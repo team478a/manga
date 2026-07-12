@@ -77,7 +77,9 @@ function register() {
   );
   handle("projects:rename", (v) => {
     const x = renameProjectSchema.parse(v);
-    return store.renameProject(x.id, x.title);
+    return store.captureHistory(x.id, "プロジェクト名を変更", () =>
+      store.renameProject(x.id, x.title),
+    );
   });
   handle("projects:duplicate", (v) =>
     store.duplicateProject(projectIdSchema.parse(v).id),
@@ -90,39 +92,76 @@ function register() {
   );
   handle("episodes:create", (v) => {
     const x = episodeInputSchema.parse(v);
-    return store.createEpisode(x.projectId, x.title);
+    return store.captureHistory(x.projectId, "エピソードを追加", () =>
+      store.createEpisode(x.projectId, x.title),
+    );
   });
   handle("episodes:rename", (v) => {
     const x = renameEpisodeSchema.parse(v);
-    return store.renameEpisode(x.id, x.title);
+    const projectId = store.projectIdForEpisode(x.id);
+    return store.captureHistory(projectId, "エピソード名を変更", () =>
+      store.renameEpisode(x.id, x.title),
+    );
   });
   handle("episodes:reorder", (v) => {
     const x = reorderEpisodesSchema.parse(v);
-    return store.reorderEpisodes(x.projectId, x.episodeIds);
+    return store.captureHistory(x.projectId, "エピソードを並び替え", () =>
+      store.reorderEpisodes(x.projectId, x.episodeIds),
+    );
   });
-  handle("episodes:delete", (v) =>
-    store.deleteEpisode(projectIdSchema.parse(v).id),
-  );
+  handle("episodes:delete", (v) => {
+    const id = projectIdSchema.parse(v).id;
+    const projectId = store.projectIdForEpisode(id);
+    return store.captureHistory(projectId, "エピソードを削除", () =>
+      store.deleteEpisode(id),
+    );
+  });
   handle("projects:set-cover", (v) => {
     const x = setProjectCoverSchema.parse(v);
-    return store.setProjectCover(x.projectId, x.assetId);
+    return store.captureHistory(x.projectId, "表紙を変更", () =>
+      store.setProjectCover(x.projectId, x.assetId),
+    );
   });
   handle("pages:add", (v) => {
     const x = pageInputSchema.parse(v);
-    return store.addPage(x.episodeId, x.imageAssetId);
+    const projectId = store.projectIdForEpisode(x.episodeId);
+    return store.captureHistory(projectId, "ページを追加", () =>
+      store.addPage(x.episodeId, x.imageAssetId),
+    );
   });
-  handle("pages:duplicate", (v) =>
-    store.duplicatePage(projectIdSchema.parse(v).id),
-  );
-  handle("pages:delete", (v) => store.deletePage(projectIdSchema.parse(v).id));
+  handle("pages:duplicate", (v) => {
+    const id = projectIdSchema.parse(v).id;
+    const projectId = store.projectIdForPage(id);
+    return store.captureHistory(projectId, "ページを複製", () =>
+      store.duplicatePage(id),
+    );
+  });
+  handle("pages:delete", (v) => {
+    const id = projectIdSchema.parse(v).id;
+    const projectId = store.projectIdForPage(id);
+    return store.captureHistory(projectId, "ページを削除", () =>
+      store.deletePage(id),
+    );
+  });
   handle("pages:reorder", (v) => {
     const x = reorderPagesSchema.parse(v);
-    return store.reorderPages(x.episodeId, x.pageIds);
+    const projectId = store.projectIdForEpisode(x.episodeId);
+    return store.captureHistory(projectId, "ページを並び替え", () =>
+      store.reorderPages(x.episodeId, x.pageIds),
+    );
   });
   handle("pages:save", (v) => {
     const x = pagePromptSchema.parse(v);
-    return store.savePage(x.id, x.prompt, x.negativePrompt, x.notes);
+    const projectId = store.projectIdForPage(x.id);
+    return store.captureHistory(projectId, "ページ内容を編集", () =>
+      store.savePage(x.id, x.prompt, x.negativePrompt, x.notes),
+    );
   });
+  handle("history:list", (v) =>
+    store.listOperationHistory(projectIdSchema.parse(v).id),
+  );
+  handle("history:undo", (v) => store.undo(projectIdSchema.parse(v).id));
+  handle("history:redo", (v) => store.redo(projectIdSchema.parse(v).id));
   handle("assets:pick", async (v) => {
     const projectId = projectIdSchema.parse(v).id;
     const result = await dialog.showOpenDialog({

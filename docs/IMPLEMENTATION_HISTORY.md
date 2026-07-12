@@ -10,21 +10,21 @@
 
 MANGAIを次の2製品へ分離しています。
 
-| 製品 | 配置 | 責務 |
-| --- | --- | --- |
-| MANGAI Hub | リポジトリルートのNext.jsアプリ | 作品公開、検索、販売、Stripe決済、売上、グッズ申請、運営管理 |
-| MANGAI Desktop | `apps/desktop` | ローカル漫画プロジェクト、Episode、Page、素材、プレビュー、販売用書き出し |
+| 製品           | 配置                            | 責務                                                                      |
+| -------------- | ------------------------------- | ------------------------------------------------------------------------- |
+| MANGAI Hub     | リポジトリルートのNext.jsアプリ | 作品公開、検索、販売、Stripe決済、売上、グッズ申請、運営管理              |
+| MANGAI Desktop | `apps/desktop`                  | ローカル漫画プロジェクト、Episode、Page、素材、プレビュー、販売用書き出し |
 
 Hubの既存コードは移動せず維持し、Desktopと共通パッケージを追加する段階的な構成を採用しています。
 
 ## 2. Git保全履歴
 
-| コミット | 内容 |
-| --- | --- |
-| `baa1977` | 正常ビルドできるMANGAI Hub Marketplace MVPを初期保全 |
-| `7a5a9e3` | Electron、React、Vite、SQLiteによるDesktop基盤を追加 |
+| コミット  | 内容                                                          |
+| --------- | ------------------------------------------------------------- |
+| `baa1977` | 正常ビルドできるMANGAI Hub Marketplace MVPを初期保全          |
+| `7a5a9e3` | Electron、React、Vite、SQLiteによるDesktop基盤を追加          |
 | `26df166` | DesktopからPDF、画像ZIP、作品情報、販売文を書き出す機能を追加 |
-| `1726dd2` | Episode切り替えとプロジェクト代表画像表示を追加 |
+| `1726dd2` | Episode切り替えとプロジェクト代表画像表示を追加               |
 
 Hub保全タグ:
 
@@ -141,14 +141,15 @@ SNS告知文.txt
 {Documents}/MANGAI/mangai_local.sqlite
 ```
 
-| テーブル | 用途 |
-| --- | --- |
-| `projects` | 作品設定、保存先、代表素材、作成・更新・最終表示日時 |
-| `episodes` | Projectに属するEpisodeと表示順 |
-| `pages` | Episodeに属するPage、寸法、画像、プロンプト、メモ |
-| `panels` | 将来のコマ編集用座標・生成情報 |
-| `assets` | 相対パス、MIME、寸法、容量、SHA-256 |
-| `export_history` | 書き出し先、生成ファイル、警告、日時 |
+| テーブル         | 用途                                                 |
+| ---------------- | ---------------------------------------------------- |
+| `projects`       | 作品設定、保存先、代表素材、作成・更新・最終表示日時 |
+| `episodes`       | Projectに属するEpisodeと表示順                       |
+| `pages`          | Episodeに属するPage、寸法、画像、プロンプト、メモ    |
+| `panels`         | 将来のコマ編集用座標・生成情報                       |
+| `assets`         | 相対パス、MIME、寸法、容量、SHA-256                  |
+| `export_history` | 書き出し先、生成ファイル、警告、日時                 |
+| `operation_history` | Project編集の変更前後、取消状態、操作日時 |
 
 設定:
 
@@ -223,21 +224,21 @@ npm run build
 
 2026-07-12時点:
 
-| 検証 | 結果 |
-| --- | --- |
-| Hub TypeScript | 成功 |
-| Hub ESLint | 成功 |
-| Hub Next.js本番ビルド | 成功 |
-| Desktop TypeScript | 成功 |
-| Desktop ESLint | 成功 |
-| Electron mainビルド | 成功 |
-| Vite rendererビルド | 成功 |
-| Windows Electron起動 | 成功 |
-| SQLite永続化テスト | 成功 |
-| Page並び替えテスト | 成功 |
+| 検証                           | 結果 |
+| ------------------------------ | ---- |
+| Hub TypeScript                 | 成功 |
+| Hub ESLint                     | 成功 |
+| Hub Next.js本番ビルド          | 成功 |
+| Desktop TypeScript             | 成功 |
+| Desktop ESLint                 | 成功 |
+| Electron mainビルド            | 成功 |
+| Vite rendererビルド            | 成功 |
+| Windows Electron起動           | 成功 |
+| SQLite永続化テスト             | 成功 |
+| Page並び替えテスト             | 成功 |
 | 画像付きPDF・ZIP書き出しテスト | 成功 |
 
-Desktop統合テストは14件すべて成功しています。AIテストにはOllama、ComfyUI、Creator Chat、ジョブ、キャンセル、タイムアウト、素材登録、ワークフロー管理を含みます。
+Desktop統合テストは15件すべて成功しています。AIテストにはOllama、ComfyUI、Creator Chat、ジョブ、キャンセル、タイムアウト、素材登録、ワークフロー管理を含みます。編集履歴テストには永続化、複数回Undo/Redo、履歴分岐の破棄を含みます。
 
 ## 11. 現在の未実装・既知課題
 
@@ -257,8 +258,11 @@ Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ�
 ## 13. 推奨する次工程
 
 1. 実環境のOllama・ComfyUIによるE2E確認
-2. Undo/Redoと操作履歴
-3. 保存先選択ダイアログ
-4. Electron Builder等によるWindowsインストーラー
-5. export-coreのWebP変換対応
-6. 依存関係監査とアップデート方針決定
+2. 保存先選択ダイアログ
+3. Electron Builder等によるWindowsインストーラー
+4. export-coreのWebP変換対応
+5. 依存関係監査とアップデート方針決定
+
+## 14. Undo / Redo・操作履歴
+
+Project編集の変更前後をSQLiteへ永続化し、ツールバー操作、キーボードショートカット、直近50件の履歴表示に対応しました。対象範囲と制限は [`desktop/UNDO_REDO.md`](desktop/UNDO_REDO.md) を参照してください。

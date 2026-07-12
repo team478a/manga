@@ -66,6 +66,7 @@ export class MangaiDatabase {
  create table if not exists generation_jobs(id text primary key,project_id text references projects(id) on delete set null,episode_id text references episodes(id) on delete set null,page_id text references pages(id) on delete set null,provider_type text not null,provider_id text not null,model_id text,generation_type text not null,status text not null,prompt text not null,negative_prompt text not null default '',input_json text not null default '{}',output_json text not null default '{}',provider_job_id text,error_code text,error_message text,created_at text not null,started_at text,completed_at text);
  create table if not exists generation_outputs(id text primary key,job_id text not null references generation_jobs(id) on delete cascade,asset_id text references assets(id) on delete set null,relative_path text,metadata_json text not null default '{}',created_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
+ create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
  create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);`);
     const assetColumns = this.db
       .prepare("pragma table_info(assets)")
@@ -239,6 +240,184 @@ export class MangaiDatabase {
       .run(uid(), projectId, title, i, now(), now());
     return this.bundle(projectId);
   }
+  private editableSnapshot(projectId: string) {
+    const bundle = this.bundle(projectId);
+    return {
+      project: {
+        title: bundle.project.title,
+        coverAssetId: bundle.project.coverAssetId,
+      },
+      episodes: bundle.episodes,
+      pages: bundle.pages,
+      panels: bundle.panels,
+    };
+  }
+  captureHistory<T>(projectId: string, label: string, mutation: () => T) {
+    const before = this.editableSnapshot(projectId);
+    const result = mutation();
+    const after = this.editableSnapshot(projectId);
+    if (JSON.stringify(before) === JSON.stringify(after)) return result;
+    this.db.transaction(() => {
+      this.db
+        .prepare(
+          "delete from operation_history where project_id=? and is_undone=1",
+        )
+        .run(projectId);
+      this.db
+        .prepare(
+          "insert into operation_history(project_id,label,before_json,after_json,created_at) values(?,?,?,?,?)",
+        )
+        .run(
+          projectId,
+          label,
+          JSON.stringify(before),
+          JSON.stringify(after),
+          now(),
+        );
+    })();
+    return result;
+  }
+  private restoreEditableSnapshot(projectId: string, snapshot: any) {
+    this.db.transaction(() => {
+      this.db
+        .prepare(
+          "update projects set title=?,cover_asset_id=?,updated_at=? where id=?",
+        )
+        .run(
+          snapshot.project.title,
+          snapshot.project.coverAssetId,
+          now(),
+          projectId,
+        );
+      const episodeIds = new Set(snapshot.episodes.map((item: any) => item.id));
+      const pageIds = new Set(snapshot.pages.map((item: any) => item.id));
+      const panelIds = new Set(snapshot.panels.map((item: any) => item.id));
+      for (const item of snapshot.episodes)
+        this.db
+          .prepare(
+            "insert into episodes values(?,?,?,?,?,?) on conflict(id) do update set title=excluded.title,order_index=excluded.order_index,updated_at=excluded.updated_at",
+          )
+          .run(
+            item.id,
+            projectId,
+            item.title,
+            item.orderIndex,
+            item.createdAt,
+            now(),
+          );
+      for (const item of snapshot.pages)
+        this.db
+          .prepare(
+            "insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set episode_id=excluded.episode_id,page_number=excluded.page_number,order_index=excluded.order_index,width=excluded.width,height=excluded.height,background_color=excluded.background_color,image_asset_id=excluded.image_asset_id,prompt=excluded.prompt,negative_prompt=excluded.negative_prompt,notes=excluded.notes,updated_at=excluded.updated_at",
+          )
+          .run(
+            item.id,
+            item.episodeId,
+            item.pageNumber,
+            item.orderIndex,
+            item.width,
+            item.height,
+            item.backgroundColor,
+            item.imageAssetId,
+            item.prompt,
+            item.negativePrompt,
+            item.notes,
+            item.createdAt,
+            now(),
+          );
+      for (const item of snapshot.panels)
+        this.db
+          .prepare(
+            "insert into panels values(?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,order_index=excluded.order_index,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,image_asset_id=excluded.image_asset_id,prompt=excluded.prompt,negative_prompt=excluded.negative_prompt,generation_status=excluded.generation_status,metadata=excluded.metadata",
+          )
+          .run(
+            item.id,
+            item.pageId,
+            item.orderIndex,
+            item.x,
+            item.y,
+            item.width,
+            item.height,
+            item.imageAssetId,
+            item.prompt,
+            item.negativePrompt,
+            item.generationStatus,
+            item.metadata,
+          );
+      const existingPanels = this.db
+        .prepare(
+          "select panels.id from panels join pages on pages.id=panels.page_id join episodes on episodes.id=pages.episode_id where episodes.project_id=?",
+        )
+        .all(projectId) as any[];
+      for (const row of existingPanels)
+        if (!panelIds.has(row.id))
+          this.db.prepare("delete from panels where id=?").run(row.id);
+      const existingPages = this.db
+        .prepare(
+          "select pages.id from pages join episodes on episodes.id=pages.episode_id where episodes.project_id=?",
+        )
+        .all(projectId) as any[];
+      for (const row of existingPages)
+        if (!pageIds.has(row.id))
+          this.db.prepare("delete from pages where id=?").run(row.id);
+      const existingEpisodes = this.db
+        .prepare("select id from episodes where project_id=?")
+        .all(projectId) as any[];
+      for (const row of existingEpisodes)
+        if (!episodeIds.has(row.id))
+          this.db.prepare("delete from episodes where id=?").run(row.id);
+    })();
+  }
+  listOperationHistory(projectId: string) {
+    const items = this.db
+      .prepare(
+        "select id,label,is_undone as isUndone,created_at as createdAt from operation_history where project_id=? order by id desc limit 50",
+      )
+      .all(projectId);
+    return {
+      items,
+      canUndo: Boolean(
+        this.db
+          .prepare(
+            "select 1 from operation_history where project_id=? and is_undone=0 limit 1",
+          )
+          .get(projectId),
+      ),
+      canRedo: Boolean(
+        this.db
+          .prepare(
+            "select 1 from operation_history where project_id=? and is_undone=1 limit 1",
+          )
+          .get(projectId),
+      ),
+    };
+  }
+  undo(projectId: string) {
+    const row = this.db
+      .prepare(
+        "select id,before_json as snapshot from operation_history where project_id=? and is_undone=0 order by id desc limit 1",
+      )
+      .get(projectId) as any;
+    if (!row) return this.bundle(projectId);
+    this.restoreEditableSnapshot(projectId, JSON.parse(row.snapshot));
+    this.db
+      .prepare("update operation_history set is_undone=1 where id=?")
+      .run(row.id);
+    return this.bundle(projectId);
+  }
+  redo(projectId: string) {
+    const row = this.db
+      .prepare(
+        "select id,after_json as snapshot from operation_history where project_id=? and is_undone=1 order by id asc limit 1",
+      )
+      .get(projectId) as any;
+    if (!row) return this.bundle(projectId);
+    this.restoreEditableSnapshot(projectId, JSON.parse(row.snapshot));
+    this.db
+      .prepare("update operation_history set is_undone=0 where id=?")
+      .run(row.id);
+    return this.bundle(projectId);
+  }
   renameEpisode(id: string, title: string) {
     const row = this.db
       .prepare("select project_id from episodes where id=?")
@@ -292,12 +471,21 @@ export class MangaiDatabase {
       .run(assetId, now(), projectId);
     return this.bundle(projectId);
   }
-  private projectIdForEpisode(episodeId: string) {
+  projectIdForEpisode(episodeId: string) {
     const r = this.db
       .prepare("select project_id from episodes where id=?")
       .get(episodeId) as any;
     if (!r) throw new Error("エピソードが見つかりません。");
     return r.project_id as string;
+  }
+  projectIdForPage(pageId: string) {
+    const row = this.db
+      .prepare(
+        "select episodes.project_id from pages join episodes on episodes.id=pages.episode_id where pages.id=?",
+      )
+      .get(pageId) as any;
+    if (!row) throw new Error("ページが見つかりません。");
+    return row.project_id as string;
   }
   addPage(episodeId: string, imageAssetId?: string) {
     const projectId = this.projectIdForEpisode(episodeId),

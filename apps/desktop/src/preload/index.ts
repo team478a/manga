@@ -31,6 +31,12 @@ contextBridge.exposeInMainWorld("mangai", {
     negativePrompt: string,
     notes: string,
   ) => ipcRenderer.invoke("pages:save", { id, prompt, negativePrompt, notes }),
+  listHistory: (projectId: string) =>
+    ipcRenderer.invoke("history:list", { id: projectId }),
+  undo: (projectId: string) =>
+    ipcRenderer.invoke("history:undo", { id: projectId }),
+  redo: (projectId: string) =>
+    ipcRenderer.invoke("history:redo", { id: projectId }),
   pickAssets: (projectId: string) =>
     ipcRenderer.invoke("assets:pick", { id: projectId }),
   importDroppedAssets: (projectId: string, files: File[]) =>

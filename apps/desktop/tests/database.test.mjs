@@ -77,6 +77,55 @@ test("page reordering is persisted", () => {
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test("operation history supports persistent undo, redo and branch clearing", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-history-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "履歴",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1000,
+    height: 1500,
+    dpi: 300,
+  });
+  const projectId = bundle.project.id;
+  const episodeId = bundle.episodes[0].id;
+  bundle = db.captureHistory(projectId, "ページを追加", () =>
+    db.addPage(episodeId),
+  );
+  const pageId = bundle.pages[0].id;
+  db.captureHistory(projectId, "ページ内容を編集", () =>
+    db.savePage(pageId, "prompt", "negative", "memo"),
+  );
+  assert.equal(db.listOperationHistory(projectId).items.length, 2);
+  assert.equal(db.undo(projectId).pages[0].notes, "");
+  db.close();
+
+  db = new MangaiDatabase(paths);
+  assert.equal(db.listOperationHistory(projectId).canRedo, true);
+  assert.equal(db.undo(projectId).pages.length, 0);
+  bundle = db.redo(projectId);
+  assert.equal(bundle.pages[0].id, pageId);
+  db.captureHistory(projectId, "エピソード名を変更", () =>
+    db.renameEpisode(episodeId, "分岐後"),
+  );
+  assert.equal(db.listOperationHistory(projectId).canRedo, false);
+  assert.equal(db.undo(projectId).episodes[0].title, "第1話");
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 test("project export creates PDF, ZIP, manifest and sales text", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-export-"));
   const paths = {
@@ -121,7 +170,9 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     assert.equal(fs.existsSync(path.join(result.outputDir, file)), true),
   );
   assert.equal(
-    fs.readFileSync(path.join(result.outputDir, "本編PDF.pdf"), "utf8").slice(0, 4),
+    fs
+      .readFileSync(path.join(result.outputDir, "本編PDF.pdf"), "utf8")
+      .slice(0, 4),
     "%PDF",
   );
   assert.deepEqual(result.warnings, []);

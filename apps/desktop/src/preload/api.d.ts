@@ -9,6 +9,16 @@ export type ChatEvent = {
   jobId?: string;
   message?: string;
 };
+export type OperationHistory = {
+  items: Array<{
+    id: number;
+    label: string;
+    isUndone: number;
+    createdAt: string;
+  }>;
+  canUndo: boolean;
+  canRedo: boolean;
+};
 export type DesktopApi = {
   listProjects: () => Promise<Project[]>;
   projectCover: (id: string) => Promise<string | null>;
@@ -46,6 +56,9 @@ export type DesktopApi = {
     negativePrompt: string,
     notes: string,
   ) => Promise<ProjectBundle>;
+  listHistory: (projectId: string) => Promise<OperationHistory>;
+  undo: (projectId: string) => Promise<ProjectBundle>;
+  redo: (projectId: string) => Promise<ProjectBundle>;
   pickAssets: (projectId: string) => Promise<ProjectBundle>;
   importDroppedAssets: (
     projectId: string,

@@ -5,6 +5,7 @@ import type { Project, ProjectBundle, Page, Asset } from "@mangai/project-core";
 import { AISettings } from "./features/ai-settings/AISettings";
 import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
+import type { OperationHistory } from "../preload/api";
 
 const emptyForm = {
   title: "",
@@ -35,6 +36,11 @@ function App() {
     [error, setError] = React.useState(""),
     [saving, setSaving] = React.useState("保存済み"),
     [zoom, setZoom] = React.useState(70),
+    [history, setHistory] = React.useState<OperationHistory>({
+      items: [],
+      canUndo: false,
+      canRedo: false,
+    }),
     [assetUrls, setAssetUrls] = React.useState<Record<string, string>>({});
   const showError = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
@@ -69,6 +75,11 @@ function App() {
       .then((xs) => setAssetUrls(Object.fromEntries(xs)))
       .catch(showError);
   }, [bundle?.assets]);
+  const refreshHistory = (projectId: string) =>
+    window.mangai.listHistory(projectId).then(setHistory);
+  React.useEffect(() => {
+    if (bundle && !activeTool) void refreshHistory(bundle.project.id);
+  }, [bundle?.project.id, activeTool]);
   const apply = (p: Promise<ProjectBundle>) =>
     p
       .then((b) => {
@@ -82,9 +93,36 @@ function App() {
           x && b.pages.some((p) => p.id === x) ? x : (b.pages[0]?.id ?? null),
         );
         void refresh();
+        void refreshHistory(b.project.id);
         setSaving("保存済み");
       })
       .catch(showError);
+  React.useEffect(() => {
+    if (!bundle || activeTool) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input, textarea, select, [contenteditable=true]"))
+        return;
+      if (!(event.ctrlKey || event.metaKey)) return;
+      if (
+        event.key.toLowerCase() === "z" &&
+        !event.shiftKey &&
+        history.canUndo
+      ) {
+        event.preventDefault();
+        void apply(window.mangai.undo(bundle.project.id));
+      } else if (
+        (event.key.toLowerCase() === "y" ||
+          (event.key.toLowerCase() === "z" && event.shiftKey)) &&
+        history.canRedo
+      ) {
+        event.preventDefault();
+        void apply(window.mangai.redo(bundle.project.id));
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [bundle, activeTool, history.canUndo, history.canRedo]);
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -325,8 +363,38 @@ function App() {
         <strong>{bundle.project.title}</strong>
         <span className="status">● {saving}</span>
         <span className="spacer" />
-        <button disabled>元に戻す</button>
-        <button disabled>やり直す</button>
+        <button
+          disabled={!history.canUndo}
+          title="元に戻す (Ctrl+Z)"
+          onClick={() => apply(window.mangai.undo(bundle.project.id))}
+        >
+          元に戻す
+        </button>
+        <button
+          disabled={!history.canRedo}
+          title="やり直す (Ctrl+Y / Ctrl+Shift+Z)"
+          onClick={() => apply(window.mangai.redo(bundle.project.id))}
+        >
+          やり直す
+        </button>
+        <details className="history-menu">
+          <summary>操作履歴</summary>
+          <div>
+            {history.items.length ? (
+              history.items.map((item) => (
+                <p className={item.isUndone ? "undone" : ""} key={item.id}>
+                  <b>{item.label}</b>
+                  <small>
+                    {item.isUndone ? "取消済み・" : ""}
+                    {new Date(item.createdAt).toLocaleTimeString("ja-JP")}
+                  </small>
+                </p>
+              ))
+            ) : (
+              <p>履歴はまだありません。</p>
+            )}
+          </div>
+        </details>
         <button
           onClick={() => apply(window.mangai.pickAssets(bundle.project.id))}
         >
