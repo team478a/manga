@@ -102,6 +102,8 @@ MANGAI DesktopはComfyUI本体やモデルを自動インストールしませ�
 5. 必要に応じてキャンセルできます。
 6. 完了画像は自動的にProject素材へ登録されます。
 
+生成履歴には進捗バーを表示します。現在のComfyUI履歴APIから正確なノード別割合は取得できないため、受付、処理中、画像取得、完了という処理段階に基づく目安です。進捗値はSQLiteへ保存され、完了時は100%になります。
+
 生成ファイル:
 
 ```text
@@ -134,6 +136,7 @@ MANGAI DesktopはComfyUI本体やモデルを自動インストールしませ�
 - `comfy_workflows`
 
 `assets`には `generation_job_id` と `metadata_json` を追加しています。
+`generation_jobs.progress`には0から1の進捗値を保存します。
 
 ## ログ
 

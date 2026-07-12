@@ -235,6 +235,18 @@ export function GenerationJobs({
                   <small>
                     {job.status}・{job.createdAt}
                   </small>
+                  {job.generationType === "image" && (
+                    <div className="job-progress">
+                      <progress
+                        max="100"
+                        value={Math.round((job.progress ?? 0) * 100)}
+                      />
+                      <small>
+                        {Math.round((job.progress ?? 0) * 100)}%
+                        {job.status === "running" ? "（処理段階の目安）" : ""}
+                      </small>
+                    </div>
+                  )}
                   {job.errorMessage && (
                     <p className="error">{job.errorMessage}</p>
                   )}

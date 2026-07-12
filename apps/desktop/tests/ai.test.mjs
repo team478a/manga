@@ -358,6 +358,7 @@ test("ComfyUI generation is saved as a project asset", async () => {
     assert.equal(result.status, "completed");
     assert.equal(result.bundle.assets.length, 1);
     assert.equal(result.bundle.assets[0].fileName, "generated.png");
+    assert.equal(db.listGenerationJobs(project.project.id)[0].progress, 1);
   } finally {
     db.close();
     await mock.close();
@@ -423,6 +424,7 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
       db.listGenerationJobs(project.project.id)[0].status,
       "canceled",
     );
+    assert.ok(db.listGenerationJobs(project.project.id)[0].progress >= 0.15);
   } finally {
     db.close();
     await mock.close();

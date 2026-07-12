@@ -252,14 +252,13 @@ Desktop統合テストは14件すべて成功しています。AIテストには
 
 ## 12. Creator Chat・ローカルAI基盤
 
-Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ、プロンプトテンプレート、生成画像の素材登録を追加しました。Creator Chat内のProject・Episode・Page切替、Ollamaモデル一覧のSQLiteキャッシュ・オフライン復元、初期テンプレートの複製とカスタムテンプレート編集にも対応しています。設定・利用方法は [`desktop/AI_CREATOR.md`](desktop/AI_CREATOR.md)、完了条件は [`desktop/AI_IMPLEMENTATION_STATUS.md`](desktop/AI_IMPLEMENTATION_STATUS.md) を参照してください。
+Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ、プロンプトテンプレート、生成画像の素材登録を追加しました。Creator Chat内のProject・Episode・Page切替、Ollamaモデル一覧のSQLiteキャッシュ・オフライン復元、初期テンプレートの複製とカスタムテンプレート編集、画像生成の段階別進捗表示にも対応しています。設定・利用方法は [`desktop/AI_CREATOR.md`](desktop/AI_CREATOR.md)、完了条件は [`desktop/AI_IMPLEMENTATION_STATUS.md`](desktop/AI_IMPLEMENTATION_STATUS.md) を参照してください。
 
 ## 13. 推奨する次工程
 
 1. 実環境のOllama・ComfyUIによるE2E確認
-2. 生成ジョブの進捗率表示
-3. Undo/Redoと操作履歴
-4. 保存先選択ダイアログ
-5. Electron Builder等によるWindowsインストーラー
-6. export-coreのWebP変換対応
-7. 依存関係監査とアップデート方針決定
+2. Undo/Redoと操作履歴
+3. 保存先選択ダイアログ
+4. Electron Builder等によるWindowsインストーラー
+5. export-coreのWebP変換対応
+6. 依存関係監査とアップデート方針決定

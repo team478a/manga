@@ -265,7 +265,7 @@ export class AIService {
     const controller = new AbortController();
     this.controllers.set(jobId, controller);
     try {
-      this.store.updateGenerationJob(jobId, "running");
+      this.store.updateGenerationJob(jobId, "running", { progress: 0.05 });
       const queued = await provider.generateImage(
         input as ImageGenerationRequest,
         undefined,
@@ -273,6 +273,7 @@ export class AIService {
       );
       this.store.updateGenerationJob(jobId, "running", {
         providerJobId: queued.providerJobId,
+        progress: 0.15,
       });
       const deadline = Date.now() + settings.timeoutMs;
       while (Date.now() < deadline) {
@@ -291,6 +292,7 @@ export class AIService {
             status.error ?? "ComfyUI生成に失敗しました。",
           );
         if (status.status === "completed") {
+          this.store.updateGenerationJob(jobId, "running", { progress: 0.9 });
           const images = await provider.downloadImages(
               queued.providerJobId,
               status.outputs,
@@ -331,6 +333,9 @@ export class AIService {
             bundle: this.store.bundle(input.projectId),
           };
         }
+        this.store.updateGenerationJob(jobId, "running", {
+          progress: status.progress ?? 0.5,
+        });
         await new Promise((resolve) =>
           setTimeout(resolve, settings.pollIntervalMs),
         );

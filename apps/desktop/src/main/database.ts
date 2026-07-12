@@ -76,6 +76,13 @@ export class MangaiDatabase {
       this.db.exec(
         "alter table assets add column metadata_json text not null default '{}'",
       );
+    const jobColumns = this.db
+      .prepare("pragma table_info(generation_jobs)")
+      .all() as Array<{ name: string }>;
+    if (!jobColumns.some((column) => column.name === "progress"))
+      this.db.exec(
+        "alter table generation_jobs add column progress real not null default 0",
+      );
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -828,6 +835,7 @@ export class MangaiDatabase {
       output?: unknown;
       errorCode?: string;
       errorMessage?: string;
+      progress?: number;
     } = {},
   ) {
     const started = status === "running" ? now() : null,
@@ -836,14 +844,15 @@ export class MangaiDatabase {
         : null;
     this.db
       .prepare(
-        "update generation_jobs set status=?,provider_job_id=coalesce(?,provider_job_id),output_json=?,error_code=?,error_message=?,started_at=coalesce(started_at,?),completed_at=? where id=?",
+        "update generation_jobs set status=?,provider_job_id=coalesce(?,provider_job_id),output_json=coalesce(?,output_json),error_code=?,error_message=?,progress=coalesce(?,progress),started_at=coalesce(started_at,?),completed_at=? where id=?",
       )
       .run(
         status,
         values.providerJobId ?? null,
-        JSON.stringify(values.output ?? {}),
+        values.output === undefined ? null : JSON.stringify(values.output),
         values.errorCode ?? null,
         values.errorMessage ?? null,
+        values.progress ?? (status === "completed" ? 1 : null),
         started,
         completed,
         id,
@@ -851,7 +860,7 @@ export class MangaiDatabase {
   }
   listGenerationJobs(projectId?: string) {
     const sql =
-      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
+      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
     return projectId
       ? this.db
           .prepare(`${sql} where project_id=? order by created_at desc`)

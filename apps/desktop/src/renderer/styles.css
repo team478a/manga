@@ -519,6 +519,16 @@ label {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.job-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+.job-progress progress {
+  width: min(280px, 55vw);
+  accent-color: #276749;
+}
 .workflow-tools {
   border: 1px solid #d9dedb;
   border-radius: 8px;
