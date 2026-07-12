@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "desktop:dev": "npm --prefix apps/desktop run dev",
     "desktop:build": "npm --prefix apps/desktop run build",
-    "desktop:test": "npm --prefix apps/desktop run test"
+    "desktop:test": "npm --prefix apps/desktop run test",
+    "desktop:pack:win": "npm --prefix apps/desktop run pack:win",
+    "desktop:dist:win": "npm --prefix apps/desktop run dist:win"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

@@ -1,11 +1,13 @@
 {
   "name": "@mangai/desktop",
   "version": "0.1.0",
+  "description": "MANGAI local manga creator workspace",
+  "author": "MANGAI",
   "private": true,
   "type": "module",
   "main": "dist-main/main/index.js",
   "scripts": {
-    "postinstall": "electron-rebuild -f -w better-sqlite3",
+    "postinstall": "electron-builder install-app-deps",
     "dev": "concurrently -k \"vite\" \"tsc -p tsconfig.main.json --watch\" \"wait-on tcp:5173 file:dist-main/main/index.js && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "build": "npm run build:main && vite build",
     "build:packages": "tsc -p ../../packages/shared/tsconfig.json && tsc -p ../../packages/project-core/tsconfig.json && tsc -p ../../packages/export-core/tsconfig.json && tsc -p ../../packages/ai-core/tsconfig.json",
@@ -13,7 +15,9 @@
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "lint": "eslint src",
     "test": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test tests/database.test.mjs tests/ai.test.mjs",
-    "start": "electron ."
+    "start": "electron .",
+    "pack:win": "npm run build && electron-builder --win dir --x64",
+    "dist:win": "npm run build && electron-builder --win nsis --x64"
   },
   "dependencies": {
     "@mangai/ai-core": "file:../../packages/ai-core",
@@ -29,7 +33,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@electron/rebuild": "^4.2.0",
     "@eslint/js": "^9.39.4",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.10.7",
@@ -38,7 +41,8 @@
     "@vitejs/plugin-react": "^4.4.1",
     "concurrently": "^9.1.2",
     "cross-env": "^7.0.3",
-    "electron": "^37.2.0",
+    "electron": "^39.8.5",
+    "electron-builder": "^26.15.3",
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
@@ -47,5 +51,40 @@
     "typescript-eslint": "^8.35.1",
     "vite": "^7.0.0",
     "wait-on": "^8.0.3"
+  },
+  "build": {
+    "appId": "jp.mangai.creator.desktop",
+    "productName": "MANGAI Desktop",
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**"
+    ],
+    "files": [
+      "dist-main/**/*",
+      "dist-renderer/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "MANGAI-Desktop-Setup-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "MANGAI Desktop"
+    }
   }
 }

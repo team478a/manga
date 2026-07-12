@@ -257,9 +257,9 @@ Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ�
 ## 13. 推奨する次工程
 
 1. 実環境のOllama・ComfyUIによるE2E確認
-2. Electron Builder等によるWindowsインストーラー
-3. export-coreのWebP変換対応
-4. 依存関係監査とアップデート方針決定
+2. Windowsコード署名とブランドアイコン
+3. 自動更新と公開配布先
+4. export-coreのWebP変換対応
 
 ## 14. Undo / Redo・操作履歴
 
@@ -268,3 +268,7 @@ Project編集の変更前後をSQLiteへ永続化し、ツールバー操作、�
 ## 15. Project保存先選択
 
 新規Project作成画面からOSネイティブのフォルダー選択ダイアログを開き、Projectルートを指定できるようにしました。キャンセル時は現在値を保持し、「既定に戻す」で `{Documents}/MANGAI/projects/{projectId}` へ戻せます。
+
+## 16. Windowsインストーラー
+
+Electron BuilderとNSISによるWindows x64インストーラー生成を追加しました。`better-sqlite3`のABI再構築とASAR外展開を設定し、Electron 39.8.5でDesktop統合テスト16件と依存関係監査0件を確認しています。生成方法と配布前課題は [`desktop/WINDOWS_INSTALLER.md`](desktop/WINDOWS_INSTALLER.md) を参照してください。
