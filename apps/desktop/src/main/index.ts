@@ -154,9 +154,16 @@ function register() {
   handle("ai:provider:models", async (v) => {
     const id = providerSettingsSchema.shape.providerId.parse(v?.providerId),
       provider = aiService.provider(id);
-    return "listModels" in provider && provider.listModels
-      ? provider.listModels()
-      : [];
+    if (!("listModels" in provider) || !provider.listModels) return [];
+    try {
+      const models = await provider.listModels();
+      store.saveAIModels(id, models);
+      return models.map((model) => ({ ...model, cached: false }));
+    } catch (error) {
+      const cached = store.listAIModels(id);
+      if (cached.length) return cached;
+      throw error;
+    }
   });
   handle("ai:templates:list", () => store.listPromptTemplates());
   handle("ai:templates:save", (v) =>

@@ -8,7 +8,7 @@
 | 2 | 既存Desktop機能 | 完了 | 既存統合テストとDesktopビルド成功 |
 | 3 | AI設定画面 | 完了 | 上部「設定」から表示 |
 | 4 | Ollama接続確認 | 完了 | main process経由。成功・失敗モックテスト済み |
-| 5 | Ollamaモデル一覧 | 完了 | `/api/tags`取得テスト成功 |
+| 5 | Ollamaモデル一覧 | 完了 | `/api/tags`取得、SQLiteキャッシュ、接続失敗時の復元 |
 | 6 | Creator Chat送信 | 完了 | Ollama有効時はOllama、未設定時はMock |
 | 7 | ストリーミング表示 | 完了 | NDJSONストリームとIPCイベント |
 | 8 | 応答途中停止 | 完了 | AbortControllerと送信停止ボタン |
@@ -29,6 +29,7 @@
 | 23 | Desktopビルド | 完了 | Electron main・Vite成功 |
 | 24 | Hub回帰検証 | 完了 | TypeScript・ESLint・ビルド成功 |
 | 25 | ドキュメント | 完了 | AI設定・利用手順・状況表を追加 |
+| 26 | Creator Chat対象切替 | 完了 | Chat内でProject・Episode・Pageを選択可能 |
 
 ## 外部環境で未確認
 
@@ -36,9 +37,7 @@
 
 ## 残る改善
 
-- Creator Chatで別Projectを選ぶUI（現在は開いているProjectを使用）
 - 初期テンプレートを複製して編集するUI
 - ジョブ進捗率表示（現在は状態表示）
-- `ai_models`のキャッシュ活用
 - クラウドプロバイダー追加時のElectron `safeStorage` 対応
 - URL許可リストのより細かなネットワーク制限

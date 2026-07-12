@@ -3,7 +3,7 @@ import type { ProviderSettings } from "@mangai/ai-core";
 export function AISettings({ onClose }: { onClose: () => void }) {
   const [settings, setSettings] = React.useState<ProviderSettings[]>([]),
     [models, setModels] = React.useState<
-      Record<string, Array<{ id: string; name: string }>>
+      Record<string, Array<{ id: string; name: string; cached?: boolean }>>
     >({}),
     [status, setStatus] = React.useState<Record<string, string>>({}),
     [paths, setPaths] = React.useState<any>(),
@@ -186,7 +186,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     setModels((m) => ({ ...m, [value.providerId]: list }));
                     setStatus((s) => ({
                       ...s,
-                      [value.providerId]: `${list.length}件のモデルを取得しました。`,
+                      [value.providerId]: `${list.length}件のモデルを取得しました。${list.some((model) => model.cached) ? "（前回取得したキャッシュ）" : ""}`,
                     }));
                   }}
                 >

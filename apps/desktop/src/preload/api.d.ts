@@ -69,7 +69,9 @@ export type DesktopApi = {
     ) => Promise<{ ok: boolean; message: string; latencyMs?: number }>;
     listModels: (
       providerId: string,
-    ) => Promise<Array<{ id: string; name: string }>>;
+    ) => Promise<
+      Array<{ id: string; name: string; cached?: boolean; updatedAt?: string }>
+    >;
     listTemplates: () => Promise<any[]>;
     saveTemplate: (value: {
       id?: string;

@@ -20,10 +20,12 @@ rendererはOllamaやComfyUIへ直接接続しません。すべての通信、�
 
 Ollamaが無効な場合、Creator Chatはテスト可能なモックプロバイダーを使用します。Ollama未導入・停止中でもDesktopの既存機能には影響しません。
 
+取得したモデル一覧はSQLiteへキャッシュします。Ollamaが一時停止している場合でも、以前に取得した一覧があれば「前回取得したキャッシュ」として表示し、モデル設定を維持できます。
+
 ## Creator Chat
 
-1. Projectを開き、必要なEpisodeとPageを選択します。
-2. 「Creator Chat」を開きます。
+1. Projectを開いて「Creator Chat」を選択します。
+2. チャット左側で対象のProject、Episode、Pageを選択します。
 3. 必要に応じてプロンプトテンプレートを選びます。
 4. AIへ渡すProject情報を確認します。
 5. 「Project情報を参照」の有効・無効を選択します。
@@ -38,6 +40,7 @@ Ollamaが無効な場合、Creator Chatはテスト可能なモックプロバ�
 - 応答再生成
 - クリップボードへコピー
 - AI応答を選択Pageのメモへ保存
+- Creator Chat内でのProject・Episode・Page切替
 - SQLiteへの会話履歴保存と再起動後の復元
 
 送信候補コンテキストはProjectタイトル、説明、ジャンル、対象年齢、読み方向、選択Episode、選択Page、Pageプロンプト、ネガティブプロンプト、メモです。

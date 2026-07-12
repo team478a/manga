@@ -635,6 +635,54 @@ export class MangaiDatabase {
       );
     return this.getProviderSettings();
   }
+  saveAIModels(
+    providerId: string,
+    models: Array<{
+      id: string;
+      name: string;
+      size?: number;
+      modifiedAt?: string;
+    }>,
+  ) {
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db
+        .prepare("delete from ai_models where provider_id=?")
+        .run(providerId);
+      const insert = this.db.prepare(
+        "insert into ai_models values(?,?,?,?,?,?)",
+      );
+      for (const model of models)
+        insert.run(
+          uid(),
+          providerId,
+          model.id,
+          model.name,
+          JSON.stringify({ size: model.size, modifiedAt: model.modifiedAt }),
+          stamp,
+        );
+    })();
+    return this.listAIModels(providerId);
+  }
+  listAIModels(providerId: string) {
+    return (
+      this.db
+        .prepare(
+          "select model_id as id,name,metadata_json as metadataJson,updated_at as updatedAt from ai_models where provider_id=? order by name",
+        )
+        .all(providerId) as any[]
+    ).map((row) => {
+      const metadata = JSON.parse(row.metadataJson);
+      return {
+        id: row.id,
+        name: row.name,
+        size: metadata.size,
+        modifiedAt: metadata.modifiedAt,
+        updatedAt: row.updatedAt,
+        cached: true,
+      };
+    });
+  }
   listPromptTemplates() {
     return this.db
       .prepare(

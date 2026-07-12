@@ -161,6 +161,7 @@ test("AI settings, chat and jobs survive database reopening", () => {
   let db = new MangaiDatabase(paths);
   const settingsValue = settings("ollama", "http://127.0.0.1:11434");
   db.saveProviderSettings(settingsValue);
+  db.saveAIModels("ollama", [{ id: "manga:latest", name: "Manga", size: 42 }]);
   const project = db.createProject({
       title: "AI漫画",
       subtitle: "",
@@ -195,6 +196,8 @@ test("AI settings, chat and jobs survive database reopening", () => {
   assert.equal(recovered.status, "failed");
   assert.equal(recovered.errorCode, "INTERRUPTED");
   assert.equal(db.listPromptTemplates().length, 11);
+  assert.equal(db.listAIModels("ollama")[0].id, "manga:latest");
+  assert.equal(db.listAIModels("ollama")[0].cached, true);
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

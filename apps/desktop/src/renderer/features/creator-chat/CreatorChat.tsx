@@ -21,6 +21,12 @@ export function CreatorChat({
   onClose: () => void;
 }) {
   const [sessions, setSessions] = React.useState<any[]>([]),
+    [projects, setProjects] = React.useState<
+      Array<{ id: string; title: string }>
+    >([]),
+    [chatBundle, setChatBundle] = React.useState(bundle),
+    [chatEpisodeId, setChatEpisodeId] = React.useState(episodeId),
+    [chatPageId, setChatPageId] = React.useState(pageId),
     [sessionId, setSessionId] = React.useState<string>(),
     [messages, setMessages] = React.useState<Message[]>([]),
     [templates, setTemplates] = React.useState<any[]>([]),
@@ -30,9 +36,10 @@ export function CreatorChat({
     [requestId, setRequestId] = React.useState<string>(),
     [error, setError] = React.useState("");
   const loadSessions = () =>
-    window.mangai.ai.listSessions(bundle.project.id).then(setSessions);
+    window.mangai.ai.listSessions(chatBundle.project.id).then(setSessions);
   React.useEffect(() => {
     void loadSessions();
+    void window.mangai.listProjects().then(setProjects);
     void window.mangai.ai.listTemplates().then(setTemplates);
     return window.mangai.ai.onChatEvent((event: ChatEvent) => {
       if (requestId && event.requestId !== requestId) return;
@@ -63,7 +70,7 @@ export function CreatorChat({
         setRequestId(undefined);
       }
     });
-  }, [requestId]);
+  }, [requestId, chatBundle.project.id]);
   React.useEffect(() => {
     if (sessionId)
       void window.mangai.ai.listMessages(sessionId).then(setMessages);
@@ -82,16 +89,16 @@ export function CreatorChat({
     await window.mangai.ai.sendChat({
       requestId: id,
       sessionId,
-      projectId: bundle.project.id,
-      episodeId,
-      pageId,
+      projectId: chatBundle.project.id,
+      episodeId: chatEpisodeId,
+      pageId: chatPageId,
       message: text,
       templateId: templateId || undefined,
       includeContext,
     });
   };
-  const episode = bundle.episodes.find((e) => e.id === episodeId),
-    page = bundle.pages.find((p) => p.id === pageId);
+  const episode = chatBundle.episodes.find((e) => e.id === chatEpisodeId),
+    page = chatBundle.pages.find((p) => p.id === chatPageId);
   return (
     <main className="tool-page">
       <header className="tool-header">
@@ -101,6 +108,74 @@ export function CreatorChat({
       </header>
       <div className="chat-layout">
         <aside>
+          <label>
+            Project
+            <select
+              value={chatBundle.project.id}
+              disabled={Boolean(requestId)}
+              onChange={async (e) => {
+                const opened = await window.mangai.openProject(e.target.value);
+                setChatBundle(opened);
+                onBundle(opened);
+                const nextEpisode = opened.episodes[0];
+                setChatEpisodeId(nextEpisode?.id);
+                setChatPageId(
+                  opened.pages
+                    .filter((page) => page.episodeId === nextEpisode?.id)
+                    .sort((a, b) => a.orderIndex - b.orderIndex)[0]?.id,
+                );
+                setSessionId(undefined);
+                setMessages([]);
+                setSessions(
+                  await window.mangai.ai.listSessions(opened.project.id),
+                );
+              }}
+            >
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Episode
+            <select
+              value={chatEpisodeId ?? ""}
+              onChange={(e) => {
+                const id = e.target.value;
+                setChatEpisodeId(id);
+                setChatPageId(
+                  chatBundle.pages
+                    .filter((page) => page.episodeId === id)
+                    .sort((a, b) => a.orderIndex - b.orderIndex)[0]?.id,
+                );
+              }}
+            >
+              {chatBundle.episodes.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Page
+            <select
+              value={chatPageId ?? ""}
+              onChange={(e) => setChatPageId(e.target.value || undefined)}
+            >
+              <option value="">未選択</option>
+              {chatBundle.pages
+                .filter((item) => item.episodeId === chatEpisodeId)
+                .sort((a, b) => a.orderIndex - b.orderIndex)
+                .map((item) => (
+                  <option key={item.id} value={item.id}>
+                    Page {item.pageNumber}
+                  </option>
+                ))}
+            </select>
+          </label>
           <button
             className="wide"
             onClick={() => {
@@ -187,6 +262,7 @@ export function CreatorChat({
                                 .filter(Boolean)
                                 .join("\n\n"),
                             );
+                            setChatBundle(updated);
                             onBundle(updated);
                           }}
                         >
@@ -251,9 +327,9 @@ export function CreatorChat({
         </section>
         <aside className="context-panel">
           <h2>送信コンテキスト</h2>
-          <p>Project: {bundle.project.title}</p>
-          <p>ジャンル: {bundle.project.genre || "未設定"}</p>
-          <p>対象年齢: {bundle.project.ageRating}</p>
+          <p>Project: {chatBundle.project.title}</p>
+          <p>ジャンル: {chatBundle.project.genre || "未設定"}</p>
+          <p>対象年齢: {chatBundle.project.ageRating}</p>
           <p>Episode: {episode?.title ?? "未選択"}</p>
           <p>Page: {page?.pageNumber ?? "未選択"}</p>
           {page?.prompt && <p>Prompt: {page.prompt}</p>}
