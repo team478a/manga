@@ -1,0 +1,81 @@
+import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const configPath = path.join(root, "build", "update-config.json");
+const value = process.env.MANGAI_UPDATE_URL?.trim();
+const publishToGitHub = process.env.MANGAI_PUBLISH_GITHUB === "1";
+
+if (!value) {
+  console.error("MANGAI_UPDATE_URLを設定してください。");
+  process.exit(1);
+}
+
+let url;
+try {
+  url = new URL(value);
+} catch {
+  console.error("MANGAI_UPDATE_URLが正しいURLではありません。");
+  process.exit(1);
+}
+if (url.protocol !== "https:") {
+  console.error("MANGAI_UPDATE_URLはHTTPSで指定してください。");
+  process.exit(1);
+}
+if (publishToGitHub) {
+  if (!/^[-\w.]+\/[-\w.]+$/.test(process.env.GITHUB_REPOSITORY ?? "")) {
+    console.error(
+      "GITHUB_REPOSITORYをowner/repository形式で設定してください。",
+    );
+    process.exit(1);
+  }
+  if (!process.env.GH_TOKEN && !process.env.GITHUB_TOKEN) {
+    console.error("GH_TOKENまたはGITHUB_TOKENを設定してください。");
+    process.exit(1);
+  }
+}
+
+const original = fs.readFileSync(configPath, "utf8");
+const npmCli = process.env.npm_execpath;
+const builderCli = path.join(
+  root,
+  "node_modules",
+  "electron-builder",
+  "out",
+  "cli",
+  "cli.js",
+);
+
+if (!npmCli || !fs.existsSync(npmCli)) {
+  console.error("npm run経由で実行してください。");
+  process.exit(1);
+}
+
+try {
+  fs.writeFileSync(
+    configPath,
+    `${JSON.stringify({ updateUrl: url.href }, null, 2)}\n`,
+  );
+  execFileSync(process.execPath, [npmCli, "run", "build"], {
+    cwd: root,
+    stdio: "inherit",
+  });
+  execFileSync(
+    process.execPath,
+    [
+      builderCli,
+      "--config",
+      "electron-builder.update.cjs",
+      "--win",
+      "nsis",
+      "--x64",
+      "--publish",
+      publishToGitHub ? "always" : "never",
+    ],
+    { cwd: root, stdio: "inherit" },
+  );
+} finally {
+  fs.writeFileSync(configPath, original);
+}

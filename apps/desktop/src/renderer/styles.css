@@ -568,6 +568,11 @@ label {
 .path-picker input {
   min-width: 0;
 }
+.update-ready {
+  background: #e65d3f;
+  color: white;
+  border-color: #cf4b30;
+}
 .workflow-tools {
   border: 1px solid #d9dedb;
   border-radius: 8px;

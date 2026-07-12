@@ -1,0 +1,47 @@
+name: MANGAI Desktop Release
+
+on:
+  push:
+    tags:
+      - "desktop-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows-release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify
+        run: npm run typecheck; npm run lint; npm test
+      - name: Require signing secrets
+        shell: pwsh
+        env:
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: |
+          if (-not $env:WIN_CSC_LINK -or -not $env:WIN_CSC_KEY_PASSWORD) {
+            throw "WIN_CSC_LINK / WIN_CSC_KEY_PASSWORD secrets are required."
+          }
+      - name: Build signed draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          MANGAI_PUBLISH_GITHUB: "1"
+          MANGAI_REQUIRE_SIGNING: "1"
+          MANGAI_UPDATE_URL: https://github.com/${{ github.repository }}/releases/latest/download/
+          WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
+          WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
+        run: npm run dist:win:update

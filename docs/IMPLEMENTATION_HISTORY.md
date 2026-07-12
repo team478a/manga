@@ -258,7 +258,7 @@ Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ�
 
 1. 実環境のOllama・ComfyUIによるE2E確認
 2. 信頼された証明書によるWindows実署名
-3. 自動更新と公開配布先
+3. Git remote設定と初回署名リリース
 4. export-coreのWebP変換対応
 
 ## 14. Undo / Redo・操作履歴
@@ -276,3 +276,7 @@ Electron BuilderとNSISによるWindows x64インストーラー生成を追加�
 ## 17. ブランドアイコン・コード署名準備
 
 漫画原稿と「M」を組み合わせたMANGAI DesktopアイコンをSVG、PNG、Windows ICOで追加しました。署名版専用コマンドは環境変数から証明書を受け取り、証明書なしでは停止し、`forceCodeSigning`で未署名成果物を拒否します。信頼された証明書自体の取得と実署名は外部発行が必要なため未完了です。
+
+## 18. 自動更新・公開配布基盤
+
+`electron-updater`によるHTTPS更新確認、手動ダウンロード、進捗表示、再起動適用を追加しました。更新用ビルドは配布URLを安全に埋め込み、`latest.yml`、NSIS EXE、blockmapを生成します。GitHub Actionsはタグ駆動の署名済みDraft Releaseを作成できますが、Git remoteと証明書Secretsが未設定のため実公開は未実施です。詳細は [`desktop/AUTO_UPDATE.md`](desktop/AUTO_UPDATE.md) を参照してください。

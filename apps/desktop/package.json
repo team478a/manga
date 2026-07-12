@@ -18,7 +18,8 @@
     "start": "electron .",
     "pack:win": "npm run build && electron-builder --win dir --x64",
     "dist:win": "npm run build && electron-builder --win nsis --x64",
-    "dist:win:signed": "node scripts/build-signed.mjs"
+    "dist:win:signed": "node scripts/build-signed.mjs",
+    "dist:win:update": "node scripts/build-update-release.mjs"
   },
   "dependencies": {
     "@mangai/ai-core": "file:../../packages/ai-core",
@@ -26,6 +27,7 @@
     "@mangai/project-core": "file:../../packages/project-core",
     "@mangai/shared": "file:../../packages/shared",
     "better-sqlite3": "^12.11.1",
+    "electron-updater": "^6.8.9",
     "image-size": "^2.0.2",
     "jszip": "^3.10.1",
     "pdf-lib": "^1.17.1",
@@ -68,6 +70,12 @@
     "directories": {
       "output": "release"
     },
+    "extraResources": [
+      {
+        "from": "build/update-config.json",
+        "to": "update-config.json"
+      }
+    ],
     "win": {
       "icon": "build/icon.ico",
       "target": [

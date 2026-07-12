@@ -50,6 +50,18 @@ contextBridge.exposeInMainWorld("mangai", {
   assetUrl: (relativePath: string) =>
     ipcRenderer.invoke("assets:url", { relativePath }),
   getPaths: () => ipcRenderer.invoke("app:paths"),
+  updater: {
+    getState: () => ipcRenderer.invoke("update:state"),
+    check: () => ipcRenderer.invoke("update:check"),
+    download: () => ipcRenderer.invoke("update:download"),
+    install: () => ipcRenderer.invoke("update:install"),
+    onStatus: (listener: (value: unknown) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, value: unknown) =>
+        listener(value);
+      ipcRenderer.on("update:status", handler);
+      return () => ipcRenderer.removeListener("update:status", handler);
+    },
+  },
   ai: {
     listSettings: () => ipcRenderer.invoke("ai:settings:list"),
     saveSettings: (value: unknown) =>

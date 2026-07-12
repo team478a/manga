@@ -9,6 +9,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { MangaiDatabase } from "./database.js";
 import { AIService } from "./ai/service.js";
+import { DesktopUpdater } from "./updater.js";
 import {
   assetIdSchema,
   episodeInputSchema,
@@ -38,6 +39,7 @@ import {
 const here = path.dirname(fileURLToPath(import.meta.url));
 let store: MangaiDatabase;
 let aiService: AIService;
+let updater: DesktopUpdater;
 function desktopPaths() {
   const root = path.join(app.getPath("documents"), "MANGAI");
   return {
@@ -65,6 +67,10 @@ function handle(
 }
 function register() {
   handle("app:paths", () => desktopPaths());
+  handle("update:state", () => updater.getState());
+  handle("update:check", () => updater.check());
+  handle("update:download", () => updater.download());
+  handle("update:install", () => updater.install());
   handle("projects:list", () => store.listProjects());
   handle("projects:choose-storage", async (v) => {
     const initialPath =
@@ -318,8 +324,11 @@ async function createWindow() {
 app.whenReady().then(async () => {
   store = new MangaiDatabase(desktopPaths());
   aiService = new AIService(store);
+  updater = new DesktopUpdater();
   register();
   await createWindow();
+  if (updater.getState().status === "idle")
+    setTimeout(() => void updater.check(), 5000);
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) void createWindow();
   });

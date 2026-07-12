@@ -17,6 +17,8 @@ npm start
 
 Windowsインストーラーは `npm run desktop:dist:win` で生成します。詳細は [`WINDOWS_INSTALLER.md`](WINDOWS_INSTALLER.md) を参照してください。
 
+更新メタデータ付きビルドとGitHub Releases運用は [`AUTO_UPDATE.md`](AUTO_UPDATE.md) を参照してください。
+
 ## 保存先
 
 Electron main processで `app.getPath("documents")` を取得し、次を作成します。

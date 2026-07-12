@@ -1,4 +1,7 @@
 import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 if (!process.env.WIN_CSC_LINK && !process.env.CSC_LINK) {
   console.error(
@@ -7,12 +10,28 @@ if (!process.env.WIN_CSC_LINK && !process.env.CSC_LINK) {
   process.exit(1);
 }
 
-const npm = process.platform === "win32" ? "npm.cmd" : "npm";
-const npx = process.platform === "win32" ? "npx.cmd" : "npx";
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const npmCli = process.env.npm_execpath;
+const builderCli = path.join(
+  root,
+  "node_modules",
+  "electron-builder",
+  "out",
+  "cli",
+  "cli.js",
+);
 
-execFileSync(npm, ["run", "build"], { stdio: "inherit" });
+if (!npmCli || !fs.existsSync(npmCli)) {
+  console.error("npm run経由で実行してください。");
+  process.exit(1);
+}
+
+execFileSync(process.execPath, [npmCli, "run", "build"], {
+  cwd: root,
+  stdio: "inherit",
+});
 execFileSync(
-  npx,
-  ["electron-builder", "--win", "nsis", "--x64", "-c.forceCodeSigning=true"],
-  { stdio: "inherit" },
+  process.execPath,
+  [builderCli, "--win", "nsis", "--x64", "-c.forceCodeSigning=true"],
+  { cwd: root, stdio: "inherit" },
 );

@@ -13,7 +13,8 @@
     "desktop:test": "npm --prefix apps/desktop run test",
     "desktop:pack:win": "npm --prefix apps/desktop run pack:win",
     "desktop:dist:win": "npm --prefix apps/desktop run dist:win",
-    "desktop:dist:win:signed": "npm --prefix apps/desktop run dist:win:signed"
+    "desktop:dist:win:signed": "npm --prefix apps/desktop run dist:win:signed",
+    "desktop:dist:win:update": "npm --prefix apps/desktop run dist:win:update"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

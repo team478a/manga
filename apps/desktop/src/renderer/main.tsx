@@ -5,6 +5,7 @@ import type { Project, ProjectBundle, Page, Asset } from "@mangai/project-core";
 import { AISettings } from "./features/ai-settings/AISettings";
 import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
+import { UpdateControl } from "./features/updater/UpdateControl";
 import type { OperationHistory } from "../preload/api";
 
 const emptyForm = {
@@ -143,6 +144,7 @@ function App() {
             <span>漫画制作プロジェクト</span>
           </div>
           <button onClick={() => setCreating(true)}>＋ 新規プロジェクト</button>
+          <UpdateControl />
         </header>
         {error && <div className="error">{error}</div>}
         {creating && (
@@ -448,6 +450,7 @@ function App() {
           書き出し
         </button>
         <button onClick={() => setActiveTool("settings")}>設定</button>
+        <UpdateControl />
       </header>
       {error && (
         <div className="error floating" onClick={() => setError("")}>

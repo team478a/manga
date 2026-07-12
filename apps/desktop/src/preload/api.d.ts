@@ -19,6 +19,21 @@ export type OperationHistory = {
   canUndo: boolean;
   canRedo: boolean;
 };
+export type UpdateState = {
+  status:
+    | "disabled"
+    | "idle"
+    | "checking"
+    | "available"
+    | "not-available"
+    | "downloading"
+    | "downloaded"
+    | "error";
+  currentVersion: string;
+  availableVersion?: string;
+  percent?: number;
+  message: string;
+};
 export type DesktopApi = {
   listProjects: () => Promise<Project[]>;
   chooseProjectStorage: (currentPath?: string) => Promise<string | null>;
@@ -75,6 +90,13 @@ export type DesktopApi = {
     exports: string;
     logs: string;
   }>;
+  updater: {
+    getState: () => Promise<UpdateState>;
+    check: () => Promise<UpdateState>;
+    download: () => Promise<UpdateState>;
+    install: () => Promise<boolean>;
+    onStatus: (listener: (value: UpdateState) => void) => () => void;
+  };
   ai: {
     listSettings: () => Promise<ProviderSettings[]>;
     saveSettings: (value: ProviderSettings) => Promise<ProviderSettings[]>;
