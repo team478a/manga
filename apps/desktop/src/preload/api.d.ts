@@ -21,6 +21,7 @@ export type OperationHistory = {
 };
 export type DesktopApi = {
   listProjects: () => Promise<Project[]>;
+  chooseProjectStorage: (currentPath?: string) => Promise<string | null>;
   projectCover: (id: string) => Promise<string | null>;
   createProject: (v: ProjectInput) => Promise<ProjectBundle>;
   openProject: (id: string) => Promise<ProjectBundle>;

@@ -40,6 +40,51 @@ test("project, episode, page and asset data survive reopening", () => {
   reopenedDb.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
+test("project can use a selected custom storage folder", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-storage-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  const selected = path.join(root, "selected-project");
+  const bundle = db.createProject({
+    title: "保存先テスト",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1000,
+    height: 1500,
+    dpi: 300,
+    storagePath: selected,
+  });
+  assert.equal(bundle.project.storagePath, path.resolve(selected));
+  assert.equal(fs.existsSync(path.join(selected, "assets")), true);
+  assert.throws(
+    () =>
+      db.createProject({
+        title: "重複保存先",
+        subtitle: "",
+        description: "",
+        genre: "",
+        ageRating: "全年齢",
+        readingDirection: "rtl",
+        width: 1000,
+        height: 1500,
+        dpi: 300,
+        storagePath: selected.toUpperCase(),
+      }),
+    /別のProjectで使用されています/,
+  );
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
 test("page reordering is persisted", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-order-"));
   const paths = {

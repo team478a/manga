@@ -237,13 +237,39 @@ function App() {
               </label>
             </div>
             <label>
-              保存先（空欄でDocuments/MANGAI/projects）
-              <input
-                value={form.storagePath}
-                onChange={(e) =>
-                  setForm({ ...form, storagePath: e.target.value })
-                }
-              />
+              Projectフォルダー
+              <div className="path-picker">
+                <input
+                  readOnly
+                  value={form.storagePath}
+                  placeholder="既定: Documents/MANGAI/projects/{projectId}"
+                  title={form.storagePath || "既定の保存先を使用"}
+                />
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={async () => {
+                    const selected = await window.mangai.chooseProjectStorage(
+                      form.storagePath || undefined,
+                    );
+                    if (selected)
+                      setForm((current) => ({
+                        ...current,
+                        storagePath: selected,
+                      }));
+                  }}
+                >
+                  参照…
+                </button>
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={!form.storagePath}
+                  onClick={() => setForm({ ...form, storagePath: "" })}
+                >
+                  既定に戻す
+                </button>
+              </div>
             </label>
             <footer>
               <button

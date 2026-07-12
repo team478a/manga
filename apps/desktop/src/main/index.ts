@@ -66,6 +66,18 @@ function handle(
 function register() {
   handle("app:paths", () => desktopPaths());
   handle("projects:list", () => store.listProjects());
+  handle("projects:choose-storage", async (v) => {
+    const initialPath =
+      v && typeof v.currentPath === "string" && v.currentPath.trim()
+        ? path.resolve(v.currentPath)
+        : desktopPaths().projects;
+    const result = await dialog.showOpenDialog({
+      title: "MANGAI Projectの保存先を選択",
+      defaultPath: initialPath,
+      properties: ["openDirectory", "createDirectory"],
+    });
+    return result.canceled ? null : result.filePaths[0];
+  });
   handle("projects:cover", (v) =>
     store.projectCover(projectIdSchema.parse(v).id),
   );

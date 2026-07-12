@@ -23,7 +23,7 @@
 | 17 | 失敗ジョブ再実行 | 完了 | 画像ジョブ履歴から再実行 |
 | 18 | 実行中キャンセル | 完了 | AbortとComfyUI `/interrupt` |
 | 19 | AI未設定で起動 | 完了 | Mock fallback、外部接続なし |
-| 20 | モック自動テスト | 完了 | Desktop統合テスト全15件成功 |
+| 20 | モック自動テスト | 完了 | Desktop統合テスト全16件成功 |
 | 21 | Desktop TypeScript | 完了 | 成功 |
 | 22 | Desktop ESLint | 完了 | 成功 |
 | 23 | Desktopビルド | 完了 | Electron main・Vite成功 |

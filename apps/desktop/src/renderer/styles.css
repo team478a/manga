@@ -559,6 +559,15 @@ label {
 .history-menu p.undone {
   opacity: 0.5;
 }
+.path-picker {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+.path-picker input {
+  min-width: 0;
+}
 .workflow-tools {
   border: 1px solid #d9dedb;
   border-radius: 8px;

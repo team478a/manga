@@ -238,11 +238,10 @@ npm run build
 | Page並び替えテスト             | 成功 |
 | 画像付きPDF・ZIP書き出しテスト | 成功 |
 
-Desktop統合テストは15件すべて成功しています。AIテストにはOllama、ComfyUI、Creator Chat、ジョブ、キャンセル、タイムアウト、素材登録、ワークフロー管理を含みます。編集履歴テストには永続化、複数回Undo/Redo、履歴分岐の破棄を含みます。
+Desktop統合テストは16件すべて成功しています。AIテストにはOllama、ComfyUI、Creator Chat、ジョブ、キャンセル、タイムアウト、素材登録、ワークフロー管理を含みます。編集履歴テストには永続化、複数回Undo/Redo、履歴分岐の破棄を含み、保存先テストでは選択フォルダーの作成と永続化を確認しています。
 
 ## 11. 現在の未実装・既知課題
 
-- Undo/Redo
 - Panel編集、高度なコマ割り
 - WebPのPDF変換
 - カスタム保存先が別ドライブの場合の安全なゴミ箱移動
@@ -258,11 +257,14 @@ Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ�
 ## 13. 推奨する次工程
 
 1. 実環境のOllama・ComfyUIによるE2E確認
-2. 保存先選択ダイアログ
-3. Electron Builder等によるWindowsインストーラー
-4. export-coreのWebP変換対応
-5. 依存関係監査とアップデート方針決定
+2. Electron Builder等によるWindowsインストーラー
+3. export-coreのWebP変換対応
+4. 依存関係監査とアップデート方針決定
 
 ## 14. Undo / Redo・操作履歴
 
 Project編集の変更前後をSQLiteへ永続化し、ツールバー操作、キーボードショートカット、直近50件の履歴表示に対応しました。対象範囲と制限は [`desktop/UNDO_REDO.md`](desktop/UNDO_REDO.md) を参照してください。
+
+## 15. Project保存先選択
+
+新規Project作成画面からOSネイティブのフォルダー選択ダイアログを開き、Projectルートを指定できるようにしました。キャンセル時は現在値を保持し、「既定に戻す」で `{Documents}/MANGAI/projects/{projectId}` へ戻せます。

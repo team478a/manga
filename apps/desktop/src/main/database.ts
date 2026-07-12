@@ -133,6 +133,12 @@ export class MangaiDatabase {
       storage = input.storagePath
         ? path.resolve(input.storagePath)
         : path.join(this.paths.projects, id);
+    if (
+      this.db
+        .prepare("select 1 from projects where lower(storage_path)=lower(?)")
+        .get(storage)
+    )
+      throw new Error("この保存先は別のProjectで使用されています。");
     fs.mkdirSync(path.join(storage, "assets"), { recursive: true });
     this.db.transaction(() => {
       this.db

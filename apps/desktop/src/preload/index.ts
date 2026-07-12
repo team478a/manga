@@ -1,6 +1,8 @@
 import { contextBridge, ipcRenderer, webUtils } from "electron";
 contextBridge.exposeInMainWorld("mangai", {
   listProjects: () => ipcRenderer.invoke("projects:list"),
+  chooseProjectStorage: (currentPath?: string) =>
+    ipcRenderer.invoke("projects:choose-storage", { currentPath }),
   projectCover: (id: string) => ipcRenderer.invoke("projects:cover", { id }),
   createProject: (v: unknown) => ipcRenderer.invoke("projects:create", v),
   openProject: (id: string) => ipcRenderer.invoke("projects:open", { id }),

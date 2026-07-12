@@ -31,6 +31,8 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 
 素材は `{project}/assets/` へコピーし、SQLiteには相対パス、SHA-256、画像寸法、MIME、サイズを保存します。削除対象は即時消去せず `.trash` へ移動します。
 
+新規Project画面の「参照…」からWindowsのフォルダー選択ダイアログを開き、任意のProjectフォルダーを指定できます。「既定に戻す」を選ぶと、従来どおり `{Documents}/MANGAI/projects/{projectId}` を使用します。選択したフォルダーにはアプリが `assets/` などを作成するため、Project専用フォルダーを指定してください。別のProjectが使用中の保存先は指定できません。
+
 ## SQLiteスキーマ
 
 - `projects`: 作品設定、保存先、代表素材、最近開いた日時
@@ -55,6 +57,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 ## 実装済み
 
 - プロジェクト作成、一覧、再オープン、名前変更、複製、ゴミ箱移動、最近開いた順、代表画像表示
+- 新規Projectの保存先フォルダー選択と既定保存先への復帰
 - Episode作成・切り替え・名前変更・並び替え・削除
 - Page追加、複製、削除、上下並べ替え、番号正規化
 - JPG/JPEG/PNG/WebPの複数選択・ドラッグ＆ドロップ
@@ -68,6 +71,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - `export_history` への書き出し履歴保存
 - 任意素材の代表画像設定
 - Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定
+- Project単位のUndo/Redo、キーボードショートカット、操作履歴
 - ComfyUI画像生成とProject素材への自動登録
 
 ## 未実装
