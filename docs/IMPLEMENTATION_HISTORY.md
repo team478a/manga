@@ -257,7 +257,7 @@ Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ�
 ## 13. 推奨する次工程
 
 1. 実環境のOllama・ComfyUIによるE2E確認
-2. Windowsコード署名とブランドアイコン
+2. 信頼された証明書によるWindows実署名
 3. 自動更新と公開配布先
 4. export-coreのWebP変換対応
 
@@ -272,3 +272,7 @@ Project編集の変更前後をSQLiteへ永続化し、ツールバー操作、�
 ## 16. Windowsインストーラー
 
 Electron BuilderとNSISによるWindows x64インストーラー生成を追加しました。`better-sqlite3`のABI再構築とASAR外展開を設定し、Electron 39.8.5でDesktop統合テスト16件と依存関係監査0件を確認しています。生成方法と配布前課題は [`desktop/WINDOWS_INSTALLER.md`](desktop/WINDOWS_INSTALLER.md) を参照してください。
+
+## 17. ブランドアイコン・コード署名準備
+
+漫画原稿と「M」を組み合わせたMANGAI DesktopアイコンをSVG、PNG、Windows ICOで追加しました。署名版専用コマンドは環境変数から証明書を受け取り、証明書なしでは停止し、`forceCodeSigning`で未署名成果物を拒否します。信頼された証明書自体の取得と実署名は外部発行が必要なため未完了です。

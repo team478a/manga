@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MANGAI Desktop">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#173f35"/>
+      <stop offset="1" stop-color="#0b241f"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#background)"/>
+  <path d="M128 104h206l50 50v254H128z" fill="#f7f2e8"/>
+  <path d="M334 104v50h50" fill="#d9c9a7"/>
+  <path d="M174 350V190h46l36 61 36-61h46v160h-44v-91l-38 61-38-61v91z" fill="#173f35"/>
+  <circle cx="378" cy="382" r="56" fill="#e65d3f"/>
+  <path d="M352 382h52M378 356v52" stroke="#fff" stroke-width="15" stroke-linecap="round"/>
+</svg>
