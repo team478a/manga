@@ -1,5 +1,14 @@
 import type { ProjectBundle, Project } from "@mangai/project-core";
 import type { ProjectInput } from "@mangai/shared";
+import type { ProviderSettings } from "@mangai/ai-core";
+export type ChatEvent = {
+  requestId: string;
+  sessionId: string;
+  type: "start" | "chunk" | "complete" | "error" | "canceled";
+  text?: string;
+  jobId?: string;
+  message?: string;
+};
 export type DesktopApi = {
   listProjects: () => Promise<Project[]>;
   projectCover: (id: string) => Promise<string | null>;
@@ -14,6 +23,16 @@ export type DesktopApi = {
     warnings: string[];
   }>;
   createEpisode: (projectId: string, title: string) => Promise<ProjectBundle>;
+  renameEpisode: (id: string, title: string) => Promise<ProjectBundle>;
+  reorderEpisodes: (
+    projectId: string,
+    episodeIds: string[],
+  ) => Promise<ProjectBundle>;
+  deleteEpisode: (id: string) => Promise<ProjectBundle>;
+  setProjectCover: (
+    projectId: string,
+    assetId: string,
+  ) => Promise<ProjectBundle>;
   addPage: (episodeId: string, imageAssetId?: string) => Promise<ProjectBundle>;
   duplicatePage: (id: string) => Promise<ProjectBundle>;
   deletePage: (id: string) => Promise<ProjectBundle>;
@@ -42,6 +61,36 @@ export type DesktopApi = {
     exports: string;
     logs: string;
   }>;
+  ai: {
+    listSettings: () => Promise<ProviderSettings[]>;
+    saveSettings: (value: ProviderSettings) => Promise<ProviderSettings[]>;
+    checkProvider: (
+      providerId: string,
+    ) => Promise<{ ok: boolean; message: string; latencyMs?: number }>;
+    listModels: (
+      providerId: string,
+    ) => Promise<Array<{ id: string; name: string }>>;
+    listTemplates: () => Promise<any[]>;
+    saveTemplate: (value: {
+      id?: string;
+      name: string;
+      template: string;
+      systemPrompt: string;
+    }) => Promise<any[]>;
+    deleteTemplate: (id: string) => Promise<any[]>;
+    listSessions: (projectId?: string) => Promise<any[]>;
+    listMessages: (id: string) => Promise<any[]>;
+    renameSession: (id: string, title: string) => Promise<any[]>;
+    deleteSession: (id: string) => Promise<any[]>;
+    sendChat: (value: any) => Promise<{ requestId: string }>;
+    cancel: (requestId: string) => Promise<boolean>;
+    onChatEvent: (listener: (event: ChatEvent) => void) => () => void;
+    listJobs: (projectId?: string) => Promise<any[]>;
+    generateImage: (value: any) => Promise<any>;
+    listWorkflows: () => Promise<any[]>;
+    addWorkflow: (name: string, mapping: unknown) => Promise<any[]>;
+    deleteWorkflow: (id: string) => Promise<any[]>;
+  };
 };
 declare global {
   interface Window {

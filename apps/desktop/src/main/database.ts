@@ -12,6 +12,11 @@ import {
 } from "@mangai/export-core";
 import type { ProjectBundle, Project } from "@mangai/project-core";
 import type { ProjectInput } from "@mangai/shared";
+import {
+  defaultPromptTemplates,
+  type GenerationStatus,
+  type ProviderSettings,
+} from "@mangai/ai-core";
 
 type Paths = {
   root: string;
@@ -53,7 +58,39 @@ export class MangaiDatabase {
  create table if not exists pages(id text primary key,episode_id text not null references episodes(id) on delete cascade,page_number integer not null,order_index integer not null,width integer not null,height integer not null,background_color text not null default '#ffffff',image_asset_id text references assets(id) on delete set null,prompt text not null default '',negative_prompt text not null default '',notes text not null default '',created_at text not null,updated_at text not null);
  create table if not exists panels(id text primary key,page_id text not null references pages(id) on delete cascade,order_index integer not null,x real not null,y real not null,width real not null,height real not null,image_asset_id text references assets(id) on delete set null,prompt text not null default '',negative_prompt text not null default '',generation_status text not null default 'idle',metadata text not null default '{}');
  create table if not exists export_history(id text primary key,project_id text not null references projects(id) on delete cascade,export_path text not null,files_json text not null,warnings_json text not null,created_at text not null);
+ create table if not exists ai_provider_settings(provider_id text primary key,enabled integer not null,config_json text not null,updated_at text not null);
+ create table if not exists ai_models(id text primary key,provider_id text not null,model_id text not null,name text not null,metadata_json text not null default '{}',updated_at text not null,unique(provider_id,model_id));
+ create table if not exists chat_sessions(id text primary key,project_id text references projects(id) on delete set null,title text not null,created_at text not null,updated_at text not null);
+ create table if not exists chat_messages(id text primary key,session_id text not null references chat_sessions(id) on delete cascade,role text not null check(role in ('user','assistant','system')),content text not null,provider_id text,model_id text,created_at text not null);
+ create table if not exists prompt_templates(id text primary key,name text not null,template text not null,system_prompt text not null default '',is_builtin integer not null default 0,created_at text not null,updated_at text not null);
+ create table if not exists generation_jobs(id text primary key,project_id text references projects(id) on delete set null,episode_id text references episodes(id) on delete set null,page_id text references pages(id) on delete set null,provider_type text not null,provider_id text not null,model_id text,generation_type text not null,status text not null,prompt text not null,negative_prompt text not null default '',input_json text not null default '{}',output_json text not null default '{}',provider_job_id text,error_code text,error_message text,created_at text not null,started_at text,completed_at text);
+ create table if not exists generation_outputs(id text primary key,job_id text not null references generation_jobs(id) on delete cascade,asset_id text references assets(id) on delete set null,relative_path text,metadata_json text not null default '{}',created_at text not null);
+ create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
  create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);`);
+    const assetColumns = this.db
+      .prepare("pragma table_info(assets)")
+      .all() as Array<{ name: string }>;
+    if (!assetColumns.some((column) => column.name === "generation_job_id"))
+      this.db.exec("alter table assets add column generation_job_id text");
+    if (!assetColumns.some((column) => column.name === "metadata_json"))
+      this.db.exec(
+        "alter table assets add column metadata_json text not null default '{}'",
+      );
+    const insertTemplate = this.db.prepare(
+      "insert into prompt_templates values(?,?,?,?,?,?,?)",
+    );
+    const hasTemplate = this.db.prepare(
+      "select 1 from prompt_templates where name=?",
+    );
+    for (const [name, template] of defaultPromptTemplates) {
+      if (!hasTemplate.get(name))
+        insertTemplate.run(uid(), name, template, "", 1, now(), now());
+    }
+    this.db
+      .prepare(
+        "update generation_jobs set status='failed',error_code='INTERRUPTED',error_message='アプリ終了により生成が中断されました。',completed_at=? where status='running'",
+      )
+      .run(now());
   }
   private project(row: any): Project {
     return {
@@ -195,6 +232,59 @@ export class MangaiDatabase {
       .run(uid(), projectId, title, i, now(), now());
     return this.bundle(projectId);
   }
+  renameEpisode(id: string, title: string) {
+    const row = this.db
+      .prepare("select project_id from episodes where id=?")
+      .get(id) as any;
+    if (!row) throw new Error("エピソードが見つかりません。");
+    this.db
+      .prepare("update episodes set title=?,updated_at=? where id=?")
+      .run(title, now(), id);
+    return this.bundle(row.project_id);
+  }
+  reorderEpisodes(projectId: string, ids: string[]) {
+    this.db.transaction(() =>
+      ids.forEach((id, index) =>
+        this.db
+          .prepare(
+            "update episodes set order_index=?,updated_at=? where id=? and project_id=?",
+          )
+          .run(index, now(), id, projectId),
+      ),
+    )();
+    return this.bundle(projectId);
+  }
+  deleteEpisode(id: string) {
+    const row = this.db
+      .prepare("select project_id from episodes where id=?")
+      .get(id) as any;
+    if (!row) throw new Error("エピソードが見つかりません。");
+    const count = (
+      this.db
+        .prepare("select count(*) count from episodes where project_id=?")
+        .get(row.project_id) as any
+    ).count;
+    if (count <= 1) throw new Error("最後のエピソードは削除できません。");
+    this.db.prepare("delete from episodes where id=?").run(id);
+    const ids = (
+      this.db
+        .prepare(
+          "select id from episodes where project_id=? order by order_index",
+        )
+        .all(row.project_id) as any[]
+    ).map((item) => item.id);
+    return this.reorderEpisodes(row.project_id, ids);
+  }
+  setProjectCover(projectId: string, assetId: string) {
+    const exists = this.db
+      .prepare("select 1 from assets where id=? and project_id=?")
+      .get(assetId, projectId);
+    if (!exists) throw new Error("このプロジェクトの素材ではありません。");
+    this.db
+      .prepare("update projects set cover_asset_id=?,updated_at=? where id=?")
+      .run(assetId, now(), projectId);
+    return this.bundle(projectId);
+  }
   private projectIdForEpisode(episodeId: string) {
     const r = this.db
       .prepare("select project_id from episodes where id=?")
@@ -327,7 +417,9 @@ export class MangaiDatabase {
         assetId = uid();
       fs.copyFileSync(source, dest);
       this.db
-        .prepare("insert into assets values(?,?,?,?,?,?,?,?,?,?)")
+        .prepare(
+          "insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at) values(?,?,?,?,?,?,?,?,?,?)",
+        )
         .run(
           assetId,
           projectId,
@@ -444,7 +536,10 @@ export class MangaiDatabase {
         height: bundle.project.height,
       }),
     );
-    fs.writeFileSync(path.join(outputDir, files[1]), await createImagesZip(images));
+    fs.writeFileSync(
+      path.join(outputDir, files[1]),
+      await createImagesZip(images),
+    );
     fs.writeFileSync(
       path.join(outputDir, files[2]),
       createProjectManifest({ ...bundle, exportedAt: now() }),
@@ -458,11 +553,373 @@ export class MangaiDatabase {
         : []),
     ];
     this.db
-      .prepare(
-        "insert into export_history values(?,?,?,?,?,?)",
-      )
-      .run(uid(), id, outputDir, JSON.stringify(files), JSON.stringify(warnings), now());
+      .prepare("insert into export_history values(?,?,?,?,?,?)")
+      .run(
+        uid(),
+        id,
+        outputDir,
+        JSON.stringify(files),
+        JSON.stringify(warnings),
+        now(),
+      );
     return { outputDir, files, warnings };
+  }
+  getProviderSettings(): ProviderSettings[] {
+    const defaults: ProviderSettings[] = [
+      {
+        providerId: "ollama",
+        enabled: false,
+        baseUrl: "http://127.0.0.1:11434",
+        modelId: "",
+        temperature: 0.7,
+        maxTokens: 2048,
+        timeoutMs: 120000,
+        stream: true,
+        pollIntervalMs: 1000,
+      },
+      {
+        providerId: "comfyui",
+        enabled: false,
+        baseUrl: "http://127.0.0.1:8188",
+        modelId: "",
+        temperature: 0.7,
+        maxTokens: 2048,
+        timeoutMs: 300000,
+        stream: false,
+        pollIntervalMs: 1000,
+      },
+      {
+        providerId: "mock",
+        enabled: true,
+        baseUrl: "http://127.0.0.1",
+        modelId: "mock-text",
+        temperature: 0.7,
+        maxTokens: 2048,
+        timeoutMs: 30000,
+        stream: true,
+        pollIntervalMs: 250,
+      },
+    ];
+    const rows = this.db
+      .prepare("select * from ai_provider_settings")
+      .all() as Array<{
+      provider_id: string;
+      enabled: number;
+      config_json: string;
+    }>;
+    const byId = new Map(
+      rows.map((row) => [
+        row.provider_id,
+        {
+          ...JSON.parse(row.config_json),
+          providerId: row.provider_id,
+          enabled: Boolean(row.enabled),
+        },
+      ]),
+    );
+    return defaults.map((value) => ({
+      ...value,
+      ...(byId.get(value.providerId) ?? {}),
+    }));
+  }
+  saveProviderSettings(settings: ProviderSettings) {
+    this.db
+      .prepare(
+        "insert into ai_provider_settings values(?,?,?,?) on conflict(provider_id) do update set enabled=excluded.enabled,config_json=excluded.config_json,updated_at=excluded.updated_at",
+      )
+      .run(
+        settings.providerId,
+        settings.enabled ? 1 : 0,
+        JSON.stringify(settings),
+        now(),
+      );
+    return this.getProviderSettings();
+  }
+  listPromptTemplates() {
+    return this.db
+      .prepare(
+        "select id,name,template,system_prompt as systemPrompt,is_builtin as isBuiltin from prompt_templates order by is_builtin desc,name",
+      )
+      .all();
+  }
+  savePromptTemplate(input: {
+    id?: string;
+    name: string;
+    template: string;
+    systemPrompt: string;
+  }) {
+    const stamp = now();
+    if (input.id) {
+      const row = this.db
+        .prepare("select is_builtin from prompt_templates where id=?")
+        .get(input.id) as any;
+      if (row?.is_builtin)
+        throw new Error("初期テンプレートは上書きできません。");
+      this.db
+        .prepare(
+          "update prompt_templates set name=?,template=?,system_prompt=?,updated_at=? where id=?",
+        )
+        .run(input.name, input.template, input.systemPrompt, stamp, input.id);
+    } else
+      this.db
+        .prepare("insert into prompt_templates values(?,?,?,?,?,?,?)")
+        .run(
+          uid(),
+          input.name,
+          input.template,
+          input.systemPrompt,
+          0,
+          stamp,
+          stamp,
+        );
+    return this.listPromptTemplates();
+  }
+  deletePromptTemplate(id: string) {
+    this.db
+      .prepare("delete from prompt_templates where id=? and is_builtin=0")
+      .run(id);
+    return this.listPromptTemplates();
+  }
+  listChatSessions(projectId?: string) {
+    return projectId
+      ? this.db
+          .prepare(
+            "select * from chat_sessions where project_id=? order by updated_at desc",
+          )
+          .all(projectId)
+      : this.db
+          .prepare("select * from chat_sessions order by updated_at desc")
+          .all();
+  }
+  createChatSession(projectId: string | undefined, title: string) {
+    const id = uid(),
+      stamp = now();
+    this.db
+      .prepare("insert into chat_sessions values(?,?,?,?,?)")
+      .run(id, projectId ?? null, title.slice(0, 200), stamp, stamp);
+    return id;
+  }
+  renameChatSession(id: string, title: string) {
+    this.db
+      .prepare("update chat_sessions set title=?,updated_at=? where id=?")
+      .run(title, now(), id);
+  }
+  deleteChatSession(id: string) {
+    this.db.prepare("delete from chat_sessions where id=?").run(id);
+  }
+  listChatMessages(sessionId: string) {
+    return this.db
+      .prepare(
+        "select id,session_id as sessionId,role,content,provider_id as providerId,model_id as modelId,created_at as createdAt from chat_messages where session_id=? order by created_at",
+      )
+      .all(sessionId);
+  }
+  addChatMessage(
+    sessionId: string,
+    role: "user" | "assistant" | "system",
+    content: string,
+    providerId?: string,
+    modelId?: string,
+  ) {
+    const id = uid();
+    this.db
+      .prepare("insert into chat_messages values(?,?,?,?,?,?,?)")
+      .run(
+        id,
+        sessionId,
+        role,
+        content,
+        providerId ?? null,
+        modelId ?? null,
+        now(),
+      );
+    this.db
+      .prepare("update chat_sessions set updated_at=? where id=?")
+      .run(now(), sessionId);
+    return id;
+  }
+  createGenerationJob(input: {
+    projectId?: string;
+    episodeId?: string;
+    pageId?: string;
+    providerType: string;
+    providerId: string;
+    modelId?: string;
+    generationType: string;
+    prompt: string;
+    negativePrompt?: string;
+    inputJson?: unknown;
+  }) {
+    const id = uid();
+    this.db
+      .prepare(
+        "insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,prompt,negative_prompt,input_json,created_at) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+      )
+      .run(
+        id,
+        input.projectId ?? null,
+        input.episodeId ?? null,
+        input.pageId ?? null,
+        input.providerType,
+        input.providerId,
+        input.modelId ?? null,
+        input.generationType,
+        "queued",
+        input.prompt,
+        input.negativePrompt ?? "",
+        JSON.stringify(input.inputJson ?? {}),
+        now(),
+      );
+    return id;
+  }
+  updateGenerationJob(
+    id: string,
+    status: GenerationStatus,
+    values: {
+      providerJobId?: string;
+      output?: unknown;
+      errorCode?: string;
+      errorMessage?: string;
+    } = {},
+  ) {
+    const started = status === "running" ? now() : null,
+      completed = ["completed", "failed", "canceled"].includes(status)
+        ? now()
+        : null;
+    this.db
+      .prepare(
+        "update generation_jobs set status=?,provider_job_id=coalesce(?,provider_job_id),output_json=?,error_code=?,error_message=?,started_at=coalesce(started_at,?),completed_at=? where id=?",
+      )
+      .run(
+        status,
+        values.providerJobId ?? null,
+        JSON.stringify(values.output ?? {}),
+        values.errorCode ?? null,
+        values.errorMessage ?? null,
+        started,
+        completed,
+        id,
+      );
+  }
+  listGenerationJobs(projectId?: string) {
+    const sql =
+      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
+    return projectId
+      ? this.db
+          .prepare(`${sql} where project_id=? order by created_at desc`)
+          .all(projectId)
+      : this.db.prepare(`${sql} order by created_at desc`).all();
+  }
+  getGenerationJob(id: string) {
+    return this.db
+      .prepare("select * from generation_jobs where id=?")
+      .get(id) as Record<string, unknown> | undefined;
+  }
+  registerGeneratedAsset(
+    projectId: string,
+    sourceRelativePath: string,
+    jobId: string,
+    metadata: unknown,
+  ) {
+    const project = this.bundle(projectId).project;
+    const source = this.safeProjectPath(
+      project.storagePath,
+      sourceRelativePath,
+    );
+    const before = new Set(
+      this.bundle(projectId).assets.map((asset) => asset.id),
+    );
+    const bundle = this.importAssets(projectId, [source]);
+    const asset =
+      bundle.assets.find((item) => !before.has(item.id)) ??
+      bundle.assets.find(
+        (item) =>
+          item.sha256 ===
+          crypto
+            .createHash("sha256")
+            .update(fs.readFileSync(source))
+            .digest("hex"),
+      );
+    if (!asset) throw new Error("生成画像を素材へ登録できませんでした。");
+    this.db
+      .prepare(
+        "update assets set generation_job_id=?,metadata_json=? where id=?",
+      )
+      .run(jobId, JSON.stringify(metadata), asset.id);
+    this.db
+      .prepare("insert into generation_outputs values(?,?,?,?,?,?)")
+      .run(
+        uid(),
+        jobId,
+        asset.id,
+        asset.relativePath,
+        JSON.stringify(metadata),
+        now(),
+      );
+    return this.bundle(projectId);
+  }
+  projectContext(projectId: string, episodeId?: string, pageId?: string) {
+    const bundle = this.bundle(projectId),
+      episode = bundle.episodes.find((item) => item.id === episodeId),
+      page = bundle.pages.find((item) => item.id === pageId);
+    const lines = [
+      `Project: ${bundle.project.title}`,
+      bundle.project.description && `説明: ${bundle.project.description}`,
+      bundle.project.genre && `ジャンル: ${bundle.project.genre}`,
+      `対象年齢: ${bundle.project.ageRating}`,
+      `読み方向: ${bundle.project.readingDirection === "rtl" ? "右開き" : "左開き"}`,
+      episode && `Episode: ${episode.title}`,
+      page && `Page: ${page.pageNumber}`,
+      page?.prompt && `Page Prompt: ${page.prompt}`,
+      page?.negativePrompt && `Negative Prompt: ${page.negativePrompt}`,
+      page?.notes && `メモ: ${page.notes}`,
+    ].filter(Boolean);
+    return { summary: lines.join("\n"), items: lines };
+  }
+  registerComfyWorkflow(name: string, sourcePath: string, mapping: unknown) {
+    if (path.extname(sourcePath).toLowerCase() !== ".json")
+      throw new Error("ComfyUIワークフローはJSONを選択してください。");
+    const raw = fs.readFileSync(sourcePath, "utf8");
+    JSON.parse(raw);
+    const dir = path.join(this.paths.root, "ai", "workflows");
+    fs.mkdirSync(dir, { recursive: true });
+    const id = uid(),
+      destination = path.join(dir, `${id}.json`);
+    fs.copyFileSync(sourcePath, destination);
+    this.db
+      .prepare("insert into comfy_workflows values(?,?,?,?,?,?,?)")
+      .run(id, name, destination, JSON.stringify(mapping), 0, now(), now());
+    return this.listComfyWorkflows();
+  }
+  listComfyWorkflows() {
+    return this.db
+      .prepare(
+        "select id,name,file_path as filePath,mapping_json as mappingJson,is_default as isDefault,created_at as createdAt,updated_at as updatedAt from comfy_workflows order by is_default desc,name",
+      )
+      .all();
+  }
+  getComfyWorkflow(id: string) {
+    const row = this.db
+      .prepare("select * from comfy_workflows where id=?")
+      .get(id) as any;
+    if (!row) throw new Error("ComfyUIワークフローが見つかりません。");
+    const allowed = path.resolve(this.paths.root, "ai", "workflows") + path.sep,
+      resolved = path.resolve(row.file_path);
+    if (!resolved.startsWith(allowed))
+      throw new Error("許可されていないワークフローパスです。");
+    return {
+      workflow: JSON.parse(fs.readFileSync(resolved, "utf8")),
+      mapping: JSON.parse(row.mapping_json),
+    };
+  }
+  deleteComfyWorkflow(id: string) {
+    const row = this.db
+      .prepare("select file_path from comfy_workflows where id=?")
+      .get(id) as any;
+    if (row?.file_path && fs.existsSync(row.file_path))
+      fs.rmSync(row.file_path);
+    this.db.prepare("delete from comfy_workflows where id=?").run(id);
+    return this.listComfyWorkflows();
   }
   private safeProjectPath(root: string, relative: string) {
     const full = path.resolve(root, relative),

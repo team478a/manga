@@ -1,7 +1,14 @@
-import { app, BrowserWindow, dialog, ipcMain } from "electron";
+import {
+  app,
+  BrowserWindow,
+  dialog,
+  ipcMain,
+  type IpcMainInvokeEvent,
+} from "electron";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { MangaiDatabase } from "./database.js";
+import { AIService } from "./ai/service.js";
 import {
   assetIdSchema,
   episodeInputSchema,
@@ -11,11 +18,25 @@ import {
   projectIdSchema,
   projectInputSchema,
   renameProjectSchema,
+  renameEpisodeSchema,
+  reorderEpisodesSchema,
   reorderPagesSchema,
+  setProjectCoverSchema,
 } from "@mangai/shared";
+import {
+  cancelRequestSchema,
+  chatRequestSchema,
+  chatSessionIdSchema,
+  imageJobRequestSchema,
+  promptTemplateInputSchema,
+  providerSettingsSchema,
+  renameChatSchema,
+  workflowMappingSchema,
+} from "@mangai/ai-core";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 let store: MangaiDatabase;
+let aiService: AIService;
 function desktopPaths() {
   const root = path.join(app.getPath("documents"), "MANGAI");
   return {
@@ -27,10 +48,13 @@ function desktopPaths() {
     logs: path.join(root, "logs"),
   };
 }
-function handle(channel: string, fn: (value: any) => any) {
-  ipcMain.handle(channel, async (_event, value) => {
+function handle(
+  channel: string,
+  fn: (value: any, event: IpcMainInvokeEvent) => any,
+) {
+  ipcMain.handle(channel, async (event, value) => {
     try {
-      return await fn(value);
+      return await fn(value, event);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "処理に失敗しました。";
@@ -66,6 +90,21 @@ function register() {
   handle("episodes:create", (v) => {
     const x = episodeInputSchema.parse(v);
     return store.createEpisode(x.projectId, x.title);
+  });
+  handle("episodes:rename", (v) => {
+    const x = renameEpisodeSchema.parse(v);
+    return store.renameEpisode(x.id, x.title);
+  });
+  handle("episodes:reorder", (v) => {
+    const x = reorderEpisodesSchema.parse(v);
+    return store.reorderEpisodes(x.projectId, x.episodeIds);
+  });
+  handle("episodes:delete", (v) =>
+    store.deleteEpisode(projectIdSchema.parse(v).id),
+  );
+  handle("projects:set-cover", (v) => {
+    const x = setProjectCoverSchema.parse(v);
+    return store.setProjectCover(x.projectId, x.assetId);
   });
   handle("pages:add", (v) => {
     const x = pageInputSchema.parse(v);
@@ -103,6 +142,80 @@ function register() {
       v && typeof v.relativePath === "string" ? v.relativePath : "",
     ),
   );
+  handle("ai:settings:list", () => store.getProviderSettings());
+  handle("ai:settings:save", (v) =>
+    store.saveProviderSettings(providerSettingsSchema.parse(v)),
+  );
+  handle("ai:provider:check", async (v) => {
+    const id = providerSettingsSchema.shape.providerId.parse(v?.providerId);
+    return aiService.provider(id).checkConnection();
+  });
+  handle("ai:provider:models", async (v) => {
+    const id = providerSettingsSchema.shape.providerId.parse(v?.providerId),
+      provider = aiService.provider(id);
+    return "listModels" in provider && provider.listModels
+      ? provider.listModels()
+      : [];
+  });
+  handle("ai:templates:list", () => store.listPromptTemplates());
+  handle("ai:templates:save", (v) =>
+    store.savePromptTemplate(promptTemplateInputSchema.parse(v)),
+  );
+  handle("ai:templates:delete", (v) =>
+    store.deletePromptTemplate(chatSessionIdSchema.parse(v).id),
+  );
+  handle("ai:chat:sessions", (v) =>
+    store.listChatSessions(
+      typeof v?.projectId === "string" ? v.projectId : undefined,
+    ),
+  );
+  handle("ai:chat:messages", (v) =>
+    store.listChatMessages(chatSessionIdSchema.parse(v).id),
+  );
+  handle("ai:chat:rename", (v) => {
+    const input = renameChatSchema.parse(v);
+    store.renameChatSession(input.id, input.title);
+    return store.listChatSessions();
+  });
+  handle("ai:chat:delete", (v) => {
+    store.deleteChatSession(chatSessionIdSchema.parse(v).id);
+    return store.listChatSessions();
+  });
+  handle("ai:chat:send", async (v, event) => {
+    const input = chatRequestSchema.parse(v);
+    void aiService.sendChat(input, (message) =>
+      event.sender.send("ai:chat:event", message),
+    );
+    return { requestId: input.requestId };
+  });
+  handle("ai:request:cancel", (v) => {
+    aiService.cancel(cancelRequestSchema.parse(v).requestId);
+    return true;
+  });
+  handle("ai:jobs:list", (v) =>
+    store.listGenerationJobs(
+      typeof v?.projectId === "string" ? v.projectId : undefined,
+    ),
+  );
+  handle("ai:image:generate", (v) =>
+    aiService.generateImage(imageJobRequestSchema.parse(v)),
+  );
+  handle("ai:workflows:list", () => store.listComfyWorkflows());
+  handle("ai:workflows:add", async (v) => {
+    const name = String(v?.name ?? "").trim();
+    if (!name) throw new Error("ワークフロー名が必要です。");
+    const mapping = workflowMappingSchema.parse(v?.mapping);
+    const result = await dialog.showOpenDialog({
+      properties: ["openFile"],
+      filters: [{ name: "ComfyUI workflow", extensions: ["json"] }],
+    });
+    return result.canceled
+      ? store.listComfyWorkflows()
+      : store.registerComfyWorkflow(name, result.filePaths[0], mapping);
+  });
+  handle("ai:workflows:delete", (v) =>
+    store.deleteComfyWorkflow(chatSessionIdSchema.parse(v).id),
+  );
 }
 async function createWindow() {
   const win = new BrowserWindow({
@@ -123,6 +236,7 @@ async function createWindow() {
 }
 app.whenReady().then(async () => {
   store = new MangaiDatabase(desktopPaths());
+  aiService = new AIService(store);
   register();
   await createWindow();
   app.on("activate", () => {

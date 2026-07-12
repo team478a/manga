@@ -2,6 +2,9 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import type { Project, ProjectBundle, Page, Asset } from "@mangai/project-core";
+import { AISettings } from "./features/ai-settings/AISettings";
+import { CreatorChat } from "./features/creator-chat/CreatorChat";
+import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
 
 const emptyForm = {
   title: "",
@@ -22,6 +25,9 @@ function App() {
     ),
     [bundle, setBundle] = React.useState<ProjectBundle | null>(null),
     [selectedEpisode, setSelectedEpisode] = React.useState<string | null>(null),
+    [activeTool, setActiveTool] = React.useState<
+      "chat" | "settings" | "jobs" | null
+    >(null),
     [selectedPage, setSelectedPage] = React.useState<string | null>(null),
     [selectedAsset, setSelectedAsset] = React.useState<string | null>(null),
     [form, setForm] = React.useState(emptyForm),
@@ -276,6 +282,28 @@ function App() {
     asset = bundle.assets.find(
       (a) => a.id === (page?.imageAssetId || selectedAsset),
     );
+  if (activeTool === "settings")
+    return <AISettings onClose={() => setActiveTool(null)} />;
+  if (activeTool === "chat")
+    return (
+      <CreatorChat
+        bundle={bundle}
+        episodeId={episode?.id}
+        pageId={page?.id}
+        onBundle={setBundle}
+        onClose={() => setActiveTool(null)}
+      />
+    );
+  if (activeTool === "jobs")
+    return (
+      <GenerationJobs
+        bundle={bundle}
+        episodeId={episode?.id}
+        pageId={page?.id}
+        onBundle={setBundle}
+        onClose={() => setActiveTool(null)}
+      />
+    );
   return (
     <main
       className="app"
@@ -304,6 +332,8 @@ function App() {
         >
           インポート
         </button>
+        <button onClick={() => setActiveTool("chat")}>Creator Chat</button>
+        <button onClick={() => setActiveTool("jobs")}>AI生成</button>
         <button
           onClick={async () => {
             try {
@@ -323,7 +353,7 @@ function App() {
         >
           書き出し
         </button>
-        <button disabled>設定</button>
+        <button onClick={() => setActiveTool("settings")}>設定</button>
       </header>
       {error && (
         <div className="error floating" onClick={() => setError("")}>
@@ -351,20 +381,67 @@ function App() {
                 ＋
               </button>
             </h3>
-            {bundle.episodes.map((e) => (
-              <button
-                className={`row ${e.id === episode?.id ? "active" : ""}`}
-                key={e.id}
-                onClick={() => {
-                  setSelectedEpisode(e.id);
-                  const firstPage = bundle.pages
-                    .filter((page) => page.episodeId === e.id)
-                    .sort((a, b) => a.orderIndex - b.orderIndex)[0];
-                  setSelectedPage(firstPage?.id ?? null);
-                }}
-              >
-                {e.title}
-              </button>
+            {bundle.episodes.map((e, index) => (
+              <div className="episode-row" key={e.id}>
+                <button
+                  className={`row ${e.id === episode?.id ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedEpisode(e.id);
+                    const firstPage = bundle.pages
+                      .filter((page) => page.episodeId === e.id)
+                      .sort((a, b) => a.orderIndex - b.orderIndex)[0];
+                    setSelectedPage(firstPage?.id ?? null);
+                  }}
+                >
+                  {e.title}
+                </button>
+                <button
+                  title="名前変更"
+                  onClick={() => {
+                    const title = prompt("エピソード名", e.title);
+                    if (title) apply(window.mangai.renameEpisode(e.id, title));
+                  }}
+                >
+                  ✎
+                </button>
+                <button
+                  disabled={index === 0}
+                  title="上へ"
+                  onClick={() => {
+                    const ids = bundle.episodes.map((item) => item.id);
+                    [ids[index - 1], ids[index]] = [ids[index], ids[index - 1]];
+                    apply(
+                      window.mangai.reorderEpisodes(bundle.project.id, ids),
+                    );
+                  }}
+                >
+                  ↑
+                </button>
+                <button
+                  disabled={index === bundle.episodes.length - 1}
+                  title="下へ"
+                  onClick={() => {
+                    const ids = bundle.episodes.map((item) => item.id);
+                    [ids[index + 1], ids[index]] = [ids[index], ids[index + 1]];
+                    apply(
+                      window.mangai.reorderEpisodes(bundle.project.id, ids),
+                    );
+                  }}
+                >
+                  ↓
+                </button>
+                <button
+                  className="danger"
+                  disabled={bundle.episodes.length <= 1}
+                  title="削除"
+                  onClick={() =>
+                    confirm(`「${e.title}」とページを削除しますか？`) &&
+                    apply(window.mangai.deleteEpisode(e.id))
+                  }
+                >
+                  ×
+                </button>
+              </div>
             ))}
           </section>
           <section className="grow">
@@ -478,6 +555,8 @@ function App() {
           bundle={bundle}
           page={page}
           asset={asset}
+          assetUrl={asset ? assetUrls[asset.id] : undefined}
+          episodeId={episode?.id}
           apply={apply}
           saving={setSaving}
         />
@@ -490,12 +569,16 @@ function Inspector({
   bundle,
   page,
   asset,
+  assetUrl,
+  episodeId,
   apply,
   saving,
 }: {
   bundle: ProjectBundle;
   page?: Page;
   asset?: Asset;
+  assetUrl?: string;
+  episodeId?: string;
   apply: (p: Promise<ProjectBundle>) => void;
   saving: (s: string) => void;
 }) {
@@ -589,7 +672,7 @@ function Inspector({
       {asset && (
         <section>
           <h3>選択画像</h3>
-          <img className="preview" src={asset && undefined} />
+          <img className="preview" src={assetUrl} alt={asset.fileName} />
           <p title={asset.fileName}>{asset.fileName}</p>
           <p>
             {asset.width} × {asset.height}px
@@ -599,13 +682,22 @@ function Inspector({
             {page ? null : (
               <button
                 onClick={() =>
-                  bundle.episodes[0] &&
-                  apply(window.mangai.addPage(bundle.episodes[0].id, asset.id))
+                  episodeId && apply(window.mangai.addPage(episodeId, asset.id))
                 }
               >
                 ページへ追加
               </button>
             )}
+            <button
+              className="secondary"
+              onClick={() =>
+                apply(
+                  window.mangai.setProjectCover(bundle.project.id, asset.id),
+                )
+              }
+            >
+              代表画像に設定
+            </button>
             <button
               className="danger"
               onClick={() =>

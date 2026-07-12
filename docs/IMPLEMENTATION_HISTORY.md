@@ -237,15 +237,12 @@ npm run build
 | Page並び替えテスト | 成功 |
 | 画像付きPDF・ZIP書き出しテスト | 成功 |
 
-統合テストは3件すべて成功しています。
+Desktop統合テストは13件すべて成功しています。AIテストにはOllama、ComfyUI、Creator Chat、ジョブ、キャンセル、タイムアウト、素材登録を含みます。
 
 ## 11. 現在の未実装・既知課題
 
 - Undo/Redo
-- Episodeの名前変更、並び替え、削除
-- 任意素材を表紙・代表画像へ設定するUI
 - Panel編集、高度なコマ割り
-- AI画像生成
 - WebPのPDF変換
 - カスタム保存先が別ドライブの場合の安全なゴミ箱移動
 - Desktopインストーラー
@@ -253,13 +250,16 @@ npm run build
 - 自動更新
 - npm監査で報告されるhigh severity依存関係の精査
 
-## 12. 推奨する次工程
+## 12. Creator Chat・ローカルAI基盤
 
-1. Episodeの名前変更、並び替え、削除
-2. 任意素材を表紙へ設定するUI
+Ollama、ComfyUI、モックプロバイダー、Creator Chat、生成ジョブ、プロンプトテンプレート、生成画像の素材登録を追加しました。設定・利用方法は [`desktop/AI_CREATOR.md`](desktop/AI_CREATOR.md)、完了条件は [`desktop/AI_IMPLEMENTATION_STATUS.md`](desktop/AI_IMPLEMENTATION_STATUS.md) を参照してください。
+
+## 13. 推奨する次工程
+
+1. 実環境のOllama・ComfyUIによるE2E確認
+2. ComfyUIワークフロー管理の強化
 3. Undo/Redoと操作履歴
-4. Desktop設定画面と保存先選択ダイアログ
+4. 保存先選択ダイアログ
 5. Electron Builder等によるWindowsインストーラー
 6. export-coreのWebP変換対応
 7. 依存関係監査とアップデート方針決定
-

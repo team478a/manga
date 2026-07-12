@@ -55,7 +55,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 ## 実装済み
 
 - プロジェクト作成、一覧、再オープン、名前変更、複製、ゴミ箱移動、最近開いた順、代表画像表示
-- Episode作成・切り替え
+- Episode作成・切り替え・名前変更・並び替え・削除
 - Page追加、複製、削除、上下並べ替え、番号正規化
 - JPG/JPEG/PNG/WebPの複数選択・ドラッグ＆ドロップ
 - SHA-256による重複防止、原本を壊さないコピー
@@ -66,14 +66,17 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - SQLite永続化
 - Desktopの「書き出し」からPDF、画像ZIP、作品情報JSON、販売文、SNS告知文を生成
 - `export_history` への書き出し履歴保存
+- 任意素材の代表画像設定
+- Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定
+- ComfyUI画像生成とProject素材への自動登録
 
 ## 未実装
 
 - Undo/Redo（ボタンは将来位置のみ）
-- 表紙を任意素材へ変更する選択UI
-- Episodeの名前変更・並べ替え・削除
 - Panel編集
-- AI画像生成
+- 高度なAIエージェント
 - インストーラー作成、コード署名、自動更新
 
 完了条件ごとの確認結果は [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) を参照してください。
+
+Creator Chat、Ollama、ComfyUIの設定と使い方は [`AI_CREATOR.md`](AI_CREATOR.md) を参照してください。
