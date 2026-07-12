@@ -1,0 +1,298 @@
+# MANGAI Creator Platform 実装済み機能
+
+最終確認日: 2026-07-12
+
+この文書は、READMEの計画ではなく現在のソースコードを基準に、MVPで利用できる機能と制約を整理したものです。
+
+## 1. システム概要
+
+MANGAI Creator Platformは、AIクリエイターが作品を公開し、デジタル商品を販売し、グッズ化を運営へ申請するためのWebアプリケーションです。クラウド機能とは別に、外部販売サイトへ手動出品するファイル一式をPC上で作成するローカル機能も備えています。
+
+### 技術構成
+
+| 分類 | 採用技術 |
+| --- | --- |
+| Web | Next.js 16 App Router、React 19、TypeScript |
+| UI | Tailwind CSS、Lucide React |
+| 認証・DB・Storage | Supabase |
+| 決済 | Stripe Checkout、Stripe Webhook |
+| ローカル保存 | SQLite（better-sqlite3） |
+| パッケージ生成 | JSZip、Node.js File System API |
+| 入力検証 | Zod |
+
+## 2. 利用者区分と権限
+
+| 区分 | 主な権限 |
+| --- | --- |
+| 未ログイン利用者 | 公開作品の閲覧・検索、販売中商品の購入、販売パッケージ画面の利用 |
+| クリエイター | プロフィール、自分の作品・商品・グッズ申請・売上の管理 |
+| 管理者 | 全ユーザー・作品・商品・申請・注文の確認、グッズ申請の更新 |
+
+- `/dashboard` と `/admin` はSupabase Authによるログイン保護があります。
+- `/admin` は `profiles.role = 'admin'` のユーザーだけが利用できます。
+- DBではRow Level Security（RLS）を有効化し、所有者・管理者・公開データごとにアクセスを制限しています。
+- Service Role Keyはサーバー側の管理処理だけで使用します。
+
+## 3. 認証・プロフィール
+
+### 実装済み
+
+- メールアドレスとパスワードによる新規登録
+- ログイン、ログアウト
+- 認証状態に応じたヘッダーナビゲーション
+- 初回利用時のプロフィール作成
+- 表示名と自己紹介の編集
+- 未ログイン時の保護ページからログイン画面へのリダイレクト
+- 一般ユーザーが管理画面へアクセスした場合のマイページへのリダイレクト
+
+### 主な画面
+
+- `/signup`
+- `/login`
+- `/dashboard`
+
+## 4. 作品公開・検索
+
+### クリエイター向け
+
+- 作品の新規登録
+- タイトル、説明、タグ、画像、公開設定の保存
+- JPG、PNG、WebP画像のアップロード
+- 登録済み作品の一覧表示
+- 作品情報、公開状態、画像の編集
+- 自分の作品だけを操作できる所有者制御
+
+### 一般公開
+
+- 公開作品のカード一覧
+- 作品詳細ページ
+- タイトル・説明を対象にしたキーワード検索
+- タグによる絞り込み
+- キーワードとタグの併用
+- 検索結果件数と条件クリア
+- 作品に紐づく販売中デジタル商品の表示
+
+### 主な画面
+
+- `/works`
+- `/works/[id]`
+- `/dashboard/works`
+- `/dashboard/works/new`
+- `/dashboard/works/[id]/edit`
+
+## 5. デジタル商品
+
+### 実装済み
+
+- 自分の作品に紐づくデジタル商品の登録
+- 商品名、説明、税込価格、販売状態の保存
+- PDF、PNG、JPG、ZIPの販売ファイルアップロード
+- 商品情報、販売状態、販売ファイルの編集
+- 販売ファイルを非公開Storageに保存
+- 販売中かつ公開作品に紐づく商品だけを購入画面へ表示
+
+### 主な画面
+
+- `/dashboard/products`
+- `/dashboard/products/new`
+- `/dashboard/products/[id]/edit`
+
+## 6. Stripe決済・ダウンロード
+
+### 購入フロー
+
+1. 購入者がメールアドレスを入力します。
+2. 金額、プラットフォーム手数料、クリエイター受取額を確定し、`pending` 注文を作成します。
+3. Stripe Checkout Sessionを作成してStripeへ遷移します。
+4. Stripe Webhookの署名を検証し、決済結果を注文へ反映します。
+5. 成功画面でもStripe Sessionを再確認し、Webhook到着前後の取りこぼしを補完します。
+6. 決済済み注文に対して、非公開Storageから5分間有効な署名付きURLを発行します。
+
+### 実装済みステータス処理
+
+- 決済完了: `paid`
+- 決済失敗: `failed`
+- キャンセル: `canceled`
+- 全額返金: `refunded`
+- 同一Webhookの再送を考慮した冪等更新
+- Stripe Payment Intent IDの注文への保存
+
+### 金額計算
+
+- プラットフォーム手数料: 商品価格の20%（切り捨て）
+- クリエイター受取額: 商品価格 − プラットフォーム手数料
+- 通貨: 日本円
+
+### API・画面
+
+- `/checkout/[productId]`
+- `/checkout/success`
+- `/checkout/cancel`
+- `POST /api/checkout/create-session`
+- `POST /api/stripe/webhook`
+
+### Stripe側で購読するイベント
+
+- `checkout.session.completed`
+- `checkout.session.async_payment_succeeded`
+- `payment_intent.payment_failed`
+- `charge.refunded`
+
+## 7. 売上管理
+
+### クリエイター向け
+
+- 自分に紐づく注文一覧
+- 購入者メールアドレス、金額、手数料、受取額、注文状態の表示
+- クリエイター受取予定額の集計表示
+
+### 管理者向け
+
+- 全注文一覧
+- 購入金額、手数料、クリエイター受取額、注文状態の表示
+- 支払い済み注文を対象にした売上合計のダッシュボード表示
+
+### 主な画面
+
+- `/dashboard/sales`
+- `/admin/orders`
+
+## 8. グッズ販売申請
+
+### クリエイター向け
+
+- 自分の作品を指定したグッズ販売申請
+- 希望商品タイプと申請メモの登録
+- 自分の申請一覧と対応状態の確認
+
+### 管理者向け
+
+- 全申請の確認
+- 申請状態と管理者メモの更新
+- `pending`、`approved`、`rejected`、`in_progress`、`completed` の状態管理
+
+### 主な画面
+
+- `/dashboard/goods-requests`
+- `/dashboard/goods-requests/new`
+- `/admin/goods-requests`
+
+## 9. 管理者機能
+
+### ダッシュボード
+
+- 登録ユーザー数
+- 公開作品数
+- デジタル商品数
+- グッズ販売申請数
+- 注文数
+- 支払い済み注文の売上合計
+
+### 管理画面
+
+- ユーザー一覧とユーザー詳細
+- ユーザーの表示名、権限、登録日
+- Service Role Key設定時のメールアドレス表示
+- 全作品の公開状態・作者・作成日の確認
+- 全デジタル商品の作品・作者・価格・販売状態の確認
+- 全注文の確認
+- グッズ申請の状態更新
+
+### 主な画面
+
+- `/admin`
+- `/admin/users`
+- `/admin/users/[id]`
+- `/admin/works`
+- `/admin/products`
+- `/admin/orders`
+- `/admin/goods-requests`
+
+## 10. ローカル販売パッケージ
+
+Supabase未設定でも `/sales-packages` から利用できる、PCローカル専用の出品準備機能です。
+
+### 実装済み
+
+- プロジェクトID単位の販売情報保存
+- タイトル、サブタイトル、ジャンル、タグ、対象年齢、価格メモ、販売予定サイトの管理
+- 表紙とサムネイルのアップロード
+- `Documents/MANGAI` 内にある生成済み画像の選択
+- 許可されたローカル画像の取り込み
+- キャッチコピー、説明文、短い紹介文、サムネイル文言、SNS告知文のテンプレート生成
+- 成人向け選択時の注意書き自動追加
+- 本編PDFと複数画像の登録
+- SQLiteへの販売パッケージ、生成文、書き出し履歴の保存
+
+「AI販売文を生成」というUI名ですが、現在の実装は外部AI APIを呼ばないテンプレートベースの文章生成です。
+
+### 書き出しファイル
+
+- `本編PDF.pdf`
+- `本編画像ZIP.zip`
+- `表紙画像.*`
+- `サムネイル画像.*`
+- `販売用説明文.txt`
+- `タグ一覧.txt`
+- `SNS告知文.txt`
+- `作品情報.json`
+
+### ローカル保存先
+
+- SQLite: `C:\Users\Owner\Documents\MANGAI\mangai_local.sqlite`
+- 出力: `C:\Users\Owner\Documents\MANGAI\projects\{projectId}\sales_package\`
+
+## 11. データベースとStorage
+
+### Supabaseテーブル
+
+| テーブル | 用途 |
+| --- | --- |
+| `profiles` | 表示名、自己紹介、権限 |
+| `works` | 作品、画像URL、タグ、公開状態 |
+| `digital_products` | 販売ファイル、価格、販売状態 |
+| `goods_requests` | グッズ販売申請と管理者対応 |
+| `orders` | 購入者、金額内訳、Stripe情報、注文状態 |
+
+### Storage bucket
+
+| Bucket | 公開範囲 | 用途・制限 |
+| --- | --- | --- |
+| `works` | Public | 作品画像、最大10MB、JPG・PNG・WebP |
+| `digital-products` | Private | 販売ファイル、最大50MB、PDF・PNG・JPG・ZIP |
+
+## 12. 必要な環境変数
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+- Supabase認証・通常操作にはURLとAnon Keyが必要です。
+- 管理者メール表示、注文更新、署名付きURL発行にはService Role Keyが必要です。
+- 決済にはStripe Secret KeyとWebhook Secretが必要です。
+- 秘密鍵を `NEXT_PUBLIC_` 付きの環境変数へ設定してはいけません。
+
+## 13. 現在の制約・未実装
+
+- 購入者アカウントと購入履歴
+- 有効期限後の購入者向け再ダウンロード導線
+- 購入完了・申請更新などのメール通知
+- 公開クリエイタープロフィールページ
+- 作品・商品・ユーザーに対する管理者の削除・停止操作
+- Stripe Connectによるクリエイターへの自動分配・振込
+- 部分返金の独立した状態・金額管理
+- 返金操作を開始する管理画面
+- 印刷会社APIとのグッズ製造連携
+- 外部AI APIを使った販売文生成
+- E2Eテストと自動テストスイート
+- Vercel、Supabase、Stripeの本番環境設定
+
+## 14. 実装状況の確認
+
+2026-07-12時点で、TypeScript型チェック、ESLint、Next.js本番ビルドは成功しています。Stripe決済のエンドツーエンド確認には、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
+
