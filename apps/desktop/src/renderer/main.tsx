@@ -17,7 +17,11 @@ const emptyForm = {
 };
 function App() {
   const [projects, setProjects] = React.useState<Project[]>([]),
+    [projectCovers, setProjectCovers] = React.useState<Record<string, string>>(
+      {},
+    ),
     [bundle, setBundle] = React.useState<ProjectBundle | null>(null),
+    [selectedEpisode, setSelectedEpisode] = React.useState<string | null>(null),
     [selectedPage, setSelectedPage] = React.useState<string | null>(null),
     [selectedAsset, setSelectedAsset] = React.useState<string | null>(null),
     [form, setForm] = React.useState(emptyForm),
@@ -28,7 +32,23 @@ function App() {
     [assetUrls, setAssetUrls] = React.useState<Record<string, string>>({});
   const showError = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
-  const refresh = () => window.mangai.listProjects().then(setProjects);
+  const refresh = () =>
+    window.mangai.listProjects().then(async (items) => {
+      setProjects(items);
+      const covers = await Promise.all(
+        items.map(
+          async (project) =>
+            [project.id, await window.mangai.projectCover(project.id)] as const,
+        ),
+      );
+      setProjectCovers(
+        Object.fromEntries(
+          covers.filter(
+            (entry): entry is readonly [string, string] => entry[1] !== null,
+          ),
+        ),
+      );
+    });
   React.useEffect(() => {
     void refresh();
   }, []);
@@ -47,6 +67,11 @@ function App() {
     p
       .then((b) => {
         setBundle(b);
+        setSelectedEpisode((current) =>
+          current && b.episodes.some((episode) => episode.id === current)
+            ? current
+            : (b.episodes[0]?.id ?? null),
+        );
         setSelectedPage((x) =>
           x && b.pages.some((p) => p.id === x) ? x : (b.pages[0]?.id ?? null),
         );
@@ -196,7 +221,13 @@ function App() {
                 key={p.id}
                 onClick={() => apply(window.mangai.openProject(p.id))}
               >
-                <div className="cover">M</div>
+                <div className="cover">
+                  {projectCovers[p.id] ? (
+                    <img src={projectCovers[p.id]} alt="" />
+                  ) : (
+                    "M"
+                  )}
+                </div>
                 <div>
                   <h2>{p.title}</h2>
                   <p>{p.subtitle || p.description || "説明なし"}</p>
@@ -235,7 +266,9 @@ function App() {
         </section>
       </main>
     );
-  const episode = bundle.episodes[0],
+  const episode =
+      bundle.episodes.find((item) => item.id === selectedEpisode) ??
+      bundle.episodes[0],
     pages = bundle.pages
       .filter((p) => p.episodeId === episode?.id)
       .sort((a, b) => a.orderIndex - b.orderIndex),
@@ -322,6 +355,13 @@ function App() {
               <button
                 className={`row ${e.id === episode?.id ? "active" : ""}`}
                 key={e.id}
+                onClick={() => {
+                  setSelectedEpisode(e.id);
+                  const firstPage = bundle.pages
+                    .filter((page) => page.episodeId === e.id)
+                    .sort((a, b) => a.orderIndex - b.orderIndex)[0];
+                  setSelectedPage(firstPage?.id ?? null);
+                }}
               >
                 {e.title}
               </button>
