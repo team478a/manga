@@ -15,10 +15,13 @@
     "start": "electron ."
   },
   "dependencies": {
+    "@mangai/export-core": "file:../../packages/export-core",
     "@mangai/project-core": "file:../../packages/project-core",
     "@mangai/shared": "file:../../packages/shared",
     "better-sqlite3": "^12.11.1",
     "image-size": "^2.0.2",
+    "jszip": "^3.10.1",
+    "pdf-lib": "^1.17.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "zod": "^4.4.3"
@@ -37,6 +40,7 @@
     "eslint": "^9.39.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "globals": "^16.0.0",
+    "prettier": "^3.9.5",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.35.1",
     "vite": "^7.0.0",

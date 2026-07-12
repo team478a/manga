@@ -13,7 +13,7 @@ DesktopはHubを埋め込まず、Supabase Service Role KeyやStripe Secret Key�
 apps/desktop/          Electron + React + Vite
 packages/shared/       IPC入力用Zodスキーマ
 packages/project-core/ Project/Episode/Page/Panel型と順序ロジック
-packages/export-core/  販売文案・将来のPDF/ZIP書き出しコア
+packages/export-core/  販売文案・PDF・ZIP・作品情報書き出しコア
 src/                   MANGAI Hub（段階移行のため現位置を維持）
 supabase/              Hub DBスキーマ
 docs/desktop/          Desktop運用・実装資料
@@ -21,4 +21,3 @@ docs/hub/              Hub資料
 ```
 
 既存Webの全面移動は参照パスとデプロイを壊すリスクがあるため、今回行っていません。
-

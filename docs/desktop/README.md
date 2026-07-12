@@ -64,11 +64,12 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - ページプレビュー、ズーム、リセット
 - プロンプト、ネガティブプロンプト、メモの自動保存
 - SQLite永続化
+- Desktopの「書き出し」からPDF、画像ZIP、作品情報JSON、販売文、SNS告知文を生成
+- `export_history` への書き出し履歴保存
 
 ## 未実装
 
 - Undo/Redo（ボタンは将来位置のみ）
-- PDF/ZIPのDesktop UIからの書き出し
 - 表紙の選択UIとプロジェクト一覧サムネイル
 - Episodeの切替・並べ替え・削除
 - Panel編集

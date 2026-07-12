@@ -19,16 +19,15 @@
 | 13 | TypeScript型チェック | 完了 | Hub・Desktop・各packageで成功 |
 | 14 | ESLint | 完了 | Hub・Desktop双方で成功 |
 | 15 | Desktop/Web本番ビルド | 完了 | Electron main、Vite renderer、Next.js成功 |
-| 16 | ユニット・統合テスト | 完了 | SQLite永続化、ページ順序の2件成功 |
+| 16 | ユニット・統合テスト | 完了 | SQLite永続化、ページ順序、書き出しの3件成功 |
 | 17 | ドキュメント反映 | 完了 | architecture、desktop、hub、実装状況を追加 |
 
 ## 指示範囲内で残る改善
 
 - Undo/Redoは配置のみで未接続です。
-- DesktopのPDF/ZIP書き出しUIは未実装です。`export-core`には販売文案生成の入口だけを切り出しました。
+- DesktopのPDF・画像ZIP・作品情報・販売文書き出しを実装しました。WebPは画像ZIPには含まれますが、PDFはJPG・PNGページを対象とします。
 - プロジェクト一覧の代表画像表示はDB・IPCの準備までで、UI表示は未接続です。
 - 複数Episodeの作成はできますが、ワークスペースでのEpisode切替は未実装です。
 - インストーラー、コード署名、自動更新は未実装です。
 
 旧Web版のローカル販売パッケージ処理は削除せず保全していますが、公開Webからローカルファイル操作を露出しないよう既定で無効化しました。開発互換確認が必要な場合のみ `MANGAI_ENABLE_LEGACY_LOCAL_TOOLS=true` を使用します。
-
