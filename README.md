@@ -5,6 +5,7 @@
 - Desktop: [`apps/desktop`](apps/desktop)、起動方法は [`docs/desktop/README.md`](docs/desktop/README.md)
 - Hub: ルートNext.jsアプリ、詳細は [`docs/hub/README.md`](docs/hub/README.md)
 - 全体構成: [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md)
+- ここまでの実装記録・引き継ぎ: [`docs/IMPLEMENTATION_HISTORY.md`](docs/IMPLEMENTATION_HISTORY.md)
 
 現在のコードを基準にした詳細な機能一覧は [`docs/IMPLEMENTED_FEATURES.md`](docs/IMPLEMENTED_FEATURES.md) を参照してください。
 
