@@ -44,6 +44,11 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - `pages`: ページ番号、順序、寸法、配置素材、プロンプト、メモ
 - `panels`: 将来のコマ編集向け座標・生成情報
 - `assets`: 相対パス、画像メタ情報、SHA-256
+- `operation_history`: Undo/Redo用の変更前後スナップショット
+- `ai_provider_settings` / `ai_models`: AI接続設定とモデルキャッシュ
+- `chat_sessions` / `chat_messages`: Creator Chat履歴
+- `generation_jobs` / `generation_outputs`: AI生成ジョブと出力
+- `comfy_workflows`: ComfyUIワークフロー設定
 
 外部キー、cascade、WALを有効化し、すべての値はパラメータ化クエリで扱います。
 
@@ -80,10 +85,11 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 
 ## 未実装
 
-- Undo/Redo（ボタンは将来位置のみ）
 - Panel編集
 - 高度なAIエージェント
-- インストーラー作成、コード署名、自動更新
+- WebPのPDF変換
+- 信頼された証明書による実署名と初回公開リリース
+- Projectバックアップ・復元
 
 完了条件ごとの確認結果は [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) を参照してください。
 

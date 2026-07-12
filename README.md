@@ -6,6 +6,7 @@
 - Hub: ルートNext.jsアプリ、詳細は [`docs/hub/README.md`](docs/hub/README.md)
 - 全体構成: [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md)
 - ここまでの実装記録・引き継ぎ: [`docs/IMPLEMENTATION_HISTORY.md`](docs/IMPLEMENTATION_HISTORY.md)
+- 現在の実装状況と今後のロードマップ: [`docs/PROJECT_STATUS_AND_ROADMAP.md`](docs/PROJECT_STATUS_AND_ROADMAP.md)
 
 現在のコードを基準にした詳細な機能一覧は [`docs/IMPLEMENTED_FEATURES.md`](docs/IMPLEMENTED_FEATURES.md) を参照してください。
 
@@ -20,10 +21,10 @@
 - デジタル商品登録
 - グッズ販売申請
 - 売上管理画面
-- 管理者画面の雛形
+- ユーザー、作品、商品、注文、グッズ申請の管理画面
 - ローカル版の販売用パッケージ作成
 - Supabase PostgreSQL スキーマとRLS
-- Stripe Checkout APIルートの雛形
+- Stripe Checkout、Webhook、購入後期限付きダウンロード
 
 ## ファイル構成
 
@@ -130,9 +131,9 @@ Supabase管理画面で手動作成する場合は、Storageから `works` bucke
 6. `/dashboard/products` に自分の商品だけが表示されることを確認します。
 7. 「編集する」から `/dashboard/products/[id]/edit` を開き、商品名、説明、価格、販売状態、ファイル差し替えを保存できることを確認します。
 
-## デジタル商品の購入準備確認手順
+## デジタル商品の購入確認手順
 
-この段階ではStripe Checkoutへの遷移までを実装しています。Webhookによる決済完了反映と購入後ダウンロードは次回以降に実装します。
+Stripe Checkoutへの遷移、Webhookによる決済状態反映、決済確認後の期限付きダウンロードURL発行まで実装しています。
 
 1. `.env.local` にSupabaseの値を設定します。
 2. Supabase SQL Editorで `supabase/schema.sql` を実行します。
@@ -144,7 +145,9 @@ Supabase管理画面で手動作成する場合は、Storageから `works` bucke
 8. Stripe Checkoutへ遷移することを確認します。
 9. `orders` テーブルに `pending` の仮注文が作成され、`amount`、`platform_fee`、`creator_revenue` が保存されることを確認します。
 10. Stripe画面でキャンセルすると `/checkout/cancel?order_id=...` に戻り、注文が `canceled` になることを確認します。
-11. 商品を「停止中」に変更した場合、購入準備できないことを確認します。
+11. テスト決済を完了し、Webhookまたは成功画面の再確認で注文が`paid`になることを確認します。
+12. 決済済み注文だけに期限付きダウンロードURLが発行されることを確認します。
+13. 商品を「停止中」に変更した場合、購入準備できないことを確認します。
 
 手数料計算:
 
@@ -277,19 +280,10 @@ Stripeテスト環境の設定:
 - `cancel_url`: `/checkout/cancel?order_id=xxx`
 - metadataに `order_id`、`product_id`、`creator_id` を設定
 - キャンセル時に注文ステータスを `canceled` に更新
+- Webhook署名検証と冪等な注文更新
+- `paid`、`failed`、`refunded`の状態反映
+- 購入者への期限付きダウンロードURL発行
 
-次の段階で以下を実装します。
+## 今後の実装計画
 
-- 仮注文IDから注文と商品情報を取得
-- Webhookで `orders` を `paid` に更新
-- 購入者へのダウンロードURL発行
-- 返金・失敗時の状態更新
-
-## 今後の実装候補
-
-- グッズ申請の管理者ステータス更新フォーム
-- 注文作成からファイル配布までの本番決済
-- 作品の検索とタグ絞り込み
-- プロフィール公開ページ
-- メール通知
-- Vercel本番環境設定
+Desktop Release Candidate、漫画編集機能、DesktopとHubの連携、本番運用の順に整理しています。詳細は [`docs/PROJECT_STATUS_AND_ROADMAP.md`](docs/PROJECT_STATUS_AND_ROADMAP.md) を参照してください。

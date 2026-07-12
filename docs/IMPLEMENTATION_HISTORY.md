@@ -1,10 +1,10 @@
 # MANGAI 実装記録・引き継ぎ資料
 
-最終更新: 2026-07-12  
-対象ブランチ: `master`  
-現在のHEAD: `1726dd2`
+最終更新: 2026-07-13
+対象ブランチ: `master`
+実装基準コミット: `f813780`
 
-この文書は、MANGAI Hubの保全からMANGAI Desktop基盤構築までの実装経緯と、現在の利用可能範囲をまとめた引き継ぎ資料です。
+この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
 ## 1. 現在の製品構成
 
@@ -25,6 +25,16 @@ Hubの既存コードは移動せず維持し、Desktopと共通パッケージ�
 | `7a5a9e3` | Electron、React、Vite、SQLiteによるDesktop基盤を追加          |
 | `26df166` | DesktopからPDF、画像ZIP、作品情報、販売文を書き出す機能を追加 |
 | `1726dd2` | Episode切り替えとプロジェクト代表画像表示を追加               |
+| `df75731` | Creator Chat、Ollama、ComfyUI、生成ジョブを追加 |
+| `f544ba8` | ComfyUIワークフロー管理を強化 |
+| `6a9be41` | Chat対象切り替えとAIモデルキャッシュを追加 |
+| `298fe98` | プロンプトテンプレート複製・編集を追加 |
+| `656ee6a` | 画像生成進捗表示を追加 |
+| `fee995a` | 永続Undo/Redoと操作履歴を追加 |
+| `7eeef1b` | Project保存先選択を追加 |
+| `b41e477` | Windows NSISインストーラーを追加 |
+| `553a549` | ブランドアイコンと署名ワークフローを追加 |
+| `f813780` | 自動更新とGitHub Releases配布基盤を追加 |
 
 Hub保全タグ:
 
@@ -245,10 +255,10 @@ Desktop統合テストは16件すべて成功しています。AIテストには
 - Panel編集、高度なコマ割り
 - WebPのPDF変換
 - カスタム保存先が別ドライブの場合の安全なゴミ箱移動
-- Desktopインストーラー
-- Windowsコード署名
-- 自動更新
-- npm監査で報告されるhigh severity依存関係の精査
+- 信頼された証明書によるWindows実署名
+- Git remote設定と初回公開リリース
+- 自動更新の実配布先E2E
+- Projectバックアップ・復元
 
 ## 12. Creator Chat・ローカルAI基盤
 
