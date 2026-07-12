@@ -153,6 +153,11 @@ export const workflowInputSchema = z.object({
   filePath: z.string().min(1),
   mapping: workflowMappingSchema,
 });
+export const workflowUpdateSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(1).max(200),
+  mapping: workflowMappingSchema,
+});
 export const promptTemplateInputSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().trim().min(1).max(200),

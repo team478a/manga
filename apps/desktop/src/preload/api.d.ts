@@ -90,6 +90,16 @@ export type DesktopApi = {
     listWorkflows: () => Promise<any[]>;
     addWorkflow: (name: string, mapping: unknown) => Promise<any[]>;
     deleteWorkflow: (id: string) => Promise<any[]>;
+    updateWorkflow: (
+      id: string,
+      name: string,
+      mapping: unknown,
+    ) => Promise<any[]>;
+    setDefaultWorkflow: (id: string) => Promise<any[]>;
+    validateWorkflow: (
+      id: string,
+    ) => Promise<{ ok: boolean; message: string; fields?: string[] }>;
+    testWorkflow: (id: string) => Promise<{ ok: boolean; message: string }>;
   };
 };
 declare global {

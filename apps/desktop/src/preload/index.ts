@@ -80,5 +80,13 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:workflows:add", { name, mapping }),
     deleteWorkflow: (id: string) =>
       ipcRenderer.invoke("ai:workflows:delete", { id }),
+    updateWorkflow: (id: string, name: string, mapping: unknown) =>
+      ipcRenderer.invoke("ai:workflows:update", { id, name, mapping }),
+    setDefaultWorkflow: (id: string) =>
+      ipcRenderer.invoke("ai:workflows:default", { id }),
+    validateWorkflow: (id: string) =>
+      ipcRenderer.invoke("ai:workflows:validate", { id }),
+    testWorkflow: (id: string) =>
+      ipcRenderer.invoke("ai:workflows:test", { id }),
   },
 });

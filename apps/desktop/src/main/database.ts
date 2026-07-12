@@ -886,9 +886,20 @@ export class MangaiDatabase {
     const id = uid(),
       destination = path.join(dir, `${id}.json`);
     fs.copyFileSync(sourcePath, destination);
+    const count = (
+      this.db.prepare("select count(*) count from comfy_workflows").get() as any
+    ).count;
     this.db
       .prepare("insert into comfy_workflows values(?,?,?,?,?,?,?)")
-      .run(id, name, destination, JSON.stringify(mapping), 0, now(), now());
+      .run(
+        id,
+        name,
+        destination,
+        JSON.stringify(mapping),
+        count === 0 ? 1 : 0,
+        now(),
+        now(),
+      );
     return this.listComfyWorkflows();
   }
   listComfyWorkflows() {
@@ -912,13 +923,69 @@ export class MangaiDatabase {
       mapping: JSON.parse(row.mapping_json),
     };
   }
+  updateComfyWorkflow(id: string, name: string, mapping: unknown) {
+    const result = this.db
+      .prepare(
+        "update comfy_workflows set name=?,mapping_json=?,updated_at=? where id=?",
+      )
+      .run(name, JSON.stringify(mapping), now(), id);
+    if (!result.changes) throw new Error("ワークフローが見つかりません。");
+    return this.listComfyWorkflows();
+  }
+  setDefaultComfyWorkflow(id: string) {
+    this.db.transaction(() => {
+      this.db.prepare("update comfy_workflows set is_default=0").run();
+      const result = this.db
+        .prepare(
+          "update comfy_workflows set is_default=1,updated_at=? where id=?",
+        )
+        .run(now(), id);
+      if (!result.changes) throw new Error("ワークフローが見つかりません。");
+    })();
+    return this.listComfyWorkflows();
+  }
+  validateComfyWorkflow(id: string) {
+    const definition = this.getComfyWorkflow(id),
+      errors: string[] = [],
+      fields: string[] = [];
+    for (const [field, target] of Object.entries(definition.mapping) as Array<
+      [string, any]
+    >) {
+      if (!target) continue;
+      fields.push(field);
+      const node = definition.workflow[target.nodeId];
+      if (!node)
+        errors.push(`${field}: ノード ${target.nodeId} がありません。`);
+      else if (!node.inputs || !(target.input in node.inputs))
+        errors.push(
+          `${field}: ${target.nodeId}.${target.input} がありません。`,
+        );
+    }
+    if (!definition.mapping.prompt) errors.push("Promptマッピングが必要です。");
+    return {
+      ok: errors.length === 0,
+      message: errors.length
+        ? errors.join("\n")
+        : `${fields.length}項目のマッピングを確認しました。`,
+      fields,
+    };
+  }
   deleteComfyWorkflow(id: string) {
     const row = this.db
-      .prepare("select file_path from comfy_workflows where id=?")
+      .prepare("select file_path,is_default from comfy_workflows where id=?")
       .get(id) as any;
     if (row?.file_path && fs.existsSync(row.file_path))
       fs.rmSync(row.file_path);
     this.db.prepare("delete from comfy_workflows where id=?").run(id);
+    if (row?.is_default) {
+      const next = this.db
+        .prepare("select id from comfy_workflows order by created_at limit 1")
+        .get() as any;
+      if (next)
+        this.db
+          .prepare("update comfy_workflows set is_default=1 where id=?")
+          .run(next.id);
+    }
     return this.listComfyWorkflows();
   }
   private safeProjectPath(root: string, relative: string) {

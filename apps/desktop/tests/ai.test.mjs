@@ -477,3 +477,47 @@ test("ComfyUI timeout marks the job as failed", async () => {
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("ComfyUI workflow settings can be validated, edited and defaulted", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-workflow-ai-")),
+    paths = {
+      root,
+      database: path.join(root, "db.sqlite"),
+      projects: path.join(root, "projects"),
+      assets: path.join(root, "assets"),
+      exports: path.join(root, "exports"),
+      logs: path.join(root, "logs"),
+    },
+    db = new MangaiDatabase(paths);
+  try {
+    const sourceA = path.join(root, "a.json"),
+      sourceB = path.join(root, "b.json");
+    fs.writeFileSync(sourceA, JSON.stringify({ 6: { inputs: { text: "" } } }));
+    fs.writeFileSync(
+      sourceB,
+      JSON.stringify({ 10: { inputs: { prompt: "" } } }),
+    );
+    let list = db.registerComfyWorkflow("A", sourceA, {
+      prompt: { nodeId: "6", input: "text" },
+    });
+    assert.equal(list[0].isDefault, 1);
+    assert.equal(db.validateComfyWorkflow(list[0].id).ok, true);
+    const firstId = list[0].id;
+    list = db.registerComfyWorkflow("B", sourceB, {
+      prompt: { nodeId: "10", input: "prompt" },
+    });
+    const second = list.find((item) => item.name === "B");
+    list = db.setDefaultComfyWorkflow(second.id);
+    assert.equal(list[0].id, second.id);
+    list = db.updateComfyWorkflow(second.id, "B updated", {
+      prompt: { nodeId: "missing", input: "text" },
+    });
+    assert.equal(db.validateComfyWorkflow(second.id).ok, false);
+    list = db.deleteComfyWorkflow(second.id);
+    assert.equal(list[0].id, firstId);
+    assert.equal(list[0].isDefault, 1);
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

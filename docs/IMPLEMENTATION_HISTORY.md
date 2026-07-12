@@ -237,7 +237,7 @@ npm run build
 | Page並び替えテスト | 成功 |
 | 画像付きPDF・ZIP書き出しテスト | 成功 |
 
-Desktop統合テストは13件すべて成功しています。AIテストにはOllama、ComfyUI、Creator Chat、ジョブ、キャンセル、タイムアウト、素材登録を含みます。
+Desktop統合テストは14件すべて成功しています。AIテストにはOllama、ComfyUI、Creator Chat、ジョブ、キャンセル、タイムアウト、素材登録、ワークフロー管理を含みます。
 
 ## 11. 現在の未実装・既知課題
 

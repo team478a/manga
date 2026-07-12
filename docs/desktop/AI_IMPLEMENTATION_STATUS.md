@@ -23,7 +23,7 @@
 | 17 | 失敗ジョブ再実行 | 完了 | 画像ジョブ履歴から再実行 |
 | 18 | 実行中キャンセル | 完了 | AbortとComfyUI `/interrupt` |
 | 19 | AI未設定で起動 | 完了 | Mock fallback、外部接続なし |
-| 20 | モック自動テスト | 完了 | 全13件成功 |
+| 20 | モック自動テスト | 完了 | 全14件成功 |
 | 21 | Desktop TypeScript | 完了 | 成功 |
 | 22 | Desktop ESLint | 完了 | 成功 |
 | 23 | Desktopビルド | 完了 | Electron main・Vite成功 |
@@ -38,7 +38,6 @@
 
 - Creator Chatで別Projectを選ぶUI（現在は開いているProjectを使用）
 - 初期テンプレートを複製して編集するUI
-- ComfyUIワークフロー名変更、既定指定、単独テスト実行
 - ジョブ進捗率表示（現在は状態表示）
 - `ai_models`のキャッシュ活用
 - クラウドプロバイダー追加時のElectron `safeStorage` 対応

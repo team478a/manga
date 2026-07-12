@@ -19,7 +19,8 @@ export function GenerationJobs({
     [promptText, setPrompt] = React.useState(""),
     [negative, setNegative] = React.useState(""),
     [busy, setBusy] = React.useState(false),
-    [error, setError] = React.useState("");
+    [error, setError] = React.useState(""),
+    [workflowMessage, setWorkflowMessage] = React.useState("");
   const load = () =>
     Promise.all([
       window.mangai.ai.listJobs(bundle.project.id).then(setJobs),
@@ -55,6 +56,9 @@ export function GenerationJobs({
       setBusy(false);
     }
   };
+  const selectedWorkflow = workflows.find(
+    (workflow) => workflow.id === workflowId,
+  );
   return (
     <main className="tool-page">
       <header className="tool-header">
@@ -72,6 +76,7 @@ export function GenerationJobs({
               <option value="">ワークフローを選択</option>
               {workflows.map((w) => (
                 <option key={w.id} value={w.id}>
+                  {w.isDefault ? "★ " : ""}
                   {w.name}
                 </option>
               ))}
@@ -118,6 +123,83 @@ export function GenerationJobs({
               設定削除
             </button>
           </div>
+          {selectedWorkflow && (
+            <div className="workflow-tools">
+              <p>
+                入力マッピング: <code>{selectedWorkflow.mappingJson}</code>
+              </p>
+              <div className="inline">
+                <button
+                  className="secondary"
+                  onClick={async () => {
+                    const name = prompt(
+                      "ワークフロー名",
+                      selectedWorkflow.name,
+                    );
+                    if (!name) return;
+                    const mappingText = prompt(
+                      "入力マッピングJSON",
+                      selectedWorkflow.mappingJson,
+                    );
+                    if (!mappingText) return;
+                    try {
+                      setWorkflows(
+                        await window.mangai.ai.updateWorkflow(
+                          selectedWorkflow.id,
+                          name,
+                          JSON.parse(mappingText),
+                        ),
+                      );
+                      setWorkflowMessage("ワークフロー設定を更新しました。");
+                    } catch (cause) {
+                      setError(
+                        cause instanceof Error ? cause.message : String(cause),
+                      );
+                    }
+                  }}
+                >
+                  名前・マッピング編集
+                </button>
+                <button
+                  className="secondary"
+                  disabled={Boolean(selectedWorkflow.isDefault)}
+                  onClick={async () => {
+                    setWorkflows(
+                      await window.mangai.ai.setDefaultWorkflow(
+                        selectedWorkflow.id,
+                      ),
+                    );
+                    setWorkflowMessage("既定ワークフローに設定しました。");
+                  }}
+                >
+                  既定に設定
+                </button>
+                <button
+                  className="secondary"
+                  onClick={async () => {
+                    const result = await window.mangai.ai.validateWorkflow(
+                      selectedWorkflow.id,
+                    );
+                    setWorkflowMessage(result.message);
+                  }}
+                >
+                  マッピング検証
+                </button>
+                <button
+                  className="secondary"
+                  onClick={async () => {
+                    const result = await window.mangai.ai.testWorkflow(
+                      selectedWorkflow.id,
+                    );
+                    setWorkflowMessage(result.message);
+                  }}
+                >
+                  接続テスト
+                </button>
+              </div>
+            </div>
+          )}
+          {workflowMessage && <p className="notice">{workflowMessage}</p>}
           <label>
             Prompt
             <textarea

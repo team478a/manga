@@ -32,6 +32,7 @@ import {
   providerSettingsSchema,
   renameChatSchema,
   workflowMappingSchema,
+  workflowUpdateSchema,
 } from "@mangai/ai-core";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -216,6 +217,28 @@ function register() {
   handle("ai:workflows:delete", (v) =>
     store.deleteComfyWorkflow(chatSessionIdSchema.parse(v).id),
   );
+  handle("ai:workflows:update", (v) => {
+    const input = workflowUpdateSchema.parse(v);
+    return store.updateComfyWorkflow(input.id, input.name, input.mapping);
+  });
+  handle("ai:workflows:default", (v) =>
+    store.setDefaultComfyWorkflow(chatSessionIdSchema.parse(v).id),
+  );
+  handle("ai:workflows:validate", (v) =>
+    store.validateComfyWorkflow(chatSessionIdSchema.parse(v).id),
+  );
+  handle("ai:workflows:test", async (v) => {
+    const id = chatSessionIdSchema.parse(v).id,
+      validation = store.validateComfyWorkflow(id);
+    if (!validation.ok) return validation;
+    const connection = await aiService.provider("comfyui").checkConnection();
+    return {
+      ok: connection.ok,
+      message: connection.ok
+        ? `${validation.message}\n${connection.message}`
+        : connection.message,
+    };
+  });
 }
 async function createWindow() {
   const win = new BrowserWindow({
