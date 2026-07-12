@@ -224,7 +224,7 @@ Supabase未設定でも `/sales-packages` から利用できる、PCローカル
 - 本編PDFと複数画像の登録
 - SQLiteへの販売パッケージ、生成文、書き出し履歴の保存
 
-「AI販売文を生成」というUI名ですが、現在の実装は外部AI APIを呼ばないテンプレートベースの文章生成です。
+「販売文案を作成」機能は、外部AI APIを呼ばないテンプレートベースの文章生成です。
 
 ### 書き出しファイル
 
@@ -239,8 +239,8 @@ Supabase未設定でも `/sales-packages` から利用できる、PCローカル
 
 ### ローカル保存先
 
-- SQLite: `C:\Users\Owner\Documents\MANGAI\mangai_local.sqlite`
-- 出力: `C:\Users\Owner\Documents\MANGAI\projects\{projectId}\sales_package\`
+- SQLite: `{Documents}\MANGAI\mangai_local.sqlite`
+- 出力: `{Documents}\MANGAI\projects\{projectId}\sales_package\`
 
 ## 11. データベースとStorage
 
@@ -295,4 +295,3 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ## 14. 実装状況の確認
 
 2026-07-12時点で、TypeScript型チェック、ESLint、Next.js本番ビルドは成功しています。Stripe決済のエンドツーエンド確認には、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
-

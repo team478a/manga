@@ -1,7 +1,11 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { exportSalesPackage, saveSalesPackageFromForm } from "@/lib/local/salesPackage";
+import { exportSalesPackage, isLegacyLocalSalesEnabled, saveSalesPackageFromForm } from "@/lib/local/salesPackage";
+
+function requireLegacyLocalTools() {
+  if (!isLegacyLocalSalesEnabled()) throw new Error("ローカルファイル操作はMANGAI Desktopへ移行しました。");
+}
 
 function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : "処理に失敗しました。";
@@ -12,6 +16,7 @@ function redirectTo(projectId: string, packageId: string, message: string) {
 }
 
 export async function saveSalesPackageAction(formData: FormData) {
+  requireLegacyLocalTools();
   let projectId = "default";
   let packageId = "";
   try {
@@ -25,6 +30,7 @@ export async function saveSalesPackageAction(formData: FormData) {
 }
 
 export async function generateSalesTextAction(formData: FormData) {
+  requireLegacyLocalTools();
   let projectId = "default";
   let packageId = "";
   try {
@@ -34,10 +40,11 @@ export async function generateSalesTextAction(formData: FormData) {
   } catch (error) {
     redirect(`/sales-packages?error=${encodeURIComponent(errorMessage(error))}`);
   }
-  redirectTo(projectId, packageId, "AI販売文を生成して保存しました。");
+  redirectTo(projectId, packageId, "販売文案を作成して保存しました。");
 }
 
 export async function exportSalesPackageAction(formData: FormData) {
+  requireLegacyLocalTools();
   let projectId = "default";
   let packageId = "";
   let message = "販売用ファイル一式を書き出しました。";

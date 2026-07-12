@@ -1,0 +1,2 @@
+import js from "@eslint/js"; import globals from "globals"; import tseslint from "typescript-eslint"; import hooks from "eslint-plugin-react-hooks";
+export default tseslint.config({ignores:["dist-main","dist-renderer"]},js.configs.recommended,...tseslint.configs.recommended,{files:["src/**/*.{ts,tsx}"],languageOptions:{globals:{...globals.browser,...globals.node}},plugins:{"react-hooks":hooks},rules:{...hooks.configs.recommended.rules,"react-hooks/exhaustive-deps":"off","@typescript-eslint/no-explicit-any":"off"}});

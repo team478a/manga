@@ -1,6 +1,10 @@
-# MANGAI Creator Platform MVP
+# MANGAI
 
-AIクリエイターが作品を公開し、デジタル商品販売とグッズ販売申請を行うためのMVPです。
+このリポジトリは、漫画制作を行う **MANGAI Desktop** と、作品公開・販売を行う **MANGAI Hub** を段階的に分離しています。既存のルートNext.jsアプリはMANGAI Hubとして維持しています。
+
+- Desktop: [`apps/desktop`](apps/desktop)、起動方法は [`docs/desktop/README.md`](docs/desktop/README.md)
+- Hub: ルートNext.jsアプリ、詳細は [`docs/hub/README.md`](docs/hub/README.md)
+- 全体構成: [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md)
 
 現在のコードを基準にした詳細な機能一覧は [`docs/IMPLEMENTED_FEATURES.md`](docs/IMPLEMENTED_FEATURES.md) を参照してください。
 
@@ -191,13 +195,13 @@ where user_id = '対象ユーザーのauth.users.id';
 保存先:
 
 ```txt
-C:\Users\Owner\Documents\MANGAI\projects\{projectId}\sales_package\
+{Documents}\MANGAI\projects\{projectId}\sales_package\
 ```
 
 ローカルSQLite:
 
 ```txt
-C:\Users\Owner\Documents\MANGAI\mangai_local.sqlite
+{Documents}\MANGAI\mangai_local.sqlite
 ```
 
 保存される情報:
@@ -225,7 +229,7 @@ C:\Users\Owner\Documents\MANGAI\mangai_local.sqlite
 1. `npm run dev` を実行します。
 2. `/sales-packages` を開きます。
 3. プロジェクトID、作品タイトル、販売文、タグ、対象年齢などを入力します。
-4. 必要に応じて「AI販売文を生成」を押します。
+4. 必要に応じて「販売文案を作成」を押します。
 5. 表紙画像、サムネイル画像、本編PDF、本編画像を登録します。
 6. 「販売用ファイルを書き出す」を押します。
 7. `Documents/MANGAI/projects/{projectId}/sales_package/` に出力されたファイルを販売サイトへ手動で登録します。

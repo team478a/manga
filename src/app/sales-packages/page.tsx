@@ -1,13 +1,25 @@
 import Link from "next/link";
 import { Download, FileText, Sparkles } from "lucide-react";
 import { exportSalesPackageAction, generateSalesTextAction, saveSalesPackageAction } from "@/app/sales-packages/actions";
-import { getProjectDir, getSalesPackage, listGeneratedImages } from "@/lib/local/salesPackage";
+import { getProjectDir, getSalesPackage, isLegacyLocalSalesEnabled, listGeneratedImages } from "@/lib/local/salesPackage";
 
 export default async function SalesPackagesPage({
   searchParams
 }: {
   searchParams: Promise<{ projectId?: string; packageId?: string; message?: string; error?: string }>;
 }) {
+  if (!isLegacyLocalSalesEnabled()) {
+    return (
+      <main className="page max-w-2xl">
+        <section className="panel">
+          <p className="text-lg font-semibold text-leaf">MANGAI Desktopへ移行しました</p>
+          <h1 className="mt-3 text-3xl font-bold">販売準備・ローカルファイル操作</h1>
+          <p className="mt-4 text-lg leading-relaxed text-stone-600">公開WebからPC内のファイルを操作しないため、この旧機能は既定で無効です。MANGAI Desktopの書き出し機能へ段階的に移行します。</p>
+          <Link className="button-secondary mt-6" href="/">トップへ戻る</Link>
+        </section>
+      </main>
+    );
+  }
   const params = await searchParams;
   const projectId = params.projectId || "default";
   const record = await getSalesPackage(projectId, params.packageId);
@@ -101,7 +113,7 @@ export default async function SalesPackagesPage({
           <div>
             <label className="label" htmlFor="coverExternalPath">外部画像パスを読み込む</label>
             <p className="mt-1 text-base text-stone-600">安全のため Documents/MANGAI 内の画像だけ読み込めます。</p>
-            <input className="field" id="coverExternalPath" name="coverExternalPath" placeholder="C:\Users\Owner\Documents\MANGAI\..." />
+            <input className="field" id="coverExternalPath" name="coverExternalPath" placeholder="Documents/MANGAI 内の画像パス" />
           </div>
 
           <div className="border-t border-stone-200 pt-5">
@@ -122,7 +134,7 @@ export default async function SalesPackagesPage({
           </div>
           <div>
             <label className="label" htmlFor="thumbnailExternalPath">外部サムネイル画像パス</label>
-            <input className="field" id="thumbnailExternalPath" name="thumbnailExternalPath" placeholder="C:\Users\Owner\Documents\MANGAI\..." />
+            <input className="field" id="thumbnailExternalPath" name="thumbnailExternalPath" placeholder="Documents/MANGAI 内の画像パス" />
           </div>
         </section>
 
@@ -131,7 +143,7 @@ export default async function SalesPackagesPage({
             <h2 className="text-2xl font-bold">販売文</h2>
             <button className="button-secondary" formAction={generateSalesTextAction} type="submit">
               <Sparkles className="mr-2 h-5 w-5" />
-              AI販売文を生成
+              販売文案を作成
             </button>
           </div>
           <div>

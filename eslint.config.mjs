@@ -1,5 +1,5 @@
 import nextVitals from "eslint-config-next/core-web-vitals";
 
-const eslintConfig = [...nextVitals];
+const eslintConfig = [{ ignores: ["apps/desktop/**", "packages/**"] }, ...nextVitals];
 
 export default eslintConfig;
