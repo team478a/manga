@@ -72,14 +72,38 @@ export type DesktopApi = {
     ) => Promise<
       Array<{ id: string; name: string; cached?: boolean; updatedAt?: string }>
     >;
-    listTemplates: () => Promise<any[]>;
+    listTemplates: () => Promise<
+      Array<{
+        id: string;
+        name: string;
+        template: string;
+        systemPrompt: string;
+        isBuiltin: number;
+      }>
+    >;
     saveTemplate: (value: {
       id?: string;
       name: string;
       template: string;
       systemPrompt: string;
-    }) => Promise<any[]>;
-    deleteTemplate: (id: string) => Promise<any[]>;
+    }) => Promise<
+      Array<{
+        id: string;
+        name: string;
+        template: string;
+        systemPrompt: string;
+        isBuiltin: number;
+      }>
+    >;
+    deleteTemplate: (id: string) => Promise<
+      Array<{
+        id: string;
+        name: string;
+        template: string;
+        systemPrompt: string;
+        isBuiltin: number;
+      }>
+    >;
     listSessions: (projectId?: string) => Promise<any[]>;
     listMessages: (id: string) => Promise<any[]>;
     renameSession: (id: string, title: string) => Promise<any[]>;

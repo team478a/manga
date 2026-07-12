@@ -196,6 +196,36 @@ test("AI settings, chat and jobs survive database reopening", () => {
   assert.equal(recovered.status, "failed");
   assert.equal(recovered.errorCode, "INTERRUPTED");
   assert.equal(db.listPromptTemplates().length, 11);
+  const builtinTemplate = db.listPromptTemplates()[0];
+  assert.throws(
+    () =>
+      db.savePromptTemplate({
+        id: builtinTemplate.id,
+        name: "変更不可",
+        template: "変更不可",
+        systemPrompt: "",
+      }),
+    /初期テンプレートは上書きできません/,
+  );
+  let templateList = db.savePromptTemplate({
+    name: `${builtinTemplate.name} のコピー`,
+    template: builtinTemplate.template,
+    systemPrompt: "編集用",
+  });
+  const copiedTemplate = templateList.find(
+    (template) => template.name === `${builtinTemplate.name} のコピー`,
+  );
+  assert.equal(copiedTemplate.isBuiltin, 0);
+  templateList = db.savePromptTemplate({
+    id: copiedTemplate.id,
+    name: "編集済みテンプレート",
+    template: "更新した本文",
+    systemPrompt: "更新したシステムプロンプト",
+  });
+  assert.equal(
+    templateList.find((template) => template.id === copiedTemplate.id).template,
+    "更新した本文",
+  );
   assert.equal(db.listAIModels("ollama")[0].id, "manga:latest");
   assert.equal(db.listAIModels("ollama")[0].cached, true);
   db.close();

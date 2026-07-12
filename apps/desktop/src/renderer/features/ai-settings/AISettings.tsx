@@ -1,5 +1,14 @@
 import React from "react";
 import type { ProviderSettings } from "@mangai/ai-core";
+
+type PromptTemplate = {
+  id: string;
+  name: string;
+  template: string;
+  systemPrompt: string;
+  isBuiltin: number;
+};
+
 export function AISettings({ onClose }: { onClose: () => void }) {
   const [settings, setSettings] = React.useState<ProviderSettings[]>([]),
     [models, setModels] = React.useState<
@@ -7,9 +16,13 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     >({}),
     [status, setStatus] = React.useState<Record<string, string>>({}),
     [paths, setPaths] = React.useState<any>(),
-    [templates, setTemplates] = React.useState<any[]>([]),
+    [templates, setTemplates] = React.useState<PromptTemplate[]>([]),
+    [editingTemplateId, setEditingTemplateId] = React.useState<string | null>(
+      null,
+    ),
     [templateName, setTemplateName] = React.useState(""),
-    [templateBody, setTemplateBody] = React.useState("");
+    [templateBody, setTemplateBody] = React.useState(""),
+    [templateSystemPrompt, setTemplateSystemPrompt] = React.useState("");
   const load = () =>
     Promise.all([
       window.mangai.ai.listSettings().then(setSettings),
@@ -44,6 +57,18 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           error instanceof Error ? error.message : String(error),
       }));
     }
+  };
+  const resetTemplateForm = () => {
+    setEditingTemplateId(null);
+    setTemplateName("");
+    setTemplateBody("");
+    setTemplateSystemPrompt("");
+  };
+  const fillTemplateForm = (template: PromptTemplate, duplicate: boolean) => {
+    setEditingTemplateId(duplicate ? null : template.id);
+    setTemplateName(duplicate ? `${template.name} のコピー` : template.name);
+    setTemplateBody(template.template);
+    setTemplateSystemPrompt(template.systemPrompt);
   };
   return (
     <main className="tool-page">
@@ -202,7 +227,8 @@ export function AISettings({ onClose }: { onClose: () => void }) {
         <section className="panel-lite">
           <h2>プロンプトテンプレート</h2>
           <p>
-            初期テンプレートに加えて、Creator Chat用テンプレートを追加できます。
+            初期テンプレートを複製するか、Creator
+            Chat用テンプレートを追加・編集できます。
           </p>
           <div className="grid">
             <label>
@@ -219,42 +245,79 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 onChange={(e) => setTemplateBody(e.target.value)}
               />
             </label>
+            <label>
+              システムプロンプト（任意）
+              <textarea
+                value={templateSystemPrompt}
+                onChange={(e) => setTemplateSystemPrompt(e.target.value)}
+              />
+            </label>
           </div>
-          <button
-            disabled={!templateName.trim() || !templateBody.trim()}
-            onClick={async () => {
-              setTemplates(
-                await window.mangai.ai.saveTemplate({
-                  name: templateName,
-                  template: templateBody,
-                  systemPrompt: "",
-                }),
-              );
-              setTemplateName("");
-              setTemplateBody("");
-            }}
-          >
-            追加
-          </button>
+          <div className="inline">
+            <button
+              disabled={!templateName.trim() || !templateBody.trim()}
+              onClick={async () => {
+                setTemplates(
+                  await window.mangai.ai.saveTemplate({
+                    id: editingTemplateId ?? undefined,
+                    name: templateName,
+                    template: templateBody,
+                    systemPrompt: templateSystemPrompt,
+                  }),
+                );
+                resetTemplateForm();
+              }}
+            >
+              {editingTemplateId ? "変更を保存" : "追加"}
+            </button>
+            {editingTemplateId && (
+              <button className="secondary" onClick={resetTemplateForm}>
+                編集をキャンセル
+              </button>
+            )}
+          </div>
           <div className="job-list">
             {templates.map((template) => (
               <article key={template.id}>
                 <div>
-                  <b>{template.name}</b>
+                  <b>
+                    {template.name} {template.isBuiltin ? "（初期）" : ""}
+                  </b>
                   <p>{template.template}</p>
+                  {template.systemPrompt && (
+                    <p>システム: {template.systemPrompt}</p>
+                  )}
                 </div>
-                {!template.isBuiltin && (
+                <div className="inline">
                   <button
-                    className="danger"
-                    onClick={async () =>
-                      setTemplates(
-                        await window.mangai.ai.deleteTemplate(template.id),
-                      )
-                    }
+                    className="secondary"
+                    onClick={() => fillTemplateForm(template, true)}
                   >
-                    削除
+                    複製
                   </button>
-                )}
+                  {!template.isBuiltin && (
+                    <>
+                      <button
+                        className="secondary"
+                        onClick={() => fillTemplateForm(template, false)}
+                      >
+                        編集
+                      </button>
+                      <button
+                        className="danger"
+                        onClick={async () => {
+                          setTemplates(
+                            await window.mangai.ai.deleteTemplate(template.id),
+                          );
+                          if (editingTemplateId === template.id)
+                            resetTemplateForm();
+                        }}
+                      >
+                        削除
+                      </button>
+                    </>
+                  )}
+                </div>
               </article>
             ))}
           </div>
