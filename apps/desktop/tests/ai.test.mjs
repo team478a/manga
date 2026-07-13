@@ -12,6 +12,7 @@ import { ComfyUIProvider } from "../dist-main/main/ai/providers/comfyui.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { AIService } from "../dist-main/main/ai/service.js";
 import { chatRequestSchema } from "@mangai/ai-core";
+process.env.MANGAI_ENABLE_MOCK_AI = "true";
 const settings = (providerId, baseUrl) => ({
   providerId,
   enabled: true,
@@ -236,6 +237,35 @@ test("invalid IPC-shaped AI input is rejected", () => {
     chatRequestSchema.safeParse({ requestId: "bad", message: "" }).success,
     false,
   );
+});
+
+test("Mock AI is rejected unless test mode is explicitly enabled", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-no-mock-ai-"));
+  const paths = {
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  try {
+    await assert.rejects(
+      new AIService(db, { allowMock: false }).sendChat(
+        {
+          requestId: randomUUID(),
+          message: "hello",
+          includeContext: false,
+        },
+        () => {},
+      ),
+      /AIが設定されていません/,
+    );
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("Creator Chat streams and persists a mock response", async () => {

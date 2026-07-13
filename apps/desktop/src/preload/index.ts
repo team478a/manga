@@ -63,6 +63,7 @@ contextBridge.exposeInMainWorld("mangai", {
     },
   },
   ai: {
+    runtimeInfo: () => ipcRenderer.invoke("ai:runtime"),
     listSettings: () => ipcRenderer.invoke("ai:settings:list"),
     saveSettings: (value: unknown) =>
       ipcRenderer.invoke("ai:settings:save", value),

@@ -95,6 +95,12 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - 製品版Mock AI無効化
 - コミットをDB移行、CRUD、Mock安全修正に分割
 
+進捗:
+
+- Canvasマイグレーション前バックアップ、`schema_migrations`、Panel拡張、Balloon/Textテーブルを実装
+- 製品版Mock自動フォールバック停止、テストモード表示、AI設定導線を実装
+- Canvas CRUD、IPC、Undoスナップショットv2は次の作業単位
+
 ### Step 4: コマ・画像Canvas
 
 - `konva` / `react-konva`

@@ -21,7 +21,17 @@ export type ChatEvent = {
 };
 export class AIService {
   private controllers = new Map<string, AbortController>();
-  constructor(private store: MangaiDatabase) {}
+  private allowMock: boolean;
+  constructor(
+    private store: MangaiDatabase,
+    options: { allowMock?: boolean } = {},
+  ) {
+    this.allowMock =
+      options.allowMock ?? process.env.MANGAI_ENABLE_MOCK_AI === "true";
+  }
+  isMockEnabled() {
+    return this.allowMock;
+  }
   private log(
     event: string,
     error: unknown,
@@ -62,7 +72,17 @@ export class AIService {
     const ollama = this.settings("ollama");
     if (ollama.enabled)
       return { provider: new OllamaProvider(ollama), settings: ollama };
+    if (!this.allowMock)
+      throw new AIProviderError(
+        "PROVIDER_NOT_CONFIGURED",
+        "AIが設定されていません。設定画面でOllamaを有効にしてください。",
+      );
     const mock = this.settings("mock");
+    if (!mock.enabled)
+      throw new AIProviderError(
+        "PROVIDER_NOT_CONFIGURED",
+        "AIが設定されていません。設定画面でOllamaを有効にしてください。",
+      );
     return { provider: new MockTextProvider(), settings: mock };
   }
   provider(id: "ollama" | "comfyui" | "mock") {
@@ -71,6 +91,11 @@ export class AIService {
     if (id === "comfyui")
       return new ComfyUIProvider(settings, async (workflowId) =>
         this.store.getComfyWorkflow(workflowId),
+      );
+    if (!this.allowMock)
+      throw new AIProviderError(
+        "PROVIDER_DISABLED",
+        "製品版ではMock AIを利用できません。",
       );
     return new MockTextProvider();
   }

@@ -200,7 +200,15 @@ function register() {
       v && typeof v.relativePath === "string" ? v.relativePath : "",
     ),
   );
-  handle("ai:settings:list", () => store.getProviderSettings());
+  handle("ai:settings:list", () =>
+    store
+      .getProviderSettings()
+      .filter(
+        (settings) =>
+          settings.providerId !== "mock" || aiService.isMockEnabled(),
+      ),
+  );
+  handle("ai:runtime", () => ({ mockEnabled: aiService.isMockEnabled() }));
   handle("ai:settings:save", (v) =>
     store.saveProviderSettings(providerSettingsSchema.parse(v)),
   );
@@ -323,7 +331,9 @@ async function createWindow() {
 }
 app.whenReady().then(async () => {
   store = new MangaiDatabase(desktopPaths());
-  aiService = new AIService(store);
+  aiService = new AIService(store, {
+    allowMock: !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
+  });
   updater = new DesktopUpdater();
   register();
   await createWindow();

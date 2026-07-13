@@ -12,14 +12,17 @@ export function CreatorChat({
   episodeId,
   pageId,
   onBundle,
+  onOpenSettings,
   onClose,
 }: {
   bundle: ProjectBundle;
   episodeId?: string;
   pageId?: string;
   onBundle: (value: ProjectBundle) => void;
+  onOpenSettings: () => void;
   onClose: () => void;
 }) {
+  const [mockEnabled, setMockEnabled] = React.useState(false);
   const [sessions, setSessions] = React.useState<any[]>([]),
     [projects, setProjects] = React.useState<
       Array<{ id: string; title: string }>
@@ -37,6 +40,11 @@ export function CreatorChat({
     [error, setError] = React.useState("");
   const loadSessions = () =>
     window.mangai.ai.listSessions(chatBundle.project.id).then(setSessions);
+  React.useEffect(() => {
+    void window.mangai.ai
+      .runtimeInfo()
+      .then((info) => setMockEnabled(info.mockEnabled));
+  }, []);
   React.useEffect(() => {
     void loadSessions();
     void window.mangai.listProjects().then(setProjects);
@@ -225,6 +233,9 @@ export function CreatorChat({
           ))}
         </aside>
         <section className="chat-main">
+          {mockEnabled && (
+            <p className="notice">テストモード: Mock AIが有効です。</p>
+          )}
           <div className="messages">
             {messages.length ? (
               messages.map((message, index) => (
@@ -279,7 +290,16 @@ export function CreatorChat({
               </div>
             )}
           </div>
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <div className="error">
+              <p>{error}</p>
+              {error.includes("AIが設定されていません") && (
+                <button className="secondary" onClick={onOpenSettings}>
+                  AI設定を開く
+                </button>
+              )}
+            </div>
+          )}
           <div className="composer">
             <div className="grid">
               <select

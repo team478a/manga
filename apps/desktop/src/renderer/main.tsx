@@ -357,6 +357,7 @@ function App() {
         episodeId={episode?.id}
         pageId={page?.id}
         onBundle={setBundle}
+        onOpenSettings={() => setActiveTool("settings")}
         onClose={() => setActiveTool(null)}
       />
     );

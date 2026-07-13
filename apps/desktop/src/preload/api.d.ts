@@ -98,6 +98,7 @@ export type DesktopApi = {
     onStatus: (listener: (value: UpdateState) => void) => () => void;
   };
   ai: {
+    runtimeInfo: () => Promise<{ mockEnabled: boolean }>;
     listSettings: () => Promise<ProviderSettings[]>;
     saveSettings: (value: ProviderSettings) => Promise<ProviderSettings[]>;
     checkProvider: (
