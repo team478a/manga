@@ -9,6 +9,73 @@ type PromptTemplate = {
   isBuiltin: number;
 };
 
+type DiagnosticLevel = "running" | "success" | "warning" | "error";
+type DiagnosticItem = {
+  id: string;
+  label: string;
+  level: DiagnosticLevel;
+  message: string;
+};
+type ComfyWorkflow = { id: string; name: string; isDefault: number };
+
+const providerName = (id: ProviderSettings["providerId"]) =>
+  id === "ollama" ? "Ollama" : id === "comfyui" ? "ComfyUI" : "モック";
+
+const diagnosticLabel: Record<DiagnosticLevel, string> = {
+  running: "確認中",
+  success: "成功",
+  warning: "要確認",
+  error: "失敗",
+};
+
+async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
+  report({
+    id: "comfyui-workflow",
+    label: "ComfyUI ワークフロー",
+    level: "running",
+    message: "登録内容を確認しています…",
+  });
+  try {
+    const workflows =
+      (await window.mangai.ai.listWorkflows()) as ComfyWorkflow[];
+    if (!workflows.length) {
+      report({
+        id: "comfyui-workflow",
+        label: "ComfyUI ワークフロー",
+        level: "warning",
+        message:
+          "ワークフローが未登録です。AI生成画面からJSONを追加してください。",
+      });
+      return;
+    }
+    const results = await Promise.all(
+      workflows.map(async (workflow) => ({
+        workflow,
+        result: await window.mangai.ai.validateWorkflow(workflow.id),
+      })),
+    );
+    const invalid = results.filter((item) => !item.result.ok);
+    const defaultWorkflow = workflows.find((workflow) => workflow.isDefault);
+    report({
+      id: "comfyui-workflow",
+      label: "ComfyUI ワークフロー",
+      level: invalid.length || !defaultWorkflow ? "warning" : "success",
+      message: invalid.length
+        ? `${workflows.length}件中${invalid.length}件のマッピングを確認してください: ${invalid.map((item) => item.workflow.name).join("、")}`
+        : !defaultWorkflow
+          ? `${workflows.length}件は有効ですが、既定ワークフローがありません。`
+          : `${workflows.length}件のマッピングが有効です。既定: ${defaultWorkflow.name}`,
+    });
+  } catch (cause) {
+    report({
+      id: "comfyui-workflow",
+      label: "ComfyUI ワークフロー",
+      level: "error",
+      message: cause instanceof Error ? cause.message : String(cause),
+    });
+  }
+}
+
 export function AISettings({ onClose }: { onClose: () => void }) {
   const [settings, setSettings] = React.useState<ProviderSettings[]>([]),
     [models, setModels] = React.useState<
@@ -22,7 +89,10 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     ),
     [templateName, setTemplateName] = React.useState(""),
     [templateBody, setTemplateBody] = React.useState(""),
-    [templateSystemPrompt, setTemplateSystemPrompt] = React.useState("");
+    [templateSystemPrompt, setTemplateSystemPrompt] = React.useState(""),
+    [diagnostics, setDiagnostics] = React.useState<DiagnosticItem[]>([]),
+    [diagnosing, setDiagnosing] = React.useState(false),
+    [diagnosedAt, setDiagnosedAt] = React.useState<Date | null>(null);
   const load = () =>
     Promise.all([
       window.mangai.ai.listSettings().then(setSettings),
@@ -58,6 +128,111 @@ export function AISettings({ onClose }: { onClose: () => void }) {
       }));
     }
   };
+  const runDiagnostics = async () => {
+    const providers = settings.filter((value) => value.providerId !== "mock");
+    const report = (item: DiagnosticItem) =>
+      setDiagnostics((items) => [
+        ...items.filter((current) => current.id !== item.id),
+        item,
+      ]);
+    setDiagnosing(true);
+    setDiagnosedAt(null);
+    setDiagnostics(
+      providers.map((value) => ({
+        id: `${value.providerId}-connection`,
+        label: `${providerName(value.providerId)} 接続`,
+        level: "running",
+        message: "設定を確認しています…",
+      })),
+    );
+    try {
+      for (const value of providers) {
+        const name = providerName(value.providerId);
+        try {
+          await window.mangai.ai.saveSettings(value);
+        } catch (cause) {
+          report({
+            id: `${value.providerId}-connection`,
+            label: `${name} 設定`,
+            level: "error",
+            message: `設定を保存できません。${cause instanceof Error ? cause.message : String(cause)}`,
+          });
+          continue;
+        }
+        if (!value.enabled) {
+          report({
+            id: `${value.providerId}-connection`,
+            label: `${name} 接続`,
+            level: "warning",
+            message: `${name}は無効です。使用するときは「有効」をオンにしてください。`,
+          });
+          continue;
+        }
+        let connected = false;
+        try {
+          const result = await window.mangai.ai.checkProvider(value.providerId);
+          connected = result.ok;
+          report({
+            id: `${value.providerId}-connection`,
+            label: `${name} 接続`,
+            level: result.ok ? "success" : "error",
+            message: `${result.message}${result.latencyMs !== undefined ? ` 応答 ${result.latencyMs}ms` : ""}`,
+          });
+        } catch (cause) {
+          report({
+            id: `${value.providerId}-connection`,
+            label: `${name} 接続`,
+            level: "error",
+            message: cause instanceof Error ? cause.message : String(cause),
+          });
+        }
+        if (value.providerId === "comfyui")
+          await diagnoseComfyWorkflows(report);
+        if (value.providerId !== "ollama" || !connected) continue;
+        report({
+          id: "ollama-model",
+          label: "Ollama モデル",
+          level: "running",
+          message: "モデル一覧を確認しています…",
+        });
+        try {
+          const list = await window.mangai.ai.listModels("ollama");
+          setModels((current) => ({ ...current, ollama: list }));
+          const selected = list.find((model) => model.id === value.modelId);
+          const cached = list.some((model) => model.cached);
+          report({
+            id: "ollama-model",
+            label: "Ollama モデル",
+            level:
+              !list.length || (value.modelId && !selected)
+                ? "error"
+                : !value.modelId || cached
+                  ? "warning"
+                  : "success",
+            message: !list.length
+              ? "利用可能なモデルがありません。Ollamaでモデルを取得してください。"
+              : !value.modelId
+                ? `${list.length}件見つかりました。使用モデルを選択してください。`
+                : !selected
+                  ? `選択中のモデル「${value.modelId}」が見つかりません。`
+                  : cached
+                    ? `「${selected.name}」を前回取得したキャッシュで確認しました。`
+                    : `「${selected.name}」を利用できます。`,
+          });
+        } catch (cause) {
+          report({
+            id: "ollama-model",
+            label: "Ollama モデル",
+            level: "error",
+            message: cause instanceof Error ? cause.message : String(cause),
+          });
+        }
+      }
+    } finally {
+      setDiagnosing(false);
+      setDiagnosedAt(new Date());
+    }
+  };
   const resetTemplateForm = () => {
     setEditingTemplateId(null);
     setTemplateName("");
@@ -81,6 +256,42 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           <h2>一般設定</h2>
           <p>データ保存先: {paths?.root ?? "読み込み中"}</p>
           <p>AIログには秘密情報を保存しません。クラウドAPIキーは未対応です。</p>
+        </section>
+        <section className="panel-lite ai-diagnostics">
+          <div className="setting-title">
+            <div>
+              <h2>AI接続診断</h2>
+              <p>
+                現在の設定、ローカルAIへの接続、モデルとワークフローの準備状態をまとめて確認します。
+              </p>
+            </div>
+            <button disabled={diagnosing} onClick={() => void runDiagnostics()}>
+              {diagnosing ? "診断中…" : "一括診断を実行"}
+            </button>
+          </div>
+          {!diagnostics.length ? (
+            <p className="diagnostic-empty">
+              診断では生成処理を実行せず、OllamaとComfyUIのローカル接続だけを確認します。
+            </p>
+          ) : (
+            <div className="diagnostic-list" aria-live="polite">
+              {diagnostics.map((item) => (
+                <article
+                  className={`diagnostic-item ${item.level}`}
+                  key={item.id}
+                >
+                  <span>{diagnosticLabel[item.level]}</span>
+                  <div>
+                    <b>{item.label}</b>
+                    <p>{item.message}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
+          {diagnosedAt && !diagnosing && (
+            <small>最終診断: {diagnosedAt.toLocaleString("ja-JP")}</small>
+          )}
         </section>
         {settings.map((value) => (
           <section className="panel-lite" key={value.providerId}>

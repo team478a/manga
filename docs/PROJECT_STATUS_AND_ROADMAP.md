@@ -114,6 +114,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 - Ollama、ComfyUI、Mockプロバイダー
 - AI設定、接続確認、モデル一覧
+- Ollamaモデル選択とComfyUIワークフローを含むAI接続一括診断
 - Ollamaモデル一覧のSQLiteキャッシュとオフライン復元
 - Creator Chatのストリーミング、停止、再生成、履歴復元
 - Chat内のProject、Episode、Page切り替え
@@ -278,7 +279,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 実装作業として次に着手するなら、以下の順を推奨します。
 
 1. クリーンWindowsでのインストール・更新・アンインストールE2E
-2. 実Ollama・ComfyUI環境E2Eチェックリストと診断画面
+2. 実Ollama・ComfyUI環境E2Eチェックリストと診断画面（診断画面は実装済み）
 3. 自動バックアップとDB破損時リカバリー
 4. Canvasツールバーの機能別メニュー化と追加UI調整
 

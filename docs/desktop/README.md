@@ -85,6 +85,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - `export_history` への書き出し履歴保存
 - 任意素材の代表画像設定
 - Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定
+- Ollamaモデル・ComfyUIワークフローを含むAI接続一括診断
 - Project単位のUndo/Redo、キーボードショートカット、操作履歴
 - ComfyUI画像生成とProject素材への自動登録
 
