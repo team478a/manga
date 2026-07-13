@@ -708,6 +708,7 @@ export function MangaCanvas({
 }) {
   const [selection, setSelection] = React.useState<Selection>(null);
   const [selectedKeys, setSelectedKeys] = React.useState<SelectionKey[]>([]);
+  const stageRef = React.useRef<any>(null);
   const [guides, setGuides] = React.useState<{
     vertical: number[];
     horizontal: number[];
@@ -874,6 +875,25 @@ export function MangaCanvas({
     setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
     onApply(window.mangai.canvas.savePanel(panelInput({ ...item, ...rect })));
+  };
+  const dropAssetOnPanel = (event: React.DragEvent<HTMLDivElement>) => {
+    const assetId = event.dataTransfer.getData("application/x-mangai-asset-id");
+    if (!assetId || !bundle.assets.some((asset) => asset.id === assetId))
+      return;
+    event.preventDefault();
+    event.stopPropagation();
+    const stage = stageRef.current;
+    if (!stage) return;
+    stage.setPointersPositions(event.nativeEvent);
+    const position = stage.getPointerPosition();
+    let node = position ? stage.getIntersection(position) : null;
+    while (node && node !== stage && !node.id()?.startsWith("panel-"))
+      node = node.getParent();
+    const panelId = node?.id()?.replace(/^panel-/, "");
+    const panel = panels.find((value) => value.id === panelId);
+    if (!panel || panel.locked) return;
+    savePanel({ ...panel, imageAssetId: assetId });
+    select("panel", panel.id, node);
   };
   const saveBalloon = (item: Balloon) => {
     if (saveGroupMove({ ...item, objectType: "balloon" })) return;
@@ -1263,8 +1283,20 @@ export function MangaCanvas({
         )}
       </div>
       <div className="canvas-stage-row">
-        <div className="konva-paper">
+        <div
+          className="konva-paper"
+          onDragOver={(event) => {
+            if (
+              event.dataTransfer.types.includes("application/x-mangai-asset-id")
+            ) {
+              event.preventDefault();
+              event.dataTransfer.dropEffect = "copy";
+            }
+          }}
+          onDrop={dropAssetOnPanel}
+        >
           <Stage
+            ref={stageRef}
             width={page.width * scale}
             height={page.height * scale}
             scaleX={scale}

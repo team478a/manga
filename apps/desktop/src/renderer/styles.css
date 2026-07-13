@@ -280,6 +280,10 @@ label {
   background: #eee;
   color: #333;
   overflow: hidden;
+  cursor: grab;
+}
+.asset-grid button:active {
+  cursor: grabbing;
 }
 .asset-grid img {
   width: 100%;

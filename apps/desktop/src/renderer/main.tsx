@@ -652,8 +652,16 @@ function App() {
                 <button
                   key={a.id}
                   title={a.fileName}
+                  draggable
                   className={a.id === selectedAsset ? "active" : ""}
                   onClick={() => setSelectedAsset(a.id)}
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = "copy";
+                    event.dataTransfer.setData(
+                      "application/x-mangai-asset-id",
+                      a.id,
+                    );
+                  }}
                 >
                   <img src={assetUrls[a.id]} />
                   <small>{a.fileName}</small>
