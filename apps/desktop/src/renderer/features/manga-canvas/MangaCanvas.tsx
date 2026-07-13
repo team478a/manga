@@ -23,7 +23,9 @@ import {
   balloonTailPoints,
   computeImagePlacement,
   constrainRectToPage,
+  imageTransformFromNode,
   layoutVerticalText,
+  normalizeRotation,
   pageTemplates,
   rectFromPoints,
   remapChildRect,
@@ -108,14 +110,18 @@ function PanelNode({
   panel,
   imageUrl,
   selected,
+  imageEditing,
   onSelect,
+  onBeginImageEdit,
   onMove,
   onSave,
 }: {
   panel: Panel;
   imageUrl?: string;
   selected: boolean;
+  imageEditing: boolean;
   onSelect: (node: any, additive: boolean) => void;
+  onBeginImageEdit: (node: any) => void;
   onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
     x: number;
     y: number;
@@ -123,6 +129,16 @@ function PanelNode({
   onSave: (value: Panel) => void;
 }) {
   const image = useImage(imageUrl);
+  const imageNode = React.useRef<any>(null);
+  const imageTransformer = React.useRef<any>(null);
+  React.useEffect(() => {
+    const transformer = imageTransformer.current;
+    if (!transformer) return;
+    transformer.nodes(
+      imageEditing && imageNode.current ? [imageNode.current] : [],
+    );
+    transformer.getLayer()?.batchDraw();
+  }, [imageEditing, image]);
   if (!panel.visible) return null;
   const placement = image
     ? computeImagePlacement(
@@ -144,12 +160,17 @@ function PanelNode({
       width={panel.width}
       height={panel.height}
       rotation={panel.rotation}
-      draggable={!panel.locked}
+      draggable={!panel.locked && !imageEditing}
       onClick={(event) =>
         onSelect(event.currentTarget, Boolean(event.evt.shiftKey))
       }
       onTap={(event) => onSelect(event.currentTarget, false)}
+      onDblClick={(event) => {
+        if (!image || panel.locked) return;
+        onBeginImageEdit(event.currentTarget);
+      }}
       onDragMove={(event) => {
+        if (event.target !== event.currentTarget) return;
         if (!onMove) return;
         const next = onMove({
           x: event.target.x(),
@@ -159,10 +180,12 @@ function PanelNode({
         });
         event.target.position(next);
       }}
-      onDragEnd={(event) =>
-        onSave({ ...panel, x: event.target.x(), y: event.target.y() })
-      }
+      onDragEnd={(event) => {
+        if (event.target !== event.currentTarget) return;
+        onSave({ ...panel, x: event.target.x(), y: event.target.y() });
+      }}
       onTransformEnd={(event) => {
+        if (event.target !== event.currentTarget) return;
         const node = event.target;
         const scaleX = node.scaleX();
         const scaleY = node.scaleY();
@@ -187,6 +210,7 @@ function PanelNode({
           clipHeight={panel.height}
         >
           <KonvaImage
+            ref={imageNode}
             image={image}
             x={placement.x}
             y={placement.y}
@@ -194,7 +218,48 @@ function PanelNode({
             height={placement.height}
             rotation={panel.imageRotation}
             opacity={panel.imageOpacity}
-            listening={false}
+            draggable={imageEditing}
+            listening={imageEditing}
+            onClick={(event) => {
+              event.cancelBubble = true;
+            }}
+            onTap={(event) => {
+              event.cancelBubble = true;
+            }}
+            onDragEnd={(event) => {
+              event.cancelBubble = true;
+              onSave({
+                ...panel,
+                imageOffsetX:
+                  panel.imageOffsetX + event.target.x() - placement.x,
+                imageOffsetY:
+                  panel.imageOffsetY + event.target.y() - placement.y,
+              });
+            }}
+            onTransformEnd={(event) => {
+              event.cancelBubble = true;
+              const node = event.target;
+              const transform = imageTransformFromNode(
+                { width: image.naturalWidth, height: image.naturalHeight },
+                { x: 0, y: 0, width: panel.width, height: panel.height },
+                { fit: panel.imageFit, scale: panel.imageScale },
+                {
+                  x: node.x(),
+                  y: node.y(),
+                  scaleX: node.scaleX(),
+                  scaleY: node.scaleY(),
+                },
+              );
+              node.scaleX(1);
+              node.scaleY(1);
+              onSave({
+                ...panel,
+                imageScale: transform.scale,
+                imageOffsetX: transform.offsetX,
+                imageOffsetY: transform.offsetY,
+                imageRotation: normalizeRotation(node.rotation()),
+              });
+            }}
           />
         </Group>
       )}
@@ -206,6 +271,24 @@ function PanelNode({
           selected ? Math.max(panel.borderWidth, 7) : panel.borderWidth
         }
       />
+      {imageEditing && image && (
+        <Transformer
+          ref={imageTransformer}
+          enabledAnchors={[
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right",
+          ]}
+          keepRatio
+          rotateEnabled
+          flipEnabled={false}
+          borderStroke="#e67e22"
+          anchorFill="#ffffff"
+          anchorStroke="#e67e22"
+          anchorSize={14}
+        />
+      )}
     </Group>
   );
 }
@@ -407,12 +490,18 @@ function DebouncedTextArea({
 function CanvasProperties({
   item,
   balloons,
+  imageEditing,
+  onBeginImageEdit,
+  onFinishImageEdit,
   savePanel,
   saveBalloon,
   saveText,
 }: {
   item: LayerItem;
   balloons: Balloon[];
+  imageEditing: boolean;
+  onBeginImageEdit: (panel: Panel) => void;
+  onFinishImageEdit: () => void;
   savePanel: (item: Panel) => void;
   saveBalloon: (item: Balloon) => void;
   saveText: (item: TextObject) => void;
@@ -522,12 +611,40 @@ function CanvasProperties({
             />
           </label>
           {item.imageAssetId && (
-            <button
-              className="secondary"
-              onClick={() => savePanel({ ...item, imageAssetId: null })}
-            >
-              画像を外す
-            </button>
+            <>
+              <button
+                className={imageEditing ? "active" : "secondary"}
+                disabled={item.locked}
+                onClick={() =>
+                  imageEditing ? onFinishImageEdit() : onBeginImageEdit(item)
+                }
+              >
+                {imageEditing ? "画像編集を終了" : "Canvasで画像を編集"}
+              </button>
+              <button
+                className="secondary"
+                onClick={() =>
+                  savePanel({
+                    ...item,
+                    imageScale: 1,
+                    imageOffsetX: 0,
+                    imageOffsetY: 0,
+                    imageRotation: 0,
+                  })
+                }
+              >
+                画像を中央へリセット
+              </button>
+              <button
+                className="secondary"
+                onClick={() => {
+                  onFinishImageEdit();
+                  savePanel({ ...item, imageAssetId: null });
+                }}
+              >
+                画像を外す
+              </button>
+            </>
           )}
         </>
       )}
@@ -718,6 +835,9 @@ export function MangaCanvas({
   const [selectedKeys, setSelectedKeys] = React.useState<SelectionKey[]>([]);
   const [drawPanelMode, setDrawPanelMode] = React.useState(false);
   const [panelDraft, setPanelDraft] = React.useState<PanelDraft | null>(null);
+  const [editingPanelImageId, setEditingPanelImageId] = React.useState<
+    string | null
+  >(null);
   const [showGrid, setShowGrid] = React.useState(false);
   const [snapEnabled, setSnapEnabled] = React.useState(true);
   const [gridSnapEnabled, setGridSnapEnabled] = React.useState(false);
@@ -752,6 +872,7 @@ export function MangaCanvas({
     setSelectedKeys([]);
     setPanelDraft(null);
     setDrawPanelMode(false);
+    setEditingPanelImageId(null);
     transformer.current?.nodes([]);
   }, [page.id]);
   const select = (
@@ -760,6 +881,8 @@ export function MangaCanvas({
     node: any | null,
     additive = false,
   ) => {
+    if (editingPanelImageId && (type !== "panel" || id !== editingPanelImageId))
+      setEditingPanelImageId(null);
     const key = { type, id } as SelectionKey;
     let nextKeys: SelectionKey[];
     if (additive) {
@@ -794,6 +917,9 @@ export function MangaCanvas({
     selection?.type === "panel"
       ? panels.find((item) => item.id === selection.id)
       : undefined;
+  const editingPanel = editingPanelImageId
+    ? panels.find((item) => item.id === editingPanelImageId)
+    : undefined;
   const selectedLayer = selection
     ? layers.find(
         (item) =>
@@ -960,9 +1086,32 @@ export function MangaCanvas({
     onApply(window.mangai.canvas.saveText(textInput({ ...item, ...rect })));
   };
   const clearSelection = () => {
+    setEditingPanelImageId(null);
     setSelection(null);
     setSelectedKeys([]);
     transformer.current?.nodes([]);
+  };
+  const beginImageEdit = (panel: Panel, node?: any) => {
+    if (!panel.imageAssetId || panel.locked) return;
+    setDrawPanelMode(false);
+    setPanelDraft(null);
+    const panelNode =
+      node ?? stageRef.current?.findOne?.(`#panel-${panel.id}`) ?? null;
+    select("panel", panel.id, panelNode);
+    transformer.current?.nodes([]);
+    transformer.current?.getLayer()?.batchDraw();
+    setEditingPanelImageId(panel.id);
+  };
+  const finishImageEdit = () => {
+    const panelId = editingPanelImageId;
+    setEditingPanelImageId(null);
+    if (!panelId) return;
+    window.requestAnimationFrame(() => {
+      const node = stageRef.current?.findOne?.(`#panel-${panelId}`);
+      if (!node) return;
+      transformer.current?.nodes([node]);
+      transformer.current?.getLayer()?.batchDraw();
+    });
   };
   const getPagePointer = () => {
     const pointer = stageRef.current?.getPointerPosition();
@@ -1100,6 +1249,15 @@ export function MangaCanvas({
     window.addEventListener("keydown", cancelDrawing);
     return () => window.removeEventListener("keydown", cancelDrawing);
   }, [drawPanelMode]);
+  React.useEffect(() => {
+    if (!editingPanelImageId) return;
+    const finishEditing = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      finishImageEdit();
+    };
+    window.addEventListener("keydown", finishEditing);
+    return () => window.removeEventListener("keydown", finishEditing);
+  }, [editingPanelImageId]);
   const addPanel = (rect?: {
     x: number;
     y: number;
@@ -1367,6 +1525,29 @@ export function MangaCanvas({
         >
           グリッド吸着
         </button>
+        {editingPanel && (
+          <>
+            <span className="image-edit-status">
+              画像編集中: {editingPanel.name}
+            </span>
+            <button
+              onClick={() =>
+                savePanel({
+                  ...editingPanel,
+                  imageScale: 1,
+                  imageOffsetX: 0,
+                  imageOffsetY: 0,
+                  imageRotation: 0,
+                })
+              }
+            >
+              中央へリセット
+            </button>
+            <button className="active" onClick={finishImageEdit}>
+              画像編集を完了
+            </button>
+          </>
+        )}
         {selection && (
           <button
             className="danger"
@@ -1390,7 +1571,7 @@ export function MangaCanvas({
       </div>
       <div className="canvas-stage-row">
         <div
-          className={`konva-paper${drawPanelMode ? " drawing" : ""}`}
+          className={`konva-paper${drawPanelMode ? " drawing" : ""}${editingPanel ? " image-editing" : ""}`}
           onDragOver={(event) => {
             if (
               event.dataTransfer.types.includes("application/x-mangai-asset-id")
@@ -1485,7 +1666,9 @@ export function MangaCanvas({
                     selected={
                       selection?.type === "panel" && selection.id === panel.id
                     }
+                    imageEditing={editingPanelImageId === panel.id}
                     onSelect={(node) => select("panel", panel.id, node)}
+                    onBeginImageEdit={(node) => beginImageEdit(panel, node)}
                     onSave={savePanel}
                   />
                 ))}
@@ -1641,9 +1824,11 @@ export function MangaCanvas({
                           : undefined
                       }
                       selected={isSelected("panel", panel.id)}
+                      imageEditing={editingPanelImageId === panel.id}
                       onSelect={(node, additive) =>
                         select("panel", panel.id, node, additive)
                       }
+                      onBeginImageEdit={(node) => beginImageEdit(panel, node)}
                       onMove={(rect) => snapMove(panel.id, rect)}
                       onSave={savePanel}
                     />
@@ -1706,11 +1891,16 @@ export function MangaCanvas({
               ))}
               <Transformer
                 ref={transformer}
+                visible={!editingPanelImageId}
                 resizeEnabled={
-                  selectedKeys.length === 1 && !selectedLayer?.locked
+                  !editingPanelImageId &&
+                  selectedKeys.length === 1 &&
+                  !selectedLayer?.locked
                 }
                 rotateEnabled={
-                  selectedKeys.length === 1 && !selectedLayer?.locked
+                  !editingPanelImageId &&
+                  selectedKeys.length === 1 &&
+                  !selectedLayer?.locked
                 }
                 anchorSize={12 / scale}
               />
@@ -1781,6 +1971,9 @@ export function MangaCanvas({
             <CanvasProperties
               item={selectedLayer as LayerItem}
               balloons={balloons}
+              imageEditing={editingPanelImageId === selectedLayer.id}
+              onBeginImageEdit={beginImageEdit}
+              onFinishImageEdit={finishImageEdit}
               savePanel={savePanel}
               saveBalloon={saveBalloon}
               saveText={saveText}

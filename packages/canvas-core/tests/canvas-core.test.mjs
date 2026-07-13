@@ -6,6 +6,7 @@ import {
   canvasBatchInputSchema,
   computeImagePlacement,
   constrainRectToPage,
+  imageTransformFromNode,
   layoutVerticalText,
   normalizeLayerOrder,
   normalizeRotation,
@@ -73,6 +74,17 @@ test("cover and contain image placement remain centered", () => {
       { fit: "cover", scale: 2, offsetX: 5 },
     ),
     { x: -135, y: -30, width: 400, height: 200 },
+  );
+});
+test("image node transforms convert back to persistent scale and offsets", () => {
+  assert.deepEqual(
+    imageTransformFromNode(
+      { width: 200, height: 100 },
+      { x: 0, y: 0, width: 100, height: 100 },
+      { fit: "cover", scale: 1 },
+      { x: -70, y: -10, scaleX: 1.5, scaleY: 1.5 },
+    ),
+    { scale: 1.5, offsetX: 30, offsetY: 15 },
   );
 });
 test("objects snap to page and neighboring guides", () => {

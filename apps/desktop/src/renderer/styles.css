@@ -340,6 +340,18 @@ label {
 .konva-paper.drawing canvas {
   cursor: crosshair !important;
 }
+.konva-paper.image-editing canvas {
+  cursor: move;
+}
+.image-edit-status {
+  align-self: center;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: #fff4e6;
+  color: #9a4d00;
+  font-weight: 700;
+  line-height: 1.2;
+}
 .canvas-layers {
   position: sticky;
   top: 52px;

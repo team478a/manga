@@ -15,7 +15,7 @@
 | 5   | 矩形コマを作成                        | 完了         | 既定追加、テンプレート、ドラッグ作成                 |
 | 6   | コマを移動・リサイズ・回転            | 完了         | Konva Transformerと永続保存                         |
 | 7   | 素材画像をコマへ配置                  | 完了（実装） | Asset ID限定の直接D&Dと選択素材割り当て             |
-| 8   | コマ内画像を移動・拡縮・回転          | 完了         | オフセット、倍率、回転プロパティとレンダラー試験    |
+| 8   | コマ内画像を移動・拡縮・回転          | 完了         | 専用モード、Transformer、変換計算試験                |
 | 9   | 画像をコマ領域でクリップ              | 完了         | Konva clipと書き出しSVG clipPath                    |
 | 10  | 3種類の吹き出しを作成                 | 完了         | ellipse、rounded、narration型とUI選択               |
 | 11  | 吹き出しへテキスト入力                | 完了         | 吹き出しと子Textの一括作成、親Balloon指定、本文入力 |
@@ -37,7 +37,7 @@
 | 27  | Desktop ESLint                        | 完了         | `npm run lint`成功                                  |
 | 28  | Desktop本番ビルド                     | 完了         | Electron mainとVite renderer成功                    |
 | 29  | 既存統合テスト                        | 完了         | AI・DBを含む19/19成功                               |
-| 30  | 今回追加したテスト                    | 完了         | canvas-core 14/14、Canvas DB・書き出し試験成功      |
+| 30  | 今回追加したテスト                    | 完了         | canvas-core 15/15、Canvas DB・書き出し試験成功      |
 | 31  | NSIS x64生成                          | 完了         | `MANGAI-Desktop-Setup-0.1.0-x64.exe`生成成功        |
 | 32  | Hub TypeScript、ESLint、Next.jsビルド | 完了         | 3項目成功                                           |
 | 33  | 実装・未実装を文書化                  | 完了         | 本書、MANGA_EDITOR、計画、履歴、全体資料を更新      |
@@ -45,7 +45,7 @@
 ## 検証数値
 
 - Desktop統合テスト: 19/19
-- canvas-core単体テスト: 14/14
+- canvas-core単体テスト: 15/15
 - Hub TypeScript / ESLint / Next.js build: 成功
 - Desktop TypeScript / ESLint / production build: 成功
 - Windows x64 NSIS: 成功
@@ -55,8 +55,7 @@
 ## 完了を妨げる残項目
 
 1. 4手動シナリオを素材ファイルと出力結果まで完走する
-2. Canvas内画像編集専用モード
-3. 親子テキスト保存座標の完全な相対座標化
-4. レイヤーD&D並び替え
-5. 30オブジェクトPage性能確認
-6. クリーンWindowsへのインストール確認
+2. 親子テキスト保存座標の完全な相対座標化
+3. レイヤーD&D並び替え
+4. 30オブジェクトPage性能確認
+5. クリーンWindowsへのインストール確認

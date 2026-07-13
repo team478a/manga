@@ -303,6 +303,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 縦書き・横書き、自由テキスト、親Balloon設定
 - 統合レイヤー、表示、ロック、z-index、6種類のテンプレート
 - ドラッグ式コマ作成、100pxグリッド、グリッド吸着、スナップ切替
+- Canvas内画像編集モード、直接移動、四隅拡縮、回転、中央リセット
 - 単一・複数選択、移動、複製、削除、キーボード操作
 - SQLite永続化、Canvasスナップショットv2、Undo/Redo
 - JPG・PNG・WebP合成、DPI準拠PDF、連番PNG ZIP

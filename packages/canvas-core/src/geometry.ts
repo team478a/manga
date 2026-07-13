@@ -138,6 +138,32 @@ export function computeImagePlacement(
     height,
   };
 }
+export function imageTransformFromNode(
+  source: PageSize,
+  frame: Rect,
+  options: {
+    fit: ImageFit;
+    scale: number;
+  },
+  node: {
+    x: number;
+    y: number;
+    scaleX: number;
+    scaleY: number;
+  },
+) {
+  const transformScale = Math.max(Math.abs(node.scaleX), Math.abs(node.scaleY));
+  const scale = Math.max(0.01, options.scale * transformScale);
+  const centered = computeImagePlacement(source, frame, {
+    fit: options.fit,
+    scale,
+  });
+  return {
+    scale,
+    offsetX: node.x - centered.x,
+    offsetY: node.y - centered.y,
+  };
+}
 export type SnapResult = {
   rect: Rect;
   guides: { vertical: number[]; horizontal: number[] };
