@@ -21,6 +21,21 @@ const emptyForm = {
   dpi: 300,
   storagePath: "",
 };
+const readPanelPreference = (key: string, defaultValue: boolean) => {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored === null ? defaultValue : stored === "true";
+  } catch {
+    return defaultValue;
+  }
+};
+const writePanelPreference = (key: string, value: boolean) => {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    // 設定保存が利用できない環境でもパネル操作は継続する。
+  }
+};
 function App() {
   const [projects, setProjects] = React.useState<Project[]>([]),
     [projectCovers, setProjectCovers] = React.useState<Record<string, string>>(
@@ -47,6 +62,12 @@ function App() {
       canUndo: false,
       canRedo: false,
     }),
+    [leftPanelOpen, setLeftPanelOpen] = React.useState(() =>
+      readPanelPreference("mangai.left-panel-open", window.innerWidth >= 1000),
+    ),
+    [rightPanelOpen, setRightPanelOpen] = React.useState(() =>
+      readPanelPreference("mangai.right-panel-open", window.innerWidth >= 1300),
+    ),
     [assetUrls, setAssetUrls] = React.useState<Record<string, string>>({});
   const showError = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
@@ -70,6 +91,12 @@ function App() {
   React.useEffect(() => {
     void refresh();
   }, []);
+  React.useEffect(() => {
+    writePanelPreference("mangai.left-panel-open", leftPanelOpen);
+  }, [leftPanelOpen]);
+  React.useEffect(() => {
+    writePanelPreference("mangai.right-panel-open", rightPanelOpen);
+  }, [rightPanelOpen]);
   React.useEffect(
     () =>
       window.mangai.onExportProgress((progress) =>
@@ -445,6 +472,22 @@ function App() {
         <span className="status">● {saving}</span>
         <span className="spacer" />
         <button
+          className={leftPanelOpen ? "active" : "secondary"}
+          aria-pressed={leftPanelOpen}
+          title="Project・Episode・Page・素材パネルを開閉"
+          onClick={() => setLeftPanelOpen((value) => !value)}
+        >
+          素材パネル
+        </button>
+        <button
+          className={rightPanelOpen ? "active" : "secondary"}
+          aria-pressed={rightPanelOpen}
+          title="Project・Page情報パネルを開閉"
+          onClick={() => setRightPanelOpen((value) => !value)}
+        >
+          情報パネル
+        </button>
+        <button
           className="secondary"
           onClick={() => void backupProject(bundle.project.id)}
         >
@@ -553,7 +596,9 @@ function App() {
           <progress max="100" value={exportTask.progress.percent} />
         </div>
       )}
-      <div className="workspace">
+      <div
+        className={`workspace${leftPanelOpen ? "" : " left-collapsed"}${rightPanelOpen ? "" : " right-collapsed"}`}
+      >
         <aside className="left">
           <section>
             <h3>プロジェクト</h3>

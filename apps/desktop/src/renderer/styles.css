@@ -179,6 +179,16 @@ label {
 .app {
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.app > .toolbar {
+  flex: 0 0 auto;
+  height: auto;
+  min-height: 64px;
+  flex-wrap: wrap;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 .toolbar strong {
   font-size: 18px;
@@ -191,9 +201,25 @@ label {
   flex: 1;
 }
 .workspace {
-  height: calc(100vh - 64px);
+  --left-panel-width: 290px;
+  --right-panel-width: 310px;
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  grid-template-columns: 290px 1fr 310px;
+  grid-template-columns: var(--left-panel-width) minmax(0, 1fr) var(
+      --right-panel-width
+    );
+  transition: grid-template-columns 160ms ease;
+}
+.workspace.left-collapsed {
+  --left-panel-width: 0px;
+}
+.workspace.right-collapsed {
+  --right-panel-width: 0px;
+}
+.workspace.left-collapsed > .left,
+.workspace.right-collapsed > .right {
+  display: none;
 }
 .left,
 .right {
@@ -306,6 +332,7 @@ label {
   margin-top: 8px;
 }
 .canvas {
+  min-width: 0;
   overflow: auto;
   display: block;
   padding: 55px 28px 28px;
@@ -461,11 +488,11 @@ label {
   object-fit: contain;
 }
 .zoom {
-  position: fixed;
-  top: 78px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: sticky;
+  top: 8px;
   z-index: 2;
+  width: max-content;
+  margin: -45px auto 10px;
   background: #fff;
   padding: 5px;
   border-radius: 8px;
@@ -525,7 +552,48 @@ label {
 }
 @media (max-width: 1200px) {
   .workspace {
-    grid-template-columns: 250px 1fr 270px;
+    --left-panel-width: 250px;
+    --right-panel-width: 270px;
+  }
+  .workspace.left-collapsed {
+    --left-panel-width: 0px;
+  }
+  .workspace.right-collapsed {
+    --right-panel-width: 0px;
+  }
+  .toolbar strong {
+    max-width: 220px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .canvas {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+}
+@media (max-width: 850px) {
+  .toolbar {
+    gap: 6px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .toolbar .status {
+    display: none;
+  }
+  .toolbar button,
+  .toolbar summary {
+    font-size: 12px;
+  }
+  .workspace {
+    --left-panel-width: 220px;
+    --right-panel-width: 230px;
+  }
+  .workspace.left-collapsed {
+    --left-panel-width: 0px;
+  }
+  .workspace.right-collapsed {
+    --right-panel-width: 0px;
   }
 }
 .tool-page {
