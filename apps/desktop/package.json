@@ -11,7 +11,7 @@
     "dev": "concurrently -k \"vite\" \"tsc -p tsconfig.main.json --watch\" \"wait-on tcp:5173 file:dist-main/main/index.js && cross-env VITE_DEV_SERVER_URL=http://localhost:5173 electron .\"",
     "build": "npm run build:main && vite build",
     "build:packages": "tsc -p ../../packages/shared/tsconfig.json && tsc -p ../../packages/project-core/tsconfig.json && tsc -p ../../packages/export-core/tsconfig.json && tsc -p ../../packages/ai-core/tsconfig.json && tsc -p ../../packages/canvas-core/tsconfig.json",
-    "build:main": "npm run build:packages && tsc -p tsconfig.main.json",
+    "build:main": "npm run build:packages && tsc -p tsconfig.main.json && node scripts/copy-preload-manifest.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "lint": "eslint src",
     "test": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test tests/database.test.mjs tests/ai.test.mjs",
