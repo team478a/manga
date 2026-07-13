@@ -337,6 +337,9 @@ label {
   box-shadow: 0 8px 35px #0004;
   line-height: 0;
 }
+.konva-paper.drawing canvas {
+  cursor: crosshair !important;
+}
 .canvas-layers {
   position: sticky;
   top: 52px;

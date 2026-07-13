@@ -7,6 +7,36 @@ export type ViewportTransform = {
   offsetX: number;
   offsetY: number;
 };
+export function snapPointToGrid(point: Point, gridSize: number): Point {
+  if (!Number.isFinite(gridSize) || gridSize <= 0)
+    throw new Error("グリッド間隔は正数である必要があります。");
+  return {
+    x: Math.round(point.x / gridSize) * gridSize,
+    y: Math.round(point.y / gridSize) * gridSize,
+  };
+}
+export function snapRectToGrid(rect: Rect, gridSize: number): Rect {
+  return { ...rect, ...snapPointToGrid(rect, gridSize) };
+}
+export function rectFromPoints(
+  start: Point,
+  end: Point,
+  page: PageSize,
+  gridSize?: number,
+): Rect {
+  const first = gridSize ? snapPointToGrid(start, gridSize) : start;
+  const second = gridSize ? snapPointToGrid(end, gridSize) : end;
+  const startX = clamp(first.x, 0, page.width);
+  const startY = clamp(first.y, 0, page.height);
+  const endX = clamp(second.x, 0, page.width);
+  const endY = clamp(second.y, 0, page.height);
+  return {
+    x: Math.min(startX, endX),
+    y: Math.min(startY, endY),
+    width: Math.abs(endX - startX),
+    height: Math.abs(endY - startY),
+  };
+}
 export function pageToViewport(
   point: Point,
   viewport: ViewportTransform,

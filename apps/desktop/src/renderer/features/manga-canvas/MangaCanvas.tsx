@@ -18,25 +18,33 @@ import type {
   TextObject,
 } from "@mangai/project-core";
 import {
+  MIN_CANVAS_OBJECT_SIZE,
   applyPageTemplate,
   balloonTailPoints,
   computeImagePlacement,
   constrainRectToPage,
   layoutVerticalText,
   pageTemplates,
+  rectFromPoints,
   remapChildRect,
   segmentGraphemes,
+  snapPointToGrid,
+  snapRectToGrid,
   snapRectToGuides,
   verticalGlyph,
+  type Point,
+  type Rect as CanvasRect,
   type PageTemplateId,
 } from "@mangai/canvas-core";
 
 type Selection = { type: "panel" | "balloon" | "text"; id: string } | null;
 type SelectionKey = Exclude<Selection, null>;
+type PanelDraft = { start: Point; rect: CanvasRect };
 type LayerItem =
   | (Panel & { objectType: "panel" })
   | (Balloon & { objectType: "balloon" })
   | (TextObject & { objectType: "text" });
+const CANVAS_GRID_SIZE = 100;
 
 function useImage(source?: string) {
   const [image, setImage] = React.useState<HTMLImageElement>();
@@ -708,6 +716,11 @@ export function MangaCanvas({
 }) {
   const [selection, setSelection] = React.useState<Selection>(null);
   const [selectedKeys, setSelectedKeys] = React.useState<SelectionKey[]>([]);
+  const [drawPanelMode, setDrawPanelMode] = React.useState(false);
+  const [panelDraft, setPanelDraft] = React.useState<PanelDraft | null>(null);
+  const [showGrid, setShowGrid] = React.useState(false);
+  const [snapEnabled, setSnapEnabled] = React.useState(true);
+  const [gridSnapEnabled, setGridSnapEnabled] = React.useState(false);
   const stageRef = React.useRef<any>(null);
   const [guides, setGuides] = React.useState<{
     vertical: number[];
@@ -737,6 +750,8 @@ export function MangaCanvas({
   React.useEffect(() => {
     setSelection(null);
     setSelectedKeys([]);
+    setPanelDraft(null);
+    setDrawPanelMode(false);
     transformer.current?.nodes([]);
   }, [page.id]);
   const select = (
@@ -807,12 +822,21 @@ export function MangaCanvas({
     id: string,
     rect: { x: number; y: number; width: number; height: number },
   ) => {
-    const result = snapRectToGuides(
-      rect,
-      page,
-      layers.filter((item) => item.id !== id),
-      8 / scale,
-    );
+    const gridRect =
+      snapEnabled && gridSnapEnabled
+        ? snapRectToGrid(rect, CANVAS_GRID_SIZE)
+        : rect;
+    const result = snapEnabled
+      ? snapRectToGuides(
+          gridRect,
+          page,
+          layers.filter((item) => item.id !== id),
+          8 / scale,
+        )
+      : {
+          rect: gridRect,
+          guides: { vertical: [], horizontal: [] },
+        };
     setGuides(result.guides);
     const source = layers.find((item) => item.id === id);
     if (
@@ -940,6 +964,15 @@ export function MangaCanvas({
     setSelectedKeys([]);
     transformer.current?.nodes([]);
   };
+  const getPagePointer = () => {
+    const pointer = stageRef.current?.getPointerPosition();
+    return pointer
+      ? {
+          x: pointer.x / scale,
+          y: pointer.y / scale,
+        }
+      : null;
+  };
   const deleteSelected = () => {
     if (!selectedItems.length || selectedItems.some((item) => item.locked))
       return;
@@ -1057,6 +1090,16 @@ export function MangaCanvas({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [selectedLayer, nextZ, onApply]);
+  React.useEffect(() => {
+    if (!drawPanelMode) return;
+    const cancelDrawing = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      setPanelDraft(null);
+      setDrawPanelMode(false);
+    };
+    window.addEventListener("keydown", cancelDrawing);
+    return () => window.removeEventListener("keydown", cancelDrawing);
+  }, [drawPanelMode]);
   const addPanel = (rect?: {
     x: number;
     y: number;
@@ -1088,6 +1131,32 @@ export function MangaCanvas({
         imageOpacity: 1,
       }),
     );
+  const updatePanelDraft = () => {
+    if (!panelDraft) return;
+    const pointer = getPagePointer();
+    if (!pointer) return;
+    setPanelDraft({
+      ...panelDraft,
+      rect: rectFromPoints(
+        panelDraft.start,
+        pointer,
+        page,
+        snapEnabled && gridSnapEnabled ? CANVAS_GRID_SIZE : undefined,
+      ),
+    });
+  };
+  const finishPanelDraft = () => {
+    if (!panelDraft) return;
+    const rect = panelDraft.rect;
+    setPanelDraft(null);
+    setDrawPanelMode(false);
+    if (
+      rect.width < MIN_CANVAS_OBJECT_SIZE ||
+      rect.height < MIN_CANVAS_OBJECT_SIZE
+    )
+      return;
+    addPanel(rect);
+  };
   const applyTemplate = (id: PageTemplateId) => {
     const rects = applyPageTemplate(id, page);
     return window.mangai.canvas.saveBatch({
@@ -1150,6 +1219,17 @@ export function MangaCanvas({
     <div className="manga-canvas-shell">
       <div className="canvas-tools">
         <button onClick={() => addPanel()}>＋ コマ</button>
+        <button
+          className={drawPanelMode ? "active" : undefined}
+          aria-pressed={drawPanelMode}
+          title="ページ上をドラッグしてコマを作成（Escで解除）"
+          onClick={() => {
+            setPanelDraft(null);
+            setDrawPanelMode((value) => !value);
+          }}
+        >
+          ▭ コマを描く
+        </button>
         <button
           onClick={() => {
             const balloonId = crypto.randomUUID();
@@ -1261,6 +1341,32 @@ export function MangaCanvas({
             </option>
           ))}
         </select>
+        <button
+          className={showGrid ? "active" : undefined}
+          aria-pressed={showGrid}
+          onClick={() => setShowGrid((value) => !value)}
+        >
+          # グリッド
+        </button>
+        <button
+          className={snapEnabled ? "active" : undefined}
+          aria-pressed={snapEnabled}
+          onClick={() => {
+            setSnapEnabled((value) => !value);
+            setGuides({ vertical: [], horizontal: [] });
+          }}
+        >
+          スナップ
+        </button>
+        <button
+          className={gridSnapEnabled ? "active" : undefined}
+          aria-pressed={gridSnapEnabled}
+          disabled={!snapEnabled}
+          title="100pxグリッドへ吸着"
+          onClick={() => setGridSnapEnabled((value) => !value)}
+        >
+          グリッド吸着
+        </button>
         {selection && (
           <button
             className="danger"
@@ -1284,7 +1390,7 @@ export function MangaCanvas({
       </div>
       <div className="canvas-stage-row">
         <div
-          className="konva-paper"
+          className={`konva-paper${drawPanelMode ? " drawing" : ""}`}
           onDragOver={(event) => {
             if (
               event.dataTransfer.types.includes("application/x-mangai-asset-id")
@@ -1302,13 +1408,30 @@ export function MangaCanvas({
             scaleX={scale}
             scaleY={scale}
             onMouseDown={(event) => {
-              if (event.target === event.target.getStage()) {
-                clearSelection();
-              }
+              const stage = event.target.getStage();
+              const isPageBackground =
+                event.target === stage ||
+                event.target.name() === "page-background";
+              if (!isPageBackground) return;
+              clearSelection();
+              if (!drawPanelMode) return;
+              const pointer = getPagePointer();
+              if (!pointer) return;
+              const start =
+                snapEnabled && gridSnapEnabled
+                  ? snapPointToGrid(pointer, CANVAS_GRID_SIZE)
+                  : pointer;
+              setPanelDraft({
+                start,
+                rect: { ...start, width: 0, height: 0 },
+              });
             }}
+            onMouseMove={updatePanelDraft}
+            onMouseUp={finishPanelDraft}
           >
             <Layer>
               <Rect
+                name="page-background"
                 width={page.width}
                 height={page.height}
                 fill={page.backgroundColor}
@@ -1321,6 +1444,34 @@ export function MangaCanvas({
                   listening={false}
                 />
               )}
+              {showGrid &&
+                Array.from(
+                  { length: Math.floor(page.width / CANVAS_GRID_SIZE) + 1 },
+                  (_, index) => index * CANVAS_GRID_SIZE,
+                ).map((x) => (
+                  <Line
+                    key={`grid-v-${x}`}
+                    points={[x, 0, x, page.height]}
+                    stroke="#5f7f6f"
+                    strokeWidth={1 / scale}
+                    opacity={0.22}
+                    listening={false}
+                  />
+                ))}
+              {showGrid &&
+                Array.from(
+                  { length: Math.floor(page.height / CANVAS_GRID_SIZE) + 1 },
+                  (_, index) => index * CANVAS_GRID_SIZE,
+                ).map((y) => (
+                  <Line
+                    key={`grid-h-${y}`}
+                    points={[0, y, page.width, y]}
+                    stroke="#5f7f6f"
+                    strokeWidth={1 / scale}
+                    opacity={0.22}
+                    listening={false}
+                  />
+                ))}
               {renderLegacyGroups &&
                 panels.map((panel) => (
                   <PanelNode
@@ -1525,6 +1676,16 @@ export function MangaCanvas({
                   />
                 );
               })}
+              {panelDraft && (
+                <Rect
+                  {...panelDraft.rect}
+                  fill="#2f9e6826"
+                  stroke="#2f9e68"
+                  strokeWidth={3 / scale}
+                  dash={[12 / scale, 8 / scale]}
+                  listening={false}
+                />
+              )}
               {guides.vertical.map((x) => (
                 <Line
                   key={`v-${x}`}

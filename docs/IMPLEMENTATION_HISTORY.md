@@ -293,8 +293,8 @@ Electron BuilderとNSISによるWindows x64インストーラー生成を追加�
 
 ## 19. 漫画編集Canvas MVP
 
-`konva` / `react-konva`と`packages/canvas-core`を追加し、矩形コマ、素材クリッピング、3種類の吹き出し、縦横テキスト、統合レイヤー、6テンプレート、複数選択、Canvas Undo/Redoを実装しました。SQLiteはマイグレーション前バックアップ、schema version、Balloon・Text Object、Canvasスナップショットv2へ拡張しています。
+`konva` / `react-konva`と`packages/canvas-core`を追加し、既定・テンプレート・ドラッグ式の矩形コマ、100pxグリッドとスナップ切替、素材クリッピング、3種類の吹き出し、縦横テキスト、統合レイヤー、6テンプレート、複数選択、Canvas Undo/Redoを実装しました。SQLiteはマイグレーション前バックアップ、schema version、Balloon・Text Object、Canvasスナップショットv2へ拡張しています。
 
-Sharpを使う共通PageレンダラーでJPG・PNG・WebPをPage原寸へ合成し、DPI準拠PDFと連番PNG ZIP、進捗、キャンセル、ページ別エラーへ対応しました。Desktop 19件、canvas-core 12件、Hub回帰、Windows x64 NSIS生成に成功しています。
+Sharpを使う共通PageレンダラーでJPG・PNG・WebPをPage原寸へ合成し、DPI準拠PDFと連番PNG ZIP、進捗、キャンセル、ページ別エラーへ対応しました。Desktop 19件、canvas-core 14件、Hub回帰、Windows x64 NSIS生成に成功しています。
 
 パッケージ版受け入れでsandboxed preloadのES Modules生成による黒画面を検出し、preloadだけCommonJSとして生成・梱包するよう修正しました。修正版で新規Project、Page、4コマ、吹き出し、縦書き、Undo/Redo、再起動復元を確認しています。詳細と残項目は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md) と [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。

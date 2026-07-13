@@ -13,8 +13,11 @@ import {
   pageTemplates,
   pageToViewport,
   panelInputSchema,
+  rectFromPoints,
   remapChildRect,
   segmentGraphemes,
+  snapPointToGrid,
+  snapRectToGrid,
   snapRectToGuides,
   viewportToPage,
   verticalGlyph,
@@ -85,6 +88,26 @@ test("objects snap to page and neighboring guides", () => {
       guides: { vertical: [150], horizontal: [200] },
     },
   );
+});
+test("points, rectangles, and drawn bounds snap to the grid", () => {
+  assert.deepEqual(snapPointToGrid({ x: 149, y: 251 }, 100), {
+    x: 100,
+    y: 300,
+  });
+  assert.deepEqual(
+    snapRectToGrid({ x: 149, y: 251, width: 320, height: 480 }, 100),
+    { x: 100, y: 300, width: 320, height: 480 },
+  );
+  assert.deepEqual(
+    rectFromPoints(
+      { x: 930, y: 810 },
+      { x: -20, y: 190 },
+      { width: 1000, height: 1000 },
+      100,
+    ),
+    { x: 0, y: 200, width: 900, height: 600 },
+  );
+  assert.throws(() => snapPointToGrid({ x: 10, y: 20 }, 0));
 });
 test("z-index is unique and continuous", () => {
   const values = normalizeLayerOrder([
