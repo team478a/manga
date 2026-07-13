@@ -35,6 +35,12 @@ import {
   workflowMappingSchema,
   workflowUpdateSchema,
 } from "@mangai/ai-core";
+import {
+  balloonInputSchema,
+  canvasObjectIdSchema,
+  panelInputSchema,
+  textObjectInputSchema,
+} from "@mangai/canvas-core";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 let store: MangaiDatabase;
@@ -173,6 +179,34 @@ function register() {
     const projectId = store.projectIdForPage(x.id);
     return store.captureHistory(projectId, "ページ内容を編集", () =>
       store.savePage(x.id, x.prompt, x.negativePrompt, x.notes),
+    );
+  });
+  handle("canvas:panel:save", (v) => {
+    const item = panelInputSchema.parse(v);
+    const projectId = store.projectIdForPage(item.pageId);
+    return store.captureHistory(projectId, "コマを保存", () =>
+      store.savePanel({ ...item, createdAt: "", updatedAt: "" }),
+    );
+  });
+  handle("canvas:balloon:save", (v) => {
+    const item = balloonInputSchema.parse(v);
+    const projectId = store.projectIdForPage(item.pageId);
+    return store.captureHistory(projectId, "吹き出しを保存", () =>
+      store.saveBalloon({ ...item, createdAt: "", updatedAt: "" }),
+    );
+  });
+  handle("canvas:text:save", (v) => {
+    const item = textObjectInputSchema.parse(v);
+    const projectId = store.projectIdForPage(item.pageId);
+    return store.captureHistory(projectId, "テキストを保存", () =>
+      store.saveTextObject({ ...item, createdAt: "", updatedAt: "" }),
+    );
+  });
+  handle("canvas:object:delete", (v) => {
+    const item = canvasObjectIdSchema.parse(v);
+    const projectId = store.projectIdForCanvasObject(item.type, item.id);
+    return store.captureHistory(projectId, "Canvasオブジェクトを削除", () =>
+      store.deleteCanvasObject(item.type, item.id),
     );
   });
   handle("history:list", (v) =>

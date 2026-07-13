@@ -1,6 +1,7 @@
 import type { ProjectBundle, Project } from "@mangai/project-core";
 import type { ProjectInput } from "@mangai/shared";
 import type { ProviderSettings } from "@mangai/ai-core";
+import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
 export type ChatEvent = {
   requestId: string;
   sessionId: string;
@@ -72,6 +73,21 @@ export type DesktopApi = {
     negativePrompt: string,
     notes: string,
   ) => Promise<ProjectBundle>;
+  canvas: {
+    savePanel: (
+      value: Omit<Panel, "createdAt" | "updatedAt">,
+    ) => Promise<ProjectBundle>;
+    saveBalloon: (
+      value: Omit<Balloon, "createdAt" | "updatedAt">,
+    ) => Promise<ProjectBundle>;
+    saveText: (
+      value: Omit<TextObject, "createdAt" | "updatedAt">,
+    ) => Promise<ProjectBundle>;
+    deleteObject: (
+      type: "panel" | "balloon" | "text",
+      id: string,
+    ) => Promise<ProjectBundle>;
+  };
   listHistory: (projectId: string) => Promise<OperationHistory>;
   undo: (projectId: string) => Promise<ProjectBundle>;
   redo: (projectId: string) => Promise<ProjectBundle>;

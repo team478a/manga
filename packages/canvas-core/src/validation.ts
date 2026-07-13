@@ -78,3 +78,7 @@ export const textObjectInputSchema = z.object({
   padding: finite.min(0).max(5000),
   opacity,
 });
+export const canvasObjectIdSchema = z.object({
+  type: z.enum(["panel", "balloon", "text"]),
+  id: z.string().uuid(),
+});

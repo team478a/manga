@@ -99,7 +99,12 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 
 - Canvasマイグレーション前バックアップ、`schema_migrations`、Panel拡張、Balloon/Textテーブルを実装
 - 製品版Mock自動フォールバック停止、テストモード表示、AI設定導線を実装
-- Canvas CRUD、IPC、Undoスナップショットv2は次の作業単位
+- Panel・Balloon・Text Objectの保存／削除CRUDとIPCを実装済み
+- IPC入力はcanvas-coreのZod schemaで検証し、親BalloonとTextのページ整合性もDB層で検証
+- ProjectBundleをCanvas属性、Balloon、Text Object対応へ拡張
+- Undoスナップショットv2へ移行し、旧スナップショットとの後方互換を維持
+- 再起動後の永続化、親子cascade削除、Undo/Redo復元を含むDesktop 19テストが成功
+- Canvas一括保存とレイヤー並び替えはKonva UI実装時に追加する
 
 ### Step 4: コマ・画像Canvas
 

@@ -33,6 +33,15 @@ contextBridge.exposeInMainWorld("mangai", {
     negativePrompt: string,
     notes: string,
   ) => ipcRenderer.invoke("pages:save", { id, prompt, negativePrompt, notes }),
+  canvas: {
+    savePanel: (value: unknown) =>
+      ipcRenderer.invoke("canvas:panel:save", value),
+    saveBalloon: (value: unknown) =>
+      ipcRenderer.invoke("canvas:balloon:save", value),
+    saveText: (value: unknown) => ipcRenderer.invoke("canvas:text:save", value),
+    deleteObject: (type: "panel" | "balloon" | "text", id: string) =>
+      ipcRenderer.invoke("canvas:object:delete", { type, id }),
+  },
   listHistory: (projectId: string) =>
     ipcRenderer.invoke("history:list", { id: projectId }),
   undo: (projectId: string) =>

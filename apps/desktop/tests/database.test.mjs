@@ -215,6 +215,134 @@ test("operation history supports persistent undo, redo and branch clearing", () 
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test("canvas objects persist and participate in undo and redo", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-canvas-crud-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "Canvas CRUD",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  bundle = db.addPage(bundle.episodes[0].id);
+  const projectId = bundle.project.id;
+  const pageId = bundle.pages[0].id;
+  const panel = {
+    id: "00000000-0000-4000-8000-000000000001",
+    pageId,
+    name: "コマ1",
+    x: 20,
+    y: 30,
+    width: 500,
+    height: 700,
+    rotation: 0,
+    zIndex: 0,
+    visible: true,
+    locked: false,
+    borderColor: "#000000",
+    borderWidth: 4,
+    fillColor: "#ffffff",
+    imageAssetId: null,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    imageOpacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  };
+  const balloon = {
+    id: "00000000-0000-4000-8000-000000000002",
+    pageId,
+    name: "吹き出し1",
+    type: "speech_ellipse",
+    x: 100,
+    y: 100,
+    width: 360,
+    height: 240,
+    rotation: 0,
+    zIndex: 1,
+    visible: true,
+    locked: false,
+    fillColor: "#ffffff",
+    strokeColor: "#000000",
+    strokeWidth: 4,
+    opacity: 1,
+    tailDirection: "bottom_left",
+    tailOffset: 0.5,
+    createdAt: "",
+    updatedAt: "",
+  };
+  const textObject = {
+    id: "00000000-0000-4000-8000-000000000003",
+    pageId,
+    parentBalloonId: balloon.id,
+    name: "台詞1",
+    text: "こんにちは",
+    writingMode: "vertical",
+    x: 130,
+    y: 120,
+    width: 280,
+    height: 180,
+    rotation: 0,
+    zIndex: 2,
+    visible: true,
+    locked: false,
+    fontFamily: "sans-serif",
+    fontSize: 48,
+    fontWeight: 400,
+    color: "#000000",
+    textAlign: "center",
+    verticalAlign: "middle",
+    lineHeight: 1.2,
+    letterSpacing: 0,
+    padding: 16,
+    opacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  };
+  db.captureHistory(projectId, "Canvasを作成", () => {
+    db.savePanel(panel);
+    db.saveBalloon(balloon);
+    return db.saveTextObject(textObject);
+  });
+  db.close();
+
+  db = new MangaiDatabase(paths);
+  bundle = db.openProject(projectId);
+  assert.equal(bundle.panels[0].name, "コマ1");
+  assert.equal(bundle.balloons[0].tailDirection, "bottom_left");
+  assert.equal(bundle.textObjects[0].writingMode, "vertical");
+  assert.equal(db.undo(projectId).panels.length, 0);
+  bundle = db.redo(projectId);
+  assert.equal(bundle.balloons.length, 1);
+  assert.equal(bundle.textObjects[0].text, "こんにちは");
+  bundle = db.captureHistory(projectId, "吹き出しを削除", () =>
+    db.deleteCanvasObject("balloon", balloon.id),
+  );
+  assert.equal(bundle.balloons.length, 0);
+  assert.equal(bundle.textObjects.length, 0);
+  bundle = db.undo(projectId);
+  assert.equal(bundle.balloons.length, 1);
+  assert.equal(bundle.textObjects.length, 1);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 test("project export creates PDF, ZIP, manifest and sales text", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-export-"));
   const paths = {

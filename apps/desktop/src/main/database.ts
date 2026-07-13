@@ -17,6 +17,7 @@ import {
   type GenerationStatus,
   type ProviderSettings,
 } from "@mangai/ai-core";
+import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
 
 type Paths = {
   root: string;
@@ -340,6 +341,8 @@ export class MangaiDatabase {
       episodes: bundle.episodes,
       pages: bundle.pages,
       panels: bundle.panels,
+      balloons: bundle.balloons,
+      textObjects: bundle.textObjects,
     };
   }
   captureHistory<T>(projectId: string, label: string, mutation: () => T) {
@@ -382,6 +385,12 @@ export class MangaiDatabase {
       const episodeIds = new Set(snapshot.episodes.map((item: any) => item.id));
       const pageIds = new Set(snapshot.pages.map((item: any) => item.id));
       const panelIds = new Set(snapshot.panels.map((item: any) => item.id));
+      const balloonIds = new Set(
+        (snapshot.balloons ?? []).map((item: any) => item.id),
+      );
+      const textObjectIds = new Set(
+        (snapshot.textObjects ?? []).map((item: any) => item.id),
+      );
       for (const item of snapshot.episodes)
         this.db
           .prepare(
@@ -418,7 +427,8 @@ export class MangaiDatabase {
       for (const item of snapshot.panels)
         this.db
           .prepare(
-            "insert into panels values(?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,order_index=excluded.order_index,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,image_asset_id=excluded.image_asset_id,prompt=excluded.prompt,negative_prompt=excluded.negative_prompt,generation_status=excluded.generation_status,metadata=excluded.metadata",
+            `insert into panels(id,page_id,order_index,x,y,width,height,image_asset_id,prompt,negative_prompt,generation_status,metadata,name,rotation,z_index,visible,locked,border_color,border_width,fill_color,image_fit,image_offset_x,image_offset_y,image_scale,image_rotation,image_opacity,created_at,updated_at)
+             values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,order_index=excluded.order_index,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,image_asset_id=excluded.image_asset_id,prompt=excluded.prompt,negative_prompt=excluded.negative_prompt,generation_status=excluded.generation_status,metadata=excluded.metadata,name=excluded.name,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,border_color=excluded.border_color,border_width=excluded.border_width,fill_color=excluded.fill_color,image_fit=excluded.image_fit,image_offset_x=excluded.image_offset_x,image_offset_y=excluded.image_offset_y,image_scale=excluded.image_scale,image_rotation=excluded.image_rotation,image_opacity=excluded.image_opacity,updated_at=excluded.updated_at`,
           )
           .run(
             item.id,
@@ -433,7 +443,42 @@ export class MangaiDatabase {
             item.negativePrompt,
             item.generationStatus,
             item.metadata,
+            item.name ?? "コマ",
+            item.rotation ?? 0,
+            item.zIndex ?? item.orderIndex,
+            item.visible === false ? 0 : 1,
+            item.locked ? 1 : 0,
+            item.borderColor ?? "#000000",
+            item.borderWidth ?? 4,
+            item.fillColor ?? "#ffffff",
+            item.imageFit ?? "cover",
+            item.imageOffsetX ?? 0,
+            item.imageOffsetY ?? 0,
+            item.imageScale ?? 1,
+            item.imageRotation ?? 0,
+            item.imageOpacity ?? 1,
+            item.createdAt ?? now(),
+            now(),
           );
+      for (const item of snapshot.balloons ?? []) this.upsertBalloonRow(item);
+      for (const item of snapshot.textObjects ?? [])
+        this.upsertTextObjectRow(item);
+      const existingTextObjects = this.db
+        .prepare(
+          "select t.id from text_objects t join pages p on p.id=t.page_id join episodes e on e.id=p.episode_id where e.project_id=?",
+        )
+        .all(projectId) as any[];
+      for (const row of existingTextObjects)
+        if (!textObjectIds.has(row.id))
+          this.db.prepare("delete from text_objects where id=?").run(row.id);
+      const existingBalloons = this.db
+        .prepare(
+          "select b.id from balloons b join pages p on p.id=b.page_id join episodes e on e.id=p.episode_id where e.project_id=?",
+        )
+        .all(projectId) as any[];
+      for (const row of existingBalloons)
+        if (!balloonIds.has(row.id))
+          this.db.prepare("delete from balloons where id=?").run(row.id);
       const existingPanels = this.db
         .prepare(
           "select panels.id from panels join pages on pages.id=panels.page_id join episodes on episodes.id=pages.episode_id where episodes.project_id=?",
@@ -508,6 +553,144 @@ export class MangaiDatabase {
       .run(row.id);
     return this.bundle(projectId);
   }
+  private upsertPanelRow(item: Panel) {
+    const stamp = now();
+    this.db
+      .prepare(
+        `insert into panels(id,page_id,order_index,x,y,width,height,image_asset_id,prompt,negative_prompt,generation_status,metadata,name,rotation,z_index,visible,locked,border_color,border_width,fill_color,image_fit,image_offset_x,image_offset_y,image_scale,image_rotation,image_opacity,created_at,updated_at)
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,order_index=excluded.order_index,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,image_asset_id=excluded.image_asset_id,name=excluded.name,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,border_color=excluded.border_color,border_width=excluded.border_width,fill_color=excluded.fill_color,image_fit=excluded.image_fit,image_offset_x=excluded.image_offset_x,image_offset_y=excluded.image_offset_y,image_scale=excluded.image_scale,image_rotation=excluded.image_rotation,image_opacity=excluded.image_opacity,updated_at=excluded.updated_at`,
+      )
+      .run(
+        item.id,
+        item.pageId,
+        item.zIndex,
+        item.x,
+        item.y,
+        item.width,
+        item.height,
+        item.imageAssetId,
+        "",
+        "",
+        "idle",
+        "{}",
+        item.name,
+        item.rotation,
+        item.zIndex,
+        item.visible ? 1 : 0,
+        item.locked ? 1 : 0,
+        item.borderColor,
+        item.borderWidth,
+        item.fillColor,
+        item.imageFit,
+        item.imageOffsetX,
+        item.imageOffsetY,
+        item.imageScale,
+        item.imageRotation,
+        item.imageOpacity,
+        item.createdAt || stamp,
+        stamp,
+      );
+  }
+  private upsertBalloonRow(item: Balloon) {
+    const stamp = now();
+    this.db
+      .prepare(
+        `insert into balloons(id,page_id,name,type,x,y,width,height,rotation,z_index,visible,locked,fill_color,stroke_color,stroke_width,opacity,tail_direction,tail_offset,created_at,updated_at)
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,name=excluded.name,type=excluded.type,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,fill_color=excluded.fill_color,stroke_color=excluded.stroke_color,stroke_width=excluded.stroke_width,opacity=excluded.opacity,tail_direction=excluded.tail_direction,tail_offset=excluded.tail_offset,updated_at=excluded.updated_at`,
+      )
+      .run(
+        item.id,
+        item.pageId,
+        item.name,
+        item.type,
+        item.x,
+        item.y,
+        item.width,
+        item.height,
+        item.rotation,
+        item.zIndex,
+        item.visible ? 1 : 0,
+        item.locked ? 1 : 0,
+        item.fillColor,
+        item.strokeColor,
+        item.strokeWidth,
+        item.opacity,
+        item.tailDirection,
+        item.tailOffset,
+        item.createdAt || stamp,
+        stamp,
+      );
+  }
+  private upsertTextObjectRow(item: TextObject) {
+    if (item.parentBalloonId) {
+      const parent = this.db
+        .prepare("select page_id from balloons where id=?")
+        .get(item.parentBalloonId) as { page_id: string } | undefined;
+      if (!parent || parent.page_id !== item.pageId)
+        throw new Error("親の吹き出しが同じページにありません。");
+    }
+    const stamp = now();
+    this.db
+      .prepare(
+        `insert into text_objects(id,page_id,parent_balloon_id,name,text,writing_mode,x,y,width,height,rotation,z_index,visible,locked,font_family,font_size,font_weight,color,text_align,vertical_align,line_height,letter_spacing,padding,opacity,created_at,updated_at)
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,parent_balloon_id=excluded.parent_balloon_id,name=excluded.name,text=excluded.text,writing_mode=excluded.writing_mode,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,font_family=excluded.font_family,font_size=excluded.font_size,font_weight=excluded.font_weight,color=excluded.color,text_align=excluded.text_align,vertical_align=excluded.vertical_align,line_height=excluded.line_height,letter_spacing=excluded.letter_spacing,padding=excluded.padding,opacity=excluded.opacity,updated_at=excluded.updated_at`,
+      )
+      .run(
+        item.id,
+        item.pageId,
+        item.parentBalloonId,
+        item.name,
+        item.text,
+        item.writingMode,
+        item.x,
+        item.y,
+        item.width,
+        item.height,
+        item.rotation,
+        item.zIndex,
+        item.visible ? 1 : 0,
+        item.locked ? 1 : 0,
+        item.fontFamily,
+        item.fontSize,
+        item.fontWeight,
+        item.color,
+        item.textAlign,
+        item.verticalAlign,
+        item.lineHeight,
+        item.letterSpacing,
+        item.padding,
+        item.opacity,
+        item.createdAt || stamp,
+        stamp,
+      );
+  }
+  savePanel(item: Panel) {
+    this.upsertPanelRow(item);
+    return this.bundle(this.projectIdForPage(item.pageId));
+  }
+  saveBalloon(item: Balloon) {
+    this.upsertBalloonRow(item);
+    return this.bundle(this.projectIdForPage(item.pageId));
+  }
+  saveTextObject(item: TextObject) {
+    this.upsertTextObjectRow(item);
+    return this.bundle(this.projectIdForPage(item.pageId));
+  }
+  deleteCanvasObject(type: "panel" | "balloon" | "text", id: string) {
+    const table =
+      type === "panel"
+        ? "panels"
+        : type === "balloon"
+          ? "balloons"
+          : "text_objects";
+    const row = this.db
+      .prepare(`select page_id from ${table} where id=?`)
+      .get(id) as { page_id: string } | undefined;
+    if (!row) throw new Error("Canvasオブジェクトが見つかりません。");
+    const projectId = this.projectIdForPage(row.page_id);
+    this.db.prepare(`delete from ${table} where id=?`).run(id);
+    return this.bundle(projectId);
+  }
   renameEpisode(id: string, title: string) {
     const row = this.db
       .prepare("select project_id from episodes where id=?")
@@ -576,6 +759,19 @@ export class MangaiDatabase {
       .get(pageId) as any;
     if (!row) throw new Error("ページが見つかりません。");
     return row.project_id as string;
+  }
+  projectIdForCanvasObject(type: "panel" | "balloon" | "text", id: string) {
+    const table =
+      type === "panel"
+        ? "panels"
+        : type === "balloon"
+          ? "balloons"
+          : "text_objects";
+    const row = this.db
+      .prepare(`select page_id from ${table} where id=?`)
+      .get(id) as { page_id: string } | undefined;
+    if (!row) throw new Error("Canvasオブジェクトが見つかりません。");
+    return this.projectIdForPage(row.page_id);
   }
   addPage(episodeId: string, imageAssetId?: string) {
     const projectId = this.projectIdForEpisode(episodeId),
@@ -1379,16 +1575,94 @@ export class MangaiDatabase {
     ).map((p) => ({
       id: p.id,
       pageId: p.page_id,
+      name: p.name,
       orderIndex: p.order_index,
+      zIndex: p.z_index,
       x: p.x,
       y: p.y,
       width: p.width,
       height: p.height,
+      rotation: p.rotation,
+      visible: Boolean(p.visible),
+      locked: Boolean(p.locked),
+      borderColor: p.border_color,
+      borderWidth: p.border_width,
+      fillColor: p.fill_color,
       imageAssetId: p.image_asset_id,
+      imageFit: p.image_fit,
+      imageOffsetX: p.image_offset_x,
+      imageOffsetY: p.image_offset_y,
+      imageScale: p.image_scale,
+      imageRotation: p.image_rotation,
+      imageOpacity: p.image_opacity,
       prompt: p.prompt,
       negativePrompt: p.negative_prompt,
       generationStatus: p.generation_status,
       metadata: p.metadata,
+      createdAt: p.created_at,
+      updatedAt: p.updated_at,
+    }));
+    const balloons = (
+      this.db
+        .prepare(
+          "select b.* from balloons b join pages p on p.id=b.page_id join episodes e on e.id=p.episode_id where e.project_id=? order by b.z_index",
+        )
+        .all(projectId) as any[]
+    ).map((b) => ({
+      id: b.id,
+      pageId: b.page_id,
+      name: b.name,
+      type: b.type,
+      x: b.x,
+      y: b.y,
+      width: b.width,
+      height: b.height,
+      rotation: b.rotation,
+      zIndex: b.z_index,
+      visible: Boolean(b.visible),
+      locked: Boolean(b.locked),
+      fillColor: b.fill_color,
+      strokeColor: b.stroke_color,
+      strokeWidth: b.stroke_width,
+      opacity: b.opacity,
+      tailDirection: b.tail_direction,
+      tailOffset: b.tail_offset,
+      createdAt: b.created_at,
+      updatedAt: b.updated_at,
+    }));
+    const textObjects = (
+      this.db
+        .prepare(
+          "select t.* from text_objects t join pages p on p.id=t.page_id join episodes e on e.id=p.episode_id where e.project_id=? order by t.z_index",
+        )
+        .all(projectId) as any[]
+    ).map((t) => ({
+      id: t.id,
+      pageId: t.page_id,
+      parentBalloonId: t.parent_balloon_id,
+      name: t.name,
+      text: t.text,
+      writingMode: t.writing_mode,
+      x: t.x,
+      y: t.y,
+      width: t.width,
+      height: t.height,
+      rotation: t.rotation,
+      zIndex: t.z_index,
+      visible: Boolean(t.visible),
+      locked: Boolean(t.locked),
+      fontFamily: t.font_family,
+      fontSize: t.font_size,
+      fontWeight: t.font_weight,
+      color: t.color,
+      textAlign: t.text_align,
+      verticalAlign: t.vertical_align,
+      lineHeight: t.line_height,
+      letterSpacing: t.letter_spacing,
+      padding: t.padding,
+      opacity: t.opacity,
+      createdAt: t.created_at,
+      updatedAt: t.updated_at,
     }));
     const assets = (
       this.db
@@ -1408,6 +1682,14 @@ export class MangaiDatabase {
       sha256: a.sha256,
       createdAt: a.created_at,
     }));
-    return { project: this.project(p), episodes, pages, panels, assets };
+    return {
+      project: this.project(p),
+      episodes,
+      pages,
+      panels,
+      balloons,
+      textObjects,
+      assets,
+    };
   }
 }
