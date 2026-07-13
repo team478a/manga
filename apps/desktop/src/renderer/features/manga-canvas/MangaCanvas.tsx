@@ -31,6 +31,7 @@ import {
 } from "@mangai/canvas-core";
 
 type Selection = { type: "panel" | "balloon" | "text"; id: string } | null;
+type SelectionKey = Exclude<Selection, null>;
 type LayerItem =
   | (Panel & { objectType: "panel" })
   | (Balloon & { objectType: "balloon" })
@@ -105,7 +106,7 @@ function PanelNode({
   panel: Panel;
   imageUrl?: string;
   selected: boolean;
-  onSelect: (node: any) => void;
+  onSelect: (node: any, additive: boolean) => void;
   onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
     x: number;
     y: number;
@@ -135,8 +136,10 @@ function PanelNode({
       height={panel.height}
       rotation={panel.rotation}
       draggable={!panel.locked}
-      onClick={(event) => onSelect(event.currentTarget)}
-      onTap={(event) => onSelect(event.currentTarget)}
+      onClick={(event) =>
+        onSelect(event.currentTarget, Boolean(event.evt.shiftKey))
+      }
+      onTap={(event) => onSelect(event.currentTarget, false)}
       onDragMove={(event) => {
         if (!onMove) return;
         const next = onMove({
@@ -205,7 +208,7 @@ function BalloonNode({
   onSave,
 }: {
   balloon: Balloon;
-  onSelect: (node: any) => void;
+  onSelect: (node: any, additive: boolean) => void;
   onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
     x: number;
     y: number;
@@ -218,14 +221,17 @@ function BalloonNode({
   const tail = balloonTailPoints(balloon);
   return (
     <Group
+      id={`balloon-${balloon.id}`}
       x={balloon.x}
       y={balloon.y}
       width={balloon.width}
       height={balloon.height}
       rotation={balloon.rotation}
       draggable={!balloon.locked}
-      onClick={(event) => onSelect(event.currentTarget)}
-      onTap={(event) => onSelect(event.currentTarget)}
+      onClick={(event) =>
+        onSelect(event.currentTarget, Boolean(event.evt.shiftKey))
+      }
+      onTap={(event) => onSelect(event.currentTarget, false)}
       onDragMove={(event) => {
         if (!onMove) return;
         const next = onMove({
@@ -293,7 +299,7 @@ function TextNode({
   onSave,
 }: {
   item: TextObject;
-  onSelect: (node: any) => void;
+  onSelect: (node: any, additive: boolean) => void;
   onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
     x: number;
     y: number;
@@ -303,6 +309,7 @@ function TextNode({
   if (!item.visible) return null;
   return (
     <Text
+      id={`text-${item.id}`}
       x={item.x}
       y={item.y}
       width={item.width}
@@ -330,8 +337,8 @@ function TextNode({
       opacity={item.opacity}
       rotation={item.rotation}
       draggable={!item.locked}
-      onClick={(event) => onSelect(event.target)}
-      onTap={(event) => onSelect(event.target)}
+      onClick={(event) => onSelect(event.target, Boolean(event.evt.shiftKey))}
+      onTap={(event) => onSelect(event.target, false)}
       onDragMove={(event) => {
         if (!onMove) return;
         const next = onMove({
@@ -699,6 +706,7 @@ export function MangaCanvas({
   onApply: (promise: Promise<ProjectBundle>) => void;
 }) {
   const [selection, setSelection] = React.useState<Selection>(null);
+  const [selectedKeys, setSelectedKeys] = React.useState<SelectionKey[]>([]);
   const [guides, setGuides] = React.useState<{
     vertical: number[];
     horizontal: number[];
@@ -724,16 +732,44 @@ export function MangaCanvas({
     ...texts.map((item) => ({ ...item, objectType: "text" as const })),
   ].sort((a, b) => b.zIndex - a.zIndex);
 
-  React.useEffect(() => setSelection(null), [page.id]);
+  React.useEffect(() => {
+    setSelection(null);
+    setSelectedKeys([]);
+    transformer.current?.nodes([]);
+  }, [page.id]);
   const select = (
     type: "panel" | "balloon" | "text",
     id: string,
-    node: any,
+    node: any | null,
+    additive = false,
   ) => {
-    setSelection({ type, id });
-    transformer.current?.nodes([node]);
+    const key = { type, id } as SelectionKey;
+    let nextKeys: SelectionKey[];
+    if (additive) {
+      const exists = selectedKeys.some(
+        (item) => item.type === type && item.id === id,
+      );
+      nextKeys = exists
+        ? selectedKeys.filter((item) => !(item.type === type && item.id === id))
+        : [...selectedKeys, key];
+    } else {
+      nextKeys = [key];
+    }
+    setSelectedKeys(nextKeys);
+    setSelection(nextKeys.at(-1) ?? null);
+    const stage = node?.getStage?.() ?? transformer.current?.getStage();
+    const nextNodes = stage
+      ? nextKeys
+          .map((item) => stage.findOne(`#${item.type}-${item.id}`))
+          .filter(Boolean)
+      : node
+        ? [node]
+        : [];
+    transformer.current?.nodes(nextNodes);
     transformer.current?.getLayer()?.batchDraw();
   };
+  const isSelected = (type: SelectionKey["type"], id: string) =>
+    selectedKeys.some((item) => item.type === type && item.id === id);
   const nextZ = layers.length
     ? Math.max(...layers.map((item) => item.zIndex)) + 1
     : 0;
@@ -742,8 +778,29 @@ export function MangaCanvas({
       ? panels.find((item) => item.id === selection.id)
       : undefined;
   const selectedLayer = selection
-    ? layers.find((item) => item.id === selection.id)
+    ? layers.find(
+        (item) =>
+          item.objectType === selection.type && item.id === selection.id,
+      )
     : undefined;
+  const selectedItems = layers.filter((item) =>
+    isSelected(item.objectType, item.id),
+  );
+  const saveItems = (items: LayerItem[]) =>
+    onApply(
+      window.mangai.canvas.saveBatch({
+        pageId: page.id,
+        panels: items
+          .filter((item) => item.objectType === "panel")
+          .map((item) => panelInput(item as Panel)),
+        balloons: items
+          .filter((item) => item.objectType === "balloon")
+          .map((item) => balloonInput(item as Balloon)),
+        textObjects: items
+          .filter((item) => item.objectType === "text")
+          .map((item) => textInput(item as TextObject)),
+      }),
+    );
   const snapMove = (
     id: string,
     rect: { x: number; y: number; width: number; height: number },
@@ -755,14 +812,55 @@ export function MangaCanvas({
       8 / scale,
     );
     setGuides(result.guides);
+    const source = layers.find((item) => item.id === id);
+    if (
+      selectedKeys.length > 1 &&
+      source &&
+      isSelected(source.objectType, id)
+    ) {
+      const stage = transformer.current?.getStage();
+      if (stage) {
+        const deltaX = result.rect.x - source.x;
+        const deltaY = result.rect.y - source.y;
+        for (const item of selectedItems) {
+          if (item.id === id) continue;
+          stage
+            .findOne(`#${item.objectType}-${item.id}`)
+            ?.position({ x: item.x + deltaX, y: item.y + deltaY });
+        }
+      }
+    }
     return { x: result.rect.x, y: result.rect.y };
   };
+  const saveGroupMove = (item: LayerItem) => {
+    if (selectedKeys.length <= 1 || !isSelected(item.objectType, item.id))
+      return false;
+    const source = layers.find(
+      (value) => value.objectType === item.objectType && value.id === item.id,
+    );
+    if (!source || (source.x === item.x && source.y === item.y)) return false;
+    const deltaX = item.x - source.x;
+    const deltaY = item.y - source.y;
+    setGuides({ vertical: [], horizontal: [] });
+    saveItems(
+      selectedItems.map((value) => ({
+        ...value,
+        ...constrainRectToPage(
+          { ...value, x: value.x + deltaX, y: value.y + deltaY },
+          page,
+        ),
+      })) as LayerItem[],
+    );
+    return true;
+  };
   const savePanel = (item: Panel) => {
+    if (saveGroupMove({ ...item, objectType: "panel" })) return;
     setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
     onApply(window.mangai.canvas.savePanel(panelInput({ ...item, ...rect })));
   };
   const saveBalloon = (item: Balloon) => {
+    if (saveGroupMove({ ...item, objectType: "balloon" })) return;
     setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
     onApply(
@@ -770,9 +868,79 @@ export function MangaCanvas({
     );
   };
   const saveText = (item: TextObject) => {
+    if (saveGroupMove({ ...item, objectType: "text" })) return;
     setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
     onApply(window.mangai.canvas.saveText(textInput({ ...item, ...rect })));
+  };
+  const clearSelection = () => {
+    setSelection(null);
+    setSelectedKeys([]);
+    transformer.current?.nodes([]);
+  };
+  const deleteSelected = () => {
+    if (!selectedItems.length || selectedItems.some((item) => item.locked))
+      return;
+    const panelIds = new Set(
+      selectedItems
+        .filter((item) => item.objectType === "panel")
+        .map((item) => item.id),
+    );
+    const balloonIds = new Set(
+      selectedItems
+        .filter((item) => item.objectType === "balloon")
+        .map((item) => item.id),
+    );
+    const textIds = new Set(
+      selectedItems
+        .filter((item) => item.objectType === "text")
+        .map((item) => item.id),
+    );
+    onApply(
+      window.mangai.canvas.saveBatch({
+        pageId: page.id,
+        panels: panels.filter((item) => !panelIds.has(item.id)).map(panelInput),
+        balloons: balloons
+          .filter((item) => !balloonIds.has(item.id))
+          .map(balloonInput),
+        textObjects: texts
+          .filter(
+            (item) =>
+              !textIds.has(item.id) &&
+              (!item.parentBalloonId || !balloonIds.has(item.parentBalloonId)),
+          )
+          .map(textInput),
+        replacePanels: true,
+        replaceBalloons: true,
+        replaceTextObjects: true,
+      }),
+    );
+    clearSelection();
+  };
+  const duplicateSelected = () => {
+    if (!selectedItems.length || selectedItems.some((item) => item.locked))
+      return;
+    const idMap = new Map(
+      selectedItems.map((item) => [item.id, crypto.randomUUID()]),
+    );
+    const copies = [...selectedItems]
+      .sort((a, b) => a.zIndex - b.zIndex)
+      .map((item, index) => {
+        const copy = {
+          ...item,
+          id: idMap.get(item.id)!,
+          name: `${item.name} のコピー`,
+          x: item.x + 20,
+          y: item.y + 20,
+          zIndex: nextZ + index,
+        } as LayerItem;
+        if (copy.objectType === "text" && copy.parentBalloonId)
+          copy.parentBalloonId =
+            idMap.get(copy.parentBalloonId) ?? copy.parentBalloonId;
+        return copy;
+      });
+    saveItems(copies);
+    clearSelection();
   };
   React.useEffect(() => {
     if (!selectedLayer) return;
@@ -780,31 +948,15 @@ export function MangaCanvas({
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable=true]"))
         return;
-      if (selectedLayer.locked) return;
+      if (selectedItems.some((item) => item.locked)) return;
       if (event.key === "Delete" || event.key === "Backspace") {
         event.preventDefault();
-        onApply(
-          window.mangai.canvas.deleteObject(
-            selectedLayer.objectType,
-            selectedLayer.id,
-          ),
-        );
-        setSelection(null);
+        deleteSelected();
         return;
       }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
         event.preventDefault();
-        const copy = {
-          ...selectedLayer,
-          id: crypto.randomUUID(),
-          name: `${selectedLayer.name} のコピー`,
-          x: selectedLayer.x + 20,
-          y: selectedLayer.y + 20,
-          zIndex: nextZ,
-        };
-        if (copy.objectType === "panel") savePanel(copy);
-        else if (copy.objectType === "balloon") saveBalloon(copy);
-        else saveText(copy);
+        duplicateSelected();
         return;
       }
       const distance = event.shiftKey ? 10 : 1;
@@ -1002,15 +1154,12 @@ export function MangaCanvas({
         {selection && (
           <button
             className="danger"
-            disabled={selectedLayer?.locked}
-            onClick={() => {
-              onApply(
-                window.mangai.canvas.deleteObject(selection.type, selection.id),
-              );
-              setSelection(null);
-            }}
+            disabled={selectedItems.some((item) => item.locked)}
+            onClick={deleteSelected}
           >
-            選択を削除
+            {selectedKeys.length > 1
+              ? `${selectedKeys.length}件を削除`
+              : "選択を削除"}
           </button>
         )}
         {selectedPanel && selectedAssetId && (
@@ -1032,8 +1181,7 @@ export function MangaCanvas({
             scaleY={scale}
             onMouseDown={(event) => {
               if (event.target === event.target.getStage()) {
-                setSelection(null);
-                transformer.current?.nodes([]);
+                clearSelection();
               }
             }}
           >
@@ -1219,10 +1367,10 @@ export function MangaCanvas({
                           ? assetUrls[panel.imageAssetId]
                           : undefined
                       }
-                      selected={
-                        selection?.type === "panel" && selection.id === panel.id
+                      selected={isSelected("panel", panel.id)}
+                      onSelect={(node, additive) =>
+                        select("panel", panel.id, node, additive)
                       }
-                      onSelect={(node) => select("panel", panel.id, node)}
                       onMove={(rect) => snapMove(panel.id, rect)}
                       onSave={savePanel}
                     />
@@ -1234,7 +1382,9 @@ export function MangaCanvas({
                     <BalloonNode
                       key={`balloon-${balloon.id}`}
                       balloon={balloon}
-                      onSelect={(node) => select("balloon", balloon.id, node)}
+                      onSelect={(node, additive) =>
+                        select("balloon", balloon.id, node, additive)
+                      }
                       onMove={(rect) => snapMove(balloon.id, rect)}
                       onSave={saveBalloon}
                     />
@@ -1245,7 +1395,9 @@ export function MangaCanvas({
                   <TextNode
                     key={`text-${text.id}`}
                     item={text}
-                    onSelect={(node) => select("text", text.id, node)}
+                    onSelect={(node, additive) =>
+                      select("text", text.id, node, additive)
+                    }
                     onMove={(rect) => snapMove(text.id, rect)}
                     onSave={saveText}
                   />
@@ -1271,8 +1423,12 @@ export function MangaCanvas({
               ))}
               <Transformer
                 ref={transformer}
-                resizeEnabled={!selectedLayer?.locked}
-                rotateEnabled={!selectedLayer?.locked}
+                resizeEnabled={
+                  selectedKeys.length === 1 && !selectedLayer?.locked
+                }
+                rotateEnabled={
+                  selectedKeys.length === 1 && !selectedLayer?.locked
+                }
                 anchorSize={12 / scale}
               />
             </Layer>
@@ -1286,10 +1442,18 @@ export function MangaCanvas({
               key={`${item.objectType}-${item.id}`}
             >
               <button
-                className={selection?.id === item.id ? "active" : ""}
-                onClick={() =>
-                  setSelection({ type: item.objectType, id: item.id })
-                }
+                className={isSelected(item.objectType, item.id) ? "active" : ""}
+                onClick={(event) => {
+                  const node = transformer.current
+                    ?.getStage()
+                    ?.findOne(`#${item.objectType}-${item.id}`);
+                  select(
+                    item.objectType,
+                    item.id,
+                    node ?? null,
+                    event.shiftKey,
+                  );
+                }}
               >
                 <span>
                   {item.objectType === "panel"
