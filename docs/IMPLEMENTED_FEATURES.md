@@ -1,6 +1,6 @@
 # MANGAI Creator Platform 実装済み機能
 
-最終確認日: 2026-07-12
+最終確認日: 2026-07-14
 
 この文書は、READMEの計画ではなく現在のソースコードを基準に、MVPで利用できる機能と制約を整理したものです。
 
@@ -310,6 +310,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 30オブジェクトPageの性能確認（製品版実操作、保存・移動・再読込スモークテスト）
 - SQLite永続化、Canvasスナップショットv2、Undo/Redo
 - JPG・PNG・WebP合成、DPI準拠PDF、連番PNG ZIP
+- 使用中WebPのPNG正規化による、PDF・ZIP合成時の画像欠落防止
 - 書き出し進捗、キャンセル、ページ別エラー
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。

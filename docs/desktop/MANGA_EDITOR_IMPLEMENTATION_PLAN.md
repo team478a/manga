@@ -26,7 +26,7 @@
 - DBスキーマバージョンとマイグレーション前バックアップがない
 - UndoスナップショットはProject、Episode、Page、Panelを含むが、履歴スキーマバージョンがない
 - 書き出しはPage画像素材を直接利用し、Canvas合成状態をレンダリングしない
-- WebPは画像ZIPへ入るがPDFへ埋め込まれない
+- 旧書き出し経路ではWebPがPDFへ埋め込まれない
 - renderer中央は画像プレビューで、編集Canvasではない
 - 製品版でもOllama未設定時にMock AIへフォールバックする
 
@@ -189,6 +189,7 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - Canvas Coreの画像配置・縦書き・吹き出し尻尾計算を共有するSVGページレンダラーをmain processへ実装
 - Page原寸PNGへ背景、Panelクリップ画像、Balloon、Text、回転、透明度、z-indexを合成
 - JPG / PNG / WebPをdata URIとして同じ合成経路で処理し、旧Page画像も全面背景として維持
+- Sharp/librsvgのSVG内WebP非描画を避けるため、使用中WebPを合成前にPNGへ正規化
 - 合成済みPNGを`001.png`形式でZIPへ格納し、Episode・Page正式順を維持
 - PDF物理サイズをPageピクセル寸法とProject DPIから72pt/inchで算出
 - ページ失敗時は対象ページと理由をまとめてエラーにし、欠落した正常完了を禁止
@@ -206,13 +207,15 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 進捗:
 
 - Desktop TypeScript、ESLint、本番ビルド、統合テスト20件を確認
-- canvas-core単体テスト13件を確認
+- canvas-core単体テスト16件を確認
 - Hub TypeScript、ESLint、Next.js本番ビルドを確認
 - Windows x64 NSISを生成し、パッケージ版の正常起動を確認
 - パッケージ版で新規Project、Page、4コマ、吹き出し、縦書き、Undo/Redo、再起動復元を確認
 - preloadのCommonJS梱包漏れによるパッケージ版黒画面を検出・修正
 - 33条件の個別判定と詳細要件の残項目を文書化
-- 4手動シナリオの素材配置・出力を含む完全完走は未完了
+- 4手動シナリオを完走。新規編集、Undo/Redo・再起動復元、旧形式相当Page、JPG/PNG/WebP混在PDF・ZIPを確認
+- 受け入れで検出したWebP欠落を修正し、色画素回帰テストと修正版パッケージで再確認
+- 実旧DB移行はバックアップ付き自動テスト、旧形式相当Projectの表示・未編集出力はパッケージ版UIで確認
 
 ## リスクと対策
 

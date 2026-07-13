@@ -27,6 +27,13 @@ export async function renderPagePng(input: {
   assets: Map<string, RenderAsset>;
 }) {
   const { page, assets } = input;
+  const svgAssets = await prepareSvgAssets(
+    assets,
+    [
+      page.imageAssetId,
+      ...input.panels.map((panel) => panel.imageAssetId),
+    ].filter((id): id is string => Boolean(id)),
+  );
   const objects = [
     ...input.panels.map((item) => ({ ...item, objectType: "panel" as const })),
     ...input.balloons.map((item) => ({
@@ -44,14 +51,14 @@ export async function renderPagePng(input: {
     `<rect width="${page.width}" height="${page.height}" fill="${attr(page.backgroundColor)}"/>`,
   ];
   if (page.imageAssetId) {
-    const asset = assets.get(page.imageAssetId);
+    const asset = svgAssets.get(page.imageAssetId);
     if (asset)
       body.push(
         `<image href="${dataUrl(asset)}" width="${page.width}" height="${page.height}" preserveAspectRatio="none"/>`,
       );
   }
   for (const item of objects) {
-    if (item.objectType === "panel") body.push(renderPanel(item, assets));
+    if (item.objectType === "panel") body.push(renderPanel(item, svgAssets));
     else if (item.objectType === "balloon") body.push(renderBalloon(item));
     else body.push(renderText(item));
   }
@@ -62,6 +69,23 @@ export async function renderPagePng(input: {
   })
     .png({ compressionLevel: 9 })
     .toBuffer();
+}
+
+async function prepareSvgAssets(
+  assets: Map<string, RenderAsset>,
+  assetIds: string[],
+) {
+  const prepared = new Map(assets);
+  for (const id of new Set(assetIds)) {
+    const asset = assets.get(id);
+    if (!asset || asset.mimeType !== "image/webp") continue;
+    prepared.set(id, {
+      ...asset,
+      mimeType: "image/png",
+      bytes: await sharp(Buffer.from(asset.bytes)).png().toBuffer(),
+    });
+  }
+  return prepared;
 }
 
 function renderPanel(panel: Panel, assets: Map<string, RenderAsset>) {

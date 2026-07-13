@@ -615,8 +615,16 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     .webp()
     .toFile(webpImage);
   bundle = db.importAssets(bundle.project.id, [sourceImage, webpImage]);
-  bundle = db.addPage(bundle.episodes[0].id, bundle.assets[0].id);
-  bundle = db.addPage(bundle.episodes[0].id, bundle.assets[1].id);
+  const pngAsset = bundle.assets.find(
+    (asset) => asset.mimeType === "image/png",
+  );
+  const webpAsset = bundle.assets.find(
+    (asset) => asset.mimeType === "image/webp",
+  );
+  assert.ok(pngAsset);
+  assert.ok(webpAsset);
+  bundle = db.addPage(bundle.episodes[0].id, pngAsset.id);
+  bundle = db.addPage(bundle.episodes[0].id, webpAsset.id);
   bundle = db.addPage(bundle.episodes[0].id);
   const pageId = bundle.pages[0].id;
   db.savePanel({
@@ -634,7 +642,7 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     borderColor: "#000000",
     borderWidth: 6,
     fillColor: "#ffffff",
-    imageAssetId: bundle.assets[0].id,
+    imageAssetId: pngAsset.id,
     imageFit: "cover",
     imageOffsetX: 0,
     imageOffsetY: 0,
@@ -750,6 +758,15 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     height: 1800,
     type: "png",
   });
+  const secondPng = await zip.file("002.png").async("uint8array");
+  const secondPixel = await sharp(secondPng)
+    .extract({ left: 600, top: 900, width: 1, height: 1 })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  assert.ok(Math.abs(secondPixel[0] - 20) <= 3);
+  assert.ok(Math.abs(secondPixel[1] - 80) <= 3);
+  assert.ok(Math.abs(secondPixel[2] - 180) <= 3);
   const thirdPng = await zip.file("003.png").async("uint8array");
   const pixel = await sharp(thirdPng).raw().toBuffer();
   assert.deepEqual([...pixel.subarray(0, 3)], [255, 255, 255]);

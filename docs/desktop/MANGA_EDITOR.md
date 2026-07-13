@@ -1,12 +1,12 @@
 # 漫画編集Canvas MVP
 
-更新日: 2026-07-13
+更新日: 2026-07-14
 
 ## 現在の判定
 
 MANGAI Desktopで、矩形コマ、素材画像、吹き出し、縦書き・横書きテキスト、レイヤー、テンプレート、Undo/Redo、PDF・画像ZIP書き出しの基本経路を利用できます。
 
-完了条件33項目の広義な機能・ビルド判定は満たしています。ただし、元指示書の詳細要件と4つの手動シナリオには未確認・未実装が残るため、漫画編集Canvas MVP全体の判定は「一部完了」です。個別判定は [`MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
+完了条件33項目と4つの手動受け入れシナリオを満たしています。クリーンWindows環境でのインストール確認が残るため、配布まで含む漫画編集Canvas MVP全体の判定は「一部完了」です。個別判定は [`MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
 
 ## 対応機能
 
@@ -49,6 +49,7 @@ MANGAI Desktopで、矩形コマ、素材画像、吹き出し、縦書き・横
 
 - Page原寸の合成PNG
 - JPG、PNG、WebP素材の混在
+- SVG合成前に使用中のWebPだけをPNGへ正規化し、PDF・ZIPでの画像欠落を防止
 - Episode・Page正式順の連番PNG ZIP
 - DPIから物理サイズを算出するPDF
 - 非表示レイヤーの除外
@@ -116,16 +117,20 @@ Canvasスナップショットv2はPage設定、Panel、Balloon、Text、z-index
 
 ## 手動受け入れ記録
 
-2026-07-13のパッケージ版確認:
+2026-07-13〜14のパッケージ版確認:
 
 - 新規Project、Episode、Page: 成功
 - 4コマテンプレート: 成功。レイヤー4件を確認
 - 吹き出しと縦書きテキスト: 成功
 - Undo/Redo: 成功
 - アプリ終了後のProject、4コマ、吹き出し、テキスト復元: 成功
-- シナリオA: 一部完了。4素材配置とUIからのPDF/ZIP書き出しは未実施
-- シナリオB: 一部完了。Undo/Redoと再起動復元は確認、複数回の全操作列は未実施
-- シナリオC: 自動テスト成功、旧Projectを使った手動確認は未実施
-- シナリオD: 自動テスト成功、JPG/PNG/WebPを使った手動確認は未実施
+- シナリオA: 成功。PNG/JPG/WebPを含む4素材を4コマへ配置し、倍率・位置、吹き出し、縦横テキスト、レイヤー順を確認
+- シナリオB: 成功。コマとテキストの編集、複数回Undo/Redo、再起動後の状態・履歴復元を確認
+- シナリオC: 成功。旧形式相当の全面Page画像を手動表示し、未編集のままPDF 1ページと1600×2400の`001.png`へ出力。実旧DBの移行はバックアップ付き自動テストで確認
+- シナリオD: 成功。JPG/PNG/WebP混在Pageをパッケージ版から出力し、PDF 1ページ、ZIP `001.png` 1枚、赤・緑・青・黄の画素を確認
+
+シナリオAの素材登録は、Windowsファイル選択ダイアログの自動操作が安定しなかったため、製品と同じデータ層から行いました。登録後の配置・Canvas編集・保存・書き出しはパッケージ版UIで確認しています。
+
+受け入れ中、SVGへ埋め込んだWebPがSharp/librsvgで描画されず、青素材がPDF・ZIPから欠落する問題を検出しました。使用中のWebPをSVG合成前にPNGへ変換する修正と画素回帰テストを追加し、修正版パッケージで再確認しています。
 
 パッケージ確認中に、sandboxed preloadがES Modulesとして生成されるため黒画面になる問題を検出しました。preloadをCommonJSとして生成し、修正版NSISと`win-unpacked`で正常起動を確認しています。
