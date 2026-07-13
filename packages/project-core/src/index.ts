@@ -85,7 +85,16 @@ export type Balloon = {
   strokeColor: string;
   strokeWidth: number;
   opacity: number;
-  tailDirection: string;
+  tailDirection:
+    | "none"
+    | "top"
+    | "top_right"
+    | "right"
+    | "bottom_right"
+    | "bottom"
+    | "bottom_left"
+    | "left"
+    | "top_left";
   tailOffset: number;
   createdAt: string;
   updatedAt: string;

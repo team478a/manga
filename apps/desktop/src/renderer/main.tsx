@@ -6,6 +6,7 @@ import { AISettings } from "./features/ai-settings/AISettings";
 import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
 import { UpdateControl } from "./features/updater/UpdateControl";
+import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
 import type { OperationHistory } from "../preload/api";
 
 const emptyForm = {
@@ -633,16 +634,13 @@ function App() {
             <button onClick={() => setZoom(70)}>リセット</button>
           </div>
           {page ? (
-            <div
-              className="paper"
-              style={{
-                width: `${zoom}%`,
-                aspectRatio: `${page.width}/${page.height}`,
-                background: page.backgroundColor,
-              }}
-            >
-              {asset && <img src={assetUrls[asset.id]} alt={asset.fileName} />}
-            </div>
+            <MangaCanvas
+              bundle={bundle}
+              page={page}
+              assetUrls={assetUrls}
+              zoom={zoom}
+              onApply={apply}
+            />
           ) : (
             <div className="empty">
               ページを追加してください。素材を選び「全素材を連続ページ化」も利用できます。
