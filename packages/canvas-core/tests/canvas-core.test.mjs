@@ -14,6 +14,7 @@ import {
   pageToViewport,
   panelInputSchema,
   segmentGraphemes,
+  snapRectToGuides,
   viewportToPage,
 } from "../dist/index.js";
 test("page and viewport coordinates round-trip", () => {
@@ -57,6 +58,20 @@ test("cover and contain image placement remain centered", () => {
       { fit: "cover", scale: 2, offsetX: 5 },
     ),
     { x: -135, y: -30, width: 400, height: 200 },
+  );
+});
+test("objects snap to page and neighboring guides", () => {
+  assert.deepEqual(
+    snapRectToGuides(
+      { x: 47, y: 96, width: 100, height: 100 },
+      { width: 1000, height: 1000 },
+      [{ x: 150, y: 200, width: 200, height: 100 }],
+      5,
+    ),
+    {
+      rect: { x: 50, y: 100, width: 100, height: 100 },
+      guides: { vertical: [150], horizontal: [200] },
+    },
   );
 });
 test("z-index is unique and continuous", () => {

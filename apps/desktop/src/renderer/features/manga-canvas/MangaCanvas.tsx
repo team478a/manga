@@ -24,6 +24,7 @@ import {
   layoutVerticalText,
   pageTemplates,
   segmentGraphemes,
+  snapRectToGuides,
   type PageTemplateId,
 } from "@mangai/canvas-core";
 
@@ -96,12 +97,17 @@ function PanelNode({
   imageUrl,
   selected,
   onSelect,
+  onMove,
   onSave,
 }: {
   panel: Panel;
   imageUrl?: string;
   selected: boolean;
   onSelect: (node: any) => void;
+  onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
+    x: number;
+    y: number;
+  };
   onSave: (value: Panel) => void;
 }) {
   const image = useImage(imageUrl);
@@ -129,6 +135,16 @@ function PanelNode({
       draggable={!panel.locked}
       onClick={(event) => onSelect(event.currentTarget)}
       onTap={(event) => onSelect(event.currentTarget)}
+      onDragMove={(event) => {
+        if (!onMove) return;
+        const next = onMove({
+          x: event.target.x(),
+          y: event.target.y(),
+          width: panel.width,
+          height: panel.height,
+        });
+        event.target.position(next);
+      }}
       onDragEnd={(event) =>
         onSave({ ...panel, x: event.target.x(), y: event.target.y() })
       }
@@ -183,10 +199,15 @@ function PanelNode({
 function BalloonNode({
   balloon,
   onSelect,
+  onMove,
   onSave,
 }: {
   balloon: Balloon;
   onSelect: (node: any) => void;
+  onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
+    x: number;
+    y: number;
+  };
   onSave: (value: Balloon) => void;
 }) {
   if (!balloon.visible) return null;
@@ -203,6 +224,16 @@ function BalloonNode({
       draggable={!balloon.locked}
       onClick={(event) => onSelect(event.currentTarget)}
       onTap={(event) => onSelect(event.currentTarget)}
+      onDragMove={(event) => {
+        if (!onMove) return;
+        const next = onMove({
+          x: event.target.x(),
+          y: event.target.y(),
+          width: balloon.width,
+          height: balloon.height,
+        });
+        event.target.position(next);
+      }}
       onDragEnd={(event) =>
         onSave({
           ...balloon,
@@ -306,10 +337,15 @@ function balloonTailPoints(balloon: Balloon) {
 function TextNode({
   item,
   onSelect,
+  onMove,
   onSave,
 }: {
   item: TextObject;
   onSelect: (node: any) => void;
+  onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
+    x: number;
+    y: number;
+  };
   onSave: (value: TextObject) => void;
 }) {
   if (!item.visible) return null;
@@ -344,6 +380,16 @@ function TextNode({
       draggable={!item.locked}
       onClick={(event) => onSelect(event.target)}
       onTap={(event) => onSelect(event.target)}
+      onDragMove={(event) => {
+        if (!onMove) return;
+        const next = onMove({
+          x: event.target.x(),
+          y: event.target.y(),
+          width: item.width,
+          height: item.height,
+        });
+        event.target.position(next);
+      }}
       onDragEnd={(event) =>
         onSave({ ...item, x: event.target.x(), y: event.target.y() })
       }
@@ -366,13 +412,39 @@ function TextNode({
   );
 }
 
+function DebouncedTextArea({
+  initialValue,
+  onCommit,
+}: {
+  initialValue: string;
+  onCommit: (value: string) => void;
+}) {
+  const [value, setValue] = React.useState(initialValue);
+  const commitRef = React.useRef(onCommit);
+  commitRef.current = onCommit;
+  React.useEffect(() => setValue(initialValue), [initialValue]);
+  React.useEffect(() => {
+    if (value === initialValue) return;
+    const timer = window.setTimeout(() => commitRef.current(value), 600);
+    return () => window.clearTimeout(timer);
+  }, [value, initialValue]);
+  return (
+    <textarea
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+    />
+  );
+}
+
 function CanvasProperties({
   item,
+  balloons,
   savePanel,
   saveBalloon,
   saveText,
 }: {
   item: LayerItem;
+  balloons: Balloon[];
   savePanel: (item: Panel) => void;
   saveBalloon: (item: Balloon) => void;
   saveText: (item: TextObject) => void;
@@ -576,12 +648,29 @@ function CanvasProperties({
           )}
           <label>
             本文
-            <textarea
-              defaultValue={item.text}
-              onBlur={(event) =>
-                saveText({ ...item, text: event.target.value })
-              }
+            <DebouncedTextArea
+              initialValue={item.text}
+              onCommit={(text) => saveText({ ...item, text })}
             />
+          </label>
+          <label>
+            親の吹き出し
+            <select
+              value={item.parentBalloonId ?? ""}
+              onChange={(event) =>
+                saveText({
+                  ...item,
+                  parentBalloonId: event.target.value || null,
+                })
+              }
+            >
+              <option value="">なし（自由テキスト）</option>
+              {balloons.map((balloon) => (
+                <option key={balloon.id} value={balloon.id}>
+                  {balloon.name}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             組方向
@@ -658,6 +747,10 @@ export function MangaCanvas({
   onApply: (promise: Promise<ProjectBundle>) => void;
 }) {
   const [selection, setSelection] = React.useState<Selection>(null);
+  const [guides, setGuides] = React.useState<{
+    vertical: number[];
+    horizontal: number[];
+  }>({ vertical: [], horizontal: [] });
   const transformer = React.useRef<any>(null);
   const renderLegacyGroups = bundle.project.id === "";
   const scale = zoom / 100;
@@ -699,17 +792,33 @@ export function MangaCanvas({
   const selectedLayer = selection
     ? layers.find((item) => item.id === selection.id)
     : undefined;
+  const snapMove = (
+    id: string,
+    rect: { x: number; y: number; width: number; height: number },
+  ) => {
+    const result = snapRectToGuides(
+      rect,
+      page,
+      layers.filter((item) => item.id !== id),
+      8 / scale,
+    );
+    setGuides(result.guides);
+    return { x: result.rect.x, y: result.rect.y };
+  };
   const savePanel = (item: Panel) => {
+    setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
     onApply(window.mangai.canvas.savePanel(panelInput({ ...item, ...rect })));
   };
   const saveBalloon = (item: Balloon) => {
+    setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
     onApply(
       window.mangai.canvas.saveBalloon(balloonInput({ ...item, ...rect })),
     );
   };
   const saveText = (item: TextObject) => {
+    setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
     onApply(window.mangai.canvas.saveText(textInput({ ...item, ...rect })));
   };
@@ -840,7 +949,8 @@ export function MangaCanvas({
               window.mangai.canvas.saveText({
                 id: crypto.randomUUID(),
                 pageId: page.id,
-                parentBalloonId: null,
+                parentBalloonId:
+                  selection?.type === "balloon" ? selection.id : null,
                 name: `テキスト${texts.length + 1}`,
                 text: "テキスト",
                 writingMode: "vertical",
@@ -1106,6 +1216,7 @@ export function MangaCanvas({
                         selection?.type === "panel" && selection.id === panel.id
                       }
                       onSelect={(node) => select("panel", panel.id, node)}
+                      onMove={(rect) => snapMove(panel.id, rect)}
                       onSave={savePanel}
                     />
                   );
@@ -1117,6 +1228,7 @@ export function MangaCanvas({
                       key={`balloon-${balloon.id}`}
                       balloon={balloon}
                       onSelect={(node) => select("balloon", balloon.id, node)}
+                      onMove={(rect) => snapMove(balloon.id, rect)}
                       onSave={saveBalloon}
                     />
                   );
@@ -1127,10 +1239,29 @@ export function MangaCanvas({
                     key={`text-${text.id}`}
                     item={text}
                     onSelect={(node) => select("text", text.id, node)}
+                    onMove={(rect) => snapMove(text.id, rect)}
                     onSave={saveText}
                   />
                 );
               })}
+              {guides.vertical.map((x) => (
+                <Line
+                  key={`v-${x}`}
+                  points={[x, 0, x, page.height]}
+                  stroke="#00a3ff"
+                  strokeWidth={2 / scale}
+                  listening={false}
+                />
+              ))}
+              {guides.horizontal.map((y) => (
+                <Line
+                  key={`h-${y}`}
+                  points={[0, y, page.width, y]}
+                  stroke="#00a3ff"
+                  strokeWidth={2 / scale}
+                  listening={false}
+                />
+              ))}
               <Transformer
                 ref={transformer}
                 resizeEnabled={!selectedLayer?.locked}
@@ -1195,6 +1326,7 @@ export function MangaCanvas({
           {selectedLayer && (
             <CanvasProperties
               item={selectedLayer as LayerItem}
+              balloons={balloons}
               savePanel={savePanel}
               saveBalloon={saveBalloon}
               saveText={saveText}

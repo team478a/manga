@@ -94,6 +94,63 @@ export function computeImagePlacement(
     height,
   };
 }
+export type SnapResult = {
+  rect: Rect;
+  guides: { vertical: number[]; horizontal: number[] };
+};
+export function snapRectToGuides(
+  rect: Rect,
+  page: PageSize,
+  others: readonly Rect[] = [],
+  threshold = 8,
+): SnapResult {
+  const verticalTargets = [0, page.width / 2, page.width];
+  const horizontalTargets = [0, page.height / 2, page.height];
+  for (const other of others) {
+    verticalTargets.push(
+      other.x,
+      other.x + other.width / 2,
+      other.x + other.width,
+    );
+    horizontalTargets.push(
+      other.y,
+      other.y + other.height / 2,
+      other.y + other.height,
+    );
+  }
+  const xSnap = nearestSnap(
+    [rect.x, rect.x + rect.width / 2, rect.x + rect.width],
+    verticalTargets,
+    threshold,
+  );
+  const ySnap = nearestSnap(
+    [rect.y, rect.y + rect.height / 2, rect.y + rect.height],
+    horizontalTargets,
+    threshold,
+  );
+  return {
+    rect: {
+      ...rect,
+      x: rect.x + (xSnap?.delta ?? 0),
+      y: rect.y + (ySnap?.delta ?? 0),
+    },
+    guides: {
+      vertical: xSnap ? [xSnap.target] : [],
+      horizontal: ySnap ? [ySnap.target] : [],
+    },
+  };
+}
+function nearestSnap(anchors: number[], targets: number[], threshold: number) {
+  let best: { target: number; delta: number; distance: number } | undefined;
+  for (const anchor of anchors)
+    for (const target of targets) {
+      const delta = target - anchor;
+      const distance = Math.abs(delta);
+      if (distance <= threshold && (!best || distance < best.distance))
+        best = { target, delta, distance };
+    }
+  return best;
+}
 function clamp(value: number, minimum: number, maximum: number) {
   if (!Number.isFinite(value)) return minimum;
   return Math.min(maximum, Math.max(minimum, value));
