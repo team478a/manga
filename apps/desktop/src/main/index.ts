@@ -37,6 +37,7 @@ import {
 } from "@mangai/ai-core";
 import {
   balloonInputSchema,
+  canvasBatchInputSchema,
   canvasObjectIdSchema,
   panelInputSchema,
   textObjectInputSchema,
@@ -207,6 +208,13 @@ function register() {
     const projectId = store.projectIdForCanvasObject(item.type, item.id);
     return store.captureHistory(projectId, "Canvasオブジェクトを削除", () =>
       store.deleteCanvasObject(item.type, item.id),
+    );
+  });
+  handle("canvas:batch:save", (v) => {
+    const input = canvasBatchInputSchema.parse(v);
+    const projectId = store.projectIdForPage(input.pageId);
+    return store.captureHistory(projectId, "Canvasを一括更新", () =>
+      store.saveCanvasBatch(input),
     );
   });
   handle("history:list", (v) =>

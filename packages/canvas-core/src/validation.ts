@@ -82,3 +82,21 @@ export const canvasObjectIdSchema = z.object({
   type: z.enum(["panel", "balloon", "text"]),
   id: z.string().uuid(),
 });
+export const canvasBatchInputSchema = z
+  .object({
+    pageId: z.string().uuid(),
+    panels: z.array(panelInputSchema).default([]),
+    balloons: z.array(balloonInputSchema).default([]),
+    textObjects: z.array(textObjectInputSchema).default([]),
+    replacePanels: z.boolean().default(false),
+    replaceBalloons: z.boolean().default(false),
+    replaceTextObjects: z.boolean().default(false),
+  })
+  .superRefine((value, context) => {
+    const items = [...value.panels, ...value.balloons, ...value.textObjects];
+    if (items.some((item) => item.pageId !== value.pageId))
+      context.addIssue({
+        code: "custom",
+        message: "一括保存するオブジェクトのページが一致していません。",
+      });
+  });

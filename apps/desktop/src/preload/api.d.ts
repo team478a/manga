@@ -87,6 +87,15 @@ export type DesktopApi = {
       type: "panel" | "balloon" | "text",
       id: string,
     ) => Promise<ProjectBundle>;
+    saveBatch: (value: {
+      pageId: string;
+      panels?: Array<Omit<Panel, "createdAt" | "updatedAt">>;
+      balloons?: Array<Omit<Balloon, "createdAt" | "updatedAt">>;
+      textObjects?: Array<Omit<TextObject, "createdAt" | "updatedAt">>;
+      replacePanels?: boolean;
+      replaceBalloons?: boolean;
+      replaceTextObjects?: boolean;
+    }) => Promise<ProjectBundle>;
   };
   listHistory: (projectId: string) => Promise<OperationHistory>;
   undo: (projectId: string) => Promise<ProjectBundle>;

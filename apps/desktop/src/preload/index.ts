@@ -41,6 +41,8 @@ contextBridge.exposeInMainWorld("mangai", {
     saveText: (value: unknown) => ipcRenderer.invoke("canvas:text:save", value),
     deleteObject: (type: "panel" | "balloon" | "text", id: string) =>
       ipcRenderer.invoke("canvas:object:delete", { type, id }),
+    saveBatch: (value: unknown) =>
+      ipcRenderer.invoke("canvas:batch:save", value),
   },
   listHistory: (projectId: string) =>
     ipcRenderer.invoke("history:list", { id: projectId }),

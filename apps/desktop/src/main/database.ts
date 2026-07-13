@@ -676,6 +676,36 @@ export class MangaiDatabase {
     this.upsertTextObjectRow(item);
     return this.bundle(this.projectIdForPage(item.pageId));
   }
+  saveCanvasBatch(input: {
+    pageId: string;
+    panels: Array<Omit<Panel, "createdAt" | "updatedAt">>;
+    balloons: Array<Omit<Balloon, "createdAt" | "updatedAt">>;
+    textObjects: Array<Omit<TextObject, "createdAt" | "updatedAt">>;
+    replacePanels: boolean;
+    replaceBalloons: boolean;
+    replaceTextObjects: boolean;
+  }) {
+    const projectId = this.projectIdForPage(input.pageId);
+    this.db.transaction(() => {
+      if (input.replaceTextObjects)
+        this.db
+          .prepare("delete from text_objects where page_id=?")
+          .run(input.pageId);
+      if (input.replaceBalloons)
+        this.db
+          .prepare("delete from balloons where page_id=?")
+          .run(input.pageId);
+      if (input.replacePanels)
+        this.db.prepare("delete from panels where page_id=?").run(input.pageId);
+      for (const item of input.panels)
+        this.upsertPanelRow({ ...item, createdAt: "", updatedAt: "" });
+      for (const item of input.balloons)
+        this.upsertBalloonRow({ ...item, createdAt: "", updatedAt: "" });
+      for (const item of input.textObjects)
+        this.upsertTextObjectRow({ ...item, createdAt: "", updatedAt: "" });
+    })();
+    return this.bundle(projectId);
+  }
   deleteCanvasObject(type: "panel" | "balloon" | "text", id: string) {
     const table =
       type === "panel"

@@ -638,6 +638,7 @@ function App() {
               bundle={bundle}
               page={page}
               assetUrls={assetUrls}
+              selectedAssetId={selectedAsset}
               zoom={zoom}
               onApply={apply}
             />

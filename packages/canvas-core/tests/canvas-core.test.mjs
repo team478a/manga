@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import {
   applyPageTemplate,
+  canvasBatchInputSchema,
   constrainRectToPage,
   layoutVerticalText,
   normalizeLayerOrder,
@@ -118,6 +119,40 @@ test("Zod rejects unsafe pages and panels", () => {
       imageScale: 1,
       imageRotation: 0,
       imageOpacity: 1,
+    }).success,
+    false,
+  );
+});
+test("canvas batch requires every object to belong to its page", () => {
+  const pageId = randomUUID();
+  assert.equal(
+    canvasBatchInputSchema.safeParse({
+      pageId,
+      panels: [
+        {
+          id: randomUUID(),
+          pageId: randomUUID(),
+          name: "別ページのコマ",
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100,
+          rotation: 0,
+          zIndex: 0,
+          visible: true,
+          locked: false,
+          borderColor: "#000",
+          borderWidth: 4,
+          fillColor: "#fff",
+          imageAssetId: null,
+          imageFit: "cover",
+          imageOffsetX: 0,
+          imageOffsetY: 0,
+          imageScale: 1,
+          imageRotation: 0,
+          imageOpacity: 1,
+        },
+      ],
     }).success,
     false,
   );

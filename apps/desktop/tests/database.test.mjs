@@ -339,6 +339,33 @@ test("canvas objects persist and participate in undo and redo", () => {
   bundle = db.undo(projectId);
   assert.equal(bundle.balloons.length, 1);
   assert.equal(bundle.textObjects.length, 1);
+  bundle = db.captureHistory(projectId, "テンプレートを適用", () =>
+    db.saveCanvasBatch({
+      pageId,
+      panels: [
+        { ...panel, id: "00000000-0000-4000-8000-000000000011", name: "左" },
+        {
+          ...panel,
+          id: "00000000-0000-4000-8000-000000000012",
+          name: "右",
+          x: 540,
+        },
+      ],
+      balloons: [],
+      textObjects: [],
+      replacePanels: true,
+      replaceBalloons: false,
+      replaceTextObjects: false,
+    }),
+  );
+  assert.equal(bundle.panels.length, 2);
+  assert.equal(
+    db.listOperationHistory(projectId).items[0].label,
+    "テンプレートを適用",
+  );
+  bundle = db.undo(projectId);
+  assert.equal(bundle.panels.length, 1);
+  assert.equal(bundle.panels[0].name, "コマ1");
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

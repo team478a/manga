@@ -17,6 +17,7 @@ import type {
 } from "@mangai/project-core";
 import {
   applyPageTemplate,
+  constrainRectToPage,
   pageTemplates,
   type PageTemplateId,
 } from "@mangai/canvas-core";
@@ -148,21 +149,140 @@ function PanelNode({
   );
 }
 
+function BalloonNode({
+  balloon,
+  onSelect,
+  onSave,
+}: {
+  balloon: Balloon;
+  onSelect: (node: any) => void;
+  onSave: (value: Balloon) => void;
+}) {
+  if (!balloon.visible) return null;
+  const Shape = balloon.type === "speech_ellipse" ? Ellipse : Rect;
+  const centered = balloon.type === "speech_ellipse";
+  return (
+    <Shape
+      x={centered ? balloon.x + balloon.width / 2 : balloon.x}
+      y={centered ? balloon.y + balloon.height / 2 : balloon.y}
+      width={balloon.width}
+      height={balloon.height}
+      radiusX={balloon.width / 2}
+      radiusY={balloon.height / 2}
+      cornerRadius={balloon.type === "speech_rounded" ? 30 : 0}
+      rotation={balloon.rotation}
+      fill={balloon.fillColor}
+      stroke={balloon.strokeColor}
+      strokeWidth={balloon.strokeWidth}
+      opacity={balloon.opacity}
+      draggable={!balloon.locked}
+      onClick={(event) => onSelect(event.target)}
+      onTap={(event) => onSelect(event.target)}
+      onDragEnd={(event) =>
+        onSave({
+          ...balloon,
+          x: event.target.x() - (centered ? balloon.width / 2 : 0),
+          y: event.target.y() - (centered ? balloon.height / 2 : 0),
+        })
+      }
+      onTransformEnd={(event) => {
+        const node = event.target;
+        const width = Math.max(20, node.width() * node.scaleX());
+        const height = Math.max(20, node.height() * node.scaleY());
+        node.scaleX(1);
+        node.scaleY(1);
+        onSave({
+          ...balloon,
+          x: node.x() - (centered ? width / 2 : 0),
+          y: node.y() - (centered ? height / 2 : 0),
+          width,
+          height,
+          rotation: node.rotation(),
+        });
+      }}
+    />
+  );
+}
+
+function TextNode({
+  item,
+  onSelect,
+  onSave,
+}: {
+  item: TextObject;
+  onSelect: (node: any) => void;
+  onSave: (value: TextObject) => void;
+}) {
+  if (!item.visible) return null;
+  return (
+    <Text
+      x={item.x}
+      y={item.y}
+      width={item.width}
+      height={item.height}
+      text={
+        item.writingMode === "vertical" ? [...item.text].join("\n") : item.text
+      }
+      fontFamily={item.fontFamily}
+      fontSize={item.fontSize}
+      fontStyle={item.fontWeight >= 600 ? "bold" : "normal"}
+      fill={item.color}
+      align={
+        item.textAlign === "start"
+          ? "left"
+          : item.textAlign === "end"
+            ? "right"
+            : "center"
+      }
+      verticalAlign={item.verticalAlign}
+      lineHeight={item.lineHeight}
+      letterSpacing={item.letterSpacing}
+      padding={item.padding}
+      opacity={item.opacity}
+      rotation={item.rotation}
+      draggable={!item.locked}
+      onClick={(event) => onSelect(event.target)}
+      onTap={(event) => onSelect(event.target)}
+      onDragEnd={(event) =>
+        onSave({ ...item, x: event.target.x(), y: event.target.y() })
+      }
+      onTransformEnd={(event) => {
+        const node = event.target;
+        const width = Math.max(20, node.width() * node.scaleX());
+        const height = Math.max(20, node.height() * node.scaleY());
+        node.scaleX(1);
+        node.scaleY(1);
+        onSave({
+          ...item,
+          x: node.x(),
+          y: node.y(),
+          width,
+          height,
+          rotation: node.rotation(),
+        });
+      }}
+    />
+  );
+}
+
 export function MangaCanvas({
   bundle,
   page,
   assetUrls,
+  selectedAssetId,
   zoom,
   onApply,
 }: {
   bundle: ProjectBundle;
   page: Page;
   assetUrls: Record<string, string>;
+  selectedAssetId: string | null;
   zoom: number;
   onApply: (promise: Promise<ProjectBundle>) => void;
 }) {
   const [selection, setSelection] = React.useState<Selection>(null);
   const transformer = React.useRef<any>(null);
+  const renderLegacyGroups = bundle.project.id === "";
   const scale = zoom / 100;
   const pageImage = useImage(
     page.imageAssetId ? assetUrls[page.imageAssetId] : undefined,
@@ -195,6 +315,27 @@ export function MangaCanvas({
   const nextZ = layers.length
     ? Math.max(...layers.map((item) => item.zIndex)) + 1
     : 0;
+  const selectedPanel =
+    selection?.type === "panel"
+      ? panels.find((item) => item.id === selection.id)
+      : undefined;
+  const selectedLayer = selection
+    ? layers.find((item) => item.id === selection.id)
+    : undefined;
+  const savePanel = (item: Panel) => {
+    const rect = constrainRectToPage(item, page);
+    onApply(window.mangai.canvas.savePanel(panelInput({ ...item, ...rect })));
+  };
+  const saveBalloon = (item: Balloon) => {
+    const rect = constrainRectToPage(item, page);
+    onApply(
+      window.mangai.canvas.saveBalloon(balloonInput({ ...item, ...rect })),
+    );
+  };
+  const saveText = (item: TextObject) => {
+    const rect = constrainRectToPage(item, page);
+    onApply(window.mangai.canvas.saveText(textInput({ ...item, ...rect })));
+  };
   const addPanel = (rect?: {
     x: number;
     y: number;
@@ -226,14 +367,12 @@ export function MangaCanvas({
         imageOpacity: 1,
       }),
     );
-  const applyTemplate = async (id: PageTemplateId) => {
-    let result = bundle;
-    for (const panel of panels)
-      result = await window.mangai.canvas.deleteObject("panel", panel.id);
+  const applyTemplate = (id: PageTemplateId) => {
     const rects = applyPageTemplate(id, page);
-    for (let index = 0; index < rects.length; index++) {
-      const rect = rects[index];
-      result = await window.mangai.canvas.savePanel({
+    return window.mangai.canvas.saveBatch({
+      pageId: page.id,
+      replacePanels: true,
+      panels: rects.map((rect, index) => ({
         id: crypto.randomUUID(),
         pageId: page.id,
         name: `コマ${index + 1}`,
@@ -252,9 +391,39 @@ export function MangaCanvas({
         imageScale: 1,
         imageRotation: 0,
         imageOpacity: 1,
-      });
-    }
-    return result;
+      })),
+    });
+  };
+  const updateLayerState = (
+    item: (typeof layers)[number],
+    changes: { visible?: boolean; locked?: boolean },
+  ) => {
+    if (item.objectType === "panel") savePanel({ ...item, ...changes });
+    else if (item.objectType === "balloon")
+      saveBalloon({ ...item, ...changes });
+    else saveText({ ...item, ...changes });
+  };
+  const moveLayer = (id: string, direction: -1 | 1) => {
+    const ordered = [...layers].sort((a, b) => a.zIndex - b.zIndex);
+    const index = ordered.findIndex((item) => item.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= ordered.length) return;
+    [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+    const normalized = ordered.map((item, zIndex) => ({ ...item, zIndex }));
+    onApply(
+      window.mangai.canvas.saveBatch({
+        pageId: page.id,
+        panels: normalized
+          .filter((item) => item.objectType === "panel")
+          .map((item) => panelInput(item as Panel)),
+        balloons: normalized
+          .filter((item) => item.objectType === "balloon")
+          .map((item) => balloonInput(item as Balloon)),
+        textObjects: normalized
+          .filter((item) => item.objectType === "text")
+          .map((item) => textInput(item as TextObject)),
+      }),
+    );
   };
   return (
     <div className="manga-canvas-shell">
@@ -350,6 +519,15 @@ export function MangaCanvas({
             選択を削除
           </button>
         )}
+        {selectedPanel && selectedAssetId && (
+          <button
+            onClick={() =>
+              savePanel({ ...selectedPanel, imageAssetId: selectedAssetId })
+            }
+          >
+            選択コマへ素材を配置
+          </button>
+        )}
       </div>
       <div className="canvas-stage-row">
         <div className="konva-paper">
@@ -379,75 +557,139 @@ export function MangaCanvas({
                   listening={false}
                 />
               )}
-              {panels.map((panel) => (
-                <PanelNode
-                  key={panel.id}
-                  panel={panel}
-                  imageUrl={
-                    panel.imageAssetId
-                      ? assetUrls[panel.imageAssetId]
-                      : undefined
-                  }
-                  selected={
-                    selection?.type === "panel" && selection.id === panel.id
-                  }
-                  onSelect={(node) => select("panel", panel.id, node)}
-                  onSave={(value) =>
-                    onApply(window.mangai.canvas.savePanel(panelInput(value)))
-                  }
-                />
-              ))}
-              {balloons
-                .filter((item) => item.visible)
-                .map((balloon: Balloon) => {
-                  const Shape =
-                    balloon.type === "speech_ellipse" ? Ellipse : Rect;
-                  return (
-                    <Shape
-                      key={balloon.id}
-                      x={
-                        balloon.type === "speech_ellipse"
-                          ? balloon.x + balloon.width / 2
-                          : balloon.x
-                      }
-                      y={
-                        balloon.type === "speech_ellipse"
-                          ? balloon.y + balloon.height / 2
-                          : balloon.y
-                      }
-                      width={balloon.width}
-                      height={balloon.height}
-                      radiusX={balloon.width / 2}
-                      radiusY={balloon.height / 2}
-                      cornerRadius={balloon.type === "speech_rounded" ? 30 : 0}
-                      rotation={balloon.rotation}
-                      fill={balloon.fillColor}
-                      stroke={balloon.strokeColor}
-                      strokeWidth={balloon.strokeWidth}
-                      opacity={balloon.opacity}
-                      draggable={!balloon.locked}
-                      onClick={(event) =>
-                        select("balloon", balloon.id, event.target)
-                      }
-                      onDragEnd={(event) => {
-                        const offsetX =
+              {renderLegacyGroups &&
+                panels.map((panel) => (
+                  <PanelNode
+                    key={panel.id}
+                    panel={panel}
+                    imageUrl={
+                      panel.imageAssetId
+                        ? assetUrls[panel.imageAssetId]
+                        : undefined
+                    }
+                    selected={
+                      selection?.type === "panel" && selection.id === panel.id
+                    }
+                    onSelect={(node) => select("panel", panel.id, node)}
+                    onSave={savePanel}
+                  />
+                ))}
+              {renderLegacyGroups &&
+                balloons
+                  .filter((item) => item.visible)
+                  .map((balloon: Balloon) => {
+                    const Shape =
+                      balloon.type === "speech_ellipse" ? Ellipse : Rect;
+                    return (
+                      <Shape
+                        key={balloon.id}
+                        x={
                           balloon.type === "speech_ellipse"
-                            ? balloon.width / 2
-                            : 0;
-                        const offsetY =
+                            ? balloon.x + balloon.width / 2
+                            : balloon.x
+                        }
+                        y={
                           balloon.type === "speech_ellipse"
-                            ? balloon.height / 2
-                            : 0;
-                        onApply(
-                          window.mangai.canvas.saveBalloon(
-                            balloonInput({
-                              ...balloon,
-                              x: event.target.x() - offsetX,
-                              y: event.target.y() - offsetY,
-                            }),
-                          ),
-                        );
-                      }}
+                            ? balloon.y + balloon.height / 2
+                            : balloon.y
+                        }
+                        width={balloon.width}
+                        height={balloon.height}
+                        radiusX={balloon.width / 2}
+                        radiusY={balloon.height / 2}
+                        cornerRadius={
+                          balloon.type === "speech_rounded" ? 30 : 0
+                        }
+                        rotation={balloon.rotation}
+                        fill={balloon.fillColor}
+                        stroke={balloon.strokeColor}
+                        strokeWidth={balloon.strokeWidth}
+                        opacity={balloon.opacity}
+                        draggable={!balloon.locked}
+                        onClick={(event) =>
+                          select("balloon", balloon.id, event.target)
+                        }
+                        onDragEnd={(event) => {
+                          const offsetX =
+                            balloon.type === "speech_ellipse"
+                              ? balloon.width / 2
+                              : 0;
+                          const offsetY =
+                            balloon.type === "speech_ellipse"
+                              ? balloon.height / 2
+                              : 0;
+                          saveBalloon({
+                            ...balloon,
+                            x: event.target.x() - offsetX,
+                            y: event.target.y() - offsetY,
+                          });
+                        }}
+                        onTransformEnd={(event) => {
+                          const node = event.target;
+                          const width = Math.max(
+                            20,
+                            node.width() * node.scaleX(),
+                          );
+                          const height = Math.max(
+                            20,
+                            node.height() * node.scaleY(),
+                          );
+                          const centered = balloon.type === "speech_ellipse";
+                          node.scaleX(1);
+                          node.scaleY(1);
+                          saveBalloon({
+                            ...balloon,
+                            x: node.x() - (centered ? width / 2 : 0),
+                            y: node.y() - (centered ? height / 2 : 0),
+                            width,
+                            height,
+                            rotation: node.rotation(),
+                          });
+                        }}
+                      />
+                    );
+                  })}
+              {renderLegacyGroups &&
+                texts
+                  .filter((item) => item.visible)
+                  .map((text: TextObject) => (
+                    <Text
+                      key={text.id}
+                      x={text.x}
+                      y={text.y}
+                      width={text.width}
+                      height={text.height}
+                      text={
+                        text.writingMode === "vertical"
+                          ? [...text.text].join("\n")
+                          : text.text
+                      }
+                      fontFamily={text.fontFamily}
+                      fontSize={text.fontSize}
+                      fontStyle={text.fontWeight >= 600 ? "bold" : "normal"}
+                      fill={text.color}
+                      align={
+                        text.textAlign === "start"
+                          ? "left"
+                          : text.textAlign === "end"
+                            ? "right"
+                            : "center"
+                      }
+                      verticalAlign={text.verticalAlign}
+                      lineHeight={text.lineHeight}
+                      letterSpacing={text.letterSpacing}
+                      padding={text.padding}
+                      opacity={text.opacity}
+                      rotation={text.rotation}
+                      draggable={!text.locked}
+                      onClick={(event) => select("text", text.id, event.target)}
+                      onDragEnd={(event) =>
+                        saveText({
+                          ...text,
+                          x: event.target.x(),
+                          y: event.target.y(),
+                        })
+                      }
                       onTransformEnd={(event) => {
                         const node = event.target;
                         const width = Math.max(
@@ -458,96 +700,64 @@ export function MangaCanvas({
                           20,
                           node.height() * node.scaleY(),
                         );
-                        const centered = balloon.type === "speech_ellipse";
                         node.scaleX(1);
                         node.scaleY(1);
-                        onApply(
-                          window.mangai.canvas.saveBalloon(
-                            balloonInput({
-                              ...balloon,
-                              x: node.x() - (centered ? width / 2 : 0),
-                              y: node.y() - (centered ? height / 2 : 0),
-                              width,
-                              height,
-                              rotation: node.rotation(),
-                            }),
-                          ),
-                        );
+                        saveText({
+                          ...text,
+                          x: node.x(),
+                          y: node.y(),
+                          width,
+                          height,
+                          rotation: node.rotation(),
+                        });
                       }}
                     />
+                  ))}
+              {[...layers].reverse().map((item) => {
+                if (item.objectType === "panel") {
+                  const panel = item as Panel & { objectType: "panel" };
+                  return (
+                    <PanelNode
+                      key={`panel-${panel.id}`}
+                      panel={panel}
+                      imageUrl={
+                        panel.imageAssetId
+                          ? assetUrls[panel.imageAssetId]
+                          : undefined
+                      }
+                      selected={
+                        selection?.type === "panel" && selection.id === panel.id
+                      }
+                      onSelect={(node) => select("panel", panel.id, node)}
+                      onSave={savePanel}
+                    />
                   );
-                })}
-              {texts
-                .filter((item) => item.visible)
-                .map((text: TextObject) => (
-                  <Text
-                    key={text.id}
-                    x={text.x}
-                    y={text.y}
-                    width={text.width}
-                    height={text.height}
-                    text={
-                      text.writingMode === "vertical"
-                        ? [...text.text].join("\n")
-                        : text.text
-                    }
-                    fontFamily={text.fontFamily}
-                    fontSize={text.fontSize}
-                    fontStyle={text.fontWeight >= 600 ? "bold" : "normal"}
-                    fill={text.color}
-                    align={
-                      text.textAlign === "start"
-                        ? "left"
-                        : text.textAlign === "end"
-                          ? "right"
-                          : "center"
-                    }
-                    verticalAlign={text.verticalAlign}
-                    lineHeight={text.lineHeight}
-                    letterSpacing={text.letterSpacing}
-                    padding={text.padding}
-                    opacity={text.opacity}
-                    rotation={text.rotation}
-                    draggable={!text.locked}
-                    onClick={(event) => select("text", text.id, event.target)}
-                    onDragEnd={(event) =>
-                      onApply(
-                        window.mangai.canvas.saveText(
-                          textInput({
-                            ...text,
-                            x: event.target.x(),
-                            y: event.target.y(),
-                          }),
-                        ),
-                      )
-                    }
-                    onTransformEnd={(event) => {
-                      const node = event.target;
-                      const width = Math.max(20, node.width() * node.scaleX());
-                      const height = Math.max(
-                        20,
-                        node.height() * node.scaleY(),
-                      );
-                      node.scaleX(1);
-                      node.scaleY(1);
-                      onApply(
-                        window.mangai.canvas.saveText(
-                          textInput({
-                            ...text,
-                            x: node.x(),
-                            y: node.y(),
-                            width,
-                            height,
-                            rotation: node.rotation(),
-                          }),
-                        ),
-                      );
-                    }}
+                }
+                if (item.objectType === "balloon") {
+                  const balloon = item as Balloon & { objectType: "balloon" };
+                  return (
+                    <BalloonNode
+                      key={`balloon-${balloon.id}`}
+                      balloon={balloon}
+                      onSelect={(node) => select("balloon", balloon.id, node)}
+                      onSave={saveBalloon}
+                    />
+                  );
+                }
+                const text = item as TextObject & { objectType: "text" };
+                return (
+                  <TextNode
+                    key={`text-${text.id}`}
+                    item={text}
+                    onSelect={(node) => select("text", text.id, node)}
+                    onSave={saveText}
                   />
-                ))}
+                );
+              })}
               <Transformer
                 ref={transformer}
-                rotateEnabled
+                resizeEnabled={!selectedLayer?.locked}
+                rotateEnabled={!selectedLayer?.locked}
                 anchorSize={12 / scale}
               />
             </Layer>
@@ -555,23 +765,55 @@ export function MangaCanvas({
         </div>
         <aside className="canvas-layers">
           <h3>レイヤー</h3>
-          {layers.map((item) => (
-            <button
+          {layers.map((item, index) => (
+            <div
+              className="canvas-layer-row"
               key={`${item.objectType}-${item.id}`}
-              className={selection?.id === item.id ? "active" : ""}
-              onClick={() =>
-                setSelection({ type: item.objectType, id: item.id })
-              }
             >
-              <span>
-                {item.objectType === "panel"
-                  ? "▣"
-                  : item.objectType === "balloon"
-                    ? "◯"
-                    : "T"}
-              </span>
-              {item.name}
-            </button>
+              <button
+                className={selection?.id === item.id ? "active" : ""}
+                onClick={() =>
+                  setSelection({ type: item.objectType, id: item.id })
+                }
+              >
+                <span>
+                  {item.objectType === "panel"
+                    ? "▣"
+                    : item.objectType === "balloon"
+                      ? "◯"
+                      : "T"}
+                </span>
+                {item.name}
+              </button>
+              <button
+                title="表示切替"
+                onClick={() =>
+                  updateLayerState(item, { visible: !item.visible })
+                }
+              >
+                {item.visible ? "◉" : "○"}
+              </button>
+              <button
+                title="ロック切替"
+                onClick={() => updateLayerState(item, { locked: !item.locked })}
+              >
+                {item.locked ? "🔒" : "◇"}
+              </button>
+              <button
+                disabled={index === 0}
+                title="前面へ"
+                onClick={() => moveLayer(item.id, 1)}
+              >
+                ↑
+              </button>
+              <button
+                disabled={index === layers.length - 1}
+                title="背面へ"
+                onClick={() => moveLayer(item.id, -1)}
+              >
+                ↓
+              </button>
+            </div>
           ))}
         </aside>
       </div>
