@@ -13,6 +13,7 @@ import {
   pageTemplates,
   pageToViewport,
   panelInputSchema,
+  remapChildRect,
   segmentGraphemes,
   snapRectToGuides,
   viewportToPage,
@@ -42,6 +43,16 @@ test("minimum dimensions and rotations are normalized", () => {
   assert.equal(value.height, 16);
   assert.equal(normalizeRotation(-450), 270);
   assert.equal(normalizeRotation(725), 5);
+});
+test("child rectangles follow parent movement and resizing", () => {
+  assert.deepEqual(
+    remapChildRect(
+      { x: 120, y: 140, width: 100, height: 80 },
+      { x: 100, y: 100, width: 200, height: 200 },
+      { x: 300, y: 200, width: 400, height: 100 },
+    ),
+    { x: 340, y: 220, width: 200, height: 40 },
+  );
 });
 test("cover and contain image placement remain centered", () => {
   assert.deepEqual(

@@ -24,6 +24,7 @@ import {
   constrainRectToPage,
   layoutVerticalText,
   pageTemplates,
+  remapChildRect,
   segmentGraphemes,
   snapRectToGuides,
   verticalGlyph,
@@ -842,8 +843,23 @@ export function MangaCanvas({
     const deltaX = item.x - source.x;
     const deltaY = item.y - source.y;
     setGuides({ vertical: [], horizontal: [] });
+    const selectedBalloonIds = new Set(
+      selectedItems
+        .filter((value) => value.objectType === "balloon")
+        .map((value) => value.id),
+    );
+    const itemsToMove = [
+      ...selectedItems,
+      ...layers.filter(
+        (value) =>
+          value.objectType === "text" &&
+          value.parentBalloonId &&
+          selectedBalloonIds.has(value.parentBalloonId) &&
+          !isSelected("text", value.id),
+      ),
+    ];
     saveItems(
-      selectedItems.map((value) => ({
+      itemsToMove.map((value) => ({
         ...value,
         ...constrainRectToPage(
           { ...value, x: value.x + deltaX, y: value.y + deltaY },
@@ -863,9 +879,35 @@ export function MangaCanvas({
     if (saveGroupMove({ ...item, objectType: "balloon" })) return;
     setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
-    onApply(
-      window.mangai.canvas.saveBalloon(balloonInput({ ...item, ...rect })),
-    );
+    const next = { ...item, ...rect };
+    const previous = balloons.find((value) => value.id === item.id);
+    const children = texts.filter((value) => value.parentBalloonId === item.id);
+    if (
+      previous &&
+      children.length &&
+      (previous.x !== next.x ||
+        previous.y !== next.y ||
+        previous.width !== next.width ||
+        previous.height !== next.height)
+    ) {
+      onApply(
+        window.mangai.canvas.saveBatch({
+          pageId: page.id,
+          balloons: [balloonInput(next)],
+          textObjects: children.map((child) =>
+            textInput({
+              ...child,
+              ...constrainRectToPage(
+                remapChildRect(child, previous, next),
+                page,
+              ),
+            }),
+          ),
+        }),
+      );
+      return;
+    }
+    onApply(window.mangai.canvas.saveBalloon(balloonInput(next)));
   };
   const saveText = (item: TextObject) => {
     if (saveGroupMove({ ...item, objectType: "text" })) return;
@@ -920,10 +962,25 @@ export function MangaCanvas({
   const duplicateSelected = () => {
     if (!selectedItems.length || selectedItems.some((item) => item.locked))
       return;
-    const idMap = new Map(
-      selectedItems.map((item) => [item.id, crypto.randomUUID()]),
+    const selectedBalloonIds = new Set(
+      selectedItems
+        .filter((item) => item.objectType === "balloon")
+        .map((item) => item.id),
     );
-    const copies = [...selectedItems]
+    const itemsToCopy = [
+      ...selectedItems,
+      ...layers.filter(
+        (item) =>
+          item.objectType === "text" &&
+          item.parentBalloonId &&
+          selectedBalloonIds.has(item.parentBalloonId) &&
+          !isSelected("text", item.id),
+      ),
+    ];
+    const idMap = new Map(
+      itemsToCopy.map((item) => [item.id, crypto.randomUUID()]),
+    );
+    const copies = [...itemsToCopy]
       .sort((a, b) => a.zIndex - b.zIndex)
       .map((item, index) => {
         const copy = {
@@ -1074,30 +1131,63 @@ export function MangaCanvas({
       <div className="canvas-tools">
         <button onClick={() => addPanel()}>＋ コマ</button>
         <button
-          onClick={() =>
+          onClick={() => {
+            const balloonId = crypto.randomUUID();
+            const balloon = {
+              id: balloonId,
+              pageId: page.id,
+              name: `吹き出し${balloons.length + 1}`,
+              type: "speech_ellipse",
+              x: page.width * 0.55,
+              y: page.height * 0.08,
+              width: page.width * 0.35,
+              height: page.height * 0.2,
+              rotation: 0,
+              zIndex: nextZ,
+              visible: true,
+              locked: false,
+              fillColor: "#ffffff",
+              strokeColor: "#000000",
+              strokeWidth: 4,
+              opacity: 1,
+              tailDirection: "bottom_left",
+              tailOffset: 0.5,
+            } as const;
             onApply(
-              window.mangai.canvas.saveBalloon({
-                id: crypto.randomUUID(),
+              window.mangai.canvas.saveBatch({
                 pageId: page.id,
-                name: `吹き出し${balloons.length + 1}`,
-                type: "speech_ellipse",
-                x: page.width * 0.55,
-                y: page.height * 0.08,
-                width: page.width * 0.35,
-                height: page.height * 0.2,
-                rotation: 0,
-                zIndex: nextZ,
-                visible: true,
-                locked: false,
-                fillColor: "#ffffff",
-                strokeColor: "#000000",
-                strokeWidth: 4,
-                opacity: 1,
-                tailDirection: "bottom_left",
-                tailOffset: 0.5,
+                balloons: [balloon],
+                textObjects: [
+                  {
+                    id: crypto.randomUUID(),
+                    pageId: page.id,
+                    parentBalloonId: balloonId,
+                    name: `テキスト${texts.length + 1}`,
+                    text: "テキスト",
+                    writingMode: "vertical",
+                    x: balloon.x + balloon.width * 0.2,
+                    y: balloon.y + balloon.height * 0.15,
+                    width: balloon.width * 0.6,
+                    height: balloon.height * 0.7,
+                    rotation: 0,
+                    zIndex: nextZ + 1,
+                    visible: true,
+                    locked: false,
+                    fontFamily: "sans-serif",
+                    fontSize: 48,
+                    fontWeight: 400,
+                    color: "#000000",
+                    textAlign: "center",
+                    verticalAlign: "middle",
+                    lineHeight: 1.2,
+                    letterSpacing: 0,
+                    padding: 16,
+                    opacity: 1,
+                  },
+                ],
               }),
-            )
-          }
+            );
+          }}
         >
           ＋ 吹き出し
         </button>

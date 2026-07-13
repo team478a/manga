@@ -54,6 +54,20 @@ export function constrainRectToPage(
     height,
   };
 }
+export function remapChildRect(
+  child: Rect,
+  previousParent: Rect,
+  nextParent: Rect,
+): Rect {
+  const scaleX = nextParent.width / previousParent.width;
+  const scaleY = nextParent.height / previousParent.height;
+  return {
+    x: nextParent.x + (child.x - previousParent.x) * scaleX,
+    y: nextParent.y + (child.y - previousParent.y) * scaleY,
+    width: child.width * scaleX,
+    height: child.height * scaleY,
+  };
+}
 export function normalizeRotation(value: number) {
   if (!Number.isFinite(value)) return 0;
   const rotation = value % 360;

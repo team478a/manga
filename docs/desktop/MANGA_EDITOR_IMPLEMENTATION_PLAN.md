@@ -141,6 +141,8 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - テキスト本文、縦横組、文字サイズ、文字色、揃え、名称の詳細編集を実装
 - grapheme単位の縦書き表示と文字あふれ警告を実装
 - 同一ページBalloonへの親子割り当てUIと、選択Balloon内へのText追加を実装
+- Balloon作成時の子Text自動生成と、移動・リサイズ時の追従・領域再計算を実装
+- 親Balloonの複製・複数移動では子Textを自動的に含め、単一Undoへ集約
 - 本文入力を600msのデバウンス保存へ集約
 - 句読点・括弧・長音・三点リーダーを縦書き用字形へ変換
 - 禁則処理は次の作業単位
@@ -194,7 +196,7 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 進捗:
 
 - Desktop TypeScript、ESLint、本番ビルド、統合テスト19件を確認
-- canvas-core単体テスト12件を確認
+- canvas-core単体テスト13件を確認
 - Hub TypeScript、ESLint、Next.js本番ビルドを確認
 - Windows x64 NSISを生成し、パッケージ版の正常起動を確認
 - パッケージ版で新規Project、Page、4コマ、吹き出し、縦書き、Undo/Redo、再起動復元を確認
