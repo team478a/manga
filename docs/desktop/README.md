@@ -42,7 +42,8 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - `projects`: 作品設定、保存先、代表素材、最近開いた日時
 - `episodes`: プロジェクト内の話と順序
 - `pages`: ページ番号、順序、寸法、配置素材、プロンプト、メモ
-- `panels`: 将来のコマ編集向け座標・生成情報
+- `panels`: コマの座標、スタイル、画像変形・生成情報
+- `balloons` / `text_objects`: 吹き出し、自由テキスト、親基準の相対テキスト座標
 - `assets`: 相対パス、画像メタ情報、SHA-256
 - `operation_history`: Undo/Redo用の変更前後スナップショット
 - `ai_provider_settings` / `ai_models`: AI接続設定とモデルキャッシュ

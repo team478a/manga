@@ -89,6 +89,8 @@ MANGAI Desktopで、矩形コマ、素材画像、吹き出し、縦書き・横
 ## データ構造と保存
 
 - 正本はSQLiteの`pages`、`panels`、`balloons`、`text_objects`です。
+- 吹き出し内テキストの位置・寸法は、親の幅と高さを1とする相対比率を`relative_x`、`relative_y`、`relative_width`、`relative_height`へ保存します。
+- Canvas・IPC・書き出し時は相対比率からPage原寸座標を導出します。自由テキストはPage座標を正本とします。
 - Canvas内部JSONは永続データの正本にしません。
 - 座標と寸法は表示倍率に依存しないPage原寸ピクセルです。
 - Canvas IPC入力は`@mangai/canvas-core`のZod schemaで検証します。
@@ -104,7 +106,6 @@ Canvasスナップショットv2はPage設定、Panel、Balloon、Text、z-index
 
 ## 制限事項・既知の問題
 
-- 親子テキストは移動・リサイズへ追従しますが、SQLiteにはPage座標として保存します。親基準の相対座標を正本にする移行は未実施です。
 - レイヤーのボタン並び替えはありますが、ドラッグ＆ドロップ並び替えは未実装です。
 - 高度な禁則、ルビ、縦中横、商用フォント同梱は対象外です。
 - Canvas領域はPage原寸×ズームでスクロールします。狭いウィンドウではレイヤーパネルを見るため横スクロールが必要です。

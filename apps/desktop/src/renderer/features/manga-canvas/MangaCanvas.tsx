@@ -28,7 +28,6 @@ import {
   normalizeRotation,
   pageTemplates,
   rectFromPoints,
-  remapChildRect,
   segmentGraphemes,
   snapPointToGrid,
   snapRectToGrid,
@@ -1049,35 +1048,9 @@ export function MangaCanvas({
     if (saveGroupMove({ ...item, objectType: "balloon" })) return;
     setGuides({ vertical: [], horizontal: [] });
     const rect = constrainRectToPage(item, page);
-    const next = { ...item, ...rect };
-    const previous = balloons.find((value) => value.id === item.id);
-    const children = texts.filter((value) => value.parentBalloonId === item.id);
-    if (
-      previous &&
-      children.length &&
-      (previous.x !== next.x ||
-        previous.y !== next.y ||
-        previous.width !== next.width ||
-        previous.height !== next.height)
-    ) {
-      onApply(
-        window.mangai.canvas.saveBatch({
-          pageId: page.id,
-          balloons: [balloonInput(next)],
-          textObjects: children.map((child) =>
-            textInput({
-              ...child,
-              ...constrainRectToPage(
-                remapChildRect(child, previous, next),
-                page,
-              ),
-            }),
-          ),
-        }),
-      );
-      return;
-    }
-    onApply(window.mangai.canvas.saveBalloon(balloonInput(next)));
+    onApply(
+      window.mangai.canvas.saveBalloon(balloonInput({ ...item, ...rect })),
+    );
   };
   const saveText = (item: TextObject) => {
     if (saveGroupMove({ ...item, objectType: "text" })) return;

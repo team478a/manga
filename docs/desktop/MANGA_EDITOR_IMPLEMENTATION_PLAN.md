@@ -104,6 +104,8 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - ProjectBundleをCanvas属性、Balloon、Text Object対応へ拡張
 - Undoスナップショットv2へ移行し、旧スナップショットとの後方互換を維持
 - 再起動後の永続化、親子cascade削除、Undo/Redo復元を含むDesktop 19テストが成功
+- `canvas-relative-text-v1` migrationで旧Page座標を親基準の相対比率へ変換し、移行前バックアップを作成
+- 子テキストの相対比率をSQLiteの正本とし、bundle生成時にPage座標へ解決する後方互換経路を実装
 - Canvas一括保存とレイヤー並び替えはKonva UI実装時に追加する
 
 ### Step 4: コマ・画像Canvas
@@ -146,6 +148,7 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - grapheme単位の縦書き表示と文字あふれ警告を実装
 - 同一ページBalloonへの親子割り当てUIと、選択Balloon内へのText追加を実装
 - Balloon作成時の子Text自動生成と、移動・リサイズ時の追従・領域再計算を実装
+- 親の移動・リサイズ時は子Textを再保存せず、SQLiteの相対比率からPage座標を再計算
 - 親Balloonの複製・複数移動では子Textを自動的に含め、単一Undoへ集約
 - 本文入力を600msのデバウンス保存へ集約
 - 句読点・括弧・長音・三点リーダーを縦書き用字形へ変換

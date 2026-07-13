@@ -130,6 +130,19 @@ test("legacy database is backed up before canvas schema migration", () => {
       .prepare("select 1 from sqlite_master where name='text_objects'")
       .get(),
   );
+  const textColumns = migrated
+    .prepare("pragma table_info(text_objects)")
+    .all()
+    .map((column) => column.name);
+  assert.equal(textColumns.includes("relative_x"), true);
+  assert.equal(textColumns.includes("relative_height"), true);
+  assert.ok(
+    migrated
+      .prepare(
+        "select 1 from schema_migrations where version='canvas-relative-text-v1'",
+      )
+      .get(),
+  );
   migrated.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
@@ -326,11 +339,54 @@ test("canvas objects persist and participate in undo and redo", () => {
   });
   db.close();
 
+  const stored = new Database(paths.database);
+  const relative = stored
+    .prepare(
+      "select relative_x,relative_y,relative_width,relative_height from text_objects where id=?",
+    )
+    .get(textObject.id);
+  assert.ok(Math.abs(relative.relative_x - 1 / 12) < 1e-9);
+  assert.ok(Math.abs(relative.relative_y - 1 / 12) < 1e-9);
+  assert.ok(Math.abs(relative.relative_width - 7 / 9) < 1e-9);
+  assert.ok(Math.abs(relative.relative_height - 3 / 4) < 1e-9);
+  stored
+    .prepare(
+      "update text_objects set relative_x=null,relative_y=null,relative_width=null,relative_height=null where id=?",
+    )
+    .run(textObject.id);
+  stored
+    .prepare(
+      "delete from schema_migrations where version='canvas-relative-text-v1'",
+    )
+    .run();
+  stored.close();
+
   db = new MangaiDatabase(paths);
   bundle = db.openProject(projectId);
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => /before-canvas-relative-text-v1/.test(file)),
+  );
   assert.equal(bundle.panels[0].name, "コマ1");
   assert.equal(bundle.balloons[0].tailDirection, "bottom_left");
   assert.equal(bundle.textObjects[0].writingMode, "vertical");
+  bundle = db.saveBalloon({
+    ...bundle.balloons[0],
+    x: 200,
+    y: 300,
+    width: 720,
+    height: 480,
+  });
+  assert.deepEqual(
+    {
+      x: bundle.textObjects[0].x,
+      y: bundle.textObjects[0].y,
+      width: bundle.textObjects[0].width,
+      height: bundle.textObjects[0].height,
+    },
+    { x: 260, y: 340, width: 560, height: 360 },
+  );
   assert.equal(db.undo(projectId).panels.length, 0);
   bundle = db.redo(projectId);
   assert.equal(bundle.balloons.length, 1);

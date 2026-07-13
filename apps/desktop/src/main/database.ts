@@ -48,8 +48,14 @@ export class MangaiDatabase {
     this.db = new Database(paths.database);
     this.db.pragma("foreign_keys = ON");
     this.db.pragma("journal_mode = WAL");
-    if (databaseExisted && !this.hasMigration("canvas-v1"))
-      this.backupBeforeMigration("canvas-v1");
+    if (databaseExisted) {
+      const pendingMigration = !this.hasMigration("canvas-v1")
+        ? "canvas-v1"
+        : !this.hasMigration("canvas-relative-text-v1")
+          ? "canvas-relative-text-v1"
+          : null;
+      if (pendingMigration) this.backupBeforeMigration(pendingMigration);
+    }
     this.migrate();
   }
   close() {
@@ -119,6 +125,7 @@ export class MangaiDatabase {
         "alter table generation_jobs add column progress real not null default 0",
       );
     this.migrateCanvasV1();
+    this.migrateRelativeTextV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -184,6 +191,68 @@ export class MangaiDatabase {
           "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
         )
         .run("canvas-v1", "Manga canvas panels, balloons and text", stamp);
+    })();
+  }
+  private migrateRelativeTextV1() {
+    if (this.hasMigration("canvas-relative-text-v1")) return;
+    const columns = new Set(
+      (
+        this.db.prepare("pragma table_info(text_objects)").all() as Array<{
+          name: string;
+        }>
+      ).map((column) => column.name),
+    );
+    const additions = [
+      ["relative_x", "real"],
+      ["relative_y", "real"],
+      ["relative_width", "real"],
+      ["relative_height", "real"],
+    ] as const;
+    const stamp = now();
+    this.db.transaction(() => {
+      for (const [column, definition] of additions)
+        if (!columns.has(column))
+          this.db.exec(
+            `alter table text_objects add column ${column} ${definition}`,
+          );
+      const children = this.db
+        .prepare(
+          `select t.id,t.x,t.y,t.width,t.height,b.x as parent_x,b.y as parent_y,b.width as parent_width,b.height as parent_height
+           from text_objects t join balloons b on b.id=t.parent_balloon_id`,
+        )
+        .all() as Array<{
+        id: string;
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+        parent_x: number;
+        parent_y: number;
+        parent_width: number;
+        parent_height: number;
+      }>;
+      const update = this.db.prepare(
+        "update text_objects set relative_x=?,relative_y=?,relative_width=?,relative_height=? where id=?",
+      );
+      for (const item of children) {
+        if (item.parent_width <= 0 || item.parent_height <= 0) continue;
+        update.run(
+          (item.x - item.parent_x) / item.parent_width,
+          (item.y - item.parent_y) / item.parent_height,
+          item.width / item.parent_width,
+          item.height / item.parent_height,
+          item.id,
+        );
+      }
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run(
+          "canvas-relative-text-v1",
+          "Balloon-relative text geometry",
+          stamp,
+        );
     })();
   }
   private project(row: any): Project {
@@ -623,18 +692,36 @@ export class MangaiDatabase {
       );
   }
   private upsertTextObjectRow(item: TextObject) {
+    let relative:
+      { x: number; y: number; width: number; height: number } | undefined;
     if (item.parentBalloonId) {
       const parent = this.db
-        .prepare("select page_id from balloons where id=?")
-        .get(item.parentBalloonId) as { page_id: string } | undefined;
+        .prepare("select page_id,x,y,width,height from balloons where id=?")
+        .get(item.parentBalloonId) as
+        | {
+            page_id: string;
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          }
+        | undefined;
       if (!parent || parent.page_id !== item.pageId)
         throw new Error("親の吹き出しが同じページにありません。");
+      if (parent.width <= 0 || parent.height <= 0)
+        throw new Error("親の吹き出し寸法が不正です。");
+      relative = {
+        x: (item.x - parent.x) / parent.width,
+        y: (item.y - parent.y) / parent.height,
+        width: item.width / parent.width,
+        height: item.height / parent.height,
+      };
     }
     const stamp = now();
     this.db
       .prepare(
-        `insert into text_objects(id,page_id,parent_balloon_id,name,text,writing_mode,x,y,width,height,rotation,z_index,visible,locked,font_family,font_size,font_weight,color,text_align,vertical_align,line_height,letter_spacing,padding,opacity,created_at,updated_at)
-         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,parent_balloon_id=excluded.parent_balloon_id,name=excluded.name,text=excluded.text,writing_mode=excluded.writing_mode,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,font_family=excluded.font_family,font_size=excluded.font_size,font_weight=excluded.font_weight,color=excluded.color,text_align=excluded.text_align,vertical_align=excluded.vertical_align,line_height=excluded.line_height,letter_spacing=excluded.letter_spacing,padding=excluded.padding,opacity=excluded.opacity,updated_at=excluded.updated_at`,
+        `insert into text_objects(id,page_id,parent_balloon_id,name,text,writing_mode,x,y,width,height,relative_x,relative_y,relative_width,relative_height,rotation,z_index,visible,locked,font_family,font_size,font_weight,color,text_align,vertical_align,line_height,letter_spacing,padding,opacity,created_at,updated_at)
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,parent_balloon_id=excluded.parent_balloon_id,name=excluded.name,text=excluded.text,writing_mode=excluded.writing_mode,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,relative_x=excluded.relative_x,relative_y=excluded.relative_y,relative_width=excluded.relative_width,relative_height=excluded.relative_height,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,font_family=excluded.font_family,font_size=excluded.font_size,font_weight=excluded.font_weight,color=excluded.color,text_align=excluded.text_align,vertical_align=excluded.vertical_align,line_height=excluded.line_height,letter_spacing=excluded.letter_spacing,padding=excluded.padding,opacity=excluded.opacity,updated_at=excluded.updated_at`,
       )
       .run(
         item.id,
@@ -647,6 +734,10 @@ export class MangaiDatabase {
         item.y,
         item.width,
         item.height,
+        relative?.x ?? null,
+        relative?.y ?? null,
+        relative?.width ?? null,
+        relative?.height ?? null,
         item.rotation,
         item.zIndex,
         item.visible ? 1 : 0,
@@ -1725,34 +1816,45 @@ export class MangaiDatabase {
           "select t.* from text_objects t join pages p on p.id=t.page_id join episodes e on e.id=p.episode_id where e.project_id=? order by t.z_index",
         )
         .all(projectId) as any[]
-    ).map((t) => ({
-      id: t.id,
-      pageId: t.page_id,
-      parentBalloonId: t.parent_balloon_id,
-      name: t.name,
-      text: t.text,
-      writingMode: t.writing_mode,
-      x: t.x,
-      y: t.y,
-      width: t.width,
-      height: t.height,
-      rotation: t.rotation,
-      zIndex: t.z_index,
-      visible: Boolean(t.visible),
-      locked: Boolean(t.locked),
-      fontFamily: t.font_family,
-      fontSize: t.font_size,
-      fontWeight: t.font_weight,
-      color: t.color,
-      textAlign: t.text_align,
-      verticalAlign: t.vertical_align,
-      lineHeight: t.line_height,
-      letterSpacing: t.letter_spacing,
-      padding: t.padding,
-      opacity: t.opacity,
-      createdAt: t.created_at,
-      updatedAt: t.updated_at,
-    }));
+    ).map((t) => {
+      const parent = balloons.find((item) => item.id === t.parent_balloon_id);
+      const usesRelativeGeometry =
+        parent &&
+        Number.isFinite(t.relative_x) &&
+        Number.isFinite(t.relative_y) &&
+        Number.isFinite(t.relative_width) &&
+        Number.isFinite(t.relative_height);
+      return {
+        id: t.id,
+        pageId: t.page_id,
+        parentBalloonId: t.parent_balloon_id,
+        name: t.name,
+        text: t.text,
+        writingMode: t.writing_mode,
+        x: usesRelativeGeometry ? parent.x + t.relative_x * parent.width : t.x,
+        y: usesRelativeGeometry ? parent.y + t.relative_y * parent.height : t.y,
+        width: usesRelativeGeometry ? t.relative_width * parent.width : t.width,
+        height: usesRelativeGeometry
+          ? t.relative_height * parent.height
+          : t.height,
+        rotation: t.rotation,
+        zIndex: t.z_index,
+        visible: Boolean(t.visible),
+        locked: Boolean(t.locked),
+        fontFamily: t.font_family,
+        fontSize: t.font_size,
+        fontWeight: t.font_weight,
+        color: t.color,
+        textAlign: t.text_align,
+        verticalAlign: t.vertical_align,
+        lineHeight: t.line_height,
+        letterSpacing: t.letter_spacing,
+        padding: t.padding,
+        opacity: t.opacity,
+        createdAt: t.created_at,
+        updatedAt: t.updated_at,
+      };
+    });
     const assets = (
       this.db
         .prepare(
