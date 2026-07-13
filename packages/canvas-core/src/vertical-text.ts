@@ -13,6 +13,25 @@ export function segmentGraphemes(value: string, locale = "ja") {
   }
   return Array.from(value);
 }
+const verticalForms: Readonly<Record<string, string>> = {
+  "、": "︑",
+  "。": "︒",
+  "（": "︵",
+  "）": "︶",
+  "「": "﹁",
+  "」": "﹂",
+  "『": "﹃",
+  "』": "﹄",
+  "【": "︻",
+  "】": "︼",
+  "…": "︙",
+  "‥": "︰",
+  ー: "｜",
+  "―": "︱",
+};
+export function verticalGlyph(value: string) {
+  return verticalForms[value] ?? value;
+}
 export function layoutVerticalText(
   text: string,
   box: Rect,
@@ -38,7 +57,7 @@ export function layoutVerticalText(
       row = 0;
     }
     glyphs.push({
-      value,
+      value: verticalGlyph(value),
       x: box.x + box.width - options.fontSize / 2 - column * columnAdvance,
       y: box.y + options.fontSize / 2 + row * rowAdvance,
       column,

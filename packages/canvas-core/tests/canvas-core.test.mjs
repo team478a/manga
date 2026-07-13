@@ -16,6 +16,7 @@ import {
   segmentGraphemes,
   snapRectToGuides,
   viewportToPage,
+  verticalGlyph,
 } from "../dist/index.js";
 test("page and viewport coordinates round-trip", () => {
   const viewport = { scale: 0.5, offsetX: 20, offsetY: 30 },
@@ -108,6 +109,12 @@ test("six ratio-based templates create expected counts", () => {
 });
 test("vertical segmentation preserves surrogate pairs", () =>
   assert.deepEqual(segmentGraphemes("漫画😀𠮷"), ["漫", "画", "😀", "𠮷"]));
+test("Japanese punctuation uses vertical presentation forms", () => {
+  assert.equal(verticalGlyph("。"), "︒");
+  assert.equal(verticalGlyph("「"), "﹁");
+  assert.equal(verticalGlyph("ー"), "｜");
+  assert.equal(verticalGlyph("漫"), "漫");
+});
 test("vertical columns advance right to left", () => {
   const result = layoutVerticalText(
     "一二三四五六",

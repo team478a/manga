@@ -25,6 +25,7 @@ import {
   pageTemplates,
   segmentGraphemes,
   snapRectToGuides,
+  verticalGlyph,
   type PageTemplateId,
 } from "@mangai/canvas-core";
 
@@ -357,7 +358,7 @@ function TextNode({
       height={item.height}
       text={
         item.writingMode === "vertical"
-          ? segmentGraphemes(item.text).join("\n")
+          ? segmentGraphemes(item.text).map(verticalGlyph).join("\n")
           : item.text
       }
       fontFamily={item.fontFamily}
@@ -822,6 +823,60 @@ export function MangaCanvas({
     const rect = constrainRectToPage(item, page);
     onApply(window.mangai.canvas.saveText(textInput({ ...item, ...rect })));
   };
+  React.useEffect(() => {
+    if (!selectedLayer) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.matches("input, textarea, select, [contenteditable=true]"))
+        return;
+      if (selectedLayer.locked) return;
+      if (event.key === "Delete" || event.key === "Backspace") {
+        event.preventDefault();
+        onApply(
+          window.mangai.canvas.deleteObject(
+            selectedLayer.objectType,
+            selectedLayer.id,
+          ),
+        );
+        setSelection(null);
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "d") {
+        event.preventDefault();
+        const copy = {
+          ...selectedLayer,
+          id: crypto.randomUUID(),
+          name: `${selectedLayer.name} のコピー`,
+          x: selectedLayer.x + 20,
+          y: selectedLayer.y + 20,
+          zIndex: nextZ,
+        };
+        if (copy.objectType === "panel") savePanel(copy);
+        else if (copy.objectType === "balloon") saveBalloon(copy);
+        else saveText(copy);
+        return;
+      }
+      const distance = event.shiftKey ? 10 : 1;
+      const movement = {
+        ArrowLeft: { x: -distance, y: 0 },
+        ArrowRight: { x: distance, y: 0 },
+        ArrowUp: { x: 0, y: -distance },
+        ArrowDown: { x: 0, y: distance },
+      }[event.key];
+      if (!movement) return;
+      event.preventDefault();
+      const moved = {
+        ...selectedLayer,
+        x: selectedLayer.x + movement.x,
+        y: selectedLayer.y + movement.y,
+      };
+      if (moved.objectType === "panel") savePanel(moved);
+      else if (moved.objectType === "balloon") saveBalloon(moved);
+      else saveText(moved);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedLayer, nextZ, onApply]);
   const addPanel = (rect?: {
     x: number;
     y: number;
@@ -996,6 +1051,7 @@ export function MangaCanvas({
         {selection && (
           <button
             className="danger"
+            disabled={selectedLayer?.locked}
             onClick={() => {
               onApply(
                 window.mangai.canvas.deleteObject(selection.type, selection.id),
