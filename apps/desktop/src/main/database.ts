@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { imageSize } from "image-size";
+import JSZip from "jszip";
 import {
   createImagesZip,
   createPagesPdf,
@@ -11,7 +12,7 @@ import {
   type ExportImage,
 } from "@mangai/export-core";
 import type { ProjectBundle, Project } from "@mangai/project-core";
-import type { ProjectInput } from "@mangai/shared";
+import { projectInputSchema, type ProjectInput } from "@mangai/shared";
 import {
   defaultPromptTemplates,
   type GenerationStatus,
@@ -30,6 +31,14 @@ type Paths = {
 };
 const now = () => new Date().toISOString();
 const uid = () => crypto.randomUUID();
+const backupFormat = "mangai.project-backup";
+const maxBackupBytes = 2 * 1024 * 1024 * 1024;
+type ProjectBackupManifest = {
+  format: typeof backupFormat;
+  version: 1;
+  createdAt: string;
+  bundle: ProjectBundle;
+};
 const mime = (file: string) =>
   ({
     ".jpg": "image/jpeg",
@@ -37,6 +46,58 @@ const mime = (file: string) =>
     ".png": "image/png",
     ".webp": "image/webp",
   })[path.extname(file).toLowerCase()] || "";
+const assetExtension = (mimeType: string) =>
+  ({
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+  })[mimeType] || "";
+
+function parseBackupManifest(value: unknown): ProjectBackupManifest {
+  if (!value || typeof value !== "object")
+    throw new Error("バックアップ情報が不正です。");
+  const manifest = value as Record<string, unknown>;
+  if (manifest.format !== backupFormat || manifest.version !== 1)
+    throw new Error("対応していないバックアップ形式です。");
+  const bundle = manifest.bundle as ProjectBundle | undefined;
+  if (!bundle || !bundle.project || typeof bundle.project !== "object")
+    throw new Error("Project情報がありません。");
+  const collections = [
+    bundle.episodes,
+    bundle.pages,
+    bundle.panels,
+    bundle.balloons,
+    bundle.textObjects,
+    bundle.assets,
+  ];
+  if (collections.some((items) => !Array.isArray(items)))
+    throw new Error("バックアップのデータ構造が不正です。");
+  if (
+    typeof bundle.project.title !== "string" ||
+    !bundle.project.title.trim() ||
+    !Number.isFinite(bundle.project.width) ||
+    !Number.isFinite(bundle.project.height) ||
+    !Number.isFinite(bundle.project.dpi)
+  )
+    throw new Error("Project設定が不正です。");
+  if (bundle.episodes.length < 1 || bundle.episodes.length > 1000)
+    throw new Error("エピソード数が不正です。");
+  if (bundle.pages.length > 10000 || bundle.assets.length > 10000)
+    throw new Error("バックアップ内の項目数が上限を超えています。");
+  for (const items of collections)
+    for (const item of items)
+      if (!item || typeof item.id !== "string" || !item.id)
+        throw new Error("バックアップ内のIDが不正です。");
+  for (const asset of bundle.assets)
+    if (
+      !assetExtension(asset.mimeType) ||
+      !Number.isSafeInteger(asset.byteSize) ||
+      asset.byteSize < 0 ||
+      !/^[0-9a-f]{64}$/i.test(asset.sha256)
+    )
+      throw new Error(`素材「${asset.fileName}」の情報が不正です。`);
+  return manifest as ProjectBackupManifest;
+}
 
 export class MangaiDatabase {
   private db: Database.Database;
@@ -386,6 +447,251 @@ export class MangaiDatabase {
           path.join(trash, `${id}-${Date.now()}`),
         );
       this.db.prepare("delete from projects where id=?").run(id);
+    }
+  }
+  async backupProject(id: string, destination: string) {
+    const bundle = this.bundle(id);
+    const zip = new JSZip();
+    const manifest: ProjectBackupManifest = {
+      format: backupFormat,
+      version: 1,
+      createdAt: now(),
+      bundle: {
+        ...bundle,
+        project: { ...bundle.project, storagePath: "" },
+      },
+    };
+    zip.file("manifest.json", JSON.stringify(manifest));
+    for (const asset of bundle.assets) {
+      const source = this.safeProjectPath(
+        bundle.project.storagePath,
+        asset.relativePath,
+      );
+      if (!fs.existsSync(source))
+        throw new Error(`素材「${asset.fileName}」が見つかりません。`);
+      const bytes = fs.readFileSync(source);
+      const hash = crypto.createHash("sha256").update(bytes).digest("hex");
+      if (bytes.length !== asset.byteSize || hash !== asset.sha256)
+        throw new Error(`素材「${asset.fileName}」の整合性を確認できません。`);
+      zip.file(`assets/${asset.id}`, bytes);
+    }
+    const bytes = await zip.generateAsync({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+      compressionOptions: { level: 6 },
+    });
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.writeFileSync(destination, bytes);
+    return { filePath: destination, byteSize: bytes.length };
+  }
+  async restoreProject(source: string) {
+    const stat = fs.statSync(source);
+    if (!stat.isFile() || stat.size <= 0 || stat.size > maxBackupBytes)
+      throw new Error("バックアップファイルのサイズが不正です。");
+    const zip = await JSZip.loadAsync(fs.readFileSync(source));
+    const manifestEntry = zip.file("manifest.json");
+    if (!manifestEntry) throw new Error("バックアップ情報がありません。");
+    const manifestText = await manifestEntry.async("string");
+    if (Buffer.byteLength(manifestText) > 10 * 1024 * 1024)
+      throw new Error("バックアップ情報が大きすぎます。");
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(manifestText);
+    } catch {
+      throw new Error("バックアップ情報を読み取れません。");
+    }
+    const manifest = parseBackupManifest(parsed);
+    const assetBytes = new Map<string, Buffer>();
+    const expectedAssetBytes = manifest.bundle.assets.reduce(
+      (total, asset) => total + asset.byteSize,
+      0,
+    );
+    if (
+      !Number.isSafeInteger(expectedAssetBytes) ||
+      expectedAssetBytes > maxBackupBytes
+    )
+      throw new Error("展開後の素材サイズが上限を超えています。");
+    let totalBytes = 0;
+    for (const asset of manifest.bundle.assets) {
+      const entry = zip.file(`assets/${asset.id}`);
+      if (!entry) throw new Error(`素材「${asset.fileName}」がありません。`);
+      const bytes = await entry.async("nodebuffer");
+      totalBytes += bytes.length;
+      if (totalBytes > maxBackupBytes)
+        throw new Error("展開後の素材サイズが上限を超えています。");
+      const hash = crypto.createHash("sha256").update(bytes).digest("hex");
+      if (bytes.length !== asset.byteSize || hash !== asset.sha256)
+        throw new Error(`素材「${asset.fileName}」が破損しています。`);
+      assetBytes.set(asset.id, bytes);
+    }
+    const sourceBundle = manifest.bundle;
+    const restored = this.createProject(
+      projectInputSchema.parse({
+        title: `${sourceBundle.project.title} (復元)`,
+        subtitle: sourceBundle.project.subtitle,
+        description: sourceBundle.project.description,
+        genre: sourceBundle.project.genre,
+        ageRating: sourceBundle.project.ageRating,
+        readingDirection: sourceBundle.project.readingDirection,
+        width: sourceBundle.project.width,
+        height: sourceBundle.project.height,
+        dpi: sourceBundle.project.dpi,
+      }),
+    );
+    const projectId = restored.project.id;
+    const storagePath = restored.project.storagePath;
+    try {
+      const assetMap = new Map<string, string>();
+      const episodeMap = new Map<string, string>();
+      const pageMap = new Map<string, string>();
+      const balloonMap = new Map<string, string>();
+      const mappedReference = (
+        map: Map<string, string>,
+        sourceId: string | null,
+        label: string,
+      ) => {
+        if (!sourceId) return null;
+        const mapped = map.get(sourceId);
+        if (!mapped) throw new Error(`${label}の参照が不正です。`);
+        return mapped;
+      };
+      const stamp = now();
+      const preparedAssets = sourceBundle.assets.map((asset) => {
+        const id = uid();
+        assetMap.set(asset.id, id);
+        const relativePath = path.join(
+          "assets",
+          `${id}${assetExtension(asset.mimeType)}`,
+        );
+        fs.writeFileSync(
+          this.safeProjectPath(storagePath, relativePath),
+          assetBytes.get(asset.id)!,
+        );
+        return { asset, id, relativePath };
+      });
+      this.db.transaction(() => {
+        this.db
+          .prepare("delete from episodes where project_id=?")
+          .run(projectId);
+        for (const { asset, id, relativePath } of preparedAssets)
+          this.db
+            .prepare(
+              "insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at) values(?,?,?,?,?,?,?,?,?,?)",
+            )
+            .run(
+              id,
+              projectId,
+              asset.fileName,
+              relativePath,
+              asset.mimeType,
+              asset.width,
+              asset.height,
+              asset.byteSize,
+              asset.sha256,
+              stamp,
+            );
+        for (const episode of sourceBundle.episodes) {
+          const id = uid();
+          episodeMap.set(episode.id, id);
+          this.db
+            .prepare("insert into episodes values(?,?,?,?,?,?)")
+            .run(
+              id,
+              projectId,
+              episode.title,
+              episode.orderIndex,
+              stamp,
+              stamp,
+            );
+        }
+        for (const page of sourceBundle.pages) {
+          const episodeId = episodeMap.get(page.episodeId);
+          if (!episodeId) throw new Error("ページのエピソード参照が不正です。");
+          const id = uid();
+          pageMap.set(page.id, id);
+          this.db
+            .prepare("insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            .run(
+              id,
+              episodeId,
+              page.pageNumber,
+              page.orderIndex,
+              page.width,
+              page.height,
+              page.backgroundColor,
+              mappedReference(assetMap, page.imageAssetId, "ページ素材"),
+              page.prompt,
+              page.negativePrompt,
+              page.notes,
+              stamp,
+              stamp,
+            );
+        }
+        for (const panel of sourceBundle.panels) {
+          const pageId = pageMap.get(panel.pageId);
+          if (!pageId) throw new Error("コマのページ参照が不正です。");
+          this.upsertPanelRow({
+            ...panel,
+            id: uid(),
+            pageId,
+            imageAssetId: mappedReference(
+              assetMap,
+              panel.imageAssetId,
+              "コマ素材",
+            ),
+            createdAt: "",
+            updatedAt: "",
+          });
+        }
+        for (const balloon of sourceBundle.balloons) {
+          const pageId = pageMap.get(balloon.pageId);
+          if (!pageId) throw new Error("吹き出しのページ参照が不正です。");
+          const id = uid();
+          balloonMap.set(balloon.id, id);
+          this.upsertBalloonRow({
+            ...balloon,
+            id,
+            pageId,
+            createdAt: "",
+            updatedAt: "",
+          });
+        }
+        for (const textObject of sourceBundle.textObjects) {
+          const pageId = pageMap.get(textObject.pageId);
+          if (!pageId) throw new Error("テキストのページ参照が不正です。");
+          this.upsertTextObjectRow({
+            ...textObject,
+            id: uid(),
+            pageId,
+            parentBalloonId: mappedReference(
+              balloonMap,
+              textObject.parentBalloonId,
+              "親吹き出し",
+            ),
+            createdAt: "",
+            updatedAt: "",
+          });
+        }
+        this.db
+          .prepare(
+            "update projects set cover_asset_id=?,updated_at=?,last_opened_at=? where id=?",
+          )
+          .run(
+            mappedReference(
+              assetMap,
+              sourceBundle.project.coverAssetId,
+              "表紙素材",
+            ),
+            stamp,
+            stamp,
+            projectId,
+          );
+      })();
+      return this.openProject(projectId);
+    } catch (error) {
+      this.db.prepare("delete from projects where id=?").run(projectId);
+      fs.rmSync(storagePath, { recursive: true, force: true });
+      throw error;
     }
   }
   createEpisode(projectId: string, title: string) {

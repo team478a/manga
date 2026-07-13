@@ -6,6 +6,7 @@ import {
   type IpcMainInvokeEvent,
 } from "electron";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { MangaiDatabase } from "./database.js";
 import { AIService } from "./ai/service.js";
@@ -110,6 +111,49 @@ function register() {
   handle("projects:duplicate", (v) =>
     store.duplicateProject(projectIdSchema.parse(v).id),
   );
+  handle("projects:backup", async (v) => {
+    const id = projectIdSchema.parse(v).id;
+    const project = store.bundle(id).project;
+    const safeTitle =
+      Array.from(project.title)
+        .map((character) =>
+          character.charCodeAt(0) < 32 || '<>:"/\\|?*'.includes(character)
+            ? "-"
+            : character,
+        )
+        .join("")
+        .slice(0, 80) || "project";
+    const backupDirectory = path.join(desktopPaths().root, "backups");
+    fs.mkdirSync(backupDirectory, { recursive: true });
+    const result = await dialog.showSaveDialog({
+      title: "MANGAI Projectをバックアップ",
+      defaultPath: path.join(
+        backupDirectory,
+        `${safeTitle}-${new Date().toISOString().slice(0, 10)}.mangai-backup`,
+      ),
+      filters: [
+        { name: "MANGAI Projectバックアップ", extensions: ["mangai-backup"] },
+      ],
+    });
+    return result.canceled || !result.filePath
+      ? null
+      : store.backupProject(id, result.filePath);
+  });
+  handle("projects:restore", async () => {
+    const backupDirectory = path.join(desktopPaths().root, "backups");
+    fs.mkdirSync(backupDirectory, { recursive: true });
+    const result = await dialog.showOpenDialog({
+      title: "MANGAI Projectバックアップを復元",
+      defaultPath: backupDirectory,
+      properties: ["openFile"],
+      filters: [
+        { name: "MANGAI Projectバックアップ", extensions: ["mangai-backup"] },
+      ],
+    });
+    return result.canceled || !result.filePaths[0]
+      ? null
+      : store.restoreProject(result.filePaths[0]);
+  });
   handle("projects:delete", (v) =>
     store.deleteProject(projectIdSchema.parse(v).id),
   );

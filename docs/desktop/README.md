@@ -19,6 +19,8 @@ Windowsインストーラーは `npm run desktop:dist:win` で生成します。
 
 更新メタデータ付きビルドとGitHub Releases運用は [`AUTO_UPDATE.md`](AUTO_UPDATE.md) を参照してください。
 
+Projectバックアップの対象範囲と復元仕様は [`PROJECT_BACKUP.md`](PROJECT_BACKUP.md) を参照してください。
+
 ## 保存先
 
 Electron main processで `app.getPath("documents")` を取得し、次を作成します。
@@ -67,6 +69,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 ## 実装済み
 
 - プロジェクト作成、一覧、再オープン、名前変更、複製、ゴミ箱移動、最近開いた順、代表画像表示
+- Project編集データと素材を`.mangai-backup`へ保存し、新しいProjectとして復元
 - 新規Projectの保存先フォルダー選択と既定保存先への復帰
 - Episode作成・切り替え・名前変更・並び替え・削除
 - Page追加、複製、削除、上下並べ替え、番号正規化
@@ -86,11 +89,9 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 
 ## 未実装
 
-- Panel編集
 - 高度なAIエージェント
-- WebPのPDF変換
 - 信頼された証明書による実署名と初回公開リリース
-- Projectバックアップ・復元
+- Undo/Redo・Creator Chat・AI生成ジョブ履歴を含む完全バックアップ
 
 完了条件ごとの確認結果は [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) を参照してください。
 

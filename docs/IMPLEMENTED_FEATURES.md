@@ -312,5 +312,6 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - JPG・PNG・WebP合成、DPI準拠PDF、連番PNG ZIP
 - 使用中WebPのPNG正規化による、PDF・ZIP合成時の画像欠落防止
 - 書き出し進捗、キャンセル、ページ別エラー
+- Project設定・Canvas・素材をまとめる`.mangai-backup`と新IDでの安全な復元
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。

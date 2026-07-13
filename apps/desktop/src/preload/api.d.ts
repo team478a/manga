@@ -51,6 +51,10 @@ export type DesktopApi = {
   openProject: (id: string) => Promise<ProjectBundle>;
   renameProject: (id: string, title: string) => Promise<ProjectBundle>;
   duplicateProject: (id: string) => Promise<ProjectBundle>;
+  backupProject: (
+    id: string,
+  ) => Promise<{ filePath: string; byteSize: number } | null>;
+  restoreProject: () => Promise<ProjectBundle | null>;
   deleteProject: (id: string) => Promise<void>;
   exportProject: (
     id: string,

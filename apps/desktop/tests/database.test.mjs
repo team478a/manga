@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import crypto from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { performance } from "node:perf_hooks";
@@ -569,6 +570,190 @@ test("canvas objects persist and participate in undo and redo", () => {
   bundle = db.undo(projectId);
   assert.equal(bundle.panels.length, 1);
   assert.equal(bundle.panels[0].name, "コマ1");
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
+test("project backup restores canvas data and verifies asset integrity", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-backup-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "バックアップ確認",
+    subtitle: "副題",
+    description: "説明",
+    genre: "漫画",
+    ageRating: "12歳以上",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  const sourceImage = path.join(root, "source.png");
+  await sharp({
+    create: {
+      width: 80,
+      height: 120,
+      channels: 4,
+      background: { r: 25, g: 100, b: 180, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(sourceImage);
+  bundle = db.importAssets(bundle.project.id, [sourceImage]);
+  const sourceAsset = bundle.assets[0];
+  bundle = db.addPage(bundle.episodes[0].id, sourceAsset.id);
+  const pageId = bundle.pages[0].id;
+  const balloonId = "10000000-0000-4000-8000-000000000002";
+  db.savePanel({
+    id: "10000000-0000-4000-8000-000000000001",
+    pageId,
+    name: "復元コマ",
+    x: 20,
+    y: 30,
+    width: 500,
+    height: 700,
+    rotation: 5,
+    zIndex: 0,
+    visible: true,
+    locked: false,
+    borderColor: "#123456",
+    borderWidth: 6,
+    fillColor: "#ffffff",
+    imageAssetId: sourceAsset.id,
+    imageFit: "manual",
+    imageOffsetX: 12,
+    imageOffsetY: -8,
+    imageScale: 1.25,
+    imageRotation: 3,
+    imageOpacity: 0.8,
+    createdAt: "",
+    updatedAt: "",
+  });
+  db.saveBalloon({
+    id: balloonId,
+    pageId,
+    name: "復元吹き出し",
+    type: "speech_rounded",
+    x: 100,
+    y: 100,
+    width: 360,
+    height: 240,
+    rotation: 0,
+    zIndex: 1,
+    visible: true,
+    locked: false,
+    fillColor: "#ffffff",
+    strokeColor: "#000000",
+    strokeWidth: 4,
+    opacity: 1,
+    tailDirection: "bottom_left",
+    tailOffset: 0.5,
+    createdAt: "",
+    updatedAt: "",
+  });
+  db.saveTextObject({
+    id: "10000000-0000-4000-8000-000000000003",
+    pageId,
+    parentBalloonId: balloonId,
+    name: "復元テキスト",
+    text: "バックアップ",
+    writingMode: "vertical",
+    x: 130,
+    y: 120,
+    width: 280,
+    height: 180,
+    rotation: 0,
+    zIndex: 2,
+    visible: true,
+    locked: false,
+    fontFamily: "sans-serif",
+    fontSize: 48,
+    fontWeight: 400,
+    color: "#000000",
+    textAlign: "center",
+    verticalAlign: "middle",
+    lineHeight: 1.2,
+    letterSpacing: 0,
+    padding: 16,
+    opacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  });
+  bundle = db.setProjectCover(bundle.project.id, sourceAsset.id);
+
+  const backupPath = path.join(root, "project.mangai-backup");
+  const backup = await db.backupProject(bundle.project.id, backupPath);
+  assert.equal(backup.filePath, backupPath);
+  assert.ok(backup.byteSize > 0);
+  const archive = await JSZip.loadAsync(fs.readFileSync(backupPath));
+  assert.ok(archive.file("manifest.json"));
+  assert.ok(archive.file(`assets/${sourceAsset.id}`));
+  const manifest = JSON.parse(
+    await archive.file("manifest.json").async("string"),
+  );
+  assert.equal(manifest.bundle.project.storagePath, "");
+
+  const restored = await db.restoreProject(backupPath);
+  assert.notEqual(restored.project.id, bundle.project.id);
+  assert.equal(restored.project.title, "バックアップ確認 (復元)");
+  assert.equal(restored.project.subtitle, "副題");
+  assert.equal(restored.assets.length, 1);
+  assert.equal(restored.pages.length, 1);
+  assert.equal(restored.panels[0].name, "復元コマ");
+  assert.equal(restored.panels[0].imageAssetId, restored.assets[0].id);
+  assert.equal(restored.pages[0].imageAssetId, restored.assets[0].id);
+  assert.equal(restored.balloons[0].name, "復元吹き出し");
+  assert.equal(
+    restored.textObjects[0].parentBalloonId,
+    restored.balloons[0].id,
+  );
+  assert.equal(restored.textObjects[0].text, "バックアップ");
+  assert.equal(restored.project.coverAssetId, restored.assets[0].id);
+  const restoredBytes = fs.readFileSync(
+    path.join(restored.project.storagePath, restored.assets[0].relativePath),
+  );
+  assert.equal(
+    crypto.createHash("sha256").update(restoredBytes).digest("hex"),
+    sourceAsset.sha256,
+  );
+
+  archive.file(`assets/${sourceAsset.id}`, Buffer.from("broken"));
+  const corruptPath = path.join(root, "corrupt.mangai-backup");
+  fs.writeFileSync(
+    corruptPath,
+    await archive.generateAsync({ type: "nodebuffer" }),
+  );
+  const projectCount = db.listProjects().length;
+  await assert.rejects(() => db.restoreProject(corruptPath), /破損/);
+  assert.equal(db.listProjects().length, projectCount);
+
+  const invalidReferenceArchive = await JSZip.loadAsync(
+    fs.readFileSync(backupPath),
+  );
+  manifest.bundle.pages[0].imageAssetId =
+    "ffffffff-ffff-4fff-8fff-ffffffffffff";
+  invalidReferenceArchive.file("manifest.json", JSON.stringify(manifest));
+  const invalidReferencePath = path.join(
+    root,
+    "invalid-reference.mangai-backup",
+  );
+  fs.writeFileSync(
+    invalidReferencePath,
+    await invalidReferenceArchive.generateAsync({ type: "nodebuffer" }),
+  );
+  await assert.rejects(
+    () => db.restoreProject(invalidReferencePath),
+    /ページ素材の参照が不正/,
+  );
+  assert.equal(db.listProjects().length, projectCount);
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

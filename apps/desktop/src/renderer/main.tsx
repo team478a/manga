@@ -151,6 +151,27 @@ function App() {
     );
     setCreating(false);
   };
+  const backupProject = async (projectId: string) => {
+    try {
+      setError("");
+      const result = await window.mangai.backupProject(projectId);
+      if (result)
+        alert(
+          `バックアップを作成しました:\n${result.filePath}\n${(result.byteSize / 1024 / 1024).toFixed(1)} MB`,
+        );
+    } catch (cause) {
+      showError(cause);
+    }
+  };
+  const restoreProject = async () => {
+    try {
+      setError("");
+      const restored = await window.mangai.restoreProject();
+      if (restored) await apply(Promise.resolve(restored));
+    } catch (cause) {
+      showError(cause);
+    }
+  };
   if (!bundle)
     return (
       <main className="home">
@@ -159,7 +180,14 @@ function App() {
             <b>MANGAI Desktop</b>
             <span>漫画制作プロジェクト</span>
           </div>
-          <button onClick={() => setCreating(true)}>＋ 新規プロジェクト</button>
+          <div className="header-actions">
+            <button className="secondary" onClick={restoreProject}>
+              バックアップから復元
+            </button>
+            <button onClick={() => setCreating(true)}>
+              ＋ 新規プロジェクト
+            </button>
+          </div>
           <UpdateControl />
         </header>
         {error && <div className="error">{error}</div>}
@@ -327,6 +355,14 @@ function App() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      void backupProject(p.id);
+                    }}
+                  >
+                    バックアップ
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       void apply(window.mangai.duplicateProject(p.id));
                     }}
                   >
@@ -408,6 +444,12 @@ function App() {
         <strong>{bundle.project.title}</strong>
         <span className="status">● {saving}</span>
         <span className="spacer" />
+        <button
+          className="secondary"
+          onClick={() => void backupProject(bundle.project.id)}
+        >
+          バックアップ
+        </button>
         <button
           disabled={!history.canUndo}
           title="元に戻す (Ctrl+Z)"
