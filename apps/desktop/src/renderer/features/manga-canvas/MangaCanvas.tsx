@@ -28,6 +28,7 @@ import {
   normalizeRotation,
   pageTemplates,
   rectFromPoints,
+  reorderLayer,
   segmentGraphemes,
   snapPointToGrid,
   snapRectToGrid,
@@ -46,6 +47,7 @@ type LayerItem =
   | (Balloon & { objectType: "balloon" })
   | (TextObject & { objectType: "text" });
 const CANVAS_GRID_SIZE = 100;
+const LAYER_DRAG_TYPE = "application/x-mangai-canvas-layer";
 
 function useImage(source?: string) {
   const [image, setImage] = React.useState<HTMLImageElement>();
@@ -837,6 +839,13 @@ export function MangaCanvas({
   const [editingPanelImageId, setEditingPanelImageId] = React.useState<
     string | null
   >(null);
+  const [draggingLayer, setDraggingLayer] = React.useState<SelectionKey | null>(
+    null,
+  );
+  const [layerDropTarget, setLayerDropTarget] = React.useState<{
+    key: SelectionKey;
+    placement: "before" | "after";
+  } | null>(null);
   const [showGrid, setShowGrid] = React.useState(false);
   const [snapEnabled, setSnapEnabled] = React.useState(true);
   const [gridSnapEnabled, setGridSnapEnabled] = React.useState(false);
@@ -872,6 +881,8 @@ export function MangaCanvas({
     setPanelDraft(null);
     setDrawPanelMode(false);
     setEditingPanelImageId(null);
+    setDraggingLayer(null);
+    setLayerDropTarget(null);
     transformer.current?.nodes([]);
   }, [page.id]);
   const select = (
@@ -1324,26 +1335,55 @@ export function MangaCanvas({
       saveBalloon({ ...item, ...changes });
     else saveText({ ...item, ...changes });
   };
-  const moveLayer = (id: string, direction: -1 | 1) => {
-    const ordered = [...layers].sort((a, b) => a.zIndex - b.zIndex);
-    const index = ordered.findIndex((item) => item.id === id);
-    const target = index + direction;
-    if (index < 0 || target < 0 || target >= ordered.length) return;
-    [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
-    const normalized = ordered.map((item, zIndex) => ({ ...item, zIndex }));
-    onApply(
-      window.mangai.canvas.saveBatch({
-        pageId: page.id,
-        panels: normalized
-          .filter((item) => item.objectType === "panel")
-          .map((item) => panelInput(item as Panel)),
-        balloons: normalized
-          .filter((item) => item.objectType === "balloon")
-          .map((item) => balloonInput(item as Balloon)),
-        textObjects: normalized
-          .filter((item) => item.objectType === "text")
-          .map((item) => textInput(item as TextObject)),
-      }),
+  const applyLayerOrder = (
+    dragged: SelectionKey,
+    target: SelectionKey,
+    placement: "before" | "after",
+  ) => {
+    const ordered = reorderLayer(
+      layers.map((item) => ({
+        id: item.id,
+        type: item.objectType,
+        name: item.name,
+        zIndex: item.zIndex,
+        visible: item.visible,
+        locked: item.locked,
+        parentId: item.objectType === "text" ? item.parentBalloonId : undefined,
+      })),
+      dragged,
+      target,
+      placement,
+    );
+    const zIndexes = new Map(
+      ordered.map((item) => [`${item.type}:${item.id}`, item.zIndex]),
+    );
+    const normalized = layers.map((item) => ({
+      ...item,
+      zIndex: zIndexes.get(`${item.objectType}:${item.id}`) ?? item.zIndex,
+    })) as LayerItem[];
+    if (
+      normalized.every(
+        (item) =>
+          item.zIndex ===
+          layers.find(
+            (value) =>
+              value.objectType === item.objectType && value.id === item.id,
+          )?.zIndex,
+      )
+    )
+      return;
+    saveItems(normalized);
+  };
+  const moveLayerStep = (item: LayerItem, direction: -1 | 1) => {
+    const index = layers.findIndex(
+      (value) => value.objectType === item.objectType && value.id === item.id,
+    );
+    const target = layers[index - direction];
+    if (index < 0 || !target) return;
+    applyLayerOrder(
+      { type: item.objectType, id: item.id },
+      { type: target.objectType, id: target.id },
+      direction === 1 ? "before" : "after",
     );
   };
   return (
@@ -1882,64 +1922,140 @@ export function MangaCanvas({
         </div>
         <aside className="canvas-layers">
           <h3>レイヤー</h3>
-          {layers.map((item, index) => (
-            <div
-              className="canvas-layer-row"
-              key={`${item.objectType}-${item.id}`}
-            >
-              <button
-                className={isSelected(item.objectType, item.id) ? "active" : ""}
-                onClick={(event) => {
-                  const node = transformer.current
-                    ?.getStage()
-                    ?.findOne(`#${item.objectType}-${item.id}`);
-                  select(
-                    item.objectType,
-                    item.id,
-                    node ?? null,
-                    event.shiftKey,
-                  );
+          {layers.map((item, index) => {
+            const key = { type: item.objectType, id: item.id } as SelectionKey;
+            const isDragging =
+              draggingLayer?.type === key.type && draggingLayer.id === key.id;
+            const dropPlacement =
+              layerDropTarget?.key.type === key.type &&
+              layerDropTarget.key.id === key.id
+                ? layerDropTarget.placement
+                : null;
+            return (
+              <div
+                className={`canvas-layer-row${isDragging ? " dragging" : ""}${dropPlacement ? ` drop-${dropPlacement}` : ""}`}
+                key={`${item.objectType}-${item.id}`}
+                onDragOver={(event) => {
+                  if (!event.dataTransfer.types.includes(LAYER_DRAG_TYPE))
+                    return;
+                  event.preventDefault();
+                  event.dataTransfer.dropEffect = "move";
+                  const bounds = event.currentTarget.getBoundingClientRect();
+                  setLayerDropTarget({
+                    key,
+                    placement:
+                      event.clientY < bounds.top + bounds.height / 2
+                        ? "before"
+                        : "after",
+                  });
+                }}
+                onDrop={(event) => {
+                  const sourceText =
+                    event.dataTransfer.getData(LAYER_DRAG_TYPE);
+                  if (!sourceText) return;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  try {
+                    const source = JSON.parse(sourceText) as SelectionKey;
+                    const exists = layers.some(
+                      (value) =>
+                        value.objectType === source.type &&
+                        value.id === source.id,
+                    );
+                    const bounds = event.currentTarget.getBoundingClientRect();
+                    if (exists)
+                      applyLayerOrder(
+                        source,
+                        key,
+                        event.clientY < bounds.top + bounds.height / 2
+                          ? "before"
+                          : "after",
+                      );
+                  } catch {
+                    // Ignore malformed data from outside this layer list.
+                  } finally {
+                    setDraggingLayer(null);
+                    setLayerDropTarget(null);
+                  }
                 }}
               >
-                <span>
-                  {item.objectType === "panel"
-                    ? "▣"
-                    : item.objectType === "balloon"
-                      ? "◯"
-                      : "T"}
+                <span
+                  className="layer-drag-handle"
+                  draggable
+                  title="ドラッグしてレイヤー順を変更"
+                  onDragStart={(event) => {
+                    event.dataTransfer.effectAllowed = "move";
+                    event.dataTransfer.setData(
+                      LAYER_DRAG_TYPE,
+                      JSON.stringify(key),
+                    );
+                    setDraggingLayer(key);
+                  }}
+                  onDragEnd={() => {
+                    setDraggingLayer(null);
+                    setLayerDropTarget(null);
+                  }}
+                >
+                  ⠿
                 </span>
-                {item.name}
-              </button>
-              <button
-                title="表示切替"
-                onClick={() =>
-                  updateLayerState(item, { visible: !item.visible })
-                }
-              >
-                {item.visible ? "◉" : "○"}
-              </button>
-              <button
-                title="ロック切替"
-                onClick={() => updateLayerState(item, { locked: !item.locked })}
-              >
-                {item.locked ? "🔒" : "◇"}
-              </button>
-              <button
-                disabled={index === 0}
-                title="前面へ"
-                onClick={() => moveLayer(item.id, 1)}
-              >
-                ↑
-              </button>
-              <button
-                disabled={index === layers.length - 1}
-                title="背面へ"
-                onClick={() => moveLayer(item.id, -1)}
-              >
-                ↓
-              </button>
-            </div>
-          ))}
+                <button
+                  className={
+                    isSelected(item.objectType, item.id) ? "active" : ""
+                  }
+                  onClick={(event) => {
+                    const node = transformer.current
+                      ?.getStage()
+                      ?.findOne(`#${item.objectType}-${item.id}`);
+                    select(
+                      item.objectType,
+                      item.id,
+                      node ?? null,
+                      event.shiftKey,
+                    );
+                  }}
+                >
+                  <span>
+                    {item.objectType === "panel"
+                      ? "▣"
+                      : item.objectType === "balloon"
+                        ? "◯"
+                        : "T"}
+                  </span>
+                  {item.name}
+                </button>
+                <button
+                  title="表示切替"
+                  onClick={() =>
+                    updateLayerState(item, { visible: !item.visible })
+                  }
+                >
+                  {item.visible ? "◉" : "○"}
+                </button>
+                <button
+                  title="ロック切替"
+                  onClick={() =>
+                    updateLayerState(item, { locked: !item.locked })
+                  }
+                >
+                  {item.locked ? "🔒" : "◇"}
+                </button>
+                <button
+                  disabled={index === 0}
+                  title="前面へ"
+                  onClick={() => moveLayerStep(item, 1)}
+                >
+                  ↑
+                </button>
+                <button
+                  disabled={index === layers.length - 1}
+                  title="背面へ"
+                  onClick={() => moveLayerStep(item, -1)}
+                >
+                  ↓
+                </button>
+              </div>
+            );
+          })}
           {selectedLayer && (
             <CanvasProperties
               item={selectedLayer as LayerItem}

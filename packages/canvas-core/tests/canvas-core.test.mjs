@@ -15,6 +15,7 @@ import {
   pageToViewport,
   panelInputSchema,
   rectFromPoints,
+  reorderLayer,
   remapChildRect,
   segmentGraphemes,
   snapPointToGrid,
@@ -134,6 +135,29 @@ test("z-index is unique and continuous", () => {
       ["middle", 1],
       ["front", 2],
     ],
+  );
+});
+test("layers reorder by visual position and composite object key", () => {
+  const values = [
+    { id: "same", type: "panel", name: "front", zIndex: 2 },
+    { id: "middle", type: "text", name: "middle", zIndex: 1 },
+    { id: "same", type: "balloon", name: "back", zIndex: 0 },
+  ];
+  const reordered = reorderLayer(
+    values,
+    { id: "same", type: "balloon" },
+    { id: "same", type: "panel" },
+    "before",
+  );
+  assert.deepEqual(
+    [...reordered]
+      .sort((a, b) => b.zIndex - a.zIndex)
+      .map((value) => value.name),
+    ["back", "front", "middle"],
+  );
+  assert.deepEqual(
+    reordered.map((value) => value.zIndex),
+    [0, 1, 2],
   );
 });
 test("six ratio-based templates create expected counts", () => {

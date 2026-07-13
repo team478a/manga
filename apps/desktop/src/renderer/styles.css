@@ -355,7 +355,7 @@ label {
 .canvas-layers {
   position: sticky;
   top: 52px;
-  width: 170px;
+  width: 210px;
   max-height: calc(100vh - 180px);
   overflow: auto;
   padding: 10px;
@@ -370,9 +370,29 @@ label {
 }
 .canvas-layer-row {
   display: grid;
-  grid-template-columns: minmax(70px, 1fr) repeat(4, 26px);
+  grid-template-columns: 20px minmax(70px, 1fr) repeat(4, 26px);
   gap: 3px;
   margin-bottom: 4px;
+}
+.canvas-layer-row.dragging {
+  opacity: 0.45;
+}
+.canvas-layer-row.drop-before {
+  box-shadow: inset 0 3px #2f9e68;
+}
+.canvas-layer-row.drop-after {
+  box-shadow: inset 0 -3px #2f9e68;
+}
+.layer-drag-handle {
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: #65736b;
+  cursor: grab;
+  user-select: none;
+}
+.layer-drag-handle:active {
+  cursor: grabbing;
 }
 .canvas-layer-row button {
   display: flex;

@@ -22,7 +22,7 @@
 | 12  | 横書きを表示・保存                    | 完了         | UI・SQLite・書き出し経路                            |
 | 13  | 縦書きを表示・保存                    | 完了         | 手動表示、canvas-core単体試験、書き出し試験         |
 | 14  | 自由テキストを配置                    | 完了         | parent nullのText Object                            |
-| 15  | レイヤー順を変更                      | 完了         | 統合z-index保存と正規化                             |
+| 15  | レイヤー順を変更                      | 完了         | D&D、ボタン、複合キー対応z-index正規化              |
 | 16  | レイヤーを非表示・ロック              | 完了         | UI、永続化、書き出し除外試験                        |
 | 17  | 6種類のPageテンプレート               | 完了         | canvas-core 6種類試験、4コマを手動確認              |
 | 18  | Canvas操作をUndo/Redo                 | 完了         | 手動Undo/Redoと統合試験                             |
@@ -37,7 +37,7 @@
 | 27  | Desktop ESLint                        | 完了         | `npm run lint`成功                                  |
 | 28  | Desktop本番ビルド                     | 完了         | Electron mainとVite renderer成功                    |
 | 29  | 既存統合テスト                        | 完了         | AI・DBを含む19/19成功                               |
-| 30  | 今回追加したテスト                    | 完了         | canvas-core 15/15、Canvas DB・書き出し試験成功      |
+| 30  | 今回追加したテスト                    | 完了         | canvas-core 16/16、Canvas DB・書き出し試験成功      |
 | 31  | NSIS x64生成                          | 完了         | `MANGAI-Desktop-Setup-0.1.0-x64.exe`生成成功        |
 | 32  | Hub TypeScript、ESLint、Next.jsビルド | 完了         | 3項目成功                                           |
 | 33  | 実装・未実装を文書化                  | 完了         | 本書、MANGA_EDITOR、計画、履歴、全体資料を更新      |
@@ -45,7 +45,7 @@
 ## 検証数値
 
 - Desktop統合テスト: 19/19
-- canvas-core単体テスト: 15/15
+- canvas-core単体テスト: 16/16
 - Hub TypeScript / ESLint / Next.js build: 成功
 - Desktop TypeScript / ESLint / production build: 成功
 - Windows x64 NSIS: 成功
@@ -55,6 +55,5 @@
 ## 完了を妨げる残項目
 
 1. 4手動シナリオを素材ファイルと出力結果まで完走する
-2. レイヤーD&D並び替え
-3. 30オブジェクトPage性能確認
-4. クリーンWindowsへのインストール確認
+2. 30オブジェクトPage性能確認
+3. クリーンWindowsへのインストール確認
