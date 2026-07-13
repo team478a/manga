@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { performance } from "node:perf_hooks";
 import { Buffer } from "node:buffer";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import Database from "better-sqlite3";
@@ -10,6 +11,148 @@ import sharp from "sharp";
 import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
 import { imageSize } from "image-size";
+
+test("30 canvas objects remain responsive across save, move and reopen", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-canvas-perf-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "30オブジェクト性能確認",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1600,
+    height: 2400,
+    dpi: 300,
+  });
+  bundle = db.addPage(bundle.episodes[0].id);
+  const pageId = bundle.pages[0].id;
+  const panels = Array.from({ length: 28 }, (_, index) => ({
+    id: `00000000-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
+    pageId,
+    name: `性能確認コマ${index + 1}`,
+    x: 40 + (index % 4) * 380,
+    y: 40 + Math.floor(index / 4) * 320,
+    width: 340,
+    height: 280,
+    rotation: 0,
+    zIndex: index,
+    visible: true,
+    locked: false,
+    borderColor: "#000000",
+    borderWidth: 4,
+    fillColor: "#ffffff",
+    imageAssetId: null,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    imageOpacity: 1,
+  }));
+  const balloonId = "00000000-0000-4000-8000-000000000029";
+  const saveStartedAt = performance.now();
+  bundle = db.saveCanvasBatch({
+    pageId,
+    panels,
+    balloons: [
+      {
+        id: balloonId,
+        pageId,
+        name: "性能確認吹き出し",
+        type: "speech_ellipse",
+        x: 1100,
+        y: 100,
+        width: 360,
+        height: 240,
+        rotation: 0,
+        zIndex: 28,
+        visible: true,
+        locked: false,
+        fillColor: "#ffffff",
+        strokeColor: "#000000",
+        strokeWidth: 4,
+        opacity: 1,
+        tailDirection: "bottom_left",
+        tailOffset: 0.5,
+      },
+    ],
+    textObjects: [
+      {
+        id: "00000000-0000-4000-8000-000000000030",
+        pageId,
+        parentBalloonId: balloonId,
+        name: "性能確認テキスト",
+        text: "30オブジェクト",
+        writingMode: "vertical",
+        x: 1180,
+        y: 130,
+        width: 180,
+        height: 180,
+        rotation: 0,
+        zIndex: 29,
+        visible: true,
+        locked: false,
+        fontFamily: "sans-serif",
+        fontSize: 40,
+        fontWeight: 400,
+        color: "#000000",
+        textAlign: "center",
+        verticalAlign: "middle",
+        lineHeight: 1.2,
+        letterSpacing: 0,
+        padding: 8,
+        opacity: 1,
+      },
+    ],
+    replacePanels: true,
+    replaceBalloons: true,
+    replaceTextObjects: true,
+  });
+  const batchSaveMs = performance.now() - saveStartedAt;
+  assert.equal(
+    bundle.panels.length + bundle.balloons.length + bundle.textObjects.length,
+    30,
+  );
+
+  const moveStartedAt = performance.now();
+  bundle = db.savePanel({
+    ...bundle.panels[0],
+    x: bundle.panels[0].x + 10,
+    y: bundle.panels[0].y + 10,
+  });
+  const moveSaveMs = performance.now() - moveStartedAt;
+  assert.equal(bundle.panels[0].x, 50);
+  db.close();
+
+  const reopenStartedAt = performance.now();
+  const reopenedDb = new MangaiDatabase(paths);
+  const reopened = reopenedDb.openProject(bundle.project.id);
+  const reopenMs = performance.now() - reopenStartedAt;
+  assert.equal(
+    reopened.panels.length +
+      reopened.balloons.length +
+      reopened.textObjects.length,
+    30,
+  );
+  assert.ok(batchSaveMs < 2_000, `一括保存が遅すぎます: ${batchSaveMs}ms`);
+  assert.ok(moveSaveMs < 2_000, `移動保存が遅すぎます: ${moveSaveMs}ms`);
+  assert.ok(reopenMs < 2_000, `再読込が遅すぎます: ${reopenMs}ms`);
+  t.diagnostic(
+    `30 objects: batch ${batchSaveMs.toFixed(1)}ms, move ${moveSaveMs.toFixed(1)}ms, reopen ${reopenMs.toFixed(1)}ms`,
+  );
+  reopenedDb.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
 test("project, episode, page and asset data survive reopening", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-test-"));
   const paths = {

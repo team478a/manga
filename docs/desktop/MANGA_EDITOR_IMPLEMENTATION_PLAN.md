@@ -134,6 +134,7 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - 一括移動はページ内制約とスナップを維持し、ロックを含む選択の変更を抑止
 - 複数選択時は移動のみを許可し、曖昧な一括リサイズ・回転は無効化
 - レイヤー一覧のドラッグハンドル、挿入位置ガイド、任意位置D&D並び替えを実装
+- 30オブジェクトPageの製品版実操作と、保存・移動・再読込の性能スモークテストを完了
 - D&Dと前面／背面ボタンを複合キー対応の共通z-index正規化へ統合し、単一Undoで保存
 
 ### Step 5: 吹き出し・テキスト
@@ -204,7 +205,7 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 
 進捗:
 
-- Desktop TypeScript、ESLint、本番ビルド、統合テスト19件を確認
+- Desktop TypeScript、ESLint、本番ビルド、統合テスト20件を確認
 - canvas-core単体テスト13件を確認
 - Hub TypeScript、ESLint、Next.js本番ビルドを確認
 - Windows x64 NSISを生成し、パッケージ版の正常起動を確認
