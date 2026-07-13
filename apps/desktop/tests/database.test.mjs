@@ -6,6 +6,10 @@ import path from "node:path";
 import { Buffer } from "node:buffer";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import Database from "better-sqlite3";
+import sharp from "sharp";
+import JSZip from "jszip";
+import { PDFDocument } from "pdf-lib";
+import { imageSize } from "image-size";
 test("project, episode, page and asset data survive reopening", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-test-"));
   const paths = {
@@ -400,8 +404,122 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
       "base64",
     ),
   );
-  bundle = db.importAssets(bundle.project.id, [sourceImage]);
+  const webpImage = path.join(root, "page.webp");
+  await sharp({
+    create: {
+      width: 8,
+      height: 8,
+      channels: 4,
+      background: { r: 20, g: 80, b: 180, alpha: 1 },
+    },
+  })
+    .webp()
+    .toFile(webpImage);
+  bundle = db.importAssets(bundle.project.id, [sourceImage, webpImage]);
   bundle = db.addPage(bundle.episodes[0].id, bundle.assets[0].id);
+  bundle = db.addPage(bundle.episodes[0].id, bundle.assets[1].id);
+  bundle = db.addPage(bundle.episodes[0].id);
+  const pageId = bundle.pages[0].id;
+  db.savePanel({
+    id: "00000000-0000-4000-8000-000000000021",
+    pageId,
+    name: "書き出しコマ",
+    x: 100,
+    y: 100,
+    width: 500,
+    height: 600,
+    rotation: 5,
+    zIndex: 0,
+    visible: true,
+    locked: false,
+    borderColor: "#000000",
+    borderWidth: 6,
+    fillColor: "#ffffff",
+    imageAssetId: bundle.assets[0].id,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    imageOpacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  });
+  db.saveBalloon({
+    id: "00000000-0000-4000-8000-000000000022",
+    pageId,
+    name: "書き出し吹き出し",
+    type: "speech_ellipse",
+    x: 650,
+    y: 100,
+    width: 400,
+    height: 250,
+    rotation: 0,
+    zIndex: 1,
+    visible: true,
+    locked: false,
+    fillColor: "#ffffff",
+    strokeColor: "#000000",
+    strokeWidth: 4,
+    opacity: 1,
+    tailDirection: "bottom_left",
+    tailOffset: 0.5,
+    createdAt: "",
+    updatedAt: "",
+  });
+  db.saveTextObject({
+    id: "00000000-0000-4000-8000-000000000023",
+    pageId,
+    parentBalloonId: "00000000-0000-4000-8000-000000000022",
+    name: "書き出し台詞",
+    text: "縦書き。",
+    writingMode: "vertical",
+    x: 730,
+    y: 130,
+    width: 200,
+    height: 180,
+    rotation: 0,
+    zIndex: 2,
+    visible: true,
+    locked: false,
+    fontFamily: "sans-serif",
+    fontSize: 40,
+    fontWeight: 400,
+    color: "#000000",
+    textAlign: "center",
+    verticalAlign: "middle",
+    lineHeight: 1.2,
+    letterSpacing: 0,
+    padding: 8,
+    opacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  });
+  db.savePanel({
+    id: "00000000-0000-4000-8000-000000000024",
+    pageId: bundle.pages[2].id,
+    name: "非表示レイヤー",
+    x: 0,
+    y: 0,
+    width: 1200,
+    height: 1800,
+    rotation: 0,
+    zIndex: 0,
+    visible: false,
+    locked: false,
+    borderColor: "#ff0000",
+    borderWidth: 0,
+    fillColor: "#ff0000",
+    imageAssetId: null,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    imageOpacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  });
   const result = await db.exportProject(bundle.project.id);
   assert.deepEqual(result.files, [
     "本編PDF.pdf",
@@ -420,6 +538,25 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     "%PDF",
   );
   assert.deepEqual(result.warnings, []);
+  const zip = await JSZip.loadAsync(
+    fs.readFileSync(path.join(result.outputDir, "本編画像ZIP.zip")),
+  );
+  assert.deepEqual(Object.keys(zip.files), ["001.png", "002.png", "003.png"]);
+  const firstPng = await zip.file("001.png").async("uint8array");
+  assert.deepEqual(imageSize(firstPng), {
+    width: 1200,
+    height: 1800,
+    type: "png",
+  });
+  const thirdPng = await zip.file("003.png").async("uint8array");
+  const pixel = await sharp(thirdPng).raw().toBuffer();
+  assert.deepEqual([...pixel.subarray(0, 3)], [255, 255, 255]);
+  const pdf = await PDFDocument.load(
+    fs.readFileSync(path.join(result.outputDir, "本編PDF.pdf")),
+  );
+  assert.equal(pdf.getPageCount(), 3);
+  assert.equal(Math.round(pdf.getPage(0).getWidth()), 288);
+  assert.equal(Math.round(pdf.getPage(0).getHeight()), 432);
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

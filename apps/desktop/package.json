@@ -36,6 +36,7 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-konva": "^19.2.5",
+    "sharp": "^0.35.3",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -63,7 +64,9 @@
     "productName": "MANGAI Desktop",
     "asar": true,
     "asarUnpack": [
-      "node_modules/better-sqlite3/**"
+      "node_modules/better-sqlite3/**",
+      "node_modules/sharp/**",
+      "node_modules/@img/**"
     ],
     "files": [
       "dist-main/**/*",

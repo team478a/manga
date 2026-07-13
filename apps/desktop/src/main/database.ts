@@ -18,6 +18,7 @@ import {
   type ProviderSettings,
 } from "@mangai/ai-core";
 import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
+import { renderPagePng, type RenderAsset } from "./page-renderer.js";
 
 type Paths = {
   root: string;
@@ -992,29 +993,55 @@ export class MangaiDatabase {
     const episodeOrder = new Map(
       bundle.episodes.map((episode) => [episode.id, episode.orderIndex]),
     );
-    const assetById = new Map(bundle.assets.map((asset) => [asset.id, asset]));
+    const renderAssets = new Map<string, RenderAsset>();
+    for (const asset of bundle.assets) {
+      const file = this.safeProjectPath(
+        bundle.project.storagePath,
+        asset.relativePath,
+      );
+      if (!fs.existsSync(file)) continue;
+      renderAssets.set(asset.id, {
+        id: asset.id,
+        mimeType: asset.mimeType,
+        width: asset.width,
+        height: asset.height,
+        bytes: fs.readFileSync(file),
+      });
+    }
     const orderedPages = [...bundle.pages].sort(
       (a, b) =>
         (episodeOrder.get(a.episodeId) ?? 0) -
           (episodeOrder.get(b.episodeId) ?? 0) || a.orderIndex - b.orderIndex,
     );
     const images: ExportImage[] = [];
-    for (const page of orderedPages) {
-      if (!page.imageAssetId) continue;
-      const asset = assetById.get(page.imageAssetId);
-      if (!asset) continue;
-      const file = this.safeProjectPath(
-        bundle.project.storagePath,
-        asset.relativePath,
-      );
-      images.push({
-        fileName: asset.fileName,
-        bytes: fs.readFileSync(file),
-        mimeType: asset.mimeType,
-        width: asset.width,
-        height: asset.height,
-      });
+    const failedPages: string[] = [];
+    for (let index = 0; index < orderedPages.length; index++) {
+      const page = orderedPages[index];
+      try {
+        images.push({
+          fileName: `${String(index + 1).padStart(3, "0")}.png`,
+          bytes: await renderPagePng({
+            page,
+            panels: bundle.panels.filter((item) => item.pageId === page.id),
+            balloons: bundle.balloons.filter((item) => item.pageId === page.id),
+            textObjects: bundle.textObjects.filter(
+              (item) => item.pageId === page.id,
+            ),
+            assets: renderAssets,
+          }),
+          mimeType: "image/png",
+          width: page.width,
+          height: page.height,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        failedPages.push(`ページ${page.pageNumber}: ${message}`);
+      }
     }
+    if (failedPages.length)
+      throw new Error(
+        `書き出しに失敗したページがあります。\n${failedPages.join("\n")}`,
+      );
     const stamp = new Date().toISOString().replace(/[:.]/g, "-");
     const safeTitle =
       Array.from(bundle.project.title)
@@ -1043,8 +1070,7 @@ export class MangaiDatabase {
     fs.writeFileSync(
       path.join(outputDir, files[0]),
       await createPagesPdf(images, {
-        width: bundle.project.width,
-        height: bundle.project.height,
+        dpi: bundle.project.dpi,
       }),
     );
     fs.writeFileSync(
@@ -1059,9 +1085,6 @@ export class MangaiDatabase {
     fs.writeFileSync(path.join(outputDir, files[4]), text.snsPost, "utf8");
     const warnings = [
       ...(images.length === 0 ? ["画像がないため空のPDFを作成しました。"] : []),
-      ...(images.some((image) => image.mimeType === "image/webp")
-        ? ["WebPはZIPに含まれますがPDFページには含まれません。"]
-        : []),
     ];
     this.db
       .prepare("insert into export_history values(?,?,?,?,?,?)")

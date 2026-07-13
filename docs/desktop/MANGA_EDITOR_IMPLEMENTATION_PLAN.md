@@ -168,6 +168,17 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - 合成済み連番画像ZIP
 - 進捗、キャンセル、ページ別失敗
 
+進捗:
+
+- Canvas Coreの画像配置・縦書き・吹き出し尻尾計算を共有するSVGページレンダラーをmain processへ実装
+- Page原寸PNGへ背景、Panelクリップ画像、Balloon、Text、回転、透明度、z-indexを合成
+- JPG / PNG / WebPをdata URIとして同じ合成経路で処理し、旧Page画像も全面背景として維持
+- 合成済みPNGを`001.png`形式でZIPへ格納し、Episode・Page正式順を維持
+- PDF物理サイズをPageピクセル寸法とProject DPIから72pt/inchで算出
+- ページ失敗時は対象ページと理由をまとめてエラーにし、欠落した正常完了を禁止
+- PNG寸法、PDFページ数・物理寸法、WebP、縦書き、吹き出し、非表示レイヤーを自動テスト
+- UI進捗表示とキャンセルは次の作業単位
+
 ### Step 9: 回帰・受け入れ・文書
 
 - 指示書の自動テストと4手動シナリオ
