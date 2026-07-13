@@ -8,9 +8,9 @@
 
 MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ローカル漫画制作を担当するWindows製品「MANGAI Desktop」の2製品構成です。
 
-| 製品 | 現在の段階 | 要約 |
-| --- | --- | --- |
-| MANGAI Hub | Marketplace MVP実装済み | 認証、作品公開、検索、デジタル商品、Stripe決済、購入後配布、売上、グッズ申請、管理者機能 |
+| 製品           | 現在の段階                         | 要約                                                                                                |
+| -------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
+| MANGAI Hub     | Marketplace MVP実装済み            | 認証、作品公開、検索、デジタル商品、Stripe決済、購入後配布、売上、グッズ申請、管理者機能            |
 | MANGAI Desktop | ローカル制作・AI・配布基盤実装済み | Project/Episode/Page/素材、書き出し、Creator Chat、ComfyUI、Undo/Redo、インストーラー、自動更新基盤 |
 
 コード上の主要機能は揃っていますが、一般公開版としては次が未完了です。
@@ -25,14 +25,14 @@ MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ロー�
 
 ## 2. 製品境界
 
-| 領域 | MANGAI Hub | MANGAI Desktop |
-| --- | --- | --- |
-| 実行環境 | Next.js / Web | Electron / Windows |
-| 主データ | Supabase PostgreSQL / Storage | ローカルSQLite / Projectフォルダー |
-| 認証 | Supabase Auth | 現在はローカル利用、認証不要 |
-| 決済 | Stripe Checkout / Webhook | 秘密鍵を保持しない |
-| AI | 現在は販売プラットフォーム中心 | Ollama、ComfyUI、Mock |
-| ファイル責務 | 公開作品・販売ファイル | 制作素材・生成画像・販売用書き出し |
+| 領域         | MANGAI Hub                     | MANGAI Desktop                     |
+| ------------ | ------------------------------ | ---------------------------------- |
+| 実行環境     | Next.js / Web                  | Electron / Windows                 |
+| 主データ     | Supabase PostgreSQL / Storage  | ローカルSQLite / Projectフォルダー |
+| 認証         | Supabase Auth                  | 現在はローカル利用、認証不要       |
+| 決済         | Stripe Checkout / Webhook      | 秘密鍵を保持しない                 |
+| AI           | 現在は販売プラットフォーム中心 | Ollama、ComfyUI、Mock              |
+| ファイル責務 | 公開作品・販売ファイル         | 制作素材・生成画像・販売用書き出し |
 
 DesktopはSupabase Service Role KeyやStripe Secret Keyを保持せず、HubはDesktopのローカルIPCへアクセスしません。この分離は今後も維持します。
 
@@ -163,17 +163,17 @@ JPG・PNGはPDFとZIPへ収録します。WebPはZIPへ収録しますが、現�
 
 2026-07-13時点の直近確認:
 
-| 対象 | 結果 |
-| --- | --- |
-| Desktop TypeScript | 成功 |
-| Desktop ESLint | 成功 |
-| Electron main / Vite本番ビルド | 成功 |
-| Desktop統合テスト | 16件成功 |
-| NSIS x64生成 | 成功 |
-| 更新メタデータ付きNSIS生成 | 成功 |
-| 展開版Windows起動 | 成功 |
-| `latest.yml` / blockmap | 生成確認 |
-| 依存関係監査 | Electron 39.8.5更新時点で0件 |
+| 対象                                    | 結果                          |
+| --------------------------------------- | ----------------------------- |
+| Desktop TypeScript                      | 成功                          |
+| Desktop ESLint                          | 成功                          |
+| Electron main / Vite本番ビルド          | 成功                          |
+| Desktop統合テスト                       | 16件成功                      |
+| NSIS x64生成                            | 成功                          |
+| 更新メタデータ付きNSIS生成              | 成功                          |
+| 展開版Windows起動                       | 成功                          |
+| `latest.yml` / blockmap                 | 生成確認                      |
+| 依存関係監査                            | Electron 39.8.5更新時点で0件  |
 | Hub TypeScript / ESLint / Next.jsビルド | Desktop分離時の回帰確認で成功 |
 
 実サービス依存のE2Eは未確認です。HTTP互換モックではOllama、ComfyUI、成功、失敗、タイムアウト、キャンセル、画像取得を確認しています。
@@ -235,6 +235,8 @@ JPG・PNGはPDFとZIPへ収録します。WebPはZIPへ収録しますが、現�
 - JPG、PNG、WebP混在でもPDFが欠落しない
 - Panel・テキスト編集をUndo/Redoできる
 
+2026-07-13進捗: Canvas基盤、矩形コマ、画像配置、吹き出し、縦横テキスト、レイヤー、6テンプレート、Undo/Redo、JPG・PNG・WebP合成PDF/ZIPまで実装しました。ビルド・自動テスト・NSIS生成に成功し、パッケージ版の基本操作と再起動復元も確認しています。直接D&D、ドラッグ式コマ作成、画像編集専用モード、親子テキスト追従、全手動シナリオは残作業です。
+
 ### Phase 3: DesktopとHubの連携
 
 目的: 制作完了から公開・販売までの二重入力を減らす。
@@ -265,22 +267,22 @@ JPG・PNGはPDFとZIPへ収録します。WebPはZIPへ収録しますが、現�
 
 ## 9. 次に決めるべきこと
 
-| 判断項目 | 推奨 | 影響 |
-| --- | --- | --- |
-| 次の最優先 | Phase 1 Release Candidate | 既存投資を安全に試用可能にする |
-| 初回配布先 | GitHub Releases | 現在のBuilder・Actions構成をそのまま利用できる |
-| AI配布方式 | Ollama / ComfyUIは外部インストール継続 | インストーラー肥大化とモデルライセンス問題を避ける |
-| Desktop-Hub連携 | Phase 2後に開始 | 編集データモデル確定前のAPI手戻りを避ける |
-| Panel編集の範囲 | テンプレート＋矩形編集から開始 | 自由描画より短い経路で漫画編集価値を出せる |
+| 判断項目        | 推奨                                   | 影響                                               |
+| --------------- | -------------------------------------- | -------------------------------------------------- |
+| 次の最優先      | Phase 1 Release Candidate              | 既存投資を安全に試用可能にする                     |
+| 初回配布先      | GitHub Releases                        | 現在のBuilder・Actions構成をそのまま利用できる     |
+| AI配布方式      | Ollama / ComfyUIは外部インストール継続 | インストーラー肥大化とモデルライセンス問題を避ける |
+| Desktop-Hub連携 | Phase 2後に開始                        | 編集データモデル確定前のAPI手戻りを避ける          |
+| Panel編集の範囲 | テンプレート＋矩形編集から開始         | 自由描画より短い経路で漫画編集価値を出せる         |
 
 ## 10. 推奨する次の実装単位
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. WebPのPDF変換対応
-2. Projectバックアップ・復元
-3. 実環境E2Eチェックリストと診断画面
-4. Panel編集MVPのデータ操作・UI設計
+1. Canvas手動受け入れ4シナリオの完全完走
+2. 素材D&D、画像編集専用モード、親子テキスト追従
+3. Projectバックアップ・復元
+4. 実環境E2Eチェックリストと診断画面
 
 コード署名証明書とGit remoteは外部準備が必要なため、並行して進めます。
 

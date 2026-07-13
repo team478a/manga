@@ -191,6 +191,17 @@ CanvasオブジェクトがないPageは`image_asset_id`をページ全面に表
 - Desktop / Hub / NSIS回帰
 - 完了条件33項目の個別判定
 
+進捗:
+
+- Desktop TypeScript、ESLint、本番ビルド、統合テスト19件を確認
+- canvas-core単体テスト12件を確認
+- Hub TypeScript、ESLint、Next.js本番ビルドを確認
+- Windows x64 NSISを生成し、パッケージ版の正常起動を確認
+- パッケージ版で新規Project、Page、4コマ、吹き出し、縦書き、Undo/Redo、再起動復元を確認
+- preloadのCommonJS梱包漏れによるパッケージ版黒画面を検出・修正
+- 33条件の個別判定と詳細要件の残項目を文書化
+- 4手動シナリオの素材配置・出力を含む完全完走は未完了
+
 ## リスクと対策
 
 | リスク                       | 対策                                               |

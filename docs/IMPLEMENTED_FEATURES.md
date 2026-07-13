@@ -10,23 +10,23 @@ MANGAI Creator Platformは、AIクリエイターが作品を公開し、デジ�
 
 ### 技術構成
 
-| 分類 | 採用技術 |
-| --- | --- |
-| Web | Next.js 16 App Router、React 19、TypeScript |
-| UI | Tailwind CSS、Lucide React |
-| 認証・DB・Storage | Supabase |
-| 決済 | Stripe Checkout、Stripe Webhook |
-| ローカル保存 | SQLite（better-sqlite3） |
-| パッケージ生成 | JSZip、Node.js File System API |
-| 入力検証 | Zod |
+| 分類              | 採用技術                                    |
+| ----------------- | ------------------------------------------- |
+| Web               | Next.js 16 App Router、React 19、TypeScript |
+| UI                | Tailwind CSS、Lucide React                  |
+| 認証・DB・Storage | Supabase                                    |
+| 決済              | Stripe Checkout、Stripe Webhook             |
+| ローカル保存      | SQLite（better-sqlite3）                    |
+| パッケージ生成    | JSZip、Node.js File System API              |
+| 入力検証          | Zod                                         |
 
 ## 2. 利用者区分と権限
 
-| 区分 | 主な権限 |
-| --- | --- |
+| 区分             | 主な権限                                                         |
+| ---------------- | ---------------------------------------------------------------- |
 | 未ログイン利用者 | 公開作品の閲覧・検索、販売中商品の購入、販売パッケージ画面の利用 |
-| クリエイター | プロフィール、自分の作品・商品・グッズ申請・売上の管理 |
-| 管理者 | 全ユーザー・作品・商品・申請・注文の確認、グッズ申請の更新 |
+| クリエイター     | プロフィール、自分の作品・商品・グッズ申請・売上の管理           |
+| 管理者           | 全ユーザー・作品・商品・申請・注文の確認、グッズ申請の更新       |
 
 - `/dashboard` と `/admin` はSupabase Authによるログイン保護があります。
 - `/admin` は `profiles.role = 'admin'` のユーザーだけが利用できます。
@@ -246,20 +246,20 @@ Supabase未設定でも `/sales-packages` から利用できる、PCローカル
 
 ### Supabaseテーブル
 
-| テーブル | 用途 |
-| --- | --- |
-| `profiles` | 表示名、自己紹介、権限 |
-| `works` | 作品、画像URL、タグ、公開状態 |
-| `digital_products` | 販売ファイル、価格、販売状態 |
-| `goods_requests` | グッズ販売申請と管理者対応 |
-| `orders` | 購入者、金額内訳、Stripe情報、注文状態 |
+| テーブル           | 用途                                   |
+| ------------------ | -------------------------------------- |
+| `profiles`         | 表示名、自己紹介、権限                 |
+| `works`            | 作品、画像URL、タグ、公開状態          |
+| `digital_products` | 販売ファイル、価格、販売状態           |
+| `goods_requests`   | グッズ販売申請と管理者対応             |
+| `orders`           | 購入者、金額内訳、Stripe情報、注文状態 |
 
 ### Storage bucket
 
-| Bucket | 公開範囲 | 用途・制限 |
-| --- | --- | --- |
-| `works` | Public | 作品画像、最大10MB、JPG・PNG・WebP |
-| `digital-products` | Private | 販売ファイル、最大50MB、PDF・PNG・JPG・ZIP |
+| Bucket             | 公開範囲 | 用途・制限                                 |
+| ------------------ | -------- | ------------------------------------------ |
+| `works`            | Public   | 作品画像、最大10MB、JPG・PNG・WebP         |
+| `digital-products` | Private  | 販売ファイル、最大50MB、PDF・PNG・JPG・ZIP |
 
 ## 12. 必要な環境変数
 
@@ -295,3 +295,16 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ## 14. 実装状況の確認
 
 2026-07-12時点で、TypeScript型チェック、ESLint、Next.js本番ビルドは成功しています。Stripe決済のエンドツーエンド確認には、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
+
+## 15. Desktop漫画編集Canvas
+
+- 矩形コマ、素材画像クリッピングと画像配置調整
+- 楕円・角丸・ナレーション吹き出しと8方向のしっぽ
+- 縦書き・横書き、自由テキスト、親Balloon設定
+- 統合レイヤー、表示、ロック、z-index、6種類のテンプレート
+- 単一・複数選択、移動、複製、削除、キーボード操作
+- SQLite永続化、Canvasスナップショットv2、Undo/Redo
+- JPG・PNG・WebP合成、DPI準拠PDF、連番PNG ZIP
+- 書き出し進捗、キャンセル、ページ別エラー
+
+操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。

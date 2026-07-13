@@ -25,16 +25,16 @@ Hubの既存コードは移動せず維持し、Desktopと共通パッケージ�
 | `7a5a9e3` | Electron、React、Vite、SQLiteによるDesktop基盤を追加          |
 | `26df166` | DesktopからPDF、画像ZIP、作品情報、販売文を書き出す機能を追加 |
 | `1726dd2` | Episode切り替えとプロジェクト代表画像表示を追加               |
-| `df75731` | Creator Chat、Ollama、ComfyUI、生成ジョブを追加 |
-| `f544ba8` | ComfyUIワークフロー管理を強化 |
-| `6a9be41` | Chat対象切り替えとAIモデルキャッシュを追加 |
-| `298fe98` | プロンプトテンプレート複製・編集を追加 |
-| `656ee6a` | 画像生成進捗表示を追加 |
-| `fee995a` | 永続Undo/Redoと操作履歴を追加 |
-| `7eeef1b` | Project保存先選択を追加 |
-| `b41e477` | Windows NSISインストーラーを追加 |
-| `553a549` | ブランドアイコンと署名ワークフローを追加 |
-| `f813780` | 自動更新とGitHub Releases配布基盤を追加 |
+| `df75731` | Creator Chat、Ollama、ComfyUI、生成ジョブを追加               |
+| `f544ba8` | ComfyUIワークフロー管理を強化                                 |
+| `6a9be41` | Chat対象切り替えとAIモデルキャッシュを追加                    |
+| `298fe98` | プロンプトテンプレート複製・編集を追加                        |
+| `656ee6a` | 画像生成進捗表示を追加                                        |
+| `fee995a` | 永続Undo/Redoと操作履歴を追加                                 |
+| `7eeef1b` | Project保存先選択を追加                                       |
+| `b41e477` | Windows NSISインストーラーを追加                              |
+| `553a549` | ブランドアイコンと署名ワークフローを追加                      |
+| `f813780` | 自動更新とGitHub Releases配布基盤を追加                       |
 
 Hub保全タグ:
 
@@ -151,15 +151,15 @@ SNS告知文.txt
 {Documents}/MANGAI/mangai_local.sqlite
 ```
 
-| テーブル         | 用途                                                 |
-| ---------------- | ---------------------------------------------------- |
-| `projects`       | 作品設定、保存先、代表素材、作成・更新・最終表示日時 |
-| `episodes`       | Projectに属するEpisodeと表示順                       |
-| `pages`          | Episodeに属するPage、寸法、画像、プロンプト、メモ    |
-| `panels`         | 将来のコマ編集用座標・生成情報                       |
-| `assets`         | 相対パス、MIME、寸法、容量、SHA-256                  |
-| `export_history` | 書き出し先、生成ファイル、警告、日時                 |
-| `operation_history` | Project編集の変更前後、取消状態、操作日時 |
+| テーブル            | 用途                                                 |
+| ------------------- | ---------------------------------------------------- |
+| `projects`          | 作品設定、保存先、代表素材、作成・更新・最終表示日時 |
+| `episodes`          | Projectに属するEpisodeと表示順                       |
+| `pages`             | Episodeに属するPage、寸法、画像、プロンプト、メモ    |
+| `panels`            | 将来のコマ編集用座標・生成情報                       |
+| `assets`            | 相対パス、MIME、寸法、容量、SHA-256                  |
+| `export_history`    | 書き出し先、生成ファイル、警告、日時                 |
+| `operation_history` | Project編集の変更前後、取消状態、操作日時            |
 
 設定:
 
@@ -290,3 +290,11 @@ Electron BuilderとNSISによるWindows x64インストーラー生成を追加�
 ## 18. 自動更新・公開配布基盤
 
 `electron-updater`によるHTTPS更新確認、手動ダウンロード、進捗表示、再起動適用を追加しました。更新用ビルドは配布URLを安全に埋め込み、`latest.yml`、NSIS EXE、blockmapを生成します。GitHub Actionsはタグ駆動の署名済みDraft Releaseを作成できますが、Git remoteと証明書Secretsが未設定のため実公開は未実施です。詳細は [`desktop/AUTO_UPDATE.md`](desktop/AUTO_UPDATE.md) を参照してください。
+
+## 19. 漫画編集Canvas MVP
+
+`konva` / `react-konva`と`packages/canvas-core`を追加し、矩形コマ、素材クリッピング、3種類の吹き出し、縦横テキスト、統合レイヤー、6テンプレート、複数選択、Canvas Undo/Redoを実装しました。SQLiteはマイグレーション前バックアップ、schema version、Balloon・Text Object、Canvasスナップショットv2へ拡張しています。
+
+Sharpを使う共通PageレンダラーでJPG・PNG・WebPをPage原寸へ合成し、DPI準拠PDFと連番PNG ZIP、進捗、キャンセル、ページ別エラーへ対応しました。Desktop 19件、canvas-core 12件、Hub回帰、Windows x64 NSIS生成に成功しています。
+
+パッケージ版受け入れでsandboxed preloadのES Modules生成による黒画面を検出し、preloadだけCommonJSとして生成・梱包するよう修正しました。修正版で新規Project、Page、4コマ、吹き出し、縦書き、Undo/Redo、再起動復元を確認しています。詳細と残項目は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md) と [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
