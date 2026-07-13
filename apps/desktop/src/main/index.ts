@@ -47,6 +47,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 let store: MangaiDatabase;
 let aiService: AIService;
 let updater: DesktopUpdater;
+const exportControllers = new Map<string, AbortController>();
 function desktopPaths() {
   const root = path.join(app.getPath("documents"), "MANGAI");
   return {
@@ -112,9 +113,35 @@ function register() {
   handle("projects:delete", (v) =>
     store.deleteProject(projectIdSchema.parse(v).id),
   );
-  handle("projects:export", (v) =>
-    store.exportProject(projectIdSchema.parse(v).id),
-  );
+  handle("projects:export", async (v, event) => {
+    const id = projectIdSchema.parse(v).id;
+    const requestId = String(v?.requestId ?? "");
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        requestId,
+      )
+    )
+      throw new Error("書き出しリクエストIDが不正です。");
+    const controller = new AbortController();
+    exportControllers.set(requestId, controller);
+    try {
+      return await store.exportProject(id, {
+        signal: controller.signal,
+        onProgress: (value) =>
+          event.sender.send("projects:export:progress", {
+            requestId,
+            ...value,
+          }),
+      });
+    } finally {
+      exportControllers.delete(requestId);
+    }
+  });
+  handle("projects:export:cancel", (v) => {
+    const requestId = String(v?.requestId ?? "");
+    exportControllers.get(requestId)?.abort();
+    return true;
+  });
   handle("episodes:create", (v) => {
     const x = episodeInputSchema.parse(v);
     return store.captureHistory(x.projectId, "エピソードを追加", () =>

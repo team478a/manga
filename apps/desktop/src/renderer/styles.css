@@ -433,6 +433,27 @@ label {
 .zoom button {
   padding: 5px 9px;
 }
+.export-progress {
+  position: fixed;
+  top: 72px;
+  right: 18px;
+  z-index: 10;
+  width: 300px;
+  padding: 12px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 18px #0003;
+}
+.export-progress div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+.export-progress progress {
+  width: 100%;
+}
 .right section {
   display: grid;
   gap: 9px;

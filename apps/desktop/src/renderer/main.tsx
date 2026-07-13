@@ -7,7 +7,7 @@ import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
 import { UpdateControl } from "./features/updater/UpdateControl";
 import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
-import type { OperationHistory } from "../preload/api";
+import type { ExportProgress, OperationHistory } from "../preload/api";
 
 const emptyForm = {
   title: "",
@@ -37,6 +37,10 @@ function App() {
     [creating, setCreating] = React.useState(false),
     [error, setError] = React.useState(""),
     [saving, setSaving] = React.useState("保存済み"),
+    [exportTask, setExportTask] = React.useState<{
+      requestId: string;
+      progress: ExportProgress;
+    } | null>(null),
     [zoom, setZoom] = React.useState(70),
     [history, setHistory] = React.useState<OperationHistory>({
       items: [],
@@ -66,6 +70,17 @@ function App() {
   React.useEffect(() => {
     void refresh();
   }, []);
+  React.useEffect(
+    () =>
+      window.mangai.onExportProgress((progress) =>
+        setExportTask((current) =>
+          current && current.requestId === progress.requestId
+            ? { ...current, progress }
+            : current,
+        ),
+      ),
+    [],
+  );
   React.useEffect(() => {
     if (!bundle) return;
     Promise.all(
@@ -434,22 +449,46 @@ function App() {
         <button onClick={() => setActiveTool("jobs")}>AI生成</button>
         <button
           onClick={async () => {
+            if (exportTask) {
+              await window.mangai.cancelExport(exportTask.requestId);
+              return;
+            }
+            const requestId = crypto.randomUUID();
             try {
               setSaving("書き出し中…");
+              setExportTask({
+                requestId,
+                progress: {
+                  requestId,
+                  current: 0,
+                  total: bundle.pages.length,
+                  percent: 0,
+                  status: "rendering",
+                },
+              });
               const result = await window.mangai.exportProject(
                 bundle.project.id,
+                requestId,
               );
               setSaving("保存済み");
               alert(
                 `書き出しました:\n${result.outputDir}${result.warnings.length ? `\n\n注意:\n${result.warnings.join("\n")}` : ""}`,
               );
             } catch (cause) {
-              setSaving("書き出し失敗");
-              showError(cause);
+              const message =
+                cause instanceof Error ? cause.message : String(cause);
+              setSaving(
+                message.includes("キャンセル")
+                  ? "書き出しキャンセル"
+                  : "書き出し失敗",
+              );
+              if (!message.includes("キャンセル")) showError(cause);
+            } finally {
+              setExportTask(null);
             }
           }}
         >
-          書き出し
+          {exportTask ? "キャンセル" : "書き出し"}
         </button>
         <button onClick={() => setActiveTool("settings")}>設定</button>
         <UpdateControl />
@@ -457,6 +496,19 @@ function App() {
       {error && (
         <div className="error floating" onClick={() => setError("")}>
           {error}
+        </div>
+      )}
+      {exportTask && (
+        <div className="export-progress">
+          <div>
+            <b>
+              {exportTask.progress.status === "packaging"
+                ? "PDF・ZIPを作成中"
+                : `ページ ${exportTask.progress.pageNumber ?? exportTask.progress.current} / ${exportTask.progress.total}`}
+            </b>
+            <span>{exportTask.progress.percent}%</span>
+          </div>
+          <progress max="100" value={exportTask.progress.percent} />
         </div>
       )}
       <div className="workspace">

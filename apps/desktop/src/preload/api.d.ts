@@ -35,6 +35,14 @@ export type UpdateState = {
   percent?: number;
   message: string;
 };
+export type ExportProgress = {
+  requestId: string;
+  current: number;
+  total: number;
+  percent: number;
+  pageNumber?: number;
+  status: "rendering" | "packaging" | "complete";
+};
 export type DesktopApi = {
   listProjects: () => Promise<Project[]>;
   chooseProjectStorage: (currentPath?: string) => Promise<string | null>;
@@ -44,11 +52,16 @@ export type DesktopApi = {
   renameProject: (id: string, title: string) => Promise<ProjectBundle>;
   duplicateProject: (id: string) => Promise<ProjectBundle>;
   deleteProject: (id: string) => Promise<void>;
-  exportProject: (id: string) => Promise<{
+  exportProject: (
+    id: string,
+    requestId: string,
+  ) => Promise<{
     outputDir: string;
     files: string[];
     warnings: string[];
   }>;
+  cancelExport: (requestId: string) => Promise<boolean>;
+  onExportProgress: (listener: (value: ExportProgress) => void) => () => void;
   createEpisode: (projectId: string, title: string) => Promise<ProjectBundle>;
   renameEpisode: (id: string, title: string) => Promise<ProjectBundle>;
   reorderEpisodes: (

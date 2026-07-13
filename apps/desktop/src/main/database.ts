@@ -988,7 +988,19 @@ export class MangaiDatabase {
       .get(id) as any;
     return row?.relative_path ? this.assetData(row.relative_path) : null;
   }
-  async exportProject(id: string) {
+  async exportProject(
+    id: string,
+    options: {
+      signal?: AbortSignal;
+      onProgress?: (value: {
+        current: number;
+        total: number;
+        percent: number;
+        pageNumber?: number;
+        status: "rendering" | "packaging" | "complete";
+      }) => void;
+    } = {},
+  ) {
     const bundle = this.bundle(id);
     const episodeOrder = new Map(
       bundle.episodes.map((episode) => [episode.id, episode.orderIndex]),
@@ -1015,8 +1027,18 @@ export class MangaiDatabase {
     );
     const images: ExportImage[] = [];
     const failedPages: string[] = [];
+    const total = orderedPages.length;
     for (let index = 0; index < orderedPages.length; index++) {
+      if (options.signal?.aborted)
+        throw new Error("書き出しをキャンセルしました。");
       const page = orderedPages[index];
+      options.onProgress?.({
+        current: index,
+        total,
+        percent: total ? Math.round((index / total) * 85) : 85,
+        pageNumber: page.pageNumber,
+        status: "rendering",
+      });
       try {
         images.push({
           fileName: `${String(index + 1).padStart(3, "0")}.png`,
@@ -1038,6 +1060,8 @@ export class MangaiDatabase {
         failedPages.push(`ページ${page.pageNumber}: ${message}`);
       }
     }
+    if (options.signal?.aborted)
+      throw new Error("書き出しをキャンセルしました。");
     if (failedPages.length)
       throw new Error(
         `書き出しに失敗したページがあります。\n${failedPages.join("\n")}`,
@@ -1054,6 +1078,12 @@ export class MangaiDatabase {
         .slice(0, 80) || "project";
     const outputDir = path.join(this.paths.exports, `${safeTitle}-${stamp}`);
     fs.mkdirSync(outputDir, { recursive: true });
+    options.onProgress?.({
+      current: total,
+      total,
+      percent: 90,
+      status: "packaging",
+    });
     const text = createSalesTextDraft({
       title: bundle.project.title,
       subtitle: bundle.project.subtitle,
@@ -1096,6 +1126,12 @@ export class MangaiDatabase {
         JSON.stringify(warnings),
         now(),
       );
+    options.onProgress?.({
+      current: total,
+      total,
+      percent: 100,
+      status: "complete",
+    });
     return { outputDir, files, warnings };
   }
   getProviderSettings(): ProviderSettings[] {

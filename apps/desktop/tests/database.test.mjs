@@ -520,7 +520,10 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     createdAt: "",
     updatedAt: "",
   });
-  const result = await db.exportProject(bundle.project.id);
+  const progress = [];
+  const result = await db.exportProject(bundle.project.id, {
+    onProgress: (value) => progress.push(value),
+  });
   assert.deepEqual(result.files, [
     "本編PDF.pdf",
     "本編画像ZIP.zip",
@@ -557,6 +560,15 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
   assert.equal(pdf.getPageCount(), 3);
   assert.equal(Math.round(pdf.getPage(0).getWidth()), 288);
   assert.equal(Math.round(pdf.getPage(0).getHeight()), 432);
+  assert.equal(progress[0].status, "rendering");
+  assert.equal(progress.at(-1).status, "complete");
+  assert.equal(progress.at(-1).percent, 100);
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(
+    () => db.exportProject(bundle.project.id, { signal: controller.signal }),
+    /キャンセル/,
+  );
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

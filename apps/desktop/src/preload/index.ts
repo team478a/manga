@@ -11,7 +11,17 @@ contextBridge.exposeInMainWorld("mangai", {
   duplicateProject: (id: string) =>
     ipcRenderer.invoke("projects:duplicate", { id }),
   deleteProject: (id: string) => ipcRenderer.invoke("projects:delete", { id }),
-  exportProject: (id: string) => ipcRenderer.invoke("projects:export", { id }),
+  exportProject: (id: string, requestId: string) =>
+    ipcRenderer.invoke("projects:export", { id, requestId }),
+  cancelExport: (requestId: string) =>
+    ipcRenderer.invoke("projects:export:cancel", { requestId }),
+  onExportProgress: (listener: (value: unknown) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, value: unknown) =>
+      listener(value);
+    ipcRenderer.on("projects:export:progress", handler);
+    return () =>
+      ipcRenderer.removeListener("projects:export:progress", handler);
+  },
   createEpisode: (projectId: string, title: string) =>
     ipcRenderer.invoke("episodes:create", { projectId, title }),
   renameEpisode: (id: string, title: string) =>
