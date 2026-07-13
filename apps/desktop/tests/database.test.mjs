@@ -5,6 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { Buffer } from "node:buffer";
 import { MangaiDatabase } from "../dist-main/main/database.js";
+import Database from "better-sqlite3";
 test("project, episode, page and asset data survive reopening", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-test-"));
   const paths = {
@@ -83,6 +84,49 @@ test("project can use a selected custom storage folder", () => {
     /別のProjectで使用されています/,
   );
   db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+test("legacy database is backed up before canvas schema migration", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-migration-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const legacy = new Database(paths.database);
+  legacy.exec(
+    "create table panels(id text primary key,page_id text not null,order_index integer not null,x real not null,y real not null,width real not null,height real not null,image_asset_id text,prompt text not null default '',negative_prompt text not null default '',generation_status text not null default 'idle',metadata text not null default '{}')",
+  );
+  legacy.close();
+  const db = new MangaiDatabase(paths);
+  const backups = fs.readdirSync(path.join(root, "backups"));
+  assert.equal(backups.length, 1);
+  assert.match(backups[0], /before-canvas-v1/);
+  db.close();
+  const migrated = new Database(paths.database);
+  const panelColumns = migrated
+    .prepare("pragma table_info(panels)")
+    .all()
+    .map((column) => column.name);
+  assert.equal(panelColumns.includes("image_fit"), true);
+  assert.equal(panelColumns.includes("locked"), true);
+  assert.ok(
+    migrated
+      .prepare("select 1 from schema_migrations where version='canvas-v1'")
+      .get(),
+  );
+  assert.ok(
+    migrated.prepare("select 1 from sqlite_master where name='balloons'").get(),
+  );
+  assert.ok(
+    migrated
+      .prepare("select 1 from sqlite_master where name='text_objects'")
+      .get(),
+  );
+  migrated.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
 test("page reordering is persisted", () => {

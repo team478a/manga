@@ -39,16 +39,47 @@ const mime = (file: string) =>
 export class MangaiDatabase {
   private db: Database.Database;
   constructor(public paths: Paths) {
+    const databaseExisted = fs.existsSync(paths.database);
     Object.values(paths)
       .filter((x) => x !== paths.database)
       .forEach((x) => fs.mkdirSync(x, { recursive: true }));
     this.db = new Database(paths.database);
     this.db.pragma("foreign_keys = ON");
     this.db.pragma("journal_mode = WAL");
+    if (databaseExisted && !this.hasMigration("canvas-v1"))
+      this.backupBeforeMigration("canvas-v1");
     this.migrate();
   }
   close() {
     this.db.close();
+  }
+  private hasMigration(version: string) {
+    const exists = this.db
+      .prepare(
+        "select 1 from sqlite_master where type='table' and name='schema_migrations'",
+      )
+      .get();
+    if (!exists) return false;
+    return Boolean(
+      this.db
+        .prepare("select 1 from schema_migrations where version=?")
+        .get(version),
+    );
+  }
+  private backupBeforeMigration(name: string) {
+    const directory = path.join(this.paths.root, "backups");
+    fs.mkdirSync(directory, { recursive: true });
+    this.db.pragma("wal_checkpoint(RESTART)");
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const destination = path.join(
+      directory,
+      `mangai_local-before-${name}-${stamp}.sqlite`,
+    );
+    fs.copyFileSync(
+      this.paths.database,
+      destination,
+      fs.constants.COPYFILE_EXCL,
+    );
   }
   private migrate() {
     this.db.exec(`
@@ -67,6 +98,7 @@ export class MangaiDatabase {
  create table if not exists generation_outputs(id text primary key,job_id text not null references generation_jobs(id) on delete cascade,asset_id text references assets(id) on delete set null,relative_path text,metadata_json text not null default '{}',created_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
+ create table if not exists schema_migrations(version text primary key,name text not null,applied_at text not null);
  create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);`);
     const assetColumns = this.db
       .prepare("pragma table_info(assets)")
@@ -84,6 +116,7 @@ export class MangaiDatabase {
       this.db.exec(
         "alter table generation_jobs add column progress real not null default 0",
       );
+    this.migrateCanvasV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -99,6 +132,57 @@ export class MangaiDatabase {
         "update generation_jobs set status='failed',error_code='INTERRUPTED',error_message='アプリ終了により生成が中断されました。',completed_at=? where status='running'",
       )
       .run(now());
+  }
+  private migrateCanvasV1() {
+    if (this.hasMigration("canvas-v1")) return;
+    const columns = new Set(
+      (
+        this.db.prepare("pragma table_info(panels)").all() as Array<{
+          name: string;
+        }>
+      ).map((column) => column.name),
+    );
+    const additions = [
+      ["name", "text not null default 'コマ'"],
+      ["rotation", "real not null default 0"],
+      ["z_index", "integer not null default 0"],
+      ["visible", "integer not null default 1"],
+      ["locked", "integer not null default 0"],
+      ["border_color", "text not null default '#000000'"],
+      ["border_width", "real not null default 4"],
+      ["fill_color", "text not null default '#ffffff'"],
+      ["image_fit", "text not null default 'cover'"],
+      ["image_offset_x", "real not null default 0"],
+      ["image_offset_y", "real not null default 0"],
+      ["image_scale", "real not null default 1"],
+      ["image_rotation", "real not null default 0"],
+      ["image_opacity", "real not null default 1"],
+      ["created_at", "text not null default ''"],
+      ["updated_at", "text not null default ''"],
+    ] as const;
+    const stamp = now();
+    this.db.transaction(() => {
+      for (const [column, definition] of additions)
+        if (!columns.has(column))
+          this.db.exec(`alter table panels add column ${column} ${definition}`);
+      this.db.exec(`
+        create table balloons(id text primary key,page_id text not null references pages(id) on delete cascade,name text not null,type text not null,x real not null,y real not null,width real not null,height real not null,rotation real not null default 0,z_index integer not null,visible integer not null default 1,locked integer not null default 0,fill_color text not null default '#ffffff',stroke_color text not null default '#000000',stroke_width real not null default 4,opacity real not null default 1,tail_direction text not null default 'none',tail_offset real not null default 0.5,created_at text not null,updated_at text not null);
+        create table text_objects(id text primary key,page_id text not null references pages(id) on delete cascade,parent_balloon_id text references balloons(id) on delete cascade,name text not null,text text not null default '',writing_mode text not null default 'horizontal',x real not null,y real not null,width real not null,height real not null,rotation real not null default 0,z_index integer not null,visible integer not null default 1,locked integer not null default 0,font_family text not null default 'sans-serif',font_size real not null default 48,font_weight integer not null default 400,color text not null default '#000000',text_align text not null default 'center',vertical_align text not null default 'middle',line_height real not null default 1.2,letter_spacing real not null default 0,padding real not null default 16,opacity real not null default 1,created_at text not null,updated_at text not null);
+        create index idx_panels_page_z on panels(page_id,z_index);
+        create index idx_balloons_page_z on balloons(page_id,z_index);
+        create index idx_text_objects_page_z on text_objects(page_id,z_index);
+      `);
+      this.db
+        .prepare(
+          "update panels set z_index=order_index,created_at=case when created_at='' then ? else created_at end,updated_at=case when updated_at='' then ? else updated_at end",
+        )
+        .run(stamp, stamp);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run("canvas-v1", "Manga canvas panels, balloons and text", stamp);
+    })();
   }
   private project(row: any): Project {
     return {
