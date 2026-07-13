@@ -1,4 +1,4 @@
-import type { PageSize, Point, Rect } from "./types.js";
+import type { ImageFit, PageSize, Point, Rect } from "./types.js";
 export const MIN_CANVAS_OBJECT_SIZE = 16;
 export const MAX_PAGE_EDGE = 20_000;
 export const MAX_PAGE_PIXELS = 100_000_000;
@@ -61,6 +61,38 @@ export function normalizeRotation(value: number) {
 }
 export function estimateRgbaMemoryBytes(page: PageSize) {
   return page.width * page.height * 4;
+}
+export function computeImagePlacement(
+  source: PageSize,
+  frame: Rect,
+  options: {
+    fit: ImageFit;
+    scale?: number;
+    offsetX?: number;
+    offsetY?: number;
+  },
+): Rect {
+  if (source.width <= 0 || source.height <= 0)
+    throw new Error("画像サイズは正数である必要があります。");
+  const containScale = Math.min(
+    frame.width / source.width,
+    frame.height / source.height,
+  );
+  const coverScale = Math.max(
+    frame.width / source.width,
+    frame.height / source.height,
+  );
+  const fitScale = options.fit === "cover" ? coverScale : containScale;
+  const editScale = Math.max(0.01, options.scale ?? 1);
+  const scale = fitScale * editScale;
+  const width = source.width * scale;
+  const height = source.height * scale;
+  return {
+    x: frame.x + (frame.width - width) / 2 + (options.offsetX ?? 0),
+    y: frame.y + (frame.height - height) / 2 + (options.offsetY ?? 0),
+    width,
+    height,
+  };
 }
 function clamp(value: number, minimum: number, maximum: number) {
   if (!Number.isFinite(value)) return minimum;

@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import {
   applyPageTemplate,
   canvasBatchInputSchema,
+  computeImagePlacement,
   constrainRectToPage,
   layoutVerticalText,
   normalizeLayerOrder,
@@ -39,6 +40,24 @@ test("minimum dimensions and rotations are normalized", () => {
   assert.equal(value.height, 16);
   assert.equal(normalizeRotation(-450), 270);
   assert.equal(normalizeRotation(725), 5);
+});
+test("cover and contain image placement remain centered", () => {
+  assert.deepEqual(
+    computeImagePlacement(
+      { width: 200, height: 100 },
+      { x: 10, y: 20, width: 100, height: 100 },
+      { fit: "contain" },
+    ),
+    { x: 10, y: 45, width: 100, height: 50 },
+  );
+  assert.deepEqual(
+    computeImagePlacement(
+      { width: 200, height: 100 },
+      { x: 10, y: 20, width: 100, height: 100 },
+      { fit: "cover", scale: 2, offsetX: 5 },
+    ),
+    { x: -135, y: -30, width: 400, height: 200 },
+  );
 });
 test("z-index is unique and continuous", () => {
   const values = normalizeLayerOrder([

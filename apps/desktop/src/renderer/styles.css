@@ -370,6 +370,39 @@ label {
   justify-content: center;
   padding: 4px 2px;
 }
+.canvas-properties {
+  display: grid;
+  gap: 7px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #d9dedb;
+}
+.canvas-properties label {
+  display: grid;
+  gap: 3px;
+  font-size: 11px;
+  color: #59655f;
+}
+.canvas-properties input,
+.canvas-properties select,
+.canvas-properties textarea {
+  width: 100%;
+  min-width: 0;
+  padding: 5px;
+  font-size: 12px;
+}
+.canvas-properties .canvas-warning {
+  margin: 0;
+  padding: 6px;
+  border-radius: 5px;
+  background: #fff0d5;
+  color: #8a5200;
+  font-size: 11px;
+}
+.canvas-properties textarea {
+  min-height: 70px;
+  resize: vertical;
+}
 .paper {
   background: #fff;
   box-shadow: 0 8px 35px #0004;

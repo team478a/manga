@@ -1,8 +1,10 @@
 import React from "react";
 import {
   Ellipse,
+  Group,
   Image as KonvaImage,
   Layer,
+  Line,
   Rect,
   Stage,
   Text,
@@ -17,12 +19,19 @@ import type {
 } from "@mangai/project-core";
 import {
   applyPageTemplate,
+  computeImagePlacement,
   constrainRectToPage,
+  layoutVerticalText,
   pageTemplates,
+  segmentGraphemes,
   type PageTemplateId,
 } from "@mangai/canvas-core";
 
 type Selection = { type: "panel" | "balloon" | "text"; id: string } | null;
+type LayerItem =
+  | (Panel & { objectType: "panel" })
+  | (Balloon & { objectType: "balloon" })
+  | (TextObject & { objectType: "text" });
 
 function useImage(source?: string) {
   const [image, setImage] = React.useState<HTMLImageElement>();
@@ -97,55 +106,77 @@ function PanelNode({
 }) {
   const image = useImage(imageUrl);
   if (!panel.visible) return null;
+  const placement = image
+    ? computeImagePlacement(
+        { width: image.naturalWidth, height: image.naturalHeight },
+        { x: 0, y: 0, width: panel.width, height: panel.height },
+        {
+          fit: panel.imageFit,
+          scale: panel.imageScale,
+          offsetX: panel.imageOffsetX,
+          offsetY: panel.imageOffsetY,
+        },
+      )
+    : null;
   return (
-    <React.Fragment>
+    <Group
+      id={`panel-${panel.id}`}
+      x={panel.x}
+      y={panel.y}
+      width={panel.width}
+      height={panel.height}
+      rotation={panel.rotation}
+      draggable={!panel.locked}
+      onClick={(event) => onSelect(event.currentTarget)}
+      onTap={(event) => onSelect(event.currentTarget)}
+      onDragEnd={(event) =>
+        onSave({ ...panel, x: event.target.x(), y: event.target.y() })
+      }
+      onTransformEnd={(event) => {
+        const node = event.target;
+        const scaleX = node.scaleX();
+        const scaleY = node.scaleY();
+        node.scaleX(1);
+        node.scaleY(1);
+        onSave({
+          ...panel,
+          x: node.x(),
+          y: node.y(),
+          width: Math.max(20, panel.width * scaleX),
+          height: Math.max(20, panel.height * scaleY),
+          rotation: node.rotation(),
+        });
+      }}
+    >
+      <Rect width={panel.width} height={panel.height} fill={panel.fillColor} />
+      {image && placement && (
+        <Group
+          clipX={0}
+          clipY={0}
+          clipWidth={panel.width}
+          clipHeight={panel.height}
+        >
+          <KonvaImage
+            image={image}
+            x={placement.x}
+            y={placement.y}
+            width={placement.width}
+            height={placement.height}
+            rotation={panel.imageRotation}
+            opacity={panel.imageOpacity}
+            listening={false}
+          />
+        </Group>
+      )}
       <Rect
-        id={`panel-${panel.id}`}
-        x={panel.x}
-        y={panel.y}
         width={panel.width}
         height={panel.height}
-        rotation={panel.rotation}
-        fill={panel.fillColor}
         stroke={selected ? "#2f9e68" : panel.borderColor}
         strokeWidth={
           selected ? Math.max(panel.borderWidth, 7) : panel.borderWidth
         }
-        draggable={!panel.locked}
-        onClick={(event) => onSelect(event.target)}
-        onTap={(event) => onSelect(event.target)}
-        onDragEnd={(event) =>
-          onSave({ ...panel, x: event.target.x(), y: event.target.y() })
-        }
-        onTransformEnd={(event) => {
-          const node = event.target;
-          const scaleX = node.scaleX();
-          const scaleY = node.scaleY();
-          node.scaleX(1);
-          node.scaleY(1);
-          onSave({
-            ...panel,
-            x: node.x(),
-            y: node.y(),
-            width: Math.max(20, node.width() * scaleX),
-            height: Math.max(20, node.height() * scaleY),
-            rotation: node.rotation(),
-          });
-        }}
       />
-      {image && (
-        <KonvaImage
-          image={image}
-          x={panel.x}
-          y={panel.y}
-          width={panel.width}
-          height={panel.height}
-          rotation={panel.rotation}
-          opacity={panel.imageOpacity}
-          listening={false}
-        />
-      )}
-    </React.Fragment>
+    </Group>
   );
 }
 
@@ -161,28 +192,22 @@ function BalloonNode({
   if (!balloon.visible) return null;
   const Shape = balloon.type === "speech_ellipse" ? Ellipse : Rect;
   const centered = balloon.type === "speech_ellipse";
+  const tail = balloonTailPoints(balloon);
   return (
-    <Shape
-      x={centered ? balloon.x + balloon.width / 2 : balloon.x}
-      y={centered ? balloon.y + balloon.height / 2 : balloon.y}
+    <Group
+      x={balloon.x}
+      y={balloon.y}
       width={balloon.width}
       height={balloon.height}
-      radiusX={balloon.width / 2}
-      radiusY={balloon.height / 2}
-      cornerRadius={balloon.type === "speech_rounded" ? 30 : 0}
       rotation={balloon.rotation}
-      fill={balloon.fillColor}
-      stroke={balloon.strokeColor}
-      strokeWidth={balloon.strokeWidth}
-      opacity={balloon.opacity}
       draggable={!balloon.locked}
-      onClick={(event) => onSelect(event.target)}
-      onTap={(event) => onSelect(event.target)}
+      onClick={(event) => onSelect(event.currentTarget)}
+      onTap={(event) => onSelect(event.currentTarget)}
       onDragEnd={(event) =>
         onSave({
           ...balloon,
-          x: event.target.x() - (centered ? balloon.width / 2 : 0),
-          y: event.target.y() - (centered ? balloon.height / 2 : 0),
+          x: event.target.x(),
+          y: event.target.y(),
         })
       }
       onTransformEnd={(event) => {
@@ -193,15 +218,89 @@ function BalloonNode({
         node.scaleY(1);
         onSave({
           ...balloon,
-          x: node.x() - (centered ? width / 2 : 0),
-          y: node.y() - (centered ? height / 2 : 0),
+          x: node.x(),
+          y: node.y(),
           width,
           height,
           rotation: node.rotation(),
         });
       }}
-    />
+    >
+      {tail.length > 0 && (
+        <Line
+          points={tail}
+          closed
+          fill={balloon.fillColor}
+          stroke={balloon.strokeColor}
+          strokeWidth={balloon.strokeWidth}
+          opacity={balloon.opacity}
+        />
+      )}
+      <Shape
+        x={centered ? balloon.width / 2 : 0}
+        y={centered ? balloon.height / 2 : 0}
+        width={balloon.width}
+        height={balloon.height}
+        radiusX={balloon.width / 2}
+        radiusY={balloon.height / 2}
+        cornerRadius={balloon.type === "speech_rounded" ? 30 : 0}
+        fill={balloon.fillColor}
+        stroke={balloon.strokeColor}
+        strokeWidth={balloon.strokeWidth}
+        opacity={balloon.opacity}
+      />
+    </Group>
   );
+}
+
+function balloonTailPoints(balloon: Balloon) {
+  if (balloon.tailDirection === "none") return [];
+  const width = balloon.width;
+  const height = balloon.height;
+  const offset = balloon.tailOffset;
+  const horizontal = width * offset;
+  const vertical = height * offset;
+  const base = Math.max(12, Math.min(width, height) * 0.08);
+  const length = Math.max(30, Math.min(width, height) * 0.3);
+  switch (balloon.tailDirection) {
+    case "top":
+      return [horizontal - base, 0, horizontal, -length, horizontal + base, 0];
+    case "top_right":
+      return [width - base, 0, width + length, -length, width, base];
+    case "right":
+      return [
+        width,
+        vertical - base,
+        width + length,
+        vertical,
+        width,
+        vertical + base,
+      ];
+    case "bottom_right":
+      return [
+        width,
+        height - base,
+        width + length,
+        height + length,
+        width - base,
+        height,
+      ];
+    case "bottom":
+      return [
+        horizontal - base,
+        height,
+        horizontal,
+        height + length,
+        horizontal + base,
+        height,
+      ];
+    case "bottom_left":
+      return [base, height, -length, height + length, 0, height - base];
+    case "left":
+      return [0, vertical - base, -length, vertical, 0, vertical + base];
+    case "top_left":
+      return [0, base, -length, -length, base, 0];
+  }
 }
 
 function TextNode({
@@ -221,7 +320,9 @@ function TextNode({
       width={item.width}
       height={item.height}
       text={
-        item.writingMode === "vertical" ? [...item.text].join("\n") : item.text
+        item.writingMode === "vertical"
+          ? segmentGraphemes(item.text).join("\n")
+          : item.text
       }
       fontFamily={item.fontFamily}
       fontSize={item.fontSize}
@@ -262,6 +363,282 @@ function TextNode({
         });
       }}
     />
+  );
+}
+
+function CanvasProperties({
+  item,
+  savePanel,
+  saveBalloon,
+  saveText,
+}: {
+  item: LayerItem;
+  savePanel: (item: Panel) => void;
+  saveBalloon: (item: Balloon) => void;
+  saveText: (item: TextObject) => void;
+}) {
+  const textOverflow =
+    item.objectType === "text" &&
+    (item.writingMode === "vertical"
+      ? layoutVerticalText(item.text, item, {
+          fontSize: item.fontSize,
+          lineHeight: item.lineHeight,
+          letterSpacing: item.letterSpacing,
+        }).overflow
+      : item.text.length * item.fontSize * item.fontSize * item.lineHeight >
+        item.width * item.height);
+  const saveName = (name: string) => {
+    if (!name.trim() || name === item.name) return;
+    if (item.objectType === "panel") savePanel({ ...item, name });
+    else if (item.objectType === "balloon") saveBalloon({ ...item, name });
+    else saveText({ ...item, name });
+  };
+  return (
+    <div className="canvas-properties" key={`${item.objectType}-${item.id}`}>
+      <h3>選択中のプロパティ</h3>
+      <label>
+        名前
+        <input
+          defaultValue={item.name}
+          onBlur={(event) => saveName(event.target.value)}
+        />
+      </label>
+      {item.objectType === "panel" && (
+        <>
+          <label>
+            画像表示
+            <select
+              value={item.imageFit}
+              onChange={(event) =>
+                savePanel({
+                  ...item,
+                  imageFit: event.target.value as Panel["imageFit"],
+                })
+              }
+            >
+              <option value="cover">枠を覆う</option>
+              <option value="contain">全体を表示</option>
+              <option value="manual">手動</option>
+            </select>
+          </label>
+          <label>
+            画像倍率
+            <input
+              type="number"
+              min="0.01"
+              max="100"
+              step="0.05"
+              defaultValue={item.imageScale}
+              onBlur={(event) =>
+                savePanel({ ...item, imageScale: Number(event.target.value) })
+              }
+            />
+          </label>
+          <label>
+            横オフセット
+            <input
+              type="number"
+              defaultValue={item.imageOffsetX}
+              onBlur={(event) =>
+                savePanel({ ...item, imageOffsetX: Number(event.target.value) })
+              }
+            />
+          </label>
+          <label>
+            縦オフセット
+            <input
+              type="number"
+              defaultValue={item.imageOffsetY}
+              onBlur={(event) =>
+                savePanel({ ...item, imageOffsetY: Number(event.target.value) })
+              }
+            />
+          </label>
+          <label>
+            画像回転
+            <input
+              type="number"
+              step="1"
+              defaultValue={item.imageRotation}
+              onBlur={(event) =>
+                savePanel({
+                  ...item,
+                  imageRotation: Number(event.target.value),
+                })
+              }
+            />
+          </label>
+          <label>
+            画像透明度
+            <input
+              type="number"
+              min="0"
+              max="1"
+              step="0.05"
+              defaultValue={item.imageOpacity}
+              onBlur={(event) =>
+                savePanel({ ...item, imageOpacity: Number(event.target.value) })
+              }
+            />
+          </label>
+          {item.imageAssetId && (
+            <button
+              className="secondary"
+              onClick={() => savePanel({ ...item, imageAssetId: null })}
+            >
+              画像を外す
+            </button>
+          )}
+        </>
+      )}
+      {item.objectType === "balloon" && (
+        <>
+          <label>
+            種類
+            <select
+              value={item.type}
+              onChange={(event) =>
+                saveBalloon({
+                  ...item,
+                  type: event.target.value as Balloon["type"],
+                })
+              }
+            >
+              <option value="speech_ellipse">楕円</option>
+              <option value="speech_rounded">角丸</option>
+              <option value="narration_box">ナレーション</option>
+            </select>
+          </label>
+          <label>
+            尻尾
+            <select
+              value={item.tailDirection}
+              onChange={(event) =>
+                saveBalloon({
+                  ...item,
+                  tailDirection: event.target.value as Balloon["tailDirection"],
+                })
+              }
+            >
+              <option value="none">なし</option>
+              <option value="top">上</option>
+              <option value="top_right">右上</option>
+              <option value="right">右</option>
+              <option value="bottom_right">右下</option>
+              <option value="bottom">下</option>
+              <option value="bottom_left">左下</option>
+              <option value="left">左</option>
+              <option value="top_left">左上</option>
+            </select>
+          </label>
+          <label>
+            塗り色
+            <input
+              type="color"
+              value={item.fillColor}
+              onChange={(event) =>
+                saveBalloon({ ...item, fillColor: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            線色
+            <input
+              type="color"
+              value={item.strokeColor}
+              onChange={(event) =>
+                saveBalloon({ ...item, strokeColor: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            線幅
+            <input
+              type="number"
+              min="0"
+              defaultValue={item.strokeWidth}
+              onBlur={(event) =>
+                saveBalloon({
+                  ...item,
+                  strokeWidth: Number(event.target.value),
+                })
+              }
+            />
+          </label>
+        </>
+      )}
+      {item.objectType === "text" && (
+        <>
+          {textOverflow && (
+            <p className="canvas-warning">
+              文字が枠からあふれる可能性があります。
+            </p>
+          )}
+          <label>
+            本文
+            <textarea
+              defaultValue={item.text}
+              onBlur={(event) =>
+                saveText({ ...item, text: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            組方向
+            <select
+              value={item.writingMode}
+              onChange={(event) =>
+                saveText({
+                  ...item,
+                  writingMode: event.target.value as TextObject["writingMode"],
+                })
+              }
+            >
+              <option value="vertical">縦書き</option>
+              <option value="horizontal">横書き</option>
+            </select>
+          </label>
+          <label>
+            文字サイズ
+            <input
+              type="number"
+              min="1"
+              max="2000"
+              defaultValue={item.fontSize}
+              onBlur={(event) =>
+                saveText({ ...item, fontSize: Number(event.target.value) })
+              }
+            />
+          </label>
+          <label>
+            文字色
+            <input
+              type="color"
+              value={item.color}
+              onChange={(event) =>
+                saveText({ ...item, color: event.target.value })
+              }
+            />
+          </label>
+          <label>
+            揃え
+            <select
+              value={item.textAlign}
+              onChange={(event) =>
+                saveText({
+                  ...item,
+                  textAlign: event.target.value as TextObject["textAlign"],
+                })
+              }
+            >
+              <option value="start">先頭</option>
+              <option value="center">中央</option>
+              <option value="end">末尾</option>
+            </select>
+          </label>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -815,6 +1192,14 @@ export function MangaCanvas({
               </button>
             </div>
           ))}
+          {selectedLayer && (
+            <CanvasProperties
+              item={selectedLayer as LayerItem}
+              savePanel={savePanel}
+              saveBalloon={saveBalloon}
+              saveText={saveText}
+            />
+          )}
         </aside>
       </div>
     </div>
