@@ -106,6 +106,7 @@ DesktopはSupabase Service Role KeyやStripe Secret Keyを保持せず、HubはD
 - 作品情報JSON
 - 販売用説明文
 - SNS告知文
+- MANGAI販売パッケージZIP v1
 - `export_history`への記録
 
 JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIPへ収録します。使用中のWebPはSVG合成前にPNGへ正規化し、Sharp/librsvgでの欠落を防ぎます。
@@ -240,7 +241,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 目的: 制作完了から公開・販売までの二重入力を減らす。
 
-1. Desktop販売パッケージ仕様の正式化
+1. Desktop販売パッケージ仕様の正式化（`mangai.sales-package` v1、SHA-256付きZIPを実装済み）
 2. Hub側インポートAPIまたは手動インポート画面
 3. 作品情報、表紙、サンプル、商品ファイルの受け渡し
 4. DesktopからHub公開状況を確認する読み取り連携

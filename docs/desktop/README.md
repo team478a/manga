@@ -91,7 +91,8 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - ページプレビュー、ズーム、リセット
 - プロンプト、ネガティブプロンプト、メモの自動保存
 - SQLite永続化
-- Desktopの「書き出し」からPDF、画像ZIP、作品情報JSON、販売文、SNS告知文を生成
+- Desktopの「書き出し」からPDF、画像ZIP、作品情報JSON、販売文、SNS告知文、MANGAI販売パッケージZIPを生成
+- 販売パッケージv1仕様: [`SALES_PACKAGE_SPEC.md`](SALES_PACKAGE_SPEC.md)
 - `export_history` への書き出し履歴保存
 - 任意素材の代表画像設定
 - Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定

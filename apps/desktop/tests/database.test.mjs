@@ -13,6 +13,7 @@ import sharp from "sharp";
 import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
 import { imageSize } from "image-size";
+import { parseSalesPackageManifest } from "@mangai/export-core";
 
 test("30 canvas objects remain responsive across save, move and reopen", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-canvas-perf-"));
@@ -1297,6 +1298,7 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     "作品情報.json",
     "販売用説明文.txt",
     "SNS告知文.txt",
+    "MANGAI販売パッケージ.zip",
   ]);
   result.files.forEach((file) =>
     assert.equal(fs.existsSync(path.join(result.outputDir, file)), true),
@@ -1308,6 +1310,51 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     "%PDF",
   );
   assert.deepEqual(result.warnings, []);
+  const salesPackage = await JSZip.loadAsync(
+    fs.readFileSync(path.join(result.outputDir, "MANGAI販売パッケージ.zip")),
+  );
+  const salesManifest = JSON.parse(
+    await salesPackage.file("manifest.json").async("string"),
+  );
+  assert.equal(salesManifest.format, "mangai.sales-package");
+  assert.equal(salesManifest.version, 1);
+  assert.equal(salesManifest.work.sourceProjectId, bundle.project.id);
+  assert.equal(salesManifest.work.pageCount, 3);
+  assert.equal(parseSalesPackageManifest(salesManifest).version, 1);
+  assert.throws(
+    () =>
+      parseSalesPackageManifest({
+        ...salesManifest,
+        files: [{ ...salesManifest.files[0], path: "../unsafe.pdf" }],
+      }),
+    /ファイル情報が不正/,
+  );
+  assert.throws(
+    () => parseSalesPackageManifest({ ...salesManifest, version: 2 }),
+    /対応していない/,
+  );
+  assert.deepEqual(
+    [...new Set(salesManifest.files.map((file) => file.role))].sort(),
+    [
+      "cover",
+      "description",
+      "page_images_zip",
+      "product_pdf",
+      "project_info",
+      "sample",
+      "social_post",
+    ],
+  );
+  for (const file of salesManifest.files) {
+    const entry = salesPackage.file(file.path);
+    assert.ok(entry, `販売パッケージに${file.path}がありません。`);
+    const bytes = await entry.async("nodebuffer");
+    assert.equal(bytes.byteLength, file.byteSize);
+    assert.equal(
+      crypto.createHash("sha256").update(bytes).digest("hex"),
+      file.sha256,
+    );
+  }
   const zip = await JSZip.loadAsync(
     fs.readFileSync(path.join(result.outputDir, "本編画像ZIP.zip")),
   );

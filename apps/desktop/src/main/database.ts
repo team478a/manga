@@ -8,8 +8,13 @@ import {
   createImagesZip,
   createPagesPdf,
   createProjectManifest,
+  createSalesPackageZip,
   createSalesTextDraft,
+  SALES_PACKAGE_FORMAT,
+  SALES_PACKAGE_VERSION,
   type ExportImage,
+  type SalesPackageFileRole,
+  type SalesPackageManifest,
 } from "@mangai/export-core";
 import type { ProjectBundle, Project } from "@mangai/project-core";
 import { projectInputSchema, type ProjectInput } from "@mangai/shared";
@@ -2098,25 +2103,137 @@ export class MangaiDatabase {
       "作品情報.json",
       "販売用説明文.txt",
       "SNS告知文.txt",
+      "MANGAI販売パッケージ.zip",
     ];
-    fs.writeFileSync(
-      path.join(outputDir, files[0]),
-      await createPagesPdf(images, {
-        dpi: bundle.project.dpi,
-      }),
-    );
-    fs.writeFileSync(
-      path.join(outputDir, files[1]),
-      await createImagesZip(images),
-    );
+    const pdfBytes = await createPagesPdf(images, {
+      dpi: bundle.project.dpi,
+    });
+    const imagesZipBytes = await createImagesZip(images);
+    const projectInfoBytes = createProjectManifest({
+      sourceProjectId: bundle.project.id,
+      title: bundle.project.title,
+      subtitle: bundle.project.subtitle,
+      description: bundle.project.description,
+      genre: bundle.project.genre,
+      ageRating: bundle.project.ageRating,
+      readingDirection: bundle.project.readingDirection,
+      width: bundle.project.width,
+      height: bundle.project.height,
+      dpi: bundle.project.dpi,
+      episodeCount: bundle.episodes.length,
+      pageCount: images.length,
+      exportedAt: now(),
+    });
+    fs.writeFileSync(path.join(outputDir, files[0]), pdfBytes);
+    fs.writeFileSync(path.join(outputDir, files[1]), imagesZipBytes);
     fs.writeFileSync(
       path.join(outputDir, files[2]),
       createProjectManifest({ ...bundle, exportedAt: now() }),
     );
     fs.writeFileSync(path.join(outputDir, files[3]), text.description, "utf8");
     fs.writeFileSync(path.join(outputDir, files[4]), text.snsPost, "utf8");
+    const salesFiles: Array<{
+      role: SalesPackageFileRole;
+      path: string;
+      mimeType: string;
+      bytes: Uint8Array;
+    }> = [
+      {
+        role: "product_pdf",
+        path: "products/main.pdf",
+        mimeType: "application/pdf",
+        bytes: pdfBytes,
+      },
+      {
+        role: "page_images_zip",
+        path: "products/pages.zip",
+        mimeType: "application/zip",
+        bytes: imagesZipBytes,
+      },
+      {
+        role: "project_info",
+        path: "metadata/project.json",
+        mimeType: "application/json",
+        bytes: projectInfoBytes,
+      },
+      {
+        role: "description",
+        path: "metadata/description.txt",
+        mimeType: "text/plain; charset=utf-8",
+        bytes: Buffer.from(text.description, "utf8"),
+      },
+      {
+        role: "social_post",
+        path: "metadata/social-post.txt",
+        mimeType: "text/plain; charset=utf-8",
+        bytes: Buffer.from(text.snsPost, "utf8"),
+      },
+      ...images.slice(0, 3).map((image, index) => ({
+        role: "sample" as const,
+        path: `samples/${String(index + 1).padStart(3, "0")}.png`,
+        mimeType: "image/png",
+        bytes: image.bytes,
+      })),
+    ];
+    const coverAsset = bundle.project.coverAssetId
+      ? renderAssets.get(bundle.project.coverAssetId)
+      : undefined;
+    if (coverAsset) {
+      const extension =
+        coverAsset.mimeType === "image/jpeg"
+          ? "jpg"
+          : coverAsset.mimeType === "image/webp"
+            ? "webp"
+            : "png";
+      salesFiles.push({
+        role: "cover",
+        path: `cover/cover.${extension}`,
+        mimeType: coverAsset.mimeType,
+        bytes: coverAsset.bytes,
+      });
+    }
+    const createdAt = now();
+    const salesManifest: SalesPackageManifest = {
+      format: SALES_PACKAGE_FORMAT,
+      version: SALES_PACKAGE_VERSION,
+      createdAt,
+      work: {
+        sourceProjectId: bundle.project.id,
+        title: bundle.project.title,
+        subtitle: bundle.project.subtitle,
+        description: bundle.project.description,
+        genre: bundle.project.genre,
+        ageRating: bundle.project.ageRating,
+        readingDirection: bundle.project.readingDirection,
+        width: bundle.project.width,
+        height: bundle.project.height,
+        dpi: bundle.project.dpi,
+        episodeCount: bundle.episodes.length,
+        pageCount: images.length,
+      },
+      files: salesFiles.map((file) => ({
+        role: file.role,
+        path: file.path,
+        mimeType: file.mimeType,
+        byteSize: file.bytes.byteLength,
+        sha256: crypto.createHash("sha256").update(file.bytes).digest("hex"),
+      })),
+    };
+    fs.writeFileSync(
+      path.join(outputDir, files[5]),
+      await createSalesPackageZip(
+        salesManifest,
+        salesFiles.map(({ path: filePath, bytes }) => ({
+          path: filePath,
+          bytes,
+        })),
+      ),
+    );
     const warnings = [
       ...(images.length === 0 ? ["画像がないため空のPDFを作成しました。"] : []),
+      ...(!coverAsset
+        ? ["表紙が未設定のため販売パッケージに表紙を含めませんでした。"]
+        : []),
     ];
     this.db
       .prepare("insert into export_history values(?,?,?,?,?,?)")

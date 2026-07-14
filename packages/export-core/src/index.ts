@@ -15,6 +15,138 @@ export type ExportImage = {
   width: number;
   height: number;
 };
+export const SALES_PACKAGE_FORMAT = "mangai.sales-package" as const;
+export const SALES_PACKAGE_VERSION = 1 as const;
+export type SalesPackageFileRole =
+  | "product_pdf"
+  | "page_images_zip"
+  | "cover"
+  | "sample"
+  | "project_info"
+  | "description"
+  | "social_post";
+export type SalesPackageManifest = {
+  format: typeof SALES_PACKAGE_FORMAT;
+  version: typeof SALES_PACKAGE_VERSION;
+  createdAt: string;
+  work: {
+    sourceProjectId: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    genre: string;
+    ageRating: string;
+    readingDirection: "rtl" | "ltr";
+    width: number;
+    height: number;
+    dpi: number;
+    episodeCount: number;
+    pageCount: number;
+  };
+  files: Array<{
+    role: SalesPackageFileRole;
+    path: string;
+    mimeType: string;
+    byteSize: number;
+    sha256: string;
+  }>;
+};
+const salesPackageFileRoles = [
+  "product_pdf",
+  "page_images_zip",
+  "cover",
+  "sample",
+  "project_info",
+  "description",
+  "social_post",
+] as const satisfies readonly SalesPackageFileRole[];
+
+function safePackagePath(value: string) {
+  return (
+    value.length > 0 &&
+    value.length <= 240 &&
+    !value.startsWith("/") &&
+    !value.startsWith("\\") &&
+    !/^[a-z]:/i.test(value) &&
+    !value.split(/[\\/]/).includes("..") &&
+    !/[\u0000-\u001f]/.test(value)
+  );
+}
+
+export function parseSalesPackageManifest(
+  value: unknown,
+): SalesPackageManifest {
+  if (!value || typeof value !== "object")
+    throw new Error("販売パッケージ情報が不正です。");
+  const manifest = value as SalesPackageManifest;
+  const work = manifest.work;
+  if (
+    manifest.format !== SALES_PACKAGE_FORMAT ||
+    manifest.version !== SALES_PACKAGE_VERSION ||
+    typeof manifest.createdAt !== "string" ||
+    !work ||
+    typeof work.sourceProjectId !== "string" ||
+    typeof work.title !== "string" ||
+    typeof work.subtitle !== "string" ||
+    typeof work.description !== "string" ||
+    typeof work.genre !== "string" ||
+    typeof work.ageRating !== "string" ||
+    (work.readingDirection !== "rtl" && work.readingDirection !== "ltr") ||
+    !Number.isSafeInteger(work.width) ||
+    work.width <= 0 ||
+    !Number.isSafeInteger(work.height) ||
+    work.height <= 0 ||
+    !Number.isSafeInteger(work.dpi) ||
+    work.dpi <= 0 ||
+    !Number.isSafeInteger(work.episodeCount) ||
+    work.episodeCount < 0 ||
+    !Number.isSafeInteger(work.pageCount) ||
+    work.pageCount < 0 ||
+    !Array.isArray(manifest.files) ||
+    manifest.files.length > 1000
+  )
+    throw new Error("対応していない販売パッケージです。");
+  const paths = new Set<string>();
+  for (const file of manifest.files) {
+    if (
+      !safePackagePath(file.path) ||
+      paths.has(file.path) ||
+      !Number.isSafeInteger(file.byteSize) ||
+      file.byteSize < 0 ||
+      !/^[0-9a-f]{64}$/.test(file.sha256) ||
+      typeof file.mimeType !== "string" ||
+      !salesPackageFileRoles.includes(file.role)
+    )
+      throw new Error("販売パッケージのファイル情報が不正です。");
+    paths.add(file.path);
+  }
+  return manifest;
+}
+
+export async function createSalesPackageZip(
+  manifest: SalesPackageManifest,
+  files: Array<{ path: string; bytes: Uint8Array }>,
+) {
+  const parsed = parseSalesPackageManifest(manifest);
+  const inputs = new Map(files.map((file) => [file.path, file.bytes]));
+  if (
+    inputs.size !== files.length ||
+    parsed.files.some((file) => !inputs.has(file.path)) ||
+    inputs.size !== parsed.files.length ||
+    parsed.files.some(
+      (file) => inputs.get(file.path)!.byteLength !== file.byteSize,
+    )
+  )
+    throw new Error("販売パッケージの実ファイルがmanifestと一致しません。");
+  const zip = new JSZip();
+  zip.file("manifest.json", JSON.stringify(parsed, null, 2));
+  for (const file of parsed.files) zip.file(file.path, inputs.get(file.path)!);
+  return zip.generateAsync({
+    type: "uint8array",
+    compression: "DEFLATE",
+    compressionOptions: { level: 6 },
+  });
+}
 
 export function createSalesTextDraft(input: SalesTextInput) {
   const genre = input.genre || "漫画";
