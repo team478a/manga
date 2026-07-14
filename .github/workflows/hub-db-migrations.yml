@@ -5,12 +5,14 @@ on:
     paths:
       - "supabase/**"
       - "scripts/validate-supabase-migrations.mjs"
+      - "scripts/check-supabase-staging.mjs"
       - ".github/workflows/hub-db-migrations.yml"
   push:
     branches: [main]
     paths:
       - "supabase/**"
       - "scripts/validate-supabase-migrations.mjs"
+      - "scripts/check-supabase-staging.mjs"
       - ".github/workflows/hub-db-migrations.yml"
   workflow_dispatch:
 
@@ -75,3 +77,9 @@ jobs:
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/schema.sql
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/schema.sql
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_current_schema.sql
+      - name: Run read-only staging preflight against test schema
+        env:
+          MANGAI_DB_ENV: staging
+          PGDATABASE: current_schema
+          PGSSLMODE: disable
+        run: node scripts/check-supabase-staging.mjs

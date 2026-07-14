@@ -39,14 +39,32 @@ npm run db:migrations:validate
 3. rollbackを逆順適用し、追加した列・表・関数・policyが除去されたことを検証
 4. forwardを再適用し、同じassertionを再実行
 5. 別DBで`schema.sql`を2回適用し、新規構築と冪等性を検証
+6. 同じDBへ読み取り専用staging preflightを実行
 
 ローカルで同じSQL往復試験を行う場合はPostgreSQL 16と`psql`が必要です。未導入環境では静的検査を実行し、実DB試験はGitHub Actionsで確認します。
+
+## stagingの読み取り専用preflight
+
+PostgreSQL clientの`psql`をインストールし、staging専用の接続情報を環境変数へ設定します。接続先の取り違えを防ぐため、`MANGAI_DB_ENV=staging`が完全一致しなければコマンドは停止します。
+
+```powershell
+$env:MANGAI_DB_ENV = "staging"
+$env:PGHOST = "db.your-project.supabase.co"
+$env:PGPORT = "5432"
+$env:PGDATABASE = "postgres"
+$env:PGUSER = "postgres"
+$env:PGPASSWORD = "staging database password"
+$env:PGSSLMODE = "require"
+npm run db:staging:preflight
+```
+
+preflightは読み取り専用トランザクション内で、PostgreSQL version、主要表と列、RLS、関数権限、Storage bucket・policy、無効index、承認済み端末データの整合性を検査します。作品・商品・端末認証の件数だけを表示し、migration適用やrollbackは行いません。接続情報やパスワードも出力しません。
 
 ## 本番適用手順
 
 1. Supabaseのバックアップを取得し、復元できることを確認します。
 2. maintenance時間と対象migration IDを記録します。
-3. stagingへforwardを1件ずつ昇順適用し、Hubの認証・インポート・端末認証を確認します。
+3. stagingへforwardを1件ずつ昇順適用し、`npm run db:staging:preflight`とHubの認証・インポート・端末認証を確認します。
 4. 本番へ同じ順序で適用し、各変更後にエラーと主要件数を確認します。
 5. 障害時はアプリを先に安全な版へ戻し、対応rollbackを新しいものから逆順で実行します。
 6. rollback guardが停止した場合はSQLを強制変更せず、バックアップ復元またはデータ移行を選択します。

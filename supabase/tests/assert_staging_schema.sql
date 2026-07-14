@@ -1,0 +1,124 @@
+\set ON_ERROR_STOP on
+
+begin transaction read only;
+
+do $$
+declare
+  v_server_version integer := current_setting('server_version_num')::integer;
+begin
+  if v_server_version < 150000 then
+    raise exception 'PostgreSQL 15 or newer is required; server_version_num=%', v_server_version;
+  end if;
+
+  if to_regclass('public.profiles') is null
+     or to_regclass('public.works') is null
+     or to_regclass('public.digital_products') is null
+     or to_regclass('public.desktop_device_authorizations') is null
+     or to_regclass('public.desktop_device_rate_limits') is null then
+    raise exception 'required MANGAI Hub tables are missing';
+  end if;
+
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'works'
+      and column_name = 'sample_image_urls'
+      and data_type = 'ARRAY'
+  ) or not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'works'
+      and column_name = 'source_project_id'
+      and data_type = 'uuid'
+  ) then
+    raise exception 'sales package columns are missing or have unexpected types';
+  end if;
+
+  if to_regprocedure('public.consume_desktop_device_rate_limit(text,integer,integer)') is null
+     or to_regprocedure('public.cleanup_desktop_device_authorizations()') is null then
+    raise exception 'Desktop device functions are missing';
+  end if;
+
+  if has_function_privilege('anon', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute')
+     or has_function_privilege('authenticated', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute')
+     or has_function_privilege('anon', 'public.cleanup_desktop_device_authorizations()', 'execute')
+     or has_function_privilege('authenticated', 'public.cleanup_desktop_device_authorizations()', 'execute')
+     or not has_function_privilege('service_role', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute')
+     or not has_function_privilege('service_role', 'public.cleanup_desktop_device_authorizations()', 'execute') then
+    raise exception 'Desktop device function privileges are invalid';
+  end if;
+
+  if to_regclass('public.works_source_project_id_idx') is null
+     or to_regclass('public.desktop_device_authorizations_profile_idx') is null
+     or to_regclass('public.desktop_device_authorizations_expiry_idx') is null then
+    raise exception 'required MANGAI Hub indexes are missing';
+  end if;
+
+  if exists (
+    select 1
+    from (values
+      ('works'),
+      ('digital_products'),
+      ('desktop_device_authorizations'),
+      ('desktop_device_rate_limits')
+    ) as required_tables(table_name)
+    where not exists (
+      select 1 from pg_class
+      where oid = format('public.%I', required_tables.table_name)::regclass
+        and relrowsecurity
+    )
+  ) then
+    raise exception 'RLS is not enabled on every protected table';
+  end if;
+
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'works_creator_delete'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage'
+      and tablename = 'objects'
+      and policyname = 'digital_products_creator_delete'
+  ) then
+    raise exception 'sales package Storage delete policies are missing';
+  end if;
+
+  if not exists (
+    select 1 from storage.buckets
+    where id = 'works' and public = true
+  ) or not exists (
+    select 1 from storage.buckets
+    where id = 'digital-products' and public = false
+  ) then
+    raise exception 'required Storage buckets are missing or have invalid visibility';
+  end if;
+
+  if exists (
+    select 1 from pg_index
+    where not indisvalid
+      and indrelid in (
+        'public.works'::regclass,
+        'public.desktop_device_authorizations'::regclass,
+        'public.desktop_device_rate_limits'::regclass
+      )
+  ) then
+    raise exception 'an invalid MANGAI Hub index exists';
+  end if;
+
+  if exists (
+    select 1 from public.desktop_device_authorizations
+    where status = 'approved'
+      and (profile_id is null or approved_at is null or token_expires_at is null)
+  ) then
+    raise exception 'approved Desktop authorization data is inconsistent';
+  end if;
+end $$;
+
+select
+  (select count(*) from public.works) as works,
+  (select count(*) from public.digital_products) as digital_products,
+  (select count(*) from public.desktop_device_authorizations) as device_authorizations;
+
+rollback;

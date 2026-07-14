@@ -263,7 +263,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 - メール通知と運営通知
 - クラッシュレポート、構造化ログ、利用者同意（ローカル保存、除外処理、ローテーション、削除UIまで実装済み。外部送信なし）
 - stable / beta更新チャンネル
-- DBマイグレーション試験とロールバック（変更単位SQL、rollback guard、PostgreSQL 16往復CIを実装済み。実Supabase staging試験は未実施）
+- DBマイグレーション試験とロールバック（変更単位SQL、rollback guard、PostgreSQL 16往復CI、staging読み取り専用preflightを実装済み。実Supabase staging試験は未実施）
 - アクセシビリティ、キーボード操作、多言語化
 - グッズ会社API、配送、在庫連携
 

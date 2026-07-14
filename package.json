@@ -16,7 +16,8 @@
     "desktop:dist:win:signed": "npm --prefix apps/desktop run dist:win:signed",
     "desktop:dist:win:update": "npm --prefix apps/desktop run dist:win:update",
     "canvas:test": "npm --prefix packages/canvas-core test",
-    "db:migrations:validate": "node scripts/validate-supabase-migrations.mjs"
+    "db:migrations:validate": "node scripts/validate-supabase-migrations.mjs",
+    "db:staging:preflight": "node scripts/check-supabase-staging.mjs"
   },
   "dependencies": {
     "@mangai/export-core": "file:packages/export-core",
