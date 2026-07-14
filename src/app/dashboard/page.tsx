@@ -7,6 +7,7 @@ import {
   PackagePlus,
   ReceiptText,
   ShoppingBag,
+  MonitorSmartphone,
 } from "lucide-react";
 import { updateProfile } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
@@ -60,6 +61,12 @@ export default async function DashboardPage({
       body: "Desktopで書き出した販売パッケージの内容と整合性を確認します。",
       href: "/dashboard/import-package",
       icon: FileUp,
+    },
+    {
+      title: "Desktop端末認証",
+      body: "Desktopから自分の作品状態を安全に確認する端末を管理します。",
+      href: "/dashboard/devices",
+      icon: MonitorSmartphone,
     },
   ];
 

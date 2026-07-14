@@ -2,6 +2,11 @@ import { contextBridge, ipcRenderer, webUtils } from "electron";
 contextBridge.exposeInMainWorld("mangai", {
   hubStatus: (projectId: string, baseUrl: string) =>
     ipcRenderer.invoke("hub:status", { projectId, baseUrl }),
+  hubDeviceState: () => ipcRenderer.invoke("hub:device:state"),
+  startHubDeviceAuthorization: (baseUrl: string) =>
+    ipcRenderer.invoke("hub:device:start", { baseUrl }),
+  pollHubDeviceAuthorization: () => ipcRenderer.invoke("hub:device:poll"),
+  disconnectHubDevice: () => ipcRenderer.invoke("hub:device:disconnect"),
   listProjects: () => ipcRenderer.invoke("projects:list"),
   chooseProjectStorage: (currentPath?: string) =>
     ipcRenderer.invoke("projects:choose-storage", { currentPath }),

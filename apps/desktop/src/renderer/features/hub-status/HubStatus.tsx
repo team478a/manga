@@ -1,5 +1,8 @@
 import React from "react";
-import type { HubStatus as HubStatusResult } from "../../../preload/api";
+import type {
+  HubDeviceState,
+  HubStatus as HubStatusResult,
+} from "../../../preload/api";
 
 const STORAGE_KEY = "mangai.hub-base-url";
 const DEFAULT_HUB_URL = "http://localhost:3000";
@@ -23,6 +26,7 @@ export function HubStatus({
 }) {
   const [baseUrl, setBaseUrl] = React.useState(initialBaseUrl);
   const [status, setStatus] = React.useState<HubStatusResult | null>(null);
+  const [device, setDevice] = React.useState<HubDeviceState | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
   const check = React.useCallback(async () => {
@@ -45,13 +49,33 @@ export function HubStatus({
   }, [baseUrl, projectId]);
 
   React.useEffect(() => {
-    void check();
+    void window.mangai
+      .hubDeviceState()
+      .then(setDevice)
+      .then(() => check());
   }, []);
 
+  React.useEffect(() => {
+    if (device?.status !== "pending") return;
+    const timer = window.setInterval(async () => {
+      try {
+        const next = await window.mangai.pollHubDeviceAuthorization();
+        setDevice(next);
+        if (next.status === "approved") await check();
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : String(cause));
+      }
+    }, 5_000);
+    return () => window.clearInterval(timer);
+  }, [device?.status, check]);
+
   const publicUrl =
-    status?.linked === true
+    status?.linked === true && status.work.isPublic
       ? `${baseUrl.trim().replace(/\/+$/, "")}${status.work.path}`
       : "";
+  const verificationUrl = device
+    ? `${device.baseUrl.replace(/\/+$/, "")}${device.verificationPath}`
+    : "";
 
   return (
     <main className="tool-page">
@@ -67,7 +91,9 @@ export function HubStatus({
               <h2>公開状況を確認</h2>
               <p>{projectTitle}</p>
             </div>
-            <span className="hub-readonly-badge">公開情報のみ</span>
+            <span className="hub-readonly-badge">
+              {device?.status === "approved" ? "端末認証済み" : "公開情報のみ"}
+            </span>
           </div>
           <label>
             MANGAI Hub URL
@@ -89,6 +115,80 @@ export function HubStatus({
           </small>
         </section>
 
+        <section className="panel-lite hub-device-card">
+          <div className="setting-title">
+            <div>
+              <h2>Desktop端末認証</h2>
+              <p>
+                認証すると、自分の非公開下書きも読み取り専用で確認できます。
+              </p>
+            </div>
+            {device?.status === "approved" ? (
+              <button
+                className="secondary"
+                onClick={async () => {
+                  await window.mangai.disconnectHubDevice();
+                  setDevice(null);
+                  await check();
+                }}
+              >
+                認証を解除
+              </button>
+            ) : (
+              <button
+                disabled={busy || !baseUrl.trim()}
+                onClick={async () => {
+                  setBusy(true);
+                  setError("");
+                  try {
+                    setDevice(
+                      await window.mangai.startHubDeviceAuthorization(baseUrl),
+                    );
+                  } catch (cause) {
+                    setError(
+                      cause instanceof Error ? cause.message : String(cause),
+                    );
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                端末認証を開始
+              </button>
+            )}
+          </div>
+          {device?.status === "pending" && (
+            <div className="hub-pairing">
+              <p>Hubへログインし、次のコードを15分以内に承認してください。</p>
+              <strong>{device.userCode}</strong>
+              <code>{verificationUrl}</code>
+              <button
+                className="secondary"
+                onClick={() =>
+                  void navigator.clipboard.writeText(verificationUrl)
+                }
+              >
+                承認URLをコピー
+              </button>
+              <small>承認を待っています。確認は自動的に更新されます。</small>
+            </div>
+          )}
+          {device?.status === "approved" && (
+            <div className="notice">
+              読み取り専用で認証済みです。有効期限:{" "}
+              {device.tokenExpiresAt
+                ? new Date(device.tokenExpiresAt).toLocaleString("ja-JP")
+                : "確認中"}
+            </div>
+          )}
+          {device &&
+            ["denied", "expired", "revoked"].includes(device.status) && (
+              <div className="error">
+                認証は無効または期限切れです。もう一度開始してください。
+              </div>
+            )}
+        </section>
+
         {error && <div className="error">{error}</div>}
 
         {!error && busy && !status && (
@@ -99,10 +199,10 @@ export function HubStatus({
 
         {!error && status?.linked === false && (
           <section className="panel-lite hub-state-card unpublished">
-            <b>公開作品はまだ確認できません</b>
+            <b>対応するHub作品を確認できません</b>
             <p>{status.message}</p>
             <small>
-              Hubへ販売パッケージを取り込み、作品を公開した後に再確認してください。非公開下書きはこの画面には表示されません。
+              Hubへ販売パッケージを取り込んでください。未認証の場合、非公開下書きはこの画面には表示されません。
             </small>
           </section>
         )}
@@ -110,7 +210,13 @@ export function HubStatus({
         {status?.linked === true && (
           <section className="panel-lite hub-state-card published">
             <div className="hub-status-heading">
-              <span>公開中</span>
+              <span>
+                {status.work.isPublic
+                  ? "公開中"
+                  : status.work.status === "draft"
+                    ? "非公開下書き"
+                    : "非公開"}
+              </span>
               <small>
                 最終更新:{" "}
                 {new Date(status.work.updatedAt).toLocaleString("ja-JP")}
@@ -119,34 +225,40 @@ export function HubStatus({
             <h2>{status.work.title}</h2>
             <dl className="hub-status-grid">
               <div>
-                <dt>公開作品</dt>
-                <dd>1件</dd>
+                <dt>作品状態</dt>
+                <dd>{status.work.isPublic ? "公開" : "非公開"}</dd>
               </div>
               <div>
                 <dt>販売中の商品</dt>
                 <dd>{status.sales.activeProductCount}件</dd>
               </div>
               <div>
+                <dt>停止中の商品</dt>
+                <dd>{status.sales.pausedProductCount}件</dd>
+              </div>
+              <div>
                 <dt>販売状態</dt>
                 <dd>{status.sales.available ? "購入可能" : "販売準備中"}</dd>
               </div>
             </dl>
-            <div className="hub-public-url">
-              <code>{publicUrl}</code>
-              <button
-                className="secondary"
-                onClick={() => void navigator.clipboard.writeText(publicUrl)}
-              >
-                URLをコピー
-              </button>
-            </div>
+            {publicUrl && (
+              <div className="hub-public-url">
+                <code>{publicUrl}</code>
+                <button
+                  className="secondary"
+                  onClick={() => void navigator.clipboard.writeText(publicUrl)}
+                >
+                  URLをコピー
+                </button>
+              </div>
+            )}
           </section>
         )}
 
         <section className="panel-lite hub-security-note">
           <h2>安全な連携範囲</h2>
           <p>
-            Desktopからは公開済み作品だけを照会します。Hubのログイン情報、Supabase
+            未認証時は公開情報だけを照会します。認証後のトークンはOS機能で暗号化し、編集・公開・決済には使用できません。Hubのログイン情報、Supabase
             Service Role Key、Stripe Secret KeyはDesktopへ保存しません。
           </p>
           <small>Project ID: {projectId}</small>

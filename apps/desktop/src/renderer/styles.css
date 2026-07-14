@@ -851,6 +851,28 @@ label {
 .hub-security-note {
   background: #f8faf9;
 }
+.hub-device-card .setting-title > div {
+  display: grid;
+  gap: 6px;
+}
+.hub-pairing {
+  display: grid;
+  justify-items: start;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid #d9dedb;
+  border-radius: 8px;
+  background: #f8faf9;
+}
+.hub-pairing strong {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  font-size: 28px;
+  letter-spacing: 0.16em;
+}
+.hub-pairing code {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
 @media (max-width: 650px) {
   .hub-status-grid {
     grid-template-columns: 1fr;

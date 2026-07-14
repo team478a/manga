@@ -28,3 +28,5 @@ HubはSupabaseとStripeのサーバー環境変数を使用します。Desktop�
 ## Desktop公開状況API
 
 `GET /api/desktop/projects/{sourceProjectId}/status`は、販売パッケージの元Project IDに対応する公開済み作品と販売中の商品数だけを返します。非公開下書きの存在は返しません。Desktopの「Hub連携」画面はこのAPIを読み取り専用で利用し、秘密鍵やHubログイン情報を保存しません。
+
+端末認証後は、同じAPIへ読み取り専用Bearer tokenを付けることで、本人の非公開下書きと停止中商品も確認できます。Hubの`/dashboard/devices`で認証端末の確認・失効、`/dashboard/devices/authorize`で15分コードの承認を行います。端末認証APIにはサーバー側の`SUPABASE_SERVICE_ROLE_KEY`が必要です。詳細は[`../desktop/HUB_DEVICE_AUTH.md`](../desktop/HUB_DEVICE_AUTH.md)を参照してください。

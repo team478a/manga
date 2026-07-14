@@ -21,7 +21,7 @@
 | 13  | TypeScript型チェック         | 完了 | Hub・Desktop・各packageで成功                           |
 | 14  | ESLint                       | 完了 | Hub・Desktop双方で成功                                  |
 | 15  | Desktop/Web本番ビルド        | 完了 | Electron main、Vite renderer、Next.js成功               |
-| 16  | ユニット・統合テスト         | 完了 | SQLite、AI、書き出し、履歴、Hub照会を含む29件成功       |
+| 16  | ユニット・統合テスト         | 完了 | SQLite、AI、書き出し、履歴、端末認証を含む30件成功      |
 | 17  | ドキュメント反映             | 完了 | architecture、desktop、hub、実装状況を追加              |
 
 ## 現状と残る改善
@@ -30,6 +30,7 @@
 - PDF、画像ZIP、作品情報、販売文書き出しを実装しています。WebPは画像ZIPには含まれますが、PDFは現在JPG・PNGページが対象です。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。
 - Hub連携画面から、Projectに対応する公開作品と販売中商品数を秘密鍵なしで確認できます。
+- Hubで端末コードを承認すると、自分の非公開下書きも読み取り専用で確認できます。
 - NSISインストーラー、ブランドアイコン、署名専用ビルド、自動更新、GitHub Actions配布基盤を実装しています。
 - 信頼された署名証明書、Git remote、実公開先が未設定のため、実署名と初回公開リリースは未完了です。
 - 最新の全体状況と計画は [`../PROJECT_STATUS_AND_ROADMAP.md`](../PROJECT_STATUS_AND_ROADMAP.md) を参照してください。

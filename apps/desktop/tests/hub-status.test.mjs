@@ -5,6 +5,9 @@ import { randomUUID } from "node:crypto";
 import {
   fetchHubStatus,
   normalizeHubBaseUrl,
+  pollHubDeviceAuthorization,
+  revokeHubDeviceAuthorization,
+  startHubDeviceAuthorization,
 } from "../dist-main/main/hub-status.js";
 
 async function server(handler) {
@@ -50,10 +53,16 @@ test("公開作品と販売状況をHubから取得する", async () => {
         work: {
           id: workId,
           title: "公開作品",
+          status: "published",
+          isPublic: true,
           updatedAt: "2026-07-14T12:00:00.000Z",
           path: `/works/${workId}`,
         },
-        sales: { activeProductCount: 2, available: true },
+        sales: {
+          activeProductCount: 2,
+          pausedProductCount: 0,
+          available: true,
+        },
       }),
     );
   });
@@ -61,6 +70,62 @@ test("公開作品と販売状況をHubから取得する", async () => {
     const result = await fetchHubStatus(projectId, mock.url);
     assert.equal(result.linked, true);
     assert.equal(result.sales.activeProductCount, 2);
+  } finally {
+    await mock.close();
+  }
+});
+
+test("Hub端末認証の開始・承認確認・解除", async () => {
+  const token = "A".repeat(43);
+  let revoked = false;
+  const mock = await server((request, response) => {
+    response.setHeader("content-type", "application/json");
+    if (
+      request.url === "/api/desktop/device/authorize" &&
+      request.method === "POST"
+    )
+      return response.end(
+        JSON.stringify({
+          status: "pending",
+          deviceToken: token,
+          userCode: "ABCD-2345",
+          verificationPath: "/dashboard/devices/authorize?code=ABCD-2345",
+          expiresAt: "2026-07-14T13:00:00.000Z",
+          intervalSeconds: 5,
+        }),
+      );
+    assert.equal(request.headers.authorization, `Bearer ${token}`);
+    if (request.method === "GET")
+      return response.end(
+        JSON.stringify({
+          status: "approved",
+          approvedAt: "2026-07-14T12:00:00.000Z",
+          tokenExpiresAt: "2026-10-12T12:00:00.000Z",
+        }),
+      );
+    if (request.method === "DELETE") {
+      revoked = true;
+      return response.end(JSON.stringify({ revoked: true }));
+    }
+    response.statusCode = 404;
+    response.end("{}");
+  });
+  try {
+    const started = await startHubDeviceAuthorization(
+      mock.url,
+      "MANGAI Desktop",
+    );
+    assert.equal(started.userCode, "ABCD-2345");
+    const polled = await pollHubDeviceAuthorization(
+      mock.url,
+      started.deviceToken,
+    );
+    assert.equal(polled.status, "approved");
+    assert.equal(
+      await revokeHubDeviceAuthorization(mock.url, started.deviceToken),
+      true,
+    );
+    assert.equal(revoked, true);
   } finally {
     await mock.close();
   }

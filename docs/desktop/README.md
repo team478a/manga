@@ -94,6 +94,8 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - Desktopの「書き出し」からPDF、画像ZIP、作品情報JSON、販売文、SNS告知文、MANGAI販売パッケージZIPを生成
 - 販売パッケージv1仕様: [`SALES_PACKAGE_SPEC.md`](SALES_PACKAGE_SPEC.md)
 - 「Hub連携」からProjectに対応する公開作品、最終更新、販売中商品数を読み取り専用で確認
+- Hubで15分コードを承認すると、自分の非公開下書き・停止中商品も確認可能。トークンはOS機能で暗号化し、90日または手動解除で失効
+- 端末認証仕様: [`HUB_DEVICE_AUTH.md`](HUB_DEVICE_AUTH.md)
 - `export_history` への書き出し履歴保存
 - 任意素材の代表画像設定
 - Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定

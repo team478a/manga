@@ -17,6 +17,17 @@ import { AIService } from "./ai/service.js";
 import { DesktopUpdater } from "./updater.js";
 import { fetchHubStatus } from "./hub-status.js";
 import {
+  pollHubDeviceAuthorization,
+  revokeHubDeviceAuthorization,
+  startHubDeviceAuthorization,
+} from "./hub-status.js";
+import {
+  deleteHubDeviceCredential,
+  hubDeviceState,
+  readHubDeviceCredential,
+  saveHubDeviceCredential,
+} from "./hub-device-store.js";
+import {
   assetIdSchema,
   episodeInputSchema,
   importAssetsSchema,
@@ -143,7 +154,58 @@ function register() {
   handle("app:paths", () => desktopPaths());
   handle("hub:status", (v) => {
     const input = hubStatusRequestSchema.parse(v);
-    return fetchHubStatus(input.projectId, input.baseUrl);
+    const credential = readHubDeviceCredential();
+    const token =
+      credential?.status === "approved" && credential.baseUrl === input.baseUrl
+        ? credential.deviceToken
+        : undefined;
+    return fetchHubStatus(input.projectId, input.baseUrl, fetch, token);
+  });
+  handle("hub:device:state", () => hubDeviceState());
+  handle("hub:device:start", async (v) => {
+    const input = hubStatusRequestSchema.pick({ baseUrl: true }).parse(v);
+    const result = await startHubDeviceAuthorization(
+      input.baseUrl,
+      "MANGAI Desktop",
+    );
+    saveHubDeviceCredential({
+      baseUrl: input.baseUrl,
+      deviceToken: result.deviceToken,
+      userCode: result.userCode,
+      verificationPath: result.verificationPath,
+      expiresAt: result.expiresAt,
+      status: result.status,
+    });
+    return hubDeviceState();
+  });
+  handle("hub:device:poll", async () => {
+    const credential = readHubDeviceCredential();
+    if (!credential) throw new Error("開始中のHub端末認証がありません。");
+    const result = await pollHubDeviceAuthorization(
+      credential.baseUrl,
+      credential.deviceToken,
+    );
+    saveHubDeviceCredential({
+      baseUrl: credential.baseUrl,
+      deviceToken: credential.deviceToken,
+      userCode: credential.userCode,
+      verificationPath: credential.verificationPath,
+      expiresAt: credential.expiresAt,
+      status: result.status,
+      approvedAt: result.approvedAt,
+      tokenExpiresAt: result.tokenExpiresAt,
+    });
+    return hubDeviceState();
+  });
+  handle("hub:device:disconnect", async () => {
+    const credential = readHubDeviceCredential();
+    if (credential)
+      await revokeHubDeviceAuthorization(
+        credential.baseUrl,
+        credential.deviceToken,
+      );
+    deleteHubDeviceCredential();
+    return null;
   });
   handle("database:recovery:status", () => databaseRecovery);
   handle("update:state", () => updater.getState());

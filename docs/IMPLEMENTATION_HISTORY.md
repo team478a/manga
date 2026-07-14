@@ -382,3 +382,7 @@ Desktop書き出しへ`MANGAI販売パッケージ.zip`を追加しました。�
 ## 38. DesktopからHub公開状況を確認
 
 販売パッケージの`sourceProjectId`をHub作品へ記録し、公開済み作品と販売中商品数だけを返す読み取り専用APIを追加しました。Desktopの「Hub連携」画面ではHub URLをローカル保存し、作品名、最終更新、販売状態、公開URLを確認できます。通信先はHTTPSに限定し、開発用localhostだけHTTPを許可します。非公開下書きは匿名APIへ露出せず、Supabase Service Role Key、Stripe Secret Key、Hubログイン情報をDesktopへ保存しません。URL制約、公開応答、非公開応答を含むDesktop統合テストは29/29成功しています。
+
+## 39. Hub端末コード認証
+
+Hubへログインした本人が8桁・15分のコードを承認するDesktop端末認証を追加しました。256bitトークンはHub DBへSHA-256ハッシュだけを保存し、DesktopではElectron `safeStorage`によりOS暗号化してmain processだけで使用します。90日間の`works:read` scopeに限定し、本人の非公開下書き、公開状態、販売中・停止中商品数を確認できます。Hubの端末管理画面とDesktopの両方から失効できます。端末認証開始、承認確認、解除を含むDesktop統合テストは30/30成功しています。

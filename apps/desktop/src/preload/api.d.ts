@@ -67,14 +67,33 @@ export type HubStatus =
       work: {
         id: string;
         title: string;
+        status: "draft" | "published" | "archived";
+        isPublic: boolean;
         updatedAt: string;
         path: string;
       };
-      sales: { activeProductCount: number; available: boolean };
+      sales: {
+        activeProductCount: number;
+        pausedProductCount: number;
+        available: boolean;
+      };
     }
   | { linked: false; message: string };
+export type HubDeviceState = {
+  baseUrl: string;
+  userCode: string;
+  verificationPath: string;
+  expiresAt: string;
+  status: "pending" | "approved" | "denied" | "expired" | "revoked";
+  approvedAt?: string | null;
+  tokenExpiresAt?: string | null;
+};
 export type DesktopApi = {
   hubStatus: (projectId: string, baseUrl: string) => Promise<HubStatus>;
+  hubDeviceState: () => Promise<HubDeviceState | null>;
+  startHubDeviceAuthorization: (baseUrl: string) => Promise<HubDeviceState>;
+  pollHubDeviceAuthorization: () => Promise<HubDeviceState>;
+  disconnectHubDevice: () => Promise<null>;
   listProjects: () => Promise<Project[]>;
   chooseProjectStorage: (currentPath?: string) => Promise<string | null>;
   projectCover: (id: string) => Promise<string | null>;

@@ -1,0 +1,82 @@
+import { NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { bearerToken, hashDeviceSecret } from "@/lib/desktop-auth";
+
+export async function GET(request: Request) {
+  const token = bearerToken(request);
+  if (!token)
+    return NextResponse.json(
+      { message: "端末トークンが不正です。" },
+      { status: 401 },
+    );
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("desktop_device_authorizations")
+      .select("id, status, expires_at, token_expires_at, approved_at")
+      .eq("secret_hash", hashDeviceSecret(token))
+      .maybeSingle<{
+        id: string;
+        status: "pending" | "approved" | "denied" | "expired" | "revoked";
+        expires_at: string;
+        token_expires_at: string | null;
+        approved_at: string | null;
+      }>();
+    if (error) throw new Error(error.message);
+    if (!data)
+      return NextResponse.json(
+        { message: "端末認証が見つかりません。" },
+        { status: 401 },
+      );
+    if (
+      data.status === "pending" &&
+      new Date(data.expires_at).getTime() <= Date.now()
+    ) {
+      await admin
+        .from("desktop_device_authorizations")
+        .update({ status: "expired" })
+        .eq("id", data.id);
+      return NextResponse.json({ status: "expired" }, { status: 410 });
+    }
+    if (data.status === "approved")
+      return NextResponse.json({
+        status: "approved",
+        approvedAt: data.approved_at,
+        tokenExpiresAt: data.token_expires_at,
+      });
+    return NextResponse.json(
+      { status: data.status },
+      { status: data.status === "pending" ? 202 : 410 },
+    );
+  } catch (cause) {
+    console.error("Desktop device authorization poll failed", cause);
+    return NextResponse.json(
+      { message: "端末認証を確認できませんでした。" },
+      { status: 503 },
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  const token = bearerToken(request);
+  if (!token)
+    return NextResponse.json(
+      { message: "端末トークンが不正です。" },
+      { status: 401 },
+    );
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("desktop_device_authorizations")
+      .update({ status: "revoked", revoked_at: new Date().toISOString() })
+      .eq("secret_hash", hashDeviceSecret(token));
+    if (error) throw new Error(error.message);
+    return NextResponse.json({ revoked: true });
+  } catch (cause) {
+    console.error("Desktop device authorization revoke failed", cause);
+    return NextResponse.json(
+      { message: "端末認証を解除できませんでした。" },
+      { status: 503 },
+    );
+  }
+}

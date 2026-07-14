@@ -309,6 +309,10 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 販売パッケージの元Desktop Project IDを作品へ保存
 - 公開済み作品と販売中商品数だけを返すDesktop向け匿名API
 - Desktop「Hub連携」画面での読み取り専用ステータス確認
+- Hubログイン中の本人が承認する8桁・15分のDesktop端末コード
+- 90日・`works:read`限定の端末トークンとHub端末管理・失効画面
+- 認証済みDesktopから本人の非公開下書き・停止中商品数を確認
+- DesktopトークンのOS暗号化保存とrendererからの分離
 
 ## 14. 実装状況の確認
 
