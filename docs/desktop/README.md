@@ -74,6 +74,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - SQLite起動時整合性検査、破損原本保全、自動バックアップからのDB再構築
 - Undo/Redo・Creator Chat・AI生成ジョブ履歴を含むversion 2完全バックアップ
 - 素材・情報・Canvasレイヤーパネルの開閉、状態保持、狭幅レイアウト
+- Canvasツールバーの「追加」「レイアウト」「表示」メニュー化とキーボード操作
 - 新規Projectの保存先フォルダー選択と既定保存先への復帰
 - Episode作成・切り替え・名前変更・並び替え・削除
 - Page追加、複製、削除、上下並べ替え、番号正規化

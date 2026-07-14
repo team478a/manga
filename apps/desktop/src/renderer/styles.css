@@ -390,6 +390,8 @@ label {
   top: 0;
   z-index: 3;
   display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
   justify-content: center;
   gap: 6px;
   margin: 0 auto 14px;
@@ -397,6 +399,61 @@ label {
 .canvas-tools button,
 .canvas-tools select {
   box-shadow: 0 2px 8px #0002;
+}
+.canvas-tool-menu {
+  position: relative;
+}
+.canvas-tool-menu > summary {
+  list-style: none;
+  min-height: 34px;
+  padding: 8px 12px;
+  border: 1px solid #cfd7d2;
+  border-radius: 7px;
+  background: #fff;
+  color: #26332d;
+  box-shadow: 0 1px 5px #0001;
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1;
+}
+.canvas-tool-menu > summary::-webkit-details-marker {
+  display: none;
+}
+.canvas-tool-menu > summary::after {
+  content: "▾";
+  margin-left: 7px;
+  font-size: 10px;
+}
+.canvas-tool-menu > summary:focus-visible,
+.canvas-tool-menu[open] > summary {
+  outline: 2px solid #4b9b70;
+  outline-offset: 1px;
+  background: #edf7f1;
+}
+.canvas-tool-menu-panel {
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 0;
+  z-index: 10;
+  display: grid;
+  gap: 5px;
+  min-width: 230px;
+  padding: 7px;
+  border: 1px solid #cfd7d2;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 24px #0003;
+}
+.canvas-tool-menu-panel button {
+  width: 100%;
+  text-align: left;
+  box-shadow: none;
+}
+.canvas-context-tools {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .canvas-stage-row {
   display: flex;

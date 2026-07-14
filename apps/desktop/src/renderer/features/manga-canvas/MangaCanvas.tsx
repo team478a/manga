@@ -49,6 +49,79 @@ type LayerItem =
 const CANVAS_GRID_SIZE = 100;
 const LAYER_DRAG_TYPE = "application/x-mangai-canvas-layer";
 
+function CanvasToolMenu({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  const detailsRef = React.useRef<HTMLDetailsElement>(null);
+  const close = React.useCallback((restoreFocus = false) => {
+    const details = detailsRef.current;
+    if (!details) return;
+    details.open = false;
+    if (restoreFocus) details.querySelector<HTMLElement>("summary")?.focus();
+  }, []);
+  React.useEffect(() => {
+    const closeOutside = (event: PointerEvent) => {
+      if (!detailsRef.current?.contains(event.target as Node)) close();
+    };
+    document.addEventListener("pointerdown", closeOutside);
+    return () => document.removeEventListener("pointerdown", closeOutside);
+  }, [close]);
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDetailsElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      close(true);
+      return;
+    }
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    const controls = [
+      ...(detailsRef.current?.querySelectorAll<HTMLElement>(
+        ".canvas-tool-menu-panel button:not(:disabled), .canvas-tool-menu-panel select:not(:disabled)",
+      ) ?? []),
+    ];
+    if (!controls.length) return;
+    event.preventDefault();
+    if (detailsRef.current) detailsRef.current.open = true;
+    const current = controls.indexOf(document.activeElement as HTMLElement);
+    const next =
+      event.key === "Home"
+        ? 0
+        : event.key === "End"
+          ? controls.length - 1
+          : event.key === "ArrowDown"
+            ? current < 0
+              ? 0
+              : (current + 1) % controls.length
+            : current < 0
+              ? controls.length - 1
+              : (current - 1 + controls.length) % controls.length;
+    controls[next].focus();
+  };
+  return (
+    <details
+      className="canvas-tool-menu"
+      ref={detailsRef}
+      onKeyDown={onKeyDown}
+    >
+      <summary>{label}</summary>
+      <div
+        className="canvas-tool-menu-panel"
+        role="group"
+        aria-label={`${label}メニュー`}
+        onClick={(event) => {
+          if ((event.target as HTMLElement).closest("[data-close-menu]"))
+            close(true);
+        }}
+      >
+        {children}
+      </div>
+    </details>
+  );
+}
+
 function useImage(source?: string) {
   const [image, setImage] = React.useState<HTMLImageElement>();
   React.useEffect(() => {
@@ -1288,6 +1361,92 @@ export function MangaCanvas({
         imageOpacity: 1,
       }),
     );
+  const addBalloon = () => {
+    const balloonId = crypto.randomUUID();
+    const balloon = {
+      id: balloonId,
+      pageId: page.id,
+      name: `吹き出し${balloons.length + 1}`,
+      type: "speech_ellipse",
+      x: page.width * 0.55,
+      y: page.height * 0.08,
+      width: page.width * 0.35,
+      height: page.height * 0.2,
+      rotation: 0,
+      zIndex: nextZ,
+      visible: true,
+      locked: false,
+      fillColor: "#ffffff",
+      strokeColor: "#000000",
+      strokeWidth: 4,
+      opacity: 1,
+      tailDirection: "bottom_left",
+      tailOffset: 0.5,
+    } as const;
+    onApply(
+      window.mangai.canvas.saveBatch({
+        pageId: page.id,
+        balloons: [balloon],
+        textObjects: [
+          {
+            id: crypto.randomUUID(),
+            pageId: page.id,
+            parentBalloonId: balloonId,
+            name: `テキスト${texts.length + 1}`,
+            text: "テキスト",
+            writingMode: "vertical",
+            x: balloon.x + balloon.width * 0.2,
+            y: balloon.y + balloon.height * 0.15,
+            width: balloon.width * 0.6,
+            height: balloon.height * 0.7,
+            rotation: 0,
+            zIndex: nextZ + 1,
+            visible: true,
+            locked: false,
+            fontFamily: "sans-serif",
+            fontSize: 48,
+            fontWeight: 400,
+            color: "#000000",
+            textAlign: "center",
+            verticalAlign: "middle",
+            lineHeight: 1.2,
+            letterSpacing: 0,
+            padding: 16,
+            opacity: 1,
+          },
+        ],
+      }),
+    );
+  };
+  const addText = () =>
+    onApply(
+      window.mangai.canvas.saveText({
+        id: crypto.randomUUID(),
+        pageId: page.id,
+        parentBalloonId: selection?.type === "balloon" ? selection.id : null,
+        name: `テキスト${texts.length + 1}`,
+        text: "テキスト",
+        writingMode: "vertical",
+        x: page.width * 0.65,
+        y: page.height * 0.12,
+        width: page.width * 0.2,
+        height: page.height * 0.3,
+        rotation: 0,
+        zIndex: nextZ,
+        visible: true,
+        locked: false,
+        fontFamily: "sans-serif",
+        fontSize: 48,
+        fontWeight: 400,
+        color: "#000000",
+        textAlign: "center",
+        verticalAlign: "middle",
+        lineHeight: 1.2,
+        letterSpacing: 0,
+        padding: 16,
+        opacity: 1,
+      }),
+    );
   const updatePanelDraft = () => {
     if (!panelDraft) return;
     const pointer = getPagePointer();
@@ -1403,207 +1562,131 @@ export function MangaCanvas({
   };
   return (
     <div className="manga-canvas-shell">
-      <div className="canvas-tools">
-        <button onClick={() => addPanel()}>＋ コマ</button>
-        <button
-          className={drawPanelMode ? "active" : undefined}
-          aria-pressed={drawPanelMode}
-          title="ページ上をドラッグしてコマを作成（Escで解除）"
-          onClick={() => {
-            setPanelDraft(null);
-            setDrawPanelMode((value) => !value);
-          }}
-        >
-          ▭ コマを描く
-        </button>
-        <button
-          onClick={() => {
-            const balloonId = crypto.randomUUID();
-            const balloon = {
-              id: balloonId,
-              pageId: page.id,
-              name: `吹き出し${balloons.length + 1}`,
-              type: "speech_ellipse",
-              x: page.width * 0.55,
-              y: page.height * 0.08,
-              width: page.width * 0.35,
-              height: page.height * 0.2,
-              rotation: 0,
-              zIndex: nextZ,
-              visible: true,
-              locked: false,
-              fillColor: "#ffffff",
-              strokeColor: "#000000",
-              strokeWidth: 4,
-              opacity: 1,
-              tailDirection: "bottom_left",
-              tailOffset: 0.5,
-            } as const;
-            onApply(
-              window.mangai.canvas.saveBatch({
-                pageId: page.id,
-                balloons: [balloon],
-                textObjects: [
-                  {
-                    id: crypto.randomUUID(),
-                    pageId: page.id,
-                    parentBalloonId: balloonId,
-                    name: `テキスト${texts.length + 1}`,
-                    text: "テキスト",
-                    writingMode: "vertical",
-                    x: balloon.x + balloon.width * 0.2,
-                    y: balloon.y + balloon.height * 0.15,
-                    width: balloon.width * 0.6,
-                    height: balloon.height * 0.7,
-                    rotation: 0,
-                    zIndex: nextZ + 1,
-                    visible: true,
-                    locked: false,
-                    fontFamily: "sans-serif",
-                    fontSize: 48,
-                    fontWeight: 400,
-                    color: "#000000",
-                    textAlign: "center",
-                    verticalAlign: "middle",
-                    lineHeight: 1.2,
-                    letterSpacing: 0,
-                    padding: 16,
-                    opacity: 1,
-                  },
-                ],
-              }),
-            );
-          }}
-        >
-          ＋ 吹き出し
-        </button>
-        <button
-          onClick={() =>
-            onApply(
-              window.mangai.canvas.saveText({
-                id: crypto.randomUUID(),
-                pageId: page.id,
-                parentBalloonId:
-                  selection?.type === "balloon" ? selection.id : null,
-                name: `テキスト${texts.length + 1}`,
-                text: "テキスト",
-                writingMode: "vertical",
-                x: page.width * 0.65,
-                y: page.height * 0.12,
-                width: page.width * 0.2,
-                height: page.height * 0.3,
-                rotation: 0,
-                zIndex: nextZ,
-                visible: true,
-                locked: false,
-                fontFamily: "sans-serif",
-                fontSize: 48,
-                fontWeight: 400,
-                color: "#000000",
-                textAlign: "center",
-                verticalAlign: "middle",
-                lineHeight: 1.2,
-                letterSpacing: 0,
-                padding: 16,
-                opacity: 1,
-              }),
-            )
-          }
-        >
-          ＋ テキスト
-        </button>
-        <select
-          defaultValue=""
-          onChange={(event) => {
-            if (!event.target.value) return;
-            onApply(applyTemplate(event.target.value as PageTemplateId));
-            event.target.value = "";
-          }}
-        >
-          <option value="">テンプレート…</option>
+      <div
+        className="canvas-tools"
+        role="toolbar"
+        aria-label="Canvas編集ツール"
+      >
+        <CanvasToolMenu label="＋ 追加">
+          <button data-close-menu onClick={() => addPanel()}>
+            コマを追加
+          </button>
+          <button
+            data-close-menu
+            className={drawPanelMode ? "active" : undefined}
+            aria-pressed={drawPanelMode}
+            aria-keyshortcuts="Escape"
+            title="ページ上をドラッグしてコマを作成（Escで解除）"
+            onClick={() => {
+              setPanelDraft(null);
+              setDrawPanelMode((value) => !value);
+            }}
+          >
+            ▭ コマを描く
+          </button>
+          <button data-close-menu onClick={addBalloon}>
+            吹き出しを追加
+          </button>
+          <button data-close-menu onClick={addText}>
+            {selection?.type === "balloon"
+              ? "選択吹き出しへテキスト追加"
+              : "テキストを追加"}
+          </button>
+        </CanvasToolMenu>
+        <CanvasToolMenu label="レイアウト">
           {pageTemplates.map((template) => (
-            <option key={template.id} value={template.id}>
+            <button
+              data-close-menu
+              key={template.id}
+              title="現在のコマを置き換えてテンプレートを適用"
+              onClick={() => onApply(applyTemplate(template.id))}
+            >
               {template.name}
-            </option>
+            </button>
           ))}
-        </select>
-        <button
-          className={showGrid ? "active" : undefined}
-          aria-pressed={showGrid}
-          onClick={() => setShowGrid((value) => !value)}
-        >
-          # グリッド
-        </button>
-        <button
-          className={snapEnabled ? "active" : undefined}
-          aria-pressed={snapEnabled}
-          onClick={() => {
-            setSnapEnabled((value) => !value);
-            setGuides({ vertical: [], horizontal: [] });
-          }}
-        >
-          スナップ
-        </button>
-        <button
-          className={gridSnapEnabled ? "active" : undefined}
-          aria-pressed={gridSnapEnabled}
-          disabled={!snapEnabled}
-          title="100pxグリッドへ吸着"
-          onClick={() => setGridSnapEnabled((value) => !value)}
-        >
-          グリッド吸着
-        </button>
-        <button
-          className={showLayers ? "active" : undefined}
-          aria-pressed={showLayers}
-          title="レイヤーとCanvasプロパティを開閉"
-          onClick={() => setShowLayers((value) => !value)}
-        >
-          レイヤー
-        </button>
-        {editingPanel && (
-          <>
-            <span className="image-edit-status">
-              画像編集中: {editingPanel.name}
-            </span>
+        </CanvasToolMenu>
+        <CanvasToolMenu label="表示">
+          <button
+            className={showGrid ? "active" : undefined}
+            aria-pressed={showGrid}
+            onClick={() => setShowGrid((value) => !value)}
+          >
+            # グリッド
+          </button>
+          <button
+            className={snapEnabled ? "active" : undefined}
+            aria-pressed={snapEnabled}
+            onClick={() => {
+              setSnapEnabled((value) => !value);
+              setGuides({ vertical: [], horizontal: [] });
+            }}
+          >
+            スナップ
+          </button>
+          <button
+            className={gridSnapEnabled ? "active" : undefined}
+            aria-pressed={gridSnapEnabled}
+            disabled={!snapEnabled}
+            title="100pxグリッドへ吸着"
+            onClick={() => setGridSnapEnabled((value) => !value)}
+          >
+            グリッド吸着
+          </button>
+          <button
+            className={showLayers ? "active" : undefined}
+            aria-pressed={showLayers}
+            title="レイヤーとCanvasプロパティを開閉"
+            onClick={() => setShowLayers((value) => !value)}
+          >
+            レイヤー
+          </button>
+        </CanvasToolMenu>
+        <div className="canvas-context-tools" aria-label="選択中の操作">
+          {editingPanel && (
+            <>
+              <span className="image-edit-status" role="status">
+                画像編集中: {editingPanel.name}
+              </span>
+              <button
+                onClick={() =>
+                  savePanel({
+                    ...editingPanel,
+                    imageScale: 1,
+                    imageOffsetX: 0,
+                    imageOffsetY: 0,
+                    imageRotation: 0,
+                  })
+                }
+              >
+                中央へリセット
+              </button>
+              <button className="active" onClick={finishImageEdit}>
+                画像編集を完了
+              </button>
+            </>
+          )}
+          {selection && (
+            <button
+              className="danger"
+              aria-keyshortcuts="Delete Backspace"
+              disabled={selectedItems.some((item) => item.locked)}
+              onClick={deleteSelected}
+            >
+              {selectedKeys.length > 1
+                ? `${selectedKeys.length}件を削除`
+                : "選択を削除"}
+            </button>
+          )}
+          {selectedPanel && selectedAssetId && (
             <button
               onClick={() =>
-                savePanel({
-                  ...editingPanel,
-                  imageScale: 1,
-                  imageOffsetX: 0,
-                  imageOffsetY: 0,
-                  imageRotation: 0,
-                })
+                savePanel({ ...selectedPanel, imageAssetId: selectedAssetId })
               }
             >
-              中央へリセット
+              選択コマへ素材を配置
             </button>
-            <button className="active" onClick={finishImageEdit}>
-              画像編集を完了
-            </button>
-          </>
-        )}
-        {selection && (
-          <button
-            className="danger"
-            disabled={selectedItems.some((item) => item.locked)}
-            onClick={deleteSelected}
-          >
-            {selectedKeys.length > 1
-              ? `${selectedKeys.length}件を削除`
-              : "選択を削除"}
-          </button>
-        )}
-        {selectedPanel && selectedAssetId && (
-          <button
-            onClick={() =>
-              savePanel({ ...selectedPanel, imageAssetId: selectedAssetId })
-            }
-          >
-            選択コマへ素材を配置
-          </button>
-        )}
+          )}
+        </div>
       </div>
       <div className="canvas-stage-row">
         <div
