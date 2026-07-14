@@ -27,6 +27,7 @@
 - Desktop販売パッケージから非公開作品・停止中商品を作成
 - DesktopからHubの公開作品・販売中商品数を読み取り専用で確認
 - Hub本人承認によるDesktop端末認証と非公開下書きの読み取り
+- Desktopのローカル構造化ログと同意制クラッシュレポート
 - Supabase PostgreSQL スキーマとRLS
 - Stripe Checkout、Webhook、購入後期限付きダウンロード
 

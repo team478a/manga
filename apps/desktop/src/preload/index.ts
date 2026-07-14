@@ -1,5 +1,12 @@
 import { contextBridge, ipcRenderer, webUtils } from "electron";
 contextBridge.exposeInMainWorld("mangai", {
+  diagnostics: {
+    getState: () => ipcRenderer.invoke("diagnostics:state"),
+    setConsent: (enabled: boolean) =>
+      ipcRenderer.invoke("diagnostics:consent", { enabled }),
+    openLogs: () => ipcRenderer.invoke("diagnostics:open-logs"),
+    clearCrashReports: () => ipcRenderer.invoke("diagnostics:clear-crashes"),
+  },
   hubStatus: (projectId: string, baseUrl: string) =>
     ipcRenderer.invoke("hub:status", { projectId, baseUrl }),
   hubDeviceState: () => ipcRenderer.invoke("hub:device:state"),

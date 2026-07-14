@@ -21,6 +21,8 @@ Windowsインストーラーは `npm run desktop:dist:win` で生成します。
 
 Projectバックアップの対象範囲と復元仕様は [`PROJECT_BACKUP.md`](PROJECT_BACKUP.md) を参照してください。
 
+端末内の構造化ログ、クラッシュレポート同意、除外・保持仕様は [`DIAGNOSTICS_PRIVACY.md`](DIAGNOSTICS_PRIVACY.md) を参照してください。
+
 ## 保存先
 
 Electron main processで `app.getPath("documents")` を取得し、次を作成します。
@@ -100,6 +102,9 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - 任意素材の代表画像設定
 - Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定
 - Ollamaモデル・ComfyUIワークフローを含むAI接続一括診断
+- 秘密値を除外するローカルJSONL構造化ログ、5MB・3世代ローテーション
+- 明示同意後だけ保存する詳細クラッシュレポート、最大20件、保存先表示・全削除
+- main、renderer、child process異常と応答停止の捕捉。外部自動送信なし
 - Project単位のUndo/Redo、キーボードショートカット、操作履歴
 - ComfyUI画像生成とProject素材への自動登録
 

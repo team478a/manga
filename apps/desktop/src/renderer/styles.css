@@ -905,6 +905,25 @@ label {
 .ai-diagnostics .setting-title {
   gap: 20px;
 }
+.diagnostics-privacy .setting-title {
+  gap: 20px;
+}
+.diagnostics-privacy .setting-title > div {
+  display: grid;
+  gap: 6px;
+}
+.diagnostics-consent {
+  padding: 12px;
+  border: 1px solid #b9d9c7;
+  border-radius: 8px;
+  background: #f3faf6;
+  font-weight: 700;
+}
+.diagnostics-storage {
+  display: grid;
+  gap: 5px;
+  overflow-wrap: anywhere;
+}
 .ai-diagnostics .setting-title > div {
   display: grid;
   gap: 6px;

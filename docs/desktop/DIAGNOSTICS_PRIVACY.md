@@ -1,0 +1,44 @@
+# Desktop診断ログとプライバシー
+
+## 保存内容
+
+MANGAI Desktopは`{Documents}/MANGAI/logs/desktop.jsonl`へ、起動、終了、IPC失敗、バックアップ失敗、DB復旧、renderer・child process異常などの構造化イベントを保存します。ログは端末内だけで利用し、外部送信機能はありません。
+
+JSONLログは5MBごとにローテーションし、現行ファイルと過去3世代を保持します。
+
+## 詳細クラッシュレポート
+
+設定画面の「診断データとプライバシー」で利用者が明示的に同意した場合だけ、次を含む`crash-*.json`を端末内へ保存します。
+
+- 発生日時と発生元
+- MANGAI Desktop、Electron、OS、CPU architectureのバージョン情報
+- エラー名、メッセージ、stack
+- process終了理由、exit codeなどの限定された診断情報
+
+最大20件を保持します。設定画面から保存先を開き、詳細レポートを全削除できます。同意はいつでもOFFへ戻せます。OFFへ戻しても既存ファイルは自動削除しないため、不要な場合は「詳細レポートを削除」を実行します。
+
+## 除外処理
+
+ログと詳細レポートは保存前に再帰的に正規化し、次を除外・短縮します。
+
+- `authorization`、`cookie`、`password`、`secret`、`token`、API key、device codeに該当するfield
+- Bearer token、OpenAI形式のsecret key、JWT
+- URL queryのtoken、key、secret、code
+- OSのhome directory部分
+- 過大な文字列、配列、object、深い階層
+
+Project本文、Creator Chat本文、AI prompt、素材画像は診断イベントへ意図的に渡しません。
+
+## 捕捉対象
+
+- Electron main processの`uncaughtException`と`unhandledRejection`
+- renderer processの異常終了と応答停止
+- Electron child processの異常終了
+- IPC handlerの失敗種別
+- 自動バックアップ失敗件数、DB復旧件数
+
+`uncaughtException`は同期保存後にアプリを異常終了させ、壊れた状態で処理を継続しません。
+
+## 今後の外部送信
+
+現時点の`externalUploadEnabled`は常に`false`です。将来外部送信を追加する場合は、送信先、保持期間、削除方法、送信前プレビュー、別の明示同意を設計し、現在のローカル保存同意を自動的に送信同意へ流用しません。

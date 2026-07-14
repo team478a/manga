@@ -1,5 +1,6 @@
 import React from "react";
 import type { ProviderSettings } from "@mangai/ai-core";
+import type { DiagnosticsState } from "../../../preload/api";
 
 type PromptTemplate = {
   id: string;
@@ -92,12 +93,16 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     [templateSystemPrompt, setTemplateSystemPrompt] = React.useState(""),
     [diagnostics, setDiagnostics] = React.useState<DiagnosticItem[]>([]),
     [diagnosing, setDiagnosing] = React.useState(false),
-    [diagnosedAt, setDiagnosedAt] = React.useState<Date | null>(null);
+    [diagnosedAt, setDiagnosedAt] = React.useState<Date | null>(null),
+    [diagnosticsState, setDiagnosticsState] =
+      React.useState<DiagnosticsState | null>(null),
+    [diagnosticsMessage, setDiagnosticsMessage] = React.useState("");
   const load = () =>
     Promise.all([
       window.mangai.ai.listSettings().then(setSettings),
       window.mangai.getPaths().then(setPaths),
       window.mangai.ai.listTemplates().then(setTemplates),
+      window.mangai.diagnostics.getState().then(setDiagnosticsState),
     ]);
   React.useEffect(() => {
     void load();
@@ -249,13 +254,100 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     <main className="tool-page">
       <header className="tool-header">
         <button onClick={onClose}>← ワークスペース</button>
-        <h1>AI設定</h1>
+        <h1>設定</h1>
       </header>
       <div className="tool-content">
         <section className="panel-lite">
           <h2>一般設定</h2>
           <p>データ保存先: {paths?.root ?? "読み込み中"}</p>
           <p>AIログには秘密情報を保存しません。クラウドAPIキーは未対応です。</p>
+        </section>
+        <section className="panel-lite diagnostics-privacy">
+          <div className="setting-title">
+            <div>
+              <h2>診断データとプライバシー</h2>
+              <p>
+                動作ログは端末内だけに保存し、秘密値とホームフォルダーを除外します。外部への自動送信は実装していません。
+              </p>
+            </div>
+            <span className="hub-readonly-badge">外部送信なし</span>
+          </div>
+          <label className="check diagnostics-consent">
+            <input
+              type="checkbox"
+              checked={diagnosticsState?.detailedCrashReportsEnabled ?? false}
+              disabled={!diagnosticsState}
+              onChange={async (event) => {
+                setDiagnosticsMessage("");
+                try {
+                  setDiagnosticsState(
+                    await window.mangai.diagnostics.setConsent(
+                      event.target.checked,
+                    ),
+                  );
+                  setDiagnosticsMessage("診断データ設定を保存しました。");
+                } catch (cause) {
+                  setDiagnosticsMessage(
+                    cause instanceof Error ? cause.message : String(cause),
+                  );
+                }
+              }}
+            />
+            詳細なクラッシュレポートを端末内へ保存することに同意する
+          </label>
+          <p className="diagnostic-empty">
+            OFFの場合も、起動・終了・エラー種別を含む最小限のJSONL動作ログは端末内へ保存します。ONの場合だけ、エラー内容とスタックを含む詳細ファイルを最大20件保存します。
+          </p>
+          <div className="diagnostics-storage">
+            <p>
+              <b>ログ保存先:</b>{" "}
+              {diagnosticsState?.logDirectory ?? "読み込み中"}
+            </p>
+            <p>
+              <b>詳細クラッシュレポート:</b>{" "}
+              {diagnosticsState?.crashReportCount ?? 0}件
+            </p>
+          </div>
+          <div className="inline">
+            <button
+              className="secondary"
+              onClick={async () => {
+                setDiagnosticsMessage("");
+                try {
+                  await window.mangai.diagnostics.openLogs();
+                } catch (cause) {
+                  setDiagnosticsMessage(
+                    cause instanceof Error ? cause.message : String(cause),
+                  );
+                }
+              }}
+            >
+              ログフォルダーを開く
+            </button>
+            <button
+              className="secondary"
+              disabled={!diagnosticsState?.crashReportCount}
+              onClick={async () => {
+                if (!confirm("端末内の詳細クラッシュレポートを削除しますか？"))
+                  return;
+                try {
+                  setDiagnosticsState(
+                    await window.mangai.diagnostics.clearCrashReports(),
+                  );
+                  setDiagnosticsMessage(
+                    "詳細クラッシュレポートを削除しました。",
+                  );
+                } catch (cause) {
+                  setDiagnosticsMessage(
+                    cause instanceof Error ? cause.message : String(cause),
+                  );
+                }
+              }}
+            >
+              詳細レポートを削除
+            </button>
+          </div>
+          {diagnosticsMessage && <p className="notice">{diagnosticsMessage}</p>}
         </section>
         <section className="panel-lite ai-diagnostics">
           <div className="setting-title">

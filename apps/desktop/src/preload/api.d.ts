@@ -88,7 +88,21 @@ export type HubDeviceState = {
   approvedAt?: string | null;
   tokenExpiresAt?: string | null;
 };
+export type DiagnosticsState = {
+  detailedCrashReportsEnabled: boolean;
+  externalUploadEnabled: false;
+  logDirectory: string;
+  logFile: string;
+  crashReportCount: number;
+  updatedAt: string | null;
+};
 export type DesktopApi = {
+  diagnostics: {
+    getState: () => Promise<DiagnosticsState>;
+    setConsent: (enabled: boolean) => Promise<DiagnosticsState>;
+    openLogs: () => Promise<true>;
+    clearCrashReports: () => Promise<DiagnosticsState>;
+  };
   hubStatus: (projectId: string, baseUrl: string) => Promise<HubStatus>;
   hubDeviceState: () => Promise<HubDeviceState | null>;
   startHubDeviceAuthorization: (baseUrl: string) => Promise<HubDeviceState>;

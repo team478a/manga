@@ -3,6 +3,7 @@ import {
   BrowserWindow,
   dialog,
   ipcMain,
+  shell,
   type IpcMainInvokeEvent,
 } from "electron";
 import path from "node:path";
@@ -15,6 +16,7 @@ import {
 } from "./database-recovery.js";
 import { AIService } from "./ai/service.js";
 import { DesktopUpdater } from "./updater.js";
+import { DiagnosticsService } from "./diagnostics.js";
 import { fetchHubStatus } from "./hub-status.js";
 import {
   pollHubDeviceAuthorization,
@@ -66,6 +68,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 let store: MangaiDatabase;
 let aiService: AIService;
 let updater: DesktopUpdater;
+let diagnostics: DiagnosticsService;
 let databaseRecovery: DatabaseRecoveryReport | null = null;
 type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
@@ -104,6 +107,10 @@ function handle(
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "処理に失敗しました。";
+      diagnostics?.log("error", "ipc_handler_failed", {
+        channel,
+        errorType: error instanceof Error ? error.name : typeof error,
+      });
       throw new Error(message);
     }
   });
@@ -130,12 +137,10 @@ async function runAutoBackup() {
           : "すべてのProjectはバックアップ済みです。",
     };
     if (result.errors.length) {
-      const logPath = path.join(desktopPaths().logs, "desktop.log");
-      fs.mkdirSync(path.dirname(logPath), { recursive: true });
-      fs.appendFileSync(
-        logPath,
-        `${result.errors.map((error) => JSON.stringify({ at: result.checkedAt, scope: "auto-backup", ...error })).join("\n")}\n`,
-      );
+      diagnostics.log("error", "auto_backup_failed", {
+        checkedAt: result.checkedAt,
+        errorCount: result.errors.length,
+      });
     }
   } catch (cause) {
     autoBackupState = {
@@ -152,6 +157,19 @@ async function runAutoBackup() {
 }
 function register() {
   handle("app:paths", () => desktopPaths());
+  handle("diagnostics:state", () => diagnostics.state());
+  handle("diagnostics:consent", (v) => {
+    if (!v || typeof v.enabled !== "boolean")
+      throw new Error("診断データ設定が不正です。");
+    return diagnostics.updateConsent(v.enabled);
+  });
+  handle("diagnostics:open-logs", async () => {
+    fs.mkdirSync(desktopPaths().logs, { recursive: true });
+    const error = await shell.openPath(desktopPaths().logs);
+    if (error) throw new Error(error);
+    return true;
+  });
+  handle("diagnostics:clear-crashes", () => diagnostics.clearCrashReports());
   handle("hub:status", (v) => {
     const input = hubStatusRequestSchema.parse(v);
     const credential = readHubDeviceCredential();
@@ -583,17 +601,81 @@ async function createWindow() {
   if (dev) await win.loadURL(dev);
   else await win.loadFile(path.join(here, "../../dist-renderer/index.html"));
 }
+function registerDiagnosticsHandlers() {
+  process.on("uncaughtException", (cause) => {
+    diagnostics.captureCrash("main.uncaughtException", cause);
+    app.exit(1);
+  });
+  process.on("unhandledRejection", (cause) => {
+    diagnostics.captureCrash("main.unhandledRejection", cause);
+  });
+  app.on("render-process-gone", (_event, webContents, details) => {
+    diagnostics.log(
+      details.reason === "clean-exit" ? "info" : "error",
+      "render_process_gone",
+      {
+        webContentsId: webContents.id,
+        reason: details.reason,
+        exitCode: details.exitCode,
+      },
+    );
+    if (details.reason !== "clean-exit")
+      diagnostics.captureCrash("renderer.processGone", details, {
+        webContentsId: webContents.id,
+      });
+  });
+  app.on("child-process-gone", (_event, details) => {
+    diagnostics.log("error", "child_process_gone", {
+      type: details.type,
+      reason: details.reason,
+      exitCode: details.exitCode,
+      serviceName: details.serviceName,
+    });
+    if (details.reason !== "clean-exit")
+      diagnostics.captureCrash(
+        "child.processGone",
+        new Error(`Child process ended: ${details.reason}`),
+        {
+          type: details.type,
+          reason: details.reason,
+          exitCode: details.exitCode,
+        },
+      );
+  });
+  app.on("web-contents-created", (_event, contents) => {
+    contents.on("unresponsive", () => {
+      diagnostics.captureCrash(
+        "renderer.unresponsive",
+        new Error("Renderer became unresponsive"),
+        {
+          webContentsId: contents.id,
+        },
+      );
+    });
+  });
+}
 app.whenReady().then(async () => {
+  diagnostics = new DiagnosticsService(desktopPaths(), {
+    appVersion: app.getVersion(),
+    platform: process.platform,
+    arch: process.arch,
+    electronVersion: process.versions.electron,
+  });
+  registerDiagnosticsHandlers();
+  diagnostics.log("info", "app_started", {
+    appVersion: app.getVersion(),
+    platform: process.platform,
+    arch: process.arch,
+  });
   const opened = await openDatabaseWithRecovery(desktopPaths());
   store = opened.database;
   databaseRecovery = opened.recovery;
   if (databaseRecovery) {
-    const logPath = path.join(desktopPaths().logs, "desktop.log");
-    fs.mkdirSync(path.dirname(logPath), { recursive: true });
-    fs.appendFileSync(
-      logPath,
-      `${JSON.stringify({ scope: "database-recovery", ...databaseRecovery })}\n`,
-    );
+    diagnostics.log("warn", "database_recovered", {
+      source: databaseRecovery.source,
+      restoredProjectCount: databaseRecovery.restoredProjects.length,
+      failedBackupCount: databaseRecovery.failedBackups.length,
+    });
   }
   aiService = new AIService(store, {
     allowMock: !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
@@ -613,6 +695,7 @@ app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
 app.on("before-quit", () => {
+  diagnostics?.log("info", "app_before_quit");
   if (autoBackupTimer) clearInterval(autoBackupTimer);
   store?.close();
 });
