@@ -394,3 +394,9 @@ Hubへログインした本人が8桁・15分のコードを承認するDesktop�
 ## 41. Desktop構造化ログ・クラッシュ同意
 
 Desktopへ端末内JSONL構造化ログ、5MB・過去3世代のローテーション、明示同意後だけ保存する詳細クラッシュレポートを追加しました。mainの未捕捉例外・Promise rejection、renderer異常終了・応答停止、child process異常を捕捉します。秘密field、Bearer、API key、JWT、URL token、home directoryを保存前に除外し、Project本文・Chat本文・prompt・画像は診断イベントへ渡しません。詳細レポートは最大20件で、設定画面から同意変更、保存先表示、全削除ができます。外部送信は常に無効です。除外・ローテーション・同意前後・削除を含む統合テストは33/33成功しています。
+
+## 42. Hub DBマイグレーション往復基盤
+
+販売パッケージ取り込み、Desktop端末認証、認証rate limitを3つの順序付きforward migrationへ分割し、それぞれに逆順適用できるrollbackを追加しました。データ損失につながるrollbackは対象データや有効な端末認証が存在すると停止します。manifest・対応ファイル・トランザクション境界・破壊的forward SQLを検査するNodeスクリプトも追加しました。
+
+GitHub ActionsではPostgreSQL 16上で旧スキーマからforward適用、機能assertion、逆順rollback、再適用を行い、現在の`schema.sql`を2回適用する冪等性も検証します。ローカル環境にはPostgreSQL実行環境がないため、静的検査のみ成功を確認し、実DB往復はCIと今後のSupabase stagingで確認します。運用手順は[`hub/DATABASE_MIGRATIONS.md`](hub/DATABASE_MIGRATIONS.md)へ記録しました。

@@ -293,3 +293,13 @@ Stripeテスト環境の設定:
 ## 今後の実装計画
 
 Desktop Release Candidate、漫画編集機能、DesktopとHubの連携、本番運用の順に整理しています。詳細は [`docs/PROJECT_STATUS_AND_ROADMAP.md`](docs/PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
+
+## Supabaseスキーマ変更
+
+新規環境は`supabase/schema.sql`、既存環境は`supabase/migrations`の順序付きSQLを使用します。forward/rollbackの整合性は次のコマンドで確認できます。
+
+```powershell
+npm run db:migrations:validate
+```
+
+適用・rollback・PostgreSQL CIの詳細は[`docs/hub/DATABASE_MIGRATIONS.md`](docs/hub/DATABASE_MIGRATIONS.md)を参照してください。

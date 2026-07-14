@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "migrations": [
+    {
+      "id": "202607140001_sales_package_import",
+      "description": "販売パッケージのサンプル画像、Desktop Project ID、Storage削除policyを追加"
+    },
+    {
+      "id": "202607140002_desktop_device_auth",
+      "description": "Desktop端末コード認証と失効情報を追加"
+    },
+    {
+      "id": "202607140003_device_rate_limit",
+      "description": "端末認証rate limitと期限切れ認証清掃を追加"
+    }
+  ]
+}
