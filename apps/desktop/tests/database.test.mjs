@@ -7,6 +7,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { Buffer } from "node:buffer";
 import { MangaiDatabase } from "../dist-main/main/database.js";
+import { openDatabaseWithRecovery } from "../dist-main/main/database-recovery.js";
 import Database from "better-sqlite3";
 import sharp from "sharp";
 import JSZip from "jszip";
@@ -830,6 +831,88 @@ test("automatic project backup skips unchanged data and keeps limited generation
     files.some((name) => name.endsWith(".partial")),
     false,
   );
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
+test("corrupt database is preserved and rebuilt from automatic project backups", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-recovery-auto-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  db.createProject({
+    title: "破損復旧Project",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  const backup = await db.autoBackupProjects({ minimumIntervalMs: 60_000 });
+  assert.equal(backup.created.length, 1);
+  db.close();
+  const corruptBytes = Buffer.from("this is not sqlite");
+  fs.writeFileSync(paths.database, corruptBytes);
+
+  const opened = await openDatabaseWithRecovery(paths);
+  db = opened.database;
+  assert.ok(opened.recovery);
+  assert.equal(opened.recovery.source, "project-backups");
+  assert.deepEqual(opened.recovery.restoredProjects, ["破損復旧Project"]);
+  assert.equal(db.listProjects()[0].title, "破損復旧Project");
+  const archived = path.join(
+    opened.recovery.archiveDirectory,
+    path.basename(paths.database),
+  );
+  assert.deepEqual(fs.readFileSync(archived), corruptBytes);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
+test("corrupt database falls back to a valid migration backup", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-recovery-db-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  db.createProject({
+    title: "SQLiteバックアップ復旧",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  db.close();
+  const backupDirectory = path.join(root, "backups");
+  fs.mkdirSync(backupDirectory, { recursive: true });
+  fs.copyFileSync(
+    paths.database,
+    path.join(backupDirectory, "mangai_local-before-test.sqlite"),
+  );
+  fs.writeFileSync(paths.database, "broken");
+
+  const opened = await openDatabaseWithRecovery(paths);
+  db = opened.database;
+  assert.equal(opened.recovery?.source, "sqlite-backup");
+  assert.equal(db.listProjects()[0].title, "SQLiteバックアップ復旧");
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

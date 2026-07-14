@@ -21,7 +21,7 @@ import {
 import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
 import { renderPagePng, type RenderAsset } from "./page-renderer.js";
 
-type Paths = {
+export type Paths = {
   root: string;
   database: string;
   projects: string;
@@ -29,6 +29,12 @@ type Paths = {
   exports: string;
   logs: string;
 };
+export class DatabaseIntegrityError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "DatabaseIntegrityError";
+  }
+}
 const now = () => new Date().toISOString();
 const uid = () => crypto.randomUUID();
 const backupFormat = "mangai.project-backup";
@@ -58,6 +64,53 @@ const assetExtension = (mimeType: string) =>
     "image/png": ".png",
     "image/webp": ".webp",
   })[mimeType] || "";
+
+function isSqliteCorruptionError(error: unknown) {
+  const code =
+    error && typeof error === "object" && "code" in error
+      ? String(error.code)
+      : "";
+  const message = error instanceof Error ? error.message.toLowerCase() : "";
+  return (
+    code === "SQLITE_CORRUPT" ||
+    code === "SQLITE_NOTADB" ||
+    message.includes("database disk image is malformed") ||
+    message.includes("file is not a database")
+  );
+}
+
+function openCheckedDatabase(databasePath: string, existed: boolean) {
+  let database: Database.Database | undefined;
+  try {
+    if (existed && fs.statSync(databasePath).size === 0)
+      throw new DatabaseIntegrityError(
+        "SQLiteファイルが空です。書き込み中断または破損の可能性があります。",
+      );
+    database = new Database(databasePath);
+    if (existed) {
+      const rows = database.pragma("quick_check") as Array<
+        Record<string, unknown>
+      >;
+      const messages = rows
+        .flatMap((row) => Object.values(row))
+        .map(String)
+        .filter((value) => value.toLowerCase() !== "ok");
+      if (messages.length)
+        throw new DatabaseIntegrityError(
+          `SQLite整合性検査に失敗しました: ${messages.slice(0, 3).join(" / ")}`,
+        );
+    }
+    return database;
+  } catch (error) {
+    database?.close();
+    if (error instanceof DatabaseIntegrityError) throw error;
+    if (isSqliteCorruptionError(error))
+      throw new DatabaseIntegrityError(
+        error instanceof Error ? error.message : "SQLiteが破損しています。",
+      );
+    throw error;
+  }
+}
 
 function parseBackupManifest(value: unknown): ProjectBackupManifest {
   if (!value || typeof value !== "object")
@@ -112,7 +165,7 @@ export class MangaiDatabase {
     Object.values(paths)
       .filter((x) => x !== paths.database)
       .forEach((x) => fs.mkdirSync(x, { recursive: true }));
-    this.db = new Database(paths.database);
+    this.db = openCheckedDatabase(paths.database, databaseExisted);
     this.db.pragma("foreign_keys = ON");
     this.db.pragma("journal_mode = WAL");
     if (databaseExisted) {
@@ -581,7 +634,7 @@ export class MangaiDatabase {
     }
     return result;
   }
-  async restoreProject(source: string) {
+  async restoreProject(source: string, options?: { titleSuffix?: string }) {
     const stat = fs.statSync(source);
     if (!stat.isFile() || stat.size <= 0 || stat.size > maxBackupBytes)
       throw new Error("バックアップファイルのサイズが不正です。");
@@ -624,7 +677,7 @@ export class MangaiDatabase {
     const sourceBundle = manifest.bundle;
     const restored = this.createProject(
       projectInputSchema.parse({
-        title: `${sourceBundle.project.title} (復元)`,
+        title: `${sourceBundle.project.title}${options?.titleSuffix ?? " (復元)"}`,
         subtitle: sourceBundle.project.subtitle,
         description: sourceBundle.project.description,
         genre: sourceBundle.project.genre,

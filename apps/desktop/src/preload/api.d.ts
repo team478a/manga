@@ -50,6 +50,15 @@ export type AutoBackupState = {
   skippedCount: number;
   message: string;
 };
+export type DatabaseRecoveryState = {
+  recovered: true;
+  detectedAt: string;
+  reason: string;
+  archiveDirectory: string;
+  source: "project-backups" | "sqlite-backup" | "empty";
+  restoredProjects: string[];
+  failedBackups: Array<{ filePath: string; message: string }>;
+};
 export type DesktopApi = {
   listProjects: () => Promise<Project[]>;
   chooseProjectStorage: (currentPath?: string) => Promise<string | null>;
@@ -141,6 +150,7 @@ export type DesktopApi = {
     exports: string;
     logs: string;
   }>;
+  databaseRecoveryStatus: () => Promise<DatabaseRecoveryState | null>;
   updater: {
     getState: () => Promise<UpdateState>;
     check: () => Promise<UpdateState>;

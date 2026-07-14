@@ -9,6 +9,10 @@ import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { MangaiDatabase } from "./database.js";
+import {
+  openDatabaseWithRecovery,
+  type DatabaseRecoveryReport,
+} from "./database-recovery.js";
 import { AIService } from "./ai/service.js";
 import { DesktopUpdater } from "./updater.js";
 import {
@@ -48,6 +52,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 let store: MangaiDatabase;
 let aiService: AIService;
 let updater: DesktopUpdater;
+let databaseRecovery: DatabaseRecoveryReport | null = null;
 type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
   checkedAt?: string;
@@ -133,6 +138,7 @@ async function runAutoBackup() {
 }
 function register() {
   handle("app:paths", () => desktopPaths());
+  handle("database:recovery:status", () => databaseRecovery);
   handle("update:state", () => updater.getState());
   handle("update:check", () => updater.check());
   handle("update:download", () => updater.download());
@@ -502,7 +508,17 @@ async function createWindow() {
   else await win.loadFile(path.join(here, "../../dist-renderer/index.html"));
 }
 app.whenReady().then(async () => {
-  store = new MangaiDatabase(desktopPaths());
+  const opened = await openDatabaseWithRecovery(desktopPaths());
+  store = opened.database;
+  databaseRecovery = opened.recovery;
+  if (databaseRecovery) {
+    const logPath = path.join(desktopPaths().logs, "desktop.log");
+    fs.mkdirSync(path.dirname(logPath), { recursive: true });
+    fs.appendFileSync(
+      logPath,
+      `${JSON.stringify({ scope: "database-recovery", ...databaseRecovery })}\n`,
+    );
+  }
   aiService = new AIService(store, {
     allowMock: !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
   });

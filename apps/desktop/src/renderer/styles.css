@@ -195,6 +195,21 @@ label {
   background: #fff5f5;
   color: #8c2929;
 }
+.database-recovery {
+  max-width: 1000px;
+  margin: 14px auto 0;
+  padding: 14px;
+  border: 1px solid #e0b35a;
+  border-radius: 8px;
+  background: #fff8e6;
+  color: #704600;
+}
+.database-recovery p {
+  margin: 6px 0;
+}
+.database-recovery small {
+  overflow-wrap: anywhere;
+}
 .floating {
   position: fixed;
   z-index: 20;

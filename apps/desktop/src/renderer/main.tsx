@@ -9,6 +9,7 @@ import { UpdateControl } from "./features/updater/UpdateControl";
 import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
 import type {
   AutoBackupState,
+  DatabaseRecoveryState,
   ExportProgress,
   OperationHistory,
 } from "../preload/api";
@@ -73,6 +74,8 @@ function App() {
       readPanelPreference("mangai.right-panel-open", window.innerWidth >= 1300),
     ),
     [autoBackup, setAutoBackup] = React.useState<AutoBackupState | null>(null),
+    [databaseRecovery, setDatabaseRecovery] =
+      React.useState<DatabaseRecoveryState | null>(null),
     [assetUrls, setAssetUrls] = React.useState<Record<string, string>>({});
   const showError = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
@@ -95,6 +98,10 @@ function App() {
     });
   React.useEffect(() => {
     void refresh();
+    void window.mangai
+      .databaseRecoveryStatus()
+      .then(setDatabaseRecovery)
+      .catch(showError);
   }, []);
   React.useEffect(() => {
     const refreshAutoBackup = () =>
@@ -245,6 +252,24 @@ function App() {
           </div>
           <UpdateControl />
         </header>
+        {databaseRecovery && (
+          <section className="database-recovery" role="alert">
+            <div>
+              <b>データベースを復旧しました</b>
+              <p>
+                {databaseRecovery.restoredProjects.length
+                  ? `${databaseRecovery.restoredProjects.length}件のProjectをバックアップから復元しました。`
+                  : "復元できるProjectバックアップがなかったため、新しいデータベースで起動しました。"}
+                {databaseRecovery.failedBackups.length
+                  ? ` ${databaseRecovery.failedBackups.length}件のバックアップを復元できませんでした。`
+                  : ""}
+              </p>
+              <small>
+                破損した原本の保管場所: {databaseRecovery.archiveDirectory}
+              </small>
+            </div>
+          </section>
+        )}
         {autoBackup && (
           <div
             className={`home-backup-status ${autoBackup.status}`}

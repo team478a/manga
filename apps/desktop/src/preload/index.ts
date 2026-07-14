@@ -75,6 +75,7 @@ contextBridge.exposeInMainWorld("mangai", {
   assetUrl: (relativePath: string) =>
     ipcRenderer.invoke("assets:url", { relativePath }),
   getPaths: () => ipcRenderer.invoke("app:paths"),
+  databaseRecoveryStatus: () => ipcRenderer.invoke("database:recovery:status"),
   updater: {
     getState: () => ipcRenderer.invoke("update:state"),
     check: () => ipcRenderer.invoke("update:check"),
