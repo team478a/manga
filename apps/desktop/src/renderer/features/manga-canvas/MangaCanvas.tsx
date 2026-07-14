@@ -6,6 +6,7 @@ import {
   Layer,
   Line,
   Rect,
+  Shape,
   Stage,
   Text,
   Transformer,
@@ -28,13 +29,14 @@ import {
   layoutVerticalText,
   normalizeRotation,
   pageTemplates,
-  panelShapePoints,
+  panelShapeCommands,
   rectFromPoints,
   reorderLayer,
   segmentGraphemes,
   snapPointToGrid,
   snapRectToGrid,
   snapRectToGuides,
+  type PanelShapeCommand,
   type Point,
   type Rect as CanvasRect,
   type PageTemplateId,
@@ -183,6 +185,24 @@ function textInput({
   return item;
 }
 
+function tracePanelShape(context: any, commands: PanelShapeCommand[]) {
+  context.beginPath();
+  for (const command of commands) {
+    if (command.type === "move") context.moveTo(command.x, command.y);
+    else if (command.type === "line") context.lineTo(command.x, command.y);
+    else if (command.type === "curve")
+      context.bezierCurveTo(
+        command.control1X,
+        command.control1Y,
+        command.control2X,
+        command.control2Y,
+        command.x,
+        command.y,
+      );
+    else context.closePath();
+  }
+}
+
 function PanelNode({
   panel,
   imageUrl,
@@ -229,7 +249,7 @@ function PanelNode({
         },
       )
     : null;
-  const shapePoints = panelShapePoints(panel);
+  const shapeCommands = panelShapeCommands(panel);
   return (
     <Group
       id={`panel-${panel.id}`}
@@ -279,20 +299,18 @@ function PanelNode({
         });
       }}
     >
-      <Line
-        points={shapePoints}
-        closed
+      <Shape
         fill={panel.fillColor}
         listening={false}
+        sceneFunc={(context, shape) => {
+          tracePanelShape(context, shapeCommands);
+          context.fillStrokeShape(shape);
+        }}
       />
       {image && placement && (
         <Group
           clipFunc={(context) => {
-            context.beginPath();
-            context.moveTo(shapePoints[0], shapePoints[1]);
-            for (let index = 2; index < shapePoints.length; index += 2)
-              context.lineTo(shapePoints[index], shapePoints[index + 1]);
-            context.closePath();
+            tracePanelShape(context, shapeCommands);
           }}
         >
           <KonvaImage
@@ -349,13 +367,15 @@ function PanelNode({
           />
         </Group>
       )}
-      <Line
-        points={shapePoints}
-        closed
+      <Shape
         stroke={selected ? "#2f9e68" : panel.borderColor}
         strokeWidth={
           selected ? Math.max(panel.borderWidth, 7) : panel.borderWidth
         }
+        sceneFunc={(context, shape) => {
+          tracePanelShape(context, shapeCommands);
+          context.fillStrokeShape(shape);
+        }}
       />
       {imageEditing && image && (
         <Transformer
@@ -902,11 +922,13 @@ function CanvasProperties({
               <option value="rectangle">矩形</option>
               <option value="slant_up">斜め（右上がり ／）</option>
               <option value="slant_down">斜め（右下がり ＼）</option>
+              <option value="curve_left">曲線（左辺）</option>
+              <option value="curve_right">曲線（右辺）</option>
             </select>
           </label>
           {item.shape !== "rectangle" && (
             <label>
-              傾斜率（%）
+              変形率（%）
               <input
                 type="number"
                 min="0"

@@ -45,7 +45,7 @@
 ## 検証数値
 
 - Desktop統合テスト: 25/25
-- canvas-core単体テスト: 22/22
+- canvas-core単体テスト: 23/23
 - Hub TypeScript / ESLint / Next.js build: 成功
 - Desktop TypeScript / ESLint / production build: 成功
 - Windows x64 NSIS: 成功

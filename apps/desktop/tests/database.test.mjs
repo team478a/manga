@@ -1153,7 +1153,7 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     imageOffsetY: 0,
     imageScale: 1,
     imageRotation: 0,
-    shape: "slant_down",
+    shape: "curve_right",
     slant: 0.2,
     imageOpacity: 1,
     createdAt: "",

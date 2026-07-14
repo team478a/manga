@@ -1,6 +1,7 @@
 export type CanvasObjectType = "panel" | "balloon" | "text";
 export type ImageFit = "cover" | "contain" | "manual";
-export type PanelShape = "rectangle" | "slant_up" | "slant_down";
+export type PanelShape =
+  "rectangle" | "slant_up" | "slant_down" | "curve_left" | "curve_right";
 export type BalloonType = "speech_ellipse" | "speech_rounded" | "narration_box";
 export type TailDirection =
   | "none"

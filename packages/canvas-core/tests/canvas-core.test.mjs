@@ -16,7 +16,9 @@ import {
   pageTemplates,
   pageToViewport,
   panelInputSchema,
+  panelShapeCommands,
   panelShapePoints,
+  panelShapeSvgPath,
   rectFromPoints,
   reorderLayer,
   remapChildRect,
@@ -91,6 +93,36 @@ test("panel shape points create safe parallelograms", () => {
       }),
     ),
     100,
+  );
+});
+test("panel shape paths create curved left and right edges", () => {
+  const leftCurve = panelShapeCommands({
+    width: 100,
+    height: 80,
+    shape: "curve_left",
+    slant: 0.2,
+  }).find((command) => command.type === "curve");
+  assert.ok(leftCurve);
+  assert.equal(leftCurve.control1X, 20);
+  assert.equal(leftCurve.control2X, 20);
+  assert.equal(leftCurve.x, 0);
+  assert.equal(
+    panelShapeSvgPath({
+      width: 100,
+      height: 80,
+      shape: "curve_right",
+      slant: 0.2,
+    }),
+    "M 0 0 L 100 0 C 80 22.4 80 57.6 100 80 L 0 80 Z",
+  );
+  assert.match(
+    panelShapeSvgPath({
+      width: 100,
+      height: 80,
+      shape: "curve_left",
+      slant: 5,
+    }),
+    /C 45 57\.6 45 22\.4 0 0/,
   );
 });
 test("child rectangles follow parent movement and resizing", () => {
