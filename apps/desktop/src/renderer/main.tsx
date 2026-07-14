@@ -2,6 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import type { Project, ProjectBundle, Page, Asset } from "@mangai/project-core";
+import { episodeTemplates, type EpisodeTemplateId } from "@mangai/canvas-core";
 import { AISettings } from "./features/ai-settings/AISettings";
 import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
@@ -48,6 +49,8 @@ function App() {
     ),
     [bundle, setBundle] = React.useState<ProjectBundle | null>(null),
     [selectedEpisode, setSelectedEpisode] = React.useState<string | null>(null),
+    [episodeTemplateId, setEpisodeTemplateId] =
+      React.useState<EpisodeTemplateId>("short_8"),
     [activeTool, setActiveTool] = React.useState<
       "chat" | "settings" | "jobs" | null
     >(null),
@@ -748,6 +751,47 @@ function App() {
                 </button>
               </div>
             ))}
+            {episode && (
+              <div className="episode-template">
+                <select
+                  aria-label="話テンプレート"
+                  value={episodeTemplateId}
+                  onChange={(event) =>
+                    setEpisodeTemplateId(
+                      event.target.value as EpisodeTemplateId,
+                    )
+                  }
+                >
+                  {episodeTemplates.map((template) => (
+                    <option key={template.id} value={template.id}>
+                      {template.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  title="選択中のEpisode末尾へページとコマを一括追加"
+                  onClick={() => {
+                    const template = episodeTemplates.find(
+                      (item) => item.id === episodeTemplateId,
+                    );
+                    if (
+                      template &&
+                      confirm(
+                        `「${episode.title}」の末尾へ${template.name}を追加しますか？\n${template.description}\nこの操作は1回のUndoで戻せます。`,
+                      )
+                    )
+                      void apply(
+                        window.mangai.applyEpisodeTemplate(
+                          episode.id,
+                          episodeTemplateId,
+                        ),
+                      );
+                  }}
+                >
+                  話構成を追加
+                </button>
+              </div>
+            )}
           </section>
           <section className="grow">
             <h3>

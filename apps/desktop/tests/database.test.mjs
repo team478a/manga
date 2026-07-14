@@ -351,6 +351,57 @@ test("page reordering is persisted", () => {
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test("episode template creates pages and panels as one undoable operation", () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mangai-episode-template-"),
+  );
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "話テンプレート",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1600,
+    height: 2400,
+    dpi: 300,
+  });
+  const projectId = bundle.project.id;
+  const episodeId = bundle.episodes[0].id;
+  bundle = db.captureHistory(projectId, "話テンプレートを一括追加", () =>
+    db.addEpisodeTemplate(episodeId, "short_8"),
+  );
+  assert.equal(bundle.pages.length, 8);
+  assert.equal(bundle.panels.length, 28);
+  assert.deepEqual(
+    [...bundle.pages]
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .map((page) => page.pageNumber),
+    [1, 2, 3, 4, 5, 6, 7, 8],
+  );
+  assert.equal(
+    db.listOperationHistory(projectId).items[0].label,
+    "話テンプレートを一括追加",
+  );
+  bundle = db.undo(projectId);
+  assert.equal(bundle.pages.length, 0);
+  assert.equal(bundle.panels.length, 0);
+  bundle = db.redo(projectId);
+  assert.equal(bundle.pages.length, 8);
+  assert.equal(bundle.panels.length, 28);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 test("operation history supports persistent undo, redo and branch clearing", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-history-"));
   const paths = {

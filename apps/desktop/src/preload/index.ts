@@ -33,6 +33,8 @@ contextBridge.exposeInMainWorld("mangai", {
   reorderEpisodes: (projectId: string, episodeIds: string[]) =>
     ipcRenderer.invoke("episodes:reorder", { projectId, episodeIds }),
   deleteEpisode: (id: string) => ipcRenderer.invoke("episodes:delete", { id }),
+  applyEpisodeTemplate: (episodeId: string, templateId: string) =>
+    ipcRenderer.invoke("episodes:apply-template", { episodeId, templateId }),
   setProjectCover: (projectId: string, assetId: string) =>
     ipcRenderer.invoke("projects:set-cover", { projectId, assetId }),
   addPage: (episodeId: string, imageAssetId?: string) =>

@@ -7,6 +7,13 @@ export type PageTemplateId =
   | "four_equal"
   | "six_equal";
 export type PageTemplate = { id: PageTemplateId; name: string; panels: Rect[] };
+export type EpisodeTemplateId = "short_8" | "standard_16" | "four_panel_8";
+export type EpisodeTemplate = {
+  id: EpisodeTemplateId;
+  name: string;
+  description: string;
+  pages: readonly PageTemplateId[];
+};
 export const pageTemplates: readonly PageTemplate[] = [
   {
     id: "single",
@@ -41,6 +48,58 @@ export const pageTemplates: readonly PageTemplate[] = [
   { id: "four_equal", name: "4コマ均等", panels: grid(2, 2) },
   { id: "six_equal", name: "6コマ均等", panels: grid(2, 3) },
 ] as const;
+export const episodeTemplates: readonly EpisodeTemplate[] = [
+  {
+    id: "short_8",
+    name: "短編8ページ",
+    description: "導入と締めを大きく見せる短編向け構成",
+    pages: [
+      "single",
+      "top_one_bottom_two",
+      "four_equal",
+      "six_equal",
+      "six_equal",
+      "four_equal",
+      "top_one_bottom_two",
+      "single",
+    ],
+  },
+  {
+    id: "standard_16",
+    name: "標準16ページ",
+    description: "見開きの流れを意識した標準的な読み切り構成",
+    pages: [
+      "single",
+      "top_one_bottom_two",
+      "four_equal",
+      "six_equal",
+      "four_equal",
+      "horizontal_two",
+      "six_equal",
+      "top_one_bottom_two",
+      "four_equal",
+      "six_equal",
+      "vertical_two",
+      "four_equal",
+      "six_equal",
+      "top_one_bottom_two",
+      "horizontal_two",
+      "single",
+    ],
+  },
+  {
+    id: "four_panel_8",
+    name: "4コマ8ページ",
+    description: "全ページを均等4コマで作成",
+    pages: Array.from({ length: 8 }, () => "four_equal" as const),
+  },
+] as const;
+
+export function getEpisodeTemplate(id: EpisodeTemplateId) {
+  const template = episodeTemplates.find((value) => value.id === id);
+  if (!template) throw new Error("話テンプレートが見つかりません。");
+  return template;
+}
 export function applyPageTemplate(
   id: PageTemplateId,
   page: PageSize,

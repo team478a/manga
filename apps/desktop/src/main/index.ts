@@ -44,6 +44,7 @@ import {
   balloonInputSchema,
   canvasBatchInputSchema,
   canvasObjectIdSchema,
+  episodeTemplateInputSchema,
   panelInputSchema,
   textObjectInputSchema,
 } from "@mangai/canvas-core";
@@ -275,6 +276,13 @@ function register() {
     const projectId = store.projectIdForEpisode(id);
     return store.captureHistory(projectId, "エピソードを削除", () =>
       store.deleteEpisode(id),
+    );
+  });
+  handle("episodes:apply-template", (v) => {
+    const input = episodeTemplateInputSchema.parse(v);
+    const projectId = store.projectIdForEpisode(input.episodeId);
+    return store.captureHistory(projectId, "話テンプレートを一括追加", () =>
+      store.addEpisodeTemplate(input.episodeId, input.templateId),
     );
   });
   handle("projects:set-cover", (v) => {

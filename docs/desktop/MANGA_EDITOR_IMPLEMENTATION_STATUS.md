@@ -9,7 +9,7 @@
 | #   | 完了条件                              | 状態         | 確認方法                                            |
 | --- | ------------------------------------- | ------------ | --------------------------------------------------- |
 | 1   | 既存MANGAI Hubが正常にビルド          | 完了         | ルートTypeScript、ESLint、Next.js 16本番ビルド成功  |
-| 2   | 既存MANGAI Desktop機能が利用可能      | 完了         | Desktop統合テスト25件、修正版パッケージUI起動       |
+| 2   | 既存MANGAI Desktop機能が利用可能      | 完了         | Desktop統合テスト26件、修正版パッケージUI起動       |
 | 3   | 旧Projectを開ける                     | 完了         | 旧DB移行テストと旧形式相当Projectの手動表示・出力   |
 | 4   | Page編集Canvasを開ける                | 完了         | パッケージUIで新規Page Canvasを確認                 |
 | 5   | 矩形コマを作成                        | 完了         | 既定追加、テンプレート、ドラッグ作成                |
@@ -44,8 +44,8 @@
 
 ## 検証数値
 
-- Desktop統合テスト: 25/25
-- canvas-core単体テスト: 23/23
+- Desktop統合テスト: 26/26
+- canvas-core単体テスト: 24/24
 - Hub TypeScript / ESLint / Next.js build: 成功
 - Desktop TypeScript / ESLint / production build: 成功
 - Windows x64 NSIS: 成功

@@ -307,6 +307,17 @@ label {
 .episode-row > button:not(.row) {
   padding: 3px;
 }
+
+.episode-template {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.episode-template select,
+.episode-template button {
+  width: 100%;
+}
 .active {
   outline: 2px solid #4b9b70 !important;
   background: #edf7f1 !important;

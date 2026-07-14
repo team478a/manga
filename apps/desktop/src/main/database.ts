@@ -18,7 +18,14 @@ import {
   type GenerationStatus,
   type ProviderSettings,
 } from "@mangai/ai-core";
-import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
+import {
+  applyPageTemplate,
+  getEpisodeTemplate,
+  type Balloon,
+  type EpisodeTemplateId,
+  type Panel,
+  type TextObject,
+} from "@mangai/canvas-core";
 import { renderPagePng, type RenderAsset } from "./page-renderer.js";
 
 export type Paths = {
@@ -1764,6 +1771,68 @@ export class MangaiDatabase {
         now(),
         now(),
       );
+    return this.bundle(projectId);
+  }
+  addEpisodeTemplate(episodeId: string, templateId: EpisodeTemplateId) {
+    const projectId = this.projectIdForEpisode(episodeId);
+    const project = this.bundle(projectId).project;
+    const template = getEpisodeTemplate(templateId);
+    const startIndex = (
+      this.db
+        .prepare(
+          "select coalesce(max(order_index),-1)+1 n from pages where episode_id=?",
+        )
+        .get(episodeId) as { n: number }
+    ).n;
+    this.db.transaction(() => {
+      template.pages.forEach((pageTemplateId, pageOffset) => {
+        const pageId = uid();
+        const orderIndex = startIndex + pageOffset;
+        this.db
+          .prepare("insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+          .run(
+            pageId,
+            episodeId,
+            orderIndex + 1,
+            orderIndex,
+            project.width,
+            project.height,
+            "#ffffff",
+            null,
+            "",
+            "",
+            "",
+            now(),
+            now(),
+          );
+        applyPageTemplate(pageTemplateId, project).forEach((rect, index) =>
+          this.upsertPanelRow({
+            id: uid(),
+            pageId,
+            name: `コマ${index + 1}`,
+            ...rect,
+            rotation: 0,
+            zIndex: index,
+            visible: true,
+            locked: false,
+            borderColor: "#000000",
+            borderWidth: 4,
+            fillColor: "#ffffff",
+            shape: "rectangle",
+            slant: 0.12,
+            imageAssetId: null,
+            imageFit: "cover",
+            imageOffsetX: 0,
+            imageOffsetY: 0,
+            imageScale: 1,
+            imageRotation: 0,
+            imageOpacity: 1,
+            createdAt: "",
+            updatedAt: "",
+          }),
+        );
+      });
+    })();
     return this.bundle(projectId);
   }
   duplicatePage(id: string) {

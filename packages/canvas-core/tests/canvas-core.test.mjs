@@ -6,6 +6,8 @@ import {
   canvasBatchInputSchema,
   computeImagePlacement,
   constrainRectToPage,
+  episodeTemplateInputSchema,
+  episodeTemplates,
   imageTransformFromNode,
   layoutHorizontalText,
   layoutVerticalText,
@@ -251,6 +253,26 @@ test("six ratio-based templates create expected counts", () => {
       (panel) =>
         panel.width > 0 && panel.height > 0 && panel.x >= 0 && panel.y >= 0,
     ),
+  );
+});
+test("episode templates provide validated multi-page layouts", () => {
+  assert.deepEqual(
+    episodeTemplates.map((template) => template.pages.length),
+    [8, 16, 8],
+  );
+  assert.equal(
+    episodeTemplateInputSchema.safeParse({
+      episodeId: randomUUID(),
+      templateId: "short_8",
+    }).success,
+    true,
+  );
+  assert.equal(
+    episodeTemplateInputSchema.safeParse({
+      episodeId: randomUUID(),
+      templateId: "unsafe_template",
+    }).success,
+    false,
   );
 });
 test("vertical segmentation preserves surrogate pairs", () =>

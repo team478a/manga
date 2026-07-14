@@ -2,6 +2,7 @@ import type { ProjectBundle, Project } from "@mangai/project-core";
 import type { ProjectInput } from "@mangai/shared";
 import type { ProviderSettings } from "@mangai/ai-core";
 import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
+import type { EpisodeTemplateId } from "@mangai/canvas-core";
 export type ChatEvent = {
   requestId: string;
   sessionId: string;
@@ -91,6 +92,10 @@ export type DesktopApi = {
     episodeIds: string[],
   ) => Promise<ProjectBundle>;
   deleteEpisode: (id: string) => Promise<ProjectBundle>;
+  applyEpisodeTemplate: (
+    episodeId: string,
+    templateId: EpisodeTemplateId,
+  ) => Promise<ProjectBundle>;
   setProjectCover: (
     projectId: string,
     assetId: string,

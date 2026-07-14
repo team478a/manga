@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { MAX_PAGE_EDGE, MAX_PAGE_PIXELS } from "./geometry.js";
+import type { EpisodeTemplateId } from "./templates.js";
 const finite = z.number().finite(),
   positive = finite.positive(),
   opacity = finite.min(0).max(1),
@@ -17,6 +18,15 @@ const baseObject = {
   visible: z.boolean(),
   locked: z.boolean(),
 };
+const episodeTemplateIds = [
+  "short_8",
+  "standard_16",
+  "four_panel_8",
+] as const satisfies readonly EpisodeTemplateId[];
+export const episodeTemplateInputSchema = z.object({
+  episodeId: z.string().uuid(),
+  templateId: z.enum(episodeTemplateIds),
+});
 export const pageSizeSchema = z
   .object({
     width: z.number().int().positive().max(MAX_PAGE_EDGE),
