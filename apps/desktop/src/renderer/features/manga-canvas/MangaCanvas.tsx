@@ -29,6 +29,7 @@ import {
   pageTemplates,
   rectFromPoints,
   reorderLayer,
+  segmentGraphemes,
   snapPointToGrid,
   snapRectToGrid,
   snapRectToGuides,
@@ -640,24 +641,137 @@ function TextNode({
 function DebouncedTextArea({
   initialValue,
   onCommit,
+  rubyTools = false,
 }: {
   initialValue: string;
   onCommit: (value: string) => void;
+  rubyTools?: boolean;
 }) {
   const [value, setValue] = React.useState(initialValue);
+  const [selection, setSelection] = React.useState({ start: 0, end: 0 });
+  const [reading, setReading] = React.useState("");
+  const [rubyError, setRubyError] = React.useState("");
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
   const commitRef = React.useRef(onCommit);
   commitRef.current = onCommit;
-  React.useEffect(() => setValue(initialValue), [initialValue]);
+  React.useEffect(() => {
+    setValue(initialValue);
+    setRubyError("");
+  }, [initialValue]);
   React.useEffect(() => {
     if (value === initialValue) return;
     const timer = window.setTimeout(() => commitRef.current(value), 600);
     return () => window.clearTimeout(timer);
   }, [value, initialValue]);
+  const rememberSelection = (target: HTMLTextAreaElement) =>
+    setSelection({ start: target.selectionStart, end: target.selectionEnd });
+  const replaceSelection = (
+    replacement: string,
+    nextSelectionStart: number,
+    nextSelectionEnd = nextSelectionStart,
+  ) => {
+    const next =
+      value.slice(0, selection.start) +
+      replacement +
+      value.slice(selection.end);
+    setValue(next);
+    setRubyError("");
+    setSelection({
+      start: nextSelectionStart,
+      end: nextSelectionEnd,
+    });
+    window.requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(
+        nextSelectionStart,
+        nextSelectionEnd,
+      );
+    });
+  };
+  const applyRuby = () => {
+    const base = value.slice(selection.start, selection.end);
+    const ruby = reading.trim();
+    if (!base) return setRubyError("本文から親文字を選択してください。");
+    if (!ruby) return setRubyError("ルビの読みを入力してください。");
+    if (/[｜《》\r\n]/u.test(base) || /[｜《》\r\n]/u.test(ruby))
+      return setRubyError("選択文字と読みには改行やルビ記号を含められません。");
+    if (segmentGraphemes(base).length > 50)
+      return setRubyError("親文字は50文字以内で選択してください。");
+    if (segmentGraphemes(ruby).length > 100)
+      return setRubyError("読みは100文字以内で入力してください。");
+    const notation = `｜${base}《${ruby}》`;
+    replaceSelection(
+      notation,
+      selection.start + 1,
+      selection.start + 1 + base.length,
+    );
+    setReading("");
+  };
+  const removeRuby = () => {
+    const expression = /｜([^｜《》\r\n]{1,50})《([^｜《》\r\n]{1,100})》/gu;
+    const match = [...value.matchAll(expression)].find((candidate) => {
+      const start = candidate.index ?? 0;
+      const end = start + candidate[0].length;
+      return selection.start >= start && selection.end <= end;
+    });
+    if (!match)
+      return setRubyError("解除するルビ記法の中へカーソルを置いてください。");
+    const start = match.index ?? 0;
+    setSelection({ start, end: start + match[0].length });
+    const next =
+      value.slice(0, start) + match[1] + value.slice(start + match[0].length);
+    setValue(next);
+    setRubyError("");
+    setReading("");
+    window.requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(start, start + match[1].length);
+    });
+  };
+  const selectedText = value.slice(selection.start, selection.end);
   return (
-    <textarea
-      value={value}
-      onChange={(event) => setValue(event.target.value)}
-    />
+    <div className="ruby-editor">
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(event) => {
+          setValue(event.target.value);
+          rememberSelection(event.target);
+        }}
+        onSelect={(event) => rememberSelection(event.currentTarget)}
+      />
+      {rubyTools && (
+        <>
+          <p className="ruby-selection">
+            {selectedText
+              ? `親文字: ${selectedText}`
+              : "本文からルビを付ける親文字を選択"}
+          </p>
+          <div className="ruby-controls">
+            <input
+              value={reading}
+              aria-label="ルビの読み"
+              placeholder="読み（例: まんが）"
+              onChange={(event) => {
+                setReading(event.target.value);
+                setRubyError("");
+              }}
+            />
+            <button type="button" onClick={applyRuby}>
+              ルビを追加
+            </button>
+            <button type="button" className="secondary" onClick={removeRuby}>
+              解除
+            </button>
+          </div>
+          {rubyError && (
+            <p className="ruby-error" role="alert">
+              {rubyError}
+            </p>
+          )}
+        </>
+      )}
+    </div>
   );
 }
 
@@ -905,13 +1019,14 @@ function CanvasProperties({
               文字が枠からあふれる可能性があります。
             </p>
           )}
-          <label>
-            本文
+          <div className="canvas-field">
+            <span>本文</span>
             <DebouncedTextArea
               initialValue={item.text}
+              rubyTools={item.writingMode === "vertical"}
               onCommit={(text) => saveText({ ...item, text })}
             />
-          </label>
+          </div>
           <label>
             親の吹き出し
             <select
