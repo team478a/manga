@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin, requireProfile } from "@/lib/auth";
 import { createStripeCheckoutSession } from "@/lib/checkout";
+import { normalizeBuyerEmail } from "@/lib/checkout-policy";
 import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { splitTags } from "@/lib/format";
@@ -14,7 +15,13 @@ const WORKS_BUCKET = "works";
 const DIGITAL_PRODUCTS_BUCKET = "digital-products";
 const WORK_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const WORK_IMAGE_MAX_SIZE = 10 * 1024 * 1024;
-const DIGITAL_PRODUCT_FILE_TYPES = ["application/pdf", "image/png", "image/jpeg", "application/zip", "application/x-zip-compressed"];
+const DIGITAL_PRODUCT_FILE_TYPES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "application/zip",
+  "application/x-zip-compressed",
+];
 const DIGITAL_PRODUCT_FILE_MAX_SIZE = 50 * 1024 * 1024;
 
 function getText(formData: FormData, key: string) {
@@ -44,14 +51,19 @@ function validateWorkImage(file: FormDataEntryValue | null, required: boolean) {
   return file;
 }
 
-function validateDigitalProductFile(file: FormDataEntryValue | null, required: boolean) {
+function validateDigitalProductFile(
+  file: FormDataEntryValue | null,
+  required: boolean,
+) {
   if (!(file instanceof File) || file.size === 0) {
     if (required) throw new Error("ダウンロード用ファイルを選んでください。");
     return null;
   }
 
   if (!DIGITAL_PRODUCT_FILE_TYPES.includes(file.type)) {
-    throw new Error("販売ファイルはPDF、PNG、JPG、ZIPのいずれかを選んでください。");
+    throw new Error(
+      "販売ファイルはPDF、PNG、JPG、ZIPのいずれかを選んでください。",
+    );
   }
 
   if (file.size > DIGITAL_PRODUCT_FILE_MAX_SIZE) {
@@ -61,13 +73,16 @@ function validateDigitalProductFile(file: FormDataEntryValue | null, required: b
   return file;
 }
 
-async function uploadIfPresent(bucket: string, file: FormDataEntryValue | null) {
+async function uploadIfPresent(
+  bucket: string,
+  file: FormDataEntryValue | null,
+) {
   if (!(file instanceof File) || file.size === 0) return null;
   const supabase = await createClient();
   const path = fileName(file);
   const { error } = await supabase.storage.from(bucket).upload(path, file, {
     contentType: file.type,
-    upsert: false
+    upsert: false,
   });
 
   if (error) throw new Error(error.message);
@@ -88,12 +103,12 @@ export async function signUp(formData: FormData) {
   const schema = z.object({
     email: z.string().email(),
     password: z.string().min(6),
-    displayName: z.string().min(1)
+    displayName: z.string().min(1),
   });
   const input = schema.safeParse({
     email: getText(formData, "email"),
     password: getText(formData, "password"),
-    displayName: getText(formData, "displayName")
+    displayName: getText(formData, "displayName"),
   });
 
   if (!input.success) redirect("/signup?error=入力内容を確認してください");
@@ -104,9 +119,9 @@ export async function signUp(formData: FormData) {
     password: input.data.password,
     options: {
       data: {
-        display_name: input.data.displayName
-      }
-    }
+        display_name: input.data.displayName,
+      },
+    },
   });
 
   if (error) redirect(`/signup?error=${encodeURIComponent(error.message)}`);
@@ -121,10 +136,13 @@ export async function signIn(formData: FormData) {
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
     email: getText(formData, "email"),
-    password: getText(formData, "password")
+    password: getText(formData, "password"),
   });
 
-  if (error) redirect(`/login?error=${encodeURIComponent("メールアドレスまたはパスワードを確認してください")}`);
+  if (error)
+    redirect(
+      `/login?error=${encodeURIComponent("メールアドレスまたはパスワードを確認してください")}`,
+    );
   redirect("/dashboard");
 }
 
@@ -145,7 +163,7 @@ export async function updateProfile(formData: FormData) {
     .from("profiles")
     .update({
       display_name: getText(formData, "displayName"),
-      bio: getText(formData, "bio")
+      bio: getText(formData, "bio"),
     })
     .eq("id", profile.id);
 
@@ -164,11 +182,16 @@ export async function createWork(formData: FormData) {
     const imageFile = validateWorkImage(formData.get("image"), true);
     imageUrl = await uploadIfPresent(WORKS_BUCKET, imageFile);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "画像のアップロードに失敗しました。";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "画像のアップロードに失敗しました。";
     redirect(`/dashboard/works/new?error=${encodeURIComponent(message)}`);
   }
 
-  const isPublic = getText(formData, "visibility") === "public" || getText(formData, "isPublic") === "on";
+  const isPublic =
+    getText(formData, "visibility") === "public" ||
+    getText(formData, "isPublic") === "on";
   const supabase = await createClient();
   const { error } = await supabase.from("works").insert({
     creator_id: profile.id,
@@ -177,10 +200,11 @@ export async function createWork(formData: FormData) {
     image_url: imageUrl,
     tags: splitTags(formData.get("tags")),
     status: isPublic ? "published" : "draft",
-    is_public: isPublic
+    is_public: isPublic,
   });
 
-  if (error) redirect(`/dashboard/works/new?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect(`/dashboard/works/new?error=${encodeURIComponent(error.message)}`);
   revalidatePath("/dashboard/works");
   revalidatePath("/works");
   redirect("/dashboard/works?message=作品を保存しました");
@@ -190,14 +214,21 @@ export async function updateWork(formData: FormData) {
   const { profile } = await requireProfile();
   const id = getText(formData, "id");
   const title = getText(formData, "title");
-  if (!id || !title) redirect("/dashboard/works?error=作品を保存できませんでした");
+  if (!id || !title)
+    redirect("/dashboard/works?error=作品を保存できませんでした");
 
   const update: Record<string, unknown> = {
     title,
     description: getText(formData, "description"),
     tags: splitTags(formData.get("tags")),
-    is_public: getText(formData, "visibility") === "public" || getText(formData, "isPublic") === "on",
-    status: getText(formData, "visibility") === "public" || getText(formData, "isPublic") === "on" ? "published" : "draft"
+    is_public:
+      getText(formData, "visibility") === "public" ||
+      getText(formData, "isPublic") === "on",
+    status:
+      getText(formData, "visibility") === "public" ||
+      getText(formData, "isPublic") === "on"
+        ? "published"
+        : "draft",
   };
 
   try {
@@ -205,14 +236,26 @@ export async function updateWork(formData: FormData) {
     const imageUrl = await uploadIfPresent(WORKS_BUCKET, imageFile);
     if (imageUrl) update.image_url = imageUrl;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "画像のアップロードに失敗しました。";
-    redirect(`/dashboard/works/${id}/edit?error=${encodeURIComponent(message)}`);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "画像のアップロードに失敗しました。";
+    redirect(
+      `/dashboard/works/${id}/edit?error=${encodeURIComponent(message)}`,
+    );
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.from("works").update(update).eq("id", id).eq("creator_id", profile.id);
+  const { error } = await supabase
+    .from("works")
+    .update(update)
+    .eq("id", id)
+    .eq("creator_id", profile.id);
 
-  if (error) redirect(`/dashboard/works/${id}/edit?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect(
+      `/dashboard/works/${id}/edit?error=${encodeURIComponent(error.message)}`,
+    );
   revalidatePath("/dashboard/works");
   revalidatePath(`/works/${id}`);
   redirect("/dashboard/works?message=作品を更新しました");
@@ -226,13 +269,22 @@ export async function createDigitalProduct(formData: FormData) {
   const status = getText(formData, "status") === "paused" ? "paused" : "active";
 
   if (!title || !workId || Number.isNaN(price) || price < 0) {
-    redirect("/dashboard/products/new?error=商品名、作品、価格を確認してください");
+    redirect(
+      "/dashboard/products/new?error=商品名、作品、価格を確認してください",
+    );
   }
 
   const supabase = await createClient();
-  const { data: work } = await supabase.from("works").select("id").eq("id", workId).eq("creator_id", profile.id).maybeSingle();
+  const { data: work } = await supabase
+    .from("works")
+    .select("id")
+    .eq("id", workId)
+    .eq("creator_id", profile.id)
+    .maybeSingle();
   if (!work) {
-    redirect("/dashboard/products/new?error=自分の作品だけを商品に紐づけできます");
+    redirect(
+      "/dashboard/products/new?error=自分の作品だけを商品に紐づけできます",
+    );
   }
 
   let filePath: string | null = null;
@@ -240,7 +292,10 @@ export async function createDigitalProduct(formData: FormData) {
     const productFile = validateDigitalProductFile(formData.get("file"), true);
     filePath = await uploadIfPresent(DIGITAL_PRODUCTS_BUCKET, productFile);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "販売ファイルのアップロードに失敗しました";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "販売ファイルのアップロードに失敗しました";
     redirect(`/dashboard/products/new?error=${encodeURIComponent(message)}`);
   }
 
@@ -251,10 +306,13 @@ export async function createDigitalProduct(formData: FormData) {
     description: getText(formData, "description"),
     file_url: filePath,
     price,
-    status
+    status,
   });
 
-  if (error) redirect(`/dashboard/products/new?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect(
+      `/dashboard/products/new?error=${encodeURIComponent(error.message)}`,
+    );
   revalidatePath("/dashboard/products");
   redirect("/dashboard/products?message=販売商品を登録しました");
 }
@@ -273,16 +331,30 @@ export async function updateDigitalProduct(formData: FormData) {
 
   const supabase = await createClient();
   const [{ data: product }, { data: work }] = await Promise.all([
-    supabase.from("digital_products").select("id").eq("id", id).eq("creator_id", profile.id).maybeSingle(),
-    supabase.from("works").select("id").eq("id", workId).eq("creator_id", profile.id).maybeSingle()
+    supabase
+      .from("digital_products")
+      .select("id")
+      .eq("id", id)
+      .eq("creator_id", profile.id)
+      .maybeSingle(),
+    supabase
+      .from("works")
+      .select("id")
+      .eq("id", workId)
+      .eq("creator_id", profile.id)
+      .maybeSingle(),
   ]);
 
   if (!product) {
-    redirect("/dashboard/products?error=商品が見つからないか、編集権限がありません");
+    redirect(
+      "/dashboard/products?error=商品が見つからないか、編集権限がありません",
+    );
   }
 
   if (!work) {
-    redirect(`/dashboard/products/${id}/edit?error=自分の作品だけを商品に紐づけできます`);
+    redirect(
+      `/dashboard/products/${id}/edit?error=自分の作品だけを商品に紐づけできます`,
+    );
   }
 
   const update: Record<string, unknown> = {
@@ -290,21 +362,36 @@ export async function updateDigitalProduct(formData: FormData) {
     title,
     description: getText(formData, "description"),
     price,
-    status
+    status,
   };
 
   try {
     const productFile = validateDigitalProductFile(formData.get("file"), false);
-    const filePath = await uploadIfPresent(DIGITAL_PRODUCTS_BUCKET, productFile);
+    const filePath = await uploadIfPresent(
+      DIGITAL_PRODUCTS_BUCKET,
+      productFile,
+    );
     if (filePath) update.file_url = filePath;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "販売ファイルのアップロードに失敗しました";
-    redirect(`/dashboard/products/${id}/edit?error=${encodeURIComponent(message)}`);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "販売ファイルのアップロードに失敗しました";
+    redirect(
+      `/dashboard/products/${id}/edit?error=${encodeURIComponent(message)}`,
+    );
   }
 
-  const { error } = await supabase.from("digital_products").update(update).eq("id", id).eq("creator_id", profile.id);
+  const { error } = await supabase
+    .from("digital_products")
+    .update(update)
+    .eq("id", id)
+    .eq("creator_id", profile.id);
 
-  if (error) redirect(`/dashboard/products/${id}/edit?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect(
+      `/dashboard/products/${id}/edit?error=${encodeURIComponent(error.message)}`,
+    );
   revalidatePath("/dashboard/products");
   redirect("/dashboard/products?message=販売商品を更新しました");
 }
@@ -315,11 +402,18 @@ export async function createGoodsRequest(formData: FormData) {
   const productType = getText(formData, "productType");
 
   if (!workId || !productType) {
-    redirect("/dashboard/goods-requests/new?error=作品とグッズの種類を選んでください");
+    redirect(
+      "/dashboard/goods-requests/new?error=作品とグッズの種類を選んでください",
+    );
   }
 
   const supabase = await createClient();
-  const { data: work } = await supabase.from("works").select("id").eq("id", workId).eq("creator_id", profile.id).maybeSingle();
+  const { data: work } = await supabase
+    .from("works")
+    .select("id")
+    .eq("id", workId)
+    .eq("creator_id", profile.id)
+    .maybeSingle();
   if (!work) {
     redirect("/dashboard/goods-requests/new?error=自分の作品だけ申請できます");
   }
@@ -329,10 +423,13 @@ export async function createGoodsRequest(formData: FormData) {
     creator_id: profile.id,
     product_type: productType,
     note: getText(formData, "note"),
-    status: "pending"
+    status: "pending",
   });
 
-  if (error) redirect(`/dashboard/goods-requests/new?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect(
+      `/dashboard/goods-requests/new?error=${encodeURIComponent(error.message)}`,
+    );
   revalidatePath("/dashboard/goods-requests");
   redirect("/dashboard/goods-requests?message=グッズ販売申請を受け付けました");
 }
@@ -341,7 +438,13 @@ export async function updateGoodsRequestAdmin(formData: FormData) {
   await requireAdmin();
   const id = getText(formData, "id");
   const status = getText(formData, "status");
-  const allowedStatuses = ["pending", "approved", "rejected", "in_progress", "completed"];
+  const allowedStatuses = [
+    "pending",
+    "approved",
+    "rejected",
+    "in_progress",
+    "completed",
+  ];
 
   if (!id || !allowedStatuses.includes(status)) {
     redirect("/admin/goods-requests?error=状態を確認してください");
@@ -352,25 +455,35 @@ export async function updateGoodsRequestAdmin(formData: FormData) {
     .from("goods_requests")
     .update({
       status,
-      admin_note: getText(formData, "adminNote")
+      admin_note: getText(formData, "adminNote"),
     })
     .eq("id", id);
 
-  if (error) redirect(`/admin/goods-requests?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect(
+      `/admin/goods-requests?error=${encodeURIComponent(error.message)}`,
+    );
   revalidatePath("/admin/goods-requests");
   redirect("/admin/goods-requests?message=グッズ申請を更新しました");
 }
 
 export async function createPendingOrder(formData: FormData) {
   const productId = getText(formData, "productId");
-  const buyerEmail = getText(formData, "buyerEmail");
+  let buyerEmail = "";
+  try {
+    buyerEmail = normalizeBuyerEmail(getText(formData, "buyerEmail"));
+  } catch {
+    redirect(`/checkout/${productId}?error=メールアドレスを確認してください`);
+  }
 
-  if (!productId || !buyerEmail.includes("@")) {
+  if (!productId) {
     redirect(`/checkout/${productId}?error=メールアドレスを確認してください`);
   }
 
   if (!hasSupabaseAdminEnv()) {
-    redirect(`/checkout/${productId}?error=Supabaseの管理用環境変数が設定されていません`);
+    redirect(
+      `/checkout/${productId}?error=Supabaseの管理用環境変数が設定されていません`,
+    );
   }
 
   const supabase = await createClient();
@@ -404,7 +517,7 @@ export async function createPendingOrder(formData: FormData) {
       amount,
       platform_fee: platformFee,
       creator_revenue: creatorRevenue,
-      status: "pending"
+      status: "pending",
     })
     .select("id")
     .single<{ id: string }>();
@@ -418,12 +531,17 @@ export async function createPendingOrder(formData: FormData) {
     const session = await createStripeCheckoutSession({
       orderId: order.id,
       productId: product.id,
-      buyerEmail
+      buyerEmail,
     });
     checkoutUrl = session.url ?? "";
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Stripe Checkoutへの遷移に失敗しました。";
-    redirect(`/checkout/${productId}?error=${encodeURIComponent(message)}&orderId=${order.id}`);
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Stripe Checkoutへの遷移に失敗しました。";
+    redirect(
+      `/checkout/${productId}?error=${encodeURIComponent(message)}&orderId=${order.id}`,
+    );
   }
   redirect(checkoutUrl);
 }

@@ -1,5 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStripeClient } from "@/lib/stripe";
+import {
+  assertCheckoutOrder,
+  createCheckoutCancelToken,
+  normalizeBuyerEmail,
+  resolveCheckoutOrigin,
+} from "@/lib/checkout-policy";
 
 type CheckoutOrder = {
   id: string;
@@ -26,7 +32,7 @@ export async function createStripeCheckoutSession({
   orderId,
   productId,
   buyerEmail,
-  origin
+  origin,
 }: {
   orderId: string;
   productId: string;
@@ -38,57 +44,62 @@ export async function createStripeCheckoutSession({
   }
 
   const supabase = createAdminClient();
-  const { data: order } = await supabase
+  const { data: checkoutOrder } = await supabase
     .from("orders")
-    .select("id,buyer_email,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public))")
+    .select(
+      "id,buyer_email,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public))",
+    )
     .eq("id", orderId)
     .eq("product_id", productId)
     .maybeSingle<CheckoutOrder>();
 
-  if (!order || order.status !== "pending") {
-    throw new Error("決済準備できる注文が見つかりません。");
-  }
-
-  if (order.buyer_email !== buyerEmail) {
-    throw new Error("購入者メールアドレスが注文情報と一致しません。");
-  }
-
-  if (!order.digital_products || order.digital_products.status !== "active" || !order.digital_products.works?.is_public) {
-    throw new Error("この商品は現在購入できません。");
-  }
-
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin || "http://localhost:3000";
+  const order = assertCheckoutOrder(checkoutOrder, {
+    orderId,
+    productId,
+    buyerEmail,
+  });
+  const normalizedEmail = normalizeBuyerEmail(buyerEmail);
+  const siteUrl = resolveCheckoutOrigin({
+    configured: process.env.NEXT_PUBLIC_SITE_URL,
+    requestOrigin: origin,
+    production: process.env.NODE_ENV === "production",
+  });
+  const cancelSecret =
+    process.env.CHECKOUT_CANCEL_SECRET ||
+    process.env.STRIPE_WEBHOOK_SECRET ||
+    "";
+  const cancelToken = createCheckoutCancelToken(order.id, cancelSecret);
   const stripe = createStripeClient();
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    customer_email: buyerEmail,
+    customer_email: normalizedEmail,
     line_items: [
       {
         price_data: {
           currency: "jpy",
           product_data: {
             name: order.digital_products.title,
-            description: order.digital_products.description ?? undefined
+            description: order.digital_products.description ?? undefined,
           },
-          unit_amount: order.amount
+          unit_amount: order.amount,
         },
-        quantity: 1
-      }
+        quantity: 1,
+      },
     ],
     success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl}/checkout/cancel?order_id=${order.id}`,
+    cancel_url: `${siteUrl}/checkout/cancel?order_id=${order.id}&cancel_token=${cancelToken}`,
     metadata: {
       order_id: order.id,
       product_id: order.product_id,
-      creator_id: order.creator_id
+      creator_id: order.creator_id,
     },
     payment_intent_data: {
       metadata: {
         order_id: order.id,
         product_id: order.product_id,
-        creator_id: order.creator_id
-      }
-    }
+        creator_id: order.creator_id,
+      },
+    },
   });
 
   if (!session.url) {

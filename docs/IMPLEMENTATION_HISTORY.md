@@ -418,3 +418,9 @@ GitHub公開ビルドはowner/repositoryを安全に埋め込み、`electron-upd
 Stripe Webhookイベントを副作用のない状態遷移計画へ分離し、Checkout同期成功、非同期成功・失敗、Payment Intent失敗、全額返金、未対応イベントをNode標準テストで検証できるようにしました。`checkout.session.async_payment_failed`を新たに処理し、Payment Intentを文字列・展開済みobjectのどちらでも解決します。
 
 失敗イベントは`pending`・`failed`注文だけを対象とし、遅延した失敗通知が`paid`・`refunded`を上書きしないようにしました。返金はWebhook順序が前後しても後続の決済成功で戻らない状態遷移です。使用されていなかった旧501 API `/api/stripe/checkout`を削除し、`/api/checkout/create-session`へ一本化しました。Hub専用CIを追加し、決済イベントテスト5/5、TypeScript、ESLint、Next.js本番ビルドをPull Requestごとに検証します。
+
+## 46. Checkout・キャンセル・ダウンロード認可
+
+Checkout作成前にpending状態、注文・商品ID、購入者メール、出品者、商品販売状態、作品公開状態、整数金額を共通ポリシーで照合するようにしました。購入者メールは小文字へ正規化し、本番の成功・キャンセルURLは`NEXT_PUBLIC_SITE_URL`で指定したHTTPS originだけを使用します。Host由来URLへの意図しないリダイレクトを防ぐため、本番でURL未設定の場合はCheckout作成を停止します。
+
+キャンセルURLには注文IDをサーバー秘密値でHMAC化したトークンを付け、欠落・改ざん・別注文への流用時はDBを更新しません。購入後ダウンロードはStripe Sessionの支払状態に加え、metadataの注文IDと商品IDをDB照会へ再適用します。メール・注文照合、HTTPS制約、HMAC改ざん、未払い・metadata不足を含むHubテスト10/10、TypeScript、ESLint、Next.js本番ビルドに成功しました。

@@ -106,7 +106,7 @@ MANGAI Creator Platformは、AIクリエイターが作品を公開し、デジ�
 3. Stripe Checkout Sessionを作成してStripeへ遷移します。
 4. Stripe Webhookの署名を検証し、決済結果を注文へ反映します。
 5. 成功画面でもStripe Sessionを再確認し、Webhook到着前後の取りこぼしを補完します。
-6. 決済済み注文に対して、非公開Storageから5分間有効な署名付きURLを発行します。
+6. Session内の注文ID・商品IDと支払済み注文が一致した場合だけ、非公開Storageから5分間有効な署名付きURLを発行します。
 
 ### 実装済みステータス処理
 
@@ -116,6 +116,9 @@ MANGAI Creator Platformは、AIクリエイターが作品を公開し、デジ�
 - 全額返金: `refunded`
 - 同一Webhookの再送を考慮した冪等更新
 - Stripe Payment Intent IDの注文への保存
+- キャンセルURLの注文IDをHMACで認証し、改ざん時は注文を更新しない
+- 購入者メールアドレスの小文字正規化と形式・長さ検証
+- 本番の成功・キャンセルURLは設定済みHTTPS originだけを使用
 
 ### 金額計算
 
@@ -319,7 +322,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 ## 14. 実装状況の確認
 
-2026-07-15時点で、TypeScript型チェック、ESLint、Next.js本番ビルド、Hub決済イベントテスト5/5は成功しています。Stripe決済とDesktop-Hub連携の実サービスE2Eには、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
+2026-07-15時点で、TypeScript型チェック、ESLint、Next.js本番ビルド、Hub決済ポリシー・イベントテスト10/10は成功しています。Stripe決済とDesktop-Hub連携の実サービスE2Eには、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
 
 ## 15. Desktop漫画編集Canvas
 
