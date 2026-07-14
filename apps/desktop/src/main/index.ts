@@ -15,6 +15,7 @@ import {
 } from "./database-recovery.js";
 import { AIService } from "./ai/service.js";
 import { DesktopUpdater } from "./updater.js";
+import { fetchHubStatus } from "./hub-status.js";
 import {
   assetIdSchema,
   episodeInputSchema,
@@ -28,6 +29,7 @@ import {
   reorderEpisodesSchema,
   reorderPagesSchema,
   setProjectCoverSchema,
+  hubStatusRequestSchema,
 } from "@mangai/shared";
 import {
   cancelRequestSchema,
@@ -139,6 +141,10 @@ async function runAutoBackup() {
 }
 function register() {
   handle("app:paths", () => desktopPaths());
+  handle("hub:status", (v) => {
+    const input = hubStatusRequestSchema.parse(v);
+    return fetchHubStatus(input.projectId, input.baseUrl);
+  });
   handle("database:recovery:status", () => databaseRecovery);
   handle("update:state", () => updater.getState());
   handle("update:check", () => updater.check());

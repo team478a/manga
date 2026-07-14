@@ -6,6 +6,7 @@ import { episodeTemplates, type EpisodeTemplateId } from "@mangai/canvas-core";
 import { AISettings } from "./features/ai-settings/AISettings";
 import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
+import { HubStatus } from "./features/hub-status/HubStatus";
 import { UpdateControl } from "./features/updater/UpdateControl";
 import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
 import type {
@@ -52,7 +53,7 @@ function App() {
     [episodeTemplateId, setEpisodeTemplateId] =
       React.useState<EpisodeTemplateId>("short_8"),
     [activeTool, setActiveTool] = React.useState<
-      "chat" | "settings" | "jobs" | null
+      "chat" | "settings" | "jobs" | "hub" | null
     >(null),
     [selectedPage, setSelectedPage] = React.useState<string | null>(null),
     [selectedAsset, setSelectedAsset] = React.useState<string | null>(null),
@@ -520,6 +521,14 @@ function App() {
         onClose={() => setActiveTool(null)}
       />
     );
+  if (activeTool === "hub")
+    return (
+      <HubStatus
+        projectId={bundle.project.id}
+        projectTitle={bundle.project.title}
+        onClose={() => setActiveTool(null)}
+      />
+    );
   return (
     <main
       className="app"
@@ -602,6 +611,7 @@ function App() {
         </button>
         <button onClick={() => setActiveTool("chat")}>Creator Chat</button>
         <button onClick={() => setActiveTool("jobs")}>AI生成</button>
+        <button onClick={() => setActiveTool("hub")}>Hub連携</button>
         <button
           onClick={async () => {
             if (exportTask) {

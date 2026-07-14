@@ -306,10 +306,13 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - サーバー側でのmanifest・サイズ・SHA-256・実ファイル形式の再検証
 - Supabase Storageへの表紙、最大3サンプル、商品ファイル保存
 - 途中失敗時の作品・Storageロールバック
+- 販売パッケージの元Desktop Project IDを作品へ保存
+- 公開済み作品と販売中商品数だけを返すDesktop向け匿名API
+- Desktop「Hub連携」画面での読み取り専用ステータス確認
 
 ## 14. 実装状況の確認
 
-2026-07-12時点で、TypeScript型チェック、ESLint、Next.js本番ビルドは成功しています。Stripe決済のエンドツーエンド確認には、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
+2026-07-14時点で、TypeScript型チェック、ESLint、Next.js本番ビルドは成功しています。Stripe決済とDesktop-Hub連携の実サービスE2Eには、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
 
 ## 15. Desktop漫画編集Canvas
 

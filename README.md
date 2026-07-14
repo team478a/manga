@@ -25,6 +25,7 @@
 - ローカル版の販売用パッケージ作成
 - Desktop販売パッケージv1のブラウザ内検証・プレビュー
 - Desktop販売パッケージから非公開作品・停止中商品を作成
+- DesktopからHubの公開作品・販売中商品数を読み取り専用で確認
 - Supabase PostgreSQL スキーマとRLS
 - Stripe Checkout、Webhook、購入後期限付きダウンロード
 

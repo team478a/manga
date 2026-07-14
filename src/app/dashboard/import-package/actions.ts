@@ -237,6 +237,7 @@ export async function importSalesPackageDraft(
           description: input.description,
           image_url: coverUrl,
           sample_image_urls: sampleUrls,
+          source_project_id: manifest.work.sourceProjectId,
           tags: [manifest.work.genre, manifest.work.ageRating].filter(Boolean),
           status: "draft",
           is_public: false,

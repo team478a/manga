@@ -14,6 +14,7 @@ export type Work = {
   description: string | null;
   image_url: string | null;
   sample_image_urls: string[];
+  source_project_id: string | null;
   tags: string[];
   status: "draft" | "published" | "archived";
   is_public: boolean;

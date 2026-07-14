@@ -18,6 +18,7 @@ create table if not exists public.works (
   description text,
   image_url text,
   sample_image_urls text[] not null default '{}',
+  source_project_id uuid,
   tags text[] not null default '{}',
   status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
   is_public boolean not null default false,
@@ -27,6 +28,13 @@ create table if not exists public.works (
 
 alter table public.works
 add column if not exists sample_image_urls text[] not null default '{}';
+
+alter table public.works
+add column if not exists source_project_id uuid;
+
+create index if not exists works_source_project_id_idx
+on public.works (source_project_id)
+where source_project_id is not null;
 
 create table if not exists public.digital_products (
   id uuid primary key default gen_random_uuid(),

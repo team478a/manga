@@ -93,6 +93,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - SQLite永続化
 - Desktopの「書き出し」からPDF、画像ZIP、作品情報JSON、販売文、SNS告知文、MANGAI販売パッケージZIPを生成
 - 販売パッケージv1仕様: [`SALES_PACKAGE_SPEC.md`](SALES_PACKAGE_SPEC.md)
+- 「Hub連携」からProjectに対応する公開作品、最終更新、販売中商品数を読み取り専用で確認
 - `export_history` への書き出し履歴保存
 - 任意素材の代表画像設定
 - Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定

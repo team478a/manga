@@ -60,7 +60,21 @@ export type DatabaseRecoveryState = {
   restoredProjects: string[];
   failedBackups: Array<{ filePath: string; message: string }>;
 };
+export type HubStatus =
+  | {
+      linked: true;
+      projectId: string;
+      work: {
+        id: string;
+        title: string;
+        updatedAt: string;
+        path: string;
+      };
+      sales: { activeProductCount: number; available: boolean };
+    }
+  | { linked: false; message: string };
 export type DesktopApi = {
+  hubStatus: (projectId: string, baseUrl: string) => Promise<HubStatus>;
   listProjects: () => Promise<Project[]>;
   chooseProjectStorage: (currentPath?: string) => Promise<string | null>;
   projectCover: (id: string) => Promise<string | null>;

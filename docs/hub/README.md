@@ -23,4 +23,8 @@ HubはSupabaseとStripeのサーバー環境変数を使用します。Desktop�
 - 商品PDFまたは画像ZIPは`digital-products` bucketへ保存
 - サーバー側で容量、SHA-256、PDF・ZIP・画像シグネチャを再検証
 
-既存Supabase環境では、[`../../supabase/schema.sql`](../../supabase/schema.sql)を再実行して`works.sample_image_urls`とStorage削除policyを追加してください。Server Actionは最大100MBに設定していますが、公開先のリクエスト上限がこれより小さい場合は、将来の署名付き直接アップロード方式へ切り替える必要があります。
+既存Supabase環境では、[`../../supabase/schema.sql`](../../supabase/schema.sql)を再実行して`works.sample_image_urls`、`works.source_project_id`、検索index、Storage削除policyを追加してください。Server Actionは最大100MBに設定していますが、公開先のリクエスト上限がこれより小さい場合は、将来の署名付き直接アップロード方式へ切り替える必要があります。
+
+## Desktop公開状況API
+
+`GET /api/desktop/projects/{sourceProjectId}/status`は、販売パッケージの元Project IDに対応する公開済み作品と販売中の商品数だけを返します。非公開下書きの存在は返しません。Desktopの「Hub連携」画面はこのAPIを読み取り専用で利用し、秘密鍵やHubログイン情報を保存しません。

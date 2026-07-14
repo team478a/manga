@@ -25,6 +25,10 @@ export const renameProjectSchema = z.object({
   title: z.string().trim().min(1).max(200),
 });
 export const projectIdSchema = z.object({ id: idSchema });
+export const hubStatusRequestSchema = z.object({
+  projectId: idSchema,
+  baseUrl: z.string().trim().url().max(2048),
+});
 export const episodeInputSchema = z.object({
   projectId: idSchema,
   title: z.string().trim().min(1).max(200),
@@ -62,3 +66,4 @@ export const pagePromptSchema = z.object({
 });
 
 export type ProjectInput = z.infer<typeof projectInputSchema>;
+export type HubStatusRequest = z.infer<typeof hubStatusRequestSchema>;

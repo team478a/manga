@@ -378,3 +378,7 @@ Desktop書き出しへ`MANGAI販売パッケージ.zip`を追加しました。�
 ## 37. Hub下書きインポート確定処理
 
 検証済み販売パッケージから、非公開の`works`下書きと停止中の`digital_products`を作成するServer Actionを追加しました。商品は本編PDFまたは連番画像ZIPを選択でき、価格・作品名・説明・商品名を確定前に編集できます。サーバー側でも認証、manifest、role、容量、SHA-256、PDF・ZIP・画像シグネチャを再検証し、表紙・最大3枚のサンプル・商品ファイルをSupabase Storageへ保存します。途中失敗時はDBとアップロード済みファイルをロールバックします。`works.sample_image_urls`と所有者限定のStorage削除policyをスキーマへ追加し、公開作品詳細でサンプルを表示します。
+
+## 38. DesktopからHub公開状況を確認
+
+販売パッケージの`sourceProjectId`をHub作品へ記録し、公開済み作品と販売中商品数だけを返す読み取り専用APIを追加しました。Desktopの「Hub連携」画面ではHub URLをローカル保存し、作品名、最終更新、販売状態、公開URLを確認できます。通信先はHTTPSに限定し、開発用localhostだけHTTPを許可します。非公開下書きは匿名APIへ露出せず、Supabase Service Role Key、Stripe Secret Key、Hubログイン情報をDesktopへ保存しません。URL制約、公開応答、非公開応答を含むDesktop統合テストは29/29成功しています。
