@@ -9,6 +9,7 @@ import type {
 import {
   balloonTailPoints,
   computeImagePlacement,
+  layoutHorizontalText,
   layoutVerticalText,
 } from "@mangai/canvas-core";
 
@@ -173,49 +174,35 @@ function renderText(item: TextObject) {
       .join("");
     return `<g transform="${transform}">${baseGlyphs}${rubyGlyphs}</g>`;
   }
-  const available = Math.max(1, item.width - item.padding * 2);
-  const characters = Math.max(
-    1,
-    Math.floor(available / (item.fontSize * 0.55)),
+  const layout = layoutHorizontalText(
+    item.text,
+    {
+      x: item.padding,
+      y: item.padding,
+      width: Math.max(1, item.width - item.padding * 2),
+      height: Math.max(1, item.height - item.padding * 2),
+    },
+    {
+      fontSize: item.fontSize,
+      lineHeight: item.lineHeight,
+      letterSpacing: item.letterSpacing,
+      textAlign: item.textAlign,
+      verticalAlign: item.verticalAlign,
+    },
   );
-  const lines = wrapText(item.text, characters);
-  const anchor =
-    item.textAlign === "center"
-      ? "middle"
-      : item.textAlign === "end"
-        ? "end"
-        : "start";
-  const x =
-    item.textAlign === "center"
-      ? item.width / 2
-      : item.textAlign === "end"
-        ? item.width - item.padding
-        : item.padding;
-  const lineAdvance = item.fontSize * item.lineHeight;
-  const contentHeight = lines.length * lineAdvance;
-  const startY =
-    item.verticalAlign === "middle"
-      ? (item.height - contentHeight) / 2 + item.fontSize
-      : item.verticalAlign === "bottom"
-        ? item.height - contentHeight + item.fontSize - item.padding
-        : item.padding + item.fontSize;
-  return `<g transform="${transform}"><text x="${x}" y="${startY}" text-anchor="${anchor}" font-size="${item.fontSize}" ${common}>${lines
+  const lines = layout.lines
     .map(
-      (line, index) =>
-        `<tspan x="${x}" dy="${index === 0 ? 0 : lineAdvance}">${text(line)}</tspan>`,
+      (line) =>
+        `<text x="${line.x}" y="${line.y}" text-anchor="start" font-size="${item.fontSize}" letter-spacing="${item.letterSpacing}" ${common}>${text(line.value)}</text>`,
     )
-    .join("")}</text></g>`;
-}
-
-function wrapText(value: string, length: number) {
-  const lines: string[] = [];
-  for (const source of value.split(/\r?\n/)) {
-    const characters = Array.from(source);
-    if (!characters.length) lines.push("");
-    for (let index = 0; index < characters.length; index += length)
-      lines.push(characters.slice(index, index + length).join(""));
-  }
-  return lines;
+    .join("");
+  const rubyRuns = layout.rubyRuns
+    .map(
+      (ruby) =>
+        `<text x="${ruby.x}" y="${ruby.y}" text-anchor="middle" font-size="${item.fontSize * 0.42}" letter-spacing="0" ${common}>${text(ruby.value)}</text>`,
+    )
+    .join("");
+  return `<g transform="${transform}">${lines}${rubyRuns}</g>`;
 }
 function dataUrl(asset: RenderAsset) {
   return `data:${asset.mimeType};base64,${Buffer.from(asset.bytes).toString("base64")}`;

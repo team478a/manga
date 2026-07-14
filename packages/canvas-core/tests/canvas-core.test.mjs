@@ -7,6 +7,7 @@ import {
   computeImagePlacement,
   constrainRectToPage,
   imageTransformFromNode,
+  layoutHorizontalText,
   layoutVerticalText,
   normalizeLayerOrder,
   normalizeRotation,
@@ -271,6 +272,38 @@ test("explicit ruby notation is parsed and laid out beside vertical text", () =>
     ["ま", "ん", "が"],
   );
   assert.ok(result.rubyGlyphs.every((glyph) => glyph.x > result.glyphs[0].x));
+});
+test("horizontal ruby stays with its base and uses shared line layout", () => {
+  const result = layoutHorizontalText(
+    "第12話 ｜漫画《まんが》です",
+    { x: 10, y: 20, width: 110, height: 100 },
+    {
+      fontSize: 20,
+      lineHeight: 1.2,
+      textAlign: "start",
+      verticalAlign: "top",
+    },
+  );
+  assert.equal(result.plainText, "第12話 漫画です");
+  assert.deepEqual(
+    result.lines.map((line) => line.value),
+    ["第12話 ", "漫画です"],
+  );
+  assert.equal(result.rubyRuns.length, 1);
+  assert.equal(result.rubyRuns[0].value, "まんが");
+  assert.equal(result.rubyRuns[0].line, 1);
+  assert.ok(result.rubyRuns[0].y < result.lines[1].y);
+});
+test("horizontal layout preserves explicit blank lines", () => {
+  const result = layoutHorizontalText(
+    "一\n\n二",
+    { x: 0, y: 0, width: 100, height: 100 },
+    { fontSize: 20 },
+  );
+  assert.deepEqual(
+    result.lines.map((line) => line.value),
+    ["一", "", "二"],
+  );
 });
 test("Zod rejects unsafe pages and panels", () => {
   assert.equal(

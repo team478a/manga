@@ -24,6 +24,7 @@ import {
   computeImagePlacement,
   constrainRectToPage,
   imageTransformFromNode,
+  layoutHorizontalText,
   layoutVerticalText,
   normalizeRotation,
   pageTemplates,
@@ -578,49 +579,55 @@ function TextNode({
       </Group>
     );
   }
+  const layout = layoutHorizontalText(
+    item.text,
+    {
+      x: item.padding,
+      y: item.padding,
+      width: Math.max(1, item.width - item.padding * 2),
+      height: Math.max(1, item.height - item.padding * 2),
+    },
+    {
+      fontSize: item.fontSize,
+      lineHeight: item.lineHeight,
+      letterSpacing: item.letterSpacing,
+      textAlign: item.textAlign,
+      verticalAlign: item.verticalAlign,
+    },
+  );
   return (
-    <Text
+    <Group
       id={`text-${item.id}`}
       x={item.x}
       y={item.y}
       width={item.width}
       height={item.height}
-      text={item.text}
-      fontFamily={item.fontFamily}
-      fontSize={item.fontSize}
-      fontStyle={item.fontWeight >= 600 ? "bold" : "normal"}
-      fill={item.color}
-      align={
-        item.textAlign === "start"
-          ? "left"
-          : item.textAlign === "end"
-            ? "right"
-            : "center"
-      }
-      verticalAlign={item.verticalAlign}
-      lineHeight={item.lineHeight}
-      letterSpacing={item.letterSpacing}
-      padding={item.padding}
       opacity={item.opacity}
       rotation={item.rotation}
       draggable={!item.locked}
-      onClick={(event) => onSelect(event.target, Boolean(event.evt.shiftKey))}
-      onTap={(event) => onSelect(event.target, false)}
+      onClick={(event) =>
+        onSelect(event.currentTarget, Boolean(event.evt.shiftKey))
+      }
+      onTap={(event) => onSelect(event.currentTarget, false)}
       onDragMove={(event) => {
         if (!onMove) return;
         const next = onMove({
-          x: event.target.x(),
-          y: event.target.y(),
+          x: event.currentTarget.x(),
+          y: event.currentTarget.y(),
           width: item.width,
           height: item.height,
         });
-        event.target.position(next);
+        event.currentTarget.position(next);
       }}
       onDragEnd={(event) =>
-        onSave({ ...item, x: event.target.x(), y: event.target.y() })
+        onSave({
+          ...item,
+          x: event.currentTarget.x(),
+          y: event.currentTarget.y(),
+        })
       }
       onTransformEnd={(event) => {
-        const node = event.target;
+        const node = event.currentTarget;
         const width = Math.max(20, node.width() * node.scaleX());
         const height = Math.max(20, node.height() * node.scaleY());
         node.scaleX(1);
@@ -634,7 +641,40 @@ function TextNode({
           rotation: node.rotation(),
         });
       }}
-    />
+    >
+      {layout.lines.map((line, index) => (
+        <Text
+          key={`line-${index}`}
+          x={line.x}
+          y={line.y - item.fontSize}
+          width={Math.max(1, line.width)}
+          height={item.fontSize * item.lineHeight}
+          text={line.value}
+          fontFamily={item.fontFamily}
+          fontSize={item.fontSize}
+          fontStyle={item.fontWeight >= 600 ? "bold" : "normal"}
+          fill={item.color}
+          letterSpacing={item.letterSpacing}
+          listening={false}
+        />
+      ))}
+      {layout.rubyRuns.map((ruby, index) => (
+        <Text
+          key={`ruby-${ruby.line}-${index}`}
+          x={ruby.x - Math.max(ruby.width, item.fontSize) / 2}
+          y={ruby.y - item.fontSize * 0.42}
+          width={Math.max(ruby.width, item.fontSize)}
+          height={item.fontSize * 0.5}
+          text={ruby.value}
+          fontFamily={item.fontFamily}
+          fontSize={item.fontSize * 0.42}
+          fontStyle={item.fontWeight >= 600 ? "bold" : "normal"}
+          fill={item.color}
+          align="center"
+          listening={false}
+        />
+      ))}
+    </Group>
   );
 }
 
@@ -802,8 +842,22 @@ function CanvasProperties({
           lineHeight: item.lineHeight,
           letterSpacing: item.letterSpacing,
         }).overflow
-      : item.text.length * item.fontSize * item.fontSize * item.lineHeight >
-        item.width * item.height);
+      : layoutHorizontalText(
+          item.text,
+          {
+            x: item.padding,
+            y: item.padding,
+            width: Math.max(1, item.width - item.padding * 2),
+            height: Math.max(1, item.height - item.padding * 2),
+          },
+          {
+            fontSize: item.fontSize,
+            lineHeight: item.lineHeight,
+            letterSpacing: item.letterSpacing,
+            textAlign: item.textAlign,
+            verticalAlign: item.verticalAlign,
+          },
+        ).overflow);
   const saveName = (name: string) => {
     if (!name.trim() || name === item.name) return;
     if (item.objectType === "panel") savePanel({ ...item, name });
@@ -1023,7 +1077,7 @@ function CanvasProperties({
             <span>本文</span>
             <DebouncedTextArea
               initialValue={item.text}
-              rubyTools={item.writingMode === "vertical"}
+              rubyTools
               onCommit={(text) => saveText({ ...item, text })}
             />
           </div>
@@ -1061,12 +1115,12 @@ function CanvasProperties({
               <option value="horizontal">横書き</option>
             </select>
           </label>
-          {item.writingMode === "vertical" && (
-            <small>
-              基本禁則と半角2桁数字の縦中横を自動適用します。ルビは
-              「｜漫画《まんが》」の形式で入力します。
-            </small>
-          )}
+          <small>
+            {item.writingMode === "vertical"
+              ? "基本禁則と半角2桁数字の縦中横を自動適用します。"
+              : "日本語・ASCIIの文字幅を考慮して折り返します。"}
+            ルビは「｜漫画《まんが》」の形式で保存します。
+          </small>
           <label>
             文字サイズ
             <input
