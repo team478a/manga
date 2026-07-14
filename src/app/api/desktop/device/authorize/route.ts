@@ -7,6 +7,10 @@ import {
   generateUserCode,
   hashDeviceSecret,
 } from "@/lib/desktop-auth";
+import {
+  cleanupDesktopDeviceAuthorizations,
+  enforceDesktopDeviceRateLimit,
+} from "@/lib/desktop-device-rate-limit";
 
 const requestSchema = z.object({
   deviceName: z.string().trim().min(1).max(100),
@@ -14,6 +18,21 @@ const requestSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = await enforceDesktopDeviceRateLimit(request);
+    if (!rateLimit.allowed)
+      return NextResponse.json(
+        {
+          message:
+            "端末認証の開始回数が上限に達しました。15分後に再試行してください。",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+        },
+      );
+    await cleanupDesktopDeviceAuthorizations().catch((cause) => {
+      console.warn("Desktop device authorization cleanup failed", cause);
+    });
     const parsed = requestSchema.safeParse(await request.json());
     if (!parsed.success)
       return NextResponse.json(

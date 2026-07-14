@@ -34,10 +34,15 @@ DesktopへSupabase Session、Service Role Key、Stripe Secret Keyを保存せず
 - 非認証APIは従来どおり公開済み作品だけを返します。
 - HubログインCookieやSupabase Auth SessionをDesktopへ渡しません。
 - Hub端末一覧では、承認日時、最終利用、有効期限を確認して個別に失効できます。
+- 認証開始は15分あたりIP単位10回、全体300回までです。接続元IPは専用秘密値でHMAC化し、生値をDBへ保存しません。
+- Proxyが接続元を取得できないローカル環境は15分あたり50回までです。
+- rate limit判定はPostgreSQL行ロックを使った原子的な処理です。
+- 未承認・期限切れは期限から1日後、失効・トークン期限切れは30日後に、認証開始時の清掃処理で削除します。
 
 ## 運用前提と残る確認
 
 - Hubサーバーには`SUPABASE_SERVICE_ROLE_KEY`が必要です。Desktopには不要です。
+- `DESKTOP_AUTH_RATE_LIMIT_SECRET`へ32byte以上のランダム値を設定してください。未設定時はService Role KeyからHMACを生成します。
 - 既存環境では[`../../supabase/schema.sql`](../../supabase/schema.sql)を再実行します。
-- 公開前にホスティング/CDN層で端末認証開始APIのrate limitを設定してください。
+- アプリ内rate limitに加え、公開時はホスティング/CDN層でもrate limitを設定すると多層防御になります。Proxyは外部からの接続元ヘッダーを上書き・正規化する構成にしてください。
 - 実Supabase、複数端末、期限切れ、失効後アクセスのE2Eは本番準備フェーズで確認します。

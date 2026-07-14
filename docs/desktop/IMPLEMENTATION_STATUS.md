@@ -21,7 +21,7 @@
 | 13  | TypeScript型チェック         | 完了 | Hub・Desktop・各packageで成功                           |
 | 14  | ESLint                       | 完了 | Hub・Desktop双方で成功                                  |
 | 15  | Desktop/Web本番ビルド        | 完了 | Electron main、Vite renderer、Next.js成功               |
-| 16  | ユニット・統合テスト         | 完了 | SQLite、AI、書き出し、履歴、端末認証を含む30件成功      |
+| 16  | ユニット・統合テスト         | 完了 | SQLite、AI、書き出し、履歴、端末認証を含む31件成功      |
 | 17  | ドキュメント反映             | 完了 | architecture、desktop、hub、実装状況を追加              |
 
 ## 現状と残る改善

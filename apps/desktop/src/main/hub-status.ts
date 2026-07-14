@@ -121,7 +121,14 @@ export async function startHubDeviceAuthorization(
       redirect: "error",
     },
   );
-  if (!response.ok) throw new Error("Hubで端末認証を開始できませんでした。");
+  if (!response.ok) {
+    const body = (await response.json().catch(() => null)) as {
+      message?: unknown;
+    } | null;
+    if (response.status === 429 && typeof body?.message === "string")
+      throw new Error(body.message);
+    throw new Error("Hubで端末認証を開始できませんでした。");
+  }
   try {
     return deviceStartResponseSchema.parse(await response.json());
   } catch {

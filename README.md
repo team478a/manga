@@ -61,6 +61,7 @@ npm run dev
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+DESKTOP_AUTH_RATE_LIMIT_SECRET=replace-with-at-least-32-random-bytes
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
 NEXT_PUBLIC_SITE_URL=http://localhost:3000

@@ -313,6 +313,8 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 90日・`works:read`限定の端末トークンとHub端末管理・失効画面
 - 認証済みDesktopから本人の非公開下書き・停止中商品数を確認
 - DesktopトークンのOS暗号化保存とrendererからの分離
+- IPをHMAC化した端末認証開始rate limit（15分あたりIP 10回・全体300回）
+- 期限切れ・失効済み端末認証と古いrate limit行の自動清掃
 
 ## 14. 実装状況の確認
 

@@ -131,6 +131,27 @@ test("Hub端末認証の開始・承認確認・解除", async () => {
   }
 });
 
+test("Hub端末認証のrate limitを利用者へ通知する", async () => {
+  const mock = await server((_request, response) => {
+    response.statusCode = 429;
+    response.setHeader("content-type", "application/json");
+    response.end(
+      JSON.stringify({
+        message:
+          "端末認証の開始回数が上限に達しました。15分後に再試行してください。",
+      }),
+    );
+  });
+  try {
+    await assert.rejects(
+      startHubDeviceAuthorization(mock.url, "MANGAI Desktop"),
+      /15分後に再試行/,
+    );
+  } finally {
+    await mock.close();
+  }
+});
+
 test("非公開Projectは未連携として扱う", async () => {
   const projectId = randomUUID();
   const mock = await server((_request, response) => {
