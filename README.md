@@ -23,6 +23,7 @@
 - 売上管理画面
 - ユーザー、作品、商品、注文、グッズ申請の管理画面
 - ローカル版の販売用パッケージ作成
+- Desktop販売パッケージv1のブラウザ内検証・プレビュー
 - Supabase PostgreSQL スキーマとRLS
 - Stripe Checkout、Webhook、購入後期限付きダウンロード
 

@@ -291,6 +291,17 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 外部AI APIを使った販売文生成
 - E2Eテストと自動テストスイート
 - Vercel、Supabase、Stripeの本番環境設定
+- Desktop販売パッケージからSupabase下書きを作成する確定処理（安全検証・プレビュー画面までは実装済み）
+
+### Desktop販売パッケージ確認
+
+- 認証済み画面 `/dashboard/import-package`
+- ZIPをサーバーへ送信しないブラウザ内検証
+- `mangai.sales-package` v1の形式・version・role検証
+- 危険な相対パス、manifest外ファイル、不足ファイルの拒否
+- 250MBのZIP上限、500MBの展開後合計上限
+- 全収録ファイルのサイズ・SHA-256照合
+- 作品情報、表紙、サンプル、収録ファイル一覧のプレビュー
 
 ## 14. 実装状況の確認
 

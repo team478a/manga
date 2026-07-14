@@ -81,3 +81,5 @@ metadata/social-post.txt
 ## 互換性
 
 v1へ任意項目を追加する場合、既存読込側が無視できる項目に限定します。必須項目、ファイル役割、意味を変更する場合は`version`を上げます。共通実装は`@mangai/export-core`の`parseSalesPackageManifest`と`createSalesPackageZip`を使用します。
+
+Hubの`/dashboard/import-package`は、ZIPをサーバーへ送信する前にブラウザ内で本仕様を検証し、作品情報・表紙・サンプル・収録ファイルをプレビューします。Supabaseへ非公開下書きを作成する確定処理は次の実装段階です。

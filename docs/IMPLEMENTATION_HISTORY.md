@@ -370,3 +370,7 @@ Panel形状へ左辺・右辺が内側へ湾曲する曲線コマを追加しま
 ## 35. MANGAI販売パッケージ v1
 
 Desktop書き出しへ`MANGAI販売パッケージ.zip`を追加しました。形式名`mangai.sales-package`、version 1のmanifestに、作品情報、商品PDF、連番画像ZIP、表紙、先頭3ページのサンプル、販売文、SNS文を役割付きで収録します。全ファイルのバイト数とSHA-256を記録し、共通`export-core`で形式、パス、role、重複、実ファイル一致を検証します。仕様は[`desktop/SALES_PACKAGE_SPEC.md`](desktop/SALES_PACKAGE_SPEC.md)へ記録しました。
+
+## 36. Hub販売パッケージ確認画面
+
+認証済みHubダッシュボードへ`/dashboard/import-package`を追加しました。販売パッケージZIPをサーバーへ送信せずブラウザ内で解析し、形式・version・role・パス・ファイル数・展開前後の上限・全ファイルのバイト数とSHA-256を検証します。検証後は作品情報、表紙、先頭3ページのサンプル、収録ファイル一覧を表示します。危険な相対パス、manifest外ファイル、不足ファイル、サイズ・ハッシュ不一致を拒否します。
