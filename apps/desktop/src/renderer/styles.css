@@ -1146,6 +1146,17 @@ label {
   color: white;
   border-color: #cf4b30;
 }
+
+.update-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.update-control select {
+  min-width: 82px;
+  padding: 7px 8px;
+}
 .workflow-tools {
   border: 1px solid #d9dedb;
   border-radius: 8px;

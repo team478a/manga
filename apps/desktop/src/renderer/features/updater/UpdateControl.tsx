@@ -4,6 +4,7 @@ import type { UpdateState } from "../../../preload/api";
 const initialState: UpdateState = {
   status: "disabled",
   currentVersion: "",
+  channel: "stable",
   message: "更新状態を確認しています。",
 };
 
@@ -39,22 +40,52 @@ export function UpdateControl() {
             ? "再起動して更新"
             : "更新確認";
 
+  const channelLocked =
+    state.status === "checking" ||
+    state.status === "downloading" ||
+    state.status === "downloaded";
+
+  const changeChannel = async (channel: "stable" | "beta") => {
+    try {
+      setState(await window.mangai.updater.setChannel(channel));
+    } catch {
+      setState(await window.mangai.updater.getState());
+      alert("更新チャンネルを保存できませんでした。");
+    }
+  };
+
   return (
-    <button
-      className={
-        state.status === "available" || state.status === "downloaded"
-          ? "update-ready"
-          : "secondary"
-      }
-      disabled={
-        state.status === "disabled" ||
-        state.status === "checking" ||
-        state.status === "downloading"
-      }
-      title={`${state.message}${state.currentVersion ? ` 現在: v${state.currentVersion}` : ""}`}
-      onClick={() => void action()}
-    >
-      {label}
-    </button>
+    <span className="update-control">
+      <label title="Stableは正式版のみ、Betaは正式公開前の更新も受け取ります。">
+        <span className="sr-only">更新チャンネル</span>
+        <select
+          aria-label="更新チャンネル"
+          value={state.channel}
+          disabled={channelLocked}
+          onChange={(event) =>
+            void changeChannel(event.target.value as "stable" | "beta")
+          }
+        >
+          <option value="stable">Stable</option>
+          <option value="beta">Beta</option>
+        </select>
+      </label>
+      <button
+        className={
+          state.status === "available" || state.status === "downloaded"
+            ? "update-ready"
+            : "secondary"
+        }
+        disabled={
+          state.status === "disabled" ||
+          state.status === "checking" ||
+          state.status === "downloading"
+        }
+        title={`${state.message}${state.currentVersion ? ` 現在: v${state.currentVersion}` : ""}`}
+        onClick={() => void action()}
+      >
+        {label}
+      </button>
+    </span>
   );
 }

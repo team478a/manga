@@ -14,7 +14,7 @@
     "build:main": "npm run build:packages && tsc -p tsconfig.main.json && node scripts/copy-preload-manifest.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "lint": "eslint src",
-    "test": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test tests/database.test.mjs tests/ai.test.mjs tests/hub-status.test.mjs tests/diagnostics.test.mjs",
+    "test": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test tests/database.test.mjs tests/ai.test.mjs tests/hub-status.test.mjs tests/diagnostics.test.mjs tests/updater.test.mjs",
     "start": "electron .",
     "pack:win": "npm run build && electron-builder --win dir --x64",
     "dist:win": "npm run build && electron-builder --win nsis --x64",

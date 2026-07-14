@@ -1,10 +1,12 @@
 # 自動更新・公開配布
 
-更新日: 2026-07-13
+更新日: 2026-07-15
 
 ## 実装概要
 
 MANGAI Desktopは`electron-updater`のNSIS更新に対応しています。配布版は起動5秒後に更新を確認し、利用者が明示的に「取得」を選ぶまでダウンロードしません。ダウンロード後は確認ダイアログを経て再起動・適用します。
+
+更新チャンネルは`Stable`と`Beta`から選択できます。既定はStableで、選択値は`{Documents}/MANGAI/settings/update.json`へ保存します。Stableは正式版だけ、Betaは`-beta.N`形式の先行版と正式版を受け取ります。確認中、ダウンロード中、適用待ちはチャンネルを変更できません。
 
 開発版と通常ビルドは更新URLが空のため外部通信しません。更新用リリースビルドだけがHTTPS配布URLを`resources/update-config.json`へ埋め込みます。
 
@@ -27,19 +29,27 @@ $env:MANGAI_UPDATE_URL = "https://downloads.example.com/mangai/"
 npm run desktop:dist:win:update
 ```
 
+Beta版はDesktopのversionを`1.2.0-beta.1`のように設定します。チャンネルはversionから自動判定され、明示値とversionが矛盾する場合はビルドを停止します。
+
+```powershell
+$env:MANGAI_UPDATE_URL = "https://downloads.example.com/mangai/"
+$env:MANGAI_RELEASE_CHANNEL = "beta"
+npm run desktop:dist:win:update
+```
+
 `apps/desktop/release/`に最低限次の3ファイルが生成されます。
 
 ```text
-latest.yml
+latest.yml（Stable）またはbeta.yml（Beta）
 MANGAI-Desktop-Setup-{version}-x64.exe
 MANGAI-Desktop-Setup-{version}-x64.exe.blockmap
 ```
 
-3ファイルを`MANGAI_UPDATE_URL`と同じHTTPSディレクトリへ配置します。新しいリリースでは先に`apps/desktop/package.json`のversionを上げてください。
+3ファイルを`MANGAI_UPDATE_URL`と同じHTTPSディレクトリへ配置します。generic配布先では`latest.yml`と`beta.yml`を同じ基点に置きます。新しいリリースでは先に`apps/desktop/package.json`のversionを上げてください。
 
 ## GitHub Releases
 
-`.github/workflows/desktop-release.yml`を追加しています。`desktop-v*`タグまたは手動実行で、Windows上の型検査、Lint、16件の統合テスト、署名、Draft Release作成、更新ファイルのアップロードを行います。
+`.github/workflows/desktop-release.yml`は`desktop-v*`タグまたは手動実行で、Windows上の型検査、Lint、統合テスト、署名、Draft Release作成、更新ファイルのアップロードを行います。タグは`desktop-v{package.jsonのversion}`との完全一致を要求します。通常versionはStable、`-beta.N`はBetaとしてmetadataを生成し、それ以外のprerelease表記を拒否します。
 
 必要なRepository Secrets:
 
@@ -53,6 +63,8 @@ GitHub Releasesを更新元にするURL:
 ```text
 https://github.com/{owner}/{repository}/releases/latest/download/
 ```
+
+GitHub公開ビルドはリポジトリ名も`update-config.json`へ埋め込みます。DesktopはGitHub providerを使うため、Stableは正式Release、Betaは公開済みPrereleaseを検索できます。Draftのままではどちらのチャンネルにも配信されません。Beta版は確認後にGitHub上でPrereleaseとして公開してください。
 
 ## 現在の状態
 

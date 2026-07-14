@@ -406,3 +406,9 @@ GitHub ActionsではPostgreSQL 16上で旧スキーマからforward適用、機�
 実Supabaseへ適用した後の状態を変更せずに検査する`db:staging:preflight`を追加しました。`MANGAI_DB_ENV=staging`の明示を必須にし、標準のPostgreSQL接続環境変数を`psql`へ安全に引き渡します。接続情報やパスワードは出力しません。
 
 検査SQLは読み取り専用トランザクション内で、PostgreSQL version、販売パッケージ列、Desktop端末認証表・関数、RLS、service role限定権限、Storage bucket・削除policy、無効index、承認済み端末データの必須値を確認します。接続情報と`psql`が未設定のため、実stagingでの実行は未完了です。
+
+## 44. Stable / Beta更新チャンネル
+
+Desktopの更新操作へStable・Beta選択を追加し、端末内の`settings/update.json`へ永続化しました。Stableは正式版、Betaは先行版を取得し、更新確認・ダウンロード・適用待ちの途中では切替を拒否します。不正な設定ファイルはStableへ安全にフォールバックします。
+
+GitHub公開ビルドはowner/repositoryを安全に埋め込み、`electron-updater`のGitHub providerで正式ReleaseとPrereleaseを分離します。generic配布にも`latest.yml`・`beta.yml`を使用できます。リリースworkflowはtagとpackage versionの一致、Stableの通常semver、Betaの`-beta.N`形式を検証します。設定永続化、入力拒否、HTTPS・GitHub配布元解決を含むDesktop統合テストは35/35成功しました。

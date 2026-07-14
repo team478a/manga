@@ -227,6 +227,7 @@ function register() {
   });
   handle("database:recovery:status", () => databaseRecovery);
   handle("update:state", () => updater.getState());
+  handle("update:channel", (v) => updater.setChannel(v?.channel));
   handle("update:check", () => updater.check());
   handle("update:download", () => updater.download());
   handle("update:install", () => updater.install());
@@ -680,7 +681,7 @@ app.whenReady().then(async () => {
   aiService = new AIService(store, {
     allowMock: !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
   });
-  updater = new DesktopUpdater();
+  updater = new DesktopUpdater(desktopPaths().root);
   register();
   await createWindow();
   setTimeout(() => void runAutoBackup(), 15_000);

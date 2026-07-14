@@ -94,6 +94,8 @@ contextBridge.exposeInMainWorld("mangai", {
   databaseRecoveryStatus: () => ipcRenderer.invoke("database:recovery:status"),
   updater: {
     getState: () => ipcRenderer.invoke("update:state"),
+    setChannel: (channel: "stable" | "beta") =>
+      ipcRenderer.invoke("update:channel", { channel }),
     check: () => ipcRenderer.invoke("update:check"),
     download: () => ipcRenderer.invoke("update:download"),
     install: () => ipcRenderer.invoke("update:install"),

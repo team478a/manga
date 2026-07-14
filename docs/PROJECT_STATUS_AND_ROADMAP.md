@@ -170,7 +170,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 33/33成功                     |
+| Desktop統合テスト                       | 35/35成功                     |
 | canvas-core単体テスト                   | 24/24成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |
@@ -262,7 +262,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 - Hub本番決済・返金・ダウンロードE2E
 - メール通知と運営通知
 - クラッシュレポート、構造化ログ、利用者同意（ローカル保存、除外処理、ローテーション、削除UIまで実装済み。外部送信なし）
-- stable / beta更新チャンネル
+- stable / beta更新チャンネル（端末選択・永続化、GitHub prerelease、generic channel metadataまで実装済み）
 - DBマイグレーション試験とロールバック（変更単位SQL、rollback guard、PostgreSQL 16往復CI、staging読み取り専用preflightを実装済み。実Supabase staging試験は未実施）
 - アクセシビリティ、キーボード操作、多言語化
 - グッズ会社API、配送、在庫連携

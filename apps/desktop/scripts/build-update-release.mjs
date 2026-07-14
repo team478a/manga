@@ -7,6 +7,29 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const configPath = path.join(root, "build", "update-config.json");
 const value = process.env.MANGAI_UPDATE_URL?.trim();
 const publishToGitHub = process.env.MANGAI_PUBLISH_GITHUB === "1";
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(root, "package.json"), "utf8"),
+);
+const requestedChannel = process.env.MANGAI_RELEASE_CHANNEL?.trim();
+const inferredChannel = /-beta(?:\.|$)/.test(packageJson.version)
+  ? "beta"
+  : "stable";
+const releaseChannel = requestedChannel || inferredChannel;
+
+if (releaseChannel !== "stable" && releaseChannel !== "beta") {
+  console.error("MANGAI_RELEASE_CHANNELはstableまたはbetaで指定してください。");
+  process.exit(1);
+}
+if (
+  (releaseChannel === "stable" && packageJson.version.includes("-")) ||
+  (releaseChannel === "beta" && !/-beta(?:\.|$)/.test(packageJson.version))
+) {
+  console.error(
+    `version ${packageJson.version} と${releaseChannel}チャンネルが一致しません。`,
+  );
+  process.exit(1);
+}
+process.env.MANGAI_RELEASE_CHANNEL = releaseChannel;
 
 if (!value) {
   console.error("MANGAI_UPDATE_URLを設定してください。");
@@ -54,9 +77,12 @@ if (!npmCli || !fs.existsSync(npmCli)) {
 }
 
 try {
+  const githubRepository = publishToGitHub
+    ? process.env.GITHUB_REPOSITORY
+    : undefined;
   fs.writeFileSync(
     configPath,
-    `${JSON.stringify({ updateUrl: url.href }, null, 2)}\n`,
+    `${JSON.stringify({ updateUrl: url.href, githubRepository }, null, 2)}\n`,
   );
   execFileSync(process.execPath, [npmCli, "run", "build"], {
     cwd: root,

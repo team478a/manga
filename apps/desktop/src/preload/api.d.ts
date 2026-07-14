@@ -32,6 +32,7 @@ export type UpdateState = {
     | "downloaded"
     | "error";
   currentVersion: string;
+  channel: "stable" | "beta";
   availableVersion?: string;
   percent?: number;
   message: string;
@@ -205,6 +206,7 @@ export type DesktopApi = {
   databaseRecoveryStatus: () => Promise<DatabaseRecoveryState | null>;
   updater: {
     getState: () => Promise<UpdateState>;
+    setChannel: (channel: "stable" | "beta") => Promise<UpdateState>;
     check: () => Promise<UpdateState>;
     download: () => Promise<UpdateState>;
     install: () => Promise<boolean>;
