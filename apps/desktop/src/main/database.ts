@@ -252,7 +252,9 @@ export class MangaiDatabase {
         ? "canvas-v1"
         : !this.hasMigration("canvas-relative-text-v1")
           ? "canvas-relative-text-v1"
-          : null;
+          : !this.hasMigration("canvas-panel-shape-v1")
+            ? "canvas-panel-shape-v1"
+            : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -325,6 +327,7 @@ export class MangaiDatabase {
       );
     this.migrateCanvasV1();
     this.migrateRelativeTextV1();
+    this.migratePanelShapeV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -452,6 +455,32 @@ export class MangaiDatabase {
           "Balloon-relative text geometry",
           stamp,
         );
+    })();
+  }
+  private migratePanelShapeV1() {
+    if (this.hasMigration("canvas-panel-shape-v1")) return;
+    const columns = new Set(
+      (
+        this.db.prepare("pragma table_info(panels)").all() as Array<{
+          name: string;
+        }>
+      ).map((column) => column.name),
+    );
+    const stamp = now();
+    this.db.transaction(() => {
+      if (!columns.has("shape"))
+        this.db.exec(
+          "alter table panels add column shape text not null default 'rectangle'",
+        );
+      if (!columns.has("slant"))
+        this.db.exec(
+          "alter table panels add column slant real not null default 0.12",
+        );
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run("canvas-panel-shape-v1", "Panel shape and slant ratio", stamp);
     })();
   }
   private project(row: any): Project {
@@ -1438,8 +1467,8 @@ export class MangaiDatabase {
     const stamp = now();
     this.db
       .prepare(
-        `insert into panels(id,page_id,order_index,x,y,width,height,image_asset_id,prompt,negative_prompt,generation_status,metadata,name,rotation,z_index,visible,locked,border_color,border_width,fill_color,image_fit,image_offset_x,image_offset_y,image_scale,image_rotation,image_opacity,created_at,updated_at)
-         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,order_index=excluded.order_index,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,image_asset_id=excluded.image_asset_id,name=excluded.name,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,border_color=excluded.border_color,border_width=excluded.border_width,fill_color=excluded.fill_color,image_fit=excluded.image_fit,image_offset_x=excluded.image_offset_x,image_offset_y=excluded.image_offset_y,image_scale=excluded.image_scale,image_rotation=excluded.image_rotation,image_opacity=excluded.image_opacity,updated_at=excluded.updated_at`,
+        `insert into panels(id,page_id,order_index,x,y,width,height,image_asset_id,prompt,negative_prompt,generation_status,metadata,name,rotation,z_index,visible,locked,border_color,border_width,fill_color,shape,slant,image_fit,image_offset_x,image_offset_y,image_scale,image_rotation,image_opacity,created_at,updated_at)
+         values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,order_index=excluded.order_index,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,image_asset_id=excluded.image_asset_id,name=excluded.name,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,border_color=excluded.border_color,border_width=excluded.border_width,fill_color=excluded.fill_color,shape=excluded.shape,slant=excluded.slant,image_fit=excluded.image_fit,image_offset_x=excluded.image_offset_x,image_offset_y=excluded.image_offset_y,image_scale=excluded.image_scale,image_rotation=excluded.image_rotation,image_opacity=excluded.image_opacity,updated_at=excluded.updated_at`,
       )
       .run(
         item.id,
@@ -1462,6 +1491,8 @@ export class MangaiDatabase {
         item.borderColor,
         item.borderWidth,
         item.fillColor,
+        item.shape ?? "rectangle",
+        item.slant ?? 0.12,
         item.imageFit,
         item.imageOffsetX,
         item.imageOffsetY,
@@ -2579,6 +2610,8 @@ export class MangaiDatabase {
       borderColor: p.border_color,
       borderWidth: p.border_width,
       fillColor: p.fill_color,
+      shape: p.shape ?? "rectangle",
+      slant: p.slant ?? 0.12,
       imageAssetId: p.image_asset_id,
       imageFit: p.image_fit,
       imageOffsetX: p.image_offset_x,

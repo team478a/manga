@@ -6,3 +6,4 @@ export * from "./vertical-text.js";
 export * from "./horizontal-text.js";
 export * from "./validation.js";
 export * from "./balloon.js";
+export * from "./panel-shape.js";

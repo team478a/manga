@@ -54,6 +54,8 @@ export type Panel = {
   borderColor: string;
   borderWidth: number;
   fillColor: string;
+  shape: "rectangle" | "slant_up" | "slant_down";
+  slant: number;
   imageAssetId: string | null;
   imageFit: "cover" | "contain" | "manual";
   imageOffsetX: number;

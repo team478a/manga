@@ -34,6 +34,8 @@ export const panelInputSchema = z.object({
   borderColor: color,
   borderWidth: finite.min(0).max(1000),
   fillColor: color,
+  shape: z.enum(["rectangle", "slant_up", "slant_down"]),
+  slant: finite.min(0).max(0.45),
   imageAssetId: z.string().uuid().nullable(),
   imageFit: z.enum(["cover", "contain", "manual"]),
   imageOffsetX: finite,

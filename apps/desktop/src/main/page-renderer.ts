@@ -11,6 +11,7 @@ import {
   computeImagePlacement,
   layoutHorizontalText,
   layoutVerticalText,
+  panelShapePoints,
 } from "@mangai/canvas-core";
 
 export type RenderAsset = Pick<
@@ -91,9 +92,10 @@ async function prepareSvgAssets(
 
 function renderPanel(panel: Panel, assets: Map<string, RenderAsset>) {
   const clipId = `clip-${panel.id}`;
+  const shape = pairs(panelShapePoints(panel));
   const parts = [
     `<g transform="translate(${panel.x} ${panel.y}) rotate(${panel.rotation})">`,
-    `<rect width="${panel.width}" height="${panel.height}" fill="${attr(panel.fillColor)}"/>`,
+    `<polygon points="${shape}" fill="${attr(panel.fillColor)}"/>`,
   ];
   const asset = panel.imageAssetId ? assets.get(panel.imageAssetId) : undefined;
   if (asset && asset.width > 0 && asset.height > 0) {
@@ -108,12 +110,12 @@ function renderPanel(panel: Panel, assets: Map<string, RenderAsset>) {
       },
     );
     parts.push(
-      `<defs><clipPath id="${clipId}"><rect width="${panel.width}" height="${panel.height}"/></clipPath></defs>`,
+      `<defs><clipPath id="${clipId}"><polygon points="${shape}"/></clipPath></defs>`,
       `<image href="${dataUrl(asset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${panel.imageOpacity}" transform="rotate(${panel.imageRotation} ${placement.x} ${placement.y})" clip-path="url(#${clipId})"/>`,
     );
   }
   parts.push(
-    `<rect width="${panel.width}" height="${panel.height}" fill="none" stroke="${attr(panel.borderColor)}" stroke-width="${panel.borderWidth}"/>`,
+    `<polygon points="${shape}" fill="none" stroke="${attr(panel.borderColor)}" stroke-width="${panel.borderWidth}"/>`,
     `</g>`,
   );
   return parts.join("");

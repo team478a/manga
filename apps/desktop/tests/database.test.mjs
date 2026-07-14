@@ -59,6 +59,8 @@ test("30 canvas objects remain responsive across save, move and reopen", (t) => 
     imageOffsetY: 0,
     imageScale: 1,
     imageRotation: 0,
+    shape: "rectangle",
+    slant: 0.12,
     imageOpacity: 1,
   }));
   const balloonId = "00000000-0000-4000-8000-000000000029";
@@ -262,6 +264,8 @@ test("legacy database is backed up before canvas schema migration", () => {
     .map((column) => column.name);
   assert.equal(panelColumns.includes("image_fit"), true);
   assert.equal(panelColumns.includes("locked"), true);
+  assert.equal(panelColumns.includes("shape"), true);
+  assert.equal(panelColumns.includes("slant"), true);
   assert.ok(
     migrated
       .prepare("select 1 from schema_migrations where version='canvas-v1'")
@@ -288,7 +292,26 @@ test("legacy database is backed up before canvas schema migration", () => {
       )
       .get(),
   );
+  assert.ok(
+    migrated
+      .prepare(
+        "select 1 from schema_migrations where version='canvas-panel-shape-v1'",
+      )
+      .get(),
+  );
+  migrated
+    .prepare(
+      "delete from schema_migrations where version='canvas-panel-shape-v1'",
+    )
+    .run();
   migrated.close();
+  const reopened = new MangaiDatabase(paths);
+  reopened.close();
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => file.includes("before-canvas-panel-shape-v1")),
+  );
   fs.rmSync(root, { recursive: true, force: true });
 });
 test("page reordering is persisted", () => {
@@ -423,6 +446,8 @@ test("canvas objects persist and participate in undo and redo", () => {
     imageOffsetY: 0,
     imageScale: 1,
     imageRotation: 0,
+    shape: "rectangle",
+    slant: 0.12,
     imageOpacity: 1,
     createdAt: "",
     updatedAt: "",
@@ -634,6 +659,8 @@ test("project backup restores canvas data and verifies asset integrity", async (
     imageOffsetY: -8,
     imageScale: 1.25,
     imageRotation: 3,
+    shape: "slant_up",
+    slant: 0.18,
     imageOpacity: 0.8,
     createdAt: "",
     updatedAt: "",
@@ -710,6 +737,8 @@ test("project backup restores canvas data and verifies asset integrity", async (
   assert.equal(restored.pages.length, 1);
   assert.equal(restored.panels[0].name, "復元コマ");
   assert.equal(restored.panels[0].imageAssetId, restored.assets[0].id);
+  assert.equal(restored.panels[0].shape, "slant_up");
+  assert.equal(restored.panels[0].slant, 0.18);
   assert.equal(restored.pages[0].imageAssetId, restored.assets[0].id);
   assert.equal(restored.balloons[0].name, "復元吹き出し");
   assert.equal(
@@ -1124,6 +1153,8 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     imageOffsetY: 0,
     imageScale: 1,
     imageRotation: 0,
+    shape: "slant_down",
+    slant: 0.2,
     imageOpacity: 1,
     createdAt: "",
     updatedAt: "",
@@ -1199,6 +1230,8 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     imageOffsetY: 0,
     imageScale: 1,
     imageRotation: 0,
+    shape: "rectangle",
+    slant: 0.12,
     imageOpacity: 1,
     createdAt: "",
     updatedAt: "",

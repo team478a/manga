@@ -16,6 +16,7 @@ import {
   pageTemplates,
   pageToViewport,
   panelInputSchema,
+  panelShapePoints,
   rectFromPoints,
   reorderLayer,
   remapChildRect,
@@ -51,6 +52,46 @@ test("minimum dimensions and rotations are normalized", () => {
   assert.equal(value.height, 16);
   assert.equal(normalizeRotation(-450), 270);
   assert.equal(normalizeRotation(725), 5);
+});
+test("panel shape points create safe parallelograms", () => {
+  assert.deepEqual(
+    panelShapePoints({
+      width: 100,
+      height: 80,
+      shape: "rectangle",
+      slant: 0.12,
+    }),
+    [0, 0, 100, 0, 100, 80, 0, 80],
+  );
+  assert.deepEqual(
+    panelShapePoints({
+      width: 100,
+      height: 80,
+      shape: "slant_up",
+      slant: 0.2,
+    }),
+    [20, 0, 100, 0, 80, 80, 0, 80],
+  );
+  assert.deepEqual(
+    panelShapePoints({
+      width: 100,
+      height: 80,
+      shape: "slant_down",
+      slant: 0.2,
+    }),
+    [0, 0, 80, 0, 100, 80, 20, 80],
+  );
+  assert.equal(
+    Math.max(
+      ...panelShapePoints({
+        width: 100,
+        height: 80,
+        shape: "slant_up",
+        slant: 5,
+      }),
+    ),
+    100,
+  );
 });
 test("child rectangles follow parent movement and resizing", () => {
   assert.deepEqual(
@@ -336,6 +377,8 @@ test("Zod rejects unsafe pages and panels", () => {
       imageOffsetY: 0,
       imageScale: 1,
       imageRotation: 0,
+      shape: "rectangle",
+      slant: 0.12,
       imageOpacity: 1,
     }).success,
     false,
@@ -368,6 +411,8 @@ test("canvas batch requires every object to belong to its page", () => {
           imageOffsetY: 0,
           imageScale: 1,
           imageRotation: 0,
+          shape: "rectangle",
+          slant: 0.12,
           imageOpacity: 1,
         },
       ],

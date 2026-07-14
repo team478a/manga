@@ -1,5 +1,6 @@
 export type CanvasObjectType = "panel" | "balloon" | "text";
 export type ImageFit = "cover" | "contain" | "manual";
+export type PanelShape = "rectangle" | "slant_up" | "slant_down";
 export type BalloonType = "speech_ellipse" | "speech_rounded" | "narration_box";
 export type TailDirection =
   | "none"
@@ -26,6 +27,8 @@ export type Panel = TransformRect & {
   borderColor: string;
   borderWidth: number;
   fillColor: string;
+  shape: PanelShape;
+  slant: number;
   imageAssetId: string | null;
   imageFit: ImageFit;
   imageOffsetX: number;

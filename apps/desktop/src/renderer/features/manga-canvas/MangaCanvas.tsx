@@ -28,6 +28,7 @@ import {
   layoutVerticalText,
   normalizeRotation,
   pageTemplates,
+  panelShapePoints,
   rectFromPoints,
   reorderLayer,
   segmentGraphemes,
@@ -152,6 +153,8 @@ function panelInput(panel: Panel) {
     borderColor: panel.borderColor,
     borderWidth: panel.borderWidth,
     fillColor: panel.fillColor,
+    shape: panel.shape,
+    slant: panel.slant,
     imageAssetId: panel.imageAssetId,
     imageFit: panel.imageFit,
     imageOffsetX: panel.imageOffsetX,
@@ -226,6 +229,7 @@ function PanelNode({
         },
       )
     : null;
+  const shapePoints = panelShapePoints(panel);
   return (
     <Group
       id={`panel-${panel.id}`}
@@ -275,13 +279,21 @@ function PanelNode({
         });
       }}
     >
-      <Rect width={panel.width} height={panel.height} fill={panel.fillColor} />
+      <Line
+        points={shapePoints}
+        closed
+        fill={panel.fillColor}
+        listening={false}
+      />
       {image && placement && (
         <Group
-          clipX={0}
-          clipY={0}
-          clipWidth={panel.width}
-          clipHeight={panel.height}
+          clipFunc={(context) => {
+            context.beginPath();
+            context.moveTo(shapePoints[0], shapePoints[1]);
+            for (let index = 2; index < shapePoints.length; index += 2)
+              context.lineTo(shapePoints[index], shapePoints[index + 1]);
+            context.closePath();
+          }}
         >
           <KonvaImage
             ref={imageNode}
@@ -337,9 +349,9 @@ function PanelNode({
           />
         </Group>
       )}
-      <Rect
-        width={panel.width}
-        height={panel.height}
+      <Line
+        points={shapePoints}
+        closed
         stroke={selected ? "#2f9e68" : panel.borderColor}
         strokeWidth={
           selected ? Math.max(panel.borderWidth, 7) : panel.borderWidth
@@ -876,6 +888,43 @@ function CanvasProperties({
       </label>
       {item.objectType === "panel" && (
         <>
+          <label>
+            コマ形状
+            <select
+              value={item.shape}
+              onChange={(event) =>
+                savePanel({
+                  ...item,
+                  shape: event.target.value as Panel["shape"],
+                })
+              }
+            >
+              <option value="rectangle">矩形</option>
+              <option value="slant_up">斜め（右上がり ／）</option>
+              <option value="slant_down">斜め（右下がり ＼）</option>
+            </select>
+          </label>
+          {item.shape !== "rectangle" && (
+            <label>
+              傾斜率（%）
+              <input
+                type="number"
+                min="0"
+                max="45"
+                step="1"
+                defaultValue={Math.round(item.slant * 100)}
+                onBlur={(event) =>
+                  savePanel({
+                    ...item,
+                    slant: Math.min(
+                      0.45,
+                      Math.max(0, Number(event.target.value) / 100),
+                    ),
+                  })
+                }
+              />
+            </label>
+          )}
           <label>
             画像表示
             <select
@@ -1627,6 +1676,8 @@ export function MangaCanvas({
         borderColor: "#000000",
         borderWidth: 4,
         fillColor: "#ffffff",
+        shape: "rectangle",
+        slant: 0.12,
         imageAssetId: null,
         imageFit: "cover",
         imageOffsetX: 0,
@@ -1765,6 +1816,8 @@ export function MangaCanvas({
         borderColor: "#000000",
         borderWidth: 4,
         fillColor: "#ffffff",
+        shape: "rectangle",
+        slant: 0.12,
         imageAssetId: null,
         imageFit: "cover",
         imageOffsetX: 0,
