@@ -14,13 +14,14 @@ MANGAI Desktopは、Projectの編集データと素材画像を単一の`.mangai
 - 素材画像の本体とメタ情報
 - Page・コマ・表紙から素材への参照
 - 吹き出しと子テキストの親子関係
+- Undo/Redoのbefore・afterスナップショットと取消状態
+- Projectに紐づくCreator Chatセッションとメッセージ
+- AI生成ジョブ、生成出力、生成素材との参照
 
 現在の対象外:
 
-- Undo/Redo履歴
-- Creator Chatの会話履歴
-- AI生成ジョブ履歴
 - AI接続設定とComfyUIワークフロー
+- 端末全体で共有するプロンプトテンプレート
 
 ## 操作
 
@@ -62,7 +63,7 @@ Desktop起動時に既存SQLiteへ`PRAGMA quick_check`を実行します。SQLit
   mangai_local.sqlite-shm
 ```
 
-自動Projectバックアップからの復旧ではProject IDを新しく発行します。Undo/Redo、Creator Chat、AI生成ジョブなど現行バックアップ対象外の履歴は復旧されません。破損原本は自動削除しないため、必要に応じて専門的なデータ復旧へ利用できます。
+自動Projectバックアップからの復旧ではProject IDと各データIDを新しく発行します。version 2バックアップの場合はUndo/Redo、Creator Chat、AI生成ジョブも新IDへ参照を変換して復旧します。破損原本は自動削除しないため、必要に応じて専門的なデータ復旧へ利用できます。
 
 ## ファイル形式と安全性
 
@@ -73,14 +74,17 @@ manifest.json
 assets/{旧Asset ID}
 ```
 
-- `manifest.json`に形式名`mangai.project-backup`とバージョン`1`を保存
+- `manifest.json`に形式名`mangai.project-backup`とバージョン`2`を保存
+- 旧バージョン`1`のバックアップも引き続き復元可能
 - 元PCの絶対保存パスはバックアップへ記録しない
 - 素材ごとにサイズとSHA-256を検証
 - 復元時にProject、Episode、Page、Asset、CanvasオブジェクトIDを新規発行
 - Page・コマ・表紙・親吹き出しの参照を新IDへ再マッピング
+- 履歴内だけに残る削除済みオブジェクトにも新IDを予約し、Undo/Redoを維持
+- 実行中・待機中だった生成ジョブは再送信せず`RESTORED_INTERRUPTED`として復元
 - 破損、素材欠落、未対応形式、参照不整合、サイズ上限超過を拒否
 - 復元処理が失敗した場合は、途中作成したDB行とProjectフォルダーを削除
 
 ## 自動テスト
 
-Project設定、PNG素材、表紙、Page、画像入りコマ、吹き出し、親子テキストをバックアップし、新IDで同じ内容へ復元できることを確認しています。素材を改ざんしたバックアップは復元前に拒否し、空のProjectを残さないことも確認しています。自動バックアップは初回作成、未変更スキップ、間隔制御、世代管理、途中ファイル除去を検証しています。破損DBの原本保全、Project自動バックアップからの再構築、マイグレーション前SQLiteへのフォールバックも検証しています。
+Project設定、素材、Canvas、履歴を新IDで同じ内容へ復元できることを確認しています。復元後のRedo/Undo、Creator Chat本文、完了済み生成ジョブ、生成出力と素材リンク、旧version 1互換も検証しています。素材を改ざんしたバックアップは復元前に拒否し、空のProjectを残しません。自動バックアップの変更検知・世代管理と、破損DBの原本保全・再構築・SQLiteフォールバックも検証しています。

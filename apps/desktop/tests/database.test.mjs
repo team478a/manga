@@ -759,6 +759,138 @@ test("project backup restores canvas data and verifies asset integrity", async (
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test("version 2 backup restores undo, chat and generation history", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-full-backup-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "履歴バックアップ",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  bundle = db.addPage(bundle.episodes[0].id);
+  db.captureHistory(bundle.project.id, "タイトルを変更", () =>
+    db.renameProject(bundle.project.id, "変更後タイトル"),
+  );
+  bundle = db.undo(bundle.project.id);
+  assert.equal(bundle.project.title, "履歴バックアップ");
+  assert.equal(db.listOperationHistory(bundle.project.id).canRedo, true);
+
+  const sessionId = db.createChatSession(bundle.project.id, "復元する会話");
+  db.addChatMessage(sessionId, "user", "構成案を考えて");
+  db.addChatMessage(
+    sessionId,
+    "assistant",
+    "3幕構成を提案します",
+    "ollama",
+    "test-model",
+  );
+
+  const jobId = db.createGenerationJob({
+    projectId: bundle.project.id,
+    episodeId: bundle.episodes[0].id,
+    pageId: bundle.pages[0].id,
+    providerType: "image",
+    providerId: "comfyui",
+    generationType: "image",
+    prompt: "manga page",
+    inputJson: { width: 1200, height: 1800 },
+  });
+  db.updateGenerationJob(jobId, "completed", {
+    output: { images: 1 },
+    progress: 1,
+  });
+  const generatedDirectory = path.join(bundle.project.storagePath, "generated");
+  fs.mkdirSync(generatedDirectory, { recursive: true });
+  const generatedPath = path.join(generatedDirectory, "history.png");
+  await sharp({
+    create: {
+      width: 32,
+      height: 32,
+      channels: 4,
+      background: { r: 100, g: 40, b: 180, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(generatedPath);
+  db.registerGeneratedAsset(
+    bundle.project.id,
+    path.join("generated", "history.png"),
+    jobId,
+    { prompt: "manga page", provider: "comfyui" },
+  );
+
+  const backupPath = path.join(root, "full.mangai-backup");
+  await db.backupProject(bundle.project.id, backupPath);
+  const archive = await JSZip.loadAsync(fs.readFileSync(backupPath));
+  const manifest = JSON.parse(
+    await archive.file("manifest.json").async("string"),
+  );
+  assert.equal(manifest.version, 2);
+  assert.equal(manifest.history.operations.length, 1);
+  assert.equal(manifest.history.chatMessages.length, 2);
+  assert.equal(manifest.history.generationJobs.length, 1);
+  assert.equal(manifest.history.generationOutputs.length, 1);
+
+  const restored = await db.restoreProject(backupPath);
+  assert.equal(restored.project.title, "履歴バックアップ (復元)");
+  assert.equal(db.listOperationHistory(restored.project.id).canRedo, true);
+  const redone = db.redo(restored.project.id);
+  assert.equal(redone.project.title, "変更後タイトル");
+  assert.equal(db.undo(restored.project.id).project.title, "履歴バックアップ");
+
+  const sessions = db.listChatSessions(restored.project.id);
+  assert.equal(sessions.length, 1);
+  assert.equal(sessions[0].title, "復元する会話");
+  const messages = db.listChatMessages(sessions[0].id);
+  assert.deepEqual(
+    messages.map((message) => message.content),
+    ["構成案を考えて", "3幕構成を提案します"],
+  );
+  const jobs = db.listGenerationJobs(restored.project.id);
+  assert.equal(jobs.length, 1);
+  assert.equal(jobs[0].status, "completed");
+  assert.equal(jobs[0].episodeId, restored.episodes[0].id);
+  assert.equal(jobs[0].pageId, restored.pages[0].id);
+  const inspect = new Database(paths.database, { readonly: true });
+  const output = inspect
+    .prepare(
+      "select o.job_id as jobId,o.asset_id as assetId,a.generation_job_id as assetJobId from generation_outputs o join assets a on a.id=o.asset_id where a.project_id=?",
+    )
+    .get(restored.project.id);
+  assert.equal(output.jobId, jobs[0].id);
+  assert.equal(output.assetId, restored.assets[0].id);
+  assert.equal(output.assetJobId, jobs[0].id);
+  inspect.close();
+
+  delete manifest.history;
+  manifest.version = 1;
+  archive.file("manifest.json", JSON.stringify(manifest));
+  const legacyPath = path.join(root, "legacy-v1.mangai-backup");
+  fs.writeFileSync(
+    legacyPath,
+    await archive.generateAsync({ type: "nodebuffer" }),
+  );
+  const legacyRestored = await db.restoreProject(legacyPath);
+  assert.equal(db.listChatSessions(legacyRestored.project.id).length, 0);
+  assert.equal(db.listGenerationJobs(legacyRestored.project.id).length, 0);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 test("automatic project backup skips unchanged data and keeps limited generations", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-auto-backup-"));
   const paths = {

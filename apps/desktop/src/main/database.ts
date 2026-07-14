@@ -41,9 +41,68 @@ const backupFormat = "mangai.project-backup";
 const maxBackupBytes = 2 * 1024 * 1024 * 1024;
 type ProjectBackupManifest = {
   format: typeof backupFormat;
-  version: 1;
+  version: 1 | 2;
   createdAt: string;
   bundle: ProjectBundle;
+  history?: ProjectBackupHistory;
+};
+type BackupOperation = {
+  label: string;
+  beforeJson: string;
+  afterJson: string;
+  isUndone: number;
+  createdAt: string;
+};
+type BackupChatSession = {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+};
+type BackupChatMessage = {
+  id: string;
+  sessionId: string;
+  role: string;
+  content: string;
+  providerId: string | null;
+  modelId: string | null;
+  createdAt: string;
+};
+type BackupGenerationJob = {
+  id: string;
+  episodeId: string | null;
+  pageId: string | null;
+  providerType: string;
+  providerId: string;
+  modelId: string | null;
+  generationType: string;
+  status: string;
+  progress: number;
+  prompt: string;
+  negativePrompt: string;
+  inputJson: string;
+  outputJson: string;
+  providerJobId: string | null;
+  errorCode: string | null;
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+};
+type BackupGenerationOutput = {
+  id: string;
+  jobId: string;
+  assetId: string | null;
+  relativePath: string | null;
+  metadataJson: string;
+  createdAt: string;
+};
+type ProjectBackupHistory = {
+  operations: BackupOperation[];
+  chatSessions: BackupChatSession[];
+  chatMessages: BackupChatMessage[];
+  generationJobs: BackupGenerationJob[];
+  generationOutputs: BackupGenerationOutput[];
 };
 export type AutoBackupRunResult = {
   checkedAt: string;
@@ -116,7 +175,10 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
   if (!value || typeof value !== "object")
     throw new Error("バックアップ情報が不正です。");
   const manifest = value as Record<string, unknown>;
-  if (manifest.format !== backupFormat || manifest.version !== 1)
+  if (
+    manifest.format !== backupFormat ||
+    (manifest.version !== 1 && manifest.version !== 2)
+  )
     throw new Error("対応していないバックアップ形式です。");
   const bundle = manifest.bundle as ProjectBundle | undefined;
   if (!bundle || !bundle.project || typeof bundle.project !== "object")
@@ -155,6 +217,23 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
       !/^[0-9a-f]{64}$/i.test(asset.sha256)
     )
       throw new Error(`素材「${asset.fileName}」の情報が不正です。`);
+  if (manifest.version === 2) {
+    const history = manifest.history as ProjectBackupHistory | undefined;
+    const historyCollections = history && [
+      history.operations,
+      history.chatSessions,
+      history.chatMessages,
+      history.generationJobs,
+      history.generationOutputs,
+    ];
+    if (
+      !historyCollections ||
+      historyCollections.some((items) => !Array.isArray(items))
+    )
+      throw new Error("バックアップ履歴のデータ構造が不正です。");
+    if (historyCollections.some((items) => items.length > 100_000))
+      throw new Error("バックアップ履歴の項目数が上限を超えています。");
+  }
   return manifest as ProjectBackupManifest;
 }
 
@@ -508,17 +587,58 @@ export class MangaiDatabase {
       this.db.prepare("delete from projects where id=?").run(id);
     }
   }
+  private projectBackupHistory(projectId: string): ProjectBackupHistory {
+    const operations = this.db
+      .prepare(
+        "select label,before_json as beforeJson,after_json as afterJson,is_undone as isUndone,created_at as createdAt from operation_history where project_id=? order by id",
+      )
+      .all(projectId) as BackupOperation[];
+    const chatSessions = this.db
+      .prepare(
+        "select id,title,created_at as createdAt,updated_at as updatedAt from chat_sessions where project_id=? order by created_at",
+      )
+      .all(projectId) as BackupChatSession[];
+    const sessionIds = new Set(chatSessions.map((session) => session.id));
+    const chatMessages = (
+      this.db
+        .prepare(
+          `select m.id,m.session_id as sessionId,m.role,m.content,m.provider_id as providerId,m.model_id as modelId,m.created_at as createdAt
+           from chat_messages m join chat_sessions s on s.id=m.session_id where s.project_id=? order by m.created_at`,
+        )
+        .all(projectId) as BackupChatMessage[]
+    ).filter((message) => sessionIds.has(message.sessionId));
+    const generationJobs = this.db
+      .prepare(
+        `select id,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt
+         from generation_jobs where project_id=? order by created_at`,
+      )
+      .all(projectId) as BackupGenerationJob[];
+    const generationOutputs = this.db
+      .prepare(
+        `select o.id,o.job_id as jobId,o.asset_id as assetId,o.relative_path as relativePath,o.metadata_json as metadataJson,o.created_at as createdAt
+         from generation_outputs o join generation_jobs j on j.id=o.job_id where j.project_id=? order by o.created_at`,
+      )
+      .all(projectId) as BackupGenerationOutput[];
+    return {
+      operations,
+      chatSessions,
+      chatMessages,
+      generationJobs,
+      generationOutputs,
+    };
+  }
   async backupProject(id: string, destination: string) {
     const bundle = this.bundle(id);
     const zip = new JSZip();
     const manifest: ProjectBackupManifest = {
       format: backupFormat,
-      version: 1,
+      version: 2,
       createdAt: now(),
       bundle: {
         ...bundle,
         project: { ...bundle.project, storagePath: "" },
       },
+      history: this.projectBackupHistory(id),
     };
     zip.file("manifest.json", JSON.stringify(manifest));
     for (const asset of bundle.assets) {
@@ -589,6 +709,7 @@ export class MangaiDatabase {
           })
           .sort((a, b) => b.modifiedAt - a.modifiedAt);
         const bundle = this.bundle(project.id);
+        const history = this.projectBackupHistory(project.id);
         const fingerprint = crypto
           .createHash("sha256")
           .update(
@@ -599,6 +720,7 @@ export class MangaiDatabase {
                 storagePath: "",
                 lastOpenedAt: null,
               },
+              history,
             }),
           )
           .digest("hex")
@@ -642,7 +764,7 @@ export class MangaiDatabase {
     const manifestEntry = zip.file("manifest.json");
     if (!manifestEntry) throw new Error("バックアップ情報がありません。");
     const manifestText = await manifestEntry.async("string");
-    if (Buffer.byteLength(manifestText) > 10 * 1024 * 1024)
+    if (Buffer.byteLength(manifestText) > 50 * 1024 * 1024)
       throw new Error("バックアップ情報が大きすぎます。");
     let parsed: unknown;
     try {
@@ -694,7 +816,59 @@ export class MangaiDatabase {
       const assetMap = new Map<string, string>();
       const episodeMap = new Map<string, string>();
       const pageMap = new Map<string, string>();
+      const panelMap = new Map<string, string>();
       const balloonMap = new Map<string, string>();
+      const textObjectMap = new Map<string, string>();
+      const sessionMap = new Map<string, string>();
+      const generationJobMap = new Map<string, string>();
+      const ensureMappedId = (map: Map<string, string>, sourceId: string) => {
+        if (!sourceId || typeof sourceId !== "string")
+          throw new Error("バックアップ履歴のIDが不正です。");
+        const existing = map.get(sourceId);
+        if (existing) return existing;
+        const id = uid();
+        map.set(sourceId, id);
+        return id;
+      };
+      const backupHistory = manifest.history;
+      const operations = (backupHistory?.operations ?? []).map((operation) => {
+        try {
+          return {
+            operation,
+            before: JSON.parse(operation.beforeJson),
+            after: JSON.parse(operation.afterJson),
+          };
+        } catch {
+          throw new Error("Undo/Redo履歴を読み取れません。");
+        }
+      });
+      const collectSnapshotIds = (snapshot: any) => {
+        if (
+          !snapshot ||
+          !Array.isArray(snapshot.episodes) ||
+          !Array.isArray(snapshot.pages) ||
+          !Array.isArray(snapshot.panels) ||
+          !Array.isArray(snapshot.balloons ?? []) ||
+          !Array.isArray(snapshot.textObjects ?? [])
+        )
+          throw new Error("Undo/Redo履歴の構造が不正です。");
+        for (const item of snapshot.episodes)
+          ensureMappedId(episodeMap, item.id);
+        for (const item of snapshot.pages) ensureMappedId(pageMap, item.id);
+        for (const item of snapshot.panels) ensureMappedId(panelMap, item.id);
+        for (const item of snapshot.balloons ?? [])
+          ensureMappedId(balloonMap, item.id);
+        for (const item of snapshot.textObjects ?? [])
+          ensureMappedId(textObjectMap, item.id);
+      };
+      for (const item of operations) {
+        collectSnapshotIds(item.before);
+        collectSnapshotIds(item.after);
+      }
+      for (const session of backupHistory?.chatSessions ?? [])
+        ensureMappedId(sessionMap, session.id);
+      for (const job of backupHistory?.generationJobs ?? [])
+        ensureMappedId(generationJobMap, job.id);
       const mappedReference = (
         map: Map<string, string>,
         sourceId: string | null,
@@ -707,8 +881,7 @@ export class MangaiDatabase {
       };
       const stamp = now();
       const preparedAssets = sourceBundle.assets.map((asset) => {
-        const id = uid();
-        assetMap.set(asset.id, id);
+        const id = ensureMappedId(assetMap, asset.id);
         const relativePath = path.join(
           "assets",
           `${id}${assetExtension(asset.mimeType)}`,
@@ -719,6 +892,67 @@ export class MangaiDatabase {
         );
         return { asset, id, relativePath };
       });
+      const remapSnapshot = (snapshot: any) => ({
+        project: {
+          ...snapshot.project,
+          coverAssetId: mappedReference(
+            assetMap,
+            snapshot.project?.coverAssetId ?? null,
+            "履歴の表紙素材",
+          ),
+        },
+        episodes: snapshot.episodes.map((item: any) => ({
+          ...item,
+          id: mappedReference(episodeMap, item.id, "履歴のEpisode"),
+          projectId,
+        })),
+        pages: snapshot.pages.map((item: any) => ({
+          ...item,
+          id: mappedReference(pageMap, item.id, "履歴のPage"),
+          episodeId: mappedReference(
+            episodeMap,
+            item.episodeId,
+            "履歴PageのEpisode",
+          ),
+          imageAssetId: mappedReference(
+            assetMap,
+            item.imageAssetId,
+            "履歴Pageの素材",
+          ),
+        })),
+        panels: snapshot.panels.map((item: any) => ({
+          ...item,
+          id: mappedReference(panelMap, item.id, "履歴のコマ"),
+          pageId: mappedReference(pageMap, item.pageId, "履歴コマのPage"),
+          imageAssetId: mappedReference(
+            assetMap,
+            item.imageAssetId,
+            "履歴コマの素材",
+          ),
+        })),
+        balloons: (snapshot.balloons ?? []).map((item: any) => ({
+          ...item,
+          id: mappedReference(balloonMap, item.id, "履歴の吹き出し"),
+          pageId: mappedReference(pageMap, item.pageId, "履歴吹き出しのPage"),
+        })),
+        textObjects: (snapshot.textObjects ?? []).map((item: any) => ({
+          ...item,
+          id: mappedReference(textObjectMap, item.id, "履歴のテキスト"),
+          pageId: mappedReference(pageMap, item.pageId, "履歴テキストのPage"),
+          parentBalloonId: mappedReference(
+            balloonMap,
+            item.parentBalloonId,
+            "履歴テキストの親吹き出し",
+          ),
+        })),
+      });
+      const remappedOperations = operations.map(
+        ({ operation, before, after }) => ({
+          operation,
+          before: remapSnapshot(before),
+          after: remapSnapshot(after),
+        }),
+      );
       this.db.transaction(() => {
         this.db
           .prepare("delete from episodes where project_id=?")
@@ -741,8 +975,7 @@ export class MangaiDatabase {
               stamp,
             );
         for (const episode of sourceBundle.episodes) {
-          const id = uid();
-          episodeMap.set(episode.id, id);
+          const id = ensureMappedId(episodeMap, episode.id);
           this.db
             .prepare("insert into episodes values(?,?,?,?,?,?)")
             .run(
@@ -757,8 +990,7 @@ export class MangaiDatabase {
         for (const page of sourceBundle.pages) {
           const episodeId = episodeMap.get(page.episodeId);
           if (!episodeId) throw new Error("ページのエピソード参照が不正です。");
-          const id = uid();
-          pageMap.set(page.id, id);
+          const id = ensureMappedId(pageMap, page.id);
           this.db
             .prepare("insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?)")
             .run(
@@ -782,7 +1014,7 @@ export class MangaiDatabase {
           if (!pageId) throw new Error("コマのページ参照が不正です。");
           this.upsertPanelRow({
             ...panel,
-            id: uid(),
+            id: ensureMappedId(panelMap, panel.id),
             pageId,
             imageAssetId: mappedReference(
               assetMap,
@@ -796,8 +1028,7 @@ export class MangaiDatabase {
         for (const balloon of sourceBundle.balloons) {
           const pageId = pageMap.get(balloon.pageId);
           if (!pageId) throw new Error("吹き出しのページ参照が不正です。");
-          const id = uid();
-          balloonMap.set(balloon.id, id);
+          const id = ensureMappedId(balloonMap, balloon.id);
           this.upsertBalloonRow({
             ...balloon,
             id,
@@ -811,7 +1042,7 @@ export class MangaiDatabase {
           if (!pageId) throw new Error("テキストのページ参照が不正です。");
           this.upsertTextObjectRow({
             ...textObject,
-            id: uid(),
+            id: ensureMappedId(textObjectMap, textObject.id),
             pageId,
             parentBalloonId: mappedReference(
               balloonMap,
@@ -821,6 +1052,130 @@ export class MangaiDatabase {
             createdAt: "",
             updatedAt: "",
           });
+        }
+        for (const { operation, before, after } of remappedOperations)
+          this.db
+            .prepare(
+              "insert into operation_history(project_id,label,before_json,after_json,is_undone,created_at) values(?,?,?,?,?,?)",
+            )
+            .run(
+              projectId,
+              operation.label,
+              JSON.stringify(before),
+              JSON.stringify(after),
+              operation.isUndone ? 1 : 0,
+              operation.createdAt,
+            );
+        for (const session of backupHistory?.chatSessions ?? [])
+          this.db
+            .prepare("insert into chat_sessions values(?,?,?,?,?)")
+            .run(
+              mappedReference(sessionMap, session.id, "チャットセッション"),
+              projectId,
+              session.title,
+              session.createdAt,
+              session.updatedAt,
+            );
+        for (const message of backupHistory?.chatMessages ?? []) {
+          if (
+            !(["user", "assistant", "system"] as string[]).includes(
+              message.role,
+            )
+          )
+            throw new Error("チャット履歴のロールが不正です。");
+          this.db
+            .prepare("insert into chat_messages values(?,?,?,?,?,?,?)")
+            .run(
+              uid(),
+              mappedReference(
+                sessionMap,
+                message.sessionId,
+                "チャットメッセージのセッション",
+              ),
+              message.role,
+              message.content,
+              message.providerId,
+              message.modelId,
+              message.createdAt,
+            );
+        }
+        const validGenerationStatuses = [
+          "queued",
+          "running",
+          "completed",
+          "failed",
+          "canceled",
+        ];
+        for (const job of backupHistory?.generationJobs ?? []) {
+          if (!validGenerationStatuses.includes(job.status))
+            throw new Error("AI生成ジョブの状態が不正です。");
+          JSON.parse(job.inputJson);
+          JSON.parse(job.outputJson);
+          const interrupted =
+            job.status === "queued" || job.status === "running";
+          this.db
+            .prepare(
+              `insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,progress,prompt,negative_prompt,input_json,output_json,provider_job_id,error_code,error_message,created_at,started_at,completed_at)
+               values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+            )
+            .run(
+              mappedReference(generationJobMap, job.id, "AI生成ジョブ"),
+              projectId,
+              mappedReference(episodeMap, job.episodeId, "AI生成Episode"),
+              mappedReference(pageMap, job.pageId, "AI生成Page"),
+              job.providerType,
+              job.providerId,
+              job.modelId,
+              job.generationType,
+              interrupted ? "failed" : job.status,
+              Number.isFinite(job.progress) ? job.progress : 0,
+              job.prompt,
+              job.negativePrompt,
+              job.inputJson,
+              job.outputJson,
+              job.providerJobId,
+              interrupted ? "RESTORED_INTERRUPTED" : job.errorCode,
+              interrupted
+                ? "バックアップ時に実行中だったため失敗として復元しました。"
+                : job.errorMessage,
+              job.createdAt,
+              job.startedAt,
+              interrupted ? stamp : job.completedAt,
+            );
+        }
+        const relativePathByAssetId = new Map(
+          preparedAssets.map((item) => [item.id, item.relativePath]),
+        );
+        for (const output of backupHistory?.generationOutputs ?? []) {
+          JSON.parse(output.metadataJson);
+          const jobId = mappedReference(
+            generationJobMap,
+            output.jobId,
+            "AI生成出力のジョブ",
+          );
+          const assetId = mappedReference(
+            assetMap,
+            output.assetId,
+            "AI生成出力の素材",
+          );
+          this.db
+            .prepare("insert into generation_outputs values(?,?,?,?,?,?)")
+            .run(
+              uid(),
+              jobId,
+              assetId,
+              assetId
+                ? (relativePathByAssetId.get(assetId) ?? output.relativePath)
+                : null,
+              output.metadataJson,
+              output.createdAt,
+            );
+          if (assetId)
+            this.db
+              .prepare(
+                "update assets set generation_job_id=?,metadata_json=? where id=?",
+              )
+              .run(jobId, output.metadataJson, assetId);
         }
         this.db
           .prepare(

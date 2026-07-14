@@ -72,6 +72,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 - Project編集データと素材を`.mangai-backup`へ保存し、新しいProjectとして復元
 - 変更検知、30分間隔、Projectごと5世代の自動バックアップ
 - SQLite起動時整合性検査、破損原本保全、自動バックアップからのDB再構築
+- Undo/Redo・Creator Chat・AI生成ジョブ履歴を含むversion 2完全バックアップ
 - 素材・情報・Canvasレイヤーパネルの開閉、状態保持、狭幅レイアウト
 - 新規Projectの保存先フォルダー選択と既定保存先への復帰
 - Episode作成・切り替え・名前変更・並び替え・削除
@@ -95,7 +96,6 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 
 - 高度なAIエージェント
 - 信頼された証明書による実署名と初回公開リリース
-- Undo/Redo・Creator Chat・AI生成ジョブ履歴を含む完全バックアップ
 
 完了条件ごとの確認結果は [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) を参照してください。
 
