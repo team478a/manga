@@ -412,3 +412,9 @@ GitHub ActionsではPostgreSQL 16上で旧スキーマからforward適用、機�
 Desktopの更新操作へStable・Beta選択を追加し、端末内の`settings/update.json`へ永続化しました。Stableは正式版、Betaは先行版を取得し、更新確認・ダウンロード・適用待ちの途中では切替を拒否します。不正な設定ファイルはStableへ安全にフォールバックします。
 
 GitHub公開ビルドはowner/repositoryを安全に埋め込み、`electron-updater`のGitHub providerで正式ReleaseとPrereleaseを分離します。generic配布にも`latest.yml`・`beta.yml`を使用できます。リリースworkflowはtagとpackage versionの一致、Stableの通常semver、Betaの`-beta.N`形式を検証します。設定永続化、入力拒否、HTTPS・GitHub配布元解決を含むDesktop統合テストは35/35成功しました。
+
+## 45. Hub決済イベント状態遷移テスト
+
+Stripe Webhookイベントを副作用のない状態遷移計画へ分離し、Checkout同期成功、非同期成功・失敗、Payment Intent失敗、全額返金、未対応イベントをNode標準テストで検証できるようにしました。`checkout.session.async_payment_failed`を新たに処理し、Payment Intentを文字列・展開済みobjectのどちらでも解決します。
+
+失敗イベントは`pending`・`failed`注文だけを対象とし、遅延した失敗通知が`paid`・`refunded`を上書きしないようにしました。返金はWebhook順序が前後しても後続の決済成功で戻らない状態遷移です。使用されていなかった旧501 API `/api/stripe/checkout`を削除し、`/api/checkout/create-session`へ一本化しました。Hub専用CIを追加し、決済イベントテスト5/5、TypeScript、ESLint、Next.js本番ビルドをPull Requestごとに検証します。

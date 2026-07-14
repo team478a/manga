@@ -42,7 +42,7 @@ src/
     works/
     sales-packages/
     admin/
-    api/stripe/checkout/
+    api/checkout/create-session/
   components/
   lib/
 supabase/schema.sql

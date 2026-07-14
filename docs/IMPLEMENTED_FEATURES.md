@@ -135,6 +135,7 @@ MANGAI Creator Platformは、AIクリエイターが作品を公開し、デジ�
 
 - `checkout.session.completed`
 - `checkout.session.async_payment_succeeded`
+- `checkout.session.async_payment_failed`
 - `payment_intent.payment_failed`
 - `charge.refunded`
 
@@ -318,7 +319,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 
 ## 14. 実装状況の確認
 
-2026-07-14時点で、TypeScript型チェック、ESLint、Next.js本番ビルドは成功しています。Stripe決済とDesktop-Hub連携の実サービスE2Eには、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
+2026-07-15時点で、TypeScript型チェック、ESLint、Next.js本番ビルド、Hub決済イベントテスト5/5は成功しています。Stripe決済とDesktop-Hub連携の実サービスE2Eには、Stripeテスト環境、Webhook、Supabaseの実値設定が別途必要です。
 
 ## 15. Desktop漫画編集Canvas
 
