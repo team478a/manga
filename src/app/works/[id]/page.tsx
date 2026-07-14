@@ -5,7 +5,11 @@ import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import type { DigitalProduct, Work } from "@/lib/types";
 
-export default async function WorkDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function WorkDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
   const supabase = await createClient();
   const { data: work } = await supabase
@@ -30,34 +34,85 @@ export default async function WorkDetailPage({ params }: { params: Promise<{ id:
       <div className="grid gap-8 lg:grid-cols-[1fr_0.9fr]">
         <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-linen">
           {work.image_url ? (
-            <Image src={work.image_url} alt={work.title} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 50vw" />
+            <Image
+              src={work.image_url}
+              alt={work.title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
           ) : (
-            <div className="flex h-full items-center justify-center text-stone-500">画像未登録</div>
+            <div className="flex h-full items-center justify-center text-stone-500">
+              画像未登録
+            </div>
           )}
         </div>
         <section>
           <h1 className="text-4xl font-bold">{work.title}</h1>
-          <p className="mt-5 whitespace-pre-wrap text-lg leading-relaxed text-stone-700">{work.description || "説明はまだありません。"}</p>
+          <p className="mt-5 whitespace-pre-wrap text-lg leading-relaxed text-stone-700">
+            {work.description || "説明はまだありません。"}
+          </p>
           <div className="mt-5 flex flex-wrap gap-2">
-            {work.tags?.map((tag) => <span className="rounded-full bg-linen px-3 py-1 text-sm" key={tag}>{tag}</span>)}
+            {work.tags?.map((tag) => (
+              <span
+                className="rounded-full bg-linen px-3 py-1 text-sm"
+                key={tag}
+              >
+                {tag}
+              </span>
+            ))}
           </div>
         </section>
       </div>
+      {work.sample_image_urls?.length ? (
+        <section className="mt-10">
+          <h2 className="text-2xl font-bold">サンプル</h2>
+          <div className="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {work.sample_image_urls.map((url, index) => (
+              <div
+                className="relative aspect-[2/3] overflow-hidden rounded-lg bg-linen"
+                key={url}
+              >
+                <Image
+                  src={url}
+                  alt={`${work.title} サンプル${index + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
       <section className="mt-10">
         <h2 className="text-2xl font-bold">販売中の商品</h2>
         <div className="mt-4 grid gap-4">
-          {products?.length ? products.map((product) => (
-            <div className="panel flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between" key={product.id}>
-              <div>
-                <h3 className="text-xl font-bold">{product.title}</h3>
-                <p className="mt-1 text-stone-600">{product.description}</p>
+          {products?.length ? (
+            products.map((product) => (
+              <div
+                className="panel flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                key={product.id}
+              >
+                <div>
+                  <h3 className="text-xl font-bold">{product.title}</h3>
+                  <p className="mt-1 text-stone-600">{product.description}</p>
+                </div>
+                <div className="flex flex-col gap-2 sm:items-end">
+                  <p className="text-2xl font-bold">
+                    税込 {yen(product.price)}
+                  </p>
+                  <Link className="button" href={`/checkout/${product.id}`}>
+                    購入ボタン
+                  </Link>
+                </div>
               </div>
-              <div className="flex flex-col gap-2 sm:items-end">
-                <p className="text-2xl font-bold">税込 {yen(product.price)}</p>
-                <Link className="button" href={`/checkout/${product.id}`}>購入ボタン</Link>
-              </div>
-            </div>
-          )) : <p className="mt-3 text-lg text-stone-600">販売中の商品はまだありません。</p>}
+            ))
+          ) : (
+            <p className="mt-3 text-lg text-stone-600">
+              販売中の商品はまだありません。
+            </p>
+          )}
         </div>
       </section>
     </main>

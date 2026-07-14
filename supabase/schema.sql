@@ -17,12 +17,16 @@ create table if not exists public.works (
   title text not null,
   description text,
   image_url text,
+  sample_image_urls text[] not null default '{}',
   tags text[] not null default '{}',
   status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
   is_public boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.works
+add column if not exists sample_image_urls text[] not null default '{}';
 
 create table if not exists public.digital_products (
   id uuid primary key default gen_random_uuid(),
@@ -315,6 +319,13 @@ create policy "works_creator_update" on storage.objects
 for update using (bucket_id = 'works' and auth.role() = 'authenticated')
 with check (bucket_id = 'works' and auth.role() = 'authenticated');
 
+drop policy if exists "works_creator_delete" on storage.objects;
+create policy "works_creator_delete" on storage.objects
+for delete using (
+  bucket_id = 'works'
+  and owner_id = auth.uid()::text
+);
+
 drop policy if exists "digital_products_creator_upload" on storage.objects;
 create policy "digital_products_creator_upload" on storage.objects
 for insert with check (bucket_id = 'digital-products' and auth.role() = 'authenticated');
@@ -323,3 +334,10 @@ drop policy if exists "digital_products_creator_update" on storage.objects;
 create policy "digital_products_creator_update" on storage.objects
 for update using (bucket_id = 'digital-products' and auth.role() = 'authenticated')
 with check (bucket_id = 'digital-products' and auth.role() = 'authenticated');
+
+drop policy if exists "digital_products_creator_delete" on storage.objects;
+create policy "digital_products_creator_delete" on storage.objects
+for delete using (
+  bucket_id = 'digital-products'
+  and owner_id = auth.uid()::text
+);

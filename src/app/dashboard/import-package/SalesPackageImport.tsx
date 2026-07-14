@@ -6,6 +6,10 @@ import {
   parseSalesPackageManifest,
   type SalesPackageManifest,
 } from "@mangai/export-core";
+import {
+  importSalesPackageDraft,
+  type SalesPackageImportResult,
+} from "./actions";
 
 const MAX_PACKAGE_BYTES = 250 * 1024 * 1024;
 const MAX_EXPANDED_BYTES = 500 * 1024 * 1024;
@@ -19,6 +23,13 @@ type ImportPreview = {
   files: VerifiedFile[];
   coverUrl?: string;
   sampleUrls: string[];
+  uploads: {
+    productPdf: File;
+    pageImagesZip: File;
+    cover?: File;
+    samples: File[];
+  };
+  salesDescription: string;
 };
 type SizedZipEntry = JSZip.JSZipObject & {
   _data?: { uncompressedSize?: number };
@@ -54,6 +65,12 @@ export function SalesPackageImport() {
   const [preview, setPreview] = React.useState<ImportPreview | null>(null);
   const [error, setError] = React.useState("");
   const [checking, setChecking] = React.useState(false);
+  const [importing, setImporting] = React.useState(false);
+  const [importResult, setImportResult] =
+    React.useState<SalesPackageImportResult | null>(null);
+  const [productRole, setProductRole] = React.useState<
+    "product_pdf" | "page_images_zip"
+  >("product_pdf");
   const urls = React.useRef<string[]>([]);
 
   const clearUrls = React.useCallback(() => {
@@ -66,6 +83,7 @@ export function SalesPackageImport() {
     clearUrls();
     setPreview(null);
     setError("");
+    setImportResult(null);
     if (file.size > MAX_PACKAGE_BYTES)
       throw new Error("販売パッケージは250MB以内にしてください。");
     if (!file.name.toLowerCase().endsWith(".zip"))
@@ -111,6 +129,11 @@ export function SalesPackageImport() {
     const verified: VerifiedFile[] = [];
     let coverUrl: string | undefined;
     const sampleUrls: string[] = [];
+    let productPdf: File | undefined;
+    let pageImagesZip: File | undefined;
+    let coverFile: File | undefined;
+    const sampleFiles: File[] = [];
+    let salesDescription = "";
     for (const declared of manifest.files) {
       if (declared.byteSize > MAX_ENTRY_BYTES)
         throw new Error(`${declared.path}が250MBを超えています。`);
@@ -132,6 +155,17 @@ export function SalesPackageImport() {
       if (digest !== declared.sha256)
         throw new Error(`${declared.path}のSHA-256が一致しません。`);
       verified.push({ ...declared, verified: true });
+      const upload = new File(
+        [bytes.slice()],
+        declared.path.split("/").at(-1) || "package-file",
+        { type: declared.mimeType },
+      );
+      if (declared.role === "product_pdf") productPdf = upload;
+      else if (declared.role === "page_images_zip") pageImagesZip = upload;
+      else if (declared.role === "cover") coverFile = upload;
+      else if (declared.role === "sample") sampleFiles.push(upload);
+      else if (declared.role === "description")
+        salesDescription = new TextDecoder().decode(bytes);
       if (declared.role === "cover" || declared.role === "sample") {
         const url = URL.createObjectURL(
           new Blob([bytes.slice()], { type: declared.mimeType }),
@@ -141,7 +175,21 @@ export function SalesPackageImport() {
         else sampleUrls.push(url);
       }
     }
-    setPreview({ manifest, files: verified, coverUrl, sampleUrls });
+    if (!productPdf || !pageImagesZip)
+      throw new Error("商品PDFまたは連番画像ZIPがありません。");
+    setPreview({
+      manifest,
+      files: verified,
+      coverUrl,
+      sampleUrls,
+      uploads: {
+        productPdf,
+        pageImagesZip,
+        cover: coverFile,
+        samples: sampleFiles,
+      },
+      salesDescription,
+    });
   };
 
   return (
@@ -284,12 +332,157 @@ export function SalesPackageImport() {
               </tbody>
             </table>
           </section>
-          <div className="rounded-md border border-amber-300 bg-amber-50 p-5 text-amber-950">
-            <h2 className="text-xl font-bold">次の段階</h2>
-            <p className="mt-2 leading-relaxed">
-              パッケージ内容は正常です。次の実装で、確認した内容から非公開の作品下書きと停止中の商品を作成できるようにします。
-            </p>
-          </div>
+          <form
+            className="panel space-y-5"
+            onSubmit={(event) => {
+              event.preventDefault();
+              const formData = new FormData(event.currentTarget);
+              formData.set("manifest", JSON.stringify(preview.manifest));
+              formData.set(
+                "product",
+                productRole === "product_pdf"
+                  ? preview.uploads.productPdf
+                  : preview.uploads.pageImagesZip,
+              );
+              if (preview.uploads.cover)
+                formData.set("cover", preview.uploads.cover);
+              preview.uploads.samples.forEach((sample, index) =>
+                formData.set(`sample${index}`, sample),
+              );
+              setImportResult(null);
+              setImporting(true);
+              void importSalesPackageDraft(formData)
+                .then(setImportResult)
+                .finally(() => setImporting(false));
+            }}
+          >
+            <div>
+              <h2 className="text-2xl font-bold">Hub下書きを作成</h2>
+              <p className="mt-2 leading-relaxed text-stone-600">
+                作品は非公開、商品は停止中で作成します。公開・販売開始前に既存の編集画面で確認できます。
+              </p>
+            </div>
+            <div>
+              <label className="label" htmlFor="importTitle">
+                作品名
+              </label>
+              <input
+                className="field"
+                id="importTitle"
+                name="title"
+                defaultValue={preview.manifest.work.title}
+                maxLength={200}
+                required
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="importDescription">
+                作品説明
+              </label>
+              <textarea
+                className="field min-h-32"
+                id="importDescription"
+                name="description"
+                defaultValue={preview.manifest.work.description}
+                maxLength={5000}
+              />
+            </div>
+            <div>
+              <label className="label" htmlFor="productRole">
+                販売ファイル
+              </label>
+              <select
+                className="field"
+                id="productRole"
+                name="productRole"
+                value={productRole}
+                onChange={(event) =>
+                  setProductRole(
+                    event.target.value as "product_pdf" | "page_images_zip",
+                  )
+                }
+              >
+                <option value="product_pdf">本編PDF</option>
+                <option value="page_images_zip">連番画像ZIP</option>
+              </select>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="productTitle">
+                  商品名
+                </label>
+                <input
+                  className="field"
+                  id="productTitle"
+                  key={productRole}
+                  name="productTitle"
+                  defaultValue={`${preview.manifest.work.title} ${productRole === "product_pdf" ? "本編PDF" : "連番画像ZIP"}`}
+                  maxLength={200}
+                  required
+                />
+              </div>
+              <div>
+                <label className="label" htmlFor="importPrice">
+                  販売価格（税込円）
+                </label>
+                <input
+                  className="field"
+                  id="importPrice"
+                  name="price"
+                  type="number"
+                  min="0"
+                  max="1000000"
+                  step="1"
+                  defaultValue="0"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="productDescription">
+                商品説明
+              </label>
+              <textarea
+                className="field min-h-28"
+                id="productDescription"
+                name="productDescription"
+                defaultValue={preview.salesDescription}
+                maxLength={5000}
+              />
+            </div>
+            {importResult && !importResult.ok ? (
+              <p className="rounded-md bg-red-50 p-4 text-red-700">
+                {importResult.message}
+              </p>
+            ) : null}
+            {importResult?.ok ? (
+              <div className="rounded-md bg-green-50 p-5 text-green-900">
+                <h3 className="text-xl font-bold">下書きを作成しました</h3>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <a
+                    className="button"
+                    href={`/dashboard/works/${importResult.workId}/edit`}
+                  >
+                    作品を確認
+                  </a>
+                  <a
+                    className="button-secondary"
+                    href={`/dashboard/products/${importResult.productId}/edit`}
+                  >
+                    商品を確認
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="button w-full"
+                type="submit"
+                disabled={importing}
+              >
+                {importing ? "安全性を再確認して作成中…" : "非公開下書きを作成"}
+              </button>
+            )}
+          </form>
         </>
       ) : null}
     </section>

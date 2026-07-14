@@ -13,6 +13,7 @@ export type Work = {
   title: string;
   description: string | null;
   image_url: string | null;
+  sample_image_urls: string[];
   tags: string[];
   status: "draft" | "published" | "archived";
   is_public: boolean;

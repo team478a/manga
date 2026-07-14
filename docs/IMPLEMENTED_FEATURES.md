@@ -291,7 +291,6 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 外部AI APIを使った販売文生成
 - E2Eテストと自動テストスイート
 - Vercel、Supabase、Stripeの本番環境設定
-- Desktop販売パッケージからSupabase下書きを作成する確定処理（安全検証・プレビュー画面までは実装済み）
 
 ### Desktop販売パッケージ確認
 
@@ -302,6 +301,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 250MBのZIP上限、500MBの展開後合計上限
 - 全収録ファイルのサイズ・SHA-256照合
 - 作品情報、表紙、サンプル、収録ファイル一覧のプレビュー
+- 確認後の非公開作品下書きと停止中商品の一括作成
+- 本編PDFまたは連番画像ZIPの商品ファイル選択
+- サーバー側でのmanifest・サイズ・SHA-256・実ファイル形式の再検証
+- Supabase Storageへの表紙、最大3サンプル、商品ファイル保存
+- 途中失敗時の作品・Storageロールバック
 
 ## 14. 実装状況の確認
 

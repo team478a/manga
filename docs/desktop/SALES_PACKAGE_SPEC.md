@@ -82,4 +82,4 @@ metadata/social-post.txt
 
 v1へ任意項目を追加する場合、既存読込側が無視できる項目に限定します。必須項目、ファイル役割、意味を変更する場合は`version`を上げます。共通実装は`@mangai/export-core`の`parseSalesPackageManifest`と`createSalesPackageZip`を使用します。
 
-Hubの`/dashboard/import-package`は、ZIPをサーバーへ送信する前にブラウザ内で本仕様を検証し、作品情報・表紙・サンプル・収録ファイルをプレビューします。Supabaseへ非公開下書きを作成する確定処理は次の実装段階です。
+Hubの`/dashboard/import-package`は、ZIPをサーバーへ送信する前にブラウザ内で本仕様を検証し、作品情報・表紙・サンプル・収録ファイルをプレビューします。確定時は商品ファイルと画像だけを送信し、サーバー側で同じmanifest、容量、SHA-256、実ファイル形式を再検証してから、非公開作品と停止中商品を作成します。

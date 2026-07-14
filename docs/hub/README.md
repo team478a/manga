@@ -13,3 +13,14 @@ npm run dev
 
 HubはSupabaseとStripeのサーバー環境変数を使用します。Desktopはこれらの秘密鍵を使用しません。
 
+## Desktop販売パッケージの取り込み
+
+認証後、`/dashboard/import-package`でDesktopが生成した`MANGAI販売パッケージ.zip`を選択します。ブラウザ内検証とプレビュー後、作品名、説明、商品形式、商品名、価格を確認して「非公開下書きを作成」を実行します。
+
+- 作品は`draft`・非公開で作成
+- 商品は`paused`で作成
+- 表紙と最大3枚のサンプルは`works` bucketへ保存
+- 商品PDFまたは画像ZIPは`digital-products` bucketへ保存
+- サーバー側で容量、SHA-256、PDF・ZIP・画像シグネチャを再検証
+
+既存Supabase環境では、[`../../supabase/schema.sql`](../../supabase/schema.sql)を再実行して`works.sample_image_urls`とStorage削除policyを追加してください。Server Actionは最大100MBに設定していますが、公開先のリクエスト上限がこれより小さい場合は、将来の署名付き直接アップロード方式へ切り替える必要があります。
