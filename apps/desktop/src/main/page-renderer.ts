@@ -140,7 +140,7 @@ function renderBalloon(balloon: Balloon) {
 }
 
 function renderText(item: TextObject) {
-  const common = `font-family="${attr(item.fontFamily)}" font-size="${item.fontSize}" font-weight="${item.fontWeight}" fill="${attr(item.color)}" opacity="${item.opacity}"`;
+  const common = `font-family="${attr(item.fontFamily)}" font-weight="${item.fontWeight}" fill="${attr(item.color)}" opacity="${item.opacity}"`;
   const transform = `translate(${item.x} ${item.y}) rotate(${item.rotation})`;
   if (item.writingMode === "vertical") {
     const layout = layoutVerticalText(
@@ -158,10 +158,12 @@ function renderText(item: TextObject) {
       },
     );
     return `<g transform="${transform}">${layout.glyphs
-      .map(
-        (glyph) =>
-          `<text x="${glyph.x}" y="${glyph.y}" text-anchor="middle" dominant-baseline="central" ${common}>${text(glyph.value)}</text>`,
-      )
+      .map((glyph) => {
+        const glyphFontSize = glyph.tateChuYoko
+          ? item.fontSize * 0.62
+          : item.fontSize;
+        return `<text x="${glyph.x}" y="${glyph.y}" text-anchor="middle" dominant-baseline="central" ${common} font-size="${glyphFontSize}"${glyph.tateChuYoko ? ` letter-spacing="0" aria-label="${attr(glyph.value)}"` : ""}>${text(glyph.value)}</text>`;
+      })
       .join("")}</g>`;
   }
   const available = Math.max(1, item.width - item.padding * 2);
@@ -190,7 +192,7 @@ function renderText(item: TextObject) {
       : item.verticalAlign === "bottom"
         ? item.height - contentHeight + item.fontSize - item.padding
         : item.padding + item.fontSize;
-  return `<g transform="${transform}"><text x="${x}" y="${startY}" text-anchor="${anchor}" ${common}>${lines
+  return `<g transform="${transform}"><text x="${x}" y="${startY}" text-anchor="${anchor}" font-size="${item.fontSize}" ${common}>${lines
     .map(
       (line, index) =>
         `<tspan x="${x}" dy="${index === 0 ? 0 : lineAdvance}">${text(line)}</tspan>`,

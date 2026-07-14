@@ -21,6 +21,7 @@ import {
   snapPointToGrid,
   snapRectToGrid,
   snapRectToGuides,
+  tokenizeVerticalText,
   viewportToPage,
   verticalGlyph,
 } from "../dist/index.js";
@@ -196,6 +197,54 @@ test("vertical columns advance right to left", () => {
   assert.deepEqual(
     result.glyphs.map((glyph) => glyph.value),
     ["一", "二", "三", "四", "五", "六"],
+  );
+});
+test("two ASCII digits form one tate-chu-yoko cell", () => {
+  assert.deepEqual(tokenizeVerticalText("第12話345"), [
+    { value: "第", tateChuYoko: false },
+    { value: "12", tateChuYoko: true },
+    { value: "話", tateChuYoko: false },
+    { value: "34", tateChuYoko: true },
+    { value: "5", tateChuYoko: false },
+  ]);
+  const result = layoutVerticalText(
+    "12月",
+    { x: 0, y: 0, width: 40, height: 40 },
+    { fontSize: 20, lineHeight: 1 },
+  );
+  assert.equal(result.glyphs.length, 2);
+  assert.equal(result.glyphs[0].value, "12");
+  assert.equal(result.glyphs[0].tateChuYoko, true);
+});
+test("vertical layout avoids prohibited punctuation at column boundaries", () => {
+  const closing = layoutVerticalText(
+    "あいう。え",
+    { x: 0, y: 0, width: 100, height: 60 },
+    { fontSize: 20, lineHeight: 1 },
+  );
+  assert.deepEqual(
+    closing.glyphs.map(({ column, row }) => [column, row]),
+    [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1],
+      [1, 2],
+    ],
+  );
+  const opening = layoutVerticalText(
+    "あい「う",
+    { x: 0, y: 0, width: 100, height: 60 },
+    { fontSize: 20, lineHeight: 1 },
+  );
+  assert.deepEqual(
+    opening.glyphs.map(({ column, row }) => [column, row]),
+    [
+      [0, 0],
+      [0, 1],
+      [1, 0],
+      [1, 1],
+    ],
   );
 });
 test("Zod rejects unsafe pages and panels", () => {

@@ -29,11 +29,9 @@ import {
   pageTemplates,
   rectFromPoints,
   reorderLayer,
-  segmentGraphemes,
   snapPointToGrid,
   snapRectToGrid,
   snapRectToGuides,
-  verticalGlyph,
   type Point,
   type Rect as CanvasRect,
   type PageTemplateId,
@@ -473,6 +471,95 @@ function TextNode({
   onSave: (value: TextObject) => void;
 }) {
   if (!item.visible) return null;
+  if (item.writingMode === "vertical") {
+    const layout = layoutVerticalText(
+      item.text,
+      {
+        x: item.padding,
+        y: item.padding,
+        width: Math.max(1, item.width - item.padding * 2),
+        height: Math.max(1, item.height - item.padding * 2),
+      },
+      {
+        fontSize: item.fontSize,
+        lineHeight: item.lineHeight,
+        letterSpacing: item.letterSpacing,
+      },
+    );
+    return (
+      <Group
+        id={`text-${item.id}`}
+        x={item.x}
+        y={item.y}
+        width={item.width}
+        height={item.height}
+        rotation={item.rotation}
+        opacity={item.opacity}
+        draggable={!item.locked}
+        onClick={(event) =>
+          onSelect(event.currentTarget, Boolean(event.evt.shiftKey))
+        }
+        onTap={(event) => onSelect(event.currentTarget, false)}
+        onDragMove={(event) => {
+          if (!onMove) return;
+          const next = onMove({
+            x: event.currentTarget.x(),
+            y: event.currentTarget.y(),
+            width: item.width,
+            height: item.height,
+          });
+          event.currentTarget.position(next);
+        }}
+        onDragEnd={(event) =>
+          onSave({
+            ...item,
+            x: event.currentTarget.x(),
+            y: event.currentTarget.y(),
+          })
+        }
+        onTransformEnd={(event) => {
+          const node = event.currentTarget;
+          const width = Math.max(20, node.width() * node.scaleX());
+          const height = Math.max(20, node.height() * node.scaleY());
+          node.scaleX(1);
+          node.scaleY(1);
+          onSave({
+            ...item,
+            x: node.x(),
+            y: node.y(),
+            width,
+            height,
+            rotation: node.rotation(),
+          });
+        }}
+      >
+        {layout.glyphs.map((glyph, index) => {
+          const fontSize = glyph.tateChuYoko
+            ? item.fontSize * 0.62
+            : item.fontSize;
+          const cellWidth = item.fontSize * item.lineHeight;
+          return (
+            <Text
+              key={`${glyph.column}-${glyph.row}-${index}`}
+              x={glyph.x - cellWidth / 2}
+              y={glyph.y - item.fontSize / 2}
+              width={cellWidth}
+              height={item.fontSize}
+              text={glyph.value}
+              fontFamily={item.fontFamily}
+              fontSize={fontSize}
+              fontStyle={item.fontWeight >= 600 ? "bold" : "normal"}
+              fill={item.color}
+              align="center"
+              verticalAlign="middle"
+              letterSpacing={glyph.tateChuYoko ? 0 : item.letterSpacing}
+              listening={false}
+            />
+          );
+        })}
+      </Group>
+    );
+  }
   return (
     <Text
       id={`text-${item.id}`}
@@ -480,11 +567,7 @@ function TextNode({
       y={item.y}
       width={item.width}
       height={item.height}
-      text={
-        item.writingMode === "vertical"
-          ? segmentGraphemes(item.text).map(verticalGlyph).join("\n")
-          : item.text
-      }
+      text={item.text}
       fontFamily={item.fontFamily}
       fontSize={item.fontSize}
       fontStyle={item.fontWeight >= 600 ? "bold" : "normal"}
@@ -846,6 +929,11 @@ function CanvasProperties({
               <option value="horizontal">横書き</option>
             </select>
           </label>
+          {item.writingMode === "vertical" && (
+            <small>
+              行頭・行末の基本禁則と、半角2桁数字の縦中横を自動適用します。
+            </small>
+          )}
           <label>
             文字サイズ
             <input
