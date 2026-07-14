@@ -157,14 +157,21 @@ function renderText(item: TextObject) {
         letterSpacing: item.letterSpacing,
       },
     );
-    return `<g transform="${transform}">${layout.glyphs
+    const baseGlyphs = layout.glyphs
       .map((glyph) => {
         const glyphFontSize = glyph.tateChuYoko
           ? item.fontSize * 0.62
           : item.fontSize;
         return `<text x="${glyph.x}" y="${glyph.y}" text-anchor="middle" dominant-baseline="central" ${common} font-size="${glyphFontSize}"${glyph.tateChuYoko ? ` letter-spacing="0" aria-label="${attr(glyph.value)}"` : ""}>${text(glyph.value)}</text>`;
       })
-      .join("")}</g>`;
+      .join("");
+    const rubyGlyphs = layout.rubyGlyphs
+      .map(
+        (glyph) =>
+          `<text x="${glyph.x}" y="${glyph.y}" text-anchor="middle" dominant-baseline="central" ${common} font-size="${item.fontSize * 0.42}" letter-spacing="0">${text(glyph.value)}</text>`,
+      )
+      .join("");
+    return `<g transform="${transform}">${baseGlyphs}${rubyGlyphs}</g>`;
   }
   const available = Math.max(1, item.width - item.padding * 2);
   const characters = Math.max(

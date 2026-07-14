@@ -10,6 +10,7 @@ import {
   layoutVerticalText,
   normalizeLayerOrder,
   normalizeRotation,
+  parseRubyText,
   pageSizeSchema,
   pageTemplates,
   pageToViewport,
@@ -201,11 +202,11 @@ test("vertical columns advance right to left", () => {
 });
 test("two ASCII digits form one tate-chu-yoko cell", () => {
   assert.deepEqual(tokenizeVerticalText("第12話345"), [
-    { value: "第", tateChuYoko: false },
-    { value: "12", tateChuYoko: true },
-    { value: "話", tateChuYoko: false },
-    { value: "34", tateChuYoko: true },
-    { value: "5", tateChuYoko: false },
+    { value: "第", tateChuYoko: false, sourceStart: 0, sourceLength: 1 },
+    { value: "12", tateChuYoko: true, sourceStart: 1, sourceLength: 2 },
+    { value: "話", tateChuYoko: false, sourceStart: 3, sourceLength: 1 },
+    { value: "34", tateChuYoko: true, sourceStart: 4, sourceLength: 2 },
+    { value: "5", tateChuYoko: false, sourceStart: 6, sourceLength: 1 },
   ]);
   const result = layoutVerticalText(
     "12月",
@@ -246,6 +247,30 @@ test("vertical layout avoids prohibited punctuation at column boundaries", () =>
       [1, 1],
     ],
   );
+});
+test("explicit ruby notation is parsed and laid out beside vertical text", () => {
+  assert.deepEqual(parseRubyText("これは｜漫画《まんが》です"), {
+    plainText: "これは漫画です",
+    annotations: [{ base: "漫画", reading: "まんが", start: 3, length: 2 }],
+  });
+  assert.deepEqual(parseRubyText("不完全な｜記法《"), {
+    plainText: "不完全な｜記法《",
+    annotations: [],
+  });
+  const result = layoutVerticalText(
+    "｜漫画《まんが》12",
+    { x: 0, y: 0, width: 100, height: 120 },
+    { fontSize: 20, lineHeight: 1 },
+  );
+  assert.deepEqual(
+    result.glyphs.map((glyph) => glyph.value),
+    ["漫", "画", "12"],
+  );
+  assert.deepEqual(
+    result.rubyGlyphs.map((glyph) => glyph.value),
+    ["ま", "ん", "が"],
+  );
+  assert.ok(result.rubyGlyphs.every((glyph) => glyph.x > result.glyphs[0].x));
 });
 test("Zod rejects unsafe pages and panels", () => {
   assert.equal(

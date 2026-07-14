@@ -557,6 +557,23 @@ function TextNode({
             />
           );
         })}
+        {layout.rubyGlyphs.map((glyph, index) => (
+          <Text
+            key={`ruby-${glyph.column}-${index}`}
+            x={glyph.x - item.fontSize * 0.3}
+            y={glyph.y - item.fontSize * 0.25}
+            width={item.fontSize * 0.6}
+            height={item.fontSize * 0.5}
+            text={glyph.value}
+            fontFamily={item.fontFamily}
+            fontSize={item.fontSize * 0.42}
+            fontStyle={item.fontWeight >= 600 ? "bold" : "normal"}
+            fill={item.color}
+            align="center"
+            verticalAlign="middle"
+            listening={false}
+          />
+        ))}
       </Group>
     );
   }
@@ -931,7 +948,8 @@ function CanvasProperties({
           </label>
           {item.writingMode === "vertical" && (
             <small>
-              行頭・行末の基本禁則と、半角2桁数字の縦中横を自動適用します。
+              基本禁則と半角2桁数字の縦中横を自動適用します。ルビは
+              「｜漫画《まんが》」の形式で入力します。
             </small>
           )}
           <label>
