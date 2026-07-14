@@ -7,7 +7,11 @@ import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
 import { UpdateControl } from "./features/updater/UpdateControl";
 import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
-import type { ExportProgress, OperationHistory } from "../preload/api";
+import type {
+  AutoBackupState,
+  ExportProgress,
+  OperationHistory,
+} from "../preload/api";
 
 const emptyForm = {
   title: "",
@@ -68,6 +72,7 @@ function App() {
     [rightPanelOpen, setRightPanelOpen] = React.useState(() =>
       readPanelPreference("mangai.right-panel-open", window.innerWidth >= 1300),
     ),
+    [autoBackup, setAutoBackup] = React.useState<AutoBackupState | null>(null),
     [assetUrls, setAssetUrls] = React.useState<Record<string, string>>({});
   const showError = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
@@ -90,6 +95,13 @@ function App() {
     });
   React.useEffect(() => {
     void refresh();
+  }, []);
+  React.useEffect(() => {
+    const refreshAutoBackup = () =>
+      window.mangai.autoBackupStatus().then(setAutoBackup).catch(showError);
+    void refreshAutoBackup();
+    const timer = window.setInterval(refreshAutoBackup, 15_000);
+    return () => window.clearInterval(timer);
   }, []);
   React.useEffect(() => {
     writePanelPreference("mangai.left-panel-open", leftPanelOpen);
@@ -208,6 +220,22 @@ function App() {
             <span>漫画制作プロジェクト</span>
           </div>
           <div className="header-actions">
+            <button
+              className="secondary"
+              disabled={autoBackup?.status === "running"}
+              title={autoBackup?.message}
+              onClick={async () => {
+                try {
+                  setAutoBackup(await window.mangai.runAutoBackup());
+                } catch (cause) {
+                  showError(cause);
+                }
+              }}
+            >
+              {autoBackup?.status === "running"
+                ? "バックアップ確認中…"
+                : "自動バックアップ"}
+            </button>
             <button className="secondary" onClick={restoreProject}>
               バックアップから復元
             </button>
@@ -217,6 +245,20 @@ function App() {
           </div>
           <UpdateControl />
         </header>
+        {autoBackup && (
+          <div
+            className={`home-backup-status ${autoBackup.status}`}
+            role={autoBackup.status === "error" ? "alert" : "status"}
+          >
+            <b>自動バックアップ:</b> {autoBackup.message}
+            {autoBackup.checkedAt && (
+              <small>
+                最終確認{" "}
+                {new Date(autoBackup.checkedAt).toLocaleString("ja-JP")}
+              </small>
+            )}
+          </div>
+        )}
         {error && <div className="error">{error}</div>}
         {creating && (
           <form className="modal" onSubmit={create}>

@@ -39,6 +39,12 @@ type ProjectBackupManifest = {
   createdAt: string;
   bundle: ProjectBundle;
 };
+export type AutoBackupRunResult = {
+  checkedAt: string;
+  created: Array<{ projectId: string; filePath: string; byteSize: number }>;
+  skipped: Array<{ projectId: string; reason: "unchanged" | "interval" }>;
+  errors: Array<{ projectId: string; message: string }>;
+};
 const mime = (file: string) =>
   ({
     ".jpg": "image/jpeg",
@@ -481,8 +487,99 @@ export class MangaiDatabase {
       compressionOptions: { level: 6 },
     });
     fs.mkdirSync(path.dirname(destination), { recursive: true });
-    fs.writeFileSync(destination, bytes);
+    const temporary = `${destination}.${process.pid}.partial`;
+    try {
+      fs.writeFileSync(temporary, bytes, { flag: "wx" });
+      if (fs.existsSync(destination)) fs.rmSync(destination);
+      fs.renameSync(temporary, destination);
+    } finally {
+      if (fs.existsSync(temporary)) fs.rmSync(temporary, { force: true });
+    }
     return { filePath: destination, byteSize: bytes.length };
+  }
+  async autoBackupProjects(options?: {
+    nowMs?: number;
+    minimumIntervalMs?: number;
+    retention?: number;
+  }): Promise<AutoBackupRunResult> {
+    const nowMs = options?.nowMs ?? Date.now();
+    const minimumIntervalMs = Math.max(
+      60_000,
+      options?.minimumIntervalMs ?? 30 * 60_000,
+    );
+    const retention = Math.min(50, Math.max(1, options?.retention ?? 5));
+    const result: AutoBackupRunResult = {
+      checkedAt: new Date(nowMs).toISOString(),
+      created: [],
+      skipped: [],
+      errors: [],
+    };
+    const root = path.join(this.paths.root, "backups", "automatic");
+    fs.mkdirSync(root, { recursive: true });
+    for (const project of this.listProjects()) {
+      try {
+        const directory = path.join(root, project.id);
+        fs.mkdirSync(directory, { recursive: true });
+        for (const name of fs.readdirSync(directory))
+          if (name.endsWith(".partial"))
+            fs.rmSync(path.join(directory, name), { force: true });
+        const files = fs
+          .readdirSync(directory)
+          .filter((name) => /^auto-.+-[0-9a-f]{12}\.mangai-backup$/.test(name))
+          .map((name) => {
+            const filePath = path.join(directory, name);
+            return {
+              name,
+              filePath,
+              modifiedAt: fs.statSync(filePath).mtimeMs,
+            };
+          })
+          .sort((a, b) => b.modifiedAt - a.modifiedAt);
+        const bundle = this.bundle(project.id);
+        const fingerprint = crypto
+          .createHash("sha256")
+          .update(
+            JSON.stringify({
+              ...bundle,
+              project: {
+                ...bundle.project,
+                storagePath: "",
+                lastOpenedAt: null,
+              },
+            }),
+          )
+          .digest("hex")
+          .slice(0, 12);
+        const latest = files[0];
+        if (latest?.name.endsWith(`-${fingerprint}.mangai-backup`)) {
+          result.skipped.push({ projectId: project.id, reason: "unchanged" });
+          continue;
+        }
+        if (latest && nowMs - latest.modifiedAt < minimumIntervalMs) {
+          result.skipped.push({ projectId: project.id, reason: "interval" });
+          continue;
+        }
+        const stamp = new Date(nowMs).toISOString().replace(/[:.]/g, "-");
+        const destination = path.join(
+          directory,
+          `auto-${stamp}-${fingerprint}.mangai-backup`,
+        );
+        const created = await this.backupProject(project.id, destination);
+        result.created.push({ projectId: project.id, ...created });
+        const retained = [
+          { name: path.basename(destination), filePath: destination },
+          ...files,
+        ];
+        for (const expired of retained.slice(retention))
+          fs.rmSync(expired.filePath, { force: true });
+      } catch (cause) {
+        result.errors.push({
+          projectId: project.id,
+          message: cause instanceof Error ? cause.message : String(cause),
+        });
+      }
+    }
+    return result;
   }
   async restoreProject(source: string) {
     const stat = fs.statSync(source);

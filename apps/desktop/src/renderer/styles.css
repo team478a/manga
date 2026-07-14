@@ -170,6 +170,31 @@ label {
   max-width: 1000px;
   margin: 15px auto;
 }
+.home-backup-status {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  max-width: 1000px;
+  margin: 14px auto 0;
+  padding: 10px 14px;
+  border: 1px solid #d9dedb;
+  border-radius: 7px;
+  background: #fff;
+  color: #59655f;
+  font-size: 13px;
+}
+.home-backup-status small {
+  margin-left: auto;
+}
+.home-backup-status.success {
+  border-color: #b9d9c7;
+  background: #f3faf6;
+}
+.home-backup-status.error {
+  border-color: #efb9b9;
+  background: #fff5f5;
+  color: #8c2929;
+}
 .floating {
   position: fixed;
   z-index: 20;

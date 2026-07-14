@@ -758,6 +758,82 @@ test("project backup restores canvas data and verifies asset integrity", async (
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test("automatic project backup skips unchanged data and keeps limited generations", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-auto-backup-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  const project = db.createProject({
+    title: "自動バックアップ",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  }).project;
+  const startedAt = Date.now();
+  const first = await db.autoBackupProjects({
+    nowMs: startedAt,
+    minimumIntervalMs: 60_000,
+    retention: 2,
+  });
+  assert.equal(first.created.length, 1);
+  assert.equal(first.errors.length, 0);
+
+  const unchanged = await db.autoBackupProjects({
+    nowMs: startedAt + 61_000,
+    minimumIntervalMs: 60_000,
+    retention: 2,
+  });
+  assert.equal(unchanged.created.length, 0);
+  assert.equal(unchanged.skipped[0].reason, "unchanged");
+
+  db.renameProject(project.id, "変更1");
+  const rateLimited = await db.autoBackupProjects({
+    nowMs: startedAt + 1_000,
+    minimumIntervalMs: 60_000,
+    retention: 2,
+  });
+  assert.equal(rateLimited.skipped[0].reason, "interval");
+  const second = await db.autoBackupProjects({
+    nowMs: startedAt + 62_000,
+    minimumIntervalMs: 60_000,
+    retention: 2,
+  });
+  assert.equal(second.created.length, 1);
+
+  const directory = path.join(root, "backups", "automatic", project.id);
+  fs.writeFileSync(path.join(directory, "interrupted.partial"), "partial");
+  db.renameProject(project.id, "変更2");
+  const third = await db.autoBackupProjects({
+    nowMs: startedAt + 123_000,
+    minimumIntervalMs: 60_000,
+    retention: 2,
+  });
+  assert.equal(third.created.length, 1);
+  assert.equal(third.errors.length, 0);
+  const files = fs.readdirSync(directory);
+  assert.equal(
+    files.filter((name) => name.endsWith(".mangai-backup")).length,
+    2,
+  );
+  assert.equal(
+    files.some((name) => name.endsWith(".partial")),
+    false,
+  );
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 test("project export creates PDF, ZIP, manifest and sales text", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-export-"));
   const paths = {

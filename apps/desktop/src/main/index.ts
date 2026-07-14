@@ -48,6 +48,21 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 let store: MangaiDatabase;
 let aiService: AIService;
 let updater: DesktopUpdater;
+type AutoBackupState = {
+  status: "idle" | "running" | "success" | "error";
+  checkedAt?: string;
+  createdCount: number;
+  skippedCount: number;
+  message: string;
+};
+let autoBackupState: AutoBackupState = {
+  status: "idle",
+  createdCount: 0,
+  skippedCount: 0,
+  message: "自動バックアップは起動後に確認します。",
+};
+let autoBackupTimer: NodeJS.Timeout | undefined;
+let autoBackupRunning = false;
 const exportControllers = new Map<string, AbortController>();
 function desktopPaths() {
   const root = path.join(app.getPath("documents"), "MANGAI");
@@ -74,6 +89,48 @@ function handle(
     }
   });
 }
+async function runAutoBackup() {
+  if (autoBackupRunning) return autoBackupState;
+  autoBackupRunning = true;
+  autoBackupState = {
+    ...autoBackupState,
+    status: "running",
+    message: "確認中…",
+  };
+  try {
+    const result = await store.autoBackupProjects();
+    autoBackupState = {
+      status: result.errors.length ? "error" : "success",
+      checkedAt: result.checkedAt,
+      createdCount: result.created.length,
+      skippedCount: result.skipped.length,
+      message: result.errors.length
+        ? `${result.errors.length}件のProjectをバックアップできませんでした。`
+        : result.created.length
+          ? `${result.created.length}件の自動バックアップを作成しました。`
+          : "すべてのProjectはバックアップ済みです。",
+    };
+    if (result.errors.length) {
+      const logPath = path.join(desktopPaths().logs, "desktop.log");
+      fs.mkdirSync(path.dirname(logPath), { recursive: true });
+      fs.appendFileSync(
+        logPath,
+        `${result.errors.map((error) => JSON.stringify({ at: result.checkedAt, scope: "auto-backup", ...error })).join("\n")}\n`,
+      );
+    }
+  } catch (cause) {
+    autoBackupState = {
+      status: "error",
+      checkedAt: new Date().toISOString(),
+      createdCount: 0,
+      skippedCount: 0,
+      message: cause instanceof Error ? cause.message : String(cause),
+    };
+  } finally {
+    autoBackupRunning = false;
+  }
+  return autoBackupState;
+}
 function register() {
   handle("app:paths", () => desktopPaths());
   handle("update:state", () => updater.getState());
@@ -81,6 +138,8 @@ function register() {
   handle("update:download", () => updater.download());
   handle("update:install", () => updater.install());
   handle("projects:list", () => store.listProjects());
+  handle("projects:auto-backup:status", () => autoBackupState);
+  handle("projects:auto-backup:run", () => runAutoBackup());
   handle("projects:choose-storage", async (v) => {
     const initialPath =
       v && typeof v.currentPath === "string" && v.currentPath.trim()
@@ -450,6 +509,8 @@ app.whenReady().then(async () => {
   updater = new DesktopUpdater();
   register();
   await createWindow();
+  setTimeout(() => void runAutoBackup(), 15_000);
+  autoBackupTimer = setInterval(() => void runAutoBackup(), 30 * 60_000);
   if (updater.getState().status === "idle")
     setTimeout(() => void updater.check(), 5000);
   app.on("activate", () => {
@@ -459,6 +520,9 @@ app.whenReady().then(async () => {
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });
-app.on("before-quit", () => store?.close());
+app.on("before-quit", () => {
+  if (autoBackupTimer) clearInterval(autoBackupTimer);
+  store?.close();
+});
 
 export { desktopPaths };

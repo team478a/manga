@@ -70,6 +70,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 
 - プロジェクト作成、一覧、再オープン、名前変更、複製、ゴミ箱移動、最近開いた順、代表画像表示
 - Project編集データと素材を`.mangai-backup`へ保存し、新しいProjectとして復元
+- 変更検知、30分間隔、Projectごと5世代の自動バックアップ
 - 素材・情報・Canvasレイヤーパネルの開閉、状態保持、狭幅レイアウト
 - 新規Projectの保存先フォルダー選択と既定保存先への復帰
 - Episode作成・切り替え・名前変更・並び替え・削除

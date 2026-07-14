@@ -43,6 +43,13 @@ export type ExportProgress = {
   pageNumber?: number;
   status: "rendering" | "packaging" | "complete";
 };
+export type AutoBackupState = {
+  status: "idle" | "running" | "success" | "error";
+  checkedAt?: string;
+  createdCount: number;
+  skippedCount: number;
+  message: string;
+};
 export type DesktopApi = {
   listProjects: () => Promise<Project[]>;
   chooseProjectStorage: (currentPath?: string) => Promise<string | null>;
@@ -54,6 +61,8 @@ export type DesktopApi = {
   backupProject: (
     id: string,
   ) => Promise<{ filePath: string; byteSize: number } | null>;
+  autoBackupStatus: () => Promise<AutoBackupState>;
+  runAutoBackup: () => Promise<AutoBackupState>;
   restoreProject: () => Promise<ProjectBundle | null>;
   deleteProject: (id: string) => Promise<void>;
   exportProject: (
