@@ -1,6 +1,7 @@
 import React from "react";
 import type { ProjectBundle } from "@mangai/project-core";
 import type { ChatEvent } from "../../../preload/api";
+import { StatusBadge } from "../../components/common/StatusBadge";
 type Message = {
   id: string;
   role: "user" | "assistant" | "system";
@@ -112,7 +113,9 @@ export function CreatorChat({
       <header className="tool-header">
         <button onClick={onClose}>← ワークスペース</button>
         <h1>Creator Chat</h1>
-        <span>{requestId ? "生成中" : "待機中"}</span>
+        <StatusBadge tone={requestId ? "info" : "success"} live>
+          {requestId ? "生成中" : "待機中"}
+        </StatusBadge>
       </header>
       <div className="chat-layout">
         <aside>

@@ -181,11 +181,14 @@ Project、Episode、Page、Asset、Canvasオブジェクト、生成ジョブ、
 
 ## 12. 実装順序とコミット境界
 
-### UI-1 デザイントークンと共通部品
+### UI-1 デザイントークンと共通部品（完了）
 
 - 色、文字、余白、境界線、角丸、フォーカス、状態色をCSS変数化
-- `IconButton`、`Tabs`、`StatusBadge`、`Tooltip`相当の最小部品
-- 現行レイアウトを維持したまま適用
+- 共通`StatusBadge`を保存状態とCreator Chat状態へ適用
+- 状態を色だけでなく点と文言で表示
+- 現行レイアウト、Canvas、IPCを維持したままダークテーマを適用
+
+`IconButton`、`Tabs`、`Tooltip`は利用箇所と同時に実装し、未使用の共通部品を先行追加しない。
 
 ### UI-2 App Shell
 
@@ -228,6 +231,6 @@ Project、Episode、Page、Asset、Canvasオブジェクト、生成ジョブ、
 
 ## 13. 次の実装単位
 
-次は`UI-1 デザイントークンと共通部品`へ進む。
+次は`UI-2 App Shell`へ進む。
 
-初回変更ではSQLite、IPC、Canvasロジック、画面配置を変更せず、現在の画面へ置き換え可能なCSS変数と共通状態表現を導入する。これにより、その後のApp Shell変更を小さな差分で実施できる。
+`AppHeader`、`GlobalNav`、`ProjectPanel`、`MainWorkspace`、`InspectorPanel`、`StatusBar`の責務を分離する。最初は既存propsとコールバックを移し、Canvas内部、SQLite、IPC、Undo / Redoの処理は変更しない。

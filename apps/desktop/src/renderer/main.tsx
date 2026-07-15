@@ -9,6 +9,7 @@ import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
 import { HubStatus } from "./features/hub-status/HubStatus";
 import { UpdateControl } from "./features/updater/UpdateControl";
 import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
+import { StatusBadge, type StatusTone } from "./components/common/StatusBadge";
 import type {
   AutoBackupState,
   DatabaseRecoveryState,
@@ -548,7 +549,9 @@ function App() {
           ← プロジェクト
         </button>
         <strong>{bundle.project.title}</strong>
-        <span className="status">● {saving}</span>
+        <StatusBadge tone={savingTone(saving)} live>
+          {saving}
+        </StatusBadge>
         <span className="spacer" />
         <button
           className={leftPanelOpen ? "active" : "secondary"}
@@ -928,6 +931,15 @@ function App() {
       </div>
     </main>
   );
+}
+
+function savingTone(value: string): StatusTone {
+  if (value.includes("失敗")) return "danger";
+  if (value.includes("キャンセル") || value.includes("未保存"))
+    return "warning";
+  if (value.includes("中")) return "info";
+  if (value.includes("保存済み")) return "success";
+  return "neutral";
 }
 
 function Inspector({
