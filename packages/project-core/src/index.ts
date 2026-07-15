@@ -139,6 +139,11 @@ export type Asset = {
   height: number;
   byteSize: number;
   sha256: string;
+  libraryCategory:
+    "unclassified" | "background" | "prop" | "effect" | "character" | "other";
+  libraryTags: string[];
+  libraryFavorite: boolean;
+  libraryUpdatedAt: string | null;
   createdAt: string;
 };
 export type ProjectBundle = {

@@ -95,6 +95,12 @@ contextBridge.exposeInMainWorld("mangai", {
       paths: files.map((f) => webUtils.getPathForFile(f)).filter(Boolean),
     }),
   deleteAsset: (id: string) => ipcRenderer.invoke("assets:delete", { id }),
+  saveAssetLibraryMetadata: (value: {
+    assetId: string;
+    category: string;
+    tags: string[];
+    favorite: boolean;
+  }) => ipcRenderer.invoke("assets:library:save", value),
   assetUrl: (relativePath: string) =>
     ipcRenderer.invoke("assets:url", { relativePath }),
   getPaths: () => ipcRenderer.invoke("app:paths"),

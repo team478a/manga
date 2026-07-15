@@ -285,6 +285,102 @@ test("project generation policy survives reopening, duplication and backup resto
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
+test("asset library metadata survives reopening, duplication and backup restore", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-assets-library-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "素材ライブラリ",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  const sourceImage = path.join(root, "school-background.png");
+  await sharp({
+    create: {
+      width: 32,
+      height: 32,
+      channels: 4,
+      background: { r: 30, g: 120, b: 220, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(sourceImage);
+  bundle = db.importAssets(bundle.project.id, [sourceImage]);
+  bundle = db.saveAssetLibraryMetadata({
+    assetId: bundle.assets[0].id,
+    category: "background",
+    tags: ["学校", "昼", "学校"],
+    favorite: true,
+  });
+  const expected = {
+    libraryCategory: "background",
+    libraryTags: ["学校", "昼"],
+    libraryFavorite: true,
+  };
+  assert.deepEqual(
+    {
+      libraryCategory: bundle.assets[0].libraryCategory,
+      libraryTags: bundle.assets[0].libraryTags,
+      libraryFavorite: bundle.assets[0].libraryFavorite,
+    },
+    expected,
+  );
+
+  db.close();
+  db = new MangaiDatabase(paths);
+  bundle = db.openProject(bundle.project.id);
+  assert.equal(bundle.assets[0].libraryCategory, "background");
+  assert.deepEqual(bundle.assets[0].libraryTags, ["学校", "昼"]);
+
+  const duplicate = db.duplicateProject(bundle.project.id);
+  assert.equal(duplicate.assets[0].libraryCategory, "background");
+  assert.deepEqual(duplicate.assets[0].libraryTags, ["学校", "昼"]);
+  assert.equal(duplicate.assets[0].libraryFavorite, true);
+
+  const backupPath = path.join(root, "library.mangai-backup");
+  await db.backupProject(bundle.project.id, backupPath);
+  const restored = await db.restoreProject(backupPath);
+  assert.equal(restored.assets[0].libraryCategory, "background");
+  assert.deepEqual(restored.assets[0].libraryTags, ["学校", "昼"]);
+  assert.equal(restored.assets[0].libraryFavorite, true);
+
+  const archive = await JSZip.loadAsync(fs.readFileSync(backupPath));
+  const manifest = JSON.parse(
+    await archive.file("manifest.json").async("string"),
+  );
+  for (const asset of manifest.bundle.assets) {
+    delete asset.libraryCategory;
+    delete asset.libraryTags;
+    delete asset.libraryFavorite;
+    delete asset.libraryUpdatedAt;
+  }
+  archive.file("manifest.json", JSON.stringify(manifest));
+  const legacyPath = path.join(root, "library-legacy.mangai-backup");
+  fs.writeFileSync(
+    legacyPath,
+    await archive.generateAsync({ type: "nodebuffer" }),
+  );
+  const legacy = await db.restoreProject(legacyPath);
+  assert.equal(legacy.assets[0].libraryCategory, "unclassified");
+  assert.deepEqual(legacy.assets[0].libraryTags, []);
+  assert.equal(legacy.assets[0].libraryFavorite, false);
+
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
 test("project duplication preserves assets, canvas content and rendered pages", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-duplicate-"));
   const paths = {
@@ -631,6 +727,12 @@ test("asset deletion uses project-local trash and supports undo and redo", async
     .toFile(image);
   bundle = db.importAssets(bundle.project.id, [image]);
   const asset = bundle.assets[0];
+  bundle = db.saveAssetLibraryMetadata({
+    assetId: asset.id,
+    category: "background",
+    tags: ["undo対象"],
+    favorite: true,
+  });
   bundle = db.addPage(bundle.episodes[0].id, asset.id);
   const originalAssetPath = path.join(selected, asset.relativePath);
   bundle = db.captureHistory(
@@ -657,6 +759,9 @@ test("asset deletion uses project-local trash and supports undo and redo", async
   assert.equal(bundle.assets[0].id, asset.id);
   assert.equal(bundle.pages[0].imageAssetId, asset.id);
   assert.equal(bundle.project.coverAssetId, asset.id);
+  assert.equal(bundle.assets[0].libraryCategory, "background");
+  assert.deepEqual(bundle.assets[0].libraryTags, ["undo対象"]);
+  assert.equal(bundle.assets[0].libraryFavorite, true);
   assert.equal(fs.existsSync(originalAssetPath), true);
   assert.equal(fs.readdirSync(assetTrash).length, 0);
 

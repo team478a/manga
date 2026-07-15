@@ -1,5 +1,5 @@
 import type { ProjectBundle, Project } from "@mangai/project-core";
-import type { ProjectInput } from "@mangai/shared";
+import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
 import type {
   GenerationRouteDecisionRecord,
   ProjectGenerationPolicy,
@@ -236,6 +236,9 @@ export type DesktopApi = {
     files: File[],
   ) => Promise<ProjectBundle>;
   deleteAsset: (id: string) => Promise<ProjectBundle>;
+  saveAssetLibraryMetadata: (
+    value: AssetLibraryMetadataInput,
+  ) => Promise<ProjectBundle>;
   assetUrl: (relativePath: string) => Promise<string>;
   getPaths: () => Promise<{
     root: string;

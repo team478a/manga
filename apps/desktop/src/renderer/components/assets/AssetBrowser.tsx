@@ -1,9 +1,24 @@
 import React from "react";
 import type { Episode, ProjectBundle } from "@mangai/project-core";
-import { Search, Upload } from "lucide-react";
+import type { AssetLibraryCategory } from "@mangai/shared";
+import { Search, Star, Upload } from "lucide-react";
 import { useI18n } from "../../i18n";
 
 type AssetFilter = "all" | "png" | "jpeg" | "webp";
+type CategoryFilter = "all" | AssetLibraryCategory;
+
+const categories: AssetLibraryCategory[] = [
+  "unclassified",
+  "background",
+  "prop",
+  "effect",
+  "character",
+  "other",
+];
+
+function categoryKey(category: AssetLibraryCategory) {
+  return `asset.category.${category}` as const;
+}
 
 export function AssetBrowser({
   bundle,
@@ -26,18 +41,36 @@ export function AssetBrowser({
 }) {
   const { localeCode, t } = useI18n();
   const [query, setQuery] = React.useState(""),
-    [filter, setFilter] = React.useState<AssetFilter>("all");
+    [filter, setFilter] = React.useState<AssetFilter>("all"),
+    [categoryFilter, setCategoryFilter] = React.useState<CategoryFilter>("all"),
+    [favoritesOnly, setFavoritesOnly] = React.useState(false),
+    [editCategory, setEditCategory] =
+      React.useState<AssetLibraryCategory>("unclassified"),
+    [editTags, setEditTags] = React.useState(""),
+    [editFavorite, setEditFavorite] = React.useState(false);
 
-  const usedAssetIds = React.useMemo(() => {
-    const ids = new Set<string>();
-    if (bundle.project.coverAssetId) ids.add(bundle.project.coverAssetId);
+  const selectedAsset = bundle.assets.find(
+    (asset) => asset.id === selectedAssetId,
+  );
+  React.useEffect(() => {
+    setEditCategory(selectedAsset?.libraryCategory ?? "unclassified");
+    setEditTags(selectedAsset?.libraryTags.join(", ") ?? "");
+    setEditFavorite(selectedAsset?.libraryFavorite ?? false);
+  }, [selectedAsset]);
+
+  const assetUsageCounts = React.useMemo(() => {
+    const counts = new Map<string, number>();
+    const add = (id: string | null) => {
+      if (id) counts.set(id, (counts.get(id) ?? 0) + 1);
+    };
+    add(bundle.project.coverAssetId);
     bundle.pages.forEach((page) => {
-      if (page.imageAssetId) ids.add(page.imageAssetId);
+      add(page.imageAssetId);
     });
     bundle.panels.forEach((panel) => {
-      if (panel.imageAssetId) ids.add(panel.imageAssetId);
+      add(panel.imageAssetId);
     });
-    return ids;
+    return counts;
   }, [bundle.project.coverAssetId, bundle.pages, bundle.panels]);
 
   const assets = React.useMemo(() => {
@@ -45,15 +78,23 @@ export function AssetBrowser({
     return bundle.assets.filter((asset) => {
       const matchesQuery =
         !normalizedQuery ||
-        asset.fileName.toLocaleLowerCase(localeCode).includes(normalizedQuery);
+        [asset.fileName, ...asset.libraryTags]
+          .join(" ")
+          .toLocaleLowerCase(localeCode)
+          .includes(normalizedQuery);
       const matchesFilter =
         filter === "all" ||
         (filter === "png" && asset.mimeType === "image/png") ||
         (filter === "jpeg" && asset.mimeType === "image/jpeg") ||
         (filter === "webp" && asset.mimeType === "image/webp");
-      return matchesQuery && matchesFilter;
+      const matchesCategory =
+        categoryFilter === "all" || asset.libraryCategory === categoryFilter;
+      const matchesFavorite = !favoritesOnly || asset.libraryFavorite;
+      return (
+        matchesQuery && matchesFilter && matchesCategory && matchesFavorite
+      );
     });
-  }, [bundle.assets, filter, localeCode, query]);
+  }, [bundle.assets, categoryFilter, favoritesOnly, filter, localeCode, query]);
 
   return (
     <>
@@ -84,7 +125,79 @@ export function AssetBrowser({
           <option value="jpeg">JPEG</option>
           <option value="webp">WebP</option>
         </select>
+        <select
+          aria-label={t("asset.category")}
+          value={categoryFilter}
+          onChange={(event) =>
+            setCategoryFilter(event.target.value as CategoryFilter)
+          }
+        >
+          <option value="all">{t("asset.allCategories")}</option>
+          {categories.map((category) => (
+            <option key={category} value={category}>
+              {t(categoryKey(category))}
+            </option>
+          ))}
+        </select>
+        <button
+          className={favoritesOnly ? "active secondary" : "secondary"}
+          aria-pressed={favoritesOnly}
+          onClick={() => setFavoritesOnly((value) => !value)}
+        >
+          <Star size={15} aria-hidden="true" />
+          {t("asset.favorites")}
+        </button>
       </section>
+      {selectedAsset && (
+        <section className="asset-library-editor">
+          <strong>{t("asset.libraryMetadata")}</strong>
+          <select
+            aria-label={t("asset.category")}
+            value={editCategory}
+            onChange={(event) =>
+              setEditCategory(event.target.value as AssetLibraryCategory)
+            }
+          >
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {t(categoryKey(category))}
+              </option>
+            ))}
+          </select>
+          <input
+            value={editTags}
+            maxLength={1000}
+            placeholder={t("asset.tagsPlaceholder")}
+            aria-label={t("asset.tags")}
+            onChange={(event) => setEditTags(event.target.value)}
+          />
+          <label>
+            <input
+              type="checkbox"
+              checked={editFavorite}
+              onChange={(event) => setEditFavorite(event.target.checked)}
+            />
+            {t("asset.favorite")}
+          </label>
+          <button
+            onClick={() =>
+              apply(
+                window.mangai.saveAssetLibraryMetadata({
+                  assetId: selectedAsset.id,
+                  category: editCategory,
+                  tags: editTags
+                    .split(/[,、\n]/)
+                    .map((tag) => tag.trim())
+                    .filter(Boolean),
+                  favorite: editFavorite,
+                }),
+              )
+            }
+          >
+            {t("asset.saveMetadata")}
+          </button>
+        </section>
+      )}
       <section className="assets">
         <div className="asset-browser-heading">
           <h3>{t("asset.heading")}</h3>
@@ -98,7 +211,8 @@ export function AssetBrowser({
         {assets.length ? (
           <div className="asset-grid">
             {assets.map((asset) => {
-              const inUse = usedAssetIds.has(asset.id);
+              const usageCount = assetUsageCounts.get(asset.id) ?? 0;
+              const inUse = usageCount > 0;
               return (
                 <button
                   key={asset.id}
@@ -121,10 +235,25 @@ export function AssetBrowser({
                   <span className="asset-thumbnail">
                     <img src={assetUrls[asset.id]} alt="" />
                     {inUse && (
-                      <span className="asset-usage">{t("asset.inUse")}</span>
+                      <span className="asset-usage">
+                        {t("asset.usageCount", { count: usageCount })}
+                      </span>
+                    )}
+                    {asset.libraryFavorite && (
+                      <Star
+                        className="asset-favorite"
+                        size={15}
+                        fill="currentColor"
+                        aria-label={t("asset.favorite")}
+                      />
                     )}
                   </span>
                   <small>{asset.fileName}</small>
+                  {asset.libraryCategory !== "unclassified" && (
+                    <span className="asset-category">
+                      {t(categoryKey(asset.libraryCategory))}
+                    </span>
+                  )}
                 </button>
               );
             })}

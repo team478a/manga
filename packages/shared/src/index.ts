@@ -58,6 +58,23 @@ export const importAssetsSchema = z.object({
   paths: z.array(z.string().min(1)).min(1).max(500),
 });
 export const assetIdSchema = z.object({ id: idSchema });
+export const assetLibraryCategorySchema = z.enum([
+  "unclassified",
+  "background",
+  "prop",
+  "effect",
+  "character",
+  "other",
+]);
+export const assetLibraryMetadataInputSchema = z.object({
+  assetId: idSchema,
+  category: assetLibraryCategorySchema,
+  tags: z
+    .array(z.string().trim().min(1).max(50))
+    .max(20)
+    .transform((tags) => [...new Set(tags)]),
+  favorite: z.boolean(),
+});
 export const pagePromptSchema = z.object({
   id: idSchema,
   prompt: z.string().max(10000),
@@ -67,3 +84,7 @@ export const pagePromptSchema = z.object({
 
 export type ProjectInput = z.infer<typeof projectInputSchema>;
 export type HubStatusRequest = z.infer<typeof hubStatusRequestSchema>;
+export type AssetLibraryCategory = z.infer<typeof assetLibraryCategorySchema>;
+export type AssetLibraryMetadataInput = z.infer<
+  typeof assetLibraryMetadataInputSchema
+>;

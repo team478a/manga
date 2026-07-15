@@ -918,6 +918,39 @@ label {
   justify-content: space-between;
   gap: 8px;
 }
+.asset-library-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.asset-library-editor strong,
+.asset-library-editor > input {
+  grid-column: 1 / -1;
+}
+.asset-library-editor label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.asset-favorite {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #f5b942;
+  filter: drop-shadow(0 1px 2px #0008);
+}
+.asset-category {
+  align-self: flex-start;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--surface-raised);
+  color: var(--text-muted);
+  font-size: 10px;
+}
 .asset-browser-heading h3 {
   margin-bottom: 8px;
 }

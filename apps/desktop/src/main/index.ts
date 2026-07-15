@@ -33,6 +33,7 @@ import {
 } from "./hub-device-store.js";
 import {
   assetIdSchema,
+  assetLibraryMetadataInputSchema,
   episodeInputSchema,
   importAssetsSchema,
   pageInputSchema,
@@ -546,6 +547,9 @@ function register() {
       { assetIds: [id] },
     );
   });
+  handle("assets:library:save", (v) =>
+    store.saveAssetLibraryMetadata(assetLibraryMetadataInputSchema.parse(v)),
+  );
   handle("assets:url", (v) =>
     store.assetData(
       v && typeof v.relativePath === "string" ? v.relativePath : "",

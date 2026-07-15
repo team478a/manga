@@ -17,7 +17,12 @@ import {
   type SalesPackageManifest,
 } from "@mangai/export-core";
 import type { ProjectBundle, Project } from "@mangai/project-core";
-import { projectInputSchema, type ProjectInput } from "@mangai/shared";
+import {
+  assetLibraryMetadataInputSchema,
+  projectInputSchema,
+  type AssetLibraryMetadataInput,
+  type ProjectInput,
+} from "@mangai/shared";
 import {
   defaultPromptTemplates,
   generationJobDraftSchema,
@@ -328,7 +333,9 @@ export class MangaiDatabase {
               ? "hybrid-generation-policy-v1"
               : !this.hasMigration("hybrid-generation-routing-v1")
                 ? "hybrid-generation-routing-v1"
-                : null;
+                : !this.hasMigration("asset-library-v1")
+                  ? "asset-library-v1"
+                  : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -405,6 +412,7 @@ export class MangaiDatabase {
     this.migratePanelShapeV1();
     this.migrateGenerationPolicyV1();
     this.migrateGenerationRoutingV1();
+    this.migrateAssetLibraryV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -627,6 +635,36 @@ export class MangaiDatabase {
           "Hybrid generation route decisions",
           stamp,
         );
+    })();
+  }
+  private migrateAssetLibraryV1() {
+    if (this.hasMigration("asset-library-v1")) return;
+    const columns = new Set(
+      (
+        this.db.prepare("pragma table_info(assets)").all() as Array<{
+          name: string;
+        }>
+      ).map((column) => column.name),
+    );
+    const additions = [
+      ["library_category", "text not null default 'unclassified'"],
+      ["library_tags_json", "text not null default '[]'"],
+      ["library_favorite", "integer not null default 0"],
+      ["library_updated_at", "text"],
+    ] as const;
+    const stamp = now();
+    this.db.transaction(() => {
+      for (const [column, definition] of additions)
+        if (!columns.has(column))
+          this.db.exec(`alter table assets add column ${column} ${definition}`);
+      this.db.exec(
+        "create index if not exists idx_assets_library on assets(project_id,library_category,library_favorite,created_at)",
+      );
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run("asset-library-v1", "Project asset library metadata", stamp);
     })();
   }
   private project(row: any): Project {
@@ -854,7 +892,11 @@ export class MangaiDatabase {
         for (const { asset, assetId, relativePath } of preparedAssets)
           this.db
             .prepare(
-              "insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at) values(?,?,?,?,?,?,?,?,?,?)",
+              `insert into assets(
+                 id,project_id,file_name,relative_path,mime_type,width,height,
+                 byte_size,sha256,created_at,library_category,
+                 library_tags_json,library_favorite,library_updated_at
+               ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
             )
             .run(
               assetId,
@@ -867,6 +909,10 @@ export class MangaiDatabase {
               asset.byteSize,
               asset.sha256,
               stamp,
+              asset.libraryCategory,
+              JSON.stringify(asset.libraryTags),
+              asset.libraryFavorite ? 1 : 0,
+              asset.libraryUpdatedAt,
             );
         for (const episode of source.episodes)
           this.db
@@ -1407,7 +1453,11 @@ export class MangaiDatabase {
         for (const { asset, id, relativePath } of preparedAssets)
           this.db
             .prepare(
-              "insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at) values(?,?,?,?,?,?,?,?,?,?)",
+              `insert into assets(
+                 id,project_id,file_name,relative_path,mime_type,width,height,
+                 byte_size,sha256,created_at,library_category,
+                 library_tags_json,library_favorite,library_updated_at
+               ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
             )
             .run(
               id,
@@ -1420,6 +1470,10 @@ export class MangaiDatabase {
               asset.byteSize,
               asset.sha256,
               stamp,
+              asset.libraryCategory ?? "unclassified",
+              JSON.stringify(asset.libraryTags ?? []),
+              asset.libraryFavorite ? 1 : 0,
+              asset.libraryUpdatedAt ?? null,
             );
         for (const episode of sourceBundle.episodes) {
           const id = ensureMappedId(episodeMap, episode.id);
@@ -1726,6 +1780,10 @@ export class MangaiDatabase {
         sha256: asset.sha256,
         generationJobId: asset.generation_job_id,
         metadataJson: asset.metadata_json,
+        libraryCategory: asset.library_category ?? "unclassified",
+        libraryTagsJson: asset.library_tags_json ?? "[]",
+        libraryFavorite: Boolean(asset.library_favorite),
+        libraryUpdatedAt: asset.library_updated_at ?? null,
         createdAt: asset.created_at,
       }));
     const generationOutputs = (
@@ -2078,8 +2136,11 @@ export class MangaiDatabase {
     }
 
     const insert = this.db.prepare(
-      `insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at,generation_job_id,metadata_json)
-       values(?,?,?,?,?,?,?,?,?,?,?,?)`,
+      `insert into assets(
+         id,project_id,file_name,relative_path,mime_type,width,height,byte_size,
+         sha256,created_at,generation_job_id,metadata_json,library_category,
+         library_tags_json,library_favorite,library_updated_at
+       ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
     );
     for (const asset of targetAssets) {
       if (currentById.has(asset.id)) continue;
@@ -2109,6 +2170,10 @@ export class MangaiDatabase {
         asset.createdAt,
         asset.generationJobId ?? null,
         asset.metadataJson ?? "{}",
+        asset.libraryCategory ?? "unclassified",
+        asset.libraryTagsJson ?? "[]",
+        asset.libraryFavorite ? 1 : 0,
+        asset.libraryUpdatedAt ?? null,
       );
     }
   }
@@ -2652,6 +2717,28 @@ export class MangaiDatabase {
         .run(assetId, now(), projectId);
     }
     return this.bundle(projectId);
+  }
+  saveAssetLibraryMetadata(input: AssetLibraryMetadataInput) {
+    input = assetLibraryMetadataInputSchema.parse(input);
+    const asset = this.db
+      .prepare("select project_id as projectId from assets where id=?")
+      .get(input.assetId) as { projectId: string } | undefined;
+    if (!asset) throw new Error("素材が見つかりません。");
+    this.db
+      .prepare(
+        `update assets
+         set library_category=?,library_tags_json=?,library_favorite=?,
+             library_updated_at=?
+         where id=?`,
+      )
+      .run(
+        input.category,
+        JSON.stringify(input.tags),
+        input.favorite ? 1 : 0,
+        now(),
+        input.assetId,
+      );
+    return this.bundle(asset.projectId);
   }
   deleteAsset(id: string) {
     const a = this.db
@@ -3760,6 +3847,10 @@ export class MangaiDatabase {
       height: a.height,
       byteSize: a.byte_size,
       sha256: a.sha256,
+      libraryCategory: a.library_category ?? "unclassified",
+      libraryTags: JSON.parse(a.library_tags_json ?? "[]"),
+      libraryFavorite: Boolean(a.library_favorite),
+      libraryUpdatedAt: a.library_updated_at ?? null,
       createdAt: a.created_at,
     }));
     return {
