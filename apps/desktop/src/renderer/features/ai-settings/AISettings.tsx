@@ -4,6 +4,7 @@ import type {
   AISettingsHistoryItem,
   DiagnosticsState,
 } from "../../../preload/api";
+import { useI18n } from "../../i18n";
 
 type PromptTemplate = {
   id: string;
@@ -81,6 +82,7 @@ async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
 }
 
 export function AISettings({ onClose }: { onClose: () => void }) {
+  const { locale, setLocale, t } = useI18n();
   const [settings, setSettings] = React.useState<ProviderSettings[]>([]),
     [models, setModels] = React.useState<
       Record<string, Array<{ id: string; name: string; cached?: boolean }>>
@@ -262,11 +264,24 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     <main className="tool-page">
       <header className="tool-header">
         <button onClick={onClose}>← ワークスペース</button>
-        <h1>設定</h1>
+        <h1>{t("nav.settings")}</h1>
       </header>
       <div className="tool-content">
         <section className="panel-lite">
-          <h2>一般設定</h2>
+          <h2>{t("settings.general")}</h2>
+          <label>
+            {t("settings.language")}
+            <select
+              value={locale}
+              onChange={(event) =>
+                setLocale(event.target.value === "en" ? "en" : "ja")
+              }
+            >
+              <option value="ja">{t("settings.japanese")}</option>
+              <option value="en">{t("settings.english")}</option>
+            </select>
+            <small>{t("settings.languageHelp")}</small>
+          </label>
           <p>データ保存先: {paths?.root ?? "読み込み中"}</p>
           <p>AIログには秘密情報を保存しません。クラウドAPIキーは未対応です。</p>
         </section>

@@ -7,19 +7,20 @@ import {
   MessageSquare,
   Settings,
 } from "lucide-react";
+import { useI18n } from "../../i18n";
 
 export type WorkspaceView = "editor" | "chat" | "jobs" | "hub" | "settings";
 
 const items: Array<{
   id: WorkspaceView;
-  label: string;
+  labelKey: "nav.editor" | "nav.chat" | "nav.jobs" | "nav.hub" | "nav.settings";
   icon: React.ComponentType<{ size?: number; strokeWidth?: number }>;
 }> = [
-  { id: "editor", label: "漫画編集", icon: FolderKanban },
-  { id: "chat", label: "Creator Chat", icon: MessageSquare },
-  { id: "jobs", label: "画像生成", icon: ImagePlus },
-  { id: "hub", label: "Hub連携", icon: Cloud },
-  { id: "settings", label: "設定", icon: Settings },
+  { id: "editor", labelKey: "nav.editor", icon: FolderKanban },
+  { id: "chat", labelKey: "nav.chat", icon: MessageSquare },
+  { id: "jobs", labelKey: "nav.jobs", icon: ImagePlus },
+  { id: "hub", labelKey: "nav.hub", icon: Cloud },
+  { id: "settings", labelKey: "nav.settings", icon: Settings },
 ];
 
 export function GlobalNav({
@@ -31,12 +32,13 @@ export function GlobalNav({
   onSelect: (view: WorkspaceView) => void;
   onProjects: () => void;
 }) {
+  const { t } = useI18n();
   return (
-    <nav className="global-nav" aria-label="メインナビゲーション">
+    <nav className="global-nav" aria-label={t("nav.main")}>
       <button
         className="global-nav-brand"
-        title="Project一覧"
-        aria-label="Project一覧"
+        title={t("nav.projects")}
+        aria-label={t("nav.projects")}
         onClick={onProjects}
       >
         M
@@ -44,17 +46,18 @@ export function GlobalNav({
       <div className="global-nav-items">
         {items.map((item) => {
           const Icon = item.icon;
+          const label = t(item.labelKey);
           return (
             <button
               key={item.id}
               className={active === item.id ? "selected" : ""}
               aria-current={active === item.id ? "page" : undefined}
-              aria-label={item.label}
-              title={item.label}
+              aria-label={label}
+              title={label}
               onClick={() => onSelect(item.id)}
             >
               <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
-              <span>{item.label}</span>
+              <span>{label}</span>
             </button>
           );
         })}

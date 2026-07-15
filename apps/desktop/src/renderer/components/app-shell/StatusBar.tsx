@@ -1,5 +1,6 @@
 import React from "react";
 import { Folder, Image, Maximize2 } from "lucide-react";
+import { useI18n } from "../../i18n";
 
 export function StatusBar({
   selectedLabel,
@@ -18,6 +19,7 @@ export function StatusBar({
   storagePath: string;
   activity?: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <footer className="status-bar">
       <span>{selectedLabel}</span>
@@ -26,7 +28,7 @@ export function StatusBar({
         {storagePath}
       </span>
       <span>
-        {pageSize ?? "Page未選択"} / {dpi}dpi
+        {pageSize ?? t("status.noPage")} / {dpi}dpi
       </span>
       <span className="status-bar-spacer" />
       {activity}
@@ -34,7 +36,8 @@ export function StatusBar({
         <Maximize2 size={13} aria-hidden="true" /> {zoom}%
       </span>
       <span>
-        <Image size={13} aria-hidden="true" /> 素材 {assetCount}
+        <Image size={13} aria-hidden="true" />{" "}
+        {t("status.assets", { count: assetCount })}
       </span>
     </footer>
   );

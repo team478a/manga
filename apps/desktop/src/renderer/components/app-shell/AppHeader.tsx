@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { OperationHistory } from "../../../preload/api";
 import { StatusBadge, type StatusTone } from "../common/StatusBadge";
+import { useI18n } from "../../i18n";
 
 export function AppHeader({
   projectTitle,
@@ -50,6 +51,7 @@ export function AppHeader({
   onExport: () => void;
   updateControl: React.ReactNode;
 }) {
+  const { t, localeCode } = useI18n();
   return (
     <header className="app-header">
       <div className="app-header-location">
@@ -69,29 +71,29 @@ export function AppHeader({
           aria-pressed={leftPanelOpen}
           aria-expanded={leftPanelOpen}
           aria-controls="project-panel"
-          title="構成・素材パネルを開閉"
+          title={t("header.toggleLeft")}
           onClick={onToggleLeftPanel}
         >
           <PanelLeft size={17} aria-hidden="true" />
-          <span>左パネル</span>
+          <span>{t("header.leftPanel")}</span>
         </button>
         <button
           className={rightPanelOpen ? "selected" : "secondary"}
           aria-pressed={rightPanelOpen}
           aria-expanded={rightPanelOpen}
           aria-controls="inspector-panel"
-          title="情報パネルを開閉"
+          title={t("header.toggleRight")}
           onClick={onToggleRightPanel}
         >
           <PanelRight size={17} aria-hidden="true" />
-          <span>右パネル</span>
+          <span>{t("header.rightPanel")}</span>
         </button>
         <span className="app-header-divider" />
         <button
           className="secondary icon-action"
           disabled={!history.canUndo}
-          title="元に戻す (Ctrl+Z)"
-          aria-label="元に戻す"
+          title={`${t("header.undo")} (Ctrl+Z)`}
+          aria-label={t("header.undo")}
           onClick={onUndo}
         >
           <Undo2 size={18} aria-hidden="true" />
@@ -99,45 +101,45 @@ export function AppHeader({
         <button
           className="secondary icon-action"
           disabled={!history.canRedo}
-          title="やり直す (Ctrl+Y / Ctrl+Shift+Z)"
-          aria-label="やり直す"
+          title={`${t("header.redo")} (Ctrl+Y / Ctrl+Shift+Z)`}
+          aria-label={t("header.redo")}
           onClick={onRedo}
         >
           <Redo2 size={18} aria-hidden="true" />
         </button>
         <button className="secondary" onClick={onImport}>
           <Upload size={17} aria-hidden="true" />
-          <span>インポート</span>
+          <span>{t("header.import")}</span>
         </button>
         <button className="primary-action" onClick={onExport}>
           <Download size={17} aria-hidden="true" />
-          <span>{exporting ? "進捗" : "書き出し"}</span>
+          <span>{exporting ? t("header.progress") : t("header.export")}</span>
         </button>
         <details className="app-header-more">
-          <summary title="その他の操作" aria-label="その他の操作">
+          <summary title={t("header.more")} aria-label={t("header.more")}>
             <MoreHorizontal size={19} aria-hidden="true" />
           </summary>
           <div className="app-header-menu">
             <button onClick={onBackup}>
               <Save size={16} aria-hidden="true" />
-              バックアップ
+              {t("header.backup")}
             </button>
             <div className="app-header-history">
               <b>
-                <History size={15} aria-hidden="true" /> 操作履歴
+                <History size={15} aria-hidden="true" /> {t("header.history")}
               </b>
               {history.items.length ? (
                 history.items.slice(0, 10).map((item) => (
                   <p className={item.isUndone ? "undone" : ""} key={item.id}>
                     <span>{item.label}</span>
                     <small>
-                      {item.isUndone ? "取消済み・" : ""}
-                      {new Date(item.createdAt).toLocaleTimeString("ja-JP")}
+                      {item.isUndone ? t("header.undone") : ""}
+                      {new Date(item.createdAt).toLocaleTimeString(localeCode)}
                     </small>
                   </p>
                 ))
               ) : (
-                <p>履歴はまだありません。</p>
+                <p>{t("header.noHistory")}</p>
               )}
             </div>
             <div className="app-header-update">{updateControl}</div>

@@ -33,6 +33,7 @@ import type {
   ExportHistoryItem,
   OperationHistory,
 } from "../preload/api";
+import { I18nProvider, useI18n } from "./i18n";
 
 const emptyForm = {
   title: "",
@@ -70,6 +71,10 @@ const readInspectorTab = (): InspectorTab => {
   }
 };
 function App() {
+  const { locale, setLocale, t, formatDateTime } = useI18n();
+  const newProjectButtonRef = React.useRef<HTMLButtonElement>(null);
+  const projectDialogRef = React.useRef<HTMLFormElement>(null);
+  const projectTitleRef = React.useRef<HTMLInputElement>(null);
   const [projects, setProjects] = React.useState<Project[]>([]),
     [projectCovers, setProjectCovers] = React.useState<Record<string, string>>(
       {},
@@ -163,6 +168,36 @@ function App() {
       // 設定保存が利用できない環境でもタブ操作は継続する。
     }
   }, [inspectorTab]);
+  React.useEffect(() => {
+    if (!creating) return;
+    projectTitleRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setCreating(false);
+        requestAnimationFrame(() => newProjectButtonRef.current?.focus());
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const focusable = [
+        ...(projectDialogRef.current?.querySelectorAll<HTMLElement>(
+          "button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled])",
+        ) ?? []),
+      ];
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [creating]);
   React.useEffect(
     () =>
       window.mangai.onExportProgress((progress) =>
@@ -276,11 +311,11 @@ function App() {
   };
   if (!bundle)
     return (
-      <main className="home">
+      <main id="main-content" className="home" tabIndex={-1}>
         <header>
           <div>
             <b>MANGAI Desktop</b>
-            <span>漫画制作プロジェクト</span>
+            <span>{t("home.subtitle")}</span>
           </div>
           <div className="header-actions">
             <button
@@ -296,16 +331,28 @@ function App() {
               }}
             >
               {autoBackup?.status === "running"
-                ? "バックアップ確認中…"
-                : "自動バックアップ"}
+                ? t("home.checkingBackup")
+                : t("home.autoBackup")}
             </button>
             <button className="secondary" onClick={restoreProject}>
-              バックアップから復元
+              {t("home.restore")}
             </button>
-            <button onClick={() => setCreating(true)}>
-              ＋ 新規プロジェクト
+            <button ref={newProjectButtonRef} onClick={() => setCreating(true)}>
+              {t("home.newProject")}
             </button>
           </div>
+          <label className="home-language">
+            <span>{t("settings.language")}</span>
+            <select
+              value={locale}
+              onChange={(event) =>
+                setLocale(event.target.value === "en" ? "en" : "ja")
+              }
+            >
+              <option value="ja">{t("settings.japanese")}</option>
+              <option value="en">{t("settings.english")}</option>
+            </select>
+          </label>
           <UpdateControl />
         </header>
         {databaseRecovery && (
@@ -333,174 +380,210 @@ function App() {
           >
             <b>自動バックアップ:</b> {autoBackup.message}
             {autoBackup.checkedAt && (
-              <small>
-                最終確認{" "}
-                {new Date(autoBackup.checkedAt).toLocaleString("ja-JP")}
-              </small>
+              <small>最終確認 {formatDateTime(autoBackup.checkedAt)}</small>
             )}
           </div>
         )}
-        {error && <div className="error">{error}</div>}
+        {error && (
+          <div className="error dismissible" role="alert">
+            <span>{error}</span>
+            <button
+              className="secondary"
+              aria-label={t("a11y.dismissError")}
+              onClick={() => setError("")}
+            >
+              ×
+            </button>
+          </div>
+        )}
         {creating && (
-          <form className="modal" onSubmit={create}>
-            <h2>新規プロジェクト</h2>
-            <label>
-              タイトル
-              <input
-                required
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-              />
-            </label>
-            <label>
-              サブタイトル
-              <input
-                value={form.subtitle}
-                onChange={(e) => setForm({ ...form, subtitle: e.target.value })}
-              />
-            </label>
-            <label>
-              説明
-              <textarea
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-              />
-            </label>
-            <div className="grid">
+          <div className="modal-backdrop">
+            <form
+              ref={projectDialogRef}
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="new-project-title"
+              onSubmit={create}
+            >
+              <h2 id="new-project-title">{t("projectDialog.title")}</h2>
               <label>
-                ジャンル
+                {t("projectDialog.name")}
                 <input
-                  value={form.genre}
-                  onChange={(e) => setForm({ ...form, genre: e.target.value })}
+                  ref={projectTitleRef}
+                  required
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
               </label>
               <label>
-                対象年齢
-                <select
-                  value={form.ageRating}
-                  onChange={(e) =>
-                    setForm({ ...form, ageRating: e.target.value as any })
-                  }
-                >
-                  <option>全年齢</option>
-                  <option>12歳以上</option>
-                  <option>15歳以上</option>
-                  <option>成人向け</option>
-                </select>
-              </label>
-              <label>
-                読み方向
-                <select
-                  value={form.readingDirection}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      readingDirection: e.target.value as any,
-                    })
-                  }
-                >
-                  <option value="rtl">右開き</option>
-                  <option value="ltr">左開き</option>
-                </select>
-              </label>
-              <label>
-                幅
+                {t("projectDialog.subtitle")}
                 <input
-                  type="number"
-                  value={form.width}
-                  onChange={(e) => setForm({ ...form, width: +e.target.value })}
-                />
-              </label>
-              <label>
-                高さ
-                <input
-                  type="number"
-                  value={form.height}
+                  value={form.subtitle}
                   onChange={(e) =>
-                    setForm({ ...form, height: +e.target.value })
+                    setForm({ ...form, subtitle: e.target.value })
                   }
                 />
               </label>
               <label>
-                DPI
-                <input
-                  type="number"
-                  value={form.dpi}
-                  onChange={(e) => setForm({ ...form, dpi: +e.target.value })}
+                {t("projectDialog.description")}
+                <textarea
+                  value={form.description}
+                  onChange={(e) =>
+                    setForm({ ...form, description: e.target.value })
+                  }
                 />
               </label>
-            </div>
-            <label>
-              Projectフォルダー
-              <div className="path-picker">
-                <input
-                  readOnly
-                  value={form.storagePath}
-                  placeholder="既定: Documents/MANGAI/projects/{projectId}"
-                  title={form.storagePath || "既定の保存先を使用"}
-                />
+              <div className="grid">
+                <label>
+                  {t("projectDialog.genre")}
+                  <input
+                    value={form.genre}
+                    onChange={(e) =>
+                      setForm({ ...form, genre: e.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  {t("projectDialog.ageRating")}
+                  <select
+                    value={form.ageRating}
+                    onChange={(e) =>
+                      setForm({ ...form, ageRating: e.target.value as any })
+                    }
+                  >
+                    <option value="全年齢">{t("projectDialog.allAges")}</option>
+                    <option value="12歳以上">{t("projectDialog.age12")}</option>
+                    <option value="15歳以上">{t("projectDialog.age15")}</option>
+                    <option value="成人向け">{t("projectDialog.adult")}</option>
+                  </select>
+                </label>
+                <label>
+                  {t("projectDialog.reading")}
+                  <select
+                    value={form.readingDirection}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        readingDirection: e.target.value as any,
+                      })
+                    }
+                  >
+                    <option value="rtl">{t("projectDialog.rtl")}</option>
+                    <option value="ltr">{t("projectDialog.ltr")}</option>
+                  </select>
+                </label>
+                <label>
+                  {t("projectDialog.width")}
+                  <input
+                    type="number"
+                    value={form.width}
+                    onChange={(e) =>
+                      setForm({ ...form, width: +e.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  {t("projectDialog.height")}
+                  <input
+                    type="number"
+                    value={form.height}
+                    onChange={(e) =>
+                      setForm({ ...form, height: +e.target.value })
+                    }
+                  />
+                </label>
+                <label>
+                  DPI
+                  <input
+                    type="number"
+                    value={form.dpi}
+                    onChange={(e) => setForm({ ...form, dpi: +e.target.value })}
+                  />
+                </label>
+              </div>
+              <label>
+                {t("projectDialog.folder")}
+                <div className="path-picker">
+                  <input
+                    readOnly
+                    value={form.storagePath}
+                    placeholder="既定: Documents/MANGAI/projects/{projectId}"
+                    title={form.storagePath || t("projectDialog.defaultFolder")}
+                  />
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={async () => {
+                      const selected = await window.mangai.chooseProjectStorage(
+                        form.storagePath || undefined,
+                      );
+                      if (selected)
+                        setForm((current) => ({
+                          ...current,
+                          storagePath: selected,
+                        }));
+                    }}
+                  >
+                    {t("projectDialog.browse")}
+                  </button>
+                  <button
+                    type="button"
+                    className="secondary"
+                    disabled={!form.storagePath}
+                    onClick={() => setForm({ ...form, storagePath: "" })}
+                  >
+                    {t("projectDialog.reset")}
+                  </button>
+                </div>
+              </label>
+              <footer>
                 <button
                   type="button"
                   className="secondary"
-                  onClick={async () => {
-                    const selected = await window.mangai.chooseProjectStorage(
-                      form.storagePath || undefined,
+                  onClick={() => {
+                    setCreating(false);
+                    requestAnimationFrame(() =>
+                      newProjectButtonRef.current?.focus(),
                     );
-                    if (selected)
-                      setForm((current) => ({
-                        ...current,
-                        storagePath: selected,
-                      }));
                   }}
                 >
-                  参照…
+                  {t("projectDialog.cancel")}
                 </button>
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!form.storagePath}
-                  onClick={() => setForm({ ...form, storagePath: "" })}
-                >
-                  既定に戻す
-                </button>
-              </div>
-            </label>
-            <footer>
-              <button
-                type="button"
-                className="secondary"
-                onClick={() => setCreating(false)}
-              >
-                キャンセル
-              </button>
-              <button>作成</button>
-            </footer>
-          </form>
+                <button>{t("projectDialog.create")}</button>
+              </footer>
+            </form>
+          </div>
         )}
         <section className="projects">
-          <h1>最近開いたプロジェクト</h1>
+          <h1>{t("home.recent")}</h1>
           {projects.length ? (
             projects.map((p) => (
-              <article
-                key={p.id}
-                onClick={() => apply(window.mangai.openProject(p.id))}
-              >
-                <div className="cover">
-                  {projectCovers[p.id] ? (
-                    <img src={projectCovers[p.id]} alt="" />
-                  ) : (
-                    "M"
-                  )}
-                </div>
-                <div>
-                  <h2>{p.title}</h2>
-                  <p>{p.subtitle || p.description || "説明なし"}</p>
-                  <small>
-                    更新: {new Date(p.updatedAt).toLocaleString("ja-JP")}
-                  </small>
-                </div>
+              <article key={p.id}>
+                <button
+                  className="project-open"
+                  aria-label={t("home.openProject", { title: p.title })}
+                  onClick={() => apply(window.mangai.openProject(p.id))}
+                >
+                  <span className="cover">
+                    {projectCovers[p.id] ? (
+                      <img src={projectCovers[p.id]} alt="" />
+                    ) : (
+                      "M"
+                    )}
+                  </span>
+                  <span className="project-summary">
+                    <strong>{p.title}</strong>
+                    <span>
+                      {p.subtitle || p.description || t("home.noDescription")}
+                    </span>
+                    <small>
+                      {t("home.updated", {
+                        value: formatDateTime(p.updatedAt),
+                      })}
+                    </small>
+                  </span>
+                </button>
                 <div className="actions">
                   <button
                     onClick={(e) => {
@@ -508,7 +591,7 @@ function App() {
                       void backupProject(p.id);
                     }}
                   >
-                    バックアップ
+                    {t("home.backup")}
                   </button>
                   <button
                     onClick={(e) => {
@@ -516,26 +599,26 @@ function App() {
                       void apply(window.mangai.duplicateProject(p.id));
                     }}
                   >
-                    複製
+                    {t("home.duplicate")}
                   </button>
                   <button
                     className="danger"
                     onClick={(e) => {
                       e.stopPropagation();
-                      if (confirm(`「${p.title}」をゴミ箱へ移動しますか？`))
+                      if (confirm(t("home.deleteConfirm", { title: p.title })))
                         window.mangai
                           .deleteProject(p.id)
                           .then(refresh)
                           .catch(showError);
                     }}
                   >
-                    削除
+                    {t("home.delete")}
                   </button>
                 </div>
               </article>
             ))
           ) : (
-            <div className="empty">プロジェクトはまだありません。</div>
+            <div className="empty">{t("home.none")}</div>
           )}
         </section>
       </main>
@@ -650,6 +733,7 @@ function App() {
   };
   return (
     <main
+      id="main-content"
       className="app"
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
@@ -688,8 +772,15 @@ function App() {
         updateControl={<UpdateControl />}
       />
       {error && (
-        <div className="error floating" onClick={() => setError("")}>
-          {error}
+        <div className="error floating dismissible" role="alert">
+          <span>{error}</span>
+          <button
+            className="secondary"
+            aria-label={t("a11y.dismissError")}
+            onClick={() => setError("")}
+          >
+            ×
+          </button>
         </div>
       )}
       <ExportDialog
@@ -829,7 +920,7 @@ function ToolShell({
   children: React.ReactNode;
 }) {
   return (
-    <main className="app tool-shell">
+    <main id="main-content" className="app tool-shell" tabIndex={-1}>
       <div className="app-shell-body">
         <GlobalNav
           active={active}
@@ -841,8 +932,22 @@ function ToolShell({
     </main>
   );
 }
+function AppRoot() {
+  const { t } = useI18n();
+  return (
+    <>
+      <a className="skip-link" href="#main-content">
+        {t("a11y.skipMain")}
+      </a>
+      <App />
+    </>
+  );
+}
+
 createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <I18nProvider>
+      <AppRoot />
+    </I18nProvider>
   </React.StrictMode>,
 );
