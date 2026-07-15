@@ -70,6 +70,36 @@ export type Panel = {
   createdAt: string;
   updatedAt: string;
 };
+export type PanelLayerType =
+  | "background"
+  | "character"
+  | "prop"
+  | "effect"
+  | "tone"
+  | "mask"
+  | "correction"
+  | "flattened_legacy";
+export type PanelLayerBlendMode = "normal" | "multiply" | "screen" | "overlay";
+export type PanelLayer = {
+  id: string;
+  panelId: string;
+  name: string;
+  type: PanelLayerType;
+  orderIndex: number;
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+  blendMode: PanelLayerBlendMode;
+  assetId: string | null;
+  sourceJobId: string | null;
+  imageFit: "cover" | "contain" | "manual";
+  imageOffsetX: number;
+  imageOffsetY: number;
+  imageScale: number;
+  imageRotation: number;
+  createdAt: string;
+  updatedAt: string;
+};
 export type Balloon = {
   id: string;
   pageId: string;
@@ -151,6 +181,7 @@ export type ProjectBundle = {
   episodes: Episode[];
   pages: Page[];
   panels: Panel[];
+  panelLayers: PanelLayer[];
   balloons: Balloon[];
   textObjects: TextObject[];
   assets: Asset[];

@@ -73,6 +73,8 @@ contextBridge.exposeInMainWorld("mangai", {
   canvas: {
     savePanel: (value: unknown) =>
       ipcRenderer.invoke("canvas:panel:save", value),
+    savePanelLayers: (value: unknown) =>
+      ipcRenderer.invoke("canvas:panel-layers:save", value),
     saveBalloon: (value: unknown) =>
       ipcRenderer.invoke("canvas:balloon:save", value),
     saveText: (value: unknown) => ipcRenderer.invoke("canvas:text:save", value),

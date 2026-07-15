@@ -66,6 +66,7 @@ import {
   canvasObjectIdSchema,
   episodeTemplateInputSchema,
   panelInputSchema,
+  panelLayersSaveSchema,
   textObjectInputSchema,
 } from "@mangai/canvas-core";
 
@@ -489,6 +490,13 @@ function register() {
     const projectId = store.projectIdForPage(item.pageId);
     return store.captureHistory(projectId, "コマを保存", () =>
       store.savePanel({ ...item, createdAt: "", updatedAt: "" }),
+    );
+  });
+  handle("canvas:panel-layers:save", (v) => {
+    const input = panelLayersSaveSchema.parse(v);
+    const projectId = store.projectIdForCanvasObject("panel", input.panelId);
+    return store.captureHistory(projectId, "コマレイヤーを保存", () =>
+      store.savePanelLayers(input.panelId, input.layers),
     );
   });
   handle("canvas:balloon:save", (v) => {

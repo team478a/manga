@@ -60,6 +60,61 @@ export const panelInputSchema = z.object({
   imageRotation: finite,
   imageOpacity: opacity,
 });
+export const panelLayerInputSchema = z.object({
+  id: z.string().uuid(),
+  panelId: z.string().uuid(),
+  name: z.string().trim().min(1).max(200),
+  type: z.enum([
+    "background",
+    "character",
+    "prop",
+    "effect",
+    "tone",
+    "mask",
+    "correction",
+    "flattened_legacy",
+  ]),
+  orderIndex: z.number().int().min(0).max(10_000),
+  visible: z.boolean(),
+  locked: z.boolean(),
+  opacity,
+  blendMode: z.enum(["normal", "multiply", "screen", "overlay"]),
+  assetId: z.string().uuid().nullable(),
+  sourceJobId: z.string().uuid().nullable(),
+  imageFit: z.enum(["cover", "contain", "manual"]),
+  imageOffsetX: finite,
+  imageOffsetY: finite,
+  imageScale: positive.max(100),
+  imageRotation: finite,
+});
+export const panelLayersSaveSchema = z
+  .object({
+    panelId: z.string().uuid(),
+    layers: z.array(panelLayerInputSchema).max(100),
+  })
+  .superRefine((value, context) => {
+    if (value.layers.some((layer) => layer.panelId !== value.panelId))
+      context.addIssue({
+        code: "custom",
+        message: "保存するレイヤーのコマが一致していません。",
+      });
+    if (
+      new Set(value.layers.map((layer) => layer.id)).size !==
+      value.layers.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "レイヤーIDが重複しています。",
+      });
+    if (
+      new Set(value.layers.map((layer) => layer.orderIndex)).size !==
+      value.layers.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "レイヤーの並び順が重複しています。",
+      });
+  });
 export const balloonInputSchema = z.object({
   ...baseObject,
   type: z.enum(["speech_ellipse", "speech_rounded", "narration_box"]),

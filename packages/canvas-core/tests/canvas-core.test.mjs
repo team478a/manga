@@ -18,6 +18,7 @@ import {
   pageTemplates,
   pageToViewport,
   panelInputSchema,
+  panelLayersSaveSchema,
   panelShapeCommands,
   panelShapePoints,
   panelShapeSvgPath,
@@ -470,6 +471,41 @@ test("canvas batch requires every object to belong to its page", () => {
           imageOpacity: 1,
         },
       ],
+    }).success,
+    false,
+  );
+});
+test("panel layer batch rejects mismatched panels and duplicate ordering", () => {
+  const panelId = randomUUID();
+  const layer = {
+    id: randomUUID(),
+    panelId,
+    name: "背景",
+    type: "background",
+    orderIndex: 0,
+    visible: true,
+    locked: false,
+    opacity: 1,
+    blendMode: "normal",
+    assetId: null,
+    sourceJobId: null,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+  };
+  assert.equal(
+    panelLayersSaveSchema.safeParse({
+      panelId,
+      layers: [layer, { ...layer, id: randomUUID(), orderIndex: 0 }],
+    }).success,
+    false,
+  );
+  assert.equal(
+    panelLayersSaveSchema.safeParse({
+      panelId,
+      layers: [{ ...layer, panelId: randomUUID() }],
     }).success,
     false,
   );

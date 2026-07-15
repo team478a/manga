@@ -40,6 +40,36 @@ export type Panel = TransformRect & {
   createdAt: string;
   updatedAt: string;
 };
+export type PanelLayerType =
+  | "background"
+  | "character"
+  | "prop"
+  | "effect"
+  | "tone"
+  | "mask"
+  | "correction"
+  | "flattened_legacy";
+export type PanelLayerBlendMode = "normal" | "multiply" | "screen" | "overlay";
+export type PanelLayer = {
+  id: string;
+  panelId: string;
+  name: string;
+  type: PanelLayerType;
+  orderIndex: number;
+  visible: boolean;
+  locked: boolean;
+  opacity: number;
+  blendMode: PanelLayerBlendMode;
+  assetId: string | null;
+  sourceJobId: string | null;
+  imageFit: ImageFit;
+  imageOffsetX: number;
+  imageOffsetY: number;
+  imageScale: number;
+  imageRotation: number;
+  createdAt: string;
+  updatedAt: string;
+};
 export type Balloon = TransformRect & {
   id: string;
   pageId: string;

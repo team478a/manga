@@ -43,9 +43,11 @@ import {
 import {
   applyPageTemplate,
   getEpisodeTemplate,
+  panelLayerInputSchema,
   type Balloon,
   type EpisodeTemplateId,
   type Panel,
+  type PanelLayer,
   type TextObject,
 } from "@mangai/canvas-core";
 import { renderPagePng, type RenderAsset } from "./page-renderer.js";
@@ -247,10 +249,12 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
   const bundle = manifest.bundle as ProjectBundle | undefined;
   if (!bundle || !bundle.project || typeof bundle.project !== "object")
     throw new Error("Project情報がありません。");
+  if (!Array.isArray(bundle.panelLayers)) bundle.panelLayers = [];
   const collections = [
     bundle.episodes,
     bundle.pages,
     bundle.panels,
+    bundle.panelLayers,
     bundle.balloons,
     bundle.textObjects,
     bundle.assets,
@@ -269,6 +273,8 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
     throw new Error("エピソード数が不正です。");
   if (bundle.pages.length > 10000 || bundle.assets.length > 10000)
     throw new Error("バックアップ内の項目数が上限を超えています。");
+  if (bundle.panelLayers.length > 1_000_000)
+    throw new Error("コマレイヤー数が上限を超えています。");
   for (const items of collections)
     for (const item of items)
       if (!item || typeof item.id !== "string" || !item.id)
@@ -281,6 +287,15 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
       !/^[0-9a-f]{64}$/i.test(asset.sha256)
     )
       throw new Error(`素材「${asset.fileName}」の情報が不正です。`);
+  const panelIds = new Set(bundle.panels.map((panel) => panel.id));
+  const assetIds = new Set(bundle.assets.map((asset) => asset.id));
+  for (const layer of bundle.panelLayers) {
+    panelLayerInputSchema.parse(layer);
+    if (!panelIds.has(layer.panelId))
+      throw new Error("コマレイヤーのコマ参照が不正です。");
+    if (layer.assetId && !assetIds.has(layer.assetId))
+      throw new Error("コマレイヤーの素材参照が不正です。");
+  }
   if (manifest.version === 2) {
     const history = manifest.history as ProjectBackupHistory | undefined;
     const historyCollections = history && [
@@ -335,7 +350,9 @@ export class MangaiDatabase {
                 ? "hybrid-generation-routing-v1"
                 : !this.hasMigration("asset-library-v1")
                   ? "asset-library-v1"
-                  : null;
+                  : !this.hasMigration("panel-layers-v1")
+                    ? "panel-layers-v1"
+                    : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -413,6 +430,7 @@ export class MangaiDatabase {
     this.migrateGenerationPolicyV1();
     this.migrateGenerationRoutingV1();
     this.migrateAssetLibraryV1();
+    this.migratePanelLayersV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -667,6 +685,88 @@ export class MangaiDatabase {
         .run("asset-library-v1", "Project asset library metadata", stamp);
     })();
   }
+  private migratePanelLayersV1() {
+    if (this.hasMigration("panel-layers-v1")) return;
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db.exec(`
+        create table if not exists panel_layers(
+          id text primary key,
+          panel_id text not null references panels(id) on delete cascade,
+          name text not null,
+          layer_type text not null check(layer_type in ('background','character','prop','effect','tone','mask','correction','flattened_legacy')),
+          order_index integer not null,
+          visible integer not null default 1,
+          locked integer not null default 0,
+          opacity real not null default 1,
+          blend_mode text not null default 'normal' check(blend_mode in ('normal','multiply','screen','overlay')),
+          asset_id text references assets(id) on delete set null,
+          source_job_id text references generation_jobs(id) on delete set null,
+          image_fit text not null default 'cover' check(image_fit in ('cover','contain','manual')),
+          image_offset_x real not null default 0,
+          image_offset_y real not null default 0,
+          image_scale real not null default 1,
+          image_rotation real not null default 0,
+          created_at text not null,
+          updated_at text not null,
+          unique(panel_id,order_index)
+        );
+        create index if not exists idx_panel_layers_panel on panel_layers(panel_id,order_index);
+        create index if not exists idx_panel_layers_asset on panel_layers(asset_id);
+        create index if not exists idx_panel_layers_source_job on panel_layers(source_job_id);
+      `);
+      const legacyPanels = this.db
+        .prepare(
+          `select p.id,p.image_asset_id,p.image_fit,p.image_offset_x,
+                  p.image_offset_y,p.image_scale,p.image_rotation
+           from panels p
+           where p.image_asset_id is not null
+             and not exists(select 1 from panel_layers l where l.panel_id=p.id)`,
+        )
+        .all() as Array<{
+        id: string;
+        image_asset_id: string;
+        image_fit: "cover" | "contain" | "manual";
+        image_offset_x: number;
+        image_offset_y: number;
+        image_scale: number;
+        image_rotation: number;
+      }>;
+      const insert = this.db.prepare(
+        `insert into panel_layers(
+           id,panel_id,name,layer_type,order_index,visible,locked,opacity,
+           blend_mode,asset_id,source_job_id,image_fit,image_offset_x,
+           image_offset_y,image_scale,image_rotation,created_at,updated_at
+         ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      );
+      for (const panel of legacyPanels)
+        insert.run(
+          uid(),
+          panel.id,
+          "従来の統合画像",
+          "flattened_legacy",
+          0,
+          1,
+          0,
+          1,
+          "normal",
+          panel.image_asset_id,
+          null,
+          panel.image_fit,
+          panel.image_offset_x,
+          panel.image_offset_y,
+          panel.image_scale,
+          panel.image_rotation,
+          stamp,
+          stamp,
+        );
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run("panel-layers-v1", "Layered panel image foundation", stamp);
+    })();
+  }
   private project(row: any): Project {
     return {
       id: row.id,
@@ -827,6 +927,7 @@ export class MangaiDatabase {
         source.episodes.map((episode) => [episode.id, uid()]),
       );
       const pageMap = new Map(source.pages.map((page) => [page.id, uid()]));
+      const panelMap = new Map(source.panels.map((panel) => [panel.id, uid()]));
       const balloonMap = new Map(
         source.balloons.map((balloon) => [balloon.id, uid()]),
       );
@@ -946,13 +1047,31 @@ export class MangaiDatabase {
         for (const panel of source.panels)
           this.upsertPanelRow({
             ...panel,
-            id: uid(),
+            id: mappedReference(panelMap, panel.id, "コマ")!,
             pageId: mappedReference(pageMap, panel.pageId, "コマのPage")!,
             imageAssetId: mappedReference(
               assetMap,
               panel.imageAssetId,
               "コマ素材",
             ),
+            createdAt: "",
+            updatedAt: "",
+          });
+        for (const layer of source.panelLayers)
+          this.upsertPanelLayerRow({
+            ...layer,
+            id: uid(),
+            panelId: mappedReference(
+              panelMap,
+              layer.panelId,
+              "コマレイヤーのコマ",
+            )!,
+            assetId: mappedReference(
+              assetMap,
+              layer.assetId,
+              "コマレイヤー素材",
+            ),
+            sourceJobId: null,
             createdAt: "",
             updatedAt: "",
           });
@@ -1287,6 +1406,7 @@ export class MangaiDatabase {
       const episodeMap = new Map<string, string>();
       const pageMap = new Map<string, string>();
       const panelMap = new Map<string, string>();
+      const panelLayerMap = new Map<string, string>();
       const balloonMap = new Map<string, string>();
       const textObjectMap = new Map<string, string>();
       const sessionMap = new Map<string, string>();
@@ -1326,6 +1446,8 @@ export class MangaiDatabase {
           ensureMappedId(episodeMap, item.id);
         for (const item of snapshot.pages) ensureMappedId(pageMap, item.id);
         for (const item of snapshot.panels) ensureMappedId(panelMap, item.id);
+        for (const item of snapshot.panelLayers ?? [])
+          ensureMappedId(panelLayerMap, item.id);
         for (const item of snapshot.balloons ?? [])
           ensureMappedId(balloonMap, item.id);
         for (const item of snapshot.textObjects ?? [])
@@ -1400,6 +1522,33 @@ export class MangaiDatabase {
             "履歴コマの素材",
           ),
         })),
+        ...(Array.isArray(snapshot.panelLayers)
+          ? {
+              panelLayers: snapshot.panelLayers.map((item: any) => ({
+                ...item,
+                id: mappedReference(
+                  panelLayerMap,
+                  item.id,
+                  "履歴のコマレイヤー",
+                ),
+                panelId: mappedReference(
+                  panelMap,
+                  item.panelId,
+                  "履歴コマレイヤーのコマ",
+                ),
+                assetId: mappedReference(
+                  assetMap,
+                  item.assetId,
+                  "履歴コマレイヤーの素材",
+                ),
+                sourceJobId: mappedReference(
+                  generationJobMap,
+                  item.sourceJobId,
+                  "履歴コマレイヤーの生成ジョブ",
+                ),
+              })),
+            }
+          : {}),
         balloons: (snapshot.balloons ?? []).map((item: any) => ({
           ...item,
           id: mappedReference(balloonMap, item.id, "履歴の吹き出し"),
@@ -1644,6 +1793,45 @@ export class MangaiDatabase {
               interrupted ? stamp : job.completedAt,
             );
         }
+        for (const layer of sourceBundle.panelLayers ?? [])
+          this.upsertPanelLayerRow({
+            ...layer,
+            id: ensureMappedId(panelLayerMap, layer.id),
+            panelId: mappedReference(
+              panelMap,
+              layer.panelId,
+              "コマレイヤーのコマ",
+            )!,
+            assetId: mappedReference(
+              assetMap,
+              layer.assetId,
+              "コマレイヤー素材",
+            ),
+            sourceJobId: mappedReference(
+              generationJobMap,
+              layer.sourceJobId,
+              "コマレイヤーの生成ジョブ",
+            ),
+            createdAt: "",
+            updatedAt: "",
+          });
+        const panelsWithLayers = new Set(
+          (sourceBundle.panelLayers ?? []).map((layer) => layer.panelId),
+        );
+        for (const panel of sourceBundle.panels)
+          if (panel.imageAssetId && !panelsWithLayers.has(panel.id))
+            this.syncLegacyPanelLayer({
+              ...panel,
+              id: mappedReference(panelMap, panel.id, "コマ")!,
+              pageId: mappedReference(pageMap, panel.pageId, "コマのPage")!,
+              imageAssetId: mappedReference(
+                assetMap,
+                panel.imageAssetId,
+                "コマ素材",
+              ),
+              createdAt: "",
+              updatedAt: "",
+            });
         const relativePathByAssetId = new Map(
           preparedAssets.map((item) => [item.id, item.relativePath]),
         );
@@ -1808,6 +1996,7 @@ export class MangaiDatabase {
       episodes: bundle.episodes,
       pages: bundle.pages,
       panels: bundle.panels,
+      panelLayers: bundle.panelLayers,
       balloons: bundle.balloons,
       textObjects: bundle.textObjects,
       ...(trackedAssetIds.length
@@ -1884,6 +2073,10 @@ export class MangaiDatabase {
       imageAssetId: trackedAssetIds.includes(panel.imageAssetId)
         ? null
         : panel.imageAssetId,
+    }));
+    before.panelLayers = before.panelLayers.map((layer: any) => ({
+      ...layer,
+      assetId: trackedAssetIds.includes(layer.assetId) ? null : layer.assetId,
     }));
     this.db.transaction(() => {
       this.db
@@ -2009,6 +2202,20 @@ export class MangaiDatabase {
               item.createdAt ?? now(),
               now(),
             );
+        if (Array.isArray(snapshot.panelLayers)) {
+          this.db
+            .prepare(
+              `delete from panel_layers where panel_id in (
+                 select pn.id from panels pn
+                 join pages p on p.id=pn.page_id
+                 join episodes e on e.id=p.episode_id
+                 where e.project_id=?
+               )`,
+            )
+            .run(projectId);
+          for (const item of snapshot.panelLayers)
+            this.upsertPanelLayerRow(item);
+        }
         for (const item of snapshot.balloons ?? []) this.upsertBalloonRow(item);
         for (const item of snapshot.textObjects ?? [])
           this.upsertTextObjectRow(item);
@@ -2267,6 +2474,102 @@ export class MangaiDatabase {
         stamp,
       );
   }
+  private upsertPanelLayerRow(item: PanelLayer) {
+    const stamp = now();
+    this.db
+      .prepare(
+        `insert into panel_layers(
+           id,panel_id,name,layer_type,order_index,visible,locked,opacity,
+           blend_mode,asset_id,source_job_id,image_fit,image_offset_x,
+           image_offset_y,image_scale,image_rotation,created_at,updated_at
+         ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+         on conflict(id) do update set
+           panel_id=excluded.panel_id,name=excluded.name,
+           layer_type=excluded.layer_type,order_index=excluded.order_index,
+           visible=excluded.visible,locked=excluded.locked,
+           opacity=excluded.opacity,blend_mode=excluded.blend_mode,
+           asset_id=excluded.asset_id,source_job_id=excluded.source_job_id,
+           image_fit=excluded.image_fit,image_offset_x=excluded.image_offset_x,
+           image_offset_y=excluded.image_offset_y,
+           image_scale=excluded.image_scale,image_rotation=excluded.image_rotation,
+           updated_at=excluded.updated_at`,
+      )
+      .run(
+        item.id,
+        item.panelId,
+        item.name,
+        item.type,
+        item.orderIndex,
+        item.visible ? 1 : 0,
+        item.locked ? 1 : 0,
+        item.opacity,
+        item.blendMode,
+        item.assetId,
+        item.sourceJobId,
+        item.imageFit,
+        item.imageOffsetX,
+        item.imageOffsetY,
+        item.imageScale,
+        item.imageRotation,
+        item.createdAt || stamp,
+        stamp,
+      );
+  }
+  private syncLegacyPanelLayer(item: Panel) {
+    const existing = this.db
+      .prepare(
+        "select id,created_at as createdAt from panel_layers where panel_id=? and layer_type='flattened_legacy' order by order_index limit 1",
+      )
+      .get(item.id) as { id: string; createdAt: string } | undefined;
+    if (!item.imageAssetId) {
+      this.db
+        .prepare(
+          "delete from panel_layers where panel_id=? and layer_type='flattened_legacy'",
+        )
+        .run(item.id);
+      return;
+    }
+    if (
+      !existing &&
+      this.db
+        .prepare("select 1 from panel_layers where panel_id=? limit 1")
+        .get(item.id)
+    )
+      return;
+    const orderIndex = existing
+      ? (
+          this.db
+            .prepare("select order_index as value from panel_layers where id=?")
+            .get(existing.id) as { value: number }
+        ).value
+      : (
+          this.db
+            .prepare(
+              "select coalesce(max(order_index),-1)+1 as value from panel_layers where panel_id=?",
+            )
+            .get(item.id) as { value: number }
+        ).value;
+    this.upsertPanelLayerRow({
+      id: existing?.id ?? uid(),
+      panelId: item.id,
+      name: "従来の統合画像",
+      type: "flattened_legacy",
+      orderIndex,
+      visible: true,
+      locked: false,
+      opacity: item.imageOpacity,
+      blendMode: "normal",
+      assetId: item.imageAssetId,
+      sourceJobId: null,
+      imageFit: item.imageFit,
+      imageOffsetX: item.imageOffsetX,
+      imageOffsetY: item.imageOffsetY,
+      imageScale: item.imageScale,
+      imageRotation: item.imageRotation,
+      createdAt: existing?.createdAt ?? "",
+      updatedAt: "",
+    });
+  }
   private upsertBalloonRow(item: Balloon) {
     const stamp = now();
     this.db
@@ -2363,8 +2666,52 @@ export class MangaiDatabase {
       );
   }
   savePanel(item: Panel) {
-    this.upsertPanelRow(item);
+    this.db.transaction(() => {
+      this.upsertPanelRow(item);
+      this.syncLegacyPanelLayer(item);
+    })();
     return this.bundle(this.projectIdForPage(item.pageId));
+  }
+  savePanelLayers(
+    panelId: string,
+    layers: Array<Omit<PanelLayer, "createdAt" | "updatedAt">>,
+  ) {
+    const row = this.db
+      .prepare(
+        `select e.project_id as projectId from panels pn
+         join pages p on p.id=pn.page_id
+         join episodes e on e.id=p.episode_id where pn.id=?`,
+      )
+      .get(panelId) as { projectId: string } | undefined;
+    if (!row) throw new Error("コマが見つかりません。");
+    for (const layer of layers) {
+      if (layer.panelId !== panelId)
+        throw new Error("保存するレイヤーのコマが一致していません。");
+      if (
+        layer.assetId &&
+        !this.db
+          .prepare("select 1 from assets where id=? and project_id=?")
+          .get(layer.assetId, row.projectId)
+      )
+        throw new Error("このProjectの素材ではありません。");
+      if (
+        layer.sourceJobId &&
+        !this.db
+          .prepare("select 1 from generation_jobs where id=? and project_id=?")
+          .get(layer.sourceJobId, row.projectId)
+      )
+        throw new Error("このProjectの生成ジョブではありません。");
+    }
+    this.db.transaction(() => {
+      this.db.prepare("delete from panel_layers where panel_id=?").run(panelId);
+      for (const layer of layers)
+        this.upsertPanelLayerRow({
+          ...layer,
+          createdAt: "",
+          updatedAt: "",
+        });
+    })();
+    return this.bundle(row.projectId);
   }
   saveBalloon(item: Balloon) {
     this.upsertBalloonRow(item);
@@ -2397,6 +2744,12 @@ export class MangaiDatabase {
         this.db.prepare("delete from panels where page_id=?").run(input.pageId);
       for (const item of input.panels)
         this.upsertPanelRow({ ...item, createdAt: "", updatedAt: "" });
+      for (const item of input.panels)
+        this.syncLegacyPanelLayer({
+          ...item,
+          createdAt: "",
+          updatedAt: "",
+        });
       for (const item of input.balloons)
         this.upsertBalloonRow({ ...item, createdAt: "", updatedAt: "" });
       for (const item of input.textObjects)
@@ -3758,6 +4111,36 @@ export class MangaiDatabase {
       createdAt: p.created_at,
       updatedAt: p.updated_at,
     }));
+    const panelLayers = (
+      this.db
+        .prepare(
+          `select l.* from panel_layers l
+           join panels pn on pn.id=l.panel_id
+           join pages p on p.id=pn.page_id
+           join episodes e on e.id=p.episode_id
+           where e.project_id=? order by l.panel_id,l.order_index`,
+        )
+        .all(projectId) as any[]
+    ).map((layer) => ({
+      id: layer.id,
+      panelId: layer.panel_id,
+      name: layer.name,
+      type: layer.layer_type,
+      orderIndex: layer.order_index,
+      visible: Boolean(layer.visible),
+      locked: Boolean(layer.locked),
+      opacity: layer.opacity,
+      blendMode: layer.blend_mode,
+      assetId: layer.asset_id,
+      sourceJobId: layer.source_job_id,
+      imageFit: layer.image_fit,
+      imageOffsetX: layer.image_offset_x,
+      imageOffsetY: layer.image_offset_y,
+      imageScale: layer.image_scale,
+      imageRotation: layer.image_rotation,
+      createdAt: layer.created_at,
+      updatedAt: layer.updated_at,
+    }));
     const balloons = (
       this.db
         .prepare(
@@ -3858,6 +4241,7 @@ export class MangaiDatabase {
       episodes,
       pages,
       panels,
+      panelLayers,
       balloons,
       textObjects,
       assets,

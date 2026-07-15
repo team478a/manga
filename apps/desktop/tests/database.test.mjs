@@ -505,11 +505,15 @@ test("project duplication preserves assets, canvas content and rendered pages", 
   assert.equal(duplicate.assets.length, 1);
   assert.equal(duplicate.pages.length, 1);
   assert.equal(duplicate.panels.length, 1);
+  assert.equal(duplicate.panelLayers.length, 1);
   assert.equal(duplicate.balloons.length, 1);
   assert.equal(duplicate.textObjects.length, 1);
   assert.notEqual(duplicate.assets[0].id, sourceAsset.id);
   assert.equal(duplicate.pages[0].imageAssetId, duplicate.assets[0].id);
   assert.equal(duplicate.panels[0].imageAssetId, duplicate.assets[0].id);
+  assert.equal(duplicate.panelLayers[0].panelId, duplicate.panels[0].id);
+  assert.equal(duplicate.panelLayers[0].assetId, duplicate.assets[0].id);
+  assert.equal(duplicate.panelLayers[0].type, "flattened_legacy");
   assert.equal(duplicate.project.coverAssetId, duplicate.assets[0].id);
   assert.equal(
     duplicate.textObjects[0].parentBalloonId,
@@ -863,6 +867,18 @@ test("legacy database is backed up before canvas schema migration", () => {
       )
       .get(),
   );
+  assert.ok(
+    migrated
+      .prepare(
+        "select 1 from schema_migrations where version='panel-layers-v1'",
+      )
+      .get(),
+  );
+  assert.ok(
+    migrated
+      .prepare("select 1 from sqlite_master where name='panel_layers'")
+      .get(),
+  );
   migrated
     .prepare(
       "delete from schema_migrations where version='canvas-panel-shape-v1'",
@@ -875,6 +891,18 @@ test("legacy database is backed up before canvas schema migration", () => {
     fs
       .readdirSync(path.join(root, "backups"))
       .some((file) => file.includes("before-canvas-panel-shape-v1")),
+  );
+  const beforePanelLayers = new Database(paths.database);
+  beforePanelLayers
+    .prepare("delete from schema_migrations where version='panel-layers-v1'")
+    .run();
+  beforePanelLayers.close();
+  const panelLayersReopened = new MangaiDatabase(paths);
+  panelLayersReopened.close();
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => file.includes("before-panel-layers-v1")),
   );
   fs.rmSync(root, { recursive: true, force: true });
 });
@@ -1215,6 +1243,170 @@ test("canvas objects persist and participate in undo and redo", () => {
   fs.rmSync(root, { recursive: true, force: true });
 });
 
+test("panel layers preserve legacy images and participate in undo, copy and backup", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-panel-layers-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  let bundle = db.createProject({
+    title: "コマレイヤー",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1000,
+    height: 1500,
+    dpi: 300,
+  });
+  const source = path.join(root, "layer.png");
+  fs.writeFileSync(
+    source,
+    Buffer.from(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
+      "base64",
+    ),
+  );
+  bundle = db.importAssets(bundle.project.id, [source]);
+  bundle = db.addPage(bundle.episodes[0].id);
+  const projectId = bundle.project.id;
+  const panelId = "30000000-0000-4000-8000-000000000001";
+  bundle = db.savePanel({
+    id: panelId,
+    pageId: bundle.pages[0].id,
+    name: "レイヤー対象コマ",
+    x: 10,
+    y: 20,
+    width: 600,
+    height: 800,
+    rotation: 0,
+    zIndex: 0,
+    visible: true,
+    locked: false,
+    borderColor: "#000000",
+    borderWidth: 4,
+    fillColor: "#ffffff",
+    shape: "rectangle",
+    slant: 0.12,
+    imageAssetId: bundle.assets[0].id,
+    imageFit: "manual",
+    imageOffsetX: 12,
+    imageOffsetY: -4,
+    imageScale: 1.2,
+    imageRotation: 3,
+    imageOpacity: 0.8,
+    createdAt: "",
+    updatedAt: "",
+  });
+  assert.equal(bundle.panelLayers.length, 1);
+  assert.equal(bundle.panelLayers[0].type, "flattened_legacy");
+  assert.equal(bundle.panelLayers[0].assetId, bundle.assets[0].id);
+  assert.equal(bundle.panelLayers[0].imageFit, "manual");
+  assert.equal(bundle.panelLayers[0].opacity, 0.8);
+
+  db.close();
+  const preLayerMigration = new Database(paths.database);
+  preLayerMigration.exec(
+    "delete from panel_layers; delete from schema_migrations where version='panel-layers-v1'",
+  );
+  preLayerMigration.close();
+  db = new MangaiDatabase(paths);
+  bundle = db.openProject(projectId);
+  assert.equal(bundle.panelLayers.length, 1);
+  assert.equal(bundle.panelLayers[0].type, "flattened_legacy");
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => file.includes("before-panel-layers-v1")),
+  );
+
+  const layers = [
+    {
+      id: "30000000-0000-4000-8000-000000000002",
+      panelId,
+      name: "背景",
+      type: "background",
+      orderIndex: 0,
+      visible: true,
+      locked: false,
+      opacity: 1,
+      blendMode: "normal",
+      assetId: bundle.assets[0].id,
+      sourceJobId: null,
+      imageFit: "cover",
+      imageOffsetX: 0,
+      imageOffsetY: 0,
+      imageScale: 1,
+      imageRotation: 0,
+    },
+    {
+      id: "30000000-0000-4000-8000-000000000003",
+      panelId,
+      name: "効果",
+      type: "effect",
+      orderIndex: 1,
+      visible: true,
+      locked: false,
+      opacity: 0.5,
+      blendMode: "screen",
+      assetId: bundle.assets[0].id,
+      sourceJobId: null,
+      imageFit: "contain",
+      imageOffsetX: 2,
+      imageOffsetY: 3,
+      imageScale: 1,
+      imageRotation: 0,
+    },
+  ];
+  bundle = db.captureHistory(projectId, "コマレイヤーを保存", () =>
+    db.savePanelLayers(panelId, layers),
+  );
+  assert.deepEqual(
+    bundle.panelLayers.map((layer) => layer.type),
+    ["background", "effect"],
+  );
+  bundle = db.savePanel({ ...bundle.panels[0], borderWidth: 5 });
+  assert.deepEqual(
+    bundle.panelLayers.map((layer) => layer.type),
+    ["background", "effect"],
+  );
+  assert.equal(db.undo(projectId).panelLayers[0].type, "flattened_legacy");
+  assert.deepEqual(
+    db.redo(projectId).panelLayers.map((layer) => layer.type),
+    ["background", "effect"],
+  );
+  db.close();
+  db = new MangaiDatabase(paths);
+  assert.deepEqual(
+    db.openProject(projectId).panelLayers.map((layer) => layer.type),
+    ["background", "effect"],
+  );
+  const duplicate = db.duplicateProject(projectId);
+  assert.deepEqual(
+    duplicate.panelLayers.map((layer) => layer.type),
+    ["background", "effect"],
+  );
+  assert.equal(duplicate.panelLayers[0].panelId, duplicate.panels[0].id);
+  assert.equal(duplicate.panelLayers[0].assetId, duplicate.assets[0].id);
+  const backupPath = path.join(root, "panel-layers.mangai-backup");
+  await db.backupProject(projectId, backupPath);
+  const restored = await db.restoreProject(backupPath);
+  assert.deepEqual(
+    restored.panelLayers.map((layer) => layer.type),
+    ["background", "effect"],
+  );
+  assert.equal(restored.panelLayers[0].panelId, restored.panels[0].id);
+  assert.equal(restored.panelLayers[0].assetId, restored.assets[0].id);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 test("project backup restores canvas data and verifies asset integrity", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-backup-"));
   const paths = {
@@ -1352,6 +1544,10 @@ test("project backup restores canvas data and verifies asset integrity", async (
   assert.equal(restored.pages.length, 1);
   assert.equal(restored.panels[0].name, "復元コマ");
   assert.equal(restored.panels[0].imageAssetId, restored.assets[0].id);
+  assert.equal(restored.panelLayers.length, 1);
+  assert.equal(restored.panelLayers[0].panelId, restored.panels[0].id);
+  assert.equal(restored.panelLayers[0].assetId, restored.assets[0].id);
+  assert.equal(restored.panelLayers[0].type, "flattened_legacy");
   assert.equal(restored.panels[0].shape, "slant_up");
   assert.equal(restored.panels[0].slant, 0.18);
   assert.equal(restored.pages[0].imageAssetId, restored.assets[0].id);

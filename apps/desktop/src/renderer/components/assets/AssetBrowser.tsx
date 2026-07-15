@@ -70,8 +70,23 @@ export function AssetBrowser({
     bundle.panels.forEach((panel) => {
       add(panel.imageAssetId);
     });
+    const legacyPanelAssets = new Map(
+      bundle.panels.map((panel) => [panel.id, panel.imageAssetId]),
+    );
+    bundle.panelLayers.forEach((layer) => {
+      if (
+        layer.type !== "flattened_legacy" ||
+        legacyPanelAssets.get(layer.panelId) !== layer.assetId
+      )
+        add(layer.assetId);
+    });
     return counts;
-  }, [bundle.project.coverAssetId, bundle.pages, bundle.panels]);
+  }, [
+    bundle.project.coverAssetId,
+    bundle.pages,
+    bundle.panels,
+    bundle.panelLayers,
+  ]);
 
   const assets = React.useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase(localeCode);

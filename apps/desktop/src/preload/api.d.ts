@@ -9,7 +9,12 @@ import type {
   RouteDecision,
   SafeAssetLibraryRequest,
 } from "@mangai/ai-core";
-import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
+import type {
+  Balloon,
+  Panel,
+  PanelLayer,
+  TextObject,
+} from "@mangai/canvas-core";
 import type { EpisodeTemplateId } from "@mangai/canvas-core";
 export type ChatEvent = {
   requestId: string;
@@ -210,6 +215,10 @@ export type DesktopApi = {
     savePanel: (
       value: Omit<Panel, "createdAt" | "updatedAt">,
     ) => Promise<ProjectBundle>;
+    savePanelLayers: (value: {
+      panelId: string;
+      layers: Array<Omit<PanelLayer, "createdAt" | "updatedAt">>;
+    }) => Promise<ProjectBundle>;
     saveBalloon: (
       value: Omit<Balloon, "createdAt" | "updatedAt">,
     ) => Promise<ProjectBundle>;
