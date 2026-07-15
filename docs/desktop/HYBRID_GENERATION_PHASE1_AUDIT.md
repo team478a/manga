@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `c9b18b2`
+実装基準コミット: `15a0c09`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -363,7 +363,20 @@ handoff中は対象分類を画面へ明示し、利用者は通常生成へ戻�
 - Zod検証済み限定IPCとProject外素材・生成Jobの参照拒否
 - Undo / Redo、再起動、Project複製、手動・自動バックアップ、旧バックアップ復元で保持
 
-既存CanvasとPDF・画像ZIPは引き続き`panels.image_asset_id`を描画するため、今回のmigrationで見た目や書き出し結果は変わりません。分離レイヤーのCanvas表示・操作、ローカル合成、合成キャッシュ更新は次の実装単位です。
+この永続基盤だけの時点ではCanvasとPDF・画像ZIPが`panels.image_asset_id`を描画していました。Commit 10で分離レイヤーの表示・基本操作とローカル合成を接続しました。
+
+### Commit 10: PanelレイヤーCanvas編集・ローカル合成（完了: `15a0c09`）
+
+- 選択コマ内の背景・人物・小物・効果・tone・mask・correctionレイヤー一覧
+- 選択素材の追加・差し替え、表示、lock、opacity、blend mode、前後移動、削除
+- レイヤーごとのfit・offset・scale・rotationを使ったCanvas描画
+- コマ形状でclipした複数素材のローカル合成
+- CanvasとPDF・連番PNG ZIPで同じ順序・表示・opacity・blend mode・画像変形を使用
+- 分離レイヤーが存在するコマでは従来統合画像を描画せず、全レイヤー非表示も空の合成結果として維持
+- 従来統合画像だけのProjectは既存描画経路を維持
+- 書き出し画像の画素検証を含むDesktop統合テスト
+
+現在は合成結果を描画時・書き出し時にローカル生成します。レイヤー画像のCanvas上での直接変形、mask・correction固有処理、`panels.image_asset_id`互換cacheの更新は次工程です。
 
 ## 11. テスト基準
 

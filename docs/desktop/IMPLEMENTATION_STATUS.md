@@ -35,7 +35,7 @@
 - 背景・小物・効果のsafe JobをProject内Libraryへrouteし、一致候補を選択できます。一致なしではlocalへ戻し、外部Providerへ自動送信しません。
 - Library不一致のsafe Jobをloopback ComfyUIへ引き継ぎ、生成した新規素材を分類・タグ付きでLibraryへ登録できます。
 - 外部safe素材Providerへ送る予定のPrompt、送らない入力素材・人物参照・完成Page、費用・保持・学習条件を事前確認できます。実Providerは未設定で、外部通信と送信操作は無効です。
-- `panel_layers`へ背景・人物・小物・効果等の素材参照と合成設定を保存できます。従来コマ画像は互換レイヤーへ自動移行され、Undo、複製、バックアップで保持します。Canvasでの分離表示・合成操作は次工程です。
+- `panel_layers`へ背景・人物・小物・効果等の素材参照と合成設定を保存できます。従来コマ画像は互換レイヤーへ自動移行され、Undo、複製、バックアップで保持します。Canvasの追加・差し替え・表示・lock・順序・opacity・blend mode編集と、PDF・画像ZIPのローカル合成に対応しています。直接変形とmask固有処理は次工程です。
 - 書き出し履歴は書き出し画面、秘密値を除外したAI設定変更履歴は設定画面で確認できます。
 - PDF、画像ZIP、作品情報、販売文書き出しを実装しています。JPG・PNG・WebPを共通PageレンダラーでPDFと画像ZIPへ合成します。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。

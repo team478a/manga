@@ -2,9 +2,9 @@
 
 最終更新: 2026-07-15
 
-- 漫画Canvasの30オブジェクト性能を製品版で確認し、再現可能なDB性能スモークテストを追加
-  対象ブランチ: `master`
-  実装基準コミット: `c9b18b2`
+対象ブランチ: `feature/manga-canvas-mvp`
+
+実装基準コミット: `15a0c09`
 
 この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
@@ -700,3 +700,11 @@ ai-core単体テスト16/16、Desktop TypeScript、ESLint、本番renderer build
 レイヤーはProject Bundle、Undo / Redo、再起動、Project複製、手動・自動バックアップ、旧バックアップ復元へ統合しました。複製・復元時はPanel・Asset・生成Job参照を新IDへ変換し、Asset Libraryの使用数にも反映します。現段階の描画と書き出しは従来統合画像を維持し、分離レイヤーのCanvas表示とローカル合成は次工程です。
 
 Desktop TypeScript、Web TypeScript、ESLint、本番renderer build、統合テスト52/52、canvas-core 25/25、ai-core 16/16に成功しています。
+
+## 84. PanelレイヤーCanvas編集・ローカル合成
+
+CanvasのコマInspectorへ分離画像レイヤー一覧を追加し、選択素材を背景・人物・小物・効果・tone・mask・correctionとして追加・差し替えできるようにしました。表示、lock、前後移動、削除、opacity、normal・multiply・screen・overlayを編集できます。既存のfit・offset・scale・rotation設定をレイヤーごとに描画へ反映し、コマ形状からはみ出す部分をclipします。
+
+共通Page rendererも`panel_layers`を受け取り、PDFと連番PNG ZIPをローカルで複数レイヤー合成します。分離レイヤーが1件でも存在するコマは従来統合画像へ戻らず、全レイヤーを非表示にした状態も維持します。分離レイヤーがない旧Projectだけは従来の`panels.image_asset_id`描画を継続します。赤い分離レイヤーが緑の互換画像より優先されることを、書き出しPNGの画素で検証しました。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト52/52、canvas-core 25/25、ai-core 16/16に成功しています。Canvas上の直接移動・拡縮・回転、mask・correction固有処理、互換cache更新は次工程です。
