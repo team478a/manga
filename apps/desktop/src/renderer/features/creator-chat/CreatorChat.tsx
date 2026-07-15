@@ -2,6 +2,7 @@ import React from "react";
 import type { ProjectBundle } from "@mangai/project-core";
 import type { ChatEvent } from "../../../preload/api";
 import { StatusBadge } from "../../components/common/StatusBadge";
+import { useI18n } from "../../i18n";
 type Message = {
   id: string;
   role: "user" | "assistant" | "system";
@@ -25,6 +26,7 @@ export function CreatorChat({
   onOpenSettings: () => void;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const [mockEnabled, setMockEnabled] = React.useState(false);
   const [sessions, setSessions] = React.useState<any[]>([]),
     [projects, setProjects] = React.useState<
@@ -77,11 +79,11 @@ export function CreatorChat({
         void loadSessions();
       }
       if (event.type === "error") {
-        setError(event.message ?? "生成に失敗しました。");
+        setError(event.message ?? t("chat.failed"));
         setRequestId(undefined);
       }
     });
-  }, [requestId, chatBundle.project.id]);
+  }, [requestId, chatBundle.project.id, t]);
   React.useEffect(() => {
     if (sessionId)
       void window.mangai.ai.listMessages(sessionId).then(setMessages);
@@ -121,6 +123,17 @@ export function CreatorChat({
   };
   const episode = chatBundle.episodes.find((e) => e.id === chatEpisodeId),
     page = chatBundle.pages.find((p) => p.id === chatPageId);
+  const needsAISettings =
+    error.includes("AIが設定されていません") ||
+    error.toLowerCase().includes("ai is not configured");
+  const ageRatingLabel =
+    chatBundle.project.ageRating === "全年齢"
+      ? t("projectDialog.allAges")
+      : chatBundle.project.ageRating === "12歳以上"
+        ? t("projectDialog.age12")
+        : chatBundle.project.ageRating === "15歳以上"
+          ? t("projectDialog.age15")
+          : t("projectDialog.adult");
   if (variant === "panel")
     return (
       <section className="creator-chat-panel" aria-label="Creator Chat">
@@ -128,24 +141,24 @@ export function CreatorChat({
           <div>
             <strong>Creator Chat</strong>
             <small>
-              {episode?.title ?? "エピソード未選択"} / Page{" "}
-              {page?.pageNumber ?? "未選択"}
+              {episode?.title ?? t("chat.noEpisode")} / Page{" "}
+              {page?.pageNumber ?? t("chat.notSelected")}
             </small>
           </div>
           <StatusBadge tone={requestId ? "info" : "success"} live>
-            {requestId ? "生成中" : "待機中"}
+            {requestId ? t("chat.generating") : t("chat.idle")}
           </StatusBadge>
         </header>
         <div className="chat-panel-actions">
           <select
-            aria-label="チャット履歴"
+            aria-label={t("chat.history")}
             value={sessionId ?? ""}
             onChange={(event) => {
               setSessionId(event.target.value || undefined);
               if (!event.target.value) setMessages([]);
             }}
           >
-            <option value="">新規チャット</option>
+            <option value="">{t("chat.new")}</option>
             {sessions.map((session) => (
               <option key={session.id} value={session.id}>
                 {session.title}
@@ -153,15 +166,15 @@ export function CreatorChat({
             ))}
           </select>
           <button className="secondary" onClick={onOpenSettings}>
-            AI設定
+            {t("chat.aiSettings")}
           </button>
         </div>
-        {mockEnabled && <p className="notice">Mock AI テストモード</p>}
+        {mockEnabled && <p className="notice">{t("chat.mockMode")}</p>}
         <div className="messages chat-panel-messages">
           {messages.length ? (
             messages.map((message, index) => (
               <article className={`message ${message.role}`} key={message.id}>
-                <b>{message.role === "user" ? "あなた" : "Creator AI"}</b>
+                <b>{message.role === "user" ? t("chat.you") : "Creator AI"}</b>
                 <pre>{message.content}</pre>
                 {message.role === "assistant" && (
                   <div className="message-actions">
@@ -170,7 +183,7 @@ export function CreatorChat({
                         navigator.clipboard.writeText(message.content)
                       }
                     >
-                      コピー
+                      {t("chat.copy")}
                     </button>
                     <button
                       disabled={Boolean(requestId)}
@@ -181,7 +194,7 @@ export function CreatorChat({
                         if (previous) void send(previous.content);
                       }}
                     >
-                      再生成
+                      {t("chat.regenerate")}
                     </button>
                     {page && (
                       <button
@@ -198,7 +211,7 @@ export function CreatorChat({
                           onBundle(updated);
                         }}
                       >
-                        メモへ保存
+                        {t("chat.saveNotes")}
                       </button>
                     )}
                   </div>
@@ -206,28 +219,26 @@ export function CreatorChat({
               </article>
             ))
           ) : (
-            <div className="empty">
-              Canvasを見ながら構成、セリフ、画像プロンプトを相談できます。
-            </div>
+            <div className="empty">{t("chat.panelEmpty")}</div>
           )}
         </div>
         {error && (
-          <div className="error">
+          <div className="error" role="alert">
             <p>{error}</p>
-            {error.includes("AIが設定されていません") && (
+            {needsAISettings && (
               <button className="secondary" onClick={onOpenSettings}>
-                AI設定を開く
+                {t("chat.openSettings")}
               </button>
             )}
           </div>
         )}
         <div className="composer chat-panel-composer">
           <select
-            aria-label="プロンプトテンプレート"
+            aria-label={t("chat.template")}
             value={templateId}
             onChange={(event) => setTemplateId(event.target.value)}
           >
-            <option value="">テンプレートなし</option>
+            <option value="">{t("chat.noTemplate")}</option>
             {templates.map((template) => (
               <option key={template.id} value={template.id}>
                 {template.name}
@@ -240,12 +251,13 @@ export function CreatorChat({
               checked={includeContext}
               onChange={(event) => setIncludeContext(event.target.checked)}
             />
-            Project・Page情報を参照
+            {t("chat.includeProjectPage")}
           </label>
           <textarea
+            aria-label={t("chat.placeholder")}
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Creator AIへ相談"
+            placeholder={t("chat.placeholder")}
             onKeyDown={(event) => {
               if (event.key === "Enter" && (event.ctrlKey || event.metaKey))
                 void send();
@@ -256,10 +268,10 @@ export function CreatorChat({
               className="danger"
               onClick={() => window.mangai.ai.cancel(requestId)}
             >
-              送信停止
+              {t("chat.stop")}
             </button>
           ) : (
-            <button onClick={() => void send()}>送信（Ctrl+Enter）</button>
+            <button onClick={() => void send()}>{t("chat.send")}</button>
           )}
         </div>
       </section>
@@ -267,10 +279,10 @@ export function CreatorChat({
   return (
     <main className="tool-page">
       <header className="tool-header">
-        <button onClick={onClose}>← ワークスペース</button>
+        <button onClick={onClose}>{t("chat.backWorkspace")}</button>
         <h1>Creator Chat</h1>
         <StatusBadge tone={requestId ? "info" : "success"} live>
-          {requestId ? "生成中" : "待機中"}
+          {requestId ? t("chat.generating") : t("chat.idle")}
         </StatusBadge>
       </header>
       <div className="chat-layout">
@@ -332,7 +344,7 @@ export function CreatorChat({
               value={chatPageId ?? ""}
               onChange={(e) => setChatPageId(e.target.value || undefined)}
             >
-              <option value="">未選択</option>
+              <option value="">{t("chat.notSelected")}</option>
               {chatBundle.pages
                 .filter((item) => item.episodeId === chatEpisodeId)
                 .sort((a, b) => a.orderIndex - b.orderIndex)
@@ -350,19 +362,24 @@ export function CreatorChat({
               setMessages([]);
             }}
           >
-            ＋ 新規チャット
+            {t("chat.newWithPlus")}
           </button>
           {sessions.map((session) => (
             <div
               className={`chat-session ${session.id === sessionId ? "active" : ""}`}
               key={session.id}
-              onClick={() => setSessionId(session.id)}
             >
-              <span>{session.title}</span>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const title = prompt("セッション名", session.title);
+                className="chat-session-select"
+                aria-pressed={session.id === sessionId}
+                onClick={() => setSessionId(session.id)}
+              >
+                {session.title}
+              </button>
+              <button
+                aria-label={t("chat.renameSession", { title: session.title })}
+                onClick={() => {
+                  const title = prompt(t("chat.sessionName"), session.title);
                   if (title)
                     void window.mangai.ai
                       .renameSession(session.id, title)
@@ -372,9 +389,9 @@ export function CreatorChat({
                 ✎
               </button>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (confirm("チャットを削除しますか？"))
+                aria-label={t("chat.deleteSession", { title: session.title })}
+                onClick={() => {
+                  if (confirm(t("chat.deleteConfirm")))
                     void window.mangai.ai
                       .deleteSession(session.id)
                       .then((values) => {
@@ -392,14 +409,14 @@ export function CreatorChat({
           ))}
         </aside>
         <section className="chat-main">
-          {mockEnabled && (
-            <p className="notice">テストモード: Mock AIが有効です。</p>
-          )}
+          {mockEnabled && <p className="notice">{t("chat.mockModeFull")}</p>}
           <div className="messages">
             {messages.length ? (
               messages.map((message, index) => (
                 <article className={`message ${message.role}`} key={message.id}>
-                  <b>{message.role === "user" ? "あなた" : "Creator AI"}</b>
+                  <b>
+                    {message.role === "user" ? t("chat.you") : "Creator AI"}
+                  </b>
                   <pre>{message.content}</pre>
                   {message.role === "assistant" && (
                     <div className="message-actions">
@@ -408,7 +425,7 @@ export function CreatorChat({
                           navigator.clipboard.writeText(message.content)
                         }
                       >
-                        コピー
+                        {t("chat.copy")}
                       </button>
                       <button
                         disabled={Boolean(requestId)}
@@ -419,7 +436,7 @@ export function CreatorChat({
                           if (previous) void send(previous.content);
                         }}
                       >
-                        再生成
+                        {t("chat.regenerate")}
                       </button>
                       {page && (
                         <button
@@ -436,7 +453,7 @@ export function CreatorChat({
                             onBundle(updated);
                           }}
                         >
-                          Pageメモへ保存
+                          {t("chat.savePageNotes")}
                         </button>
                       )}
                     </div>
@@ -444,17 +461,15 @@ export function CreatorChat({
                 </article>
               ))
             ) : (
-              <div className="empty">
-                漫画の企画、構成、セリフ、画像プロンプトなどを相談できます。
-              </div>
+              <div className="empty">{t("chat.fullEmpty")}</div>
             )}
           </div>
           {error && (
-            <div className="error">
+            <div className="error" role="alert">
               <p>{error}</p>
-              {error.includes("AIが設定されていません") && (
+              {needsAISettings && (
                 <button className="secondary" onClick={onOpenSettings}>
-                  AI設定を開く
+                  {t("chat.openSettings")}
                 </button>
               )}
             </div>
@@ -462,10 +477,11 @@ export function CreatorChat({
           <div className="composer">
             <div className="grid">
               <select
+                aria-label={t("chat.template")}
                 value={templateId}
                 onChange={(e) => setTemplateId(e.target.value)}
               >
-                <option value="">テンプレートなし</option>
+                <option value="">{t("chat.noTemplate")}</option>
                 {templates.map((t) => (
                   <option key={t.id} value={t.id}>
                     {t.name}
@@ -478,13 +494,14 @@ export function CreatorChat({
                   checked={includeContext}
                   onChange={(e) => setIncludeContext(e.target.checked)}
                 />
-                Project情報を参照
+                {t("chat.includeProject")}
               </label>
             </div>
             <textarea
+              aria-label={t("chat.placeholderFull")}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Creator AIへ相談する内容を入力"
+              placeholder={t("chat.placeholderFull")}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) void send();
               }}
@@ -495,26 +512,28 @@ export function CreatorChat({
                   className="danger"
                   onClick={() => window.mangai.ai.cancel(requestId)}
                 >
-                  送信停止
+                  {t("chat.stop")}
                 </button>
               ) : (
-                <button onClick={() => void send()}>送信（Ctrl+Enter）</button>
+                <button onClick={() => void send()}>{t("chat.send")}</button>
               )}
-              <span>Ollama有効時はOllama、未設定時はモックを使用</span>
+              <span>{t("chat.providerHelp")}</span>
             </div>
           </div>
         </section>
         <aside className="context-panel">
-          <h2>送信コンテキスト</h2>
+          <h2>{t("chat.context")}</h2>
           <p>Project: {chatBundle.project.title}</p>
-          <p>ジャンル: {chatBundle.project.genre || "未設定"}</p>
-          <p>対象年齢: {chatBundle.project.ageRating}</p>
-          <p>Episode: {episode?.title ?? "未選択"}</p>
-          <p>Page: {page?.pageNumber ?? "未選択"}</p>
-          {page?.prompt && <p>Prompt: {page.prompt}</p>}
-          <p className="notice">
-            この内容は「Project情報を参照」が有効な場合だけAIへ送信されます。
+          <p>
+            {t("chat.genre")}: {chatBundle.project.genre || t("chat.notSet")}
           </p>
+          <p>
+            {t("chat.ageRating")}: {ageRatingLabel}
+          </p>
+          <p>Episode: {episode?.title ?? t("chat.notSelected")}</p>
+          <p>Page: {page?.pageNumber ?? t("chat.notSelected")}</p>
+          {page?.prompt && <p>Prompt: {page.prompt}</p>}
+          <p className="notice">{t("chat.contextNotice")}</p>
         </aside>
       </div>
     </main>

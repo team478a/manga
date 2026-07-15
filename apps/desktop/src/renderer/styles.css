@@ -1985,10 +1985,21 @@ label {
   align-items: center;
   padding: 7px;
   border-radius: 6px;
-  cursor: pointer;
 }
 .chat-session button {
   padding: 2px 6px;
+}
+.chat-session-select {
+  min-width: 0;
+  overflow: hidden;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-session-select:hover {
+  background: var(--bg-hover);
 }
 .context-panel {
   border-left: 1px solid var(--border-subtle) !important;
