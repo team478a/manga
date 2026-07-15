@@ -67,6 +67,24 @@ export class OllamaProvider implements TextGenerationProvider {
       modifiedAt: model.modified_at,
     }));
   }
+  async unloadModel(model: string, signal?: AbortSignal): Promise<void> {
+    const response = await fetchWithTimeout(
+      this.url("/api/generate"),
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ model, keep_alive: 0, stream: false }),
+      },
+      this.settings.timeoutMs,
+      signal,
+    );
+    if (!response.ok)
+      throw new AIProviderError(
+        "MODEL_UNLOAD_FAILED",
+        "画像生成前にOllamaモデルをGPUから解放できませんでした。Ollamaを確認して再試行してください。",
+        true,
+      );
+  }
   async generateText(
     request: TextGenerationRequest,
     _context?: unknown,

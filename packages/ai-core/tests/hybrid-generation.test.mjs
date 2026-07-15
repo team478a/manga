@@ -59,6 +59,15 @@ test("all local runtime profiles serialize image generation", () => {
   }
 });
 
+test("low VRAM profiles require exclusive GPU work and model unload", () => {
+  for (const profile of ["cpu_only", "vram_6gb", "vram_8gb", "vram_12gb"]) {
+    assert.equal(runtimeLimits(profile).exclusiveGpuWork, true);
+    assert.equal(runtimeLimits(profile).unloadTextModelBeforeImage, true);
+  }
+  assert.equal(runtimeLimits("vram_16gb").exclusiveGpuWork, false);
+  assert.equal(runtimeLimits("vram_16gb").unloadTextModelBeforeImage, false);
+});
+
 test("runtime profile scales generation dimensions without changing aspect ratio", () => {
   assert.deepEqual(constrainImageDimensions(1600, 1200, 1024), {
     width: 1024,

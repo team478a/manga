@@ -32,6 +32,7 @@ export type ChatEvent = {
 export class AIService {
   private controllers = new Map<string, AbortController>();
   private activeLocalImageJobId: string | null = null;
+  private activeLocalTextRequests = new Set<string>();
   private allowMock: boolean;
   private getRuntimeProfile?: () => RuntimeProfileState;
   constructor(
@@ -56,6 +57,17 @@ export class AIService {
       hostname === "::1" ||
       /^127(?:\.\d{1,3}){3}$/.test(hostname)
     );
+  }
+  private async unloadLocalTextModel(signal: AbortSignal) {
+    const settings = this.settings("ollama");
+    if (
+      !settings.enabled ||
+      !settings.modelId ||
+      !this.isLoopbackUrl(settings.baseUrl)
+    )
+      return false;
+    await new OllamaProvider(settings).unloadModel(settings.modelId, signal);
+    return true;
   }
   private routeImageGeneration(
     jobId: string,
@@ -365,6 +377,18 @@ export class AIService {
         prompt,
         inputJson: { sessionId, includeContext: input.includeContext },
       });
+      const runtime = this.getRuntimeProfile?.();
+      const usesLocalGpu =
+        provider.id === "ollama" && this.isLoopbackUrl(settings.baseUrl);
+      if (runtime?.limits.exclusiveGpuWork && usesLocalGpu) {
+        if (this.activeLocalImageJobId || this.activeLocalTextRequests.size)
+          throw new AIProviderError(
+            "LOCAL_RESOURCE_BUSY",
+            "低VRAM端末ではCreator Chatと画像生成を同時実行できません。実行中の処理が完了してから再試行してください。",
+            true,
+          );
+        this.activeLocalTextRequests.add(input.requestId);
+      }
       this.store.updateGenerationJob(jobId, "running");
       emit({ requestId: input.requestId, sessionId, type: "start", jobId });
       let text = "";
@@ -461,6 +485,7 @@ export class AIService {
         message,
       });
     } finally {
+      this.activeLocalTextRequests.delete(input.requestId);
       this.controllers.delete(input.requestId);
     }
   }
@@ -532,6 +557,15 @@ export class AIService {
           "ROUTE_TARGET_UNAVAILABLE",
           "この画像生成はローカルComfyUIでのみ実行できます。",
         );
+      if (
+        runtime?.limits.exclusiveGpuWork &&
+        this.activeLocalTextRequests.size
+      )
+        throw new AIProviderError(
+          "LOCAL_RESOURCE_BUSY",
+          "低VRAM端末ではCreator Chatと画像生成を同時実行できません。Creator Chatが完了してから再試行してください。",
+          true,
+        );
       if (this.activeLocalImageJobId)
         throw new AIProviderError(
           "LOCAL_JOB_BUSY",
@@ -539,6 +573,9 @@ export class AIService {
           true,
         );
       this.activeLocalImageJobId = jobId;
+      const ollamaModelUnloaded = runtime?.limits.unloadTextModelBeforeImage
+        ? await this.unloadLocalTextModel(controller.signal)
+        : false;
       this.store.updateGenerationJob(jobId, "running", { progress: 0.05 });
       const queued = await provider.generateImage(
         effectiveInput as ImageGenerationRequest,
@@ -634,6 +671,7 @@ export class AIService {
             status: "completed",
             count: images.length,
             runtimeProfile: runtime?.effectiveProfile,
+            ollamaModelUnloaded,
             dimensionsAdjusted: dimensions.adjusted,
             effectiveWidth: effectiveInput.width,
             effectiveHeight: effectiveInput.height,

@@ -30,6 +30,8 @@ export type RuntimeLimits = {
   maxOutputDimension: number | null;
   maxControlNets: number;
   maxLoras: number;
+  exclusiveGpuWork: boolean;
+  unloadTextModelBeforeImage: boolean;
   localImageGenerationRecommended: boolean;
 };
 
@@ -81,6 +83,18 @@ export function runtimeLimits(profile: RuntimeProfileId): RuntimeLimits {
     maxOutputDimension: maxOutputDimension[profile],
     maxControlNets: maxControlNets[profile],
     maxLoras: maxLoras[profile],
+    exclusiveGpuWork: [
+      "cpu_only",
+      "vram_6gb",
+      "vram_8gb",
+      "vram_12gb",
+    ].includes(profile),
+    unloadTextModelBeforeImage: [
+      "cpu_only",
+      "vram_6gb",
+      "vram_8gb",
+      "vram_12gb",
+    ].includes(profile),
     localImageGenerationRecommended: profile !== "cpu_only",
   };
 }

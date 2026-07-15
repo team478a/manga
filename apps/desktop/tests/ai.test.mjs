@@ -124,6 +124,7 @@ test("AI connection URL requires loopback or an explicit HTTPS origin", () => {
   assert.throws(() => safeBaseUrl("http://localhost:11434/api"), /不正/);
 });
 test("Ollama connection, models, generation and stream cancellation", async () => {
+  let unloadedModel;
   const mock = await server((req, res) => {
     res.setHeader("content-type", "application/json");
     if (req.url === "/api/tags")
@@ -135,6 +136,10 @@ test("Ollama connection, models, generation and stream cancellation", async () =
       req.on("data", (chunk) => (body += chunk));
       req.on("end", () => {
         const input = JSON.parse(body);
+        if (input.keep_alive === 0) {
+          unloadedModel = input.model;
+          return res.end(JSON.stringify({ done: true }));
+        }
         if (input.stream) {
           res.write(JSON.stringify({ response: "hello ", done: false }) + "\n");
           setTimeout(
@@ -161,6 +166,8 @@ test("Ollama connection, models, generation and stream cancellation", async () =
         .text,
       "completed",
     );
+    await provider.unloadModel("manga:latest");
+    assert.equal(unloadedModel, "manga:latest");
     const controller = new globalThis.AbortController(),
       chunks = [];
     for await (const chunk of provider.streamText(
@@ -443,6 +450,17 @@ test("ComfyUI generation is saved as a project asset", async () => {
     "base64",
   );
   let queuedPrompt;
+  let ollamaUnloaded = false;
+  const ollamaMock = await server((req, res) => {
+    if (req.url !== "/api/generate") return res.end("{}");
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => {
+      const input = JSON.parse(body);
+      ollamaUnloaded = input.model === "test-model" && input.keep_alive === 0;
+      res.end(JSON.stringify({ done: true }));
+    });
+  });
   const mock = await server((req, res) => {
     if (req.url === "/prompt") {
       let body = "";
@@ -485,6 +503,7 @@ test("ComfyUI generation is saved as a project asset", async () => {
       ...settings("comfyui", mock.url),
       pollIntervalMs: 10,
     });
+    db.saveProviderSettings(settings("ollama", ollamaMock.url));
     const project = db.createProject({
       title: "生成素材",
       subtitle: "",
@@ -523,6 +542,8 @@ test("ComfyUI generation is saved as a project asset", async () => {
       height: 1200,
     });
     assert.equal(result.status, "completed");
+    assert.equal(result.ollamaModelUnloaded, true);
+    assert.equal(ollamaUnloaded, true);
     assert.equal(result.dimensionsAdjusted, true);
     assert.equal(result.effectiveWidth, 1024);
     assert.equal(result.effectiveHeight, 768);
@@ -572,6 +593,7 @@ test("ComfyUI generation is saved as a project asset", async () => {
   } finally {
     db.close();
     await mock.close();
+    await ollamaMock.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
@@ -920,6 +942,13 @@ test("ComfyUI multi-image registration rolls back partial assets", async () => {
 });
 
 test("ComfyUI timeout and cancellation update generation jobs", async () => {
+  let ollamaRequests = 0;
+  const ollamaMock = await server((req, res) => {
+    if (req.url === "/api/generate") ollamaRequests += 1;
+    let body = "";
+    req.on("data", (chunk) => (body += chunk));
+    req.on("end", () => res.end(JSON.stringify({ done: true })));
+  });
   const mock = await server((req, res) => {
     if (req.url === "/prompt")
       return res.end(JSON.stringify({ prompt_id: "slow-job" }));
@@ -942,6 +971,7 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
       timeoutMs: 5000,
       pollIntervalMs: 10,
     });
+    db.saveProviderSettings(settings("ollama", ollamaMock.url));
     const project = db.createProject({
       title: "停止",
       subtitle: "",
@@ -959,9 +989,11 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
       JSON.stringify({ 6: { inputs: { text: "" } } }),
     );
     const workflow = db.registerComfyWorkflow("slow", workflowFile, {
-        prompt: { nodeId: "6", input: "text" },
+      prompt: { nodeId: "6", input: "text" },
       })[0],
-      service = new AIService(db),
+      service = new AIService(db, {
+        getRuntimeProfile: () => runtimeState(),
+      }),
       pending = service.generateImage({
         projectId: project.project.id,
         workflowId: workflow.id,
@@ -969,6 +1001,19 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
         negativePrompt: "",
       });
     await new Promise((resolve) => setTimeout(resolve, 40));
+    const chatEvents = [];
+    await service.sendChat(
+      {
+        requestId: randomUUID(),
+        projectId: project.project.id,
+        message: "画像生成中の質問",
+        includeContext: false,
+      },
+      (event) => chatEvents.push(event),
+    );
+    assert.equal(chatEvents.at(-1)?.type, "error");
+    assert.match(chatEvents.at(-1)?.message ?? "", /同時実行できません/);
+    assert.equal(ollamaRequests, 1);
     await assert.rejects(
       () =>
         service.generateImage({
@@ -1003,6 +1048,7 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
   } finally {
     db.close();
     await mock.close();
+    await ollamaMock.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
