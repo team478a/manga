@@ -650,3 +650,11 @@ ai-core単体テスト12/12、Desktop TypeScript、ESLint、本番renderer build
 現行UIは生成種別とSensitivityをまだ指定しないため、`adult_character_render / external_forbidden / personPresence=unknown`へ補完し、cloud許可にならないfail-closed判定を記録します。現時点では判定結果で実行先を変更せず、既存ComfyUI生成、キャンセル、失敗、素材登録を維持します。RouterへProjectのローカル優先設定も反映しました。
 
 route履歴はProjectバックアップversion 2へ追加し、復元時にProject、Page、Panel、Asset、Job参照を新IDへ置換します。route履歴を持たない旧version 1 / 2も復元できます。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト47/47、canvas-core 24/24に成功しています。
+
+## 78. ハイブリッド生成のローカル実行ゲート
+
+既存ComfyUI画像生成をshadow modeから正式なRouter実行へ切り替えました。汎用画像生成は分類情報が不足するため安全側の`adult_character_render / external_forbidden / personPresence=unknown`として判定し、Routerが`local`を選び、接続URLがlocalhost、127.0.0.0/8、IPv6 loopbackの場合だけ既存ComfyUI Providerを実行します。
+
+HTTPSのremote ComfyUIを設定しても、Providerへの接続、workflow読込、Prompt送信より前に`ROUTE_BLOCKED`で拒否します。route判定の保存自体に失敗した場合も生成を続けないfail-closed構成です。拒否されたJobはfailed状態とerror codeを保持し、Prompt本文・Negative Prompt・画像をroute監査履歴へ複製しません。
+
+画像生成履歴へExecution Target、Sensitivity、判定理由、blocked状態を日本語・英語で表示します。既存のloopback ComfyUI生成成功に加え、remote ComfyUIがネットワーク処理前に拒否される統合テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト48/48、canvas-core 24/24に成功しています。

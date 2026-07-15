@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-調査基準コミット: `ca8e8a8`
+実装基準コミット: `91b5598`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -104,11 +104,11 @@ RendererはNode.jsや外部APIを直接使用せず、preloadの限定APIとZod�
 
 現在のProvider:
 
-| Provider | 用途 | 既定接続先 | 状態 |
-| --- | --- | --- | --- |
-| Ollama | Creator Chat | `http://127.0.0.1:11434` | 既定OFF |
-| ComfyUI | 画像生成 | `http://127.0.0.1:8188` | 既定OFF |
-| Mock | 開発テスト | loopback | 製品版では拒否 |
+| Provider | 用途         | 既定接続先               | 状態           |
+| -------- | ------------ | ------------------------ | -------------- |
+| Ollama   | Creator Chat | `http://127.0.0.1:11434` | 既定OFF        |
+| ComfyUI  | 画像生成     | `http://127.0.0.1:8188`  | 既定OFF        |
+| Mock     | 開発テスト   | loopback                 | 製品版では拒否 |
 
 既存の通信防御:
 
@@ -298,12 +298,15 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 現行画像生成UIはJob TypeやSensitivityをまだ入力しないため、shadow modeでは`adult_character_render / external_forbidden / personPresence=unknown`として安全側へ分類します。実際のComfyUI実行経路は変更せず、判定と現行実行先の差を記録できる段階です。`preferLocal`もRouterへ反映し、Asset Libraryが見つからないsafe Jobでもローカル優先設定ならcloudよりlocalを選びます。
 
-### Commit 4: ローカルComfyUI切替
+### Commit 4: ローカルComfyUI切替（完了: `91b5598`）
 
-- `local_comfyui` adapter
-- Routerが`local`を選んだ場合だけ既存Providerを実行
-- Jobへtarget、sensitivity、reasonを表示
-- 既存画像生成テストを維持
+- Routerが`local`を選び、ComfyUI URLがloopbackの場合だけ既存Providerを実行
+- remote ComfyUIは接続前に`ROUTE_BLOCKED`で拒否
+- route判定の保存に失敗した場合も外部送信しない
+- 生成履歴へtarget、sensitivity、reason、blocked状態を日英表示
+- localhost成功とremote拒否の統合テストを追加
+
+現行の汎用画像生成UIは分類入力が未実装のため、引き続き`adult_character_render / external_forbidden / personPresence=unknown`として扱います。このため、利用者がHTTPSのremote ComfyUIを設定しても、Prompt、Negative Prompt、画像、workflowを送信する前に拒否します。loopbackのlocalhost、127.0.0.0/8、IPv6 loopbackだけが既存ComfyUI経路へ進みます。
 
 ### Commit 5: Asset Library
 
@@ -318,7 +321,7 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 2026-07-15の調査時点:
 
-- Desktop統合テスト: 47/47成功
+- Desktop統合テスト: 48/48成功
 - ai-core Router単体テスト: 13/13成功
 - canvas-core単体テスト: 24/24成功
 
