@@ -348,6 +348,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 左パネルの構成・素材タブ、選択タブ保持、素材名検索、形式フィルター、使用中素材表示
 - 右パネルのプロパティ・レイヤー・AIタブ、選択タブ保持、Canvas選択設定のPortal統合
 - Canvasを見ながら利用できるCreator Chat、履歴、テンプレート、再生成、Pageメモ保存
+- Creator Chat専用画面・右パネルの日英表示、明示的な履歴選択button、操作別アクセシブルラベル
 - 下部ステータスのOllama・ComfyUI接続要約、手動更新、Project別生成ジョブ件数
 - 制作画面上の生成ジョブDrawer、直近履歴、進捗、失敗内容、キャンセル
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
@@ -360,6 +361,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - skip link、keyboard操作可能なProject一覧、dialog focus管理、reduced motion・forced colors
 - Project構成・Episode・Page・素材browser・Inspectorの英語表示とPage選択button
 - Canvas toolbar・layout・コマ・吹き出し・テキスト・ルビ・layer操作の英語表示
+- Creator Chatの履歴・テンプレート・文脈・送信状態・エラー・AI設定導線の英語表示
 - main、renderer、child process異常の捕捉。外部自動送信なし
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
