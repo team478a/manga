@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `26b4cf3`
+実装基準コミット: `c6bfd78`
 
 この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
@@ -716,3 +716,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト52/52、canv
 Inspectorへfit、倍率、横・縦offset、回転の数値入力、中央リセット、編集開始・終了操作を追加しました。対象レイヤーを非表示またはlockした場合、別レイヤーや別オブジェクトへ移動した場合、Escapeを押した場合は専用編集を終了します。従来統合画像の直接編集も維持しています。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト52/52、canvas-core 25/25、ai-core 16/16に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。
+
+## 86. Panel mask合成・correction透明パッチ
+
+Panel Layerの`mask`を通常画像表示からalpha maskへ変更しました。maskはそれより下にある合成済みレイヤーへ画像alphaとopacityを適用し、後続レイヤーには影響しません。`correction`は透明部分を維持する修正パッチとして後段合成し、opacityとblend modeを利用できます。Inspectorには日英の挙動説明を表示し、maskでは意味を持たないblend mode操作を無効化します。
+
+CanvasではPorter-Duffの`destination-in`が他オブジェクトを消さないよう、Panel内スタックをpixel ratio 1のオフスクリーンcacheへ隔離しました。直接編集中はcacheを解除してmask元画像を表示し、編集終了後に再合成します。Page rendererはSVG alpha maskを逐次入れ子にし、PDFと連番PNG ZIPへ同じ順序で反映します。
+
+赤い背景の右半分を透明maskで除外し、その後ろへ青いcorrectionパッチを置く画素テストを追加しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト53/53、canvas-core 25/25、ai-core 16/16に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。

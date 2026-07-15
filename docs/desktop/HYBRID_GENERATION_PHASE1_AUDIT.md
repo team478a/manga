@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `26b4cf3`
+実装基準コミット: `c6bfd78`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -376,7 +376,7 @@ handoff中は対象分類を画面へ明示し、利用者は通常生成へ戻�
 - 従来統合画像だけのProjectは既存描画経路を維持
 - 書き出し画像の画素検証を含むDesktop統合テスト
 
-現在は合成結果を描画時・書き出し時にローカル生成します。mask・correction固有処理、`panels.image_asset_id`互換cacheの更新は次工程です。
+現在は合成結果を描画時・書き出し時にローカル生成します。`panels.image_asset_id`互換cacheの更新は次工程です。
 
 ### Commit 11: Panelレイヤー直接変形（完了: `26b4cf3`）
 
@@ -388,13 +388,26 @@ handoff中は対象分類を画面へ明示し、利用者は通常生成へ戻�
 - 変形結果を既存Panel Layer IPCへ保存し、Undo / Redoと書き出しへ反映
 - 従来統合画像の直接編集モードを維持
 
-CanvasとPage rendererは同じfit・offset・scale・rotation値を使用します。mask・correctionは現段階では通常画像レイヤーとして描画され、固有の切り抜き・色補正処理はまだ行いません。
+CanvasとPage rendererは同じfit・offset・scale・rotation値を使用します。Commit 12でmaskとcorrection透明パッチの合成規則を追加しました。
+
+### Commit 12: mask合成・correction透明パッチ（完了: `c6bfd78`）
+
+- mask画像のalphaを、それより下にある合成済みレイヤーへ適用
+- maskより後ろに並ぶレイヤーへは影響させない逐次合成
+- correction画像を透明部分を維持する修正パッチとして後段合成
+- CanvasのPorter-Duff合成をPanel単位のオフスクリーンcacheへ隔離
+- 低スペック端末を考慮し、Canvas cacheのpixel ratioを1に制限
+- mask編集中は元画像をプレビューし、終了後にalpha maskへ復帰
+- PDF・連番PNG ZIPのSVG alpha mask合成
+- mask前の赤レイヤーとmask後の青correctionを画素検証
+
+maskのblend modeは使用せず、alphaとopacityだけを適用します。correctionはalpha付き画像パッチとしてopacityとblend modeを利用できます。色調補正パラメータ型は未導入です。
 
 ## 11. テスト基準
 
 2026-07-15の調査時点:
 
-- Desktop統合テスト: 52/52成功
+- Desktop統合テスト: 53/53成功
 - ai-core Router・外部送信契約単体テスト: 16/16成功
 - canvas-core単体テスト: 25/25成功
 
