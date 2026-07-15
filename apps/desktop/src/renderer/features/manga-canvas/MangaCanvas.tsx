@@ -16,6 +16,7 @@ import type {
   Balloon,
   Page,
   Panel,
+  PanelLayer,
   ProjectBundle,
   TextObject,
 } from "@mangai/project-core";
@@ -53,6 +54,15 @@ type LayerItem =
   | (TextObject & { objectType: "text" });
 const CANVAS_GRID_SIZE = 100;
 const LAYER_DRAG_TYPE = "application/x-mangai-canvas-layer";
+const PANEL_LAYER_TYPES = [
+  "background",
+  "character",
+  "prop",
+  "effect",
+  "tone",
+  "mask",
+  "correction",
+] as const;
 
 function CanvasToolMenu({
   label,
@@ -169,6 +179,15 @@ function panelInput(panel: Panel) {
     imageOpacity: panel.imageOpacity,
   };
 }
+function panelLayerInput({
+  createdAt: _createdAt,
+  updatedAt: _updatedAt,
+  ...layer
+}: PanelLayer) {
+  void _createdAt;
+  void _updatedAt;
+  return layer;
+}
 function balloonInput({
   createdAt: _createdAt,
   updatedAt: _updatedAt,
@@ -209,6 +228,8 @@ function tracePanelShape(context: any, commands: PanelShapeCommand[]) {
 function PanelNode({
   panel,
   imageUrl,
+  imageLayers,
+  assetUrls,
   selected,
   imageEditing,
   onSelect,
@@ -218,6 +239,8 @@ function PanelNode({
 }: {
   panel: Panel;
   imageUrl?: string;
+  imageLayers: PanelLayer[];
+  assetUrls: Record<string, string>;
   selected: boolean;
   imageEditing: boolean;
   onSelect: (node: any, additive: boolean) => void;
@@ -253,6 +276,9 @@ function PanelNode({
       )
     : null;
   const shapeCommands = panelShapeCommands(panel);
+  const separatedLayers = imageLayers
+    .filter((layer) => layer.type !== "flattened_legacy")
+    .sort((a, b) => a.orderIndex - b.orderIndex);
   return (
     <Group
       id={`panel-${panel.id}`}
@@ -310,7 +336,22 @@ function PanelNode({
           context.fillStrokeShape(shape);
         }}
       />
-      {image && placement && (
+      {separatedLayers.length > 0 ? (
+        <Group
+          clipFunc={(context) => {
+            tracePanelShape(context, shapeCommands);
+          }}
+        >
+          {separatedLayers.map((layer) => (
+            <PanelLayerImage
+              key={layer.id}
+              layer={layer}
+              panel={panel}
+              imageUrl={layer.assetId ? assetUrls[layer.assetId] : undefined}
+            />
+          ))}
+        </Group>
+      ) : image && placement ? (
         <Group
           clipFunc={(context) => {
             tracePanelShape(context, shapeCommands);
@@ -369,7 +410,7 @@ function PanelNode({
             }}
           />
         </Group>
-      )}
+      ) : null}
       <Shape
         stroke={selected ? "#2f9e68" : panel.borderColor}
         strokeWidth={
@@ -399,6 +440,48 @@ function PanelNode({
         />
       )}
     </Group>
+  );
+}
+
+function PanelLayerImage({
+  layer,
+  panel,
+  imageUrl,
+}: {
+  layer: PanelLayer;
+  panel: Panel;
+  imageUrl?: string;
+}) {
+  const image = useImage(imageUrl);
+  if (!layer.visible || !image) return null;
+  const placement = computeImagePlacement(
+    { width: image.naturalWidth, height: image.naturalHeight },
+    { x: 0, y: 0, width: panel.width, height: panel.height },
+    {
+      fit: layer.imageFit,
+      scale: layer.imageScale,
+      offsetX: layer.imageOffsetX,
+      offsetY: layer.imageOffsetY,
+    },
+  );
+  const composite = {
+    normal: "source-over",
+    multiply: "multiply",
+    screen: "screen",
+    overlay: "overlay",
+  }[layer.blendMode] as GlobalCompositeOperation;
+  return (
+    <KonvaImage
+      image={image}
+      x={placement.x}
+      y={placement.y}
+      width={placement.width}
+      height={placement.height}
+      rotation={layer.imageRotation}
+      opacity={layer.opacity}
+      globalCompositeOperation={composite}
+      listening={false}
+    />
   );
 }
 
@@ -1271,6 +1354,11 @@ export function MangaCanvas({
   const [editingPanelImageId, setEditingPanelImageId] = React.useState<
     string | null
   >(null);
+  const [selectedPanelLayerId, setSelectedPanelLayerId] = React.useState<
+    string | null
+  >(null);
+  const [newPanelLayerType, setNewPanelLayerType] =
+    React.useState<(typeof PANEL_LAYER_TYPES)[number]>("background");
   const [draggingLayer, setDraggingLayer] = React.useState<SelectionKey | null>(
     null,
   );
@@ -1301,6 +1389,9 @@ export function MangaCanvas({
   const texts = bundle.textObjects
     .filter((item) => item.pageId === page.id)
     .sort((a, b) => a.zIndex - b.zIndex);
+  const panelLayers = bundle.panelLayers.filter((layer) =>
+    panels.some((panel) => panel.id === layer.panelId),
+  );
   const layers = [
     ...panels.map((item) => ({ ...item, objectType: "panel" as const })),
     ...balloons.map((item) => ({ ...item, objectType: "balloon" as const })),
@@ -1359,6 +1450,20 @@ export function MangaCanvas({
     selection?.type === "panel"
       ? panels.find((item) => item.id === selection.id)
       : undefined;
+  const selectedPanelLayers = selectedPanel
+    ? panelLayers
+        .filter((layer) => layer.panelId === selectedPanel.id)
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+    : [];
+  const editableSelectedPanelLayers = selectedPanelLayers.filter(
+    (layer) => layer.type !== "flattened_legacy",
+  );
+  const selectedPanelLayer = selectedPanelLayers.find(
+    (layer) => layer.id === selectedPanelLayerId,
+  );
+  React.useEffect(() => {
+    setSelectedPanelLayerId(null);
+  }, [selectedPanel?.id]);
   const editingPanel = editingPanelImageId
     ? panels.find((item) => item.id === editingPanelImageId)
     : undefined;
@@ -1468,6 +1573,89 @@ export function MangaCanvas({
     const rect = constrainRectToPage(item, page);
     onApply(window.mangai.canvas.savePanel(panelInput({ ...item, ...rect })));
   };
+  const savePanelImageLayers = (panelId: string, next: PanelLayer[]) =>
+    onApply(
+      window.mangai.canvas.savePanelLayers({
+        panelId,
+        layers: next
+          .sort((a, b) => a.orderIndex - b.orderIndex)
+          .map((layer, orderIndex) =>
+            panelLayerInput({ ...layer, orderIndex }),
+          ),
+      }),
+    );
+  const addAssetAsLayer = (
+    panel: Panel,
+    assetId: string,
+    type: (typeof PANEL_LAYER_TYPES)[number],
+  ) => {
+    const current = panelLayers
+      .filter((layer) => layer.panelId === panel.id)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+    const next: PanelLayer = {
+      id: crypto.randomUUID(),
+      panelId: panel.id,
+      name: t(`canvas.panelLayerType.${type}` as const),
+      type,
+      orderIndex: current.length,
+      visible: true,
+      locked: false,
+      opacity: 1,
+      blendMode: "normal",
+      assetId,
+      sourceJobId: null,
+      imageFit: "cover",
+      imageOffsetX: 0,
+      imageOffsetY: 0,
+      imageScale: 1,
+      imageRotation: 0,
+      createdAt: "",
+      updatedAt: "",
+    };
+    setSelectedPanelLayerId(next.id);
+    savePanelImageLayers(panel.id, [...current, next]);
+  };
+  const addSelectedAssetAsLayer = () => {
+    if (!selectedPanel || !selectedAssetId) return;
+    addAssetAsLayer(selectedPanel, selectedAssetId, newPanelLayerType);
+  };
+  const updatePanelImageLayer = (
+    layerId: string,
+    patch: Partial<PanelLayer>,
+  ) => {
+    if (!selectedPanel) return;
+    savePanelImageLayers(
+      selectedPanel.id,
+      selectedPanelLayers.map((layer) =>
+        layer.id === layerId ? { ...layer, ...patch } : layer,
+      ),
+    );
+  };
+  const removePanelImageLayer = (layerId: string) => {
+    if (!selectedPanel) return;
+    setSelectedPanelLayerId(null);
+    savePanelImageLayers(
+      selectedPanel.id,
+      selectedPanelLayers.filter((layer) => layer.id !== layerId),
+    );
+  };
+  const movePanelImageLayer = (layerId: string, direction: -1 | 1) => {
+    if (!selectedPanel) return;
+    const index = editableSelectedPanelLayers.findIndex(
+      (layer) => layer.id === layerId,
+    );
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= editableSelectedPanelLayers.length)
+      return;
+    const next = [...editableSelectedPanelLayers];
+    [next[index], next[target]] = [next[target], next[index]];
+    savePanelImageLayers(selectedPanel.id, [
+      ...selectedPanelLayers.filter(
+        (layer) => layer.type === "flattened_legacy",
+      ),
+      ...next,
+    ]);
+  };
   const dropAssetOnPanel = (event: React.DragEvent<HTMLDivElement>) => {
     const assetId = event.dataTransfer.getData("application/x-mangai-asset-id");
     if (!assetId || !bundle.assets.some((asset) => asset.id === assetId))
@@ -1484,7 +1672,14 @@ export function MangaCanvas({
     const panelId = node?.id()?.replace(/^panel-/, "");
     const panel = panels.find((value) => value.id === panelId);
     if (!panel || panel.locked) return;
-    savePanel({ ...panel, imageAssetId: assetId });
+    if (
+      panelLayers.some(
+        (layer) =>
+          layer.panelId === panel.id && layer.type !== "flattened_legacy",
+      )
+    )
+      addAssetAsLayer(panel, assetId, "background");
+    else savePanel({ ...panel, imageAssetId: assetId });
     select("panel", panel.id, node);
   };
   const saveBalloon = (item: Balloon) => {
@@ -2038,9 +2233,15 @@ export function MangaCanvas({
           )}
           {selectedPanel && selectedAssetId && (
             <button
-              onClick={() =>
-                savePanel({ ...selectedPanel, imageAssetId: selectedAssetId })
-              }
+              onClick={() => {
+                if (editableSelectedPanelLayers.length)
+                  addSelectedAssetAsLayer();
+                else
+                  savePanel({
+                    ...selectedPanel,
+                    imageAssetId: selectedAssetId,
+                  });
+              }}
             >
               {t("canvas.placeAsset")}
             </button>
@@ -2141,6 +2342,10 @@ export function MangaCanvas({
                         ? assetUrls[panel.imageAssetId]
                         : undefined
                     }
+                    imageLayers={panelLayers.filter(
+                      (layer) => layer.panelId === panel.id,
+                    )}
+                    assetUrls={assetUrls}
                     selected={
                       selection?.type === "panel" && selection.id === panel.id
                     }
@@ -2301,6 +2506,10 @@ export function MangaCanvas({
                           ? assetUrls[panel.imageAssetId]
                           : undefined
                       }
+                      imageLayers={panelLayers.filter(
+                        (layer) => layer.panelId === panel.id,
+                      )}
+                      assetUrls={assetUrls}
                       selected={isSelected("panel", panel.id)}
                       imageEditing={editingPanelImageId === panel.id}
                       onSelect={(node, additive) =>
@@ -2538,6 +2747,192 @@ export function MangaCanvas({
                   </div>
                 );
               })}
+              {selectedPanel && (
+                <section className="panel-image-layers">
+                  <h4>{t("canvas.panelImageLayers")}</h4>
+                  <div className="inline panel-layer-add">
+                    <select
+                      aria-label={t("canvas.panelLayerType")}
+                      value={newPanelLayerType}
+                      onChange={(event) =>
+                        setNewPanelLayerType(
+                          event.target
+                            .value as (typeof PANEL_LAYER_TYPES)[number],
+                        )
+                      }
+                    >
+                      {PANEL_LAYER_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {t(`canvas.panelLayerType.${type}` as const)}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      disabled={!selectedAssetId}
+                      onClick={addSelectedAssetAsLayer}
+                    >
+                      {t("canvas.addSelectedAssetLayer")}
+                    </button>
+                  </div>
+                  {!selectedAssetId && (
+                    <p className="muted">{t("canvas.selectAssetForLayer")}</p>
+                  )}
+                  {selectedPanelLayers.some(
+                    (layer) => layer.type === "flattened_legacy",
+                  ) && (
+                    <p className="muted panel-layer-legacy-note">
+                      {t("canvas.legacyLayerNotice")}
+                    </p>
+                  )}
+                  {editableSelectedPanelLayers
+                    .slice()
+                    .reverse()
+                    .map((layer) => {
+                      const layerIndex = editableSelectedPanelLayers.findIndex(
+                        (item) => item.id === layer.id,
+                      );
+                      return (
+                        <div className="panel-image-layer-row" key={layer.id}>
+                          <button
+                            className={
+                              selectedPanelLayerId === layer.id ? "active" : ""
+                            }
+                            onClick={() => setSelectedPanelLayerId(layer.id)}
+                          >
+                            {layer.name}
+                          </button>
+                          <button
+                            title={t("canvas.toggleVisibility")}
+                            onClick={() =>
+                              updatePanelImageLayer(layer.id, {
+                                visible: !layer.visible,
+                              })
+                            }
+                          >
+                            {layer.visible ? "◉" : "○"}
+                          </button>
+                          <button
+                            title={t("canvas.toggleLock")}
+                            onClick={() =>
+                              updatePanelImageLayer(layer.id, {
+                                locked: !layer.locked,
+                              })
+                            }
+                          >
+                            {layer.locked ? "🔒" : "◇"}
+                          </button>
+                          <button
+                            disabled={
+                              layer.locked ||
+                              layerIndex ===
+                                editableSelectedPanelLayers.length - 1
+                            }
+                            title={t("canvas.moveFront")}
+                            onClick={() => movePanelImageLayer(layer.id, 1)}
+                          >
+                            ↑
+                          </button>
+                          <button
+                            disabled={layer.locked || layerIndex === 0}
+                            title={t("canvas.moveBack")}
+                            onClick={() => movePanelImageLayer(layer.id, -1)}
+                          >
+                            ↓
+                          </button>
+                          <button
+                            disabled={layer.locked}
+                            title={t("canvas.deletePanelLayer")}
+                            onClick={() => removePanelImageLayer(layer.id)}
+                          >
+                            ×
+                          </button>
+                        </div>
+                      );
+                    })}
+                  {selectedPanelLayer &&
+                    selectedPanelLayer.type !== "flattened_legacy" && (
+                      <div className="panel-layer-properties">
+                        <label>
+                          {t("canvas.panelLayerType")}
+                          <select
+                            disabled={selectedPanelLayer.locked}
+                            value={selectedPanelLayer.type}
+                            onChange={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                type: event.target.value as PanelLayer["type"],
+                                name: t(
+                                  `canvas.panelLayerType.${event.target.value as (typeof PANEL_LAYER_TYPES)[number]}` as const,
+                                ),
+                              })
+                            }
+                          >
+                            {PANEL_LAYER_TYPES.map((type) => (
+                              <option key={type} value={type}>
+                                {t(`canvas.panelLayerType.${type}` as const)}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label>
+                          {t("properties.imageOpacity")}
+                          <input
+                            type="number"
+                            min="0"
+                            max="1"
+                            step="0.05"
+                            disabled={selectedPanelLayer.locked}
+                            value={selectedPanelLayer.opacity}
+                            onChange={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                opacity: Number(event.target.value),
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          {t("canvas.panelLayerBlend")}
+                          <select
+                            disabled={selectedPanelLayer.locked}
+                            value={selectedPanelLayer.blendMode}
+                            onChange={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                blendMode: event.target
+                                  .value as PanelLayer["blendMode"],
+                              })
+                            }
+                          >
+                            {(
+                              [
+                                "normal",
+                                "multiply",
+                                "screen",
+                                "overlay",
+                              ] as const
+                            ).map((mode) => (
+                              <option key={mode} value={mode}>
+                                {mode}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <button
+                          className="secondary"
+                          disabled={
+                            !selectedAssetId || selectedPanelLayer.locked
+                          }
+                          onClick={() =>
+                            updatePanelImageLayer(selectedPanelLayer.id, {
+                              assetId: selectedAssetId,
+                              sourceJobId: null,
+                            })
+                          }
+                        >
+                          {t("canvas.replaceLayerAsset")}
+                        </button>
+                      </div>
+                    )}
+                </section>
+              )}
             </div>,
             layersHost,
           )}

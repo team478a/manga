@@ -3205,6 +3205,12 @@ export class MangaiDatabase {
           bytes: await renderPagePng({
             page,
             panels: bundle.panels.filter((item) => item.pageId === page.id),
+            panelLayers: bundle.panelLayers.filter((layer) =>
+              bundle.panels.some(
+                (panel) =>
+                  panel.pageId === page.id && panel.id === layer.panelId,
+              ),
+            ),
             balloons: bundle.balloons.filter((item) => item.pageId === page.id),
             textObjects: bundle.textObjects.filter(
               (item) => item.pageId === page.id,

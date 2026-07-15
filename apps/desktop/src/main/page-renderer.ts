@@ -4,6 +4,7 @@ import type {
   Balloon,
   Page,
   Panel,
+  PanelLayer,
   TextObject,
 } from "@mangai/project-core";
 import {
@@ -24,6 +25,7 @@ export type RenderAsset = Pick<
 export async function renderPagePng(input: {
   page: Page;
   panels: Panel[];
+  panelLayers: PanelLayer[];
   balloons: Balloon[];
   textObjects: TextObject[];
   assets: Map<string, RenderAsset>;
@@ -34,6 +36,7 @@ export async function renderPagePng(input: {
     [
       page.imageAssetId,
       ...input.panels.map((panel) => panel.imageAssetId),
+      ...input.panelLayers.map((layer) => layer.assetId),
     ].filter((id): id is string => Boolean(id)),
   );
   const objects = [
@@ -60,7 +63,14 @@ export async function renderPagePng(input: {
       );
   }
   for (const item of objects) {
-    if (item.objectType === "panel") body.push(renderPanel(item, svgAssets));
+    if (item.objectType === "panel")
+      body.push(
+        renderPanel(
+          item,
+          svgAssets,
+          input.panelLayers.filter((layer) => layer.panelId === item.id),
+        ),
+      );
     else if (item.objectType === "balloon") body.push(renderBalloon(item));
     else body.push(renderText(item));
   }
@@ -90,29 +100,63 @@ async function prepareSvgAssets(
   return prepared;
 }
 
-function renderPanel(panel: Panel, assets: Map<string, RenderAsset>) {
+function renderPanel(
+  panel: Panel,
+  assets: Map<string, RenderAsset>,
+  layers: PanelLayer[],
+) {
   const clipId = `clip-${panel.id}`;
   const shape = panelShapeSvgPath(panel);
   const parts = [
     `<g transform="translate(${panel.x} ${panel.y}) rotate(${panel.rotation})">`,
     `<path d="${shape}" fill="${attr(panel.fillColor)}"/>`,
   ];
-  const asset = panel.imageAssetId ? assets.get(panel.imageAssetId) : undefined;
-  if (asset && asset.width > 0 && asset.height > 0) {
-    const placement = computeImagePlacement(
-      { width: asset.width, height: asset.height },
-      { x: 0, y: 0, width: panel.width, height: panel.height },
-      {
-        fit: panel.imageFit,
-        scale: panel.imageScale,
-        offsetX: panel.imageOffsetX,
-        offsetY: panel.imageOffsetY,
-      },
-    );
+  const separatedLayers = layers
+    .filter((layer) => layer.type !== "flattened_legacy")
+    .sort((a, b) => a.orderIndex - b.orderIndex);
+  if (separatedLayers.length) {
     parts.push(
       `<defs><clipPath id="${clipId}"><path d="${shape}"/></clipPath></defs>`,
-      `<image href="${dataUrl(asset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${panel.imageOpacity}" transform="rotate(${panel.imageRotation} ${placement.x} ${placement.y})" clip-path="url(#${clipId})"/>`,
     );
+    for (const layer of separatedLayers) {
+      if (!layer.visible) continue;
+      const layerAsset = layer.assetId ? assets.get(layer.assetId) : undefined;
+      if (!layerAsset || layerAsset.width <= 0 || layerAsset.height <= 0)
+        continue;
+      const placement = computeImagePlacement(
+        { width: layerAsset.width, height: layerAsset.height },
+        { x: 0, y: 0, width: panel.width, height: panel.height },
+        {
+          fit: layer.imageFit,
+          scale: layer.imageScale,
+          offsetX: layer.imageOffsetX,
+          offsetY: layer.imageOffsetY,
+        },
+      );
+      parts.push(
+        `<image href="${dataUrl(layerAsset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${layer.opacity}" transform="rotate(${layer.imageRotation} ${placement.x} ${placement.y})" clip-path="url(#${clipId})" style="mix-blend-mode:${layer.blendMode}"/>`,
+      );
+    }
+  } else {
+    const asset = panel.imageAssetId
+      ? assets.get(panel.imageAssetId)
+      : undefined;
+    if (asset && asset.width > 0 && asset.height > 0) {
+      const placement = computeImagePlacement(
+        { width: asset.width, height: asset.height },
+        { x: 0, y: 0, width: panel.width, height: panel.height },
+        {
+          fit: panel.imageFit,
+          scale: panel.imageScale,
+          offsetX: panel.imageOffsetX,
+          offsetY: panel.imageOffsetY,
+        },
+      );
+      parts.push(
+        `<defs><clipPath id="${clipId}"><path d="${shape}"/></clipPath></defs>`,
+        `<image href="${dataUrl(asset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${panel.imageOpacity}" transform="rotate(${panel.imageRotation} ${placement.x} ${placement.y})" clip-path="url(#${clipId})"/>`,
+      );
+    }
   }
   parts.push(
     `<path d="${shape}" fill="none" stroke="${attr(panel.borderColor)}" stroke-width="${panel.borderWidth}"/>`,

@@ -1265,15 +1265,37 @@ test("panel layers preserve legacy images and participate in undo, copy and back
     height: 1500,
     dpi: 300,
   });
-  const source = path.join(root, "layer.png");
-  fs.writeFileSync(
-    source,
-    Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
-      "base64",
-    ),
+  const source = path.join(root, "legacy-green.png");
+  const separatedSource = path.join(root, "separated-red.png");
+  await sharp({
+    create: {
+      width: 20,
+      height: 20,
+      channels: 4,
+      background: { r: 20, g: 220, b: 30, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(source);
+  await sharp({
+    create: {
+      width: 20,
+      height: 20,
+      channels: 4,
+      background: { r: 230, g: 25, b: 35, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(separatedSource);
+  bundle = db.importAssets(bundle.project.id, [source, separatedSource]);
+  const legacyAsset = bundle.assets.find(
+    (asset) => asset.fileName === "legacy-green.png",
   );
-  bundle = db.importAssets(bundle.project.id, [source]);
+  const separatedAsset = bundle.assets.find(
+    (asset) => asset.fileName === "separated-red.png",
+  );
+  assert.ok(legacyAsset);
+  assert.ok(separatedAsset);
   bundle = db.addPage(bundle.episodes[0].id);
   const projectId = bundle.project.id;
   const panelId = "30000000-0000-4000-8000-000000000001";
@@ -1294,7 +1316,7 @@ test("panel layers preserve legacy images and participate in undo, copy and back
     fillColor: "#ffffff",
     shape: "rectangle",
     slant: 0.12,
-    imageAssetId: bundle.assets[0].id,
+    imageAssetId: legacyAsset.id,
     imageFit: "manual",
     imageOffsetX: 12,
     imageOffsetY: -4,
@@ -1306,7 +1328,7 @@ test("panel layers preserve legacy images and participate in undo, copy and back
   });
   assert.equal(bundle.panelLayers.length, 1);
   assert.equal(bundle.panelLayers[0].type, "flattened_legacy");
-  assert.equal(bundle.panelLayers[0].assetId, bundle.assets[0].id);
+  assert.equal(bundle.panelLayers[0].assetId, legacyAsset.id);
   assert.equal(bundle.panelLayers[0].imageFit, "manual");
   assert.equal(bundle.panelLayers[0].opacity, 0.8);
 
@@ -1337,7 +1359,7 @@ test("panel layers preserve legacy images and participate in undo, copy and back
       locked: false,
       opacity: 1,
       blendMode: "normal",
-      assetId: bundle.assets[0].id,
+      assetId: separatedAsset.id,
       sourceJobId: null,
       imageFit: "cover",
       imageOffsetX: 0,
@@ -1355,7 +1377,7 @@ test("panel layers preserve legacy images and participate in undo, copy and back
       locked: false,
       opacity: 0.5,
       blendMode: "screen",
-      assetId: bundle.assets[0].id,
+      assetId: separatedAsset.id,
       sourceJobId: null,
       imageFit: "contain",
       imageOffsetX: 2,
@@ -1381,6 +1403,18 @@ test("panel layers preserve legacy images and participate in undo, copy and back
     db.redo(projectId).panelLayers.map((layer) => layer.type),
     ["background", "effect"],
   );
+  const layerExport = await db.exportProject(projectId);
+  const layerImages = await JSZip.loadAsync(
+    fs.readFileSync(path.join(layerExport.outputDir, "本編画像ZIP.zip")),
+  );
+  const layerPixel = await sharp(
+    await layerImages.file("001.png").async("nodebuffer"),
+  )
+    .extract({ left: 300, top: 400, width: 1, height: 1 })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  assert.ok(layerPixel[0] > layerPixel[1] * 2);
   db.close();
   db = new MangaiDatabase(paths);
   assert.deepEqual(
@@ -1393,7 +1427,10 @@ test("panel layers preserve legacy images and participate in undo, copy and back
     ["background", "effect"],
   );
   assert.equal(duplicate.panelLayers[0].panelId, duplicate.panels[0].id);
-  assert.equal(duplicate.panelLayers[0].assetId, duplicate.assets[0].id);
+  assert.equal(
+    duplicate.panelLayers[0].assetId,
+    duplicate.assets.find((asset) => asset.fileName === "separated-red.png").id,
+  );
   const backupPath = path.join(root, "panel-layers.mangai-backup");
   await db.backupProject(projectId, backupPath);
   const restored = await db.restoreProject(backupPath);
@@ -1402,7 +1439,10 @@ test("panel layers preserve legacy images and participate in undo, copy and back
     ["background", "effect"],
   );
   assert.equal(restored.panelLayers[0].panelId, restored.panels[0].id);
-  assert.equal(restored.panelLayers[0].assetId, restored.assets[0].id);
+  assert.equal(
+    restored.panelLayers[0].assetId,
+    restored.assets.find((asset) => asset.fileName === "separated-red.png").id,
+  );
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
