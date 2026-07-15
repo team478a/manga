@@ -586,3 +586,11 @@ rendererへ型付きの日本語・英語辞書とlocale contextを追加しま�
 画面先頭へskip linkを追加し、Project一覧は明示的なbuttonでkeyboardから開けるようにしました。新規Projectをmodal backdrop付きdialogへ変更し、初期focus、Tab / Shift+Tab循環、Escape終了、起点へのfocus復帰を実装しました。errorはalertと閉じるbuttonに分離し、クリック領域だけに依存しません。OS設定に合わせたreduced motionとWindows forced colorsも追加しました。
 
 対応範囲と残作業は[`desktop/LOCALIZATION_ACCESSIBILITY.md`](desktop/LOCALIZATION_ACCESSIBILITY.md)へ記録しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。
+
+## 70. 編集サイドパネルの英語化
+
+左側のProject panelと右側Inspectorを日本語・英語辞書へ移行しました。Project構成、Episode追加・名称変更・並び替え・削除、Episodeテンプレート、Page追加・選択・並び替え、素材追加・検索・形式filter・連続Page化、Project・Page・選択画像のInspector操作が表示localeへ連動します。既存データやテンプレートIDは変更せず、名称と説明だけを翻訳します。
+
+Page一覧は行全体をクリックする`div`から、Page選択用buttonと上下移動buttonを分離した構造へ変更しました。keyboardとスクリーンリーダーで「選択」と「並び替え」を別操作として認識できます。素材検索のcase変換も選択localeを使用します。
+
+保存・書き出しstatusも英語表示へ対応し、locale切替直後のstatus表示を更新します。Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。

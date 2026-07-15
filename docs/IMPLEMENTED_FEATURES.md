@@ -358,6 +358,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - ローカル保存と別の明示同意、送信前確認、HTTPS限定、失敗再送に対応する外部送信client
 - 日本語・英語locale基盤、主要shell翻訳、言語・日時localeの再起動保持
 - skip link、keyboard操作可能なProject一覧、dialog focus管理、reduced motion・forced colors
+- Project構成・Episode・Page・素材browser・Inspectorの英語表示とPage選択button
 - main、renderer、child process異常の捕捉。外部自動送信なし
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。

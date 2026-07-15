@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `49f8724`
+実装基準コミット: `0e47516`
 
 ## 1. 現在地
 
@@ -130,6 +130,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 - ローカル保存と分離した外部送信同意、未送信件数、手動送信・再送client
 - HTTPS受付先、schema再検証、redirect拒否、SHA-256冪等ID（受付先は既定未設定）
 - 日本語・英語locale基盤、ホーム・global navigation・header・statusの英語表示
+- Project構成、Episode、Page、素材browser、Inspectorの英語表示
 - 言語設定の再起動保持、HTML lang・日時locale連動
 
 ### Windows配布
@@ -211,7 +212,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 ### 機能上の制限
 
 - 素材削除とAI生成素材追加は実ファイルを含む永続Undo/Redoに対応済み。書き出しとAI設定は監査履歴に分離済み
-- 英語表示は主要shellまで対応済み。Canvas、各tool画面、main process messageの辞書移行とWCAG評価は未完了
+- 英語表示は主要shell・Project panel・Inspectorまで対応済み。Canvas、各tool画面、main process messageの辞書移行とWCAG評価は未完了
 - 別ドライブのカスタム保存先は同じドライブの`.mangai-trash`へ退避（実DドライブE2E済み）
 - 販売パッケージ経由の下書き作成、公開情報の匿名照会、認証済み端末からの非公開下書き照会を実装済み。Desktopからの更新操作は未実装
 - 手動・自動Projectバックアップ、履歴込み復元、DB破損時リカバリー、ローカル構造化ログ、同意制の詳細クラッシュレポート、別同意の手動送信clientを実装済み。外部受付APIと運用方針は未設定
