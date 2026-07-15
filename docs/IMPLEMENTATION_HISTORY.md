@@ -594,3 +594,11 @@ rendererへ型付きの日本語・英語辞書とlocale contextを追加しま�
 Page一覧は行全体をクリックする`div`から、Page選択用buttonと上下移動buttonを分離した構造へ変更しました。keyboardとスクリーンリーダーで「選択」と「並び替え」を別操作として認識できます。素材検索のcase変換も選択localeを使用します。
 
 保存・書き出しstatusも英語表示へ対応し、locale切替直後のstatus表示を更新します。Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。
+
+## 71. Canvas編集機能の英語化
+
+`MangaCanvas`内の固定日本語を日本語・英語辞書へ移行しました。追加・レイアウト・表示menu、Page layoutテンプレート、grid・snap、画像編集、複数選択削除、素材配置、レイヤー一覧と表示・lock・前後移動が表示localeへ連動します。
+
+Inspectorへportal表示するコマ形状、画像fit・scale・offset・回転・透明度、吹き出し種別・尻尾・色・線幅、テキスト本文・親吹き出し・縦横書き・文字サイズ・色・揃えも翻訳しました。ルビの選択案内、入力、追加・解除、全validation messageも英語表示へ対応しています。
+
+新規コマ・吹き出し・テキスト、複製名、テンプレート適用後のコマ名は作成時のlocaleで初期化し、保存済みの利用者編集名は変更しません。MangaCanvas内の固定日本語が残っていないことを検索で確認しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。

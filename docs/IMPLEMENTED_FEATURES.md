@@ -359,6 +359,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 日本語・英語locale基盤、主要shell翻訳、言語・日時localeの再起動保持
 - skip link、keyboard操作可能なProject一覧、dialog focus管理、reduced motion・forced colors
 - Project構成・Episode・Page・素材browser・Inspectorの英語表示とPage選択button
+- Canvas toolbar・layout・コマ・吹き出し・テキスト・ルビ・layer操作の英語表示
 - main、renderer、child process異常の捕捉。外部自動送信なし
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
