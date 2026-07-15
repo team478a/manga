@@ -8,6 +8,7 @@ import {
   routeGenerationJob,
   recommendRuntimeProfile,
   runtimeLimits,
+  constrainImageDimensions,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
@@ -56,6 +57,19 @@ test("all local runtime profiles serialize image generation", () => {
     assert.equal(runtimeLimits(profile).batchSize, 1);
     assert.equal(runtimeLimits(profile).maxConcurrentLocalJobs, 1);
   }
+});
+
+test("runtime profile scales generation dimensions without changing aspect ratio", () => {
+  assert.deepEqual(constrainImageDimensions(1600, 1200, 1024), {
+    width: 1024,
+    height: 768,
+    adjusted: true,
+  });
+  assert.deepEqual(constrainImageDimensions(768, 1024, 1024), {
+    width: 768,
+    height: 1024,
+    adjusted: false,
+  });
 });
 
 function job(overrides = {}) {

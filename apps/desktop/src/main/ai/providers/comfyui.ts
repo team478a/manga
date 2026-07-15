@@ -6,8 +6,46 @@ import {
   type ProviderConnectionResult,
   type ProviderJobStatus,
   type ProviderSettings,
+  type RuntimeProfileState,
 } from "@mangai/ai-core";
 import { fetchWithTimeout, safeBaseUrl } from "./http.js";
+export function applyRuntimeLimitsToWorkflow(
+  workflow: Record<string, any>,
+  runtime: RuntimeProfileState,
+) {
+  const classTypes: string[] = [];
+  for (const node of Object.values(workflow)) {
+    if (!node || typeof node !== "object") continue;
+    if (typeof node.class_type === "string")
+      classTypes.push(node.class_type.toLowerCase().replace(/[^a-z0-9]/g, ""));
+    if (
+      node.inputs &&
+      typeof node.inputs === "object" &&
+      Object.hasOwn(node.inputs, "batch_size")
+    )
+      node.inputs.batch_size = runtime.limits.batchSize;
+  }
+  const controlNetLoaders = classTypes.filter((value) =>
+      value.includes("controlnetloader"),
+    ).length,
+    controlNetAppliers = classTypes.filter((value) =>
+      value.includes("controlnetapply"),
+    ).length,
+    controlNets = Math.max(controlNetLoaders, controlNetAppliers),
+    loras = classTypes.filter((value) => value.includes("loraloader")).length;
+  if (controlNets > runtime.limits.maxControlNets)
+    throw new AIProviderError(
+      "WORKFLOW_PROFILE_LIMIT",
+      `現在のRuntime ProfileではControlNetは最大${runtime.limits.maxControlNets}件です。ワークフローには${controlNets}件あります。`,
+    );
+  if (loras > runtime.limits.maxLoras)
+    throw new AIProviderError(
+      "WORKFLOW_PROFILE_LIMIT",
+      `現在のRuntime ProfileではLoRAは最大${runtime.limits.maxLoras}件です。ワークフローには${loras}件あります。`,
+    );
+  return { controlNets, loras };
+}
+
 export class ComfyUIProvider implements ImageGenerationProvider {
   id = "comfyui";
   name = "ComfyUI";
@@ -16,6 +54,7 @@ export class ComfyUIProvider implements ImageGenerationProvider {
     private getWorkflow: (
       id: string,
     ) => Promise<{ workflow: Record<string, any>; mapping: any }>,
+    private getRuntimeProfile?: () => RuntimeProfileState,
   ) {}
   private url(path: string) {
     return `${safeBaseUrl(this.settings.baseUrl, this.settings.allowedOrigins)}${path}`;
@@ -71,6 +110,8 @@ export class ComfyUIProvider implements ImageGenerationProvider {
     set(definition.mapping.width, request.width);
     set(definition.mapping.height, request.height);
     set(definition.mapping.seed, request.seed);
+    if (this.getRuntimeProfile)
+      applyRuntimeLimitsToWorkflow(workflow, this.getRuntimeProfile());
     const response = await fetchWithTimeout(
       this.url("/prompt"),
       {

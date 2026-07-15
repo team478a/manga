@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import {
   AIProviderError,
   createExternalDispatchPreview,
+  constrainImageDimensions,
   imageJobRequestSchema,
   routeGenerationJob,
   type SafeAssetLibraryRequest,
@@ -13,6 +14,7 @@ import {
   type TextGenerationProvider,
   type ImageGenerationRequest,
   type ImageJobRequest,
+  type RuntimeProfileState,
 } from "@mangai/ai-core";
 import { MangaiDatabase } from "../database.js";
 import { OllamaProvider } from "./providers/ollama.js";
@@ -31,12 +33,17 @@ export class AIService {
   private controllers = new Map<string, AbortController>();
   private activeLocalImageJobId: string | null = null;
   private allowMock: boolean;
+  private getRuntimeProfile?: () => RuntimeProfileState;
   constructor(
     private store: MangaiDatabase,
-    options: { allowMock?: boolean } = {},
+    options: {
+      allowMock?: boolean;
+      getRuntimeProfile?: () => RuntimeProfileState;
+    } = {},
   ) {
     this.allowMock =
       options.allowMock ?? process.env.MANGAI_ENABLE_MOCK_AI === "true";
+    this.getRuntimeProfile = options.getRuntimeProfile;
   }
   isMockEnabled() {
     return this.allowMock;
@@ -288,8 +295,10 @@ export class AIService {
     const settings = this.settings(id);
     if (id === "ollama") return new OllamaProvider(settings);
     if (id === "comfyui")
-      return new ComfyUIProvider(settings, async (workflowId) =>
-        this.store.getComfyWorkflow(workflowId),
+      return new ComfyUIProvider(
+        settings,
+        async (workflowId) => this.store.getComfyWorkflow(workflowId),
+        this.getRuntimeProfile,
       );
     if (!this.allowMock)
       throw new AIProviderError(
@@ -457,14 +466,29 @@ export class AIService {
   }
   async generateImage(input: ImageJobRequest) {
     input = imageJobRequestSchema.parse(input);
+    const runtime = this.getRuntimeProfile?.();
+    const dimensions = runtime
+      ? constrainImageDimensions(
+          input.width,
+          input.height,
+          runtime.limits.maxOutputDimension,
+        )
+      : { width: input.width, height: input.height, adjusted: false };
+    const effectiveInput: ImageJobRequest = {
+      ...input,
+      width: dimensions.width,
+      height: dimensions.height,
+    };
     const settings = this.settings("comfyui");
     if (!settings.enabled)
       throw new AIProviderError(
         "PROVIDER_DISABLED",
         "ComfyUIが無効です。設定画面で有効にしてください。",
       );
-    const provider = new ComfyUIProvider(settings, async (id) =>
-        this.store.getComfyWorkflow(id),
+    const provider = new ComfyUIProvider(
+        settings,
+        async (id) => this.store.getComfyWorkflow(id),
+        this.getRuntimeProfile,
       ),
       jobId = this.store.createGenerationJob({
         projectId: input.projectId,
@@ -475,7 +499,15 @@ export class AIService {
         generationType: "image",
         prompt: input.prompt,
         negativePrompt: input.negativePrompt,
-        inputJson: input,
+        inputJson: runtime
+          ? {
+              ...input,
+              runtimeProfile: runtime.effectiveProfile,
+              effectiveWidth: effectiveInput.width,
+              effectiveHeight: effectiveInput.height,
+              dimensionsAdjusted: dimensions.adjusted,
+            }
+          : input,
       });
     const controller = new AbortController();
     this.controllers.set(jobId, controller);
@@ -509,7 +541,7 @@ export class AIService {
       this.activeLocalImageJobId = jobId;
       this.store.updateGenerationJob(jobId, "running", { progress: 0.05 });
       const queued = await provider.generateImage(
-        input as ImageGenerationRequest,
+        effectiveInput as ImageGenerationRequest,
         undefined,
         controller.signal,
       );
@@ -560,8 +592,8 @@ export class AIService {
                   workflowId: input.workflowId,
                   prompt: input.prompt,
                   negativePrompt: input.negativePrompt,
-                  width: input.width,
-                  height: input.height,
+                  width: effectiveInput.width,
+                  height: effectiveInput.height,
                   seed: input.seed,
                   jobType: input.jobType,
                   libraryTags: input.libraryTags,
@@ -601,6 +633,10 @@ export class AIService {
             jobId,
             status: "completed",
             count: images.length,
+            runtimeProfile: runtime?.effectiveProfile,
+            dimensionsAdjusted: dimensions.adjusted,
+            effectiveWidth: effectiveInput.width,
+            effectiveHeight: effectiveInput.height,
             bundle: this.store.bundle(input.projectId),
           };
         }

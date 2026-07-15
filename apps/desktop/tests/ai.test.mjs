@@ -8,7 +8,10 @@ import { Buffer } from "node:buffer";
 import { setTimeout } from "node:timers";
 import { createHash, randomUUID } from "node:crypto";
 import { OllamaProvider } from "../dist-main/main/ai/providers/ollama.js";
-import { ComfyUIProvider } from "../dist-main/main/ai/providers/comfyui.js";
+import {
+  applyRuntimeLimitsToWorkflow,
+  ComfyUIProvider,
+} from "../dist-main/main/ai/providers/comfyui.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { AIService } from "../dist-main/main/ai/service.js";
 import { safeBaseUrl } from "../dist-main/main/ai/providers/http.js";
@@ -16,8 +19,21 @@ import {
   hardwareFromElectronGpuInfo,
   RuntimeProfileService,
 } from "../dist-main/main/runtime-profile.js";
-import { chatRequestSchema } from "@mangai/ai-core";
+import { chatRequestSchema, runtimeLimits } from "@mangai/ai-core";
 process.env.MANGAI_ENABLE_MOCK_AI = "true";
+
+const runtimeState = (profile = "vram_8gb") => ({
+  hardware: {
+    totalRamBytes: 32 * 1024 ** 3,
+    gpuName: "Test GPU",
+    dedicatedVramMb: 8192,
+  },
+  recommendedProfile: profile,
+  selection: profile,
+  effectiveProfile: profile,
+  limits: runtimeLimits(profile),
+  detectedAt: "2026-07-16T00:00:00.000Z",
+});
 
 test("runtime profile detects active GPU and restores a saved selection", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-runtime-"));
@@ -43,6 +59,26 @@ test("runtime profile detects active GPU and restores a saved selection", () => 
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("runtime profile forces batch one and rejects oversized workflow features", () => {
+  const workflow = {
+    1: { class_type: "EmptyLatentImage", inputs: { batch_size: 4 } },
+    2: { class_type: "ControlNetLoader", inputs: {} },
+    3: { class_type: "ControlNetApplyAdvanced", inputs: {} },
+    4: { class_type: "LoraLoader", inputs: {} },
+    5: { class_type: "LoraLoaderModelOnly", inputs: {} },
+  };
+  assert.deepEqual(applyRuntimeLimitsToWorkflow(workflow, runtimeState()), {
+    controlNets: 1,
+    loras: 2,
+  });
+  assert.equal(workflow[1].inputs.batch_size, 1);
+  workflow[6] = { class_type: "LoraLoader", inputs: {} };
+  assert.throws(
+    () => applyRuntimeLimitsToWorkflow(workflow, runtimeState()),
+    (error) => error?.code === "WORKFLOW_PROFILE_LIMIT",
+  );
 });
 const settings = (providerId, baseUrl) => ({
   providerId,
@@ -406,9 +442,17 @@ test("ComfyUI generation is saved as a project asset", async () => {
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
     "base64",
   );
+  let queuedPrompt;
   const mock = await server((req, res) => {
-    if (req.url === "/prompt")
-      return res.end(JSON.stringify({ prompt_id: "asset-job" }));
+    if (req.url === "/prompt") {
+      let body = "";
+      req.on("data", (chunk) => (body += chunk));
+      req.on("end", () => {
+        queuedPrompt = JSON.parse(body).prompt;
+        res.end(JSON.stringify({ prompt_id: "asset-job" }));
+      });
+      return;
+    }
     if (req.url === "/history/asset-job")
       return res.end(
         JSON.stringify({
@@ -455,18 +499,36 @@ test("ComfyUI generation is saved as a project asset", async () => {
     const workflowFile = path.join(root, "workflow.json");
     fs.writeFileSync(
       workflowFile,
-      JSON.stringify({ 6: { inputs: { text: "" } } }),
+      JSON.stringify({
+        5: {
+          class_type: "EmptyLatentImage",
+          inputs: { width: 512, height: 512, batch_size: 4 },
+        },
+        6: { inputs: { text: "" } },
+      }),
     );
     const workflow = db.registerComfyWorkflow("test", workflowFile, {
       prompt: { nodeId: "6", input: "text" },
+      width: { nodeId: "5", input: "width" },
+      height: { nodeId: "5", input: "height" },
     })[0];
-    const result = await new AIService(db).generateImage({
+    const result = await new AIService(db, {
+      getRuntimeProfile: () => runtimeState(),
+    }).generateImage({
       projectId: project.project.id,
       workflowId: workflow.id,
       prompt: "cat",
       negativePrompt: "",
+      width: 1600,
+      height: 1200,
     });
     assert.equal(result.status, "completed");
+    assert.equal(result.dimensionsAdjusted, true);
+    assert.equal(result.effectiveWidth, 1024);
+    assert.equal(result.effectiveHeight, 768);
+    assert.equal(queuedPrompt[5].inputs.width, 1024);
+    assert.equal(queuedPrompt[5].inputs.height, 768);
+    assert.equal(queuedPrompt[5].inputs.batch_size, 1);
     assert.equal(result.bundle.assets.length, 1);
     assert.equal(result.bundle.assets[0].fileName, "generated.png");
     assert.equal(db.listGenerationJobs(project.project.id)[0].progress, 1);

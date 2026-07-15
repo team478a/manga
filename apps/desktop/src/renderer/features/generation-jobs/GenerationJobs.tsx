@@ -94,6 +94,7 @@ export function GenerationJobs({
     [negative, setNegative] = React.useState(""),
     [busy, setBusy] = React.useState(false),
     [error, setError] = React.useState(""),
+    [generationNotice, setGenerationNotice] = React.useState(""),
     [workflowMessage, setWorkflowMessage] = React.useState("");
   const [safeType, setSafeType] = React.useState<
       "background" | "prop" | "effect"
@@ -124,6 +125,7 @@ export function GenerationJobs({
     if (!workflowId || !promptText.trim()) return;
     setBusy(true);
     setError("");
+    setGenerationNotice("");
     const refreshTimer = window.setInterval(() => void load(), 750);
     try {
       const result = await window.mangai.ai.generateImage({
@@ -140,6 +142,12 @@ export function GenerationJobs({
         libraryTags: safeHandoff?.tags,
       });
       if (result.bundle) onBundle(result.bundle);
+      if (result.dimensionsAdjusted)
+        setGenerationNotice(
+          t("generation.runtimeAdjusted")
+            .replace("{width}", String(result.effectiveWidth))
+            .replace("{height}", String(result.effectiveHeight)),
+        );
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -546,6 +554,7 @@ export function GenerationJobs({
               {error}
             </p>
           )}
+          {generationNotice && <p>{generationNotice}</p>}
         </section>
         <section className="panel-lite">
           <h2>{t("generation.history")}</h2>

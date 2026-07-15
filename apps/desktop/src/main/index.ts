@@ -847,6 +847,7 @@ app
     aiService = new AIService(store, {
       allowMock:
         !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
+      getRuntimeProfile: () => runtimeProfile.getState(),
     });
     updater = new DesktopUpdater(desktopPaths().root);
     register();

@@ -381,6 +381,8 @@ const ja = {
   "generation.negativePrompt": "Negative Prompt",
   "generation.generating": "生成中…",
   "generation.start": "画像生成を開始",
+  "generation.runtimeAdjusted":
+    "端末のRuntime Profileに合わせて {width}×{height}px で生成しました。",
   "generation.history": "生成履歴",
   "generation.image": "画像",
   "generation.text": "文章",
@@ -826,6 +828,8 @@ const en: Record<TranslationKey, string> = {
   "generation.negativePrompt": "Negative prompt",
   "generation.generating": "Generating…",
   "generation.start": "Generate image",
+  "generation.runtimeAdjusted":
+    "Generated at {width}×{height}px to match this device's Runtime Profile.",
   "generation.history": "Generation history",
   "generation.image": "Image",
   "generation.text": "Text",
