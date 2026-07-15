@@ -9,6 +9,41 @@ function generationStatusKey(status: string) {
   if (status === "canceled") return "generation.status.canceled" as const;
   return "generation.status.failed" as const;
 }
+function routeTargetKey(target: string) {
+  if (target === "builtin") return "generation.routeTarget.builtin" as const;
+  if (target === "local") return "generation.routeTarget.local" as const;
+  if (target === "cloud") return "generation.routeTarget.cloud" as const;
+  if (target === "render_node")
+    return "generation.routeTarget.renderNode" as const;
+  return "generation.routeTarget.assetLibrary" as const;
+}
+function sensitivityKey(sensitivity: string) {
+  if (sensitivity === "safe") return "generation.sensitivity.safe" as const;
+  if (sensitivity === "restricted")
+    return "generation.sensitivity.restricted" as const;
+  if (sensitivity === "adult") return "generation.sensitivity.adult" as const;
+  return "generation.sensitivity.externalForbidden" as const;
+}
+function routeReasonKey(reason: string) {
+  const keys = {
+    builtin_operation: "generation.routeReason.builtinOperation",
+    explicit_target: "generation.routeReason.explicitTarget",
+    sensitive_local_only: "generation.routeReason.sensitiveLocalOnly",
+    sensitive_render_node: "generation.routeReason.sensitiveRenderNode",
+    project_local_only: "generation.routeReason.projectLocalOnly",
+    asset_library_preferred: "generation.routeReason.assetLibraryPreferred",
+    external_background_allowed:
+      "generation.routeReason.externalBackgroundAllowed",
+    external_safe_asset_allowed:
+      "generation.routeReason.externalSafeAssetAllowed",
+    external_manual_approval: "generation.routeReason.externalManualApproval",
+    external_custom_policy: "generation.routeReason.externalCustomPolicy",
+    local_fallback: "generation.routeReason.localFallback",
+    required_target_unavailable:
+      "generation.routeReason.requiredTargetUnavailable",
+  } as const;
+  return keys[reason as keyof typeof keys] ?? keys.required_target_unavailable;
+}
 export function GenerationJobs({
   bundle,
   episodeId,
@@ -24,6 +59,7 @@ export function GenerationJobs({
 }) {
   const { t, formatDateTime } = useI18n();
   const [jobs, setJobs] = React.useState<any[]>([]),
+    [routes, setRoutes] = React.useState<any[]>([]),
     [workflows, setWorkflows] = React.useState<any[]>([]),
     [workflowId, setWorkflowId] = React.useState(""),
     [promptText, setPrompt] = React.useState(""),
@@ -34,6 +70,7 @@ export function GenerationJobs({
   const load = () =>
     Promise.all([
       window.mangai.ai.listJobs(bundle.project.id).then(setJobs),
+      window.mangai.ai.listRouteDecisions(bundle.project.id).then(setRoutes),
       window.mangai.ai.listWorkflows().then(setWorkflows),
     ]);
   React.useEffect(() => {
@@ -248,77 +285,100 @@ export function GenerationJobs({
         <section className="panel-lite">
           <h2>{t("generation.history")}</h2>
           <div className="job-list">
-            {jobs.map((job) => (
-              <article key={job.id}>
-                <div>
-                  <b>
-                    {job.generationType === "image"
-                      ? t("generation.image")
-                      : t("generation.text")}{" "}
-                    / {job.providerId}
-                  </b>
-                  <p>{job.prompt}</p>
-                  <small>
-                    {t(generationStatusKey(job.status))}・
-                    {formatDateTime(job.createdAt)}
-                  </small>
-                  {job.generationType === "image" && (
-                    <div className="job-progress">
-                      <progress
-                        max="100"
-                        value={Math.round((job.progress ?? 0) * 100)}
-                      />
-                      <small>
-                        {Math.round((job.progress ?? 0) * 100)}%
-                        {job.status === "running"
-                          ? t("generation.progressEstimate")
-                          : ""}
-                      </small>
-                    </div>
-                  )}
-                  {job.errorMessage && (
-                    <p className="error" role="alert">
-                      {job.errorMessage}
-                    </p>
-                  )}
-                </div>
-                <div className="inline">
-                  {job.status === "completed" &&
-                    job.generationType === "image" && (
-                      <button className="secondary" onClick={onClose}>
-                        {t("generation.openAsset")}
-                      </button>
+            {jobs.map((job) => {
+              const route = routes.find((item) => item.jobId === job.id);
+              return (
+                <article key={job.id}>
+                  <div>
+                    <b>
+                      {job.generationType === "image"
+                        ? t("generation.image")
+                        : t("generation.text")}{" "}
+                      / {job.providerId}
+                    </b>
+                    <p>{job.prompt}</p>
+                    <small>
+                      {t(generationStatusKey(job.status))}・
+                      {formatDateTime(job.createdAt)}
+                    </small>
+                    {job.generationType === "image" && (
+                      <div className="job-progress">
+                        <progress
+                          max="100"
+                          value={Math.round((job.progress ?? 0) * 100)}
+                        />
+                        <small>
+                          {Math.round((job.progress ?? 0) * 100)}%
+                          {job.status === "running"
+                            ? t("generation.progressEstimate")
+                            : ""}
+                        </small>
+                      </div>
                     )}
-                  {job.status === "running" && (
-                    <button
-                      className="danger"
-                      onClick={() => window.mangai.ai.cancel(job.id).then(load)}
-                    >
-                      {t("generation.cancel")}
-                    </button>
-                  )}
-                  {job.status === "failed" &&
-                    job.generationType === "image" && (
+                    {job.errorMessage && (
+                      <p className="error" role="alert">
+                        {job.errorMessage}
+                      </p>
+                    )}
+                    {route && (
+                      <div className="job-route">
+                        <small>
+                          {t("generation.route")}:{" "}
+                          {t(routeTargetKey(route.decision.target))}
+                          {" / "}
+                          {t("generation.sensitivity")}:{" "}
+                          {t(sensitivityKey(route.draft.sensitivity))}
+                        </small>
+                        <small>
+                          {t("generation.routeReason")}:{" "}
+                          {t(routeReasonKey(route.decision.reason))}
+                          {route.decision.blocked
+                            ? ` / ${t("generation.routeBlocked")}`
+                            : ""}
+                        </small>
+                      </div>
+                    )}
+                  </div>
+                  <div className="inline">
+                    {job.status === "completed" &&
+                      job.generationType === "image" && (
+                        <button className="secondary" onClick={onClose}>
+                          {t("generation.openAsset")}
+                        </button>
+                      )}
+                    {job.status === "running" && (
                       <button
-                        onClick={async () => {
-                          const input = JSON.parse(job.inputJson);
-                          setBusy(true);
-                          try {
-                            const result =
-                              await window.mangai.ai.generateImage(input);
-                            if (result.bundle) onBundle(result.bundle);
-                            await load();
-                          } finally {
-                            setBusy(false);
-                          }
-                        }}
+                        className="danger"
+                        onClick={() =>
+                          window.mangai.ai.cancel(job.id).then(load)
+                        }
                       >
-                        {t("generation.retry")}
+                        {t("generation.cancel")}
                       </button>
                     )}
-                </div>
-              </article>
-            ))}
+                    {job.status === "failed" &&
+                      job.generationType === "image" && (
+                        <button
+                          onClick={async () => {
+                            const input = JSON.parse(job.inputJson);
+                            setBusy(true);
+                            try {
+                              const result =
+                                await window.mangai.ai.generateImage(input);
+                              if (result.bundle) onBundle(result.bundle);
+                              await load();
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                        >
+                          {t("generation.retry")}
+                        </button>
+                      )}
+                  </div>
+                </article>
+              );
+            })}
             {!jobs.length && (
               <div className="panel-empty">{t("generation.empty")}</div>
             )}

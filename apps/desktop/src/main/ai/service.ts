@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import {
   AIProviderError,
   routeGenerationJob,
+  type RouteDecision,
   type ProviderSettings,
   type TextGenerationProvider,
   type ImageGenerationRequest,
@@ -34,7 +35,7 @@ export class AIService {
   isMockEnabled() {
     return this.allowMock;
   }
-  private recordImageShadowRoute(
+  private routeImageGeneration(
     jobId: string,
     input: {
       projectId: string;
@@ -42,7 +43,7 @@ export class AIService {
       prompt: string;
     },
     settings: ProviderSettings,
-  ) {
+  ): { decision: RouteDecision; localProvider: boolean } {
     const policy = this.store.getProjectGenerationPolicy(input.projectId);
     const hostname = new URL(settings.baseUrl).hostname.toLowerCase();
     const localProvider =
@@ -90,6 +91,7 @@ export class AIService {
         .update(input.prompt, "utf8")
         .digest("hex"),
     });
+    return { decision, localProvider };
   }
   private log(
     event: string,
@@ -346,17 +348,29 @@ export class AIService {
         negativePrompt: input.negativePrompt,
         inputJson: input,
       });
-    try {
-      this.recordImageShadowRoute(jobId, input, settings);
-    } catch (error) {
-      this.log("image_shadow_route_failed", error, {
-        provider: "comfyui",
-        jobId,
-      });
-    }
     const controller = new AbortController();
     this.controllers.set(jobId, controller);
     try {
+      const { decision, localProvider } = this.routeImageGeneration(
+        jobId,
+        input,
+        settings,
+      );
+      if (decision.blocked)
+        throw new AIProviderError(
+          "ROUTE_BLOCKED",
+          "この生成内容はローカル処理が必須ですが、ローカルComfyUIが設定されていません。ComfyUIのURLをlocalhostまたは127.0.0.1に設定してください。",
+        );
+      if (decision.requiresUserConfirmation)
+        throw new AIProviderError(
+          "ROUTE_CONFIRMATION_REQUIRED",
+          "この生成には外部処理の確認が必要です。現在の画面では確認付き実行に未対応です。",
+        );
+      if (decision.target !== "local" || !localProvider)
+        throw new AIProviderError(
+          "ROUTE_TARGET_UNAVAILABLE",
+          "この画像生成はローカルComfyUIでのみ実行できます。",
+        );
       this.store.updateGenerationJob(jobId, "running", { progress: 0.05 });
       const queued = await provider.generateImage(
         input as ImageGenerationRequest,

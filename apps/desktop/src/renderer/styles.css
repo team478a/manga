@@ -2093,6 +2093,12 @@ label {
   width: min(280px, 55vw);
   accent-color: var(--accent);
 }
+.job-route {
+  display: grid;
+  gap: 3px;
+  margin-top: 8px;
+  color: var(--text-muted);
+}
 .history-menu {
   position: relative;
 }

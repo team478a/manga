@@ -484,6 +484,58 @@ test("ComfyUI generation is saved as a project asset", async () => {
   }
 });
 
+test("remote ComfyUI is blocked before external image generation", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-route-gate-")),
+    paths = {
+      root,
+      database: path.join(root, "db.sqlite"),
+      projects: path.join(root, "projects"),
+      assets: path.join(root, "assets"),
+      exports: path.join(root, "exports"),
+      logs: path.join(root, "logs"),
+    },
+    db = new MangaiDatabase(paths);
+  try {
+    db.saveProviderSettings({
+      ...settings("comfyui", "https://example.invalid"),
+      allowedOrigins: ["https://example.invalid"],
+    });
+    const project = db.createProject({
+      title: "外部送信ゲート",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    await assert.rejects(
+      new AIService(db).generateImage({
+        projectId: project.project.id,
+        workflowId: randomUUID(),
+        prompt: "character reference",
+        negativePrompt: "",
+      }),
+      (error) => error?.code === "ROUTE_BLOCKED",
+    );
+    const jobs = db.listGenerationJobs(project.project.id);
+    assert.equal(jobs.length, 1);
+    assert.equal(jobs[0].status, "failed");
+    assert.equal(jobs[0].errorCode, "ROUTE_BLOCKED");
+    const routes = db.listGenerationRouteDecisions(project.project.id);
+    assert.equal(routes.length, 1);
+    assert.equal(routes[0].decision.target, "local");
+    assert.equal(routes[0].decision.blocked, true);
+    assert.equal(routes[0].decision.reason, "required_target_unavailable");
+    assert.equal(project.assets.length, 0);
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("ComfyUI multi-image registration rolls back partial assets", async () => {
   const png = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
