@@ -610,3 +610,11 @@ Creator Chatの専用画面とCanvas右パネルを日本語・英語辞書へ�
 履歴行全体をクリックする構造を、Chat選択buttonと名称変更・削除buttonへ分離しました。各入力、選択、履歴操作へアクセシブルラベルを追加し、エラーは`role="alert"`で通知します。組み込みプロンプトテンプレート名・本文、保存済み会話、外部AIからの応答は利用者コンテンツとして自動翻訳しません。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。
+
+## 73. 画像生成・生成ジョブの英語化
+
+ComfyUI画像生成画面と制作画面の生成ジョブDrawerを日本語・英語辞書へ移行しました。ワークフロー選択・追加・編集・削除・既定化・検証、Prompt入力、生成開始、状態、進捗、履歴、キャンセル、再実行、AI接続状態が選択localeへ連動します。履歴日時も選択localeで整形します。
+
+ワークフロー選択へアクセシブルラベルを追加し、設定完了通知は`role="status"`、生成・履歴エラーは`role="alert"`で通知します。生成ジョブDrawerのfocus対象は翻訳文言に依存しないdata属性で特定するため、localeを切り替えても初期focusとEscape終了を維持します。ComfyUIやmain processが返すメッセージ、Prompt、ワークフロー名は外部・利用者データとして自動翻訳しません。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。

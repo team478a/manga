@@ -351,6 +351,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - Creator Chat専用画面・右パネルの日英表示、明示的な履歴選択button、操作別アクセシブルラベル
 - 下部ステータスのOllama・ComfyUI接続要約、手動更新、Project別生成ジョブ件数
 - 制作画面上の生成ジョブDrawer、直近履歴、進捗、失敗内容、キャンセル
+- ComfyUI画像生成・ワークフロー管理・履歴・ジョブDrawerの日英表示とlocale準拠日時
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
 - 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰
@@ -362,6 +363,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - Project構成・Episode・Page・素材browser・Inspectorの英語表示とPage選択button
 - Canvas toolbar・layout・コマ・吹き出し・テキスト・ルビ・layer操作の英語表示
 - Creator Chatの履歴・テンプレート・文脈・送信状態・エラー・AI設定導線の英語表示
+- 画像生成条件・ワークフロー操作・状態名・履歴操作・接続状態の英語表示
 - main、renderer、child process異常の捕捉。外部自動送信なし
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
