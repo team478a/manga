@@ -18,10 +18,12 @@ function initialBaseUrl() {
 export function HubStatus({
   projectId,
   projectTitle,
+  projectDescription,
   onClose,
 }: {
   projectId: string;
   projectTitle: string;
+  projectDescription: string;
   onClose: () => void;
 }) {
   const [baseUrl, setBaseUrl] = React.useState(initialBaseUrl);
@@ -29,9 +31,11 @@ export function HubStatus({
   const [device, setDevice] = React.useState<HubDeviceState | null>(null);
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
+  const [message, setMessage] = React.useState("");
   const check = React.useCallback(async () => {
     setBusy(true);
     setError("");
+    setMessage("");
     try {
       const result = await window.mangai.hubStatus(projectId, baseUrl);
       setStatus(result);
@@ -82,7 +86,7 @@ export function HubStatus({
       <header className="tool-header">
         <button onClick={onClose}>← ワークスペース</button>
         <h1>Hub連携</h1>
-        <span>読み取り専用</span>
+        <span>安全な下書き連携</span>
       </header>
       <div className="tool-content hub-content">
         <section className="panel-lite">
@@ -120,7 +124,7 @@ export function HubStatus({
             <div>
               <h2>Desktop端末認証</h2>
               <p>
-                認証すると、自分の非公開下書きも読み取り専用で確認できます。
+                認証すると、自分の非公開下書きを確認し、作品名と説明だけを更新できます。
               </p>
             </div>
             {device?.status === "approved" ? (
@@ -175,7 +179,10 @@ export function HubStatus({
           )}
           {device?.status === "approved" && (
             <div className="notice">
-              読み取り専用で認証済みです。有効期限:{" "}
+              {device.scopes?.includes("works:write:draft")
+                ? "非公開下書きの限定更新を許可済み"
+                : "読み取り専用で認証済み"}
+              。有効期限:{" "}
               {device.tokenExpiresAt
                 ? new Date(device.tokenExpiresAt).toLocaleString("ja-JP")
                 : "確認中"}
@@ -190,6 +197,7 @@ export function HubStatus({
         </section>
 
         {error && <div className="error">{error}</div>}
+        {message && <div className="notice">{message}</div>}
 
         {!error && busy && !status && (
           <section className="panel-lite hub-state-card">
@@ -223,6 +231,7 @@ export function HubStatus({
               </small>
             </div>
             <h2>{status.work.title}</h2>
+            {status.work.description && <p>{status.work.description}</p>}
             <dl className="hub-status-grid">
               <div>
                 <dt>作品状態</dt>
@@ -252,13 +261,68 @@ export function HubStatus({
                 </button>
               </div>
             )}
+            {!status.work.isPublic && status.work.status === "draft" && (
+              <div className="hub-public-url">
+                <div>
+                  <b>Desktopとの差分</b>
+                  <small>
+                    作品名: {status.work.title === projectTitle ? "同じ" : "変更あり"}
+                    ／ 説明:{" "}
+                    {status.work.description === projectDescription
+                      ? "同じ"
+                      : "変更あり"}
+                  </small>
+                </div>
+                <button
+                  disabled={
+                    busy ||
+                    !status.work.canWriteDraft ||
+                    (status.work.title === projectTitle &&
+                      status.work.description === projectDescription)
+                  }
+                  onClick={async () => {
+                    if (
+                      !window.confirm(
+                        "Hubの非公開下書きの作品名と説明を、Desktopの内容で更新しますか？",
+                      )
+                    )
+                      return;
+                    setBusy(true);
+                    setError("");
+                    setMessage("");
+                    try {
+                      await window.mangai.updateHubDraft({
+                        projectId,
+                        baseUrl,
+                        title: projectTitle,
+                        description: projectDescription,
+                        expectedUpdatedAt: status.work.updatedAt,
+                      });
+                      await check();
+                      setMessage("Hubの非公開下書きを更新しました。");
+                    } catch (cause) {
+                      setError(
+                        cause instanceof Error ? cause.message : String(cause),
+                      );
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  Hub下書きを更新
+                </button>
+                {!status.work.canWriteDraft && (
+                  <small>更新するには端末認証を解除し、再認証してください。</small>
+                )}
+              </div>
+            )}
           </section>
         )}
 
         <section className="panel-lite hub-security-note">
           <h2>安全な連携範囲</h2>
           <p>
-            未認証時は公開情報だけを照会します。認証後のトークンはOS機能で暗号化し、編集・公開・決済には使用できません。Hubのログイン情報、Supabase
+            未認証時は公開情報だけを照会します。認証後のトークンはOS機能で暗号化し、編集は本人の非公開下書きの作品名・説明だけに制限されます。公開・商品・価格・販売ファイル・決済には使用できません。Hubのログイン情報、Supabase
             Service Role Key、Stripe Secret KeyはDesktopへ保存しません。
           </p>
           <small>Project ID: {projectId}</small>

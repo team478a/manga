@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("mangai", {
   },
   hubStatus: (projectId: string, baseUrl: string) =>
     ipcRenderer.invoke("hub:status", { projectId, baseUrl }),
+  updateHubDraft: (value: unknown) =>
+    ipcRenderer.invoke("hub:draft:update", value),
   hubDeviceState: () => ipcRenderer.invoke("hub:device:state"),
   startHubDeviceAuthorization: (baseUrl: string) =>
     ipcRenderer.invoke("hub:device:start", { baseUrl }),

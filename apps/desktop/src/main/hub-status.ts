@@ -7,10 +7,12 @@ const hubStatusResponseSchema = z.discriminatedUnion("linked", [
     work: z.object({
       id: z.string().uuid(),
       title: z.string(),
+      description: z.string(),
       status: z.enum(["draft", "published", "archived"]),
       isPublic: z.boolean(),
       updatedAt: z.string(),
       path: z.string().startsWith("/"),
+      canWriteDraft: z.boolean(),
     }),
     sales: z.object({
       activeProductCount: z.number().int().nonnegative(),
@@ -38,6 +40,7 @@ const devicePollResponseSchema = z.object({
   status: z.enum(["pending", "approved", "denied", "expired", "revoked"]),
   approvedAt: z.string().nullable().optional(),
   tokenExpiresAt: z.string().nullable().optional(),
+  scopes: z.array(z.string()).optional(),
 });
 export type HubDeviceStart = z.infer<typeof deviceStartResponseSchema>;
 export type HubDevicePoll = z.infer<typeof devicePollResponseSchema>;
@@ -117,7 +120,10 @@ export async function startHubDeviceAuthorization(
         accept: "application/json",
         "content-type": "application/json",
       },
-      body: JSON.stringify({ deviceName }),
+      body: JSON.stringify({
+        deviceName,
+        scopes: ["works:read", "works:write:draft"],
+      }),
       redirect: "error",
     },
   );
@@ -133,6 +139,50 @@ export async function startHubDeviceAuthorization(
     return deviceStartResponseSchema.parse(await response.json());
   } catch {
     throw new Error("Hubから不正な端末認証応答を受信しました。");
+  }
+}
+
+const hubDraftUpdateResponseSchema = z.object({
+  updated: z.literal(true),
+  work: z.object({
+    id: z.string().uuid(),
+    title: z.string(),
+    description: z.string(),
+    updatedAt: z.string(),
+  }),
+});
+
+export async function updateHubDraft(
+  projectId: string,
+  baseUrl: string,
+  input: { title: string; description: string; expectedUpdatedAt: string },
+  deviceToken: string,
+  fetcher: typeof fetch = fetch,
+) {
+  const response = await fetcher(
+    `${normalizeHubBaseUrl(baseUrl)}/api/desktop/projects/${encodeURIComponent(projectId)}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        accept: "application/json",
+        authorization: `Bearer ${deviceToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(input),
+      redirect: "error",
+    },
+  );
+  const body = (await response.json().catch(() => null)) as {
+    message?: unknown;
+  } | null;
+  if (!response.ok) {
+    if (typeof body?.message === "string") throw new Error(body.message);
+    throw new Error(`Hub下書きを更新できませんでした（HTTP ${response.status}）。`);
+  }
+  try {
+    return hubDraftUpdateResponseSchema.parse(body);
+  } catch {
+    throw new Error("Hubから不正な下書き更新応答を受信しました。");
   }
 }
 

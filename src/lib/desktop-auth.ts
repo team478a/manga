@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export const DEVICE_PENDING_MINUTES = 15;
 export const DEVICE_TOKEN_DAYS = 90;
+export const DESKTOP_READ_SCOPE = "works:read";
+export const DESKTOP_DRAFT_WRITE_SCOPE = "works:write:draft";
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 export type DesktopAuthorization = {
@@ -36,6 +38,7 @@ export function bearerToken(request: Request) {
 
 export async function authorizeDesktopRequest(
   request: Request,
+  requiredScope = DESKTOP_READ_SCOPE,
 ): Promise<DesktopAuthorization | null> {
   const token = bearerToken(request);
   if (!token) return null;
@@ -49,7 +52,7 @@ export async function authorizeDesktopRequest(
     .gt("token_expires_at", now)
     .maybeSingle<{ id: string; profile_id: string; scopes: string[] }>();
   if (error) throw new Error(error.message);
-  if (!data?.profile_id || !data.scopes.includes("works:read")) return null;
+  if (!data?.profile_id || !data.scopes.includes(requiredScope)) return null;
   await admin
     .from("desktop_device_authorizations")
     .update({ last_used_at: now })

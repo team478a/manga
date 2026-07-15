@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("desktop_device_authorizations")
-      .select("id, status, expires_at, token_expires_at, approved_at")
+      .select("id, status, expires_at, token_expires_at, approved_at, scopes")
       .eq("secret_hash", hashDeviceSecret(token))
       .maybeSingle<{
         id: string;
@@ -21,6 +21,7 @@ export async function GET(request: Request) {
         expires_at: string;
         token_expires_at: string | null;
         approved_at: string | null;
+        scopes: string[];
       }>();
     if (error) throw new Error(error.message);
     if (!data)
@@ -43,6 +44,7 @@ export async function GET(request: Request) {
         status: "approved",
         approvedAt: data.approved_at,
         tokenExpiresAt: data.token_expires_at,
+        scopes: data.scopes,
       });
     return NextResponse.json(
       { status: data.status },

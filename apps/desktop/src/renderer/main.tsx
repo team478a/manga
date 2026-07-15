@@ -607,6 +607,7 @@ function App() {
         <HubStatus
           projectId={bundle.project.id}
           projectTitle={bundle.project.title}
+          projectDescription={bundle.project.description}
           onClose={() => setActiveTool(null)}
         />
       </ToolShell>

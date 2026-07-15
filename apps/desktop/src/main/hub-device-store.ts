@@ -12,6 +12,7 @@ const storedCredentialSchema = z.object({
   status: z.enum(["pending", "approved", "denied", "expired", "revoked"]),
   approvedAt: z.string().nullable().optional(),
   tokenExpiresAt: z.string().nullable().optional(),
+  scopes: z.array(z.string()).optional(),
 });
 type StoredCredential = z.infer<typeof storedCredentialSchema>;
 export type HubDeviceState = Omit<StoredCredential, "encryptedToken">;
@@ -69,6 +70,7 @@ export function hubDeviceState(): HubDeviceState | null {
     status: credential.status,
     approvedAt: credential.approvedAt,
     tokenExpiresAt: credential.tokenExpiresAt,
+    scopes: credential.scopes,
   };
 }
 

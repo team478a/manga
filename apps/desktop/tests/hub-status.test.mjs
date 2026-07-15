@@ -8,6 +8,7 @@ import {
   pollHubDeviceAuthorization,
   revokeHubDeviceAuthorization,
   startHubDeviceAuthorization,
+  updateHubDraft,
 } from "../dist-main/main/hub-status.js";
 
 async function server(handler) {
@@ -53,10 +54,12 @@ test("公開作品と販売状況をHubから取得する", async () => {
         work: {
           id: workId,
           title: "公開作品",
+          description: "作品説明",
           status: "published",
           isPublic: true,
           updatedAt: "2026-07-14T12:00:00.000Z",
           path: `/works/${workId}`,
+          canWriteDraft: false,
         },
         sales: {
           activeProductCount: 2,
@@ -83,17 +86,27 @@ test("Hub端末認証の開始・承認確認・解除", async () => {
     if (
       request.url === "/api/desktop/device/authorize" &&
       request.method === "POST"
-    )
-      return response.end(
-        JSON.stringify({
-          status: "pending",
-          deviceToken: token,
-          userCode: "ABCD-2345",
-          verificationPath: "/dashboard/devices/authorize?code=ABCD-2345",
-          expiresAt: "2026-07-14T13:00:00.000Z",
-          intervalSeconds: 5,
-        }),
-      );
+    ) {
+      let body = "";
+      request.on("data", (chunk) => (body += chunk));
+      request.on("end", () => {
+        assert.deepEqual(JSON.parse(body).scopes, [
+          "works:read",
+          "works:write:draft",
+        ]);
+        response.end(
+          JSON.stringify({
+            status: "pending",
+            deviceToken: token,
+            userCode: "ABCD-2345",
+            verificationPath: "/dashboard/devices/authorize?code=ABCD-2345",
+            expiresAt: "2026-07-14T13:00:00.000Z",
+            intervalSeconds: 5,
+          }),
+        );
+      });
+      return;
+    }
     assert.equal(request.headers.authorization, `Bearer ${token}`);
     if (request.method === "GET")
       return response.end(
@@ -101,6 +114,7 @@ test("Hub端末認証の開始・承認確認・解除", async () => {
           status: "approved",
           approvedAt: "2026-07-14T12:00:00.000Z",
           tokenExpiresAt: "2026-10-12T12:00:00.000Z",
+          scopes: ["works:read", "works:write:draft"],
         }),
       );
     if (request.method === "DELETE") {
@@ -126,6 +140,83 @@ test("Hub端末認証の開始・承認確認・解除", async () => {
       true,
     );
     assert.equal(revoked, true);
+  } finally {
+    await mock.close();
+  }
+});
+
+test("本人確認済み端末から非公開下書きの作品名と説明を更新する", async () => {
+  const projectId = randomUUID();
+  const workId = randomUUID();
+  const token = "B".repeat(43);
+  const mock = await server((request, response) => {
+    assert.equal(request.method, "PATCH");
+    assert.equal(request.headers.authorization, `Bearer ${token}`);
+    let body = "";
+    request.on("data", (chunk) => (body += chunk));
+    request.on("end", () => {
+      assert.deepEqual(JSON.parse(body), {
+        title: "Desktop作品",
+        description: "Desktop説明",
+        expectedUpdatedAt: "2026-07-15T01:00:00.000Z",
+      });
+      response.setHeader("content-type", "application/json");
+      response.end(
+        JSON.stringify({
+          updated: true,
+          work: {
+            id: workId,
+            title: "Desktop作品",
+            description: "Desktop説明",
+            updatedAt: "2026-07-15T02:00:00.000Z",
+          },
+        }),
+      );
+    });
+  });
+  try {
+    const result = await updateHubDraft(
+      projectId,
+      mock.url,
+      {
+        title: "Desktop作品",
+        description: "Desktop説明",
+        expectedUpdatedAt: "2026-07-15T01:00:00.000Z",
+      },
+      token,
+    );
+    assert.equal(result.updated, true);
+    assert.equal(result.work.id, workId);
+  } finally {
+    await mock.close();
+  }
+});
+
+test("Hub側の更新競合メッセージを利用者へ返す", async () => {
+  const mock = await server((_request, response) => {
+    response.statusCode = 409;
+    response.setHeader("content-type", "application/json");
+    response.end(
+      JSON.stringify({
+        message:
+          "Hub側で作品が更新されています。再確認してからやり直してください。",
+      }),
+    );
+  });
+  try {
+    await assert.rejects(
+      updateHubDraft(
+        randomUUID(),
+        mock.url,
+        {
+          title: "作品",
+          description: "説明",
+          expectedUpdatedAt: "2026-07-15T01:00:00.000Z",
+        },
+        "C".repeat(43),
+      ),
+      /Hub側で作品が更新/,
+    );
   } finally {
     await mock.close();
   }

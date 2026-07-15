@@ -9,6 +9,7 @@ import {
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
+import { z } from "zod";
 import { MangaiDatabase } from "./database.js";
 import {
   openDatabaseWithRecovery,
@@ -17,7 +18,7 @@ import {
 import { AIService } from "./ai/service.js";
 import { DesktopUpdater } from "./updater.js";
 import { DiagnosticsService } from "./diagnostics.js";
-import { fetchHubStatus } from "./hub-status.js";
+import { fetchHubStatus, updateHubDraft } from "./hub-status.js";
 import {
   pollHubDeviceAuthorization,
   revokeHubDeviceAuthorization,
@@ -187,6 +188,33 @@ function register() {
         : undefined;
     return fetchHubStatus(input.projectId, input.baseUrl, fetch, token);
   });
+  handle("hub:draft:update", (v) => {
+    const input = hubStatusRequestSchema
+      .extend({
+        title: projectInputSchema.shape.title,
+        description: projectInputSchema.shape.description,
+        expectedUpdatedAt: z.string().datetime({ offset: true }),
+      })
+      .parse(v);
+    const credential = readHubDeviceCredential();
+    if (
+      !credential ||
+      credential.status !== "approved" ||
+      credential.baseUrl !== input.baseUrl ||
+      !credential.scopes?.includes("works:write:draft")
+    )
+      throw new Error("Hub下書き更新の端末権限がありません。");
+    return updateHubDraft(
+      input.projectId,
+      input.baseUrl,
+      {
+        title: input.title,
+        description: input.description,
+        expectedUpdatedAt: input.expectedUpdatedAt,
+      },
+      credential.deviceToken,
+    );
+  });
   handle("hub:device:state", () => hubDeviceState());
   handle("hub:device:start", async (v) => {
     const input = hubStatusRequestSchema.pick({ baseUrl: true }).parse(v);
@@ -220,6 +248,7 @@ function register() {
       status: result.status,
       approvedAt: result.approvedAt,
       tokenExpiresAt: result.tokenExpiresAt,
+      scopes: result.scopes,
     });
     return hubDeviceState();
   });

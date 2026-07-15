@@ -68,10 +68,12 @@ export type HubStatus =
       work: {
         id: string;
         title: string;
+        description: string;
         status: "draft" | "published" | "archived";
         isPublic: boolean;
         updatedAt: string;
         path: string;
+        canWriteDraft: boolean;
       };
       sales: {
         activeProductCount: number;
@@ -88,6 +90,7 @@ export type HubDeviceState = {
   status: "pending" | "approved" | "denied" | "expired" | "revoked";
   approvedAt?: string | null;
   tokenExpiresAt?: string | null;
+  scopes?: string[];
 };
 export type DiagnosticsState = {
   detailedCrashReportsEnabled: boolean;
@@ -105,6 +108,16 @@ export type DesktopApi = {
     clearCrashReports: () => Promise<DiagnosticsState>;
   };
   hubStatus: (projectId: string, baseUrl: string) => Promise<HubStatus>;
+  updateHubDraft: (value: {
+    projectId: string;
+    baseUrl: string;
+    title: string;
+    description: string;
+    expectedUpdatedAt: string;
+  }) => Promise<{
+    updated: true;
+    work: { id: string; title: string; description: string; updatedAt: string };
+  }>;
   hubDeviceState: () => Promise<HubDeviceState | null>;
   startHubDeviceAuthorization: (baseUrl: string) => Promise<HubDeviceState>;
   pollHubDeviceAuthorization: () => Promise<HubDeviceState>;

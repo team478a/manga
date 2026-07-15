@@ -23,10 +23,10 @@ export async function approveDesktopDevice(formData: FormData) {
   const now = new Date();
   const { data: authorization, error } = await admin
     .from("desktop_device_authorizations")
-    .select("id, expires_at")
+    .select("id, expires_at, scopes")
     .eq("user_code", parsed.data)
     .eq("status", "pending")
-    .maybeSingle<{ id: string; expires_at: string }>();
+    .maybeSingle<{ id: string; expires_at: string; scopes: string[] }>();
   if (error)
     redirect(
       `/dashboard/devices/authorize?error=${encodeURIComponent(error.message)}`,
@@ -34,6 +34,11 @@ export async function approveDesktopDevice(formData: FormData) {
   if (!authorization || new Date(authorization.expires_at) <= now)
     redirect(
       "/dashboard/devices/authorize?error=認証コードが無効または期限切れです",
+    );
+  const expectedScopeConfirmation = [...authorization.scopes].sort().join(",");
+  if (formData.get("scopeConfirmation") !== expectedScopeConfirmation)
+    redirect(
+      `/dashboard/devices/authorize?code=${encodeURIComponent(parsed.data)}`,
     );
   const tokenExpiresAt = new Date(
     now.getTime() + DEVICE_TOKEN_DAYS * 86_400_000,

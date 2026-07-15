@@ -6,6 +6,8 @@ import {
   generateDeviceSecret,
   generateUserCode,
   hashDeviceSecret,
+  DESKTOP_DRAFT_WRITE_SCOPE,
+  DESKTOP_READ_SCOPE,
 } from "@/lib/desktop-auth";
 import {
   cleanupDesktopDeviceAuthorizations,
@@ -14,6 +16,11 @@ import {
 
 const requestSchema = z.object({
   deviceName: z.string().trim().min(1).max(100),
+  scopes: z
+    .array(z.enum([DESKTOP_READ_SCOPE, DESKTOP_DRAFT_WRITE_SCOPE]))
+    .min(1)
+    .max(2)
+    .default([DESKTOP_READ_SCOPE]),
 });
 
 export async function POST(request: Request) {
@@ -54,6 +61,7 @@ export async function POST(request: Request) {
           user_code: userCode,
           status: "pending",
           expires_at: expiresAt,
+          scopes: [...new Set(parsed.data.scopes)],
         });
       if (!error)
         return NextResponse.json(
