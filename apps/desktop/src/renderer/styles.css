@@ -783,6 +783,36 @@ label {
 .right {
   border-left: 1px solid var(--border-subtle);
 }
+.inspector-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.inspector-tabs {
+  flex: 0 0 auto;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.inspector-tab-panel {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.inspector-tab-panel[hidden] {
+  display: none;
+}
+.canvas-properties-host:empty {
+  display: none;
+}
+.inspector-object-properties > .canvas-properties {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.muted {
+  color: var(--text-muted) !important;
+}
 .left section,
 .right section {
   padding: 14px;
@@ -1005,16 +1035,7 @@ label {
   line-height: 1.2;
 }
 .canvas-layers {
-  position: sticky;
-  top: 52px;
-  width: 210px;
-  max-height: calc(100vh - 180px);
-  overflow: auto;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
-  background: rgb(23 26 33 / 96%);
-  box-shadow: var(--shadow-panel);
+  padding: 14px 10px;
 }
 .canvas-layers h3 {
   margin: 0 0 7px;
@@ -1061,6 +1082,10 @@ label {
 .canvas-layer-row button:not(:first-child) {
   justify-content: center;
   padding: 4px 2px;
+}
+.inspector-empty {
+  padding: 18px 10px;
+  font-size: 12px;
 }
 .canvas-properties {
   display: grid;
@@ -1613,6 +1638,62 @@ label {
 }
 .context-panel p {
   overflow-wrap: anywhere;
+}
+.inspector-ai-panel {
+  overflow: hidden;
+}
+.creator-chat-panel {
+  display: grid;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto;
+  height: 100%;
+  min-height: 0;
+}
+.creator-chat-panel > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.creator-chat-panel > header > div {
+  display: grid;
+  min-width: 0;
+}
+.creator-chat-panel > header small {
+  overflow: hidden;
+  color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chat-panel-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.creator-chat-panel > .notice,
+.creator-chat-panel > .error {
+  margin: 8px 10px 0;
+}
+.chat-panel-messages {
+  min-height: 0;
+  padding: 10px;
+}
+.chat-panel-messages .message {
+  margin-bottom: 9px;
+  padding: 10px;
+  font-size: 12px;
+}
+.chat-panel-messages .message-actions {
+  flex-wrap: wrap;
+}
+.chat-panel-composer {
+  padding: 10px;
+}
+.chat-panel-composer textarea {
+  min-height: 72px;
 }
 .job-list {
   display: grid;

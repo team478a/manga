@@ -9,6 +9,7 @@ type Message = {
   createdAt?: string;
 };
 export function CreatorChat({
+  variant = "page",
   bundle,
   episodeId,
   pageId,
@@ -16,6 +17,7 @@ export function CreatorChat({
   onOpenSettings,
   onClose,
 }: {
+  variant?: "page" | "panel";
   bundle: ProjectBundle;
   episodeId?: string;
   pageId?: string;
@@ -84,6 +86,17 @@ export function CreatorChat({
     if (sessionId)
       void window.mangai.ai.listMessages(sessionId).then(setMessages);
   }, [sessionId]);
+  React.useEffect(() => {
+    if (bundle.project.id !== chatBundle.project.id) {
+      setSessionId(undefined);
+      setMessages([]);
+    }
+    setChatBundle(bundle);
+  }, [bundle]);
+  React.useEffect(() => {
+    setChatEpisodeId(episodeId);
+    setChatPageId(pageId);
+  }, [episodeId, pageId]);
   const send = async (override?: string) => {
     const source = override ?? input;
     if (!source.trim() || requestId) return;
@@ -108,6 +121,149 @@ export function CreatorChat({
   };
   const episode = chatBundle.episodes.find((e) => e.id === chatEpisodeId),
     page = chatBundle.pages.find((p) => p.id === chatPageId);
+  if (variant === "panel")
+    return (
+      <section className="creator-chat-panel" aria-label="Creator Chat">
+        <header>
+          <div>
+            <strong>Creator Chat</strong>
+            <small>
+              {episode?.title ?? "エピソード未選択"} / Page{" "}
+              {page?.pageNumber ?? "未選択"}
+            </small>
+          </div>
+          <StatusBadge tone={requestId ? "info" : "success"} live>
+            {requestId ? "生成中" : "待機中"}
+          </StatusBadge>
+        </header>
+        <div className="chat-panel-actions">
+          <select
+            aria-label="チャット履歴"
+            value={sessionId ?? ""}
+            onChange={(event) => {
+              setSessionId(event.target.value || undefined);
+              if (!event.target.value) setMessages([]);
+            }}
+          >
+            <option value="">新規チャット</option>
+            {sessions.map((session) => (
+              <option key={session.id} value={session.id}>
+                {session.title}
+              </option>
+            ))}
+          </select>
+          <button className="secondary" onClick={onOpenSettings}>
+            AI設定
+          </button>
+        </div>
+        {mockEnabled && <p className="notice">Mock AI テストモード</p>}
+        <div className="messages chat-panel-messages">
+          {messages.length ? (
+            messages.map((message, index) => (
+              <article className={`message ${message.role}`} key={message.id}>
+                <b>{message.role === "user" ? "あなた" : "Creator AI"}</b>
+                <pre>{message.content}</pre>
+                {message.role === "assistant" && (
+                  <div className="message-actions">
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(message.content)
+                      }
+                    >
+                      コピー
+                    </button>
+                    <button
+                      disabled={Boolean(requestId)}
+                      onClick={() => {
+                        const previous = [...messages.slice(0, index)]
+                          .reverse()
+                          .find((item) => item.role === "user");
+                        if (previous) void send(previous.content);
+                      }}
+                    >
+                      再生成
+                    </button>
+                    {page && (
+                      <button
+                        onClick={async () => {
+                          const updated = await window.mangai.savePage(
+                            page.id,
+                            page.prompt,
+                            page.negativePrompt,
+                            [page.notes, message.content]
+                              .filter(Boolean)
+                              .join("\n\n"),
+                          );
+                          setChatBundle(updated);
+                          onBundle(updated);
+                        }}
+                      >
+                        メモへ保存
+                      </button>
+                    )}
+                  </div>
+                )}
+              </article>
+            ))
+          ) : (
+            <div className="empty">
+              Canvasを見ながら構成、セリフ、画像プロンプトを相談できます。
+            </div>
+          )}
+        </div>
+        {error && (
+          <div className="error">
+            <p>{error}</p>
+            {error.includes("AIが設定されていません") && (
+              <button className="secondary" onClick={onOpenSettings}>
+                AI設定を開く
+              </button>
+            )}
+          </div>
+        )}
+        <div className="composer chat-panel-composer">
+          <select
+            aria-label="プロンプトテンプレート"
+            value={templateId}
+            onChange={(event) => setTemplateId(event.target.value)}
+          >
+            <option value="">テンプレートなし</option>
+            {templates.map((template) => (
+              <option key={template.id} value={template.id}>
+                {template.name}
+              </option>
+            ))}
+          </select>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={includeContext}
+              onChange={(event) => setIncludeContext(event.target.checked)}
+            />
+            Project・Page情報を参照
+          </label>
+          <textarea
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Creator AIへ相談"
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey))
+                void send();
+            }}
+          />
+          {requestId ? (
+            <button
+              className="danger"
+              onClick={() => window.mangai.ai.cancel(requestId)}
+            >
+              送信停止
+            </button>
+          ) : (
+            <button onClick={() => void send()}>送信（Ctrl+Enter）</button>
+          )}
+        </div>
+      </section>
+    );
   return (
     <main className="tool-page">
       <header className="tool-header">

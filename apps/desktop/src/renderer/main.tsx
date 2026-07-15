@@ -15,7 +15,10 @@ import {
   GlobalNav,
   type WorkspaceView,
 } from "./components/app-shell/GlobalNav";
-import { InspectorPanel } from "./components/app-shell/InspectorPanel";
+import {
+  InspectorPanel,
+  type InspectorTab,
+} from "./components/app-shell/InspectorPanel";
 import { ProjectPanel } from "./components/app-shell/ProjectPanel";
 import { StatusBar } from "./components/app-shell/StatusBar";
 import type {
@@ -52,6 +55,14 @@ const writePanelPreference = (key: string, value: boolean) => {
     // 設定保存が利用できない環境でもパネル操作は継続する。
   }
 };
+const readInspectorTab = (): InspectorTab => {
+  try {
+    const stored = localStorage.getItem("mangai.inspector-tab");
+    return stored === "layers" || stored === "ai" ? stored : "properties";
+  } catch {
+    return "properties";
+  }
+};
 function App() {
   const [projects, setProjects] = React.useState<Project[]>([]),
     [projectCovers, setProjectCovers] = React.useState<Record<string, string>>(
@@ -86,6 +97,12 @@ function App() {
     [rightPanelOpen, setRightPanelOpen] = React.useState(() =>
       readPanelPreference("mangai.right-panel-open", window.innerWidth >= 1300),
     ),
+    [inspectorTab, setInspectorTab] =
+      React.useState<InspectorTab>(readInspectorTab),
+    [propertiesHost, setPropertiesHost] = React.useState<HTMLDivElement | null>(
+      null,
+    ),
+    [layersHost, setLayersHost] = React.useState<HTMLDivElement | null>(null),
     [autoBackup, setAutoBackup] = React.useState<AutoBackupState | null>(null),
     [databaseRecovery, setDatabaseRecovery] =
       React.useState<DatabaseRecoveryState | null>(null),
@@ -129,6 +146,13 @@ function App() {
   React.useEffect(() => {
     writePanelPreference("mangai.right-panel-open", rightPanelOpen);
   }, [rightPanelOpen]);
+  React.useEffect(() => {
+    try {
+      localStorage.setItem("mangai.inspector-tab", inspectorTab);
+    } catch {
+      // 設定保存が利用できない環境でもタブ操作は継続する。
+    }
+  }, [inspectorTab]);
   React.useEffect(
     () =>
       window.mangai.onExportProgress((progress) =>
@@ -699,6 +723,12 @@ function App() {
                 assetUrls={assetUrls}
                 selectedAssetId={selectedAsset}
                 zoom={zoom}
+                propertiesHost={propertiesHost}
+                layersHost={layersHost}
+                onOpenInspectorTab={(tab) => {
+                  setRightPanelOpen(true);
+                  setInspectorTab(tab);
+                }}
                 onApply={apply}
               />
             ) : (
@@ -713,6 +743,12 @@ function App() {
             asset={asset}
             assetUrl={asset ? assetUrls[asset.id] : undefined}
             episodeId={episode?.id}
+            activeTab={inspectorTab}
+            onTabChange={setInspectorTab}
+            onPropertiesHost={setPropertiesHost}
+            onLayersHost={setLayersHost}
+            onBundle={setBundle}
+            onOpenSettings={() => setActiveTool("settings")}
             apply={apply}
             saving={setSaving}
           />

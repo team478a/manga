@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import {
   Ellipse,
   Group,
@@ -1242,6 +1243,9 @@ export function MangaCanvas({
   assetUrls,
   selectedAssetId,
   zoom,
+  propertiesHost,
+  layersHost,
+  onOpenInspectorTab,
   onApply,
 }: {
   bundle: ProjectBundle;
@@ -1249,6 +1253,9 @@ export function MangaCanvas({
   assetUrls: Record<string, string>;
   selectedAssetId: string | null;
   zoom: number;
+  propertiesHost: HTMLElement | null;
+  layersHost: HTMLElement | null;
+  onOpenInspectorTab: (tab: "properties" | "layers") => void;
   onApply: (promise: Promise<ProjectBundle>) => void;
 }) {
   const [selection, setSelection] = React.useState<Selection>(null);
@@ -1266,14 +1273,6 @@ export function MangaCanvas({
     placement: "before" | "after";
   } | null>(null);
   const [showGrid, setShowGrid] = React.useState(false);
-  const [showLayers, setShowLayers] = React.useState(() => {
-    try {
-      const stored = localStorage.getItem("mangai.canvas-layers-open");
-      return stored === null ? window.innerWidth >= 1150 : stored === "true";
-    } catch {
-      return true;
-    }
-  });
   const [snapEnabled, setSnapEnabled] = React.useState(true);
   const [gridSnapEnabled, setGridSnapEnabled] = React.useState(false);
   const stageRef = React.useRef<any>(null);
@@ -1312,13 +1311,6 @@ export function MangaCanvas({
     setLayerDropTarget(null);
     transformer.current?.nodes([]);
   }, [page.id]);
-  React.useEffect(() => {
-    try {
-      localStorage.setItem("mangai.canvas-layers-open", String(showLayers));
-    } catch {
-      // 設定保存が利用できない環境でも開閉操作は継続する。
-    }
-  }, [showLayers]);
   const select = (
     type: "panel" | "balloon" | "text",
     id: string,
@@ -1983,10 +1975,8 @@ export function MangaCanvas({
             グリッド吸着
           </button>
           <button
-            className={showLayers ? "active" : undefined}
-            aria-pressed={showLayers}
-            title="レイヤーとCanvasプロパティを開閉"
-            onClick={() => setShowLayers((value) => !value)}
+            title="右パネルでレイヤーを表示"
+            onClick={() => onOpenInspectorTab("layers")}
           >
             レイヤー
           </button>
@@ -2376,161 +2366,184 @@ export function MangaCanvas({
             </Layer>
           </Stage>
         </div>
-        {showLayers && (
-          <aside className="canvas-layers">
-            <h3>レイヤー</h3>
-            {layers.map((item, index) => {
-              const key = {
-                type: item.objectType,
-                id: item.id,
-              } as SelectionKey;
-              const isDragging =
-                draggingLayer?.type === key.type && draggingLayer.id === key.id;
-              const dropPlacement =
-                layerDropTarget?.key.type === key.type &&
-                layerDropTarget.key.id === key.id
-                  ? layerDropTarget.placement
-                  : null;
-              return (
-                <div
-                  className={`canvas-layer-row${isDragging ? " dragging" : ""}${dropPlacement ? ` drop-${dropPlacement}` : ""}`}
-                  key={`${item.objectType}-${item.id}`}
-                  onDragOver={(event) => {
-                    if (!event.dataTransfer.types.includes(LAYER_DRAG_TYPE))
-                      return;
-                    event.preventDefault();
-                    event.dataTransfer.dropEffect = "move";
-                    const bounds = event.currentTarget.getBoundingClientRect();
-                    setLayerDropTarget({
-                      key,
-                      placement:
-                        event.clientY < bounds.top + bounds.height / 2
-                          ? "before"
-                          : "after",
-                    });
-                  }}
-                  onDrop={(event) => {
-                    const sourceText =
-                      event.dataTransfer.getData(LAYER_DRAG_TYPE);
-                    if (!sourceText) return;
-                    event.preventDefault();
-                    event.stopPropagation();
-                    try {
-                      const source = JSON.parse(sourceText) as SelectionKey;
-                      const exists = layers.some(
-                        (value) =>
-                          value.objectType === source.type &&
-                          value.id === source.id,
-                      );
+        {layersHost &&
+          createPortal(
+            <div className="canvas-layers">
+              <h3>レイヤー</h3>
+              {layers.length === 0 && (
+                <div className="empty inspector-empty">
+                  コマ・吹き出し・テキストを追加すると表示されます。
+                </div>
+              )}
+              {layers.map((item, index) => {
+                const key = {
+                  type: item.objectType,
+                  id: item.id,
+                } as SelectionKey;
+                const isDragging =
+                  draggingLayer?.type === key.type &&
+                  draggingLayer.id === key.id;
+                const dropPlacement =
+                  layerDropTarget?.key.type === key.type &&
+                  layerDropTarget.key.id === key.id
+                    ? layerDropTarget.placement
+                    : null;
+                return (
+                  <div
+                    className={`canvas-layer-row${isDragging ? " dragging" : ""}${dropPlacement ? ` drop-${dropPlacement}` : ""}`}
+                    key={`${item.objectType}-${item.id}`}
+                    onDragOver={(event) => {
+                      if (!event.dataTransfer.types.includes(LAYER_DRAG_TYPE))
+                        return;
+                      event.preventDefault();
+                      event.dataTransfer.dropEffect = "move";
                       const bounds =
                         event.currentTarget.getBoundingClientRect();
-                      if (exists)
-                        applyLayerOrder(
-                          source,
-                          key,
+                      setLayerDropTarget({
+                        key,
+                        placement:
                           event.clientY < bounds.top + bounds.height / 2
                             ? "before"
                             : "after",
+                      });
+                    }}
+                    onDrop={(event) => {
+                      const sourceText =
+                        event.dataTransfer.getData(LAYER_DRAG_TYPE);
+                      if (!sourceText) return;
+                      event.preventDefault();
+                      event.stopPropagation();
+                      try {
+                        const source = JSON.parse(sourceText) as SelectionKey;
+                        const exists = layers.some(
+                          (value) =>
+                            value.objectType === source.type &&
+                            value.id === source.id,
                         );
-                    } catch {
-                      // Ignore malformed data from outside this layer list.
-                    } finally {
-                      setDraggingLayer(null);
-                      setLayerDropTarget(null);
-                    }
-                  }}
-                >
-                  <span
-                    className="layer-drag-handle"
-                    draggable
-                    title="ドラッグしてレイヤー順を変更"
-                    onDragStart={(event) => {
-                      event.dataTransfer.effectAllowed = "move";
-                      event.dataTransfer.setData(
-                        LAYER_DRAG_TYPE,
-                        JSON.stringify(key),
-                      );
-                      setDraggingLayer(key);
-                    }}
-                    onDragEnd={() => {
-                      setDraggingLayer(null);
-                      setLayerDropTarget(null);
+                        const bounds =
+                          event.currentTarget.getBoundingClientRect();
+                        if (exists)
+                          applyLayerOrder(
+                            source,
+                            key,
+                            event.clientY < bounds.top + bounds.height / 2
+                              ? "before"
+                              : "after",
+                          );
+                      } catch {
+                        // Ignore malformed data from outside this layer list.
+                      } finally {
+                        setDraggingLayer(null);
+                        setLayerDropTarget(null);
+                      }
                     }}
                   >
-                    ⠿
-                  </span>
-                  <button
-                    className={
-                      isSelected(item.objectType, item.id) ? "active" : ""
-                    }
-                    onClick={(event) => {
-                      const node = transformer.current
-                        ?.getStage()
-                        ?.findOne(`#${item.objectType}-${item.id}`);
-                      select(
-                        item.objectType,
-                        item.id,
-                        node ?? null,
-                        event.shiftKey,
-                      );
-                    }}
-                  >
-                    <span>
-                      {item.objectType === "panel"
-                        ? "▣"
-                        : item.objectType === "balloon"
-                          ? "◯"
-                          : "T"}
+                    <span
+                      className="layer-drag-handle"
+                      draggable
+                      title="ドラッグしてレイヤー順を変更"
+                      onDragStart={(event) => {
+                        event.dataTransfer.effectAllowed = "move";
+                        event.dataTransfer.setData(
+                          LAYER_DRAG_TYPE,
+                          JSON.stringify(key),
+                        );
+                        setDraggingLayer(key);
+                      }}
+                      onDragEnd={() => {
+                        setDraggingLayer(null);
+                        setLayerDropTarget(null);
+                      }}
+                    >
+                      ⠿
                     </span>
-                    {item.name}
-                  </button>
-                  <button
-                    title="表示切替"
-                    onClick={() =>
-                      updateLayerState(item, { visible: !item.visible })
-                    }
-                  >
-                    {item.visible ? "◉" : "○"}
-                  </button>
-                  <button
-                    title="ロック切替"
-                    onClick={() =>
-                      updateLayerState(item, { locked: !item.locked })
-                    }
-                  >
-                    {item.locked ? "🔒" : "◇"}
-                  </button>
-                  <button
-                    disabled={index === 0}
-                    title="前面へ"
-                    onClick={() => moveLayerStep(item, 1)}
-                  >
-                    ↑
-                  </button>
-                  <button
-                    disabled={index === layers.length - 1}
-                    title="背面へ"
-                    onClick={() => moveLayerStep(item, -1)}
-                  >
-                    ↓
-                  </button>
-                </div>
-              );
-            })}
-            {selectedLayer && (
-              <CanvasProperties
-                item={selectedLayer as LayerItem}
-                balloons={balloons}
-                imageEditing={editingPanelImageId === selectedLayer.id}
-                onBeginImageEdit={beginImageEdit}
-                onFinishImageEdit={finishImageEdit}
-                savePanel={savePanel}
-                saveBalloon={saveBalloon}
-                saveText={saveText}
-              />
-            )}
-          </aside>
-        )}
+                    <button
+                      className={
+                        isSelected(item.objectType, item.id) ? "active" : ""
+                      }
+                      onClick={(event) => {
+                        const node = transformer.current
+                          ?.getStage()
+                          ?.findOne(`#${item.objectType}-${item.id}`);
+                        select(
+                          item.objectType,
+                          item.id,
+                          node ?? null,
+                          event.shiftKey,
+                        );
+                      }}
+                    >
+                      <span>
+                        {item.objectType === "panel"
+                          ? "▣"
+                          : item.objectType === "balloon"
+                            ? "◯"
+                            : "T"}
+                      </span>
+                      {item.name}
+                    </button>
+                    <button
+                      title="表示切替"
+                      onClick={() =>
+                        updateLayerState(item, { visible: !item.visible })
+                      }
+                    >
+                      {item.visible ? "◉" : "○"}
+                    </button>
+                    <button
+                      title="ロック切替"
+                      onClick={() =>
+                        updateLayerState(item, { locked: !item.locked })
+                      }
+                    >
+                      {item.locked ? "🔒" : "◇"}
+                    </button>
+                    <button
+                      disabled={index === 0}
+                      title="前面へ"
+                      onClick={() => moveLayerStep(item, 1)}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      disabled={index === layers.length - 1}
+                      title="背面へ"
+                      onClick={() => moveLayerStep(item, -1)}
+                    >
+                      ↓
+                    </button>
+                  </div>
+                );
+              })}
+            </div>,
+            layersHost,
+          )}
+        {propertiesHost &&
+          createPortal(
+            selectedLayer ? (
+              <section className="inspector-object-properties">
+                <h3>選択オブジェクト</h3>
+                <CanvasProperties
+                  item={selectedLayer as LayerItem}
+                  balloons={balloons}
+                  imageEditing={editingPanelImageId === selectedLayer.id}
+                  onBeginImageEdit={beginImageEdit}
+                  onFinishImageEdit={finishImageEdit}
+                  savePanel={savePanel}
+                  saveBalloon={saveBalloon}
+                  saveText={saveText}
+                />
+              </section>
+            ) : (
+              <section className="inspector-object-properties">
+                <h3>選択オブジェクト</h3>
+                <p className="muted">
+                  Canvas上のオブジェクトを選択してください。
+                </p>
+              </section>
+            ),
+            propertiesHost,
+          )}
       </div>
     </div>
   );

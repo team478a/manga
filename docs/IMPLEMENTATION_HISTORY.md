@@ -442,3 +442,11 @@ UI統合の第1段階として、Desktop CSSへダークテーマの背景、文
 Projectパネルを「構成」と「素材」の2タブへ分離しました。構成タブにはProject、Episode、話テンプレート、Pageサムネイルと並び替えを集約し、素材タブには素材追加、ファイル名検索、PNG・JPEG・WebP形式フィルター、件数、サムネイル一覧を配置しています。Project表紙、Page、Panelで参照中の素材には「使用中」を表示し、CanvasへのD&Dと全素材の連続Page化は既存処理を維持します。
 
 共通`Tabs`は選択状態と関連tabpanelをARIAで結び、クリックに加えて左右矢印、Home、Endで切り替えられます。最後に開いたタブは端末の`localStorage`へ保存し、両タブのDOMと個別スクロール領域を維持したまま表示を切り替えます。SQLite、IPC、Asset保存形式は変更していません。
+
+## 50. 右Inspectorのプロパティ・レイヤー・AI統合
+
+右Inspectorを「プロパティ」「レイヤー」「AI」の3タブへ分離しました。最後に開いたタブは端末へ保存し、左右矢印、Home、Endによるキーボード切り替えにも対応しています。プロパティにはCanvasの選択オブジェクト設定と既存のProject / Page / Asset情報を集約し、レイヤーには選択、表示、ロック、前面 / 背面移動、D&D並び替えを移設しました。Canvasの表示メニューから右パネルを開いてレイヤータブへ直接移動できます。
+
+Canvas内部の選択・保存・画像編集・レイヤー並び替え処理は持ち上げず、React Portalで右パネルの表示領域へ接続しています。このためSQLite、IPC、Undo / Redo、Canvasデータ形式を変更せず、既存操作を再利用します。
+
+Creator Chatは従来の専用画面に加え、Canvasを見ながら使える右パネル表示へ対応しました。現在のEpisode / Pageを追従し、履歴選択、テンプレート、Project情報参照、送信・停止、コピー、再生成、Pageメモ保存、AI設定への導線を維持しています。Desktop TypeScript、ESLint、統合テスト35/35、本番rendererビルド、Windows x64 unpackedパッケージ作成に成功しました。
