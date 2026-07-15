@@ -25,7 +25,7 @@ test("30 canvas objects remain responsive across save, move and reopen", (t) => 
     exports: path.join(root, "exports"),
     logs: path.join(root, "logs"),
   };
-  const db = new MangaiDatabase(paths);
+  let db = new MangaiDatabase(paths);
   let bundle = db.createProject({
     title: "30オブジェクト性能確認",
     subtitle: "",
@@ -502,7 +502,7 @@ test("project metadata remains when cross-volume trash fallback fails", () => {
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
-test("asset deletion in custom storage uses the project-local trash", async () => {
+test("asset deletion uses project-local trash and supports undo and redo", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-asset-trash-"));
   const paths = {
     root: path.join(root, "app-data"),
@@ -512,7 +512,7 @@ test("asset deletion in custom storage uses the project-local trash", async () =
     exports: path.join(root, "app-data", "exports"),
     logs: path.join(root, "app-data", "logs"),
   };
-  const db = new MangaiDatabase(paths);
+  let db = new MangaiDatabase(paths);
   const selected = path.join(root, "external-volume", "custom-project");
   let bundle = db.createProject({
     title: "素材ゴミ箱",
@@ -539,8 +539,14 @@ test("asset deletion in custom storage uses the project-local trash", async () =
     .toFile(image);
   bundle = db.importAssets(bundle.project.id, [image]);
   const asset = bundle.assets[0];
+  bundle = db.addPage(bundle.episodes[0].id, asset.id);
   const originalAssetPath = path.join(selected, asset.relativePath);
-  bundle = db.deleteAsset(asset.id);
+  bundle = db.captureHistory(
+    bundle.project.id,
+    "素材を削除",
+    () => db.deleteAsset(asset.id),
+    { assetIds: [asset.id] },
+  );
 
   const assetTrash = path.join(selected, ".trash");
   const trashedAssets = fs.readdirSync(assetTrash);
@@ -551,6 +557,50 @@ test("asset deletion in custom storage uses the project-local trash", async () =
     fs.statSync(path.join(assetTrash, trashedAssets[0])).size,
     asset.byteSize,
   );
+  assert.equal(bundle.pages[0].imageAssetId, null);
+
+  db.close();
+  db = new MangaiDatabase(paths);
+  bundle = db.undo(bundle.project.id);
+  assert.equal(bundle.assets[0].id, asset.id);
+  assert.equal(bundle.pages[0].imageAssetId, asset.id);
+  assert.equal(bundle.project.coverAssetId, asset.id);
+  assert.equal(fs.existsSync(originalAssetPath), true);
+  assert.equal(fs.readdirSync(assetTrash).length, 0);
+
+  const secondImage = path.join(root, "second.png");
+  await sharp({
+    create: {
+      width: 6,
+      height: 6,
+      channels: 4,
+      background: { r: 180, g: 40, b: 90, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(secondImage);
+  bundle = db.importAssets(bundle.project.id, [secondImage]);
+  const secondAsset = bundle.assets.find((item) => item.id !== asset.id);
+  assert.ok(secondAsset);
+
+  bundle = db.redo(bundle.project.id);
+  assert.deepEqual(
+    bundle.assets.map((item) => item.id),
+    [secondAsset.id],
+  );
+  assert.equal(bundle.pages[0].imageAssetId, null);
+  assert.equal(bundle.project.coverAssetId, null);
+  assert.equal(fs.existsSync(originalAssetPath), false);
+  assert.equal(fs.readdirSync(assetTrash).length, 1);
+
+  const backupPath = path.join(root, "asset-deletion.mangai-backup");
+  await db.backupProject(bundle.project.id, backupPath);
+  const restored = await db.restoreProject(backupPath);
+  assert.deepEqual(
+    restored.assets.map((item) => item.sha256),
+    [secondAsset.sha256],
+  );
+  assert.equal(db.listOperationHistory(restored.project.id).items.length, 0);
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

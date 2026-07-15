@@ -504,7 +504,16 @@ function register() {
     const x = importAssetsSchema.parse(v);
     return store.importAssets(x.projectId, x.paths);
   });
-  handle("assets:delete", (v) => store.deleteAsset(assetIdSchema.parse(v).id));
+  handle("assets:delete", (v) => {
+    const id = assetIdSchema.parse(v).id;
+    const projectId = store.projectIdForAsset(id);
+    return store.captureHistory(
+      projectId,
+      "素材を削除",
+      () => store.deleteAsset(id),
+      { assetIds: [id] },
+    );
+  });
   handle("assets:url", (v) =>
     store.assetData(
       v && typeof v.relativePath === "string" ? v.relativePath : "",

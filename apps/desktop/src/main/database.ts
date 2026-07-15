@@ -810,11 +810,23 @@ export class MangaiDatabase {
     }
   }
   private projectBackupHistory(projectId: string): ProjectBackupHistory {
-    const operations = this.db
-      .prepare(
-        "select label,before_json as beforeJson,after_json as afterJson,is_undone as isUndone,created_at as createdAt from operation_history where project_id=? order by id",
-      )
-      .all(projectId) as BackupOperation[];
+    const operations = (
+      this.db
+        .prepare(
+          "select label,before_json as beforeJson,after_json as afterJson,is_undone as isUndone,created_at as createdAt from operation_history where project_id=? order by id",
+        )
+        .all(projectId) as BackupOperation[]
+    ).filter((operation) => {
+      try {
+        const before = JSON.parse(operation.beforeJson);
+        const after = JSON.parse(operation.afterJson);
+        return !(
+          before.trackedAssetIds?.length || after.trackedAssetIds?.length
+        );
+      } catch {
+        throw new Error("Undo/Redo履歴をバックアップできませんでした。");
+      }
+    });
     const chatSessions = this.db
       .prepare(
         "select id,title,created_at as createdAt,updated_at as updatedAt from chat_sessions where project_id=? order by created_at",
@@ -1434,8 +1446,46 @@ export class MangaiDatabase {
       .run(uid(), projectId, title, i, now(), now());
     return this.bundle(projectId);
   }
-  private editableSnapshot(projectId: string) {
+  private editableSnapshot(
+    projectId: string,
+    trackedAssetIds: string[] = [],
+    trackedGenerationOutputIds: string[] = [],
+  ) {
     const bundle = this.bundle(projectId);
+    const assets = (
+      this.db
+        .prepare("select * from assets where project_id=? order by created_at")
+        .all(projectId) as any[]
+    )
+      .filter((asset) => trackedAssetIds.includes(asset.id))
+      .map((asset) => ({
+        id: asset.id,
+        projectId: asset.project_id,
+        fileName: asset.file_name,
+        relativePath: asset.relative_path,
+        mimeType: asset.mime_type,
+        width: asset.width,
+        height: asset.height,
+        byteSize: asset.byte_size,
+        sha256: asset.sha256,
+        generationJobId: asset.generation_job_id,
+        metadataJson: asset.metadata_json,
+        createdAt: asset.created_at,
+      }));
+    const generationOutputs = (
+      this.db
+        .prepare(
+          `select o.id,o.asset_id as assetId
+           from generation_outputs o
+           join generation_jobs j on j.id=o.job_id
+           where j.project_id=?`,
+        )
+        .all(projectId) as Array<{ id: string; assetId: string | null }>
+    ).filter(
+      (output) =>
+        (output.assetId && trackedAssetIds.includes(output.assetId)) ||
+        trackedGenerationOutputIds.includes(output.id),
+    );
     return {
       project: {
         title: bundle.project.title,
@@ -1446,12 +1496,28 @@ export class MangaiDatabase {
       panels: bundle.panels,
       balloons: bundle.balloons,
       textObjects: bundle.textObjects,
+      ...(trackedAssetIds.length
+        ? { trackedAssetIds, assets, generationOutputs }
+        : {}),
     };
   }
-  captureHistory<T>(projectId: string, label: string, mutation: () => T) {
-    const before = this.editableSnapshot(projectId);
+  captureHistory<T>(
+    projectId: string,
+    label: string,
+    mutation: () => T,
+    options: { assetIds?: string[] } = {},
+  ) {
+    const trackedAssetIds = [...new Set(options.assetIds ?? [])];
+    const before = this.editableSnapshot(projectId, trackedAssetIds);
     const result = mutation();
-    const after = this.editableSnapshot(projectId);
+    const trackedOutputIds = (before.generationOutputs ?? []).map(
+      (output: { id: string }) => output.id,
+    );
+    const after = this.editableSnapshot(
+      projectId,
+      trackedAssetIds,
+      trackedOutputIds,
+    );
     if (JSON.stringify(before) === JSON.stringify(after)) return result;
     this.db.transaction(() => {
       this.db
@@ -1474,137 +1540,269 @@ export class MangaiDatabase {
     return result;
   }
   private restoreEditableSnapshot(projectId: string, snapshot: any) {
-    this.db.transaction(() => {
-      this.db
-        .prepare(
-          "update projects set title=?,cover_asset_id=?,updated_at=? where id=?",
+    const fileRollbacks: Array<() => void> = [];
+    try {
+      this.db.transaction(() => {
+        if (
+          Array.isArray(snapshot.trackedAssetIds) &&
+          Array.isArray(snapshot.assets)
         )
-        .run(
-          snapshot.project.title,
-          snapshot.project.coverAssetId,
-          now(),
-          projectId,
-        );
-      const episodeIds = new Set(snapshot.episodes.map((item: any) => item.id));
-      const pageIds = new Set(snapshot.pages.map((item: any) => item.id));
-      const panelIds = new Set(snapshot.panels.map((item: any) => item.id));
-      const balloonIds = new Set(
-        (snapshot.balloons ?? []).map((item: any) => item.id),
-      );
-      const textObjectIds = new Set(
-        (snapshot.textObjects ?? []).map((item: any) => item.id),
-      );
-      for (const item of snapshot.episodes)
-        this.db
-          .prepare(
-            "insert into episodes values(?,?,?,?,?,?) on conflict(id) do update set title=excluded.title,order_index=excluded.order_index,updated_at=excluded.updated_at",
-          )
-          .run(
-            item.id,
+          this.restoreSnapshotAssets(
             projectId,
-            item.title,
-            item.orderIndex,
-            item.createdAt,
-            now(),
+            snapshot.trackedAssetIds,
+            snapshot.assets,
+            fileRollbacks,
           );
-      for (const item of snapshot.pages)
         this.db
           .prepare(
-            "insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set episode_id=excluded.episode_id,page_number=excluded.page_number,order_index=excluded.order_index,width=excluded.width,height=excluded.height,background_color=excluded.background_color,image_asset_id=excluded.image_asset_id,prompt=excluded.prompt,negative_prompt=excluded.negative_prompt,notes=excluded.notes,updated_at=excluded.updated_at",
+            "update projects set title=?,cover_asset_id=?,updated_at=? where id=?",
           )
           .run(
-            item.id,
-            item.episodeId,
-            item.pageNumber,
-            item.orderIndex,
-            item.width,
-            item.height,
-            item.backgroundColor,
-            item.imageAssetId,
-            item.prompt,
-            item.negativePrompt,
-            item.notes,
-            item.createdAt,
+            snapshot.project.title,
+            snapshot.project.coverAssetId,
             now(),
+            projectId,
           );
-      for (const item of snapshot.panels)
-        this.db
-          .prepare(
-            `insert into panels(id,page_id,order_index,x,y,width,height,image_asset_id,prompt,negative_prompt,generation_status,metadata,name,rotation,z_index,visible,locked,border_color,border_width,fill_color,image_fit,image_offset_x,image_offset_y,image_scale,image_rotation,image_opacity,created_at,updated_at)
+        const episodeIds = new Set(
+          snapshot.episodes.map((item: any) => item.id),
+        );
+        const pageIds = new Set(snapshot.pages.map((item: any) => item.id));
+        const panelIds = new Set(snapshot.panels.map((item: any) => item.id));
+        const balloonIds = new Set(
+          (snapshot.balloons ?? []).map((item: any) => item.id),
+        );
+        const textObjectIds = new Set(
+          (snapshot.textObjects ?? []).map((item: any) => item.id),
+        );
+        for (const item of snapshot.episodes)
+          this.db
+            .prepare(
+              "insert into episodes values(?,?,?,?,?,?) on conflict(id) do update set title=excluded.title,order_index=excluded.order_index,updated_at=excluded.updated_at",
+            )
+            .run(
+              item.id,
+              projectId,
+              item.title,
+              item.orderIndex,
+              item.createdAt,
+              now(),
+            );
+        for (const item of snapshot.pages)
+          this.db
+            .prepare(
+              "insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set episode_id=excluded.episode_id,page_number=excluded.page_number,order_index=excluded.order_index,width=excluded.width,height=excluded.height,background_color=excluded.background_color,image_asset_id=excluded.image_asset_id,prompt=excluded.prompt,negative_prompt=excluded.negative_prompt,notes=excluded.notes,updated_at=excluded.updated_at",
+            )
+            .run(
+              item.id,
+              item.episodeId,
+              item.pageNumber,
+              item.orderIndex,
+              item.width,
+              item.height,
+              item.backgroundColor,
+              item.imageAssetId,
+              item.prompt,
+              item.negativePrompt,
+              item.notes,
+              item.createdAt,
+              now(),
+            );
+        for (const item of snapshot.panels)
+          this.db
+            .prepare(
+              `insert into panels(id,page_id,order_index,x,y,width,height,image_asset_id,prompt,negative_prompt,generation_status,metadata,name,rotation,z_index,visible,locked,border_color,border_width,fill_color,image_fit,image_offset_x,image_offset_y,image_scale,image_rotation,image_opacity,created_at,updated_at)
              values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) on conflict(id) do update set page_id=excluded.page_id,order_index=excluded.order_index,x=excluded.x,y=excluded.y,width=excluded.width,height=excluded.height,image_asset_id=excluded.image_asset_id,prompt=excluded.prompt,negative_prompt=excluded.negative_prompt,generation_status=excluded.generation_status,metadata=excluded.metadata,name=excluded.name,rotation=excluded.rotation,z_index=excluded.z_index,visible=excluded.visible,locked=excluded.locked,border_color=excluded.border_color,border_width=excluded.border_width,fill_color=excluded.fill_color,image_fit=excluded.image_fit,image_offset_x=excluded.image_offset_x,image_offset_y=excluded.image_offset_y,image_scale=excluded.image_scale,image_rotation=excluded.image_rotation,image_opacity=excluded.image_opacity,updated_at=excluded.updated_at`,
+            )
+            .run(
+              item.id,
+              item.pageId,
+              item.orderIndex,
+              item.x,
+              item.y,
+              item.width,
+              item.height,
+              item.imageAssetId,
+              item.prompt,
+              item.negativePrompt,
+              item.generationStatus,
+              item.metadata,
+              item.name ?? "コマ",
+              item.rotation ?? 0,
+              item.zIndex ?? item.orderIndex,
+              item.visible === false ? 0 : 1,
+              item.locked ? 1 : 0,
+              item.borderColor ?? "#000000",
+              item.borderWidth ?? 4,
+              item.fillColor ?? "#ffffff",
+              item.imageFit ?? "cover",
+              item.imageOffsetX ?? 0,
+              item.imageOffsetY ?? 0,
+              item.imageScale ?? 1,
+              item.imageRotation ?? 0,
+              item.imageOpacity ?? 1,
+              item.createdAt ?? now(),
+              now(),
+            );
+        for (const item of snapshot.balloons ?? []) this.upsertBalloonRow(item);
+        for (const item of snapshot.textObjects ?? [])
+          this.upsertTextObjectRow(item);
+        const existingTextObjects = this.db
+          .prepare(
+            "select t.id from text_objects t join pages p on p.id=t.page_id join episodes e on e.id=p.episode_id where e.project_id=?",
           )
-          .run(
-            item.id,
-            item.pageId,
-            item.orderIndex,
-            item.x,
-            item.y,
-            item.width,
-            item.height,
-            item.imageAssetId,
-            item.prompt,
-            item.negativePrompt,
-            item.generationStatus,
-            item.metadata,
-            item.name ?? "コマ",
-            item.rotation ?? 0,
-            item.zIndex ?? item.orderIndex,
-            item.visible === false ? 0 : 1,
-            item.locked ? 1 : 0,
-            item.borderColor ?? "#000000",
-            item.borderWidth ?? 4,
-            item.fillColor ?? "#ffffff",
-            item.imageFit ?? "cover",
-            item.imageOffsetX ?? 0,
-            item.imageOffsetY ?? 0,
-            item.imageScale ?? 1,
-            item.imageRotation ?? 0,
-            item.imageOpacity ?? 1,
-            item.createdAt ?? now(),
-            now(),
+          .all(projectId) as any[];
+        for (const row of existingTextObjects)
+          if (!textObjectIds.has(row.id))
+            this.db.prepare("delete from text_objects where id=?").run(row.id);
+        const existingBalloons = this.db
+          .prepare(
+            "select b.id from balloons b join pages p on p.id=b.page_id join episodes e on e.id=p.episode_id where e.project_id=?",
+          )
+          .all(projectId) as any[];
+        for (const row of existingBalloons)
+          if (!balloonIds.has(row.id))
+            this.db.prepare("delete from balloons where id=?").run(row.id);
+        const existingPanels = this.db
+          .prepare(
+            "select panels.id from panels join pages on pages.id=panels.page_id join episodes on episodes.id=pages.episode_id where episodes.project_id=?",
+          )
+          .all(projectId) as any[];
+        for (const row of existingPanels)
+          if (!panelIds.has(row.id))
+            this.db.prepare("delete from panels where id=?").run(row.id);
+        const existingPages = this.db
+          .prepare(
+            "select pages.id from pages join episodes on episodes.id=pages.episode_id where episodes.project_id=?",
+          )
+          .all(projectId) as any[];
+        for (const row of existingPages)
+          if (!pageIds.has(row.id))
+            this.db.prepare("delete from pages where id=?").run(row.id);
+        const existingEpisodes = this.db
+          .prepare("select id from episodes where project_id=?")
+          .all(projectId) as any[];
+        for (const row of existingEpisodes)
+          if (!episodeIds.has(row.id))
+            this.db.prepare("delete from episodes where id=?").run(row.id);
+        if (Array.isArray(snapshot.generationOutputs)) {
+          const updateOutput = this.db.prepare(
+            "update generation_outputs set asset_id=? where id=?",
           );
-      for (const item of snapshot.balloons ?? []) this.upsertBalloonRow(item);
-      for (const item of snapshot.textObjects ?? [])
-        this.upsertTextObjectRow(item);
-      const existingTextObjects = this.db
-        .prepare(
-          "select t.id from text_objects t join pages p on p.id=t.page_id join episodes e on e.id=p.episode_id where e.project_id=?",
-        )
-        .all(projectId) as any[];
-      for (const row of existingTextObjects)
-        if (!textObjectIds.has(row.id))
-          this.db.prepare("delete from text_objects where id=?").run(row.id);
-      const existingBalloons = this.db
-        .prepare(
-          "select b.id from balloons b join pages p on p.id=b.page_id join episodes e on e.id=p.episode_id where e.project_id=?",
-        )
-        .all(projectId) as any[];
-      for (const row of existingBalloons)
-        if (!balloonIds.has(row.id))
-          this.db.prepare("delete from balloons where id=?").run(row.id);
-      const existingPanels = this.db
-        .prepare(
-          "select panels.id from panels join pages on pages.id=panels.page_id join episodes on episodes.id=pages.episode_id where episodes.project_id=?",
-        )
-        .all(projectId) as any[];
-      for (const row of existingPanels)
-        if (!panelIds.has(row.id))
-          this.db.prepare("delete from panels where id=?").run(row.id);
-      const existingPages = this.db
-        .prepare(
-          "select pages.id from pages join episodes on episodes.id=pages.episode_id where episodes.project_id=?",
-        )
-        .all(projectId) as any[];
-      for (const row of existingPages)
-        if (!pageIds.has(row.id))
-          this.db.prepare("delete from pages where id=?").run(row.id);
-      const existingEpisodes = this.db
-        .prepare("select id from episodes where project_id=?")
-        .all(projectId) as any[];
-      for (const row of existingEpisodes)
-        if (!episodeIds.has(row.id))
-          this.db.prepare("delete from episodes where id=?").run(row.id);
-    })();
+          for (const output of snapshot.generationOutputs)
+            updateOutput.run(output.assetId ?? null, output.id);
+        }
+      })();
+    } catch (error) {
+      for (const rollback of fileRollbacks.reverse()) {
+        try {
+          rollback();
+        } catch {
+          // 元の例外を優先する。復旧不能時も履歴行は未更新のまま残る。
+        }
+      }
+      throw error;
+    }
+  }
+
+  private assetHistoryTrashPath(
+    storagePath: string,
+    asset: { id: string; relativePath: string },
+  ) {
+    return path.join(
+      storagePath,
+      ".trash",
+      `asset-${asset.id}-${path.basename(asset.relativePath)}`,
+    );
+  }
+
+  private verifyAssetFile(
+    filePath: string,
+    asset: { byteSize: number; sha256: string },
+  ) {
+    const bytes = fs.readFileSync(filePath);
+    if (
+      bytes.length !== asset.byteSize ||
+      crypto.createHash("sha256").update(bytes).digest("hex") !== asset.sha256
+    )
+      throw new Error("素材ファイルの整合性を確認できませんでした。");
+  }
+
+  private restoreSnapshotAssets(
+    projectId: string,
+    trackedAssetIds: string[],
+    targetAssets: any[],
+    fileRollbacks: Array<() => void>,
+  ) {
+    const project = this.bundle(projectId).project;
+    const currentAssets = this.db
+      .prepare("select * from assets where project_id=?")
+      .all(projectId) as any[];
+    const currentById = new Map(
+      currentAssets.map((asset) => [asset.id, asset]),
+    );
+    const targetById = new Map(targetAssets.map((asset) => [asset.id, asset]));
+
+    for (const row of currentAssets) {
+      if (!trackedAssetIds.includes(row.id)) continue;
+      if (targetById.has(row.id)) continue;
+      const asset = {
+        id: row.id,
+        relativePath: row.relative_path,
+        byteSize: row.byte_size,
+        sha256: row.sha256,
+      };
+      const source = this.safeProjectPath(
+        project.storagePath,
+        asset.relativePath,
+      );
+      const trash = this.assetHistoryTrashPath(project.storagePath, asset);
+      if (fs.existsSync(source)) {
+        this.verifyAssetFile(source, asset);
+        if (fs.existsSync(trash))
+          throw new Error("素材の履歴用ゴミ箱に同名ファイルがあります。");
+        fs.mkdirSync(path.dirname(trash), { recursive: true });
+        fs.renameSync(source, trash);
+        fileRollbacks.push(() => fs.renameSync(trash, source));
+      } else if (!fs.existsSync(trash))
+        throw new Error("削除する素材ファイルが見つかりません。");
+      else this.verifyAssetFile(trash, asset);
+      this.db.prepare("delete from assets where id=?").run(row.id);
+    }
+
+    const insert = this.db.prepare(
+      `insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at,generation_job_id,metadata_json)
+       values(?,?,?,?,?,?,?,?,?,?,?,?)`,
+    );
+    for (const asset of targetAssets) {
+      if (currentById.has(asset.id)) continue;
+      const destination = this.safeProjectPath(
+        project.storagePath,
+        asset.relativePath,
+      );
+      const trash = this.assetHistoryTrashPath(project.storagePath, asset);
+      if (!fs.existsSync(destination)) {
+        if (!fs.existsSync(trash))
+          throw new Error("復元する素材ファイルがゴミ箱にありません。");
+        this.verifyAssetFile(trash, asset);
+        fs.mkdirSync(path.dirname(destination), { recursive: true });
+        fs.renameSync(trash, destination);
+        fileRollbacks.push(() => fs.renameSync(destination, trash));
+      } else this.verifyAssetFile(destination, asset);
+      insert.run(
+        asset.id,
+        projectId,
+        asset.fileName,
+        asset.relativePath,
+        asset.mimeType,
+        asset.width,
+        asset.height,
+        asset.byteSize,
+        asset.sha256,
+        asset.createdAt,
+        asset.generationJobId ?? null,
+        asset.metadataJson ?? "{}",
+      );
+    }
   }
   listOperationHistory(projectId: string) {
     const items = this.db
@@ -1917,6 +2115,13 @@ export class MangaiDatabase {
     if (!row) throw new Error("ページが見つかりません。");
     return row.project_id as string;
   }
+  projectIdForAsset(assetId: string) {
+    const row = this.db
+      .prepare("select project_id from assets where id=?")
+      .get(assetId) as { project_id: string } | undefined;
+    if (!row) throw new Error("素材が見つかりません。");
+    return row.project_id;
+  }
   projectIdForCanvasObject(type: "panel" | "balloon" | "text", id: string) {
     const table =
       type === "panel"
@@ -2147,15 +2352,34 @@ export class MangaiDatabase {
       )
       .get(id) as any;
     if (!a) throw new Error("素材が見つかりません。");
-    const source = this.safeProjectPath(a.storage_path, a.relative_path),
-      trash = path.join(a.storage_path, ".trash");
-    fs.mkdirSync(trash, { recursive: true });
-    if (fs.existsSync(source))
-      fs.renameSync(
-        source,
-        path.join(trash, `${Date.now()}-${path.basename(source)}`),
-      );
-    this.db.prepare("delete from assets where id=?").run(id);
+    const asset = {
+      id: a.id,
+      relativePath: a.relative_path,
+      byteSize: a.byte_size,
+      sha256: a.sha256,
+    };
+    const source = this.safeProjectPath(a.storage_path, a.relative_path);
+    const trash = this.assetHistoryTrashPath(a.storage_path, asset);
+    if (!fs.existsSync(source))
+      throw new Error("削除する素材ファイルが見つかりません。");
+    this.verifyAssetFile(source, asset);
+    if (fs.existsSync(trash))
+      throw new Error("素材の履歴用ゴミ箱に同名ファイルがあります。");
+    fs.mkdirSync(path.dirname(trash), { recursive: true });
+    fs.renameSync(source, trash);
+    try {
+      this.db.transaction(() => {
+        this.db
+          .prepare(
+            "update projects set cover_asset_id=null,updated_at=? where cover_asset_id=?",
+          )
+          .run(now(), id);
+        this.db.prepare("delete from assets where id=?").run(id);
+      })();
+    } catch (error) {
+      fs.renameSync(trash, source);
+      throw error;
+    }
     return this.bundle(a.project_id);
   }
   assetData(relativePath: string) {
