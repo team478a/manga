@@ -275,10 +275,14 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             <div>
               <h2>診断データとプライバシー</h2>
               <p>
-                動作ログは端末内だけに保存し、秘密値とホームフォルダーを除外します。外部への自動送信は実装していません。
+                動作ログは端末内だけに保存し、秘密値とホームフォルダーを除外します。詳細レポートの外部送信には別の同意と手動操作が必要です。
               </p>
             </div>
-            <span className="hub-readonly-badge">外部送信なし</span>
+            <span className="hub-readonly-badge">
+              {diagnosticsState?.externalUploadAvailable
+                ? "手動送信"
+                : "送信先未設定"}
+            </span>
           </div>
           <label className="check diagnostics-consent">
             <input
@@ -306,6 +310,35 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           <p className="diagnostic-empty">
             OFFの場合も、起動・終了・エラー種別を含む最小限のJSONL動作ログは端末内へ保存します。ONの場合だけ、エラー内容とスタックを含む詳細ファイルを最大20件保存します。
           </p>
+          <label className="check diagnostics-consent">
+            <input
+              type="checkbox"
+              checked={diagnosticsState?.externalUploadEnabled ?? false}
+              disabled={
+                !diagnosticsState?.externalUploadAvailable ||
+                !diagnosticsState?.detailedCrashReportsEnabled
+              }
+              onChange={async (event) => {
+                setDiagnosticsMessage("");
+                try {
+                  setDiagnosticsState(
+                    await window.mangai.diagnostics.setUploadConsent(
+                      event.target.checked,
+                    ),
+                  );
+                  setDiagnosticsMessage("外部送信の同意設定を保存しました。");
+                } catch (cause) {
+                  setDiagnosticsMessage(
+                    cause instanceof Error ? cause.message : String(cause),
+                  );
+                }
+              }}
+            />
+            詳細クラッシュレポートを外部へ送信することに同意する
+          </label>
+          <p className="diagnostic-empty">
+            ローカル保存への同意とは別に管理します。自動送信はせず、下の「未送信分を送信」を選んだ場合だけ送信します。
+          </p>
           <div className="diagnostics-storage">
             <p>
               <b>ログ保存先:</b>{" "}
@@ -314,6 +347,15 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             <p>
               <b>詳細クラッシュレポート:</b>{" "}
               {diagnosticsState?.crashReportCount ?? 0}件
+            </p>
+            <p>
+              <b>外部へ未送信:</b> {diagnosticsState?.pendingUploadCount ?? 0}件
+            </p>
+            <p>
+              <b>最終送信:</b>{" "}
+              {diagnosticsState?.lastUploadAt
+                ? new Date(diagnosticsState.lastUploadAt).toLocaleString()
+                : "未送信"}
             </p>
           </div>
           <div className="inline">
@@ -353,6 +395,37 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               }}
             >
               詳細レポートを削除
+            </button>
+            <button
+              className="secondary"
+              disabled={
+                !diagnosticsState?.externalUploadEnabled ||
+                !diagnosticsState?.pendingUploadCount
+              }
+              onClick={async () => {
+                if (
+                  !confirm(
+                    `${diagnosticsState?.pendingUploadCount ?? 0}件の詳細クラッシュレポートを外部へ送信しますか？`,
+                  )
+                )
+                  return;
+                setDiagnosticsMessage("");
+                try {
+                  setDiagnosticsState(
+                    await window.mangai.diagnostics.uploadPending(),
+                  );
+                  setDiagnosticsMessage("未送信レポートを送信しました。");
+                } catch (cause) {
+                  setDiagnosticsState(
+                    await window.mangai.diagnostics.getState(),
+                  );
+                  setDiagnosticsMessage(
+                    cause instanceof Error ? cause.message : String(cause),
+                  );
+                }
+              }}
+            >
+              未送信分を送信
             </button>
           </div>
           {diagnosticsMessage && <p className="notice">{diagnosticsMessage}</p>}
@@ -472,7 +545,8 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 placeholder="https://ai.example.com:8188"
               />
               <small>
-                localhostは登録不要です。それ以外はHTTPS originの完全一致だけを許可します。
+                localhostは登録不要です。それ以外はHTTPS
+                originの完全一致だけを許可します。
               </small>
             </label>
             {value.providerId !== "comfyui" && (

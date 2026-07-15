@@ -4,6 +4,9 @@ contextBridge.exposeInMainWorld("mangai", {
     getState: () => ipcRenderer.invoke("diagnostics:state"),
     setConsent: (enabled: boolean) =>
       ipcRenderer.invoke("diagnostics:consent", { enabled }),
+    setUploadConsent: (enabled: boolean) =>
+      ipcRenderer.invoke("diagnostics:upload-consent", { enabled }),
+    uploadPending: () => ipcRenderer.invoke("diagnostics:upload-pending"),
     openLogs: () => ipcRenderer.invoke("diagnostics:open-logs"),
     clearCrashReports: () => ipcRenderer.invoke("diagnostics:clear-crashes"),
   },

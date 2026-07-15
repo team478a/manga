@@ -4,7 +4,10 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { StructuredLogger } from "../dist-main/main/structured-logger.js";
-import { DiagnosticsService } from "../dist-main/main/diagnostics.js";
+import {
+  DiagnosticsService,
+  safeDiagnosticsUploadEndpoint,
+} from "../dist-main/main/diagnostics.js";
 
 const runtime = {
   appVersion: "0.1.0-test",
@@ -76,6 +79,89 @@ test("詳細クラッシュレポートは同意後だけ保存して削除で�
     assert.equal(reopened.state().detailedCrashReportsEnabled, true);
     assert.equal(reopened.state().crashReportCount, 1);
     assert.equal(reopened.clearCrashReports().crashReportCount, 0);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("外部送信はHTTPS送信先と別同意がなければ有効にできない", () => {
+  assert.equal(safeDiagnosticsUploadEndpoint(null), null);
+  assert.equal(
+    safeDiagnosticsUploadEndpoint("https://diagnostics.example.com/v1/crashes"),
+    "https://diagnostics.example.com/v1/crashes",
+  );
+  assert.throws(
+    () => safeDiagnosticsUploadEndpoint("http://diagnostics.example.com"),
+    /HTTPS/,
+  );
+  assert.throws(
+    () => safeDiagnosticsUploadEndpoint("https://user:pass@example.com"),
+    /認証情報/,
+  );
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-upload-off-"));
+  try {
+    const diagnostics = new DiagnosticsService(
+      { root, logs: path.join(root, "logs") },
+      runtime,
+    );
+    assert.equal(diagnostics.state().externalUploadAvailable, false);
+    assert.throws(
+      () => diagnostics.updateExternalUploadConsent(true),
+      /送信先が設定されていません/,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("詳細クラッシュレポートは確認操作後だけ送信して成功を記録する", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-upload-"));
+  const requests = [];
+  const fetchImpl = async (url, init) => {
+    requests.push({ url: String(url), init });
+    return new Response(null, { status: 204 });
+  };
+  try {
+    const diagnostics = new DiagnosticsService(
+      { root, logs: path.join(root, "logs") },
+      runtime,
+      undefined,
+      {
+        endpoint: "https://diagnostics.example.com/v1/crashes",
+        fetchImpl,
+      },
+    );
+    assert.equal(diagnostics.state().externalUploadAvailable, true);
+    assert.throws(
+      () => diagnostics.updateExternalUploadConsent(true),
+      /端末内保存へ同意/,
+    );
+    diagnostics.updateConsent(true);
+    diagnostics.updateExternalUploadConsent(true);
+    diagnostics.captureCrash("test.upload", new Error("Bearer secret-token"), {
+      password: "password-value",
+    });
+    assert.equal(diagnostics.state().pendingUploadCount, 1);
+    assert.equal(requests.length, 0);
+
+    const state = await diagnostics.uploadPendingCrashReports();
+    assert.equal(requests.length, 1);
+    assert.equal(state.pendingUploadCount, 0);
+    assert.ok(state.lastUploadAt);
+    assert.equal(requests[0].url, "https://diagnostics.example.com/v1/crashes");
+    assert.equal(requests[0].init.redirect, "error");
+    assert.match(
+      requests[0].init.headers["x-mangai-report-id"],
+      /^[a-f0-9]{64}$/,
+    );
+    assert.doesNotMatch(
+      String(requests[0].init.body),
+      /secret-token|password-value/,
+    );
+
+    await diagnostics.uploadPendingCrashReports();
+    assert.equal(requests.length, 1);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }

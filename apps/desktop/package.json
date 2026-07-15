@@ -86,6 +86,10 @@
       {
         "from": "build/update-config.json",
         "to": "update-config.json"
+      },
+      {
+        "from": "build/diagnostics-upload-config.json",
+        "to": "diagnostics-upload-config.json"
       }
     ],
     "win": {

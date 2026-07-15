@@ -112,16 +112,21 @@ export type HubDeviceState = {
 };
 export type DiagnosticsState = {
   detailedCrashReportsEnabled: boolean;
-  externalUploadEnabled: false;
+  externalUploadEnabled: boolean;
+  externalUploadAvailable: boolean;
   logDirectory: string;
   logFile: string;
   crashReportCount: number;
+  pendingUploadCount: number;
+  lastUploadAt: string | null;
   updatedAt: string | null;
 };
 export type DesktopApi = {
   diagnostics: {
     getState: () => Promise<DiagnosticsState>;
     setConsent: (enabled: boolean) => Promise<DiagnosticsState>;
+    setUploadConsent: (enabled: boolean) => Promise<DiagnosticsState>;
+    uploadPending: () => Promise<DiagnosticsState>;
     openLogs: () => Promise<true>;
     clearCrashReports: () => Promise<DiagnosticsState>;
   };

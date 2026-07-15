@@ -107,6 +107,25 @@ function desktopPaths() {
     logs: path.join(root, "logs"),
   };
 }
+
+function diagnosticsUploadEndpoint() {
+  if (!app.isPackaged) return process.env.MANGAI_DIAGNOSTICS_UPLOAD_URL ?? null;
+  try {
+    const value = z
+      .object({ endpoint: z.string().nullable() })
+      .parse(
+        JSON.parse(
+          fs.readFileSync(
+            path.join(process.resourcesPath, "diagnostics-upload-config.json"),
+            "utf8",
+          ),
+        ),
+      );
+    return value.endpoint;
+  } catch {
+    return null;
+  }
+}
 function handle(
   channel: string,
   fn: (value: any, event: IpcMainInvokeEvent) => any,
@@ -180,6 +199,14 @@ function register() {
     return true;
   });
   handle("diagnostics:clear-crashes", () => diagnostics.clearCrashReports());
+  handle("diagnostics:upload-consent", (v) => {
+    if (!v || typeof v.enabled !== "boolean")
+      throw new Error("診断レポート送信設定が不正です。");
+    return diagnostics.updateExternalUploadConsent(v.enabled);
+  });
+  handle("diagnostics:upload-pending", () =>
+    diagnostics.uploadPendingCrashReports(),
+  );
   handle("hub:status", (v) => {
     const input = hubStatusRequestSchema.parse(v);
     const credential = readHubDeviceCredential();
@@ -712,12 +739,17 @@ function registerDiagnosticsHandlers() {
 app
   .whenReady()
   .then(async () => {
-    diagnostics = new DiagnosticsService(desktopPaths(), {
-      appVersion: app.getVersion(),
-      platform: process.platform,
-      arch: process.arch,
-      electronVersion: process.versions.electron,
-    });
+    diagnostics = new DiagnosticsService(
+      desktopPaths(),
+      {
+        appVersion: app.getVersion(),
+        platform: process.platform,
+        arch: process.arch,
+        electronVersion: process.versions.electron,
+      },
+      undefined,
+      { endpoint: diagnosticsUploadEndpoint() },
+    );
     registerDiagnosticsHandlers();
     diagnostics.log("info", "app_started", {
       appVersion: app.getVersion(),
