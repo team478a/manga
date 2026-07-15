@@ -1,10 +1,10 @@
 # MANGAI 実装記録・引き継ぎ資料
 
-最終更新: 2026-07-15
+最終更新: 2026-07-16
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `c6bfd78`
+実装基準コミット: `5ddcc3b`
 
 この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
@@ -724,3 +724,13 @@ Panel Layerの`mask`を通常画像表示からalpha maskへ変更しました�
 CanvasではPorter-Duffの`destination-in`が他オブジェクトを消さないよう、Panel内スタックをpixel ratio 1のオフスクリーンcacheへ隔離しました。直接編集中はcacheを解除してmask元画像を表示し、編集終了後に再合成します。Page rendererはSVG alpha maskを逐次入れ子にし、PDFと連番PNG ZIPへ同じ順序で反映します。
 
 赤い背景の右半分を透明maskで除外し、その後ろへ青いcorrectionパッチを置く画素テストを追加しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト53/53、canvas-core 25/25、ai-core 16/16に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。
+
+## 87. Panel分離レイヤーの互換cache
+
+Panel内の分離レイヤーをローカル合成した内部PNGを生成し、`panels.image_asset_id`へ設定する互換cacheを追加しました。Canvasと新しいPage rendererは`panel_layers`を正式な描画元として維持しつつ、従来の単一画像参照しか扱わない経路でも最新のコマ画像を表示できます。元の`flattened_legacy`は上書きせず、分離レイヤーを外した場合の復帰先として保持します。
+
+cacheはレイヤー保存、Panel寸法・形状変更、Canvas一括更新、Project再オープン、Undo / Redo後に同期します。Panel寸法・形状、各レイヤー設定、参照素材SHA-256からsignatureを作り、一致時は画像生成・ファイル読込・DB更新を省略します。再生成時も対象Panelで表示中の参照素材だけを読み、全Project素材をメモリへ展開しません。
+
+内部PNGは予約タグ付きAssetとしてバックアップとProject複製へ含めますが、素材ブラウザー、素材件数、一括Page化から除外します。main processでもメタデータ編集と削除を拒否します。cache作成、内容変更時の同一Asset更新、同一signature時の無更新、Undo / Redoでの従来画像復帰・cache再利用を統合テストへ追加しました。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト53/53、canvas-core 25/25、ai-core 16/16に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。

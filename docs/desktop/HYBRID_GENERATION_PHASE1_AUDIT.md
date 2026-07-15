@@ -1,10 +1,10 @@
 # ハイブリッド生成 Phase 1 現状調査
 
-確認日: 2026-07-15
+確認日: 2026-07-16
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `c6bfd78`
+実装基準コミット: `5ddcc3b`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -402,6 +402,20 @@ CanvasとPage rendererは同じfit・offset・scale・rotation値を使用しま
 - mask前の赤レイヤーとmask後の青correctionを画素検証
 
 maskのblend modeは使用せず、alphaとopacityだけを適用します。correctionはalpha付き画像パッチとしてopacityとblend modeを利用できます。色調補正パラメータ型は未導入です。
+
+### Commit 13: `panels.image_asset_id`互換cache（完了: `5ddcc3b`）
+
+- 分離レイヤーのローカル合成結果をPanel寸法の内部PNGとして生成
+- `panels.image_asset_id`を内部PNGへ更新し、画像変形値をcache表示用に正規化
+- レイヤー保存、Panel寸法・形状変更、Canvas一括更新、Project再オープン、Undo / Redo後の同期
+- Panel寸法・形状・レイヤー設定・参照素材SHA-256からcache signatureを計算
+- signature一致時は画像生成、ファイル読込、DB更新を省略
+- 対象Panelが実際に参照する表示中素材だけをメモリへ読込
+- cacheを内部タグ付きAssetとしてバックアップ・複製可能にし、素材一覧・件数・一括Page化から除外
+- 内部cacheのメタデータ編集・手動削除をmain processで拒否
+- 分離レイヤー削除時は元の`flattened_legacy`参照へ復帰
+
+互換cacheは派生データであり、CanvasとPDF・画像ZIPの正式な描画元は引き続き`panel_layers`です。従来統合画像は分離後も上書きせず、段階移行とUndo / Redoの復帰先として保持します。
 
 ## 11. テスト基準
 

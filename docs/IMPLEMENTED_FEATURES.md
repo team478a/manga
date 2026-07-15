@@ -1,6 +1,6 @@
 # MANGAI Creator Platform 実装済み機能
 
-最終確認日: 2026-07-15
+最終確認日: 2026-07-16
 
 この文書は、READMEの計画ではなく現在のソースコードを基準に、MVPで利用できる機能と制約を整理したものです。
 
@@ -366,6 +366,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - PanelレイヤーのCanvas表示、素材追加・差し替え、表示・lock・順序・opacity・blend mode編集、コマ形状内のPDF・連番PNG ZIPローカル合成
 - Panelレイヤー画像のCanvas直接移動・等比拡縮・回転、fit・倍率・offset・回転の数値編集とリセット
 - Panel maskのalpha逐次合成、correction透明パッチ、Canvas隔離cache、PDF・連番PNG ZIPでの同一合成
+- 分離レイヤー合成結果の`panels.image_asset_id`内部PNG互換cache、署名による差分更新、再オープン・Undo/Redo同期
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
 - 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰
