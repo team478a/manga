@@ -30,6 +30,7 @@
   --canvas-page: #fff;
   --focus-ring: 0 0 0 2px var(--bg-app), 0 0 0 4px var(--accent);
   --shadow-panel: 0 10px 32px rgb(0 0 0 / 30%);
+  --shadow-dialog: 0 20px 64px rgb(0 0 0 / 48%);
 }
 * {
   box-sizing: border-box;
@@ -541,6 +542,117 @@ label {
 }
 .status-bar-spacer {
   flex: 1;
+}
+.workspace-status-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.status-bar-control,
+.status-bar-jobs,
+.status-bar-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 22px;
+  padding: 2px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.status-bar-control:hover,
+.status-bar-jobs:hover,
+.status-bar-refresh:hover,
+.status-bar-jobs.active {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.status-bar-control .status-badge {
+  min-height: 18px;
+  padding: 2px 5px;
+  font-size: 10px;
+}
+.status-bar-control .status-badge-dot {
+  width: 5px;
+  max-width: none;
+  height: 5px;
+}
+.status-bar-refresh {
+  padding: 4px;
+}
+.spin {
+  animation: spin 900ms linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.generation-drawer {
+  position: fixed;
+  right: 16px;
+  bottom: 42px;
+  z-index: 20;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: min(400px, calc(100vw - 32px));
+  max-height: min(620px, calc(100vh - 120px));
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-dialog);
+}
+.generation-drawer > header,
+.generation-drawer > footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.generation-drawer > header > div {
+  display: grid;
+}
+.generation-drawer > header small {
+  color: var(--text-muted);
+}
+.generation-drawer > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 0;
+}
+.generation-drawer-list {
+  min-height: 0;
+  padding: 8px;
+  overflow: auto;
+}
+.generation-drawer-list article {
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.generation-drawer-list article > p {
+  margin: 0;
+  overflow: hidden;
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.generation-drawer-list article > small {
+  color: var(--danger);
+}
+.generation-drawer-list article > button {
+  justify-self: end;
+}
+.generation-drawer-job-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 .shell-tool-content {
   flex: 1 1 auto;
@@ -1186,27 +1298,127 @@ label {
 .zoom button {
   padding: 5px 9px;
 }
-.export-progress {
+.modal-backdrop {
   position: fixed;
-  top: 72px;
-  right: 18px;
-  z-index: 10;
-  width: 300px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border-strong);
-  background: var(--bg-panel-elevated);
-  box-shadow: var(--shadow-panel);
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(5 6 9 / 66%);
+  backdrop-filter: blur(3px);
 }
-.export-progress div {
+.export-dialog {
+  width: min(520px, 100%);
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-panel);
+  box-shadow: var(--shadow-dialog);
+}
+.export-dialog > header,
+.export-dialog > footer {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 7px;
-  font-size: 12px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--border-subtle);
 }
-.export-progress progress {
+.export-dialog > header h2 {
+  margin: 2px 0 0;
+  font-size: 19px;
+}
+.export-dialog > header small {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+.export-dialog > footer {
+  justify-content: flex-end;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 0;
+}
+.export-dialog-content,
+.export-dialog-state {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+}
+.export-dialog-content > p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+.export-dialog-content > .export-empty-warning {
+  padding: 9px;
+  border-radius: 6px;
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+.export-format-list {
+  display: grid;
+  gap: 8px;
+}
+.export-format-list article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-panel-elevated);
+}
+.export-format-list article > svg {
+  color: var(--accent);
+}
+.export-format-list article > div {
+  display: grid;
+}
+.export-format-list small {
+  color: var(--text-muted);
+}
+.export-dialog-state {
+  justify-items: center;
+  padding: 36px 22px;
+  text-align: center;
+}
+.export-dialog-state > svg {
+  color: var(--info);
+}
+.export-dialog-state.success > svg {
+  color: var(--success);
+}
+.export-dialog-state.danger-state > svg {
+  color: var(--danger);
+}
+.export-dialog-state progress {
   width: 100%;
+}
+.export-output-path {
+  max-width: 100%;
+  margin: 0;
+  padding: 9px;
+  overflow-wrap: anywhere;
+  border-radius: 6px;
+  background: var(--bg-app);
+  color: var(--text-secondary);
+  font-size: 12px;
+  text-align: left;
+}
+.export-warnings {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--warning) 45%, transparent);
+  border-radius: 7px;
+  background: var(--warning-soft);
+  color: var(--warning);
+  text-align: left;
+}
+.export-warnings p {
+  margin: 5px 0 0;
+  font-size: 12px;
 }
 .right section {
   display: grid;

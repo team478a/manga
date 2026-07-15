@@ -107,7 +107,7 @@ export function AppHeader({
         </button>
         <button className="primary-action" onClick={onExport}>
           <Download size={17} aria-hidden="true" />
-          <span>{exporting ? "キャンセル" : "書き出し"}</span>
+          <span>{exporting ? "進捗" : "書き出し"}</span>
         </button>
         <details className="app-header-more">
           <summary title="その他の操作" aria-label="その他の操作">

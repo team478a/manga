@@ -8,6 +8,7 @@ export function StatusBar({
   zoom,
   assetCount,
   storagePath,
+  activity,
 }: {
   selectedLabel: string;
   pageSize?: string;
@@ -15,6 +16,7 @@ export function StatusBar({
   zoom: number;
   assetCount: number;
   storagePath: string;
+  activity?: React.ReactNode;
 }) {
   return (
     <footer className="status-bar">
@@ -27,6 +29,7 @@ export function StatusBar({
         {pageSize ?? "Page未選択"} / {dpi}dpi
       </span>
       <span className="status-bar-spacer" />
+      {activity}
       <span>
         <Maximize2 size={13} aria-hidden="true" /> {zoom}%
       </span>

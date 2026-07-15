@@ -21,6 +21,11 @@ import {
 } from "./components/app-shell/InspectorPanel";
 import { ProjectPanel } from "./components/app-shell/ProjectPanel";
 import { StatusBar } from "./components/app-shell/StatusBar";
+import {
+  ExportDialog,
+  type ExportResult,
+} from "./components/app-shell/ExportDialog";
+import { WorkspaceStatusControls } from "./components/app-shell/WorkspaceStatusControls";
 import type {
   AutoBackupState,
   DatabaseRecoveryState,
@@ -85,6 +90,9 @@ function App() {
       requestId: string;
       progress: ExportProgress;
     } | null>(null),
+    [exportDialogOpen, setExportDialogOpen] = React.useState(false),
+    [exportResult, setExportResult] = React.useState<ExportResult>(),
+    [exportError, setExportError] = React.useState<string>(),
     [zoom, setZoom] = React.useState(70),
     [history, setHistory] = React.useState<OperationHistory>({
       items: [],
@@ -595,12 +603,10 @@ function App() {
       </ToolShell>
     );
   const runExport = async () => {
-    if (exportTask) {
-      await window.mangai.cancelExport(exportTask.requestId);
-      return;
-    }
     const requestId = crypto.randomUUID();
     try {
+      setExportResult(undefined);
+      setExportError(undefined);
       setSaving("書き出し中…");
       setExportTask({
         requestId,
@@ -617,15 +623,12 @@ function App() {
         requestId,
       );
       setSaving("保存済み");
-      alert(
-        `書き出しました:\n${result.outputDir}${result.warnings.length ? `\n\n注意:\n${result.warnings.join("\n")}` : ""}`,
-      );
+      setExportResult(result);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : String(cause);
-      setSaving(
-        message.includes("キャンセル") ? "書き出しキャンセル" : "書き出し失敗",
-      );
-      if (!message.includes("キャンセル")) showError(cause);
+      const canceled = message.includes("キャンセル");
+      setSaving(canceled ? "書き出しキャンセル" : "書き出し失敗");
+      setExportError(canceled ? "書き出しをキャンセルしました。" : message);
     } finally {
       setExportTask(null);
     }
@@ -660,7 +663,7 @@ function App() {
         onUndo={() => apply(window.mangai.undo(bundle.project.id))}
         onRedo={() => apply(window.mangai.redo(bundle.project.id))}
         onImport={() => apply(window.mangai.pickAssets(bundle.project.id))}
-        onExport={() => void runExport()}
+        onExport={() => setExportDialogOpen(true)}
         updateControl={<UpdateControl />}
       />
       {error && (
@@ -668,19 +671,23 @@ function App() {
           {error}
         </div>
       )}
-      {exportTask && (
-        <div className="export-progress">
-          <div>
-            <b>
-              {exportTask.progress.status === "packaging"
-                ? "PDF・ZIPを作成中"
-                : `ページ ${exportTask.progress.pageNumber ?? exportTask.progress.current} / ${exportTask.progress.total}`}
-            </b>
-            <span>{exportTask.progress.percent}%</span>
-          </div>
-          <progress max="100" value={exportTask.progress.percent} />
-        </div>
-      )}
+      <ExportDialog
+        open={exportDialogOpen}
+        projectTitle={bundle.project.title}
+        pageCount={bundle.pages.length}
+        progress={exportTask?.progress}
+        result={exportResult}
+        error={exportError}
+        onStart={() => void runExport()}
+        onCancel={() => {
+          if (exportTask) void window.mangai.cancelExport(exportTask.requestId);
+        }}
+        onClose={() => {
+          setExportDialogOpen(false);
+          setExportResult(undefined);
+          setExportError(undefined);
+        }}
+      />
       <div className="app-shell-body">
         <GlobalNav
           active="editor"
@@ -761,6 +768,13 @@ function App() {
         zoom={zoom}
         assetCount={bundle.assets.length}
         storagePath={bundle.project.storagePath}
+        activity={
+          <WorkspaceStatusControls
+            projectId={bundle.project.id}
+            onOpenJobs={() => setActiveTool("jobs")}
+            onOpenSettings={() => setActiveTool("settings")}
+          />
+        }
       />
     </main>
   );
