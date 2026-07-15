@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-調査基準コミット: `994cd20`
+調査基準コミット: `ca8e8a8`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -287,12 +287,16 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 既存DBはmigration前に自動バックアップし、既存Projectへ安全な既定値を追加します。設定は再起動、Project複製、自動・手動バックアップ、復元で維持します。generation policyを含まない旧version 1 / 2バックアップは安全な既定値で復元します。
 
-### Commit 3: shadow routing
+### Commit 3: shadow routing（完了: `ca8e8a8`）
 
 - 既存画像生成RequestをJob Draftへ変換
 - Route Decisionを保存
 - 実行は従来ComfyUIを維持
 - 成人向け・不明入力がcloud決定にならないテスト
+
+`generation_route_decisions`を追加し、既存画像生成ジョブごとにJob Draft、作品ポリシーを反映したRouting Context、Route Decision、PromptのSHA-256を記録します。Prompt本文、Negative Prompt、画像はroute判定履歴へ保存しません。履歴は限定IPCで読み出せ、バックアップ・復元時にProject、Page、Panel、Asset、Job参照を新IDへ変換します。
+
+現行画像生成UIはJob TypeやSensitivityをまだ入力しないため、shadow modeでは`adult_character_render / external_forbidden / personPresence=unknown`として安全側へ分類します。実際のComfyUI実行経路は変更せず、判定と現行実行先の差を記録できる段階です。`preferLocal`もRouterへ反映し、Asset Libraryが見つからないsafe Jobでもローカル優先設定ならcloudよりlocalを選びます。
 
 ### Commit 4: ローカルComfyUI切替
 
@@ -315,6 +319,7 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 2026-07-15の調査時点:
 
 - Desktop統合テスト: 47/47成功
+- ai-core Router単体テスト: 13/13成功
 - canvas-core単体テスト: 24/24成功
 
 Phase 1追加テスト:

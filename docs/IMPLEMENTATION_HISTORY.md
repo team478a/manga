@@ -642,3 +642,11 @@ ai-core単体テスト12/12、Desktop TypeScript、ESLint、本番renderer build
 既存DBは`hybrid-generation-policy-v1` migration前に自動バックアップし、全Projectへ安全な既定値を追加します。ポリシーは再起動、Project複製、自動バックアップの変更検知、手動バックアップ、復元で維持します。generation policyを含まない旧version 1 / 2バックアップは既定値で復元できます。
 
 ai-core単体テスト12/12、Desktop TypeScript、ESLint、本番renderer build、統合テスト47/47、canvas-core 24/24に成功しています。既存ComfyUI経路とUIは変更しておらず、次のshadow routingまでは実行判断に使用しません。
+
+## 77. ハイブリッド生成のshadow routing・監査履歴
+
+既存ComfyUI画像生成の前段で純粋Routerをshadow実行し、`generation_route_decisions`へJob Draft、作品ポリシーを反映したContext、判定先、reason code、確認要否、blocked状態、PromptのSHA-256を保存するようにしました。Prompt本文、Negative Prompt、入力・出力画像はroute履歴へ保存しません。限定IPCからProject別履歴を読み出せます。
+
+現行UIは生成種別とSensitivityをまだ指定しないため、`adult_character_render / external_forbidden / personPresence=unknown`へ補完し、cloud許可にならないfail-closed判定を記録します。現時点では判定結果で実行先を変更せず、既存ComfyUI生成、キャンセル、失敗、素材登録を維持します。RouterへProjectのローカル優先設定も反映しました。
+
+route履歴はProjectバックアップversion 2へ追加し、復元時にProject、Page、Panel、Asset、Job参照を新IDへ置換します。route履歴を持たない旧version 1 / 2も復元できます。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト47/47、canvas-core 24/24に成功しています。

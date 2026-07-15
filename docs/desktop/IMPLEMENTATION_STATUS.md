@@ -30,6 +30,7 @@
 - 素材削除は実ファイル、Page・コマ、表紙、AI生成出力参照を含めて再起動後もUndo/Redoできます。
 - ComfyUI生成ジョブの監査記録を残したまま、新規生成素材の追加だけを1操作でUndo/Redoできます。
 - 作品別外部送信ポリシーを安全な既定値でSQLiteへ保存し、再起動、Project複製、バックアップ・復元で維持します。
+- 現行ComfyUI生成の前にshadow route判定を行い、実行を変えずに判定理由とPrompt hashを保存します。Prompt本文と画像はroute履歴へ保存しません。
 - 書き出し履歴は書き出し画面、秘密値を除外したAI設定変更履歴は設定画面で確認できます。
 - PDF、画像ZIP、作品情報、販売文書き出しを実装しています。JPG・PNG・WebPを共通PageレンダラーでPDFと画像ZIPへ合成します。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。
