@@ -1394,16 +1394,69 @@ test("panel layers preserve legacy images and participate in undo, copy and back
     bundle.panelLayers.map((layer) => layer.type),
     ["background", "effect"],
   );
+  bundle = await db.refreshPanelLayerCaches(projectId, [panelId]);
+  const firstCacheAsset = bundle.assets.find(
+    (asset) => asset.id === bundle.panels[0].imageAssetId,
+  );
+  assert.ok(firstCacheAsset);
+  assert.notEqual(firstCacheAsset.id, legacyAsset.id);
+  assert.ok(
+    firstCacheAsset.libraryTags.includes(
+      `mangai:internal:panel-cache:${panelId}`,
+    ),
+  );
+  assert.ok(
+    fs.existsSync(
+      path.join(bundle.project.storagePath, firstCacheAsset.relativePath),
+    ),
+  );
   bundle = db.savePanel({ ...bundle.panels[0], borderWidth: 5 });
   assert.deepEqual(
     bundle.panelLayers.map((layer) => layer.type),
     ["background", "effect"],
   );
-  assert.equal(db.undo(projectId).panelLayers[0].type, "flattened_legacy");
+  bundle = db.undo(projectId);
+  bundle = await db.refreshPanelLayerCaches(projectId, [panelId]);
+  assert.equal(bundle.panelLayers[0].type, "flattened_legacy");
+  assert.equal(bundle.panels[0].imageAssetId, legacyAsset.id);
+  bundle = db.redo(projectId);
+  bundle = await db.refreshPanelLayerCaches(projectId, [panelId]);
   assert.deepEqual(
-    db.redo(projectId).panelLayers.map((layer) => layer.type),
+    bundle.panelLayers.map((layer) => layer.type),
     ["background", "effect"],
   );
+  assert.equal(bundle.panels[0].imageAssetId, firstCacheAsset.id);
+  const refreshedCache = bundle.assets.find(
+    (asset) => asset.id === firstCacheAsset.id,
+  );
+  assert.equal(refreshedCache.sha256, firstCacheAsset.sha256);
+  assert.throws(() => db.deleteAsset(firstCacheAsset.id), /内部互換キャッシュ/);
+  bundle = db.savePanelLayers(
+    panelId,
+    bundle.panelLayers.map((layer) => ({
+      ...layer,
+      opacity: layer.type === "background" ? 0.75 : layer.opacity,
+    })),
+  );
+  bundle = await db.refreshPanelLayerCaches(projectId, [panelId]);
+  const updatedCache = bundle.assets.find(
+    (asset) => asset.id === firstCacheAsset.id,
+  );
+  assert.ok(updatedCache);
+  assert.notEqual(updatedCache.sha256, firstCacheAsset.sha256);
+  const unchangedCacheBundle = await db.refreshPanelLayerCaches(projectId, [
+    panelId,
+  ]);
+  assert.equal(
+    unchangedCacheBundle.panels[0].updatedAt,
+    bundle.panels[0].updatedAt,
+  );
+  assert.equal(
+    unchangedCacheBundle.assets.find((asset) => asset.id === firstCacheAsset.id)
+      .libraryUpdatedAt,
+    updatedCache.libraryUpdatedAt,
+  );
+  bundle = unchangedCacheBundle;
   const layerExport = await db.exportProject(projectId);
   const layerImages = await JSZip.loadAsync(
     fs.readFileSync(path.join(layerExport.outputDir, "本編画像ZIP.zip")),

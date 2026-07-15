@@ -176,6 +176,12 @@ export type Asset = {
   libraryUpdatedAt: string | null;
   createdAt: string;
 };
+export const INTERNAL_PANEL_CACHE_TAG_PREFIX = "mangai:internal:panel-cache:";
+export function isInternalPanelCacheAsset(asset: Pick<Asset, "libraryTags">) {
+  return asset.libraryTags.some((tag) =>
+    tag.startsWith(INTERNAL_PANEL_CACHE_TAG_PREFIX),
+  );
+}
 export type ProjectBundle = {
   project: Project;
   episodes: Episode[];

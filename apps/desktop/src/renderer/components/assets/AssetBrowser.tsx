@@ -1,5 +1,9 @@
 import React from "react";
-import type { Episode, ProjectBundle } from "@mangai/project-core";
+import {
+  isInternalPanelCacheAsset,
+  type Episode,
+  type ProjectBundle,
+} from "@mangai/project-core";
 import type { AssetLibraryCategory } from "@mangai/shared";
 import { Search, Star, Upload } from "lucide-react";
 import { useI18n } from "../../i18n";
@@ -48,8 +52,12 @@ export function AssetBrowser({
       React.useState<AssetLibraryCategory>("unclassified"),
     [editTags, setEditTags] = React.useState(""),
     [editFavorite, setEditFavorite] = React.useState(false);
+  const libraryAssets = React.useMemo(
+    () => bundle.assets.filter((asset) => !isInternalPanelCacheAsset(asset)),
+    [bundle.assets],
+  );
 
-  const selectedAsset = bundle.assets.find(
+  const selectedAsset = libraryAssets.find(
     (asset) => asset.id === selectedAssetId,
   );
   React.useEffect(() => {
@@ -90,7 +98,7 @@ export function AssetBrowser({
 
   const assets = React.useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase(localeCode);
-    return bundle.assets.filter((asset) => {
+    return libraryAssets.filter((asset) => {
       const matchesQuery =
         !normalizedQuery ||
         [asset.fileName, ...asset.libraryTags]
@@ -109,7 +117,7 @@ export function AssetBrowser({
         matchesQuery && matchesFilter && matchesCategory && matchesFavorite
       );
     });
-  }, [bundle.assets, categoryFilter, favoritesOnly, filter, localeCode, query]);
+  }, [categoryFilter, favoritesOnly, filter, libraryAssets, localeCode, query]);
 
   return (
     <>
@@ -219,7 +227,7 @@ export function AssetBrowser({
           <small>
             {t("asset.count", {
               visible: assets.length,
-              total: bundle.assets.length,
+              total: libraryAssets.length,
             })}
           </small>
         </div>
@@ -275,15 +283,15 @@ export function AssetBrowser({
           </div>
         ) : (
           <div className="panel-empty">
-            {bundle.assets.length ? t("asset.noMatch") : t("asset.empty")}
+            {libraryAssets.length ? t("asset.noMatch") : t("asset.empty")}
           </div>
         )}
-        {episode && bundle.assets.length > 0 && (
+        {episode && libraryAssets.length > 0 && (
           <button
             className="wide secondary"
             onClick={async () => {
               let nextBundle = bundle;
-              for (const asset of bundle.assets)
+              for (const asset of libraryAssets)
                 nextBundle = await window.mangai.addPage(episode.id, asset.id);
               onBundle(nextBundle);
               onSelectPage(nextBundle.pages.at(-1)?.id || null);

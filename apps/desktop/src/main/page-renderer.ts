@@ -83,6 +83,36 @@ export async function renderPagePng(input: {
     .toBuffer();
 }
 
+export async function renderPanelLayerCachePng(input: {
+  panel: Panel;
+  panelLayers: PanelLayer[];
+  assets: Map<string, RenderAsset>;
+  cacheKey: string;
+}) {
+  const assetIds = input.panelLayers
+    .map((layer) => layer.assetId)
+    .filter((id): id is string => Boolean(id));
+  const assets = await prepareSvgAssets(input.assets, assetIds);
+  const width = Math.max(1, Math.round(input.panel.width));
+  const height = Math.max(1, Math.round(input.panel.height));
+  const content = renderSeparatedPanelLayers(
+    input.panel,
+    assets,
+    input.panelLayers,
+    `cache-clip-${input.panel.id}`,
+  );
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${input.panel.width} ${input.panel.height}">${content}</svg>`;
+  return sharp(Buffer.from(svg), {
+    density: 72,
+    limitInputPixels: 100_000_000,
+  })
+    .withMetadata({
+      exif: { IFD0: { ImageDescription: input.cacheKey } },
+    })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+}
+
 async function prepareSvgAssets(
   assets: Map<string, RenderAsset>,
   assetIds: string[],
@@ -115,47 +145,7 @@ function renderPanel(
     .filter((layer) => layer.type !== "flattened_legacy")
     .sort((a, b) => a.orderIndex - b.orderIndex);
   if (separatedLayers.length) {
-    const definitions = [
-      `<clipPath id="${clipId}"><path d="${shape}"/></clipPath>`,
-    ];
-    const composite: string[] = [];
-    for (const layer of separatedLayers) {
-      if (!layer.visible) continue;
-      const layerAsset = layer.assetId ? assets.get(layer.assetId) : undefined;
-      if (!layerAsset || layerAsset.width <= 0 || layerAsset.height <= 0)
-        continue;
-      const placement = computeImagePlacement(
-        { width: layerAsset.width, height: layerAsset.height },
-        { x: 0, y: 0, width: panel.width, height: panel.height },
-        {
-          fit: layer.imageFit,
-          scale: layer.imageScale,
-          offsetX: layer.imageOffsetX,
-          offsetY: layer.imageOffsetY,
-        },
-      );
-      const image = `<image href="${dataUrl(layerAsset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${layer.opacity}" transform="rotate(${layer.imageRotation} ${placement.x} ${placement.y})"/>`;
-      if (layer.type === "mask") {
-        const maskId = `mask-${panel.id}-${layer.id}`;
-        definitions.push(
-          `<mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${panel.width}" height="${panel.height}" style="mask-type:alpha">${image}</mask>`,
-        );
-        const masked = composite.join("");
-        composite.splice(
-          0,
-          composite.length,
-          `<g mask="url(#${maskId})">${masked}</g>`,
-        );
-      } else {
-        composite.push(
-          image.replace("/>", ` style="mix-blend-mode:${layer.blendMode}"/>`),
-        );
-      }
-    }
-    parts.push(
-      `<defs>${definitions.join("")}</defs>`,
-      `<g clip-path="url(#${clipId})">${composite.join("")}</g>`,
-    );
+    parts.push(renderSeparatedPanelLayers(panel, assets, layers, clipId));
   } else {
     const asset = panel.imageAssetId
       ? assets.get(panel.imageAssetId)
@@ -182,6 +172,55 @@ function renderPanel(
     `</g>`,
   );
   return parts.join("");
+}
+
+function renderSeparatedPanelLayers(
+  panel: Panel,
+  assets: Map<string, RenderAsset>,
+  layers: PanelLayer[],
+  clipId: string,
+) {
+  const shape = panelShapeSvgPath(panel);
+  const definitions = [
+    `<clipPath id="${clipId}"><path d="${shape}"/></clipPath>`,
+  ];
+  const composite: string[] = [];
+  for (const layer of layers
+    .filter((item) => item.type !== "flattened_legacy")
+    .sort((a, b) => a.orderIndex - b.orderIndex)) {
+    if (!layer.visible) continue;
+    const layerAsset = layer.assetId ? assets.get(layer.assetId) : undefined;
+    if (!layerAsset || layerAsset.width <= 0 || layerAsset.height <= 0)
+      continue;
+    const placement = computeImagePlacement(
+      { width: layerAsset.width, height: layerAsset.height },
+      { x: 0, y: 0, width: panel.width, height: panel.height },
+      {
+        fit: layer.imageFit,
+        scale: layer.imageScale,
+        offsetX: layer.imageOffsetX,
+        offsetY: layer.imageOffsetY,
+      },
+    );
+    const image = `<image href="${dataUrl(layerAsset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${layer.opacity}" transform="rotate(${layer.imageRotation} ${placement.x} ${placement.y})"/>`;
+    if (layer.type === "mask") {
+      const maskId = `mask-${panel.id}-${layer.id}`;
+      definitions.push(
+        `<mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${panel.width}" height="${panel.height}" style="mask-type:alpha">${image}</mask>`,
+      );
+      const masked = composite.join("");
+      composite.splice(
+        0,
+        composite.length,
+        `<g mask="url(#${maskId})">${masked}</g>`,
+      );
+    } else {
+      composite.push(
+        image.replace("/>", ` style="mix-blend-mode:${layer.blendMode}"/>`),
+      );
+    }
+  }
+  return `<defs>${definitions.join("")}</defs><g clip-path="url(#${clipId})">${composite.join("")}</g>`;
 }
 
 function renderBalloon(balloon: Balloon) {

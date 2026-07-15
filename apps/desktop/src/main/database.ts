@@ -16,7 +16,12 @@ import {
   type SalesPackageFileRole,
   type SalesPackageManifest,
 } from "@mangai/export-core";
-import type { ProjectBundle, Project } from "@mangai/project-core";
+import {
+  INTERNAL_PANEL_CACHE_TAG_PREFIX,
+  isInternalPanelCacheAsset,
+  type ProjectBundle,
+  type Project,
+} from "@mangai/project-core";
 import {
   assetLibraryMetadataInputSchema,
   projectInputSchema,
@@ -50,7 +55,11 @@ import {
   type PanelLayer,
   type TextObject,
 } from "@mangai/canvas-core";
-import { renderPagePng, type RenderAsset } from "./page-renderer.js";
+import {
+  renderPagePng,
+  renderPanelLayerCachePng,
+  type RenderAsset,
+} from "./page-renderer.js";
 
 export type Paths = {
   root: string;
@@ -2516,6 +2525,14 @@ export class MangaiDatabase {
       );
   }
   private syncLegacyPanelLayer(item: Panel) {
+    if (
+      this.db
+        .prepare(
+          "select 1 from panel_layers where panel_id=? and layer_type<>'flattened_legacy' limit 1",
+        )
+        .get(item.id)
+    )
+      return;
     const existing = this.db
       .prepare(
         "select id,created_at as createdAt from panel_layers where panel_id=? and layer_type='flattened_legacy' order by order_index limit 1",
@@ -2712,6 +2729,294 @@ export class MangaiDatabase {
         });
     })();
     return this.bundle(row.projectId);
+  }
+  async refreshPanelLayerCaches(projectId: string, panelIds?: string[]) {
+    const bundle = this.bundle(projectId);
+    const requested = panelIds ? new Set(panelIds) : null;
+    const panels = bundle.panels.filter(
+      (panel) => !requested || requested.has(panel.id),
+    );
+    const targetPanelIds = new Set(panels.map((panel) => panel.id));
+    const requiredAssetIds = new Set(
+      bundle.panelLayers
+        .filter(
+          (layer) =>
+            targetPanelIds.has(layer.panelId) &&
+            layer.type !== "flattened_legacy" &&
+            layer.visible &&
+            layer.assetId,
+        )
+        .map((layer) => layer.assetId as string),
+    );
+    const renderAssets = new Map<string, RenderAsset>();
+    for (const asset of bundle.assets) {
+      if (!requiredAssetIds.has(asset.id)) continue;
+      const file = this.safeProjectPath(
+        bundle.project.storagePath,
+        asset.relativePath,
+      );
+      if (!fs.existsSync(file)) continue;
+      renderAssets.set(asset.id, {
+        id: asset.id,
+        mimeType: asset.mimeType,
+        width: asset.width,
+        height: asset.height,
+        bytes: fs.readFileSync(file),
+      });
+    }
+    for (const panel of panels) {
+      const layers = bundle.panelLayers
+        .filter((layer) => layer.panelId === panel.id)
+        .sort((a, b) => a.orderIndex - b.orderIndex);
+      const separated = layers.filter(
+        (layer) => layer.type !== "flattened_legacy",
+      );
+      const legacy = layers.find((layer) => layer.type === "flattened_legacy");
+      if (!separated.length) {
+        const currentAsset = bundle.assets.find(
+          (asset) => asset.id === panel.imageAssetId,
+        );
+        if (
+          !layers.length &&
+          panel.imageAssetId &&
+          (!currentAsset || !isInternalPanelCacheAsset(currentAsset))
+        )
+          continue;
+        if (
+          panel.imageAssetId === (legacy?.assetId ?? null) &&
+          panel.imageFit === (legacy?.imageFit ?? "cover") &&
+          panel.imageOffsetX === (legacy?.imageOffsetX ?? 0) &&
+          panel.imageOffsetY === (legacy?.imageOffsetY ?? 0) &&
+          panel.imageScale === (legacy?.imageScale ?? 1) &&
+          panel.imageRotation === (legacy?.imageRotation ?? 0) &&
+          panel.imageOpacity === (legacy?.opacity ?? 1)
+        )
+          continue;
+        this.db
+          .prepare(
+            `update panels set image_asset_id=?,image_fit=?,image_offset_x=?,
+               image_offset_y=?,image_scale=?,image_rotation=?,image_opacity=?,
+               updated_at=? where id=?`,
+          )
+          .run(
+            legacy?.assetId ?? null,
+            legacy?.imageFit ?? "cover",
+            legacy?.imageOffsetX ?? 0,
+            legacy?.imageOffsetY ?? 0,
+            legacy?.imageScale ?? 1,
+            legacy?.imageRotation ?? 0,
+            legacy?.opacity ?? 1,
+            now(),
+            panel.id,
+          );
+        continue;
+      }
+      for (const layer of separated)
+        if (layer.visible && layer.assetId && !renderAssets.has(layer.assetId))
+          throw new Error(`レイヤー素材「${layer.name}」が見つかりません。`);
+      const cacheTag = `${INTERNAL_PANEL_CACHE_TAG_PREFIX}${panel.id}`;
+      const currentAsset = bundle.assets.find(
+        (asset) => asset.id === panel.imageAssetId,
+      );
+      const cacheAsset =
+        (currentAsset && isInternalPanelCacheAsset(currentAsset)
+          ? currentAsset
+          : undefined) ??
+        bundle.assets.find((asset) => asset.libraryTags.includes(cacheTag));
+      const cacheSignature = crypto
+        .createHash("sha256")
+        .update(
+          JSON.stringify({
+            width: panel.width,
+            height: panel.height,
+            shape: panel.shape,
+            slant: panel.slant,
+            layers: separated.map((layer) => ({
+              ...layer,
+              createdAt: undefined,
+              updatedAt: undefined,
+              assetSha256: layer.assetId
+                ? bundle.assets.find((asset) => asset.id === layer.assetId)
+                    ?.sha256
+                : null,
+            })),
+          }),
+        )
+        .digest("hex");
+      if (cacheAsset) {
+        const cacheRow = this.db
+          .prepare(
+            "select metadata_json as metadataJson from assets where id=? and project_id=?",
+          )
+          .get(cacheAsset.id, projectId) as
+          { metadataJson: string } | undefined;
+        let metadata: { cacheSignature?: string } = {};
+        try {
+          metadata = JSON.parse(cacheRow?.metadataJson ?? "{}");
+        } catch {
+          metadata = {};
+        }
+        const cacheFile = this.safeProjectPath(
+          bundle.project.storagePath,
+          cacheAsset.relativePath,
+        );
+        if (
+          metadata.cacheSignature === cacheSignature &&
+          fs.existsSync(cacheFile)
+        ) {
+          if (
+            cacheAsset.libraryTags.length === 1 &&
+            cacheAsset.libraryTags[0] === cacheTag &&
+            panel.imageAssetId === cacheAsset.id &&
+            panel.imageFit === "cover" &&
+            panel.imageOffsetX === 0 &&
+            panel.imageOffsetY === 0 &&
+            panel.imageScale === 1 &&
+            panel.imageRotation === 0 &&
+            panel.imageOpacity === 1
+          )
+            continue;
+          const stamp = now();
+          this.db.transaction(() => {
+            this.db
+              .prepare(
+                `update assets set library_tags_json=?,metadata_json=?,
+                   library_updated_at=? where id=? and project_id=?`,
+              )
+              .run(
+                JSON.stringify([cacheTag]),
+                JSON.stringify({
+                  internal: "panel-layer-cache",
+                  panelId: panel.id,
+                  cacheSignature,
+                }),
+                stamp,
+                cacheAsset.id,
+                projectId,
+              );
+            this.setPanelCacheReference(panel.id, cacheAsset.id, stamp);
+          })();
+          continue;
+        }
+      }
+      const bytes = await renderPanelLayerCachePng({
+        panel,
+        panelLayers: layers,
+        assets: renderAssets,
+        cacheKey: `${projectId}:${panel.id}`,
+      });
+      const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
+      const width = Math.max(1, Math.round(panel.width));
+      const height = Math.max(1, Math.round(panel.height));
+      const stamp = now();
+      if (cacheAsset) {
+        const file = this.safeProjectPath(
+          bundle.project.storagePath,
+          cacheAsset.relativePath,
+        );
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        const previous = fs.existsSync(file) ? fs.readFileSync(file) : null;
+        fs.writeFileSync(file, bytes);
+        try {
+          this.db.transaction(() => {
+            this.db
+              .prepare(
+                `update assets set file_name=?,mime_type='image/png',width=?,
+                   height=?,byte_size=?,sha256=?,library_category='other',
+                   library_tags_json=?,library_favorite=0,library_updated_at=?,
+                   metadata_json=?
+                 where id=? and project_id=?`,
+              )
+              .run(
+                `.mangai-panel-cache-${panel.id}.png`,
+                width,
+                height,
+                bytes.length,
+                sha256,
+                JSON.stringify([cacheTag]),
+                stamp,
+                JSON.stringify({
+                  internal: "panel-layer-cache",
+                  panelId: panel.id,
+                  cacheSignature,
+                }),
+                cacheAsset.id,
+                projectId,
+              );
+            this.setPanelCacheReference(panel.id, cacheAsset.id, stamp);
+          })();
+        } catch (error) {
+          if (previous) fs.writeFileSync(file, previous);
+          else fs.rmSync(file, { force: true });
+          throw error;
+        }
+      } else {
+        const assetId = uid();
+        const relativePath = path.join(
+          "assets",
+          `.mangai-panel-cache-${panel.id}-${assetId}.png`,
+        );
+        const file = this.safeProjectPath(
+          bundle.project.storagePath,
+          relativePath,
+        );
+        fs.mkdirSync(path.dirname(file), { recursive: true });
+        fs.writeFileSync(file, bytes, { flag: "wx" });
+        try {
+          this.db.transaction(() => {
+            this.db
+              .prepare(
+                `insert into assets(
+                   id,project_id,file_name,relative_path,mime_type,width,height,
+                   byte_size,sha256,created_at,generation_job_id,metadata_json,
+                   library_category,library_tags_json,library_favorite,
+                   library_updated_at
+                 ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+              )
+              .run(
+                assetId,
+                projectId,
+                `.mangai-panel-cache-${panel.id}.png`,
+                relativePath,
+                "image/png",
+                width,
+                height,
+                bytes.length,
+                sha256,
+                stamp,
+                null,
+                JSON.stringify({
+                  internal: "panel-layer-cache",
+                  panelId: panel.id,
+                  cacheSignature,
+                }),
+                "other",
+                JSON.stringify([cacheTag]),
+                0,
+                stamp,
+              );
+            this.setPanelCacheReference(panel.id, assetId, stamp);
+          })();
+        } catch (error) {
+          fs.rmSync(file, { force: true });
+          throw error;
+        }
+      }
+    }
+    return this.bundle(projectId);
+  }
+  private setPanelCacheReference(
+    panelId: string,
+    assetId: string,
+    stamp: string,
+  ) {
+    this.db
+      .prepare(
+        `update panels set image_asset_id=?,image_fit='cover',image_offset_x=0,
+           image_offset_y=0,image_scale=1,image_rotation=0,image_opacity=1,
+           updated_at=? where id=?`,
+      )
+      .run(assetId, stamp, panelId);
   }
   saveBalloon(item: Balloon) {
     this.upsertBalloonRow(item);
@@ -3074,9 +3379,18 @@ export class MangaiDatabase {
   saveAssetLibraryMetadata(input: AssetLibraryMetadataInput) {
     input = assetLibraryMetadataInputSchema.parse(input);
     const asset = this.db
-      .prepare("select project_id as projectId from assets where id=?")
-      .get(input.assetId) as { projectId: string } | undefined;
+      .prepare(
+        "select project_id as projectId,library_tags_json as libraryTagsJson from assets where id=?",
+      )
+      .get(input.assetId) as
+      { projectId: string; libraryTagsJson: string } | undefined;
     if (!asset) throw new Error("素材が見つかりません。");
+    if (
+      isInternalPanelCacheAsset({
+        libraryTags: JSON.parse(asset.libraryTagsJson ?? "[]"),
+      })
+    )
+      throw new Error("内部互換キャッシュは編集できません。");
     this.db
       .prepare(
         `update assets
@@ -3100,6 +3414,12 @@ export class MangaiDatabase {
       )
       .get(id) as any;
     if (!a) throw new Error("素材が見つかりません。");
+    if (
+      isInternalPanelCacheAsset({
+        libraryTags: JSON.parse(a.library_tags_json ?? "[]"),
+      })
+    )
+      throw new Error("内部互換キャッシュは削除できません。");
     const asset = {
       id: a.id,
       relativePath: a.relative_path,

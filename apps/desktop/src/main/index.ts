@@ -321,9 +321,11 @@ function register() {
   handle("projects:create", (v) =>
     store.createProject(projectInputSchema.parse(v)),
   );
-  handle("projects:open", (v) =>
-    store.openProject(projectIdSchema.parse(v).id),
-  );
+  handle("projects:open", async (v) => {
+    const projectId = projectIdSchema.parse(v).id;
+    store.openProject(projectId);
+    return store.refreshPanelLayerCaches(projectId);
+  });
   handle("projects:rename", (v) => {
     const x = renameProjectSchema.parse(v);
     return store.captureHistory(x.id, "プロジェクト名を変更", () =>
@@ -485,19 +487,21 @@ function register() {
       store.savePage(x.id, x.prompt, x.negativePrompt, x.notes),
     );
   });
-  handle("canvas:panel:save", (v) => {
+  handle("canvas:panel:save", async (v) => {
     const item = panelInputSchema.parse(v);
     const projectId = store.projectIdForPage(item.pageId);
-    return store.captureHistory(projectId, "コマを保存", () =>
+    store.captureHistory(projectId, "コマを保存", () =>
       store.savePanel({ ...item, createdAt: "", updatedAt: "" }),
     );
+    return store.refreshPanelLayerCaches(projectId, [item.id]);
   });
-  handle("canvas:panel-layers:save", (v) => {
+  handle("canvas:panel-layers:save", async (v) => {
     const input = panelLayersSaveSchema.parse(v);
     const projectId = store.projectIdForCanvasObject("panel", input.panelId);
-    return store.captureHistory(projectId, "コマレイヤーを保存", () =>
+    store.captureHistory(projectId, "コマレイヤーを保存", () =>
       store.savePanelLayers(input.panelId, input.layers),
     );
+    return store.refreshPanelLayerCaches(projectId, [input.panelId]);
   });
   handle("canvas:balloon:save", (v) => {
     const item = balloonInputSchema.parse(v);
@@ -520,18 +524,30 @@ function register() {
       store.deleteCanvasObject(item.type, item.id),
     );
   });
-  handle("canvas:batch:save", (v) => {
+  handle("canvas:batch:save", async (v) => {
     const input = canvasBatchInputSchema.parse(v);
     const projectId = store.projectIdForPage(input.pageId);
-    return store.captureHistory(projectId, "Canvasを一括更新", () =>
+    store.captureHistory(projectId, "Canvasを一括更新", () =>
       store.saveCanvasBatch(input),
+    );
+    return store.refreshPanelLayerCaches(
+      projectId,
+      input.panels.map((panel) => panel.id),
     );
   });
   handle("history:list", (v) =>
     store.listOperationHistory(projectIdSchema.parse(v).id),
   );
-  handle("history:undo", (v) => store.undo(projectIdSchema.parse(v).id));
-  handle("history:redo", (v) => store.redo(projectIdSchema.parse(v).id));
+  handle("history:undo", async (v) => {
+    const projectId = projectIdSchema.parse(v).id;
+    store.undo(projectId);
+    return store.refreshPanelLayerCaches(projectId);
+  });
+  handle("history:redo", async (v) => {
+    const projectId = projectIdSchema.parse(v).id;
+    store.redo(projectId);
+    return store.refreshPanelLayerCaches(projectId);
+  });
   handle("assets:pick", async (v) => {
     const projectId = projectIdSchema.parse(v).id;
     const result = await dialog.showOpenDialog({

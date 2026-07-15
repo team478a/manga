@@ -1,5 +1,10 @@
 import React from "react";
-import type { Episode, Page, ProjectBundle } from "@mangai/project-core";
+import {
+  isInternalPanelCacheAsset,
+  type Episode,
+  type Page,
+  type ProjectBundle,
+} from "@mangai/project-core";
 import type { EpisodeTemplateId } from "@mangai/canvas-core";
 import { AssetBrowser } from "../assets/AssetBrowser";
 import { ProjectStructureTab } from "../project/ProjectStructureTab";
@@ -50,6 +55,9 @@ export function ProjectPanel({
   const { t } = useI18n();
   const [activeTab, setActiveTab] =
     React.useState<ProjectPanelTab>(readPanelTab);
+  const assetCount = bundle.assets.filter(
+    (asset) => !isInternalPanelCacheAsset(asset),
+  ).length;
 
   React.useEffect(() => {
     try {
@@ -79,7 +87,7 @@ export function ProjectPanel({
             {
               id: "assets",
               label: t("panel.assets"),
-              count: bundle.assets.length,
+              count: assetCount,
             },
           ]}
           onChange={setActiveTab}

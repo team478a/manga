@@ -1,7 +1,11 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
-import type { Project, ProjectBundle } from "@mangai/project-core";
+import {
+  isInternalPanelCacheAsset,
+  type Project,
+  type ProjectBundle,
+} from "@mangai/project-core";
 import type { EpisodeTemplateId } from "@mangai/canvas-core";
 import { AISettings } from "./features/ai-settings/AISettings";
 import { CreatorChat } from "./features/creator-chat/CreatorChat";
@@ -892,7 +896,10 @@ function App() {
         pageSize={page ? `${page.width} × ${page.height}px` : undefined}
         dpi={bundle.project.dpi}
         zoom={zoom}
-        assetCount={bundle.assets.length}
+        assetCount={
+          bundle.assets.filter((asset) => !isInternalPanelCacheAsset(asset))
+            .length
+        }
         storagePath={bundle.project.storagePath}
         activity={
           <WorkspaceStatusControls
