@@ -3,12 +3,15 @@ import path from "node:path";
 import crypto from "node:crypto";
 import {
   AIProviderError,
+  imageJobRequestSchema,
   routeGenerationJob,
   type SafeAssetLibraryRequest,
+  type SafeAssetJobType,
   type RouteDecision,
   type ProviderSettings,
   type TextGenerationProvider,
   type ImageGenerationRequest,
+  type ImageJobRequest,
 } from "@mangai/ai-core";
 import { MangaiDatabase } from "../database.js";
 import { OllamaProvider } from "./providers/ollama.js";
@@ -51,23 +54,37 @@ export class AIService {
       projectId: string;
       pageId?: string;
       prompt: string;
+      jobType?: SafeAssetJobType;
     },
     settings: ProviderSettings,
   ): { decision: RouteDecision; localProvider: boolean } {
     const policy = this.store.getProjectGenerationPolicy(input.projectId);
     const localProvider = this.isLoopbackUrl(settings.baseUrl);
-    const draft = {
-      projectId: input.projectId,
-      pageId: input.pageId,
-      type: "adult_character_render" as const,
-      sensitivity: "external_forbidden" as const,
-      inputAssetIds: [],
-      personPresence: "unknown" as const,
-      hasCharacterReference: false,
-      hasCompletedPage: false,
-      promptIncludesRestrictedContent: false,
-      allInputAssetsExternalAllowed: false,
-    };
+    const draft = input.jobType
+      ? {
+          projectId: input.projectId,
+          pageId: input.pageId,
+          type: input.jobType,
+          sensitivity: "safe" as const,
+          inputAssetIds: [],
+          personPresence: "none" as const,
+          hasCharacterReference: false,
+          hasCompletedPage: false,
+          promptIncludesRestrictedContent: false,
+          allInputAssetsExternalAllowed: true,
+        }
+      : {
+          projectId: input.projectId,
+          pageId: input.pageId,
+          type: "adult_character_render" as const,
+          sensitivity: "external_forbidden" as const,
+          inputAssetIds: [],
+          personPresence: "unknown" as const,
+          hasCharacterReference: false,
+          hasCompletedPage: false,
+          promptIncludesRestrictedContent: false,
+          allInputAssetsExternalAllowed: false,
+        };
     const context = {
       policy: policy.externalProcessingPolicy,
       availableTargets: [
@@ -417,17 +434,8 @@ export class AIService {
       this.controllers.delete(input.requestId);
     }
   }
-  async generateImage(input: {
-    projectId: string;
-    episodeId?: string;
-    pageId?: string;
-    workflowId: string;
-    prompt: string;
-    negativePrompt: string;
-    width?: number;
-    height?: number;
-    seed?: number;
-  }) {
+  async generateImage(input: ImageJobRequest) {
+    input = imageJobRequestSchema.parse(input);
     const settings = this.settings("comfyui");
     if (!settings.enabled)
       throw new AIProviderError(
@@ -527,10 +535,21 @@ export class AIService {
                   width: input.width,
                   height: input.height,
                   seed: input.seed,
+                  jobType: input.jobType,
+                  libraryTags: input.libraryTags,
                   createdAt: new Date().toISOString(),
                 },
               );
-              if (registered.created) createdAssetIds.push(registered.assetId);
+              if (registered.created) {
+                createdAssetIds.push(registered.assetId);
+                if (input.jobType)
+                  this.store.saveAssetLibraryMetadata({
+                    assetId: registered.assetId,
+                    category: input.jobType,
+                    tags: input.libraryTags ?? [],
+                    favorite: false,
+                  });
+              }
             }
             this.store.updateGenerationJob(jobId, "completed", {
               output: { count: images.length },

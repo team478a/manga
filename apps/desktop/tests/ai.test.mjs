@@ -530,8 +530,111 @@ test("remote ComfyUI is blocked before external image generation", async () => {
     assert.equal(routes[0].decision.blocked, true);
     assert.equal(routes[0].decision.reason, "required_target_unavailable");
     assert.equal(project.assets.length, 0);
+    await assert.rejects(
+      new AIService(db).generateImage({
+        projectId: project.project.id,
+        workflowId: randomUUID(),
+        prompt: "empty classroom",
+        negativePrompt: "",
+        jobType: "background",
+        libraryTags: ["教室"],
+      }),
+      (error) => error?.code === "ROUTE_BLOCKED",
+    );
+    const safeRoutes = db.listGenerationRouteDecisions(project.project.id);
+    assert.equal(safeRoutes.length, 2);
+    const safeRoute = safeRoutes.find(
+      (route) => route.draft.type === "background",
+    );
+    assert.ok(safeRoute);
+    assert.equal(safeRoute.draft.sensitivity, "safe");
+    assert.equal(safeRoute.decision.blocked, true);
   } finally {
     db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("safe local ComfyUI output is classified in the asset library", async () => {
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
+    "base64",
+  );
+  const mock = await server((req, res) => {
+    if (req.url === "/prompt")
+      return res.end(JSON.stringify({ prompt_id: "safe-local-job" }));
+    if (req.url === "/history/safe-local-job")
+      return res.end(
+        JSON.stringify({
+          "safe-local-job": {
+            status: { status_str: "success" },
+            outputs: {
+              9: { images: [{ filename: "background.png", type: "output" }] },
+            },
+          },
+        }),
+      );
+    if (req.url?.startsWith("/view?")) {
+      res.setHeader("content-type", "image/png");
+      return res.end(png);
+    }
+    res.end("{}");
+  });
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-safe-local-")),
+    paths = {
+      root,
+      database: path.join(root, "db.sqlite"),
+      projects: path.join(root, "projects"),
+      assets: path.join(root, "assets"),
+      exports: path.join(root, "exports"),
+      logs: path.join(root, "logs"),
+    },
+    db = new MangaiDatabase(paths);
+  try {
+    db.saveProviderSettings({
+      ...settings("comfyui", mock.url),
+      pollIntervalMs: 10,
+    });
+    const project = db.createProject({
+      title: "safeローカル生成",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const workflowFile = path.join(root, "workflow.json");
+    fs.writeFileSync(
+      workflowFile,
+      JSON.stringify({ 6: { inputs: { text: "" } } }),
+    );
+    const workflow = db.registerComfyWorkflow("safe", workflowFile, {
+      prompt: { nodeId: "6", input: "text" },
+    })[0];
+    const result = await new AIService(db).generateImage({
+      projectId: project.project.id,
+      workflowId: workflow.id,
+      prompt: "empty classroom daytime",
+      negativePrompt: "person",
+      jobType: "background",
+      libraryTags: ["教室", "昼"],
+    });
+    assert.equal(result.status, "completed");
+    assert.equal(result.bundle.assets.length, 1);
+    assert.equal(result.bundle.assets[0].libraryCategory, "background");
+    assert.deepEqual(result.bundle.assets[0].libraryTags, ["教室", "昼"]);
+    const route = db.listGenerationRouteDecisions(project.project.id)[0];
+    assert.equal(route.draft.type, "background");
+    assert.equal(route.draft.sensitivity, "safe");
+    assert.equal(route.draft.personPresence, "none");
+    assert.equal(route.decision.target, "local");
+    assert.equal(route.decision.blocked, false);
+  } finally {
+    db.close();
+    await mock.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
 });

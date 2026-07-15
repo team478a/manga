@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { safeAssetJobTypeSchema } from "./hybrid-generation.js";
 
 export * from "./hybrid-generation.js";
 
@@ -136,7 +137,14 @@ export const imageJobRequestSchema = z.object({
   width: z.number().int().min(64).max(8192).optional(),
   height: z.number().int().min(64).max(8192).optional(),
   seed: z.number().int().nonnegative().optional(),
+  jobType: safeAssetJobTypeSchema.optional(),
+  libraryTags: z
+    .array(z.string().trim().min(1).max(50))
+    .max(20)
+    .transform((tags) => [...new Set(tags)])
+    .optional(),
 });
+export type ImageJobRequest = z.infer<typeof imageJobRequestSchema>;
 export const chatSessionIdSchema = z.object({ id: z.string().uuid() });
 export const renameChatSchema = z.object({
   id: z.string().uuid(),

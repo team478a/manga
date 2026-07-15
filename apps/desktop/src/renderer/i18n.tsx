@@ -311,6 +311,10 @@ const ja = {
   "generation.safeAssetSearch": "Libraryを検索",
   "generation.safeAssetSearching": "検索中…",
   "generation.safeAssetNoMatch": "一致する素材はありません。",
+  "generation.safeAssetHandoff": "ローカルComfyUI生成へ引き継ぐ",
+  "generation.safeAssetHandoffActive":
+    "safe素材としてローカル生成します: {type}",
+  "generation.safeAssetHandoffClear": "通常生成へ戻す",
   "generation.selectWorkflow": "ワークフローを選択",
   "generation.workflowSelectAria": "ComfyUIワークフロー",
   "generation.addJson": "JSON追加",
@@ -706,6 +710,10 @@ const en: Record<TranslationKey, string> = {
   "generation.safeAssetSearch": "Search library",
   "generation.safeAssetSearching": "Searching…",
   "generation.safeAssetNoMatch": "No matching assets found.",
+  "generation.safeAssetHandoff": "Continue with local ComfyUI",
+  "generation.safeAssetHandoffActive":
+    "Local generation classified as a safe asset: {type}",
+  "generation.safeAssetHandoffClear": "Return to standard generation",
   "generation.selectWorkflow": "Select a workflow",
   "generation.workflowSelectAria": "ComfyUI workflow",
   "generation.addJson": "Add JSON",

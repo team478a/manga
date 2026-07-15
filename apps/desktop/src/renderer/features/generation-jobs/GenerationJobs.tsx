@@ -52,6 +52,13 @@ type SafeAssetResult = {
   assets: Asset[];
   message?: string;
 };
+function splitLibraryTags(value: string) {
+  return value
+    .split(/[,、\s]+/)
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+    .slice(0, 20);
+}
 export function GenerationJobs({
   bundle,
   episodeId,
@@ -83,6 +90,10 @@ export function GenerationJobs({
     [safeQuery, setSafeQuery] = React.useState(""),
     [safeBusy, setSafeBusy] = React.useState(false),
     [safeResult, setSafeResult] = React.useState<SafeAssetResult | null>(null),
+    [safeHandoff, setSafeHandoff] = React.useState<{
+      type: "background" | "prop" | "effect";
+      tags: string[];
+    } | null>(null),
     [safeAssetUrls, setSafeAssetUrls] = React.useState<Record<string, string>>(
       {},
     );
@@ -111,6 +122,8 @@ export function GenerationJobs({
         width: bundle.project.width,
         height: bundle.project.height,
         seed: Math.floor(Math.random() * 2147483647),
+        jobType: safeHandoff?.type,
+        libraryTags: safeHandoff?.tags,
       });
       if (result.bundle) onBundle(result.bundle);
       await load();
@@ -146,6 +159,8 @@ export function GenerationJobs({
       );
       setSafeAssetUrls(urls);
       setSafeResult(result);
+      if (result.decision.target !== "local" || result.decision.blocked)
+        setSafeHandoff(null);
       await load();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
@@ -222,15 +237,47 @@ export function GenerationJobs({
                   ))}
                 </div>
               ) : (
-                <p className="notice">
-                  {safeResult.message ?? t("generation.safeAssetNoMatch")}
-                </p>
+                <div className="notice">
+                  <p>
+                    {safeResult.message ?? t("generation.safeAssetNoMatch")}
+                  </p>
+                  {safeResult.decision.target === "local" &&
+                    !safeResult.decision.blocked && (
+                      <button
+                        className="secondary"
+                        onClick={() => {
+                          setPrompt(safeQuery);
+                          setSafeHandoff({
+                            type: safeType,
+                            tags: splitLibraryTags(safeQuery),
+                          });
+                        }}
+                      >
+                        {t("generation.safeAssetHandoff")}
+                      </button>
+                    )}
+                </div>
               )}
             </div>
           )}
         </section>
         <section className="panel-lite">
           <h2>{t("generation.comfyTitle")}</h2>
+          {safeHandoff && (
+            <div className="notice safe-handoff-notice" role="status">
+              <span>
+                {t("generation.safeAssetHandoffActive", {
+                  type: t(`asset.category.${safeHandoff.type}` as const),
+                })}
+              </span>
+              <button
+                className="secondary"
+                onClick={() => setSafeHandoff(null)}
+              >
+                {t("generation.safeAssetHandoffClear")}
+              </button>
+            </div>
+          )}
           <div className="inline">
             <select
               aria-label={t("generation.workflowSelectAria")}
