@@ -2164,6 +2164,43 @@ label {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.external-dispatch-preview {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg-panel-elevated);
+}
+.external-dispatch-preview h3 {
+  margin: 0;
+}
+.external-dispatch-preview dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+.external-dispatch-preview dl > div {
+  min-width: 0;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--bg-panel);
+}
+.external-dispatch-preview dt {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.external-dispatch-preview dd {
+  margin: 3px 0 0;
+  overflow-wrap: anywhere;
+}
+.external-preview-warning {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
 .safe-handoff-notice {
   display: flex;
   align-items: center;

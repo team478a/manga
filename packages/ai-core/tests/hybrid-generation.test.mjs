@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
-import { generationJobDraftSchema, routeGenerationJob } from "../dist/index.js";
+import {
+  createExternalDispatchPreview,
+  externalDispatchConfirmationSchema,
+  generationJobDraftSchema,
+  routeGenerationJob,
+} from "../dist/index.js";
 
 const projectId = randomUUID();
 
@@ -209,4 +214,90 @@ test("an approved render node is an explicit sensitive fallback", () => {
     requiresUserConfirmation: true,
     blocked: false,
   });
+});
+
+test("external safe asset preview is disabled and content-minimized by default", () => {
+  const preview = createExternalDispatchPreview({
+    previewId: randomUUID(),
+    request: {
+      projectId,
+      type: "background",
+      query: "empty school classroom",
+    },
+    promptSha256: "a".repeat(64),
+    policy: "safe_assets_only",
+    createdAt: new Date().toISOString(),
+  });
+  assert.equal(preview.executable, false);
+  assert.equal(preview.blockReason, "provider_not_configured");
+  assert.equal(preview.requiresUserConfirmation, true);
+  assert.deepEqual(preview.manifest, {
+    jobType: "background",
+    sensitivity: "safe",
+    promptIncluded: true,
+    negativePromptIncluded: false,
+    inputAssetCount: 0,
+    characterReferenceIncluded: false,
+    completedPageIncluded: false,
+    personPresence: "none",
+  });
+  assert.equal(JSON.stringify(preview).includes("school classroom"), false);
+});
+
+test("configured external preview still requires explicit confirmation", () => {
+  const preview = createExternalDispatchPreview({
+    previewId: randomUUID(),
+    request: { projectId, type: "effect", query: "speed lines" },
+    promptSha256: "b".repeat(64),
+    policy: "safe_assets_only",
+    provider: {
+      providerId: "safe-assets",
+      displayName: "Safe Assets",
+      enabled: true,
+      endpointConfigured: true,
+      supportedJobTypes: ["background", "prop", "effect"],
+      dataRetentionSummary: "24 hours",
+      trainingUseSummary: "Not used for training",
+      pricingSummary: "Per image",
+    },
+    estimate: { cost: 12, currency: "jpy" },
+    createdAt: new Date().toISOString(),
+  });
+  assert.equal(preview.executable, true);
+  assert.equal(preview.blockReason, null);
+  assert.equal(preview.currency, "JPY");
+  assert.equal(preview.requiresUserConfirmation, true);
+  assert.throws(() =>
+    externalDispatchConfirmationSchema.parse({
+      previewId: preview.previewId,
+      promptSha256: preview.promptSha256,
+      payloadReviewed: true,
+      costReviewed: false,
+      providerTermsReviewed: true,
+      confirmedAt: new Date().toISOString(),
+    }),
+  );
+});
+
+test("project policy blocks an otherwise configured external preview", () => {
+  const preview = createExternalDispatchPreview({
+    previewId: randomUUID(),
+    request: { projectId, type: "prop", query: "desk" },
+    promptSha256: "c".repeat(64),
+    policy: "background_only",
+    provider: {
+      providerId: "safe-assets",
+      displayName: "Safe Assets",
+      enabled: true,
+      endpointConfigured: true,
+      supportedJobTypes: ["prop"],
+      dataRetentionSummary: "24 hours",
+      trainingUseSummary: "Not used for training",
+      pricingSummary: "Per image",
+    },
+    estimate: { cost: 12, currency: "JPY" },
+    createdAt: new Date().toISOString(),
+  });
+  assert.equal(preview.executable, false);
+  assert.equal(preview.blockReason, "policy_blocked");
 });

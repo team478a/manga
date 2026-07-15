@@ -643,6 +643,9 @@ function register() {
   handle("ai:asset-library:resolve", (v) =>
     aiService.resolveSafeAssetLibrary(safeAssetLibraryRequestSchema.parse(v)),
   );
+  handle("ai:external-asset:preview", (v) =>
+    aiService.previewExternalSafeAsset(safeAssetLibraryRequestSchema.parse(v)),
+  );
   handle("ai:image:generate", (v) =>
     aiService.generateImage(imageJobRequestSchema.parse(v)),
   );

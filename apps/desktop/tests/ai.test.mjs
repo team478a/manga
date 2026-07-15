@@ -725,6 +725,21 @@ test("safe asset jobs prefer project library and never require external access",
       true,
     );
     assert.equal(db.listGenerationJobs(project.project.id).length, 3);
+
+    const preview = service.previewExternalSafeAsset({
+      projectId: project.project.id,
+      type: "background",
+      query: "未登録の夜景",
+    });
+    assert.equal(preview.executable, false);
+    assert.equal(preview.blockReason, "provider_not_configured");
+    assert.equal(preview.requiresUserConfirmation, true);
+    assert.equal(preview.manifest.promptIncluded, true);
+    assert.equal(preview.manifest.inputAssetCount, 0);
+    assert.equal(preview.manifest.characterReferenceIncluded, false);
+    assert.equal(preview.manifest.completedPageIncluded, false);
+    assert.equal(JSON.stringify(preview).includes("未登録の夜景"), false);
+    assert.equal(db.listGenerationJobs(project.project.id).length, 3);
   } finally {
     db.close();
     fs.rmSync(root, { recursive: true, force: true });

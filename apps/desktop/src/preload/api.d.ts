@@ -2,6 +2,7 @@ import type { Asset, ProjectBundle, Project } from "@mangai/project-core";
 import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
 import type {
   GenerationRouteDecisionRecord,
+  ExternalDispatchPreview,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
   ProviderSettings,
@@ -328,6 +329,9 @@ export type DesktopApi = {
       assets: Asset[];
       message?: string;
     }>;
+    previewExternalSafeAsset: (
+      value: SafeAssetLibraryRequest,
+    ) => Promise<ExternalDispatchPreview>;
     generateImage: (value: any) => Promise<any>;
     listWorkflows: () => Promise<any[]>;
     addWorkflow: (name: string, mapping: unknown) => Promise<any[]>;

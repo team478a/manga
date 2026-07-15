@@ -1,6 +1,6 @@
 import React from "react";
 import type { Asset, ProjectBundle } from "@mangai/project-core";
-import type { RouteDecision } from "@mangai/ai-core";
+import type { ExternalDispatchPreview, RouteDecision } from "@mangai/ai-core";
 import { useI18n } from "../../i18n";
 
 function generationStatusKey(status: string) {
@@ -44,6 +44,17 @@ function routeReasonKey(reason: string) {
       "generation.routeReason.requiredTargetUnavailable",
   } as const;
   return keys[reason as keyof typeof keys] ?? keys.required_target_unavailable;
+}
+function externalBlockReasonKey(reason: string | null) {
+  if (reason === "provider_disabled")
+    return "generation.externalBlock.providerDisabled" as const;
+  if (reason === "unsupported_job_type")
+    return "generation.externalBlock.unsupportedJob" as const;
+  if (reason === "policy_blocked")
+    return "generation.externalBlock.policyBlocked" as const;
+  if (reason === "cost_estimate_unavailable")
+    return "generation.externalBlock.costUnavailable" as const;
+  return "generation.externalBlock.providerNotConfigured" as const;
 }
 type SafeAssetResult = {
   jobId: string;
@@ -94,6 +105,9 @@ export function GenerationJobs({
       type: "background" | "prop" | "effect";
       tags: string[];
     } | null>(null),
+    [externalPreview, setExternalPreview] =
+      React.useState<ExternalDispatchPreview | null>(null),
+    [externalPreviewBusy, setExternalPreviewBusy] = React.useState(false),
     [safeAssetUrls, setSafeAssetUrls] = React.useState<Record<string, string>>(
       {},
     );
@@ -182,11 +196,12 @@ export function GenerationJobs({
             <select
               aria-label={t("generation.safeAssetType")}
               value={safeType}
-              onChange={(event) =>
+              onChange={(event) => {
                 setSafeType(
                   event.target.value as "background" | "prop" | "effect",
-                )
-              }
+                );
+                setExternalPreview(null);
+              }}
             >
               <option value="background">
                 {t("asset.category.background")}
@@ -199,7 +214,10 @@ export function GenerationJobs({
               maxLength={500}
               placeholder={t("generation.safeAssetQuery")}
               aria-label={t("generation.safeAssetQuery")}
-              onChange={(event) => setSafeQuery(event.target.value)}
+              onChange={(event) => {
+                setSafeQuery(event.target.value);
+                setExternalPreview(null);
+              }}
               onKeyDown={(event) => {
                 if (event.key === "Enter") void resolveSafeAsset();
               }}
@@ -256,9 +274,93 @@ export function GenerationJobs({
                         {t("generation.safeAssetHandoff")}
                       </button>
                     )}
+                  <button
+                    className="secondary"
+                    disabled={externalPreviewBusy}
+                    onClick={async () => {
+                      setExternalPreviewBusy(true);
+                      try {
+                        setExternalPreview(
+                          await window.mangai.ai.previewExternalSafeAsset({
+                            projectId: bundle.project.id,
+                            pageId,
+                            type: safeType,
+                            query: safeQuery,
+                          }),
+                        );
+                      } finally {
+                        setExternalPreviewBusy(false);
+                      }
+                    }}
+                  >
+                    {externalPreviewBusy
+                      ? t("generation.externalPreviewLoading")
+                      : t("generation.externalPreviewOpen")}
+                  </button>
                 </div>
               )}
             </div>
+          )}
+          {externalPreview && (
+            <section className="external-dispatch-preview" role="region">
+              <h3>{t("generation.externalPreviewTitle")}</h3>
+              {externalPreview.blockReason && (
+                <p className="notice">
+                  {t(externalBlockReasonKey(externalPreview.blockReason))}
+                </p>
+              )}
+              <dl>
+                <div>
+                  <dt>{t("generation.externalProvider")}</dt>
+                  <dd>{externalPreview.provider.displayName}</dd>
+                </div>
+                <div>
+                  <dt>{t("generation.safeAssetType")}</dt>
+                  <dd>
+                    {t(`asset.category.${externalPreview.jobType}` as const)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalPrompt")}</dt>
+                  <dd>{t("generation.externalIncluded")}</dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalNegativePrompt")}</dt>
+                  <dd>{t("generation.externalNotIncluded")}</dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalInputAssets")}</dt>
+                  <dd>{externalPreview.manifest.inputAssetCount}</dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalCharacterReference")}</dt>
+                  <dd>{t("generation.externalNotIncluded")}</dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalCompletedPage")}</dt>
+                  <dd>{t("generation.externalNotIncluded")}</dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalCost")}</dt>
+                  <dd>
+                    {externalPreview.estimatedCost === null
+                      ? t("generation.externalUnknown")
+                      : `${externalPreview.estimatedCost} ${externalPreview.currency}`}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalRetention")}</dt>
+                  <dd>{externalPreview.provider.dataRetentionSummary}</dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalTraining")}</dt>
+                  <dd>{externalPreview.provider.trainingUseSummary}</dd>
+                </div>
+              </dl>
+              <p className="external-preview-warning">
+                {t("generation.externalPreviewDisabled")}
+              </p>
+            </section>
           )}
         </section>
         <section className="panel-lite">

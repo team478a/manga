@@ -3,6 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import {
   AIProviderError,
+  createExternalDispatchPreview,
   imageJobRequestSchema,
   routeGenerationJob,
   type SafeAssetLibraryRequest,
@@ -231,6 +232,25 @@ export class AIService {
       errorMessage: message,
     });
     return { jobId, status: "failed" as const, decision, assets: [], message };
+  }
+  previewExternalSafeAsset(input: SafeAssetLibraryRequest) {
+    if (
+      input.pageId &&
+      this.store.projectIdForPage(input.pageId) !== input.projectId
+    )
+      throw new Error("PageとProjectの参照が一致しません。");
+    const policy = this.store.getProjectGenerationPolicy(input.projectId);
+    return createExternalDispatchPreview({
+      previewId: crypto.randomUUID(),
+      request: input,
+      promptSha256: crypto
+        .createHash("sha256")
+        .update(input.query, "utf8")
+        .digest("hex"),
+      policy: policy.externalProcessingPolicy,
+      customCloudJobTypes: policy.customCloudJobTypes,
+      createdAt: new Date().toISOString(),
+    });
   }
   private settings(id: string) {
     const value = this.store

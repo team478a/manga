@@ -160,6 +160,8 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:routes:list", { id: projectId }),
     resolveSafeAssetLibrary: (value: unknown) =>
       ipcRenderer.invoke("ai:asset-library:resolve", value),
+    previewExternalSafeAsset: (value: unknown) =>
+      ipcRenderer.invoke("ai:external-asset:preview", value),
     generateImage: (value: unknown) =>
       ipcRenderer.invoke("ai:image:generate", value),
     listWorkflows: () => ipcRenderer.invoke("ai:workflows:list"),

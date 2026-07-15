@@ -2,6 +2,7 @@ import { z } from "zod";
 import { safeAssetJobTypeSchema } from "./hybrid-generation.js";
 
 export * from "./hybrid-generation.js";
+export * from "./external-asset-provider.js";
 
 export const generationStatusSchema = z.enum([
   "queued",
