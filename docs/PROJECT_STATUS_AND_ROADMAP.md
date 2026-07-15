@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `228860c`
+実装基準コミット: `bbd4a7c`
 
 ## 1. 現在地
 
@@ -24,6 +24,8 @@ MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ロー�
 したがって、現在の位置づけは「機能開発用MVPを越え、Release Candidate準備へ進める状態」です。
 
 2026-07-15に低スペックPC向けのハイブリッド生成を最優先方針へ変更しました。既存RC基盤を維持しつつ、人物・センシティブ処理をローカルへ固定し、safeな背景・素材だけをAsset Libraryまたは外部Providerへrouteする基盤を追加します。Phase 1調査は[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)に記録しています。
+
+Phase 1の最初の実装として、DBや既存生成経路へ影響しない純粋Generation Routerと型・schemaを追加しました。分類不明、成人向け、人物、参照画像、完成Pageをfail-closedでローカル固定し、safeな背景・小物・効果だけをAsset Libraryまたは許可済みcloud候補にできます。
 
 ## 2. 製品境界
 

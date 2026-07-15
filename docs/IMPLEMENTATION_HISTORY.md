@@ -626,3 +626,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成�
 現行の画像生成、ComfyUI、generation jobs、Project素材、Canvas、IPC、Provider設定、通信制限、ログ、バックアップを調査しました。既存基盤を維持したままGeneration Routerと作品別外部送信ポリシーを前段へ追加できる一方、現状はリモートComfyUIを許可した場合にSensitivityを構造的に判定する層がないことを確認しました。
 
 互換性判断、追加型、migration候補、shadow routing、テスト基準、外部依存を[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)へ記録しました。調査時点でDesktop統合テスト46/46、canvas-core単体テスト24/24に成功しています。コードとDBスキーマは変更していません。
+
+## 75. ハイブリッド生成の型・純粋Router
+
+`packages/ai-core`へ21種類のHybrid Generation Job Type、5種類のExecution Target、4段階のSensitivity、5種類のExternal Processing Policy、Job Draft、Routing Context、Route DecisionとZod schemaを追加しました。Routerはネットワーク、DB、ファイルへアクセスしない純粋関数です。
+
+枠・tone・吹き出し・文字・合成・書き出しはbuiltin、人物・成人向け・修正処理はlocalへ固定します。分類不明、人物入力、Character参照、完成Page、restricted Prompt、外部許可のない入力Assetもfail-closedでlocalへ戻します。safeな背景・小物・効果はAsset Libraryを優先し、作品ポリシー、Provider有効状態、費用上限を満たす場合だけcloud候補にします。利用者の明示cloud指定も安全ポリシーを上書きできません。
+
+ai-core単体テスト12/12、Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46、canvas-core 24/24に成功しています。DB、IPC、UI、既存ComfyUI実行経路は変更していません。

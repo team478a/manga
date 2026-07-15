@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-調査基準コミット: `228860c`
+調査基準コミット: `bbd4a7c`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -266,12 +266,14 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 ## 10. 最初の実装単位
 
-### Commit 1: 型と純粋Router
+### Commit 1: 型と純粋Router（完了: `bbd4a7c`）
 
 - `packages/ai-core`へ型・schema追加
 - fail-closed Router追加
 - local / builtin / asset_library / cloud候補判定テスト
 - DB、IPC、UIは変更しない
+
+`HybridGenerationJobType`、`ExecutionTarget`、`SensitivityLevel`、`ExternalProcessingPolicy`、Job Draft、Routing Context、Route DecisionとZod schemaを`packages/ai-core`へ追加しました。分類情報がない場合は`external_forbidden`と`personPresence=unknown`へ補完し、cloudへrouteしないfail-closed動作にしています。Router単体テスト12/12に成功しています。
 
 ### Commit 2: 作品ポリシー永続化
 
@@ -349,4 +351,3 @@ Phase 1基盤とAsset Libraryは外部準備なしで実装できます。次は
 - UIからの直接API通信
 - 成人向け内容の自動外部送信
 - Phase 1中のRender Node実装
-
