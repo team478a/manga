@@ -19,6 +19,7 @@ function context(overrides = {}) {
   return {
     policy: "safe_assets_only",
     availableTargets: ["builtin", "local", "cloud", "asset_library"],
+    preferLocal: false,
     externalProviderEnabled: true,
     externalCostWithinLimit: true,
     requireExternalConfirmation: true,
@@ -117,6 +118,18 @@ test("safe background can use cloud when the asset library is unavailable", () =
     requiresUserConfirmation: true,
     blocked: false,
   });
+});
+
+test("project local preference wins before an available cloud provider", () => {
+  const result = routeGenerationJob(
+    job(),
+    context({
+      availableTargets: ["local", "cloud"],
+      preferLocal: true,
+    }),
+  );
+  assert.equal(result.target, "local");
+  assert.equal(result.reason, "local_fallback");
 });
 
 test("background-only policy does not send props to cloud", () => {

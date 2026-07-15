@@ -78,6 +78,7 @@ export type GenerationJobDraftInput = z.input<typeof generationJobDraftSchema>;
 export const routingContextSchema = z.object({
   policy: externalProcessingPolicySchema,
   availableTargets: z.array(executionTargetSchema),
+  preferLocal: z.boolean().default(true),
   externalProviderEnabled: z.boolean().default(false),
   externalCostWithinLimit: z.boolean().default(false),
   requireExternalConfirmation: z.boolean().default(true),
@@ -136,13 +137,28 @@ export const routeReasonSchema = z.enum([
 ]);
 export type RouteReason = z.infer<typeof routeReasonSchema>;
 
-export type RouteDecision = {
-  target: ExecutionTarget;
-  providerId?: string;
-  reason: RouteReason;
-  requiresUserConfirmation: boolean;
-  blocked: boolean;
-};
+export const routeDecisionSchema = z.object({
+  target: executionTargetSchema,
+  providerId: z.string().trim().min(1).max(200).optional(),
+  reason: routeReasonSchema,
+  requiresUserConfirmation: z.boolean(),
+  blocked: z.boolean(),
+});
+export type RouteDecision = z.infer<typeof routeDecisionSchema>;
+
+export const generationRouteDecisionRecordSchema = z.object({
+  id: z.string().uuid(),
+  jobId: z.string().uuid(),
+  projectId: z.string().uuid(),
+  draft: generationJobDraftSchema,
+  context: routingContextSchema,
+  decision: routeDecisionSchema,
+  promptSha256: z.string().regex(/^[0-9a-f]{64}$/),
+  createdAt: z.string().datetime(),
+});
+export type GenerationRouteDecisionRecord = z.infer<
+  typeof generationRouteDecisionRecordSchema
+>;
 
 const builtinTypes = new Set<HybridGenerationJobType>([
   "panel_layout",
@@ -309,6 +325,9 @@ export function routeGenerationJob(
     targetAvailable(context, "asset_library")
   )
     return decision("asset_library", "asset_library_preferred");
+
+  if (context.preferLocal && targetAvailable(context, "local"))
+    return decision("local", "local_fallback");
 
   if (canUseCloud)
     return decision("cloud", cloudReason(context), {

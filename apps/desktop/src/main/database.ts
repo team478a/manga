@@ -20,12 +20,20 @@ import type { ProjectBundle, Project } from "@mangai/project-core";
 import { projectInputSchema, type ProjectInput } from "@mangai/shared";
 import {
   defaultPromptTemplates,
+  generationJobDraftSchema,
+  generationRouteDecisionRecordSchema,
   projectGenerationPolicyInputSchema,
   projectGenerationPolicySchema,
+  routeDecisionSchema,
+  routingContextSchema,
+  type GenerationJobDraftInput,
+  type GenerationRouteDecisionRecord,
   type GenerationStatus,
   type ProjectGenerationPolicy,
   type ProjectGenerationPolicyInput,
   type ProviderSettings,
+  type RouteDecision,
+  type RoutingContextInput,
 } from "@mangai/ai-core";
 import {
   applyPageTemplate,
@@ -120,6 +128,7 @@ type ProjectBackupHistory = {
   chatMessages: BackupChatMessage[];
   generationJobs: BackupGenerationJob[];
   generationOutputs: BackupGenerationOutput[];
+  routeDecisions?: GenerationRouteDecisionRecord[];
 };
 export type AutoBackupRunResult = {
   checkedAt: string;
@@ -283,6 +292,15 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
       throw new Error("バックアップ履歴のデータ構造が不正です。");
     if (historyCollections.some((items) => items.length > 100_000))
       throw new Error("バックアップ履歴の項目数が上限を超えています。");
+    if (history.routeDecisions !== undefined) {
+      if (
+        !Array.isArray(history.routeDecisions) ||
+        history.routeDecisions.length > 100_000
+      )
+        throw new Error("Route判定履歴のデータ構造が不正です。");
+      for (const item of history.routeDecisions)
+        generationRouteDecisionRecordSchema.parse(item);
+    }
   }
   if (manifest.generationPolicy !== undefined)
     projectGenerationPolicySchema.parse(manifest.generationPolicy);
@@ -308,7 +326,9 @@ export class MangaiDatabase {
             ? "canvas-panel-shape-v1"
             : !this.hasMigration("hybrid-generation-policy-v1")
               ? "hybrid-generation-policy-v1"
-              : null;
+              : !this.hasMigration("hybrid-generation-routing-v1")
+                ? "hybrid-generation-routing-v1"
+                : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -384,6 +404,7 @@ export class MangaiDatabase {
     this.migrateRelativeTextV1();
     this.migratePanelShapeV1();
     this.migrateGenerationPolicyV1();
+    this.migrateGenerationRoutingV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -573,6 +594,37 @@ export class MangaiDatabase {
         .run(
           "hybrid-generation-policy-v1",
           "Project hybrid generation policy",
+          stamp,
+        );
+    })();
+  }
+  private migrateGenerationRoutingV1() {
+    if (this.hasMigration("hybrid-generation-routing-v1")) return;
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db.exec(`
+        create table if not exists generation_route_decisions(
+          id text primary key,
+          job_id text not null references generation_jobs(id) on delete cascade,
+          project_id text not null references projects(id) on delete cascade,
+          draft_json text not null,
+          context_json text not null,
+          decision_json text not null,
+          prompt_sha256 text not null,
+          created_at text not null
+        );
+        create index if not exists idx_generation_route_project
+          on generation_route_decisions(project_id,created_at);
+        create index if not exists idx_generation_route_job
+          on generation_route_decisions(job_id,created_at);
+      `);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run(
+          "hybrid-generation-routing-v1",
+          "Hybrid generation route decisions",
           stamp,
         );
     })();
@@ -986,12 +1038,14 @@ export class MangaiDatabase {
          from generation_outputs o join generation_jobs j on j.id=o.job_id where j.project_id=? order by o.created_at`,
       )
       .all(projectId) as BackupGenerationOutput[];
+    const routeDecisions = this.listGenerationRouteDecisions(projectId);
     return {
       operations,
       chatSessions,
       chatMessages,
       generationJobs,
       generationOutputs,
+      routeDecisions,
     };
   }
   async backupProject(id: string, destination: string) {
@@ -1569,6 +1623,49 @@ export class MangaiDatabase {
                 "update assets set generation_job_id=?,metadata_json=? where id=?",
               )
               .run(jobId, output.metadataJson, assetId);
+        }
+        for (const route of backupHistory?.routeDecisions ?? []) {
+          const draft = generationJobDraftSchema.parse({
+            ...route.draft,
+            projectId,
+            pageId: route.draft.pageId
+              ? pageMap.get(route.draft.pageId)
+              : undefined,
+            panelId: route.draft.panelId
+              ? panelMap.get(route.draft.panelId)
+              : undefined,
+            inputAssetIds: route.draft.inputAssetIds
+              .map((id) => assetMap.get(id))
+              .filter((id): id is string => Boolean(id)),
+          });
+          const restoredRoute = generationRouteDecisionRecordSchema.parse({
+            ...route,
+            id: uid(),
+            jobId: mappedReference(
+              generationJobMap,
+              route.jobId,
+              "Route判定の生成ジョブ",
+            ),
+            projectId,
+            draft,
+          });
+          this.db
+            .prepare(
+              `insert into generation_route_decisions(
+                 id,job_id,project_id,draft_json,context_json,decision_json,
+                 prompt_sha256,created_at
+               ) values(?,?,?,?,?,?,?,?)`,
+            )
+            .run(
+              restoredRoute.id,
+              restoredRoute.jobId,
+              restoredRoute.projectId,
+              JSON.stringify(restoredRoute.draft),
+              JSON.stringify(restoredRoute.context),
+              JSON.stringify(restoredRoute.decision),
+              restoredRoute.promptSha256,
+              restoredRoute.createdAt,
+            );
         }
         this.db
           .prepare(
@@ -3236,6 +3333,84 @@ export class MangaiDatabase {
     return this.db
       .prepare("select * from generation_jobs where id=?")
       .get(id) as Record<string, unknown> | undefined;
+  }
+  createGenerationRouteDecision(input: {
+    jobId: string;
+    projectId: string;
+    draft: GenerationJobDraftInput;
+    context: RoutingContextInput;
+    decision: RouteDecision;
+    promptSha256: string;
+  }): GenerationRouteDecisionRecord {
+    const job = this.db
+      .prepare("select project_id as projectId from generation_jobs where id=?")
+      .get(input.jobId) as { projectId: string | null } | undefined;
+    if (!job || job.projectId !== input.projectId)
+      throw new Error("生成ジョブとProjectの参照が一致しません。");
+    const record = generationRouteDecisionRecordSchema.parse({
+      id: uid(),
+      jobId: input.jobId,
+      projectId: input.projectId,
+      draft: generationJobDraftSchema.parse(input.draft),
+      context: routingContextSchema.parse(input.context),
+      decision: routeDecisionSchema.parse(input.decision),
+      promptSha256: input.promptSha256,
+      createdAt: now(),
+    });
+    if (record.draft.projectId !== record.projectId)
+      throw new Error("Route判定とProjectの参照が一致しません。");
+    this.db
+      .prepare(
+        `insert into generation_route_decisions(
+           id,job_id,project_id,draft_json,context_json,decision_json,
+           prompt_sha256,created_at
+         ) values(?,?,?,?,?,?,?,?)`,
+      )
+      .run(
+        record.id,
+        record.jobId,
+        record.projectId,
+        JSON.stringify(record.draft),
+        JSON.stringify(record.context),
+        JSON.stringify(record.decision),
+        record.promptSha256,
+        record.createdAt,
+      );
+    return record;
+  }
+  listGenerationRouteDecisions(projectId: string) {
+    return (
+      this.db
+        .prepare(
+          `select id,job_id as jobId,project_id as projectId,
+                  draft_json as draftJson,context_json as contextJson,
+                  decision_json as decisionJson,prompt_sha256 as promptSha256,
+                  created_at as createdAt
+           from generation_route_decisions where project_id=?
+           order by created_at desc`,
+        )
+        .all(projectId) as Array<{
+        id: string;
+        jobId: string;
+        projectId: string;
+        draftJson: string;
+        contextJson: string;
+        decisionJson: string;
+        promptSha256: string;
+        createdAt: string;
+      }>
+    ).map((row) =>
+      generationRouteDecisionRecordSchema.parse({
+        id: row.id,
+        jobId: row.jobId,
+        projectId: row.projectId,
+        draft: JSON.parse(row.draftJson),
+        context: JSON.parse(row.contextJson),
+        decision: JSON.parse(row.decisionJson),
+        promptSha256: row.promptSha256,
+        createdAt: row.createdAt,
+      }),
+    );
   }
   registerGeneratedAsset(
     projectId: string,

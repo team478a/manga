@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { Buffer } from "node:buffer";
 import { setTimeout } from "node:timers";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { OllamaProvider } from "../dist-main/main/ai/providers/ollama.js";
 import { ComfyUIProvider } from "../dist-main/main/ai/providers/comfyui.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
@@ -39,19 +39,14 @@ test("AI connection URL requires loopback or an explicit HTTPS origin", () => {
   assert.equal(safeBaseUrl("http://127.0.0.1:11434"), "http://127.0.0.1:11434");
   assert.equal(safeBaseUrl("http://localhost:8188/"), "http://localhost:8188");
   assert.equal(
-    safeBaseUrl("https://ai.example.com:8188", [
-      "https://ai.example.com:8188",
-    ]),
+    safeBaseUrl("https://ai.example.com:8188", ["https://ai.example.com:8188"]),
     "https://ai.example.com:8188",
   );
   assert.throws(
     () => safeBaseUrl("http://192.168.1.20:11434", ["https://192.168.1.20"]),
     /HTTPS/,
   );
-  assert.throws(
-    () => safeBaseUrl("https://ai.example.com:8188"),
-    /許可リスト/,
-  );
+  assert.throws(() => safeBaseUrl("https://ai.example.com:8188"), /許可リスト/);
   assert.throws(
     () =>
       safeBaseUrl("https://ai.example.com:8188", [
@@ -59,14 +54,8 @@ test("AI connection URL requires loopback or an explicit HTTPS origin", () => {
       ]),
     /許可リスト/,
   );
-  assert.throws(
-    () => safeBaseUrl("http://user:pass@localhost:11434"),
-    /不正/,
-  );
-  assert.throws(
-    () => safeBaseUrl("http://localhost:11434/api"),
-    /不正/,
-  );
+  assert.throws(() => safeBaseUrl("http://user:pass@localhost:11434"), /不正/);
+  assert.throws(() => safeBaseUrl("http://localhost:11434/api"), /不正/);
 });
 test("Ollama connection, models, generation and stream cancellation", async () => {
   const mock = await server((req, res) => {
@@ -451,6 +440,17 @@ test("ComfyUI generation is saved as a project asset", async () => {
     assert.equal(result.bundle.assets.length, 1);
     assert.equal(result.bundle.assets[0].fileName, "generated.png");
     assert.equal(db.listGenerationJobs(project.project.id)[0].progress, 1);
+    const routes = db.listGenerationRouteDecisions(project.project.id);
+    assert.equal(routes.length, 1);
+    assert.equal(routes[0].draft.type, "adult_character_render");
+    assert.equal(routes[0].draft.sensitivity, "external_forbidden");
+    assert.equal(routes[0].decision.target, "local");
+    assert.equal(routes[0].decision.blocked, false);
+    assert.equal(
+      routes[0].promptSha256,
+      createHash("sha256").update("cat", "utf8").digest("hex"),
+    );
+    assert.equal(JSON.stringify(routes[0]).includes('"prompt":"cat"'), false);
     assert.equal(
       db.listOperationHistory(project.project.id).items[0].label,
       "AI生成素材を追加",
@@ -464,13 +464,19 @@ test("ComfyUI generation is saved as a project asset", async () => {
     assert.equal(bundle.assets.length, 0);
     assert.equal(bundle.project.coverAssetId, null);
     assert.equal(fs.existsSync(generatedAssetPath), false);
-    assert.equal(db.listGenerationJobs(project.project.id)[0].status, "completed");
+    assert.equal(
+      db.listGenerationJobs(project.project.id)[0].status,
+      "completed",
+    );
 
     bundle = db.redo(project.project.id);
     assert.equal(bundle.assets[0].id, generatedAsset.id);
     assert.equal(bundle.project.coverAssetId, generatedAsset.id);
     assert.equal(fs.existsSync(generatedAssetPath), true);
-    assert.equal(db.listGenerationJobs(project.project.id)[0].status, "completed");
+    assert.equal(
+      db.listGenerationJobs(project.project.id)[0].status,
+      "completed",
+    );
   } finally {
     db.close();
     await mock.close();

@@ -1,6 +1,7 @@
 import type { ProjectBundle, Project } from "@mangai/project-core";
 import type { ProjectInput } from "@mangai/shared";
 import type {
+  GenerationRouteDecisionRecord,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
   ProviderSettings,
@@ -312,6 +313,9 @@ export type DesktopApi = {
     cancel: (requestId: string) => Promise<boolean>;
     onChatEvent: (listener: (event: ChatEvent) => void) => () => void;
     listJobs: (projectId?: string) => Promise<any[]>;
+    listRouteDecisions: (
+      projectId: string,
+    ) => Promise<GenerationRouteDecisionRecord[]>;
     generateImage: (value: any) => Promise<any>;
     listWorkflows: () => Promise<any[]>;
     addWorkflow: (name: string, mapping: unknown) => Promise<any[]>;

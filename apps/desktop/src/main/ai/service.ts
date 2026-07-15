@@ -1,7 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import {
   AIProviderError,
+  routeGenerationJob,
   type ProviderSettings,
   type TextGenerationProvider,
   type ImageGenerationRequest,
@@ -31,6 +33,63 @@ export class AIService {
   }
   isMockEnabled() {
     return this.allowMock;
+  }
+  private recordImageShadowRoute(
+    jobId: string,
+    input: {
+      projectId: string;
+      pageId?: string;
+      prompt: string;
+    },
+    settings: ProviderSettings,
+  ) {
+    const policy = this.store.getProjectGenerationPolicy(input.projectId);
+    const hostname = new URL(settings.baseUrl).hostname.toLowerCase();
+    const localProvider =
+      hostname === "localhost" ||
+      hostname === "[::1]" ||
+      hostname === "::1" ||
+      /^127(?:\.\d{1,3}){3}$/.test(hostname);
+    const draft = {
+      projectId: input.projectId,
+      pageId: input.pageId,
+      type: "adult_character_render" as const,
+      sensitivity: "external_forbidden" as const,
+      inputAssetIds: [],
+      personPresence: "unknown" as const,
+      hasCharacterReference: false,
+      hasCompletedPage: false,
+      promptIncludesRestrictedContent: false,
+      allInputAssetsExternalAllowed: false,
+    };
+    const context = {
+      policy: policy.externalProcessingPolicy,
+      availableTargets: [
+        "builtin" as const,
+        localProvider ? ("local" as const) : ("cloud" as const),
+      ],
+      preferLocal: policy.preferLocal,
+      externalProviderEnabled: settings.enabled && !localProvider,
+      // 外部Providerの費用見積もりが未実装の間は上限内とみなさない。
+      externalCostWithinLimit: false,
+      requireExternalConfirmation: policy.externalConfirmationRequired,
+      manualApprovalGranted: false,
+      customCloudJobTypes: policy.customCloudJobTypes,
+      sensitiveRenderNodeAllowed: false,
+      cloudProviderId: localProvider ? undefined : "comfyui",
+    };
+    const decision = routeGenerationJob(draft, context);
+    this.store.createGenerationRouteDecision({
+      jobId,
+      projectId: input.projectId,
+      draft,
+      context,
+      decision,
+      promptSha256: crypto
+        .createHash("sha256")
+        .update(input.prompt, "utf8")
+        .digest("hex"),
+    });
   }
   private log(
     event: string,
@@ -287,6 +346,14 @@ export class AIService {
         negativePrompt: input.negativePrompt,
         inputJson: input,
       });
+    try {
+      this.recordImageShadowRoute(jobId, input, settings);
+    } catch (error) {
+      this.log("image_shadow_route_failed", error, {
+        provider: "comfyui",
+        jobId,
+      });
+    }
     const controller = new AbortController();
     this.controllers.set(jobId, controller);
     try {
@@ -349,8 +416,7 @@ export class AIService {
                   createdAt: new Date().toISOString(),
                 },
               );
-              if (registered.created)
-                createdAssetIds.push(registered.assetId);
+              if (registered.created) createdAssetIds.push(registered.assetId);
             }
             this.store.updateGenerationJob(jobId, "completed", {
               output: { count: images.length },

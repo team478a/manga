@@ -632,6 +632,9 @@ function register() {
       typeof v?.projectId === "string" ? v.projectId : undefined,
     ),
   );
+  handle("ai:routes:list", (v) =>
+    store.listGenerationRouteDecisions(projectIdSchema.parse(v).id),
+  );
   handle("ai:image:generate", (v) =>
     aiService.generateImage(imageJobRequestSchema.parse(v)),
   );

@@ -268,6 +268,7 @@ test("project generation policy survives reopening, duplication and backup resto
   );
 
   delete manifest.generationPolicy;
+  delete manifest.history.routeDecisions;
   archive.file("manifest.json", JSON.stringify(manifest));
   const legacyPath = path.join(root, "policy-legacy-v2.mangai-backup");
   fs.writeFileSync(
@@ -1351,6 +1352,33 @@ test("version 2 backup restores undo, chat and generation history", async () => 
     output: { images: 1 },
     progress: 1,
   });
+  const promptSha256 = crypto
+    .createHash("sha256")
+    .update("manga page", "utf8")
+    .digest("hex");
+  db.createGenerationRouteDecision({
+    jobId,
+    projectId: bundle.project.id,
+    draft: {
+      projectId: bundle.project.id,
+      pageId: bundle.pages[0].id,
+      type: "adult_character_render",
+      sensitivity: "external_forbidden",
+      personPresence: "unknown",
+    },
+    context: {
+      policy: "safe_assets_only",
+      availableTargets: ["builtin", "local"],
+      preferLocal: true,
+    },
+    decision: {
+      target: "local",
+      reason: "sensitive_local_only",
+      requiresUserConfirmation: false,
+      blocked: false,
+    },
+    promptSha256,
+  });
   const generatedDirectory = path.join(bundle.project.storagePath, "generated");
   fs.mkdirSync(generatedDirectory, { recursive: true });
   const generatedPath = path.join(generatedDirectory, "history.png");
@@ -1382,6 +1410,7 @@ test("version 2 backup restores undo, chat and generation history", async () => 
   assert.equal(manifest.history.chatMessages.length, 2);
   assert.equal(manifest.history.generationJobs.length, 1);
   assert.equal(manifest.history.generationOutputs.length, 1);
+  assert.equal(manifest.history.routeDecisions.length, 1);
 
   const restored = await db.restoreProject(backupPath);
   assert.equal(restored.project.title, "履歴バックアップ (復元)");
@@ -1403,6 +1432,13 @@ test("version 2 backup restores undo, chat and generation history", async () => 
   assert.equal(jobs[0].status, "completed");
   assert.equal(jobs[0].episodeId, restored.episodes[0].id);
   assert.equal(jobs[0].pageId, restored.pages[0].id);
+  const routes = db.listGenerationRouteDecisions(restored.project.id);
+  assert.equal(routes.length, 1);
+  assert.equal(routes[0].jobId, jobs[0].id);
+  assert.equal(routes[0].draft.projectId, restored.project.id);
+  assert.equal(routes[0].draft.pageId, restored.pages[0].id);
+  assert.equal(routes[0].decision.target, "local");
+  assert.equal(routes[0].promptSha256, promptSha256);
   const inspect = new Database(paths.database, { readonly: true });
   const output = inspect
     .prepare(
@@ -1425,6 +1461,10 @@ test("version 2 backup restores undo, chat and generation history", async () => 
   const legacyRestored = await db.restoreProject(legacyPath);
   assert.equal(db.listChatSessions(legacyRestored.project.id).length, 0);
   assert.equal(db.listGenerationJobs(legacyRestored.project.id).length, 0);
+  assert.equal(
+    db.listGenerationRouteDecisions(legacyRestored.project.id).length,
+    0,
+  );
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });

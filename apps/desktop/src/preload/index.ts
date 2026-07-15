@@ -150,6 +150,8 @@ contextBridge.exposeInMainWorld("mangai", {
     },
     listJobs: (projectId?: string) =>
       ipcRenderer.invoke("ai:jobs:list", { projectId }),
+    listRouteDecisions: (projectId: string) =>
+      ipcRenderer.invoke("ai:routes:list", { id: projectId }),
     generateImage: (value: unknown) =>
       ipcRenderer.invoke("ai:image:generate", value),
     listWorkflows: () => ipcRenderer.invoke("ai:workflows:list"),
