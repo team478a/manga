@@ -2,6 +2,7 @@ import React from "react";
 import type { ProviderSettings } from "@mangai/ai-core";
 import { Bot, ChevronUp, RefreshCw, Sparkles } from "lucide-react";
 import { StatusBadge, type StatusTone } from "../common/StatusBadge";
+import { useI18n } from "../../i18n";
 
 type ProviderId = "ollama" | "comfyui";
 type ConnectionState = {
@@ -39,14 +40,6 @@ function jobTone(status: GenerationJob["status"]): StatusTone {
   return "info";
 }
 
-const jobLabel: Record<GenerationJob["status"], string> = {
-  queued: "待機中",
-  running: "生成中",
-  completed: "完了",
-  failed: "失敗",
-  canceled: "キャンセル",
-};
-
 export function WorkspaceStatusControls({
   projectId,
   onOpenJobs,
@@ -56,6 +49,7 @@ export function WorkspaceStatusControls({
   onOpenJobs: () => void;
   onOpenSettings: () => void;
 }) {
+  const { t } = useI18n();
   const [connections, setConnections] = React.useState<
       Partial<Record<ProviderId, ConnectionState>>
     >({}),
@@ -80,8 +74,14 @@ export function WorkspaceStatusControls({
           providers.map(({ id, settings: value }) => [
             id,
             value?.enabled
-              ? { status: "checking", message: "接続確認中…" }
-              : { status: "disabled", message: "設定で無効です" },
+              ? {
+                  status: "checking",
+                  message: t("generation.connectionChecking"),
+                }
+              : {
+                  status: "disabled",
+                  message: t("generation.connectionDisabled"),
+                },
           ]),
         ),
       );
@@ -118,7 +118,7 @@ export function WorkspaceStatusControls({
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [t]);
 
   const refreshJobs = React.useCallback(
     () =>
@@ -144,7 +144,7 @@ export function WorkspaceStatusControls({
   React.useEffect(() => {
     if (!drawerOpen) return;
     drawerRef.current
-      ?.querySelector<HTMLElement>('button[aria-label="生成ジョブを閉じる"]')
+      ?.querySelector<HTMLElement>("button[data-generation-close]")
       ?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
@@ -172,7 +172,7 @@ export function WorkspaceStatusControls({
             <button
               key={id}
               className="status-bar-control"
-              title={`${providerLabel[id]}: ${state?.message ?? "確認待ち"}${state?.latencyMs !== undefined ? ` (${state.latencyMs}ms)` : ""}`}
+              title={`${providerLabel[id]}: ${state?.message ?? t("generation.connectionPending")}${state?.latencyMs !== undefined ? ` (${state.latencyMs}ms)` : ""}`}
               onClick={onOpenSettings}
             >
               <Bot size={13} aria-hidden="true" />
@@ -185,8 +185,8 @@ export function WorkspaceStatusControls({
         <button
           ref={drawerTriggerRef}
           className="status-bar-refresh"
-          aria-label="AI接続状態を更新"
-          title="AI接続状態を更新"
+          aria-label={t("generation.refreshConnections")}
+          title={t("generation.refreshConnections")}
           disabled={refreshing}
           onClick={() => void refreshConnections()}
         >
@@ -204,7 +204,7 @@ export function WorkspaceStatusControls({
           onClick={() => setDrawerOpen((value) => !value)}
         >
           <Sparkles size={13} aria-hidden="true" />
-          生成ジョブ {activeJobs.length}
+          {t("generation.jobsCount", { count: activeJobs.length })}
           <ChevronUp size={13} aria-hidden="true" />
         </button>
       </div>
@@ -212,17 +212,20 @@ export function WorkspaceStatusControls({
         <aside
           ref={drawerRef}
           className="generation-drawer"
-          aria-label="生成ジョブ"
+          aria-label={t("generation.jobsAria")}
           role="dialog"
         >
           <header>
             <div>
-              <strong>生成ジョブ</strong>
-              <small>{activeJobs.length}件を実行中</small>
+              <strong>{t("generation.jobsAria")}</strong>
+              <small>
+                {t("generation.activeCount", { count: activeJobs.length })}
+              </small>
             </div>
             <button
               className="secondary"
-              aria-label="生成ジョブを閉じる"
+              data-generation-close
+              aria-label={t("generation.closeJobs")}
               onClick={() => setDrawerOpen(false)}
             >
               ×
@@ -234,14 +237,18 @@ export function WorkspaceStatusControls({
                 <article key={job.id}>
                   <div className="generation-drawer-job-heading">
                     <b>
-                      {job.generationType === "image" ? "画像" : "文章"} /{" "}
-                      {job.providerId}
+                      {job.generationType === "image"
+                        ? t("generation.image")
+                        : t("generation.text")}{" "}
+                      / {job.providerId}
                     </b>
                     <StatusBadge tone={jobTone(job.status)}>
-                      {jobLabel[job.status]}
+                      {t(`generation.status.${job.status}`)}
                     </StatusBadge>
                   </div>
-                  <p title={job.prompt}>{job.prompt || "プロンプトなし"}</p>
+                  <p title={job.prompt}>
+                    {job.prompt || t("generation.noPrompt")}
+                  </p>
                   {(job.status === "queued" || job.status === "running") && (
                     <progress
                       max="100"
@@ -256,17 +263,17 @@ export function WorkspaceStatusControls({
                         void window.mangai.ai.cancel(job.id).then(refreshJobs)
                       }
                     >
-                      キャンセル
+                      {t("generation.cancel")}
                     </button>
                   )}
                 </article>
               ))
             ) : (
-              <div className="panel-empty">生成履歴はまだありません。</div>
+              <div className="panel-empty">{t("generation.empty")}</div>
             )}
           </div>
           <footer>
-            <button onClick={onOpenJobs}>生成画面を開く</button>
+            <button onClick={onOpenJobs}>{t("generation.openScreen")}</button>
           </footer>
         </aside>
       )}

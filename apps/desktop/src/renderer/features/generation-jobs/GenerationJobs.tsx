@@ -1,5 +1,14 @@
 import React from "react";
 import type { ProjectBundle } from "@mangai/project-core";
+import { useI18n } from "../../i18n";
+
+function generationStatusKey(status: string) {
+  if (status === "queued") return "generation.status.queued" as const;
+  if (status === "running") return "generation.status.running" as const;
+  if (status === "completed") return "generation.status.completed" as const;
+  if (status === "canceled") return "generation.status.canceled" as const;
+  return "generation.status.failed" as const;
+}
 export function GenerationJobs({
   bundle,
   episodeId,
@@ -13,6 +22,7 @@ export function GenerationJobs({
   onBundle: (value: ProjectBundle) => void;
   onClose: () => void;
 }) {
+  const { t, formatDateTime } = useI18n();
   const [jobs, setJobs] = React.useState<any[]>([]),
     [workflows, setWorkflows] = React.useState<any[]>([]),
     [workflowId, setWorkflowId] = React.useState(""),
@@ -62,18 +72,19 @@ export function GenerationJobs({
   return (
     <main className="tool-page">
       <header className="tool-header">
-        <button onClick={onClose}>← ワークスペース</button>
-        <h1>AI生成ジョブ</h1>
+        <button onClick={onClose}>{t("generation.backWorkspace")}</button>
+        <h1>{t("generation.title")}</h1>
       </header>
       <div className="tool-content">
         <section className="panel-lite">
-          <h2>ComfyUI画像生成</h2>
+          <h2>{t("generation.comfyTitle")}</h2>
           <div className="inline">
             <select
+              aria-label={t("generation.workflowSelectAria")}
               value={workflowId}
               onChange={(e) => setWorkflowId(e.target.value)}
             >
-              <option value="">ワークフローを選択</option>
+              <option value="">{t("generation.selectWorkflow")}</option>
               {workflows.map((w) => (
                 <option key={w.id} value={w.id}>
                   {w.isDefault ? "★ " : ""}
@@ -84,10 +95,13 @@ export function GenerationJobs({
             <button
               className="secondary"
               onClick={async () => {
-                const name = prompt("ワークフロー名", "標準ワークフロー");
+                const name = prompt(
+                  t("generation.workflowName"),
+                  t("generation.defaultWorkflowName"),
+                );
                 if (name) {
                   const mappingText = prompt(
-                    "入力マッピングJSONを指定してください。ノードIDはワークフローに合わせて変更します。",
+                    t("generation.mappingPrompt"),
                     '{"prompt":{"nodeId":"6","input":"text"},"negativePrompt":{"nodeId":"7","input":"text"},"width":{"nodeId":"5","input":"width"},"height":{"nodeId":"5","input":"height"},"seed":{"nodeId":"3","input":"seed"}}',
                   );
                   if (mappingText)
@@ -106,13 +120,13 @@ export function GenerationJobs({
                 }
               }}
             >
-              JSON追加
+              {t("generation.addJson")}
             </button>
             <button
               className="danger"
               disabled={!workflowId}
               onClick={async () => {
-                if (confirm("選択中のワークフロー設定を削除しますか？")) {
+                if (confirm(t("generation.deleteWorkflowConfirm"))) {
                   setWorkflows(
                     await window.mangai.ai.deleteWorkflow(workflowId),
                   );
@@ -120,25 +134,26 @@ export function GenerationJobs({
                 }
               }}
             >
-              設定削除
+              {t("generation.deleteSettings")}
             </button>
           </div>
           {selectedWorkflow && (
             <div className="workflow-tools">
               <p>
-                入力マッピング: <code>{selectedWorkflow.mappingJson}</code>
+                {t("generation.inputMapping")}:{" "}
+                <code>{selectedWorkflow.mappingJson}</code>
               </p>
               <div className="inline">
                 <button
                   className="secondary"
                   onClick={async () => {
                     const name = prompt(
-                      "ワークフロー名",
+                      t("generation.workflowName"),
                       selectedWorkflow.name,
                     );
                     if (!name) return;
                     const mappingText = prompt(
-                      "入力マッピングJSON",
+                      t("generation.mappingShort"),
                       selectedWorkflow.mappingJson,
                     );
                     if (!mappingText) return;
@@ -150,7 +165,7 @@ export function GenerationJobs({
                           JSON.parse(mappingText),
                         ),
                       );
-                      setWorkflowMessage("ワークフロー設定を更新しました。");
+                      setWorkflowMessage(t("generation.workflowUpdated"));
                     } catch (cause) {
                       setError(
                         cause instanceof Error ? cause.message : String(cause),
@@ -158,7 +173,7 @@ export function GenerationJobs({
                     }
                   }}
                 >
-                  名前・マッピング編集
+                  {t("generation.editWorkflow")}
                 </button>
                 <button
                   className="secondary"
@@ -169,10 +184,10 @@ export function GenerationJobs({
                         selectedWorkflow.id,
                       ),
                     );
-                    setWorkflowMessage("既定ワークフローに設定しました。");
+                    setWorkflowMessage(t("generation.defaultUpdated"));
                   }}
                 >
-                  既定に設定
+                  {t("generation.setDefault")}
                 </button>
                 <button
                   className="secondary"
@@ -183,7 +198,7 @@ export function GenerationJobs({
                     setWorkflowMessage(result.message);
                   }}
                 >
-                  マッピング検証
+                  {t("generation.validateMapping")}
                 </button>
                 <button
                   className="secondary"
@@ -194,21 +209,25 @@ export function GenerationJobs({
                     setWorkflowMessage(result.message);
                   }}
                 >
-                  接続テスト
+                  {t("generation.testConnection")}
                 </button>
               </div>
             </div>
           )}
-          {workflowMessage && <p className="notice">{workflowMessage}</p>}
+          {workflowMessage && (
+            <p className="notice" role="status">
+              {workflowMessage}
+            </p>
+          )}
           <label>
-            Prompt
+            {t("generation.prompt")}
             <textarea
               value={promptText}
               onChange={(e) => setPrompt(e.target.value)}
             />
           </label>
           <label>
-            Negative Prompt
+            {t("generation.negativePrompt")}
             <textarea
               value={negative}
               onChange={(e) => setNegative(e.target.value)}
@@ -218,22 +237,30 @@ export function GenerationJobs({
             disabled={busy || !workflowId || !promptText.trim()}
             onClick={() => void generate()}
           >
-            {busy ? "生成中…" : "画像生成を開始"}
+            {busy ? t("generation.generating") : t("generation.start")}
           </button>
-          {error && <p className="error">{error}</p>}
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
         </section>
         <section className="panel-lite">
-          <h2>生成履歴</h2>
+          <h2>{t("generation.history")}</h2>
           <div className="job-list">
             {jobs.map((job) => (
               <article key={job.id}>
                 <div>
                   <b>
-                    {job.generationType} / {job.providerId}
+                    {job.generationType === "image"
+                      ? t("generation.image")
+                      : t("generation.text")}{" "}
+                    / {job.providerId}
                   </b>
                   <p>{job.prompt}</p>
                   <small>
-                    {job.status}・{job.createdAt}
+                    {t(generationStatusKey(job.status))}・
+                    {formatDateTime(job.createdAt)}
                   </small>
                   {job.generationType === "image" && (
                     <div className="job-progress">
@@ -243,19 +270,23 @@ export function GenerationJobs({
                       />
                       <small>
                         {Math.round((job.progress ?? 0) * 100)}%
-                        {job.status === "running" ? "（処理段階の目安）" : ""}
+                        {job.status === "running"
+                          ? t("generation.progressEstimate")
+                          : ""}
                       </small>
                     </div>
                   )}
                   {job.errorMessage && (
-                    <p className="error">{job.errorMessage}</p>
+                    <p className="error" role="alert">
+                      {job.errorMessage}
+                    </p>
                   )}
                 </div>
                 <div className="inline">
                   {job.status === "completed" &&
                     job.generationType === "image" && (
                       <button className="secondary" onClick={onClose}>
-                        素材を開く
+                        {t("generation.openAsset")}
                       </button>
                     )}
                   {job.status === "running" && (
@@ -263,7 +294,7 @@ export function GenerationJobs({
                       className="danger"
                       onClick={() => window.mangai.ai.cancel(job.id).then(load)}
                     >
-                      キャンセル
+                      {t("generation.cancel")}
                     </button>
                   )}
                   {job.status === "failed" &&
@@ -282,12 +313,15 @@ export function GenerationJobs({
                           }
                         }}
                       >
-                        再実行
+                        {t("generation.retry")}
                       </button>
                     )}
                 </div>
               </article>
             ))}
+            {!jobs.length && (
+              <div className="panel-empty">{t("generation.empty")}</div>
+            )}
           </div>
         </section>
       </div>
