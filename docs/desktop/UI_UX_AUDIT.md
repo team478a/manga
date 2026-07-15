@@ -201,12 +201,15 @@ Project、Episode、Page、Asset、Canvasオブジェクト、生成ジョブ、
 
 Canvas内部、SQLite、IPC、Undo / Redo、書き出し処理は変更していない。
 
-### UI-3 左パネル統合
+### UI-3 左パネル統合（完了）
 
-- 構成 / 素材タブ
-- Episode / Page操作の整理
-- Asset D&Dの維持
-- タブ別スクロール位置の保持
+- 構成 / 素材タブとキーボード切り替え
+- 最後に開いたタブの端末保存
+- Episode / Page操作を構成タブへ集約
+- Asset追加、名前検索、PNG / JPEG / WebPフィルター
+- Project内で使用中のAsset表示
+- Asset D&Dと全素材の連続Page化を維持
+- 両タブを保持したまま表示を切り替え、タブ別スクロール位置を維持
 
 ### UI-4 右パネル統合
 
@@ -231,6 +234,6 @@ Canvas内部、SQLite、IPC、Undo / Redo、書き出し処理は変更してい
 
 ## 13. 次の実装単位
 
-次は`UI-3 左パネル統合`へ進む。
+次は`UI-4 右パネル統合`へ進む。
 
-現在縦積みされているProject、Episode、Page、Assetを「構成」「素材」タブへ分ける。既存のEpisode / Page操作、Asset D&D、素材からの連続Page化は維持し、タブ別のスクロール位置と選択状態を保持する。
+現在Canvas内にあるレイヤー・選択オブジェクトプロパティと、外側のProject / Page / Asset情報を「プロパティ」「レイヤー」へ統合する。その後、Creator Chatを同じ右領域の「AI」タブへ段階的に配置する。Canvas選択・D&D・保存ロジックは既存実装を再利用する。

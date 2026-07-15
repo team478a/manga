@@ -343,6 +343,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - Project設定・Canvas・素材をまとめる`.mangai-backup`と新IDでの安全な復元
 - 素材・情報・Canvasレイヤーパネルの個別開閉、状態保持、狭幅時のCanvas優先表示
 - ダークテーマのデザイントークン、固定ヘッダー、左端グローバルナビ、Project・Inspector分離、下部ステータスバー
+- 左パネルの構成・素材タブ、選択タブ保持、素材名検索、形式フィルター、使用中素材表示
 - 秘密値除外・5MB/3世代ローテーション付きローカルJSONLログ
 - 明示同意後だけ保存する最大20件の詳細クラッシュレポートと削除UI
 - main、renderer、child process異常の捕捉。外部自動送信なし
