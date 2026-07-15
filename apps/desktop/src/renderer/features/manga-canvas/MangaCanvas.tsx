@@ -42,6 +42,7 @@ import {
   type Rect as CanvasRect,
   type PageTemplateId,
 } from "@mangai/canvas-core";
+import { useI18n } from "../../i18n";
 
 type Selection = { type: "panel" | "balloon" | "text"; id: string } | null;
 type SelectionKey = Exclude<Selection, null>;
@@ -60,6 +61,7 @@ function CanvasToolMenu({
   label: string;
   children: React.ReactNode;
 }) {
+  const { t } = useI18n();
   const detailsRef = React.useRef<HTMLDetailsElement>(null);
   const close = React.useCallback((restoreFocus = false) => {
     const details = detailsRef.current;
@@ -114,7 +116,7 @@ function CanvasToolMenu({
       <div
         className="canvas-tool-menu-panel"
         role="group"
-        aria-label={`${label}メニュー`}
+        aria-label={t("canvas.menuAria", { label })}
         onClick={(event) => {
           if ((event.target as HTMLElement).closest("[data-close-menu]"))
             close(true);
@@ -720,6 +722,7 @@ function DebouncedTextArea({
   onCommit: (value: string) => void;
   rubyTools?: boolean;
 }) {
+  const { t } = useI18n();
   const [value, setValue] = React.useState(initialValue);
   const [selection, setSelection] = React.useState({ start: 0, end: 0 });
   const [reading, setReading] = React.useState("");
@@ -764,14 +767,14 @@ function DebouncedTextArea({
   const applyRuby = () => {
     const base = value.slice(selection.start, selection.end);
     const ruby = reading.trim();
-    if (!base) return setRubyError("本文から親文字を選択してください。");
-    if (!ruby) return setRubyError("ルビの読みを入力してください。");
+    if (!base) return setRubyError(t("ruby.selectBase"));
+    if (!ruby) return setRubyError(t("ruby.enterReading"));
     if (/[｜《》\r\n]/u.test(base) || /[｜《》\r\n]/u.test(ruby))
-      return setRubyError("選択文字と読みには改行やルビ記号を含められません。");
+      return setRubyError(t("ruby.invalidCharacters"));
     if (segmentGraphemes(base).length > 50)
-      return setRubyError("親文字は50文字以内で選択してください。");
+      return setRubyError(t("ruby.baseTooLong"));
     if (segmentGraphemes(ruby).length > 100)
-      return setRubyError("読みは100文字以内で入力してください。");
+      return setRubyError(t("ruby.readingTooLong"));
     const notation = `｜${base}《${ruby}》`;
     replaceSelection(
       notation,
@@ -787,8 +790,7 @@ function DebouncedTextArea({
       const end = start + candidate[0].length;
       return selection.start >= start && selection.end <= end;
     });
-    if (!match)
-      return setRubyError("解除するルビ記法の中へカーソルを置いてください。");
+    if (!match) return setRubyError(t("ruby.placeCursor"));
     const start = match.index ?? 0;
     setSelection({ start, end: start + match[0].length });
     const next =
@@ -817,24 +819,24 @@ function DebouncedTextArea({
         <>
           <p className="ruby-selection">
             {selectedText
-              ? `親文字: ${selectedText}`
-              : "本文からルビを付ける親文字を選択"}
+              ? t("ruby.selectedBase", { value: selectedText })
+              : t("ruby.selectHelp")}
           </p>
           <div className="ruby-controls">
             <input
               value={reading}
-              aria-label="ルビの読み"
-              placeholder="読み（例: まんが）"
+              aria-label={t("ruby.reading")}
+              placeholder={t("ruby.placeholder")}
               onChange={(event) => {
                 setReading(event.target.value);
                 setRubyError("");
               }}
             />
             <button type="button" onClick={applyRuby}>
-              ルビを追加
+              {t("ruby.add")}
             </button>
             <button type="button" className="secondary" onClick={removeRuby}>
-              解除
+              {t("ruby.remove")}
             </button>
           </div>
           {rubyError && (
@@ -867,6 +869,7 @@ function CanvasProperties({
   saveBalloon: (item: Balloon) => void;
   saveText: (item: TextObject) => void;
 }) {
+  const { t } = useI18n();
   const textOverflow =
     item.objectType === "text" &&
     (item.writingMode === "vertical"
@@ -899,9 +902,9 @@ function CanvasProperties({
   };
   return (
     <div className="canvas-properties" key={`${item.objectType}-${item.id}`}>
-      <h3>選択中のプロパティ</h3>
+      <h3>{t("properties.heading")}</h3>
       <label>
-        名前
+        {t("properties.name")}
         <input
           defaultValue={item.name}
           onBlur={(event) => saveName(event.target.value)}
@@ -910,7 +913,7 @@ function CanvasProperties({
       {item.objectType === "panel" && (
         <>
           <label>
-            コマ形状
+            {t("properties.panelShape")}
             <select
               value={item.shape}
               onChange={(event) =>
@@ -920,16 +923,16 @@ function CanvasProperties({
                 })
               }
             >
-              <option value="rectangle">矩形</option>
-              <option value="slant_up">斜め（右上がり ／）</option>
-              <option value="slant_down">斜め（右下がり ＼）</option>
-              <option value="curve_left">曲線（左辺）</option>
-              <option value="curve_right">曲線（右辺）</option>
+              <option value="rectangle">{t("properties.rectangle")}</option>
+              <option value="slant_up">{t("properties.slantUp")}</option>
+              <option value="slant_down">{t("properties.slantDown")}</option>
+              <option value="curve_left">{t("properties.curveLeft")}</option>
+              <option value="curve_right">{t("properties.curveRight")}</option>
             </select>
           </label>
           {item.shape !== "rectangle" && (
             <label>
-              変形率（%）
+              {t("properties.deformation")}
               <input
                 type="number"
                 min="0"
@@ -949,7 +952,7 @@ function CanvasProperties({
             </label>
           )}
           <label>
-            画像表示
+            {t("properties.imageFit")}
             <select
               value={item.imageFit}
               onChange={(event) =>
@@ -959,13 +962,13 @@ function CanvasProperties({
                 })
               }
             >
-              <option value="cover">枠を覆う</option>
-              <option value="contain">全体を表示</option>
-              <option value="manual">手動</option>
+              <option value="cover">{t("properties.cover")}</option>
+              <option value="contain">{t("properties.contain")}</option>
+              <option value="manual">{t("properties.manual")}</option>
             </select>
           </label>
           <label>
-            画像倍率
+            {t("properties.imageScale")}
             <input
               type="number"
               min="0.01"
@@ -978,7 +981,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            横オフセット
+            {t("properties.offsetX")}
             <input
               type="number"
               defaultValue={item.imageOffsetX}
@@ -988,7 +991,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            縦オフセット
+            {t("properties.offsetY")}
             <input
               type="number"
               defaultValue={item.imageOffsetY}
@@ -998,7 +1001,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            画像回転
+            {t("properties.imageRotation")}
             <input
               type="number"
               step="1"
@@ -1012,7 +1015,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            画像透明度
+            {t("properties.imageOpacity")}
             <input
               type="number"
               min="0"
@@ -1033,7 +1036,9 @@ function CanvasProperties({
                   imageEditing ? onFinishImageEdit() : onBeginImageEdit(item)
                 }
               >
-                {imageEditing ? "画像編集を終了" : "Canvasで画像を編集"}
+                {imageEditing
+                  ? t("properties.endImageEdit")
+                  : t("properties.beginImageEdit")}
               </button>
               <button
                 className="secondary"
@@ -1047,7 +1052,7 @@ function CanvasProperties({
                   })
                 }
               >
-                画像を中央へリセット
+                {t("properties.resetImage")}
               </button>
               <button
                 className="secondary"
@@ -1056,7 +1061,7 @@ function CanvasProperties({
                   savePanel({ ...item, imageAssetId: null });
                 }}
               >
-                画像を外す
+                {t("properties.removeImage")}
               </button>
             </>
           )}
@@ -1065,7 +1070,7 @@ function CanvasProperties({
       {item.objectType === "balloon" && (
         <>
           <label>
-            種類
+            {t("properties.type")}
             <select
               value={item.type}
               onChange={(event) =>
@@ -1075,13 +1080,13 @@ function CanvasProperties({
                 })
               }
             >
-              <option value="speech_ellipse">楕円</option>
-              <option value="speech_rounded">角丸</option>
-              <option value="narration_box">ナレーション</option>
+              <option value="speech_ellipse">{t("properties.ellipse")}</option>
+              <option value="speech_rounded">{t("properties.rounded")}</option>
+              <option value="narration_box">{t("properties.narration")}</option>
             </select>
           </label>
           <label>
-            尻尾
+            {t("properties.tail")}
             <select
               value={item.tailDirection}
               onChange={(event) =>
@@ -1091,19 +1096,21 @@ function CanvasProperties({
                 })
               }
             >
-              <option value="none">なし</option>
-              <option value="top">上</option>
-              <option value="top_right">右上</option>
-              <option value="right">右</option>
-              <option value="bottom_right">右下</option>
-              <option value="bottom">下</option>
-              <option value="bottom_left">左下</option>
-              <option value="left">左</option>
-              <option value="top_left">左上</option>
+              <option value="none">{t("properties.none")}</option>
+              <option value="top">{t("properties.top")}</option>
+              <option value="top_right">{t("properties.topRight")}</option>
+              <option value="right">{t("properties.right")}</option>
+              <option value="bottom_right">
+                {t("properties.bottomRight")}
+              </option>
+              <option value="bottom">{t("properties.bottom")}</option>
+              <option value="bottom_left">{t("properties.bottomLeft")}</option>
+              <option value="left">{t("properties.left")}</option>
+              <option value="top_left">{t("properties.topLeft")}</option>
             </select>
           </label>
           <label>
-            塗り色
+            {t("properties.fill")}
             <input
               type="color"
               value={item.fillColor}
@@ -1113,7 +1120,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            線色
+            {t("properties.stroke")}
             <input
               type="color"
               value={item.strokeColor}
@@ -1123,7 +1130,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            線幅
+            {t("properties.strokeWidth")}
             <input
               type="number"
               min="0"
@@ -1141,12 +1148,10 @@ function CanvasProperties({
       {item.objectType === "text" && (
         <>
           {textOverflow && (
-            <p className="canvas-warning">
-              文字が枠からあふれる可能性があります。
-            </p>
+            <p className="canvas-warning">{t("properties.textOverflow")}</p>
           )}
           <div className="canvas-field">
-            <span>本文</span>
+            <span>{t("properties.body")}</span>
             <DebouncedTextArea
               initialValue={item.text}
               rubyTools
@@ -1154,7 +1159,7 @@ function CanvasProperties({
             />
           </div>
           <label>
-            親の吹き出し
+            {t("properties.parentBalloon")}
             <select
               value={item.parentBalloonId ?? ""}
               onChange={(event) =>
@@ -1164,7 +1169,7 @@ function CanvasProperties({
                 })
               }
             >
-              <option value="">なし（自由テキスト）</option>
+              <option value="">{t("properties.freeText")}</option>
               {balloons.map((balloon) => (
                 <option key={balloon.id} value={balloon.id}>
                   {balloon.name}
@@ -1173,7 +1178,7 @@ function CanvasProperties({
             </select>
           </label>
           <label>
-            組方向
+            {t("properties.writingMode")}
             <select
               value={item.writingMode}
               onChange={(event) =>
@@ -1183,18 +1188,18 @@ function CanvasProperties({
                 })
               }
             >
-              <option value="vertical">縦書き</option>
-              <option value="horizontal">横書き</option>
+              <option value="vertical">{t("properties.vertical")}</option>
+              <option value="horizontal">{t("properties.horizontal")}</option>
             </select>
           </label>
           <small>
             {item.writingMode === "vertical"
-              ? "基本禁則と半角2桁数字の縦中横を自動適用します。"
-              : "日本語・ASCIIの文字幅を考慮して折り返します。"}
-            ルビは「｜漫画《まんが》」の形式で保存します。
+              ? t("properties.verticalHelp")
+              : t("properties.horizontalHelp")}{" "}
+            {t("properties.rubyHelp")}
           </small>
           <label>
-            文字サイズ
+            {t("properties.fontSize")}
             <input
               type="number"
               min="1"
@@ -1206,7 +1211,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            文字色
+            {t("properties.textColor")}
             <input
               type="color"
               value={item.color}
@@ -1216,7 +1221,7 @@ function CanvasProperties({
             />
           </label>
           <label>
-            揃え
+            {t("properties.align")}
             <select
               value={item.textAlign}
               onChange={(event) =>
@@ -1226,9 +1231,9 @@ function CanvasProperties({
                 })
               }
             >
-              <option value="start">先頭</option>
-              <option value="center">中央</option>
-              <option value="end">末尾</option>
+              <option value="start">{t("properties.start")}</option>
+              <option value="center">{t("properties.center")}</option>
+              <option value="end">{t("properties.end")}</option>
             </select>
           </label>
         </>
@@ -1258,6 +1263,7 @@ export function MangaCanvas({
   onOpenInspectorTab: (tab: "properties" | "layers") => void;
   onApply: (promise: Promise<ProjectBundle>) => void;
 }) {
+  const { t } = useI18n();
   const [selection, setSelection] = React.useState<Selection>(null);
   const [selectedKeys, setSelectedKeys] = React.useState<SelectionKey[]>([]);
   const [drawPanelMode, setDrawPanelMode] = React.useState(false);
@@ -1598,7 +1604,7 @@ export function MangaCanvas({
         const copy = {
           ...item,
           id: idMap.get(item.id)!,
-          name: `${item.name} のコピー`,
+          name: t("canvas.copyName", { name: item.name }),
           x: item.x + 20,
           y: item.y + 20,
           zIndex: nextZ + index,
@@ -1678,7 +1684,7 @@ export function MangaCanvas({
       window.mangai.canvas.savePanel({
         id: crypto.randomUUID(),
         pageId: page.id,
-        name: `コマ${panels.length + 1}`,
+        name: t("canvas.objectPanel", { count: panels.length + 1 }),
         x: rect?.x ?? page.width * 0.1,
         y: rect?.y ?? page.height * 0.1,
         width: rect?.width ?? page.width * 0.8,
@@ -1706,7 +1712,7 @@ export function MangaCanvas({
     const balloon = {
       id: balloonId,
       pageId: page.id,
-      name: `吹き出し${balloons.length + 1}`,
+      name: t("canvas.objectBalloon", { count: balloons.length + 1 }),
       type: "speech_ellipse",
       x: page.width * 0.55,
       y: page.height * 0.08,
@@ -1732,8 +1738,8 @@ export function MangaCanvas({
             id: crypto.randomUUID(),
             pageId: page.id,
             parentBalloonId: balloonId,
-            name: `テキスト${texts.length + 1}`,
-            text: "テキスト",
+            name: t("canvas.objectText", { count: texts.length + 1 }),
+            text: t("canvas.defaultText"),
             writingMode: "vertical",
             x: balloon.x + balloon.width * 0.2,
             y: balloon.y + balloon.height * 0.15,
@@ -1764,8 +1770,8 @@ export function MangaCanvas({
         id: crypto.randomUUID(),
         pageId: page.id,
         parentBalloonId: selection?.type === "balloon" ? selection.id : null,
-        name: `テキスト${texts.length + 1}`,
-        text: "テキスト",
+        name: t("canvas.objectText", { count: texts.length + 1 }),
+        text: t("canvas.defaultText"),
         writingMode: "vertical",
         x: page.width * 0.65,
         y: page.height * 0.12,
@@ -1821,7 +1827,7 @@ export function MangaCanvas({
       panels: rects.map((rect, index) => ({
         id: crypto.randomUUID(),
         pageId: page.id,
-        name: `コマ${index + 1}`,
+        name: t("canvas.objectPanel", { count: index + 1 }),
         ...rect,
         rotation: 0,
         zIndex: index,
@@ -1907,53 +1913,63 @@ export function MangaCanvas({
       <div
         className="canvas-tools"
         role="toolbar"
-        aria-label="Canvas編集ツール"
+        aria-label={t("canvas.toolbar")}
       >
-        <CanvasToolMenu label="＋ 追加">
+        <CanvasToolMenu label={t("canvas.addMenu")}>
           <button data-close-menu onClick={() => addPanel()}>
-            コマを追加
+            {t("canvas.addPanel")}
           </button>
           <button
             data-close-menu
             className={drawPanelMode ? "active" : undefined}
             aria-pressed={drawPanelMode}
             aria-keyshortcuts="Escape"
-            title="ページ上をドラッグしてコマを作成（Escで解除）"
+            title={t("canvas.drawPanelTitle")}
             onClick={() => {
               setPanelDraft(null);
               setDrawPanelMode((value) => !value);
             }}
           >
-            ▭ コマを描く
+            {t("canvas.drawPanel")}
           </button>
           <button data-close-menu onClick={addBalloon}>
-            吹き出しを追加
+            {t("canvas.addBalloon")}
           </button>
           <button data-close-menu onClick={addText}>
             {selection?.type === "balloon"
-              ? "選択吹き出しへテキスト追加"
-              : "テキストを追加"}
+              ? t("canvas.addTextToBalloon")
+              : t("canvas.addText")}
           </button>
         </CanvasToolMenu>
-        <CanvasToolMenu label="レイアウト">
+        <CanvasToolMenu label={t("canvas.layoutMenu")}>
           {pageTemplates.map((template) => (
             <button
               data-close-menu
               key={template.id}
-              title="現在のコマを置き換えてテンプレートを適用"
+              title={t("canvas.applyTemplate")}
               onClick={() => onApply(applyTemplate(template.id))}
             >
-              {template.name}
+              {template.id === "single"
+                ? t("canvas.template.single")
+                : template.id === "vertical_two"
+                  ? t("canvas.template.verticalTwo")
+                  : template.id === "horizontal_two"
+                    ? t("canvas.template.horizontalTwo")
+                    : template.id === "top_one_bottom_two"
+                      ? t("canvas.template.topBottom")
+                      : template.id === "four_equal"
+                        ? t("canvas.template.four")
+                        : t("canvas.template.six")}
             </button>
           ))}
         </CanvasToolMenu>
-        <CanvasToolMenu label="表示">
+        <CanvasToolMenu label={t("canvas.viewMenu")}>
           <button
             className={showGrid ? "active" : undefined}
             aria-pressed={showGrid}
             onClick={() => setShowGrid((value) => !value)}
           >
-            # グリッド
+            {t("canvas.grid")}
           </button>
           <button
             className={snapEnabled ? "active" : undefined}
@@ -1963,29 +1979,32 @@ export function MangaCanvas({
               setGuides({ vertical: [], horizontal: [] });
             }}
           >
-            スナップ
+            {t("canvas.snap")}
           </button>
           <button
             className={gridSnapEnabled ? "active" : undefined}
             aria-pressed={gridSnapEnabled}
             disabled={!snapEnabled}
-            title="100pxグリッドへ吸着"
+            title={t("canvas.gridSnapTitle")}
             onClick={() => setGridSnapEnabled((value) => !value)}
           >
-            グリッド吸着
+            {t("canvas.gridSnap")}
           </button>
           <button
-            title="右パネルでレイヤーを表示"
+            title={t("canvas.openLayers")}
             onClick={() => onOpenInspectorTab("layers")}
           >
-            レイヤー
+            {t("canvas.layers")}
           </button>
         </CanvasToolMenu>
-        <div className="canvas-context-tools" aria-label="選択中の操作">
+        <div
+          className="canvas-context-tools"
+          aria-label={t("canvas.selectionActions")}
+        >
           {editingPanel && (
             <>
               <span className="image-edit-status" role="status">
-                画像編集中: {editingPanel.name}
+                {t("canvas.editingImage", { name: editingPanel.name })}
               </span>
               <button
                 onClick={() =>
@@ -1998,10 +2017,10 @@ export function MangaCanvas({
                   })
                 }
               >
-                中央へリセット
+                {t("canvas.resetCenter")}
               </button>
               <button className="active" onClick={finishImageEdit}>
-                画像編集を完了
+                {t("canvas.finishImageEdit")}
               </button>
             </>
           )}
@@ -2013,8 +2032,8 @@ export function MangaCanvas({
               onClick={deleteSelected}
             >
               {selectedKeys.length > 1
-                ? `${selectedKeys.length}件を削除`
-                : "選択を削除"}
+                ? t("canvas.deleteCount", { count: selectedKeys.length })
+                : t("canvas.deleteSelection")}
             </button>
           )}
           {selectedPanel && selectedAssetId && (
@@ -2023,7 +2042,7 @@ export function MangaCanvas({
                 savePanel({ ...selectedPanel, imageAssetId: selectedAssetId })
               }
             >
-              選択コマへ素材を配置
+              {t("canvas.placeAsset")}
             </button>
           )}
         </div>
@@ -2369,10 +2388,10 @@ export function MangaCanvas({
         {layersHost &&
           createPortal(
             <div className="canvas-layers">
-              <h3>レイヤー</h3>
+              <h3>{t("canvas.layers")}</h3>
               {layers.length === 0 && (
                 <div className="empty inspector-empty">
-                  コマ・吹き出し・テキストを追加すると表示されます。
+                  {t("canvas.layersEmpty")}
                 </div>
               )}
               {layers.map((item, index) => {
@@ -2441,7 +2460,7 @@ export function MangaCanvas({
                     <span
                       className="layer-drag-handle"
                       draggable
-                      title="ドラッグしてレイヤー順を変更"
+                      title={t("canvas.reorderLayer")}
                       onDragStart={(event) => {
                         event.dataTransfer.effectAllowed = "move";
                         event.dataTransfer.setData(
@@ -2483,7 +2502,8 @@ export function MangaCanvas({
                       {item.name}
                     </button>
                     <button
-                      title="表示切替"
+                      title={t("canvas.toggleVisibility")}
+                      aria-label={`${t("canvas.toggleVisibility")}: ${item.name}`}
                       onClick={() =>
                         updateLayerState(item, { visible: !item.visible })
                       }
@@ -2491,7 +2511,8 @@ export function MangaCanvas({
                       {item.visible ? "◉" : "○"}
                     </button>
                     <button
-                      title="ロック切替"
+                      title={t("canvas.toggleLock")}
+                      aria-label={`${t("canvas.toggleLock")}: ${item.name}`}
                       onClick={() =>
                         updateLayerState(item, { locked: !item.locked })
                       }
@@ -2500,14 +2521,16 @@ export function MangaCanvas({
                     </button>
                     <button
                       disabled={index === 0}
-                      title="前面へ"
+                      title={t("canvas.moveFront")}
+                      aria-label={`${t("canvas.moveFront")}: ${item.name}`}
                       onClick={() => moveLayerStep(item, 1)}
                     >
                       ↑
                     </button>
                     <button
                       disabled={index === layers.length - 1}
-                      title="背面へ"
+                      title={t("canvas.moveBack")}
+                      aria-label={`${t("canvas.moveBack")}: ${item.name}`}
                       onClick={() => moveLayerStep(item, -1)}
                     >
                       ↓
@@ -2522,7 +2545,7 @@ export function MangaCanvas({
           createPortal(
             selectedLayer ? (
               <section className="inspector-object-properties">
-                <h3>選択オブジェクト</h3>
+                <h3>{t("canvas.selectedObject")}</h3>
                 <CanvasProperties
                   item={selectedLayer as LayerItem}
                   balloons={balloons}
@@ -2536,10 +2559,8 @@ export function MangaCanvas({
               </section>
             ) : (
               <section className="inspector-object-properties">
-                <h3>選択オブジェクト</h3>
-                <p className="muted">
-                  Canvas上のオブジェクトを選択してください。
-                </p>
+                <h3>{t("canvas.selectedObject")}</h3>
+                <p className="muted">{t("canvas.selectObject")}</p>
               </section>
             ),
             propertiesHost,
