@@ -39,7 +39,7 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
   .trash/
 ```
 
-素材は `{project}/assets/` へコピーし、SQLiteには相対パス、SHA-256、画像寸法、MIME、サイズを保存します。素材削除はProject内の`.trash`へ移動します。Project削除は通常`{Documents}/MANGAI/.trash`へ移動し、カスタム保存先が別ドライブの場合は保存先と同じドライブの親フォルダーにある`.mangai-trash`へ退避します。退避に失敗した場合はSQLiteのProject情報を削除しません。
+素材は `{project}/assets/` へコピーし、SQLiteには相対パス、SHA-256、画像寸法、MIME、サイズを保存します。素材削除はProject内の`.trash`へ移動し、実ファイルと参照を再起動後もUndo/Redoできます。Project削除は通常`{Documents}/MANGAI/.trash`へ移動し、カスタム保存先が別ドライブの場合は保存先と同じドライブの親フォルダーにある`.mangai-trash`へ退避します。退避に失敗した場合はSQLiteのProject情報を削除しません。
 
 新規Project画面の「参照…」からWindowsのフォルダー選択ダイアログを開き、任意のProjectフォルダーを指定できます。「既定に戻す」を選ぶと、従来どおり `{Documents}/MANGAI/projects/{projectId}` を使用します。選択したフォルダーにはアプリが `assets/` などを作成するため、Project専用フォルダーを指定してください。別のProjectが使用中の保存先は指定できません。
 
