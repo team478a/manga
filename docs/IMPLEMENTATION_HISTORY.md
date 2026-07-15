@@ -506,3 +506,9 @@ PDFは9Page・384×576ptで、連番画像ZIPは`001.png`〜`009.png`、販売�
 NSIS成果物を一時フォルダーへsilent installし、製品EXE、Desktop・Start Menuショートカット、Windowsのアンインストール登録を確認後、silent uninstallと残存物の消失を検査する`rc:windows-installer-e2e`を追加しました。既存のMANGAI Desktop、ショートカット、登録情報を検出した場合は上書きせず停止し、ローカルでは`allow-local`の明示を必須にしています。製品データを変更しないよう、インストールしたアプリ自体は起動しません。
 
 現行0.1.0インストーラーでE2Eに成功しました。NSISのアンインストーラーはプロセス終了後にショートカットと登録情報を遅延削除するため、すべての消失を待って判定します。同じ検査を署名・metadata検証後のWindowsリリースworkflowへ追加しました。これによりWindows成果物で残るRC条件はコード署名証明書の設定です。
+
+## 59. インストール済み製品版の起動スモーク
+
+インストール結果のファイル確認だけでなく、製品版EXEがSQLiteを初期化してrendererを描画できることまで検査する起動スモークを追加しました。`--mangai-smoke-test`は`MANGAI_SMOKE_DOCUMENTS`で指定した絶対パスをElectronのDocuments保存先へ一時設定し、`#root`へのReact描画を最大10秒待って正常終了します。通常起動ではこの処理を使用しません。
+
+NSIS E2Eは一時Documents配下に`MANGAI/mangai_local.sqlite`が作成されたことも確認します。現行コードから0.1.0インストーラーとunpacked製品を再生成し、成果物整合性、silent install、製品版起動、renderer描画、隔離SQLite生成、silent uninstall、残存物消失がすべて成功しました。通常の作品データは変更していません。

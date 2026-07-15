@@ -65,6 +65,14 @@ import {
 } from "@mangai/canvas-core";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
+const smokeTest = process.argv.includes("--mangai-smoke-test");
+if (smokeTest) {
+  const smokeDocuments = process.env.MANGAI_SMOKE_DOCUMENTS;
+  if (!smokeDocuments || !path.isAbsolute(smokeDocuments))
+    throw new Error("Smoke test documents path is required.");
+  fs.mkdirSync(smokeDocuments, { recursive: true });
+  app.setPath("documents", smokeDocuments);
+}
 let store: MangaiDatabase;
 let aiService: AIService;
 let updater: DesktopUpdater;
@@ -601,6 +609,7 @@ async function createWindow() {
   const dev = process.env.VITE_DEV_SERVER_URL;
   if (dev) await win.loadURL(dev);
   else await win.loadFile(path.join(here, "../../dist-renderer/index.html"));
+  return win;
 }
 function registerDiagnosticsHandlers() {
   process.on("uncaughtException", (cause) => {
@@ -655,43 +664,71 @@ function registerDiagnosticsHandlers() {
     });
   });
 }
-app.whenReady().then(async () => {
-  diagnostics = new DiagnosticsService(desktopPaths(), {
-    appVersion: app.getVersion(),
-    platform: process.platform,
-    arch: process.arch,
-    electronVersion: process.versions.electron,
-  });
-  registerDiagnosticsHandlers();
-  diagnostics.log("info", "app_started", {
-    appVersion: app.getVersion(),
-    platform: process.platform,
-    arch: process.arch,
-  });
-  const opened = await openDatabaseWithRecovery(desktopPaths());
-  store = opened.database;
-  databaseRecovery = opened.recovery;
-  if (databaseRecovery) {
-    diagnostics.log("warn", "database_recovered", {
-      source: databaseRecovery.source,
-      restoredProjectCount: databaseRecovery.restoredProjects.length,
-      failedBackupCount: databaseRecovery.failedBackups.length,
+app
+  .whenReady()
+  .then(async () => {
+    diagnostics = new DiagnosticsService(desktopPaths(), {
+      appVersion: app.getVersion(),
+      platform: process.platform,
+      arch: process.arch,
+      electronVersion: process.versions.electron,
     });
-  }
-  aiService = new AIService(store, {
-    allowMock: !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
+    registerDiagnosticsHandlers();
+    diagnostics.log("info", "app_started", {
+      appVersion: app.getVersion(),
+      platform: process.platform,
+      arch: process.arch,
+    });
+    const opened = await openDatabaseWithRecovery(desktopPaths());
+    store = opened.database;
+    databaseRecovery = opened.recovery;
+    if (databaseRecovery) {
+      diagnostics.log("warn", "database_recovered", {
+        source: databaseRecovery.source,
+        restoredProjectCount: databaseRecovery.restoredProjects.length,
+        failedBackupCount: databaseRecovery.failedBackups.length,
+      });
+    }
+    aiService = new AIService(store, {
+      allowMock:
+        !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
+    });
+    updater = new DesktopUpdater(desktopPaths().root);
+    register();
+    const win = await createWindow();
+    if (smokeTest) {
+      const rendererReady = await win.webContents.executeJavaScript(`
+      new Promise((resolve) => {
+        const deadline = Date.now() + 10000;
+        const check = () => {
+          const root = document.querySelector("#root");
+          if (root && root.childElementCount > 0) return resolve(true);
+          if (Date.now() >= deadline) return resolve(false);
+          setTimeout(check, 100);
+        };
+        check();
+      })
+    `);
+      if (!rendererReady) throw new Error("Renderer smoke test timed out.");
+      app.quit();
+      return;
+    }
+    setTimeout(() => void runAutoBackup(), 15_000);
+    autoBackupTimer = setInterval(() => void runAutoBackup(), 30 * 60_000);
+    if (updater.getState().status === "idle")
+      setTimeout(() => void updater.check(), 5000);
+    app.on("activate", () => {
+      if (BrowserWindow.getAllWindows().length === 0) void createWindow();
+    });
+  })
+  .catch((cause) => {
+    if (smokeTest) {
+      diagnostics?.captureCrash("smoke_test.failed", cause);
+      app.exit(1);
+      return;
+    }
+    throw cause;
   });
-  updater = new DesktopUpdater(desktopPaths().root);
-  register();
-  await createWindow();
-  setTimeout(() => void runAutoBackup(), 15_000);
-  autoBackupTimer = setInterval(() => void runAutoBackup(), 30 * 60_000);
-  if (updater.getState().status === "idle")
-    setTimeout(() => void updater.check(), 5000);
-  app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) void createWindow();
-  });
-});
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
 });

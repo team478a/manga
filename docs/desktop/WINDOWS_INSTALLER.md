@@ -40,15 +40,15 @@ npm run rc:windows-artifacts -- signed
 
 ## インストール／アンインストールE2E
 
-WindowsのクリーンなCIでは、NSISのsilent install、実行ファイル、Desktop・Start Menuショートカット、アンインストール登録、silent uninstall、残存物の削除を自動確認します。既存のMANGAI Desktopを検出した場合は上書きせず停止します。
+WindowsのクリーンなCIでは、NSISのsilent install、実行ファイル、Desktop・Start Menuショートカット、アンインストール登録、製品版起動、silent uninstall、残存物の削除を自動確認します。既存のMANGAI Desktopを検出した場合は上書きせず停止します。
 
-ローカル実行はシステムへ一時的にインストールするため、明示的に`allow-local`を指定します。製品データへ触れないようアプリ本体は起動しません。
+ローカル実行はシステムへ一時的にインストールするため、明示的に`allow-local`を指定します。製品版はテスト専用引数で起動し、一時Documents配下のSQLite初期化とrenderer描画を確認して自動終了します。通常の`Documents/MANGAI`には触れません。
 
 ```powershell
 npm run rc:windows-installer-e2e -- allow-local
 ```
 
-2026-07-15に現行0.1.0インストーラーで実行し、インストールからアンインストール後の登録・ショートカット消失まで成功しました。
+2026-07-15に現行0.1.0インストーラーで実行し、インストール、製品版renderer起動、隔離SQLite生成からアンインストール後の登録・ショートカット消失まで成功しました。
 
 ## 配布設定
 

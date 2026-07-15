@@ -92,6 +92,7 @@ const temporaryRoot = fs.mkdtempSync(
 const installDirectory = path.join(temporaryRoot, "MANGAI Desktop");
 let uninstallerPath;
 let installed = false;
+let applicationStarted = false;
 const failures = [];
 
 function run(file, commandArgs) {
@@ -126,6 +127,28 @@ try {
       failures.push("インストール後の実行ファイルがありません。");
     } else if (!fs.statSync(executablePath).isFile()) {
       failures.push("インストール後の実行ファイルが不正です。");
+    } else {
+      const smokeDocuments = path.join(temporaryRoot, "Documents");
+      const smoke = spawnSync(
+        executablePath,
+        ["--mangai-smoke-test", "--disable-gpu"],
+        {
+          encoding: "utf8",
+          env: { ...process.env, MANGAI_SMOKE_DOCUMENTS: smokeDocuments },
+          timeout: 60_000,
+          windowsHide: true,
+        },
+      );
+      applicationStarted = smoke.status === 0;
+      if (!applicationStarted)
+        failures.push("インストール済み製品版の起動確認が失敗しました。");
+      if (
+        applicationStarted &&
+        !fs.existsSync(
+          path.join(smokeDocuments, "MANGAI", "mangai_local.sqlite"),
+        )
+      )
+        failures.push("隔離データベースが作成されませんでした。");
     }
     if (!fs.existsSync(desktopShortcut))
       failures.push("Desktopショートカットが作成されませんでした。");
@@ -181,6 +204,9 @@ try {
 console.log("MANGAI Windows installer E2E");
 console.log("  Silent install: checked");
 console.log("  Installed files: checked");
+console.log(
+  `  Packaged app startup: ${applicationStarted ? "checked" : "failed"}`,
+);
 console.log("  Shortcuts / registry: checked");
 console.log("  Silent uninstall: checked");
 console.log(`  Result: ${failures.length === 0 ? "PASSED" : "FAILED"}`);
