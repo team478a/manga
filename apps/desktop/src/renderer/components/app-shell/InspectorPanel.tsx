@@ -2,6 +2,7 @@ import React from "react";
 import type { Asset, Page, ProjectBundle } from "@mangai/project-core";
 import { CreatorChat } from "../../features/creator-chat/CreatorChat";
 import { Tabs } from "../common/Tabs";
+import { useI18n } from "../../i18n";
 
 export type InspectorTab = "properties" | "layers" | "ai";
 
@@ -34,6 +35,7 @@ export function InspectorPanel({
   apply: (promise: Promise<ProjectBundle>) => void;
   saving: (status: string) => void;
 }) {
+  const { t } = useI18n();
   const [promptText, setPrompt] = React.useState(page?.prompt || ""),
     [negative, setNegative] = React.useState(page?.negativePrompt || ""),
     [notes, setNotes] = React.useState(page?.notes || "");
@@ -47,7 +49,7 @@ export function InspectorPanel({
   React.useEffect(() => {
     if (!page) return;
     const timer = setTimeout(() => {
-      saving("保存中…");
+      saving(t("saving.inProgress"));
       apply(window.mangai.savePage(page.id, promptText, negative, notes));
     }, 700);
     return () => clearTimeout(timer);
@@ -57,16 +59,16 @@ export function InspectorPanel({
     <aside
       id="inspector-panel"
       className="right inspector-panel"
-      aria-label="編集パネル"
+      aria-label={t("inspector.aria")}
     >
       <div className="inspector-tabs">
         <Tabs
-          label="編集パネル"
+          label={t("inspector.aria")}
           idPrefix="inspector"
           value={activeTab}
           options={[
-            { id: "properties", label: "プロパティ" },
-            { id: "layers", label: "レイヤー" },
+            { id: "properties", label: t("inspector.properties") },
+            { id: "layers", label: t("inspector.layers") },
             { id: "ai", label: "AI" },
           ]}
           onChange={onTabChange}
@@ -81,9 +83,9 @@ export function InspectorPanel({
       >
         <div ref={onPropertiesHost} className="canvas-properties-host" />
         <section>
-          <h3>プロジェクト情報</h3>
+          <h3>{t("inspector.projectInfo")}</h3>
           <label>
-            タイトル
+            {t("inspector.title")}
             <input
               defaultValue={bundle.project.title}
               onBlur={(event) => {
@@ -102,48 +104,61 @@ export function InspectorPanel({
             {bundle.project.dpi}dpi
           </p>
           <p>
-            {bundle.project.readingDirection === "rtl" ? "右開き" : "左開き"}・
-            {bundle.project.ageRating}
+            {bundle.project.readingDirection === "rtl"
+              ? t("projectDialog.rtl")
+              : t("projectDialog.ltr")}
+            ・
+            {bundle.project.ageRating === "全年齢"
+              ? t("projectDialog.allAges")
+              : bundle.project.ageRating === "12歳以上"
+                ? t("projectDialog.age12")
+                : bundle.project.ageRating === "15歳以上"
+                  ? t("projectDialog.age15")
+                  : t("projectDialog.adult")}
           </p>
         </section>
         {page && (
           <section>
-            <h3>ページ情報</h3>
+            <h3>{t("inspector.pageInfo")}</h3>
             <p>
-              ページ {page.pageNumber} / {page.width} × {page.height}
+              {t("inspector.pageSummary", {
+                page: page.pageNumber,
+                width: page.width,
+                height: page.height,
+              })}
             </p>
             <div className="inline">
               <button
                 onClick={() => apply(window.mangai.duplicatePage(page.id))}
               >
-                複製
+                {t("inspector.duplicate")}
               </button>
               <button
                 className="danger"
                 onClick={() =>
-                  confirm("ページを削除しますか？") &&
+                  confirm(t("inspector.deletePageConfirm")) &&
                   apply(window.mangai.deletePage(page.id))
                 }
               >
-                削除
+                {t("inspector.delete")}
               </button>
             </div>
             <label>
-              プロンプト
+              {t("inspector.prompt")}
               <textarea
                 value={promptText}
                 onChange={(event) => setPrompt(event.target.value)}
               />
             </label>
             <label>
-              ネガティブプロンプト
+              {t("inspector.negativePrompt")}
               <textarea
                 value={negative}
                 onChange={(event) => setNegative(event.target.value)}
               />
             </label>
             <label>
-              メモ
+              {t("inspector.notes")}
               <textarea
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
@@ -153,7 +168,7 @@ export function InspectorPanel({
         )}
         {asset && (
           <section>
-            <h3>選択画像</h3>
+            <h3>{t("inspector.selectedImage")}</h3>
             <img className="preview" src={assetUrl} alt={asset.fileName} />
             <p title={asset.fileName}>{asset.fileName}</p>
             <p>
@@ -168,7 +183,7 @@ export function InspectorPanel({
                     apply(window.mangai.addPage(episodeId, asset.id))
                   }
                 >
-                  ページへ追加
+                  {t("inspector.addToPage")}
                 </button>
               )}
               <button
@@ -179,16 +194,16 @@ export function InspectorPanel({
                   )
                 }
               >
-                代表画像に設定
+                {t("inspector.setCover")}
               </button>
               <button
                 className="danger"
                 onClick={() =>
-                  confirm("素材をゴミ箱へ移動しますか？") &&
+                  confirm(t("inspector.deleteAssetConfirm")) &&
                   apply(window.mangai.deleteAsset(asset.id))
                 }
               >
-                素材削除
+                {t("inspector.deleteAsset")}
               </button>
             </div>
           </section>

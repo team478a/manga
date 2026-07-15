@@ -1046,12 +1046,24 @@ label {
 }
 .page-row {
   display: grid;
-  grid-template-columns: 42px 1fr 28px 28px;
+  grid-template-columns: minmax(0, 1fr) 28px 28px;
   gap: 5px;
   align-items: center;
   padding: 5px;
   border-radius: 6px;
-  cursor: pointer;
+}
+.page-select {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 5px;
+  align-items: center;
+  min-width: 0;
+  background: transparent;
+  color: var(--text-primary);
+  text-align: left;
+}
+.page-select:hover {
+  background: var(--bg-hover);
 }
 .page-row span {
   height: 40px;

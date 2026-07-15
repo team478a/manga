@@ -1,6 +1,7 @@
 import React from "react";
 import type { Episode, ProjectBundle } from "@mangai/project-core";
 import { Search, Upload } from "lucide-react";
+import { useI18n } from "../../i18n";
 
 type AssetFilter = "all" | "png" | "jpeg" | "webp";
 
@@ -23,6 +24,7 @@ export function AssetBrowser({
   onSelectPage: (id: string | null) => void;
   onSelectAsset: (id: string) => void;
 }) {
+  const { localeCode, t } = useI18n();
   const [query, setQuery] = React.useState(""),
     [filter, setFilter] = React.useState<AssetFilter>("all");
 
@@ -39,11 +41,11 @@ export function AssetBrowser({
   }, [bundle.project.coverAssetId, bundle.pages, bundle.panels]);
 
   const assets = React.useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase("ja-JP");
+    const normalizedQuery = query.trim().toLocaleLowerCase(localeCode);
     return bundle.assets.filter((asset) => {
       const matchesQuery =
         !normalizedQuery ||
-        asset.fileName.toLocaleLowerCase("ja-JP").includes(normalizedQuery);
+        asset.fileName.toLocaleLowerCase(localeCode).includes(normalizedQuery);
       const matchesFilter =
         filter === "all" ||
         (filter === "png" && asset.mimeType === "image/png") ||
@@ -51,7 +53,7 @@ export function AssetBrowser({
         (filter === "webp" && asset.mimeType === "image/webp");
       return matchesQuery && matchesFilter;
     });
-  }, [bundle.assets, filter, query]);
+  }, [bundle.assets, filter, localeCode, query]);
 
   return (
     <>
@@ -61,23 +63,23 @@ export function AssetBrowser({
           onClick={() => apply(window.mangai.pickAssets(bundle.project.id))}
         >
           <Upload size={16} aria-hidden="true" />
-          素材を追加
+          {t("asset.add")}
         </button>
         <label className="asset-search">
           <Search size={15} aria-hidden="true" />
           <input
             value={query}
-            placeholder="素材名を検索"
-            aria-label="素材名を検索"
+            placeholder={t("asset.search")}
+            aria-label={t("asset.search")}
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
         <select
-          aria-label="素材形式"
+          aria-label={t("asset.format")}
           value={filter}
           onChange={(event) => setFilter(event.target.value as AssetFilter)}
         >
-          <option value="all">すべての形式</option>
+          <option value="all">{t("asset.allFormats")}</option>
           <option value="png">PNG</option>
           <option value="jpeg">JPEG</option>
           <option value="webp">WebP</option>
@@ -85,9 +87,12 @@ export function AssetBrowser({
       </section>
       <section className="assets">
         <div className="asset-browser-heading">
-          <h3>素材</h3>
+          <h3>{t("asset.heading")}</h3>
           <small>
-            {assets.length} / {bundle.assets.length}件
+            {t("asset.count", {
+              visible: assets.length,
+              total: bundle.assets.length,
+            })}
           </small>
         </div>
         {assets.length ? (
@@ -115,7 +120,9 @@ export function AssetBrowser({
                 >
                   <span className="asset-thumbnail">
                     <img src={assetUrls[asset.id]} alt="" />
-                    {inUse && <span className="asset-usage">使用中</span>}
+                    {inUse && (
+                      <span className="asset-usage">{t("asset.inUse")}</span>
+                    )}
                   </span>
                   <small>{asset.fileName}</small>
                 </button>
@@ -124,9 +131,7 @@ export function AssetBrowser({
           </div>
         ) : (
           <div className="panel-empty">
-            {bundle.assets.length
-              ? "条件に一致する素材はありません。"
-              : "素材を追加するとここに表示されます。"}
+            {bundle.assets.length ? t("asset.noMatch") : t("asset.empty")}
           </div>
         )}
         {episode && bundle.assets.length > 0 && (
@@ -140,7 +145,7 @@ export function AssetBrowser({
               onSelectPage(nextBundle.pages.at(-1)?.id || null);
             }}
           >
-            全素材を連続Page化
+            {t("asset.makePages")}
           </button>
         )}
       </section>

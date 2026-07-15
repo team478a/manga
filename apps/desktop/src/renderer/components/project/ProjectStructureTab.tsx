@@ -1,6 +1,7 @@
 import React from "react";
 import type { Episode, Page, ProjectBundle } from "@mangai/project-core";
 import { episodeTemplates, type EpisodeTemplateId } from "@mangai/canvas-core";
+import { useI18n } from "../../i18n";
 
 export function ProjectStructureTab({
   bundle,
@@ -25,22 +26,41 @@ export function ProjectStructureTab({
   onSelectPage: (id: string | null) => void;
   onEpisodeTemplateChange: (id: EpisodeTemplateId) => void;
 }) {
+  const { t } = useI18n();
+  const templateText = (id: EpisodeTemplateId) =>
+    id === "short_8"
+      ? {
+          name: t("template.short8.name"),
+          description: t("template.short8.description"),
+        }
+      : id === "standard_16"
+        ? {
+            name: t("template.standard16.name"),
+            description: t("template.standard16.description"),
+          }
+        : {
+            name: t("template.fourPanel8.name"),
+            description: t("template.fourPanel8.description"),
+          };
   return (
     <>
       <section>
-        <h3>プロジェクト</h3>
+        <h3>{t("structure.project")}</h3>
         <button className="row active" title={bundle.project.title}>
           {bundle.project.title}
         </button>
       </section>
       <section>
         <h3>
-          エピソード
+          {t("structure.episodes")}
           <button
-            title="Episodeを追加"
-            aria-label="Episodeを追加"
+            title={t("structure.addEpisode")}
+            aria-label={t("structure.addEpisode")}
             onClick={() => {
-              const title = prompt("エピソード名", "新しいエピソード");
+              const title = prompt(
+                t("structure.episodeName"),
+                t("structure.newEpisode"),
+              );
               if (title)
                 void apply(
                   window.mangai.createEpisode(bundle.project.id, title),
@@ -65,9 +85,10 @@ export function ProjectStructureTab({
               {item.title}
             </button>
             <button
-              title="名前変更"
+              title={t("structure.rename")}
+              aria-label={`${t("structure.rename")}: ${item.title}`}
               onClick={() => {
-                const title = prompt("エピソード名", item.title);
+                const title = prompt(t("structure.episodeName"), item.title);
                 if (title) apply(window.mangai.renameEpisode(item.id, title));
               }}
             >
@@ -75,7 +96,8 @@ export function ProjectStructureTab({
             </button>
             <button
               disabled={index === 0}
-              title="上へ"
+              title={t("structure.moveUp")}
+              aria-label={`${t("structure.moveUp")}: ${item.title}`}
               onClick={() => {
                 const ids = bundle.episodes.map((episode) => episode.id);
                 [ids[index - 1], ids[index]] = [ids[index], ids[index - 1]];
@@ -86,7 +108,8 @@ export function ProjectStructureTab({
             </button>
             <button
               disabled={index === bundle.episodes.length - 1}
-              title="下へ"
+              title={t("structure.moveDown")}
+              aria-label={`${t("structure.moveDown")}: ${item.title}`}
               onClick={() => {
                 const ids = bundle.episodes.map((episode) => episode.id);
                 [ids[index + 1], ids[index]] = [ids[index], ids[index + 1]];
@@ -98,10 +121,12 @@ export function ProjectStructureTab({
             <button
               className="danger"
               disabled={bundle.episodes.length <= 1}
-              title="削除"
+              title={t("structure.delete")}
+              aria-label={`${t("structure.delete")}: ${item.title}`}
               onClick={() =>
-                confirm(`「${item.title}」とページを削除しますか？`) &&
-                apply(window.mangai.deleteEpisode(item.id))
+                confirm(
+                  t("structure.deleteEpisodeConfirm", { title: item.title }),
+                ) && apply(window.mangai.deleteEpisode(item.id))
               }
             >
               ×
@@ -111,7 +136,7 @@ export function ProjectStructureTab({
         {episode && (
           <div className="episode-template">
             <select
-              aria-label="話テンプレート"
+              aria-label={t("structure.episodeTemplate")}
               value={episodeTemplateId}
               onChange={(event) =>
                 onEpisodeTemplateChange(event.target.value as EpisodeTemplateId)
@@ -119,12 +144,12 @@ export function ProjectStructureTab({
             >
               {episodeTemplates.map((template) => (
                 <option key={template.id} value={template.id}>
-                  {template.name}
+                  {templateText(template.id).name}
                 </option>
               ))}
             </select>
             <button
-              title="選択中のEpisode末尾へページとコマを一括追加"
+              title={t("structure.applyTemplateTitle")}
               onClick={() => {
                 const template = episodeTemplates.find(
                   (item) => item.id === episodeTemplateId,
@@ -132,7 +157,11 @@ export function ProjectStructureTab({
                 if (
                   template &&
                   confirm(
-                    `「${episode.title}」の末尾へ${template.name}を追加しますか？\n${template.description}\nこの操作は1回のUndoで戻せます。`,
+                    t("structure.applyTemplateConfirm", {
+                      title: episode.title,
+                      name: templateText(template.id).name,
+                      description: templateText(template.id).description,
+                    }),
                   )
                 )
                   void apply(
@@ -143,17 +172,17 @@ export function ProjectStructureTab({
                   );
               }}
             >
-              話構成を追加
+              {t("structure.applyStory")}
             </button>
           </div>
         )}
       </section>
       <section className="grow">
         <h3>
-          ページ
+          {t("structure.pages")}
           <button
-            title="Pageを追加"
-            aria-label="Pageを追加"
+            title={t("structure.addPage")}
+            aria-label={t("structure.addPage")}
             onClick={() => episode && apply(window.mangai.addPage(episode.id))}
           >
             ＋
@@ -166,23 +195,27 @@ export function ProjectStructureTab({
                 "page-row " + (page.id === selectedPageId ? "active" : "")
               }
               key={page.id}
-              onClick={() => onSelectPage(page.id)}
             >
-              <span>
-                {assetUrls[page.imageAssetId || ""] ? (
-                  <img
-                    src={assetUrls[page.imageAssetId || ""]}
-                    alt={`Page ${page.pageNumber}`}
-                  />
-                ) : (
-                  "□"
-                )}
-              </span>
-              <b>{page.pageNumber}</b>
+              <button
+                className="page-select"
+                aria-label={`Page ${page.pageNumber}`}
+                onClick={() => onSelectPage(page.id)}
+              >
+                <span>
+                  {assetUrls[page.imageAssetId || ""] ? (
+                    <img src={assetUrls[page.imageAssetId || ""]} alt="" />
+                  ) : (
+                    "□"
+                  )}
+                </span>
+                <b>{page.pageNumber}</b>
+              </button>
               <button
                 disabled={index === 0}
-                title="Pageを上へ"
-                aria-label={`Page ${page.pageNumber}を上へ`}
+                title={t("structure.movePageUp", { page: page.pageNumber })}
+                aria-label={t("structure.movePageUp", {
+                  page: page.pageNumber,
+                })}
                 onClick={(event) => {
                   event.stopPropagation();
                   const ids = pages.map((item) => item.id);
@@ -195,8 +228,10 @@ export function ProjectStructureTab({
               </button>
               <button
                 disabled={index === pages.length - 1}
-                title="Pageを下へ"
-                aria-label={`Page ${page.pageNumber}を下へ`}
+                title={t("structure.movePageDown", { page: page.pageNumber })}
+                aria-label={t("structure.movePageDown", {
+                  page: page.pageNumber,
+                })}
                 onClick={(event) => {
                   event.stopPropagation();
                   const ids = pages.map((item) => item.id);
@@ -210,7 +245,7 @@ export function ProjectStructureTab({
             </div>
           ))
         ) : (
-          <div className="panel-empty">Pageを追加してください。</div>
+          <div className="panel-empty">{t("structure.noPages")}</div>
         )}
       </section>
     </>

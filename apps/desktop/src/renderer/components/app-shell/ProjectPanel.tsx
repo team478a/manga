@@ -4,6 +4,7 @@ import type { EpisodeTemplateId } from "@mangai/canvas-core";
 import { AssetBrowser } from "../assets/AssetBrowser";
 import { ProjectStructureTab } from "../project/ProjectStructureTab";
 import { Tabs } from "../common/Tabs";
+import { useI18n } from "../../i18n";
 
 type ProjectPanelTab = "structure" | "assets";
 
@@ -46,6 +47,7 @@ export function ProjectPanel({
   onSelectAsset: (id: string) => void;
   onEpisodeTemplateChange: (id: EpisodeTemplateId) => void;
 }) {
+  const { t } = useI18n();
   const [activeTab, setActiveTab] =
     React.useState<ProjectPanelTab>(readPanelTab);
 
@@ -61,16 +63,24 @@ export function ProjectPanel({
     <aside
       id="project-panel"
       className="left project-panel"
-      aria-label="Project構成と素材"
+      aria-label={t("panel.projectAria")}
     >
       <div className="project-panel-tabs">
         <Tabs
           idPrefix="project-panel"
-          label="Projectパネル"
+          label={t("panel.projectTabs")}
           value={activeTab}
           options={[
-            { id: "structure", label: "構成", count: pages.length },
-            { id: "assets", label: "素材", count: bundle.assets.length },
+            {
+              id: "structure",
+              label: t("panel.structure"),
+              count: pages.length,
+            },
+            {
+              id: "assets",
+              label: t("panel.assets"),
+              count: bundle.assets.length,
+            },
           ]}
           onChange={setActiveTab}
         />

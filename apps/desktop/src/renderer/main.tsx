@@ -91,7 +91,7 @@ function App() {
     [form, setForm] = React.useState(emptyForm),
     [creating, setCreating] = React.useState(false),
     [error, setError] = React.useState(""),
-    [saving, setSaving] = React.useState("保存済み"),
+    [saving, setSaving] = React.useState(() => t("saving.saved")),
     [exportTask, setExportTask] = React.useState<{
       requestId: string;
       progress: ExportProgress;
@@ -124,6 +124,7 @@ function App() {
     [assetUrls, setAssetUrls] = React.useState<Record<string, string>>({});
   const showError = (e: unknown) =>
     setError(e instanceof Error ? e.message : String(e));
+  React.useEffect(() => setSaving(t("saving.saved")), [locale]);
   const refresh = () =>
     window.mangai.listProjects().then(async (items) => {
       setProjects(items);
@@ -239,7 +240,7 @@ function App() {
         );
         void refresh();
         void refreshHistory(b.project.id);
-        setSaving("保存済み");
+        setSaving(t("saving.saved"));
       })
       .catch(showError);
   React.useEffect(() => {
@@ -702,7 +703,7 @@ function App() {
     try {
       setExportResult(undefined);
       setExportError(undefined);
-      setSaving("書き出し中…");
+      setSaving(t("saving.exporting"));
       setExportTask({
         requestId,
         progress: {
@@ -717,7 +718,7 @@ function App() {
         bundle.project.id,
         requestId,
       );
-      setSaving("保存済み");
+      setSaving(t("saving.saved"));
       setExportResult(result);
       setExportHistory(
         await window.mangai.listExportHistory(bundle.project.id),
@@ -725,8 +726,10 @@ function App() {
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : String(cause);
       const canceled = message.includes("キャンセル");
-      setSaving(canceled ? "書き出しキャンセル" : "書き出し失敗");
-      setExportError(canceled ? "書き出しをキャンセルしました。" : message);
+      setSaving(
+        canceled ? t("saving.exportCanceled") : t("saving.exportFailed"),
+      );
+      setExportError(canceled ? t("saving.exportCanceledMessage") : message);
     } finally {
       setExportTask(null);
     }
@@ -834,7 +837,9 @@ function App() {
               <button onClick={() => setZoom(Math.min(200, zoom + 10))}>
                 ＋
               </button>
-              <button onClick={() => setZoom(70)}>リセット</button>
+              <button onClick={() => setZoom(70)}>
+                {t("workspace.zoomReset")}
+              </button>
             </div>
             {page ? (
               <MangaCanvas
@@ -852,14 +857,12 @@ function App() {
                 onApply={apply}
               />
             ) : (
-              <div className="empty">
-                ページを追加してください。素材を選び「全素材を連続ページ化」も利用できます。
-              </div>
+              <div className="empty">{t("workspace.noPage")}</div>
             )}
           </section>
           <button
             className="inspector-scrim"
-            aria-label="右パネルを閉じる"
+            aria-label={t("workspace.closeInspector")}
             tabIndex={-1}
             onClick={() => setRightPanelOpen(false)}
           />
@@ -900,11 +903,15 @@ function App() {
 }
 
 function savingTone(value: string): StatusTone {
-  if (value.includes("失敗")) return "danger";
-  if (value.includes("キャンセル") || value.includes("未保存"))
+  if (value.includes("失敗") || value.includes("failed")) return "danger";
+  if (
+    value.includes("キャンセル") ||
+    value.includes("canceled") ||
+    value.includes("未保存")
+  )
     return "warning";
-  if (value.includes("中")) return "info";
-  if (value.includes("保存済み")) return "success";
+  if (value.includes("中") || value.endsWith("ing…")) return "info";
+  if (value.includes("保存済み") || value === "Saved") return "success";
   return "neutral";
 }
 
