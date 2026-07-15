@@ -530,3 +530,11 @@ Desktopのpackage-lockとローカルMANGAIパッケージを読み取り、SPDX
 カスタムProjectがDocumentsと異なるドライブにある場合、従来の`rename`ではWindowsが`EXDEV`を返し、Projectを中央`.trash`へ移動できない問題を修正しました。中央ゴミ箱を優先し、別ボリューム時だけProject保存先の親フォルダーにある`.mangai-trash`へ同一ドライブ内で退避します。ファイル退避に成功した後だけDB行を削除し、DB削除失敗時は元の保存先へ戻します。ファイルシステムrootやMANGAIデータrootをProjectとして削除する操作も拒否します。
 
 自動テストでは`EXDEV`フォールバック、退避失敗時のDB・原本保持、カスタム保存先内の素材`.trash`を検証しました。さらにCドライブのSQLiteからDドライブの実Projectを削除し、内容をDドライブの`.mangai-trash`へ保持できることを専用E2Eで確認しました。一時領域を削除後、Desktop統合テスト39/39、TypeScript、ESLintに成功しています。
+
+## 63. DesktopからHub非公開下書きへの限定更新
+
+Desktop端末認証へ`works:write:draft` scopeを追加し、承認画面で付与内容を明示するようにしました。コードを手入力した場合も、権限確認画面を一度表示しなければ承認できません。既存の`works:read`トークンは読み取り専用のままで、更新には再認証が必要です。
+
+Desktopから変更できる対象を、本人所有・Project ID一致・`draft`・非公開のHub作品に限定しました。更新項目は作品名と説明だけで、公開状態、商品、価格、販売ファイル、決済情報は変更できません。Desktop画面ではHubとの差分を表示し、利用者の確認後にだけ更新します。`updated_at`を使った楽観的ロックにより、Hub側で先に編集された場合は上書きせず再確認を促します。
+
+Desktop TypeScript、Hub TypeScript、ESLint、Desktop統合テスト41/41、Hubテスト10/10、Next.js本番buildに成功しました。

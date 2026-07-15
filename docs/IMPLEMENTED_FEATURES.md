@@ -312,10 +312,11 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 途中失敗時の作品・Storageロールバック
 - 販売パッケージの元Desktop Project IDを作品へ保存
 - 公開済み作品と販売中商品数だけを返すDesktop向け匿名API
-- Desktop「Hub連携」画面での読み取り専用ステータス確認
+- Desktop「Hub連携」画面での公開・下書きステータス確認と差分表示
 - Hubログイン中の本人が承認する8桁・15分のDesktop端末コード
-- 90日・`works:read`限定の端末トークンとHub端末管理・失効画面
+- 90日・`works:read` / `works:write:draft`分離の端末トークンとHub端末管理・失効画面
 - 認証済みDesktopから本人の非公開下書き・停止中商品数を確認
+- 本人の非公開下書きに限った作品名・説明の確認付き更新と競合防止
 - DesktopトークンのOS暗号化保存とrendererからの分離
 - IPをHMAC化した端末認証開始rate limit（15分あたりIP 10回・全体300回）
 - 期限切れ・失効済み端末認証と古いrate limit行の自動清掃
