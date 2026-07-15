@@ -19,6 +19,7 @@ import { AIService } from "./ai/service.js";
 import { DesktopUpdater } from "./updater.js";
 import { DiagnosticsService } from "./diagnostics.js";
 import { fetchHubStatus, updateHubDraft } from "./hub-status.js";
+import { safeBaseUrl } from "./ai/providers/http.js";
 import {
   pollHubDeviceAuthorization,
   revokeHubDeviceAuthorization,
@@ -532,9 +533,11 @@ function register() {
   );
   handle("ai:settings:history", () => store.listAISettingsHistory());
   handle("ai:runtime", () => ({ mockEnabled: aiService.isMockEnabled() }));
-  handle("ai:settings:save", (v) =>
-    store.saveProviderSettings(providerSettingsSchema.parse(v)),
-  );
+  handle("ai:settings:save", (v) => {
+    const settings = providerSettingsSchema.parse(v);
+    safeBaseUrl(settings.baseUrl, settings.allowedOrigins);
+    return store.saveProviderSettings(settings);
+  });
   handle("ai:provider:check", async (v) => {
     const id = providerSettingsSchema.shape.providerId.parse(v?.providerId);
     return aiService.provider(id).checkConnection();

@@ -457,6 +457,24 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 }
               />
             </label>
+            <label>
+              許可するリモートorigin（1行に1件）
+              <textarea
+                value={value.allowedOrigins.join("\n")}
+                onChange={(e) =>
+                  update(value.providerId, {
+                    allowedOrigins: e.target.value
+                      .split(/\r?\n/)
+                      .map((origin) => origin.trim())
+                      .filter(Boolean),
+                  })
+                }
+                placeholder="https://ai.example.com:8188"
+              />
+              <small>
+                localhostは登録不要です。それ以外はHTTPS originの完全一致だけを許可します。
+              </small>
+            </label>
             {value.providerId !== "comfyui" && (
               <>
                 <label>

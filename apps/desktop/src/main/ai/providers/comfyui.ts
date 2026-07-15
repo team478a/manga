@@ -18,7 +18,7 @@ export class ComfyUIProvider implements ImageGenerationProvider {
     ) => Promise<{ workflow: Record<string, any>; mapping: any }>,
   ) {}
   private url(path: string) {
-    return `${safeBaseUrl(this.settings.baseUrl)}${path}`;
+    return `${safeBaseUrl(this.settings.baseUrl, this.settings.allowedOrigins)}${path}`;
   }
   async checkConnection(
     signal?: AbortSignal,

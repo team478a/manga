@@ -108,6 +108,7 @@ export const providerSettingsSchema = z.object({
   timeoutMs: z.number().int().min(1000).max(3600000).default(120000),
   stream: z.boolean().default(true),
   pollIntervalMs: z.number().int().min(250).max(60000).default(1000),
+  allowedOrigins: z.array(z.string().url()).max(20).default([]),
 });
 export type ProviderSettings = z.infer<typeof providerSettingsSchema>;
 export const chatSendSchema = z.object({

@@ -11,6 +11,7 @@ import { OllamaProvider } from "../dist-main/main/ai/providers/ollama.js";
 import { ComfyUIProvider } from "../dist-main/main/ai/providers/comfyui.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { AIService } from "../dist-main/main/ai/service.js";
+import { safeBaseUrl } from "../dist-main/main/ai/providers/http.js";
 import { chatRequestSchema } from "@mangai/ai-core";
 process.env.MANGAI_ENABLE_MOCK_AI = "true";
 const settings = (providerId, baseUrl) => ({
@@ -23,6 +24,7 @@ const settings = (providerId, baseUrl) => ({
   timeoutMs: 1000,
   stream: true,
   pollIntervalMs: 10,
+  allowedOrigins: [],
 });
 async function server(handler) {
   const instance = http.createServer(handler);
@@ -33,6 +35,39 @@ async function server(handler) {
     close: () => new Promise((resolve) => instance.close(resolve)),
   };
 }
+test("AI connection URL requires loopback or an explicit HTTPS origin", () => {
+  assert.equal(safeBaseUrl("http://127.0.0.1:11434"), "http://127.0.0.1:11434");
+  assert.equal(safeBaseUrl("http://localhost:8188/"), "http://localhost:8188");
+  assert.equal(
+    safeBaseUrl("https://ai.example.com:8188", [
+      "https://ai.example.com:8188",
+    ]),
+    "https://ai.example.com:8188",
+  );
+  assert.throws(
+    () => safeBaseUrl("http://192.168.1.20:11434", ["https://192.168.1.20"]),
+    /HTTPS/,
+  );
+  assert.throws(
+    () => safeBaseUrl("https://ai.example.com:8188"),
+    /許可リスト/,
+  );
+  assert.throws(
+    () =>
+      safeBaseUrl("https://ai.example.com:8188", [
+        "https://ai.example.com:443",
+      ]),
+    /許可リスト/,
+  );
+  assert.throws(
+    () => safeBaseUrl("http://user:pass@localhost:11434"),
+    /不正/,
+  );
+  assert.throws(
+    () => safeBaseUrl("http://localhost:11434/api"),
+    /不正/,
+  );
+});
 test("Ollama connection, models, generation and stream cancellation", async () => {
   const mock = await server((req, res) => {
     res.setHeader("content-type", "application/json");
@@ -95,6 +130,27 @@ test("Ollama connection failure returns a user-facing result", async () => {
   const result = await provider.checkConnection();
   assert.equal(result.ok, false);
   assert.match(result.message, /接続|タイムアウト/);
+});
+test("AI HTTP requests do not follow redirects", async () => {
+  let redirected = false;
+  const mock = await server((req, res) => {
+    if (req.url === "/api/tags") {
+      res.statusCode = 302;
+      res.setHeader("location", "/unexpected");
+      return res.end();
+    }
+    redirected = true;
+    res.end(JSON.stringify({ models: [] }));
+  });
+  try {
+    const result = await new OllamaProvider(
+      settings("ollama", mock.url),
+    ).checkConnection();
+    assert.equal(result.ok, false);
+    assert.equal(redirected, false);
+  } finally {
+    await mock.close();
+  }
 });
 test("ComfyUI queue, status and image retrieval", async () => {
   const png = Buffer.from(

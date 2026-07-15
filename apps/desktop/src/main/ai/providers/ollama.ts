@@ -14,7 +14,7 @@ export class OllamaProvider implements TextGenerationProvider {
   name = "Ollama";
   constructor(private settings: ProviderSettings) {}
   private url(path: string) {
-    return `${safeBaseUrl(this.settings.baseUrl)}${path}`;
+    return `${safeBaseUrl(this.settings.baseUrl, this.settings.allowedOrigins)}${path}`;
   }
   async checkConnection(
     signal?: AbortSignal,

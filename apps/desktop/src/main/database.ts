@@ -2738,6 +2738,7 @@ export class MangaiDatabase {
         timeoutMs: 120000,
         stream: true,
         pollIntervalMs: 1000,
+        allowedOrigins: [],
       },
       {
         providerId: "comfyui",
@@ -2749,6 +2750,7 @@ export class MangaiDatabase {
         timeoutMs: 300000,
         stream: false,
         pollIntervalMs: 1000,
+        allowedOrigins: [],
       },
       {
         providerId: "mock",
@@ -2760,6 +2762,7 @@ export class MangaiDatabase {
         timeoutMs: 30000,
         stream: true,
         pollIntervalMs: 250,
+        allowedOrigins: [],
       },
     ];
     const rows = this.db
@@ -2790,7 +2793,8 @@ export class MangaiDatabase {
     );
     const changedFields = previous
       ? (Object.keys(settings) as Array<keyof ProviderSettings>).filter(
-          (key) => previous[key] !== settings[key],
+          (key) =>
+            JSON.stringify(previous[key]) !== JSON.stringify(settings[key]),
         )
       : (Object.keys(settings) as Array<keyof ProviderSettings>);
     const stamp = now();
