@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `15a0c09`
+実装基準コミット: `26b4cf3`
 
 この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
@@ -708,3 +708,11 @@ CanvasのコマInspectorへ分離画像レイヤー一覧を追加し、選択�
 共通Page rendererも`panel_layers`を受け取り、PDFと連番PNG ZIPをローカルで複数レイヤー合成します。分離レイヤーが1件でも存在するコマは従来統合画像へ戻らず、全レイヤーを非表示にした状態も維持します。分離レイヤーがない旧Projectだけは従来の`panels.image_asset_id`描画を継続します。赤い分離レイヤーが緑の互換画像より優先されることを、書き出しPNGの画素で検証しました。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト52/52、canvas-core 25/25、ai-core 16/16に成功しています。Canvas上の直接移動・拡縮・回転、mask・correction固有処理、互換cache更新は次工程です。
+
+## 85. Panelレイヤー画像のCanvas直接変形
+
+選択したPanelレイヤー画像を専用編集モードでCanvas上からドラッグ移動、四隅の等比拡縮、回転できるようにしました。変形結果はレイヤーのfit、scale、offset、rotationへ変換して限定IPCで保存するため、再起動、Undo / Redo、PDF・画像ZIP書き出しへそのまま反映されます。
+
+Inspectorへfit、倍率、横・縦offset、回転の数値入力、中央リセット、編集開始・終了操作を追加しました。対象レイヤーを非表示またはlockした場合、別レイヤーや別オブジェクトへ移動した場合、Escapeを押した場合は専用編集を終了します。従来統合画像の直接編集も維持しています。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト52/52、canvas-core 25/25、ai-core 16/16に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。

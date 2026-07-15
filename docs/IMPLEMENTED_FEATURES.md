@@ -364,6 +364,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 外部safe素材Providerの無効既定interface、Promptだけを対象とする送信manifest、費用・利用条件の事前プレビュー、3項目の明示確認契約
 - 背景・人物・小物・効果・tone・mask・correctionを保持する`panel_layers`永続基盤、従来統合画像の自動移行、Undo・複製・バックアップ復元
 - PanelレイヤーのCanvas表示、素材追加・差し替え、表示・lock・順序・opacity・blend mode編集、コマ形状内のPDF・連番PNG ZIPローカル合成
+- Panelレイヤー画像のCanvas直接移動・等比拡縮・回転、fit・倍率・offset・回転の数値編集とリセット
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
 - 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰

@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `15a0c09`
+実装基準コミット: `26b4cf3`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -376,7 +376,19 @@ handoff中は対象分類を画面へ明示し、利用者は通常生成へ戻�
 - 従来統合画像だけのProjectは既存描画経路を維持
 - 書き出し画像の画素検証を含むDesktop統合テスト
 
-現在は合成結果を描画時・書き出し時にローカル生成します。レイヤー画像のCanvas上での直接変形、mask・correction固有処理、`panels.image_asset_id`互換cacheの更新は次工程です。
+現在は合成結果を描画時・書き出し時にローカル生成します。mask・correction固有処理、`panels.image_asset_id`互換cacheの更新は次工程です。
+
+### Commit 11: Panelレイヤー直接変形（完了: `26b4cf3`）
+
+- Inspectorから対象レイヤーを選び、Canvas専用編集モードを開始・終了
+- Canvas上のドラッグ移動、四隅の等比拡縮、回転handle
+- fit、倍率、横・縦offset、回転の数値編集
+- 中央位置・倍率・回転のリセット
+- 非表示・lock・別レイヤー選択時の編集モード安全終了
+- 変形結果を既存Panel Layer IPCへ保存し、Undo / Redoと書き出しへ反映
+- 従来統合画像の直接編集モードを維持
+
+CanvasとPage rendererは同じfit・offset・scale・rotation値を使用します。mask・correctionは現段階では通常画像レイヤーとして描画され、固有の切り抜き・色補正処理はまだ行いません。
 
 ## 11. テスト基準
 
