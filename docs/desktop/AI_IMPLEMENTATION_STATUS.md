@@ -1,6 +1,6 @@
 # Creator Chat・ローカルAI基盤 完了条件
 
-確認日: 2026-07-12
+確認日: 2026-07-15
 
 | # | 完了条件 | 状態 | 確認方法・補足 |
 | --- | --- | --- | --- |
@@ -23,7 +23,7 @@
 | 17 | 失敗ジョブ再実行 | 完了 | 画像ジョブ履歴から再実行 |
 | 18 | 実行中キャンセル | 完了 | AbortとComfyUI `/interrupt` |
 | 19 | AI未設定で起動 | 完了 | Mock fallback、外部接続なし |
-| 20 | モック自動テスト | 完了 | Desktop統合テスト全16件成功 |
+| 20 | モック自動テスト | 完了 | Desktop統合テスト44/44成功。通信先許可・redirect拒否を含む |
 | 21 | Desktop TypeScript | 完了 | 成功 |
 | 22 | Desktop ESLint | 完了 | 成功 |
 | 23 | Desktopビルド | 完了 | Electron main・Vite成功 |
@@ -37,7 +37,15 @@
 
 実際のOllamaモデル、実際のComfyUIインストール、ユーザー固有ワークフローによるE2E生成は、このPC上の外部サービス稼働状態に依存するため未確認です。HTTP互換モックでは接続、モデル取得、ストリーム、キュー、成功、失敗、タイムアウト、キャンセル、画像取得を検証しています。
 
+## AI通信先の保護
+
+- `localhost`、IPv4 `127.0.0.0/8`、IPv6 `[::1]`はローカル接続として許可
+- リモート接続はHTTPSと設定済みoriginの完全一致を必須化
+- URL credential、base path、query、fragmentを拒否
+- HTTP redirectを追跡せず拒否
+- 許可originは最大20件、AI設定履歴には実URL・hostを保存しない
+
 ## 残る改善
 
 - クラウドプロバイダー追加時のElectron `safeStorage` 対応
-- URL許可リストのより細かなネットワーク制限
+- DNS解決結果を使ったprivate network・DNS rebinding対策の追加検討

@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `41f362a`
+実装基準コミット: `842a397`
 
 ## 1. 現在地
 
@@ -115,6 +115,8 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 - Ollama、ComfyUI、Mockプロバイダー
 - AI設定、接続確認、モデル一覧
+- localhost接続と、HTTPS完全一致origin許可リストによるリモート通信先制限
+- URL credential・base path・query・fragment・HTTP redirectの拒否
 - Ollamaモデル選択とComfyUIワークフローを含むAI接続一括診断
 - Ollamaモデル一覧のSQLiteキャッシュとオフライン復元
 - Creator Chatのストリーミング、停止、再生成、履歴復元
@@ -156,6 +158,8 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 - SQLite Foreign Key、WAL、パラメータ化クエリ
 - 秘密鍵をDesktopへ同梱しない
 - 更新配布URLはHTTPSのみ許可
+- AIのリモート通信はHTTPSかつ明示したoriginとの完全一致だけを許可
+- Ollama・ComfyUI通信のHTTP redirectを拒否
 
 ### Hub
 
@@ -173,7 +177,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 39/39成功                     |
+| Desktop統合テスト                       | 44/44成功                     |
 | canvas-core単体テスト                   | 24/24成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |

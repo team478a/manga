@@ -1,12 +1,25 @@
 # Creator Chat・ローカルAI生成
 
-更新日: 2026-07-14
+更新日: 2026-07-15
 
 ## 概要
 
 MANGAI Desktopは、AI未設定でも従来のProject・Episode・Page・素材・書き出し機能を利用できます。ローカルAIを使用するときはワークスペース上部の「設定」「Creator Chat」「AI生成」を使用します。
 
 rendererはOllamaやComfyUIへ直接接続しません。すべての通信、ジョブ、ファイル保存はElectron main processで行い、入力はZodで検証します。
+
+## AI通信先の制限
+
+初期設定のOllamaとComfyUIは、PC内のループバックアドレスだけへ接続します。`localhost`、`127.0.0.0/8`、`[::1]`はHTTPでも利用できます。
+
+別PCやリモートサービスへ接続する場合は、設定画面の「許可するリモートorigin」へ接続先を1行に1件登録してください。リモート接続はHTTPSだけを許可し、scheme、host、portが完全一致するoriginだけへ接続します。
+
+```text
+https://ai.example.com
+https://ai.example.com:8443
+```
+
+接続URLと許可originには、ユーザー名・パスワード、パス、query、fragmentを指定できません。HTTP redirectも追跡しないため、転送先を使う場合は最終的なHTTPS originを明示して接続URLと許可一覧へ設定します。
 
 ## AI接続診断
 

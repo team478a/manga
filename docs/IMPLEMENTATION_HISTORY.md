@@ -562,3 +562,11 @@ Desktop TypeScript、ESLint、統合テスト42/42に成功しました。
 Project固有ではないAI設定もProject Undoへ混ぜず、端末内の監査履歴として保存・表示します。Ollama / ComfyUIの有効状態、ローカル／リモート接続の区分、変更項目、モデル選択の有無だけを記録し、接続URL、ホスト名、モデル名の実値は履歴へ保存しません。同じ設定を再保存した場合は履歴を増やしません。
 
 Desktop TypeScript、ESLint、統合テスト42/42に成功しました。
+
+## 67. AI通信先の明示許可origin
+
+OllamaとComfyUIの接続先検証を強化しました。`localhost`、IPv4の`127.0.0.0/8`、IPv6の`[::1]`は従来どおりローカルHTTP接続を許可します。リモート接続はHTTPSだけに限定し、AI設定の許可一覧へ登録したscheme、host、portが完全一致するoriginだけへ接続します。許可originは最大20件です。
+
+接続URLと許可originに含まれるユーザー名・パスワード、base path、query、fragmentを拒否し、HTTP redirectも追跡しません。設定保存時にもmain processで同じ検証を行うため、不正なURLをSQLiteへ保存して後から使用する経路を防ぎます。許可originの追加・削除は既存のAI設定監査履歴へ変更項目として記録しますが、実際のURLやhostは記録しません。
+
+完全一致origin、port不一致、未登録origin、HTTPリモート接続、URL credential、base path、redirect拒否の回帰テストを追加しました。Desktop TypeScript、ESLint、統合テスト44/44に成功しています。

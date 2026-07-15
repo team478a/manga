@@ -110,6 +110,7 @@ npm run rc:windows-cross-volume-trash -- D:\ allow-local
 - 任意素材の代表画像設定
 - Creator Chat、Ollama、ComfyUI、生成ジョブ、AI設定
 - Ollamaモデル・ComfyUIワークフローを含むAI接続一括診断
+- localhostまたは明示したHTTPS originだけへ接続するAI通信先制限
 - 秘密値を除外するローカルJSONL構造化ログ、5MB・3世代ローテーション
 - 明示同意後だけ保存する詳細クラッシュレポート、最大20件、保存先表示・全削除
 - main、renderer、child process異常と応答停止の捕捉。外部自動送信なし
