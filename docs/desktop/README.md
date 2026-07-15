@@ -39,9 +39,15 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
   .trash/
 ```
 
-素材は `{project}/assets/` へコピーし、SQLiteには相対パス、SHA-256、画像寸法、MIME、サイズを保存します。削除対象は即時消去せず `.trash` へ移動します。
+素材は `{project}/assets/` へコピーし、SQLiteには相対パス、SHA-256、画像寸法、MIME、サイズを保存します。素材削除はProject内の`.trash`へ移動します。Project削除は通常`{Documents}/MANGAI/.trash`へ移動し、カスタム保存先が別ドライブの場合は保存先と同じドライブの親フォルダーにある`.mangai-trash`へ退避します。退避に失敗した場合はSQLiteのProject情報を削除しません。
 
 新規Project画面の「参照…」からWindowsのフォルダー選択ダイアログを開き、任意のProjectフォルダーを指定できます。「既定に戻す」を選ぶと、従来どおり `{Documents}/MANGAI/projects/{projectId}` を使用します。選択したフォルダーにはアプリが `assets/` などを作成するため、Project専用フォルダーを指定してください。別のProjectが使用中の保存先は指定できません。
+
+実ドライブ確認は、Desktopをbuildした後に次のように異なるドライブrootを明示して実行します。ランダム名の`MANGAI-Codex-E2E-*`だけを作成・削除し、既存フォルダーには触れません。
+
+```powershell
+npm run rc:windows-cross-volume-trash -- D:\ allow-local
+```
 
 ## SQLiteスキーマ
 

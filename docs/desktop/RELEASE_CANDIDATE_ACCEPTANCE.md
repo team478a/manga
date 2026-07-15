@@ -126,7 +126,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 
 | 判定                  | 完了条件                            | 現在                                       |
 | --------------------- | ----------------------------------- | ------------------------------------------ |
-| ローカル品質ゲート    | `npm run rc:validate`成功           | 2026-07-15成功（Desktop 36/36、Hub 10/10） |
+| ローカル品質ゲート    | `npm run rc:validate`成功           | 2026-07-15成功（Desktop 39/39、Hub 10/10） |
 | Desktopローカル受入れ | 第4節を製品版で完了                 | 2026-07-15完了                             |
 | Ollama                | 第5節を実サービスで完了             | 外部サービス待ち                           |
 | ComfyUI               | 第6節を実サービスで完了             | 外部サービス待ち                           |
@@ -144,7 +144,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 
 複製処理を修正し、素材ファイルを整合性検査して新しいProject保存先へコピーし、すべてのCanvas参照を新IDへ張り替えるようにしました。元Projectの素材4件、コマ4件、吹き出し3件、テキスト3件、表紙を保持した複製を製品版で確認し、そこからPDFを再生成しました。PDFをPNGへ描画して、黄・緑・青・赤の4コマ、吹き出し、縦書き・横書きテキストが表示されることを目視確認しました。
 
-複製先からの内容入り書き出しに加え、3Pageの自動RC受入れ、Desktop TypeScript、ESLint、統合テスト36/36が成功しています。これを外部サービス不要のDesktopローカル受入れ結果とします。
+複製先からの内容入り書き出しに加え、3Pageの自動RC受入れ、Desktop TypeScript、ESLint、統合テスト39/39が成功しています。これを外部サービス不要のDesktopローカル受入れ結果とします。
 
 同日に現行0.1.0のNSISインストーラーとblockmapを再生成し、version、ファイルサイズ、blockmapを検証しました。分離出力した更新検証版では`latest.yml`のinstaller名、SHA-512、サイズも一致しています。いずれもAuthenticodeは`NotSigned`であり、署名必須ゲートは意図どおり失敗するため、Windows成果物のRC完了判定はコード署名後まで保留します。
 
@@ -153,3 +153,5 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 さらに、インストール済み製品版を隔離したDocuments保存先で起動し、SQLite初期化とrenderer描画を確認して自動終了するスモーク検査をE2Eへ統合しました。通常の作品データを変更せず、パッケージ不足、ネイティブ依存不整合、main・preload・renderer読込失敗を配布前に検出できます。
 
 現行0.1.0のpackage-lockとローカルMANGAIパッケージからSPDX 2.3 SBOMを生成し、562パッケージを記録しました。インストーラー、blockmap、SBOMのSHA-256一覧を生成・再検証し、SBOMを変更した否定テストが終了コード1となることも確認しています。更新版では`latest.yml`または`beta.yml`も同じ一覧へ含まれます。
+
+CドライブのSQLiteからDドライブに作成したカスタムProjectを削除し、同じDドライブの`.mangai-trash`へ原本を保持して退避できることを確認しました。別ボリューム移動の失敗時だけ同一ドライブへフォールバックし、退避そのものが失敗した場合はProjectのDB情報を保持します。

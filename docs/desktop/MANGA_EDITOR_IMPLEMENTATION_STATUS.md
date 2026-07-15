@@ -9,7 +9,7 @@
 | #   | 完了条件                              | 状態         | 確認方法                                            |
 | --- | ------------------------------------- | ------------ | --------------------------------------------------- |
 | 1   | 既存MANGAI Hubが正常にビルド          | 完了         | ルートTypeScript、ESLint、Next.js 16本番ビルド成功  |
-| 2   | 既存MANGAI Desktop機能が利用可能      | 完了         | Desktop統合テスト36件、修正版パッケージUI起動       |
+| 2   | 既存MANGAI Desktop機能が利用可能      | 完了         | Desktop統合テスト39件、修正版パッケージUI起動       |
 | 3   | 旧Projectを開ける                     | 完了         | 旧DB移行テストと旧形式相当Projectの手動表示・出力   |
 | 4   | Page編集Canvasを開ける                | 完了         | パッケージUIで新規Page Canvasを確認                 |
 | 5   | 矩形コマを作成                        | 完了         | 既定追加、テンプレート、ドラッグ作成                |
@@ -36,7 +36,7 @@
 | 26  | Desktop TypeScript                    | 完了         | `npm run typecheck`成功                             |
 | 27  | Desktop ESLint                        | 完了         | `npm run lint`成功                                  |
 | 28  | Desktop本番ビルド                     | 完了         | Electron mainとVite renderer成功                    |
-| 29  | 既存統合テスト                        | 完了         | AI・DB・複製・更新を含む36/36成功                   |
+| 29  | 既存統合テスト                        | 完了         | AI・DB・複製・別ドライブ削除・更新を含む39/39成功   |
 | 30  | 今回追加したテスト                    | 完了         | canvas-core 24/24、Canvas DB・書き出し試験成功      |
 | 31  | NSIS x64生成                          | 完了         | `MANGAI-Desktop-Setup-0.1.0-x64.exe`生成成功        |
 | 32  | Hub TypeScript、ESLint、Next.jsビルド | 完了         | 3項目成功                                           |
@@ -44,13 +44,14 @@
 
 ## 検証数値
 
-- Desktop統合テスト: 36/36
+- Desktop統合テスト: 39/39
 - canvas-core単体テスト: 24/24
 - Hub TypeScript / ESLint / Next.js build: 成功
 - Desktop TypeScript / ESLint / production build: 成功
 - Windows x64 NSIS: 成功
 - NSIS install・製品版renderer起動・隔離SQLite・uninstall E2E: 成功
 - Windows成果物・SPDX SBOM・SHA-256検証: 成功
+- CドライブDB・DドライブProjectの削除・同一ドライブ退避E2E: 成功
 - パッケージ版起動・素材表示: 成功
 - 手動受け入れシナリオA〜D: 成功
 - シナリオAの素材は、ファイル選択ダイアログの自動操作が安定しなかったため、製品と同じデータ層から登録して配置・編集・出力を確認

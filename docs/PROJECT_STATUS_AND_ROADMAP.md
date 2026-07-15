@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `c0b5ff3`
+実装基準コミット: `ed28238`
 
 ## 1. 現在地
 
@@ -173,12 +173,13 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 36/36成功                     |
+| Desktop統合テスト                       | 39/39成功                     |
 | canvas-core単体テスト                   | 24/24成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |
 | NSIS install・製品版起動・uninstall E2E | 成功                          |
 | Windows成果物・SBOM・checksum検証       | 成功                          |
+| C→DドライブProject削除・退避E2E         | 成功                          |
 | Canvas手動受け入れA〜D                  | 成功                          |
 | JPG/PNG/WebP混在PDF・ZIP画素確認        | 成功                          |
 | `latest.yml` / blockmap                 | 生成確認                      |
@@ -200,7 +201,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 ### 機能上の制限
 
 - 素材削除やAI生成をUndo対象にしていない
-- カスタム保存先が別ドライブの場合のゴミ箱移動を未検証
+- 別ドライブのカスタム保存先は同じドライブの`.mangai-trash`へ退避（実DドライブE2E済み）
 - 販売パッケージ経由の下書き作成、公開情報の匿名照会、認証済み端末からの非公開下書き照会を実装済み。Desktopからの更新操作は未実装
 - 手動・自動Projectバックアップ、履歴込み復元、DB破損時リカバリー、ローカル構造化ログ、同意制の詳細クラッシュレポートを実装済み。外部送信は未実装
 
@@ -215,7 +216,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 3. コード署名証明書取得と実署名
 4. Git remote設定と最初の署名済みDraft Release
 5. 自動・履歴込み完全バックアップ、DB破損時リカバリー（実装済み）
-6. 別ドライブ保存先の削除・ゴミ箱動作確認
+6. 別ドライブ保存先の削除・ゴミ箱動作確認（実装・実DドライブE2E済み）
 
 完了条件:
 
@@ -288,7 +289,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 1. Supabase staging、Desktop端末認証、Stripeテスト決済E2E
 2. 実Ollama・ComfyUI環境E2Eと対応version記録
 3. コード署名、GitHub Draft Release、署名付き自動更新E2E
-4. 別ドライブ保存先の削除・ゴミ箱動作確認
+4. DesktopからHubへの更新操作に必要なscope・差分確認・監査設計
 
 コード署名証明書とGit remoteは外部準備が必要なため、並行して進めます。
 

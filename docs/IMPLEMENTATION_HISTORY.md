@@ -524,3 +524,9 @@ Desktopのpackage-lockとローカルMANGAIパッケージを読み取り、SPDX
 ロードマップの基準を2026-07-15・`c0b5ff3`へ更新し、Project完全複製、Desktop統合テスト36/36、NSIS install・製品版起動・uninstall E2E、SPDX SBOM、SHA-256証跡、Hub/Desktop依存脆弱性0件を反映しました。古い「インストール未確認」「Desktopテスト26件」「WebP PDF非対応」の記載も現行実装へ合わせました。
 
 残作業を[`REMAINING_TASKS.md`](REMAINING_TASKS.md)へ集約し、RC公開を止める外部サービスE2E・コード署名・初回公開と、外部準備なしで進められる機能改善、公開後のHub成長機能を分離しました。現時点の最優先はSupabase staging・端末認証・Stripeテスト、実Ollama・ComfyUI、署名済みDraft Release、クリーンWindowsでの署名付き自動更新です。
+
+## 62. 別ドライブProject削除・ゴミ箱退避
+
+カスタムProjectがDocumentsと異なるドライブにある場合、従来の`rename`ではWindowsが`EXDEV`を返し、Projectを中央`.trash`へ移動できない問題を修正しました。中央ゴミ箱を優先し、別ボリューム時だけProject保存先の親フォルダーにある`.mangai-trash`へ同一ドライブ内で退避します。ファイル退避に成功した後だけDB行を削除し、DB削除失敗時は元の保存先へ戻します。ファイルシステムrootやMANGAIデータrootをProjectとして削除する操作も拒否します。
+
+自動テストでは`EXDEV`フォールバック、退避失敗時のDB・原本保持、カスタム保存先内の素材`.trash`を検証しました。さらにCドライブのSQLiteからDドライブの実Projectを削除し、内容をDドライブの`.mangai-trash`へ保持できることを専用E2Eで確認しました。一時領域を削除後、Desktop統合テスト39/39、TypeScript、ESLintに成功しています。
