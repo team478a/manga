@@ -474,3 +474,11 @@ Desktop、Hub、Supabase migrationの型検査、Lint、テスト、本番build�
 実サービスE2Eは自動検証と分離し、Ollama、ComfyUI、複数Page書き出し、販売パッケージ、Hub staging、Desktop端末認証、Stripeテスト決済、Windows成果物の受入れ手順と完了条件を[`desktop/RELEASE_CANDIDATE_ACCEPTANCE.md`](desktop/RELEASE_CANDIDATE_ACCEPTANCE.md)へ固定しました。ローカル品質ゲートの結果と外部サービス待ちを混同せず、未実施項目を明示してRC判定できる状態にしています。
 
 2026-07-15に`rc:validate`を実行し、Desktop TypeScript、ESLint、統合テスト35/35、本番renderer build、Hub TypeScript、ESLint、テスト10/10、Next.js本番build、Supabase migration静的検証3件がすべて成功しました。外部接続設定は未投入のため通常preflightは`PENDING`、strict preflightは意図どおり終了コード1です。
+
+## 54. 複数Page書き出しRC自動受入れ
+
+3Page作品を実画像から書き出す既存統合テストを、単独実行できる`rc:export-acceptance`へ昇格しました。PDFのPage数・300 DPI換算寸法、連番PNGの順序と寸法、WebP素材の合成、空Pageの白背景に加え、販売パッケージ内のPDF / ZIPが外側の成果物とbyte単位で一致することを確認します。
+
+販売パッケージの表紙、Project情報、先頭3Pageのsample、全ファイルのbyte数・SHA-256も検査します。書き出しをキャンセルした直後に再実行し、別の出力先へ完全な3Page PDFを生成できることまで受入れ条件へ追加しました。
+
+2026-07-15に`rc:export-acceptance`を実行し、対象テスト1/1が成功しました。

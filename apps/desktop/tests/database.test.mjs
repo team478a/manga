@@ -1130,7 +1130,7 @@ test("corrupt database falls back to a valid migration backup", async () => {
   fs.rmSync(root, { recursive: true, force: true });
 });
 
-test("project export creates PDF, ZIP, manifest and sales text", async () => {
+test("RC multi-page export creates consistent release artifacts", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-export-"));
   const paths = {
     root,
@@ -1355,6 +1355,33 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
       file.sha256,
     );
   }
+  const salesFileByRole = (role) => {
+    const file = salesManifest.files.find(
+      (candidate) => candidate.role === role,
+    );
+    assert.ok(file, `販売パッケージに${role}がありません。`);
+    return salesPackage.file(file.path);
+  };
+  assert.deepEqual(
+    await salesFileByRole("product_pdf").async("nodebuffer"),
+    fs.readFileSync(path.join(result.outputDir, "本編PDF.pdf")),
+  );
+  assert.deepEqual(
+    await salesFileByRole("page_images_zip").async("nodebuffer"),
+    fs.readFileSync(path.join(result.outputDir, "本編画像ZIP.zip")),
+  );
+  assert.deepEqual(
+    await salesFileByRole("cover").async("nodebuffer"),
+    fs.readFileSync(sourceImage),
+  );
+  const packagedProjectInfo = JSON.parse(
+    await salesFileByRole("project_info").async("string"),
+  );
+  assert.equal(packagedProjectInfo.sourceProjectId, bundle.project.id);
+  assert.equal(packagedProjectInfo.pageCount, 3);
+  assert.equal(packagedProjectInfo.width, 1200);
+  assert.equal(packagedProjectInfo.height, 1800);
+  assert.equal(packagedProjectInfo.dpi, 300);
   const zip = await JSZip.loadAsync(
     fs.readFileSync(path.join(result.outputDir, "本編画像ZIP.zip")),
   );
@@ -1377,6 +1404,18 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
   const thirdPng = await zip.file("003.png").async("uint8array");
   const pixel = await sharp(thirdPng).raw().toBuffer();
   assert.deepEqual([...pixel.subarray(0, 3)], [255, 255, 255]);
+  const samples = salesManifest.files
+    .filter((file) => file.role === "sample")
+    .sort((a, b) => a.path.localeCompare(b.path));
+  assert.equal(samples.length, 3);
+  for (let index = 0; index < samples.length; index++) {
+    assert.deepEqual(
+      await salesPackage.file(samples[index].path).async("nodebuffer"),
+      await zip
+        .file(`${String(index + 1).padStart(3, "0")}.png`)
+        .async("nodebuffer"),
+    );
+  }
   const pdf = await PDFDocument.load(
     fs.readFileSync(path.join(result.outputDir, "本編PDF.pdf")),
   );
@@ -1392,6 +1431,12 @@ test("project export creates PDF, ZIP, manifest and sales text", async () => {
     () => db.exportProject(bundle.project.id, { signal: controller.signal }),
     /キャンセル/,
   );
+  const retry = await db.exportProject(bundle.project.id);
+  assert.notEqual(retry.outputDir, result.outputDir);
+  const retryPdf = await PDFDocument.load(
+    fs.readFileSync(path.join(retry.outputDir, "本編PDF.pdf")),
+  );
+  assert.equal(retryPdf.getPageCount(), 3);
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
