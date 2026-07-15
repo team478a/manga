@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `d99edcc`
+実装基準コミット: `7f8c019`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -319,13 +319,24 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 `asset-library-v1` migrationで既存Assetへ追加カラムだけを加えます。旧Projectはすべて未分類から始まり、旧バックアップは未分類・タグなし・お気に入りなしで復元します。Rendererは限定IPCだけを使用し、ファイル検索やSQLiteへ直接アクセスしません。
 
+### Commit 6: safe素材JobとLibrary route（完了: `7f8c019`）
+
+- 背景・小物・効果専用のsafe Job入力schema
+- Project内Libraryに一致がある場合だけ`asset_library`を候補へ追加
+- 一致素材をお気に入り優先で最大20件提示
+- 候補選択から編集画面の素材選択状態へ復帰
+- 一致なしはローカルComfyUIへfallbackし、remoteだけの場合はblocked
+- 外部Providerを候補に加えず、検索・判定・候補表示を端末内で完結
+
+safe Jobも通常のgeneration jobとroute監査履歴へ保存します。Job Draftは`sensitivity=safe / personPresence=none`を明示します。Asset Libraryに一致しない場合も自動的な外部送信は行いません。
+
 外部背景APIはProvider事業者、利用規約、保存期間、料金、API credential運用が確定した後に実通信を有効化します。
 
 ## 11. テスト基準
 
 2026-07-15の調査時点:
 
-- Desktop統合テスト: 49/49成功
+- Desktop統合テスト: 50/50成功
 - ai-core Router単体テスト: 13/13成功
 - canvas-core単体テスト: 24/24成功
 

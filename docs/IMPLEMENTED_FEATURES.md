@@ -358,6 +358,8 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 生成履歴での実行先・Sensitivity・判定理由・拒否状態の日英表示
 - Project素材の背景・小物・効果・人物分類、タグ、お気に入り、使用数表示
 - 素材名・タグ・形式・分類・お気に入りによるAsset Library検索とCanvas再利用
+- 背景・小物・効果のsafe Job検索と、Asset Library優先route・候補選択
+- Library不一致時のlocal fallback、ローカル生成先なしのblocked判定
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
 - 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰

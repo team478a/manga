@@ -666,3 +666,11 @@ HTTPSのremote ComfyUIを設定しても、Providerへの接続、workflow読込
 `asset-library-v1` migrationは既存Assetsへ追加カラムだけを加え、migration前バックアップを作成します。分類情報は再起動、素材削除のUndo、Project複製、自動・手動バックアップ、復元で保持します。新項目を持たない旧バックアップは未分類・タグなし・お気に入りなしで復元します。入力は共有Zod schemaとmain processで検証し、rendererからSQLiteやファイルへ直接アクセスさせません。
 
 Asset Libraryの再起動・複製・バックアップ・旧形式復元テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト49/49、canvas-core 24/24に成功しています。
+
+## 80. safe素材JobのAsset Library route
+
+背景・小物・効果を明示するsafe Job入力schemaとDesktop APIを追加し、Project内Asset Library検索をGeneration Routerへ接続しました。Job Draftは`sensitivity=safe`、`personPresence=none`、外部入力Assetなしとして構造化し、分類情報が不足する既存汎用画像生成とは分離しています。
+
+指定分類のファイル名・タグに一致する素材がある場合だけ`asset_library`を利用可能候補へ加え、Routerの`asset_library_preferred`判定でお気に入り優先の最大20件を提示します。候補を選ぶと編集画面へ戻り、その素材が選択状態になります。一致がない場合はloopbackのローカルComfyUIがあればlocal fallback、remote ComfyUIしかない場合はblockedです。この経路はcloudや外部背景Providerを候補へ加えないため、検索queryや素材を外部へ送信しません。
+
+safe Jobと判定は既存generation jobs・route監査履歴へ保存します。Library一致、local fallback、remote設定時blockedの統合テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト50/50、canvas-core 24/24に成功しています。
