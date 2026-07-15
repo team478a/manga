@@ -1,5 +1,9 @@
 import React from "react";
-import type { ProviderSettings } from "@mangai/ai-core";
+import type {
+  ProviderSettings,
+  RuntimeProfileSelection,
+  RuntimeProfileState,
+} from "@mangai/ai-core";
 import type {
   AISettingsHistoryItem,
   DiagnosticsState,
@@ -31,6 +35,16 @@ const diagnosticLabel: Record<DiagnosticLevel, string> = {
   success: "成功",
   warning: "要確認",
   error: "失敗",
+};
+const runtimeProfileLabel: Record<RuntimeProfileSelection, string> = {
+  auto: "自動（推奨）",
+  cpu_only: "CPUのみ",
+  vram_6gb: "VRAM 6GB以下",
+  vram_8gb: "VRAM 8GB",
+  vram_12gb: "VRAM 12GB",
+  vram_16gb: "VRAM 16GB",
+  vram_24gb_plus: "VRAM 24GB以上",
+  remote_render: "Render Node",
 };
 
 async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
@@ -102,6 +116,9 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     [diagnosticsState, setDiagnosticsState] =
       React.useState<DiagnosticsState | null>(null),
     [diagnosticsMessage, setDiagnosticsMessage] = React.useState("");
+  const [runtimeProfile, setRuntimeProfile] =
+    React.useState<RuntimeProfileState | null>(null);
+  const [runtimeMessage, setRuntimeMessage] = React.useState("");
   const [settingsHistory, setSettingsHistory] = React.useState<
     AISettingsHistoryItem[]
   >([]);
@@ -112,6 +129,9 @@ export function AISettings({ onClose }: { onClose: () => void }) {
       window.mangai.ai.listTemplates().then(setTemplates),
       window.mangai.diagnostics.getState().then(setDiagnosticsState),
       window.mangai.ai.listSettingsHistory().then(setSettingsHistory),
+      window.mangai.ai
+        .runtimeInfo()
+        .then((value) => setRuntimeProfile(value.runtimeProfile)),
     ]);
   React.useEffect(() => {
     void load();
@@ -284,6 +304,62 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           </label>
           <p>データ保存先: {paths?.root ?? "読み込み中"}</p>
           <p>AIログには秘密情報を保存しません。クラウドAPIキーは未対応です。</p>
+        </section>
+        <section className="panel-lite">
+          <div className="setting-title">
+            <div>
+              <h2>端末性能とRuntime Profile</h2>
+              <p>
+                起動時にRAMとGPUメモリを診断し、ローカル生成の安全な初期値を選びます。
+              </p>
+            </div>
+            <span className="hub-readonly-badge">
+              {runtimeProfile
+                ? runtimeProfileLabel[runtimeProfile.effectiveProfile]
+                : "診断中"}
+            </span>
+          </div>
+          {runtimeProfile && (
+            <>
+              <p>
+                RAM: {(runtimeProfile.hardware.totalRamBytes / 1024 ** 3).toFixed(1)} GB
+                ／ GPU: {runtimeProfile.hardware.gpuName ?? "未検出"}
+                ／ VRAM: {runtimeProfile.hardware.dedicatedVramMb
+                  ? `${Math.round(runtimeProfile.hardware.dedicatedVramMb / 1024)} GB`
+                  : "不明"}
+              </p>
+              <label>
+                使用プロファイル
+                <select
+                  value={runtimeProfile.selection}
+                  onChange={async (event) => {
+                    const selection = event.target
+                      .value as RuntimeProfileSelection;
+                    const saved =
+                      await window.mangai.ai.saveRuntimeProfile(selection);
+                    setRuntimeProfile(saved);
+                    setRuntimeMessage("端末設定へ保存しました。");
+                  }}
+                >
+                  {Object.entries(runtimeProfileLabel).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+                <small>
+                  推奨: {runtimeProfileLabel[runtimeProfile.recommendedProfile]}
+                  ／ バッチ1・ローカル生成の同時実行1件
+                </small>
+              </label>
+              {!runtimeProfile.limits.localImageGenerationRecommended && (
+                <p className="diagnostic-empty">
+                  GPUを確認できないため、ローカル画像生成は非推奨です。編集・素材利用・背景APIは引き続き使用できます。
+                </p>
+              )}
+              {runtimeMessage && <p>{runtimeMessage}</p>}
+            </>
+          )}
         </section>
         <section className="panel-lite diagnostics-privacy">
           <div className="setting-title">

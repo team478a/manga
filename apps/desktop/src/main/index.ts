@@ -8,6 +8,7 @@ import {
 } from "electron";
 import path from "node:path";
 import fs from "node:fs";
+import os from "node:os";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { MangaiDatabase } from "./database.js";
@@ -18,6 +19,10 @@ import {
 import { AIService } from "./ai/service.js";
 import { DesktopUpdater } from "./updater.js";
 import { DiagnosticsService } from "./diagnostics.js";
+import {
+  hardwareFromElectronGpuInfo,
+  RuntimeProfileService,
+} from "./runtime-profile.js";
 import { fetchHubStatus, updateHubDraft } from "./hub-status.js";
 import { safeBaseUrl } from "./ai/providers/http.js";
 import {
@@ -83,6 +88,7 @@ let store: MangaiDatabase;
 let aiService: AIService;
 let updater: DesktopUpdater;
 let diagnostics: DiagnosticsService;
+let runtimeProfile: RuntimeProfileService;
 let databaseRecovery: DatabaseRecoveryReport | null = null;
 type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
@@ -589,7 +595,13 @@ function register() {
       ),
   );
   handle("ai:settings:history", () => store.listAISettingsHistory());
-  handle("ai:runtime", () => ({ mockEnabled: aiService.isMockEnabled() }));
+  handle("ai:runtime", () => ({
+    mockEnabled: aiService.isMockEnabled(),
+    runtimeProfile: runtimeProfile.getState(),
+  }));
+  handle("ai:runtime:save", (v) =>
+    runtimeProfile.saveSelection(v?.selection),
+  );
   handle("ai:generation-policy:get", (v) =>
     store.getProjectGenerationPolicy(projectIdSchema.parse(v).id),
   );
@@ -813,6 +825,25 @@ app
         failedBackupCount: databaseRecovery.failedBackups.length,
       });
     }
+    let gpuInfo: unknown;
+    try {
+      gpuInfo = await app.getGPUInfo("complete");
+    } catch (error) {
+      diagnostics.log("warn", "runtime_gpu_detection_failed", {
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+    runtimeProfile = new RuntimeProfileService(
+      path.join(desktopPaths().root, "runtime-profile.json"),
+      hardwareFromElectronGpuInfo(os.totalmem(), gpuInfo),
+    );
+    const runtimeState = runtimeProfile.getState();
+    diagnostics.log("info", "runtime_profile_detected", {
+      totalRamBytes: runtimeState.hardware.totalRamBytes,
+      dedicatedVramMb: runtimeState.hardware.dedicatedVramMb,
+      recommendedProfile: runtimeState.recommendedProfile,
+      effectiveProfile: runtimeState.effectiveProfile,
+    });
     aiService = new AIService(store, {
       allowMock:
         !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",

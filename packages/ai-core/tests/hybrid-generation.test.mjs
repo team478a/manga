@@ -6,9 +6,57 @@ import {
   externalDispatchConfirmationSchema,
   generationJobDraftSchema,
   routeGenerationJob,
+  recommendRuntimeProfile,
+  runtimeLimits,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+test("runtime profile recommendation fails closed for missing GPU details", () => {
+  assert.equal(
+    recommendRuntimeProfile({
+      totalRamBytes: 16 * 1024 ** 3,
+      gpuName: null,
+      dedicatedVramMb: null,
+    }),
+    "cpu_only",
+  );
+  assert.equal(
+    recommendRuntimeProfile({
+      totalRamBytes: 32 * 1024 ** 3,
+      gpuName: "Detected GPU",
+      dedicatedVramMb: null,
+    }),
+    "vram_6gb",
+  );
+});
+
+test("runtime profile recommendation follows VRAM tiers", () => {
+  const profile = (vram) =>
+    recommendRuntimeProfile({
+      totalRamBytes: 32 * 1024 ** 3,
+      gpuName: "GPU",
+      dedicatedVramMb: vram,
+    });
+  assert.equal(profile(8 * 1024), "vram_8gb");
+  assert.equal(profile(12 * 1024), "vram_12gb");
+  assert.equal(profile(16 * 1024), "vram_16gb");
+  assert.equal(profile(24 * 1024), "vram_24gb_plus");
+});
+
+test("all local runtime profiles serialize image generation", () => {
+  for (const profile of [
+    "cpu_only",
+    "vram_6gb",
+    "vram_8gb",
+    "vram_12gb",
+    "vram_16gb",
+    "vram_24gb_plus",
+  ]) {
+    assert.equal(runtimeLimits(profile).batchSize, 1);
+    assert.equal(runtimeLimits(profile).maxConcurrentLocalJobs, 1);
+  }
+});
 
 function job(overrides = {}) {
   return {

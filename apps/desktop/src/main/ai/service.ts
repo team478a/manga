@@ -29,6 +29,7 @@ export type ChatEvent = {
 };
 export class AIService {
   private controllers = new Map<string, AbortController>();
+  private activeLocalImageJobId: string | null = null;
   private allowMock: boolean;
   constructor(
     private store: MangaiDatabase,
@@ -499,6 +500,13 @@ export class AIService {
           "ROUTE_TARGET_UNAVAILABLE",
           "この画像生成はローカルComfyUIでのみ実行できます。",
         );
+      if (this.activeLocalImageJobId)
+        throw new AIProviderError(
+          "LOCAL_JOB_BUSY",
+          "ローカル画像生成は同時に1件だけ実行できます。実行中の生成が完了してから再試行してください。",
+          true,
+        );
+      this.activeLocalImageJobId = jobId;
       this.store.updateGenerationJob(jobId, "running", { progress: 0.05 });
       const queued = await provider.generateImage(
         input as ImageGenerationRequest,
@@ -624,6 +632,8 @@ export class AIService {
       if (controller.signal.aborted) return { jobId, status: "canceled" };
       throw error;
     } finally {
+      if (this.activeLocalImageJobId === jobId)
+        this.activeLocalImageJobId = null;
       this.controllers.delete(jobId);
     }
   }

@@ -7,6 +7,8 @@ import type {
   ProjectGenerationPolicyInput,
   ProviderSettings,
   RouteDecision,
+  RuntimeProfileSelection,
+  RuntimeProfileState,
   SafeAssetLibraryRequest,
 } from "@mangai/ai-core";
 import type {
@@ -270,7 +272,13 @@ export type DesktopApi = {
     onStatus: (listener: (value: UpdateState) => void) => () => void;
   };
   ai: {
-    runtimeInfo: () => Promise<{ mockEnabled: boolean }>;
+    runtimeInfo: () => Promise<{
+      mockEnabled: boolean;
+      runtimeProfile: RuntimeProfileState;
+    }>;
+    saveRuntimeProfile: (
+      selection: RuntimeProfileSelection,
+    ) => Promise<RuntimeProfileState>;
     getGenerationPolicy: (
       projectId: string,
     ) => Promise<ProjectGenerationPolicy>;

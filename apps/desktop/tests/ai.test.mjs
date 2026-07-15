@@ -12,8 +12,38 @@ import { ComfyUIProvider } from "../dist-main/main/ai/providers/comfyui.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { AIService } from "../dist-main/main/ai/service.js";
 import { safeBaseUrl } from "../dist-main/main/ai/providers/http.js";
+import {
+  hardwareFromElectronGpuInfo,
+  RuntimeProfileService,
+} from "../dist-main/main/runtime-profile.js";
 import { chatRequestSchema } from "@mangai/ai-core";
 process.env.MANGAI_ENABLE_MOCK_AI = "true";
+
+test("runtime profile detects active GPU and restores a saved selection", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-runtime-"));
+  try {
+    const hardware = hardwareFromElectronGpuInfo(32 * 1024 ** 3, {
+      gpuDevice: [
+        { deviceString: "Microsoft Basic Render Driver", videoMemory: 0 },
+        {
+          active: true,
+          deviceString: "Creator GPU",
+          videoMemory: 8192,
+        },
+      ],
+    });
+    const file = path.join(root, "runtime-profile.json");
+    const service = new RuntimeProfileService(file, hardware);
+    assert.equal(service.getState().recommendedProfile, "vram_8gb");
+    service.saveSelection("vram_6gb");
+    assert.equal(
+      new RuntimeProfileService(file, hardware).getState().effectiveProfile,
+      "vram_6gb",
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 const settings = (providerId, baseUrl) => ({
   providerId,
   enabled: true,
@@ -877,15 +907,37 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
         negativePrompt: "",
       });
     await new Promise((resolve) => setTimeout(resolve, 40));
-    const job = db.listGenerationJobs(project.project.id)[0];
+    await assert.rejects(
+      () =>
+        service.generateImage({
+          projectId: project.project.id,
+          workflowId: workflow.id,
+          prompt: "dog",
+          negativePrompt: "",
+        }),
+      (error) => error?.code === "LOCAL_JOB_BUSY",
+    );
+    const jobs = db.listGenerationJobs(project.project.id);
+    const job = jobs.find((value) => value.status === "running");
+    assert.ok(job);
+    assert.equal(
+      jobs.find((value) => value.errorCode === "LOCAL_JOB_BUSY")?.status,
+      "failed",
+    );
     service.cancel(job.id);
     const result = await pending;
     assert.equal(result.status, "canceled");
     assert.equal(
-      db.listGenerationJobs(project.project.id)[0].status,
+      db.listGenerationJobs(project.project.id).find(
+        (value) => value.id === job.id,
+      ).status,
       "canceled",
     );
-    assert.ok(db.listGenerationJobs(project.project.id)[0].progress >= 0.15);
+    assert.ok(
+      db.listGenerationJobs(project.project.id).find(
+        (value) => value.id === job.id,
+      ).progress >= 0.15,
+    );
   } finally {
     db.close();
     await mock.close();
