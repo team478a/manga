@@ -354,6 +354,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - ComfyUI画像生成・ワークフロー管理・履歴・ジョブDrawerの日英表示とlocale準拠日時
 - RAM・GPU・専用VRAMの起動時診断、低スペックRuntime Profileの自動選択・端末保存・設定画面表示
 - Mainプロセスによるローカル画像生成の同時1件制御と`LOCAL_JOB_BUSY`失敗履歴
+- Runtime Profileに応じた生成解像度の縦横比維持縮小、ComfyUI batch 1固定、ControlNet・LoRA上限の送信前検証
 - ハイブリッド生成のJob Type・Sensitivity・Execution Target・作品ポリシー型とfail-closedな純粋Router
 - `safe_assets_only`既定の作品別外部送信ポリシー、費用上限、custom Job Typeの永続化・複製・バックアップ復元
 - loopbackのローカルComfyUIだけを実行するRouterゲートと、Prompt本文を残さないroute監査履歴

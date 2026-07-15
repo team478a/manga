@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `15b17c1`
+実装基準コミット: `2b6cc20`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -428,14 +428,27 @@ maskのblend modeは使用せず、alphaとopacityだけを適用します。cor
 - Mainプロセスで2件目を`LOCAL_JOB_BUSY`として拒否し、失敗Jobへ記録
 - GPU診断失敗時もDesktopを起動し、編集・素材・背景API経路を維持
 
-高解像度上限のprofile定義は追加済みですが、既存workflowの値を自動変更する処理はまだ接続していません。次工程は永続Queueとprofile別workflow parameter適用です。
+高解像度上限、batch、ControlNet、LoRAのprofile別制約はCommit 15でComfyUI送信経路へ接続しました。VAEタイル、CPUオフロード、モデル解放は専用workflow・ComfyUI起動設定が必要なため未接続です。
+
+### Commit 15: Runtime Profile別workflow制約（完了: `2b6cc20`）
+
+- profile別の最大出力辺、ControlNet数、LoRA数を共通制約として定義
+- 最大辺を超える生成指定を縦横比を保った8px単位で自動縮小
+- ComfyUI API workflow内の`batch_size`を送信直前に1へ固定
+- ControlNet Loader / ApplyとLoRA Loaderを数え、profile上限超過を送信前に`WORKFLOW_PROFILE_LIMIT`で拒否
+- 元の登録workflow JSONは変更せず、リクエスト用cloneだけを調整
+- Generation Jobへprofile、要求・実効解像度、調整有無を記録
+- 自動縮小時は生成画面へ実効解像度を日本語・英語で表示
+- 1600×1200要求が8GB profileで1024×768、batch 4が1になる統合テスト
+
+VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはworkflow構造・導入済みcustom node・ComfyUI起動引数に依存します。既存workflowを推測で書き換えず、検証済み低スペックworkflowテンプレートとして次工程で導入します。
 
 ## 11. テスト基準
 
 2026-07-16の確認時点:
 
-- Desktop統合テスト: 54/54成功
-- ai-core Router・外部送信契約・Runtime Profile単体テスト: 19/19成功
+- Desktop統合テスト: 55/55成功
+- ai-core Router・外部送信契約・Runtime Profile単体テスト: 20/20成功
 - canvas-core単体テスト: 25/25成功
 
 Phase 1追加テスト:

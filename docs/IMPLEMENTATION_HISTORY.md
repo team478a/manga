@@ -742,3 +742,11 @@ Electron起動時にOS RAMとGPU情報を診断し、`cpu_only`、VRAM 6GB、8GB
 設定画面へRAM、GPU名、専用VRAM、推奨・実効profileを表示し、自動選択または手動profileを端末設定へ保存して再起動後に復元できます。CPUのみの場合はローカル画像生成非推奨を表示します。全ローカルprofileはbatch 1・同時生成1件を共通制約とし、Mainプロセスで競合した2件目を`LOCAL_JOB_BUSY`として拒否・失敗履歴へ記録します。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト54/54、canvas-core 25/25、ai-core 19/19に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。profile別workflow parameter適用、Ollamaとの排他、モデルunload、永続Queueは次工程です。
+
+## 89. Runtime Profile別ComfyUI workflow制約
+
+Runtime Profileの制約を実際のComfyUI送信経路へ接続しました。指定解像度の最大辺がprofile上限を超える場合は縦横比を保って8px単位で縮小し、API workflow内の`batch_size`は1へ固定します。調整は登録済みworkflowを変更せず、送信用cloneだけへ適用します。
+
+workflow内のControlNet Loader / ApplyとLoRA Loaderを検出し、8GB profileはControlNet最大1・LoRA最大2、12GB profileは最大2・3として上限超過をネットワーク送信前に拒否します。Generation Jobには使用profile、要求・実効解像度、調整有無を残し、縮小時は生成画面へ実効解像度を日英で表示します。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト55/55、canvas-core 25/25、ai-core 20/20に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。VAEタイル、CPUオフロード、モデル解放は検証済みworkflowテンプレートとresource schedulerで対応します。
