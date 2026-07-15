@@ -132,7 +132,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 | ComfyUI               | 第6節を実サービスで完了             | 外部サービス待ち                           |
 | Hub staging           | 読み取り専用preflightと端末認証完了 | 接続設定待ち                               |
 | Stripe                | テスト決済・失敗・返金・認可を完了  | 接続設定待ち                               |
-| Windows成果物         | 署名済みinstallerと更新metadata確認 | 整合性確認済み・コード署名待ち             |
+| Windows成果物         | 署名済みinstallerと更新metadata確認 | install E2E完了・コード署名待ち            |
 
 すべてが完了し、重大な未解決不具合がない場合だけRC承認とします。未実施項目を自動テスト成功で代替しません。
 
@@ -147,3 +147,5 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 複製先からの内容入り書き出しに加え、3Pageの自動RC受入れ、Desktop TypeScript、ESLint、統合テスト36/36が成功しています。これを外部サービス不要のDesktopローカル受入れ結果とします。
 
 同日に現行0.1.0のNSISインストーラーとblockmapを再生成し、version、ファイルサイズ、blockmapを検証しました。分離出力した更新検証版では`latest.yml`のinstaller名、SHA-512、サイズも一致しています。いずれもAuthenticodeは`NotSigned`であり、署名必須ゲートは意図どおり失敗するため、Windows成果物のRC完了判定はコード署名後まで保留します。
+
+現行インストーラーを一時フォルダーへsilent installし、実行ファイル、Desktop・Start Menuショートカット、アンインストール登録を確認後、silent uninstallで実行ファイル・ショートカット・登録情報が消えることも確認しました。既存インストールを保護する停止条件を備え、同じE2EをWindowsリリースworkflowへ追加しています。Windows成果物で残る必須条件は信頼された証明書によるコード署名です。

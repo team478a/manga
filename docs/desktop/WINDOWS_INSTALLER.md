@@ -38,6 +38,18 @@ npm run rc:windows-artifacts -- signed
 
 2026-07-15に現行コードから0.1.0のNSISインストーラーとblockmapを再生成し、通常検証に成功しました。Authenticodeは`NotSigned`であり、コード署名完了前の内部確認用成果物です。古い更新metadataは現行の更新無効インストーラーと混同しないよう配布フォルダーから除外しています。
 
+## インストール／アンインストールE2E
+
+WindowsのクリーンなCIでは、NSISのsilent install、実行ファイル、Desktop・Start Menuショートカット、アンインストール登録、silent uninstall、残存物の削除を自動確認します。既存のMANGAI Desktopを検出した場合は上書きせず停止します。
+
+ローカル実行はシステムへ一時的にインストールするため、明示的に`allow-local`を指定します。製品データへ触れないようアプリ本体は起動しません。
+
+```powershell
+npm run rc:windows-installer-e2e -- allow-local
+```
+
+2026-07-15に現行0.1.0インストーラーで実行し、インストールからアンインストール後の登録・ショートカット消失まで成功しました。
+
 ## 配布設定
 
 - App ID: `jp.mangai.creator.desktop`

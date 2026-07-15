@@ -500,3 +500,9 @@ PDFは9Page・384×576ptで、連番画像ZIPは`001.png`〜`009.png`、販売�
 現行0.1.0からWindows x64 NSISインストーラーとblockmapを再生成しました。成果物のpackage version、installer名、ファイルサイズ、blockmap形式、Authenticode状態を確認する`rc:windows-artifacts`を追加し、更新metadataがある場合は記載されたSHA-512とサイズも実ファイルへ照合します。`metadata`と`signed`を指定すると、それぞれ更新metadataと有効なAuthenticode署名を必須条件にできます。
 
 更新ビルドは`MANGAI_RELEASE_OUTPUT`で通常の`release/`と分離して生成できるようにしました。ダミーHTTPS URLによる検証版で`latest.yml`、installer、blockmapの整合性と設定ファイルの自動復元を確認し、検証用URLを含む成果物は正式配布先へ昇格していません。通常RC成果物の機械検証は成功し、署名必須ゲートは`NotSigned`だけを理由に意図どおり失敗します。残るWindows配布条件はコード署名とインストール・アンインストールE2Eです。
+
+## 58. Windows installer E2E
+
+NSIS成果物を一時フォルダーへsilent installし、製品EXE、Desktop・Start Menuショートカット、Windowsのアンインストール登録を確認後、silent uninstallと残存物の消失を検査する`rc:windows-installer-e2e`を追加しました。既存のMANGAI Desktop、ショートカット、登録情報を検出した場合は上書きせず停止し、ローカルでは`allow-local`の明示を必須にしています。製品データを変更しないよう、インストールしたアプリ自体は起動しません。
+
+現行0.1.0インストーラーでE2Eに成功しました。NSISのアンインストーラーはプロセス終了後にショートカットと登録情報を遅延削除するため、すべての消失を待って判定します。同じ検査を署名・metadata検証後のWindowsリリースworkflowへ追加しました。これによりWindows成果物で残るRC条件はコード署名証明書の設定です。

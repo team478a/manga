@@ -21,7 +21,8 @@
     "dist:win": "npm run build && electron-builder --win nsis --x64",
     "dist:win:signed": "node scripts/build-signed.mjs",
     "dist:win:update": "node scripts/build-update-release.mjs",
-    "verify:win:artifacts": "node scripts/check-windows-artifacts.mjs"
+    "verify:win:artifacts": "node scripts/check-windows-artifacts.mjs",
+    "test:win:installer": "node scripts/smoke-windows-installer.mjs"
   },
   "dependencies": {
     "@mangai/ai-core": "file:../../packages/ai-core",

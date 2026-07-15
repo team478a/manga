@@ -54,3 +54,7 @@ jobs:
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
         run: npm run dist:win:update
+      - name: Verify signed artifacts
+        run: npm run verify:win:artifacts -- metadata signed
+      - name: Installer install and uninstall E2E
+        run: npm run test:win:installer

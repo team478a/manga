@@ -364,6 +364,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - `rc:preflight:strict`: Hub / Supabase、Stripe、端末認証、staging DBの不足を終了コードで検出
 - `rc:validate`: Desktop・Hub・Supabase migrationの型検査、Lint、テスト、本番buildを一括実行
 - `rc:windows-artifacts`: Windows installer、blockmap、更新metadataのversion・サイズ・SHA-512とAuthenticode状態を検証
+- `rc:windows-installer-e2e`: 既存インストールを保護しながらNSISのinstall・shortcut・登録・uninstall・残存物を検証
 - Ollama、ComfyUI、複数Page書き出し、Hub staging、Stripeテスト決済を分離した手動E2Eチェックリスト
 
 判定方法は[`desktop/RELEASE_CANDIDATE_ACCEPTANCE.md`](desktop/RELEASE_CANDIDATE_ACCEPTANCE.md)を参照してください。
