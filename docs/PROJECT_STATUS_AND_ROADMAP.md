@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `91b5598`
+実装基準コミット: `d99edcc`
 
 ## 1. 現在地
 
@@ -30,6 +30,8 @@ Phase 1の最初の実装として、DBや既存生成経路へ影響しない�
 作品別外部送信ポリシーをSQLiteへ追加し、`safe_assets_only`を既定にしました。ローカル優先、外部送信前確認、月間費用上限、custom cloud Job Typeを保存でき、再起動、Project複製、バックアップ・復元で維持します。
 
 既存画像生成を正式にRouter経由へ切り替えました。現在は分類情報がない生成を安全側へ固定し、loopbackのローカルComfyUIだけを実行します。remote ComfyUIは外部接続前に拒否し、生成履歴へ実行先、Sensitivity、理由、blocked状態を表示します。route履歴はバックアップ・復元対象ですが、Prompt本文と画像は含みません。
+
+Project内Asset Libraryを追加しました。素材を背景・小物・効果・人物・その他へ分類し、ファイル名とタグ、形式、分類、お気に入りで検索できます。カードにはPage・Panel・表紙での現在使用数を表示し、既存のドラッグ配置で再利用します。分類情報は再起動、素材削除Undo、Project複製、バックアップ・復元で維持します。
 
 ## 2. 製品境界
 
@@ -145,6 +147,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 - 言語設定の再起動保持、HTML lang・日時locale連動
 - 作品別ハイブリッド生成ポリシーのSQLite永続化、複製・バックアップ・復元
 - 既存画像生成のローカル実行ゲート、理由・実行先・Prompt hashの監査履歴
+- Project素材の分類・タグ・お気に入り・使用数表示・検索・Canvas再利用
 
 ### Windows配布
 
@@ -197,7 +200,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 48/48成功                     |
+| Desktop統合テスト                       | 49/49成功                     |
 | canvas-core単体テスト                   | 24/24成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |

@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `91b5598`
+実装基準コミット: `d99edcc`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -308,12 +308,16 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 現行の汎用画像生成UIは分類入力が未実装のため、引き続き`adult_character_render / external_forbidden / personPresence=unknown`として扱います。このため、利用者がHTTPSのremote ComfyUIを設定しても、Prompt、Negative Prompt、画像、workflowを送信する前に拒否します。loopbackのlocalhost、127.0.0.0/8、IPv6 loopbackだけが既存ComfyUI経路へ進みます。
 
-### Commit 5: Asset Library
+### Commit 5: Asset Library（完了: `d99edcc`）
 
-- 既存Project素材metadataを利用した背景検索
-- 一致時は生成せず再利用
-- 使用回数・タグ・お気に入りの追加設計
+- 既存Project素材へ背景・小物・効果・人物・その他の分類を追加
+- ファイル名とタグの横断検索、分類・形式・お気に入りfilter
+- Page・Panel・表紙の現在使用数を素材カードへ表示
+- 既存のドラッグ配置を利用したCanvasへの再利用
+- 分類・タグ・お気に入りを再起動、Undo、Project複製、バックアップ・復元で保持
 - 外部通信なし
+
+`asset-library-v1` migrationで既存Assetへ追加カラムだけを加えます。旧Projectはすべて未分類から始まり、旧バックアップは未分類・タグなし・お気に入りなしで復元します。Rendererは限定IPCだけを使用し、ファイル検索やSQLiteへ直接アクセスしません。
 
 外部背景APIはProvider事業者、利用規約、保存期間、料金、API credential運用が確定した後に実通信を有効化します。
 
@@ -321,7 +325,7 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 2026-07-15の調査時点:
 
-- Desktop統合テスト: 48/48成功
+- Desktop統合テスト: 49/49成功
 - ai-core Router単体テスト: 13/13成功
 - canvas-core単体テスト: 24/24成功
 

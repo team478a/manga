@@ -658,3 +658,11 @@ route履歴はProjectバックアップversion 2へ追加し、復元時にProje
 HTTPSのremote ComfyUIを設定しても、Providerへの接続、workflow読込、Prompt送信より前に`ROUTE_BLOCKED`で拒否します。route判定の保存自体に失敗した場合も生成を続けないfail-closed構成です。拒否されたJobはfailed状態とerror codeを保持し、Prompt本文・Negative Prompt・画像をroute監査履歴へ複製しません。
 
 画像生成履歴へExecution Target、Sensitivity、判定理由、blocked状態を日本語・英語で表示します。既存のloopback ComfyUI生成成功に加え、remote ComfyUIがネットワーク処理前に拒否される統合テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト48/48、canvas-core 24/24に成功しています。
+
+## 79. Project内Asset Library
+
+外部通信を使わず既存Project素材を検索・再利用するAsset Libraryを追加しました。素材へ未分類・背景・小物・効果・人物・その他の分類、最大20件のタグ、お気に入りを保存できます。素材ブラウザーは従来の形式filterに加え、ファイル名とタグの横断検索、分類filter、お気に入りfilterに対応し、Page・Panel・表紙での現在使用数をカードへ表示します。検索した素材は既存のドラッグ操作でCanvasへ再利用できます。
+
+`asset-library-v1` migrationは既存Assetsへ追加カラムだけを加え、migration前バックアップを作成します。分類情報は再起動、素材削除のUndo、Project複製、自動・手動バックアップ、復元で保持します。新項目を持たない旧バックアップは未分類・タグなし・お気に入りなしで復元します。入力は共有Zod schemaとmain processで検証し、rendererからSQLiteやファイルへ直接アクセスさせません。
+
+Asset Libraryの再起動・複製・バックアップ・旧形式復元テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト49/49、canvas-core 24/24に成功しています。

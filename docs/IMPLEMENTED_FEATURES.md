@@ -356,6 +356,8 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - `safe_assets_only`既定の作品別外部送信ポリシー、費用上限、custom Job Typeの永続化・複製・バックアップ復元
 - loopbackのローカルComfyUIだけを実行するRouterゲートと、Prompt本文を残さないroute監査履歴
 - 生成履歴での実行先・Sensitivity・判定理由・拒否状態の日英表示
+- Project素材の背景・小物・効果・人物分類、タグ、お気に入り、使用数表示
+- 素材名・タグ・形式・分類・お気に入りによるAsset Library検索とCanvas再利用
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
 - 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰
