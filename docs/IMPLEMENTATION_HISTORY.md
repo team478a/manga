@@ -482,3 +482,9 @@ Desktop、Hub、Supabase migrationの型検査、Lint、テスト、本番build�
 販売パッケージの表紙、Project情報、先頭3Pageのsample、全ファイルのbyte数・SHA-256も検査します。書き出しをキャンセルした直後に再実行し、別の出力先へ完全な3Page PDFを生成できることまで受入れ条件へ追加しました。
 
 2026-07-15に`rc:export-acceptance`を実行し、対象テスト1/1が成功しました。
+
+## 55. 現行Windows製品版・9Page書き出し目視受入れ
+
+現行コードからWindows x64 unpacked製品版を再作成し、受入れ用に複製したProjectへ短編8Page構成を追加して合計9Pageを書き出しました。製品版の書き出し確認ダイアログ、Page別進捗、パッケージング、完了画面、表紙未設定警告が同じダイアログ内で正常に遷移することを確認しました。
+
+PDFは9Page・384×576ptで、先頭・中間・最終PageをPNGへ描画し、白背景、コマ枠、Page欠落がないことを目視確認しました。連番画像ZIPは`001.png`〜`009.png`、販売パッケージv1はPage数9、sample 3件、表紙0件で、manifest記載の全8ファイルについてbyte数とSHA-256が一致しました。外部サービス不要のDesktopローカルRC受入れは完了です。
