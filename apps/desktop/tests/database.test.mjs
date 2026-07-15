@@ -193,6 +193,97 @@ test("project, episode, page and asset data survive reopening", () => {
   reopenedDb.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
+
+test("project generation policy survives reopening, duplication and backup restore", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-policy-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  const bundle = db.createProject({
+    title: "外部送信ポリシー",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "成人向け",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  const defaults = db.getProjectGenerationPolicy(bundle.project.id);
+  assert.equal(defaults.externalProcessingPolicy, "safe_assets_only");
+  assert.equal(defaults.preferLocal, true);
+  assert.equal(defaults.externalConfirmationRequired, true);
+  assert.equal(defaults.monthlyCostLimit, null);
+
+  const expected = {
+    externalProcessingPolicy: "custom",
+    preferLocal: false,
+    externalConfirmationRequired: true,
+    monthlyCostLimit: 2500,
+    customCloudJobTypes: ["background", "effect"],
+  };
+  db.saveProjectGenerationPolicy({
+    projectId: bundle.project.id,
+    ...expected,
+  });
+  db.close();
+
+  db = new MangaiDatabase(paths);
+  const comparable = (policy) => {
+    const { projectId, updatedAt, ...settings } = policy;
+    void projectId;
+    void updatedAt;
+    return settings;
+  };
+  assert.deepEqual(
+    comparable(db.getProjectGenerationPolicy(bundle.project.id)),
+    expected,
+  );
+
+  const duplicate = db.duplicateProject(bundle.project.id);
+  assert.deepEqual(
+    comparable(db.getProjectGenerationPolicy(duplicate.project.id)),
+    expected,
+  );
+
+  const backupPath = path.join(root, "policy.mangai-backup");
+  await db.backupProject(bundle.project.id, backupPath);
+  const archive = await JSZip.loadAsync(fs.readFileSync(backupPath));
+  const manifest = JSON.parse(
+    await archive.file("manifest.json").async("string"),
+  );
+  assert.deepEqual(comparable(manifest.generationPolicy), expected);
+
+  const restored = await db.restoreProject(backupPath);
+  assert.deepEqual(
+    comparable(db.getProjectGenerationPolicy(restored.project.id)),
+    expected,
+  );
+
+  delete manifest.generationPolicy;
+  archive.file("manifest.json", JSON.stringify(manifest));
+  const legacyPath = path.join(root, "policy-legacy-v2.mangai-backup");
+  fs.writeFileSync(
+    legacyPath,
+    await archive.generateAsync({ type: "nodebuffer" }),
+  );
+  const legacyRestored = await db.restoreProject(legacyPath);
+  assert.equal(
+    db.getProjectGenerationPolicy(legacyRestored.project.id)
+      .externalProcessingPolicy,
+    "safe_assets_only",
+  );
+
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
 test("project duplication preserves assets, canvas content and rendered pages", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-duplicate-"));
   const paths = {

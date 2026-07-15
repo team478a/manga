@@ -90,6 +90,36 @@ export const routingContextSchema = z.object({
 export type RoutingContext = z.output<typeof routingContextSchema>;
 export type RoutingContextInput = z.input<typeof routingContextSchema>;
 
+export const projectGenerationPolicyInputSchema = z.object({
+  projectId: z.string().uuid(),
+  externalProcessingPolicy:
+    externalProcessingPolicySchema.default("safe_assets_only"),
+  preferLocal: z.boolean().default(true),
+  externalConfirmationRequired: z.boolean().default(true),
+  monthlyCostLimit: z
+    .number()
+    .finite()
+    .min(0)
+    .max(1_000_000_000)
+    .nullable()
+    .default(null),
+  customCloudJobTypes: z
+    .array(hybridGenerationJobTypeSchema)
+    .max(50)
+    .default([]),
+});
+export type ProjectGenerationPolicyInput = z.input<
+  typeof projectGenerationPolicyInputSchema
+>;
+
+export const projectGenerationPolicySchema =
+  projectGenerationPolicyInputSchema.extend({
+    updatedAt: z.string().datetime(),
+  });
+export type ProjectGenerationPolicy = z.output<
+  typeof projectGenerationPolicySchema
+>;
+
 export const routeReasonSchema = z.enum([
   "builtin_operation",
   "explicit_target",

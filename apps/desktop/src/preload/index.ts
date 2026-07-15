@@ -115,6 +115,10 @@ contextBridge.exposeInMainWorld("mangai", {
   },
   ai: {
     runtimeInfo: () => ipcRenderer.invoke("ai:runtime"),
+    getGenerationPolicy: (projectId: string) =>
+      ipcRenderer.invoke("ai:generation-policy:get", { id: projectId }),
+    saveGenerationPolicy: (value: unknown) =>
+      ipcRenderer.invoke("ai:generation-policy:save", value),
     listSettings: () => ipcRenderer.invoke("ai:settings:list"),
     listSettingsHistory: () => ipcRenderer.invoke("ai:settings:history"),
     saveSettings: (value: unknown) =>

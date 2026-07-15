@@ -20,7 +20,11 @@ import type { ProjectBundle, Project } from "@mangai/project-core";
 import { projectInputSchema, type ProjectInput } from "@mangai/shared";
 import {
   defaultPromptTemplates,
+  projectGenerationPolicyInputSchema,
+  projectGenerationPolicySchema,
   type GenerationStatus,
+  type ProjectGenerationPolicy,
+  type ProjectGenerationPolicyInput,
   type ProviderSettings,
 } from "@mangai/ai-core";
 import {
@@ -57,6 +61,7 @@ type ProjectBackupManifest = {
   createdAt: string;
   bundle: ProjectBundle;
   history?: ProjectBackupHistory;
+  generationPolicy?: ProjectGenerationPolicy;
 };
 type BackupOperation = {
   label: string;
@@ -279,6 +284,8 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
     if (historyCollections.some((items) => items.length > 100_000))
       throw new Error("バックアップ履歴の項目数が上限を超えています。");
   }
+  if (manifest.generationPolicy !== undefined)
+    projectGenerationPolicySchema.parse(manifest.generationPolicy);
   return manifest as ProjectBackupManifest;
 }
 
@@ -299,7 +306,9 @@ export class MangaiDatabase {
           ? "canvas-relative-text-v1"
           : !this.hasMigration("canvas-panel-shape-v1")
             ? "canvas-panel-shape-v1"
-            : null;
+            : !this.hasMigration("hybrid-generation-policy-v1")
+              ? "hybrid-generation-policy-v1"
+              : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -374,6 +383,7 @@ export class MangaiDatabase {
     this.migrateCanvasV1();
     this.migrateRelativeTextV1();
     this.migratePanelShapeV1();
+    this.migrateGenerationPolicyV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -529,6 +539,44 @@ export class MangaiDatabase {
         .run("canvas-panel-shape-v1", "Panel shape and slant ratio", stamp);
     })();
   }
+  private migrateGenerationPolicyV1() {
+    if (this.hasMigration("hybrid-generation-policy-v1")) return;
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db.exec(`
+        create table if not exists project_generation_policies(
+          project_id text primary key references projects(id) on delete cascade,
+          external_processing_policy text not null,
+          prefer_local integer not null default 1,
+          external_confirmation_required integer not null default 1,
+          monthly_cost_limit real,
+          custom_cloud_job_types_json text not null default '[]',
+          created_at text not null,
+          updated_at text not null
+        );
+      `);
+      this.db
+        .prepare(
+          `insert into project_generation_policies(
+             project_id,external_processing_policy,prefer_local,
+             external_confirmation_required,monthly_cost_limit,
+             custom_cloud_job_types_json,created_at,updated_at
+           )
+           select id,'safe_assets_only',1,1,null,'[]',?,? from projects
+           where id not in (select project_id from project_generation_policies)`,
+        )
+        .run(stamp, stamp);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run(
+          "hybrid-generation-policy-v1",
+          "Project hybrid generation policy",
+          stamp,
+        );
+    })();
+  }
   private project(row: any): Project {
     return {
       id: row.id,
@@ -555,6 +603,63 @@ export class MangaiDatabase {
       )
       .all()
       .map((x) => this.project(x));
+  }
+  getProjectGenerationPolicy(projectId: string): ProjectGenerationPolicy {
+    const row = this.db
+      .prepare(
+        `select project_id as projectId,
+                external_processing_policy as externalProcessingPolicy,
+                prefer_local as preferLocal,
+                external_confirmation_required as externalConfirmationRequired,
+                monthly_cost_limit as monthlyCostLimit,
+                custom_cloud_job_types_json as customCloudJobTypesJson,
+                updated_at as updatedAt
+         from project_generation_policies where project_id=?`,
+      )
+      .get(projectId) as
+      | {
+          projectId: string;
+          externalProcessingPolicy: string;
+          preferLocal: number;
+          externalConfirmationRequired: number;
+          monthlyCostLimit: number | null;
+          customCloudJobTypesJson: string;
+          updatedAt: string;
+        }
+      | undefined;
+    if (!row) throw new Error("Projectの生成ポリシーが見つかりません。");
+    return projectGenerationPolicySchema.parse({
+      ...row,
+      preferLocal: Boolean(row.preferLocal),
+      externalConfirmationRequired: Boolean(row.externalConfirmationRequired),
+      customCloudJobTypes: JSON.parse(row.customCloudJobTypesJson),
+    });
+  }
+  saveProjectGenerationPolicy(
+    input: ProjectGenerationPolicyInput,
+  ): ProjectGenerationPolicy {
+    const policy = projectGenerationPolicyInputSchema.parse(input);
+    const stamp = now();
+    const result = this.db
+      .prepare(
+        `update project_generation_policies
+         set external_processing_policy=?,prefer_local=?,
+             external_confirmation_required=?,monthly_cost_limit=?,
+             custom_cloud_job_types_json=?,updated_at=?
+         where project_id=?`,
+      )
+      .run(
+        policy.externalProcessingPolicy,
+        policy.preferLocal ? 1 : 0,
+        policy.externalConfirmationRequired ? 1 : 0,
+        policy.monthlyCostLimit,
+        JSON.stringify(policy.customCloudJobTypes),
+        stamp,
+        policy.projectId,
+      );
+    if (!result.changes)
+      throw new Error("Projectの生成ポリシーが見つかりません。");
+    return this.getProjectGenerationPolicy(policy.projectId);
   }
   createProject(input: ProjectInput) {
     const id = uid(),
@@ -592,6 +697,15 @@ export class MangaiDatabase {
       this.db
         .prepare("insert into episodes values(?,?,?,?,?,?)")
         .run(uid(), id, "第1話", 0, stamp, stamp);
+      this.db
+        .prepare(
+          `insert into project_generation_policies(
+             project_id,external_processing_policy,prefer_local,
+             external_confirmation_required,monthly_cost_limit,
+             custom_cloud_job_types_json,created_at,updated_at
+           ) values(?,?,?,?,?,?,?,?)`,
+        )
+        .run(id, "safe_assets_only", 1, 1, null, "[]", stamp, stamp);
     })();
     return this.openProject(id);
   }
@@ -609,6 +723,7 @@ export class MangaiDatabase {
   }
   duplicateProject(id: string) {
     const source = this.bundle(id);
+    const sourcePolicy = this.getProjectGenerationPolicy(id);
     const copy = this.createProject({
       ...source.project,
       title: `${source.project.title} のコピー`,
@@ -667,6 +782,23 @@ export class MangaiDatabase {
         this.db
           .prepare("delete from episodes where project_id=?")
           .run(projectId);
+        this.db
+          .prepare(
+            `update project_generation_policies
+             set external_processing_policy=?,prefer_local=?,
+                 external_confirmation_required=?,monthly_cost_limit=?,
+                 custom_cloud_job_types_json=?,updated_at=?
+             where project_id=?`,
+          )
+          .run(
+            sourcePolicy.externalProcessingPolicy,
+            sourcePolicy.preferLocal ? 1 : 0,
+            sourcePolicy.externalConfirmationRequired ? 1 : 0,
+            sourcePolicy.monthlyCostLimit,
+            JSON.stringify(sourcePolicy.customCloudJobTypes),
+            stamp,
+            projectId,
+          );
         for (const { asset, assetId, relativePath } of preparedAssets)
           this.db
             .prepare(
@@ -874,6 +1006,7 @@ export class MangaiDatabase {
         project: { ...bundle.project, storagePath: "" },
       },
       history: this.projectBackupHistory(id),
+      generationPolicy: this.getProjectGenerationPolicy(id),
     };
     zip.file("manifest.json", JSON.stringify(manifest));
     for (const asset of bundle.assets) {
@@ -945,6 +1078,7 @@ export class MangaiDatabase {
           .sort((a, b) => b.modifiedAt - a.modifiedAt);
         const bundle = this.bundle(project.id);
         const history = this.projectBackupHistory(project.id);
+        const generationPolicy = this.getProjectGenerationPolicy(project.id);
         const fingerprint = crypto
           .createHash("sha256")
           .update(
@@ -956,6 +1090,7 @@ export class MangaiDatabase {
                 lastOpenedAt: null,
               },
               history,
+              generationPolicy,
             }),
           )
           .digest("hex")
@@ -1192,6 +1327,29 @@ export class MangaiDatabase {
         this.db
           .prepare("delete from episodes where project_id=?")
           .run(projectId);
+        if (manifest.generationPolicy) {
+          const policy = projectGenerationPolicyInputSchema.parse({
+            ...manifest.generationPolicy,
+            projectId,
+          });
+          this.db
+            .prepare(
+              `update project_generation_policies
+               set external_processing_policy=?,prefer_local=?,
+                   external_confirmation_required=?,monthly_cost_limit=?,
+                   custom_cloud_job_types_json=?,updated_at=?
+               where project_id=?`,
+            )
+            .run(
+              policy.externalProcessingPolicy,
+              policy.preferLocal ? 1 : 0,
+              policy.externalConfirmationRequired ? 1 : 0,
+              policy.monthlyCostLimit,
+              JSON.stringify(policy.customCloudJobTypes),
+              stamp,
+              projectId,
+            );
+        }
         for (const { asset, id, relativePath } of preparedAssets)
           this.db
             .prepare(

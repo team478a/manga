@@ -52,6 +52,7 @@ import {
   chatSessionIdSchema,
   imageJobRequestSchema,
   promptTemplateInputSchema,
+  projectGenerationPolicyInputSchema,
   providerSettingsSchema,
   renameChatSchema,
   workflowMappingSchema,
@@ -560,6 +561,14 @@ function register() {
   );
   handle("ai:settings:history", () => store.listAISettingsHistory());
   handle("ai:runtime", () => ({ mockEnabled: aiService.isMockEnabled() }));
+  handle("ai:generation-policy:get", (v) =>
+    store.getProjectGenerationPolicy(projectIdSchema.parse(v).id),
+  );
+  handle("ai:generation-policy:save", (v) =>
+    store.saveProjectGenerationPolicy(
+      projectGenerationPolicyInputSchema.parse(v),
+    ),
+  );
   handle("ai:settings:save", (v) => {
     const settings = providerSettingsSchema.parse(v);
     safeBaseUrl(settings.baseUrl, settings.allowedOrigins);

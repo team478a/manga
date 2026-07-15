@@ -1,6 +1,10 @@
 import type { ProjectBundle, Project } from "@mangai/project-core";
 import type { ProjectInput } from "@mangai/shared";
-import type { ProviderSettings } from "@mangai/ai-core";
+import type {
+  ProjectGenerationPolicy,
+  ProjectGenerationPolicyInput,
+  ProviderSettings,
+} from "@mangai/ai-core";
 import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
 import type { EpisodeTemplateId } from "@mangai/canvas-core";
 export type ChatEvent = {
@@ -251,6 +255,12 @@ export type DesktopApi = {
   };
   ai: {
     runtimeInfo: () => Promise<{ mockEnabled: boolean }>;
+    getGenerationPolicy: (
+      projectId: string,
+    ) => Promise<ProjectGenerationPolicy>;
+    saveGenerationPolicy: (
+      value: ProjectGenerationPolicyInput,
+    ) => Promise<ProjectGenerationPolicy>;
     listSettings: () => Promise<ProviderSettings[]>;
     listSettingsHistory: () => Promise<AISettingsHistoryItem[]>;
     saveSettings: (value: ProviderSettings) => Promise<ProviderSettings[]>;
