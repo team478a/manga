@@ -1676,6 +1676,11 @@ test("RC multi-page export creates consistent release artifacts", async () => {
     "%PDF",
   );
   assert.deepEqual(result.warnings, []);
+  const exportHistory = db.listExportHistory(bundle.project.id);
+  assert.equal(exportHistory.length, 1);
+  assert.equal(exportHistory[0].outputDir, result.outputDir);
+  assert.deepEqual(exportHistory[0].files, result.files);
+  assert.deepEqual(exportHistory[0].warnings, []);
   const salesPackage = await JSZip.loadAsync(
     fs.readFileSync(path.join(result.outputDir, "MANGAI販売パッケージ.zip")),
   );

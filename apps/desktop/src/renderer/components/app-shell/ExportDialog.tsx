@@ -6,7 +6,10 @@ import {
   FileText,
   XCircle,
 } from "lucide-react";
-import type { ExportProgress } from "../../../preload/api";
+import type {
+  ExportHistoryItem,
+  ExportProgress,
+} from "../../../preload/api";
 
 export type ExportResult = {
   outputDir: string;
@@ -23,6 +26,7 @@ export function ExportDialog({
   onStart,
   onCancel,
   onClose,
+  history,
 }: {
   open: boolean;
   projectTitle: string;
@@ -33,6 +37,7 @@ export function ExportDialog({
   onStart: () => void;
   onCancel: () => void;
   onClose: () => void;
+  history: ExportHistoryItem[];
 }) {
   const dialogRef = React.useRef<HTMLElement>(null),
     running = Boolean(progress),
@@ -186,6 +191,24 @@ export function ExportDialog({
                   <small>Hub取り込み用の作品・商品データ</small>
                 </div>
               </article>
+            </div>
+            <div className="export-warnings">
+              <b>最近の書き出し</b>
+              {!history.length ? (
+                <p>まだ書き出し履歴はありません。</p>
+              ) : (
+                history.slice(0, 3).map((item) => (
+                  <p key={item.id}>
+                    {new Date(item.createdAt).toLocaleString("ja-JP")}・
+                    {item.files.length}ファイル
+                    {item.warnings.length
+                      ? `・確認事項${item.warnings.length}件`
+                      : ""}
+                    <br />
+                    <small>{item.outputDir}</small>
+                  </p>
+                ))
+              )}
             </div>
           </div>
         )}

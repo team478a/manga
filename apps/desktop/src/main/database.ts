@@ -344,6 +344,7 @@ export class MangaiDatabase {
  create table if not exists panels(id text primary key,page_id text not null references pages(id) on delete cascade,order_index integer not null,x real not null,y real not null,width real not null,height real not null,image_asset_id text references assets(id) on delete set null,prompt text not null default '',negative_prompt text not null default '',generation_status text not null default 'idle',metadata text not null default '{}');
  create table if not exists export_history(id text primary key,project_id text not null references projects(id) on delete cascade,export_path text not null,files_json text not null,warnings_json text not null,created_at text not null);
  create table if not exists ai_provider_settings(provider_id text primary key,enabled integer not null,config_json text not null,updated_at text not null);
+ create table if not exists ai_settings_history(id text primary key,provider_id text not null,changed_fields_json text not null,summary_json text not null,created_at text not null);
  create table if not exists ai_models(id text primary key,provider_id text not null,model_id text not null,name text not null,metadata_json text not null default '{}',updated_at text not null,unique(provider_id,model_id));
  create table if not exists chat_sessions(id text primary key,project_id text references projects(id) on delete set null,title text not null,created_at text not null,updated_at text not null);
  create table if not exists chat_messages(id text primary key,session_id text not null references chat_sessions(id) on delete cascade,role text not null check(role in ('user','assistant','system')),content text not null,provider_id text,model_id text,created_at text not null);
@@ -2710,6 +2711,21 @@ export class MangaiDatabase {
     });
     return { outputDir, files, warnings };
   }
+  listExportHistory(projectId: string, limit = 10) {
+    return (
+      this.db
+        .prepare(
+          "select id,export_path as outputDir,files_json as filesJson,warnings_json as warningsJson,created_at as createdAt from export_history where project_id=? order by created_at desc limit ?",
+        )
+        .all(projectId, Math.max(1, Math.min(50, limit))) as any[]
+    ).map((row) => ({
+      id: row.id,
+      outputDir: row.outputDir,
+      files: JSON.parse(row.filesJson) as string[],
+      warnings: JSON.parse(row.warningsJson) as string[],
+      createdAt: row.createdAt,
+    }));
+  }
   getProviderSettings(): ProviderSettings[] {
     const defaults: ProviderSettings[] = [
       {
@@ -2769,17 +2785,65 @@ export class MangaiDatabase {
     }));
   }
   saveProviderSettings(settings: ProviderSettings) {
-    this.db
-      .prepare(
-        "insert into ai_provider_settings values(?,?,?,?) on conflict(provider_id) do update set enabled=excluded.enabled,config_json=excluded.config_json,updated_at=excluded.updated_at",
-      )
-      .run(
-        settings.providerId,
-        settings.enabled ? 1 : 0,
-        JSON.stringify(settings),
-        now(),
-      );
+    const previous = this.getProviderSettings().find(
+      (value) => value.providerId === settings.providerId,
+    );
+    const changedFields = previous
+      ? (Object.keys(settings) as Array<keyof ProviderSettings>).filter(
+          (key) => previous[key] !== settings[key],
+        )
+      : (Object.keys(settings) as Array<keyof ProviderSettings>);
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db
+        .prepare(
+          "insert into ai_provider_settings values(?,?,?,?) on conflict(provider_id) do update set enabled=excluded.enabled,config_json=excluded.config_json,updated_at=excluded.updated_at",
+        )
+        .run(
+          settings.providerId,
+          settings.enabled ? 1 : 0,
+          JSON.stringify(settings),
+          stamp,
+        );
+      if (changedFields.length)
+        this.db
+          .prepare("insert into ai_settings_history values(?,?,?,?,?)")
+          .run(
+            uid(),
+            settings.providerId,
+            JSON.stringify(changedFields),
+            JSON.stringify({
+              enabled: settings.enabled,
+              endpointKind: /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(
+                new URL(settings.baseUrl).hostname,
+              )
+                ? "local"
+                : "remote",
+              modelSelected: Boolean(settings.modelId),
+            }),
+            stamp,
+          );
+    })();
     return this.getProviderSettings();
+  }
+  listAISettingsHistory(limit = 20) {
+    return (
+      this.db
+        .prepare(
+          "select id,provider_id as providerId,changed_fields_json as changedFieldsJson,summary_json as summaryJson,created_at as createdAt from ai_settings_history order by created_at desc limit ?",
+        )
+        .all(Math.max(1, Math.min(100, limit))) as any[]
+    ).map((row) => ({
+      id: row.id,
+      providerId: row.providerId,
+      changedFields: JSON.parse(row.changedFieldsJson) as string[],
+      summary: JSON.parse(row.summaryJson) as {
+        enabled: boolean;
+        endpointKind: "local" | "remote";
+        modelSelected: boolean;
+      },
+      createdAt: row.createdAt,
+    }));
   }
   saveAIModels(
     providerId: string,

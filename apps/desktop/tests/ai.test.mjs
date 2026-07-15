@@ -162,6 +162,11 @@ test("AI settings, chat and jobs survive database reopening", () => {
   let db = new MangaiDatabase(paths);
   const settingsValue = settings("ollama", "http://127.0.0.1:11434");
   db.saveProviderSettings(settingsValue);
+  db.saveProviderSettings(settingsValue);
+  const settingsHistory = db.listAISettingsHistory();
+  assert.equal(settingsHistory.length, 1);
+  assert.equal(settingsHistory[0].summary.endpointKind, "local");
+  assert.equal(JSON.stringify(settingsHistory).includes("127.0.0.1"), false);
   db.saveAIModels("ollama", [{ id: "manga:latest", name: "Manga", size: 42 }]);
   const project = db.createProject({
       title: "AI漫画",
@@ -197,6 +202,7 @@ test("AI settings, chat and jobs survive database reopening", () => {
   assert.equal(recovered.status, "failed");
   assert.equal(recovered.errorCode, "INTERRUPTED");
   assert.equal(db.listPromptTemplates().length, 11);
+  assert.equal(db.listAISettingsHistory().length, 1);
   const builtinTemplate = db.listPromptTemplates()[0];
   assert.throws(
     () =>

@@ -1,6 +1,9 @@
 import React from "react";
 import type { ProviderSettings } from "@mangai/ai-core";
-import type { DiagnosticsState } from "../../../preload/api";
+import type {
+  AISettingsHistoryItem,
+  DiagnosticsState,
+} from "../../../preload/api";
 
 type PromptTemplate = {
   id: string;
@@ -97,12 +100,16 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     [diagnosticsState, setDiagnosticsState] =
       React.useState<DiagnosticsState | null>(null),
     [diagnosticsMessage, setDiagnosticsMessage] = React.useState("");
+  const [settingsHistory, setSettingsHistory] = React.useState<
+    AISettingsHistoryItem[]
+  >([]);
   const load = () =>
     Promise.all([
       window.mangai.ai.listSettings().then(setSettings),
       window.mangai.getPaths().then(setPaths),
       window.mangai.ai.listTemplates().then(setTemplates),
       window.mangai.diagnostics.getState().then(setDiagnosticsState),
+      window.mangai.ai.listSettingsHistory().then(setSettingsHistory),
     ]);
   React.useEffect(() => {
     void load();
@@ -115,6 +122,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     );
   const save = async (value: ProviderSettings) => {
     await window.mangai.ai.saveSettings(value);
+    setSettingsHistory(await window.mangai.ai.listSettingsHistory());
     setStatus((s) => ({ ...s, [value.providerId]: "保存しました。" }));
   };
   const check = async (value: ProviderSettings) => {
@@ -383,6 +391,40 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           )}
           {diagnosedAt && !diagnosing && (
             <small>最終診断: {diagnosedAt.toLocaleString("ja-JP")}</small>
+          )}
+        </section>
+        <section className="panel-lite">
+          <div className="setting-title">
+            <div>
+              <h2>AI設定の変更履歴</h2>
+              <p>
+                接続URLやモデル名の実値は記録せず、変更項目と状態だけを端末内へ保存します。
+              </p>
+            </div>
+            <span className="hub-readonly-badge">監査履歴</span>
+          </div>
+          {!settingsHistory.length ? (
+            <p className="diagnostic-empty">設定変更はまだありません。</p>
+          ) : (
+            <div className="job-list">
+              {settingsHistory.slice(0, 10).map((item) => (
+                <article key={item.id}>
+                  <div>
+                    <b>{providerName(item.providerId)}</b>
+                    <p>
+                      {item.summary.enabled ? "有効" : "無効"}・
+                      {item.summary.endpointKind === "local"
+                        ? "ローカル接続"
+                        : "リモート接続"}
+                      ・変更: {item.changedFields.join("、")}
+                    </p>
+                    <small>
+                      {new Date(item.createdAt).toLocaleString("ja-JP")}
+                    </small>
+                  </div>
+                </article>
+              ))}
+            </div>
           )}
         </section>
         {settings.map((value) => (

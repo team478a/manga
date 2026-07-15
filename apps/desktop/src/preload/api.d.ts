@@ -45,6 +45,24 @@ export type ExportProgress = {
   pageNumber?: number;
   status: "rendering" | "packaging" | "complete";
 };
+export type ExportHistoryItem = {
+  id: string;
+  outputDir: string;
+  files: string[];
+  warnings: string[];
+  createdAt: string;
+};
+export type AISettingsHistoryItem = {
+  id: string;
+  providerId: "ollama" | "comfyui" | "mock";
+  changedFields: string[];
+  summary: {
+    enabled: boolean;
+    endpointKind: "local" | "remote";
+    modelSelected: boolean;
+  };
+  createdAt: string;
+};
 export type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
   checkedAt?: string;
@@ -145,6 +163,7 @@ export type DesktopApi = {
     warnings: string[];
   }>;
   cancelExport: (requestId: string) => Promise<boolean>;
+  listExportHistory: (projectId: string) => Promise<ExportHistoryItem[]>;
   onExportProgress: (listener: (value: ExportProgress) => void) => () => void;
   createEpisode: (projectId: string, title: string) => Promise<ProjectBundle>;
   renameEpisode: (id: string, title: string) => Promise<ProjectBundle>;
@@ -228,6 +247,7 @@ export type DesktopApi = {
   ai: {
     runtimeInfo: () => Promise<{ mockEnabled: boolean }>;
     listSettings: () => Promise<ProviderSettings[]>;
+    listSettingsHistory: () => Promise<AISettingsHistoryItem[]>;
     saveSettings: (value: ProviderSettings) => Promise<ProviderSettings[]>;
     checkProvider: (
       providerId: string,

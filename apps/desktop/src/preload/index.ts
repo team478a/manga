@@ -35,6 +35,8 @@ contextBridge.exposeInMainWorld("mangai", {
     ipcRenderer.invoke("projects:export", { id, requestId }),
   cancelExport: (requestId: string) =>
     ipcRenderer.invoke("projects:export:cancel", { requestId }),
+  listExportHistory: (projectId: string) =>
+    ipcRenderer.invoke("projects:export:history", { id: projectId }),
   onExportProgress: (listener: (value: unknown) => void) => {
     const handler = (_event: Electron.IpcRendererEvent, value: unknown) =>
       listener(value);
@@ -111,6 +113,7 @@ contextBridge.exposeInMainWorld("mangai", {
   ai: {
     runtimeInfo: () => ipcRenderer.invoke("ai:runtime"),
     listSettings: () => ipcRenderer.invoke("ai:settings:list"),
+    listSettingsHistory: () => ipcRenderer.invoke("ai:settings:history"),
     saveSettings: (value: unknown) =>
       ipcRenderer.invoke("ai:settings:save", value),
     checkProvider: (providerId: string) =>

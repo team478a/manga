@@ -376,6 +376,9 @@ function register() {
     exportControllers.get(requestId)?.abort();
     return true;
   });
+  handle("projects:export:history", (v) =>
+    store.listExportHistory(projectIdSchema.parse(v).id),
+  );
   handle("episodes:create", (v) => {
     const x = episodeInputSchema.parse(v);
     return store.captureHistory(x.projectId, "エピソードを追加", () =>
@@ -527,6 +530,7 @@ function register() {
           settings.providerId !== "mock" || aiService.isMockEnabled(),
       ),
   );
+  handle("ai:settings:history", () => store.listAISettingsHistory());
   handle("ai:runtime", () => ({ mockEnabled: aiService.isMockEnabled() }));
   handle("ai:settings:save", (v) =>
     store.saveProviderSettings(providerSettingsSchema.parse(v)),

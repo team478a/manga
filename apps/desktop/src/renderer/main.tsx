@@ -30,6 +30,7 @@ import type {
   AutoBackupState,
   DatabaseRecoveryState,
   ExportProgress,
+  ExportHistoryItem,
   OperationHistory,
 } from "../preload/api";
 
@@ -93,6 +94,7 @@ function App() {
     [exportDialogOpen, setExportDialogOpen] = React.useState(false),
     [exportResult, setExportResult] = React.useState<ExportResult>(),
     [exportError, setExportError] = React.useState<string>(),
+    [exportHistory, setExportHistory] = React.useState<ExportHistoryItem[]>([]),
     [zoom, setZoom] = React.useState(70),
     [history, setHistory] = React.useState<OperationHistory>({
       items: [],
@@ -634,6 +636,9 @@ function App() {
       );
       setSaving("保存済み");
       setExportResult(result);
+      setExportHistory(
+        await window.mangai.listExportHistory(bundle.project.id),
+      );
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : String(cause);
       const canceled = message.includes("キャンセル");
@@ -673,7 +678,13 @@ function App() {
         onUndo={() => apply(window.mangai.undo(bundle.project.id))}
         onRedo={() => apply(window.mangai.redo(bundle.project.id))}
         onImport={() => apply(window.mangai.pickAssets(bundle.project.id))}
-        onExport={() => setExportDialogOpen(true)}
+        onExport={() => {
+          setExportDialogOpen(true);
+          void window.mangai
+            .listExportHistory(bundle.project.id)
+            .then(setExportHistory)
+            .catch(showError);
+        }}
         updateControl={<UpdateControl />}
       />
       {error && (
@@ -688,6 +699,7 @@ function App() {
         progress={exportTask?.progress}
         result={exportResult}
         error={exportError}
+        history={exportHistory}
         onStart={() => void runExport()}
         onCancel={() => {
           if (exportTask) void window.mangai.cancelExport(exportTask.requestId);
