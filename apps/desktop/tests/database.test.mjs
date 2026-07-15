@@ -397,6 +397,163 @@ test("project can use a selected custom storage folder", () => {
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
+test("custom storage deletion falls back to a same-volume trash", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-trash-volume-"));
+  const paths = {
+    root: path.join(root, "app-data"),
+    database: path.join(root, "app-data", "mangai.sqlite"),
+    projects: path.join(root, "app-data", "projects"),
+    assets: path.join(root, "app-data", "assets"),
+    exports: path.join(root, "app-data", "exports"),
+    logs: path.join(root, "app-data", "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  const selected = path.join(root, "external-volume", "custom-project");
+  const bundle = db.createProject({
+    title: "別ドライブ削除",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1000,
+    height: 1500,
+    dpi: 300,
+    storagePath: selected,
+  });
+  fs.writeFileSync(path.join(selected, "project-marker.txt"), "preserved");
+
+  const originalRename = fs.renameSync;
+  const renameDestinations = [];
+  fs.renameSync = (source, destination) => {
+    renameDestinations.push(destination);
+    if (renameDestinations.length === 1) {
+      const error = new Error("cross-device rename");
+      error.code = "EXDEV";
+      throw error;
+    }
+    return originalRename(source, destination);
+  };
+  try {
+    db.deleteProject(bundle.project.id);
+  } finally {
+    fs.renameSync = originalRename;
+  }
+
+  const fallbackTrash = path.join(path.dirname(selected), ".mangai-trash");
+  const entries = fs.readdirSync(fallbackTrash);
+  assert.equal(renameDestinations.length, 2);
+  assert.equal(path.dirname(renameDestinations[1]), fallbackTrash);
+  assert.equal(entries.length, 1);
+  assert.match(entries[0], new RegExp(`^${bundle.project.id}-`));
+  assert.equal(
+    fs.readFileSync(
+      path.join(fallbackTrash, entries[0], "project-marker.txt"),
+      "utf8",
+    ),
+    "preserved",
+  );
+  assert.equal(fs.existsSync(selected), false);
+  assert.equal(db.listProjects().length, 0);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+test("project metadata remains when cross-volume trash fallback fails", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-trash-failure-"));
+  const paths = {
+    root: path.join(root, "app-data"),
+    database: path.join(root, "app-data", "mangai.sqlite"),
+    projects: path.join(root, "app-data", "projects"),
+    assets: path.join(root, "app-data", "assets"),
+    exports: path.join(root, "app-data", "exports"),
+    logs: path.join(root, "app-data", "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  const selected = path.join(root, "external-volume", "custom-project");
+  const bundle = db.createProject({
+    title: "退避失敗",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1000,
+    height: 1500,
+    dpi: 300,
+    storagePath: selected,
+  });
+
+  const originalRename = fs.renameSync;
+  let attempt = 0;
+  fs.renameSync = () => {
+    const error = new Error("move failed");
+    error.code = attempt++ === 0 ? "EXDEV" : "EACCES";
+    throw error;
+  };
+  try {
+    assert.throws(() => db.deleteProject(bundle.project.id), /move failed/);
+  } finally {
+    fs.renameSync = originalRename;
+  }
+
+  assert.equal(db.listProjects().length, 1);
+  assert.equal(db.openProject(bundle.project.id).project.id, bundle.project.id);
+  assert.equal(fs.existsSync(selected), true);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+test("asset deletion in custom storage uses the project-local trash", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-asset-trash-"));
+  const paths = {
+    root: path.join(root, "app-data"),
+    database: path.join(root, "app-data", "mangai.sqlite"),
+    projects: path.join(root, "app-data", "projects"),
+    assets: path.join(root, "app-data", "assets"),
+    exports: path.join(root, "app-data", "exports"),
+    logs: path.join(root, "app-data", "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  const selected = path.join(root, "external-volume", "custom-project");
+  let bundle = db.createProject({
+    title: "素材ゴミ箱",
+    subtitle: "",
+    description: "",
+    genre: "",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1000,
+    height: 1500,
+    dpi: 300,
+    storagePath: selected,
+  });
+  const image = path.join(root, "source.png");
+  await sharp({
+    create: {
+      width: 8,
+      height: 8,
+      channels: 4,
+      background: { r: 20, g: 80, b: 140, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(image);
+  bundle = db.importAssets(bundle.project.id, [image]);
+  const asset = bundle.assets[0];
+  const originalAssetPath = path.join(selected, asset.relativePath);
+  bundle = db.deleteAsset(asset.id);
+
+  const assetTrash = path.join(selected, ".trash");
+  const trashedAssets = fs.readdirSync(assetTrash);
+  assert.equal(bundle.assets.length, 0);
+  assert.equal(fs.existsSync(originalAssetPath), false);
+  assert.equal(trashedAssets.length, 1);
+  assert.equal(
+    fs.statSync(path.join(assetTrash, trashedAssets[0])).size,
+    asset.byteSize,
+  );
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
 test("legacy database is backed up before canvas schema migration", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-migration-"));
   const paths = {

@@ -24,6 +24,7 @@
     "rc:export-acceptance": "npm --prefix apps/desktop run test:export-acceptance",
     "rc:windows-artifacts": "node apps/desktop/scripts/check-windows-artifacts.mjs",
     "rc:windows-installer-e2e": "node apps/desktop/scripts/smoke-windows-installer.mjs",
+    "rc:windows-cross-volume-trash": "npm --prefix apps/desktop run test:win:cross-volume-trash --",
     "rc:windows-evidence": "node apps/desktop/scripts/generate-windows-release-evidence.mjs",
     "rc:validate": "node scripts/check-release-candidate.mjs --full"
   },

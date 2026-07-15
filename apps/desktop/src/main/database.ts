@@ -136,6 +136,39 @@ const assetExtension = (mimeType: string) =>
     "image/webp": ".webp",
   })[mimeType] || "";
 
+function uniqueTrashDestination(directory: string, name: string) {
+  const stamp = Date.now();
+  for (let attempt = 0; attempt < 1000; attempt++) {
+    const suffix = attempt ? `-${attempt}` : "";
+    const destination = path.join(directory, `${name}-${stamp}${suffix}`);
+    if (!fs.existsSync(destination)) return destination;
+  }
+  throw new Error("ゴミ箱の保存先を確保できませんでした。");
+}
+
+function moveProjectDirectoryToTrash(
+  source: string,
+  preferredTrash: string,
+  projectId: string,
+) {
+  const moveInto = (trash: string) => {
+    fs.mkdirSync(trash, { recursive: true });
+    const destination = uniqueTrashDestination(trash, projectId);
+    fs.renameSync(source, destination);
+    return destination;
+  };
+  try {
+    return moveInto(preferredTrash);
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String(error.code)
+        : "";
+    if (code !== "EXDEV") throw error;
+    return moveInto(path.join(path.dirname(source), ".mangai-trash"));
+  }
+}
+
 function isSqliteCorruptionError(error: unknown) {
   const code =
     error && typeof error === "object" && "code" in error
@@ -739,15 +772,41 @@ export class MangaiDatabase {
     const row = this.db
       .prepare("select storage_path from projects where id=?")
       .get(id) as any;
-    if (row) {
-      const trash = path.join(this.paths.root, ".trash");
-      fs.mkdirSync(trash, { recursive: true });
-      if (fs.existsSync(row.storage_path))
-        fs.renameSync(
-          row.storage_path,
-          path.join(trash, `${id}-${Date.now()}`),
+    if (!row) return;
+    const storagePath = path.resolve(row.storage_path);
+    const fileSystemRoot = path.parse(storagePath).root;
+    const relativeAppRoot = path.relative(
+      storagePath,
+      path.resolve(this.paths.root),
+    );
+    if (
+      storagePath === fileSystemRoot ||
+      relativeAppRoot === "" ||
+      (!relativeAppRoot.startsWith("..") && !path.isAbsolute(relativeAppRoot))
+    )
+      throw new Error("この保存先はProjectとして安全に削除できません。");
+
+    let movedTo: string | undefined;
+    try {
+      if (fs.existsSync(storagePath))
+        movedTo = moveProjectDirectoryToTrash(
+          storagePath,
+          path.join(this.paths.root, ".trash"),
+          id,
         );
       this.db.prepare("delete from projects where id=?").run(id);
+    } catch (error) {
+      if (movedTo && fs.existsSync(movedTo) && !fs.existsSync(storagePath)) {
+        try {
+          fs.renameSync(movedTo, storagePath);
+        } catch {
+          throw new Error(
+            "Project情報の削除に失敗し、退避フォルダーも元へ戻せませんでした。",
+            { cause: error },
+          );
+        }
+      }
+      throw error;
     }
   }
   private projectBackupHistory(projectId: string): ProjectBackupHistory {

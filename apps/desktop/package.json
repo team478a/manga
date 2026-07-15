@@ -23,6 +23,7 @@
     "dist:win:update": "node scripts/build-update-release.mjs",
     "verify:win:artifacts": "node scripts/check-windows-artifacts.mjs",
     "test:win:installer": "node scripts/smoke-windows-installer.mjs",
+    "test:win:cross-volume-trash": "cross-env ELECTRON_RUN_AS_NODE=1 electron scripts/test-cross-volume-trash.mjs",
     "generate:win:evidence": "node scripts/generate-windows-release-evidence.mjs"
   },
   "dependencies": {
