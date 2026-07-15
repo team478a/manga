@@ -570,3 +570,11 @@ OllamaとComfyUIの接続先検証を強化しました。`localhost`、IPv4の`
 接続URLと許可originに含まれるユーザー名・パスワード、base path、query、fragmentを拒否し、HTTP redirectも追跡しません。設定保存時にもmain processで同じ検証を行うため、不正なURLをSQLiteへ保存して後から使用する経路を防ぎます。許可originの追加・削除は既存のAI設定監査履歴へ変更項目として記録しますが、実際のURLやhostは記録しません。
 
 完全一致origin、port不一致、未登録origin、HTTPリモート接続、URL credential、base path、redirect拒否の回帰テストを追加しました。Desktop TypeScript、ESLint、統合テスト44/44に成功しています。
+
+## 68. 同意制クラッシュレポート送信client
+
+詳細クラッシュレポートの外部送信clientを追加しました。端末内保存とは別の明示同意を必要とし、自動送信せず、利用者が未送信件数を確認して送信操作を確定した場合だけ処理します。端末内保存をOFFにすると外部送信同意もOFFになります。
+
+送信先は製品resourcesの設定から取得するHTTPS endpointだけを許可し、credential、query、fragment、HTTP redirectを拒否します。送信直前にversion 1 schemaで再検証して秘密値除外を再実行し、256KB上限、10秒timeout、同時送信拒否を適用します。SHA-256 report IDを冪等キーとして付与し、成功したファイルだけを端末内ledgerへ記録するため、途中失敗後は残りだけを再試行できます。
+
+現行の配布設定はendpointが`null`であり、受付APIとプライバシー運用が確定するまで外部通信と送信同意UIを無効にしています。受付API契約と有効化条件は[`desktop/DIAGNOSTICS_UPLOAD_DESIGN.md`](desktop/DIAGNOSTICS_UPLOAD_DESIGN.md)へ記録しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。

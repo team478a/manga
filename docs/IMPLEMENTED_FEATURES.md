@@ -355,6 +355,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰
 - 秘密値除外・5MB/3世代ローテーション付きローカルJSONLログ
 - 明示同意後だけ保存する最大20件の詳細クラッシュレポートと削除UI
+- ローカル保存と別の明示同意、送信前確認、HTTPS限定、失敗再送に対応する外部送信client
 - main、renderer、child process異常の捕捉。外部自動送信なし
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。

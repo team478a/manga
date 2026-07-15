@@ -36,7 +36,7 @@
 | 26  | Desktop TypeScript                    | 完了         | `npm run typecheck`成功                             |
 | 27  | Desktop ESLint                        | 完了         | `npm run lint`成功                                  |
 | 28  | Desktop本番ビルド                     | 完了         | Electron mainとVite renderer成功                    |
-| 29  | 既存統合テスト                        | 完了         | AI・DB・複製・別ドライブ削除・更新を含む39/39成功   |
+| 29  | 既存統合テスト                        | 完了         | AI・DB・複製・別ドライブ削除・更新を含む46/46成功   |
 | 30  | 今回追加したテスト                    | 完了         | canvas-core 24/24、Canvas DB・書き出し試験成功      |
 | 31  | NSIS x64生成                          | 完了         | `MANGAI-Desktop-Setup-0.1.0-x64.exe`生成成功        |
 | 32  | Hub TypeScript、ESLint、Next.jsビルド | 完了         | 3項目成功                                           |
@@ -44,7 +44,7 @@
 
 ## 検証数値
 
-- Desktop統合テスト: 39/39
+- Desktop統合テスト: 46/46
 - canvas-core単体テスト: 24/24
 - Hub TypeScript / ESLint / Next.js build: 成功
 - Desktop TypeScript / ESLint / production build: 成功
