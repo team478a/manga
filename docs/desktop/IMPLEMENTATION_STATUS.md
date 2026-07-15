@@ -31,6 +31,7 @@
 - ComfyUI生成ジョブの監査記録を残したまま、新規生成素材の追加だけを1操作でUndo/Redoできます。
 - 起動時にRAM・GPU・専用VRAMからRuntime Profileを自動選択し、端末別設定として保存できます。ローカル画像生成はMainプロセスで同時1件に制限します。
 - Runtime Profileに合わせて生成解像度とComfyUI batchを自動調整し、ControlNet・LoRA数の上限超過を送信前に拒否します。
+- 低VRAM profileではCreator Chatと画像生成を排他制御し、画像生成前にOllamaモデルをGPUから解放します。
 - 作品別外部送信ポリシーを安全な既定値でSQLiteへ保存し、再起動、Project複製、バックアップ・復元で維持します。
 - ComfyUI生成の前にroute判定を保存し、loopbackのローカルComfyUIだけを実行します。remote接続は送信前に拒否し、生成履歴へ判定先・Sensitivity・理由を表示します。Prompt本文と画像はroute履歴へ保存しません。
 - Project素材を背景・小物・効果・人物・その他へ分類し、タグ、形式、お気に入りで絞り込み、使用数を確認してCanvasへ再利用できます。分類情報は複製・バックアップ・Undoで維持します。

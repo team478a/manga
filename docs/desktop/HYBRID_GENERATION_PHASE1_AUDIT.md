@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `2b6cc20`
+実装基準コミット: `10d66b7`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -443,12 +443,26 @@ maskのblend modeは使用せず、alphaとopacityだけを適用します。cor
 
 VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはworkflow構造・導入済みcustom node・ComfyUI起動引数に依存します。既存workflowを推測で書き換えず、検証済み低スペックworkflowテンプレートとして次工程で導入します。
 
+### Commit 16: Ollama・ComfyUI GPU排他とモデル解放（完了: `10d66b7`）
+
+- 12GB以下のprofileをGPU排他・画像生成前モデル解放対象として定義
+- ローカル画像生成の直前にOllama `/api/generate`へ`keep_alive: 0`を送信
+- 設定中モデルの解放成功後だけComfyUIへworkflowを送信
+- Ollama未使用・remote設定・モデル未選択の場合は解放要求を省略
+- 画像生成中のCreator ChatとChat中の画像生成を`LOCAL_RESOURCE_BUSY`で拒否
+- 同一低VRAM端末で複数Creator Chatを同時開始する操作も拒否
+- 16GB以上では指示書どおり限定的同時利用を許可
+- モデル解放結果を画像生成結果へ記録
+- HTTP mockでモデル解放がComfyUI送信前に行われること、画像生成中のChatがOllamaへ送信されないことを検証
+
+排他はMainプロセスの全AI入口へ配置し、renderer側のbusy表示だけには依存しません。次は拒否された処理を待機へ回せる永続Queue、停止・再開、再起動復元です。
+
 ## 11. テスト基準
 
 2026-07-16の確認時点:
 
 - Desktop統合テスト: 55/55成功
-- ai-core Router・外部送信契約・Runtime Profile単体テスト: 20/20成功
+- ai-core Router・外部送信契約・Runtime Profile単体テスト: 21/21成功
 - canvas-core単体テスト: 25/25成功
 
 Phase 1追加テスト:

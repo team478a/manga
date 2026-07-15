@@ -750,3 +750,11 @@ Runtime Profileの制約を実際のComfyUI送信経路へ接続しました。�
 workflow内のControlNet Loader / ApplyとLoRA Loaderを検出し、8GB profileはControlNet最大1・LoRA最大2、12GB profileは最大2・3として上限超過をネットワーク送信前に拒否します。Generation Jobには使用profile、要求・実効解像度、調整有無を残し、縮小時は生成画面へ実効解像度を日英で表示します。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト55/55、canvas-core 25/25、ai-core 20/20に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。VAEタイル、CPUオフロード、モデル解放は検証済みworkflowテンプレートとresource schedulerで対応します。
+
+## 90. ローカルAIのGPU排他とOllamaモデル解放
+
+12GB以下のRuntime ProfileではCreator ChatとComfyUI画像生成を同時実行しないMainプロセス排他を追加しました。画像生成中のChat、Chat中の画像生成、複数の同時Chatは`LOCAL_RESOURCE_BUSY`として失敗Jobへ記録し、Providerへの二重送信を防ぎます。16GB以上のprofileでは限定的同時利用を維持します。
+
+ローカル画像生成を確保した後、設定中のローカルOllamaモデルへ`keep_alive: 0`を送り、解放成功後だけComfyUI workflowを送信します。Ollamaが無効、remote接続、モデル未選択の場合は解放要求を行いません。モデル解放失敗は`MODEL_UNLOAD_FAILED`としてfail-closedで停止します。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト55/55、canvas-core 25/25、ai-core 21/21に成功しています。HTTP mockでモデル解放要求、ComfyUI送信、競合Chat拒否の順序も確認しました。次工程は永続Queueと停止・再開・再起動復元です。
