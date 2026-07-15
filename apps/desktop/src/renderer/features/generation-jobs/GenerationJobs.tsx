@@ -1,5 +1,6 @@
 import React from "react";
-import type { ProjectBundle } from "@mangai/project-core";
+import type { Asset, ProjectBundle } from "@mangai/project-core";
+import type { RouteDecision } from "@mangai/ai-core";
 import { useI18n } from "../../i18n";
 
 function generationStatusKey(status: string) {
@@ -44,17 +45,26 @@ function routeReasonKey(reason: string) {
   } as const;
   return keys[reason as keyof typeof keys] ?? keys.required_target_unavailable;
 }
+type SafeAssetResult = {
+  jobId: string;
+  status: "completed" | "failed";
+  decision: RouteDecision;
+  assets: Asset[];
+  message?: string;
+};
 export function GenerationJobs({
   bundle,
   episodeId,
   pageId,
   onBundle,
+  onSelectAsset,
   onClose,
 }: {
   bundle: ProjectBundle;
   episodeId?: string;
   pageId?: string;
   onBundle: (value: ProjectBundle) => void;
+  onSelectAsset: (id: string) => void;
   onClose: () => void;
 }) {
   const { t, formatDateTime } = useI18n();
@@ -67,6 +77,15 @@ export function GenerationJobs({
     [busy, setBusy] = React.useState(false),
     [error, setError] = React.useState(""),
     [workflowMessage, setWorkflowMessage] = React.useState("");
+  const [safeType, setSafeType] = React.useState<
+      "background" | "prop" | "effect"
+    >("background"),
+    [safeQuery, setSafeQuery] = React.useState(""),
+    [safeBusy, setSafeBusy] = React.useState(false),
+    [safeResult, setSafeResult] = React.useState<SafeAssetResult | null>(null),
+    [safeAssetUrls, setSafeAssetUrls] = React.useState<Record<string, string>>(
+      {},
+    );
   const load = () =>
     Promise.all([
       window.mangai.ai.listJobs(bundle.project.id).then(setJobs),
@@ -106,6 +125,34 @@ export function GenerationJobs({
   const selectedWorkflow = workflows.find(
     (workflow) => workflow.id === workflowId,
   );
+  const resolveSafeAsset = async () => {
+    if (!safeQuery.trim()) return;
+    setSafeBusy(true);
+    setError("");
+    try {
+      const result = await window.mangai.ai.resolveSafeAssetLibrary({
+        projectId: bundle.project.id,
+        pageId,
+        type: safeType,
+        query: safeQuery,
+      });
+      const urls = Object.fromEntries(
+        await Promise.all(
+          result.assets.map(async (asset) => [
+            asset.id,
+            await window.mangai.assetUrl(asset.relativePath),
+          ]),
+        ),
+      );
+      setSafeAssetUrls(urls);
+      setSafeResult(result);
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      setSafeBusy(false);
+    }
+  };
   return (
     <main className="tool-page">
       <header className="tool-header">
@@ -113,6 +160,75 @@ export function GenerationJobs({
         <h1>{t("generation.title")}</h1>
       </header>
       <div className="tool-content">
+        <section className="panel-lite safe-asset-resolver">
+          <h2>{t("generation.safeAssetTitle")}</h2>
+          <p>{t("generation.safeAssetDescription")}</p>
+          <div className="inline">
+            <select
+              aria-label={t("generation.safeAssetType")}
+              value={safeType}
+              onChange={(event) =>
+                setSafeType(
+                  event.target.value as "background" | "prop" | "effect",
+                )
+              }
+            >
+              <option value="background">
+                {t("asset.category.background")}
+              </option>
+              <option value="prop">{t("asset.category.prop")}</option>
+              <option value="effect">{t("asset.category.effect")}</option>
+            </select>
+            <input
+              value={safeQuery}
+              maxLength={500}
+              placeholder={t("generation.safeAssetQuery")}
+              aria-label={t("generation.safeAssetQuery")}
+              onChange={(event) => setSafeQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") void resolveSafeAsset();
+              }}
+            />
+            <button
+              disabled={safeBusy || !safeQuery.trim()}
+              onClick={() => void resolveSafeAsset()}
+            >
+              {safeBusy
+                ? t("generation.safeAssetSearching")
+                : t("generation.safeAssetSearch")}
+            </button>
+          </div>
+          {safeResult && (
+            <div className="safe-asset-result" role="status">
+              <small>
+                {t("generation.route")}:{" "}
+                {t(routeTargetKey(safeResult.decision.target))}
+                {" / "}
+                {t("generation.routeReason")}:{" "}
+                {t(routeReasonKey(safeResult.decision.reason))}
+              </small>
+              {safeResult.assets.length ? (
+                <div className="safe-asset-grid">
+                  {safeResult.assets.map((asset) => (
+                    <button
+                      key={asset.id}
+                      title={asset.fileName}
+                      onClick={() => onSelectAsset(asset.id)}
+                    >
+                      <img src={safeAssetUrls[asset.id]} alt="" />
+                      <span>{asset.fileName}</span>
+                      <small>{asset.libraryTags.join(" / ")}</small>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="notice">
+                  {safeResult.message ?? t("generation.safeAssetNoMatch")}
+                </p>
+              )}
+            </div>
+          )}
+        </section>
         <section className="panel-lite">
           <h2>{t("generation.comfyTitle")}</h2>
           <div className="inline">
@@ -291,9 +407,11 @@ export function GenerationJobs({
                 <article key={job.id}>
                   <div>
                     <b>
-                      {job.generationType === "image"
-                        ? t("generation.image")
-                        : t("generation.text")}{" "}
+                      {job.providerType === "asset"
+                        ? t("generation.assetLibrary")
+                        : job.generationType === "image"
+                          ? t("generation.image")
+                          : t("generation.text")}{" "}
                       / {job.providerId}
                     </b>
                     <p>{job.prompt}</p>

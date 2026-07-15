@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import {
   AIProviderError,
   routeGenerationJob,
+  type SafeAssetLibraryRequest,
   type RouteDecision,
   type ProviderSettings,
   type TextGenerationProvider,
@@ -35,6 +36,15 @@ export class AIService {
   isMockEnabled() {
     return this.allowMock;
   }
+  private isLoopbackUrl(baseUrl: string) {
+    const hostname = new URL(baseUrl).hostname.toLowerCase();
+    return (
+      hostname === "localhost" ||
+      hostname === "[::1]" ||
+      hostname === "::1" ||
+      /^127(?:\.\d{1,3}){3}$/.test(hostname)
+    );
+  }
   private routeImageGeneration(
     jobId: string,
     input: {
@@ -45,12 +55,7 @@ export class AIService {
     settings: ProviderSettings,
   ): { decision: RouteDecision; localProvider: boolean } {
     const policy = this.store.getProjectGenerationPolicy(input.projectId);
-    const hostname = new URL(settings.baseUrl).hostname.toLowerCase();
-    const localProvider =
-      hostname === "localhost" ||
-      hostname === "[::1]" ||
-      hostname === "::1" ||
-      /^127(?:\.\d{1,3}){3}$/.test(hostname);
+    const localProvider = this.isLoopbackUrl(settings.baseUrl);
     const draft = {
       projectId: input.projectId,
       pageId: input.pageId,
@@ -114,6 +119,101 @@ export class AIService {
     } catch {
       // Logging failures must never stop project or AI operations.
     }
+  }
+  resolveSafeAssetLibrary(input: SafeAssetLibraryRequest) {
+    if (
+      input.pageId &&
+      this.store.projectIdForPage(input.pageId) !== input.projectId
+    )
+      throw new Error("PageとProjectの参照が一致しません。");
+    const policy = this.store.getProjectGenerationPolicy(input.projectId);
+    const queryTokens = input.query
+      .toLocaleLowerCase("ja-JP")
+      .split(/[\s,、]+/)
+      .filter(Boolean);
+    const matches = this.store
+      .bundle(input.projectId)
+      .assets.filter((asset) => {
+        if (asset.libraryCategory !== input.type) return false;
+        const searchable = [asset.fileName, ...asset.libraryTags]
+          .join(" ")
+          .toLocaleLowerCase("ja-JP");
+        return queryTokens.every((token) => searchable.includes(token));
+      })
+      .sort(
+        (left, right) =>
+          Number(right.libraryFavorite) - Number(left.libraryFavorite) ||
+          right.createdAt.localeCompare(left.createdAt),
+      )
+      .slice(0, 20);
+    const comfy = this.store
+      .getProviderSettings()
+      .find((settings) => settings.providerId === "comfyui");
+    const localAvailable = Boolean(
+      comfy?.enabled && this.isLoopbackUrl(comfy.baseUrl),
+    );
+    const draft = {
+      projectId: input.projectId,
+      pageId: input.pageId,
+      type: input.type,
+      sensitivity: "safe" as const,
+      inputAssetIds: [],
+      personPresence: "none" as const,
+      hasCharacterReference: false,
+      hasCompletedPage: false,
+      promptIncludesRestrictedContent: false,
+      allInputAssetsExternalAllowed: true,
+    };
+    const context = {
+      policy: policy.externalProcessingPolicy,
+      availableTargets: [
+        "builtin" as const,
+        ...(matches.length ? (["asset_library"] as const) : []),
+        ...(localAvailable ? (["local"] as const) : []),
+      ],
+      preferLocal: policy.preferLocal,
+      externalProviderEnabled: false,
+      externalCostWithinLimit: false,
+      requireExternalConfirmation: policy.externalConfirmationRequired,
+      manualApprovalGranted: false,
+      customCloudJobTypes: policy.customCloudJobTypes,
+      sensitiveRenderNodeAllowed: false,
+    };
+    const decision = routeGenerationJob(draft, context);
+    const jobId = this.store.createGenerationJob({
+      projectId: input.projectId,
+      pageId: input.pageId,
+      providerType: "asset",
+      providerId: "asset_library",
+      generationType: input.type,
+      prompt: input.query,
+      inputJson: input,
+    });
+    this.store.createGenerationRouteDecision({
+      jobId,
+      projectId: input.projectId,
+      draft,
+      context,
+      decision,
+      promptSha256: crypto
+        .createHash("sha256")
+        .update(input.query, "utf8")
+        .digest("hex"),
+    });
+    if (decision.target === "asset_library" && matches.length) {
+      this.store.updateGenerationJob(jobId, "completed", {
+        output: { assetIds: matches.map((asset) => asset.id) },
+      });
+      return { jobId, status: "completed" as const, decision, assets: matches };
+    }
+    const message = decision.blocked
+      ? "一致する素材がなく、利用可能なローカル生成先もありません。"
+      : "一致する素材がありません。ローカル生成を使用してください。";
+    this.store.updateGenerationJob(jobId, "failed", {
+      errorCode: decision.blocked ? "ROUTE_BLOCKED" : "ASSET_LIBRARY_NO_MATCH",
+      errorMessage: message,
+    });
+    return { jobId, status: "failed" as const, decision, assets: [], message };
   }
   private settings(id: string) {
     const value = this.store

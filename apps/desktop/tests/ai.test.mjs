@@ -536,6 +536,98 @@ test("remote ComfyUI is blocked before external image generation", async () => {
   }
 });
 
+test("safe asset jobs prefer project library and never require external access", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-safe-assets-")),
+    paths = {
+      root,
+      database: path.join(root, "db.sqlite"),
+      projects: path.join(root, "projects"),
+      assets: path.join(root, "assets"),
+      exports: path.join(root, "exports"),
+      logs: path.join(root, "logs"),
+    },
+    db = new MangaiDatabase(paths);
+  try {
+    db.saveProviderSettings(settings("comfyui", "http://127.0.0.1:8188"));
+    let project = db.createProject({
+      title: "safe素材検索",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const source = path.join(root, "school-yard.png");
+    fs.writeFileSync(
+      source,
+      Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
+        "base64",
+      ),
+    );
+    project = db.importAssets(project.project.id, [source]);
+    project = db.saveAssetLibraryMetadata({
+      assetId: project.assets[0].id,
+      category: "background",
+      tags: ["学校", "昼"],
+      favorite: true,
+    });
+    const service = new AIService(db);
+    const match = service.resolveSafeAssetLibrary({
+      projectId: project.project.id,
+      type: "background",
+      query: "学校 昼",
+    });
+    assert.equal(match.status, "completed");
+    assert.equal(match.decision.target, "asset_library");
+    assert.equal(match.decision.reason, "asset_library_preferred");
+    assert.deepEqual(
+      match.assets.map((asset) => asset.id),
+      [project.assets[0].id],
+    );
+
+    const localFallback = service.resolveSafeAssetLibrary({
+      projectId: project.project.id,
+      type: "effect",
+      query: "集中線",
+    });
+    assert.equal(localFallback.status, "failed");
+    assert.equal(localFallback.decision.target, "local");
+    assert.equal(localFallback.decision.blocked, false);
+    assert.equal(localFallback.decision.reason, "local_fallback");
+
+    db.saveProviderSettings({
+      ...settings("comfyui", "https://example.invalid"),
+      allowedOrigins: ["https://example.invalid"],
+    });
+    const blocked = service.resolveSafeAssetLibrary({
+      projectId: project.project.id,
+      type: "prop",
+      query: "机",
+    });
+    assert.equal(blocked.status, "failed");
+    assert.equal(blocked.decision.target, "local");
+    assert.equal(blocked.decision.blocked, true);
+    const routes = db.listGenerationRouteDecisions(project.project.id);
+    assert.equal(routes.length, 3);
+    assert.equal(
+      routes.every((route) => route.draft.sensitivity === "safe"),
+      true,
+    );
+    assert.equal(
+      routes.every((route) => route.draft.personPresence === "none"),
+      true,
+    );
+    assert.equal(db.listGenerationJobs(project.project.id).length, 3);
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("ComfyUI multi-image registration rolls back partial assets", async () => {
   const png = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",

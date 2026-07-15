@@ -27,6 +27,19 @@ export type HybridGenerationJobType = z.infer<
   typeof hybridGenerationJobTypeSchema
 >;
 
+export const safeAssetJobTypeSchema = z.enum(["background", "prop", "effect"]);
+export type SafeAssetJobType = z.infer<typeof safeAssetJobTypeSchema>;
+
+export const safeAssetLibraryRequestSchema = z.object({
+  projectId: z.string().uuid(),
+  pageId: z.string().uuid().optional(),
+  type: safeAssetJobTypeSchema,
+  query: z.string().trim().min(1).max(500),
+});
+export type SafeAssetLibraryRequest = z.infer<
+  typeof safeAssetLibraryRequestSchema
+>;
+
 export const executionTargetSchema = z.enum([
   "builtin",
   "local",

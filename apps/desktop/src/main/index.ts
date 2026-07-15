@@ -56,6 +56,7 @@ import {
   projectGenerationPolicyInputSchema,
   providerSettingsSchema,
   renameChatSchema,
+  safeAssetLibraryRequestSchema,
   workflowMappingSchema,
   workflowUpdateSchema,
 } from "@mangai/ai-core";
@@ -638,6 +639,9 @@ function register() {
   );
   handle("ai:routes:list", (v) =>
     store.listGenerationRouteDecisions(projectIdSchema.parse(v).id),
+  );
+  handle("ai:asset-library:resolve", (v) =>
+    aiService.resolveSafeAssetLibrary(safeAssetLibraryRequestSchema.parse(v)),
   );
   handle("ai:image:generate", (v) =>
     aiService.generateImage(imageJobRequestSchema.parse(v)),

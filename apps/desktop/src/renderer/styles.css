@@ -2132,6 +2132,38 @@ label {
   margin-top: 8px;
   color: var(--text-muted);
 }
+.safe-asset-resolver .inline input {
+  flex: 1 1 240px;
+}
+.safe-asset-result {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+.safe-asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 8px;
+}
+.safe-asset-grid button {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 7px;
+  text-align: left;
+}
+.safe-asset-grid img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 5px;
+  object-fit: cover;
+}
+.safe-asset-grid span,
+.safe-asset-grid small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .history-menu {
   position: relative;
 }

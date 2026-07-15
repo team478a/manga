@@ -679,6 +679,10 @@ function App() {
           episodeId={episode?.id}
           pageId={page?.id}
           onBundle={setBundle}
+          onSelectAsset={(id) => {
+            setSelectedAsset(id);
+            setActiveTool(null);
+          }}
           onClose={() => setActiveTool(null)}
         />
       </ToolShell>

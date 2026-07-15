@@ -1,10 +1,12 @@
-import type { ProjectBundle, Project } from "@mangai/project-core";
+import type { Asset, ProjectBundle, Project } from "@mangai/project-core";
 import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
 import type {
   GenerationRouteDecisionRecord,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
   ProviderSettings,
+  RouteDecision,
+  SafeAssetLibraryRequest,
 } from "@mangai/ai-core";
 import type { Balloon, Panel, TextObject } from "@mangai/canvas-core";
 import type { EpisodeTemplateId } from "@mangai/canvas-core";
@@ -319,6 +321,13 @@ export type DesktopApi = {
     listRouteDecisions: (
       projectId: string,
     ) => Promise<GenerationRouteDecisionRecord[]>;
+    resolveSafeAssetLibrary: (value: SafeAssetLibraryRequest) => Promise<{
+      jobId: string;
+      status: "completed" | "failed";
+      decision: RouteDecision;
+      assets: Asset[];
+      message?: string;
+    }>;
     generateImage: (value: any) => Promise<any>;
     listWorkflows: () => Promise<any[]>;
     addWorkflow: (name: string, mapping: unknown) => Promise<any[]>;
