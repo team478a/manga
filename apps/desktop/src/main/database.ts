@@ -580,38 +580,160 @@ export class MangaiDatabase {
       title: `${source.project.title} のコピー`,
       storagePath: undefined,
     });
-    const episodeMap = new Map<string, string>();
-    this.db.transaction(() => {
-      this.db
-        .prepare("delete from episodes where project_id=?")
-        .run(copy.project.id);
-      for (const e of source.episodes) {
-        const eid = uid();
-        episodeMap.set(e.id, eid);
-        this.db
-          .prepare("insert into episodes values(?,?,?,?,?,?)")
-          .run(eid, copy.project.id, e.title, e.orderIndex, now(), now());
-      }
-      for (const p of source.pages)
-        this.db
-          .prepare("insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?)")
-          .run(
-            uid(),
-            episodeMap.get(p.episodeId),
-            p.pageNumber,
-            p.orderIndex,
-            p.width,
-            p.height,
-            p.backgroundColor,
-            null,
-            p.prompt,
-            p.negativePrompt,
-            p.notes,
-            now(),
-            now(),
+    const projectId = copy.project.id;
+    const storagePath = copy.project.storagePath;
+    try {
+      const assetMap = new Map(source.assets.map((asset) => [asset.id, uid()]));
+      const episodeMap = new Map(
+        source.episodes.map((episode) => [episode.id, uid()]),
+      );
+      const pageMap = new Map(source.pages.map((page) => [page.id, uid()]));
+      const balloonMap = new Map(
+        source.balloons.map((balloon) => [balloon.id, uid()]),
+      );
+      const mappedReference = (
+        map: Map<string, string>,
+        sourceId: string | null,
+        label: string,
+      ) => {
+        if (!sourceId) return null;
+        const mapped = map.get(sourceId);
+        if (!mapped) throw new Error(`${label}の参照が不正です。`);
+        return mapped;
+      };
+      const stamp = now();
+      const preparedAssets = source.assets.map((asset) => {
+        const assetId = mappedReference(assetMap, asset.id, "素材");
+        if (!assetId) throw new Error("素材のIDが不正です。");
+        const sourcePath = this.safeProjectPath(
+          source.project.storagePath,
+          asset.relativePath,
+        );
+        if (!fs.existsSync(sourcePath))
+          throw new Error(`素材「${asset.fileName}」が見つかりません。`);
+        const bytes = fs.readFileSync(sourcePath);
+        const hash = crypto.createHash("sha256").update(bytes).digest("hex");
+        if (bytes.length !== asset.byteSize || hash !== asset.sha256)
+          throw new Error(
+            `素材「${asset.fileName}」の整合性を確認できません。`,
           );
-    })();
-    return this.bundle(copy.project.id);
+        const relativePath = path.join(
+          "assets",
+          `${assetId}${assetExtension(asset.mimeType)}`,
+        );
+        fs.writeFileSync(
+          this.safeProjectPath(storagePath, relativePath),
+          bytes,
+          { flag: "wx" },
+        );
+        return { asset, assetId, relativePath };
+      });
+
+      this.db.transaction(() => {
+        this.db
+          .prepare("delete from episodes where project_id=?")
+          .run(projectId);
+        for (const { asset, assetId, relativePath } of preparedAssets)
+          this.db
+            .prepare(
+              "insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at) values(?,?,?,?,?,?,?,?,?,?)",
+            )
+            .run(
+              assetId,
+              projectId,
+              asset.fileName,
+              relativePath,
+              asset.mimeType,
+              asset.width,
+              asset.height,
+              asset.byteSize,
+              asset.sha256,
+              stamp,
+            );
+        for (const episode of source.episodes)
+          this.db
+            .prepare("insert into episodes values(?,?,?,?,?,?)")
+            .run(
+              mappedReference(episodeMap, episode.id, "Episode"),
+              projectId,
+              episode.title,
+              episode.orderIndex,
+              stamp,
+              stamp,
+            );
+        for (const page of source.pages)
+          this.db
+            .prepare("insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            .run(
+              mappedReference(pageMap, page.id, "Page"),
+              mappedReference(episodeMap, page.episodeId, "PageのEpisode"),
+              page.pageNumber,
+              page.orderIndex,
+              page.width,
+              page.height,
+              page.backgroundColor,
+              mappedReference(assetMap, page.imageAssetId, "Page素材"),
+              page.prompt,
+              page.negativePrompt,
+              page.notes,
+              stamp,
+              stamp,
+            );
+        for (const panel of source.panels)
+          this.upsertPanelRow({
+            ...panel,
+            id: uid(),
+            pageId: mappedReference(pageMap, panel.pageId, "コマのPage")!,
+            imageAssetId: mappedReference(
+              assetMap,
+              panel.imageAssetId,
+              "コマ素材",
+            ),
+            createdAt: "",
+            updatedAt: "",
+          });
+        for (const balloon of source.balloons)
+          this.upsertBalloonRow({
+            ...balloon,
+            id: mappedReference(balloonMap, balloon.id, "吹き出し")!,
+            pageId: mappedReference(pageMap, balloon.pageId, "吹き出しのPage")!,
+            createdAt: "",
+            updatedAt: "",
+          });
+        for (const textObject of source.textObjects)
+          this.upsertTextObjectRow({
+            ...textObject,
+            id: uid(),
+            pageId: mappedReference(
+              pageMap,
+              textObject.pageId,
+              "テキストのPage",
+            )!,
+            parentBalloonId: mappedReference(
+              balloonMap,
+              textObject.parentBalloonId,
+              "テキストの親吹き出し",
+            ),
+            createdAt: "",
+            updatedAt: "",
+          });
+        this.db
+          .prepare(
+            "update projects set cover_asset_id=?,updated_at=?,last_opened_at=? where id=?",
+          )
+          .run(
+            mappedReference(assetMap, source.project.coverAssetId, "表紙素材"),
+            stamp,
+            stamp,
+            projectId,
+          );
+      })();
+      return this.bundle(projectId);
+    } catch (error) {
+      this.db.prepare("delete from projects where id=?").run(projectId);
+      fs.rmSync(storagePath, { recursive: true, force: true });
+      throw error;
+    }
   }
   deleteProject(id: string) {
     const row = this.db

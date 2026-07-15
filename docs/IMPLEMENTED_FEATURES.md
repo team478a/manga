@@ -337,6 +337,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - レイヤーD&D並び替え、前面／背面移動、連続z-index正規化
 - 30オブジェクトPageの性能確認（製品版実操作、保存・移動・再読込スモークテスト）
 - SQLite永続化、Canvasスナップショットv2、Undo/Redo
+- 素材ファイル、Canvas内容、表紙と全参照を新IDで保持するProject完全複製
 - JPG・PNG・WebP合成、DPI準拠PDF、連番PNG ZIP
 - 使用中WebPのPNG正規化による、PDF・ZIP合成時の画像欠落防止
 - 書き出し進捗、キャンセル、ページ別エラー

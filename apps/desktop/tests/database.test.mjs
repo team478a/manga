@@ -193,6 +193,165 @@ test("project, episode, page and asset data survive reopening", () => {
   reopenedDb.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
+test("project duplication preserves assets, canvas content and rendered pages", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-duplicate-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  let source = db.createProject({
+    title: "複製元",
+    subtitle: "Canvas内容を維持",
+    description: "素材を含むProject",
+    genre: "漫画",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  const sourceImage = path.join(root, "red-page.png");
+  await sharp({
+    create: {
+      width: 32,
+      height: 32,
+      channels: 4,
+      background: { r: 220, g: 30, b: 40, alpha: 1 },
+    },
+  })
+    .png()
+    .toFile(sourceImage);
+  source = db.importAssets(source.project.id, [sourceImage]);
+  const sourceAsset = source.assets[0];
+  source = db.addPage(source.episodes[0].id, sourceAsset.id);
+  const sourcePage = source.pages[0];
+  db.savePanel({
+    id: "20000000-0000-4000-8000-000000000001",
+    pageId: sourcePage.id,
+    name: "複製対象コマ",
+    x: 100,
+    y: 100,
+    width: 500,
+    height: 600,
+    rotation: 0,
+    zIndex: 0,
+    visible: true,
+    locked: false,
+    borderColor: "#000000",
+    borderWidth: 4,
+    fillColor: "#ffffff",
+    imageAssetId: sourceAsset.id,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    shape: "rectangle",
+    slant: 0.12,
+    imageOpacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  });
+  const balloonId = "20000000-0000-4000-8000-000000000002";
+  db.saveBalloon({
+    id: balloonId,
+    pageId: sourcePage.id,
+    name: "複製対象吹き出し",
+    type: "speech_ellipse",
+    x: 700,
+    y: 100,
+    width: 350,
+    height: 250,
+    rotation: 0,
+    zIndex: 1,
+    visible: true,
+    locked: false,
+    fillColor: "#ffffff",
+    strokeColor: "#000000",
+    strokeWidth: 4,
+    opacity: 1,
+    tailDirection: "bottom_left",
+    tailOffset: 0.5,
+    createdAt: "",
+    updatedAt: "",
+  });
+  db.saveTextObject({
+    id: "20000000-0000-4000-8000-000000000003",
+    pageId: sourcePage.id,
+    parentBalloonId: balloonId,
+    name: "複製対象テキスト",
+    text: "複製成功",
+    writingMode: "vertical",
+    x: 775,
+    y: 125,
+    width: 200,
+    height: 180,
+    rotation: 0,
+    zIndex: 2,
+    visible: true,
+    locked: false,
+    fontFamily: "sans-serif",
+    fontSize: 40,
+    fontWeight: 400,
+    color: "#000000",
+    textAlign: "center",
+    verticalAlign: "middle",
+    lineHeight: 1.2,
+    letterSpacing: 0,
+    padding: 8,
+    opacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  });
+  source = db.setProjectCover(source.project.id, sourceAsset.id);
+
+  const duplicate = db.duplicateProject(source.project.id);
+  assert.notEqual(duplicate.project.id, source.project.id);
+  assert.notEqual(duplicate.project.storagePath, source.project.storagePath);
+  assert.equal(duplicate.project.title, "複製元 のコピー");
+  assert.equal(duplicate.assets.length, 1);
+  assert.equal(duplicate.pages.length, 1);
+  assert.equal(duplicate.panels.length, 1);
+  assert.equal(duplicate.balloons.length, 1);
+  assert.equal(duplicate.textObjects.length, 1);
+  assert.notEqual(duplicate.assets[0].id, sourceAsset.id);
+  assert.equal(duplicate.pages[0].imageAssetId, duplicate.assets[0].id);
+  assert.equal(duplicate.panels[0].imageAssetId, duplicate.assets[0].id);
+  assert.equal(duplicate.project.coverAssetId, duplicate.assets[0].id);
+  assert.equal(
+    duplicate.textObjects[0].parentBalloonId,
+    duplicate.balloons[0].id,
+  );
+  assert.equal(duplicate.textObjects[0].text, "複製成功");
+  const copiedBytes = fs.readFileSync(
+    path.join(duplicate.project.storagePath, duplicate.assets[0].relativePath),
+  );
+  assert.equal(
+    crypto.createHash("sha256").update(copiedBytes).digest("hex"),
+    sourceAsset.sha256,
+  );
+
+  const exported = await db.exportProject(duplicate.project.id);
+  const images = await JSZip.loadAsync(
+    fs.readFileSync(path.join(exported.outputDir, "本編画像ZIP.zip")),
+  );
+  const renderedPage = await images.file("001.png").async("nodebuffer");
+  const centerPixel = await sharp(renderedPage)
+    .extract({ left: 600, top: 900, width: 1, height: 1 })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  assert.ok(centerPixel[0] > 200);
+  assert.ok(centerPixel[1] < 50);
+  assert.ok(centerPixel[2] < 60);
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
 test("project can use a selected custom storage folder", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-storage-"));
   const paths = {
