@@ -356,3 +356,12 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - main、renderer、child process異常の捕捉。外部自動送信なし
 
 操作と制限は [`desktop/MANGA_EDITOR.md`](desktop/MANGA_EDITOR.md)、33条件の判定は [`desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](desktop/MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
+
+## 16. 配布候補版の品質ゲート
+
+- `rc:preflight`: 外部接続設定を秘密値なしで`configured`、`missing`、`placeholder`に分類
+- `rc:preflight:strict`: Hub / Supabase、Stripe、端末認証、staging DBの不足を終了コードで検出
+- `rc:validate`: Desktop・Hub・Supabase migrationの型検査、Lint、テスト、本番buildを一括実行
+- Ollama、ComfyUI、複数Page書き出し、Hub staging、Stripeテスト決済を分離した手動E2Eチェックリスト
+
+判定方法は[`desktop/RELEASE_CANDIDATE_ACCEPTANCE.md`](desktop/RELEASE_CANDIDATE_ACCEPTANCE.md)を参照してください。

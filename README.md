@@ -7,6 +7,7 @@
 - 全体構成: [`docs/architecture/OVERVIEW.md`](docs/architecture/OVERVIEW.md)
 - ここまでの実装記録・引き継ぎ: [`docs/IMPLEMENTATION_HISTORY.md`](docs/IMPLEMENTATION_HISTORY.md)
 - 現在の実装状況と今後のロードマップ: [`docs/PROJECT_STATUS_AND_ROADMAP.md`](docs/PROJECT_STATUS_AND_ROADMAP.md)
+- 配布候補版のpreflightと受入れ手順: [`docs/desktop/RELEASE_CANDIDATE_ACCEPTANCE.md`](docs/desktop/RELEASE_CANDIDATE_ACCEPTANCE.md)
 
 現在のコードを基準にした詳細な機能一覧は [`docs/IMPLEMENTED_FEATURES.md`](docs/IMPLEMENTED_FEATURES.md) を参照してください。
 
@@ -55,6 +56,8 @@ npm install
 cp .env.example .env.local
 npm run dev
 ```
+
+配布候補版の設定準備状況は`npm run rc:preflight`、外部サービス不要の一括品質ゲートは`npm run rc:validate`で確認できます。preflightは環境変数の値を表示しません。
 
 `.env.local` に以下を設定してください。
 

@@ -18,7 +18,10 @@
     "canvas:test": "npm --prefix packages/canvas-core test",
     "hub:test": "node --experimental-strip-types --test tests/*.test.mjs",
     "db:migrations:validate": "node scripts/validate-supabase-migrations.mjs",
-    "db:staging:preflight": "node scripts/check-supabase-staging.mjs"
+    "db:staging:preflight": "node scripts/check-supabase-staging.mjs",
+    "rc:preflight": "node scripts/check-release-candidate.mjs",
+    "rc:preflight:strict": "node scripts/check-release-candidate.mjs --strict",
+    "rc:validate": "node scripts/check-release-candidate.mjs --full"
   },
   "dependencies": {
     "@mangai/export-core": "file:packages/export-core",

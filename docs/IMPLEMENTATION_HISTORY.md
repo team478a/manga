@@ -466,3 +466,11 @@ Project単位の生成ジョブを2秒間隔で更新し、待機中・実行中
 左右パネルの開閉ボタンへ`aria-controls`と`aria-expanded`を追加しました。書き出しダイアログは表示時と進捗・完了・失敗への遷移時に操作可能要素へフォーカスし、Tab / Shift+Tabを内部で循環させ、実行中以外はEscapeで閉じて元の操作位置へ戻します。生成Drawerも開いた時に閉じる操作へフォーカスし、Escape終了後は下部ステータスのトリガーへ戻します。
 
 DesktopはTypeScript、ESLint、統合テスト35/35、本番rendererビルド、Windows x64 NSISインストーラーとblockmap作成に成功しました。HubはTypeScript、ESLint、決済・ダウンロード認可テスト10/10、Next.js本番ビルドに成功しました。UI-1からUI-6までのDesktop UI統合計画は完了し、次は外部サービスを含む配布候補版受入れへ移行します。
+
+## 53. 配布候補版preflight・受入れ基盤
+
+Desktop、Hub、Supabase migrationの型検査、Lint、テスト、本番buildを順番に実行する`rc:validate`を追加しました。`rc:preflight`はHub / Supabase、Stripe、Desktop端末認証、staging DBの設定準備状況を確認し、環境変数の値、URL、パスワード、API keyを表示せず、設定済み・未設定・placeholderだけを報告します。外部設定不足も配布判定で失敗にする`rc:preflight:strict`も利用できます。
+
+実サービスE2Eは自動検証と分離し、Ollama、ComfyUI、複数Page書き出し、販売パッケージ、Hub staging、Desktop端末認証、Stripeテスト決済、Windows成果物の受入れ手順と完了条件を[`desktop/RELEASE_CANDIDATE_ACCEPTANCE.md`](desktop/RELEASE_CANDIDATE_ACCEPTANCE.md)へ固定しました。ローカル品質ゲートの結果と外部サービス待ちを混同せず、未実施項目を明示してRC判定できる状態にしています。
+
+2026-07-15に`rc:validate`を実行し、Desktop TypeScript、ESLint、統合テスト35/35、本番renderer build、Hub TypeScript、ESLint、テスト10/10、Next.js本番build、Supabase migration静的検証3件がすべて成功しました。外部接続設定は未投入のため通常preflightは`PENDING`、strict preflightは意図どおり終了コード1です。
