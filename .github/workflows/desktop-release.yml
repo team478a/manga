@@ -58,3 +58,12 @@ jobs:
         run: npm run verify:win:artifacts -- metadata signed
       - name: Installer install and uninstall E2E
         run: npm run test:win:installer
+      - name: Generate SBOM and checksums
+        run: npm run generate:win:evidence
+      - name: Upload release evidence
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = node -p "require('./package.json').version"
+          gh release upload "desktop-v$version" "release/SHA256SUMS.txt" "release/MANGAI-Desktop-$version-sbom.spdx.json" --clobber

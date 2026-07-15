@@ -60,7 +60,7 @@ MANGAI-Desktop-Setup-{version}-x64.exe.blockmap
 
 ## GitHub Releases
 
-`.github/workflows/desktop-release.yml`は`desktop-v*`タグまたは手動実行で、Windows上の型検査、Lint、統合テスト、署名、Draft Release作成、更新ファイルのアップロードを行います。タグは`desktop-v{package.jsonのversion}`との完全一致を要求します。通常versionはStable、`-beta.N`はBetaとしてmetadataを生成し、それ以外のprerelease表記を拒否します。
+`.github/workflows/desktop-release.yml`は`desktop-v*`タグまたは手動実行で、Windows上の型検査、Lint、統合テスト、署名、成果物整合性、インストール・製品版起動E2E、Draft Release作成、更新ファイル・SPDX SBOM・SHA-256一覧のアップロードを行います。タグは`desktop-v{package.jsonのversion}`との完全一致を要求します。通常versionはStable、`-beta.N`はBetaとしてmetadataを生成し、それ以外のprerelease表記を拒否します。
 
 必要なRepository Secrets:
 

@@ -512,3 +512,9 @@ NSIS成果物を一時フォルダーへsilent installし、製品EXE、Desktop�
 インストール結果のファイル確認だけでなく、製品版EXEがSQLiteを初期化してrendererを描画できることまで検査する起動スモークを追加しました。`--mangai-smoke-test`は`MANGAI_SMOKE_DOCUMENTS`で指定した絶対パスをElectronのDocuments保存先へ一時設定し、`#root`へのReact描画を最大10秒待って正常終了します。通常起動ではこの処理を使用しません。
 
 NSIS E2Eは一時Documents配下に`MANGAI/mangai_local.sqlite`が作成されたことも確認します。現行コードから0.1.0インストーラーとunpacked製品を再生成し、成果物整合性、silent install、製品版起動、renderer描画、隔離SQLite生成、silent uninstall、残存物消失がすべて成功しました。通常の作品データは変更していません。
+
+## 60. Windows配布SBOM・SHA-256証跡
+
+Desktopのpackage-lockとローカルMANGAIパッケージを読み取り、SPDX 2.3 JSONを生成する`rc:windows-evidence`を追加しました。同じ名前・versionの依存を統合し、package URL、license、取得元、lockfileにあるSHA-512 integrity、直接依存関係を記録します。標準の`npm sbom`はローカル`file:`パッケージの依存を欠落として停止するため、依存関係を変更せずlockfileを直接扱っています。
+
+インストーラー、blockmap、存在する更新metadata、SBOMを対象に`SHA256SUMS.txt`を生成し、`verify`モードでは既存ファイルの製品名・version・パッケージ数・対象一覧・全checksumを再検証します。現行0.1.0では562パッケージと3成果物の検証に成功し、SBOM改変の否定テストも失敗として検出しました。Windowsリリースworkflowは署名と起動E2Eの後にSBOMとchecksumをDraft Releaseへ追加します。

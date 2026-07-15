@@ -22,7 +22,8 @@
     "dist:win:signed": "node scripts/build-signed.mjs",
     "dist:win:update": "node scripts/build-update-release.mjs",
     "verify:win:artifacts": "node scripts/check-windows-artifacts.mjs",
-    "test:win:installer": "node scripts/smoke-windows-installer.mjs"
+    "test:win:installer": "node scripts/smoke-windows-installer.mjs",
+    "generate:win:evidence": "node scripts/generate-windows-release-evidence.mjs"
   },
   "dependencies": {
     "@mangai/ai-core": "file:../../packages/ai-core",

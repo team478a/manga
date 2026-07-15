@@ -132,7 +132,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 | ComfyUI               | 第6節を実サービスで完了             | 外部サービス待ち                           |
 | Hub staging           | 読み取り専用preflightと端末認証完了 | 接続設定待ち                               |
 | Stripe                | テスト決済・失敗・返金・認可を完了  | 接続設定待ち                               |
-| Windows成果物         | 署名済みinstallerと更新metadata確認 | 起動・install E2E完了、コード署名待ち      |
+| Windows成果物         | 署名済みinstallerと更新metadata確認 | 起動・SBOM・checksum完了、コード署名待ち   |
 
 すべてが完了し、重大な未解決不具合がない場合だけRC承認とします。未実施項目を自動テスト成功で代替しません。
 
@@ -151,3 +151,5 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 現行インストーラーを一時フォルダーへsilent installし、実行ファイル、Desktop・Start Menuショートカット、アンインストール登録を確認後、silent uninstallで実行ファイル・ショートカット・登録情報が消えることも確認しました。既存インストールを保護する停止条件を備え、同じE2EをWindowsリリースworkflowへ追加しています。Windows成果物で残る必須条件は信頼された証明書によるコード署名です。
 
 さらに、インストール済み製品版を隔離したDocuments保存先で起動し、SQLite初期化とrenderer描画を確認して自動終了するスモーク検査をE2Eへ統合しました。通常の作品データを変更せず、パッケージ不足、ネイティブ依存不整合、main・preload・renderer読込失敗を配布前に検出できます。
+
+現行0.1.0のpackage-lockとローカルMANGAIパッケージからSPDX 2.3 SBOMを生成し、562パッケージを記録しました。インストーラー、blockmap、SBOMのSHA-256一覧を生成・再検証し、SBOMを変更した否定テストが終了コード1となることも確認しています。更新版では`latest.yml`または`beta.yml`も同じ一覧へ含まれます。

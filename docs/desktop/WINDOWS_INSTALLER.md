@@ -50,6 +50,24 @@ npm run rc:windows-installer-e2e -- allow-local
 
 2026-07-15に現行0.1.0インストーラーで実行し、インストール、製品版renderer起動、隔離SQLite生成からアンインストール後の登録・ショートカット消失まで成功しました。
 
+## SBOM・SHA-256
+
+インストーラー、blockmap、更新metadata、SBOMの改変検出に使う配布証跡を生成します。
+
+```powershell
+npm run rc:windows-evidence
+npm run rc:windows-evidence -- verify
+```
+
+`release/`へSPDX 2.3 JSONと`SHA256SUMS.txt`を生成します。SBOMはDesktopのpackage-lockとローカルMANGAIパッケージから依存関係を収集し、SHA-256一覧は存在する配布成果物だけを対象にします。`verify`はファイルを生成せず、SBOMの製品名・version・パッケージ数と全checksumを再検証します。
+
+```text
+MANGAI-Desktop-{version}-sbom.spdx.json
+SHA256SUMS.txt
+```
+
+Windowsリリースworkflowでは署名、metadata、install・起動E2Eの成功後に両ファイルをDraft Releaseへアップロードします。2026-07-15の0.1.0では562パッケージ、3成果物を記録し、SBOM改変時に検証が失敗することも確認しました。
+
 ## 配布設定
 
 - App ID: `jp.mangai.creator.desktop`
