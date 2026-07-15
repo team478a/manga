@@ -232,10 +232,12 @@ function PanelNode({
   assetUrls,
   selected,
   imageEditing,
+  editingLayerId,
   onSelect,
   onBeginImageEdit,
   onMove,
   onSave,
+  onSaveLayer,
 }: {
   panel: Panel;
   imageUrl?: string;
@@ -243,6 +245,7 @@ function PanelNode({
   assetUrls: Record<string, string>;
   selected: boolean;
   imageEditing: boolean;
+  editingLayerId: string | null;
   onSelect: (node: any, additive: boolean) => void;
   onBeginImageEdit: (node: any) => void;
   onMove?: (rect: { x: number; y: number; width: number; height: number }) => {
@@ -250,6 +253,7 @@ function PanelNode({
     y: number;
   };
   onSave: (value: Panel) => void;
+  onSaveLayer: (layerId: string, patch: Partial<PanelLayer>) => void;
 }) {
   const image = useImage(imageUrl);
   const imageNode = React.useRef<any>(null);
@@ -257,11 +261,12 @@ function PanelNode({
   React.useEffect(() => {
     const transformer = imageTransformer.current;
     if (!transformer) return;
+    if (editingLayerId) return;
     transformer.nodes(
       imageEditing && imageNode.current ? [imageNode.current] : [],
     );
     transformer.getLayer()?.batchDraw();
-  }, [imageEditing, image]);
+  }, [editingLayerId, imageEditing, image]);
   if (!panel.visible) return null;
   const placement = image
     ? computeImagePlacement(
@@ -293,7 +298,7 @@ function PanelNode({
       }
       onTap={(event) => onSelect(event.currentTarget, false)}
       onDblClick={(event) => {
-        if (!image || panel.locked) return;
+        if (separatedLayers.length || !image || panel.locked) return;
         onBeginImageEdit(event.currentTarget);
       }}
       onDragMove={(event) => {
@@ -348,6 +353,9 @@ function PanelNode({
               layer={layer}
               panel={panel}
               imageUrl={layer.assetId ? assetUrls[layer.assetId] : undefined}
+              editing={imageEditing && editingLayerId === layer.id}
+              transformerRef={imageTransformer}
+              onSave={(patch) => onSaveLayer(layer.id, patch)}
             />
           ))}
         </Group>
@@ -421,24 +429,25 @@ function PanelNode({
           context.fillStrokeShape(shape);
         }}
       />
-      {imageEditing && image && (
-        <Transformer
-          ref={imageTransformer}
-          enabledAnchors={[
-            "top-left",
-            "top-right",
-            "bottom-left",
-            "bottom-right",
-          ]}
-          keepRatio
-          rotateEnabled
-          flipEnabled={false}
-          borderStroke="#e67e22"
-          anchorFill="#ffffff"
-          anchorStroke="#e67e22"
-          anchorSize={14}
-        />
-      )}
+      {imageEditing &&
+        ((editingLayerId && separatedLayers.length > 0) || image) && (
+          <Transformer
+            ref={imageTransformer}
+            enabledAnchors={[
+              "top-left",
+              "top-right",
+              "bottom-left",
+              "bottom-right",
+            ]}
+            keepRatio
+            rotateEnabled
+            flipEnabled={false}
+            borderStroke="#e67e22"
+            anchorFill="#ffffff"
+            anchorStroke="#e67e22"
+            anchorSize={14}
+          />
+        )}
     </Group>
   );
 }
@@ -447,12 +456,34 @@ function PanelLayerImage({
   layer,
   panel,
   imageUrl,
+  editing,
+  transformerRef,
+  onSave,
 }: {
   layer: PanelLayer;
   panel: Panel;
   imageUrl?: string;
+  editing: boolean;
+  transformerRef: React.RefObject<any>;
+  onSave: (patch: Partial<PanelLayer>) => void;
 }) {
   const image = useImage(imageUrl);
+  const imageNode = React.useRef<any>(null);
+  React.useEffect(() => {
+    const transformer = transformerRef.current;
+    if (!transformer || !editing || !imageNode.current) return;
+    transformer.nodes([imageNode.current]);
+    transformer.forceUpdate();
+    transformer.getLayer()?.batchDraw();
+  }, [
+    editing,
+    image,
+    layer.imageOffsetX,
+    layer.imageOffsetY,
+    layer.imageRotation,
+    layer.imageScale,
+    transformerRef,
+  ]);
   if (!layer.visible || !image) return null;
   const placement = computeImagePlacement(
     { width: image.naturalWidth, height: image.naturalHeight },
@@ -472,6 +503,7 @@ function PanelLayerImage({
   }[layer.blendMode] as GlobalCompositeOperation;
   return (
     <KonvaImage
+      ref={imageNode}
       image={image}
       x={placement.x}
       y={placement.y}
@@ -480,7 +512,44 @@ function PanelLayerImage({
       rotation={layer.imageRotation}
       opacity={layer.opacity}
       globalCompositeOperation={composite}
-      listening={false}
+      draggable={editing && !layer.locked}
+      listening={editing && !layer.locked}
+      onClick={(event) => {
+        event.cancelBubble = true;
+      }}
+      onTap={(event) => {
+        event.cancelBubble = true;
+      }}
+      onDragEnd={(event) => {
+        event.cancelBubble = true;
+        onSave({
+          imageOffsetX: layer.imageOffsetX + event.target.x() - placement.x,
+          imageOffsetY: layer.imageOffsetY + event.target.y() - placement.y,
+        });
+      }}
+      onTransformEnd={(event) => {
+        event.cancelBubble = true;
+        const node = event.target;
+        const transform = imageTransformFromNode(
+          { width: image.naturalWidth, height: image.naturalHeight },
+          { x: 0, y: 0, width: panel.width, height: panel.height },
+          { fit: layer.imageFit, scale: layer.imageScale },
+          {
+            x: node.x(),
+            y: node.y(),
+            scaleX: node.scaleX(),
+            scaleY: node.scaleY(),
+          },
+        );
+        node.scaleX(1);
+        node.scaleY(1);
+        onSave({
+          imageScale: transform.scale,
+          imageOffsetX: transform.offsetX,
+          imageOffsetY: transform.offsetY,
+          imageRotation: normalizeRotation(node.rotation()),
+        });
+      }}
     />
   );
 }
@@ -1354,6 +1423,9 @@ export function MangaCanvas({
   const [editingPanelImageId, setEditingPanelImageId] = React.useState<
     string | null
   >(null);
+  const [editingPanelLayerId, setEditingPanelLayerId] = React.useState<
+    string | null
+  >(null);
   const [selectedPanelLayerId, setSelectedPanelLayerId] = React.useState<
     string | null
   >(null);
@@ -1404,6 +1476,7 @@ export function MangaCanvas({
     setPanelDraft(null);
     setDrawPanelMode(false);
     setEditingPanelImageId(null);
+    setEditingPanelLayerId(null);
     setDraggingLayer(null);
     setLayerDropTarget(null);
     transformer.current?.nodes([]);
@@ -1414,8 +1487,13 @@ export function MangaCanvas({
     node: any | null,
     additive = false,
   ) => {
-    if (editingPanelImageId && (type !== "panel" || id !== editingPanelImageId))
+    if (
+      editingPanelImageId &&
+      (type !== "panel" || id !== editingPanelImageId)
+    ) {
       setEditingPanelImageId(null);
+      setEditingPanelLayerId(null);
+    }
     const key = { type, id } as SelectionKey;
     let nextKeys: SelectionKey[];
     if (additive) {
@@ -1466,6 +1544,9 @@ export function MangaCanvas({
   }, [selectedPanel?.id]);
   const editingPanel = editingPanelImageId
     ? panels.find((item) => item.id === editingPanelImageId)
+    : undefined;
+  const editingPanelLayer = editingPanelLayerId
+    ? panelLayers.find((item) => item.id === editingPanelLayerId)
     : undefined;
   const selectedLayer = selection
     ? layers.find(
@@ -1633,6 +1714,7 @@ export function MangaCanvas({
   };
   const removePanelImageLayer = (layerId: string) => {
     if (!selectedPanel) return;
+    if (editingPanelLayerId === layerId) finishImageEdit();
     setSelectedPanelLayerId(null);
     savePanelImageLayers(
       selectedPanel.id,
@@ -1698,6 +1780,7 @@ export function MangaCanvas({
   };
   const clearSelection = () => {
     setEditingPanelImageId(null);
+    setEditingPanelLayerId(null);
     setSelection(null);
     setSelectedKeys([]);
     transformer.current?.nodes([]);
@@ -1711,11 +1794,32 @@ export function MangaCanvas({
     select("panel", panel.id, panelNode);
     transformer.current?.nodes([]);
     transformer.current?.getLayer()?.batchDraw();
+    setEditingPanelLayerId(null);
+    setEditingPanelImageId(panel.id);
+  };
+  const beginPanelLayerImageEdit = (panel: Panel, layer: PanelLayer) => {
+    if (
+      panel.locked ||
+      layer.locked ||
+      !layer.visible ||
+      !layer.assetId ||
+      layer.type === "flattened_legacy"
+    )
+      return;
+    setDrawPanelMode(false);
+    setPanelDraft(null);
+    const panelNode = stageRef.current?.findOne?.(`#panel-${panel.id}`) ?? null;
+    select("panel", panel.id, panelNode);
+    setSelectedPanelLayerId(layer.id);
+    transformer.current?.nodes([]);
+    transformer.current?.getLayer()?.batchDraw();
+    setEditingPanelLayerId(layer.id);
     setEditingPanelImageId(panel.id);
   };
   const finishImageEdit = () => {
     const panelId = editingPanelImageId;
     setEditingPanelImageId(null);
+    setEditingPanelLayerId(null);
     if (!panelId) return;
     window.requestAnimationFrame(() => {
       const node = stageRef.current?.findOne?.(`#panel-${panelId}`);
@@ -2199,18 +2303,22 @@ export function MangaCanvas({
           {editingPanel && (
             <>
               <span className="image-edit-status" role="status">
-                {t("canvas.editingImage", { name: editingPanel.name })}
+                {t("canvas.editingImage", {
+                  name: editingPanelLayer?.name ?? editingPanel.name,
+                })}
               </span>
               <button
-                onClick={() =>
-                  savePanel({
-                    ...editingPanel,
+                onClick={() => {
+                  const reset = {
                     imageScale: 1,
                     imageOffsetX: 0,
                     imageOffsetY: 0,
                     imageRotation: 0,
-                  })
-                }
+                  };
+                  if (editingPanelLayer)
+                    updatePanelImageLayer(editingPanelLayer.id, reset);
+                  else savePanel({ ...editingPanel, ...reset });
+                }}
               >
                 {t("canvas.resetCenter")}
               </button>
@@ -2350,9 +2458,15 @@ export function MangaCanvas({
                       selection?.type === "panel" && selection.id === panel.id
                     }
                     imageEditing={editingPanelImageId === panel.id}
+                    editingLayerId={
+                      editingPanelImageId === panel.id
+                        ? editingPanelLayerId
+                        : null
+                    }
                     onSelect={(node) => select("panel", panel.id, node)}
                     onBeginImageEdit={(node) => beginImageEdit(panel, node)}
                     onSave={savePanel}
+                    onSaveLayer={updatePanelImageLayer}
                   />
                 ))}
               {renderLegacyGroups &&
@@ -2512,12 +2626,18 @@ export function MangaCanvas({
                       assetUrls={assetUrls}
                       selected={isSelected("panel", panel.id)}
                       imageEditing={editingPanelImageId === panel.id}
+                      editingLayerId={
+                        editingPanelImageId === panel.id
+                          ? editingPanelLayerId
+                          : null
+                      }
                       onSelect={(node, additive) =>
                         select("panel", panel.id, node, additive)
                       }
                       onBeginImageEdit={(node) => beginImageEdit(panel, node)}
                       onMove={(rect) => snapMove(panel.id, rect)}
                       onSave={savePanel}
+                      onSaveLayer={updatePanelImageLayer}
                     />
                   );
                 }
@@ -2797,27 +2917,38 @@ export function MangaCanvas({
                             className={
                               selectedPanelLayerId === layer.id ? "active" : ""
                             }
-                            onClick={() => setSelectedPanelLayerId(layer.id)}
+                            onClick={() => {
+                              if (
+                                editingPanelLayerId &&
+                                editingPanelLayerId !== layer.id
+                              )
+                                finishImageEdit();
+                              setSelectedPanelLayerId(layer.id);
+                            }}
                           >
                             {layer.name}
                           </button>
                           <button
                             title={t("canvas.toggleVisibility")}
-                            onClick={() =>
+                            onClick={() => {
+                              if (editingPanelLayerId === layer.id)
+                                finishImageEdit();
                               updatePanelImageLayer(layer.id, {
                                 visible: !layer.visible,
-                              })
-                            }
+                              });
+                            }}
                           >
                             {layer.visible ? "◉" : "○"}
                           </button>
                           <button
                             title={t("canvas.toggleLock")}
-                            onClick={() =>
+                            onClick={() => {
+                              if (editingPanelLayerId === layer.id)
+                                finishImageEdit();
                               updatePanelImageLayer(layer.id, {
                                 locked: !layer.locked,
-                              })
-                            }
+                              });
+                            }}
                           >
                             {layer.locked ? "🔒" : "◇"}
                           </button>
@@ -2915,6 +3046,127 @@ export function MangaCanvas({
                             ))}
                           </select>
                         </label>
+                        <label>
+                          {t("properties.imageFit")}
+                          <select
+                            disabled={selectedPanelLayer.locked}
+                            value={selectedPanelLayer.imageFit}
+                            onChange={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                imageFit: event.target
+                                  .value as PanelLayer["imageFit"],
+                              })
+                            }
+                          >
+                            <option value="cover">
+                              {t("properties.cover")}
+                            </option>
+                            <option value="contain">
+                              {t("properties.contain")}
+                            </option>
+                            <option value="manual">
+                              {t("properties.manual")}
+                            </option>
+                          </select>
+                        </label>
+                        <label>
+                          {t("properties.imageScale")}
+                          <input
+                            key={`${selectedPanelLayer.id}-scale-${selectedPanelLayer.imageScale}`}
+                            type="number"
+                            min="0.05"
+                            step="0.05"
+                            disabled={selectedPanelLayer.locked}
+                            defaultValue={selectedPanelLayer.imageScale}
+                            onBlur={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                imageScale: Number(event.target.value),
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          {t("properties.offsetX")}
+                          <input
+                            key={`${selectedPanelLayer.id}-offset-x-${selectedPanelLayer.imageOffsetX}`}
+                            type="number"
+                            disabled={selectedPanelLayer.locked}
+                            defaultValue={selectedPanelLayer.imageOffsetX}
+                            onBlur={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                imageOffsetX: Number(event.target.value),
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          {t("properties.offsetY")}
+                          <input
+                            key={`${selectedPanelLayer.id}-offset-y-${selectedPanelLayer.imageOffsetY}`}
+                            type="number"
+                            disabled={selectedPanelLayer.locked}
+                            defaultValue={selectedPanelLayer.imageOffsetY}
+                            onBlur={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                imageOffsetY: Number(event.target.value),
+                              })
+                            }
+                          />
+                        </label>
+                        <label>
+                          {t("properties.imageRotation")}
+                          <input
+                            key={`${selectedPanelLayer.id}-rotation-${selectedPanelLayer.imageRotation}`}
+                            type="number"
+                            disabled={selectedPanelLayer.locked}
+                            defaultValue={selectedPanelLayer.imageRotation}
+                            onBlur={(event) =>
+                              updatePanelImageLayer(selectedPanelLayer.id, {
+                                imageRotation: normalizeRotation(
+                                  Number(event.target.value),
+                                ),
+                              })
+                            }
+                          />
+                        </label>
+                        <button
+                          className={
+                            editingPanelLayerId === selectedPanelLayer.id
+                              ? "active"
+                              : "secondary"
+                          }
+                          disabled={
+                            selectedPanelLayer.locked ||
+                            !selectedPanelLayer.visible ||
+                            !selectedPanelLayer.assetId
+                          }
+                          onClick={() =>
+                            editingPanelLayerId === selectedPanelLayer.id
+                              ? finishImageEdit()
+                              : beginPanelLayerImageEdit(
+                                  selectedPanel,
+                                  selectedPanelLayer,
+                                )
+                          }
+                        >
+                          {editingPanelLayerId === selectedPanelLayer.id
+                            ? t("properties.endImageEdit")
+                            : t("properties.beginImageEdit")}
+                        </button>
+                        <button
+                          className="secondary"
+                          disabled={selectedPanelLayer.locked}
+                          onClick={() =>
+                            updatePanelImageLayer(selectedPanelLayer.id, {
+                              imageScale: 1,
+                              imageOffsetX: 0,
+                              imageOffsetY: 0,
+                              imageRotation: 0,
+                            })
+                          }
+                        >
+                          {t("properties.resetImage")}
+                        </button>
                         <button
                           className="secondary"
                           disabled={
