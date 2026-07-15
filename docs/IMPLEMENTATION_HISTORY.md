@@ -578,3 +578,11 @@ OllamaとComfyUIの接続先検証を強化しました。`localhost`、IPv4の`
 送信先は製品resourcesの設定から取得するHTTPS endpointだけを許可し、credential、query、fragment、HTTP redirectを拒否します。送信直前にversion 1 schemaで再検証して秘密値除外を再実行し、256KB上限、10秒timeout、同時送信拒否を適用します。SHA-256 report IDを冪等キーとして付与し、成功したファイルだけを端末内ledgerへ記録するため、途中失敗後は残りだけを再試行できます。
 
 現行の配布設定はendpointが`null`であり、受付APIとプライバシー運用が確定するまで外部通信と送信同意UIを無効にしています。受付API契約と有効化条件は[`desktop/DIAGNOSTICS_UPLOAD_DESIGN.md`](desktop/DIAGNOSTICS_UPLOAD_DESIGN.md)へ記録しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。
+
+## 69. 多言語化基盤・追加アクセシビリティ
+
+rendererへ型付きの日本語・英語辞書とlocale contextを追加しました。ホームまたは設定から表示言語を切り替え、localStorageへ保存して次回起動時に復元します。HTMLの`lang`と日時formatも選択言語へ連動します。最初の移行範囲はホーム、新規Project、global navigation、workspace header、status bar、一般設定です。対象年齢など既存データのenum値は変更せず、表示ラベルだけを翻訳しています。
+
+画面先頭へskip linkを追加し、Project一覧は明示的なbuttonでkeyboardから開けるようにしました。新規Projectをmodal backdrop付きdialogへ変更し、初期focus、Tab / Shift+Tab循環、Escape終了、起点へのfocus復帰を実装しました。errorはalertと閉じるbuttonに分離し、クリック領域だけに依存しません。OS設定に合わせたreduced motionとWindows forced colorsも追加しました。
+
+対応範囲と残作業は[`desktop/LOCALIZATION_ACCESSIBILITY.md`](desktop/LOCALIZATION_ACCESSIBILITY.md)へ記録しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。

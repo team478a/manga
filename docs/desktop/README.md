@@ -25,6 +25,7 @@ Projectバックアップの対象範囲と復元仕様は [`PROJECT_BACKUP.md`]
 
 端末内の構造化ログ、クラッシュレポート同意、除外・保持仕様は [`DIAGNOSTICS_PRIVACY.md`](DIAGNOSTICS_PRIVACY.md) を参照してください。
 外部送信クライアントと受付APIの有効化条件は [`DIAGNOSTICS_UPLOAD_DESIGN.md`](DIAGNOSTICS_UPLOAD_DESIGN.md) を参照してください。
+表示言語の対応範囲とkeyboard・スクリーンリーダー対応は [`LOCALIZATION_ACCESSIBILITY.md`](LOCALIZATION_ACCESSIBILITY.md) を参照してください。
 
 ## 保存先
 
@@ -115,6 +116,8 @@ npm run rc:windows-cross-volume-trash -- D:\ allow-local
 - 秘密値を除外するローカルJSONL構造化ログ、5MB・3世代ローテーション
 - 明示同意後だけ保存する詳細クラッシュレポート、最大20件、保存先表示・全削除
 - 別同意・手動確認・HTTPS限定のクラッシュレポート送信クライアント（受付先は既定未設定）
+- 日本語・英語の表示切替基盤と、ホーム・主要シェルの英語表示
+- スキップリンク、新規Project dialogのfocus trap・Escape・focus復帰、reduced motion・forced colors
 - main、renderer、child process異常と応答停止の捕捉。外部自動送信なし
 - Project単位のUndo/Redo、キーボードショートカット、操作履歴
 - ComfyUI画像生成とProject素材への自動登録
