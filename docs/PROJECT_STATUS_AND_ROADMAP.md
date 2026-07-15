@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `bbd4a7c`
+実装基準コミット: `994cd20`
 
 ## 1. 現在地
 
@@ -26,6 +26,8 @@ MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ロー�
 2026-07-15に低スペックPC向けのハイブリッド生成を最優先方針へ変更しました。既存RC基盤を維持しつつ、人物・センシティブ処理をローカルへ固定し、safeな背景・素材だけをAsset Libraryまたは外部Providerへrouteする基盤を追加します。Phase 1調査は[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)に記録しています。
 
 Phase 1の最初の実装として、DBや既存生成経路へ影響しない純粋Generation Routerと型・schemaを追加しました。分類不明、成人向け、人物、参照画像、完成Pageをfail-closedでローカル固定し、safeな背景・小物・効果だけをAsset Libraryまたは許可済みcloud候補にできます。
+
+作品別外部送信ポリシーをSQLiteへ追加し、`safe_assets_only`を既定にしました。ローカル優先、外部送信前確認、月間費用上限、custom cloud Job Typeを保存でき、再起動、Project複製、バックアップ・復元で維持します。まだRouter実行経路へ接続していないため、現行ComfyUI生成の挙動は変わりません。
 
 ## 2. 製品境界
 
@@ -139,6 +141,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 - Creator Chatの専用画面・Canvas右パネル・履歴・テンプレート・送信操作の英語表示
 - ComfyUI画像生成・ワークフロー管理・生成履歴・生成ジョブDrawerの英語表示
 - 言語設定の再起動保持、HTML lang・日時locale連動
+- 作品別ハイブリッド生成ポリシーのSQLite永続化、複製・バックアップ・復元
 
 ### Windows配布
 
@@ -191,7 +194,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 46/46成功                     |
+| Desktop統合テスト                       | 47/47成功                     |
 | canvas-core単体テスト                   | 24/24成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |

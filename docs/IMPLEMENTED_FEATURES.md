@@ -353,6 +353,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 制作画面上の生成ジョブDrawer、直近履歴、進捗、失敗内容、キャンセル
 - ComfyUI画像生成・ワークフロー管理・履歴・ジョブDrawerの日英表示とlocale準拠日時
 - ハイブリッド生成のJob Type・Sensitivity・Execution Target・作品ポリシー型とfail-closedな純粋Router
+- `safe_assets_only`既定の作品別外部送信ポリシー、費用上限、custom Job Typeの永続化・複製・バックアップ復元
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
 - 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰

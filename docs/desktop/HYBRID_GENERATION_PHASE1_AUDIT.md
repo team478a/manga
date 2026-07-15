@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-調査基準コミット: `bbd4a7c`
+調査基準コミット: `994cd20`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -275,13 +275,17 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 `HybridGenerationJobType`、`ExecutionTarget`、`SensitivityLevel`、`ExternalProcessingPolicy`、Job Draft、Routing Context、Route DecisionとZod schemaを`packages/ai-core`へ追加しました。分類情報がない場合は`external_forbidden`と`personPresence=unknown`へ補完し、cloudへrouteしないfail-closed動作にしています。Router単体テスト12/12に成功しています。
 
-### Commit 2: 作品ポリシー永続化
+### Commit 2: 作品ポリシー永続化（完了: `994cd20`）
 
 - migration前バックアップ
 - Project別policy table
 - main processの読み書きAPI
 - DB再オープン・バックアップ回帰テスト
-- UIはまだ既定値表示のみ
+- UIはまだ追加せず、main processの限定APIまで提供
+
+`project_generation_policies`を追加し、全Projectへ`safe_assets_only`、ローカル優先、外部送信前確認を既定設定しました。policy、ローカル優先、確認要否、月間費用上限、customでcloud利用を許可するJob TypeをZod検証して保存します。限定IPCを追加し、rendererから外部Providerへ直接接続しない境界を維持しています。
+
+既存DBはmigration前に自動バックアップし、既存Projectへ安全な既定値を追加します。設定は再起動、Project複製、自動・手動バックアップ、復元で維持します。generation policyを含まない旧version 1 / 2バックアップは安全な既定値で復元します。
 
 ### Commit 3: shadow routing
 
@@ -310,7 +314,7 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 2026-07-15の調査時点:
 
-- Desktop統合テスト: 46/46成功
+- Desktop統合テスト: 47/47成功
 - canvas-core単体テスト: 24/24成功
 
 Phase 1追加テスト:

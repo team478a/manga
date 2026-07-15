@@ -634,3 +634,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成�
 枠・tone・吹き出し・文字・合成・書き出しはbuiltin、人物・成人向け・修正処理はlocalへ固定します。分類不明、人物入力、Character参照、完成Page、restricted Prompt、外部許可のない入力Assetもfail-closedでlocalへ戻します。safeな背景・小物・効果はAsset Libraryを優先し、作品ポリシー、Provider有効状態、費用上限を満たす場合だけcloud候補にします。利用者の明示cloud指定も安全ポリシーを上書きできません。
 
 ai-core単体テスト12/12、Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46、canvas-core 24/24に成功しています。DB、IPC、UI、既存ComfyUI実行経路は変更していません。
+
+## 76. 作品別ハイブリッド生成ポリシーの永続化
+
+`project_generation_policies`を追加し、ProjectごとにExternal Processing Policy、ローカル優先、外部送信前確認、月間費用上限、custom cloud Job Typeを保存できるようにしました。新規・既存Projectはいずれも`safe_assets_only`、ローカル優先、送信前確認を既定値とします。値はai-coreのZod schemaとmain process IPCで検証し、rendererからDBや外部Providerへ直接アクセスさせません。
+
+既存DBは`hybrid-generation-policy-v1` migration前に自動バックアップし、全Projectへ安全な既定値を追加します。ポリシーは再起動、Project複製、自動バックアップの変更検知、手動バックアップ、復元で維持します。generation policyを含まない旧version 1 / 2バックアップは既定値で復元できます。
+
+ai-core単体テスト12/12、Desktop TypeScript、ESLint、本番renderer build、統合テスト47/47、canvas-core 24/24に成功しています。既存ComfyUI経路とUIは変更しておらず、次のshadow routingまでは実行判断に使用しません。

@@ -21,7 +21,7 @@
 | 13  | TypeScript型チェック         | 完了 | Hub・Desktop・各packageで成功                                                      |
 | 14  | ESLint                       | 完了 | Hub・Desktop双方で成功                                                             |
 | 15  | Desktop/Web本番ビルド        | 完了 | Electron main、Vite renderer、Next.js成功                                          |
-| 16  | ユニット・統合テスト         | 完了 | SQLite、完全複製、別ドライブ削除、AI、書き出し、端末認証、診断、更新を含む46件成功 |
+| 16  | ユニット・統合テスト         | 完了 | SQLite、完全複製、生成ポリシー、別ドライブ削除、AI、書き出し、端末認証、診断、更新を含む47件成功 |
 | 17  | ドキュメント反映             | 完了 | architecture、desktop、hub、実装状況を追加                                         |
 
 ## 現状と残る改善
@@ -29,6 +29,7 @@
 - Project単位の永続Undo/Redoと直近50件の操作履歴に対応しています。
 - 素材削除は実ファイル、Page・コマ、表紙、AI生成出力参照を含めて再起動後もUndo/Redoできます。
 - ComfyUI生成ジョブの監査記録を残したまま、新規生成素材の追加だけを1操作でUndo/Redoできます。
+- 作品別外部送信ポリシーを安全な既定値でSQLiteへ保存し、再起動、Project複製、バックアップ・復元で維持します。
 - 書き出し履歴は書き出し画面、秘密値を除外したAI設定変更履歴は設定画面で確認できます。
 - PDF、画像ZIP、作品情報、販売文書き出しを実装しています。JPG・PNG・WebPを共通PageレンダラーでPDFと画像ZIPへ合成します。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。
