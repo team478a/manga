@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `5ddcc3b`
+実装基準コミット: `15b17c1`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -201,19 +201,19 @@ Phase 1で必要な変更:
 
 ## 8. 低スペック対応の現在地
 
-現在はComfyUIへwidth、height、seedとworkflow mappingを渡せますが、端末性能診断やRuntime Profileはありません。ComfyUI workflow内のbatch、ControlNet、LoRA、VAE tile、CPU offload、モデルunloadもMANGAI側では制御していません。
+Electron起動時のRAM・GPU・専用VRAM診断、`cpu_only`から`vram_24gb_plus`までのRuntime Profile自動選択、端末設定への手動上書き保存、同時ローカル画像生成1件の排他制御を実装しました。ComfyUI workflow内のControlNet、LoRA、VAE tile、CPU offload、モデルunloadはまだMANGAI側では制御していません。
 
 Phase 3で必要:
 
-- GPU / VRAM / RAM検出
-- `cpu_only`から`vram_24gb_plus`までのprofile
+- GPU / VRAM / RAM検出（完了）
+- `cpu_only`から`vram_24gb_plus`までのprofile（完了）
 - profile別workflow parameter制約
-- 同時ローカルジョブ数1のresource scheduler
+- 同時ローカル画像生成数1の排他制御（完了。待機Queue化は未完了）
 - OllamaとComfyUIの排他制御
 - pause / resume / priority付き永続Queue
 - 再起動後のqueued / paused復元
 
-これらはPhase 1のRouter型にRuntime Profileを入力できる余地だけ確保し、性能制御そのものはPhase 3まで持ち込みません。
+残るPhase 3作業は、profile別workflow制約、Ollamaとの排他、モデルunload、永続Queueと再開・優先度です。
 
 ## 9. Phase 1の追加設計
 
@@ -417,12 +417,25 @@ maskのblend modeは使用せず、alphaとopacityだけを適用します。cor
 
 互換cacheは派生データであり、CanvasとPDF・画像ZIPの正式な描画元は引き続き`panel_layers`です。従来統合画像は分離後も上書きせず、段階移行とUndo / Redoの復帰先として保持します。
 
+### Commit 14: 低スペックRuntime Profile基盤（完了: `15b17c1`）
+
+- 起動時にOS RAMとElectron GPU情報からGPU名・専用VRAMを診断
+- GPU未検出は`cpu_only`、VRAM不明GPUは最小profileへ倒すfail-closed判定
+- 指示書どおり`cpu_only`、6GB、8GB、12GB、16GB、24GB以上、Render Nodeのprofile型を追加
+- 推奨profileの自動適用と、設定画面からの端末別手動上書き・再起動復元
+- 設定画面へRAM、GPU、VRAM、推奨・実効profile、CPUのみ警告を表示
+- 全ローカルprofileでbatch 1・同時画像生成1件を共通制約化
+- Mainプロセスで2件目を`LOCAL_JOB_BUSY`として拒否し、失敗Jobへ記録
+- GPU診断失敗時もDesktopを起動し、編集・素材・背景API経路を維持
+
+高解像度上限のprofile定義は追加済みですが、既存workflowの値を自動変更する処理はまだ接続していません。次工程は永続Queueとprofile別workflow parameter適用です。
+
 ## 11. テスト基準
 
-2026-07-15の調査時点:
+2026-07-16の確認時点:
 
-- Desktop統合テスト: 53/53成功
-- ai-core Router・外部送信契約単体テスト: 16/16成功
+- Desktop統合テスト: 54/54成功
+- ai-core Router・外部送信契約・Runtime Profile単体テスト: 19/19成功
 - canvas-core単体テスト: 25/25成功
 
 Phase 1追加テスト:

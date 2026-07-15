@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-16
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `5ddcc3b`
+実装基準コミット: `15b17c1`
 
 ## 1. 現在地
 
@@ -40,6 +40,8 @@ Library不一致のsafe Jobをloopback ComfyUI生成フォームへ引き継げ�
 外部safe素材Providerのinterface、送信manifest、費用見積もり、明示確認の契約を追加しました。Library不一致時に、Promptだけが対象で入力素材・キャラクター参照・完成Pageは対象外であること、Providerの保持・学習利用条件、費用状態を事前表示できます。実Providerは未設定・既定無効で、現段階では外部通信も送信確定操作も行えません。
 
 `panel_layers`永続基盤を追加しました。既存のコマ画像は`panels.image_asset_id`を残したまま`flattened_legacy`レイヤーへ自動移行し、背景・人物・小物・効果・tone・mask・correctionの分類、素材・生成Job参照、順序、表示、lock、opacity、blend mode、画像変形を保存できます。Undo、複製、バックアップ・旧形式復元に対応しています。Canvasでは画像の直接移動・等比拡縮・回転とfit・offset数値編集ができ、maskは下位合成結果へalphaを適用し、後続correctionは透明パッチとして重なります。PDF・連番PNG ZIPも同じ規則でローカル合成します。合成結果は内部PNGへ必要時だけ更新し、`panels.image_asset_id`を利用する従来経路にも互換表示を提供します。
+
+低スペックRuntime Profile基盤を追加しました。起動時にRAM・GPU・専用VRAMを診断して安全なprofileを自動選択し、設定画面で確認・端末別上書きできます。GPU未検出でもDesktopは起動し、ローカル画像生成はMainプロセスで同時1件に制限します。
 
 ## 2. 製品境界
 
@@ -203,15 +205,15 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 ## 6. 検証済み
 
-2026-07-15時点の直近確認:
+2026-07-16時点の直近確認:
 
 | 対象                                    | 結果                          |
 | --------------------------------------- | ----------------------------- |
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 53/53成功                     |
-| ai-core Router・外部送信契約テスト      | 16/16成功                     |
+| Desktop統合テスト                       | 54/54成功                     |
+| ai-core Router・外部送信・Runtimeテスト | 19/19成功                     |
 | canvas-core単体テスト                   | 25/25成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |
@@ -325,7 +327,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. VRAM/RAM診断と低スペックRuntime Profile、同時ローカルジョブ数1の制御
+1. Runtime Profile別workflow制約、モデル解放、再起動復元可能な永続Queue
 2. Provider選定後にcredential、費用見積、明示確認後の外部safe素材送信を接続
 3. Supabase staging、Stripe、実Ollama・ComfyUI、署名付き更新のRC受入れ
 

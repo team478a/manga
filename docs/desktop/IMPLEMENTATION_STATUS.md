@@ -21,7 +21,7 @@
 | 13  | TypeScript型チェック         | 完了 | Hub・Desktop・各packageで成功                                                                                                                          |
 | 14  | ESLint                       | 完了 | Hub・Desktop双方で成功                                                                                                                                 |
 | 15  | Desktop/Web本番ビルド        | 完了 | Electron main、Vite renderer、Next.js成功                                                                                                              |
-| 16  | ユニット・統合テスト         | 完了 | SQLite、Panelレイヤー・mask合成、完全複製、生成ポリシー、safe素材生成、Asset Library、別ドライブ削除、AI、書き出し、端末認証、診断、更新を含む53件成功 |
+| 16  | ユニット・統合テスト         | 完了 | SQLite、Panelレイヤー・mask合成、完全複製、生成ポリシー、Runtime Profile、同時生成制御、Asset Library、AI、書き出し等を含む54件成功 |
 | 17  | ドキュメント反映             | 完了 | architecture、desktop、hub、実装状況を追加                                                                                                             |
 
 ## 現状と残る改善
@@ -29,6 +29,7 @@
 - Project単位の永続Undo/Redoと直近50件の操作履歴に対応しています。
 - 素材削除は実ファイル、Page・コマ、表紙、AI生成出力参照を含めて再起動後もUndo/Redoできます。
 - ComfyUI生成ジョブの監査記録を残したまま、新規生成素材の追加だけを1操作でUndo/Redoできます。
+- 起動時にRAM・GPU・専用VRAMからRuntime Profileを自動選択し、端末別設定として保存できます。ローカル画像生成はMainプロセスで同時1件に制限します。
 - 作品別外部送信ポリシーを安全な既定値でSQLiteへ保存し、再起動、Project複製、バックアップ・復元で維持します。
 - ComfyUI生成の前にroute判定を保存し、loopbackのローカルComfyUIだけを実行します。remote接続は送信前に拒否し、生成履歴へ判定先・Sensitivity・理由を表示します。Prompt本文と画像はroute履歴へ保存しません。
 - Project素材を背景・小物・効果・人物・その他へ分類し、タグ、形式、お気に入りで絞り込み、使用数を確認してCanvasへ再利用できます。分類情報は複製・バックアップ・Undoで維持します。

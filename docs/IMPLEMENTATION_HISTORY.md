@@ -734,3 +734,11 @@ cacheはレイヤー保存、Panel寸法・形状変更、Canvas一括更新、P
 内部PNGは予約タグ付きAssetとしてバックアップとProject複製へ含めますが、素材ブラウザー、素材件数、一括Page化から除外します。main processでもメタデータ編集と削除を拒否します。cache作成、内容変更時の同一Asset更新、同一signature時の無更新、Undo / Redoでの従来画像復帰・cache再利用を統合テストへ追加しました。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト53/53、canvas-core 25/25、ai-core 16/16に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。
+
+## 88. 低スペックRuntime Profile基盤
+
+Electron起動時にOS RAMとGPU情報を診断し、`cpu_only`、VRAM 6GB、8GB、12GB、16GB、24GB以上のRuntime Profileを自動選択する基盤を追加しました。GPUは検出できても専用VRAMが不明な場合は最小profileへ倒し、GPU未検出時もアプリを停止せず編集・素材利用を継続します。
+
+設定画面へRAM、GPU名、専用VRAM、推奨・実効profileを表示し、自動選択または手動profileを端末設定へ保存して再起動後に復元できます。CPUのみの場合はローカル画像生成非推奨を表示します。全ローカルprofileはbatch 1・同時生成1件を共通制約とし、Mainプロセスで競合した2件目を`LOCAL_JOB_BUSY`として拒否・失敗履歴へ記録します。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト54/54、canvas-core 25/25、ai-core 19/19に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。profile別workflow parameter適用、Ollamaとの排他、モデルunload、永続Queueは次工程です。
