@@ -115,9 +115,10 @@ function renderPanel(
     .filter((layer) => layer.type !== "flattened_legacy")
     .sort((a, b) => a.orderIndex - b.orderIndex);
   if (separatedLayers.length) {
-    parts.push(
-      `<defs><clipPath id="${clipId}"><path d="${shape}"/></clipPath></defs>`,
-    );
+    const definitions = [
+      `<clipPath id="${clipId}"><path d="${shape}"/></clipPath>`,
+    ];
+    const composite: string[] = [];
     for (const layer of separatedLayers) {
       if (!layer.visible) continue;
       const layerAsset = layer.assetId ? assets.get(layer.assetId) : undefined;
@@ -133,10 +134,28 @@ function renderPanel(
           offsetY: layer.imageOffsetY,
         },
       );
-      parts.push(
-        `<image href="${dataUrl(layerAsset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${layer.opacity}" transform="rotate(${layer.imageRotation} ${placement.x} ${placement.y})" clip-path="url(#${clipId})" style="mix-blend-mode:${layer.blendMode}"/>`,
-      );
+      const image = `<image href="${dataUrl(layerAsset)}" x="${placement.x}" y="${placement.y}" width="${placement.width}" height="${placement.height}" opacity="${layer.opacity}" transform="rotate(${layer.imageRotation} ${placement.x} ${placement.y})"/>`;
+      if (layer.type === "mask") {
+        const maskId = `mask-${panel.id}-${layer.id}`;
+        definitions.push(
+          `<mask id="${maskId}" maskUnits="userSpaceOnUse" x="0" y="0" width="${panel.width}" height="${panel.height}" style="mask-type:alpha">${image}</mask>`,
+        );
+        const masked = composite.join("");
+        composite.splice(
+          0,
+          composite.length,
+          `<g mask="url(#${maskId})">${masked}</g>`,
+        );
+      } else {
+        composite.push(
+          image.replace("/>", ` style="mix-blend-mode:${layer.blendMode}"/>`),
+        );
+      }
     }
+    parts.push(
+      `<defs>${definitions.join("")}</defs>`,
+      `<g clip-path="url(#${clipId})">${composite.join("")}</g>`,
+    );
   } else {
     const asset = panel.imageAssetId
       ? assets.get(panel.imageAssetId)

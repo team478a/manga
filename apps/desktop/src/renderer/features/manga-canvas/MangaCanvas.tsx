@@ -342,23 +342,16 @@ function PanelNode({
         }}
       />
       {separatedLayers.length > 0 ? (
-        <Group
-          clipFunc={(context) => {
-            tracePanelShape(context, shapeCommands);
-          }}
-        >
-          {separatedLayers.map((layer) => (
-            <PanelLayerImage
-              key={layer.id}
-              layer={layer}
-              panel={panel}
-              imageUrl={layer.assetId ? assetUrls[layer.assetId] : undefined}
-              editing={imageEditing && editingLayerId === layer.id}
-              transformerRef={imageTransformer}
-              onSave={(patch) => onSaveLayer(layer.id, patch)}
-            />
-          ))}
-        </Group>
+        <PanelLayerStack
+          panel={panel}
+          layers={separatedLayers}
+          assetUrls={assetUrls}
+          shapeCommands={shapeCommands}
+          imageEditing={imageEditing}
+          editingLayerId={editingLayerId}
+          transformerRef={imageTransformer}
+          onSaveLayer={onSaveLayer}
+        />
       ) : image && placement ? (
         <Group
           clipFunc={(context) => {
@@ -452,19 +445,91 @@ function PanelNode({
   );
 }
 
+function PanelLayerStack({
+  panel,
+  layers,
+  assetUrls,
+  shapeCommands,
+  imageEditing,
+  editingLayerId,
+  transformerRef,
+  onSaveLayer,
+}: {
+  panel: Panel;
+  layers: PanelLayer[];
+  assetUrls: Record<string, string>;
+  shapeCommands: PanelShapeCommand[];
+  imageEditing: boolean;
+  editingLayerId: string | null;
+  transformerRef: React.RefObject<any>;
+  onSaveLayer: (layerId: string, patch: Partial<PanelLayer>) => void;
+}) {
+  const groupRef = React.useRef<any>(null);
+  const refreshCache = React.useCallback(() => {
+    const group = groupRef.current;
+    if (!group) return;
+    group.clearCache();
+    if (!imageEditing)
+      group.cache({
+        x: 0,
+        y: 0,
+        width: panel.width,
+        height: panel.height,
+        pixelRatio: 1,
+      });
+    group.getLayer()?.batchDraw();
+  }, [imageEditing, panel.height, panel.width]);
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(refreshCache);
+    return () => window.cancelAnimationFrame(frame);
+  }, [layers, refreshCache]);
+  React.useEffect(
+    () => () => {
+      groupRef.current?.clearCache();
+    },
+    [],
+  );
+  return (
+    <Group
+      ref={groupRef}
+      clipFunc={(context) => {
+        tracePanelShape(context, shapeCommands);
+      }}
+    >
+      {layers.map((layer) => (
+        <PanelLayerImage
+          key={layer.id}
+          layer={layer}
+          panel={panel}
+          imageUrl={layer.assetId ? assetUrls[layer.assetId] : undefined}
+          editing={imageEditing && editingLayerId === layer.id}
+          maskActive={!imageEditing}
+          transformerRef={transformerRef}
+          onImageReady={refreshCache}
+          onSave={(patch) => onSaveLayer(layer.id, patch)}
+        />
+      ))}
+    </Group>
+  );
+}
+
 function PanelLayerImage({
   layer,
   panel,
   imageUrl,
   editing,
+  maskActive,
   transformerRef,
+  onImageReady,
   onSave,
 }: {
   layer: PanelLayer;
   panel: Panel;
   imageUrl?: string;
   editing: boolean;
+  maskActive: boolean;
   transformerRef: React.RefObject<any>;
+  onImageReady: () => void;
   onSave: (patch: Partial<PanelLayer>) => void;
 }) {
   const image = useImage(imageUrl);
@@ -484,6 +549,11 @@ function PanelLayerImage({
     layer.imageScale,
     transformerRef,
   ]);
+  React.useEffect(() => {
+    if (!image) return;
+    const frame = window.requestAnimationFrame(onImageReady);
+    return () => window.cancelAnimationFrame(frame);
+  }, [image, onImageReady]);
   if (!layer.visible || !image) return null;
   const placement = computeImagePlacement(
     { width: image.naturalWidth, height: image.naturalHeight },
@@ -511,7 +581,9 @@ function PanelLayerImage({
       height={placement.height}
       rotation={layer.imageRotation}
       opacity={layer.opacity}
-      globalCompositeOperation={composite}
+      globalCompositeOperation={
+        layer.type === "mask" && maskActive ? "destination-in" : composite
+      }
       draggable={editing && !layer.locked}
       listening={editing && !layer.locked}
       onClick={(event) => {
@@ -3004,6 +3076,14 @@ export function MangaCanvas({
                             ))}
                           </select>
                         </label>
+                        {selectedPanelLayer.type === "mask" && (
+                          <p className="muted">{t("canvas.maskLayerHint")}</p>
+                        )}
+                        {selectedPanelLayer.type === "correction" && (
+                          <p className="muted">
+                            {t("canvas.correctionLayerHint")}
+                          </p>
+                        )}
                         <label>
                           {t("properties.imageOpacity")}
                           <input
@@ -3023,7 +3103,10 @@ export function MangaCanvas({
                         <label>
                           {t("canvas.panelLayerBlend")}
                           <select
-                            disabled={selectedPanelLayer.locked}
+                            disabled={
+                              selectedPanelLayer.locked ||
+                              selectedPanelLayer.type === "mask"
+                            }
                             value={selectedPanelLayer.blendMode}
                             onChange={(event) =>
                               updatePanelImageLayer(selectedPanelLayer.id, {

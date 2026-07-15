@@ -8,6 +8,7 @@ import { performance } from "node:perf_hooks";
 import { Buffer } from "node:buffer";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { openDatabaseWithRecovery } from "../dist-main/main/database-recovery.js";
+import { renderPagePng } from "../dist-main/main/page-renderer.js";
 import Database from "better-sqlite3";
 import sharp from "sharp";
 import JSZip from "jszip";
@@ -1445,6 +1446,135 @@ test("panel layers preserve legacy images and participate in undo, copy and back
   );
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
+});
+
+test("panel masks clip lower layers and correction patches remain composable", async () => {
+  const width = 20;
+  const height = 20;
+  const red = await sharp({
+    create: {
+      width,
+      height,
+      channels: 4,
+      background: { r: 230, g: 20, b: 30, alpha: 1 },
+    },
+  })
+    .png()
+    .toBuffer();
+  const maskPixels = Buffer.alloc(width * height * 4);
+  const correctionPixels = Buffer.alloc(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const offset = (y * width + x) * 4;
+      maskPixels[offset] = 255;
+      maskPixels[offset + 1] = 255;
+      maskPixels[offset + 2] = 255;
+      maskPixels[offset + 3] = x < width / 2 ? 255 : 0;
+      correctionPixels[offset] = 20;
+      correctionPixels[offset + 1] = 40;
+      correctionPixels[offset + 2] = 230;
+      correctionPixels[offset + 3] = x < width / 2 ? 0 : 255;
+    }
+  }
+  const mask = await sharp(maskPixels, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
+  const correction = await sharp(correctionPixels, {
+    raw: { width, height, channels: 4 },
+  })
+    .png()
+    .toBuffer();
+  const assets = new Map(
+    [
+      ["red", red],
+      ["mask", mask],
+      ["correction", correction],
+    ].map(([id, bytes]) => [
+      id,
+      { id, mimeType: "image/png", width, height, bytes },
+    ]),
+  );
+  const page = {
+    id: "page",
+    episodeId: "episode",
+    name: "mask page",
+    pageNumber: 1,
+    width: 200,
+    height: 100,
+    dpi: 72,
+    backgroundColor: "#ffffff",
+    imageAssetId: null,
+    createdAt: "",
+    updatedAt: "",
+  };
+  const panel = {
+    id: "panel",
+    pageId: page.id,
+    name: "mask panel",
+    x: 0,
+    y: 0,
+    width: page.width,
+    height: page.height,
+    rotation: 0,
+    zIndex: 0,
+    visible: true,
+    locked: false,
+    borderColor: "#000000",
+    borderWidth: 0,
+    fillColor: "#ffffff",
+    shape: "rectangle",
+    slant: 0,
+    imageAssetId: null,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    imageOpacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  };
+  const layer = (id, type, orderIndex, assetId) => ({
+    id,
+    panelId: panel.id,
+    name: type,
+    type,
+    orderIndex,
+    visible: true,
+    locked: false,
+    opacity: 1,
+    blendMode: "normal",
+    assetId,
+    sourceJobId: null,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    createdAt: "",
+    updatedAt: "",
+  });
+  const output = await renderPagePng({
+    page,
+    panels: [panel],
+    panelLayers: [
+      layer("background", "background", 0, "red"),
+      layer("alpha-mask", "mask", 1, "mask"),
+      layer("patch", "correction", 2, "correction"),
+    ],
+    balloons: [],
+    textObjects: [],
+    assets,
+  });
+  const pixels = await sharp(output)
+    .extract({ left: 40, top: 50, width: 120, height: 1 })
+    .removeAlpha()
+    .raw()
+    .toBuffer();
+  const left = pixels.subarray(0, 3);
+  const right = pixels.subarray(pixels.length - 3);
+  assert.ok(left[0] > left[2] * 4, `left pixel was ${left}`);
+  assert.ok(right[2] > right[0] * 4, `right pixel was ${right}`);
 });
 
 test("project backup restores canvas data and verifies asset integrity", async () => {

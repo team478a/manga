@@ -185,6 +185,10 @@ const ja = {
   "canvas.legacyLayerNotice":
     "従来の統合画像は互換用として保持され、分離レイヤーがある間は表示されません。",
   "canvas.panelLayerBlend": "合成モード",
+  "canvas.maskLayerHint":
+    "マスクは、それより下にある合成結果へ画像の透明度を適用します。透明部分は非表示になります。",
+  "canvas.correctionLayerHint":
+    "補正画像は透明部分を維持したまま、下の合成結果へ重ねます。",
   "canvas.deletePanelLayer": "コマ内レイヤーを削除",
   "canvas.replaceLayerAsset": "選択素材へ差し替え",
   "canvas.openLayers": "右パネルでレイヤーを表示",
@@ -621,6 +625,10 @@ const en: Record<TranslationKey, string> = {
   "canvas.legacyLayerNotice":
     "The legacy flattened image is retained for compatibility and hidden while separated layers exist.",
   "canvas.panelLayerBlend": "Blend mode",
+  "canvas.maskLayerHint":
+    "A mask applies its image alpha to the composited layers below it. Transparent areas are hidden.",
+  "canvas.correctionLayerHint":
+    "A correction image overlays the result below while preserving transparent areas.",
   "canvas.deletePanelLayer": "Delete panel image layer",
   "canvas.replaceLayerAsset": "Replace with selected asset",
   "canvas.openLayers": "Show layers in the inspector",
