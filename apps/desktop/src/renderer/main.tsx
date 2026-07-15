@@ -103,7 +103,7 @@ function App() {
       readPanelPreference("mangai.left-panel-open", window.innerWidth >= 1000),
     ),
     [rightPanelOpen, setRightPanelOpen] = React.useState(() =>
-      readPanelPreference("mangai.right-panel-open", window.innerWidth >= 1300),
+      readPanelPreference("mangai.right-panel-open", window.innerWidth >= 1366),
     ),
     [inspectorTab, setInspectorTab] =
       React.useState<InspectorTab>(readInspectorTab),
@@ -211,6 +211,15 @@ function App() {
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select, [contenteditable=true]"))
         return;
+      if (
+        event.key === "Escape" &&
+        rightPanelOpen &&
+        window.matchMedia("(max-width: 1365px)").matches
+      ) {
+        event.preventDefault();
+        setRightPanelOpen(false);
+        return;
+      }
       if (!(event.ctrlKey || event.metaKey)) return;
       if (
         event.key.toLowerCase() === "z" &&
@@ -230,7 +239,7 @@ function App() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [bundle, activeTool, history.canUndo, history.canRedo]);
+  }, [bundle, activeTool, history.canUndo, history.canRedo, rightPanelOpen]);
   const create = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -744,6 +753,12 @@ function App() {
               </div>
             )}
           </section>
+          <button
+            className="inspector-scrim"
+            aria-label="右パネルを閉じる"
+            tabIndex={-1}
+            onClick={() => setRightPanelOpen(false)}
+          />
           <InspectorPanel
             bundle={bundle}
             page={page}

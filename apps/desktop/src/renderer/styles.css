@@ -745,6 +745,9 @@ label {
 .workspace.right-collapsed > .right {
   display: none;
 }
+.inspector-scrim {
+  display: none;
+}
 .left,
 .right {
   background: var(--bg-panel);
@@ -1445,6 +1448,46 @@ label {
   background: var(--bg-panel-elevated);
   border-radius: 9px;
 }
+@media (max-width: 1365px) {
+  .workspace {
+    --left-panel-width: 260px;
+    position: relative;
+    grid-template-columns: var(--left-panel-width) minmax(0, 1fr);
+  }
+  .workspace.left-collapsed {
+    --left-panel-width: 0px;
+  }
+  .workspace > .right {
+    position: absolute;
+    z-index: 9;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 310px;
+    border-left-color: var(--border-strong);
+    box-shadow: var(--shadow-dialog);
+  }
+  .workspace > .inspector-scrim {
+    position: absolute;
+    z-index: 8;
+    inset: 0 0 0 var(--left-panel-width);
+    display: block;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgb(5 6 9 / 28%);
+    cursor: default;
+  }
+  .workspace.right-collapsed > .inspector-scrim {
+    display: none;
+  }
+  .status-bar {
+    gap: 10px;
+  }
+  .status-bar-path {
+    max-width: 20%;
+  }
+}
 @media (max-width: 1200px) {
   .app-breadcrumb span {
     max-width: 120px;
@@ -1462,13 +1505,9 @@ label {
   }
   .workspace {
     --left-panel-width: 250px;
-    --right-panel-width: 270px;
   }
   .workspace.left-collapsed {
     --left-panel-width: 0px;
-  }
-  .workspace.right-collapsed {
-    --right-panel-width: 0px;
   }
   .toolbar strong {
     max-width: 220px;
@@ -1506,13 +1545,20 @@ label {
   }
   .workspace {
     --left-panel-width: 220px;
-    --right-panel-width: 230px;
   }
   .workspace.left-collapsed {
     --left-panel-width: 0px;
   }
-  .workspace.right-collapsed {
-    --right-panel-width: 0px;
+  .workspace > .right {
+    width: min(300px, calc(100vw - 64px));
+  }
+  .status-bar {
+    padding-left: 70px;
+  }
+  .status-bar > span:nth-of-type(3),
+  .status-bar-control,
+  .status-bar-refresh {
+    display: none;
   }
 }
 .tool-page {

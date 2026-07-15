@@ -67,6 +67,8 @@ export function AppHeader({
         <button
           className={leftPanelOpen ? "selected" : "secondary"}
           aria-pressed={leftPanelOpen}
+          aria-expanded={leftPanelOpen}
+          aria-controls="project-panel"
           title="構成・素材パネルを開閉"
           onClick={onToggleLeftPanel}
         >
@@ -76,6 +78,8 @@ export function AppHeader({
         <button
           className={rightPanelOpen ? "selected" : "secondary"}
           aria-pressed={rightPanelOpen}
+          aria-expanded={rightPanelOpen}
+          aria-controls="inspector-panel"
           title="情報パネルを開閉"
           onClick={onToggleRightPanel}
         >

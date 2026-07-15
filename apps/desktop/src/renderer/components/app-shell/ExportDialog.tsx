@@ -34,15 +34,73 @@ export function ExportDialog({
   onCancel: () => void;
   onClose: () => void;
 }) {
+  const dialogRef = React.useRef<HTMLElement>(null),
+    running = Boolean(progress),
+    runningRef = React.useRef(running),
+    closeRef = React.useRef(onClose);
+  runningRef.current = running;
+  closeRef.current = onClose;
+  React.useEffect(() => {
+    if (!open) return;
+    const previous = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+    dialog
+      ?.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )
+      ?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !runningRef.current) {
+        event.preventDefault();
+        closeRef.current();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+      const focusable = [
+        ...dialog.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ];
+      if (!focusable.length) return;
+      const first = focusable[0],
+        last = focusable.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      previous?.focus();
+    };
+  }, [open]);
+  React.useEffect(() => {
+    if (!open || dialogRef.current?.contains(document.activeElement)) return;
+    dialogRef.current
+      ?.querySelector<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      )
+      ?.focus();
+  }, [open, running, result, error]);
   if (!open) return null;
-  const running = Boolean(progress);
   return (
     <div className="modal-backdrop" role="presentation">
       <section
+        ref={dialogRef}
         className="export-dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby="export-dialog-title"
+        onKeyDown={(event) => {
+          if (event.key !== "Escape" || running) return;
+          event.preventDefault();
+          event.stopPropagation();
+          onClose();
+        }}
       >
         <header>
           <div>

@@ -349,6 +349,8 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 下部ステータスのOllama・ComfyUI接続要約、手動更新、Project別生成ジョブ件数
 - 制作画面上の生成ジョブDrawer、直近履歴、進捗、失敗内容、キャンセル
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
+- 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
+- ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰
 - 秘密値除外・5MB/3世代ローテーション付きローカルJSONLログ
 - 明示同意後だけ保存する最大20件の詳細クラッシュレポートと削除UI
 - main、renderer、child process異常の捕捉。外部自動送信なし

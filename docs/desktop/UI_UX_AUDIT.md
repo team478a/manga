@@ -233,15 +233,20 @@ Canvas内部、SQLite、IPC、Undo / Redo、書き出し処理は変更してい
 - PDF、連番画像ZIP、販売パッケージを確認して開始する書き出しダイアログ
 - Page描画、パッケージング進捗、キャンセル、成功、警告、失敗、再実行を同じダイアログへ統合
 
-### UI-6 レスポンシブと回帰
+### UI-6 レスポンシブと回帰（完了）
 
-- 1280x720、1440x900、1920x1080
-- キーボードとフォーカス
-- Desktop typecheck / lint / test / build / NSIS
-- Hub typecheck / lint / test / build
+- 1366px以上は左パネル / Canvas / 右Inspectorの3カラム
+- 1365px以下は左パネル / Canvasを維持し、右Inspectorを310pxオーバーレイ表示
+- 右Inspectorの背景クリックとEscape終了、開閉状態のARIA関連付け
+- 850px以下ではステータス情報を段階的に省略
+- 書き出しダイアログの初期・フェーズ変更フォーカス、Tab循環、Escape終了、フォーカス復帰
+- 生成Drawerの初期フォーカス、Escape終了、トリガーへのフォーカス復帰
+- 1920px、約1440px、1280px幅の製品版実画面確認
+- Desktop typecheck / lint / test 35件 / build / Windows NSIS
+- Hub typecheck / lint / test 10件 / Next.js build
 
 ## 13. 次の実装単位
 
-次は`UI-6 レスポンシブと回帰`へ進む。
+UI-1〜UI-6のDesktop UI統合計画は完了した。
 
-1280x720、1440x900、1920x1080でApp Shell、左右パネル、Canvas、右AI、生成Drawer、書き出しダイアログを確認する。狭幅時の右パネルオーバーレイ、ヘッダーとステータスの省略、キーボード・フォーカスを調整し、DesktopとHubの回帰検証を完了する。
+次は配布候補版の受入れフェーズとし、実際のOllama / ComfyUI、複数Page作品の書き出し、Hub staging、Stripeテスト環境を使った外部サービスE2Eを個別に進める。外部接続値が不要な範囲では、Desktop起動、Project再読込、Canvas編集、左右パネル、Creator Chat Mock、生成履歴、書き出しダイアログを受入れ項目として固定する。

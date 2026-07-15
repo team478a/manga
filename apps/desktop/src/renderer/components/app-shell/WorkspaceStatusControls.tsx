@@ -61,7 +61,9 @@ export function WorkspaceStatusControls({
     >({}),
     [jobs, setJobs] = React.useState<GenerationJob[]>([]),
     [drawerOpen, setDrawerOpen] = React.useState(false),
-    [refreshing, setRefreshing] = React.useState(false);
+    [refreshing, setRefreshing] = React.useState(false),
+    drawerRef = React.useRef<HTMLElement>(null),
+    drawerTriggerRef = React.useRef<HTMLButtonElement>(null);
 
   const refreshConnections = React.useCallback(async () => {
     setRefreshing(true);
@@ -139,6 +141,23 @@ export function WorkspaceStatusControls({
     return () => window.clearInterval(timer);
   }, [refreshJobs]);
 
+  React.useEffect(() => {
+    if (!drawerOpen) return;
+    drawerRef.current
+      ?.querySelector<HTMLElement>('button[aria-label="生成ジョブを閉じる"]')
+      ?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setDrawerOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      drawerTriggerRef.current?.focus();
+    };
+  }, [drawerOpen]);
+
   const activeJobs = jobs.filter(
       (job) => job.status === "queued" || job.status === "running",
     ),
@@ -164,6 +183,7 @@ export function WorkspaceStatusControls({
           );
         })}
         <button
+          ref={drawerTriggerRef}
           className="status-bar-refresh"
           aria-label="AI接続状態を更新"
           title="AI接続状態を更新"
@@ -190,6 +210,7 @@ export function WorkspaceStatusControls({
       </div>
       {drawerOpen && (
         <aside
+          ref={drawerRef}
           className="generation-drawer"
           aria-label="生成ジョブ"
           role="dialog"

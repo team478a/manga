@@ -54,7 +54,11 @@ export function InspectorPanel({
   }, [promptText, negative, notes]);
 
   return (
-    <aside className="right inspector-panel" aria-label="編集パネル">
+    <aside
+      id="inspector-panel"
+      className="right inspector-panel"
+      aria-label="編集パネル"
+    >
       <div className="inspector-tabs">
         <Tabs
           label="編集パネル"

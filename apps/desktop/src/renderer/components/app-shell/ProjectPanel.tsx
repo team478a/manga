@@ -58,7 +58,11 @@ export function ProjectPanel({
   }, [activeTab]);
 
   return (
-    <aside className="left project-panel" aria-label="Project構成と素材">
+    <aside
+      id="project-panel"
+      className="left project-panel"
+      aria-label="Project構成と素材"
+    >
       <div className="project-panel-tabs">
         <Tabs
           idPrefix="project-panel"
