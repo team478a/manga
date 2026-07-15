@@ -19,6 +19,8 @@ Windowsインストーラーは `npm run desktop:dist:win` で生成します。
 
 更新メタデータ付きビルドとGitHub Releases運用は [`AUTO_UPDATE.md`](AUTO_UPDATE.md) を参照してください。
 
+Desktop UI/UX統合の現状監査、変更境界、段階的な実装順序は [`UI_UX_AUDIT.md`](UI_UX_AUDIT.md) を参照してください。
+
 Projectバックアップの対象範囲と復元仕様は [`PROJECT_BACKUP.md`](PROJECT_BACKUP.md) を参照してください。
 
 端末内の構造化ログ、クラッシュレポート同意、除外・保持仕様は [`DIAGNOSTICS_PRIVACY.md`](DIAGNOSTICS_PRIVACY.md) を参照してください。
