@@ -28,6 +28,7 @@
 
 - Project単位の永続Undo/Redoと直近50件の操作履歴に対応しています。
 - 素材削除は実ファイル、Page・コマ、表紙、AI生成出力参照を含めて再起動後もUndo/Redoできます。
+- ComfyUI生成ジョブの監査記録を残したまま、新規生成素材の追加だけを1操作でUndo/Redoできます。
 - PDF、画像ZIP、作品情報、販売文書き出しを実装しています。JPG・PNG・WebPを共通PageレンダラーでPDFと画像ZIPへ合成します。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。
 - 別ドライブのProject削除は同一ドライブの`.mangai-trash`へ退避し、退避失敗時はDB情報を保持します。
