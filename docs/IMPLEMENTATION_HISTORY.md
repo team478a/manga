@@ -430,3 +430,9 @@ Checkout作成前にpending状態、注文・商品ID、購入者メール、出
 参照UI資料と現在のrenderer、preload、main IPCを照合し、Project、Episode、Page、Asset、Canvas、Properties、Layers、Creator Chat、Ollama、ComfyUI、Generation Jobs、Export、Settingsの監査表を作成しました。既存機能の再利用、見た目変更、再配置、統合、不足修正、未実装を分類し、SQLite、IPC、Canvasデータ、Undo / Redo、書き出し、配布基盤を変更しない境界を明記しました。
 
 UI統合の第1段階として、Desktop CSSへダークテーマの背景、文字、境界線、アクセント、状態色、Canvas色、フォーカスリングを変数化して導入しました。ホーム、ワークスペース、Canvas周辺、Creator Chat、AI生成、Hub、設定を同じトークンへ統一し、Canvas Pageの白背景はアプリテーマから分離しています。保存状態とCreator Chat状態は共通`StatusBadge`で点・文言・色を併用して表示します。画面配置、Canvasロジック、IPC、SQLiteは変更していません。
+
+## 48. Desktop App Shell統合
+
+編集画面を一段固定の`AppHeader`、64pxの`GlobalNav`、`ProjectPanel`、中央Canvas、`InspectorPanel`、30pxの`StatusBar`へ分離しました。ヘッダーにはProject / Episode / Pageのパンくず、保存状態、左右パネル、Undo / Redo、インポート、主操作の書き出しを配置し、バックアップ、直近操作履歴、更新チャンネルは「その他」メニューへ集約しています。
+
+左端ナビは漫画編集、Creator Chat、画像生成、Hub連携、設定の既存画面だけを表示し、専用画面へ移動した後もナビを維持します。下部ステータスには現在Page、Project保存先、Page寸法、DPI、ズーム、素材数を実データから表示します。Project / Episode / Page / Asset操作は`ProjectPanel`、Project / Page / Asset情報は`InspectorPanel`へ既存IPC接続のまま分離しました。Lucide Reactのアイコン、ツールチップ、選択状態、狭幅時のラベル省略を追加しています。

@@ -190,16 +190,16 @@ Project、Episode、Page、Asset、Canvasオブジェクト、生成ジョブ、
 
 `IconButton`、`Tabs`、`Tooltip`は利用箇所と同時に実装し、未使用の共通部品を先行追加しない。
 
-### UI-2 App Shell
+### UI-2 App Shell（完了）
 
-- `AppHeader`
-- `GlobalNav`
-- `ProjectPanel`
-- `MainWorkspace`
-- `InspectorPanel`
-- `StatusBar`
+- 一段固定の`AppHeader`
+- 実装済み画面だけを表示する`GlobalNav`
+- `ProjectPanel`と`InspectorPanel`の分離
+- Canvasを中央に維持する`MainWorkspace`
+- Page、保存先、寸法、DPI、ズーム、素材数を表示する`StatusBar`
+- バックアップ、操作履歴、更新を「その他」メニューへ集約
 
-この段階ではCanvas内部を移動しない。
+Canvas内部、SQLite、IPC、Undo / Redo、書き出し処理は変更していない。
 
 ### UI-3 左パネル統合
 
@@ -231,6 +231,6 @@ Project、Episode、Page、Asset、Canvasオブジェクト、生成ジョブ、
 
 ## 13. 次の実装単位
 
-次は`UI-2 App Shell`へ進む。
+次は`UI-3 左パネル統合`へ進む。
 
-`AppHeader`、`GlobalNav`、`ProjectPanel`、`MainWorkspace`、`InspectorPanel`、`StatusBar`の責務を分離する。最初は既存propsとコールバックを移し、Canvas内部、SQLite、IPC、Undo / Redoの処理は変更しない。
+現在縦積みされているProject、Episode、Page、Assetを「構成」「素材」タブへ分ける。既存のEpisode / Page操作、Asset D&D、素材からの連続Page化は維持し、タブ別のスクロール位置と選択状態を保持する。
