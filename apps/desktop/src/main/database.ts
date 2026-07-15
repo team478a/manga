@@ -1539,6 +1539,58 @@ export class MangaiDatabase {
     })();
     return result;
   }
+  recordCreatedAssetsHistory(
+    projectId: string,
+    label: string,
+    assetIds: string[],
+  ) {
+    const trackedAssetIds = [...new Set(assetIds)];
+    if (!trackedAssetIds.length) return this.bundle(projectId);
+    const after = this.editableSnapshot(projectId, trackedAssetIds);
+    if ((after.assets?.length ?? 0) !== trackedAssetIds.length)
+      throw new Error("AI生成素材の履歴を作成できませんでした。");
+    const before = JSON.parse(JSON.stringify(after));
+    before.assets = [];
+    before.generationOutputs = before.generationOutputs.map(
+      (output: { id: string; assetId: string | null }) => ({
+        ...output,
+        assetId: null,
+      }),
+    );
+    if (trackedAssetIds.includes(before.project.coverAssetId))
+      before.project.coverAssetId = null;
+    before.pages = before.pages.map((page: any) => ({
+      ...page,
+      imageAssetId: trackedAssetIds.includes(page.imageAssetId)
+        ? null
+        : page.imageAssetId,
+    }));
+    before.panels = before.panels.map((panel: any) => ({
+      ...panel,
+      imageAssetId: trackedAssetIds.includes(panel.imageAssetId)
+        ? null
+        : panel.imageAssetId,
+    }));
+    this.db.transaction(() => {
+      this.db
+        .prepare(
+          "delete from operation_history where project_id=? and is_undone=1",
+        )
+        .run(projectId);
+      this.db
+        .prepare(
+          "insert into operation_history(project_id,label,before_json,after_json,created_at) values(?,?,?,?,?)",
+        )
+        .run(
+          projectId,
+          label,
+          JSON.stringify(before),
+          JSON.stringify(after),
+          now(),
+        );
+    })();
+    return this.bundle(projectId);
+  }
   private restoreEditableSnapshot(projectId: string, snapshot: any) {
     const fileRollbacks: Array<() => void> = [];
     try {
@@ -2985,6 +3037,7 @@ export class MangaiDatabase {
             .digest("hex"),
       );
     if (!asset) throw new Error("生成画像を素材へ登録できませんでした。");
+    const created = !before.has(asset.id);
     this.db
       .prepare(
         "update assets set generation_job_id=?,metadata_json=? where id=?",
@@ -3000,7 +3053,7 @@ export class MangaiDatabase {
         JSON.stringify(metadata),
         now(),
       );
-    return this.bundle(projectId);
+    return { bundle: this.bundle(projectId), assetId: asset.id, created };
   }
   projectContext(projectId: string, episodeId?: string, pageId?: string) {
     const bundle = this.bundle(projectId),

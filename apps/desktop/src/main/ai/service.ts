@@ -326,31 +326,50 @@ export class AIService {
             project = this.store.bundle(input.projectId).project,
             dir = path.join(project.storagePath, "generated", "images", jobId);
           fs.mkdirSync(dir, { recursive: true });
-          for (const image of images) {
-            const safe =
-                image.fileName.replace(/[^a-zA-Z0-9._-]/g, "-") ||
-                "generated.png",
-              file = path.join(dir, safe);
-            fs.writeFileSync(file, image.bytes);
-            this.store.registerGeneratedAsset(
+          const createdAssetIds: string[] = [];
+          try {
+            for (const image of images) {
+              const safe =
+                  image.fileName.replace(/[^a-zA-Z0-9._-]/g, "-") ||
+                  "generated.png",
+                file = path.join(dir, safe);
+              fs.writeFileSync(file, image.bytes);
+              const registered = this.store.registerGeneratedAsset(
+                input.projectId,
+                path.relative(project.storagePath, file),
+                jobId,
+                {
+                  provider: "comfyui",
+                  workflowId: input.workflowId,
+                  prompt: input.prompt,
+                  negativePrompt: input.negativePrompt,
+                  width: input.width,
+                  height: input.height,
+                  seed: input.seed,
+                  createdAt: new Date().toISOString(),
+                },
+              );
+              if (registered.created)
+                createdAssetIds.push(registered.assetId);
+            }
+            this.store.updateGenerationJob(jobId, "completed", {
+              output: { count: images.length },
+            });
+            this.store.recordCreatedAssetsHistory(
               input.projectId,
-              path.relative(project.storagePath, file),
-              jobId,
-              {
-                provider: "comfyui",
-                workflowId: input.workflowId,
-                prompt: input.prompt,
-                negativePrompt: input.negativePrompt,
-                width: input.width,
-                height: input.height,
-                seed: input.seed,
-                createdAt: new Date().toISOString(),
-              },
+              "AI生成素材を追加",
+              createdAssetIds,
             );
+          } catch (error) {
+            for (const assetId of createdAssetIds.reverse()) {
+              try {
+                this.store.deleteAsset(assetId);
+              } catch {
+                // 元の生成エラーを優先する。
+              }
+            }
+            throw error;
           }
-          this.store.updateGenerationJob(jobId, "completed", {
-            output: { count: images.length },
-          });
           return {
             jobId,
             status: "completed",

@@ -389,6 +389,107 @@ test("ComfyUI generation is saved as a project asset", async () => {
     assert.equal(result.bundle.assets.length, 1);
     assert.equal(result.bundle.assets[0].fileName, "generated.png");
     assert.equal(db.listGenerationJobs(project.project.id)[0].progress, 1);
+    assert.equal(
+      db.listOperationHistory(project.project.id).items[0].label,
+      "AI生成素材を追加",
+    );
+    const generatedAsset = result.bundle.assets[0];
+    const generatedAssetPath = path.join(
+      result.bundle.project.storagePath,
+      generatedAsset.relativePath,
+    );
+    let bundle = db.undo(project.project.id);
+    assert.equal(bundle.assets.length, 0);
+    assert.equal(bundle.project.coverAssetId, null);
+    assert.equal(fs.existsSync(generatedAssetPath), false);
+    assert.equal(db.listGenerationJobs(project.project.id)[0].status, "completed");
+
+    bundle = db.redo(project.project.id);
+    assert.equal(bundle.assets[0].id, generatedAsset.id);
+    assert.equal(bundle.project.coverAssetId, generatedAsset.id);
+    assert.equal(fs.existsSync(generatedAssetPath), true);
+    assert.equal(db.listGenerationJobs(project.project.id)[0].status, "completed");
+  } finally {
+    db.close();
+    await mock.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("ComfyUI multi-image registration rolls back partial assets", async () => {
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
+    "base64",
+  );
+  const mock = await server((req, res) => {
+    if (req.url === "/prompt")
+      return res.end(JSON.stringify({ prompt_id: "partial-job" }));
+    if (req.url === "/history/partial-job")
+      return res.end(
+        JSON.stringify({
+          "partial-job": {
+            status: { status_str: "success" },
+            outputs: {
+              9: {
+                images: [
+                  { filename: "good.png", type: "output" },
+                  { filename: "broken.png", type: "output" },
+                ],
+              },
+            },
+          },
+        }),
+      );
+    if (req.url?.includes("filename=good.png")) return res.end(png);
+    if (req.url?.includes("filename=broken.png"))
+      return res.end(Buffer.from("not-an-image"));
+    res.end("{}");
+  });
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-image-rollback-"));
+  const paths = {
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  try {
+    db.saveProviderSettings({
+      ...settings("comfyui", mock.url),
+      pollIntervalMs: 10,
+    });
+    const project = db.createProject({
+      title: "部分失敗",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const workflowFile = path.join(root, "workflow.json");
+    fs.writeFileSync(
+      workflowFile,
+      JSON.stringify({ 6: { inputs: { text: "" } } }),
+    );
+    const workflow = db.registerComfyWorkflow("partial", workflowFile, {
+      prompt: { nodeId: "6", input: "text" },
+    })[0];
+    await assert.rejects(
+      new AIService(db).generateImage({
+        projectId: project.project.id,
+        workflowId: workflow.id,
+        prompt: "cat",
+        negativePrompt: "",
+      }),
+    );
+    assert.equal(db.bundle(project.project.id).assets.length, 0);
+    assert.equal(db.listOperationHistory(project.project.id).items.length, 0);
+    assert.equal(db.listGenerationJobs(project.project.id)[0].status, "failed");
   } finally {
     db.close();
     await mock.close();
