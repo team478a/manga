@@ -1,6 +1,6 @@
 # Windowsインストーラー
 
-更新日: 2026-07-12
+更新日: 2026-07-15
 
 ## 生成
 
@@ -23,6 +23,20 @@ MANGAI-Desktop-Setup-{version}-x64.exe
 MANGAI-Desktop-Setup-{version}-x64.exe.blockmap
 win-unpacked/
 ```
+
+生成後は、version、ファイルサイズ、blockmap、Authenticode状態を検証します。
+
+```powershell
+npm run rc:windows-artifacts
+```
+
+署名済みRCとして判定する場合は`Signed`ではなく有効な`Valid`署名を必須にします。
+
+```powershell
+npm run rc:windows-artifacts -- signed
+```
+
+2026-07-15に現行コードから0.1.0のNSISインストーラーとblockmapを再生成し、通常検証に成功しました。Authenticodeは`NotSigned`であり、コード署名完了前の内部確認用成果物です。古い更新metadataは現行の更新無効インストーラーと混同しないよう配布フォルダーから除外しています。
 
 ## 配布設定
 
@@ -64,4 +78,10 @@ npm run desktop:dist:win:signed
 
 ```powershell
 Get-AuthenticodeSignature apps/desktop/release/MANGAI-Desktop-Setup-0.1.0-x64.exe
+```
+
+公開前の最終判定では手動確認に加えて次を実行してください。
+
+```powershell
+npm run rc:windows-artifacts -- signed
 ```

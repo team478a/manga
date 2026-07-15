@@ -29,6 +29,17 @@ $env:MANGAI_UPDATE_URL = "https://downloads.example.com/mangai/"
 npm run desktop:dist:win:update
 ```
 
+既存の`release/`を上書きせず検証する場合は、Desktop配下の単一フォルダー名を指定できます。
+
+```powershell
+$env:MANGAI_UPDATE_URL = "https://downloads.example.com/mangai/"
+$env:MANGAI_RELEASE_OUTPUT = "release-rc-update"
+npm run desktop:dist:win:update
+npm run rc:windows-artifacts -- release-rc-update metadata
+```
+
+検証コマンドはmetadataのversion、installer名、SHA-512、ファイルサイズとblockmapを照合します。公開用の署名も同時に必須とする場合は末尾へ`signed`を追加します。
+
 Beta版はDesktopのversionを`1.2.0-beta.1`のように設定します。チャンネルはversionから自動判定され、明示値とversionが矛盾する場合はビルドを停止します。
 
 ```powershell
@@ -68,7 +79,7 @@ GitHub公開ビルドはリポジトリ名も`update-config.json`へ埋め込み
 
 ## 現在の状態
 
-このローカルリポジトリにはGit remoteが設定されていないため、公開アップロードは実行していません。ダミーHTTPS URLによる`latest.yml`生成、URL埋め込み、ソース設定の自動復元までを確認しています。
+このローカルリポジトリにはGit remoteが設定されていないため、公開アップロードは実行していません。2026-07-15にダミーHTTPS URLと分離出力先を使い、`latest.yml`生成、URL埋め込み、metadataのSHA-512・サイズ照合、ソース設定の自動復元までを確認しました。検証用URLを含む成果物は正式配布フォルダーへ昇格していません。Authenticodeは`NotSigned`のため、署名必須検証は意図どおり失敗します。
 
 実公開前に次を行います。
 

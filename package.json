@@ -22,6 +22,7 @@
     "rc:preflight": "node scripts/check-release-candidate.mjs",
     "rc:preflight:strict": "node scripts/check-release-candidate.mjs --strict",
     "rc:export-acceptance": "npm --prefix apps/desktop run test:export-acceptance",
+    "rc:windows-artifacts": "node apps/desktop/scripts/check-windows-artifacts.mjs",
     "rc:validate": "node scripts/check-release-candidate.mjs --full"
   },
   "dependencies": {

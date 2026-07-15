@@ -20,7 +20,8 @@
     "pack:win": "npm run build && electron-builder --win dir --x64",
     "dist:win": "npm run build && electron-builder --win nsis --x64",
     "dist:win:signed": "node scripts/build-signed.mjs",
-    "dist:win:update": "node scripts/build-update-release.mjs"
+    "dist:win:update": "node scripts/build-update-release.mjs",
+    "verify:win:artifacts": "node scripts/check-windows-artifacts.mjs"
   },
   "dependencies": {
     "@mangai/ai-core": "file:../../packages/ai-core",

@@ -40,6 +40,13 @@ npm run rc:validate
 
 Windowsインストーラーはコード署名と配布チャンネルを含むため、この一括ゲートには含めません。RC成果物を作る時は[`WINDOWS_INSTALLER.md`](WINDOWS_INSTALLER.md)と[`AUTO_UPDATE.md`](AUTO_UPDATE.md)に従って別途作成・署名・確認します。
 
+生成した成果物の機械検証は次で実行します。更新metadataがある場合は`metadata`、公開判定では`signed`も追加します。
+
+```bash
+npm run rc:windows-artifacts
+npm run rc:windows-artifacts -- release-rc-update metadata signed
+```
+
 ## 4. Desktopローカル受入れ
 
 外部AIを起動しない状態でも、製品版Desktopで次を確認します。
@@ -125,7 +132,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 | ComfyUI               | 第6節を実サービスで完了             | 外部サービス待ち                           |
 | Hub staging           | 読み取り専用preflightと端末認証完了 | 接続設定待ち                               |
 | Stripe                | テスト決済・失敗・返金・認可を完了  | 接続設定待ち                               |
-| Windows成果物         | 署名済みinstallerと更新metadata確認 | RC用最終作成待ち                           |
+| Windows成果物         | 署名済みinstallerと更新metadata確認 | 整合性確認済み・コード署名待ち             |
 
 すべてが完了し、重大な未解決不具合がない場合だけRC承認とします。未実施項目を自動テスト成功で代替しません。
 
@@ -138,3 +145,5 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 複製処理を修正し、素材ファイルを整合性検査して新しいProject保存先へコピーし、すべてのCanvas参照を新IDへ張り替えるようにしました。元Projectの素材4件、コマ4件、吹き出し3件、テキスト3件、表紙を保持した複製を製品版で確認し、そこからPDFを再生成しました。PDFをPNGへ描画して、黄・緑・青・赤の4コマ、吹き出し、縦書き・横書きテキストが表示されることを目視確認しました。
 
 複製先からの内容入り書き出しに加え、3Pageの自動RC受入れ、Desktop TypeScript、ESLint、統合テスト36/36が成功しています。これを外部サービス不要のDesktopローカル受入れ結果とします。
+
+同日に現行0.1.0のNSISインストーラーとblockmapを再生成し、version、ファイルサイズ、blockmapを検証しました。分離出力した更新検証版では`latest.yml`のinstaller名、SHA-512、サイズも一致しています。いずれもAuthenticodeは`NotSigned`であり、署名必須ゲートは意図どおり失敗するため、Windows成果物のRC完了判定はコード署名後まで保留します。

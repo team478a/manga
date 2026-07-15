@@ -11,6 +11,7 @@ const packageJson = JSON.parse(
   fs.readFileSync(path.join(root, "package.json"), "utf8"),
 );
 const requestedChannel = process.env.MANGAI_RELEASE_CHANNEL?.trim();
+const requestedOutput = process.env.MANGAI_RELEASE_OUTPUT?.trim();
 const inferredChannel = /-beta(?:\.|$)/.test(packageJson.version)
   ? "beta"
   : "stable";
@@ -33,6 +34,17 @@ process.env.MANGAI_RELEASE_CHANNEL = releaseChannel;
 
 if (!value) {
   console.error("MANGAI_UPDATE_URLを設定してください。");
+  process.exit(1);
+}
+if (
+  requestedOutput &&
+  (!/^[a-zA-Z0-9._-]+$/.test(requestedOutput) ||
+    requestedOutput === "." ||
+    requestedOutput === "..")
+) {
+  console.error(
+    "MANGAI_RELEASE_OUTPUTはDesktopフォルダ内の単一ディレクトリ名で指定してください。",
+  );
   process.exit(1);
 }
 
@@ -88,20 +100,22 @@ try {
     cwd: root,
     stdio: "inherit",
   });
-  execFileSync(
-    process.execPath,
-    [
-      builderCli,
-      "--config",
-      "electron-builder.update.cjs",
-      "--win",
-      "nsis",
-      "--x64",
-      "--publish",
-      publishToGitHub ? "always" : "never",
-    ],
-    { cwd: root, stdio: "inherit" },
-  );
+  const builderArguments = [
+    builderCli,
+    "--config",
+    "electron-builder.update.cjs",
+    "--win",
+    "nsis",
+    "--x64",
+    "--publish",
+    publishToGitHub ? "always" : "never",
+  ];
+  if (requestedOutput)
+    builderArguments.push(`--config.directories.output=${requestedOutput}`);
+  execFileSync(process.execPath, builderArguments, {
+    cwd: root,
+    stdio: "inherit",
+  });
 } finally {
   fs.writeFileSync(configPath, original);
 }

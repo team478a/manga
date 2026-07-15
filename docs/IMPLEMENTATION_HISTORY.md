@@ -494,3 +494,9 @@ PDFは9Page・384×576ptで、連番画像ZIPは`001.png`〜`009.png`、販売�
 ホーム画面のProject複製がProject設定、Episode、Page数だけをコピーし、素材ファイル、Page画像、コマ、吹き出し、テキスト、表紙を落としていた問題を修正しました。複製時は全素材のbyte数とSHA-256を確認し、新しいProject保存先へ別IDでコピーします。Episode、Page、コマ、吹き出し、テキストにも新IDを割り当て、Page素材、コマ素材、親吹き出し、表紙の参照を複製先IDへ張り替えます。途中失敗時は複製先DB行と保存フォルダをロールバックします。
 
 回帰テストでは赤色Page素材、画像付きコマ、吹き出し、縦書きテキスト、表紙を含むProjectを複製し、ID分離、参照整合性、素材hash、複製先からの書き出しを検証しました。製品版でも元Projectの素材4件、コマ4件、吹き出し3件、テキスト3件、表紙が複製先へ保持され、再生成PDFをPNGへ描画して黄・緑・青・赤の4コマと文字が表示されることを確認しました。Desktop TypeScript、ESLint、統合テスト36/36が成功しています。
+
+## 57. Windows RC成果物・整合性ゲート
+
+現行0.1.0からWindows x64 NSISインストーラーとblockmapを再生成しました。成果物のpackage version、installer名、ファイルサイズ、blockmap形式、Authenticode状態を確認する`rc:windows-artifacts`を追加し、更新metadataがある場合は記載されたSHA-512とサイズも実ファイルへ照合します。`metadata`と`signed`を指定すると、それぞれ更新metadataと有効なAuthenticode署名を必須条件にできます。
+
+更新ビルドは`MANGAI_RELEASE_OUTPUT`で通常の`release/`と分離して生成できるようにしました。ダミーHTTPS URLによる検証版で`latest.yml`、installer、blockmapの整合性と設定ファイルの自動復元を確認し、検証用URLを含む成果物は正式配布先へ昇格していません。通常RC成果物の機械検証は成功し、署名必須ゲートは`NotSigned`だけを理由に意図どおり失敗します。残るWindows配布条件はコード署名とインストール・アンインストールE2Eです。
