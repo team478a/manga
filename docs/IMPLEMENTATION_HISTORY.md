@@ -518,3 +518,9 @@ NSIS E2Eは一時Documents配下に`MANGAI/mangai_local.sqlite`が作成され�
 Desktopのpackage-lockとローカルMANGAIパッケージを読み取り、SPDX 2.3 JSONを生成する`rc:windows-evidence`を追加しました。同じ名前・versionの依存を統合し、package URL、license、取得元、lockfileにあるSHA-512 integrity、直接依存関係を記録します。標準の`npm sbom`はローカル`file:`パッケージの依存を欠落として停止するため、依存関係を変更せずlockfileを直接扱っています。
 
 インストーラー、blockmap、存在する更新metadata、SBOMを対象に`SHA256SUMS.txt`を生成し、`verify`モードでは既存ファイルの製品名・version・パッケージ数・対象一覧・全checksumを再検証します。現行0.1.0では562パッケージと3成果物の検証に成功し、SBOM改変の否定テストも失敗として検出しました。Windowsリリースworkflowは署名と起動E2Eの後にSBOMとchecksumをDraft Releaseへ追加します。
+
+## 61. 現行ステータス・残タスク再整理
+
+ロードマップの基準を2026-07-15・`c0b5ff3`へ更新し、Project完全複製、Desktop統合テスト36/36、NSIS install・製品版起動・uninstall E2E、SPDX SBOM、SHA-256証跡、Hub/Desktop依存脆弱性0件を反映しました。古い「インストール未確認」「Desktopテスト26件」「WebP PDF非対応」の記載も現行実装へ合わせました。
+
+残作業を[`REMAINING_TASKS.md`](REMAINING_TASKS.md)へ集約し、RC公開を止める外部サービスE2E・コード署名・初回公開と、外部準備なしで進められる機能改善、公開後のHub成長機能を分離しました。現時点の最優先はSupabase staging・端末認証・Stripeテスト、実Ollama・ComfyUI、署名済みDraft Release、クリーンWindowsでの署名付き自動更新です。

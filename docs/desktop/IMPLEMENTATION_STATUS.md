@@ -1,6 +1,6 @@
 # Desktop基盤 完了条件チェック
 
-確認日: 2026-07-14
+確認日: 2026-07-15
 
 漫画編集Canvas MVPの個別33条件は [`MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
 
@@ -27,12 +27,13 @@
 ## 現状と残る改善
 
 - Project単位の永続Undo/Redoと直近50件の操作履歴に対応しています。
-- PDF、画像ZIP、作品情報、販売文書き出しを実装しています。WebPは画像ZIPには含まれますが、PDFは現在JPG・PNGページが対象です。
+- PDF、画像ZIP、作品情報、販売文書き出しを実装しています。JPG・PNG・WebPを共通PageレンダラーでPDFと画像ZIPへ合成します。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。
 - Hub連携画面から、Projectに対応する公開作品と販売中商品数を秘密鍵なしで確認できます。
 - Hubで端末コードを承認すると、自分の非公開下書きも読み取り専用で確認できます。
 - ローカル構造化ログと同意制の詳細クラッシュレポートに対応しています。外部送信はありません。
 - NSISインストーラー、ブランドアイコン、署名専用ビルド、自動更新、GitHub Actions配布基盤を実装しています。
+- NSISのinstall、製品版renderer起動、隔離SQLite生成、uninstall E2Eと、SPDX SBOM・SHA-256検証に対応しています。
 - 信頼された署名証明書、Git remote、実公開先が未設定のため、実署名と初回公開リリースは未完了です。
 - 最新の全体状況と計画は [`../PROJECT_STATUS_AND_ROADMAP.md`](../PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 

@@ -1,6 +1,6 @@
 # MANGAI Creator Platform 実装済み機能
 
-最終確認日: 2026-07-14
+最終確認日: 2026-07-15
 
 この文書は、READMEの計画ではなく現在のソースコードを基準に、MVPで利用できる機能と制約を整理したものです。
 
@@ -293,7 +293,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 返金操作を開始する管理画面
 - 印刷会社APIとのグッズ製造連携
 - 外部AI APIを使った販売文生成
-- E2Eテストと自動テストスイート
+- ブラウザ操作を含むHub実サービスE2Eスイート
 - Vercel、Supabase、Stripeの本番環境設定
 
 ### Desktop販売パッケージ確認

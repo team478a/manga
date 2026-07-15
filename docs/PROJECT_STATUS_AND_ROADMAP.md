@@ -1,8 +1,8 @@
 # MANGAI 現在の実装状況と今後のロードマップ
 
-最終確認日: 2026-07-14
+最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `e2a5b56`
+実装基準コミット: `c0b5ff3`
 
 ## 1. 現在地
 
@@ -18,7 +18,7 @@ MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ロー�
 - 実Ollama・実ComfyUIを使ったユーザー環境E2E
 - 信頼された証明書によるWindows実署名
 - Git remote、公開リポジトリ、初回署名リリース
-- インストール・更新・アンインストールのクリーンPC E2E
+- 署名済み旧版から新版への自動更新とクリーンPC E2E
 - Hubの本番Supabase・Stripe・Vercel環境での通し確認
 
 したがって、現在の位置づけは「機能開発用MVPを越え、Release Candidate準備へ進める状態」です。
@@ -138,6 +138,9 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 - 更新ダウンロード進捗と再起動適用
 - `latest.yml`、EXE、blockmap生成
 - 署名Secrets必須のGitHub Actions Draft Release
+- installer・blockmap・更新metadataのversion、SHA-512、サイズ、Authenticode検証
+- silent install、隔離データでの製品版起動、renderer・SQLite、silent uninstall E2E
+- SPDX 2.3 SBOMと`SHA256SUMS.txt`の生成・改変検証
 
 ## 5. データ・セキュリティ
 
@@ -163,7 +166,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 ## 6. 検証済み
 
-2026-07-14時点の直近確認:
+2026-07-15時点の直近確認:
 
 | 対象                                    | 結果                          |
 | --------------------------------------- | ----------------------------- |
@@ -174,11 +177,12 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | canvas-core単体テスト                   | 24/24成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |
-| 展開版Windows起動                       | 成功                          |
+| NSIS install・製品版起動・uninstall E2E | 成功                          |
+| Windows成果物・SBOM・checksum検証       | 成功                          |
 | Canvas手動受け入れA〜D                  | 成功                          |
 | JPG/PNG/WebP混在PDF・ZIP画素確認        | 成功                          |
 | `latest.yml` / blockmap                 | 生成確認                      |
-| 依存関係監査                            | Electron 39.8.5更新時点で0件  |
+| 依存関係監査                            | 2026-07-15 Hub/Desktopとも0件 |
 | Hub TypeScript / ESLint / Next.jsビルド | Desktop分離時の回帰確認で成功 |
 
 実サービス依存のE2Eは未確認です。HTTP互換モックではOllama、ComfyUI、成功、失敗、タイムアウト、キャンセル、画像取得を確認しています。
@@ -188,7 +192,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 ### 公開を止める要因
 
 - Windowsコード署名証明書が未取得
-- Git remoteと実公開先が未設定
+- Git remote、公開リポジトリ、実公開先が未設定
 - 自動更新の実公開サーバーE2Eが未実施
 - 実Ollama・ComfyUI環境のE2Eが未実施
 - Hub本番環境の決済・Webhook・ダウンロードE2Eが未実施
@@ -207,7 +211,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 目的: 既存機能を安全に配布・更新できる状態にする。
 
 1. 実Ollama・ComfyUI E2Eと対応バージョン表
-2. クリーンWindows環境でインストール、起動、更新、アンインストール確認
+2. クリーンWindows環境で署名済みinstall、起動、更新、uninstall確認（ローカル自動E2Eは完了）
 3. コード署名証明書取得と実署名
 4. Git remote設定と最初の署名済みDraft Release
 5. 自動・履歴込み完全バックアップ、DB破損時リカバリー（実装済み）
@@ -281,16 +285,17 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. クリーンWindowsでのインストール・更新・アンインストールE2E
-2. 実Ollama・ComfyUI環境E2Eチェックリストと診断画面（診断画面は実装済み）
-3. 高度な禁則・ルビ・縦中横
-4. クラッシュレポートと利用者同意（ローカル基盤は実装済み。外部送信は別同意設計後）
+1. Supabase staging、Desktop端末認証、Stripeテスト決済E2E
+2. 実Ollama・ComfyUI環境E2Eと対応version記録
+3. コード署名、GitHub Draft Release、署名付き自動更新E2E
+4. 別ドライブ保存先の削除・ゴミ箱動作確認
 
 コード署名証明書とGit remoteは外部準備が必要なため、並行して進めます。
 
 ## 11. 関連文書
 
 - [実装履歴](IMPLEMENTATION_HISTORY.md)
+- [残タスク一覧](REMAINING_TASKS.md)
 - [現在のHub機能](IMPLEMENTED_FEATURES.md)
 - [全体アーキテクチャ](architecture/OVERVIEW.md)
 - [Desktop概要](desktop/README.md)

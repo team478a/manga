@@ -1,15 +1,15 @@
 # 漫画編集Canvas MVP 完了条件チェック
 
-確認日: 2026-07-14
+確認日: 2026-07-15
 
 総合判定: **一部完了**
 
-以下の33項目は機能・自動検証・ビルド・手動受け入れの条件として完了しています。クリーンWindows環境へのインストール確認だけが配布前確認として残るため、総合判定は「一部完了」を維持します。
+以下の33項目は機能・自動検証・ビルド・手動受け入れの条件として完了しています。現行NSISのinstall・製品版起動・uninstall E2Eは完了しました。署名済み自動更新とクリーンWindows最終受入れが残るため、総合判定は「一部完了」を維持します。
 
 | #   | 完了条件                              | 状態         | 確認方法                                            |
 | --- | ------------------------------------- | ------------ | --------------------------------------------------- |
 | 1   | 既存MANGAI Hubが正常にビルド          | 完了         | ルートTypeScript、ESLint、Next.js 16本番ビルド成功  |
-| 2   | 既存MANGAI Desktop機能が利用可能      | 完了         | Desktop統合テスト26件、修正版パッケージUI起動       |
+| 2   | 既存MANGAI Desktop機能が利用可能      | 完了         | Desktop統合テスト36件、修正版パッケージUI起動       |
 | 3   | 旧Projectを開ける                     | 完了         | 旧DB移行テストと旧形式相当Projectの手動表示・出力   |
 | 4   | Page編集Canvasを開ける                | 完了         | パッケージUIで新規Page Canvasを確認                 |
 | 5   | 矩形コマを作成                        | 完了         | 既定追加、テンプレート、ドラッグ作成                |
@@ -36,19 +36,21 @@
 | 26  | Desktop TypeScript                    | 完了         | `npm run typecheck`成功                             |
 | 27  | Desktop ESLint                        | 完了         | `npm run lint`成功                                  |
 | 28  | Desktop本番ビルド                     | 完了         | Electron mainとVite renderer成功                    |
-| 29  | 既存統合テスト                        | 完了         | AI・DBを含む20/20成功                               |
-| 30  | 今回追加したテスト                    | 完了         | canvas-core 16/16、Canvas DB・書き出し試験成功      |
+| 29  | 既存統合テスト                        | 完了         | AI・DB・複製・更新を含む36/36成功                   |
+| 30  | 今回追加したテスト                    | 完了         | canvas-core 24/24、Canvas DB・書き出し試験成功      |
 | 31  | NSIS x64生成                          | 完了         | `MANGAI-Desktop-Setup-0.1.0-x64.exe`生成成功        |
 | 32  | Hub TypeScript、ESLint、Next.jsビルド | 完了         | 3項目成功                                           |
 | 33  | 実装・未実装を文書化                  | 完了         | 本書、MANGA_EDITOR、計画、履歴、全体資料を更新      |
 
 ## 検証数値
 
-- Desktop統合テスト: 26/26
+- Desktop統合テスト: 36/36
 - canvas-core単体テスト: 24/24
 - Hub TypeScript / ESLint / Next.js build: 成功
 - Desktop TypeScript / ESLint / production build: 成功
 - Windows x64 NSIS: 成功
+- NSIS install・製品版renderer起動・隔離SQLite・uninstall E2E: 成功
+- Windows成果物・SPDX SBOM・SHA-256検証: 成功
 - パッケージ版起動・素材表示: 成功
 - 手動受け入れシナリオA〜D: 成功
 - シナリオAの素材は、ファイル選択ダイアログの自動操作が安定しなかったため、製品と同じデータ層から登録して配置・編集・出力を確認
@@ -60,4 +62,6 @@
 
 ## 配布前に残る確認
 
-1. クリーンWindowsへのインストール、起動、更新、アンインストール確認
+1. 信頼された証明書によるWindows実署名
+2. 署名済み旧版から新版への自動更新E2E
+3. クリーンWindowsでの最終受入れ

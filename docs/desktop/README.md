@@ -113,7 +113,10 @@ Electron main processで `app.getPath("documents")` を取得し、次を作成�
 ## 未実装
 
 - 高度なAIエージェント
-- 信頼された証明書による実署名と初回公開リリース
+- 信頼された証明書による実署名、署名付き自動更新E2E、初回公開リリース
+- 実Ollama・ComfyUI、Hub staging、Stripeテスト環境のRC受入れ
+
+優先順位と前提は[`../REMAINING_TASKS.md`](../REMAINING_TASKS.md)を参照してください。
 
 完了条件ごとの確認結果は [`IMPLEMENTATION_STATUS.md`](IMPLEMENTATION_STATUS.md) を参照してください。
 
