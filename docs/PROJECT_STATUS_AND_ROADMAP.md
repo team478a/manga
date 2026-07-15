@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `a53340d`
+実装基準コミット: `c3c5d71`
 
 ## 1. 現在地
 
@@ -36,6 +36,8 @@ Project内Asset Libraryを追加しました。素材を背景・小物・効果
 背景・小物・効果のsafe Job入力をRouterとAsset Libraryへ接続しました。一致素材がある場合だけ`asset_library`を候補に加え、お気に入り優先の候補を端末内で提示します。一致がなければlocal fallback、ローカル生成先もなければblockedとなり、remote ComfyUIや外部APIへ自動送信しません。
 
 Library不一致のsafe Jobをloopback ComfyUI生成フォームへ引き継げるようにしました。Job Typeとタグを保持し、生成された新規画像を背景・小物・効果へ自動分類します。通常画像生成の外部送信禁止分類は維持し、safe Jobもremote ComfyUIでは送信前に拒否します。
+
+外部safe素材Providerのinterface、送信manifest、費用見積もり、明示確認の契約を追加しました。Library不一致時に、Promptだけが対象で入力素材・キャラクター参照・完成Pageは対象外であること、Providerの保持・学習利用条件、費用状態を事前表示できます。実Providerは未設定・既定無効で、現段階では外部通信も送信確定操作も行えません。
 
 ## 2. 製品境界
 
@@ -207,6 +209,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
 | Desktop統合テスト                       | 51/51成功                     |
+| ai-core Router・外部送信契約テスト      | 16/16成功                     |
 | canvas-core単体テスト                   | 24/24成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |
@@ -320,10 +323,11 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. Supabase staging、Desktop端末認証、Stripeテスト決済E2E
-2. 実Ollama・ComfyUI環境E2Eと対応version記録
-3. コード署名、GitHub Draft Release、署名付き自動更新E2E
-4. Desktop-Hub限定更新の実Supabase E2Eと運用監査記録
+1. 既存Panel画像と互換性を保つ`panel_layers`の追加設計・migration
+2. 背景・人物・小物・効果レイヤーの差し替えとローカル再合成
+3. VRAM/RAM診断と低スペックRuntime Profile、同時ローカルジョブ数1の制御
+4. Provider選定後にcredential、費用見積、明示確認後の外部safe素材送信を接続
+5. Supabase staging、Stripe、実Ollama・ComfyUI、署名付き更新のRC受入れ
 
 コード署名証明書とGit remoteは外部準備が必要なため、並行して進めます。
 

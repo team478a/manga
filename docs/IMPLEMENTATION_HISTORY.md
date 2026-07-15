@@ -1,10 +1,10 @@
 # MANGAI 実装記録・引き継ぎ資料
 
-最終更新: 2026-07-13
+最終更新: 2026-07-15
 
 - 漫画Canvasの30オブジェクト性能を製品版で確認し、再現可能なDB性能スモークテストを追加
   対象ブランチ: `master`
-  実装基準コミット: `f813780`
+  実装基準コミット: `c3c5d71`
 
 この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
@@ -682,3 +682,11 @@ Asset Libraryに一致せずRouterがlocal fallbackを返したsafe Jobを、既
 AIServiceはsafe Job Typeがある画像生成を`sensitivity=safe / personPresence=none`としてrouteし、分類指定がない通常画像生成は従来どおり`external_forbidden`として扱います。どちらも実行できるのはloopback ComfyUIだけです。remote ComfyUIへsafe Requestを渡した場合も、workflow読込やPrompt送信より前にblockedとなります。
 
 ローカル生成された新規素材はJob Typeに対応するLibrary分類と最大20件のタグを自動保存します。SHA-256重複排除で既存素材が再利用された場合は、利用者が設定した既存分類を上書きしません。safe local生成成功・Library分類・remote拒否の統合テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト51/51、canvas-core 24/24に成功しています。
+
+## 82. 外部safe素材Providerの送信プレビュー契約
+
+外部safe素材Providerのdescriptor、対応Job Type、保持・学習利用・料金説明、費用見積もり、送信manifest、明示確認を`ai-core`の型とZod schemaへ追加しました。Provider未設定、無効、Job非対応、作品ポリシー拒否、費用不明のいずれかなら実行不可となるfail-closed判定です。確認契約はpayload、費用、Provider条件をすべて確認済みにする必要があります。
+
+Library不一致時にDesktopから送信プレビューを開き、Promptだけを対象とし、Negative Prompt、入力素材、キャラクター参照、完成Pageは送らないことを表示します。プレビュー結果にはPrompt本文を含めずSHA-256だけを保持し、generation jobやroute履歴も増やしません。実Provider、endpoint、credentialは未設定で、外部通信と送信確定操作は実装していません。
+
+ai-core単体テスト16/16、Desktop TypeScript、ESLint、本番renderer build、統合テスト51/51、canvas-core 24/24に成功しています。

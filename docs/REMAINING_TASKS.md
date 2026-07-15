@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-基準コミット: `a53340d`
+基準コミット: `c3c5d71`
 
 ## 1. 現在の判定
 
@@ -34,7 +34,9 @@ HubとDesktopの主要機能、ローカル品質ゲート、Windowsインスト
 | 優先 | タスク                       | 現在の制限                                                                         |
 | ---- | ---------------------------- | ---------------------------------------------------------------------------------- |
 | P0   | ハイブリッド生成Phase 1基盤  | Router・ポリシー・ローカル実行・Asset Library・safe Job handoffまで完了            |
-| P1   | 外部背景Provider契約         | 実Providerは未選定。無効既定のinterface・送信内容preview・確認契約が未実装         |
+| P1   | 外部背景Provider接続         | interface・送信preview・確認契約は完了。実Provider・credential・見積・送信は未実装 |
+| P1   | Panelレイヤー分離            | 既存flattened画像互換を保つ`panel_layers`と背景・人物・小物・効果の分離が未実装    |
+| P2   | 低スペックRuntime Profile    | VRAM/RAM診断、端末別workflow制約、同時ローカルジョブ数1の制御が未実装              |
 | P2   | 英語化の全画面展開・WCAG評価 | 漫画編集workspace・Creator Chat・画像生成英語化完了。Hub・設定詳細とWCAG評価が残る |
 
 ## 4. 外部受付基盤の準備後に進める改善

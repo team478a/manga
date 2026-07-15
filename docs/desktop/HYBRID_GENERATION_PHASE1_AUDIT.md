@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `a53340d`
+実装基準コミット: `c3c5d71`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -343,12 +343,23 @@ handoff中は対象分類を画面へ明示し、利用者は通常生成へ戻�
 
 外部背景APIはProvider事業者、利用規約、保存期間、料金、API credential運用が確定した後に実通信を有効化します。
 
+### Commit 8: 外部safe素材Provider送信プレビュー（完了: `c3c5d71`）
+
+- Provider capability、費用見積もり、送信manifest、確認内容の型とschema
+- Provider未設定・無効・非対応・ポリシー拒否・費用不明をfail-closedで判定
+- Prompt本文を返さずSHA-256だけを保持するプレビューAPI
+- Prompt以外の入力素材、キャラクター参照、完成Pageを送信対象外として明示
+- Library不一致時に送信予定内容、保持・学習利用条件、費用状態を日英表示
+- 実Providerとendpointを未設定のまま維持し、外部通信・送信操作を実装しない
+
+確認契約はpayload、費用、Provider条件の3項目すべての明示確認を要求します。現時点のDesktopは常に`provider_not_configured`で実行不可となり、プレビュー生成によってgeneration jobやroute履歴も増えません。
+
 ## 11. テスト基準
 
 2026-07-15の調査時点:
 
 - Desktop統合テスト: 51/51成功
-- ai-core Router単体テスト: 13/13成功
+- ai-core Router・外部送信契約単体テスト: 16/16成功
 - canvas-core単体テスト: 24/24成功
 
 Phase 1追加テスト:
@@ -377,7 +388,7 @@ Phase 1基盤とAsset Libraryは外部準備なしで実装できます。次は
 - VRAM 8GB / 12GB / 16GB実機
 - LAN Render Node用の証明書・pairing設計
 
-外部条件が未確定でも、Provider interface、無効状態、mock、確認UI契約までは実装可能です。
+Provider interface、無効状態、送信内容プレビュー、明示確認契約までは実装済みです。実Provider adapter、credential保存、費用見積もり、送信実行は外部条件が確定するまで有効化しません。
 
 ## 13. 今回変更しない範囲
 

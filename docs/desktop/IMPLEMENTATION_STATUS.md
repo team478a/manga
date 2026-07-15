@@ -34,6 +34,7 @@
 - Project素材を背景・小物・効果・人物・その他へ分類し、タグ、形式、お気に入りで絞り込み、使用数を確認してCanvasへ再利用できます。分類情報は複製・バックアップ・Undoで維持します。
 - 背景・小物・効果のsafe JobをProject内Libraryへrouteし、一致候補を選択できます。一致なしではlocalへ戻し、外部Providerへ自動送信しません。
 - Library不一致のsafe Jobをloopback ComfyUIへ引き継ぎ、生成した新規素材を分類・タグ付きでLibraryへ登録できます。
+- 外部safe素材Providerへ送る予定のPrompt、送らない入力素材・人物参照・完成Page、費用・保持・学習条件を事前確認できます。実Providerは未設定で、外部通信と送信操作は無効です。
 - 書き出し履歴は書き出し画面、秘密値を除外したAI設定変更履歴は設定画面で確認できます。
 - PDF、画像ZIP、作品情報、販売文書き出しを実装しています。JPG・PNG・WebPを共通PageレンダラーでPDFと画像ZIPへ合成します。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。
