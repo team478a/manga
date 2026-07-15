@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `7f8c019`
+実装基準コミット: `a53340d`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -330,13 +330,24 @@ Promptや入力JSONを含む既存行の扱いを変えないため、migration�
 
 safe Jobも通常のgeneration jobとroute監査履歴へ保存します。Job Draftは`sensitivity=safe / personPresence=none`を明示します。Asset Libraryに一致しない場合も自動的な外部送信は行いません。
 
+### Commit 7: safe Jobのローカル生成handoff（完了: `a53340d`）
+
+- Library不一致かつlocal fallbackの場合だけComfyUIフォームへ引き継ぎ
+- safe Job Typeと検索語由来タグを画像生成Requestへ保持
+- 通常の汎用画像生成とsafe素材生成のJob Draftを分離
+- loopback ComfyUIで生成した新規素材をLibraryへ自動分類
+- 重複排除で既存素材が選ばれた場合は既存分類を上書きしない
+- remote ComfyUIへのsafe Requestも送信前にblocked
+
+handoff中は対象分類を画面へ明示し、利用者は通常生成へ戻せます。画像生成Requestはmain processでも再検証し、種類とタグの不正値を拒否します。生成元metadataにもJob TypeとLibraryタグを残します。
+
 外部背景APIはProvider事業者、利用規約、保存期間、料金、API credential運用が確定した後に実通信を有効化します。
 
 ## 11. テスト基準
 
 2026-07-15の調査時点:
 
-- Desktop統合テスト: 50/50成功
+- Desktop統合テスト: 51/51成功
 - ai-core Router単体テスト: 13/13成功
 - canvas-core単体テスト: 24/24成功
 

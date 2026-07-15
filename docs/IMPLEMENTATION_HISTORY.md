@@ -674,3 +674,11 @@ Asset Libraryの再起動・複製・バックアップ・旧形式復元テス�
 指定分類のファイル名・タグに一致する素材がある場合だけ`asset_library`を利用可能候補へ加え、Routerの`asset_library_preferred`判定でお気に入り優先の最大20件を提示します。候補を選ぶと編集画面へ戻り、その素材が選択状態になります。一致がない場合はloopbackのローカルComfyUIがあればlocal fallback、remote ComfyUIしかない場合はblockedです。この経路はcloudや外部背景Providerを候補へ加えないため、検索queryや素材を外部へ送信しません。
 
 safe Jobと判定は既存generation jobs・route監査履歴へ保存します。Library一致、local fallback、remote設定時blockedの統合テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト50/50、canvas-core 24/24に成功しています。
+
+## 81. safe JobのローカルComfyUI handoff
+
+Asset Libraryに一致せずRouterがlocal fallbackを返したsafe Jobを、既存ComfyUI生成フォームへ引き継げるようにしました。背景・小物・効果のJob Typeと検索語由来のタグをRequestへ保持し、handoff中の分類を画面へ明示します。利用者は任意に通常画像生成へ戻せます。
+
+AIServiceはsafe Job Typeがある画像生成を`sensitivity=safe / personPresence=none`としてrouteし、分類指定がない通常画像生成は従来どおり`external_forbidden`として扱います。どちらも実行できるのはloopback ComfyUIだけです。remote ComfyUIへsafe Requestを渡した場合も、workflow読込やPrompt送信より前にblockedとなります。
+
+ローカル生成された新規素材はJob Typeに対応するLibrary分類と最大20件のタグを自動保存します。SHA-256重複排除で既存素材が再利用された場合は、利用者が設定した既存分類を上書きしません。safe local生成成功・Library分類・remote拒否の統合テストを追加しました。ai-core単体テスト13/13、Desktop TypeScript、ESLint、本番renderer build、統合テスト51/51、canvas-core 24/24に成功しています。
