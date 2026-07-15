@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `c3c5d71`
+実装基準コミット: `c9b18b2`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -354,13 +354,24 @@ handoff中は対象分類を画面へ明示し、利用者は通常生成へ戻�
 
 確認契約はpayload、費用、Provider条件の3項目すべての明示確認を要求します。現時点のDesktopは常に`provider_not_configured`で実行不可となり、プレビュー生成によってgeneration jobやroute履歴も増えません。
 
+### Commit 9: Panelレイヤー永続基盤（完了: `c9b18b2`）
+
+- `panel_layers`追加migrationとmigration前バックアップ
+- 背景・人物・小物・効果・tone・mask・correction・従来統合画像の8分類
+- 素材、source generation job、順序、表示・lock、opacity、blend mode、画像変形の保持
+- 既存`panels.image_asset_id`を維持し、`flattened_legacy`へ自動移行
+- Zod検証済み限定IPCとProject外素材・生成Jobの参照拒否
+- Undo / Redo、再起動、Project複製、手動・自動バックアップ、旧バックアップ復元で保持
+
+既存CanvasとPDF・画像ZIPは引き続き`panels.image_asset_id`を描画するため、今回のmigrationで見た目や書き出し結果は変わりません。分離レイヤーのCanvas表示・操作、ローカル合成、合成キャッシュ更新は次の実装単位です。
+
 ## 11. テスト基準
 
 2026-07-15の調査時点:
 
-- Desktop統合テスト: 51/51成功
+- Desktop統合テスト: 52/52成功
 - ai-core Router・外部送信契約単体テスト: 16/16成功
-- canvas-core単体テスト: 24/24成功
+- canvas-core単体テスト: 25/25成功
 
 Phase 1追加テスト:
 

@@ -4,25 +4,25 @@
 
 漫画編集Canvas MVPの個別33条件は [`MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
 
-| #   | 完了条件                     | 状態 | 確認方法・補足                                                                                                                |
-| --- | ---------------------------- | ---- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 1   | 既存Webがビルドできる        | 完了 | `npm run build` 相当のNext.js本番ビルド成功                                                                                   |
-| 2   | DesktopがWindowsで起動       | 完了 | Electronを起動し、6秒後もプロセス継続・stderrなしを確認                                                                       |
-| 3   | Supabase未設定で利用         | 完了 | DesktopはSupabase依存・環境変数なし                                                                                           |
-| 4   | プロジェクト新規作成         | 完了 | UI、IPC、SQLite統合テスト                                                                                                     |
-| 5   | プロジェクト再オープン       | 完了 | SQLite再接続統合テスト                                                                                                        |
-| 6   | EpisodeとPage作成            | 完了 | UI、IPC、SQLite実装                                                                                                           |
-| 7   | 複数画像を素材として読込     | 完了 | ファイル選択、D&D、SHA-256重複防止                                                                                            |
-| 8   | 画像から連続ページ作成       | 完了 | 「全素材を連続ページ化」                                                                                                      |
-| 9   | ページ並び替え               | 完了 | 上下操作、統合テスト                                                                                                          |
-| 10  | 終了後もSQLite保存           | 完了 | WAL、再接続統合テスト、終了時close                                                                                            |
-| 11  | 固定ユーザー名・ドライブなし | 完了 | Desktopは `app.getPath("documents")`、旧Web記載も汎用化                                                                       |
-| 12  | エラーを利用者へ表示         | 完了 | IPC例外をメッセージ化しrendererで通知                                                                                         |
-| 13  | TypeScript型チェック         | 完了 | Hub・Desktop・各packageで成功                                                                                                 |
-| 14  | ESLint                       | 完了 | Hub・Desktop双方で成功                                                                                                        |
-| 15  | Desktop/Web本番ビルド        | 完了 | Electron main、Vite renderer、Next.js成功                                                                                     |
-| 16  | ユニット・統合テスト         | 完了 | SQLite、完全複製、生成ポリシー、safe素材生成、Asset Library、別ドライブ削除、AI、書き出し、端末認証、診断、更新を含む51件成功 |
-| 17  | ドキュメント反映             | 完了 | architecture、desktop、hub、実装状況を追加                                                                                    |
+| #   | 完了条件                     | 状態 | 確認方法・補足                                                                                                                               |
+| --- | ---------------------------- | ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | 既存Webがビルドできる        | 完了 | `npm run build` 相当のNext.js本番ビルド成功                                                                                                  |
+| 2   | DesktopがWindowsで起動       | 完了 | Electronを起動し、6秒後もプロセス継続・stderrなしを確認                                                                                      |
+| 3   | Supabase未設定で利用         | 完了 | DesktopはSupabase依存・環境変数なし                                                                                                          |
+| 4   | プロジェクト新規作成         | 完了 | UI、IPC、SQLite統合テスト                                                                                                                    |
+| 5   | プロジェクト再オープン       | 完了 | SQLite再接続統合テスト                                                                                                                       |
+| 6   | EpisodeとPage作成            | 完了 | UI、IPC、SQLite実装                                                                                                                          |
+| 7   | 複数画像を素材として読込     | 完了 | ファイル選択、D&D、SHA-256重複防止                                                                                                           |
+| 8   | 画像から連続ページ作成       | 完了 | 「全素材を連続ページ化」                                                                                                                     |
+| 9   | ページ並び替え               | 完了 | 上下操作、統合テスト                                                                                                                         |
+| 10  | 終了後もSQLite保存           | 完了 | WAL、再接続統合テスト、終了時close                                                                                                           |
+| 11  | 固定ユーザー名・ドライブなし | 完了 | Desktopは `app.getPath("documents")`、旧Web記載も汎用化                                                                                      |
+| 12  | エラーを利用者へ表示         | 完了 | IPC例外をメッセージ化しrendererで通知                                                                                                        |
+| 13  | TypeScript型チェック         | 完了 | Hub・Desktop・各packageで成功                                                                                                                |
+| 14  | ESLint                       | 完了 | Hub・Desktop双方で成功                                                                                                                       |
+| 15  | Desktop/Web本番ビルド        | 完了 | Electron main、Vite renderer、Next.js成功                                                                                                    |
+| 16  | ユニット・統合テスト         | 完了 | SQLite、Panelレイヤー、完全複製、生成ポリシー、safe素材生成、Asset Library、別ドライブ削除、AI、書き出し、端末認証、診断、更新を含む52件成功 |
+| 17  | ドキュメント反映             | 完了 | architecture、desktop、hub、実装状況を追加                                                                                                   |
 
 ## 現状と残る改善
 
@@ -35,6 +35,7 @@
 - 背景・小物・効果のsafe JobをProject内Libraryへrouteし、一致候補を選択できます。一致なしではlocalへ戻し、外部Providerへ自動送信しません。
 - Library不一致のsafe Jobをloopback ComfyUIへ引き継ぎ、生成した新規素材を分類・タグ付きでLibraryへ登録できます。
 - 外部safe素材Providerへ送る予定のPrompt、送らない入力素材・人物参照・完成Page、費用・保持・学習条件を事前確認できます。実Providerは未設定で、外部通信と送信操作は無効です。
+- `panel_layers`へ背景・人物・小物・効果等の素材参照と合成設定を保存できます。従来コマ画像は互換レイヤーへ自動移行され、Undo、複製、バックアップで保持します。Canvasでの分離表示・合成操作は次工程です。
 - 書き出し履歴は書き出し画面、秘密値を除外したAI設定変更履歴は設定画面で確認できます。
 - PDF、画像ZIP、作品情報、販売文書き出しを実装しています。JPG・PNG・WebPを共通PageレンダラーでPDFと画像ZIPへ合成します。
 - 複数Episode、代表画像、任意保存先、Creator Chat、ComfyUI画像生成に対応しています。

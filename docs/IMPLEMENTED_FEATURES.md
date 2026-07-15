@@ -362,6 +362,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - Library不一致時のlocal fallback、ローカル生成先なしのblocked判定
 - safe Job条件のローカルComfyUI handoffと生成素材の分類・タグ自動登録
 - 外部safe素材Providerの無効既定interface、Promptだけを対象とする送信manifest、費用・利用条件の事前プレビュー、3項目の明示確認契約
+- 背景・人物・小物・効果・tone・mask・correctionを保持する`panel_layers`永続基盤、従来統合画像の自動移行、Undo・複製・バックアップ復元
 - PDF・連番画像ZIP・販売パッケージの確認、進捗、成功、警告、失敗、再実行ダイアログ
 - 1365px以下の右Inspectorオーバーレイ、背景・Escape終了、狭幅ステータス省略
 - ダイアログと生成Drawerの初期フォーカス、Tab循環、Escape終了、フォーカス復帰

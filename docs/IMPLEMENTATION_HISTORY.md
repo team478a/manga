@@ -4,7 +4,7 @@
 
 - 漫画Canvasの30オブジェクト性能を製品版で確認し、再現可能なDB性能スモークテストを追加
   対象ブランチ: `master`
-  実装基準コミット: `c3c5d71`
+  実装基準コミット: `c9b18b2`
 
 この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
@@ -690,3 +690,13 @@ AIServiceはsafe Job Typeがある画像生成を`sensitivity=safe / personPrese
 Library不一致時にDesktopから送信プレビューを開き、Promptだけを対象とし、Negative Prompt、入力素材、キャラクター参照、完成Pageは送らないことを表示します。プレビュー結果にはPrompt本文を含めずSHA-256だけを保持し、generation jobやroute履歴も増やしません。実Provider、endpoint、credentialは未設定で、外部通信と送信確定操作は実装していません。
 
 ai-core単体テスト16/16、Desktop TypeScript、ESLint、本番renderer build、統合テスト51/51、canvas-core 24/24に成功しています。
+
+## 83. Panelレイヤー永続基盤
+
+既存`pages`と`panels`を置き換えず、コマ内の画像構成を保存する`panel_layers`を追加しました。背景、人物、小物、効果、tone、mask、correction、従来統合画像を区分し、素材ID、生成元Job ID、順序、表示、lock、opacity、normal・multiply・screen・overlay、fit・offset・scale・rotationを保持します。保存入力はZodとmain processで検証し、別Projectの素材・生成Job参照を拒否します。
+
+既存`panels.image_asset_id`はCanvasと書き出し互換用に維持し、migration時に`flattened_legacy`レイヤーへ自動登録します。migration前SQLiteバックアップ、従来編集による互換レイヤー同期、分離済みレイヤーを従来編集しても互換レイヤーを再追加しない保護を実装しました。
+
+レイヤーはProject Bundle、Undo / Redo、再起動、Project複製、手動・自動バックアップ、旧バックアップ復元へ統合しました。複製・復元時はPanel・Asset・生成Job参照を新IDへ変換し、Asset Libraryの使用数にも反映します。現段階の描画と書き出しは従来統合画像を維持し、分離レイヤーのCanvas表示とローカル合成は次工程です。
+
+Desktop TypeScript、Web TypeScript、ESLint、本番renderer build、統合テスト52/52、canvas-core 25/25、ai-core 16/16に成功しています。

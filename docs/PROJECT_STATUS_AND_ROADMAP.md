@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-15
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `c3c5d71`
+実装基準コミット: `c9b18b2`
 
 ## 1. 現在地
 
@@ -38,6 +38,8 @@ Project内Asset Libraryを追加しました。素材を背景・小物・効果
 Library不一致のsafe Jobをloopback ComfyUI生成フォームへ引き継げるようにしました。Job Typeとタグを保持し、生成された新規画像を背景・小物・効果へ自動分類します。通常画像生成の外部送信禁止分類は維持し、safe Jobもremote ComfyUIでは送信前に拒否します。
 
 外部safe素材Providerのinterface、送信manifest、費用見積もり、明示確認の契約を追加しました。Library不一致時に、Promptだけが対象で入力素材・キャラクター参照・完成Pageは対象外であること、Providerの保持・学習利用条件、費用状態を事前表示できます。実Providerは未設定・既定無効で、現段階では外部通信も送信確定操作も行えません。
+
+`panel_layers`永続基盤を追加しました。既存のコマ画像は`panels.image_asset_id`を残したまま`flattened_legacy`レイヤーへ自動移行し、背景・人物・小物・効果・tone・mask・correctionの分類、素材・生成Job参照、順序、表示、lock、opacity、blend mode、画像変形を保存できます。Undo、複製、バックアップ・旧形式復元に対応しています。現段階のCanvasと書き出しは従来統合画像を描画し、分離レイヤーの表示・合成は次工程です。
 
 ## 2. 製品境界
 
@@ -208,9 +210,9 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 51/51成功                     |
+| Desktop統合テスト                       | 52/52成功                     |
 | ai-core Router・外部送信契約テスト      | 16/16成功                     |
-| canvas-core単体テスト                   | 24/24成功                     |
+| canvas-core単体テスト                   | 25/25成功                     |
 | NSIS x64生成                            | 成功                          |
 | 更新メタデータ付きNSIS生成              | 成功                          |
 | NSIS install・製品版起動・uninstall E2E | 成功                          |
@@ -323,8 +325,8 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. 既存Panel画像と互換性を保つ`panel_layers`の追加設計・migration
-2. 背景・人物・小物・効果レイヤーの差し替えとローカル再合成
+1. 背景・人物・小物・効果レイヤーのCanvas表示・追加・差し替え・並び替え
+2. 複数レイヤーのローカル合成と`panels.image_asset_id`互換cache更新
 3. VRAM/RAM診断と低スペックRuntime Profile、同時ローカルジョブ数1の制御
 4. Provider選定後にcredential、費用見積、明示確認後の外部safe素材送信を接続
 5. Supabase staging、Stripe、実Ollama・ComfyUI、署名付き更新のRC受入れ
