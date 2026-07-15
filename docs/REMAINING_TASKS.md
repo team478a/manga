@@ -4,11 +4,13 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-基準コミット: `11c44fb`
+基準コミット: `228860c`
 
 ## 1. 現在の判定
 
 HubとDesktopの主要機能、ローカル品質ゲート、Windowsインストール・製品版起動・アンインストールE2E、SBOM・checksum生成、実Dドライブを使ったProject削除・ゴミ箱E2Eまでは完了しています。残作業の中心は外部サービスを使うRC受入れ、コード署名、初回公開です。
+
+2026-07-15に製品方針を低スペック対応・ハイブリッド生成へ変更しました。既存機能を維持し、Generation Router、外部送信ポリシー、背景Provider、レイヤー分離、低スペックRuntime Profileを段階追加します。調査結果と実装順は[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)を参照してください。
 
 ## 2. RC公開を止めるタスク
 
@@ -31,6 +33,8 @@ HubとDesktopの主要機能、ローカル品質ゲート、Windowsインスト
 
 | 優先 | タスク                         | 現在の制限                                      |
 | ---- | ------------------------------ | ----------------------------------------------- |
+| P0   | ハイブリッド生成Phase 1基盤    | Router・Sensitivity・実行先・作品別外部送信ポリシーが未実装 |
+| P1   | 背景Asset Library              | 生成素材は保存済みだが背景分類・検索・再利用導線がない |
 | P2   | 英語化の全画面展開・WCAG評価   | 漫画編集workspace・Creator Chat・画像生成英語化完了。Hub・設定詳細とWCAG評価が残る |
 
 ## 4. 外部受付基盤の準備後に進める改善

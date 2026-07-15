@@ -618,3 +618,11 @@ ComfyUI画像生成画面と制作画面の生成ジョブDrawerを日本語・�
 ワークフロー選択へアクセシブルラベルを追加し、設定完了通知は`role="status"`、生成・履歴エラーは`role="alert"`で通知します。生成ジョブDrawerのfocus対象は翻訳文言に依存しないdata属性で特定するため、localeを切り替えても初期focusとEscape終了を維持します。ComfyUIやmain processが返すメッセージ、Prompt、ワークフロー名は外部・利用者データとして自動翻訳しません。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト46/46に成功しています。
+
+## 74. 低スペック・ハイブリッド生成 Phase 1現状調査
+
+低スペックPC対応の方針を、単純な軽量モデル化から「人物・センシティブ処理はローカル、safeな背景・素材はAsset Libraryまたは外部Provider、枠・吹き出し・文字はbuiltin、最終合成はローカル」とするハイブリッド生成へ変更しました。
+
+現行の画像生成、ComfyUI、generation jobs、Project素材、Canvas、IPC、Provider設定、通信制限、ログ、バックアップを調査しました。既存基盤を維持したままGeneration Routerと作品別外部送信ポリシーを前段へ追加できる一方、現状はリモートComfyUIを許可した場合にSensitivityを構造的に判定する層がないことを確認しました。
+
+互換性判断、追加型、migration候補、shadow routing、テスト基準、外部依存を[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)へ記録しました。調査時点でDesktop統合テスト46/46、canvas-core単体テスト24/24に成功しています。コードとDBスキーマは変更していません。
