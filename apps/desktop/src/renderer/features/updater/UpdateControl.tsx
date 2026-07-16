@@ -10,7 +10,7 @@ const initialState: UpdateState = {
 };
 
 export function UpdateControl() {
-  const { t } = useI18n();
+  const { t, localizeMessage } = useI18n();
   const [state, setState] = React.useState(initialState);
 
   React.useEffect(() => {
@@ -87,7 +87,7 @@ export function UpdateControl() {
           state.status === "checking" ||
           state.status === "downloading"
         }
-        title={`${state.status === "error" && state.message ? state.message : label}${
+        title={`${state.status === "error" && state.message ? localizeMessage(state.message) : label}${
           state.currentVersion
             ? ` ${t("updater.currentVersion", {
                 version: state.currentVersion,

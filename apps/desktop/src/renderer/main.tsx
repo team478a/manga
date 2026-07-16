@@ -75,7 +75,7 @@ const readInspectorTab = (): InspectorTab => {
   }
 };
 function App() {
-  const { locale, setLocale, t, formatDateTime } = useI18n();
+  const { locale, setLocale, t, localizeMessage, formatDateTime } = useI18n();
   const newProjectButtonRef = React.useRef<HTMLButtonElement>(null);
   const projectDialogRef = React.useRef<HTMLFormElement>(null);
   const projectTitleRef = React.useRef<HTMLInputElement>(null);
@@ -127,7 +127,7 @@ function App() {
       React.useState<DatabaseRecoveryState | null>(null),
     [assetUrls, setAssetUrls] = React.useState<Record<string, string>>({});
   const showError = (e: unknown) =>
-    setError(e instanceof Error ? e.message : String(e));
+    setError(localizeMessage(e instanceof Error ? e.message : String(e)));
   React.useEffect(() => setSaving(t("saving.saved")), [locale]);
   const refresh = () =>
     window.mangai.listProjects().then(async (items) => {
@@ -326,7 +326,11 @@ function App() {
             <button
               className="secondary"
               disabled={autoBackup?.status === "running"}
-              title={autoBackup?.message}
+              title={
+                autoBackup?.message
+                  ? localizeMessage(autoBackup.message)
+                  : undefined
+              }
               onClick={async () => {
                 try {
                   setAutoBackup(await window.mangai.runAutoBackup());
@@ -388,7 +392,8 @@ function App() {
             className={`home-backup-status ${autoBackup.status}`}
             role={autoBackup.status === "error" ? "alert" : "status"}
           >
-            <b>自動バックアップ:</b> {autoBackup.message}
+            <b>自動バックアップ:</b>{" "}
+            {localizeMessage(autoBackup.message)}
             {autoBackup.checkedAt && (
               <small>最終確認 {formatDateTime(autoBackup.checkedAt)}</small>
             )}
@@ -738,7 +743,9 @@ function App() {
         await window.mangai.listExportHistory(bundle.project.id),
       );
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : String(cause);
+      const message = localizeMessage(
+        cause instanceof Error ? cause.message : String(cause),
+      );
       const canceled = message.includes("キャンセル");
       setSaving(
         canceled ? t("saving.exportCanceled") : t("saving.exportFailed"),

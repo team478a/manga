@@ -890,3 +890,11 @@ axe監査を日本語9画面・状態に加えて、設定からEnglishへ切り
 自動監査ではDocumentsに加えてElectronのuserDataも一時フォルダーへ隔離し、実利用中のlocalStorage、表示言語、Chromium設定へ影響しないようにしました。隔離環境でtimerが抑制されないよう、自動rendererテスト時だけ`backgroundThrottling`を無効にしています。Windows installer smoke testにも同じuserData隔離を適用しました。
 
 日本語・英語の18画面・状態は合計392項目合格、自動判定の違反0件です。編集workspaceの同じ装飾3要素が両localeで判定保留となるため、実質3要素をNarrator・目視確認へ引き継ぎます。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。
+
+## 107. 主要Mainプロセス・外部サービスメッセージの英語変換
+
+IPCや外部サービスが返したメッセージをrendererの選択localeへ変換する共通層を追加しました。Hub URL・認証・通信、AI Provider未設定、ComfyUI無効・timeout、低VRAM排他、診断送信、書き出し、OS資格情報暗号化、更新エラーを対象とし、IPCが付加する内部呼び出しprefixも利用者表示前に除外します。
+
+Home・workspace共通エラー、Hub、画像生成、AI設定診断、Provider状態、生成Job Drawer、書き出しダイアログ、更新Controlへ共通変換を適用しました。日本語localeでは従来文面を維持し、保存済み利用者コンテンツやPromptは変換しません。
+
+英語のHub URLエラー状態では、通知内に日本語文字が残っていないことを製品Electron監査で明示検証します。日英18画面・状態のaxe A・AA違反0件を維持し、Desktop TypeScript、ESLint、本番renderer buildに成功しています。バックアップ破損・DB復旧・詳細workflow検証など低頻度メッセージは次段階です。

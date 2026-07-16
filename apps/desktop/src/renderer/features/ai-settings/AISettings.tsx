@@ -186,7 +186,7 @@ async function diagnoseComfyWorkflows(
 }
 
 export function AISettings({ onClose }: { onClose: () => void }) {
-  const { locale, setLocale, t, formatDateTime } = useI18n();
+  const { locale, setLocale, t, localizeMessage, formatDateTime } = useI18n();
   const [settings, setSettings] = React.useState<ProviderSettings[]>([]),
     [models, setModels] = React.useState<
       Record<string, Array<{ id: string; name: string; cached?: boolean }>>
@@ -494,7 +494,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               )}
               {runtimeMessage && (
                 <p role="status" aria-live="polite">
-                  {runtimeMessage}
+                  {localizeMessage(runtimeMessage)}
                 </p>
               )}
             </>
@@ -673,7 +673,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           </div>
           {diagnosticsMessage && (
             <p className="notice" role="status" aria-live="polite">
-              {diagnosticsMessage}
+              {localizeMessage(diagnosticsMessage)}
             </p>
           )}
         </section>
@@ -715,7 +715,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                   <span>{t(diagnosticKey[item.level])}</span>
                   <div>
                     <b>{item.label}</b>
-                    <p>{item.message}</p>
+                    <p>{localizeMessage(item.message)}</p>
                   </div>
                 </article>
               ))}
@@ -944,7 +944,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             </div>
             {status[value.providerId] && (
               <p className="notice" role="status" aria-live="polite">
-                {status[value.providerId]}
+                {localizeMessage(status[value.providerId])}
               </p>
             )}
           </section>

@@ -1503,6 +1503,7 @@ type I18nContextValue = {
   localeCode: "ja-JP" | "en-US";
   setLocale: (locale: AppLocale) => void;
   t: (key: TranslationKey, values?: Record<string, string | number>) => string;
+  localizeMessage: (message: string) => string;
   formatDateTime: (value: string | number | Date) => string;
 };
 
@@ -1514,6 +1515,44 @@ function storedLocale(): AppLocale {
   } catch {
     return "ja";
   }
+}
+
+const englishMainMessageReplacements: Array<[RegExp, string]> = [
+  [/Hub URLはHTTPSを指定してください（localhostのみHTTPを利用できます）。/g, "Use an HTTPS Hub URL. HTTP is allowed only for localhost."],
+  [/認証情報を含むHub URLは指定できません。/g, "Hub URLs cannot include credentials."],
+  [/Hub URLにクエリまたはフラグメントは指定できません。/g, "Hub URLs cannot include a query or fragment."],
+  [/Hubへの接続がタイムアウトしました。/g, "The Hub connection timed out."],
+  [/Hubから不正な応答を受信しました。/g, "Hub returned an invalid response."],
+  [/Hubとの通信に失敗しました（HTTP (\d+)）。/g, "Hub communication failed (HTTP $1)."],
+  [/公開作品は見つかりません。/g, "No published work was found."],
+  [/AIプロバイダーが設定されていません。/g, "No AI provider is configured."],
+  [/AIが設定されていません。設定画面でOllamaを有効にしてください。/g, "AI is not configured. Enable Ollama in Settings."],
+  [/ComfyUIが無効です。設定画面で有効にしてください。/g, "ComfyUI is disabled. Enable it in Settings."],
+  [/Promptが入力されたPageがありません。/g, "No page has a prompt."],
+  [/ローカル画像生成は同時に1件だけ実行できます。実行中の生成が完了してから再試行してください。/g, "Only one local image generation can run at a time. Wait for the active job and try again."],
+  [/低VRAM端末ではCreator Chatと画像生成を同時実行できません。[^。]*。/g, "Creator Chat and image generation cannot run together on a low-VRAM device. Wait for the active task and try again."],
+  [/ComfyUI画像生成がタイムアウトしました。/g, "ComfyUI image generation timed out."],
+  [/ComfyUI生成に失敗しました。/g, "ComfyUI generation failed."],
+  [/画像生成に失敗しました。/g, "Image generation failed."],
+  [/診断レポートの送信先が設定されていません。/g, "The diagnostics report endpoint is not configured."],
+  [/外部送信への同意が必要です。/g, "Consent for external upload is required."],
+  [/書き出しをキャンセルしました。/g, "Export was canceled."],
+  [/OSの安全な資格情報暗号化を利用できません。/g, "Secure operating-system credential encryption is unavailable."],
+  [/保存済みHub端末認証を読み取れませんでした。/g, "The saved Hub device authorization could not be read."],
+  [/処理に失敗しました。/g, "The operation failed."],
+  [/fetch failed/g, "Could not connect to the service."],
+];
+
+function localizeExternalMessage(message: string, locale: AppLocale) {
+  const unwrapped = message.replace(
+    /^Error invoking remote method '[^']+': Error: /,
+    "",
+  );
+  if (locale === "ja") return unwrapped;
+  return englishMainMessageReplacements.reduce(
+    (value, [pattern, replacement]) => value.replace(pattern, replacement),
+    unwrapped,
+  );
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
@@ -1542,6 +1581,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
             message.replaceAll(`{${name}}`, String(replacement)),
           messages[key],
         ),
+      localizeMessage: (message) => localizeExternalMessage(message, locale),
       formatDateTime: (input) =>
         new Intl.DateTimeFormat(localeCode, {
           dateStyle: "medium",

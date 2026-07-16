@@ -1,6 +1,6 @@
 # Desktop基盤 完了条件チェック
 
-確認日: 2026-07-16
+確認日: 2026-07-17
 
 漫画編集Canvas MVPの個別33条件は [`MANGA_EDITOR_IMPLEMENTATION_STATUS.md`](MANGA_EDITOR_IMPLEMENTATION_STATUS.md) を参照してください。
 
@@ -53,7 +53,7 @@
 - Hub連携画面から、Projectに対応する公開作品と販売中商品数を秘密鍵なしで確認できます。
 - Hubで端末コードと限定scopeを承認すると、自分の非公開下書きを確認し、作品名・説明だけを更新できます。
 - ローカル構造化ログと同意制の詳細クラッシュレポートに対応しています。外部送信clientは別同意・手動操作で実装済みですが、現行配布版の受付先は未設定です。
-- 日本語・英語locale基盤と漫画編集workspace・Creator Chat・画像生成・書き出し・設定・更新・Hub連携の英語表示、dialog focus管理、reduced motion、Windows forced colorsに対応しています。製品Electronを使う日英18画面・状態のaxe A・AA監査は合計392項目合格・違反0件です。実質3要素の判定保留、main process messageの翻訳、画像生成状態の自動評価、Narrator確認は未完了です。
+- 日本語・英語locale基盤と漫画編集workspace・Creator Chat・画像生成・書き出し・設定・更新・Hub連携の英語表示、主要main process errorの英語変換、dialog focus管理、reduced motion、Windows forced colorsに対応しています。製品Electronを使う日英18画面・状態のaxe A・AA監査は合計392項目合格・違反0件です。実質3要素の判定保留、低頻度message、画像生成状態の自動評価、Narrator確認は未完了です。
 - NSISインストーラー、ブランドアイコン、署名専用ビルド、自動更新、GitHub Actions配布基盤を実装しています。
 - NSISのinstall、製品版renderer起動、隔離SQLite生成、uninstall E2Eと、SPDX SBOM・SHA-256検証に対応しています。
 - 信頼された署名証明書、Git remote、実公開先が未設定のため、実署名と初回公開リリースは未完了です。

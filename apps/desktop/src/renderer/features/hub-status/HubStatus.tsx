@@ -27,7 +27,7 @@ export function HubStatus({
   projectDescription: string;
   onClose: () => void;
 }) {
-  const { t, formatDateTime } = useI18n();
+  const { t, localizeMessage, formatDateTime } = useI18n();
   const [baseUrl, setBaseUrl] = React.useState(initialBaseUrl);
   const [status, setStatus] = React.useState<HubStatusResult | null>(null);
   const [device, setDevice] = React.useState<HubDeviceState | null>(null);
@@ -219,7 +219,7 @@ export function HubStatus({
 
         {error && (
           <div className="error" role="alert">
-            {error}
+            {localizeMessage(error)}
           </div>
         )}
         {message && (
@@ -240,7 +240,7 @@ export function HubStatus({
         {!error && status?.linked === false && (
           <section className="panel-lite hub-state-card unpublished">
             <b>{t("hub.notLinked")}</b>
-            <p>{status.message}</p>
+            <p>{localizeMessage(status.message)}</p>
             <small>
               {t("hub.notLinkedHelp")}
             </small>

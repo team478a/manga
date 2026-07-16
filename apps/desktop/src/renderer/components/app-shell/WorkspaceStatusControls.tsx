@@ -55,7 +55,7 @@ export function WorkspaceStatusControls({
   onOpenJobs: () => void;
   onOpenSettings: () => void;
 }) {
-  const { t } = useI18n();
+  const { t, localizeMessage } = useI18n();
   const [connections, setConnections] = React.useState<
       Partial<Record<ProviderId, ConnectionState>>
     >({}),
@@ -181,7 +181,11 @@ export function WorkspaceStatusControls({
             <button
               key={id}
               className="status-bar-control"
-              title={`${providerLabel[id]}: ${state?.message ?? t("generation.connectionPending")}${state?.latencyMs !== undefined ? ` (${state.latencyMs}ms)` : ""}`}
+              title={`${providerLabel[id]}: ${
+                state?.message
+                  ? localizeMessage(state.message)
+                  : t("generation.connectionPending")
+              }${state?.latencyMs !== undefined ? ` (${state.latencyMs}ms)` : ""}`}
               onClick={onOpenSettings}
             >
               <Bot size={13} aria-hidden="true" />
@@ -264,7 +268,9 @@ export function WorkspaceStatusControls({
                       value={Math.round((job.progress ?? 0) * 100)}
                     />
                   )}
-                  {job.errorMessage && <small>{job.errorMessage}</small>}
+                  {job.errorMessage && (
+                    <small>{localizeMessage(job.errorMessage)}</small>
+                  )}
                   {job.status === "running" && (
                     <button
                       className="danger"

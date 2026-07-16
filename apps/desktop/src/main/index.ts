@@ -1023,6 +1023,11 @@ app
           document.querySelector('[data-a11y-action="check-hub"]').click();
           await waitFor('[role="alert"]');
           screens.push(await audit("hub-error-en"));
+          const englishAlert = document.querySelector('[role="alert"]');
+          if (/[\u3040-\u30ff\u3400-\u9fff]/.test(englishAlert.textContent))
+            throw new Error(
+              "English Hub error still contains Japanese text.",
+            );
           for (const view of ["jobs", "chat", "editor"]) {
             document.querySelector(
               '[data-workspace-view="' + view + '"]',

@@ -90,7 +90,7 @@ export function GenerationJobs({
   onSelectAsset: (id: string) => void;
   onClose: () => void;
 }) {
-  const { t, formatDateTime } = useI18n();
+  const { t, localizeMessage, formatDateTime } = useI18n();
   const [jobs, setJobs] = React.useState<any[]>([]),
     [routes, setRoutes] = React.useState<any[]>([]),
     [workflows, setWorkflows] = React.useState<any[]>([]),
@@ -713,7 +713,7 @@ export function GenerationJobs({
           </button>
           {error && (
             <p className="error" role="alert">
-              {error}
+              {localizeMessage(error)}
             </p>
           )}
           {generationNotice && <p>{generationNotice}</p>}
@@ -768,7 +768,7 @@ export function GenerationJobs({
                     )}
                     {job.errorMessage && (
                       <p className="error" role="alert">
-                        {job.errorMessage}
+                        {localizeMessage(job.errorMessage)}
                       </p>
                     )}
                     {route && (

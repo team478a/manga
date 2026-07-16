@@ -40,7 +40,7 @@ export function ExportDialog({
   onClose: () => void;
   history: ExportHistoryItem[];
 }) {
-  const { t, formatDateTime } = useI18n();
+  const { t, localizeMessage, formatDateTime } = useI18n();
   const backdropRef = React.useRef<HTMLDivElement>(null),
     dialogRef = React.useRef<HTMLElement>(null),
     running = Boolean(progress),
@@ -193,7 +193,7 @@ export function ExportDialog({
         ) : error ? (
           <div className="export-dialog-state danger-state">
             <XCircle size={40} aria-hidden="true" />
-            <strong>{error}</strong>
+            <strong>{localizeMessage(error)}</strong>
             <p>{t("export.unchanged")}</p>
           </div>
         ) : (
