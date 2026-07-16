@@ -39,7 +39,8 @@ export function ExportDialog({
   onClose: () => void;
   history: ExportHistoryItem[];
 }) {
-  const dialogRef = React.useRef<HTMLElement>(null),
+  const backdropRef = React.useRef<HTMLDivElement>(null),
+    dialogRef = React.useRef<HTMLElement>(null),
     running = Boolean(progress),
     runningRef = React.useRef(running),
     closeRef = React.useRef(onClose);
@@ -91,9 +92,36 @@ export function ExportDialog({
       )
       ?.focus();
   }, [open, running, result, error]);
+  React.useEffect(() => {
+    const backdrop = backdropRef.current;
+    const parent = backdrop?.parentElement;
+    if (!open || !backdrop || !parent) return;
+    const siblings = [...parent.children].filter(
+      (element): element is HTMLElement =>
+        element instanceof HTMLElement && element !== backdrop,
+    );
+    const previous = siblings.map((element) => ({
+      element,
+      inert: element.getAttribute("inert"),
+      ariaHidden: element.getAttribute("aria-hidden"),
+    }));
+    for (const element of siblings) {
+      element.setAttribute("inert", "");
+      element.setAttribute("aria-hidden", "true");
+    }
+    return () => {
+      for (const item of previous) {
+        if (item.inert === null) item.element.removeAttribute("inert");
+        else item.element.setAttribute("inert", item.inert);
+        if (item.ariaHidden === null)
+          item.element.removeAttribute("aria-hidden");
+        else item.element.setAttribute("aria-hidden", item.ariaHidden);
+      }
+    };
+  }, [open]);
   if (!open) return null;
   return (
-    <div className="modal-backdrop" role="presentation">
+    <div ref={backdropRef} className="modal-backdrop" role="presentation">
       <section
         ref={dialogRef}
         className="export-dialog"
@@ -121,7 +149,12 @@ export function ExportDialog({
             </h2>
           </div>
           {!running && (
-            <button className="secondary" aria-label="閉じる" onClick={onClose}>
+            <button
+              className="secondary"
+              data-a11y-action="close-export"
+              aria-label="閉じる"
+              onClick={onClose}
+            >
               ×
             </button>
           )}

@@ -111,7 +111,11 @@ export function AppHeader({
           <Upload size={17} aria-hidden="true" />
           <span>{t("header.import")}</span>
         </button>
-        <button className="primary-action" onClick={onExport}>
+        <button
+          className="primary-action"
+          data-a11y-action="open-export"
+          onClick={onExport}
+        >
           <Download size={17} aria-hidden="true" />
           <span>{exporting ? t("header.progress") : t("header.export")}</span>
         </button>

@@ -942,6 +942,7 @@ app
             .querySelector('[data-a11y-action="new-project"]')
             .click();
           const title = await waitFor('[data-a11y-field="project-title"]');
+          screens.push(await audit("new-project-dialog"));
           const valueSetter = Object.getOwnPropertyDescriptor(
             HTMLInputElement.prototype,
             "value",
@@ -951,7 +952,12 @@ app
           document.querySelector('form[role="dialog"]').requestSubmit();
           await waitFor('[data-workspace-view="editor"]');
           screens.push(await audit("editor"));
-          for (const view of ["chat", "jobs", "hub", "settings"]) {
+          document.querySelector('[data-a11y-action="open-export"]').click();
+          await waitFor('.export-dialog[role="dialog"]');
+          screens.push(await audit("export-dialog"));
+          document.querySelector('[data-a11y-action="close-export"]').click();
+          await waitFor('[data-workspace-view="editor"][aria-current="page"]');
+          for (const view of ["chat", "jobs", "hub"]) {
             document.querySelector(
               '[data-workspace-view="' + view + '"]',
             ).click();
@@ -960,6 +966,19 @@ app
             );
             screens.push(await audit(view));
           }
+          const hubUrl = await waitFor('[data-a11y-field="hub-url"]');
+          valueSetter.call(hubUrl, "http://example.com");
+          hubUrl.dispatchEvent(new Event("input", { bubbles: true }));
+          document.querySelector('[data-a11y-action="check-hub"]').click();
+          await waitFor('[role="alert"]');
+          screens.push(await audit("hub-error"));
+          document
+            .querySelector('[data-workspace-view="settings"]')
+            .click();
+          await waitFor(
+            '[data-workspace-view="settings"][aria-current="page"]',
+          );
+          screens.push(await audit("settings"));
           return {
             checkedAt: new Date().toISOString(),
             screens,

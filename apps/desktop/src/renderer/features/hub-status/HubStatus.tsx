@@ -116,13 +116,18 @@ export function HubStatus({
             {t("hub.url")}
             <div className="inline hub-url-row">
               <input
+                data-a11y-field="hub-url"
                 type="url"
                 spellCheck={false}
                 value={baseUrl}
                 onChange={(event) => setBaseUrl(event.target.value)}
                 placeholder="https://hub.example.com"
               />
-              <button disabled={busy || !baseUrl.trim()} onClick={check}>
+              <button
+                data-a11y-action="check-hub"
+                disabled={busy || !baseUrl.trim()}
+                onClick={check}
+              >
                 {busy ? t("hub.checking") : t("hub.recheck")}
               </button>
             </div>

@@ -872,3 +872,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-c
 初回の複数画面監査で、編集ヘッダー、空Page案内、Hub補足文、Project IDのコントラスト不足を検出しました。アクセント文字用の明色tokenを背景button用tokenから分離し、muted文字色を暗いpanel上でAA基準を満たす値へ調整しました。タブ件数、Episode名称変更、Zoom縮小には明示的な操作名を設定し、装飾文字をスクリーンリーダーから除外しました。
 
 主要6画面は合計132項目合格、自動判定の違反0件です。編集画面の件数`0`、`✎`、`−`はaxeが色コントラストを自動確定できないため判定保留3件として記録し、Narrator・目視確認へ引き継ぎます。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。
+
+## 105. ダイアログ・エラー状態のWCAG自動監査
+
+主要画面の監査に、新規Projectダイアログ、書き出しダイアログ、無効なHub URLを入力したエラー状態を追加しました。監査操作は表示文字列に依存せず専用data属性を経由し、実際の入力・button操作と`role="alert"`表示を待ってから評価します。
+
+書き出しダイアログの初回監査では、小見出しのアクセント色が暗い背景に対して2.9:1だったため、背景button用ではなく明色のアクセント文字tokenへ変更しました。また、ダイアログ表示中の背面workspaceへ`inert`と`aria-hidden`を設定し、スクリーンリーダーとkeyboardが背面操作へ移動しないようにしました。終了時は既存属性を復元します。
+
+9画面・状態は合計195項目合格、自動判定の違反0件です。編集workspaceの装飾表示に関する判定保留3件は継続して手動確認対象です。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。
