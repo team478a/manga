@@ -360,6 +360,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - retryableな一時障害の最大3回・指数バックオフ自動再試行と、試行回数・次回時刻の再起動復元
 - 日跨ぎ対応の夜間Queue時間帯、時間外の通信なし待機、開始時刻の自動実行、端末設定の永続化
 - Episode内のPrompt入力済みPageをページ順で永続画像生成Queueへ一括登録し、空Promptをスキップ
+- ComfyUI workflowのタイルVAE適合監査、生成画面・AI診断での状態表示、CPU offload実環境確認の分離
 - ハイブリッド生成のJob Type・Sensitivity・Execution Target・作品ポリシー型とfail-closedな純粋Router
 - `safe_assets_only`既定の作品別外部送信ポリシー、費用上限、custom Job Typeの永続化・複製・バックアップ復元
 - loopbackのローカルComfyUIだけを実行するRouterゲートと、Prompt本文を残さないroute監査履歴

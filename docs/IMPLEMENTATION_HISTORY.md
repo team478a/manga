@@ -792,3 +792,11 @@ ComfyUI接続失敗、通信タイムアウト、Ollamaモデル解放失敗な�
 `generation_jobs`へ後方互換な`queue_order`を追加し、同じpriorityの一括Jobを登録順、すなわちPage順で実行します。各Jobは既存の夜間時間帯、最大3回の自動再試行、一時停止・再開、priority変更、再起動復元を利用します。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト57/57、ai-core 22/22に成功しています。ページ順、空Promptスキップ、重複拒否、永続Queue順序を統合テストで確認しました。renderer buildには既知の500KB超chunk警告だけが残ります。
+
+## 95. 低スペックComfyUI workflow適合監査
+
+登録済みComfyUI API workflowのノード種別を解析し、標準VAE Decode、`VAEDecodeTiled`、`VAEEncodeTiled`を識別する低スペック適合監査を追加しました。生成画面では選択workflowのタイルVAE対応状態を日英表示し、AI一括診断では既定workflowを独立項目として判定します。
+
+CPUオフロードはworkflowノードではなくComfyUIの起動引数・Dynamic VRAM設定に依存するため、JSONから有効と推測しません。画面では実環境確認が必要であることを明示し、既存workflowの自動書き換えや強制無効化は行いません。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト57/57、ai-core 23/23に成功しています。タイルVAE検出とCPUオフロードの実環境分離を単体・統合テストで確認しました。残る完了条件は、実モデル用workflowとComfyUI起動設定を用いた8GB端末E2Eです。

@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `f9caa08`
+実装基準コミット: `5257178`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -201,7 +201,7 @@ Phase 1で必要な変更:
 
 ## 8. 低スペック対応の現在地
 
-Electron起動時のRAM・GPU・専用VRAM診断、`cpu_only`から`vram_24gb_plus`までのRuntime Profile自動選択、端末設定への手動上書き保存、同時ローカル画像生成1件の排他制御を実装しました。ComfyUI workflow内のControlNet、LoRA、VAE tile、CPU offload、モデルunloadはまだMANGAI側では制御していません。
+Electron起動時のRAM・GPU・専用VRAM診断、`cpu_only`から`vram_24gb_plus`までのRuntime Profile自動選択、端末設定への手動上書き保存、同時ローカル画像生成1件の排他制御を実装しました。ControlNet・LoRA上限、タイルVAE適合監査、Ollamaモデル解放まで接続済みです。CPU offloadはComfyUI起動環境の実機確認が残ります。
 
 Phase 3で必要:
 
@@ -213,7 +213,7 @@ Phase 3で必要:
 - pause / resume / priority付き永続Queue
 - 再起動後のqueued / paused復元
 
-残るPhase 3作業は、profile別workflow制約、Ollamaとの排他、モデルunload、永続Queueと再開・優先度です。
+Phase 3のコード基盤は、profile別workflow制約、Ollamaとの排他、モデルunload、永続Queue、夜間実行、Page一括投入、タイルVAE適合監査まで完了しました。残る完了条件はCPU offload起動設定を含む8GB実機E2Eです。
 
 ## 9. Phase 1の追加設計
 
@@ -441,7 +441,7 @@ maskのblend modeは使用せず、alphaとopacityだけを適用します。cor
 - 自動縮小時は生成画面へ実効解像度を日本語・英語で表示
 - 1600×1200要求が8GB profileで1024×768、batch 4が1になる統合テスト
 
-VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはworkflow構造・導入済みcustom node・ComfyUI起動引数に依存します。既存workflowを推測で書き換えず、検証済み低スペックworkflowテンプレートとして次工程で導入します。
+VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはworkflow構造・導入済みcustom node・ComfyUI起動引数に依存します。既存workflowを推測で書き換えず、タイルVAEノードの適合監査をCommit 21で導入しました。次は実モデル用workflowと起動設定を8GB端末で検証します。
 
 ### Commit 16: Ollama・ComfyUI GPU排他とモデル解放（完了: `10d66b7`）
 
@@ -516,12 +516,24 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 
 一括登録は生成画面でworkflowを選択して実行します。夜間Modeの時間外ではProviderへ通信せず全件を待機させます。
 
+### Commit 21: 低スペックComfyUI workflow適合監査（完了: `5257178`）
+
+- 登録済みAPI workflowの`class_type`を安全に解析
+- 標準`VAEDecode`、`VAEDecodeTiled`、`VAEEncodeTiled`を識別
+- `VAEDecodeTiled`を8GB向けVAEタイル適合条件として検証結果へ追加
+- CPUオフロードはworkflow JSONから推測せず、ComfyUI起動環境での確認必須として分離
+- 生成画面へ選択workflowのタイルVAE適合状態とCPUオフロード確認案内を日英表示
+- AI一括診断へ既定workflowの低スペック適合項目を追加
+- 既存workflowを自動書き換えず、従来生成経路を維持
+
+標準ComfyUIでは`--cpu-vae`、Dynamic VRAM、`--lowvram`等は起動環境の設定です。MANGAIはJSONから有効状態を断定しません。実機完了条件は、利用者環境のモデルを含むタイルVAE workflowとComfyUI起動設定を組み合わせた8GB端末E2Eです。
+
 ## 11. テスト基準
 
 2026-07-16の確認時点:
 
 - Desktop統合テスト: 57/57成功
-- ai-core Router・外部送信契約・Runtime Profile単体テスト: 22/22成功
+- ai-core Router・外部送信契約・Runtime Profile単体テスト: 23/23成功
 - canvas-core単体テスト: 25/25成功
 
 Phase 1追加テスト:
