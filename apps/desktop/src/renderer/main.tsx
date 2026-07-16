@@ -342,7 +342,11 @@ function App() {
             <button className="secondary" onClick={restoreProject}>
               {t("home.restore")}
             </button>
-            <button ref={newProjectButtonRef} onClick={() => setCreating(true)}>
+            <button
+              ref={newProjectButtonRef}
+              data-a11y-action="new-project"
+              onClick={() => setCreating(true)}
+            >
               {t("home.newProject")}
             </button>
           </div>
@@ -416,6 +420,7 @@ function App() {
                 {t("projectDialog.name")}
                 <input
                   ref={projectTitleRef}
+                  data-a11y-field="project-title"
                   required
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
@@ -838,12 +843,18 @@ function App() {
           />
           <section className="canvas">
             <div className="zoom">
-              <button onClick={() => setZoom(Math.max(20, zoom - 10))}>
-                −
+              <button
+                aria-label={t("workspace.zoomOut")}
+                onClick={() => setZoom(Math.max(20, zoom - 10))}
+              >
+                <span aria-hidden="true">−</span>
               </button>
               <span>{zoom}%</span>
-              <button onClick={() => setZoom(Math.min(200, zoom + 10))}>
-                ＋
+              <button
+                aria-label={t("workspace.zoomIn")}
+                onClick={() => setZoom(Math.min(200, zoom + 10))}
+              >
+                <span aria-hidden="true">＋</span>
               </button>
               <button onClick={() => setZoom(70)}>
                 {t("workspace.zoomReset")}

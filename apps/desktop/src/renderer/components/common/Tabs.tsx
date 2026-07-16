@@ -27,6 +27,11 @@ export function Tabs<T extends string>({
           id={`${idPrefix}-tab-${option.id}`}
           role="tab"
           type="button"
+          aria-label={
+            option.count === undefined
+              ? option.label
+              : `${option.label} (${option.count})`
+          }
           aria-selected={value === option.id}
           aria-controls={`${idPrefix}-panel-${option.id}`}
           tabIndex={value === option.id ? 0 : -1}
@@ -55,7 +60,9 @@ export function Tabs<T extends string>({
           }}
         >
           <span>{option.label}</span>
-          {option.count !== undefined && <small>{option.count}</small>}
+          {option.count !== undefined && (
+            <small aria-hidden="true">{option.count}</small>
+          )}
         </button>
       ))}
     </div>

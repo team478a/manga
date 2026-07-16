@@ -42,16 +42,19 @@ try {
     : null;
   if (report) {
     const summary = {
-      passes: report.passes,
-      violations: report.violations.map((item) => ({
-        id: item.id,
-        impact: item.impact,
-        nodes: item.nodes.length,
-      })),
-      incomplete: report.incomplete.map((item) => ({
-        id: item.id,
-        impact: item.impact,
-        nodes: item.nodes.length,
+      screens: report.screens.map((screen) => ({
+        screen: screen.screen,
+        passes: screen.passes,
+        violations: screen.violations.map((item) => ({
+          id: item.id,
+          impact: item.impact,
+          nodes: item.nodes.length,
+        })),
+        incomplete: screen.incomplete.map((item) => ({
+          id: item.id,
+          impact: item.impact,
+          nodes: item.nodes.length,
+        })),
       })),
     };
     process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);

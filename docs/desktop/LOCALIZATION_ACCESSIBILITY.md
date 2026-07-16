@@ -60,13 +60,22 @@
 
 ## 自動評価
 
-製品rendererを隔離した一時DocumentsフォルダーでElectron起動し、`axe-core`でHome画面を評価できます。
+製品rendererを隔離した一時DocumentsフォルダーでElectron起動し、`axe-core`で次の主要画面を連続評価できます。
+
+- Home
+- 漫画編集workspace
+- Creator Chat
+- 画像生成
+- Hub連携
+- 設定
 
 ```powershell
 npm run desktop:test:a11y
 ```
 
-検査対象はWCAG 2.0 / 2.1のA・AAタグです。結果JSONをMainプロセスから書き出し、`serious`または`critical`の違反がある場合は終了コード1にします。Desktop ReleaseのWindows CIでも同じコマンドを実行します。2026-07-16時点のHome画面は20項目合格、違反0件、判定保留0件です。
+検査対象はWCAG 2.0 / 2.1のA・AAタグです。監査専用ProjectをUIから作成して各画面へ遷移し、画面別の結果JSONをMainプロセスから書き出します。`serious`または`critical`の違反がある場合は終了コード1にします。Desktop ReleaseのWindows CIでも同じコマンドを実行します。
+
+2026-07-16時点では6画面合計132項目が合格し、自動判定の違反は0件です。編集画面では、表示件数の`0`と装飾記号`✎`・`−`について色コントラストを自動確定できない判定保留が3件あります。タブの件数は操作名と合わせた`aria-label`、記号buttonは翻訳済み操作名の`aria-label`を持ち、装飾文字は`aria-hidden`にしています。これらはNarratorと目視による手動確認対象です。
 
 ## 確認項目
 
@@ -86,4 +95,4 @@ npm run desktop:test:a11y
 14. テンプレートの複製・編集・削除確認と、更新チャンネル・更新確認を英語表示でkeyboard操作できること
 15. Hubの公開照会、端末認証、URLコピー、差分確認、下書き更新を英語表示でkeyboard操作できること
 
-完全な英語版と全画面WCAG評価は未完了です。main process messageを同じ辞書へ移行し、axe対象を設定・編集・生成・Hub画面へ広げ、Narratorによる手動確認を追加する必要があります。
+完全な英語版と全状態のWCAG評価は未完了です。main process messageを同じ辞書へ移行し、axe対象をダイアログ・エラー・生成実行中などの状態へ広げ、Narratorによる手動確認を追加する必要があります。

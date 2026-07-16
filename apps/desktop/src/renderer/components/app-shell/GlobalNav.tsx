@@ -50,6 +50,7 @@ export function GlobalNav({
           return (
             <button
               key={item.id}
+              data-workspace-view={item.id}
               className={active === item.id ? "selected" : ""}
               aria-current={active === item.id ? "page" : undefined}
               aria-label={label}

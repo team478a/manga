@@ -902,31 +902,87 @@ app
         throw new Error("MANGAI_A11Y_REPORT must be an absolute path.");
       await win.webContents.executeJavaScript(fs.readFileSync(axePath, "utf8"));
       const report = (await win.webContents.executeJavaScript(`
-        axe.run(document, {
-          runOnly: {
-            type: "tag",
-            values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+        (async () => {
+          const waitFor = (selector) =>
+            new Promise((resolve, reject) => {
+              const deadline = Date.now() + 10000;
+              const check = () => {
+                const element = document.querySelector(selector);
+                if (element) return resolve(element);
+                if (Date.now() >= deadline)
+                  return reject(new Error("Timed out waiting for " + selector));
+                setTimeout(check, 50);
+              };
+              check();
+            });
+          const settle = () =>
+            new Promise((resolve) =>
+              requestAnimationFrame(() =>
+                requestAnimationFrame(() => setTimeout(resolve, 150)),
+              ),
+            );
+          const audit = async (screen) => {
+            await settle();
+            const result = await axe.run(document, {
+              runOnly: {
+                type: "tag",
+                values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+              }
+            });
+            return {
+              screen,
+              url: location.href,
+              violations: result.violations,
+              incomplete: result.incomplete,
+              passes: result.passes.length
+            };
+          };
+          const screens = [await audit("home")];
+          document
+            .querySelector('[data-a11y-action="new-project"]')
+            .click();
+          const title = await waitFor('[data-a11y-field="project-title"]');
+          const valueSetter = Object.getOwnPropertyDescriptor(
+            HTMLInputElement.prototype,
+            "value",
+          ).set;
+          valueSetter.call(title, "Accessibility Test Project");
+          title.dispatchEvent(new Event("input", { bubbles: true }));
+          document.querySelector('form[role="dialog"]').requestSubmit();
+          await waitFor('[data-workspace-view="editor"]');
+          screens.push(await audit("editor"));
+          for (const view of ["chat", "jobs", "hub", "settings"]) {
+            document.querySelector(
+              '[data-workspace-view="' + view + '"]',
+            ).click();
+            await waitFor(
+              '[data-workspace-view="' + view + '"][aria-current="page"]',
+            );
+            screens.push(await audit(view));
           }
-        }).then((result) => ({
-          url: location.href,
-          checkedAt: new Date().toISOString(),
-          violations: result.violations,
-          incomplete: result.incomplete,
-          passes: result.passes.length
-        }))
+          return {
+            checkedAt: new Date().toISOString(),
+            screens,
+          };
+        })()
       `)) as {
-        violations: Array<{ impact?: string | null; id: string }>;
+        screens: Array<{
+          screen: string;
+          violations: Array<{ impact?: string | null; id: string }>;
+        }>;
       };
       fs.mkdirSync(path.dirname(reportPath), { recursive: true });
       fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
-      const blocking = report.violations.filter((item) =>
-        ["serious", "critical"].includes(String(item.impact)),
+      const blocking = report.screens.flatMap((screen) =>
+        screen.violations
+          .filter((item) =>
+            ["serious", "critical"].includes(String(item.impact)),
+          )
+          .map((item) => `${screen.screen}:${item.id}`),
       );
       if (blocking.length)
         throw new Error(
-          `Accessibility audit failed: ${blocking
-            .map((item) => item.id)
-            .join(", ")}`,
+          `Accessibility audit failed: ${blocking.join(", ")}`,
         );
       app.quit();
       return;

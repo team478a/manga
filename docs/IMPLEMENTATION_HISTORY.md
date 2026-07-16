@@ -864,3 +864,11 @@ Desktopから更新できる範囲は従来どおり本人の非公開下書き�
 初回監査で「新規Project」buttonの文字色とアクセント背景が3.97:1だったため、通常時とhover時のアクセント色を暗くしてAA基準を満たしました。修正後は20項目合格、違反0件、判定保留0件です。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次は設定・編集・生成・Hub画面へのaxe対象拡張とWindows Narratorによる手動評価です。
+
+## 104. 主要6画面へのWCAG自動監査拡張
+
+製品Electronのaxe監査をHomeだけでなく、漫画編集workspace、Creator Chat、画像生成、Hub連携、設定へ拡張しました。監査用Projectを実際の新規作成ダイアログから作成し、グローバルナビゲーションを経由して各画面を連続評価します。画面別の合格・違反・判定保留をJSONへ記録し、違反時は画面名とrule IDを終了エラーへ含めます。
+
+初回の複数画面監査で、編集ヘッダー、空Page案内、Hub補足文、Project IDのコントラスト不足を検出しました。アクセント文字用の明色tokenを背景button用tokenから分離し、muted文字色を暗いpanel上でAA基準を満たす値へ調整しました。タブ件数、Episode名称変更、Zoom縮小には明示的な操作名を設定し、装飾文字をスクリーンリーダーから除外しました。
+
+主要6画面は合計132項目合格、自動判定の違反0件です。編集画面の件数`0`、`✎`、`−`はaxeが色コントラストを自動確定できないため判定保留3件として記録し、Narrator・目視確認へ引き継ぎます。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。

@@ -14,9 +14,10 @@
   --border-strong: #3a4352;
   --text-primary: #f3f5f7;
   --text-secondary: #a6afbd;
-  --text-muted: #727d8d;
+  --text-muted: #818b99;
   --accent: #6848d8;
   --accent-hover: #7354e6;
+  --accent-text: #9b86ff;
   --accent-soft: rgb(124 92 255 / 16%);
   --success: #37c77a;
   --success-soft: rgb(55 199 122 / 14%);
@@ -144,7 +145,7 @@ label {
 }
 .home header b {
   font-size: 22px;
-  color: var(--accent-hover);
+  color: var(--accent-text);
 }
 .home header span {
   color: var(--text-secondary);
@@ -223,7 +224,7 @@ label {
   overflow: hidden;
   border-radius: 7px;
   background: var(--accent-soft);
-  color: var(--accent-hover);
+  color: var(--accent-text);
   display: grid;
   place-items: center;
   font-size: 34px;
@@ -358,7 +359,7 @@ label {
   min-width: 0;
 }
 .app-header-location > strong {
-  color: var(--accent-hover);
+  color: var(--accent-text);
   font-size: 15px;
   letter-spacing: 0.02em;
 }
@@ -547,7 +548,7 @@ label {
 .global-nav-items button.selected {
   border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   background: var(--accent-soft);
-  color: var(--accent-hover);
+  color: var(--accent-text);
 }
 .global-nav-items button.selected::before {
   position: absolute;

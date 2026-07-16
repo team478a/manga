@@ -92,7 +92,7 @@ export function ProjectStructureTab({
                 if (title) apply(window.mangai.renameEpisode(item.id, title));
               }}
             >
-              ✎
+              <span aria-hidden="true">✎</span>
             </button>
             <button
               disabled={index === 0}

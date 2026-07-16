@@ -143,6 +143,8 @@ const ja = {
   "saving.exportCanceled": "書き出しキャンセル",
   "saving.exportFailed": "書き出し失敗",
   "saving.exportCanceledMessage": "書き出しをキャンセルしました。",
+  "workspace.zoomOut": "縮小",
+  "workspace.zoomIn": "拡大",
   "workspace.zoomReset": "リセット",
   "workspace.noPage":
     "ページを追加してください。素材を選び「全素材を連続ページ化」も利用できます。",
@@ -857,6 +859,8 @@ const en: Record<TranslationKey, string> = {
   "saving.exportCanceled": "Export canceled",
   "saving.exportFailed": "Export failed",
   "saving.exportCanceledMessage": "Export was canceled.",
+  "workspace.zoomOut": "Zoom out",
+  "workspace.zoomIn": "Zoom in",
   "workspace.zoomReset": "Reset",
   "workspace.noPage":
     "Add a page, or select assets and create a sequence of pages.",
