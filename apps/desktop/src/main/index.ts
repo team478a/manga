@@ -906,6 +906,49 @@ app
         throw new Error("MANGAI_AXE_PATH must point to axe.min.js.");
       if (!reportPath || !path.isAbsolute(reportPath))
         throw new Error("MANGAI_A11Y_REPORT must be an absolute path.");
+      const generationStateSeed = new Promise<boolean>((resolve) => {
+        const deadline = Date.now() + 10_000;
+        const timer = setInterval(() => {
+          const project = store.listProjects()[0];
+          if (!project) {
+            if (Date.now() >= deadline) {
+              clearInterval(timer);
+              resolve(false);
+            }
+            return;
+          }
+          const createJob = (
+            status: "running" | "completed" | "failed",
+            progress: number,
+            errorMessage?: string,
+          ) => {
+            const id = store.createGenerationJob({
+              projectId: project.id,
+              providerType: "local",
+              providerId: "comfyui",
+              modelId: "accessibility-test",
+              generationType: "image",
+              prompt: `Accessibility ${status} state`,
+              inputJson: {
+                projectId: project.id,
+                workflowId: "accessibility-test",
+                prompt: `Accessibility ${status} state`,
+              },
+            });
+            store.updateGenerationJob(id, status, {
+              progress,
+              errorCode: status === "failed" ? "A11Y_TEST_FAILURE" : undefined,
+              errorMessage,
+              output: status === "completed" ? { test: true } : undefined,
+            });
+          };
+          createJob("running", 0.45);
+          createJob("completed", 1);
+          createJob("failed", 0.7, "ComfyUI生成に失敗しました。");
+          clearInterval(timer);
+          resolve(true);
+        }, 50);
+      });
       await win.webContents.executeJavaScript(fs.readFileSync(axePath, "utf8"));
       const report = (await win.webContents.executeJavaScript(`
         (async () => {
@@ -979,6 +1022,15 @@ app
             .querySelector('[data-a11y-action="open-generation-drawer"]')
             .click();
           await waitFor('.generation-drawer[role="dialog"]');
+          await waitFor(
+            '.generation-drawer [data-generation-status="running"]',
+          );
+          await waitFor(
+            '.generation-drawer [data-generation-status="completed"]',
+          );
+          await waitFor(
+            '.generation-drawer [data-generation-status="failed"]',
+          );
           screens.push(await audit("generation-drawer"));
           document.querySelector('[data-generation-close]').click();
           await waitForMissing('.generation-drawer[role="dialog"]');
@@ -995,6 +1047,11 @@ app
             await waitFor(
               '[data-workspace-view="' + view + '"][aria-current="page"]',
             );
+            if (view === "jobs") {
+              await waitFor('[data-generation-status="running"]');
+              await waitFor('[data-generation-status="completed"]');
+              await waitFor('[data-generation-status="failed"]');
+            }
             screens.push(await audit(view));
           }
           const hubUrl = await waitFor('[data-a11y-field="hub-url"]');
@@ -1042,12 +1099,37 @@ app
             await waitFor(
               '[data-workspace-view="' + view + '"][aria-current="page"]',
             );
+            if (view === "jobs") {
+              await waitFor('[data-generation-status="running"]');
+              await waitFor('[data-generation-status="completed"]');
+              await waitFor('[data-generation-status="failed"]');
+              const failedMessage = document.querySelector(
+                '[data-generation-status="failed"] [role="alert"]',
+              );
+              if (
+                /[\u3040-\u30ff\u3400-\u9fff]/.test(
+                  failedMessage.textContent,
+                )
+              )
+                throw new Error(
+                  "English generation error still contains Japanese text.",
+                );
+            }
             screens.push(await audit(view + "-en"));
           }
           document
             .querySelector('[data-a11y-action="open-generation-drawer"]')
             .click();
           await waitFor('.generation-drawer[role="dialog"]');
+          await waitFor(
+            '.generation-drawer [data-generation-status="running"]',
+          );
+          await waitFor(
+            '.generation-drawer [data-generation-status="completed"]',
+          );
+          await waitFor(
+            '.generation-drawer [data-generation-status="failed"]',
+          );
           screens.push(await audit("generation-drawer-en"));
           document.querySelector('[data-generation-close]').click();
           await waitForMissing('.generation-drawer[role="dialog"]');
@@ -1075,6 +1157,8 @@ app
           violations: Array<{ impact?: string | null; id: string }>;
         }>;
       };
+      if (!(await generationStateSeed))
+        throw new Error("Accessibility generation states were not seeded.");
       fs.mkdirSync(path.dirname(reportPath), { recursive: true });
       fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
       const blocking = report.screens.flatMap((screen) =>

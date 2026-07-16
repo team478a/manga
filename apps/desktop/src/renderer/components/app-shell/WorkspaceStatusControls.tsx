@@ -248,7 +248,7 @@ export function WorkspaceStatusControls({
           <div className="generation-drawer-list">
             {recentJobs.length ? (
               recentJobs.map((job) => (
-                <article key={job.id}>
+                <article key={job.id} data-generation-status={job.status}>
                   <div className="generation-drawer-job-heading">
                     <b>
                       {job.generationType === "image"

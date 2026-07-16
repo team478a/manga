@@ -724,7 +724,7 @@ export function GenerationJobs({
             {jobs.map((job) => {
               const route = routes.find((item) => item.jobId === job.id);
               return (
-                <article key={job.id}>
+                <article key={job.id} data-generation-status={job.status}>
                   <div>
                     <b>
                       {job.providerType === "asset"
