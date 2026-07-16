@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `12e7c85`
+実装基準コミット: `f9caa08`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -473,7 +473,7 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 - 既存の同期的な生成成功レスポンスを維持し、待機へ入った場合だけ即座に`queued`を返す
 - Queue待機・一時停止・優先度・順次実行・再オープン復元の統合テスト
 
-生成Promptとworkflow入力は従来どおりローカルSQLite内だけに保存します。夜間開始時刻、Page単位の一括投入、最大試行回数付き自動再試行は次工程です。
+生成Promptとworkflow入力は従来どおりローカルSQLite内だけに保存します。夜間開始時刻、Page単位の一括投入、最大試行回数付き自動再試行まで実装済みです。
 
 ### Commit 18: 一時障害の永続自動再試行（完了: `eff2440`）
 
@@ -504,11 +504,23 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 
 夜間Modeは既定無効です。利用者が明示的に有効化した端末だけで適用し、既存の単発生成挙動は変更しません。
 
+### Commit 20: Episode内Pageの一括Queue投入（完了: `f9caa08`）
+
+- 選択中EpisodeのPageを`order_index`順で画像生成Queueへ一括登録
+- 各PageのPrompt、Negative Prompt、幅、高さを既存ComfyUI Jobへ引き継ぎ
+- 空PromptのPageは安全にスキップし、対象件数とスキップ件数を日英表示
+- Project・Episode境界外のPage IDと重複Page IDをMainプロセスで拒否
+- `queue_order`を後方互換追加し、同一priority内の一括JobをPage順で実行
+- 既存の夜間時間帯、最大3回再試行、一時停止・再開、priority、再起動復元をそのまま適用
+- Page順、空Promptスキップ、重複拒否、永続Queue順序の統合テスト
+
+一括登録は生成画面でworkflowを選択して実行します。夜間Modeの時間外ではProviderへ通信せず全件を待機させます。
+
 ## 11. テスト基準
 
 2026-07-16の確認時点:
 
-- Desktop統合テスト: 56/56成功
+- Desktop統合テスト: 57/57成功
 - ai-core Router・外部送信契約・Runtime Profile単体テスト: 22/22成功
 - canvas-core単体テスト: 25/25成功
 

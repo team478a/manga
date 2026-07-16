@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-16
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `12e7c85`
+実装基準コミット: `f9caa08`
 
 ## 1. 現在地
 
@@ -52,6 +52,8 @@ Runtime ProfileをComfyUI送信へ接続し、profile上限を超える解像度
 接続失敗・タイムアウト等の一時障害は同一Jobを最大3回まで指数バックオフで自動再試行します。試行回数と次回時刻はSQLiteへ保存され、再起動後も継続します。設定不備・不正workflow・route拒否は再試行しません。
 
 端末別の夜間Queue時間帯を設定できます。時間外の生成はProvider通信なしで待機し、開始時刻に自動実行します。日跨ぎの時間帯と設定の再起動復元に対応し、既定は無効です。
+
+選択中EpisodeのPrompt入力済みPageをページ順で画像生成Queueへ一括登録できます。空Promptは件数を表示してスキップし、夜間時間帯、自動再試行、一時停止・再開、優先順位、再起動復元を一括Jobにも適用します。
 
 ## 2. 製品境界
 
@@ -222,7 +224,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 56/56成功                     |
+| Desktop統合テスト                       | 57/57成功                     |
 | ai-core Router・外部送信・Runtimeテスト | 22/22成功                     |
 | canvas-core単体テスト                   | 25/25成功                     |
 | NSIS x64生成                            | 成功                          |
@@ -337,7 +339,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. 検証済みVAEタイル・CPU offload workflow、Page単位の一括投入
+1. 検証済みVAEタイル・CPU offload workflow
 2. Provider選定後にcredential、費用見積、明示確認後の外部safe素材送信を接続
 3. Supabase staging、Stripe、実Ollama・ComfyUI、署名付き更新のRC受入れ
 

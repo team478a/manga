@@ -784,3 +784,11 @@ ComfyUI接続失敗、通信タイムアウト、Ollamaモデル解放失敗な�
 時間外に投入された画像JobはProviderへ送信せず、試行回数0の待機状態で保持します。Mainプロセスは次の開始時刻にtimerでQueueを再開し、設定変更時はtimerを再計算します。終了時刻を過ぎた実行中Jobは途中停止せず、現在の1件を完了してから次を待機させます。
 
 生成画面へ夜間Mode、開始・終了時刻、保存操作を日英で追加しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト56/56、canvas-core 25/25、ai-core 22/22に成功しています。日跨ぎ判定、開始までの時間、時間外のProvider未送信、SQLite再オープン後の設定維持を確認しました。
+
+## 94. Episode内Pageの一括画像生成Queue
+
+選択中Episodeに属するPageのうち、Promptが入力されたものだけをページ順で永続画像生成Queueへ一括登録できるようにしました。空Promptはスキップして対象件数とともに日英表示し、別Project・別EpisodeのPage IDと重複IDはMainプロセスで拒否します。
+
+`generation_jobs`へ後方互換な`queue_order`を追加し、同じpriorityの一括Jobを登録順、すなわちPage順で実行します。各Jobは既存の夜間時間帯、最大3回の自動再試行、一時停止・再開、priority変更、再起動復元を利用します。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト57/57、ai-core 22/22に成功しています。ページ順、空Promptスキップ、重複拒否、永続Queue順序を統合テストで確認しました。renderer buildには既知の500KB超chunk警告だけが残ります。
