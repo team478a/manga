@@ -4,6 +4,7 @@ import type {
   GenerationRouteDecisionRecord,
   GenerationQueueSettings,
   PageBatchImageRequest,
+  ComfyWorkflowOptimization,
   ExternalDispatchPreview,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
@@ -375,7 +376,13 @@ export type DesktopApi = {
     setDefaultWorkflow: (id: string) => Promise<any[]>;
     validateWorkflow: (
       id: string,
-    ) => Promise<{ ok: boolean; message: string; fields?: string[] }>;
+    ) => Promise<{
+      ok: boolean;
+      message: string;
+      fields?: string[];
+      warnings: string[];
+      optimization: ComfyWorkflowOptimization;
+    }>;
     testWorkflow: (id: string) => Promise<{ ok: boolean; message: string }>;
   };
 };

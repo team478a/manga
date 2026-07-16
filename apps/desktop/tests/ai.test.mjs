@@ -1385,7 +1385,13 @@ test("ComfyUI workflow settings can be validated, edited and defaulted", () => {
   try {
     const sourceA = path.join(root, "a.json"),
       sourceB = path.join(root, "b.json");
-    fs.writeFileSync(sourceA, JSON.stringify({ 6: { inputs: { text: "" } } }));
+    fs.writeFileSync(
+      sourceA,
+      JSON.stringify({
+        6: { class_type: "CLIPTextEncode", inputs: { text: "" } },
+        7: { class_type: "VAEDecodeTiled", inputs: { tile_size: 512 } },
+      }),
+    );
     fs.writeFileSync(
       sourceB,
       JSON.stringify({ 10: { inputs: { prompt: "" } } }),
@@ -1394,7 +1400,11 @@ test("ComfyUI workflow settings can be validated, edited and defaulted", () => {
       prompt: { nodeId: "6", input: "text" },
     });
     assert.equal(list[0].isDefault, 1);
-    assert.equal(db.validateComfyWorkflow(list[0].id).ok, true);
+    assert.equal(list[0].optimization.lowSpecVaeReady, true);
+    const validation = db.validateComfyWorkflow(list[0].id);
+    assert.equal(validation.ok, true);
+    assert.equal(validation.optimization.hasTiledVaeDecode, true);
+    assert.equal(validation.optimization.cpuOffloadVerification, "runtime_required");
     const firstId = list[0].id;
     list = db.registerComfyWorkflow("B", sourceB, {
       prompt: { nodeId: "10", input: "prompt" },

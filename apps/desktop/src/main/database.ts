@@ -29,6 +29,7 @@ import {
   type ProjectInput,
 } from "@mangai/shared";
 import {
+  analyzeComfyWorkflowOptimization,
   defaultPromptTemplates,
   generationJobDraftSchema,
   generationQueueSettingsSchema,
@@ -4416,11 +4417,23 @@ export class MangaiDatabase {
     return this.listComfyWorkflows();
   }
   listComfyWorkflows() {
-    return this.db
+    const rows = this.db
       .prepare(
         "select id,name,file_path as filePath,mapping_json as mappingJson,is_default as isDefault,created_at as createdAt,updated_at as updatedAt from comfy_workflows order by is_default desc,name",
       )
-      .all();
+      .all() as Array<Record<string, any>>;
+    return rows.map((row) => {
+      try {
+        return {
+          ...row,
+          optimization: analyzeComfyWorkflowOptimization(
+            this.getComfyWorkflow(row.id).workflow,
+          ),
+        };
+      } catch {
+        return { ...row, optimization: null };
+      }
+    });
   }
   getComfyWorkflow(id: string) {
     const row = this.db
@@ -4475,12 +4488,23 @@ export class MangaiDatabase {
         );
     }
     if (!definition.mapping.prompt) errors.push("Promptマッピングが必要です。");
+    const optimization = analyzeComfyWorkflowOptimization(
+        definition.workflow,
+      ),
+      warnings = [
+        !optimization.hasTiledVaeDecode
+          ? "低スペック向けのVAEDecodeTiledが見つかりません。"
+          : "",
+        "CPUオフロードはworkflow JSONでは確認できません。ComfyUIの起動設定を実環境で確認してください。",
+      ].filter(Boolean);
     return {
       ok: errors.length === 0,
       message: errors.length
         ? errors.join("\n")
         : `${fields.length}項目のマッピングを確認しました。`,
       fields,
+      warnings,
+      optimization,
     };
   }
   deleteComfyWorkflow(id: string) {

@@ -569,6 +569,21 @@ export function GenerationJobs({
           </div>
           {selectedWorkflow && (
             <div className="workflow-tools">
+              <div
+                className={
+                  selectedWorkflow.optimization?.lowSpecVaeReady
+                    ? "notice"
+                    : "error"
+                }
+                role="status"
+              >
+                <b>
+                  {selectedWorkflow.optimization?.lowSpecVaeReady
+                    ? t("generation.lowSpecVaeReady")
+                    : t("generation.lowSpecVaeMissing")}
+                </b>
+                <p>{t("generation.cpuOffloadManualCheck")}</p>
+              </div>
               <p>
                 {t("generation.inputMapping")}:{" "}
                 <code>{selectedWorkflow.mappingJson}</code>

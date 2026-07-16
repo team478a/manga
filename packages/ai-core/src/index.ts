@@ -189,6 +189,49 @@ export const pageBatchImageRequestSchema = z.object({
 export type PageBatchImageRequest = z.infer<
   typeof pageBatchImageRequestSchema
 >;
+export type ComfyWorkflowOptimization = {
+  hasTiledVaeDecode: boolean;
+  hasTiledVaeEncode: boolean;
+  hasStandardVaeDecode: boolean;
+  lowSpecVaeReady: boolean;
+  cpuOffloadVerification: "runtime_required";
+  nodeTypes: string[];
+};
+export function analyzeComfyWorkflowOptimization(
+  workflow: Record<string, unknown>,
+): ComfyWorkflowOptimization {
+  const nodeTypes = Array.from(
+    new Set(
+      Object.values(workflow)
+        .map((node) =>
+          node && typeof node === "object" && "class_type" in node
+            ? String((node as { class_type?: unknown }).class_type ?? "")
+            : "",
+        )
+        .filter(Boolean),
+    ),
+  ).sort();
+  const normalized = nodeTypes.map((value) =>
+    value.toLowerCase().replace(/[^a-z0-9]/g, ""),
+  );
+  const hasTiledVaeDecode = normalized.some((value) =>
+      value.includes("vaedecodetiled"),
+    ),
+    hasTiledVaeEncode = normalized.some((value) =>
+      value.includes("vaeencodetiled"),
+    ),
+    hasStandardVaeDecode = normalized.some(
+      (value) => value.includes("vaedecode") && !value.includes("tiled"),
+    );
+  return {
+    hasTiledVaeDecode,
+    hasTiledVaeEncode,
+    hasStandardVaeDecode,
+    lowSpecVaeReady: hasTiledVaeDecode,
+    cpuOffloadVerification: "runtime_required",
+    nodeTypes,
+  };
+}
 export const chatSessionIdSchema = z.object({ id: z.string().uuid() });
 export const renameChatSchema = z.object({
   id: z.string().uuid(),

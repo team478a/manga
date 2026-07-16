@@ -377,6 +377,11 @@ const ja = {
   "generation.testConnection": "接続テスト",
   "generation.workflowUpdated": "ワークフロー設定を更新しました。",
   "generation.defaultUpdated": "既定ワークフローに設定しました。",
+  "generation.lowSpecVaeReady": "VAEタイル対応を確認しました",
+  "generation.lowSpecVaeMissing":
+    "低スペック向けVAEDecodeTiledが見つかりません",
+  "generation.cpuOffloadManualCheck":
+    "CPUオフロードはworkflowではなくComfyUI起動環境の設定です。8GB以下の端末では--cpu-vae等の実環境確認が必要です。",
   "generation.prompt": "Prompt",
   "generation.negativePrompt": "Negative Prompt",
   "generation.generating": "生成中…",
@@ -848,6 +853,11 @@ const en: Record<TranslationKey, string> = {
   "generation.testConnection": "Test connection",
   "generation.workflowUpdated": "Workflow settings updated.",
   "generation.defaultUpdated": "Default workflow updated.",
+  "generation.lowSpecVaeReady": "Tiled VAE support detected",
+  "generation.lowSpecVaeMissing":
+    "No low-spec VAEDecodeTiled node was found",
+  "generation.cpuOffloadManualCheck":
+    "CPU offload is configured by the ComfyUI runtime, not the workflow. On systems with 8 GB VRAM or less, verify runtime options such as --cpu-vae.",
   "generation.prompt": "Prompt",
   "generation.negativePrompt": "Negative prompt",
   "generation.generating": "Generating…",

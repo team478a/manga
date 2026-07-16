@@ -11,9 +11,23 @@ import {
   constrainImageDimensions,
   isGenerationQueueWindowOpen,
   minutesUntilGenerationQueueWindow,
+  analyzeComfyWorkflowOptimization,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+test("ComfyUI workflow optimization detects tiled VAE without inferring runtime offload", () => {
+  const report = analyzeComfyWorkflowOptimization({
+    1: { class_type: "VAEDecode", inputs: {} },
+    2: { class_type: "VAE Decode (Tiled)", inputs: {} },
+    3: { class_type: "VAEEncodeTiled", inputs: {} },
+  });
+  assert.equal(report.hasTiledVaeDecode, true);
+  assert.equal(report.hasTiledVaeEncode, true);
+  assert.equal(report.hasStandardVaeDecode, true);
+  assert.equal(report.lowSpecVaeReady, true);
+  assert.equal(report.cpuOffloadVerification, "runtime_required");
+});
 
 test("runtime profile recommendation fails closed for missing GPU details", () => {
   assert.equal(

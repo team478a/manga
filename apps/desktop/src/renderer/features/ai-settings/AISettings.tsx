@@ -85,6 +85,21 @@ async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
           ? `${workflows.length}件は有効ですが、既定ワークフローがありません。`
           : `${workflows.length}件のマッピングが有効です。既定: ${defaultWorkflow.name}`,
     });
+    if (defaultWorkflow) {
+      const defaultResult = results.find(
+        (item) => item.workflow.id === defaultWorkflow.id,
+      )?.result;
+      report({
+        id: "comfyui-low-spec",
+        label: "低スペック向けワークフロー",
+        level: defaultResult?.optimization.lowSpecVaeReady
+          ? "success"
+          : "warning",
+        message: defaultResult?.optimization.lowSpecVaeReady
+          ? "既定ワークフローにVAEDecodeTiledがあります。CPUオフロードはComfyUI起動設定を実環境で確認してください。"
+          : "既定ワークフローにVAEDecodeTiledがありません。8GB以下向けにはタイルVAE版を登録してください。",
+      });
+    }
   } catch (cause) {
     report({
       id: "comfyui-workflow",
