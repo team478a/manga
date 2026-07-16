@@ -410,6 +410,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           <label>
             {t("settings.language")}
             <select
+              data-a11y-field="locale"
               value={locale}
               onChange={(event) =>
                 setLocale(event.target.value === "en" ? "en" : "ja")

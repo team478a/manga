@@ -10,6 +10,7 @@ import type {
   ExportHistoryItem,
   ExportProgress,
 } from "../../../preload/api";
+import { useI18n } from "../../i18n";
 
 export type ExportResult = {
   outputDir: string;
@@ -39,6 +40,7 @@ export function ExportDialog({
   onClose: () => void;
   history: ExportHistoryItem[];
 }) {
+  const { t, formatDateTime } = useI18n();
   const backdropRef = React.useRef<HTMLDivElement>(null),
     dialogRef = React.useRef<HTMLElement>(null),
     running = Boolean(progress),
@@ -140,19 +142,19 @@ export function ExportDialog({
             <small>MANGAI EXPORT</small>
             <h2 id="export-dialog-title">
               {running
-                ? "書き出し中"
+                ? t("export.runningTitle")
                 : result
-                  ? "書き出し完了"
+                  ? t("export.completeTitle")
                   : error
-                    ? "書き出しを完了できませんでした"
-                    : "作品を書き出す"}
+                    ? t("export.failedTitle")
+                    : t("export.title")}
             </h2>
           </div>
           {!running && (
             <button
               className="secondary"
               data-a11y-action="close-export"
-              aria-label="閉じる"
+              aria-label={t("export.close")}
               onClick={onClose}
             >
               ×
@@ -164,8 +166,12 @@ export function ExportDialog({
             <Download size={36} aria-hidden="true" />
             <strong>
               {progress?.status === "packaging"
-                ? "PDF・ZIP・販売パッケージを作成中"
-                : `Page ${progress?.pageNumber ?? progress?.current} / ${progress?.total} を描画中`}
+                  ? t("export.packaging")
+                  : t("export.rendering", {
+                    current:
+                      progress?.pageNumber ?? progress?.current ?? 0,
+                    total: progress?.total ?? 0,
+                  })}
             </strong>
             <progress max="100" value={progress?.percent ?? 0} />
             <span>{progress?.percent ?? 0}%</span>
@@ -173,11 +179,11 @@ export function ExportDialog({
         ) : result ? (
           <div className="export-dialog-state success">
             <CheckCircle2 size={40} aria-hidden="true" />
-            <strong>{projectTitle}を書き出しました。</strong>
+            <strong>{t("export.complete", { project: projectTitle })}</strong>
             <p className="export-output-path">{result.outputDir}</p>
             {result.warnings.length > 0 && (
               <div className="export-warnings">
-                <b>確認事項</b>
+                <b>{t("export.warnings")}</b>
                 {result.warnings.map((warning) => (
                   <p key={warning}>{warning}</p>
                 ))}
@@ -188,54 +194,57 @@ export function ExportDialog({
           <div className="export-dialog-state danger-state">
             <XCircle size={40} aria-hidden="true" />
             <strong>{error}</strong>
-            <p>
-              Projectデータは変更されていません。内容を確認して再実行できます。
-            </p>
+            <p>{t("export.unchanged")}</p>
           </div>
         ) : (
           <div className="export-dialog-content">
             <p>
-              <b>{projectTitle}</b> の {pageCount}ページを書き出します。
+              {t("export.summary", {
+                project: projectTitle,
+                count: pageCount,
+              })}
             </p>
             {pageCount === 0 && (
               <p className="export-empty-warning">
-                書き出すPageがありません。先にPageを追加してください。
+                {t("export.empty")}
               </p>
             )}
             <div className="export-format-list">
               <article>
                 <FileText size={22} aria-hidden="true" />
                 <div>
-                  <b>印刷・閲覧用PDF</b>
-                  <small>DPI設定に基づく全ページPDF</small>
+                  <b>{t("export.pdfTitle")}</b>
+                  <small>{t("export.pdfDescription")}</small>
                 </div>
               </article>
               <article>
                 <FileArchive size={22} aria-hidden="true" />
                 <div>
-                  <b>連番画像ZIP</b>
-                  <small>合成済みPNGとmanifest</small>
+                  <b>{t("export.zipTitle")}</b>
+                  <small>{t("export.zipDescription")}</small>
                 </div>
               </article>
               <article>
                 <FileArchive size={22} aria-hidden="true" />
                 <div>
-                  <b>MANGAI販売パッケージ</b>
-                  <small>Hub取り込み用の作品・商品データ</small>
+                  <b>{t("export.packageTitle")}</b>
+                  <small>{t("export.packageDescription")}</small>
                 </div>
               </article>
             </div>
             <div className="export-warnings">
-              <b>最近の書き出し</b>
+              <b>{t("export.recent")}</b>
               {!history.length ? (
-                <p>まだ書き出し履歴はありません。</p>
+                <p>{t("export.noHistory")}</p>
               ) : (
                 history.slice(0, 3).map((item) => (
                   <p key={item.id}>
-                    {new Date(item.createdAt).toLocaleString("ja-JP")}・
-                    {item.files.length}ファイル
+                    {formatDateTime(item.createdAt)}・
+                    {t("export.historyFiles", { count: item.files.length })}
                     {item.warnings.length
-                      ? `・確認事項${item.warnings.length}件`
+                      ? `・${t("export.historyWarnings", {
+                          count: item.warnings.length,
+                        })}`
                       : ""}
                     <br />
                     <small>{item.outputDir}</small>
@@ -248,17 +257,17 @@ export function ExportDialog({
         <footer>
           {running ? (
             <button className="danger" onClick={onCancel}>
-              書き出しをキャンセル
+              {t("export.cancel")}
             </button>
           ) : result ? (
-            <button onClick={onClose}>完了</button>
+            <button onClick={onClose}>{t("export.done")}</button>
           ) : (
             <>
               <button className="secondary" onClick={onClose}>
-                閉じる
+                {t("export.close")}
               </button>
               <button disabled={pageCount === 0} onClick={onStart}>
-                {error ? "再実行" : "書き出し開始"}
+                {error ? t("export.retry") : t("export.start")}
               </button>
             </>
           )}

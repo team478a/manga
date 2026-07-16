@@ -13,6 +13,7 @@ const temporaryRoot = fs.mkdtempSync(
   path.join(os.tmpdir(), "mangai-accessibility-"),
 );
 const documents = path.join(temporaryRoot, "Documents");
+const userData = path.join(temporaryRoot, "UserData");
 const reportPath =
   process.env.MANGAI_A11Y_REPORT ??
   path.join(temporaryRoot, "accessibility-home.json");
@@ -20,6 +21,7 @@ const axePath = require.resolve("axe-core/axe.min.js");
 const env = {
   ...process.env,
   MANGAI_SMOKE_DOCUMENTS: documents,
+  MANGAI_TEST_USER_DATA: userData,
   MANGAI_AXE_PATH: axePath,
   MANGAI_A11Y_REPORT: path.resolve(reportPath),
 };
@@ -60,6 +62,7 @@ try {
     process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
   }
   if (result.status !== 0) {
+    if (result.error) process.stderr.write(`${result.error.stack}\n`);
     if (result.stdout) process.stderr.write(result.stdout);
     if (result.stderr) process.stderr.write(result.stderr);
     process.exitCode = result.status ?? 1;

@@ -37,6 +37,7 @@ export function GlobalNav({
     <nav className="global-nav" aria-label={t("nav.main")}>
       <button
         className="global-nav-brand"
+        data-a11y-action="open-projects"
         title={t("nav.projects")}
         aria-label={t("nav.projects")}
         onClick={onProjects}

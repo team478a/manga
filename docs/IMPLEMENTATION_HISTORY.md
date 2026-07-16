@@ -880,3 +880,13 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-c
 書き出しダイアログの初回監査では、小見出しのアクセント色が暗い背景に対して2.9:1だったため、背景button用ではなく明色のアクセント文字tokenへ変更しました。また、ダイアログ表示中の背面workspaceへ`inert`と`aria-hidden`を設定し、スクリーンリーダーとkeyboardが背面操作へ移動しないようにしました。終了時は既存属性を復元します。
 
 9画面・状態は合計195項目合格、自動判定の違反0件です。編集workspaceの装飾表示に関する判定保留3件は継続して手動確認対象です。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。
+
+## 106. 英語locale監査・書き出しダイアログ英語化
+
+axe監査を日本語9画面・状態に加えて、設定からEnglishへ切り替えた後の設定、Hub、Hub URLエラー、画像生成、Creator Chat、編集workspace、書き出しダイアログ、Home、新規Projectダイアログへ拡張しました。HTMLの`lang="en"`への更新を待ってから評価し、表示言語切替を含む実操作経路を検証します。
+
+書き出しダイアログの固定日本語を日英辞書へ移行しました。開始前、実行中、完了、失敗、PDF・ZIP・販売パッケージ説明、履歴、警告、再実行・キャンセル操作がlocaleへ連動し、履歴日時も共通locale formatterを使用します。
+
+自動監査ではDocumentsに加えてElectronのuserDataも一時フォルダーへ隔離し、実利用中のlocalStorage、表示言語、Chromium設定へ影響しないようにしました。隔離環境でtimerが抑制されないよう、自動rendererテスト時だけ`backgroundThrottling`を無効にしています。Windows installer smoke testにも同じuserData隔離を適用しました。
+
+日本語・英語の18画面・状態は合計392項目合格、自動判定の違反0件です。編集workspaceの同じ装飾3要素が両localeで判定保留となるため、実質3要素をNarrator・目視確認へ引き継ぎます。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。

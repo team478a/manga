@@ -129,12 +129,17 @@ try {
       failures.push("インストール後の実行ファイルが不正です。");
     } else {
       const smokeDocuments = path.join(temporaryRoot, "Documents");
+      const smokeUserData = path.join(temporaryRoot, "UserData");
       const smoke = spawnSync(
         executablePath,
         ["--mangai-smoke-test", "--disable-gpu"],
         {
           encoding: "utf8",
-          env: { ...process.env, MANGAI_SMOKE_DOCUMENTS: smokeDocuments },
+          env: {
+            ...process.env,
+            MANGAI_SMOKE_DOCUMENTS: smokeDocuments,
+            MANGAI_TEST_USER_DATA: smokeUserData,
+          },
           timeout: 60_000,
           windowsHide: true,
         },

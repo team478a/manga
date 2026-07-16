@@ -85,8 +85,13 @@ if (automatedRendererTest) {
   const smokeDocuments = process.env.MANGAI_SMOKE_DOCUMENTS;
   if (!smokeDocuments || !path.isAbsolute(smokeDocuments))
     throw new Error("Automated renderer test documents path is required.");
+  const testUserData = process.env.MANGAI_TEST_USER_DATA;
+  if (!testUserData || !path.isAbsolute(testUserData))
+    throw new Error("Automated renderer test user data path is required.");
   fs.mkdirSync(smokeDocuments, { recursive: true });
+  fs.mkdirSync(testUserData, { recursive: true });
   app.setPath("documents", smokeDocuments);
+  app.setPath("userData", testUserData);
 }
 let store: MangaiDatabase;
 let aiService: AIService;
@@ -760,6 +765,7 @@ async function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
+      backgroundThrottling: !automatedRendererTest,
     },
   });
   const dev = process.env.VITE_DEV_SERVER_URL;
@@ -915,6 +921,19 @@ app
               };
               check();
             });
+          const waitForMissing = (selector) =>
+            new Promise((resolve, reject) => {
+              const deadline = Date.now() + 10000;
+              const check = () => {
+                if (!document.querySelector(selector)) return resolve(true);
+                if (Date.now() >= deadline)
+                  return reject(
+                    new Error("Timed out waiting to remove " + selector),
+                  );
+                setTimeout(check, 50);
+              };
+              check();
+            });
           const settle = () =>
             new Promise((resolve) =>
               requestAnimationFrame(() =>
@@ -947,6 +966,10 @@ app
             HTMLInputElement.prototype,
             "value",
           ).set;
+          const selectValueSetter = Object.getOwnPropertyDescriptor(
+            HTMLSelectElement.prototype,
+            "value",
+          ).set;
           valueSetter.call(title, "Accessibility Test Project");
           title.dispatchEvent(new Event("input", { bubbles: true }));
           document.querySelector('form[role="dialog"]').requestSubmit();
@@ -956,6 +979,7 @@ app
           await waitFor('.export-dialog[role="dialog"]');
           screens.push(await audit("export-dialog"));
           document.querySelector('[data-a11y-action="close-export"]').click();
+          await waitForMissing('.export-dialog[role="dialog"]');
           await waitFor('[data-workspace-view="editor"][aria-current="page"]');
           for (const view of ["chat", "jobs", "hub"]) {
             document.querySelector(
@@ -979,6 +1003,48 @@ app
             '[data-workspace-view="settings"][aria-current="page"]',
           );
           screens.push(await audit("settings"));
+          const localeSelect = await waitFor('[data-a11y-field="locale"]');
+          selectValueSetter.call(localeSelect, "en");
+          localeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+          await waitFor('html[lang="en"]');
+          screens.push(await audit("settings-en"));
+          document
+            .querySelector('[data-workspace-view="hub"]')
+            .click();
+          await waitFor(
+            '[data-workspace-view="hub"][aria-current="page"]',
+          );
+          screens.push(await audit("hub-en"));
+          const englishHubUrl = await waitFor(
+            '[data-a11y-field="hub-url"]',
+          );
+          valueSetter.call(englishHubUrl, "http://example.com");
+          englishHubUrl.dispatchEvent(new Event("input", { bubbles: true }));
+          document.querySelector('[data-a11y-action="check-hub"]').click();
+          await waitFor('[role="alert"]');
+          screens.push(await audit("hub-error-en"));
+          for (const view of ["jobs", "chat", "editor"]) {
+            document.querySelector(
+              '[data-workspace-view="' + view + '"]',
+            ).click();
+            await waitFor(
+              '[data-workspace-view="' + view + '"][aria-current="page"]',
+            );
+            screens.push(await audit(view + "-en"));
+          }
+          document.querySelector('[data-a11y-action="open-export"]').click();
+          await waitFor('.export-dialog[role="dialog"]');
+          screens.push(await audit("export-dialog-en"));
+          document.querySelector('[data-a11y-action="close-export"]').click();
+          await waitForMissing('.export-dialog[role="dialog"]');
+          document.querySelector('[data-a11y-action="open-projects"]').click();
+          await waitFor('[data-a11y-action="new-project"]');
+          screens.push(await audit("home-en"));
+          document
+            .querySelector('[data-a11y-action="new-project"]')
+            .click();
+          await waitFor('[data-a11y-field="project-title"]');
+          screens.push(await audit("new-project-dialog-en"));
           return {
             checkedAt: new Date().toISOString(),
             screens,
