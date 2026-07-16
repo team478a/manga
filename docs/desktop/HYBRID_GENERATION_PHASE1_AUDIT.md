@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `567634c`
+実装基準コミット: `f9352b9`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -469,6 +469,7 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 - 起動時に中断された画像Jobを`RECOVERED_AFTER_RESTART`付きで待機列へ復元
 - 中断されたCreator Chatは再送せず、従来どおり`INTERRUPTED`で失敗確定
 - アプリ起動時とGPUリソース解放時にQueue処理を自動再開
+- 待機Jobのバックグラウンド完了を生成画面で監視し、Project Bundleと新規素材を自動反映
 - 既存の同期的な生成成功レスポンスを維持し、待機へ入った場合だけ即座に`queued`を返す
 - Queue待機・一時停止・優先度・順次実行・再オープン復元の統合テスト
 

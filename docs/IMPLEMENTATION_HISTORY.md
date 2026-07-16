@@ -767,4 +767,4 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト55/55、canv
 
 アプリ終了時に実行中だった画像Jobは、次回DBオープン時に`RECOVERED_AFTER_RESTART`付きの待機状態へ戻し、AIService初期化後に自動再開します。Creator Chatは応答途中から安全に復元できないため、従来どおり`INTERRUPTED`で失敗確定します。
 
-Desktop TypeScript、ESLint、本番renderer build、統合テスト56/56、canvas-core 25/25、ai-core 21/21に成功しています。Queueの順次実行、一時停止・再開・priority、キャンセル、SQLite再オープン復元を統合テストで確認しました。夜間一括、Page batch、自動再試行上限は次工程です。
+Desktop TypeScript、ESLint、本番renderer build、統合テスト56/56、canvas-core 25/25、ai-core 21/21に成功しています。Queueの順次実行、一時停止・再開・priority、キャンセル、SQLite再オープン復元を統合テストで確認しました。生成画面は待機Jobの完了を監視し、新しい素材を現在のProject Bundleへ自動反映します。夜間一括、Page batch、自動再試行上限は次工程です。
