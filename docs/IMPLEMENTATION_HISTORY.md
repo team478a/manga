@@ -808,3 +808,11 @@ ComfyUI公式APIからversion、GPU、VRAM、タイルVAEノード、CPU VAE起�
 接続確認には`/system_stats`と`/object_info/VAEDecodeTiled`を利用し、既存のURL制限、redirect拒否、timeoutを維持します。HTTP mockで8GB GPU、`--cpu-vae`、`--lowvram`、`--reserve-vram`とタイルVAEノードの解析を確認しました。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。開発PCではComfyUIプロセスと一般的な配置フォルダーが見つからなかったため、実モデルによる画像生成E2Eは引き続き外部環境待ちです。
+
+## 97. AI接続診断の英語化・ARIA改善
+
+設定画面のAI接続診断を日英辞書へ移行しました。Ollama・ComfyUI接続、workflowマッピング、低スペックworkflow、ComfyUIのGPU・VRAM・起動設定、Ollamaモデル準備状態、最終診断日時が選択localeへ連動します。Runtime Profileの選択肢も英語表示へ対応しました。
+
+診断sectionを見出しへ関連付け、処理中は`aria-busy`を設定し、実行buttonを説明文へ関連付けました。既存の`aria-live="polite"`による結果通知を維持しています。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。設定画面の診断データ・Provider詳細・テンプレートとHub画面の辞書移行、axe・Narrator評価は次工程です。

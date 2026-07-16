@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-16
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `3e1b267`
+実装基準コミット: `93f1537`
 
 ## 1. 現在地
 
@@ -58,6 +58,8 @@ Runtime ProfileをComfyUI送信へ接続し、profile上限を超える解像度
 登録済みComfyUI workflowから`VAEDecodeTiled`を検出し、生成画面とAI一括診断へ低スペック適合状態を表示します。CPUオフロードはworkflow JSONではなくComfyUI起動環境の設定として分離し、実環境確認が必要であることを明示します。
 
 AI一括診断は接続中ComfyUIからversion、GPU、VRAM、タイルVAEノード、`--cpu-vae`、VRAM mode、予約VRAMを取得できます。開発PCではComfyUIが未検出のため、実画像生成E2Eは保留です。
+
+設定画面のAI接続診断を日英辞書へ移行しました。接続状態、workflow、低スペック適合、ComfyUI実行環境、Ollamaモデル、診断日時がlocaleへ連動し、診断領域には見出し参照、`aria-busy`、説明参照を設定しています。
 
 ## 2. 製品境界
 
@@ -257,7 +259,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 ### 機能上の制限
 
 - 素材削除とAI生成素材追加は実ファイルを含む永続Undo/Redoに対応済み。書き出しとAI設定は監査履歴に分離済み
-- 漫画編集workspace、Creator Chat、画像生成の英語表示は対応済み。Hub、設定詳細、main process messageの辞書移行とWCAG評価は未完了
+- 漫画編集workspace、Creator Chat、画像生成、AI接続診断の英語表示は対応済み。Hub、設定残画面、main process messageの辞書移行とWCAG評価は未完了
 - 別ドライブのカスタム保存先は同じドライブの`.mangai-trash`へ退避（実DドライブE2E済み）
 - 販売パッケージ経由の下書き作成、公開情報の匿名照会、認証済み端末からの非公開下書き照会を実装済み。Desktopからの更新操作は未実装
 - 手動・自動Projectバックアップ、履歴込み復元、DB破損時リカバリー、ローカル構造化ログ、同意制の詳細クラッシュレポート、別同意の手動送信clientを実装済み。外部受付APIと運用方針は未設定
