@@ -113,14 +113,31 @@ export function GenerationJobs({
     [safeAssetUrls, setSafeAssetUrls] = React.useState<Record<string, string>>(
       {},
     );
-  const load = () =>
-    Promise.all([
-      window.mangai.ai.listJobs(bundle.project.id).then(setJobs),
-      window.mangai.ai.listRouteDecisions(bundle.project.id).then(setRoutes),
-      window.mangai.ai.listWorkflows().then(setWorkflows),
+  const completedImageCount = React.useRef<number | null>(null);
+  const load = async () => {
+    const [nextJobs, nextRoutes, nextWorkflows] = await Promise.all([
+      window.mangai.ai.listJobs(bundle.project.id),
+      window.mangai.ai.listRouteDecisions(bundle.project.id),
+      window.mangai.ai.listWorkflows(),
     ]);
+    setJobs(nextJobs);
+    setRoutes(nextRoutes);
+    setWorkflows(nextWorkflows);
+    const nextCompletedCount = nextJobs.filter(
+      (job: any) =>
+        job.generationType === "image" && job.status === "completed",
+    ).length;
+    if (
+      completedImageCount.current !== null &&
+      nextCompletedCount > completedImageCount.current
+    )
+      onBundle(await window.mangai.openProject(bundle.project.id));
+    completedImageCount.current = nextCompletedCount;
+  };
   React.useEffect(() => {
     void load();
+    const timer = window.setInterval(() => void load(), 1500);
+    return () => window.clearInterval(timer);
   }, []);
   const generate = async () => {
     if (!workflowId || !promptText.trim()) return;
