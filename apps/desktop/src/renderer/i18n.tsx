@@ -606,6 +606,34 @@ const ja = {
   "settings.provider.field.stream": "ストリーミング",
   "settings.provider.field.pollIntervalMs": "ポーリング間隔",
   "settings.provider.field.allowedOrigins": "許可origin",
+  "settings.templates.title": "プロンプトテンプレート",
+  "settings.templates.description":
+    "初期テンプレートを複製するか、Creator Chat用テンプレートを追加・編集できます。",
+  "settings.templates.name": "名前",
+  "settings.templates.body": "テンプレート",
+  "settings.templates.systemPrompt": "システムプロンプト（任意）",
+  "settings.templates.saveChanges": "変更を保存",
+  "settings.templates.add": "追加",
+  "settings.templates.cancelEdit": "編集をキャンセル",
+  "settings.templates.builtin": "（初期）",
+  "settings.templates.systemLabel": "システム:",
+  "settings.templates.duplicate": "複製",
+  "settings.templates.edit": "編集",
+  "settings.templates.delete": "削除",
+  "settings.templates.deleteConfirm": "「{name}」を削除しますか？",
+  "settings.templates.copyName": "{name} のコピー",
+  "updater.channel": "更新チャンネル",
+  "updater.channelHelp":
+    "Stableは正式版のみ、Betaは正式公開前の更新も受け取ります。",
+  "updater.applyConfirm":
+    "MANGAI Desktopを再起動して更新を適用しますか？",
+  "updater.checking": "更新確認中…",
+  "updater.download": "v{version}を取得",
+  "updater.downloading": "更新 {percent}%",
+  "updater.restart": "再起動して更新",
+  "updater.check": "更新確認",
+  "updater.channelSaveFailed": "更新チャンネルを保存できませんでした。",
+  "updater.currentVersion": "現在: v{version}",
 } as const;
 
 type TranslationKey = keyof typeof ja;
@@ -1227,6 +1255,34 @@ const en: Record<TranslationKey, string> = {
   "settings.provider.field.stream": "Streaming",
   "settings.provider.field.pollIntervalMs": "Polling interval",
   "settings.provider.field.allowedOrigins": "Allowed origins",
+  "settings.templates.title": "Prompt templates",
+  "settings.templates.description":
+    "Duplicate a built-in template or add and edit templates for Creator Chat.",
+  "settings.templates.name": "Name",
+  "settings.templates.body": "Template",
+  "settings.templates.systemPrompt": "System prompt (optional)",
+  "settings.templates.saveChanges": "Save changes",
+  "settings.templates.add": "Add",
+  "settings.templates.cancelEdit": "Cancel editing",
+  "settings.templates.builtin": "(built-in)",
+  "settings.templates.systemLabel": "System:",
+  "settings.templates.duplicate": "Duplicate",
+  "settings.templates.edit": "Edit",
+  "settings.templates.delete": "Delete",
+  "settings.templates.deleteConfirm": "Delete “{name}”?",
+  "settings.templates.copyName": "Copy of {name}",
+  "updater.channel": "Update channel",
+  "updater.channelHelp":
+    "Stable receives official releases only. Beta may receive updates before their official release.",
+  "updater.applyConfirm":
+    "Restart MANGAI Desktop and apply the update?",
+  "updater.checking": "Checking for updates…",
+  "updater.download": "Download v{version}",
+  "updater.downloading": "Updating {percent}%",
+  "updater.restart": "Restart and update",
+  "updater.check": "Check for updates",
+  "updater.channelSaveFailed": "Could not save the update channel.",
+  "updater.currentVersion": "Current: v{version}",
 };
 
 type I18nContextValue = {

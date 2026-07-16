@@ -1,14 +1,16 @@
 import React from "react";
 import type { UpdateState } from "../../../preload/api";
+import { useI18n } from "../../i18n";
 
 const initialState: UpdateState = {
   status: "disabled",
   currentVersion: "",
   channel: "stable",
-  message: "更新状態を確認しています。",
+  message: "",
 };
 
 export function UpdateControl() {
+  const { t } = useI18n();
   const [state, setState] = React.useState(initialState);
 
   React.useEffect(() => {
@@ -22,7 +24,7 @@ export function UpdateControl() {
       return;
     }
     if (state.status === "downloaded") {
-      if (confirm("MANGAI Desktopを再起動して更新を適用しますか？"))
+      if (confirm(t("updater.applyConfirm")))
         await window.mangai.updater.install();
       return;
     }
@@ -31,14 +33,18 @@ export function UpdateControl() {
 
   const label =
     state.status === "checking"
-      ? "更新確認中…"
+      ? t("updater.checking")
       : state.status === "available"
-        ? `v${state.availableVersion}を取得`
+        ? t("updater.download", {
+            version: state.availableVersion ?? "",
+          })
         : state.status === "downloading"
-          ? `更新 ${Math.round(state.percent ?? 0)}%`
+          ? t("updater.downloading", {
+              percent: Math.round(state.percent ?? 0),
+            })
           : state.status === "downloaded"
-            ? "再起動して更新"
-            : "更新確認";
+            ? t("updater.restart")
+            : t("updater.check");
 
   const channelLocked =
     state.status === "checking" ||
@@ -50,16 +56,16 @@ export function UpdateControl() {
       setState(await window.mangai.updater.setChannel(channel));
     } catch {
       setState(await window.mangai.updater.getState());
-      alert("更新チャンネルを保存できませんでした。");
+      alert(t("updater.channelSaveFailed"));
     }
   };
 
   return (
     <span className="update-control">
-      <label title="Stableは正式版のみ、Betaは正式公開前の更新も受け取ります。">
-        <span className="sr-only">更新チャンネル</span>
+      <label title={t("updater.channelHelp")}>
+        <span className="sr-only">{t("updater.channel")}</span>
         <select
-          aria-label="更新チャンネル"
+          aria-label={t("updater.channel")}
           value={state.channel}
           disabled={channelLocked}
           onChange={(event) =>
@@ -81,7 +87,14 @@ export function UpdateControl() {
           state.status === "checking" ||
           state.status === "downloading"
         }
-        title={`${state.message}${state.currentVersion ? ` 現在: v${state.currentVersion}` : ""}`}
+        title={`${state.status === "error" && state.message ? state.message : label}${
+          state.currentVersion
+            ? ` ${t("updater.currentVersion", {
+                version: state.currentVersion,
+              })}`
+            : ""
+        }`}
+        aria-live="polite"
         onClick={() => void action()}
       >
         {label}

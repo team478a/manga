@@ -390,7 +390,11 @@ export function AISettings({ onClose }: { onClose: () => void }) {
   };
   const fillTemplateForm = (template: PromptTemplate, duplicate: boolean) => {
     setEditingTemplateId(duplicate ? null : template.id);
-    setTemplateName(duplicate ? `${template.name} のコピー` : template.name);
+    setTemplateName(
+      duplicate
+        ? t("settings.templates.copyName", { name: template.name })
+        : template.name,
+    );
     setTemplateBody(template.template);
     setTemplateSystemPrompt(template.systemPrompt);
   };
@@ -925,28 +929,25 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           </section>
         ))}
         <section className="panel-lite">
-          <h2>プロンプトテンプレート</h2>
-          <p>
-            初期テンプレートを複製するか、Creator
-            Chat用テンプレートを追加・編集できます。
-          </p>
+          <h2>{t("settings.templates.title")}</h2>
+          <p>{t("settings.templates.description")}</p>
           <div className="grid">
             <label>
-              名前
+              {t("settings.templates.name")}
               <input
                 value={templateName}
                 onChange={(e) => setTemplateName(e.target.value)}
               />
             </label>
             <label>
-              テンプレート
+              {t("settings.templates.body")}
               <textarea
                 value={templateBody}
                 onChange={(e) => setTemplateBody(e.target.value)}
               />
             </label>
             <label>
-              システムプロンプト（任意）
+              {t("settings.templates.systemPrompt")}
               <textarea
                 value={templateSystemPrompt}
                 onChange={(e) => setTemplateSystemPrompt(e.target.value)}
@@ -968,11 +969,13 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 resetTemplateForm();
               }}
             >
-              {editingTemplateId ? "変更を保存" : "追加"}
+              {editingTemplateId
+                ? t("settings.templates.saveChanges")
+                : t("settings.templates.add")}
             </button>
             {editingTemplateId && (
               <button className="secondary" onClick={resetTemplateForm}>
-                編集をキャンセル
+                {t("settings.templates.cancelEdit")}
               </button>
             )}
           </div>
@@ -981,11 +984,17 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               <article key={template.id}>
                 <div>
                   <b>
-                    {template.name} {template.isBuiltin ? "（初期）" : ""}
+                    {template.name}{" "}
+                    {template.isBuiltin
+                      ? t("settings.templates.builtin")
+                      : ""}
                   </b>
                   <p>{template.template}</p>
                   {template.systemPrompt && (
-                    <p>システム: {template.systemPrompt}</p>
+                    <p>
+                      {t("settings.templates.systemLabel")}{" "}
+                      {template.systemPrompt}
+                    </p>
                   )}
                 </div>
                 <div className="inline">
@@ -993,7 +1002,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     className="secondary"
                     onClick={() => fillTemplateForm(template, true)}
                   >
-                    複製
+                    {t("settings.templates.duplicate")}
                   </button>
                   {!template.isBuiltin && (
                     <>
@@ -1001,11 +1010,19 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                         className="secondary"
                         onClick={() => fillTemplateForm(template, false)}
                       >
-                        編集
+                        {t("settings.templates.edit")}
                       </button>
                       <button
                         className="danger"
                         onClick={async () => {
+                          if (
+                            !confirm(
+                              t("settings.templates.deleteConfirm", {
+                                name: template.name,
+                              }),
+                            )
+                          )
+                            return;
                           setTemplates(
                             await window.mangai.ai.deleteTemplate(template.id),
                           );
@@ -1013,7 +1030,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                             resetTemplateForm();
                         }}
                       >
-                        削除
+                        {t("settings.templates.delete")}
                       </button>
                     </>
                   )}
