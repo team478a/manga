@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-16
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `5257178`
+実装基準コミット: `3e1b267`
 
 ## 1. 現在地
 
@@ -56,6 +56,8 @@ Runtime ProfileをComfyUI送信へ接続し、profile上限を超える解像度
 選択中EpisodeのPrompt入力済みPageをページ順で画像生成Queueへ一括登録できます。空Promptは件数を表示してスキップし、夜間時間帯、自動再試行、一時停止・再開、優先順位、再起動復元を一括Jobにも適用します。
 
 登録済みComfyUI workflowから`VAEDecodeTiled`を検出し、生成画面とAI一括診断へ低スペック適合状態を表示します。CPUオフロードはworkflow JSONではなくComfyUI起動環境の設定として分離し、実環境確認が必要であることを明示します。
+
+AI一括診断は接続中ComfyUIからversion、GPU、VRAM、タイルVAEノード、`--cpu-vae`、VRAM mode、予約VRAMを取得できます。開発PCではComfyUIが未検出のため、実画像生成E2Eは保留です。
 
 ## 2. 製品境界
 
@@ -226,7 +228,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 57/57成功                     |
+| Desktop統合テスト                       | 58/58成功                     |
 | ai-core Router・外部送信・Runtimeテスト | 23/23成功                     |
 | canvas-core単体テスト                   | 25/25成功                     |
 | NSIS x64生成                            | 成功                          |

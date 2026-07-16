@@ -37,6 +37,7 @@
 - 夜間Queueの開始・終了時刻を端末へ保存し、時間外のJobを通信せず待機させて開始時刻に自動実行できます。
 - 選択中EpisodeのPrompt入力済みPageをページ順で一括Queue登録できます。空Promptはスキップし、夜間設定・再試行・再起動復元を共通利用します。
 - 登録済みComfyUI workflowの`VAEDecodeTiled`を検出し、生成画面とAI診断へ低スペック適合状態を表示します。CPU offloadはComfyUI起動環境での確認事項として分離します。
+- 接続中ComfyUIのversion、GPU、VRAM、タイルVAEノード、`--cpu-vae`、VRAM mode、予約VRAMをAI一括診断で確認できます。
 - 作品別外部送信ポリシーを安全な既定値でSQLiteへ保存し、再起動、Project複製、バックアップ・復元で維持します。
 - ComfyUI生成の前にroute判定を保存し、loopbackのローカルComfyUIだけを実行します。remote接続は送信前に拒否し、生成履歴へ判定先・Sensitivity・理由を表示します。Prompt本文と画像はroute履歴へ保存しません。
 - Project素材を背景・小物・効果・人物・その他へ分類し、タグ、形式、お気に入りで絞り込み、使用数を確認してCanvasへ再利用できます。分類情報は複製・バックアップ・Undoで維持します。

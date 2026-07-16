@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `5257178`
+実装基準コミット: `3e1b267`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -528,11 +528,22 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 
 標準ComfyUIでは`--cpu-vae`、Dynamic VRAM、`--lowvram`等は起動環境の設定です。MANGAIはJSONから有効状態を断定しません。実機完了条件は、利用者環境のモデルを含むタイルVAE workflowとComfyUI起動設定を組み合わせた8GB端末E2Eです。
 
+### Commit 22: ComfyUI低スペック実行環境診断（完了: `3e1b267`）
+
+- ComfyUI公式`/system_stats`からversion、GPU、VRAM、起動引数を取得
+- 取得した起動引数はrendererへそのまま渡さず、`--cpu-vae`、VRAM mode、`--reserve-vram`だけを構造化
+- `/object_info/VAEDecodeTiled`で接続先ComfyUIのタイルVAEノード可用性を確認
+- GPU、タイルVAE、CPU VAE起動設定をAI一括診断へ表示
+- Provider無効・未起動・HTTP失敗を既存の接続制限とtimeoutで安全に通知
+- HTTP mockで8GB GPU、タイルVAE、`--cpu-vae`、`--lowvram`、予約VRAMの解析を検証
+
+2026-07-16時点で開発PC上に起動中ComfyUIと一般的な配置フォルダーは検出できなかったため、実画像生成E2Eは未実施です。ComfyUI起動後は設定画面のAI一括診断から前提条件を確認できます。
+
 ## 11. テスト基準
 
 2026-07-16の確認時点:
 
-- Desktop統合テスト: 57/57成功
+- Desktop統合テスト: 58/58成功
 - ai-core Router・外部送信契約・Runtime Profile単体テスト: 23/23成功
 - canvas-core単体テスト: 25/25成功
 

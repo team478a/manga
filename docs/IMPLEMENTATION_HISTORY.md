@@ -800,3 +800,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト57/57、ai-c
 CPUオフロードはworkflowノードではなくComfyUIの起動引数・Dynamic VRAM設定に依存するため、JSONから有効と推測しません。画面では実環境確認が必要であることを明示し、既存workflowの自動書き換えや強制無効化は行いません。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト57/57、ai-core 23/23に成功しています。タイルVAE検出とCPUオフロードの実環境分離を単体・統合テストで確認しました。残る完了条件は、実モデル用workflowとComfyUI起動設定を用いた8GB端末E2Eです。
+
+## 96. ComfyUI低スペック実行環境診断
+
+ComfyUI公式APIからversion、GPU、VRAM、タイルVAEノード、CPU VAE起動設定、VRAM mode、予約VRAMを取得する実環境診断を追加しました。起動引数全体はrendererへ渡さず、低スペック判断に必要な項目だけを構造化してAI一括診断へ表示します。
+
+接続確認には`/system_stats`と`/object_info/VAEDecodeTiled`を利用し、既存のURL制限、redirect拒否、timeoutを維持します。HTTP mockで8GB GPU、`--cpu-vae`、`--lowvram`、`--reserve-vram`とタイルVAEノードの解析を確認しました。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。開発PCではComfyUIプロセスと一般的な配置フォルダーが見つからなかったため、実モデルによる画像生成E2Eは引き続き外部環境待ちです。
