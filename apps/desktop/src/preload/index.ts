@@ -160,6 +160,10 @@ contextBridge.exposeInMainWorld("mangai", {
     },
     listJobs: (projectId?: string) =>
       ipcRenderer.invoke("ai:jobs:list", { projectId }),
+    pauseJob: (id: string) => ipcRenderer.invoke("ai:jobs:pause", { id }),
+    resumeJob: (id: string) => ipcRenderer.invoke("ai:jobs:resume", { id }),
+    changeJobPriority: (id: string, delta: -1 | 1) =>
+      ipcRenderer.invoke("ai:jobs:priority", { id, delta }),
     listRouteDecisions: (projectId: string) =>
       ipcRenderer.invoke("ai:routes:list", { id: projectId }),
     resolveSafeAssetLibrary: (value: unknown) =>

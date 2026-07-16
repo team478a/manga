@@ -433,6 +433,13 @@ export class MangaiDatabase {
       this.db.exec(
         "alter table generation_jobs add column progress real not null default 0",
       );
+    if (!jobColumns.some((column) => column.name === "priority"))
+      this.db.exec(
+        "alter table generation_jobs add column priority integer not null default 0",
+      );
+    this.db.exec(
+      "create index if not exists idx_generation_jobs_queue on generation_jobs(status,provider_type,priority desc,created_at)",
+    );
     this.migrateCanvasV1();
     this.migrateRelativeTextV1();
     this.migratePanelShapeV1();
@@ -450,6 +457,11 @@ export class MangaiDatabase {
       if (!hasTemplate.get(name))
         insertTemplate.run(uid(), name, template, "", 1, now(), now());
     }
+    this.db
+      .prepare(
+        "update generation_jobs set status='queued',progress=0,provider_job_id=null,error_code='RECOVERED_AFTER_RESTART',error_message='アプリ再起動後の待機列へ戻しました。',started_at=null,completed_at=null where status='running' and generation_type='image'",
+      )
+      .run();
     this.db
       .prepare(
         "update generation_jobs set status='failed',error_code='INTERRUPTED',error_message='アプリ終了により生成が中断されました。',completed_at=? where status='running'",
@@ -1760,6 +1772,7 @@ export class MangaiDatabase {
         }
         const validGenerationStatuses = [
           "queued",
+          "paused",
           "running",
           "completed",
           "failed",
@@ -4088,7 +4101,7 @@ export class MangaiDatabase {
   }
   listGenerationJobs(projectId?: string) {
     const sql =
-      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
+      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,priority,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
     return projectId
       ? this.db
           .prepare(`${sql} where project_id=? order by created_at desc`)
@@ -4099,6 +4112,33 @@ export class MangaiDatabase {
     return this.db
       .prepare("select * from generation_jobs where id=?")
       .get(id) as Record<string, unknown> | undefined;
+  }
+  nextQueuedImageJob() {
+    return this.db
+      .prepare(
+        `select id,input_json as inputJson from generation_jobs
+         where status='queued' and generation_type='image'
+         order by priority desc,created_at,id limit 1`,
+      )
+      .get() as { id: string; inputJson: string } | undefined;
+  }
+  setGenerationJobStatus(id: string, status: GenerationStatus) {
+    const job = this.db
+      .prepare("select status,generation_type as generationType from generation_jobs where id=?")
+      .get(id) as { status: string; generationType: string } | undefined;
+    if (!job || job.generationType !== "image") return false;
+    this.updateGenerationJob(id, status, {
+      progress: status === "queued" ? 0 : undefined,
+    });
+    return true;
+  }
+  changeGenerationJobPriority(id: string, delta: number) {
+    this.db
+      .prepare(
+        "update generation_jobs set priority=max(-100,min(100,priority+?)) where id=? and status in ('queued','paused') and generation_type='image'",
+      )
+      .run(Math.sign(delta), id);
+    return this.listGenerationJobs();
   }
   createGenerationRouteDecision(input: {
     jobId: string;

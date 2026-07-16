@@ -336,6 +336,9 @@ export type DesktopApi = {
     cancel: (requestId: string) => Promise<boolean>;
     onChatEvent: (listener: (event: ChatEvent) => void) => () => void;
     listJobs: (projectId?: string) => Promise<any[]>;
+    pauseJob: (id: string) => Promise<boolean>;
+    resumeJob: (id: string) => Promise<boolean>;
+    changeJobPriority: (id: string, delta: -1 | 1) => Promise<any[]>;
     listRouteDecisions: (
       projectId: string,
     ) => Promise<GenerationRouteDecisionRecord[]>;

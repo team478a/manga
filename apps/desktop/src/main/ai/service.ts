@@ -33,6 +33,7 @@ export class AIService {
   private controllers = new Map<string, AbortController>();
   private activeLocalImageJobId: string | null = null;
   private activeLocalTextRequests = new Set<string>();
+  private pauseRequested = new Set<string>();
   private allowMock: boolean;
   private getRuntimeProfile?: () => RuntimeProfileState;
   constructor(
@@ -320,7 +321,38 @@ export class AIService {
     return new MockTextProvider();
   }
   cancel(requestId: string) {
-    this.controllers.get(requestId)?.abort();
+    const controller = this.controllers.get(requestId);
+    if (controller) controller.abort();
+    else {
+      const job = this.store.getGenerationJob(requestId);
+      if (job && ["queued", "paused"].includes(String(job.status)))
+        this.store.setGenerationJobStatus(requestId, "canceled");
+    }
+  }
+  pauseImageJob(jobId: string) {
+    const job = this.store.getGenerationJob(jobId);
+    if (!job) return false;
+    if (job.status === "running") {
+      this.pauseRequested.add(jobId);
+      this.controllers.get(jobId)?.abort();
+      return true;
+    }
+    return job.status === "queued"
+      ? this.store.setGenerationJobStatus(jobId, "paused")
+      : false;
+  }
+  resumeImageJob(jobId: string) {
+    const job = this.store.getGenerationJob(jobId);
+    if (!job || job.status !== "paused") return false;
+    const changed = this.store.setGenerationJobStatus(jobId, "queued");
+    if (changed) void this.runNextQueuedImage();
+    return changed;
+  }
+  changeImageJobPriority(jobId: string, delta: number) {
+    return this.store.changeGenerationJobPriority(jobId, delta);
+  }
+  resumeQueuedImages() {
+    void this.runNextQueuedImage();
   }
   async sendChat(
     input: {
@@ -487,9 +519,28 @@ export class AIService {
     } finally {
       this.activeLocalTextRequests.delete(input.requestId);
       this.controllers.delete(input.requestId);
+      void this.runNextQueuedImage();
     }
   }
-  async generateImage(input: ImageJobRequest) {
+  private async runNextQueuedImage() {
+    if (
+      this.activeLocalImageJobId ||
+      (this.getRuntimeProfile?.().limits.exclusiveGpuWork &&
+        this.activeLocalTextRequests.size)
+    )
+      return;
+    const next = this.store.nextQueuedImageJob();
+    if (!next) return;
+    try {
+      await this.generateImage(
+        imageJobRequestSchema.parse(JSON.parse(next.inputJson)),
+        next.id,
+      );
+    } catch {
+      // runImageJob records the durable failure before rejecting.
+    }
+  }
+  async generateImage(input: ImageJobRequest, existingJobId?: string) {
     input = imageJobRequestSchema.parse(input);
     const runtime = this.getRuntimeProfile?.();
     const dimensions = runtime
@@ -504,6 +555,29 @@ export class AIService {
       width: dimensions.width,
       height: dimensions.height,
     };
+    const queuedAhead = !existingJobId && this.store.nextQueuedImageJob();
+    if (
+      this.activeLocalImageJobId ||
+      (runtime?.limits.exclusiveGpuWork && this.activeLocalTextRequests.size) ||
+      queuedAhead
+    ) {
+      const jobId =
+        existingJobId ??
+        this.store.createGenerationJob({
+          projectId: input.projectId,
+          episodeId: input.episodeId,
+          pageId: input.pageId,
+          providerType: "image",
+          providerId: "comfyui",
+          generationType: "image",
+          prompt: input.prompt,
+          negativePrompt: input.negativePrompt,
+          inputJson: input,
+        });
+      if (!this.activeLocalImageJobId && !this.activeLocalTextRequests.size)
+        queueMicrotask(() => void this.runNextQueuedImage());
+      return { jobId, status: "queued" };
+    }
     const settings = this.settings("comfyui");
     if (!settings.enabled)
       throw new AIProviderError(
@@ -515,7 +589,7 @@ export class AIService {
         async (id) => this.store.getComfyWorkflow(id),
         this.getRuntimeProfile,
       ),
-      jobId = this.store.createGenerationJob({
+      jobId = existingJobId ?? this.store.createGenerationJob({
         projectId: input.projectId,
         episodeId: input.episodeId,
         pageId: input.pageId,
@@ -535,6 +609,7 @@ export class AIService {
           : input,
       });
     const controller = new AbortController();
+    let queuedProviderJobId: string | undefined;
     this.controllers.set(jobId, controller);
     try {
       const { decision, localProvider } = this.routeImageGeneration(
@@ -582,6 +657,7 @@ export class AIService {
         undefined,
         controller.signal,
       );
+      queuedProviderJobId = queued.providerJobId;
       this.store.updateGenerationJob(jobId, "running", {
         providerJobId: queued.providerJobId,
         progress: 0.15,
@@ -590,8 +666,11 @@ export class AIService {
       while (Date.now() < deadline) {
         if (controller.signal.aborted) {
           await provider.cancelJob?.(queued.providerJobId);
-          this.store.updateGenerationJob(jobId, "canceled");
-          return { jobId, status: "canceled" };
+          const stoppedStatus = this.pauseRequested.has(jobId)
+            ? "paused"
+            : "canceled";
+          this.store.updateGenerationJob(jobId, stoppedStatus);
+          return { jobId, status: stoppedStatus };
         }
         const status = await provider.getJobStatus!(
           queued.providerJobId,
@@ -690,25 +769,42 @@ export class AIService {
         "ComfyUI画像生成がタイムアウトしました。",
       );
     } catch (error) {
+      if (controller.signal.aborted && queuedProviderJobId) {
+        try {
+          await provider.cancelJob?.(queuedProviderJobId);
+        } catch {
+          // 停止状態の永続化を優先する。
+        }
+      }
       this.log("image_generation_failed", error, {
         provider: "comfyui",
         jobId,
       });
       this.store.updateGenerationJob(
         jobId,
-        controller.signal.aborted ? "canceled" : "failed",
+        controller.signal.aborted
+          ? this.pauseRequested.has(jobId)
+            ? "paused"
+            : "canceled"
+          : "failed",
         {
           errorCode: error instanceof AIProviderError ? error.code : "UNKNOWN",
           errorMessage:
             error instanceof Error ? error.message : "画像生成に失敗しました。",
         },
       );
-      if (controller.signal.aborted) return { jobId, status: "canceled" };
+      if (controller.signal.aborted)
+        return {
+          jobId,
+          status: this.pauseRequested.has(jobId) ? "paused" : "canceled",
+        };
       throw error;
     } finally {
       if (this.activeLocalImageJobId === jobId)
         this.activeLocalImageJobId = null;
+      this.pauseRequested.delete(jobId);
       this.controllers.delete(jobId);
+      queueMicrotask(() => void this.runNextQueuedImage());
     }
   }
 }

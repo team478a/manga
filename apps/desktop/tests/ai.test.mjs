@@ -80,6 +80,64 @@ test("runtime profile forces batch one and rejects oversized workflow features",
     (error) => error?.code === "WORKFLOW_PROFILE_LIMIT",
   );
 });
+
+test("interrupted image jobs return to the durable queue after reopening", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-queue-reopen-"));
+  const paths = {
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  try {
+    const project = db.createProject({
+      title: "Queue recovery",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const jobId = db.createGenerationJob({
+      projectId: project.project.id,
+      providerType: "image",
+      providerId: "comfyui",
+      generationType: "image",
+      prompt: "recover",
+      inputJson: {
+        projectId: project.project.id,
+        workflowId: randomUUID(),
+        prompt: "recover",
+      },
+    });
+    db.updateGenerationJob(jobId, "running", { progress: 0.5 });
+    db.close();
+    db = new MangaiDatabase(paths);
+    const recovered = db
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === jobId);
+    assert.equal(recovered.status, "queued");
+    assert.equal(recovered.progress, 0);
+    assert.equal(recovered.errorCode, "RECOVERED_AFTER_RESTART");
+    assert.equal(db.setGenerationJobStatus(jobId, "paused"), true);
+    db.close();
+    db = new MangaiDatabase(paths);
+    assert.equal(
+      db.listGenerationJobs(project.project.id).find((job) => job.id === jobId)
+        .status,
+      "paused",
+    );
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 const settings = (providerId, baseUrl) => ({
   providerId,
   enabled: true,
@@ -942,6 +1000,11 @@ test("ComfyUI multi-image registration rolls back partial assets", async () => {
 });
 
 test("ComfyUI timeout and cancellation update generation jobs", async () => {
+  const png = Buffer.from(
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nzsAAAAASUVORK5CYII=",
+    "base64",
+  );
+  let promptCount = 0;
   let ollamaRequests = 0;
   const ollamaMock = await server((req, res) => {
     if (req.url === "/api/generate") ollamaRequests += 1;
@@ -950,8 +1013,29 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
     req.on("end", () => res.end(JSON.stringify({ done: true })));
   });
   const mock = await server((req, res) => {
-    if (req.url === "/prompt")
-      return res.end(JSON.stringify({ prompt_id: "slow-job" }));
+    if (req.url === "/prompt") {
+      promptCount += 1;
+      return res.end(
+        JSON.stringify({
+          prompt_id: promptCount === 1 ? "slow-job" : "queued-job",
+        }),
+      );
+    }
+    if (req.url === "/history/queued-job")
+      return res.end(
+        JSON.stringify({
+          "queued-job": {
+            status: { status_str: "success" },
+            outputs: {
+              9: { images: [{ filename: "queued.png", type: "output" }] },
+            },
+          },
+        }),
+      );
+    if (req.url?.startsWith("/view?")) {
+      res.setHeader("content-type", "image/png");
+      return res.end(png);
+    }
     if (req.url === "/interrupt") return res.end("{}");
     res.end("{}");
   });
@@ -1014,22 +1098,34 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
     assert.equal(chatEvents.at(-1)?.type, "error");
     assert.match(chatEvents.at(-1)?.message ?? "", /同時実行できません/);
     assert.equal(ollamaRequests, 1);
-    await assert.rejects(
-      () =>
-        service.generateImage({
-          projectId: project.project.id,
-          workflowId: workflow.id,
-          prompt: "dog",
-          negativePrompt: "",
-        }),
-      (error) => error?.code === "LOCAL_JOB_BUSY",
+    const queuedResult = await service.generateImage({
+      projectId: project.project.id,
+      workflowId: workflow.id,
+      prompt: "dog",
+      negativePrompt: "",
+    });
+    assert.equal(queuedResult.status, "queued");
+    assert.equal(service.pauseImageJob(queuedResult.jobId), true);
+    assert.equal(
+      db.listGenerationJobs(project.project.id).find(
+        (value) => value.id === queuedResult.jobId,
+      ).status,
+      "paused",
     );
+    service.changeImageJobPriority(queuedResult.jobId, 1);
+    assert.equal(
+      db.listGenerationJobs(project.project.id).find(
+        (value) => value.id === queuedResult.jobId,
+      ).priority,
+      1,
+    );
+    assert.equal(service.resumeImageJob(queuedResult.jobId), true);
     const jobs = db.listGenerationJobs(project.project.id);
     const job = jobs.find((value) => value.status === "running");
     assert.ok(job);
     assert.equal(
-      jobs.find((value) => value.errorCode === "LOCAL_JOB_BUSY")?.status,
-      "failed",
+      jobs.find((value) => value.id === queuedResult.jobId)?.status,
+      "queued",
     );
     service.cancel(job.id);
     const result = await pending;
@@ -1045,6 +1141,21 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
         (value) => value.id === job.id,
       ).progress >= 0.15,
     );
+    const deadline = Date.now() + 2000;
+    while (
+      Date.now() < deadline &&
+      db.listGenerationJobs(project.project.id).find(
+        (value) => value.id === queuedResult.jobId,
+      )?.status !== "completed"
+    )
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    assert.equal(
+      db.listGenerationJobs(project.project.id).find(
+        (value) => value.id === queuedResult.jobId,
+      )?.status,
+      "completed",
+    );
+    assert.equal(promptCount, 2);
   } finally {
     db.close();
     await mock.close();

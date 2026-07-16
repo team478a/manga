@@ -14,7 +14,13 @@ type GenerationJob = {
   id: string;
   providerId: string;
   generationType: string;
-  status: "queued" | "running" | "completed" | "failed" | "canceled";
+  status:
+    | "queued"
+    | "paused"
+    | "running"
+    | "completed"
+    | "failed"
+    | "canceled";
   progress?: number;
   prompt: string;
   errorMessage?: string;
@@ -159,7 +165,10 @@ export function WorkspaceStatusControls({
   }, [drawerOpen]);
 
   const activeJobs = jobs.filter(
-      (job) => job.status === "queued" || job.status === "running",
+      (job) =>
+        job.status === "queued" ||
+        job.status === "paused" ||
+        job.status === "running",
     ),
     recentJobs = jobs.slice(0, 8);
 

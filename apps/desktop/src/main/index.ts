@@ -673,6 +673,17 @@ function register() {
       typeof v?.projectId === "string" ? v.projectId : undefined,
     ),
   );
+  handle("ai:jobs:pause", (v) =>
+    aiService.pauseImageJob(chatSessionIdSchema.parse(v).id),
+  );
+  handle("ai:jobs:resume", (v) =>
+    aiService.resumeImageJob(chatSessionIdSchema.parse(v).id),
+  );
+  handle("ai:jobs:priority", (v) => {
+    const id = chatSessionIdSchema.parse(v).id;
+    const delta = z.number().int().min(-1).max(1).parse(v?.delta);
+    return aiService.changeImageJobPriority(id, delta);
+  });
   handle("ai:routes:list", (v) =>
     store.listGenerationRouteDecisions(projectIdSchema.parse(v).id),
   );
@@ -851,6 +862,7 @@ app
     });
     updater = new DesktopUpdater(desktopPaths().root);
     register();
+    aiService.resumeQueuedImages();
     const win = await createWindow();
     if (smokeTest) {
       const rendererReady = await win.webContents.executeJavaScript(`

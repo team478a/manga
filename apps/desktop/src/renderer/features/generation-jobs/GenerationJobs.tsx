@@ -5,6 +5,7 @@ import { useI18n } from "../../i18n";
 
 function generationStatusKey(status: string) {
   if (status === "queued") return "generation.status.queued" as const;
+  if (status === "paused") return "generation.status.paused" as const;
   if (status === "running") return "generation.status.running" as const;
   if (status === "completed") return "generation.status.completed" as const;
   if (status === "canceled") return "generation.status.canceled" as const;
@@ -623,15 +624,80 @@ export function GenerationJobs({
                         </button>
                       )}
                     {job.status === "running" && (
-                      <button
-                        className="danger"
-                        onClick={() =>
-                          window.mangai.ai.cancel(job.id).then(load)
-                        }
-                      >
-                        {t("generation.cancel")}
-                      </button>
+                      <>
+                        {job.generationType === "image" && (
+                          <button
+                            className="secondary"
+                            onClick={() =>
+                              window.mangai.ai.pauseJob(job.id).then(load)
+                            }
+                          >
+                            {t("generation.pause")}
+                          </button>
+                        )}
+                        <button
+                          className="danger"
+                          onClick={() =>
+                            window.mangai.ai.cancel(job.id).then(load)
+                          }
+                        >
+                          {t("generation.cancel")}
+                        </button>
+                      </>
                     )}
+                    {["queued", "paused"].includes(job.status) &&
+                      job.generationType === "image" && (
+                        <>
+                          <button
+                            className="secondary"
+                            aria-label={t("generation.priorityUp")}
+                            onClick={() =>
+                              window.mangai.ai
+                                .changeJobPriority(job.id, 1)
+                                .then(load)
+                            }
+                          >
+                            ↑
+                          </button>
+                          <button
+                            className="secondary"
+                            aria-label={t("generation.priorityDown")}
+                            onClick={() =>
+                              window.mangai.ai
+                                .changeJobPriority(job.id, -1)
+                                .then(load)
+                            }
+                          >
+                            ↓
+                          </button>
+                          {job.status === "queued" ? (
+                            <button
+                              className="secondary"
+                              onClick={() =>
+                                window.mangai.ai.pauseJob(job.id).then(load)
+                              }
+                            >
+                              {t("generation.pause")}
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                window.mangai.ai.resumeJob(job.id).then(load)
+                              }
+                            >
+                              {t("generation.resume")}
+                            </button>
+                          )}
+                          <button
+                            className="danger"
+                            onClick={() =>
+                              window.mangai.ai.cancel(job.id).then(load)
+                            }
+                          >
+                            {t("generation.cancel")}
+                          </button>
+                        </>
+                      )}
                     {job.status === "failed" &&
                       job.generationType === "image" && (
                         <button

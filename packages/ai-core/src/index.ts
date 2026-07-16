@@ -7,6 +7,7 @@ export * from "./runtime-profile.js";
 
 export const generationStatusSchema = z.enum([
   "queued",
+  "paused",
   "running",
   "completed",
   "failed",
