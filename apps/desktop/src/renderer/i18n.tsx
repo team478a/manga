@@ -468,6 +468,72 @@ const ja = {
   "settings.languageHelp": "主要画面から段階的に翻訳を適用しています。",
   "settings.japanese": "日本語",
   "settings.english": "English",
+  "settings.mock": "モック",
+  "settings.status.running": "確認中",
+  "settings.status.success": "成功",
+  "settings.status.warning": "要確認",
+  "settings.status.error": "失敗",
+  "settings.runtime.auto": "自動（推奨）",
+  "settings.runtime.cpuOnly": "CPUのみ",
+  "settings.runtime.vram6": "VRAM 6GB以下",
+  "settings.runtime.vram8": "VRAM 8GB",
+  "settings.runtime.vram12": "VRAM 12GB",
+  "settings.runtime.vram16": "VRAM 16GB",
+  "settings.runtime.vram24": "VRAM 24GB以上",
+  "settings.runtime.remote": "Render Node",
+  "settings.aiDiagnostics.title": "AI接続診断",
+  "settings.aiDiagnostics.description":
+    "現在の設定、ローカルAIへの接続、モデルとワークフローの準備状態をまとめて確認します。",
+  "settings.aiDiagnostics.run": "一括診断を実行",
+  "settings.aiDiagnostics.running": "診断中…",
+  "settings.aiDiagnostics.help":
+    "診断では生成処理を実行せず、OllamaとComfyUIのローカル接続だけを確認します。",
+  "settings.aiDiagnostics.lastRun": "最終診断: {value}",
+  "settings.aiDiagnostics.workflow": "ComfyUI ワークフロー",
+  "settings.aiDiagnostics.workflowChecking": "登録内容を確認しています…",
+  "settings.aiDiagnostics.workflowMissing":
+    "ワークフローが未登録です。AI生成画面からJSONを追加してください。",
+  "settings.aiDiagnostics.workflowInvalid":
+    "{count}件中{invalid}件のマッピングを確認してください: {names}",
+  "settings.aiDiagnostics.workflowNoDefault":
+    "{count}件は有効ですが、既定ワークフローがありません。",
+  "settings.aiDiagnostics.workflowReady":
+    "{count}件のマッピングが有効です。既定: {name}",
+  "settings.aiDiagnostics.lowSpecWorkflow": "低スペック向けワークフロー",
+  "settings.aiDiagnostics.lowSpecReady":
+    "既定ワークフローにVAEDecodeTiledがあります。CPUオフロードはComfyUI起動設定を実環境で確認してください。",
+  "settings.aiDiagnostics.lowSpecMissing":
+    "既定ワークフローにVAEDecodeTiledがありません。8GB以下向けにはタイルVAE版を登録してください。",
+  "settings.aiDiagnostics.runtime": "ComfyUI低スペック実行環境",
+  "settings.aiDiagnostics.runtimeChecking":
+    "GPU、タイルVAEノード、起動設定を確認しています…",
+  "settings.aiDiagnostics.unknown": "不明",
+  "settings.aiDiagnostics.versionUnknown": "version不明",
+  "settings.aiDiagnostics.gpuMissing": "未検出",
+  "settings.aiDiagnostics.tiledAvailable": "VAEDecodeTiled利用可能",
+  "settings.aiDiagnostics.tiledMissing": "VAEDecodeTiledなし",
+  "settings.aiDiagnostics.cpuVaeEnabled": "--cpu-vae有効",
+  "settings.aiDiagnostics.cpuVaeMissing": "--cpu-vae未確認",
+  "settings.aiDiagnostics.reserveNone": "VRAM予約なし",
+  "settings.aiDiagnostics.reserve": "VRAM予約 {value}GB",
+  "settings.aiDiagnostics.connection": "{name} 接続",
+  "settings.aiDiagnostics.configChecking": "設定を確認しています…",
+  "settings.aiDiagnostics.settingsLabel": "{name} 設定",
+  "settings.aiDiagnostics.saveFailed": "設定を保存できません。{message}",
+  "settings.aiDiagnostics.disabled":
+    "{name}は無効です。使用するときは「有効」をオンにしてください。",
+  "settings.aiDiagnostics.response": " 応答 {value}ms",
+  "settings.aiDiagnostics.ollamaModel": "Ollama モデル",
+  "settings.aiDiagnostics.modelsChecking": "モデル一覧を確認しています…",
+  "settings.aiDiagnostics.modelsMissing":
+    "利用可能なモデルがありません。Ollamaでモデルを取得してください。",
+  "settings.aiDiagnostics.modelSelect":
+    "{count}件見つかりました。使用モデルを選択してください。",
+  "settings.aiDiagnostics.modelMissing":
+    "選択中のモデル「{name}」が見つかりません。",
+  "settings.aiDiagnostics.modelCached":
+    "「{name}」を前回取得したキャッシュで確認しました。",
+  "settings.aiDiagnostics.modelReady": "「{name}」を利用できます。",
 } as const;
 
 type TranslationKey = keyof typeof ja;
@@ -951,6 +1017,72 @@ const en: Record<TranslationKey, string> = {
     "Translation is being rolled out to the main screens in stages.",
   "settings.japanese": "日本語",
   "settings.english": "English",
+  "settings.mock": "Mock",
+  "settings.status.running": "Checking",
+  "settings.status.success": "Success",
+  "settings.status.warning": "Needs attention",
+  "settings.status.error": "Failed",
+  "settings.runtime.auto": "Automatic (recommended)",
+  "settings.runtime.cpuOnly": "CPU only",
+  "settings.runtime.vram6": "VRAM 6 GB or less",
+  "settings.runtime.vram8": "VRAM 8 GB",
+  "settings.runtime.vram12": "VRAM 12 GB",
+  "settings.runtime.vram16": "VRAM 16 GB",
+  "settings.runtime.vram24": "VRAM 24 GB or more",
+  "settings.runtime.remote": "Render Node",
+  "settings.aiDiagnostics.title": "AI connection diagnostics",
+  "settings.aiDiagnostics.description":
+    "Check the current settings, local AI connections, models, and workflow readiness together.",
+  "settings.aiDiagnostics.run": "Run diagnostics",
+  "settings.aiDiagnostics.running": "Running diagnostics…",
+  "settings.aiDiagnostics.help":
+    "Diagnostics do not start generation. They only check local Ollama and ComfyUI connections.",
+  "settings.aiDiagnostics.lastRun": "Last run: {value}",
+  "settings.aiDiagnostics.workflow": "ComfyUI workflow",
+  "settings.aiDiagnostics.workflowChecking": "Checking registered workflows…",
+  "settings.aiDiagnostics.workflowMissing":
+    "No workflow is registered. Add an API workflow JSON from Image Generation.",
+  "settings.aiDiagnostics.workflowInvalid":
+    "Check the mappings for {invalid} of {count} workflows: {names}",
+  "settings.aiDiagnostics.workflowNoDefault":
+    "All {count} workflows are valid, but no default workflow is selected.",
+  "settings.aiDiagnostics.workflowReady":
+    "All {count} workflow mappings are valid. Default: {name}",
+  "settings.aiDiagnostics.lowSpecWorkflow": "Low-spec workflow",
+  "settings.aiDiagnostics.lowSpecReady":
+    "The default workflow includes VAEDecodeTiled. Verify CPU offload in the ComfyUI runtime settings.",
+  "settings.aiDiagnostics.lowSpecMissing":
+    "The default workflow does not include VAEDecodeTiled. Register a tiled-VAE workflow for systems with 8 GB VRAM or less.",
+  "settings.aiDiagnostics.runtime": "ComfyUI low-spec runtime",
+  "settings.aiDiagnostics.runtimeChecking":
+    "Checking the GPU, tiled-VAE node, and launch settings…",
+  "settings.aiDiagnostics.unknown": "Unknown",
+  "settings.aiDiagnostics.versionUnknown": "version unknown",
+  "settings.aiDiagnostics.gpuMissing": "not detected",
+  "settings.aiDiagnostics.tiledAvailable": "VAEDecodeTiled available",
+  "settings.aiDiagnostics.tiledMissing": "VAEDecodeTiled unavailable",
+  "settings.aiDiagnostics.cpuVaeEnabled": "--cpu-vae enabled",
+  "settings.aiDiagnostics.cpuVaeMissing": "--cpu-vae not detected",
+  "settings.aiDiagnostics.reserveNone": "No reserved VRAM",
+  "settings.aiDiagnostics.reserve": "Reserved VRAM {value} GB",
+  "settings.aiDiagnostics.connection": "{name} connection",
+  "settings.aiDiagnostics.configChecking": "Checking settings…",
+  "settings.aiDiagnostics.settingsLabel": "{name} settings",
+  "settings.aiDiagnostics.saveFailed": "Could not save settings. {message}",
+  "settings.aiDiagnostics.disabled":
+    "{name} is disabled. Turn on Enabled before using it.",
+  "settings.aiDiagnostics.response": " Response {value} ms",
+  "settings.aiDiagnostics.ollamaModel": "Ollama model",
+  "settings.aiDiagnostics.modelsChecking": "Checking available models…",
+  "settings.aiDiagnostics.modelsMissing":
+    "No models are available. Download a model with Ollama.",
+  "settings.aiDiagnostics.modelSelect":
+    "Found {count} models. Select the model to use.",
+  "settings.aiDiagnostics.modelMissing":
+    "The selected model “{name}” was not found.",
+  "settings.aiDiagnostics.modelCached":
+    "Verified “{name}” using the previously cached model list.",
+  "settings.aiDiagnostics.modelReady": "“{name}” is available.",
 };
 
 type I18nContextValue = {

@@ -26,33 +26,47 @@ type DiagnosticItem = {
   message: string;
 };
 type ComfyWorkflow = { id: string; name: string; isDefault: number };
+type Translator = ReturnType<typeof useI18n>["t"];
 
-const providerName = (id: ProviderSettings["providerId"]) =>
-  id === "ollama" ? "Ollama" : id === "comfyui" ? "ComfyUI" : "モック";
+const providerName = (
+  id: ProviderSettings["providerId"],
+  t: Translator,
+) =>
+  id === "ollama"
+    ? "Ollama"
+    : id === "comfyui"
+      ? "ComfyUI"
+      : t("settings.mock");
 
-const diagnosticLabel: Record<DiagnosticLevel, string> = {
-  running: "確認中",
-  success: "成功",
-  warning: "要確認",
-  error: "失敗",
+const diagnosticKey: Record<DiagnosticLevel, Parameters<Translator>[0]> = {
+  running: "settings.status.running",
+  success: "settings.status.success",
+  warning: "settings.status.warning",
+  error: "settings.status.error",
 };
-const runtimeProfileLabel: Record<RuntimeProfileSelection, string> = {
-  auto: "自動（推奨）",
-  cpu_only: "CPUのみ",
-  vram_6gb: "VRAM 6GB以下",
-  vram_8gb: "VRAM 8GB",
-  vram_12gb: "VRAM 12GB",
-  vram_16gb: "VRAM 16GB",
-  vram_24gb_plus: "VRAM 24GB以上",
-  remote_render: "Render Node",
+const runtimeProfileKey: Record<
+  RuntimeProfileSelection,
+  Parameters<Translator>[0]
+> = {
+  auto: "settings.runtime.auto",
+  cpu_only: "settings.runtime.cpuOnly",
+  vram_6gb: "settings.runtime.vram6",
+  vram_8gb: "settings.runtime.vram8",
+  vram_12gb: "settings.runtime.vram12",
+  vram_16gb: "settings.runtime.vram16",
+  vram_24gb_plus: "settings.runtime.vram24",
+  remote_render: "settings.runtime.remote",
 };
 
-async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
+async function diagnoseComfyWorkflows(
+  report: (item: DiagnosticItem) => void,
+  t: Translator,
+) {
   report({
     id: "comfyui-workflow",
-    label: "ComfyUI ワークフロー",
+    label: t("settings.aiDiagnostics.workflow"),
     level: "running",
-    message: "登録内容を確認しています…",
+    message: t("settings.aiDiagnostics.workflowChecking"),
   });
   try {
     const workflows =
@@ -60,10 +74,9 @@ async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
     if (!workflows.length) {
       report({
         id: "comfyui-workflow",
-        label: "ComfyUI ワークフロー",
+        label: t("settings.aiDiagnostics.workflow"),
         level: "warning",
-        message:
-          "ワークフローが未登録です。AI生成画面からJSONを追加してください。",
+        message: t("settings.aiDiagnostics.workflowMissing"),
       });
       return;
     }
@@ -77,13 +90,22 @@ async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
     const defaultWorkflow = workflows.find((workflow) => workflow.isDefault);
     report({
       id: "comfyui-workflow",
-      label: "ComfyUI ワークフロー",
+      label: t("settings.aiDiagnostics.workflow"),
       level: invalid.length || !defaultWorkflow ? "warning" : "success",
       message: invalid.length
-        ? `${workflows.length}件中${invalid.length}件のマッピングを確認してください: ${invalid.map((item) => item.workflow.name).join("、")}`
+        ? t("settings.aiDiagnostics.workflowInvalid", {
+            count: workflows.length,
+            invalid: invalid.length,
+            names: invalid.map((item) => item.workflow.name).join(", "),
+          })
         : !defaultWorkflow
-          ? `${workflows.length}件は有効ですが、既定ワークフローがありません。`
-          : `${workflows.length}件のマッピングが有効です。既定: ${defaultWorkflow.name}`,
+          ? t("settings.aiDiagnostics.workflowNoDefault", {
+              count: workflows.length,
+            })
+          : t("settings.aiDiagnostics.workflowReady", {
+              count: workflows.length,
+              name: defaultWorkflow.name,
+            }),
     });
     if (defaultWorkflow) {
       const defaultResult = results.find(
@@ -91,48 +113,52 @@ async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
       )?.result;
       report({
         id: "comfyui-low-spec",
-        label: "低スペック向けワークフロー",
+        label: t("settings.aiDiagnostics.lowSpecWorkflow"),
         level: defaultResult?.optimization.lowSpecVaeReady
           ? "success"
           : "warning",
         message: defaultResult?.optimization.lowSpecVaeReady
-          ? "既定ワークフローにVAEDecodeTiledがあります。CPUオフロードはComfyUI起動設定を実環境で確認してください。"
-          : "既定ワークフローにVAEDecodeTiledがありません。8GB以下向けにはタイルVAE版を登録してください。",
+          ? t("settings.aiDiagnostics.lowSpecReady")
+          : t("settings.aiDiagnostics.lowSpecMissing"),
       });
     }
     report({
       id: "comfyui-low-spec-runtime",
-      label: "ComfyUI低スペック実行環境",
+      label: t("settings.aiDiagnostics.runtime"),
       level: "running",
-      message: "GPU、タイルVAEノード、起動設定を確認しています…",
+      message: t("settings.aiDiagnostics.runtimeChecking"),
     });
     try {
       const runtime = await window.mangai.ai.inspectComfyLowSpecRuntime(),
         device = runtime.devices[0],
         vram = device?.vramTotalBytes
           ? `${(device.vramTotalBytes / 1024 ** 3).toFixed(1)}GB`
-          : "不明";
+          : t("settings.aiDiagnostics.unknown");
       report({
         id: "comfyui-low-spec-runtime",
-        label: "ComfyUI低スペック実行環境",
+        label: t("settings.aiDiagnostics.runtime"),
         level: runtime.runtimeChecksPassed ? "success" : "warning",
         message: [
-          `ComfyUI ${runtime.comfyuiVersion ?? "version不明"}`,
-          `GPU ${device?.name || "未検出"} / VRAM ${vram}`,
+          `ComfyUI ${runtime.comfyuiVersion ?? t("settings.aiDiagnostics.versionUnknown")}`,
+          `GPU ${device?.name || t("settings.aiDiagnostics.gpuMissing")} / VRAM ${vram}`,
           runtime.tiledVaeNodeAvailable
-            ? "VAEDecodeTiled利用可能"
-            : "VAEDecodeTiledなし",
-          runtime.cpuVaeEnabled ? "--cpu-vae有効" : "--cpu-vae未確認",
+            ? t("settings.aiDiagnostics.tiledAvailable")
+            : t("settings.aiDiagnostics.tiledMissing"),
+          runtime.cpuVaeEnabled
+            ? t("settings.aiDiagnostics.cpuVaeEnabled")
+            : t("settings.aiDiagnostics.cpuVaeMissing"),
           `VRAM mode: ${runtime.lowVramMode}`,
           runtime.reserveVramGb === null
-            ? "VRAM予約なし"
-            : `VRAM予約 ${runtime.reserveVramGb}GB`,
+            ? t("settings.aiDiagnostics.reserveNone")
+            : t("settings.aiDiagnostics.reserve", {
+                value: runtime.reserveVramGb,
+              }),
         ].join(" / "),
       });
     } catch (cause) {
       report({
         id: "comfyui-low-spec-runtime",
-        label: "ComfyUI低スペック実行環境",
+        label: t("settings.aiDiagnostics.runtime"),
         level: "error",
         message: cause instanceof Error ? cause.message : String(cause),
       });
@@ -140,7 +166,7 @@ async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
   } catch (cause) {
     report({
       id: "comfyui-workflow",
-      label: "ComfyUI ワークフロー",
+      label: t("settings.aiDiagnostics.workflow"),
       level: "error",
       message: cause instanceof Error ? cause.message : String(cause),
     });
@@ -227,31 +253,35 @@ export function AISettings({ onClose }: { onClose: () => void }) {
     setDiagnostics(
       providers.map((value) => ({
         id: `${value.providerId}-connection`,
-        label: `${providerName(value.providerId)} 接続`,
+        label: t("settings.aiDiagnostics.connection", {
+          name: providerName(value.providerId, t),
+        }),
         level: "running",
-        message: "設定を確認しています…",
+        message: t("settings.aiDiagnostics.configChecking"),
       })),
     );
     try {
       for (const value of providers) {
-        const name = providerName(value.providerId);
+        const name = providerName(value.providerId, t);
         try {
           await window.mangai.ai.saveSettings(value);
         } catch (cause) {
           report({
             id: `${value.providerId}-connection`,
-            label: `${name} 設定`,
+            label: t("settings.aiDiagnostics.settingsLabel", { name }),
             level: "error",
-            message: `設定を保存できません。${cause instanceof Error ? cause.message : String(cause)}`,
+            message: t("settings.aiDiagnostics.saveFailed", {
+              message: cause instanceof Error ? cause.message : String(cause),
+            }),
           });
           continue;
         }
         if (!value.enabled) {
           report({
             id: `${value.providerId}-connection`,
-            label: `${name} 接続`,
+            label: t("settings.aiDiagnostics.connection", { name }),
             level: "warning",
-            message: `${name}は無効です。使用するときは「有効」をオンにしてください。`,
+            message: t("settings.aiDiagnostics.disabled", { name }),
           });
           continue;
         }
@@ -261,26 +291,32 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           connected = result.ok;
           report({
             id: `${value.providerId}-connection`,
-            label: `${name} 接続`,
+            label: t("settings.aiDiagnostics.connection", { name }),
             level: result.ok ? "success" : "error",
-            message: `${result.message}${result.latencyMs !== undefined ? ` 応答 ${result.latencyMs}ms` : ""}`,
+            message: `${result.message}${
+              result.latencyMs !== undefined
+                ? t("settings.aiDiagnostics.response", {
+                    value: result.latencyMs,
+                  })
+                : ""
+            }`,
           });
         } catch (cause) {
           report({
             id: `${value.providerId}-connection`,
-            label: `${name} 接続`,
+            label: t("settings.aiDiagnostics.connection", { name }),
             level: "error",
             message: cause instanceof Error ? cause.message : String(cause),
           });
         }
         if (value.providerId === "comfyui")
-          await diagnoseComfyWorkflows(report);
+          await diagnoseComfyWorkflows(report, t);
         if (value.providerId !== "ollama" || !connected) continue;
         report({
           id: "ollama-model",
-          label: "Ollama モデル",
+          label: t("settings.aiDiagnostics.ollamaModel"),
           level: "running",
-          message: "モデル一覧を確認しています…",
+          message: t("settings.aiDiagnostics.modelsChecking"),
         });
         try {
           const list = await window.mangai.ai.listModels("ollama");
@@ -289,7 +325,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           const cached = list.some((model) => model.cached);
           report({
             id: "ollama-model",
-            label: "Ollama モデル",
+            label: t("settings.aiDiagnostics.ollamaModel"),
             level:
               !list.length || (value.modelId && !selected)
                 ? "error"
@@ -297,19 +333,27 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                   ? "warning"
                   : "success",
             message: !list.length
-              ? "利用可能なモデルがありません。Ollamaでモデルを取得してください。"
+              ? t("settings.aiDiagnostics.modelsMissing")
               : !value.modelId
-                ? `${list.length}件見つかりました。使用モデルを選択してください。`
+                ? t("settings.aiDiagnostics.modelSelect", {
+                    count: list.length,
+                  })
                 : !selected
-                  ? `選択中のモデル「${value.modelId}」が見つかりません。`
+                  ? t("settings.aiDiagnostics.modelMissing", {
+                      name: value.modelId,
+                    })
                   : cached
-                    ? `「${selected.name}」を前回取得したキャッシュで確認しました。`
-                    : `「${selected.name}」を利用できます。`,
+                    ? t("settings.aiDiagnostics.modelCached", {
+                        name: selected.name,
+                      })
+                    : t("settings.aiDiagnostics.modelReady", {
+                        name: selected.name,
+                      }),
           });
         } catch (cause) {
           report({
             id: "ollama-model",
-            label: "Ollama モデル",
+            label: t("settings.aiDiagnostics.ollamaModel"),
             level: "error",
             message: cause instanceof Error ? cause.message : String(cause),
           });
@@ -367,7 +411,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             </div>
             <span className="hub-readonly-badge">
               {runtimeProfile
-                ? runtimeProfileLabel[runtimeProfile.effectiveProfile]
+                ? t(runtimeProfileKey[runtimeProfile.effectiveProfile])
                 : "診断中"}
             </span>
           </div>
@@ -393,14 +437,14 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     setRuntimeMessage("端末設定へ保存しました。");
                   }}
                 >
-                  {Object.entries(runtimeProfileLabel).map(([value, label]) => (
+                  {Object.entries(runtimeProfileKey).map(([value, key]) => (
                     <option key={value} value={value}>
-                      {label}
+                      {t(key)}
                     </option>
                   ))}
                 </select>
                 <small>
-                  推奨: {runtimeProfileLabel[runtimeProfile.recommendedProfile]}
+                  推奨: {t(runtimeProfileKey[runtimeProfile.recommendedProfile])}
                   ／ バッチ1・ローカル生成の同時実行1件
                 </small>
               </label>
@@ -573,21 +617,33 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           </div>
           {diagnosticsMessage && <p className="notice">{diagnosticsMessage}</p>}
         </section>
-        <section className="panel-lite ai-diagnostics">
+        <section
+          className="panel-lite ai-diagnostics"
+          aria-labelledby="ai-diagnostics-title"
+          aria-busy={diagnosing}
+        >
           <div className="setting-title">
             <div>
-              <h2>AI接続診断</h2>
-              <p>
-                現在の設定、ローカルAIへの接続、モデルとワークフローの準備状態をまとめて確認します。
+              <h2 id="ai-diagnostics-title">
+                {t("settings.aiDiagnostics.title")}
+              </h2>
+              <p id="ai-diagnostics-description">
+                {t("settings.aiDiagnostics.description")}
               </p>
             </div>
-            <button disabled={diagnosing} onClick={() => void runDiagnostics()}>
-              {diagnosing ? "診断中…" : "一括診断を実行"}
+            <button
+              disabled={diagnosing}
+              aria-describedby="ai-diagnostics-description"
+              onClick={() => void runDiagnostics()}
+            >
+              {diagnosing
+                ? t("settings.aiDiagnostics.running")
+                : t("settings.aiDiagnostics.run")}
             </button>
           </div>
           {!diagnostics.length ? (
             <p className="diagnostic-empty">
-              診断では生成処理を実行せず、OllamaとComfyUIのローカル接続だけを確認します。
+              {t("settings.aiDiagnostics.help")}
             </p>
           ) : (
             <div className="diagnostic-list" aria-live="polite">
@@ -596,7 +652,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                   className={`diagnostic-item ${item.level}`}
                   key={item.id}
                 >
-                  <span>{diagnosticLabel[item.level]}</span>
+                  <span>{t(diagnosticKey[item.level])}</span>
                   <div>
                     <b>{item.label}</b>
                     <p>{item.message}</p>
@@ -606,7 +662,13 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             </div>
           )}
           {diagnosedAt && !diagnosing && (
-            <small>最終診断: {diagnosedAt.toLocaleString("ja-JP")}</small>
+            <small>
+              {t("settings.aiDiagnostics.lastRun", {
+                value: diagnosedAt.toLocaleString(
+                  locale === "ja" ? "ja-JP" : "en-US",
+                ),
+              })}
+            </small>
           )}
         </section>
         <section className="panel-lite">
@@ -626,7 +688,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               {settingsHistory.slice(0, 10).map((item) => (
                 <article key={item.id}>
                   <div>
-                    <b>{providerName(item.providerId)}</b>
+                    <b>{providerName(item.providerId, t)}</b>
                     <p>
                       {item.summary.enabled ? "有効" : "無効"}・
                       {item.summary.endpointKind === "local"
