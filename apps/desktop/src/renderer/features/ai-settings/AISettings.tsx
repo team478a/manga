@@ -401,7 +401,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
   return (
     <main className="tool-page">
       <header className="tool-header">
-        <button onClick={onClose}>← ワークスペース</button>
+        <button onClick={onClose}>{t("settings.backWorkspace")}</button>
         <h1>{t("nav.settings")}</h1>
       </header>
       <div className="tool-content">
@@ -420,34 +420,45 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             </select>
             <small>{t("settings.languageHelp")}</small>
           </label>
-          <p>データ保存先: {paths?.root ?? "読み込み中"}</p>
-          <p>AIログには秘密情報を保存しません。クラウドAPIキーは未対応です。</p>
+          <p>
+            {t("settings.dataLocation", {
+              path: paths?.root ?? t("settings.loading"),
+            })}
+          </p>
+          <p>{t("settings.aiLogPrivacy")}</p>
         </section>
-        <section className="panel-lite">
+        <section
+          className="panel-lite"
+          aria-labelledby="runtime-profile-title"
+        >
           <div className="setting-title">
             <div>
-              <h2>端末性能とRuntime Profile</h2>
-              <p>
-                起動時にRAMとGPUメモリを診断し、ローカル生成の安全な初期値を選びます。
-              </p>
+              <h2 id="runtime-profile-title">
+                {t("settings.runtime.title")}
+              </h2>
+              <p>{t("settings.runtime.description")}</p>
             </div>
             <span className="hub-readonly-badge">
               {runtimeProfile
                 ? t(runtimeProfileKey[runtimeProfile.effectiveProfile])
-                : "診断中"}
+                : t("settings.runtime.checking")}
             </span>
           </div>
           {runtimeProfile && (
             <>
               <p>
-                RAM: {(runtimeProfile.hardware.totalRamBytes / 1024 ** 3).toFixed(1)} GB
-                ／ GPU: {runtimeProfile.hardware.gpuName ?? "未検出"}
-                ／ VRAM: {runtimeProfile.hardware.dedicatedVramMb
+                RAM:{" "}
+                {(runtimeProfile.hardware.totalRamBytes / 1024 ** 3).toFixed(1)}{" "}
+                GB / GPU:{" "}
+                {runtimeProfile.hardware.gpuName ??
+                  t("settings.runtime.gpuMissing")}{" "}
+                / VRAM:{" "}
+                {runtimeProfile.hardware.dedicatedVramMb
                   ? `${Math.round(runtimeProfile.hardware.dedicatedVramMb / 1024)} GB`
-                  : "不明"}
+                  : t("settings.runtime.unknown")}
               </p>
               <label>
-                使用プロファイル
+                {t("settings.runtime.profile")}
                 <select
                   value={runtimeProfile.selection}
                   onChange={async (event) => {
@@ -456,7 +467,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     const saved =
                       await window.mangai.ai.saveRuntimeProfile(selection);
                     setRuntimeProfile(saved);
-                    setRuntimeMessage("端末設定へ保存しました。");
+                    setRuntimeMessage(t("settings.runtime.saved"));
                   }}
                 >
                   {Object.entries(runtimeProfileKey).map(([value, key]) => (
@@ -466,16 +477,25 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                   ))}
                 </select>
                 <small>
-                  推奨: {t(runtimeProfileKey[runtimeProfile.recommendedProfile])}
-                  ／ バッチ1・ローカル生成の同時実行1件
+                  {t("settings.runtime.recommended", {
+                    profile: t(
+                      runtimeProfileKey[runtimeProfile.recommendedProfile],
+                    ),
+                  })}
+                  {" · "}
+                  {t("settings.runtime.constraints")}
                 </small>
               </label>
               {!runtimeProfile.limits.localImageGenerationRecommended && (
                 <p className="diagnostic-empty">
-                  GPUを確認できないため、ローカル画像生成は非推奨です。編集・素材利用・背景APIは引き続き使用できます。
+                  {t("settings.runtime.notRecommended")}
                 </p>
               )}
-              {runtimeMessage && <p>{runtimeMessage}</p>}
+              {runtimeMessage && (
+                <p role="status" aria-live="polite">
+                  {runtimeMessage}
+                </p>
+              )}
             </>
           )}
         </section>

@@ -468,6 +468,11 @@ const ja = {
   "settings.languageHelp": "主要画面から段階的に翻訳を適用しています。",
   "settings.japanese": "日本語",
   "settings.english": "English",
+  "settings.backWorkspace": "← ワークスペース",
+  "settings.dataLocation": "データ保存先: {path}",
+  "settings.loading": "読み込み中",
+  "settings.aiLogPrivacy":
+    "AIログには秘密情報を保存しません。クラウドAPIキーは未対応です。",
   "settings.mock": "モック",
   "settings.status.running": "確認中",
   "settings.status.success": "成功",
@@ -481,6 +486,19 @@ const ja = {
   "settings.runtime.vram16": "VRAM 16GB",
   "settings.runtime.vram24": "VRAM 24GB以上",
   "settings.runtime.remote": "Render Node",
+  "settings.runtime.title": "端末性能とRuntime Profile",
+  "settings.runtime.description":
+    "起動時にRAMとGPUメモリを診断し、ローカル生成の安全な初期値を選びます。",
+  "settings.runtime.checking": "診断中",
+  "settings.runtime.gpuMissing": "未検出",
+  "settings.runtime.unknown": "不明",
+  "settings.runtime.profile": "使用プロファイル",
+  "settings.runtime.saved": "端末設定へ保存しました。",
+  "settings.runtime.recommended": "推奨: {profile}",
+  "settings.runtime.constraints":
+    "バッチ1・ローカル生成の同時実行1件",
+  "settings.runtime.notRecommended":
+    "GPUを確認できないため、ローカル画像生成は非推奨です。編集・素材利用・背景APIは引き続き使用できます。",
   "settings.aiDiagnostics.title": "AI接続診断",
   "settings.aiDiagnostics.description":
     "現在の設定、ローカルAIへの接続、モデルとワークフローの準備状態をまとめて確認します。",
@@ -1117,6 +1135,11 @@ const en: Record<TranslationKey, string> = {
     "Translation is being rolled out to the main screens in stages.",
   "settings.japanese": "日本語",
   "settings.english": "English",
+  "settings.backWorkspace": "← Workspace",
+  "settings.dataLocation": "Data location: {path}",
+  "settings.loading": "Loading",
+  "settings.aiLogPrivacy":
+    "AI logs do not store secrets. Cloud API keys are not currently supported.",
   "settings.mock": "Mock",
   "settings.status.running": "Checking",
   "settings.status.success": "Success",
@@ -1130,6 +1153,19 @@ const en: Record<TranslationKey, string> = {
   "settings.runtime.vram16": "VRAM 16 GB",
   "settings.runtime.vram24": "VRAM 24 GB or more",
   "settings.runtime.remote": "Render Node",
+  "settings.runtime.title": "Device performance and Runtime Profile",
+  "settings.runtime.description":
+    "RAM and GPU memory are checked at startup to select safe defaults for local generation.",
+  "settings.runtime.checking": "Checking",
+  "settings.runtime.gpuMissing": "Not detected",
+  "settings.runtime.unknown": "Unknown",
+  "settings.runtime.profile": "Runtime Profile",
+  "settings.runtime.saved": "Device settings saved.",
+  "settings.runtime.recommended": "Recommended: {profile}",
+  "settings.runtime.constraints":
+    "Batch size 1 · one local generation job at a time",
+  "settings.runtime.notRecommended":
+    "A GPU could not be verified, so local image generation is not recommended. Editing, asset reuse, and background APIs remain available.",
   "settings.aiDiagnostics.title": "AI connection diagnostics",
   "settings.aiDiagnostics.description":
     "Check the current settings, local AI connections, models, and workflow readiness together.",
