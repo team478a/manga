@@ -100,6 +100,43 @@ async function diagnoseComfyWorkflows(report: (item: DiagnosticItem) => void) {
           : "既定ワークフローにVAEDecodeTiledがありません。8GB以下向けにはタイルVAE版を登録してください。",
       });
     }
+    report({
+      id: "comfyui-low-spec-runtime",
+      label: "ComfyUI低スペック実行環境",
+      level: "running",
+      message: "GPU、タイルVAEノード、起動設定を確認しています…",
+    });
+    try {
+      const runtime = await window.mangai.ai.inspectComfyLowSpecRuntime(),
+        device = runtime.devices[0],
+        vram = device?.vramTotalBytes
+          ? `${(device.vramTotalBytes / 1024 ** 3).toFixed(1)}GB`
+          : "不明";
+      report({
+        id: "comfyui-low-spec-runtime",
+        label: "ComfyUI低スペック実行環境",
+        level: runtime.runtimeChecksPassed ? "success" : "warning",
+        message: [
+          `ComfyUI ${runtime.comfyuiVersion ?? "version不明"}`,
+          `GPU ${device?.name || "未検出"} / VRAM ${vram}`,
+          runtime.tiledVaeNodeAvailable
+            ? "VAEDecodeTiled利用可能"
+            : "VAEDecodeTiledなし",
+          runtime.cpuVaeEnabled ? "--cpu-vae有効" : "--cpu-vae未確認",
+          `VRAM mode: ${runtime.lowVramMode}`,
+          runtime.reserveVramGb === null
+            ? "VRAM予約なし"
+            : `VRAM予約 ${runtime.reserveVramGb}GB`,
+        ].join(" / "),
+      });
+    } catch (cause) {
+      report({
+        id: "comfyui-low-spec-runtime",
+        label: "ComfyUI低スペック実行環境",
+        level: "error",
+        message: cause instanceof Error ? cause.message : String(cause),
+      });
+    }
   } catch (cause) {
     report({
       id: "comfyui-workflow",

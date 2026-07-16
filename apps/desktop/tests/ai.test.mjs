@@ -298,6 +298,57 @@ test("AI connection URL requires loopback or an explicit HTTPS origin", () => {
   assert.throws(() => safeBaseUrl("http://user:pass@localhost:11434"), /不正/);
   assert.throws(() => safeBaseUrl("http://localhost:11434/api"), /不正/);
 });
+
+test("ComfyUI low-spec runtime inspection reads node and launch capabilities", async () => {
+  const mock = await server((req, res) => {
+    res.setHeader("content-type", "application/json");
+    if (req.url === "/system_stats")
+      return res.end(
+        JSON.stringify({
+          system: {
+            comfyui_version: "0.3.test",
+            argv: [
+              "main.py",
+              "--cpu-vae",
+              "--lowvram",
+              "--reserve-vram",
+              "1.5",
+            ],
+          },
+          devices: [
+            {
+              name: "cuda:0 Test GPU",
+              type: "cuda",
+              vram_total: 8 * 1024 ** 3,
+              vram_free: 6 * 1024 ** 3,
+            },
+          ],
+        }),
+      );
+    if (req.url === "/object_info/VAEDecodeTiled")
+      return res.end(JSON.stringify({ VAEDecodeTiled: { name: "VAEDecodeTiled" } }));
+    res.statusCode = 404;
+    res.end("{}");
+  });
+  try {
+    const provider = new ComfyUIProvider(
+      settings("comfyui", mock.url),
+      async () => ({ workflow: {}, mapping: {} }),
+    );
+    const report = await provider.inspectLowSpecRuntime();
+    assert.equal(report.comfyuiVersion, "0.3.test");
+    assert.equal(report.tiledVaeNodeAvailable, true);
+    assert.equal(report.cpuVaeEnabled, true);
+    assert.equal(report.lowVramMode, "lowvram");
+    assert.equal(report.dynamicVramEnabled, true);
+    assert.equal(report.reserveVramGb, 1.5);
+    assert.equal(report.devices[0].vramTotalBytes, 8 * 1024 ** 3);
+    assert.equal(report.runtimeChecksPassed, true);
+  } finally {
+    await mock.close();
+  }
+});
+
 test("Ollama connection, models, generation and stream cancellation", async () => {
   let unloadedModel;
   const mock = await server((req, res) => {

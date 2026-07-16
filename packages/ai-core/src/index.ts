@@ -197,6 +197,21 @@ export type ComfyWorkflowOptimization = {
   cpuOffloadVerification: "runtime_required";
   nodeTypes: string[];
 };
+export type ComfyLowSpecRuntimeReport = {
+  comfyuiVersion: string | null;
+  devices: Array<{
+    name: string;
+    type: string;
+    vramTotalBytes: number | null;
+    vramFreeBytes: number | null;
+  }>;
+  tiledVaeNodeAvailable: boolean;
+  cpuVaeEnabled: boolean;
+  lowVramMode: "dynamic" | "lowvram" | "novram" | "disabled";
+  dynamicVramEnabled: boolean;
+  reserveVramGb: number | null;
+  runtimeChecksPassed: boolean;
+};
 export function analyzeComfyWorkflowOptimization(
   workflow: Record<string, unknown>,
 ): ComfyWorkflowOptimization {

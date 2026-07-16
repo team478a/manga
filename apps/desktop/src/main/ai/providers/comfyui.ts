@@ -7,6 +7,7 @@ import {
   type ProviderJobStatus,
   type ProviderSettings,
   type RuntimeProfileState,
+  type ComfyLowSpecRuntimeReport,
 } from "@mangai/ai-core";
 import { fetchWithTimeout, safeBaseUrl } from "./http.js";
 export function applyRuntimeLimitsToWorkflow(
@@ -87,6 +88,85 @@ export class ComfyUIProvider implements ImageGenerationProvider {
           error instanceof Error ? error.message : "ComfyUIへ接続できません。",
       };
     }
+  }
+  async inspectLowSpecRuntime(
+    signal?: AbortSignal,
+  ): Promise<ComfyLowSpecRuntimeReport> {
+    const [statsResponse, tiledNodeResponse] = await Promise.all([
+      fetchWithTimeout(
+        this.url("/system_stats"),
+        {},
+        this.settings.timeoutMs,
+        signal,
+      ),
+      fetchWithTimeout(
+        this.url("/object_info/VAEDecodeTiled"),
+        {},
+        this.settings.timeoutMs,
+        signal,
+      ),
+    ]);
+    if (!statsResponse.ok)
+      throw new AIProviderError(
+        "CONNECTION_FAILED",
+        `ComfyUI実行環境の取得に失敗しました（HTTP ${statsResponse.status}）。`,
+      );
+    if (!tiledNodeResponse.ok)
+      throw new AIProviderError(
+        "NODE_INFO_FAILED",
+        `ComfyUIノード情報の取得に失敗しました（HTTP ${tiledNodeResponse.status}）。`,
+      );
+    const stats = (await statsResponse.json()) as Record<string, any>,
+      tiledNodes = (await tiledNodeResponse.json()) as Record<string, any>,
+      argv = Array.isArray(stats.system?.argv)
+        ? stats.system.argv.map(String)
+        : [],
+      hasFlag = (name: string) =>
+        argv.some((value: string) => value === name || value.startsWith(`${name}=`)),
+      flagValue = (name: string) => {
+        const inline = argv.find((value: string) => value.startsWith(`${name}=`));
+        if (inline) return inline.slice(name.length + 1);
+        const index = argv.indexOf(name);
+        return index >= 0 ? argv[index + 1] : undefined;
+      },
+      cpuVaeEnabled = hasFlag("--cpu-vae"),
+      dynamicVramEnabled = !hasFlag("--disable-dynamic-vram"),
+      lowVramMode = hasFlag("--novram")
+        ? "novram"
+        : hasFlag("--lowvram")
+          ? "lowvram"
+          : dynamicVramEnabled
+            ? "dynamic"
+            : "disabled",
+      reserve = Number(flagValue("--reserve-vram")),
+      devices = (Array.isArray(stats.devices) ? stats.devices : []).map(
+        (device: Record<string, unknown>) => ({
+          name: String(device.name ?? ""),
+          type: String(device.type ?? ""),
+          vramTotalBytes:
+            typeof device.vram_total === "number" ? device.vram_total : null,
+          vramFreeBytes:
+            typeof device.vram_free === "number" ? device.vram_free : null,
+        }),
+      ),
+      tiledVaeNodeAvailable = Boolean(tiledNodes.VAEDecodeTiled),
+      hasAccelerator = devices.some(
+        (device) => device.type && device.type.toLowerCase() !== "cpu",
+      );
+    return {
+      comfyuiVersion:
+        typeof stats.system?.comfyui_version === "string"
+          ? stats.system.comfyui_version
+          : null,
+      devices,
+      tiledVaeNodeAvailable,
+      cpuVaeEnabled,
+      lowVramMode,
+      dynamicVramEnabled,
+      reserveVramGb: Number.isFinite(reserve) ? reserve : null,
+      runtimeChecksPassed:
+        tiledVaeNodeAvailable && cpuVaeEnabled && hasAccelerator,
+    };
   }
   async generateImage(
     request: ImageGenerationRequest,

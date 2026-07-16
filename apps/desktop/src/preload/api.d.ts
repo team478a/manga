@@ -5,6 +5,7 @@ import type {
   GenerationQueueSettings,
   PageBatchImageRequest,
   ComfyWorkflowOptimization,
+  ComfyLowSpecRuntimeReport,
   ExternalDispatchPreview,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
@@ -294,6 +295,7 @@ export type DesktopApi = {
     checkProvider: (
       providerId: string,
     ) => Promise<{ ok: boolean; message: string; latencyMs?: number }>;
+    inspectComfyLowSpecRuntime: () => Promise<ComfyLowSpecRuntimeReport>;
     listModels: (
       providerId: string,
     ) => Promise<

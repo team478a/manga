@@ -328,6 +328,19 @@ export class AIService {
       );
     return new MockTextProvider();
   }
+  inspectComfyLowSpecRuntime() {
+    const settings = this.settings("comfyui");
+    if (!settings.enabled)
+      throw new AIProviderError(
+        "PROVIDER_DISABLED",
+        "ComfyUIが無効です。設定画面で有効にしてください。",
+      );
+    return new ComfyUIProvider(
+      settings,
+      async (workflowId) => this.store.getComfyWorkflow(workflowId),
+      this.getRuntimeProfile,
+    ).inspectLowSpecRuntime();
+  }
   cancel(requestId: string) {
     const controller = this.controllers.get(requestId);
     if (controller) controller.abort();

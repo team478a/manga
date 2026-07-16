@@ -135,6 +135,8 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:settings:save", value),
     checkProvider: (providerId: string) =>
       ipcRenderer.invoke("ai:provider:check", { providerId }),
+    inspectComfyLowSpecRuntime: () =>
+      ipcRenderer.invoke("ai:comfyui:low-spec-runtime"),
     listModels: (providerId: string) =>
       ipcRenderer.invoke("ai:provider:models", { providerId }),
     listTemplates: () => ipcRenderer.invoke("ai:templates:list"),

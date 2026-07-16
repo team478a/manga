@@ -621,6 +621,9 @@ function register() {
     const id = providerSettingsSchema.shape.providerId.parse(v?.providerId);
     return aiService.provider(id).checkConnection();
   });
+  handle("ai:comfyui:low-spec-runtime", () =>
+    aiService.inspectComfyLowSpecRuntime(),
+  );
   handle("ai:provider:models", async (v) => {
     const id = providerSettingsSchema.shape.providerId.parse(v?.providerId),
       provider = aiService.provider(id);
