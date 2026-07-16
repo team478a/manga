@@ -856,3 +856,11 @@ Hub連携画面を日英辞書へ移行しました。Hub URL、公開・販売�
 承認URL・公開URLのコピー成功と下書き更新成功を`role="status"`、認証無効・通信・clipboardエラーを`role="alert"`で通知します。clipboard失敗は未処理Promiseにせず画面エラーへ変換します。
 
 Desktopから更新できる範囲は従来どおり本人の非公開下書きの作品名・説明だけです。公開、商品、価格、販売ファイル、決済は変更できず、Hub login、Supabase Service Role Key、Stripe Secret Keyを保存しません。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。残る多言語化はMainプロセスメッセージで、次はaxe・NarratorによるWCAG評価です。
+
+## 103. 製品ElectronによるHome画面WCAG自動監査
+
+隔離した一時Documentsフォルダーで製品Electronを起動し、renderer準備完了後に`axe-core`を注入してHome画面を検査する自動評価を追加しました。WCAG 2.0 / 2.1のA・AAを対象とし、JSONレポートを保存して`serious`または`critical`の違反を品質ゲートとして失敗させます。Desktop ReleaseのWindows CIにも同じ監査を追加しました。`axe-core`は開発依存だけに置き、製品renderer bundleへ含めません。
+
+初回監査で「新規Project」buttonの文字色とアクセント背景が3.97:1だったため、通常時とhover時のアクセント色を暗くしてAA基準を満たしました。修正後は20項目合格、違反0件、判定保留0件です。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23、`npm run desktop:test:a11y`に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次は設定・編集・生成・Hub画面へのaxe対象拡張とWindows Narratorによる手動評価です。

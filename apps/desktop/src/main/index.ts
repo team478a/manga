@@ -79,10 +79,12 @@ import {
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const smokeTest = process.argv.includes("--mangai-smoke-test");
-if (smokeTest) {
+const accessibilityTest = process.argv.includes("--mangai-accessibility-test");
+const automatedRendererTest = smokeTest || accessibilityTest;
+if (automatedRendererTest) {
   const smokeDocuments = process.env.MANGAI_SMOKE_DOCUMENTS;
   if (!smokeDocuments || !path.isAbsolute(smokeDocuments))
-    throw new Error("Smoke test documents path is required.");
+    throw new Error("Automated renderer test documents path is required.");
   fs.mkdirSync(smokeDocuments, { recursive: true });
   app.setPath("documents", smokeDocuments);
 }
@@ -876,7 +878,7 @@ app
     register();
     aiService.resumeQueuedImages();
     const win = await createWindow();
-    if (smokeTest) {
+    if (automatedRendererTest) {
       const rendererReady = await win.webContents.executeJavaScript(`
       new Promise((resolve) => {
         const deadline = Date.now() + 10000;
@@ -889,7 +891,47 @@ app
         check();
       })
     `);
-      if (!rendererReady) throw new Error("Renderer smoke test timed out.");
+      if (!rendererReady) throw new Error("Automated renderer test timed out.");
+    }
+    if (accessibilityTest) {
+      const axePath = process.env.MANGAI_AXE_PATH,
+        reportPath = process.env.MANGAI_A11Y_REPORT;
+      if (!axePath || !path.isAbsolute(axePath) || !fs.existsSync(axePath))
+        throw new Error("MANGAI_AXE_PATH must point to axe.min.js.");
+      if (!reportPath || !path.isAbsolute(reportPath))
+        throw new Error("MANGAI_A11Y_REPORT must be an absolute path.");
+      await win.webContents.executeJavaScript(fs.readFileSync(axePath, "utf8"));
+      const report = (await win.webContents.executeJavaScript(`
+        axe.run(document, {
+          runOnly: {
+            type: "tag",
+            values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]
+          }
+        }).then((result) => ({
+          url: location.href,
+          checkedAt: new Date().toISOString(),
+          violations: result.violations,
+          incomplete: result.incomplete,
+          passes: result.passes.length
+        }))
+      `)) as {
+        violations: Array<{ impact?: string | null; id: string }>;
+      };
+      fs.mkdirSync(path.dirname(reportPath), { recursive: true });
+      fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+      const blocking = report.violations.filter((item) =>
+        ["serious", "critical"].includes(String(item.impact)),
+      );
+      if (blocking.length)
+        throw new Error(
+          `Accessibility audit failed: ${blocking
+            .map((item) => item.id)
+            .join(", ")}`,
+        );
+      app.quit();
+      return;
+    }
+    if (smokeTest) {
       app.quit();
       return;
     }
@@ -902,8 +944,13 @@ app
     });
   })
   .catch((cause) => {
-    if (smokeTest) {
-      diagnostics?.captureCrash("smoke_test.failed", cause);
+    if (automatedRendererTest) {
+      diagnostics?.captureCrash(
+        accessibilityTest
+          ? "accessibility_test.failed"
+          : "smoke_test.failed",
+        cause,
+      );
       app.exit(1);
       return;
     }

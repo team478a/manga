@@ -11,6 +11,7 @@
     "desktop:dev": "npm --prefix apps/desktop run dev",
     "desktop:build": "npm --prefix apps/desktop run build",
     "desktop:test": "npm --prefix apps/desktop run test",
+    "desktop:test:a11y": "npm --prefix apps/desktop run test:a11y",
     "desktop:pack:win": "npm --prefix apps/desktop run pack:win",
     "desktop:dist:win": "npm --prefix apps/desktop run dist:win",
     "desktop:dist:win:signed": "npm --prefix apps/desktop run dist:win:signed",

@@ -56,6 +56,17 @@
 - `prefers-reduced-motion: reduce`ではanimationとtransitionを実質無効化
 - Windows forced colorsでは入力、button、dialog、panelの境界と選択状態をOS色で明示
 - keyboard focusは既存の高視認focus ringを使用
+- Homeの主操作色は通常時・hover時とも通常文字のWCAG AAコントラストを満たす配色を使用
+
+## 自動評価
+
+製品rendererを隔離した一時DocumentsフォルダーでElectron起動し、`axe-core`でHome画面を評価できます。
+
+```powershell
+npm run desktop:test:a11y
+```
+
+検査対象はWCAG 2.0 / 2.1のA・AAタグです。結果JSONをMainプロセスから書き出し、`serious`または`critical`の違反がある場合は終了コード1にします。Desktop ReleaseのWindows CIでも同じコマンドを実行します。2026-07-16時点のHome画面は20項目合格、違反0件、判定保留0件です。
 
 ## 確認項目
 
@@ -75,4 +86,4 @@
 14. テンプレートの複製・編集・削除確認と、更新チャンネル・更新確認を英語表示でkeyboard操作できること
 15. Hubの公開照会、端末認証、URLコピー、差分確認、下書き更新を英語表示でkeyboard操作できること
 
-完全な英語版とWCAG評価は未完了です。未翻訳画面を同じ辞書へ段階移行し、axeなどの自動検査とNarratorによる手動確認を追加する必要があります。
+完全な英語版と全画面WCAG評価は未完了です。main process messageを同じ辞書へ移行し、axe対象を設定・編集・生成・Hub画面へ広げ、Narratorによる手動確認を追加する必要があります。
