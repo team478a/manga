@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-16
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `f9352b9`
+実装基準コミット: `eff2440`
 
 ## 1. 現在地
 
@@ -48,6 +48,8 @@ Runtime ProfileをComfyUI送信へ接続し、profile上限を超える解像度
 12GB以下のprofileではCreator Chatと画像生成をMainプロセスで排他制御し、ComfyUI送信前にOllamaモデルを`keep_alive: 0`でGPUから解放します。16GB以上では限定的な同時利用を許可します。
 
 ローカル画像生成の永続Queueを追加しました。実行中に追加した生成はSQLiteへ待機し、優先順位順に1件ずつ処理されます。待機・実行中Jobの一時停止、再開、キャンセル、優先順位変更と、アプリ再起動後の自動復元に対応します。バックグラウンド完了した素材は開いているProjectへ自動反映されます。
+
+接続失敗・タイムアウト等の一時障害は同一Jobを最大3回まで指数バックオフで自動再試行します。試行回数と次回時刻はSQLiteへ保存され、再起動後も継続します。設定不備・不正workflow・route拒否は再試行しません。
 
 ## 2. 製品境界
 
@@ -333,7 +335,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. 検証済みVAEタイル・CPU offload workflow、夜間一括投入、自動再試行上限
+1. 検証済みVAEタイル・CPU offload workflow、夜間一括投入
 2. Provider選定後にcredential、費用見積、明示確認後の外部safe素材送信を接続
 3. Supabase staging、Stripe、実Ollama・ComfyUI、署名付き更新のRC受入れ
 

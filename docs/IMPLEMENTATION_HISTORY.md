@@ -768,3 +768,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト55/55、canv
 アプリ終了時に実行中だった画像Jobは、次回DBオープン時に`RECOVERED_AFTER_RESTART`付きの待機状態へ戻し、AIService初期化後に自動再開します。Creator Chatは応答途中から安全に復元できないため、従来どおり`INTERRUPTED`で失敗確定します。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト56/56、canvas-core 25/25、ai-core 21/21に成功しています。Queueの順次実行、一時停止・再開・priority、キャンセル、SQLite再オープン復元を統合テストで確認しました。生成画面は待機Jobの完了を監視し、新しい素材を現在のProject Bundleへ自動反映します。夜間一括、Page batch、自動再試行上限は次工程です。
+
+## 92. 画像生成Jobの上限付き自動再試行
+
+ComfyUI接続失敗、通信タイムアウト、Ollamaモデル解放失敗など、`AIProviderError.retryable`が明示された一時障害だけを同一Jobで自動再試行するようにしました。workflow不正、Runtime Profile上限超過、route拒否、Provider無効は即時失敗とし、無意味な再送を行いません。
+
+試行回数、最大回数、次回試行時刻をSQLiteへ後方互換追加し、最大3回、1秒から最大30秒の指数バックオフで再実行します。遅延中は他の実行可能Jobを先に処理し、アプリ再起動後も保存済み時刻から待機を継続します。一時停止したJobを利用者が再開した場合は遅延を解除します。
+
+生成画面へ試行回数と次回時刻を日英表示しました。Desktop TypeScript、ESLint、本番renderer build、統合テスト56/56、canvas-core 25/25、ai-core 21/21に成功しています。HTTP接続を1回切断し、同一Job IDの2回目試行で生成完了する経路を統合テストで確認しました。

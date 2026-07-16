@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `f9352b9`
+実装基準コミット: `eff2440`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -474,6 +474,21 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 - Queue待機・一時停止・優先度・順次実行・再オープン復元の統合テスト
 
 生成Promptとworkflow入力は従来どおりローカルSQLite内だけに保存します。夜間開始時刻、Page単位の一括投入、最大試行回数付き自動再試行は次工程です。
+
+### Commit 18: 一時障害の永続自動再試行（完了: `eff2440`）
+
+- `generation_jobs`へ`attempt_count`、`max_attempts`、`next_attempt_at`を後方互換追加
+- 接続失敗、通信タイムアウト、モデル解放失敗など`retryable`エラーだけを自動再試行
+- workflow不正、profile上限、route拒否、Provider設定不備は即時失敗
+- 最大3回の試行上限と1秒開始・最大30秒の指数バックオフ
+- 次回試行時刻まで別の実行可能Jobを優先
+- 遅延中のJobだけが残る場合はMainプロセスのtimerで再開
+- 次回時刻と試行回数をSQLiteへ保存し、アプリ再起動後も継続
+- 一時停止後の手動再開では遅延を解除して即時実行
+- 生成画面へ試行回数、最大回数、次回再試行時刻を日英表示
+- HTTP接続切断後に同一Job IDで再試行し、2回目で完了する統合テスト
+
+再試行のたびに新しいJobを増やさず、1件の監査履歴へ試行回数を集約します。手動の「再実行」は従来どおり新しいJobとして開始します。
 
 ## 11. テスト基準
 
