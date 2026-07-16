@@ -816,3 +816,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-c
 診断sectionを見出しへ関連付け、処理中は`aria-busy`を設定し、実行buttonを説明文へ関連付けました。既存の`aria-live="polite"`による結果通知を維持しています。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。設定画面の診断データ・Provider詳細・テンプレートとHub画面の辞書移行、axe・Narrator評価は次工程です。
+
+## 98. 診断データ・プライバシー設定の英語化
+
+設定画面の診断データとプライバシー領域を日英辞書へ移行しました。詳細クラッシュレポートのローカル保存同意、別管理の外部送信同意、ログ保存先、保存件数、未送信件数、最終送信日時、ログフォルダー、削除、手動送信が選択localeへ連動します。
+
+削除・送信の確認文と完了通知も翻訳し、日時は共通locale formatterを利用します。設定sectionを見出しへ関連付け、保存・削除・送信結果は`role="status"`と`aria-live="polite"`で通知します。外部送信は従来どおり別同意と利用者の手動操作が必要で、自動送信は行いません。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次はAI Provider詳細・プロンプトテンプレート・更新設定、Hub画面の辞書移行とWCAG評価です。
