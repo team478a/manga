@@ -390,6 +390,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - Creator Chatの履歴・テンプレート・文脈・送信状態・エラー・AI設定導線の英語表示
 - AI接続診断の接続・workflow・低スペック実行環境・Ollamaモデル判定の日英表示とARIA状態通知
 - 診断データ・プライバシーの同意、保存・未送信件数、削除・手動送信確認の日英表示
+- AI Providerの接続URL・許可origin・モデル・生成設定・操作結果と、秘密値を含まない監査履歴の日英表示
 - 画像生成条件・ワークフロー操作・状態名・履歴操作・接続状態の英語表示
 - main、renderer、child process異常の捕捉。外部自動送信なし
 

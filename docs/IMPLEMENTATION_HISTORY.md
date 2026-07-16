@@ -824,3 +824,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58に成�
 削除・送信の確認文と完了通知も翻訳し、日時は共通locale formatterを利用します。設定sectionを見出しへ関連付け、保存・削除・送信結果は`role="status"`と`aria-live="polite"`で通知します。外部送信は従来どおり別同意と利用者の手動操作が必要で、自動送信は行いません。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次はAI Provider詳細・プロンプトテンプレート・更新設定、Hub画面の辞書移行とWCAG評価です。
+
+## 99. AI Provider詳細・監査履歴の英語化
+
+設定画面のOllama・ComfyUI・Mock Provider詳細を日英辞書へ移行しました。有効化、接続URL、許可するHTTPS origin、モデル、Temperature、最大出力、streaming、timeout、polling、保存、接続確認、モデル一覧更新が選択localeへ連動します。
+
+AI設定変更履歴も、有効状態、local/remote区分、変更フィールド名、日時を翻訳しました。接続URL、host、モデル名の実値を履歴へ保存しない既存の監査仕様は維持しています。Provider操作結果は`role="status"`と`aria-live="polite"`で通知します。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次はプロンプトテンプレート・更新設定、Hub画面の辞書移行とWCAG評価です。
