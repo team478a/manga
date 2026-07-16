@@ -404,6 +404,15 @@ const ja = {
   "generation.nightQueueEnd": "終了",
   "generation.nightQueueSave": "夜間設定を保存",
   "generation.nightQueueSaved": "夜間Queue設定を保存しました。",
+  "generation.pageBatchTitle": "EpisodeのPageを一括登録",
+  "generation.pageBatchHelp":
+    "選択中EpisodeのPrompt入力済みPageを、ページ順で画像生成Queueへ登録します。空のPromptはスキップします。",
+  "generation.pageBatchCount": "登録対象 {eligible}件・スキップ {skipped}件",
+  "generation.pageBatchNoEpisode": "先にEpisodeを選択してください。",
+  "generation.pageBatchEnqueue": "Pageを一括でQueueへ登録",
+  "generation.pageBatchEnqueuing": "登録中…",
+  "generation.pageBatchQueued":
+    "{queued}件をQueueへ登録しました（空Prompt {skipped}件をスキップ）。",
   "generation.retry": "再実行",
   "generation.status.queued": "待機中",
   "generation.status.paused": "一時停止中",
@@ -866,6 +875,16 @@ const en: Record<TranslationKey, string> = {
   "generation.nightQueueEnd": "End",
   "generation.nightQueueSave": "Save night queue",
   "generation.nightQueueSaved": "Night queue settings saved.",
+  "generation.pageBatchTitle": "Queue episode pages",
+  "generation.pageBatchHelp":
+    "Queues pages with prompts from the selected episode in page order. Pages with blank prompts are skipped.",
+  "generation.pageBatchCount":
+    "Eligible: {eligible} / skipped: {skipped}",
+  "generation.pageBatchNoEpisode": "Select an episode first.",
+  "generation.pageBatchEnqueue": "Queue episode pages",
+  "generation.pageBatchEnqueuing": "Queuing…",
+  "generation.pageBatchQueued":
+    "Queued {queued} pages (skipped {skipped} blank prompts).",
   "generation.retry": "Retry",
   "generation.status.queued": "Queued",
   "generation.status.paused": "Paused",

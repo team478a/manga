@@ -124,6 +124,8 @@ export function GenerationJobs({
       endTime: "07:00",
     });
   const [queueSettingsMessage, setQueueSettingsMessage] = React.useState("");
+  const [batchBusy, setBatchBusy] = React.useState(false);
+  const [batchMessage, setBatchMessage] = React.useState("");
   const completedImageCount = React.useRef<number | null>(null);
   const load = async () => {
     const [nextJobs, nextRoutes, nextWorkflows] = await Promise.all([
@@ -190,6 +192,38 @@ export function GenerationJobs({
   const selectedWorkflow = workflows.find(
     (workflow) => workflow.id === workflowId,
   );
+  const episodePages = bundle.pages
+    .filter((page) => page.episodeId === episodeId)
+    .sort((left, right) => left.orderIndex - right.orderIndex);
+  const batchEligibleCount = episodePages.filter((page) =>
+    page.prompt.trim(),
+  ).length;
+  const batchSkippedCount = episodePages.length - batchEligibleCount;
+  const enqueuePageBatch = async () => {
+    if (!episodeId || !workflowId || !batchEligibleCount) return;
+    setBatchBusy(true);
+    setBatchMessage("");
+    setError("");
+    try {
+      const result = await window.mangai.ai.enqueuePageBatch({
+        projectId: bundle.project.id,
+        episodeId,
+        workflowId,
+        pageIds: episodePages.map((page) => page.id),
+      });
+      setBatchMessage(
+        t("generation.pageBatchQueued", {
+          queued: result.queuedCount,
+          skipped: result.skippedPageIds.length,
+        }),
+      );
+      await load();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      setBatchBusy(false);
+    }
+  };
   const resolveSafeAsset = async () => {
     if (!safeQuery.trim()) return;
     setSafeBusy(true);
@@ -615,6 +649,33 @@ export function GenerationJobs({
               {workflowMessage}
             </p>
           )}
+          <div className="notice" role="region">
+            <h3>{t("generation.pageBatchTitle")}</h3>
+            <p>{t("generation.pageBatchHelp")}</p>
+            <p>
+              {episodeId
+                ? t("generation.pageBatchCount", {
+                    eligible: batchEligibleCount,
+                    skipped: batchSkippedCount,
+                  })
+                : t("generation.pageBatchNoEpisode")}
+            </p>
+            <button
+              className="secondary"
+              disabled={
+                batchBusy ||
+                !episodeId ||
+                !workflowId ||
+                batchEligibleCount === 0
+              }
+              onClick={() => void enqueuePageBatch()}
+            >
+              {batchBusy
+                ? t("generation.pageBatchEnqueuing")
+                : t("generation.pageBatchEnqueue")}
+            </button>
+            {batchMessage && <p role="status">{batchMessage}</p>}
+          </div>
           <label>
             {t("generation.prompt")}
             <textarea

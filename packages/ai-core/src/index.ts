@@ -180,6 +180,15 @@ export const imageJobRequestSchema = z.object({
     .optional(),
 });
 export type ImageJobRequest = z.infer<typeof imageJobRequestSchema>;
+export const pageBatchImageRequestSchema = z.object({
+  projectId: z.string().uuid(),
+  episodeId: z.string().uuid(),
+  workflowId: z.string().uuid(),
+  pageIds: z.array(z.string().uuid()).min(1).max(100),
+});
+export type PageBatchImageRequest = z.infer<
+  typeof pageBatchImageRequestSchema
+>;
 export const chatSessionIdSchema = z.object({ id: z.string().uuid() });
 export const renameChatSchema = z.object({
   id: z.string().uuid(),

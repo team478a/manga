@@ -57,6 +57,7 @@ import {
   chatRequestSchema,
   chatSessionIdSchema,
   imageJobRequestSchema,
+  pageBatchImageRequestSchema,
   generationQueueSettingsSchema,
   promptTemplateInputSchema,
   projectGenerationPolicyInputSchema,
@@ -700,6 +701,9 @@ function register() {
   );
   handle("ai:image:generate", (v) =>
     aiService.generateImage(imageJobRequestSchema.parse(v)),
+  );
+  handle("ai:image:enqueue-pages", (v) =>
+    aiService.enqueuePageBatch(pageBatchImageRequestSchema.parse(v)),
   );
   handle("ai:workflows:list", () => store.listComfyWorkflows());
   handle("ai:workflows:add", async (v) => {

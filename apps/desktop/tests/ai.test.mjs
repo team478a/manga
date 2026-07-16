@@ -174,6 +174,99 @@ const settings = (providerId, baseUrl) => ({
   pollIntervalMs: 10,
   allowedOrigins: [],
 });
+
+test("episode page batch queues prompt pages in page order", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-page-batch-"));
+  const paths = {
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  try {
+    db.saveProviderSettings(settings("comfyui", "http://127.0.0.1:8188"));
+    const project = db.createProject({
+      title: "Page batch",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 768,
+      dpi: 300,
+    });
+    const episodeId = project.episodes[0].id;
+    let bundle = db.addPage(episodeId);
+    const first = bundle.pages[0];
+    bundle = db.savePage(first.id, "first prompt", "first negative", "");
+    bundle = db.addPage(episodeId);
+    const blank = bundle.pages.find((page) => page.id !== first.id);
+    bundle = db.addPage(episodeId);
+    const last = bundle.pages.find(
+      (page) => page.id !== first.id && page.id !== blank.id,
+    );
+    db.savePage(last.id, "last prompt", "", "");
+    const workflowFile = path.join(root, "workflow.json");
+    fs.writeFileSync(
+      workflowFile,
+      JSON.stringify({ 6: { class_type: "CLIPTextEncode", inputs: { text: "" } } }),
+    );
+    const workflow = db.registerComfyWorkflow("batch", workflowFile, {
+      prompt: { nodeId: "6", input: "text" },
+    })[0];
+    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+    const formatMinute = (value) =>
+      `${String(Math.floor((value % 1440) / 60)).padStart(2, "0")}:${String(
+        value % 60,
+      ).padStart(2, "0")}`;
+    db.saveGenerationQueueSettings({
+      nightModeEnabled: true,
+      startTime: formatMinute(nowMinutes + 60),
+      endTime: formatMinute(nowMinutes + 120),
+    });
+
+    const result = new AIService(db).enqueuePageBatch({
+      projectId: project.project.id,
+      episodeId,
+      workflowId: workflow.id,
+      pageIds: [last.id, blank.id, first.id],
+    });
+
+    assert.equal(result.queuedCount, 2);
+    assert.deepEqual(result.skippedPageIds, [blank.id]);
+    assert.deepEqual(
+      result.jobs.map((job) => job.pageId),
+      [first.id, last.id],
+    );
+    const queued = db
+      .listGenerationJobs(project.project.id)
+      .filter((job) => result.jobs.some((item) => item.jobId === job.id))
+      .sort((left, right) => left.queueOrder - right.queueOrder);
+    assert.deepEqual(
+      queued.map((job) => job.pageId),
+      [first.id, last.id],
+    );
+    assert.ok(queued[0].queueOrder < queued[1].queueOrder);
+    assert.throws(
+      () =>
+        new AIService(db).enqueuePageBatch({
+          projectId: project.project.id,
+          episodeId,
+          workflowId: workflow.id,
+          pageIds: [first.id, first.id],
+        }),
+      (error) => error?.code === "BATCH_PAGE_INVALID",
+    );
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 async function server(handler) {
   const instance = http.createServer(handler);
   await new Promise((resolve) => instance.listen(0, "127.0.0.1", resolve));

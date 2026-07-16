@@ -450,8 +450,12 @@ export class MangaiDatabase {
       );
     if (!jobColumns.some((column) => column.name === "next_attempt_at"))
       this.db.exec("alter table generation_jobs add column next_attempt_at text");
+    if (!jobColumns.some((column) => column.name === "queue_order"))
+      this.db.exec(
+        "alter table generation_jobs add column queue_order integer not null default 0",
+      );
     this.db.exec(
-      "create index if not exists idx_generation_jobs_queue on generation_jobs(status,provider_type,priority desc,created_at)",
+      "create index if not exists idx_generation_jobs_queue_v2 on generation_jobs(status,provider_type,priority desc,queue_order,created_at)",
     );
     this.migrateCanvasV1();
     this.migrateRelativeTextV1();
@@ -4060,9 +4064,16 @@ export class MangaiDatabase {
     inputJson?: unknown;
   }) {
     const id = uid();
+    const queueOrder = (
+      this.db
+        .prepare(
+          "select coalesce(max(queue_order),0)+1 as value from generation_jobs",
+        )
+        .get() as { value: number }
+    ).value;
     this.db
       .prepare(
-        "insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,prompt,negative_prompt,input_json,created_at) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,prompt,negative_prompt,input_json,created_at,queue_order) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
       )
       .run(
         id,
@@ -4078,6 +4089,7 @@ export class MangaiDatabase {
         input.negativePrompt ?? "",
         JSON.stringify(input.inputJson ?? {}),
         now(),
+        queueOrder,
       );
     return id;
   }
@@ -4114,7 +4126,7 @@ export class MangaiDatabase {
   }
   listGenerationJobs(projectId?: string) {
     const sql =
-      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,priority,attempt_count as attemptCount,max_attempts as maxAttempts,next_attempt_at as nextAttemptAt,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
+      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,priority,queue_order as queueOrder,attempt_count as attemptCount,max_attempts as maxAttempts,next_attempt_at as nextAttemptAt,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
     return projectId
       ? this.db
           .prepare(`${sql} where project_id=? order by created_at desc`)
@@ -4132,7 +4144,7 @@ export class MangaiDatabase {
         `select id,input_json as inputJson from generation_jobs
          where status='queued' and generation_type='image'
            and (next_attempt_at is null or next_attempt_at<=?)
-         order by priority desc,created_at,id limit 1`,
+         order by priority desc,queue_order,created_at,id limit 1`,
       )
       .get(now()) as { id: string; inputJson: string } | undefined;
   }

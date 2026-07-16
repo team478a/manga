@@ -3,6 +3,7 @@ import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
 import type {
   GenerationRouteDecisionRecord,
   GenerationQueueSettings,
+  PageBatchImageRequest,
   ExternalDispatchPreview,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
@@ -358,6 +359,11 @@ export type DesktopApi = {
       value: SafeAssetLibraryRequest,
     ) => Promise<ExternalDispatchPreview>;
     generateImage: (value: any) => Promise<any>;
+    enqueuePageBatch: (value: PageBatchImageRequest) => Promise<{
+      jobs: Array<{ pageId: string; jobId: string }>;
+      queuedCount: number;
+      skippedPageIds: string[];
+    }>;
     listWorkflows: () => Promise<any[]>;
     addWorkflow: (name: string, mapping: unknown) => Promise<any[]>;
     deleteWorkflow: (id: string) => Promise<any[]>;

@@ -16,6 +16,7 @@ import {
   type TextGenerationProvider,
   type ImageGenerationRequest,
   type ImageJobRequest,
+  type PageBatchImageRequest,
   type GenerationQueueSettings,
   type RuntimeProfileState,
 } from "@mangai/ai-core";
@@ -370,6 +371,71 @@ export class AIService {
     this.queueWakeTimer = undefined;
     void this.runNextQueuedImage();
     return settings;
+  }
+
+  enqueuePageBatch(input: PageBatchImageRequest) {
+    const settings = this.settings("comfyui");
+    if (!settings.enabled)
+      throw new AIProviderError(
+        "PROVIDER_DISABLED",
+        "ComfyUIが無効です。設定画面で有効にしてください。",
+      );
+    this.store.getComfyWorkflow(input.workflowId);
+    const bundle = this.store.bundle(input.projectId);
+    const requested = new Set(input.pageIds);
+    if (requested.size !== input.pageIds.length)
+      throw new AIProviderError(
+        "BATCH_PAGE_INVALID",
+        "一括生成のPage IDが重複しています。",
+      );
+    const episodePages = bundle.pages
+      .filter((page) => page.episodeId === input.episodeId)
+      .sort((left, right) => left.orderIndex - right.orderIndex);
+    const found = new Set(episodePages.map((page) => page.id));
+    if (input.pageIds.some((id) => !found.has(id)))
+      throw new AIProviderError(
+        "BATCH_PAGE_INVALID",
+        "一括生成対象に別Episodeまたは別ProjectのPageが含まれています。",
+      );
+    const pages = episodePages.filter((page) => requested.has(page.id));
+    const eligible = pages.filter((page) => page.prompt.trim());
+    const skippedPageIds = pages
+      .filter((page) => !page.prompt.trim())
+      .map((page) => page.id);
+    if (!eligible.length)
+      throw new AIProviderError(
+        "BATCH_PROMPT_EMPTY",
+        "Promptが入力されたPageがありません。",
+      );
+    const jobs = eligible.map((page) => {
+      const request: ImageJobRequest = {
+        projectId: input.projectId,
+        episodeId: input.episodeId,
+        pageId: page.id,
+        workflowId: input.workflowId,
+        prompt: page.prompt,
+        negativePrompt: page.negativePrompt,
+        width: page.width,
+        height: page.height,
+        seed: crypto.randomInt(0, 2_147_483_647),
+      };
+      return {
+        pageId: page.id,
+        jobId: this.store.createGenerationJob({
+          projectId: request.projectId,
+          episodeId: request.episodeId,
+          pageId: request.pageId,
+          providerType: "image",
+          providerId: "comfyui",
+          generationType: "image",
+          prompt: request.prompt,
+          negativePrompt: request.negativePrompt,
+          inputJson: request,
+        }),
+      };
+    });
+    void this.runNextQueuedImage();
+    return { jobs, queuedCount: jobs.length, skippedPageIds };
   }
   async sendChat(
     input: {

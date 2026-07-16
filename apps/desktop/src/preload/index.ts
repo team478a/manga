@@ -175,6 +175,8 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:external-asset:preview", value),
     generateImage: (value: unknown) =>
       ipcRenderer.invoke("ai:image:generate", value),
+    enqueuePageBatch: (value: unknown) =>
+      ipcRenderer.invoke("ai:image:enqueue-pages", value),
     listWorkflows: () => ipcRenderer.invoke("ai:workflows:list"),
     addWorkflow: (name: string, mapping: unknown) =>
       ipcRenderer.invoke("ai:workflows:add", { name, mapping }),
