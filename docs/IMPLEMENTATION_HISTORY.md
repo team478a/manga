@@ -848,3 +848,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-c
 Runtime Profile sectionを見出しへ関連付け、保存結果を`role="status"`と`aria-live="polite"`で通知します。これにより`AISettings.tsx`内の固定日本語は解消され、保存済みテンプレートやMainプロセス・外部サービスが返す利用者データだけは自動翻訳しません。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。英語化の主な残範囲はHub連携とMainプロセスメッセージで、次にWCAG自動・手動評価を進めます。
+
+## 102. Hub連携画面の英語化
+
+Hub連携画面を日英辞書へ移行しました。Hub URL、公開・販売状態、device code認証、承認URL、承認待ち、token期限、非公開下書きのDesktopとの差分、作品名・説明の限定更新、再認証案内、安全なscopeがlocaleへ連動します。日時は共通formatterを利用します。
+
+承認URL・公開URLのコピー成功と下書き更新成功を`role="status"`、認証無効・通信・clipboardエラーを`role="alert"`で通知します。clipboard失敗は未処理Promiseにせず画面エラーへ変換します。
+
+Desktopから更新できる範囲は従来どおり本人の非公開下書きの作品名・説明だけです。公開、商品、価格、販売ファイル、決済は変更できず、Hub login、Supabase Service Role Key、Stripe Secret Keyを保存しません。Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。残る多言語化はMainプロセスメッセージで、次はaxe・NarratorによるWCAG評価です。
