@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `10d66b7`
+実装基準コミット: `567634c`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -457,11 +457,28 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 
 排他はMainプロセスの全AI入口へ配置し、renderer側のbusy表示だけには依存しません。次は拒否された処理を待機へ回せる永続Queue、停止・再開、再起動復元です。
 
+### Commit 17: ローカル画像生成の永続Queue（完了: `567634c`）
+
+- `generation_jobs`へ後方互換な`priority`列とQueue検索indexを追加
+- `paused`状態をai-core、SQLite、IPC、rendererへ追加
+- 画像生成中の追加Requestを失敗させず`queued`として永続保存
+- priority降順・作成日時順で1件ずつ自動実行
+- 実行中・待機中Jobの一時停止、停止、再開、キャンセル
+- 待機・一時停止中Jobの優先順位を上下操作
+- 実行中の一時停止時にComfyUIへinterruptを送信
+- 起動時に中断された画像Jobを`RECOVERED_AFTER_RESTART`付きで待機列へ復元
+- 中断されたCreator Chatは再送せず、従来どおり`INTERRUPTED`で失敗確定
+- アプリ起動時とGPUリソース解放時にQueue処理を自動再開
+- 既存の同期的な生成成功レスポンスを維持し、待機へ入った場合だけ即座に`queued`を返す
+- Queue待機・一時停止・優先度・順次実行・再オープン復元の統合テスト
+
+生成Promptとworkflow入力は従来どおりローカルSQLite内だけに保存します。夜間開始時刻、Page単位の一括投入、最大試行回数付き自動再試行は次工程です。
+
 ## 11. テスト基準
 
 2026-07-16の確認時点:
 
-- Desktop統合テスト: 55/55成功
+- Desktop統合テスト: 56/56成功
 - ai-core Router・外部送信契約・Runtime Profile単体テスト: 21/21成功
 - canvas-core単体テスト: 25/25成功
 

@@ -758,3 +758,13 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト55/55、canv
 ローカル画像生成を確保した後、設定中のローカルOllamaモデルへ`keep_alive: 0`を送り、解放成功後だけComfyUI workflowを送信します。Ollamaが無効、remote接続、モデル未選択の場合は解放要求を行いません。モデル解放失敗は`MODEL_UNLOAD_FAILED`としてfail-closedで停止します。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト55/55、canvas-core 25/25、ai-core 21/21に成功しています。HTTP mockでモデル解放要求、ComfyUI送信、競合Chat拒否の順序も確認しました。次工程は永続Queueと停止・再開・再起動復元です。
+
+## 91. ローカル画像生成の永続Queue
+
+画像生成中に追加されたRequestを`LOCAL_JOB_BUSY`で失敗させず、既存`generation_jobs`へ`queued`として保存する永続Queueへ移行しました。Queueはpriority降順・作成日時順で1件ずつ自動実行し、既存の単発生成は従来どおり完了Bundleを返します。
+
+`paused`状態、priority列、Queue index、限定IPCを後方互換で追加し、生成Job画面から実行中・待機中Jobの一時停止、再開、キャンセル、優先順位の上下操作ができます。実行中の一時停止・キャンセルはComfyUIへinterruptを送り、待機中操作は外部通信を行いません。
+
+アプリ終了時に実行中だった画像Jobは、次回DBオープン時に`RECOVERED_AFTER_RESTART`付きの待機状態へ戻し、AIService初期化後に自動再開します。Creator Chatは応答途中から安全に復元できないため、従来どおり`INTERRUPTED`で失敗確定します。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト56/56、canvas-core 25/25、ai-core 21/21に成功しています。Queueの順次実行、一時停止・再開・priority、キャンセル、SQLite再オープン復元を統合テストで確認しました。夜間一括、Page batch、自動再試行上限は次工程です。

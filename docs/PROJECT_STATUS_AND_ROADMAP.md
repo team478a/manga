@@ -2,7 +2,7 @@
 
 最終確認日: 2026-07-16
 対象ブランチ: `feature/manga-canvas-mvp`
-実装基準コミット: `10d66b7`
+実装基準コミット: `567634c`
 
 ## 1. 現在地
 
@@ -46,6 +46,8 @@ Library不一致のsafe Jobをloopback ComfyUI生成フォームへ引き継げ�
 Runtime ProfileをComfyUI送信へ接続し、profile上限を超える解像度を縦横比維持で縮小、batchを1へ固定、ControlNet・LoRA過多をネットワーク送信前に拒否します。調整後の解像度は生成履歴と画面で確認できます。
 
 12GB以下のprofileではCreator Chatと画像生成をMainプロセスで排他制御し、ComfyUI送信前にOllamaモデルを`keep_alive: 0`でGPUから解放します。16GB以上では限定的な同時利用を許可します。
+
+ローカル画像生成の永続Queueを追加しました。実行中に追加した生成はSQLiteへ待機し、優先順位順に1件ずつ処理されます。待機・実行中Jobの一時停止、再開、キャンセル、優先順位変更と、アプリ再起動後の自動復元に対応します。
 
 ## 2. 製品境界
 
@@ -216,7 +218,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 | Desktop TypeScript                      | 成功                          |
 | Desktop ESLint                          | 成功                          |
 | Electron main / Vite本番ビルド          | 成功                          |
-| Desktop統合テスト                       | 55/55成功                     |
+| Desktop統合テスト                       | 56/56成功                     |
 | ai-core Router・外部送信・Runtimeテスト | 21/21成功                     |
 | canvas-core単体テスト                   | 25/25成功                     |
 | NSIS x64生成                            | 成功                          |
@@ -331,7 +333,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 
 実装作業として次に着手するなら、以下の順を推奨します。
 
-1. 再起動復元可能な永続Queue、停止・再開・再試行
+1. 検証済みVAEタイル・CPU offload workflow、夜間一括投入、自動再試行上限
 2. Provider選定後にcredential、費用見積、明示確認後の外部safe素材送信を接続
 3. Supabase staging、Stripe、実Ollama・ComfyUI、署名付き更新のRC受入れ
 
