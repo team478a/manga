@@ -372,17 +372,23 @@ function App() {
         {databaseRecovery && (
           <section className="database-recovery" role="alert">
             <div>
-              <b>データベースを復旧しました</b>
+              <b>{t("home.databaseRecovered")}</b>
               <p>
                 {databaseRecovery.restoredProjects.length
-                  ? `${databaseRecovery.restoredProjects.length}件のProjectをバックアップから復元しました。`
-                  : "復元できるProjectバックアップがなかったため、新しいデータベースで起動しました。"}
+                  ? t("home.projectsRestored", {
+                      count: databaseRecovery.restoredProjects.length,
+                    })
+                  : t("home.noProjectsRestored")}
                 {databaseRecovery.failedBackups.length
-                  ? ` ${databaseRecovery.failedBackups.length}件のバックアップを復元できませんでした。`
+                  ? t("home.backupsFailed", {
+                      count: databaseRecovery.failedBackups.length,
+                    })
                   : ""}
               </p>
               <small>
-                破損した原本の保管場所: {databaseRecovery.archiveDirectory}
+                {t("home.corruptArchive", {
+                  path: databaseRecovery.archiveDirectory,
+                })}
               </small>
             </div>
           </section>
@@ -392,7 +398,7 @@ function App() {
             className={`home-backup-status ${autoBackup.status}`}
             role={autoBackup.status === "error" ? "alert" : "status"}
           >
-            <b>自動バックアップ:</b>{" "}
+            <b>{t("home.autoBackupStatus")}</b>{" "}
             {localizeMessage(autoBackup.message)}
             {autoBackup.checkedAt && (
               <small>最終確認 {formatDateTime(autoBackup.checkedAt)}</small>

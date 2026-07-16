@@ -51,7 +51,7 @@ export function AppHeader({
   onExport: () => void;
   updateControl: React.ReactNode;
 }) {
-  const { t, localeCode } = useI18n();
+  const { t, localizeMessage, localeCode } = useI18n();
   return (
     <header className="app-header">
       <div className="app-header-location">
@@ -135,7 +135,7 @@ export function AppHeader({
               {history.items.length ? (
                 history.items.slice(0, 10).map((item) => (
                   <p className={item.isUndone ? "undone" : ""} key={item.id}>
-                    <span>{item.label}</span>
+                    <span>{localizeMessage(item.label)}</span>
                     <small>
                       {item.isUndone ? t("header.undone") : ""}
                       {new Date(item.createdAt).toLocaleTimeString(localeCode)}

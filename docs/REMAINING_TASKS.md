@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-基準コミット: `4fd24d5`
+基準コミット: `fdf22e0`
 
 ## 1. 現在の判定
 
@@ -37,7 +37,7 @@ HubとDesktopの主要機能、ローカル品質ゲート、Windowsインスト
 | P1   | 外部背景Provider接続         | interface・送信preview・確認契約は完了。実Provider・credential・見積・送信は未実装 |
 | P1   | Panelレイヤー分離・合成      | 永続化、直接変形、mask、correction透明パッチ、互換cacheまで完了                    |
 | P2   | 低スペックRuntime Profile    | ComfyUI実行環境診断まで完了。実workflowによる8GB画像生成E2Eが残る                |
-| P2   | 英語化の全画面展開・WCAG評価 | 日英18状態のaxe違反0件。主要main error翻訳済み。低頻度message・生成状態・Narratorが残る |
+| P2   | 英語化の全画面展開・WCAG評価 | 日英18状態のaxe違反0件。既知main error・履歴翻訳済み。生成状態・Narrator・未知文面fallbackが残る |
 
 ## 4. 外部受付基盤の準備後に進める改善
 

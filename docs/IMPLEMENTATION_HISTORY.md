@@ -898,3 +898,11 @@ IPCや外部サービスが返したメッセージをrendererの選択localeへ
 Home・workspace共通エラー、Hub、画像生成、AI設定診断、Provider状態、生成Job Drawer、書き出しダイアログ、更新Controlへ共通変換を適用しました。日本語localeでは従来文面を維持し、保存済み利用者コンテンツやPromptは変換しません。
 
 英語のHub URLエラー状態では、通知内に日本語文字が残っていないことを製品Electron監査で明示検証します。日英18画面・状態のaxe A・AA違反0件を維持し、Desktop TypeScript、ESLint、本番renderer buildに成功しています。バックアップ破損・DB復旧・詳細workflow検証など低頻度メッセージは次段階です。
+
+## 108. バックアップ・DB・workflow・操作履歴の英語変換
+
+共通メッセージ変換層を、バックアップmanifest・形式・サイズ・履歴、SQLite空ファイル・整合性・破損、素材欠落・破損・復元、Project保存先、Episode・Page・Canvas参照、内部互換cache、ComfyUI workflow選択・mapping・低スペック適合へ拡張しました。ファイル名など利用者由来部分は保持したまま周辺説明だけを翻訳します。
+
+HomeのDB復旧通知、復元件数、失敗件数、破損DB保管先、自動バックアップ見出しを日英辞書へ移行しました。操作履歴はDBに保存済みの日本語監査ラベルを変更せず、AppHeader表示時だけProject・Episode・Page・Canvas・素材操作名を英語へ変換します。
+
+日英18画面・状態のaxe A・AA違反0件を維持し、Desktop TypeScript、ESLint、本番renderer buildに成功しています。今後の未登録エラーや接続先独自文面に対する共通fallbackとNarrator確認は継続課題です。
