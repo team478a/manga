@@ -3,6 +3,7 @@ import type {
   HubDeviceState,
   HubStatus as HubStatusResult,
 } from "../../../preload/api";
+import { useI18n } from "../../i18n";
 
 const STORAGE_KEY = "mangai.hub-base-url";
 const DEFAULT_HUB_URL = "http://localhost:3000";
@@ -26,6 +27,7 @@ export function HubStatus({
   projectDescription: string;
   onClose: () => void;
 }) {
+  const { t, formatDateTime } = useI18n();
   const [baseUrl, setBaseUrl] = React.useState(initialBaseUrl);
   const [status, setStatus] = React.useState<HubStatusResult | null>(null);
   const [device, setDevice] = React.useState<HubDeviceState | null>(null);
@@ -42,7 +44,7 @@ export function HubStatus({
       try {
         localStorage.setItem(STORAGE_KEY, baseUrl.trim());
       } catch {
-        // ローカル設定を保存できない環境でも照会は継続する。
+        // Continue the query even when local settings cannot be persisted.
       }
     } catch (cause) {
       setStatus(null);
@@ -80,27 +82,38 @@ export function HubStatus({
   const verificationUrl = device
     ? `${device.baseUrl.replace(/\/+$/, "")}${device.verificationPath}`
     : "";
+  const copyToClipboard = async (value: string, successMessage: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setError("");
+      setMessage(successMessage);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    }
+  };
 
   return (
     <main className="tool-page">
       <header className="tool-header">
-        <button onClick={onClose}>← ワークスペース</button>
-        <h1>Hub連携</h1>
-        <span>安全な下書き連携</span>
+        <button onClick={onClose}>{t("hub.backWorkspace")}</button>
+        <h1>{t("hub.title")}</h1>
+        <span>{t("hub.subtitle")}</span>
       </header>
       <div className="tool-content hub-content">
         <section className="panel-lite">
           <div className="setting-title">
             <div>
-              <h2>公開状況を確認</h2>
+              <h2>{t("hub.statusTitle")}</h2>
               <p>{projectTitle}</p>
             </div>
             <span className="hub-readonly-badge">
-              {device?.status === "approved" ? "端末認証済み" : "公開情報のみ"}
+              {device?.status === "approved"
+                ? t("hub.deviceApproved")
+                : t("hub.publicOnly")}
             </span>
           </div>
           <label>
-            MANGAI Hub URL
+            {t("hub.url")}
             <div className="inline hub-url-row">
               <input
                 type="url"
@@ -110,22 +123,20 @@ export function HubStatus({
                 placeholder="https://hub.example.com"
               />
               <button disabled={busy || !baseUrl.trim()} onClick={check}>
-                {busy ? "確認中…" : "再確認"}
+                {busy ? t("hub.checking") : t("hub.recheck")}
               </button>
             </div>
           </label>
           <small className="hub-help">
-            本番URLはHTTPSを指定してください。開発中はlocalhostを利用できます。
+            {t("hub.urlHelp")}
           </small>
         </section>
 
         <section className="panel-lite hub-device-card">
           <div className="setting-title">
             <div>
-              <h2>Desktop端末認証</h2>
-              <p>
-                認証すると、自分の非公開下書きを確認し、作品名と説明だけを更新できます。
-              </p>
+              <h2>{t("hub.deviceTitle")}</h2>
+              <p>{t("hub.deviceDescription")}</p>
             </div>
             {device?.status === "approved" ? (
               <button
@@ -136,7 +147,7 @@ export function HubStatus({
                   await check();
                 }}
               >
-                認証を解除
+                {t("hub.disconnect")}
               </button>
             ) : (
               <button
@@ -157,60 +168,76 @@ export function HubStatus({
                   }
                 }}
               >
-                端末認証を開始
+                {t("hub.startAuthorization")}
               </button>
             )}
           </div>
           {device?.status === "pending" && (
             <div className="hub-pairing">
-              <p>Hubへログインし、次のコードを15分以内に承認してください。</p>
+              <p>{t("hub.approvalPrompt")}</p>
               <strong>{device.userCode}</strong>
               <code>{verificationUrl}</code>
               <button
                 className="secondary"
                 onClick={() =>
-                  void navigator.clipboard.writeText(verificationUrl)
+                  void copyToClipboard(
+                    verificationUrl,
+                    t("hub.approvalUrlCopied"),
+                  )
                 }
               >
-                承認URLをコピー
+                {t("hub.copyApprovalUrl")}
               </button>
-              <small>承認を待っています。確認は自動的に更新されます。</small>
+              <small>{t("hub.waitingApproval")}</small>
             </div>
           )}
           {device?.status === "approved" && (
             <div className="notice">
               {device.scopes?.includes("works:write:draft")
-                ? "非公開下書きの限定更新を許可済み"
-                : "読み取り専用で認証済み"}
-              。有効期限:{" "}
-              {device.tokenExpiresAt
-                ? new Date(device.tokenExpiresAt).toLocaleString("ja-JP")
-                : "確認中"}
+                ? t("hub.draftWriteApproved")
+                : t("hub.readOnlyApproved")}
+              {" · "}
+              {t("hub.expires", {
+                value: device.tokenExpiresAt
+                  ? formatDateTime(device.tokenExpiresAt)
+                  : t("hub.checking"),
+              })}
             </div>
           )}
           {device &&
             ["denied", "expired", "revoked"].includes(device.status) && (
-              <div className="error">
-                認証は無効または期限切れです。もう一度開始してください。
+              <div className="error" role="alert">
+                {t("hub.authorizationInvalid")}
               </div>
             )}
         </section>
 
-        {error && <div className="error">{error}</div>}
-        {message && <div className="notice">{message}</div>}
+        {error && (
+          <div className="error" role="alert">
+            {error}
+          </div>
+        )}
+        {message && (
+          <div className="notice" role="status" aria-live="polite">
+            {message}
+          </div>
+        )}
 
         {!error && busy && !status && (
-          <section className="panel-lite hub-state-card">
-            <p>Hubの公開状況を確認しています…</p>
+          <section
+            className="panel-lite hub-state-card"
+            aria-live="polite"
+          >
+            <p>{t("hub.checkingStatus")}</p>
           </section>
         )}
 
         {!error && status?.linked === false && (
           <section className="panel-lite hub-state-card unpublished">
-            <b>対応するHub作品を確認できません</b>
+            <b>{t("hub.notLinked")}</b>
             <p>{status.message}</p>
             <small>
-              Hubへ販売パッケージを取り込んでください。未認証の場合、非公開下書きはこの画面には表示されません。
+              {t("hub.notLinkedHelp")}
             </small>
           </section>
         )}
@@ -220,34 +247,49 @@ export function HubStatus({
             <div className="hub-status-heading">
               <span>
                 {status.work.isPublic
-                  ? "公開中"
+                  ? t("hub.statusPublic")
                   : status.work.status === "draft"
-                    ? "非公開下書き"
-                    : "非公開"}
+                    ? t("hub.statusDraft")
+                    : t("hub.statusPrivate")}
               </span>
               <small>
-                最終更新:{" "}
-                {new Date(status.work.updatedAt).toLocaleString("ja-JP")}
+                {t("hub.lastUpdated", {
+                  value: formatDateTime(status.work.updatedAt),
+                })}
               </small>
             </div>
             <h2>{status.work.title}</h2>
             {status.work.description && <p>{status.work.description}</p>}
             <dl className="hub-status-grid">
               <div>
-                <dt>作品状態</dt>
-                <dd>{status.work.isPublic ? "公開" : "非公開"}</dd>
+                <dt>{t("hub.workStatus")}</dt>
+                <dd>
+                  {status.work.isPublic ? t("hub.public") : t("hub.private")}
+                </dd>
               </div>
               <div>
-                <dt>販売中の商品</dt>
-                <dd>{status.sales.activeProductCount}件</dd>
+                <dt>{t("hub.activeProducts")}</dt>
+                <dd>
+                  {t("hub.items", {
+                    count: status.sales.activeProductCount,
+                  })}
+                </dd>
               </div>
               <div>
-                <dt>停止中の商品</dt>
-                <dd>{status.sales.pausedProductCount}件</dd>
+                <dt>{t("hub.pausedProducts")}</dt>
+                <dd>
+                  {t("hub.items", {
+                    count: status.sales.pausedProductCount,
+                  })}
+                </dd>
               </div>
               <div>
-                <dt>販売状態</dt>
-                <dd>{status.sales.available ? "購入可能" : "販売準備中"}</dd>
+                <dt>{t("hub.salesStatus")}</dt>
+                <dd>
+                  {status.sales.available
+                    ? t("hub.available")
+                    : t("hub.preparing")}
+                </dd>
               </div>
             </dl>
             {publicUrl && (
@@ -255,22 +297,32 @@ export function HubStatus({
                 <code>{publicUrl}</code>
                 <button
                   className="secondary"
-                  onClick={() => void navigator.clipboard.writeText(publicUrl)}
+                  onClick={() =>
+                    void copyToClipboard(publicUrl, t("hub.publicUrlCopied"))
+                  }
                 >
-                  URLをコピー
+                  {t("hub.copyUrl")}
                 </button>
               </div>
             )}
             {!status.work.isPublic && status.work.status === "draft" && (
               <div className="hub-public-url">
                 <div>
-                  <b>Desktopとの差分</b>
+                  <b>{t("hub.desktopDiff")}</b>
                   <small>
-                    作品名: {status.work.title === projectTitle ? "同じ" : "変更あり"}
-                    ／ 説明:{" "}
-                    {status.work.description === projectDescription
-                      ? "同じ"
-                      : "変更あり"}
+                    {t("hub.titleDiff", {
+                      value:
+                        status.work.title === projectTitle
+                          ? t("hub.same")
+                          : t("hub.changed"),
+                    })}
+                    {" · "}
+                    {t("hub.descriptionDiff", {
+                      value:
+                        status.work.description === projectDescription
+                          ? t("hub.same")
+                          : t("hub.changed"),
+                    })}
                   </small>
                 </div>
                 <button
@@ -283,7 +335,7 @@ export function HubStatus({
                   onClick={async () => {
                     if (
                       !window.confirm(
-                        "Hubの非公開下書きの作品名と説明を、Desktopの内容で更新しますか？",
+                        t("hub.updateConfirm"),
                       )
                     )
                       return;
@@ -299,7 +351,7 @@ export function HubStatus({
                         expectedUpdatedAt: status.work.updatedAt,
                       });
                       await check();
-                      setMessage("Hubの非公開下書きを更新しました。");
+                      setMessage(t("hub.updated"));
                     } catch (cause) {
                       setError(
                         cause instanceof Error ? cause.message : String(cause),
@@ -309,10 +361,10 @@ export function HubStatus({
                     }
                   }}
                 >
-                  Hub下書きを更新
+                  {t("hub.updateDraft")}
                 </button>
                 {!status.work.canWriteDraft && (
-                  <small>更新するには端末認証を解除し、再認証してください。</small>
+                  <small>{t("hub.reauthorize")}</small>
                 )}
               </div>
             )}
@@ -320,11 +372,8 @@ export function HubStatus({
         )}
 
         <section className="panel-lite hub-security-note">
-          <h2>安全な連携範囲</h2>
-          <p>
-            未認証時は公開情報だけを照会します。認証後のトークンはOS機能で暗号化し、編集は本人の非公開下書きの作品名・説明だけに制限されます。公開・商品・価格・販売ファイル・決済には使用できません。Hubのログイン情報、Supabase
-            Service Role Key、Stripe Secret KeyはDesktopへ保存しません。
-          </p>
+          <h2>{t("hub.securityTitle")}</h2>
+          <p>{t("hub.securityDescription")}</p>
           <small>Project ID: {projectId}</small>
         </section>
       </div>
