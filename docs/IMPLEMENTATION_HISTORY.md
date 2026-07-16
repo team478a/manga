@@ -832,3 +832,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-c
 AI設定変更履歴も、有効状態、local/remote区分、変更フィールド名、日時を翻訳しました。接続URL、host、モデル名の実値を履歴へ保存しない既存の監査仕様は維持しています。Provider操作結果は`role="status"`と`aria-live="polite"`で通知します。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次はプロンプトテンプレート・更新設定、Hub画面の辞書移行とWCAG評価です。
+
+## 100. プロンプトテンプレート・更新Controlの英語化
+
+設定画面のプロンプトテンプレートを日英辞書へ移行しました。名前、本文、任意system prompt、追加、変更保存、編集cancel、複製、編集、削除がlocaleへ連動します。カスタムテンプレート削除にはテンプレート名付きの確認操作を追加しました。保存済みの名前・本文・system promptは利用者コンテンツとして自動翻訳しません。
+
+Stable/Beta更新チャンネル、更新確認、version取得、download進捗、再起動更新、チャンネル保存失敗、現在versionも翻訳しました。更新buttonは`aria-live="polite"`で状態変化を通知し、更新適用前の再起動確認を維持します。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次は設定一般・Runtime Profile補足、Hub画面の辞書移行とWCAG評価です。
