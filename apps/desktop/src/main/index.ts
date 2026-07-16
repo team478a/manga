@@ -57,6 +57,7 @@ import {
   chatRequestSchema,
   chatSessionIdSchema,
   imageJobRequestSchema,
+  generationQueueSettingsSchema,
   promptTemplateInputSchema,
   projectGenerationPolicyInputSchema,
   providerSettingsSchema,
@@ -672,6 +673,10 @@ function register() {
     store.listGenerationJobs(
       typeof v?.projectId === "string" ? v.projectId : undefined,
     ),
+  );
+  handle("ai:queue:settings:get", () => aiService.getQueueSettings());
+  handle("ai:queue:settings:save", (v) =>
+    aiService.saveQueueSettings(generationQueueSettingsSchema.parse(v)),
   );
   handle("ai:jobs:pause", (v) =>
     aiService.pauseImageJob(chatSessionIdSchema.parse(v).id),

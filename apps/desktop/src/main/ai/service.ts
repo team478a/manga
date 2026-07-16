@@ -6,6 +6,8 @@ import {
   createExternalDispatchPreview,
   constrainImageDimensions,
   imageJobRequestSchema,
+  isGenerationQueueWindowOpen,
+  minutesUntilGenerationQueueWindow,
   routeGenerationJob,
   type SafeAssetLibraryRequest,
   type SafeAssetJobType,
@@ -14,6 +16,7 @@ import {
   type TextGenerationProvider,
   type ImageGenerationRequest,
   type ImageJobRequest,
+  type GenerationQueueSettings,
   type RuntimeProfileState,
 } from "@mangai/ai-core";
 import { MangaiDatabase } from "../database.js";
@@ -358,6 +361,16 @@ export class AIService {
   resumeQueuedImages() {
     void this.runNextQueuedImage();
   }
+  getQueueSettings() {
+    return this.store.getGenerationQueueSettings();
+  }
+  saveQueueSettings(input: unknown) {
+    const settings = this.store.saveGenerationQueueSettings(input);
+    if (this.queueWakeTimer) clearTimeout(this.queueWakeTimer);
+    this.queueWakeTimer = undefined;
+    void this.runNextQueuedImage();
+    return settings;
+  }
   async sendChat(
     input: {
       requestId: string;
@@ -527,6 +540,11 @@ export class AIService {
     }
   }
   private async runNextQueuedImage() {
+    const windowDelay = this.queueWindowDelayMs();
+    if (windowDelay > 0) {
+      this.scheduleQueueWake(windowDelay);
+      return;
+    }
     if (
       this.activeLocalImageJobId ||
       (this.getRuntimeProfile?.().limits.exclusiveGpuWork &&
@@ -556,6 +574,20 @@ export class AIService {
       this.queueWakeTimer = undefined;
       void this.runNextQueuedImage();
     }, Math.max(10, delayMs));
+    this.queueWakeTimer.unref?.();
+  }
+  private queueWindowDelayMs(settings?: GenerationQueueSettings) {
+    const queueSettings = settings ?? this.store.getGenerationQueueSettings();
+    const current = new Date();
+    const currentMinute = current.getHours() * 60 + current.getMinutes();
+    if (isGenerationQueueWindowOpen(queueSettings, currentMinute)) return 0;
+    return Math.max(
+      10,
+      minutesUntilGenerationQueueWindow(queueSettings, currentMinute) *
+        60_000 -
+        current.getSeconds() * 1000 -
+        current.getMilliseconds(),
+    );
   }
   async generateImage(input: ImageJobRequest, existingJobId?: string) {
     input = imageJobRequestSchema.parse(input);
@@ -573,10 +605,12 @@ export class AIService {
       height: dimensions.height,
     };
     const queuedAhead = !existingJobId && this.store.nextQueuedImageJob();
+    const outsideQueueWindow = this.queueWindowDelayMs() > 0;
     if (
       this.activeLocalImageJobId ||
       (runtime?.limits.exclusiveGpuWork && this.activeLocalTextRequests.size) ||
-      queuedAhead
+      queuedAhead ||
+      outsideQueueWindow
     ) {
       const jobId =
         existingJobId ??

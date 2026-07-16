@@ -1,6 +1,10 @@
 import React from "react";
 import type { Asset, ProjectBundle } from "@mangai/project-core";
-import type { ExternalDispatchPreview, RouteDecision } from "@mangai/ai-core";
+import type {
+  ExternalDispatchPreview,
+  GenerationQueueSettings,
+  RouteDecision,
+} from "@mangai/ai-core";
 import { useI18n } from "../../i18n";
 
 function generationStatusKey(status: string) {
@@ -113,6 +117,13 @@ export function GenerationJobs({
     [safeAssetUrls, setSafeAssetUrls] = React.useState<Record<string, string>>(
       {},
     );
+  const [queueSettings, setQueueSettings] =
+    React.useState<GenerationQueueSettings>({
+      nightModeEnabled: false,
+      startTime: "22:00",
+      endTime: "07:00",
+    });
+  const [queueSettingsMessage, setQueueSettingsMessage] = React.useState("");
   const completedImageCount = React.useRef<number | null>(null);
   const load = async () => {
     const [nextJobs, nextRoutes, nextWorkflows] = await Promise.all([
@@ -136,6 +147,7 @@ export function GenerationJobs({
   };
   React.useEffect(() => {
     void load();
+    void window.mangai.ai.getQueueSettings().then(setQueueSettings);
     const timer = window.setInterval(() => void load(), 1500);
     return () => window.clearInterval(timer);
   }, []);
@@ -388,6 +400,62 @@ export function GenerationJobs({
               </p>
             </section>
           )}
+        </section>
+        <section className="panel-lite">
+          <h2>{t("generation.nightQueueTitle")}</h2>
+          <p>{t("generation.nightQueueHelp")}</p>
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={queueSettings.nightModeEnabled}
+              onChange={(event) =>
+                setQueueSettings((value) => ({
+                  ...value,
+                  nightModeEnabled: event.target.checked,
+                }))
+              }
+            />
+            {t("generation.nightQueueEnabled")}
+          </label>
+          <div className="inline">
+            <label>
+              {t("generation.nightQueueStart")}
+              <input
+                type="time"
+                value={queueSettings.startTime}
+                onChange={(event) =>
+                  setQueueSettings((value) => ({
+                    ...value,
+                    startTime: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <label>
+              {t("generation.nightQueueEnd")}
+              <input
+                type="time"
+                value={queueSettings.endTime}
+                onChange={(event) =>
+                  setQueueSettings((value) => ({
+                    ...value,
+                    endTime: event.target.value,
+                  }))
+                }
+              />
+            </label>
+            <button
+              onClick={async () => {
+                setQueueSettings(
+                  await window.mangai.ai.saveQueueSettings(queueSettings),
+                );
+                setQueueSettingsMessage(t("generation.nightQueueSaved"));
+              }}
+            >
+              {t("generation.nightQueueSave")}
+            </button>
+          </div>
+          {queueSettingsMessage && <p>{queueSettingsMessage}</p>}
         </section>
         <section className="panel-lite">
           <h2>{t("generation.comfyTitle")}</h2>

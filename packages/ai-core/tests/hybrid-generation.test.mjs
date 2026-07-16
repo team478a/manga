@@ -9,6 +9,8 @@ import {
   recommendRuntimeProfile,
   runtimeLimits,
   constrainImageDimensions,
+  isGenerationQueueWindowOpen,
+  minutesUntilGenerationQueueWindow,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
@@ -79,6 +81,25 @@ test("runtime profile scales generation dimensions without changing aspect ratio
     height: 1024,
     adjusted: false,
   });
+});
+
+test("night queue windows support overnight and daytime ranges", () => {
+  const overnight = {
+    nightModeEnabled: true,
+    startTime: "22:00",
+    endTime: "07:00",
+  };
+  assert.equal(isGenerationQueueWindowOpen(overnight, 23 * 60), true);
+  assert.equal(isGenerationQueueWindowOpen(overnight, 6 * 60), true);
+  assert.equal(isGenerationQueueWindowOpen(overnight, 12 * 60), false);
+  assert.equal(minutesUntilGenerationQueueWindow(overnight, 12 * 60), 10 * 60);
+  assert.equal(
+    isGenerationQueueWindowOpen(
+      { ...overnight, startTime: "09:00", endTime: "17:00" },
+      12 * 60,
+    ),
+    true,
+  );
 });
 
 function job(overrides = {}) {

@@ -14,6 +14,38 @@ export const generationStatusSchema = z.enum([
   "canceled",
 ]);
 export type GenerationStatus = z.infer<typeof generationStatusSchema>;
+export const generationQueueSettingsSchema = z.object({
+  nightModeEnabled: z.boolean().default(false),
+  startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).default("22:00"),
+  endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).default("07:00"),
+});
+export type GenerationQueueSettings = z.infer<
+  typeof generationQueueSettingsSchema
+>;
+const timeToMinutes = (value: string) => {
+  const [hours, minutes] = value.split(":").map(Number);
+  return hours * 60 + minutes;
+};
+export function isGenerationQueueWindowOpen(
+  settings: GenerationQueueSettings,
+  currentMinute: number,
+) {
+  if (!settings.nightModeEnabled) return true;
+  const start = timeToMinutes(settings.startTime),
+    end = timeToMinutes(settings.endTime);
+  if (start === end) return true;
+  return start < end
+    ? currentMinute >= start && currentMinute < end
+    : currentMinute >= start || currentMinute < end;
+}
+export function minutesUntilGenerationQueueWindow(
+  settings: GenerationQueueSettings,
+  currentMinute: number,
+) {
+  if (isGenerationQueueWindowOpen(settings, currentMinute)) return 0;
+  const start = timeToMinutes(settings.startTime);
+  return (start - currentMinute + 24 * 60) % (24 * 60);
+}
 export type AIModelInfo = {
   id: string;
   name: string;

@@ -81,7 +81,7 @@ test("runtime profile forces batch one and rejects oversized workflow features",
   );
 });
 
-test("interrupted image jobs return to the durable queue after reopening", () => {
+test("interrupted image jobs and night settings survive reopening", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-queue-reopen-"));
   const paths = {
     root,
@@ -126,6 +126,29 @@ test("interrupted image jobs return to the durable queue after reopening", () =>
     assert.equal(recovered.progress, 0);
     assert.equal(recovered.errorCode, "RECOVERED_AFTER_RESTART");
     assert.equal(db.setGenerationJobStatus(jobId, "paused"), true);
+    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+    const formatMinute = (value) =>
+      `${String(Math.floor((value % 1440) / 60)).padStart(2, "0")}:${String(
+        value % 60,
+      ).padStart(2, "0")}`;
+    const nightSettings = db.saveGenerationQueueSettings({
+      nightModeEnabled: true,
+      startTime: formatMinute(nowMinutes + 60),
+      endTime: formatMinute(nowMinutes + 120),
+    });
+    const queuedAtNight = await new AIService(db).generateImage({
+      projectId: project.project.id,
+      workflowId: randomUUID(),
+      prompt: "wait for night",
+    });
+    assert.equal(queuedAtNight.status, "queued");
+    assert.equal(
+      db.listGenerationJobs(project.project.id).find(
+        (job) => job.id === queuedAtNight.jobId,
+      ).attemptCount,
+      0,
+    );
+    new AIService(db).cancel(queuedAtNight.jobId);
     db.close();
     db = new MangaiDatabase(paths);
     assert.equal(
@@ -133,6 +156,7 @@ test("interrupted image jobs return to the durable queue after reopening", () =>
         .status,
       "paused",
     );
+    assert.deepEqual(db.getGenerationQueueSettings(), nightSettings);
   } finally {
     db.close();
     fs.rmSync(root, { recursive: true, force: true });

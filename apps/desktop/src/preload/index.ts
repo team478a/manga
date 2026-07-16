@@ -160,6 +160,9 @@ contextBridge.exposeInMainWorld("mangai", {
     },
     listJobs: (projectId?: string) =>
       ipcRenderer.invoke("ai:jobs:list", { projectId }),
+    getQueueSettings: () => ipcRenderer.invoke("ai:queue:settings:get"),
+    saveQueueSettings: (value: unknown) =>
+      ipcRenderer.invoke("ai:queue:settings:save", value),
     pauseJob: (id: string) => ipcRenderer.invoke("ai:jobs:pause", { id }),
     resumeJob: (id: string) => ipcRenderer.invoke("ai:jobs:resume", { id }),
     changeJobPriority: (id: string, delta: -1 | 1) =>

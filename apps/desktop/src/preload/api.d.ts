@@ -2,6 +2,7 @@ import type { Asset, ProjectBundle, Project } from "@mangai/project-core";
 import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
 import type {
   GenerationRouteDecisionRecord,
+  GenerationQueueSettings,
   ExternalDispatchPreview,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
@@ -336,6 +337,10 @@ export type DesktopApi = {
     cancel: (requestId: string) => Promise<boolean>;
     onChatEvent: (listener: (event: ChatEvent) => void) => () => void;
     listJobs: (projectId?: string) => Promise<any[]>;
+    getQueueSettings: () => Promise<GenerationQueueSettings>;
+    saveQueueSettings: (
+      value: GenerationQueueSettings,
+    ) => Promise<GenerationQueueSettings>;
     pauseJob: (id: string) => Promise<boolean>;
     resumeJob: (id: string) => Promise<boolean>;
     changeJobPriority: (id: string, delta: -1 | 1) => Promise<any[]>;

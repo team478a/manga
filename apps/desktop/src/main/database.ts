@@ -31,6 +31,7 @@ import {
 import {
   defaultPromptTemplates,
   generationJobDraftSchema,
+  generationQueueSettingsSchema,
   generationRouteDecisionRecordSchema,
   projectGenerationPolicyInputSchema,
   projectGenerationPolicySchema,
@@ -39,6 +40,7 @@ import {
   type GenerationJobDraftInput,
   type GenerationRouteDecisionRecord,
   type GenerationStatus,
+  type GenerationQueueSettings,
   type ProjectGenerationPolicy,
   type ProjectGenerationPolicyInput,
   type ProviderSettings,
@@ -413,6 +415,7 @@ export class MangaiDatabase {
  create table if not exists prompt_templates(id text primary key,name text not null,template text not null,system_prompt text not null default '',is_builtin integer not null default 0,created_at text not null,updated_at text not null);
  create table if not exists generation_jobs(id text primary key,project_id text references projects(id) on delete set null,episode_id text references episodes(id) on delete set null,page_id text references pages(id) on delete set null,provider_type text not null,provider_id text not null,model_id text,generation_type text not null,status text not null,prompt text not null,negative_prompt text not null default '',input_json text not null default '{}',output_json text not null default '{}',provider_job_id text,error_code text,error_message text,created_at text not null,started_at text,completed_at text);
  create table if not exists generation_outputs(id text primary key,job_id text not null references generation_jobs(id) on delete cascade,asset_id text references assets(id) on delete set null,relative_path text,metadata_json text not null default '{}',created_at text not null);
+ create table if not exists generation_queue_settings(id integer primary key check(id=1),night_mode_enabled integer not null default 0,start_time text not null default '22:00',end_time text not null default '07:00',updated_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
  create table if not exists schema_migrations(version text primary key,name text not null,applied_at text not null);
@@ -4132,6 +4135,36 @@ export class MangaiDatabase {
          order by priority desc,created_at,id limit 1`,
       )
       .get(now()) as { id: string; inputJson: string } | undefined;
+  }
+  getGenerationQueueSettings(): GenerationQueueSettings {
+    const row = this.db
+      .prepare(
+        "select night_mode_enabled as nightModeEnabled,start_time as startTime,end_time as endTime from generation_queue_settings where id=1",
+      )
+      .get() as
+      | { nightModeEnabled: number; startTime: string; endTime: string }
+      | undefined;
+    return generationQueueSettingsSchema.parse(
+      row
+        ? { ...row, nightModeEnabled: Boolean(row.nightModeEnabled) }
+        : {},
+    );
+  }
+  saveGenerationQueueSettings(input: unknown): GenerationQueueSettings {
+    const settings = generationQueueSettingsSchema.parse(input);
+    this.db
+      .prepare(
+        `insert into generation_queue_settings values(1,?,?,?,?)
+         on conflict(id) do update set night_mode_enabled=excluded.night_mode_enabled,
+         start_time=excluded.start_time,end_time=excluded.end_time,updated_at=excluded.updated_at`,
+      )
+      .run(
+        settings.nightModeEnabled ? 1 : 0,
+        settings.startTime,
+        settings.endTime,
+        now(),
+      );
+    return settings;
   }
   nextQueuedImageDelayMs() {
     const row = this.db
