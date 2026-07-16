@@ -392,6 +392,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 診断データ・プライバシーの同意、保存・未送信件数、削除・手動送信確認の日英表示
 - AI Providerの接続URL・許可origin・モデル・生成設定・操作結果と、秘密値を含まない監査履歴の日英表示
 - プロンプトテンプレートの追加・編集・複製・削除と、Stable/Beta更新Controlの日英表示
+- 設定画面の一般情報・保存先・AIログ方針・Runtime Profile・GPU警告を含む固定UIの完全な日英表示
 - 画像生成条件・ワークフロー操作・状態名・履歴操作・接続状態の英語表示
 - main、renderer、child process異常の捕捉。外部自動送信なし
 

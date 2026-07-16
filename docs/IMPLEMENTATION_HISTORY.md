@@ -840,3 +840,11 @@ Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-c
 Stable/Beta更新チャンネル、更新確認、version取得、download進捗、再起動更新、チャンネル保存失敗、現在versionも翻訳しました。更新buttonは`aria-live="polite"`で状態変化を通知し、更新適用前の再起動確認を維持します。
 
 Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。次は設定一般・Runtime Profile補足、Hub画面の辞書移行とWCAG評価です。
+
+## 101. 設定画面の固定UI英語化完了
+
+設定画面の一般情報とRuntime Profile補足を日英辞書へ移行しました。ワークスペースへ戻る操作、データ保存先、AIログの秘密情報方針、端末性能説明、RAM・GPU・VRAM、使用・推奨Profile、batchと同時実行制約、GPU未検出警告、端末設定保存結果がlocaleへ連動します。
+
+Runtime Profile sectionを見出しへ関連付け、保存結果を`role="status"`と`aria-live="polite"`で通知します。これにより`AISettings.tsx`内の固定日本語は解消され、保存済みテンプレートやMainプロセス・外部サービスが返す利用者データだけは自動翻訳しません。
+
+Desktop TypeScript、ESLint、本番renderer build、統合テスト58/58、ai-core 23/23に成功しています。renderer buildには既知の500KB超chunk警告だけが残ります。英語化の主な残範囲はHub連携とMainプロセスメッセージで、次にWCAG自動・手動評価を進めます。
