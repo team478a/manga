@@ -174,7 +174,7 @@ async function diagnoseComfyWorkflows(
 }
 
 export function AISettings({ onClose }: { onClose: () => void }) {
-  const { locale, setLocale, t } = useI18n();
+  const { locale, setLocale, t, formatDateTime } = useI18n();
   const [settings, setSettings] = React.useState<ProviderSettings[]>([]),
     [models, setModels] = React.useState<
       Record<string, Array<{ id: string; name: string; cached?: boolean }>>
@@ -457,18 +457,21 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             </>
           )}
         </section>
-        <section className="panel-lite diagnostics-privacy">
+        <section
+          className="panel-lite diagnostics-privacy"
+          aria-labelledby="diagnostics-privacy-title"
+        >
           <div className="setting-title">
             <div>
-              <h2>診断データとプライバシー</h2>
-              <p>
-                動作ログは端末内だけに保存し、秘密値とホームフォルダーを除外します。詳細レポートの外部送信には別の同意と手動操作が必要です。
-              </p>
+              <h2 id="diagnostics-privacy-title">
+                {t("settings.privacy.title")}
+              </h2>
+              <p>{t("settings.privacy.description")}</p>
             </div>
             <span className="hub-readonly-badge">
               {diagnosticsState?.externalUploadAvailable
-                ? "手動送信"
-                : "送信先未設定"}
+                ? t("settings.privacy.manualUpload")
+                : t("settings.privacy.uploadUnavailable")}
             </span>
           </div>
           <label className="check diagnostics-consent">
@@ -484,7 +487,9 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                       event.target.checked,
                     ),
                   );
-                  setDiagnosticsMessage("診断データ設定を保存しました。");
+                  setDiagnosticsMessage(
+                    t("settings.privacy.localConsentSaved"),
+                  );
                 } catch (cause) {
                   setDiagnosticsMessage(
                     cause instanceof Error ? cause.message : String(cause),
@@ -492,10 +497,10 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 }
               }}
             />
-            詳細なクラッシュレポートを端末内へ保存することに同意する
+            {t("settings.privacy.localConsent")}
           </label>
           <p className="diagnostic-empty">
-            OFFの場合も、起動・終了・エラー種別を含む最小限のJSONL動作ログは端末内へ保存します。ONの場合だけ、エラー内容とスタックを含む詳細ファイルを最大20件保存します。
+            {t("settings.privacy.localHelp")}
           </p>
           <label className="check diagnostics-consent">
             <input
@@ -513,7 +518,9 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                       event.target.checked,
                     ),
                   );
-                  setDiagnosticsMessage("外部送信の同意設定を保存しました。");
+                  setDiagnosticsMessage(
+                    t("settings.privacy.uploadConsentSaved"),
+                  );
                 } catch (cause) {
                   setDiagnosticsMessage(
                     cause instanceof Error ? cause.message : String(cause),
@@ -521,28 +528,34 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 }
               }}
             />
-            詳細クラッシュレポートを外部へ送信することに同意する
+            {t("settings.privacy.uploadConsent")}
           </label>
           <p className="diagnostic-empty">
-            ローカル保存への同意とは別に管理します。自動送信はせず、下の「未送信分を送信」を選んだ場合だけ送信します。
+            {t("settings.privacy.uploadHelp")}
           </p>
           <div className="diagnostics-storage">
             <p>
-              <b>ログ保存先:</b>{" "}
-              {diagnosticsState?.logDirectory ?? "読み込み中"}
+              <b>{t("settings.privacy.logDirectory")}</b>{" "}
+              {diagnosticsState?.logDirectory ??
+                t("settings.privacy.loading")}
             </p>
             <p>
-              <b>詳細クラッシュレポート:</b>{" "}
-              {diagnosticsState?.crashReportCount ?? 0}件
+              <b>{t("settings.privacy.crashReports")}</b>{" "}
+              {t("settings.privacy.items", {
+                count: diagnosticsState?.crashReportCount ?? 0,
+              })}
             </p>
             <p>
-              <b>外部へ未送信:</b> {diagnosticsState?.pendingUploadCount ?? 0}件
+              <b>{t("settings.privacy.pendingUploads")}</b>{" "}
+              {t("settings.privacy.items", {
+                count: diagnosticsState?.pendingUploadCount ?? 0,
+              })}
             </p>
             <p>
-              <b>最終送信:</b>{" "}
+              <b>{t("settings.privacy.lastUpload")}</b>{" "}
               {diagnosticsState?.lastUploadAt
-                ? new Date(diagnosticsState.lastUploadAt).toLocaleString()
-                : "未送信"}
+                ? formatDateTime(diagnosticsState.lastUploadAt)
+                : t("settings.privacy.neverUploaded")}
             </p>
           </div>
           <div className="inline">
@@ -559,21 +572,19 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 }
               }}
             >
-              ログフォルダーを開く
+              {t("settings.privacy.openLogs")}
             </button>
             <button
               className="secondary"
               disabled={!diagnosticsState?.crashReportCount}
               onClick={async () => {
-                if (!confirm("端末内の詳細クラッシュレポートを削除しますか？"))
+                if (!confirm(t("settings.privacy.deleteConfirm")))
                   return;
                 try {
                   setDiagnosticsState(
                     await window.mangai.diagnostics.clearCrashReports(),
                   );
-                  setDiagnosticsMessage(
-                    "詳細クラッシュレポートを削除しました。",
-                  );
+                  setDiagnosticsMessage(t("settings.privacy.deleted"));
                 } catch (cause) {
                   setDiagnosticsMessage(
                     cause instanceof Error ? cause.message : String(cause),
@@ -581,7 +592,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 }
               }}
             >
-              詳細レポートを削除
+              {t("settings.privacy.delete")}
             </button>
             <button
               className="secondary"
@@ -592,7 +603,9 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               onClick={async () => {
                 if (
                   !confirm(
-                    `${diagnosticsState?.pendingUploadCount ?? 0}件の詳細クラッシュレポートを外部へ送信しますか？`,
+                    t("settings.privacy.uploadConfirm", {
+                      count: diagnosticsState?.pendingUploadCount ?? 0,
+                    }),
                   )
                 )
                   return;
@@ -601,7 +614,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                   setDiagnosticsState(
                     await window.mangai.diagnostics.uploadPending(),
                   );
-                  setDiagnosticsMessage("未送信レポートを送信しました。");
+                  setDiagnosticsMessage(t("settings.privacy.uploaded"));
                 } catch (cause) {
                   setDiagnosticsState(
                     await window.mangai.diagnostics.getState(),
@@ -612,10 +625,14 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 }
               }}
             >
-              未送信分を送信
+              {t("settings.privacy.upload")}
             </button>
           </div>
-          {diagnosticsMessage && <p className="notice">{diagnosticsMessage}</p>}
+          {diagnosticsMessage && (
+            <p className="notice" role="status" aria-live="polite">
+              {diagnosticsMessage}
+            </p>
+          )}
         </section>
         <section
           className="panel-lite ai-diagnostics"

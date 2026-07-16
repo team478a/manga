@@ -534,6 +534,38 @@ const ja = {
   "settings.aiDiagnostics.modelCached":
     "「{name}」を前回取得したキャッシュで確認しました。",
   "settings.aiDiagnostics.modelReady": "「{name}」を利用できます。",
+  "settings.privacy.title": "診断データとプライバシー",
+  "settings.privacy.description":
+    "動作ログは端末内だけに保存し、秘密値とホームフォルダーを除外します。詳細レポートの外部送信には別の同意と手動操作が必要です。",
+  "settings.privacy.manualUpload": "手動送信",
+  "settings.privacy.uploadUnavailable": "送信先未設定",
+  "settings.privacy.localConsent":
+    "詳細なクラッシュレポートを端末内へ保存することに同意する",
+  "settings.privacy.localConsentSaved": "診断データ設定を保存しました。",
+  "settings.privacy.localHelp":
+    "OFFの場合も、起動・終了・エラー種別を含む最小限のJSONL動作ログは端末内へ保存します。ONの場合だけ、エラー内容とスタックを含む詳細ファイルを最大20件保存します。",
+  "settings.privacy.uploadConsent":
+    "詳細クラッシュレポートを外部へ送信することに同意する",
+  "settings.privacy.uploadConsentSaved":
+    "外部送信の同意設定を保存しました。",
+  "settings.privacy.uploadHelp":
+    "ローカル保存への同意とは別に管理します。自動送信はせず、下の「未送信分を送信」を選んだ場合だけ送信します。",
+  "settings.privacy.logDirectory": "ログ保存先:",
+  "settings.privacy.loading": "読み込み中",
+  "settings.privacy.crashReports": "詳細クラッシュレポート:",
+  "settings.privacy.pendingUploads": "外部へ未送信:",
+  "settings.privacy.items": "{count}件",
+  "settings.privacy.lastUpload": "最終送信:",
+  "settings.privacy.neverUploaded": "未送信",
+  "settings.privacy.openLogs": "ログフォルダーを開く",
+  "settings.privacy.deleteConfirm":
+    "端末内の詳細クラッシュレポートを削除しますか？",
+  "settings.privacy.deleted": "詳細クラッシュレポートを削除しました。",
+  "settings.privacy.delete": "詳細レポートを削除",
+  "settings.privacy.uploadConfirm":
+    "{count}件の詳細クラッシュレポートを外部へ送信しますか？",
+  "settings.privacy.uploaded": "未送信レポートを送信しました。",
+  "settings.privacy.upload": "未送信分を送信",
 } as const;
 
 type TranslationKey = keyof typeof ja;
@@ -1083,6 +1115,38 @@ const en: Record<TranslationKey, string> = {
   "settings.aiDiagnostics.modelCached":
     "Verified “{name}” using the previously cached model list.",
   "settings.aiDiagnostics.modelReady": "“{name}” is available.",
+  "settings.privacy.title": "Diagnostics data and privacy",
+  "settings.privacy.description":
+    "Operational logs stay on this device and exclude secrets and home-folder paths. Uploading detailed reports requires separate consent and a manual action.",
+  "settings.privacy.manualUpload": "Manual upload",
+  "settings.privacy.uploadUnavailable": "Upload destination not configured",
+  "settings.privacy.localConsent":
+    "Allow detailed crash reports to be stored on this device",
+  "settings.privacy.localConsentSaved":
+    "Diagnostics data settings saved.",
+  "settings.privacy.localHelp":
+    "Minimal JSONL logs containing startup, shutdown, and error categories remain local even when this is off. When enabled, up to 20 detailed files containing error information and stacks are retained.",
+  "settings.privacy.uploadConsent":
+    "Allow detailed crash reports to be uploaded",
+  "settings.privacy.uploadConsentSaved": "Upload consent settings saved.",
+  "settings.privacy.uploadHelp":
+    "This consent is separate from local storage consent. Reports are never uploaded automatically and are sent only when you select Upload pending reports below.",
+  "settings.privacy.logDirectory": "Log folder:",
+  "settings.privacy.loading": "Loading",
+  "settings.privacy.crashReports": "Detailed crash reports:",
+  "settings.privacy.pendingUploads": "Pending uploads:",
+  "settings.privacy.items": "{count}",
+  "settings.privacy.lastUpload": "Last upload:",
+  "settings.privacy.neverUploaded": "Never uploaded",
+  "settings.privacy.openLogs": "Open log folder",
+  "settings.privacy.deleteConfirm":
+    "Delete the detailed crash reports stored on this device?",
+  "settings.privacy.deleted": "Detailed crash reports deleted.",
+  "settings.privacy.delete": "Delete detailed reports",
+  "settings.privacy.uploadConfirm":
+    "Upload {count} detailed crash reports?",
+  "settings.privacy.uploaded": "Pending reports uploaded.",
+  "settings.privacy.upload": "Upload pending reports",
 };
 
 type I18nContextValue = {
