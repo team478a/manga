@@ -358,6 +358,7 @@ NEXT_PUBLIC_SITE_URL=http://localhost:3000
 - 12GB以下でのCreator Chat・画像生成GPU排他と、ComfyUI送信前のOllamaモデル自動解放
 - SQLite永続画像生成Queue、順次実行、一時停止・再開・キャンセル・優先順位変更・再起動復元・完了素材の自動反映
 - retryableな一時障害の最大3回・指数バックオフ自動再試行と、試行回数・次回時刻の再起動復元
+- 日跨ぎ対応の夜間Queue時間帯、時間外の通信なし待機、開始時刻の自動実行、端末設定の永続化
 - ハイブリッド生成のJob Type・Sensitivity・Execution Target・作品ポリシー型とfail-closedな純粋Router
 - `safe_assets_only`既定の作品別外部送信ポリシー、費用上限、custom Job Typeの永続化・複製・バックアップ復元
 - loopbackのローカルComfyUIだけを実行するRouterゲートと、Prompt本文を残さないroute監査履歴

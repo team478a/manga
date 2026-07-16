@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-実装基準コミット: `eff2440`
+実装基準コミット: `12e7c85`
 
 参照指示書: `MANGAI_low_spec_hybrid_generation_implementation_guide.md`
 
@@ -490,12 +490,26 @@ VAE Decodeのタイル版への置換やText EncoderのCPUオフロードはwork
 
 再試行のたびに新しいJobを増やさず、1件の監査履歴へ試行回数を集約します。手動の「再実行」は従来どおり新しいJobとして開始します。
 
+### Commit 19: 夜間Queue実行時間帯（完了: `12e7c85`）
+
+- 端末共通の夜間Queue有効・開始時刻・終了時刻をSQLiteへ保存
+- 22:00〜07:00の日跨ぎと09:00〜17:00の同日時間帯に対応
+- 時間外の画像生成はProviderへ送信せず、試行回数0の`queued`として保存
+- 開始時刻にMainプロセスtimerで自動起動
+- 終了時刻を過ぎた実行中Jobは強制中断せず、現在の1件だけ完了
+- 設定変更時にtimerを再計算し、夜間Mode解除時はQueueを即時再開
+- 夜間設定と待機Jobをアプリ再起動後も復元
+- 生成画面で有効化、開始・終了時刻の編集・保存
+- 日跨ぎ判定、開始までの時間計算、時間外Provider未送信、設定再オープンのテスト
+
+夜間Modeは既定無効です。利用者が明示的に有効化した端末だけで適用し、既存の単発生成挙動は変更しません。
+
 ## 11. テスト基準
 
 2026-07-16の確認時点:
 
 - Desktop統合テスト: 56/56成功
-- ai-core Router・外部送信契約・Runtime Profile単体テスト: 21/21成功
+- ai-core Router・外部送信契約・Runtime Profile単体テスト: 22/22成功
 - canvas-core単体テスト: 25/25成功
 
 Phase 1追加テスト:
