@@ -269,7 +269,7 @@ JPG・PNG・WebPを共通Pageレンダラーで合成し、PDFと連番PNG ZIP�
 ### 機能上の制限
 
 - 素材削除とAI生成素材追加は実ファイルを含む永続Undo/Redoに対応済み。書き出しとAI設定は監査履歴に分離済み
-- 漫画編集workspace、Creator Chat、画像生成、書き出し、設定、更新、Hub連携の英語表示は対応済み。既知main process messageの英語変換と未知日本語文面fallbackも対応済み。日英20画面・状態のaxe A・AA監査は違反0件で、画像生成のrunning・completed・failed表示も監査済み。残る確認ダイアログとNarrator確認は未完了
+- 漫画編集workspace、Creator Chat、画像生成、書き出し、設定、更新、Hub連携の英語表示は対応済み。既知main process messageの英語変換と未知日本語文面fallbackも対応済み。日英29画面・状態のaxe A・AA監査は違反0件で、Pageあり編集、各menu、生成3状態も監査済み。Narrator・高コントラスト・150%表示のWindows実機確認は未完了
 - 別ドライブのカスタム保存先は同じドライブの`.mangai-trash`へ退避（実DドライブE2E済み）
 - 販売パッケージ経由の下書き作成、公開情報の匿名照会、認証済み端末からの非公開下書き照会を実装済み。Desktopからの更新操作は未実装
 - 手動・自動Projectバックアップ、履歴込み復元、DB破損時リカバリー、ローカル構造化ログ、同意制の詳細クラッシュレポート、別同意の手動送信clientを実装済み。外部受付APIと運用方針は未設定

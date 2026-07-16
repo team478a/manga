@@ -17,6 +17,7 @@ npm run rc:preflight
 - Desktop端末認証の署名秘密値
 - Supabase staging DBと`psql`
 - Ollama、ComfyUI、書き出し、Hub・Stripeの手動確認項目
+- Windows Narrator・高コントラスト・150%表示は[`NARRATOR_ACCEPTANCE.md`](NARRATOR_ACCEPTANCE.md)へ結果を記録
 
 外部設定が不足していても通常のpreflightは終了コード0です。配布判定やCIで外部設定の不足も失敗にする場合は次を使用します。
 

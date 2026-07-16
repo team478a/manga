@@ -70,7 +70,10 @@ Hub URL・認証、AI Provider未設定、ComfyUI無効・timeout、低VRAM排�
 - Home
 - 新規Projectダイアログ
 - 漫画編集workspace
+- Pageあり漫画編集workspace
 - 生成Job Drawer
+- 上部「その他」menu
+- Canvasの追加・レイアウト・表示menu
 - 書き出しダイアログ
 - Creator Chat
 - 画像生成
@@ -84,7 +87,7 @@ npm run desktop:test:a11y
 
 検査対象はWCAG 2.0 / 2.1のA・AAタグです。監査専用ProjectをUIから作成して各画面へ遷移し、画面別の結果JSONをMainプロセスから書き出します。`serious`または`critical`の違反がある場合は終了コード1にします。Desktop ReleaseのWindows CIでも同じコマンドを実行します。
 
-2026-07-17時点では日本語・英語の20画面・状態で合計444項目が合格し、自動判定の違反は0件です。書き出しダイアログ表示中は背景要素へ`inert`と`aria-hidden`を設定し、読み上げとkeyboard移動をダイアログ内へ限定します。
+2026-07-17時点では日本語・英語の29画面・状態で合計726項目が合格し、自動判定の違反は0件です。書き出しダイアログ表示中は背景要素へ`inert`と`aria-hidden`を設定し、読み上げとkeyboard移動をダイアログ内へ限定します。
 
 編集画面では、表示件数の`0`と装飾記号`✎`・`−`について色コントラストを自動確定できない判定保留が各localeで3件あります。タブの件数は操作名と合わせた`aria-label`、記号buttonは翻訳済み操作名の`aria-label`を持ち、装飾文字は`aria-hidden`にしています。実質3要素をNarratorと目視による手動確認対象とします。
 
@@ -108,4 +111,4 @@ npm run desktop:test:a11y
 
 隔離DBへ監査専用の画像生成Jobを作成し、実行中45%、完了100%、失敗70%の表示を画像生成画面とJob Drawerで評価します。英語localeでは失敗通知に日本語システム文面が残らないことも確認します。実ComfyUI通信は行わず、通常起動時のDBやIPCには監査用Jobを追加しません。
 
-完全な全状態WCAG評価は未完了です。未知の日本語システム文面は共通英語へfallbackします。次は残る確認ダイアログとNarratorによる手動確認を追加する必要があります。
+ネイティブ`confirm`・`prompt`を含む手動確認手順は[`NARRATOR_ACCEPTANCE.md`](NARRATOR_ACCEPTANCE.md)へ整理済みです。完全な全状態WCAG評価は、同チェックリストをWindows実機で日本語・英語、高コントラスト、150%表示について完走するまで未完了です。

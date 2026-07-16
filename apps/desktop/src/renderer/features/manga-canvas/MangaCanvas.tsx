@@ -66,9 +66,11 @@ const PANEL_LAYER_TYPES = [
 
 function CanvasToolMenu({
   label,
+  auditId,
   children,
 }: {
   label: string;
+  auditId: "add" | "layout" | "view";
   children: React.ReactNode;
 }) {
   const { t } = useI18n();
@@ -119,6 +121,7 @@ function CanvasToolMenu({
   return (
     <details
       className="canvas-tool-menu"
+      data-a11y-menu={auditId}
       ref={detailsRef}
       onKeyDown={onKeyDown}
     >
@@ -2286,7 +2289,7 @@ export function MangaCanvas({
         role="toolbar"
         aria-label={t("canvas.toolbar")}
       >
-        <CanvasToolMenu label={t("canvas.addMenu")}>
+        <CanvasToolMenu label={t("canvas.addMenu")} auditId="add">
           <button data-close-menu onClick={() => addPanel()}>
             {t("canvas.addPanel")}
           </button>
@@ -2312,7 +2315,7 @@ export function MangaCanvas({
               : t("canvas.addText")}
           </button>
         </CanvasToolMenu>
-        <CanvasToolMenu label={t("canvas.layoutMenu")}>
+        <CanvasToolMenu label={t("canvas.layoutMenu")} auditId="layout">
           {pageTemplates.map((template) => (
             <button
               data-close-menu
@@ -2334,7 +2337,7 @@ export function MangaCanvas({
             </button>
           ))}
         </CanvasToolMenu>
-        <CanvasToolMenu label={t("canvas.viewMenu")}>
+        <CanvasToolMenu label={t("canvas.viewMenu")} auditId="view">
           <button
             className={showGrid ? "active" : undefined}
             aria-pressed={showGrid}
@@ -2370,6 +2373,7 @@ export function MangaCanvas({
         </CanvasToolMenu>
         <div
           className="canvas-context-tools"
+          role="toolbar"
           aria-label={t("canvas.selectionActions")}
         >
           {editingPanel && (

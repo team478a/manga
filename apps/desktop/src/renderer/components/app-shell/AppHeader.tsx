@@ -119,7 +119,7 @@ export function AppHeader({
           <Download size={17} aria-hidden="true" />
           <span>{exporting ? t("header.progress") : t("header.export")}</span>
         </button>
-        <details className="app-header-more">
+        <details className="app-header-more" data-a11y-menu="header-more">
           <summary title={t("header.more")} aria-label={t("header.more")}>
             <MoreHorizontal size={19} aria-hidden="true" />
           </summary>

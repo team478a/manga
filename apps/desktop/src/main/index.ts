@@ -917,6 +917,9 @@ app
             }
             return;
           }
+          const projectBundle = store.bundle(project.id);
+          if (!projectBundle.pages.length && projectBundle.episodes[0])
+            store.addPage(projectBundle.episodes[0].id);
           const createJob = (
             status: "running" | "completed" | "failed",
             progress: number,
@@ -1034,6 +1037,29 @@ app
           screens.push(await audit("generation-drawer"));
           document.querySelector('[data-generation-close]').click();
           await waitForMissing('.generation-drawer[role="dialog"]');
+          document.querySelector('[data-a11y-action="open-projects"]').click();
+          const projectButton = await waitFor('.project-open');
+          projectButton.click();
+          await waitFor('.manga-canvas-shell');
+          screens.push(await audit("editor-page"));
+          const headerMenu = document.querySelector(
+            '[data-a11y-menu="header-more"]',
+          );
+          headerMenu.querySelector("summary").click();
+          await waitFor('[data-a11y-menu="header-more"][open]');
+          screens.push(await audit("header-more-menu"));
+          headerMenu.open = false;
+          for (const menu of ["add", "layout", "view"]) {
+            const details = document.querySelector(
+              '[data-a11y-menu="' + menu + '"]',
+            );
+            details.querySelector("summary").click();
+            await waitFor(
+              '[data-a11y-menu="' + menu + '"][open]',
+            );
+            screens.push(await audit("canvas-" + menu + "-menu"));
+            details.open = false;
+          }
           document.querySelector('[data-a11y-action="open-export"]').click();
           await waitFor('.export-dialog[role="dialog"]');
           screens.push(await audit("export-dialog"));
@@ -1115,7 +1141,27 @@ app
                   "English generation error still contains Japanese text.",
                 );
             }
-            screens.push(await audit(view + "-en"));
+            screens.push(
+              await audit(view === "editor" ? "editor-page-en" : view + "-en"),
+            );
+          }
+          const englishHeaderMenu = document.querySelector(
+            '[data-a11y-menu="header-more"]',
+          );
+          englishHeaderMenu.querySelector("summary").click();
+          await waitFor('[data-a11y-menu="header-more"][open]');
+          screens.push(await audit("header-more-menu-en"));
+          englishHeaderMenu.open = false;
+          for (const menu of ["add", "layout", "view"]) {
+            const details = document.querySelector(
+              '[data-a11y-menu="' + menu + '"]',
+            );
+            details.querySelector("summary").click();
+            await waitFor(
+              '[data-a11y-menu="' + menu + '"][open]',
+            );
+            screens.push(await audit("canvas-" + menu + "-menu-en"));
+            details.open = false;
           }
           document
             .querySelector('[data-a11y-action="open-generation-drawer"]')

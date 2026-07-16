@@ -922,3 +922,13 @@ workspace下部の生成Job操作へ監査用識別子を追加し、空状態�
 runningは45%進捗と停止操作、completedは100%と素材を開く操作、failedは70%とエラー・再実行操作を画像生成画面とJob Drawerへ表示します。監査は3状態のDOM反映を待ってからaxeを実行し、英語localeでは失敗メッセージに日本語システム文面が残っていないことも検証します。
 
 日英20画面・状態の合計444項目合格・違反0件を維持しています。実ComfyUIを使う生成E2EはRC実環境試験として分離され、今回の状態監査では外部通信を行いません。
+
+## 111. Page・各menu監査とNarrator受入れ表
+
+監査ProjectへPageを1件追加し、HomeからProjectを開き直す実経路でPageあり編集workspaceを評価しました。上部「その他」menuとCanvasの追加・レイアウト・表示menuを日本語・英語で開き、menu内容、選択状態、後続画面遷移をaxe監査へ追加しました。
+
+Pageあり画面の初回監査で、選択中操作領域の通常`div`へ`aria-label`だけが設定されている違反を検出しました。領域を`role="toolbar"`として明示し、日英すべてのPage・menu状態で違反0件へ修正しました。
+
+axeで評価できないWindows Narrator、ネイティブ`confirm`・`prompt`、高コントラスト、150%表示を30項目の[`NARRATOR_ACCEPTANCE.md`](desktop/NARRATOR_ACCEPTANCE.md)へ整理しました。RC停止条件、環境記録、日本語・English結果欄を備え、Release Candidate手順から参照します。
+
+日英29画面・状態は合計726項目合格、自動判定の違反0件です。自動判定保留は短い記号、menu summary、Inspector文字などの重複を手動確認表へ統合しました。次はWindows実機でNarrator受入れを完走します。
