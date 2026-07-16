@@ -34,18 +34,22 @@ export class AIService {
   private activeLocalImageJobId: string | null = null;
   private activeLocalTextRequests = new Set<string>();
   private pauseRequested = new Set<string>();
+  private queueWakeTimer: NodeJS.Timeout | undefined;
   private allowMock: boolean;
   private getRuntimeProfile?: () => RuntimeProfileState;
+  private retryBaseDelayMs: number;
   constructor(
     private store: MangaiDatabase,
     options: {
       allowMock?: boolean;
       getRuntimeProfile?: () => RuntimeProfileState;
+      retryBaseDelayMs?: number;
     } = {},
   ) {
     this.allowMock =
       options.allowMock ?? process.env.MANGAI_ENABLE_MOCK_AI === "true";
     this.getRuntimeProfile = options.getRuntimeProfile;
+    this.retryBaseDelayMs = Math.max(10, options.retryBaseDelayMs ?? 1000);
   }
   isMockEnabled() {
     return this.allowMock;
@@ -530,7 +534,13 @@ export class AIService {
     )
       return;
     const next = this.store.nextQueuedImageJob();
-    if (!next) return;
+    if (!next) {
+      const delay = this.store.nextQueuedImageDelayMs();
+      if (delay !== null) this.scheduleQueueWake(delay);
+      return;
+    }
+    if (this.queueWakeTimer) clearTimeout(this.queueWakeTimer);
+    this.queueWakeTimer = undefined;
     try {
       await this.generateImage(
         imageJobRequestSchema.parse(JSON.parse(next.inputJson)),
@@ -539,6 +549,13 @@ export class AIService {
     } catch {
       // runImageJob records the durable failure before rejecting.
     }
+  }
+  private scheduleQueueWake(delayMs: number) {
+    if (this.queueWakeTimer) clearTimeout(this.queueWakeTimer);
+    this.queueWakeTimer = setTimeout(() => {
+      this.queueWakeTimer = undefined;
+      void this.runNextQueuedImage();
+    }, Math.max(10, delayMs));
   }
   async generateImage(input: ImageJobRequest, existingJobId?: string) {
     input = imageJobRequestSchema.parse(input);
@@ -648,6 +665,7 @@ export class AIService {
           true,
         );
       this.activeLocalImageJobId = jobId;
+      this.store.beginGenerationJobAttempt(jobId);
       const ollamaModelUnloaded = runtime?.limits.unloadTextModelBeforeImage
         ? await this.unloadLocalTextModel(controller.signal)
         : false;
@@ -774,6 +792,35 @@ export class AIService {
           await provider.cancelJob?.(queuedProviderJobId);
         } catch {
           // 停止状態の永続化を優先する。
+        }
+      }
+      if (
+        !controller.signal.aborted &&
+        error instanceof AIProviderError &&
+        error.retryable
+      ) {
+        const job = this.store.getGenerationJob(jobId);
+        const attemptCount = Number(job?.attempt_count ?? 1);
+        const delayMs = Math.min(
+          30_000,
+          this.retryBaseDelayMs * 2 ** Math.max(0, attemptCount - 1),
+        );
+        if (
+          this.store.requeueGenerationJob(
+            jobId,
+            error.code,
+            error.message,
+            delayMs,
+          )
+        ) {
+          this.log("image_generation_retry_scheduled", error, {
+            provider: "comfyui",
+            jobId,
+            attemptCount,
+            delayMs,
+          });
+          this.scheduleQueueWake(delayMs);
+          return { jobId, status: "queued", retryScheduled: true };
         }
       }
       this.log("image_generation_failed", error, {

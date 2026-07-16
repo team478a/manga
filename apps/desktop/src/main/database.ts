@@ -437,6 +437,16 @@ export class MangaiDatabase {
       this.db.exec(
         "alter table generation_jobs add column priority integer not null default 0",
       );
+    if (!jobColumns.some((column) => column.name === "attempt_count"))
+      this.db.exec(
+        "alter table generation_jobs add column attempt_count integer not null default 0",
+      );
+    if (!jobColumns.some((column) => column.name === "max_attempts"))
+      this.db.exec(
+        "alter table generation_jobs add column max_attempts integer not null default 3",
+      );
+    if (!jobColumns.some((column) => column.name === "next_attempt_at"))
+      this.db.exec("alter table generation_jobs add column next_attempt_at text");
     this.db.exec(
       "create index if not exists idx_generation_jobs_queue on generation_jobs(status,provider_type,priority desc,created_at)",
     );
@@ -4101,7 +4111,7 @@ export class MangaiDatabase {
   }
   listGenerationJobs(projectId?: string) {
     const sql =
-      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,priority,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
+      "select id,project_id as projectId,episode_id as episodeId,page_id as pageId,provider_type as providerType,provider_id as providerId,model_id as modelId,generation_type as generationType,status,priority,attempt_count as attemptCount,max_attempts as maxAttempts,next_attempt_at as nextAttemptAt,progress,prompt,negative_prompt as negativePrompt,input_json as inputJson,output_json as outputJson,provider_job_id as providerJobId,error_code as errorCode,error_message as errorMessage,created_at as createdAt,started_at as startedAt,completed_at as completedAt from generation_jobs";
     return projectId
       ? this.db
           .prepare(`${sql} where project_id=? order by created_at desc`)
@@ -4118,9 +4128,59 @@ export class MangaiDatabase {
       .prepare(
         `select id,input_json as inputJson from generation_jobs
          where status='queued' and generation_type='image'
+           and (next_attempt_at is null or next_attempt_at<=?)
          order by priority desc,created_at,id limit 1`,
       )
-      .get() as { id: string; inputJson: string } | undefined;
+      .get(now()) as { id: string; inputJson: string } | undefined;
+  }
+  nextQueuedImageDelayMs() {
+    const row = this.db
+      .prepare(
+        `select next_attempt_at as nextAttemptAt from generation_jobs
+         where status='queued' and generation_type='image' and next_attempt_at is not null
+         order by next_attempt_at limit 1`,
+      )
+      .get() as { nextAttemptAt: string } | undefined;
+    return row
+      ? Math.max(0, new Date(row.nextAttemptAt).getTime() - Date.now())
+      : null;
+  }
+  beginGenerationJobAttempt(id: string) {
+    this.db
+      .prepare(
+        "update generation_jobs set attempt_count=attempt_count+1,next_attempt_at=null where id=? and generation_type='image'",
+      )
+      .run(id);
+    return this.db
+      .prepare(
+        "select attempt_count as attemptCount,max_attempts as maxAttempts from generation_jobs where id=?",
+      )
+      .get(id) as { attemptCount: number; maxAttempts: number };
+  }
+  requeueGenerationJob(
+    id: string,
+    errorCode: string,
+    errorMessage: string,
+    delayMs: number,
+  ) {
+    const job = this.db
+      .prepare(
+        "select attempt_count as attemptCount,max_attempts as maxAttempts from generation_jobs where id=?",
+      )
+      .get(id) as { attemptCount: number; maxAttempts: number } | undefined;
+    if (!job || job.attemptCount >= job.maxAttempts) return false;
+    this.db
+      .prepare(
+        `update generation_jobs set status='queued',progress=0,provider_job_id=null,
+         error_code=?,error_message=?,next_attempt_at=?,completed_at=null where id=?`,
+      )
+      .run(
+        errorCode,
+        errorMessage,
+        new Date(Date.now() + delayMs).toISOString(),
+        id,
+      );
+    return true;
   }
   setGenerationJobStatus(id: string, status: GenerationStatus) {
     const job = this.db
@@ -4130,6 +4190,10 @@ export class MangaiDatabase {
     this.updateGenerationJob(id, status, {
       progress: status === "queued" ? 0 : undefined,
     });
+    if (status === "queued")
+      this.db
+        .prepare("update generation_jobs set next_attempt_at=null where id=?")
+        .run(id);
     return true;
   }
   changeGenerationJobPriority(id: string, delta: number) {

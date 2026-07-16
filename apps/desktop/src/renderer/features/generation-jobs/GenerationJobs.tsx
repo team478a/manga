@@ -595,6 +595,19 @@ export function GenerationJobs({
                       {t(generationStatusKey(job.status))}・
                       {formatDateTime(job.createdAt)}
                     </small>
+                    {job.generationType === "image" && job.attemptCount > 0 && (
+                      <small>
+                        {t("generation.attempt", {
+                          current: job.attemptCount,
+                          max: job.maxAttempts,
+                        })}
+                        {job.status === "queued" && job.nextAttemptAt
+                          ? `・${t("generation.nextRetry", {
+                              time: formatDateTime(job.nextAttemptAt),
+                            })}`
+                          : ""}
+                      </small>
+                    )}
                     {job.generationType === "image" && (
                       <div className="job-progress">
                         <progress

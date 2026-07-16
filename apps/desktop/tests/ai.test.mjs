@@ -1015,6 +1015,10 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
   const mock = await server((req, res) => {
     if (req.url === "/prompt") {
       promptCount += 1;
+      if (promptCount === 2) {
+        req.socket.destroy();
+        return;
+      }
       return res.end(
         JSON.stringify({
           prompt_id: promptCount === 1 ? "slow-job" : "queued-job",
@@ -1077,6 +1081,7 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
       })[0],
       service = new AIService(db, {
         getRuntimeProfile: () => runtimeState(),
+        retryBaseDelayMs: 10,
       }),
       pending = service.generateImage({
         projectId: project.project.id,
@@ -1155,7 +1160,11 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
       )?.status,
       "completed",
     );
-    assert.equal(promptCount, 2);
+    const completedQueuedJob = db
+      .listGenerationJobs(project.project.id)
+      .find((value) => value.id === queuedResult.jobId);
+    assert.equal(completedQueuedJob.attemptCount, 2);
+    assert.equal(promptCount, 3);
   } finally {
     db.close();
     await mock.close();
