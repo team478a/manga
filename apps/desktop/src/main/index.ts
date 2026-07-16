@@ -975,6 +975,13 @@ app
           document.querySelector('form[role="dialog"]').requestSubmit();
           await waitFor('[data-workspace-view="editor"]');
           screens.push(await audit("editor"));
+          document
+            .querySelector('[data-a11y-action="open-generation-drawer"]')
+            .click();
+          await waitFor('.generation-drawer[role="dialog"]');
+          screens.push(await audit("generation-drawer"));
+          document.querySelector('[data-generation-close]').click();
+          await waitForMissing('.generation-drawer[role="dialog"]');
           document.querySelector('[data-a11y-action="open-export"]').click();
           await waitFor('.export-dialog[role="dialog"]');
           screens.push(await audit("export-dialog"));
@@ -1037,6 +1044,13 @@ app
             );
             screens.push(await audit(view + "-en"));
           }
+          document
+            .querySelector('[data-a11y-action="open-generation-drawer"]')
+            .click();
+          await waitFor('.generation-drawer[role="dialog"]');
+          screens.push(await audit("generation-drawer-en"));
+          document.querySelector('[data-generation-close]').click();
+          await waitForMissing('.generation-drawer[role="dialog"]');
           document.querySelector('[data-a11y-action="open-export"]').click();
           await waitFor('.export-dialog[role="dialog"]');
           screens.push(await audit("export-dialog-en"));

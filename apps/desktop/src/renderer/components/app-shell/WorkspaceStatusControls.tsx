@@ -210,6 +210,7 @@ export function WorkspaceStatusControls({
           />
         </button>
         <button
+          data-a11y-action="open-generation-drawer"
           className={
             activeJobs.length ? "status-bar-jobs active" : "status-bar-jobs"
           }

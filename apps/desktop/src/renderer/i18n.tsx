@@ -1638,10 +1638,19 @@ function localizeExternalMessage(message: string, locale: AppLocale) {
     "",
   );
   if (locale === "ja") return unwrapped;
-  return englishMainMessageReplacements.reduce(
-    (value, [pattern, replacement]) => value.replace(pattern, replacement),
-    unwrapped,
-  );
+  let localized = unwrapped;
+  let translated = false;
+  for (const [pattern, replacement] of englishMainMessageReplacements) {
+    const next = localized.replace(pattern, replacement);
+    if (next !== localized) translated = true;
+    localized = next;
+  }
+  if (
+    !translated &&
+    /[\u3040-\u30ff\u3400-\u9fff]/.test(localized)
+  )
+    return "The operation could not be completed. Review the input and try again.";
+  return localized;
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
