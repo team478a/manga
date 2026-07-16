@@ -57,6 +57,18 @@ const runtimeProfileKey: Record<
   vram_24gb_plus: "settings.runtime.vram24",
   remote_render: "settings.runtime.remote",
 };
+const providerFieldKey: Record<string, Parameters<Translator>[0]> = {
+  providerId: "settings.provider.field.providerId",
+  enabled: "settings.provider.field.enabled",
+  baseUrl: "settings.provider.field.baseUrl",
+  modelId: "settings.provider.field.modelId",
+  temperature: "settings.provider.field.temperature",
+  maxTokens: "settings.provider.field.maxTokens",
+  timeoutMs: "settings.provider.field.timeoutMs",
+  stream: "settings.provider.field.stream",
+  pollIntervalMs: "settings.provider.field.pollIntervalMs",
+  allowedOrigins: "settings.provider.field.allowedOrigins",
+};
 
 async function diagnoseComfyWorkflows(
   report: (item: DiagnosticItem) => void,
@@ -223,11 +235,17 @@ export function AISettings({ onClose }: { onClose: () => void }) {
   const save = async (value: ProviderSettings) => {
     await window.mangai.ai.saveSettings(value);
     setSettingsHistory(await window.mangai.ai.listSettingsHistory());
-    setStatus((s) => ({ ...s, [value.providerId]: "保存しました。" }));
+    setStatus((s) => ({
+      ...s,
+      [value.providerId]: t("settings.provider.saved"),
+    }));
   };
   const check = async (value: ProviderSettings) => {
     await save(value);
-    setStatus((s) => ({ ...s, [value.providerId]: "接続確認中…" }));
+    setStatus((s) => ({
+      ...s,
+      [value.providerId]: t("settings.provider.checking"),
+    }));
     try {
       const result = await window.mangai.ai.checkProvider(value.providerId);
       setStatus((s) => ({ ...s, [value.providerId]: result.message }));
@@ -691,15 +709,17 @@ export function AISettings({ onClose }: { onClose: () => void }) {
         <section className="panel-lite">
           <div className="setting-title">
             <div>
-              <h2>AI設定の変更履歴</h2>
-              <p>
-                接続URLやモデル名の実値は記録せず、変更項目と状態だけを端末内へ保存します。
-              </p>
+              <h2>{t("settings.provider.historyTitle")}</h2>
+              <p>{t("settings.provider.historyDescription")}</p>
             </div>
-            <span className="hub-readonly-badge">監査履歴</span>
+            <span className="hub-readonly-badge">
+              {t("settings.provider.auditHistory")}
+            </span>
           </div>
           {!settingsHistory.length ? (
-            <p className="diagnostic-empty">設定変更はまだありません。</p>
+            <p className="diagnostic-empty">
+              {t("settings.provider.historyEmpty")}
+            </p>
           ) : (
             <div className="job-list">
               {settingsHistory.slice(0, 10).map((item) => (
@@ -707,15 +727,25 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                   <div>
                     <b>{providerName(item.providerId, t)}</b>
                     <p>
-                      {item.summary.enabled ? "有効" : "無効"}・
+                      {item.summary.enabled
+                        ? t("settings.provider.enabledState")
+                        : t("settings.provider.disabledState")}
+                      {" · "}
                       {item.summary.endpointKind === "local"
-                        ? "ローカル接続"
-                        : "リモート接続"}
-                      ・変更: {item.changedFields.join("、")}
+                        ? t("settings.provider.localEndpoint")
+                        : t("settings.provider.remoteEndpoint")}
+                      {" · "}
+                      {t("settings.provider.changed", {
+                        fields: item.changedFields
+                          .map((field) =>
+                            providerFieldKey[field]
+                              ? t(providerFieldKey[field])
+                              : field,
+                          )
+                          .join(", "),
+                      })}
                     </p>
-                    <small>
-                      {new Date(item.createdAt).toLocaleString("ja-JP")}
-                    </small>
+                    <small>{formatDateTime(item.createdAt)}</small>
                   </div>
                 </article>
               ))}
@@ -730,7 +760,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                   ? "Ollama"
                   : value.providerId === "comfyui"
                     ? "ComfyUI"
-                    : "モックプロバイダー"}
+                    : t("settings.provider.mock")}
               </h2>
               <label className="check">
                 <input
@@ -740,11 +770,11 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     update(value.providerId, { enabled: e.target.checked })
                   }
                 />
-                有効
+                {t("settings.provider.enabled")}
               </label>
             </div>
             <label>
-              接続URL
+              {t("settings.provider.baseUrl")}
               <input
                 value={value.baseUrl}
                 onChange={(e) =>
@@ -753,7 +783,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               />
             </label>
             <label>
-              許可するリモートorigin（1行に1件）
+              {t("settings.provider.allowedOrigins")}
               <textarea
                 value={value.allowedOrigins.join("\n")}
                 onChange={(e) =>
@@ -766,22 +796,21 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                 }
                 placeholder="https://ai.example.com:8188"
               />
-              <small>
-                localhostは登録不要です。それ以外はHTTPS
-                originの完全一致だけを許可します。
-              </small>
+              <small>{t("settings.provider.allowedOriginsHelp")}</small>
             </label>
             {value.providerId !== "comfyui" && (
               <>
                 <label>
-                  使用モデル
+                  {t("settings.provider.model")}
                   <select
                     value={value.modelId}
                     onChange={(e) =>
                       update(value.providerId, { modelId: e.target.value })
                     }
                   >
-                    <option value="">選択してください</option>
+                    <option value="">
+                      {t("settings.provider.selectModel")}
+                    </option>
                     {models[value.providerId]?.map((model) => (
                       <option key={model.id} value={model.id}>
                         {model.name}
@@ -806,7 +835,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     />
                   </label>
                   <label>
-                    最大出力
+                    {t("settings.provider.maxTokens")}
                     <input
                       type="number"
                       value={value.maxTokens}
@@ -824,13 +853,13 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                       update(value.providerId, { stream: e.target.checked })
                     }
                   />
-                  ストリーミング
+                  {t("settings.provider.streaming")}
                 </label>
               </>
             )}
             <div className="grid">
               <label>
-                タイムアウト(ms)
+                {t("settings.provider.timeout")}
                 <input
                   type="number"
                   value={value.timeoutMs}
@@ -841,7 +870,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               </label>
               {value.providerId === "comfyui" && (
                 <label>
-                  ポーリング間隔(ms)
+                  {t("settings.provider.pollInterval")}
                   <input
                     type="number"
                     value={value.pollIntervalMs}
@@ -855,9 +884,11 @@ export function AISettings({ onClose }: { onClose: () => void }) {
               )}
             </div>
             <div className="inline">
-              <button onClick={() => save(value)}>保存</button>
+              <button onClick={() => save(value)}>
+                {t("settings.provider.save")}
+              </button>
               <button className="secondary" onClick={() => check(value)}>
-                接続確認
+                {t("settings.provider.check")}
               </button>
               {value.providerId !== "comfyui" && (
                 <button
@@ -870,16 +901,26 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     setModels((m) => ({ ...m, [value.providerId]: list }));
                     setStatus((s) => ({
                       ...s,
-                      [value.providerId]: `${list.length}件のモデルを取得しました。${list.some((model) => model.cached) ? "（前回取得したキャッシュ）" : ""}`,
+                      [value.providerId]: t(
+                        "settings.provider.modelsLoaded",
+                        {
+                          count: list.length,
+                          cache: list.some((model) => model.cached)
+                            ? t("settings.provider.modelsCached")
+                            : "",
+                        },
+                      ),
                     }));
                   }}
                 >
-                  モデル一覧更新
+                  {t("settings.provider.refreshModels")}
                 </button>
               )}
             </div>
             {status[value.providerId] && (
-              <p className="notice">{status[value.providerId]}</p>
+              <p className="notice" role="status" aria-live="polite">
+                {status[value.providerId]}
+              </p>
             )}
           </section>
         ))}
