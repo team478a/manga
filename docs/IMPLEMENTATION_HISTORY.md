@@ -18,6 +18,9 @@
 - Dezgo公式APIの読み取り専用clientを追加し、接続確認、モデル一覧、残高取得、15秒timeout、キャンセル、HTTP error分類へ対応
 - モデルmetadataの24時間SQLite cacheとAPI停止時fallbackを追加し、feature flag無効時はcacheを含めて操作を拒否
 - 生成APIは未有効のまま維持し、ai-core 25/25、Desktop統合テスト69/69、TypeScript、ESLint、本番renderer buildに成功
+- 設定画面へDezgo専用カードを追加し、APIキーの保存・更新・削除、接続確認、残高、モデルmetadata表示を日英対応
+- feature flag無効時は資格情報操作と外部通信を無効化し、接続確認では画像・Promptを送信しないことを画面上に明示
+- 日英設定画面を含むaxe監査は違反0件。既存Canvas装飾の色判定保留だけを継続
 
 ## 1. 現在の製品構成
 

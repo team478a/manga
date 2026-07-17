@@ -351,3 +351,14 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - rendererへ接続確認・モデル一覧・残高の限定IPCを公開し、APIキーと未加工response bodyは公開しない
 - `generateImage`は明示的に未有効のまま維持し、この段階ではDezgoへ生成要求を送信しない
 - ai-core 25/25、Desktop TypeScript、ESLint、統合テスト69/69、本番renderer build成功
+
+### 2026-07-17: 設定画面統合
+
+- 設定画面へDezgo専用カードを追加し、Provider / BYOK / OS資格情報Storeの利用可否を表示
+- APIキー入力をpassword fieldとし、保存後はrenderer stateを消去して保存値を再表示しない
+- APIキーの保存・更新・削除を既存の限定credential IPCへ接続
+- 明示操作による接続確認後だけモデル一覧と残高を取得し、画像やPromptは送信しない
+- モデル名、説明、family、native resolution、対応Job Type、cache状態を確認可能
+- Phase 1 feature flagが無効な製品版ではカードを説明表示に留め、資格情報操作と外部通信を無効化
+- 日本語・英語表示、status live region、busy / disabled状態、狭幅レイアウトへ対応
+- Desktop TypeScript、ESLint、統合テスト69/69、本番renderer build、日英設定画面を含むaxe監査違反0件

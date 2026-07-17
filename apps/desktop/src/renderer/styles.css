@@ -1898,6 +1898,53 @@ label {
   justify-content: space-between;
   align-items: center;
 }
+.dezgo-settings .setting-title {
+  gap: 20px;
+}
+.dezgo-settings .setting-title > div {
+  display: grid;
+  gap: 6px;
+}
+.dezgo-settings .setting-title p,
+.dezgo-model-details p {
+  margin: 0;
+}
+.dezgo-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+.dezgo-summary > div,
+.dezgo-model-details {
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-panel-elevated);
+}
+.dezgo-summary dt {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.dezgo-summary dd {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.dezgo-model-details {
+  display: grid;
+  gap: 6px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 650px) {
+  .dezgo-settings .setting-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .dezgo-summary {
+    grid-template-columns: 1fr;
+  }
+}
 .check {
   display: flex;
   align-items: center;

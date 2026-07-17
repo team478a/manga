@@ -9,6 +9,7 @@ import type {
   DiagnosticsState,
 } from "../../../preload/api";
 import { useI18n } from "../../i18n";
+import { DezgoSettings } from "./DezgoSettings";
 
 type PromptTemplate = {
   id: string;
@@ -777,6 +778,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             </div>
           )}
         </section>
+        <DezgoSettings />
         {settings.map((value) => (
           <section className="panel-lite" key={value.providerId}>
             <div className="setting-title">
