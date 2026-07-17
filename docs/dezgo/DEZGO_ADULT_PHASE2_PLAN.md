@@ -95,7 +95,11 @@ MANGAI Desktopで成人向け漫画を制作し、将来Dezgoを成人向け画�
 
 ### D. Provider承認・モデルallowlist
 
-- Provider回答または公式規約のSHA-256、確認日、状態を管理
+- [完了] Provider回答または公式規約のSHA-256、確認日、有効期限、失効状態を保存するschemaとSQLite
+- [完了] モデルごとのlicense証跡SHA-256、確認日、有効期限、失効状態を保存するallowlist
+- [完了] Providerとモデルの両承認が現在有効なモデルだけをeligibleとするfail-closed評価
+- [完了] 書き込みIPCを公開しない日英読み取り専用状態表示
+- [未完了] 承認済み運用データの署名検証付き取込経路
 - `GET /info`の全モデルを成人向け対応と推測せず、確認済みモデルだけをallowlistへ登録
 - モデルライセンス変更・Provider承認失効時は新規送信と待機Jobを停止
 
@@ -119,7 +123,7 @@ MANGAI Desktopで成人向け漫画を制作し、将来Dezgoを成人向け画�
 
 - Dezgoによる成人向け商用API利用の確認可能な承認証跡
 - 画像参照対応時の端末内人物・年齢推定
-- モデルallowlist
+- Dezgo承認証跡とモデルallowlistの実運用データ（現在は0件）
 - 成人向け専用Queue・dispatcher
 - 非成人向け実API 10枚E2E
 

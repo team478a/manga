@@ -1067,3 +1067,13 @@ Rendererのdisabled状態だけに依存せず、ai-core schemaは6項目すべ�
 成人向けProjectのPage一括生成は、1枚ごとの内容確認を省略できるため無効化しました。生成Asset metadataにも成人向けPromptとNegative Promptを複製せず、`adultContent=true`だけを記録します。成人向け確認をsafe背景などの通常Requestへ付与することもschemaで拒否します。
 
 確認欠落、一部未確認、通常Requestへの誤添付、未成年・実在人物・非同意Prompt、管理者停止、18歳確認欠落、正常な成人向けRequestがProvider設定確認まで進むことを自動検証しました。Desktop統合テスト79/79、ai-core 33/33、TypeScript、ESLint、製品build、日英29画面・状態のaxe違反0件に成功しています。Dezgo成人向け外部送信は引き続き無効です。
+
+## 124. 成人向けProvider承認証跡・モデルallowlist基盤
+
+Dezgoの成人向け商用API利用承認を、公開FAQの一般的な商用利用可と区別して管理するレジストリを追加しました。Provider承認には状態、証跡SHA-256、確認日時、有効期限、失効日時を保持し、`approved`には証跡hashと確認日時を必須化します。承認文書本文はSQLiteへ保存しません。
+
+モデルallowlistもProviderのモデルcacheから分離し、モデルID、状態、license証跡SHA-256、確認日時、有効期限を個別管理します。`GET /info`で取得しただけのモデルを成人向け対応とはみなしません。Provider承認とモデル承認の両方が現在有効な場合だけ`eligibleModelIds`へ含め、未確認、失効、期限切れ、未登録モデルは理由別にfail closedとなります。
+
+既存端末には`adult-provider-policy-v1` migrationを適用し、適用前DBを自動backupします。Rendererへは読み取り専用IPCだけを公開し、設定画面でProvider状態、現在有効なモデル数、証跡SHA-256を確認できます。承認状態やallowlistを書き換えるIPCは公開していません。
+
+証跡欠落、日時逆転、Provider未確認、モデル未登録、期限切れ、両承認有効、再起動後の復元、migration前backupを自動検証しました。Desktop統合テスト80/80、ai-core 35/35、TypeScriptに成功しています。署名検証付き運用データ取込、実承認データ、成人向けdispatcher接続は未実装で、Dezgo成人向け外部送信は引き続き無効です。

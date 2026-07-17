@@ -18,6 +18,9 @@ import {
   evaluateAdultGenerationGate,
   imageJobRequestSchema,
   reviewAdultGenerationPrompt,
+  adultModelApprovalInputSchema,
+  adultProviderApprovalInputSchema,
+  evaluateAdultProviderCapability,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
@@ -179,6 +182,75 @@ test("adult prompt review blocks minor, real-person and non-consensual signals",
   assert.deepEqual(
     reviewAdultGenerationPrompt("two fictional consenting adults, age 25"),
     { allowed: true, reason: null },
+  );
+});
+
+const providerApproval = {
+  providerId: "dezgo",
+  status: "approved",
+  evidenceSha256: "a".repeat(64),
+  confirmedAt: "2026-07-17T00:00:00.000Z",
+  expiresAt: "2026-08-17T00:00:00.000Z",
+  revokedAt: null,
+  updatedAt: "2026-07-17T00:00:00.000Z",
+};
+const modelApproval = {
+  providerId: "dezgo",
+  modelId: "verified-model",
+  status: "approved",
+  licenseEvidenceSha256: "b".repeat(64),
+  verifiedAt: "2026-07-17T00:00:00.000Z",
+  expiresAt: "2026-08-17T00:00:00.000Z",
+  updatedAt: "2026-07-17T00:00:00.000Z",
+};
+
+test("adult provider evidence schemas reject incomplete or inverted approvals", () => {
+  assert.throws(() =>
+    adultProviderApprovalInputSchema.parse({
+      ...providerApproval,
+      evidenceSha256: null,
+    }),
+  );
+  assert.throws(() =>
+    adultModelApprovalInputSchema.parse({
+      ...modelApproval,
+      expiresAt: "2026-07-16T00:00:00.000Z",
+    }),
+  );
+});
+
+test("adult provider capability requires current provider and model approval", () => {
+  assert.deepEqual(
+    evaluateAdultProviderCapability({
+      approval: { ...providerApproval, status: "unverified" },
+      model: null,
+      referenceTime: "2026-07-18T00:00:00.000Z",
+    }),
+    { allowed: false, reason: "provider_unverified" },
+  );
+  assert.deepEqual(
+    evaluateAdultProviderCapability({
+      approval: providerApproval,
+      model: null,
+      referenceTime: "2026-07-18T00:00:00.000Z",
+    }),
+    { allowed: false, reason: "model_not_allowlisted" },
+  );
+  assert.deepEqual(
+    evaluateAdultProviderCapability({
+      approval: providerApproval,
+      model: modelApproval,
+      referenceTime: "2026-07-18T00:00:00.000Z",
+    }),
+    { allowed: true, reason: null },
+  );
+  assert.deepEqual(
+    evaluateAdultProviderCapability({
+      approval: providerApproval,
+      model: modelApproval,
+      referenceTime: "2026-09-01T00:00:00.000Z",
+    }),
+    { allowed: false, reason: "provider_expired" },
   );
 });
 

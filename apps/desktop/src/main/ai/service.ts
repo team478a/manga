@@ -143,6 +143,9 @@ export class AIService {
   getAdultGenerationSettings(): AdultGenerationSettings {
     return this.store.getAdultGenerationSettings();
   }
+  getAdultProviderPolicyState() {
+    return this.store.getAdultProviderPolicyState();
+  }
   setAdultGenerationAdministratorEnabled(enabled: boolean) {
     const settings = this.store.setAdultGenerationAdministratorEnabled(enabled);
     if (!settings.administratorEnabled)

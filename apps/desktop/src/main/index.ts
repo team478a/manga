@@ -636,6 +636,9 @@ function register() {
   handle("ai:adult-settings:get", () =>
     aiService.getAdultGenerationSettings(),
   );
+  handle("ai:adult-provider-policy:get", () =>
+    aiService.getAdultProviderPolicyState(),
+  );
   handle("ai:adult-settings:administrator", (v) =>
     aiService.setAdultGenerationAdministratorEnabled(
       adultGenerationAdministratorInputSchema.parse(v).enabled,

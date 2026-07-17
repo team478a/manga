@@ -33,6 +33,11 @@ import {
   ADULT_GENERATION_TERMS_VERSION,
   adultGenerationConsentInputSchema,
   adultGenerationSettingsSchema,
+  adultModelApprovalInputSchema,
+  adultModelApprovalSchema,
+  adultProviderApprovalInputSchema,
+  adultProviderApprovalSchema,
+  evaluateAdultProviderCapability,
   analyzeComfyWorkflowOptimization,
   defaultPromptTemplates,
   generationJobDraftSchema,
@@ -44,6 +49,8 @@ import {
   routingContextSchema,
   type GenerationJobDraftInput,
   type AdultGenerationSettings,
+  type AdultModelApproval,
+  type AdultProviderApproval,
   type ImageGenerationModelMetadata,
   type GenerationRouteDecisionRecord,
   type GenerationStatus,
@@ -373,7 +380,9 @@ export class MangaiDatabase {
                     ? "panel-layers-v1"
                     : !this.hasMigration("adult-generation-consent-v1")
                       ? "adult-generation-consent-v1"
-                      : null;
+                      : !this.hasMigration("adult-provider-policy-v1")
+                        ? "adult-provider-policy-v1"
+                        : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -427,6 +436,8 @@ export class MangaiDatabase {
  create table if not exists generation_outputs(id text primary key,job_id text not null references generation_jobs(id) on delete cascade,asset_id text references assets(id) on delete set null,relative_path text,metadata_json text not null default '{}',created_at text not null);
  create table if not exists generation_queue_settings(id integer primary key check(id=1),night_mode_enabled integer not null default 0,start_time text not null default '22:00',end_time text not null default '07:00',updated_at text not null);
  create table if not exists adult_generation_settings(id integer primary key check(id=1),administrator_enabled integer not null default 0,user_confirmed_18_plus integer not null default 0,terms_version text,confirmed_at text,expires_at text,revoked_at text,updated_at text not null);
+ create table if not exists adult_provider_approvals(provider_id text primary key check(provider_id='dezgo'),status text not null check(status in ('unverified','approved','revoked')),evidence_sha256 text,confirmed_at text,expires_at text,revoked_at text,updated_at text not null);
+ create table if not exists adult_model_approvals(provider_id text not null check(provider_id='dezgo'),model_id text not null,status text not null check(status in ('approved','revoked')),license_evidence_sha256 text not null,verified_at text not null,expires_at text,updated_at text not null,primary key(provider_id,model_id));
  create table if not exists external_cost_reservations(id text primary key,project_id text not null references projects(id) on delete cascade,provider_id text not null,approval_token_sha256 text not null unique,job_id text references generation_jobs(id) on delete set null,billing_month text not null,reserved_amount_usd real not null check(reserved_amount_usd>=0),actual_amount_usd real,status text not null check(status in ('reserved','settled','released')),created_at text not null,updated_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
@@ -483,6 +494,7 @@ export class MangaiDatabase {
     this.migrateAssetLibraryV1();
     this.migratePanelLayersV1();
     this.migrateAdultGenerationConsentV1();
+    this.migrateAdultProviderPolicyV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -847,6 +859,42 @@ export class MangaiDatabase {
         .run(
           "adult-generation-consent-v1",
           "Adult generation administrator switch and age attestation",
+          stamp,
+        );
+    })();
+  }
+  private migrateAdultProviderPolicyV1() {
+    if (this.hasMigration("adult-provider-policy-v1")) return;
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db.exec(`
+        create table if not exists adult_provider_approvals(
+          provider_id text primary key check(provider_id='dezgo'),
+          status text not null check(status in ('unverified','approved','revoked')),
+          evidence_sha256 text,
+          confirmed_at text,
+          expires_at text,
+          revoked_at text,
+          updated_at text not null
+        );
+        create table if not exists adult_model_approvals(
+          provider_id text not null check(provider_id='dezgo'),
+          model_id text not null,
+          status text not null check(status in ('approved','revoked')),
+          license_evidence_sha256 text not null,
+          verified_at text not null,
+          expires_at text,
+          updated_at text not null,
+          primary key(provider_id,model_id)
+        );
+      `);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run(
+          "adult-provider-policy-v1",
+          "Adult provider approval evidence and model allowlist",
           stamp,
         );
     })();
@@ -4558,6 +4606,106 @@ export class MangaiDatabase {
       revokedAt: row.revokedAt,
       updatedAt: row.updatedAt,
     });
+  }
+  getAdultProviderApproval(): AdultProviderApproval {
+    const row = this.db
+      .prepare(
+        `select provider_id as providerId,status,
+                evidence_sha256 as evidenceSha256,
+                confirmed_at as confirmedAt,expires_at as expiresAt,
+                revoked_at as revokedAt,updated_at as updatedAt
+         from adult_provider_approvals where provider_id='dezgo'`,
+      )
+      .get() as AdultProviderApproval | undefined;
+    return adultProviderApprovalSchema.parse(
+      row ?? {
+        providerId: "dezgo",
+        status: "unverified",
+        evidenceSha256: null,
+        confirmedAt: null,
+        expiresAt: null,
+        revokedAt: null,
+        updatedAt: null,
+      },
+    );
+  }
+  saveAdultProviderApproval(input: unknown): AdultProviderApproval {
+    const approval = adultProviderApprovalInputSchema.parse(input);
+    const stamp = now();
+    this.db
+      .prepare(
+        `insert into adult_provider_approvals(
+           provider_id,status,evidence_sha256,confirmed_at,expires_at,
+           revoked_at,updated_at
+         ) values(?,?,?,?,?,?,?)
+         on conflict(provider_id) do update set status=excluded.status,
+           evidence_sha256=excluded.evidence_sha256,
+           confirmed_at=excluded.confirmed_at,expires_at=excluded.expires_at,
+           revoked_at=excluded.revoked_at,updated_at=excluded.updated_at`,
+      )
+      .run(
+        approval.providerId,
+        approval.status,
+        approval.evidenceSha256,
+        approval.confirmedAt,
+        approval.expiresAt,
+        approval.revokedAt,
+        stamp,
+      );
+    return this.getAdultProviderApproval();
+  }
+  listAdultModelApprovals(): AdultModelApproval[] {
+    return (
+      this.db
+        .prepare(
+          `select provider_id as providerId,model_id as modelId,status,
+                  license_evidence_sha256 as licenseEvidenceSha256,
+                  verified_at as verifiedAt,expires_at as expiresAt,
+                  updated_at as updatedAt
+           from adult_model_approvals where provider_id='dezgo'
+           order by model_id`,
+        )
+        .all() as AdultModelApproval[]
+    ).map((row) => adultModelApprovalSchema.parse(row));
+  }
+  saveAdultModelApproval(input: unknown): AdultModelApproval {
+    const model = adultModelApprovalInputSchema.parse(input);
+    const stamp = now();
+    this.db
+      .prepare(
+        `insert into adult_model_approvals(
+           provider_id,model_id,status,license_evidence_sha256,verified_at,
+           expires_at,updated_at
+         ) values(?,?,?,?,?,?,?)
+         on conflict(provider_id,model_id) do update set status=excluded.status,
+           license_evidence_sha256=excluded.license_evidence_sha256,
+           verified_at=excluded.verified_at,expires_at=excluded.expires_at,
+           updated_at=excluded.updated_at`,
+      )
+      .run(
+        model.providerId,
+        model.modelId,
+        model.status,
+        model.licenseEvidenceSha256,
+        model.verifiedAt,
+        model.expiresAt,
+        stamp,
+      );
+    return adultModelApprovalSchema.parse({ ...model, updatedAt: stamp });
+  }
+  getAdultProviderPolicyState() {
+    const approval = this.getAdultProviderApproval();
+    const models = this.listAdultModelApprovals();
+    return {
+      approval,
+      models,
+      eligibleModelIds: models
+        .filter(
+          (model) =>
+            evaluateAdultProviderCapability({ approval, model }).allowed,
+        )
+        .map((model) => model.modelId),
+    };
   }
   setAdultGenerationAdministratorEnabled(
     enabled: boolean,

@@ -101,6 +101,123 @@ export function reviewAdultGenerationPrompt(prompt: string):
   return { allowed: true, reason: null };
 }
 
+export const adultProviderApprovalInputSchema = z
+  .object({
+    providerId: z.literal("dezgo"),
+    status: z.enum(["unverified", "approved", "revoked"]),
+    evidenceSha256: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+    confirmedAt: z.string().datetime().nullable(),
+    expiresAt: z.string().datetime().nullable(),
+    revokedAt: z.string().datetime().nullable().default(null),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.status === "approved" &&
+      (!value.evidenceSha256 || !value.confirmedAt)
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Provider承認には証跡SHA-256と確認日時が必要です。",
+      });
+    if (
+      value.confirmedAt &&
+      value.expiresAt &&
+      Date.parse(value.expiresAt) <= Date.parse(value.confirmedAt)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["expiresAt"],
+        message: "Provider承認の有効期限が確認日時以前です。",
+      });
+  });
+export type AdultProviderApprovalInput = z.input<
+  typeof adultProviderApprovalInputSchema
+>;
+
+export const adultProviderApprovalSchema = z.object({
+  providerId: z.literal("dezgo"),
+  status: z.enum(["unverified", "approved", "revoked"]),
+  evidenceSha256: z.string().regex(/^[0-9a-f]{64}$/).nullable(),
+  confirmedAt: z.string().datetime().nullable(),
+  expiresAt: z.string().datetime().nullable(),
+  revokedAt: z.string().datetime().nullable(),
+  updatedAt: z.string().datetime().nullable(),
+});
+export type AdultProviderApproval = z.infer<
+  typeof adultProviderApprovalSchema
+>;
+
+export const adultModelApprovalInputSchema = z
+  .object({
+    providerId: z.literal("dezgo"),
+    modelId: z.string().trim().min(1).max(300),
+    status: z.enum(["approved", "revoked"]),
+    licenseEvidenceSha256: z.string().regex(/^[0-9a-f]{64}$/),
+    verifiedAt: z.string().datetime(),
+    expiresAt: z.string().datetime().nullable(),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.expiresAt &&
+      Date.parse(value.expiresAt) <= Date.parse(value.verifiedAt)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["expiresAt"],
+        message: "モデル承認の有効期限が確認日時以前です。",
+      });
+  });
+export type AdultModelApprovalInput = z.input<
+  typeof adultModelApprovalInputSchema
+>;
+
+export const adultModelApprovalSchema = adultModelApprovalInputSchema
+  .safeExtend({ updatedAt: z.string().datetime() });
+export type AdultModelApproval = z.infer<typeof adultModelApprovalSchema>;
+
+export type AdultProviderCapabilityResult =
+  | { allowed: true; reason: null }
+  | {
+      allowed: false;
+      reason:
+        | "provider_unverified"
+        | "provider_revoked"
+        | "provider_expired"
+        | "model_not_allowlisted"
+        | "model_revoked"
+        | "model_approval_expired";
+    };
+
+export function evaluateAdultProviderCapability(input: {
+  approval: AdultProviderApproval;
+  model: AdultModelApproval | null;
+  referenceTime?: string;
+}): AdultProviderCapabilityResult {
+  const referenceMs = Date.parse(input.referenceTime ?? new Date().toISOString());
+  if (!Number.isFinite(referenceMs))
+    throw new Error("Provider承認の基準日時が不正です。");
+  if (input.approval.status === "revoked")
+    return { allowed: false, reason: "provider_revoked" };
+  if (
+    input.approval.status !== "approved" ||
+    !input.approval.evidenceSha256 ||
+    !input.approval.confirmedAt
+  )
+    return { allowed: false, reason: "provider_unverified" };
+  if (
+    input.approval.expiresAt &&
+    Date.parse(input.approval.expiresAt) <= referenceMs
+  )
+    return { allowed: false, reason: "provider_expired" };
+  if (!input.model)
+    return { allowed: false, reason: "model_not_allowlisted" };
+  if (input.model.status === "revoked")
+    return { allowed: false, reason: "model_revoked" };
+  if (input.model.expiresAt && Date.parse(input.model.expiresAt) <= referenceMs)
+    return { allowed: false, reason: "model_approval_expired" };
+  return { allowed: true, reason: null };
+}
+
 export const adultGenerationGateInputSchema = z.object({
   userConfirmed18Plus: z.boolean().default(false),
   projectAgeRating: z

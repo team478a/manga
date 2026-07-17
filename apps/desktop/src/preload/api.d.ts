@@ -3,6 +3,8 @@ import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
 import type {
   AdultGenerationConsentInput,
   AdultGenerationSettings,
+  AdultModelApproval,
+  AdultProviderApproval,
   GenerationRouteDecisionRecord,
   GenerationQueueSettings,
   PageBatchImageRequest,
@@ -302,6 +304,11 @@ export type DesktopApi = {
     listSettings: () => Promise<ProviderSettings[]>;
     listSettingsHistory: () => Promise<AISettingsHistoryItem[]>;
     getAdultGenerationSettings: () => Promise<AdultGenerationSettings>;
+    getAdultProviderPolicyState: () => Promise<{
+      approval: AdultProviderApproval;
+      models: AdultModelApproval[];
+      eligibleModelIds: string[];
+    }>;
     setAdultGenerationAdministratorEnabled: (
       enabled: boolean,
     ) => Promise<AdultGenerationSettings>;

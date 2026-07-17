@@ -9,14 +9,22 @@ export function AdultGenerationSettings() {
   const { t, formatDateTime } = useI18n();
   const [settings, setSettings] =
     React.useState<AdultGenerationSettingsState | null>(null);
+  const [providerPolicy, setProviderPolicy] = React.useState<Awaited<
+    ReturnType<typeof window.mangai.ai.getAdultProviderPolicyState>
+  > | null>(null);
   const [ageConfirmed, setAgeConfirmed] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
   const [message, setMessage] = React.useState("");
 
   React.useEffect(() => {
-    void window.mangai.ai
-      .getAdultGenerationSettings()
-      .then(setSettings)
+    void Promise.all([
+      window.mangai.ai.getAdultGenerationSettings(),
+      window.mangai.ai.getAdultProviderPolicyState(),
+    ])
+      .then(([nextSettings, nextProviderPolicy]) => {
+        setSettings(nextSettings);
+        setProviderPolicy(nextProviderPolicy);
+      })
       .catch((cause) =>
         setMessage(cause instanceof Error ? cause.message : String(cause)),
       );
@@ -140,6 +148,35 @@ export function AdultGenerationSettings() {
           </div>
         </dl>
       )}
+      <div className="panel-lite">
+        <h3>{t("settings.adult.providerPolicyTitle")}</h3>
+        <p>{t("settings.adult.providerPolicyReadonly")}</p>
+        <dl className="dezgo-summary">
+          <div>
+            <dt>{t("settings.adult.providerApproval")}</dt>
+            <dd>
+              {providerPolicy
+                ? t(
+                    `settings.adult.providerStatus.${providerPolicy.approval.status}`,
+                  )
+                : t("settings.adult.loading")}
+            </dd>
+          </div>
+          <div>
+            <dt>{t("settings.adult.approvedModels")}</dt>
+            <dd>
+              {providerPolicy
+                ? String(providerPolicy.eligibleModelIds.length)
+                : "—"}
+            </dd>
+          </div>
+        </dl>
+        {providerPolicy?.approval.evidenceSha256 && (
+          <small>
+            {t("settings.adult.evidenceHash")}: {providerPolicy.approval.evidenceSha256}
+          </small>
+        )}
+      </div>
       {message && <p role="status">{message}</p>}
     </section>
   );

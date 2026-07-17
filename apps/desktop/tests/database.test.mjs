@@ -18,6 +18,7 @@ import { parseSalesPackageManifest } from "@mangai/export-core";
 import {
   ADULT_GENERATION_CONSENT_VALIDITY_DAYS,
   ADULT_GENERATION_TERMS_VERSION,
+  evaluateAdultProviderCapability,
 } from "@mangai/ai-core";
 
 test("30 canvas objects remain responsive across save, move and reopen", (t) => {
@@ -888,6 +889,13 @@ test("legacy database is backed up before canvas schema migration", () => {
   );
   assert.ok(
     migrated
+      .prepare(
+        "select 1 from schema_migrations where version='adult-provider-policy-v1'",
+      )
+      .get(),
+  );
+  assert.ok(
+    migrated
       .prepare("select 1 from sqlite_master where name='panel_layers'")
       .get(),
   );
@@ -930,6 +938,86 @@ test("legacy database is backed up before canvas schema migration", () => {
       .readdirSync(path.join(root, "backups"))
       .some((file) => file.includes("before-adult-generation-consent-v1")),
   );
+  const beforeAdultProviderPolicy = new Database(paths.database);
+  beforeAdultProviderPolicy
+    .prepare(
+      "delete from schema_migrations where version='adult-provider-policy-v1'",
+    )
+    .run();
+  beforeAdultProviderPolicy.close();
+  const adultProviderPolicyReopened = new MangaiDatabase(paths);
+  adultProviderPolicyReopened.close();
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => file.includes("before-adult-provider-policy-v1")),
+  );
+  fs.rmSync(root, { recursive: true, force: true });
+});
+test("adult provider evidence and model allowlist persist fail closed", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-provider-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  assert.equal(db.getAdultProviderApproval().status, "unverified");
+  assert.deepEqual(db.listAdultModelApprovals(), []);
+  assert.throws(() =>
+    db.saveAdultProviderApproval({
+      providerId: "dezgo",
+      status: "approved",
+      evidenceSha256: null,
+      confirmedAt: "2026-07-17T00:00:00.000Z",
+      expiresAt: null,
+      revokedAt: null,
+    }),
+  );
+  const approval = db.saveAdultProviderApproval({
+    providerId: "dezgo",
+    status: "approved",
+    evidenceSha256: "a".repeat(64),
+    confirmedAt: "2026-07-17T00:00:00.000Z",
+    expiresAt: "2026-08-17T00:00:00.000Z",
+    revokedAt: null,
+  });
+  const model = db.saveAdultModelApproval({
+    providerId: "dezgo",
+    modelId: "verified-model",
+    status: "approved",
+    licenseEvidenceSha256: "b".repeat(64),
+    verifiedAt: "2026-07-17T00:00:00.000Z",
+    expiresAt: "2026-08-17T00:00:00.000Z",
+  });
+  assert.deepEqual(
+    evaluateAdultProviderCapability({
+      approval,
+      model,
+      referenceTime: "2026-07-18T00:00:00.000Z",
+    }),
+    { allowed: true, reason: null },
+  );
+  assert.deepEqual(db.getAdultProviderPolicyState().eligibleModelIds, [
+    "verified-model",
+  ]);
+  db.close();
+
+  db = new MangaiDatabase(paths);
+  assert.equal(db.getAdultProviderApproval().evidenceSha256, "a".repeat(64));
+  assert.equal(db.listAdultModelApprovals()[0].modelId, "verified-model");
+  assert.deepEqual(
+    evaluateAdultProviderCapability({
+      approval: db.getAdultProviderApproval(),
+      model: db.listAdultModelApprovals()[0],
+      referenceTime: "2026-09-01T00:00:00.000Z",
+    }),
+    { allowed: false, reason: "provider_expired" },
+  );
+  db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
 test("adult generation settings fail closed and persist age attestation", () => {
