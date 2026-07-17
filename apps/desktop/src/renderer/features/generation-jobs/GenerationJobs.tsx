@@ -193,6 +193,14 @@ export function GenerationJobs({
     [error, setError] = React.useState(""),
     [generationNotice, setGenerationNotice] = React.useState(""),
     [workflowMessage, setWorkflowMessage] = React.useState("");
+  const [adultChecks, setAdultChecks] = React.useState({
+    fictionalAdultsOnly: false,
+    allCharacters18Plus: false,
+    noMinorOrAgeAmbiguousAppearance: false,
+    noRealPersonReference: false,
+    consensualAndNonExploitativeOnly: false,
+    rightsConfirmed: false,
+  });
   const [safeType, setSafeType] = React.useState<
       "background" | "prop" | "effect"
     >("background"),
@@ -314,8 +322,16 @@ export function GenerationJobs({
         width: bundle.project.width,
         height: bundle.project.height,
         seed: Math.floor(Math.random() * 2147483647),
-        jobType: safeHandoff?.type,
+        jobType:
+          safeHandoff?.type ??
+          (bundle.project.ageRating === "成人向け"
+            ? "adult_character_render"
+            : undefined),
         libraryTags: safeHandoff?.tags,
+        adultContentConfirmation:
+          bundle.project.ageRating === "成人向け" && !safeHandoff
+            ? adultChecks
+            : undefined,
       });
       if (result.bundle) onBundle(result.bundle);
       if (result.dimensionsAdjusted)
@@ -336,6 +352,9 @@ export function GenerationJobs({
   const selectedWorkflow = workflows.find(
     (workflow) => workflow.id === workflowId,
   );
+  const adultConfirmationRequired =
+    bundle.project.ageRating === "成人向け" && !safeHandoff;
+  const adultConfirmationComplete = Object.values(adultChecks).every(Boolean);
   const episodePages = bundle.pages
     .filter((page) => page.episodeId === episodeId)
     .sort((left, right) => left.orderIndex - right.orderIndex);
@@ -975,6 +994,7 @@ export function GenerationJobs({
               className="secondary"
               disabled={
                 batchBusy ||
+                bundle.project.ageRating === "成人向け" ||
                 !episodeId ||
                 !workflowId ||
                 batchEligibleCount === 0
@@ -986,7 +1006,41 @@ export function GenerationJobs({
                 : t("generation.pageBatchEnqueue")}
             </button>
             {batchMessage && <p role="status">{batchMessage}</p>}
+            {bundle.project.ageRating === "成人向け" && (
+              <small>{t("generation.adult.batchDisabled")}</small>
+            )}
           </div>
+          {adultConfirmationRequired && (
+            <fieldset className="panel-lite adult-content-confirmation">
+              <legend>{t("generation.adult.confirmationTitle")}</legend>
+              <p>{t("generation.adult.confirmationHelp")}</p>
+              {(
+                [
+                  "fictionalAdultsOnly",
+                  "allCharacters18Plus",
+                  "noMinorOrAgeAmbiguousAppearance",
+                  "noRealPersonReference",
+                  "consensualAndNonExploitativeOnly",
+                  "rightsConfirmed",
+                ] as const
+              ).map((key) => (
+                <label className="check" key={key}>
+                  <input
+                    type="checkbox"
+                    checked={adultChecks[key]}
+                    onChange={(event) =>
+                      setAdultChecks((current) => ({
+                        ...current,
+                        [key]: event.target.checked,
+                      }))
+                    }
+                  />
+                  {t(`generation.adult.${key}`)}
+                </label>
+              ))}
+              <small>{t("generation.adult.localOnly")}</small>
+            </fieldset>
+          )}
           <label>
             {t("generation.prompt")}
             <textarea
@@ -1002,7 +1056,12 @@ export function GenerationJobs({
             />
           </label>
           <button
-            disabled={busy || !workflowId || !promptText.trim()}
+            disabled={
+              busy ||
+              !workflowId ||
+              !promptText.trim() ||
+              (adultConfirmationRequired && !adultConfirmationComplete)
+            }
             onClick={() => void generate()}
           >
             {busy ? t("generation.generating") : t("generation.start")}

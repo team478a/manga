@@ -1057,3 +1057,13 @@ AI設定画面へ日英対応の「成人向け生成の安全設定」を追加
 管理者停止または確認取消の操作時に、`adult_character_render`と明示分類された待機・一時停止Jobを失敗状態へ移し、外部費用予約があれば解放します。ComfyUI・Dezgoの各workerも次のJobを選ぶ直前に確認状態を再評価するため、30日経過や規約変更後に残った待機Jobは送信・実行前に停止します。背景などのsafe Jobと従来の未分類Jobは対象外です。
 
 初期状態、期限切れ、取消、管理者停止、成人向けJobだけの停止、通常Jobの継続を自動検証しました。Desktop統合テスト78/78、TypeScript、製品build、日英29画面・状態のaxe違反0件に成功しています。成人向けDezgo flag、成人向け外部送信、実API利用は引き続き無効です。
+
+## 123. 成人向けProject内容確認・ローカル専用生成契約
+
+対象年齢が`成人向け`のProjectで通常画像生成を開始する場合、Requestを`adult_character_render`として明示分類する専用UIを追加しました。架空の成人だけ、全員18歳以上、未成年・年齢曖昧なし、実在人物・人物写真・ディープフェイクなし、非同意・強制・搾取なし、キャラクターと素材の権利確認という6項目がすべて確認されるまで生成を開始できません。
+
+Rendererのdisabled状態だけに依存せず、ai-core schemaは6項目すべてのliteral `true`を要求します。Mainプロセスでは管理者設定、18歳以上確認、Project対象年齢、端末内Prompt review、ComfyUIのloopback接続を再検証します。未成年・年齢曖昧、実在人物、非同意・搾取的内容を示す日本語・英語のPromptは理由別error codeで拒否し、成人向けJobは常にローカルRouteになります。
+
+成人向けProjectのPage一括生成は、1枚ごとの内容確認を省略できるため無効化しました。生成Asset metadataにも成人向けPromptとNegative Promptを複製せず、`adultContent=true`だけを記録します。成人向け確認をsafe背景などの通常Requestへ付与することもschemaで拒否します。
+
+確認欠落、一部未確認、通常Requestへの誤添付、未成年・実在人物・非同意Prompt、管理者停止、18歳確認欠落、正常な成人向けRequestがProvider設定確認まで進むことを自動検証しました。Desktop統合テスト79/79、ai-core 33/33、TypeScript、ESLint、製品build、日英29画面・状態のaxe違反0件に成功しています。Dezgo成人向け外部送信は引き続き無効です。

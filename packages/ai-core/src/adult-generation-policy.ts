@@ -41,6 +41,66 @@ export const adultGenerationAdministratorInputSchema = z.object({
   enabled: z.boolean(),
 });
 
+export const adultGenerationContentConfirmationSchema = z.object({
+  fictionalAdultsOnly: z.literal(true),
+  allCharacters18Plus: z.literal(true),
+  noMinorOrAgeAmbiguousAppearance: z.literal(true),
+  noRealPersonReference: z.literal(true),
+  consensualAndNonExploitativeOnly: z.literal(true),
+  rightsConfirmed: z.literal(true),
+});
+export type AdultGenerationContentConfirmation = z.infer<
+  typeof adultGenerationContentConfirmationSchema
+>;
+
+export const adultPromptBlockReasonSchema = z.enum([
+  "minor_or_age_ambiguous",
+  "real_person_reference",
+  "nonconsensual_or_exploitative_content",
+]);
+export type AdultPromptBlockReason = z.infer<
+  typeof adultPromptBlockReasonSchema
+>;
+
+const adultPromptRules: Array<{
+  reason: AdultPromptBlockReason;
+  patterns: RegExp[];
+}> = [
+  {
+    reason: "minor_or_age_ambiguous",
+    patterns: [
+      /(?:^|\W)(?:child|minor|underage|loli|lolita|schoolgirl|schoolboy|teen)(?:$|\W)/iu,
+      /(?:^|\W)(?:[0-9]|1[0-7])\s*(?:years?\s*old|y\/o|yo)(?:$|\W)/iu,
+      /(?:^|\D)(?:[0-9]|1[0-7])\s*歳/u,
+      /未成年|児童|幼児|幼女|幼い外見|年齢不詳|ロリ|小学生|中学生|高校生/u,
+    ],
+  },
+  {
+    reason: "real_person_reference",
+    patterns: [
+      /(?:^|\W)(?:deepfake|face\s*swap|celebrity|real\s+person|actual\s+person)(?:$|\W)/iu,
+      /実在人物|実在の人物|芸能人|著名人|ディープフェイク|顔交換/u,
+    ],
+  },
+  {
+    reason: "nonconsensual_or_exploitative_content",
+    patterns: [
+      /(?:^|\W)(?:rape|raped|non[- ]?consensual|forced\s+sex|sexual\s+slavery|unconscious\s+sex)(?:$|\W)/iu,
+      /強姦|レイプ|非同意|無理やり|性的搾取|性的奴隷|意識不明.*性行為/u,
+    ],
+  },
+];
+
+export function reviewAdultGenerationPrompt(prompt: string):
+  | { allowed: true; reason: null }
+  | { allowed: false; reason: AdultPromptBlockReason } {
+  const normalized = prompt.normalize("NFKC");
+  for (const rule of adultPromptRules)
+    if (rule.patterns.some((pattern) => pattern.test(normalized)))
+      return { allowed: false, reason: rule.reason };
+  return { allowed: true, reason: null };
+}
+
 export const adultGenerationGateInputSchema = z.object({
   userConfirmed18Plus: z.boolean().default(false),
   projectAgeRating: z

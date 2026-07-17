@@ -491,6 +491,24 @@ const ja = {
   "generation.negativePrompt": "Negative Prompt",
   "generation.generating": "生成中…",
   "generation.start": "画像生成を開始",
+  "generation.adult.confirmationTitle": "成人向け生成の内容確認",
+  "generation.adult.confirmationHelp":
+    "この1枚に含まれる人物・参照素材・表現について、すべて確認してください。",
+  "generation.adult.fictionalAdultsOnly": "架空の成人キャラクターだけです",
+  "generation.adult.allCharacters18Plus":
+    "描写される全員が18歳以上と明示されています",
+  "generation.adult.noMinorOrAgeAmbiguousAppearance":
+    "未成年、未成年に見える人物、年齢が曖昧な人物を含みません",
+  "generation.adult.noRealPersonReference":
+    "実在人物、著名人、人物写真、ディープフェイクを含みません",
+  "generation.adult.consensualAndNonExploitativeOnly":
+    "非同意、強制、搾取的な性的内容を含みません",
+  "generation.adult.rightsConfirmed":
+    "キャラクターと入力素材を利用する権利を確認しました",
+  "generation.adult.localOnly":
+    "成人向け生成は端末内ComfyUIだけで実行します。Promptや画像をDezgoへ送信しません。",
+  "generation.adult.batchDisabled":
+    "成人向けProjectの一括生成は無効です。内容を確認して1枚ずつ生成してください。",
   "generation.runtimeAdjusted":
     "端末のRuntime Profileに合わせて {width}×{height}px で生成しました。",
   "generation.history": "生成履歴",
@@ -1406,6 +1424,25 @@ const en: Record<TranslationKey, string> = {
   "generation.negativePrompt": "Negative prompt",
   "generation.generating": "Generating…",
   "generation.start": "Generate image",
+  "generation.adult.confirmationTitle": "Adult-generation content check",
+  "generation.adult.confirmationHelp":
+    "Confirm every item for the people, references, and content in this single image.",
+  "generation.adult.fictionalAdultsOnly":
+    "This contains fictional adult characters only",
+  "generation.adult.allCharacters18Plus":
+    "Every depicted character is explicitly 18 or older",
+  "generation.adult.noMinorOrAgeAmbiguousAppearance":
+    "No minor, minor-looking, or age-ambiguous person is included",
+  "generation.adult.noRealPersonReference":
+    "No real person, celebrity, person photo, or deepfake is included",
+  "generation.adult.consensualAndNonExploitativeOnly":
+    "No non-consensual, forced, or exploitative sexual content is included",
+  "generation.adult.rightsConfirmed":
+    "I confirmed the rights to use the characters and input assets",
+  "generation.adult.localOnly":
+    "Adult generation runs only in local ComfyUI. Prompts and images are not sent to Dezgo.",
+  "generation.adult.batchDisabled":
+    "Batch generation is disabled for adult projects. Review and generate one image at a time.",
   "generation.runtimeAdjusted":
     "Generated at {width}×{height}px to match this device's Runtime Profile.",
   "generation.history": "Generation history",
@@ -1936,6 +1973,14 @@ const englishMainMessageReplacements: Array<[RegExp, string]> = [
   [/Promptマッピングが必要です。/g, "A prompt mapping is required."],
   [/低スペック向けのVAEDecodeTiledが見つかりません。/g, "VAEDecodeTiled for low-spec operation was not found."],
   [/CPUオフロードはworkflow JSONでは確認できません。ComfyUIの起動設定を実環境で確認してください。/g, "CPU offload cannot be verified from workflow JSON. Check the ComfyUI launch configuration."],
+  [/管理者設定で成人向け生成が無効です。設定画面で確認してください。/g, "Adult generation is disabled by the administrator setting. Review Settings."],
+  [/18歳以上の確認が無効または期限切れです。設定画面で確認してください。/g, "The 18-or-older confirmation is missing or expired. Review Settings."],
+  [/成人向け生成は対象年齢が成人向けのProjectでのみ利用できます。/g, "Adult generation is available only in projects rated Adult."],
+  [/未成年または年齢が曖昧な表現を含むため生成できません。/g, "Generation is blocked because the prompt contains a minor or age-ambiguous signal."],
+  [/実在人物を参照する表現を含むため生成できません。/g, "Generation is blocked because the prompt references a real person."],
+  [/非同意または搾取的な表現を含むため生成できません。/g, "Generation is blocked because the prompt contains a non-consensual or exploitative signal."],
+  [/成人向け生成はこの段階では端末内ComfyUIでのみ実行できます。/g, "Adult generation currently runs only through local ComfyUI."],
+  [/成人向けProjectは内容確認が必要なため、1枚ずつ生成してください。/g, "Adult projects require a content check. Generate one image at a time."],
   [/プロジェクト外のファイルにはアクセスできません。/g, "Files outside the project cannot be accessed."],
   [/プロジェクトが見つかりません。/g, "The project was not found."],
   [/プロジェクト名を変更/g, "Rename project"],

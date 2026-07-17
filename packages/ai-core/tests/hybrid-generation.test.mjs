@@ -16,6 +16,8 @@ import {
   imageGenerationJobTypeSchema,
   adultGenerationGateInputSchema,
   evaluateAdultGenerationGate,
+  imageJobRequestSchema,
+  reviewAdultGenerationPrompt,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
@@ -112,6 +114,72 @@ test("adult external generation gate rejects minors, real people and exploitatio
     allowed: true,
     reason: null,
   });
+});
+
+const adultContentConfirmation = {
+  fictionalAdultsOnly: true,
+  allCharacters18Plus: true,
+  noMinorOrAgeAmbiguousAppearance: true,
+  noRealPersonReference: true,
+  consensualAndNonExploitativeOnly: true,
+  rightsConfirmed: true,
+};
+const adultImageRequest = {
+  projectId,
+  workflowId: randomUUID(),
+  prompt: "fictional adult characters, both explicitly age 25",
+  jobType: "adult_character_render",
+  adultContentConfirmation,
+};
+
+test("adult image requests require every content confirmation", () => {
+  assert.equal(
+    imageJobRequestSchema.parse(adultImageRequest).jobType,
+    "adult_character_render",
+  );
+  assert.throws(() =>
+    imageJobRequestSchema.parse({
+      ...adultImageRequest,
+      adultContentConfirmation: undefined,
+    }),
+  );
+  assert.throws(() =>
+    imageJobRequestSchema.parse({
+      ...adultImageRequest,
+      adultContentConfirmation: {
+        ...adultContentConfirmation,
+        allCharacters18Plus: false,
+      },
+    }),
+  );
+});
+
+test("adult confirmation cannot be attached to an ordinary image request", () => {
+  assert.throws(() =>
+    imageJobRequestSchema.parse({
+      ...adultImageRequest,
+      jobType: "background",
+    }),
+  );
+});
+
+test("adult prompt review blocks minor, real-person and non-consensual signals", () => {
+  assert.deepEqual(reviewAdultGenerationPrompt("16 years old character"), {
+    allowed: false,
+    reason: "minor_or_age_ambiguous",
+  });
+  assert.deepEqual(reviewAdultGenerationPrompt("celebrity deepfake"), {
+    allowed: false,
+    reason: "real_person_reference",
+  });
+  assert.deepEqual(reviewAdultGenerationPrompt("non-consensual scene"), {
+    allowed: false,
+    reason: "nonconsensual_or_exploitative_content",
+  });
+  assert.deepEqual(
+    reviewAdultGenerationPrompt("two fictional consenting adults, age 25"),
+    { allowed: true, reason: null },
+  );
 });
 
 test("ComfyUI workflow optimization detects tiled VAE without inferring runtime offload", () => {

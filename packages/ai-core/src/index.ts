@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { safeAssetJobTypeSchema } from "./hybrid-generation.js";
+import { adultGenerationContentConfirmationSchema } from "./adult-generation-policy.js";
 
 export * from "./hybrid-generation.js";
 export * from "./external-asset-provider.js";
@@ -202,23 +203,48 @@ export const chatRequestSchema = chatSendSchema.extend({
   requestId: z.string().uuid(),
 });
 export const cancelRequestSchema = z.object({ requestId: z.string().uuid() });
-export const imageJobRequestSchema = z.object({
-  projectId: z.string().uuid(),
-  episodeId: z.string().uuid().optional(),
-  pageId: z.string().uuid().optional(),
-  workflowId: z.string().uuid(),
-  prompt: z.string().trim().min(1).max(50000),
-  negativePrompt: z.string().max(50000).default(""),
-  width: z.number().int().min(64).max(8192).optional(),
-  height: z.number().int().min(64).max(8192).optional(),
-  seed: z.number().int().nonnegative().optional(),
-  jobType: safeAssetJobTypeSchema.optional(),
-  libraryTags: z
-    .array(z.string().trim().min(1).max(50))
-    .max(20)
-    .transform((tags) => [...new Set(tags)])
-    .optional(),
-});
+export const imageJobRequestSchema = z
+  .object({
+    projectId: z.string().uuid(),
+    episodeId: z.string().uuid().optional(),
+    pageId: z.string().uuid().optional(),
+    workflowId: z.string().uuid(),
+    prompt: z.string().trim().min(1).max(50000),
+    negativePrompt: z.string().max(50000).default(""),
+    width: z.number().int().min(64).max(8192).optional(),
+    height: z.number().int().min(64).max(8192).optional(),
+    seed: z.number().int().nonnegative().optional(),
+    jobType: z
+      .union([safeAssetJobTypeSchema, z.literal("adult_character_render")])
+      .optional(),
+    adultContentConfirmation:
+      adultGenerationContentConfirmationSchema.optional(),
+    libraryTags: z
+      .array(z.string().trim().min(1).max(50))
+      .max(20)
+      .transform((tags) => [...new Set(tags)])
+      .optional(),
+  })
+  .superRefine((value, context) => {
+    if (
+      value.jobType === "adult_character_render" &&
+      !value.adultContentConfirmation
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["adultContentConfirmation"],
+        message: "成人向け生成には内容確認が必要です。",
+      });
+    if (
+      value.jobType !== "adult_character_render" &&
+      value.adultContentConfirmation
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["adultContentConfirmation"],
+        message: "成人向け内容確認を通常生成へ付与できません。",
+      });
+  });
 export type ImageJobRequest = z.infer<typeof imageJobRequestSchema>;
 export const pageBatchImageRequestSchema = z.object({
   projectId: z.string().uuid(),

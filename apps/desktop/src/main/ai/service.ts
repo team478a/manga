@@ -11,6 +11,7 @@ import {
   isGenerationQueueWindowOpen,
   minutesUntilGenerationQueueWindow,
   routeGenerationJob,
+  reviewAdultGenerationPrompt,
   safeAssetJobTypeSchema,
   type SafeAssetLibraryRequest,
   type SafeAssetJobType,
@@ -182,7 +183,7 @@ export class AIService {
       projectId: string;
       pageId?: string;
       prompt: string;
-      jobType?: SafeAssetJobType;
+      jobType?: SafeAssetJobType | "adult_character_render";
     },
     settings: ProviderSettings,
   ): { decision: RouteDecision; localProvider: boolean } {
@@ -193,13 +194,21 @@ export class AIService {
           projectId: input.projectId,
           pageId: input.pageId,
           type: input.jobType,
-          sensitivity: "safe" as const,
+          sensitivity:
+            input.jobType === "adult_character_render"
+              ? ("adult" as const)
+              : ("safe" as const),
           inputAssetIds: [],
-          personPresence: "none" as const,
+          personPresence:
+            input.jobType === "adult_character_render"
+              ? ("unknown" as const)
+              : ("none" as const),
           hasCharacterReference: false,
           hasCompletedPage: false,
-          promptIncludesRestrictedContent: false,
-          allInputAssetsExternalAllowed: true,
+          promptIncludesRestrictedContent:
+            input.jobType === "adult_character_render",
+          allInputAssetsExternalAllowed:
+            input.jobType !== "adult_character_render",
         }
       : {
           projectId: input.projectId,
@@ -804,6 +813,11 @@ export class AIService {
       );
     this.store.getComfyWorkflow(input.workflowId);
     const bundle = this.store.bundle(input.projectId);
+    if (bundle.project.ageRating === "成人向け")
+      throw new AIProviderError(
+        "ADULT_BATCH_CONFIRMATION_REQUIRED",
+        "成人向けProjectは内容確認が必要なため、1枚ずつ生成してください。",
+      );
     const requested = new Set(input.pageIds);
     if (requested.size !== input.pageIds.length)
       throw new AIProviderError(
@@ -1251,6 +1265,40 @@ export class AIService {
   }
   async generateImage(input: ImageJobRequest, existingJobId?: string) {
     input = imageJobRequestSchema.parse(input);
+    if (input.jobType === "adult_character_render") {
+      const settings = this.store.getAdultGenerationSettings();
+      if (!settings.administratorEnabled)
+        throw new AIProviderError(
+          "ADULT_GENERATION_ADMIN_DISABLED",
+          "管理者設定で成人向け生成が無効です。設定画面で確認してください。",
+        );
+      if (!settings.userConfirmed18Plus)
+        throw new AIProviderError(
+          "ADULT_GENERATION_CONSENT_REQUIRED",
+          "18歳以上の確認が無効または期限切れです。設定画面で確認してください。",
+        );
+      if (this.store.bundle(input.projectId).project.ageRating !== "成人向け")
+        throw new AIProviderError(
+          "ADULT_PROJECT_REQUIRED",
+          "成人向け生成は対象年齢が成人向けのProjectでのみ利用できます。",
+        );
+      const review = reviewAdultGenerationPrompt(input.prompt);
+      if (!review.allowed)
+        throw new AIProviderError(
+          `ADULT_POLICY_${review.reason.toUpperCase()}`,
+          review.reason === "minor_or_age_ambiguous"
+            ? "未成年または年齢が曖昧な表現を含むため生成できません。"
+            : review.reason === "real_person_reference"
+              ? "実在人物を参照する表現を含むため生成できません。"
+              : "非同意または搾取的な表現を含むため生成できません。",
+        );
+      const comfySettings = this.settings("comfyui");
+      if (!this.isLoopbackUrl(comfySettings.baseUrl))
+        throw new AIProviderError(
+          "ADULT_LOCAL_PROVIDER_REQUIRED",
+          "成人向け生成はこの段階では端末内ComfyUIでのみ実行できます。",
+        );
+    }
     const runtime = this.getRuntimeProfile?.();
     const dimensions = runtime
       ? constrainImageDimensions(
@@ -1419,8 +1467,12 @@ export class AIService {
                 {
                   provider: "comfyui",
                   workflowId: input.workflowId,
-                  prompt: input.prompt,
-                  negativePrompt: input.negativePrompt,
+                  ...(input.jobType === "adult_character_render"
+                    ? { adultContent: true }
+                    : {
+                        prompt: input.prompt,
+                        negativePrompt: input.negativePrompt,
+                      }),
                   width: effectiveInput.width,
                   height: effectiveInput.height,
                   seed: input.seed,
@@ -1431,10 +1483,13 @@ export class AIService {
               );
               if (registered.created) {
                 createdAssetIds.push(registered.assetId);
-                if (input.jobType)
+                const libraryCategory = safeAssetJobTypeSchema.safeParse(
+                  input.jobType,
+                );
+                if (libraryCategory.success)
                   this.store.saveAssetLibraryMetadata({
                     assetId: registered.assetId,
-                    category: input.jobType,
+                    category: libraryCategory.data,
                     tags: input.libraryTags ?? [],
                     favorite: false,
                   });

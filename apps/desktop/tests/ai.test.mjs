@@ -19,7 +19,11 @@ import {
   hardwareFromElectronGpuInfo,
   RuntimeProfileService,
 } from "../dist-main/main/runtime-profile.js";
-import { chatRequestSchema, runtimeLimits } from "@mangai/ai-core";
+import {
+  ADULT_GENERATION_TERMS_VERSION,
+  chatRequestSchema,
+  runtimeLimits,
+} from "@mangai/ai-core";
 process.env.MANGAI_ENABLE_MOCK_AI = "true";
 
 const runtimeState = (profile = "vram_8gb") => ({
@@ -33,6 +37,73 @@ const runtimeState = (profile = "vram_8gb") => ({
   effectiveProfile: profile,
   limits: runtimeLimits(profile),
   detectedAt: "2026-07-16T00:00:00.000Z",
+});
+
+test("adult local generation requires device, age, project and content checks", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-local-"));
+  const db = new MangaiDatabase({
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  });
+  try {
+    const adultProject = db.createProject({
+      title: "成人向けローカル生成",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "成人向け",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const service = new AIService(db);
+    const request = {
+      projectId: adultProject.project.id,
+      workflowId: randomUUID(),
+      prompt: "two fictional consenting adults, both explicitly age 25",
+      jobType: "adult_character_render",
+      adultContentConfirmation: {
+        fictionalAdultsOnly: true,
+        allCharacters18Plus: true,
+        noMinorOrAgeAmbiguousAppearance: true,
+        noRealPersonReference: true,
+        consensualAndNonExploitativeOnly: true,
+        rightsConfirmed: true,
+      },
+    };
+    await assert.rejects(service.generateImage(request), (error) => {
+      assert.equal(error.code, "ADULT_GENERATION_ADMIN_DISABLED");
+      return true;
+    });
+    db.setAdultGenerationAdministratorEnabled(true);
+    await assert.rejects(service.generateImage(request), (error) => {
+      assert.equal(error.code, "ADULT_GENERATION_CONSENT_REQUIRED");
+      return true;
+    });
+    db.confirmAdultGeneration18Plus({
+      userConfirmed18Plus: true,
+      termsVersion: ADULT_GENERATION_TERMS_VERSION,
+    });
+    await assert.rejects(
+      service.generateImage({ ...request, prompt: "16 years old character" }),
+      (error) => {
+        assert.equal(error.code, "ADULT_POLICY_MINOR_OR_AGE_AMBIGUOUS");
+        return true;
+      },
+    );
+    await assert.rejects(service.generateImage(request), (error) => {
+      assert.equal(error.code, "PROVIDER_DISABLED");
+      return true;
+    });
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 });
 
 test("runtime profile detects active GPU and restores a saved selection", () => {
