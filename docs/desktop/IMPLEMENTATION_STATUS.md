@@ -21,7 +21,7 @@
 | 13  | TypeScript型チェック         | 完了 | Hub・Desktop・各packageで成功                                                                                                                          |
 | 14  | ESLint                       | 完了 | Hub・Desktop双方で成功                                                                                                                                 |
 | 15  | Desktop/Web本番ビルド        | 完了 | Electron main、Vite renderer、Next.js成功                                                                                                              |
-| 16  | ユニット・統合テスト         | 完了 | SQLite、Panelレイヤー・mask合成、Runtime Profile、永続生成Queue、Asset Library、AI、書き出し等を含む58件成功 |
+| 16  | ユニット・統合テスト         | 完了 | SQLite、Panelレイヤー・mask合成、Runtime Profile、永続生成Queue、Asset Library、Dezgo、AI、書き出し等を含む77件成功 |
 | 17  | ドキュメント反映             | 完了 | architecture、desktop、hub、実装状況を追加                                                                                                             |
 
 ## 現状と残る改善
@@ -43,7 +43,7 @@
 - Project素材を背景・小物・効果・人物・その他へ分類し、タグ、形式、お気に入りで絞り込み、使用数を確認してCanvasへ再利用できます。分類情報は複製・バックアップ・Undoで維持します。
 - 背景・小物・効果のsafe JobをProject内Libraryへrouteし、一致候補を選択できます。一致なしではlocalへ戻し、外部Providerへ自動送信しません。
 - Library不一致のsafe Jobをloopback ComfyUIへ引き継ぎ、生成した新規素材を分類・タグ付きでLibraryへ登録できます。
-- 外部safe素材Providerへ送る予定のPrompt、送らない入力素材・人物参照・完成Page、費用・保持・学習条件を事前確認できます。実Providerは未設定で、外部通信と送信操作は無効です。
+- 外部safe素材Providerへ送るPrompt、送らない入力素材・人物参照・完成Page、費用・保持・学習条件を事前確認できます。Dezgoは開発限定の三重feature flag、BYOK、毎回の明示確認、月間費用予約を通過した1枚のsafe素材だけを直列実行できます。製品版は無効で、実API 10枚の手動E2Eは未実施です。
 - `panel_layers`へ背景・人物・小物・効果等の素材参照と合成設定を保存できます。従来コマ画像は互換レイヤーへ自動移行され、Undo、複製、バックアップで保持します。Canvasの追加・差し替え・表示・lock・順序・opacity・blend mode編集、画像の直接移動・拡縮・回転、maskのalpha合成、correction透明パッチ、PDF・画像ZIPのローカル合成に対応しています。
 - 分離レイヤーの合成結果を内部PNGへ差分更新し、`panels.image_asset_id`を利用する従来経路へ互換表示を提供します。内部cacheは素材一覧・素材件数・一括Page化から除外し、手動編集・削除を拒否します。
 - 書き出し履歴は書き出し画面、秘密値を除外したAI設定変更履歴は設定画面で確認できます。

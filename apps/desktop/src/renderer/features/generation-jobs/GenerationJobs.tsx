@@ -90,6 +90,8 @@ type GenerationOutputSummary = {
   assetId?: string;
   model?: string;
   actualCostUsd?: number;
+  accountedCostUsd?: number;
+  billingAmountSource?: "provider_header" | "authorization_ceiling";
   balanceUsd?: number;
   responseSeed?: number;
   requestedSeed?: number;
@@ -118,6 +120,14 @@ function parseGenerationOutput(value: unknown): GenerationOutputSummary | null {
       assetId: text("assetId"),
       model: text("model"),
       actualCostUsd: number("actualCostUsd"),
+      accountedCostUsd: number("accountedCostUsd"),
+      billingAmountSource:
+        text("billingAmountSource") === "provider_header" ||
+        text("billingAmountSource") === "authorization_ceiling"
+          ? (text("billingAmountSource") as
+              | "provider_header"
+              | "authorization_ceiling")
+          : undefined,
       balanceUsd: number("balanceUsd"),
       responseSeed: number("responseSeed"),
       requestedSeed: number("requestedSeed"),
@@ -220,6 +230,9 @@ export function GenerationJobs({
   const [queueSettingsMessage, setQueueSettingsMessage] = React.useState("");
   const [batchBusy, setBatchBusy] = React.useState(false);
   const [batchMessage, setBatchMessage] = React.useState("");
+  const [dezgoDispatchEnabled, setDezgoDispatchEnabled] = React.useState<
+    boolean | null
+  >(null);
   const externalConfirmTitleRef = React.useRef<HTMLHeadingElement>(null);
   const externalConfirmRef = React.useRef<HTMLElement>(null);
   const externalConfirmOpenButtonRef = React.useRef<HTMLButtonElement>(null);
@@ -248,6 +261,11 @@ export function GenerationJobs({
   React.useEffect(() => {
     void load();
     void window.mangai.ai.getQueueSettings().then(setQueueSettings);
+    void window.mangai.ai
+      .runtimeInfo()
+      .then((runtime) =>
+        setDezgoDispatchEnabled(runtime.dezgo.dezgoDispatchEnabled),
+      );
     const timer = window.setInterval(() => void load(), 1500);
     return () => window.clearInterval(timer);
   }, []);
@@ -416,7 +434,13 @@ export function GenerationJobs({
       });
       setExternalConfirmOpen(false);
       setExternalChecks({ payload: false, cost: false, terms: false });
-      setExternalQueueMessage(t("generation.externalQueued"));
+      setExternalQueueMessage(
+        t(
+          dezgoDispatchEnabled
+            ? "generation.externalQueuedDispatching"
+            : "generation.externalQueuedWaiting",
+        ),
+      );
       setExternalPreview(null);
       await load();
       window.setTimeout(() => externalQueueMessageRef.current?.focus());
@@ -998,6 +1022,8 @@ export function GenerationJobs({
               const output = parseGenerationOutput(job.outputJson);
               const isDezgo = job.providerId === "dezgo";
               const outputSeed = output?.responseSeed ?? output?.requestedSeed;
+              const outputCostUsd =
+                output?.accountedCostUsd ?? output?.actualCostUsd;
               const outputAssetId = bundle.assets.some(
                 (asset) => asset.id === output?.assetId,
               )
@@ -1036,6 +1062,20 @@ export function GenerationJobs({
                           : ""}
                       </small>
                     )}
+                    {isDezgo &&
+                      job.status === "queued" &&
+                      dezgoDispatchEnabled === false && (
+                        <small className="external-preview-warning">
+                          {t("generation.dezgoDispatcherWaiting")}
+                        </small>
+                      )}
+                    {isDezgo &&
+                      job.status === "paused" &&
+                      job.errorCode === "DEZGO_CONNECTION_FAILED" && (
+                        <small className="external-preview-warning">
+                          {t("generation.dezgoConnectionHeld")}
+                        </small>
+                      )}
                     {job.generationType === "image" && (
                       <div className="job-progress">
                         <progress
@@ -1085,9 +1125,20 @@ export function GenerationJobs({
                         <div>
                           <dt>{t("generation.resultCost")}</dt>
                           <dd>
-                            {output.actualCostUsd === undefined
+                            {outputCostUsd === undefined
                               ? "—"
-                              : formatUsd(output.actualCostUsd)}
+                              : formatUsd(outputCostUsd)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultBillingSource")}</dt>
+                          <dd>
+                            {output.billingAmountSource === "provider_header"
+                              ? t("generation.billingSourceProvider")
+                              : output.billingAmountSource ===
+                                  "authorization_ceiling"
+                                ? t("generation.billingSourceCeiling")
+                                : "—"}
                           </dd>
                         </div>
                         <div>
@@ -1152,7 +1203,7 @@ export function GenerationJobs({
                       )}
                     {job.status === "running" && (
                       <>
-                        {job.generationType === "image" && (
+                        {job.generationType === "image" && !isDezgo && (
                           <button
                             className="secondary"
                             onClick={() =>

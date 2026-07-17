@@ -4,7 +4,7 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-基準コミット: `6bcbcc3`
+基準コミット: Dezgo dispatcher `1909117`以降
 
 ## 1. 現在の判定
 
@@ -24,6 +24,7 @@ RC受入れ結果は`desktop/RC_ACCEPTANCE_STATUS.json`へ構造化して記録�
 | P0   | クリーンWindows受入れ | install、起動、書き出し、更新、uninstallを新規環境で完走 | Windows VMまたは新規PC         |
 | P0   | Ollama実環境E2E       | 接続、モデル取得、Chat、停止、履歴復元                   | Ollamaと対象モデル             |
 | P0   | ComfyUI実環境E2E      | workflow、生成、キャンセル、素材登録                     | ComfyUI、モデル、workflow JSON |
+| P0   | Dezgo Phase 1実API E2E | 非成人向けsafe素材10枚、費用・速度・秘密値非露出を記録   | BYOK key、利用者の課金承認      |
 | P0   | Supabase staging試験  | migration適用、読み取り専用preflight、rollback確認       | staging DBと`psql`             |
 | P0   | Desktop端末認証E2E    | 承認、複数端末、期限切れ、失効後拒否                     | staging Hub・Supabase          |
 | P0   | StripeテストE2E       | 成功、失敗、返金、改ざん拒否、期限付きdownload           | Stripe test・Webhook           |
@@ -36,7 +37,7 @@ RC受入れ結果は`desktop/RC_ACCEPTANCE_STATUS.json`へ構造化して記録�
 | 優先 | タスク                       | 現在の制限                                                                         |
 | ---- | ---------------------------- | ---------------------------------------------------------------------------------- |
 | P0   | ハイブリッド生成Phase 1基盤  | Router・ポリシー・ローカル実行・Asset Library・safe Job handoffまで完了            |
-| P1   | 外部背景Provider接続         | interface・送信preview・確認契約は完了。実Provider・credential・見積・送信は未実装 |
+| P1   | 外部背景Provider接続         | Dezgoのcredential・見積・承認・直列dispatcher・費用確定まで完了。実API E2E待ち    |
 | P1   | Panelレイヤー分離・合成      | 永続化、直接変形、mask、correction透明パッチ、互換cacheまで完了                    |
 | P2   | 低スペックRuntime Profile    | ComfyUI実行環境診断まで完了。実workflowによる8GB画像生成E2Eが残る                  |
 | P2   | 英語化の全画面展開・WCAG評価 | 日英29状態のaxe違反0件。Narrator受入れ表作成済み。Windows実機での手動完走が残る    |
@@ -65,7 +66,7 @@ RC受入れ結果は`desktop/RC_ACCEPTANCE_STATUS.json`へ構造化して記録�
 1. コード署名証明書の取得とGitHubリポジトリ準備を並行開始
 2. Supabase stagingへmigrationを適用し、端末認証を確認
 3. Stripeテスト決済・失敗・返金・download E2E
-4. 実Ollama・ComfyUI E2Eと対応version記録
+4. 実Ollama・ComfyUI E2Eと、利用者承認後のDezgo非成人向け10枚試験
 5. 署名済みDraft Release作成
 6. クリーンWindowsで旧版から新版への更新を含む最終受入れ
 7. Hub公開環境を設定し、RC判定記録を確定

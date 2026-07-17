@@ -825,7 +825,7 @@ test("Dezgo queue enforces capacity, cancellation, provider isolation and restar
   }
 });
 
-test("guarded Dezgo dispatcher resumes an approved job and persists mocked output", async () => {
+test("guarded Dezgo dispatcher handles lifecycle and billing with mocked output", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-dezgo-dispatch-"));
   const database = new MangaiDatabase({
     root,
@@ -883,7 +883,7 @@ test("guarded Dezgo dispatcher resumes an approved job and persists mocked outpu
         modelId: "mock-safe-model",
       });
       assert.equal(preview.executable, true);
-      return queueService.confirmAndEnqueueExternalSafeAsset({
+      const queued = await queueService.confirmAndEnqueueExternalSafeAsset({
         previewId: preview.previewId,
         promptSha256: preview.promptSha256,
         payloadReviewed: true,
@@ -891,6 +891,7 @@ test("guarded Dezgo dispatcher resumes an approved job and persists mocked outpu
         providerTermsReviewed: true,
         confirmedAt: new Date().toISOString(),
       });
+      return { ...queued, estimatedCost: preview.estimatedCost };
     };
     const queued = await enqueue("人物を含まない漫画背景");
     let calls = 0;
@@ -959,6 +960,173 @@ test("guarded Dezgo dispatcher resumes an approved job and persists mocked outpu
     assert.equal(summary.actualUsd, 0.001);
     assert.equal(summary.reservedUsd, 0);
     assert.ok(database.bundle(project.project.id).assets.length > 0);
+
+    const fallbackQueue = await enqueue("費用header欠落確認用の無人背景");
+    const fallbackWorker = new AIService(database, {
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () => ({
+        textToImage: async () => ({
+          providerJobId: "mock-no-cost-header",
+          images: [{ bytes: new Uint8Array(image), mimeType: "image/png" }],
+          metadata: {
+            seed: 2222,
+            actualCostUsd: null,
+            balanceUsd: null,
+            balanceIndex: null,
+          },
+        }),
+      }),
+    });
+    assert.equal(
+      (await fallbackWorker.runNextQueuedDezgo()).status,
+      "completed",
+    );
+    const fallbackJob = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === fallbackQueue.jobId);
+    const fallbackOutput = JSON.parse(fallbackJob.outputJson);
+    assert.equal(
+      fallbackOutput.accountedCostUsd,
+      fallbackQueue.estimatedCost,
+    );
+    assert.equal(
+      fallbackOutput.billingAmountSource,
+      "authorization_ceiling",
+    );
+
+    const heldQueue = await enqueue("通信断保留確認用の無人背景");
+    const heldWorker = new AIService(database, {
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () => ({
+        textToImage: async () => {
+          throw new AIProviderError(
+            "DEZGO_CONNECTION_FAILED",
+            "mock offline",
+            true,
+          );
+        },
+      }),
+    });
+    assert.equal((await heldWorker.runNextQueuedDezgo()).status, "paused");
+    const heldJob = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === heldQueue.jobId);
+    assert.equal(heldJob.status, "paused");
+    assert.equal(heldJob.errorCode, "DEZGO_CONNECTION_FAILED");
+    assert.ok(
+      database.externalCostSummary(project.project.id, "dezgo").reservedUsd >
+        0,
+    );
+    heldWorker.cancel(heldQueue.jobId);
+    assert.equal(
+      database.externalCostSummary(project.project.id, "dezgo").reservedUsd,
+      0,
+    );
+
+    const retryQueue = await enqueue("再試行確認用の無人背景");
+    let retryCalls = 0;
+    const retryWorker = new AIService(database, {
+      retryBaseDelayMs: 10,
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () => ({
+        textToImage: async () => {
+          retryCalls += 1;
+          if (retryCalls === 1)
+            throw new AIProviderError(
+              "DEZGO_RATE_LIMITED",
+              "mock busy",
+              true,
+            );
+          return {
+            providerJobId: "mock-retried-job",
+            images: [{ bytes: new Uint8Array(image), mimeType: "image/png" }],
+            metadata: {
+              seed: 3333,
+              actualCostUsd: 0.0015,
+              balanceUsd: 9.5,
+              balanceIndex: 8,
+            },
+          };
+        },
+      }),
+    });
+    assert.equal((await retryWorker.runNextQueuedDezgo()).status, "queued");
+    for (let index = 0; index < 50; index += 1) {
+      const current = database
+        .listGenerationJobs(project.project.id)
+        .find((job) => job.id === retryQueue.jobId);
+      if (current.status === "completed") break;
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+    const retriedJob = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === retryQueue.jobId);
+    assert.equal(retriedJob.status, "completed");
+    assert.equal(retriedJob.attemptCount, 2);
+    assert.equal(retryCalls, 2);
+
+    const timeoutQueue = await enqueue("timeout確認用の無人背景");
+    const beforeTimeout = database.externalCostSummary(
+      project.project.id,
+      "dezgo",
+    ).actualUsd;
+    const timeoutWorker = new AIService(database, {
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () => ({
+        textToImage: async () => {
+          throw new AIProviderError("DEZGO_TIMEOUT", "mock timeout");
+        },
+      }),
+    });
+    assert.equal((await timeoutWorker.runNextQueuedDezgo()).status, "failed");
+    const timeoutJob = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === timeoutQueue.jobId);
+    assert.equal(timeoutJob.errorCode, "DEZGO_TIMEOUT");
+    assert.ok(
+      Math.abs(
+        database.externalCostSummary(project.project.id, "dezgo").actualUsd -
+          beforeTimeout -
+          timeoutQueue.estimatedCost,
+      ) < 1e-9,
+    );
+
+    const cancelQueue = await enqueue("cancel確認用の無人背景");
+    const beforeCancel = database.externalCostSummary(
+      project.project.id,
+      "dezgo",
+    ).actualUsd;
+    const cancelWorker = new AIService(database, {
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () => ({
+        textToImage: (_request, signal) =>
+          new Promise((_resolve, reject) => {
+            signal.addEventListener(
+              "abort",
+              () =>
+                reject(
+                  new AIProviderError("DEZGO_CANCELED", "mock canceled"),
+                ),
+              { once: true },
+            );
+          }),
+      }),
+    });
+    const canceling = cancelWorker.runNextQueuedDezgo();
+    await new Promise((resolve) => setImmediate(resolve));
+    cancelWorker.cancel(cancelQueue.jobId);
+    assert.equal((await canceling).status, "canceled");
+    const canceledJob = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === cancelQueue.jobId);
+    assert.equal(canceledJob.status, "canceled");
+    assert.ok(
+      Math.abs(
+        database.externalCostSummary(project.project.id, "dezgo").actualUsd -
+          beforeCancel -
+          cancelQueue.estimatedCost,
+      ) < 1e-9,
+    );
 
     const failedQueue = await enqueue("失敗確認用の無人背景");
     const failingWorker = new AIService(database, {

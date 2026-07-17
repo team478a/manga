@@ -417,8 +417,10 @@ const ja = {
   "generation.externalConfirmCancel": "キャンセル",
   "generation.externalConfirmQueue": "承認してQueueへ追加",
   "generation.externalQueueing": "Queueへ追加中…",
-  "generation.externalQueued":
-    "Dezgo生成をQueueへ追加しました。実行dispatcherはまだ無効です。",
+  "generation.externalQueuedDispatching":
+    "Dezgo生成をQueueへ追加しました。承認済みの1件を順番に実行します。",
+  "generation.externalQueuedWaiting":
+    "Dezgo生成をQueueへ追加しました。dispatcherが無効なため送信せず待機します。",
   "generation.externalBlock.providerNotConfigured": "Providerが未設定です。",
   "generation.externalBlock.providerDisabled": "Providerは無効です。",
   "generation.externalBlock.unsupportedJob": "このジョブ種類に未対応です。",
@@ -500,7 +502,10 @@ const ja = {
   "generation.assetUnavailable": "保存済み素材を確認できません。",
   "generation.resultDetails": "Dezgo生成結果の詳細",
   "generation.resultModel": "モデル",
-  "generation.resultCost": "実費",
+  "generation.resultCost": "計上額",
+  "generation.resultBillingSource": "費用確定方法",
+  "generation.billingSourceProvider": "Provider実費header",
+  "generation.billingSourceCeiling": "承認上限（実費不明）",
   "generation.resultBalance": "生成後残高",
   "generation.resultSeed": "Seed",
   "generation.resultDuration": "所要時間",
@@ -516,6 +521,10 @@ const ja = {
   "generation.priorityDown": "優先順位を下げる",
   "generation.attempt": "試行 {current}/{max}",
   "generation.nextRetry": "次回再試行 {time}",
+  "generation.dezgoDispatcherWaiting":
+    "dispatcherが無効なため外部送信せず待機しています。",
+  "generation.dezgoConnectionHeld":
+    "通信断のため費用予約を保持して停止しました。接続確認後に再開できます。",
   "generation.nightQueueTitle": "夜間Queue",
   "generation.nightQueueHelp":
     "有効にすると時間外の画像生成は待機列へ保存され、開始時刻に自動実行します。実行中の1件は終了時刻を過ぎても完了まで続けます。",
@@ -738,13 +747,18 @@ const ja = {
     "接続できました（{latency}ms）。モデル{count}件と残高を更新しました。",
   "settings.dezgo.balance": "残高",
   "settings.dezgo.models": "モデル一覧",
+  "settings.dezgo.dispatcher": "生成dispatcher",
+  "settings.dezgo.dispatcherEnabled": "開発限定で有効",
+  "settings.dezgo.dispatcherDisabled": "無効・外部送信なし",
   "settings.dezgo.modelCount": "{count}件",
   "settings.dezgo.notChecked": "未確認",
   "settings.dezgo.balanceUnknown": "取得できません",
   "settings.dezgo.modelDetails": "モデル情報",
   "settings.dezgo.cached": "キャッシュ",
   "settings.dezgo.generationDisabled":
-    "画像生成はまだ有効化されていません。接続確認で画像やPromptは送信しません。",
+    "生成dispatcherは無効です。接続確認では画像やPromptを送信せず、承認済みQueueも待機します。",
+  "settings.dezgo.generationEnabled":
+    "開発限定dispatcherが有効です。明示承認済みのsafe素材だけを1件ずつ送信します。",
   "settings.provider.mock": "モックプロバイダー",
   "settings.provider.enabled": "有効",
   "settings.provider.baseUrl": "接続URL",
@@ -1284,8 +1298,10 @@ const en: Record<TranslationKey, string> = {
   "generation.externalConfirmCancel": "Cancel",
   "generation.externalConfirmQueue": "Approve and add to queue",
   "generation.externalQueueing": "Adding to queue…",
-  "generation.externalQueued":
-    "The Dezgo generation was added to the queue. The execution dispatcher remains disabled.",
+  "generation.externalQueuedDispatching":
+    "The Dezgo generation was queued. Approved jobs will run one at a time.",
+  "generation.externalQueuedWaiting":
+    "The Dezgo generation was queued but will not be sent while the dispatcher is disabled.",
   "generation.externalBlock.providerNotConfigured":
     "No external provider is configured.",
   "generation.externalBlock.providerDisabled": "The provider is disabled.",
@@ -1371,7 +1387,10 @@ const en: Record<TranslationKey, string> = {
   "generation.assetUnavailable": "The saved asset is unavailable.",
   "generation.resultDetails": "Dezgo generation result details",
   "generation.resultModel": "Model",
-  "generation.resultCost": "Actual cost",
+  "generation.resultCost": "Accounted amount",
+  "generation.resultBillingSource": "Billing source",
+  "generation.billingSourceProvider": "Provider cost header",
+  "generation.billingSourceCeiling": "Authorization ceiling (cost unknown)",
   "generation.resultBalance": "Balance after generation",
   "generation.resultSeed": "Seed",
   "generation.resultDuration": "Duration",
@@ -1387,6 +1406,10 @@ const en: Record<TranslationKey, string> = {
   "generation.priorityDown": "Decrease priority",
   "generation.attempt": "Attempt {current}/{max}",
   "generation.nextRetry": "Next retry {time}",
+  "generation.dezgoDispatcherWaiting":
+    "The dispatcher is disabled. This job remains queued without external transmission.",
+  "generation.dezgoConnectionHeld":
+    "The job is paused after a connection failure and retains its cost reservation. Check the connection, then resume.",
   "generation.nightQueueTitle": "Night queue",
   "generation.nightQueueHelp":
     "When enabled, image jobs submitted outside the window remain queued and start automatically at the configured time. A running job may finish after the end time.",
@@ -1616,13 +1639,18 @@ const en: Record<TranslationKey, string> = {
     "Connected ({latency} ms). Updated {count} models and the balance.",
   "settings.dezgo.balance": "Balance",
   "settings.dezgo.models": "Models",
+  "settings.dezgo.dispatcher": "Generation dispatcher",
+  "settings.dezgo.dispatcherEnabled": "Enabled for development",
+  "settings.dezgo.dispatcherDisabled": "Disabled; no external requests",
   "settings.dezgo.modelCount": "{count}",
   "settings.dezgo.notChecked": "Not checked",
   "settings.dezgo.balanceUnknown": "Unavailable",
   "settings.dezgo.modelDetails": "Model details",
   "settings.dezgo.cached": "Cached",
   "settings.dezgo.generationDisabled":
-    "Image generation is not enabled yet. Connection checks do not send images or prompts.",
+    "The generation dispatcher is disabled. Connection checks do not send images or prompts, and approved queue jobs remain waiting.",
+  "settings.dezgo.generationEnabled":
+    "The development-only dispatcher is enabled. It sends one explicitly approved safe-asset job at a time.",
   "settings.provider.mock": "Mock provider",
   "settings.provider.enabled": "Enabled",
   "settings.provider.baseUrl": "Connection URL",

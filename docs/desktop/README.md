@@ -126,7 +126,7 @@ npm run rc:windows-cross-volume-trash -- D:\ allow-local
 
 - 高度なAIエージェント
 - 信頼された証明書による実署名、署名付き自動更新E2E、初回公開リリース
-- 実Ollama・ComfyUI、Hub staging、Stripeテスト環境のRC受入れ
+- 実Ollama・ComfyUI・Dezgo 10枚、Hub staging、Stripeテスト環境のRC受入れ
 
 優先順位と前提は[`../REMAINING_TASKS.md`](../REMAINING_TASKS.md)を参照してください。
 

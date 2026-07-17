@@ -88,6 +88,12 @@ npm run rc:windows-artifacts -- release-rc-update metadata signed
 5. 2件目を実行中にキャンセルし、ComfyUI側の処理とDesktopの履歴がキャンセル状態になることを確認します。
 6. 失敗するworkflowで、秘密値を含まないエラー表示と再実行導線を確認します。
 
+### 6.1 Dezgo Phase 1実API E2E
+
+利用者本人がBYOK keyによる外部送信と費用発生を明示承認した場合だけ、非成人向けsafe素材10枚の手動試験を実施します。成人向け、人物、キャラクター参照、完成Page、入力画像は対象外です。
+
+APIキー、Prompt本文、生成画像、Dezgo user IDを報告書へ残さず、モデル、寸法、Steps、Seed、試行回数、時間、計上額、費用確定方法、生成後残高、Asset登録だけを記録します。手順と停止条件は[`../dezgo/DEZGO_MANUAL_E2E.md`](../dezgo/DEZGO_MANUAL_E2E.md)、結果の正本は[`../dezgo/DEZGO_MANUAL_E2E_RESULTS.md`](../dezgo/DEZGO_MANUAL_E2E_RESULTS.md)です。結果が`未実施`の間は合格にしません。
+
 ## 7. 複数Page書き出しE2E
 
 表紙あり、画像あり、吹き出し・縦書き・自由テキストを含む3Page以上のProjectを使用します。
@@ -140,6 +146,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 | Desktopローカル受入れ | 第4節を製品版で完了                 | 2026-07-15完了                             |
 | Ollama                | 第5節を実サービスで完了             | 外部サービス待ち                           |
 | ComfyUI               | 第6節を実サービスで完了             | 外部サービス待ち                           |
+| Dezgo                 | 第6.1節の非成人向け10枚を完了        | 利用者のBYOK・課金承認待ち                 |
 | Hub staging           | 読み取り専用preflightと端末認証完了 | 接続設定待ち                               |
 | Stripe                | テスト決済・失敗・返金・認可を完了  | 接続設定待ち                               |
 | Windows成果物         | 署名済みinstallerと更新metadata確認 | 起動・SBOM・checksum完了、コード署名待ち   |

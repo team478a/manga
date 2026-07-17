@@ -205,6 +205,16 @@ export function DezgoSettings() {
           <dt>{t("settings.dezgo.models")}</dt>
           <dd>{t("settings.dezgo.modelCount", { count: models.length })}</dd>
         </div>
+        <div>
+          <dt>{t("settings.dezgo.dispatcher")}</dt>
+          <dd>
+            {!runtime
+              ? t("settings.dezgo.loading")
+              : runtime.dezgoDispatchEnabled
+                ? t("settings.dezgo.dispatcherEnabled")
+                : t("settings.dezgo.dispatcherDisabled")}
+          </dd>
+        </div>
       </dl>
 
       {models.length > 0 && (
@@ -242,7 +252,9 @@ export function DezgoSettings() {
       )}
 
       <p className="external-preview-warning">
-        {t("settings.dezgo.generationDisabled")}
+        {runtime?.dezgoDispatchEnabled
+          ? t("settings.dezgo.generationEnabled")
+          : t("settings.dezgo.generationDisabled")}
       </p>
       {message && (
         <p className="notice" role="status" aria-live="polite">

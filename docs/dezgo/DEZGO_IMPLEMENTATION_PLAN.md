@@ -312,6 +312,8 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 
 ユーザーが用意したDezgo BYOK keyをOS keyringへ保存し、秘密値を表示しない専用manual testで実施する。Phase 1は非成人向け画像10枚だけとし、model、寸法、steps、seed、時間、実費、残高、成功・失敗を記録する。画像とprompt本文は報告書へ添付しない。
 
+実施手順は[`DEZGO_MANUAL_E2E.md`](DEZGO_MANUAL_E2E.md)、秘密値を含めない結果様式は[`DEZGO_MANUAL_E2E_RESULTS.md`](DEZGO_MANUAL_E2E_RESULTS.md)を正本とする。結果様式が`未実施`の間はPhase 1完了と判定しない。
+
 ## 19. Phase 1完了条件
 
 指示書の23項目を満たし、次も確認できた場合に完了とする。

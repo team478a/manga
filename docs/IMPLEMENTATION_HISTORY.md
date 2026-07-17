@@ -1015,3 +1015,13 @@ rendererへ承認tokenを返さない専用IPCを追加し、Mainプロセス内
 429・5xxは最大1回だけ再試行し、通信断は手動再開可能な保留、恒久エラーは失敗として予約を解放します。timeoutと実行中cancelはProvider側の課金状態を確認できないため、承認上限を保守的に記録します。起動時Queue復元、手動resume、夜間Queueへ接続し、ComfyUI workerは引き続きDezgo Jobを取得しません。
 
 フラグ無効時の送信ゼロ、承認済みJobの再開、モック画像のAsset登録、実費確定、恒久エラー時の予約解放を注入Providerで自動検証しました。実Dezgo APIへの送信は行っていません。Desktop統合テスト77/77に成功し、非成人向け実API 10枚の手動試験は次段階です。
+
+## 118. Dezgo dispatcher失敗系検証・状態UI・手動E2E準備
+
+Dezgo dispatcherの自動検証を、実費header欠落時の承認上限計上、通信断による費用予約保持と一時停止、429からの1回再試行、timeoutと実行中cancelの保守的計上、恒久入力エラーの予約解放まで拡張しました。すべて注入モックProviderを使用し、実APIは呼び出していません。
+
+設定画面へ開発限定dispatcherの有効・無効を表示し、無効時は外部送信せずQueue待機することを明記しました。生成履歴には試行回数、次回再試行、通信断保留理由、計上額、`provider_header`または`authorization_ceiling`の費用確定方法を日英表示します。Dezgo実行中は安全に一時停止できないため、無効な一時停止操作を表示せずキャンセルだけを提供します。
+
+非成人向け実API 10枚の手順書と未実施結果テンプレートを追加しました。APIキーはWindows資格情報マネージャーだけへ保存し、Prompt本文・生成画像・Dezgo user IDを報告書へ残さず、費用・速度・試行・Asset登録だけを記録します。利用者の明示承認とBYOK keyがない現段階では未実施を維持します。
+
+RC正本とDesktop状況をDesktop 77/77、ai-core 27/27へ同期し、Dezgo実API E2Eを外部条件付き残タスクとして追加しました。

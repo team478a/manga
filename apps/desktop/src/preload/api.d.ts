@@ -283,6 +283,7 @@ export type DesktopApi = {
       dezgo: {
         dezgoProviderEnabled: boolean;
         dezgoDirectByokEnabled: boolean;
+        dezgoDispatchEnabled: boolean;
         dezgoAdultGenerationEnabled: false;
         dezgoBatchGenerationEnabled: false;
       };
