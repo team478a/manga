@@ -410,3 +410,17 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - Queue上限、Provider分離、キャンセル、再起動復元、試行上限、error別方針を自動テスト化
 - 実行dispatcher、実生成UI、IPC、外部API送信はまだ有効化しない
 - ai-core 25/25、Desktop統合テスト73/73に成功
+
+### 2026-07-17: 一回限り外部送信承認契約
+
+- preview本体と元のsafe素材RequestをMainプロセスのメモリだけに保持し、rendererへPrompt本文を含む承認tokenを返さない
+- preview ID、Project / Page、Job Type、Prompt SHA-256を元Requestへ固定し、不一致や差し替えを登録時に拒否
+- Project外部処理policy、月額上限、policy更新時刻、Dezgo feature flag、資格情報設定状態をcontext SHA-256へ固定
+- payload、費用、Provider条件の3項目を明示確認したconfirmationだけを受理
+- preview有効期限5分、発行後token有効期限60秒、一回消費後は即時無効
+- tokenから実行Requestを復元し、rendererから送られた別Requestをdispatcherへ渡さない契約
+- policy・資格情報状態の変更、Prompt改ざん、Project不一致、未来・過去の不正確認時刻、blocked previewを拒否
+- 承認情報は最大100件のメモリ上限を持ち、アプリ再起動後は復元せず再確認を必須化
+- 現在のDezgo previewは費用見積未取得で`executable=false`のため、承認発行、実行dispatcher、IPC、外部API送信は引き続き無効
+- 自動テストで改ざん、再利用、期限切れ、context変更、Project不一致、blocked preview、再起動相当のStore再生成を確認
+- ai-core 25/25、Desktop統合テスト74/74、TypeScript、ESLint、本番renderer buildに成功

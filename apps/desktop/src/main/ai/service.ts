@@ -5,12 +5,15 @@ import {
   AIProviderError,
   createExternalDispatchPreview,
   constrainImageDimensions,
+  externalDispatchConfirmationSchema,
   imageJobRequestSchema,
   isGenerationQueueWindowOpen,
   minutesUntilGenerationQueueWindow,
   routeGenerationJob,
   type SafeAssetLibraryRequest,
   type SafeAssetJobType,
+  type ExternalDispatchConfirmation,
+  type ProjectGenerationPolicy,
   type RouteDecision,
   type ProviderSettings,
   type TextGenerationProvider,
@@ -26,6 +29,10 @@ import { MockTextProvider } from "./providers/mock.js";
 import { ComfyUIProvider } from "./providers/comfyui.js";
 import { DezgoProvider } from "./providers/dezgo.js";
 import type { DezgoFeatureFlags } from "./dezgo-feature-flags.js";
+import {
+  ExternalDispatchApprovalError,
+  ExternalDispatchApprovalStore,
+} from "./external-dispatch-approval.js";
 
 export type ChatEvent = {
   requestId: string;
@@ -48,6 +55,7 @@ export class AIService {
     providerId: "dezgo",
   ) => Promise<string | null>;
   private dezgoFeatures: DezgoFeatureFlags;
+  private externalDispatchApprovals = new ExternalDispatchApprovalStore();
   constructor(
     private store: MangaiDatabase,
     options: {
@@ -291,7 +299,7 @@ export class AIService {
     const dezgoConfigured = dezgoEnabled
       ? Boolean(await this.getProviderCredential("dezgo"))
       : false;
-    return createExternalDispatchPreview({
+    const preview = createExternalDispatchPreview({
       previewId: crypto.randomUUID(),
       request: input,
       promptSha256: crypto
@@ -312,6 +320,71 @@ export class AIService {
       },
       createdAt: new Date().toISOString(),
     });
+    this.externalDispatchApprovals.register(
+      preview,
+      input,
+      this.externalDispatchContextSha256(
+        policy,
+        dezgoEnabled,
+        dezgoConfigured,
+      ),
+    );
+    return preview;
+  }
+  async confirmExternalSafeAsset(
+    input: ExternalDispatchConfirmation,
+  ) {
+    const confirmation = externalDispatchConfirmationSchema.parse(input);
+    const projectId = this.externalDispatchApprovals.projectIdForPreview(
+      confirmation.previewId,
+    );
+    if (!projectId)
+      throw new ExternalDispatchApprovalError(
+        "PREVIEW_NOT_FOUND",
+        "外部送信プレビューが見つかりません。もう一度確認してください。",
+      );
+    const policy = this.store.getProjectGenerationPolicy(projectId);
+    const dezgoEnabled =
+      this.dezgoFeatures.dezgoProviderEnabled &&
+      this.dezgoFeatures.dezgoDirectByokEnabled;
+    const dezgoConfigured = dezgoEnabled
+      ? Boolean(await this.getProviderCredential("dezgo"))
+      : false;
+    return this.externalDispatchApprovals.confirm(
+      confirmation,
+      this.externalDispatchContextSha256(
+        policy,
+        dezgoEnabled,
+        dezgoConfigured,
+      ),
+    );
+  }
+  consumeExternalDispatchApproval(approvalToken: string) {
+    return this.externalDispatchApprovals.consume(approvalToken);
+  }
+  private externalDispatchContextSha256(
+    policy: ProjectGenerationPolicy,
+    providerEnabled: boolean,
+    providerConfigured: boolean,
+  ) {
+    return crypto
+      .createHash("sha256")
+      .update(
+        JSON.stringify({
+          projectId: policy.projectId,
+          externalProcessingPolicy: policy.externalProcessingPolicy,
+          preferLocal: policy.preferLocal,
+          externalConfirmationRequired: policy.externalConfirmationRequired,
+          monthlyCostLimit: policy.monthlyCostLimit,
+          customCloudJobTypes: policy.customCloudJobTypes,
+          policyUpdatedAt: policy.updatedAt,
+          providerId: "dezgo",
+          providerEnabled,
+          providerConfigured,
+        }),
+        "utf8",
+      )
+      .digest("hex");
   }
   private settings(id: string) {
     const value = this.store

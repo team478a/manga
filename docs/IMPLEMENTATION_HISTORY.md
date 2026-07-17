@@ -977,3 +977,11 @@ Dezgo画像Jobへ、DB層で自動的にactive Queue上限20件と最大試行2�
 既存のComfyUI workerはProvider指定でComfyUI Jobだけを取得するようにし、未有効のDezgo Jobを誤ってComfyUI形式として実行しないよう分離しました。Dezgoの自動再試行は429と5xxだけを最大1回とし、通信断はQueue保留、入力・認証・残高・権限・モデル・timeoutは停止する方針をコード化しました。
 
 Dezgo Jobの20件上限、Provider分離、キャンセル、再起動後の`running`から`queued`への復元、最大試行数維持、error別方針を自動テストで確認しました。実行dispatcher、実生成UI、IPC、外部API送信はまだ有効化していません。ai-core 25/25、Desktop統合テスト73/73に成功しています。
+
+## 114. 外部送信の一回限り明示承認契約
+
+外部送信previewと元のsafe素材RequestをMainプロセスのメモリだけへ保持し、Project・Page・Job Type・Prompt SHA-256を固定する承認Storeを追加しました。Project外部処理policy、月額上限、更新時刻、Dezgo feature flag、資格情報設定状態もcontext SHA-256へ含め、preview後に条件が変わった場合は再確認を要求します。
+
+明示承認はpayload・費用・Provider条件の3項目を必須とし、previewは5分、発行後のopaque tokenは60秒だけ有効です。tokenは一回消費した時点で削除され、dispatcherはtokenへ保存された元Requestだけを取得します。再利用、Prompt改ざん、Project不一致、context変更、期限切れ、不正な確認時刻、blocked previewを拒否し、承認情報は最大100件、アプリ再起動後は復元しません。
+
+現在のDezgo previewは事前費用見積を取得できず`executable=false`であるため、承認tokenは発行されません。実行dispatcher、renderer IPC、外部API送信は引き続き未接続です。ai-core 25/25、Desktop統合テスト74/74、TypeScript、ESLint、本番renderer buildに成功しています。

@@ -1105,6 +1105,17 @@ test("safe asset jobs prefer project library and never require external access",
       JSON.stringify(configuredPreview).includes("configured-test-key"),
       false,
     );
+    await assert.rejects(
+      dezgoService.confirmExternalSafeAsset({
+        previewId: configuredPreview.previewId,
+        promptSha256: configuredPreview.promptSha256,
+        payloadReviewed: true,
+        costReviewed: true,
+        providerTermsReviewed: true,
+        confirmedAt: new Date().toISOString(),
+      }),
+      (error) => error?.code === "PREVIEW_BLOCKED",
+    );
 
     db.saveProjectGenerationPolicy({
       projectId: project.project.id,

@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import sharp from "sharp";
-import { AIProviderError } from "@mangai/ai-core";
+import {
+  AIProviderError,
+  createExternalDispatchPreview,
+} from "@mangai/ai-core";
 import { resolveDezgoFeatureFlags } from "../dist-main/main/ai/dezgo-feature-flags.js";
 import {
   ProviderCredentialError,
@@ -23,6 +27,9 @@ import {
   DEZGO_QUEUE_POLICY,
   dezgoFailureDisposition,
 } from "../dist-main/main/ai/dezgo-queue-policy.js";
+import {
+  ExternalDispatchApprovalStore,
+} from "../dist-main/main/ai/external-dispatch-approval.js";
 import { AIService } from "../dist-main/main/ai/service.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 
@@ -603,4 +610,130 @@ test("Dezgo queue enforces capacity, cancellation, provider isolation and restar
     database.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("external dispatch approval binds one request and expires after one use", () => {
+  let nowMs = Date.parse("2026-07-17T03:00:00.000Z");
+  const now = () => new Date(nowMs);
+  const approvals = new ExternalDispatchApprovalStore(
+    now,
+    5 * 60_000,
+    60_000,
+  );
+  const request = {
+    projectId: randomUUID(),
+    pageId: randomUUID(),
+    type: "background",
+    query: "empty manga city at night",
+  };
+  const contextSha256 = createHash("sha256")
+    .update("policy-v1")
+    .digest("hex");
+  const previewFor = (value = request, estimate = true) =>
+    createExternalDispatchPreview({
+      previewId: randomUUID(),
+      request: value,
+      promptSha256: createHash("sha256")
+        .update(value.query, "utf8")
+        .digest("hex"),
+      policy: "safe_assets_only",
+      provider: {
+        providerId: "dezgo",
+        displayName: "Dezgo API",
+        enabled: true,
+        endpointConfigured: true,
+        supportedJobTypes: ["background", "prop", "effect"],
+        dataRetentionSummary: "30 days",
+        trainingUseSummary: "unknown",
+        pricingSummary: "estimated",
+      },
+      estimate: estimate ? { cost: 0.01, currency: "usd" } : undefined,
+      createdAt: now().toISOString(),
+    });
+  const confirmationFor = (preview) => ({
+    previewId: preview.previewId,
+    promptSha256: preview.promptSha256,
+    payloadReviewed: true,
+    costReviewed: true,
+    providerTermsReviewed: true,
+    confirmedAt: now().toISOString(),
+  });
+
+  const preview = previewFor();
+  approvals.register(preview, request, contextSha256);
+  const approval = approvals.confirm(
+    confirmationFor(preview),
+    contextSha256,
+  );
+  assert.equal(approval.previewId, preview.previewId);
+  assert.equal(
+    JSON.stringify(approval).includes("empty manga city at night"),
+    false,
+  );
+  const consumed = approvals.consume(approval.approvalToken);
+  assert.deepEqual(consumed.request, request);
+  assert.equal(consumed.preview.promptSha256, preview.promptSha256);
+  assert.throws(
+    () => approvals.consume(approval.approvalToken),
+    (error) => error?.code === "APPROVAL_TOKEN_INVALID",
+  );
+  assert.throws(
+    () =>
+      new ExternalDispatchApprovalStore(now).consume(approval.approvalToken),
+    (error) => error?.code === "APPROVAL_TOKEN_INVALID",
+  );
+
+  const alteredPreview = previewFor();
+  approvals.register(alteredPreview, request, contextSha256);
+  assert.throws(
+    () =>
+      approvals.confirm(
+        {
+          ...confirmationFor(alteredPreview),
+          promptSha256: "0".repeat(64),
+        },
+        contextSha256,
+      ),
+    (error) => error?.code === "CONFIRMATION_MISMATCH",
+  );
+
+  const contextPreview = previewFor();
+  approvals.register(contextPreview, request, contextSha256);
+  assert.throws(
+    () => approvals.confirm(confirmationFor(contextPreview), "1".repeat(64)),
+    (error) => error?.code === "CONTEXT_CHANGED",
+  );
+
+  const blockedPreview = previewFor(request, false);
+  approvals.register(blockedPreview, request, contextSha256);
+  assert.throws(
+    () => approvals.confirm(confirmationFor(blockedPreview), contextSha256),
+    (error) => error?.code === "PREVIEW_BLOCKED",
+  );
+
+  const expiredPreview = previewFor();
+  approvals.register(expiredPreview, request, contextSha256);
+  nowMs += 5 * 60_000 + 1;
+  assert.throws(
+    () => approvals.confirm(confirmationFor(expiredPreview), contextSha256),
+    (error) => error?.code === "PREVIEW_EXPIRED",
+  );
+
+  const tokenPreview = previewFor();
+  approvals.register(tokenPreview, request, contextSha256);
+  const expiringApproval = approvals.confirm(
+    confirmationFor(tokenPreview),
+    contextSha256,
+  );
+  nowMs += 60_001;
+  assert.throws(
+    () => approvals.consume(expiringApproval.approvalToken),
+    (error) => error?.code === "APPROVAL_TOKEN_EXPIRED",
+  );
+
+  const mismatchedRequest = { ...request, projectId: randomUUID() };
+  assert.throws(
+    () => approvals.register(previewFor(), mismatchedRequest, contextSha256),
+    (error) => error?.code === "PREVIEW_REQUEST_MISMATCH",
+  );
 });
