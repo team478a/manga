@@ -896,6 +896,13 @@ test("legacy database is backed up before canvas schema migration", () => {
   );
   assert.ok(
     migrated
+      .prepare(
+        "select 1 from schema_migrations where version='adult-provider-policy-import-v1'",
+      )
+      .get(),
+  );
+  assert.ok(
+    migrated
       .prepare("select 1 from sqlite_master where name='panel_layers'")
       .get(),
   );
@@ -952,6 +959,20 @@ test("legacy database is backed up before canvas schema migration", () => {
       .readdirSync(path.join(root, "backups"))
       .some((file) => file.includes("before-adult-provider-policy-v1")),
   );
+  const beforeAdultProviderPolicyImport = new Database(paths.database);
+  beforeAdultProviderPolicyImport
+    .prepare(
+      "delete from schema_migrations where version='adult-provider-policy-import-v1'",
+    )
+    .run();
+  beforeAdultProviderPolicyImport.close();
+  const adultProviderPolicyImportReopened = new MangaiDatabase(paths);
+  adultProviderPolicyImportReopened.close();
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => file.includes("before-adult-provider-policy-import-v1")),
+  );
   fs.rmSync(root, { recursive: true, force: true });
 });
 test("adult provider evidence and model allowlist persist fail closed", () => {
@@ -1004,6 +1025,34 @@ test("adult provider evidence and model allowlist persist fail closed", () => {
   assert.deepEqual(db.getAdultProviderPolicyState().eligibleModelIds, [
     "verified-model",
   ]);
+  const applied = db.applyAdultProviderPolicyBundle({
+    keyId: "test-key-1",
+    payloadSha256: "c".repeat(64),
+    payload: {
+      issuedAt: "2026-07-17T00:00:00.000Z",
+      expiresAt: "2026-08-17T00:00:00.000Z",
+      providerApproval: {
+        providerId: "dezgo",
+        status: "approved",
+        evidenceSha256: "a".repeat(64),
+        confirmedAt: "2026-07-17T00:00:00.000Z",
+        expiresAt: "2026-08-17T00:00:00.000Z",
+        revokedAt: null,
+      },
+      models: [
+        {
+          providerId: "dezgo",
+          modelId: "verified-model",
+          status: "approved",
+          licenseEvidenceSha256: "b".repeat(64),
+          verifiedAt: "2026-07-17T00:00:00.000Z",
+          expiresAt: "2026-08-17T00:00:00.000Z",
+        },
+      ],
+    },
+  });
+  assert.equal(applied.lastImport.keyId, "test-key-1");
+  assert.equal(applied.lastImport.payloadSha256, "c".repeat(64));
   db.close();
 
   db = new MangaiDatabase(paths);

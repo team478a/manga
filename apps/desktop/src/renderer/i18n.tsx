@@ -810,6 +810,12 @@ const ja = {
   "settings.adult.providerPolicyTitle": "Dezgo成人向け承認状態",
   "settings.adult.providerPolicyReadonly":
     "現在は読み取り専用です。承認済み運用データの取込機能が接続されるまで未確認のままです。",
+  "settings.adult.providerPolicyImportReady":
+    "信頼済み公開鍵で署名を検証した運用policyだけを取り込めます。",
+  "settings.adult.providerPolicyImport": "署名済みpolicyを取り込む",
+  "settings.adult.providerPolicyImported":
+    "署名を検証し、成人向け運用policyを反映しました。",
+  "settings.adult.providerPolicyLastImport": "最終取込日時",
   "settings.adult.providerApproval": "Provider承認",
   "settings.adult.approvedModels": "承認済みモデル数",
   "settings.adult.evidenceHash": "承認証跡SHA-256",
@@ -1763,6 +1769,12 @@ const en: Record<TranslationKey, string> = {
   "settings.adult.providerPolicyTitle": "Dezgo adult-use approval",
   "settings.adult.providerPolicyReadonly":
     "This view is read-only. It remains unverified until the approved operational-data import is connected.",
+  "settings.adult.providerPolicyImportReady":
+    "Only operational policies signed by a trusted public key can be imported.",
+  "settings.adult.providerPolicyImport": "Import signed policy",
+  "settings.adult.providerPolicyImported":
+    "The signature was verified and the adult-use policy was applied.",
+  "settings.adult.providerPolicyLastImport": "Last imported",
   "settings.adult.providerApproval": "Provider approval",
   "settings.adult.approvedModels": "Approved models",
   "settings.adult.evidenceHash": "Approval evidence SHA-256",

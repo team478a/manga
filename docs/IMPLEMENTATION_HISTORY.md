@@ -1077,3 +1077,11 @@ Dezgoの成人向け商用API利用承認を、公開FAQの一般的な商用利
 既存端末には`adult-provider-policy-v1` migrationを適用し、適用前DBを自動backupします。Rendererへは読み取り専用IPCだけを公開し、設定画面でProvider状態、現在有効なモデル数、証跡SHA-256を確認できます。承認状態やallowlistを書き換えるIPCは公開していません。
 
 証跡欠落、日時逆転、Provider未確認、モデル未登録、期限切れ、両承認有効、再起動後の復元、migration前backupを自動検証しました。Desktop統合テスト80/80、ai-core 35/35、TypeScriptに成功しています。署名検証付き運用データ取込、実承認データ、成人向けdispatcher接続は未実装で、Dezgo成人向け外部送信は引き続き無効です。
+
+## 125. 成人向け運用ポリシーの署名検証付き取込
+
+Provider承認とモデルallowlistを、運用担当が作成する署名済みJSONから取り込む経路を追加しました。payloadはkey順を固定したcanonical JSONとし、key IDで選択したEd25519公開鍵によって署名を検証します。1MBのファイル上限、発行日時の未来ずれ5分、有効期間180日以内を強制し、未知のkey、改変、期限切れ、重複モデルを拒否します。Provider・モデルの有効期限がbundle全体の有効期限を超えるデータも受理しません。
+
+検証後はProvider承認、Dezgoモデルallowlist、key ID・payload SHA-256・取込日時の監査記録を1つのSQLite transactionで更新します。監査tableは独立した`adult-provider-policy-import-v1` migrationで既存端末にも追加し、適用前DBを自動backupします。設定画面には取込操作と最終取込日時を追加しましたが、同梱のtrust storeは初期状態で公開鍵0件のため、運用公開鍵が明示的に登録されるまでは取込ボタンが無効です。秘密鍵はアプリとリポジトリへ含めていません。
+
+一時生成したテスト用Ed25519鍵で正常取込、改変、未知key、期限切れを自動検証しました。Desktop統合テスト81/81、ai-core 35/35、TypeScript、ESLintに成功しています。本番公開鍵、実承認データ、成人向けdispatcher接続は未完了で、Dezgo成人向け外部送信は引き続き無効です。

@@ -150,7 +150,13 @@ export function AdultGenerationSettings() {
       )}
       <div className="panel-lite">
         <h3>{t("settings.adult.providerPolicyTitle")}</h3>
-        <p>{t("settings.adult.providerPolicyReadonly")}</p>
+        <p>
+          {t(
+            providerPolicy?.importAvailable
+              ? "settings.adult.providerPolicyImportReady"
+              : "settings.adult.providerPolicyReadonly",
+          )}
+        </p>
         <dl className="dezgo-summary">
           <div>
             <dt>{t("settings.adult.providerApproval")}</dt>
@@ -174,6 +180,34 @@ export function AdultGenerationSettings() {
         {providerPolicy?.approval.evidenceSha256 && (
           <small>
             {t("settings.adult.evidenceHash")}: {providerPolicy.approval.evidenceSha256}
+          </small>
+        )}
+        <button
+          className="secondary"
+          disabled={busy || !providerPolicy?.importAvailable}
+          onClick={() => {
+            setBusy(true);
+            setMessage("");
+            void window.mangai.ai
+              .importAdultProviderPolicy()
+              .then((next) => {
+                if (!next) return;
+                setProviderPolicy(next);
+                setMessage(t("settings.adult.providerPolicyImported"));
+              })
+              .catch((cause) =>
+                setMessage(
+                  cause instanceof Error ? cause.message : String(cause),
+                ),
+              )
+              .finally(() => setBusy(false));
+          }}
+        >
+          {t("settings.adult.providerPolicyImport")}
+        </button>
+        {providerPolicy?.lastImport && (
+          <small>
+            {t("settings.adult.providerPolicyLastImport")}: {formatDateTime(providerPolicy.lastImport.importedAt)}
           </small>
         )}
       </div>

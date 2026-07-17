@@ -135,6 +135,8 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:adult-settings:get"),
     getAdultProviderPolicyState: () =>
       ipcRenderer.invoke("ai:adult-provider-policy:get"),
+    importAdultProviderPolicy: () =>
+      ipcRenderer.invoke("ai:adult-provider-policy:import"),
     setAdultGenerationAdministratorEnabled: (enabled: boolean) =>
       ipcRenderer.invoke("ai:adult-settings:administrator", { enabled }),
     confirmAdultGeneration18Plus: (value: unknown) =>

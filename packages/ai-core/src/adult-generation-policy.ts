@@ -110,6 +110,7 @@ export const adultProviderApprovalInputSchema = z
     expiresAt: z.string().datetime().nullable(),
     revokedAt: z.string().datetime().nullable().default(null),
   })
+  .strict()
   .superRefine((value, context) => {
     if (
       value.status === "approved" &&
@@ -156,6 +157,7 @@ export const adultModelApprovalInputSchema = z
     verifiedAt: z.string().datetime(),
     expiresAt: z.string().datetime().nullable(),
   })
+  .strict()
   .superRefine((value, context) => {
     if (
       value.expiresAt &&

@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { imageSize } from "image-size";
 import JSZip from "jszip";
+import { z } from "zod";
 import {
   createImagesZip,
   createPagesPdf,
@@ -382,7 +383,9 @@ export class MangaiDatabase {
                       ? "adult-generation-consent-v1"
                       : !this.hasMigration("adult-provider-policy-v1")
                         ? "adult-provider-policy-v1"
-                        : null;
+                        : !this.hasMigration("adult-provider-policy-import-v1")
+                          ? "adult-provider-policy-import-v1"
+                          : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -438,6 +441,7 @@ export class MangaiDatabase {
  create table if not exists adult_generation_settings(id integer primary key check(id=1),administrator_enabled integer not null default 0,user_confirmed_18_plus integer not null default 0,terms_version text,confirmed_at text,expires_at text,revoked_at text,updated_at text not null);
  create table if not exists adult_provider_approvals(provider_id text primary key check(provider_id='dezgo'),status text not null check(status in ('unverified','approved','revoked')),evidence_sha256 text,confirmed_at text,expires_at text,revoked_at text,updated_at text not null);
  create table if not exists adult_model_approvals(provider_id text not null check(provider_id='dezgo'),model_id text not null,status text not null check(status in ('approved','revoked')),license_evidence_sha256 text not null,verified_at text not null,expires_at text,updated_at text not null,primary key(provider_id,model_id));
+ create table if not exists adult_provider_policy_imports(id text primary key,key_id text not null,payload_sha256 text not null,issued_at text not null,expires_at text not null,imported_at text not null);
  create table if not exists external_cost_reservations(id text primary key,project_id text not null references projects(id) on delete cascade,provider_id text not null,approval_token_sha256 text not null unique,job_id text references generation_jobs(id) on delete set null,billing_month text not null,reserved_amount_usd real not null check(reserved_amount_usd>=0),actual_amount_usd real,status text not null check(status in ('reserved','settled','released')),created_at text not null,updated_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
@@ -495,6 +499,7 @@ export class MangaiDatabase {
     this.migratePanelLayersV1();
     this.migrateAdultGenerationConsentV1();
     this.migrateAdultProviderPolicyV1();
+    this.migrateAdultProviderPolicyImportV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -895,6 +900,31 @@ export class MangaiDatabase {
         .run(
           "adult-provider-policy-v1",
           "Adult provider approval evidence and model allowlist",
+          stamp,
+        );
+    })();
+  }
+  private migrateAdultProviderPolicyImportV1() {
+    if (this.hasMigration("adult-provider-policy-import-v1")) return;
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db.exec(`
+        create table if not exists adult_provider_policy_imports(
+          id text primary key,
+          key_id text not null,
+          payload_sha256 text not null,
+          issued_at text not null,
+          expires_at text not null,
+          imported_at text not null
+        );
+      `);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run(
+          "adult-provider-policy-import-v1",
+          "Signed adult provider policy import audit",
           stamp,
         );
     })();
@@ -4705,7 +4735,72 @@ export class MangaiDatabase {
             evaluateAdultProviderCapability({ approval, model }).allowed,
         )
         .map((model) => model.modelId),
+      lastImport:
+        ((this.db
+          .prepare(
+            `select key_id as keyId,payload_sha256 as payloadSha256,
+                    issued_at as issuedAt,expires_at as expiresAt,
+                    imported_at as importedAt
+             from adult_provider_policy_imports order by imported_at desc,id desc limit 1`,
+          )
+          .get() as
+          | {
+              keyId: string;
+              payloadSha256: string;
+              issuedAt: string;
+              expiresAt: string;
+              importedAt: string;
+            }
+          | undefined) ?? null),
     };
+  }
+  applyAdultProviderPolicyBundle(input: {
+    keyId: string;
+    payloadSha256: string;
+    payload: {
+      issuedAt: string;
+      expiresAt: string;
+      providerApproval: unknown;
+      models: unknown[];
+    };
+  }) {
+    if (!/^[a-zA-Z0-9._-]{1,100}$/.test(input.keyId))
+      throw new Error("成人向け運用policyの署名鍵IDが不正です。");
+    if (!/^[0-9a-f]{64}$/.test(input.payloadSha256))
+      throw new Error("成人向け運用policyのpayload hashが不正です。");
+    const issuedAt = z.string().datetime().parse(input.payload.issuedAt);
+    const expiresAt = z.string().datetime().parse(input.payload.expiresAt);
+    const approval = adultProviderApprovalInputSchema.parse(
+      input.payload.providerApproval,
+    );
+    const models = input.payload.models.map((model) =>
+      adultModelApprovalInputSchema.parse(model),
+    );
+    if (new Set(models.map((model) => model.modelId)).size !== models.length)
+      throw new Error("成人向け運用policyのモデルIDが重複しています。");
+    const importedAt = now();
+    this.db.transaction(() => {
+      this.saveAdultProviderApproval(approval);
+      this.db
+        .prepare("delete from adult_model_approvals where provider_id='dezgo'")
+        .run();
+      for (const model of models) this.saveAdultModelApproval(model);
+      this.db
+        .prepare(
+          `insert into adult_provider_policy_imports(
+             id,key_id,payload_sha256,issued_at,expires_at,imported_at
+           ) values(?,?,?,?,?,?)`,
+        )
+        .run(
+          uid(),
+          input.keyId,
+          input.payloadSha256,
+          issuedAt,
+          expiresAt,
+          importedAt,
+        );
+    })();
+    return this.getAdultProviderPolicyState();
   }
   setAdultGenerationAdministratorEnabled(
     enabled: boolean,

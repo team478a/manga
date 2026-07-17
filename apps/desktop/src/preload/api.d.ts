@@ -145,6 +145,19 @@ export type DiagnosticsState = {
   lastUploadAt: string | null;
   updatedAt: string | null;
 };
+export type AdultProviderPolicyState = {
+  approval: AdultProviderApproval;
+  models: AdultModelApproval[];
+  eligibleModelIds: string[];
+  lastImport: {
+    keyId: string;
+    payloadSha256: string;
+    issuedAt: string;
+    expiresAt: string;
+    importedAt: string;
+  } | null;
+  importAvailable: boolean;
+};
 export type DesktopApi = {
   diagnostics: {
     getState: () => Promise<DiagnosticsState>;
@@ -304,11 +317,8 @@ export type DesktopApi = {
     listSettings: () => Promise<ProviderSettings[]>;
     listSettingsHistory: () => Promise<AISettingsHistoryItem[]>;
     getAdultGenerationSettings: () => Promise<AdultGenerationSettings>;
-    getAdultProviderPolicyState: () => Promise<{
-      approval: AdultProviderApproval;
-      models: AdultModelApproval[];
-      eligibleModelIds: string[];
-    }>;
+    getAdultProviderPolicyState: () => Promise<AdultProviderPolicyState>;
+    importAdultProviderPolicy: () => Promise<AdultProviderPolicyState | null>;
     setAdultGenerationAdministratorEnabled: (
       enabled: boolean,
     ) => Promise<AdultGenerationSettings>;

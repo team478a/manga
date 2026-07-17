@@ -17,6 +17,10 @@ import {
   type DatabaseRecoveryReport,
 } from "./database-recovery.js";
 import { AIService } from "./ai/service.js";
+import {
+  loadAdultProviderPolicyTrustConfig,
+  readAndVerifyAdultProviderPolicyBundle,
+} from "./ai/adult-provider-policy-import.js";
 import { DesktopUpdater } from "./updater.js";
 import { DiagnosticsService } from "./diagnostics.js";
 import {
@@ -173,6 +177,12 @@ function diagnosticsUploadEndpoint() {
   } catch {
     return null;
   }
+}
+function adultProviderPolicyTrustedKeys() {
+  const filePath = app.isPackaged
+    ? path.join(process.resourcesPath, "adult-provider-policy-trust.json")
+    : path.join(app.getAppPath(), "build", "adult-provider-policy-trust.json");
+  return loadAdultProviderPolicyTrustConfig(filePath);
 }
 function handle(
   channel: string,
@@ -637,8 +647,33 @@ function register() {
     aiService.getAdultGenerationSettings(),
   );
   handle("ai:adult-provider-policy:get", () =>
-    aiService.getAdultProviderPolicyState(),
+    ({
+      ...aiService.getAdultProviderPolicyState(),
+      importAvailable: adultProviderPolicyTrustedKeys().length > 0,
+    }),
   );
+  handle("ai:adult-provider-policy:import", async () => {
+    const trustedKeys = adultProviderPolicyTrustedKeys();
+    if (!trustedKeys.length)
+      throw new Error("成人向け運用policyの信頼鍵が設定されていません。");
+    const result = await dialog.showOpenDialog({
+      title: "署名済み成人向け運用policyを選択",
+      properties: ["openFile"],
+      filters: [
+        { name: "MANGAI成人向け運用policy", extensions: ["json"] },
+      ],
+    });
+    if (result.canceled || !result.filePaths[0])
+      return null;
+    const verified = readAndVerifyAdultProviderPolicyBundle(
+      result.filePaths[0],
+      trustedKeys,
+    );
+    return {
+      ...store.applyAdultProviderPolicyBundle(verified),
+      importAvailable: true,
+    };
+  });
   handle("ai:adult-settings:administrator", (v) =>
     aiService.setAdultGenerationAdministratorEnabled(
       adultGenerationAdministratorInputSchema.parse(v).enabled,
