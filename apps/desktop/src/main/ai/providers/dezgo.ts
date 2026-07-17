@@ -442,6 +442,10 @@ export class DezgoProvider implements ImageGenerationProvider {
     return this.client.balance(signal);
   }
 
+  textToImage(input: DezgoTextToImageRequest, signal?: AbortSignal) {
+    return this.client.textToImage(input, signal);
+  }
+
   async generateImage(): Promise<ImageGenerationResult> {
     throw new AIProviderError(
       "DEZGO_GENERATION_DISABLED",

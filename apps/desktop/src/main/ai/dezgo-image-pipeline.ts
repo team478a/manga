@@ -48,6 +48,8 @@ export type PersistDezgoGenerationInput = {
   request: DezgoTextToImageRequest;
   result: DezgoTextToImageResult;
   durationMs: number;
+  accountedCostUsd?: number;
+  billingAmountSource?: "provider_header" | "authorization_ceiling";
   jobType?: "background" | "prop" | "effect";
   libraryTags?: string[];
 };
@@ -91,6 +93,8 @@ export async function persistDezgoGenerationResult(
     outputFormat: "png",
     originalMimeType: image.mimeType,
     durationMs: Math.max(0, Math.round(input.durationMs)),
+    accountedCostUsd: input.accountedCostUsd,
+    billingAmountSource: input.billingAmountSource,
     jobType: input.jobType,
     libraryTags: input.libraryTags ?? [],
     createdAt: new Date().toISOString(),

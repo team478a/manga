@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { z } from "zod";
 import {
   AIProviderError,
   createExternalDispatchPreview,
@@ -10,6 +11,7 @@ import {
   isGenerationQueueWindowOpen,
   minutesUntilGenerationQueueWindow,
   routeGenerationJob,
+  safeAssetJobTypeSchema,
   type SafeAssetLibraryRequest,
   type SafeAssetJobType,
   type ExternalDispatchConfirmation,
@@ -27,7 +29,10 @@ import { MangaiDatabase } from "../database.js";
 import { OllamaProvider } from "./providers/ollama.js";
 import { MockTextProvider } from "./providers/mock.js";
 import { ComfyUIProvider } from "./providers/comfyui.js";
-import { DezgoProvider } from "./providers/dezgo.js";
+import {
+  DezgoProvider,
+  dezgoTextToImageRequestSchema,
+} from "./providers/dezgo.js";
 import type { DezgoFeatureFlags } from "./dezgo-feature-flags.js";
 import {
   DEZGO_PRICING_VERSION,
@@ -38,6 +43,35 @@ import {
   ExternalDispatchApprovalError,
   ExternalDispatchApprovalStore,
 } from "./external-dispatch-approval.js";
+import { persistDezgoGenerationResult } from "./dezgo-image-pipeline.js";
+import { dezgoFailureDisposition } from "./dezgo-queue-policy.js";
+
+const dezgoQueuedInputSchema = z.object({
+  endpoint: z.literal("text2image"),
+  jobType: safeAssetJobTypeSchema,
+  model: z.string().trim().min(1).max(300),
+  width: z.number().int().min(320).max(1024),
+  height: z.number().int().min(320).max(1024),
+  steps: z.number().int().min(10).max(150),
+  guidance: z.number().finite().min(-20).max(20),
+  sampler: z.enum([
+    "ddim",
+    "dpm",
+    "dpm_single",
+    "dpmpp_2m_karras",
+    "euler",
+    "euler_a",
+    "k_lms",
+    "pndm",
+  ]),
+  seed: z.number().int().min(0).max(4_294_967_295).optional(),
+  format: z.enum(["jpg", "png", "webp"]),
+  dispatchApproval: z.object({
+    previewId: z.string().uuid(),
+    confirmedAt: z.string().datetime(),
+    estimatedCostUsd: z.number().finite().nonnegative(),
+  }),
+});
 
 export type ChatEvent = {
   requestId: string;
@@ -53,6 +87,8 @@ export class AIService {
   private activeLocalTextRequests = new Set<string>();
   private pauseRequested = new Set<string>();
   private queueWakeTimer: NodeJS.Timeout | undefined;
+  private dezgoQueueWakeTimer: NodeJS.Timeout | undefined;
+  private activeDezgoJobId: string | null = null;
   private allowMock: boolean;
   private getRuntimeProfile?: () => RuntimeProfileState;
   private retryBaseDelayMs: number;
@@ -60,6 +96,7 @@ export class AIService {
     providerId: "dezgo",
   ) => Promise<string | null>;
   private getDezgoBalance: () => Promise<number | null>;
+  private createDezgoProvider: () => Pick<DezgoProvider, "textToImage">;
   private dezgoFeatures: DezgoFeatureFlags;
   private externalDispatchApprovals = new ExternalDispatchApprovalStore();
   constructor(
@@ -70,6 +107,7 @@ export class AIService {
       retryBaseDelayMs?: number;
       getProviderCredential?: (providerId: "dezgo") => Promise<string | null>;
       getDezgoBalance?: () => Promise<number | null>;
+      createDezgoProvider?: () => Pick<DezgoProvider, "textToImage">;
       dezgoFeatures?: DezgoFeatureFlags;
     } = {},
   ) {
@@ -85,9 +123,14 @@ export class AIService {
         new DezgoProvider(() =>
           this.getProviderCredential("dezgo"),
         ).getBalance());
+    this.createDezgoProvider =
+      options.createDezgoProvider ??
+      (() =>
+        new DezgoProvider(() => this.getProviderCredential("dezgo")));
     this.dezgoFeatures = options.dezgoFeatures ?? {
       dezgoProviderEnabled: false,
       dezgoDirectByokEnabled: false,
+      dezgoDispatchEnabled: false,
       dezgoAdultGenerationEnabled: false,
       dezgoBatchGenerationEnabled: false,
     };
@@ -497,6 +540,8 @@ export class AIService {
           promptSha256: dispatch.preview.promptSha256,
         },
       });
+      if (this.dezgoFeatures.dezgoDispatchEnabled)
+        queueMicrotask(() => void this.runNextQueuedDezgo());
       return {
         jobId,
         status: "queued" as const,
@@ -692,6 +737,7 @@ export class AIService {
     const job = this.store.getGenerationJob(jobId);
     if (!job) return false;
     if (job.status === "running") {
+      if (job.provider_id === "dezgo") return false;
       this.pauseRequested.add(jobId);
       this.controllers.get(jobId)?.abort();
       return true;
@@ -704,7 +750,10 @@ export class AIService {
     const job = this.store.getGenerationJob(jobId);
     if (!job || job.status !== "paused") return false;
     const changed = this.store.setGenerationJobStatus(jobId, "queued");
-    if (changed) void this.runNextQueuedImage();
+    if (changed) {
+      if (job.provider_id === "dezgo") void this.runNextQueuedDezgo();
+      else void this.runNextQueuedImage();
+    }
     return changed;
   }
   changeImageJobPriority(jobId: string, delta: number) {
@@ -712,6 +761,7 @@ export class AIService {
   }
   resumeQueuedImages() {
     void this.runNextQueuedImage();
+    void this.runNextQueuedDezgo();
   }
   getQueueSettings() {
     return this.store.getGenerationQueueSettings();
@@ -721,6 +771,9 @@ export class AIService {
     if (this.queueWakeTimer) clearTimeout(this.queueWakeTimer);
     this.queueWakeTimer = undefined;
     void this.runNextQueuedImage();
+    if (this.dezgoQueueWakeTimer) clearTimeout(this.dezgoQueueWakeTimer);
+    this.dezgoQueueWakeTimer = undefined;
+    void this.runNextQueuedDezgo();
     return settings;
   }
 
@@ -955,6 +1008,176 @@ export class AIService {
       this.controllers.delete(input.requestId);
       void this.runNextQueuedImage();
     }
+  }
+  async runNextQueuedDezgo() {
+    if (
+      !this.dezgoFeatures.dezgoDispatchEnabled ||
+      this.activeDezgoJobId
+    )
+      return null;
+    const windowDelay = this.queueWindowDelayMs();
+    if (windowDelay > 0) {
+      this.scheduleDezgoQueueWake(windowDelay);
+      return null;
+    }
+    const next = this.store.nextQueuedImageJob(["dezgo"]);
+    if (!next) {
+      const delay = this.store.nextQueuedImageDelayMs(["dezgo"]);
+      if (delay !== null) this.scheduleDezgoQueueWake(delay);
+      return null;
+    }
+    const job = this.store.getGenerationJob(next.id);
+    const reservation = this.store.externalCostReservationForJob(next.id);
+    if (!job || !reservation) {
+      this.store.updateGenerationJob(next.id, "failed", {
+        errorCode: "DEZGO_APPROVAL_MISSING",
+        errorMessage:
+          "Dezgo生成の費用予約を確認できません。もう一度確認してQueueへ追加してください。",
+      });
+      queueMicrotask(() => void this.runNextQueuedDezgo());
+      return { jobId: next.id, status: "failed" as const };
+    }
+    let request: z.infer<typeof dezgoTextToImageRequestSchema>;
+    let jobType: SafeAssetJobType;
+    try {
+      if (typeof job.project_id !== "string" || !job.project_id)
+        throw new Error("Project参照がありません。");
+      const stored = dezgoQueuedInputSchema.parse(JSON.parse(next.inputJson));
+      request = dezgoTextToImageRequestSchema.parse({
+        ...stored,
+        prompt: String(job.prompt ?? ""),
+        negativePrompt: String(job.negative_prompt ?? ""),
+      });
+      jobType = stored.jobType;
+    } catch (error) {
+      this.store.releaseExternalCostReservationForJob(next.id);
+      this.store.updateGenerationJob(next.id, "failed", {
+        errorCode: "DEZGO_JOB_INVALID",
+        errorMessage:
+          "Dezgo Queueの保存内容が不正です。確認画面からもう一度追加してください。",
+      });
+      this.log("dezgo_job_invalid", error, {
+        provider: "dezgo",
+        jobId: next.id,
+      });
+      queueMicrotask(() => void this.runNextQueuedDezgo());
+      return { jobId: next.id, status: "failed" as const };
+    }
+    const controller = new AbortController();
+    this.controllers.set(next.id, controller);
+    this.activeDezgoJobId = next.id;
+    const attempt = this.store.beginGenerationJobAttempt(next.id);
+    let providerResponded = false;
+    let costSettled = false;
+    try {
+      this.store.updateGenerationJob(next.id, "running", { progress: 0.1 });
+      const startedAt = Date.now();
+      const result = await this.createDezgoProvider().textToImage(
+        request,
+        controller.signal,
+      );
+      providerResponded = true;
+      const accountedCostUsd =
+        result.metadata.actualCostUsd ?? reservation.reservedAmountUsd;
+      this.store.settleExternalCostForJob({
+        jobId: next.id,
+        actualAmountUsd: accountedCostUsd,
+      });
+      costSettled = true;
+      this.store.updateGenerationJob(next.id, "running", { progress: 0.85 });
+      const persisted = await persistDezgoGenerationResult(this.store, {
+        jobId: next.id,
+        projectId: String(job.project_id),
+        request,
+        result,
+        durationMs: Date.now() - startedAt,
+        accountedCostUsd,
+        billingAmountSource:
+          result.metadata.actualCostUsd === null
+            ? "authorization_ceiling"
+            : "provider_header",
+        jobType,
+        libraryTags: [],
+      });
+      return {
+        jobId: next.id,
+        status: "completed" as const,
+        assetId: persisted.assetId,
+      };
+    } catch (error) {
+      const aborted = controller.signal.aborted;
+      if (aborted) {
+        if (!costSettled)
+          this.store.settleExternalCostForJob({
+            jobId: next.id,
+            actualAmountUsd: reservation.reservedAmountUsd,
+          });
+        this.store.updateGenerationJob(next.id, "canceled", {
+          errorCode: "DEZGO_CANCELED",
+          errorMessage:
+            "Dezgo生成を停止しました。課金状態を確認できないため承認上限を利用額として記録しました。",
+        });
+        return { jobId: next.id, status: "canceled" as const };
+      }
+      const disposition = dezgoFailureDisposition(error, attempt.attemptCount);
+      const errorCode =
+        error instanceof AIProviderError ? error.code : "DEZGO_DISPATCH_FAILED";
+      const errorMessage =
+        error instanceof Error ? error.message : "Dezgo生成に失敗しました。";
+      if (!providerResponded && disposition === "retry") {
+        const delayMs = Math.min(
+          30_000,
+          this.retryBaseDelayMs * 2 ** Math.max(0, attempt.attemptCount - 1),
+        );
+        const requeued = this.store.requeueGenerationJob(
+          next.id,
+          errorCode,
+          errorMessage,
+          delayMs,
+        );
+        if (requeued) {
+          this.scheduleDezgoQueueWake(delayMs);
+          return { jobId: next.id, status: "queued" as const };
+        }
+      }
+      if (!providerResponded && disposition === "hold") {
+        this.store.updateGenerationJob(next.id, "paused", {
+          errorCode,
+          errorMessage,
+        });
+        return { jobId: next.id, status: "paused" as const };
+      }
+      if (!costSettled && errorCode === "DEZGO_TIMEOUT") {
+        this.store.settleExternalCostForJob({
+          jobId: next.id,
+          actualAmountUsd: reservation.reservedAmountUsd,
+        });
+      } else if (!costSettled && !providerResponded) {
+        this.store.releaseExternalCostReservationForJob(next.id);
+      }
+      this.store.updateGenerationJob(next.id, "failed", {
+        errorCode,
+        errorMessage,
+      });
+      this.log("dezgo_generation_failed", error, {
+        provider: "dezgo",
+        jobId: next.id,
+        attemptCount: attempt.attemptCount,
+      });
+      return { jobId: next.id, status: "failed" as const };
+    } finally {
+      if (this.activeDezgoJobId === next.id) this.activeDezgoJobId = null;
+      this.controllers.delete(next.id);
+      queueMicrotask(() => void this.runNextQueuedDezgo());
+    }
+  }
+  private scheduleDezgoQueueWake(delayMs: number) {
+    if (this.dezgoQueueWakeTimer) clearTimeout(this.dezgoQueueWakeTimer);
+    this.dezgoQueueWakeTimer = setTimeout(() => {
+      this.dezgoQueueWakeTimer = undefined;
+      void this.runNextQueuedDezgo();
+    }, Math.max(10, delayMs));
+    this.dezgoQueueWakeTimer.unref?.();
   }
   private async runNextQueuedImage() {
     const windowDelay = this.queueWindowDelayMs();

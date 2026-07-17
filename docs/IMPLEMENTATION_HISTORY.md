@@ -1005,3 +1005,13 @@ Project月間費用上限、当月の確定実費、未精算予約、Dezgo残�
 rendererへ承認tokenを返さない専用IPCを追加し、Mainプロセス内で一回限り承認を発行・即時消費します。既存費用予約へのJob関連付け、Dezgo Queue Job作成、cloud Route監査は同じSQLite transactionで確定し、Jobにはモデルと再現可能なText-to-Image parameterだけを保存します。API key、承認token、Promptの重複コピーはJob input JSONへ保存しません。
 
 キャンセル時はJobに関連する費用予約を解放します。再起動時はQueue Jobへ関連付け済みの予約を保持し、Job化されていない承認予約だけを解放するため、Queue復元とProject月間上限が一致します。ComfyUI workerはDezgo Jobを取得せず、Dezgo dispatcherと実生成API送信はまだ無効です。ai-core 27/27、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英29画面・状態のaxe違反0件に成功しています。
+
+## 117. 開発限定Dezgo Queue dispatcher・費用確定
+
+承認済みDezgo Queue JobをProvider別に1件ずつ実行するdispatcherを追加しました。Provider・Direct BYOKに加えて専用の`MANGAI_ENABLE_DEZGO_DISPATCH=true`を要求し、3条件が揃った開発起動だけで動作します。packaged buildでは環境変数を指定しても有効になりません。
+
+外部送信前にQueue入力と承認metadata、Project参照、未精算の費用予約を再検証します。不正JobはAPIへ送らず失敗へ移して予約を解放します。成功時はDezgoの実費header、取得できない場合は承認上限を台帳へ確定してから、metadataを除去したPNGをProject Assetへ保存します。金額と`provider_header` / `authorization_ceiling`の由来は安全な生成結果metadataへ記録します。
+
+429・5xxは最大1回だけ再試行し、通信断は手動再開可能な保留、恒久エラーは失敗として予約を解放します。timeoutと実行中cancelはProvider側の課金状態を確認できないため、承認上限を保守的に記録します。起動時Queue復元、手動resume、夜間Queueへ接続し、ComfyUI workerは引き続きDezgo Jobを取得しません。
+
+フラグ無効時の送信ゼロ、承認済みJobの再開、モック画像のAsset登録、実費確定、恒久エラー時の予約解放を注入Providerで自動検証しました。実Dezgo APIへの送信は行っていません。Desktop統合テスト77/77に成功し、非成人向け実API 10枚の手動試験は次段階です。

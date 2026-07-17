@@ -4214,6 +4214,16 @@ export class MangaiDatabase {
         .run(now(), jobId).changes,
     );
   }
+  externalCostReservationForJob(jobId: string) {
+    return this.db
+      .prepare(
+        `select reserved_amount_usd as reservedAmountUsd,billing_month as billingMonth
+         from external_cost_reservations where job_id=? and status='reserved'`,
+      )
+      .get(jobId) as
+      | { reservedAmountUsd: number; billingMonth: string }
+      | undefined;
+  }
   settleExternalCostForJob(input: {
     jobId: string;
     actualAmountUsd: number;

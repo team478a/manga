@@ -450,3 +450,16 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - Queueのキャンセル時は費用予約を解放し、再起動時はJob関連済み予約だけを保持、未使用の承認予約を解放
 - ComfyUI workerは引き続きDezgo Jobを取得せず、Dezgo dispatcherと実生成API送信はまだ無効
 - ai-core 27/27、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英29画面・状態のaxe違反0件に成功
+
+### 2026-07-17: 開発限定Dezgo Queue dispatcher
+
+- `MANGAI_ENABLE_DEZGO_PROVIDER=true`、`MANGAI_ENABLE_DEZGO_DIRECT_BYOK=true`、`MANGAI_ENABLE_DEZGO_DISPATCH=true`の3条件を満たす開発起動だけでdispatcherを有効化
+- packaged buildでは環境変数を指定してもdispatcherを有効化できず、既定値も無効
+- Queueへ固定保存したendpoint、Job Type、model、寸法、Steps、Guidance、Sampler、format、承認metadataを外部送信前に再検証
+- 承認済み費用予約がないJob、不正なQueue入力、Project参照欠落はAPIへ送らず失敗へ移し、予約を解放
+- 生成成功時はProvider実費headerを先に月間台帳へ確定し、画像をmetadata除去済みPNGとしてProject Assetへ登録
+- 実費headerがない場合は承認上限を保守的な利用額として確定し、履歴へ金額の由来を記録
+- 429・5xxは最大1回再試行、通信断は保留、恒久エラーは失敗・予約解放、timeout・実行中cancelは課金不明として承認上限を記録
+- アプリ起動時のQueue再開、手動resume、夜間Queue設定、Provider別直列実行へ接続し、ComfyUI workerとの分離を維持
+- 自動テストは注入したモックProviderだけを使用し、フラグ無効時の送信ゼロ、再起動相当のQueue再開、画像保存、実費精算、恒久失敗時の予約解放を確認
+- 実Dezgo APIは自動テストで呼び出しておらず、非成人向け10枚の実測は利用者の明示承認とBYOK keyを使うmanual testとして残る

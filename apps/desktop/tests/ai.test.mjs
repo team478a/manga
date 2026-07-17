@@ -1087,6 +1087,7 @@ test("safe asset jobs prefer project library and never require external access",
       dezgoFeatures: {
         dezgoProviderEnabled: true,
         dezgoDirectByokEnabled: true,
+        dezgoDispatchEnabled: false,
         dezgoAdultGenerationEnabled: false,
         dezgoBatchGenerationEnabled: false,
       },

@@ -1,6 +1,7 @@
 export type DezgoFeatureFlags = {
   dezgoProviderEnabled: boolean;
   dezgoDirectByokEnabled: boolean;
+  dezgoDispatchEnabled: boolean;
   dezgoAdultGenerationEnabled: false;
   dezgoBatchGenerationEnabled: false;
 };
@@ -14,11 +15,15 @@ export function resolveDezgoFeatureFlags(input: {
   const environment = input.environment ?? process.env;
   const developmentProviderEnabled =
     !input.isPackaged && enabled(environment.MANGAI_ENABLE_DEZGO_PROVIDER);
+  const developmentByokEnabled =
+    developmentProviderEnabled &&
+    enabled(environment.MANGAI_ENABLE_DEZGO_DIRECT_BYOK);
   return {
     dezgoProviderEnabled: developmentProviderEnabled,
-    dezgoDirectByokEnabled:
-      developmentProviderEnabled &&
-      enabled(environment.MANGAI_ENABLE_DEZGO_DIRECT_BYOK),
+    dezgoDirectByokEnabled: developmentByokEnabled,
+    dezgoDispatchEnabled:
+      developmentByokEnabled &&
+      enabled(environment.MANGAI_ENABLE_DEZGO_DISPATCH),
     // These capabilities stay impossible to enable during Phase 1.
     dezgoAdultGenerationEnabled: false,
     dezgoBatchGenerationEnabled: false,

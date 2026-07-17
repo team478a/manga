@@ -247,6 +247,7 @@ test("Dezgo Phase 1 features are disabled by default", () => {
     {
       dezgoProviderEnabled: false,
       dezgoDirectByokEnabled: false,
+      dezgoDispatchEnabled: false,
       dezgoAdultGenerationEnabled: false,
       dezgoBatchGenerationEnabled: false,
     },
@@ -260,6 +261,7 @@ test("development requires separate provider and BYOK opt-ins", () => {
       environment: {
         MANGAI_ENABLE_DEZGO_PROVIDER: "true",
         MANGAI_ENABLE_DEZGO_DIRECT_BYOK: "true",
+        MANGAI_ENABLE_DEZGO_DISPATCH: "true",
         MANGAI_ENABLE_DEZGO_ADULT: "true",
         MANGAI_ENABLE_DEZGO_BATCH: "true",
       },
@@ -267,6 +269,7 @@ test("development requires separate provider and BYOK opt-ins", () => {
     {
       dezgoProviderEnabled: true,
       dezgoDirectByokEnabled: true,
+      dezgoDispatchEnabled: true,
       dezgoAdultGenerationEnabled: false,
       dezgoBatchGenerationEnabled: false,
     },
@@ -287,11 +290,13 @@ test("packaged builds ignore all Phase 1 environment opt-ins", () => {
       environment: {
         MANGAI_ENABLE_DEZGO_PROVIDER: "true",
         MANGAI_ENABLE_DEZGO_DIRECT_BYOK: "true",
+        MANGAI_ENABLE_DEZGO_DISPATCH: "true",
       },
     }),
     {
       dezgoProviderEnabled: false,
       dezgoDirectByokEnabled: false,
+      dezgoDispatchEnabled: false,
       dezgoAdultGenerationEnabled: false,
       dezgoBatchGenerationEnabled: false,
     },
@@ -813,6 +818,170 @@ test("Dezgo queue enforces capacity, cancellation, provider isolation and restar
         10,
       ),
       false,
+    );
+  } finally {
+    database.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("guarded Dezgo dispatcher resumes an approved job and persists mocked output", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-dezgo-dispatch-"));
+  const database = new MangaiDatabase({
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  });
+  const flags = (dezgoDispatchEnabled) => ({
+    dezgoProviderEnabled: true,
+    dezgoDirectByokEnabled: true,
+    dezgoDispatchEnabled,
+    dezgoAdultGenerationEnabled: false,
+    dezgoBatchGenerationEnabled: false,
+  });
+  try {
+    const project = database.createProject({
+      title: "Dezgo dispatcher",
+      subtitle: "",
+      description: "",
+      genre: "漫画",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    database.saveProjectGenerationPolicy({
+      projectId: project.project.id,
+      externalProcessingPolicy: "background_only",
+      preferLocal: true,
+      externalConfirmationRequired: true,
+      monthlyCostLimit: 10,
+      customCloudJobTypes: [],
+    });
+    database.saveAIModels("dezgo", [
+      {
+        id: "mock-safe-model",
+        name: "Mock safe model",
+        supportedFunctions: ["text_to_image"],
+        fetchedAt: new Date().toISOString(),
+      },
+    ]);
+    const queueService = new AIService(database, {
+      getProviderCredential: async () => "mock-key",
+      getDezgoBalance: async () => 10,
+      dezgoFeatures: flags(false),
+    });
+    const enqueue = async (query) => {
+      const preview = await queueService.previewExternalSafeAsset({
+        projectId: project.project.id,
+        type: "background",
+        query,
+        modelId: "mock-safe-model",
+      });
+      assert.equal(preview.executable, true);
+      return queueService.confirmAndEnqueueExternalSafeAsset({
+        previewId: preview.previewId,
+        promptSha256: preview.promptSha256,
+        payloadReviewed: true,
+        costReviewed: true,
+        providerTermsReviewed: true,
+        confirmedAt: new Date().toISOString(),
+      });
+    };
+    const queued = await enqueue("人物を含まない漫画背景");
+    let calls = 0;
+    const disabledWorker = new AIService(database, {
+      dezgoFeatures: flags(false),
+      createDezgoProvider: () => ({
+        textToImage: async () => {
+          calls += 1;
+          throw new Error("must not run");
+        },
+      }),
+    });
+    assert.equal(await disabledWorker.runNextQueuedDezgo(), null);
+    assert.equal(calls, 0);
+
+    const image = await sharp({
+      create: {
+        width: 16,
+        height: 16,
+        channels: 4,
+        background: { r: 30, g: 120, b: 80, alpha: 1 },
+      },
+    })
+      .png()
+      .toBuffer();
+    let dispatchedRequest;
+    const worker = new AIService(database, {
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () => ({
+        textToImage: async (request) => {
+          calls += 1;
+          dispatchedRequest = request;
+          return {
+            providerJobId: "mock-provider-job",
+            images: [{ bytes: new Uint8Array(image), mimeType: "image/png" }],
+            metadata: {
+              seed: 9876,
+              actualCostUsd: 0.001,
+              balanceUsd: 9.999,
+              balanceIndex: 7,
+            },
+          };
+        },
+      }),
+    });
+    const completed = await worker.runNextQueuedDezgo();
+    assert.equal(completed.status, "completed");
+    assert.equal(completed.jobId, queued.jobId);
+    assert.equal(calls, 1);
+    assert.equal(dispatchedRequest.prompt, "人物を含まない漫画背景");
+    assert.equal(dispatchedRequest.model, "mock-safe-model");
+    const saved = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === queued.jobId);
+    assert.equal(saved.status, "completed");
+    assert.equal(saved.providerJobId, "mock-provider-job");
+    const output = JSON.parse(saved.outputJson);
+    assert.equal(output.accountedCostUsd, 0.001);
+    assert.equal(output.billingAmountSource, "provider_header");
+    assert.equal(output.jobType, "background");
+    assert.equal(saved.outputJson.includes("mock-key"), false);
+    const summary = database.externalCostSummary(
+      project.project.id,
+      "dezgo",
+    );
+    assert.equal(summary.actualUsd, 0.001);
+    assert.equal(summary.reservedUsd, 0);
+    assert.ok(database.bundle(project.project.id).assets.length > 0);
+
+    const failedQueue = await enqueue("失敗確認用の無人背景");
+    const failingWorker = new AIService(database, {
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () => ({
+        textToImage: async () => {
+          throw new AIProviderError(
+            "DEZGO_INPUT_INVALID",
+            "mock input failure",
+          );
+        },
+      }),
+    });
+    const failed = await failingWorker.runNextQueuedDezgo();
+    assert.equal(failed.status, "failed");
+    const failedJob = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === failedQueue.jobId);
+    assert.equal(failedJob.status, "failed");
+    assert.equal(failedJob.errorCode, "DEZGO_INPUT_INVALID");
+    assert.equal(
+      database.externalCostSummary(project.project.id, "dezgo").reservedUsd,
+      0,
     );
   } finally {
     database.close();
