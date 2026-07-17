@@ -29,6 +29,10 @@ import {
   type ProjectInput,
 } from "@mangai/shared";
 import {
+  ADULT_GENERATION_CONSENT_VALIDITY_DAYS,
+  ADULT_GENERATION_TERMS_VERSION,
+  adultGenerationConsentInputSchema,
+  adultGenerationSettingsSchema,
   analyzeComfyWorkflowOptimization,
   defaultPromptTemplates,
   generationJobDraftSchema,
@@ -39,6 +43,7 @@ import {
   routeDecisionSchema,
   routingContextSchema,
   type GenerationJobDraftInput,
+  type AdultGenerationSettings,
   type ImageGenerationModelMetadata,
   type GenerationRouteDecisionRecord,
   type GenerationStatus,
@@ -366,7 +371,9 @@ export class MangaiDatabase {
                   ? "asset-library-v1"
                   : !this.hasMigration("panel-layers-v1")
                     ? "panel-layers-v1"
-                    : null;
+                    : !this.hasMigration("adult-generation-consent-v1")
+                      ? "adult-generation-consent-v1"
+                      : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -419,6 +426,7 @@ export class MangaiDatabase {
  create table if not exists generation_jobs(id text primary key,project_id text references projects(id) on delete set null,episode_id text references episodes(id) on delete set null,page_id text references pages(id) on delete set null,provider_type text not null,provider_id text not null,model_id text,generation_type text not null,status text not null,prompt text not null,negative_prompt text not null default '',input_json text not null default '{}',output_json text not null default '{}',provider_job_id text,error_code text,error_message text,created_at text not null,started_at text,completed_at text);
  create table if not exists generation_outputs(id text primary key,job_id text not null references generation_jobs(id) on delete cascade,asset_id text references assets(id) on delete set null,relative_path text,metadata_json text not null default '{}',created_at text not null);
  create table if not exists generation_queue_settings(id integer primary key check(id=1),night_mode_enabled integer not null default 0,start_time text not null default '22:00',end_time text not null default '07:00',updated_at text not null);
+ create table if not exists adult_generation_settings(id integer primary key check(id=1),administrator_enabled integer not null default 0,user_confirmed_18_plus integer not null default 0,terms_version text,confirmed_at text,expires_at text,revoked_at text,updated_at text not null);
  create table if not exists external_cost_reservations(id text primary key,project_id text not null references projects(id) on delete cascade,provider_id text not null,approval_token_sha256 text not null unique,job_id text references generation_jobs(id) on delete set null,billing_month text not null,reserved_amount_usd real not null check(reserved_amount_usd>=0),actual_amount_usd real,status text not null check(status in ('reserved','settled','released')),created_at text not null,updated_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
@@ -474,6 +482,7 @@ export class MangaiDatabase {
     this.migrateGenerationRoutingV1();
     this.migrateAssetLibraryV1();
     this.migratePanelLayersV1();
+    this.migrateAdultGenerationConsentV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -813,6 +822,33 @@ export class MangaiDatabase {
           "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
         )
         .run("panel-layers-v1", "Layered panel image foundation", stamp);
+    })();
+  }
+  private migrateAdultGenerationConsentV1() {
+    if (this.hasMigration("adult-generation-consent-v1")) return;
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db.exec(`
+        create table if not exists adult_generation_settings(
+          id integer primary key check(id=1),
+          administrator_enabled integer not null default 0,
+          user_confirmed_18_plus integer not null default 0,
+          terms_version text,
+          confirmed_at text,
+          expires_at text,
+          revoked_at text,
+          updated_at text not null
+        );
+      `);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run(
+          "adult-generation-consent-v1",
+          "Adult generation administrator switch and age attestation",
+          stamp,
+        );
     })();
   }
   private project(row: any): Project {
@@ -4454,6 +4490,127 @@ export class MangaiDatabase {
       .get(now(), ...(providerIds ?? [])) as
       | { id: string; providerId: string; inputJson: string }
       | undefined;
+  }
+  getAdultGenerationSettings(referenceTime = now()): AdultGenerationSettings {
+    const referenceMs = new Date(referenceTime).getTime();
+    if (!Number.isFinite(referenceMs))
+      throw new Error("成人向け設定の基準日時が不正です。");
+    const row = this.db
+      .prepare(
+        `select administrator_enabled as administratorEnabled,
+                user_confirmed_18_plus as storedConfirmation,
+                terms_version as termsVersion,confirmed_at as confirmedAt,
+                expires_at as expiresAt,revoked_at as revokedAt,
+                updated_at as updatedAt
+         from adult_generation_settings where id=1`,
+      )
+      .get() as
+      | {
+          administratorEnabled: number;
+          storedConfirmation: number;
+          termsVersion: string | null;
+          confirmedAt: string | null;
+          expiresAt: string | null;
+          revokedAt: string | null;
+          updatedAt: string;
+        }
+      | undefined;
+    if (!row)
+      return adultGenerationSettingsSchema.parse({
+        administratorEnabled: false,
+        userConfirmed18Plus: false,
+        consentStatus: "missing",
+        termsVersion: null,
+        confirmedAt: null,
+        expiresAt: null,
+        revokedAt: null,
+        updatedAt: null,
+      });
+    const confirmedMs = row.confirmedAt
+      ? new Date(row.confirmedAt).getTime()
+      : Number.NaN;
+    const expiresMs = row.expiresAt
+      ? new Date(row.expiresAt).getTime()
+      : Number.NaN;
+    let consentStatus: AdultGenerationSettings["consentStatus"] = "missing";
+    if (row.revokedAt) consentStatus = "revoked";
+    else if (
+      row.storedConfirmation &&
+      row.termsVersion !== ADULT_GENERATION_TERMS_VERSION
+    )
+      consentStatus = "terms_changed";
+    else if (
+      row.storedConfirmation &&
+      Number.isFinite(confirmedMs) &&
+      Number.isFinite(expiresMs)
+    )
+      consentStatus =
+        referenceMs >= confirmedMs && referenceMs < expiresMs
+          ? "active"
+          : "expired";
+    return adultGenerationSettingsSchema.parse({
+      administratorEnabled: Boolean(row.administratorEnabled),
+      userConfirmed18Plus: consentStatus === "active",
+      consentStatus,
+      termsVersion: row.termsVersion,
+      confirmedAt: row.confirmedAt,
+      expiresAt: row.expiresAt,
+      revokedAt: row.revokedAt,
+      updatedAt: row.updatedAt,
+    });
+  }
+  setAdultGenerationAdministratorEnabled(
+    enabled: boolean,
+  ): AdultGenerationSettings {
+    const stamp = now();
+    this.db
+      .prepare(
+        `insert into adult_generation_settings(
+           id,administrator_enabled,user_confirmed_18_plus,terms_version,
+           confirmed_at,expires_at,revoked_at,updated_at
+         ) values(1,?,0,null,null,null,null,?)
+         on conflict(id) do update set
+           administrator_enabled=excluded.administrator_enabled,
+           updated_at=excluded.updated_at`,
+      )
+      .run(enabled ? 1 : 0, stamp);
+    return this.getAdultGenerationSettings(stamp);
+  }
+  confirmAdultGeneration18Plus(input: unknown): AdultGenerationSettings {
+    adultGenerationConsentInputSchema.parse(input);
+    const confirmedAt = now();
+    const expiresAt = new Date(
+      new Date(confirmedAt).getTime() +
+        ADULT_GENERATION_CONSENT_VALIDITY_DAYS * 24 * 60 * 60 * 1000,
+    ).toISOString();
+    this.db
+      .prepare(
+        `insert into adult_generation_settings(
+           id,administrator_enabled,user_confirmed_18_plus,terms_version,
+           confirmed_at,expires_at,revoked_at,updated_at
+         ) values(1,0,1,?,?,?,null,?)
+         on conflict(id) do update set
+           user_confirmed_18_plus=1,terms_version=excluded.terms_version,
+           confirmed_at=excluded.confirmed_at,expires_at=excluded.expires_at,
+           revoked_at=null,updated_at=excluded.updated_at`,
+      )
+      .run(
+        ADULT_GENERATION_TERMS_VERSION,
+        confirmedAt,
+        expiresAt,
+        confirmedAt,
+      );
+    return this.getAdultGenerationSettings(confirmedAt);
+  }
+  revokeAdultGenerationConsent(): AdultGenerationSettings {
+    const revokedAt = now();
+    this.db
+      .prepare(
+        `update adult_generation_settings
+         set user_confirmed_18_plus=0,revoked_at=?,updated_at=? where id=1`,
+      )
+      .run(revokedAt, revokedAt);
+    return this.getAdultGenerationSettings(revokedAt);
   }
   getGenerationQueueSettings(): GenerationQueueSettings {
     const row = this.db

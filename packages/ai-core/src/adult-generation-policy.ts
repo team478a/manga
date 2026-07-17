@@ -1,5 +1,42 @@
 import { z } from "zod";
 
+export const ADULT_GENERATION_TERMS_VERSION =
+  "adult-generation-v1-2026-07-17";
+export const ADULT_GENERATION_CONSENT_VALIDITY_DAYS = 30;
+
+export const adultGenerationConsentStatusSchema = z.enum([
+  "missing",
+  "active",
+  "expired",
+  "revoked",
+  "terms_changed",
+]);
+export type AdultGenerationConsentStatus = z.infer<
+  typeof adultGenerationConsentStatusSchema
+>;
+
+export const adultGenerationSettingsSchema = z.object({
+  administratorEnabled: z.boolean(),
+  userConfirmed18Plus: z.boolean(),
+  consentStatus: adultGenerationConsentStatusSchema,
+  termsVersion: z.string().nullable(),
+  confirmedAt: z.string().datetime().nullable(),
+  expiresAt: z.string().datetime().nullable(),
+  revokedAt: z.string().datetime().nullable(),
+  updatedAt: z.string().datetime().nullable(),
+});
+export type AdultGenerationSettings = z.infer<
+  typeof adultGenerationSettingsSchema
+>;
+
+export const adultGenerationConsentInputSchema = z.object({
+  userConfirmed18Plus: z.literal(true),
+  termsVersion: z.literal(ADULT_GENERATION_TERMS_VERSION),
+});
+export type AdultGenerationConsentInput = z.input<
+  typeof adultGenerationConsentInputSchema
+>;
+
 export const adultGenerationGateInputSchema = z.object({
   userConfirmed18Plus: z.boolean().default(false),
   projectAgeRating: z

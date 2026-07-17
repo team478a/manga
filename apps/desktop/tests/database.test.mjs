@@ -15,6 +15,10 @@ import JSZip from "jszip";
 import { PDFDocument } from "pdf-lib";
 import { imageSize } from "image-size";
 import { parseSalesPackageManifest } from "@mangai/export-core";
+import {
+  ADULT_GENERATION_CONSENT_VALIDITY_DAYS,
+  ADULT_GENERATION_TERMS_VERSION,
+} from "@mangai/ai-core";
 
 test("30 canvas objects remain responsive across save, move and reopen", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-canvas-perf-"));
@@ -877,6 +881,13 @@ test("legacy database is backed up before canvas schema migration", () => {
   );
   assert.ok(
     migrated
+      .prepare(
+        "select 1 from schema_migrations where version='adult-generation-consent-v1'",
+      )
+      .get(),
+  );
+  assert.ok(
+    migrated
       .prepare("select 1 from sqlite_master where name='panel_layers'")
       .get(),
   );
@@ -905,6 +916,95 @@ test("legacy database is backed up before canvas schema migration", () => {
       .readdirSync(path.join(root, "backups"))
       .some((file) => file.includes("before-panel-layers-v1")),
   );
+  const beforeAdultConsent = new Database(paths.database);
+  beforeAdultConsent
+    .prepare(
+      "delete from schema_migrations where version='adult-generation-consent-v1'",
+    )
+    .run();
+  beforeAdultConsent.close();
+  const adultConsentReopened = new MangaiDatabase(paths);
+  adultConsentReopened.close();
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => file.includes("before-adult-generation-consent-v1")),
+  );
+  fs.rmSync(root, { recursive: true, force: true });
+});
+test("adult generation settings fail closed and persist age attestation", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-policy-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  assert.deepEqual(db.getAdultGenerationSettings(), {
+    administratorEnabled: false,
+    userConfirmed18Plus: false,
+    consentStatus: "missing",
+    termsVersion: null,
+    confirmedAt: null,
+    expiresAt: null,
+    revokedAt: null,
+    updatedAt: null,
+  });
+  assert.equal(
+    db.setAdultGenerationAdministratorEnabled(true).administratorEnabled,
+    true,
+  );
+  assert.throws(() =>
+    db.confirmAdultGeneration18Plus({
+      userConfirmed18Plus: true,
+      termsVersion: "obsolete-terms",
+    }),
+  );
+  const confirmed = db.confirmAdultGeneration18Plus({
+    userConfirmed18Plus: true,
+    termsVersion: ADULT_GENERATION_TERMS_VERSION,
+  });
+  assert.equal(confirmed.administratorEnabled, true);
+  assert.equal(confirmed.userConfirmed18Plus, true);
+  assert.equal(confirmed.consentStatus, "active");
+  assert.equal(confirmed.termsVersion, ADULT_GENERATION_TERMS_VERSION);
+  assert.equal(
+    new Date(confirmed.expiresAt).getTime() -
+      new Date(confirmed.confirmedAt).getTime(),
+    ADULT_GENERATION_CONSENT_VALIDITY_DAYS * 24 * 60 * 60 * 1000,
+  );
+  const afterExpiry = new Date(
+    new Date(confirmed.expiresAt).getTime() + 1,
+  ).toISOString();
+  assert.equal(
+    db.getAdultGenerationSettings(afterExpiry).consentStatus,
+    "expired",
+  );
+  assert.equal(
+    db.getAdultGenerationSettings(afterExpiry).userConfirmed18Plus,
+    false,
+  );
+  db.close();
+
+  db = new MangaiDatabase(paths);
+  assert.equal(db.getAdultGenerationSettings().administratorEnabled, true);
+  assert.equal(db.getAdultGenerationSettings().consentStatus, "active");
+  const revoked = db.revokeAdultGenerationConsent();
+  assert.equal(revoked.userConfirmed18Plus, false);
+  assert.equal(revoked.consentStatus, "revoked");
+  db.close();
+
+  const inspection = new Database(paths.database, { readonly: true });
+  const columnNames = inspection
+    .prepare("pragma table_info(adult_generation_settings)")
+    .all()
+    .map((column) => column.name);
+  assert.equal(columnNames.includes("birth_date"), false);
+  assert.equal(columnNames.includes("identity_document"), false);
+  inspection.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
 test("page reordering is persisted", () => {

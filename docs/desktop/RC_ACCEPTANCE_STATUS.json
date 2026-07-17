@@ -10,7 +10,7 @@
       "completedAt": "2026-07-17",
       "verifier": "Codex automated validation",
       "evidence": [
-        "Desktop 77/77 tests",
+        "Desktop 78/78 tests",
         "ai-core 30/30 tests",
         "axe 29 states / 726 passes / 0 violations"
       ]
