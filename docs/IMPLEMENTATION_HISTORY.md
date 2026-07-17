@@ -1025,3 +1025,11 @@ Dezgo dispatcherの自動検証を、実費header欠落時の承認上限計上�
 非成人向け実API 10枚の手順書と未実施結果テンプレートを追加しました。APIキーはWindows資格情報マネージャーだけへ保存し、Prompt本文・生成画像・Dezgo user IDを報告書へ残さず、費用・速度・試行・Asset登録だけを記録します。利用者の明示承認とBYOK keyがない現段階では未実施を維持します。
 
 RC正本とDesktop状況をDesktop 77/77、ai-core 27/27へ同期し、Dezgo実API E2Eを外部条件付き残タスクとして追加しました。
+
+## 119. Dezgo二重送信防止・端末ファイル秘密値走査
+
+実API試験前の否定検証として、同じ`AIService`のDezgo dispatcherを並行に2回呼び出し、active Job排他によりProvider requestが1回だけになることを自動テストへ追加しました。2回目は新しいJobや試行を作らず`null`で終了し、最初の承認済みJobだけが完了します。
+
+テスト用の固有APIキー相当文字列を`DezgoProvider`の実認証header経路へ渡し、HTTP部分だけを端末内モック応答へ置き換えました。画像保存と費用確定後、隔離したDesktop root内のSQLite、WAL、ログ、生成画像、Projectファイルをbyte走査し、秘密値が0件であることを確認します。認証headerへ値が到達することもメモリ上だけで確認し、外部通信は行いません。
+
+手動E2E手順にも、この自動ゲートが失敗した場合は実API試験へ進まない停止条件を追加しました。Desktop統合テスト77/77と対象試験単独実行に成功しています。

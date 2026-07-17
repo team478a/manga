@@ -842,6 +842,7 @@ test("guarded Dezgo dispatcher handles lifecycle and billing with mocked output"
     dezgoAdultGenerationEnabled: false,
     dezgoBatchGenerationEnabled: false,
   });
+  const apiKey = "mangai-dezgo-secret-must-never-reach-disk-7f91";
   try {
     const project = database.createProject({
       title: "Dezgo dispatcher",
@@ -871,7 +872,7 @@ test("guarded Dezgo dispatcher handles lifecycle and billing with mocked output"
       },
     ]);
     const queueService = new AIService(database, {
-      getProviderCredential: async () => "mock-key",
+      getProviderCredential: async () => apiKey,
       getDezgoBalance: async () => 10,
       dezgoFeatures: flags(false),
     });
@@ -952,7 +953,7 @@ test("guarded Dezgo dispatcher handles lifecycle and billing with mocked output"
     assert.equal(output.accountedCostUsd, 0.001);
     assert.equal(output.billingAmountSource, "provider_header");
     assert.equal(output.jobType, "background");
-    assert.equal(saved.outputJson.includes("mock-key"), false);
+    assert.equal(saved.outputJson.includes(apiKey), false);
     const summary = database.externalCostSummary(
       project.project.id,
       "dezgo",
@@ -1151,6 +1152,55 @@ test("guarded Dezgo dispatcher handles lifecycle and billing with mocked output"
       database.externalCostSummary(project.project.id, "dezgo").reservedUsd,
       0,
     );
+
+    const isolatedQueue = await enqueue("二重送信防止確認用の無人背景");
+    let providerRequests = 0;
+    let observedHeader;
+    const providerWorker = new AIService(database, {
+      dezgoFeatures: flags(true),
+      createDezgoProvider: () =>
+        new DezgoProvider(async () => apiKey, {
+          fetchImpl: async (_url, init) => {
+            providerRequests += 1;
+            observedHeader = init.headers["X-Dezgo-Key"];
+            return new Response(image, {
+              status: 200,
+              headers: {
+                "content-type": "image/png",
+                "x-input-seed": "4444",
+                "x-dezgo-job-amount-usd": "0.00125",
+                "x-dezgo-balance-total-usd": "9.25",
+              },
+            });
+          },
+        }),
+    });
+    const [isolatedResult, duplicateResult] = await Promise.all([
+      providerWorker.runNextQueuedDezgo(),
+      providerWorker.runNextQueuedDezgo(),
+    ]);
+    assert.equal(isolatedResult.status, "completed");
+    assert.equal(isolatedResult.jobId, isolatedQueue.jobId);
+    assert.equal(duplicateResult, null);
+    assert.equal(providerRequests, 1);
+    assert.equal(observedHeader, apiKey);
+
+    const pendingPaths = [root];
+    const persistedFiles = [];
+    while (pendingPaths.length) {
+      const current = pendingPaths.pop();
+      for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+        const entryPath = path.join(current, entry.name);
+        if (entry.isDirectory()) pendingPaths.push(entryPath);
+        else if (entry.isFile()) persistedFiles.push(entryPath);
+      }
+    }
+    for (const file of persistedFiles)
+      assert.equal(
+        fs.readFileSync(file).includes(Buffer.from(apiKey, "utf8")),
+        false,
+        `credential leaked to ${path.relative(root, file)}`,
+      );
   } finally {
     database.close();
     fs.rmSync(root, { recursive: true, force: true });

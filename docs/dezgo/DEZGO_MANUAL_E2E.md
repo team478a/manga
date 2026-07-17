@@ -30,6 +30,8 @@ npm --prefix apps/desktop run typecheck
 npm --prefix apps/desktop run lint
 ```
 
+Desktop統合テストには、同じdispatcherを並行起動しても1回だけ送信する検証と、実Provider形式の認証headerを使った後もテスト用秘密値がSQLite、WAL、ログ、生成物へ残らない検証が含まれます。ここが失敗した場合は実API試験へ進みません。
+
 5. APIキーをコマンドラインへ入力せず、次の開発限定フラグだけを設定してDesktopを起動します。
 
 ```powershell

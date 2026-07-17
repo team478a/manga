@@ -464,4 +464,5 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - 429・5xxは最大1回再試行、通信断は保留、恒久エラーは失敗・予約解放、timeout・実行中cancelは課金不明として承認上限を記録
 - アプリ起動時のQueue再開、手動resume、夜間Queue設定、Provider別直列実行へ接続し、ComfyUI workerとの分離を維持
 - 自動テストは注入したモックProviderだけを使用し、フラグ無効時の送信ゼロ、再起動相当のQueue再開、画像保存、実費精算、恒久失敗時の予約解放を確認
+- 実Provider形式のモック認証headerを通し、並行dispatcher呼び出しでも送信1回、テスト用秘密値のSQLite・WAL・ログ・生成物残存0件を確認
 - 実Dezgo APIは自動テストで呼び出しておらず、非成人向け10枚の実測は利用者の明示承認とBYOK keyを使うmanual testとして残る
