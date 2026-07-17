@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "releaseVersion": "0.1.0",
+  "updatedAt": "2026-07-17",
+  "requirements": [
+    {
+      "id": "local-quality-gate",
+      "label": "ローカル品質ゲート",
+      "status": "passed",
+      "completedAt": "2026-07-17",
+      "verifier": "Codex automated validation",
+      "evidence": [
+        "Desktop 58/58 tests",
+        "ai-core 23/23 tests",
+        "axe 29 states / 726 passes / 0 violations"
+      ]
+    },
+    {
+      "id": "desktop-local-acceptance",
+      "label": "Desktopローカル受入れ",
+      "status": "passed",
+      "completedAt": "2026-07-15",
+      "verifier": "Codex product build acceptance",
+      "evidence": ["docs/desktop/RELEASE_CANDIDATE_ACCEPTANCE.md#10-rc判定記録"]
+    },
+    {
+      "id": "windows-narrator-ja",
+      "label": "Windows Narrator 日本語",
+      "status": "pending"
+    },
+    {
+      "id": "windows-narrator-en",
+      "label": "Windows Narrator English",
+      "status": "pending"
+    },
+    {
+      "id": "windows-high-contrast",
+      "label": "Windows高コントラスト",
+      "status": "pending"
+    },
+    {
+      "id": "windows-scale-150",
+      "label": "Windows表示倍率150%",
+      "status": "pending"
+    },
+    {
+      "id": "ollama-e2e",
+      "label": "Ollama実環境E2E",
+      "status": "pending"
+    },
+    {
+      "id": "comfyui-e2e",
+      "label": "ComfyUI実環境E2E",
+      "status": "pending"
+    },
+    {
+      "id": "hub-staging-device-auth",
+      "label": "Hub staging・Desktop端末認証E2E",
+      "status": "pending"
+    },
+    {
+      "id": "stripe-test-e2e",
+      "label": "Stripeテスト決済E2E",
+      "status": "pending"
+    },
+    {
+      "id": "windows-code-signing",
+      "label": "Windowsコード署名",
+      "status": "blocked",
+      "reason": "信頼されたコード署名証明書待ち"
+    },
+    {
+      "id": "signed-auto-update",
+      "label": "署名付き自動更新E2E",
+      "status": "blocked",
+      "reason": "署名済み2versionと公開更新URL待ち"
+    },
+    {
+      "id": "clean-windows-acceptance",
+      "label": "クリーンWindows最終受入れ",
+      "status": "pending"
+    },
+    {
+      "id": "hub-production-acceptance",
+      "label": "Hub公開環境受入れ",
+      "status": "pending"
+    }
+  ]
+}

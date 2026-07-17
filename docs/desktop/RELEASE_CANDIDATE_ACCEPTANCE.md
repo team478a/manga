@@ -25,6 +25,15 @@ npm run rc:preflight
 npm run rc:preflight:strict
 ```
 
+手動・外部受入れの正式な進捗は[`RC_ACCEPTANCE_STATUS.json`](RC_ACCEPTANCE_STATUS.json)へ記録します。通常の確認は未完了でも終了コード0、最終RC判定は未完了・blockedがあると終了コード1になります。
+
+```bash
+npm run rc:acceptance
+npm run rc:acceptance:strict
+```
+
+`passed`には`completedAt`、`verifier`、1件以上の`evidence`が必須です。例外承認の`waived`には`completedAt`、`approvedBy`、`reason`が必須です。証拠のない完了記録や、理由のないblockedは検証エラーになります。
+
 ## 3. ローカル品質ゲート
 
 ```bash
@@ -136,6 +145,8 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 | Windows成果物         | 署名済みinstallerと更新metadata確認 | 起動・SBOM・checksum完了、コード署名待ち   |
 
 すべてが完了し、重大な未解決不具合がない場合だけRC承認とします。未実施項目を自動テスト成功で代替しません。
+
+上表は読みやすい概要、`RC_ACCEPTANCE_STATUS.json`は機械判定用の正本です。受入れ実施後は両方を同じ変更で更新し、`npm run rc:acceptance:strict`を最終判定に使用します。
 
 2026-07-15の`rc:preflight`では、リポジトリ構造は準備完了、外部サービス設定は未設定、手動E2Eは未実施と判定されました。`rc:preflight:strict`が終了コード1となるのは、この状態では意図した結果です。
 

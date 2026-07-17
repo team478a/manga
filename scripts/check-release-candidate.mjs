@@ -2,6 +2,10 @@ import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  readAcceptanceRecord,
+  summarizeAcceptance,
+} from "./lib/rc-acceptance.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = new Set(process.argv.slice(2));
@@ -146,6 +150,7 @@ const checks = [
 const staticPaths = [
   "package.json",
   "apps/desktop/package.json",
+  "docs/desktop/RC_ACCEPTANCE_STATUS.json",
   "supabase/migrations/manifest.json",
   "supabase/tests/assert_staging_schema.sql",
 ];
@@ -179,6 +184,28 @@ console.log(
   "  [manual] Hub staging import, device authorization, and Stripe test checkout",
 );
 
+let acceptanceErrors = [];
+const acceptancePath = path.join(
+  root,
+  "docs",
+  "desktop",
+  "RC_ACCEPTANCE_STATUS.json",
+);
+if (fs.existsSync(acceptancePath)) {
+  try {
+    const acceptance = readAcceptanceRecord(acceptancePath);
+    acceptanceErrors = acceptance.errors;
+    const summary = summarizeAcceptance(acceptance.document);
+    console.log(
+      `  Record: ${summary.counts.passed} passed, ${summary.counts.waived} waived, ${summary.counts.pending} pending, ${summary.counts.blocked} blocked`,
+    );
+  } catch (error) {
+    acceptanceErrors = [error.message];
+  }
+}
+for (const error of acceptanceErrors)
+  console.log(`  [invalid record] ${error}`);
+
 const localGates = [
   ["Desktop typecheck", ["--prefix", "apps/desktop", "run", "typecheck"]],
   ["Desktop lint", ["--prefix", "apps/desktop", "run", "lint"]],
@@ -191,7 +218,7 @@ const localGates = [
   ["Migration validation", ["run", "db:migrations:validate"]],
 ];
 
-let localFailure = missingPaths.length > 0;
+let localFailure = missingPaths.length > 0 || acceptanceErrors.length > 0;
 if (runFullValidation && !localFailure) {
   const npmExecutable = process.env.npm_execpath
     ? {

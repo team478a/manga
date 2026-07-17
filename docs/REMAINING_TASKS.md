@@ -4,11 +4,13 @@
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
-基準コミット: `7752740`
+基準コミット: `6bcbcc3`
 
 ## 1. 現在の判定
 
 HubとDesktopの主要機能、ローカル品質ゲート、Windowsインストール・製品版起動・アンインストールE2E、SBOM・checksum生成、実Dドライブを使ったProject削除・ゴミ箱E2Eまでは完了しています。残作業の中心は外部サービスを使うRC受入れ、コード署名、初回公開です。
+
+RC受入れ結果は`desktop/RC_ACCEPTANCE_STATUS.json`へ構造化して記録し、`npm run rc:acceptance`でschemaと証拠必須項目、`npm run rc:acceptance:strict`で未完了・blockedの有無を機械判定できるようにしました。通常preflightにも集計を表示します。
 
 2026-07-15に製品方針を低スペック対応・ハイブリッド生成へ変更しました。既存機能を維持し、Generation Router、外部送信ポリシー、背景Provider、レイヤー分離、低スペックRuntime Profileを段階追加します。調査結果と実装順は[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)を参照してください。
 
@@ -36,8 +38,8 @@ HubとDesktopの主要機能、ローカル品質ゲート、Windowsインスト
 | P0   | ハイブリッド生成Phase 1基盤  | Router・ポリシー・ローカル実行・Asset Library・safe Job handoffまで完了            |
 | P1   | 外部背景Provider接続         | interface・送信preview・確認契約は完了。実Provider・credential・見積・送信は未実装 |
 | P1   | Panelレイヤー分離・合成      | 永続化、直接変形、mask、correction透明パッチ、互換cacheまで完了                    |
-| P2   | 低スペックRuntime Profile    | ComfyUI実行環境診断まで完了。実workflowによる8GB画像生成E2Eが残る                |
-| P2   | 英語化の全画面展開・WCAG評価 | 日英29状態のaxe違反0件。Narrator受入れ表作成済み。Windows実機での手動完走が残る |
+| P2   | 低スペックRuntime Profile    | ComfyUI実行環境診断まで完了。実workflowによる8GB画像生成E2Eが残る                  |
+| P2   | 英語化の全画面展開・WCAG評価 | 日英29状態のaxe違反0件。Narrator受入れ表作成済み。Windows実機での手動完走が残る    |
 
 ## 4. 外部受付基盤の準備後に進める改善
 

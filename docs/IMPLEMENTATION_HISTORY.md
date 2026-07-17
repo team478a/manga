@@ -1,6 +1,6 @@
 # MANGAI 実装記録・引き継ぎ資料
 
-最終更新: 2026-07-16
+最終更新: 2026-07-17
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
@@ -932,3 +932,11 @@ Pageあり画面の初回監査で、選択中操作領域の通常`div`へ`aria
 axeで評価できないWindows Narrator、ネイティブ`confirm`・`prompt`、高コントラスト、150%表示を30項目の[`NARRATOR_ACCEPTANCE.md`](desktop/NARRATOR_ACCEPTANCE.md)へ整理しました。RC停止条件、環境記録、日本語・English結果欄を備え、Release Candidate手順から参照します。
 
 日英29画面・状態は合計726項目合格、自動判定の違反0件です。自動判定保留は短い記号、menu summary、Inspector文字などの重複を手動確認表へ統合しました。次はWindows実機でNarrator受入れを完走します。
+
+# 2026-07-17 RC受入れ記録の機械判定
+
+- `docs/desktop/RC_ACCEPTANCE_STATUS.json`をRC受入れ進捗の構造化正本として追加
+- `npm run rc:acceptance`でschema、完了証拠、blocked理由、例外承認を検証
+- `npm run rc:acceptance:strict`でpending・blockedを含むRCを終了コード1にする最終判定を追加
+- 通常の`rc:preflight`へpassed / waived / pending / blockedの件数を統合
+- 記録validatorの正常系・証拠不足・未完了判定を自動テスト化
