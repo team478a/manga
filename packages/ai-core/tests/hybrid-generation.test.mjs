@@ -12,9 +12,30 @@ import {
   isGenerationQueueWindowOpen,
   minutesUntilGenerationQueueWindow,
   analyzeComfyWorkflowOptimization,
+  imageGenerationProviderIdSchema,
+  imageGenerationJobTypeSchema,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+test("image generation provider identifiers preserve ComfyUI and allow future adapters", () => {
+  assert.equal(imageGenerationProviderIdSchema.parse("dezgo"), "dezgo");
+  assert.equal(imageGenerationProviderIdSchema.parse("comfyui"), "comfyui");
+  assert.equal(
+    imageGenerationProviderIdSchema.parse("local_comfyui"),
+    "local_comfyui",
+  );
+  assert.throws(() => imageGenerationProviderIdSchema.parse("unknown"));
+});
+
+test("image generation job types include Phase 1 and later capabilities", () => {
+  assert.equal(
+    imageGenerationJobTypeSchema.parse("text_to_image"),
+    "text_to_image",
+  );
+  assert.equal(imageGenerationJobTypeSchema.parse("controlnet"), "controlnet");
+  assert.throws(() => imageGenerationJobTypeSchema.parse("batch"));
+});
 
 test("ComfyUI workflow optimization detects tiled VAE without inferring runtime offload", () => {
   const report = analyzeComfyWorkflowOptimization({

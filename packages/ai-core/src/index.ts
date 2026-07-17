@@ -16,8 +16,14 @@ export const generationStatusSchema = z.enum([
 export type GenerationStatus = z.infer<typeof generationStatusSchema>;
 export const generationQueueSettingsSchema = z.object({
   nightModeEnabled: z.boolean().default(false),
-  startTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).default("22:00"),
-  endTime: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).default("07:00"),
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .default("22:00"),
+  endTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+    .default("07:00"),
 });
 export type GenerationQueueSettings = z.infer<
   typeof generationQueueSettingsSchema
@@ -51,6 +57,38 @@ export type AIModelInfo = {
   name: string;
   size?: number;
   modifiedAt?: string;
+};
+export const imageGenerationProviderIdSchema = z.enum([
+  "dezgo",
+  "comfyui",
+  "local_comfyui",
+  "mangai_cloud",
+  "render_node",
+  "asset_library",
+]);
+export type ImageGenerationProviderId = z.infer<
+  typeof imageGenerationProviderIdSchema
+>;
+export const imageGenerationJobTypeSchema = z.enum([
+  "text_to_image",
+  "image_to_image",
+  "controlnet",
+  "inpainting",
+  "upscale",
+  "remove_background",
+]);
+export type ImageGenerationJobType = z.infer<
+  typeof imageGenerationJobTypeSchema
+>;
+export type ImageGenerationModelMetadata = AIModelInfo & {
+  family?: string;
+  description?: string;
+  license?: string;
+  categories?: string[];
+  supportedFunctions?: ImageGenerationJobType[];
+  nativeResolution?: { width: number; height: number };
+  triggers?: string[] | null;
+  fetchedAt?: string;
 };
 export type ProviderConnectionResult = {
   ok: boolean;
@@ -186,9 +224,7 @@ export const pageBatchImageRequestSchema = z.object({
   workflowId: z.string().uuid(),
   pageIds: z.array(z.string().uuid()).min(1).max(100),
 });
-export type PageBatchImageRequest = z.infer<
-  typeof pageBatchImageRequestSchema
->;
+export type PageBatchImageRequest = z.infer<typeof pageBatchImageRequestSchema>;
 export type ComfyWorkflowOptimization = {
   hasTiledVaeDecode: boolean;
   hasTiledVaeEncode: boolean;
