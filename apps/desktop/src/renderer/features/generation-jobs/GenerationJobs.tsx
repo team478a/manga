@@ -69,6 +69,51 @@ type SafeAssetResult = {
   assets: Asset[];
   message?: string;
 };
+type GenerationOutputSummary = {
+  assetId?: string;
+  model?: string;
+  actualCostUsd?: number;
+  balanceUsd?: number;
+  responseSeed?: number;
+  requestedSeed?: number;
+  durationMs?: number;
+  width?: number;
+  height?: number;
+  steps?: number;
+  sampler?: string;
+};
+function parseGenerationOutput(value: unknown): GenerationOutputSummary | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
+      return null;
+    const source = parsed as Record<string, unknown>;
+    const text = (key: string) =>
+      typeof source[key] === "string" && source[key].trim()
+        ? source[key].trim()
+        : undefined;
+    const number = (key: string) =>
+      typeof source[key] === "number" && Number.isFinite(source[key])
+        ? source[key]
+        : undefined;
+    return {
+      assetId: text("assetId"),
+      model: text("model"),
+      actualCostUsd: number("actualCostUsd"),
+      balanceUsd: number("balanceUsd"),
+      responseSeed: number("responseSeed"),
+      requestedSeed: number("requestedSeed"),
+      durationMs: number("durationMs"),
+      width: number("width"),
+      height: number("height"),
+      steps: number("steps"),
+      sampler: text("sampler"),
+    };
+  } catch {
+    return null;
+  }
+}
 function splitLibraryTags(value: string) {
   return value
     .split(/[,、\s]+/)
@@ -91,7 +136,26 @@ export function GenerationJobs({
   onSelectAsset: (id: string) => void;
   onClose: () => void;
 }) {
-  const { t, localizeMessage, formatDateTime } = useI18n();
+  const { t, localizeMessage, formatDateTime, localeCode } = useI18n();
+  const formatUsd = React.useCallback(
+    (value: number) =>
+      new Intl.NumberFormat(localeCode, {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 6,
+      }).format(value),
+    [localeCode],
+  );
+  const formatDuration = React.useCallback(
+    (value: number) =>
+      value < 1_000
+        ? t("generation.durationMilliseconds", { value: Math.round(value) })
+        : t("generation.durationSeconds", {
+            value: (value / 1_000).toFixed(1),
+          }),
+    [t],
+  );
   const [jobs, setJobs] = React.useState<any[]>([]),
     [routes, setRoutes] = React.useState<any[]>([]),
     [workflows, setWorkflows] = React.useState<any[]>([]),
@@ -748,8 +812,20 @@ export function GenerationJobs({
           <div className="job-list">
             {jobs.map((job) => {
               const route = routes.find((item) => item.jobId === job.id);
+              const output = parseGenerationOutput(job.outputJson);
+              const isDezgo = job.providerId === "dezgo";
+              const outputSeed = output?.responseSeed ?? output?.requestedSeed;
+              const outputAssetId = bundle.assets.some(
+                (asset) => asset.id === output?.assetId,
+              )
+                ? output?.assetId
+                : undefined;
               return (
-                <article key={job.id} data-generation-status={job.status}>
+                <article
+                  key={job.id}
+                  data-generation-status={job.status}
+                  data-generation-provider={isDezgo ? "dezgo" : undefined}
+                >
                   <div>
                     <b>
                       {job.providerType === "asset"
@@ -814,11 +890,80 @@ export function GenerationJobs({
                         </small>
                       </div>
                     )}
+                    {isDezgo && output && job.status === "completed" && (
+                      <dl
+                        className="job-output-metadata"
+                        aria-label={t("generation.resultDetails")}
+                      >
+                        <div>
+                          <dt>{t("generation.resultModel")}</dt>
+                          <dd>{job.modelId ?? output.model ?? "—"}</dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultCost")}</dt>
+                          <dd>
+                            {output.actualCostUsd === undefined
+                              ? "—"
+                              : formatUsd(output.actualCostUsd)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultBalance")}</dt>
+                          <dd>
+                            {output.balanceUsd === undefined
+                              ? "—"
+                              : formatUsd(output.balanceUsd)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultSeed")}</dt>
+                          <dd>{outputSeed ?? "—"}</dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultDuration")}</dt>
+                          <dd>
+                            {output.durationMs === undefined
+                              ? "—"
+                              : formatDuration(output.durationMs)}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultDimensions")}</dt>
+                          <dd>
+                            {output.width === undefined ||
+                            output.height === undefined
+                              ? "—"
+                              : `${output.width} × ${output.height}`}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultSteps")}</dt>
+                          <dd>{output.steps ?? "—"}</dd>
+                        </div>
+                        <div>
+                          <dt>{t("generation.resultSampler")}</dt>
+                          <dd>{output.sampler ?? "—"}</dd>
+                        </div>
+                      </dl>
+                    )}
                   </div>
                   <div className="inline">
                     {job.status === "completed" &&
                       job.generationType === "image" && (
-                        <button className="secondary" onClick={onClose}>
+                        <button
+                          className="secondary"
+                          disabled={isDezgo && !outputAssetId}
+                          title={
+                            isDezgo && !outputAssetId
+                              ? t("generation.assetUnavailable")
+                              : undefined
+                          }
+                          onClick={() =>
+                            outputAssetId
+                              ? onSelectAsset(outputAssetId)
+                              : onClose()
+                          }
+                        >
                           {t("generation.openAsset")}
                         </button>
                       )}

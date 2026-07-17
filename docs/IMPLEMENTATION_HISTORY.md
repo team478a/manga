@@ -961,3 +961,11 @@ axeで評価できないWindows Narrator、ネイティブ`confirm`・`prompt`�
 - `npm run rc:acceptance:strict`でpending・blockedを含むRCを終了コード1にする最終判定を追加
 - 通常の`rc:preflight`へpassed / waived / pending / blockedの件数を統合
 - 記録validatorの正常系・証拠不足・未完了判定を自動テスト化
+
+## 112. Dezgo生成履歴の結果詳細・Asset選択導線
+
+DezgoのText-to-Image内部pipelineが端末内Job履歴へ保存する安全な結果metadataを、既存の画像生成履歴へ統合しました。完了Jobにはmodel、実費、生成後残高、Seed、所要時間、画像サイズ、Steps、Samplerを日本語・英語で表示します。未加工response header、Dezgo user ID、API keyはUIへ渡しません。
+
+保存済み`assetId`を持つ履歴では「素材を開く」からProject Asset Libraryの該当素材を選択し、編集画面へ戻れるようにしました。Dezgo履歴にAsset IDがない場合はbuttonを無効化し、既存ComfyUI履歴の従来動作は維持します。
+
+アクセシビリティ監査用の隔離DBへDezgo完了状態を追加し、日英の生成画面で結果詳細の描画を監査対象にしました。Dezgoの実生成UI / IPC / Queue経路は引き続き無効であり、この実装では外部送信を行いません。ai-core 25/25、Desktop統合テスト71/71、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功しています。

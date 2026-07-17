@@ -386,3 +386,15 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - Promptは既存の端末内Job履歴へ保持するが、Asset出力metadataへ重複保存せず、API keyはどちらにも保存しない
 - 実API送信を呼び出すUI / IPC / Queue経路は追加せず、`DezgoProvider.generateImage`は無効のまま維持
 - Desktop TypeScript、ESLint、統合テスト71/71、本番renderer build成功
+
+### 2026-07-17: 生成履歴UI統合
+
+- 完了したDezgo Jobの安全な`output_json`だけをrendererで解析し、未加工JSONやheaderは表示しない
+- model、実費、生成後残高、Seed、所要時間、画像サイズ、Steps、Samplerを生成履歴へ日英表示
+- 実費と残高は選択localeのUSD表記、所要時間はms / 秒で表示
+- 保存済み`assetId`がある場合は「素材を開く」からProject Asset Libraryの該当素材を選択して編集画面へ戻る
+- Dezgo履歴に`assetId`がなければ操作を無効化し、存在しない素材を開いたように見せない
+- 既存ComfyUI履歴は従来どおり生成画面を閉じてAsset Libraryへ戻る挙動を維持
+- axe監査用の隔離DBへDezgo完了Jobを追加し、日本語・英語の生成画面で結果詳細の描画を待ってから監査
+- 実生成UI / IPC / Queue経路は引き続き無効で、外部API送信は行わない
+- ai-core 25/25、Desktop統合テスト71/71、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功

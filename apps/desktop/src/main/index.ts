@@ -1024,6 +1024,52 @@ app
           createJob("running", 0.45);
           createJob("completed", 1);
           createJob("failed", 0.7, "ComfyUI生成に失敗しました。");
+          const dezgoJobId = store.createGenerationJob({
+            projectId: project.id,
+            providerType: "cloud",
+            providerId: "dezgo",
+            modelId: "flux_1_schnell",
+            generationType: "image",
+            prompt: "Accessibility Dezgo completed state",
+            inputJson: { test: true },
+          });
+          const dezgoSourceRelativePath = path.join(
+            "generated",
+            "accessibility-dezgo.png",
+          );
+          const dezgoSourcePath = path.join(
+            project.storagePath,
+            dezgoSourceRelativePath,
+          );
+          fs.mkdirSync(path.dirname(dezgoSourcePath), { recursive: true });
+          fs.writeFileSync(
+            dezgoSourcePath,
+            Buffer.from(
+              "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+              "base64",
+            ),
+          );
+          const dezgoAsset = store.registerGeneratedAsset(
+            project.id,
+            dezgoSourceRelativePath,
+            dezgoJobId,
+            { test: true },
+          );
+          store.updateGenerationJob(dezgoJobId, "completed", {
+            progress: 1,
+            output: {
+              assetId: dezgoAsset.assetId,
+              model: "flux_1_schnell",
+              actualCostUsd: 0.0125,
+              balanceUsd: 9.9875,
+              responseSeed: 123456,
+              durationMs: 2345,
+              width: 768,
+              height: 1024,
+              steps: 20,
+              sampler: "dpmpp_2m_karras",
+            },
+          });
           clearInterval(timer);
           resolve(true);
         }, 50);
@@ -1153,6 +1199,11 @@ app
               await waitFor('[data-generation-status="running"]');
               await waitFor('[data-generation-status="completed"]');
               await waitFor('[data-generation-status="failed"]');
+              const dezgoResult = await waitFor(
+                '[data-generation-provider="dezgo"]',
+              );
+              if (dezgoResult.querySelector("button")?.disabled)
+                throw new Error("Dezgo saved asset action is disabled.");
             }
             screens.push(await audit(view));
           }
@@ -1205,6 +1256,11 @@ app
               await waitFor('[data-generation-status="running"]');
               await waitFor('[data-generation-status="completed"]');
               await waitFor('[data-generation-status="failed"]');
+              const dezgoResult = await waitFor(
+                '[data-generation-provider="dezgo"]',
+              );
+              if (dezgoResult.querySelector("button")?.disabled)
+                throw new Error("Dezgo saved asset action is disabled.");
               const failedMessage = document.querySelector(
                 '[data-generation-status="failed"] [role="alert"]',
               );

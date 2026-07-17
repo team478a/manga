@@ -2232,6 +2232,29 @@ label {
   margin-top: 8px;
   color: var(--text-muted);
 }
+.job-output-metadata {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin: 10px 0 0;
+}
+.job-output-metadata > div {
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--surface-raised);
+}
+.job-output-metadata dt {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.job-output-metadata dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  font-weight: 600;
+}
 .safe-asset-resolver .inline input {
   flex: 1 1 240px;
 }
