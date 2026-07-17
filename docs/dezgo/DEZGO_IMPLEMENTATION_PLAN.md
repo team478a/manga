@@ -324,3 +324,18 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - 非成人向け実API 10枚の費用・速度結果を記録
 
 成人向け、ControlNet、Inpainting、20ページ以上の実測はPhase 1完了条件へ含めない。
+
+## 20. 実装進捗
+
+### 2026-07-17: OS資格情報Store
+
+- 保守終了済み`keytar`を避け、N-APIの`@napi-rs/keyring` 1.3.0を採用
+- `ProviderCredentialStore`をmain processへ追加
+- Windows Credential Managerの固定service / accountへ保存し、SQLite・設定JSONへ保存しない
+- rendererには設定済み状態、保存、削除だけを公開し、APIキー取得APIを公開しない
+- Provider / BYOK flagが無効なら保存・削除IPCを拒否
+- keyring不調時は秘密値を含まない固定errorに変換し、ファイルへfallbackしない
+- Windows Credential Managerへの一時値の保存・読取・削除smoke成功
+- Electron 39 Windows x64 unpacked build成功
+- `app.asar.unpacked`へのkeyring JavaScriptと`keyring.win32-x64-msvc.node`同梱を確認
+- Desktop TypeScript、ESLint、統合テスト64/64成功

@@ -279,6 +279,12 @@ export type DesktopApi = {
     runtimeInfo: () => Promise<{
       mockEnabled: boolean;
       runtimeProfile: RuntimeProfileState;
+      dezgo: {
+        dezgoProviderEnabled: boolean;
+        dezgoDirectByokEnabled: boolean;
+        dezgoAdultGenerationEnabled: false;
+        dezgoBatchGenerationEnabled: false;
+      };
     }>;
     saveRuntimeProfile: (
       selection: RuntimeProfileSelection,
@@ -292,6 +298,18 @@ export type DesktopApi = {
     listSettings: () => Promise<ProviderSettings[]>;
     listSettingsHistory: () => Promise<AISettingsHistoryItem[]>;
     saveSettings: (value: ProviderSettings) => Promise<ProviderSettings[]>;
+    credentialState: (providerId: "dezgo") => Promise<{
+      providerId: "dezgo";
+      configured: boolean;
+      available: boolean;
+    }>;
+    saveCredential: (
+      providerId: "dezgo",
+      apiKey: string,
+    ) => Promise<{ providerId: "dezgo"; configured: true }>;
+    deleteCredential: (
+      providerId: "dezgo",
+    ) => Promise<{ providerId: "dezgo"; configured: false }>;
     checkProvider: (
       providerId: string,
     ) => Promise<{ ok: boolean; message: string; latencyMs?: number }>;
@@ -376,9 +394,7 @@ export type DesktopApi = {
       mapping: unknown,
     ) => Promise<any[]>;
     setDefaultWorkflow: (id: string) => Promise<any[]>;
-    validateWorkflow: (
-      id: string,
-    ) => Promise<{
+    validateWorkflow: (id: string) => Promise<{
       ok: boolean;
       message: string;
       fields?: string[];

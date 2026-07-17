@@ -8,6 +8,14 @@
 
 この文書は、MANGAI Hubの保全からMANGAI Desktop、自動更新基盤までの実装経緯をまとめた引き継ぎ資料です。最新の機能一覧と今後の優先順位は [`PROJECT_STATUS_AND_ROADMAP.md`](PROJECT_STATUS_AND_ROADMAP.md) を参照してください。
 
+## 2026-07-17 Dezgo Phase 1開始
+
+- 既存Provider、Queue、生成履歴、外部送信policyを調査し、`docs/dezgo/DEZGO_IMPLEMENTATION_PLAN.md`を作成
+- 画像生成Provider ID、Job Type、model metadataの共通型を後方互換追加
+- Dezgo Provider / BYOKを開発環境の明示opt-inに限定し、成人向け・一括生成flagをPhase 1中は常時falseに固定
+- `@napi-rs/keyring`を使うmain process限定credential storeを追加し、Windows Credential Managerへの保存・読取・削除を確認
+- APIキー取得をpreloadへ公開せず、keyring障害時もDB・設定JSON・暗号化ファイルへfallbackしない
+
 ## 1. 現在の製品構成
 
 MANGAIを次の2製品へ分離しています。

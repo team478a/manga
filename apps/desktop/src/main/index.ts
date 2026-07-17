@@ -26,6 +26,14 @@ import {
 import { fetchHubStatus, updateHubDraft } from "./hub-status.js";
 import { safeBaseUrl } from "./ai/providers/http.js";
 import {
+  ProviderCredentialStore,
+  type CredentialProviderId,
+} from "./ai/provider-credential-store.js";
+import {
+  resolveDezgoFeatureFlags,
+  type DezgoFeatureFlags,
+} from "./ai/dezgo-feature-flags.js";
+import {
   pollHubDeviceAuthorization,
   revokeHubDeviceAuthorization,
   startHubDeviceAuthorization,
@@ -98,6 +106,8 @@ let aiService: AIService;
 let updater: DesktopUpdater;
 let diagnostics: DiagnosticsService;
 let runtimeProfile: RuntimeProfileService;
+let providerCredentials: ProviderCredentialStore;
+let dezgoFeatures: DezgoFeatureFlags;
 let databaseRecovery: DatabaseRecoveryReport | null = null;
 type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
@@ -115,6 +125,21 @@ let autoBackupState: AutoBackupState = {
 let autoBackupTimer: NodeJS.Timeout | undefined;
 let autoBackupRunning = false;
 const exportControllers = new Map<string, AbortController>();
+const dezgoCredentialSchema = z.object({
+  providerId: z.literal("dezgo"),
+  apiKey: z.string().trim().min(8).max(4096),
+});
+const credentialProviderSchema = z.object({
+  providerId: z.literal("dezgo"),
+});
+
+function requireDezgoByok() {
+  if (
+    !dezgoFeatures.dezgoProviderEnabled ||
+    !dezgoFeatures.dezgoDirectByokEnabled
+  )
+    throw new Error("Dezgo BYOKはこのビルドで無効です。");
+}
 function desktopPaths() {
   const root = path.join(app.getPath("documents"), "MANGAI");
   return {
@@ -607,10 +632,38 @@ function register() {
   handle("ai:runtime", () => ({
     mockEnabled: aiService.isMockEnabled(),
     runtimeProfile: runtimeProfile.getState(),
+    dezgo: dezgoFeatures,
   }));
-  handle("ai:runtime:save", (v) =>
-    runtimeProfile.saveSelection(v?.selection),
-  );
+  handle("ai:credential:state", async (v) => {
+    const { providerId } = credentialProviderSchema.parse(v);
+    if (!dezgoFeatures.dezgoProviderEnabled)
+      return { providerId, configured: false, available: false };
+    try {
+      return {
+        providerId,
+        configured: await providerCredentials.has(providerId),
+        available: true,
+      };
+    } catch {
+      return { providerId, configured: false, available: false };
+    }
+  });
+  handle("ai:credential:save", async (v) => {
+    requireDezgoByok();
+    const input = dezgoCredentialSchema.parse(v);
+    await providerCredentials.set(
+      input.providerId as CredentialProviderId,
+      input.apiKey,
+    );
+    return { providerId: input.providerId, configured: true };
+  });
+  handle("ai:credential:delete", async (v) => {
+    requireDezgoByok();
+    const { providerId } = credentialProviderSchema.parse(v);
+    await providerCredentials.delete(providerId);
+    return { providerId, configured: false };
+  });
+  handle("ai:runtime:save", (v) => runtimeProfile.saveSelection(v?.selection));
   handle("ai:generation-policy:get", (v) =>
     store.getProjectGenerationPolicy(projectIdSchema.parse(v).id),
   );
@@ -880,6 +933,8 @@ app
         !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
       getRuntimeProfile: () => runtimeProfile.getState(),
     });
+    providerCredentials = new ProviderCredentialStore();
+    dezgoFeatures = resolveDezgoFeatureFlags({ isPackaged: app.isPackaged });
     updater = new DesktopUpdater(desktopPaths().root);
     register();
     aiService.resumeQueuedImages();
@@ -1215,9 +1270,7 @@ app
           .map((item) => `${screen.screen}:${item.id}`),
       );
       if (blocking.length)
-        throw new Error(
-          `Accessibility audit failed: ${blocking.join(", ")}`,
-        );
+        throw new Error(`Accessibility audit failed: ${blocking.join(", ")}`);
       app.quit();
       return;
     }
@@ -1236,9 +1289,7 @@ app
   .catch((cause) => {
     if (automatedRendererTest) {
       diagnostics?.captureCrash(
-        accessibilityTest
-          ? "accessibility_test.failed"
-          : "smoke_test.failed",
+        accessibilityTest ? "accessibility_test.failed" : "smoke_test.failed",
         cause,
       );
       app.exit(1);

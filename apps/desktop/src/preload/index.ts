@@ -133,6 +133,12 @@ contextBridge.exposeInMainWorld("mangai", {
     listSettingsHistory: () => ipcRenderer.invoke("ai:settings:history"),
     saveSettings: (value: unknown) =>
       ipcRenderer.invoke("ai:settings:save", value),
+    credentialState: (providerId: "dezgo") =>
+      ipcRenderer.invoke("ai:credential:state", { providerId }),
+    saveCredential: (providerId: "dezgo", apiKey: string) =>
+      ipcRenderer.invoke("ai:credential:save", { providerId, apiKey }),
+    deleteCredential: (providerId: "dezgo") =>
+      ipcRenderer.invoke("ai:credential:delete", { providerId }),
     checkProvider: (providerId: string) =>
       ipcRenderer.invoke("ai:provider:check", { providerId }),
     inspectComfyLowSpecRuntime: () =>
