@@ -278,13 +278,19 @@ export class AIService {
     });
     return { jobId, status: "failed" as const, decision, assets: [], message };
   }
-  previewExternalSafeAsset(input: SafeAssetLibraryRequest) {
+  async previewExternalSafeAsset(input: SafeAssetLibraryRequest) {
     if (
       input.pageId &&
       this.store.projectIdForPage(input.pageId) !== input.projectId
     )
       throw new Error("PageとProjectの参照が一致しません。");
     const policy = this.store.getProjectGenerationPolicy(input.projectId);
+    const dezgoEnabled =
+      this.dezgoFeatures.dezgoProviderEnabled &&
+      this.dezgoFeatures.dezgoDirectByokEnabled;
+    const dezgoConfigured = dezgoEnabled
+      ? Boolean(await this.getProviderCredential("dezgo"))
+      : false;
     return createExternalDispatchPreview({
       previewId: crypto.randomUUID(),
       request: input,
@@ -294,6 +300,16 @@ export class AIService {
         .digest("hex"),
       policy: policy.externalProcessingPolicy,
       customCloudJobTypes: policy.customCloudJobTypes,
+      provider: {
+        providerId: "dezgo",
+        displayName: "Dezgo API",
+        enabled: dezgoEnabled,
+        endpointConfigured: dezgoConfigured,
+        supportedJobTypes: ["background", "prop", "effect"],
+        dataRetentionSummary: "公式資料で保持期間を確認できていません。",
+        trainingUseSummary: "公式資料で学習利用条件を確認できていません。",
+        pricingSummary: "生成後の実費のみ取得可能。事前見積は未対応。",
+      },
       createdAt: new Date().toISOString(),
     });
   }

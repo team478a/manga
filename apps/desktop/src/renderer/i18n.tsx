@@ -383,19 +383,52 @@ const ja = {
   "generation.externalCharacterReference": "キャラクター参照",
   "generation.externalCompletedPage": "完成ページ",
   "generation.externalCost": "推定費用",
+  "generation.externalPricing": "価格情報",
   "generation.externalRetention": "データ保持",
   "generation.externalTraining": "学習利用",
+  "generation.externalConfirmation": "送信前の明示確認",
+  "generation.externalRequired": "必須",
+  "generation.externalDezgoPricing":
+    "生成後の実費は取得できますが、事前見積APIは確認できていません。",
+  "generation.externalDezgoRetention":
+    "公式資料で保持期間を確認できていません。",
+  "generation.externalDezgoTraining":
+    "公式資料で学習利用条件を確認できていません。",
   "generation.externalIncluded": "送信対象",
   "generation.externalNotIncluded": "送信しない",
   "generation.externalUnknown": "未設定",
   "generation.externalPreviewDisabled":
-    "現在はプレビューのみです。実Provider、費用、利用条件が確定するまで外部送信は有効になりません。",
+    "現在はプレビューのみです。費用見積と利用条件を確認できない限り外部送信は有効になりません。",
   "generation.externalBlock.providerNotConfigured": "Providerが未設定です。",
   "generation.externalBlock.providerDisabled": "Providerは無効です。",
   "generation.externalBlock.unsupportedJob": "このジョブ種類に未対応です。",
   "generation.externalBlock.policyBlocked":
     "作品ポリシーで外部処理が禁止されています。",
   "generation.externalBlock.costUnavailable": "費用見積もりを取得できません。",
+  "generation.policy.title": "Project外部処理ポリシー",
+  "generation.policy.description":
+    "このProjectからクラウドへ送信できる生成種類と費用上限を設定します。",
+  "generation.policy.loading": "ポリシーを読み込んでいます…",
+  "generation.policy.mode": "外部処理の許可範囲",
+  "generation.policy.modeHelp":
+    "成人向け、人物・キャラクター参照、完成Pageはこの設定に関係なく外部送信しません。",
+  "generation.policy.local_only": "ローカルのみ",
+  "generation.policy.safe_assets_only": "safe素材のみ",
+  "generation.policy.background_only": "背景のみ",
+  "generation.policy.manual_approval": "毎回手動承認",
+  "generation.policy.custom": "種類を指定",
+  "generation.policy.customTypes": "外部処理を許可するsafe素材",
+  "generation.policy.preferLocal": "利用可能ならローカル処理を優先",
+  "generation.policy.requireConfirmation": "外部送信前に毎回確認する",
+  "generation.policy.monthlyLimit": "Project月間費用上限（USD）",
+  "generation.policy.noLimit": "未設定",
+  "generation.policy.monthlyLimitHelp":
+    "見積を取得できない処理は、上限未設定でも実行しません。",
+  "generation.policy.save": "ポリシーを保存",
+  "generation.policy.saving": "保存中…",
+  "generation.policy.saved": "外部処理ポリシーを保存しました。",
+  "generation.policy.dezgoConfirmation":
+    "Dezgo Phase 1ではこの設定にかかわらず送信内容・費用・利用条件の明示確認が必須です。",
   "generation.selectWorkflow": "ワークフローを選択",
   "generation.workflowSelectAria": "ComfyUIワークフロー",
   "generation.addJson": "JSON追加",
@@ -1172,13 +1205,22 @@ const en: Record<TranslationKey, string> = {
   "generation.externalCharacterReference": "Character reference",
   "generation.externalCompletedPage": "Completed page",
   "generation.externalCost": "Estimated cost",
+  "generation.externalPricing": "Pricing information",
   "generation.externalRetention": "Data retention",
   "generation.externalTraining": "Training use",
+  "generation.externalConfirmation": "Explicit confirmation before dispatch",
+  "generation.externalRequired": "Required",
+  "generation.externalDezgoPricing":
+    "Actual cost is available after generation, but no official preflight estimate API has been confirmed.",
+  "generation.externalDezgoRetention":
+    "No retention period has been confirmed in the official materials.",
+  "generation.externalDezgoTraining":
+    "No training-use terms have been confirmed in the official materials.",
   "generation.externalIncluded": "Included",
   "generation.externalNotIncluded": "Not included",
   "generation.externalUnknown": "Not configured",
   "generation.externalPreviewDisabled":
-    "This is a preview only. External dispatch remains disabled until a provider, cost, and terms are configured.",
+    "This is a preview only. External dispatch remains disabled until the cost estimate and terms can be verified.",
   "generation.externalBlock.providerNotConfigured":
     "No external provider is configured.",
   "generation.externalBlock.providerDisabled": "The provider is disabled.",
@@ -1188,6 +1230,31 @@ const en: Record<TranslationKey, string> = {
     "The project policy blocks external processing.",
   "generation.externalBlock.costUnavailable":
     "A cost estimate is not available.",
+  "generation.policy.title": "Project external-processing policy",
+  "generation.policy.description":
+    "Choose which generation types this project may send to a cloud provider and set a cost limit.",
+  "generation.policy.loading": "Loading the policy…",
+  "generation.policy.mode": "Allowed external processing",
+  "generation.policy.modeHelp":
+    "Adult content, people or character references, and completed pages are never sent externally regardless of this setting.",
+  "generation.policy.local_only": "Local only",
+  "generation.policy.safe_assets_only": "Safe assets only",
+  "generation.policy.background_only": "Backgrounds only",
+  "generation.policy.manual_approval": "Manual approval every time",
+  "generation.policy.custom": "Choose types",
+  "generation.policy.customTypes": "Safe-asset types allowed externally",
+  "generation.policy.preferLocal": "Prefer local processing when available",
+  "generation.policy.requireConfirmation":
+    "Confirm every external dispatch",
+  "generation.policy.monthlyLimit": "Project monthly cost limit (USD)",
+  "generation.policy.noLimit": "Not configured",
+  "generation.policy.monthlyLimitHelp":
+    "A job without an estimate is blocked even when no limit is configured.",
+  "generation.policy.save": "Save policy",
+  "generation.policy.saving": "Saving…",
+  "generation.policy.saved": "External-processing policy saved.",
+  "generation.policy.dezgoConfirmation":
+    "Dezgo Phase 1 always requires explicit review of the payload, cost, and terms regardless of this setting.",
   "generation.selectWorkflow": "Select a workflow",
   "generation.workflowSelectAria": "ComfyUI workflow",
   "generation.addJson": "Add JSON",

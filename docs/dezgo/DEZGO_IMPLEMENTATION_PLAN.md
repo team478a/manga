@@ -362,3 +362,15 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - Phase 1 feature flagが無効な製品版ではカードを説明表示に留め、資格情報操作と外部通信を無効化
 - 日本語・英語表示、status live region、busy / disabled状態、狭幅レイアウトへ対応
 - Desktop TypeScript、ESLint、統合テスト69/69、本番renderer build、日英設定画面を含むaxe監査違反0件
+
+### 2026-07-17: Projectポリシー・外部送信preview
+
+- 画像生成画面へProject単位の外部処理ポリシー編集UIを追加
+- `local_only`、`safe_assets_only`、`background_only`、`manual_approval`、種類指定に対応
+- ローカル優先、毎回確認、Project月間費用上限を既存SQLiteポリシーへ保存
+- Dezgo feature flagとOS keyringの設定済み状態を外部送信previewへ接続
+- previewにはProvider、送信対象、非送信素材、推定費用、保持・学習利用、明示確認要件だけを表示し、Prompt本文は返さない
+- 公式の事前見積APIを確認できないため、APIキー、許可ポリシー、月額上限が揃っても`cost_estimate_unavailable`で送信をblock
+- 保持期間と学習利用条件は未確認と明示し、推測した条件や固定価格を表示しない
+- 成人向け、人物・キャラクター参照、完成PageはProject設定で解除できないことを日英表示
+- ai-core 25/25、Desktop TypeScript、ESLint、統合テスト69/69、本番renderer build、日英axe監査違反0件

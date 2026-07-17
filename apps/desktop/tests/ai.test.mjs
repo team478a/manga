@@ -979,7 +979,7 @@ test("safe local ComfyUI output is classified in the asset library", async () =>
   }
 });
 
-test("safe asset jobs prefer project library and never require external access", () => {
+test("safe asset jobs prefer project library and never require external access", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-safe-assets-")),
     paths = {
       root,
@@ -1066,7 +1066,7 @@ test("safe asset jobs prefer project library and never require external access",
     );
     assert.equal(db.listGenerationJobs(project.project.id).length, 3);
 
-    const preview = service.previewExternalSafeAsset({
+    const preview = await service.previewExternalSafeAsset({
       projectId: project.project.id,
       type: "background",
       query: "未登録の夜景",
@@ -1080,6 +1080,47 @@ test("safe asset jobs prefer project library and never require external access",
     assert.equal(preview.manifest.completedPageIncluded, false);
     assert.equal(JSON.stringify(preview).includes("未登録の夜景"), false);
     assert.equal(db.listGenerationJobs(project.project.id).length, 3);
+
+    const dezgoService = new AIService(db, {
+      getProviderCredential: async () => "configured-test-key",
+      dezgoFeatures: {
+        dezgoProviderEnabled: true,
+        dezgoDirectByokEnabled: true,
+        dezgoAdultGenerationEnabled: false,
+        dezgoBatchGenerationEnabled: false,
+      },
+    });
+    const configuredPreview = await dezgoService.previewExternalSafeAsset({
+      projectId: project.project.id,
+      type: "background",
+      query: "未登録の夜景",
+    });
+    assert.equal(configuredPreview.provider.providerId, "dezgo");
+    assert.equal(configuredPreview.provider.enabled, true);
+    assert.equal(configuredPreview.provider.endpointConfigured, true);
+    assert.equal(configuredPreview.estimatedCost, null);
+    assert.equal(configuredPreview.executable, false);
+    assert.equal(configuredPreview.blockReason, "cost_estimate_unavailable");
+    assert.equal(
+      JSON.stringify(configuredPreview).includes("configured-test-key"),
+      false,
+    );
+
+    db.saveProjectGenerationPolicy({
+      projectId: project.project.id,
+      externalProcessingPolicy: "background_only",
+      preferLocal: true,
+      externalConfirmationRequired: true,
+      monthlyCostLimit: 20,
+      customCloudJobTypes: [],
+    });
+    const policyBlockedPreview =
+      await dezgoService.previewExternalSafeAsset({
+        projectId: project.project.id,
+        type: "prop",
+        query: "未登録の机",
+      });
+    assert.equal(policyBlockedPreview.blockReason, "policy_blocked");
   } finally {
     db.close();
     fs.rmSync(root, { recursive: true, force: true });

@@ -21,6 +21,10 @@
 - 設定画面へDezgo専用カードを追加し、APIキーの保存・更新・削除、接続確認、残高、モデルmetadata表示を日英対応
 - feature flag無効時は資格情報操作と外部通信を無効化し、接続確認では画像・Promptを送信しないことを画面上に明示
 - 日英設定画面を含むaxe監査は違反0件。既存Canvas装飾の色判定保留だけを継続
+- 画像生成画面へProject外部処理ポリシーを追加し、許可範囲、ローカル優先、毎回確認、月間費用上限を編集可能にした
+- Dezgoのflag・credential状態を外部送信previewへ接続し、Prompt本文を返さず送信対象、費用、保持・学習利用、確認要件を表示
+- 事前費用見積API、保持期間、学習利用条件を公式資料で確認できないため、`cost_estimate_unavailable`で送信をfail closedに維持
+- ai-core 25/25、Desktop統合テスト69/69、TypeScript、ESLint、本番renderer build、日英axe監査違反0件
 
 ## 1. 現在の製品構成
 

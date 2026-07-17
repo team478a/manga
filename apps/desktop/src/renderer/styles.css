@@ -2273,6 +2273,38 @@ label {
   border-radius: 8px;
   background: var(--bg-panel-elevated);
 }
+.generation-policy .setting-title {
+  gap: 20px;
+}
+.generation-policy .setting-title > div {
+  display: grid;
+  gap: 6px;
+}
+.generation-policy .setting-title p {
+  margin: 0;
+}
+.generation-policy-types {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+}
+.generation-policy-types legend {
+  padding: 0 6px;
+  color: var(--text-muted);
+}
+.generation-policy-options {
+  align-items: start;
+}
+@media (max-width: 650px) {
+  .generation-policy .setting-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
 .external-dispatch-preview h3 {
   margin: 0;
 }

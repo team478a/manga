@@ -6,6 +6,7 @@ import type {
   RouteDecision,
 } from "@mangai/ai-core";
 import { useI18n } from "../../i18n";
+import { ProjectGenerationPolicySettings } from "./ProjectGenerationPolicySettings";
 
 function generationStatusKey(status: string) {
   if (status === "queued") return "generation.status.queued" as const;
@@ -261,6 +262,10 @@ export function GenerationJobs({
         <h1>{t("generation.title")}</h1>
       </header>
       <div className="tool-content">
+        <ProjectGenerationPolicySettings
+          projectId={bundle.project.id}
+          onSaved={() => setExternalPreview(null)}
+        />
         <section className="panel-lite safe-asset-resolver">
           <h2>{t("generation.safeAssetTitle")}</h2>
           <p>{t("generation.safeAssetDescription")}</p>
@@ -421,12 +426,32 @@ export function GenerationJobs({
                   </dd>
                 </div>
                 <div>
+                  <dt>{t("generation.externalPricing")}</dt>
+                  <dd>
+                    {externalPreview.provider.providerId === "dezgo"
+                      ? t("generation.externalDezgoPricing")
+                      : externalPreview.provider.pricingSummary}
+                  </dd>
+                </div>
+                <div>
                   <dt>{t("generation.externalRetention")}</dt>
-                  <dd>{externalPreview.provider.dataRetentionSummary}</dd>
+                  <dd>
+                    {externalPreview.provider.providerId === "dezgo"
+                      ? t("generation.externalDezgoRetention")
+                      : externalPreview.provider.dataRetentionSummary}
+                  </dd>
                 </div>
                 <div>
                   <dt>{t("generation.externalTraining")}</dt>
-                  <dd>{externalPreview.provider.trainingUseSummary}</dd>
+                  <dd>
+                    {externalPreview.provider.providerId === "dezgo"
+                      ? t("generation.externalDezgoTraining")
+                      : externalPreview.provider.trainingUseSummary}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t("generation.externalConfirmation")}</dt>
+                  <dd>{t("generation.externalRequired")}</dd>
                 </div>
               </dl>
               <p className="external-preview-warning">
