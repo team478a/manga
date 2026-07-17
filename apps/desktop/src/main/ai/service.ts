@@ -673,9 +673,9 @@ export class AIService {
         this.activeLocalTextRequests.size)
     )
       return;
-    const next = this.store.nextQueuedImageJob();
+    const next = this.store.nextQueuedImageJob(["comfyui"]);
     if (!next) {
-      const delay = this.store.nextQueuedImageDelayMs();
+      const delay = this.store.nextQueuedImageDelayMs(["comfyui"]);
       if (delay !== null) this.scheduleQueueWake(delay);
       return;
     }
@@ -726,7 +726,8 @@ export class AIService {
       width: dimensions.width,
       height: dimensions.height,
     };
-    const queuedAhead = !existingJobId && this.store.nextQueuedImageJob();
+    const queuedAhead =
+      !existingJobId && this.store.nextQueuedImageJob(["comfyui"]);
     const outsideQueueWindow = this.queueWindowDelayMs() > 0;
     if (
       this.activeLocalImageJobId ||

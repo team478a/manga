@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import sharp from "sharp";
+import { AIProviderError } from "@mangai/ai-core";
 import { resolveDezgoFeatureFlags } from "../dist-main/main/ai/dezgo-feature-flags.js";
 import {
   ProviderCredentialError,
@@ -18,6 +19,11 @@ import {
   persistDezgoGenerationResult,
   sanitizeDezgoImage,
 } from "../dist-main/main/ai/dezgo-image-pipeline.js";
+import {
+  DEZGO_QUEUE_POLICY,
+  dezgoFailureDisposition,
+} from "../dist-main/main/ai/dezgo-queue-policy.js";
+import { AIService } from "../dist-main/main/ai/service.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 
 test("Dezgo Phase 1 features are disabled by default", () => {
@@ -463,6 +469,136 @@ test("Dezgo model metadata survives the SQLite cache", () => {
     assert.deepEqual(cached.supportedFunctions, ["text_to_image"]);
     assert.deepEqual(cached.nativeResolution, { width: 1024, height: 1024 });
     assert.equal(cached.cached, true);
+  } finally {
+    database.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Dezgo queue retry policy only retries rate limits and service errors once", () => {
+  assert.deepEqual(DEZGO_QUEUE_POLICY, {
+    maxConcurrentJobs: 1,
+    maxActiveJobs: 20,
+    maxAttempts: 2,
+  });
+  assert.equal(
+    dezgoFailureDisposition(
+      new AIProviderError("DEZGO_RATE_LIMITED", "busy", true),
+      1,
+    ),
+    "retry",
+  );
+  assert.equal(
+    dezgoFailureDisposition(
+      new AIProviderError("DEZGO_SERVICE_ERROR", "unavailable", true),
+      2,
+    ),
+    "fail",
+  );
+  assert.equal(
+    dezgoFailureDisposition(
+      new AIProviderError("DEZGO_CONNECTION_FAILED", "offline", true),
+      1,
+    ),
+    "hold",
+  );
+  for (const code of [
+    "DEZGO_INPUT_INVALID",
+    "DEZGO_API_KEY_INVALID",
+    "DEZGO_BALANCE_INSUFFICIENT",
+    "DEZGO_NOT_ALLOWED",
+    "DEZGO_NOT_FOUND",
+    "DEZGO_TIMEOUT",
+  ])
+    assert.equal(
+      dezgoFailureDisposition(new AIProviderError(code, "stop", true), 1),
+      "fail",
+    );
+});
+
+test("Dezgo queue enforces capacity, cancellation, provider isolation and restart recovery", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-dezgo-queue-"));
+  const paths = {
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let database = new MangaiDatabase(paths);
+  try {
+    const project = database.createProject({
+      title: "Dezgo queue",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const enqueue = (index) =>
+      database.createGenerationJob({
+        projectId: project.project.id,
+        providerType: "cloud",
+        providerId: "dezgo",
+        modelId: "test-model",
+        generationType: "image",
+        prompt: `safe background ${index}`,
+        inputJson: { providerId: "dezgo", index },
+      });
+    const jobs = Array.from(
+      { length: DEZGO_QUEUE_POLICY.maxActiveJobs },
+      (_, index) => enqueue(index),
+    );
+    assert.equal(database.countActiveGenerationJobs("dezgo"), 20);
+    assert.throws(() => enqueue(20), /20件まで/);
+    assert.equal(database.nextQueuedImageJob(["comfyui"]), undefined);
+    assert.equal(database.nextQueuedImageJob(["dezgo"]).id, jobs[0]);
+
+    new AIService(database).cancel(jobs[0]);
+    assert.equal(database.countActiveGenerationJobs("dezgo"), 19);
+    const replacement = enqueue(21);
+    assert.ok(replacement);
+    database.updateGenerationJob(jobs[1], "running", { progress: 0.5 });
+
+    database.close();
+    database = new MangaiDatabase(paths);
+    const recovered = database
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === jobs[1]);
+    assert.equal(recovered.status, "queued");
+    assert.equal(recovered.errorCode, "RECOVERED_AFTER_RESTART");
+    assert.equal(recovered.maxAttempts, 2);
+
+    assert.deepEqual(database.beginGenerationJobAttempt(jobs[1]), {
+      attemptCount: 1,
+      maxAttempts: 2,
+    });
+    assert.equal(
+      database.requeueGenerationJob(
+        jobs[1],
+        "DEZGO_RATE_LIMITED",
+        "retry",
+        10,
+      ),
+      true,
+    );
+    assert.deepEqual(database.beginGenerationJobAttempt(jobs[1]), {
+      attemptCount: 2,
+      maxAttempts: 2,
+    });
+    assert.equal(
+      database.requeueGenerationJob(
+        jobs[1],
+        "DEZGO_SERVICE_ERROR",
+        "stop",
+        10,
+      ),
+      false,
+    );
   } finally {
     database.close();
     fs.rmSync(root, { recursive: true, force: true });

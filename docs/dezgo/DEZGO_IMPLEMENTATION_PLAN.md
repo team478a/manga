@@ -398,3 +398,15 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - axe監査用の隔離DBへDezgo完了Jobを追加し、日本語・英語の生成画面で結果詳細の描画を待ってから監査
 - 実生成UI / IPC / Queue経路は引き続き無効で、外部API送信は行わない
 - ai-core 25/25、Desktop統合テスト71/71、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功
+
+### 2026-07-17: Provider別Queue安全制御
+
+- Dezgoの同時実行上限1件をQueue policyとして固定し、画像JobへDB層で自動的にactive Queue上限20件、最大試行2回（初回＋自動再試行1回）を適用
+- 上限判定とJob作成を同じSQLite transactionで処理し、同時登録による20件超過を防止
+- active件数は`queued`、`paused`、`running`を対象とし、完了・失敗・キャンセル後は新しいJobを登録可能
+- Queue取得をProvider別に分離し、既存ComfyUI workerはDezgo Jobを取得しない
+- 429と5xxだけを最大1回の自動再試行対象とし、通信断はQueue保留、400・401・402・403・404・入力不正・timeoutは自動再試行しない
+- 汎用のキャンセルと再起動復元をDezgo Jobにも適用し、`running`は同じJob ID・最大試行数を維持して`queued`へ戻す
+- Queue上限、Provider分離、キャンセル、再起動復元、試行上限、error別方針を自動テスト化
+- 実行dispatcher、実生成UI、IPC、外部API送信はまだ有効化しない
+- ai-core 25/25、Desktop統合テスト73/73に成功

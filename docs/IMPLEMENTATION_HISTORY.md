@@ -969,3 +969,11 @@ DezgoのText-to-Image内部pipelineが端末内Job履歴へ保存する安全な
 保存済み`assetId`を持つ履歴では「素材を開く」からProject Asset Libraryの該当素材を選択し、編集画面へ戻れるようにしました。Dezgo履歴にAsset IDがない場合はbuttonを無効化し、既存ComfyUI履歴の従来動作は維持します。
 
 アクセシビリティ監査用の隔離DBへDezgo完了状態を追加し、日英の生成画面で結果詳細の描画を監査対象にしました。Dezgoの実生成UI / IPC / Queue経路は引き続き無効であり、この実装では外部送信を行いません。ai-core 25/25、Desktop統合テスト71/71、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功しています。
+
+## 113. Dezgo Provider別Queue安全制御
+
+Dezgo画像Jobへ、DB層で自動的にactive Queue上限20件と最大試行2回（初回＋再試行1回）を適用しました。上限確認とJob作成は1つのSQLite transaction内で実行し、`queued`・`paused`・`running`の合計が上限を超えないようにします。キャンセルや完了後は空いた枠を再利用できます。
+
+既存のComfyUI workerはProvider指定でComfyUI Jobだけを取得するようにし、未有効のDezgo Jobを誤ってComfyUI形式として実行しないよう分離しました。Dezgoの自動再試行は429と5xxだけを最大1回とし、通信断はQueue保留、入力・認証・残高・権限・モデル・timeoutは停止する方針をコード化しました。
+
+Dezgo Jobの20件上限、Provider分離、キャンセル、再起動後の`running`から`queued`への復元、最大試行数維持、error別方針を自動テストで確認しました。実行dispatcher、実生成UI、IPC、外部API送信はまだ有効化していません。ai-core 25/25、Desktop統合テスト73/73に成功しています。

@@ -64,6 +64,7 @@ import {
   renderPanelLayerCachePng,
   type RenderAsset,
 } from "./page-renderer.js";
+import { DEZGO_QUEUE_POLICY } from "./ai/dezgo-queue-policy.js";
 
 export type Paths = {
   root: string;
@@ -4057,36 +4058,66 @@ export class MangaiDatabase {
     prompt: string;
     negativePrompt?: string;
     inputJson?: unknown;
-  }) {
+  }, options: {
+    maxAttempts?: number;
+    activeProviderLimit?: number;
+  } = {}) {
+    const isDezgoImage =
+      input.providerId === "dezgo" && input.generationType === "image";
+    const maxAttempts =
+      options.maxAttempts ??
+      (isDezgoImage ? DEZGO_QUEUE_POLICY.maxAttempts : 3);
+    const activeProviderLimit =
+      options.activeProviderLimit ??
+      (isDezgoImage ? DEZGO_QUEUE_POLICY.maxActiveJobs : undefined);
+    if (!Number.isInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 10)
+      throw new Error("生成ジョブの最大試行回数が正しくありません。");
+    if (
+      activeProviderLimit !== undefined &&
+      (!Number.isInteger(activeProviderLimit) ||
+        activeProviderLimit < 1 ||
+        activeProviderLimit > 1000)
+    )
+      throw new Error("生成Queue上限が正しくありません。");
     const id = uid();
-    const queueOrder = (
+    return this.db.transaction(() => {
+      if (activeProviderLimit !== undefined) {
+        const active = this.countActiveGenerationJobs(input.providerId);
+        if (active >= activeProviderLimit)
+          throw new Error(
+            `このProviderの生成Queueは${activeProviderLimit}件までです。完了またはキャンセル後に再試行してください。`,
+          );
+      }
+      const queueOrder = (
+        this.db
+          .prepare(
+            "select coalesce(max(queue_order),0)+1 as value from generation_jobs",
+          )
+          .get() as { value: number }
+      ).value;
       this.db
         .prepare(
-          "select coalesce(max(queue_order),0)+1 as value from generation_jobs",
+          "insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,prompt,negative_prompt,input_json,created_at,queue_order,max_attempts) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         )
-        .get() as { value: number }
-    ).value;
-    this.db
-      .prepare(
-        "insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,prompt,negative_prompt,input_json,created_at,queue_order) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-      )
-      .run(
-        id,
-        input.projectId ?? null,
-        input.episodeId ?? null,
-        input.pageId ?? null,
-        input.providerType,
-        input.providerId,
-        input.modelId ?? null,
-        input.generationType,
-        "queued",
-        input.prompt,
-        input.negativePrompt ?? "",
-        JSON.stringify(input.inputJson ?? {}),
-        now(),
-        queueOrder,
-      );
-    return id;
+        .run(
+          id,
+          input.projectId ?? null,
+          input.episodeId ?? null,
+          input.pageId ?? null,
+          input.providerType,
+          input.providerId,
+          input.modelId ?? null,
+          input.generationType,
+          "queued",
+          input.prompt,
+          input.negativePrompt ?? "",
+          JSON.stringify(input.inputJson ?? {}),
+          now(),
+          queueOrder,
+          maxAttempts,
+        );
+      return id;
+    })();
   }
   updateGenerationJob(
     id: string,
@@ -4133,15 +4164,33 @@ export class MangaiDatabase {
       .prepare("select * from generation_jobs where id=?")
       .get(id) as Record<string, unknown> | undefined;
   }
-  nextQueuedImageJob() {
+  countActiveGenerationJobs(providerId: string) {
+    return (
+      this.db
+        .prepare(
+          `select count(*) as count from generation_jobs
+           where provider_id=? and generation_type='image'
+             and status in ('queued','paused','running')`,
+        )
+        .get(providerId) as { count: number }
+    ).count;
+  }
+  nextQueuedImageJob(providerIds?: string[]) {
+    if (providerIds && !providerIds.length) return undefined;
+    const providerClause = providerIds
+      ? ` and provider_id in (${providerIds.map(() => "?").join(",")})`
+      : "";
     return this.db
       .prepare(
-        `select id,input_json as inputJson from generation_jobs
+        `select id,provider_id as providerId,input_json as inputJson from generation_jobs
          where status='queued' and generation_type='image'
            and (next_attempt_at is null or next_attempt_at<=?)
+           ${providerClause}
          order by priority desc,queue_order,created_at,id limit 1`,
       )
-      .get(now()) as { id: string; inputJson: string } | undefined;
+      .get(now(), ...(providerIds ?? [])) as
+      | { id: string; providerId: string; inputJson: string }
+      | undefined;
   }
   getGenerationQueueSettings(): GenerationQueueSettings {
     const row = this.db
@@ -4173,14 +4222,19 @@ export class MangaiDatabase {
       );
     return settings;
   }
-  nextQueuedImageDelayMs() {
+  nextQueuedImageDelayMs(providerIds?: string[]) {
+    if (providerIds && !providerIds.length) return null;
+    const providerClause = providerIds
+      ? ` and provider_id in (${providerIds.map(() => "?").join(",")})`
+      : "";
     const row = this.db
       .prepare(
         `select next_attempt_at as nextAttemptAt from generation_jobs
          where status='queued' and generation_type='image' and next_attempt_at is not null
+         ${providerClause}
          order by next_attempt_at limit 1`,
       )
-      .get() as { nextAttemptAt: string } | undefined;
+      .get(...(providerIds ?? [])) as { nextAttemptAt: string } | undefined;
     return row
       ? Math.max(0, new Date(row.nextAttemptAt).getTime() - Date.now())
       : null;
