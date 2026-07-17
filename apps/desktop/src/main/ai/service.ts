@@ -30,6 +30,11 @@ import { ComfyUIProvider } from "./providers/comfyui.js";
 import { DezgoProvider } from "./providers/dezgo.js";
 import type { DezgoFeatureFlags } from "./dezgo-feature-flags.js";
 import {
+  DEZGO_PRICING_VERSION,
+  dezgoPreviewDimensions,
+  evaluateDezgoCostGuard,
+} from "./dezgo-cost-guard.js";
+import {
   ExternalDispatchApprovalError,
   ExternalDispatchApprovalStore,
 } from "./external-dispatch-approval.js";
@@ -54,6 +59,7 @@ export class AIService {
   private getProviderCredential: (
     providerId: "dezgo",
   ) => Promise<string | null>;
+  private getDezgoBalance: () => Promise<number | null>;
   private dezgoFeatures: DezgoFeatureFlags;
   private externalDispatchApprovals = new ExternalDispatchApprovalStore();
   constructor(
@@ -63,6 +69,7 @@ export class AIService {
       getRuntimeProfile?: () => RuntimeProfileState;
       retryBaseDelayMs?: number;
       getProviderCredential?: (providerId: "dezgo") => Promise<string | null>;
+      getDezgoBalance?: () => Promise<number | null>;
       dezgoFeatures?: DezgoFeatureFlags;
     } = {},
   ) {
@@ -72,6 +79,12 @@ export class AIService {
     this.retryBaseDelayMs = Math.max(10, options.retryBaseDelayMs ?? 1000);
     this.getProviderCredential =
       options.getProviderCredential ?? (async () => null);
+    this.getDezgoBalance =
+      options.getDezgoBalance ??
+      (() =>
+        new DezgoProvider(() =>
+          this.getProviderCredential("dezgo"),
+        ).getBalance());
     this.dezgoFeatures = options.dezgoFeatures ?? {
       dezgoProviderEnabled: false,
       dezgoDirectByokEnabled: false,
@@ -299,6 +312,12 @@ export class AIService {
     const dezgoConfigured = dezgoEnabled
       ? Boolean(await this.getProviderCredential("dezgo"))
       : false;
+    const costContext = await this.dezgoCostContext(
+      input.projectId,
+      policy,
+      dezgoEnabled,
+      dezgoConfigured,
+    );
     const preview = createExternalDispatchPreview({
       previewId: crypto.randomUUID(),
       request: input,
@@ -316,8 +335,14 @@ export class AIService {
         supportedJobTypes: ["background", "prop", "effect"],
         dataRetentionSummary: "ジョブデータは完了後30日間保持されます。",
         trainingUseSummary: "公式資料で学習利用条件を確認できていません。",
-        pricingSummary: "生成後の実費のみ取得可能。事前見積は未対応。",
+        pricingSummary:
+          "公式価格表を基に25%の安全余裕を加えた承認上限です。実費は生成応答で照合します。",
       },
+      estimate: {
+        cost: costContext.guard.authorizationCostUsd,
+        currency: costContext.guard.currency,
+      },
+      costBlockReason: costContext.guard.blockReason ?? undefined,
       createdAt: new Date().toISOString(),
     });
     this.externalDispatchApprovals.register(
@@ -327,6 +352,7 @@ export class AIService {
         policy,
         dezgoEnabled,
         dezgoConfigured,
+        costContext,
       ),
     );
     return preview;
@@ -343,6 +369,14 @@ export class AIService {
         "PREVIEW_NOT_FOUND",
         "外部送信プレビューが見つかりません。もう一度確認してください。",
       );
+    const preview = this.externalDispatchApprovals.previewFor(
+      confirmation.previewId,
+    );
+    if (!preview)
+      throw new ExternalDispatchApprovalError(
+        "PREVIEW_NOT_FOUND",
+        "外部送信プレビューが見つかりません。もう一度確認してください。",
+      );
     const policy = this.store.getProjectGenerationPolicy(projectId);
     const dezgoEnabled =
       this.dezgoFeatures.dezgoProviderEnabled &&
@@ -350,22 +384,93 @@ export class AIService {
     const dezgoConfigured = dezgoEnabled
       ? Boolean(await this.getProviderCredential("dezgo"))
       : false;
-    return this.externalDispatchApprovals.confirm(
+    const costContext = await this.dezgoCostContext(
+      projectId,
+      policy,
+      dezgoEnabled,
+      dezgoConfigured,
+    );
+    const approval = this.externalDispatchApprovals.confirm(
       confirmation,
       this.externalDispatchContextSha256(
         policy,
         dezgoEnabled,
         dezgoConfigured,
+        costContext,
       ),
     );
+    try {
+      this.store.reserveExternalCost({
+        projectId,
+        providerId: "dezgo",
+        approvalToken: approval.approvalToken,
+        amountUsd: preview.estimatedCost ?? 0,
+        monthlyLimitUsd: policy.monthlyCostLimit,
+      });
+      return approval;
+    } catch (error) {
+      this.externalDispatchApprovals.revoke(approval.approvalToken);
+      throw error;
+    }
   }
   consumeExternalDispatchApproval(approvalToken: string) {
-    return this.externalDispatchApprovals.consume(approvalToken);
+    try {
+      return this.externalDispatchApprovals.consume(approvalToken);
+    } catch (error) {
+      this.store.releaseExternalCostReservation(approvalToken);
+      throw error;
+    }
+  }
+  settleExternalDispatchCost(
+    approvalToken: string,
+    actualAmountUsd: number,
+    jobId?: string,
+  ) {
+    return this.store.settleExternalCost({
+      approvalToken,
+      actualAmountUsd,
+      jobId,
+    });
+  }
+  releaseExternalDispatchCost(approvalToken: string) {
+    return this.store.releaseExternalCostReservation(approvalToken);
+  }
+  private async dezgoCostContext(
+    projectId: string,
+    policy: ProjectGenerationPolicy,
+    providerEnabled: boolean,
+    providerConfigured: boolean,
+  ) {
+    const project = this.store.bundle(projectId).project;
+    const dimensions = dezgoPreviewDimensions(project.width, project.height);
+    const summary = this.store.externalCostSummary(projectId, "dezgo");
+    let balanceUsd: number | null = null;
+    if (providerEnabled && providerConfigured) {
+      try {
+        balanceUsd = await this.getDezgoBalance();
+      } catch (error) {
+        this.log("dezgo_balance_failed", error, { projectId });
+      }
+    }
+    const steps = 30;
+    return {
+      dimensions,
+      steps,
+      guard: evaluateDezgoCostGuard({
+        ...dimensions,
+        steps,
+        monthlyLimitUsd: policy.monthlyCostLimit,
+        monthlyActualUsd: summary.actualUsd,
+        monthlyReservedUsd: summary.reservedUsd,
+        balanceUsd,
+      }),
+    };
   }
   private externalDispatchContextSha256(
     policy: ProjectGenerationPolicy,
     providerEnabled: boolean,
     providerConfigured: boolean,
+    costContext: Awaited<ReturnType<AIService["dezgoCostContext"]>>,
   ) {
     return crypto
       .createHash("sha256")
@@ -381,6 +486,14 @@ export class AIService {
           providerId: "dezgo",
           providerEnabled,
           providerConfigured,
+          pricingVersion: DEZGO_PRICING_VERSION,
+          dimensions: costContext.dimensions,
+          steps: costContext.steps,
+          authorizationCostUsd: costContext.guard.authorizationCostUsd,
+          monthlyActualUsd: costContext.guard.monthlyActualUsd,
+          monthlyReservedUsd: costContext.guard.monthlyReservedUsd,
+          balanceUsd: costContext.guard.balanceUsd,
+          costBlockReason: costContext.guard.blockReason,
         }),
         "utf8",
       )

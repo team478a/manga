@@ -389,7 +389,7 @@ const ja = {
   "generation.externalConfirmation": "送信前の明示確認",
   "generation.externalRequired": "必須",
   "generation.externalDezgoPricing":
-    "生成後の実費は取得できますが、事前見積APIは確認できていません。",
+    "公式価格表を基に25%の安全余裕を加えた承認上限です。実費は生成応答で照合します。",
   "generation.externalDezgoRetention":
     "ジョブデータは完了後30日間保持されます。",
   "generation.externalDezgoTraining":
@@ -398,12 +398,22 @@ const ja = {
   "generation.externalNotIncluded": "送信しない",
   "generation.externalUnknown": "未設定",
   "generation.externalPreviewDisabled":
-    "現在はプレビューのみです。費用見積と利用条件を確認できない限り外部送信は有効になりません。",
+    "外部送信には、送信内容・費用・Provider条件の確認が毎回必要です。",
   "generation.externalBlock.providerNotConfigured": "Providerが未設定です。",
   "generation.externalBlock.providerDisabled": "Providerは無効です。",
   "generation.externalBlock.unsupportedJob": "このジョブ種類に未対応です。",
   "generation.externalBlock.policyBlocked":
     "作品ポリシーで外部処理が禁止されています。",
+  "generation.externalBlock.pricingStale":
+    "価格情報の確認期限が切れています。アプリを更新してください。",
+  "generation.externalBlock.costLimitNotSet":
+    "Project月間費用上限を設定してください。",
+  "generation.externalBlock.costLimitExceeded":
+    "Project月間費用上限を超えるため実行できません。",
+  "generation.externalBlock.balanceUnavailable":
+    "Dezgo残高を確認できません。接続を確認してください。",
+  "generation.externalBlock.balanceInsufficient":
+    "Dezgo残高が承認上限に足りません。",
   "generation.externalBlock.costUnavailable": "費用見積もりを取得できません。",
   "generation.policy.title": "Project外部処理ポリシー",
   "generation.policy.description":
@@ -1223,7 +1233,7 @@ const en: Record<TranslationKey, string> = {
   "generation.externalConfirmation": "Explicit confirmation before dispatch",
   "generation.externalRequired": "Required",
   "generation.externalDezgoPricing":
-    "Actual cost is available after generation, but no official preflight estimate API has been confirmed.",
+    "This authorization ceiling adds a 25% safety margin to the official price table. Actual cost is reconciled from the generation response.",
   "generation.externalDezgoRetention":
     "Job data is retained for 30 days after completion.",
   "generation.externalDezgoTraining":
@@ -1232,7 +1242,7 @@ const en: Record<TranslationKey, string> = {
   "generation.externalNotIncluded": "Not included",
   "generation.externalUnknown": "Not configured",
   "generation.externalPreviewDisabled":
-    "This is a preview only. External dispatch remains disabled until the cost estimate and terms can be verified.",
+    "Every external dispatch requires review of the payload, cost, and provider terms.",
   "generation.externalBlock.providerNotConfigured":
     "No external provider is configured.",
   "generation.externalBlock.providerDisabled": "The provider is disabled.",
@@ -1240,6 +1250,16 @@ const en: Record<TranslationKey, string> = {
     "The provider does not support this job type.",
   "generation.externalBlock.policyBlocked":
     "The project policy blocks external processing.",
+  "generation.externalBlock.pricingStale":
+    "The pricing information has expired. Update the app before dispatching.",
+  "generation.externalBlock.costLimitNotSet":
+    "Set a monthly project cost limit before dispatching.",
+  "generation.externalBlock.costLimitExceeded":
+    "This dispatch would exceed the monthly project cost limit.",
+  "generation.externalBlock.balanceUnavailable":
+    "The Dezgo balance could not be verified. Check the connection.",
+  "generation.externalBlock.balanceInsufficient":
+    "The Dezgo balance is below the authorization ceiling.",
   "generation.externalBlock.costUnavailable":
     "A cost estimate is not available.",
   "generation.policy.title": "Project external-processing policy",

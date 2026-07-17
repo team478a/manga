@@ -1083,6 +1083,7 @@ test("safe asset jobs prefer project library and never require external access",
 
     const dezgoService = new AIService(db, {
       getProviderCredential: async () => "configured-test-key",
+      getDezgoBalance: async () => 10,
       dezgoFeatures: {
         dezgoProviderEnabled: true,
         dezgoDirectByokEnabled: true,
@@ -1098,9 +1099,9 @@ test("safe asset jobs prefer project library and never require external access",
     assert.equal(configuredPreview.provider.providerId, "dezgo");
     assert.equal(configuredPreview.provider.enabled, true);
     assert.equal(configuredPreview.provider.endpointConfigured, true);
-    assert.equal(configuredPreview.estimatedCost, null);
+    assert.equal(configuredPreview.estimatedCost, 0.002375);
     assert.equal(configuredPreview.executable, false);
-    assert.equal(configuredPreview.blockReason, "cost_estimate_unavailable");
+    assert.equal(configuredPreview.blockReason, "cost_limit_not_set");
     assert.equal(
       JSON.stringify(configuredPreview).includes("configured-test-key"),
       false,
@@ -1132,6 +1133,38 @@ test("safe asset jobs prefer project library and never require external access",
         query: "未登録の机",
       });
     assert.equal(policyBlockedPreview.blockReason, "policy_blocked");
+    const approvedPreview = await dezgoService.previewExternalSafeAsset({
+      projectId: project.project.id,
+      type: "background",
+      query: "人物を含まない夜景",
+    });
+    assert.equal(approvedPreview.executable, true);
+    assert.equal(approvedPreview.blockReason, null);
+    assert.equal(approvedPreview.currency, "USD");
+    const approval = await dezgoService.confirmExternalSafeAsset({
+      previewId: approvedPreview.previewId,
+      promptSha256: approvedPreview.promptSha256,
+      payloadReviewed: true,
+      costReviewed: true,
+      providerTermsReviewed: true,
+      confirmedAt: new Date().toISOString(),
+    });
+    assert.equal(
+      db.externalCostSummary(project.project.id, "dezgo").reservedUsd,
+      approvedPreview.estimatedCost,
+    );
+    const dispatch = dezgoService.consumeExternalDispatchApproval(
+      approval.approvalToken,
+    );
+    assert.equal(dispatch.request.query, "人物を含まない夜景");
+    assert.equal(
+      dezgoService.releaseExternalDispatchCost(approval.approvalToken),
+      true,
+    );
+    assert.equal(
+      db.externalCostSummary(project.project.id, "dezgo").reservedUsd,
+      0,
+    );
   } finally {
     db.close();
     fs.rmSync(root, { recursive: true, force: true });

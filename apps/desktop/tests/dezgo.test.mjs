@@ -28,10 +28,161 @@ import {
   dezgoFailureDisposition,
 } from "../dist-main/main/ai/dezgo-queue-policy.js";
 import {
+  DEZGO_PRICING_VALID_UNTIL,
+  dezgoPreviewDimensions,
+  estimateDezgoTextToImageCost,
+  evaluateDezgoCostGuard,
+} from "../dist-main/main/ai/dezgo-cost-guard.js";
+import {
   ExternalDispatchApprovalStore,
 } from "../dist-main/main/ai/external-dispatch-approval.js";
 import { AIService } from "../dist-main/main/ai/service.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
+
+test("Dezgo conservative cost guard checks price age, budget and balance", () => {
+  assert.deepEqual(dezgoPreviewDimensions(100, 2049), {
+    width: 320,
+    height: 1024,
+  });
+  assert.equal(
+    estimateDezgoTextToImageCost({ width: 512, height: 512, steps: 30 })
+      .authorizationCostUsd,
+    0.002375,
+  );
+  const large = estimateDezgoTextToImageCost({
+    width: 1024,
+    height: 1024,
+    steps: 150,
+  });
+  assert.equal(large.publishedBracketEstimateUsd, 0.0905);
+  assert.equal(large.authorizationCostUsd, 0.113125);
+
+  const base = {
+    width: 512,
+    height: 512,
+    steps: 30,
+    monthlyLimitUsd: 1,
+    monthlyActualUsd: 0.1,
+    monthlyReservedUsd: 0.2,
+    balanceUsd: 2,
+    now: new Date("2026-07-17T00:00:00.000Z"),
+  };
+  assert.equal(evaluateDezgoCostGuard(base).allowed, true);
+  assert.equal(
+    evaluateDezgoCostGuard({
+      ...base,
+      now: new Date(Date.parse(DEZGO_PRICING_VALID_UNTIL) + 1),
+    }).blockReason,
+    "pricing_stale",
+  );
+  assert.equal(
+    evaluateDezgoCostGuard({ ...base, monthlyLimitUsd: null }).blockReason,
+    "cost_limit_not_set",
+  );
+  assert.equal(
+    evaluateDezgoCostGuard({ ...base, monthlyLimitUsd: 0.301 }).blockReason,
+    "cost_limit_exceeded",
+  );
+  assert.equal(
+    evaluateDezgoCostGuard({ ...base, balanceUsd: null }).blockReason,
+    "balance_unavailable",
+  );
+  assert.equal(
+    evaluateDezgoCostGuard({ ...base, balanceUsd: 0.001 }).blockReason,
+    "balance_insufficient",
+  );
+});
+
+test("external cost reservations enforce monthly limits and recover on restart", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-cost-ledger-"));
+  const paths = {
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let database = new MangaiDatabase(paths);
+  try {
+    const project = database.createProject({
+      title: "Cost ledger",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const projectId = project.project.id;
+    database.reserveExternalCost({
+      projectId,
+      providerId: "dezgo",
+      approvalToken: "first-private-token",
+      amountUsd: 0.4,
+      monthlyLimitUsd: 1,
+      createdAt: "2026-07-17T00:00:00.000Z",
+    });
+    database.reserveExternalCost({
+      projectId,
+      providerId: "dezgo",
+      approvalToken: "second-private-token",
+      amountUsd: 0.5,
+      monthlyLimitUsd: 1,
+      createdAt: "2026-07-18T00:00:00.000Z",
+    });
+    assert.throws(
+      () =>
+        database.reserveExternalCost({
+          projectId,
+          providerId: "dezgo",
+          approvalToken: "over-limit-token",
+          amountUsd: 0.2,
+          monthlyLimitUsd: 1,
+          createdAt: "2026-07-19T00:00:00.000Z",
+        }),
+      /月間費用上限/,
+    );
+    database.settleExternalCost({
+      approvalToken: "first-private-token",
+      actualAmountUsd: 0.35,
+    });
+    database.releaseExternalCostReservation("second-private-token");
+    assert.deepEqual(database.externalCostSummary(projectId, "dezgo", "2026-07"), {
+      billingMonth: "2026-07",
+      actualUsd: 0.35,
+      reservedUsd: 0,
+      totalUsd: 0.35,
+    });
+    database.reserveExternalCost({
+      projectId,
+      providerId: "dezgo",
+      approvalToken: "next-month-token",
+      amountUsd: 0.8,
+      monthlyLimitUsd: 1,
+      createdAt: "2026-08-01T00:00:00.000Z",
+    });
+    assert.equal(
+      fs.readFileSync(paths.database).includes(Buffer.from("next-month-token")),
+      false,
+    );
+    database.close();
+    database = new MangaiDatabase(paths);
+    assert.equal(
+      database.externalCostSummary(projectId, "dezgo", "2026-08").reservedUsd,
+      0,
+    );
+    assert.equal(
+      database.externalCostSummary(projectId, "dezgo", "2026-07").actualUsd,
+      0.35,
+    );
+  } finally {
+    database.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("Dezgo Phase 1 features are disabled by default", () => {
   assert.deepEqual(

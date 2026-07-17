@@ -115,6 +115,10 @@ export class ExternalDispatchApprovalStore {
     return this.pending.get(previewId)?.preview.projectId ?? null;
   }
 
+  previewFor(previewId: string) {
+    return this.pending.get(previewId)?.preview ?? null;
+  }
+
   confirm(
     confirmationInput: ExternalDispatchConfirmation,
     currentContextSha256: string,
@@ -198,6 +202,10 @@ export class ExternalDispatchApprovalStore {
       request: approved.request,
       confirmedAt: approved.confirmedAt,
     };
+  }
+
+  revoke(approvalToken: string) {
+    return this.approved.delete(approvalToken);
   }
 
   private prune() {

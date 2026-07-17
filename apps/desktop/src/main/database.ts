@@ -419,10 +419,16 @@ export class MangaiDatabase {
  create table if not exists generation_jobs(id text primary key,project_id text references projects(id) on delete set null,episode_id text references episodes(id) on delete set null,page_id text references pages(id) on delete set null,provider_type text not null,provider_id text not null,model_id text,generation_type text not null,status text not null,prompt text not null,negative_prompt text not null default '',input_json text not null default '{}',output_json text not null default '{}',provider_job_id text,error_code text,error_message text,created_at text not null,started_at text,completed_at text);
  create table if not exists generation_outputs(id text primary key,job_id text not null references generation_jobs(id) on delete cascade,asset_id text references assets(id) on delete set null,relative_path text,metadata_json text not null default '{}',created_at text not null);
  create table if not exists generation_queue_settings(id integer primary key check(id=1),night_mode_enabled integer not null default 0,start_time text not null default '22:00',end_time text not null default '07:00',updated_at text not null);
+ create table if not exists external_cost_reservations(id text primary key,project_id text not null references projects(id) on delete cascade,provider_id text not null,approval_token_sha256 text not null unique,job_id text references generation_jobs(id) on delete set null,billing_month text not null,reserved_amount_usd real not null check(reserved_amount_usd>=0),actual_amount_usd real,status text not null check(status in ('reserved','settled','released')),created_at text not null,updated_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
  create table if not exists schema_migrations(version text primary key,name text not null,applied_at text not null);
- create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);`);
+ create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);create index if not exists idx_external_cost_project_month on external_cost_reservations(project_id,provider_id,billing_month,status);`);
+    this.db
+      .prepare(
+        "update external_cost_reservations set status='released',updated_at=? where status='reserved'",
+      )
+      .run(now());
     const assetColumns = this.db
       .prepare("pragma table_info(assets)")
       .all() as Array<{ name: string }>;
@@ -4046,6 +4052,156 @@ export class MangaiDatabase {
       .prepare("update chat_sessions set updated_at=? where id=?")
       .run(now(), sessionId);
     return id;
+  }
+  externalCostSummary(
+    projectId: string,
+    providerId: string,
+    billingMonth = new Date().toISOString().slice(0, 7),
+  ) {
+    if (!/^\d{4}-\d{2}$/.test(billingMonth))
+      throw new Error("費用集計月が正しくありません。");
+    const row = this.db
+      .prepare(
+        `select
+           coalesce(sum(case when status='settled' then actual_amount_usd else 0 end),0) as actualUsd,
+           coalesce(sum(case when status='reserved' then reserved_amount_usd else 0 end),0) as reservedUsd
+         from external_cost_reservations
+         where project_id=? and provider_id=? and billing_month=?`,
+      )
+      .get(projectId, providerId, billingMonth) as {
+      actualUsd: number;
+      reservedUsd: number;
+    };
+    return {
+      billingMonth,
+      actualUsd: row.actualUsd,
+      reservedUsd: row.reservedUsd,
+      totalUsd: row.actualUsd + row.reservedUsd,
+    };
+  }
+  reserveExternalCost(input: {
+    projectId: string;
+    providerId: string;
+    approvalToken: string;
+    amountUsd: number;
+    monthlyLimitUsd: number | null;
+    createdAt?: string;
+  }) {
+    if (
+      !input.approvalToken ||
+      input.approvalToken.length > 500 ||
+      !Number.isFinite(input.amountUsd) ||
+      input.amountUsd < 0 ||
+      input.amountUsd > 1_000_000
+    )
+      throw new Error("外部送信の費用予約が正しくありません。");
+    if (
+      input.monthlyLimitUsd === null ||
+      !Number.isFinite(input.monthlyLimitUsd) ||
+      input.monthlyLimitUsd < 0
+    )
+      throw new Error("Project月間費用上限が設定されていません。");
+    const monthlyLimitUsd = input.monthlyLimitUsd;
+    const requestedStamp = input.createdAt ?? now();
+    const parsedStamp = new Date(requestedStamp);
+    if (!Number.isFinite(parsedStamp.getTime()))
+      throw new Error("外部送信の費用予約時刻が正しくありません。");
+    const stamp = parsedStamp.toISOString();
+    const billingMonth = stamp.slice(0, 7);
+    const tokenSha256 = crypto
+      .createHash("sha256")
+      .update(input.approvalToken, "utf8")
+      .digest("hex");
+    return this.db.transaction(() => {
+      const existing = this.db
+        .prepare(
+          "select 1 from external_cost_reservations where approval_token_sha256=?",
+        )
+        .get(tokenSha256);
+      if (existing) throw new Error("外部送信の費用予約はすでに使用されています。");
+      const summary = this.externalCostSummary(
+        input.projectId,
+        input.providerId,
+        billingMonth,
+      );
+      if (summary.totalUsd + input.amountUsd > monthlyLimitUsd + 1e-9)
+        throw new Error("Project月間費用上限を超えるため実行できません。");
+      const id = uid();
+      this.db
+        .prepare(
+          `insert into external_cost_reservations(
+             id,project_id,provider_id,approval_token_sha256,billing_month,
+             reserved_amount_usd,status,created_at,updated_at
+           ) values(?,?,?,?,?,?,'reserved',?,?)`,
+        )
+        .run(
+          id,
+          input.projectId,
+          input.providerId,
+          tokenSha256,
+          billingMonth,
+          input.amountUsd,
+          stamp,
+          stamp,
+        );
+      return {
+        id,
+        ...this.externalCostSummary(
+          input.projectId,
+          input.providerId,
+          billingMonth,
+        ),
+      };
+    })();
+  }
+  settleExternalCost(input: {
+    approvalToken: string;
+    actualAmountUsd: number;
+    jobId?: string;
+    updatedAt?: string;
+  }) {
+    if (
+      !input.approvalToken ||
+      input.approvalToken.length > 500 ||
+      !Number.isFinite(input.actualAmountUsd) ||
+      input.actualAmountUsd < 0 ||
+      input.actualAmountUsd > 1_000_000
+    )
+      throw new Error("外部送信の実費が正しくありません。");
+    const tokenSha256 = crypto
+      .createHash("sha256")
+      .update(input.approvalToken, "utf8")
+      .digest("hex");
+    const result = this.db
+      .prepare(
+        `update external_cost_reservations
+         set status='settled',actual_amount_usd=?,job_id=?,updated_at=?
+         where approval_token_sha256=? and status='reserved'`,
+      )
+      .run(
+        input.actualAmountUsd,
+        input.jobId ?? null,
+        input.updatedAt ?? now(),
+        tokenSha256,
+      );
+    if (!result.changes)
+      throw new Error("外部送信の費用予約を確定できませんでした。");
+    return true;
+  }
+  releaseExternalCostReservation(approvalToken: string) {
+    if (!approvalToken || approvalToken.length > 500) return false;
+    const tokenSha256 = crypto
+      .createHash("sha256")
+      .update(approvalToken, "utf8")
+      .digest("hex");
+    return Boolean(
+      this.db
+        .prepare(
+          `update external_cost_reservations set status='released',updated_at=?
+           where approval_token_sha256=? and status='reserved'`,
+        )
+        .run(now(), tokenSha256).changes,
+    );
   }
   createGenerationJob(input: {
     projectId?: string;

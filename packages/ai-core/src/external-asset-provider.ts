@@ -40,11 +40,22 @@ export const externalDispatchBlockReasonSchema = z.enum([
   "provider_disabled",
   "unsupported_job_type",
   "policy_blocked",
+  "pricing_stale",
+  "cost_limit_not_set",
+  "cost_limit_exceeded",
+  "balance_unavailable",
+  "balance_insufficient",
   "cost_estimate_unavailable",
 ]);
 export type ExternalDispatchBlockReason = z.infer<
   typeof externalDispatchBlockReasonSchema
 >;
+export type ExternalDispatchCostBlockReason =
+  | "pricing_stale"
+  | "cost_limit_not_set"
+  | "cost_limit_exceeded"
+  | "balance_unavailable"
+  | "balance_insufficient";
 
 export const externalDispatchPreviewSchema = z.object({
   previewId: z.string().uuid(),
@@ -121,6 +132,7 @@ export function createExternalDispatchPreview(input: {
   customCloudJobTypes?: string[];
   provider?: ExternalAssetProviderDescriptor;
   estimate?: { cost: number; currency: string };
+  costBlockReason?: ExternalDispatchCostBlockReason;
   createdAt: string;
 }): ExternalDispatchPreview {
   const request = safeAssetLibraryRequestSchema.parse(input.request);
@@ -139,6 +151,7 @@ export function createExternalDispatchPreview(input: {
   else if (!provider.enabled) blockReason = "provider_disabled";
   else if (!supported) blockReason = "unsupported_job_type";
   else if (!allowed) blockReason = "policy_blocked";
+  else if (input.costBlockReason) blockReason = input.costBlockReason;
   else if (!input.estimate) blockReason = "cost_estimate_unavailable";
   return externalDispatchPreviewSchema.parse({
     previewId: input.previewId,

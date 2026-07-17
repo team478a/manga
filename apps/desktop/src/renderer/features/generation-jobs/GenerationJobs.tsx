@@ -58,6 +58,16 @@ function externalBlockReasonKey(reason: string | null) {
     return "generation.externalBlock.unsupportedJob" as const;
   if (reason === "policy_blocked")
     return "generation.externalBlock.policyBlocked" as const;
+  if (reason === "pricing_stale")
+    return "generation.externalBlock.pricingStale" as const;
+  if (reason === "cost_limit_not_set")
+    return "generation.externalBlock.costLimitNotSet" as const;
+  if (reason === "cost_limit_exceeded")
+    return "generation.externalBlock.costLimitExceeded" as const;
+  if (reason === "balance_unavailable")
+    return "generation.externalBlock.balanceUnavailable" as const;
+  if (reason === "balance_insufficient")
+    return "generation.externalBlock.balanceInsufficient" as const;
   if (reason === "cost_estimate_unavailable")
     return "generation.externalBlock.costUnavailable" as const;
   return "generation.externalBlock.providerNotConfigured" as const;

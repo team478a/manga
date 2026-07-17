@@ -406,6 +406,31 @@ test("configured external preview still requires explicit confirmation", () => {
   );
 });
 
+test("configured external preview reports a cost guard block reason", () => {
+  const preview = createExternalDispatchPreview({
+    previewId: randomUUID(),
+    request: { projectId, type: "background", query: "empty city" },
+    promptSha256: "d".repeat(64),
+    policy: "safe_assets_only",
+    provider: {
+      providerId: "safe-assets",
+      displayName: "Safe Assets",
+      enabled: true,
+      endpointConfigured: true,
+      supportedJobTypes: ["background"],
+      dataRetentionSummary: "24 hours",
+      trainingUseSummary: "Not used for training",
+      pricingSummary: "Per image",
+    },
+    estimate: { cost: 0.01, currency: "USD" },
+    costBlockReason: "balance_insufficient",
+    createdAt: new Date().toISOString(),
+  });
+  assert.equal(preview.executable, false);
+  assert.equal(preview.blockReason, "balance_insufficient");
+  assert.equal(preview.estimatedCost, 0.01);
+});
+
 test("project policy blocks an otherwise configured external preview", () => {
   const preview = createExternalDispatchPreview({
     previewId: randomUUID(),

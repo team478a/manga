@@ -985,3 +985,13 @@ Dezgo Jobの20件上限、Provider分離、キャンセル、再起動後の`run
 明示承認はpayload・費用・Provider条件の3項目を必須とし、previewは5分、発行後のopaque tokenは60秒だけ有効です。tokenは一回消費した時点で削除され、dispatcherはtokenへ保存された元Requestだけを取得します。再利用、Prompt改ざん、Project不一致、context変更、期限切れ、不正な確認時刻、blocked previewを拒否し、承認情報は最大100件、アプリ再起動後は復元しません。
 
 現在のDezgo previewは事前費用見積を取得できず`executable=false`であるため、承認tokenは発行されません。実行dispatcher、renderer IPC、外部API送信は引き続き未接続です。ai-core 25/25、Desktop統合テスト74/74、TypeScript、ESLint、本番renderer buildに成功しています。
+
+## 115. Dezgo保守的費用ガード・Project月間予約台帳
+
+Dezgo公式価格表のStable Diffusion 1/2 Text-to-Image例を端末内の価格versionとして固定し、30 Stepsを基準にSteps比例、要求サイズ以上の公開解像度帯、25%の安全余裕を順に適用する保守的な承認上限を追加しました。公式OpenAPIに事前見積endpointを確認できないことによるMANGAI側の推定であり、価格表確認から30日を過ぎたbuildは自動停止します。
+
+Project月間費用上限、当月の確定実費、未精算予約、Dezgo残高を外部送信previewへ接続しました。上限未設定・超過、残高取得失敗・不足、価格情報期限切れを個別に表示し、preview後の費用条件変化もcontext SHA-256不一致として再確認させます。
+
+承認時はSQLite transaction内で費用枠を予約するため、同時承認でも月間上限を超えません。DBにはopaque承認tokenそのものではなくSHA-256だけを保存し、将来のdispatcherが生成応答の実費headerで確定または失敗時に解放できるService契約を追加しました。Mainプロセスの一回限り承認が再起動で失われた場合、対応する未精算予約もDB起動時に解放します。
+
+価格計算、価格期限、上限・残高の各block、月跨ぎ、原子的な上限拒否、token非保存、精算・解放、再起動回収、previewから承認・一回消費までを自動テスト化しました。実行dispatcher、実生成UI、外部送信IPCは引き続き未接続で、生成requestは送信していません。ai-core 26/26、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功しています。

@@ -424,3 +424,16 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - 現在のDezgo previewは費用見積未取得で`executable=false`のため、承認発行、実行dispatcher、IPC、外部API送信は引き続き無効
 - 自動テストで改ざん、再利用、期限切れ、context変更、Project不一致、blocked preview、再起動相当のStore再生成を確認
 - ai-core 25/25、Desktop統合テスト74/74、TypeScript、ESLint、本番renderer buildに成功
+
+### 2026-07-17: 保守的費用見積・月間予算予約
+
+- 公式の[Stable Diffusion 1/2価格表](https://dev.dezgo.com/pricing/sd1/)にある30 Steps時の320 / 512 / 768 / 1024px例とSteps比例を基準化
+- 公式[OpenAPI](https://dev.dezgo.com/openapi.json)に事前見積endpointを確認できないため、要求画像以上の公開解像度帯を使い、さらに25%を加えた値をMANGAIの承認上限とする
+- 価格表の確認日をversion化し、確認から30日を過ぎたbuildは`pricing_stale`でfail closed
+- Project月間上限の未設定・超過、[`/account/tx/last`](https://dev.dezgo.com/getting-started/)による残高の取得失敗・不足を個別理由でblock
+- previewと再確認時に価格version、寸法、Steps、予約上限、当月実費・予約額、残高をcontext SHA-256へ固定
+- 承認token発行時にSQLite transactionで費用枠を予約し、同時承認でもProject月間上限を超えないようにする
+- 台帳には承認tokenのSHA-256だけを保存し、実費確定時は`x-dezgo-job-amount-usd`で精算する契約を追加
+- 承認Storeが再起動で消える設計に合わせ、未精算予約はDB起動時に自動解放し、settled実費は月次集計へ保持
+- 実行dispatcher、実生成UI、外部送信IPCはまだ有効化せず、この段階で生成requestは送信しない
+- ai-core 26/26、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功
