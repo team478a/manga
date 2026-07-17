@@ -83,6 +83,7 @@ export class ExternalDispatchApprovalStore {
       preview.projectId === request.projectId &&
       preview.pageId === request.pageId &&
       preview.jobType === request.type &&
+      preview.modelId === (request.modelId ?? null) &&
       equalSha256(preview.promptSha256, sha256(request.query));
     if (!requestMatches || !SHA256_PATTERN.test(contextSha256))
       throw new ExternalDispatchApprovalError(

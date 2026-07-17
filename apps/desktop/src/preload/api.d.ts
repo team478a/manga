@@ -6,6 +6,7 @@ import type {
   PageBatchImageRequest,
   ComfyWorkflowOptimization,
   ComfyLowSpecRuntimeReport,
+  ExternalDispatchConfirmation,
   ExternalDispatchPreview,
   ProjectGenerationPolicy,
   ProjectGenerationPolicyInput,
@@ -396,6 +397,14 @@ export type DesktopApi = {
     previewExternalSafeAsset: (
       value: SafeAssetLibraryRequest,
     ) => Promise<ExternalDispatchPreview>;
+    enqueueExternalSafeAsset: (
+      value: ExternalDispatchConfirmation,
+    ) => Promise<{
+      jobId: string;
+      status: "queued";
+      providerId: "dezgo";
+      modelId: string;
+    }>;
     generateImage: (value: any) => Promise<any>;
     enqueuePageBatch: (value: PageBatchImageRequest) => Promise<{
       jobs: Array<{ pageId: string; jobId: string }>;

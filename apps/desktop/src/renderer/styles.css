@@ -2356,6 +2356,19 @@ label {
   color: var(--text-muted);
   font-size: 12px;
 }
+.external-confirm-modal {
+  width: min(680px, 94vw);
+}
+.external-confirm-modal > h2,
+.external-confirm-modal > p {
+  margin: 0;
+}
+.external-confirm-modal .check {
+  align-items: flex-start;
+  padding: 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 7px;
+}
 .safe-handoff-notice {
   display: flex;
   align-items: center;

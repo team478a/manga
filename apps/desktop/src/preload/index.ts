@@ -183,6 +183,8 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:asset-library:resolve", value),
     previewExternalSafeAsset: (value: unknown) =>
       ipcRenderer.invoke("ai:external-asset:preview", value),
+    enqueueExternalSafeAsset: (value: unknown) =>
+      ipcRenderer.invoke("ai:external-asset:enqueue", value),
     generateImage: (value: unknown) =>
       ipcRenderer.invoke("ai:image:generate", value),
     enqueuePageBatch: (value: unknown) =>

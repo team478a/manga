@@ -376,6 +376,11 @@ const ja = {
   "generation.externalPreviewLoading": "外部送信内容を確認中…",
   "generation.externalPreviewOpen": "外部送信内容を確認",
   "generation.externalPreviewTitle": "外部safe素材Provider 送信プレビュー",
+  "generation.externalModelsLoad": "Dezgoモデルを読み込む",
+  "generation.externalModelsLoading": "モデルを読み込み中…",
+  "generation.externalModel": "生成モデル",
+  "generation.externalModelUnavailable":
+    "Text-to-Image対応モデルがありません。設定画面で接続を確認してください。",
   "generation.externalProvider": "Provider",
   "generation.externalPrompt": "Prompt",
   "generation.externalNegativePrompt": "Negative Prompt",
@@ -399,11 +404,29 @@ const ja = {
   "generation.externalUnknown": "未設定",
   "generation.externalPreviewDisabled":
     "外部送信には、送信内容・費用・Provider条件の確認が毎回必要です。",
+  "generation.externalConfirmOpen": "確認してQueueへ追加",
+  "generation.externalConfirmTitle": "Dezgo外部送信の最終確認",
+  "generation.externalConfirmWarning":
+    "PromptがDezgo APIへ送信されます。機密作品や外部送信を避けたい作品では実行しないでください。",
+  "generation.externalConfirmPayload":
+    "送信対象がPromptのみで、入力画像・キャラクター参照・完成Pageを含まないことを確認しました。",
+  "generation.externalConfirmCost":
+    "表示された費用は安全余裕を含む承認上限であることを確認しました。",
+  "generation.externalConfirmTerms":
+    "データ保持とProvider条件を確認しました。",
+  "generation.externalConfirmCancel": "キャンセル",
+  "generation.externalConfirmQueue": "承認してQueueへ追加",
+  "generation.externalQueueing": "Queueへ追加中…",
+  "generation.externalQueued":
+    "Dezgo生成をQueueへ追加しました。実行dispatcherはまだ無効です。",
   "generation.externalBlock.providerNotConfigured": "Providerが未設定です。",
   "generation.externalBlock.providerDisabled": "Providerは無効です。",
   "generation.externalBlock.unsupportedJob": "このジョブ種類に未対応です。",
   "generation.externalBlock.policyBlocked":
     "作品ポリシーで外部処理が禁止されています。",
+  "generation.externalBlock.modelNotSelected": "生成モデルを選択してください。",
+  "generation.externalBlock.modelUnavailable":
+    "選択したモデルは現在のText-to-Imageモデル一覧にありません。",
   "generation.externalBlock.pricingStale":
     "価格情報の確認期限が切れています。アプリを更新してください。",
   "generation.externalBlock.costLimitNotSet":
@@ -1220,6 +1243,11 @@ const en: Record<TranslationKey, string> = {
   "generation.externalPreviewLoading": "Reviewing external payload…",
   "generation.externalPreviewOpen": "Review external payload",
   "generation.externalPreviewTitle": "External safe-asset provider preview",
+  "generation.externalModelsLoad": "Load Dezgo models",
+  "generation.externalModelsLoading": "Loading models…",
+  "generation.externalModel": "Generation model",
+  "generation.externalModelUnavailable":
+    "No Text-to-Image models are available. Check the connection in Settings.",
   "generation.externalProvider": "Provider",
   "generation.externalPrompt": "Prompt",
   "generation.externalNegativePrompt": "Negative prompt",
@@ -1243,6 +1271,21 @@ const en: Record<TranslationKey, string> = {
   "generation.externalUnknown": "Not configured",
   "generation.externalPreviewDisabled":
     "Every external dispatch requires review of the payload, cost, and provider terms.",
+  "generation.externalConfirmOpen": "Review and add to queue",
+  "generation.externalConfirmTitle": "Final Dezgo dispatch confirmation",
+  "generation.externalConfirmWarning":
+    "The prompt will be sent to the Dezgo API. Do not proceed for confidential projects or projects that must remain local.",
+  "generation.externalConfirmPayload":
+    "I confirmed that only the prompt is sent, with no input image, character reference, or completed page.",
+  "generation.externalConfirmCost":
+    "I confirmed that the displayed cost is an authorization ceiling with a safety margin.",
+  "generation.externalConfirmTerms":
+    "I reviewed the data-retention and provider terms.",
+  "generation.externalConfirmCancel": "Cancel",
+  "generation.externalConfirmQueue": "Approve and add to queue",
+  "generation.externalQueueing": "Adding to queue…",
+  "generation.externalQueued":
+    "The Dezgo generation was added to the queue. The execution dispatcher remains disabled.",
   "generation.externalBlock.providerNotConfigured":
     "No external provider is configured.",
   "generation.externalBlock.providerDisabled": "The provider is disabled.",
@@ -1250,6 +1293,10 @@ const en: Record<TranslationKey, string> = {
     "The provider does not support this job type.",
   "generation.externalBlock.policyBlocked":
     "The project policy blocks external processing.",
+  "generation.externalBlock.modelNotSelected":
+    "Select a generation model.",
+  "generation.externalBlock.modelUnavailable":
+    "The selected model is not in the current Text-to-Image model list.",
   "generation.externalBlock.pricingStale":
     "The pricing information has expired. Update the app before dispatching.",
   "generation.externalBlock.costLimitNotSet":

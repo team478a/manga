@@ -426,7 +426,8 @@ export class MangaiDatabase {
  create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);create index if not exists idx_external_cost_project_month on external_cost_reservations(project_id,provider_id,billing_month,status);`);
     this.db
       .prepare(
-        "update external_cost_reservations set status='released',updated_at=? where status='reserved'",
+        `update external_cost_reservations set status='released',updated_at=?
+         where status='reserved' and job_id is null`,
       )
       .run(now());
     const assetColumns = this.db
@@ -4203,6 +4204,39 @@ export class MangaiDatabase {
         .run(now(), tokenSha256).changes,
     );
   }
+  releaseExternalCostReservationForJob(jobId: string) {
+    return Boolean(
+      this.db
+        .prepare(
+          `update external_cost_reservations set status='released',updated_at=?
+           where job_id=? and status='reserved'`,
+        )
+        .run(now(), jobId).changes,
+    );
+  }
+  settleExternalCostForJob(input: {
+    jobId: string;
+    actualAmountUsd: number;
+    updatedAt?: string;
+  }) {
+    if (
+      !input.jobId ||
+      !Number.isFinite(input.actualAmountUsd) ||
+      input.actualAmountUsd < 0 ||
+      input.actualAmountUsd > 1_000_000
+    )
+      throw new Error("外部送信の実費が正しくありません。");
+    const result = this.db
+      .prepare(
+        `update external_cost_reservations
+         set status='settled',actual_amount_usd=?,updated_at=?
+         where job_id=? and status='reserved'`,
+      )
+      .run(input.actualAmountUsd, input.updatedAt ?? now(), input.jobId);
+    if (!result.changes)
+      throw new Error("外部送信Jobの費用予約を確定できませんでした。");
+    return true;
+  }
   createGenerationJob(input: {
     projectId?: string;
     episodeId?: string;
@@ -4273,6 +4307,69 @@ export class MangaiDatabase {
           maxAttempts,
         );
       return id;
+    })();
+  }
+  createApprovedExternalGenerationJob(input: {
+    approvalToken: string;
+    projectId: string;
+    pageId?: string;
+    providerId: string;
+    modelId: string;
+    prompt: string;
+    inputJson: unknown;
+    routeAudit: {
+      draft: GenerationJobDraftInput;
+      context: RoutingContextInput;
+      decision: RouteDecision;
+      promptSha256: string;
+    };
+  }) {
+    if (!input.approvalToken || input.approvalToken.length > 500)
+      throw new Error("外部送信の承認を確認できません。");
+    const tokenSha256 = crypto
+      .createHash("sha256")
+      .update(input.approvalToken, "utf8")
+      .digest("hex");
+    return this.db.transaction(() => {
+      const reservation = this.db
+        .prepare(
+          `select project_id as projectId,provider_id as providerId
+           from external_cost_reservations
+           where approval_token_sha256=? and status='reserved' and job_id is null`,
+        )
+        .get(tokenSha256) as
+        | { projectId: string; providerId: string }
+        | undefined;
+      if (
+        !reservation ||
+        reservation.projectId !== input.projectId ||
+        reservation.providerId !== input.providerId
+      )
+        throw new Error("外部送信の費用予約を確認できません。");
+      const jobId = this.createGenerationJob({
+        projectId: input.projectId,
+        pageId: input.pageId,
+        providerType: "cloud",
+        providerId: input.providerId,
+        modelId: input.modelId,
+        generationType: "image",
+        prompt: input.prompt,
+        inputJson: input.inputJson,
+      });
+      const bound = this.db
+        .prepare(
+          `update external_cost_reservations set job_id=?,updated_at=?
+           where approval_token_sha256=? and status='reserved' and job_id is null`,
+        )
+        .run(jobId, now(), tokenSha256);
+      if (!bound.changes)
+        throw new Error("外部送信Queueと費用予約を関連付けできませんでした。");
+      this.createGenerationRouteDecision({
+        jobId,
+        projectId: input.projectId,
+        ...input.routeAudit,
+      });
+      return jobId;
     })();
   }
   updateGenerationJob(

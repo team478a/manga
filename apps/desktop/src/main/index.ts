@@ -64,6 +64,7 @@ import {
   cancelRequestSchema,
   chatRequestSchema,
   chatSessionIdSchema,
+  externalDispatchConfirmationSchema,
   imageJobRequestSchema,
   pageBatchImageRequestSchema,
   generationQueueSettingsSchema,
@@ -779,6 +780,11 @@ function register() {
   );
   handle("ai:external-asset:preview", (v) =>
     aiService.previewExternalSafeAsset(safeAssetLibraryRequestSchema.parse(v)),
+  );
+  handle("ai:external-asset:enqueue", (v) =>
+    aiService.confirmAndEnqueueExternalSafeAsset(
+      externalDispatchConfirmationSchema.parse(v),
+    ),
   );
   handle("ai:image:generate", (v) =>
     aiService.generateImage(imageJobRequestSchema.parse(v)),

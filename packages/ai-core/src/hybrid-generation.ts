@@ -35,6 +35,7 @@ export const safeAssetLibraryRequestSchema = z.object({
   pageId: z.string().uuid().optional(),
   type: safeAssetJobTypeSchema,
   query: z.string().trim().min(1).max(500),
+  modelId: z.string().trim().min(1).max(300).optional(),
 });
 export type SafeAssetLibraryRequest = z.infer<
   typeof safeAssetLibraryRequestSchema

@@ -40,6 +40,8 @@ export const externalDispatchBlockReasonSchema = z.enum([
   "provider_disabled",
   "unsupported_job_type",
   "policy_blocked",
+  "model_not_selected",
+  "model_unavailable",
   "pricing_stale",
   "cost_limit_not_set",
   "cost_limit_exceeded",
@@ -56,12 +58,17 @@ export type ExternalDispatchCostBlockReason =
   | "cost_limit_exceeded"
   | "balance_unavailable"
   | "balance_insufficient";
+export type ExternalDispatchRequestBlockReason =
+  | "model_not_selected"
+  | "model_unavailable";
 
 export const externalDispatchPreviewSchema = z.object({
   previewId: z.string().uuid(),
   projectId: z.string().uuid(),
   pageId: z.string().uuid().optional(),
   jobType: safeAssetJobTypeSchema,
+  modelId: z.string().trim().min(1).max(300).nullable(),
+  modelName: z.string().trim().min(1).max(500).nullable(),
   promptSha256: z.string().regex(/^[0-9a-f]{64}$/),
   provider: externalAssetProviderDescriptorSchema,
   manifest: externalPayloadManifestSchema,
@@ -132,6 +139,8 @@ export function createExternalDispatchPreview(input: {
   customCloudJobTypes?: string[];
   provider?: ExternalAssetProviderDescriptor;
   estimate?: { cost: number; currency: string };
+  modelName?: string;
+  requestBlockReason?: ExternalDispatchRequestBlockReason;
   costBlockReason?: ExternalDispatchCostBlockReason;
   createdAt: string;
 }): ExternalDispatchPreview {
@@ -151,6 +160,8 @@ export function createExternalDispatchPreview(input: {
   else if (!provider.enabled) blockReason = "provider_disabled";
   else if (!supported) blockReason = "unsupported_job_type";
   else if (!allowed) blockReason = "policy_blocked";
+  else if (input.requestBlockReason)
+    blockReason = input.requestBlockReason;
   else if (input.costBlockReason) blockReason = input.costBlockReason;
   else if (!input.estimate) blockReason = "cost_estimate_unavailable";
   return externalDispatchPreviewSchema.parse({
@@ -158,6 +169,8 @@ export function createExternalDispatchPreview(input: {
     projectId: request.projectId,
     pageId: request.pageId,
     jobType: request.type,
+    modelId: request.modelId ?? null,
+    modelName: input.modelName ?? null,
     promptSha256: input.promptSha256,
     provider,
     manifest: {

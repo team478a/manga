@@ -431,6 +431,38 @@ test("configured external preview reports a cost guard block reason", () => {
   assert.equal(preview.estimatedCost, 0.01);
 });
 
+test("external preview binds a selected model and rejects unavailable models", () => {
+  const preview = createExternalDispatchPreview({
+    previewId: randomUUID(),
+    request: {
+      projectId,
+      type: "background",
+      query: "empty station",
+      modelId: "model-from-provider",
+    },
+    promptSha256: "e".repeat(64),
+    policy: "safe_assets_only",
+    provider: {
+      providerId: "safe-assets",
+      displayName: "Safe Assets",
+      enabled: true,
+      endpointConfigured: true,
+      supportedJobTypes: ["background"],
+      dataRetentionSummary: "24 hours",
+      trainingUseSummary: "Unknown",
+      pricingSummary: "Per image",
+    },
+    modelName: "Model from provider",
+    requestBlockReason: "model_unavailable",
+    estimate: { cost: 0.01, currency: "USD" },
+    createdAt: new Date().toISOString(),
+  });
+  assert.equal(preview.modelId, "model-from-provider");
+  assert.equal(preview.modelName, "Model from provider");
+  assert.equal(preview.executable, false);
+  assert.equal(preview.blockReason, "model_unavailable");
+});
+
 test("project policy blocks an otherwise configured external preview", () => {
   const preview = createExternalDispatchPreview({
     previewId: randomUUID(),

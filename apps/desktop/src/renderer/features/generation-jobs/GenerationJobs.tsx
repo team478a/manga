@@ -58,6 +58,10 @@ function externalBlockReasonKey(reason: string | null) {
     return "generation.externalBlock.unsupportedJob" as const;
   if (reason === "policy_blocked")
     return "generation.externalBlock.policyBlocked" as const;
+  if (reason === "model_not_selected")
+    return "generation.externalBlock.modelNotSelected" as const;
+  if (reason === "model_unavailable")
+    return "generation.externalBlock.modelUnavailable" as const;
   if (reason === "pricing_stale")
     return "generation.externalBlock.pricingStale" as const;
   if (reason === "cost_limit_not_set")
@@ -79,6 +83,9 @@ type SafeAssetResult = {
   assets: Asset[];
   message?: string;
 };
+type ExternalModel = Awaited<
+  ReturnType<typeof window.mangai.ai.listModels>
+>[number];
 type GenerationOutputSummary = {
   assetId?: string;
   model?: string;
@@ -189,6 +196,18 @@ export function GenerationJobs({
     [externalPreview, setExternalPreview] =
       React.useState<ExternalDispatchPreview | null>(null),
     [externalPreviewBusy, setExternalPreviewBusy] = React.useState(false),
+    [externalModels, setExternalModels] = React.useState<ExternalModel[]>([]),
+    [externalModelsBusy, setExternalModelsBusy] = React.useState(false),
+    [externalModelId, setExternalModelId] = React.useState(""),
+    [externalConfirmOpen, setExternalConfirmOpen] = React.useState(false),
+    [externalEnqueueBusy, setExternalEnqueueBusy] = React.useState(false),
+    [externalConfirmError, setExternalConfirmError] = React.useState(""),
+    [externalQueueMessage, setExternalQueueMessage] = React.useState(""),
+    [externalChecks, setExternalChecks] = React.useState({
+      payload: false,
+      cost: false,
+      terms: false,
+    }),
     [safeAssetUrls, setSafeAssetUrls] = React.useState<Record<string, string>>(
       {},
     );
@@ -201,6 +220,10 @@ export function GenerationJobs({
   const [queueSettingsMessage, setQueueSettingsMessage] = React.useState("");
   const [batchBusy, setBatchBusy] = React.useState(false);
   const [batchMessage, setBatchMessage] = React.useState("");
+  const externalConfirmTitleRef = React.useRef<HTMLHeadingElement>(null);
+  const externalConfirmRef = React.useRef<HTMLElement>(null);
+  const externalConfirmOpenButtonRef = React.useRef<HTMLButtonElement>(null);
+  const externalQueueMessageRef = React.useRef<HTMLParagraphElement>(null);
   const completedImageCount = React.useRef<number | null>(null);
   const load = async () => {
     const [nextJobs, nextRoutes, nextWorkflows] = await Promise.all([
@@ -228,6 +251,34 @@ export function GenerationJobs({
     const timer = window.setInterval(() => void load(), 1500);
     return () => window.clearInterval(timer);
   }, []);
+  React.useEffect(() => {
+    if (!externalConfirmOpen) return;
+    externalConfirmTitleRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !externalEnqueueBusy) {
+        setExternalConfirmOpen(false);
+        window.setTimeout(() => externalConfirmOpenButtonRef.current?.focus());
+      }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(
+        externalConfirmRef.current?.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])',
+        ) ?? [],
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable.at(-1)!;
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [externalConfirmOpen, externalEnqueueBusy]);
   const generate = async () => {
     if (!workflowId || !promptText.trim()) return;
     setBusy(true);
@@ -329,13 +380,69 @@ export function GenerationJobs({
       setSafeBusy(false);
     }
   };
+  const loadExternalModels = async () => {
+    setExternalModelsBusy(true);
+    setError("");
+    setExternalPreview(null);
+    try {
+      const models = (await window.mangai.ai.listModels("dezgo")).filter(
+        (model) => model.supportedFunctions?.includes("text_to_image"),
+      );
+      setExternalModels(models);
+      setExternalModelId((current) =>
+        models.some((model) => model.id === current)
+          ? current
+          : (models[0]?.id ?? ""),
+      );
+      if (!models.length) setError(t("generation.externalModelUnavailable"));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      setExternalModelsBusy(false);
+    }
+  };
+  const enqueueExternal = async () => {
+    if (!externalPreview?.executable) return;
+    setExternalEnqueueBusy(true);
+    setError("");
+    try {
+      await window.mangai.ai.enqueueExternalSafeAsset({
+        previewId: externalPreview.previewId,
+        promptSha256: externalPreview.promptSha256,
+        payloadReviewed: true,
+        costReviewed: true,
+        providerTermsReviewed: true,
+        confirmedAt: new Date().toISOString(),
+      });
+      setExternalConfirmOpen(false);
+      setExternalChecks({ payload: false, cost: false, terms: false });
+      setExternalQueueMessage(t("generation.externalQueued"));
+      setExternalPreview(null);
+      await load();
+      window.setTimeout(() => externalQueueMessageRef.current?.focus());
+    } catch (cause) {
+      setExternalConfirmError(
+        cause instanceof Error ? cause.message : String(cause),
+      );
+    } finally {
+      setExternalEnqueueBusy(false);
+    }
+  };
   return (
     <main className="tool-page">
-      <header className="tool-header">
+      <header
+        className="tool-header"
+        inert={externalConfirmOpen}
+        aria-hidden={externalConfirmOpen || undefined}
+      >
         <button onClick={onClose}>{t("generation.backWorkspace")}</button>
         <h1>{t("generation.title")}</h1>
       </header>
-      <div className="tool-content">
+      <div
+        className="tool-content"
+        inert={externalConfirmOpen}
+        aria-hidden={externalConfirmOpen || undefined}
+      >
         <ProjectGenerationPolicySettings
           projectId={bundle.project.id}
           onSaved={() => setExternalPreview(null)}
@@ -352,6 +459,7 @@ export function GenerationJobs({
                   event.target.value as "background" | "prop" | "effect",
                 );
                 setExternalPreview(null);
+                setExternalQueueMessage("");
               }}
             >
               <option value="background">
@@ -368,6 +476,7 @@ export function GenerationJobs({
               onChange={(event) => {
                 setSafeQuery(event.target.value);
                 setExternalPreview(null);
+                setExternalQueueMessage("");
               }}
               onKeyDown={(event) => {
                 if (event.key === "Enter") void resolveSafeAsset();
@@ -427,7 +536,32 @@ export function GenerationJobs({
                     )}
                   <button
                     className="secondary"
-                    disabled={externalPreviewBusy}
+                    disabled={externalModelsBusy}
+                    onClick={() => void loadExternalModels()}
+                  >
+                    {externalModelsBusy
+                      ? t("generation.externalModelsLoading")
+                      : t("generation.externalModelsLoad")}
+                  </button>
+                  {externalModels.length > 0 && (
+                    <select
+                      aria-label={t("generation.externalModel")}
+                      value={externalModelId}
+                      onChange={(event) => {
+                        setExternalModelId(event.target.value);
+                        setExternalPreview(null);
+                      }}
+                    >
+                      {externalModels.map((model) => (
+                        <option key={model.id} value={model.id}>
+                          {model.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    className="secondary"
+                    disabled={externalPreviewBusy || !externalModelId}
                     onClick={async () => {
                       setExternalPreviewBusy(true);
                       try {
@@ -437,7 +571,14 @@ export function GenerationJobs({
                             pageId,
                             type: safeType,
                             query: safeQuery,
+                            modelId: externalModelId,
                           }),
+                        );
+                      } catch (cause) {
+                        setError(
+                          cause instanceof Error
+                            ? cause.message
+                            : String(cause),
                         );
                       } finally {
                         setExternalPreviewBusy(false);
@@ -461,6 +602,12 @@ export function GenerationJobs({
                 </p>
               )}
               <dl>
+                <div>
+                  <dt>{t("generation.externalModel")}</dt>
+                  <dd>
+                    {externalPreview.modelName ?? externalPreview.modelId}
+                  </dd>
+                </div>
                 <div>
                   <dt>{t("generation.externalProvider")}</dt>
                   <dd>{externalPreview.provider.displayName}</dd>
@@ -531,7 +678,33 @@ export function GenerationJobs({
               <p className="external-preview-warning">
                 {t("generation.externalPreviewDisabled")}
               </p>
+              {externalPreview.executable && (
+                <button
+                  ref={externalConfirmOpenButtonRef}
+                  onClick={() => {
+                    setExternalChecks({
+                      payload: false,
+                      cost: false,
+                      terms: false,
+                    });
+                    setExternalConfirmError("");
+                    setExternalConfirmOpen(true);
+                  }}
+                >
+                  {t("generation.externalConfirmOpen")}
+                </button>
+              )}
             </section>
+          )}
+          {externalQueueMessage && (
+            <p
+              ref={externalQueueMessageRef}
+              className="notice"
+              role="status"
+              tabIndex={-1}
+            >
+              {externalQueueMessage}
+            </p>
           )}
         </section>
         <section className="panel-lite">
@@ -1081,6 +1254,113 @@ export function GenerationJobs({
           </div>
         </section>
       </div>
+      {externalConfirmOpen && externalPreview && (
+        <div className="modal-backdrop" role="presentation">
+          <section
+            ref={externalConfirmRef}
+            className="modal external-confirm-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="external-confirm-title"
+          >
+            <h2
+              id="external-confirm-title"
+              ref={externalConfirmTitleRef}
+              tabIndex={-1}
+            >
+              {t("generation.externalConfirmTitle")}
+            </h2>
+            <p>{t("generation.externalConfirmWarning")}</p>
+            {externalConfirmError && (
+              <p className="error" role="alert">
+                {localizeMessage(externalConfirmError)}
+              </p>
+            )}
+            <dl className="dezgo-summary">
+              <div>
+                <dt>{t("generation.externalProvider")}</dt>
+                <dd>{externalPreview.provider.displayName}</dd>
+              </div>
+              <div>
+                <dt>{t("generation.externalModel")}</dt>
+                <dd>{externalPreview.modelName ?? externalPreview.modelId}</dd>
+              </div>
+              <div>
+                <dt>{t("generation.externalCost")}</dt>
+                <dd>
+                  {externalPreview.estimatedCost} {externalPreview.currency}
+                </dd>
+              </div>
+            </dl>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={externalChecks.payload}
+                onChange={(event) =>
+                  setExternalChecks((value) => ({
+                    ...value,
+                    payload: event.target.checked,
+                  }))
+                }
+              />
+              {t("generation.externalConfirmPayload")}
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={externalChecks.cost}
+                onChange={(event) =>
+                  setExternalChecks((value) => ({
+                    ...value,
+                    cost: event.target.checked,
+                  }))
+                }
+              />
+              {t("generation.externalConfirmCost")}
+            </label>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={externalChecks.terms}
+                onChange={(event) =>
+                  setExternalChecks((value) => ({
+                    ...value,
+                    terms: event.target.checked,
+                  }))
+                }
+              />
+              {t("generation.externalConfirmTerms")}
+            </label>
+            <footer>
+              <button
+                className="secondary"
+                disabled={externalEnqueueBusy}
+                onClick={() => {
+                  setExternalConfirmOpen(false);
+                  window.setTimeout(() =>
+                    externalConfirmOpenButtonRef.current?.focus(),
+                  );
+                }}
+              >
+                {t("generation.externalConfirmCancel")}
+              </button>
+              <button
+                disabled={
+                  externalEnqueueBusy ||
+                  !externalChecks.payload ||
+                  !externalChecks.cost ||
+                  !externalChecks.terms
+                }
+                onClick={() => void enqueueExternal()}
+              >
+                {externalEnqueueBusy
+                  ? t("generation.externalQueueing")
+                  : t("generation.externalConfirmQueue")}
+              </button>
+            </footer>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

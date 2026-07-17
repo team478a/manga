@@ -995,3 +995,13 @@ Project月間費用上限、当月の確定実費、未精算予約、Dezgo残�
 承認時はSQLite transaction内で費用枠を予約するため、同時承認でも月間上限を超えません。DBにはopaque承認tokenそのものではなくSHA-256だけを保存し、将来のdispatcherが生成応答の実費headerで確定または失敗時に解放できるService契約を追加しました。Mainプロセスの一回限り承認が再起動で失われた場合、対応する未精算予約もDB起動時に解放します。
 
 価格計算、価格期限、上限・残高の各block、月跨ぎ、原子的な上限拒否、token非保存、精算・解放、再起動回収、previewから承認・一回消費までを自動テスト化しました。実行dispatcher、実生成UI、外部送信IPCは引き続き未接続で、生成requestは送信していません。ai-core 26/26、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功しています。
+
+## 116. Dezgoモデル選択・最終確認・Queue登録
+
+生成画面のsafe素材検索で一致がない場合、Dezgoの取得済みモデル一覧を明示操作で読み込み、Text-to-Image対応モデルを選択して外部送信previewを作成できるようにしました。モデル名は固定せず、ProviderのモデルID・名称・cache更新時刻をPrompt SHA-256、Projectポリシー、費用・残高条件と一緒に承認contextへ固定します。preview後のモデル差し替えや一覧更新は再確認を要求します。
+
+最終確認dialogでは、送信対象がPromptのみであること、費用が安全余裕を含む承認上限であること、データ保持とProvider条件を確認したことの3項目を必須にしました。dialogはEscape、Tab focus trap、開始・終了時のfocus移動、背面の`inert`と`aria-hidden`、日英表示へ対応しています。
+
+rendererへ承認tokenを返さない専用IPCを追加し、Mainプロセス内で一回限り承認を発行・即時消費します。既存費用予約へのJob関連付け、Dezgo Queue Job作成、cloud Route監査は同じSQLite transactionで確定し、Jobにはモデルと再現可能なText-to-Image parameterだけを保存します。API key、承認token、Promptの重複コピーはJob input JSONへ保存しません。
+
+キャンセル時はJobに関連する費用予約を解放します。再起動時はQueue Jobへ関連付け済みの予約を保持し、Job化されていない承認予約だけを解放するため、Queue復元とProject月間上限が一致します。ComfyUI workerはDezgo Jobを取得せず、Dezgo dispatcherと実生成API送信はまだ無効です。ai-core 27/27、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英29画面・状態のaxe違反0件に成功しています。

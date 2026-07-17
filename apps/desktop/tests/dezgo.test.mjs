@@ -164,6 +164,58 @@ test("external cost reservations enforce monthly limits and recover on restart",
       monthlyLimitUsd: 1,
       createdAt: "2026-08-01T00:00:00.000Z",
     });
+    const boundJobId = database.createApprovedExternalGenerationJob({
+      approvalToken: "next-month-token",
+      projectId,
+      providerId: "dezgo",
+      modelId: "test-model",
+      prompt: "safe background",
+      inputJson: { endpoint: "text2image" },
+      routeAudit: {
+        draft: {
+          projectId,
+          type: "background",
+          sensitivity: "safe",
+          requestedTarget: "cloud",
+          inputAssetIds: [],
+          personPresence: "none",
+          hasCharacterReference: false,
+          hasCompletedPage: false,
+          promptIncludesRestrictedContent: false,
+          allInputAssetsExternalAllowed: true,
+        },
+        context: {
+          policy: "safe_assets_only",
+          availableTargets: ["cloud"],
+          preferLocal: true,
+          externalProviderEnabled: true,
+          externalCostWithinLimit: true,
+          requireExternalConfirmation: true,
+          manualApprovalGranted: true,
+          customCloudJobTypes: [],
+          sensitiveRenderNodeAllowed: false,
+          cloudProviderId: "dezgo",
+        },
+        decision: {
+          target: "cloud",
+          providerId: "dezgo",
+          reason: "explicit_target",
+          requiresUserConfirmation: true,
+          blocked: false,
+        },
+        promptSha256: createHash("sha256")
+          .update("safe background")
+          .digest("hex"),
+      },
+    });
+    database.reserveExternalCost({
+      projectId,
+      providerId: "dezgo",
+      approvalToken: "restart-orphan-token",
+      amountUsd: 0.1,
+      monthlyLimitUsd: 1,
+      createdAt: "2026-08-01T00:01:00.000Z",
+    });
     assert.equal(
       fs.readFileSync(paths.database).includes(Buffer.from("next-month-token")),
       false,
@@ -172,11 +224,16 @@ test("external cost reservations enforce monthly limits and recover on restart",
     database = new MangaiDatabase(paths);
     assert.equal(
       database.externalCostSummary(projectId, "dezgo", "2026-08").reservedUsd,
-      0,
+      0.8,
     );
     assert.equal(
       database.externalCostSummary(projectId, "dezgo", "2026-07").actualUsd,
       0.35,
+    );
+    assert.equal(database.releaseExternalCostReservationForJob(boundJobId), true);
+    assert.equal(
+      database.externalCostSummary(projectId, "dezgo", "2026-08").reservedUsd,
+      0,
     );
   } finally {
     database.close();
@@ -885,6 +942,17 @@ test("external dispatch approval binds one request and expires after one use", (
   const mismatchedRequest = { ...request, projectId: randomUUID() };
   assert.throws(
     () => approvals.register(previewFor(), mismatchedRequest, contextSha256),
+    (error) => error?.code === "PREVIEW_REQUEST_MISMATCH",
+  );
+  const modelRequest = { ...request, modelId: "approved-model" };
+  const modelPreview = previewFor(modelRequest);
+  assert.throws(
+    () =>
+      approvals.register(
+        modelPreview,
+        { ...modelRequest, modelId: "substituted-model" },
+        contextSha256,
+      ),
     (error) => error?.code === "PREVIEW_REQUEST_MISMATCH",
   );
 });

@@ -1091,6 +1091,14 @@ test("safe asset jobs prefer project library and never require external access",
         dezgoBatchGenerationEnabled: false,
       },
     });
+    db.saveAIModels("dezgo", [
+      {
+        id: "safe-text-model",
+        name: "Safe text model",
+        supportedFunctions: ["text_to_image"],
+        fetchedAt: new Date().toISOString(),
+      },
+    ]);
     const configuredPreview = await dezgoService.previewExternalSafeAsset({
       projectId: project.project.id,
       type: "background",
@@ -1101,7 +1109,7 @@ test("safe asset jobs prefer project library and never require external access",
     assert.equal(configuredPreview.provider.endpointConfigured, true);
     assert.equal(configuredPreview.estimatedCost, 0.002375);
     assert.equal(configuredPreview.executable, false);
-    assert.equal(configuredPreview.blockReason, "cost_limit_not_set");
+    assert.equal(configuredPreview.blockReason, "model_not_selected");
     assert.equal(
       JSON.stringify(configuredPreview).includes("configured-test-key"),
       false,
@@ -1137,11 +1145,12 @@ test("safe asset jobs prefer project library and never require external access",
       projectId: project.project.id,
       type: "background",
       query: "人物を含まない夜景",
+      modelId: "safe-text-model",
     });
     assert.equal(approvedPreview.executable, true);
     assert.equal(approvedPreview.blockReason, null);
     assert.equal(approvedPreview.currency, "USD");
-    const approval = await dezgoService.confirmExternalSafeAsset({
+    const queued = await dezgoService.confirmAndEnqueueExternalSafeAsset({
       previewId: approvedPreview.previewId,
       promptSha256: approvedPreview.promptSha256,
       payloadReviewed: true,
@@ -1153,14 +1162,39 @@ test("safe asset jobs prefer project library and never require external access",
       db.externalCostSummary(project.project.id, "dezgo").reservedUsd,
       approvedPreview.estimatedCost,
     );
-    const dispatch = dezgoService.consumeExternalDispatchApproval(
-      approval.approvalToken,
-    );
-    assert.equal(dispatch.request.query, "人物を含まない夜景");
-    assert.equal(
-      dezgoService.releaseExternalDispatchCost(approval.approvalToken),
-      true,
-    );
+    assert.equal(queued.status, "queued");
+    assert.equal(queued.modelId, "safe-text-model");
+    const queuedJob = db
+      .listGenerationJobs(project.project.id)
+      .find((job) => job.id === queued.jobId);
+    assert.equal(queuedJob.providerId, "dezgo");
+    assert.equal(queuedJob.modelId, "safe-text-model");
+    assert.equal(queuedJob.status, "queued");
+    assert.equal(queuedJob.inputJson.includes("人物を含まない夜景"), false);
+    assert.equal(queuedJob.inputJson.includes("approvalToken"), false);
+    assert.deepEqual(JSON.parse(queuedJob.inputJson), {
+      endpoint: "text2image",
+      jobType: "background",
+      model: "safe-text-model",
+      width: 512,
+      height: 512,
+      steps: 30,
+      guidance: 7,
+      sampler: "dpmpp_2m_karras",
+      format: "png",
+      dispatchApproval: {
+        previewId: approvedPreview.previewId,
+        confirmedAt: JSON.parse(queuedJob.inputJson).dispatchApproval.confirmedAt,
+        estimatedCostUsd: approvedPreview.estimatedCost,
+      },
+    });
+    const queuedRoute = db
+      .listGenerationRouteDecisions(project.project.id)
+      .find((route) => route.jobId === queued.jobId);
+    assert.equal(queuedRoute.decision.target, "cloud");
+    assert.equal(queuedRoute.decision.providerId, "dezgo");
+    assert.equal(queuedRoute.context.manualApprovalGranted, true);
+    dezgoService.cancel(queued.jobId);
     assert.equal(
       db.externalCostSummary(project.project.id, "dezgo").reservedUsd,
       0,

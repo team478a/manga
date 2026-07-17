@@ -317,6 +317,7 @@ export class AIService {
       policy,
       dezgoEnabled,
       dezgoConfigured,
+      input.modelId,
     );
     const preview = createExternalDispatchPreview({
       previewId: crypto.randomUUID(),
@@ -342,6 +343,8 @@ export class AIService {
         cost: costContext.guard.authorizationCostUsd,
         currency: costContext.guard.currency,
       },
+      modelName: costContext.model?.name,
+      requestBlockReason: costContext.requestBlockReason ?? undefined,
       costBlockReason: costContext.guard.blockReason ?? undefined,
       createdAt: new Date().toISOString(),
     });
@@ -389,6 +392,7 @@ export class AIService {
       policy,
       dezgoEnabled,
       dezgoConfigured,
+      preview.modelId ?? undefined,
     );
     const approval = this.externalDispatchApprovals.confirm(
       confirmation,
@@ -421,6 +425,89 @@ export class AIService {
       throw error;
     }
   }
+  async confirmAndEnqueueExternalSafeAsset(
+    input: ExternalDispatchConfirmation,
+  ) {
+    const approval = await this.confirmExternalSafeAsset(input);
+    try {
+      const dispatch = this.consumeExternalDispatchApproval(
+        approval.approvalToken,
+      );
+      if (!dispatch.request.modelId)
+        throw new Error("Dezgoモデルが選択されていません。");
+      const project = this.store.bundle(dispatch.request.projectId).project;
+      const dimensions = dezgoPreviewDimensions(project.width, project.height);
+      const policy = this.store.getProjectGenerationPolicy(
+        dispatch.request.projectId,
+      );
+      const draft = {
+        projectId: dispatch.request.projectId,
+        pageId: dispatch.request.pageId,
+        type: dispatch.request.type,
+        sensitivity: "safe" as const,
+        requestedTarget: "cloud" as const,
+        inputAssetIds: [],
+        personPresence: "none" as const,
+        hasCharacterReference: false,
+        hasCompletedPage: false,
+        promptIncludesRestrictedContent: false,
+        allInputAssetsExternalAllowed: true,
+      };
+      const context = {
+        policy: policy.externalProcessingPolicy,
+        availableTargets: ["cloud" as const],
+        preferLocal: policy.preferLocal,
+        externalProviderEnabled: true,
+        externalCostWithinLimit: true,
+        requireExternalConfirmation: policy.externalConfirmationRequired,
+        manualApprovalGranted: true,
+        customCloudJobTypes: policy.customCloudJobTypes,
+        sensitiveRenderNodeAllowed: false,
+        cloudProviderId: "dezgo",
+      };
+      const decision = routeGenerationJob(draft, context);
+      if (decision.blocked || decision.target !== "cloud")
+        throw new Error("現在のProjectポリシーではDezgo Queueへ追加できません。");
+      const jobId = this.store.createApprovedExternalGenerationJob({
+        approvalToken: approval.approvalToken,
+        projectId: dispatch.request.projectId,
+        pageId: dispatch.request.pageId,
+        providerId: "dezgo",
+        modelId: dispatch.request.modelId,
+        prompt: dispatch.request.query,
+        inputJson: {
+          endpoint: "text2image",
+          jobType: dispatch.request.type,
+          model: dispatch.request.modelId,
+          ...dimensions,
+          steps: 30,
+          guidance: 7,
+          sampler: "dpmpp_2m_karras",
+          format: "png",
+          dispatchApproval: {
+            previewId: dispatch.preview.previewId,
+            confirmedAt: dispatch.confirmedAt,
+            estimatedCostUsd: dispatch.preview.estimatedCost,
+          },
+        },
+        routeAudit: {
+          draft,
+          context,
+          decision,
+          promptSha256: dispatch.preview.promptSha256,
+        },
+      });
+      return {
+        jobId,
+        status: "queued" as const,
+        providerId: "dezgo" as const,
+        modelId: dispatch.request.modelId,
+      };
+    } catch (error) {
+      this.releaseExternalDispatchCost(approval.approvalToken);
+      throw error;
+    }
+  }
   settleExternalDispatchCost(
     approvalToken: string,
     actualAmountUsd: number,
@@ -435,17 +522,31 @@ export class AIService {
   releaseExternalDispatchCost(approvalToken: string) {
     return this.store.releaseExternalCostReservation(approvalToken);
   }
+  settleExternalDispatchCostForJob(jobId: string, actualAmountUsd: number) {
+    return this.store.settleExternalCostForJob({ jobId, actualAmountUsd });
+  }
   private async dezgoCostContext(
     projectId: string,
     policy: ProjectGenerationPolicy,
     providerEnabled: boolean,
     providerConfigured: boolean,
+    modelId?: string,
   ) {
     const project = this.store.bundle(projectId).project;
     const dimensions = dezgoPreviewDimensions(project.width, project.height);
     const summary = this.store.externalCostSummary(projectId, "dezgo");
+    const model = modelId
+      ? this.store
+          .listAIModels("dezgo")
+          .find((candidate) => candidate.id === modelId)
+      : undefined;
+    const requestBlockReason = !modelId
+      ? ("model_not_selected" as const)
+      : !model?.supportedFunctions?.includes("text_to_image")
+        ? ("model_unavailable" as const)
+        : null;
     let balanceUsd: number | null = null;
-    if (providerEnabled && providerConfigured) {
+    if (providerEnabled && providerConfigured && !requestBlockReason) {
       try {
         balanceUsd = await this.getDezgoBalance();
       } catch (error) {
@@ -456,6 +557,8 @@ export class AIService {
     return {
       dimensions,
       steps,
+      model,
+      requestBlockReason,
       guard: evaluateDezgoCostGuard({
         ...dimensions,
         steps,
@@ -494,6 +597,9 @@ export class AIService {
           monthlyReservedUsd: costContext.guard.monthlyReservedUsd,
           balanceUsd: costContext.guard.balanceUsd,
           costBlockReason: costContext.guard.blockReason,
+          modelId: costContext.model?.id ?? null,
+          modelUpdatedAt: costContext.model?.updatedAt ?? null,
+          requestBlockReason: costContext.requestBlockReason,
         }),
         "utf8",
       )
@@ -575,8 +681,11 @@ export class AIService {
     if (controller) controller.abort();
     else {
       const job = this.store.getGenerationJob(requestId);
-      if (job && ["queued", "paused"].includes(String(job.status)))
+      if (job && ["queued", "paused"].includes(String(job.status))) {
         this.store.setGenerationJobStatus(requestId, "canceled");
+        if (job.provider_id === "dezgo")
+          this.store.releaseExternalCostReservationForJob(requestId);
+      }
     }
   }
   pauseImageJob(jobId: string) {

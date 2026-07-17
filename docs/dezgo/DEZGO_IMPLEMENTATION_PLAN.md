@@ -437,3 +437,16 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - 承認Storeが再起動で消える設計に合わせ、未精算予約はDB起動時に自動解放し、settled実費は月次集計へ保持
 - 実行dispatcher、実生成UI、外部送信IPCはまだ有効化せず、この段階で生成requestは送信しない
 - ai-core 26/26、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英axe監査違反0件に成功
+
+### 2026-07-17: 明示確認UI・Dezgo Queue登録
+
+- 生成画面から`GET /info`由来の24時間cacheを読み込み、`text_to_image`対応モデルだけを明示選択するUIを追加
+- モデルIDをハードコードせず、選択モデルID・名称・cache更新時刻をpreviewと承認contextへ固定
+- Prompt、入力素材なし、キャラクター参照なし、完成Pageなし、費用上限、保持・Provider条件をpreviewへ表示
+- 最終確認dialogでpayload・費用・Provider条件の3チェックを必須とし、Escape、focus trap、focus復帰、背面`inert`へ対応
+- rendererからはpreview ID、Prompt SHA-256、確認状態だけをIPCへ渡し、Prompt再送・API key・承認tokenを扱わない
+- Mainプロセスで一回限りtokenを発行・消費し、既存費用予約へのJob関連付け、Dezgo Job作成、Route監査を1つのSQLite transactionで確定
+- Jobにはmodel、width、height、Steps、Guidance、Sampler、format、承認metadataを保存し、同条件の再現に必要な値を固定
+- Queueのキャンセル時は費用予約を解放し、再起動時はJob関連済み予約だけを保持、未使用の承認予約を解放
+- ComfyUI workerは引き続きDezgo Jobを取得せず、Dezgo dispatcherと実生成API送信はまだ無効
+- ai-core 27/27、Desktop統合テスト76/76、TypeScript、ESLint、本番renderer build、日英29画面・状態のaxe違反0件に成功
