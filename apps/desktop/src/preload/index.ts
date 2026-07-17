@@ -143,8 +143,10 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:provider:check", { providerId }),
     inspectComfyLowSpecRuntime: () =>
       ipcRenderer.invoke("ai:comfyui:low-spec-runtime"),
-    listModels: (providerId: string) =>
-      ipcRenderer.invoke("ai:provider:models", { providerId }),
+    listModels: (providerId: string, refresh = false) =>
+      ipcRenderer.invoke("ai:provider:models", { providerId, refresh }),
+    providerBalance: (providerId: "dezgo") =>
+      ipcRenderer.invoke("ai:provider:balance", { providerId }),
     listTemplates: () => ipcRenderer.invoke("ai:templates:list"),
     saveTemplate: (value: unknown) =>
       ipcRenderer.invoke("ai:templates:save", value),

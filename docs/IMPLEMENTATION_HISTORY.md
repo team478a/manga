@@ -15,6 +15,9 @@
 - Dezgo Provider / BYOKを開発環境の明示opt-inに限定し、成人向け・一括生成flagをPhase 1中は常時falseに固定
 - `@napi-rs/keyring`を使うmain process限定credential storeを追加し、Windows Credential Managerへの保存・読取・削除を確認
 - APIキー取得をpreloadへ公開せず、keyring障害時もDB・設定JSON・暗号化ファイルへfallbackしない
+- Dezgo公式APIの読み取り専用clientを追加し、接続確認、モデル一覧、残高取得、15秒timeout、キャンセル、HTTP error分類へ対応
+- モデルmetadataの24時間SQLite cacheとAPI停止時fallbackを追加し、feature flag無効時はcacheを含めて操作を拒否
+- 生成APIは未有効のまま維持し、ai-core 25/25、Desktop統合テスト69/69、TypeScript、ESLint、本番renderer buildに成功
 
 ## 1. 現在の製品構成
 

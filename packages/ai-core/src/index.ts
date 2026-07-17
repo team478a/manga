@@ -162,6 +162,7 @@ export interface ImageGenerationProvider {
   name: string;
   checkConnection(signal?: AbortSignal): Promise<ProviderConnectionResult>;
   listModels?(signal?: AbortSignal): Promise<AIModelInfo[]>;
+  getBalance?(signal?: AbortSignal): Promise<number | null>;
   generateImage(
     request: ImageGenerationRequest,
     context?: GenerationContext,

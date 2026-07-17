@@ -316,9 +316,26 @@ export type DesktopApi = {
     inspectComfyLowSpecRuntime: () => Promise<ComfyLowSpecRuntimeReport>;
     listModels: (
       providerId: string,
+      refresh?: boolean,
     ) => Promise<
-      Array<{ id: string; name: string; cached?: boolean; updatedAt?: string }>
+      Array<{
+        id: string;
+        name: string;
+        family?: string;
+        description?: string;
+        license?: string;
+        categories?: string[];
+        supportedFunctions?: string[];
+        nativeResolution?: { width: number; height: number };
+        triggers?: string[] | null;
+        fetchedAt?: string;
+        cached?: boolean;
+        updatedAt?: string;
+      }>
     >;
+    providerBalance: (
+      providerId: "dezgo",
+    ) => Promise<{ providerId: "dezgo"; balanceUsd: number | null }>;
     listTemplates: () => Promise<
       Array<{
         id: string;

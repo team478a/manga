@@ -132,6 +132,7 @@ const dezgoCredentialSchema = z.object({
 const credentialProviderSchema = z.object({
   providerId: z.literal("dezgo"),
 });
+const providerIdSchema = z.enum(["ollama", "comfyui", "mock", "dezgo"]);
 
 function requireDezgoByok() {
   if (
@@ -678,25 +679,42 @@ function register() {
     return store.saveProviderSettings(settings);
   });
   handle("ai:provider:check", async (v) => {
-    const id = providerSettingsSchema.shape.providerId.parse(v?.providerId);
+    const id = providerIdSchema.parse(v?.providerId);
     return aiService.provider(id).checkConnection();
   });
   handle("ai:comfyui:low-spec-runtime", () =>
     aiService.inspectComfyLowSpecRuntime(),
   );
   handle("ai:provider:models", async (v) => {
-    const id = providerSettingsSchema.shape.providerId.parse(v?.providerId),
-      provider = aiService.provider(id);
+    const id = providerIdSchema.parse(v?.providerId);
+    const provider = aiService.provider(id);
+    const cached = store.listAIModels(id);
+    const newestCache = Math.max(
+      ...cached.map((model) => Date.parse(model.updatedAt)),
+      0,
+    );
+    if (
+      id === "dezgo" &&
+      !v?.refresh &&
+      cached.length &&
+      Date.now() - newestCache < 24 * 60 * 60 * 1000
+    )
+      return cached;
     if (!("listModels" in provider) || !provider.listModels) return [];
     try {
       const models = await provider.listModels();
       store.saveAIModels(id, models);
       return models.map((model) => ({ ...model, cached: false }));
     } catch (error) {
-      const cached = store.listAIModels(id);
       if (cached.length) return cached;
       throw error;
     }
+  });
+  handle("ai:provider:balance", async (v) => {
+    const id = z.literal("dezgo").parse(v?.providerId);
+    const provider = aiService.provider(id);
+    if (!("getBalance" in provider) || !provider.getBalance) return null;
+    return { providerId: id, balanceUsd: await provider.getBalance() };
   });
   handle("ai:templates:list", () => store.listPromptTemplates());
   handle("ai:templates:save", (v) =>
@@ -928,13 +946,16 @@ app
       recommendedProfile: runtimeState.recommendedProfile,
       effectiveProfile: runtimeState.effectiveProfile,
     });
+    providerCredentials = new ProviderCredentialStore();
+    dezgoFeatures = resolveDezgoFeatureFlags({ isPackaged: app.isPackaged });
     aiService = new AIService(store, {
       allowMock:
         !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
       getRuntimeProfile: () => runtimeProfile.getState(),
+      getProviderCredential: (providerId) =>
+        providerCredentials.get(providerId),
+      dezgoFeatures,
     });
-    providerCredentials = new ProviderCredentialStore();
-    dezgoFeatures = resolveDezgoFeatureFlags({ isPackaged: app.isPackaged });
     updater = new DesktopUpdater(desktopPaths().root);
     register();
     aiService.resumeQueuedImages();

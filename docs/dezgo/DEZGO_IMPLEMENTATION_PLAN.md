@@ -339,3 +339,15 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - Electron 39 Windows x64 unpacked build成功
 - `app.asar.unpacked`へのkeyring JavaScriptと`keyring.win32-x64-msvc.node`同梱を確認
 - Desktop TypeScript、ESLint、統合テスト64/64成功
+
+### 2026-07-17: 読み取り専用Provider基盤
+
+- 通信先を公式`https://api.dezgo.com`へ固定し、`X-Dezgo-Key`認証、15秒timeout、キャンセル、redirect拒否を実装
+- `/info`による接続確認・モデル一覧と`/account/tx/last`による残高取得をmain processへ追加
+- HTTP 400、401、402、403、404、429、5xx、timeout、通信失敗を秘密値を含まない固定errorへ分類
+- 公式metadataの`functions`をMANGAI Job Typeへ変換し、未知の値は安全に無視
+- モデルmetadataをSQLiteへ保持し、24時間cacheとAPI停止時のoffline fallbackを追加
+- feature flag無効時はcacheを含むDezgo Provider操作を拒否
+- rendererへ接続確認・モデル一覧・残高の限定IPCを公開し、APIキーと未加工response bodyは公開しない
+- `generateImage`は明示的に未有効のまま維持し、この段階ではDezgoへ生成要求を送信しない
+- ai-core 25/25、Desktop TypeScript、ESLint、統合テスト69/69、本番renderer build成功

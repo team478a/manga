@@ -39,6 +39,7 @@ import {
   routeDecisionSchema,
   routingContextSchema,
   type GenerationJobDraftInput,
+  type ImageGenerationModelMetadata,
   type GenerationRouteDecisionRecord,
   type GenerationStatus,
   type GenerationQueueSettings,
@@ -3901,15 +3902,7 @@ export class MangaiDatabase {
       createdAt: row.createdAt,
     }));
   }
-  saveAIModels(
-    providerId: string,
-    models: Array<{
-      id: string;
-      name: string;
-      size?: number;
-      modifiedAt?: string;
-    }>,
-  ) {
+  saveAIModels(providerId: string, models: ImageGenerationModelMetadata[]) {
     const stamp = now();
     this.db.transaction(() => {
       this.db
@@ -3918,15 +3911,17 @@ export class MangaiDatabase {
       const insert = this.db.prepare(
         "insert into ai_models values(?,?,?,?,?,?)",
       );
-      for (const model of models)
+      for (const model of models) {
+        const { id, name, ...metadata } = model;
         insert.run(
           uid(),
           providerId,
-          model.id,
-          model.name,
-          JSON.stringify({ size: model.size, modifiedAt: model.modifiedAt }),
+          id,
+          name,
+          JSON.stringify(metadata),
           stamp,
         );
+      }
     })();
     return this.listAIModels(providerId);
   }
@@ -3942,8 +3937,7 @@ export class MangaiDatabase {
       return {
         id: row.id,
         name: row.name,
-        size: metadata.size,
-        modifiedAt: metadata.modifiedAt,
+        ...metadata,
         updatedAt: row.updatedAt,
         cached: true,
       };

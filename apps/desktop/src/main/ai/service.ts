@@ -24,6 +24,8 @@ import { MangaiDatabase } from "../database.js";
 import { OllamaProvider } from "./providers/ollama.js";
 import { MockTextProvider } from "./providers/mock.js";
 import { ComfyUIProvider } from "./providers/comfyui.js";
+import { DezgoProvider } from "./providers/dezgo.js";
+import type { DezgoFeatureFlags } from "./dezgo-feature-flags.js";
 
 export type ChatEvent = {
   requestId: string;
@@ -42,18 +44,32 @@ export class AIService {
   private allowMock: boolean;
   private getRuntimeProfile?: () => RuntimeProfileState;
   private retryBaseDelayMs: number;
+  private getProviderCredential: (
+    providerId: "dezgo",
+  ) => Promise<string | null>;
+  private dezgoFeatures: DezgoFeatureFlags;
   constructor(
     private store: MangaiDatabase,
     options: {
       allowMock?: boolean;
       getRuntimeProfile?: () => RuntimeProfileState;
       retryBaseDelayMs?: number;
+      getProviderCredential?: (providerId: "dezgo") => Promise<string | null>;
+      dezgoFeatures?: DezgoFeatureFlags;
     } = {},
   ) {
     this.allowMock =
       options.allowMock ?? process.env.MANGAI_ENABLE_MOCK_AI === "true";
     this.getRuntimeProfile = options.getRuntimeProfile;
     this.retryBaseDelayMs = Math.max(10, options.retryBaseDelayMs ?? 1000);
+    this.getProviderCredential =
+      options.getProviderCredential ?? (async () => null);
+    this.dezgoFeatures = options.dezgoFeatures ?? {
+      dezgoProviderEnabled: false,
+      dezgoDirectByokEnabled: false,
+      dezgoAdultGenerationEnabled: false,
+      dezgoBatchGenerationEnabled: false,
+    };
   }
   isMockEnabled() {
     return this.allowMock;
@@ -312,7 +328,18 @@ export class AIService {
       );
     return { provider: new MockTextProvider(), settings: mock };
   }
-  provider(id: "ollama" | "comfyui" | "mock") {
+  provider(id: "ollama" | "comfyui" | "mock" | "dezgo") {
+    if (id === "dezgo") {
+      if (
+        !this.dezgoFeatures.dezgoProviderEnabled ||
+        !this.dezgoFeatures.dezgoDirectByokEnabled
+      )
+        throw new AIProviderError(
+          "DEZGO_DISABLED",
+          "Dezgo APIはこのビルドで無効です。",
+        );
+      return new DezgoProvider(() => this.getProviderCredential("dezgo"));
+    }
     const settings = this.settings(id);
     if (id === "ollama") return new OllamaProvider(settings);
     if (id === "comfyui")
