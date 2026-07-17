@@ -306,7 +306,7 @@ export class AIService {
         enabled: dezgoEnabled,
         endpointConfigured: dezgoConfigured,
         supportedJobTypes: ["background", "prop", "effect"],
-        dataRetentionSummary: "公式資料で保持期間を確認できていません。",
+        dataRetentionSummary: "ジョブデータは完了後30日間保持されます。",
         trainingUseSummary: "公式資料で学習利用条件を確認できていません。",
         pricingSummary: "生成後の実費のみ取得可能。事前見積は未対応。",
       },

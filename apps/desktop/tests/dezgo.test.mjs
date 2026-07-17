@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
+import sharp from "sharp";
 import { resolveDezgoFeatureFlags } from "../dist-main/main/ai/dezgo-feature-flags.js";
 import {
   ProviderCredentialError,
@@ -11,7 +12,12 @@ import {
 import {
   DezgoClient,
   DezgoProvider,
+  dezgoTextToImageRequestSchema,
 } from "../dist-main/main/ai/providers/dezgo.js";
+import {
+  persistDezgoGenerationResult,
+  sanitizeDezgoImage,
+} from "../dist-main/main/ai/dezgo-image-pipeline.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 
 test("Dezgo Phase 1 features are disabled by default", () => {
@@ -252,6 +258,180 @@ test("Dezgo generation remains disabled while read-only Phase 1 setup is built",
     assert.equal(error.code, "DEZGO_GENERATION_DISABLED");
     return true;
   });
+});
+
+test("Dezgo text-to-image maps one JSON request and parses safe billing metadata", async () => {
+  const source = await sharp({
+    create: {
+      width: 8,
+      height: 8,
+      channels: 4,
+      background: { r: 20, g: 80, b: 140, alpha: 1 },
+    },
+  })
+    .withMetadata({ exif: { IFD0: { Copyright: "must-be-removed" } } })
+    .png()
+    .toBuffer();
+  const calls = [];
+  const client = new DezgoClient(
+    async () => "secret-test-key",
+    async (url, init) => {
+      calls.push({ url, init });
+      return new Response(source, {
+        status: 200,
+        headers: {
+          "content-type": "image/png",
+          "x-input-seed": "1234",
+          "x-dezgo-job-amount-usd": "0.0125",
+          "x-dezgo-balance-total-usd": "4.2375",
+          "x-dezgo-balance-index": "42",
+          "x-dezgo-auth-userid": "must-not-be-recorded",
+        },
+      });
+    },
+  );
+  const request = {
+    prompt: "empty manga classroom",
+    negativePrompt: "people, text",
+    model: "model-from-api",
+    width: 512,
+    height: 768,
+    guidance: 7,
+    steps: 30,
+    sampler: "dpmpp_2m_karras",
+    seed: 1234,
+    format: "png",
+  };
+  const result = await client.textToImage(request);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://api.dezgo.com/text2image");
+  assert.equal(calls[0].init.method, "POST");
+  assert.equal(calls[0].init.redirect, "error");
+  assert.equal(calls[0].init.headers["X-Dezgo-Key"], "secret-test-key");
+  assert.deepEqual(JSON.parse(calls[0].init.body), {
+    prompt: "empty manga classroom",
+    negative_prompt: "people, text",
+    model: "model-from-api",
+    width: 512,
+    height: 768,
+    guidance: 7,
+    steps: 30,
+    sampler: "dpmpp_2m_karras",
+    seed: 1234,
+    format: "png",
+  });
+  assert.equal(result.images.length, 1);
+  assert.equal(result.images[0].mimeType, "image/png");
+  assert.deepEqual(result.metadata, {
+    seed: 1234,
+    actualCostUsd: 0.0125,
+    balanceUsd: 4.2375,
+    balanceIndex: 42,
+  });
+  assert.equal(JSON.stringify(result).includes("secret-test-key"), false);
+  assert.equal(JSON.stringify(result).includes("must-not-be-recorded"), false);
+
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-dezgo-image-"));
+  const database = new MangaiDatabase({
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  });
+  try {
+    const project = database.createProject({
+      title: "Dezgo mock image",
+      subtitle: "",
+      description: "",
+      genre: "漫画",
+      ageRating: "全年齢",
+      readingDirection: "rtl",
+      width: 512,
+      height: 768,
+      dpi: 300,
+    });
+    const jobId = database.createGenerationJob({
+      projectId: project.project.id,
+      providerType: "image",
+      providerId: "dezgo",
+      modelId: request.model,
+      generationType: "image",
+      prompt: request.prompt,
+      negativePrompt: request.negativePrompt,
+      inputJson: request,
+    });
+    database.updateGenerationJob(jobId, "running", { progress: 0.8 });
+    const persisted = await persistDezgoGenerationResult(database, {
+      jobId,
+      projectId: project.project.id,
+      request,
+      result,
+      durationMs: 1250,
+      jobType: "background",
+      libraryTags: ["classroom"],
+    });
+    assert.equal(persisted.bundle.assets.length, 1);
+    assert.equal(persisted.assetId, persisted.bundle.assets[0].id);
+    assert.equal(persisted.bundle.assets[0].libraryCategory, "background");
+    const assetFile = path.join(
+      persisted.bundle.project.storagePath,
+      persisted.bundle.assets[0].relativePath,
+    );
+    const sanitizedMetadata = await sharp(assetFile).metadata();
+    assert.equal(sanitizedMetadata.format, "png");
+    assert.equal(sanitizedMetadata.exif, undefined);
+    assert.equal(sanitizedMetadata.icc, undefined);
+    assert.equal(sanitizedMetadata.xmp, undefined);
+    const savedJob = database.listGenerationJobs(project.project.id)[0];
+    assert.equal(savedJob.status, "completed");
+    assert.equal(savedJob.providerId, "dezgo");
+    assert.equal(savedJob.modelId, "model-from-api");
+    assert.equal(JSON.parse(savedJob.outputJson).actualCostUsd, 0.0125);
+    assert.equal(savedJob.outputJson.includes("empty manga classroom"), false);
+    assert.equal(savedJob.outputJson.includes("secret-test-key"), false);
+  } finally {
+    database.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("Dezgo text-to-image rejects invalid parameters and non-image responses", async () => {
+  const valid = {
+    prompt: "empty room",
+    negativePrompt: "people",
+    model: "model-from-api",
+    width: 512,
+    height: 512,
+    guidance: 7,
+    steps: 30,
+    sampler: "dpmpp_2m_karras",
+    format: "png",
+  };
+  assert.throws(() =>
+    dezgoTextToImageRequestSchema.parse({ ...valid, width: 513 }),
+  );
+  assert.throws(() =>
+    dezgoTextToImageRequestSchema.parse({
+      ...valid,
+      prompt: "x".repeat(1001),
+    }),
+  );
+  const client = new DezgoClient(
+    async () => "secret-test-key",
+    async () =>
+      new Response('{"error":"secret provider body"}', {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+  );
+  await assert.rejects(client.textToImage(valid), (error) => {
+    assert.equal(error.code, "DEZGO_IMAGE_INVALID");
+    assert.doesNotMatch(error.message, /secret provider body/);
+    return true;
+  });
+  await assert.rejects(sanitizeDezgoImage(Buffer.from("not-an-image")));
 });
 
 test("Dezgo model metadata survives the SQLite cache", () => {

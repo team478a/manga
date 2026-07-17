@@ -371,6 +371,18 @@ Phase 1では次をすべて満たしても成人向け生成は実行しない�
 - Dezgo feature flagとOS keyringの設定済み状態を外部送信previewへ接続
 - previewにはProvider、送信対象、非送信素材、推定費用、保持・学習利用、明示確認要件だけを表示し、Prompt本文は返さない
 - 公式の事前見積APIを確認できないため、APIキー、許可ポリシー、月額上限が揃っても`cost_estimate_unavailable`で送信をblock
-- 保持期間と学習利用条件は未確認と明示し、推測した条件や固定価格を表示しない
+- 公式OpenAPIに基づきジョブデータ保持期間を完了後30日と表示し、未確認の学習利用条件や固定価格は推測しない
 - 成人向け、人物・キャラクター参照、完成PageはProject設定で解除できないことを日英表示
 - ai-core 25/25、Desktop TypeScript、ESLint、統合テスト69/69、本番renderer build、日英axe監査違反0件
+
+### 2026-07-17: Text-to-Image内部pipeline
+
+- 公式`POST /text2image`に合わせ、Prompt・Negative Prompt最大1000文字、320〜1024px・8px単位、Guidance、10〜150 Steps、Sampler、uint32 Seed、PNG/JPG/WebPをZod検証
+- `application/json`の1枚限定request mapperを追加し、固定origin、`X-Dezgo-Key`、redirect拒否、3分timeout、cancelを維持
+- binary responseをPNG・JPEG・WebP、25MiB以下に限定し、非画像・空画像・過大画像を固定errorで拒否
+- `x-input-seed`、実費、生成後残高、取引indexだけを解析し、Dezgo user IDや全response headerを履歴へ保存しない
+- Sharpでdecode後にPNGへ再encodeし、EXIF、ICC、XMP等のmetadataを除去
+- 1枚だけをProject Assetへ登録し、model、寸法、Guidance、Steps、Sampler、Seed、実費、残高、所要時間を生成履歴へ保存
+- Promptは既存の端末内Job履歴へ保持するが、Asset出力metadataへ重複保存せず、API keyはどちらにも保存しない
+- 実API送信を呼び出すUI / IPC / Queue経路は追加せず、`DezgoProvider.generateImage`は無効のまま維持
+- Desktop TypeScript、ESLint、統合テスト71/71、本番renderer build成功

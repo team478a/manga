@@ -391,7 +391,7 @@ const ja = {
   "generation.externalDezgoPricing":
     "生成後の実費は取得できますが、事前見積APIは確認できていません。",
   "generation.externalDezgoRetention":
-    "公式資料で保持期間を確認できていません。",
+    "ジョブデータは完了後30日間保持されます。",
   "generation.externalDezgoTraining":
     "公式資料で学習利用条件を確認できていません。",
   "generation.externalIncluded": "送信対象",
@@ -1213,7 +1213,7 @@ const en: Record<TranslationKey, string> = {
   "generation.externalDezgoPricing":
     "Actual cost is available after generation, but no official preflight estimate API has been confirmed.",
   "generation.externalDezgoRetention":
-    "No retention period has been confirmed in the official materials.",
+    "Job data is retained for 30 days after completion.",
   "generation.externalDezgoTraining":
     "No training-use terms have been confirmed in the official materials.",
   "generation.externalIncluded": "Included",

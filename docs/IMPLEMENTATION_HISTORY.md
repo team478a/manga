@@ -23,8 +23,11 @@
 - 日英設定画面を含むaxe監査は違反0件。既存Canvas装飾の色判定保留だけを継続
 - 画像生成画面へProject外部処理ポリシーを追加し、許可範囲、ローカル優先、毎回確認、月間費用上限を編集可能にした
 - Dezgoのflag・credential状態を外部送信previewへ接続し、Prompt本文を返さず送信対象、費用、保持・学習利用、確認要件を表示
-- 事前費用見積API、保持期間、学習利用条件を公式資料で確認できないため、`cost_estimate_unavailable`で送信をfail closedに維持
+- 事前費用見積APIと学習利用条件を公式資料で確認できないため、`cost_estimate_unavailable`で送信をfail closedに維持。ジョブデータ保持は公式OpenAPIに従い完了後30日と表示
 - ai-core 25/25、Desktop統合テスト69/69、TypeScript、ESLint、本番renderer build、日英axe監査違反0件
+- Dezgo Text-to-Imageの1枚限定JSON mapper、parameter検証、binary画像・課金header解析を内部実装
+- Sharp再encodeでEXIF・ICC・XMPを除去し、モデル・寸法・Seed・実費・残高・所要時間とともにProject Assetへ保存するpipelineを追加
+- mock応答だけでAsset登録まで検証し、実APIを呼び出すUI・IPC・Queueは未接続。Desktop統合テスト71/71、TypeScript、ESLint、本番renderer build成功
 
 ## 1. 現在の製品構成
 
