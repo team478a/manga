@@ -1085,3 +1085,11 @@ Provider承認とモデルallowlistを、運用担当が作成する署名済み
 検証後はProvider承認、Dezgoモデルallowlist、key ID・payload SHA-256・取込日時の監査記録を1つのSQLite transactionで更新します。監査tableは独立した`adult-provider-policy-import-v1` migrationで既存端末にも追加し、適用前DBを自動backupします。設定画面には取込操作と最終取込日時を追加しましたが、同梱のtrust storeは初期状態で公開鍵0件のため、運用公開鍵が明示的に登録されるまでは取込ボタンが無効です。秘密鍵はアプリとリポジトリへ含めていません。
 
 一時生成したテスト用Ed25519鍵で正常取込、改変、未知key、期限切れを自動検証しました。Desktop統合テスト81/81、ai-core 35/35、TypeScript、ESLintに成功しています。本番公開鍵、実承認データ、成人向けdispatcher接続は未完了で、Dezgo成人向け外部送信は引き続き無効です。
+
+## 126. 成人向けProvider失効・allowlist変更時の待機Job停止
+
+署名済み運用ポリシーを取り込んだ直後とDezgo Queue workerが次のJobを選ぶ直前に、待機・一時停止中の成人向けDezgo画像Jobを新しいProvider承認とモデルallowlistで再評価する処理を追加しました。Provider未確認・失効・期限切れ、モデル未登録・失効・期限切れを理由別error codeで失敗状態へ移し、関連する未精算の費用予約を同じtransactionで解放します。これにより、時刻経過だけで承認期限が切れた場合もProvider呼出し前に停止します。
+
+対象は`provider_id=dezgo`かつ`jobType=adult_character_render`と明示された待機Jobだけです。通常のsafe素材Job、ローカルComfyUI成人向けJob、完了済みJobは変更しません。allowlistに残る有効モデルのJobは待機を継続し、その後Provider承認が失効した場合に停止します。
+
+モデル除外とProvider失効、待機・一時停止、費用予約解放、有効Job継続、safe Job・ローカルJob非干渉を自動検証しました。Desktop統合テスト82/82、TypeScript、ESLintに成功しています。新規外部送信前の再評価は次の成人向け専用dispatcher段階で実装し、Dezgo成人向け外部送信は引き続き無効です。

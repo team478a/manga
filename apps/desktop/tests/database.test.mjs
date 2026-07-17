@@ -1069,6 +1069,147 @@ test("adult provider evidence and model allowlist persist fail closed", () => {
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
+test("adult provider policy stops disallowed pending Dezgo jobs and releases reservations", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-policy-jobs-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  const projectId = db.createProject({
+    title: "成人向けpolicy Queue確認",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "成人向け",
+    readingDirection: "rtl",
+    width: 1600,
+    height: 2400,
+    dpi: 300,
+  }).project.id;
+  const keptAdultJob = db.createGenerationJob({
+    projectId,
+    providerType: "cloud",
+    providerId: "dezgo",
+    modelId: "kept-model",
+    generationType: "image",
+    prompt: "adult queue item",
+    inputJson: { jobType: "adult_character_render" },
+  });
+  const removedAdultJob = db.createGenerationJob({
+    projectId,
+    providerType: "cloud",
+    providerId: "dezgo",
+    modelId: "removed-model",
+    generationType: "image",
+    prompt: "adult queue item",
+    inputJson: { jobType: "adult_character_render" },
+  });
+  db.updateGenerationJob(removedAdultJob, "paused");
+  const safeJob = db.createGenerationJob({
+    projectId,
+    providerType: "cloud",
+    providerId: "dezgo",
+    modelId: "removed-model",
+    generationType: "image",
+    prompt: "safe background",
+    inputJson: { jobType: "background" },
+  });
+  const localAdultJob = db.createGenerationJob({
+    projectId,
+    providerType: "local",
+    providerId: "comfyui",
+    modelId: "removed-model",
+    generationType: "image",
+    prompt: "local adult queue item",
+    inputJson: { jobType: "adult_character_render" },
+  });
+  const reservations = [
+    ["kept-adult-token", keptAdultJob],
+    ["removed-adult-token", removedAdultJob],
+    ["safe-token", safeJob],
+  ];
+  for (const [approvalToken] of reservations)
+    db.reserveExternalCost({
+      projectId,
+      providerId: "dezgo",
+      approvalToken,
+      amountUsd: 0.2,
+      monthlyLimitUsd: 1,
+      createdAt: "2026-07-17T00:00:00.000Z",
+    });
+  db.close();
+  const raw = new Database(paths.database);
+  for (const [approvalToken, jobId] of reservations)
+    raw
+      .prepare(
+        "update external_cost_reservations set job_id=? where approval_token_sha256=?",
+      )
+      .run(
+        jobId,
+        crypto.createHash("sha256").update(approvalToken).digest("hex"),
+      );
+  raw.close();
+  db = new MangaiDatabase(paths);
+  const policy = (status, revokedAt = null) => ({
+    keyId: "test-key-queue",
+    payloadSha256: status === "approved" ? "d".repeat(64) : "e".repeat(64),
+    payload: {
+      issuedAt: "2026-07-17T00:00:00.000Z",
+      expiresAt: "2026-08-17T00:00:00.000Z",
+      providerApproval: {
+        providerId: "dezgo",
+        status,
+        evidenceSha256: "a".repeat(64),
+        confirmedAt: "2026-07-17T00:00:00.000Z",
+        expiresAt: "2026-08-17T00:00:00.000Z",
+        revokedAt,
+      },
+      models: [
+        {
+          providerId: "dezgo",
+          modelId: "kept-model",
+          status: "approved",
+          licenseEvidenceSha256: "b".repeat(64),
+          verifiedAt: "2026-07-17T00:00:00.000Z",
+          expiresAt: "2026-08-17T00:00:00.000Z",
+        },
+      ],
+    },
+  });
+  db.applyAdultProviderPolicyBundle(policy("approved"));
+  assert.equal(db.getGenerationJob(keptAdultJob).status, "queued");
+  assert.equal(db.getGenerationJob(removedAdultJob).status, "failed");
+  assert.equal(
+    db.getGenerationJob(removedAdultJob).error_code,
+    "ADULT_MODEL_NOT_ALLOWLISTED",
+  );
+  assert.equal(db.getGenerationJob(safeJob).status, "queued");
+  assert.equal(db.getGenerationJob(localAdultJob).status, "queued");
+  assert.equal(
+    db.externalCostSummary(projectId, "dezgo", "2026-07").reservedUsd,
+    0.4,
+  );
+  db.applyAdultProviderPolicyBundle(
+    policy("revoked", "2026-07-17T01:00:00.000Z"),
+  );
+  assert.equal(db.getGenerationJob(keptAdultJob).status, "failed");
+  assert.equal(
+    db.getGenerationJob(keptAdultJob).error_code,
+    "ADULT_PROVIDER_REVOKED",
+  );
+  assert.equal(db.getGenerationJob(safeJob).status, "queued");
+  assert.equal(
+    db.externalCostSummary(projectId, "dezgo", "2026-07").reservedUsd,
+    0.2,
+  );
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
 test("adult generation settings fail closed and persist age attestation", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-policy-"));
   const paths = {

@@ -4754,6 +4754,74 @@ export class MangaiDatabase {
           | undefined) ?? null),
     };
   }
+  stopPendingAdultDezgoJobsDisallowedByPolicy(referenceTime = now()) {
+    const approval = this.getAdultProviderApproval();
+    const models = this.listAdultModelApprovals();
+    const modelsById = new Map(models.map((model) => [model.modelId, model]));
+    const rows = this.db
+      .prepare(
+        `select id,model_id as modelId,input_json as inputJson
+         from generation_jobs
+         where provider_id='dezgo' and generation_type='image'
+           and status in ('queued','paused')`,
+      )
+      .all() as Array<{
+      id: string;
+      modelId: string | null;
+      inputJson: string;
+    }>;
+    const blocked = rows.flatMap((row) => {
+      try {
+        const input = JSON.parse(row.inputJson) as { jobType?: unknown };
+        if (input.jobType !== "adult_character_render") return [];
+      } catch {
+        return [];
+      }
+      const result = evaluateAdultProviderCapability({
+        approval,
+        model: row.modelId ? (modelsById.get(row.modelId) ?? null) : null,
+        referenceTime,
+      });
+      return result.allowed ? [] : [{ id: row.id, reason: result.reason }];
+    });
+    const errors = {
+      provider_unverified: [
+        "ADULT_PROVIDER_UNVERIFIED",
+        "Dezgoの成人向け利用承認を確認できないため、待機中の生成を停止しました。",
+      ],
+      provider_revoked: [
+        "ADULT_PROVIDER_REVOKED",
+        "Dezgoの成人向け利用承認が失効したため、待機中の生成を停止しました。",
+      ],
+      provider_expired: [
+        "ADULT_PROVIDER_EXPIRED",
+        "Dezgoの成人向け利用承認期限が切れたため、待機中の生成を停止しました。",
+      ],
+      model_not_allowlisted: [
+        "ADULT_MODEL_NOT_ALLOWLISTED",
+        "選択モデルが成人向けallowlistにないため、待機中の生成を停止しました。",
+      ],
+      model_revoked: [
+        "ADULT_MODEL_REVOKED",
+        "選択モデルの成人向け承認が失効したため、待機中の生成を停止しました。",
+      ],
+      model_approval_expired: [
+        "ADULT_MODEL_APPROVAL_EXPIRED",
+        "選択モデルの成人向け承認期限が切れたため、待機中の生成を停止しました。",
+      ],
+    } as const;
+    this.db.transaction(() => {
+      for (const item of blocked) {
+        const [errorCode, errorMessage] = errors[item.reason];
+        this.releaseExternalCostReservationForJob(item.id);
+        this.updateGenerationJob(item.id, "failed", {
+          errorCode,
+          errorMessage,
+        });
+      }
+    })();
+    return blocked.map((item) => item.id);
+  }
   applyAdultProviderPolicyBundle(input: {
     keyId: string;
     payloadSha256: string;
@@ -4799,6 +4867,7 @@ export class MangaiDatabase {
           expiresAt,
           importedAt,
         );
+      this.stopPendingAdultDezgoJobsDisallowedByPolicy(importedAt);
     })();
     return this.getAdultProviderPolicyState();
   }

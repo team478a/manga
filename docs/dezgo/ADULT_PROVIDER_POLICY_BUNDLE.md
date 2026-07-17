@@ -45,6 +45,7 @@ Dezgoの成人向け商用API承認証跡と、確認済みモデルallowlistを
 - 未知のkey ID、署名改変、重複モデルID、schema外fieldは拒否します。
 - 検証成功後だけProvider承認・モデルallowlist・取込監査を同一transactionで更新します。
 - importはallowlist全体を置き換えます。bundleから削除されたモデルは承認対象から外れます。
+- 更新後に承認対象外となった成人向けDezgo待機・一時停止Jobは同じtransactionで停止し、未精算の費用予約を解放します。通常のsafe Jobとローカル生成Jobは変更しません。
 
 ## 5. 現在の状態
 

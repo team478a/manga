@@ -1051,6 +1051,7 @@ export class AIService {
     )
       return null;
     this.store.stopUnauthorizedPendingAdultGenerationJobs();
+    this.store.stopPendingAdultDezgoJobsDisallowedByPolicy();
     const windowDelay = this.queueWindowDelayMs();
     if (windowDelay > 0) {
       this.scheduleDezgoQueueWake(windowDelay);
