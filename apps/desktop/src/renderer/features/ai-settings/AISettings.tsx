@@ -10,6 +10,7 @@ import type {
 } from "../../../preload/api";
 import { useI18n } from "../../i18n";
 import { DezgoSettings } from "./DezgoSettings";
+import { AdultGenerationSettings } from "./AdultGenerationSettings";
 
 type PromptTemplate = {
   id: string;
@@ -779,6 +780,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
           )}
         </section>
         <DezgoSettings />
+        <AdultGenerationSettings />
         {settings.map((value) => (
           <section className="panel-lite" key={value.providerId}>
             <div className="setting-title">

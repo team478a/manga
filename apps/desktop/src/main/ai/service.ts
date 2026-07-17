@@ -24,6 +24,7 @@ import {
   type PageBatchImageRequest,
   type GenerationQueueSettings,
   type RuntimeProfileState,
+  type AdultGenerationSettings,
 } from "@mangai/ai-core";
 import { MangaiDatabase } from "../database.js";
 import { OllamaProvider } from "./providers/ollama.js";
@@ -137,6 +138,23 @@ export class AIService {
   }
   isMockEnabled() {
     return this.allowMock;
+  }
+  getAdultGenerationSettings(): AdultGenerationSettings {
+    return this.store.getAdultGenerationSettings();
+  }
+  setAdultGenerationAdministratorEnabled(enabled: boolean) {
+    const settings = this.store.setAdultGenerationAdministratorEnabled(enabled);
+    if (!settings.administratorEnabled)
+      this.store.stopUnauthorizedPendingAdultGenerationJobs();
+    return settings;
+  }
+  confirmAdultGeneration18Plus(input: unknown) {
+    return this.store.confirmAdultGeneration18Plus(input);
+  }
+  revokeAdultGenerationConsent() {
+    const settings = this.store.revokeAdultGenerationConsent();
+    this.store.stopUnauthorizedPendingAdultGenerationJobs();
+    return settings;
   }
   private isLoopbackUrl(baseUrl: string) {
     const hostname = new URL(baseUrl).hostname.toLowerCase();
@@ -1015,6 +1033,7 @@ export class AIService {
       this.activeDezgoJobId
     )
       return null;
+    this.store.stopUnauthorizedPendingAdultGenerationJobs();
     const windowDelay = this.queueWindowDelayMs();
     if (windowDelay > 0) {
       this.scheduleDezgoQueueWake(windowDelay);
@@ -1180,6 +1199,7 @@ export class AIService {
     this.dezgoQueueWakeTimer.unref?.();
   }
   private async runNextQueuedImage() {
+    this.store.stopUnauthorizedPendingAdultGenerationJobs();
     const windowDelay = this.queueWindowDelayMs();
     if (windowDelay > 0) {
       this.scheduleQueueWake(windowDelay);

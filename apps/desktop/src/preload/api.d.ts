@@ -1,6 +1,8 @@
 import type { Asset, ProjectBundle, Project } from "@mangai/project-core";
 import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
 import type {
+  AdultGenerationConsentInput,
+  AdultGenerationSettings,
   GenerationRouteDecisionRecord,
   GenerationQueueSettings,
   PageBatchImageRequest,
@@ -299,6 +301,14 @@ export type DesktopApi = {
     ) => Promise<ProjectGenerationPolicy>;
     listSettings: () => Promise<ProviderSettings[]>;
     listSettingsHistory: () => Promise<AISettingsHistoryItem[]>;
+    getAdultGenerationSettings: () => Promise<AdultGenerationSettings>;
+    setAdultGenerationAdministratorEnabled: (
+      enabled: boolean,
+    ) => Promise<AdultGenerationSettings>;
+    confirmAdultGeneration18Plus: (
+      value: AdultGenerationConsentInput,
+    ) => Promise<AdultGenerationSettings>;
+    revokeAdultGenerationConsent: () => Promise<AdultGenerationSettings>;
     saveSettings: (value: ProviderSettings) => Promise<ProviderSettings[]>;
     credentialState: (providerId: "dezgo") => Promise<{
       providerId: "dezgo";

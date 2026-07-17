@@ -759,6 +759,36 @@ const ja = {
     "生成dispatcherは無効です。接続確認では画像やPromptを送信せず、承認済みQueueも待機します。",
   "settings.dezgo.generationEnabled":
     "開発限定dispatcherが有効です。明示承認済みのsafe素材だけを1件ずつ送信します。",
+  "settings.adult.title": "成人向け生成の安全設定",
+  "settings.adult.description":
+    "成人向け漫画制作の端末設定と18歳以上確認を管理します。",
+  "settings.adult.loading": "確認中",
+  "settings.adult.externalDisabled":
+    "成人向けDezgo外部送信はProvider承認と専用審査が完了するまで無効です。この設定だけでは外部送信されません。",
+  "settings.adult.administratorToggle": "この端末で成人向け生成を許可する",
+  "settings.adult.administratorHelp":
+    "無効にすると待機中の成人向け生成を送信前に停止します。",
+  "settings.adult.administratorEnabled": "成人向け端末設定を有効にしました。",
+  "settings.adult.administratorDisabled":
+    "成人向け端末設定を無効にし、待機Jobを停止しました。",
+  "settings.adult.ageConfirmation":
+    "私は18歳以上で、成人向け生成の禁止事項と利用条件を確認しました",
+  "settings.adult.privacyHelp":
+    "確認日時と有効期限だけを端末内へ保存します。生年月日や本人確認書類は保存しません。有効期間は30日です。",
+  "settings.adult.confirmButton": "18歳以上を確認",
+  "settings.adult.confirmed": "18歳以上の確認を保存しました。",
+  "settings.adult.revokeButton": "確認を取り消す",
+  "settings.adult.revokeConfirm":
+    "18歳以上の確認を取り消し、待機中の成人向け生成を停止しますか？",
+  "settings.adult.revoked": "確認を取り消し、待機Jobを停止しました。",
+  "settings.adult.confirmedAt": "確認日時",
+  "settings.adult.expiresAt": "有効期限",
+  "settings.adult.notAvailable": "記録なし",
+  "settings.adult.status.missing": "未確認",
+  "settings.adult.status.active": "確認有効",
+  "settings.adult.status.expired": "期限切れ",
+  "settings.adult.status.revoked": "取消済み",
+  "settings.adult.status.terms_changed": "規約更新・再確認必要",
   "settings.provider.mock": "モックプロバイダー",
   "settings.provider.enabled": "有効",
   "settings.provider.baseUrl": "接続URL",
@@ -1651,6 +1681,39 @@ const en: Record<TranslationKey, string> = {
     "The generation dispatcher is disabled. Connection checks do not send images or prompts, and approved queue jobs remain waiting.",
   "settings.dezgo.generationEnabled":
     "The development-only dispatcher is enabled. It sends one explicitly approved safe-asset job at a time.",
+  "settings.adult.title": "Adult generation safety",
+  "settings.adult.description":
+    "Manage device authorization and the 18-or-older attestation for adult manga creation.",
+  "settings.adult.loading": "Checking",
+  "settings.adult.externalDisabled":
+    "Adult Dezgo transmission remains disabled until provider approval and dedicated review are complete. These settings alone never enable external transmission.",
+  "settings.adult.administratorToggle":
+    "Allow adult generation on this device",
+  "settings.adult.administratorHelp":
+    "Disabling this stops queued adult-generation jobs before dispatch.",
+  "settings.adult.administratorEnabled":
+    "Adult generation was enabled for this device.",
+  "settings.adult.administratorDisabled":
+    "Adult generation was disabled and queued jobs were stopped.",
+  "settings.adult.ageConfirmation":
+    "I am 18 or older and have reviewed the prohibited content and terms for adult generation",
+  "settings.adult.privacyHelp":
+    "Only the confirmation time and expiry are stored locally. No date of birth or identity document is stored. Confirmation is valid for 30 days.",
+  "settings.adult.confirmButton": "Confirm age 18 or older",
+  "settings.adult.confirmed": "The age attestation was saved.",
+  "settings.adult.revokeButton": "Revoke confirmation",
+  "settings.adult.revokeConfirm":
+    "Revoke the age attestation and stop queued adult-generation jobs?",
+  "settings.adult.revoked":
+    "The confirmation was revoked and queued jobs were stopped.",
+  "settings.adult.confirmedAt": "Confirmed",
+  "settings.adult.expiresAt": "Expires",
+  "settings.adult.notAvailable": "No record",
+  "settings.adult.status.missing": "Not confirmed",
+  "settings.adult.status.active": "Confirmation active",
+  "settings.adult.status.expired": "Expired",
+  "settings.adult.status.revoked": "Revoked",
+  "settings.adult.status.terms_changed": "Terms changed; reconfirm",
   "settings.provider.mock": "Mock provider",
   "settings.provider.enabled": "Enabled",
   "settings.provider.baseUrl": "Connection URL",

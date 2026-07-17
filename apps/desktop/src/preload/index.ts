@@ -131,6 +131,14 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:generation-policy:save", value),
     listSettings: () => ipcRenderer.invoke("ai:settings:list"),
     listSettingsHistory: () => ipcRenderer.invoke("ai:settings:history"),
+    getAdultGenerationSettings: () =>
+      ipcRenderer.invoke("ai:adult-settings:get"),
+    setAdultGenerationAdministratorEnabled: (enabled: boolean) =>
+      ipcRenderer.invoke("ai:adult-settings:administrator", { enabled }),
+    confirmAdultGeneration18Plus: (value: unknown) =>
+      ipcRenderer.invoke("ai:adult-settings:confirm", value),
+    revokeAdultGenerationConsent: () =>
+      ipcRenderer.invoke("ai:adult-settings:revoke"),
     saveSettings: (value: unknown) =>
       ipcRenderer.invoke("ai:settings:save", value),
     credentialState: (providerId: "dezgo") =>

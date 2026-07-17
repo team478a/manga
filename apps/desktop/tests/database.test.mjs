@@ -987,6 +987,36 @@ test("adult generation settings fail closed and persist age attestation", () => 
     db.getAdultGenerationSettings(afterExpiry).userConfirmed18Plus,
     false,
   );
+  const expiredAdultJob = db.createGenerationJob({
+    providerType: "image",
+    providerId: "comfyui",
+    generationType: "image",
+    prompt: "not persisted in policy output",
+    inputJson: { jobType: "adult_character_render" },
+  });
+  const safeJob = db.createGenerationJob({
+    providerType: "image",
+    providerId: "comfyui",
+    generationType: "image",
+    prompt: "safe background",
+    inputJson: { jobType: "background" },
+  });
+  assert.deepEqual(db.stopUnauthorizedPendingAdultGenerationJobs(afterExpiry), [
+    expiredAdultJob,
+  ]);
+  assert.equal(db.getGenerationJob(expiredAdultJob).status, "failed");
+  assert.equal(
+    db.getGenerationJob(expiredAdultJob).error_code,
+    "ADULT_GENERATION_CONSENT_REQUIRED",
+  );
+  assert.equal(db.getGenerationJob(safeJob).status, "queued");
+  const revokedAdultJob = db.createGenerationJob({
+    providerType: "image",
+    providerId: "comfyui",
+    generationType: "image",
+    prompt: "adult job awaiting authorization",
+    inputJson: { jobType: "adult_character_render" },
+  });
   db.close();
 
   db = new MangaiDatabase(paths);
@@ -995,6 +1025,28 @@ test("adult generation settings fail closed and persist age attestation", () => 
   const revoked = db.revokeAdultGenerationConsent();
   assert.equal(revoked.userConfirmed18Plus, false);
   assert.equal(revoked.consentStatus, "revoked");
+  assert.deepEqual(db.stopUnauthorizedPendingAdultGenerationJobs(), [
+    revokedAdultJob,
+  ]);
+  assert.equal(
+    db.getGenerationJob(revokedAdultJob).error_code,
+    "ADULT_GENERATION_CONSENT_REQUIRED",
+  );
+  const administratorStoppedJob = db.createGenerationJob({
+    providerType: "image",
+    providerId: "comfyui",
+    generationType: "image",
+    prompt: "adult job stopped by administrator",
+    inputJson: { jobType: "adult_character_render" },
+  });
+  db.setAdultGenerationAdministratorEnabled(false);
+  assert.deepEqual(db.stopUnauthorizedPendingAdultGenerationJobs(), [
+    administratorStoppedJob,
+  ]);
+  assert.equal(
+    db.getGenerationJob(administratorStoppedJob).error_code,
+    "ADULT_GENERATION_ADMIN_DISABLED",
+  );
   db.close();
 
   const inspection = new Database(paths.database, { readonly: true });

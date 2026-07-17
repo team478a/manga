@@ -37,6 +37,10 @@ export type AdultGenerationConsentInput = z.input<
   typeof adultGenerationConsentInputSchema
 >;
 
+export const adultGenerationAdministratorInputSchema = z.object({
+  enabled: z.boolean(),
+});
+
 export const adultGenerationGateInputSchema = z.object({
   userConfirmed18Plus: z.boolean().default(false),
   projectAgeRating: z

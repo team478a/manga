@@ -4612,6 +4612,43 @@ export class MangaiDatabase {
       .run(revokedAt, revokedAt);
     return this.getAdultGenerationSettings(revokedAt);
   }
+  stopUnauthorizedPendingAdultGenerationJobs(referenceTime = now()) {
+    const settings = this.getAdultGenerationSettings(referenceTime);
+    if (settings.administratorEnabled && settings.userConfirmed18Plus)
+      return [] as string[];
+    const rows = this.db
+      .prepare(
+        `select id,input_json as inputJson from generation_jobs
+         where generation_type='image' and status in ('queued','paused')`,
+      )
+      .all() as Array<{ id: string; inputJson: string }>;
+    const adultJobIds = rows
+      .filter((row) => {
+        try {
+          const input = JSON.parse(row.inputJson) as { jobType?: unknown };
+          return input.jobType === "adult_character_render";
+        } catch {
+          return false;
+        }
+      })
+      .map((row) => row.id);
+    const errorCode = settings.administratorEnabled
+      ? "ADULT_GENERATION_CONSENT_REQUIRED"
+      : "ADULT_GENERATION_ADMIN_DISABLED";
+    const errorMessage = settings.administratorEnabled
+      ? "18歳以上の確認が無効または期限切れのため、成人向け生成を停止しました。"
+      : "管理者設定で成人向け生成が無効なため、成人向け生成を停止しました。";
+    this.db.transaction(() => {
+      for (const jobId of adultJobIds) {
+        this.releaseExternalCostReservationForJob(jobId);
+        this.updateGenerationJob(jobId, "failed", {
+          errorCode,
+          errorMessage,
+        });
+      }
+    })();
+    return adultJobIds;
+  }
   getGenerationQueueSettings(): GenerationQueueSettings {
     const row = this.db
       .prepare(

@@ -61,6 +61,8 @@ import {
   hubStatusRequestSchema,
 } from "@mangai/shared";
 import {
+  adultGenerationAdministratorInputSchema,
+  adultGenerationConsentInputSchema,
   cancelRequestSchema,
   chatRequestSchema,
   chatSessionIdSchema,
@@ -631,6 +633,22 @@ function register() {
       ),
   );
   handle("ai:settings:history", () => store.listAISettingsHistory());
+  handle("ai:adult-settings:get", () =>
+    aiService.getAdultGenerationSettings(),
+  );
+  handle("ai:adult-settings:administrator", (v) =>
+    aiService.setAdultGenerationAdministratorEnabled(
+      adultGenerationAdministratorInputSchema.parse(v).enabled,
+    ),
+  );
+  handle("ai:adult-settings:confirm", (v) =>
+    aiService.confirmAdultGeneration18Plus(
+      adultGenerationConsentInputSchema.parse(v),
+    ),
+  );
+  handle("ai:adult-settings:revoke", () =>
+    aiService.revokeAdultGenerationConsent(),
+  );
   handle("ai:runtime", () => ({
     mockEnabled: aiService.isMockEnabled(),
     runtimeProfile: runtimeProfile.getState(),
