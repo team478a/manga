@@ -1,5 +1,7 @@
 # MANGAI Desktop Dezgo Phase 1 実装計画
 
+成人向け対応の次段階は[`DEZGO_ADULT_PHASE2_PLAN.md`](DEZGO_ADULT_PHASE2_PLAN.md)を参照してください。Phase 1の安全制約と非成人向け実API受入れは、Phase 2開始後も前提条件として維持します。
+
 作成日: 2026-07-17
 
 対象ブランチ: `feature/manga-canvas-mvp`

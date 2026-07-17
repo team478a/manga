@@ -4,6 +4,7 @@ import { safeAssetJobTypeSchema } from "./hybrid-generation.js";
 export * from "./hybrid-generation.js";
 export * from "./external-asset-provider.js";
 export * from "./runtime-profile.js";
+export * from "./adult-generation-policy.js";
 
 export const generationStatusSchema = z.enum([
   "queued",

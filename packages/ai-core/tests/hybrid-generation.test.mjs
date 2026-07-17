@@ -14,6 +14,8 @@ import {
   analyzeComfyWorkflowOptimization,
   imageGenerationProviderIdSchema,
   imageGenerationJobTypeSchema,
+  adultGenerationGateInputSchema,
+  evaluateAdultGenerationGate,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
@@ -35,6 +37,81 @@ test("image generation job types include Phase 1 and later capabilities", () => 
   );
   assert.equal(imageGenerationJobTypeSchema.parse("controlnet"), "controlnet");
   assert.throws(() => imageGenerationJobTypeSchema.parse("batch"));
+});
+
+const adultGateAllowedInput = {
+  userConfirmed18Plus: true,
+  projectAgeRating: "成人向け",
+  jobType: "adult_character_render",
+  characterIsFictional: true,
+  allDepictedCharactersExplicitly18Plus: true,
+  minorOrAgeAmbiguousAppearanceDetected: false,
+  realPersonReferenceIncluded: false,
+  nonConsensualOrExploitativeContentDetected: false,
+  rightsConfirmed: true,
+  localPolicyReviewPassed: true,
+  externalTransmissionReviewed: true,
+  administratorAdultGenerationEnabled: true,
+  providerAdultCommercialUseApproval: "approved",
+  providerApprovalReferenceSha256: "a".repeat(64),
+  selectedModelAdultUseApproved: true,
+  adultGenerationFeatureEnabled: true,
+};
+
+test("adult external generation gate fails closed on incomplete input", () => {
+  const parsed = adultGenerationGateInputSchema.parse({});
+  assert.equal(parsed.userConfirmed18Plus, false);
+  assert.equal(parsed.minorOrAgeAmbiguousAppearanceDetected, true);
+  assert.equal(parsed.realPersonReferenceIncluded, true);
+  assert.equal(
+    evaluateAdultGenerationGate({}).reason,
+    "user_age_not_confirmed",
+  );
+});
+
+test("adult external generation gate requires provider evidence and feature enablement", () => {
+  assert.deepEqual(
+    evaluateAdultGenerationGate({
+      ...adultGateAllowedInput,
+      providerAdultCommercialUseApproval: "unverified",
+      providerApprovalReferenceSha256: undefined,
+    }),
+    { allowed: false, reason: "provider_approval_missing" },
+  );
+  assert.deepEqual(
+    evaluateAdultGenerationGate({
+      ...adultGateAllowedInput,
+      adultGenerationFeatureEnabled: false,
+    }),
+    { allowed: false, reason: "feature_disabled" },
+  );
+});
+
+test("adult external generation gate rejects minors, real people and exploitation", () => {
+  const cases = [
+    [
+      { allDepictedCharactersExplicitly18Plus: false },
+      "depicted_adult_age_not_confirmed",
+    ],
+    [
+      { minorOrAgeAmbiguousAppearanceDetected: true },
+      "minor_or_age_ambiguous",
+    ],
+    [{ realPersonReferenceIncluded: true }, "real_person_reference"],
+    [
+      { nonConsensualOrExploitativeContentDetected: true },
+      "nonconsensual_or_exploitative_content",
+    ],
+  ];
+  for (const [override, reason] of cases)
+    assert.deepEqual(
+      evaluateAdultGenerationGate({ ...adultGateAllowedInput, ...override }),
+      { allowed: false, reason },
+    );
+  assert.deepEqual(evaluateAdultGenerationGate(adultGateAllowedInput), {
+    allowed: true,
+    reason: null,
+  });
 });
 
 test("ComfyUI workflow optimization detects tiled VAE without inferring runtime offload", () => {

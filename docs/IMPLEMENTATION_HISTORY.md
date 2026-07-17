@@ -1033,3 +1033,11 @@ RC正本とDesktop状況をDesktop 77/77、ai-core 27/27へ同期し、Dezgo実A
 テスト用の固有APIキー相当文字列を`DezgoProvider`の実認証header経路へ渡し、HTTP部分だけを端末内モック応答へ置き換えました。画像保存と費用確定後、隔離したDesktop root内のSQLite、WAL、ログ、生成画像、Projectファイルをbyte走査し、秘密値が0件であることを確認します。認証headerへ値が到達することもメモリ上だけで確認し、外部通信は行いません。
 
 手動E2E手順にも、この自動ゲートが失敗した場合は実API試験へ進まない停止条件を追加しました。Desktop統合テスト77/77と対象試験単独実行に成功しています。
+
+## 120. Dezgo Adult Phase 2開始・fail-closed判定契約
+
+MANGAI DesktopとDezgoの最終目的が成人向け漫画制作であることをPhase 2計画へ明記しました。Dezgo公式Termsでは18歳以上、違法利用・児童搾取・権利侵害禁止、FAQではモデルライセンス順守を条件とする商用利用可を確認しましたが、成人向け漫画の商用API生成を明示承認する記載は確認できませんでした。既存指示書どおり、確認可能なProvider承認証跡が揃うまでadult feature flagは常時falseを維持します。
+
+ai-coreへ成人向け外部生成の純粋な判定契約を追加しました。利用者18歳以上、成人向けProject、`adult_character_render`、架空成人、全員18歳以上、未成年・年齢曖昧なし、実在人物なし、非同意・搾取的内容なし、権利確認、端末内ポリシー合格、外部送信確認、管理者有効、Provider承認証跡、モデルallowlist、feature flagの全条件を要求します。
+
+不完全入力では肯定項目をfalse、未成年・年齢曖昧、実在人物、搾取的内容をtrueとしてfail closedにします。Provider承認状態だけをapprovedへ変更しても証跡SHA-256がなければ拒否します。30件へ増えたai-core試験で空入力、Provider未承認、flag無効、未成年・年齢曖昧、実在人物、搾取的内容と全条件合格を確認しました。実API送信、成人向け画像生成、成人向けPrompt送信は行っていません。
