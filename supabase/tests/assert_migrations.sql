@@ -380,6 +380,7 @@ begin
      or v_claim.lease_token is null then
     raise exception 'Cloud AI worker could not claim a queued job';
   end if;
+  update public.cloud_ai_settings set daily_cost_limit_micros=900 where singleton;
   perform public.finish_cloud_generation_job(
     v_claim.id, v_claim.lease_token, true, '{"text":"done"}'::jsonb,
     null, 'provider-job-1', 900, null, null, false
@@ -388,6 +389,9 @@ begin
     select 1 from public.cloud_generation_jobs
     where id=v_claim.id and status='completed' and progress=100 and actual_cost_micros=900
   ) then raise exception 'Cloud AI worker completion did not persist'; end if;
+  if exists(select 1 from public.cloud_ai_settings where singleton and generation_enabled) then
+    raise exception 'Cloud AI daily budget did not trigger automatic stop';
+  end if;
   select * into v_expired from public.claim_cloud_generation_job('phase3-ci-worker', 120);
   v_old_token := v_expired.lease_token;
   update public.cloud_generation_jobs set lease_expires_at=now()-interval '1 second'
@@ -409,11 +413,24 @@ begin
     v_reclaimed.id,v_reclaimed.lease_token,true,'{"text":"recovered"}'::jsonb,
     null,'provider-job-2',0,null,null,false
   );
-  update public.cloud_ai_settings set generation_enabled=false,updated_at=now() where singleton;
   perform public.refresh_cloud_ai_notifications();
   perform public.refresh_cloud_ai_notifications();
   if (select count(*) from public.cloud_ai_notifications where notification_type='generation_stopped')<>1 then
     raise exception 'Cloud AI stop notification deduplication failed';
+  end if;
+end $$;
+reset role;
+
+set local "request.jwt.claim.role"='service_role';
+set local role service_role;
+do $$
+declare v_first boolean;v_second boolean;v_blocked boolean;
+begin
+  v_first:=public.consume_cloud_ai_rate_limit('global','phase4-global-rate-key',2,900);
+  v_second:=public.consume_cloud_ai_rate_limit('global','phase4-global-rate-key',2,900);
+  v_blocked:=public.consume_cloud_ai_rate_limit('global','phase4-global-rate-key',2,900);
+  if not v_first or not v_second or v_blocked then
+    raise exception 'Cloud AI atomic rate limit did not enforce its limit';
   end if;
 end $$;
 reset role;

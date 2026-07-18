@@ -1193,3 +1193,11 @@ Cloud AIの利用者・管理者通知をPostgreSQLへ永続化しました。�
 通知生成はservice role限定RPCとし、Job ID、利用期間、日付、設定更新時刻を含むdedupe keyでworkerや監視の再実行による重複を防止します。worker POSTの処理後と認証付き監視GETで通知をrefreshします。利用者Dashboardには通知一覧、個別既読、全件既読を追加し、管理者運用画面ではwarning／critical通知を確認できます。
 
 RLSと列権限により、利用者は本人宛通知だけを読み、通知本文を変更せず`read_at`だけ更新できます。Hub 30/30、TypeScript、ESLint、Web production build、migration静的検査13件に成功しました。PostgreSQL 16で通知生成・重複防止、service role限定refresh、更新列制限、forward、全rollback、正規schema二重適用を確認しています。
+
+## 139. Phase 4 Cloud quota・課金・Marketplace統合 完了
+
+Free／Trial／Creator Plan、生成credit、Job前quota、Provider実費ledger、User／Project／IP／Global rate limit、予算警告・自動停止、管理者kill switch、Stripe entitlement、Cloud Creator販売同期、購入履歴・再ダウンロード、利用者・管理者通知を要件別に再監査し、Phase 4のリポジトリ実装完了を確認しました。
+
+不足していたCloud rate limitの上限拒否と、実費到達による自動kill switchをPostgreSQL assertionへ追加しました。最終回帰はHub 30/30、AI core 40/40、Canvas core 26/26、Desktop統合83/83、TypeScript、ESLint、Web／Desktop production build、migration静的検査13件に成功しました。PostgreSQL 16で全forward・動作assertion・全rollback・再適用・正規schema二重適用・Marketplace同期を完走しています。
+
+Supabase staging適用、Stripe test modeの実Checkout／Portal／署名webhook、実Gateway請求値との照合は秘密値と外部環境を使うRC受入れへ分離しました。要件と証跡は[`PHASE4_CLOUD_QUOTA_BILLING_MARKETPLACE_COMPLETION.md`](PHASE4_CLOUD_QUOTA_BILLING_MARKETPLACE_COMPLETION.md)へ記録しています。

@@ -58,8 +58,6 @@
 - migration静的検査10件: 成功
 - PostgreSQL 16: 購入者RLS、他人の再ダウンロード拒否、原子的回数記録、forward、全rollback、再適用、正規schema二重適用に成功
 
-## 次の実装
-
 ## Milestone 4: Cloud Creator・Marketplace直接連携
 
 - Cloud Projectの全Pageから商品PDFと表紙PNGをServerで再生成
@@ -77,8 +75,6 @@
 - migration静的検査11件: 成功
 - PostgreSQL 16: 初回作成、同一IDへの再同期、販売中商品拒否、transaction rollbackを確認
 
-## 次の実装
-
 ## Milestone 5: 管理者運用UI
 
 - Cloud AI全体の手動kill switch
@@ -93,8 +89,6 @@
 
 - TypeScript、ESLint、Web production build、migration静的検査12件: 成功
 - PostgreSQL 16: forward、全rollback、正規schema二重適用、監査表権限境界に成功
-
-## 次の実装
 
 ## Milestone 6: 通知・運用監視
 
@@ -112,9 +106,8 @@
 - Hub単体テスト30/30、TypeScript、ESLint、Web production build、migration静的検査13件: 成功
 - PostgreSQL 16: 通知生成・重複防止、service role限定refresh、更新列制限、forward、全rollback、正規schema二重適用に成功
 
-## 次の実装
+## 完了
 
-1. Phase 4全体の受入れ監査と完了資料
-2. 実Stripe／Supabase staging credentialを使うRC受入れ
+要件別監査と全回帰を完了した。詳細は[`PHASE4_CLOUD_QUOTA_BILLING_MARKETPLACE_COMPLETION.md`](PHASE4_CLOUD_QUOTA_BILLING_MARKETPLACE_COMPLETION.md)を参照すること。実Stripe／Supabase／Gateway credentialを使う確認はRC外部受入れとして分離する。
 
-状態: **進行中**
+状態: **Phase 4リポジトリ実装完了**
