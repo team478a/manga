@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
   createCloudAssetSignedUrl,
+  listCloudAssets,
   uploadCloudAsset,
 } from "@/lib/cloud-creator-server";
 
@@ -10,9 +11,13 @@ const sha256Schema = z.string().regex(/^[0-9a-f]{64}$/);
 
 export async function GET(request: Request) {
   try {
-    const assetId = uuidSchema.parse(
-      new URL(request.url).searchParams.get("id"),
-    );
+    const search = new URL(request.url).searchParams;
+    const projectId = search.get("projectId");
+    if (projectId)
+      return NextResponse.json(
+        await listCloudAssets(uuidSchema.parse(projectId)),
+      );
+    const assetId = uuidSchema.parse(search.get("id"));
     return NextResponse.json({ url: await createCloudAssetSignedUrl(assetId) });
   } catch (error) {
     return NextResponse.json(

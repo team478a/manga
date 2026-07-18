@@ -1129,3 +1129,11 @@ Cloud専用の画像・文章Provider契約、capability registry、送信前mod
 Supabaseへ永続Jobテーブルを追加し、入力、進捗、試行回数、費用、出力、エラー、leaseを管理します。登録RPCは一般向けProjectと所有権を再確認し、利用者単位idempotencyを保証します。利用者は履歴確認とcancelだけが可能で、Job claimと完了はservice roleだけに限定しました。
 
 ai-core 38/38、TypeScript、ESLint、migration静的検査7件に成功しました。PostgreSQL 16では重複防止、moderation拒否、cancel、worker claim／完了、全rollback、正規schema二重適用まで完走しています。実Provider通信とAsset化は次段階です。
+
+## 131. Cloud AI mock worker・Asset・Canvas接続
+
+secret認証された内部worker endpointと、開発・自動テスト専用の画像／文章mock Providerを追加しました。workerはservice roleでJobをclaimし、生成後もJobのleaseが有効か再確認してから結果を保存します。期限切れleaseは別workerが再claimでき、古いleaseからの完了更新は拒否します。
+
+生成画像はSharpでdecode後にPNGへ再エンコードしてmetadataを除去し、形式、寸法、容量、SHA-256を再検証して一般向けProjectのprivate Assetへ保存します。Editorから画像／文章Jobを登録し、進捗、試行、費用、失敗、cancelを確認できます。完成画像は選択中Panelの種別付きlayerへ、完成文章はCanvasの縦書きテキストへ追加できます。
+
+Hub 24/24、TypeScript、ESLint、Web本番build、migration静的検査7件に成功しました。PostgreSQL 16では期限切れlease再取得とstale lease拒否を含むforward動作を確認しました。実Provider adapterはProvider選定後の次段階です。

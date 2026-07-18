@@ -5,7 +5,7 @@ import {
 } from "@mangai/ai-core";
 
 function configuredCapabilities(): CloudProviderCapability[] {
-  return [
+  const capabilities: CloudProviderCapability[] = [
     cloudProviderCapabilitySchema.parse({
       providerId: "mangai-cloud-image",
       modelId: process.env.MANGAI_CLOUD_IMAGE_MODEL ?? "general-image-v1",
@@ -25,6 +25,31 @@ function configuredCapabilities(): CloudProviderCapability[] {
       enabled: process.env.MANGAI_CLOUD_TEXT_ENABLED === "true",
     }),
   ];
+  if (
+    process.env.NODE_ENV !== "production" &&
+    process.env.MANGAI_CLOUD_AI_MOCK_ENABLED === "true"
+  )
+    capabilities.unshift(
+      cloudProviderCapabilitySchema.parse({
+        providerId: "mangai-cloud-mock-image",
+        modelId: "mock-image-v1",
+        kind: "image",
+        jobTypes: ["background", "prop", "effect", "character_base"],
+        policyVersion: "general-v1",
+        pricingVersion: "mock-free-v1",
+        enabled: true,
+      }),
+      cloudProviderCapabilitySchema.parse({
+        providerId: "mangai-cloud-mock-text",
+        modelId: "mock-text-v1",
+        kind: "text",
+        jobTypes: ["story", "storyboard", "speech_bubble"],
+        policyVersion: "general-v1",
+        pricingVersion: "mock-free-v1",
+        enabled: true,
+      }),
+    );
+  return capabilities;
 }
 
 export function listCloudProviderCapabilities() {

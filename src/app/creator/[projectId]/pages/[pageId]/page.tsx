@@ -4,6 +4,7 @@ import {
   getCloudPageSnapshot,
   getCloudProjectWorkspace,
   listCloudAssets,
+  listCloudGenerationJobs,
 } from "@/lib/cloud-creator-server";
 import { CloudCanvasEditor } from "./CloudCanvasEditor";
 
@@ -17,11 +18,13 @@ export default async function CloudCanvasPage({
   let workspace: Awaited<ReturnType<typeof getCloudProjectWorkspace>>;
   let snapshot: Awaited<ReturnType<typeof getCloudPageSnapshot>>;
   let assets: Awaited<ReturnType<typeof listCloudAssets>>;
+  let generationJobs: Awaited<ReturnType<typeof listCloudGenerationJobs>>;
   try {
-    [workspace, snapshot, assets] = await Promise.all([
+    [workspace, snapshot, assets, generationJobs] = await Promise.all([
       getCloudProjectWorkspace(projectId),
       getCloudPageSnapshot(pageId),
       listCloudAssets(projectId),
+      listCloudGenerationJobs(projectId),
     ]);
   } catch {
     notFound();
@@ -35,6 +38,7 @@ export default async function CloudCanvasPage({
       page={page}
       initialCanvas={snapshot.canvas}
       initialAssets={assets}
+      initialGenerationJobs={generationJobs}
     />
   );
 }

@@ -14,19 +14,24 @@
 - 利用者向けJob登録・履歴・キャンセルAPI
 - service roleだけが利用できる`FOR UPDATE SKIP LOCKED` claimとlease一致必須の完了RPC
 - Provider未設定時は生成だけを停止し、編集・保存・書き出しを継続できるfail-closed registry
+- secret認証された内部worker endpointと、開発・自動テスト専用mock画像／文章Provider
+- 生成画像のdecode、PNG再エンコードによるmetadata除去、SHA-256・寸法再検証、private Asset保存
+- Editor内の一般向け画像Job登録、進捗・費用履歴、cancel、完成AssetのPanel layer配置
+- 一般向け文章Job登録、生成結果の履歴表示、Canvas縦書きテキストへの追加
+- 期限切れworker leaseの再claimと、古いleaseによる完了拒否
 
 ## 検証
 
 - ai-core: 38/38
+- Hub単体テスト: 24/24
 - TypeScript、ESLint、migration静的検査7件: 成功
 - PostgreSQL 16: forward、RLS権限、重複登録防止、moderation拒否、cancel、claim、完了、全rollback、正規schema二重適用に成功
 
 ## 次の実装
 
-1. Provider adapter実装と秘密値をServer環境だけで読むworker
-2. timeout、429、5xx、cancel、lease期限切れ回収のworker統合テスト
-3. 生成画像のdecode・metadata除去・private Asset保存
-4. 生成結果をCanvas Panel layerへ配置するUI
-5. 文章生成結果、生成履歴、実費表示
+1. 最初の実Providerを選定し、秘密値をServer環境だけで読むadapterを実装
+2. 実Provider形式でtimeout、429、5xx、cancelを検証
+3. Provider moderation結果とローカルpreflightを二重記録
+4. 運用workerの定期起動、監視、kill switch
 
 実Providerの選定とAPI credential設定が必要になるまでは、mock adapterを使ってworker全体を検証する。

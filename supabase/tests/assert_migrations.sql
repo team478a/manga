@@ -165,6 +165,7 @@ declare
   v_job_id uuid;
   v_duplicate_job_id uuid;
   v_cancel_job_id uuid;
+  v_lease_job_id uuid;
 begin
   if not exists(
     select 1 from public.cloud_canvas_snapshots
@@ -249,6 +250,12 @@ begin
   if not exists(select 1 from public.cloud_generation_jobs where id=v_cancel_job_id and status='canceled') then
     raise exception 'Cloud AI cancel did not persist';
   end if;
+  v_lease_job_id := public.enqueue_cloud_generation_job(
+    v_created.project_id, null, 'text', 'story', 'mock-cloud', 'mock-text-v1',
+    'phase3-lease-recovery', repeat('d',64),
+    '{"kind":"text","jobType":"story","prompt":"lease recovery"}'::jsonb,
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, null
+  );
   perform public.set_cloud_project_cover(v_created.project_id,v_page_id);
   perform public.soft_delete_cloud_page(v_page_id);
   perform public.soft_delete_cloud_episode(v_episode_id);
@@ -265,6 +272,9 @@ set local role service_role;
 do $$
 declare
   v_claim public.cloud_generation_jobs%rowtype;
+  v_expired public.cloud_generation_jobs%rowtype;
+  v_reclaimed public.cloud_generation_jobs%rowtype;
+  v_old_token uuid;
 begin
   select * into v_claim from public.claim_cloud_generation_job('phase3-ci-worker', 120);
   if v_claim.id is null or v_claim.status <> 'running' or v_claim.attempt_count <> 1
@@ -279,6 +289,27 @@ begin
     select 1 from public.cloud_generation_jobs
     where id=v_claim.id and status='completed' and progress=100 and actual_cost_micros=900
   ) then raise exception 'Cloud AI worker completion did not persist'; end if;
+  select * into v_expired from public.claim_cloud_generation_job('phase3-ci-worker', 120);
+  v_old_token := v_expired.lease_token;
+  update public.cloud_generation_jobs set lease_expires_at=now()-interval '1 second'
+  where id=v_expired.id;
+  select * into v_reclaimed from public.claim_cloud_generation_job('phase3-ci-worker-2', 120);
+  if v_reclaimed.id<>v_expired.id or v_reclaimed.lease_token=v_old_token
+     or v_reclaimed.attempt_count<>2 then
+    raise exception 'expired Cloud AI lease was not reclaimed safely';
+  end if;
+  begin
+    perform public.finish_cloud_generation_job(
+      v_expired.id,v_old_token,true,'{}'::jsonb,null,null,0,null,null,false
+    );
+    raise exception 'stale Cloud AI lease completed a reclaimed job';
+  exception when others then
+    if sqlerrm<>'cloud_generation_lease_invalid' then raise; end if;
+  end;
+  perform public.finish_cloud_generation_job(
+    v_reclaimed.id,v_reclaimed.lease_token,true,'{"text":"recovered"}'::jsonb,
+    null,'provider-job-2',0,null,null,false
+  );
 end $$;
 reset role;
 rollback;

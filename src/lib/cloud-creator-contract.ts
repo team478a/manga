@@ -93,6 +93,23 @@ export async function validateCloudAssetBytes(input: {
   } as const;
 }
 
+export async function sanitizeCloudGeneratedImage(bytes: Uint8Array) {
+  const sanitized = new Uint8Array(
+    await sharp(bytes, {
+      failOn: "error",
+      limitInputPixels: 100_000_000,
+    })
+      .rotate()
+      .png({ compressionLevel: 9 })
+      .toBuffer(),
+  );
+  const validation = await validateCloudAssetBytes({
+    bytes: sanitized,
+    declaredMimeType: "image/png",
+  });
+  return { bytes: sanitized, ...validation };
+}
+
 export function sumCloudAssetBytes(
   assets: Array<{ byteSize: number; deletedAt?: string | null }>,
 ) {

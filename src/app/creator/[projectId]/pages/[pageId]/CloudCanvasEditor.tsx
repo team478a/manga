@@ -15,6 +15,7 @@ import {
   PanelTop,
   Redo2,
   Save,
+  Sparkles,
   Trash2,
   Type,
   Undo2,
@@ -31,6 +32,7 @@ import {
 } from "@mangai/canvas-core";
 import type {
   CloudAsset,
+  CloudGenerationJob,
   CloudPage,
   CloudProjectSummary,
 } from "@/lib/cloud-creator-server";
@@ -128,15 +130,26 @@ export function CloudCanvasEditor({
   page,
   initialCanvas,
   initialAssets,
+  initialGenerationJobs,
 }: {
   project: CloudProjectSummary;
   pages: CloudPage[];
   page: CloudPage;
   initialCanvas: PageCanvas;
   initialAssets: CloudAsset[];
+  initialGenerationJobs: CloudGenerationJob[];
 }) {
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
+  const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
+  const [generationPrompt, setGenerationPrompt] = useState("");
+  const [generationType, setGenerationType] = useState<
+    "background" | "prop" | "effect" | "character_base"
+  >("background");
+  const [textGenerationPrompt, setTextGenerationPrompt] = useState("");
+  const [textGenerationType, setTextGenerationType] = useState<
+    "story" | "storyboard" | "speech_bubble"
+  >("speech_bubble");
   const [selection, setSelection] = useState<Selection>(null);
   const [saveState, setSaveState] = useState<SaveState>("saved");
   const [message, setMessage] = useState("");
@@ -195,6 +208,30 @@ export function CloudCanvasEditor({
   useEffect(() => {
     canvasRef.current = canvas;
   }, [canvas]);
+
+  const refreshGenerationJobs = useCallback(async () => {
+    const response = await fetch(
+      `/api/creator/generation-jobs?projectId=${project.id}`,
+      { cache: "no-store" },
+    );
+    const result = (await response.json()) as CloudGenerationJob[] & {
+      error?: string;
+    };
+    if (!response.ok)
+      throw new Error(result.error ?? "生成履歴を取得できませんでした。");
+    setGenerationJobs(result);
+  }, [project.id]);
+
+  useEffect(() => {
+    if (
+      !generationJobs.some(
+        (job) => job.status === "queued" || job.status === "running",
+      )
+    )
+      return;
+    const timer = window.setInterval(() => void refreshGenerationJobs(), 3000);
+    return () => window.clearInterval(timer);
+  }, [generationJobs, refreshGenerationJobs]);
 
   const commit = useCallback((update: (draft: PageCanvas) => void) => {
     changeVersion.current += 1;
@@ -536,7 +573,11 @@ export function CloudCanvasEditor({
     event.target.value = "";
   }
 
-  function applyAsset(assetId: string) {
+  function applyAsset(
+    assetId: string,
+    sourceJobId: string | null = null,
+    layerType: PanelLayer["type"] = "background",
+  ) {
     if (selection?.type !== "panel") return;
     const layerId = crypto.randomUUID();
     const timestamp = now();
@@ -551,14 +592,14 @@ export function CloudCanvasEditor({
         id: layerId,
         panelId: panel.id,
         name: assetMap.get(assetId)?.file_name ?? "画像レイヤー",
-        type: "background",
+        type: layerType,
         orderIndex: currentLayers.length,
         visible: true,
         locked: false,
         opacity: 1,
         blendMode: "normal",
         assetId,
-        sourceJobId: null,
+        sourceJobId,
         imageFit: "cover",
         imageOffsetX: 0,
         imageOffsetY: 0,
@@ -568,6 +609,144 @@ export function CloudCanvasEditor({
         updatedAt: timestamp,
       });
     });
+  }
+
+  async function requestCloudGeneration() {
+    if (!generationPrompt.trim()) return;
+    setMessage("Cloud AI Jobを登録しています…");
+    const response = await fetch("/api/creator/generation-jobs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        projectId: project.id,
+        pageId: page.id,
+        idempotencyKey: crypto.randomUUID(),
+        generation: {
+          kind: "image",
+          jobType: generationType,
+          prompt: generationPrompt,
+          negativePrompt: "",
+          width: Math.min(2048, page.width),
+          height: Math.min(2048, page.height),
+        },
+      }),
+    });
+    const result = (await response.json()) as { id?: string; error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Cloud AI Jobを登録できませんでした。");
+      return;
+    }
+    setGenerationPrompt("");
+    setMessage("Cloud AI Jobを登録しました。");
+    await refreshGenerationJobs();
+  }
+
+  async function requestCloudTextGeneration() {
+    if (!textGenerationPrompt.trim()) return;
+    setMessage("Cloud AI文章Jobを登録しています…");
+    const response = await fetch("/api/creator/generation-jobs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        projectId: project.id,
+        pageId: page.id,
+        idempotencyKey: crypto.randomUUID(),
+        generation: {
+          kind: "text",
+          jobType: textGenerationType,
+          prompt: textGenerationPrompt,
+          negativePrompt: "",
+        },
+      }),
+    });
+    const result = (await response.json()) as { id?: string; error?: string };
+    if (!response.ok) {
+      setMessage(result.error ?? "Cloud AI文章Jobを登録できませんでした。");
+      return;
+    }
+    setTextGenerationPrompt("");
+    setMessage("Cloud AI文章Jobを登録しました。");
+    await refreshGenerationJobs();
+  }
+
+  function addGeneratedText(job: CloudGenerationJob) {
+    const generated = job.output?.text;
+    if (typeof generated !== "string" || !generated.trim()) return;
+    const id = crypto.randomUUID();
+    const timestamp = now();
+    commit((draft) => {
+      draft.textObjects.push({
+        id,
+        pageId: page.id,
+        parentBalloonId: null,
+        name: "AI生成テキスト",
+        text: generated.slice(0, 20_000),
+        writingMode: "vertical",
+        x: canvas.width * 0.65,
+        y: canvas.height * 0.15,
+        width: canvas.width * 0.18,
+        height: canvas.height * 0.35,
+        rotation: 0,
+        zIndex: nextZIndex,
+        visible: true,
+        locked: false,
+        fontFamily: "sans-serif",
+        fontSize: 64,
+        fontWeight: 400,
+        color: "#111111",
+        textAlign: "start",
+        verticalAlign: "top",
+        lineHeight: 1.5,
+        letterSpacing: 0,
+        padding: 16,
+        opacity: 1,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+    });
+    setSelection({ type: "text", id });
+    setMessage("生成文章をCanvasテキストへ追加しました。");
+  }
+
+  async function cancelGenerationJob(jobId: string) {
+    const response = await fetch(`/api/creator/generation-jobs/${jobId}`, {
+      method: "DELETE",
+    });
+    if (!response.ok) {
+      const result = (await response.json()) as { error?: string };
+      setMessage(result.error ?? "Jobをキャンセルできませんでした。");
+      return;
+    }
+    setMessage("Cloud AI Jobをキャンセルしました。");
+    await refreshGenerationJobs();
+  }
+
+  async function placeGeneratedAsset(job: CloudGenerationJob) {
+    if (!job.output_asset_id || selection?.type !== "panel") return;
+    const response = await fetch(
+      `/api/creator/assets?projectId=${project.id}`,
+      {
+        cache: "no-store",
+      },
+    );
+    const nextAssets = (await response.json()) as CloudAsset[] & {
+      error?: string;
+    };
+    if (!response.ok) {
+      setMessage(nextAssets.error ?? "生成Assetを取得できませんでした。");
+      return;
+    }
+    setAssets(nextAssets);
+    const layerType =
+      job.job_type === "character_base"
+        ? "character"
+        : job.job_type === "prop"
+          ? "prop"
+          : job.job_type === "effect"
+            ? "effect"
+            : "background";
+    applyAsset(job.output_asset_id, job.id, layerType);
+    setMessage("生成Assetを選択中のコマへ配置しました。");
   }
 
   function movePanelLayer(layerId: string, delta: -1 | 1) {
@@ -791,6 +970,134 @@ export function CloudCanvasEditor({
                 <Type className="mr-2 h-5 w-5" />
                 テキスト
               </button>
+            </div>
+          </section>
+          <section className="panel p-4">
+            <h2 className="flex items-center gap-2 font-bold">
+              <Sparkles className="h-5 w-5" /> Cloud AI
+            </h2>
+            <label
+              className="mt-3 block text-xs font-bold"
+              htmlFor="cloud-generation-type"
+            >
+              生成種別
+            </label>
+            <select
+              className="field mt-1 w-full"
+              id="cloud-generation-type"
+              value={generationType}
+              onChange={(event) =>
+                setGenerationType(event.target.value as typeof generationType)
+              }
+            >
+              <option value="background">背景</option>
+              <option value="prop">小物</option>
+              <option value="effect">効果</option>
+              <option value="character_base">キャラクター</option>
+            </select>
+            <label
+              className="mt-3 block text-xs font-bold"
+              htmlFor="cloud-generation-prompt"
+            >
+              Prompt
+            </label>
+            <textarea
+              className="field mt-1 min-h-24 w-full"
+              id="cloud-generation-prompt"
+              maxLength={20000}
+              value={generationPrompt}
+              onChange={(event) => setGenerationPrompt(event.target.value)}
+            />
+            <button
+              className="button mt-2 w-full"
+              disabled={!generationPrompt.trim()}
+              onClick={() => void requestCloudGeneration()}
+              type="button"
+            >
+              一般向け画像を生成
+            </button>
+            <hr className="my-4 border-stone-200" />
+            <label
+              className="block text-xs font-bold"
+              htmlFor="cloud-text-generation-type"
+            >
+              文章生成種別
+            </label>
+            <select
+              className="field mt-1 w-full"
+              id="cloud-text-generation-type"
+              value={textGenerationType}
+              onChange={(event) =>
+                setTextGenerationType(
+                  event.target.value as typeof textGenerationType,
+                )
+              }
+            >
+              <option value="speech_bubble">セリフ</option>
+              <option value="storyboard">ネーム案</option>
+              <option value="story">物語案</option>
+            </select>
+            <textarea
+              aria-label="文章生成Prompt"
+              className="field mt-2 min-h-20 w-full"
+              maxLength={20000}
+              value={textGenerationPrompt}
+              onChange={(event) => setTextGenerationPrompt(event.target.value)}
+            />
+            <button
+              className="button-secondary mt-2 w-full"
+              disabled={!textGenerationPrompt.trim()}
+              onClick={() => void requestCloudTextGeneration()}
+              type="button"
+            >
+              一般向け文章を生成
+            </button>
+            <div className="mt-3 space-y-2" aria-live="polite">
+              {generationJobs.slice(0, 5).map((job) => (
+                <div
+                  className="rounded border border-stone-200 bg-white p-2 text-xs"
+                  key={job.id}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span>
+                      {job.job_type} / {job.status} / {job.progress}%
+                    </span>
+                    {job.status === "queued" || job.status === "running" ? (
+                      <button
+                        className="text-red-700 underline"
+                        onClick={() => void cancelGenerationJob(job.id)}
+                        type="button"
+                      >
+                        中止
+                      </button>
+                    ) : null}
+                  </div>
+                  {job.error_message ? (
+                    <p className="mt-1 text-red-700">{job.error_message}</p>
+                  ) : null}
+                  {job.status === "completed" && job.output_asset_id ? (
+                    <button
+                      className="button-secondary mt-2 w-full"
+                      disabled={selection?.type !== "panel"}
+                      onClick={() => void placeGeneratedAsset(job)}
+                      type="button"
+                    >
+                      選択中のコマへ配置
+                    </button>
+                  ) : null}
+                  {job.status === "completed" &&
+                  job.kind === "text" &&
+                  typeof job.output?.text === "string" ? (
+                    <button
+                      className="button-secondary mt-2 w-full"
+                      onClick={() => addGeneratedText(job)}
+                      type="button"
+                    >
+                      Canvasテキストへ追加
+                    </button>
+                  ) : null}
+                </div>
+              ))}
             </div>
           </section>
           <section className="panel p-4">

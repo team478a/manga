@@ -148,7 +148,8 @@ begin
     raise exception 'cloud_worker_not_authorized';
   end if;
   select id into v_job_id from public.cloud_generation_jobs
-  where status = 'queued' and (retry_at is null or retry_at <= now())
+  where (status = 'queued' and (retry_at is null or retry_at <= now()))
+     or (status = 'running' and lease_expires_at <= now())
   order by created_at for update skip locked limit 1;
   if v_job_id is null then return; end if;
   return query update public.cloud_generation_jobs
