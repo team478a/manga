@@ -26,6 +26,7 @@ MANGAI HubのSupabase PostgreSQL変更を、安全に追加・検証・取り消
 | `202607180005` | Cloud AI plan、quota、原価ledger、rate limit、予算停止         | 課金表・予約列を除去しPhase 3 RPCへ復元 |
 | `202607180006` | Stripe Subscription entitlement同期                            | event表・同期関数・event時刻列を除去    |
 | `202607180007` | 購入者Profile・購入履歴・再ダウンロード                        | 購入者列・policy・indexを除去           |
+| `202607180008` | Cloud Projectから非公開作品・停止中商品への同期              | 同期RPCを除去                           |
 
 データを失う可能性があるrollbackは、条件を満たさない限り例外で停止します。停止した場合は自動回避せず、バックアップと対象データを確認してください。
 

@@ -6,6 +6,7 @@ import {
   FilePlus2,
   PencilLine,
   Plus,
+  ShoppingBag,
   Trash2,
 } from "lucide-react";
 import {
@@ -17,8 +18,10 @@ import {
   renameCloudEpisodeAction,
   renameCloudProjectAction,
   setCloudProjectCoverAction,
+  syncCloudMarketplaceDraftAction,
 } from "@/app/creator/actions";
 import { requireProfile } from "@/lib/auth";
+import { getCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { getCloudProjectWorkspace } from "@/lib/cloud-creator-server";
 
 export default async function CloudProjectPage({
@@ -26,7 +29,11 @@ export default async function CloudProjectPage({
   searchParams,
 }: {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ message?: string; error?: string }>;
+  searchParams: Promise<{
+    message?: string;
+    error?: string;
+    productId?: string;
+  }>;
 }) {
   await requireProfile();
   const { projectId } = await params;
@@ -38,6 +45,14 @@ export default async function CloudProjectPage({
     notFound();
   }
   const { project, episodes, pages } = workspace;
+  const marketplaceDraft = await getCloudMarketplaceDraft(projectId).catch(
+    () => null,
+  );
+  const marketplaceIsCurrent = Boolean(
+    marketplaceDraft?.product &&
+      new Date(marketplaceDraft.product.updated_at).getTime() >=
+        new Date(project.updated_at).getTime(),
+  );
   return (
     <main className="page">
       <Link className="text-leaf underline" href="/creator">
@@ -56,9 +71,17 @@ export default async function CloudProjectPage({
         </span>
       </div>
       {query.message ? (
-        <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">
-          {query.message}
-        </p>
+        <div className="mt-5 rounded-md bg-green-50 p-4 text-green-800">
+          <p>{query.message}</p>
+          {query.productId ? (
+            <Link
+              className="mt-2 inline-block font-semibold underline"
+              href={`/dashboard/products/${query.productId}/edit`}
+            >
+              商品下書きを確認
+            </Link>
+          ) : null}
+        </div>
       ) : null}
       {query.error ? (
         <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
@@ -341,6 +364,51 @@ export default async function CloudProjectPage({
                 </dd>
               </div>
             </dl>
+          </section>
+          <section className="panel">
+            <h2 className="flex items-center text-xl font-bold">
+              <ShoppingBag className="mr-2 h-5 w-5" />
+              Marketplaceへ受け渡す
+            </h2>
+            <p className="mt-3 text-sm leading-relaxed text-stone-600">
+              全PageをPDFへ再生成し、非公開作品と停止中商品を作成・更新します。公開中・販売中のデータは上書きしません。
+            </p>
+            {marketplaceDraft?.product ? (
+              <div className="mt-4 rounded-md bg-stone-50 p-3 text-sm">
+                <p className="font-semibold">
+                  {marketplaceIsCurrent ? "同期済み" : "Projectに未反映の変更あり"}
+                </p>
+                <Link
+                  className="mt-1 inline-block text-leaf underline"
+                  href={`/dashboard/products/${marketplaceDraft.product.id}/edit`}
+                >
+                  商品下書きを確認
+                </Link>
+              </div>
+            ) : null}
+            <form
+              action={syncCloudMarketplaceDraftAction.bind(null, projectId)}
+              className="mt-4"
+            >
+              <label className="label" htmlFor="marketplace-price">
+                販売価格（税込円）
+              </label>
+              <input
+                className="field"
+                id="marketplace-price"
+                name="price"
+                type="number"
+                min="0"
+                max="1000000"
+                defaultValue={marketplaceDraft?.product?.price ?? 500}
+                required
+              />
+              <button className="button mt-4 w-full" type="submit">
+                {marketplaceDraft?.product
+                  ? "下書きを再生成"
+                  : "販売下書きを作成"}
+              </button>
+            </form>
           </section>
         </aside>
       </div>

@@ -15,6 +15,9 @@ begin
      or to_regprocedure('public.record_order_download(uuid,uuid)') is not null then
     raise exception 'Buyer purchase library remains after rollback';
   end if;
+  if to_regprocedure('public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)') is not null then
+    raise exception 'Cloud Marketplace draft function remains after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

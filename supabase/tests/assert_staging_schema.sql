@@ -44,6 +44,9 @@ begin
      or to_regprocedure('public.record_order_download(uuid,uuid)') is null then
     raise exception 'Buyer purchase library boundary is invalid';
   end if;
+  if to_regprocedure('public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)') is null then
+    raise exception 'Cloud Marketplace draft boundary is invalid';
+  end if;
 
   if not exists (
     select 1 from information_schema.columns

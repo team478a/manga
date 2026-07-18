@@ -60,8 +60,27 @@
 
 ## 次の実装
 
-1. Cloud Creatorから非公開作品・販売商品へ差分付きで受け渡す
-2. 管理者向け価格表・kill switch・費用監視UI
-3. 利用枠・失敗・予算停止の通知と運用監視
+## Milestone 4: Cloud Creator・Marketplace直接連携
+
+- Cloud Projectの全Pageから商品PDFと表紙PNGをServerで再生成
+- Project IDに紐づく非公開作品と停止中デジタル商品を作成・再同期
+- 同じProjectの再同期では作品・商品を重複作成せず、既存下書きを更新
+- Project revisionを描画後・DB確定前に再確認して競合を拒否
+- 作品・商品を同一PostgreSQL transactionで更新
+- 公開中作品、販売中商品、重複した作品・商品はfail closedで自動上書きしない
+- Storage失敗時の新規ファイル清掃と、同期成功後の旧商品ファイル清掃
+- Cloud Creator画面で同期状態、価格、商品編集導線を表示
+
+## 検証
+
+- Hub単体テスト30/30、TypeScript、ESLint、Web production build: 成功
+- migration静的検査11件: 成功
+- PostgreSQL 16: 初回作成、同一IDへの再同期、販売中商品拒否、transaction rollbackを確認
+
+## 次の実装
+
+1. 管理者向け価格表・kill switch・費用監視UI
+2. 利用枠・失敗・予算停止の通知と運用監視
+3. Phase 4全体の受入れ手順と実Stripe／Supabase staging検証
 
 状態: **進行中**

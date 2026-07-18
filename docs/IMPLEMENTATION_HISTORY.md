@@ -1169,3 +1169,11 @@ Subscription変換を含むHub 29/29、TypeScript、ESLint、migration静的検�
 注文には初回支払日時、ダウンロード回数、最終ダウンロード日時を記録します。回数更新はservice role限定RPCで原子的に行い、同時アクセスによる更新欠落を防ぎます。決済完了処理も冪等化し、Stripe webhookの再送や完了ページの再表示で初回支払日時を上書きしません。
 
 購入者本人だけが支払済み・返金済み注文を読めるRLSを追加し、注文作成RLSでは未ログイン購入のBuyer Profile指定を禁止し、ログイン中も自分以外のProfileを指定できないようにしました。Hub 29/29、TypeScript、ESLint、Web production build、migration静的検査10件に成功しました。PostgreSQL 16で購入者RLS、他人の記録拒否、原子的回数更新、forward、全rollback、再適用、正規schema二重適用を確認しています。
+
+## 136. Cloud CreatorからMarketplace下書きへの直接同期
+
+Cloud CreatorのProject画面から、全Pageを商品PDF、指定Pageを表紙PNGとしてServerで再生成し、非公開作品と停止中デジタル商品へ直接受け渡す導線を追加しました。初回は作品・商品を作成し、再実行時は`source_project_id`で同じ下書きを特定して更新するため、同じProjectから重複データを増やしません。販売価格と生成した販売説明文も商品下書きへ反映します。
+
+描画開始時のProject revisionをDB確定直前に再検証し、制作中に内容が変わった場合は同期を拒否します。作品と商品の作成・更新は所有者を再確認するPostgreSQL RPCの1 transactionで行います。公開中作品、販売中商品、同じProjectに紐づく複数作品・商品は自動上書きせずfail closedとしました。StorageまたはDB処理に失敗した場合は新規生成ファイルを清掃し、同期成功後は置き換え前の商品ファイルを削除します。
+
+Cloud Creator画面には同期済み／未反映変更、価格入力、商品編集への導線を表示しました。Hub 30/30、TypeScript、ESLint、Web production build、migration静的検査11件に成功し、PostgreSQL 16で初回作成、同一IDへの再同期、販売中商品拒否、transaction rollbackを確認しています。

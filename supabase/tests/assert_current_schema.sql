@@ -52,6 +52,9 @@ begin
      or to_regprocedure('public.record_order_download(uuid,uuid)') is null then
     raise exception 'Buyer purchase library schema is missing';
   end if;
+  if to_regprocedure('public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)') is null then
+    raise exception 'Cloud Marketplace draft function is missing';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null

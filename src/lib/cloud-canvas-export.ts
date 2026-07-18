@@ -39,6 +39,27 @@ async function exportImages(projectId: string) {
   return { bundle, images };
 }
 
+export async function createCloudMarketplaceArtifacts(projectId: string) {
+  const { bundle, images } = await exportImages(projectId);
+  if (!images.length) throw new Error("販売用に書き出せるPageがありません。");
+  const coverIndex = Math.max(
+    0,
+    bundle.pages.findIndex((page) => page.id === bundle.project.cover_page_id),
+  );
+  const cover = images[coverIndex]?.bytes;
+  if (!cover) throw new Error("販売用の表紙を生成できませんでした。");
+  const salesText = createSalesTextDraft({
+    title: bundle.project.title,
+    ageRating: bundle.project.age_rating,
+  });
+  return {
+    project: bundle.project,
+    pdf: await createPagesPdf(images, { dpi: bundle.project.dpi }),
+    cover,
+    description: salesText.description,
+  };
+}
+
 export async function createCloudProjectExport(
   projectId: string,
   format: "pdf" | "images" | "package",

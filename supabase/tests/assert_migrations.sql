@@ -83,6 +83,11 @@ begin
      or to_regprocedure('public.record_order_download(uuid,uuid)') is null then
     raise exception 'Buyer purchase library schema is missing';
   end if;
+  if to_regprocedure('public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)') is null
+     or has_function_privilege('anon','public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)','execute')
+     or not has_function_privilege('authenticated','public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)','execute') then
+    raise exception 'Cloud Marketplace draft function is missing or has invalid privileges';
+  end if;
   if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
      or to_regprocedure('public.consume_cloud_ai_rate_limit(text,text,integer,integer)') is null
      or to_regprocedure('public.get_my_cloud_ai_quota()') is null then
