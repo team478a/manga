@@ -24,6 +24,7 @@ type CheckoutOrder = {
       id: string;
       title: string;
       is_public: boolean;
+      content_class: "general" | "adult";
     } | null;
   } | null;
 };
@@ -47,7 +48,7 @@ export async function createStripeCheckoutSession({
   const { data: checkoutOrder } = await supabase
     .from("orders")
     .select(
-      "id,buyer_email,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public))",
+      "id,buyer_email,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class))",
     )
     .eq("id", orderId)
     .eq("product_id", productId)

@@ -6,6 +6,7 @@ import {
   parseSalesPackageManifest,
   type SalesPackageManifest,
 } from "@mangai/export-core";
+import { assertGeneralSalesPackage } from "@/lib/content-boundary";
 import {
   importSalesPackageDraft,
   type SalesPackageImportResult,
@@ -101,7 +102,9 @@ export function SalesPackageImport() {
     } catch {
       throw new Error("manifest.jsonを読み取れません。");
     }
-    const manifest = parseSalesPackageManifest(manifestValue);
+    const manifest = assertGeneralSalesPackage(
+      parseSalesPackageManifest(manifestValue),
+    );
     const declaredPaths = new Set(manifest.files.map((entry) => entry.path));
     const entries = Object.values(zip.files);
     if (

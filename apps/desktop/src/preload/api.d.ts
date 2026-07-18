@@ -188,6 +188,10 @@ export type DesktopApi = {
   createProject: (v: ProjectInput) => Promise<ProjectBundle>;
   openProject: (id: string) => Promise<ProjectBundle>;
   renameProject: (id: string, title: string) => Promise<ProjectBundle>;
+  changeProjectContentClass: (
+    id: string,
+    contentClass: "general" | "adult",
+  ) => Promise<ProjectBundle>;
   duplicateProject: (id: string) => Promise<ProjectBundle>;
   backupProject: (
     id: string,
@@ -425,9 +429,7 @@ export type DesktopApi = {
     previewExternalSafeAsset: (
       value: SafeAssetLibraryRequest,
     ) => Promise<ExternalDispatchPreview>;
-    enqueueExternalSafeAsset: (
-      value: ExternalDispatchConfirmation,
-    ) => Promise<{
+    enqueueExternalSafeAsset: (value: ExternalDispatchConfirmation) => Promise<{
       jobId: string;
       status: "queued";
       providerId: "dezgo";

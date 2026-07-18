@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "@mangai/export-core": "file:packages/export-core",
+    "@mangai/shared": "file:packages/shared",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "better-sqlite3": "^12.11.1",

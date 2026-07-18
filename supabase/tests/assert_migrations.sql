@@ -10,6 +10,27 @@ begin
   ) then
     raise exception 'source_project_id migration missing';
   end if;
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'works'
+      and column_name = 'content_class'
+  ) or not exists (
+    select 1 from pg_constraint
+    where conname = 'works_content_class_check'
+      and conrelid = 'public.works'::regclass
+  ) then
+    raise exception 'content class boundary migration missing';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'public'
+      and tablename = 'works'
+      and policyname = 'works_creator_insert'
+      and with_check like '%content_class%general%'
+  ) then
+    raise exception 'general-only works insert policy missing';
+  end if;
   if to_regclass('public.desktop_device_authorizations') is null then
     raise exception 'desktop_device_authorizations migration missing';
   end if;

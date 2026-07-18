@@ -17,6 +17,7 @@ export default async function WorkDetailPage({
     .select("*")
     .eq("id", id)
     .eq("is_public", true)
+    .eq("content_class", "general")
     .maybeSingle<Work>();
 
   if (!work) notFound();

@@ -1093,3 +1093,13 @@ Provider承認とモデルallowlistを、運用担当が作成する署名済み
 対象は`provider_id=dezgo`かつ`jobType=adult_character_render`と明示された待機Jobだけです。通常のsafe素材Job、ローカルComfyUI成人向けJob、完了済みJobは変更しません。allowlistに残る有効モデルのJobは待機を継続し、その後Provider承認が失効した場合に停止します。
 
 モデル除外とProvider失効、待機・一時停止、費用予約解放、有効Job継続、safe Job・ローカルJob非干渉を自動検証しました。Desktop統合テスト82/82、TypeScript、ESLintに成功しています。新規外部送信前の再評価は次の成人向け専用dispatcher段階で実装し、Dezgo成人向け外部送信は引き続き無効です。
+
+## 127. Cloud／Desktop Adult製品境界 Phase 0完了
+
+共通packageへ`ContentClass`、`ProductSurface`、`ExecutionTarget`、`ContentExecutionPolicy`を追加し、一般向けCloudと成人向けDesktopの実行matrixをschemaで固定しました。既存Projectは全年齢・12歳以上・15歳以上だけを一般向けとし、成人向けと未知の年齢区分は成人向けへfail closedで移行します。
+
+DesktopではProject作成時の作品区分選択、成人向けの`local_only`既定、一般から成人への不可逆移行を追加しました。移行時は待機中のCloud／Dezgo Jobを停止し、費用予約を解放します。SQLite migration前backup、区分backfill、復元・複製、販売パッケージ書き出しにも区分を維持します。
+
+販売パッケージをv2へ更新し、作品区分、作成surface、policy versionを必須化しました。Hubはv1を安全側へ正規化しつつ、成人向けpackageをアップロード前とServer再検証の両方で拒否します。作品作成、商品、グッズ、公開表示、Checkout、Desktop Hub更新を一般向けに限定しました。
+
+Supabaseへ`works.content_class`、CHECK制約、一般向けpartial index、関連RLS、`general/` Storage namespaceをforward／rollback migrationで追加しました。Hubテスト16/16、Desktop統合83/83、ai-core 35/35、canvas-core 25/25、Web／Desktop production build、日英29画面・状態のaxe違反0件、migration／rollback検証4件に成功しました。実環境Supabase適用はRC受入れで行います。

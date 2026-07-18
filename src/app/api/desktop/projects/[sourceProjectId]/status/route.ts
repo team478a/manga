@@ -43,6 +43,7 @@ export async function PATCH(
       .select("id, status, is_public, updated_at")
       .eq("creator_id", authorization.profileId)
       .eq("source_project_id", params.data.sourceProjectId)
+      .eq("content_class", "general")
       .order("updated_at", { ascending: false })
       .limit(1)
       .maybeSingle<{
@@ -79,6 +80,7 @@ export async function PATCH(
       })
       .eq("id", current.id)
       .eq("creator_id", authorization.profileId)
+      .eq("content_class", "general")
       .eq("status", "draft")
       .eq("is_public", false)
       .eq("updated_at", input.data.expectedUpdatedAt)
@@ -142,6 +144,7 @@ export async function GET(
         .select("id, title, description, status, is_public, updated_at")
         .eq("creator_id", authorization.profileId)
         .eq("source_project_id", parsed.data.sourceProjectId)
+        .eq("content_class", "general")
         .order("updated_at", { ascending: false })
         .limit(1)
         .maybeSingle<{
@@ -201,6 +204,7 @@ export async function GET(
       .from("works")
       .select("id, title, description, updated_at")
       .eq("source_project_id", parsed.data.sourceProjectId)
+      .eq("content_class", "general")
       .eq("status", "published")
       .eq("is_public", true)
       .order("updated_at", { ascending: false })

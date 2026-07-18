@@ -216,7 +216,7 @@ test("project generation policy survives reopening, duplication and backup resto
     subtitle: "",
     description: "",
     genre: "漫画",
-    ageRating: "成人向け",
+    ageRating: "全年齢",
     readingDirection: "rtl",
     width: 1200,
     height: 1800,
@@ -288,6 +288,100 @@ test("project generation policy survives reopening, duplication and backup resto
     "safe_assets_only",
   );
 
+  db.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+test("adult projects default to local-only and reject the general cloud policy", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-boundary-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  const bundle = db.createProject({
+    title: "成人向けローカル作品",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "成人向け",
+    contentClass: "adult",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  assert.equal(bundle.project.contentClass, "adult");
+  assert.equal(
+    db.getProjectGenerationPolicy(bundle.project.id).externalProcessingPolicy,
+    "local_only",
+  );
+  assert.throws(
+    () =>
+      db.saveProjectGenerationPolicy({
+        projectId: bundle.project.id,
+        externalProcessingPolicy: "safe_assets_only",
+        preferLocal: true,
+        externalConfirmationRequired: true,
+        monthlyCostLimit: 10,
+        customCloudJobTypes: [],
+      }),
+    /ローカル処理/,
+  );
+  assert.throws(
+    () =>
+      db.createProject({
+        title: "不整合Project",
+        subtitle: "",
+        description: "",
+        genre: "漫画",
+        ageRating: "成人向け",
+        contentClass: "general",
+        readingDirection: "rtl",
+        width: 1200,
+        height: 1800,
+        dpi: 300,
+      }),
+    /一致していません/,
+  );
+  const general = db.createProject({
+    title: "一般から成人へ移行",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "全年齢",
+    contentClass: "general",
+    readingDirection: "rtl",
+    width: 1200,
+    height: 1800,
+    dpi: 300,
+  });
+  const queuedCloudJob = db.createGenerationJob({
+    projectId: general.project.id,
+    providerType: "cloud",
+    providerId: "future-general-provider",
+    generationType: "image",
+    prompt: "general cloud job",
+  });
+  const moved = db.changeProjectContentClass(general.project.id, "adult");
+  assert.equal(moved.project.contentClass, "adult");
+  assert.equal(moved.project.ageRating, "成人向け");
+  assert.equal(
+    db.getProjectGenerationPolicy(general.project.id).externalProcessingPolicy,
+    "local_only",
+  );
+  assert.equal(db.getGenerationJob(queuedCloudJob).status, "canceled");
+  assert.equal(
+    db.getGenerationJob(queuedCloudJob).error_code,
+    "content_class_changed",
+  );
+  assert.throws(
+    () => db.changeProjectContentClass(general.project.id, "general"),
+    /戻すことはできません/,
+  );
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
@@ -973,6 +1067,54 @@ test("legacy database is backed up before canvas schema migration", () => {
       .readdirSync(path.join(root, "backups"))
       .some((file) => file.includes("before-adult-provider-policy-import-v1")),
   );
+  const beforeContentClass = new MangaiDatabase(paths);
+  beforeContentClass.createProject({
+    title: "旧一般作品",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "全年齢",
+    readingDirection: "rtl",
+    width: 1600,
+    height: 2400,
+    dpi: 300,
+  });
+  beforeContentClass.createProject({
+    title: "旧区分不明作品",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "未確認",
+    readingDirection: "rtl",
+    width: 1600,
+    height: 2400,
+    dpi: 300,
+  });
+  beforeContentClass.close();
+  const legacyContentClass = new Database(paths.database);
+  legacyContentClass
+    .prepare("delete from schema_migrations where version='content-class-v1'")
+    .run();
+  legacyContentClass.exec("alter table projects drop column content_class");
+  legacyContentClass.close();
+  const contentClassReopened = new MangaiDatabase(paths);
+  const migratedProjects = contentClassReopened.listProjects();
+  assert.equal(
+    migratedProjects.find((project) => project.title === "旧一般作品")
+      ?.contentClass,
+    "general",
+  );
+  assert.equal(
+    migratedProjects.find((project) => project.title === "旧区分不明作品")
+      ?.contentClass,
+    "adult",
+  );
+  contentClassReopened.close();
+  assert.ok(
+    fs
+      .readdirSync(path.join(root, "backups"))
+      .some((file) => file.includes("before-content-class-v1")),
+  );
   fs.rmSync(root, { recursive: true, force: true });
 });
 test("adult provider evidence and model allowlist persist fail closed", () => {
@@ -1070,7 +1212,9 @@ test("adult provider evidence and model allowlist persist fail closed", () => {
   fs.rmSync(root, { recursive: true, force: true });
 });
 test("adult provider policy stops disallowed pending Dezgo jobs and releases reservations", () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-policy-jobs-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mangai-adult-policy-jobs-"),
+  );
   const paths = {
     root,
     database: path.join(root, "mangai.sqlite"),
@@ -2773,10 +2917,13 @@ test("RC multi-page export creates consistent release artifacts", async () => {
     await salesPackage.file("manifest.json").async("string"),
   );
   assert.equal(salesManifest.format, "mangai.sales-package");
-  assert.equal(salesManifest.version, 1);
+  assert.equal(salesManifest.version, 2);
+  assert.equal(salesManifest.createdBySurface, "desktop");
+  assert.equal(salesManifest.policyVersion, 1);
   assert.equal(salesManifest.work.sourceProjectId, bundle.project.id);
+  assert.equal(salesManifest.work.contentClass, "general");
   assert.equal(salesManifest.work.pageCount, 3);
-  assert.equal(parseSalesPackageManifest(salesManifest).version, 1);
+  assert.equal(parseSalesPackageManifest(salesManifest).version, 2);
   assert.throws(
     () =>
       parseSalesPackageManifest({
@@ -2786,9 +2933,17 @@ test("RC multi-page export creates consistent release artifacts", async () => {
     /ファイル情報が不正/,
   );
   assert.throws(
-    () => parseSalesPackageManifest({ ...salesManifest, version: 2 }),
+    () => parseSalesPackageManifest({ ...salesManifest, version: 3 }),
     /対応していない/,
   );
+  const legacyManifest = structuredClone(salesManifest);
+  legacyManifest.version = 1;
+  delete legacyManifest.createdBySurface;
+  delete legacyManifest.policyVersion;
+  delete legacyManifest.work.contentClass;
+  const parsedLegacy = parseSalesPackageManifest(legacyManifest);
+  assert.equal(parsedLegacy.version, 2);
+  assert.equal(parsedLegacy.work.contentClass, "general");
   assert.deepEqual(
     [...new Set(salesManifest.files.map((file) => file.role))].sort(),
     [
@@ -2834,6 +2989,8 @@ test("RC multi-page export creates consistent release artifacts", async () => {
     await salesFileByRole("project_info").async("string"),
   );
   assert.equal(packagedProjectInfo.sourceProjectId, bundle.project.id);
+  assert.equal(packagedProjectInfo.contentClass, "general");
+  assert.equal(packagedProjectInfo.createdBySurface, "desktop");
   assert.equal(packagedProjectInfo.pageCount, 3);
   assert.equal(packagedProjectInfo.width, 1200);
   assert.equal(packagedProjectInfo.height, 1800);

@@ -5,6 +5,7 @@ export type Project = {
   description: string;
   genre: string;
   ageRating: "全年齢" | "12歳以上" | "15歳以上" | "成人向け";
+  contentClass: "general" | "adult";
   readingDirection: "rtl" | "ltr";
   width: number;
   height: number;

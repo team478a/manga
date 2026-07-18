@@ -10,6 +10,14 @@ begin
   ) then
     raise exception 'sales package columns remain after rollback';
   end if;
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'works'
+      and column_name = 'content_class'
+  ) or to_regclass('public.works_general_public_idx') is not null then
+    raise exception 'content class boundary remains after rollback';
+  end if;
   if to_regclass('public.desktop_device_authorizations') is not null
      or to_regclass('public.desktop_device_rate_limits') is not null then
     raise exception 'Desktop device tables remain after rollback';

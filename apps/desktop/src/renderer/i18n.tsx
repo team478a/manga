@@ -40,11 +40,15 @@ const ja = {
   "home.openProject": "{title}を開く",
   "home.backup": "バックアップ",
   "home.duplicate": "複製",
+  "home.moveAdult": "成人向けへ移行",
+  "home.moveAdultConfirm":
+    "「{title}」を成人向けDesktop Projectへ移行しますか？\nCloud／Hubへの送信と待機中の外部生成を停止し、ローカル生成を既定にします。この変更は元に戻せません。",
+  "home.moveAdultComplete":
+    "成人向けDesktop Projectへ移行しました。以後はローカル保存・ローカル生成を使用してください。",
   "home.delete": "削除",
   "home.deleteConfirm": "「{title}」をゴミ箱へ移動しますか？",
   "home.databaseRecovered": "データベースを復旧しました",
-  "home.projectsRestored":
-    "{count}件のProjectをバックアップから復元しました。",
+  "home.projectsRestored": "{count}件のProjectをバックアップから復元しました。",
   "home.noProjectsRestored":
     "復元できるProjectバックアップがなかったため、新しいデータベースで起動しました。",
   "home.backupsFailed": " {count}件のバックアップを復元できませんでした。",
@@ -55,6 +59,13 @@ const ja = {
   "projectDialog.subtitle": "サブタイトル",
   "projectDialog.description": "説明",
   "projectDialog.genre": "ジャンル",
+  "projectDialog.contentClass": "作品区分",
+  "projectDialog.contentGeneral": "一般漫画（MANGAI Cloud対応）",
+  "projectDialog.contentAdult": "成人向け（Desktop Adult）",
+  "projectDialog.contentGeneralHelp":
+    "一般向け作品です。将来MANGAI Cloudへ移行できます。",
+  "projectDialog.contentAdultHelp":
+    "成人向け作品はDesktop内で扱い、一般向けCloudへ送信しません。",
   "projectDialog.ageRating": "対象年齢",
   "projectDialog.allAges": "全年齢",
   "projectDialog.age12": "12歳以上",
@@ -412,8 +423,7 @@ const ja = {
     "送信対象がPromptのみで、入力画像・キャラクター参照・完成Pageを含まないことを確認しました。",
   "generation.externalConfirmCost":
     "表示された費用は安全余裕を含む承認上限であることを確認しました。",
-  "generation.externalConfirmTerms":
-    "データ保持とProvider条件を確認しました。",
+  "generation.externalConfirmTerms": "データ保持とProvider条件を確認しました。",
   "generation.externalConfirmCancel": "キャンセル",
   "generation.externalConfirmQueue": "承認してQueueへ追加",
   "generation.externalQueueing": "Queueへ追加中…",
@@ -637,8 +647,7 @@ const ja = {
   "settings.runtime.profile": "使用プロファイル",
   "settings.runtime.saved": "端末設定へ保存しました。",
   "settings.runtime.recommended": "推奨: {profile}",
-  "settings.runtime.constraints":
-    "バッチ1・ローカル生成の同時実行1件",
+  "settings.runtime.constraints": "バッチ1・ローカル生成の同時実行1件",
   "settings.runtime.notRecommended":
     "GPUを確認できないため、ローカル画像生成は非推奨です。編集・素材利用・背景APIは引き続き使用できます。",
   "settings.aiDiagnostics.title": "AI接続診断",
@@ -706,8 +715,7 @@ const ja = {
     "OFFの場合も、起動・終了・エラー種別を含む最小限のJSONL動作ログは端末内へ保存します。ONの場合だけ、エラー内容とスタックを含む詳細ファイルを最大20件保存します。",
   "settings.privacy.uploadConsent":
     "詳細クラッシュレポートを外部へ送信することに同意する",
-  "settings.privacy.uploadConsentSaved":
-    "外部送信の同意設定を保存しました。",
+  "settings.privacy.uploadConsentSaved": "外部送信の同意設定を保存しました。",
   "settings.privacy.uploadHelp":
     "ローカル保存への同意とは別に管理します。自動送信はせず、下の「未送信分を送信」を選んだ場合だけ送信します。",
   "settings.privacy.logDirectory": "ログ保存先:",
@@ -825,8 +833,7 @@ const ja = {
   "settings.provider.mock": "モックプロバイダー",
   "settings.provider.enabled": "有効",
   "settings.provider.baseUrl": "接続URL",
-  "settings.provider.allowedOrigins":
-    "許可するリモートorigin（1行に1件）",
+  "settings.provider.allowedOrigins": "許可するリモートorigin（1行に1件）",
   "settings.provider.allowedOriginsHelp":
     "localhostは登録不要です。それ以外はHTTPS originの完全一致だけを許可します。",
   "settings.provider.model": "使用モデル",
@@ -871,8 +878,7 @@ const ja = {
   "updater.channel": "更新チャンネル",
   "updater.channelHelp":
     "Stableは正式版のみ、Betaは正式公開前の更新も受け取ります。",
-  "updater.applyConfirm":
-    "MANGAI Desktopを再起動して更新を適用しますか？",
+  "updater.applyConfirm": "MANGAI Desktopを再起動して更新を適用しますか？",
   "updater.checking": "更新確認中…",
   "updater.download": "v{version}を取得",
   "updater.downloading": "更新 {percent}%",
@@ -934,8 +940,7 @@ const ja = {
     "Hubの非公開下書きの作品名と説明を、Desktopの内容で更新しますか？",
   "hub.updated": "Hubの非公開下書きを更新しました。",
   "hub.updateDraft": "Hub下書きを更新",
-  "hub.reauthorize":
-    "更新するには端末認証を解除し、再認証してください。",
+  "hub.reauthorize": "更新するには端末認証を解除し、再認証してください。",
   "hub.securityTitle": "安全な連携範囲",
   "hub.securityDescription":
     "未認証時は公開情報だけを照会します。認証後のトークンはOS機能で暗号化し、編集は本人の非公開下書きの作品名・説明だけに制限されます。公開・商品・価格・販売ファイル・決済には使用できません。Hubのログイン情報、Supabase Service Role Key、Stripe Secret KeyはDesktopへ保存しません。",
@@ -980,6 +985,11 @@ const en: Record<TranslationKey, string> = {
   "home.openProject": "Open {title}",
   "home.backup": "Back up",
   "home.duplicate": "Duplicate",
+  "home.moveAdult": "Move to Adult",
+  "home.moveAdultConfirm":
+    "Move “{title}” to a Desktop Adult project?\nCloud/Hub transfer and queued external generation will be stopped, and local generation will become the default. This cannot be undone.",
+  "home.moveAdultComplete":
+    "Moved to a Desktop Adult project. Use local storage and local generation from now on.",
   "home.delete": "Delete",
   "home.deleteConfirm": "Move “{title}” to Trash?",
   "home.databaseRecovered": "Database recovered",
@@ -994,6 +1004,13 @@ const en: Record<TranslationKey, string> = {
   "projectDialog.subtitle": "Subtitle",
   "projectDialog.description": "Description",
   "projectDialog.genre": "Genre",
+  "projectDialog.contentClass": "Content class",
+  "projectDialog.contentGeneral": "General manga (MANGAI Cloud)",
+  "projectDialog.contentAdult": "Adult (Desktop Adult)",
+  "projectDialog.contentGeneralHelp":
+    "General-audience project that can be migrated to MANGAI Cloud.",
+  "projectDialog.contentAdultHelp":
+    "Adult projects stay in Desktop and are not sent to the general-audience Cloud.",
   "projectDialog.ageRating": "Age rating",
   "projectDialog.allAges": "All ages",
   "projectDialog.age12": "Ages 12+",
@@ -1372,8 +1389,7 @@ const en: Record<TranslationKey, string> = {
     "The provider does not support this job type.",
   "generation.externalBlock.policyBlocked":
     "The project policy blocks external processing.",
-  "generation.externalBlock.modelNotSelected":
-    "Select a generation model.",
+  "generation.externalBlock.modelNotSelected": "Select a generation model.",
   "generation.externalBlock.modelUnavailable":
     "The selected model is not in the current Text-to-Image model list.",
   "generation.externalBlock.pricingStale":
@@ -1402,8 +1418,7 @@ const en: Record<TranslationKey, string> = {
   "generation.policy.custom": "Choose types",
   "generation.policy.customTypes": "Safe-asset types allowed externally",
   "generation.policy.preferLocal": "Prefer local processing when available",
-  "generation.policy.requireConfirmation":
-    "Confirm every external dispatch",
+  "generation.policy.requireConfirmation": "Confirm every external dispatch",
   "generation.policy.monthlyLimit": "Project monthly cost limit (USD)",
   "generation.policy.noLimit": "Not configured",
   "generation.policy.monthlyLimitHelp":
@@ -1431,8 +1446,7 @@ const en: Record<TranslationKey, string> = {
   "generation.workflowUpdated": "Workflow settings updated.",
   "generation.defaultUpdated": "Default workflow updated.",
   "generation.lowSpecVaeReady": "Tiled VAE support detected",
-  "generation.lowSpecVaeMissing":
-    "No low-spec VAEDecodeTiled node was found",
+  "generation.lowSpecVaeMissing": "No low-spec VAEDecodeTiled node was found",
   "generation.cpuOffloadManualCheck":
     "CPU offload is configured by the ComfyUI runtime, not the workflow. On systems with 8 GB VRAM or less, verify runtime options such as --cpu-vae.",
   "generation.prompt": "Prompt",
@@ -1503,8 +1517,7 @@ const en: Record<TranslationKey, string> = {
   "generation.pageBatchTitle": "Queue episode pages",
   "generation.pageBatchHelp":
     "Queues pages with prompts from the selected episode in page order. Pages with blank prompts are skipped.",
-  "generation.pageBatchCount":
-    "Eligible: {eligible} / skipped: {skipped}",
+  "generation.pageBatchCount": "Eligible: {eligible} / skipped: {skipped}",
   "generation.pageBatchNoEpisode": "Select an episode first.",
   "generation.pageBatchEnqueue": "Queue episode pages",
   "generation.pageBatchEnqueuing": "Queuing…",
@@ -1657,8 +1670,7 @@ const en: Record<TranslationKey, string> = {
   "settings.privacy.uploadUnavailable": "Upload destination not configured",
   "settings.privacy.localConsent":
     "Allow detailed crash reports to be stored on this device",
-  "settings.privacy.localConsentSaved":
-    "Diagnostics data settings saved.",
+  "settings.privacy.localConsentSaved": "Diagnostics data settings saved.",
   "settings.privacy.localHelp":
     "Minimal JSONL logs containing startup, shutdown, and error categories remain local even when this is off. When enabled, up to 20 detailed files containing error information and stacks are retained.",
   "settings.privacy.uploadConsent":
@@ -1678,8 +1690,7 @@ const en: Record<TranslationKey, string> = {
     "Delete the detailed crash reports stored on this device?",
   "settings.privacy.deleted": "Detailed crash reports deleted.",
   "settings.privacy.delete": "Delete detailed reports",
-  "settings.privacy.uploadConfirm":
-    "Upload {count} detailed crash reports?",
+  "settings.privacy.uploadConfirm": "Upload {count} detailed crash reports?",
   "settings.privacy.uploaded": "Pending reports uploaded.",
   "settings.privacy.upload": "Upload pending reports",
   "settings.provider.historyTitle": "AI settings history",
@@ -1739,8 +1750,7 @@ const en: Record<TranslationKey, string> = {
   "settings.adult.loading": "Checking",
   "settings.adult.externalDisabled":
     "Adult Dezgo transmission remains disabled until provider approval and dedicated review are complete. These settings alone never enable external transmission.",
-  "settings.adult.administratorToggle":
-    "Allow adult generation on this device",
+  "settings.adult.administratorToggle": "Allow adult generation on this device",
   "settings.adult.administratorHelp":
     "Disabling this stops queued adult-generation jobs before dispatch.",
   "settings.adult.administratorEnabled":
@@ -1785,8 +1795,7 @@ const en: Record<TranslationKey, string> = {
   "settings.provider.mock": "Mock provider",
   "settings.provider.enabled": "Enabled",
   "settings.provider.baseUrl": "Connection URL",
-  "settings.provider.allowedOrigins":
-    "Allowed remote origins (one per line)",
+  "settings.provider.allowedOrigins": "Allowed remote origins (one per line)",
   "settings.provider.allowedOriginsHelp":
     "localhost does not need to be registered. Other connections require an exact HTTPS origin match.",
   "settings.provider.model": "Model",
@@ -1831,8 +1840,7 @@ const en: Record<TranslationKey, string> = {
   "updater.channel": "Update channel",
   "updater.channelHelp":
     "Stable receives official releases only. Beta may receive updates before their official release.",
-  "updater.applyConfirm":
-    "Restart MANGAI Desktop and apply the update?",
+  "updater.applyConfirm": "Restart MANGAI Desktop and apply the update?",
   "updater.checking": "Checking for updates…",
   "updater.download": "Download v{version}",
   "updater.downloading": "Updating {percent}%",
@@ -1922,97 +1930,274 @@ function storedLocale(): AppLocale {
 }
 
 const englishMainMessageReplacements: Array<[RegExp, string]> = [
-  [/Hub URLはHTTPSを指定してください（localhostのみHTTPを利用できます）。/g, "Use an HTTPS Hub URL. HTTP is allowed only for localhost."],
-  [/認証情報を含むHub URLは指定できません。/g, "Hub URLs cannot include credentials."],
-  [/Hub URLにクエリまたはフラグメントは指定できません。/g, "Hub URLs cannot include a query or fragment."],
+  [
+    /Hub URLはHTTPSを指定してください（localhostのみHTTPを利用できます）。/g,
+    "Use an HTTPS Hub URL. HTTP is allowed only for localhost.",
+  ],
+  [
+    /認証情報を含むHub URLは指定できません。/g,
+    "Hub URLs cannot include credentials.",
+  ],
+  [
+    /Hub URLにクエリまたはフラグメントは指定できません。/g,
+    "Hub URLs cannot include a query or fragment.",
+  ],
   [/Hubへの接続がタイムアウトしました。/g, "The Hub connection timed out."],
   [/Hubから不正な応答を受信しました。/g, "Hub returned an invalid response."],
-  [/Hubとの通信に失敗しました（HTTP (\d+)）。/g, "Hub communication failed (HTTP $1)."],
+  [
+    /Hubとの通信に失敗しました（HTTP (\d+)）。/g,
+    "Hub communication failed (HTTP $1).",
+  ],
   [/公開作品は見つかりません。/g, "No published work was found."],
   [/AIプロバイダーが設定されていません。/g, "No AI provider is configured."],
-  [/AIが設定されていません。設定画面でOllamaを有効にしてください。/g, "AI is not configured. Enable Ollama in Settings."],
-  [/ComfyUIが無効です。設定画面で有効にしてください。/g, "ComfyUI is disabled. Enable it in Settings."],
+  [
+    /AIが設定されていません。設定画面でOllamaを有効にしてください。/g,
+    "AI is not configured. Enable Ollama in Settings.",
+  ],
+  [
+    /ComfyUIが無効です。設定画面で有効にしてください。/g,
+    "ComfyUI is disabled. Enable it in Settings.",
+  ],
   [/Promptが入力されたPageがありません。/g, "No page has a prompt."],
-  [/ローカル画像生成は同時に1件だけ実行できます。実行中の生成が完了してから再試行してください。/g, "Only one local image generation can run at a time. Wait for the active job and try again."],
-  [/低VRAM端末ではCreator Chatと画像生成を同時実行できません。[^。]*。/g, "Creator Chat and image generation cannot run together on a low-VRAM device. Wait for the active task and try again."],
-  [/ComfyUI画像生成がタイムアウトしました。/g, "ComfyUI image generation timed out."],
+  [
+    /ローカル画像生成は同時に1件だけ実行できます。実行中の生成が完了してから再試行してください。/g,
+    "Only one local image generation can run at a time. Wait for the active job and try again.",
+  ],
+  [
+    /低VRAM端末ではCreator Chatと画像生成を同時実行できません。[^。]*。/g,
+    "Creator Chat and image generation cannot run together on a low-VRAM device. Wait for the active task and try again.",
+  ],
+  [
+    /ComfyUI画像生成がタイムアウトしました。/g,
+    "ComfyUI image generation timed out.",
+  ],
   [/ComfyUI生成に失敗しました。/g, "ComfyUI generation failed."],
   [/画像生成に失敗しました。/g, "Image generation failed."],
-  [/Dezgo APIはこのビルドで無効です。/g, "The Dezgo API is disabled in this build."],
-  [/Dezgo APIキーが設定されていません。/g, "The Dezgo API key is not configured."],
+  [
+    /Dezgo APIはこのビルドで無効です。/g,
+    "The Dezgo API is disabled in this build.",
+  ],
+  [
+    /Dezgo APIキーが設定されていません。/g,
+    "The Dezgo API key is not configured.",
+  ],
   [/Dezgo APIキーが無効です。/g, "The Dezgo API key is invalid."],
   [/Dezgoの残高が不足しています。/g, "The Dezgo balance is insufficient."],
-  [/Dezgo APIが混雑しています。しばらく待ってから再試行してください。/g, "The Dezgo API is busy. Wait and try again."],
-  [/Dezgo APIで一時的なエラーが発生しました。/g, "A temporary Dezgo API error occurred."],
-  [/Dezgo APIへの接続がタイムアウトしました。/g, "The Dezgo API connection timed out."],
-  [/Dezgo APIへ接続できません。接続を確認してください。/g, "Could not connect to the Dezgo API. Check the connection."],
+  [
+    /Dezgo APIが混雑しています。しばらく待ってから再試行してください。/g,
+    "The Dezgo API is busy. Wait and try again.",
+  ],
+  [
+    /Dezgo APIで一時的なエラーが発生しました。/g,
+    "A temporary Dezgo API error occurred.",
+  ],
+  [
+    /Dezgo APIへの接続がタイムアウトしました。/g,
+    "The Dezgo API connection timed out.",
+  ],
+  [
+    /Dezgo APIへ接続できません。接続を確認してください。/g,
+    "Could not connect to the Dezgo API. Check the connection.",
+  ],
   [/Dezgo APIへ接続できました。/g, "Connected to the Dezgo API."],
-  [/診断レポートの送信先が設定されていません。/g, "The diagnostics report endpoint is not configured."],
+  [
+    /診断レポートの送信先が設定されていません。/g,
+    "The diagnostics report endpoint is not configured.",
+  ],
   [/外部送信への同意が必要です。/g, "Consent for external upload is required."],
   [/書き出しをキャンセルしました。/g, "Export was canceled."],
-  [/OSの安全な資格情報暗号化を利用できません。/g, "Secure operating-system credential encryption is unavailable."],
-  [/保存済みHub端末認証を読み取れませんでした。/g, "The saved Hub device authorization could not be read."],
-  [/ゴミ箱の保存先を確保できませんでした。/g, "A Trash location could not be prepared."],
-  [/SQLiteファイルが空です。書き込み中断または破損の可能性があります。/g, "The SQLite file is empty and may be incomplete or damaged."],
+  [
+    /OSの安全な資格情報暗号化を利用できません。/g,
+    "Secure operating-system credential encryption is unavailable.",
+  ],
+  [
+    /保存済みHub端末認証を読み取れませんでした。/g,
+    "The saved Hub device authorization could not be read.",
+  ],
+  [
+    /ゴミ箱の保存先を確保できませんでした。/g,
+    "A Trash location could not be prepared.",
+  ],
+  [
+    /SQLiteファイルが空です。書き込み中断または破損の可能性があります。/g,
+    "The SQLite file is empty and may be incomplete or damaged.",
+  ],
   [/SQLite整合性検査に失敗しました: /g, "SQLite integrity validation failed: "],
   [/SQLiteが破損しています。/g, "The SQLite database is damaged."],
   [/バックアップ情報が不正です。/g, "The backup metadata is invalid."],
-  [/対応していないバックアップ形式です。/g, "This backup format is not supported."],
-  [/Project情報がありません。/g, "The backup does not contain project information."],
-  [/バックアップのデータ構造が不正です。/g, "The backup data structure is invalid."],
+  [
+    /対応していないバックアップ形式です。/g,
+    "This backup format is not supported.",
+  ],
+  [
+    /Project情報がありません。/g,
+    "The backup does not contain project information.",
+  ],
+  [
+    /バックアップのデータ構造が不正です。/g,
+    "The backup data structure is invalid.",
+  ],
   [/Project設定が不正です。/g, "The project settings are invalid."],
   [/エピソード数が不正です。/g, "The episode count is invalid."],
-  [/バックアップ内の項目数が上限を超えています。/g, "The backup contains too many items."],
-  [/コマレイヤー数が上限を超えています。/g, "The backup contains too many panel layers."],
+  [
+    /バックアップ内の項目数が上限を超えています。/g,
+    "The backup contains too many items.",
+  ],
+  [
+    /コマレイヤー数が上限を超えています。/g,
+    "The backup contains too many panel layers.",
+  ],
   [/バックアップ内のIDが不正です。/g, "The backup contains an invalid ID."],
-  [/バックアップ履歴のデータ構造が不正です。/g, "The backup history structure is invalid."],
-  [/バックアップ履歴の項目数が上限を超えています。/g, "The backup contains too many history items."],
-  [/バックアップファイルのサイズが不正です。/g, "The backup file size is invalid."],
+  [
+    /バックアップ履歴のデータ構造が不正です。/g,
+    "The backup history structure is invalid.",
+  ],
+  [
+    /バックアップ履歴の項目数が上限を超えています。/g,
+    "The backup contains too many history items.",
+  ],
+  [
+    /バックアップファイルのサイズが不正です。/g,
+    "The backup file size is invalid.",
+  ],
   [/バックアップ情報がありません。/g, "Backup metadata is missing."],
   [/バックアップ情報が大きすぎます。/g, "The backup metadata is too large."],
-  [/バックアップ情報を読み取れません。/g, "The backup metadata could not be read."],
-  [/展開後の素材サイズが上限を超えています。/g, "The extracted assets exceed the size limit."],
-  [/Undo\/Redo履歴をバックアップできませんでした。/g, "Undo/redo history could not be backed up."],
+  [
+    /バックアップ情報を読み取れません。/g,
+    "The backup metadata could not be read.",
+  ],
+  [
+    /展開後の素材サイズが上限を超えています。/g,
+    "The extracted assets exceed the size limit.",
+  ],
+  [
+    /Undo\/Redo履歴をバックアップできませんでした。/g,
+    "Undo/redo history could not be backed up.",
+  ],
   [/Undo\/Redo履歴を読み取れません。/g, "Undo/redo history could not be read."],
-  [/Undo\/Redo履歴の構造が不正です。/g, "The undo/redo history structure is invalid."],
+  [
+    /Undo\/Redo履歴の構造が不正です。/g,
+    "The undo/redo history structure is invalid.",
+  ],
   [/素材「(.+?)」が見つかりません。/g, "Asset “$1” was not found."],
   [/素材「(.+?)」がありません。/g, "Asset “$1” is missing from the backup."],
   [/素材「(.+?)」が破損しています。/g, "Asset “$1” is damaged."],
   [/素材「(.+?)」の情報が不正です。/g, "Asset “$1” has invalid metadata."],
-  [/素材「(.+?)」の整合性を確認できません。/g, "Asset “$1” failed integrity validation."],
-  [/素材ファイルの整合性を確認できませんでした。/g, "Asset file integrity could not be verified."],
-  [/削除する素材ファイルが見つかりません。/g, "The asset file to delete was not found."],
-  [/復元する素材ファイルがゴミ箱にありません。/g, "The asset file to restore is not in Trash."],
-  [/素材の履歴用ゴミ箱に同名ファイルがあります。/g, "A file with the same name already exists in the asset history Trash."],
-  [/Projectの生成ポリシーが見つかりません。/g, "The project generation policy was not found."],
-  [/この保存先は別のProjectで使用されています。/g, "This storage folder is used by another project."],
-  [/この保存先はProjectとして安全に削除できません。/g, "This storage folder cannot be safely deleted as a project."],
+  [
+    /素材「(.+?)」の整合性を確認できません。/g,
+    "Asset “$1” failed integrity validation.",
+  ],
+  [
+    /素材ファイルの整合性を確認できませんでした。/g,
+    "Asset file integrity could not be verified.",
+  ],
+  [
+    /削除する素材ファイルが見つかりません。/g,
+    "The asset file to delete was not found.",
+  ],
+  [
+    /復元する素材ファイルがゴミ箱にありません。/g,
+    "The asset file to restore is not in Trash.",
+  ],
+  [
+    /素材の履歴用ゴミ箱に同名ファイルがあります。/g,
+    "A file with the same name already exists in the asset history Trash.",
+  ],
+  [
+    /Projectの生成ポリシーが見つかりません。/g,
+    "The project generation policy was not found.",
+  ],
+  [
+    /この保存先は別のProjectで使用されています。/g,
+    "This storage folder is used by another project.",
+  ],
+  [
+    /この保存先はProjectとして安全に削除できません。/g,
+    "This storage folder cannot be safely deleted as a project.",
+  ],
   [/エピソードが見つかりません。/g, "The episode was not found."],
-  [/最後のエピソードは削除できません。/g, "The last episode cannot be deleted."],
+  [
+    /最後のエピソードは削除できません。/g,
+    "The last episode cannot be deleted.",
+  ],
   [/ページが見つかりません。/g, "The page was not found."],
   [/素材が見つかりません。/g, "The asset was not found."],
   [/コマが見つかりません。/g, "The panel was not found."],
   [/Canvasオブジェクトが見つかりません。/g, "The Canvas object was not found."],
-  [/内部互換キャッシュは編集できません。/g, "The internal compatibility cache cannot be edited."],
-  [/内部互換キャッシュは削除できません。/g, "The internal compatibility cache cannot be deleted."],
-  [/親の吹き出しが同じページにありません。/g, "The parent balloon is not on the same page."],
-  [/親の吹き出し寸法が不正です。/g, "The parent balloon dimensions are invalid."],
-  [/ComfyUIワークフローはJSONを選択してください。/g, "Select a JSON file for the ComfyUI workflow."],
-  [/ComfyUIワークフローが見つかりません。/g, "The ComfyUI workflow was not found."],
-  [/許可されていないワークフローパスです。/g, "The workflow path is not allowed."],
+  [
+    /内部互換キャッシュは編集できません。/g,
+    "The internal compatibility cache cannot be edited.",
+  ],
+  [
+    /内部互換キャッシュは削除できません。/g,
+    "The internal compatibility cache cannot be deleted.",
+  ],
+  [
+    /親の吹き出しが同じページにありません。/g,
+    "The parent balloon is not on the same page.",
+  ],
+  [
+    /親の吹き出し寸法が不正です。/g,
+    "The parent balloon dimensions are invalid.",
+  ],
+  [
+    /ComfyUIワークフローはJSONを選択してください。/g,
+    "Select a JSON file for the ComfyUI workflow.",
+  ],
+  [
+    /ComfyUIワークフローが見つかりません。/g,
+    "The ComfyUI workflow was not found.",
+  ],
+  [
+    /許可されていないワークフローパスです。/g,
+    "The workflow path is not allowed.",
+  ],
   [/ワークフローが見つかりません。/g, "The workflow was not found."],
   [/Promptマッピングが必要です。/g, "A prompt mapping is required."],
-  [/低スペック向けのVAEDecodeTiledが見つかりません。/g, "VAEDecodeTiled for low-spec operation was not found."],
-  [/CPUオフロードはworkflow JSONでは確認できません。ComfyUIの起動設定を実環境で確認してください。/g, "CPU offload cannot be verified from workflow JSON. Check the ComfyUI launch configuration."],
-  [/管理者設定で成人向け生成が無効です。設定画面で確認してください。/g, "Adult generation is disabled by the administrator setting. Review Settings."],
-  [/18歳以上の確認が無効または期限切れです。設定画面で確認してください。/g, "The 18-or-older confirmation is missing or expired. Review Settings."],
-  [/成人向け生成は対象年齢が成人向けのProjectでのみ利用できます。/g, "Adult generation is available only in projects rated Adult."],
-  [/未成年または年齢が曖昧な表現を含むため生成できません。/g, "Generation is blocked because the prompt contains a minor or age-ambiguous signal."],
-  [/実在人物を参照する表現を含むため生成できません。/g, "Generation is blocked because the prompt references a real person."],
-  [/非同意または搾取的な表現を含むため生成できません。/g, "Generation is blocked because the prompt contains a non-consensual or exploitative signal."],
-  [/成人向け生成はこの段階では端末内ComfyUIでのみ実行できます。/g, "Adult generation currently runs only through local ComfyUI."],
-  [/成人向けProjectは内容確認が必要なため、1枚ずつ生成してください。/g, "Adult projects require a content check. Generate one image at a time."],
-  [/プロジェクト外のファイルにはアクセスできません。/g, "Files outside the project cannot be accessed."],
+  [
+    /低スペック向けのVAEDecodeTiledが見つかりません。/g,
+    "VAEDecodeTiled for low-spec operation was not found.",
+  ],
+  [
+    /CPUオフロードはworkflow JSONでは確認できません。ComfyUIの起動設定を実環境で確認してください。/g,
+    "CPU offload cannot be verified from workflow JSON. Check the ComfyUI launch configuration.",
+  ],
+  [
+    /管理者設定で成人向け生成が無効です。設定画面で確認してください。/g,
+    "Adult generation is disabled by the administrator setting. Review Settings.",
+  ],
+  [
+    /18歳以上の確認が無効または期限切れです。設定画面で確認してください。/g,
+    "The 18-or-older confirmation is missing or expired. Review Settings.",
+  ],
+  [
+    /成人向け生成は対象年齢が成人向けのProjectでのみ利用できます。/g,
+    "Adult generation is available only in projects rated Adult.",
+  ],
+  [
+    /未成年または年齢が曖昧な表現を含むため生成できません。/g,
+    "Generation is blocked because the prompt contains a minor or age-ambiguous signal.",
+  ],
+  [
+    /実在人物を参照する表現を含むため生成できません。/g,
+    "Generation is blocked because the prompt references a real person.",
+  ],
+  [
+    /非同意または搾取的な表現を含むため生成できません。/g,
+    "Generation is blocked because the prompt contains a non-consensual or exploitative signal.",
+  ],
+  [
+    /成人向け生成はこの段階では端末内ComfyUIでのみ実行できます。/g,
+    "Adult generation currently runs only through local ComfyUI.",
+  ],
+  [
+    /成人向けProjectは内容確認が必要なため、1枚ずつ生成してください。/g,
+    "Adult projects require a content check. Generate one image at a time.",
+  ],
+  [
+    /プロジェクト外のファイルにはアクセスできません。/g,
+    "Files outside the project cannot be accessed.",
+  ],
   [/プロジェクトが見つかりません。/g, "The project was not found."],
   [/プロジェクト名を変更/g, "Rename project"],
   [/エピソードを追加/g, "Add episode"],
@@ -2051,10 +2236,7 @@ function localizeExternalMessage(message: string, locale: AppLocale) {
     if (next !== localized) translated = true;
     localized = next;
   }
-  if (
-    !translated &&
-    /[\u3040-\u30ff\u3400-\u9fff]/.test(localized)
-  )
+  if (!translated && /[\u3040-\u30ff\u3400-\u9fff]/.test(localized))
     return "The operation could not be completed. Review the input and try again.";
   return localized;
 }

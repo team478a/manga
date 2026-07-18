@@ -20,7 +20,7 @@ const order = () => ({
     id: "product-1",
     status: "active",
     creator_id: "creator-1",
-    works: { is_public: true },
+    works: { is_public: true, content_class: "general" },
   },
 });
 
@@ -61,6 +61,24 @@ test("pending注文の商品・購入者・出品者・公開状態を照合す�
         {
           ...value,
           digital_products: { ...value.digital_products, status: "paused" },
+        },
+        {
+          orderId: "order-1",
+          productId: "product-1",
+          buyerEmail: "buyer@example.com",
+        },
+      ),
+    /購入できません/,
+  );
+  assert.throws(
+    () =>
+      assertCheckoutOrder(
+        {
+          ...value,
+          digital_products: {
+            ...value.digital_products,
+            works: { is_public: true, content_class: "adult" },
+          },
         },
         {
           orderId: "order-1",

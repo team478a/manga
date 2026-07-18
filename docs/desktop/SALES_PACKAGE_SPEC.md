@@ -1,12 +1,12 @@
-# MANGAI販売パッケージ仕様 v1
+# MANGAI販売パッケージ仕様 v2
 
-最終更新: 2026-07-14
+最終更新: 2026-07-18
 
 ## 目的
 
-MANGAI Desktopで完成した作品を、秘密鍵をDesktopへ保存せずMANGAI Hubへ受け渡すための交換形式です。ファイル拡張子は`.zip`、形式名は`mangai.sales-package`、バージョンは`1`です。
+MANGAI Desktopで完成した作品を、秘密鍵をDesktopへ保存せずMANGAI Hubへ受け渡すための交換形式です。ファイル拡張子は`.zip`、形式名は`mangai.sales-package`、現行バージョンは`2`です。
 
-Desktopの「書き出し」は`MANGAI販売パッケージ.zip`を生成します。HubはZIPを受け取り、内容確認後に下書き作品・商品へ変換します。v1はアップロード処理を含まず、ローカルファイル生成までを責務とします。
+Desktopの「書き出し」は`MANGAI販売パッケージ.zip`を生成します。HubはZIPを受け取り、内容確認後に下書き作品・商品へ変換します。v2は作品区分、作成surface、policy versionを必須化します。Cloud／Hubへ取り込めるのは`contentClass: "general"`だけです。
 
 ## ZIP構成
 
@@ -28,8 +28,10 @@ metadata/social-post.txt
 ```json
 {
   "format": "mangai.sales-package",
-  "version": 1,
+  "version": 2,
   "createdAt": "2026-07-14T00:00:00.000Z",
+  "createdBySurface": "desktop",
+  "policyVersion": 1,
   "work": {
     "sourceProjectId": "UUID",
     "title": "作品名",
@@ -37,6 +39,7 @@ metadata/social-post.txt
     "description": "",
     "genre": "漫画",
     "ageRating": "全年齢",
+    "contentClass": "general",
     "readingDirection": "rtl",
     "width": 1600,
     "height": 2400,
@@ -75,11 +78,13 @@ metadata/social-post.txt
 - `manifest.json`に未記載のファイルと、ZIP内に存在しない記載ファイルを拒否する
 - 展開した各ファイルのバイト数とSHA-256をmanifestと照合する
 - 同じパスの重複、未対応`format`・`version`・`role`を拒否する
+- `contentClass`と`ageRating`の不一致を拒否する
+- Hubは`contentClass: "adult"`および区分を検証できないパッケージを保存前に拒否する
 - MIME typeは宣言だけを信用せず、Hub側でもファイル内容を検査する
 - `sourceProjectId`は同期IDではなく出所確認用とし、Hubの所有者・作品IDは認証済みユーザーに対して新規採番する
 
-## 互換性
+## v1互換性
 
-v1へ任意項目を追加する場合、既存読込側が無視できる項目に限定します。必須項目、ファイル役割、意味を変更する場合は`version`を上げます。共通実装は`@mangai/export-core`の`parseSalesPackageManifest`と`createSalesPackageZip`を使用します。
+共通readerは既存v1を読み込み、`ageRating`から作品区分を補完してv2へ正規化します。全年齢・12歳以上・15歳以上だけを一般向けとし、成人向けまたは未知の旧区分は`adult`としてfail closedします。新規書き出しは常にv2です。共通実装は`@mangai/export-core`の`parseSalesPackageManifest`と`createSalesPackageZip`を使用します。
 
 Hubの`/dashboard/import-package`は、ZIPをサーバーへ送信する前にブラウザ内で本仕様を検証し、作品情報・表紙・サンプル・収録ファイルをプレビューします。確定時は商品ファイルと画像だけを送信し、サーバー側で同じmanifest、容量、SHA-256、実ファイル形式を再検証してから、非公開作品と停止中商品を作成します。

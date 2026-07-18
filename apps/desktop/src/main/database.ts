@@ -24,8 +24,10 @@ import {
   type Project,
 } from "@mangai/project-core";
 import {
+  CONTENT_POLICY_VERSION,
   assetLibraryMetadataInputSchema,
   projectInputSchema,
+  resolveProjectContentClass,
   type AssetLibraryMetadataInput,
   type ProjectInput,
 } from "@mangai/shared";
@@ -385,7 +387,9 @@ export class MangaiDatabase {
                         ? "adult-provider-policy-v1"
                         : !this.hasMigration("adult-provider-policy-import-v1")
                           ? "adult-provider-policy-import-v1"
-                          : null;
+                          : !this.hasMigration("content-class-v1")
+                            ? "content-class-v1"
+                            : null;
       if (pendingMigration) this.backupBeforeMigration(pendingMigration);
     }
     this.migrate();
@@ -423,7 +427,7 @@ export class MangaiDatabase {
   }
   private migrate() {
     this.db.exec(`
- create table if not exists projects(id text primary key,title text not null,subtitle text not null default '',description text not null default '',genre text not null default '',age_rating text not null,reading_direction text not null,width integer not null,height integer not null,dpi integer not null,storage_path text not null,cover_asset_id text,created_at text not null,updated_at text not null,last_opened_at text);
+ create table if not exists projects(id text primary key,title text not null,subtitle text not null default '',description text not null default '',genre text not null default '',age_rating text not null,content_class text not null default 'adult' check(content_class in ('general','adult')),reading_direction text not null,width integer not null,height integer not null,dpi integer not null,storage_path text not null,cover_asset_id text,created_at text not null,updated_at text not null,last_opened_at text);
  create table if not exists episodes(id text primary key,project_id text not null references projects(id) on delete cascade,title text not null,order_index integer not null,created_at text not null,updated_at text not null);
  create table if not exists assets(id text primary key,project_id text not null references projects(id) on delete cascade,file_name text not null,relative_path text not null,mime_type text not null,width integer not null,height integer not null,byte_size integer not null,sha256 text not null,created_at text not null,unique(project_id,sha256));
  create table if not exists pages(id text primary key,episode_id text not null references episodes(id) on delete cascade,page_number integer not null,order_index integer not null,width integer not null,height integer not null,background_color text not null default '#ffffff',image_asset_id text references assets(id) on delete set null,prompt text not null default '',negative_prompt text not null default '',notes text not null default '',created_at text not null,updated_at text not null);
@@ -482,7 +486,9 @@ export class MangaiDatabase {
         "alter table generation_jobs add column max_attempts integer not null default 3",
       );
     if (!jobColumns.some((column) => column.name === "next_attempt_at"))
-      this.db.exec("alter table generation_jobs add column next_attempt_at text");
+      this.db.exec(
+        "alter table generation_jobs add column next_attempt_at text",
+      );
     if (!jobColumns.some((column) => column.name === "queue_order"))
       this.db.exec(
         "alter table generation_jobs add column queue_order integer not null default 0",
@@ -500,6 +506,7 @@ export class MangaiDatabase {
     this.migrateAdultGenerationConsentV1();
     this.migrateAdultProviderPolicyV1();
     this.migrateAdultProviderPolicyImportV1();
+    this.migrateContentClassV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -929,6 +936,42 @@ export class MangaiDatabase {
         );
     })();
   }
+  private migrateContentClassV1() {
+    if (this.hasMigration("content-class-v1")) return;
+    const columns = new Set(
+      (
+        this.db.prepare("pragma table_info(projects)").all() as Array<{
+          name: string;
+        }>
+      ).map((column) => column.name),
+    );
+    const stamp = now();
+    this.db.transaction(() => {
+      if (!columns.has("content_class"))
+        this.db.exec(
+          "alter table projects add column content_class text not null default 'adult' check(content_class in ('general','adult'))",
+        );
+      this.db.exec(`
+        update projects
+        set content_class=case
+          when age_rating in ('全年齢','12歳以上','15歳以上') then 'general'
+          else 'adult'
+        end;
+        update project_generation_policies
+        set external_processing_policy='local_only',prefer_local=1,
+            external_confirmation_required=1,custom_cloud_job_types_json='[]',
+            updated_at='${stamp.replaceAll("'", "''")}'
+        where project_id in (
+          select id from projects where content_class='adult'
+        );
+      `);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run("content-class-v1", "General and adult product boundary", stamp);
+    })();
+  }
   private project(row: any): Project {
     return {
       id: row.id,
@@ -937,6 +980,10 @@ export class MangaiDatabase {
       description: row.description,
       genre: row.genre,
       ageRating: row.age_rating,
+      contentClass: resolveProjectContentClass({
+        ageRating: row.age_rating,
+        contentClass: row.content_class,
+      }),
       readingDirection: row.reading_direction,
       width: row.width,
       height: row.height,
@@ -991,6 +1038,18 @@ export class MangaiDatabase {
     input: ProjectGenerationPolicyInput,
   ): ProjectGenerationPolicy {
     const policy = projectGenerationPolicyInputSchema.parse(input);
+    const project = this.db
+      .prepare("select content_class as contentClass from projects where id=?")
+      .get(policy.projectId) as
+      { contentClass: "general" | "adult" } | undefined;
+    if (!project) throw new Error("Projectが見つかりません。");
+    if (
+      project.contentClass === "adult" &&
+      policy.externalProcessingPolicy !== "local_only"
+    )
+      throw new Error(
+        "成人向けProjectは通常の外部処理ポリシーを利用できません。ローカル処理を使用してください。",
+      );
     const stamp = now();
     const result = this.db
       .prepare(
@@ -1016,6 +1075,7 @@ export class MangaiDatabase {
   createProject(input: ProjectInput) {
     const id = uid(),
       stamp = now(),
+      contentClass = resolveProjectContentClass(input),
       storage = input.storagePath
         ? path.resolve(input.storagePath)
         : path.join(this.paths.projects, id);
@@ -1028,7 +1088,13 @@ export class MangaiDatabase {
     fs.mkdirSync(path.join(storage, "assets"), { recursive: true });
     this.db.transaction(() => {
       this.db
-        .prepare("insert into projects values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        .prepare(
+          `insert into projects(
+             id,title,subtitle,description,genre,age_rating,content_class,
+             reading_direction,width,height,dpi,storage_path,cover_asset_id,
+             created_at,updated_at,last_opened_at
+           ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+        )
         .run(
           id,
           input.title,
@@ -1036,6 +1102,7 @@ export class MangaiDatabase {
           input.description,
           input.genre,
           input.ageRating,
+          contentClass,
           input.readingDirection,
           input.width,
           input.height,
@@ -1057,7 +1124,16 @@ export class MangaiDatabase {
              custom_cloud_job_types_json,created_at,updated_at
            ) values(?,?,?,?,?,?,?,?)`,
         )
-        .run(id, "safe_assets_only", 1, 1, null, "[]", stamp, stamp);
+        .run(
+          id,
+          contentClass === "adult" ? "local_only" : "safe_assets_only",
+          1,
+          1,
+          null,
+          "[]",
+          stamp,
+          stamp,
+        );
     })();
     return this.openProject(id);
   }
@@ -1071,6 +1147,59 @@ export class MangaiDatabase {
     this.db
       .prepare("update projects set title=?,updated_at=? where id=?")
       .run(title, now(), id);
+    return this.bundle(id);
+  }
+  changeProjectContentClass(id: string, contentClass: "general" | "adult") {
+    const project = this.bundle(id).project;
+    if (project.contentClass === contentClass) return this.bundle(id);
+    if (project.contentClass === "adult" || contentClass !== "adult")
+      throw new Error(
+        "成人向けProjectを一般向けへ戻すことはできません。一般向けProjectを新規作成してください。",
+      );
+    const runningCloudJob = this.db
+      .prepare(
+        `select 1 from generation_jobs
+         where project_id=? and (provider_type='cloud' or provider_id='dezgo')
+           and status='running' limit 1`,
+      )
+      .get(id);
+    if (runningCloudJob)
+      throw new Error(
+        "実行中の外部生成をキャンセルしてから成人向けへ変更してください。",
+      );
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db
+        .prepare(
+          `update projects
+           set content_class='adult',age_rating='成人向け',updated_at=? where id=?`,
+        )
+        .run(stamp, id);
+      this.db
+        .prepare(
+          `update project_generation_policies
+           set external_processing_policy='local_only',prefer_local=1,
+               external_confirmation_required=1,custom_cloud_job_types_json='[]',
+               updated_at=? where project_id=?`,
+        )
+        .run(stamp, id);
+      this.db
+        .prepare(
+          `update generation_jobs
+           set status='canceled',error_code='content_class_changed',
+               error_message='Projectが成人向けへ変更されたため外部送信を停止しました。',
+               completed_at=?
+           where project_id=? and (provider_type='cloud' or provider_id='dezgo')
+             and status in ('queued','paused')`,
+        )
+        .run(stamp, id);
+      this.db
+        .prepare(
+          `update external_cost_reservations set status='released',updated_at=?
+           where project_id=? and status='reserved'`,
+        )
+        .run(stamp, id);
+    })();
     return this.bundle(id);
   }
   duplicateProject(id: string) {
@@ -1555,6 +1684,7 @@ export class MangaiDatabase {
         description: sourceBundle.project.description,
         genre: sourceBundle.project.genre,
         ageRating: sourceBundle.project.ageRating,
+        contentClass: sourceBundle.project.contentClass,
         readingDirection: sourceBundle.project.readingDirection,
         width: sourceBundle.project.width,
         height: sourceBundle.project.height,
@@ -3749,6 +3879,9 @@ export class MangaiDatabase {
       description: bundle.project.description,
       genre: bundle.project.genre,
       ageRating: bundle.project.ageRating,
+      contentClass: bundle.project.contentClass,
+      createdBySurface: "desktop",
+      policyVersion: CONTENT_POLICY_VERSION,
       readingDirection: bundle.project.readingDirection,
       width: bundle.project.width,
       height: bundle.project.height,
@@ -3830,6 +3963,8 @@ export class MangaiDatabase {
       format: SALES_PACKAGE_FORMAT,
       version: SALES_PACKAGE_VERSION,
       createdAt,
+      createdBySurface: "desktop",
+      policyVersion: CONTENT_POLICY_VERSION,
       work: {
         sourceProjectId: bundle.project.id,
         title: bundle.project.title,
@@ -3837,6 +3972,7 @@ export class MangaiDatabase {
         description: bundle.project.description,
         genre: bundle.project.genre,
         ageRating: bundle.project.ageRating,
+        contentClass: bundle.project.contentClass,
         readingDirection: bundle.project.readingDirection,
         width: bundle.project.width,
         height: bundle.project.height,
@@ -4233,7 +4369,8 @@ export class MangaiDatabase {
           "select 1 from external_cost_reservations where approval_token_sha256=?",
         )
         .get(tokenSha256);
-      if (existing) throw new Error("外部送信の費用予約はすでに使用されています。");
+      if (existing)
+        throw new Error("外部送信の費用予約はすでに使用されています。");
       const summary = this.externalCostSummary(
         input.projectId,
         input.providerId,
@@ -4335,8 +4472,7 @@ export class MangaiDatabase {
          from external_cost_reservations where job_id=? and status='reserved'`,
       )
       .get(jobId) as
-      | { reservedAmountUsd: number; billingMonth: string }
-      | undefined;
+      { reservedAmountUsd: number; billingMonth: string } | undefined;
   }
   settleExternalCostForJob(input: {
     jobId: string;
@@ -4361,21 +4497,24 @@ export class MangaiDatabase {
       throw new Error("外部送信Jobの費用予約を確定できませんでした。");
     return true;
   }
-  createGenerationJob(input: {
-    projectId?: string;
-    episodeId?: string;
-    pageId?: string;
-    providerType: string;
-    providerId: string;
-    modelId?: string;
-    generationType: string;
-    prompt: string;
-    negativePrompt?: string;
-    inputJson?: unknown;
-  }, options: {
-    maxAttempts?: number;
-    activeProviderLimit?: number;
-  } = {}) {
+  createGenerationJob(
+    input: {
+      projectId?: string;
+      episodeId?: string;
+      pageId?: string;
+      providerType: string;
+      providerId: string;
+      modelId?: string;
+      generationType: string;
+      prompt: string;
+      negativePrompt?: string;
+      inputJson?: unknown;
+    },
+    options: {
+      maxAttempts?: number;
+      activeProviderLimit?: number;
+    } = {},
+  ) {
     const isDezgoImage =
       input.providerId === "dezgo" && input.generationType === "image";
     const maxAttempts =
@@ -4462,8 +4601,7 @@ export class MangaiDatabase {
            where approval_token_sha256=? and status='reserved' and job_id is null`,
         )
         .get(tokenSha256) as
-        | { projectId: string; providerId: string }
-        | undefined;
+        { projectId: string; providerId: string } | undefined;
       if (
         !reservation ||
         reservation.projectId !== input.projectId ||
@@ -4566,8 +4704,7 @@ export class MangaiDatabase {
          order by priority desc,queue_order,created_at,id limit 1`,
       )
       .get(now(), ...(providerIds ?? [])) as
-      | { id: string; providerId: string; inputJson: string }
-      | undefined;
+      { id: string; providerId: string; inputJson: string } | undefined;
   }
   getAdultGenerationSettings(referenceTime = now()): AdultGenerationSettings {
     const referenceMs = new Date(referenceTime).getTime();
@@ -4736,7 +4873,7 @@ export class MangaiDatabase {
         )
         .map((model) => model.modelId),
       lastImport:
-        ((this.db
+        (this.db
           .prepare(
             `select key_id as keyId,payload_sha256 as payloadSha256,
                     issued_at as issuedAt,expires_at as expiresAt,
@@ -4751,7 +4888,7 @@ export class MangaiDatabase {
               expiresAt: string;
               importedAt: string;
             }
-          | undefined) ?? null),
+          | undefined) ?? null,
     };
   }
   stopPendingAdultDezgoJobsDisallowedByPolicy(referenceTime = now()) {
@@ -4906,12 +5043,7 @@ export class MangaiDatabase {
            confirmed_at=excluded.confirmed_at,expires_at=excluded.expires_at,
            revoked_at=null,updated_at=excluded.updated_at`,
       )
-      .run(
-        ADULT_GENERATION_TERMS_VERSION,
-        confirmedAt,
-        expiresAt,
-        confirmedAt,
-      );
+      .run(ADULT_GENERATION_TERMS_VERSION, confirmedAt, expiresAt, confirmedAt);
     return this.getAdultGenerationSettings(confirmedAt);
   }
   revokeAdultGenerationConsent(): AdultGenerationSettings {
@@ -4970,9 +5102,7 @@ export class MangaiDatabase {
       | { nightModeEnabled: number; startTime: string; endTime: string }
       | undefined;
     return generationQueueSettingsSchema.parse(
-      row
-        ? { ...row, nightModeEnabled: Boolean(row.nightModeEnabled) }
-        : {},
+      row ? { ...row, nightModeEnabled: Boolean(row.nightModeEnabled) } : {},
     );
   }
   saveGenerationQueueSettings(input: unknown): GenerationQueueSettings {
@@ -5047,7 +5177,9 @@ export class MangaiDatabase {
   }
   setGenerationJobStatus(id: string, status: GenerationStatus) {
     const job = this.db
-      .prepare("select status,generation_type as generationType from generation_jobs where id=?")
+      .prepare(
+        "select status,generation_type as generationType from generation_jobs where id=?",
+      )
       .get(id) as { status: string; generationType: string } | undefined;
     if (!job || job.generationType !== "image") return false;
     this.updateGenerationJob(id, status, {
@@ -5305,9 +5437,7 @@ export class MangaiDatabase {
         );
     }
     if (!definition.mapping.prompt) errors.push("Promptマッピングが必要です。");
-    const optimization = analyzeComfyWorkflowOptimization(
-        definition.workflow,
-      ),
+    const optimization = analyzeComfyWorkflowOptimization(definition.workflow),
       warnings = [
         !optimization.hasTiledVaeDecode
           ? "低スペック向けのVAEDecodeTiledが見つかりません。"

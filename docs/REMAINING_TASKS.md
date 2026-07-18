@@ -1,6 +1,6 @@
 # MANGAI 残タスク一覧
 
-確認日: 2026-07-17
+確認日: 2026-07-18
 
 対象ブランチ: `feature/manga-canvas-mvp`
 
@@ -8,7 +8,9 @@
 
 ## 1. 現在の判定
 
-一般漫画をCloud、成人向け漫画をDesktopで扱う製品分離後の不足機能と実装順は[`PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md`](PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md)へ整理しました。最優先はコンテンツ区分の強制と、現在のMarketplace Hubとは別にCloud CreatorのProject保存・Editor・一般向けAI Queueを追加することです。
+一般漫画をCloud、成人向け漫画をDesktopで扱う製品分離後の不足機能と実装順は[`PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md`](PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md)へ整理しました。コンテンツ区分を型、Desktop、Hub、販売パッケージ、Supabase RLS／Storageへ強制するPhase 0は完了しました。次の開発対象はPhase 1のCloud Creator Project保存基盤です。
+
+Phase 0の実装範囲と検証証跡は[`PHASE0_PRODUCT_BOUNDARY_COMPLETION.md`](PHASE0_PRODUCT_BOUNDARY_COMPLETION.md)を参照してください。
 
 HubとDesktopの主要機能、ローカル品質ゲート、Windowsインストール・製品版起動・アンインストールE2E、SBOM・checksum生成、実Dドライブを使ったProject削除・ゴミ箱E2Eまでは完了しています。残作業の中心は外部サービスを使うRC受入れ、コード署名、初回公開です。
 

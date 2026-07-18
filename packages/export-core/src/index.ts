@@ -1,5 +1,13 @@
 import JSZip from "jszip";
 import { PDFDocument, rgb } from "pdf-lib";
+import {
+  CONTENT_POLICY_VERSION,
+  contentClassSchema,
+  productSurfaceSchema,
+  resolveProjectContentClass,
+  type ContentClass,
+  type ProductSurface,
+} from "@mangai/shared";
 
 export type SalesTextInput = {
   title: string;
@@ -16,7 +24,7 @@ export type ExportImage = {
   height: number;
 };
 export const SALES_PACKAGE_FORMAT = "mangai.sales-package" as const;
-export const SALES_PACKAGE_VERSION = 1 as const;
+export const SALES_PACKAGE_VERSION = 2 as const;
 export type SalesPackageFileRole =
   | "product_pdf"
   | "page_images_zip"
@@ -29,6 +37,8 @@ export type SalesPackageManifest = {
   format: typeof SALES_PACKAGE_FORMAT;
   version: typeof SALES_PACKAGE_VERSION;
   createdAt: string;
+  createdBySurface: ProductSurface;
+  policyVersion: typeof CONTENT_POLICY_VERSION;
   work: {
     sourceProjectId: string;
     title: string;
@@ -36,6 +46,7 @@ export type SalesPackageManifest = {
     description: string;
     genre: string;
     ageRating: string;
+    contentClass: ContentClass;
     readingDirection: "rtl" | "ltr";
     width: number;
     height: number;
@@ -78,12 +89,31 @@ export function parseSalesPackageManifest(
 ): SalesPackageManifest {
   if (!value || typeof value !== "object")
     throw new Error("販売パッケージ情報が不正です。");
-  const manifest = value as SalesPackageManifest;
+  const source = value as Record<string, unknown>;
+  const sourceWork = source.work as Record<string, unknown> | undefined;
+  const sourceVersion = source.version;
+  const legacy = sourceVersion === 1;
+  const manifest = {
+    ...source,
+    version: SALES_PACKAGE_VERSION,
+    createdBySurface: legacy
+      ? "desktop"
+      : productSurfaceSchema.parse(source.createdBySurface),
+    policyVersion: legacy ? CONTENT_POLICY_VERSION : source.policyVersion,
+    work: {
+      ...sourceWork,
+      contentClass: resolveProjectContentClass({
+        ageRating: sourceWork?.ageRating,
+        contentClass: legacy ? undefined : sourceWork?.contentClass,
+      }),
+    },
+  } as SalesPackageManifest;
   const work = manifest.work;
   if (
     manifest.format !== SALES_PACKAGE_FORMAT ||
-    manifest.version !== SALES_PACKAGE_VERSION ||
+    (sourceVersion !== 1 && sourceVersion !== SALES_PACKAGE_VERSION) ||
     typeof manifest.createdAt !== "string" ||
+    manifest.policyVersion !== CONTENT_POLICY_VERSION ||
     !work ||
     typeof work.sourceProjectId !== "string" ||
     typeof work.title !== "string" ||
@@ -91,6 +121,7 @@ export function parseSalesPackageManifest(
     typeof work.description !== "string" ||
     typeof work.genre !== "string" ||
     typeof work.ageRating !== "string" ||
+    !contentClassSchema.safeParse(work.contentClass).success ||
     (work.readingDirection !== "rtl" && work.readingDirection !== "ltr") ||
     !Number.isSafeInteger(work.width) ||
     work.width <= 0 ||

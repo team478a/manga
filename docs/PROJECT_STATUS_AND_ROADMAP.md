@@ -86,6 +86,8 @@ Hub連携画面も日英辞書へ移行しました。公開・販売状態、de
 
 DesktopはSupabase Service Role KeyやStripe Secret Keyを保持せず、HubはDesktopのローカルIPCへアクセスしません。この分離は今後も維持します。
 
+2026-07-18に製品境界Phase 0を完了しました。Hub／Cloudは`general`だけを保存・公開・販売でき、Desktop Adultは`adult`をローカル専用既定で扱います。旧データの区分が不明な場合は`adult`へ倒し、成人向け販売パッケージとCloud保存をServer／RLSでも拒否します。
+
 ## 3. MANGAI Hub 実装済み
 
 ### アカウント・権限

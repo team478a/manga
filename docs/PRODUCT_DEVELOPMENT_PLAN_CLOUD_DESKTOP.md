@@ -35,7 +35,7 @@ Desktopでいう「ローカルLLM」は文章生成を行うOllamaを指す。�
 - MANGAI HubはMarketplaceであり、ブラウザー上のCloud Creator Editorではない
 - Cloud用Project、Page、Canvas、Asset、生成履歴のDBとRLSがない
 - 一般向けAI APIを実行するServer Queue、Provider adapter、費用・quota基盤がない
-- CloudとDesktopのコンテンツ区分を強制する共通契約がない
+- Cloud Creator本体のProject・Canvasデータ基盤は未実装（製品境界の共通契約はPhase 0で実装済み）
 - 成人向けDezgo専用dispatcherと実運用承認データがない
 - Supabase、Stripe、Vercel、Ollama、ComfyUI、Dezgoの実環境RC受入れが未完了
 
@@ -99,7 +99,7 @@ interface ContentExecutionPolicy {
 
 ## 5. 開発フェーズ
 
-### Phase 0: 製品境界と安全契約
+### Phase 0: 製品境界と安全契約（2026-07-18 完了）
 
 目的: 一般向けCloudと成人向けDesktopの混線を先に防ぐ。
 
@@ -119,6 +119,8 @@ interface ContentExecutionPolicy {
 - 成人向けfixtureを使ったCloud保存・生成要求がすべて拒否される
 - 一般向けProjectは既存Marketplace導線を維持する
 - UI改変だけでは境界を回避できない
+
+完了記録と検証証跡は[Phase 0完了報告](PHASE0_PRODUCT_BOUNDARY_COMPLETION.md)を参照する。
 
 ### Phase 1: Cloud Creatorデータ基盤
 

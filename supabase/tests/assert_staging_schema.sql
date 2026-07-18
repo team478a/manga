@@ -33,6 +33,19 @@ begin
   ) then
     raise exception 'sales package columns are missing or have unexpected types';
   end if;
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'works'
+      and column_name = 'content_class'
+      and data_type = 'text'
+  ) or not exists (
+    select 1 from pg_constraint
+    where conname = 'works_content_class_check'
+      and conrelid = 'public.works'::regclass
+  ) then
+    raise exception 'content class boundary is missing';
+  end if;
 
   if to_regprocedure('public.consume_desktop_device_rate_limit(text,integer,integer)') is null
      or to_regprocedure('public.cleanup_desktop_device_authorizations()') is null then
@@ -52,6 +65,9 @@ begin
      or to_regclass('public.desktop_device_authorizations_profile_idx') is null
      or to_regclass('public.desktop_device_authorizations_expiry_idx') is null then
     raise exception 'required MANGAI Hub indexes are missing';
+  end if;
+  if to_regclass('public.works_general_public_idx') is null then
+    raise exception 'general works index is missing';
   end if;
 
   if exists (

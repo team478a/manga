@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld("mangai", {
   openProject: (id: string) => ipcRenderer.invoke("projects:open", { id }),
   renameProject: (id: string, title: string) =>
     ipcRenderer.invoke("projects:rename", { id, title }),
+  changeProjectContentClass: (id: string, contentClass: "general" | "adult") =>
+    ipcRenderer.invoke("projects:content-class", { id, contentClass }),
   duplicateProject: (id: string) =>
     ipcRenderer.invoke("projects:duplicate", { id }),
   backupProject: (id: string) => ipcRenderer.invoke("projects:backup", { id }),

@@ -56,6 +56,7 @@ import {
   pageInputSchema,
   pagePromptSchema,
   projectIdSchema,
+  projectContentClassChangeSchema,
   projectInputSchema,
   renameProjectSchema,
   renameEpisodeSchema,
@@ -386,6 +387,10 @@ function register() {
       store.renameProject(x.id, x.title),
     );
   });
+  handle("projects:content-class", (v) => {
+    const input = projectContentClassChangeSchema.parse(v);
+    return store.changeProjectContentClass(input.id, input.contentClass);
+  });
   handle("projects:duplicate", (v) =>
     store.duplicateProject(projectIdSchema.parse(v).id),
   );
@@ -643,15 +648,11 @@ function register() {
       ),
   );
   handle("ai:settings:history", () => store.listAISettingsHistory());
-  handle("ai:adult-settings:get", () =>
-    aiService.getAdultGenerationSettings(),
-  );
-  handle("ai:adult-provider-policy:get", () =>
-    ({
-      ...aiService.getAdultProviderPolicyState(),
-      importAvailable: adultProviderPolicyTrustedKeys().length > 0,
-    }),
-  );
+  handle("ai:adult-settings:get", () => aiService.getAdultGenerationSettings());
+  handle("ai:adult-provider-policy:get", () => ({
+    ...aiService.getAdultProviderPolicyState(),
+    importAvailable: adultProviderPolicyTrustedKeys().length > 0,
+  }));
   handle("ai:adult-provider-policy:import", async () => {
     const trustedKeys = adultProviderPolicyTrustedKeys();
     if (!trustedKeys.length)
@@ -659,12 +660,9 @@ function register() {
     const result = await dialog.showOpenDialog({
       title: "署名済み成人向け運用policyを選択",
       properties: ["openFile"],
-      filters: [
-        { name: "MANGAI成人向け運用policy", extensions: ["json"] },
-      ],
+      filters: [{ name: "MANGAI成人向け運用policy", extensions: ["json"] }],
     });
-    if (result.canceled || !result.filePaths[0])
-      return null;
+    if (result.canceled || !result.filePaths[0]) return null;
     const verified = readAndVerifyAdultProviderPolicyBundle(
       result.filePaths[0],
       trustedKeys,

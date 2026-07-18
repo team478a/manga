@@ -13,6 +13,9 @@ export default async function ImportPackagePage() {
             MANGAI
             Desktopで書き出したZIPをブラウザ内で検証します。この段階ではファイルをサーバーへ送信せず、作品や商品も作成しません。
           </p>
+          <p className="mt-3 max-w-3xl rounded-md bg-amber-50 p-4 text-amber-900">
+            Cloudへ取り込めるのは一般漫画の販売パッケージだけです。成人向けパッケージは送信前に拒否されます。
+          </p>
         </div>
         <Link className="button-secondary" href="/dashboard">
           マイページへ戻る

@@ -7,6 +7,7 @@ import {
   type ProjectBundle,
 } from "@mangai/project-core";
 import type { EpisodeTemplateId } from "@mangai/canvas-core";
+import type { ProjectInput } from "@mangai/shared";
 import { AISettings } from "./features/ai-settings/AISettings";
 import { CreatorChat } from "./features/creator-chat/CreatorChat";
 import { GenerationJobs } from "./features/generation-jobs/GenerationJobs";
@@ -39,12 +40,17 @@ import type {
 } from "../preload/api";
 import { I18nProvider, useI18n } from "./i18n";
 
-const emptyForm = {
+type ProjectForm = Omit<ProjectInput, "contentClass" | "storagePath"> & {
+  contentClass: Project["contentClass"];
+  storagePath: string;
+};
+const emptyForm: ProjectForm = {
   title: "",
   subtitle: "",
   description: "",
   genre: "",
   ageRating: "全年齢" as const,
+  contentClass: "general" as const,
   readingDirection: "rtl" as const,
   width: 1600,
   height: 2400,
@@ -467,6 +473,38 @@ function App() {
                   />
                 </label>
                 <label>
+                  {t("projectDialog.contentClass")}
+                  <select
+                    value={form.contentClass}
+                    onChange={(e) => {
+                      const contentClass =
+                        e.target.value === "adult" ? "adult" : "general";
+                      setForm({
+                        ...form,
+                        contentClass,
+                        ageRating:
+                          contentClass === "adult"
+                            ? "成人向け"
+                            : form.ageRating === "成人向け"
+                              ? "全年齢"
+                              : form.ageRating,
+                      });
+                    }}
+                  >
+                    <option value="general">
+                      {t("projectDialog.contentGeneral")}
+                    </option>
+                    <option value="adult">
+                      {t("projectDialog.contentAdult")}
+                    </option>
+                  </select>
+                  <small>
+                    {form.contentClass === "adult"
+                      ? t("projectDialog.contentAdultHelp")
+                      : t("projectDialog.contentGeneralHelp")}
+                  </small>
+                </label>
+                <label>
                   {t("projectDialog.ageRating")}
                   <select
                     value={form.ageRating}
@@ -474,10 +512,23 @@ function App() {
                       setForm({ ...form, ageRating: e.target.value as any })
                     }
                   >
-                    <option value="全年齢">{t("projectDialog.allAges")}</option>
-                    <option value="12歳以上">{t("projectDialog.age12")}</option>
-                    <option value="15歳以上">{t("projectDialog.age15")}</option>
-                    <option value="成人向け">{t("projectDialog.adult")}</option>
+                    {form.contentClass === "general" ? (
+                      <>
+                        <option value="全年齢">
+                          {t("projectDialog.allAges")}
+                        </option>
+                        <option value="12歳以上">
+                          {t("projectDialog.age12")}
+                        </option>
+                        <option value="15歳以上">
+                          {t("projectDialog.age15")}
+                        </option>
+                      </>
+                    ) : (
+                      <option value="成人向け">
+                        {t("projectDialog.adult")}
+                      </option>
+                    )}
                   </select>
                 </label>
                 <label>
@@ -596,6 +647,11 @@ function App() {
                   </span>
                   <span className="project-summary">
                     <strong>{p.title}</strong>
+                    <small>
+                      {p.contentClass === "adult"
+                        ? t("projectDialog.contentAdult")
+                        : t("projectDialog.contentGeneral")}
+                    </small>
                     <span>
                       {p.subtitle || p.description || t("home.noDescription")}
                     </span>
@@ -607,6 +663,26 @@ function App() {
                   </span>
                 </button>
                 <div className="actions">
+                  {p.contentClass === "general" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (
+                          !confirm(
+                            t("home.moveAdultConfirm", { title: p.title }),
+                          )
+                        )
+                          return;
+                        void window.mangai
+                          .changeProjectContentClass(p.id, "adult")
+                          .then(refresh)
+                          .then(() => alert(t("home.moveAdultComplete")))
+                          .catch(showError);
+                      }}
+                    >
+                      {t("home.moveAdult")}
+                    </button>
+                  )}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();

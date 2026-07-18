@@ -19,6 +19,7 @@ create table if not exists public.works (
   image_url text,
   sample_image_urls text[] not null default '{}',
   source_project_id uuid,
+  content_class text not null default 'general' check (content_class in ('general', 'adult')),
   tags text[] not null default '{}',
   status text not null default 'draft' check (status in ('draft', 'published', 'archived')),
   is_public boolean not null default false,
@@ -32,9 +33,32 @@ add column if not exists sample_image_urls text[] not null default '{}';
 alter table public.works
 add column if not exists source_project_id uuid;
 
+alter table public.works
+add column if not exists content_class text not null default 'adult';
+
+update public.works
+set content_class = case
+  when tags && array['全年齢','12歳以上','15歳以上']::text[] then 'general'
+  else 'adult'
+end;
+
+alter table public.works
+drop constraint if exists works_content_class_check;
+
+alter table public.works
+add constraint works_content_class_check
+check (content_class in ('general', 'adult'));
+
+alter table public.works
+alter column content_class set default 'general';
+
 create index if not exists works_source_project_id_idx
 on public.works (source_project_id)
 where source_project_id is not null;
+
+create index if not exists works_general_public_idx
+on public.works (is_public, status, created_at desc)
+where content_class = 'general';
 
 create table if not exists public.digital_products (
   id uuid primary key default gen_random_uuid(),
@@ -283,14 +307,27 @@ drop policy if exists "works_creator_update" on public.works;
 drop policy if exists "works_creator_delete" on public.works;
 
 create policy "works_public_read" on public.works
-for select using (is_public = true or creator_id = public.current_profile_id() or public.is_admin());
+for select using (
+  (content_class = 'general' and is_public = true)
+  or creator_id = public.current_profile_id()
+  or public.is_admin()
+);
 
 create policy "works_creator_insert" on public.works
-for insert with check (creator_id = public.current_profile_id());
+for insert with check (
+  creator_id = public.current_profile_id()
+  and content_class = 'general'
+);
 
 create policy "works_creator_update" on public.works
 for update using (creator_id = public.current_profile_id() or public.is_admin())
-with check (creator_id = public.current_profile_id() or public.is_admin());
+with check (
+  public.is_admin()
+  or (
+    creator_id = public.current_profile_id()
+    and content_class = 'general'
+  )
+);
 
 create policy "works_creator_delete" on public.works
 for delete using (creator_id = public.current_profile_id() or public.is_admin());
@@ -301,9 +338,17 @@ drop policy if exists "products_creator_update" on public.digital_products;
 
 create policy "products_public_read_active" on public.digital_products
 for select using (
-  status = 'active'
-  or creator_id = public.current_profile_id()
+  creator_id = public.current_profile_id()
   or public.is_admin()
+  or (
+    status = 'active'
+    and exists (
+      select 1 from public.works
+      where works.id = digital_products.work_id
+        and works.content_class = 'general'
+        and works.is_public = true
+    )
+  )
 );
 
 create policy "products_creator_insert" on public.digital_products
@@ -313,6 +358,7 @@ for insert with check (
     select 1 from public.works
     where works.id = digital_products.work_id
       and works.creator_id = public.current_profile_id()
+      and works.content_class = 'general'
   )
 );
 
@@ -326,6 +372,7 @@ with check (
       select 1 from public.works
       where works.id = digital_products.work_id
         and works.creator_id = public.current_profile_id()
+        and works.content_class = 'general'
     )
   )
 );
@@ -364,6 +411,7 @@ for insert with check (
     select 1 from public.works
     where works.id = goods_requests.work_id
       and works.creator_id = public.current_profile_id()
+      and works.content_class = 'general'
   )
 );
 
@@ -408,6 +456,7 @@ for insert with check (
       and digital_products.price = orders.amount
       and digital_products.status = 'active'
       and works.is_public = true
+      and works.content_class = 'general'
   )
 );
 
@@ -448,12 +497,24 @@ for select using (bucket_id = 'works');
 
 drop policy if exists "works_creator_upload" on storage.objects;
 create policy "works_creator_upload" on storage.objects
-for insert with check (bucket_id = 'works' and auth.role() = 'authenticated');
+for insert with check (
+  bucket_id = 'works'
+  and auth.role() = 'authenticated'
+  and (storage.foldername(name))[1] = 'general'
+);
 
 drop policy if exists "works_creator_update" on storage.objects;
 create policy "works_creator_update" on storage.objects
-for update using (bucket_id = 'works' and auth.role() = 'authenticated')
-with check (bucket_id = 'works' and auth.role() = 'authenticated');
+for update using (
+  bucket_id = 'works'
+  and auth.role() = 'authenticated'
+  and (storage.foldername(name))[1] = 'general'
+)
+with check (
+  bucket_id = 'works'
+  and auth.role() = 'authenticated'
+  and (storage.foldername(name))[1] = 'general'
+);
 
 drop policy if exists "works_creator_delete" on storage.objects;
 create policy "works_creator_delete" on storage.objects

@@ -12,7 +12,10 @@ export type CheckoutOrderPolicy = {
     id: string;
     status: string;
     creator_id: string;
-    works: { is_public: boolean } | null;
+    works: {
+      is_public: boolean;
+      content_class: "general" | "adult";
+    } | null;
   } | null;
 };
 
@@ -41,7 +44,8 @@ export function assertCheckoutOrder<T extends CheckoutOrderPolicy>(
     throw new Error("購入者メールアドレスが注文情報と一致しません。");
   if (
     order.digital_products.status !== "active" ||
-    !order.digital_products.works?.is_public
+    !order.digital_products.works?.is_public ||
+    order.digital_products.works.content_class !== "general"
   )
     throw new Error("この商品は現在購入できません。");
   if (

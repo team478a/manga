@@ -10,6 +10,7 @@ import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { splitTags } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
+import { generalCloudStoragePath } from "@/lib/content-boundary";
 
 const WORKS_BUCKET = "works";
 const DIGITAL_PRODUCTS_BUCKET = "digital-products";
@@ -31,7 +32,7 @@ function getText(formData: FormData, key: string) {
 
 function fileName(file: File) {
   const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-  return `${crypto.randomUUID()}-${safe}`;
+  return generalCloudStoragePath(`${crypto.randomUUID()}-${safe}`);
 }
 
 function validateWorkImage(file: FormDataEntryValue | null, required: boolean) {
@@ -199,6 +200,7 @@ export async function createWork(formData: FormData) {
     description: getText(formData, "description"),
     image_url: imageUrl,
     tags: splitTags(formData.get("tags")),
+    content_class: "general",
     status: isPublic ? "published" : "draft",
     is_public: isPublic,
   });
@@ -280,6 +282,7 @@ export async function createDigitalProduct(formData: FormData) {
     .select("id")
     .eq("id", workId)
     .eq("creator_id", profile.id)
+    .eq("content_class", "general")
     .maybeSingle();
   if (!work) {
     redirect(
@@ -342,6 +345,7 @@ export async function updateDigitalProduct(formData: FormData) {
       .select("id")
       .eq("id", workId)
       .eq("creator_id", profile.id)
+      .eq("content_class", "general")
       .maybeSingle(),
   ]);
 
@@ -413,6 +417,7 @@ export async function createGoodsRequest(formData: FormData) {
     .select("id")
     .eq("id", workId)
     .eq("creator_id", profile.id)
+    .eq("content_class", "general")
     .maybeSingle();
   if (!work) {
     redirect("/dashboard/goods-requests/new?error=自分の作品だけ申請できます");

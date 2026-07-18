@@ -10,6 +10,10 @@ import {
 } from "@mangai/export-core";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import {
+  assertGeneralSalesPackage,
+  generalCloudStoragePath,
+} from "@/lib/content-boundary";
 
 const WORKS_BUCKET = "works";
 const PRODUCTS_BUCKET = "digital-products";
@@ -103,6 +107,7 @@ export async function importSalesPackageDraft(
       manifest = parseSalesPackageManifest(
         JSON.parse(text(formData, "manifest")),
       );
+      assertGeneralSalesPackage(manifest);
     } catch {
       throw new Error("販売パッケージのmanifestを再検証できませんでした。");
     }
@@ -201,7 +206,10 @@ export async function importSalesPackageDraft(
       let coverUrl: string | null = null;
       const sampleUrls: string[] = [];
       for (const image of verifiedImages) {
-        const storagePath = `${profile.id}/${randomUUID()}.${imageExtension(image.declared.mimeType)}`;
+        const storagePath = generalCloudStoragePath(
+          profile.id,
+          `${randomUUID()}.${imageExtension(image.declared.mimeType)}`,
+        );
         const { error } = await supabase.storage
           .from(WORKS_BUCKET)
           .upload(storagePath, image.bytes, {
@@ -219,7 +227,10 @@ export async function importSalesPackageDraft(
 
       const productExtension =
         input.productRole === "product_pdf" ? "pdf" : "zip";
-      const productPath = `${profile.id}/${randomUUID()}.${productExtension}`;
+      const productPath = generalCloudStoragePath(
+        profile.id,
+        `${randomUUID()}.${productExtension}`,
+      );
       const { error: uploadError } = await supabase.storage
         .from(PRODUCTS_BUCKET)
         .upload(productPath, productBytes, {
@@ -238,6 +249,7 @@ export async function importSalesPackageDraft(
           image_url: coverUrl,
           sample_image_urls: sampleUrls,
           source_project_id: manifest.work.sourceProjectId,
+          content_class: "general",
           tags: [manifest.work.genre, manifest.work.ageRating].filter(Boolean),
           status: "draft",
           is_public: false,
