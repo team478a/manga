@@ -103,6 +103,10 @@ for (const required of [
   "cloud_generation_jobs",
   "enqueue_cloud_generation_job",
   "claim_cloud_generation_job",
+  "cloud_ai_entitlements",
+  "cloud_ai_cost_ledger",
+  "enqueue_cloud_generation_job_with_quota",
+  "consume_cloud_ai_rate_limit",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

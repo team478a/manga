@@ -5,6 +5,7 @@ import {
   getCloudProjectWorkspace,
   listCloudAssets,
   listCloudGenerationJobs,
+  getMyCloudAiQuota,
 } from "@/lib/cloud-creator-server";
 import { CloudCanvasEditor } from "./CloudCanvasEditor";
 
@@ -19,6 +20,7 @@ export default async function CloudCanvasPage({
   let snapshot: Awaited<ReturnType<typeof getCloudPageSnapshot>>;
   let assets: Awaited<ReturnType<typeof listCloudAssets>>;
   let generationJobs: Awaited<ReturnType<typeof listCloudGenerationJobs>>;
+  const quotaPromise = getMyCloudAiQuota().catch(() => null);
   try {
     [workspace, snapshot, assets, generationJobs] = await Promise.all([
       getCloudProjectWorkspace(projectId),
@@ -31,6 +33,7 @@ export default async function CloudCanvasPage({
   }
   const page = workspace.pages.find((candidate) => candidate.id === pageId);
   if (!page || snapshot.project_id !== projectId) notFound();
+  const quota = await quotaPromise;
   return (
     <CloudCanvasEditor
       project={workspace.project}
@@ -39,6 +42,7 @@ export default async function CloudCanvasPage({
       initialCanvas={snapshot.canvas}
       initialAssets={assets}
       initialGenerationJobs={generationJobs}
+      initialQuota={quota}
     />
   );
 }

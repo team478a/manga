@@ -65,6 +65,19 @@ begin
   if to_regclass('public.cloud_generation_jobs') is null then
     raise exception 'Cloud AI queue table is missing';
   end if;
+  if to_regclass('public.cloud_ai_plans') is null
+     or to_regclass('public.cloud_ai_entitlements') is null
+     or to_regclass('public.cloud_ai_provider_prices') is null
+     or to_regclass('public.cloud_ai_usage_periods') is null
+     or to_regclass('public.cloud_ai_cost_ledger') is null
+     or to_regclass('public.cloud_ai_rate_limits') is null then
+    raise exception 'Cloud AI billing tables are missing';
+  end if;
+  if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
+     or to_regprocedure('public.consume_cloud_ai_rate_limit(text,text,integer,integer)') is null
+     or to_regprocedure('public.get_my_cloud_ai_quota()') is null then
+    raise exception 'Cloud AI billing functions are missing';
+  end if;
   if exists (
     select 1 from storage.buckets where id = 'cloud-assets' and public
   ) or not exists (
@@ -89,6 +102,10 @@ begin
   if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute')
      or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
     raise exception 'Cloud worker function privileges are invalid';
+  end if;
+  if has_function_privilege('authenticated', 'public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)', 'execute')
+     or not has_function_privilege('authenticated', 'public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)', 'execute') then
+    raise exception 'Cloud quota enqueue privileges are invalid';
   end if;
   if not exists (
     select 1 from pg_policies
@@ -118,6 +135,10 @@ insert into auth.users(id,email) values
 insert into public.profiles(id,user_id,role) values
   ('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','creator'),
   ('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000002','creator');
+update public.cloud_ai_settings set generation_enabled=true,daily_cost_limit_micros=1000000 where singleton;
+insert into public.cloud_ai_provider_prices(provider_id,model_id,kind,job_type,pricing_version,credits,max_cost_micros,currency,active) values
+  ('mock-cloud','mock-image-v1','image','background','phase4-test-v1',1,1000,'USD',true),
+  ('mock-cloud','mock-text-v1','text','story','phase4-test-v1',1,500,'USD',true);
 insert into public.cloud_projects(id,owner_profile_id,title,visibility) values
   ('40000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001','Private Phase 1','private'),
   ('40000000-0000-4000-8000-000000000002','30000000-0000-4000-8000-000000000001','Public Phase 1','public');
@@ -214,47 +235,50 @@ begin
      or not exists(select 1 from public.cloud_episodes where id=v_episode_id and title='第2話 更新') then
     raise exception 'Cloud structure mutations or revision history are invalid';
   end if;
-  v_job_id := public.enqueue_cloud_generation_job(
+  v_job_id := public.enqueue_cloud_generation_job_with_quota(
     v_created.project_id, v_created.page_id, 'image', 'background',
     'mock-cloud', 'mock-image-v1', 'phase3-idempotency-1', repeat('a',64),
     '{"kind":"image","jobType":"background","prompt":"green forest"}'::jsonb,
-    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, 1000
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb
   );
-  v_duplicate_job_id := public.enqueue_cloud_generation_job(
+  v_duplicate_job_id := public.enqueue_cloud_generation_job_with_quota(
     v_created.project_id, v_created.page_id, 'image', 'background',
     'mock-cloud', 'mock-image-v1', 'phase3-idempotency-1', repeat('a',64),
     '{"kind":"image","jobType":"background","prompt":"green forest"}'::jsonb,
-    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, 1000
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb
   );
   if v_job_id <> v_duplicate_job_id then
     raise exception 'Cloud AI idempotency created duplicate jobs';
   end if;
   begin
-    perform public.enqueue_cloud_generation_job(
+    perform public.enqueue_cloud_generation_job_with_quota(
       v_created.project_id, v_created.page_id, 'image', 'background',
       'mock-cloud', 'mock-image-v1', 'phase3-blocked', repeat('b',64),
       '{"kind":"image","jobType":"background","prompt":"blocked"}'::jsonb,
-      '{"decision":"block","reasons":["adult_content"],"policyVersion":1}'::jsonb, null
+      '{"decision":"block","reasons":["adult_content"],"policyVersion":1}'::jsonb
     );
     raise exception 'blocked Cloud AI input was queued';
   exception when others then
     if sqlerrm <> 'cloud_generation_input_rejected' then raise; end if;
   end;
-  v_cancel_job_id := public.enqueue_cloud_generation_job(
+  v_cancel_job_id := public.enqueue_cloud_generation_job_with_quota(
     v_created.project_id, null, 'text', 'story', 'mock-cloud', 'mock-text-v1',
     'phase3-cancel', repeat('c',64),
     '{"kind":"text","jobType":"story","prompt":"friendship"}'::jsonb,
-    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, null
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb
   );
   perform public.cancel_cloud_generation_job(v_cancel_job_id);
   if not exists(select 1 from public.cloud_generation_jobs where id=v_cancel_job_id and status='canceled') then
     raise exception 'Cloud AI cancel did not persist';
   end if;
-  v_lease_job_id := public.enqueue_cloud_generation_job(
+  if not exists(select 1 from public.cloud_ai_cost_ledger where job_id=v_cancel_job_id and event_type='release') then
+    raise exception 'Cloud AI cancel did not release its reservation';
+  end if;
+  v_lease_job_id := public.enqueue_cloud_generation_job_with_quota(
     v_created.project_id, null, 'text', 'story', 'mock-cloud', 'mock-text-v1',
     'phase3-lease-recovery', repeat('d',64),
     '{"kind":"text","jobType":"story","prompt":"lease recovery"}'::jsonb,
-    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, null
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb
   );
   perform public.set_cloud_project_cover(v_created.project_id,v_page_id);
   perform public.soft_delete_cloud_page(v_page_id);
@@ -312,6 +336,18 @@ begin
   );
 end $$;
 reset role;
+
+do $$
+begin
+  if not exists(select 1 from public.cloud_ai_usage_periods where profile_id='30000000-0000-4000-8000-000000000001' and credits_reserved=0 and credits_used=2 and cost_actual_micros=900) then
+    raise exception 'Cloud AI quota settlement is invalid';
+  end if;
+  if (select count(*) from public.cloud_ai_cost_ledger where event_type='reserve')<>3
+     or (select count(*) from public.cloud_ai_cost_ledger where event_type='settle')<>2
+     or (select count(*) from public.cloud_ai_cost_ledger where event_type='release')<>1 then
+    raise exception 'Cloud AI cost ledger lifecycle is incomplete';
+  end if;
+end $$;
 rollback;
 
 do $$

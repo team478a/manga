@@ -5,6 +5,7 @@ import {
   enqueueCloudGenerationJob,
   listCloudGenerationJobs,
 } from "@/lib/cloud-creator-server";
+import { enforceCloudAiRateLimit } from "@/lib/cloud-ai-rate-limit";
 
 const createSchema = z.object({
   projectId: z.string().uuid(),
@@ -32,6 +33,15 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const rateLimit = await enforceCloudAiRateLimit(request);
+    if (!rateLimit.allowed)
+      return NextResponse.json(
+        { error: "Cloud AI要求が集中しています。1分後に再試行してください。" },
+        {
+          status: 429,
+          headers: { "retry-after": String(rateLimit.retryAfterSeconds) },
+        },
+      );
     const input = createSchema.parse(await request.json());
     return NextResponse.json(
       { id: await enqueueCloudGenerationJob(input) },
@@ -43,11 +53,13 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: message },
       {
-        status: message.includes("拒否")
-          ? 422
-          : message.includes("停止中")
-            ? 503
-            : 400,
+        status: message.includes("集中")
+          ? 429
+          : message.includes("拒否")
+            ? 422
+            : message.includes("停止中")
+              ? 503
+              : 400,
       },
     );
   }

@@ -209,6 +209,8 @@ interface ContentExecutionPolicy {
 
 ### Phase 4: Cloud quota・課金・Marketplace統合
 
+状態: **進行中（2026-07-18開始）**。Plan、entitlement、月間credit、原価予約／確定／解放ledger、利用者・Project・IP rate limit、日次予算停止、Editor残credit表示まで実装済み。進捗は[Phase 4進捗記録](PHASE4_CLOUD_BILLING_PROGRESS.md)を参照する。
+
 目的: API原価を制御し、制作から販売まで接続する。
 
 実装:

@@ -32,6 +32,7 @@ import {
 } from "@mangai/canvas-core";
 import type {
   CloudAsset,
+  CloudAiQuota,
   CloudGenerationJob,
   CloudPage,
   CloudProjectSummary,
@@ -131,6 +132,7 @@ export function CloudCanvasEditor({
   initialCanvas,
   initialAssets,
   initialGenerationJobs,
+  initialQuota,
 }: {
   project: CloudProjectSummary;
   pages: CloudPage[];
@@ -138,10 +140,12 @@ export function CloudCanvasEditor({
   initialCanvas: PageCanvas;
   initialAssets: CloudAsset[];
   initialGenerationJobs: CloudGenerationJob[];
+  initialQuota: CloudAiQuota | null;
 }) {
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
   const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
+  const [quota, setQuota] = useState(initialQuota);
   const [generationPrompt, setGenerationPrompt] = useState("");
   const [generationType, setGenerationType] = useState<
     "background" | "prop" | "effect" | "character_base"
@@ -222,6 +226,14 @@ export function CloudCanvasEditor({
     setGenerationJobs(result);
   }, [project.id]);
 
+  const refreshQuota = useCallback(async () => {
+    const response = await fetch("/api/creator/ai-quota", {
+      cache: "no-store",
+    });
+    if (!response.ok) return;
+    setQuota((await response.json()) as CloudAiQuota | null);
+  }, []);
+
   useEffect(() => {
     if (
       !generationJobs.some(
@@ -229,9 +241,19 @@ export function CloudCanvasEditor({
       )
     )
       return;
-    const timer = window.setInterval(() => void refreshGenerationJobs(), 3000);
+    const timer = window.setInterval(() => {
+      void refreshGenerationJobs();
+      void refreshQuota();
+    }, 3000);
     return () => window.clearInterval(timer);
-  }, [generationJobs, refreshGenerationJobs]);
+  }, [generationJobs, refreshGenerationJobs, refreshQuota]);
+
+  const remainingCredits = quota
+    ? Math.max(
+        0,
+        quota.credits_limit - quota.credits_used - quota.credits_reserved,
+      )
+    : 0;
 
   const commit = useCallback((update: (draft: PageCanvas) => void) => {
     changeVersion.current += 1;
@@ -638,7 +660,7 @@ export function CloudCanvasEditor({
     }
     setGenerationPrompt("");
     setMessage("Cloud AI Jobを登録しました。");
-    await refreshGenerationJobs();
+    await Promise.all([refreshGenerationJobs(), refreshQuota()]);
   }
 
   async function requestCloudTextGeneration() {
@@ -666,7 +688,7 @@ export function CloudCanvasEditor({
     }
     setTextGenerationPrompt("");
     setMessage("Cloud AI文章Jobを登録しました。");
-    await refreshGenerationJobs();
+    await Promise.all([refreshGenerationJobs(), refreshQuota()]);
   }
 
   function addGeneratedText(job: CloudGenerationJob) {
@@ -718,7 +740,7 @@ export function CloudCanvasEditor({
       return;
     }
     setMessage("Cloud AI Jobをキャンセルしました。");
-    await refreshGenerationJobs();
+    await Promise.all([refreshGenerationJobs(), refreshQuota()]);
   }
 
   async function placeGeneratedAsset(job: CloudGenerationJob) {
@@ -976,6 +998,29 @@ export function CloudCanvasEditor({
             <h2 className="flex items-center gap-2 font-bold">
               <Sparkles className="h-5 w-5" /> Cloud AI
             </h2>
+            <div className="mt-3 rounded border border-stone-200 bg-stone-50 p-2 text-xs">
+              {quota ? (
+                <>
+                  <p className="font-bold">
+                    {quota.plan_key.toUpperCase()}プラン・残り
+                    {remainingCredits} credit
+                  </p>
+                  <p className="mt-1 text-stone-600">
+                    使用 {quota.credits_used} / 予約 {quota.credits_reserved} /
+                    上限 {quota.credits_limit}
+                  </p>
+                  {!quota.generation_enabled ? (
+                    <p className="mt-1 text-red-700">
+                      現在、生成は停止中です。
+                    </p>
+                  ) : null}
+                </>
+              ) : (
+                <p className="text-red-700">
+                  利用枠を確認できないため生成できません。
+                </p>
+              )}
+            </div>
             <label
               className="mt-3 block text-xs font-bold"
               htmlFor="cloud-generation-type"
@@ -1010,7 +1055,11 @@ export function CloudCanvasEditor({
             />
             <button
               className="button mt-2 w-full"
-              disabled={!generationPrompt.trim()}
+              disabled={
+                !generationPrompt.trim() ||
+                !quota?.generation_enabled ||
+                remainingCredits <= 0
+              }
               onClick={() => void requestCloudGeneration()}
               type="button"
             >
@@ -1046,7 +1095,11 @@ export function CloudCanvasEditor({
             />
             <button
               className="button-secondary mt-2 w-full"
-              disabled={!textGenerationPrompt.trim()}
+              disabled={
+                !textGenerationPrompt.trim() ||
+                !quota?.generation_enabled ||
+                remainingCredits <= 0
+              }
               onClick={() => void requestCloudTextGeneration()}
               type="button"
             >

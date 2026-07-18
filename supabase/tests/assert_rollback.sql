@@ -22,6 +22,11 @@ begin
      or to_regclass('public.desktop_device_rate_limits') is not null then
     raise exception 'Desktop device tables remain after rollback';
   end if;
+  if to_regclass('public.cloud_ai_plans') is not null
+     or to_regclass('public.cloud_ai_cost_ledger') is not null
+     or to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is not null then
+    raise exception 'Cloud AI billing objects remain after rollback';
+  end if;
   if to_regclass('public.cloud_projects') is not null
      or to_regclass('public.cloud_assets') is not null
      or to_regprocedure('public.save_cloud_page_snapshot(uuid,bigint,jsonb)') is not null

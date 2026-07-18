@@ -24,9 +24,80 @@ import {
   cloudGenerationInputSchema,
   moderateGeneralCloudPrompt,
   shouldRetryCloudGeneration,
+  evaluateCloudGenerationQuota,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+const quota = {
+  planKey: "free",
+  entitlementStatus: "active",
+  periodStartsAt: "2026-07-01T00:00:00.000Z",
+  periodEndsAt: "2026-08-01T00:00:00.000Z",
+  creditsLimit: 20,
+  creditsReserved: 2,
+  creditsUsed: 10,
+  costLimitMicros: 2_000_000,
+  costReservedMicros: 100_000,
+  costActualMicros: 900_000,
+  currency: "USD",
+};
+const price = {
+  providerId: "mangai-cloud-image",
+  modelId: "general-image-v1",
+  jobType: "background",
+  pricingVersion: "provider-price-test-v1",
+  credits: 1,
+  maxCostMicros: 100_000,
+  currency: "USD",
+  active: true,
+};
+
+test("Cloud quota reserves both credits and conservative provider cost", () => {
+  assert.deepEqual(
+    evaluateCloudGenerationQuota({
+      generationEnabled: true,
+      now: new Date("2026-07-18T00:00:00.000Z"),
+      quota,
+      price,
+    }),
+    {
+      allowed: true,
+      creditsAfterReservation: 13,
+      costAfterReservationMicros: 1_100_000,
+    },
+  );
+});
+
+test("Cloud quota fails closed for disabled, expired and over-budget generation", () => {
+  assert.equal(
+    evaluateCloudGenerationQuota({
+      generationEnabled: false,
+      now: new Date("2026-07-18T00:00:00.000Z"),
+      quota,
+      price,
+    }).reason,
+    "generation_disabled",
+  );
+  assert.equal(
+    evaluateCloudGenerationQuota({
+      generationEnabled: true,
+      now: new Date("2026-08-01T00:00:00.000Z"),
+      quota,
+      price,
+    }).reason,
+    "period_expired",
+  );
+  assert.equal(
+    evaluateCloudGenerationQuota({
+      generationEnabled: true,
+      now: new Date("2026-07-18T00:00:00.000Z"),
+      quota: { ...quota, costActualMicros: 1_950_000 },
+      price,
+    }).reason,
+    "cost_quota_exceeded",
+  );
+});
 
 test("general Cloud generation accepts only matching image and text job types", () => {
   assert.equal(

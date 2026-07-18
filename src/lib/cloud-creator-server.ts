@@ -91,6 +91,29 @@ export type CloudGenerationJob = {
   updated_at: string;
 };
 
+export type CloudAiQuota = {
+  plan_key: "free" | "trial" | "creator";
+  entitlement_status:
+    "active" | "trialing" | "past_due" | "canceled" | "expired";
+  period_starts_at: string;
+  period_ends_at: string;
+  credits_limit: number;
+  credits_reserved: number;
+  credits_used: number;
+  cost_limit_micros: number;
+  cost_reserved_micros: number;
+  cost_actual_micros: number;
+  currency: string;
+  generation_enabled: boolean;
+};
+
+export async function getMyCloudAiQuota() {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase.rpc("get_my_cloud_ai_quota");
+  if (error) throw new Error("Cloud AI利用枠を読み込めませんでした。");
+  return ((data ?? [])[0] ?? null) as CloudAiQuota | null;
+}
+
 export async function enqueueCloudGenerationJob(input: {
   projectId: string;
   pageId?: string;
@@ -111,20 +134,42 @@ export async function enqueueCloudGenerationJob(input: {
     .createHash("sha256")
     .update(generation.prompt, "utf8")
     .digest("hex");
-  const { data, error } = await supabase.rpc("enqueue_cloud_generation_job", {
-    p_project_id: input.projectId,
-    p_page_id: input.pageId ?? null,
-    p_kind: generation.kind,
-    p_job_type: generation.jobType,
-    p_provider_id: capability.providerId,
-    p_model_id: capability.modelId,
-    p_idempotency_key: input.idempotencyKey,
-    p_prompt_sha256: promptSha256,
-    p_input: generation,
-    p_moderation: moderation,
-    p_estimated_cost_micros: null,
-  });
-  if (error || !data) throw new Error("Cloud AI Jobを登録できませんでした。");
+  const { data, error } = await supabase.rpc(
+    "enqueue_cloud_generation_job_with_quota",
+    {
+      p_project_id: input.projectId,
+      p_page_id: input.pageId ?? null,
+      p_kind: generation.kind,
+      p_job_type: generation.jobType,
+      p_provider_id: capability.providerId,
+      p_model_id: capability.modelId,
+      p_idempotency_key: input.idempotencyKey,
+      p_prompt_sha256: promptSha256,
+      p_input: generation,
+      p_moderation: moderation,
+    },
+  );
+  if (error || !data) {
+    const reason = error?.message ?? "";
+    if (reason.includes("cloud_credit_quota_exceeded"))
+      throw new Error("今月のCloud AI生成creditを使い切りました。");
+    if (reason.includes("cloud_cost_quota_exceeded"))
+      throw new Error("今月のCloud AI費用上限に達しました。");
+    if (reason.includes("cloud_daily_budget_exceeded"))
+      throw new Error("本日のCloud AI運用予算に達したため停止中です。");
+    if (reason.includes("cloud_generation_rate_limited"))
+      throw new Error(
+        "Cloud AI要求が集中しています。1分後に再試行してください。",
+      );
+    if (reason.includes("cloud_entitlement_inactive"))
+      throw new Error("Cloud AIプランが有効ではありません。");
+    if (
+      reason.includes("cloud_generation_disabled") ||
+      reason.includes("cloud_generation_price_unavailable")
+    )
+      throw new Error("Cloud AI生成は現在停止中です。");
+    throw new Error("Cloud AI Jobを登録できませんでした。");
+  }
   return data as string;
 }
 

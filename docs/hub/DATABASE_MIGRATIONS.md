@@ -23,6 +23,7 @@ MANGAI HubのSupabase PostgreSQL変更を、安全に追加・検証・取り消
 | `202607180002` | Cloud Creator保存、RLS、revision、非公開Asset基盤               | Storage object存在時は停止して保護     |
 | `202607180003` | Cloud Project・Episode・Page管理と表紙設定RPC                   | 追加関数と表紙参照を除去               |
 | `202607180004` | 一般向けCloud AI永続Queue、moderation、worker lease             | Job関数とJobテーブルを除去             |
+| `202607180005` | Cloud AI plan、quota、原価ledger、rate limit、予算停止         | 課金表・予約列を除去しPhase 3 RPCへ復元 |
 
 データを失う可能性があるrollbackは、条件を満たさない限り例外で停止します。停止した場合は自動回避せず、バックアップと対象データを確認してください。
 

@@ -36,6 +36,12 @@ begin
      or to_regclass('public.cloud_generation_jobs') is null then
     raise exception 'Cloud Creator Phase 1 schema is missing';
   end if;
+  if to_regclass('public.cloud_ai_plans') is null
+     or to_regclass('public.cloud_ai_entitlements') is null
+     or to_regclass('public.cloud_ai_cost_ledger') is null
+     or to_regclass('public.cloud_ai_rate_limits') is null then
+    raise exception 'Cloud AI billing schema is missing';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null
@@ -48,6 +54,12 @@ begin
      or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
      or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null then
     raise exception 'Cloud Creator structure functions are missing';
+  end if;
+  if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
+     or to_regprocedure('public.get_my_cloud_ai_quota()') is null
+     or has_function_privilege('authenticated','public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)','execute')
+     or not has_function_privilege('authenticated','public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)','execute') then
+    raise exception 'Cloud AI quota functions or privileges are invalid';
   end if;
   if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
     raise exception 'authenticated users must not claim Cloud AI jobs';

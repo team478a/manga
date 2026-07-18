@@ -26,6 +26,13 @@ begin
      or to_regclass('public.cloud_generation_jobs') is null then
     raise exception 'Cloud Creator and Cloud AI tables are missing';
   end if;
+  if to_regclass('public.cloud_ai_plans') is null
+     or to_regclass('public.cloud_ai_entitlements') is null
+     or to_regclass('public.cloud_ai_usage_periods') is null
+     or to_regclass('public.cloud_ai_cost_ledger') is null
+     or to_regclass('public.cloud_ai_rate_limits') is null then
+    raise exception 'Cloud AI billing tables are missing';
+  end if;
 
   if not exists (
     select 1 from information_schema.columns
@@ -69,6 +76,13 @@ begin
      or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
     raise exception 'Cloud AI worker privileges are invalid';
   end if;
+  if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
+     or to_regprocedure('public.consume_cloud_ai_rate_limit(text,text,integer,integer)') is null
+     or has_function_privilege('authenticated','public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)','execute')
+     or not has_function_privilege('authenticated','public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)','execute')
+     or has_function_privilege('authenticated','public.consume_cloud_ai_rate_limit(text,text,integer,integer)','execute') then
+    raise exception 'Cloud AI billing function privileges are invalid';
+  end if;
 
   if has_function_privilege('anon', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute')
      or has_function_privilege('authenticated', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute')
@@ -103,6 +117,14 @@ begin
       ('cloud_canvas_snapshots'),
       ('cloud_project_versions'),
       ('cloud_generation_jobs')
+      ,('cloud_ai_plans')
+      ,('cloud_ai_entitlements')
+      ,('cloud_ai_provider_prices')
+      ,('cloud_ai_usage_periods')
+      ,('cloud_ai_daily_costs')
+      ,('cloud_ai_settings')
+      ,('cloud_ai_rate_limits')
+      ,('cloud_ai_cost_ledger')
     ) as required_tables(table_name)
     where not exists (
       select 1 from pg_class

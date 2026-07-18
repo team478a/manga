@@ -7,6 +7,7 @@ export * from "./external-asset-provider.js";
 export * from "./runtime-profile.js";
 export * from "./adult-generation-policy.js";
 export * from "./cloud-generation.js";
+export * from "./cloud-billing.js";
 
 export const generationStatusSchema = z.enum([
   "queued",

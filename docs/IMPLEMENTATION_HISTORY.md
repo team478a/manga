@@ -1145,3 +1145,11 @@ Hub 24/24、TypeScript、ESLint、Web本番build、migration静的検査7件に�
 Workerには初期停止のkill switchを追加し、認証付き監視GETからqueued、running、failed、期限切れlease、有効Providerを秘密値なしで確認できます。実Providerが非同期の場合はGateway側でpolling／webhookを吸収する運用境界とし、credential、契約モデル、価格、schedulerをリポジトリへ保存しない手順を文書化しました。
 
 Gateway adapterの画像decode、idempotency header、費用・moderation記録、文章moderation拒否、429 retry分類を自動検証しました。Hub 27/27、ai-core 38/38、canvas-core 26/26、Desktop統合83/83、TypeScript、ESLint、Web／Desktop production build、migration静的検査7件に成功しています。リポジトリ側Phase 3は完了し、実Gateway credentialによるstaging画像／文章生成と費用alert設定をRC受入れへ残します。
+
+## 133. Cloud AI quota・原価ledger基盤
+
+Free、Trial、Creator PlanとProfile単位entitlement、月間credit、月間原価上限、Provider価格表を追加しました。Job登録時はブラウザーの推定額を信用せず、DBの有効なProvider・model・Job種別・pricing versionから最大原価を取得します。quota確認、Job作成、credit・原価予約、ledger記録は1つのPostgreSQL transactionで行い、idempotency再送では二重予約しません。
+
+成功時は予約を使用creditと実原価へ確定し、cancelと最終失敗では予約を解放します。一時障害のretry中は予約を維持します。利用者、Project、HMAC化IP、全体のrate limitと日次原価上限も追加し、実原価が上限に達した場合は生成を自動停止します。旧Job登録RPCはservice role専用へ閉じ、authenticated利用者はquota付きRPCだけを実行できます。
+
+EditorではPlan、残credit、予約creditを確認でき、利用枠不明・停止中・残数0では生成ボタンがfail closedになります。ai-core 40/40、Hub 27/27、TypeScript、ESLint、Web production build、migration静的検査8件に成功しました。PostgreSQL 16でforward、予約、重複防止、cancel解放、成功確定、ledger、全rollback、再適用、正規schema二重適用、staging検査を完走しています。
