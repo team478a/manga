@@ -38,6 +38,12 @@ begin
      or has_function_privilege('authenticated','public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)','execute') then
     raise exception 'Stripe Cloud entitlement boundary is invalid';
   end if;
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='buyer_profile_id')
+     or not exists(select 1 from pg_policies where schemaname='public' and tablename='orders' and policyname='orders_buyer_read')
+     or not exists(select 1 from pg_policies where schemaname='public' and tablename='orders' and policyname='orders_public_pending_insert' and with_check like '%buyer_profile_id%current_profile_id%')
+     or to_regprocedure('public.record_order_download(uuid,uuid)') is null then
+    raise exception 'Buyer purchase library boundary is invalid';
+  end if;
 
   if not exists (
     select 1 from information_schema.columns

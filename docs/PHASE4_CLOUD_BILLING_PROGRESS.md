@@ -32,8 +32,6 @@
 - TypeScript、ESLint、migration静的検査8件: 成功
 - PostgreSQL 16: forward、quota予約、idempotency、cancel解放、成功確定、ledger件数、全rollback、再適用、正規schema二重適用、staging read-only検査に成功
 
-## 次の実装
-
 ## Milestone 2: Stripe Subscription
 
 - CreatorプランのStripe Checkoutと任意のtrial日数
@@ -44,10 +42,26 @@
 - 単品デジタル商品CheckoutとSubscription eventの分離
 - Dashboardのプラン・利用枠・請求管理画面
 
+## Milestone 3: 購入履歴・再ダウンロード
+
+- ログイン中の認証メールと購入メールが一致した注文をBuyer Profileへ関連付け
+- 支払済み・返金済み注文を確認できる購入履歴画面
+- 支払済み商品の5分間有効な署名付き再ダウンロードURL
+- 注文ID・Buyer Profile・支払状態をServerで再照合するダウンロードAPI
+- 再ダウンロード回数と最終日時の原子的な記録
+- 購入者本人だけが注文を読めるRLSと、注文作成時のBuyer Profile差し替え防止
+- 決済完了処理を冪等化し、再送・再表示で初回支払日時を上書きしない
+
+## 検証
+
+- Hub単体テスト29/29、TypeScript、ESLint、Web production build: 成功
+- migration静的検査10件: 成功
+- PostgreSQL 16: 購入者RLS、他人の再ダウンロード拒否、原子的回数記録、forward、全rollback、再適用、正規schema二重適用に成功
+
 ## 次の実装
 
-1. 購入者アカウントへ注文を関連付け、購入履歴・再ダウンロードを追加
-2. Cloud Creatorから非公開作品・販売商品へ差分付きで受け渡す
-3. 管理者向け価格表・kill switch・費用監視UI
+1. Cloud Creatorから非公開作品・販売商品へ差分付きで受け渡す
+2. 管理者向け価格表・kill switch・費用監視UI
+3. 利用枠・失敗・予算停止の通知と運用監視
 
 状態: **進行中**

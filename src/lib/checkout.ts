@@ -14,6 +14,7 @@ type CheckoutOrder = {
   creator_id: string;
   amount: number;
   status: string;
+  buyer_profile_id: string | null;
   digital_products: {
     id: string;
     title: string;
@@ -48,7 +49,7 @@ export async function createStripeCheckoutSession({
   const { data: checkoutOrder } = await supabase
     .from("orders")
     .select(
-      "id,buyer_email,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class))",
+      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class))",
     )
     .eq("id", orderId)
     .eq("product_id", productId)
@@ -71,6 +72,9 @@ export async function createStripeCheckoutSession({
     "";
   const cancelToken = createCheckoutCancelToken(order.id, cancelSecret);
   const stripe = createStripeClient();
+  const buyerMetadata: Record<string, string> = {};
+  if (order.buyer_profile_id)
+    buyerMetadata.buyer_profile_id = order.buyer_profile_id;
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: normalizedEmail,
@@ -93,12 +97,14 @@ export async function createStripeCheckoutSession({
       order_id: order.id,
       product_id: order.product_id,
       creator_id: order.creator_id,
+      ...buyerMetadata,
     },
     payment_intent_data: {
       metadata: {
         order_id: order.id,
         product_id: order.product_id,
         creator_id: order.creator_id,
+        ...buyerMetadata,
       },
     },
   });

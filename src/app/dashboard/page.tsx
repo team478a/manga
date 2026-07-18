@@ -10,6 +10,7 @@ import {
   MonitorSmartphone,
   PanelsTopLeft,
   CreditCard,
+  Library,
 } from "lucide-react";
 import { updateProfile } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
@@ -33,6 +34,12 @@ export default async function DashboardPage({
       body: "生成credit、契約状態、Stripe請求を確認します。",
       href: "/dashboard/billing",
       icon: CreditCard,
+    },
+    {
+      title: "購入履歴",
+      body: "購入したデジタル商品を確認し、安全に再ダウンロードします。",
+      href: "/dashboard/purchases",
+      icon: Library,
     },
     {
       title: "作品管理",

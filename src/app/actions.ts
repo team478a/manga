@@ -492,6 +492,21 @@ export async function createPendingOrder(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const {
+    data: { user: buyerUser },
+  } = await supabase.auth.getUser();
+  let buyerProfileId: string | null = null;
+  if (
+    buyerUser?.email &&
+    normalizeBuyerEmail(buyerUser.email) === buyerEmail
+  ) {
+    const { data: buyerProfile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", buyerUser.id)
+      .maybeSingle<{ id: string }>();
+    buyerProfileId = buyerProfile?.id ?? null;
+  }
   const { data: product } = await supabase
     .from("digital_products")
     .select("id,creator_id,price,status,works:work_id(id,is_public)")
@@ -517,6 +532,7 @@ export async function createPendingOrder(formData: FormData) {
     .from("orders")
     .insert({
       buyer_email: buyerEmail,
+      buyer_profile_id: buyerProfileId,
       product_id: product.id,
       creator_id: product.creator_id,
       amount,

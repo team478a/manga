@@ -1161,3 +1161,11 @@ DashboardへCloud AIプラン・利用枠画面を追加し、Creatorプラン�
 Subscription created、updated、deleted eventは、Profile metadata、MANGAI Cloud AI surface、契約Price ID、請求期間を再検証してTrialまたはCreator entitlementへ変換します。event IDを永続化して再送を冪等にし、Stripe event作成時刻より古い通知が新しい契約状態を上書きしないPostgreSQL RPCを追加しました。既存の単品デジタル商品CheckoutはSubscription完了eventを注文支払済みとして扱いません。
 
 Subscription変換を含むHub 29/29、TypeScript、ESLint、migration静的検査9件に成功しました。PostgreSQL 16で新旧event順序、event再送、全migration rollback、正規schema二重適用を確認しています。Stripe test modeの実Checkout・Portal・署名付きwebhookはRC受入れで実credentialを使って確認します。
+
+## 135. 購入履歴・安全な再ダウンロード
+
+ログイン中の認証メールと購入時メールが一致する注文をBuyer Profileへ関連付け、Dashboardへ購入履歴を追加しました。支払済み商品は注文ID、購入者、支払状態をServerで再照合し、5分間だけ有効なStorage署名付きURLで再ダウンロードできます。返金済み注文は履歴へ残しますが、ダウンロードは許可しません。
+
+注文には初回支払日時、ダウンロード回数、最終ダウンロード日時を記録します。回数更新はservice role限定RPCで原子的に行い、同時アクセスによる更新欠落を防ぎます。決済完了処理も冪等化し、Stripe webhookの再送や完了ページの再表示で初回支払日時を上書きしません。
+
+購入者本人だけが支払済み・返金済み注文を読めるRLSを追加し、注文作成RLSでは未ログイン購入のBuyer Profile指定を禁止し、ログイン中も自分以外のProfileを指定できないようにしました。Hub 29/29、TypeScript、ESLint、Web production build、migration静的検査10件に成功しました。PostgreSQL 16で購入者RLS、他人の記録拒否、原子的回数更新、forward、全rollback、再適用、正規schema二重適用を確認しています。

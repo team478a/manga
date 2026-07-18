@@ -46,6 +46,12 @@ begin
      or to_regprocedure('public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)') is null then
     raise exception 'Stripe Cloud entitlement schema is missing';
   end if;
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='buyer_profile_id')
+     or not exists(select 1 from pg_policies where schemaname='public' and tablename='orders' and policyname='orders_buyer_read')
+     or not exists(select 1 from pg_policies where schemaname='public' and tablename='orders' and policyname='orders_public_pending_insert' and with_check like '%buyer_profile_id%current_profile_id%')
+     or to_regprocedure('public.record_order_download(uuid,uuid)') is null then
+    raise exception 'Buyer purchase library schema is missing';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null

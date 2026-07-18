@@ -72,6 +72,9 @@ export default async function CheckoutSuccessPage({
           <Link className="button" href="/works">
             作品を探す
           </Link>
+          <Link className="button-secondary" href="/dashboard/purchases">
+            購入履歴
+          </Link>
           <Link className="button-secondary" href="/">
             トップへ戻る
           </Link>

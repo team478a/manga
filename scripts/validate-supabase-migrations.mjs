@@ -109,6 +109,9 @@ for (const required of [
   "consume_cloud_ai_rate_limit",
   "stripe_webhook_events",
   "apply_cloud_ai_subscription_event",
+  "buyer_profile_id",
+  "orders_buyer_read",
+  "record_order_download",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

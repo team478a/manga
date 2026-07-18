@@ -15,15 +15,29 @@ export async function markCheckoutSessionPaid(
   const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("orders")
-    .update({ status: "paid", stripe_payment_intent_id: paymentIntentId })
+    .update({
+      status: "paid",
+      stripe_payment_intent_id: paymentIntentId,
+      paid_at: new Date().toISOString(),
+    })
     .eq("id", orderId)
     .eq("product_id", session.metadata?.product_id ?? "")
-    .in("status", ["pending", "paid"])
+    .eq("status", "pending")
     .select("id")
     .maybeSingle();
 
   if (error) throw error;
-  return Boolean(data);
+  if (data) return true;
+
+  const { data: paidOrder, error: paidOrderError } = await supabase
+    .from("orders")
+    .select("id")
+    .eq("id", orderId)
+    .eq("product_id", session.metadata?.product_id ?? "")
+    .eq("status", "paid")
+    .maybeSingle();
+  if (paidOrderError) throw paidOrderError;
+  return Boolean(paidOrder);
 }
 
 export async function markPaymentIntentStatus(

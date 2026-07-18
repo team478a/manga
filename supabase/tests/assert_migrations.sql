@@ -77,6 +77,12 @@ begin
      or to_regprocedure('public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)') is null then
     raise exception 'Stripe Cloud entitlement objects are missing';
   end if;
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='buyer_profile_id')
+     or not exists(select 1 from pg_policies where schemaname='public' and tablename='orders' and policyname='orders_buyer_read')
+     or not exists(select 1 from pg_policies where schemaname='public' and tablename='orders' and policyname='orders_public_pending_insert' and with_check like '%buyer_profile_id%current_profile_id%')
+     or to_regprocedure('public.record_order_download(uuid,uuid)') is null then
+    raise exception 'Buyer purchase library schema is missing';
+  end if;
   if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
      or to_regprocedure('public.consume_cloud_ai_rate_limit(text,text,integer,integer)') is null
      or to_regprocedure('public.get_my_cloud_ai_quota()') is null then
@@ -111,6 +117,10 @@ begin
      or not has_function_privilege('authenticated', 'public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)', 'execute') then
     raise exception 'Cloud quota enqueue privileges are invalid';
   end if;
+  if has_function_privilege('authenticated', 'public.record_order_download(uuid,uuid)', 'execute')
+     or not has_function_privilege('service_role', 'public.record_order_download(uuid,uuid)', 'execute') then
+    raise exception 'Buyer download recorder privileges are invalid';
+  end if;
   if not exists (
     select 1 from pg_policies
     where schemaname = 'storage'
@@ -139,6 +149,12 @@ insert into auth.users(id,email) values
 insert into public.profiles(id,user_id,role) values
   ('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','creator'),
   ('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000002','creator');
+insert into public.works(id,creator_id,title,status,is_public,content_class) values
+  ('31000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001','Purchase Test','published',true,'general');
+insert into public.digital_products(id,work_id,creator_id,price,status) values
+  ('32000000-0000-4000-8000-000000000001','31000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001',1200,'active');
+insert into public.orders(id,buyer_profile_id,product_id,creator_id,amount,platform_fee,creator_revenue,status,paid_at) values
+  ('33000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000002','32000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001',1200,120,1080,'paid',now());
 update public.cloud_ai_settings set generation_enabled=true,daily_cost_limit_micros=1000000 where singleton;
 insert into public.cloud_ai_provider_prices(provider_id,model_id,kind,job_type,pricing_version,credits,max_cost_micros,currency,active) values
   ('mock-cloud','mock-image-v1','image','background','phase4-test-v1',1,1000,'USD',true),
@@ -164,6 +180,9 @@ begin
   end if;
   if exists(select 1 from public.cloud_pages where id='60000000-0000-4000-8000-000000000001') then
     raise exception 'another user can read a private Cloud Page';
+  end if;
+  if not exists(select 1 from public.orders where id='33000000-0000-4000-8000-000000000001') then
+    raise exception 'buyer cannot read their paid order';
   end if;
 end $$;
 reset role;
@@ -306,6 +325,17 @@ declare
   v_applied boolean;
   v_ignored boolean;
 begin
+  if not public.record_order_download(
+    '33000000-0000-4000-8000-000000000001',
+    '30000000-0000-4000-8000-000000000002'
+  ) or not public.record_order_download(
+    '33000000-0000-4000-8000-000000000001',
+    '30000000-0000-4000-8000-000000000002'
+  ) then raise exception 'Buyer download recorder rejected a paid order'; end if;
+  if public.record_order_download(
+    '33000000-0000-4000-8000-000000000001',
+    '30000000-0000-4000-8000-000000000001'
+  ) then raise exception 'Buyer download recorder accepted another buyer'; end if;
   v_applied:=public.apply_cloud_ai_subscription_event(
     'evt_phase4_new','customer.subscription.updated','2026-07-18 08:00:00+00',
     '30000000-0000-4000-8000-000000000001','creator','active',
@@ -361,6 +391,15 @@ begin
   );
 end $$;
 reset role;
+
+do $$
+begin
+  if not exists(
+    select 1 from public.orders
+    where id='33000000-0000-4000-8000-000000000001'
+      and download_count=2 and last_download_at is not null
+  ) then raise exception 'Buyer download count was not updated atomically'; end if;
+end $$;
 
 do $$
 begin

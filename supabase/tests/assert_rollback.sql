@@ -10,6 +10,11 @@ begin
   ) then
     raise exception 'sales package columns remain after rollback';
   end if;
+  if exists(select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='buyer_profile_id')
+     or exists(select 1 from pg_policies where schemaname='public' and tablename='orders' and policyname='orders_buyer_read')
+     or to_regprocedure('public.record_order_download(uuid,uuid)') is not null then
+    raise exception 'Buyer purchase library remains after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

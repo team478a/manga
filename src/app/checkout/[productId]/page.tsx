@@ -30,6 +30,9 @@ export default async function CheckoutPage({
   const { productId } = await params;
   const messages = await searchParams;
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   const { data: product } = await supabase
     .from("digital_products")
     .select("id,title,description,price,status,profiles:creator_id(display_name),works:work_id(id,title,image_url,is_public)")
@@ -67,7 +70,10 @@ export default async function CheckoutPage({
             <div>
               <label className="label" htmlFor="buyerEmail">購入者メールアドレス</label>
               <p className="mt-1 text-base text-stone-600">決済やダウンロード案内に使う予定のメールアドレスです。</p>
-              <input className="field" id="buyerEmail" name="buyerEmail" type="email" required placeholder="you@example.com" disabled={!canPurchase} />
+              <input className="field" id="buyerEmail" name="buyerEmail" type="email" required placeholder="you@example.com" defaultValue={user?.email ?? ""} disabled={!canPurchase} />
+              <p className="mt-2 text-sm text-stone-500">
+                ログイン中のメールアドレスで購入すると、購入履歴から再ダウンロードできます。
+              </p>
             </div>
             <button className="button w-full" type="submit" disabled={!canPurchase}>
               購入へ進む
