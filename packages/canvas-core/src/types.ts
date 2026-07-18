@@ -126,6 +126,7 @@ export type PageCanvas = {
   height: number;
   backgroundColor: string;
   panels: Panel[];
+  panelLayers: PanelLayer[];
   balloons: Balloon[];
   textObjects: TextObject[];
 };

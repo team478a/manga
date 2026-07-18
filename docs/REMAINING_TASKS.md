@@ -8,9 +8,9 @@
 
 ## 1. 現在の判定
 
-一般漫画をCloud、成人向け漫画をDesktopで扱う製品分離後の不足機能と実装順は[`PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md`](PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md)へ整理しました。製品境界を強制するPhase 0と、Cloud Creatorの保存・権限・Asset・Desktop移行を整備するPhase 1は完了しました。次の開発対象はPhase 2のCloud Creator Editor MVPです。
+一般漫画をCloud、成人向け漫画をDesktopで扱う製品分離後の不足機能と実装順は[`PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md`](PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md)へ整理しました。Phase 0の製品境界、Phase 1のCloud保存基盤、Phase 2のCloud Creator Editor MVPまで完了しました。次の開発対象はPhase 3の一般向けCloud AIです。
 
-Phase 0とPhase 1の実装範囲・検証証跡は[`PHASE0_PRODUCT_BOUNDARY_COMPLETION.md`](PHASE0_PRODUCT_BOUNDARY_COMPLETION.md)および[`PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md`](PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md)を参照してください。
+各Phaseの実装範囲・検証証跡は[`PHASE0_PRODUCT_BOUNDARY_COMPLETION.md`](PHASE0_PRODUCT_BOUNDARY_COMPLETION.md)、[`PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md`](PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md)、[`PHASE2_CLOUD_CREATOR_EDITOR_COMPLETION.md`](PHASE2_CLOUD_CREATOR_EDITOR_COMPLETION.md)を参照してください。
 
 HubとDesktopの主要機能、ローカル品質ゲート、Windowsインストール・製品版起動・アンインストールE2E、SBOM・checksum生成、実Dドライブを使ったProject削除・ゴミ箱E2Eまでは完了しています。残作業の中心は外部サービスを使うRC受入れ、コード署名、初回公開です。
 

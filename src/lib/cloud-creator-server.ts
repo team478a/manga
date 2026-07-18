@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { pageCanvasSchema, type PageCanvas } from "@mangai/canvas-core";
 import { createClient } from "@/lib/supabase/server";
 import {
   CLOUD_ASSET_BUCKET,
@@ -20,7 +21,254 @@ async function apiContext() {
     .eq("user_id", user.id)
     .single();
   if (error || !profile) throw new Error("プロフィールが必要です。");
+  if (profile.role !== "creator" && profile.role !== "admin")
+    throw new Error("Cloud Creatorを利用するにはクリエイター登録が必要です。");
   return { supabase, profile };
+}
+
+export type CloudProjectSummary = {
+  id: string;
+  title: string;
+  description: string;
+  age_rating: "全年齢" | "12歳以上" | "15歳以上";
+  reading_direction: "rtl" | "ltr";
+  width: number;
+  height: number;
+  dpi: number;
+  visibility: "private" | "unlisted" | "public";
+  revision: number;
+  storage_bytes: number;
+  source_surface: "cloud" | "desktop";
+  cover_page_id: string | null;
+  updated_at: string;
+};
+
+export type CloudEpisode = {
+  id: string;
+  project_id: string;
+  title: string;
+  order_index: number;
+  revision: number;
+};
+
+export type CloudPage = {
+  id: string;
+  project_id: string;
+  episode_id: string;
+  page_number: number;
+  order_index: number;
+  width: number;
+  height: number;
+  background_color: string;
+  revision: number;
+};
+
+function normalizeCloudCanvas(
+  page: Pick<CloudPage, "id" | "width" | "height" | "background_color">,
+  value: unknown,
+) {
+  const source =
+    value && typeof value === "object"
+      ? (value as Record<string, unknown>)
+      : {};
+  const canvas = pageCanvasSchema.safeParse({
+    schemaVersion: 1,
+    pageId: page.id,
+    width: page.width,
+    height: page.height,
+    backgroundColor: source.backgroundColor ?? page.background_color,
+    panels: source.panels ?? [],
+    panelLayers: source.panelLayers ?? [],
+    balloons: source.balloons ?? [],
+    textObjects: source.textObjects ?? [],
+  });
+  if (!canvas.success)
+    throw new Error("Canvasデータが不正なため、安全に読み込めませんでした。");
+  return canvas.data;
+}
+
+export async function listCloudProjects() {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase
+    .from("cloud_projects")
+    .select(
+      "id,title,description,age_rating,reading_direction,width,height,dpi,visibility,revision,storage_bytes,source_surface,cover_page_id,updated_at",
+    )
+    .is("deleted_at", null)
+    .order("updated_at", { ascending: false });
+  if (error) throw new Error("Cloud Project一覧を読み込めませんでした。");
+  return (data ?? []) as CloudProjectSummary[];
+}
+
+export async function listDeletedCloudProjects() {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase
+    .from("cloud_projects")
+    .select(
+      "id,title,description,age_rating,reading_direction,width,height,dpi,visibility,revision,storage_bytes,source_surface,cover_page_id,updated_at,deleted_at",
+    )
+    .not("deleted_at", "is", null)
+    .order("deleted_at", { ascending: false });
+  if (error) throw new Error("Cloud Projectのゴミ箱を読み込めませんでした。");
+  return (data ?? []) as Array<CloudProjectSummary & { deleted_at: string }>;
+}
+
+export async function getCloudProjectWorkspace(projectId: string) {
+  const { supabase } = await apiContext();
+  const [{ data: project, error: projectError }, episodesResult, pagesResult] =
+    await Promise.all([
+      supabase
+        .from("cloud_projects")
+        .select(
+          "id,title,description,age_rating,reading_direction,width,height,dpi,visibility,revision,storage_bytes,source_surface,cover_page_id,updated_at",
+        )
+        .eq("id", projectId)
+        .is("deleted_at", null)
+        .single(),
+      supabase
+        .from("cloud_episodes")
+        .select("id,project_id,title,order_index,revision")
+        .eq("project_id", projectId)
+        .is("deleted_at", null)
+        .order("order_index"),
+      supabase
+        .from("cloud_pages")
+        .select(
+          "id,project_id,episode_id,page_number,order_index,width,height,background_color,revision",
+        )
+        .eq("project_id", projectId)
+        .is("deleted_at", null)
+        .order("page_number"),
+    ]);
+  if (projectError || !project)
+    throw new Error("Cloud Projectが見つかりません。");
+  if (episodesResult.error || pagesResult.error)
+    throw new Error("Episode／Pageを読み込めませんでした。");
+  return {
+    project: project as CloudProjectSummary,
+    episodes: (episodesResult.data ?? []) as CloudEpisode[],
+    pages: (pagesResult.data ?? []) as CloudPage[],
+  };
+}
+
+export async function createCloudProject(input: {
+  title: string;
+  description: string;
+  ageRating: "全年齢" | "12歳以上" | "15歳以上";
+  readingDirection: "rtl" | "ltr";
+  width: number;
+  height: number;
+  dpi: number;
+}) {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase.rpc(
+    "create_cloud_project_with_first_page",
+    {
+      p_title: input.title,
+      p_description: input.description,
+      p_age_rating: input.ageRating,
+      p_reading_direction: input.readingDirection,
+      p_width: input.width,
+      p_height: input.height,
+      p_dpi: input.dpi,
+    },
+  );
+  if (error || !data?.[0]?.project_id)
+    throw new Error("Cloud Projectを作成できませんでした。");
+  return data[0] as {
+    project_id: string;
+    episode_id: string;
+    page_id: string;
+  };
+}
+
+export async function addCloudEpisode(projectId: string, title: string) {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase.rpc("add_cloud_episode", {
+    p_project_id: projectId,
+    p_title: title,
+  });
+  if (error || !data) throw new Error("Episodeを追加できませんでした。");
+  return data as string;
+}
+
+export async function addCloudPage(episodeId: string) {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase.rpc("add_cloud_page", {
+    p_episode_id: episodeId,
+  });
+  if (error || !data) throw new Error("Pageを追加できませんでした。");
+  return data as string;
+}
+
+export async function renameCloudProject(
+  projectId: string,
+  title: string,
+  description: string,
+) {
+  const { supabase } = await apiContext();
+  const { error } = await supabase.rpc("rename_cloud_project", {
+    p_project_id: projectId,
+    p_title: title,
+    p_description: description,
+  });
+  if (error) throw new Error("Project情報を更新できませんでした。");
+}
+
+export async function renameCloudEpisode(episodeId: string, title: string) {
+  const { supabase } = await apiContext();
+  const { error } = await supabase.rpc("rename_cloud_episode", {
+    p_episode_id: episodeId,
+    p_title: title,
+  });
+  if (error) throw new Error("Episode名を更新できませんでした。");
+}
+
+export async function moveCloudStructure(
+  kind: "episode" | "page",
+  id: string,
+  direction: -1 | 1,
+) {
+  const { supabase } = await apiContext();
+  const { error } = await supabase.rpc(
+    kind === "episode" ? "move_cloud_episode" : "move_cloud_page",
+    kind === "episode"
+      ? { p_episode_id: id, p_direction: direction }
+      : { p_page_id: id, p_direction: direction },
+  );
+  if (error)
+    throw new Error(
+      `${kind === "episode" ? "Episode" : "Page"}を移動できませんでした。`,
+    );
+}
+
+export async function deleteCloudStructure(
+  kind: "episode" | "page",
+  id: string,
+) {
+  const { supabase } = await apiContext();
+  const { error } = await supabase.rpc(
+    kind === "episode" ? "soft_delete_cloud_episode" : "soft_delete_cloud_page",
+    kind === "episode" ? { p_episode_id: id } : { p_page_id: id },
+  );
+  if (error) {
+    if (error.message.includes("last_episode"))
+      throw new Error("最後のEpisodeは削除できません。");
+    if (error.message.includes("last_page"))
+      throw new Error("最後のPageは削除できません。");
+    throw new Error(
+      `${kind === "episode" ? "Episode" : "Page"}を削除できませんでした。`,
+    );
+  }
+}
+
+export async function setCloudProjectCover(projectId: string, pageId: string) {
+  const { supabase } = await apiContext();
+  const { error } = await supabase.rpc("set_cloud_project_cover", {
+    p_project_id: projectId,
+    p_page_id: pageId,
+  });
+  if (error) throw new Error("表紙Pageを設定できませんでした。");
 }
 
 export async function importDesktopCloudProject(value: unknown) {
@@ -40,7 +288,7 @@ export async function importDesktopCloudProject(value: unknown) {
 export async function saveCloudPageSnapshot(input: {
   pageId: string;
   expectedRevision: number;
-  canvas: Record<string, unknown>;
+  canvas: PageCanvas;
 }) {
   const { supabase } = await apiContext();
   const { data, error } = await supabase.rpc("save_cloud_page_snapshot", {
@@ -60,7 +308,7 @@ export async function getCloudPageSnapshot(pageId: string) {
   const { supabase } = await apiContext();
   const { data: page, error } = await supabase
     .from("cloud_pages")
-    .select("id,project_id,revision,updated_at")
+    .select("id,project_id,revision,width,height,background_color,updated_at")
     .eq("id", pageId)
     .is("deleted_at", null)
     .single();
@@ -72,7 +320,98 @@ export async function getCloudPageSnapshot(pageId: string) {
     .eq("revision", page.revision)
     .maybeSingle();
   if (snapshotError) throw new Error("Canvasを読み込めませんでした。");
-  return { ...page, canvas: snapshot?.canvas ?? {}, snapshot };
+  return {
+    ...page,
+    canvas: normalizeCloudCanvas(page, snapshot?.canvas),
+    snapshot,
+  };
+}
+
+export type CloudAsset = {
+  id: string;
+  project_id: string;
+  file_name: string;
+  mime_type: "image/png" | "image/jpeg" | "image/webp";
+  byte_size: number;
+  width: number;
+  height: number;
+  sha256: string;
+  url: string;
+};
+
+export async function listCloudAssets(projectId: string) {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase
+    .from("cloud_assets")
+    .select(
+      "id,project_id,file_name,mime_type,byte_size,width,height,sha256,storage_path",
+    )
+    .eq("project_id", projectId)
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error("Asset Libraryを読み込めませんでした。");
+  return Promise.all(
+    (data ?? []).map(async (asset) => {
+      const { data: signed, error: signedError } = await supabase.storage
+        .from(CLOUD_ASSET_BUCKET)
+        .createSignedUrl(asset.storage_path, 300);
+      if (signedError || !signed?.signedUrl)
+        throw new Error("Assetの署名URLを作成できませんでした。");
+      const { storage_path: _storagePath, ...metadata } = asset;
+      return { ...metadata, url: signed.signedUrl } as CloudAsset;
+    }),
+  );
+}
+
+export async function getCloudProjectExportBundle(projectId: string) {
+  const { supabase } = await apiContext();
+  const workspace = await getCloudProjectWorkspace(projectId);
+  const pageIds = workspace.pages.map((page) => page.id);
+  const [
+    { data: snapshots, error: snapshotError },
+    { data: assets, error: assetError },
+  ] = await Promise.all([
+    pageIds.length
+      ? supabase
+          .from("cloud_canvas_snapshots")
+          .select("page_id,revision,canvas")
+          .in("page_id", pageIds)
+          .order("revision", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+    supabase
+      .from("cloud_assets")
+      .select(
+        "id,project_id,file_name,mime_type,byte_size,width,height,sha256,storage_path",
+      )
+      .eq("project_id", projectId)
+      .is("deleted_at", null),
+  ]);
+  if (snapshotError || assetError)
+    throw new Error("Exportデータを読み込めませんでした。");
+  const latestSnapshots = new Map<string, unknown>();
+  for (const snapshot of snapshots ?? []) {
+    if (!latestSnapshots.has(snapshot.page_id))
+      latestSnapshots.set(snapshot.page_id, snapshot.canvas);
+  }
+  const assetFiles = await Promise.all(
+    (assets ?? []).map(async (asset) => {
+      const { data, error } = await supabase.storage
+        .from(CLOUD_ASSET_BUCKET)
+        .download(asset.storage_path);
+      if (error || !data)
+        throw new Error(`Asset「${asset.file_name}」を読み込めませんでした。`);
+      const { storage_path: _storagePath, ...metadata } = asset;
+      return { ...metadata, bytes: new Uint8Array(await data.arrayBuffer()) };
+    }),
+  );
+  return {
+    ...workspace,
+    pages: workspace.pages.map((page) => ({
+      ...page,
+      canvas: normalizeCloudCanvas(page, latestSnapshots.get(page.id)),
+    })),
+    assets: assetFiles,
+  };
 }
 
 export async function setCloudProjectDeleted(

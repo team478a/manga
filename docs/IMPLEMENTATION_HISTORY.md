@@ -1113,3 +1113,11 @@ Assetはprivate bucketへ所有者・Project・Asset UUIDのnamespaceで保存�
 Desktopの一般向けProject書き出しへ`Cloud移行Project.json`を追加し、共通Zod contractとHub import APIで再検証します。成人向け、区分不明、参照不整合のmanifestは拒否し、成人向けProjectからはCloud移行manifest自体を生成しません。
 
 PostgreSQL 16でforward、RLSとRPCの動作、全rollback、再適用、正規schemaの二重適用を完走しました。Hub 21/21、Desktop統合83/83、ai-core 35/35、canvas-core 25/25、Web／Desktop本番build、日英29画面・状態のaxe違反0件に成功しました。実Supabase stagingへの適用だけは外部環境を使うRC受入れへ残します。
+
+## 129. Cloud Creator Editor MVP Phase 2完了
+
+`/creator`へ一般向けCloud Project一覧、新規作成、Episode・Page管理、Soft delete・復元、表紙設定を追加しました。Project作成と初期Episode・Page・Canvas生成、および構造変更は所有者を再確認するPostgreSQL RPCでtransaction化しました。
+
+Web CanvasへAsset Library、Panel layer、コマ、吹き出し、縦横書きテキスト、移動・拡縮・回転・順序、Undo / Redo、revision自動保存、競合表示、previewを追加しました。作品全体をPDF、連番PNG ZIP、販売パッケージZIPへ書き出せます。
+
+PostgreSQL 16のforward／rollback／正規schema、Hub 22/22、canvas-core 26/26、TypeScript、ESLint、Web本番buildに成功しました。実ブラウザーでは未認証Creator導線のログイン遷移を確認しました。実Supabase認証後E2EはRC受入れ、大規模exportの永続Job化と構造化ルビは後続拡張へ残します。

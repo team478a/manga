@@ -32,10 +32,8 @@ Desktopでいう「ローカルLLM」は文章生成を行うOllamaを指す。�
 
 ### 2.2 大きな不足
 
-- MANGAI HubはMarketplaceであり、ブラウザー上のCloud Creator Editorではない
-- Cloud用Project、Page、Canvas、Asset、生成履歴のDBとRLSがない
+- Cloud Creator Editor MVPまでは実装済み。実Supabase stagingでの認証後E2Eが未完了
 - 一般向けAI APIを実行するServer Queue、Provider adapter、費用・quota基盤がない
-- Cloud Creator本体のProject・Canvasデータ基盤は未実装（製品境界の共通契約はPhase 0で実装済み）
 - 成人向けDezgo専用dispatcherと実運用承認データがない
 - Supabase、Stripe、Vercel、Ollama、ComfyUI、Dezgoの実環境RC受入れが未完了
 
@@ -151,6 +149,8 @@ interface ContentExecutionPolicy {
 
 ### Phase 2: Cloud Creator Editor MVP
 
+状態: **完了（2026-07-18）**。実装範囲と検証証跡は[Phase 2完了報告](PHASE2_CLOUD_CREATOR_EDITOR_COMPLETION.md)を参照する。
+
 目的: 一般漫画をブラウザーだけで制作できるようにする。
 
 実装順:
@@ -158,10 +158,10 @@ interface ContentExecutionPolicy {
 1. Project一覧、新規作成、Episode・Page管理
 2. 素材アップロード、Asset Library、Canvas配置
 3. コマ、レイヤー、移動、拡縮、回転、順序、opacity
-4. 吹き出し、横書き・縦書き、ルビ
+4. 吹き出し、横書き・縦書き（構造化ルビ編集はMVP後の拡張）
 5. 自動保存、Undo / Redo、保存状態、競合表示
 6. Page preview、表紙、代表画像
-7. PDF、連番画像、販売パッケージの非同期export
+7. PDF、連番画像、販売パッケージexport（3Page MVPはrequest内で生成。大規模作品向け永続Job化はPhase 3のQueue基盤と統合）
 8. keyboard、モバイル閲覧、主要操作のアクセシビリティ
 
 再利用方針:
@@ -176,6 +176,8 @@ interface ContentExecutionPolicy {
 - 一般向け3Page作品をブラウザーだけで作成・再編集・書き出しできる
 - Desktopと同じfixtureから主要Canvas要素が同等に描画される
 - 主要編集操作でデータ消失がない
+
+上記条件はローカルのPostgreSQL 16、Canvas描画テスト、Web単体テスト、本番buildで確認済み。実Supabase stagingでのログイン後ブラウザーE2EはRC受入れとして別管理する。
 
 ### Phase 3: 一般向けCloud AI
 

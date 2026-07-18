@@ -47,7 +47,15 @@ begin
   end if;
   if to_regprocedure('public.save_cloud_page_snapshot(uuid,bigint,jsonb)') is null
      or to_regprocedure('public.import_cloud_project(jsonb)') is null
-     or to_regprocedure('public.restore_cloud_project(uuid)') is null then
+     or to_regprocedure('public.restore_cloud_project(uuid)') is null
+     or to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
+     or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
+     or to_regprocedure('public.add_cloud_page(uuid)') is null
+     or to_regprocedure('public.move_cloud_episode(uuid,integer)') is null
+     or to_regprocedure('public.move_cloud_page(uuid,integer)') is null
+     or to_regprocedure('public.soft_delete_cloud_episode(uuid)') is null
+     or to_regprocedure('public.soft_delete_cloud_page(uuid)') is null
+     or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null then
     raise exception 'Cloud Creator functions are missing';
   end if;
   if exists (
@@ -140,6 +148,9 @@ declare
     ),
     'episodes','[]'::jsonb,'pages','[]'::jsonb,'assets','[]'::jsonb,'snapshots','[]'::jsonb
   );
+  v_created record;
+  v_episode_id uuid;
+  v_page_id uuid;
 begin
   if not exists(
     select 1 from public.cloud_canvas_snapshots
@@ -167,6 +178,35 @@ begin
   exception when others then
     if sqlerrm <> 'general_cloud_import_required' then raise; end if;
   end;
+  select * into v_created from public.create_cloud_project_with_first_page(
+    'Browser Project', 'Phase 2', '全年齢', 'rtl', 1600, 2400, 300
+  );
+  if not exists(select 1 from public.cloud_projects where id=v_created.project_id and source_surface='cloud')
+     or not exists(select 1 from public.cloud_episodes where id=v_created.episode_id and project_id=v_created.project_id)
+     or not exists(select 1 from public.cloud_pages where id=v_created.page_id and episode_id=v_created.episode_id)
+     or not exists(select 1 from public.cloud_canvas_snapshots where page_id=v_created.page_id and revision=0) then
+    raise exception 'Cloud Project first-page transaction is incomplete';
+  end if;
+  v_episode_id := public.add_cloud_episode(v_created.project_id, '第2話');
+  v_page_id := public.add_cloud_page(v_episode_id);
+  perform public.add_cloud_page(v_episode_id);
+  perform public.move_cloud_page(v_page_id, 1);
+  perform public.move_cloud_episode(v_episode_id, -1);
+  perform public.rename_cloud_project(v_created.project_id, 'Browser Project Updated', 'Updated');
+  perform public.rename_cloud_episode(v_episode_id, '第2話 更新');
+  if not exists(select 1 from public.cloud_pages where id=v_page_id and project_id=v_created.project_id)
+     or not exists(select 1 from public.cloud_projects where id=v_created.project_id and title='Browser Project Updated' and revision=7)
+     or not exists(select 1 from public.cloud_episodes where id=v_episode_id and title='第2話 更新') then
+    raise exception 'Cloud structure mutations or revision history are invalid';
+  end if;
+  perform public.set_cloud_project_cover(v_created.project_id,v_page_id);
+  perform public.soft_delete_cloud_page(v_page_id);
+  perform public.soft_delete_cloud_episode(v_episode_id);
+  if exists(select 1 from public.cloud_episodes where id=v_episode_id and deleted_at is null)
+     or exists(select 1 from public.cloud_pages where episode_id=v_episode_id and deleted_at is null)
+     or exists(select 1 from public.cloud_projects where id=v_created.project_id and cover_page_id is not null) then
+    raise exception 'Cloud structure soft delete is invalid';
+  end if;
 end $$;
 reset role;
 rollback;

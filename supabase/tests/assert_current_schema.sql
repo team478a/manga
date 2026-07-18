@@ -35,6 +35,16 @@ begin
      or to_regclass('public.cloud_canvas_snapshots') is null then
     raise exception 'Cloud Creator Phase 1 schema is missing';
   end if;
+  if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
+     or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
+     or to_regprocedure('public.add_cloud_page(uuid)') is null
+     or to_regprocedure('public.move_cloud_episode(uuid,integer)') is null
+     or to_regprocedure('public.move_cloud_page(uuid,integer)') is null
+     or to_regprocedure('public.soft_delete_cloud_episode(uuid)') is null
+     or to_regprocedure('public.soft_delete_cloud_page(uuid)') is null
+     or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null then
+    raise exception 'Cloud Creator structure functions are missing';
+  end if;
   if not exists (
     select 1 from storage.buckets
     where id = 'cloud-assets' and public = false and file_size_limit = 20971520

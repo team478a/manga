@@ -1,6 +1,6 @@
 # MANGAI 現在の実装状況と今後のロードマップ
 
-最終確認日: 2026-07-16
+最終確認日: 2026-07-18
 対象ブランチ: `feature/manga-canvas-mvp`
 実装基準コミット: `026ab21`
 
@@ -10,10 +10,10 @@
 
 MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ローカル漫画制作を担当するWindows製品「MANGAI Desktop」の2製品構成です。
 
-| 製品           | 現在の段階                         | 要約                                                                                                |
-| -------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------- |
-| MANGAI Hub     | Marketplace MVP実装済み            | 認証、作品公開、検索、デジタル商品、Stripe決済、購入後配布、売上、グッズ申請、管理者機能            |
-| MANGAI Desktop | ローカル制作・AI・配布基盤実装済み | Project/Episode/Page/素材、書き出し、Creator Chat、ComfyUI、Undo/Redo、インストーラー、自動更新基盤 |
+| 製品           | 現在の段階                            | 要約                                                                                                |
+| -------------- | ------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| MANGAI Hub     | Marketplace・Cloud Editor MVP実装済み | 認証、作品公開、販売に加え、一般漫画のProject管理、Canvas編集、保存、各種書き出し                   |
+| MANGAI Desktop | ローカル制作・AI・配布基盤実装済み    | Project/Episode/Page/素材、書き出し、Creator Chat、ComfyUI、Undo/Redo、インストーラー、自動更新基盤 |
 
 コード上の主要機能は揃っていますが、一般公開版としては次が未完了です。
 
@@ -25,7 +25,7 @@ MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ロー�
 
 したがって、現在の位置づけは「機能開発用MVPを越え、Release Candidate準備へ進める状態」です。
 
-2026-07-18にCloud／Desktop製品計画のPhase 1を完了しました。一般向けCloud Projectの永続化、RLS、非公開Asset、revision競合検出、Soft delete、Desktop一般作品のimport contractが揃い、次の製品開発対象はPhase 2のブラウザーEditor MVPです。詳細は[`PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md`](PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md)を参照してください。
+2026-07-18にCloud／Desktop製品計画のPhase 2まで完了しました。Phase 1の安全な保存基盤に加え、Project・Episode・Page管理、Asset Library、Canvas、コマ・レイヤー・吹き出し・縦横書き、自動保存、Undo / Redo、preview、PDF・連番画像・販売パッケージ書き出しが揃いました。次の製品開発対象はPhase 3の一般向けCloud AIです。詳細は[`PHASE2_CLOUD_CREATOR_EDITOR_COMPLETION.md`](PHASE2_CLOUD_CREATOR_EDITOR_COMPLETION.md)を参照してください。
 
 2026-07-15に低スペックPC向けのハイブリッド生成を最優先方針へ変更しました。既存RC基盤を維持しつつ、人物・センシティブ処理をローカルへ固定し、safeな背景・素材だけをAsset Libraryまたは外部Providerへrouteする基盤を追加します。Phase 1調査は[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)に記録しています。
 

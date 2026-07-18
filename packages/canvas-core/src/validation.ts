@@ -173,3 +173,84 @@ export const canvasBatchInputSchema = z
         message: "一括保存するオブジェクトのページが一致していません。",
       });
   });
+
+const persistedTimestamps = {
+  createdAt: z.string().max(100).default(""),
+  updatedAt: z.string().max(100).default(""),
+};
+
+export const pageCanvasSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    pageId: z.string().uuid(),
+    width: z.number().int().min(100).max(MAX_PAGE_EDGE),
+    height: z.number().int().min(100).max(MAX_PAGE_EDGE),
+    backgroundColor: z.string().regex(/^#[0-9a-f]{6}$/i),
+    panels: z.array(panelInputSchema.extend(persistedTimestamps)).max(500),
+    panelLayers: z
+      .array(panelLayerInputSchema.extend(persistedTimestamps))
+      .max(5000),
+    balloons: z.array(balloonInputSchema.extend(persistedTimestamps)).max(500),
+    textObjects: z
+      .array(textObjectInputSchema.extend(persistedTimestamps))
+      .max(1000),
+  })
+  .superRefine((value, context) => {
+    const objects = [...value.panels, ...value.balloons, ...value.textObjects];
+    if (objects.some((object) => object.pageId !== value.pageId))
+      context.addIssue({
+        code: "custom",
+        message: "CanvasオブジェクトのPageが一致していません。",
+      });
+    if (new Set(objects.map((object) => object.id)).size !== objects.length)
+      context.addIssue({
+        code: "custom",
+        message: "CanvasオブジェクトIDが重複しています。",
+      });
+    if (new Set(objects.map((object) => object.zIndex)).size !== objects.length)
+      context.addIssue({
+        code: "custom",
+        message: "Canvasの重なり順が重複しています。",
+      });
+    if (
+      new Set(value.panelLayers.map((layer) => layer.id)).size !==
+      value.panelLayers.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Panel Layer IDが重複しています。",
+      });
+    for (const panel of value.panels) {
+      const layers = value.panelLayers.filter(
+        (layer) => layer.panelId === panel.id,
+      );
+      if (
+        new Set(layers.map((layer) => layer.orderIndex)).size !== layers.length
+      )
+        context.addIssue({
+          code: "custom",
+          message: "Panel Layerの重なり順が重複しています。",
+        });
+    }
+    const balloonIds = new Set(value.balloons.map((balloon) => balloon.id));
+    const panelIds = new Set(value.panels.map((panel) => panel.id));
+    if (value.panelLayers.some((layer) => !panelIds.has(layer.panelId)))
+      context.addIssue({
+        code: "custom",
+        message: "Layerが存在しないコマを参照しています。",
+      });
+    if (
+      value.textObjects.some(
+        (text) => text.parentBalloonId && !balloonIds.has(text.parentBalloonId),
+      )
+    )
+      context.addIssue({
+        code: "custom",
+        message: "Textが存在しない吹き出しを参照しています。",
+      });
+    if (value.width * value.height > MAX_PAGE_PIXELS)
+      context.addIssue({
+        code: "custom",
+        message: "Canvasの総ピクセル数が上限を超えています。",
+      });
+  });

@@ -22,6 +22,11 @@ export async function Header() {
           </Link>
           {profile ? (
             <>
+              {profile.role === "creator" || profile.role === "admin" ? (
+                <Link className="button-secondary" href="/creator">
+                  Cloud Creator
+                </Link>
+              ) : null}
               <Link className="button-secondary" href="/dashboard">
                 マイページ
               </Link>

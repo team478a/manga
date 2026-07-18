@@ -8,6 +8,7 @@ import {
   ReceiptText,
   ShoppingBag,
   MonitorSmartphone,
+  PanelsTopLeft,
 } from "lucide-react";
 import { updateProfile } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
@@ -20,6 +21,12 @@ export default async function DashboardPage({
   const { profile } = await requireProfile();
   const params = await searchParams;
   const cards = [
+    {
+      title: "Cloud Creator",
+      body: "一般漫画のProject、Episode、Pageをブラウザーで制作します。",
+      href: "/creator",
+      icon: PanelsTopLeft,
+    },
     {
       title: "作品管理",
       body: "投稿した作品を見直し、公開状態を確認できます。",

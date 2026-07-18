@@ -25,6 +25,14 @@ begin
   if to_regclass('public.cloud_projects') is not null
      or to_regclass('public.cloud_assets') is not null
      or to_regprocedure('public.save_cloud_page_snapshot(uuid,bigint,jsonb)') is not null
+     or to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is not null
+     or to_regprocedure('public.add_cloud_episode(uuid,text)') is not null
+     or to_regprocedure('public.add_cloud_page(uuid)') is not null
+     or to_regprocedure('public.move_cloud_episode(uuid,integer)') is not null
+     or to_regprocedure('public.move_cloud_page(uuid,integer)') is not null
+     or to_regprocedure('public.soft_delete_cloud_episode(uuid)') is not null
+     or to_regprocedure('public.soft_delete_cloud_page(uuid)') is not null
+     or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is not null
      or exists (select 1 from storage.buckets where id = 'cloud-assets') then
     raise exception 'Cloud Creator Phase 1 objects remain after rollback';
   end if;

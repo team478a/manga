@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { pageCanvasSchema } from "@mangai/canvas-core";
 import {
   getCloudPageSnapshot,
   saveCloudPageSnapshot,
@@ -8,7 +9,7 @@ import { CLOUD_CANVAS_MAX_BYTES } from "@/lib/cloud-creator-contract";
 
 const saveSchema = z.object({
   expectedRevision: z.number().int().min(0),
-  canvas: z.record(z.string(), z.unknown()),
+  canvas: pageCanvasSchema,
 });
 
 export async function GET(
@@ -41,8 +42,11 @@ export async function PUT(
     if (Buffer.byteLength(body, "utf8") > CLOUD_CANVAS_MAX_BYTES)
       throw new Error("Canvas snapshotは2MB以下にしてください。");
     const input = saveSchema.parse(JSON.parse(body));
+    const pageId = (await context.params).pageId;
+    if (input.canvas.pageId !== pageId)
+      throw new Error("Canvasと保存先Pageが一致しません。");
     const data = await saveCloudPageSnapshot({
-      pageId: (await context.params).pageId,
+      pageId,
       ...input,
     });
     return NextResponse.json(data[0]);

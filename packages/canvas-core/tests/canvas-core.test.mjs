@@ -15,6 +15,7 @@ import {
   normalizeRotation,
   parseRubyText,
   pageSizeSchema,
+  pageCanvasSchema,
   pageTemplates,
   pageToViewport,
   panelInputSchema,
@@ -506,6 +507,57 @@ test("panel layer batch rejects mismatched panels and duplicate ordering", () =>
     panelLayersSaveSchema.safeParse({
       panelId,
       layers: [{ ...layer, panelId: randomUUID() }],
+    }).success,
+    false,
+  );
+});
+
+test("page canvas validates page ownership, unique IDs and balloon references", () => {
+  const pageId = randomUUID();
+  const balloonId = randomUUID();
+  const canvas = {
+    schemaVersion: 1,
+    pageId,
+    width: 1600,
+    height: 2400,
+    backgroundColor: "#ffffff",
+    panels: [],
+    panelLayers: [],
+    balloons: [],
+    textObjects: [],
+  };
+  assert.equal(pageCanvasSchema.safeParse(canvas).success, true);
+  assert.equal(
+    pageCanvasSchema.safeParse({
+      ...canvas,
+      textObjects: [
+        {
+          id: randomUUID(),
+          pageId,
+          parentBalloonId: balloonId,
+          name: "本文",
+          text: "テスト",
+          writingMode: "vertical",
+          x: 100,
+          y: 100,
+          width: 300,
+          height: 500,
+          rotation: 0,
+          zIndex: 1,
+          visible: true,
+          locked: false,
+          fontFamily: "sans-serif",
+          fontSize: 48,
+          fontWeight: 400,
+          color: "#111111",
+          textAlign: "start",
+          verticalAlign: "top",
+          lineHeight: 1.5,
+          letterSpacing: 0,
+          padding: 20,
+          opacity: 1,
+        },
+      ],
     }).success,
     false,
   );

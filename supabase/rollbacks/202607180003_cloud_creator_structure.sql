@@ -1,0 +1,13 @@
+begin;
+drop function if exists public.set_cloud_project_cover(uuid,uuid);
+drop function if exists public.soft_delete_cloud_page(uuid);
+drop function if exists public.soft_delete_cloud_episode(uuid);
+drop function if exists public.move_cloud_page(uuid,integer);
+drop function if exists public.move_cloud_episode(uuid,integer);
+drop function if exists public.rename_cloud_episode(uuid,text);
+drop function if exists public.rename_cloud_project(uuid,text,text);
+drop function if exists public.add_cloud_page(uuid);
+drop function if exists public.add_cloud_episode(uuid,text);
+drop function if exists public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer);
+alter table public.cloud_projects drop column if exists cover_page_id;
+commit;
