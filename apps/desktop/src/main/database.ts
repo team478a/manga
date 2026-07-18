@@ -53,6 +53,7 @@ import {
   generationRouteDecisionRecordSchema,
   projectGenerationPolicyInputSchema,
   projectGenerationPolicySchema,
+  phase5HardwareEvidenceSchema,
   routeDecisionSchema,
   routingContextSchema,
   type GenerationJobDraftInput,
@@ -68,6 +69,7 @@ import {
   type ProviderSettings,
   type RouteDecision,
   type RoutingContextInput,
+  type RuntimeProfileState,
 } from "@mangai/ai-core";
 import {
   applyPageTemplate,
@@ -4908,6 +4910,108 @@ export class MangaiDatabase {
           .prepare(`${sql} where project_id=? order by created_at desc`)
           .all(projectId)
       : this.db.prepare(`${sql} order by created_at desc`).all();
+  }
+  createPhase5HardwareEvidence(
+    projectId: string,
+    runtime: RuntimeProfileState,
+  ) {
+    const project = this.bundle(projectId).project;
+    if (project.contentClass !== "adult")
+      throw new Error("Phase 5実機証跡は成人向けProjectで作成してください。");
+    if (!["vram_8gb", "vram_12gb", "vram_16gb"].includes(runtime.effectiveProfile))
+      throw new Error("8GB／12GB／16GBの実機Profileを選択してください。");
+    const rows = this.db
+      .prepare(
+        `select j.input_json as inputJson,j.completed_at as completedAt,
+                a.sha256 as outputSha256
+         from generation_jobs j
+         join generation_outputs o on o.job_id=j.id
+         join assets a on a.id=o.asset_id
+         where j.project_id=? and j.provider_id='comfyui'
+           and j.status='completed' and j.completed_at is not null
+         order by j.completed_at desc,o.created_at desc`,
+      )
+      .all(projectId) as Array<{
+      inputJson: string;
+      completedAt: string;
+      outputSha256: string;
+    }>;
+    const required = [
+      "text_to_image",
+      "image_to_image",
+      "controlnet",
+      "inpainting",
+    ] as const;
+    const byOperation = new Map<
+      (typeof required)[number],
+      { operation: (typeof required)[number]; result: "passed"; outputSha256: string; completedAt: string }
+    >();
+    for (const row of rows) {
+      try {
+        const input = JSON.parse(row.inputJson) as Record<string, unknown>;
+        if (input.jobType !== "adult_character_render") continue;
+        const operation =
+          input.operation === undefined ? "text_to_image" : input.operation;
+        if (
+          !required.includes(operation as (typeof required)[number]) ||
+          byOperation.has(operation as (typeof required)[number])
+        )
+          continue;
+        byOperation.set(operation as (typeof required)[number], {
+          operation: operation as (typeof required)[number],
+          result: "passed",
+          outputSha256: row.outputSha256,
+          completedAt: row.completedAt,
+        });
+      } catch {
+        // Invalid legacy input cannot be used as acceptance evidence.
+      }
+    }
+    const missing = required.filter((operation) => !byOperation.has(operation));
+    if (missing.length)
+      throw new Error(
+        `実機証跡に必要な生成が不足しています: ${missing.join(", ")}`,
+      );
+    const exportRow = this.db
+      .prepare(
+        `select export_path as outputDir,files_json as filesJson,
+                created_at as createdAt
+         from export_history where project_id=? order by created_at desc limit 1`,
+      )
+      .get(projectId) as
+      | { outputDir: string; filesJson: string; createdAt: string }
+      | undefined;
+    if (!exportRow) throw new Error("実機確認後のProject書き出しがありません。");
+    const exportRoot = path.resolve(this.paths.exports) + path.sep;
+    const outputDir = path.resolve(exportRow.outputDir);
+    if (!`${outputDir}${path.sep}`.startsWith(exportRoot))
+      throw new Error("書き出し証跡の保存先を確認できません。");
+    const files = JSON.parse(exportRow.filesJson) as unknown;
+    if (!Array.isArray(files)) throw new Error("書き出し履歴が不正です。");
+    const digest = (name: string) => {
+      if (!files.includes(name)) throw new Error(`${name}の書き出しがありません。`);
+      const file = path.join(outputDir, name);
+      if (!fs.existsSync(file)) throw new Error(`${name}が見つかりません。`);
+      return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+    };
+    return phase5HardwareEvidenceSchema.parse({
+      format: "mangai.phase5-hardware-evidence",
+      version: 1,
+      profile: runtime.effectiveProfile,
+      hardware: {
+        totalRamBytes: runtime.hardware.totalRamBytes,
+        gpuName: runtime.hardware.gpuName,
+        dedicatedVramMb: runtime.hardware.dedicatedVramMb,
+      },
+      checkedAt: now(),
+      projectIdSha256: crypto.createHash("sha256").update(projectId).digest("hex"),
+      operations: required.map((operation) => byOperation.get(operation)!),
+      export: {
+        pdfSha256: digest("本編PDF.pdf"),
+        salesPackageSha256: digest("MANGAI販売パッケージ.zip"),
+        createdAt: exportRow.createdAt,
+      },
+    });
   }
   getGenerationJob(id: string) {
     return this.db

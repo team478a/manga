@@ -13,6 +13,7 @@
     "desktop:test": "npm --prefix apps/desktop run test",
     "phase5:offline-acceptance": "npm --prefix apps/desktop run test:phase5-offline",
     "phase5:hardware-acceptance": "node apps/desktop/scripts/check-phase5-hardware-acceptance.mjs",
+    "phase5:hardware-evidence:import": "node apps/desktop/scripts/check-phase5-hardware-acceptance.mjs --import",
     "phase5:hardware-acceptance:strict": "node apps/desktop/scripts/check-phase5-hardware-acceptance.mjs --strict",
     "desktop:test:a11y": "npm --prefix apps/desktop run test:a11y",
     "desktop:pack:win": "npm --prefix apps/desktop run pack:win",

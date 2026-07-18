@@ -33,13 +33,19 @@
 - Ollama／ComfyUI、workflow mapping、低VRAM設定の導入ガイド
 - Project単位暗号化を別要件として評価し、現行の運用条件を明記
 
-## 残る完了条件
+## Milestone 3: 実機証跡回収
+
+- MANGAI Desktopから、内容を含まない実機証跡JSONを保存可能
+- 証跡はGPU／VRAM／RAM、4方式の成果物hash、PDF／販売パッケージhashだけを保持
+- CLI取込み時にProfileのVRAM帯、全4方式、日時、SHA-256、書き出しを検証
+- 取込み後も8GB／12GB／16GBの全Profileが揃わない限りstrict判定は不合格
 
 ## 検証
 
-- Phase 5 offline受入れ: 1/1。成人向けInpainting、素材保存、Page配置、PDF・販売パッケージ書き出しまで成功
-- AI core: 41/41
-- Desktop統合: 86/86
+- Phase 5 offline受入れ: 1/1。成人向けText-to-Image／Img2Img／ControlNet／Inpainting、素材保存、Page配置、PDF・販売パッケージ書き出し、実機証跡作成まで成功
+- 実機証跡取込み: 2/2。正常取込みとVRAM帯不一致拒否に成功
+- AI core: 42/42
+- Desktop統合: 88/88
 - TypeScript、ESLint、Desktop production build: 成功
 - 日英29画面・状態のaxe監査: 違反0件
 - 8GB／12GB／16GB実機記録schema: 正常
@@ -52,4 +58,4 @@
 3. 16GB以上GPU Windows実機の同4操作
 4. 実機結果反映後のPhase 5完了監査資料
 
-状態: **リポジトリ実装完了／Windows GPU実機受入れ待ち**
+状態: **リポジトリ実装・証跡回収経路完了／Windows GPU実機3区分の受入れ待ち**

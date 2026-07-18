@@ -25,9 +25,51 @@ import {
   moderateGeneralCloudPrompt,
   shouldRetryCloudGeneration,
   evaluateCloudGenerationQuota,
+  phase5HardwareEvidenceSchema,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+const phase5Evidence = (profile = "vram_8gb", dedicatedVramMb = 8192) => ({
+  format: "mangai.phase5-hardware-evidence",
+  version: 1,
+  profile,
+  hardware: {
+    totalRamBytes: 32 * 1024 ** 3,
+    gpuName: "Acceptance GPU",
+    dedicatedVramMb,
+  },
+  checkedAt: "2026-07-18T00:00:00.000Z",
+  projectIdSha256: "a".repeat(64),
+  operations: [
+    "text_to_image",
+    "image_to_image",
+    "controlnet",
+    "inpainting",
+  ].map((operation) => ({
+    operation,
+    result: "passed",
+    outputSha256: "b".repeat(64),
+    completedAt: "2026-07-18T00:00:00.000Z",
+  })),
+  export: {
+    pdfSha256: "c".repeat(64),
+    salesPackageSha256: "d".repeat(64),
+    createdAt: "2026-07-18T00:00:00.000Z",
+  },
+});
+
+test("Phase 5 hardware evidence validates profile range and four workflows", () => {
+  assert.equal(phase5HardwareEvidenceSchema.parse(phase5Evidence()).profile, "vram_8gb");
+  assert.equal(
+    phase5HardwareEvidenceSchema.safeParse(phase5Evidence("vram_12gb", 8192))
+      .success,
+    false,
+  );
+  const incomplete = phase5Evidence();
+  incomplete.operations.pop();
+  assert.equal(phase5HardwareEvidenceSchema.safeParse(incomplete).success, false);
+});
 
 const quota = {
   planKey: "free",

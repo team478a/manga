@@ -141,6 +141,10 @@ contextBridge.exposeInMainWorld("mangai", {
   },
   ai: {
     runtimeInfo: () => ipcRenderer.invoke("ai:runtime"),
+    exportPhase5HardwareEvidence: (projectId: string) =>
+      ipcRenderer.invoke("ai:phase5:hardware-evidence:export", {
+        id: projectId,
+      }),
     saveRuntimeProfile: (selection: unknown) =>
       ipcRenderer.invoke("ai:runtime:save", { selection }),
     getGenerationPolicy: (projectId: string) =>

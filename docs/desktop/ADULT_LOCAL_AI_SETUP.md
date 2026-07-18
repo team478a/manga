@@ -73,6 +73,21 @@ mapping例:
 
 各端末でText-to-Image、Image-to-Image、ControlNet、Inpaintingを1枚ずつ実行し、生成後に保存・Page配置・PDF書き出しまで確認する。
 
+### 実機証跡の登録
+
+1. 対象端末で8GB、12GB、16GB以上の該当Runtime Profileを選択する。
+2. 同じ成人向けProjectとローカルComfyUIで4方式を各1枚成功させる。
+3. 生成画像をPageへ配置し、Projectを書き出す。
+4. AI生成画面の「Phase 5実機証跡を保存」でJSONを保存する。
+5. 開発リポジトリで次を実行する。
+
+```powershell
+npm run phase5:hardware-evidence:import -- C:\path\to\phase5-hardware-evidence.json
+npm run phase5:hardware-acceptance:strict
+```
+
+証跡にはGPU名・VRAM・RAM、4方式の結果hash、PDFと販売パッケージのhashだけを記録する。Project IDはSHA-256化し、Prompt、参照画像、生成画像、成人向け内容は含めない。Profileと実VRAM帯が一致しない証跡、4方式または書き出しが不足する証跡は登録できない。
+
 ## Project privacy評価
 
 現行ProjectはWindowsユーザー領域のローカルフォルダーへ保存されるが、Project単位の暗号化は未実装である。BitLocker、Windowsアカウント分離、画面ロック、暗号化バックアップを配布前の運用条件とする。アプリ内暗号化は鍵回復、検索・サムネイル、バックアップ互換性を含む別要件として設計する。

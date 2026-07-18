@@ -407,6 +407,10 @@ const ja = {
     "入力画像とマスクは端末内のlocalhost ComfyUIだけへ渡され、外部Providerへ送信されません。",
   "generation.workflowOperationUnsupported":
     "選択中のworkflowには、この生成モードに必要な入力mappingがありません。",
+  "generation.hardwareEvidenceExport": "Phase 5実機証跡を保存",
+  "generation.hardwareEvidenceHelp":
+    "4種類の生成とProject書き出しが完了すると、Promptや画像を含まないSHA-256証跡を保存できます。",
+  "generation.hardwareEvidenceSaved": "実機証跡を保存しました: {path}",
   "generation.safeAssetTitle": "Project内のsafe素材を探す",
   "generation.safeAssetDescription":
     "背景・小物・効果をAsset Libraryから検索します。この検索は外部へ送信されません。",
@@ -1396,6 +1400,10 @@ const en: Record<TranslationKey, string> = {
     "Input images and masks are sent only to localhost ComfyUI on this device, never to an external provider.",
   "generation.workflowOperationUnsupported":
     "The selected workflow does not have the input mappings required by this generation mode.",
+  "generation.hardwareEvidenceExport": "Save Phase 5 hardware evidence",
+  "generation.hardwareEvidenceHelp":
+    "After all four generation modes and a project export pass, save SHA-256 evidence without prompts or images.",
+  "generation.hardwareEvidenceSaved": "Hardware evidence saved: {path}",
   "generation.safeAssetTitle": "Find safe assets in this project",
   "generation.safeAssetDescription":
     "Search the Asset Library for backgrounds, props, and effects. This search never leaves the device.",

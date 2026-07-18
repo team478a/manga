@@ -715,6 +715,29 @@ function register() {
     runtimeProfile: runtimeProfile.getState(),
     dezgo: dezgoFeatures,
   }));
+  handle("ai:phase5:hardware-evidence:export", async (v) => {
+    const projectId = projectIdSchema.parse(v).id;
+    const evidence = store.createPhase5HardwareEvidence(
+      projectId,
+      runtimeProfile.getState(),
+    );
+    const directory = path.join(desktopPaths().root, "acceptance");
+    fs.mkdirSync(directory, { recursive: true });
+    const result = await dialog.showSaveDialog({
+      title: "Phase 5 Windows実機証跡を保存",
+      defaultPath: path.join(
+        directory,
+        `phase5-${evidence.profile}-${new Date().toISOString().slice(0, 10)}.json`,
+      ),
+      filters: [{ name: "MANGAI Phase 5実機証跡", extensions: ["json"] }],
+    });
+    if (result.canceled || !result.filePath) return null;
+    fs.writeFileSync(result.filePath, JSON.stringify(evidence, null, 2), {
+      encoding: "utf8",
+      mode: 0o600,
+    });
+    return { filePath: result.filePath, evidence };
+  });
   handle("ai:credential:state", async (v) => {
     const { providerId } = credentialProviderSchema.parse(v);
     if (!dezgoFeatures.dezgoProviderEnabled)

@@ -107,7 +107,7 @@ test("adult local generation requires device, age, project and content checks", 
   }
 });
 
-test("Phase 5 offline adult inpainting reaches saved page and PDF export", async (t) => {
+test("Phase 5 offline adult workflows reach saved page, export and hardware evidence", async (t) => {
   const png = await sharp({
     create: { width: 64, height: 64, channels: 4, background: "#884466" },
   })
@@ -218,6 +218,7 @@ test("Phase 5 offline adult inpainting reaches saved page and PDF export", async
     prompt: { nodeId: "6", input: "text" },
     negativePrompt: { nodeId: "7", input: "text" },
     sourceImage: { nodeId: "1", input: "image" },
+    controlImage: { nodeId: "1", input: "image" },
     maskImage: { nodeId: "2", input: "image" },
     denoiseStrength: { nodeId: "3", input: "denoise" },
   })[0];
@@ -226,29 +227,42 @@ test("Phase 5 offline adult inpainting reaches saved page and PDF export", async
     userConfirmed18Plus: true,
     termsVersion: ADULT_GENERATION_TERMS_VERSION,
   });
-  const generated = await new AIService(db, {
+  const service = new AIService(db, {
     getRuntimeProfile: () => runtimeState("vram_8gb"),
-  }).generateImage({
-    projectId: project.project.id,
-    workflowId: workflow.id,
-    prompt: "repair the hand of the fictional consenting adult age 25",
-    operation: "inpainting",
-    sourceAssetId: project.assets[0].id,
-    maskAssetId: project.assets[1].id,
-    characterProfileId: profile.id,
-    denoiseStrength: 0.35,
-    jobType: "adult_character_render",
-    adultContentConfirmation: {
-      fictionalAdultsOnly: true,
-      allCharacters18Plus: true,
-      noMinorOrAgeAmbiguousAppearance: true,
-      noRealPersonReference: true,
-      consensualAndNonExploitativeOnly: true,
-      rightsConfirmed: true,
-    },
   });
-  assert.equal(generated.status, "completed");
-  assert.equal(uploadCount, 2);
+  let generated;
+  for (const operation of [
+    "text_to_image",
+    "image_to_image",
+    "controlnet",
+    "inpainting",
+  ]) {
+    generated = await service.generateImage({
+      projectId: project.project.id,
+      workflowId: workflow.id,
+      prompt: "fictional consenting adult, explicitly age 25",
+      operation,
+      ...(operation === "text_to_image"
+        ? {}
+        : { sourceAssetId: project.assets[0].id }),
+      ...(operation === "inpainting"
+        ? { maskAssetId: project.assets[1].id }
+        : {}),
+      characterProfileId: profile.id,
+      denoiseStrength: 0.35,
+      jobType: "adult_character_render",
+      adultContentConfirmation: {
+        fictionalAdultsOnly: true,
+        allCharacters18Plus: true,
+        noMinorOrAgeAmbiguousAppearance: true,
+        noRealPersonReference: true,
+        consensualAndNonExploitativeOnly: true,
+        rightsConfirmed: true,
+      },
+    });
+    assert.equal(generated.status, "completed");
+  }
+  assert.equal(uploadCount, 4);
   const outputAsset = generated.bundle.assets.find(
     (asset) => asset.fileName === "corrected.png",
   );
@@ -263,6 +277,17 @@ test("Phase 5 offline adult inpainting reaches saved page and PDF export", async
     exported.files.some((file) => file === "Cloud移行Project.json"),
     false,
   );
+  const evidence = db.createPhase5HardwareEvidence(
+    project.project.id,
+    runtimeState("vram_8gb"),
+  );
+  assert.equal(evidence.profile, "vram_8gb");
+  assert.deepEqual(
+    evidence.operations.map((item) => item.operation),
+    ["text_to_image", "image_to_image", "controlnet", "inpainting"],
+  );
+  assert.match(evidence.export.pdfSha256, /^[0-9a-f]{64}$/);
+  assert.match(evidence.export.salesPackageSha256, /^[0-9a-f]{64}$/);
 });
 
 test("runtime profile detects active GPU and restores a saved selection", () => {

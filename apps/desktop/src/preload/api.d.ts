@@ -16,6 +16,7 @@ import type {
   GenerationRouteDecisionRecord,
   GenerationQueueSettings,
   PageBatchImageRequest,
+  Phase5HardwareEvidence,
   ComfyWorkflowOptimization,
   ComfyLowSpecRuntimeReport,
   ExternalDispatchConfirmation,
@@ -336,6 +337,12 @@ export type DesktopApi = {
         dezgoBatchGenerationEnabled: false;
       };
     }>;
+    exportPhase5HardwareEvidence: (
+      projectId: string,
+    ) => Promise<{
+      filePath: string;
+      evidence: Phase5HardwareEvidence;
+    } | null>;
     saveRuntimeProfile: (
       selection: RuntimeProfileSelection,
     ) => Promise<RuntimeProfileState>;

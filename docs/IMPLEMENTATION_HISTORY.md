@@ -1211,3 +1211,11 @@ Supabase staging適用、Stripe test modeの実Checkout／Portal／署名webhook
 診断・クラッシュ情報ではPrompt、Negative Prompt、入力画像、マスク、画像bytes、生成input/outputを常時除外し、自由文の例外messageも保存しないようにしました。モデルlicenseは未確認を自動推測せず端末画面へ表示し、Ollama／ComfyUI／低VRAM導入ガイドとProject暗号化の別要件評価を記録しました。
 
 Phase 5 offline受入れ1/1、AI core 41/41、Desktop統合86/86、TypeScript、ESLint、Desktop production build、日英29画面・状態のaxe違反0件に成功しました。8GB／12GB／16GB Windows GPU実機の結果は構造化statusとstrict判定へ分離し、現端末に対象GPUとOllama／ComfyUIがないためpending 3件を成功扱いしていません。
+
+## 141. Phase 5 Windows GPU実機証跡ワークフロー
+
+MANGAI Desktopへ、成人向けProjectの実機受入れ証跡を保存する機能を追加しました。同じProjectでローカルComfyUIによるText-to-Image、Image-to-Image、ControlNet、Inpaintingがすべて成功し、PDFと販売パッケージを書き出した場合だけJSONを作成します。Prompt、参照画像、生成画像、成人向け内容は含めず、Project IDもSHA-256化します。
+
+証跡取込みCLIは8GB／12GB／16GB Profileと実VRAM帯の一致、全4方式の結果hashと日時、PDF／販売パッケージhashを検証します。不足・改変・VRAM帯不一致を拒否し、全3区分の証跡が揃うまでstrict判定を成功させません。
+
+AI core 42/42、Desktop統合88/88、Phase 5オフライン受入れ1/1、証跡取込み2/2に成功しました。オフライン受入れは4方式の生成からPage配置、PDF／販売パッケージ書き出し、証跡作成までを連続検証します。実GPU 3区分は引き続きpendingであり、実行していない結果は記録していません。

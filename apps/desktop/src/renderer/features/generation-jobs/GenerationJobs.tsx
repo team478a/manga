@@ -254,6 +254,8 @@ export function GenerationJobs({
   const [queueSettingsMessage, setQueueSettingsMessage] = React.useState("");
   const [batchBusy, setBatchBusy] = React.useState(false);
   const [batchMessage, setBatchMessage] = React.useState("");
+  const [hardwareEvidenceMessage, setHardwareEvidenceMessage] =
+    React.useState("");
   const [dezgoDispatchEnabled, setDezgoDispatchEnabled] = React.useState<
     boolean | null
   >(null);
@@ -1100,6 +1102,41 @@ export function GenerationJobs({
               </p>
             )}
             <small>{t("generation.localInputHelp")}</small>
+            {bundle.project.contentClass === "adult" && (
+              <div className="inline">
+                <button
+                  className="secondary"
+                  onClick={async () => {
+                    setError("");
+                    setHardwareEvidenceMessage("");
+                    try {
+                      const result =
+                        await window.mangai.ai.exportPhase5HardwareEvidence(
+                          bundle.project.id,
+                        );
+                      if (result)
+                        setHardwareEvidenceMessage(
+                          t("generation.hardwareEvidenceSaved", {
+                            path: result.filePath,
+                          }),
+                        );
+                    } catch (cause) {
+                      setError(
+                        cause instanceof Error ? cause.message : String(cause),
+                      );
+                    }
+                  }}
+                >
+                  {t("generation.hardwareEvidenceExport")}
+                </button>
+                <small>{t("generation.hardwareEvidenceHelp")}</small>
+              </div>
+            )}
+            {hardwareEvidenceMessage && (
+              <p className="notice" role="status">
+                {hardwareEvidenceMessage}
+              </p>
+            )}
           </div>
           <div className="notice" role="region">
             <h3>{t("generation.pageBatchTitle")}</h3>

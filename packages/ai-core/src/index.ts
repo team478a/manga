@@ -312,6 +312,75 @@ export type ComfyLowSpecRuntimeReport = {
   reserveVramGb: number | null;
   runtimeChecksPassed: boolean;
 };
+export const phase5HardwareProfileSchema = z.enum([
+  "vram_8gb",
+  "vram_12gb",
+  "vram_16gb",
+]);
+export const phase5HardwareEvidenceSchema = z
+  .object({
+    format: z.literal("mangai.phase5-hardware-evidence"),
+    version: z.literal(1),
+    profile: phase5HardwareProfileSchema,
+    hardware: z.object({
+      totalRamBytes: z.number().int().positive(),
+      gpuName: z.string().trim().min(1).max(500),
+      dedicatedVramMb: z.number().int().positive(),
+    }),
+    checkedAt: z.string().datetime(),
+    projectIdSha256: z.string().regex(/^[0-9a-f]{64}$/),
+    operations: z.array(
+      z.object({
+        operation: z.enum([
+          "text_to_image",
+          "image_to_image",
+          "controlnet",
+          "inpainting",
+        ]),
+        result: z.literal("passed"),
+        outputSha256: z.string().regex(/^[0-9a-f]{64}$/),
+        completedAt: z.string().datetime(),
+      }),
+    ),
+    export: z.object({
+      pdfSha256: z.string().regex(/^[0-9a-f]{64}$/),
+      salesPackageSha256: z.string().regex(/^[0-9a-f]{64}$/),
+      createdAt: z.string().datetime(),
+    }),
+  })
+  .superRefine((value, context) => {
+    const ranges = {
+      vram_8gb: [8 * 1024, 12 * 1024],
+      vram_12gb: [12 * 1024, 16 * 1024],
+      vram_16gb: [16 * 1024, Number.POSITIVE_INFINITY],
+    } as const;
+    const [minimum, maximum] = ranges[value.profile];
+    if (
+      value.hardware.dedicatedVramMb < minimum ||
+      value.hardware.dedicatedVramMb >= maximum
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["hardware", "dedicatedVramMb"],
+        message: "GPU VRAMが選択した実機Profileの範囲外です。",
+      });
+    const operations = new Set(value.operations.map((item) => item.operation));
+    for (const operation of [
+      "text_to_image",
+      "image_to_image",
+      "controlnet",
+      "inpainting",
+    ] as const)
+      if (!operations.has(operation))
+        context.addIssue({
+          code: "custom",
+          path: ["operations"],
+          message: `${operation}の成功証跡がありません。`,
+        });
+  });
+export type Phase5HardwareEvidence = z.infer<
+  typeof phase5HardwareEvidenceSchema
+>;
 export function analyzeComfyWorkflowOptimization(
   workflow: Record<string, unknown>,
 ): ComfyWorkflowOptimization {
