@@ -137,6 +137,7 @@ const checks = [
         environment.MANGAI_DB_ENV === "staging" ? "configured" : "missing",
       ],
       ["PGHOST", stateOf("PGHOST")],
+      ["MANGAI_STAGING_PROJECT_REF", stateOf("MANGAI_STAGING_PROJECT_REF")],
       ["PGPORT", stateOf("PGPORT")],
       ["PGDATABASE", stateOf("PGDATABASE")],
       ["PGUSER", stateOf("PGUSER")],

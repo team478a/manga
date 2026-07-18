@@ -7,7 +7,7 @@ MANGAI HubのSupabase PostgreSQL変更を、安全に追加・検証・取り消
 - `supabase/schema.sql`: 新規環境を現在の完全な状態へ構築する正規スキーマ
 - `supabase/migrations/{id}_{name}.sql`: 既存環境へ順番に適用するforward SQL
 - `supabase/rollbacks/{id}_{name}.sql`: 対応する変更を取り消すrollback SQL
-- `supabase/migrations/manifest.json`: 適用順序と説明を管理するmanifest
+- `supabase/migrations/manifest.json`: 適用順序、説明、forward／rollback／正規schemaのSHA-256を管理するmanifest
 - `supabase/tests/`: PostgreSQL 16上で使うbootstrapとassertion
 
 `id`は12桁の日時形式で昇順にし、forwardとrollbackで同じファイル名を使用します。各SQLは明示的な`begin;`と`commit;`を1組だけ持たせます。
@@ -38,7 +38,16 @@ MANGAI HubのSupabase PostgreSQL変更を、安全に追加・検証・取り消
 npm run db:migrations:validate
 ```
 
-この検査はmanifestの順序と重複、forward/rollbackの一対一対応、トランザクション境界、forward SQLへの破壊的命令の混入、正規スキーマとの対応を確認します。
+この検査はmanifestの順序と重複、forward/rollbackの一対一対応、トランザクション境界、forward SQLへの破壊的命令の混入、正規スキーマとの対応、レビュー済みSQLのSHA-256を確認します。
+
+migrationまたは正規schemaを意図的に変更した場合は、差分をレビューしてからchecksumを更新します。
+
+```powershell
+npm run db:migrations:checksums:update
+npm run db:migrations:validate
+```
+
+checksum更新だけでSQL変更の安全性が証明されるわけではありません。必ずSQL差分、rollback、PostgreSQL往復試験を同じレビューで確認します。
 
 ## CIの往復検証
 
@@ -59,6 +68,7 @@ PostgreSQL clientの`psql`をインストールし、staging専用の接続情�
 
 ```powershell
 $env:MANGAI_DB_ENV = "staging"
+$env:MANGAI_STAGING_PROJECT_REF = "your-staging-project-ref"
 $env:PGHOST = "db.your-project.supabase.co"
 $env:PGPORT = "5432"
 $env:PGDATABASE = "postgres"
@@ -68,7 +78,7 @@ $env:PGSSLMODE = "require"
 npm run db:staging:preflight
 ```
 
-preflightは読み取り専用トランザクション内で、PostgreSQL version、主要表と列、RLS、関数権限、Storage bucket・policy、無効index、承認済み端末データの整合性を検査します。作品・商品・端末認証の件数だけを表示し、migration適用やrollbackは行いません。接続情報やパスワードも出力しません。
+preflightは`MANGAI_STAGING_PROJECT_REF`が`PGHOST`またはSupabase pooler用`PGUSER`に含まれることを先に確認し、production Projectへの取り違えを拒否します。その後、読み取り専用トランザクション内でPostgreSQL version、主要表と列、RLS、関数権限、Storage bucket・policy、無効index、承認済み端末データの整合性を検査します。作品・商品・端末認証の件数だけを表示し、migration適用やrollbackは行いません。接続情報やパスワードも出力しません。
 
 ## 本番適用手順
 
@@ -84,7 +94,7 @@ preflightは読み取り専用トランザクション内で、PostgreSQL versio
 ## 新しいmigrationの追加
 
 1. 次のIDでforwardとrollbackを作成します。
-2. `manifest.json`へ同じID、名前、説明を追加します。
+2. `manifest.json`へ同じID、名前、説明を追加し、SQLレビュー後にchecksumを更新します。
 3. `schema.sql`にも最終状態を反映します。
 4. 必要なbootstrapまたはassertionを追加します。
 5. 静的検査とHubのTypeScript、ESLint、本番ビルドを実行します。

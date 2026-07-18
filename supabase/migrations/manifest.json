@@ -3,55 +3,82 @@
   "migrations": [
     {
       "id": "202607140001_sales_package_import",
-      "description": "販売パッケージのサンプル画像、Desktop Project ID、Storage削除policyを追加"
+      "description": "販売パッケージのサンプル画像、Desktop Project ID、Storage削除policyを追加",
+      "forwardSha256": "a9f80eb22a9da2cd068f98ee1e32b08275a64304e4943d2be77aa8d2c7adadad",
+      "rollbackSha256": "8433b86839a39149cb33b7c9371d9716ba591704f33ba9aa3eda46f3d0bd755b"
     },
     {
       "id": "202607140002_desktop_device_auth",
-      "description": "Desktop端末コード認証と失効情報を追加"
+      "description": "Desktop端末コード認証と失効情報を追加",
+      "forwardSha256": "d05d1fa726f7d4e3bd59842d51be2fa3080e785b44edac56d50a99a10cb730c5",
+      "rollbackSha256": "c38bbb3af194cd6341920b3677ab73e6fb5a28da0f045ee17ae232cf402a2fb0"
     },
     {
       "id": "202607140003_device_rate_limit",
-      "description": "端末認証rate limitと期限切れ認証清掃を追加"
+      "description": "端末認証rate limitと期限切れ認証清掃を追加",
+      "forwardSha256": "0abb729ba76c5493f9390d60da643f226c0393f8b35f8168d22016594cb656aa",
+      "rollbackSha256": "f5a66a36c2248d0c564a375db61ca907287e30b53fb5056cf619342b37214999"
     },
     {
       "id": "202607180001_content_class_boundary",
-      "description": "一般向けCloudと成人向けDesktopの作品区分境界を追加"
+      "description": "一般向けCloudと成人向けDesktopの作品区分境界を追加",
+      "forwardSha256": "f6770ed1f156cc7270e878048ed82da97a84c2a09b1dfe6753cd87e76b3be7e0",
+      "rollbackSha256": "13a7d51e87f22122e176d04885d7ce634b902aaaab5edbb5a495e6e263eabfee"
     },
     {
       "id": "202607180002_cloud_creator_foundation",
-      "description": "Cloud CreatorのProject保存、RLS、revision、非公開Asset基盤を追加"
+      "description": "Cloud CreatorのProject保存、RLS、revision、非公開Asset基盤を追加",
+      "forwardSha256": "376fc5a1db87ecf62296d125e0754f7eef44ebd268e668841c3952ab14e4398e",
+      "rollbackSha256": "8973621a9245689c3357306a02e026d462ba812efa677071e77fea1cf4da09f0"
     },
     {
       "id": "202607180003_cloud_creator_structure",
-      "description": "Cloud CreatorのProject、Episode、Pageを履歴付きtransactionで管理"
+      "description": "Cloud CreatorのProject、Episode、Pageを履歴付きtransactionで管理",
+      "forwardSha256": "4cc1fd752a28e4c66a61ea8aec8c0c6546ba693c10d62a3dec1d785bd79e03bd",
+      "rollbackSha256": "4aeb191cf92c378b96c842b45dc4b8a735734f6ac7324bc940ebbda5b1192a4c"
     },
     {
       "id": "202607180004_cloud_ai_queue",
-      "description": "一般向けCloud AIの永続Job、moderation、idempotency、worker leaseを追加"
+      "description": "一般向けCloud AIの永続Job、moderation、idempotency、worker leaseを追加",
+      "forwardSha256": "fc9d3af0160fd79a5c16d8f2a7a068aa3397cbb915212e5e452e646df9d2bb9f",
+      "rollbackSha256": "289fd2f28cc2b8153c054181d0a2f47227025bcfc628cb5090a5d49eacd8220e"
     },
     {
       "id": "202607180005_cloud_ai_billing",
-      "description": "Cloud AI plan、quota、原価予約ledger、rate limit、予算停止を追加"
+      "description": "Cloud AI plan、quota、原価予約ledger、rate limit、予算停止を追加",
+      "forwardSha256": "e68ba1c6e1cccc3bab0fdd7266c8358e2fa8df69454a2a34b2f64932b83cb7ff",
+      "rollbackSha256": "16ceb2d177f7f362746468344781d8eaf62ef7e7e8b5b9542f053cfe548f6d91"
     },
     {
       "id": "202607180006_stripe_cloud_entitlements",
-      "description": "Stripe Subscription eventをCloud AI entitlementへ順序保証付きで反映"
+      "description": "Stripe Subscription eventをCloud AI entitlementへ順序保証付きで反映",
+      "forwardSha256": "b7194c62447432198dbe3745f49710800e3b1ccab11e3135e5ae23eb7a6e1784",
+      "rollbackSha256": "7103a154a76cde4dd2fe5edc6a5384d6d6c7b74358b9233ad6851b2bd8de4fd7"
     },
     {
       "id": "202607180007_buyer_purchase_library",
-      "description": "購入者Profileに支払済み注文を関連付け、購入履歴と再ダウンロードを追加"
+      "description": "購入者Profileに支払済み注文を関連付け、購入履歴と再ダウンロードを追加",
+      "forwardSha256": "92aae11a652d118758dc636057efa4b64824d7c6ae35fd960c4ba122f6e93230",
+      "rollbackSha256": "7edb6246120c665fa5d62b5a54d94efdf751ce45539e78488a80a9f5fb504b72"
     },
     {
       "id": "202607180008_cloud_marketplace_draft",
-      "description": "Cloud Projectから非公開作品と停止中商品をtransaction同期"
+      "description": "Cloud Projectから非公開作品と停止中商品をtransaction同期",
+      "forwardSha256": "c14ad5986ed790ff47fc4d820e8101cc05906a647a59880bda792e937cba8081",
+      "rollbackSha256": "181e96319c91e4d11bdabd64ef75645fef66596a9ec235e3611c5974ff43ea61"
     },
     {
       "id": "202607180009_cloud_ai_admin_audit",
-      "description": "Cloud AI管理操作の変更前後を監査ログへ記録"
+      "description": "Cloud AI管理操作の変更前後を監査ログへ記録",
+      "forwardSha256": "6637afe1e7ac92b91dbbe43b40c3f35522ba558e24cc9ddbd8464e07ac173d14",
+      "rollbackSha256": "9d9bba8778a92cd2ee8a4655f23e297720d1a542f67d7cc9b0f1045b7adf2a89"
     },
     {
       "id": "202607180010_cloud_ai_notifications",
-      "description": "quota・失敗Job・予算警告・生成停止通知を永続化"
+      "description": "quota・失敗Job・予算警告・生成停止通知を永続化",
+      "forwardSha256": "de3c522bf848ffe0e7dff54b00d08255ae4ffd60b5837a26611604c06d48e710",
+      "rollbackSha256": "ca13c9aba028e12fa3d403c56bf1ae85de6e0fe6546c01f50c09d8c47784498d"
     }
-  ]
+  ],
+  "schemaSha256": "8882269a8ad069f47e27cdef1846bee9c8427cd0ca42e62ef9173fa24f7a6a2b"
 }

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +9,11 @@ const migrationsDirectory = path.join(root, "supabase", "migrations");
 const rollbacksDirectory = path.join(root, "supabase", "rollbacks");
 const manifestPath = path.join(migrationsDirectory, "manifest.json");
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+const digest = (file) =>
+  crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(file, "utf8").replace(/\r\n/g, "\n"))
+    .digest("hex");
 
 assert.equal(manifest.version, 1, "migration manifest version must be 1");
 assert.ok(
@@ -61,6 +67,11 @@ for (const migration of manifest.migrations) {
       path.join(directory, `${migration.id}.sql`),
       "utf8",
     );
+    assert.equal(
+      migration[`${kind}Sha256`],
+      digest(path.join(directory, `${migration.id}.sql`)),
+      `${kind} ${migration.id} checksum mismatch; review the SQL and run db:migrations:checksums:update`,
+    );
     assert.match(
       sql,
       /^begin;\s/i,
@@ -88,6 +99,11 @@ for (const migration of manifest.migrations) {
 const schema = fs.readFileSync(
   path.join(root, "supabase", "schema.sql"),
   "utf8",
+);
+assert.equal(
+  manifest.schemaSha256,
+  digest(path.join(root, "supabase", "schema.sql")),
+  "schema.sql checksum mismatch; review it and run db:migrations:checksums:update",
 );
 for (const required of [
   "sample_image_urls",

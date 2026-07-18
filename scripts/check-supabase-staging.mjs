@@ -14,6 +14,7 @@ const help = `MANGAI Hub Supabase staging preflight
 
 Required environment:
   MANGAI_DB_ENV=staging
+  MANGAI_STAGING_PROJECT_REF
   PGHOST, PGDATABASE, PGUSER
   PGPASSWORD or a configured pgpass file
 
@@ -35,12 +36,39 @@ if (process.env.MANGAI_DB_ENV !== "staging") {
   process.exit(1);
 }
 
+const localTest = process.env.MANGAI_DB_LOCAL_TEST === "1";
 const missing = ["PGHOST", "PGDATABASE", "PGUSER"].filter(
   (name) => !process.env[name]?.trim(),
 );
+if (
+  !localTest &&
+  !process.env.MANGAI_STAGING_PROJECT_REF?.trim()
+)
+  missing.push("MANGAI_STAGING_PROJECT_REF");
 if (missing.length > 0) {
   console.error(`Missing database environment: ${missing.join(", ")}`);
   process.exit(1);
+}
+
+const loopback = new Set(["127.0.0.1", "localhost", "::1"]);
+if (localTest) {
+  if (!loopback.has(process.env.PGHOST.toLowerCase())) {
+    console.error("MANGAI_DB_LOCAL_TEST is allowed only for a loopback database.");
+    process.exit(1);
+  }
+} else {
+  const projectRef = process.env.MANGAI_STAGING_PROJECT_REF.toLowerCase();
+  if (!/^[a-z0-9-]{8,64}$/.test(projectRef)) {
+    console.error("MANGAI_STAGING_PROJECT_REF has an invalid format.");
+    process.exit(1);
+  }
+  const targetIdentity = `${process.env.PGHOST} ${process.env.PGUSER}`.toLowerCase();
+  if (!targetIdentity.includes(projectRef)) {
+    console.error(
+      "Refusing to run: PGHOST or PGUSER does not match MANGAI_STAGING_PROJECT_REF.",
+    );
+    process.exit(1);
+  }
 }
 
 const result = spawnSync(

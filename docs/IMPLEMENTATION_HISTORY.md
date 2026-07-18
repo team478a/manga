@@ -1219,3 +1219,11 @@ MANGAI Desktopへ、成人向けProjectの実機受入れ証跡を保存する�
 証跡取込みCLIは8GB／12GB／16GB Profileと実VRAM帯の一致、全4方式の結果hashと日時、PDF／販売パッケージhashを検証します。不足・改変・VRAM帯不一致を拒否し、全3区分の証跡が揃うまでstrict判定を成功させません。
 
 AI core 42/42、Desktop統合88/88、Phase 5オフライン受入れ1/1、証跡取込み2/2に成功しました。オフライン受入れは4方式の生成からPage配置、PDF／販売パッケージ書き出し、証跡作成までを連続検証します。実GPU 3区分は引き続きpendingであり、実行していない結果は記録していません。
+
+## 142. Supabase staging適用前のDB整合性強化
+
+13組のSupabase forward／rollback migrationと正規schemaへ、改行差を正規化したSHA-256をmanifestに固定しました。静的検査は順序、対応ファイル、transaction、破壊的SQLに加えてchecksum不一致も拒否します。意図したSQL変更時だけ、差分レビュー後に専用コマンドでchecksumを更新します。
+
+staging読み取り専用preflightは、明示したSupabase Project refが接続先hostまたはpooler userへ含まれない場合に停止するよう強化しました。CI用の例外はloopback DBだけに限定し、外部DBへの迂回利用を拒否します。これにより`MANGAI_DB_ENV=staging`の設定だけでproductionへ誤接続する経路を閉じています。
+
+PostgreSQL 16の使い捨てDBで13 migrationのforward、全rollback、再適用、正規schema二重適用、read-only preflightを完走しました。Hub回帰33/33、接続先ガード3/3、migration静的検査13件に成功しています。実Supabase stagingへの適用は、staging Projectと資格情報を準備した後の外部環境受入れとして残します。

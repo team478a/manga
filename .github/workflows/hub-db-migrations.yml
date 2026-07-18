@@ -81,6 +81,7 @@ jobs:
       - name: Run read-only staging preflight against test schema
         env:
           MANGAI_DB_ENV: staging
+          MANGAI_DB_LOCAL_TEST: "1"
           PGDATABASE: current_schema
           PGSSLMODE: disable
         run: node scripts/check-supabase-staging.mjs
