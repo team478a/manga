@@ -124,6 +124,8 @@ interface ContentExecutionPolicy {
 
 ### Phase 1: Cloud Creatorデータ基盤
 
+状態: **完了（2026-07-18）**。実装範囲と検証証跡は[Phase 1完了報告](PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md)を参照する。
+
 目的: ブラウザー編集を保存できる安全な土台を作る。
 
 実装:
@@ -144,6 +146,8 @@ interface ContentExecutionPolicy {
 - Page変更を再読込後に復元できる
 - 競合更新を上書きせず検出できる
 - 成人向けmanifestをimportできない
+
+上記4条件はローカルのPostgreSQL 16、Hub単体テスト、Desktop統合テストで確認済み。実Supabase stagingへの適用は、外部環境を使用するRC受入れとして別管理する。
 
 ### Phase 2: Cloud Creator Editor MVP
 

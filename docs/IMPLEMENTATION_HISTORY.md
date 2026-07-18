@@ -1103,3 +1103,13 @@ DesktopではProject作成時の作品区分選択、成人向けの`local_only`
 販売パッケージをv2へ更新し、作品区分、作成surface、policy versionを必須化しました。Hubはv1を安全側へ正規化しつつ、成人向けpackageをアップロード前とServer再検証の両方で拒否します。作品作成、商品、グッズ、公開表示、Checkout、Desktop Hub更新を一般向けに限定しました。
 
 Supabaseへ`works.content_class`、CHECK制約、一般向けpartial index、関連RLS、`general/` Storage namespaceをforward／rollback migrationで追加しました。Hubテスト16/16、Desktop統合83/83、ai-core 35/35、canvas-core 25/25、Web／Desktop production build、日英29画面・状態のaxe違反0件、migration／rollback検証4件に成功しました。実環境Supabase適用はRC受入れで行います。
+
+## 128. Cloud Creatorデータ基盤 Phase 1完了
+
+一般向けCloud制作の保存先として、Project、Episode、Page、Asset、Canvas snapshot、Project version、共同作業者候補のPostgreSQL schemaを追加しました。所有者、公開・限定公開利用者、承認済み共同作業者、管理者を分離するRLSを適用し、削除済みProjectは所有者と管理者だけが30日以内に復元できます。
+
+Assetはprivate bucketへ所有者・Project・Asset UUIDのnamespaceで保存し、20MB、許可MIME、画像decode、実寸、SHA-256、Project合計2GBをServerとDBの両方で検証します。Page保存はrevision付きRPCで競合を検出し、snapshotとProject versionを同じtransactionへ記録します。
+
+Desktopの一般向けProject書き出しへ`Cloud移行Project.json`を追加し、共通Zod contractとHub import APIで再検証します。成人向け、区分不明、参照不整合のmanifestは拒否し、成人向けProjectからはCloud移行manifest自体を生成しません。
+
+PostgreSQL 16でforward、RLSとRPCの動作、全rollback、再適用、正規schemaの二重適用を完走しました。Hub 21/21、Desktop統合83/83、ai-core 35/35、canvas-core 25/25、Web／Desktop本番build、日英29画面・状態のaxe違反0件に成功しました。実Supabase stagingへの適用だけは外部環境を使うRC受入れへ残します。

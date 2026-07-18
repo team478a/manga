@@ -71,6 +71,108 @@ export const projectContentClassChangeSchema = z.object({
   id: idSchema,
   contentClass: contentClassSchema,
 });
+export const cloudAssetMimeTypeSchema = z.enum([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+]);
+const cloudImportEpisodeSchema = z.object({
+  id: idSchema,
+  title: z.string().trim().min(1).max(200),
+  orderIndex: z.number().int().min(0),
+});
+const cloudImportPageSchema = z.object({
+  id: idSchema,
+  episodeId: idSchema,
+  pageNumber: z.number().int().min(1),
+  orderIndex: z.number().int().min(0),
+  width: z.number().int().min(100).max(20000),
+  height: z.number().int().min(100).max(20000),
+  backgroundColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+});
+const cloudImportAssetSchema = z.object({
+  id: idSchema,
+  fileName: z.string().trim().min(1).max(255),
+  mimeType: cloudAssetMimeTypeSchema,
+  byteSize: z
+    .number()
+    .int()
+    .min(1)
+    .max(20 * 1024 * 1024),
+  width: z.number().int().min(1).max(20000),
+  height: z.number().int().min(1).max(20000),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+});
+const cloudImportSnapshotSchema = z.object({
+  pageId: idSchema,
+  canvas: z.record(z.string(), z.unknown()),
+});
+export const cloudProjectImportSchema = z
+  .object({
+    format: z.literal("mangai.cloud-project"),
+    version: z.literal(1),
+    policyVersion: z.literal(CONTENT_POLICY_VERSION),
+    createdBySurface: z.literal("desktop"),
+    project: z.object({
+      sourceProjectId: idSchema,
+      title: z.string().trim().min(1).max(200),
+      description: z.string().trim().max(5000).default(""),
+      contentClass: z.literal("general"),
+      ageRating: z.enum(["全年齢", "12歳以上", "15歳以上"]),
+      readingDirection: readingDirectionSchema,
+      width: z.number().int().min(100).max(20000),
+      height: z.number().int().min(100).max(20000),
+      dpi: z.number().int().min(72).max(1200),
+    }),
+    episodes: z.array(cloudImportEpisodeSchema).max(1000),
+    pages: z.array(cloudImportPageSchema).max(10000),
+    assets: z.array(cloudImportAssetSchema).max(10000).default([]),
+    snapshots: z.array(cloudImportSnapshotSchema).max(10000).default([]),
+  })
+  .superRefine((manifest, context) => {
+    const episodeIds = new Set(manifest.episodes.map((item) => item.id));
+    const pageIds = new Set(manifest.pages.map((item) => item.id));
+    const assetIds = new Set(manifest.assets.map((item) => item.id));
+    if (episodeIds.size !== manifest.episodes.length)
+      context.addIssue({
+        code: "custom",
+        message: "Episode IDが重複しています。",
+      });
+    if (pageIds.size !== manifest.pages.length)
+      context.addIssue({
+        code: "custom",
+        message: "Page IDが重複しています。",
+      });
+    if (assetIds.size !== manifest.assets.length)
+      context.addIssue({
+        code: "custom",
+        message: "Asset IDが重複しています。",
+      });
+    manifest.pages.forEach((page, index) => {
+      if (!episodeIds.has(page.episodeId))
+        context.addIssue({
+          code: "custom",
+          message: "Pageが存在しないEpisodeを参照しています。",
+          path: ["pages", index, "episodeId"],
+        });
+    });
+    const snapshotPageIds = new Set<string>();
+    manifest.snapshots.forEach((snapshot, index) => {
+      if (!pageIds.has(snapshot.pageId))
+        context.addIssue({
+          code: "custom",
+          message: "Canvasが存在しないPageを参照しています。",
+          path: ["snapshots", index, "pageId"],
+        });
+      if (snapshotPageIds.has(snapshot.pageId))
+        context.addIssue({
+          code: "custom",
+          message: "同じPageのCanvasが重複しています。",
+          path: ["snapshots", index, "pageId"],
+        });
+      snapshotPageIds.add(snapshot.pageId);
+    });
+  });
 export const projectIdSchema = z.object({ id: idSchema });
 export const hubStatusRequestSchema = z.object({
   projectId: idSchema,
@@ -136,6 +238,7 @@ export type ExecutionTarget = z.infer<typeof executionTargetSchema>;
 export type ContentExecutionPolicy = z.infer<
   typeof contentExecutionPolicySchema
 >;
+export type CloudProjectImport = z.infer<typeof cloudProjectImportSchema>;
 export type HubStatusRequest = z.infer<typeof hubStatusRequestSchema>;
 export type AssetLibraryCategory = z.infer<typeof assetLibraryCategorySchema>;
 export type AssetLibraryMetadataInput = z.infer<

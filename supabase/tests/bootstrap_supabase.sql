@@ -25,10 +25,14 @@ create table if not exists auth.users (
 );
 
 create or replace function auth.uid()
-returns uuid language sql stable as $$ select null::uuid $$;
+returns uuid language sql stable as $$
+  select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid
+$$;
 
 create or replace function auth.role()
-returns text language sql stable as $$ select 'anon'::text $$;
+returns text language sql stable as $$
+  select coalesce(nullif(current_setting('request.jwt.claim.role', true), ''), 'anon')::text
+$$;
 
 create table if not exists storage.buckets (
   id text primary key,
@@ -41,7 +45,17 @@ create table if not exists storage.buckets (
 create table if not exists storage.objects (
   id uuid primary key default gen_random_uuid(),
   bucket_id text not null references storage.buckets(id),
+  name text not null default '',
   owner_id text
 );
+
+create or replace function storage.foldername(name text)
+returns text[] language sql immutable as $$
+  select string_to_array(name, '/')
+$$;
+
+grant usage on schema auth, storage to anon, authenticated, service_role;
+grant execute on function auth.uid(), auth.role(), storage.foldername(text)
+to anon, authenticated, service_role;
 
 alter table storage.objects enable row level security;

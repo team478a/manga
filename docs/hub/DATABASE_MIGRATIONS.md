@@ -19,6 +19,8 @@ MANGAI HubのSupabase PostgreSQL変更を、安全に追加・検証・取り消
 | `202607140001` | 販売パッケージ由来のサンプル画像・Project ID・Storage削除policy | 対象データが存在する場合は停止         |
 | `202607140002` | Desktop端末認証                                                 | 有効な承認済み端末が存在する場合は停止 |
 | `202607140003` | 端末認証rate limit・期限切れ清掃                                | 関数、rate limit表、indexを除去        |
+| `202607180001` | 一般Cloud／成人Desktopのcontent class境界                       | 追加列、制約、policy、indexを除去      |
+| `202607180002` | Cloud Creator保存、RLS、revision、非公開Asset基盤               | Storage object存在時は停止して保護     |
 
 データを失う可能性があるrollbackは、条件を満たさない限り例外で停止します。停止した場合は自動回避せず、バックアップと対象データを確認してください。
 

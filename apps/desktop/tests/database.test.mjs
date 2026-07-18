@@ -2894,6 +2894,7 @@ test("RC multi-page export creates consistent release artifacts", async () => {
     "販売用説明文.txt",
     "SNS告知文.txt",
     "MANGAI販売パッケージ.zip",
+    "Cloud移行Project.json",
   ]);
   result.files.forEach((file) =>
     assert.equal(fs.existsSync(path.join(result.outputDir, file)), true),
@@ -2905,6 +2906,16 @@ test("RC multi-page export creates consistent release artifacts", async () => {
     "%PDF",
   );
   assert.deepEqual(result.warnings, []);
+  const cloudImportManifest = JSON.parse(
+    fs.readFileSync(
+      path.join(result.outputDir, "Cloud移行Project.json"),
+      "utf8",
+    ),
+  );
+  assert.equal(cloudImportManifest.format, "mangai.cloud-project");
+  assert.equal(cloudImportManifest.project.contentClass, "general");
+  assert.equal(cloudImportManifest.pages.length, 3);
+  assert.equal(cloudImportManifest.snapshots.length, 3);
   const exportHistory = db.listExportHistory(bundle.project.id);
   assert.equal(exportHistory.length, 1);
   assert.equal(exportHistory[0].outputDir, result.outputDir);

@@ -25,6 +25,8 @@ MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ロー�
 
 したがって、現在の位置づけは「機能開発用MVPを越え、Release Candidate準備へ進める状態」です。
 
+2026-07-18にCloud／Desktop製品計画のPhase 1を完了しました。一般向けCloud Projectの永続化、RLS、非公開Asset、revision競合検出、Soft delete、Desktop一般作品のimport contractが揃い、次の製品開発対象はPhase 2のブラウザーEditor MVPです。詳細は[`PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md`](PHASE1_CLOUD_CREATOR_FOUNDATION_COMPLETION.md)を参照してください。
+
 2026-07-15に低スペックPC向けのハイブリッド生成を最優先方針へ変更しました。既存RC基盤を維持しつつ、人物・センシティブ処理をローカルへ固定し、safeな背景・素材だけをAsset Libraryまたは外部Providerへrouteする基盤を追加します。Phase 1調査は[`desktop/HYBRID_GENERATION_PHASE1_AUDIT.md`](desktop/HYBRID_GENERATION_PHASE1_AUDIT.md)に記録しています。
 
 Phase 1の最初の実装として、DBや既存生成経路へ影響しない純粋Generation Routerと型・schemaを追加しました。分類不明、成人向け、人物、参照画像、完成Pageをfail-closedでローカル固定し、safeな背景・小物・効果だけをAsset Libraryまたは許可済みcloud候補にできます。

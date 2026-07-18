@@ -17,6 +17,14 @@ begin
      or to_regclass('public.desktop_device_rate_limits') is null then
     raise exception 'required MANGAI Hub tables are missing';
   end if;
+  if to_regclass('public.cloud_projects') is null
+     or to_regclass('public.cloud_episodes') is null
+     or to_regclass('public.cloud_pages') is null
+     or to_regclass('public.cloud_assets') is null
+     or to_regclass('public.cloud_canvas_snapshots') is null
+     or to_regclass('public.cloud_project_versions') is null then
+    raise exception 'Cloud Creator Phase 1 tables are missing';
+  end if;
 
   if not exists (
     select 1 from information_schema.columns
@@ -76,7 +84,14 @@ begin
       ('works'),
       ('digital_products'),
       ('desktop_device_authorizations'),
-      ('desktop_device_rate_limits')
+      ('desktop_device_rate_limits'),
+      ('cloud_projects'),
+      ('cloud_project_collaborators'),
+      ('cloud_episodes'),
+      ('cloud_pages'),
+      ('cloud_assets'),
+      ('cloud_canvas_snapshots'),
+      ('cloud_project_versions')
     ) as required_tables(table_name)
     where not exists (
       select 1 from pg_class
@@ -109,6 +124,12 @@ begin
     where id = 'digital-products' and public = false
   ) then
     raise exception 'required Storage buckets are missing or have invalid visibility';
+  end if;
+  if not exists (
+    select 1 from storage.buckets
+    where id = 'cloud-assets' and public = false and file_size_limit = 20971520
+  ) then
+    raise exception 'private Cloud Asset bucket is missing or invalid';
   end if;
 
   if exists (

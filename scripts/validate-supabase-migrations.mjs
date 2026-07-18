@@ -96,6 +96,10 @@ for (const required of [
   "desktop_device_rate_limits",
   "consume_desktop_device_rate_limit",
   "cleanup_desktop_device_authorizations",
+  "cloud_projects",
+  "cloud_canvas_snapshots",
+  "save_cloud_page_snapshot",
+  "cloud-assets",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

@@ -26,6 +26,7 @@ import {
 import {
   CONTENT_POLICY_VERSION,
   assetLibraryMetadataInputSchema,
+  cloudProjectImportSchema,
   projectInputSchema,
   resolveProjectContentClass,
   type AssetLibraryMetadataInput,
@@ -3998,6 +3999,73 @@ export class MangaiDatabase {
         })),
       ),
     );
+    if (bundle.project.contentClass === "general") {
+      const cloudImportFile = "Cloud移行Project.json";
+      const cloudImportManifest = cloudProjectImportSchema.parse({
+        format: "mangai.cloud-project",
+        version: 1,
+        policyVersion: CONTENT_POLICY_VERSION,
+        createdBySurface: "desktop",
+        project: {
+          sourceProjectId: bundle.project.id,
+          title: bundle.project.title,
+          description: bundle.project.description,
+          contentClass: bundle.project.contentClass,
+          ageRating: bundle.project.ageRating,
+          readingDirection: bundle.project.readingDirection,
+          width: bundle.project.width,
+          height: bundle.project.height,
+          dpi: bundle.project.dpi,
+        },
+        episodes: bundle.episodes.map((episode) => ({
+          id: episode.id,
+          title: episode.title,
+          orderIndex: episode.orderIndex,
+        })),
+        pages: bundle.pages.map((page) => ({
+          id: page.id,
+          episodeId: page.episodeId,
+          pageNumber: page.pageNumber,
+          orderIndex: page.orderIndex,
+          width: page.width,
+          height: page.height,
+          backgroundColor: page.backgroundColor,
+        })),
+        assets: bundle.assets
+          .filter((asset) => !isInternalPanelCacheAsset(asset))
+          .map((asset) => ({
+            id: asset.id,
+            fileName: asset.fileName,
+            mimeType: asset.mimeType,
+            byteSize: asset.byteSize,
+            width: asset.width,
+            height: asset.height,
+            sha256: asset.sha256,
+          })),
+        snapshots: bundle.pages.map((page) => ({
+          pageId: page.id,
+          canvas: {
+            panels: bundle.panels.filter((item) => item.pageId === page.id),
+            panelLayers: bundle.panelLayers.filter((layer) =>
+              bundle.panels.some(
+                (panel) =>
+                  panel.id === layer.panelId && panel.pageId === page.id,
+              ),
+            ),
+            balloons: bundle.balloons.filter((item) => item.pageId === page.id),
+            textObjects: bundle.textObjects.filter(
+              (item) => item.pageId === page.id,
+            ),
+          },
+        })),
+      });
+      fs.writeFileSync(
+        path.join(outputDir, cloudImportFile),
+        JSON.stringify(cloudImportManifest, null, 2),
+        "utf8",
+      );
+      files.push(cloudImportFile);
+    }
     const warnings = [
       ...(images.length === 0 ? ["画像がないため空のPDFを作成しました。"] : []),
       ...(!coverAsset

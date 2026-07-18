@@ -30,4 +30,15 @@ begin
   ) then
     raise exception 'works storage bucket is missing';
   end if;
+  if to_regclass('public.cloud_projects') is null
+     or to_regclass('public.cloud_pages') is null
+     or to_regclass('public.cloud_canvas_snapshots') is null then
+    raise exception 'Cloud Creator Phase 1 schema is missing';
+  end if;
+  if not exists (
+    select 1 from storage.buckets
+    where id = 'cloud-assets' and public = false and file_size_limit = 20971520
+  ) then
+    raise exception 'private Cloud Asset bucket is missing';
+  end if;
 end $$;

@@ -37,6 +37,40 @@ begin
   if to_regclass('public.desktop_device_rate_limits') is null then
     raise exception 'desktop_device_rate_limits migration missing';
   end if;
+  if to_regclass('public.cloud_projects') is null
+     or to_regclass('public.cloud_episodes') is null
+     or to_regclass('public.cloud_pages') is null
+     or to_regclass('public.cloud_assets') is null
+     or to_regclass('public.cloud_canvas_snapshots') is null
+     or to_regclass('public.cloud_project_versions') is null then
+    raise exception 'Cloud Creator Phase 1 tables are missing';
+  end if;
+  if to_regprocedure('public.save_cloud_page_snapshot(uuid,bigint,jsonb)') is null
+     or to_regprocedure('public.import_cloud_project(jsonb)') is null
+     or to_regprocedure('public.restore_cloud_project(uuid)') is null then
+    raise exception 'Cloud Creator functions are missing';
+  end if;
+  if exists (
+    select 1 from storage.buckets where id = 'cloud-assets' and public
+  ) or not exists (
+    select 1 from storage.buckets where id = 'cloud-assets' and not public
+      and file_size_limit = 20971520
+  ) then
+    raise exception 'Cloud Asset bucket must be private and limited to 20MB';
+  end if;
+  if not exists (
+    select 1 from pg_policies where schemaname = 'public'
+      and tablename = 'cloud_projects' and policyname = 'cloud_projects_read'
+  ) or not exists (
+    select 1 from pg_policies where schemaname = 'storage'
+      and tablename = 'objects' and policyname = 'cloud_assets_storage_insert'
+  ) then
+    raise exception 'Cloud Creator RLS policies are missing';
+  end if;
+  if has_function_privilege('anon', 'public.save_cloud_page_snapshot(uuid,bigint,jsonb)', 'execute')
+     or not has_function_privilege('authenticated', 'public.save_cloud_page_snapshot(uuid,bigint,jsonb)', 'execute') then
+    raise exception 'Cloud snapshot function privileges are invalid';
+  end if;
   if not exists (
     select 1 from pg_policies
     where schemaname = 'storage'
@@ -57,6 +91,85 @@ begin
     raise exception 'service_role must execute rate limit function';
   end if;
 end $$;
+
+begin;
+insert into auth.users(id,email) values
+  ('20000000-0000-4000-8000-000000000001','phase1-owner@example.test'),
+  ('20000000-0000-4000-8000-000000000002','phase1-other@example.test');
+insert into public.profiles(id,user_id,role) values
+  ('30000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001','creator'),
+  ('30000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000002','creator');
+insert into public.cloud_projects(id,owner_profile_id,title,visibility) values
+  ('40000000-0000-4000-8000-000000000001','30000000-0000-4000-8000-000000000001','Private Phase 1','private'),
+  ('40000000-0000-4000-8000-000000000002','30000000-0000-4000-8000-000000000001','Public Phase 1','public');
+insert into public.cloud_episodes(id,project_id,title,order_index) values
+  ('50000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','Episode 1',0);
+insert into public.cloud_pages(id,project_id,episode_id,page_number,order_index,width,height) values
+  ('60000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','50000000-0000-4000-8000-000000000001',1,0,1600,2400);
+
+set local "request.jwt.claim.sub" = '20000000-0000-4000-8000-000000000002';
+set local "request.jwt.claim.role" = 'authenticated';
+set local role authenticated;
+do $$
+begin
+  if exists(select 1 from public.cloud_projects where id='40000000-0000-4000-8000-000000000001') then
+    raise exception 'another user can read a private Cloud Project';
+  end if;
+  if not exists(select 1 from public.cloud_projects where id='40000000-0000-4000-8000-000000000002') then
+    raise exception 'public Cloud Project is not readable';
+  end if;
+  if exists(select 1 from public.cloud_pages where id='60000000-0000-4000-8000-000000000001') then
+    raise exception 'another user can read a private Cloud Page';
+  end if;
+end $$;
+reset role;
+
+set local "request.jwt.claim.sub" = '20000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select * from public.save_cloud_page_snapshot(
+  '60000000-0000-4000-8000-000000000001', 0, '{"panels":[]}'::jsonb
+);
+do $$
+declare
+  v_import jsonb := jsonb_build_object(
+    'format','mangai.cloud-project','version',1,'policyVersion',1,'createdBySurface','desktop',
+    'project',jsonb_build_object(
+      'sourceProjectId','70000000-0000-4000-8000-000000000001','title','Imported Phase 1',
+      'description','','contentClass','general','ageRating','全年齢','readingDirection','rtl',
+      'width',1600,'height',2400,'dpi',300
+    ),
+    'episodes','[]'::jsonb,'pages','[]'::jsonb,'assets','[]'::jsonb,'snapshots','[]'::jsonb
+  );
+begin
+  if not exists(
+    select 1 from public.cloud_canvas_snapshots
+    where page_id='60000000-0000-4000-8000-000000000001' and revision=1
+  ) then raise exception 'saved Canvas snapshot cannot be restored'; end if;
+  begin
+    perform public.save_cloud_page_snapshot(
+      '60000000-0000-4000-8000-000000000001', 0, '{"panels":[]}'::jsonb
+    );
+    raise exception 'stale revision overwrote a Cloud Page';
+  exception when others then
+    if sqlerrm not like 'revision_conflict:%' then raise; end if;
+  end;
+  perform public.import_cloud_project(v_import);
+  if not exists(
+    select 1 from public.cloud_projects
+    where source_project_id='70000000-0000-4000-8000-000000000001'
+      and source_surface='desktop' and content_class='general'
+  ) then raise exception 'general Desktop import was not persisted'; end if;
+  begin
+    perform public.import_cloud_project(
+      jsonb_set(v_import, '{project,contentClass}', '"adult"'::jsonb)
+    );
+    raise exception 'adult Desktop manifest was imported';
+  exception when others then
+    if sqlerrm <> 'general_cloud_import_required' then raise; end if;
+  end;
+end $$;
+reset role;
+rollback;
 
 do $$
 declare

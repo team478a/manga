@@ -22,6 +22,12 @@ begin
      or to_regclass('public.desktop_device_rate_limits') is not null then
     raise exception 'Desktop device tables remain after rollback';
   end if;
+  if to_regclass('public.cloud_projects') is not null
+     or to_regclass('public.cloud_assets') is not null
+     or to_regprocedure('public.save_cloud_page_snapshot(uuid,bigint,jsonb)') is not null
+     or exists (select 1 from storage.buckets where id = 'cloud-assets') then
+    raise exception 'Cloud Creator Phase 1 objects remain after rollback';
+  end if;
   if to_regprocedure('public.consume_desktop_device_rate_limit(text,integer,integer)') is not null
      or to_regprocedure('public.cleanup_desktop_device_authorizations()') is not null then
     raise exception 'Desktop device functions remain after rollback';
