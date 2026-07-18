@@ -43,6 +43,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "認証できません。" }, { status: 401 });
   try {
     const client = createAdminClient();
+    await client.rpc("refresh_cloud_ai_notifications");
     const now = new Date().toISOString();
     const [queued, running, failed, stale] = await Promise.all([
       client
@@ -130,13 +131,15 @@ export async function POST(request: Request) {
       );
   }
   try {
-    return NextResponse.json(
-      await processNextCloudGenerationJob({
+    const client = createAdminClient();
+    const result = await processNextCloudGenerationJob({
         workerId: process.env.MANGAI_CLOUD_AI_WORKER_ID ?? "next-worker",
         providers,
         leaseSeconds: workerLeaseSeconds(),
-      }),
-    );
+        client,
+      });
+    await client.rpc("refresh_cloud_ai_notifications");
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
       {

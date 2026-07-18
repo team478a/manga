@@ -21,6 +21,10 @@ begin
   if to_regclass('public.cloud_ai_admin_audit_logs') is not null then
     raise exception 'Cloud AI admin audit table remains after rollback';
   end if;
+  if to_regclass('public.cloud_ai_notifications') is not null
+     or to_regprocedure('public.refresh_cloud_ai_notifications()') is not null then
+    raise exception 'Cloud AI notification objects remain after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

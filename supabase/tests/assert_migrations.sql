@@ -93,6 +93,16 @@ begin
      or has_table_privilege('authenticated','public.cloud_ai_admin_audit_logs','select') then
     raise exception 'Cloud AI admin audit boundary is invalid';
   end if;
+  if to_regclass('public.cloud_ai_notifications') is null
+     or to_regprocedure('public.refresh_cloud_ai_notifications()') is null
+     or has_function_privilege('authenticated','public.refresh_cloud_ai_notifications()','execute')
+     or not has_function_privilege('service_role','public.refresh_cloud_ai_notifications()','execute') then
+    raise exception 'Cloud AI notification boundary is invalid';
+  end if;
+  if has_column_privilege('authenticated','public.cloud_ai_notifications','title','update')
+     or not has_column_privilege('authenticated','public.cloud_ai_notifications','read_at','update') then
+    raise exception 'Cloud AI notification update columns are invalid';
+  end if;
   if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
      or to_regprocedure('public.consume_cloud_ai_rate_limit(text,text,integer,integer)') is null
      or to_regprocedure('public.get_my_cloud_ai_quota()') is null then
@@ -399,6 +409,12 @@ begin
     v_reclaimed.id,v_reclaimed.lease_token,true,'{"text":"recovered"}'::jsonb,
     null,'provider-job-2',0,null,null,false
   );
+  update public.cloud_ai_settings set generation_enabled=false,updated_at=now() where singleton;
+  perform public.refresh_cloud_ai_notifications();
+  perform public.refresh_cloud_ai_notifications();
+  if (select count(*) from public.cloud_ai_notifications where notification_type='generation_stopped')<>1 then
+    raise exception 'Cloud AI stop notification deduplication failed';
+  end if;
 end $$;
 reset role;
 

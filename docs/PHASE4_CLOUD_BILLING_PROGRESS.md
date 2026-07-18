@@ -96,7 +96,25 @@
 
 ## 次の実装
 
-1. 利用枠・失敗・予算停止の通知と運用監視
-2. Phase 4全体の受入れ手順と実Stripe／Supabase staging検証
+## Milestone 6: 通知・運用監視
+
+- 利用者のcredit利用率が警告率へ到達した際のquota通知
+- retry終了後の生成Job失敗通知
+- 管理者向け日次予算警告と全体生成停止通知
+- source単位のdedupe keyによるworker再実行時の重複防止
+- worker POST完了時と認証付き監視GET時の通知refresh
+- 利用者Dashboardの通知一覧、個別既読、全件既読
+- 管理者Cloud AI画面のcritical／warning運用通知
+- 利用者は通知本文を変更できず、本人通知の`read_at`だけ更新可能
+
+## 検証
+
+- Hub単体テスト30/30、TypeScript、ESLint、Web production build、migration静的検査13件: 成功
+- PostgreSQL 16: 通知生成・重複防止、service role限定refresh、更新列制限、forward、全rollback、正規schema二重適用に成功
+
+## 次の実装
+
+1. Phase 4全体の受入れ監査と完了資料
+2. 実Stripe／Supabase staging credentialを使うRC受入れ
 
 状態: **進行中**

@@ -48,6 +48,10 @@
     {
       "id": "202607180009_cloud_ai_admin_audit",
       "description": "Cloud AI管理操作の変更前後を監査ログへ記録"
+    },
+    {
+      "id": "202607180010_cloud_ai_notifications",
+      "description": "quota・失敗Job・予算警告・生成停止通知を永続化"
     }
   ]
 }

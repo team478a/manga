@@ -14,13 +14,14 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
   await requireAdmin();
   const query=await searchParams;
   const admin=createAdminClient();
-  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult]=await Promise.all([
+  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult]=await Promise.all([
     admin.from("cloud_ai_settings").select("*").eq("singleton",true).single(),
     admin.from("cloud_ai_plans").select("*").order("plan_key"),
     admin.from("cloud_ai_provider_prices").select("*").order("created_at",{ascending:false}).limit(50),
     admin.from("cloud_ai_daily_costs").select("*").order("usage_date",{ascending:false}).limit(14),
     admin.from("cloud_generation_jobs").select("id,provider_id,model_id,job_type,status,error_code,error_message,actual_cost_micros,created_at").in("status",["failed","running"]).order("created_at",{ascending:false}).limit(30),
     admin.from("cloud_ai_admin_audit_logs").select("id,action,target_type,target_id,created_at,profiles:actor_profile_id(display_name)").order("created_at",{ascending:false}).limit(20),
+    admin.from("cloud_ai_notifications").select("id,notification_type,severity,title,body,created_at").eq("audience","admin").order("created_at",{ascending:false}).limit(20),
   ]);
   const settings=settingsResult.data as null|{generation_enabled:boolean;daily_cost_limit_micros:number;warning_percent:number};
   const today=costsResult.data?.[0] as undefined|{usage_date:string;cost_reserved_micros:number;cost_actual_micros:number};
@@ -68,6 +69,7 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
       </form>
       <div className="mt-5 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th>Provider / Model</th><th>Job</th><th>Version</th><th>credit</th><th>最大原価</th><th>状態</th></tr></thead><tbody>{(pricesResult.data??[]).map((price:any)=><tr className="border-t" key={price.id}><td className="py-3">{price.provider_id}<br/>{price.model_id}</td><td>{price.kind}/{price.job_type}</td><td>{price.pricing_version}</td><td>{price.credits}</td><td>{money(price.max_cost_micros)}</td><td><form action={setCloudAiPriceActiveAction.bind(null,price.id,!price.active)}><button className="button-secondary" type="submit">{price.active?"停止":"有効化"}</button></form></td></tr>)}</tbody></table></div>
     </section>
+    <section className="panel mt-6"><h2 className="text-xl font-bold">運用通知</h2><div className="mt-4 grid gap-3 md:grid-cols-2">{(notificationsResult.data??[]).map((notice:any)=><article className={`rounded border p-3 ${notice.severity==="critical"?"border-red-300 bg-red-50":"border-amber-300 bg-amber-50"}`} key={notice.id}><strong>{notice.title}</strong><p className="mt-1 text-sm">{notice.body}</p><p className="mt-2 text-xs text-stone-500">{new Date(notice.created_at).toLocaleString("ja-JP")}</p></article>)}{!notificationsResult.data?.length?<p className="text-stone-500">運用通知はありません。</p>:null}</div></section>
     <div className="mt-6 grid gap-6 lg:grid-cols-2"><section className="panel"><h2 className="text-xl font-bold">失敗・実行中Job</h2><div className="mt-4 space-y-3">{(jobsResult.data??[]).map((job:any)=><div className="rounded border p-3 text-sm" key={job.id}><strong>{job.status}・{job.provider_id}/{job.model_id}</strong><p>{job.job_type}・{job.error_code??"errorなし"}</p><p className="text-stone-500">{job.error_message??job.id}</p></div>)}{!jobsResult.data?.length?<p className="text-stone-500">対象Jobはありません。</p>:null}</div></section>
       <section className="panel"><h2 className="text-xl font-bold">管理操作監査</h2><div className="mt-4 space-y-3">{(auditsResult.data??[]).map((log:any)=><div className="border-b pb-3 text-sm" key={log.id}><strong>{log.action}</strong><p>{log.target_type} / {log.target_id}</p><p className="text-stone-500">{new Date(log.created_at).toLocaleString("ja-JP")}</p></div>)}</div></section></div>
   </main>;

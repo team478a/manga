@@ -50,6 +50,10 @@ begin
   if to_regclass('public.cloud_ai_admin_audit_logs') is null then
     raise exception 'Cloud AI admin audit boundary is missing';
   end if;
+  if to_regclass('public.cloud_ai_notifications') is null
+     or to_regprocedure('public.refresh_cloud_ai_notifications()') is null then
+    raise exception 'Cloud AI notification boundary is missing';
+  end if;
 
   if not exists (
     select 1 from information_schema.columns

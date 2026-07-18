@@ -1185,3 +1185,11 @@ Cloud Creator画面には同期済み／未反映変更、価格入力、商品�
 当日実費・予約原価・予算消化率、直近14日の原価情報、失敗中・実行中Jobとエラーを管理画面へ集約しました。運用設定、Plan、価格の変更は管理者Profile、操作、対象、変更前後、時刻をservice role限定の監査ログへ記録し、画面から直近の操作を確認できます。
 
 TypeScript、ESLint、Web production build、migration静的検査12件に成功しました。PostgreSQL 16でforward、全rollback、正規schema二重適用と監査表の権限境界を確認しています。
+
+## 138. Cloud AI通知・運用監視
+
+Cloud AIの利用者・管理者通知をPostgreSQLへ永続化しました。利用者には月間creditの使用済み・予約済み合計が警告率へ達した場合と、retryを終えて生成Jobが失敗した場合に通知します。管理者には日次の実費・予約原価が警告率へ達した場合と、全体kill switchまたは予算自動停止で生成が止まった場合に運用通知を作成します。
+
+通知生成はservice role限定RPCとし、Job ID、利用期間、日付、設定更新時刻を含むdedupe keyでworkerや監視の再実行による重複を防止します。worker POSTの処理後と認証付き監視GETで通知をrefreshします。利用者Dashboardには通知一覧、個別既読、全件既読を追加し、管理者運用画面ではwarning／critical通知を確認できます。
+
+RLSと列権限により、利用者は本人宛通知だけを読み、通知本文を変更せず`read_at`だけ更新できます。Hub 30/30、TypeScript、ESLint、Web production build、migration静的検査13件に成功しました。PostgreSQL 16で通知生成・重複防止、service role限定refresh、更新列制限、forward、全rollback、正規schema二重適用を確認しています。

@@ -58,6 +58,10 @@ begin
   if to_regclass('public.cloud_ai_admin_audit_logs') is null then
     raise exception 'Cloud AI admin audit table is missing';
   end if;
+  if to_regclass('public.cloud_ai_notifications') is null
+     or to_regprocedure('public.refresh_cloud_ai_notifications()') is null then
+    raise exception 'Cloud AI notification objects are missing';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null

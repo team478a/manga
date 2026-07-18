@@ -11,6 +11,7 @@ import {
   PanelsTopLeft,
   CreditCard,
   Library,
+  Bell,
 } from "lucide-react";
 import { updateProfile } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
@@ -34,6 +35,12 @@ export default async function DashboardPage({
       body: "生成credit、契約状態、Stripe請求を確認します。",
       href: "/dashboard/billing",
       icon: CreditCard,
+    },
+    {
+      title: "通知",
+      body: "Cloud AI利用枠、生成失敗、重要なお知らせを確認します。",
+      href: "/dashboard/notifications",
+      icon: Bell,
     },
     {
       title: "購入履歴",
