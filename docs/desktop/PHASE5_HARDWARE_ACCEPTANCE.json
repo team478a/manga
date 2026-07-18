@@ -1,0 +1,31 @@
+{
+  "format": "mangai.phase5-hardware-acceptance",
+  "version": 1,
+  "updatedAt": "2026-07-18T00:00:00.000Z",
+  "profiles": [
+    {
+      "profile": "vram_8gb",
+      "status": "pending",
+      "hardware": null,
+      "checkedAt": null,
+      "evidence": [],
+      "notes": "8GB GPU Windows実機とローカルComfyUIが必要"
+    },
+    {
+      "profile": "vram_12gb",
+      "status": "pending",
+      "hardware": null,
+      "checkedAt": null,
+      "evidence": [],
+      "notes": "12GB GPU Windows実機とローカルComfyUIが必要"
+    },
+    {
+      "profile": "vram_16gb",
+      "status": "pending",
+      "hardware": null,
+      "checkedAt": null,
+      "evidence": [],
+      "notes": "16GB以上GPU Windows実機とローカルComfyUIが必要"
+    }
+  ]
+}

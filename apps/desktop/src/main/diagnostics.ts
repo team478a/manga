@@ -289,6 +289,17 @@ export class DiagnosticsService {
     const timestamp = new Date().toISOString();
     const fileName = `crash-${timestamp.replace(/:/g, "-")}-${randomUUID().slice(0, 8)}.json`;
     const filePath = path.join(this.paths.logs, fileName);
+    const error =
+      cause instanceof Error
+        ? {
+            name: cause.name,
+            message: "[REDACTED]",
+            stack: cause.stack
+              ?.split(/\r?\n/)
+              .slice(1, 21)
+              .join("\n"),
+          }
+        : { name: "UnknownError", message: "[REDACTED]" };
     fs.writeFileSync(
       filePath,
       JSON.stringify(
@@ -298,7 +309,7 @@ export class DiagnosticsService {
           at: timestamp,
           source,
           runtime: this.runtime,
-          error: cause instanceof Error ? cause : new Error(String(cause)),
+          error,
           context,
         }),
         null,

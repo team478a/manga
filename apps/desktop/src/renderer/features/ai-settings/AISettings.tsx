@@ -191,7 +191,10 @@ export function AISettings({ onClose }: { onClose: () => void }) {
   const { locale, setLocale, t, localizeMessage, formatDateTime } = useI18n();
   const [settings, setSettings] = React.useState<ProviderSettings[]>([]),
     [models, setModels] = React.useState<
-      Record<string, Array<{ id: string; name: string; cached?: boolean }>>
+      Record<
+        string,
+        Array<{ id: string; name: string; cached?: boolean; license?: string }>
+      >
     >({}),
     [status, setStatus] = React.useState<Record<string, string>>({}),
     [paths, setPaths] = React.useState<any>(),
@@ -847,6 +850,15 @@ export function AISettings({ onClose }: { onClose: () => void }) {
                     ))}
                   </select>
                 </label>
+                {value.modelId && (
+                  <div className="notice" role="note">
+                    <b>{t("settings.provider.modelLicense")}</b>{" "}
+                    {models[value.providerId]?.find(
+                      (model) => model.id === value.modelId,
+                    )?.license ?? t("settings.provider.licenseUnverified")}
+                    <p>{t("settings.provider.licenseResponsibility")}</p>
+                  </div>
+                )}
                 <div className="grid">
                   <label>
                     Temperature

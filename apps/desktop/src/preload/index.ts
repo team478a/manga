@@ -105,6 +105,22 @@ contextBridge.exposeInMainWorld("mangai", {
     tags: string[];
     favorite: boolean;
   }) => ipcRenderer.invoke("assets:library:save", value),
+  listCharacterProfiles: (projectId: string) =>
+    ipcRenderer.invoke("characters:list", { id: projectId }),
+  saveCharacterProfile: (value: unknown) =>
+    ipcRenderer.invoke("characters:save", value),
+  deleteCharacterProfile: (id: string) =>
+    ipcRenderer.invoke("characters:delete", { id }),
+  attachCharacterReferenceAsset: (value: unknown) =>
+    ipcRenderer.invoke("characters:reference:attach", value),
+  detachCharacterReferenceAsset: (
+    characterProfileId: string,
+    assetId: string,
+  ) =>
+    ipcRenderer.invoke("characters:reference:detach", {
+      characterProfileId,
+      assetId,
+    }),
   assetUrl: (relativePath: string) =>
     ipcRenderer.invoke("assets:url", { relativePath }),
   getPaths: () => ipcRenderer.invoke("app:paths"),

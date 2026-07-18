@@ -177,6 +177,23 @@ export type Asset = {
   libraryUpdatedAt: string | null;
   createdAt: string;
 };
+export type CharacterReferenceRole = "reference" | "face" | "pose";
+export type CharacterReferenceAsset = {
+  assetId: string;
+  role: CharacterReferenceRole;
+  orderIndex: number;
+};
+export type CharacterProfile = {
+  id: string;
+  projectId: string;
+  name: string;
+  description: string;
+  prompt: string;
+  negativePrompt: string;
+  referenceAssets: CharacterReferenceAsset[];
+  createdAt: string;
+  updatedAt: string;
+};
 export const INTERNAL_PANEL_CACHE_TAG_PREFIX = "mangai:internal:panel-cache:";
 export function isInternalPanelCacheAsset(asset: Pick<Asset, "libraryTags">) {
   return asset.libraryTags.some((tag) =>

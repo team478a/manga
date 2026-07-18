@@ -21,6 +21,93 @@ import {
   evaluateAdultProviderCapability,
 } from "@mangai/ai-core";
 
+test("character profiles persist local prompts and same-project references", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-character-profile-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  let db = new MangaiDatabase(paths);
+  t.after(() => {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  const create = (title) =>
+    db.createProject({
+      title,
+      subtitle: "",
+      description: "",
+      genre: "漫画",
+      ageRating: "成人向け",
+      contentClass: "adult",
+      readingDirection: "rtl",
+      width: 512,
+      height: 768,
+      dpi: 300,
+    });
+  let project = create("Character profile");
+  let other = create("Other project");
+  const source = path.join(root, "reference.png");
+  await sharp({
+    create: { width: 16, height: 16, channels: 4, background: "#336699" },
+  })
+    .png()
+    .toFile(source);
+  project = db.importAssets(project.project.id, [source]);
+  other = db.importAssets(other.project.id, [source]);
+  const profile = db.saveCharacterProfile({
+    projectId: project.project.id,
+    name: "主人公",
+    description: "同じ外見を維持する",
+    prompt: "adult fictional woman, short black hair",
+    negativePrompt: "different hair color",
+  })[0];
+  let profiles = db.attachCharacterReferenceAsset({
+    characterProfileId: profile.id,
+    assetId: project.assets[0].id,
+    role: "face",
+  });
+  assert.equal(profiles[0].referenceAssets[0].role, "face");
+  assert.equal(profiles[0].prompt, "adult fictional woman, short black hair");
+  assert.throws(
+    () =>
+      db.attachCharacterReferenceAsset({
+        characterProfileId: profile.id,
+        assetId: other.assets[0].id,
+        role: "reference",
+      }),
+    /別Project/,
+  );
+  const duplicated = db.duplicateProject(project.project.id);
+  const duplicatedProfiles = db.listCharacterProfiles(duplicated.project.id);
+  assert.equal(duplicatedProfiles[0].referenceAssets.length, 1);
+  assert.notEqual(duplicatedProfiles[0].id, profile.id);
+  assert.notEqual(
+    duplicatedProfiles[0].referenceAssets[0].assetId,
+    project.assets[0].id,
+  );
+  const backup = path.join(root, "character-profile.mangai-backup");
+  await db.backupProject(project.project.id, backup);
+  const restored = await db.restoreProject(backup);
+  const restoredProfiles = db.listCharacterProfiles(restored.project.id);
+  assert.equal(restoredProfiles[0].name, "主人公");
+  assert.equal(restoredProfiles[0].referenceAssets.length, 1);
+  db.close();
+  db = new MangaiDatabase(paths);
+  profiles = db.listCharacterProfiles(project.project.id);
+  assert.equal(profiles.length, 1);
+  assert.equal(profiles[0].referenceAssets.length, 1);
+  profiles = db.detachCharacterReferenceAsset(
+    { characterProfileId: profile.id, assetId: project.assets[0].id },
+  );
+  assert.equal(profiles[0].referenceAssets.length, 0);
+  assert.equal(db.deleteCharacterProfile(profile.id).length, 0);
+});
+
 test("30 canvas objects remain responsive across save, move and reopen", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-canvas-perf-"));
   const paths = {

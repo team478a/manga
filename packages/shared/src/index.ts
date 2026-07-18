@@ -62,10 +62,30 @@ export const projectInputSchema = z.object({
   height: z.number().int().min(100).max(20000).default(2400),
   dpi: z.number().int().min(72).max(1200).default(300),
   storagePath: z.string().trim().optional(),
+  adultProjectAcknowledged: z.boolean().default(false),
 });
 export const renameProjectSchema = z.object({
   id: idSchema,
   title: z.string().trim().min(1).max(200),
+});
+export const characterReferenceRoleSchema = z.enum([
+  "reference",
+  "face",
+  "pose",
+]);
+export const characterProfileInputSchema = z.object({
+  id: idSchema.optional(),
+  projectId: idSchema,
+  name: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(5000).default(""),
+  prompt: z.string().trim().max(50000).default(""),
+  negativePrompt: z.string().trim().max(50000).default(""),
+});
+export const characterProfileIdSchema = z.object({ id: idSchema });
+export const characterReferenceAssetInputSchema = z.object({
+  characterProfileId: idSchema,
+  assetId: idSchema,
+  role: characterReferenceRoleSchema.default("reference"),
 });
 export const projectContentClassChangeSchema = z.object({
   id: idSchema,

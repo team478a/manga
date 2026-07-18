@@ -1,5 +1,10 @@
 import React from "react";
-import type { Asset, ProjectBundle } from "@mangai/project-core";
+import {
+  isInternalPanelCacheAsset,
+  type Asset,
+  type CharacterProfile,
+  type ProjectBundle,
+} from "@mangai/project-core";
 import type {
   ExternalDispatchPreview,
   GenerationQueueSettings,
@@ -7,6 +12,7 @@ import type {
 } from "@mangai/ai-core";
 import { useI18n } from "../../i18n";
 import { ProjectGenerationPolicySettings } from "./ProjectGenerationPolicySettings";
+import { CharacterProfileManager } from "./CharacterProfileManager";
 
 function generationStatusKey(status: string) {
   if (status === "queued") return "generation.status.queued" as const;
@@ -186,6 +192,16 @@ export function GenerationJobs({
   const [jobs, setJobs] = React.useState<any[]>([]),
     [routes, setRoutes] = React.useState<any[]>([]),
     [workflows, setWorkflows] = React.useState<any[]>([]),
+    [characterProfiles, setCharacterProfiles] = React.useState<
+      CharacterProfile[]
+    >([]),
+    [characterProfileId, setCharacterProfileId] = React.useState(""),
+    [operation, setOperation] = React.useState<
+      "text_to_image" | "image_to_image" | "controlnet" | "inpainting"
+    >("text_to_image"),
+    [sourceAssetId, setSourceAssetId] = React.useState(""),
+    [maskAssetId, setMaskAssetId] = React.useState(""),
+    [denoiseStrength, setDenoiseStrength] = React.useState(0.65),
     [workflowId, setWorkflowId] = React.useState(""),
     [promptText, setPrompt] = React.useState(""),
     [negative, setNegative] = React.useState(""),
@@ -247,14 +263,17 @@ export function GenerationJobs({
   const externalQueueMessageRef = React.useRef<HTMLParagraphElement>(null);
   const completedImageCount = React.useRef<number | null>(null);
   const load = async () => {
-    const [nextJobs, nextRoutes, nextWorkflows] = await Promise.all([
+    const [nextJobs, nextRoutes, nextWorkflows, nextProfiles] =
+      await Promise.all([
       window.mangai.ai.listJobs(bundle.project.id),
       window.mangai.ai.listRouteDecisions(bundle.project.id),
       window.mangai.ai.listWorkflows(),
-    ]);
+        window.mangai.listCharacterProfiles(bundle.project.id),
+      ]);
     setJobs(nextJobs);
     setRoutes(nextRoutes);
     setWorkflows(nextWorkflows);
+    setCharacterProfiles(nextProfiles);
     const nextCompletedCount = nextJobs.filter(
       (job: any) =>
         job.generationType === "image" && job.status === "completed",
@@ -322,6 +341,11 @@ export function GenerationJobs({
         width: bundle.project.width,
         height: bundle.project.height,
         seed: Math.floor(Math.random() * 2147483647),
+        operation,
+        sourceAssetId: operation === "text_to_image" ? undefined : sourceAssetId,
+        maskAssetId: operation === "inpainting" ? maskAssetId : undefined,
+        characterProfileId: characterProfileId || undefined,
+        denoiseStrength,
         jobType:
           safeHandoff?.type ??
           (bundle.project.ageRating === "成人向け"
@@ -352,9 +376,20 @@ export function GenerationJobs({
   const selectedWorkflow = workflows.find(
     (workflow) => workflow.id === workflowId,
   );
+  const workflowSupportsOperation =
+    !selectedWorkflow ||
+    !Array.isArray(selectedWorkflow.supportedOperations) ||
+    selectedWorkflow.supportedOperations.includes(operation);
   const adultConfirmationRequired =
     bundle.project.ageRating === "成人向け" && !safeHandoff;
   const adultConfirmationComplete = Object.values(adultChecks).every(Boolean);
+  const generationAssets = bundle.assets.filter(
+    (asset) => !isInternalPanelCacheAsset(asset),
+  );
+  const localInputsReady =
+    operation === "text_to_image" ||
+    (Boolean(sourceAssetId) &&
+      (operation !== "inpainting" || Boolean(maskAssetId)));
   const episodePages = bundle.pages
     .filter((page) => page.episodeId === episodeId)
     .sort((left, right) => left.orderIndex - right.orderIndex);
@@ -979,6 +1014,93 @@ export function GenerationJobs({
               {workflowMessage}
             </p>
           )}
+          <CharacterProfileManager
+            bundle={bundle}
+            profiles={characterProfiles}
+            selectedId={characterProfileId}
+            onProfiles={setCharacterProfiles}
+            onSelectedId={setCharacterProfileId}
+          />
+          <div className="panel-lite">
+            <label>
+              {t("generation.operation")}
+              <select
+                value={operation}
+                onChange={(event) => {
+                  const next = event.target.value as typeof operation;
+                  setOperation(next);
+                  if (next === "text_to_image") setSourceAssetId("");
+                  if (next !== "inpainting") setMaskAssetId("");
+                }}
+              >
+                {(
+                  [
+                    "text_to_image",
+                    "image_to_image",
+                    "controlnet",
+                    "inpainting",
+                  ] as const
+                ).map((value) => (
+                  <option key={value} value={value}>
+                    {t(`generation.operation.${value}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {operation !== "text_to_image" && (
+              <label>
+                {t("generation.sourceAsset")}
+                <select
+                  value={sourceAssetId}
+                  onChange={(event) => setSourceAssetId(event.target.value)}
+                >
+                  <option value="">{t("generation.selectAsset")}</option>
+                  {generationAssets.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {asset.fileName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {operation === "inpainting" && (
+              <label>
+                {t("generation.maskAsset")}
+                <select
+                  value={maskAssetId}
+                  onChange={(event) => setMaskAssetId(event.target.value)}
+                >
+                  <option value="">{t("generation.selectAsset")}</option>
+                  {generationAssets.map((asset) => (
+                    <option key={asset.id} value={asset.id}>
+                      {asset.fileName}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            {operation !== "text_to_image" && (
+              <label>
+                {t("generation.denoiseStrength")}: {denoiseStrength.toFixed(2)}
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={denoiseStrength}
+                  onChange={(event) =>
+                    setDenoiseStrength(Number(event.target.value))
+                  }
+                />
+              </label>
+            )}
+            {!workflowSupportsOperation && (
+              <p className="error" role="alert">
+                {t("generation.workflowOperationUnsupported")}
+              </p>
+            )}
+            <small>{t("generation.localInputHelp")}</small>
+          </div>
           <div className="notice" role="region">
             <h3>{t("generation.pageBatchTitle")}</h3>
             <p>{t("generation.pageBatchHelp")}</p>
@@ -1060,6 +1182,8 @@ export function GenerationJobs({
               busy ||
               !workflowId ||
               !promptText.trim() ||
+              !localInputsReady ||
+              !workflowSupportsOperation ||
               (adultConfirmationRequired && !adultConfirmationComplete)
             }
             onClick={() => void generate()}

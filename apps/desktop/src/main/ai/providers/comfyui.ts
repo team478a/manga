@@ -3,6 +3,7 @@ import {
   type ImageGenerationProvider,
   type ImageGenerationRequest,
   type ImageGenerationResult,
+  type GenerationInputImage,
   type ProviderConnectionResult,
   type ProviderJobStatus,
   type ProviderSettings,
@@ -168,6 +169,39 @@ export class ComfyUIProvider implements ImageGenerationProvider {
         tiledVaeNodeAvailable && cpuVaeEnabled && hasAccelerator,
     };
   }
+  private async uploadInputImage(
+    image: GenerationInputImage,
+    signal?: AbortSignal,
+  ) {
+    const safeName =
+        image.fileName.replace(/[^a-zA-Z0-9._-]/g, "-") || "input.png",
+      form = new FormData();
+    form.append(
+      "image",
+      new Blob([new Uint8Array(image.bytes)], { type: image.mimeType }),
+      safeName,
+    );
+    form.append("type", "input");
+    form.append("overwrite", "false");
+    const response = await fetchWithTimeout(
+      this.url("/upload/image"),
+      { method: "POST", body: form },
+      this.settings.timeoutMs,
+      signal,
+    );
+    if (!response.ok)
+      throw new AIProviderError(
+        "INPUT_UPLOAD_FAILED",
+        "ComfyUIへ入力画像を渡せませんでした。",
+      );
+    const result = (await response.json()) as { name?: unknown };
+    if (typeof result.name !== "string" || !result.name)
+      throw new AIProviderError(
+        "INPUT_UPLOAD_INVALID",
+        "ComfyUIの入力画像応答を確認できませんでした。",
+      );
+    return result.name;
+  }
   async generateImage(
     request: ImageGenerationRequest,
     _context?: unknown,
@@ -184,6 +218,14 @@ export class ComfyUIProvider implements ImageGenerationProvider {
             `ワークフローのノード ${target.nodeId}.${target.input} が見つかりません。`,
           );
         node.inputs[target.input] = value;
+      },
+      requireMapping = (field: string, target: any) => {
+        if (!target)
+          throw new AIProviderError(
+            "WORKFLOW_MAPPING_REQUIRED",
+            `この生成モードには${field}マッピングが必要です。`,
+          );
+        return target;
       };
     set(definition.mapping.prompt, request.prompt);
     set(definition.mapping.negativePrompt, request.negativePrompt ?? "");
@@ -192,6 +234,36 @@ export class ComfyUIProvider implements ImageGenerationProvider {
     set(definition.mapping.seed, request.seed);
     if (this.getRuntimeProfile)
       applyRuntimeLimitsToWorkflow(workflow, this.getRuntimeProfile());
+    const operation = request.operation ?? "text_to_image";
+    if (operation !== "text_to_image") {
+      if (!request.inputImage)
+        throw new AIProviderError(
+          "INPUT_IMAGE_REQUIRED",
+          "この生成モードには入力画像が必要です。",
+        );
+      const inputTarget = requireMapping(
+          operation === "controlnet" ? "ControlNet画像" : "入力画像",
+          operation === "controlnet"
+            ? definition.mapping.controlImage
+            : definition.mapping.sourceImage,
+        ),
+        inputName = await this.uploadInputImage(request.inputImage, signal);
+      set(inputTarget, inputName);
+      set(definition.mapping.denoiseStrength, request.denoiseStrength);
+    }
+    if (operation === "inpainting") {
+      if (!request.maskImage)
+        throw new AIProviderError(
+          "MASK_IMAGE_REQUIRED",
+          "Inpaintingにはマスク画像が必要です。",
+        );
+      const maskTarget = requireMapping(
+          "マスク画像",
+          definition.mapping.maskImage,
+        ),
+        maskName = await this.uploadInputImage(request.maskImage, signal);
+      set(maskTarget, maskName);
+    }
     const response = await fetchWithTimeout(
       this.url("/prompt"),
       {

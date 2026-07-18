@@ -56,6 +56,7 @@ const emptyForm: ProjectForm = {
   height: 2400,
   dpi: 300,
   storagePath: "",
+  adultProjectAcknowledged: false,
 };
 const readPanelPreference = (key: string, defaultValue: boolean) => {
   try {
@@ -488,6 +489,7 @@ function App() {
                             : form.ageRating === "成人向け"
                               ? "全年齢"
                               : form.ageRating,
+                        adultProjectAcknowledged: false,
                       });
                     }}
                   >
@@ -504,6 +506,21 @@ function App() {
                       : t("projectDialog.contentGeneralHelp")}
                   </small>
                 </label>
+                {form.contentClass === "adult" && (
+                  <label className="check">
+                    <input
+                      type="checkbox"
+                      checked={form.adultProjectAcknowledged}
+                      onChange={(event) =>
+                        setForm({
+                          ...form,
+                          adultProjectAcknowledged: event.target.checked,
+                        })
+                      }
+                    />
+                    {t("projectDialog.adultAcknowledgement")}
+                  </label>
+                )}
                 <label>
                   {t("projectDialog.ageRating")}
                   <select
@@ -623,7 +640,14 @@ function App() {
                 >
                   {t("projectDialog.cancel")}
                 </button>
-                <button>{t("projectDialog.create")}</button>
+                <button
+                  disabled={
+                    form.contentClass === "adult" &&
+                    !form.adultProjectAcknowledged
+                  }
+                >
+                  {t("projectDialog.create")}
+                </button>
               </footer>
             </form>
           </div>

@@ -20,12 +20,16 @@ import {
 import {
   INTERNAL_PANEL_CACHE_TAG_PREFIX,
   isInternalPanelCacheAsset,
+  type CharacterProfile,
+  type CharacterReferenceRole,
   type ProjectBundle,
   type Project,
 } from "@mangai/project-core";
 import {
   CONTENT_POLICY_VERSION,
   assetLibraryMetadataInputSchema,
+  characterProfileInputSchema,
+  characterReferenceAssetInputSchema,
   cloudProjectImportSchema,
   projectInputSchema,
   resolveProjectContentClass,
@@ -107,6 +111,7 @@ type ProjectBackupManifest = {
   bundle: ProjectBundle;
   history?: ProjectBackupHistory;
   generationPolicy?: ProjectGenerationPolicy;
+  characterProfiles?: CharacterProfile[];
 };
 type BackupOperation = {
   label: string;
@@ -354,6 +359,31 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
   }
   if (manifest.generationPolicy !== undefined)
     projectGenerationPolicySchema.parse(manifest.generationPolicy);
+  if (manifest.characterProfiles !== undefined) {
+    if (
+      !Array.isArray(manifest.characterProfiles) ||
+      manifest.characterProfiles.length > 10_000
+    )
+      throw new Error("キャラクターProfileのデータ構造が不正です。");
+    const backupAssetIds = new Set(bundle.assets.map((asset) => asset.id));
+    for (const profile of manifest.characterProfiles as CharacterProfile[]) {
+      characterProfileInputSchema.parse({
+        ...profile,
+        projectId: bundle.project.id,
+      });
+      if (!Array.isArray(profile.referenceAssets))
+        throw new Error("キャラクター参照素材の構造が不正です。");
+      for (const reference of profile.referenceAssets) {
+        characterReferenceAssetInputSchema.parse({
+          characterProfileId: profile.id,
+          assetId: reference.assetId,
+          role: reference.role,
+        });
+        if (!backupAssetIds.has(reference.assetId))
+          throw new Error("キャラクター参照素材がProject内にありません。");
+      }
+    }
+  }
   return manifest as ProjectBackupManifest;
 }
 
@@ -449,6 +479,8 @@ export class MangaiDatabase {
  create table if not exists adult_provider_policy_imports(id text primary key,key_id text not null,payload_sha256 text not null,issued_at text not null,expires_at text not null,imported_at text not null);
  create table if not exists external_cost_reservations(id text primary key,project_id text not null references projects(id) on delete cascade,provider_id text not null,approval_token_sha256 text not null unique,job_id text references generation_jobs(id) on delete set null,billing_month text not null,reserved_amount_usd real not null check(reserved_amount_usd>=0),actual_amount_usd real,status text not null check(status in ('reserved','settled','released')),created_at text not null,updated_at text not null);
  create table if not exists comfy_workflows(id text primary key,name text not null,file_path text not null,mapping_json text not null,is_default integer not null default 0,created_at text not null,updated_at text not null);
+ create table if not exists character_profiles(id text primary key,project_id text not null references projects(id) on delete cascade,name text not null,description text not null default '',prompt text not null default '',negative_prompt text not null default '',created_at text not null,updated_at text not null);
+ create table if not exists character_profile_assets(character_profile_id text not null references character_profiles(id) on delete cascade,asset_id text not null references assets(id) on delete cascade,role text not null check(role in ('reference','face','pose')),order_index integer not null default 0,created_at text not null,primary key(character_profile_id,asset_id));
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
  create table if not exists schema_migrations(version text primary key,name text not null,applied_at text not null);
  create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);create index if not exists idx_external_cost_project_month on external_cost_reservations(project_id,provider_id,billing_month,status);`);
@@ -508,6 +540,7 @@ export class MangaiDatabase {
     this.migrateAdultProviderPolicyV1();
     this.migrateAdultProviderPolicyImportV1();
     this.migrateContentClassV1();
+    this.migrateCharacterProfilesV1();
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -973,6 +1006,45 @@ export class MangaiDatabase {
         .run("content-class-v1", "General and adult product boundary", stamp);
     })();
   }
+  private migrateCharacterProfilesV1() {
+    if (this.hasMigration("character-profiles-v1")) return;
+    const stamp = now();
+    this.db.transaction(() => {
+      this.db.exec(`
+        create table if not exists character_profiles(
+          id text primary key,
+          project_id text not null references projects(id) on delete cascade,
+          name text not null,
+          description text not null default '',
+          prompt text not null default '',
+          negative_prompt text not null default '',
+          created_at text not null,
+          updated_at text not null
+        );
+        create table if not exists character_profile_assets(
+          character_profile_id text not null references character_profiles(id) on delete cascade,
+          asset_id text not null references assets(id) on delete cascade,
+          role text not null check(role in ('reference','face','pose')),
+          order_index integer not null default 0,
+          created_at text not null,
+          primary key(character_profile_id,asset_id)
+        );
+        create index if not exists idx_character_profiles_project
+          on character_profiles(project_id,updated_at desc);
+        create index if not exists idx_character_profile_assets_order
+          on character_profile_assets(character_profile_id,order_index);
+      `);
+      this.db
+        .prepare(
+          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
+        )
+        .run(
+          "character-profiles-v1",
+          "Local character profiles and reference assets",
+          stamp,
+        );
+    })();
+  }
   private project(row: any): Project {
     return {
       id: row.id,
@@ -1205,16 +1277,21 @@ export class MangaiDatabase {
   }
   duplicateProject(id: string) {
     const source = this.bundle(id);
+    const sourceCharacterProfiles = this.listCharacterProfiles(id);
     const sourcePolicy = this.getProjectGenerationPolicy(id);
     const copy = this.createProject({
       ...source.project,
       title: `${source.project.title} のコピー`,
       storagePath: undefined,
+      adultProjectAcknowledged: source.project.contentClass === "adult",
     });
     const projectId = copy.project.id;
     const storagePath = copy.project.storagePath;
     try {
       const assetMap = new Map(source.assets.map((asset) => [asset.id, uid()]));
+      const characterProfileMap = new Map(
+        sourceCharacterProfiles.map((profile) => [profile.id, uid()]),
+      );
       const episodeMap = new Map(
         source.episodes.map((episode) => [episode.id, uid()]),
       );
@@ -1307,6 +1384,48 @@ export class MangaiDatabase {
               asset.libraryFavorite ? 1 : 0,
               asset.libraryUpdatedAt,
             );
+        for (const profile of sourceCharacterProfiles) {
+          const profileId = mappedReference(
+            characterProfileMap,
+            profile.id,
+            "キャラクターProfile",
+          )!;
+          this.db
+            .prepare(
+              `insert into character_profiles(
+                 id,project_id,name,description,prompt,negative_prompt,
+                 created_at,updated_at
+               ) values(?,?,?,?,?,?,?,?)`,
+            )
+            .run(
+              profileId,
+              projectId,
+              profile.name,
+              profile.description,
+              profile.prompt,
+              profile.negativePrompt,
+              stamp,
+              stamp,
+            );
+          for (const reference of profile.referenceAssets)
+            this.db
+              .prepare(
+                `insert into character_profile_assets(
+                   character_profile_id,asset_id,role,order_index,created_at
+                 ) values(?,?,?,?,?)`,
+              )
+              .run(
+                profileId,
+                mappedReference(
+                  assetMap,
+                  reference.assetId,
+                  "キャラクター参照素材",
+                ),
+                reference.role,
+                reference.orderIndex,
+                stamp,
+              );
+        }
         for (const episode of source.episodes)
           this.db
             .prepare("insert into episodes values(?,?,?,?,?,?)")
@@ -1518,6 +1637,7 @@ export class MangaiDatabase {
       },
       history: this.projectBackupHistory(id),
       generationPolicy: this.getProjectGenerationPolicy(id),
+      characterProfiles: this.listCharacterProfiles(id),
     };
     zip.file("manifest.json", JSON.stringify(manifest));
     for (const asset of bundle.assets) {
@@ -1590,6 +1710,7 @@ export class MangaiDatabase {
         const bundle = this.bundle(project.id);
         const history = this.projectBackupHistory(project.id);
         const generationPolicy = this.getProjectGenerationPolicy(project.id);
+        const characterProfiles = this.listCharacterProfiles(project.id);
         const fingerprint = crypto
           .createHash("sha256")
           .update(
@@ -1602,6 +1723,7 @@ export class MangaiDatabase {
               },
               history,
               generationPolicy,
+              characterProfiles,
             }),
           )
           .digest("hex")
@@ -1704,6 +1826,7 @@ export class MangaiDatabase {
       const textObjectMap = new Map<string, string>();
       const sessionMap = new Map<string, string>();
       const generationJobMap = new Map<string, string>();
+      const characterProfileMap = new Map<string, string>();
       const ensureMappedId = (map: Map<string, string>, sourceId: string) => {
         if (!sourceId || typeof sourceId !== "string")
           throw new Error("バックアップ履歴のIDが不正です。");
@@ -1754,6 +1877,8 @@ export class MangaiDatabase {
         ensureMappedId(sessionMap, session.id);
       for (const job of backupHistory?.generationJobs ?? [])
         ensureMappedId(generationJobMap, job.id);
+      for (const profile of manifest.characterProfiles ?? [])
+        ensureMappedId(characterProfileMap, profile.id);
       const mappedReference = (
         map: Map<string, string>,
         sourceId: string | null,
@@ -1917,6 +2042,48 @@ export class MangaiDatabase {
               asset.libraryFavorite ? 1 : 0,
               asset.libraryUpdatedAt ?? null,
             );
+        for (const profile of manifest.characterProfiles ?? []) {
+          const profileId = mappedReference(
+            characterProfileMap,
+            profile.id,
+            "キャラクターProfile",
+          )!;
+          this.db
+            .prepare(
+              `insert into character_profiles(
+                 id,project_id,name,description,prompt,negative_prompt,
+                 created_at,updated_at
+               ) values(?,?,?,?,?,?,?,?)`,
+            )
+            .run(
+              profileId,
+              projectId,
+              profile.name,
+              profile.description,
+              profile.prompt,
+              profile.negativePrompt,
+              stamp,
+              stamp,
+            );
+          for (const reference of profile.referenceAssets)
+            this.db
+              .prepare(
+                `insert into character_profile_assets(
+                   character_profile_id,asset_id,role,order_index,created_at
+                 ) values(?,?,?,?,?)`,
+              )
+              .run(
+                profileId,
+                mappedReference(
+                  assetMap,
+                  reference.assetId,
+                  "キャラクター参照素材",
+                ),
+                reference.role,
+                reference.orderIndex,
+                stamp,
+              );
+        }
         for (const episode of sourceBundle.episodes) {
           const id = ensureMappedId(episodeMap, episode.id);
           this.db
@@ -5407,6 +5574,163 @@ export class MangaiDatabase {
     ].filter(Boolean);
     return { summary: lines.join("\n"), items: lines };
   }
+  listCharacterProfiles(projectId: string): CharacterProfile[] {
+    if (!this.db.prepare("select 1 from projects where id=?").get(projectId))
+      throw new Error("Projectが見つかりません。");
+    const profiles = this.db
+      .prepare(
+        `select id,project_id,name,description,prompt,negative_prompt,created_at,updated_at
+         from character_profiles where project_id=? order by updated_at desc,name`,
+      )
+      .all(projectId) as Array<Record<string, any>>;
+    const references = this.db.prepare(
+      `select asset_id,role,order_index from character_profile_assets
+       where character_profile_id=? order by order_index,created_at`,
+    );
+    return profiles.map((profile) => ({
+      id: profile.id,
+      projectId: profile.project_id,
+      name: profile.name,
+      description: profile.description,
+      prompt: profile.prompt,
+      negativePrompt: profile.negative_prompt,
+      referenceAssets: (
+        references.all(profile.id) as Array<Record<string, any>>
+      ).map((item) => ({
+        assetId: item.asset_id,
+        role: item.role as CharacterReferenceRole,
+        orderIndex: item.order_index,
+      })),
+      createdAt: profile.created_at,
+      updatedAt: profile.updated_at,
+    }));
+  }
+  getCharacterProfile(projectId: string, id: string): CharacterProfile {
+    const profile = this.listCharacterProfiles(projectId).find(
+      (item) => item.id === id,
+    );
+    if (!profile) throw new Error("キャラクターProfileが見つかりません。");
+    return profile;
+  }
+  readGenerationInputAsset(projectId: string, assetId: string) {
+    const asset = this.db
+      .prepare(
+        `select a.file_name,a.relative_path,a.mime_type,a.byte_size,a.sha256,
+                p.storage_path
+         from assets a join projects p on p.id=a.project_id
+         where a.id=? and a.project_id=?`,
+      )
+      .get(assetId, projectId) as Record<string, any> | undefined;
+    if (!asset) throw new Error("Project内の入力素材が見つかりません。");
+    if (!["image/png", "image/jpeg", "image/webp"].includes(asset.mime_type))
+      throw new Error("入力素材の画像形式に対応していません。");
+    const file = this.safeProjectPath(asset.storage_path, asset.relative_path);
+    if (!fs.existsSync(file)) throw new Error("入力素材ファイルが見つかりません。");
+    this.verifyAssetFile(file, {
+      byteSize: asset.byte_size,
+      sha256: asset.sha256,
+    });
+    return {
+      fileName: asset.file_name,
+      bytes: new Uint8Array(fs.readFileSync(file)),
+      mimeType: asset.mime_type as "image/png" | "image/jpeg" | "image/webp",
+    };
+  }
+  saveCharacterProfile(input: unknown): CharacterProfile[] {
+    const value = characterProfileInputSchema.parse(input),
+      stamp = now(),
+      id = value.id ?? uid();
+    if (!this.db.prepare("select 1 from projects where id=?").get(value.projectId))
+      throw new Error("Projectが見つかりません。");
+    const existing = value.id
+      ? (this.db
+          .prepare("select project_id from character_profiles where id=?")
+          .get(value.id) as { project_id: string } | undefined)
+      : undefined;
+    if (value.id && !existing)
+      throw new Error("キャラクターProfileが見つかりません。");
+    if (existing && existing.project_id !== value.projectId)
+      throw new Error("別ProjectのキャラクターProfileは更新できません。");
+    this.db
+      .prepare(
+        `insert into character_profiles(
+           id,project_id,name,description,prompt,negative_prompt,created_at,updated_at
+         ) values(?,?,?,?,?,?,?,?)
+         on conflict(id) do update set name=excluded.name,
+           description=excluded.description,prompt=excluded.prompt,
+           negative_prompt=excluded.negative_prompt,updated_at=excluded.updated_at`,
+      )
+      .run(
+        id,
+        value.projectId,
+        value.name,
+        value.description,
+        value.prompt,
+        value.negativePrompt,
+        stamp,
+        stamp,
+      );
+    return this.listCharacterProfiles(value.projectId);
+  }
+  deleteCharacterProfile(id: string): CharacterProfile[] {
+    const profile = this.db
+      .prepare("select project_id from character_profiles where id=?")
+      .get(id) as { project_id: string } | undefined;
+    if (!profile) throw new Error("キャラクターProfileが見つかりません。");
+    this.db.prepare("delete from character_profiles where id=?").run(id);
+    return this.listCharacterProfiles(profile.project_id);
+  }
+  attachCharacterReferenceAsset(input: unknown): CharacterProfile[] {
+    const value = characterReferenceAssetInputSchema.parse(input),
+      profile = this.db
+        .prepare("select project_id from character_profiles where id=?")
+        .get(value.characterProfileId) as { project_id: string } | undefined,
+      asset = this.db
+        .prepare("select project_id from assets where id=?")
+        .get(value.assetId) as { project_id: string } | undefined;
+    if (!profile) throw new Error("キャラクターProfileが見つかりません。");
+    if (!asset) throw new Error("参照素材が見つかりません。");
+    if (profile.project_id !== asset.project_id)
+      throw new Error("別Projectの素材は参照画像に設定できません。");
+    const order = (
+      this.db
+        .prepare(
+          "select coalesce(max(order_index),-1)+1 as value from character_profile_assets where character_profile_id=?",
+        )
+        .get(value.characterProfileId) as { value: number }
+    ).value;
+    this.db
+      .prepare(
+        `insert into character_profile_assets(
+           character_profile_id,asset_id,role,order_index,created_at
+         ) values(?,?,?,?,?)
+         on conflict(character_profile_id,asset_id) do update set
+           role=excluded.role`,
+      )
+      .run(
+        value.characterProfileId,
+        value.assetId,
+        value.role,
+        order,
+        now(),
+      );
+    return this.listCharacterProfiles(profile.project_id);
+  }
+  detachCharacterReferenceAsset(input: unknown): CharacterProfile[] {
+    const value = characterReferenceAssetInputSchema
+        .pick({ characterProfileId: true, assetId: true })
+        .parse(input),
+      profile = this.db
+        .prepare("select project_id from character_profiles where id=?")
+        .get(value.characterProfileId) as { project_id: string } | undefined;
+    if (!profile) throw new Error("キャラクターProfileが見つかりません。");
+    this.db
+      .prepare(
+        "delete from character_profile_assets where character_profile_id=? and asset_id=?",
+      )
+      .run(value.characterProfileId, value.assetId);
+    return this.listCharacterProfiles(profile.project_id);
+  }
   registerComfyWorkflow(name: string, sourcePath: string, mapping: unknown) {
     if (path.extname(sourcePath).toLowerCase() !== ".json")
       throw new Error("ComfyUIワークフローはJSONを選択してください。");
@@ -5441,11 +5765,20 @@ export class MangaiDatabase {
       .all() as Array<Record<string, any>>;
     return rows.map((row) => {
       try {
+        const definition = this.getComfyWorkflow(row.id);
         return {
           ...row,
           optimization: analyzeComfyWorkflowOptimization(
-            this.getComfyWorkflow(row.id).workflow,
+            definition.workflow,
           ),
+          supportedOperations: [
+            ...(definition.mapping.prompt ? ["text_to_image"] : []),
+            ...(definition.mapping.sourceImage ? ["image_to_image"] : []),
+            ...(definition.mapping.controlImage ? ["controlnet"] : []),
+            ...(definition.mapping.sourceImage && definition.mapping.maskImage
+              ? ["inpainting"]
+              : []),
+          ],
         };
       } catch {
         return { ...row, optimization: null };
@@ -5506,6 +5839,14 @@ export class MangaiDatabase {
     }
     if (!definition.mapping.prompt) errors.push("Promptマッピングが必要です。");
     const optimization = analyzeComfyWorkflowOptimization(definition.workflow),
+      supportedOperations = [
+        ...(definition.mapping.prompt ? ["text_to_image"] : []),
+        ...(definition.mapping.sourceImage ? ["image_to_image"] : []),
+        ...(definition.mapping.controlImage ? ["controlnet"] : []),
+        ...(definition.mapping.sourceImage && definition.mapping.maskImage
+          ? ["inpainting"]
+          : []),
+      ],
       warnings = [
         !optimization.hasTiledVaeDecode
           ? "低スペック向けのVAEDecodeTiledが見つかりません。"
@@ -5520,6 +5861,7 @@ export class MangaiDatabase {
       fields,
       warnings,
       optimization,
+      supportedOperations,
     };
   }
   deleteComfyWorkflow(id: string) {

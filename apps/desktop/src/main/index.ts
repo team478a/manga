@@ -51,6 +51,9 @@ import {
 import {
   assetIdSchema,
   assetLibraryMetadataInputSchema,
+  characterProfileIdSchema,
+  characterProfileInputSchema,
+  characterReferenceAssetInputSchema,
   episodeInputSchema,
   importAssetsSchema,
   pageInputSchema,
@@ -373,9 +376,14 @@ function register() {
   handle("projects:cover", (v) =>
     store.projectCover(projectIdSchema.parse(v).id),
   );
-  handle("projects:create", (v) =>
-    store.createProject(projectInputSchema.parse(v)),
-  );
+  handle("projects:create", (v) => {
+    const input = projectInputSchema.parse(v);
+    if (input.contentClass === "adult" && !input.adultProjectAcknowledged)
+      throw new Error(
+        "成人向けProjectのローカル保存・外部送信禁止を確認してください。",
+      );
+    return store.createProject(input);
+  });
   handle("projects:open", async (v) => {
     const projectId = projectIdSchema.parse(v).id;
     store.openProject(projectId);
@@ -633,6 +641,23 @@ function register() {
   });
   handle("assets:library:save", (v) =>
     store.saveAssetLibraryMetadata(assetLibraryMetadataInputSchema.parse(v)),
+  );
+  handle("characters:list", (v) =>
+    store.listCharacterProfiles(projectIdSchema.parse(v).id),
+  );
+  handle("characters:save", (v) =>
+    store.saveCharacterProfile(characterProfileInputSchema.parse(v)),
+  );
+  handle("characters:delete", (v) =>
+    store.deleteCharacterProfile(characterProfileIdSchema.parse(v).id),
+  );
+  handle("characters:reference:attach", (v) =>
+    store.attachCharacterReferenceAsset(
+      characterReferenceAssetInputSchema.parse(v),
+    ),
+  );
+  handle("characters:reference:detach", (v) =>
+    store.detachCharacterReferenceAsset(v),
   );
   handle("assets:url", (v) =>
     store.assetData(

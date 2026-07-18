@@ -7,6 +7,8 @@ type LogContext = Record<string, unknown>;
 
 const SENSITIVE_KEY =
   /(^|_)(authorization|cookie|password|secret|token|api[_-]?key|device[_-]?code)($|_)/i;
+const PRIVATE_CREATIVE_KEY =
+  /(^|_)(prompt|negative[_-]?prompt|input[_-]?image|mask[_-]?image|image[_-]?bytes|bytes|base64|data[_-]?url|input[_-]?json|output[_-]?json)($|_)/i;
 
 function sanitizeString(value: string) {
   const home = os.homedir();
@@ -43,7 +45,7 @@ export function sanitizeDiagnosticValue(value: unknown, depth = 0): unknown {
         .slice(0, 100)
         .map(([key, item]) => [
           key,
-          SENSITIVE_KEY.test(key)
+          SENSITIVE_KEY.test(key) || PRIVATE_CREATIVE_KEY.test(key)
             ? "[REDACTED]"
             : sanitizeDiagnosticValue(item, depth + 1),
         ]),

@@ -1,5 +1,13 @@
-import type { Asset, ProjectBundle, Project } from "@mangai/project-core";
-import type { AssetLibraryMetadataInput, ProjectInput } from "@mangai/shared";
+import type {
+  Asset,
+  CharacterProfile,
+  ProjectBundle,
+  Project,
+} from "@mangai/project-core";
+import type {
+  AssetLibraryMetadataInput,
+  ProjectInput,
+} from "@mangai/shared";
 import type {
   AdultGenerationConsentInput,
   AdultGenerationSettings,
@@ -279,6 +287,25 @@ export type DesktopApi = {
   saveAssetLibraryMetadata: (
     value: AssetLibraryMetadataInput,
   ) => Promise<ProjectBundle>;
+  listCharacterProfiles: (projectId: string) => Promise<CharacterProfile[]>;
+  saveCharacterProfile: (value: {
+    id?: string;
+    projectId: string;
+    name: string;
+    description: string;
+    prompt: string;
+    negativePrompt: string;
+  }) => Promise<CharacterProfile[]>;
+  deleteCharacterProfile: (id: string) => Promise<CharacterProfile[]>;
+  attachCharacterReferenceAsset: (value: {
+    characterProfileId: string;
+    assetId: string;
+    role: "reference" | "face" | "pose";
+  }) => Promise<CharacterProfile[]>;
+  detachCharacterReferenceAsset: (
+    characterProfileId: string,
+    assetId: string,
+  ) => Promise<CharacterProfile[]>;
   assetUrl: (relativePath: string) => Promise<string>;
   getPaths: () => Promise<{
     root: string;

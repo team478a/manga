@@ -132,6 +132,15 @@ export type ImageGenerationRequest = {
   width?: number;
   height?: number;
   seed?: number;
+  operation?: "text_to_image" | "image_to_image" | "controlnet" | "inpainting";
+  inputImage?: GenerationInputImage;
+  maskImage?: GenerationInputImage;
+  denoiseStrength?: number;
+};
+export type GenerationInputImage = {
+  fileName: string;
+  bytes: Uint8Array;
+  mimeType: "image/png" | "image/jpeg" | "image/webp";
 };
 export type ImageGenerationResult = {
   providerJobId: string;
@@ -216,6 +225,13 @@ export const imageJobRequestSchema = z
     width: z.number().int().min(64).max(8192).optional(),
     height: z.number().int().min(64).max(8192).optional(),
     seed: z.number().int().nonnegative().optional(),
+    operation: z
+      .enum(["text_to_image", "image_to_image", "controlnet", "inpainting"])
+      .default("text_to_image"),
+    sourceAssetId: z.string().uuid().optional(),
+    maskAssetId: z.string().uuid().optional(),
+    characterProfileId: z.string().uuid().optional(),
+    denoiseStrength: z.number().min(0).max(1).default(0.65),
     jobType: z
       .union([safeAssetJobTypeSchema, z.literal("adult_character_render")])
       .optional(),
@@ -228,6 +244,24 @@ export const imageJobRequestSchema = z
       .optional(),
   })
   .superRefine((value, context) => {
+    if (value.operation !== "text_to_image" && !value.sourceAssetId)
+      context.addIssue({
+        code: "custom",
+        path: ["sourceAssetId"],
+        message: "この生成モードには入力画像が必要です。",
+      });
+    if (value.operation === "inpainting" && !value.maskAssetId)
+      context.addIssue({
+        code: "custom",
+        path: ["maskAssetId"],
+        message: "Inpaintingにはマスク画像が必要です。",
+      });
+    if (value.operation !== "inpainting" && value.maskAssetId)
+      context.addIssue({
+        code: "custom",
+        path: ["maskAssetId"],
+        message: "マスク画像はInpaintingでのみ指定できます。",
+      });
     if (
       value.jobType === "adult_character_render" &&
       !value.adultContentConfirmation
@@ -326,6 +360,12 @@ export const workflowMappingSchema = z.object({
   width: z.object({ nodeId: z.string(), input: z.string() }).optional(),
   height: z.object({ nodeId: z.string(), input: z.string() }).optional(),
   seed: z.object({ nodeId: z.string(), input: z.string() }).optional(),
+  sourceImage: z.object({ nodeId: z.string(), input: z.string() }).optional(),
+  controlImage: z.object({ nodeId: z.string(), input: z.string() }).optional(),
+  maskImage: z.object({ nodeId: z.string(), input: z.string() }).optional(),
+  denoiseStrength: z
+    .object({ nodeId: z.string(), input: z.string() })
+    .optional(),
 });
 export const workflowInputSchema = z.object({
   name: z.string().trim().min(1).max(200),

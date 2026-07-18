@@ -1201,3 +1201,13 @@ Free／Trial／Creator Plan、生成credit、Job前quota、Provider実費ledger�
 不足していたCloud rate limitの上限拒否と、実費到達による自動kill switchをPostgreSQL assertionへ追加しました。最終回帰はHub 30/30、AI core 40/40、Canvas core 26/26、Desktop統合83/83、TypeScript、ESLint、Web／Desktop production build、migration静的検査13件に成功しました。PostgreSQL 16で全forward・動作assertion・全rollback・再適用・正規schema二重適用・Marketplace同期を完走しています。
 
 Supabase staging適用、Stripe test modeの実Checkout／Portal／署名webhook、実Gateway請求値との照合は秘密値と外部環境を使うRC受入れへ分離しました。要件と証跡は[`PHASE4_CLOUD_QUOTA_BILLING_MARKETPLACE_COMPLETION.md`](PHASE4_CLOUD_QUOTA_BILLING_MARKETPLACE_COMPLETION.md)へ記録しています。
+
+## 140. Phase 5 Desktop Adult ローカル制作基盤
+
+成人向けProject作成時の専用確認、キャラクターProfile、外見Prompt、Negative Prompt、顔・ポーズ・一般参照素材のProject内関連付けを追加しました。Profileは再起動、Project複製、バックアップ復元で維持され、別Projectの素材は関連付けできません。
+
+ローカルComfyUIへText-to-Image、Image-to-Image、ControlNet、Inpaintingの生成モードを追加しました。入力画像とマスクはProject所有、画像形式、byte数、SHA-256をMainプロセスで確認し、loopback ComfyUIへだけmultipart uploadします。workflow mappingはsource、control、mask、denoiseを個別に検証し、対応していないworkflowでは生成ボタンをfail closedにします。成人向けbatch拒否と1枚ずつの6項目確認を維持しています。
+
+診断・クラッシュ情報ではPrompt、Negative Prompt、入力画像、マスク、画像bytes、生成input/outputを常時除外し、自由文の例外messageも保存しないようにしました。モデルlicenseは未確認を自動推測せず端末画面へ表示し、Ollama／ComfyUI／低VRAM導入ガイドとProject暗号化の別要件評価を記録しました。
+
+Phase 5 offline受入れ1/1、AI core 41/41、Desktop統合86/86、TypeScript、ESLint、Desktop production build、日英29画面・状態のaxe違反0件に成功しました。8GB／12GB／16GB Windows GPU実機の結果は構造化statusとstrict判定へ分離し、現端末に対象GPUとOllama／ComfyUIがないためpending 3件を成功扱いしていません。

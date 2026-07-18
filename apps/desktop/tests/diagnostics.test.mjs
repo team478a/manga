@@ -67,12 +67,23 @@ test("詳細クラッシュレポートは同意後だけ保存して削除で�
     diagnostics.updateConsent(true);
     const reportPath = diagnostics.captureCrash(
       "test.enabled",
-      new Error("Bearer super-secret-token"),
-      { authorization: "super-secret-token", password: "password-value" },
+      new Error("private adult prompt: fictional adult secret fixture"),
+      {
+        authorization: "super-secret-token",
+        password: "password-value",
+        prompt: "private adult prompt fixture",
+        negativePrompt: "private negative prompt fixture",
+        inputImage: { bytes: "private-image-bytes" },
+        mask_image: "private-mask-bytes",
+      },
     );
     assert.ok(reportPath && fs.existsSync(reportPath));
     const report = fs.readFileSync(reportPath, "utf8");
     assert.doesNotMatch(report, /super-secret-token|password-value/);
+    assert.doesNotMatch(
+      report,
+      /private adult|private negative|private-image|private-mask/,
+    );
     assert.match(report, /\[REDACTED\]/);
 
     const reopened = new DiagnosticsService(paths, runtime);

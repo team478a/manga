@@ -5,6 +5,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Buffer } from "node:buffer";
+import sharp from "sharp";
 import { setTimeout } from "node:timers";
 import { createHash, randomUUID } from "node:crypto";
 import { OllamaProvider } from "../dist-main/main/ai/providers/ollama.js";
@@ -104,6 +105,164 @@ test("adult local generation requires device, age, project and content checks", 
     db.close();
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("Phase 5 offline adult inpainting reaches saved page and PDF export", async (t) => {
+  const png = await sharp({
+    create: { width: 64, height: 64, channels: 4, background: "#884466" },
+  })
+    .png()
+    .toBuffer();
+  const correctedPng = await sharp({
+    create: { width: 64, height: 64, channels: 4, background: "#448866" },
+  })
+    .png()
+    .toBuffer();
+  let uploadCount = 0;
+  const mock = await server((req, res) => {
+    if (req.url === "/upload/image") {
+      req.resume();
+      req.on("end", () => {
+        uploadCount += 1;
+        res.end(JSON.stringify({ name: `offline-${uploadCount}.png` }));
+      });
+      return;
+    }
+    if (req.url === "/prompt") {
+      req.resume();
+      req.on("end", () =>
+        res.end(JSON.stringify({ prompt_id: "offline-adult-job" })),
+      );
+      return;
+    }
+    if (req.url === "/history/offline-adult-job")
+      return res.end(
+        JSON.stringify({
+          "offline-adult-job": {
+            status: { status_str: "success" },
+            outputs: {
+              9: { images: [{ filename: "corrected.png", type: "output" }] },
+            },
+          },
+        }),
+      );
+    if (req.url?.startsWith("/view?")) {
+      res.setHeader("content-type", "image/png");
+      return res.end(correctedPng);
+    }
+    res.statusCode = 404;
+    res.end("{}");
+  });
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-phase5-offline-"));
+  const paths = {
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  t.after(async () => {
+    db.close();
+    await mock.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  db.saveProviderSettings({
+    ...settings("comfyui", mock.url),
+    enabled: true,
+    pollIntervalMs: 10,
+  });
+  let project = db.createProject({
+    title: "Offline adult correction",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "成人向け",
+    contentClass: "adult",
+    readingDirection: "rtl",
+    width: 512,
+    height: 512,
+    dpi: 300,
+  });
+  const sourcePath = path.join(root, "source.png");
+  const maskPath = path.join(root, "mask.png");
+  fs.writeFileSync(sourcePath, png);
+  fs.writeFileSync(maskPath, await sharp(png).negate().png().toBuffer());
+  project = db.importAssets(project.project.id, [sourcePath, maskPath]);
+  const profile = db.saveCharacterProfile({
+    projectId: project.project.id,
+    name: "Adult heroine",
+    description: "offline fixture",
+    prompt: "fictional consenting adult woman, explicitly age 25",
+    negativePrompt: "different face",
+  })[0];
+  db.attachCharacterReferenceAsset({
+    characterProfileId: profile.id,
+    assetId: project.assets[0].id,
+    role: "face",
+  });
+  const workflowPath = path.join(root, "inpaint-workflow.json");
+  fs.writeFileSync(
+    workflowPath,
+    JSON.stringify({
+      1: { inputs: { image: "" } },
+      2: { inputs: { image: "" } },
+      3: { inputs: { denoise: 1 } },
+      6: { inputs: { text: "" } },
+      7: { inputs: { text: "" } },
+      8: { class_type: "VAEDecodeTiled", inputs: {} },
+    }),
+  );
+  const workflow = db.registerComfyWorkflow("offline inpaint", workflowPath, {
+    prompt: { nodeId: "6", input: "text" },
+    negativePrompt: { nodeId: "7", input: "text" },
+    sourceImage: { nodeId: "1", input: "image" },
+    maskImage: { nodeId: "2", input: "image" },
+    denoiseStrength: { nodeId: "3", input: "denoise" },
+  })[0];
+  db.setAdultGenerationAdministratorEnabled(true);
+  db.confirmAdultGeneration18Plus({
+    userConfirmed18Plus: true,
+    termsVersion: ADULT_GENERATION_TERMS_VERSION,
+  });
+  const generated = await new AIService(db, {
+    getRuntimeProfile: () => runtimeState("vram_8gb"),
+  }).generateImage({
+    projectId: project.project.id,
+    workflowId: workflow.id,
+    prompt: "repair the hand of the fictional consenting adult age 25",
+    operation: "inpainting",
+    sourceAssetId: project.assets[0].id,
+    maskAssetId: project.assets[1].id,
+    characterProfileId: profile.id,
+    denoiseStrength: 0.35,
+    jobType: "adult_character_render",
+    adultContentConfirmation: {
+      fictionalAdultsOnly: true,
+      allCharacters18Plus: true,
+      noMinorOrAgeAmbiguousAppearance: true,
+      noRealPersonReference: true,
+      consensualAndNonExploitativeOnly: true,
+      rightsConfirmed: true,
+    },
+  });
+  assert.equal(generated.status, "completed");
+  assert.equal(uploadCount, 2);
+  const outputAsset = generated.bundle.assets.find(
+    (asset) => asset.fileName === "corrected.png",
+  );
+  assert.ok(outputAsset);
+  db.addPage(project.episodes[0].id, outputAsset.id);
+  const exported = await db.exportProject(project.project.id);
+  assert.ok(fs.existsSync(path.join(exported.outputDir, "本編PDF.pdf")));
+  assert.ok(
+    fs.existsSync(path.join(exported.outputDir, "MANGAI販売パッケージ.zip")),
+  );
+  assert.equal(
+    exported.files.some((file) => file === "Cloud移行Project.json"),
+    false,
+  );
 });
 
 test("runtime profile detects active GPU and restores a saved selection", () => {
@@ -560,6 +719,70 @@ test("ComfyUI queue, status and image retrieval", async () => {
     assert.equal(status.status, "completed");
     const images = await provider.downloadImages("job-1", status.outputs);
     assert.equal(images[0].fileName, "result.png");
+  } finally {
+    await mock.close();
+  }
+});
+test("ComfyUI uploads local source and mask for inpainting mappings", async () => {
+  let uploadCount = 0;
+  let queuedPrompt;
+  const mock = await server((req, res) => {
+    if (req.url === "/upload/image") {
+      req.resume();
+      req.on("end", () => {
+        uploadCount += 1;
+        res.setHeader("content-type", "application/json");
+        res.end(JSON.stringify({ name: `local-input-${uploadCount}.png` }));
+      });
+      return;
+    }
+    if (req.url === "/prompt") {
+      let body = "";
+      req.on("data", (chunk) => (body += chunk));
+      req.on("end", () => {
+        queuedPrompt = JSON.parse(body).prompt;
+        res.end(JSON.stringify({ prompt_id: "inpaint-job" }));
+      });
+      return;
+    }
+    res.statusCode = 404;
+    res.end("{}");
+  });
+  try {
+    const provider = new ComfyUIProvider(
+      settings("comfyui", mock.url),
+      async () => ({
+        workflow: {
+          1: { inputs: { image: "" } },
+          2: { inputs: { image: "" } },
+          3: { inputs: { denoise: 1 } },
+          6: { inputs: { text: "" } },
+        },
+        mapping: {
+          prompt: { nodeId: "6", input: "text" },
+          sourceImage: { nodeId: "1", input: "image" },
+          maskImage: { nodeId: "2", input: "image" },
+          denoiseStrength: { nodeId: "3", input: "denoise" },
+        },
+      }),
+    );
+    const image = {
+      fileName: "private input.png",
+      bytes: new Uint8Array([1, 2, 3]),
+      mimeType: "image/png",
+    };
+    await provider.generateImage({
+      workflowId: "inpaint",
+      prompt: "repair face",
+      operation: "inpainting",
+      inputImage: image,
+      maskImage: { ...image, fileName: "mask.png" },
+      denoiseStrength: 0.35,
+    });
+    assert.equal(uploadCount, 2);
+    assert.equal(queuedPrompt[1].inputs.image, "local-input-1.png");
+    assert.equal(queuedPrompt[2].inputs.image, "local-input-2.png");
+    assert.equal(queuedPrompt[3].inputs.denoise, 0.35);
   } finally {
     await mock.close();
   }

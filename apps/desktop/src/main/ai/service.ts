@@ -857,6 +857,8 @@ export class AIService {
         width: page.width,
         height: page.height,
         seed: crypto.randomInt(0, 2_147_483_647),
+        operation: "text_to_image",
+        denoiseStrength: 0.65,
       };
       return {
         pageId: page.id,
@@ -1269,6 +1271,19 @@ export class AIService {
   }
   async generateImage(input: ImageJobRequest, existingJobId?: string) {
     input = imageJobRequestSchema.parse(input);
+    if (input.characterProfileId) {
+      const profile = this.store.getCharacterProfile(
+        input.projectId,
+        input.characterProfileId,
+      );
+      input = {
+        ...input,
+        prompt: [profile.prompt, input.prompt].filter(Boolean).join(", "),
+        negativePrompt: [profile.negativePrompt, input.negativePrompt]
+          .filter(Boolean)
+          .join(", "),
+      };
+    }
     if (input.jobType === "adult_character_render") {
       const settings = this.store.getAdultGenerationSettings();
       if (!settings.administratorEnabled)
@@ -1417,8 +1432,24 @@ export class AIService {
         ? await this.unloadLocalTextModel(controller.signal)
         : false;
       this.store.updateGenerationJob(jobId, "running", { progress: 0.05 });
+      const providerInput: ImageGenerationRequest = {
+        ...effectiveInput,
+        operation: effectiveInput.operation,
+        inputImage: effectiveInput.sourceAssetId
+          ? this.store.readGenerationInputAsset(
+              input.projectId,
+              effectiveInput.sourceAssetId,
+            )
+          : undefined,
+        maskImage: effectiveInput.maskAssetId
+          ? this.store.readGenerationInputAsset(
+              input.projectId,
+              effectiveInput.maskAssetId,
+            )
+          : undefined,
+      };
       const queued = await provider.generateImage(
-        effectiveInput as ImageGenerationRequest,
+        providerInput,
         undefined,
         controller.signal,
       );

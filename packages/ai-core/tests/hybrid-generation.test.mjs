@@ -187,6 +187,34 @@ test("image generation job types include Phase 1 and later capabilities", () => 
   assert.throws(() => imageGenerationJobTypeSchema.parse("batch"));
 });
 
+test("local correction modes require project image inputs fail closed", () => {
+  const base = {
+    projectId,
+    workflowId: randomUUID(),
+    prompt: "fictional adult character",
+  };
+  assert.equal(imageJobRequestSchema.parse(base).operation, "text_to_image");
+  assert.throws(() =>
+    imageJobRequestSchema.parse({ ...base, operation: "image_to_image" }),
+  );
+  assert.throws(() =>
+    imageJobRequestSchema.parse({
+      ...base,
+      operation: "inpainting",
+      sourceAssetId: randomUUID(),
+    }),
+  );
+  assert.equal(
+    imageJobRequestSchema.parse({
+      ...base,
+      operation: "controlnet",
+      sourceAssetId: randomUUID(),
+      denoiseStrength: 0.4,
+    }).denoiseStrength,
+    0.4,
+  );
+});
+
 const adultGateAllowedInput = {
   userConfirmed18Plus: true,
   projectAgeRating: "成人向け",
