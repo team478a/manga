@@ -27,6 +27,10 @@ begin
      or to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is not null then
     raise exception 'Cloud AI billing objects remain after rollback';
   end if;
+  if to_regclass('public.stripe_webhook_events') is not null
+     or to_regprocedure('public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)') is not null then
+    raise exception 'Stripe Cloud entitlement objects remain after rollback';
+  end if;
   if to_regclass('public.cloud_projects') is not null
      or to_regclass('public.cloud_assets') is not null
      or to_regprocedure('public.save_cloud_page_snapshot(uuid,bigint,jsonb)') is not null

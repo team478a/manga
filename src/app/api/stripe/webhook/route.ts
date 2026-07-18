@@ -6,6 +6,8 @@ import {
 } from "@/lib/payments";
 import { planPaymentEvent } from "@/lib/payment-events";
 import { createStripeClient } from "@/lib/stripe";
+import { planCloudSubscriptionEvent } from "@/lib/subscription-events";
+import { syncCloudAiSubscription } from "@/lib/cloud-subscriptions";
 
 export const runtime = "nodejs";
 
@@ -33,14 +35,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    const action = planPaymentEvent(event);
-    if (action?.type === "checkout-paid")
-      await markCheckoutSessionPaid(action.session);
-    else if (action?.type === "payment-status")
+    const subscriptionAction = planCloudSubscriptionEvent(
+      event,
+      process.env.STRIPE_CLOUD_AI_CREATOR_PRICE_ID,
+    );
+    if (subscriptionAction) await syncCloudAiSubscription(subscriptionAction);
+    const paymentAction = planPaymentEvent(event);
+    if (paymentAction?.type === "checkout-paid")
+      await markCheckoutSessionPaid(paymentAction.session);
+    else if (paymentAction?.type === "payment-status")
       await markPaymentIntentStatus(
-        action.paymentIntentId,
-        action.status,
-        action.orderId,
+        paymentAction.paymentIntentId,
+        paymentAction.status,
+        paymentAction.orderId,
       );
   } catch (error) {
     const message =

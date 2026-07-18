@@ -34,9 +34,20 @@
 
 ## 次の実装
 
-1. Stripe Subscription eventをentitlementへ反映
-2. Plan選択・請求状態・利用枠ページ
-3. 購入者アカウントへ注文を関連付け、購入履歴・再ダウンロードを追加
-4. Cloud Creatorから非公開作品・販売商品へ差分付きで受け渡す
+## Milestone 2: Stripe Subscription
+
+- CreatorプランのStripe Checkoutと任意のtrial日数
+- Stripe Billing Portalによる請求・解約管理
+- Subscription created／updated／deletedからTrial／Creator entitlementへの変換
+- Price ID、Profile metadata、製品surface、請求期間の再検証
+- Stripe event IDの冪等性と、event作成時刻による古い通知の無視
+- 単品デジタル商品CheckoutとSubscription eventの分離
+- Dashboardのプラン・利用枠・請求管理画面
+
+## 次の実装
+
+1. 購入者アカウントへ注文を関連付け、購入履歴・再ダウンロードを追加
+2. Cloud Creatorから非公開作品・販売商品へ差分付きで受け渡す
+3. 管理者向け価格表・kill switch・費用監視UI
 
 状態: **進行中**

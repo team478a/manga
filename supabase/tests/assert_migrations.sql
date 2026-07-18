@@ -73,6 +73,10 @@ begin
      or to_regclass('public.cloud_ai_rate_limits') is null then
     raise exception 'Cloud AI billing tables are missing';
   end if;
+  if to_regclass('public.stripe_webhook_events') is null
+     or to_regprocedure('public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)') is null then
+    raise exception 'Stripe Cloud entitlement objects are missing';
+  end if;
   if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
      or to_regprocedure('public.consume_cloud_ai_rate_limit(text,text,integer,integer)') is null
      or to_regprocedure('public.get_my_cloud_ai_quota()') is null then
@@ -299,7 +303,28 @@ declare
   v_expired public.cloud_generation_jobs%rowtype;
   v_reclaimed public.cloud_generation_jobs%rowtype;
   v_old_token uuid;
+  v_applied boolean;
+  v_ignored boolean;
 begin
+  v_applied:=public.apply_cloud_ai_subscription_event(
+    'evt_phase4_new','customer.subscription.updated','2026-07-18 08:00:00+00',
+    '30000000-0000-4000-8000-000000000001','creator','active',
+    '2026-07-01 00:00:00+00','2026-08-01 00:00:00+00','cus_phase4','sub_phase4'
+  );
+  v_ignored:=public.apply_cloud_ai_subscription_event(
+    'evt_phase4_old','customer.subscription.updated','2026-07-18 07:00:00+00',
+    '30000000-0000-4000-8000-000000000001','trial','trialing',
+    '2026-07-01 00:00:00+00','2026-08-01 00:00:00+00','cus_phase4','sub_phase4'
+  );
+  if not v_applied or v_ignored or not exists(
+    select 1 from public.cloud_ai_entitlements where profile_id='30000000-0000-4000-8000-000000000001'
+      and plan_key='creator' and status='active' and source='stripe'
+  ) then raise exception 'Stripe Cloud entitlement ordering is invalid'; end if;
+  if public.apply_cloud_ai_subscription_event(
+    'evt_phase4_new','customer.subscription.updated','2026-07-18 08:00:00+00',
+    '30000000-0000-4000-8000-000000000001','creator','active',
+    '2026-07-01 00:00:00+00','2026-08-01 00:00:00+00','cus_phase4','sub_phase4'
+  ) then raise exception 'Stripe event idempotency failed'; end if;
   select * into v_claim from public.claim_cloud_generation_job('phase3-ci-worker', 120);
   if v_claim.id is null or v_claim.status <> 'running' or v_claim.attempt_count <> 1
      or v_claim.lease_token is null then

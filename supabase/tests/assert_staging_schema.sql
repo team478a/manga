@@ -33,6 +33,11 @@ begin
      or to_regclass('public.cloud_ai_rate_limits') is null then
     raise exception 'Cloud AI billing tables are missing';
   end if;
+  if to_regclass('public.stripe_webhook_events') is null
+     or to_regprocedure('public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)') is null
+     or has_function_privilege('authenticated','public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)','execute') then
+    raise exception 'Stripe Cloud entitlement boundary is invalid';
+  end if;
 
   if not exists (
     select 1 from information_schema.columns
@@ -125,6 +130,7 @@ begin
       ,('cloud_ai_settings')
       ,('cloud_ai_rate_limits')
       ,('cloud_ai_cost_ledger')
+      ,('stripe_webhook_events')
     ) as required_tables(table_name)
     where not exists (
       select 1 from pg_class

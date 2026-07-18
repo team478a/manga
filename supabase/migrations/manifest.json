@@ -32,6 +32,10 @@
     {
       "id": "202607180005_cloud_ai_billing",
       "description": "Cloud AI plan、quota、原価予約ledger、rate limit、予算停止を追加"
+    },
+    {
+      "id": "202607180006_stripe_cloud_entitlements",
+      "description": "Stripe Subscription eventをCloud AI entitlementへ順序保証付きで反映"
     }
   ]
 }

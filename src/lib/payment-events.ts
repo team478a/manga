@@ -27,8 +27,10 @@ export function planPaymentEvent(
   if (
     event.type === "checkout.session.completed" ||
     event.type === "checkout.session.async_payment_succeeded"
-  )
+  ) {
+    if (event.data.object.mode === "subscription") return null;
     return { type: "checkout-paid", session: event.data.object };
+  }
 
   if (event.type === "checkout.session.async_payment_failed") {
     const id = paymentIntentId(event.data.object.payment_intent);

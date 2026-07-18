@@ -9,6 +9,7 @@ import {
   ShoppingBag,
   MonitorSmartphone,
   PanelsTopLeft,
+  CreditCard,
 } from "lucide-react";
 import { updateProfile } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
@@ -26,6 +27,12 @@ export default async function DashboardPage({
       body: "一般漫画のProject、Episode、Pageをブラウザーで制作します。",
       href: "/creator",
       icon: PanelsTopLeft,
+    },
+    {
+      title: "Cloud AIプラン",
+      body: "生成credit、契約状態、Stripe請求を確認します。",
+      href: "/dashboard/billing",
+      icon: CreditCard,
     },
     {
       title: "作品管理",

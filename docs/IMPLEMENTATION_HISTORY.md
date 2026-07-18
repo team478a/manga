@@ -1153,3 +1153,11 @@ Free、Trial、Creator PlanとProfile単位entitlement、月間credit、月間�
 成功時は予約を使用creditと実原価へ確定し、cancelと最終失敗では予約を解放します。一時障害のretry中は予約を維持します。利用者、Project、HMAC化IP、全体のrate limitと日次原価上限も追加し、実原価が上限に達した場合は生成を自動停止します。旧Job登録RPCはservice role専用へ閉じ、authenticated利用者はquota付きRPCだけを実行できます。
 
 EditorではPlan、残credit、予約creditを確認でき、利用枠不明・停止中・残数0では生成ボタンがfail closedになります。ai-core 40/40、Hub 27/27、TypeScript、ESLint、Web production build、migration静的検査8件に成功しました。PostgreSQL 16でforward、予約、重複防止、cancel解放、成功確定、ledger、全rollback、再適用、正規schema二重適用、staging検査を完走しています。
+
+## 134. Stripe Cloud AI Subscription連携
+
+DashboardへCloud AIプラン・利用枠画面を追加し、CreatorプランのStripe Subscription CheckoutとBilling Portalへ接続しました。任意のtrial日数をServer環境で設定でき、Checkout前に利用者と現在のentitlementを再確認します。Price IDとStripe秘密値はServer環境だけで使用します。
+
+Subscription created、updated、deleted eventは、Profile metadata、MANGAI Cloud AI surface、契約Price ID、請求期間を再検証してTrialまたはCreator entitlementへ変換します。event IDを永続化して再送を冪等にし、Stripe event作成時刻より古い通知が新しい契約状態を上書きしないPostgreSQL RPCを追加しました。既存の単品デジタル商品CheckoutはSubscription完了eventを注文支払済みとして扱いません。
+
+Subscription変換を含むHub 29/29、TypeScript、ESLint、migration静的検査9件に成功しました。PostgreSQL 16で新旧event順序、event再送、全migration rollback、正規schema二重適用を確認しています。Stripe test modeの実Checkout・Portal・署名付きwebhookはRC受入れで実credentialを使って確認します。

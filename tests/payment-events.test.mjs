@@ -85,6 +85,15 @@ test("未対応イベントと決済IDのないイベントは無視する", () 
   assert.equal(planPaymentEvent(event("customer.created", {})), null);
   assert.equal(
     planPaymentEvent(
+      event("checkout.session.completed", {
+        mode: "subscription",
+        payment_status: "paid",
+      }),
+    ),
+    null,
+  );
+  assert.equal(
+    planPaymentEvent(
       event("checkout.session.async_payment_failed", {
         payment_intent: null,
         metadata: { order_id: "order-4" },

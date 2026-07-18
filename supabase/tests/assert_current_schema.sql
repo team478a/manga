@@ -42,6 +42,10 @@ begin
      or to_regclass('public.cloud_ai_rate_limits') is null then
     raise exception 'Cloud AI billing schema is missing';
   end if;
+  if to_regclass('public.stripe_webhook_events') is null
+     or to_regprocedure('public.apply_cloud_ai_subscription_event(text,text,timestamptz,uuid,text,text,timestamptz,timestamptz,text,text)') is null then
+    raise exception 'Stripe Cloud entitlement schema is missing';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null

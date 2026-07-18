@@ -107,6 +107,8 @@ for (const required of [
   "cloud_ai_cost_ledger",
   "enqueue_cloud_generation_job_with_quota",
   "consume_cloud_ai_rate_limit",
+  "stripe_webhook_events",
+  "apply_cloud_ai_subscription_event",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 
