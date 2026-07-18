@@ -19,19 +19,27 @@
 - Editor内の一般向け画像Job登録、進捗・費用履歴、cancel、完成AssetのPanel layer配置
 - 一般向け文章Job登録、生成結果の履歴表示、Canvas縦書きテキストへの追加
 - 期限切れworker leaseの再claimと、古いleaseによる完了拒否
+- 画像／文章の実Provider差分をServer内へ閉じ込めるMANGAI Cloud AI Gateway adapter
+- HTTPS、redirect拒否、timeout、30MB上限、429／5xx限定retry、idempotency header
+- Provider moderationの必須化と、送信前preflight・Provider判定の二重記録
+- 明示的なWorker kill switchと、Queue／失敗／期限切れleaseの認証付き監視endpoint
 
 ## 検証
 
 - ai-core: 38/38
-- Hub単体テスト: 24/24
+- Hub単体テスト: 27/27
+- canvas-core: 26/26、Desktop統合: 83/83
+- Web／Desktop production build: 成功
 - TypeScript、ESLint、migration静的検査7件: 成功
 - PostgreSQL 16: forward、RLS権限、重複登録防止、moderation拒否、cancel、claim、完了、全rollback、正規schema二重適用に成功
 
-## 次の実装
+## デプロイ時の受入れ
 
-1. 最初の実Providerを選定し、秘密値をServer環境だけで読むadapterを実装
-2. 実Provider形式でtimeout、429、5xx、cancelを検証
-3. Provider moderation結果とローカルpreflightを二重記録
-4. 運用workerの定期起動、監視、kill switch
+1. 契約済み画像Provider／文章ProviderをGatewayへ設定
+2. stagingの実credentialで画像・文章fixtureを1件ずつ生成
+3. Gateway access logで成人向けfixtureが送信されないことを確認
+4. 定期起動と費用alertをデプロイ環境へ設定
 
-実Providerの選定とAPI credential設定が必要になるまでは、mock adapterを使ってworker全体を検証する。
+リポジトリ側のPhase 3実装は完了。実credential、契約モデル、価格、schedulerは秘密値を伴うデプロイ設定として[Cloud AI Worker運用手順](CLOUD_AI_WORKER_OPERATIONS.md)のstaging受入れで確認する。
+
+状態: **実装完了（2026-07-18）／実Gateway staging受入れ待ち**

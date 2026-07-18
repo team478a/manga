@@ -181,7 +181,7 @@ interface ContentExecutionPolicy {
 
 ### Phase 3: 一般向けCloud AI
 
-状態: **進行中（2026-07-18開始）**。Provider契約、送信前moderation、永続Job、idempotency、cancel、限定retry、worker leaseまで実装済み。進捗は[Phase 3進捗記録](PHASE3_CLOUD_AI_PROGRESS.md)を参照する。
+状態: **実装完了（2026-07-18）／実Gateway staging受入れ待ち**。Provider契約、送信前moderation、永続Job、idempotency、cancel、限定retry、worker lease、Gateway adapter、監視、kill switchまで実装済み。進捗は[Phase 3進捗記録](PHASE3_CLOUD_AI_PROGRESS.md)、運用は[Cloud AI Worker運用手順](CLOUD_AI_WORKER_OPERATIONS.md)を参照する。
 
 目的: 一般漫画制作に一般向けAI APIを安全に接続する。
 

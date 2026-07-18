@@ -158,6 +158,7 @@ export interface CloudImageGenerationProvider {
     providerJobId?: string;
     images: Array<{ bytes: Uint8Array; mimeType: string; fileName: string }>;
     usage: CloudGenerationUsage;
+    providerModeration?: CloudModerationResult;
   }>;
   cancel?(providerJobId: string): Promise<void>;
 }
@@ -172,6 +173,7 @@ export interface CloudTextGenerationProvider {
     providerJobId?: string;
     text: string;
     usage: CloudGenerationUsage;
+    providerModeration?: CloudModerationResult;
   }>;
   cancel?(providerJobId: string): Promise<void>;
 }

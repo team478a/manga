@@ -4,7 +4,11 @@ import {
   type CloudProviderCapability,
 } from "@mangai/ai-core";
 
-function configuredCapabilities(): CloudProviderCapability[] {
+export function configuredCapabilities(): CloudProviderCapability[] {
+  const imagePricingVersion =
+    process.env.MANGAI_CLOUD_IMAGE_PRICING_VERSION?.trim();
+  const textPricingVersion =
+    process.env.MANGAI_CLOUD_TEXT_PRICING_VERSION?.trim();
   const capabilities: CloudProviderCapability[] = [
     cloudProviderCapabilitySchema.parse({
       providerId: "mangai-cloud-image",
@@ -12,8 +16,10 @@ function configuredCapabilities(): CloudProviderCapability[] {
       kind: "image",
       jobTypes: ["background", "prop", "effect", "character_base"],
       policyVersion: "general-v1",
-      pricingVersion: "unconfigured",
-      enabled: process.env.MANGAI_CLOUD_IMAGE_ENABLED === "true",
+      pricingVersion: imagePricingVersion || "unconfigured",
+      enabled:
+        process.env.MANGAI_CLOUD_IMAGE_ENABLED === "true" &&
+        Boolean(imagePricingVersion),
     }),
     cloudProviderCapabilitySchema.parse({
       providerId: "mangai-cloud-text",
@@ -21,8 +27,10 @@ function configuredCapabilities(): CloudProviderCapability[] {
       kind: "text",
       jobTypes: ["story", "storyboard", "speech_bubble"],
       policyVersion: "general-v1",
-      pricingVersion: "unconfigured",
-      enabled: process.env.MANGAI_CLOUD_TEXT_ENABLED === "true",
+      pricingVersion: textPricingVersion || "unconfigured",
+      enabled:
+        process.env.MANGAI_CLOUD_TEXT_ENABLED === "true" &&
+        Boolean(textPricingVersion),
     }),
   ];
   if (

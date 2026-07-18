@@ -105,11 +105,12 @@ export async function processNextCloudGenerationJob(input: {
   workerId: string;
   providers: CloudProvider[];
   client?: AdminClient;
+  leaseSeconds?: number;
 }) {
   const client = input.client ?? createAdminClient();
   const { data, error } = await client.rpc("claim_cloud_generation_job", {
     p_worker_id: input.workerId,
-    p_lease_seconds: 120,
+    p_lease_seconds: input.leaseSeconds ?? 300,
   });
   if (error) throw new Error("Cloud AI Jobを取得できませんでした。");
   const job = data?.[0] as ClaimedJob | undefined;
@@ -151,7 +152,11 @@ export async function processNextCloudGenerationJob(input: {
       outputAssetId = await saveGeneratedAsset(client, job, result.images[0]);
       providerJobId = result.providerJobId ?? null;
       actualCostMicros = result.usage.actualCostMicros ?? 0;
-      output = { kind: "image", assetId: outputAssetId };
+      output = {
+        kind: "image",
+        assetId: outputAssetId,
+        providerModeration: result.providerModeration,
+      };
     } else if (
       generation.kind === "text" &&
       provider.capability.kind === "text"
@@ -168,6 +173,7 @@ export async function processNextCloudGenerationJob(input: {
         kind: "text",
         text: result.text.slice(0, 50_000),
         usage: result.usage,
+        providerModeration: result.providerModeration,
       };
     } else throw new Error("JobとProviderの種類が一致しません。");
     const { error: finishError } = await client.rpc(

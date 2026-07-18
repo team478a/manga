@@ -1137,3 +1137,11 @@ secret認証された内部worker endpointと、開発・自動テスト専用�
 生成画像はSharpでdecode後にPNGへ再エンコードしてmetadataを除去し、形式、寸法、容量、SHA-256を再検証して一般向けProjectのprivate Assetへ保存します。Editorから画像／文章Jobを登録し、進捗、試行、費用、失敗、cancelを確認できます。完成画像は選択中Panelの種別付きlayerへ、完成文章はCanvasの縦書きテキストへ追加できます。
 
 Hub 24/24、TypeScript、ESLint、Web本番build、migration静的検査7件に成功しました。PostgreSQL 16では期限切れlease再取得とstale lease拒否を含むforward動作を確認しました。実Provider adapterはProvider選定後の次段階です。
+
+## 132. 一般向けCloud AI Phase 3実装完了
+
+画像／文章の実Provider差分をServer専用のMANGAI Cloud AI Gatewayへ閉じ込めるadapterを追加しました。productionではHTTPSを必須とし、redirectを拒否します。idempotency keyとJob IDをGatewayへ引き継ぎ、timeout、HTTP 429、5xxだけを一時障害として限定retryします。応答容量とschemaを検証し、Gateway側moderationが`allow`以外の結果を保存しません。ローカル送信前preflightとProvider moderationはJobへ二重記録されます。
+
+Workerには初期停止のkill switchを追加し、認証付き監視GETからqueued、running、failed、期限切れlease、有効Providerを秘密値なしで確認できます。実Providerが非同期の場合はGateway側でpolling／webhookを吸収する運用境界とし、credential、契約モデル、価格、schedulerをリポジトリへ保存しない手順を文書化しました。
+
+Gateway adapterの画像decode、idempotency header、費用・moderation記録、文章moderation拒否、429 retry分類を自動検証しました。Hub 27/27、ai-core 38/38、canvas-core 26/26、Desktop統合83/83、TypeScript、ESLint、Web／Desktop production build、migration静的検査7件に成功しています。リポジトリ側Phase 3は完了し、実Gateway credentialによるstaging画像／文章生成と費用alert設定をRC受入れへ残します。
