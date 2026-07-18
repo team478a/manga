@@ -6,6 +6,8 @@
 
 ## 1. 現在地
 
+2026-07-18に、一般漫画をMANGAI Cloud、成人向け漫画をMANGAI Desktop Adultで扱う製品分離方針を明確化しました。Cloudは一般向けAI API、Desktop AdultはOllamaとローカルComfyUIを優先し、低スペック端末の外部Provider利用は承認済み条件下のBYOKに限定します。新しい実装順と完了条件は[`PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md`](PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md)を正本とします。
+
 MANGAIは、公開・販売を担当するWeb製品「MANGAI Hub」と、ローカル漫画制作を担当するWindows製品「MANGAI Desktop」の2製品構成です。
 
 | 製品           | 現在の段階                         | 要約                                                                                                |

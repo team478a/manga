@@ -8,6 +8,8 @@
 
 ## 1. 現在の判定
 
+一般漫画をCloud、成人向け漫画をDesktopで扱う製品分離後の不足機能と実装順は[`PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md`](PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md)へ整理しました。最優先はコンテンツ区分の強制と、現在のMarketplace Hubとは別にCloud CreatorのProject保存・Editor・一般向けAI Queueを追加することです。
+
 HubとDesktopの主要機能、ローカル品質ゲート、Windowsインストール・製品版起動・アンインストールE2E、SBOM・checksum生成、実Dドライブを使ったProject削除・ゴミ箱E2Eまでは完了しています。残作業の中心は外部サービスを使うRC受入れ、コード署名、初回公開です。
 
 RC受入れ結果は`desktop/RC_ACCEPTANCE_STATUS.json`へ構造化して記録し、`npm run rc:acceptance`でschemaと証拠必須項目、`npm run rc:acceptance:strict`で未完了・blockedの有無を機械判定できるようにしました。通常preflightにも集計を表示します。
@@ -16,32 +18,32 @@ RC受入れ結果は`desktop/RC_ACCEPTANCE_STATUS.json`へ構造化して記録�
 
 ## 2. RC公開を止めるタスク
 
-| 優先 | タスク                | 完了条件                                                 | 前提                           |
-| ---- | --------------------- | -------------------------------------------------------- | ------------------------------ |
-| P0   | Windows実署名         | installerと製品EXEのAuthenticodeが`Valid`                | 信頼されたコード署名証明書     |
-| P0   | GitHub公開基盤        | remote設定、署名Secrets登録、Draft Release作成           | GitHubリポジトリ               |
-| P0   | 署名付き自動更新E2E   | 旧版から新版へ更新し、作品データを保持                   | 署名済み2version、公開更新URL  |
-| P0   | クリーンWindows受入れ | install、起動、書き出し、更新、uninstallを新規環境で完走 | Windows VMまたは新規PC         |
-| P0   | Ollama実環境E2E       | 接続、モデル取得、Chat、停止、履歴復元                   | Ollamaと対象モデル             |
-| P0   | ComfyUI実環境E2E      | workflow、生成、キャンセル、素材登録                     | ComfyUI、モデル、workflow JSON |
-| P0   | Dezgo Phase 1実API E2E | 非成人向けsafe素材10枚、費用・速度・秘密値非露出を記録   | BYOK key、利用者の課金承認      |
-| P0   | Supabase staging試験  | migration適用、読み取り専用preflight、rollback確認       | staging DBと`psql`             |
-| P0   | Desktop端末認証E2E    | 承認、複数端末、期限切れ、失効後拒否                     | staging Hub・Supabase          |
-| P0   | StripeテストE2E       | 成功、失敗、返金、改ざん拒否、期限付きdownload           | Stripe test・Webhook           |
-| P0   | Hub公開前確認         | Vercel/Supabase/Stripe環境で主要導線を完走               | staging合格後の公開設定        |
+| 優先 | タスク                 | 完了条件                                                 | 前提                           |
+| ---- | ---------------------- | -------------------------------------------------------- | ------------------------------ |
+| P0   | Windows実署名          | installerと製品EXEのAuthenticodeが`Valid`                | 信頼されたコード署名証明書     |
+| P0   | GitHub公開基盤         | remote設定、署名Secrets登録、Draft Release作成           | GitHubリポジトリ               |
+| P0   | 署名付き自動更新E2E    | 旧版から新版へ更新し、作品データを保持                   | 署名済み2version、公開更新URL  |
+| P0   | クリーンWindows受入れ  | install、起動、書き出し、更新、uninstallを新規環境で完走 | Windows VMまたは新規PC         |
+| P0   | Ollama実環境E2E        | 接続、モデル取得、Chat、停止、履歴復元                   | Ollamaと対象モデル             |
+| P0   | ComfyUI実環境E2E       | workflow、生成、キャンセル、素材登録                     | ComfyUI、モデル、workflow JSON |
+| P0   | Dezgo Phase 1実API E2E | 非成人向けsafe素材10枚、費用・速度・秘密値非露出を記録   | BYOK key、利用者の課金承認     |
+| P0   | Supabase staging試験   | migration適用、読み取り専用preflight、rollback確認       | staging DBと`psql`             |
+| P0   | Desktop端末認証E2E     | 承認、複数端末、期限切れ、失効後拒否                     | staging Hub・Supabase          |
+| P0   | StripeテストE2E        | 成功、失敗、返金、改ざん拒否、期限付きdownload           | Stripe test・Webhook           |
+| P0   | Hub公開前確認          | Vercel/Supabase/Stripe環境で主要導線を完走               | staging合格後の公開設定        |
 
 必要な設定値は`npm run rc:preflight`で値を表示せず確認できます。全項目を必須として判定する場合は`npm run rc:preflight:strict`を使用します。
 
 ## 3. 外部準備なしで進められる改善
 
-| 優先 | タスク                       | 現在の制限                                                                         |
-| ---- | ---------------------------- | ---------------------------------------------------------------------------------- |
-| P0   | ハイブリッド生成Phase 1基盤  | Router・ポリシー・ローカル実行・Asset Library・safe Job handoffまで完了            |
-| P1   | 外部背景Provider接続         | Dezgoのcredential・見積・承認・直列dispatcher・費用確定まで完了。実API E2E待ち    |
-| P1   | Dezgo成人向けPhase 2         | 署名取込・失効時Job停止まで完了。本番鍵・実承認・専用dispatcher・画像分類待ち     |
-| P1   | Panelレイヤー分離・合成      | 永続化、直接変形、mask、correction透明パッチ、互換cacheまで完了                    |
-| P2   | 低スペックRuntime Profile    | ComfyUI実行環境診断まで完了。実workflowによる8GB画像生成E2Eが残る                  |
-| P2   | 英語化の全画面展開・WCAG評価 | 日英29状態のaxe違反0件。Narrator受入れ表作成済み。Windows実機での手動完走が残る    |
+| 優先 | タスク                       | 現在の制限                                                                      |
+| ---- | ---------------------------- | ------------------------------------------------------------------------------- |
+| P0   | ハイブリッド生成Phase 1基盤  | Router・ポリシー・ローカル実行・Asset Library・safe Job handoffまで完了         |
+| P1   | 外部背景Provider接続         | Dezgoのcredential・見積・承認・直列dispatcher・費用確定まで完了。実API E2E待ち  |
+| P1   | Dezgo成人向けPhase 2         | 署名取込・失効時Job停止まで完了。本番鍵・実承認・専用dispatcher・画像分類待ち   |
+| P1   | Panelレイヤー分離・合成      | 永続化、直接変形、mask、correction透明パッチ、互換cacheまで完了                 |
+| P2   | 低スペックRuntime Profile    | ComfyUI実行環境診断まで完了。実workflowによる8GB画像生成E2Eが残る               |
+| P2   | 英語化の全画面展開・WCAG評価 | 日英29状態のaxe違反0件。Narrator受入れ表作成済み。Windows実機での手動完走が残る |
 
 ## 4. 外部受付基盤の準備後に進める改善
 
