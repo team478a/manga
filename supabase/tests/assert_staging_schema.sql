@@ -47,6 +47,9 @@ begin
   if to_regprocedure('public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)') is null then
     raise exception 'Cloud Marketplace draft boundary is invalid';
   end if;
+  if to_regclass('public.cloud_ai_admin_audit_logs') is null then
+    raise exception 'Cloud AI admin audit boundary is missing';
+  end if;
 
   if not exists (
     select 1 from information_schema.columns

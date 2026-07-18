@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BadgeJapaneseYen, Boxes, Image, PackageCheck, ReceiptText, Users } from "lucide-react";
+import { BadgeJapaneseYen, Boxes, Bot, Image, PackageCheck, ReceiptText, Users } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -28,7 +28,8 @@ export default async function AdminPage() {
     { title: "デジタル商品数", count: products.count ?? 0, href: "/admin/products", icon: Boxes },
     { title: "グッズ販売申請数", count: goodsRequests.count ?? 0, href: "/admin/goods-requests", icon: PackageCheck },
     { title: "注文数", count: ordersCount.count ?? 0, href: "/admin/orders", icon: ReceiptText },
-    { title: "売上合計（仮）", count: yen(salesTotal), href: "/admin/orders", icon: BadgeJapaneseYen }
+    { title: "売上合計（仮）", count: yen(salesTotal), href: "/admin/orders", icon: BadgeJapaneseYen },
+    { title: "Cloud AI運用", count: "設定・監視", href: "/admin/cloud-ai", icon: Bot }
   ];
 
   return (

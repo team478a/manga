@@ -79,8 +79,24 @@
 
 ## 次の実装
 
-1. 管理者向け価格表・kill switch・費用監視UI
-2. 利用枠・失敗・予算停止の通知と運用監視
-3. Phase 4全体の受入れ手順と実Stripe／Supabase staging検証
+## Milestone 5: 管理者運用UI
+
+- Cloud AI全体の手動kill switch
+- 日次原価上限と警告率の変更
+- Free／Trial／Creator Planのcredit、原価上限、rate limit、稼働状態変更
+- Provider・model・Job種別・pricing version別の価格登録と有効化／停止
+- 当日実費・予約原価・予算消化率、直近14日の原価確認
+- 失敗中・実行中Jobのエラー確認
+- 管理操作のactor、対象、変更前後をservice role限定監査ログへ記録
+
+## 検証
+
+- TypeScript、ESLint、Web production build、migration静的検査12件: 成功
+- PostgreSQL 16: forward、全rollback、正規schema二重適用、監査表権限境界に成功
+
+## 次の実装
+
+1. 利用枠・失敗・予算停止の通知と運用監視
+2. Phase 4全体の受入れ手順と実Stripe／Supabase staging検証
 
 状態: **進行中**

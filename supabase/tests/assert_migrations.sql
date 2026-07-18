@@ -88,6 +88,11 @@ begin
      or not has_function_privilege('authenticated','public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)','execute') then
     raise exception 'Cloud Marketplace draft function is missing or has invalid privileges';
   end if;
+  if to_regclass('public.cloud_ai_admin_audit_logs') is null
+     or not has_table_privilege('service_role','public.cloud_ai_admin_audit_logs','insert')
+     or has_table_privilege('authenticated','public.cloud_ai_admin_audit_logs','select') then
+    raise exception 'Cloud AI admin audit boundary is invalid';
+  end if;
   if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null
      or to_regprocedure('public.consume_cloud_ai_rate_limit(text,text,integer,integer)') is null
      or to_regprocedure('public.get_my_cloud_ai_quota()') is null then

@@ -1177,3 +1177,11 @@ Cloud CreatorのProject画面から、全Pageを商品PDF、指定Pageを表紙P
 描画開始時のProject revisionをDB確定直前に再検証し、制作中に内容が変わった場合は同期を拒否します。作品と商品の作成・更新は所有者を再確認するPostgreSQL RPCの1 transactionで行います。公開中作品、販売中商品、同じProjectに紐づく複数作品・商品は自動上書きせずfail closedとしました。StorageまたはDB処理に失敗した場合は新規生成ファイルを清掃し、同期成功後は置き換え前の商品ファイルを削除します。
 
 Cloud Creator画面には同期済み／未反映変更、価格入力、商品編集への導線を表示しました。Hub 30/30、TypeScript、ESLint、Web production build、migration静的検査11件に成功し、PostgreSQL 16で初回作成、同一IDへの再同期、販売中商品拒否、transaction rollbackを確認しています。
+
+## 137. Cloud AI管理者運用画面
+
+管理者DashboardへCloud AI運用画面を追加しました。全体生成の手動kill switch、日次原価上限・警告率、Free／Trial／Creator Planのcredit・月間原価上限・利用者／Project rate limit・稼働状態を変更できます。Provider価格はProvider、model、Job種別、pricing version、credit、最大原価、通貨ごとに停止状態で登録し、既存の有効価格を確認してから有効化します。
+
+当日実費・予約原価・予算消化率、直近14日の原価情報、失敗中・実行中Jobとエラーを管理画面へ集約しました。運用設定、Plan、価格の変更は管理者Profile、操作、対象、変更前後、時刻をservice role限定の監査ログへ記録し、画面から直近の操作を確認できます。
+
+TypeScript、ESLint、Web production build、migration静的検査12件に成功しました。PostgreSQL 16でforward、全rollback、正規schema二重適用と監査表の権限境界を確認しています。

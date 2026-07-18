@@ -44,6 +44,10 @@
     {
       "id": "202607180008_cloud_marketplace_draft",
       "description": "Cloud Projectから非公開作品と停止中商品をtransaction同期"
+    },
+    {
+      "id": "202607180009_cloud_ai_admin_audit",
+      "description": "Cloud AI管理操作の変更前後を監査ログへ記録"
     }
   ]
 }

@@ -18,6 +18,9 @@ begin
   if to_regprocedure('public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)') is not null then
     raise exception 'Cloud Marketplace draft function remains after rollback';
   end if;
+  if to_regclass('public.cloud_ai_admin_audit_logs') is not null then
+    raise exception 'Cloud AI admin audit table remains after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

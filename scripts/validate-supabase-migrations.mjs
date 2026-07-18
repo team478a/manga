@@ -113,6 +113,7 @@ for (const required of [
   "orders_buyer_read",
   "record_order_download",
   "sync_cloud_marketplace_draft",
+  "cloud_ai_admin_audit_logs",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

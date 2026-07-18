@@ -1,0 +1,166 @@
+"use server";
+
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { requireAdmin } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
+
+const micros = z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+
+function field(formData: FormData, name: string) {
+  const value = formData.get(name);
+  return typeof value === "string" ? value : "";
+}
+
+async function audit(input: {
+  actorId: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  before: unknown;
+  after: unknown;
+}) {
+  const admin = createAdminClient();
+  const { error } = await admin.from("cloud_ai_admin_audit_logs").insert({
+    actor_profile_id: input.actorId,
+    action: input.action,
+    target_type: input.targetType,
+    target_id: input.targetId,
+    before_value: input.before,
+    after_value: input.after,
+  });
+  if (error) throw new Error("管理操作の監査ログを保存できませんでした。");
+}
+
+export async function updateCloudAiSettingsAction(formData: FormData) {
+  const { profile } = await requireAdmin();
+  const parsed = z
+    .object({
+      generationEnabled: z.enum(["true", "false"]),
+      dailyCostLimitMicros: micros,
+      warningPercent: z.coerce.number().int().min(1).max(100),
+    })
+    .safeParse({
+      generationEnabled: field(formData, "generationEnabled"),
+      dailyCostLimitMicros: field(formData, "dailyCostLimitMicros"),
+      warningPercent: field(formData, "warningPercent"),
+    });
+  if (!parsed.success)
+    redirect("/admin/cloud-ai?error=運用設定を確認してください");
+  const admin = createAdminClient();
+  const { data: before } = await admin
+    .from("cloud_ai_settings")
+    .select("generation_enabled,daily_cost_limit_micros,warning_percent")
+    .eq("singleton", true)
+    .single();
+  const after = {
+    generation_enabled: parsed.data.generationEnabled === "true",
+    daily_cost_limit_micros: parsed.data.dailyCostLimitMicros,
+    warning_percent: parsed.data.warningPercent,
+  };
+  const { error } = await admin
+    .from("cloud_ai_settings")
+    .update(after)
+    .eq("singleton", true);
+  if (error) redirect(`/admin/cloud-ai?error=${encodeURIComponent(error.message)}`);
+  await audit({
+    actorId: profile.id,
+    action: "update_settings",
+    targetType: "cloud_ai_settings",
+    targetId: "global",
+    before,
+    after,
+  });
+  revalidatePath("/admin/cloud-ai");
+  redirect("/admin/cloud-ai?message=Cloud AI運用設定を更新しました");
+}
+
+export async function updateCloudAiPlanAction(
+  planKey: string,
+  formData: FormData,
+) {
+  const { profile } = await requireAdmin();
+  const parsed = z
+    .object({
+      monthlyCredits: z.coerce.number().int().min(0).max(10_000_000),
+      monthlyCostLimitMicros: micros,
+      userRate: z.coerce.number().int().min(1).max(1000),
+      projectRate: z.coerce.number().int().min(1).max(1000),
+      active: z.enum(["true", "false"]),
+    })
+    .safeParse({
+      monthlyCredits: field(formData, "monthlyCredits"),
+      monthlyCostLimitMicros: field(formData, "monthlyCostLimitMicros"),
+      userRate: field(formData, "userRate"),
+      projectRate: field(formData, "projectRate"),
+      active: field(formData, "active"),
+    });
+  if (!parsed.success || !["free", "trial", "creator"].includes(planKey))
+    redirect("/admin/cloud-ai?error=Plan設定を確認してください");
+  const admin = createAdminClient();
+  const { data: before } = await admin
+    .from("cloud_ai_plans")
+    .select("*")
+    .eq("plan_key", planKey)
+    .single();
+  const after = {
+    monthly_credits: parsed.data.monthlyCredits,
+    monthly_cost_limit_micros: parsed.data.monthlyCostLimitMicros,
+    user_requests_per_minute: parsed.data.userRate,
+    project_requests_per_minute: parsed.data.projectRate,
+    active: parsed.data.active === "true",
+    updated_at: new Date().toISOString(),
+  };
+  const { error } = await admin
+    .from("cloud_ai_plans")
+    .update(after)
+    .eq("plan_key", planKey);
+  if (error) redirect(`/admin/cloud-ai?error=${encodeURIComponent(error.message)}`);
+  await audit({ actorId: profile.id, action: "update_plan", targetType: "cloud_ai_plan", targetId: planKey, before, after });
+  revalidatePath("/admin/cloud-ai");
+  redirect("/admin/cloud-ai?message=Plan設定を更新しました");
+}
+
+export async function createCloudAiPriceAction(formData: FormData) {
+  const { profile } = await requireAdmin();
+  const parsed = z.object({
+    providerId: z.string().trim().min(1).max(100),
+    modelId: z.string().trim().min(1).max(200),
+    kind: z.enum(["image", "text"]),
+    jobType: z.enum(["background", "prop", "effect", "character_base", "story", "storyboard", "speech_bubble"]),
+    pricingVersion: z.string().trim().min(1).max(100),
+    credits: z.coerce.number().int().min(1).max(1000),
+    maxCostMicros: micros,
+    currency: z.string().trim().regex(/^[A-Z]{3}$/),
+  }).safeParse({
+    providerId: field(formData,"providerId"), modelId: field(formData,"modelId"),
+    kind: field(formData,"kind"), jobType: field(formData,"jobType"),
+    pricingVersion: field(formData,"pricingVersion"), credits: field(formData,"credits"),
+    maxCostMicros: field(formData,"maxCostMicros"), currency: field(formData,"currency").toUpperCase(),
+  });
+  if (!parsed.success) redirect("/admin/cloud-ai?error=価格情報を確認してください");
+  const admin = createAdminClient();
+  const values = {
+    provider_id: parsed.data.providerId, model_id: parsed.data.modelId,
+    kind: parsed.data.kind, job_type: parsed.data.jobType,
+    pricing_version: parsed.data.pricingVersion, credits: parsed.data.credits,
+    max_cost_micros: parsed.data.maxCostMicros, currency: parsed.data.currency, active: false,
+  };
+  const { data, error } = await admin.from("cloud_ai_provider_prices").insert(values).select("id").single<{id:string}>();
+  if (error || !data) redirect(`/admin/cloud-ai?error=${encodeURIComponent(error?.message || "価格を登録できませんでした")}`);
+  await audit({ actorId: profile.id, action: "create_price", targetType: "cloud_ai_provider_price", targetId: data.id, before: null, after: values });
+  revalidatePath("/admin/cloud-ai");
+  redirect("/admin/cloud-ai?message=価格versionを停止状態で登録しました");
+}
+
+export async function setCloudAiPriceActiveAction(id: string, active: boolean) {
+  const { profile } = await requireAdmin();
+  const priceId = z.string().uuid().parse(id);
+  const admin = createAdminClient();
+  const { data: before } = await admin.from("cloud_ai_provider_prices").select("*").eq("id",priceId).single();
+  const { error } = await admin.from("cloud_ai_provider_prices").update({active,updated_at:new Date().toISOString()}).eq("id",priceId);
+  if (error) redirect(`/admin/cloud-ai?error=${encodeURIComponent(active ? "同じProvider・model・Job種別の有効価格を先に停止してください" : error.message)}`);
+  await audit({ actorId: profile.id, action: active ? "activate_price" : "deactivate_price", targetType: "cloud_ai_provider_price", targetId: priceId, before, after: {...before,active} });
+  revalidatePath("/admin/cloud-ai");
+}
