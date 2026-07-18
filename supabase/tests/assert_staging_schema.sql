@@ -22,8 +22,9 @@ begin
      or to_regclass('public.cloud_pages') is null
      or to_regclass('public.cloud_assets') is null
      or to_regclass('public.cloud_canvas_snapshots') is null
-     or to_regclass('public.cloud_project_versions') is null then
-    raise exception 'Cloud Creator Phase 1 tables are missing';
+     or to_regclass('public.cloud_project_versions') is null
+     or to_regclass('public.cloud_generation_jobs') is null then
+    raise exception 'Cloud Creator and Cloud AI tables are missing';
   end if;
 
   if not exists (
@@ -59,6 +60,15 @@ begin
      or to_regprocedure('public.cleanup_desktop_device_authorizations()') is null then
     raise exception 'Desktop device functions are missing';
   end if;
+  if to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is null
+     or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
+     or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null then
+    raise exception 'Cloud AI queue functions are missing';
+  end if;
+  if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute')
+     or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
+    raise exception 'Cloud AI worker privileges are invalid';
+  end if;
 
   if has_function_privilege('anon', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute')
      or has_function_privilege('authenticated', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute')
@@ -91,7 +101,8 @@ begin
       ('cloud_pages'),
       ('cloud_assets'),
       ('cloud_canvas_snapshots'),
-      ('cloud_project_versions')
+      ('cloud_project_versions'),
+      ('cloud_generation_jobs')
     ) as required_tables(table_name)
     where not exists (
       select 1 from pg_class

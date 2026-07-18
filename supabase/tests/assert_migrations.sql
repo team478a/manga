@@ -55,8 +55,15 @@ begin
      or to_regprocedure('public.move_cloud_page(uuid,integer)') is null
      or to_regprocedure('public.soft_delete_cloud_episode(uuid)') is null
      or to_regprocedure('public.soft_delete_cloud_page(uuid)') is null
-     or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null then
+     or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null
+     or to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is null
+     or to_regprocedure('public.cancel_cloud_generation_job(uuid)') is null
+     or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
+     or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null then
     raise exception 'Cloud Creator functions are missing';
+  end if;
+  if to_regclass('public.cloud_generation_jobs') is null then
+    raise exception 'Cloud AI queue table is missing';
   end if;
   if exists (
     select 1 from storage.buckets where id = 'cloud-assets' and public
@@ -78,6 +85,10 @@ begin
   if has_function_privilege('anon', 'public.save_cloud_page_snapshot(uuid,bigint,jsonb)', 'execute')
      or not has_function_privilege('authenticated', 'public.save_cloud_page_snapshot(uuid,bigint,jsonb)', 'execute') then
     raise exception 'Cloud snapshot function privileges are invalid';
+  end if;
+  if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute')
+     or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
+    raise exception 'Cloud worker function privileges are invalid';
   end if;
   if not exists (
     select 1 from pg_policies
@@ -151,6 +162,9 @@ declare
   v_created record;
   v_episode_id uuid;
   v_page_id uuid;
+  v_job_id uuid;
+  v_duplicate_job_id uuid;
+  v_cancel_job_id uuid;
 begin
   if not exists(
     select 1 from public.cloud_canvas_snapshots
@@ -199,6 +213,42 @@ begin
      or not exists(select 1 from public.cloud_episodes where id=v_episode_id and title='第2話 更新') then
     raise exception 'Cloud structure mutations or revision history are invalid';
   end if;
+  v_job_id := public.enqueue_cloud_generation_job(
+    v_created.project_id, v_created.page_id, 'image', 'background',
+    'mock-cloud', 'mock-image-v1', 'phase3-idempotency-1', repeat('a',64),
+    '{"kind":"image","jobType":"background","prompt":"green forest"}'::jsonb,
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, 1000
+  );
+  v_duplicate_job_id := public.enqueue_cloud_generation_job(
+    v_created.project_id, v_created.page_id, 'image', 'background',
+    'mock-cloud', 'mock-image-v1', 'phase3-idempotency-1', repeat('a',64),
+    '{"kind":"image","jobType":"background","prompt":"green forest"}'::jsonb,
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, 1000
+  );
+  if v_job_id <> v_duplicate_job_id then
+    raise exception 'Cloud AI idempotency created duplicate jobs';
+  end if;
+  begin
+    perform public.enqueue_cloud_generation_job(
+      v_created.project_id, v_created.page_id, 'image', 'background',
+      'mock-cloud', 'mock-image-v1', 'phase3-blocked', repeat('b',64),
+      '{"kind":"image","jobType":"background","prompt":"blocked"}'::jsonb,
+      '{"decision":"block","reasons":["adult_content"],"policyVersion":1}'::jsonb, null
+    );
+    raise exception 'blocked Cloud AI input was queued';
+  exception when others then
+    if sqlerrm <> 'cloud_generation_input_rejected' then raise; end if;
+  end;
+  v_cancel_job_id := public.enqueue_cloud_generation_job(
+    v_created.project_id, null, 'text', 'story', 'mock-cloud', 'mock-text-v1',
+    'phase3-cancel', repeat('c',64),
+    '{"kind":"text","jobType":"story","prompt":"friendship"}'::jsonb,
+    '{"decision":"allow","reasons":[],"policyVersion":1}'::jsonb, null
+  );
+  perform public.cancel_cloud_generation_job(v_cancel_job_id);
+  if not exists(select 1 from public.cloud_generation_jobs where id=v_cancel_job_id and status='canceled') then
+    raise exception 'Cloud AI cancel did not persist';
+  end if;
   perform public.set_cloud_project_cover(v_created.project_id,v_page_id);
   perform public.soft_delete_cloud_page(v_page_id);
   perform public.soft_delete_cloud_episode(v_episode_id);
@@ -207,6 +257,28 @@ begin
      or exists(select 1 from public.cloud_projects where id=v_created.project_id and cover_page_id is not null) then
     raise exception 'Cloud structure soft delete is invalid';
   end if;
+end $$;
+reset role;
+
+set local "request.jwt.claim.role" = 'service_role';
+set local role service_role;
+do $$
+declare
+  v_claim public.cloud_generation_jobs%rowtype;
+begin
+  select * into v_claim from public.claim_cloud_generation_job('phase3-ci-worker', 120);
+  if v_claim.id is null or v_claim.status <> 'running' or v_claim.attempt_count <> 1
+     or v_claim.lease_token is null then
+    raise exception 'Cloud AI worker could not claim a queued job';
+  end if;
+  perform public.finish_cloud_generation_job(
+    v_claim.id, v_claim.lease_token, true, '{"text":"done"}'::jsonb,
+    null, 'provider-job-1', 900, null, null, false
+  );
+  if not exists(
+    select 1 from public.cloud_generation_jobs
+    where id=v_claim.id and status='completed' and progress=100 and actual_cost_micros=900
+  ) then raise exception 'Cloud AI worker completion did not persist'; end if;
 end $$;
 reset role;
 rollback;

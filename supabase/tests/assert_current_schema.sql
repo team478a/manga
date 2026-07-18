@@ -32,7 +32,8 @@ begin
   end if;
   if to_regclass('public.cloud_projects') is null
      or to_regclass('public.cloud_pages') is null
-     or to_regclass('public.cloud_canvas_snapshots') is null then
+     or to_regclass('public.cloud_canvas_snapshots') is null
+     or to_regclass('public.cloud_generation_jobs') is null then
     raise exception 'Cloud Creator Phase 1 schema is missing';
   end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
@@ -42,8 +43,14 @@ begin
      or to_regprocedure('public.move_cloud_page(uuid,integer)') is null
      or to_regprocedure('public.soft_delete_cloud_episode(uuid)') is null
      or to_regprocedure('public.soft_delete_cloud_page(uuid)') is null
-     or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null then
+     or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null
+     or to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is null
+     or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
+     or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null then
     raise exception 'Cloud Creator structure functions are missing';
+  end if;
+  if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
+    raise exception 'authenticated users must not claim Cloud AI jobs';
   end if;
   if not exists (
     select 1 from storage.buckets

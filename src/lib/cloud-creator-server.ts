@@ -1,5 +1,10 @@
 import crypto from "node:crypto";
 import { pageCanvasSchema, type PageCanvas } from "@mangai/canvas-core";
+import {
+  cloudGenerationInputSchema,
+  moderateGeneralCloudPrompt,
+  type CloudGenerationInput,
+} from "@mangai/ai-core";
 import { createClient } from "@/lib/supabase/server";
 import {
   CLOUD_ASSET_BUCKET,
@@ -8,6 +13,7 @@ import {
   parseCloudProjectImport,
   validateCloudAssetBytes,
 } from "@/lib/cloud-creator-contract";
+import { selectCloudProvider } from "@/lib/cloud-ai-registry";
 
 async function apiContext() {
   const supabase = await createClient();
@@ -62,6 +68,89 @@ export type CloudPage = {
   background_color: string;
   revision: number;
 };
+
+export type CloudGenerationJob = {
+  id: string;
+  project_id: string;
+  page_id: string | null;
+  kind: "image" | "text";
+  job_type: CloudGenerationInput["jobType"];
+  provider_id: string;
+  model_id: string;
+  status: "queued" | "running" | "completed" | "failed" | "canceled";
+  progress: number;
+  attempt_count: number;
+  max_attempts: number;
+  estimated_cost_micros: number | null;
+  actual_cost_micros: number | null;
+  output: Record<string, unknown> | null;
+  output_asset_id: string | null;
+  error_code: string | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export async function enqueueCloudGenerationJob(input: {
+  projectId: string;
+  pageId?: string;
+  idempotencyKey: string;
+  generation: unknown;
+}) {
+  const generation = cloudGenerationInputSchema.parse(input.generation);
+  const moderation = moderateGeneralCloudPrompt(
+    `${generation.prompt}\n${generation.negativePrompt}`,
+  );
+  if (moderation.decision !== "allow") {
+    const reason = moderation.reasons.join(", ") || "classification_required";
+    throw new Error(`Cloud AI送信前確認で拒否されました: ${reason}`);
+  }
+  const capability = selectCloudProvider(generation);
+  const { supabase } = await apiContext();
+  const promptSha256 = crypto
+    .createHash("sha256")
+    .update(generation.prompt, "utf8")
+    .digest("hex");
+  const { data, error } = await supabase.rpc("enqueue_cloud_generation_job", {
+    p_project_id: input.projectId,
+    p_page_id: input.pageId ?? null,
+    p_kind: generation.kind,
+    p_job_type: generation.jobType,
+    p_provider_id: capability.providerId,
+    p_model_id: capability.modelId,
+    p_idempotency_key: input.idempotencyKey,
+    p_prompt_sha256: promptSha256,
+    p_input: generation,
+    p_moderation: moderation,
+    p_estimated_cost_micros: null,
+  });
+  if (error || !data) throw new Error("Cloud AI Jobを登録できませんでした。");
+  return data as string;
+}
+
+export async function listCloudGenerationJobs(projectId: string) {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase
+    .from("cloud_generation_jobs")
+    .select(
+      "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at",
+    )
+    .eq("project_id", projectId)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  if (error) throw new Error("Cloud AI生成履歴を読み込めませんでした。");
+  return (data ?? []) as CloudGenerationJob[];
+}
+
+export async function cancelCloudGenerationJob(jobId: string) {
+  const { supabase } = await apiContext();
+  const { data, error } = await supabase.rpc("cancel_cloud_generation_job", {
+    p_job_id: jobId,
+  });
+  if (error || !data)
+    throw new Error("Cloud AI Jobをキャンセルできませんでした。");
+  return data as string;
+}
 
 function normalizeCloudCanvas(
   page: Pick<CloudPage, "id" | "width" | "height" | "background_color">,

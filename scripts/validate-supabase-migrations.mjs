@@ -100,6 +100,9 @@ for (const required of [
   "cloud_canvas_snapshots",
   "save_cloud_page_snapshot",
   "cloud-assets",
+  "cloud_generation_jobs",
+  "enqueue_cloud_generation_job",
+  "claim_cloud_generation_job",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

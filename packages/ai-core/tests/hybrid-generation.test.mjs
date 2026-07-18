@@ -21,9 +21,81 @@ import {
   adultModelApprovalInputSchema,
   adultProviderApprovalInputSchema,
   evaluateAdultProviderCapability,
+  cloudGenerationInputSchema,
+  moderateGeneralCloudPrompt,
+  shouldRetryCloudGeneration,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+test("general Cloud generation accepts only matching image and text job types", () => {
+  assert.equal(
+    cloudGenerationInputSchema.parse({
+      kind: "image",
+      jobType: "background",
+      prompt: "quiet forest at dawn",
+    }).negativePrompt,
+    "",
+  );
+  assert.equal(
+    cloudGenerationInputSchema.parse({
+      kind: "text",
+      jobType: "story",
+      prompt: "友情をテーマにした短編",
+    }).kind,
+    "text",
+  );
+  assert.throws(() =>
+    cloudGenerationInputSchema.parse({
+      kind: "image",
+      jobType: "story",
+      prompt: "invalid mapping",
+    }),
+  );
+});
+
+test("general Cloud moderation blocks adult and minor risk before dispatch", () => {
+  assert.deepEqual(moderateGeneralCloudPrompt("青空と緑の丘"), {
+    decision: "allow",
+    reasons: [],
+    policyVersion: 1,
+  });
+  assert.equal(
+    moderateGeneralCloudPrompt("explicit schoolgirl scene").decision,
+    "block",
+  );
+  assert.deepEqual(
+    moderateGeneralCloudPrompt("実在人物本人そっくりの漫画").reasons,
+    ["real_person"],
+  );
+});
+
+test("Cloud generation retry is limited to transient errors and max attempts", () => {
+  assert.equal(
+    shouldRetryCloudGeneration({
+      attempt: 1,
+      maxAttempts: 2,
+      errorCode: "rate_limited",
+    }),
+    true,
+  );
+  assert.equal(
+    shouldRetryCloudGeneration({
+      attempt: 2,
+      maxAttempts: 2,
+      errorCode: "rate_limited",
+    }),
+    false,
+  );
+  assert.equal(
+    shouldRetryCloudGeneration({
+      attempt: 1,
+      maxAttempts: 2,
+      errorCode: "moderation_blocked",
+    }),
+    false,
+  );
+});
 
 test("image generation provider identifiers preserve ComfyUI and allow future adapters", () => {
   assert.equal(imageGenerationProviderIdSchema.parse("dezgo"), "dezgo");
@@ -98,10 +170,7 @@ test("adult external generation gate rejects minors, real people and exploitatio
       { allDepictedCharactersExplicitly18Plus: false },
       "depicted_adult_age_not_confirmed",
     ],
-    [
-      { minorOrAgeAmbiguousAppearanceDetected: true },
-      "minor_or_age_ambiguous",
-    ],
+    [{ minorOrAgeAmbiguousAppearanceDetected: true }, "minor_or_age_ambiguous"],
     [{ realPersonReferenceIncluded: true }, "real_person_reference"],
     [
       { nonConsensualOrExploitativeContentDetected: true },

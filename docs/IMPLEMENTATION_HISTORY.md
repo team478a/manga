@@ -1121,3 +1121,11 @@ PostgreSQL 16でforward、RLSとRPCの動作、全rollback、再適用、正規s
 Web CanvasへAsset Library、Panel layer、コマ、吹き出し、縦横書きテキスト、移動・拡縮・回転・順序、Undo / Redo、revision自動保存、競合表示、previewを追加しました。作品全体をPDF、連番PNG ZIP、販売パッケージZIPへ書き出せます。
 
 PostgreSQL 16のforward／rollback／正規schema、Hub 22/22、canvas-core 26/26、TypeScript、ESLint、Web本番buildに成功しました。実ブラウザーでは未認証Creator導線のログイン遷移を確認しました。実Supabase認証後E2EはRC受入れ、大規模exportの永続Job化と構造化ルビは後続拡張へ残します。
+
+## 130. 一般向けCloud AI Phase 3永続Queue基盤
+
+Cloud専用の画像・文章Provider契約、capability registry、送信前moderation、限定retry判定を`ai-core`へ追加しました。成人向け、未成年、不同意、違法内容はblockし、実在人物と曖昧な入力はreviewとしてProvider送信前に停止します。
+
+Supabaseへ永続Jobテーブルを追加し、入力、進捗、試行回数、費用、出力、エラー、leaseを管理します。登録RPCは一般向けProjectと所有権を再確認し、利用者単位idempotencyを保証します。利用者は履歴確認とcancelだけが可能で、Job claimと完了はservice roleだけに限定しました。
+
+ai-core 38/38、TypeScript、ESLint、migration静的検査7件に成功しました。PostgreSQL 16では重複防止、moderation拒否、cancel、worker claim／完了、全rollback、正規schema二重適用まで完走しています。実Provider通信とAsset化は次段階です。

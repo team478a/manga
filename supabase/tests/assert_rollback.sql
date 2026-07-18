@@ -33,6 +33,9 @@ begin
      or to_regprocedure('public.soft_delete_cloud_episode(uuid)') is not null
      or to_regprocedure('public.soft_delete_cloud_page(uuid)') is not null
      or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is not null
+     or to_regclass('public.cloud_generation_jobs') is not null
+     or to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is not null
+     or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is not null
      or exists (select 1 from storage.buckets where id = 'cloud-assets') then
     raise exception 'Cloud Creator Phase 1 objects remain after rollback';
   end if;

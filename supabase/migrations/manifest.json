@@ -24,6 +24,10 @@
     {
       "id": "202607180003_cloud_creator_structure",
       "description": "Cloud CreatorのProject、Episode、Pageを履歴付きtransactionで管理"
+    },
+    {
+      "id": "202607180004_cloud_ai_queue",
+      "description": "一般向けCloud AIの永続Job、moderation、idempotency、worker leaseを追加"
     }
   ]
 }

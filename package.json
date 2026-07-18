@@ -34,6 +34,7 @@
     "rc:validate": "node scripts/check-release-candidate.mjs --full"
   },
   "dependencies": {
+    "@mangai/ai-core": "file:packages/ai-core",
     "@mangai/canvas-core": "file:packages/canvas-core",
     "@mangai/export-core": "file:packages/export-core",
     "@mangai/shared": "file:packages/shared",
