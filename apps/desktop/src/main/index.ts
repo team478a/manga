@@ -137,6 +137,7 @@ let autoBackupState: AutoBackupState = {
 let autoBackupTimer: NodeJS.Timeout | undefined;
 let autoBackupRunning = false;
 const exportControllers = new Map<string, AbortController>();
+const bulkControllers = new Map<string, AbortController>();
 const dezgoCredentialSchema = z.object({
   providerId: z.literal("dezgo"),
   apiKey: z.string().trim().min(8).max(4096),
@@ -403,8 +404,11 @@ function register() {
   handle("projects:duplicate", (v) =>
     store.duplicateProject(projectIdSchema.parse(v).id),
   );
-  handle("projects:backup", async (v) => {
+  handle("projects:backup", async (v, event) => {
     const id = projectIdSchema.parse(v).id;
+    const requestId = String(v?.requestId ?? "");
+    if (!z.string().uuid().safeParse(requestId).success)
+      throw new Error("バックアップリクエストIDが不正です。");
     const project = store.bundle(id).project;
     const safeTitle =
       Array.from(project.title)
@@ -427,11 +431,27 @@ function register() {
         { name: "MANGAI Projectバックアップ", extensions: ["mangai-backup"] },
       ],
     });
-    return result.canceled || !result.filePath
-      ? null
-      : store.backupProject(id, result.filePath);
+    if (result.canceled || !result.filePath) return null;
+    const controller = new AbortController();
+    bulkControllers.set(requestId, controller);
+    try {
+      return await store.backupProject(id, result.filePath, {
+        signal: controller.signal,
+        onProgress: (progress) =>
+          event.sender.send("projects:bulk:progress", {
+            requestId,
+            operation: "backup",
+            ...progress,
+          }),
+      });
+    } finally {
+      bulkControllers.delete(requestId);
+    }
   });
-  handle("projects:restore", async () => {
+  handle("projects:restore", async (v, event) => {
+    const requestId = String(v?.requestId ?? "");
+    if (!z.string().uuid().safeParse(requestId).success)
+      throw new Error("復元リクエストIDが不正です。");
     const backupDirectory = path.join(desktopPaths().root, "backups");
     fs.mkdirSync(backupDirectory, { recursive: true });
     const result = await dialog.showOpenDialog({
@@ -442,9 +462,27 @@ function register() {
         { name: "MANGAI Projectバックアップ", extensions: ["mangai-backup"] },
       ],
     });
-    return result.canceled || !result.filePaths[0]
-      ? null
-      : store.restoreProject(result.filePaths[0]);
+    if (result.canceled || !result.filePaths[0]) return null;
+    const controller = new AbortController();
+    bulkControllers.set(requestId, controller);
+    try {
+      return await store.restoreProject(result.filePaths[0], {
+        signal: controller.signal,
+        onProgress: (progress) =>
+          event.sender.send("projects:bulk:progress", {
+            requestId,
+            operation: "restore",
+            ...progress,
+          }),
+      });
+    } finally {
+      bulkControllers.delete(requestId);
+    }
+  });
+  handle("projects:bulk:cancel", (v) => {
+    const requestId = String(v?.requestId ?? "");
+    bulkControllers.get(requestId)?.abort();
+    return true;
   });
   handle("projects:delete", (v) =>
     store.deleteProject(projectIdSchema.parse(v).id),

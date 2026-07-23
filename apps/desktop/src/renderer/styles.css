@@ -2431,6 +2431,22 @@ label {
   min-width: 82px;
   padding: 7px 8px;
 }
+.bulk-operation {
+  position: fixed;
+  top: 72px;
+  left: 50%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 280px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--bg-panel-elevated);
+  box-shadow: var(--shadow-panel);
+  transform: translateX(-50%);
+}
 .workflow-tools {
   border: 1px solid var(--border-subtle);
   border-radius: 8px;

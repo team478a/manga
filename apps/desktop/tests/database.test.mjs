@@ -378,6 +378,88 @@ test("project generation policy survives reopening, duplication and backup resto
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
+
+test("streaming backup restore supports cancellation and rejects zip bombs", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-stream-backup-"));
+  const paths = {
+    root,
+    database: path.join(root, "mangai.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  };
+  const db = new MangaiDatabase(paths);
+  t.after(() => {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+  let bundle = db.createProject({
+    title: "Streaming backup",
+    subtitle: "",
+    description: "",
+    genre: "漫画",
+    ageRating: "全年齢",
+    contentClass: "general",
+    readingDirection: "rtl",
+    width: 320,
+    height: 480,
+    dpi: 300,
+  });
+  const first = path.join(root, "first.png");
+  const second = path.join(root, "second.png");
+  await sharp({
+    create: { width: 32, height: 32, channels: 4, background: "#123456" },
+  })
+    .png()
+    .toFile(first);
+  await sharp({
+    create: { width: 32, height: 32, channels: 4, background: "#654321" },
+  })
+    .png()
+    .toFile(second);
+  bundle = db.importAssets(bundle.project.id, [first, second]);
+  const backupPath = path.join(root, "stream.mangai-backup");
+  const backupProgress = [];
+  await db.backupProject(bundle.project.id, backupPath, {
+    onProgress: (progress) => backupProgress.push(progress),
+  });
+  assert.equal(backupProgress.at(-1).phase, "writing");
+
+  const controller = new AbortController();
+  const projectCount = db.listProjects().length;
+  await assert.rejects(
+    () =>
+      db.restoreProject(backupPath, {
+        signal: controller.signal,
+        onProgress: (progress) => {
+          if (progress.phase === "extracting" && progress.completed === 1)
+            controller.abort();
+        },
+      }),
+    /キャンセル/,
+  );
+  assert.equal(db.listProjects().length, projectCount);
+  assert.deepEqual(
+    fs
+      .readdirSync(paths.projects)
+      .filter((name) => name.startsWith(".restore-")),
+    [],
+  );
+
+  const bomb = new JSZip();
+  bomb.file("bomb.txt", "0".repeat(2 * 1024 * 1024));
+  const bombPath = path.join(root, "bomb.mangai-backup");
+  fs.writeFileSync(
+    bombPath,
+    await bomb.generateAsync({
+      type: "nodebuffer",
+      compression: "DEFLATE",
+      compressionOptions: { level: 9 },
+    }),
+  );
+  await assert.rejects(() => db.restoreProject(bombPath), /圧縮率/);
+});
 test("adult projects default to local-only and reject the general cloud policy", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-boundary-"));
   const paths = {

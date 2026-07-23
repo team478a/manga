@@ -33,6 +33,7 @@ import {
 import { WorkspaceStatusControls } from "./components/app-shell/WorkspaceStatusControls";
 import type {
   AutoBackupState,
+  BulkOperationProgress,
   DatabaseRecoveryState,
   ExportProgress,
   ExportHistoryItem,
@@ -106,6 +107,10 @@ function App() {
     [exportTask, setExportTask] = React.useState<{
       requestId: string;
       progress: ExportProgress;
+    } | null>(null),
+    [bulkTask, setBulkTask] = React.useState<{
+      requestId: string;
+      progress?: BulkOperationProgress;
     } | null>(null),
     [exportDialogOpen, setExportDialogOpen] = React.useState(false),
     [exportResult, setExportResult] = React.useState<ExportResult>(),
@@ -221,6 +226,17 @@ function App() {
       ),
     [],
   );
+  React.useEffect(
+    () =>
+      window.mangai.onBulkOperationProgress((progress) =>
+        setBulkTask((current) =>
+          current && current.requestId === progress.requestId
+            ? { ...current, progress }
+            : current,
+        ),
+      ),
+    [],
+  );
   React.useEffect(() => {
     if (!bundle) return;
     Promise.all(
@@ -301,26 +317,54 @@ function App() {
     setCreating(false);
   };
   const backupProject = async (projectId: string) => {
+    const requestId = crypto.randomUUID();
     try {
       setError("");
-      const result = await window.mangai.backupProject(projectId);
+      setBulkTask({ requestId });
+      const result = await window.mangai.backupProject(projectId, requestId);
       if (result)
         alert(
           `バックアップを作成しました:\n${result.filePath}\n${(result.byteSize / 1024 / 1024).toFixed(1)} MB`,
         );
     } catch (cause) {
       showError(cause);
+    } finally {
+      setBulkTask(null);
     }
   };
   const restoreProject = async () => {
+    const requestId = crypto.randomUUID();
     try {
       setError("");
-      const restored = await window.mangai.restoreProject();
+      setBulkTask({ requestId });
+      const restored = await window.mangai.restoreProject(requestId);
       if (restored) await apply(Promise.resolve(restored));
     } catch (cause) {
       showError(cause);
+    } finally {
+      setBulkTask(null);
     }
   };
+  const bulkOperationStatus = bulkTask ? (
+    <div className="bulk-operation" role="status" aria-live="polite">
+      <span>
+        {bulkTask.progress?.operation === "restore"
+          ? "Projectを復元中"
+          : "Projectをバックアップ中"}
+        {bulkTask.progress
+          ? ` ${bulkTask.progress.completed}/${bulkTask.progress.total}`
+          : ""}
+      </span>
+      <button
+        className="secondary"
+        onClick={() =>
+          void window.mangai.cancelBulkOperation(bulkTask.requestId)
+        }
+      >
+        キャンセル
+      </button>
+    </div>
+  ) : null;
   if (!bundle)
     return (
       <main id="main-content" className="home" tabIndex={-1}>
@@ -376,6 +420,7 @@ function App() {
           </label>
           <UpdateControl />
         </header>
+        {bulkOperationStatus}
         {databaseRecovery && (
           <section className="database-recovery" role="alert">
             <div>
@@ -901,6 +946,7 @@ function App() {
         }}
         updateControl={<UpdateControl />}
       />
+      {bulkOperationStatus}
       {error && (
         <div className="error floating dismissible" role="alert">
           <span>{error}</span>

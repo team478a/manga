@@ -56,6 +56,13 @@ export type OperationHistory = {
   canUndo: boolean;
   canRedo: boolean;
 };
+export type BulkOperationProgress = {
+  requestId: string;
+  operation: "backup" | "restore";
+  phase: "validating" | "writing" | "extracting" | "committing";
+  completed: number;
+  total: number;
+};
 export type UpdateState = {
   status:
     | "disabled"
@@ -206,10 +213,15 @@ export type DesktopApi = {
   duplicateProject: (id: string) => Promise<ProjectBundle>;
   backupProject: (
     id: string,
+    requestId: string,
   ) => Promise<{ filePath: string; byteSize: number } | null>;
   autoBackupStatus: () => Promise<AutoBackupState>;
   runAutoBackup: () => Promise<AutoBackupState>;
-  restoreProject: () => Promise<ProjectBundle | null>;
+  restoreProject: (requestId: string) => Promise<ProjectBundle | null>;
+  cancelBulkOperation: (requestId: string) => Promise<boolean>;
+  onBulkOperationProgress: (
+    listener: (value: BulkOperationProgress) => void,
+  ) => () => void;
   deleteProject: (id: string) => Promise<void>;
   exportProject: (
     id: string,

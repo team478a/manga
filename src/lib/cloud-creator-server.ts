@@ -1,4 +1,6 @@
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 import { pageCanvasSchema, type PageCanvas } from "@mangai/canvas-core";
 import {
   cloudGenerationInputSchema,
@@ -8,6 +10,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import {
   CLOUD_ASSET_BUCKET,
+  CLOUD_ASSET_MAX_BYTES,
   CLOUD_PROJECT_MAX_BYTES,
   cloudAssetStoragePath,
   parseCloudProjectImport,
@@ -497,7 +500,11 @@ export async function listCloudAssets(projectId: string) {
   );
 }
 
-export async function getCloudProjectExportBundle(projectId: string) {
+export async function stageCloudProjectExportBundle(
+  projectId: string,
+  destination: string,
+  options?: { concurrency?: number },
+) {
   const { supabase } = await apiContext();
   const workspace = await getCloudProjectWorkspace(projectId);
   const pageIds = workspace.pages.map((page) => page.id);
@@ -527,17 +534,71 @@ export async function getCloudProjectExportBundle(projectId: string) {
     if (!latestSnapshots.has(snapshot.page_id))
       latestSnapshots.set(snapshot.page_id, snapshot.canvas);
   }
-  const assetFiles = await Promise.all(
-    (assets ?? []).map(async (asset) => {
+  const assetRows = assets ?? [];
+  if (assetRows.length > 20_000)
+    throw new Error("Export対象のAsset数が上限を超えています。");
+  const totalBytes = assetRows.reduce(
+    (total, asset) => total + asset.byte_size,
+    0,
+  );
+  if (!Number.isSafeInteger(totalBytes) || totalBytes > CLOUD_PROJECT_MAX_BYTES)
+    throw new Error("Export対象のAsset合計サイズが上限を超えています。");
+  if (
+    assetRows.some(
+      (asset) =>
+        !Number.isSafeInteger(asset.byte_size) ||
+        asset.byte_size < 0 ||
+        asset.byte_size > CLOUD_ASSET_MAX_BYTES,
+    )
+  )
+    throw new Error("Export対象のAssetサイズが不正です。");
+  fs.mkdirSync(destination, { recursive: true });
+  const assetFiles = new Array<{
+    id: string;
+    project_id: string;
+    file_name: string;
+    mime_type: string;
+    byte_size: number;
+    width: number;
+    height: number;
+    sha256: string;
+    filePath: string;
+  }>(assetRows.length);
+  let cursor = 0;
+  const concurrency = Math.min(4, Math.max(2, options?.concurrency ?? 3));
+  const workers = Array.from(
+    { length: Math.min(concurrency, assetRows.length) },
+    async () => {
+      while (cursor < assetRows.length) {
+        const index = cursor++;
+        const asset = assetRows[index];
       const { data, error } = await supabase.storage
         .from(CLOUD_ASSET_BUCKET)
         .download(asset.storage_path);
       if (error || !data)
         throw new Error(`Asset「${asset.file_name}」を読み込めませんでした。`);
+        const bytes = new Uint8Array(await data.arrayBuffer());
+        if (
+          bytes.byteLength !== asset.byte_size ||
+          crypto.createHash("sha256").update(bytes).digest("hex") !==
+            asset.sha256
+        )
+          throw new Error(`Asset「${asset.file_name}」が破損しています。`);
+        const filePath = path.join(destination, asset.id);
+        await fs.promises.writeFile(filePath, bytes, {
+          flag: "wx",
+          mode: 0o600,
+        });
       const { storage_path: _storagePath, ...metadata } = asset;
-      return { ...metadata, bytes: new Uint8Array(await data.arrayBuffer()) };
-    }),
+        assetFiles[index] = { ...metadata, filePath };
+      }
+    },
   );
+  const workerResults = await Promise.allSettled(workers);
+  const failedWorker = workerResults.find(
+    (result): result is PromiseRejectedResult => result.status === "rejected",
+  );
+  if (failedWorker) throw failedWorker.reason;
   return {
     ...workspace,
     pages: workspace.pages.map((page) => ({

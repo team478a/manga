@@ -31,10 +31,21 @@ contextBridge.exposeInMainWorld("mangai", {
     ipcRenderer.invoke("projects:content-class", { id, contentClass }),
   duplicateProject: (id: string) =>
     ipcRenderer.invoke("projects:duplicate", { id }),
-  backupProject: (id: string) => ipcRenderer.invoke("projects:backup", { id }),
+  backupProject: (id: string, requestId: string) =>
+    ipcRenderer.invoke("projects:backup", { id, requestId }),
   autoBackupStatus: () => ipcRenderer.invoke("projects:auto-backup:status"),
   runAutoBackup: () => ipcRenderer.invoke("projects:auto-backup:run"),
-  restoreProject: () => ipcRenderer.invoke("projects:restore"),
+  restoreProject: (requestId: string) =>
+    ipcRenderer.invoke("projects:restore", { requestId }),
+  cancelBulkOperation: (requestId: string) =>
+    ipcRenderer.invoke("projects:bulk:cancel", { requestId }),
+  onBulkOperationProgress: (listener: (value: unknown) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, value: unknown) =>
+      listener(value);
+    ipcRenderer.on("projects:bulk:progress", handler);
+    return () =>
+      ipcRenderer.removeListener("projects:bulk:progress", handler);
+  },
   deleteProject: (id: string) => ipcRenderer.invoke("projects:delete", { id }),
   exportProject: (id: string, requestId: string) =>
     ipcRenderer.invoke("projects:export", { id, requestId }),

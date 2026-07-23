@@ -2,8 +2,10 @@ import Database from "better-sqlite3";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { once } from "node:events";
 import { imageSize } from "image-size";
-import JSZip from "jszip";
+import * as yauzl from "yauzl";
+import * as yazl from "yazl";
 import { z } from "zod";
 import {
   createImagesZip,
@@ -109,6 +111,108 @@ const now = () => new Date().toISOString();
 const uid = () => crypto.randomUUID();
 const backupFormat = "mangai.project-backup";
 const maxBackupBytes = 2 * 1024 * 1024 * 1024;
+const maxBackupManifestBytes = 50 * 1024 * 1024;
+const maxBackupEntries = 20_000;
+const maxBackupCompressionRatio = 200;
+type BulkOperationOptions = {
+  signal?: AbortSignal;
+  onProgress?: (progress: {
+    phase: "validating" | "writing" | "extracting" | "committing";
+    completed: number;
+    total: number;
+  }) => void;
+};
+
+function assertBulkOperationActive(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw bulkOperationAbortError();
+  }
+}
+
+function bulkOperationAbortError() {
+  const error = new Error("処理をキャンセルしました。");
+  error.name = "AbortError";
+  return error;
+}
+
+async function sha256File(
+  filePath: string,
+  signal?: AbortSignal,
+): Promise<{ byteSize: number; sha256: string }> {
+  const hash = crypto.createHash("sha256");
+  let byteSize = 0;
+  for await (const chunk of fs.createReadStream(filePath)) {
+    assertBulkOperationActive(signal);
+    const bytes = chunk as Buffer;
+    byteSize += bytes.length;
+    hash.update(bytes);
+  }
+  return { byteSize, sha256: hash.digest("hex") };
+}
+
+async function readZipEntry(
+  zip: yauzl.ZipFile,
+  entry: yauzl.Entry,
+  maximumBytes: number,
+  signal?: AbortSignal,
+) {
+  if (entry.uncompressedSize > maximumBytes)
+    throw new Error("バックアップ情報が大きすぎます。");
+  const stream = await zip.openReadStreamPromise(entry);
+  const chunks: Buffer[] = [];
+  let byteSize = 0;
+  for await (const chunk of stream) {
+    assertBulkOperationActive(signal);
+    const bytes = chunk as Buffer;
+    byteSize += bytes.length;
+    if (byteSize > maximumBytes) {
+      stream.destroy();
+      throw new Error("バックアップ情報が大きすぎます。");
+    }
+    chunks.push(bytes);
+  }
+  return Buffer.concat(chunks, byteSize);
+}
+
+async function extractZipEntry(
+  zip: yauzl.ZipFile,
+  entry: yauzl.Entry,
+  destination: string,
+  expected: { byteSize: number; sha256: string },
+  signal?: AbortSignal,
+) {
+  const input = await zip.openReadStreamPromise(entry);
+  const output = fs.createWriteStream(destination, { flags: "wx", mode: 0o600 });
+  const hash = crypto.createHash("sha256");
+  let byteSize = 0;
+  try {
+    for await (const chunk of input) {
+      assertBulkOperationActive(signal);
+      const bytes = chunk as Buffer;
+      byteSize += bytes.length;
+      if (byteSize > expected.byteSize) {
+        input.destroy();
+        throw new Error("素材の展開サイズが不正です。");
+      }
+      hash.update(bytes);
+      if (!output.write(bytes)) await once(output, "drain");
+    }
+    output.end();
+    await once(output, "close");
+  } catch (error) {
+    input.destroy();
+    output.destroy();
+    if (fs.existsSync(destination)) fs.rmSync(destination, { force: true });
+    throw error;
+  }
+  if (
+    byteSize !== expected.byteSize ||
+    hash.digest("hex") !== expected.sha256
+  ) {
+    fs.rmSync(destination, { force: true });
+    throw new Error("素材が破損しています。");
+  }
+}
 type ProjectBackupManifest = {
   format: typeof backupFormat;
   version: 1 | 2;
@@ -1660,9 +1764,12 @@ export class MangaiDatabase {
       routeDecisions,
     };
   }
-  async backupProject(id: string, destination: string) {
+  async backupProject(
+    id: string,
+    destination: string,
+    options?: BulkOperationOptions,
+  ) {
     const bundle = this.bundle(id);
-    const zip = new JSZip();
     const manifest: ProjectBackupManifest = {
       format: backupFormat,
       version: 2,
@@ -1677,35 +1784,79 @@ export class MangaiDatabase {
       adultReferenceImageAssessments:
         this.listAdultReferenceImageAssessments(id),
     };
-    zip.file("manifest.json", JSON.stringify(manifest));
-    for (const asset of bundle.assets) {
+    const manifestBytes = Buffer.from(JSON.stringify(manifest));
+    if (manifestBytes.length > maxBackupManifestBytes)
+      throw new Error("バックアップ情報が大きすぎます。");
+    if (bundle.assets.length + 1 > maxBackupEntries)
+      throw new Error("バックアップのファイル数が上限を超えています。");
+    let expandedBytes = manifestBytes.length;
+    for (const [index, asset] of bundle.assets.entries()) {
+      assertBulkOperationActive(options?.signal);
       const source = this.safeProjectPath(
         bundle.project.storagePath,
         asset.relativePath,
       );
       if (!fs.existsSync(source))
         throw new Error(`素材「${asset.fileName}」が見つかりません。`);
-      const bytes = fs.readFileSync(source);
-      const hash = crypto.createHash("sha256").update(bytes).digest("hex");
-      if (bytes.length !== asset.byteSize || hash !== asset.sha256)
+      const verified = await sha256File(source, options?.signal);
+      expandedBytes += verified.byteSize;
+      if (expandedBytes > maxBackupBytes)
+        throw new Error("バックアップ対象の合計サイズが上限を超えています。");
+      if (
+        verified.byteSize !== asset.byteSize ||
+        verified.sha256 !== asset.sha256
+      )
         throw new Error(`素材「${asset.fileName}」の整合性を確認できません。`);
-      zip.file(`assets/${asset.id}`, bytes);
+      options?.onProgress?.({
+        phase: "validating",
+        completed: index + 1,
+        total: bundle.assets.length,
+      });
     }
-    const bytes = await zip.generateAsync({
-      type: "nodebuffer",
-      compression: "DEFLATE",
-      compressionOptions: { level: 6 },
-    });
     fs.mkdirSync(path.dirname(destination), { recursive: true });
     const temporary = `${destination}.${process.pid}.partial`;
+    const zip = new yazl.ZipFile();
+    zip.addBuffer(manifestBytes, "manifest.json", { compressionLevel: 6 });
+    for (const asset of bundle.assets)
+      zip.addFile(
+        this.safeProjectPath(bundle.project.storagePath, asset.relativePath),
+        `assets/${asset.id}`,
+        { compressionLevel: 6 },
+      );
+    const output = fs.createWriteStream(temporary, {
+      flags: "wx",
+      mode: 0o600,
+    });
+    const abort = () => {
+      const error = bulkOperationAbortError();
+      (zip.outputStream as NodeJS.ReadableStream & { destroy(error: Error): void })
+        .destroy(error);
+      output.destroy(error);
+    };
+    options?.signal?.addEventListener("abort", abort, { once: true });
     try {
-      fs.writeFileSync(temporary, bytes, { flag: "wx" });
+      const completed = new Promise<void>((resolve, reject) => {
+        zip.outputStream.once("error", reject);
+        output.once("error", reject);
+        output.once("close", resolve);
+      });
+      zip.outputStream.pipe(output);
+      zip.end();
+      await completed;
+      assertBulkOperationActive(options?.signal);
       if (fs.existsSync(destination)) fs.rmSync(destination);
       fs.renameSync(temporary, destination);
     } finally {
+      options?.signal?.removeEventListener("abort", abort);
+      output.destroy();
       if (fs.existsSync(temporary)) fs.rmSync(temporary, { force: true });
     }
-    return { filePath: destination, byteSize: bytes.length };
+    options?.onProgress?.({
+      phase: "writing",
+      completed: bundle.assets.length,
+      total: bundle.assets.length,
+    });
+    return { filePath: destination, byteSize: fs.statSync(destination).size };
   }
   async autoBackupProjects(options?: {
     nowMs?: number;
@@ -1797,45 +1948,114 @@ export class MangaiDatabase {
     }
     return result;
   }
-  async restoreProject(source: string, options?: { titleSuffix?: string }) {
+  async restoreProject(
+    source: string,
+    options?: { titleSuffix?: string } & BulkOperationOptions,
+  ) {
     const stat = fs.statSync(source);
     if (!stat.isFile() || stat.size <= 0 || stat.size > maxBackupBytes)
       throw new Error("バックアップファイルのサイズが不正です。");
-    const zip = await JSZip.loadAsync(fs.readFileSync(source));
-    const manifestEntry = zip.file("manifest.json");
-    if (!manifestEntry) throw new Error("バックアップ情報がありません。");
-    const manifestText = await manifestEntry.async("string");
-    if (Buffer.byteLength(manifestText) > 50 * 1024 * 1024)
-      throw new Error("バックアップ情報が大きすぎます。");
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(manifestText);
-    } catch {
-      throw new Error("バックアップ情報を読み取れません。");
-    }
-    const manifest = parseBackupManifest(parsed);
-    const assetBytes = new Map<string, Buffer>();
-    const expectedAssetBytes = manifest.bundle.assets.reduce(
-      (total, asset) => total + asset.byteSize,
-      0,
+    assertBulkOperationActive(options?.signal);
+    fs.mkdirSync(this.paths.projects, { recursive: true });
+    const stagingDirectory = fs.mkdtempSync(
+      path.join(this.paths.projects, ".restore-"),
     );
-    if (
-      !Number.isSafeInteger(expectedAssetBytes) ||
-      expectedAssetBytes > maxBackupBytes
-    )
-      throw new Error("展開後の素材サイズが上限を超えています。");
-    let totalBytes = 0;
-    for (const asset of manifest.bundle.assets) {
-      const entry = zip.file(`assets/${asset.id}`);
-      if (!entry) throw new Error(`素材「${asset.fileName}」がありません。`);
-      const bytes = await entry.async("nodebuffer");
-      totalBytes += bytes.length;
-      if (totalBytes > maxBackupBytes)
+    const stagedAssetsDirectory = path.join(stagingDirectory, "assets");
+    fs.mkdirSync(stagedAssetsDirectory);
+    let zip: yauzl.ZipFile | undefined;
+    let manifest!: ProjectBackupManifest;
+    try {
+      zip = await yauzl.openPromise(source, {
+        lazyEntries: true,
+        autoClose: false,
+        validateEntrySizes: true,
+        strictFileNames: true,
+      });
+      if (zip.entryCount > maxBackupEntries)
+        throw new Error("バックアップのファイル数が上限を超えています。");
+      const entries = new Map<string, yauzl.Entry>();
+      let expandedBytes = 0;
+      for await (const entry of zip.eachEntry()) {
+        assertBulkOperationActive(options?.signal);
+        const fileName = entry.fileName;
+        if (
+          fileName.includes("\\") ||
+          fileName.startsWith("/") ||
+          fileName.split("/").includes("..") ||
+          entries.has(fileName)
+        )
+          throw new Error("バックアップ内のファイル名が不正です。");
+        expandedBytes += entry.uncompressedSize;
+        if (
+          !Number.isSafeInteger(expandedBytes) ||
+          expandedBytes > maxBackupBytes
+        )
+          throw new Error("展開後の合計サイズが上限を超えています。");
+        if (
+          entry.uncompressedSize > 1024 * 1024 &&
+          entry.uncompressedSize /
+            Math.max(1, entry.compressedSize) >
+            maxBackupCompressionRatio
+        )
+          throw new Error("異常な圧縮率のバックアップは復元できません。");
+        entries.set(fileName, entry);
+      }
+      const manifestEntry = entries.get("manifest.json");
+      if (!manifestEntry) throw new Error("バックアップ情報がありません。");
+      const manifestBytes = await readZipEntry(
+        zip,
+        manifestEntry,
+        maxBackupManifestBytes,
+        options?.signal,
+      );
+      try {
+        manifest = parseBackupManifest(JSON.parse(manifestBytes.toString("utf8")));
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message !== "Unexpected end of JSON input" &&
+          error.name !== "SyntaxError"
+        )
+          throw error;
+        throw new Error("バックアップ情報を読み取れません。");
+      }
+      const expectedAssetBytes = manifest.bundle.assets.reduce(
+        (total, asset) => total + asset.byteSize,
+        0,
+      );
+      if (
+        !Number.isSafeInteger(expectedAssetBytes) ||
+        expectedAssetBytes + manifestBytes.length > maxBackupBytes
+      )
         throw new Error("展開後の素材サイズが上限を超えています。");
-      const hash = crypto.createHash("sha256").update(bytes).digest("hex");
-      if (bytes.length !== asset.byteSize || hash !== asset.sha256)
-        throw new Error(`素材「${asset.fileName}」が破損しています。`);
-      assetBytes.set(asset.id, bytes);
+      for (const [index, asset] of manifest.bundle.assets.entries()) {
+        assertBulkOperationActive(options?.signal);
+        const entry = entries.get(`assets/${asset.id}`);
+        if (!entry) throw new Error(`素材「${asset.fileName}」がありません。`);
+        if (entry.uncompressedSize !== asset.byteSize)
+          throw new Error(`素材「${asset.fileName}」が破損しています。`);
+        try {
+          await extractZipEntry(
+            zip,
+            entry,
+            path.join(stagedAssetsDirectory, asset.id),
+            asset,
+            options?.signal,
+          );
+        } catch (error) {
+          if (error instanceof Error && error.name === "AbortError") throw error;
+          throw new Error(`素材「${asset.fileName}」が破損しています。`);
+        }
+        options?.onProgress?.({
+          phase: "extracting",
+          completed: index + 1,
+          total: manifest.bundle.assets.length,
+        });
+      }
+    } catch (error) {
+      zip?.close();
+      fs.rmSync(stagingDirectory, { recursive: true, force: true });
+      throw error;
     }
     const sourceBundle = manifest.bundle;
     const restored = this.createProject(
@@ -1934,11 +2154,19 @@ export class MangaiDatabase {
           "assets",
           `${id}${assetExtension(asset.mimeType)}`,
         );
-        fs.writeFileSync(
-          this.safeProjectPath(storagePath, relativePath),
-          assetBytes.get(asset.id)!,
+        fs.renameSync(
+          path.join(stagedAssetsDirectory, asset.id),
+          path.join(stagedAssetsDirectory, path.basename(relativePath)),
         );
         return { asset, id, relativePath };
+      });
+      assertBulkOperationActive(options?.signal);
+      fs.rmSync(storagePath, { recursive: true, force: true });
+      fs.renameSync(stagingDirectory, storagePath);
+      options?.onProgress?.({
+        phase: "committing",
+        completed: preparedAssets.length,
+        total: preparedAssets.length,
       });
       const remapSnapshot = (snapshot: any) => ({
         project: {
@@ -2436,10 +2664,13 @@ export class MangaiDatabase {
             projectId,
           );
       })();
+      zip?.close();
       return this.openProject(projectId);
     } catch (error) {
+      zip?.close();
       this.db.prepare("delete from projects where id=?").run(projectId);
       fs.rmSync(storagePath, { recursive: true, force: true });
+      fs.rmSync(stagingDirectory, { recursive: true, force: true });
       throw error;
     }
   }
@@ -3988,21 +4219,9 @@ export class MangaiDatabase {
     const episodeOrder = new Map(
       bundle.episodes.map((episode) => [episode.id, episode.orderIndex]),
     );
-    const renderAssets = new Map<string, RenderAsset>();
-    for (const asset of bundle.assets) {
-      const file = this.safeProjectPath(
-        bundle.project.storagePath,
-        asset.relativePath,
-      );
-      if (!fs.existsSync(file)) continue;
-      renderAssets.set(asset.id, {
-        id: asset.id,
-        mimeType: asset.mimeType,
-        width: asset.width,
-        height: asset.height,
-        bytes: fs.readFileSync(file),
-      });
-    }
+    const assetMetadata = new Map(
+      bundle.assets.map((asset) => [asset.id, asset]),
+    );
     const orderedPages = [...bundle.pages].sort(
       (a, b) =>
         (episodeOrder.get(a.episodeId) ?? 0) -
@@ -4023,17 +4242,43 @@ export class MangaiDatabase {
         status: "rendering",
       });
       try {
+        const panels = bundle.panels.filter(
+          (item) => item.pageId === page.id,
+        );
+        const panelIds = new Set(panels.map((panel) => panel.id));
+        const panelLayers = bundle.panelLayers.filter((layer) =>
+          panelIds.has(layer.panelId),
+        );
+        const assetIds = new Set(
+          [
+            page.imageAssetId,
+            ...panels.map((panel) => panel.imageAssetId),
+            ...panelLayers.map((layer) => layer.assetId),
+          ].filter((assetId): assetId is string => Boolean(assetId)),
+        );
+        const renderAssets = new Map<string, RenderAsset>();
+        for (const assetId of assetIds) {
+          const asset = assetMetadata.get(assetId);
+          if (!asset) continue;
+          const file = this.safeProjectPath(
+            bundle.project.storagePath,
+            asset.relativePath,
+          );
+          if (!fs.existsSync(file)) continue;
+          renderAssets.set(asset.id, {
+            id: asset.id,
+            mimeType: asset.mimeType,
+            width: asset.width,
+            height: asset.height,
+            bytes: fs.readFileSync(file),
+          });
+        }
         images.push({
           fileName: `${String(index + 1).padStart(3, "0")}.png`,
           bytes: await renderPagePng({
             page,
-            panels: bundle.panels.filter((item) => item.pageId === page.id),
-            panelLayers: bundle.panelLayers.filter((layer) =>
-              bundle.panels.some(
-                (panel) =>
-                  panel.pageId === page.id && panel.id === layer.panelId,
-              ),
-            ),
+            panels,
+            panelLayers,
             balloons: bundle.balloons.filter((item) => item.pageId === page.id),
             textObjects: bundle.textObjects.filter(
               (item) => item.pageId === page.id,
@@ -4161,9 +4406,15 @@ export class MangaiDatabase {
       })),
     ];
     const coverAsset = bundle.project.coverAssetId
-      ? renderAssets.get(bundle.project.coverAssetId)
+      ? assetMetadata.get(bundle.project.coverAssetId)
       : undefined;
-    if (coverAsset) {
+    const coverPath = coverAsset
+      ? this.safeProjectPath(
+          bundle.project.storagePath,
+          coverAsset.relativePath,
+        )
+      : undefined;
+    if (coverAsset && coverPath && fs.existsSync(coverPath)) {
       const extension =
         coverAsset.mimeType === "image/jpeg"
           ? "jpg"
@@ -4174,7 +4425,7 @@ export class MangaiDatabase {
         role: "cover",
         path: `cover/cover.${extension}`,
         mimeType: coverAsset.mimeType,
-        bytes: coverAsset.bytes,
+        bytes: fs.readFileSync(coverPath),
       });
     }
     const createdAt = now();

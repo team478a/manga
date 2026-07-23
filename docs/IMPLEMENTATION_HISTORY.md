@@ -1277,3 +1277,13 @@ Cloud Asset APIへ21 MiBのmultipart request上限を追加しました。`Conte
 自己host向けNginx設定と運用条件は[`hub/CLOUD_ASSET_UPLOAD_LIMITS.md`](hub/CLOUD_ASSET_UPLOAD_LIMITS.md)へ記録しました。Vercelなど21 MiB未満のplatform上限を持つ環境では、署名付きStorage直接uploadとfinalize APIへの移行が残ります。
 
 サイズ・stream・pixel境界テスト5/5、Hub全体44/44、TypeScript、ESLint、Next.js製品build、migration manifest検証、PostgreSQL 16での所有者成功・別利用者拒否に成功しました。
+
+## 149. 保守性改善PR-05 大容量Backup／Restore／Export省メモリ化
+
+Desktop Projectバックアップを`yazl`によるファイルストリーム作成へ変更し、ZIP全体と全AssetをBufferへ保持する処理を廃止しました。復元は`yauzl`のlazy entry読取りを使い、Assetを一時Projectディレクトリへ1件ずつ展開しながらbyte数とSHA-256を確認します。全検証後だけ一時ディレクトリを正式なProject保存先へrenameし、DB登録失敗・破損・キャンセル時はProject行と一時ファイルを削除します。既存のJSZip生成バックアップは引き続き復元できます。
+
+復元前にmanifest 50 MiB、entry 20,000件、展開後合計2 GiB、manifest記載のAsset byte数、200倍を超える異常圧縮率を検査します。Backup／Restore IPCへ進捗イベントとAbortControllerを接続し、Desktop画面に処理件数とキャンセル操作を追加しました。通常のDesktop書き出しも全Assetの事前読込みをやめ、Pageが参照するAssetだけをPage単位で読み込みます。
+
+Cloud Exportは全Assetの`Promise.all`一括取得を廃止し、同時3件、最大4件のworkerで20 MiB／Asset、2 GiB／Project、20,000 Assetを検査しながら一時ディスクへ保存します。各AssetはStorage metadataのbyte数とSHA-256を再検証します。Page描画は参照Assetだけを読み込み、画像ZIPと販売パッケージZIPは`yazl`でディスクへstream生成します。Export APIは生成ファイルをHTTP streamで返し、送信完了または切断後に一時領域を削除します。
+
+新規のキャンセル・一時領域cleanup・ZIP bomb試験を含むDesktop統合91/91、Hub 44/44、TypeScript、ESLint、Next.js製品build、Desktop製品buildに成功しました。
