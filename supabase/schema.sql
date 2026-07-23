@@ -33,14 +33,26 @@ add column if not exists sample_image_urls text[] not null default '{}';
 alter table public.works
 add column if not exists source_project_id uuid;
 
-alter table public.works
-add column if not exists content_class text not null default 'adult';
+do $$
+begin
+  if not exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'works'
+      and column_name = 'content_class'
+  ) then
+    alter table public.works
+    add column content_class text not null default 'adult';
 
-update public.works
-set content_class = case
-  when tags && array['全年齢','12歳以上','15歳以上']::text[] then 'general'
-  else 'adult'
-end;
+    update public.works
+    set content_class = case
+      when tags && array['全年齢','12歳以上','15歳以上']::text[] then 'general'
+      else 'adult'
+    end;
+  end if;
+end
+$$;
 
 alter table public.works
 drop constraint if exists works_content_class_check;

@@ -1253,3 +1253,9 @@ AI core 44/44、Desktop統合90/90、TypeScript、ESLintに成功しました。
 新規migration `202607240001_storage_owner_policies`とrollbackを追加し、PostgreSQL 16で所有者操作、別利用者拒否、未認証拒否、旧path互換、14 migrationのforward、全rollback、再適用、canonical schema二重適用に成功しました。
 
 品質ゲートはESLint、TypeScript、Next.js製品build、Hub 34/34、Canvas core 26/26、AI core 44/44、Desktop統合90/90、Desktop製品build、migration manifest検証、RC preflight／acceptanceの実行に成功しました。RC preflightは外部資格情報を設定していないため、Supabase staging、Stripe、端末認証および手動実機項目を`PENDING`として報告します。
+
+## 146. 保守性改善PR-02 canonical schemaのデータ冪等化
+
+`supabase/schema.sql`を再適用するたびに全作品の`content_class`をtagから再計算していた無条件更新を廃止しました。旧schemaから`content_class`列を初めて追加する場合だけ従来のbackfillを行い、列が存在する現在schemaへの再適用では作品データを変更しません。
+
+成人向けとして保存済みで全年齢tagを持つ回帰用作品を作成し、その同じtransaction内でcanonical schemaを再適用しても`adult`が維持されるPostgreSQL試験を追加しました。GitHub Actionsのcanonical schema検証でもこのデータ不変条件を実行します。
