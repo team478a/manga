@@ -41,6 +41,15 @@ function workerLeaseSeconds() {
   return Number.isInteger(value) && value >= 150 && value <= 900 ? value : 300;
 }
 
+function workerHeartbeatIntervalMs() {
+  const value = Number(
+    process.env.MANGAI_CLOUD_AI_WORKER_HEARTBEAT_SECONDS ?? 60,
+  );
+  return Number.isInteger(value) && value >= 30 && value <= 120
+    ? value * 1000
+    : 60_000;
+}
+
 export async function GET(request: Request) {
   if (!authorized(request))
     return NextResponse.json({ error: "認証できません。" }, { status: 401 });
@@ -73,6 +82,11 @@ export async function GET(request: Request) {
     if (databaseError) throw databaseError;
     return NextResponse.json({
       enabled: process.env.MANGAI_CLOUD_AI_WORKER_ENABLED === "true",
+      lease: {
+        seconds: workerLeaseSeconds(),
+        heartbeatSeconds: workerHeartbeatIntervalMs() / 1000,
+        toleratedHeartbeatFailures: 1,
+      },
       queue: {
         queued: queued.count ?? 0,
         running: running.count ?? 0,
@@ -147,6 +161,7 @@ export async function POST(request: Request) {
         workerId: process.env.MANGAI_CLOUD_AI_WORKER_ID ?? "next-worker",
         providers,
         leaseSeconds: workerLeaseSeconds(),
+        heartbeatIntervalMs: workerHeartbeatIntervalMs(),
         client,
       });
     await client.rpc("refresh_cloud_ai_notifications");

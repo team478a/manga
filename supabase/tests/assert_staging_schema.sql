@@ -90,11 +90,14 @@ begin
   end if;
   if to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is null
      or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
+     or to_regprocedure('public.extend_cloud_generation_job_lease(uuid,uuid,integer)') is null
      or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null then
     raise exception 'Cloud AI queue functions are missing';
   end if;
   if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute')
-     or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
+     or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute')
+     or has_function_privilege('authenticated', 'public.extend_cloud_generation_job_lease(uuid,uuid,integer)', 'execute')
+     or not has_function_privilege('service_role', 'public.extend_cloud_generation_job_lease(uuid,uuid,integer)', 'execute') then
     raise exception 'Cloud AI worker privileges are invalid';
   end if;
   if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null

@@ -90,7 +90,13 @@
       "description": "Cloud画像Asset・Job・課金の原子的確定とStorage補償cleanupを追加",
       "forwardSha256": "edc1cbd8f80750a0985e19a47f039fa1bf6323117043f3b2df4e7f680923abd9",
       "rollbackSha256": "8c5c3c7f4e71d4500ce4f860f3067de21e2ff13f8b78b08cecdc316aba4ac972"
+    },
+    {
+      "id": "202607240003_cloud_ai_worker_heartbeat",
+      "description": "Cloud AI Workerのlease heartbeatと期限切れtoken拒否を追加",
+      "forwardSha256": "568f9f4741d43a40f971eb02b1e40c68bd155dcd82ef1e8cac480a30d358c78b",
+      "rollbackSha256": "2a632c38a159c1d7332ed4ef9215ee1f773cdf5bf6e3107c2f9687a8f08dbc38"
     }
   ],
-  "schemaSha256": "d940e492de764110b4c41c9d065f030cd9c803f3bb0fa7e2e7cfda42ce594795"
+  "schemaSha256": "a45f17682c2573447b71195c984d85ea04924ae14b11316835d3ef685bd571ea"
 }

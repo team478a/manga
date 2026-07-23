@@ -59,6 +59,7 @@ begin
      or to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is null
      or to_regprocedure('public.cancel_cloud_generation_job(uuid)') is null
      or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
+     or to_regprocedure('public.extend_cloud_generation_job_lease(uuid,uuid,integer)') is null
      or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null then
     raise exception 'Cloud Creator functions are missing';
   end if;
@@ -141,7 +142,9 @@ begin
     raise exception 'Cloud snapshot function privileges are invalid';
   end if;
   if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute')
-     or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
+     or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute')
+     or has_function_privilege('authenticated', 'public.extend_cloud_generation_job_lease(uuid,uuid,integer)', 'execute')
+     or not has_function_privilege('service_role', 'public.extend_cloud_generation_job_lease(uuid,uuid,integer)', 'execute') then
     raise exception 'Cloud worker function privileges are invalid';
   end if;
   if has_function_privilege(
@@ -506,6 +509,8 @@ declare
   v_old_token uuid;
   v_canceled_job_id uuid;
   v_asset_id uuid := '70000000-0000-4000-8000-000000000001';
+  v_original_lease_expires_at timestamptz;
+  v_extended_lease_expires_at timestamptz;
   v_applied boolean;
   v_ignored boolean;
 begin
@@ -543,6 +548,13 @@ begin
   if v_claim.id is null or v_claim.status <> 'running' or v_claim.attempt_count <> 1
      or v_claim.lease_token is null then
     raise exception 'Cloud AI worker could not claim a queued job';
+  end if;
+  v_original_lease_expires_at := v_claim.lease_expires_at;
+  v_extended_lease_expires_at := public.extend_cloud_generation_job_lease(
+    v_claim.id,v_claim.lease_token,300
+  );
+  if v_extended_lease_expires_at<=v_original_lease_expires_at then
+    raise exception 'Cloud AI worker heartbeat did not extend the lease';
   end if;
   update public.cloud_ai_settings set daily_cost_limit_micros=900 where singleton;
   perform public.complete_cloud_generation_image_job(
@@ -596,6 +608,14 @@ begin
   v_old_token := v_expired.lease_token;
   update public.cloud_generation_jobs set lease_expires_at=now()-interval '1 second'
   where id=v_expired.id;
+  begin
+    perform public.extend_cloud_generation_job_lease(
+      v_expired.id,v_old_token,300
+    );
+    raise exception 'expired Cloud AI lease was revived';
+  exception when others then
+    if sqlerrm<>'cloud_generation_lease_invalid' then raise; end if;
+  end;
   select * into v_reclaimed from public.claim_cloud_generation_job('phase3-ci-worker-2', 120);
   if v_reclaimed.id<>v_expired.id or v_reclaimed.lease_token=v_old_token
      or v_reclaimed.attempt_count<>2 then

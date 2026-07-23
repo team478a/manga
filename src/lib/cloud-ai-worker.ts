@@ -41,6 +41,86 @@ type UploadedGeneratedAsset = {
   sha256: string;
 };
 
+export class CloudGenerationLeaseLostError extends Error {
+  constructor() {
+    super("Cloud AI Jobのleaseを失いました。");
+    this.name = "CloudGenerationLeaseLostError";
+  }
+}
+
+export function createCloudJobLeaseHeartbeat(input: {
+  client: AdminClient;
+  job: ClaimedJob;
+  leaseSeconds: number;
+  intervalMs?: number;
+  toleratedFailures?: number;
+}) {
+  const controller = new AbortController();
+  const intervalMs = Math.max(10, input.intervalMs ?? 60_000);
+  const toleratedFailures = Math.max(0, input.toleratedFailures ?? 1);
+  let consecutiveFailures = 0;
+  let lost = false;
+  let stopped = false;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let inFlight: Promise<void> | undefined;
+
+  const extend = async () => {
+    const { error } = await input.client.rpc(
+      "extend_cloud_generation_job_lease",
+      {
+        p_job_id: input.job.id,
+        p_lease_token: input.job.lease_token,
+        p_lease_seconds: input.leaseSeconds,
+      },
+    );
+    if (error) throw new CloudGenerationLeaseLostError();
+  };
+  const schedule = () => {
+    if (stopped || lost) return;
+    timer = setTimeout(() => {
+      inFlight = (async () => {
+        try {
+          await extend();
+          consecutiveFailures = 0;
+        } catch {
+          consecutiveFailures += 1;
+          if (consecutiveFailures > toleratedFailures) {
+            lost = true;
+            controller.abort();
+          }
+        } finally {
+          inFlight = undefined;
+          schedule();
+        }
+      })();
+    }, intervalMs);
+  };
+  schedule();
+
+  return {
+    signal: controller.signal,
+    get leaseLost() {
+      return lost;
+    },
+    async assertLease() {
+      if (lost) throw new CloudGenerationLeaseLostError();
+      try {
+        await extend();
+        consecutiveFailures = 0;
+      } catch {
+        lost = true;
+        controller.abort();
+        throw new CloudGenerationLeaseLostError();
+      }
+    },
+    async stop() {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      await inFlight;
+    },
+  };
+}
+
 function classifyWorkerError(error: unknown) {
   if (error instanceof AIProviderError)
     return {
@@ -60,15 +140,6 @@ function classifyWorkerError(error: unknown) {
       error instanceof Error ? error.message : "Provider処理に失敗しました。",
     retryable: false,
   };
-}
-
-async function jobStillRunning(client: AdminClient, job: ClaimedJob) {
-  const { data } = await client
-    .from("cloud_generation_jobs")
-    .select("status,lease_token")
-    .eq("id", job.id)
-    .single();
-  return data?.status === "running" && data.lease_token === job.lease_token;
 }
 
 async function uploadGeneratedAsset(
@@ -200,6 +271,8 @@ export async function processNextCloudGenerationJob(input: {
   providers: CloudProvider[];
   client?: AdminClient;
   leaseSeconds?: number;
+  heartbeatIntervalMs?: number;
+  heartbeatToleratedFailures?: number;
 }) {
   const client = input.client ?? createAdminClient();
   const { data, error } = await client.rpc("claim_cloud_generation_job", {
@@ -209,6 +282,14 @@ export async function processNextCloudGenerationJob(input: {
   if (error) throw new Error("Cloud AI Jobを取得できませんでした。");
   const job = data?.[0] as ClaimedJob | undefined;
   if (!job) return { status: "idle" as const };
+  const leaseSeconds = input.leaseSeconds ?? 300;
+  const heartbeat = createCloudJobLeaseHeartbeat({
+    client,
+    job,
+    leaseSeconds,
+    intervalMs: input.heartbeatIntervalMs,
+    toleratedFailures: input.heartbeatToleratedFailures,
+  });
   let uploadedAsset: UploadedGeneratedAsset | null = null;
   try {
     const generation = cloudGenerationInputSchema.parse(job.input);
@@ -239,12 +320,13 @@ export async function processNextCloudGenerationJob(input: {
       const result = await (provider as CloudImageGenerationProvider).generate(
         generation as typeof generation & { kind: "image" },
         context,
+        heartbeat.signal,
       );
       if (!result.images.length)
         throw new Error("Providerから画像が返されませんでした。");
-      if (!(await jobStillRunning(client, job)))
-        return { status: "canceled" as const, jobId: job.id };
+      await heartbeat.assertLease();
       uploadedAsset = await uploadGeneratedAsset(client, job, result.images[0]);
+      await heartbeat.assertLease();
       outputAssetId = uploadedAsset.assetId;
       providerJobId = result.providerJobId ?? null;
       actualCostMicros = result.usage.actualCostMicros ?? 0;
@@ -260,9 +342,9 @@ export async function processNextCloudGenerationJob(input: {
       const result = await (provider as CloudTextGenerationProvider).generate(
         generation as typeof generation & { kind: "text" },
         context,
+        heartbeat.signal,
       );
-      if (!(await jobStillRunning(client, job)))
-        return { status: "canceled" as const, jobId: job.id };
+      await heartbeat.assertLease();
       providerJobId = result.providerJobId ?? null;
       actualCostMicros = result.usage.actualCostMicros ?? 0;
       output = {
@@ -272,6 +354,7 @@ export async function processNextCloudGenerationJob(input: {
         providerModeration: result.providerModeration,
       };
     } else throw new Error("JobとProviderの種類が一致しません。");
+    await heartbeat.assertLease();
     const { error: finishError } = uploadedAsset
       ? await client.rpc("complete_cloud_generation_image_job", {
           p_job_id: job.id,
@@ -318,6 +401,16 @@ export async function processNextCloudGenerationJob(input: {
       if (state?.status === "canceled")
         return { status: "canceled" as const, jobId: job.id };
     }
+    if (
+      heartbeat.leaseLost ||
+      error instanceof CloudGenerationLeaseLostError
+    )
+      return { status: "lease_lost" as const, jobId: job.id };
+    try {
+      await heartbeat.assertLease();
+    } catch {
+      return { status: "lease_lost" as const, jobId: job.id };
+    }
     const failure = classifyWorkerError(error);
     const retryable =
       failure.retryable &&
@@ -342,5 +435,7 @@ export async function processNextCloudGenerationJob(input: {
       status: retryable ? ("retrying" as const) : ("failed" as const),
       jobId: job.id,
     };
+  } finally {
+    await heartbeat.stop();
   }
 }

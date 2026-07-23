@@ -86,6 +86,7 @@ begin
      or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null
      or to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is null
      or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
+     or to_regprocedure('public.extend_cloud_generation_job_lease(uuid,uuid,integer)') is null
      or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null
      or to_regprocedure('public.complete_cloud_generation_image_job(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,bigint)') is null
      or to_regprocedure('public.record_cloud_generation_storage_cleanup(uuid,text,text,text,text)') is null
@@ -98,7 +99,9 @@ begin
      or not has_function_privilege('authenticated','public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)','execute') then
     raise exception 'Cloud AI quota functions or privileges are invalid';
   end if;
-  if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
+  if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute')
+     or has_function_privilege('authenticated', 'public.extend_cloud_generation_job_lease(uuid,uuid,integer)', 'execute')
+     or not has_function_privilege('service_role', 'public.extend_cloud_generation_job_lease(uuid,uuid,integer)', 'execute') then
     raise exception 'authenticated users must not claim Cloud AI jobs';
   end if;
   if not exists (

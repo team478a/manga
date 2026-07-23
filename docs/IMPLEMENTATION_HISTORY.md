@@ -1295,3 +1295,13 @@ Cloud Canvas保存へ10秒timeoutと例外処理を追加し、通信切断、ti
 保存中に編集が増えた場合は変更versionを比較し、先行保存の完了後に最新Canvasを必ず再送します。409 revision競合は一時障害と分離して自動再送せず、「最新状態を再読込」だけを提示します。dirty、saving、error、conflict状態でブラウザを閉じる場合とEditor内Linkで移動する場合に未保存警告を表示します。
 
 保存retry、retry対象HTTP status、離脱警告状態を純粋なpolicyとして試験し、Hub全体47/47、TypeScript、対象ESLintに成功しました。DB migrationとAPI request形式の変更はありません。詳細は[`hub/CLOUD_CANVAS_AUTOSAVE.md`](hub/CLOUD_CANVAS_AUTOSAVE.md)へ記録しています。
+
+## 151. 保守性改善PR-07 Cloud AI Worker lease heartbeat
+
+Service Role専用`extend_cloud_generation_job_lease` RPCを追加しました。Jobがrunning、lease token一致、現在の期限が未到来という3条件を満たす場合だけ、leaseを現在時刻から300秒延長します。期限切れtokenは延長で復活できず、別Workerによる既存のstale lease回収を維持します。authenticated／anonからの実行は拒否します。
+
+WorkerはProvider処理中に60秒ごとにheartbeatし、1回の失敗を許容、2回連続失敗で共有AbortSignalを中断します。Provider応答後、画像Storage upload後、Job・Asset・課金の最終確定直前にも同期的にleaseを検証します。lease喪失時は失敗完了RPCも呼ばず、アップロード済み画像がある場合だけ既存の補償cleanupを実行します。
+
+Job作成時の永続idempotency keyをすべてのProvider試行へ渡し、Gatewayの`x-mangai-idempotency-key`とJob ID headerを維持しました。Worker再取得時も同じkeyになるため、Provider側で同一要求をdeduplicateできます。
+
+新規migration `202607240003_cloud_ai_worker_heartbeat`、rollback、canonical schema、権限・期限切れ・延長assertionを追加しました。Worker heartbeat・idempotency・lease喪失中断試験を含むHub 49/49、canvas-core 26/26、ai-core 44/44、TypeScript、ESLint、Web production build、16 migration静的検査に成功しました。PostgreSQL 16では全migrationのforward、全rollback、再適用、正規schema二重適用、データ冪等性、Marketplace assertionまで完走しています。運用とrollbackは[`hub/CLOUD_AI_WORKER_LEASE.md`](hub/CLOUD_AI_WORKER_LEASE.md)へ記録しています。

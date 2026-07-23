@@ -56,11 +56,15 @@ test("mock Cloud text Provider returns usage without a billable cost", async () 
 function workerClient({
   completionState = "running",
   removeFails = false,
+  extendFails = false,
 } = {}) {
   const calls = {
     removed: [],
     cleanup: [],
     completedAssetId: null,
+    extended: [],
+    finished: [],
+    uploaded: 0,
   };
   const job = {
     id: "10000000-0000-4000-8000-000000000001",
@@ -87,6 +91,13 @@ function workerClient({
     rpc: async (name, args) => {
       if (name === "claim_cloud_generation_job")
         return { data: [job], error: null };
+      if (name === "extend_cloud_generation_job_lease") {
+        calls.extended.push(args);
+        return {
+          data: extendFails ? null : new Date(Date.now() + 300_000).toISOString(),
+          error: extendFails ? { message: "lease lost" } : null,
+        };
+      }
       if (name === "complete_cloud_generation_image_job") {
         calls.completedAssetId = args.p_asset_id;
         return { data: null, error: { message: "completion failed" } };
@@ -95,8 +106,10 @@ function workerClient({
         calls.cleanup.push(args);
         return { data: "cleanup-id", error: null };
       }
-      if (name === "finish_cloud_generation_job")
+      if (name === "finish_cloud_generation_job") {
+        calls.finished.push(args);
         return { data: job.id, error: null };
+      }
       throw new Error(`unexpected RPC ${name}`);
     },
     from: (table) => {
@@ -130,7 +143,10 @@ function workerClient({
     },
     storage: {
       from: () => ({
-        upload: async () => ({ data: null, error: null }),
+        upload: async () => {
+          calls.uploaded += 1;
+          return { data: null, error: null };
+        },
         remove: async (paths) => {
           calls.removed.push(...paths);
           return {
@@ -185,6 +201,70 @@ test("DB応答喪失でも確定済みAssetを補償削除しない", async () =
   assert.equal(result.status, "completed");
   assert.equal(result.outputAssetId, calls.completedAssetId);
   assert.equal(calls.removed.length, 0);
+});
+
+test("生成中にlease heartbeatしProviderへ同じidempotency keyを渡す", async () => {
+  const { client, calls } = workerClient();
+  const base = new MockCloudImageProvider();
+  let receivedContext;
+  const provider = {
+    capability: base.capability,
+    async generate(input, context, signal) {
+      receivedContext = context;
+      await new Promise((resolve, reject) => {
+        const timer = setTimeout(resolve, 35);
+        signal.addEventListener(
+          "abort",
+          () => {
+            clearTimeout(timer);
+            reject(new DOMException("aborted", "AbortError"));
+          },
+          { once: true },
+        );
+      });
+      return base.generate(input, context, signal);
+    },
+  };
+  const result = await processNextCloudGenerationJob({
+    workerId: "heartbeat-worker",
+    providers: [provider],
+    client,
+    heartbeatIntervalMs: 10,
+  });
+  assert.equal(result.status, "failed");
+  assert.equal(
+    receivedContext.idempotencyKey,
+    "worker-compensation-test",
+  );
+  assert.ok(calls.extended.length >= 3);
+});
+
+test("lease喪失時はProviderを中断しAsset確定とJob完了を行わない", async () => {
+  const { client, calls } = workerClient({ extendFails: true });
+  const base = new MockCloudImageProvider();
+  const provider = {
+    capability: base.capability,
+    generate(_input, _context, signal) {
+      return new Promise((_resolve, reject) => {
+        signal.addEventListener(
+          "abort",
+          () => reject(new DOMException("aborted", "AbortError")),
+          { once: true },
+        );
+      });
+    },
+  };
+  const result = await processNextCloudGenerationJob({
+    workerId: "lost-lease-worker",
+    providers: [provider],
+    client,
+    heartbeatIntervalMs: 10,
+    heartbeatToleratedFailures: 0,
+  });
+  assert.equal(result.status, "lease_lost");
+  assert.equal(calls.uploaded, 0);
+  assert.equal(calls.completedAssetId, null);
+  assert.equal(calls.finished.length, 0);
 });
 
 function cleanupClient(removeFails = false) {
