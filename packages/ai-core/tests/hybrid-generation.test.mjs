@@ -21,6 +21,8 @@ import {
   adultModelApprovalInputSchema,
   adultProviderApprovalInputSchema,
   evaluateAdultProviderCapability,
+  adultReferenceImageAssessmentSchema,
+  evaluateAdultReferenceImage,
   cloudGenerationInputSchema,
   moderateGeneralCloudPrompt,
   shouldRetryCloudGeneration,
@@ -29,6 +31,64 @@ import {
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+test("adult reference-image assessment is internally consistent", () => {
+  const reviewedAt = "2026-07-24T00:00:00.000Z";
+  assert.equal(
+    adultReferenceImageAssessmentSchema.safeParse({
+      personPresence: "none",
+      ageAssessment: "adult",
+      realPersonAssessment: "not_applicable",
+      reviewMethod: "manual_local",
+      reviewedAt,
+    }).success,
+    false,
+  );
+  assert.equal(
+    adultReferenceImageAssessmentSchema.safeParse({
+      personPresence: "present",
+      ageAssessment: "not_applicable",
+      realPersonAssessment: "not_real",
+      reviewMethod: "manual_local",
+      reviewedAt,
+    }).success,
+    false,
+  );
+});
+
+test("adult reference-image evaluation fails closed", () => {
+  const base = {
+    personPresence: "present",
+    ageAssessment: "adult",
+    realPersonAssessment: "not_real",
+    reviewMethod: "manual_local",
+    reviewedAt: "2026-07-24T00:00:00.000Z",
+  };
+  assert.deepEqual(evaluateAdultReferenceImage(null), {
+    allowed: false,
+    reason: "assessment_missing",
+  });
+  assert.deepEqual(evaluateAdultReferenceImage(base), {
+    allowed: true,
+    reason: null,
+  });
+  assert.deepEqual(
+    evaluateAdultReferenceImage(
+      { ...base, ageAssessment: "minor_or_ambiguous" },
+    ),
+    { allowed: false, reason: "minor_or_age_ambiguous" },
+  );
+  assert.deepEqual(
+    evaluateAdultReferenceImage(
+      { ...base, realPersonAssessment: "real_or_possible" },
+    ),
+    { allowed: false, reason: "real_person_possible" },
+  );
+  assert.deepEqual(evaluateAdultReferenceImage(base, { requireLocalModel: true }), {
+    allowed: false,
+    reason: "local_model_review_required",
+  });
+});
 
 const phase5Evidence = (profile = "vram_8gb", dedicatedVramMb = 8192) => ({
   format: "mangai.phase5-hardware-evidence",

@@ -40,6 +40,8 @@ import {
   ADULT_GENERATION_CONSENT_VALIDITY_DAYS,
   ADULT_GENERATION_TERMS_VERSION,
   adultGenerationConsentInputSchema,
+  adultReferenceImageAssessmentInputSchema,
+  adultReferenceImageAssessmentSchema,
   adultGenerationSettingsSchema,
   adultModelApprovalInputSchema,
   adultModelApprovalSchema,
@@ -58,6 +60,7 @@ import {
   routingContextSchema,
   type GenerationJobDraftInput,
   type AdultGenerationSettings,
+  type AdultReferenceImageAssessment,
   type AdultModelApproval,
   type AdultProviderApproval,
   type ImageGenerationModelMetadata,
@@ -114,6 +117,10 @@ type ProjectBackupManifest = {
   history?: ProjectBackupHistory;
   generationPolicy?: ProjectGenerationPolicy;
   characterProfiles?: CharacterProfile[];
+  adultReferenceImageAssessments?: Array<{
+    assetId: string;
+    assessment: AdultReferenceImageAssessment;
+  }>;
 };
 type BackupOperation = {
   label: string;
@@ -384,6 +391,22 @@ function parseBackupManifest(value: unknown): ProjectBackupManifest {
         if (!backupAssetIds.has(reference.assetId))
           throw new Error("キャラクター参照素材がProject内にありません。");
       }
+    }
+  }
+  if (manifest.adultReferenceImageAssessments !== undefined) {
+    if (
+      !Array.isArray(manifest.adultReferenceImageAssessments) ||
+      manifest.adultReferenceImageAssessments.length > 10_000
+    )
+      throw new Error("参照画像の安全確認データ構造が不正です。");
+    const backupAssetIds = new Set(bundle.assets.map((asset) => asset.id));
+    for (const item of manifest.adultReferenceImageAssessments as Array<{
+      assetId: string;
+      assessment: unknown;
+    }>) {
+      if (!backupAssetIds.has(item.assetId))
+        throw new Error("参照画像の安全確認対象がProject内にありません。");
+      adultReferenceImageAssessmentSchema.parse(item.assessment);
     }
   }
   return manifest as ProjectBackupManifest;
@@ -1280,6 +1303,8 @@ export class MangaiDatabase {
   duplicateProject(id: string) {
     const source = this.bundle(id);
     const sourceCharacterProfiles = this.listCharacterProfiles(id);
+    const sourceAdultReferenceAssessments =
+      this.listAdultReferenceImageAssessments(id);
     const sourcePolicy = this.getProjectGenerationPolicy(id);
     const copy = this.createProject({
       ...source.project,
@@ -1385,6 +1410,15 @@ export class MangaiDatabase {
               JSON.stringify(asset.libraryTags),
               asset.libraryFavorite ? 1 : 0,
               asset.libraryUpdatedAt,
+            );
+        for (const item of sourceAdultReferenceAssessments)
+          this.db
+            .prepare("update assets set metadata_json=? where id=?")
+            .run(
+              JSON.stringify({
+                adultReferenceImageAssessment: item.assessment,
+              }),
+              mappedReference(assetMap, item.assetId, "参照画像の安全確認"),
             );
         for (const profile of sourceCharacterProfiles) {
           const profileId = mappedReference(
@@ -1640,6 +1674,8 @@ export class MangaiDatabase {
       history: this.projectBackupHistory(id),
       generationPolicy: this.getProjectGenerationPolicy(id),
       characterProfiles: this.listCharacterProfiles(id),
+      adultReferenceImageAssessments:
+        this.listAdultReferenceImageAssessments(id),
     };
     zip.file("manifest.json", JSON.stringify(manifest));
     for (const asset of bundle.assets) {
@@ -2043,6 +2079,19 @@ export class MangaiDatabase {
               JSON.stringify(asset.libraryTags ?? []),
               asset.libraryFavorite ? 1 : 0,
               asset.libraryUpdatedAt ?? null,
+            );
+        for (const item of manifest.adultReferenceImageAssessments ?? [])
+          this.db
+            .prepare("update assets set metadata_json=? where id=?")
+            .run(
+              JSON.stringify({
+                adultReferenceImageAssessment: item.assessment,
+              }),
+              mappedReference(
+                assetMap,
+                item.assetId,
+                "参照画像の安全確認",
+              ),
             );
         for (const profile of manifest.characterProfiles ?? []) {
           const profileId = mappedReference(
@@ -5765,6 +5814,83 @@ export class MangaiDatabase {
       bytes: new Uint8Array(fs.readFileSync(file)),
       mimeType: asset.mime_type as "image/png" | "image/jpeg" | "image/webp",
     };
+  }
+  getAdultReferenceImageAssessment(
+    projectId: string,
+    assetId: string,
+  ): AdultReferenceImageAssessment | null {
+    const asset = this.db
+      .prepare(
+        "select metadata_json as metadataJson from assets where id=? and project_id=?",
+      )
+      .get(assetId, projectId) as { metadataJson: string } | undefined;
+    if (!asset) throw new Error("Project内の参照素材が見つかりません。");
+    try {
+      const metadata = JSON.parse(asset.metadataJson) as {
+        adultReferenceImageAssessment?: unknown;
+      };
+      if (!metadata.adultReferenceImageAssessment) return null;
+      return adultReferenceImageAssessmentSchema.parse(
+        metadata.adultReferenceImageAssessment,
+      );
+    } catch {
+      return null;
+    }
+  }
+  listAdultReferenceImageAssessments(projectId: string) {
+    if (!this.db.prepare("select 1 from projects where id=?").get(projectId))
+      throw new Error("Projectが見つかりません。");
+    const assets = this.db
+      .prepare(
+        "select id,metadata_json as metadataJson from assets where project_id=?",
+      )
+      .all(projectId) as Array<{ id: string; metadataJson: string }>;
+    return assets.flatMap((asset) => {
+      try {
+        const metadata = JSON.parse(asset.metadataJson) as {
+          adultReferenceImageAssessment?: unknown;
+        };
+        if (!metadata.adultReferenceImageAssessment) return [];
+        return [
+          {
+            assetId: asset.id,
+            assessment: adultReferenceImageAssessmentSchema.parse(
+              metadata.adultReferenceImageAssessment,
+            ),
+          },
+        ];
+      } catch {
+        return [];
+      }
+    });
+  }
+  saveAdultReferenceImageAssessment(input: unknown) {
+    const value = adultReferenceImageAssessmentInputSchema.parse(input);
+    const asset = this.db
+      .prepare(
+        "select metadata_json as metadataJson from assets where id=? and project_id=?",
+      )
+      .get(value.assetId, value.projectId) as
+      | { metadataJson: string }
+      | undefined;
+    if (!asset) throw new Error("Project内の参照素材が見つかりません。");
+    let metadata: Record<string, unknown>;
+    try {
+      metadata = JSON.parse(asset.metadataJson);
+      if (
+        !metadata ||
+        typeof metadata !== "object" ||
+        Array.isArray(metadata)
+      )
+        metadata = {};
+    } catch {
+      metadata = {};
+    }
+    metadata.adultReferenceImageAssessment = value.assessment;
+    this.db
+      .prepare("update assets set metadata_json=? where id=? and project_id=?")
+      .run(JSON.stringify(metadata), value.assetId, value.projectId);
+    return this.listAdultReferenceImageAssessments(value.projectId);
   }
   saveCharacterProfile(input: unknown): CharacterProfile[] {
     const value = characterProfileInputSchema.parse(input),

@@ -8,6 +8,7 @@ import {
   createExternalDispatchPreview,
   constrainImageDimensions,
   evaluateAdultGenerationGate,
+  evaluateAdultReferenceImage,
   evaluateAdultProviderCapability,
   externalDispatchConfirmationSchema,
   imageJobRequestSchema,
@@ -1430,10 +1431,14 @@ export class AIService {
   }
   async generateImage(input: ImageJobRequest, existingJobId?: string) {
     input = imageJobRequestSchema.parse(input);
+    let characterReferenceAssetIds: string[] = [];
     if (input.characterProfileId) {
       const profile = this.store.getCharacterProfile(
         input.projectId,
         input.characterProfileId,
+      );
+      characterReferenceAssetIds = profile.referenceAssets.map(
+        (reference) => reference.assetId,
       );
       input = {
         ...input,
@@ -1470,6 +1475,48 @@ export class AIService {
               ? "実在人物を参照する表現を含むため生成できません。"
               : "非同意または搾取的な表現を含むため生成できません。",
         );
+      const referenceAssetIds = [
+        ...new Set([
+          ...(input.sourceAssetId ? [input.sourceAssetId] : []),
+          ...characterReferenceAssetIds,
+        ]),
+      ];
+      for (const assetId of referenceAssetIds) {
+        const assessment = this.store.getAdultReferenceImageAssessment(
+          input.projectId,
+          assetId,
+        );
+        const result = evaluateAdultReferenceImage(assessment);
+        if (result.allowed) continue;
+        const error = {
+          assessment_missing: {
+            code: "ADULT_REFERENCE_ASSESSMENT_REQUIRED",
+            message:
+              "成人向け生成に使う参照画像のローカル安全確認が必要です。",
+          },
+          local_model_review_required: {
+            code: "ADULT_REFERENCE_LOCAL_REVIEW_REQUIRED",
+            message:
+              "参照画像は端末内モデルによる安全確認が必要です。",
+          },
+          person_presence_unknown: {
+            code: "ADULT_REFERENCE_PERSON_UNKNOWN",
+            message:
+              "参照画像に人物が含まれるか判定できないため生成できません。",
+          },
+          minor_or_age_ambiguous: {
+            code: "ADULT_REFERENCE_MINOR_OR_AGE_AMBIGUOUS",
+            message:
+              "参照画像の人物が成人と確認できないため生成できません。",
+          },
+          real_person_possible: {
+            code: "ADULT_REFERENCE_REAL_PERSON_POSSIBLE",
+            message:
+              "参照画像が実在人物でないと確認できないため生成できません。",
+          },
+        }[result.reason];
+        throw new AIProviderError(error.code, error.message);
+      }
       const comfySettings = this.settings("comfyui");
       if (!this.isLoopbackUrl(comfySettings.baseUrl))
         throw new AIProviderError(

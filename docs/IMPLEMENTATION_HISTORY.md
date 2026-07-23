@@ -1235,3 +1235,11 @@ PostgreSQL 16の使い捨てDBで13 migrationのforward、全rollback、再適�
 専用dispatcherは送信直前に、利用者の18歳以上確認、管理者設定、成人向けProject、架空成人、全員18歳以上、未成年・年齢曖昧なし、実在人物なし、非同意・搾取なし、権利確認、端末内Prompt review、外部送信確認、Provider承認証跡、モデルallowlist、成人向け専用feature flagを再評価します。Provider承認不足とモデル未承認は別の停止理由として扱います。
 
 現段階では全条件が合格しても`ADULT_DEZGO_DISPATCH_NOT_CONNECTED`でJobを停止し、Provider生成関数を呼びません。未確認利用者、Provider未承認、feature無効、モデル未登録、全条件合格をモックで検証し、Provider呼出し0件、Desktop統合89/89、TypeScript、ESLintに成功しました。実API通信・課金はなく、製品buildの`dezgoAdultGenerationEnabled`は引き続き常時`false`です。
+
+## 144. 成人向け参照画像のローカル安全確認
+
+成人向けローカル生成で使用する入力画像とキャラクターProfile参照素材へ、人物有無、成人確認、実在人物可能性、確認方法・日時を記録する厳格なschemaを追加しました。人物なしの場合は年齢・実在性を該当なしに限定し、人物ありの場合は両方の判定を必須にします。判定結果は既存の素材metadataへ保存するため、新規DB migrationを増やさずProject複製・バックアップ・復元へ追従します。
+
+生成画面へ画像ごとの端末内手動確認UIを追加しました。画像自体は外部送信せず、未確認、人物有無不明、未成年または年齢曖昧、実在人物またはその可能性がある参照は生成ボタンとMainプロセスの両方でfail closedになります。Mainプロセスはrendererの状態を信用せず、生成直前に全参照素材を再取得・再評価します。現段階の`manual_local`と将来の`local_model`を区別し、外部送信では端末内モデル確認を必須化できる契約を用意しました。
+
+AI core 44/44、Desktop統合90/90、TypeScript、ESLintに成功しました。Phase 5のText-to-Image、Image-to-Image、ControlNet、Inpainting連続受入れも新しい参照画像確認を含めて成功しています。端末内モデルによる人物・年齢・実在性の自動推定は未実装で、成人向けDezgo Provider接続は引き続き無効です。

@@ -11,6 +11,8 @@ import type {
 import type {
   AdultGenerationConsentInput,
   AdultGenerationSettings,
+  AdultReferenceImageAssessment,
+  AdultReferenceImageAssessmentInput,
   AdultModelApproval,
   AdultProviderApproval,
   GenerationRouteDecisionRecord,
@@ -307,6 +309,22 @@ export type DesktopApi = {
     characterProfileId: string,
     assetId: string,
   ) => Promise<CharacterProfile[]>;
+  listAdultReferenceImageAssessments: (
+    projectId: string,
+  ) => Promise<
+    Array<{
+      assetId: string;
+      assessment: AdultReferenceImageAssessment;
+    }>
+  >;
+  saveAdultReferenceImageAssessment: (
+    value: AdultReferenceImageAssessmentInput,
+  ) => Promise<
+    Array<{
+      assetId: string;
+      assessment: AdultReferenceImageAssessment;
+    }>
+  >;
   assetUrl: (relativePath: string) => Promise<string>;
   getPaths: () => Promise<{
     root: string;

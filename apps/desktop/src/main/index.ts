@@ -71,6 +71,7 @@ import {
 import {
   adultGenerationAdministratorInputSchema,
   adultGenerationConsentInputSchema,
+  adultReferenceImageAssessmentInputSchema,
   cancelRequestSchema,
   chatRequestSchema,
   chatSessionIdSchema,
@@ -658,6 +659,14 @@ function register() {
   );
   handle("characters:reference:detach", (v) =>
     store.detachCharacterReferenceAsset(v),
+  );
+  handle("assets:adult-reference-assessments:list", (v) =>
+    store.listAdultReferenceImageAssessments(projectIdSchema.parse(v).id),
+  );
+  handle("assets:adult-reference-assessment:save", (v) =>
+    store.saveAdultReferenceImageAssessment(
+      adultReferenceImageAssessmentInputSchema.parse(v),
+    ),
   );
   handle("assets:url", (v) =>
     store.assetData(

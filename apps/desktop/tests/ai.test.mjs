@@ -107,6 +107,125 @@ test("adult local generation requires device, age, project and content checks", 
   }
 });
 
+test("adult local generation blocks unsafe or unreviewed reference images", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-reference-"));
+  const db = new MangaiDatabase({
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  });
+  try {
+    let project = db.createProject({
+      title: "成人向け参照画像",
+      subtitle: "",
+      description: "",
+      genre: "",
+      ageRating: "成人向け",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const sourcePath = path.join(root, "reference.png");
+    fs.writeFileSync(
+      sourcePath,
+      await sharp({
+        create: {
+          width: 32,
+          height: 32,
+          channels: 4,
+          background: "#663399",
+        },
+      })
+        .png()
+        .toBuffer(),
+    );
+    project = db.importAssets(project.project.id, [sourcePath]);
+    const sourceAssetId = project.assets[0].id;
+    db.setAdultGenerationAdministratorEnabled(true);
+    db.confirmAdultGeneration18Plus({
+      userConfirmed18Plus: true,
+      termsVersion: ADULT_GENERATION_TERMS_VERSION,
+    });
+    const service = new AIService(db);
+    const request = {
+      projectId: project.project.id,
+      workflowId: randomUUID(),
+      prompt: "fictional consenting adult, explicitly age 25",
+      operation: "image_to_image",
+      sourceAssetId,
+      jobType: "adult_character_render",
+      adultContentConfirmation: {
+        fictionalAdultsOnly: true,
+        allCharacters18Plus: true,
+        noMinorOrAgeAmbiguousAppearance: true,
+        noRealPersonReference: true,
+        consensualAndNonExploitativeOnly: true,
+        rightsConfirmed: true,
+      },
+    };
+    await assert.rejects(service.generateImage(request), (error) => {
+      assert.equal(error.code, "ADULT_REFERENCE_ASSESSMENT_REQUIRED");
+      return true;
+    });
+    db.saveAdultReferenceImageAssessment({
+      projectId: project.project.id,
+      assetId: sourceAssetId,
+      assessment: {
+        personPresence: "present",
+        ageAssessment: "minor_or_ambiguous",
+        realPersonAssessment: "not_real",
+        reviewMethod: "manual_local",
+        reviewedAt: "2026-07-24T00:00:00.000Z",
+      },
+    });
+    await assert.rejects(service.generateImage(request), (error) => {
+      assert.equal(error.code, "ADULT_REFERENCE_MINOR_OR_AGE_AMBIGUOUS");
+      return true;
+    });
+    db.saveAdultReferenceImageAssessment({
+      projectId: project.project.id,
+      assetId: sourceAssetId,
+      assessment: {
+        personPresence: "present",
+        ageAssessment: "adult",
+        realPersonAssessment: "not_real",
+        reviewMethod: "manual_local",
+        reviewedAt: "2026-07-24T00:05:00.000Z",
+      },
+    });
+    await assert.rejects(service.generateImage(request), (error) => {
+      assert.equal(error.code, "PROVIDER_DISABLED");
+      return true;
+    });
+    assert.equal(
+      db.getAdultReferenceImageAssessment(project.project.id, sourceAssetId)
+        ?.ageAssessment,
+      "adult",
+    );
+    const duplicate = db.duplicateProject(project.project.id);
+    assert.equal(
+      db.listAdultReferenceImageAssessments(duplicate.project.id)[0]?.assessment
+        .ageAssessment,
+      "adult",
+    );
+    const backupPath = path.join(root, "adult-reference.mangai-backup");
+    await db.backupProject(project.project.id, backupPath);
+    const restored = await db.restoreProject(backupPath);
+    assert.equal(
+      db.listAdultReferenceImageAssessments(restored.project.id)[0]?.assessment
+        .ageAssessment,
+      "adult",
+    );
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("Phase 5 offline adult workflows reach saved page, export and hardware evidence", async (t) => {
   const png = await sharp({
     create: { width: 64, height: 64, channels: 4, background: "#884466" },
@@ -226,6 +345,17 @@ test("Phase 5 offline adult workflows reach saved page, export and hardware evid
   db.confirmAdultGeneration18Plus({
     userConfirmed18Plus: true,
     termsVersion: ADULT_GENERATION_TERMS_VERSION,
+  });
+  db.saveAdultReferenceImageAssessment({
+    projectId: project.project.id,
+    assetId: project.assets[0].id,
+    assessment: {
+      personPresence: "present",
+      ageAssessment: "adult",
+      realPersonAssessment: "not_real",
+      reviewMethod: "manual_local",
+      reviewedAt: "2026-07-24T00:00:00.000Z",
+    },
   });
   const service = new AIService(db, {
     getRuntimeProfile: () => runtimeState("vram_8gb"),

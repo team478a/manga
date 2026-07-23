@@ -121,6 +121,12 @@ contextBridge.exposeInMainWorld("mangai", {
       characterProfileId,
       assetId,
     }),
+  listAdultReferenceImageAssessments: (projectId: string) =>
+    ipcRenderer.invoke("assets:adult-reference-assessments:list", {
+      id: projectId,
+    }),
+  saveAdultReferenceImageAssessment: (value: unknown) =>
+    ipcRenderer.invoke("assets:adult-reference-assessment:save", value),
   assetUrl: (relativePath: string) =>
     ipcRenderer.invoke("assets:url", { relativePath }),
   getPaths: () => ipcRenderer.invoke("app:paths"),

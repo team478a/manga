@@ -541,6 +541,20 @@ const ja = {
   "generation.generating": "生成中…",
   "generation.start": "画像生成を開始",
   "generation.adult.confirmationTitle": "成人向け生成の内容確認",
+  "generation.adult.referenceReviewTitle": "参照画像のローカル安全確認",
+  "generation.adult.referenceReviewHelp":
+    "画像は外部送信せず、この端末で確認結果だけを素材に保存します。曖昧・未成年・実在人物の可能性がある場合は生成を停止します。",
+  "generation.adult.personPresence": "人物の有無",
+  "generation.adult.reviewUnknown": "未確認・不明",
+  "generation.adult.personNone": "人物なし",
+  "generation.adult.personPresent": "人物あり",
+  "generation.adult.ageAssessment": "人物の年齢確認",
+  "generation.adult.ageAdult": "成人と確認",
+  "generation.adult.ageBlocked": "未成年または年齢が曖昧",
+  "generation.adult.realPersonAssessment": "実在人物の確認",
+  "generation.adult.fictionalReference": "架空キャラクターと確認",
+  "generation.adult.realPersonBlocked": "実在人物または可能性あり",
+  "generation.adult.saveReferenceReview": "この確認結果を保存",
   "generation.adult.confirmationHelp":
     "この1枚に含まれる人物・参照素材・表現について、すべて確認してください。",
   "generation.adult.fictionalAdultsOnly": "架空の成人キャラクターだけです",
@@ -1536,6 +1550,20 @@ const en: Record<TranslationKey, string> = {
   "generation.generating": "Generating…",
   "generation.start": "Generate image",
   "generation.adult.confirmationTitle": "Adult-generation content check",
+  "generation.adult.referenceReviewTitle": "Local reference-image review",
+  "generation.adult.referenceReviewHelp":
+    "The image stays on this device; only the review result is saved with the asset. Generation is blocked when age, person presence, or real-person status is unsafe or unclear.",
+  "generation.adult.personPresence": "Person presence",
+  "generation.adult.reviewUnknown": "Not reviewed / unknown",
+  "generation.adult.personNone": "No person",
+  "generation.adult.personPresent": "Person present",
+  "generation.adult.ageAssessment": "Age assessment",
+  "generation.adult.ageAdult": "Confirmed adult",
+  "generation.adult.ageBlocked": "Minor or age ambiguous",
+  "generation.adult.realPersonAssessment": "Real-person assessment",
+  "generation.adult.fictionalReference": "Confirmed fictional",
+  "generation.adult.realPersonBlocked": "Real person or possibly real",
+  "generation.adult.saveReferenceReview": "Save this review",
   "generation.adult.confirmationHelp":
     "Confirm every item for the people, references, and content in this single image.",
   "generation.adult.fictionalAdultsOnly":
@@ -2272,6 +2300,22 @@ const englishMainMessageReplacements: Array<[RegExp, string]> = [
   [
     /非同意または搾取的な表現を含むため生成できません。/g,
     "Generation is blocked because the prompt contains a non-consensual or exploitative signal.",
+  ],
+  [
+    /成人向け生成に使う参照画像のローカル安全確認が必要です。/g,
+    "A local safety review is required for every reference image used in adult generation.",
+  ],
+  [
+    /参照画像に人物が含まれるか判定できないため生成できません。/g,
+    "Generation is blocked because person presence in a reference image is unknown.",
+  ],
+  [
+    /参照画像の人物が成人と確認できないため生成できません。/g,
+    "Generation is blocked because a person in a reference image is not confirmed as an adult.",
+  ],
+  [
+    /参照画像が実在人物でないと確認できないため生成できません。/g,
+    "Generation is blocked because a reference image is not confirmed to be fictional.",
   ],
   [
     /成人向け生成はこの段階では端末内ComfyUIでのみ実行できます。/g,

@@ -6,6 +6,7 @@ import {
   type ProjectBundle,
 } from "@mangai/project-core";
 import type {
+  AdultReferenceImageAssessment,
   ExternalDispatchPreview,
   GenerationQueueSettings,
   RouteDecision,
@@ -209,6 +210,16 @@ export function GenerationJobs({
     [error, setError] = React.useState(""),
     [generationNotice, setGenerationNotice] = React.useState(""),
     [workflowMessage, setWorkflowMessage] = React.useState("");
+  const [adultReferenceAssessments, setAdultReferenceAssessments] =
+    React.useState<
+      Array<{
+        assetId: string;
+        assessment: AdultReferenceImageAssessment;
+      }>
+    >([]);
+  const [adultReferenceDrafts, setAdultReferenceDrafts] = React.useState<
+    Record<string, AdultReferenceImageAssessment>
+  >({});
   const [adultChecks, setAdultChecks] = React.useState({
     fictionalAdultsOnly: false,
     allCharacters18Plus: false,
@@ -289,6 +300,9 @@ export function GenerationJobs({
   };
   React.useEffect(() => {
     void load();
+    void window.mangai
+      .listAdultReferenceImageAssessments(bundle.project.id)
+      .then(setAdultReferenceAssessments);
     void window.mangai.ai.getQueueSettings().then(setQueueSettings);
     void window.mangai.ai
       .runtimeInfo()
@@ -388,6 +402,40 @@ export function GenerationJobs({
   const generationAssets = bundle.assets.filter(
     (asset) => !isInternalPanelCacheAsset(asset),
   );
+  const selectedProfile = characterProfiles.find(
+    (profile) => profile.id === characterProfileId,
+  );
+  const adultReferenceAssetIds = [
+    ...new Set([
+      ...(operation !== "text_to_image" && sourceAssetId
+        ? [sourceAssetId]
+        : []),
+      ...(selectedProfile?.referenceAssets.map(
+        (reference) => reference.assetId,
+      ) ?? []),
+    ]),
+  ];
+  const assessmentFor = (assetId: string) =>
+    adultReferenceDrafts[assetId] ??
+    adultReferenceAssessments.find((item) => item.assetId === assetId)
+      ?.assessment ?? {
+      personPresence: "unknown" as const,
+      ageAssessment: "unknown" as const,
+      realPersonAssessment: "unknown" as const,
+      reviewMethod: "manual_local" as const,
+      reviewedAt: new Date(0).toISOString(),
+    };
+  const adultReferencesReady = adultReferenceAssetIds.every((assetId) => {
+    const assessment = adultReferenceAssessments.find(
+      (item) => item.assetId === assetId,
+    )?.assessment;
+    return (
+      assessment?.personPresence === "none" ||
+      (assessment?.personPresence === "present" &&
+        assessment.ageAssessment === "adult" &&
+        assessment.realPersonAssessment === "not_real")
+    );
+  });
   const localInputsReady =
     operation === "text_to_image" ||
     (Boolean(sourceAssetId) &&
@@ -1138,6 +1186,148 @@ export function GenerationJobs({
               </p>
             )}
           </div>
+          {adultConfirmationRequired && adultReferenceAssetIds.length > 0 && (
+            <fieldset className="panel-lite">
+              <legend>{t("generation.adult.referenceReviewTitle")}</legend>
+              <p>{t("generation.adult.referenceReviewHelp")}</p>
+              {adultReferenceAssetIds.map((assetId) => {
+                const asset = bundle.assets.find((item) => item.id === assetId);
+                const draft = assessmentFor(assetId);
+                const updateDraft = (
+                  patch: Partial<AdultReferenceImageAssessment>,
+                ) =>
+                  setAdultReferenceDrafts((current) => ({
+                    ...current,
+                    [assetId]: {
+                      ...draft,
+                      ...patch,
+                      reviewMethod: "manual_local",
+                      reviewedAt: new Date().toISOString(),
+                    },
+                  }));
+                return (
+                  <div className="panel-lite" key={assetId}>
+                    <b>{asset?.fileName ?? assetId}</b>
+                    <label>
+                      {t("generation.adult.personPresence")}
+                      <select
+                        value={draft.personPresence}
+                        onChange={(event) => {
+                          const personPresence = event.target
+                            .value as AdultReferenceImageAssessment["personPresence"];
+                          updateDraft(
+                            personPresence === "none"
+                              ? {
+                                  personPresence,
+                                  ageAssessment: "not_applicable",
+                                  realPersonAssessment: "not_applicable",
+                                }
+                              : {
+                                  personPresence,
+                                  ageAssessment: "unknown",
+                                  realPersonAssessment: "unknown",
+                                },
+                          );
+                        }}
+                      >
+                        <option value="unknown">
+                          {t("generation.adult.reviewUnknown")}
+                        </option>
+                        <option value="none">
+                          {t("generation.adult.personNone")}
+                        </option>
+                        <option value="present">
+                          {t("generation.adult.personPresent")}
+                        </option>
+                      </select>
+                    </label>
+                    {draft.personPresence === "present" && (
+                      <>
+                        <label>
+                          {t("generation.adult.ageAssessment")}
+                          <select
+                            value={draft.ageAssessment}
+                            onChange={(event) =>
+                              updateDraft({
+                                ageAssessment: event.target
+                                  .value as AdultReferenceImageAssessment["ageAssessment"],
+                              })
+                            }
+                          >
+                            <option value="unknown">
+                              {t("generation.adult.reviewUnknown")}
+                            </option>
+                            <option value="adult">
+                              {t("generation.adult.ageAdult")}
+                            </option>
+                            <option value="minor_or_ambiguous">
+                              {t("generation.adult.ageBlocked")}
+                            </option>
+                          </select>
+                        </label>
+                        <label>
+                          {t("generation.adult.realPersonAssessment")}
+                          <select
+                            value={draft.realPersonAssessment}
+                            onChange={(event) =>
+                              updateDraft({
+                                realPersonAssessment: event.target
+                                  .value as AdultReferenceImageAssessment["realPersonAssessment"],
+                              })
+                            }
+                          >
+                            <option value="unknown">
+                              {t("generation.adult.reviewUnknown")}
+                            </option>
+                            <option value="not_real">
+                              {t("generation.adult.fictionalReference")}
+                            </option>
+                            <option value="real_or_possible">
+                              {t("generation.adult.realPersonBlocked")}
+                            </option>
+                          </select>
+                        </label>
+                      </>
+                    )}
+                    <button
+                      className="secondary"
+                      onClick={async () => {
+                        setError("");
+                        try {
+                          const next =
+                            await window.mangai.saveAdultReferenceImageAssessment(
+                              {
+                                projectId: bundle.project.id,
+                                assetId,
+                                assessment: {
+                                  ...draft,
+                                  reviewMethod: "manual_local",
+                                  reviewedAt: new Date().toISOString(),
+                                },
+                              },
+                            );
+                          setAdultReferenceAssessments(next);
+                          setAdultReferenceDrafts((current) => {
+                            const copy = { ...current };
+                            delete copy[assetId];
+                            return copy;
+                          });
+                        } catch (cause) {
+                          setError(
+                            cause instanceof Error
+                              ? cause.message
+                              : String(cause),
+                          );
+                        }
+                      }}
+                    >
+                      {t("generation.adult.saveReferenceReview")}
+                    </button>
+                  </div>
+                );
+              })}
+            </fieldset>
+          )}
           <div className="notice" role="region">
             <h3>{t("generation.pageBatchTitle")}</h3>
             <p>{t("generation.pageBatchHelp")}</p>
@@ -1221,7 +1411,8 @@ export function GenerationJobs({
               !promptText.trim() ||
               !localInputsReady ||
               !workflowSupportsOperation ||
-              (adultConfirmationRequired && !adultConfirmationComplete)
+              (adultConfirmationRequired &&
+                (!adultConfirmationComplete || !adultReferencesReady))
             }
             onClick={() => void generate()}
           >

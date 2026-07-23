@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseVersion": "0.1.0",
-  "updatedAt": "2026-07-17",
+  "updatedAt": "2026-07-24",
   "requirements": [
     {
       "id": "local-quality-gate",
@@ -10,8 +10,8 @@
       "completedAt": "2026-07-17",
       "verifier": "Codex automated validation",
       "evidence": [
-        "Desktop 89/89 tests",
-        "ai-core 35/35 tests",
+        "Desktop 90/90 tests",
+        "ai-core 44/44 tests",
         "axe 29 states / 726 passes / 0 violations"
       ]
     },

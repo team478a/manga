@@ -40,12 +40,20 @@
 - CLI取込み時にProfileのVRAM帯、全4方式、日時、SHA-256、書き出しを検証
 - 取込み後も8GB／12GB／16GBの全Profileが揃わない限りstrict判定は不合格
 
+## Milestone 4: 参照画像のローカル安全確認
+
+- 入力画像とキャラクターProfile参照素材を生成前に列挙
+- 人物なし、架空の成人、未確認、年齢曖昧、実在人物可能性を端末内だけで記録
+- 未確認、人物有無不明、成人未確認、実在人物可能性ありをfail closedで拒否
+- 判定結果は素材metadataへ保存し、Project複製・バックアップ・復元で維持
+- 現段階は利用者による手動ローカル確認。端末内推定モデルは今後の実装対象
+
 ## 検証
 
 - Phase 5 offline受入れ: 1/1。成人向けText-to-Image／Img2Img／ControlNet／Inpainting、素材保存、Page配置、PDF・販売パッケージ書き出し、実機証跡作成まで成功
 - 実機証跡取込み: 2/2。正常取込みとVRAM帯不一致拒否に成功
-- AI core: 42/42
-- Desktop統合: 88/88
+- AI core: 44/44
+- Desktop統合: 90/90
 - TypeScript、ESLint、Desktop production build: 成功
 - 日英29画面・状態のaxe監査: 違反0件
 - 8GB／12GB／16GB実機記録schema: 正常

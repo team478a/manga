@@ -42,7 +42,7 @@ RC受入れ結果は`desktop/RC_ACCEPTANCE_STATUS.json`へ構造化して記録�
 | ---- | ---------------------------- | ------------------------------------------------------------------------------- |
 | P0   | ハイブリッド生成Phase 1基盤  | Router・ポリシー・ローカル実行・Asset Library・safe Job handoffまで完了         |
 | P1   | 外部背景Provider接続         | Dezgoのcredential・見積・承認・直列dispatcher・費用確定まで完了。実API E2E待ち  |
-| P1   | Dezgo成人向けPhase 2         | 専用dispatcherゲートまで完了。本番鍵・実承認・Provider接続・画像分類待ち       |
+| P1   | Dezgo成人向けPhase 2         | 専用dispatcherゲートと参照画像の手動ローカル分類まで完了。端末内自動推定、本番鍵・実承認・Provider接続待ち |
 | P1   | Panelレイヤー分離・合成      | 永続化、直接変形、mask、correction透明パッチ、互換cacheまで完了                 |
 | P2   | 低スペックRuntime Profile    | ComfyUI実行環境診断まで完了。実workflowによる8GB画像生成E2Eが残る               |
 | P2   | 英語化の全画面展開・WCAG評価 | 日英29状態のaxe違反0件。Narrator受入れ表作成済み。Windows実機での手動完走が残る |
