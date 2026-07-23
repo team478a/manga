@@ -4,8 +4,11 @@ import crypto from "node:crypto";
 import { z } from "zod";
 import {
   AIProviderError,
+  adultGenerationContentConfirmationSchema,
   createExternalDispatchPreview,
   constrainImageDimensions,
+  evaluateAdultGenerationGate,
+  evaluateAdultProviderCapability,
   externalDispatchConfirmationSchema,
   imageJobRequestSchema,
   isGenerationQueueWindowOpen,
@@ -74,6 +77,40 @@ const dezgoQueuedInputSchema = z.object({
     estimatedCostUsd: z.number().finite().nonnegative(),
   }),
 });
+
+const adultDezgoQueuedInputSchema = z
+  .object({
+    endpoint: z.literal("text2image"),
+    jobType: z.literal("adult_character_render"),
+    model: z.string().trim().min(1).max(300),
+    width: z.number().int().min(320).max(1024),
+    height: z.number().int().min(320).max(1024),
+    steps: z.number().int().min(10).max(150),
+    guidance: z.number().finite().min(-20).max(20),
+    sampler: z.enum([
+      "ddim",
+      "dpm",
+      "dpm_single",
+      "dpmpp_2m_karras",
+      "euler",
+      "euler_a",
+      "k_lms",
+      "pndm",
+    ]),
+    seed: z.number().int().min(0).max(4_294_967_295).optional(),
+    format: z.enum(["jpg", "png", "webp"]),
+    contentConfirmation: adultGenerationContentConfirmationSchema,
+    localPolicyReviewPassed: z.literal(true),
+    externalTransmissionReviewed: z.literal(true),
+    dispatchApproval: z
+      .object({
+        previewId: z.string().uuid(),
+        confirmedAt: z.string().datetime(),
+        estimatedCostUsd: z.number().finite().nonnegative(),
+      })
+      .strict(),
+  })
+  .strict();
 
 export type ChatEvent = {
   requestId: string;
@@ -1208,6 +1245,128 @@ export class AIService {
       if (this.activeDezgoJobId === next.id) this.activeDezgoJobId = null;
       this.controllers.delete(next.id);
       queueMicrotask(() => void this.runNextQueuedDezgo());
+    }
+  }
+  evaluateAdultDezgoDispatchGate(
+    jobId: string,
+    referenceTime = new Date().toISOString(),
+  ) {
+    const job = this.store.getGenerationJob(jobId);
+    if (
+      !job ||
+      job.provider_id !== "dezgo" ||
+      job.generation_type !== "image" ||
+      typeof job.project_id !== "string" ||
+      !job.project_id ||
+      typeof job.model_id !== "string" ||
+      !job.model_id
+    )
+      throw new AIProviderError(
+        "ADULT_DEZGO_JOB_INVALID",
+        "成人向けDezgo QueueのJob参照が不正です。",
+      );
+    const input = adultDezgoQueuedInputSchema.parse(
+      JSON.parse(String(job.input_json ?? "{}")),
+    );
+    if (input.model !== job.model_id)
+      throw new AIProviderError(
+        "ADULT_DEZGO_JOB_INVALID",
+        "成人向けDezgo Queueのモデル参照が一致しません。",
+      );
+    const project = this.store.bundle(job.project_id).project;
+    const settings = this.store.getAdultGenerationSettings(referenceTime);
+    const approval = this.store.getAdultProviderApproval();
+    const model =
+      this.store
+        .listAdultModelApprovals()
+        .find((candidate) => candidate.modelId === job.model_id) ?? null;
+    const providerCapability = evaluateAdultProviderCapability({
+      approval,
+      model,
+      referenceTime,
+    });
+    const providerApprovalValid =
+      providerCapability.allowed ||
+      providerCapability.reason === "model_not_allowlisted" ||
+      providerCapability.reason === "model_revoked" ||
+      providerCapability.reason === "model_approval_expired";
+    const promptReview = reviewAdultGenerationPrompt(String(job.prompt ?? ""));
+    return evaluateAdultGenerationGate({
+      userConfirmed18Plus: settings.userConfirmed18Plus,
+      projectAgeRating: project.ageRating,
+      jobType: input.jobType,
+      characterIsFictional: input.contentConfirmation.fictionalAdultsOnly,
+      allDepictedCharactersExplicitly18Plus:
+        input.contentConfirmation.allCharacters18Plus,
+      minorOrAgeAmbiguousAppearanceDetected:
+        !input.contentConfirmation.noMinorOrAgeAmbiguousAppearance,
+      realPersonReferenceIncluded:
+        !input.contentConfirmation.noRealPersonReference,
+      nonConsensualOrExploitativeContentDetected:
+        !input.contentConfirmation.consensualAndNonExploitativeOnly,
+      rightsConfirmed: input.contentConfirmation.rightsConfirmed,
+      localPolicyReviewPassed:
+        input.localPolicyReviewPassed && promptReview.allowed,
+      externalTransmissionReviewed: input.externalTransmissionReviewed,
+      administratorAdultGenerationEnabled: settings.administratorEnabled,
+      providerAdultCommercialUseApproval: providerApprovalValid
+        ? "approved"
+        : approval.status,
+      providerApprovalReferenceSha256:
+        providerApprovalValid && approval.evidenceSha256
+          ? approval.evidenceSha256
+          : undefined,
+      selectedModelAdultUseApproved: providerCapability.allowed,
+      adultGenerationFeatureEnabled:
+        this.dezgoFeatures.dezgoAdultGenerationEnabled,
+    });
+  }
+  async runNextQueuedAdultDezgo() {
+    this.store.stopUnauthorizedPendingAdultGenerationJobs();
+    this.store.stopPendingAdultDezgoJobsDisallowedByPolicy();
+    const next = this.store.nextQueuedAdultDezgoJob();
+    if (!next) return null;
+    try {
+      const gate = this.evaluateAdultDezgoDispatchGate(next.id);
+      if (!gate.allowed) {
+        this.store.releaseExternalCostReservationForJob(next.id);
+        this.store.updateGenerationJob(next.id, "failed", {
+          errorCode: `ADULT_GATE_${gate.reason.toUpperCase()}`,
+          errorMessage:
+            "成人向け外部生成の送信直前条件を満たさないため、Queueを停止しました。",
+        });
+        return {
+          jobId: next.id,
+          status: "failed" as const,
+          reason: gate.reason,
+        };
+      }
+      this.store.releaseExternalCostReservationForJob(next.id);
+      this.store.updateGenerationJob(next.id, "failed", {
+        errorCode: "ADULT_DEZGO_DISPATCH_NOT_CONNECTED",
+        errorMessage:
+          "成人向けDezgo dispatcherは安全確認中のため、外部送信へ接続されていません。",
+      });
+      return {
+        jobId: next.id,
+        status: "failed" as const,
+        reason: "dispatcher_not_connected" as const,
+      };
+    } catch (error) {
+      this.store.releaseExternalCostReservationForJob(next.id);
+      this.store.updateGenerationJob(next.id, "failed", {
+        errorCode:
+          error instanceof AIProviderError
+            ? error.code
+            : "ADULT_DEZGO_JOB_INVALID",
+        errorMessage:
+          "成人向けDezgo Queueの保存内容が不正なため、外部送信せず停止しました。",
+      });
+      return {
+        jobId: next.id,
+        status: "failed" as const,
+        reason: "job_invalid" as const,
+      };
     }
   }
   private scheduleDezgoQueueWake(delayMs: number) {

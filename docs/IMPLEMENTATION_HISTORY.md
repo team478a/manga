@@ -1227,3 +1227,11 @@ AI core 42/42、Desktop統合88/88、Phase 5オフライン受入れ1/1、証跡
 staging読み取り専用preflightは、明示したSupabase Project refが接続先hostまたはpooler userへ含まれない場合に停止するよう強化しました。CI用の例外はloopback DBだけに限定し、外部DBへの迂回利用を拒否します。これにより`MANGAI_DB_ENV=staging`の設定だけでproductionへ誤接続する経路を閉じています。
 
 PostgreSQL 16の使い捨てDBで13 migrationのforward、全rollback、再適用、正規schema二重適用、read-only preflightを完走しました。Hub回帰33/33、接続先ガード3/3、migration静的検査13件に成功しています。実Supabase stagingへの適用は、staging Projectと資格情報を準備した後の外部環境受入れとして残します。
+
+## 143. 成人向けDezgo専用dispatcher送信直前ゲート
+
+通常のsafe素材Queue入力とは別に、`adult_character_render`専用の厳格な保存schemaとQueue選択を追加しました。モデル、1枚生成parameter、6項目の内容確認、端末内Prompt review、外部送信確認、確認日時を要求し、Jobのモデル参照と保存入力のモデルが一致しない場合も拒否します。
+
+専用dispatcherは送信直前に、利用者の18歳以上確認、管理者設定、成人向けProject、架空成人、全員18歳以上、未成年・年齢曖昧なし、実在人物なし、非同意・搾取なし、権利確認、端末内Prompt review、外部送信確認、Provider承認証跡、モデルallowlist、成人向け専用feature flagを再評価します。Provider承認不足とモデル未承認は別の停止理由として扱います。
+
+現段階では全条件が合格しても`ADULT_DEZGO_DISPATCH_NOT_CONNECTED`でJobを停止し、Provider生成関数を呼びません。未確認利用者、Provider未承認、feature無効、モデル未登録、全条件合格をモックで検証し、Provider呼出し0件、Desktop統合89/89、TypeScript、ESLintに成功しました。実API通信・課金はなく、製品buildの`dezgoAdultGenerationEnabled`は引き続き常時`false`です。

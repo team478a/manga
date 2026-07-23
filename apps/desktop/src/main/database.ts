@@ -5045,6 +5045,32 @@ export class MangaiDatabase {
       .get(now(), ...(providerIds ?? [])) as
       { id: string; providerId: string; inputJson: string } | undefined;
   }
+  nextQueuedAdultDezgoJob() {
+    const rows = this.db
+      .prepare(
+        `select id,provider_id as providerId,input_json as inputJson
+         from generation_jobs
+         where status='queued' and generation_type='image'
+           and provider_id='dezgo'
+           and (next_attempt_at is null or next_attempt_at<=?)
+         order by priority desc,queue_order,created_at,id`,
+      )
+      .all(now()) as Array<{
+      id: string;
+      providerId: "dezgo";
+      inputJson: string;
+    }>;
+    return rows.find((row) => {
+      try {
+        return (
+          (JSON.parse(row.inputJson) as { jobType?: unknown }).jobType ===
+          "adult_character_render"
+        );
+      } catch {
+        return false;
+      }
+    });
+  }
   getAdultGenerationSettings(referenceTime = now()): AdultGenerationSettings {
     const referenceMs = new Date(referenceTime).getTime();
     if (!Number.isFinite(referenceMs))

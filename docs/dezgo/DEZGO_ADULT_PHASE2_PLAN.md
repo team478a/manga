@@ -108,8 +108,10 @@ MANGAI Desktopで成人向け漫画を制作し、将来Dezgoを成人向け画�
 
 ### E. 成人向け専用dispatcher
 
-- safe素材Queueと別の承認契約・監査種別を使用
-- 送信直前にProject、年齢確認、管理者設定、Provider承認、モデルallowlistを再評価
+- [完了] safe素材Queueと分離した成人向け専用入力schemaとQueue選択
+- [完了] 送信直前にProject、年齢確認、管理者設定、Provider承認、モデルallowlist、内容確認、Prompt review、外部送信確認を再評価
+- [完了] 全条件合格後も`ADULT_DEZGO_DISPATCH_NOT_CONNECTED`で停止し、Provider呼出し0件を自動検証
+- [未完了] 実承認データ取得後のProvider呼出し・結果保存への接続
 - 1操作1枚、同時実行1件、月間費用上限、二重送信防止を維持
 - Prompt・画像・APIキーをRoute監査、ログ、診断、報告へ複製しない
 
@@ -127,7 +129,7 @@ MANGAI Desktopで成人向け漫画を制作し、将来Dezgoを成人向け画�
 - Dezgoによる成人向け商用API利用の確認可能な承認証跡
 - 画像参照対応時の端末内人物・年齢推定
 - 本番用の信頼済み公開鍵とDezgo承認証跡・モデルallowlistの署名済み実運用データ（現在は0件）
-- 成人向け専用Queue・dispatcher
+- 成人向け専用dispatcherからProviderへの実接続
 - 非成人向け実API 10枚E2E
 
 `MANGAI_ENABLE_DEZGO_ADULT=true`を設定しても、現行コードでは`dezgoAdultGenerationEnabled=false`のままです。

@@ -825,6 +825,172 @@ test("Dezgo queue enforces capacity, cancellation, provider isolation and restar
   }
 });
 
+test("adult Dezgo dispatcher gate remains disconnected after every safety check passes", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-dispatch-"));
+  const database = new MangaiDatabase({
+    root,
+    database: path.join(root, "db.sqlite"),
+    projects: path.join(root, "projects"),
+    assets: path.join(root, "assets"),
+    exports: path.join(root, "exports"),
+    logs: path.join(root, "logs"),
+  });
+  try {
+    const project = database.createProject({
+      title: "成人向けdispatcher安全確認",
+      subtitle: "",
+      description: "",
+      genre: "漫画",
+      ageRating: "成人向け",
+      readingDirection: "rtl",
+      width: 512,
+      height: 512,
+      dpi: 300,
+    });
+    const queuedInput = (model) => ({
+      endpoint: "text2image",
+      jobType: "adult_character_render",
+      model,
+      width: 512,
+      height: 512,
+      steps: 30,
+      guidance: 7,
+      sampler: "dpmpp_2m_karras",
+      format: "png",
+      contentConfirmation: {
+        fictionalAdultsOnly: true,
+        allCharacters18Plus: true,
+        noMinorOrAgeAmbiguousAppearance: true,
+        noRealPersonReference: true,
+        consensualAndNonExploitativeOnly: true,
+        rightsConfirmed: true,
+      },
+      localPolicyReviewPassed: true,
+      externalTransmissionReviewed: true,
+      dispatchApproval: {
+        previewId: randomUUID(),
+        confirmedAt: "2026-07-24T00:00:00.000Z",
+        estimatedCostUsd: 0.01,
+      },
+    });
+    const jobId = database.createGenerationJob({
+      projectId: project.project.id,
+      providerType: "cloud",
+      providerId: "dezgo",
+      modelId: "adult-approved-model",
+      generationType: "image",
+      prompt: "架空の成人キャラクター",
+      inputJson: queuedInput("adult-approved-model"),
+    });
+    const disabledFlags = {
+      dezgoProviderEnabled: true,
+      dezgoDirectByokEnabled: true,
+      dezgoDispatchEnabled: true,
+      dezgoAdultGenerationEnabled: false,
+      dezgoBatchGenerationEnabled: false,
+    };
+    const disabledService = new AIService(database, {
+      dezgoFeatures: disabledFlags,
+    });
+    assert.equal(
+      disabledService.evaluateAdultDezgoDispatchGate(
+        jobId,
+        "2026-07-24T00:00:00.000Z",
+      ).reason,
+      "user_age_not_confirmed",
+    );
+    database.setAdultGenerationAdministratorEnabled(true);
+    database.confirmAdultGeneration18Plus({
+      userConfirmed18Plus: true,
+      termsVersion: "adult-generation-v1-2026-07-17",
+    });
+    assert.equal(
+      disabledService.evaluateAdultDezgoDispatchGate(
+        jobId,
+        "2026-07-24T00:00:00.000Z",
+      ).reason,
+      "provider_approval_missing",
+    );
+    database.saveAdultProviderApproval({
+      providerId: "dezgo",
+      status: "approved",
+      evidenceSha256: "a".repeat(64),
+      confirmedAt: "2026-07-24T00:00:00.000Z",
+      expiresAt: "2026-08-24T00:00:00.000Z",
+      revokedAt: null,
+    });
+    database.saveAdultModelApproval({
+      providerId: "dezgo",
+      modelId: "adult-approved-model",
+      status: "approved",
+      licenseEvidenceSha256: "b".repeat(64),
+      verifiedAt: "2026-07-24T00:00:00.000Z",
+      expiresAt: "2026-08-24T00:00:00.000Z",
+    });
+    assert.equal(
+      disabledService.evaluateAdultDezgoDispatchGate(
+        jobId,
+        "2026-07-24T00:00:00.000Z",
+      ).reason,
+      "feature_disabled",
+    );
+    const unapprovedModelJob = database.createGenerationJob({
+      projectId: project.project.id,
+      providerType: "cloud",
+      providerId: "dezgo",
+      modelId: "not-allowlisted",
+      generationType: "image",
+      prompt: "架空の成人キャラクター",
+      inputJson: queuedInput("not-allowlisted"),
+    });
+    let providerCalls = 0;
+    const gateTestService = new AIService(database, {
+      dezgoFeatures: {
+        ...disabledFlags,
+        dezgoAdultGenerationEnabled: true,
+      },
+      createDezgoProvider: () => ({
+        textToImage: async () => {
+          providerCalls += 1;
+          throw new Error("成人向けProviderを呼び出してはいけません。");
+        },
+      }),
+    });
+    assert.equal(
+      gateTestService.evaluateAdultDezgoDispatchGate(
+        unapprovedModelJob,
+        "2026-07-24T00:00:00.000Z",
+      ).reason,
+      "model_not_approved_for_adult_use",
+    );
+    assert.deepEqual(
+      gateTestService.evaluateAdultDezgoDispatchGate(
+        jobId,
+        "2026-07-24T00:00:00.000Z",
+      ),
+      { allowed: true, reason: null },
+    );
+    const stopped = await gateTestService.runNextQueuedAdultDezgo();
+    assert.deepEqual(stopped, {
+      jobId,
+      status: "failed",
+      reason: "dispatcher_not_connected",
+    });
+    assert.equal(providerCalls, 0);
+    assert.equal(
+      database.getGenerationJob(jobId).error_code,
+      "ADULT_DEZGO_DISPATCH_NOT_CONNECTED",
+    );
+    assert.equal(
+      database.getGenerationJob(unapprovedModelJob).error_code,
+      "ADULT_MODEL_NOT_ALLOWLISTED",
+    );
+  } finally {
+    database.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("guarded Dezgo dispatcher handles lifecycle and billing with mocked output", async () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-dezgo-dispatch-"));
   const database = new MangaiDatabase({
