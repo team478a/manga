@@ -8,7 +8,10 @@ import {
   MockCloudImageProvider,
   MockCloudTextProvider,
 } from "@/lib/cloud-ai-mock-provider";
-import { processNextCloudGenerationJob } from "@/lib/cloud-ai-worker";
+import {
+  processNextCloudGenerationJob,
+  processPendingCloudStorageCleanup,
+} from "@/lib/cloud-ai-worker";
 import { configuredCapabilities } from "@/lib/cloud-ai-registry";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -132,6 +135,14 @@ export async function POST(request: Request) {
   }
   try {
     const client = createAdminClient();
+    const { error: orphanQueueError } = await client.rpc(
+      "queue_orphan_cloud_generation_assets",
+    );
+    if (orphanQueueError)
+      console.error(
+        JSON.stringify({ event: "cloud_generation_orphan_scan_failed" }),
+      );
+    await processPendingCloudStorageCleanup({ client });
     const result = await processNextCloudGenerationJob({
         workerId: process.env.MANGAI_CLOUD_AI_WORKER_ID ?? "next-worker",
         providers,

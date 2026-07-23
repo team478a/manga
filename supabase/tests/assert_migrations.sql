@@ -65,6 +65,17 @@ begin
   if to_regclass('public.cloud_generation_jobs') is null then
     raise exception 'Cloud AI queue table is missing';
   end if;
+  if to_regclass('public.cloud_generation_storage_cleanup') is null
+     or to_regprocedure('public.complete_cloud_generation_image_job(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,bigint)') is null
+     or to_regprocedure('public.record_cloud_generation_storage_cleanup(uuid,text,text,text,text)') is null
+     or to_regprocedure('public.queue_orphan_cloud_generation_assets()') is null
+     or not exists(
+       select 1 from pg_indexes
+       where schemaname='public'
+         and indexname='cloud_assets_source_generation_job_idx'
+     ) then
+    raise exception 'Cloud AI completion compensation objects are missing';
+  end if;
   if to_regclass('public.cloud_ai_plans') is null
      or to_regclass('public.cloud_ai_entitlements') is null
      or to_regclass('public.cloud_ai_provider_prices') is null
@@ -132,6 +143,24 @@ begin
   if has_function_privilege('authenticated', 'public.claim_cloud_generation_job(text,integer)', 'execute')
      or not has_function_privilege('service_role', 'public.claim_cloud_generation_job(text,integer)', 'execute') then
     raise exception 'Cloud worker function privileges are invalid';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.complete_cloud_generation_image_job(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,bigint)',
+       'execute'
+     ) or not has_function_privilege(
+       'service_role',
+       'public.complete_cloud_generation_image_job(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,bigint)',
+       'execute'
+     ) then
+    raise exception 'Cloud image completion function privileges are invalid';
+  end if;
+  if has_function_privilege(
+       'authenticated','public.queue_orphan_cloud_generation_assets()','execute'
+     ) or not has_function_privilege(
+       'service_role','public.queue_orphan_cloud_generation_assets()','execute'
+     ) then
+    raise exception 'Cloud orphan cleanup function privileges are invalid';
   end if;
   if has_function_privilege('authenticated', 'public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)', 'execute')
      or not has_function_privilege('authenticated', 'public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)', 'execute') then
@@ -450,6 +479,8 @@ declare
   v_expired public.cloud_generation_jobs%rowtype;
   v_reclaimed public.cloud_generation_jobs%rowtype;
   v_old_token uuid;
+  v_canceled_job_id uuid;
+  v_asset_id uuid := '70000000-0000-4000-8000-000000000001';
   v_applied boolean;
   v_ignored boolean;
 begin
@@ -489,14 +520,50 @@ begin
     raise exception 'Cloud AI worker could not claim a queued job';
   end if;
   update public.cloud_ai_settings set daily_cost_limit_micros=900 where singleton;
-  perform public.finish_cloud_generation_job(
-    v_claim.id, v_claim.lease_token, true, '{"text":"done"}'::jsonb,
-    null, 'provider-job-1', 900, null, null, false
+  perform public.complete_cloud_generation_image_job(
+    v_claim.id,v_claim.lease_token,v_asset_id,
+    '30000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000001/70000000-0000-4000-8000-000000000001.png',
+    'AI-test.png',1024,256,256,repeat('e',64),
+    jsonb_build_object('kind','image','assetId',v_asset_id::text),
+    'provider-job-1',900
+  );
+  perform public.complete_cloud_generation_image_job(
+    v_claim.id,v_claim.lease_token,v_asset_id,
+    '30000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000001/70000000-0000-4000-8000-000000000001.png',
+    'AI-test.png',1024,256,256,repeat('e',64),
+    jsonb_build_object('kind','image','assetId',v_asset_id::text),
+    'provider-job-1',900
   );
   if not exists(
     select 1 from public.cloud_generation_jobs
-    where id=v_claim.id and status='completed' and progress=100 and actual_cost_micros=900
+    where id=v_claim.id and status='completed' and progress=100
+      and actual_cost_micros=900 and output_asset_id=v_asset_id
   ) then raise exception 'Cloud AI worker completion did not persist'; end if;
+  select id into v_canceled_job_id
+  from public.cloud_generation_jobs
+  where idempotency_key='phase3-cancel';
+  begin
+    perform public.complete_cloud_generation_image_job(
+      v_canceled_job_id,gen_random_uuid(),gen_random_uuid(),'invalid/path.png',
+      'AI-canceled.png',1024,256,256,repeat('f',64),
+      '{"kind":"image","assetId":"00000000-0000-4000-8000-000000000001"}'::jsonb,
+      null,0
+    );
+    raise exception 'canceled Cloud AI job accepted an Asset';
+  exception when others then
+    if sqlerrm<>'cloud_generation_lease_invalid' then raise; end if;
+  end;
+  perform public.record_cloud_generation_storage_cleanup(
+    v_claim.id,'cloud-assets','pending/test-orphan.png','test','remove failed'
+  );
+  perform public.record_cloud_generation_storage_cleanup(
+    v_claim.id,'cloud-assets','pending/test-orphan.png','test retry','remove failed again'
+  );
+  if not exists(
+    select 1 from public.cloud_generation_storage_cleanup
+    where storage_path='pending/test-orphan.png'
+      and status='pending' and attempt_count=2
+  ) then raise exception 'Cloud storage cleanup retry was not recorded'; end if;
   if exists(select 1 from public.cloud_ai_settings where singleton and generation_enabled) then
     raise exception 'Cloud AI daily budget did not trigger automatic stop';
   end if;
@@ -529,11 +596,46 @@ begin
 end $$;
 reset role;
 
+do $$
+begin
+  if (
+    select count(*)
+    from public.cloud_assets asset
+    join public.cloud_generation_jobs job
+      on job.id=asset.source_generation_job_id
+    where job.idempotency_key='phase3-idempotency-1'
+  )<>1 or (
+    select count(*)
+    from public.cloud_ai_cost_ledger ledger
+    join public.cloud_generation_jobs job on job.id=ledger.job_id
+    where job.idempotency_key='phase3-idempotency-1'
+      and ledger.event_type='settle'
+  )<>1 then
+    raise exception 'Cloud image completion is not idempotent';
+  end if;
+end $$;
+
+insert into public.cloud_assets(
+  id,project_id,owner_profile_id,storage_path,file_name,mime_type,
+  byte_size,width,height,sha256,source_generation_job_id
+)
+select
+  '70000000-0000-4000-8000-000000000002',
+  job.project_id,job.created_by_profile_id,
+  'orphan/canceled-job.png','AI-orphan.png','image/png',
+  1024,256,256,repeat('f',64),job.id
+from public.cloud_generation_jobs job
+where job.idempotency_key='phase3-cancel';
+
 set local "request.jwt.claim.role"='service_role';
 set local role service_role;
 do $$
-declare v_first boolean;v_second boolean;v_blocked boolean;
+declare v_first boolean;v_second boolean;v_blocked boolean;v_orphans integer;
 begin
+  v_orphans:=public.queue_orphan_cloud_generation_assets();
+  if v_orphans<>1 then
+    raise exception 'Cloud orphan Asset scan did not queue one Asset';
+  end if;
   v_first:=public.consume_cloud_ai_rate_limit('global','phase4-global-rate-key',2,900);
   v_second:=public.consume_cloud_ai_rate_limit('global','phase4-global-rate-key',2,900);
   v_blocked:=public.consume_cloud_ai_rate_limit('global','phase4-global-rate-key',2,900);
@@ -542,6 +644,22 @@ begin
   end if;
 end $$;
 reset role;
+
+do $$
+begin
+  if not exists(
+    select 1
+    from public.cloud_assets asset
+    join public.cloud_generation_storage_cleanup cleanup
+      on cleanup.storage_path=asset.storage_path
+    where asset.id='70000000-0000-4000-8000-000000000002'
+      and asset.deleted_at is not null
+      and cleanup.status='pending'
+      and cleanup.reason='orphan_cloud_generation_asset'
+  ) then
+    raise exception 'Cloud orphan Asset was not soft-deleted and queued for Storage cleanup';
+  end if;
+end $$;
 
 do $$
 begin

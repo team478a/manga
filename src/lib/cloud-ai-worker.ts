@@ -6,12 +6,12 @@ import {
   type CloudImageGenerationProvider,
   type CloudTextGenerationProvider,
 } from "@mangai/ai-core";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createAdminClient } from "./supabase/admin.ts";
 import {
   CLOUD_ASSET_BUCKET,
   cloudAssetStoragePath,
   sanitizeCloudGeneratedImage,
-} from "@/lib/cloud-creator-contract";
+} from "./cloud-creator-contract.ts";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type CloudProvider = CloudImageGenerationProvider | CloudTextGenerationProvider;
@@ -29,6 +29,16 @@ type ClaimedJob = {
   attempt_count: number;
   max_attempts: number;
   lease_token: string;
+};
+
+type UploadedGeneratedAsset = {
+  assetId: string;
+  storagePath: string;
+  fileName: string;
+  byteSize: number;
+  width: number;
+  height: number;
+  sha256: string;
 };
 
 function classifyWorkerError(error: unknown) {
@@ -61,11 +71,11 @@ async function jobStillRunning(client: AdminClient, job: ClaimedJob) {
   return data?.status === "running" && data.lease_token === job.lease_token;
 }
 
-async function saveGeneratedAsset(
+async function uploadGeneratedAsset(
   client: AdminClient,
   job: ClaimedJob,
   image: { bytes: Uint8Array; fileName: string },
-) {
+): Promise<UploadedGeneratedAsset> {
   const sanitized = await sanitizeCloudGeneratedImage(image.bytes);
   const assetId = crypto.randomUUID();
   const storagePath = cloudAssetStoragePath({
@@ -82,23 +92,107 @@ async function saveGeneratedAsset(
     });
   if (uploadError)
     throw new Error("生成画像を非公開Storageへ保存できませんでした。");
-  const { error: insertError } = await client.from("cloud_assets").insert({
-    id: assetId,
-    project_id: job.project_id,
-    owner_profile_id: job.created_by_profile_id,
-    storage_path: storagePath,
-    file_name: `AI-${image.fileName}`.slice(0, 255),
-    mime_type: "image/png",
-    byte_size: sanitized.byteSize,
+  return {
+    assetId,
+    storagePath,
+    fileName: `AI-${image.fileName}`.slice(0, 255),
+    byteSize: sanitized.byteSize,
     width: sanitized.width,
     height: sanitized.height,
     sha256: sanitized.sha256,
-  });
-  if (insertError) {
-    await client.storage.from(CLOUD_ASSET_BUCKET).remove([storagePath]);
-    throw new Error("生成画像のAsset情報を保存できませんでした。");
+  };
+}
+
+async function readJobState(client: AdminClient, jobId: string) {
+  const { data } = await client
+    .from("cloud_generation_jobs")
+    .select("status,output_asset_id")
+    .eq("id", jobId)
+    .maybeSingle();
+  return data as
+    | { status: string; output_asset_id: string | null }
+    | null
+    | undefined;
+}
+
+async function compensateUploadedAsset(
+  client: AdminClient,
+  job: ClaimedJob,
+  asset: UploadedGeneratedAsset,
+) {
+  const { error: removeError } = await client.storage
+    .from(CLOUD_ASSET_BUCKET)
+    .remove([asset.storagePath]);
+  if (!removeError) return;
+  const lastError =
+    typeof removeError.message === "string"
+      ? removeError.message
+      : "Storage cleanup failed";
+  const { error: recordError } = await client.rpc(
+    "record_cloud_generation_storage_cleanup",
+    {
+      p_job_id: job.id,
+      p_bucket_id: CLOUD_ASSET_BUCKET,
+      p_storage_path: asset.storagePath,
+      p_reason: "cloud_generation_db_completion_failed",
+      p_last_error: lastError,
+    },
+  );
+  console.error(
+    JSON.stringify({
+      event: "cloud_generation_storage_cleanup_pending",
+      jobId: job.id,
+      storagePath: asset.storagePath,
+      cleanupRecorded: !recordError,
+    }),
+  );
+}
+
+export async function processPendingCloudStorageCleanup(input: {
+  client?: AdminClient;
+}) {
+  const client = input.client ?? createAdminClient();
+  const { data: pending, error: readError } = await client
+    .from("cloud_generation_storage_cleanup")
+    .select("id,job_id,bucket_id,storage_path,attempt_count")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+  if (readError)
+    throw new Error("Cloud AI Storage cleanup対象を取得できませんでした。");
+  if (!pending) return { status: "idle" as const };
+  const { error: removeError } = await client.storage
+    .from(pending.bucket_id)
+    .remove([pending.storage_path]);
+  if (removeError) {
+    const { error: updateError } = await client
+      .from("cloud_generation_storage_cleanup")
+      .update({
+        attempt_count: pending.attempt_count + 1,
+        last_error: String(removeError.message ?? "Storage cleanup failed").slice(
+          0,
+          500,
+        ),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", pending.id);
+    if (updateError)
+      throw new Error("Cloud AI Storage cleanup失敗を記録できませんでした。");
+    return { status: "retrying" as const, cleanupId: pending.id };
   }
-  return assetId;
+  const { error: updateError } = await client
+    .from("cloud_generation_storage_cleanup")
+    .update({
+      status: "resolved",
+      last_error: null,
+      resolved_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", pending.id);
+  if (updateError)
+    throw new Error("Cloud AI Storage cleanup完了を記録できませんでした。");
+  return { status: "resolved" as const, cleanupId: pending.id };
 }
 
 export async function processNextCloudGenerationJob(input: {
@@ -115,6 +209,7 @@ export async function processNextCloudGenerationJob(input: {
   if (error) throw new Error("Cloud AI Jobを取得できませんでした。");
   const job = data?.[0] as ClaimedJob | undefined;
   if (!job) return { status: "idle" as const };
+  let uploadedAsset: UploadedGeneratedAsset | null = null;
   try {
     const generation = cloudGenerationInputSchema.parse(job.input);
     const provider = input.providers.find(
@@ -149,7 +244,8 @@ export async function processNextCloudGenerationJob(input: {
         throw new Error("Providerから画像が返されませんでした。");
       if (!(await jobStillRunning(client, job)))
         return { status: "canceled" as const, jobId: job.id };
-      outputAssetId = await saveGeneratedAsset(client, job, result.images[0]);
+      uploadedAsset = await uploadGeneratedAsset(client, job, result.images[0]);
+      outputAssetId = uploadedAsset.assetId;
       providerJobId = result.providerJobId ?? null;
       actualCostMicros = result.usage.actualCostMicros ?? 0;
       output = {
@@ -176,25 +272,52 @@ export async function processNextCloudGenerationJob(input: {
         providerModeration: result.providerModeration,
       };
     } else throw new Error("JobとProviderの種類が一致しません。");
-    const { error: finishError } = await client.rpc(
-      "finish_cloud_generation_job",
-      {
-        p_job_id: job.id,
-        p_lease_token: job.lease_token,
-        p_succeeded: true,
-        p_output: output,
-        p_output_asset_id: outputAssetId,
-        p_provider_job_id: providerJobId,
-        p_actual_cost_micros: actualCostMicros,
-        p_error_code: null,
-        p_error_message: null,
-        p_retryable: false,
-      },
-    );
+    const { error: finishError } = uploadedAsset
+      ? await client.rpc("complete_cloud_generation_image_job", {
+          p_job_id: job.id,
+          p_lease_token: job.lease_token,
+          p_asset_id: uploadedAsset.assetId,
+          p_storage_path: uploadedAsset.storagePath,
+          p_file_name: uploadedAsset.fileName,
+          p_byte_size: uploadedAsset.byteSize,
+          p_width: uploadedAsset.width,
+          p_height: uploadedAsset.height,
+          p_sha256: uploadedAsset.sha256,
+          p_output: output,
+          p_provider_job_id: providerJobId,
+          p_actual_cost_micros: actualCostMicros,
+        })
+      : await client.rpc("finish_cloud_generation_job", {
+          p_job_id: job.id,
+          p_lease_token: job.lease_token,
+          p_succeeded: true,
+          p_output: output,
+          p_output_asset_id: outputAssetId,
+          p_provider_job_id: providerJobId,
+          p_actual_cost_micros: actualCostMicros,
+          p_error_code: null,
+          p_error_message: null,
+          p_retryable: false,
+        });
     if (finishError)
       throw new Error("Cloud AI Jobの完了を記録できませんでした。");
     return { status: "completed" as const, jobId: job.id, outputAssetId };
   } catch (error) {
+    if (uploadedAsset) {
+      const state = await readJobState(client, job.id);
+      if (
+        state?.status === "completed" &&
+        state.output_asset_id === uploadedAsset.assetId
+      )
+        return {
+          status: "completed" as const,
+          jobId: job.id,
+          outputAssetId: uploadedAsset.assetId,
+        };
+      await compensateUploadedAsset(client, job, uploadedAsset);
+      if (state?.status === "canceled")
+        return { status: "canceled" as const, jobId: job.id };
+    }
     const failure = classifyWorkerError(error);
     const retryable =
       failure.retryable &&

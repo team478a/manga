@@ -5,6 +5,10 @@ import {
   MockCloudImageProvider,
   MockCloudTextProvider,
 } from "../src/lib/cloud-ai-mock-provider.ts";
+import {
+  processNextCloudGenerationJob,
+  processPendingCloudStorageCleanup,
+} from "../src/lib/cloud-ai-worker.ts";
 import { sanitizeCloudGeneratedImage } from "../src/lib/cloud-creator-contract.ts";
 
 const context = {
@@ -47,4 +51,206 @@ test("mock Cloud text Provider returns usage without a billable cost", async () 
   assert.match(result.text, /友情の短編/);
   assert.equal(result.usage.actualCostMicros, 0);
   assert.ok(result.usage.inputUnits > 0);
+});
+
+function workerClient({
+  completionState = "running",
+  removeFails = false,
+} = {}) {
+  const calls = {
+    removed: [],
+    cleanup: [],
+    completedAssetId: null,
+  };
+  const job = {
+    id: "10000000-0000-4000-8000-000000000001",
+    project_id: "20000000-0000-4000-8000-000000000001",
+    page_id: null,
+    created_by_profile_id: "30000000-0000-4000-8000-000000000001",
+    kind: "image",
+    provider_id: "mangai-cloud-mock-image",
+    model_id: "mock-image-v1",
+    idempotency_key: "worker-compensation-test",
+    input: {
+      kind: "image",
+      jobType: "background",
+      prompt: "green forest",
+      negativePrompt: "",
+      width: 256,
+      height: 256,
+    },
+    attempt_count: 1,
+    max_attempts: 1,
+    lease_token: "40000000-0000-4000-8000-000000000001",
+  };
+  const client = {
+    rpc: async (name, args) => {
+      if (name === "claim_cloud_generation_job")
+        return { data: [job], error: null };
+      if (name === "complete_cloud_generation_image_job") {
+        calls.completedAssetId = args.p_asset_id;
+        return { data: null, error: { message: "completion failed" } };
+      }
+      if (name === "record_cloud_generation_storage_cleanup") {
+        calls.cleanup.push(args);
+        return { data: "cleanup-id", error: null };
+      }
+      if (name === "finish_cloud_generation_job")
+        return { data: job.id, error: null };
+      throw new Error(`unexpected RPC ${name}`);
+    },
+    from: (table) => {
+      assert.equal(table, "cloud_generation_jobs");
+      return {
+        select() {
+          return this;
+        },
+        eq() {
+          return this;
+        },
+        async single() {
+          return {
+            data: { status: "running", lease_token: job.lease_token },
+            error: null,
+          };
+        },
+        async maybeSingle() {
+          return {
+            data: {
+              status: completionState,
+              output_asset_id:
+                completionState === "completed"
+                  ? calls.completedAssetId
+                  : null,
+            },
+            error: null,
+          };
+        },
+      };
+    },
+    storage: {
+      from: () => ({
+        upload: async () => ({ data: null, error: null }),
+        remove: async (paths) => {
+          calls.removed.push(...paths);
+          return {
+            data: null,
+            error: removeFails ? { message: "remove failed" } : null,
+          };
+        },
+      }),
+    },
+  };
+  return { client, calls };
+}
+
+test("DB確定失敗時は生成Storageを補償削除する", async () => {
+  const { client, calls } = workerClient();
+  const result = await processNextCloudGenerationJob({
+    workerId: "test-worker",
+    providers: [new MockCloudImageProvider()],
+    client,
+  });
+  assert.equal(result.status, "failed");
+  assert.equal(calls.removed.length, 1);
+  assert.equal(calls.cleanup.length, 0);
+});
+
+test("補償削除失敗時はcleanup対象として記録する", async () => {
+  const { client, calls } = workerClient({ removeFails: true });
+  const originalError = console.error;
+  console.error = () => {};
+  try {
+    const result = await processNextCloudGenerationJob({
+      workerId: "test-worker",
+      providers: [new MockCloudImageProvider()],
+      client,
+    });
+    assert.equal(result.status, "failed");
+  } finally {
+    console.error = originalError;
+  }
+  assert.equal(calls.removed.length, 1);
+  assert.equal(calls.cleanup.length, 1);
+  assert.equal(calls.cleanup[0].p_bucket_id, "cloud-assets");
+});
+
+test("DB応答喪失でも確定済みAssetを補償削除しない", async () => {
+  const { client, calls } = workerClient({ completionState: "completed" });
+  const result = await processNextCloudGenerationJob({
+    workerId: "test-worker",
+    providers: [new MockCloudImageProvider()],
+    client,
+  });
+  assert.equal(result.status, "completed");
+  assert.equal(result.outputAssetId, calls.completedAssetId);
+  assert.equal(calls.removed.length, 0);
+});
+
+function cleanupClient(removeFails = false) {
+  const updates = [];
+  const pending = {
+    id: "cleanup-1",
+    job_id: "job-1",
+    bucket_id: "cloud-assets",
+    storage_path: "owner/project/orphan.png",
+    attempt_count: 1,
+  };
+  return {
+    updates,
+    client: {
+      from: (table) => {
+        assert.equal(table, "cloud_generation_storage_cleanup");
+        let updateValue = null;
+        return {
+          select() {
+            return this;
+          },
+          eq() {
+            if (updateValue) {
+              updates.push(updateValue);
+              return Promise.resolve({ data: null, error: null });
+            }
+            return this;
+          },
+          order() {
+            return this;
+          },
+          limit() {
+            return this;
+          },
+          async maybeSingle() {
+            return { data: pending, error: null };
+          },
+          update(value) {
+            updateValue = value;
+            return this;
+          },
+        };
+      },
+      storage: {
+        from: () => ({
+          remove: async () => ({
+            data: null,
+            error: removeFails ? { message: "still locked" } : null,
+          }),
+        }),
+      },
+    },
+  };
+}
+
+test("cleanup workerは孤立Storageを削除して解決済みにする", async () => {
+  const { client, updates } = cleanupClient();
+  const result = await processPendingCloudStorageCleanup({ client });
+  assert.equal(result.status, "resolved");
+  assert.equal(updates[0].status, "resolved");
+});
+
+test("cleanup workerは削除再失敗を次回retryへ残す", async () => {
+  const { client, updates } = cleanupClient(true);
+  const result = await processPendingCloudStorageCleanup({ client });
+  assert.equal(result.status, "retrying");
+  assert.equal(updates[0].attempt_count, 2);
+  assert.equal(updates[0].last_error, "still locked");
 });

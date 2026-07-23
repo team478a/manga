@@ -46,7 +46,8 @@ begin
   if to_regclass('public.cloud_projects') is null
      or to_regclass('public.cloud_pages') is null
      or to_regclass('public.cloud_canvas_snapshots') is null
-     or to_regclass('public.cloud_generation_jobs') is null then
+     or to_regclass('public.cloud_generation_jobs') is null
+     or to_regclass('public.cloud_generation_storage_cleanup') is null then
     raise exception 'Cloud Creator Phase 1 schema is missing';
   end if;
   if to_regclass('public.cloud_ai_plans') is null
@@ -85,7 +86,10 @@ begin
      or to_regprocedure('public.set_cloud_project_cover(uuid,uuid)') is null
      or to_regprocedure('public.enqueue_cloud_generation_job(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb,bigint)') is null
      or to_regprocedure('public.claim_cloud_generation_job(text,integer)') is null
-     or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null then
+     or to_regprocedure('public.finish_cloud_generation_job(uuid,uuid,boolean,jsonb,uuid,text,bigint,text,text,boolean)') is null
+     or to_regprocedure('public.complete_cloud_generation_image_job(uuid,uuid,uuid,text,text,bigint,integer,integer,text,jsonb,text,bigint)') is null
+     or to_regprocedure('public.record_cloud_generation_storage_cleanup(uuid,text,text,text,text)') is null
+     or to_regprocedure('public.queue_orphan_cloud_generation_assets()') is null then
     raise exception 'Cloud Creator structure functions are missing';
   end if;
   if to_regprocedure('public.enqueue_cloud_generation_job_with_quota(uuid,uuid,text,text,text,text,text,text,jsonb,jsonb)') is null

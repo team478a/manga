@@ -84,7 +84,13 @@
       "description": "作品画像と販売ファイルをAuth User所有者単位のStorage pathへ制限",
       "forwardSha256": "d42a23c1fb972e85e7ef2609a2a8232287e683ddc41ee7d7d84fa2a74ea555c1",
       "rollbackSha256": "54d69f5cd29cc3e4daa5df54bc207139ed8a122f31a8ffd11f82f0410cbeb236"
+    },
+    {
+      "id": "202607240002_cloud_ai_completion_compensation",
+      "description": "Cloud画像Asset・Job・課金の原子的確定とStorage補償cleanupを追加",
+      "forwardSha256": "edc1cbd8f80750a0985e19a47f039fa1bf6323117043f3b2df4e7f680923abd9",
+      "rollbackSha256": "8c5c3c7f4e71d4500ce4f860f3067de21e2ff13f8b78b08cecdc316aba4ac972"
     }
   ],
-  "schemaSha256": "afa0cd7f7ef491194f8083ff380e064fa952296ec0cc93cc11abfb29fca51c3a"
+  "schemaSha256": "d940e492de764110b4c41c9d065f030cd9c803f3bb0fa7e2e7cfda42ce594795"
 }

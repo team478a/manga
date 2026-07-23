@@ -1259,3 +1259,11 @@ AI core 44/44、Desktop統合90/90、TypeScript、ESLintに成功しました。
 `supabase/schema.sql`を再適用するたびに全作品の`content_class`をtagから再計算していた無条件更新を廃止しました。旧schemaから`content_class`列を初めて追加する場合だけ従来のbackfillを行い、列が存在する現在schemaへの再適用では作品データを変更しません。
 
 成人向けとして保存済みで全年齢tagを持つ回帰用作品を作成し、その同じtransaction内でcanonical schemaを再適用しても`adult`が維持されるPostgreSQL試験を追加しました。GitHub Actionsのcanonical schema検証でもこのデータ不変条件を実行します。
+
+## 147. 保守性改善PR-03 Cloud AI完了補償
+
+Cloud画像生成のStorage保存後にAsset登録とJob・課金確定が分離していた処理を、専用`complete_cloud_generation_image_job` RPCへ統合しました。RPCはAsset登録、Job完了、credit/cost確定を同一PostgreSQL transactionで処理します。JobごとのAsset一意制約と完了済み判定により、RPC再実行でもAssetと課金台帳を重複させません。
+
+DB確定失敗時はWorkerがStorageを補償削除します。削除失敗はService Role専用cleanup表へ記録し、次回Worker呼出しで古いものから再試行します。応答喪失時はJob状態を再取得し、確定済みAssetを誤削除しません。canceled Jobは専用RPCで拒否されます。新規孤立Asset検出RPCは1回最大100件をsoft deleteし、Storage cleanupへ移します。設計と運用は[`hub/CLOUD_AI_COMPLETION_COMPENSATION.md`](hub/CLOUD_AI_COMPLETION_COMPENSATION.md)へ記録しました。
+
+Worker補償テスト7/7、TypeScript、ESLint、15 migrationのPostgreSQL 16 forward／全rollback／再適用、二重完了・課金一回・canceled拒否・孤立Asset検出、canonical schema二重適用に成功しました。
