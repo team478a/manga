@@ -12,7 +12,7 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   assertGeneralSalesPackage,
-  generalCloudStoragePath,
+  ownedMarketplaceStoragePath,
 } from "@/lib/content-boundary";
 
 const WORKS_BUCKET = "works";
@@ -83,7 +83,7 @@ export async function importSalesPackageDraft(
   formData: FormData,
 ): Promise<SalesPackageImportResult> {
   try {
-    const { profile } = await requireProfile();
+    const { user, profile } = await requireProfile();
     const input = z
       .object({
         title: z.string().trim().min(1).max(200),
@@ -194,6 +194,8 @@ export async function importSalesPackageDraft(
     );
 
     const supabase = await createClient();
+    const workId = randomUUID();
+    const productId = randomUUID();
     const uploaded: Array<{ bucket: string; path: string }> = [];
     const cleanup = async () => {
       await Promise.all(
@@ -206,8 +208,9 @@ export async function importSalesPackageDraft(
       let coverUrl: string | null = null;
       const sampleUrls: string[] = [];
       for (const image of verifiedImages) {
-        const storagePath = generalCloudStoragePath(
-          profile.id,
+        const storagePath = ownedMarketplaceStoragePath(
+          user.id,
+          workId,
           `${randomUUID()}.${imageExtension(image.declared.mimeType)}`,
         );
         const { error } = await supabase.storage
@@ -227,8 +230,9 @@ export async function importSalesPackageDraft(
 
       const productExtension =
         input.productRole === "product_pdf" ? "pdf" : "zip";
-      const productPath = generalCloudStoragePath(
-        profile.id,
+      const productPath = ownedMarketplaceStoragePath(
+        user.id,
+        productId,
         `${randomUUID()}.${productExtension}`,
       );
       const { error: uploadError } = await supabase.storage
@@ -243,6 +247,7 @@ export async function importSalesPackageDraft(
       const { data: work, error: workError } = await supabase
         .from("works")
         .insert({
+          id: workId,
           creator_id: profile.id,
           title: input.title,
           description: input.description,
@@ -264,6 +269,7 @@ export async function importSalesPackageDraft(
       const { data: product, error: productError } = await supabase
         .from("digital_products")
         .insert({
+          id: productId,
           work_id: work.id,
           creator_id: profile.id,
           title: input.productTitle,

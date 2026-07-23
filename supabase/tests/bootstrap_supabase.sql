@@ -57,5 +57,7 @@ $$;
 grant usage on schema auth, storage to anon, authenticated, service_role;
 grant execute on function auth.uid(), auth.role(), storage.foldername(text)
 to anon, authenticated, service_role;
+grant select, insert, update, delete on storage.objects
+to anon, authenticated, service_role;
 
 alter table storage.objects enable row level security;

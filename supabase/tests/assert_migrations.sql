@@ -154,6 +154,29 @@ begin
   ) then
     raise exception 'sales package storage delete policies are missing';
   end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'works_creator_upload'
+      and with_check like '%foldername%uid%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'works_creator_update'
+      and qual like '%owner_id%uid%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'digital_products_creator_upload'
+      and with_check like '%foldername%uid%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'digital_products_creator_update'
+      and qual like '%owner_id%uid%'
+  ) then
+    raise exception 'Marketplace storage ownership boundary is invalid';
+  end if;
   if has_function_privilege('anon', 'public.consume_desktop_device_rate_limit(text,integer,integer)', 'execute') then
     raise exception 'anon must not execute rate limit function';
   end if;
@@ -187,11 +210,58 @@ insert into public.cloud_episodes(id,project_id,title,order_index) values
 insert into public.cloud_pages(id,project_id,episode_id,page_number,order_index,width,height) values
   ('60000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','50000000-0000-4000-8000-000000000001',1,0,1600,2400);
 
+insert into storage.objects(id,bucket_id,name,owner_id) values
+  ('71000000-0000-4000-8000-000000000001','works','general/legacy-owner-cover.png','20000000-0000-4000-8000-000000000001'),
+  ('71000000-0000-4000-8000-000000000002','digital-products','general/legacy-owner-product.pdf','20000000-0000-4000-8000-000000000001');
+
+set local "request.jwt.claim.sub" = '20000000-0000-4000-8000-000000000001';
+set local "request.jwt.claim.role" = 'authenticated';
+set local role authenticated;
+insert into storage.objects(id,bucket_id,name,owner_id) values
+  ('71000000-0000-4000-8000-000000000003','works','20000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000001/cover.png','20000000-0000-4000-8000-000000000001'),
+  ('71000000-0000-4000-8000-000000000004','digital-products','20000000-0000-4000-8000-000000000001/32000000-0000-4000-8000-000000000001/product.pdf','20000000-0000-4000-8000-000000000001');
+update storage.objects
+set name='20000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000001/cover-v2.png'
+where id='71000000-0000-4000-8000-000000000003';
+update storage.objects
+set name='general/legacy-owner-cover-v2.png'
+where id='71000000-0000-4000-8000-000000000001';
+do $$
+begin
+  begin
+    insert into storage.objects(id,bucket_id,name,owner_id) values(
+      '71000000-0000-4000-8000-000000000005','works',
+      'general/new-file-must-not-use-legacy-path.png',
+      '20000000-0000-4000-8000-000000000001'
+    );
+    raise exception 'new works object used the legacy path';
+  exception when insufficient_privilege then
+    null;
+  end;
+end $$;
+reset role;
+
 set local "request.jwt.claim.sub" = '20000000-0000-4000-8000-000000000002';
 set local "request.jwt.claim.role" = 'authenticated';
 set local role authenticated;
 do $$
+declare
+  v_updated integer;
+  v_deleted integer;
 begin
+  update storage.objects
+  set name='20000000-0000-4000-8000-000000000002/31000000-0000-4000-8000-000000000001/stolen.png'
+  where id='71000000-0000-4000-8000-000000000003';
+  get diagnostics v_updated = row_count;
+  delete from storage.objects
+  where id in (
+    '71000000-0000-4000-8000-000000000001',
+    '71000000-0000-4000-8000-000000000004'
+  );
+  get diagnostics v_deleted = row_count;
+  if v_updated <> 0 or v_deleted <> 0 then
+    raise exception 'another user modified Marketplace storage objects';
+  end if;
   if exists(select 1 from public.cloud_projects where id='40000000-0000-4000-8000-000000000001') then
     raise exception 'another user can read a private Cloud Project';
   end if;
@@ -207,8 +277,46 @@ begin
 end $$;
 reset role;
 
+set local "request.jwt.claim.sub" = '';
+set local "request.jwt.claim.role" = 'anon';
+set local role anon;
+do $$
+begin
+  begin
+    insert into storage.objects(id,bucket_id,name) values(
+      '71000000-0000-4000-8000-000000000006','digital-products',
+      '20000000-0000-4000-8000-000000000001/32000000-0000-4000-8000-000000000001/anonymous.pdf'
+    );
+    raise exception 'anonymous user wrote a Marketplace storage object';
+  exception when insufficient_privilege then
+    null;
+  end;
+end $$;
+reset role;
+
 set local "request.jwt.claim.sub" = '20000000-0000-4000-8000-000000000001';
 set local role authenticated;
+delete from storage.objects
+where id in (
+  '71000000-0000-4000-8000-000000000001',
+  '71000000-0000-4000-8000-000000000002',
+  '71000000-0000-4000-8000-000000000003',
+  '71000000-0000-4000-8000-000000000004'
+);
+do $$
+begin
+  if exists(
+    select 1 from storage.objects
+    where id in (
+      '71000000-0000-4000-8000-000000000001',
+      '71000000-0000-4000-8000-000000000002',
+      '71000000-0000-4000-8000-000000000003',
+      '71000000-0000-4000-8000-000000000004'
+    )
+  ) then
+    raise exception 'owner could not delete Marketplace storage objects';
+  end if;
+end $$;
 select * from public.save_cloud_page_snapshot(
   '60000000-0000-4000-8000-000000000001', 0, '{"panels":[]}'::jsonb
 );

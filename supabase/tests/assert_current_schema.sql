@@ -30,6 +30,19 @@ begin
   ) then
     raise exception 'works storage bucket is missing';
   end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'works_creator_update'
+      and qual like '%owner_id%uid%'
+  ) or not exists (
+    select 1 from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and policyname = 'digital_products_creator_update'
+      and qual like '%owner_id%uid%'
+  ) then
+    raise exception 'Marketplace storage owner policies are missing';
+  end if;
   if to_regclass('public.cloud_projects') is null
      or to_regclass('public.cloud_pages') is null
      or to_regclass('public.cloud_canvas_snapshots') is null

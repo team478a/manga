@@ -9,6 +9,7 @@ import {
 import {
   assertGeneralSalesPackage,
   generalCloudStoragePath,
+  ownedMarketplaceStoragePath,
 } from "../src/lib/content-boundary.ts";
 
 test("age ratingから既存Projectの作品区分を安全に移行する", () => {
@@ -96,4 +97,21 @@ test("Cloud保存と販売パッケージ取込は一般向けだけを許可す
     /Cloudへ保存・送信できません/,
   );
   assert.match(generalCloudStoragePath("owner-id", "cover.png"), /^general\//);
+});
+
+test("Marketplace Storage pathはAuth Userとresource単位に分離する", () => {
+  const userId = "20000000-0000-4000-8000-000000000001";
+  const resourceId = "31000000-0000-4000-8000-000000000001";
+  assert.equal(
+    ownedMarketplaceStoragePath(userId, resourceId, "表紙 image.png"),
+    `${userId}/${resourceId}/---image.png`,
+  );
+  assert.throws(
+    () => ownedMarketplaceStoragePath("profile-id", resourceId, "cover.png"),
+    /所有者別/,
+  );
+  assert.throws(
+    () => ownedMarketplaceStoragePath(userId, resourceId, "../"),
+    /所有者別/,
+  );
 });

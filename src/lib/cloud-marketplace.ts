@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { createCloudMarketplaceArtifacts } from "@/lib/cloud-canvas-export";
 import { assertCloudMarketplaceDraftMutable } from "@/lib/cloud-marketplace-policy";
-import { generalCloudStoragePath } from "@/lib/content-boundary";
+import {
+  generalCloudStoragePath,
+  ownedMarketplaceStoragePath,
+} from "@/lib/content-boundary";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -76,7 +79,7 @@ export async function syncCloudMarketplaceDraft(input: {
   projectId: string;
   price: number;
 }) {
-  const { profile } = await requireProfile();
+  const { user, profile } = await requireProfile();
   const current = await findDraft(profile.id, input.projectId);
   assertCloudMarketplaceDraftMutable({
     workStatus: current.work?.status,
@@ -92,15 +95,13 @@ export async function syncCloudMarketplaceDraft(input: {
 
   const supabase = await createClient();
   const version = `r${artifacts.project.revision}-${randomUUID()}`;
-  const coverPath = generalCloudStoragePath(
-    profile.id,
-    "cloud",
+  const coverPath = ownedMarketplaceStoragePath(
+    user.id,
     input.projectId,
     `${version}-cover.png`,
   );
-  const productPath = generalCloudStoragePath(
-    profile.id,
-    "cloud",
+  const productPath = ownedMarketplaceStoragePath(
+    user.id,
     input.projectId,
     `${version}-main.pdf`,
   );
@@ -156,9 +157,12 @@ export async function syncCloudMarketplaceDraft(input: {
     if (
       oldProductPath &&
       oldProductPath !== productPath &&
-      oldProductPath.startsWith(
-        generalCloudStoragePath(profile.id, "cloud", input.projectId),
-      )
+      (oldProductPath.startsWith(
+        `${user.id.toLowerCase()}/${input.projectId.toLowerCase()}/`,
+      ) ||
+        oldProductPath.startsWith(
+          generalCloudStoragePath(profile.id, "cloud", input.projectId),
+        ))
     )
       await supabase.storage
         .from(PRODUCTS_BUCKET)

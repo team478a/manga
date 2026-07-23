@@ -78,7 +78,13 @@
       "description": "quota・失敗Job・予算警告・生成停止通知を永続化",
       "forwardSha256": "de3c522bf848ffe0e7dff54b00d08255ae4ffd60b5837a26611604c06d48e710",
       "rollbackSha256": "ca13c9aba028e12fa3d403c56bf1ae85de6e0fe6546c01f50c09d8c47784498d"
+    },
+    {
+      "id": "202607240001_storage_owner_policies",
+      "description": "作品画像と販売ファイルをAuth User所有者単位のStorage pathへ制限",
+      "forwardSha256": "d42a23c1fb972e85e7ef2609a2a8232287e683ddc41ee7d7d84fa2a74ea555c1",
+      "rollbackSha256": "54d69f5cd29cc3e4daa5df54bc207139ed8a122f31a8ffd11f82f0410cbeb236"
     }
   ],
-  "schemaSha256": "8882269a8ad069f47e27cdef1846bee9c8427cd0ca42e62ef9173fa24f7a6a2b"
+  "schemaSha256": "3a9247c3e8092f3865da90afc007db2c616e2f3c2e3a1091ed0c647e2c0bb19a"
 }

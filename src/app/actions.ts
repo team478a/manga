@@ -10,7 +10,7 @@ import { hasSupabaseAdminEnv, hasSupabaseEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { splitTags } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
-import { generalCloudStoragePath } from "@/lib/content-boundary";
+import { ownedMarketplaceStoragePath } from "@/lib/content-boundary";
 
 const WORKS_BUCKET = "works";
 const DIGITAL_PRODUCTS_BUCKET = "digital-products";
@@ -30,9 +30,13 @@ function getText(formData: FormData, key: string) {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function fileName(file: File) {
+function fileName(authUserId: string, resourceId: string, file: File) {
   const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
-  return generalCloudStoragePath(`${crypto.randomUUID()}-${safe}`);
+  return ownedMarketplaceStoragePath(
+    authUserId,
+    resourceId,
+    `${crypto.randomUUID()}-${safe}`,
+  );
 }
 
 function validateWorkImage(file: FormDataEntryValue | null, required: boolean) {
@@ -77,10 +81,12 @@ function validateDigitalProductFile(
 async function uploadIfPresent(
   bucket: string,
   file: FormDataEntryValue | null,
+  authUserId: string,
+  resourceId: string,
 ) {
   if (!(file instanceof File) || file.size === 0) return null;
   const supabase = await createClient();
-  const path = fileName(file);
+  const path = fileName(authUserId, resourceId, file);
   const { error } = await supabase.storage.from(bucket).upload(path, file, {
     contentType: file.type,
     upsert: false,
@@ -174,14 +180,20 @@ export async function updateProfile(formData: FormData) {
 }
 
 export async function createWork(formData: FormData) {
-  const { profile } = await requireProfile();
+  const { user, profile } = await requireProfile();
   const title = getText(formData, "title");
   if (!title) redirect("/dashboard/works/new?error=作品名を入力してください");
+  const workId = crypto.randomUUID();
 
   let imageUrl: string | null = null;
   try {
     const imageFile = validateWorkImage(formData.get("image"), true);
-    imageUrl = await uploadIfPresent(WORKS_BUCKET, imageFile);
+    imageUrl = await uploadIfPresent(
+      WORKS_BUCKET,
+      imageFile,
+      user.id,
+      workId,
+    );
   } catch (error) {
     const message =
       error instanceof Error
@@ -195,6 +207,7 @@ export async function createWork(formData: FormData) {
     getText(formData, "isPublic") === "on";
   const supabase = await createClient();
   const { error } = await supabase.from("works").insert({
+    id: workId,
     creator_id: profile.id,
     title,
     description: getText(formData, "description"),
@@ -213,11 +226,23 @@ export async function createWork(formData: FormData) {
 }
 
 export async function updateWork(formData: FormData) {
-  const { profile } = await requireProfile();
+  const { user, profile } = await requireProfile();
   const id = getText(formData, "id");
   const title = getText(formData, "title");
   if (!id || !title)
     redirect("/dashboard/works?error=作品を保存できませんでした");
+  const supabase = await createClient();
+  const { data: ownedWork } = await supabase
+    .from("works")
+    .select("id")
+    .eq("id", id)
+    .eq("creator_id", profile.id)
+    .eq("content_class", "general")
+    .maybeSingle();
+  if (!ownedWork)
+    redirect(
+      "/dashboard/works?error=作品が見つからないか、編集権限がありません",
+    );
 
   const update: Record<string, unknown> = {
     title,
@@ -235,7 +260,12 @@ export async function updateWork(formData: FormData) {
 
   try {
     const imageFile = validateWorkImage(formData.get("image"), false);
-    const imageUrl = await uploadIfPresent(WORKS_BUCKET, imageFile);
+    const imageUrl = await uploadIfPresent(
+      WORKS_BUCKET,
+      imageFile,
+      user.id,
+      id,
+    );
     if (imageUrl) update.image_url = imageUrl;
   } catch (error) {
     const message =
@@ -247,7 +277,6 @@ export async function updateWork(formData: FormData) {
     );
   }
 
-  const supabase = await createClient();
   const { error } = await supabase
     .from("works")
     .update(update)
@@ -264,11 +293,12 @@ export async function updateWork(formData: FormData) {
 }
 
 export async function createDigitalProduct(formData: FormData) {
-  const { profile } = await requireProfile();
+  const { user, profile } = await requireProfile();
   const title = getText(formData, "title");
   const workId = getText(formData, "workId");
   const price = Number(getText(formData, "price"));
   const status = getText(formData, "status") === "paused" ? "paused" : "active";
+  const productId = crypto.randomUUID();
 
   if (!title || !workId || Number.isNaN(price) || price < 0) {
     redirect(
@@ -293,7 +323,12 @@ export async function createDigitalProduct(formData: FormData) {
   let filePath: string | null = null;
   try {
     const productFile = validateDigitalProductFile(formData.get("file"), true);
-    filePath = await uploadIfPresent(DIGITAL_PRODUCTS_BUCKET, productFile);
+    filePath = await uploadIfPresent(
+      DIGITAL_PRODUCTS_BUCKET,
+      productFile,
+      user.id,
+      productId,
+    );
   } catch (error) {
     const message =
       error instanceof Error
@@ -303,6 +338,7 @@ export async function createDigitalProduct(formData: FormData) {
   }
 
   const { error } = await supabase.from("digital_products").insert({
+    id: productId,
     work_id: workId,
     creator_id: profile.id,
     title,
@@ -321,7 +357,7 @@ export async function createDigitalProduct(formData: FormData) {
 }
 
 export async function updateDigitalProduct(formData: FormData) {
-  const { profile } = await requireProfile();
+  const { user, profile } = await requireProfile();
   const id = getText(formData, "id");
   const title = getText(formData, "title");
   const workId = getText(formData, "workId");
@@ -374,6 +410,8 @@ export async function updateDigitalProduct(formData: FormData) {
     const filePath = await uploadIfPresent(
       DIGITAL_PRODUCTS_BUCKET,
       productFile,
+      user.id,
+      id,
     );
     if (filePath) update.file_url = filePath;
   } catch (error) {

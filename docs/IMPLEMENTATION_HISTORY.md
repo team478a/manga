@@ -1243,3 +1243,13 @@ PostgreSQL 16の使い捨てDBで13 migrationのforward、全rollback、再適�
 生成画面へ画像ごとの端末内手動確認UIを追加しました。画像自体は外部送信せず、未確認、人物有無不明、未成年または年齢曖昧、実在人物またはその可能性がある参照は生成ボタンとMainプロセスの両方でfail closedになります。Mainプロセスはrendererの状態を信用せず、生成直前に全参照素材を再取得・再評価します。現段階の`manual_local`と将来の`local_model`を区別し、外部送信では端末内モデル確認を必須化できる契約を用意しました。
 
 AI core 44/44、Desktop統合90/90、TypeScript、ESLintに成功しました。Phase 5のText-to-Image、Image-to-Image、ControlNet、Inpainting連続受入れも新しい参照画像確認を含めて成功しています。端末内モデルによる人物・年齢・実在性の自動推定は未実装で、成人向けDezgo Provider接続は引き続き無効です。
+
+## 145. 保守性改善PR-01 Marketplace Storage所有者制限
+
+`works`と`digital-products`の新規保存pathを`Auth User ID／resource ID／file name`へ変更し、insert時はpath先頭と`auth.uid()`の一致、update／delete時は`storage.objects.owner_id`と`auth.uid()`の一致を必須にしました。認証済みというだけでは別利用者のobjectを更新できません。
+
+通常の作品・商品登録、更新、販売パッケージ取込、Cloud CreatorからMarketplace下書き同期の全Storage書き込みを新形式へ移行しました。更新ではDB上の作品・商品所有権をアップロード前に確認します。従来の`general/...` objectは新規作成を禁止し、既存所有者本人による更新・削除だけを互換経路として維持します。保存path仕様とrollback手順は[`hub/MARKETPLACE_STORAGE_OWNERSHIP.md`](hub/MARKETPLACE_STORAGE_OWNERSHIP.md)へ記録しました。
+
+新規migration `202607240001_storage_owner_policies`とrollbackを追加し、PostgreSQL 16で所有者操作、別利用者拒否、未認証拒否、旧path互換、14 migrationのforward、全rollback、再適用、canonical schema二重適用に成功しました。
+
+品質ゲートはESLint、TypeScript、Next.js製品build、Hub 34/34、Canvas core 26/26、AI core 44/44、Desktop統合90/90、Desktop製品build、migration manifest検証、RC preflight／acceptanceの実行に成功しました。RC preflightは外部資格情報を設定していないため、Supabase staging、Stripe、端末認証および手動実機項目を`PENDING`として報告します。
