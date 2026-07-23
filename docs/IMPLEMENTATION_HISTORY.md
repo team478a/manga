@@ -1287,3 +1287,11 @@ Desktop Projectバックアップを`yazl`によるファイルストリーム�
 Cloud Exportは全Assetの`Promise.all`一括取得を廃止し、同時3件、最大4件のworkerで20 MiB／Asset、2 GiB／Project、20,000 Assetを検査しながら一時ディスクへ保存します。各AssetはStorage metadataのbyte数とSHA-256を再検証します。Page描画は参照Assetだけを読み込み、画像ZIPと販売パッケージZIPは`yazl`でディスクへstream生成します。Export APIは生成ファイルをHTTP streamで返し、送信完了または切断後に一時領域を削除します。
 
 新規のキャンセル・一時領域cleanup・ZIP bomb試験を含むDesktop統合91/91、Hub 44/44、TypeScript、ESLint、Next.js製品build、Desktop製品buildに成功しました。
+
+## 150. 保守性改善PR-06 Cloud Canvas自動保存の回復性
+
+Cloud Canvas保存へ10秒timeoutと例外処理を追加し、通信切断、timeout、JSON応答破損時に「保存中」のまま停止しないよう修正しました。一時障害は1秒、2秒、4秒と指数的に間隔を延ばし、最大30秒で自動再試行します。ブラウザのonline復帰時は待機中のtimerを解除して保存を再開し、手動の「今すぐ再試行」も追加しました。
+
+保存中に編集が増えた場合は変更versionを比較し、先行保存の完了後に最新Canvasを必ず再送します。409 revision競合は一時障害と分離して自動再送せず、「最新状態を再読込」だけを提示します。dirty、saving、error、conflict状態でブラウザを閉じる場合とEditor内Linkで移動する場合に未保存警告を表示します。
+
+保存retry、retry対象HTTP status、離脱警告状態を純粋なpolicyとして試験し、Hub全体47/47、TypeScript、対象ESLintに成功しました。DB migrationとAPI request形式の変更はありません。詳細は[`hub/CLOUD_CANVAS_AUTOSAVE.md`](hub/CLOUD_CANVAS_AUTOSAVE.md)へ記録しています。

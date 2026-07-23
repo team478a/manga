@@ -37,6 +37,12 @@ import type {
   CloudPage,
   CloudProjectSummary,
 } from "@/lib/cloud-creator-server";
+import {
+  CANVAS_SAVE_TIMEOUT_MS,
+  canvasSaveRetryDelay,
+  hasUnsavedCanvasChanges,
+  shouldRetryCanvasSave,
+} from "@/lib/canvas-autosave-policy";
 
 type Selection = { type: "panel" | "balloon" | "text"; id: string } | null;
 type SaveState = "saved" | "dirty" | "saving" | "conflict" | "error";
@@ -160,9 +166,14 @@ export function CloudCanvasEditor({
   const [preview, setPreview] = useState(false);
   const revision = useRef(page.revision);
   const canvasRef = useRef(canvas);
+  const saveStateRef = useRef<SaveState>("saved");
   const changeVersion = useRef(0);
   const saving = useRef(false);
   const queuedSave = useRef(false);
+  const retryAttempt = useRef(0);
+  const retryTimer = useRef<number | null>(null);
+  const activeSaveController = useRef<AbortController | null>(null);
+  const mounted = useRef(true);
   const undoStack = useRef<PageCanvas[]>([]);
   const redoStack = useRef<PageCanvas[]>([]);
   const canvasElement = useRef<HTMLDivElement>(null);
@@ -174,6 +185,10 @@ export function CloudCanvasEditor({
     objectY: number;
     before: PageCanvas;
   } | null>(null);
+  const updateSaveState = useCallback((state: SaveState) => {
+    saveStateRef.current = state;
+    setSaveState(state);
+  }, []);
 
   const assetMap = useMemo(
     () => new Map(assets.map((asset) => [asset.id, asset])),
@@ -212,6 +227,20 @@ export function CloudCanvasEditor({
   useEffect(() => {
     canvasRef.current = canvas;
   }, [canvas]);
+
+  useEffect(() => {
+    saveStateRef.current = saveState;
+  }, [saveState]);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      activeSaveController.current?.abort();
+      if (retryTimer.current !== null)
+        window.clearTimeout(retryTimer.current);
+    };
+  }, []);
 
   const refreshGenerationJobs = useCallback(async () => {
     const response = await fetch(
@@ -268,56 +297,124 @@ export function CloudCanvasEditor({
       redoStack.current = [];
       return draft;
     });
-    setSaveState("dirty");
-  }, []);
+    updateSaveState("dirty");
+  }, [updateSaveState]);
 
   const save = useCallback(async () => {
     if (saving.current) {
       queuedSave.current = true;
       return;
     }
+    if (saveStateRef.current === "conflict") return;
+    if (retryTimer.current !== null) {
+      window.clearTimeout(retryTimer.current);
+      retryTimer.current = null;
+    }
     saving.current = true;
     queuedSave.current = false;
     const savingVersion = changeVersion.current;
     const savingCanvas = cloneCanvas(canvasRef.current);
-    setSaveState("saving");
+    updateSaveState("saving");
+    const controller = new AbortController();
+    activeSaveController.current = controller;
+    let timedOut = false;
+    const timeout = window.setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, CANVAS_SAVE_TIMEOUT_MS);
+    const scheduleRetry = (reason: string) => {
+      if (!mounted.current) return;
+      retryAttempt.current += 1;
+      const delay = canvasSaveRetryDelay(retryAttempt.current);
+      updateSaveState("error");
+      setMessage(
+        `${reason} ${Math.ceil(delay / 1000)}秒後に自動再試行します。`,
+      );
+      retryTimer.current = window.setTimeout(() => {
+        retryTimer.current = null;
+        if (
+          mounted.current &&
+          saveStateRef.current !== "conflict"
+        ) {
+          updateSaveState("dirty");
+        }
+      }, delay);
+    };
     try {
       const response = await fetch(`/api/creator/pages/${page.id}/snapshot`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           expectedRevision: revision.current,
           canvas: savingCanvas,
         }),
       });
-      const result = (await response.json()) as {
+      const responseText = await response.text();
+      let result: {
         revision?: number;
         error?: string;
       };
+      try {
+        result = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        if (response.status === 409) {
+          retryAttempt.current = 0;
+          updateSaveState("conflict");
+          setMessage(
+            "別の編集と競合しました。最新状態を再読込してください。",
+          );
+        } else if (shouldRetryCanvasSave(response.status)) {
+          scheduleRetry("保存応答を読み取れませんでした。");
+        } else {
+          updateSaveState("error");
+          setMessage("保存応答を読み取れませんでした。");
+        }
+        return;
+      }
       if (response.status === 409) {
-        setSaveState("conflict");
+        retryAttempt.current = 0;
+        updateSaveState("conflict");
         setMessage(
-          result.error ?? "別の編集と競合しました。再読込してください。",
+          result.error ??
+            "別の編集と競合しました。最新状態を再読込してください。",
         );
         return;
       }
       if (!response.ok || typeof result.revision !== "number") {
-        setSaveState("error");
-        setMessage(result.error ?? "保存できませんでした。");
+        const reason = result.error ?? "保存できませんでした。";
+        if (shouldRetryCanvasSave(response.status)) scheduleRetry(reason);
+        else {
+          updateSaveState("error");
+          setMessage(reason);
+        }
         return;
       }
       revision.current = result.revision;
+      retryAttempt.current = 0;
       setMessage("");
       if (changeVersion.current === savingVersion && !queuedSave.current) {
-        setSaveState("saved");
+        updateSaveState("saved");
       } else {
-        setSaveState("saving");
-        window.setTimeout(() => setSaveState("dirty"), 0);
+        updateSaveState("saving");
+        window.setTimeout(() => updateSaveState("dirty"), 0);
       }
+    } catch (error) {
+      if (!mounted.current) return;
+      scheduleRetry(
+        timedOut
+          ? "保存がタイムアウトしました。"
+          : error instanceof Error && error.name !== "AbortError"
+            ? `保存通信に失敗しました: ${error.message}`
+            : "保存通信に失敗しました。",
+      );
     } finally {
+      window.clearTimeout(timeout);
+      if (activeSaveController.current === controller)
+        activeSaveController.current = null;
       saving.current = false;
     }
-  }, [page.id]);
+  }, [page.id, updateSaveState]);
 
   useEffect(() => {
     if (saveState !== "dirty") return;
@@ -325,22 +422,49 @@ export function CloudCanvasEditor({
     return () => window.clearTimeout(timer);
   }, [save, saveState]);
 
+  useEffect(() => {
+    const onOnline = () => {
+      if (
+        hasUnsavedCanvasChanges(saveStateRef.current) &&
+        saveStateRef.current !== "conflict"
+      ) {
+        if (retryTimer.current !== null) {
+          window.clearTimeout(retryTimer.current);
+          retryTimer.current = null;
+        }
+        updateSaveState("dirty");
+      }
+    };
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [updateSaveState]);
+
+  useEffect(() => {
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (!hasUnsavedCanvasChanges(saveStateRef.current)) return;
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, []);
+
   const undo = useCallback(() => {
     const previous = undoStack.current.pop();
     if (!previous) return;
     redoStack.current.push(cloneCanvas(canvas));
     changeVersion.current += 1;
     setCanvas(previous);
-    setSaveState("dirty");
-  }, [canvas]);
+    updateSaveState("dirty");
+  }, [canvas, updateSaveState]);
   const redo = useCallback(() => {
     const next = redoStack.current.pop();
     if (!next) return;
     undoStack.current.push(cloneCanvas(canvas));
     changeVersion.current += 1;
     setCanvas(next);
-    setSaveState("dirty");
-  }, [canvas]);
+    updateSaveState("dirty");
+  }, [canvas, updateSaveState]);
 
   const deleteSelected = useCallback(() => {
     if (!selection) return;
@@ -554,7 +678,7 @@ export function CloudCanvasEditor({
       }
       return draft;
     });
-    setSaveState("dirty");
+    updateSaveState("dirty");
   }
 
   function pointerUp(event: React.PointerEvent<HTMLElement>) {
@@ -856,7 +980,22 @@ export function CloudCanvasEditor({
       : [];
 
   return (
-    <div className="min-h-screen bg-stone-100">
+    <div
+      className="min-h-screen bg-stone-100"
+      onClickCapture={(event) => {
+        const anchor = (event.target as HTMLElement).closest("a[href]");
+        if (
+          !anchor ||
+          !hasUnsavedCanvasChanges(saveStateRef.current) ||
+          window.confirm(
+            "保存されていない変更があります。このページから移動しますか？",
+          )
+        )
+          return;
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+    >
       <header className="sticky top-0 z-30 border-b border-stone-300 bg-white px-4 py-3">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-2">
           <Link className="button-secondary" href={`/creator/${project.id}`}>
@@ -927,7 +1066,11 @@ export function CloudCanvasEditor({
           <button
             className="button"
             onClick={() => void save()}
-            disabled={saveState === "saving" || saveState === "saved"}
+            disabled={
+              saveState === "saving" ||
+              saveState === "saved" ||
+              saveState === "conflict"
+            }
             type="button"
           >
             <Save className="mr-1 h-4 w-4" />
@@ -935,14 +1078,36 @@ export function CloudCanvasEditor({
               ? "保存中"
               : saveState === "saved"
                 ? "保存済み"
+                : saveState === "conflict"
+                  ? "保存競合"
                 : "保存"}
           </button>
         </div>
       </header>
       {saveState === "conflict" || saveState === "error" ? (
-        <p className="mx-auto max-w-[1600px] bg-red-50 p-3 text-red-800">
-          {message}
-        </p>
+        <div
+          className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 bg-red-50 p-3 text-red-800"
+          role="alert"
+        >
+          <span className="min-w-0 flex-1">{message}</span>
+          {saveState === "conflict" ? (
+            <button
+              className="button-secondary"
+              onClick={() => window.location.reload()}
+              type="button"
+            >
+              最新状態を再読込
+            </button>
+          ) : (
+            <button
+              className="button-secondary"
+              onClick={() => void save()}
+              type="button"
+            >
+              今すぐ再試行
+            </button>
+          )}
+        </div>
       ) : message ? (
         <p className="mx-auto max-w-[1600px] bg-blue-50 p-3 text-blue-900">
           {message}
