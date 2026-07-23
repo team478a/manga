@@ -1267,3 +1267,13 @@ Cloud画像生成のStorage保存後にAsset登録とJob・課金確定が分離
 DB確定失敗時はWorkerがStorageを補償削除します。削除失敗はService Role専用cleanup表へ記録し、次回Worker呼出しで古いものから再試行します。応答喪失時はJob状態を再取得し、確定済みAssetを誤削除しません。canceled Jobは専用RPCで拒否されます。新規孤立Asset検出RPCは1回最大100件をsoft deleteし、Storage cleanupへ移します。設計と運用は[`hub/CLOUD_AI_COMPLETION_COMPENSATION.md`](hub/CLOUD_AI_COMPLETION_COMPENSATION.md)へ記録しました。
 
 Worker補償テスト7/7、TypeScript、ESLint、15 migrationのPostgreSQL 16 forward／全rollback／再適用、二重完了・課金一回・canceled拒否・孤立Asset検出、canonical schema二重適用に成功しました。
+
+## 148. 保守性改善PR-04 Cloud Asset upload早期制限
+
+Cloud Asset APIへ21 MiBのmultipart request上限を追加しました。`Content-Length`超過はbody展開前に`413 Payload Too Large`を返します。headerがない場合や過少申告の場合もRequest streamを計測し、上限を超えた時点で読み取りをcancelします。これにより、従来の`request.formData()`が巨大bodyを無制限に展開する経路を除去しました。
+
+画像本体の20 MiB超過を専用errorとして`413`へ統一し、MIME実形式、decode、100,000,000 pixels、寸法、SHA-256のServer再検証を維持しました。既存の原子的rate limitをCloud Asset uploadにも適用し、user 30回／分、IP 60回／分、IP不明10回／分に制限しました。RLS実DB試験へ所有者登録成功と別利用者のprivate Project登録拒否を追加しました。
+
+自己host向けNginx設定と運用条件は[`hub/CLOUD_ASSET_UPLOAD_LIMITS.md`](hub/CLOUD_ASSET_UPLOAD_LIMITS.md)へ記録しました。Vercelなど21 MiB未満のplatform上限を持つ環境では、署名付きStorage直接uploadとfinalize APIへの移行が残ります。
+
+サイズ・stream・pixel境界テスト5/5、Hub全体44/44、TypeScript、ESLint、Next.js製品build、migration manifest検証、PostgreSQL 16での所有者成功・別利用者拒否に成功しました。

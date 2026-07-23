@@ -5,6 +5,15 @@ import {
   listCloudAssets,
   uploadCloudAsset,
 } from "@/lib/cloud-creator-server";
+import {
+  CloudAssetPayloadTooLargeError,
+  cloudAssetUploadErrorStatus,
+  declaredCloudAssetUploadTooLarge,
+  parseCloudAssetUploadForm,
+} from "@/lib/cloud-asset-upload";
+import { CloudAssetBytesTooLargeError } from "@/lib/cloud-creator-contract";
+import { enforceCloudAssetUploadRateLimit } from "@/lib/cloud-ai-rate-limit";
+import { getCurrentProfile } from "@/lib/auth";
 
 const uuidSchema = z.string().uuid();
 const sha256Schema = z.string().regex(/^[0-9a-f]{64}$/);
@@ -32,7 +41,26 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const formData = await request.formData();
+    if (declaredCloudAssetUploadTooLarge(request))
+      throw new CloudAssetPayloadTooLargeError();
+    const { user, profile } = await getCurrentProfile();
+    if (!user)
+      return NextResponse.json({ error: "認証が必要です。" }, { status: 401 });
+    if (!profile)
+      return NextResponse.json(
+        { error: "プロフィールが必要です。" },
+        { status: 403 },
+      );
+    const rateLimit = await enforceCloudAssetUploadRateLimit(request, user.id);
+    if (!rateLimit.allowed)
+      return NextResponse.json(
+        { error: "画像Uploadが集中しています。1分後に再試行してください。" },
+        {
+          status: 429,
+          headers: { "retry-after": String(rateLimit.retryAfterSeconds) },
+        },
+      );
+    const formData = await parseCloudAssetUploadForm(request);
     const projectId = uuidSchema.parse(formData.get("projectId"));
     const rawAssetId = formData.get("assetId");
     const rawExpectedSha256 = formData.get("expectedSha256");
@@ -50,12 +78,18 @@ export async function POST(request: Request) {
     });
     return NextResponse.json(asset, { status: 201 });
   } catch (error) {
+    const normalizedError =
+      error instanceof CloudAssetBytesTooLargeError
+        ? new CloudAssetPayloadTooLargeError()
+        : error;
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Uploadに失敗しました。",
+          normalizedError instanceof Error
+            ? normalizedError.message
+            : "Uploadに失敗しました。",
       },
-      { status: 400 },
+      { status: cloudAssetUploadErrorStatus(normalizedError) },
     );
   }
 }

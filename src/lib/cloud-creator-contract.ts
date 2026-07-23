@@ -12,6 +12,13 @@ export const CLOUD_PROJECT_MAX_BYTES = 2 * 1024 * 1024 * 1024;
 export const CLOUD_IMPORT_MAX_BYTES = 10 * 1024 * 1024;
 export const CLOUD_CANVAS_MAX_BYTES = 2 * 1024 * 1024;
 
+export class CloudAssetBytesTooLargeError extends Error {
+  constructor() {
+    super("画像は20MB以下にしてください。");
+    this.name = "CloudAssetBytesTooLargeError";
+  }
+}
+
 export function parseCloudProjectImport(value: unknown): CloudProjectImport {
   const parsed = cloudProjectImportSchema.safeParse(value);
   if (!parsed.success)
@@ -62,7 +69,9 @@ export async function validateCloudAssetBytes(input: {
   declaredMimeType: unknown;
 }) {
   const mimeType = cloudAssetMimeTypeSchema.parse(input.declaredMimeType);
-  if (!input.bytes.byteLength || input.bytes.byteLength > CLOUD_ASSET_MAX_BYTES)
+  if (input.bytes.byteLength > CLOUD_ASSET_MAX_BYTES)
+    throw new CloudAssetBytesTooLargeError();
+  if (!input.bytes.byteLength)
     throw new Error("画像は1byte以上20MB以下にしてください。");
   const image = sharp(input.bytes, {
     failOn: "error",

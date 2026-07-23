@@ -6,6 +6,9 @@ const WINDOW_SECONDS = 60;
 const GLOBAL_LIMIT = 600;
 const IP_LIMIT = 20;
 const UNKNOWN_IP_LIMIT = 5;
+const ASSET_UPLOAD_USER_LIMIT = 30;
+const ASSET_UPLOAD_IP_LIMIT = 60;
+const ASSET_UPLOAD_UNKNOWN_IP_LIMIT = 10;
 
 function clientAddress(request: Request) {
   const candidates = [
@@ -29,7 +32,11 @@ function subjectKey(value: string) {
   return createHmac("sha256", secret).update(value).digest("hex");
 }
 
-async function consume(scope: "global" | "ip", key: string, limit: number) {
+async function consume(
+  scope: "global" | "ip" | "user",
+  key: string,
+  limit: number,
+) {
   const { data, error } = await createAdminClient().rpc(
     "consume_cloud_ai_rate_limit",
     {
@@ -41,6 +48,27 @@ async function consume(scope: "global" | "ip", key: string, limit: number) {
   );
   if (error) throw new Error("Cloud AI rate limitを確認できませんでした。");
   return data === true;
+}
+
+export async function enforceCloudAssetUploadRateLimit(
+  request: Request,
+  userId: string,
+) {
+  if (
+    !(await consume(
+      "user",
+      `cloud-asset-upload:user:${userId}`,
+      ASSET_UPLOAD_USER_LIMIT,
+    ))
+  )
+    return { allowed: false as const, retryAfterSeconds: WINDOW_SECONDS };
+  const address = clientAddress(request);
+  const allowed = await consume(
+    "ip",
+    `cloud-asset-upload:ip:${address ?? "unknown"}`,
+    address ? ASSET_UPLOAD_IP_LIMIT : ASSET_UPLOAD_UNKNOWN_IP_LIMIT,
+  );
+  return { allowed, retryAfterSeconds: WINDOW_SECONDS };
 }
 
 export async function enforceCloudAiRateLimit(request: Request) {

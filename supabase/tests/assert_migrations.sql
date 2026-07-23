@@ -249,6 +249,16 @@ set local role authenticated;
 insert into storage.objects(id,bucket_id,name,owner_id) values
   ('71000000-0000-4000-8000-000000000003','works','20000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000001/cover.png','20000000-0000-4000-8000-000000000001'),
   ('71000000-0000-4000-8000-000000000004','digital-products','20000000-0000-4000-8000-000000000001/32000000-0000-4000-8000-000000000001/product.pdf','20000000-0000-4000-8000-000000000001');
+insert into public.cloud_assets(
+  id,project_id,owner_profile_id,storage_path,file_name,mime_type,
+  byte_size,width,height,sha256
+) values (
+  '72000000-0000-4000-8000-000000000001',
+  '40000000-0000-4000-8000-000000000001',
+  '30000000-0000-4000-8000-000000000001',
+  '30000000-0000-4000-8000-000000000001/40000000-0000-4000-8000-000000000001/72000000-0000-4000-8000-000000000001.png',
+  'owner.png','image/png',100,10,10,repeat('1',64)
+);
 update storage.objects
 set name='20000000-0000-4000-8000-000000000001/31000000-0000-4000-8000-000000000001/cover-v2.png'
 where id='71000000-0000-4000-8000-000000000003';
@@ -278,6 +288,21 @@ declare
   v_updated integer;
   v_deleted integer;
 begin
+  begin
+    insert into public.cloud_assets(
+      id,project_id,owner_profile_id,storage_path,file_name,mime_type,
+      byte_size,width,height,sha256
+    ) values (
+      '72000000-0000-4000-8000-000000000002',
+      '40000000-0000-4000-8000-000000000001',
+      '30000000-0000-4000-8000-000000000002',
+      '30000000-0000-4000-8000-000000000002/40000000-0000-4000-8000-000000000001/72000000-0000-4000-8000-000000000002.png',
+      'other.png','image/png',100,10,10,repeat('2',64)
+    );
+    raise exception 'another user uploaded to a private Cloud Project';
+  exception when insufficient_privilege then
+    null;
+  end;
   update storage.objects
   set name='20000000-0000-4000-8000-000000000002/31000000-0000-4000-8000-000000000001/stolen.png'
   where id='71000000-0000-4000-8000-000000000003';
