@@ -52,10 +52,7 @@ export async function createCloudProjectAction(formData: FormData) {
   try {
     result = await createCloudProject(parsed.data);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを作成できませんでした。";
+    const message = domainMessage(error, "Projectを作成できませんでした。");
     redirect(`/creator/new?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
@@ -118,10 +115,7 @@ export async function renameCloudProjectAction(
       parsed.data.description,
     );
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを更新できませんでした。";
+    const message = domainMessage(error, "Projectを更新できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -187,10 +181,7 @@ export async function deleteCloudProjectAction(projectId: string) {
   try {
     await setCloudProjectDeleted(projectId, true);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを削除できませんでした。";
+    const message = domainMessage(error, "Projectを削除できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
@@ -202,10 +193,7 @@ export async function restoreCloudProjectAction(projectId: string) {
   try {
     await setCloudProjectDeleted(projectId, false);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを復元できませんでした。";
+    const message = domainMessage(error, "Projectを復元できませんでした。");
     redirect(`/creator/trash?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
@@ -220,8 +208,7 @@ export async function setCloudProjectCoverAction(
   try {
     await setCloudProjectCover(projectId, pageId);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "表紙を設定できませんでした。";
+    const message = domainMessage(error, "表紙を設定できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);

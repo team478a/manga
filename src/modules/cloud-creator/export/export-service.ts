@@ -9,6 +9,11 @@ import {
 import { cloudCreatorContext } from "../auth-context";
 import { normalizeCloudCanvas } from "../canvas/canvas-normalizer";
 import { getCloudProjectWorkspace } from "../projects/project-service";
+import {
+  DomainError,
+  StorageTransactionError,
+  ValidationError,
+} from "../../../lib/domain-errors.ts";
 
 export async function stageCloudProjectExportBundle(
   projectId: string,
@@ -38,7 +43,11 @@ export async function stageCloudProjectExportBundle(
       .is("deleted_at", null),
   ]);
   if (snapshotError || assetError)
-    throw new Error("Exportデータを読み込めませんでした。");
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Exportデータを読み込めませんでした。",
+      { cause: snapshotError ?? assetError },
+    );
 
   const latestSnapshots = new Map<string, unknown>();
   for (const snapshot of snapshots ?? []) {
@@ -47,13 +56,17 @@ export async function stageCloudProjectExportBundle(
   }
   const assetRows = assets ?? [];
   if (assetRows.length > 20_000)
-    throw new Error("Export対象のAsset数が上限を超えています。");
+    throw new ValidationError(
+      "Export対象のAsset数が上限を超えています。",
+    );
   const totalBytes = assetRows.reduce(
     (total, asset) => total + asset.byte_size,
     0,
   );
   if (!Number.isSafeInteger(totalBytes) || totalBytes > CLOUD_PROJECT_MAX_BYTES)
-    throw new Error("Export対象のAsset合計サイズが上限を超えています。");
+    throw new ValidationError(
+      "Export対象のAsset合計サイズが上限を超えています。",
+    );
   if (
     assetRows.some(
       (asset) =>
@@ -62,7 +75,7 @@ export async function stageCloudProjectExportBundle(
         asset.byte_size > CLOUD_ASSET_MAX_BYTES,
     )
   ) {
-    throw new Error("Export対象のAssetサイズが不正です。");
+    throw new ValidationError("Export対象のAssetサイズが不正です。");
   }
 
   fs.mkdirSync(destination, { recursive: true });
@@ -89,7 +102,7 @@ export async function stageCloudProjectExportBundle(
           .from(CLOUD_ASSET_BUCKET)
           .download(asset.storage_path);
         if (error || !data) {
-          throw new Error(
+          throw new StorageTransactionError(
             `Asset「${asset.file_name}」を読み込めませんでした。`,
           );
         }
@@ -99,7 +112,9 @@ export async function stageCloudProjectExportBundle(
           crypto.createHash("sha256").update(bytes).digest("hex") !==
             asset.sha256
         ) {
-          throw new Error(`Asset「${asset.file_name}」が破損しています。`);
+          throw new StorageTransactionError(
+            `Asset「${asset.file_name}」が破損しています。`,
+          );
         }
         const filePath = path.join(destination, asset.id);
         await fs.promises.writeFile(filePath, bytes, {

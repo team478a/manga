@@ -1,10 +1,11 @@
 import { CLOUD_ASSET_MAX_BYTES } from "./cloud-creator-contract.ts";
+import { PayloadTooLargeError, ValidationError } from "./domain-errors.ts";
 
 export const CLOUD_ASSET_UPLOAD_OVERHEAD_BYTES = 1024 * 1024;
 export const CLOUD_ASSET_UPLOAD_MAX_REQUEST_BYTES =
   CLOUD_ASSET_MAX_BYTES + CLOUD_ASSET_UPLOAD_OVERHEAD_BYTES;
 
-export class CloudAssetPayloadTooLargeError extends Error {
+export class CloudAssetPayloadTooLargeError extends PayloadTooLargeError {
   constructor() {
     super("画像は20MB以下にしてください。");
     this.name = "CloudAssetPayloadTooLargeError";
@@ -57,7 +58,7 @@ export async function parseCloudAssetUploadForm(request: Request) {
     throw new CloudAssetPayloadTooLargeError();
   const contentType = request.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().startsWith("multipart/form-data;"))
-    throw new Error("multipart/form-data形式が必要です。");
+    throw new ValidationError("multipart/form-data形式が必要です。");
   const body = await readCloudAssetUploadBody(request);
   return new Response(body, {
     headers: { "content-type": contentType },

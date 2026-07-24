@@ -11,18 +11,33 @@ import {
   findProjectEpisodes,
   findProjectPages,
 } from "./project-repository";
+import { mapCloudProjectError } from "./project-errors";
+import {
+  DomainError,
+  ResourceNotFoundError,
+} from "../../../lib/domain-errors.ts";
 
 export async function listCloudProjects() {
   const { supabase } = await cloudCreatorContext();
   const { data, error } = await findActiveProjects(supabase);
-  if (error) throw new Error("Cloud Project一覧を読み込めませんでした。");
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Cloud Project一覧を読み込めませんでした。",
+      { cause: error },
+    );
   return (data ?? []) as CloudProjectSummary[];
 }
 
 export async function listDeletedCloudProjects() {
   const { supabase } = await cloudCreatorContext();
   const { data, error } = await findDeletedProjects(supabase);
-  if (error) throw new Error("Cloud Projectのゴミ箱を読み込めませんでした。");
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Cloud Projectのゴミ箱を読み込めませんでした。",
+      { cause: error },
+    );
   return (data ?? []) as Array<CloudProjectSummary & { deleted_at: string }>;
 }
 
@@ -35,9 +50,13 @@ export async function getCloudProjectWorkspace(projectId: string) {
       findProjectPages(supabase, projectId),
     ]);
   if (projectError || !project)
-    throw new Error("Cloud Projectが見つかりません。");
+    throw new ResourceNotFoundError("Cloud Projectが見つかりません。");
   if (episodesResult.error || pagesResult.error)
-    throw new Error("Episode／Pageを読み込めませんでした。");
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Episode／Pageを読み込めませんでした。",
+      { cause: episodesResult.error ?? pagesResult.error },
+    );
   return {
     project: project as CloudProjectSummary,
     episodes: (episodesResult.data ?? []) as CloudEpisode[],
@@ -68,7 +87,7 @@ export async function createCloudProject(input: {
     },
   );
   if (error || !data?.[0]?.project_id)
-    throw new Error("Cloud Projectを作成できませんでした。");
+    throw mapCloudProjectError(error, "create");
   return data[0] as {
     project_id: string;
     episode_id: string;
@@ -87,7 +106,7 @@ export async function renameCloudProject(
     p_title: title,
     p_description: description,
   });
-  if (error) throw new Error("Project情報を更新できませんでした。");
+  if (error) throw mapCloudProjectError(error, "rename");
 }
 
 export async function setCloudProjectCover(
@@ -99,7 +118,7 @@ export async function setCloudProjectCover(
     p_project_id: projectId,
     p_page_id: pageId,
   });
-  if (error) throw new Error("表紙Pageを設定できませんでした。");
+  if (error) throw mapCloudProjectError(error, "cover");
 }
 
 export async function setCloudProjectDeleted(
@@ -111,12 +130,7 @@ export async function setCloudProjectDeleted(
     deleted ? "soft_delete_cloud_project" : "restore_cloud_project",
     { p_project_id: projectId },
   );
-  if (error) {
-    throw new Error(
-      deleted
-        ? "Cloud Projectをゴミ箱へ移動できませんでした。"
-        : "Cloud Projectを復元できませんでした。",
-    );
-  }
+  if (error)
+    throw mapCloudProjectError(error, deleted ? "delete" : "restore");
   return data as string;
 }

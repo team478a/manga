@@ -6,6 +6,7 @@ export const domainErrorCodes = [
   "QUOTA_EXCEEDED",
   "RATE_LIMITED",
   "VALIDATION_ERROR",
+  "PAYLOAD_TOO_LARGE",
   "CONTENT_REJECTED",
   "STORAGE_TRANSACTION_ERROR",
   "PROVIDER_UNAVAILABLE",
@@ -57,6 +58,12 @@ export class RevisionConflictError extends DomainError {
 export class ValidationError extends DomainError {
   constructor(message = "入力内容が不正です。") {
     super("VALIDATION_ERROR", message);
+  }
+}
+
+export class PayloadTooLargeError extends DomainError {
+  constructor(message = "送信データが大きすぎます。") {
+    super("PAYLOAD_TOO_LARGE", message);
   }
 }
 
