@@ -46,13 +46,24 @@ test("作品入力はタグを正規化し件数・長さを制限する", () =>
 });
 
 test("作品画像のDB保存失敗時はStorageを補償削除する", async () => {
-  const source = await readFile(
-    new URL("../src/app/actions.ts", import.meta.url),
+  const workActionsSource = await readFile(
+    new URL("../src/app/actions/work-actions.ts", import.meta.url),
     "utf8",
   );
-  assert.match(source, /await removeWorkImage\(uploadedImage\.path\)/);
-  assert.match(source, /const previousPath = ownedWorkImagePath/);
-  assert.match(source, /await removeWorkImage\(previousPath\)/);
-  assert.match(source, /sharp\(await file\.arrayBuffer\(\)\)\.metadata\(\)/);
+  assert.match(workActionsSource, /persistWithStorageRollback/);
+  assert.match(
+    workActionsSource,
+    /const previousPath = ownedStoragePathFromPublicUrl/,
+  );
+  assert.match(workActionsSource, /await removeStorageObject\(/);
+
+  const fileValidationSource = await readFile(
+    new URL("../src/app/actions/shared/file-validation.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    fileValidationSource,
+    /sharp\(await file\.arrayBuffer\(\)\)\.metadata\(\)/,
+  );
 });
 

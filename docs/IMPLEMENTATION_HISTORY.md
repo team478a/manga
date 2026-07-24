@@ -1371,3 +1371,13 @@ Supabase client生成、利用者取得、creator／admin profile確認は`auth-
 既存のRLS、resource ID filter、RPC、Storage補償削除、容量・hash検査、生成moderationとquotaを維持しています。署名URL作成も共通のcreator/admin認証contextを通るよう統一しました。DB migration、API request／response、保存データの変更はありません。構造、手動確認、rollbackは[`hub/CLOUD_CREATOR_MODULES.md`](hub/CLOUD_CREATOR_MODULES.md)へ記録しています。
 
 Hub 56/56、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
+
+## 158. 保守性改善PR-14 Server Action分割・Storage補償
+
+認証、プロフィール、作品、デジタル商品、グッズ申請、注文とStorage helperが混在していた606行の`src/app/actions.ts`を機能別Server Actionへ分割しました。従来pathは既存formとComponentのimportを維持する薄いasync互換entrypointです。FormData文字列取得、画像・販売ファイル検証も共通moduleへ移しました。
+
+作品画像と販売ファイルでは、所有者namespaceへのStorage upload後にDB insert／updateが失敗すると新規オブジェクトが残る経路を修正しました。共通の補償transactionがDB error結果と例外を検出し、upload済みオブジェクトを1回だけ削除します。cleanup自体の失敗は隠さず報告し、暗黙の重複実行を行いません。既存の所有権検査、MIME・サイズ制限、redirect、revalidation、CheckoutのAdmin client境界を維持しています。
+
+補償なしの成功、DB error、DB例外、cleanup失敗、Actionの共通helper利用、互換entrypointの境界を自動試験へ追加しました。DB migration、Storage Policy、Action引数、画面仕様の変更はありません。構造、手動確認、rollback、旧ファイルcleanupの残課題は[`hub/SERVER_ACTION_MODULES.md`](hub/SERVER_ACTION_MODULES.md)へ記録しています。
+
+Hub 62/62、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。

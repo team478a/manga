@@ -4,7 +4,7 @@ import test from "node:test";
 
 test("登録Actionはパスワード確認を要求する", async () => {
   const source = await readFile(
-    new URL("../src/app/actions.ts", import.meta.url),
+    new URL("../src/app/actions/auth-actions.ts", import.meta.url),
     "utf8",
   );
   assert.match(source, /passwordConfirmation/);
@@ -13,7 +13,7 @@ test("登録Actionはパスワード確認を要求する", async () => {
 
 test("パスワード再設定は利用者の存在を応答へ露出しない", async () => {
   const source = await readFile(
-    new URL("../src/app/actions.ts", import.meta.url),
+    new URL("../src/app/actions/auth-actions.ts", import.meta.url),
     "utf8",
   );
   assert.match(source, /resetPasswordForEmail/);
