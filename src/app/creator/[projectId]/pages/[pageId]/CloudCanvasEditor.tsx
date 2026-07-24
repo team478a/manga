@@ -22,8 +22,6 @@ import {
   Unlock,
 } from "lucide-react";
 import {
-  constrainRectToPage,
-  pageCanvasSchema,
   type Balloon,
   type PageCanvas,
   type Panel,
@@ -37,15 +35,25 @@ import type {
   CloudPage,
   CloudProjectSummary,
 } from "@/lib/cloud-creator-server";
+import { useCanvasAutosave } from "./hooks/useCanvasAutosave";
+import { useCanvasHistory } from "./hooks/useCanvasHistory";
 import {
-  CANVAS_SAVE_TIMEOUT_MS,
-  canvasSaveRetryDelay,
-  hasUnsavedCanvasChanges,
-  shouldRetryCanvasSave,
-} from "@/lib/canvas-autosave-policy";
+  useCanvasPointer,
+  type CanvasSelection,
+} from "./hooks/useCanvasPointer";
+import { downloadCanvasPng } from "./services/canvas-download";
+import { createCanvasSvg } from "./services/canvas-svg";
+import {
+  cancelGeneration,
+  createGenerationJob,
+  creatorProjectExportUrl,
+  getAiQuota,
+  getAssetUrl,
+  listGenerationJobs,
+  listProjectAssets,
+  uploadProjectAsset,
+} from "./services/creator-api";
 
-type Selection = { type: "panel" | "balloon" | "text"; id: string } | null;
-type SaveState = "saved" | "dirty" | "saving" | "conflict" | "error";
 type CanvasItem = Panel | Balloon | TextObject;
 
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
@@ -54,81 +62,6 @@ function cloneCanvas(canvas: PageCanvas): PageCanvas {
 
 function now() {
   return new Date().toISOString();
-}
-
-function escapeXml(value: string) {
-  return value.replace(/[<>&"']/g, (character) => {
-    const entities: Record<string, string> = {
-      "<": "&lt;",
-      ">": "&gt;",
-      "&": "&amp;",
-      '"': "&quot;",
-      "'": "&apos;",
-    };
-    return entities[character];
-  });
-}
-
-async function asDataUrl(url: string) {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("Assetを読み込めませんでした。");
-  const blob = await response.blob();
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Assetを変換できませんでした。"));
-    reader.readAsDataURL(blob);
-  });
-}
-
-function svgMarkup(canvas: PageCanvas, assets: Map<string, string>) {
-  const layersByPanel = new Map<string, PanelLayer[]>();
-  for (const layer of canvas.panelLayers) {
-    const list = layersByPanel.get(layer.panelId) ?? [];
-    list.push(layer);
-    layersByPanel.set(layer.panelId, list);
-  }
-  const elements: string[] = [];
-  for (const panel of canvas.panels.filter((item) => item.visible)) {
-    const layers = (layersByPanel.get(panel.id) ?? [])
-      .filter((layer) => layer.visible && layer.assetId)
-      .sort((a, b) => a.orderIndex - b.orderIndex);
-    const assetId = layers.at(-1)?.assetId ?? panel.imageAssetId;
-    const href = assetId ? assets.get(assetId) : null;
-    elements.push(
-      `<g transform="translate(${panel.x} ${panel.y}) rotate(${panel.rotation} ${panel.width / 2} ${panel.height / 2})">` +
-        `<rect width="${panel.width}" height="${panel.height}" fill="${escapeXml(panel.fillColor)}" stroke="${escapeXml(panel.borderColor)}" stroke-width="${panel.borderWidth}"/>` +
-        (href
-          ? `<image href="${href}" width="${panel.width}" height="${panel.height}" preserveAspectRatio="xMidYMid slice" opacity="${layers.at(-1)?.opacity ?? panel.imageOpacity}"/>`
-          : "") +
-        `</g>`,
-    );
-  }
-  for (const balloon of canvas.balloons.filter((item) => item.visible)) {
-    const transform = `translate(${balloon.x} ${balloon.y}) rotate(${balloon.rotation} ${balloon.width / 2} ${balloon.height / 2})`;
-    elements.push(
-      balloon.type === "speech_ellipse"
-        ? `<ellipse transform="${transform}" cx="${balloon.width / 2}" cy="${balloon.height / 2}" rx="${balloon.width / 2}" ry="${balloon.height / 2}" fill="${balloon.fillColor}" stroke="${balloon.strokeColor}" stroke-width="${balloon.strokeWidth}" opacity="${balloon.opacity}"/>`
-        : `<rect transform="${transform}" width="${balloon.width}" height="${balloon.height}" rx="${balloon.type === "speech_rounded" ? 32 : 0}" fill="${balloon.fillColor}" stroke="${balloon.strokeColor}" stroke-width="${balloon.strokeWidth}" opacity="${balloon.opacity}"/>`,
-    );
-  }
-  for (const text of canvas.textObjects.filter((item) => item.visible)) {
-    const writingMode =
-      text.writingMode === "vertical" ? "vertical-rl" : "horizontal-tb";
-    elements.push(
-      `<foreignObject x="${text.x}" y="${text.y}" width="${text.width}" height="${text.height}" transform="rotate(${text.rotation} ${text.x + text.width / 2} ${text.y + text.height / 2})" opacity="${text.opacity}"><div xmlns="http://www.w3.org/1999/xhtml" style="box-sizing:border-box;width:100%;height:100%;padding:${text.padding}px;color:${text.color};font-family:${escapeXml(text.fontFamily)};font-size:${text.fontSize}px;font-weight:${text.fontWeight};line-height:${text.lineHeight};letter-spacing:${text.letterSpacing}px;writing-mode:${writingMode};white-space:pre-wrap;overflow:hidden">${escapeXml(text.text)}</div></foreignObject>`,
-    );
-  }
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}" viewBox="0 0 ${canvas.width} ${canvas.height}"><rect width="100%" height="100%" fill="${canvas.backgroundColor}"/>${elements.join("")}</svg>`;
-}
-
-function downloadBlob(blob: Blob, fileName: string) {
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = fileName;
-  anchor.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export function CloudCanvasEditor({
@@ -160,35 +93,30 @@ export function CloudCanvasEditor({
   const [textGenerationType, setTextGenerationType] = useState<
     "story" | "storyboard" | "speech_bubble"
   >("speech_bubble");
-  const [selection, setSelection] = useState<Selection>(null);
-  const [saveState, setSaveState] = useState<SaveState>("saved");
+  const [selection, setSelection] = useState<CanvasSelection>(null);
   const [message, setMessage] = useState("");
   const [preview, setPreview] = useState(false);
-  const revision = useRef(page.revision);
-  const canvasRef = useRef(canvas);
-  const saveStateRef = useRef<SaveState>("saved");
-  const changeVersion = useRef(0);
-  const saving = useRef(false);
-  const queuedSave = useRef(false);
-  const retryAttempt = useRef(0);
-  const retryTimer = useRef<number | null>(null);
-  const activeSaveController = useRef<AbortController | null>(null);
-  const mounted = useRef(true);
-  const undoStack = useRef<PageCanvas[]>([]);
-  const redoStack = useRef<PageCanvas[]>([]);
   const canvasElement = useRef<HTMLDivElement>(null);
-  const drag = useRef<{
-    selection: Exclude<Selection, null>;
-    startX: number;
-    startY: number;
-    objectX: number;
-    objectY: number;
-    before: PageCanvas;
-  } | null>(null);
-  const updateSaveState = useCallback((state: SaveState) => {
-    saveStateRef.current = state;
-    setSaveState(state);
-  }, []);
+  const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
+      pageId: page.id,
+      initialRevision: page.revision,
+      canvas,
+      setMessage,
+    });
+  const { commit, recordSnapshot, undo, redo, canUndo, canRedo } =
+    useCanvasHistory({
+      canvas,
+      setCanvas,
+      onChange: markDirty,
+    });
+  const { pointerDown, pointerMove, pointerUp } = useCanvasPointer({
+    canvas,
+    setCanvas,
+    canvasElement,
+    setSelection,
+    markDirty,
+    recordSnapshot,
+  });
 
   const assetMap = useMemo(
     () => new Map(assets.map((asset) => [asset.id, asset])),
@@ -197,7 +125,7 @@ export function CloudCanvasEditor({
   const previewUrl = useMemo(
     () =>
       `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-        svgMarkup(
+        createCanvasSvg(
           canvas,
           new Map(assets.map((asset) => [asset.id, asset.url])),
         ),
@@ -224,43 +152,12 @@ export function CloudCanvasEditor({
     [items],
   );
 
-  useEffect(() => {
-    canvasRef.current = canvas;
-  }, [canvas]);
-
-  useEffect(() => {
-    saveStateRef.current = saveState;
-  }, [saveState]);
-
-  useEffect(() => {
-    mounted.current = true;
-    return () => {
-      mounted.current = false;
-      activeSaveController.current?.abort();
-      if (retryTimer.current !== null)
-        window.clearTimeout(retryTimer.current);
-    };
-  }, []);
-
   const refreshGenerationJobs = useCallback(async () => {
-    const response = await fetch(
-      `/api/creator/generation-jobs?projectId=${project.id}`,
-      { cache: "no-store" },
-    );
-    const result = (await response.json()) as CloudGenerationJob[] & {
-      error?: string;
-    };
-    if (!response.ok)
-      throw new Error(result.error ?? "生成履歴を取得できませんでした。");
-    setGenerationJobs(result);
+    setGenerationJobs(await listGenerationJobs(project.id));
   }, [project.id]);
 
   const refreshQuota = useCallback(async () => {
-    const response = await fetch("/api/creator/ai-quota", {
-      cache: "no-store",
-    });
-    if (!response.ok) return;
-    setQuota((await response.json()) as CloudAiQuota | null);
+    setQuota(await getAiQuota());
   }, []);
 
   useEffect(() => {
@@ -283,188 +180,6 @@ export function CloudCanvasEditor({
         quota.credits_limit - quota.credits_used - quota.credits_reserved,
       )
     : 0;
-
-  const commit = useCallback((update: (draft: PageCanvas) => void) => {
-    changeVersion.current += 1;
-    setCanvas((current) => {
-      const draft = cloneCanvas(current);
-      update(draft);
-      if (!pageCanvasSchema.safeParse(draft).success) return current;
-      undoStack.current = [
-        ...undoStack.current.slice(-99),
-        cloneCanvas(current),
-      ];
-      redoStack.current = [];
-      return draft;
-    });
-    updateSaveState("dirty");
-  }, [updateSaveState]);
-
-  const save = useCallback(async () => {
-    if (saving.current) {
-      queuedSave.current = true;
-      return;
-    }
-    if (saveStateRef.current === "conflict") return;
-    if (retryTimer.current !== null) {
-      window.clearTimeout(retryTimer.current);
-      retryTimer.current = null;
-    }
-    saving.current = true;
-    queuedSave.current = false;
-    const savingVersion = changeVersion.current;
-    const savingCanvas = cloneCanvas(canvasRef.current);
-    updateSaveState("saving");
-    const controller = new AbortController();
-    activeSaveController.current = controller;
-    let timedOut = false;
-    const timeout = window.setTimeout(() => {
-      timedOut = true;
-      controller.abort();
-    }, CANVAS_SAVE_TIMEOUT_MS);
-    const scheduleRetry = (reason: string) => {
-      if (!mounted.current) return;
-      retryAttempt.current += 1;
-      const delay = canvasSaveRetryDelay(retryAttempt.current);
-      updateSaveState("error");
-      setMessage(
-        `${reason} ${Math.ceil(delay / 1000)}秒後に自動再試行します。`,
-      );
-      retryTimer.current = window.setTimeout(() => {
-        retryTimer.current = null;
-        if (
-          mounted.current &&
-          saveStateRef.current !== "conflict"
-        ) {
-          updateSaveState("dirty");
-        }
-      }, delay);
-    };
-    try {
-      const response = await fetch(`/api/creator/pages/${page.id}/snapshot`, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          expectedRevision: revision.current,
-          canvas: savingCanvas,
-        }),
-      });
-      const responseText = await response.text();
-      let result: {
-        revision?: number;
-        error?: string;
-      };
-      try {
-        result = responseText ? JSON.parse(responseText) : {};
-      } catch {
-        if (response.status === 409) {
-          retryAttempt.current = 0;
-          updateSaveState("conflict");
-          setMessage(
-            "別の編集と競合しました。最新状態を再読込してください。",
-          );
-        } else if (shouldRetryCanvasSave(response.status)) {
-          scheduleRetry("保存応答を読み取れませんでした。");
-        } else {
-          updateSaveState("error");
-          setMessage("保存応答を読み取れませんでした。");
-        }
-        return;
-      }
-      if (response.status === 409) {
-        retryAttempt.current = 0;
-        updateSaveState("conflict");
-        setMessage(
-          result.error ??
-            "別の編集と競合しました。最新状態を再読込してください。",
-        );
-        return;
-      }
-      if (!response.ok || typeof result.revision !== "number") {
-        const reason = result.error ?? "保存できませんでした。";
-        if (shouldRetryCanvasSave(response.status)) scheduleRetry(reason);
-        else {
-          updateSaveState("error");
-          setMessage(reason);
-        }
-        return;
-      }
-      revision.current = result.revision;
-      retryAttempt.current = 0;
-      setMessage("");
-      if (changeVersion.current === savingVersion && !queuedSave.current) {
-        updateSaveState("saved");
-      } else {
-        updateSaveState("saving");
-        window.setTimeout(() => updateSaveState("dirty"), 0);
-      }
-    } catch (error) {
-      if (!mounted.current) return;
-      scheduleRetry(
-        timedOut
-          ? "保存がタイムアウトしました。"
-          : error instanceof Error && error.name !== "AbortError"
-            ? `保存通信に失敗しました: ${error.message}`
-            : "保存通信に失敗しました。",
-      );
-    } finally {
-      window.clearTimeout(timeout);
-      if (activeSaveController.current === controller)
-        activeSaveController.current = null;
-      saving.current = false;
-    }
-  }, [page.id, updateSaveState]);
-
-  useEffect(() => {
-    if (saveState !== "dirty") return;
-    const timer = window.setTimeout(() => void save(), 1200);
-    return () => window.clearTimeout(timer);
-  }, [save, saveState]);
-
-  useEffect(() => {
-    const onOnline = () => {
-      if (
-        hasUnsavedCanvasChanges(saveStateRef.current) &&
-        saveStateRef.current !== "conflict"
-      ) {
-        if (retryTimer.current !== null) {
-          window.clearTimeout(retryTimer.current);
-          retryTimer.current = null;
-        }
-        updateSaveState("dirty");
-      }
-    };
-    window.addEventListener("online", onOnline);
-    return () => window.removeEventListener("online", onOnline);
-  }, [updateSaveState]);
-
-  useEffect(() => {
-    const onBeforeUnload = (event: BeforeUnloadEvent) => {
-      if (!hasUnsavedCanvasChanges(saveStateRef.current)) return;
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, []);
-
-  const undo = useCallback(() => {
-    const previous = undoStack.current.pop();
-    if (!previous) return;
-    redoStack.current.push(cloneCanvas(canvas));
-    changeVersion.current += 1;
-    setCanvas(previous);
-    updateSaveState("dirty");
-  }, [canvas, updateSaveState]);
-  const redo = useCallback(() => {
-    const next = redoStack.current.pop();
-    if (!next) return;
-    undoStack.current.push(cloneCanvas(canvas));
-    changeVersion.current += 1;
-    setCanvas(next);
-    updateSaveState("dirty");
-  }, [canvas, updateSaveState]);
 
   const deleteSelected = useCallback(() => {
     if (!selection) return;
@@ -631,92 +346,24 @@ export function CloudCanvasEditor({
     });
   }
 
-  function pointerDown(
-    event: React.PointerEvent<HTMLElement>,
-    nextSelection: Exclude<Selection, null>,
-    item: CanvasItem,
-  ) {
-    event.stopPropagation();
-    setSelection(nextSelection);
-    if (item.locked) return;
-    event.currentTarget.setPointerCapture(event.pointerId);
-    drag.current = {
-      selection: nextSelection,
-      startX: event.clientX,
-      startY: event.clientY,
-      objectX: item.x,
-      objectY: item.y,
-      before: cloneCanvas(canvas),
-    };
-  }
-
-  function pointerMove(event: React.PointerEvent<HTMLElement>) {
-    if (!drag.current || !canvasElement.current) return;
-    const scale = canvasElement.current.clientWidth / canvas.width;
-    const x =
-      drag.current.objectX + (event.clientX - drag.current.startX) / scale;
-    const y =
-      drag.current.objectY + (event.clientY - drag.current.startY) / scale;
-    const active = drag.current.selection;
-    changeVersion.current += 1;
-    setCanvas((current) => {
-      const draft = cloneCanvas(current);
-      const collection =
-        active.type === "panel"
-          ? draft.panels
-          : active.type === "balloon"
-            ? draft.balloons
-            : draft.textObjects;
-      const item = collection.find((candidate) => candidate.id === active.id);
-      if (item) {
-        const constrained = constrainRectToPage(
-          { x, y, width: item.width, height: item.height },
-          { width: canvas.width, height: canvas.height },
-        );
-        item.x = constrained.x;
-        item.y = constrained.y;
-      }
-      return draft;
-    });
-    updateSaveState("dirty");
-  }
-
-  function pointerUp(event: React.PointerEvent<HTMLElement>) {
-    if (!drag.current) return;
-    event.currentTarget.releasePointerCapture(event.pointerId);
-    undoStack.current = [...undoStack.current.slice(-99), drag.current.before];
-    redoStack.current = [];
-    drag.current = null;
-  }
-
   async function uploadAsset(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
     setMessage("Assetをアップロードしています…");
-    const formData = new FormData();
-    formData.set("projectId", project.id);
-    formData.set("file", file);
-    const response = await fetch("/api/creator/assets", {
-      method: "POST",
-      body: formData,
-    });
-    const result = (await response.json()) as CloudAsset & { error?: string };
-    if (!response.ok) {
-      setMessage(result.error ?? "Assetを追加できませんでした。");
-      return;
+    try {
+      const result = await uploadProjectAsset(project.id, file);
+      const signedResult = await getAssetUrl(result.id);
+      setAssets((current) => [
+        { ...result, url: signedResult.url },
+        ...current,
+      ]);
+      setMessage("Assetを追加しました。");
+      event.target.value = "";
+    } catch (error) {
+      setMessage(
+        error instanceof Error ? error.message : "Assetを追加できませんでした。",
+      );
     }
-    const signed = await fetch(`/api/creator/assets?id=${result.id}`);
-    const signedResult = (await signed.json()) as {
-      url?: string;
-      error?: string;
-    };
-    if (!signed.ok || !signedResult.url) {
-      setMessage(signedResult.error ?? "Assetを表示できませんでした。");
-      return;
-    }
-    setAssets((current) => [{ ...result, url: signedResult.url! }, ...current]);
-    setMessage("Assetを追加しました。");
-    event.target.value = "";
   }
 
   function applyAsset(
@@ -760,10 +407,8 @@ export function CloudCanvasEditor({
   async function requestCloudGeneration() {
     if (!generationPrompt.trim()) return;
     setMessage("Cloud AI Jobを登録しています…");
-    const response = await fetch("/api/creator/generation-jobs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await createGenerationJob({
         projectId: project.id,
         pageId: page.id,
         idempotencyKey: crypto.randomUUID(),
@@ -775,25 +420,24 @@ export function CloudCanvasEditor({
           width: Math.min(2048, page.width),
           height: Math.min(2048, page.height),
         },
-      }),
-    });
-    const result = (await response.json()) as { id?: string; error?: string };
-    if (!response.ok) {
-      setMessage(result.error ?? "Cloud AI Jobを登録できませんでした。");
-      return;
+      });
+      setGenerationPrompt("");
+      setMessage("Cloud AI Jobを登録しました。");
+      await Promise.all([refreshGenerationJobs(), refreshQuota()]);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Cloud AI Jobを登録できませんでした。",
+      );
     }
-    setGenerationPrompt("");
-    setMessage("Cloud AI Jobを登録しました。");
-    await Promise.all([refreshGenerationJobs(), refreshQuota()]);
   }
 
   async function requestCloudTextGeneration() {
     if (!textGenerationPrompt.trim()) return;
     setMessage("Cloud AI文章Jobを登録しています…");
-    const response = await fetch("/api/creator/generation-jobs", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
+    try {
+      await createGenerationJob({
         projectId: project.id,
         pageId: page.id,
         idempotencyKey: crypto.randomUUID(),
@@ -803,16 +447,17 @@ export function CloudCanvasEditor({
           prompt: textGenerationPrompt,
           negativePrompt: "",
         },
-      }),
-    });
-    const result = (await response.json()) as { id?: string; error?: string };
-    if (!response.ok) {
-      setMessage(result.error ?? "Cloud AI文章Jobを登録できませんでした。");
-      return;
+      });
+      setTextGenerationPrompt("");
+      setMessage("Cloud AI文章Jobを登録しました。");
+      await Promise.all([refreshGenerationJobs(), refreshQuota()]);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Cloud AI文章Jobを登録できませんでした。",
+      );
     }
-    setTextGenerationPrompt("");
-    setMessage("Cloud AI文章Jobを登録しました。");
-    await Promise.all([refreshGenerationJobs(), refreshQuota()]);
   }
 
   function addGeneratedText(job: CloudGenerationJob) {
@@ -855,31 +500,30 @@ export function CloudCanvasEditor({
   }
 
   async function cancelGenerationJob(jobId: string) {
-    const response = await fetch(`/api/creator/generation-jobs/${jobId}`, {
-      method: "DELETE",
-    });
-    if (!response.ok) {
-      const result = (await response.json()) as { error?: string };
-      setMessage(result.error ?? "Jobをキャンセルできませんでした。");
-      return;
+    try {
+      await cancelGeneration(jobId);
+      setMessage("Cloud AI Jobをキャンセルしました。");
+      await Promise.all([refreshGenerationJobs(), refreshQuota()]);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Jobをキャンセルできませんでした。",
+      );
     }
-    setMessage("Cloud AI Jobをキャンセルしました。");
-    await Promise.all([refreshGenerationJobs(), refreshQuota()]);
   }
 
   async function placeGeneratedAsset(job: CloudGenerationJob) {
     if (!job.output_asset_id || selection?.type !== "panel") return;
-    const response = await fetch(
-      `/api/creator/assets?projectId=${project.id}`,
-      {
-        cache: "no-store",
-      },
-    );
-    const nextAssets = (await response.json()) as CloudAsset[] & {
-      error?: string;
-    };
-    if (!response.ok) {
-      setMessage(nextAssets.error ?? "生成Assetを取得できませんでした。");
+    let nextAssets: CloudAsset[];
+    try {
+      nextAssets = await listProjectAssets(project.id);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "生成Assetを取得できませんでした。",
+      );
       return;
     }
     setAssets(nextAssets);
@@ -934,36 +578,11 @@ export function CloudCanvasEditor({
   async function exportPng() {
     setMessage("PNGを書き出しています…");
     try {
-      const dataUrls = new Map<string, string>();
-      await Promise.all(
-        assets.map(async (asset) =>
-          dataUrls.set(asset.id, await asDataUrl(asset.url)),
-        ),
-      );
-      const svg = svgMarkup(canvas, dataUrls);
-      const image = new Image();
-      const svgUrl = URL.createObjectURL(
-        new Blob([svg], { type: "image/svg+xml" }),
-      );
-      await new Promise<void>((resolve, reject) => {
-        image.onload = () => resolve();
-        image.onerror = () =>
-          reject(new Error("Previewを描画できませんでした。"));
-        image.src = svgUrl;
+      await downloadCanvasPng({
+        canvas,
+        assets,
+        fileName: `${project.title}-${String(page.page_number).padStart(3, "0")}.png`,
       });
-      const output = document.createElement("canvas");
-      output.width = canvas.width;
-      output.height = canvas.height;
-      output.getContext("2d")?.drawImage(image, 0, 0);
-      URL.revokeObjectURL(svgUrl);
-      const blob = await new Promise<Blob | null>((resolve) =>
-        output.toBlob(resolve, "image/png"),
-      );
-      if (!blob) throw new Error("PNGを作成できませんでした。");
-      downloadBlob(
-        blob,
-        `${project.title}-${String(page.page_number).padStart(3, "0")}.png`,
-      );
       setMessage("PNGを書き出しました。");
     } catch (error) {
       setMessage(
@@ -986,7 +605,7 @@ export function CloudCanvasEditor({
         const anchor = (event.target as HTMLElement).closest("a[href]");
         if (
           !anchor ||
-          !hasUnsavedCanvasChanges(saveStateRef.current) ||
+          !hasUnsavedChanges() ||
           window.confirm(
             "保存されていない変更があります。このページから移動しますか？",
           )
@@ -1007,7 +626,7 @@ export function CloudCanvasEditor({
           <button
             className="button-secondary"
             onClick={undo}
-            disabled={!undoStack.current.length}
+            disabled={!canUndo}
             type="button"
           >
             <Undo2 className="mr-1 h-4 w-4" />
@@ -1016,7 +635,7 @@ export function CloudCanvasEditor({
           <button
             className="button-secondary"
             onClick={redo}
-            disabled={!redoStack.current.length}
+            disabled={!canRedo}
             type="button"
           >
             <Redo2 className="mr-1 h-4 w-4" />
@@ -1045,19 +664,19 @@ export function CloudCanvasEditor({
             <div className="absolute right-0 z-40 mt-2 grid w-60 gap-2 rounded-lg border border-stone-200 bg-white p-3 shadow-xl">
               <a
                 className="button-secondary"
-                href={`/api/creator/projects/${project.id}/export?format=pdf`}
+            href={creatorProjectExportUrl(project.id, "pdf")}
               >
                 本編PDF
               </a>
               <a
                 className="button-secondary"
-                href={`/api/creator/projects/${project.id}/export?format=images`}
+            href={creatorProjectExportUrl(project.id, "images")}
               >
                 連番画像ZIP
               </a>
               <a
                 className="button-secondary"
-                href={`/api/creator/projects/${project.id}/export?format=package`}
+            href={creatorProjectExportUrl(project.id, "package")}
               >
                 販売パッケージ
               </a>
