@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { createStripeCheckoutSession } from "@/lib/checkout";
 import { normalizeBuyerEmail } from "@/lib/checkout-policy";
 import { hasSupabaseAdminEnv } from "@/lib/env";
@@ -87,10 +88,10 @@ export async function createPendingOrder(formData: FormData) {
     });
     checkoutUrl = session.url ?? "";
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Stripe Checkoutへの遷移に失敗しました。";
+    const message = safeDomainErrorMessage(
+      error,
+      "Stripe Checkoutへの遷移に失敗しました。",
+    );
     redirect(
       `/checkout/${productId}?error=${encodeURIComponent(message)}&orderId=${order.id}`,
     );

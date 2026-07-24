@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { validateDigitalProductFile } from "./shared/file-validation";
@@ -67,15 +68,15 @@ export async function createDigitalProduct(formData: FormData) {
         }),
     });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "販売ファイルのアップロードに失敗しました";
+    const message = safeDomainErrorMessage(
+      error,
+      "販売ファイルのアップロードに失敗しました",
+    );
     redirect(`/dashboard/products/new?error=${encodeURIComponent(message)}`);
   }
   if (result.error) {
     redirect(
-      `/dashboard/products/new?error=${encodeURIComponent(result.error.message)}`,
+      `/dashboard/products/new?error=${encodeURIComponent("販売商品を登録できませんでした")}`,
     );
   }
   revalidatePath("/dashboard/products");
@@ -153,17 +154,17 @@ export async function updateDigitalProduct(formData: FormData) {
           .eq("creator_id", profile.id),
     });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "販売ファイルのアップロードに失敗しました";
+    const message = safeDomainErrorMessage(
+      error,
+      "販売ファイルのアップロードに失敗しました",
+    );
     redirect(
       `/dashboard/products/${id}/edit?error=${encodeURIComponent(message)}`,
     );
   }
   if (result.error) {
     redirect(
-      `/dashboard/products/${id}/edit?error=${encodeURIComponent(result.error.message)}`,
+      `/dashboard/products/${id}/edit?error=${encodeURIComponent("販売商品を更新できませんでした")}`,
     );
   }
   revalidatePath("/dashboard/products");

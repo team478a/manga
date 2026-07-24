@@ -8,12 +8,19 @@ import {
   type SalesPackageFileRole,
   type SalesPackageManifest,
 } from "@mangai/export-core";
+import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
   assertGeneralSalesPackage,
   ownedMarketplaceStoragePath,
 } from "@/lib/content-boundary";
+import {
+  DomainError,
+  PayloadTooLargeError,
+  StorageTransactionError,
+  ValidationError,
+} from "@/lib/domain-errors";
 
 const WORKS_BUCKET = "works";
 const PRODUCTS_BUCKET = "digital-products";
@@ -41,7 +48,7 @@ function declaredFile(
 ) {
   const matches = manifest.files.filter((entry) => entry.role === role);
   if (matches.length !== 1)
-    throw new Error(`${role}は販売パッケージに1件必要です。`);
+    throw new ValidationError(`${role}は販売パッケージに1件必要です。`);
   return matches[0];
 }
 
@@ -50,11 +57,15 @@ async function verifyFile(
   declared: SalesPackageManifest["files"][number],
 ) {
   if (upload.size !== declared.byteSize)
-    throw new Error(`${declared.path}のサイズがmanifestと一致しません。`);
+    throw new ValidationError(
+      `${declared.path}のサイズがmanifestと一致しません。`,
+    );
   const bytes = Buffer.from(await upload.arrayBuffer());
   const digest = createHash("sha256").update(bytes).digest("hex");
   if (digest !== declared.sha256)
-    throw new Error(`${declared.path}のSHA-256がmanifestと一致しません。`);
+    throw new ValidationError(
+      `${declared.path}のSHA-256がmanifestと一致しません。`,
+    );
   return bytes;
 }
 
@@ -109,53 +120,62 @@ export async function importSalesPackageDraft(
       );
       assertGeneralSalesPackage(manifest);
     } catch {
-      throw new Error("販売パッケージのmanifestを再検証できませんでした。");
+      throw new ValidationError(
+        "販売パッケージのmanifestを再検証できませんでした。",
+      );
     }
     const productUpload = file(formData, "product");
-    if (!productUpload) throw new Error("商品ファイルがありません。");
+    if (!productUpload)
+      throw new ValidationError("商品ファイルがありません。");
     const productDeclared = declaredFile(manifest, input.productRole);
     if (productDeclared.byteSize > MAX_PRODUCT_BYTES)
-      throw new Error("商品ファイルは50MB以内にしてください。");
+      throw new PayloadTooLargeError(
+        "商品ファイルは50MB以内にしてください。",
+      );
     if (
       input.productRole === "product_pdf" &&
       productDeclared.mimeType !== "application/pdf"
     )
-      throw new Error("商品PDFのMIME typeが不正です。");
+      throw new ValidationError("商品PDFのMIME typeが不正です。");
     if (
       input.productRole === "page_images_zip" &&
       productDeclared.mimeType !== "application/zip"
     )
-      throw new Error("連番画像ZIPのMIME typeが不正です。");
+      throw new ValidationError("連番画像ZIPのMIME typeが不正です。");
     const productBytes = await verifyFile(productUpload, productDeclared);
     if (
       input.productRole === "product_pdf" &&
       productBytes.subarray(0, 4).toString("ascii") !== "%PDF"
     )
-      throw new Error("商品PDFの内容を確認できません。");
+      throw new ValidationError("商品PDFの内容を確認できません。");
     if (
       input.productRole === "page_images_zip" &&
       !productBytes.subarray(0, 2).equals(Buffer.from("PK"))
     )
-      throw new Error("連番画像ZIPの内容を確認できません。");
+      throw new ValidationError("連番画像ZIPの内容を確認できません。");
 
     const coverDeclared = manifest.files.filter(
       (entry) => entry.role === "cover",
     );
     if (coverDeclared.length > 1)
-      throw new Error("表紙ファイルが複数あります。");
+      throw new ValidationError("表紙ファイルが複数あります。");
     const coverUpload = file(formData, "cover");
     if (Boolean(coverUpload) !== Boolean(coverDeclared[0]))
-      throw new Error("表紙ファイルがmanifestと一致しません。");
+      throw new ValidationError(
+        "表紙ファイルがmanifestと一致しません。",
+      );
     const sampleDeclared = manifest.files.filter(
       (entry) => entry.role === "sample",
     );
     if (sampleDeclared.length > 3)
-      throw new Error("サンプル画像は3枚までです。");
+      throw new ValidationError("サンプル画像は3枚までです。");
     const sampleUploads = [0, 1, 2]
       .map((index) => file(formData, `sample${index}`))
       .filter((value): value is File => Boolean(value));
     if (sampleUploads.length !== sampleDeclared.length)
-      throw new Error("サンプル画像がmanifestと一致しません。");
+      throw new ValidationError(
+        "サンプル画像がmanifestと一致しません。",
+      );
 
     const imageInputs: Array<{
       file: File;
@@ -179,16 +199,19 @@ export async function importSalesPackageDraft(
     ];
     const verifiedImages = await Promise.all(
       imageInputs.map(async (image) => {
-        if (
-          image.declared.byteSize > MAX_IMAGE_BYTES ||
-          !IMAGE_TYPES.includes(image.declared.mimeType)
-        )
-          throw new Error(
-            `${image.declared.path}は10MB以内のJPG、PNG、WebPにしてください。`,
+        if (image.declared.byteSize > MAX_IMAGE_BYTES)
+          throw new PayloadTooLargeError(
+            `${image.declared.path}は10MB以内にしてください。`,
+          );
+        if (!IMAGE_TYPES.includes(image.declared.mimeType))
+          throw new ValidationError(
+            `${image.declared.path}はJPG、PNG、WebPにしてください。`,
           );
         const bytes = await verifyFile(image.file, image.declared);
         if (!hasImageSignature(bytes, image.declared.mimeType))
-          throw new Error(`${image.declared.path}の画像形式を確認できません。`);
+          throw new ValidationError(
+            `${image.declared.path}の画像形式を確認できません。`,
+          );
         return { ...image, bytes };
       }),
     );
@@ -219,7 +242,10 @@ export async function importSalesPackageDraft(
             contentType: image.declared.mimeType,
             upsert: false,
           });
-        if (error) throw new Error(error.message);
+        if (error)
+          throw new StorageTransactionError(
+            "作品画像をStorageへ保存できませんでした。",
+          );
         uploaded.push({ bucket: WORKS_BUCKET, path: storagePath });
         const { data } = supabase.storage
           .from(WORKS_BUCKET)
@@ -241,7 +267,10 @@ export async function importSalesPackageDraft(
           contentType: productDeclared.mimeType,
           upsert: false,
         });
-      if (uploadError) throw new Error(uploadError.message);
+      if (uploadError)
+        throw new StorageTransactionError(
+          "商品ファイルをStorageへ保存できませんでした。",
+        );
       uploaded.push({ bucket: PRODUCTS_BUCKET, path: productPath });
 
       const { data: work, error: workError } = await supabase
@@ -262,8 +291,10 @@ export async function importSalesPackageDraft(
         .select("id")
         .single<{ id: string }>();
       if (workError || !work)
-        throw new Error(
-          workError?.message || "作品下書きを作成できませんでした。",
+        throw new DomainError(
+          "INTERNAL_ERROR",
+          "作品下書きを作成できませんでした。",
+          { cause: workError },
         );
 
       const { data: product, error: productError } = await supabase
@@ -282,8 +313,10 @@ export async function importSalesPackageDraft(
         .single<{ id: string }>();
       if (productError || !product) {
         await supabase.from("works").delete().eq("id", work.id);
-        throw new Error(
-          productError?.message || "商品下書きを作成できませんでした。",
+        throw new DomainError(
+          "INTERNAL_ERROR",
+          "商品下書きを作成できませんでした。",
+          { cause: productError },
         );
       }
       revalidatePath("/dashboard");
@@ -297,10 +330,10 @@ export async function importSalesPackageDraft(
   } catch (cause) {
     return {
       ok: false,
-      message:
-        cause instanceof Error
-          ? cause.message
-          : "販売パッケージを取り込めませんでした。",
+      message: safeDomainErrorMessage(
+        cause,
+        "販売パッケージを取り込めませんでした。",
+      ),
     };
   }
 }

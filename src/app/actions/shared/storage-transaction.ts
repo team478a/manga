@@ -1,5 +1,6 @@
 import type { createClient } from "@/lib/supabase/server";
 import { ownedMarketplaceStoragePath } from "@/lib/content-boundary";
+import { StorageTransactionError } from "@/lib/domain-errors";
 import { persistWithCompensation } from "./compensating-transaction";
 
 type SupabaseClient = Awaited<ReturnType<typeof createClient>>;
@@ -44,7 +45,10 @@ export async function uploadMarketplaceFile({
     contentType: file.type,
     upsert: false,
   });
-  if (error) throw new Error(error.message);
+  if (error)
+    throw new StorageTransactionError(
+      "ファイルをStorageへ保存できませんでした。",
+    );
   const value = publicUrl
     ? supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl
     : path;
@@ -60,8 +64,8 @@ export async function rollbackStorageUpload(
     .from(upload.bucket)
     .remove([upload.path]);
   if (error) {
-    throw new Error(
-      `DB更新失敗後のStorage cleanupに失敗しました: ${error.message}`,
+    throw new StorageTransactionError(
+      "DB更新失敗後のStorage cleanupを完了できませんでした。",
     );
   }
 }

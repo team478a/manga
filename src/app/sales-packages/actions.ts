@@ -1,14 +1,18 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { exportSalesPackage, isLegacyLocalSalesEnabled, saveSalesPackageFromForm } from "@/lib/local/salesPackage";
 
 function requireLegacyLocalTools() {
-  if (!isLegacyLocalSalesEnabled()) throw new Error("ローカルファイル操作はMANGAI Desktopへ移行しました。");
+  if (!isLegacyLocalSalesEnabled())
+    redirect(
+      `/sales-packages?error=${encodeURIComponent("ローカルファイル操作はMANGAI Desktopへ移行しました。")}`,
+    );
 }
 
 function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "処理に失敗しました。";
+  return safeDomainErrorMessage(error, "処理に失敗しました。");
 }
 
 function redirectTo(projectId: string, packageId: string, message: string) {

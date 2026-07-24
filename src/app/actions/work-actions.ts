@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { requireProfile } from "@/lib/auth";
 import {
   firstValidationMessage,
@@ -66,14 +67,16 @@ export async function createWork(formData: FormData) {
         }),
     });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "画像のアップロードに失敗しました。";
+    const message = safeDomainErrorMessage(
+      error,
+      "画像のアップロードに失敗しました。",
+    );
     redirect(`/dashboard/works/new?error=${encodeURIComponent(message)}`);
   }
   if (result.error) {
-    redirect("/dashboard/works/new?error=作品を保存できませんでした");
+    redirect(
+      `/dashboard/works/new?error=${encodeURIComponent("作品を保存できませんでした")}`,
+    );
   }
   revalidatePath("/dashboard/works");
   revalidatePath("/works");
@@ -145,16 +148,18 @@ export async function updateWork(formData: FormData) {
           .eq("creator_id", profile.id),
     });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "画像のアップロードに失敗しました。";
+    const message = safeDomainErrorMessage(
+      error,
+      "画像のアップロードに失敗しました。",
+    );
     redirect(
       `/dashboard/works/${id}/edit?error=${encodeURIComponent(message)}`,
     );
   }
   if (result.error) {
-    redirect(`/dashboard/works/${id}/edit?error=作品を保存できませんでした`);
+    redirect(
+      `/dashboard/works/${id}/edit?error=${encodeURIComponent("作品を更新できませんでした")}`,
+    );
   }
   if (upload) {
     const previousPath = ownedStoragePathFromPublicUrl(

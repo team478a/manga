@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { PayloadTooLargeError, ValidationError } from "@/lib/domain-errors";
 
 const WORK_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const WORK_IMAGE_MAX_SIZE = 10 * 1024 * 1024;
@@ -29,11 +30,11 @@ function validateFile({
   sizeMessage: string;
 }) {
   if (!(value instanceof File) || value.size === 0) {
-    if (required) throw new Error(missingMessage);
+    if (required) throw new ValidationError(missingMessage);
     return null;
   }
-  if (!allowedTypes.includes(value.type)) throw new Error(typeMessage);
-  if (value.size > maxBytes) throw new Error(sizeMessage);
+  if (!allowedTypes.includes(value.type)) throw new ValidationError(typeMessage);
+  if (value.size > maxBytes) throw new PayloadTooLargeError(sizeMessage);
   return value;
 }
 
@@ -64,10 +65,10 @@ export async function validateWorkImage(
       !metadata.width ||
       !metadata.height
     ) {
-      throw new Error("invalid image");
+      throw new ValidationError("invalid image");
     }
   } catch {
-    throw new Error(
+    throw new ValidationError(
       "画像ファイルを確認できませんでした。正しいJPG、PNG、WebPを選んでください。",
     );
   }

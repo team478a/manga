@@ -28,7 +28,10 @@ export async function updateProfile(formData: FormData) {
     })
     .eq("id", profile.id);
 
-  if (error) redirect("/dashboard?error=プロフィールを保存できませんでした");
+  if (error)
+    redirect(
+      `/dashboard?error=${encodeURIComponent("プロフィールを保存できませんでした")}`,
+    );
   revalidatePath("/dashboard");
   redirect("/dashboard?message=保存しました");
 }

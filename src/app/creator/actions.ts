@@ -234,10 +234,10 @@ export async function syncCloudMarketplaceDraftAction(
       price: parsed.data,
     });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Marketplace下書きを作成できませんでした。";
+    const message = domainMessage(
+      error,
+      "Marketplace下書きを作成できませんでした。",
+    );
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
