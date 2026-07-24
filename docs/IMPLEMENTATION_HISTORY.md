@@ -1351,3 +1351,13 @@ Desktop統合95/95、Hub 49/49、canvas-core 26/26、ai-core 44/44、日英ア�
 Queue時刻・timer差し替え、bounded backoff、route監査の単体試験を追加し、Desktop統合98/98に成功しました。DB migrationはありません。詳細は[`desktop/AI_QUEUE_POLICY_MODULES.md`](desktop/AI_QUEUE_POLICY_MODULES.md)へ記録しています。
 
 Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査にも成功しました。
+
+## 156. 保守性改善PR-12 Cloud Canvas Editor責務分離
+
+`CloudCanvasEditor`からCanvas SVG生成、ブラウザPNG download、Creator API URL構築と通信を専用serviceへ分離しました。SVG生成は副作用のない純粋関数とし、テキスト、font、色、Asset URLをXML escapeします。Editor UIには直接の`fetch`と`/api/creator/` path構築を残していません。
+
+自動保存のrevision、timeout、競合、指数backoff、online復帰、離脱警告を`useCanvasAutosave`へ集約しました。Undo／Redo履歴と100件上限を`useCanvasHistory`、ドラッグ中の座標制約と履歴確定を`useCanvasPointer`へ移しました。保存・履歴・pointerの公開interfaceを介してEditorがレイアウトと機能統合に集中できる構成へ変更しています。
+
+SVGのXML escapeと入力不変性、Undo／Redoと分岐後のRedo破棄、Editorからの直接API参照除去を回帰試験へ追加しました。既存API request、保存schema、DB migration、画面仕様は変更していません。
+
+Hub 52/52、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
