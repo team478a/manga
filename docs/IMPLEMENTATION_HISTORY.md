@@ -1305,3 +1305,15 @@ WorkerはProvider処理中に60秒ごとにheartbeatし、1回の失敗を許容
 Job作成時の永続idempotency keyをすべてのProvider試行へ渡し、Gatewayの`x-mangai-idempotency-key`とJob ID headerを維持しました。Worker再取得時も同じkeyになるため、Provider側で同一要求をdeduplicateできます。
 
 新規migration `202607240003_cloud_ai_worker_heartbeat`、rollback、canonical schema、権限・期限切れ・延長assertionを追加しました。Worker heartbeat・idempotency・lease喪失中断試験を含むHub 49/49、canvas-core 26/26、ai-core 44/44、TypeScript、ESLint、Web production build、16 migration静的検査に成功しました。PostgreSQL 16では全migrationのforward、全rollback、再適用、正規schema二重適用、データ冪等性、Marketplace assertionまで完走しています。運用とrollbackは[`hub/CLOUD_AI_WORKER_LEASE.md`](hub/CLOUD_AI_WORKER_LEASE.md)へ記録しています。
+
+## 152. 保守性改善PR-08 CI統合・必須品質ゲート
+
+旧Hub品質workflowとDB migration workflowを`Required Quality`へ統合しました。PRでは変更pathに関係なく必ず実行し、既定ブランチ`feature/manga-canvas-mvp`と将来の`main`へのpushも検査します。同じPRまたはブランチの古い実行は`concurrency`でキャンセルし、各Jobにtimeoutとnpm dependency cacheを設定しました。
+
+必須Core品質ゲートは、root／Desktopの再現可能install、ESLint、TypeScript、Hub production build、Hub／Canvas／AI／Desktop test、migration静的検査、RC preflightを実行します。PostgreSQL 16 Jobは全migrationのforward、rollback、再適用、canonical schema二重適用、データ冪等性、Marketplace、staging preflightを検査します。testログとHub buildをartifactとして保存します。
+
+Windows固有の`Desktop Windows / Windows build`を別workflowへ追加しました。PRごとにWindowsでDesktop型検査、Lint、統合test、日英アクセシビリティtest、署名不要x64展開ビルドを行い、testログとbuildをartifactとして保存します。署名付きRelease workflow、アプリ実装、DB、公開APIは変更していません。required check名、branch protection、手動確認、rollbackは[`CI_QUALITY_GATES.md`](CI_QUALITY_GATES.md)へ記録しています。
+
+依存関係監査で検出したproduction high severity advisoryを解消するため、Next.jsを16.2.11、rootとNext.js推移依存のSharpを0.35.3へ更新しました。development推移依存も安全な版へ更新し、`npm audit` 0件を確認しました。root npm、Desktop npm、GitHub Actionsを毎週確認するDependabotと、native dependency・lockfileのreview方針も追加しました。
+
+品質ゲート実行中に、成人向けDezgo安全確認testが同意時刻だけ実時計、評価時刻を固定値としていたため、UTC日付境界後に不安定になる問題を検出しました。同意・Provider承認・評価を同じ動的基準時刻へ揃え、将来日でも安全判定順序を再現できるようにしました。最終lockfileで`npm ci`、Hub 49/49、canvas-core 26/26、ai-core 44/44、Desktop 91/91、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop production build、16 migration静的検査、RC preflight、`npm audit` 0件に成功しました。

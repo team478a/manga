@@ -869,7 +869,7 @@ test("adult Dezgo dispatcher gate remains disconnected after every safety check 
       externalTransmissionReviewed: true,
       dispatchApproval: {
         previewId: randomUUID(),
-        confirmedAt: "2026-07-24T00:00:00.000Z",
+        confirmedAt: new Date().toISOString(),
         estimatedCostUsd: 0.01,
       },
     });
@@ -900,14 +900,19 @@ test("adult Dezgo dispatcher gate remains disconnected after every safety check 
       "user_age_not_confirmed",
     );
     database.setAdultGenerationAdministratorEnabled(true);
-    database.confirmAdultGeneration18Plus({
+    const consent = database.confirmAdultGeneration18Plus({
       userConfirmed18Plus: true,
       termsVersion: "adult-generation-v1-2026-07-17",
     });
+    assert.ok(consent.confirmedAt);
+    const referenceTime = consent.confirmedAt;
+    const approvalExpiresAt = new Date(
+      Date.parse(referenceTime) + 31 * 24 * 60 * 60 * 1000,
+    ).toISOString();
     assert.equal(
       disabledService.evaluateAdultDezgoDispatchGate(
         jobId,
-        "2026-07-24T00:00:00.000Z",
+        referenceTime,
       ).reason,
       "provider_approval_missing",
     );
@@ -915,8 +920,8 @@ test("adult Dezgo dispatcher gate remains disconnected after every safety check 
       providerId: "dezgo",
       status: "approved",
       evidenceSha256: "a".repeat(64),
-      confirmedAt: "2026-07-24T00:00:00.000Z",
-      expiresAt: "2026-08-24T00:00:00.000Z",
+      confirmedAt: referenceTime,
+      expiresAt: approvalExpiresAt,
       revokedAt: null,
     });
     database.saveAdultModelApproval({
@@ -924,13 +929,13 @@ test("adult Dezgo dispatcher gate remains disconnected after every safety check 
       modelId: "adult-approved-model",
       status: "approved",
       licenseEvidenceSha256: "b".repeat(64),
-      verifiedAt: "2026-07-24T00:00:00.000Z",
-      expiresAt: "2026-08-24T00:00:00.000Z",
+      verifiedAt: referenceTime,
+      expiresAt: approvalExpiresAt,
     });
     assert.equal(
       disabledService.evaluateAdultDezgoDispatchGate(
         jobId,
-        "2026-07-24T00:00:00.000Z",
+        referenceTime,
       ).reason,
       "feature_disabled",
     );
@@ -959,14 +964,14 @@ test("adult Dezgo dispatcher gate remains disconnected after every safety check 
     assert.equal(
       gateTestService.evaluateAdultDezgoDispatchGate(
         unapprovedModelJob,
-        "2026-07-24T00:00:00.000Z",
+        referenceTime,
       ).reason,
       "model_not_approved_for_adult_use",
     );
     assert.deepEqual(
       gateTestService.evaluateAdultDezgoDispatchGate(
         jobId,
-        "2026-07-24T00:00:00.000Z",
+        referenceTime,
       ),
       { allowed: true, reason: null },
     );

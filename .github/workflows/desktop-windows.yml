@@ -1,0 +1,71 @@
+name: Desktop Windows
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feature/manga-canvas-mvp
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-windows-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-build:
+    name: Windows build
+    runs-on: windows-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - name: Prepare test results
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts/test-results | Out-Null
+          node --version | Out-File artifacts/test-results/environment.log
+      - name: Install dependencies
+        run: npm ci
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Desktop tests
+        shell: pwsh
+        run: |
+          npm test *>&1 | Tee-Object -FilePath artifacts/test-results/desktop-test.tap
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Accessibility tests
+        shell: pwsh
+        run: |
+          npm run test:a11y *>&1 | Tee-Object -FilePath artifacts/test-results/accessibility-test.log
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build unpacked Windows application
+        run: npm run pack:win
+      - name: Upload Windows test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows-results-${{ github.run_attempt }}
+          path: apps/desktop/artifacts/test-results
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload Windows build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-windows-build-${{ github.run_attempt }}
+          path: apps/desktop/release/win-unpacked
+          if-no-files-found: error
+          retention-days: 7

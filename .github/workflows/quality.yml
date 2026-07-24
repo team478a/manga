@@ -1,0 +1,174 @@
+name: Required Quality
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feature/manga-canvas-mvp
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  core-quality:
+    name: Core quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/desktop/package-lock.json
+      - name: Prepare test results
+        run: |
+          mkdir -p artifacts/test-results
+          node --version > artifacts/test-results/environment.log
+      - name: Install Hub dependencies
+        run: npm ci
+      - name: Install Desktop dependencies
+        run: npm ci --prefix apps/desktop
+      - name: Lint
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee artifacts/test-results/lint.log
+      - name: TypeScript
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run typecheck 2>&1 | tee artifacts/test-results/typecheck.log
+      - name: Hub production build
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run build 2>&1 | tee artifacts/test-results/hub-build.log
+      - name: Hub tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run hub:test 2>&1 | tee artifacts/test-results/hub-test.tap
+      - name: Canvas tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run canvas:test 2>&1 | tee artifacts/test-results/canvas-test.tap
+      - name: AI tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run ai:test 2>&1 | tee artifacts/test-results/ai-test.tap
+      - name: Desktop tests
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run desktop:test 2>&1 | tee artifacts/test-results/desktop-test.tap
+      - name: Validate migrations
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run db:migrations:validate 2>&1 | tee artifacts/test-results/migration-validation.log
+      - name: Release candidate preflight
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run rc:preflight 2>&1 | tee artifacts/test-results/rc-preflight.log
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: core-quality-results-${{ github.run_attempt }}
+          path: artifacts/test-results
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload Hub build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hub-build-${{ github.run_attempt }}
+          path: |
+            .next
+            !.next/cache
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
+
+  migration-roundtrip:
+    name: Migration roundtrip
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Validate migration files
+        run: npm run db:migrations:validate
+      - name: Create test databases
+        run: |
+          createdb migration_roundtrip
+          createdb current_schema
+      - name: Apply forward migrations
+        run: |
+          psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/bootstrap_supabase.sql
+          psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/bootstrap_migration_base.sql
+          for file in $(find supabase/migrations -maxdepth 1 -name '*.sql' | sort); do
+            psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f "$file"
+          done
+          psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/assert_migrations.sql
+      - name: Roll back in reverse order
+        run: |
+          for file in $(find supabase/rollbacks -maxdepth 1 -name '*.sql' | sort -r); do
+            psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f "$file"
+          done
+          psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/assert_rollback.sql
+      - name: Reapply after rollback
+        run: |
+          for file in $(find supabase/migrations -maxdepth 1 -name '*.sql' | sort); do
+            psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f "$file"
+          done
+          psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/assert_migrations.sql
+      - name: Verify canonical schema is idempotent
+        run: |
+          psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/bootstrap_supabase.sql
+          psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/schema.sql
+          psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/schema.sql
+          psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_current_schema.sql
+          psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_schema_data_idempotency.sql
+          psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_cloud_marketplace.sql
+      - name: Run read-only staging preflight against test schema
+        env:
+          MANGAI_DB_ENV: staging
+          MANGAI_DB_LOCAL_TEST: "1"
+          PGDATABASE: current_schema
+          PGSSLMODE: disable
+        run: npm run db:staging:preflight
