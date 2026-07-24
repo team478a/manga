@@ -8,6 +8,17 @@ import type {
   DezgoTextToImageResult,
 } from "./providers/dezgo.js";
 
+export type DezgoImagePipelineStore = Pick<
+  MangaiDatabase,
+  | "bundle"
+  | "deleteAsset"
+  | "getGenerationJob"
+  | "recordCreatedAssetsHistory"
+  | "registerGeneratedAsset"
+  | "saveAssetLibraryMetadata"
+  | "updateGenerationJob"
+>;
+
 const MAX_INPUT_BYTES = 25 * 1024 * 1024;
 const MAX_INPUT_PIXELS = 20_000_000;
 const MAX_DIMENSION = 4096;
@@ -55,14 +66,13 @@ export type PersistDezgoGenerationInput = {
 };
 
 export async function persistDezgoGenerationResult(
-  store: MangaiDatabase,
+  store: DezgoImagePipelineStore,
   input: PersistDezgoGenerationInput,
 ) {
   if (input.result.images.length !== 1)
     throw new Error("Dezgo Phase 1では生成画像を1枚だけ受け付けます。");
   const job = store.getGenerationJob(input.jobId) as
-    | { project_id?: unknown }
-    | undefined;
+    { project_id?: unknown } | undefined;
   if (!job || job.project_id !== input.projectId)
     throw new Error("Dezgo生成ジョブとProjectの参照が一致しません。");
 
@@ -118,11 +128,9 @@ export async function persistDezgoGenerationResult(
           tags: input.libraryTags ?? [],
           favorite: false,
         });
-      store.recordCreatedAssetsHistory(
-        input.projectId,
-        "Dezgo生成素材を追加",
-        [registered.assetId],
-      );
+      store.recordCreatedAssetsHistory(input.projectId, "Dezgo生成素材を追加", [
+        registered.assetId,
+      ]);
     }
     store.updateGenerationJob(input.jobId, "completed", {
       providerJobId: input.result.providerJobId,

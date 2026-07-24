@@ -1341,3 +1341,13 @@ Project Backupのmanifest型とversion 1／2互換検証、streaming ZIP Writer�
 Asset／Backupの既存統合試験に加え、Project外Asset path拒否とRestore commit失敗時cleanupを追加しました。DB migration、backup format、Electron IPCの変更はありません。設計と残る分割は[`desktop/DATABASE_ASSET_BACKUP_MODULES.md`](desktop/DATABASE_ASSET_BACKUP_MODULES.md)へ記録しています。
 
 Desktop統合95/95、Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflight、root／Desktop `npm audit` 0件に成功しました。
+
+## 155. 保守性改善PR-11 Desktop AI Queue／Policy分離
+
+`AIService`実装を`ai-service.ts`へ移し、旧`service.ts`を互換entrypointとして維持しました。生成先判定とroute decision監査記録を`GenerationRouter`、Local／Dezgoのtimer・夜間実行時間計算・wake管理を個別Queue class、Dezgo失敗分類とComfyUI指数backoffを共通Retry Policyへ分離しました。
+
+`AIService` constructorは`MangaiDatabase` concrete classではなく、必要なpublicメソッドだけを持つ`AIServiceStore`を受け取ります。Dezgo画像保存も縮小したStore interfaceへ変更しました。Provider、Queue、Routerを差し替えて単体試験でき、既存のProvider実装、Job schema、IPC、成人向けfail-closed条件を維持します。
+
+Queue時刻・timer差し替え、bounded backoff、route監査の単体試験を追加し、Desktop統合98/98に成功しました。DB migrationはありません。詳細は[`desktop/AI_QUEUE_POLICY_MODULES.md`](desktop/AI_QUEUE_POLICY_MODULES.md)へ記録しています。
+
+Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査にも成功しました。
