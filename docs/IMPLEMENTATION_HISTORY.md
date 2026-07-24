@@ -1445,3 +1445,13 @@ Hub 88/88、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境�
 message互換envelope、未知例外秘匿、Checkout入力とServer設定の分類、RouteとServiceの生Error非回帰を自動試験へ追加しました。DB migration、Stripe metadata、端末token、scope、Desktop IPC、画面仕様の変更はありません。対応表とrollbackは[`hub/CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md`](hub/CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md)へ記録しています。
 
 Hub 93/93、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 165. 保守性改善PR-21 Stripe Webhook／購入download Error契約
+
+Stripe Webhook署名検証、デジタル商品・Cloud AI Subscription反映、決済状態更新、購入済み商品の期限付きdownloadを型付きDomain Errorへ移行しました。署名不正、Stripe設定不足、購入未検出、Storage失敗、download記録競合、DB／RPC内部失敗を安定codeへ分離します。
+
+Webhookは既存の`message`へ、購入downloadは既存の`error`へ`errorCode`を追加します。Webhook成功時の`received:true`、downloadの303 redirect、購入者所有者条件、`paid`条件、signed URLの300秒期限、download回数記録は維持します。Stripe SDK、Supabase、Storage、RPCの生メッセージを外部へ返しません。
+
+Error／HTTP対応、Subscription event設定・入力分類、Routeの共通契約、所有者・paid・期限条件、Serviceの生Error非回帰を自動試験へ追加しました。DB migration、Stripe metadata、注文status、Webhook対象event、RPC、画面仕様の変更はありません。対応表とrollbackは[`hub/STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md`](hub/STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 99/99、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。
