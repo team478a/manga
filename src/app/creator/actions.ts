@@ -15,6 +15,7 @@ import {
   setCloudProjectCover,
 } from "@/lib/cloud-creator-server";
 import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
+import { isDomainError } from "@/lib/domain-errors";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -29,6 +30,10 @@ const projectSchema = z.object({
 function value(formData: FormData, name: string) {
   const entry = formData.get(name);
   return typeof entry === "string" ? entry : "";
+}
+
+function domainMessage(error: unknown, fallback: string) {
+  return isDomainError(error) ? error.message : fallback;
 }
 
 export async function createCloudProjectAction(formData: FormData) {
@@ -72,10 +77,7 @@ export async function addCloudEpisodeAction(
   try {
     await addCloudEpisode(projectId, parsed.data);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Episodeを追加できませんでした。";
+    const message = domainMessage(error, "Episodeを追加できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -87,8 +89,7 @@ export async function addCloudPageAction(projectId: string, episodeId: string) {
   try {
     pageId = await addCloudPage(episodeId);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Pageを追加できませんでした。";
+    const message = domainMessage(error, "Pageを追加できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -143,10 +144,7 @@ export async function renameCloudEpisodeAction(
   try {
     await renameCloudEpisode(episodeId, parsed.data);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Episodeを更新できませんでした。";
+    const message = domainMessage(error, "Episodeを更新できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -162,8 +160,7 @@ export async function moveCloudStructureAction(
   try {
     await moveCloudStructure(kind, id, direction);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "並び順を変更できませんでした。";
+    const message = domainMessage(error, "並び順を変更できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -177,8 +174,7 @@ export async function deleteCloudStructureAction(
   try {
     await deleteCloudStructure(kind, id);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "削除できませんでした。";
+    const message = domainMessage(error, "削除できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);

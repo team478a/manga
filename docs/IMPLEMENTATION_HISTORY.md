@@ -1415,3 +1415,13 @@ Cloud AI Job登録のcredit、費用、日次予算、rate limit、契約、生�
 DB signal対応、HTTP status、未知例外秘匿、moderation、lease code、Routeの文字列分岐非回帰を自動試験へ追加しました。DB migration、課金予約／確定、Job schema、成功response、Desktop IPCの変更はありません。対応表とrollbackは[`hub/CLOUD_AI_DOMAIN_ERRORS.md`](hub/CLOUD_AI_DOMAIN_ERRORS.md)へ記録しています。
 
 Hub 78/78、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 162. 保守性改善PR-18 Cloud Structure型付きError
+
+Episode／Page追加、Episode名変更、並び替え、論理削除のDB signalを専用のStructure Error境界で型付きDomain Errorへ変換しました。編集不可は`PERMISSION_DENIED`、最後のEpisode／Page削除禁止と不正な移動方向は`VALIDATION_ERROR`、未知のDB signalは操作別`INTERNAL_ERROR`へ正規化します。
+
+Structure Serviceから`last_episode`／`last_page`のメッセージ部分一致を削除しました。画面操作はREST APIではなくServer Action経由のため、Domain Errorの安全な利用者向けメッセージだけをredirect先へ渡し、未知の例外やDB内部メッセージは操作別fallbackへ置き換えます。
+
+DB signal対応、HTTP変換、未知例外秘匿、Serviceの文字列分岐非回帰を自動試験へ追加しました。DB migration、RPC、Server Action引数、redirect先、成功メッセージ、revalidation、画面仕様の変更はありません。対応表とrollbackは[`hub/CLOUD_STRUCTURE_DOMAIN_ERRORS.md`](hub/CLOUD_STRUCTURE_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 83/83、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
