@@ -29,13 +29,18 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: apps/desktop/package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            apps/desktop/package-lock.json
       - name: Prepare test results
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts/test-results | Out-Null
           node --version | Out-File artifacts/test-results/environment.log
-      - name: Install dependencies
+      - name: Install root dependencies
+        working-directory: ${{ github.workspace }}
+        run: npm ci
+      - name: Install Desktop dependencies
         run: npm ci
       - name: Build shared packages
         run: npm run build:packages

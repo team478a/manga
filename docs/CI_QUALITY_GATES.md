@@ -44,6 +44,7 @@ check名を変更するとbranch protectionが満たせなくなるため、work
 
 `Desktop Windows / Windows build`:
 
+- rootとDesktop双方のlockfile固定install
 - Windows上のTypeScript、ESLint、Desktop test、アクセシビリティtest
 - 型検査前に共有packageをクリーン環境でbuild
 - 署名不要のWindows x64展開ビルド
