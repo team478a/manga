@@ -26,6 +26,7 @@ check名を変更するとbranch protectionが満たせなくなるため、work
 `Required Quality / Core quality`:
 
 - rootとDesktopの`npm ci`
+- framework非依存の共有packageを依存順にbuild
 - ESLint、TypeScript、Hub production build
 - Hub、Canvas、AI、Desktop test
 - migration manifest検査
@@ -44,6 +45,7 @@ check名を変更するとbranch protectionが満たせなくなるため、work
 `Desktop Windows / Windows build`:
 
 - Windows上のTypeScript、ESLint、Desktop test、アクセシビリティtest
+- 型検査前に共有packageをクリーン環境でbuild
 - 署名不要のWindows x64展開ビルド
 - testログと展開ビルドのartifact保存
 

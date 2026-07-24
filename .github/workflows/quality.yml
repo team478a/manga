@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -37,6 +37,8 @@ jobs:
         run: npm ci
       - name: Install Desktop dependencies
         run: npm ci --prefix apps/desktop
+      - name: Build shared packages
+        run: npm --prefix apps/desktop run build:packages
       - name: Lint
         shell: bash
         run: |
@@ -84,7 +86,7 @@ jobs:
           npm run rc:preflight 2>&1 | tee artifacts/test-results/rc-preflight.log
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: core-quality-results-${{ github.run_attempt }}
           path: artifacts/test-results
@@ -92,7 +94,7 @@ jobs:
           retention-days: 14
       - name: Upload Hub build
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hub-build-${{ github.run_attempt }}
           path: |
@@ -124,8 +126,8 @@ jobs:
       PGUSER: postgres
       PGPASSWORD: postgres
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
