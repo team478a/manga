@@ -42,3 +42,21 @@ export function toApiError(
     status: domainErrorStatuses[normalized.code],
   };
 }
+
+export function toMessageApiError(error: unknown, fallbackMessage: string) {
+  const response = toApiError(error, fallbackMessage);
+  return {
+    body: {
+      message: response.body.error,
+      errorCode: response.body.errorCode,
+    },
+    status: response.status,
+  };
+}
+
+export function safeDomainErrorMessage(
+  error: unknown,
+  fallbackMessage: string,
+) {
+  return isDomainError(error) ? error.message : fallbackMessage;
+}

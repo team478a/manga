@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { DomainError } from "@/lib/domain-errors";
 
 export const DEVICE_PENDING_MINUTES = 15;
 export const DEVICE_TOKEN_DAYS = 90;
@@ -51,11 +52,22 @@ export async function authorizeDesktopRequest(
     .eq("status", "approved")
     .gt("token_expires_at", now)
     .maybeSingle<{ id: string; profile_id: string; scopes: string[] }>();
-  if (error) throw new Error(error.message);
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "端末認証を確認できませんでした。",
+      { cause: error },
+    );
   if (!data?.profile_id || !data.scopes.includes(requiredScope)) return null;
-  await admin
+  const { error: touchError } = await admin
     .from("desktop_device_authorizations")
     .update({ last_used_at: now })
     .eq("id", data.id);
+  if (touchError)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "端末認証を更新できませんでした。",
+      { cause: touchError },
+    );
   return { id: data.id, profileId: data.profile_id, scopes: data.scopes };
 }

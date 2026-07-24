@@ -1,6 +1,10 @@
 import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  DomainError,
+  ProviderUnavailableError,
+} from "@/lib/domain-errors";
 
 const WINDOW_SECONDS = 15 * 60;
 const GLOBAL_REQUEST_LIMIT = 300;
@@ -25,7 +29,7 @@ function rateLimitKey(value: string) {
     process.env.DESKTOP_AUTH_RATE_LIMIT_SECRET ??
     process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!secret || Buffer.byteLength(secret, "utf8") < 32)
-    throw new Error(
+    throw new ProviderUnavailableError(
       "端末認証rate limit用に32byte以上のサーバー秘密値が必要です。",
     );
   return createHmac("sha256", secret).update(value, "utf8").digest("hex");
@@ -38,7 +42,12 @@ async function consume(keyHash: string, requestLimit: number) {
     p_request_limit: requestLimit,
     p_window_seconds: WINDOW_SECONDS,
   });
-  if (error) throw new Error(error.message);
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "端末認証rate limitを確認できませんでした。",
+      { cause: error },
+    );
   return data === true;
 }
 
@@ -66,6 +75,11 @@ export async function cleanupDesktopDeviceAuthorizations() {
   const { data, error } = await admin.rpc(
     "cleanup_desktop_device_authorizations",
   );
-  if (error) throw new Error(error.message);
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "期限切れ端末認証を整理できませんでした。",
+      { cause: error },
+    );
   return typeof data === "number" ? data : 0;
 }
