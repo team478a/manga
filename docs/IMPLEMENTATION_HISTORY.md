@@ -1361,3 +1361,13 @@ Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ�
 SVGのXML escapeと入力不変性、Undo／Redoと分岐後のRedo破棄、Editorからの直接API参照除去を回帰試験へ追加しました。既存API request、保存schema、DB migration、画面仕様は変更していません。
 
 Hub 52/52、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
+
+## 157. 保守性改善PR-13 Cloud Creator Server分割
+
+715行で認証、Project、Episode／Page、Canvas、Asset、生成、import、exportを担当していた`cloud-creator-server.ts`を、`src/modules/cloud-creator`配下の機能別moduleへ分割しました。従来ファイルは公開関数名と型名を維持する53行の互換entrypointとし、既存API routeとServer Componentを一括変更せず段階移行できます。
+
+Supabase client生成、利用者取得、creator／admin profile確認は`auth-context.ts`へ統一しました。Project、Canvas、AssetのDB queryをRepositoryへ分離し、RepositoryからServiceへの逆依存を禁止しました。UI向け契約型は`contracts/types.ts`へ集約し、`storage_path`などのDB内部列を公開型へ含めません。Canvas正規化はSupabase非依存の純粋関数です。
+
+既存のRLS、resource ID filter、RPC、Storage補償削除、容量・hash検査、生成moderationとquotaを維持しています。署名URL作成も共通のcreator/admin認証contextを通るよう統一しました。DB migration、API request／response、保存データの変更はありません。構造、手動確認、rollbackは[`hub/CLOUD_CREATOR_MODULES.md`](hub/CLOUD_CREATOR_MODULES.md)へ記録しています。
+
+Hub 56/56、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
