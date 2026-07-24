@@ -1381,3 +1381,13 @@ Hub 56/56、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript�
 補償なしの成功、DB error、DB例外、cleanup失敗、Actionの共通helper利用、互換entrypointの境界を自動試験へ追加しました。DB migration、Storage Policy、Action引数、画面仕様の変更はありません。構造、手動確認、rollback、旧ファイルcleanupの残課題は[`hub/SERVER_ACTION_MODULES.md`](hub/SERVER_ACTION_MODULES.md)へ記録しています。
 
 Hub 62/62、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
+
+## 159. 保守性改善PR-15 Package公開API・依存境界
+
+Phase 4の依存方向を継続的に固定するため、5つの`@mangai/*` packageにroot限定の`exports` mapを追加しました。Hub、Desktop、testはpackage名から`src/index.ts`が定義する公開APIだけを利用し、`src`や`dist`内部へのdeep importを禁止します。
+
+新しい依存境界検査は、packageからNext.js、Electron、Supabase、Stripe、SQLite、Node built-in、filesystemへの逆依存、未宣言のMANGAI package依存、package間の循環、package内部の相対import循環を検出します。検査は外部libraryを追加せず、`npm run deps:check`としてRequired Quality workflowへ組み込みました。
+
+実際のrepositoryが違反なしであることに加え、framework依存、未宣言依存、deep import、package循環、source循環を意図的に含む一時fixtureを使った回帰試験を追加しました。DB migration、公開アプリケーションAPI、Desktop IPC、保存形式、画面動作の変更はありません。ルール、追加手順、rollbackは[`hub/DEPENDENCY_BOUNDARIES.md`](hub/DEPENDENCY_BOUNDARIES.md)へ記録しています。
+
+依存境界検査（5 package／21 source）、Hub 66/66、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
