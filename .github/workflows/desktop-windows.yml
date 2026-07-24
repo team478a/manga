@@ -55,7 +55,7 @@ jobs:
         run: npm run pack:win
       - name: Upload Windows test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: desktop-windows-results-${{ github.run_attempt }}
           path: apps/desktop/artifacts/test-results
@@ -63,7 +63,7 @@ jobs:
           retention-days: 14
       - name: Upload Windows build
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: desktop-windows-build-${{ github.run_attempt }}
           path: apps/desktop/release/win-unpacked

@@ -84,7 +84,7 @@ jobs:
           npm run rc:preflight 2>&1 | tee artifacts/test-results/rc-preflight.log
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: core-quality-results-${{ github.run_attempt }}
           path: artifacts/test-results
@@ -92,7 +92,7 @@ jobs:
           retention-days: 14
       - name: Upload Hub build
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hub-build-${{ github.run_attempt }}
           path: |
