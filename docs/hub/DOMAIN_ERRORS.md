@@ -105,7 +105,8 @@ the stable `LEASE_LOST` code without changing heartbeat or job-state behavior.
 
 ## Remaining work
 
-- Move Structure deletion failures to the same typed contract.
+- Cloud Structure DB signals and the Server Action boundary are documented in
+  [`CLOUD_STRUCTURE_DOMAIN_ERRORS.md`](CLOUD_STRUCTURE_DOMAIN_ERRORS.md).
 - Assign dedicated PostgreSQL SQLSTATE values in a separate migration so the
   Canvas Repository can eventually stop parsing the legacy RPC signal.
 - Migrate the API envelope fully to nested `error.code` after all supported
