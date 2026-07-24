@@ -13,11 +13,23 @@ import {
   findProjectAssets,
   findProjectStorage,
 } from "./asset-repository";
+import {
+  DomainError,
+  QuotaExceededError,
+  ResourceNotFoundError,
+  StorageTransactionError,
+  ValidationError,
+} from "../../../lib/domain-errors.ts";
 
 export async function listCloudAssets(projectId: string) {
   const { supabase } = await cloudCreatorContext();
   const { data, error } = await findProjectAssets(supabase, projectId);
-  if (error) throw new Error("Asset Libraryを読み込めませんでした。");
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Asset Libraryを読み込めませんでした。",
+      { cause: error },
+    );
 
   return Promise.all(
     (data ?? []).map(async (asset) => {
@@ -25,7 +37,9 @@ export async function listCloudAssets(projectId: string) {
         .from(CLOUD_ASSET_BUCKET)
         .createSignedUrl(asset.storage_path, 300);
       if (signedError || !signed?.signedUrl)
-        throw new Error("Assetの署名URLを作成できませんでした。");
+        throw new StorageTransactionError(
+          "Assetの署名URLを作成できませんでした。",
+        );
       const { storage_path: _storagePath, ...metadata } = asset;
       return { ...metadata, url: signed.signedUrl } as CloudAsset;
     }),
@@ -46,21 +60,23 @@ export async function uploadCloudAsset(input: {
     declaredMimeType: input.mimeType,
   });
   if (input.expectedSha256 && input.expectedSha256 !== validation.sha256)
-    throw new Error("Desktop manifestと画像のSHA-256が一致しません。");
+    throw new ValidationError(
+      "Desktop manifestと画像のSHA-256が一致しません。",
+    );
 
   const { data: project, error: projectError } = await findProjectStorage(
     supabase,
     input.projectId,
   );
   if (projectError || !project)
-    throw new Error("Cloud Projectが見つかりません。");
+    throw new ResourceNotFoundError("Cloud Projectが見つかりません。");
   const storedBytes = Number(project.storage_bytes);
   if (
     !Number.isSafeInteger(storedBytes) ||
     storedBytes < 0 ||
     storedBytes + validation.byteSize > CLOUD_PROJECT_MAX_BYTES
   ) {
-    throw new Error("Projectの保存容量上限2GBを超えます。");
+    throw new QuotaExceededError("Projectの保存容量上限2GBを超えます。");
   }
 
   const assetId = input.assetId ?? crypto.randomUUID();
@@ -77,7 +93,9 @@ export async function uploadCloudAsset(input: {
       upsert: false,
     });
   if (uploadError)
-    throw new Error("画像を非公開Storageへ保存できませんでした。");
+    throw new StorageTransactionError(
+      "画像を非公開Storageへ保存できませんでした。",
+    );
 
   const { data: asset, error: insertError } = await createAssetRow(supabase, {
     id: assetId,
@@ -93,7 +111,7 @@ export async function uploadCloudAsset(input: {
   });
   if (insertError || !asset) {
     await supabase.storage.from(CLOUD_ASSET_BUCKET).remove([storagePath]);
-    throw new Error("画像情報を保存できませんでした。");
+    throw new StorageTransactionError("画像情報を保存できませんでした。");
   }
   return asset;
 }
@@ -101,11 +119,12 @@ export async function uploadCloudAsset(input: {
 export async function createCloudAssetSignedUrl(assetId: string) {
   const { supabase } = await cloudCreatorContext();
   const { data: asset, error } = await findAssetStorage(supabase, assetId);
-  if (error || !asset) throw new Error("Assetが見つかりません。");
+  if (error || !asset)
+    throw new ResourceNotFoundError("Assetが見つかりません。");
   const { data, error: signedUrlError } = await supabase.storage
     .from(CLOUD_ASSET_BUCKET)
     .createSignedUrl(asset.storage_path, 300);
   if (signedUrlError || !data?.signedUrl)
-    throw new Error("署名URLを作成できませんでした。");
+    throw new StorageTransactionError("署名URLを作成できませんでした。");
   return data.signedUrl;
 }

@@ -1425,3 +1425,13 @@ Structure Serviceから`last_episode`／`last_page`のメッセージ部分一�
 DB signal対応、HTTP変換、未知例外秘匿、Serviceの文字列分岐非回帰を自動試験へ追加しました。DB migration、RPC、Server Action引数、redirect先、成功メッセージ、revalidation、画面仕様の変更はありません。対応表とrollbackは[`hub/CLOUD_STRUCTURE_DOMAIN_ERRORS.md`](hub/CLOUD_STRUCTURE_DOMAIN_ERRORS.md)へ記録しています。
 
 Hub 83/83、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 163. 保守性改善PR-19 Cloud Project／Asset Error契約
+
+Cloud Project、Asset、Import、ExportのService境界を型付きDomain Errorへ移行しました。Project編集不可、未検出、入力不正、requestサイズ、Project容量、rate limit、Storage transaction、未知の内部例外を安定したcodeへ分離し、AssetとImportのサイズ超過には`PAYLOAD_TOO_LARGE`とHTTP 413を追加しました。
+
+Project削除／復元、Asset、Import、Export API Routeは共通`toApiError`へ統一しました。従来の成功response、download stream、`Retry-After`を維持しつつ、すべての失敗を400／404へ潰す処理と、DB・Storage・filesystemの生メッセージ露出を撤廃しました。Project Server ActionもDomain Errorの安全な文言だけをredirect先へ渡します。
+
+Project DB signal、サイズ超過、未知例外秘匿、Routeの共通契約、Serviceの生Error非回帰を自動試験へ追加しました。DB migration、RPC、request body、Storage path、Import manifest、Export package、画面仕様の変更はありません。対応表とrollbackは[`hub/CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md`](hub/CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 88/88、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
