@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createCloudBillingPortal } from "@/lib/cloud-subscriptions";
+import { safeDomainErrorMessage } from "@/lib/api-errors";
 
 export async function POST(request: Request) {
   try {
@@ -8,7 +9,7 @@ export async function POST(request: Request) {
     const url = new URL("/dashboard/billing", request.url);
     url.searchParams.set(
       "error",
-      error instanceof Error ? error.message : "請求画面を開けませんでした。",
+      safeDomainErrorMessage(error, "請求画面を開けませんでした。"),
     );
     return NextResponse.redirect(url, 303);
   }

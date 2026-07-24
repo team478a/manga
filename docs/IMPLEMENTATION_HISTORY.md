@@ -1435,3 +1435,13 @@ Project削除／復元、Asset、Import、Export API Routeは共通`toApiError`�
 Project DB signal、サイズ超過、未知例外秘匿、Routeの共通契約、Serviceの生Error非回帰を自動試験へ追加しました。DB migration、RPC、request body、Storage path、Import manifest、Export package、画面仕様の変更はありません。対応表とrollbackは[`hub/CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md`](hub/CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md)へ記録しています。
 
 Hub 88/88、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 164. 保守性改善PR-20 Checkout／Billing／Desktop Error契約
+
+デジタル商品Checkout、Cloud AI Subscription Checkout／Billing Portal、Desktop端末認証、Hub作品状態照会・下書き更新を型付きDomain Errorへ移行しました。Checkout入力、認証、権限、未検出、更新競合、rate limit、Stripe／Hub DB利用不可、未知例外を安定codeへ分離します。
+
+既存Desktop Clientが利用する`message`形式へ`errorCode`を追加する互換変換を導入しました。公開状況GETの`linked:false`、端末認証の状態response、rate limitの`Retry-After`、Billingの303 redirectは維持します。RedirectにはDomain Errorの安全な文言だけを渡し、Stripe SDK、Supabase、rate limit RPCの生メッセージを外部へ返しません。
+
+message互換envelope、未知例外秘匿、Checkout入力とServer設定の分類、RouteとServiceの生Error非回帰を自動試験へ追加しました。DB migration、Stripe metadata、端末token、scope、Desktop IPC、画面仕様の変更はありません。対応表とrollbackは[`hub/CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md`](hub/CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 93/93、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。

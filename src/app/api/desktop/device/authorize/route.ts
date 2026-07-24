@@ -13,6 +13,12 @@ import {
   cleanupDesktopDeviceAuthorizations,
   enforceDesktopDeviceRateLimit,
 } from "@/lib/desktop-device-rate-limit";
+import { toMessageApiError } from "@/lib/api-errors";
+import {
+  ProviderUnavailableError,
+  RateLimitedError,
+  ValidationError,
+} from "@/lib/domain-errors";
 
 const requestSchema = z.object({
   deviceName: z.string().trim().min(1).max(100),
@@ -26,26 +32,24 @@ const requestSchema = z.object({
 export async function POST(request: Request) {
   try {
     const rateLimit = await enforceDesktopDeviceRateLimit(request);
-    if (!rateLimit.allowed)
-      return NextResponse.json(
-        {
-          message:
-            "端末認証の開始回数が上限に達しました。15分後に再試行してください。",
-        },
-        {
-          status: 429,
-          headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
-        },
+    if (!rateLimit.allowed) {
+      const error = new RateLimitedError(
+        "端末認証の開始回数が上限に達しました。15分後に再試行してください。",
       );
+      const response = toMessageApiError(error, "端末認証を開始できませんでした。");
+      return NextResponse.json(response.body, {
+        status: response.status,
+        headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+      });
+    }
     await cleanupDesktopDeviceAuthorizations().catch((cause) => {
       console.warn("Desktop device authorization cleanup failed", cause);
     });
-    const parsed = requestSchema.safeParse(await request.json());
+    const parsed = requestSchema.safeParse(
+      await request.json().catch(() => null),
+    );
     if (!parsed.success)
-      return NextResponse.json(
-        { message: "端末名が不正です。" },
-        { status: 400 },
-      );
+      throw new ValidationError("端末名が不正です。");
     const admin = createAdminClient();
     const deviceToken = generateDeviceSecret();
     const expiresAt = new Date(
@@ -75,14 +79,18 @@ export async function POST(request: Request) {
           },
           { status: 201 },
         );
-      if (error.code !== "23505") throw new Error(error.message);
+      if (error.code !== "23505")
+        throw new ProviderUnavailableError(
+          "端末認証を開始できませんでした。",
+        );
     }
-    throw new Error("認証コードを作成できませんでした。");
+    throw new ProviderUnavailableError("認証コードを作成できませんでした。");
   } catch (cause) {
     console.error("Desktop device authorization start failed", cause);
-    return NextResponse.json(
-      { message: "端末認証を開始できませんでした。" },
-      { status: 503 },
+    const response = toMessageApiError(
+      cause,
+      "端末認証を開始できませんでした。",
     );
+    return NextResponse.json(response.body, { status: response.status });
   }
 }

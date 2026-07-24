@@ -109,6 +109,8 @@ the stable `LEASE_LOST` code without changing heartbeat or job-state behavior.
   [`CLOUD_STRUCTURE_DOMAIN_ERRORS.md`](CLOUD_STRUCTURE_DOMAIN_ERRORS.md).
 - Cloud Project, Asset, Import and Export boundaries are documented in
   [`CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md`](CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md).
+- Checkout, Billing and Desktop-compatible API errors are documented in
+  [`CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md`](CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md).
 - Assign dedicated PostgreSQL SQLSTATE values in a separate migration so the
   Canvas Repository can eventually stop parsing the legacy RPC signal.
 - Migrate the API envelope fully to nested `error.code` after all supported

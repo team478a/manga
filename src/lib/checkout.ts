@@ -6,6 +6,11 @@ import {
   normalizeBuyerEmail,
   resolveCheckoutOrigin,
 } from "@/lib/checkout-policy";
+import {
+  DomainError,
+  isDomainError,
+  ProviderUnavailableError,
+} from "@/lib/domain-errors";
 
 type CheckoutOrder = {
   id: string;
@@ -42,11 +47,13 @@ export async function createStripeCheckoutSession({
   origin?: string;
 }) {
   if (!process.env.STRIPE_SECRET_KEY) {
-    throw new Error("Stripeのシークレットキーが設定されていません。");
+    throw new ProviderUnavailableError(
+      "Stripeのシークレットキーが設定されていません。",
+    );
   }
 
   const supabase = createAdminClient();
-  const { data: checkoutOrder } = await supabase
+  const { data: checkoutOrder, error: checkoutOrderError } = await supabase
     .from("orders")
     .select(
       "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class))",
@@ -54,6 +61,12 @@ export async function createStripeCheckoutSession({
     .eq("id", orderId)
     .eq("product_id", productId)
     .maybeSingle<CheckoutOrder>();
+  if (checkoutOrderError)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "注文情報を確認できませんでした。",
+      { cause: checkoutOrderError },
+    );
 
   const order = assertCheckoutOrder(checkoutOrder, {
     orderId,
@@ -75,43 +88,49 @@ export async function createStripeCheckoutSession({
   const buyerMetadata: Record<string, string> = {};
   if (order.buyer_profile_id)
     buyerMetadata.buyer_profile_id = order.buyer_profile_id;
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: normalizedEmail,
-    line_items: [
-      {
-        price_data: {
-          currency: "jpy",
-          product_data: {
-            name: order.digital_products.title,
-            description: order.digital_products.description ?? undefined,
+  try {
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: normalizedEmail,
+      line_items: [
+        {
+          price_data: {
+            currency: "jpy",
+            product_data: {
+              name: order.digital_products.title,
+              description: order.digital_products.description ?? undefined,
+            },
+            unit_amount: order.amount,
           },
-          unit_amount: order.amount,
+          quantity: 1,
         },
-        quantity: 1,
-      },
-    ],
-    success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl}/checkout/cancel?order_id=${order.id}&cancel_token=${cancelToken}`,
-    metadata: {
-      order_id: order.id,
-      product_id: order.product_id,
-      creator_id: order.creator_id,
-      ...buyerMetadata,
-    },
-    payment_intent_data: {
+      ],
+      success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${siteUrl}/checkout/cancel?order_id=${order.id}&cancel_token=${cancelToken}`,
       metadata: {
         order_id: order.id,
         product_id: order.product_id,
         creator_id: order.creator_id,
         ...buyerMetadata,
       },
-    },
-  });
-
-  if (!session.url) {
-    throw new Error("Stripe CheckoutのURLを作成できませんでした。");
+      payment_intent_data: {
+        metadata: {
+          order_id: order.id,
+          product_id: order.product_id,
+          creator_id: order.creator_id,
+          ...buyerMetadata,
+        },
+      },
+    });
+    if (!session.url)
+      throw new ProviderUnavailableError(
+        "Stripe CheckoutのURLを作成できませんでした。",
+      );
+    return session;
+  } catch (error) {
+    if (isDomainError(error)) throw error;
+    throw new ProviderUnavailableError(
+      "Stripe Checkoutを開始できませんでした。",
+    );
   }
-
-  return session;
 }
