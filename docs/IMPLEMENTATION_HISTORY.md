@@ -1321,3 +1321,13 @@ Windows固有の`Desktop Windows / Windows build`を別workflowへ追加しま�
 初回GitHub実行では、ローカルに残る共有package build成果物が隠していたクリーン環境の型解決不足を検出しました。CoreとWindowsの両Jobで`build:packages`を型検査前に明示し、GitHub ActionsもNode.js 24 runtimeを使用する現行majorへ更新しました。
 
 Windows Jobでは共有packageがrepo rootの依存を解決するため、rootとDesktop双方をlockfileからinstallするよう補正しました。Core Jobは共有package build後に型検査、Hub build、Hub／Canvas／AI testまでGitHub上で成功しています。
+
+## 153. 保守性改善PR-09 Desktop migration runner分離
+
+Desktop SQLiteの12個のversioned migrationを1つの`Migration[]`へ集約し、未適用判定、backup要否、実行順、transaction、`schema_migrations`登録、structured logを新しい`infrastructure/sqlite/migration-runner.ts`へ分離しました。追加漏れしていた`character-profiles-v1`を含め、既存DBでは全pending migrationの直前に個別backupを作成します。
+
+最初の未適用migrationでは、共通schema準備とmigration本体を同じtransactionで実行します。途中失敗時は共通準備、schema変更、データ変更、version登録をまとめてrollbackし、次回起動で安全に再試行できます。backupは一時名へのコピー後に同一ディレクトリでrenameし、コピー失敗時の一時ファイルを残しません。
+
+runner単体で全migrationのbackup・登録・二重適用防止、途中失敗rollback、修正後の再試行を追加検証しました。旧Canvas DBから全12 migration、`character-profiles-v1`のbackup、structured logを含むdatabase集中テスト30/30、Desktop全体93/93に成功しています。
+
+クリーンインストールで検出したDesktop development推移依存`fast-uri`のhigh severity advisoryを修正版3.1.4へ更新し、root／Desktopとも`npm audit` 0件を確認しました。Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop production build、16 Supabase migration静的検査、RC preflightにも成功しています。新しいschema migrationはなく、既存version、適用順、SQLiteデータ、公開IPCを維持します。詳細は[`desktop/MIGRATION_RUNNER.md`](desktop/MIGRATION_RUNNER.md)へ記録しています。

@@ -8,6 +8,7 @@ import { performance } from "node:perf_hooks";
 import { Buffer } from "node:buffer";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { openDatabaseWithRecovery } from "../dist-main/main/database-recovery.js";
+import { MigrationRunner } from "../dist-main/main/infrastructure/sqlite/migration-runner.js";
 import { renderPagePng } from "../dist-main/main/page-renderer.js";
 import Database from "better-sqlite3";
 import sharp from "sharp";
@@ -22,7 +23,9 @@ import {
 } from "@mangai/ai-core";
 
 test("character profiles persist local prompts and same-project references", async (t) => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-character-profile-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mangai-character-profile-"),
+  );
   const paths = {
     root,
     database: path.join(root, "mangai.sqlite"),
@@ -101,9 +104,10 @@ test("character profiles persist local prompts and same-project references", asy
   profiles = db.listCharacterProfiles(project.project.id);
   assert.equal(profiles.length, 1);
   assert.equal(profiles[0].referenceAssets.length, 1);
-  profiles = db.detachCharacterReferenceAsset(
-    { characterProfileId: profile.id, assetId: project.assets[0].id },
-  );
+  profiles = db.detachCharacterReferenceAsset({
+    characterProfileId: profile.id,
+    assetId: project.assets[0].id,
+  });
   assert.equal(profiles[0].referenceAssets.length, 0);
   assert.equal(db.deleteCharacterProfile(profile.id).length, 0);
 });
@@ -1074,7 +1078,185 @@ test("asset deletion uses project-local trash and supports undo and redo", async
   db.close();
   fs.rmSync(root, { recursive: true, force: true });
 });
-test("legacy database is backed up before canvas schema migration", () => {
+test("migration runner backs up, registers and skips every migration from one list", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-runner-"));
+  const databasePath = path.join(root, "runner.sqlite");
+  const backupDirectory = path.join(root, "backups");
+  const database = new Database(databasePath);
+  database.pragma("journal_mode = WAL");
+  database.exec(`
+    create table state(value text not null);
+    insert into state values('original');
+    create table schema_migrations(
+      version text primary key,
+      name text not null,
+      applied_at text not null
+    );
+  `);
+  const events = [];
+  const calls = [];
+  let tick = 0;
+  const runner = new MigrationRunner(database, {
+    databasePath,
+    backupDirectory,
+    databaseExisted: true,
+    now: () => new Date(Date.UTC(2026, 6, 24, 1, 0, 0, tick++)),
+    onEvent: (event) => events.push(event),
+  });
+  const migrations = [
+    {
+      version: "test-a-v1",
+      name: "Test A",
+      backupRequired: true,
+      run: (target) => {
+        calls.push("a");
+        target.prepare("update state set value='a'").run();
+      },
+    },
+    {
+      version: "test-b-v1",
+      name: "Test B",
+      backupRequired: true,
+      run: (target) => {
+        calls.push("b");
+        target.prepare("update state set value='b'").run();
+      },
+    },
+  ];
+
+  const result = runner.run(migrations, () => {
+    database.exec("create table prepared(id integer primary key)");
+  });
+  assert.deepEqual(result.applied, ["test-a-v1", "test-b-v1"]);
+  assert.deepEqual(calls, ["a", "b"]);
+  assert.deepEqual(
+    database
+      .prepare("select version from schema_migrations order by rowid")
+      .all()
+      .map((row) => row.version),
+    ["test-a-v1", "test-b-v1"],
+  );
+  const backups = fs.readdirSync(backupDirectory).sort();
+  assert.equal(backups.length, 2);
+  assert.ok(backups.some((file) => file.includes("before-test-a-v1")));
+  assert.ok(backups.some((file) => file.includes("before-test-b-v1")));
+  assert.equal(
+    events.filter((event) => event.event === "migration_backup_created").length,
+    2,
+  );
+  assert.equal(
+    events.filter((event) => event.event === "migration_applied").length,
+    2,
+  );
+
+  assert.deepEqual(runner.run(migrations, () => {}).applied, []);
+  assert.deepEqual(calls, ["a", "b"]);
+  assert.equal(fs.readdirSync(backupDirectory).length, 2);
+  database.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
+test("migration runner rolls back a failed migration and can retry safely", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-runner-fail-"));
+  const databasePath = path.join(root, "runner.sqlite");
+  const backupDirectory = path.join(root, "backups");
+  const database = new Database(databasePath);
+  database.pragma("journal_mode = WAL");
+  database.exec(`
+    create table state(value text not null);
+    insert into state values('original');
+    create table schema_migrations(
+      version text primary key,
+      name text not null,
+      applied_at text not null
+    );
+  `);
+  const events = [];
+  let tick = 0;
+  const runner = new MigrationRunner(database, {
+    databasePath,
+    backupDirectory,
+    databaseExisted: true,
+    now: () => new Date(Date.UTC(2026, 6, 24, 2, 0, 0, tick++)),
+    onEvent: (event) => events.push(event),
+  });
+  const migration = {
+    version: "failing-v1",
+    name: "Failing migration",
+    backupRequired: true,
+    run: (target) => {
+      target.exec("create table partial(id integer primary key)");
+      target.prepare("update state set value='changed'").run();
+      throw new Error("expected migration failure");
+    },
+  };
+
+  assert.throws(
+    () =>
+      runner.run([migration], () => {
+        database.exec("create table prepared(id integer primary key)");
+      }),
+    /expected migration failure/,
+  );
+  assert.equal(
+    database.prepare("select value from state").pluck().get(),
+    "original",
+  );
+  assert.equal(
+    database
+      .prepare(
+        "select count(*) from sqlite_master where name in ('prepared','partial')",
+      )
+      .pluck()
+      .get(),
+    0,
+  );
+  assert.equal(
+    database
+      .prepare(
+        "select count(*) from schema_migrations where version='failing-v1'",
+      )
+      .pluck()
+      .get(),
+    0,
+  );
+  assert.equal(
+    events.filter((event) => event.event === "migration_failed").length,
+    1,
+  );
+
+  const retry = {
+    ...migration,
+    run: (target) => {
+      target.exec("create table partial(id integer primary key)");
+      target.prepare("update state set value='recovered'").run();
+    },
+  };
+  assert.deepEqual(
+    runner.run([retry], () => {
+      database.exec("create table prepared(id integer primary key)");
+    }).applied,
+    ["failing-v1"],
+  );
+  assert.equal(
+    database.prepare("select value from state").pluck().get(),
+    "recovered",
+  );
+  assert.equal(
+    database
+      .prepare(
+        "select count(*) from schema_migrations where version='failing-v1'",
+      )
+      .pluck()
+      .get(),
+    1,
+  );
+  assert.deepEqual(runner.run([retry], () => {}).applied, []);
+  database.close();
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
+test("legacy database is backed up before every pending schema migration", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-migration-"));
   const paths = {
     root,
@@ -1091,8 +1273,42 @@ test("legacy database is backed up before canvas schema migration", () => {
   legacy.close();
   const db = new MangaiDatabase(paths);
   const backups = fs.readdirSync(path.join(root, "backups"));
-  assert.equal(backups.length, 1);
-  assert.match(backups[0], /before-canvas-v1/);
+  const migrationVersions = [
+    "canvas-v1",
+    "canvas-relative-text-v1",
+    "canvas-panel-shape-v1",
+    "hybrid-generation-policy-v1",
+    "hybrid-generation-routing-v1",
+    "asset-library-v1",
+    "panel-layers-v1",
+    "adult-generation-consent-v1",
+    "adult-provider-policy-v1",
+    "adult-provider-policy-import-v1",
+    "content-class-v1",
+    "character-profiles-v1",
+  ];
+  assert.equal(backups.length, migrationVersions.length);
+  for (const version of migrationVersions)
+    assert.ok(backups.some((file) => file.includes(`before-${version}`)));
+  const migrationEvents = fs
+    .readFileSync(path.join(paths.logs, "desktop.jsonl"), "utf8")
+    .trim()
+    .split("\n")
+    .map((line) => JSON.parse(line));
+  assert.ok(
+    migrationEvents.some(
+      (entry) =>
+        entry.event === "migration_backup_created" &&
+        entry.context.version === "character-profiles-v1",
+    ),
+  );
+  assert.ok(
+    migrationEvents.some(
+      (entry) =>
+        entry.event === "migration_applied" &&
+        entry.context.version === "character-profiles-v1",
+    ),
+  );
   db.close();
   const migrated = new Database(paths.database);
   const panelColumns = migrated
@@ -1161,6 +1377,13 @@ test("legacy database is backed up before canvas schema migration", () => {
     migrated
       .prepare(
         "select 1 from schema_migrations where version='adult-provider-policy-import-v1'",
+      )
+      .get(),
+  );
+  assert.ok(
+    migrated
+      .prepare(
+        "select 1 from schema_migrations where version='character-profiles-v1'",
       )
       .get(),
   );

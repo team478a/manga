@@ -92,6 +92,12 @@ import {
   type RenderAsset,
 } from "./page-renderer.js";
 import { DEZGO_QUEUE_POLICY } from "./ai/dezgo-queue-policy.js";
+import {
+  MigrationRunner,
+  type Migration,
+  type MigrationRunnerEvent,
+} from "./infrastructure/sqlite/migration-runner.js";
+import { StructuredLogger } from "./structured-logger.js";
 
 export type Paths = {
   root: string;
@@ -182,7 +188,10 @@ async function extractZipEntry(
   signal?: AbortSignal,
 ) {
   const input = await zip.openReadStreamPromise(entry);
-  const output = fs.createWriteStream(destination, { flags: "wx", mode: 0o600 });
+  const output = fs.createWriteStream(destination, {
+    flags: "wx",
+    mode: 0o600,
+  });
   const hash = crypto.createHash("sha256");
   let byteSize = 0;
   try {
@@ -526,67 +535,109 @@ export class MangaiDatabase {
     this.db = openCheckedDatabase(paths.database, databaseExisted);
     this.db.pragma("foreign_keys = ON");
     this.db.pragma("journal_mode = WAL");
-    if (databaseExisted) {
-      const pendingMigration = !this.hasMigration("canvas-v1")
-        ? "canvas-v1"
-        : !this.hasMigration("canvas-relative-text-v1")
-          ? "canvas-relative-text-v1"
-          : !this.hasMigration("canvas-panel-shape-v1")
-            ? "canvas-panel-shape-v1"
-            : !this.hasMigration("hybrid-generation-policy-v1")
-              ? "hybrid-generation-policy-v1"
-              : !this.hasMigration("hybrid-generation-routing-v1")
-                ? "hybrid-generation-routing-v1"
-                : !this.hasMigration("asset-library-v1")
-                  ? "asset-library-v1"
-                  : !this.hasMigration("panel-layers-v1")
-                    ? "panel-layers-v1"
-                    : !this.hasMigration("adult-generation-consent-v1")
-                      ? "adult-generation-consent-v1"
-                      : !this.hasMigration("adult-provider-policy-v1")
-                        ? "adult-provider-policy-v1"
-                        : !this.hasMigration("adult-provider-policy-import-v1")
-                          ? "adult-provider-policy-import-v1"
-                          : !this.hasMigration("content-class-v1")
-                            ? "content-class-v1"
-                            : null;
-      if (pendingMigration) this.backupBeforeMigration(pendingMigration);
-    }
-    this.migrate();
+    this.migrate(databaseExisted);
   }
   close() {
     this.db.close();
   }
-  private hasMigration(version: string) {
-    const exists = this.db
-      .prepare(
-        "select 1 from sqlite_master where type='table' and name='schema_migrations'",
-      )
-      .get();
-    if (!exists) return false;
-    return Boolean(
-      this.db
-        .prepare("select 1 from schema_migrations where version=?")
-        .get(version),
-    );
+  private migrations(): Migration[] {
+    return [
+      {
+        version: "canvas-v1",
+        name: "Manga canvas panels, balloons and text",
+        backupRequired: true,
+        run: () => this.migrateCanvasV1(),
+      },
+      {
+        version: "canvas-relative-text-v1",
+        name: "Balloon-relative text geometry",
+        backupRequired: true,
+        run: () => this.migrateRelativeTextV1(),
+      },
+      {
+        version: "canvas-panel-shape-v1",
+        name: "Panel shape and slant ratio",
+        backupRequired: true,
+        run: () => this.migratePanelShapeV1(),
+      },
+      {
+        version: "hybrid-generation-policy-v1",
+        name: "Project hybrid generation policy",
+        backupRequired: true,
+        run: () => this.migrateGenerationPolicyV1(),
+      },
+      {
+        version: "hybrid-generation-routing-v1",
+        name: "Hybrid generation route decisions",
+        backupRequired: true,
+        run: () => this.migrateGenerationRoutingV1(),
+      },
+      {
+        version: "asset-library-v1",
+        name: "Project asset library metadata",
+        backupRequired: true,
+        run: () => this.migrateAssetLibraryV1(),
+      },
+      {
+        version: "panel-layers-v1",
+        name: "Layered panel image foundation",
+        backupRequired: true,
+        run: () => this.migratePanelLayersV1(),
+      },
+      {
+        version: "adult-generation-consent-v1",
+        name: "Adult generation administrator switch and age attestation",
+        backupRequired: true,
+        run: () => this.migrateAdultGenerationConsentV1(),
+      },
+      {
+        version: "adult-provider-policy-v1",
+        name: "Adult provider approval evidence and model allowlist",
+        backupRequired: true,
+        run: () => this.migrateAdultProviderPolicyV1(),
+      },
+      {
+        version: "adult-provider-policy-import-v1",
+        name: "Signed adult provider policy import audit",
+        backupRequired: true,
+        run: () => this.migrateAdultProviderPolicyImportV1(),
+      },
+      {
+        version: "content-class-v1",
+        name: "General and adult product boundary",
+        backupRequired: true,
+        run: () => this.migrateContentClassV1(),
+      },
+      {
+        version: "character-profiles-v1",
+        name: "Local character profiles and reference assets",
+        backupRequired: true,
+        run: () => this.migrateCharacterProfilesV1(),
+      },
+    ];
   }
-  private backupBeforeMigration(name: string) {
-    const directory = path.join(this.paths.root, "backups");
-    fs.mkdirSync(directory, { recursive: true });
-    this.db.pragma("wal_checkpoint(RESTART)");
-    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const destination = path.join(
-      directory,
-      `mangai_local-before-${name}-${stamp}.sqlite`,
-    );
-    fs.copyFileSync(
-      this.paths.database,
-      destination,
-      fs.constants.COPYFILE_EXCL,
-    );
-  }
-  private migrate() {
-    this.db.exec(`
+  private migrate(databaseExisted: boolean) {
+    const logger = new StructuredLogger(this.paths.logs);
+    const runner = new MigrationRunner(this.db, {
+      databasePath: this.paths.database,
+      backupDirectory: path.join(this.paths.root, "backups"),
+      databaseExisted,
+      onEvent: (event: MigrationRunnerEvent) => {
+        logger.log(
+          event.event === "migration_failed" ? "error" : "info",
+          event.event,
+          event.event === "migration_failed"
+            ? {
+                version: event.version,
+                name: event.name,
+                error: event.error,
+              }
+            : { version: event.version, name: event.name },
+        );
+      },
+    });
+    runner.run(this.migrations(), () => {
+      this.db.exec(`
  create table if not exists projects(id text primary key,title text not null,subtitle text not null default '',description text not null default '',genre text not null default '',age_rating text not null,content_class text not null default 'adult' check(content_class in ('general','adult')),reading_direction text not null,width integer not null,height integer not null,dpi integer not null,storage_path text not null,cover_asset_id text,created_at text not null,updated_at text not null,last_opened_at text);
  create table if not exists episodes(id text primary key,project_id text not null references projects(id) on delete cascade,title text not null,order_index integer not null,created_at text not null,updated_at text not null);
  create table if not exists assets(id text primary key,project_id text not null references projects(id) on delete cascade,file_name text not null,relative_path text not null,mime_type text not null,width integer not null,height integer not null,byte_size integer not null,sha256 text not null,created_at text not null,unique(project_id,sha256));
@@ -613,63 +664,52 @@ export class MangaiDatabase {
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
  create table if not exists schema_migrations(version text primary key,name text not null,applied_at text not null);
  create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);create index if not exists idx_external_cost_project_month on external_cost_reservations(project_id,provider_id,billing_month,status);`);
-    this.db
-      .prepare(
-        `update external_cost_reservations set status='released',updated_at=?
+      this.db
+        .prepare(
+          `update external_cost_reservations set status='released',updated_at=?
          where status='reserved' and job_id is null`,
-      )
-      .run(now());
-    const assetColumns = this.db
-      .prepare("pragma table_info(assets)")
-      .all() as Array<{ name: string }>;
-    if (!assetColumns.some((column) => column.name === "generation_job_id"))
-      this.db.exec("alter table assets add column generation_job_id text");
-    if (!assetColumns.some((column) => column.name === "metadata_json"))
+        )
+        .run(now());
+      const assetColumns = this.db
+        .prepare("pragma table_info(assets)")
+        .all() as Array<{ name: string }>;
+      if (!assetColumns.some((column) => column.name === "generation_job_id"))
+        this.db.exec("alter table assets add column generation_job_id text");
+      if (!assetColumns.some((column) => column.name === "metadata_json"))
+        this.db.exec(
+          "alter table assets add column metadata_json text not null default '{}'",
+        );
+      const jobColumns = this.db
+        .prepare("pragma table_info(generation_jobs)")
+        .all() as Array<{ name: string }>;
+      if (!jobColumns.some((column) => column.name === "progress"))
+        this.db.exec(
+          "alter table generation_jobs add column progress real not null default 0",
+        );
+      if (!jobColumns.some((column) => column.name === "priority"))
+        this.db.exec(
+          "alter table generation_jobs add column priority integer not null default 0",
+        );
+      if (!jobColumns.some((column) => column.name === "attempt_count"))
+        this.db.exec(
+          "alter table generation_jobs add column attempt_count integer not null default 0",
+        );
+      if (!jobColumns.some((column) => column.name === "max_attempts"))
+        this.db.exec(
+          "alter table generation_jobs add column max_attempts integer not null default 3",
+        );
+      if (!jobColumns.some((column) => column.name === "next_attempt_at"))
+        this.db.exec(
+          "alter table generation_jobs add column next_attempt_at text",
+        );
+      if (!jobColumns.some((column) => column.name === "queue_order"))
+        this.db.exec(
+          "alter table generation_jobs add column queue_order integer not null default 0",
+        );
       this.db.exec(
-        "alter table assets add column metadata_json text not null default '{}'",
+        "create index if not exists idx_generation_jobs_queue_v2 on generation_jobs(status,provider_type,priority desc,queue_order,created_at)",
       );
-    const jobColumns = this.db
-      .prepare("pragma table_info(generation_jobs)")
-      .all() as Array<{ name: string }>;
-    if (!jobColumns.some((column) => column.name === "progress"))
-      this.db.exec(
-        "alter table generation_jobs add column progress real not null default 0",
-      );
-    if (!jobColumns.some((column) => column.name === "priority"))
-      this.db.exec(
-        "alter table generation_jobs add column priority integer not null default 0",
-      );
-    if (!jobColumns.some((column) => column.name === "attempt_count"))
-      this.db.exec(
-        "alter table generation_jobs add column attempt_count integer not null default 0",
-      );
-    if (!jobColumns.some((column) => column.name === "max_attempts"))
-      this.db.exec(
-        "alter table generation_jobs add column max_attempts integer not null default 3",
-      );
-    if (!jobColumns.some((column) => column.name === "next_attempt_at"))
-      this.db.exec(
-        "alter table generation_jobs add column next_attempt_at text",
-      );
-    if (!jobColumns.some((column) => column.name === "queue_order"))
-      this.db.exec(
-        "alter table generation_jobs add column queue_order integer not null default 0",
-      );
-    this.db.exec(
-      "create index if not exists idx_generation_jobs_queue_v2 on generation_jobs(status,provider_type,priority desc,queue_order,created_at)",
-    );
-    this.migrateCanvasV1();
-    this.migrateRelativeTextV1();
-    this.migratePanelShapeV1();
-    this.migrateGenerationPolicyV1();
-    this.migrateGenerationRoutingV1();
-    this.migrateAssetLibraryV1();
-    this.migratePanelLayersV1();
-    this.migrateAdultGenerationConsentV1();
-    this.migrateAdultProviderPolicyV1();
-    this.migrateAdultProviderPolicyImportV1();
-    this.migrateContentClassV1();
-    this.migrateCharacterProfilesV1();
+    });
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -692,7 +732,6 @@ export class MangaiDatabase {
       .run(now());
   }
   private migrateCanvasV1() {
-    if (this.hasMigration("canvas-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(panels)").all() as Array<{
@@ -735,15 +774,9 @@ export class MangaiDatabase {
           "update panels set z_index=order_index,created_at=case when created_at='' then ? else created_at end,updated_at=case when updated_at='' then ? else updated_at end",
         )
         .run(stamp, stamp);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("canvas-v1", "Manga canvas panels, balloons and text", stamp);
     })();
   }
   private migrateRelativeTextV1() {
-    if (this.hasMigration("canvas-relative-text-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(text_objects)").all() as Array<{
@@ -757,7 +790,6 @@ export class MangaiDatabase {
       ["relative_width", "real"],
       ["relative_height", "real"],
     ] as const;
-    const stamp = now();
     this.db.transaction(() => {
       for (const [column, definition] of additions)
         if (!columns.has(column))
@@ -793,19 +825,9 @@ export class MangaiDatabase {
           item.id,
         );
       }
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "canvas-relative-text-v1",
-          "Balloon-relative text geometry",
-          stamp,
-        );
     })();
   }
   private migratePanelShapeV1() {
-    if (this.hasMigration("canvas-panel-shape-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(panels)").all() as Array<{
@@ -813,7 +835,6 @@ export class MangaiDatabase {
         }>
       ).map((column) => column.name),
     );
-    const stamp = now();
     this.db.transaction(() => {
       if (!columns.has("shape"))
         this.db.exec(
@@ -823,15 +844,9 @@ export class MangaiDatabase {
         this.db.exec(
           "alter table panels add column slant real not null default 0.12",
         );
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("canvas-panel-shape-v1", "Panel shape and slant ratio", stamp);
     })();
   }
   private migrateGenerationPolicyV1() {
-    if (this.hasMigration("hybrid-generation-policy-v1")) return;
     const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
@@ -857,20 +872,9 @@ export class MangaiDatabase {
            where id not in (select project_id from project_generation_policies)`,
         )
         .run(stamp, stamp);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "hybrid-generation-policy-v1",
-          "Project hybrid generation policy",
-          stamp,
-        );
     })();
   }
   private migrateGenerationRoutingV1() {
-    if (this.hasMigration("hybrid-generation-routing-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists generation_route_decisions(
@@ -888,19 +892,9 @@ export class MangaiDatabase {
         create index if not exists idx_generation_route_job
           on generation_route_decisions(job_id,created_at);
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "hybrid-generation-routing-v1",
-          "Hybrid generation route decisions",
-          stamp,
-        );
     })();
   }
   private migrateAssetLibraryV1() {
-    if (this.hasMigration("asset-library-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(assets)").all() as Array<{
@@ -914,7 +908,6 @@ export class MangaiDatabase {
       ["library_favorite", "integer not null default 0"],
       ["library_updated_at", "text"],
     ] as const;
-    const stamp = now();
     this.db.transaction(() => {
       for (const [column, definition] of additions)
         if (!columns.has(column))
@@ -922,15 +915,9 @@ export class MangaiDatabase {
       this.db.exec(
         "create index if not exists idx_assets_library on assets(project_id,library_category,library_favorite,created_at)",
       );
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("asset-library-v1", "Project asset library metadata", stamp);
     })();
   }
   private migratePanelLayersV1() {
-    if (this.hasMigration("panel-layers-v1")) return;
     const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
@@ -1004,16 +991,9 @@ export class MangaiDatabase {
           stamp,
           stamp,
         );
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("panel-layers-v1", "Layered panel image foundation", stamp);
     })();
   }
   private migrateAdultGenerationConsentV1() {
-    if (this.hasMigration("adult-generation-consent-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists adult_generation_settings(
@@ -1027,20 +1007,9 @@ export class MangaiDatabase {
           updated_at text not null
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "adult-generation-consent-v1",
-          "Adult generation administrator switch and age attestation",
-          stamp,
-        );
     })();
   }
   private migrateAdultProviderPolicyV1() {
-    if (this.hasMigration("adult-provider-policy-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists adult_provider_approvals(
@@ -1063,20 +1032,9 @@ export class MangaiDatabase {
           primary key(provider_id,model_id)
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "adult-provider-policy-v1",
-          "Adult provider approval evidence and model allowlist",
-          stamp,
-        );
     })();
   }
   private migrateAdultProviderPolicyImportV1() {
-    if (this.hasMigration("adult-provider-policy-import-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists adult_provider_policy_imports(
@@ -1088,19 +1046,9 @@ export class MangaiDatabase {
           imported_at text not null
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "adult-provider-policy-import-v1",
-          "Signed adult provider policy import audit",
-          stamp,
-        );
     })();
   }
   private migrateContentClassV1() {
-    if (this.hasMigration("content-class-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(projects)").all() as Array<{
@@ -1128,16 +1076,9 @@ export class MangaiDatabase {
           select id from projects where content_class='adult'
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("content-class-v1", "General and adult product boundary", stamp);
     })();
   }
   private migrateCharacterProfilesV1() {
-    if (this.hasMigration("character-profiles-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists character_profiles(
@@ -1163,15 +1104,6 @@ export class MangaiDatabase {
         create index if not exists idx_character_profile_assets_order
           on character_profile_assets(character_profile_id,order_index);
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "character-profiles-v1",
-          "Local character profiles and reference assets",
-          stamp,
-        );
     })();
   }
   private project(row: any): Project {
@@ -1516,14 +1448,12 @@ export class MangaiDatabase {
               asset.libraryUpdatedAt,
             );
         for (const item of sourceAdultReferenceAssessments)
-          this.db
-            .prepare("update assets set metadata_json=? where id=?")
-            .run(
-              JSON.stringify({
-                adultReferenceImageAssessment: item.assessment,
-              }),
-              mappedReference(assetMap, item.assetId, "参照画像の安全確認"),
-            );
+          this.db.prepare("update assets set metadata_json=? where id=?").run(
+            JSON.stringify({
+              adultReferenceImageAssessment: item.assessment,
+            }),
+            mappedReference(assetMap, item.assetId, "参照画像の安全確認"),
+          );
         for (const profile of sourceCharacterProfiles) {
           const profileId = mappedReference(
             characterProfileMap,
@@ -1829,8 +1759,11 @@ export class MangaiDatabase {
     });
     const abort = () => {
       const error = bulkOperationAbortError();
-      (zip.outputStream as NodeJS.ReadableStream & { destroy(error: Error): void })
-        .destroy(error);
+      (
+        zip.outputStream as NodeJS.ReadableStream & {
+          destroy(error: Error): void;
+        }
+      ).destroy(error);
       output.destroy(error);
     };
     options?.signal?.addEventListener("abort", abort, { once: true });
@@ -1993,8 +1926,7 @@ export class MangaiDatabase {
           throw new Error("展開後の合計サイズが上限を超えています。");
         if (
           entry.uncompressedSize > 1024 * 1024 &&
-          entry.uncompressedSize /
-            Math.max(1, entry.compressedSize) >
+          entry.uncompressedSize / Math.max(1, entry.compressedSize) >
             maxBackupCompressionRatio
         )
           throw new Error("異常な圧縮率のバックアップは復元できません。");
@@ -2009,7 +1941,9 @@ export class MangaiDatabase {
         options?.signal,
       );
       try {
-        manifest = parseBackupManifest(JSON.parse(manifestBytes.toString("utf8")));
+        manifest = parseBackupManifest(
+          JSON.parse(manifestBytes.toString("utf8")),
+        );
       } catch (error) {
         if (
           error instanceof Error &&
@@ -2043,7 +1977,8 @@ export class MangaiDatabase {
             options?.signal,
           );
         } catch (error) {
-          if (error instanceof Error && error.name === "AbortError") throw error;
+          if (error instanceof Error && error.name === "AbortError")
+            throw error;
           throw new Error(`素材「${asset.fileName}」が破損しています。`);
         }
         options?.onProgress?.({
@@ -2309,18 +2244,12 @@ export class MangaiDatabase {
               asset.libraryUpdatedAt ?? null,
             );
         for (const item of manifest.adultReferenceImageAssessments ?? [])
-          this.db
-            .prepare("update assets set metadata_json=? where id=?")
-            .run(
-              JSON.stringify({
-                adultReferenceImageAssessment: item.assessment,
-              }),
-              mappedReference(
-                assetMap,
-                item.assetId,
-                "参照画像の安全確認",
-              ),
-            );
+          this.db.prepare("update assets set metadata_json=? where id=?").run(
+            JSON.stringify({
+              adultReferenceImageAssessment: item.assessment,
+            }),
+            mappedReference(assetMap, item.assetId, "参照画像の安全確認"),
+          );
         for (const profile of manifest.characterProfiles ?? []) {
           const profileId = mappedReference(
             characterProfileMap,
@@ -4242,9 +4171,7 @@ export class MangaiDatabase {
         status: "rendering",
       });
       try {
-        const panels = bundle.panels.filter(
-          (item) => item.pageId === page.id,
-        );
+        const panels = bundle.panels.filter((item) => item.pageId === page.id);
         const panelIds = new Set(panels.map((panel) => panel.id));
         const panelLayers = bundle.panelLayers.filter((layer) =>
           panelIds.has(layer.panelId),
@@ -5218,7 +5145,9 @@ export class MangaiDatabase {
     const project = this.bundle(projectId).project;
     if (project.contentClass !== "adult")
       throw new Error("Phase 5実機証跡は成人向けProjectで作成してください。");
-    if (!["vram_8gb", "vram_12gb", "vram_16gb"].includes(runtime.effectiveProfile))
+    if (
+      !["vram_8gb", "vram_12gb", "vram_16gb"].includes(runtime.effectiveProfile)
+    )
       throw new Error("8GB／12GB／16GBの実機Profileを選択してください。");
     const rows = this.db
       .prepare(
@@ -5244,7 +5173,12 @@ export class MangaiDatabase {
     ] as const;
     const byOperation = new Map<
       (typeof required)[number],
-      { operation: (typeof required)[number]; result: "passed"; outputSha256: string; completedAt: string }
+      {
+        operation: (typeof required)[number];
+        result: "passed";
+        outputSha256: string;
+        completedAt: string;
+      }
     >();
     for (const row of rows) {
       try {
@@ -5279,9 +5213,9 @@ export class MangaiDatabase {
          from export_history where project_id=? order by created_at desc limit 1`,
       )
       .get(projectId) as
-      | { outputDir: string; filesJson: string; createdAt: string }
-      | undefined;
-    if (!exportRow) throw new Error("実機確認後のProject書き出しがありません。");
+      { outputDir: string; filesJson: string; createdAt: string } | undefined;
+    if (!exportRow)
+      throw new Error("実機確認後のProject書き出しがありません。");
     const exportRoot = path.resolve(this.paths.exports) + path.sep;
     const outputDir = path.resolve(exportRow.outputDir);
     if (!`${outputDir}${path.sep}`.startsWith(exportRoot))
@@ -5289,10 +5223,14 @@ export class MangaiDatabase {
     const files = JSON.parse(exportRow.filesJson) as unknown;
     if (!Array.isArray(files)) throw new Error("書き出し履歴が不正です。");
     const digest = (name: string) => {
-      if (!files.includes(name)) throw new Error(`${name}の書き出しがありません。`);
+      if (!files.includes(name))
+        throw new Error(`${name}の書き出しがありません。`);
       const file = path.join(outputDir, name);
       if (!fs.existsSync(file)) throw new Error(`${name}が見つかりません。`);
-      return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+      return crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(file))
+        .digest("hex");
     };
     return phase5HardwareEvidenceSchema.parse({
       format: "mangai.phase5-hardware-evidence",
@@ -5304,7 +5242,10 @@ export class MangaiDatabase {
         dedicatedVramMb: runtime.hardware.dedicatedVramMb,
       },
       checkedAt: now(),
-      projectIdSha256: crypto.createHash("sha256").update(projectId).digest("hex"),
+      projectIdSha256: crypto
+        .createHash("sha256")
+        .update(projectId)
+        .digest("hex"),
       operations: required.map((operation) => byOperation.get(operation)!),
       export: {
         pdfSha256: digest("本編PDF.pdf"),
@@ -6055,7 +5996,8 @@ export class MangaiDatabase {
     if (!["image/png", "image/jpeg", "image/webp"].includes(asset.mime_type))
       throw new Error("入力素材の画像形式に対応していません。");
     const file = this.safeProjectPath(asset.storage_path, asset.relative_path);
-    if (!fs.existsSync(file)) throw new Error("入力素材ファイルが見つかりません。");
+    if (!fs.existsSync(file))
+      throw new Error("入力素材ファイルが見つかりません。");
     this.verifyAssetFile(file, {
       byteSize: asset.byte_size,
       sha256: asset.sha256,
@@ -6122,17 +6064,12 @@ export class MangaiDatabase {
         "select metadata_json as metadataJson from assets where id=? and project_id=?",
       )
       .get(value.assetId, value.projectId) as
-      | { metadataJson: string }
-      | undefined;
+      { metadataJson: string } | undefined;
     if (!asset) throw new Error("Project内の参照素材が見つかりません。");
     let metadata: Record<string, unknown>;
     try {
       metadata = JSON.parse(asset.metadataJson);
-      if (
-        !metadata ||
-        typeof metadata !== "object" ||
-        Array.isArray(metadata)
-      )
+      if (!metadata || typeof metadata !== "object" || Array.isArray(metadata))
         metadata = {};
     } catch {
       metadata = {};
@@ -6147,7 +6084,9 @@ export class MangaiDatabase {
     const value = characterProfileInputSchema.parse(input),
       stamp = now(),
       id = value.id ?? uid();
-    if (!this.db.prepare("select 1 from projects where id=?").get(value.projectId))
+    if (
+      !this.db.prepare("select 1 from projects where id=?").get(value.projectId)
+    )
       throw new Error("Projectが見つかりません。");
     const existing = value.id
       ? (this.db
@@ -6214,13 +6153,7 @@ export class MangaiDatabase {
          on conflict(character_profile_id,asset_id) do update set
            role=excluded.role`,
       )
-      .run(
-        value.characterProfileId,
-        value.assetId,
-        value.role,
-        order,
-        now(),
-      );
+      .run(value.characterProfileId, value.assetId, value.role, order, now());
     return this.listCharacterProfiles(profile.project_id);
   }
   detachCharacterReferenceAsset(input: unknown): CharacterProfile[] {
@@ -6275,9 +6208,7 @@ export class MangaiDatabase {
         const definition = this.getComfyWorkflow(row.id);
         return {
           ...row,
-          optimization: analyzeComfyWorkflowOptimization(
-            definition.workflow,
-          ),
+          optimization: analyzeComfyWorkflowOptimization(definition.workflow),
           supportedOperations: [
             ...(definition.mapping.prompt ? ["text_to_image"] : []),
             ...(definition.mapping.sourceImage ? ["image_to_image"] : []),
