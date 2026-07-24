@@ -1391,3 +1391,15 @@ Phase 4の依存方向を継続的に固定するため、5つの`@mangai/*` pac
 実際のrepositoryが違反なしであることに加え、framework依存、未宣言依存、deep import、package循環、source循環を意図的に含む一時fixtureを使った回帰試験を追加しました。DB migration、公開アプリケーションAPI、Desktop IPC、保存形式、画面動作の変更はありません。ルール、追加手順、rollbackは[`hub/DEPENDENCY_BOUNDARIES.md`](hub/DEPENDENCY_BOUNDARIES.md)へ記録しています。
 
 依存境界検査（5 package／21 source）、Hub 66/66、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 160. 保守性改善PR-16 Cloud Canvas型付きError
+
+Phase 4のエラー設計として、安定した12種類のDomain Error code、Error class、HTTP status変換、互換API Error readerを追加しました。未知のDB／内部例外は`INTERNAL_ERROR`と操作別fallbackへ置き換え、内部メッセージをBrowserへ返しません。
+
+Cloud Canvas保存では、RPCの`revision_conflict`判定をRepository境界へ限定しました。ServiceとRouteからメッセージ部分一致を削除し、`RevisionConflictError`からHTTP 409と`REVISION_CONFLICT`を生成します。認証、権限、Page未検出、入力検証も型付きErrorへ移行しました。
+
+APIは既存Clientとの互換性を保つ`error: string`に`errorCode`を追加します。Canvas UIはcodeを優先して競合状態へ遷移し、rolling deployment中の旧Server向けにHTTP 409 fallbackも維持します。将来のnested error envelopeも同じreaderで解釈できます。
+
+Domain Error／HTTP対応、未知例外の秘匿、Zod／JSON検証、旧新API envelope、DB signal変換、文字列分岐の非回帰を自動試験へ追加しました。DB migration、成功response、Canvas request、保存形式、Desktop IPCの変更はありません。設計と段階移行手順は[`hub/DOMAIN_ERRORS.md`](hub/DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 73/73、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。

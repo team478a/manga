@@ -1,4 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  AuthenticationRequiredError,
+  PermissionDeniedError,
+} from "@/lib/domain-errors";
 
 export type CloudCreatorClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -7,16 +11,17 @@ export async function cloudCreatorContext() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("認証が必要です。");
+  if (!user) throw new AuthenticationRequiredError();
 
   const { data: profile, error } = await supabase
     .from("profiles")
     .select("id,role")
     .eq("user_id", user.id)
     .single();
-  if (error || !profile) throw new Error("プロフィールが必要です。");
+  if (error || !profile)
+    throw new PermissionDeniedError("プロフィールが必要です。");
   if (profile.role !== "creator" && profile.role !== "admin") {
-    throw new Error(
+    throw new PermissionDeniedError(
       "Cloud Creatorを利用するにはクリエイター登録が必要です。",
     );
   }

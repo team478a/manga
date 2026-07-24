@@ -4,6 +4,10 @@ import type {
   CloudAiQuota,
   CloudGenerationJob,
 } from "@/lib/cloud-creator-server";
+import {
+  readApiErrorMessage,
+  type CompatibleApiErrorEnvelope,
+} from "@/lib/api-error-contract";
 
 export function creatorProjectExportUrl(
   projectId: string,
@@ -14,8 +18,8 @@ export function creatorProjectExportUrl(
 }
 
 async function responseJson<T>(response: Response, fallback: string) {
-  const result = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(result.error ?? fallback);
+  const result = (await response.json()) as T & CompatibleApiErrorEnvelope;
+  if (!response.ok) throw new Error(readApiErrorMessage(result, fallback));
   return result;
 }
 
