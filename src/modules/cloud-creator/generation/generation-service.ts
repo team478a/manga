@@ -9,11 +9,24 @@ import type {
   CloudAiQuota,
   CloudGenerationJob,
 } from "../contracts/types";
+import {
+  cloudModerationRejectedError,
+  mapCloudGenerationEnqueueError,
+} from "./generation-errors";
+import {
+  DomainError,
+  ValidationError,
+} from "@/lib/domain-errors";
 
 export async function getMyCloudAiQuota() {
   const { supabase } = await cloudCreatorContext();
   const { data, error } = await supabase.rpc("get_my_cloud_ai_quota");
-  if (error) throw new Error("Cloud AI利用枠を読み込めませんでした。");
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Cloud AI利用枠を読み込めませんでした。",
+      { cause: error },
+    );
   return ((data ?? [])[0] ?? null) as CloudAiQuota | null;
 }
 
@@ -28,8 +41,7 @@ export async function enqueueCloudGenerationJob(input: {
     `${generation.prompt}\n${generation.negativePrompt}`,
   );
   if (moderation.decision !== "allow") {
-    const reason = moderation.reasons.join(", ") || "classification_required";
-    throw new Error(`Cloud AI送信前確認で拒否されました: ${reason}`);
+    throw cloudModerationRejectedError(moderation.reasons);
   }
 
   const capability = selectCloudProvider(generation);
@@ -53,27 +65,7 @@ export async function enqueueCloudGenerationJob(input: {
       p_moderation: moderation,
     },
   );
-  if (error || !data) {
-    const reason = error?.message ?? "";
-    if (reason.includes("cloud_credit_quota_exceeded"))
-      throw new Error("今月のCloud AI生成creditを使い切りました。");
-    if (reason.includes("cloud_cost_quota_exceeded"))
-      throw new Error("今月のCloud AI費用上限に達しました。");
-    if (reason.includes("cloud_daily_budget_exceeded"))
-      throw new Error("本日のCloud AI運用予算に達したため停止中です。");
-    if (reason.includes("cloud_generation_rate_limited"))
-      throw new Error(
-        "Cloud AI要求が集中しています。1分後に再試行してください。",
-      );
-    if (reason.includes("cloud_entitlement_inactive"))
-      throw new Error("Cloud AIプランが有効ではありません。");
-    if (
-      reason.includes("cloud_generation_disabled") ||
-      reason.includes("cloud_generation_price_unavailable")
-    )
-      throw new Error("Cloud AI生成は現在停止中です。");
-    throw new Error("Cloud AI Jobを登録できませんでした。");
-  }
+  if (error || !data) throw mapCloudGenerationEnqueueError(error);
   return data as string;
 }
 
@@ -87,7 +79,12 @@ export async function listCloudGenerationJobs(projectId: string) {
     .eq("project_id", projectId)
     .order("created_at", { ascending: false })
     .limit(100);
-  if (error) throw new Error("Cloud AI生成履歴を読み込めませんでした。");
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Cloud AI生成履歴を読み込めませんでした。",
+      { cause: error },
+    );
   return (data ?? []) as CloudGenerationJob[];
 }
 
@@ -97,6 +94,8 @@ export async function cancelCloudGenerationJob(jobId: string) {
     p_job_id: jobId,
   });
   if (error || !data)
-    throw new Error("Cloud AI Jobをキャンセルできませんでした。");
+    throw new ValidationError(
+      "Cloud AI Jobをキャンセルできませんでした。",
+    );
   return data as string;
 }

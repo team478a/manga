@@ -1403,3 +1403,15 @@ APIは既存Clientとの互換性を保つ`error: string`に`errorCode`を追加
 Domain Error／HTTP対応、未知例外の秘匿、Zod／JSON検証、旧新API envelope、DB signal変換、文字列分岐の非回帰を自動試験へ追加しました。DB migration、成功response、Canvas request、保存形式、Desktop IPCの変更はありません。設計と段階移行手順は[`hub/DOMAIN_ERRORS.md`](hub/DOMAIN_ERRORS.md)へ記録しています。
 
 Hub 73/73、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 161. 保守性改善PR-17 Cloud AI型付きError
+
+Cloud AI Job登録のcredit、費用、日次予算、rate limit、契約、生成停止、価格未設定、入力不正、Project権限のDB signalをGeneration境界で型付きDomain Errorへ変換しました。moderation拒否には`CONTENT_REJECTED`とHTTP 422を追加し、未知のDB signalは`INTERNAL_ERROR`へ秘匿します。
+
+生成Job一覧／登録／キャンセル、利用枠、内部WorkerのAPI Routeを共通Error responseへ統一しました。request rate limitは`RATE_LIMITED`を返しつつ`Retry-After`を維持します。日本語メッセージの「集中」「拒否」「停止中」によるHTTP分岐を削除しました。
+
+既存の`CloudGenerationLeaseLostError`は公開名を維持したまま`LeaseLostError`を継承し、`LEASE_LOST` codeを持つようにしました。heartbeat、Provider abort、Asset確定禁止、`lease_lost`結果、Provider固有error codeとretry判定は変更していません。
+
+DB signal対応、HTTP status、未知例外秘匿、moderation、lease code、Routeの文字列分岐非回帰を自動試験へ追加しました。DB migration、課金予約／確定、Job schema、成功response、Desktop IPCの変更はありません。対応表とrollbackは[`hub/CLOUD_AI_DOMAIN_ERRORS.md`](hub/CLOUD_AI_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 78/78、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
