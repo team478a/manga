@@ -6,8 +6,15 @@ import {
   AuthenticationRequiredError,
   ProviderUnavailableError,
 } from "@/lib/domain-errors";
+import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
 
 export async function GET(request: Request) {
+  const logContext = createHubRequestContext(request);
   const token = bearerToken(request);
   try {
     if (!token)
@@ -53,16 +60,24 @@ export async function GET(request: Request) {
       { status: data.status === "pending" ? 202 : 410 },
     );
   } catch (cause) {
-    console.error("Desktop device authorization poll failed", cause);
+    logHubError(
+      "desktop_device_authorization_poll_failed",
+      cause,
+      logContext,
+    );
     const response = toMessageApiError(
       cause,
       "端末認証を確認できませんでした。",
     );
-    return NextResponse.json(response.body, { status: response.status });
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
   }
 }
 
 export async function DELETE(request: Request) {
+  const logContext = createHubRequestContext(request);
   const token = bearerToken(request);
   try {
     if (!token)
@@ -76,13 +91,24 @@ export async function DELETE(request: Request) {
       throw new ProviderUnavailableError(
         "端末認証を解除できませんでした。",
       );
-    return NextResponse.json({ revoked: true });
+    logHubEvent("info", "desktop_device_authorization_revoked", logContext);
+    return attachHubRequestId(
+      NextResponse.json({ revoked: true }),
+      logContext,
+    );
   } catch (cause) {
-    console.error("Desktop device authorization revoke failed", cause);
+    logHubError(
+      "desktop_device_authorization_revoke_failed",
+      cause,
+      logContext,
+    );
     const response = toMessageApiError(
       cause,
       "端末認証を解除できませんでした。",
     );
-    return NextResponse.json(response.body, { status: response.status });
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
   }
 }

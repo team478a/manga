@@ -1465,3 +1465,13 @@ Hub 99/99、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境�
 未知例外秘匿、全Actionの生メッセージ非回帰、共有処理の生Error非回帰、file Error分類、通知・管理Actionの型付き境界を自動試験へ追加しました。Form、Action名、redirect先、成功メッセージ、Storage path、manifest、DB migration、Desktop IPC、保存形式の変更はありません。対応表とrollbackは[`hub/SERVER_ACTION_DOMAIN_ERRORS.md`](hub/SERVER_ACTION_DOMAIN_ERRORS.md)へ記録しています。
 
 Hub 104/104、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。
+
+## 167. 保守性改善PR-23 Hub Structured Logging
+
+HubのStripe Webhook、購入download、Cloud AI Worker、Desktop端末認証・作品連携へ1行JSONのStructured Loggingを導入しました。安全な受信`x-request-id`を引き継ぎ、不正または未指定ならUUIDを生成します。主要応答にも同じIDを返し、利用者報告とserverless logを照合できます。
+
+authorization、cookie、token、API key、署名、Prompt、画像byte、email、表示名・説明などを再帰的にredactします。Bearer token、Stripe key、JWT、secret query、URL認証情報も文字列から除去します。未知ErrorとSupabase形式のplain objectからmessage、stack、details、hintを記録せず、Domain Errorは安定codeだけを残します。logger失敗は業務処理へ伝播しません。
+
+秘密値・創作内容・個人情報redaction、Error秘匿、request ID検証、1行JSON schema、level filter、sink失敗、主要経路のconsole直書き非回帰を自動試験へ追加しました。API response body、DB、Storage、Stripe metadata、Desktop IPC、保存形式の変更はありません。Event catalog、推奨alert、運用制約、rollbackは[`hub/STRUCTURED_LOGGING.md`](hub/STRUCTURED_LOGGING.md)へ記録しています。
+
+Hub 110/110、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。

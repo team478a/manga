@@ -6,6 +6,12 @@ import {
   ValidationError,
 } from "@/lib/domain-errors";
 import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
+import {
   markCheckoutSessionPaid,
   markPaymentIntentStatus,
 } from "@/lib/payments";
@@ -17,6 +23,7 @@ import { syncCloudAiSubscription } from "@/lib/cloud-subscriptions";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
+  const logContext = createHubRequestContext(request);
   try {
     const signature = request.headers.get("stripe-signature");
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -51,12 +58,26 @@ export async function POST(request: Request) {
         paymentAction.status,
         paymentAction.orderId,
       );
-    return NextResponse.json({ received: true });
+    logHubEvent("info", "stripe_webhook_processed", {
+      ...logContext,
+      stripeEventId: event.id,
+      stripeEventType: event.type,
+      subscriptionAction: subscriptionAction?.status ?? null,
+      paymentAction: paymentAction?.type ?? null,
+    });
+    return attachHubRequestId(
+      NextResponse.json({ received: true }),
+      logContext,
+    );
   } catch (error) {
+    logHubError("stripe_webhook_failed", error, logContext);
     const response = toMessageApiError(
       error,
       "Webhook処理に失敗しました。",
     );
-    return NextResponse.json(response.body, { status: response.status });
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
   }
 }

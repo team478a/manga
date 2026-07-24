@@ -13,6 +13,9 @@ npm run dev
 
 HubはSupabaseとStripeのサーバー環境変数を使用します。Desktopはこれらの秘密鍵を使用しません。
 
+重要なServer処理のlog schema、redaction、request相関ID、推奨alertは
+[`STRUCTURED_LOGGING.md`](STRUCTURED_LOGGING.md)を参照してください。
+
 ## Desktop販売パッケージの取り込み
 
 認証後、`/dashboard/import-package`でDesktopが生成した`MANGAI販売パッケージ.zip`を選択します。ブラウザ内検証とプレビュー後、作品名、説明、商品形式、商品名、価格を確認して「非公開下書きを作成」を実行します。
