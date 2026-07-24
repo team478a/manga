@@ -15,6 +15,12 @@ import {
 } from "../dist-main/main/ai/providers/comfyui.js";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { AIService } from "../dist-main/main/ai/service.js";
+import {
+  DezgoGenerationQueue,
+  LocalGenerationQueue,
+} from "../dist-main/main/ai/queue/generation-queue.js";
+import { generationRetryDelayMs } from "../dist-main/main/ai/queue/retry-policy.js";
+import { GenerationRouter } from "../dist-main/main/ai/routing/generation-router.js";
 import { safeBaseUrl } from "../dist-main/main/ai/providers/http.js";
 import {
   hardwareFromElectronGpuInfo,
@@ -26,6 +32,100 @@ import {
   runtimeLimits,
 } from "@mangai/ai-core";
 process.env.MANGAI_ENABLE_MOCK_AI = "true";
+
+test("generation queues own window calculation, timer replacement and wake", () => {
+  const timers = [];
+  const cleared = [];
+  let runs = 0;
+  const dependencies = {
+    getSettings: () => ({
+      nightModeEnabled: true,
+      startTime: "22:00",
+      endTime: "07:00",
+    }),
+    run: () => {
+      runs += 1;
+    },
+    now: () => new Date("2026-07-24T12:30:15.250"),
+    setTimer: (callback, delayMs) => {
+      const timer = { callback, delayMs, unref() {} };
+      timers.push(timer);
+      return timer;
+    },
+    clearTimer: (timer) => cleared.push(timer),
+  };
+  const local = new LocalGenerationQueue(dependencies);
+  const dezgo = new DezgoGenerationQueue(dependencies);
+  assert.equal(local.windowDelayMs(), 34_184_750);
+  assert.equal(
+    dezgo.windowDelayMs({
+      nightModeEnabled: false,
+      startTime: "22:00",
+      endTime: "07:00",
+    }),
+    0,
+  );
+  local.schedule(1);
+  local.schedule(25);
+  assert.equal(timers[0].delayMs, 10);
+  assert.equal(timers[1].delayMs, 25);
+  assert.equal(cleared[0], timers[0]);
+  timers[1].callback();
+  assert.equal(runs, 1);
+  local.resetAndRun();
+  assert.equal(runs, 2);
+});
+
+test("generation retry policy applies bounded exponential backoff", () => {
+  assert.equal(generationRetryDelayMs(1000, 1), 1000);
+  assert.equal(generationRetryDelayMs(1000, 3), 4000);
+  assert.equal(generationRetryDelayMs(1000, 20), 30_000);
+  assert.equal(generationRetryDelayMs(1, 1), 10);
+});
+
+test("generation router records one decision with a prompt hash", () => {
+  const records = [];
+  const projectId = randomUUID();
+  const jobId = randomUUID();
+  const router = new GenerationRouter({
+    createGenerationRouteDecision: (record) => records.push(record),
+  });
+  const draft = {
+    projectId,
+    type: "background",
+    sensitivity: "safe",
+    inputAssetIds: [],
+    personPresence: "none",
+    hasCharacterReference: false,
+    hasCompletedPage: false,
+    promptIncludesRestrictedContent: false,
+    allInputAssetsExternalAllowed: true,
+  };
+  const context = {
+    policy: "local_only",
+    availableTargets: ["builtin", "local"],
+    preferLocal: true,
+    externalProviderEnabled: false,
+    externalCostWithinLimit: false,
+    requireExternalConfirmation: true,
+    manualApprovalGranted: false,
+    customCloudJobTypes: [],
+    sensitiveRenderNodeAllowed: false,
+  };
+  const decision = router.decideAndRecord({
+    jobId,
+    projectId,
+    prompt: "night city",
+    draft,
+    context,
+  });
+  assert.equal(decision.target, "local");
+  assert.equal(records.length, 1);
+  assert.equal(
+    records[0].promptSha256,
+    createHash("sha256").update("night city", "utf8").digest("hex"),
+  );
+});
 
 const runtimeState = (profile = "vram_8gb") => ({
   hardware: {
@@ -108,7 +208,9 @@ test("adult local generation requires device, age, project and content checks", 
 });
 
 test("adult local generation blocks unsafe or unreviewed reference images", async () => {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-reference-"));
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mangai-adult-reference-"),
+  );
   const db = new MangaiDatabase({
     root,
     database: path.join(root, "db.sqlite"),
@@ -528,9 +630,9 @@ test("interrupted image jobs and night settings survive reopening", async () => 
     });
     assert.equal(queuedAtNight.status, "queued");
     assert.equal(
-      db.listGenerationJobs(project.project.id).find(
-        (job) => job.id === queuedAtNight.jobId,
-      ).attemptCount,
+      db
+        .listGenerationJobs(project.project.id)
+        .find((job) => job.id === queuedAtNight.jobId).attemptCount,
       0,
     );
     new AIService(db).cancel(queuedAtNight.jobId);
@@ -598,7 +700,9 @@ test("episode page batch queues prompt pages in page order", () => {
     const workflowFile = path.join(root, "workflow.json");
     fs.writeFileSync(
       workflowFile,
-      JSON.stringify({ 6: { class_type: "CLIPTextEncode", inputs: { text: "" } } }),
+      JSON.stringify({
+        6: { class_type: "CLIPTextEncode", inputs: { text: "" } },
+      }),
     );
     const workflow = db.registerComfyWorkflow("batch", workflowFile, {
       prompt: { nodeId: "6", input: "text" },
@@ -711,7 +815,9 @@ test("ComfyUI low-spec runtime inspection reads node and launch capabilities", a
         }),
       );
     if (req.url === "/object_info/VAEDecodeTiled")
-      return res.end(JSON.stringify({ VAEDecodeTiled: { name: "VAEDecodeTiled" } }));
+      return res.end(
+        JSON.stringify({ VAEDecodeTiled: { name: "VAEDecodeTiled" } }),
+      );
     res.statusCode = 404;
     res.end("{}");
   });
@@ -1584,12 +1690,11 @@ test("safe asset jobs prefer project library and never require external access",
       monthlyCostLimit: 20,
       customCloudJobTypes: [],
     });
-    const policyBlockedPreview =
-      await dezgoService.previewExternalSafeAsset({
-        projectId: project.project.id,
-        type: "prop",
-        query: "未登録の机",
-      });
+    const policyBlockedPreview = await dezgoService.previewExternalSafeAsset({
+      projectId: project.project.id,
+      type: "prop",
+      query: "未登録の机",
+    });
     assert.equal(policyBlockedPreview.blockReason, "policy_blocked");
     const approvedPreview = await dezgoService.previewExternalSafeAsset({
       projectId: project.project.id,
@@ -1634,7 +1739,8 @@ test("safe asset jobs prefer project library and never require external access",
       format: "png",
       dispatchApproval: {
         previewId: approvedPreview.previewId,
-        confirmedAt: JSON.parse(queuedJob.inputJson).dispatchApproval.confirmedAt,
+        confirmedAt: JSON.parse(queuedJob.inputJson).dispatchApproval
+          .confirmedAt,
         estimatedCostUsd: approvedPreview.estimatedCost,
       },
     });
@@ -1814,7 +1920,7 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
       JSON.stringify({ 6: { inputs: { text: "" } } }),
     );
     const workflow = db.registerComfyWorkflow("slow", workflowFile, {
-      prompt: { nodeId: "6", input: "text" },
+        prompt: { nodeId: "6", input: "text" },
       })[0],
       service = new AIService(db, {
         getRuntimeProfile: () => runtimeState(),
@@ -1849,16 +1955,16 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
     assert.equal(queuedResult.status, "queued");
     assert.equal(service.pauseImageJob(queuedResult.jobId), true);
     assert.equal(
-      db.listGenerationJobs(project.project.id).find(
-        (value) => value.id === queuedResult.jobId,
-      ).status,
+      db
+        .listGenerationJobs(project.project.id)
+        .find((value) => value.id === queuedResult.jobId).status,
       "paused",
     );
     service.changeImageJobPriority(queuedResult.jobId, 1);
     assert.equal(
-      db.listGenerationJobs(project.project.id).find(
-        (value) => value.id === queuedResult.jobId,
-      ).priority,
+      db
+        .listGenerationJobs(project.project.id)
+        .find((value) => value.id === queuedResult.jobId).priority,
       1,
     );
     assert.equal(service.resumeImageJob(queuedResult.jobId), true);
@@ -1873,28 +1979,29 @@ test("ComfyUI timeout and cancellation update generation jobs", async () => {
     const result = await pending;
     assert.equal(result.status, "canceled");
     assert.equal(
-      db.listGenerationJobs(project.project.id).find(
-        (value) => value.id === job.id,
-      ).status,
+      db
+        .listGenerationJobs(project.project.id)
+        .find((value) => value.id === job.id).status,
       "canceled",
     );
     assert.ok(
-      db.listGenerationJobs(project.project.id).find(
-        (value) => value.id === job.id,
-      ).progress >= 0.15,
+      db
+        .listGenerationJobs(project.project.id)
+        .find((value) => value.id === job.id).progress >= 0.15,
     );
     const deadline = Date.now() + 2000;
     while (
       Date.now() < deadline &&
-      db.listGenerationJobs(project.project.id).find(
-        (value) => value.id === queuedResult.jobId,
-      )?.status !== "completed"
+      db
+        .listGenerationJobs(project.project.id)
+        .find((value) => value.id === queuedResult.jobId)?.status !==
+        "completed"
     )
       await new Promise((resolve) => setTimeout(resolve, 20));
     assert.equal(
-      db.listGenerationJobs(project.project.id).find(
-        (value) => value.id === queuedResult.jobId,
-      )?.status,
+      db
+        .listGenerationJobs(project.project.id)
+        .find((value) => value.id === queuedResult.jobId)?.status,
       "completed",
     );
     const completedQueuedJob = db
@@ -2024,7 +2131,10 @@ test("ComfyUI workflow settings can be validated, edited and defaulted", () => {
     const validation = db.validateComfyWorkflow(list[0].id);
     assert.equal(validation.ok, true);
     assert.equal(validation.optimization.hasTiledVaeDecode, true);
-    assert.equal(validation.optimization.cpuOffloadVerification, "runtime_required");
+    assert.equal(
+      validation.optimization.cpuOffloadVerification,
+      "runtime_required",
+    );
     const firstId = list[0].id;
     list = db.registerComfyWorkflow("B", sourceB, {
       prompt: { nodeId: "10", input: "prompt" },
