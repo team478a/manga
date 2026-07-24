@@ -6,6 +6,7 @@ export const domainErrorCodes = [
   "QUOTA_EXCEEDED",
   "RATE_LIMITED",
   "VALIDATION_ERROR",
+  "CONTENT_REJECTED",
   "STORAGE_TRANSACTION_ERROR",
   "PROVIDER_UNAVAILABLE",
   "PROVIDER_TIMEOUT",
@@ -56,6 +57,12 @@ export class RevisionConflictError extends DomainError {
 export class ValidationError extends DomainError {
   constructor(message = "入力内容が不正です。") {
     super("VALIDATION_ERROR", message);
+  }
+}
+
+export class ContentRejectedError extends DomainError {
+  constructor(message = "コンテンツ安全確認で拒否されました。") {
+    super("CONTENT_REJECTED", message);
   }
 }
 

@@ -12,6 +12,11 @@ import {
   cloudAssetStoragePath,
   sanitizeCloudGeneratedImage,
 } from "./cloud-creator-contract.ts";
+import {
+  DomainError,
+  LeaseLostError,
+  isDomainError,
+} from "./domain-errors.ts";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type CloudProvider = CloudImageGenerationProvider | CloudTextGenerationProvider;
@@ -41,7 +46,7 @@ type UploadedGeneratedAsset = {
   sha256: string;
 };
 
-export class CloudGenerationLeaseLostError extends Error {
+export class CloudGenerationLeaseLostError extends LeaseLostError {
   constructor() {
     super("Cloud AI Jobのleaseを失いました。");
     this.name = "CloudGenerationLeaseLostError";
@@ -133,6 +138,15 @@ function classifyWorkerError(error: unknown) {
       code: "timeout",
       message: "Providerがタイムアウトしました。",
       retryable: true,
+    };
+  if (isDomainError(error))
+    return {
+      code: error.code.toLowerCase(),
+      message: error.message,
+      retryable:
+        error.code === "PROVIDER_TIMEOUT" ||
+        error.code === "PROVIDER_UNAVAILABLE" ||
+        error.code === "RATE_LIMITED",
     };
   return {
     code: "provider_error",
@@ -279,7 +293,12 @@ export async function processNextCloudGenerationJob(input: {
     p_worker_id: input.workerId,
     p_lease_seconds: input.leaseSeconds ?? 300,
   });
-  if (error) throw new Error("Cloud AI Jobを取得できませんでした。");
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Cloud AI Jobを取得できませんでした。",
+      { cause: error },
+    );
   const job = data?.[0] as ClaimedJob | undefined;
   if (!job) return { status: "idle" as const };
   const leaseSeconds = input.leaseSeconds ?? 300;

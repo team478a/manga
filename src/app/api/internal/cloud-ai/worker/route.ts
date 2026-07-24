@@ -18,6 +18,11 @@ import {
   MangaiCloudGatewayImageProvider,
   MangaiCloudGatewayTextProvider,
 } from "@/lib/cloud-ai-gateway-provider";
+import { toApiError } from "@/lib/api-errors";
+import {
+  AuthenticationRequiredError,
+  ProviderUnavailableError,
+} from "@/lib/domain-errors";
 
 export const runtime = "nodejs";
 
@@ -51,8 +56,13 @@ function workerHeartbeatIntervalMs() {
 }
 
 export async function GET(request: Request) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "認証できません。" }, { status: 401 });
+  if (!authorized(request)) {
+    const response = toApiError(
+      new AuthenticationRequiredError("認証できません。"),
+      "認証できません。",
+    );
+    return NextResponse.json(response.body, { status: response.status });
+  }
   try {
     const client = createAdminClient();
     await client.rpc("refresh_cloud_ai_notifications");
@@ -103,22 +113,30 @@ export async function GET(request: Request) {
       })),
       checkedAt: now,
     });
-  } catch {
-    return NextResponse.json(
-      { error: "Cloud AI Worker状態を取得できませんでした。" },
-      { status: 500 },
+  } catch (error) {
+    const response = toApiError(
+      error,
+      "Cloud AI Worker状態を取得できませんでした。",
     );
+    return NextResponse.json(response.body, { status: response.status });
   }
 }
 
 export async function POST(request: Request) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "認証できません。" }, { status: 401 });
-  if (process.env.MANGAI_CLOUD_AI_WORKER_ENABLED !== "true")
-    return NextResponse.json(
-      { error: "Cloud AI Workerは停止中です。" },
-      { status: 503 },
+  if (!authorized(request)) {
+    const response = toApiError(
+      new AuthenticationRequiredError("認証できません。"),
+      "認証できません。",
     );
+    return NextResponse.json(response.body, { status: response.status });
+  }
+  if (process.env.MANGAI_CLOUD_AI_WORKER_ENABLED !== "true") {
+    const response = toApiError(
+      new ProviderUnavailableError("Cloud AI Workerは停止中です。"),
+      "Worker処理に失敗しました。",
+    );
+    return NextResponse.json(response.body, { status: response.status });
+  }
   const providers: Array<
     CloudImageGenerationProvider | CloudTextGenerationProvider
   > =
@@ -167,12 +185,7 @@ export async function POST(request: Request) {
     await client.rpc("refresh_cloud_ai_notifications");
     return NextResponse.json(result);
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Worker処理に失敗しました。",
-      },
-      { status: 500 },
-    );
+    const response = toApiError(error, "Worker処理に失敗しました。");
+    return NextResponse.json(response.body, { status: response.status });
   }
 }

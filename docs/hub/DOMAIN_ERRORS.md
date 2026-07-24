@@ -23,6 +23,7 @@ branch on `errorCode`, an HTTP status or an Error class, not message wording.
 | `QUOTA_EXCEEDED` | 429 | A usage quota is exhausted |
 | `RATE_LIMITED` | 429 | Request rate limit |
 | `VALIDATION_ERROR` | 400 | Invalid request data |
+| `CONTENT_REJECTED` | 422 | Content safety policy rejection |
 | `STORAGE_TRANSACTION_ERROR` | 500 | Storage compensation or commit failure |
 | `PROVIDER_UNAVAILABLE` | 503 | AI Provider unavailable |
 | `PROVIDER_TIMEOUT` | 504 | AI Provider timeout |
@@ -91,10 +92,20 @@ Do not branch on localized messages or return raw database/Provider errors.
 
 Revert the PR commit. No migration or data rollback is necessary.
 
+## Cloud AI migration
+
+Cloud AI generation maps quota, budget, rate-limit, entitlement, disabled
+Provider, invalid input and Project permission database signals at the
+Generation boundary. Creator and internal Worker APIs use the same compatible
+error envelope.
+
+`CloudGenerationLeaseLostError` keeps its existing exported class name for
+Worker compatibility and now extends `LeaseLostError`. It therefore carries
+the stable `LEASE_LOST` code without changing heartbeat or job-state behavior.
+
 ## Remaining work
 
-- Move Structure deletion, Cloud AI quota/rate limit and Worker lease failures
-  to the same typed contract.
+- Move Structure deletion failures to the same typed contract.
 - Assign dedicated PostgreSQL SQLSTATE values in a separate migration so the
   Canvas Repository can eventually stop parsing the legacy RPC signal.
 - Migrate the API envelope fully to nested `error.code` after all supported
