@@ -1331,3 +1331,13 @@ Desktop SQLiteの12個のversioned migrationを1つの`Migration[]`へ集約し�
 runner単体で全migrationのbackup・登録・二重適用防止、途中失敗rollback、修正後の再試行を追加検証しました。旧Canvas DBから全12 migration、`character-profiles-v1`のbackup、structured logを含むdatabase集中テスト30/30、Desktop全体93/93に成功しています。
 
 クリーンインストールで検出したDesktop development推移依存`fast-uri`のhigh severity advisoryを修正版3.1.4へ更新し、root／Desktopとも`npm audit` 0件を確認しました。Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop production build、16 Supabase migration静的検査、RC preflightにも成功しています。新しいschema migrationはなく、既存version、適用順、SQLiteデータ、公開IPCを維持します。詳細は[`desktop/MIGRATION_RUNNER.md`](desktop/MIGRATION_RUNNER.md)へ記録しています。
+
+## 154. 保守性改善PR-10 Desktop Asset／Backup分離
+
+`MangaiDatabase`の公開APIをFacadeとして維持し、AssetのSQLite処理を`AssetRepository`、画像検査・Project内copy・trash・data URL処理を`AssetFileService`へ分離しました。importとdeleteのDB transaction境界はFacadeが管理し、DB失敗時にcopy済みファイルを削除、またはtrashから元へ戻します。
+
+Project Backupのmanifest型とversion 1／2互換検証、streaming ZIP Writer、サイズ・圧縮率・path traversal・SHA-256を確認するReader、commit失敗時に一時Projectを回収するRestore Serviceを専用モジュールへ移しました。既存の2 GiB、20,000 entry、50 MiB manifest、200倍圧縮率制限、進捗、cancel、atomic renameを維持しています。
+
+Asset／Backupの既存統合試験に加え、Project外Asset path拒否とRestore commit失敗時cleanupを追加しました。DB migration、backup format、Electron IPCの変更はありません。設計と残る分割は[`desktop/DATABASE_ASSET_BACKUP_MODULES.md`](desktop/DATABASE_ASSET_BACKUP_MODULES.md)へ記録しています。
+
+Desktop統合95/95、Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflight、root／Desktop `npm audit` 0件に成功しました。

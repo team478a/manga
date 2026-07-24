@@ -9,6 +9,8 @@ import { Buffer } from "node:buffer";
 import { MangaiDatabase } from "../dist-main/main/database.js";
 import { openDatabaseWithRecovery } from "../dist-main/main/database-recovery.js";
 import { MigrationRunner } from "../dist-main/main/infrastructure/sqlite/migration-runner.js";
+import { AssetFileService } from "../dist-main/main/modules/assets/asset-file-service.js";
+import { RestoreService } from "../dist-main/main/modules/backup/restore-service.js";
 import { renderPagePng } from "../dist-main/main/page-renderer.js";
 import Database from "better-sqlite3";
 import sharp from "sharp";
@@ -21,6 +23,63 @@ import {
   ADULT_GENERATION_TERMS_VERSION,
   evaluateAdultProviderCapability,
 } from "@mangai/ai-core";
+
+test("asset file service confines reads to the project directory", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-asset-files-"));
+  const service = new AssetFileService();
+  try {
+    const assetDirectory = path.join(root, "assets");
+    fs.mkdirSync(assetDirectory);
+    fs.writeFileSync(path.join(assetDirectory, "sample.png"), "asset");
+    assert.equal(
+      service.readDataUrl(root, "assets/sample.png", "image/png"),
+      "data:image/png;base64,YXNzZXQ=",
+    );
+    assert.throws(
+      () => service.readDataUrl(root, "../outside.png", "image/png"),
+      /プロジェクト外/,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("restore service removes staging data when database commit fails", async () => {
+  const root = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mangai-restore-service-"),
+  );
+  const stagingDirectory = path.join(root, ".restore-test");
+  const stagedAssetsDirectory = path.join(stagingDirectory, "assets");
+  fs.mkdirSync(stagedAssetsDirectory, { recursive: true });
+  fs.writeFileSync(path.join(stagedAssetsDirectory, "asset"), "partial");
+  const reader = {
+    async read() {
+      return {
+        manifest: { bundle: { assets: [] } },
+        stagingDirectory,
+        stagedAssetsDirectory,
+      };
+    },
+  };
+  const service = new RestoreService(reader);
+  try {
+    await assert.rejects(
+      () =>
+        service.restore({
+          source: path.join(root, "backup.mangai-backup"),
+          projectsRoot: root,
+          parseManifest: (value) => value,
+          commit: () => {
+            throw new Error("database commit failed");
+          },
+        }),
+      /database commit failed/,
+    );
+    assert.equal(fs.existsSync(stagingDirectory), false);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
 
 test("character profiles persist local prompts and same-project references", async (t) => {
   const root = fs.mkdtempSync(
