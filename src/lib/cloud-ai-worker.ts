@@ -17,6 +17,7 @@ import {
   LeaseLostError,
   isDomainError,
 } from "./domain-errors.ts";
+import { logHubError } from "./hub-logger.ts";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type CloudProvider = CloudImageGenerationProvider | CloudTextGenerationProvider;
@@ -223,13 +224,13 @@ async function compensateUploadedAsset(
       p_last_error: lastError,
     },
   );
-  console.error(
-    JSON.stringify({
-      event: "cloud_generation_storage_cleanup_pending",
+  logHubError(
+    "cloud_generation_storage_cleanup_pending",
+    removeError,
+    {
       jobId: job.id,
-      storagePath: asset.storagePath,
       cleanupRecorded: !recordError,
-    }),
+    },
   );
 }
 

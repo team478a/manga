@@ -12,6 +12,12 @@ import {
   RevisionConflictError,
   ValidationError,
 } from "@/lib/domain-errors";
+import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +32,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ sourceProjectId: string }> },
 ) {
+  const logContext = createHubRequestContext(request);
   const params = paramsSchema.safeParse(await context.params);
   const input = updateSchema.safeParse(await request.json().catch(() => null));
   try {
@@ -97,22 +104,33 @@ export async function PATCH(
       throw new RevisionConflictError(
         "Hub側で作品が更新されています。再確認してからやり直してください。",
       );
-    return NextResponse.json({
-      updated: true,
-      work: {
-        id: updated.id,
-        title: updated.title,
-        description: updated.description ?? "",
-        updatedAt: updated.updated_at,
-      },
+    logHubEvent("info", "desktop_hub_draft_updated", {
+      ...logContext,
+      sourceProjectId: params.data.sourceProjectId,
+      workId: updated.id,
     });
+    return attachHubRequestId(
+      NextResponse.json({
+        updated: true,
+        work: {
+          id: updated.id,
+          title: updated.title,
+          description: updated.description ?? "",
+          updatedAt: updated.updated_at,
+        },
+      }),
+      logContext,
+    );
   } catch (cause) {
-    console.error("Desktop Hub draft update failed", cause);
+    logHubError("desktop_hub_draft_update_failed", cause, logContext);
     const response = toMessageApiError(
       cause,
       "Hub下書きを更新できませんでした。",
     );
-    return NextResponse.json(response.body, { status: response.status });
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
   }
 }
 
@@ -120,6 +138,7 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ sourceProjectId: string }> },
 ) {
+  const logContext = createHubRequestContext(request);
   const parsed = paramsSchema.safeParse(await context.params);
   if (!parsed.success) {
     return NextResponse.json(
@@ -271,14 +290,17 @@ export async function GET(
       },
     });
   } catch (cause) {
-    console.error("Desktop Hub status lookup failed", cause);
+    logHubError("desktop_hub_status_lookup_failed", cause, logContext);
     const response = toMessageApiError(
       cause,
       "Hubの公開状況を確認できませんでした。",
     );
-    return NextResponse.json(
-      { linked: false, ...response.body },
-      { status: response.status },
+    return attachHubRequestId(
+      NextResponse.json(
+        { linked: false, ...response.body },
+        { status: response.status },
+      ),
+      logContext,
     );
   }
 }

@@ -19,6 +19,12 @@ import {
   RateLimitedError,
   ValidationError,
 } from "@/lib/domain-errors";
+import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
 
 const requestSchema = z.object({
   deviceName: z.string().trim().min(1).max(100),
@@ -30,6 +36,7 @@ const requestSchema = z.object({
 });
 
 export async function POST(request: Request) {
+  const logContext = createHubRequestContext(request);
   try {
     const rateLimit = await enforceDesktopDeviceRateLimit(request);
     if (!rateLimit.allowed) {
@@ -37,13 +44,19 @@ export async function POST(request: Request) {
         "端末認証の開始回数が上限に達しました。15分後に再試行してください。",
       );
       const response = toMessageApiError(error, "端末認証を開始できませんでした。");
-      return NextResponse.json(response.body, {
-        status: response.status,
-        headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
-      });
+      return attachHubRequestId(
+        NextResponse.json(response.body, {
+          status: response.status,
+          headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+        }),
+        logContext,
+      );
     }
     await cleanupDesktopDeviceAuthorizations().catch((cause) => {
-      console.warn("Desktop device authorization cleanup failed", cause);
+      logHubEvent("warn", "desktop_device_authorization_cleanup_failed", {
+        ...logContext,
+        error: cause,
+      });
     });
     const parsed = requestSchema.safeParse(
       await request.json().catch(() => null),
@@ -67,18 +80,27 @@ export async function POST(request: Request) {
           expires_at: expiresAt,
           scopes: [...new Set(parsed.data.scopes)],
         });
-      if (!error)
-        return NextResponse.json(
-          {
-            status: "pending",
-            deviceToken,
-            userCode,
-            verificationPath: `/dashboard/devices/authorize?code=${encodeURIComponent(userCode)}`,
-            expiresAt,
-            intervalSeconds: 5,
-          },
-          { status: 201 },
+      if (!error) {
+        logHubEvent("info", "desktop_device_authorization_started", {
+          ...logContext,
+          expiresAt,
+          scopes: [...new Set(parsed.data.scopes)],
+        });
+        return attachHubRequestId(
+          NextResponse.json(
+            {
+              status: "pending",
+              deviceToken,
+              userCode,
+              verificationPath: `/dashboard/devices/authorize?code=${encodeURIComponent(userCode)}`,
+              expiresAt,
+              intervalSeconds: 5,
+            },
+            { status: 201 },
+          ),
+          logContext,
         );
+      }
       if (error.code !== "23505")
         throw new ProviderUnavailableError(
           "端末認証を開始できませんでした。",
@@ -86,11 +108,18 @@ export async function POST(request: Request) {
     }
     throw new ProviderUnavailableError("認証コードを作成できませんでした。");
   } catch (cause) {
-    console.error("Desktop device authorization start failed", cause);
+    logHubError(
+      "desktop_device_authorization_start_failed",
+      cause,
+      logContext,
+    );
     const response = toMessageApiError(
       cause,
       "端末認証を開始できませんでした。",
     );
-    return NextResponse.json(response.body, { status: response.status });
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
   }
 }
