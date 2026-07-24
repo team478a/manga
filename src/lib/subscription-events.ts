@@ -1,4 +1,8 @@
 import type Stripe from "stripe";
+import {
+  ProviderUnavailableError,
+  ValidationError,
+} from "./domain-errors.ts";
 
 export type CloudSubscriptionAction = {
   eventId: string;
@@ -36,7 +40,10 @@ export function planCloudSubscriptionEvent(
     event.type !== "customer.subscription.deleted"
   )
     return null;
-  if (!creatorPriceId) throw new Error("Cloud AI Stripe Priceが未設定です。");
+  if (!creatorPriceId)
+    throw new ProviderUnavailableError(
+      "Cloud AI Stripe Priceが未設定です。",
+    );
   const subscription = event.data.object;
   const profileId = subscription.metadata.profile_id;
   const item = subscription.items.data[0];
@@ -53,7 +60,9 @@ export function planCloudSubscriptionEvent(
     !customerId ||
     item.current_period_end <= item.current_period_start
   )
-    throw new Error("Cloud AI Subscription eventの対応関係が不正です。");
+    throw new ValidationError(
+      "Cloud AI Subscription eventの対応関係が不正です。",
+    );
   const mapped = subscriptionStatus(subscription.status);
   return {
     eventId: event.id,

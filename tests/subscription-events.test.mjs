@@ -55,18 +55,28 @@ test("Stripe subscription event maps trial and active entitlement periods", () =
 });
 
 test("Stripe subscription event rejects mismatched price and profile metadata", () => {
-  assert.throws(() =>
-    planCloudSubscriptionEvent(subscriptionEvent(), "price_other"),
+  assert.throws(
+    () => planCloudSubscriptionEvent(subscriptionEvent(), "price_other"),
+    (error) => error.code === "VALIDATION_ERROR",
   );
-  assert.throws(() =>
-    planCloudSubscriptionEvent(
-      subscriptionEvent("active", {
-        metadata: {
-          profile_id: "not-a-uuid",
-          product_surface: "mangai-cloud-ai",
-        },
-      }),
-      "price_creator",
-    ),
+  assert.throws(
+    () =>
+      planCloudSubscriptionEvent(
+        subscriptionEvent("active", {
+          metadata: {
+            profile_id: "not-a-uuid",
+            product_surface: "mangai-cloud-ai",
+          },
+        }),
+        "price_creator",
+      ),
+    (error) => error.code === "VALIDATION_ERROR",
+  );
+});
+
+test("Stripe price未設定をProvider利用不可として分類する", () => {
+  assert.throws(
+    () => planCloudSubscriptionEvent(subscriptionEvent(), undefined),
+    (error) => error.code === "PROVIDER_UNAVAILABLE",
   );
 });
