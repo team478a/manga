@@ -9,6 +9,11 @@ import {
   shouldRetryCanvasSave,
 } from "@/lib/canvas-autosave-policy";
 import { saveCanvasSnapshot } from "../services/creator-api";
+import {
+  readApiErrorCode,
+  readApiErrorMessage,
+  type CompatibleApiErrorEnvelope,
+} from "@/lib/api-error-contract";
 
 export type CanvasSaveState =
   | "saved"
@@ -115,7 +120,7 @@ export function useCanvasAutosave({
         controller.signal,
       );
       const responseText = await response.text();
-      let result: { revision?: number; error?: string };
+      let result: { revision?: number } & CompatibleApiErrorEnvelope;
       try {
         result = responseText ? JSON.parse(responseText) : {};
       } catch {
@@ -133,17 +138,22 @@ export function useCanvasAutosave({
         }
         return;
       }
-      if (response.status === 409) {
+      if (
+        readApiErrorCode(result) === "REVISION_CONFLICT" ||
+        response.status === 409
+      ) {
         retryAttempt.current = 0;
         updateSaveState("conflict");
         setMessage(
-          result.error ??
+          readApiErrorMessage(
+            result,
             "別の編集と競合しました。最新状態を再読込してください。",
+          ),
         );
         return;
       }
       if (!response.ok || typeof result.revision !== "number") {
-        const reason = result.error ?? "保存できませんでした。";
+        const reason = readApiErrorMessage(result, "保存できませんでした。");
         if (shouldRetryCanvasSave(response.status)) scheduleRetry(reason);
         else {
           updateSaveState("error");

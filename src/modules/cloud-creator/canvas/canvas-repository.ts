@@ -1,5 +1,35 @@
 import type { PageCanvas } from "@mangai/canvas-core";
 import type { CloudCreatorClient } from "../auth-context";
+import {
+  DomainError,
+  ResourceNotFoundError,
+  RevisionConflictError,
+  ValidationError,
+} from "../../../lib/domain-errors.ts";
+
+type CanvasDatabaseError = {
+  message?: string;
+};
+
+export function mapCanvasPersistenceError(error: CanvasDatabaseError) {
+  const signal = error.message?.split(":", 1)[0];
+  switch (signal) {
+    case "revision_conflict":
+      return new RevisionConflictError(
+        "保存競合を検出しました。Pageを再読込してください。",
+      );
+    case "page_not_found":
+      return new ResourceNotFoundError("Pageが見つかりません。");
+    case "invalid_snapshot_input":
+      return new ValidationError("Canvas snapshotが不正です。");
+    default:
+      return new DomainError(
+        "INTERNAL_ERROR",
+        "Pageを保存できませんでした。",
+        { cause: error },
+      );
+  }
+}
 
 export function persistPageSnapshot(
   supabase: CloudCreatorClient,
