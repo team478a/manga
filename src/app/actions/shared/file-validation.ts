@@ -27,11 +27,11 @@ function validateFile({
   sizeMessage: string;
 }) {
   if (!(value instanceof File) || value.size === 0) {
-    if (required) throw new Error(missingMessage);
+    if (required) throw new ValidationError(missingMessage);
     return null;
   }
-  if (!allowedTypes.includes(value.type)) throw new Error(typeMessage);
-  if (value.size > maxBytes) throw new Error(sizeMessage);
+  if (!allowedTypes.includes(value.type)) throw new ValidationError(typeMessage);
+  if (value.size > maxBytes) throw new PayloadTooLargeError(sizeMessage);
   return value;
 }
 
@@ -65,3 +65,7 @@ export function validateDigitalProductFile(
     sizeMessage: "販売ファイルのサイズは50MB以内にしてください。",
   });
 }
+import {
+  PayloadTooLargeError,
+  ValidationError,
+} from "@/lib/domain-errors";

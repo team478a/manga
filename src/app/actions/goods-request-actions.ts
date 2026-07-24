@@ -36,7 +36,7 @@ export async function createGoodsRequest(formData: FormData) {
   });
   if (error) {
     redirect(
-      `/dashboard/goods-requests/new?error=${encodeURIComponent(error.message)}`,
+      `/dashboard/goods-requests/new?error=${encodeURIComponent("グッズ販売申請を登録できませんでした")}`,
     );
   }
   revalidatePath("/dashboard/goods-requests");
@@ -68,7 +68,7 @@ export async function updateGoodsRequestAdmin(formData: FormData) {
     .eq("id", id);
   if (error) {
     redirect(
-      `/admin/goods-requests?error=${encodeURIComponent(error.message)}`,
+      `/admin/goods-requests?error=${encodeURIComponent("グッズ申請を更新できませんでした")}`,
     );
   }
   revalidatePath("/admin/goods-requests");

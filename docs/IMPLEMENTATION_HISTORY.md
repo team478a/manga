@@ -1455,3 +1455,13 @@ Webhookは既存の`message`へ、購入downloadは既存の`error`へ`errorCode
 Error／HTTP対応、Subscription event設定・入力分類、Routeの共通契約、所有者・paid・期限条件、Serviceの生Error非回帰を自動試験へ追加しました。DB migration、Stripe metadata、注文status、Webhook対象event、RPC、画面仕様の変更はありません。対応表とrollbackは[`hub/STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md`](hub/STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md)へ記録しています。
 
 Hub 99/99、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。
+
+## 166. 保守性改善PR-22 Hub Server Action Error契約
+
+認証、プロフィール、作品、デジタル商品、グッズ申請、Checkout、Desktop端末、Cloud AI管理・通知、Marketplace同期、販売パッケージ取込のServer Action表示境界をDomain Errorへ統一しました。入力不正、容量超過、Storage失敗、DB内部失敗を分離し、Supabase／Storage／Stripe／RPC／filesystemの生メッセージをredirect queryとAction結果へ返しません。
+
+作品・商品file検証は`VALIDATION_ERROR`と`PAYLOAD_TOO_LARGE`、upload・cleanupは`STORAGE_TRANSACTION_ERROR`へ変換します。販売パッケージのmanifest、MIME、hash、画像signature検証は安全な入力Errorを維持します。Supabase Auth、端末管理、管理画面のDB失敗は操作別fallbackへ置き換えました。
+
+未知例外秘匿、全Actionの生メッセージ非回帰、共有処理の生Error非回帰、file Error分類、通知・管理Actionの型付き境界を自動試験へ追加しました。Form、Action名、redirect先、成功メッセージ、Storage path、manifest、DB migration、Desktop IPC、保存形式の変更はありません。対応表とrollbackは[`hub/SERVER_ACTION_DOMAIN_ERRORS.md`](hub/SERVER_ACTION_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 104/104、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。

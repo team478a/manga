@@ -29,7 +29,10 @@ export async function signUp(formData: FormData) {
     password: input.data.password,
     options: { data: { display_name: input.data.displayName } },
   });
-  if (error) redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect(
+      `/signup?error=${encodeURIComponent("新規登録できませんでした。入力内容または登録状況を確認してください。")}`,
+    );
   redirect("/dashboard");
 }
 

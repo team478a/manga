@@ -113,6 +113,8 @@ the stable `LEASE_LOST` code without changing heartbeat or job-state behavior.
   [`CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md`](CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md).
 - Stripe Webhook and purchased-download errors are documented in
   [`STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md`](STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md).
+- Hub Server Action display boundaries are documented in
+  [`SERVER_ACTION_DOMAIN_ERRORS.md`](SERVER_ACTION_DOMAIN_ERRORS.md).
 - Assign dedicated PostgreSQL SQLSTATE values in a separate migration so the
   Canvas Repository can eventually stop parsing the legacy RPC signal.
 - Migrate the API envelope fully to nested `error.code` after all supported
