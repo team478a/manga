@@ -27,6 +27,7 @@ check名を変更するとbranch protectionが満たせなくなるため、work
 
 - rootとDesktopの`npm ci`
 - framework非依存の共有packageを依存順にbuild
+- package公開API、依存方向、循環参照、deep importの検査
 - ESLint、TypeScript、Hub production build
 - Hub、Canvas、AI、Desktop test
 - migration manifest検査
@@ -92,4 +93,4 @@ workflowを先に削除するとrequired checkが永久に待機するため、r
 ## 残課題
 
 - 正式な既定ブランチを`main`へ切り替える時期の決定
-- Phase 4での依存グラフ検査追加
+- application service／repository層へ依存境界検査を段階的に拡張

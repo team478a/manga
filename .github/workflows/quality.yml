@@ -39,6 +39,11 @@ jobs:
         run: npm ci --prefix apps/desktop
       - name: Build shared packages
         run: npm --prefix apps/desktop run build:packages
+      - name: Dependency boundaries
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run deps:check 2>&1 | tee artifacts/test-results/dependency-boundaries.log
       - name: Lint
         shell: bash
         run: |
