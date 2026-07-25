@@ -1,5 +1,6 @@
 import { createWork } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
+import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
 
 export default async function NewWorkPage({
   searchParams,
@@ -36,6 +37,7 @@ export default async function NewWorkPage({
             className="field"
             id="title"
             name="title"
+            maxLength={CREATOR_INPUT_LIMITS.workTitle}
             required
             placeholder="例：春の庭で待つ少女"
           />
@@ -51,6 +53,7 @@ export default async function NewWorkPage({
             className="field min-h-36"
             id="description"
             name="description"
+            maxLength={CREATOR_INPUT_LIMITS.workDescription}
             placeholder="例：やさしい朝の光をイメージして制作しました。"
           />
         </div>
@@ -81,6 +84,10 @@ export default async function NewWorkPage({
             className="field"
             id="tags"
             name="tags"
+            maxLength={
+              CREATOR_INPUT_LIMITS.tagCount *
+              (CREATOR_INPUT_LIMITS.tagLength + 1)
+            }
             placeholder="癒し, 花, ファンタジー"
           />
         </div>

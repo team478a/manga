@@ -4,6 +4,7 @@ import { updateWork } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
+import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
 
 export default async function EditWorkPage({
   params,
@@ -42,12 +43,12 @@ export default async function EditWorkPage({
         <div>
           <label className="label" htmlFor="title">作品名</label>
           <p className="mt-1 text-base text-stone-600">作品ページの一番上に表示されます。</p>
-          <input className="field" id="title" name="title" defaultValue={work.title} required />
+          <input className="field" id="title" name="title" defaultValue={work.title} maxLength={CREATOR_INPUT_LIMITS.workTitle} required />
         </div>
         <div>
           <label className="label" htmlFor="description">作品説明</label>
           <p className="mt-1 text-base text-stone-600">作品の魅力や制作意図を編集できます。</p>
-          <textarea className="field min-h-36" id="description" name="description" defaultValue={work.description ?? ""} />
+          <textarea className="field min-h-36" id="description" name="description" defaultValue={work.description ?? ""} maxLength={CREATOR_INPUT_LIMITS.workDescription} />
         </div>
         <div>
           <label className="label" htmlFor="image">作品画像を差し替える</label>
@@ -57,7 +58,7 @@ export default async function EditWorkPage({
         <div>
           <label className="label" htmlFor="tags">タグ</label>
           <p className="mt-1 text-base text-stone-600">カンマで区切ると複数登録できます。</p>
-          <input className="field" id="tags" name="tags" defaultValue={work.tags?.join(", ") ?? ""} />
+          <input className="field" id="tags" name="tags" defaultValue={work.tags?.join(", ") ?? ""} maxLength={CREATOR_INPUT_LIMITS.tagCount * (CREATOR_INPUT_LIMITS.tagLength + 1)} />
         </div>
         <fieldset>
           <legend className="label">公開設定</legend>

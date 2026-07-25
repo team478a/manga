@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { updateProfile } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
+import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
 
 export default async function DashboardPage({
   searchParams,
@@ -148,6 +149,7 @@ export default async function DashboardPage({
               id="displayName"
               name="displayName"
               defaultValue={profile.display_name}
+              maxLength={CREATOR_INPUT_LIMITS.displayName}
               required
             />
           </div>
@@ -160,6 +162,7 @@ export default async function DashboardPage({
               id="bio"
               name="bio"
               defaultValue={profile.bio ?? ""}
+              maxLength={CREATOR_INPUT_LIMITS.bio}
             />
           </div>
           <button className="button" type="submit">

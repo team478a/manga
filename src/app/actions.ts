@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { z } from "zod";
+import sharp from "sharp";
 import { requireAdmin, requireProfile } from "@/lib/auth";
 import { createStripeCheckoutSession } from "@/lib/checkout";
 import { normalizeBuyerEmail } from "@/lib/checkout-policy";
@@ -12,6 +13,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { splitTags } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { ownedMarketplaceStoragePath } from "@/lib/content-boundary";
+import {
+  firstValidationMessage,
+  normalizeCreatorTags,
+  profileInputSchema,
+  workInputSchema,
+} from "@/lib/creator-input";
 
 const WORKS_BUCKET = "works";
 const DIGITAL_PRODUCTS_BUCKET = "digital-products";
@@ -41,7 +48,10 @@ function fileName(authUserId: string, resourceId: string, file: File) {
   );
 }
 
-function validateWorkImage(file: FormDataEntryValue | null, required: boolean) {
+async function validateWorkImage(
+  file: FormDataEntryValue | null,
+  required: boolean,
+) {
   if (!(file instanceof File) || file.size === 0) {
     if (required) throw new Error("作品画像を選んでください。");
     return null;
@@ -55,7 +65,71 @@ function validateWorkImage(file: FormDataEntryValue | null, required: boolean) {
     throw new Error("画像サイズは10MB以内にしてください。");
   }
 
+  try {
+    const metadata = await sharp(await file.arrayBuffer()).metadata();
+    const expectedFormat: Record<string, string> = {
+      "image/jpeg": "jpeg",
+      "image/png": "png",
+      "image/webp": "webp",
+    };
+    if (
+      metadata.format !== expectedFormat[file.type] ||
+      !metadata.width ||
+      !metadata.height
+    ) {
+      throw new Error("invalid image");
+    }
+  } catch {
+    throw new Error(
+      "画像ファイルを確認できませんでした。正しいJPG、PNG、WebPを選んでください。",
+    );
+  }
+
   return file;
+}
+
+async function uploadWorkImage(
+  file: File,
+  authUserId: string,
+  workId: string,
+) {
+  const supabase = await createClient();
+  const path = fileName(authUserId, workId, file);
+  const { error } = await supabase.storage
+    .from(WORKS_BUCKET)
+    .upload(path, file, {
+      contentType: file.type,
+      upsert: false,
+    });
+
+  if (error) throw new Error("画像のアップロードに失敗しました。");
+
+  const { data } = supabase.storage.from(WORKS_BUCKET).getPublicUrl(path);
+  return { path, publicUrl: data.publicUrl };
+}
+
+async function removeWorkImage(path: string) {
+  const supabase = await createClient();
+  await supabase.storage.from(WORKS_BUCKET).remove([path]);
+}
+
+function ownedWorkImagePath(
+  publicUrl: string | null,
+  authUserId: string,
+  workId: string,
+) {
+  if (!publicUrl) return null;
+  try {
+    const marker = `/storage/v1/object/public/${WORKS_BUCKET}/`;
+    const pathname = new URL(publicUrl).pathname;
+    const markerIndex = pathname.indexOf(marker);
+    if (markerIndex < 0) return null;
+    const path = decodeURIComponent(pathname.slice(markerIndex + marker.length));
+    const ownedPrefix = `${authUserId.toLowerCase()}/${workId.toLowerCase()}/`;
+    return path.toLowerCase().startsWith(ownedPrefix) ? path : null;
+  } catch {
+    return null;
+  }
 }
 
 function validateDigitalProductFile(
@@ -282,35 +356,51 @@ export async function signOut() {
 
 export async function updateProfile(formData: FormData) {
   const { profile } = await requireProfile();
+  const input = profileInputSchema.safeParse({
+    displayName: getText(formData, "displayName"),
+    bio: getText(formData, "bio"),
+  });
+  if (!input.success) {
+    redirect(
+      `/dashboard?error=${encodeURIComponent(firstValidationMessage(input.error))}`,
+    );
+  }
   const supabase = await createClient();
   const { error } = await supabase
     .from("profiles")
     .update({
-      display_name: getText(formData, "displayName"),
-      bio: getText(formData, "bio"),
+      display_name: input.data.displayName,
+      bio: input.data.bio,
     })
     .eq("id", profile.id);
 
-  if (error) redirect(`/dashboard?error=${encodeURIComponent(error.message)}`);
+  if (error)
+    redirect("/dashboard?error=プロフィールを保存できませんでした");
   revalidatePath("/dashboard");
   redirect("/dashboard?message=保存しました");
 }
 
 export async function createWork(formData: FormData) {
   const { user, profile } = await requireProfile();
-  const title = getText(formData, "title");
-  if (!title) redirect("/dashboard/works/new?error=作品名を入力してください");
+  const input = workInputSchema.safeParse({
+    title: getText(formData, "title"),
+    description: getText(formData, "description"),
+    tags: normalizeCreatorTags(formData.get("tags")),
+    visibility:
+      getText(formData, "visibility") === "public" ? "public" : "private",
+  });
+  if (!input.success) {
+    redirect(
+      `/dashboard/works/new?error=${encodeURIComponent(firstValidationMessage(input.error))}`,
+    );
+  }
   const workId = crypto.randomUUID();
 
-  let imageUrl: string | null = null;
+  let uploadedImage: { path: string; publicUrl: string } | null = null;
   try {
-    const imageFile = validateWorkImage(formData.get("image"), true);
-    imageUrl = await uploadIfPresent(
-      WORKS_BUCKET,
-      imageFile,
-      user.id,
-      workId,
-    );
+    const imageFile = await validateWorkImage(formData.get("image"), true);
+    if (!imageFile) throw new Error("作品画像を選んでください。");
+    uploadedImage = await uploadWorkImage(imageFile, user.id, workId);
   } catch (error) {
     const message =
       error instanceof Error
@@ -319,24 +409,24 @@ export async function createWork(formData: FormData) {
     redirect(`/dashboard/works/new?error=${encodeURIComponent(message)}`);
   }
 
-  const isPublic =
-    getText(formData, "visibility") === "public" ||
-    getText(formData, "isPublic") === "on";
+  const isPublic = input.data.visibility === "public";
   const supabase = await createClient();
   const { error } = await supabase.from("works").insert({
     id: workId,
     creator_id: profile.id,
-    title,
-    description: getText(formData, "description"),
-    image_url: imageUrl,
-    tags: splitTags(formData.get("tags")),
+    title: input.data.title,
+    description: input.data.description,
+    image_url: uploadedImage.publicUrl,
+    tags: input.data.tags,
     content_class: "general",
     status: isPublic ? "published" : "draft",
     is_public: isPublic,
   });
 
-  if (error)
-    redirect(`/dashboard/works/new?error=${encodeURIComponent(error.message)}`);
+  if (error) {
+    await removeWorkImage(uploadedImage.path);
+    redirect("/dashboard/works/new?error=作品を保存できませんでした");
+  }
   revalidatePath("/dashboard/works");
   revalidatePath("/works");
   redirect("/dashboard/works?message=作品を保存しました");
@@ -345,13 +435,24 @@ export async function createWork(formData: FormData) {
 export async function updateWork(formData: FormData) {
   const { user, profile } = await requireProfile();
   const id = getText(formData, "id");
-  const title = getText(formData, "title");
-  if (!id || !title)
+  if (!id)
     redirect("/dashboard/works?error=作品を保存できませんでした");
+  const input = workInputSchema.safeParse({
+    title: getText(formData, "title"),
+    description: getText(formData, "description"),
+    tags: normalizeCreatorTags(formData.get("tags")),
+    visibility:
+      getText(formData, "visibility") === "public" ? "public" : "private",
+  });
+  if (!input.success) {
+    redirect(
+      `/dashboard/works/${id}/edit?error=${encodeURIComponent(firstValidationMessage(input.error))}`,
+    );
+  }
   const supabase = await createClient();
   const { data: ownedWork } = await supabase
     .from("works")
-    .select("id")
+    .select("id,image_url")
     .eq("id", id)
     .eq("creator_id", profile.id)
     .eq("content_class", "general")
@@ -362,28 +463,20 @@ export async function updateWork(formData: FormData) {
     );
 
   const update: Record<string, unknown> = {
-    title,
-    description: getText(formData, "description"),
-    tags: splitTags(formData.get("tags")),
-    is_public:
-      getText(formData, "visibility") === "public" ||
-      getText(formData, "isPublic") === "on",
-    status:
-      getText(formData, "visibility") === "public" ||
-      getText(formData, "isPublic") === "on"
-        ? "published"
-        : "draft",
+    title: input.data.title,
+    description: input.data.description,
+    tags: input.data.tags,
+    is_public: input.data.visibility === "public",
+    status: input.data.visibility === "public" ? "published" : "draft",
   };
 
+  let uploadedImage: { path: string; publicUrl: string } | null = null;
   try {
-    const imageFile = validateWorkImage(formData.get("image"), false);
-    const imageUrl = await uploadIfPresent(
-      WORKS_BUCKET,
-      imageFile,
-      user.id,
-      id,
-    );
-    if (imageUrl) update.image_url = imageUrl;
+    const imageFile = await validateWorkImage(formData.get("image"), false);
+    if (imageFile) {
+      uploadedImage = await uploadWorkImage(imageFile, user.id, id);
+      update.image_url = uploadedImage.publicUrl;
+    }
   } catch (error) {
     const message =
       error instanceof Error
@@ -400,10 +493,16 @@ export async function updateWork(formData: FormData) {
     .eq("id", id)
     .eq("creator_id", profile.id);
 
-  if (error)
+  if (error) {
+    if (uploadedImage) await removeWorkImage(uploadedImage.path);
     redirect(
-      `/dashboard/works/${id}/edit?error=${encodeURIComponent(error.message)}`,
+      `/dashboard/works/${id}/edit?error=作品を保存できませんでした`,
     );
+  }
+  if (uploadedImage) {
+    const previousPath = ownedWorkImagePath(ownedWork.image_url, user.id, id);
+    if (previousPath) await removeWorkImage(previousPath);
+  }
   revalidatePath("/dashboard/works");
   revalidatePath(`/works/${id}`);
   redirect("/dashboard/works?message=作品を更新しました");
