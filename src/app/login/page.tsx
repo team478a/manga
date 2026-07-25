@@ -1,4 +1,5 @@
 import { signIn } from "@/app/actions";
+import Link from "next/link";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const params = await searchParams;
@@ -17,6 +18,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <div>
           <label className="label" htmlFor="password">パスワード</label>
           <input className="field" id="password" name="password" type="password" required />
+          <div className="mt-2 text-right">
+            <Link className="text-sm font-medium text-green-800 hover:underline" href="/forgot-password">
+              パスワードを忘れた方
+            </Link>
+          </div>
         </div>
         <button className="button w-full" type="submit">ログインする</button>
       </form>

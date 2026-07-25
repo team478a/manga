@@ -20,7 +20,19 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
         </div>
         <div>
           <label className="label" htmlFor="password">パスワード</label>
-          <input className="field" id="password" name="password" type="password" minLength={6} required />
+          <input className="field" id="password" name="password" type="password" minLength={8} required />
+          <p className="mt-2 text-sm text-stone-500">8文字以上で入力してください。</p>
+        </div>
+        <div>
+          <label className="label" htmlFor="passwordConfirmation">パスワード（確認）</label>
+          <input
+            className="field"
+            id="passwordConfirmation"
+            name="passwordConfirmation"
+            type="password"
+            minLength={8}
+            required
+          />
         </div>
         <button className="button w-full" type="submit">登録する</button>
       </form>
