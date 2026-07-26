@@ -80,16 +80,20 @@ test("CommandPalette: glassトークンを使用し、一時UIとしてforced-co
   );
 });
 
-test("CommandPaletteはPhase D3（本フェーズ）時点でどの既存画面からもimportされていない（単体実装のみ）", () => {
+test("CommandPaletteはPhase D3-Bでmain.tsxへ配線され、他の画面ファイルからは直接importされていない", () => {
+  // Phase D3では単体実装のみで未配線だったが、Phase D3-B
+  // (design-command-palette-integration.test.mjs参照) でmain.tsxへ配線した。
+  // main.tsx以外の画面ファイルから直接importされていないことは引き続き確認する
+  // （配線ロジックをmain.tsx/features/command-palette配下に閉じ込めるため）。
   const screenFiles = listTsxFiles(rendererDir).filter(
-    (file) => !file.startsWith(commonDir),
+    (file) => !file.startsWith(commonDir) && !file.endsWith("main.tsx"),
   );
   for (const file of screenFiles) {
     const source = fs.readFileSync(file, "utf8");
     assert.equal(
       source.includes("common/CommandPalette"),
       false,
-      `${path.relative(rendererDir, file)} should not yet import CommandPalette (global Ctrl+K wiring is out of scope for this phase)`,
+      `${path.relative(rendererDir, file)} should not import CommandPalette directly (only main.tsx wires it, per Phase D3-B)`,
     );
   }
 });
