@@ -3,76 +3,61 @@
 ## 基本情報
 
 - 更新日: 2026-07-26
-- 状態: `READY_FOR_REVIEW`（統合完了、Draft PR #34作成済み、`feature/manga-canvas-mvp`へのmergeは責任者判断待ち）
+- 状態: `READY_FOR_REVIEW`（Phase D1実装完了、Draft PR作成待ち→作成後は責任者レビュー・マージ判断待ち）
 - リポジトリ: `team478a/manga`
-- 作業ブランチ: `integration/maintenance-stack-20260726`
-- Base: `feature/manga-canvas-mvp` @ `c99a96b172fd1b45c8e8b3c4f4b2417347a0e62e`
-- Code integration HEAD: `a58dc66`（保守性改善PR #14〜#28のcherry-pick完了時点。コード変更はここまで）
-- Final branch HEAD before this correction: `43cee0f1f42d4c68e697559aa0422b9e3fd9c418`（`a58dc66`に統合記録・引継ぎ文書を追加した時点。コード変更なし、文書追加のみ）
-- Draft PR: **#34**（`integration/maintenance-stack-20260726` → `feature/manga-canvas-mvp`）
-- PR state: Draft / mergeable
-- Changed files: 139 files（`feature/manga-canvas-mvp`との比較）
-- 詳細記録: [`docs/integration/MAINTENANCE_STACK_INTEGRATION_20260726.md`](integration/MAINTENANCE_STACK_INTEGRATION_20260726.md)
+- 作業ブランチ: `design/phase-d1-desktop-tokens`
+- Base: `feature/manga-canvas-mvp` @ `dc89e0bb5e519a9bd4023904955ec2bfa5ed11e2`（PR #34マージ済みコミット）
+- 詳細記録: [`docs/design/PHASE_D1_IMPLEMENTATION.md`](design/PHASE_D1_IMPLEMENTATION.md)
 
-## 現在の目的
+## 直前の完了事項: 保守性改善PR #14〜#28の統合（PR #34）
 
-保守性改善Draft PR #14〜#28（stacked、`handoff/codex-to-claude-20260725`系統）を、`feature/manga-canvas-mvp`の最新状態（PR #30〜#32: Vercel workspace package build修正、パスワード確認・再設定フロー、Creatorプロフィール・作品アップロードの安全性強化）を失わずに統合し、デザイン実装（`design/mangai-ui-refresh`、PR #33）が着手できる新しい基準ブランチを用意すること。
+`integration/maintenance-stack-20260726`（PR #34）は責任者承認（`stockbusiness`、APPROVED）を経て**`feature/manga-canvas-mvp`へマージ済み**（merge commit `dc89e0b`）。詳細は[`docs/integration/MAINTENANCE_STACK_INTEGRATION_20260726.md`](integration/MAINTENANCE_STACK_INTEGRATION_20260726.md)を参照。
+
+## 現在の目的（Phase D1）
+
+「MANGAI Creative Studio」デザイン仕様（`docs/design/DESKTOP_CREATIVE_STUDIO_SPEC.md`）に基づき、MANGAI Desktopの既存デザイン値を一切壊さず、今後の画面刷新（Phase D2以降）で使用するデザイントークンを`apps/desktop/src/renderer/styles.css`へ追加すること。見た目の変化はなし（トークン定義のみ、既存セレクタからの参照なし）。
 
 ## 完了済み
 
-- [x] `design/mangai-ui-refresh`の作業状態を確認し中断（`docs/design/`配下の文書のみ、未commit差分なし）
-- [x] `feature/manga-canvas-mvp`を`git pull --ff-only`で最新化し、`integration/maintenance-stack-20260726`を作成
-- [x] PR #14〜#28（15コミット）を古い順に1コミットずつ`git cherry-pick`（コード統合HEAD: `a58dc66`）
-- [x] 競合3件（PR #19: `src/app/actions.ts`、PR #20: `package.json`、PR #27: `src/app/actions/{auth,profile,work}-actions.ts`）を解決
-  - 分割構造（薄い互換entrypoint + 機能別ファイル）を採用
-  - PR #31/#32由来のパスワード確認・作品アップロード安全性強化を該当する機能別ファイルへ移設
-  - `package.json`はDesktop込みroot typecheckと`deps:check`の両方を維持
-- [x] 依存関係インストール（root/apps/desktop/packages/canvas-core/packages/ai-core）、`build:packages`
+- [x] PR #34が`feature/manga-canvas-mvp`へマージ済みであることを確認（`git log`・GitHub API両方で確認）
+- [x] `feature/manga-canvas-mvp`を最新化し、`design/phase-d1-desktop-tokens`ブランチを作成
+- [x] `design/mangai-ui-refresh`（PR #33）から`docs/design`配下の文書のみを取り込み（UIコード・CSSは取り込んでいない、別コミット）
+- [x] `apps/desktop/src/renderer/styles.css`へPhase D1トークン（Elevation/Glass、Accent、Spacing、Typography、Radius、Motion、Layout）を追加。既存24トークン・既存セレクタは無変更（追加59行、削除0行）
+- [x] `apps/desktop/tests/design-tokens.test.mjs`を新規追加し、`apps/desktop/package.json`の`test`スクリプトへ登録
+- [x] `docs/design/PHASE_D1_IMPLEMENTATION.md`を作成
 - [x] 必須品質ゲートをすべて実行（詳細は下表）
-- [x] `docs/integration/MAINTENANCE_STACK_INTEGRATION_20260726.md`、`docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`を作成
-- [x] **Draft PR #34を作成済み**（`integration/maintenance-stack-20260726` → `feature/manga-canvas-mvp`）
-- [x] PR #34のCI確認: Required Quality PASS、Migration roundtrip PASS、Desktop Windows PASS（Accessibility testsを含む）、Vercel Preview Ready
-- [x] AGENTS.md、CLAUDE.md、docs/AI_HANDOFF.mdを現在の統合後状態に合わせて追加（PR #29の内容をそのまま流用せず書き直し）
+- [x] 本ファイル・`docs/HANDOFF_LOG.md`を更新
 
-## 品質ゲート結果（2026-07-26、`integration/maintenance-stack-20260726` @ `43cee0f`時点でローカル実行）
+## 品質ゲート結果（2026-07-26、`design/phase-d1-desktop-tokens`でローカル実行）
 
 | 項目 | 結果 |
 | --- | --- |
 | `npm run deps:check` | PASS（5 packages, 21 source files, 違反0件） |
 | `npm run lint` | PASS |
 | `npm run typecheck` | PASS（root + Desktop） |
-| `npm run hub:test` | PASS（116/116） |
-| `npm run canvas:test` | PASS（26/26） |
-| `npm run ai:test` | PASS（44/44） |
-| `npm run desktop:test` | PASS（98/98） |
-| `npm run desktop:test:a11y`（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT（本コンテナにXサーバーがなくElectron起動不可） |
-| `npm run test:a11y`（GitHub Actions Desktop Windows workflow） | **PASS**（Windowsランナー上で実行・成功。Accessibility全体をBLOCKED扱いにしない） |
-| `npm run db:migrations:validate` | PASS（16件） |
-| `npm run build`（Hub） | PASS |
+| `npm run desktop:test` | PASS（**108/108**。既存98件 + 新規design-tokens.test.mjs 10件、回帰なし） |
+| `npm run desktop:test:a11y`（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT（本コンテナにXサーバーがなくElectron起動不可。コード変更は行っていない） |
 | `npm run desktop:build` | PASS |
-| `npm run rc:preflight` | PASS（構造チェック、外部サービス設定はPENDING） |
 | `git diff --check` | PASS |
 
-PR #34のCI（`43cee0f`時点）: Required Quality PASS、Migration roundtrip PASS、Desktop Windows PASS、Vercel Preview deployment Ready（状態`success`、"Deployment has completed"）。
-
-詳細な競合解決内容、PR #30〜#32からの維持機能、セキュリティ確認は統合記録文書を参照。
+GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結果は、push・PR作成後にCIが完了次第確認する。
 
 ## 未完了・次の作業
 
-1. 責任者によるDraft PR #34のレビュー・承認
-2. 承認後、`feature/manga-canvas-mvp`へのmerge（本タスクでは実施しない）
-3. merge後、`design/mangai-ui-refresh`（PR #33）のビジュアル仕様承認と合わせて、新しい実装ブランチをmerge後の`feature/manga-canvas-mvp`から作成しPhase D1へ着手
-4. Vercel本番環境での通し受入れ（Vercel Previewとは別項目、BLOCKED_EXTERNAL_ENVIRONMENT）
+1. `design/phase-d1-desktop-tokens`をpushし、Draft PR（base: `feature/manga-canvas-mvp`、head: `design/phase-d1-desktop-tokens`）を作成
+2. GitHub Actions Desktop Windows workflowでAccessibility testsの結果を確認
+3. 責任者によるレビュー・マージ判断を待つ（Phase D2へはまだ進まない）
+4. Phase D2（共通コンポーネント: Button/Card/StatusBadge/FormField等の実装）は、本PRのmerge後に着手
 
 ## 禁止事項（本タスク中に遵守）
 
-- `feature/manga-canvas-mvp`への直接merge・push
-- PR #14〜#28の個別merge・close
-- PR #33のmerge・rebase・base変更
-- PR #34のmerge
-- Phase D1のデザインコード実装
-- force push
-- 既存migrationの書き換え
+- Home画面のカード化、AppHeaderの高さ変更、GlobalNavの幅変更、Project一覧レイアウト変更
+- コマンドパレット実装、Button/Card/FormFieldのReactコンポーネント実装
+- MangaCanvas、GenerationJobs、AISettingsの変更
+- API、DB、Storage、IPCの変更
+- 新規依存パッケージ追加、Tailwind導入
+- `feature/manga-canvas-mvp`への直接push、force push、既存migrationの書き換え
+- Phase D2への着手（本PRのmerge前）
 
 上記はいずれも実施していない。
 
@@ -83,5 +68,5 @@ PR #34のCI（`43cee0f`時点）: Required Quality PASS、Migration roundtrip PA
 3. `docs/AI_HANDOFF.md`
 4. 本ファイル（`docs/CURRENT_TASK.md`）
 5. [`docs/HANDOFF_LOG.md`](HANDOFF_LOG.md)
-6. [`docs/integration/MAINTENANCE_STACK_INTEGRATION_20260726.md`](integration/MAINTENANCE_STACK_INTEGRATION_20260726.md)（統合の詳細記録）
-7. 対象機能の設計文書（デザイン関連なら`docs/design/`配下）
+6. [`docs/design/PHASE_D1_IMPLEMENTATION.md`](design/PHASE_D1_IMPLEMENTATION.md)（Phase D1の詳細記録）
+7. [`docs/design/DESKTOP_CREATIVE_STUDIO_SPEC.md`](design/DESKTOP_CREATIVE_STUDIO_SPEC.md)（Phase D2以降の正本）
