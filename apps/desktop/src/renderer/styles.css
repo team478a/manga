@@ -2520,3 +2520,195 @@ label {
   overflow-wrap: anywhere;
   margin-top: 5px;
 }
+
+/*
+ * Phase D2 (MANGAI Creative Studio) common components.
+ * Source of truth: docs/design/DESKTOP_CREATIVE_STUDIO_SPEC.md §3.
+ * These rules style the standalone components under
+ * apps/desktop/src/renderer/components/common/ (Button, Card, FormField,
+ * FloatingToolbar). Not yet applied to any existing screen.
+ */
+
+/* Button (§3.1) */
+.ds-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard);
+}
+.ds-button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+.ds-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.ds-button-sm {
+  height: 28px;
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+}
+.ds-button-md {
+  height: 32px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+.ds-button-lg {
+  height: 36px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+.ds-button-primary {
+  border: none;
+  background: var(--accent);
+  color: var(--text-primary);
+}
+.ds-button-primary:not(:disabled):hover {
+  background: var(--accent-hover);
+}
+.ds-button-primary:not(:disabled):active {
+  background: var(--accent-active);
+}
+.ds-button-secondary {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-elevated);
+  color: var(--text-primary);
+}
+.ds-button-secondary:not(:disabled):hover {
+  background: var(--bg-raised);
+}
+.ds-button-ghost {
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+}
+.ds-button-ghost:not(:disabled):hover {
+  background: var(--bg-hover);
+}
+.ds-button-danger {
+  border: none;
+  background: var(--danger);
+  color: var(--text-primary);
+}
+.ds-button-danger:not(:disabled):hover {
+  filter: brightness(1.08);
+}
+
+/* Card (§3.2) */
+.ds-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-panel-elevated);
+}
+.ds-card-density-standard {
+  padding: var(--space-4);
+}
+.ds-card-density-compact {
+  padding: var(--space-3);
+}
+.ds-card-interactive {
+  cursor: pointer;
+  transition: background-color var(--motion-fast) var(--ease-standard);
+}
+.ds-card-interactive:hover {
+  background: var(--bg-raised);
+}
+.ds-card-interactive:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* FormField (§3.5) */
+.ds-form-field {
+  display: flex;
+  flex-direction: column;
+}
+.ds-form-field-density-standard {
+  gap: var(--space-1);
+}
+.ds-form-field-density-compact {
+  gap: 2px;
+}
+.ds-form-field-label {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+.ds-form-field-density-compact > .ds-form-field-label {
+  font-size: var(--text-2xs);
+}
+.ds-form-field-required {
+  color: var(--danger);
+}
+.ds-form-field-hint {
+  margin: 0;
+  font-size: var(--text-2xs);
+  color: var(--text-muted);
+}
+.ds-form-field-error {
+  margin: 0;
+  font-size: var(--text-2xs);
+  color: var(--danger);
+}
+.ds-form-field-invalid input,
+.ds-form-field-invalid textarea,
+.ds-form-field-invalid select {
+  border: 1px solid var(--danger);
+}
+
+/* Floating toolbar (§3.6, glass — transient UI only) */
+.ds-floating-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 40px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--glass-border);
+  background: var(--bg-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  box-shadow: var(--glass-shadow);
+}
+.ds-floating-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-2);
+}
+.ds-floating-toolbar-group + .ds-floating-toolbar-group {
+  border-left: 1px solid var(--glass-border);
+}
+
+@media (forced-colors: active) {
+  .ds-button,
+  .ds-card,
+  .ds-floating-toolbar {
+    border: 1px solid CanvasText;
+  }
+  .ds-floating-toolbar {
+    background: var(--bg-panel);
+    backdrop-filter: none;
+  }
+}
+
+/* StatusBadge activity indicator (§3.3) */
+.status-badge-activity-running .status-badge-dot {
+  animation: ds-status-pulse var(--motion-slow) var(--ease-standard) infinite
+    alternate;
+}
+
+@keyframes ds-status-pulse {
+  from {
+    opacity: 0.7;
+  }
+  to {
+    opacity: 1;
+  }
+}

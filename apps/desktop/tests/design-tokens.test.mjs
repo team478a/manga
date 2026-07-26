@@ -118,14 +118,26 @@ test("既存セレクタ・レイアウトクラスはPhase D1で変更されて
   assert.match(stylesSource, /@media \(forced-colors: active\)/);
 });
 
-test("新しいglass系トークンは常設UIセレクタへまだ適用されていない", () => {
-  const glassUsageOutsideRoot = stylesSource
-    .split("\n")
-    .filter((line) => !root.includes(line))
-    .some((line) => /var\(--(bg-glass|glass-)/.test(line));
-  assert.equal(
-    glassUsageOutsideRoot,
-    false,
-    "Phase D1 must only define glass tokens, not apply them to selectors yet",
+test("glass系トークンは一時UI（フローティングツールバー）以外の常設UIセレクタへ適用されていない", () => {
+  // Phase D1ではglassトークンは:root内の定義のみだった。Phase D2で
+  // DESKTOP_CREATIVE_STUDIO_SPEC.md §2.2が許可する一時UI
+  // （.ds-floating-toolbarとそのforced-colorsフォールバック）だけが
+  // これらのトークンを消費し始めた。常設UI（topbar/panel/nav/statusbar等）
+  // が引き続きglassを使っていないことを、CSSルールブロック単位で確認する。
+  const ruleBlockPattern = /([^{}]+)\{([^{}]*)\}/g;
+  const allowedSelectorPattern = /(^|[\s,])\.ds-floating-toolbar\b/;
+  const offendingSelectors = [];
+  let match;
+  while ((match = ruleBlockPattern.exec(stylesSource)) !== null) {
+    const [, selector, body] = match;
+    if (root.includes(body)) continue; // skip the :root block itself
+    if (!/var\(--(bg-glass|glass-)/.test(body)) continue;
+    if (allowedSelectorPattern.test(selector)) continue;
+    offendingSelectors.push(selector.trim());
+  }
+  assert.deepEqual(
+    offendingSelectors,
+    [],
+    "glass tokens must stay confined to :root definitions and the transient .ds-floating-toolbar component",
   );
 });
