@@ -5,7 +5,9 @@
 - 統合元: `feature/manga-canvas-mvp`（最新、PR #30〜#32適用済み）
 - 開始コミット: `c99a96b172fd1b45c8e8b3c4f4b2417347a0e62e`（`Merge pull request #32 from team478a/codex/creator-workflow`）
 - 統合作業ブランチ: `integration/maintenance-stack-20260726`（上記コミットから新規作成）
-- 統合後HEAD: `a58dc66`（`add hub structured logging`、PR #28相当）
+- **Code integration HEAD**: `a58dc66`（`add hub structured logging`、PR #28相当。保守性改善PR #14〜#28のcherry-pickが完了した時点で、コード変更はここまで）
+- **Final branch HEAD before this correction**: `43cee0f1f42d4c68e697559aa0422b9e3fd9c418`（`a58dc66`の上に統合記録文書・引継ぎ文書を追加した時点。コード変更なし、文書追加のみ）
+- Draft PR: **#34**（`integration/maintenance-stack-20260726` → `feature/manga-canvas-mvp`）、PR state: Draft / mergeable、Changed files: 139 files
 
 `feature/manga-canvas-mvp`は、保守性改善stackの分岐元（`27d678b`）から6コミット進んでいた（PR #30: Vercel workspace package build修正、PR #31: パスワード確認・再設定フロー、PR #32: Creatorプロフィール・作品アップロードの安全性強化）。本統合はこれらを失わずに保守性改善PR #14〜#28を取り込むことを目的とした。
 
@@ -76,7 +78,7 @@ a58dc66 add hub structured logging                                   (PR #28)
 - `src/app/actions/shared/file-validation.ts`: `validateWorkImage`を非同期化し、`sharp(...).metadata()`による実画像形式とMIME宣言の一致確認を追加（PR#19の実装は拡張子・MIME文字列のみの検査だった）。
 - `src/app/actions/shared/storage-transaction.ts`: 旧画像削除のための`ownedStoragePathFromPublicUrl`（公開URLから所有者パスを検証して導出）と`removeStorageObject`を新規追加。
 - `src/app/actions/work-actions.ts`: `createWork`/`updateWork`を`workInputSchema`+`normalizeCreatorTags`+`firstValidationMessage`による検証へ更新。既存の`uploadMarketplaceFile`/`persistWithStorageRollback`（DB保存失敗時の新規Storage object補償削除）は維持しつつ、`updateWork`成功後に`ownedStoragePathFromPublicUrl`+`removeStorageObject`で旧画像を削除する処理を追加。
-- `src/app/actions.ts`: 69行の薄い互換entrypöイントを維持し、`requestPasswordReset`/`updatePassword`の委譲を追加。
+- `src/app/actions.ts`: 69行の薄い互換entrypointを維持し、`requestPasswordReset`/`updatePassword`の委譲を追加。
 
 **フォーム項目名の確認**: `dashboard/works/new/page.tsx`・`dashboard/works/[id]/edit/page.tsx`を確認し、可視性フィールドは`name="visibility"`（`private`/`public`のradio）のみで、PR#19が参照していた`isPublic`チェックボックスは実在しないことを確認した。`feature/manga-canvas-mvp`側の`visibility`のみを見る実装が実際のフォームと一致するため、これを採用した。
 
@@ -128,7 +130,9 @@ a58dc66 add hub structured logging                                   (PR #28)
 - Canvas autosave・revision競合処理、AI Generation Router、成人向け・人物画像のfail-closed制御、外部Provider送信前の確認・費用制御には一切触れていない（該当ファイルへの変更はcherry-pick対象コミットの範囲内のみで、いずれもDomain Error型付けや構造分割であり、ロジック・判定条件は変更されていない）。
 - パスワード再設定の「利用者の存在を応答へ露出しない」設計（`resetPasswordForEmail`の戻り値`error`を分岐に使わない実装）を維持していることを`auth-actions.ts`で確認した。
 
-## 9. 品質ゲート結果（2026-07-26、`integration/maintenance-stack-20260726` @ `a58dc66`で実行）
+## 9. 品質ゲート結果
+
+### 9.1 ローカル実行（2026-07-26、`integration/maintenance-stack-20260726` @ `43cee0f`時点）
 
 | 項目 | 結果 | 詳細 |
 | --- | --- | --- |
@@ -141,7 +145,7 @@ a58dc66 add hub structured logging                                   (PR #28)
 | `npm run canvas:test` | PASS | 26/26 |
 | `npm run ai:test` | PASS | 44/44 |
 | `npm run desktop:test` | PASS | 98/98 |
-| `npm run desktop:test:a11y` | **BLOCKED_EXTERNAL_ENVIRONMENT** | 下記10節参照。GUI実行環境（Xサーバー）が本環境にない |
+| `npm run desktop:test:a11y` | **LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT** | 下記10節参照。GUI実行環境（Xサーバー）が本環境にない。GitHub Actions Desktop Windows workflow側の結果は9.2参照 |
 | `npm run db:migrations:validate` | PASS | Supabase migration/rollback 16件 |
 | `npm run build`（Hub） | PASS | Next.js 16.2.11 production build成功、PR#31由来の`/auth/callback`・`/forgot-password`・`/update-password`ルートを含む |
 | `npm run desktop:build` | PASS | |
@@ -150,14 +154,26 @@ a58dc66 add hub structured logging                                   (PR #28)
 
 テスト件数は固定基準（Hub 110、Canvas 26、AI 44、Desktop 98）を下回っておらず、Hub側は増加分を含め全件成功している。以前の固定件数へ戻す調整は行っていない。
 
+### 9.2 GitHub Actions（PR #34、`43cee0f`時点のCI）
+
+| ワークフロー | 結果 | 備考 |
+| --- | --- | --- |
+| Required Quality（Core quality） | PASS | |
+| Migration roundtrip | PASS | |
+| Desktop Windows（Windows build） | PASS | Windowsランナー上で`npm run test:a11y`（Accessibility tests）を実行し成功。ローカルのXサーバー不足によるBLOCKEDとは独立して確認できている |
+| Vercel Preview | Ready | 状態`success`、"Deployment has completed"（`mangai-hub-staging`プロジェクト） |
+
+Accessibility（axe監査）は、ローカル実行不可のみをもって全体をBLOCKED扱いにしない。GitHub Actions Windows CIでの成功をもって、Accessibility要件自体は満たされていると判断する。
+
 ## 10. 未実施の外部環境テスト（BLOCKED_EXTERNAL_ENVIRONMENT）
 
 | 項目 | 状態 | 理由 |
 | --- | --- | --- |
-| `npm run desktop:test:a11y`（axe監査） | BLOCKED_EXTERNAL_ENVIRONMENT | 本コンテナ環境にXサーバー（ディスプレイ）が存在せず、Electronのレンダラープロセスを起動できない（`Missing X server or $DISPLAY`）。診断のため`ELECTRON_DISABLE_SANDBOX=1`を一時的に付与して切り分けたところ、root権限によるsandbox制限ではなくディスプレイ不足が根本原因と判明。コードやテストスクリプトへの変更は行っていない（sandbox設定を緩和する恒久的な変更はセキュリティ境界の緩和にあたるため実施していない） |
+| `npm run desktop:test:a11y`（axe監査、ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT | 本コンテナ環境にXサーバー（ディスプレイ）が存在せず、Electronのレンダラープロセスを起動できない（`Missing X server or $DISPLAY`）。診断のため`ELECTRON_DISABLE_SANDBOX=1`を一時的に付与して切り分けたところ、root権限によるsandbox制限ではなくディスプレイ不足が根本原因と判明。コードやテストスクリプトへの変更は行っていない（sandbox設定を緩和する恒久的な変更はセキュリティ境界の緩和にあたるため実施していない）。**GitHub Actions Desktop Windows workflowでは同テストがPASSしており（9.2参照）、Accessibility全体はBLOCKEDではない** |
+| Vercel Preview deployment | **PASS**（9.2参照） | PR #34のVercel Preview（`mangai-hub-staging`）は`success`。BLOCKED_EXTERNAL_ENVIRONMENT一覧からは除外し、本番環境の受入れのみ以下に残す |
+| Vercel本番環境の通し受入れ | BLOCKED_EXTERNAL_ENVIRONMENT | 本番Vercel/Supabase/Stripe環境へのアクセス権が本環境にない（Previewとは別項目） |
 | Supabase staging migration適用 | BLOCKED_EXTERNAL_ENVIRONMENT | staging接続情報・`psql`接続先が本環境に未設定 |
 | Stripe test/Webhook実E2E | BLOCKED_EXTERNAL_ENVIRONMENT | Stripe test環境・Webhook endpointの認証情報が本環境にない |
-| Vercel deployment確認 | BLOCKED_EXTERNAL_ENVIRONMENT | Vercel本番/プレビュー環境へのアクセス権が本環境にない |
 | Windowsコード署名 | BLOCKED_EXTERNAL_ENVIRONMENT | 信頼されたコード署名証明書が本環境にない |
 | クリーンWindows install/update E2E | BLOCKED_EXTERNAL_ENVIRONMENT | Windows実機/VMがなく、本環境はLinuxコンテナ |
 | Ollama実環境E2E | BLOCKED_EXTERNAL_ENVIRONMENT | Ollamaサーバー・対象モデルが本環境にない |
