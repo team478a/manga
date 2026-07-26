@@ -1,7 +1,9 @@
 # MANGAI デザインシステム案（Design System Draft）
 
 作成日: 2026-07-26
-状態: **調査結果は承認済み（2026-07-26）。トークン値・コンポーネント実装は未承認の案のまま**。Desktopのテーマ・アクセントカラー・CSS基盤方針は責任者指示により確定済み（§5参照）。実装はビジュアル仕様（`UI_REDESIGN_PLAN.md`のPhase D0.5）の承認後、画面単位で開始する。
+状態: **調査結果は承認済み（2026-07-26）。トークン値・コンポーネント実装は未承認の案のまま**。Desktopのテーマ・アクセントカラー・CSS基盤方針は責任者指示により確定済み（§5参照）。実装はビジュアル仕様の承認後、画面単位で開始する。
+
+> **2026-07-26追記**: Desktop向けの具体的なトークン値（実在のCSS変数値を出発点とした階層・グラス・アクセント・spacing/type/radius/motionスケール）とコンポーネント仕様は、責任者指示（「MANGAI Creative Studio」コンセプトでの再設計）を受けて[`DESKTOP_CREATIVE_STUDIO_SPEC.md`](DESKTOP_CREATIVE_STUDIO_SPEC.md)§0〜3にまとめた。**Desktop分のトークン値・コンポーネント仕様は同文書を正本とする。** 本文書（`DESIGN_SYSTEM.md`）は、DesktopとHub双方に共通する命名方針・カテゴリ設計の説明として引き続き有効。
 
 前提: [`CURRENT_UI_AUDIT.md`](CURRENT_UI_AUDIT.md)の監査結果に基づく。DesktopとHubは技術スタックが異なる（Desktop=プレーンCSS+CSS変数、Hub=Tailwind CSS）ため、**トークンの命名・カテゴリ設計は共通化し、実装（CSS変数 vs Tailwind theme）は製品ごとに分離する**方針とする。
 

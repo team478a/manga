@@ -5,7 +5,7 @@
 
 本ブランチ（`design/mangai-ui-refresh`）は`handoff/codex-to-claude-20260725`から分岐しており、最新の`feature/manga-canvas-mvp`とも乖離しているため、**本ブランチではUIコード・CSS・Tailwind設定・Reactコンポーネントの実装を行わない**。Phase D0.5を含め、実装着手までは文書更新のみを行う。
 
-前提文書: [`CURRENT_UI_AUDIT.md`](CURRENT_UI_AUDIT.md)（現状監査）、[`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md)（トークン・コンポーネント案）、[`SCREEN_INVENTORY.md`](SCREEN_INVENTORY.md)（画面一覧）
+前提文書: [`CURRENT_UI_AUDIT.md`](CURRENT_UI_AUDIT.md)（現状監査）、[`DESIGN_SYSTEM.md`](DESIGN_SYSTEM.md)（トークン・コンポーネント案）、[`SCREEN_INVENTORY.md`](SCREEN_INVENTORY.md)（画面一覧）、[`DESKTOP_CREATIVE_STUDIO_SPEC.md`](DESKTOP_CREATIVE_STUDIO_SPEC.md)（「MANGAI Creative Studio」4画面詳細ビジュアル仕様・Phase D0.5の正本）
 
 ---
 
@@ -91,7 +91,9 @@
 - Hubのデザイン実装はDesktop確定後に着手する（本フェーズの対象外）。
 - DesktopとHubはコードを共有せず、`DESIGN_SYSTEM.md`のトークン名・コンポーネントAPI設計のみを共通化する。
 
-以降、対象3画面それぞれについて、ワイヤーフレーム／各領域の役割／主操作と副操作の優先順位／初回利用者の制作フロー／コンポーネント仕様／レスポンシブ配置／状態別仕様／アクセシビリティ要件を定義する。
+以降、対象3画面それぞれについて、ワイヤーフレーム／各領域の役割／主操作と副操作の優先順位／初回利用者の制作フロー／コンポーネント仕様／レスポンシブ配置／状態別仕様／アクセシビリティ要件を定義する（**この3画面分は初回イテレーションとして以下に残す**）。
+
+> **2026-07-26追記**: 責任者から「既存デザインの微調整ではなく、最新のプロ向けAIクリエイティブツール（コンセプト名『MANGAI Creative Studio』）として再設計する」との指示があり、Linear/Figma/Raycast/Adobe系ツール/最新OSの奥行き表現を参照した、より詳細な仕様を[`DESKTOP_CREATIVE_STUDIO_SPEC.md`](DESKTOP_CREATIVE_STUDIO_SPEC.md)として新規作成した。対象もProject一覧／制作ワークスペース／設定画面の3画面から、**AI画像生成を独立画面として追加した4画面**へ拡張している。以下の3画面分の記述は初回イテレーションの記録として残すが、**画面仕様の正本は`DESKTOP_CREATIVE_STUDIO_SPEC.md`とする**。各節末尾の「デザイン承認条件」も同文書のものを正とする。
 
 #### D0.5-1. Desktop Project一覧（Home画面）
 
@@ -372,7 +374,7 @@
 
 ### Phase D1: トークン導入（見た目の変更を最小化した基盤整備）
 
-**着手条件**: Phase D0.5の3画面ビジュアル仕様が責任者承認を得ていること、かつ保守性改善stackの統合方針が確定していること（両方が揃うまで着手しない）。
+**着手条件**: [`DESKTOP_CREATIVE_STUDIO_SPEC.md`](DESKTOP_CREATIVE_STUDIO_SPEC.md)の4画面（Desktopホーム／制作ワークスペース／AI画像生成／設定画面）のビジュアル仕様が責任者承認を得ていること、かつ保守性改善stackの統合方針が確定していること（両方が揃うまで着手しない）。
 
 - Desktop: `styles.css`の`:root`変数を`DESIGN_SYSTEM.md`§2の命名へ整理（値はほぼ現状維持、まず命名を揃える）
 - Hub: `tailwind.config.ts`のtheme拡張を`DESIGN_SYSTEM.md`§2に合わせて整理
@@ -478,10 +480,14 @@
 
 ### Phase D0.5（進行中・コード変更なし）
 
-- [x] Desktop Project一覧のビジュアル仕様（ワイヤーフレーム・領域役割・操作優先順位・初回フロー・コンポーネント仕様・レスポンシブ・状態別仕様・アクセシビリティ要件・承認条件）
-- [x] Desktop制作ワークスペースのビジュアル仕様（同上）
-- [x] Desktop設定画面のビジュアル仕様（同上）
-- [ ] 3画面それぞれの「デザイン承認条件」チェックリストの責任者承認（未着手）
+- [x] Desktop Project一覧／制作ワークスペース／設定画面のビジュアル仕様・初回イテレーション（本ファイル内、`UI_REDESIGN_PLAN.md`）
+- [x] 「MANGAI Creative Studio」コンセプトへの再設計指示を反映した詳細仕様を作成（[`DESKTOP_CREATIVE_STUDIO_SPEC.md`](DESKTOP_CREATIVE_STUDIO_SPEC.md)、対象をAI画像生成画面を含む4画面へ拡張）
+  - 基盤トークン拡張案（elevation/glass/accent-active/spacing/type/radius/motionスケール）
+  - 共通コンポーネント仕様（Button/Card/StatusBadge/コマンドパレット(Ctrl+K)/FormField/フローティングツールバー）
+  - 4画面（Desktopホーム／制作ワークスペース／AI画像生成／設定画面）それぞれの1920×1080・1366×768レイアウト、領域幅・余白・色・文字サイズ、主/副操作優先順位、初回フロー、空/エラー/生成中/blocked状態、狭幅時の挙動
+  - ブレークポイント再編案（現行1365px境界の解消）
+  - アクセシビリティ要件、デザイン承認条件
+- [ ] `DESKTOP_CREATIVE_STUDIO_SPEC.md`§8「デザイン承認条件」の責任者承認（未着手）
 - [ ] 保守性改善stack（`handoff/codex-to-claude-20260725`）の統合方針確定（本計画の管理外、統合方針が決まり次第Phase D1の着手可否を再判断）
 
-**Phase D0.5完了条件**: 上記2項目（ビジュアル仕様の承認、統合方針の確定）が揃うこと。揃うまでPhase D1（コード変更を伴うトークン導入）には着手しない。本ブランチ（`design/mangai-ui-refresh`）でのUIコード実装は行わない。
+**Phase D0.5完了条件**: 上記2項目（`DESKTOP_CREATIVE_STUDIO_SPEC.md`のビジュアル仕様承認、保守性改善stack統合方針の確定）が揃うこと。揃うまでPhase D1（コード変更を伴うトークン導入）には着手しない。本ブランチ（`design/mangai-ui-refresh`）でのUIコード実装は行わない。
