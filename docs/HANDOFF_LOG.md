@@ -69,7 +69,7 @@ READY_FOR_REVIEW（Home画面へのButton適用完了、push・Draft PR作成待
 
 ### 状態
 
-READY_FOR_REVIEW（コマンドパレット単体実装完了、push・Draft PR作成済み、PR #39）
+READY_FOR_REVIEW（コマンドパレット単体実装完了、push・Draft PR作成待ち）
 
 ### 背景
 
@@ -80,7 +80,7 @@ READY_FOR_REVIEW（コマンドパレット単体実装完了、push・Draft PR�
 - 前段: PR #35〜#38はいずれもマージ済み。`feature/manga-canvas-mvp`の現在のHEAD: `2b4f97d`
 - Branch: `design/phase-d3-command-palette`
 - Base: `feature/manga-canvas-mvp` @ `2b4f97d5fbdc90a055b2173677236c9dd8511224`
-- Draft PR #39作成済み: https://github.com/team478a/manga/pull/39
+- 本記録の後、Draft PR #39を作成し、責任者承認・全CI成功を確認のうえ`feature/manga-canvas-mvp`へマージ済み（merge commit `d68c812`）
 
 ### 完了
 
@@ -90,11 +90,11 @@ READY_FOR_REVIEW（コマンドパレット単体実装完了、push・Draft PR�
 - `design-command-palette.test.mjs`を新規追加（7件）。`design-tokens.test.mjs`のglass allowlistへ`.ds-command-palette`を追加
 - `Ctrl+K`のグローバル配線、上部バートリガー、実データ統合は本フェーズのスコープ外とした（`docs/design/PHASE_D3_COMMAND_PALETTE.md`§1参照）
 - 必須品質ゲート（deps:check/lint/typecheck/desktop:test/desktop:build/git diff --check）を実行
-- `docs/design/PHASE_D3_COMMAND_PALETTE.md`を作成。本ログ・`docs/CURRENT_TASK.md`を更新（当時）
-- push・Draft PR #39作成
+- `docs/design/PHASE_D3_COMMAND_PALETTE.md`を作成。本ログ・`docs/CURRENT_TASK.md`を更新
 
 ### 未完了
 
+- `design/phase-d3-command-palette`のpushとDraft PR作成
 - GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結果確認
 - 責任者によるレビュー・マージ判断
 - `Ctrl+K`のグローバル配線・実データ統合（本PRのmerge後）
@@ -107,7 +107,7 @@ READY_FOR_REVIEW（コマンドパレット単体実装完了、push・Draft PR�
 - `apps/desktop/tests/design-tokens.test.mjs`（glass allowlistへ`.ds-command-palette`を追加）
 - `apps/desktop/package.json`（testスクリプトへ1行追加）
 - `docs/design/PHASE_D3_COMMAND_PALETTE.md`（新規）
-- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（当時の記録）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
 
 ### 検証
 
@@ -121,7 +121,7 @@ READY_FOR_REVIEW（コマンドパレット単体実装完了、push・Draft PR�
 
 ### 失敗・BLOCKED
 
-- `npm run desktop:test:a11y`（ローカル）: 本コンテナにXサーバーがなくElectron起動不可。GitHub Actions Desktop Windows workflow側の結果はPR確認後に確認する
+- `npm run desktop:test:a11y`（ローカル）: 本コンテナにXサーバーがなくElectron起動不可。GitHub Actions Desktop Windows workflow側の結果はpush・PR作成後に確認する
 
 ---
 
