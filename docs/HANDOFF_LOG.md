@@ -4,6 +4,74 @@
 
 ---
 
+## 2026-07-26（続き9） Claude Code（PR #41マージ・旧PR17件Close・Phase D3-B実装）
+
+### 状態
+
+READY_FOR_REVIEW（Phase D3-B実装完了、push・Draft PR作成待ち）
+
+### 実施内容（責任者指示書の順序どおり）
+
+1. **PR #41マージ**: Open/Draft/mergeable=clean/base正しい/CI4件success/未解決レビューコメントなし/文書のみの変更、を確認後、Draft解除→Merge commit方式でマージ（merge commit `242334b`）。PR作成者（`stockbusiness`）とレビュー承認者（`team478a`）が別アカウントのため自己承認の問題は発生しなかった
+2. **旧Draft PR 17件のClose**: PR #14〜#28（保守性改善スタック、PR #34で統合済み）、PR #29（引継ぎ基盤、後続文書で反映済み）、PR #33（デザイン仕様、Phase D1で反映済み）を、指定コメントを付けたうえでCloseした。マージ・base変更・ブランチ削除はしていない。全17件について`state: closed`・`merged: false`をGitHub APIで確認済み
+3. **Phase D3-Bブランチ作成**: 最新`feature/manga-canvas-mvp`（`242334b`）から`design/phase-d3b-command-palette-integration`を作成。Base SHA記録済み
+4. **Phase D3-B実装**: 詳細は`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`参照
+
+### Phase D3-B実装の要点
+
+- `apps/desktop/src/renderer/features/command-palette/`配下に`command-palette-items.ts`（コマンド生成・最近開いたProject抽出）と`use-command-palette.ts`（ショートカット判定・開閉状態フック）を新規実装
+- ショートカット判定は`shouldOpenCommandPalette(event, opts)`という純粋関数に切り出し、DOM非依存でnode:testから直接単体テスト可能にした（Electronのno-DOM node環境ではReactフックそのものは実行できないため）
+- `main.tsx`の6箇所のreturn文（Home/settings/chat/jobs/hub/editor）すべてに`<CommandPalette>`を配線し、`Ctrl+K`/`Meta+K`がどの画面でも機能するようにした
+- Home画面ヘッダーと`AppHeader`（制作ワークスペース）に上部バートリガーボタンを追加（`Button`共通コンポーネント使用）。`ToolShell`配下（設定/チャット/AI画像生成/Hub接続状態）には専用ヘッダーがないためトリガーボタンは未設置（Ctrl+Kは有効）
+- コマンドは「移動」「Project」「一般操作」「最近開いたProject」の4セクション。存在しない画面（診断画面等）へのコマンドは追加していない
+- 安全境界（Provider直接有効化・成人向け直接実行・APIキー変更等）はいずれも実装せず、機械的テストで確認
+
+### 完了
+
+- STEP1〜11をすべて実施（詳細は`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`）
+- 新規テスト19件追加（`design-command-palette-integration.test.mjs`）、既存の`design-command-palette.test.mjs`を実態に合わせて更新
+- 品質ゲート: deps:check/lint/typecheck/desktop:build/git diff --check PASS、desktop:test 150/150 PASS
+- 本ログ・`docs/CURRENT_TASK.md`・`docs/design/PHASE_D3_COMMAND_PALETTE.md`を更新
+
+### 未完了
+
+- `design/phase-d3b-command-palette-integration`のpushとDraft PR作成
+- GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結果確認
+- **目視確認は未実施**（本コンテナにXサーバーがなくElectron起動不可のため）。指示書STEP12の11項目はいずれも未確認
+- 責任者によるレビュー・マージ判断
+- Phase D3-C（Home画面ビジュアル刷新）は引き続き未着手
+
+### 変更ファイル
+
+- `apps/desktop/src/renderer/features/command-palette/command-palette-items.ts`（新規）
+- `apps/desktop/src/renderer/features/command-palette/use-command-palette.ts`（新規）
+- `apps/desktop/src/renderer/main.tsx`（CommandPalette配線、Home上部バートリガー追加、`openWorkspaceView`/`openProjects`宣言位置の前方移動）
+- `apps/desktop/src/renderer/components/app-shell/AppHeader.tsx`（`onOpenCommandPalette` prop・トリガーボタン追加）
+- `apps/desktop/src/renderer/styles.css`（`.ds-button kbd`スタイル追加、既存部分は無変更）
+- `apps/desktop/tests/design-command-palette-integration.test.mjs`（新規、19件）
+- `apps/desktop/tests/design-command-palette.test.mjs`（配線の実態に合わせて更新）
+- `apps/desktop/package.json`（testスクリプトへ1行追加）
+- `docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`（新規）
+- `docs/design/PHASE_D3_COMMAND_PALETTE.md`（Phase D3-Bで配線完了した旨を追記）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（root + Desktop）
+- desktop:test: PASS（150/150、既存131件+新規19件、回帰なし）
+- desktop:test:a11y（ローカル）: LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT
+- desktop:build: PASS
+- git diff --check: PASS
+
+### 失敗・BLOCKED
+
+- `npm run desktop:test:a11y`（ローカル）: 本コンテナにXサーバーがなくElectron起動不可。GitHub Actions側の結果はpush・PR作成後に確認する
+- 目視確認全般: 同一の環境制約により未実施。次の担当者（目視確認可能な環境）またはWindows実機での確認が必要
+
+---
+
 ## 2026-07-26（続き8） Claude Code（PR #39・#40マージ・Phase D3完了）
 
 ### 状態
