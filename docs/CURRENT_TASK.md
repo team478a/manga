@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-26
-- 状態: `IN_PROGRESS`（統合方針は責任者判断待ち、それ以外は完了）
+- 状態: `PAUSED_FOR_HANDOFF`（本ブランチでの保守性PR確認作業は責任者判断待ちで一時中断。デザイン調査は別ブランチ`design/mangai-ui-refresh`で並行開始）
 - リポジトリ: `team478a/manga`
 - 作業ブランチ: `handoff/codex-to-claude-20260725`
 - 引継ぎ元: Codex
@@ -11,12 +11,36 @@
 - 引継ぎ元コミット: `0910919e37904245b80e26e4c495893da6234a9e`
 - デフォルト基準（引継ぎ作成時）: `feature/manga-canvas-mvp@27d678bfbae2be0f8fc69b165b3532748a3bcaee`
 - デフォルト最新（本確認時点）: `feature/manga-canvas-mvp@c99a96b172fd1b45c8e8b3c4f4b2417347a0e62e`
+- 本checkpoint時点のHEAD: `5cf70eb`（`chore: add missing lockfiles for ai-core and canvas-core packages`）
 
 ## 現在の目的
 
 Codexが完了した保守性改善PR stackをClaude Codeが安全に引き継ぎ、会話履歴なしで次の作業へ進める状態を維持する。
 
 今回の作業は新機能実装ではなく、依存関係インストール、ローカル品質ゲート再実行、Draft PR #14〜#28のbase/head/CI/mergeability確認、統合時の問題候補の記録。
+
+## 2026-07-26 中断時点の記録（デザイン作業ブランチ分岐のためのcheckpoint）
+
+このブランチ（`handoff/codex-to-claude-20260725`）での保守性PRスタック確認作業は、本checkpoint時点で完了している範囲まで実施済みであり、統合方針（デフォルトブランチ乖離の解消方法）は責任者判断待ちのため、これ以上の変更をこのブランチへ加えずに一時中断する。
+
+デザイン変更（UI刷新）は、保守性改善の差分と混在させないため、本ブランチから新規に分岐した`design/mangai-ui-refresh`ブランチで別途進める。設計調査・設計文書のみを先行させ、画面の一括書き換えは行わない。
+
+### 実施済み（本ブランチ、変更なし・再掲）
+
+- 依存関係install、`build:packages`、ローカル品質ゲート全項目（lint/typecheck/hub:test 110/110/canvas:test 26/26/ai:test 44/44/desktop:test 98/98/db:migrations:validate 16件/build/desktop:build/git diff --check）はすべて成功済み（詳細は本ファイル上部の「ローカル品質ゲート結果」参照）
+- Draft PR #14〜#28のbase/head/CI確認、デフォルトブランチ乖離（`src/app/actions.ts`・`package.json`の競合）の検出と記録
+- `packages/ai-core`・`packages/canvas-core`の未追跡`package-lock.json`を追加commit・push済み
+
+### 未完了（このブランチへ戻った際に再開する内容）
+
+- 統合方針（選択肢A/B/C）の責任者判断待ち。判断が出るまで、PR #14〜#28・デフォルトブランチへのmerge/rebase/force pushは実行しない
+- `src/app/actions.ts`と`package.json`の競合解決（方針決定後）
+- 競合解決後の品質ゲート再実行
+
+### このcheckpoint時点のgit状態
+
+- `git status --short`: クリーン（未追跡・未commit差分なし）
+- 直前コミット: `5cf70eb`（push済み、`origin/handoff/codex-to-claude-20260725`と一致）
 
 ## 完了済み
 

@@ -4,6 +4,57 @@
 
 ---
 
+## 2026-07-26 Claude Code（保守性PR確認の中断・デザイン作業ブランチ分岐）
+
+### 状態
+
+PAUSED（このブランチでの作業を安全な地点で中断。統合方針は引き続き責任者判断待ち）
+
+### ブランチ・コミット
+
+- Branch: `handoff/codex-to-claude-20260725`
+- Commit: `5cf70eb`（`chore: add missing lockfiles for ai-core and canvas-core packages`）
+- Base（引継ぎ元）: `0910919e37904245b80e26e4c495893da6234a9e`
+
+### 完了
+
+- 直前の記録（本ログの2026-07-26エントリ）の通り、依存install・品質ゲート全項目・Draft PR #14〜#28確認・デフォルトブランチ乖離の検出はすべて完了・commit・push済み
+- `docs/CURRENT_TASK.md`へ中断時点の状態を追記
+
+### 未完了
+
+- PR #19以降とデフォルトブランチの競合解決（責任者の統合方針判断待ち）
+- PR #14〜#28の実際のmerge/rebase/統合PR作成
+
+### 変更ファイル
+
+- `docs/CURRENT_TASK.md`（中断記録の追記）
+- `docs/HANDOFF_LOG.md`（本記録）
+
+コード変更なし。
+
+### 検証
+
+新規のコード変更がないため、テストは再実行していない。直前の記録（同ログの2026-07-26エントリ）に記載の結果がそのまま有効。
+
+- lint / typecheck / hub:test 110/110 / canvas:test 26/26 / ai:test 44/44 / desktop:test 98/98 / build / desktop:build / migrations 16件: 直前記録どおりすべてPASS
+
+### 失敗・BLOCKED
+
+変更なし。直前記録のBLOCKED_EXTERNAL_ENVIRONMENT一覧（Windows署名、Ollama/ComfyUI/Dezgo実環境、Supabase staging、Stripe、Vercel本番）がそのまま有効。
+
+### 次担当者が最初に行うこと
+
+1. このブランチ（`handoff/codex-to-claude-20260725`）へ戻る場合は、`docs/CURRENT_TASK.md`の「2026-07-26 中断時点の記録」と「重要な発見: デフォルトブランチの乖離」を読む。
+2. 統合方針が決まるまでmerge/rebase/force pushを実行しない。
+3. デザイン変更は別ブランチ`design/mangai-ui-refresh`（本ブランチから分岐、コード変更は今後別途記録）で進行中。このブランチの保守性PR確認作業とは独立に扱うこと。
+
+### 注意事項
+
+- 本エントリ以降、UI/デザイン刷新の調査・実装は`design/mangai-ui-refresh`ブランチで行う。このブランチ（`handoff/codex-to-claude-20260725`）へビジネスロジック・API・DB・Storage・Desktop IPC・Canvas保存処理・AI生成ルーティング・認証・決済に関する変更を混在させない。
+
+---
+
 ## 2026-07-26 Claude Code → Codex/責任者
 
 ### 状態
