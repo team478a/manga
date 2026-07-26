@@ -4,6 +4,42 @@
 
 ---
 
+## 2026-07-26（続き3） Claude Code（PR #35マージ・Phase D1完了）
+
+### 状態
+
+READY_FOR_PHASE_D2_DECISION（PR #35マージ済み、Phase D2着手は責任者の判断待ち）
+
+### ブランチ・コミット
+
+- PR #35（`design/phase-d1-desktop-tokens` → `feature/manga-canvas-mvp`）は責任者承認（`stockbusiness`、APPROVED、commit `cd8f8f7`時点）と全CI成功（Vercel Preview Comments/Windows build/Migration roundtrip/Core quality、いずれも`success`）を確認後、Draft解除・マージ実施。merge commit `5a87c0f`
+- `feature/manga-canvas-mvp`の現在のHEAD: `5a87c0f`
+- 本記録は`feature/manga-canvas-mvp` @ `5a87c0f`から作成した`docs/phase-d1-merge-sync-20260726`ブランチ（文書のみ更新、コード変更なし）
+
+### 完了
+
+- PR #35のCIチェック4件すべてが`completed`/`success`であることをGitHub APIで確認
+- PR #35のレビュー（`stockbusiness`、`APPROVED`、`COLLABORATOR`）が現在のhead commitに対して有効であることを確認
+- PR #35のDraftを解除（`draft: false`）
+- `mergeable_state: "clean"`を確認後、PR #35を`feature/manga-canvas-mvp`へマージ（merge commit `5a87c0f`）
+- 本ログ・`docs/CURRENT_TASK.md`を更新（コードは一切変更していない）
+
+### 未完了
+
+- GitHub Actions Desktop Windows workflow内のAccessibility testsが実際にPASSしたかどうかの個別ログ確認（`Windows build`チェック自体は`success`）
+- Phase D2（共通コンポーネント: Button/Card/StatusBadge/FormField/フローティングツールバー実装）は、責任者の明示指示があるまで未着手
+
+### 変更ファイル（本記録のみ）
+
+- `docs/HANDOFF_LOG.md`（本記録）
+- `docs/CURRENT_TASK.md`
+
+### 検証
+
+- 本ブランチはdocsのみの変更のため、コード品質ゲートは対象外（`git diff --check`のみ確認）
+
+---
+
 ## 2026-07-26（続き2） Claude Code（PR #34マージ・Phase D1実装）
 
 ### 状態

@@ -3,13 +3,16 @@
 ## 基本情報
 
 - 更新日: 2026-07-26
-- 状態: `READY_FOR_REVIEW`（Phase D1実装完了、Draft PR作成待ち→作成後は責任者レビュー・マージ判断待ち）
+- 状態: `READY_FOR_PHASE_D2_DECISION`（PR #35マージ済み。Phase D2着手は責任者の明示判断待ち）
 - リポジトリ: `team478a/manga`
-- 作業ブランチ: `design/phase-d1-desktop-tokens`
-- Base: `feature/manga-canvas-mvp` @ `dc89e0bb5e519a9bd4023904955ec2bfa5ed11e2`（PR #34マージ済みコミット）
+- 現在のベースブランチ: `feature/manga-canvas-mvp` @ `5a87c0f072505d114c7fcd0523395293da061cfc`（PR #35マージ済みコミット）
 - 詳細記録: [`docs/design/PHASE_D1_IMPLEMENTATION.md`](design/PHASE_D1_IMPLEMENTATION.md)
 
-## 直前の完了事項: 保守性改善PR #14〜#28の統合（PR #34）
+## 直前の完了事項: Phase D1（デザイントークン基盤整備、PR #35）マージ
+
+`design/phase-d1-desktop-tokens`（PR #35）は責任者承認（`stockbusiness`、APPROVED、commit `cd8f8f7`時点）と全CIチェック成功（Vercel Preview Comments/Windows build/Migration roundtrip/Core quality、いずれも`success`）を確認のうえ、Draftを解除し**`feature/manga-canvas-mvp`へマージ済み**（merge commit `5a87c0f`）。トークン追加のみで見た目への影響はなし。詳細は[`docs/design/PHASE_D1_IMPLEMENTATION.md`](design/PHASE_D1_IMPLEMENTATION.md)を参照。
+
+## その前の完了事項: 保守性改善PR #14〜#28の統合（PR #34）
 
 `integration/maintenance-stack-20260726`（PR #34）は責任者承認（`stockbusiness`、APPROVED）を経て**`feature/manga-canvas-mvp`へマージ済み**（merge commit `dc89e0b`）。詳細は[`docs/integration/MAINTENANCE_STACK_INTEGRATION_20260726.md`](integration/MAINTENANCE_STACK_INTEGRATION_20260726.md)を参照。
 
@@ -26,6 +29,10 @@
 - [x] `apps/desktop/tests/design-tokens.test.mjs`を新規追加し、`apps/desktop/package.json`の`test`スクリプトへ登録
 - [x] `docs/design/PHASE_D1_IMPLEMENTATION.md`を作成
 - [x] 必須品質ゲートをすべて実行（詳細は下表）
+- [x] `design/phase-d1-desktop-tokens`をpushし、Draft PR #35を作成
+- [x] GitHub Actions（Vercel Preview Comments/Windows build/Migration roundtrip/Core quality）が全件`success`であることを確認
+- [x] 責任者レビュー（`stockbusiness`、APPROVED）を確認
+- [x] PR #35のDraftを解除し、`feature/manga-canvas-mvp`へマージ（merge commit `5a87c0f`）
 - [x] 本ファイル・`docs/HANDOFF_LOG.md`を更新
 
 ## 品質ゲート結果（2026-07-26、`design/phase-d1-desktop-tokens`でローカル実行）
@@ -44,10 +51,8 @@ GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結�
 
 ## 未完了・次の作業
 
-1. `design/phase-d1-desktop-tokens`をpushし、Draft PR（base: `feature/manga-canvas-mvp`、head: `design/phase-d1-desktop-tokens`）を作成
-2. GitHub Actions Desktop Windows workflowでAccessibility testsの結果を確認
-3. 責任者によるレビュー・マージ判断を待つ（Phase D2へはまだ進まない）
-4. Phase D2（共通コンポーネント: Button/Card/StatusBadge/FormField等の実装）は、本PRのmerge後に着手
+1. Phase D2（共通コンポーネント: Button/Card/StatusBadge/FormField等の実装）は、責任者の明示判断があるまで着手しない
+2. GitHub Actions Desktop Windows workflow内のAccessibility testsの個別ログ確認（`Windows build`チェック自体は`success`）は任意で継続可能
 
 ## 禁止事項（本タスク中に遵守）
 
@@ -57,7 +62,7 @@ GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結�
 - API、DB、Storage、IPCの変更
 - 新規依存パッケージ追加、Tailwind導入
 - `feature/manga-canvas-mvp`への直接push、force push、既存migrationの書き換え
-- Phase D2への着手（本PRのmerge前）
+- Phase D2への着手（責任者の明示判断前）
 
 上記はいずれも実施していない。
 
