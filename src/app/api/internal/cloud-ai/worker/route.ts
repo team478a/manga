@@ -18,6 +18,17 @@ import {
   MangaiCloudGatewayImageProvider,
   MangaiCloudGatewayTextProvider,
 } from "@/lib/cloud-ai-gateway-provider";
+import { toApiError } from "@/lib/api-errors";
+import {
+  AuthenticationRequiredError,
+  ProviderUnavailableError,
+} from "@/lib/domain-errors";
+import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
 
 export const runtime = "nodejs";
 
@@ -51,8 +62,18 @@ function workerHeartbeatIntervalMs() {
 }
 
 export async function GET(request: Request) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "認証できません。" }, { status: 401 });
+  const logContext = createHubRequestContext(request);
+  if (!authorized(request)) {
+    logHubEvent("warn", "cloud_ai_worker_status_unauthorized", logContext);
+    const response = toApiError(
+      new AuthenticationRequiredError("認証できません。"),
+      "認証できません。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
+  }
   try {
     const client = createAdminClient();
     await client.rpc("refresh_cloud_ai_notifications");
@@ -80,7 +101,7 @@ export async function GET(request: Request) {
       (result) => result.error,
     )?.error;
     if (databaseError) throw databaseError;
-    return NextResponse.json({
+    const body = {
       enabled: process.env.MANGAI_CLOUD_AI_WORKER_ENABLED === "true",
       lease: {
         seconds: workerLeaseSeconds(),
@@ -102,23 +123,49 @@ export async function GET(request: Request) {
         pricingVersion: capability.pricingVersion,
       })),
       checkedAt: now,
+    };
+    logHubEvent("debug", "cloud_ai_worker_status_checked", {
+      ...logContext,
+      queue: body.queue,
     });
-  } catch {
-    return NextResponse.json(
-      { error: "Cloud AI Worker状態を取得できませんでした。" },
-      { status: 500 },
+    return attachHubRequestId(NextResponse.json(body), logContext);
+  } catch (error) {
+    logHubError("cloud_ai_worker_status_failed", error, logContext);
+    const response = toApiError(
+      error,
+      "Cloud AI Worker状態を取得できませんでした。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
     );
   }
 }
 
 export async function POST(request: Request) {
-  if (!authorized(request))
-    return NextResponse.json({ error: "認証できません。" }, { status: 401 });
-  if (process.env.MANGAI_CLOUD_AI_WORKER_ENABLED !== "true")
-    return NextResponse.json(
-      { error: "Cloud AI Workerは停止中です。" },
-      { status: 503 },
+  const logContext = createHubRequestContext(request);
+  if (!authorized(request)) {
+    logHubEvent("warn", "cloud_ai_worker_run_unauthorized", logContext);
+    const response = toApiError(
+      new AuthenticationRequiredError("認証できません。"),
+      "認証できません。",
     );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
+  }
+  if (process.env.MANGAI_CLOUD_AI_WORKER_ENABLED !== "true") {
+    logHubEvent("warn", "cloud_ai_worker_run_disabled", logContext);
+    const response = toApiError(
+      new ProviderUnavailableError("Cloud AI Workerは停止中です。"),
+      "Worker処理に失敗しました。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
+  }
   const providers: Array<
     CloudImageGenerationProvider | CloudTextGenerationProvider
   > =
@@ -153,8 +200,10 @@ export async function POST(request: Request) {
       "queue_orphan_cloud_generation_assets",
     );
     if (orphanQueueError)
-      console.error(
-        JSON.stringify({ event: "cloud_generation_orphan_scan_failed" }),
+      logHubError(
+        "cloud_generation_orphan_scan_failed",
+        orphanQueueError,
+        logContext,
       );
     await processPendingCloudStorageCleanup({ client });
     const result = await processNextCloudGenerationJob({
@@ -165,14 +214,18 @@ export async function POST(request: Request) {
         client,
       });
     await client.rpc("refresh_cloud_ai_notifications");
-    return NextResponse.json(result);
+    logHubEvent("info", "cloud_ai_worker_run_completed", {
+      ...logContext,
+      status: result.status,
+      jobId: "jobId" in result ? result.jobId : undefined,
+    });
+    return attachHubRequestId(NextResponse.json(result), logContext);
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Worker処理に失敗しました。",
-      },
-      { status: 500 },
+    logHubError("cloud_ai_worker_run_failed", error, logContext);
+    const response = toApiError(error, "Worker処理に失敗しました。");
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
     );
   }
 }

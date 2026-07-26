@@ -3,6 +3,15 @@ import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { resolveCheckoutOrigin } from "@/lib/checkout-policy";
+import {
+  AuthenticationRequiredError,
+  DomainError,
+  isDomainError,
+  PermissionDeniedError,
+  ProviderUnavailableError,
+  ResourceNotFoundError,
+  ValidationError,
+} from "@/lib/domain-errors";
 
 export async function syncCloudAiSubscription(action: CloudSubscriptionAction) {
   const { data, error } = await createAdminClient().rpc(
@@ -20,7 +29,12 @@ export async function syncCloudAiSubscription(action: CloudSubscriptionAction) {
       p_stripe_subscription_id: action.stripeSubscriptionId,
     },
   );
-  if (error) throw new Error("Cloud AIプランを同期できませんでした。");
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "Cloud AIプランを同期できませんでした。",
+      { cause: error },
+    );
   return data === true;
 }
 
@@ -29,21 +43,23 @@ async function billingContext() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("ログインが必要です。");
-  const { data: profile } = await supabase
+  if (!user) throw new AuthenticationRequiredError("ログインが必要です。");
+  const { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id")
     .eq("user_id", user.id)
     .single();
-  if (!profile) throw new Error("プロフィールが必要です。");
-  const { data: entitlement } = await supabase
+  if (profileError || !profile)
+    throw new PermissionDeniedError("プロフィールが必要です。");
+  const { data: entitlement, error: entitlementError } = await supabase
     .from("cloud_ai_entitlements")
     .select(
       "plan_key,status,source,period_ends_at,stripe_customer_id,stripe_subscription_id",
     )
     .eq("profile_id", profile.id)
     .single();
-  if (!entitlement) throw new Error("Cloud AI利用枠が見つかりません。");
+  if (entitlementError || !entitlement)
+    throw new ResourceNotFoundError("Cloud AI利用枠が見つかりません。");
   return { user, profile, entitlement };
 }
 
@@ -57,49 +73,66 @@ function siteOrigin(request: Request) {
 
 export async function createCloudSubscriptionCheckout(request: Request) {
   const priceId = process.env.STRIPE_CLOUD_AI_CREATOR_PRICE_ID;
-  if (!priceId) throw new Error("Cloud AI Stripe Priceが未設定です。");
+  if (!priceId)
+    throw new ProviderUnavailableError(
+      "Cloud AI Stripe Priceが未設定です。",
+    );
   const { user, profile, entitlement } = await billingContext();
   if (
     entitlement.source === "stripe" &&
     (entitlement.status === "active" || entitlement.status === "trialing")
   )
-    throw new Error("すでに有効なCloud AIプランがあります。");
+    throw new ValidationError("すでに有効なCloud AIプランがあります。");
   const trialDays = Number(process.env.STRIPE_CLOUD_AI_TRIAL_DAYS ?? 0);
-  const session = await createStripeClient().checkout.sessions.create({
-    mode: "subscription",
-    customer: entitlement.stripe_customer_id ?? undefined,
-    customer_email: entitlement.stripe_customer_id
-      ? undefined
-      : (user.email ?? undefined),
-    client_reference_id: profile.id,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${siteOrigin(request)}/dashboard/billing?message=申込みを受け付けました`,
-    cancel_url: `${siteOrigin(request)}/dashboard/billing?message=申込みをキャンセルしました`,
-    metadata: {
-      profile_id: profile.id,
-      product_surface: "mangai-cloud-ai",
-    },
-    subscription_data: {
+  try {
+    const session = await createStripeClient().checkout.sessions.create({
+      mode: "subscription",
+      customer: entitlement.stripe_customer_id ?? undefined,
+      customer_email: entitlement.stripe_customer_id
+        ? undefined
+        : (user.email ?? undefined),
+      client_reference_id: profile.id,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${siteOrigin(request)}/dashboard/billing?message=申込みを受け付けました`,
+      cancel_url: `${siteOrigin(request)}/dashboard/billing?message=申込みをキャンセルしました`,
       metadata: {
         profile_id: profile.id,
         product_surface: "mangai-cloud-ai",
       },
-      ...(Number.isInteger(trialDays) && trialDays >= 1 && trialDays <= 90
-        ? { trial_period_days: trialDays }
-        : {}),
-    },
-  });
-  if (!session.url) throw new Error("Stripe Checkoutを開始できませんでした。");
-  return session.url;
+      subscription_data: {
+        metadata: {
+          profile_id: profile.id,
+          product_surface: "mangai-cloud-ai",
+        },
+        ...(Number.isInteger(trialDays) && trialDays >= 1 && trialDays <= 90
+          ? { trial_period_days: trialDays }
+          : {}),
+      },
+    });
+    if (!session.url)
+      throw new ProviderUnavailableError(
+        "Stripe Checkoutを開始できませんでした。",
+      );
+    return session.url;
+  } catch (error) {
+    if (isDomainError(error)) throw error;
+    throw new ProviderUnavailableError(
+      "Stripe Checkoutを開始できませんでした。",
+    );
+  }
 }
 
 export async function createCloudBillingPortal(request: Request) {
   const { entitlement } = await billingContext();
   if (!entitlement.stripe_customer_id)
-    throw new Error("Stripe請求情報がありません。");
-  const session = await createStripeClient().billingPortal.sessions.create({
-    customer: entitlement.stripe_customer_id,
-    return_url: `${siteOrigin(request)}/dashboard/billing`,
-  });
-  return session.url;
+    throw new ResourceNotFoundError("Stripe請求情報がありません。");
+  try {
+    const session = await createStripeClient().billingPortal.sessions.create({
+      customer: entitlement.stripe_customer_id,
+      return_url: `${siteOrigin(request)}/dashboard/billing`,
+    });
+    return session.url;
+  } catch {
+    throw new ProviderUnavailableError("請求画面を開けませんでした。");
+  }
 }

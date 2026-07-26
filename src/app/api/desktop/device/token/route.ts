@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { bearerToken, hashDeviceSecret } from "@/lib/desktop-auth";
+import { toMessageApiError } from "@/lib/api-errors";
+import {
+  AuthenticationRequiredError,
+  ProviderUnavailableError,
+} from "@/lib/domain-errors";
+import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
 
 export async function GET(request: Request) {
+  const logContext = createHubRequestContext(request);
   const token = bearerToken(request);
-  if (!token)
-    return NextResponse.json(
-      { message: "端末トークンが不正です。" },
-      { status: 401 },
-    );
   try {
+    if (!token)
+      throw new AuthenticationRequiredError("端末トークンが不正です。");
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("desktop_device_authorizations")
@@ -23,12 +32,12 @@ export async function GET(request: Request) {
         approved_at: string | null;
         scopes: string[];
       }>();
-    if (error) throw new Error(error.message);
-    if (!data)
-      return NextResponse.json(
-        { message: "端末認証が見つかりません。" },
-        { status: 401 },
+    if (error)
+      throw new ProviderUnavailableError(
+        "端末認証を確認できませんでした。",
       );
+    if (!data)
+      throw new AuthenticationRequiredError("端末認証が見つかりません。");
     if (
       data.status === "pending" &&
       new Date(data.expires_at).getTime() <= Date.now()
@@ -51,34 +60,55 @@ export async function GET(request: Request) {
       { status: data.status === "pending" ? 202 : 410 },
     );
   } catch (cause) {
-    console.error("Desktop device authorization poll failed", cause);
-    return NextResponse.json(
-      { message: "端末認証を確認できませんでした。" },
-      { status: 503 },
+    logHubError(
+      "desktop_device_authorization_poll_failed",
+      cause,
+      logContext,
+    );
+    const response = toMessageApiError(
+      cause,
+      "端末認証を確認できませんでした。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
     );
   }
 }
 
 export async function DELETE(request: Request) {
+  const logContext = createHubRequestContext(request);
   const token = bearerToken(request);
-  if (!token)
-    return NextResponse.json(
-      { message: "端末トークンが不正です。" },
-      { status: 401 },
-    );
   try {
+    if (!token)
+      throw new AuthenticationRequiredError("端末トークンが不正です。");
     const admin = createAdminClient();
     const { error } = await admin
       .from("desktop_device_authorizations")
       .update({ status: "revoked", revoked_at: new Date().toISOString() })
       .eq("secret_hash", hashDeviceSecret(token));
-    if (error) throw new Error(error.message);
-    return NextResponse.json({ revoked: true });
+    if (error)
+      throw new ProviderUnavailableError(
+        "端末認証を解除できませんでした。",
+      );
+    logHubEvent("info", "desktop_device_authorization_revoked", logContext);
+    return attachHubRequestId(
+      NextResponse.json({ revoked: true }),
+      logContext,
+    );
   } catch (cause) {
-    console.error("Desktop device authorization revoke failed", cause);
-    return NextResponse.json(
-      { message: "端末認証を解除できませんでした。" },
-      { status: 503 },
+    logHubError(
+      "desktop_device_authorization_revoke_failed",
+      cause,
+      logContext,
+    );
+    const response = toMessageApiError(
+      cause,
+      "端末認証を解除できませんでした。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
     );
   }
 }

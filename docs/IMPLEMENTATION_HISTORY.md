@@ -1321,3 +1321,157 @@ Windows固有の`Desktop Windows / Windows build`を別workflowへ追加しま�
 初回GitHub実行では、ローカルに残る共有package build成果物が隠していたクリーン環境の型解決不足を検出しました。CoreとWindowsの両Jobで`build:packages`を型検査前に明示し、GitHub ActionsもNode.js 24 runtimeを使用する現行majorへ更新しました。
 
 Windows Jobでは共有packageがrepo rootの依存を解決するため、rootとDesktop双方をlockfileからinstallするよう補正しました。Core Jobは共有package build後に型検査、Hub build、Hub／Canvas／AI testまでGitHub上で成功しています。
+
+## 153. 保守性改善PR-09 Desktop migration runner分離
+
+Desktop SQLiteの12個のversioned migrationを1つの`Migration[]`へ集約し、未適用判定、backup要否、実行順、transaction、`schema_migrations`登録、structured logを新しい`infrastructure/sqlite/migration-runner.ts`へ分離しました。追加漏れしていた`character-profiles-v1`を含め、既存DBでは全pending migrationの直前に個別backupを作成します。
+
+最初の未適用migrationでは、共通schema準備とmigration本体を同じtransactionで実行します。途中失敗時は共通準備、schema変更、データ変更、version登録をまとめてrollbackし、次回起動で安全に再試行できます。backupは一時名へのコピー後に同一ディレクトリでrenameし、コピー失敗時の一時ファイルを残しません。
+
+runner単体で全migrationのbackup・登録・二重適用防止、途中失敗rollback、修正後の再試行を追加検証しました。旧Canvas DBから全12 migration、`character-profiles-v1`のbackup、structured logを含むdatabase集中テスト30/30、Desktop全体93/93に成功しています。
+
+クリーンインストールで検出したDesktop development推移依存`fast-uri`のhigh severity advisoryを修正版3.1.4へ更新し、root／Desktopとも`npm audit` 0件を確認しました。Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop production build、16 Supabase migration静的検査、RC preflightにも成功しています。新しいschema migrationはなく、既存version、適用順、SQLiteデータ、公開IPCを維持します。詳細は[`desktop/MIGRATION_RUNNER.md`](desktop/MIGRATION_RUNNER.md)へ記録しています。
+
+## 154. 保守性改善PR-10 Desktop Asset／Backup分離
+
+`MangaiDatabase`の公開APIをFacadeとして維持し、AssetのSQLite処理を`AssetRepository`、画像検査・Project内copy・trash・data URL処理を`AssetFileService`へ分離しました。importとdeleteのDB transaction境界はFacadeが管理し、DB失敗時にcopy済みファイルを削除、またはtrashから元へ戻します。
+
+Project Backupのmanifest型とversion 1／2互換検証、streaming ZIP Writer、サイズ・圧縮率・path traversal・SHA-256を確認するReader、commit失敗時に一時Projectを回収するRestore Serviceを専用モジュールへ移しました。既存の2 GiB、20,000 entry、50 MiB manifest、200倍圧縮率制限、進捗、cancel、atomic renameを維持しています。
+
+Asset／Backupの既存統合試験に加え、Project外Asset path拒否とRestore commit失敗時cleanupを追加しました。DB migration、backup format、Electron IPCの変更はありません。設計と残る分割は[`desktop/DATABASE_ASSET_BACKUP_MODULES.md`](desktop/DATABASE_ASSET_BACKUP_MODULES.md)へ記録しています。
+
+Desktop統合95/95、Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflight、root／Desktop `npm audit` 0件に成功しました。
+
+## 155. 保守性改善PR-11 Desktop AI Queue／Policy分離
+
+`AIService`実装を`ai-service.ts`へ移し、旧`service.ts`を互換entrypointとして維持しました。生成先判定とroute decision監査記録を`GenerationRouter`、Local／Dezgoのtimer・夜間実行時間計算・wake管理を個別Queue class、Dezgo失敗分類とComfyUI指数backoffを共通Retry Policyへ分離しました。
+
+`AIService` constructorは`MangaiDatabase` concrete classではなく、必要なpublicメソッドだけを持つ`AIServiceStore`を受け取ります。Dezgo画像保存も縮小したStore interfaceへ変更しました。Provider、Queue、Routerを差し替えて単体試験でき、既存のProvider実装、Job schema、IPC、成人向けfail-closed条件を維持します。
+
+Queue時刻・timer差し替え、bounded backoff、route監査の単体試験を追加し、Desktop統合98/98に成功しました。DB migrationはありません。詳細は[`desktop/AI_QUEUE_POLICY_MODULES.md`](desktop/AI_QUEUE_POLICY_MODULES.md)へ記録しています。
+
+Hub 49/49、canvas-core 26/26、ai-core 44/44、日英アクセシビリティ違反0件、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査にも成功しました。
+
+## 156. 保守性改善PR-12 Cloud Canvas Editor責務分離
+
+`CloudCanvasEditor`からCanvas SVG生成、ブラウザPNG download、Creator API URL構築と通信を専用serviceへ分離しました。SVG生成は副作用のない純粋関数とし、テキスト、font、色、Asset URLをXML escapeします。Editor UIには直接の`fetch`と`/api/creator/` path構築を残していません。
+
+自動保存のrevision、timeout、競合、指数backoff、online復帰、離脱警告を`useCanvasAutosave`へ集約しました。Undo／Redo履歴と100件上限を`useCanvasHistory`、ドラッグ中の座標制約と履歴確定を`useCanvasPointer`へ移しました。保存・履歴・pointerの公開interfaceを介してEditorがレイアウトと機能統合に集中できる構成へ変更しています。
+
+SVGのXML escapeと入力不変性、Undo／Redoと分岐後のRedo破棄、Editorからの直接API参照除去を回帰試験へ追加しました。既存API request、保存schema、DB migration、画面仕様は変更していません。
+
+Hub 52/52、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
+
+## 157. 保守性改善PR-13 Cloud Creator Server分割
+
+715行で認証、Project、Episode／Page、Canvas、Asset、生成、import、exportを担当していた`cloud-creator-server.ts`を、`src/modules/cloud-creator`配下の機能別moduleへ分割しました。従来ファイルは公開関数名と型名を維持する53行の互換entrypointとし、既存API routeとServer Componentを一括変更せず段階移行できます。
+
+Supabase client生成、利用者取得、creator／admin profile確認は`auth-context.ts`へ統一しました。Project、Canvas、AssetのDB queryをRepositoryへ分離し、RepositoryからServiceへの逆依存を禁止しました。UI向け契約型は`contracts/types.ts`へ集約し、`storage_path`などのDB内部列を公開型へ含めません。Canvas正規化はSupabase非依存の純粋関数です。
+
+既存のRLS、resource ID filter、RPC、Storage補償削除、容量・hash検査、生成moderationとquotaを維持しています。署名URL作成も共通のcreator/admin認証contextを通るよう統一しました。DB migration、API request／response、保存データの変更はありません。構造、手動確認、rollbackは[`hub/CLOUD_CREATOR_MODULES.md`](hub/CLOUD_CREATOR_MODULES.md)へ記録しています。
+
+Hub 56/56、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
+
+## 158. 保守性改善PR-14 Server Action分割・Storage補償
+
+認証、プロフィール、作品、デジタル商品、グッズ申請、注文とStorage helperが混在していた606行の`src/app/actions.ts`を機能別Server Actionへ分割しました。従来pathは既存formとComponentのimportを維持する薄いasync互換entrypointです。FormData文字列取得、画像・販売ファイル検証も共通moduleへ移しました。
+
+作品画像と販売ファイルでは、所有者namespaceへのStorage upload後にDB insert／updateが失敗すると新規オブジェクトが残る経路を修正しました。共通の補償transactionがDB error結果と例外を検出し、upload済みオブジェクトを1回だけ削除します。cleanup自体の失敗は隠さず報告し、暗黙の重複実行を行いません。既存の所有権検査、MIME・サイズ制限、redirect、revalidation、CheckoutのAdmin client境界を維持しています。
+
+補償なしの成功、DB error、DB例外、cleanup失敗、Actionの共通helper利用、互換entrypointの境界を自動試験へ追加しました。DB migration、Storage Policy、Action引数、画面仕様の変更はありません。構造、手動確認、rollback、旧ファイルcleanupの残課題は[`hub/SERVER_ACTION_MODULES.md`](hub/SERVER_ACTION_MODULES.md)へ記録しています。
+
+Hub 62/62、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub製品build、16 Supabase migration静的検査に成功しました。
+
+## 159. 保守性改善PR-15 Package公開API・依存境界
+
+Phase 4の依存方向を継続的に固定するため、5つの`@mangai/*` packageにroot限定の`exports` mapを追加しました。Hub、Desktop、testはpackage名から`src/index.ts`が定義する公開APIだけを利用し、`src`や`dist`内部へのdeep importを禁止します。
+
+新しい依存境界検査は、packageからNext.js、Electron、Supabase、Stripe、SQLite、Node built-in、filesystemへの逆依存、未宣言のMANGAI package依存、package間の循環、package内部の相対import循環を検出します。検査は外部libraryを追加せず、`npm run deps:check`としてRequired Quality workflowへ組み込みました。
+
+実際のrepositoryが違反なしであることに加え、framework依存、未宣言依存、deep import、package循環、source循環を意図的に含む一時fixtureを使った回帰試験を追加しました。DB migration、公開アプリケーションAPI、Desktop IPC、保存形式、画面動作の変更はありません。ルール、追加手順、rollbackは[`hub/DEPENDENCY_BOUNDARIES.md`](hub/DEPENDENCY_BOUNDARIES.md)へ記録しています。
+
+依存境界検査（5 package／21 source）、Hub 66/66、Canvas core 26/26、AI core 44/44、Desktop統合98/98、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 160. 保守性改善PR-16 Cloud Canvas型付きError
+
+Phase 4のエラー設計として、安定した12種類のDomain Error code、Error class、HTTP status変換、互換API Error readerを追加しました。未知のDB／内部例外は`INTERNAL_ERROR`と操作別fallbackへ置き換え、内部メッセージをBrowserへ返しません。
+
+Cloud Canvas保存では、RPCの`revision_conflict`判定をRepository境界へ限定しました。ServiceとRouteからメッセージ部分一致を削除し、`RevisionConflictError`からHTTP 409と`REVISION_CONFLICT`を生成します。認証、権限、Page未検出、入力検証も型付きErrorへ移行しました。
+
+APIは既存Clientとの互換性を保つ`error: string`に`errorCode`を追加します。Canvas UIはcodeを優先して競合状態へ遷移し、rolling deployment中の旧Server向けにHTTP 409 fallbackも維持します。将来のnested error envelopeも同じreaderで解釈できます。
+
+Domain Error／HTTP対応、未知例外の秘匿、Zod／JSON検証、旧新API envelope、DB signal変換、文字列分岐の非回帰を自動試験へ追加しました。DB migration、成功response、Canvas request、保存形式、Desktop IPCの変更はありません。設計と段階移行手順は[`hub/DOMAIN_ERRORS.md`](hub/DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 73/73、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 161. 保守性改善PR-17 Cloud AI型付きError
+
+Cloud AI Job登録のcredit、費用、日次予算、rate limit、契約、生成停止、価格未設定、入力不正、Project権限のDB signalをGeneration境界で型付きDomain Errorへ変換しました。moderation拒否には`CONTENT_REJECTED`とHTTP 422を追加し、未知のDB signalは`INTERNAL_ERROR`へ秘匿します。
+
+生成Job一覧／登録／キャンセル、利用枠、内部WorkerのAPI Routeを共通Error responseへ統一しました。request rate limitは`RATE_LIMITED`を返しつつ`Retry-After`を維持します。日本語メッセージの「集中」「拒否」「停止中」によるHTTP分岐を削除しました。
+
+既存の`CloudGenerationLeaseLostError`は公開名を維持したまま`LeaseLostError`を継承し、`LEASE_LOST` codeを持つようにしました。heartbeat、Provider abort、Asset確定禁止、`lease_lost`結果、Provider固有error codeとretry判定は変更していません。
+
+DB signal対応、HTTP status、未知例外秘匿、moderation、lease code、Routeの文字列分岐非回帰を自動試験へ追加しました。DB migration、課金予約／確定、Job schema、成功response、Desktop IPCの変更はありません。対応表とrollbackは[`hub/CLOUD_AI_DOMAIN_ERRORS.md`](hub/CLOUD_AI_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 78/78、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 162. 保守性改善PR-18 Cloud Structure型付きError
+
+Episode／Page追加、Episode名変更、並び替え、論理削除のDB signalを専用のStructure Error境界で型付きDomain Errorへ変換しました。編集不可は`PERMISSION_DENIED`、最後のEpisode／Page削除禁止と不正な移動方向は`VALIDATION_ERROR`、未知のDB signalは操作別`INTERNAL_ERROR`へ正規化します。
+
+Structure Serviceから`last_episode`／`last_page`のメッセージ部分一致を削除しました。画面操作はREST APIではなくServer Action経由のため、Domain Errorの安全な利用者向けメッセージだけをredirect先へ渡し、未知の例外やDB内部メッセージは操作別fallbackへ置き換えます。
+
+DB signal対応、HTTP変換、未知例外秘匿、Serviceの文字列分岐非回帰を自動試験へ追加しました。DB migration、RPC、Server Action引数、redirect先、成功メッセージ、revalidation、画面仕様の変更はありません。対応表とrollbackは[`hub/CLOUD_STRUCTURE_DOMAIN_ERRORS.md`](hub/CLOUD_STRUCTURE_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 83/83、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 163. 保守性改善PR-19 Cloud Project／Asset Error契約
+
+Cloud Project、Asset、Import、ExportのService境界を型付きDomain Errorへ移行しました。Project編集不可、未検出、入力不正、requestサイズ、Project容量、rate limit、Storage transaction、未知の内部例外を安定したcodeへ分離し、AssetとImportのサイズ超過には`PAYLOAD_TOO_LARGE`とHTTP 413を追加しました。
+
+Project削除／復元、Asset、Import、Export API Routeは共通`toApiError`へ統一しました。従来の成功response、download stream、`Retry-After`を維持しつつ、すべての失敗を400／404へ潰す処理と、DB・Storage・filesystemの生メッセージ露出を撤廃しました。Project Server ActionもDomain Errorの安全な文言だけをredirect先へ渡します。
+
+Project DB signal、サイズ超過、未知例外秘匿、Routeの共通契約、Serviceの生Error非回帰を自動試験へ追加しました。DB migration、RPC、request body、Storage path、Import manifest、Export package、画面仕様の変更はありません。対応表とrollbackは[`hub/CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md`](hub/CLOUD_PROJECT_ASSET_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 88/88、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 164. 保守性改善PR-20 Checkout／Billing／Desktop Error契約
+
+デジタル商品Checkout、Cloud AI Subscription Checkout／Billing Portal、Desktop端末認証、Hub作品状態照会・下書き更新を型付きDomain Errorへ移行しました。Checkout入力、認証、権限、未検出、更新競合、rate limit、Stripe／Hub DB利用不可、未知例外を安定codeへ分離します。
+
+既存Desktop Clientが利用する`message`形式へ`errorCode`を追加する互換変換を導入しました。公開状況GETの`linked:false`、端末認証の状態response、rate limitの`Retry-After`、Billingの303 redirectは維持します。RedirectにはDomain Errorの安全な文言だけを渡し、Stripe SDK、Supabase、rate limit RPCの生メッセージを外部へ返しません。
+
+message互換envelope、未知例外秘匿、Checkout入力とServer設定の分類、RouteとServiceの生Error非回帰を自動試験へ追加しました。DB migration、Stripe metadata、端末token、scope、Desktop IPC、画面仕様の変更はありません。対応表とrollbackは[`hub/CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md`](hub/CHECKOUT_BILLING_DESKTOP_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 93/93、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、Hub／Desktop製品build、16 Supabase migration静的検査、RC preflightに成功しました。
+
+## 165. 保守性改善PR-21 Stripe Webhook／購入download Error契約
+
+Stripe Webhook署名検証、デジタル商品・Cloud AI Subscription反映、決済状態更新、購入済み商品の期限付きdownloadを型付きDomain Errorへ移行しました。署名不正、Stripe設定不足、購入未検出、Storage失敗、download記録競合、DB／RPC内部失敗を安定codeへ分離します。
+
+Webhookは既存の`message`へ、購入downloadは既存の`error`へ`errorCode`を追加します。Webhook成功時の`received:true`、downloadの303 redirect、購入者所有者条件、`paid`条件、signed URLの300秒期限、download回数記録は維持します。Stripe SDK、Supabase、Storage、RPCの生メッセージを外部へ返しません。
+
+Error／HTTP対応、Subscription event設定・入力分類、Routeの共通契約、所有者・paid・期限条件、Serviceの生Error非回帰を自動試験へ追加しました。DB migration、Stripe metadata、注文status、Webhook対象event、RPC、画面仕様の変更はありません。対応表とrollbackは[`hub/STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md`](hub/STRIPE_WEBHOOK_PURCHASE_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 99/99、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。
+
+## 166. 保守性改善PR-22 Hub Server Action Error契約
+
+認証、プロフィール、作品、デジタル商品、グッズ申請、Checkout、Desktop端末、Cloud AI管理・通知、Marketplace同期、販売パッケージ取込のServer Action表示境界をDomain Errorへ統一しました。入力不正、容量超過、Storage失敗、DB内部失敗を分離し、Supabase／Storage／Stripe／RPC／filesystemの生メッセージをredirect queryとAction結果へ返しません。
+
+作品・商品file検証は`VALIDATION_ERROR`と`PAYLOAD_TOO_LARGE`、upload・cleanupは`STORAGE_TRANSACTION_ERROR`へ変換します。販売パッケージのmanifest、MIME、hash、画像signature検証は安全な入力Errorを維持します。Supabase Auth、端末管理、管理画面のDB失敗は操作別fallbackへ置き換えました。
+
+未知例外秘匿、全Actionの生メッセージ非回帰、共有処理の生Error非回帰、file Error分類、通知・管理Actionの型付き境界を自動試験へ追加しました。Form、Action名、redirect先、成功メッセージ、Storage path、manifest、DB migration、Desktop IPC、保存形式の変更はありません。対応表とrollbackは[`hub/SERVER_ACTION_DOMAIN_ERRORS.md`](hub/SERVER_ACTION_DOMAIN_ERRORS.md)へ記録しています。
+
+Hub 104/104、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。
+
+## 167. 保守性改善PR-23 Hub Structured Logging
+
+HubのStripe Webhook、購入download、Cloud AI Worker、Desktop端末認証・作品連携へ1行JSONのStructured Loggingを導入しました。安全な受信`x-request-id`を引き継ぎ、不正または未指定ならUUIDを生成します。主要応答にも同じIDを返し、利用者報告とserverless logを照合できます。
+
+authorization、cookie、token、API key、署名、Prompt、画像byte、email、表示名・説明などを再帰的にredactします。Bearer token、Stripe key、JWT、secret query、URL認証情報も文字列から除去します。未知ErrorとSupabase形式のplain objectからmessage、stack、details、hintを記録せず、Domain Errorは安定codeだけを残します。logger失敗は業務処理へ伝播しません。
+
+秘密値・創作内容・個人情報redaction、Error秘匿、request ID検証、1行JSON schema、level filter、sink失敗、主要経路のconsole直書き非回帰を自動試験へ追加しました。API response body、DB、Storage、Stripe metadata、Desktop IPC、保存形式の変更はありません。Event catalog、推奨alert、運用制約、rollbackは[`hub/STRUCTURED_LOGGING.md`](hub/STRUCTURED_LOGGING.md)へ記録しています。
+
+Hub 110/110、Canvas core 26/26、AI core 44/44、Desktop統合98/98、依存境界検査、TypeScript、ESLint、16 Supabase migration静的検査に成功しました。Hub／Desktop製品buildとmigration roundtripはGitHub CIで確認します。

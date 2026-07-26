@@ -1,5 +1,16 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { toMessageApiError } from "@/lib/api-errors";
+import {
+  ProviderUnavailableError,
+  ValidationError,
+} from "@/lib/domain-errors";
+import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
 import {
   markCheckoutSessionPaid,
   markPaymentIntentStatus,
@@ -12,29 +23,27 @@ import { syncCloudAiSubscription } from "@/lib/cloud-subscriptions";
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const signature = request.headers.get("stripe-signature");
-  const secret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!signature || !secret)
-    return NextResponse.json(
-      { message: "Webhook設定が不足しています。" },
-      { status: 400 },
-    );
-
-  let event: Stripe.Event;
+  const logContext = createHubRequestContext(request);
   try {
-    event = createStripeClient().webhooks.constructEvent(
-      await request.text(),
-      signature,
-      secret,
-    );
-  } catch {
-    return NextResponse.json(
-      { message: "Webhook署名を確認できませんでした。" },
-      { status: 400 },
-    );
-  }
+    const signature = request.headers.get("stripe-signature");
+    const secret = process.env.STRIPE_WEBHOOK_SECRET;
+    if (!secret)
+      throw new ProviderUnavailableError(
+        "Stripe Webhook設定が不足しています。",
+      );
+    if (!signature)
+      throw new ValidationError("Webhook署名がありません。");
 
-  try {
+    const payload = await request.text();
+    const stripe = createStripeClient();
+    let event: Stripe.Event;
+    try {
+      event = stripe.webhooks.constructEvent(payload, signature, secret);
+    } catch {
+      throw new ValidationError(
+        "Webhook署名を確認できませんでした。",
+      );
+    }
     const subscriptionAction = planCloudSubscriptionEvent(
       event,
       process.env.STRIPE_CLOUD_AI_CREATOR_PRICE_ID,
@@ -49,11 +58,26 @@ export async function POST(request: Request) {
         paymentAction.status,
         paymentAction.orderId,
       );
+    logHubEvent("info", "stripe_webhook_processed", {
+      ...logContext,
+      stripeEventId: event.id,
+      stripeEventType: event.type,
+      subscriptionAction: subscriptionAction?.status ?? null,
+      paymentAction: paymentAction?.type ?? null,
+    });
+    return attachHubRequestId(
+      NextResponse.json({ received: true }),
+      logContext,
+    );
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Webhook処理に失敗しました。";
-    return NextResponse.json({ message }, { status: 500 });
+    logHubError("stripe_webhook_failed", error, logContext);
+    const response = toMessageApiError(
+      error,
+      "Webhook処理に失敗しました。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
+    );
   }
-
-  return NextResponse.json({ received: true });
 }

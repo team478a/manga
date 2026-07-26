@@ -4,6 +4,20 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { authorizeDesktopRequest } from "@/lib/desktop-auth";
 import { DESKTOP_DRAFT_WRITE_SCOPE } from "@/lib/desktop-auth";
+import { toMessageApiError } from "@/lib/api-errors";
+import {
+  PermissionDeniedError,
+  ProviderUnavailableError,
+  ResourceNotFoundError,
+  RevisionConflictError,
+  ValidationError,
+} from "@/lib/domain-errors";
+import {
+  attachHubRequestId,
+  createHubRequestContext,
+  logHubError,
+  logHubEvent,
+} from "@/lib/hub-logger";
 
 export const dynamic = "force-dynamic";
 
@@ -18,23 +32,19 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ sourceProjectId: string }> },
 ) {
+  const logContext = createHubRequestContext(request);
   const params = paramsSchema.safeParse(await context.params);
   const input = updateSchema.safeParse(await request.json().catch(() => null));
-  if (!params.success || !input.success)
-    return NextResponse.json(
-      { message: "更新内容が不正です。" },
-      { status: 400 },
-    );
-
   try {
+    if (!params.success || !input.success)
+      throw new ValidationError("更新内容が不正です。");
     const authorization = await authorizeDesktopRequest(
       request,
       DESKTOP_DRAFT_WRITE_SCOPE,
     );
     if (!authorization)
-      return NextResponse.json(
-        { message: "下書き更新の端末権限がありません。" },
-        { status: 403 },
+      throw new PermissionDeniedError(
+        "下書き更新の端末権限がありません。",
       );
 
     const admin = createAdminClient();
@@ -52,24 +62,19 @@ export async function PATCH(
         is_public: boolean;
         updated_at: string;
       }>();
-    if (currentError) throw new Error(currentError.message);
-    if (!current)
-      return NextResponse.json(
-        { message: "対応するHub作品がありません。" },
-        { status: 404 },
+    if (currentError)
+      throw new ProviderUnavailableError(
+        "Hub下書きを確認できませんでした。",
       );
+    if (!current)
+      throw new ResourceNotFoundError("対応するHub作品がありません。");
     if (current.status !== "draft" || current.is_public)
-      return NextResponse.json(
-        { message: "Desktopから更新できるのは非公開下書きだけです。" },
-        { status: 409 },
+      throw new RevisionConflictError(
+        "Desktopから更新できるのは非公開下書きだけです。",
       );
     if (current.updated_at !== input.data.expectedUpdatedAt)
-      return NextResponse.json(
-        {
-          message:
-            "Hub側で作品が更新されています。再確認してからやり直してください。",
-        },
-        { status: 409 },
+      throw new RevisionConflictError(
+        "Hub側で作品が更新されています。再確認してからやり直してください。",
       );
 
     const { data: updated, error: updateError } = await admin
@@ -91,29 +96,40 @@ export async function PATCH(
         description: string | null;
         updated_at: string;
       }>();
-    if (updateError) throw new Error(updateError.message);
-    if (!updated)
-      return NextResponse.json(
-        {
-          message:
-            "Hub側で作品が更新されています。再確認してからやり直してください。",
-        },
-        { status: 409 },
+    if (updateError)
+      throw new ProviderUnavailableError(
+        "Hub下書きを更新できませんでした。",
       );
-    return NextResponse.json({
-      updated: true,
-      work: {
-        id: updated.id,
-        title: updated.title,
-        description: updated.description ?? "",
-        updatedAt: updated.updated_at,
-      },
+    if (!updated)
+      throw new RevisionConflictError(
+        "Hub側で作品が更新されています。再確認してからやり直してください。",
+      );
+    logHubEvent("info", "desktop_hub_draft_updated", {
+      ...logContext,
+      sourceProjectId: params.data.sourceProjectId,
+      workId: updated.id,
     });
+    return attachHubRequestId(
+      NextResponse.json({
+        updated: true,
+        work: {
+          id: updated.id,
+          title: updated.title,
+          description: updated.description ?? "",
+          updatedAt: updated.updated_at,
+        },
+      }),
+      logContext,
+    );
   } catch (cause) {
-    console.error("Desktop Hub draft update failed", cause);
-    return NextResponse.json(
-      { message: "Hub下書きを更新できませんでした。" },
-      { status: 503 },
+    logHubError("desktop_hub_draft_update_failed", cause, logContext);
+    const response = toMessageApiError(
+      cause,
+      "Hub下書きを更新できませんでした。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(response.body, { status: response.status }),
+      logContext,
     );
   }
 }
@@ -122,10 +138,15 @@ export async function GET(
   request: Request,
   context: { params: Promise<{ sourceProjectId: string }> },
 ) {
+  const logContext = createHubRequestContext(request);
   const parsed = paramsSchema.safeParse(await context.params);
   if (!parsed.success) {
     return NextResponse.json(
-      { linked: false, message: "公開作品は見つかりません。" },
+      {
+        linked: false,
+        message: "公開作品は見つかりません。",
+        errorCode: "RESOURCE_NOT_FOUND",
+      },
       { status: 404 },
     );
   }
@@ -135,7 +156,10 @@ export async function GET(
       const authorization = await authorizeDesktopRequest(request);
       if (!authorization)
         return NextResponse.json(
-          { message: "端末認証が無効または期限切れです。" },
+          {
+            message: "端末認証が無効または期限切れです。",
+            errorCode: "AUTHENTICATION_REQUIRED",
+          },
           { status: 401 },
         );
       const admin = createAdminClient();
@@ -155,12 +179,16 @@ export async function GET(
           is_public: boolean;
           updated_at: string;
         }>();
-      if (error) throw new Error(error.message);
+      if (error)
+        throw new ProviderUnavailableError(
+          "Hub作品を確認できませんでした。",
+        );
       if (!work)
         return NextResponse.json(
           {
             linked: false,
             message: "このProjectに対応するHub作品はありません。",
+            errorCode: "RESOURCE_NOT_FOUND",
           },
           { status: 404 },
         );
@@ -170,7 +198,10 @@ export async function GET(
         .eq("creator_id", authorization.profileId)
         .eq("work_id", work.id)
         .returns<Array<{ status: "active" | "paused" | "archived" }>>();
-      if (productError) throw new Error(productError.message);
+      if (productError)
+        throw new ProviderUnavailableError(
+          "Hub販売状況を確認できませんでした。",
+        );
       const activeProductCount =
         products?.filter((product) => product.status === "active").length ?? 0;
       const pausedProductCount =
@@ -216,10 +247,15 @@ export async function GET(
         updated_at: string;
       }>();
 
-    if (error) throw new Error(error.message);
+    if (error)
+      throw new ProviderUnavailableError("Hub作品を確認できませんでした。");
     if (!work) {
       return NextResponse.json(
-        { linked: false, message: "公開作品は見つかりません。" },
+        {
+          linked: false,
+          message: "公開作品は見つかりません。",
+          errorCode: "RESOURCE_NOT_FOUND",
+        },
         { status: 404 },
       );
     }
@@ -229,7 +265,10 @@ export async function GET(
       .select("id", { count: "exact", head: true })
       .eq("work_id", work.id)
       .eq("status", "active");
-    if (productError) throw new Error(productError.message);
+    if (productError)
+      throw new ProviderUnavailableError(
+        "Hub販売状況を確認できませんでした。",
+      );
 
     return NextResponse.json({
       linked: true,
@@ -251,10 +290,17 @@ export async function GET(
       },
     });
   } catch (cause) {
-    console.error("Desktop Hub status lookup failed", cause);
-    return NextResponse.json(
-      { linked: false, message: "Hubの公開状況を確認できませんでした。" },
-      { status: 503 },
+    logHubError("desktop_hub_status_lookup_failed", cause, logContext);
+    const response = toMessageApiError(
+      cause,
+      "Hubの公開状況を確認できませんでした。",
+    );
+    return attachHubRequestId(
+      NextResponse.json(
+        { linked: false, ...response.body },
+        { status: response.status },
+      ),
+      logContext,
     );
   }
 }

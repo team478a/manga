@@ -15,6 +15,7 @@ import {
   setCloudProjectCover,
 } from "@/lib/cloud-creator-server";
 import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
+import { isDomainError } from "@/lib/domain-errors";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -29,6 +30,10 @@ const projectSchema = z.object({
 function value(formData: FormData, name: string) {
   const entry = formData.get(name);
   return typeof entry === "string" ? entry : "";
+}
+
+function domainMessage(error: unknown, fallback: string) {
+  return isDomainError(error) ? error.message : fallback;
 }
 
 export async function createCloudProjectAction(formData: FormData) {
@@ -47,10 +52,7 @@ export async function createCloudProjectAction(formData: FormData) {
   try {
     result = await createCloudProject(parsed.data);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを作成できませんでした。";
+    const message = domainMessage(error, "Projectを作成できませんでした。");
     redirect(`/creator/new?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
@@ -72,10 +74,7 @@ export async function addCloudEpisodeAction(
   try {
     await addCloudEpisode(projectId, parsed.data);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Episodeを追加できませんでした。";
+    const message = domainMessage(error, "Episodeを追加できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -87,8 +86,7 @@ export async function addCloudPageAction(projectId: string, episodeId: string) {
   try {
     pageId = await addCloudPage(episodeId);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Pageを追加できませんでした。";
+    const message = domainMessage(error, "Pageを追加できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -117,10 +115,7 @@ export async function renameCloudProjectAction(
       parsed.data.description,
     );
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを更新できませんでした。";
+    const message = domainMessage(error, "Projectを更新できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -143,10 +138,7 @@ export async function renameCloudEpisodeAction(
   try {
     await renameCloudEpisode(episodeId, parsed.data);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Episodeを更新できませんでした。";
+    const message = domainMessage(error, "Episodeを更新できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -162,8 +154,7 @@ export async function moveCloudStructureAction(
   try {
     await moveCloudStructure(kind, id, direction);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "並び順を変更できませんでした。";
+    const message = domainMessage(error, "並び順を変更できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -177,8 +168,7 @@ export async function deleteCloudStructureAction(
   try {
     await deleteCloudStructure(kind, id);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "削除できませんでした。";
+    const message = domainMessage(error, "削除できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -191,10 +181,7 @@ export async function deleteCloudProjectAction(projectId: string) {
   try {
     await setCloudProjectDeleted(projectId, true);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを削除できませんでした。";
+    const message = domainMessage(error, "Projectを削除できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
@@ -206,10 +193,7 @@ export async function restoreCloudProjectAction(projectId: string) {
   try {
     await setCloudProjectDeleted(projectId, false);
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Projectを復元できませんでした。";
+    const message = domainMessage(error, "Projectを復元できませんでした。");
     redirect(`/creator/trash?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
@@ -224,8 +208,7 @@ export async function setCloudProjectCoverAction(
   try {
     await setCloudProjectCover(projectId, pageId);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "表紙を設定できませんでした。";
+    const message = domainMessage(error, "表紙を設定できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -251,10 +234,10 @@ export async function syncCloudMarketplaceDraftAction(
       price: parsed.data,
     });
   } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Marketplace下書きを作成できませんでした。";
+    const message = domainMessage(
+      error,
+      "Marketplace下書きを作成できませんでした。",
+    );
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);

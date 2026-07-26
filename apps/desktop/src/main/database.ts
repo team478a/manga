@@ -2,10 +2,6 @@ import Database from "better-sqlite3";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
-import { once } from "node:events";
-import { imageSize } from "image-size";
-import * as yauzl from "yauzl";
-import * as yazl from "yazl";
 import { z } from "zod";
 import {
   createImagesZip,
@@ -79,7 +75,6 @@ import {
 import {
   applyPageTemplate,
   getEpisodeTemplate,
-  panelLayerInputSchema,
   type Balloon,
   type EpisodeTemplateId,
   type Panel,
@@ -92,6 +87,33 @@ import {
   type RenderAsset,
 } from "./page-renderer.js";
 import { DEZGO_QUEUE_POLICY } from "./ai/dezgo-queue-policy.js";
+import {
+  MigrationRunner,
+  type Migration,
+  type MigrationRunnerEvent,
+} from "./infrastructure/sqlite/migration-runner.js";
+import { StructuredLogger } from "./structured-logger.js";
+import { AssetRepository } from "./modules/assets/asset-repository.js";
+import { AssetFileService } from "./modules/assets/asset-file-service.js";
+import { BackupReader } from "./modules/backup/backup-reader.js";
+import { BackupWriter } from "./modules/backup/backup-writer.js";
+import { RestoreService } from "./modules/backup/restore-service.js";
+import {
+  BACKUP_FORMAT,
+  assetExtension,
+  parseBackupManifest,
+  type BackupChatMessage,
+  type BackupChatSession,
+  type BackupGenerationJob,
+  type BackupGenerationOutput,
+  type BackupOperation,
+  type ProjectBackupHistory,
+  type ProjectBackupManifest,
+} from "./modules/backup/backup-manifest.js";
+import {
+  assertBulkOperationActive,
+  type BulkOperationOptions,
+} from "./modules/backup/backup-operation.js";
 
 export type Paths = {
   root: string;
@@ -109,202 +131,12 @@ export class DatabaseIntegrityError extends Error {
 }
 const now = () => new Date().toISOString();
 const uid = () => crypto.randomUUID();
-const backupFormat = "mangai.project-backup";
-const maxBackupBytes = 2 * 1024 * 1024 * 1024;
-const maxBackupManifestBytes = 50 * 1024 * 1024;
-const maxBackupEntries = 20_000;
-const maxBackupCompressionRatio = 200;
-type BulkOperationOptions = {
-  signal?: AbortSignal;
-  onProgress?: (progress: {
-    phase: "validating" | "writing" | "extracting" | "committing";
-    completed: number;
-    total: number;
-  }) => void;
-};
-
-function assertBulkOperationActive(signal?: AbortSignal) {
-  if (signal?.aborted) {
-    throw bulkOperationAbortError();
-  }
-}
-
-function bulkOperationAbortError() {
-  const error = new Error("処理をキャンセルしました。");
-  error.name = "AbortError";
-  return error;
-}
-
-async function sha256File(
-  filePath: string,
-  signal?: AbortSignal,
-): Promise<{ byteSize: number; sha256: string }> {
-  const hash = crypto.createHash("sha256");
-  let byteSize = 0;
-  for await (const chunk of fs.createReadStream(filePath)) {
-    assertBulkOperationActive(signal);
-    const bytes = chunk as Buffer;
-    byteSize += bytes.length;
-    hash.update(bytes);
-  }
-  return { byteSize, sha256: hash.digest("hex") };
-}
-
-async function readZipEntry(
-  zip: yauzl.ZipFile,
-  entry: yauzl.Entry,
-  maximumBytes: number,
-  signal?: AbortSignal,
-) {
-  if (entry.uncompressedSize > maximumBytes)
-    throw new Error("バックアップ情報が大きすぎます。");
-  const stream = await zip.openReadStreamPromise(entry);
-  const chunks: Buffer[] = [];
-  let byteSize = 0;
-  for await (const chunk of stream) {
-    assertBulkOperationActive(signal);
-    const bytes = chunk as Buffer;
-    byteSize += bytes.length;
-    if (byteSize > maximumBytes) {
-      stream.destroy();
-      throw new Error("バックアップ情報が大きすぎます。");
-    }
-    chunks.push(bytes);
-  }
-  return Buffer.concat(chunks, byteSize);
-}
-
-async function extractZipEntry(
-  zip: yauzl.ZipFile,
-  entry: yauzl.Entry,
-  destination: string,
-  expected: { byteSize: number; sha256: string },
-  signal?: AbortSignal,
-) {
-  const input = await zip.openReadStreamPromise(entry);
-  const output = fs.createWriteStream(destination, { flags: "wx", mode: 0o600 });
-  const hash = crypto.createHash("sha256");
-  let byteSize = 0;
-  try {
-    for await (const chunk of input) {
-      assertBulkOperationActive(signal);
-      const bytes = chunk as Buffer;
-      byteSize += bytes.length;
-      if (byteSize > expected.byteSize) {
-        input.destroy();
-        throw new Error("素材の展開サイズが不正です。");
-      }
-      hash.update(bytes);
-      if (!output.write(bytes)) await once(output, "drain");
-    }
-    output.end();
-    await once(output, "close");
-  } catch (error) {
-    input.destroy();
-    output.destroy();
-    if (fs.existsSync(destination)) fs.rmSync(destination, { force: true });
-    throw error;
-  }
-  if (
-    byteSize !== expected.byteSize ||
-    hash.digest("hex") !== expected.sha256
-  ) {
-    fs.rmSync(destination, { force: true });
-    throw new Error("素材が破損しています。");
-  }
-}
-type ProjectBackupManifest = {
-  format: typeof backupFormat;
-  version: 1 | 2;
-  createdAt: string;
-  bundle: ProjectBundle;
-  history?: ProjectBackupHistory;
-  generationPolicy?: ProjectGenerationPolicy;
-  characterProfiles?: CharacterProfile[];
-  adultReferenceImageAssessments?: Array<{
-    assetId: string;
-    assessment: AdultReferenceImageAssessment;
-  }>;
-};
-type BackupOperation = {
-  label: string;
-  beforeJson: string;
-  afterJson: string;
-  isUndone: number;
-  createdAt: string;
-};
-type BackupChatSession = {
-  id: string;
-  title: string;
-  createdAt: string;
-  updatedAt: string;
-};
-type BackupChatMessage = {
-  id: string;
-  sessionId: string;
-  role: string;
-  content: string;
-  providerId: string | null;
-  modelId: string | null;
-  createdAt: string;
-};
-type BackupGenerationJob = {
-  id: string;
-  episodeId: string | null;
-  pageId: string | null;
-  providerType: string;
-  providerId: string;
-  modelId: string | null;
-  generationType: string;
-  status: string;
-  progress: number;
-  prompt: string;
-  negativePrompt: string;
-  inputJson: string;
-  outputJson: string;
-  providerJobId: string | null;
-  errorCode: string | null;
-  errorMessage: string | null;
-  createdAt: string;
-  startedAt: string | null;
-  completedAt: string | null;
-};
-type BackupGenerationOutput = {
-  id: string;
-  jobId: string;
-  assetId: string | null;
-  relativePath: string | null;
-  metadataJson: string;
-  createdAt: string;
-};
-type ProjectBackupHistory = {
-  operations: BackupOperation[];
-  chatSessions: BackupChatSession[];
-  chatMessages: BackupChatMessage[];
-  generationJobs: BackupGenerationJob[];
-  generationOutputs: BackupGenerationOutput[];
-  routeDecisions?: GenerationRouteDecisionRecord[];
-};
 export type AutoBackupRunResult = {
   checkedAt: string;
   created: Array<{ projectId: string; filePath: string; byteSize: number }>;
   skipped: Array<{ projectId: string; reason: "unchanged" | "interval" }>;
   errors: Array<{ projectId: string; message: string }>;
 };
-const mime = (file: string) =>
-  ({
-    ".jpg": "image/jpeg",
-    ".jpeg": "image/jpeg",
-    ".png": "image/png",
-    ".webp": "image/webp",
-  })[path.extname(file).toLowerCase()] || "";
-const assetExtension = (mimeType: string) =>
-  ({
-    "image/jpeg": ".jpg",
-    "image/png": ".png",
-    "image/webp": ".webp",
-  })[mimeType] || "";
-
 function uniqueTrashDestination(directory: string, name: string) {
   const stamp = Date.now();
   for (let attempt = 0; attempt < 1000; attempt++) {
@@ -385,208 +217,127 @@ function openCheckedDatabase(databasePath: string, existed: boolean) {
   }
 }
 
-function parseBackupManifest(value: unknown): ProjectBackupManifest {
-  if (!value || typeof value !== "object")
-    throw new Error("バックアップ情報が不正です。");
-  const manifest = value as Record<string, unknown>;
-  if (
-    manifest.format !== backupFormat ||
-    (manifest.version !== 1 && manifest.version !== 2)
-  )
-    throw new Error("対応していないバックアップ形式です。");
-  const bundle = manifest.bundle as ProjectBundle | undefined;
-  if (!bundle || !bundle.project || typeof bundle.project !== "object")
-    throw new Error("Project情報がありません。");
-  if (!Array.isArray(bundle.panelLayers)) bundle.panelLayers = [];
-  const collections = [
-    bundle.episodes,
-    bundle.pages,
-    bundle.panels,
-    bundle.panelLayers,
-    bundle.balloons,
-    bundle.textObjects,
-    bundle.assets,
-  ];
-  if (collections.some((items) => !Array.isArray(items)))
-    throw new Error("バックアップのデータ構造が不正です。");
-  if (
-    typeof bundle.project.title !== "string" ||
-    !bundle.project.title.trim() ||
-    !Number.isFinite(bundle.project.width) ||
-    !Number.isFinite(bundle.project.height) ||
-    !Number.isFinite(bundle.project.dpi)
-  )
-    throw new Error("Project設定が不正です。");
-  if (bundle.episodes.length < 1 || bundle.episodes.length > 1000)
-    throw new Error("エピソード数が不正です。");
-  if (bundle.pages.length > 10000 || bundle.assets.length > 10000)
-    throw new Error("バックアップ内の項目数が上限を超えています。");
-  if (bundle.panelLayers.length > 1_000_000)
-    throw new Error("コマレイヤー数が上限を超えています。");
-  for (const items of collections)
-    for (const item of items)
-      if (!item || typeof item.id !== "string" || !item.id)
-        throw new Error("バックアップ内のIDが不正です。");
-  for (const asset of bundle.assets)
-    if (
-      !assetExtension(asset.mimeType) ||
-      !Number.isSafeInteger(asset.byteSize) ||
-      asset.byteSize < 0 ||
-      !/^[0-9a-f]{64}$/i.test(asset.sha256)
-    )
-      throw new Error(`素材「${asset.fileName}」の情報が不正です。`);
-  const panelIds = new Set(bundle.panels.map((panel) => panel.id));
-  const assetIds = new Set(bundle.assets.map((asset) => asset.id));
-  for (const layer of bundle.panelLayers) {
-    panelLayerInputSchema.parse(layer);
-    if (!panelIds.has(layer.panelId))
-      throw new Error("コマレイヤーのコマ参照が不正です。");
-    if (layer.assetId && !assetIds.has(layer.assetId))
-      throw new Error("コマレイヤーの素材参照が不正です。");
-  }
-  if (manifest.version === 2) {
-    const history = manifest.history as ProjectBackupHistory | undefined;
-    const historyCollections = history && [
-      history.operations,
-      history.chatSessions,
-      history.chatMessages,
-      history.generationJobs,
-      history.generationOutputs,
-    ];
-    if (
-      !historyCollections ||
-      historyCollections.some((items) => !Array.isArray(items))
-    )
-      throw new Error("バックアップ履歴のデータ構造が不正です。");
-    if (historyCollections.some((items) => items.length > 100_000))
-      throw new Error("バックアップ履歴の項目数が上限を超えています。");
-    if (history.routeDecisions !== undefined) {
-      if (
-        !Array.isArray(history.routeDecisions) ||
-        history.routeDecisions.length > 100_000
-      )
-        throw new Error("Route判定履歴のデータ構造が不正です。");
-      for (const item of history.routeDecisions)
-        generationRouteDecisionRecordSchema.parse(item);
-    }
-  }
-  if (manifest.generationPolicy !== undefined)
-    projectGenerationPolicySchema.parse(manifest.generationPolicy);
-  if (manifest.characterProfiles !== undefined) {
-    if (
-      !Array.isArray(manifest.characterProfiles) ||
-      manifest.characterProfiles.length > 10_000
-    )
-      throw new Error("キャラクターProfileのデータ構造が不正です。");
-    const backupAssetIds = new Set(bundle.assets.map((asset) => asset.id));
-    for (const profile of manifest.characterProfiles as CharacterProfile[]) {
-      characterProfileInputSchema.parse({
-        ...profile,
-        projectId: bundle.project.id,
-      });
-      if (!Array.isArray(profile.referenceAssets))
-        throw new Error("キャラクター参照素材の構造が不正です。");
-      for (const reference of profile.referenceAssets) {
-        characterReferenceAssetInputSchema.parse({
-          characterProfileId: profile.id,
-          assetId: reference.assetId,
-          role: reference.role,
-        });
-        if (!backupAssetIds.has(reference.assetId))
-          throw new Error("キャラクター参照素材がProject内にありません。");
-      }
-    }
-  }
-  if (manifest.adultReferenceImageAssessments !== undefined) {
-    if (
-      !Array.isArray(manifest.adultReferenceImageAssessments) ||
-      manifest.adultReferenceImageAssessments.length > 10_000
-    )
-      throw new Error("参照画像の安全確認データ構造が不正です。");
-    const backupAssetIds = new Set(bundle.assets.map((asset) => asset.id));
-    for (const item of manifest.adultReferenceImageAssessments as Array<{
-      assetId: string;
-      assessment: unknown;
-    }>) {
-      if (!backupAssetIds.has(item.assetId))
-        throw new Error("参照画像の安全確認対象がProject内にありません。");
-      adultReferenceImageAssessmentSchema.parse(item.assessment);
-    }
-  }
-  return manifest as ProjectBackupManifest;
-}
-
 export class MangaiDatabase {
   private db: Database.Database;
+  private assets: AssetRepository;
+  private assetFiles: AssetFileService;
+  private backupWriter: BackupWriter;
+  private restoreService: RestoreService;
   constructor(public paths: Paths) {
     const databaseExisted = fs.existsSync(paths.database);
     Object.values(paths)
       .filter((x) => x !== paths.database)
       .forEach((x) => fs.mkdirSync(x, { recursive: true }));
     this.db = openCheckedDatabase(paths.database, databaseExisted);
+    this.assets = new AssetRepository(this.db);
+    this.assetFiles = new AssetFileService();
+    this.backupWriter = new BackupWriter();
+    this.restoreService = new RestoreService(new BackupReader());
     this.db.pragma("foreign_keys = ON");
     this.db.pragma("journal_mode = WAL");
-    if (databaseExisted) {
-      const pendingMigration = !this.hasMigration("canvas-v1")
-        ? "canvas-v1"
-        : !this.hasMigration("canvas-relative-text-v1")
-          ? "canvas-relative-text-v1"
-          : !this.hasMigration("canvas-panel-shape-v1")
-            ? "canvas-panel-shape-v1"
-            : !this.hasMigration("hybrid-generation-policy-v1")
-              ? "hybrid-generation-policy-v1"
-              : !this.hasMigration("hybrid-generation-routing-v1")
-                ? "hybrid-generation-routing-v1"
-                : !this.hasMigration("asset-library-v1")
-                  ? "asset-library-v1"
-                  : !this.hasMigration("panel-layers-v1")
-                    ? "panel-layers-v1"
-                    : !this.hasMigration("adult-generation-consent-v1")
-                      ? "adult-generation-consent-v1"
-                      : !this.hasMigration("adult-provider-policy-v1")
-                        ? "adult-provider-policy-v1"
-                        : !this.hasMigration("adult-provider-policy-import-v1")
-                          ? "adult-provider-policy-import-v1"
-                          : !this.hasMigration("content-class-v1")
-                            ? "content-class-v1"
-                            : null;
-      if (pendingMigration) this.backupBeforeMigration(pendingMigration);
-    }
-    this.migrate();
+    this.migrate(databaseExisted);
   }
   close() {
     this.db.close();
   }
-  private hasMigration(version: string) {
-    const exists = this.db
-      .prepare(
-        "select 1 from sqlite_master where type='table' and name='schema_migrations'",
-      )
-      .get();
-    if (!exists) return false;
-    return Boolean(
-      this.db
-        .prepare("select 1 from schema_migrations where version=?")
-        .get(version),
-    );
+  private migrations(): Migration[] {
+    return [
+      {
+        version: "canvas-v1",
+        name: "Manga canvas panels, balloons and text",
+        backupRequired: true,
+        run: () => this.migrateCanvasV1(),
+      },
+      {
+        version: "canvas-relative-text-v1",
+        name: "Balloon-relative text geometry",
+        backupRequired: true,
+        run: () => this.migrateRelativeTextV1(),
+      },
+      {
+        version: "canvas-panel-shape-v1",
+        name: "Panel shape and slant ratio",
+        backupRequired: true,
+        run: () => this.migratePanelShapeV1(),
+      },
+      {
+        version: "hybrid-generation-policy-v1",
+        name: "Project hybrid generation policy",
+        backupRequired: true,
+        run: () => this.migrateGenerationPolicyV1(),
+      },
+      {
+        version: "hybrid-generation-routing-v1",
+        name: "Hybrid generation route decisions",
+        backupRequired: true,
+        run: () => this.migrateGenerationRoutingV1(),
+      },
+      {
+        version: "asset-library-v1",
+        name: "Project asset library metadata",
+        backupRequired: true,
+        run: () => this.migrateAssetLibraryV1(),
+      },
+      {
+        version: "panel-layers-v1",
+        name: "Layered panel image foundation",
+        backupRequired: true,
+        run: () => this.migratePanelLayersV1(),
+      },
+      {
+        version: "adult-generation-consent-v1",
+        name: "Adult generation administrator switch and age attestation",
+        backupRequired: true,
+        run: () => this.migrateAdultGenerationConsentV1(),
+      },
+      {
+        version: "adult-provider-policy-v1",
+        name: "Adult provider approval evidence and model allowlist",
+        backupRequired: true,
+        run: () => this.migrateAdultProviderPolicyV1(),
+      },
+      {
+        version: "adult-provider-policy-import-v1",
+        name: "Signed adult provider policy import audit",
+        backupRequired: true,
+        run: () => this.migrateAdultProviderPolicyImportV1(),
+      },
+      {
+        version: "content-class-v1",
+        name: "General and adult product boundary",
+        backupRequired: true,
+        run: () => this.migrateContentClassV1(),
+      },
+      {
+        version: "character-profiles-v1",
+        name: "Local character profiles and reference assets",
+        backupRequired: true,
+        run: () => this.migrateCharacterProfilesV1(),
+      },
+    ];
   }
-  private backupBeforeMigration(name: string) {
-    const directory = path.join(this.paths.root, "backups");
-    fs.mkdirSync(directory, { recursive: true });
-    this.db.pragma("wal_checkpoint(RESTART)");
-    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const destination = path.join(
-      directory,
-      `mangai_local-before-${name}-${stamp}.sqlite`,
-    );
-    fs.copyFileSync(
-      this.paths.database,
-      destination,
-      fs.constants.COPYFILE_EXCL,
-    );
-  }
-  private migrate() {
-    this.db.exec(`
+  private migrate(databaseExisted: boolean) {
+    const logger = new StructuredLogger(this.paths.logs);
+    const runner = new MigrationRunner(this.db, {
+      databasePath: this.paths.database,
+      backupDirectory: path.join(this.paths.root, "backups"),
+      databaseExisted,
+      onEvent: (event: MigrationRunnerEvent) => {
+        logger.log(
+          event.event === "migration_failed" ? "error" : "info",
+          event.event,
+          event.event === "migration_failed"
+            ? {
+                version: event.version,
+                name: event.name,
+                error: event.error,
+              }
+            : { version: event.version, name: event.name },
+        );
+      },
+    });
+    runner.run(this.migrations(), () => {
+      this.db.exec(`
  create table if not exists projects(id text primary key,title text not null,subtitle text not null default '',description text not null default '',genre text not null default '',age_rating text not null,content_class text not null default 'adult' check(content_class in ('general','adult')),reading_direction text not null,width integer not null,height integer not null,dpi integer not null,storage_path text not null,cover_asset_id text,created_at text not null,updated_at text not null,last_opened_at text);
  create table if not exists episodes(id text primary key,project_id text not null references projects(id) on delete cascade,title text not null,order_index integer not null,created_at text not null,updated_at text not null);
  create table if not exists assets(id text primary key,project_id text not null references projects(id) on delete cascade,file_name text not null,relative_path text not null,mime_type text not null,width integer not null,height integer not null,byte_size integer not null,sha256 text not null,created_at text not null,unique(project_id,sha256));
@@ -613,63 +364,52 @@ export class MangaiDatabase {
  create table if not exists operation_history(id integer primary key autoincrement,project_id text not null references projects(id) on delete cascade,label text not null,before_json text not null,after_json text not null,is_undone integer not null default 0,created_at text not null);
  create table if not exists schema_migrations(version text primary key,name text not null,applied_at text not null);
  create index if not exists idx_episodes_project on episodes(project_id,order_index);create index if not exists idx_pages_episode on pages(episode_id,order_index);create index if not exists idx_assets_project on assets(project_id,created_at);create index if not exists idx_external_cost_project_month on external_cost_reservations(project_id,provider_id,billing_month,status);`);
-    this.db
-      .prepare(
-        `update external_cost_reservations set status='released',updated_at=?
+      this.db
+        .prepare(
+          `update external_cost_reservations set status='released',updated_at=?
          where status='reserved' and job_id is null`,
-      )
-      .run(now());
-    const assetColumns = this.db
-      .prepare("pragma table_info(assets)")
-      .all() as Array<{ name: string }>;
-    if (!assetColumns.some((column) => column.name === "generation_job_id"))
-      this.db.exec("alter table assets add column generation_job_id text");
-    if (!assetColumns.some((column) => column.name === "metadata_json"))
+        )
+        .run(now());
+      const assetColumns = this.db
+        .prepare("pragma table_info(assets)")
+        .all() as Array<{ name: string }>;
+      if (!assetColumns.some((column) => column.name === "generation_job_id"))
+        this.db.exec("alter table assets add column generation_job_id text");
+      if (!assetColumns.some((column) => column.name === "metadata_json"))
+        this.db.exec(
+          "alter table assets add column metadata_json text not null default '{}'",
+        );
+      const jobColumns = this.db
+        .prepare("pragma table_info(generation_jobs)")
+        .all() as Array<{ name: string }>;
+      if (!jobColumns.some((column) => column.name === "progress"))
+        this.db.exec(
+          "alter table generation_jobs add column progress real not null default 0",
+        );
+      if (!jobColumns.some((column) => column.name === "priority"))
+        this.db.exec(
+          "alter table generation_jobs add column priority integer not null default 0",
+        );
+      if (!jobColumns.some((column) => column.name === "attempt_count"))
+        this.db.exec(
+          "alter table generation_jobs add column attempt_count integer not null default 0",
+        );
+      if (!jobColumns.some((column) => column.name === "max_attempts"))
+        this.db.exec(
+          "alter table generation_jobs add column max_attempts integer not null default 3",
+        );
+      if (!jobColumns.some((column) => column.name === "next_attempt_at"))
+        this.db.exec(
+          "alter table generation_jobs add column next_attempt_at text",
+        );
+      if (!jobColumns.some((column) => column.name === "queue_order"))
+        this.db.exec(
+          "alter table generation_jobs add column queue_order integer not null default 0",
+        );
       this.db.exec(
-        "alter table assets add column metadata_json text not null default '{}'",
+        "create index if not exists idx_generation_jobs_queue_v2 on generation_jobs(status,provider_type,priority desc,queue_order,created_at)",
       );
-    const jobColumns = this.db
-      .prepare("pragma table_info(generation_jobs)")
-      .all() as Array<{ name: string }>;
-    if (!jobColumns.some((column) => column.name === "progress"))
-      this.db.exec(
-        "alter table generation_jobs add column progress real not null default 0",
-      );
-    if (!jobColumns.some((column) => column.name === "priority"))
-      this.db.exec(
-        "alter table generation_jobs add column priority integer not null default 0",
-      );
-    if (!jobColumns.some((column) => column.name === "attempt_count"))
-      this.db.exec(
-        "alter table generation_jobs add column attempt_count integer not null default 0",
-      );
-    if (!jobColumns.some((column) => column.name === "max_attempts"))
-      this.db.exec(
-        "alter table generation_jobs add column max_attempts integer not null default 3",
-      );
-    if (!jobColumns.some((column) => column.name === "next_attempt_at"))
-      this.db.exec(
-        "alter table generation_jobs add column next_attempt_at text",
-      );
-    if (!jobColumns.some((column) => column.name === "queue_order"))
-      this.db.exec(
-        "alter table generation_jobs add column queue_order integer not null default 0",
-      );
-    this.db.exec(
-      "create index if not exists idx_generation_jobs_queue_v2 on generation_jobs(status,provider_type,priority desc,queue_order,created_at)",
-    );
-    this.migrateCanvasV1();
-    this.migrateRelativeTextV1();
-    this.migratePanelShapeV1();
-    this.migrateGenerationPolicyV1();
-    this.migrateGenerationRoutingV1();
-    this.migrateAssetLibraryV1();
-    this.migratePanelLayersV1();
-    this.migrateAdultGenerationConsentV1();
-    this.migrateAdultProviderPolicyV1();
-    this.migrateAdultProviderPolicyImportV1();
-    this.migrateContentClassV1();
-    this.migrateCharacterProfilesV1();
+    });
     const insertTemplate = this.db.prepare(
       "insert into prompt_templates values(?,?,?,?,?,?,?)",
     );
@@ -692,7 +432,6 @@ export class MangaiDatabase {
       .run(now());
   }
   private migrateCanvasV1() {
-    if (this.hasMigration("canvas-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(panels)").all() as Array<{
@@ -735,15 +474,9 @@ export class MangaiDatabase {
           "update panels set z_index=order_index,created_at=case when created_at='' then ? else created_at end,updated_at=case when updated_at='' then ? else updated_at end",
         )
         .run(stamp, stamp);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("canvas-v1", "Manga canvas panels, balloons and text", stamp);
     })();
   }
   private migrateRelativeTextV1() {
-    if (this.hasMigration("canvas-relative-text-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(text_objects)").all() as Array<{
@@ -757,7 +490,6 @@ export class MangaiDatabase {
       ["relative_width", "real"],
       ["relative_height", "real"],
     ] as const;
-    const stamp = now();
     this.db.transaction(() => {
       for (const [column, definition] of additions)
         if (!columns.has(column))
@@ -793,19 +525,9 @@ export class MangaiDatabase {
           item.id,
         );
       }
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "canvas-relative-text-v1",
-          "Balloon-relative text geometry",
-          stamp,
-        );
     })();
   }
   private migratePanelShapeV1() {
-    if (this.hasMigration("canvas-panel-shape-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(panels)").all() as Array<{
@@ -813,7 +535,6 @@ export class MangaiDatabase {
         }>
       ).map((column) => column.name),
     );
-    const stamp = now();
     this.db.transaction(() => {
       if (!columns.has("shape"))
         this.db.exec(
@@ -823,15 +544,9 @@ export class MangaiDatabase {
         this.db.exec(
           "alter table panels add column slant real not null default 0.12",
         );
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("canvas-panel-shape-v1", "Panel shape and slant ratio", stamp);
     })();
   }
   private migrateGenerationPolicyV1() {
-    if (this.hasMigration("hybrid-generation-policy-v1")) return;
     const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
@@ -857,20 +572,9 @@ export class MangaiDatabase {
            where id not in (select project_id from project_generation_policies)`,
         )
         .run(stamp, stamp);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "hybrid-generation-policy-v1",
-          "Project hybrid generation policy",
-          stamp,
-        );
     })();
   }
   private migrateGenerationRoutingV1() {
-    if (this.hasMigration("hybrid-generation-routing-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists generation_route_decisions(
@@ -888,19 +592,9 @@ export class MangaiDatabase {
         create index if not exists idx_generation_route_job
           on generation_route_decisions(job_id,created_at);
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "hybrid-generation-routing-v1",
-          "Hybrid generation route decisions",
-          stamp,
-        );
     })();
   }
   private migrateAssetLibraryV1() {
-    if (this.hasMigration("asset-library-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(assets)").all() as Array<{
@@ -914,7 +608,6 @@ export class MangaiDatabase {
       ["library_favorite", "integer not null default 0"],
       ["library_updated_at", "text"],
     ] as const;
-    const stamp = now();
     this.db.transaction(() => {
       for (const [column, definition] of additions)
         if (!columns.has(column))
@@ -922,15 +615,9 @@ export class MangaiDatabase {
       this.db.exec(
         "create index if not exists idx_assets_library on assets(project_id,library_category,library_favorite,created_at)",
       );
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("asset-library-v1", "Project asset library metadata", stamp);
     })();
   }
   private migratePanelLayersV1() {
-    if (this.hasMigration("panel-layers-v1")) return;
     const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
@@ -1004,16 +691,9 @@ export class MangaiDatabase {
           stamp,
           stamp,
         );
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("panel-layers-v1", "Layered panel image foundation", stamp);
     })();
   }
   private migrateAdultGenerationConsentV1() {
-    if (this.hasMigration("adult-generation-consent-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists adult_generation_settings(
@@ -1027,20 +707,9 @@ export class MangaiDatabase {
           updated_at text not null
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "adult-generation-consent-v1",
-          "Adult generation administrator switch and age attestation",
-          stamp,
-        );
     })();
   }
   private migrateAdultProviderPolicyV1() {
-    if (this.hasMigration("adult-provider-policy-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists adult_provider_approvals(
@@ -1063,20 +732,9 @@ export class MangaiDatabase {
           primary key(provider_id,model_id)
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "adult-provider-policy-v1",
-          "Adult provider approval evidence and model allowlist",
-          stamp,
-        );
     })();
   }
   private migrateAdultProviderPolicyImportV1() {
-    if (this.hasMigration("adult-provider-policy-import-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists adult_provider_policy_imports(
@@ -1088,19 +746,9 @@ export class MangaiDatabase {
           imported_at text not null
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "adult-provider-policy-import-v1",
-          "Signed adult provider policy import audit",
-          stamp,
-        );
     })();
   }
   private migrateContentClassV1() {
-    if (this.hasMigration("content-class-v1")) return;
     const columns = new Set(
       (
         this.db.prepare("pragma table_info(projects)").all() as Array<{
@@ -1128,16 +776,9 @@ export class MangaiDatabase {
           select id from projects where content_class='adult'
         );
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run("content-class-v1", "General and adult product boundary", stamp);
     })();
   }
   private migrateCharacterProfilesV1() {
-    if (this.hasMigration("character-profiles-v1")) return;
-    const stamp = now();
     this.db.transaction(() => {
       this.db.exec(`
         create table if not exists character_profiles(
@@ -1163,15 +804,6 @@ export class MangaiDatabase {
         create index if not exists idx_character_profile_assets_order
           on character_profile_assets(character_profile_id,order_index);
       `);
-      this.db
-        .prepare(
-          "insert into schema_migrations(version,name,applied_at) values(?,?,?)",
-        )
-        .run(
-          "character-profiles-v1",
-          "Local character profiles and reference assets",
-          stamp,
-        );
     })();
   }
   private project(row: any): Project {
@@ -1516,14 +1148,12 @@ export class MangaiDatabase {
               asset.libraryUpdatedAt,
             );
         for (const item of sourceAdultReferenceAssessments)
-          this.db
-            .prepare("update assets set metadata_json=? where id=?")
-            .run(
-              JSON.stringify({
-                adultReferenceImageAssessment: item.assessment,
-              }),
-              mappedReference(assetMap, item.assetId, "参照画像の安全確認"),
-            );
+          this.db.prepare("update assets set metadata_json=? where id=?").run(
+            JSON.stringify({
+              adultReferenceImageAssessment: item.assessment,
+            }),
+            mappedReference(assetMap, item.assetId, "参照画像の安全確認"),
+          );
         for (const profile of sourceCharacterProfiles) {
           const profileId = mappedReference(
             characterProfileMap,
@@ -1771,7 +1401,7 @@ export class MangaiDatabase {
   ) {
     const bundle = this.bundle(id);
     const manifest: ProjectBackupManifest = {
-      format: backupFormat,
+      format: BACKUP_FORMAT,
       version: 2,
       createdAt: now(),
       bundle: {
@@ -1784,79 +1414,15 @@ export class MangaiDatabase {
       adultReferenceImageAssessments:
         this.listAdultReferenceImageAssessments(id),
     };
-    const manifestBytes = Buffer.from(JSON.stringify(manifest));
-    if (manifestBytes.length > maxBackupManifestBytes)
-      throw new Error("バックアップ情報が大きすぎます。");
-    if (bundle.assets.length + 1 > maxBackupEntries)
-      throw new Error("バックアップのファイル数が上限を超えています。");
-    let expandedBytes = manifestBytes.length;
-    for (const [index, asset] of bundle.assets.entries()) {
-      assertBulkOperationActive(options?.signal);
-      const source = this.safeProjectPath(
-        bundle.project.storagePath,
-        asset.relativePath,
-      );
-      if (!fs.existsSync(source))
-        throw new Error(`素材「${asset.fileName}」が見つかりません。`);
-      const verified = await sha256File(source, options?.signal);
-      expandedBytes += verified.byteSize;
-      if (expandedBytes > maxBackupBytes)
-        throw new Error("バックアップ対象の合計サイズが上限を超えています。");
-      if (
-        verified.byteSize !== asset.byteSize ||
-        verified.sha256 !== asset.sha256
-      )
-        throw new Error(`素材「${asset.fileName}」の整合性を確認できません。`);
-      options?.onProgress?.({
-        phase: "validating",
-        completed: index + 1,
-        total: bundle.assets.length,
-      });
-    }
-    fs.mkdirSync(path.dirname(destination), { recursive: true });
-    const temporary = `${destination}.${process.pid}.partial`;
-    const zip = new yazl.ZipFile();
-    zip.addBuffer(manifestBytes, "manifest.json", { compressionLevel: 6 });
-    for (const asset of bundle.assets)
-      zip.addFile(
-        this.safeProjectPath(bundle.project.storagePath, asset.relativePath),
-        `assets/${asset.id}`,
-        { compressionLevel: 6 },
-      );
-    const output = fs.createWriteStream(temporary, {
-      flags: "wx",
-      mode: 0o600,
+    return this.backupWriter.write({
+      manifest,
+      assets: bundle.assets,
+      storagePath: bundle.project.storagePath,
+      destination,
+      resolveProjectPath: (storagePath, relativePath) =>
+        this.safeProjectPath(storagePath, relativePath),
+      options,
     });
-    const abort = () => {
-      const error = bulkOperationAbortError();
-      (zip.outputStream as NodeJS.ReadableStream & { destroy(error: Error): void })
-        .destroy(error);
-      output.destroy(error);
-    };
-    options?.signal?.addEventListener("abort", abort, { once: true });
-    try {
-      const completed = new Promise<void>((resolve, reject) => {
-        zip.outputStream.once("error", reject);
-        output.once("error", reject);
-        output.once("close", resolve);
-      });
-      zip.outputStream.pipe(output);
-      zip.end();
-      await completed;
-      assertBulkOperationActive(options?.signal);
-      if (fs.existsSync(destination)) fs.rmSync(destination);
-      fs.renameSync(temporary, destination);
-    } finally {
-      options?.signal?.removeEventListener("abort", abort);
-      output.destroy();
-      if (fs.existsSync(temporary)) fs.rmSync(temporary, { force: true });
-    }
-    options?.onProgress?.({
-      phase: "writing",
-      completed: bundle.assets.length,
-      total: bundle.assets.length,
-    });
-    return { filePath: destination, byteSize: fs.statSync(destination).size };
   }
   async autoBackupProjects(options?: {
     nowMs?: number;
@@ -1952,727 +1518,639 @@ export class MangaiDatabase {
     source: string,
     options?: { titleSuffix?: string } & BulkOperationOptions,
   ) {
-    const stat = fs.statSync(source);
-    if (!stat.isFile() || stat.size <= 0 || stat.size > maxBackupBytes)
-      throw new Error("バックアップファイルのサイズが不正です。");
-    assertBulkOperationActive(options?.signal);
-    fs.mkdirSync(this.paths.projects, { recursive: true });
-    const stagingDirectory = fs.mkdtempSync(
-      path.join(this.paths.projects, ".restore-"),
-    );
-    const stagedAssetsDirectory = path.join(stagingDirectory, "assets");
-    fs.mkdirSync(stagedAssetsDirectory);
-    let zip: yauzl.ZipFile | undefined;
-    let manifest!: ProjectBackupManifest;
-    try {
-      zip = await yauzl.openPromise(source, {
-        lazyEntries: true,
-        autoClose: false,
-        validateEntrySizes: true,
-        strictFileNames: true,
-      });
-      if (zip.entryCount > maxBackupEntries)
-        throw new Error("バックアップのファイル数が上限を超えています。");
-      const entries = new Map<string, yauzl.Entry>();
-      let expandedBytes = 0;
-      for await (const entry of zip.eachEntry()) {
-        assertBulkOperationActive(options?.signal);
-        const fileName = entry.fileName;
-        if (
-          fileName.includes("\\") ||
-          fileName.startsWith("/") ||
-          fileName.split("/").includes("..") ||
-          entries.has(fileName)
-        )
-          throw new Error("バックアップ内のファイル名が不正です。");
-        expandedBytes += entry.uncompressedSize;
-        if (
-          !Number.isSafeInteger(expandedBytes) ||
-          expandedBytes > maxBackupBytes
-        )
-          throw new Error("展開後の合計サイズが上限を超えています。");
-        if (
-          entry.uncompressedSize > 1024 * 1024 &&
-          entry.uncompressedSize /
-            Math.max(1, entry.compressedSize) >
-            maxBackupCompressionRatio
-        )
-          throw new Error("異常な圧縮率のバックアップは復元できません。");
-        entries.set(fileName, entry);
-      }
-      const manifestEntry = entries.get("manifest.json");
-      if (!manifestEntry) throw new Error("バックアップ情報がありません。");
-      const manifestBytes = await readZipEntry(
-        zip,
-        manifestEntry,
-        maxBackupManifestBytes,
-        options?.signal,
-      );
-      try {
-        manifest = parseBackupManifest(JSON.parse(manifestBytes.toString("utf8")));
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message !== "Unexpected end of JSON input" &&
-          error.name !== "SyntaxError"
-        )
-          throw error;
-        throw new Error("バックアップ情報を読み取れません。");
-      }
-      const expectedAssetBytes = manifest.bundle.assets.reduce(
-        (total, asset) => total + asset.byteSize,
-        0,
-      );
-      if (
-        !Number.isSafeInteger(expectedAssetBytes) ||
-        expectedAssetBytes + manifestBytes.length > maxBackupBytes
-      )
-        throw new Error("展開後の素材サイズが上限を超えています。");
-      for (const [index, asset] of manifest.bundle.assets.entries()) {
-        assertBulkOperationActive(options?.signal);
-        const entry = entries.get(`assets/${asset.id}`);
-        if (!entry) throw new Error(`素材「${asset.fileName}」がありません。`);
-        if (entry.uncompressedSize !== asset.byteSize)
-          throw new Error(`素材「${asset.fileName}」が破損しています。`);
+    return this.restoreService.restore({
+      source,
+      projectsRoot: this.paths.projects,
+      parseManifest: parseBackupManifest,
+      options,
+      commit: async ({ manifest, stagingDirectory, stagedAssetsDirectory }) => {
+        const sourceBundle = manifest.bundle;
+        const restored = this.createProject(
+          projectInputSchema.parse({
+            title: `${sourceBundle.project.title}${options?.titleSuffix ?? " (復元)"}`,
+            subtitle: sourceBundle.project.subtitle,
+            description: sourceBundle.project.description,
+            genre: sourceBundle.project.genre,
+            ageRating: sourceBundle.project.ageRating,
+            contentClass: sourceBundle.project.contentClass,
+            readingDirection: sourceBundle.project.readingDirection,
+            width: sourceBundle.project.width,
+            height: sourceBundle.project.height,
+            dpi: sourceBundle.project.dpi,
+          }),
+        );
+        const projectId = restored.project.id;
+        const storagePath = restored.project.storagePath;
         try {
-          await extractZipEntry(
-            zip,
-            entry,
-            path.join(stagedAssetsDirectory, asset.id),
-            asset,
-            options?.signal,
-          );
-        } catch (error) {
-          if (error instanceof Error && error.name === "AbortError") throw error;
-          throw new Error(`素材「${asset.fileName}」が破損しています。`);
-        }
-        options?.onProgress?.({
-          phase: "extracting",
-          completed: index + 1,
-          total: manifest.bundle.assets.length,
-        });
-      }
-    } catch (error) {
-      zip?.close();
-      fs.rmSync(stagingDirectory, { recursive: true, force: true });
-      throw error;
-    }
-    const sourceBundle = manifest.bundle;
-    const restored = this.createProject(
-      projectInputSchema.parse({
-        title: `${sourceBundle.project.title}${options?.titleSuffix ?? " (復元)"}`,
-        subtitle: sourceBundle.project.subtitle,
-        description: sourceBundle.project.description,
-        genre: sourceBundle.project.genre,
-        ageRating: sourceBundle.project.ageRating,
-        contentClass: sourceBundle.project.contentClass,
-        readingDirection: sourceBundle.project.readingDirection,
-        width: sourceBundle.project.width,
-        height: sourceBundle.project.height,
-        dpi: sourceBundle.project.dpi,
-      }),
-    );
-    const projectId = restored.project.id;
-    const storagePath = restored.project.storagePath;
-    try {
-      const assetMap = new Map<string, string>();
-      const episodeMap = new Map<string, string>();
-      const pageMap = new Map<string, string>();
-      const panelMap = new Map<string, string>();
-      const panelLayerMap = new Map<string, string>();
-      const balloonMap = new Map<string, string>();
-      const textObjectMap = new Map<string, string>();
-      const sessionMap = new Map<string, string>();
-      const generationJobMap = new Map<string, string>();
-      const characterProfileMap = new Map<string, string>();
-      const ensureMappedId = (map: Map<string, string>, sourceId: string) => {
-        if (!sourceId || typeof sourceId !== "string")
-          throw new Error("バックアップ履歴のIDが不正です。");
-        const existing = map.get(sourceId);
-        if (existing) return existing;
-        const id = uid();
-        map.set(sourceId, id);
-        return id;
-      };
-      const backupHistory = manifest.history;
-      const operations = (backupHistory?.operations ?? []).map((operation) => {
-        try {
-          return {
-            operation,
-            before: JSON.parse(operation.beforeJson),
-            after: JSON.parse(operation.afterJson),
+          const assetMap = new Map<string, string>();
+          const episodeMap = new Map<string, string>();
+          const pageMap = new Map<string, string>();
+          const panelMap = new Map<string, string>();
+          const panelLayerMap = new Map<string, string>();
+          const balloonMap = new Map<string, string>();
+          const textObjectMap = new Map<string, string>();
+          const sessionMap = new Map<string, string>();
+          const generationJobMap = new Map<string, string>();
+          const characterProfileMap = new Map<string, string>();
+          const ensureMappedId = (
+            map: Map<string, string>,
+            sourceId: string,
+          ) => {
+            if (!sourceId || typeof sourceId !== "string")
+              throw new Error("バックアップ履歴のIDが不正です。");
+            const existing = map.get(sourceId);
+            if (existing) return existing;
+            const id = uid();
+            map.set(sourceId, id);
+            return id;
           };
-        } catch {
-          throw new Error("Undo/Redo履歴を読み取れません。");
-        }
-      });
-      const collectSnapshotIds = (snapshot: any) => {
-        if (
-          !snapshot ||
-          !Array.isArray(snapshot.episodes) ||
-          !Array.isArray(snapshot.pages) ||
-          !Array.isArray(snapshot.panels) ||
-          !Array.isArray(snapshot.balloons ?? []) ||
-          !Array.isArray(snapshot.textObjects ?? [])
-        )
-          throw new Error("Undo/Redo履歴の構造が不正です。");
-        for (const item of snapshot.episodes)
-          ensureMappedId(episodeMap, item.id);
-        for (const item of snapshot.pages) ensureMappedId(pageMap, item.id);
-        for (const item of snapshot.panels) ensureMappedId(panelMap, item.id);
-        for (const item of snapshot.panelLayers ?? [])
-          ensureMappedId(panelLayerMap, item.id);
-        for (const item of snapshot.balloons ?? [])
-          ensureMappedId(balloonMap, item.id);
-        for (const item of snapshot.textObjects ?? [])
-          ensureMappedId(textObjectMap, item.id);
-      };
-      for (const item of operations) {
-        collectSnapshotIds(item.before);
-        collectSnapshotIds(item.after);
-      }
-      for (const session of backupHistory?.chatSessions ?? [])
-        ensureMappedId(sessionMap, session.id);
-      for (const job of backupHistory?.generationJobs ?? [])
-        ensureMappedId(generationJobMap, job.id);
-      for (const profile of manifest.characterProfiles ?? [])
-        ensureMappedId(characterProfileMap, profile.id);
-      const mappedReference = (
-        map: Map<string, string>,
-        sourceId: string | null,
-        label: string,
-      ) => {
-        if (!sourceId) return null;
-        const mapped = map.get(sourceId);
-        if (!mapped) throw new Error(`${label}の参照が不正です。`);
-        return mapped;
-      };
-      const stamp = now();
-      const preparedAssets = sourceBundle.assets.map((asset) => {
-        const id = ensureMappedId(assetMap, asset.id);
-        const relativePath = path.join(
-          "assets",
-          `${id}${assetExtension(asset.mimeType)}`,
-        );
-        fs.renameSync(
-          path.join(stagedAssetsDirectory, asset.id),
-          path.join(stagedAssetsDirectory, path.basename(relativePath)),
-        );
-        return { asset, id, relativePath };
-      });
-      assertBulkOperationActive(options?.signal);
-      fs.rmSync(storagePath, { recursive: true, force: true });
-      fs.renameSync(stagingDirectory, storagePath);
-      options?.onProgress?.({
-        phase: "committing",
-        completed: preparedAssets.length,
-        total: preparedAssets.length,
-      });
-      const remapSnapshot = (snapshot: any) => ({
-        project: {
-          ...snapshot.project,
-          coverAssetId: mappedReference(
-            assetMap,
-            snapshot.project?.coverAssetId ?? null,
-            "履歴の表紙素材",
-          ),
-        },
-        episodes: snapshot.episodes.map((item: any) => ({
-          ...item,
-          id: mappedReference(episodeMap, item.id, "履歴のEpisode"),
-          projectId,
-        })),
-        pages: snapshot.pages.map((item: any) => ({
-          ...item,
-          id: mappedReference(pageMap, item.id, "履歴のPage"),
-          episodeId: mappedReference(
-            episodeMap,
-            item.episodeId,
-            "履歴PageのEpisode",
-          ),
-          imageAssetId: mappedReference(
-            assetMap,
-            item.imageAssetId,
-            "履歴Pageの素材",
-          ),
-        })),
-        panels: snapshot.panels.map((item: any) => ({
-          ...item,
-          id: mappedReference(panelMap, item.id, "履歴のコマ"),
-          pageId: mappedReference(pageMap, item.pageId, "履歴コマのPage"),
-          imageAssetId: mappedReference(
-            assetMap,
-            item.imageAssetId,
-            "履歴コマの素材",
-          ),
-        })),
-        ...(Array.isArray(snapshot.panelLayers)
-          ? {
-              panelLayers: snapshot.panelLayers.map((item: any) => ({
-                ...item,
-                id: mappedReference(
-                  panelLayerMap,
-                  item.id,
-                  "履歴のコマレイヤー",
-                ),
-                panelId: mappedReference(
-                  panelMap,
-                  item.panelId,
-                  "履歴コマレイヤーのコマ",
-                ),
-                assetId: mappedReference(
-                  assetMap,
-                  item.assetId,
-                  "履歴コマレイヤーの素材",
-                ),
-                sourceJobId: mappedReference(
-                  generationJobMap,
-                  item.sourceJobId,
-                  "履歴コマレイヤーの生成ジョブ",
-                ),
-              })),
-            }
-          : {}),
-        balloons: (snapshot.balloons ?? []).map((item: any) => ({
-          ...item,
-          id: mappedReference(balloonMap, item.id, "履歴の吹き出し"),
-          pageId: mappedReference(pageMap, item.pageId, "履歴吹き出しのPage"),
-        })),
-        textObjects: (snapshot.textObjects ?? []).map((item: any) => ({
-          ...item,
-          id: mappedReference(textObjectMap, item.id, "履歴のテキスト"),
-          pageId: mappedReference(pageMap, item.pageId, "履歴テキストのPage"),
-          parentBalloonId: mappedReference(
-            balloonMap,
-            item.parentBalloonId,
-            "履歴テキストの親吹き出し",
-          ),
-        })),
-      });
-      const remappedOperations = operations.map(
-        ({ operation, before, after }) => ({
-          operation,
-          before: remapSnapshot(before),
-          after: remapSnapshot(after),
-        }),
-      );
-      this.db.transaction(() => {
-        this.db
-          .prepare("delete from episodes where project_id=?")
-          .run(projectId);
-        if (manifest.generationPolicy) {
-          const policy = projectGenerationPolicyInputSchema.parse({
-            ...manifest.generationPolicy,
-            projectId,
+          const backupHistory = manifest.history;
+          const operations = (backupHistory?.operations ?? []).map(
+            (operation) => {
+              try {
+                return {
+                  operation,
+                  before: JSON.parse(operation.beforeJson),
+                  after: JSON.parse(operation.afterJson),
+                };
+              } catch {
+                throw new Error("Undo/Redo履歴を読み取れません。");
+              }
+            },
+          );
+          const collectSnapshotIds = (snapshot: any) => {
+            if (
+              !snapshot ||
+              !Array.isArray(snapshot.episodes) ||
+              !Array.isArray(snapshot.pages) ||
+              !Array.isArray(snapshot.panels) ||
+              !Array.isArray(snapshot.balloons ?? []) ||
+              !Array.isArray(snapshot.textObjects ?? [])
+            )
+              throw new Error("Undo/Redo履歴の構造が不正です。");
+            for (const item of snapshot.episodes)
+              ensureMappedId(episodeMap, item.id);
+            for (const item of snapshot.pages) ensureMappedId(pageMap, item.id);
+            for (const item of snapshot.panels)
+              ensureMappedId(panelMap, item.id);
+            for (const item of snapshot.panelLayers ?? [])
+              ensureMappedId(panelLayerMap, item.id);
+            for (const item of snapshot.balloons ?? [])
+              ensureMappedId(balloonMap, item.id);
+            for (const item of snapshot.textObjects ?? [])
+              ensureMappedId(textObjectMap, item.id);
+          };
+          for (const item of operations) {
+            collectSnapshotIds(item.before);
+            collectSnapshotIds(item.after);
+          }
+          for (const session of backupHistory?.chatSessions ?? [])
+            ensureMappedId(sessionMap, session.id);
+          for (const job of backupHistory?.generationJobs ?? [])
+            ensureMappedId(generationJobMap, job.id);
+          for (const profile of manifest.characterProfiles ?? [])
+            ensureMappedId(characterProfileMap, profile.id);
+          const mappedReference = (
+            map: Map<string, string>,
+            sourceId: string | null,
+            label: string,
+          ) => {
+            if (!sourceId) return null;
+            const mapped = map.get(sourceId);
+            if (!mapped) throw new Error(`${label}の参照が不正です。`);
+            return mapped;
+          };
+          const stamp = now();
+          const preparedAssets = sourceBundle.assets.map((asset) => {
+            const id = ensureMappedId(assetMap, asset.id);
+            const relativePath = path.join(
+              "assets",
+              `${id}${assetExtension(asset.mimeType)}`,
+            );
+            fs.renameSync(
+              path.join(stagedAssetsDirectory, asset.id),
+              path.join(stagedAssetsDirectory, path.basename(relativePath)),
+            );
+            return { asset, id, relativePath };
           });
-          this.db
-            .prepare(
-              `update project_generation_policies
+          assertBulkOperationActive(options?.signal);
+          fs.rmSync(storagePath, { recursive: true, force: true });
+          fs.renameSync(stagingDirectory, storagePath);
+          options?.onProgress?.({
+            phase: "committing",
+            completed: preparedAssets.length,
+            total: preparedAssets.length,
+          });
+          const remapSnapshot = (snapshot: any) => ({
+            project: {
+              ...snapshot.project,
+              coverAssetId: mappedReference(
+                assetMap,
+                snapshot.project?.coverAssetId ?? null,
+                "履歴の表紙素材",
+              ),
+            },
+            episodes: snapshot.episodes.map((item: any) => ({
+              ...item,
+              id: mappedReference(episodeMap, item.id, "履歴のEpisode"),
+              projectId,
+            })),
+            pages: snapshot.pages.map((item: any) => ({
+              ...item,
+              id: mappedReference(pageMap, item.id, "履歴のPage"),
+              episodeId: mappedReference(
+                episodeMap,
+                item.episodeId,
+                "履歴PageのEpisode",
+              ),
+              imageAssetId: mappedReference(
+                assetMap,
+                item.imageAssetId,
+                "履歴Pageの素材",
+              ),
+            })),
+            panels: snapshot.panels.map((item: any) => ({
+              ...item,
+              id: mappedReference(panelMap, item.id, "履歴のコマ"),
+              pageId: mappedReference(pageMap, item.pageId, "履歴コマのPage"),
+              imageAssetId: mappedReference(
+                assetMap,
+                item.imageAssetId,
+                "履歴コマの素材",
+              ),
+            })),
+            ...(Array.isArray(snapshot.panelLayers)
+              ? {
+                  panelLayers: snapshot.panelLayers.map((item: any) => ({
+                    ...item,
+                    id: mappedReference(
+                      panelLayerMap,
+                      item.id,
+                      "履歴のコマレイヤー",
+                    ),
+                    panelId: mappedReference(
+                      panelMap,
+                      item.panelId,
+                      "履歴コマレイヤーのコマ",
+                    ),
+                    assetId: mappedReference(
+                      assetMap,
+                      item.assetId,
+                      "履歴コマレイヤーの素材",
+                    ),
+                    sourceJobId: mappedReference(
+                      generationJobMap,
+                      item.sourceJobId,
+                      "履歴コマレイヤーの生成ジョブ",
+                    ),
+                  })),
+                }
+              : {}),
+            balloons: (snapshot.balloons ?? []).map((item: any) => ({
+              ...item,
+              id: mappedReference(balloonMap, item.id, "履歴の吹き出し"),
+              pageId: mappedReference(
+                pageMap,
+                item.pageId,
+                "履歴吹き出しのPage",
+              ),
+            })),
+            textObjects: (snapshot.textObjects ?? []).map((item: any) => ({
+              ...item,
+              id: mappedReference(textObjectMap, item.id, "履歴のテキスト"),
+              pageId: mappedReference(
+                pageMap,
+                item.pageId,
+                "履歴テキストのPage",
+              ),
+              parentBalloonId: mappedReference(
+                balloonMap,
+                item.parentBalloonId,
+                "履歴テキストの親吹き出し",
+              ),
+            })),
+          });
+          const remappedOperations = operations.map(
+            ({ operation, before, after }) => ({
+              operation,
+              before: remapSnapshot(before),
+              after: remapSnapshot(after),
+            }),
+          );
+          this.db.transaction(() => {
+            this.db
+              .prepare("delete from episodes where project_id=?")
+              .run(projectId);
+            if (manifest.generationPolicy) {
+              const policy = projectGenerationPolicyInputSchema.parse({
+                ...manifest.generationPolicy,
+                projectId,
+              });
+              this.db
+                .prepare(
+                  `update project_generation_policies
                set external_processing_policy=?,prefer_local=?,
                    external_confirmation_required=?,monthly_cost_limit=?,
                    custom_cloud_job_types_json=?,updated_at=?
                where project_id=?`,
-            )
-            .run(
-              policy.externalProcessingPolicy,
-              policy.preferLocal ? 1 : 0,
-              policy.externalConfirmationRequired ? 1 : 0,
-              policy.monthlyCostLimit,
-              JSON.stringify(policy.customCloudJobTypes),
-              stamp,
-              projectId,
-            );
-        }
-        for (const { asset, id, relativePath } of preparedAssets)
-          this.db
-            .prepare(
-              `insert into assets(
+                )
+                .run(
+                  policy.externalProcessingPolicy,
+                  policy.preferLocal ? 1 : 0,
+                  policy.externalConfirmationRequired ? 1 : 0,
+                  policy.monthlyCostLimit,
+                  JSON.stringify(policy.customCloudJobTypes),
+                  stamp,
+                  projectId,
+                );
+            }
+            for (const { asset, id, relativePath } of preparedAssets)
+              this.db
+                .prepare(
+                  `insert into assets(
                  id,project_id,file_name,relative_path,mime_type,width,height,
                  byte_size,sha256,created_at,library_category,
                  library_tags_json,library_favorite,library_updated_at
                ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-            )
-            .run(
-              id,
-              projectId,
-              asset.fileName,
-              relativePath,
-              asset.mimeType,
-              asset.width,
-              asset.height,
-              asset.byteSize,
-              asset.sha256,
-              stamp,
-              asset.libraryCategory ?? "unclassified",
-              JSON.stringify(asset.libraryTags ?? []),
-              asset.libraryFavorite ? 1 : 0,
-              asset.libraryUpdatedAt ?? null,
-            );
-        for (const item of manifest.adultReferenceImageAssessments ?? [])
-          this.db
-            .prepare("update assets set metadata_json=? where id=?")
-            .run(
-              JSON.stringify({
-                adultReferenceImageAssessment: item.assessment,
-              }),
-              mappedReference(
-                assetMap,
-                item.assetId,
-                "参照画像の安全確認",
-              ),
-            );
-        for (const profile of manifest.characterProfiles ?? []) {
-          const profileId = mappedReference(
-            characterProfileMap,
-            profile.id,
-            "キャラクターProfile",
-          )!;
-          this.db
-            .prepare(
-              `insert into character_profiles(
+                )
+                .run(
+                  id,
+                  projectId,
+                  asset.fileName,
+                  relativePath,
+                  asset.mimeType,
+                  asset.width,
+                  asset.height,
+                  asset.byteSize,
+                  asset.sha256,
+                  stamp,
+                  asset.libraryCategory ?? "unclassified",
+                  JSON.stringify(asset.libraryTags ?? []),
+                  asset.libraryFavorite ? 1 : 0,
+                  asset.libraryUpdatedAt ?? null,
+                );
+            for (const item of manifest.adultReferenceImageAssessments ?? [])
+              this.db
+                .prepare("update assets set metadata_json=? where id=?")
+                .run(
+                  JSON.stringify({
+                    adultReferenceImageAssessment: item.assessment,
+                  }),
+                  mappedReference(assetMap, item.assetId, "参照画像の安全確認"),
+                );
+            for (const profile of manifest.characterProfiles ?? []) {
+              const profileId = mappedReference(
+                characterProfileMap,
+                profile.id,
+                "キャラクターProfile",
+              )!;
+              this.db
+                .prepare(
+                  `insert into character_profiles(
                  id,project_id,name,description,prompt,negative_prompt,
                  created_at,updated_at
                ) values(?,?,?,?,?,?,?,?)`,
-            )
-            .run(
-              profileId,
-              projectId,
-              profile.name,
-              profile.description,
-              profile.prompt,
-              profile.negativePrompt,
-              stamp,
-              stamp,
-            );
-          for (const reference of profile.referenceAssets)
-            this.db
-              .prepare(
-                `insert into character_profile_assets(
+                )
+                .run(
+                  profileId,
+                  projectId,
+                  profile.name,
+                  profile.description,
+                  profile.prompt,
+                  profile.negativePrompt,
+                  stamp,
+                  stamp,
+                );
+              for (const reference of profile.referenceAssets)
+                this.db
+                  .prepare(
+                    `insert into character_profile_assets(
                    character_profile_id,asset_id,role,order_index,created_at
                  ) values(?,?,?,?,?)`,
-              )
-              .run(
-                profileId,
-                mappedReference(
+                  )
+                  .run(
+                    profileId,
+                    mappedReference(
+                      assetMap,
+                      reference.assetId,
+                      "キャラクター参照素材",
+                    ),
+                    reference.role,
+                    reference.orderIndex,
+                    stamp,
+                  );
+            }
+            for (const episode of sourceBundle.episodes) {
+              const id = ensureMappedId(episodeMap, episode.id);
+              this.db
+                .prepare("insert into episodes values(?,?,?,?,?,?)")
+                .run(
+                  id,
+                  projectId,
+                  episode.title,
+                  episode.orderIndex,
+                  stamp,
+                  stamp,
+                );
+            }
+            for (const page of sourceBundle.pages) {
+              const episodeId = episodeMap.get(page.episodeId);
+              if (!episodeId)
+                throw new Error("ページのエピソード参照が不正です。");
+              const id = ensureMappedId(pageMap, page.id);
+              this.db
+                .prepare("insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?)")
+                .run(
+                  id,
+                  episodeId,
+                  page.pageNumber,
+                  page.orderIndex,
+                  page.width,
+                  page.height,
+                  page.backgroundColor,
+                  mappedReference(assetMap, page.imageAssetId, "ページ素材"),
+                  page.prompt,
+                  page.negativePrompt,
+                  page.notes,
+                  stamp,
+                  stamp,
+                );
+            }
+            for (const panel of sourceBundle.panels) {
+              const pageId = pageMap.get(panel.pageId);
+              if (!pageId) throw new Error("コマのページ参照が不正です。");
+              this.upsertPanelRow({
+                ...panel,
+                id: ensureMappedId(panelMap, panel.id),
+                pageId,
+                imageAssetId: mappedReference(
                   assetMap,
-                  reference.assetId,
-                  "キャラクター参照素材",
+                  panel.imageAssetId,
+                  "コマ素材",
                 ),
-                reference.role,
-                reference.orderIndex,
-                stamp,
-              );
-        }
-        for (const episode of sourceBundle.episodes) {
-          const id = ensureMappedId(episodeMap, episode.id);
-          this.db
-            .prepare("insert into episodes values(?,?,?,?,?,?)")
-            .run(
-              id,
-              projectId,
-              episode.title,
-              episode.orderIndex,
-              stamp,
-              stamp,
-            );
-        }
-        for (const page of sourceBundle.pages) {
-          const episodeId = episodeMap.get(page.episodeId);
-          if (!episodeId) throw new Error("ページのエピソード参照が不正です。");
-          const id = ensureMappedId(pageMap, page.id);
-          this.db
-            .prepare("insert into pages values(?,?,?,?,?,?,?,?,?,?,?,?,?)")
-            .run(
-              id,
-              episodeId,
-              page.pageNumber,
-              page.orderIndex,
-              page.width,
-              page.height,
-              page.backgroundColor,
-              mappedReference(assetMap, page.imageAssetId, "ページ素材"),
-              page.prompt,
-              page.negativePrompt,
-              page.notes,
-              stamp,
-              stamp,
-            );
-        }
-        for (const panel of sourceBundle.panels) {
-          const pageId = pageMap.get(panel.pageId);
-          if (!pageId) throw new Error("コマのページ参照が不正です。");
-          this.upsertPanelRow({
-            ...panel,
-            id: ensureMappedId(panelMap, panel.id),
-            pageId,
-            imageAssetId: mappedReference(
-              assetMap,
-              panel.imageAssetId,
-              "コマ素材",
-            ),
-            createdAt: "",
-            updatedAt: "",
-          });
-        }
-        for (const balloon of sourceBundle.balloons) {
-          const pageId = pageMap.get(balloon.pageId);
-          if (!pageId) throw new Error("吹き出しのページ参照が不正です。");
-          const id = ensureMappedId(balloonMap, balloon.id);
-          this.upsertBalloonRow({
-            ...balloon,
-            id,
-            pageId,
-            createdAt: "",
-            updatedAt: "",
-          });
-        }
-        for (const textObject of sourceBundle.textObjects) {
-          const pageId = pageMap.get(textObject.pageId);
-          if (!pageId) throw new Error("テキストのページ参照が不正です。");
-          this.upsertTextObjectRow({
-            ...textObject,
-            id: ensureMappedId(textObjectMap, textObject.id),
-            pageId,
-            parentBalloonId: mappedReference(
-              balloonMap,
-              textObject.parentBalloonId,
-              "親吹き出し",
-            ),
-            createdAt: "",
-            updatedAt: "",
-          });
-        }
-        for (const { operation, before, after } of remappedOperations)
-          this.db
-            .prepare(
-              "insert into operation_history(project_id,label,before_json,after_json,is_undone,created_at) values(?,?,?,?,?,?)",
-            )
-            .run(
-              projectId,
-              operation.label,
-              JSON.stringify(before),
-              JSON.stringify(after),
-              operation.isUndone ? 1 : 0,
-              operation.createdAt,
-            );
-        for (const session of backupHistory?.chatSessions ?? [])
-          this.db
-            .prepare("insert into chat_sessions values(?,?,?,?,?)")
-            .run(
-              mappedReference(sessionMap, session.id, "チャットセッション"),
-              projectId,
-              session.title,
-              session.createdAt,
-              session.updatedAt,
-            );
-        for (const message of backupHistory?.chatMessages ?? []) {
-          if (
-            !(["user", "assistant", "system"] as string[]).includes(
-              message.role,
-            )
-          )
-            throw new Error("チャット履歴のロールが不正です。");
-          this.db
-            .prepare("insert into chat_messages values(?,?,?,?,?,?,?)")
-            .run(
-              uid(),
-              mappedReference(
-                sessionMap,
-                message.sessionId,
-                "チャットメッセージのセッション",
-              ),
-              message.role,
-              message.content,
-              message.providerId,
-              message.modelId,
-              message.createdAt,
-            );
-        }
-        const validGenerationStatuses = [
-          "queued",
-          "paused",
-          "running",
-          "completed",
-          "failed",
-          "canceled",
-        ];
-        for (const job of backupHistory?.generationJobs ?? []) {
-          if (!validGenerationStatuses.includes(job.status))
-            throw new Error("AI生成ジョブの状態が不正です。");
-          JSON.parse(job.inputJson);
-          JSON.parse(job.outputJson);
-          const interrupted =
-            job.status === "queued" || job.status === "running";
-          this.db
-            .prepare(
-              `insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,progress,prompt,negative_prompt,input_json,output_json,provider_job_id,error_code,error_message,created_at,started_at,completed_at)
-               values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
-            )
-            .run(
-              mappedReference(generationJobMap, job.id, "AI生成ジョブ"),
-              projectId,
-              mappedReference(episodeMap, job.episodeId, "AI生成Episode"),
-              mappedReference(pageMap, job.pageId, "AI生成Page"),
-              job.providerType,
-              job.providerId,
-              job.modelId,
-              job.generationType,
-              interrupted ? "failed" : job.status,
-              Number.isFinite(job.progress) ? job.progress : 0,
-              job.prompt,
-              job.negativePrompt,
-              job.inputJson,
-              job.outputJson,
-              job.providerJobId,
-              interrupted ? "RESTORED_INTERRUPTED" : job.errorCode,
-              interrupted
-                ? "バックアップ時に実行中だったため失敗として復元しました。"
-                : job.errorMessage,
-              job.createdAt,
-              job.startedAt,
-              interrupted ? stamp : job.completedAt,
-            );
-        }
-        for (const layer of sourceBundle.panelLayers ?? [])
-          this.upsertPanelLayerRow({
-            ...layer,
-            id: ensureMappedId(panelLayerMap, layer.id),
-            panelId: mappedReference(
-              panelMap,
-              layer.panelId,
-              "コマレイヤーのコマ",
-            )!,
-            assetId: mappedReference(
-              assetMap,
-              layer.assetId,
-              "コマレイヤー素材",
-            ),
-            sourceJobId: mappedReference(
-              generationJobMap,
-              layer.sourceJobId,
-              "コマレイヤーの生成ジョブ",
-            ),
-            createdAt: "",
-            updatedAt: "",
-          });
-        const panelsWithLayers = new Set(
-          (sourceBundle.panelLayers ?? []).map((layer) => layer.panelId),
-        );
-        for (const panel of sourceBundle.panels)
-          if (panel.imageAssetId && !panelsWithLayers.has(panel.id))
-            this.syncLegacyPanelLayer({
-              ...panel,
-              id: mappedReference(panelMap, panel.id, "コマ")!,
-              pageId: mappedReference(pageMap, panel.pageId, "コマのPage")!,
-              imageAssetId: mappedReference(
-                assetMap,
-                panel.imageAssetId,
-                "コマ素材",
-              ),
-              createdAt: "",
-              updatedAt: "",
-            });
-        const relativePathByAssetId = new Map(
-          preparedAssets.map((item) => [item.id, item.relativePath]),
-        );
-        for (const output of backupHistory?.generationOutputs ?? []) {
-          JSON.parse(output.metadataJson);
-          const jobId = mappedReference(
-            generationJobMap,
-            output.jobId,
-            "AI生成出力のジョブ",
-          );
-          const assetId = mappedReference(
-            assetMap,
-            output.assetId,
-            "AI生成出力の素材",
-          );
-          this.db
-            .prepare("insert into generation_outputs values(?,?,?,?,?,?)")
-            .run(
-              uid(),
-              jobId,
-              assetId,
-              assetId
-                ? (relativePathByAssetId.get(assetId) ?? output.relativePath)
-                : null,
-              output.metadataJson,
-              output.createdAt,
-            );
-          if (assetId)
-            this.db
-              .prepare(
-                "update assets set generation_job_id=?,metadata_json=? where id=?",
+                createdAt: "",
+                updatedAt: "",
+              });
+            }
+            for (const balloon of sourceBundle.balloons) {
+              const pageId = pageMap.get(balloon.pageId);
+              if (!pageId) throw new Error("吹き出しのページ参照が不正です。");
+              const id = ensureMappedId(balloonMap, balloon.id);
+              this.upsertBalloonRow({
+                ...balloon,
+                id,
+                pageId,
+                createdAt: "",
+                updatedAt: "",
+              });
+            }
+            for (const textObject of sourceBundle.textObjects) {
+              const pageId = pageMap.get(textObject.pageId);
+              if (!pageId) throw new Error("テキストのページ参照が不正です。");
+              this.upsertTextObjectRow({
+                ...textObject,
+                id: ensureMappedId(textObjectMap, textObject.id),
+                pageId,
+                parentBalloonId: mappedReference(
+                  balloonMap,
+                  textObject.parentBalloonId,
+                  "親吹き出し",
+                ),
+                createdAt: "",
+                updatedAt: "",
+              });
+            }
+            for (const { operation, before, after } of remappedOperations)
+              this.db
+                .prepare(
+                  "insert into operation_history(project_id,label,before_json,after_json,is_undone,created_at) values(?,?,?,?,?,?)",
+                )
+                .run(
+                  projectId,
+                  operation.label,
+                  JSON.stringify(before),
+                  JSON.stringify(after),
+                  operation.isUndone ? 1 : 0,
+                  operation.createdAt,
+                );
+            for (const session of backupHistory?.chatSessions ?? [])
+              this.db
+                .prepare("insert into chat_sessions values(?,?,?,?,?)")
+                .run(
+                  mappedReference(sessionMap, session.id, "チャットセッション"),
+                  projectId,
+                  session.title,
+                  session.createdAt,
+                  session.updatedAt,
+                );
+            for (const message of backupHistory?.chatMessages ?? []) {
+              if (
+                !(["user", "assistant", "system"] as string[]).includes(
+                  message.role,
+                )
               )
-              .run(jobId, output.metadataJson, assetId);
-        }
-        for (const route of backupHistory?.routeDecisions ?? []) {
-          const draft = generationJobDraftSchema.parse({
-            ...route.draft,
-            projectId,
-            pageId: route.draft.pageId
-              ? pageMap.get(route.draft.pageId)
-              : undefined,
-            panelId: route.draft.panelId
-              ? panelMap.get(route.draft.panelId)
-              : undefined,
-            inputAssetIds: route.draft.inputAssetIds
-              .map((id) => assetMap.get(id))
-              .filter((id): id is string => Boolean(id)),
-          });
-          const restoredRoute = generationRouteDecisionRecordSchema.parse({
-            ...route,
-            id: uid(),
-            jobId: mappedReference(
-              generationJobMap,
-              route.jobId,
-              "Route判定の生成ジョブ",
-            ),
-            projectId,
-            draft,
-          });
-          this.db
-            .prepare(
-              `insert into generation_route_decisions(
+                throw new Error("チャット履歴のロールが不正です。");
+              this.db
+                .prepare("insert into chat_messages values(?,?,?,?,?,?,?)")
+                .run(
+                  uid(),
+                  mappedReference(
+                    sessionMap,
+                    message.sessionId,
+                    "チャットメッセージのセッション",
+                  ),
+                  message.role,
+                  message.content,
+                  message.providerId,
+                  message.modelId,
+                  message.createdAt,
+                );
+            }
+            const validGenerationStatuses = [
+              "queued",
+              "paused",
+              "running",
+              "completed",
+              "failed",
+              "canceled",
+            ];
+            for (const job of backupHistory?.generationJobs ?? []) {
+              if (!validGenerationStatuses.includes(job.status))
+                throw new Error("AI生成ジョブの状態が不正です。");
+              JSON.parse(job.inputJson);
+              JSON.parse(job.outputJson);
+              const interrupted =
+                job.status === "queued" || job.status === "running";
+              this.db
+                .prepare(
+                  `insert into generation_jobs(id,project_id,episode_id,page_id,provider_type,provider_id,model_id,generation_type,status,progress,prompt,negative_prompt,input_json,output_json,provider_job_id,error_code,error_message,created_at,started_at,completed_at)
+               values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+                )
+                .run(
+                  mappedReference(generationJobMap, job.id, "AI生成ジョブ"),
+                  projectId,
+                  mappedReference(episodeMap, job.episodeId, "AI生成Episode"),
+                  mappedReference(pageMap, job.pageId, "AI生成Page"),
+                  job.providerType,
+                  job.providerId,
+                  job.modelId,
+                  job.generationType,
+                  interrupted ? "failed" : job.status,
+                  Number.isFinite(job.progress) ? job.progress : 0,
+                  job.prompt,
+                  job.negativePrompt,
+                  job.inputJson,
+                  job.outputJson,
+                  job.providerJobId,
+                  interrupted ? "RESTORED_INTERRUPTED" : job.errorCode,
+                  interrupted
+                    ? "バックアップ時に実行中だったため失敗として復元しました。"
+                    : job.errorMessage,
+                  job.createdAt,
+                  job.startedAt,
+                  interrupted ? stamp : job.completedAt,
+                );
+            }
+            for (const layer of sourceBundle.panelLayers ?? [])
+              this.upsertPanelLayerRow({
+                ...layer,
+                id: ensureMappedId(panelLayerMap, layer.id),
+                panelId: mappedReference(
+                  panelMap,
+                  layer.panelId,
+                  "コマレイヤーのコマ",
+                )!,
+                assetId: mappedReference(
+                  assetMap,
+                  layer.assetId,
+                  "コマレイヤー素材",
+                ),
+                sourceJobId: mappedReference(
+                  generationJobMap,
+                  layer.sourceJobId,
+                  "コマレイヤーの生成ジョブ",
+                ),
+                createdAt: "",
+                updatedAt: "",
+              });
+            const panelsWithLayers = new Set(
+              (sourceBundle.panelLayers ?? []).map((layer) => layer.panelId),
+            );
+            for (const panel of sourceBundle.panels)
+              if (panel.imageAssetId && !panelsWithLayers.has(panel.id))
+                this.syncLegacyPanelLayer({
+                  ...panel,
+                  id: mappedReference(panelMap, panel.id, "コマ")!,
+                  pageId: mappedReference(pageMap, panel.pageId, "コマのPage")!,
+                  imageAssetId: mappedReference(
+                    assetMap,
+                    panel.imageAssetId,
+                    "コマ素材",
+                  ),
+                  createdAt: "",
+                  updatedAt: "",
+                });
+            const relativePathByAssetId = new Map(
+              preparedAssets.map((item) => [item.id, item.relativePath]),
+            );
+            for (const output of backupHistory?.generationOutputs ?? []) {
+              JSON.parse(output.metadataJson);
+              const jobId = mappedReference(
+                generationJobMap,
+                output.jobId,
+                "AI生成出力のジョブ",
+              );
+              const assetId = mappedReference(
+                assetMap,
+                output.assetId,
+                "AI生成出力の素材",
+              );
+              this.db
+                .prepare("insert into generation_outputs values(?,?,?,?,?,?)")
+                .run(
+                  uid(),
+                  jobId,
+                  assetId,
+                  assetId
+                    ? (relativePathByAssetId.get(assetId) ??
+                        output.relativePath)
+                    : null,
+                  output.metadataJson,
+                  output.createdAt,
+                );
+              if (assetId)
+                this.db
+                  .prepare(
+                    "update assets set generation_job_id=?,metadata_json=? where id=?",
+                  )
+                  .run(jobId, output.metadataJson, assetId);
+            }
+            for (const route of backupHistory?.routeDecisions ?? []) {
+              const draft = generationJobDraftSchema.parse({
+                ...route.draft,
+                projectId,
+                pageId: route.draft.pageId
+                  ? pageMap.get(route.draft.pageId)
+                  : undefined,
+                panelId: route.draft.panelId
+                  ? panelMap.get(route.draft.panelId)
+                  : undefined,
+                inputAssetIds: route.draft.inputAssetIds
+                  .map((id) => assetMap.get(id))
+                  .filter((id): id is string => Boolean(id)),
+              });
+              const restoredRoute = generationRouteDecisionRecordSchema.parse({
+                ...route,
+                id: uid(),
+                jobId: mappedReference(
+                  generationJobMap,
+                  route.jobId,
+                  "Route判定の生成ジョブ",
+                ),
+                projectId,
+                draft,
+              });
+              this.db
+                .prepare(
+                  `insert into generation_route_decisions(
                  id,job_id,project_id,draft_json,context_json,decision_json,
                  prompt_sha256,created_at
                ) values(?,?,?,?,?,?,?,?)`,
-            )
-            .run(
-              restoredRoute.id,
-              restoredRoute.jobId,
-              restoredRoute.projectId,
-              JSON.stringify(restoredRoute.draft),
-              JSON.stringify(restoredRoute.context),
-              JSON.stringify(restoredRoute.decision),
-              restoredRoute.promptSha256,
-              restoredRoute.createdAt,
-            );
+                )
+                .run(
+                  restoredRoute.id,
+                  restoredRoute.jobId,
+                  restoredRoute.projectId,
+                  JSON.stringify(restoredRoute.draft),
+                  JSON.stringify(restoredRoute.context),
+                  JSON.stringify(restoredRoute.decision),
+                  restoredRoute.promptSha256,
+                  restoredRoute.createdAt,
+                );
+            }
+            this.db
+              .prepare(
+                "update projects set cover_asset_id=?,updated_at=?,last_opened_at=? where id=?",
+              )
+              .run(
+                mappedReference(
+                  assetMap,
+                  sourceBundle.project.coverAssetId,
+                  "表紙素材",
+                ),
+                stamp,
+                stamp,
+                projectId,
+              );
+          })();
+          return this.openProject(projectId);
+        } catch (error) {
+          this.db.prepare("delete from projects where id=?").run(projectId);
+          fs.rmSync(storagePath, { recursive: true, force: true });
+          throw error;
         }
-        this.db
-          .prepare(
-            "update projects set cover_asset_id=?,updated_at=?,last_opened_at=? where id=?",
-          )
-          .run(
-            mappedReference(
-              assetMap,
-              sourceBundle.project.coverAssetId,
-              "表紙素材",
-            ),
-            stamp,
-            stamp,
-            projectId,
-          );
-      })();
-      zip?.close();
-      return this.openProject(projectId);
-    } catch (error) {
-      zip?.close();
-      this.db.prepare("delete from projects where id=?").run(projectId);
-      fs.rmSync(storagePath, { recursive: true, force: true });
-      fs.rmSync(stagingDirectory, { recursive: true, force: true });
-      throw error;
-    }
+      },
+    });
   }
   createEpisode(projectId: string, title: string) {
     const i = (
@@ -4067,57 +3545,44 @@ export class MangaiDatabase {
   }
   importAssets(projectId: string, files: string[]) {
     const project = this.bundle(projectId).project;
-    const dir = path.join(project.storagePath, "assets");
-    fs.mkdirSync(dir, { recursive: true });
     for (const source of files) {
-      const mt = mime(source);
-      if (!mt) continue;
-      const bytes = fs.readFileSync(source),
-        hash = crypto.createHash("sha256").update(bytes).digest("hex");
-      if (
-        this.db
-          .prepare("select 1 from assets where project_id=? and sha256=?")
-          .get(projectId, hash)
-      )
+      const candidate = this.assetFiles.inspectImport(source);
+      if (!candidate || this.assets.hasSha256(projectId, candidate.sha256))
         continue;
-      const ext = path.extname(source).toLowerCase(),
-        name = `${uid()}${ext}`,
-        dest = path.join(dir, name),
-        size = imageSize(bytes),
-        assetId = uid();
-      fs.copyFileSync(source, dest);
-      this.db
-        .prepare(
-          "insert into assets(id,project_id,file_name,relative_path,mime_type,width,height,byte_size,sha256,created_at) values(?,?,?,?,?,?,?,?,?,?)",
-        )
-        .run(
-          assetId,
-          projectId,
-          path.basename(source),
-          path.relative(project.storagePath, dest),
-          mt,
-          size.width || 0,
-          size.height || 0,
-          bytes.length,
-          hash,
-          now(),
-        );
-      this.db
-        .prepare(
-          "update projects set cover_asset_id=coalesce(cover_asset_id,?),updated_at=? where id=?",
-        )
-        .run(assetId, now(), projectId);
+      const assetId = uid();
+      const copied = this.assetFiles.copyIntoProject(
+        project.storagePath,
+        source,
+        assetId,
+        candidate.extension,
+      );
+      const stamp = now();
+      try {
+        this.db.transaction(() => {
+          this.assets.insert({
+            id: assetId,
+            projectId,
+            fileName: candidate.fileName,
+            relativePath: copied.relativePath,
+            mimeType: candidate.mimeType,
+            width: candidate.width,
+            height: candidate.height,
+            byteSize: candidate.byteSize,
+            sha256: candidate.sha256,
+            createdAt: stamp,
+          });
+          this.assets.setCoverWhenMissing(projectId, assetId, stamp);
+        })();
+      } catch (error) {
+        this.assetFiles.removeCopiedFile(copied.destination);
+        throw error;
+      }
     }
     return this.bundle(projectId);
   }
   saveAssetLibraryMetadata(input: AssetLibraryMetadataInput) {
     input = assetLibraryMetadataInputSchema.parse(input);
-    const asset = this.db
-      .prepare(
-        "select project_id as projectId,library_tags_json as libraryTagsJson from assets where id=?",
-      )
-      .get(input.assetId) as
-      { projectId: string; libraryTagsJson: string } | undefined;
+    const asset = this.assets.findLibraryMetadata(input.assetId);
     if (!asset) throw new Error("素材が見つかりません。");
     if (
       isInternalPanelCacheAsset({
@@ -4125,82 +3590,45 @@ export class MangaiDatabase {
       })
     )
       throw new Error("内部互換キャッシュは編集できません。");
-    this.db
-      .prepare(
-        `update assets
-         set library_category=?,library_tags_json=?,library_favorite=?,
-             library_updated_at=?
-         where id=?`,
-      )
-      .run(
-        input.category,
-        JSON.stringify(input.tags),
-        input.favorite ? 1 : 0,
-        now(),
-        input.assetId,
-      );
+    this.assets.updateLibraryMetadata({
+      assetId: input.assetId,
+      category: input.category,
+      tagsJson: JSON.stringify(input.tags),
+      favorite: input.favorite,
+      updatedAt: now(),
+    });
     return this.bundle(asset.projectId);
   }
   deleteAsset(id: string) {
-    const a = this.db
-      .prepare(
-        "select a.*,p.storage_path from assets a join projects p on p.id=a.project_id where a.id=?",
-      )
-      .get(id) as any;
-    if (!a) throw new Error("素材が見つかりません。");
+    const asset = this.assets.findStoredAsset(id);
+    if (!asset) throw new Error("素材が見つかりません。");
     if (
       isInternalPanelCacheAsset({
-        libraryTags: JSON.parse(a.library_tags_json ?? "[]"),
+        libraryTags: JSON.parse(asset.libraryTagsJson ?? "[]"),
       })
     )
       throw new Error("内部互換キャッシュは削除できません。");
-    const asset = {
-      id: a.id,
-      relativePath: a.relative_path,
-      byteSize: a.byte_size,
-      sha256: a.sha256,
-    };
-    const source = this.safeProjectPath(a.storage_path, a.relative_path);
-    const trash = this.assetHistoryTrashPath(a.storage_path, asset);
-    if (!fs.existsSync(source))
-      throw new Error("削除する素材ファイルが見つかりません。");
-    this.verifyAssetFile(source, asset);
-    if (fs.existsSync(trash))
-      throw new Error("素材の履歴用ゴミ箱に同名ファイルがあります。");
-    fs.mkdirSync(path.dirname(trash), { recursive: true });
-    fs.renameSync(source, trash);
+    const moved = this.assetFiles.moveToHistoryTrash(asset.storagePath, asset);
     try {
-      this.db.transaction(() => {
-        this.db
-          .prepare(
-            "update projects set cover_asset_id=null,updated_at=? where cover_asset_id=?",
-          )
-          .run(now(), id);
-        this.db.prepare("delete from assets where id=?").run(id);
-      })();
+      this.assets.delete(id, now());
     } catch (error) {
-      fs.renameSync(trash, source);
+      moved.rollback();
       throw error;
     }
-    return this.bundle(a.project_id);
+    return this.bundle(asset.projectId);
   }
   assetData(relativePath: string) {
-    const rows = this.db
-      .prepare(
-        "select a.relative_path,a.mime_type,p.storage_path from assets a join projects p on p.id=a.project_id where a.relative_path=?",
-      )
-      .all(relativePath) as any[];
-    if (!rows[0]) throw new Error("素材が見つかりません。");
-    const file = this.safeProjectPath(rows[0].storage_path, relativePath);
-    return `data:${rows[0].mime_type};base64,${fs.readFileSync(file).toString("base64")}`;
+    const asset = this.assets.findData(relativePath);
+    if (!asset) throw new Error("素材が見つかりません。");
+    return this.assetFiles.readDataUrl(
+      asset.storagePath,
+      asset.relativePath,
+      asset.mimeType,
+    );
   }
   projectCover(id: string) {
-    const row = this.db
-      .prepare(
-        "select a.relative_path from projects p left join assets a on a.id=coalesce(p.cover_asset_id,(select id from assets where project_id=p.id order by created_at limit 1)) where p.id=?",
-      )
-      .get(id) as any;
-    return row?.relative_path ? this.assetData(row.relative_path) : null;
+    const row = this.assets.findCoverRelativePath(id);
+    return row?.relativePath ? this.assetData(row.relativePath) : null;
   }
   async exportProject(
     id: string,
@@ -4242,9 +3670,7 @@ export class MangaiDatabase {
         status: "rendering",
       });
       try {
-        const panels = bundle.panels.filter(
-          (item) => item.pageId === page.id,
-        );
+        const panels = bundle.panels.filter((item) => item.pageId === page.id);
         const panelIds = new Set(panels.map((panel) => panel.id));
         const panelLayers = bundle.panelLayers.filter((layer) =>
           panelIds.has(layer.panelId),
@@ -5218,7 +4644,9 @@ export class MangaiDatabase {
     const project = this.bundle(projectId).project;
     if (project.contentClass !== "adult")
       throw new Error("Phase 5実機証跡は成人向けProjectで作成してください。");
-    if (!["vram_8gb", "vram_12gb", "vram_16gb"].includes(runtime.effectiveProfile))
+    if (
+      !["vram_8gb", "vram_12gb", "vram_16gb"].includes(runtime.effectiveProfile)
+    )
       throw new Error("8GB／12GB／16GBの実機Profileを選択してください。");
     const rows = this.db
       .prepare(
@@ -5244,7 +4672,12 @@ export class MangaiDatabase {
     ] as const;
     const byOperation = new Map<
       (typeof required)[number],
-      { operation: (typeof required)[number]; result: "passed"; outputSha256: string; completedAt: string }
+      {
+        operation: (typeof required)[number];
+        result: "passed";
+        outputSha256: string;
+        completedAt: string;
+      }
     >();
     for (const row of rows) {
       try {
@@ -5279,9 +4712,9 @@ export class MangaiDatabase {
          from export_history where project_id=? order by created_at desc limit 1`,
       )
       .get(projectId) as
-      | { outputDir: string; filesJson: string; createdAt: string }
-      | undefined;
-    if (!exportRow) throw new Error("実機確認後のProject書き出しがありません。");
+      { outputDir: string; filesJson: string; createdAt: string } | undefined;
+    if (!exportRow)
+      throw new Error("実機確認後のProject書き出しがありません。");
     const exportRoot = path.resolve(this.paths.exports) + path.sep;
     const outputDir = path.resolve(exportRow.outputDir);
     if (!`${outputDir}${path.sep}`.startsWith(exportRoot))
@@ -5289,10 +4722,14 @@ export class MangaiDatabase {
     const files = JSON.parse(exportRow.filesJson) as unknown;
     if (!Array.isArray(files)) throw new Error("書き出し履歴が不正です。");
     const digest = (name: string) => {
-      if (!files.includes(name)) throw new Error(`${name}の書き出しがありません。`);
+      if (!files.includes(name))
+        throw new Error(`${name}の書き出しがありません。`);
       const file = path.join(outputDir, name);
       if (!fs.existsSync(file)) throw new Error(`${name}が見つかりません。`);
-      return crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+      return crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(file))
+        .digest("hex");
     };
     return phase5HardwareEvidenceSchema.parse({
       format: "mangai.phase5-hardware-evidence",
@@ -5304,7 +4741,10 @@ export class MangaiDatabase {
         dedicatedVramMb: runtime.hardware.dedicatedVramMb,
       },
       checkedAt: now(),
-      projectIdSha256: crypto.createHash("sha256").update(projectId).digest("hex"),
+      projectIdSha256: crypto
+        .createHash("sha256")
+        .update(projectId)
+        .digest("hex"),
       operations: required.map((operation) => byOperation.get(operation)!),
       export: {
         pdfSha256: digest("本編PDF.pdf"),
@@ -6055,7 +5495,8 @@ export class MangaiDatabase {
     if (!["image/png", "image/jpeg", "image/webp"].includes(asset.mime_type))
       throw new Error("入力素材の画像形式に対応していません。");
     const file = this.safeProjectPath(asset.storage_path, asset.relative_path);
-    if (!fs.existsSync(file)) throw new Error("入力素材ファイルが見つかりません。");
+    if (!fs.existsSync(file))
+      throw new Error("入力素材ファイルが見つかりません。");
     this.verifyAssetFile(file, {
       byteSize: asset.byte_size,
       sha256: asset.sha256,
@@ -6122,17 +5563,12 @@ export class MangaiDatabase {
         "select metadata_json as metadataJson from assets where id=? and project_id=?",
       )
       .get(value.assetId, value.projectId) as
-      | { metadataJson: string }
-      | undefined;
+      { metadataJson: string } | undefined;
     if (!asset) throw new Error("Project内の参照素材が見つかりません。");
     let metadata: Record<string, unknown>;
     try {
       metadata = JSON.parse(asset.metadataJson);
-      if (
-        !metadata ||
-        typeof metadata !== "object" ||
-        Array.isArray(metadata)
-      )
+      if (!metadata || typeof metadata !== "object" || Array.isArray(metadata))
         metadata = {};
     } catch {
       metadata = {};
@@ -6147,7 +5583,9 @@ export class MangaiDatabase {
     const value = characterProfileInputSchema.parse(input),
       stamp = now(),
       id = value.id ?? uid();
-    if (!this.db.prepare("select 1 from projects where id=?").get(value.projectId))
+    if (
+      !this.db.prepare("select 1 from projects where id=?").get(value.projectId)
+    )
       throw new Error("Projectが見つかりません。");
     const existing = value.id
       ? (this.db
@@ -6214,13 +5652,7 @@ export class MangaiDatabase {
          on conflict(character_profile_id,asset_id) do update set
            role=excluded.role`,
       )
-      .run(
-        value.characterProfileId,
-        value.assetId,
-        value.role,
-        order,
-        now(),
-      );
+      .run(value.characterProfileId, value.assetId, value.role, order, now());
     return this.listCharacterProfiles(profile.project_id);
   }
   detachCharacterReferenceAsset(input: unknown): CharacterProfile[] {
@@ -6275,9 +5707,7 @@ export class MangaiDatabase {
         const definition = this.getComfyWorkflow(row.id);
         return {
           ...row,
-          optimization: analyzeComfyWorkflowOptimization(
-            definition.workflow,
-          ),
+          optimization: analyzeComfyWorkflowOptimization(definition.workflow),
           supportedOperations: [
             ...(definition.mapping.prompt ? ["text_to_image"] : []),
             ...(definition.mapping.sourceImage ? ["image_to_image"] : []),

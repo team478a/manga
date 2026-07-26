@@ -8,7 +8,7 @@
 
 ## 1. 現在の判定
 
-2026-07-24の保守性改善Phase 0を開始し、PR-01のMarketplace Storage所有者制限、PR-02のcanonical schemaデータ冪等化、PR-03のCloud AI完了補償、PR-04のCloud Asset upload早期サイズ・rate limitまで完了しました。次はPR-05としてDesktop Backup／RestoreとHub Project exportの一括メモリ処理をstreaming方式へ変更します。
+2026-07-24の保守性改善はPR-01からPR-23まで完了し、Storage所有者制限、schema冪等化、Cloud AI補償、upload制限、streaming、Canvas保存回復、Worker lease、CI、主要モジュール分割、依存境界、Cloud／Checkout／Billing／Desktop連携、Stripe Webhook、購入download、Hub Server Actionの型付きError、Hub Structured Loggingへ対応しました。次はstacked Draft PRの順次mergeと、公開環境選定後のlog sink／alert通知先設定を進めます。
 
 一般漫画をCloud、成人向け漫画をDesktopで扱う製品分離後の不足機能と実装順は[`PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md`](PRODUCT_DEVELOPMENT_PLAN_CLOUD_DESKTOP.md)へ整理しました。Phase 0〜4のリポジトリ実装は完了しています。Phase 5もローカル制作機能と証跡回収経路まで完了し、8GB／12GB／16GB Windows GPU実機受入れだけを保留しています。外部環境なしで進められる次工程として、Phase 7のSupabase staging適用前準備を開始しました。
 

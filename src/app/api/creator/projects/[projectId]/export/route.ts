@@ -3,6 +3,7 @@ import { Readable } from "node:stream";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createCloudProjectExport } from "@/lib/cloud-canvas-export";
+import { toApiError } from "@/lib/api-errors";
 
 const formatSchema = z.enum(["pdf", "images", "package"]);
 
@@ -43,12 +44,7 @@ export async function GET(
       throw error;
     }
   } catch (error) {
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Exportに失敗しました。",
-      },
-      { status: 400 },
-    );
+    const response = toApiError(error, "Exportに失敗しました。");
+    return NextResponse.json(response.body, { status: response.status });
   }
 }

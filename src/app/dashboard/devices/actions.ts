@@ -29,7 +29,7 @@ export async function approveDesktopDevice(formData: FormData) {
     .maybeSingle<{ id: string; expires_at: string; scopes: string[] }>();
   if (error)
     redirect(
-      `/dashboard/devices/authorize?error=${encodeURIComponent(error.message)}`,
+      `/dashboard/devices/authorize?error=${encodeURIComponent("認証コードを確認できませんでした")}`,
     );
   if (!authorization || new Date(authorization.expires_at) <= now)
     redirect(
@@ -58,7 +58,7 @@ export async function approveDesktopDevice(formData: FormData) {
     .maybeSingle<{ id: string }>();
   if (updateError)
     redirect(
-      `/dashboard/devices/authorize?error=${encodeURIComponent(updateError.message)}`,
+      `/dashboard/devices/authorize?error=${encodeURIComponent("Desktop端末を認証できませんでした")}`,
     );
   if (!updated)
     redirect(
@@ -80,7 +80,9 @@ export async function revokeDesktopDevice(formData: FormData) {
     .eq("profile_id", profile.id)
     .eq("status", "approved");
   if (error)
-    redirect(`/dashboard/devices?error=${encodeURIComponent(error.message)}`);
+    redirect(
+      `/dashboard/devices?error=${encodeURIComponent("端末認証を解除できませんでした")}`,
+    );
   revalidatePath("/dashboard/devices");
   redirect("/dashboard/devices?message=端末認証を解除しました");
 }
