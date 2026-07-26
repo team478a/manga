@@ -4,6 +4,41 @@
 
 ---
 
+## 2026-07-26（続き5） Claude Code（PR #37マージ・Phase D2完了）
+
+### 状態
+
+READY_FOR_PHASE_D3_DECISION（PR #37マージ済み。コマンドパレット・既存画面適用は責任者判断待ち）
+
+### ブランチ・コミット
+
+- PR #37（`design/phase-d2-desktop-components` → `feature/manga-canvas-mvp`）は責任者承認（`stockbusiness`、APPROVED、commit `a8549a3`時点）と全CI成功（Vercel Preview Comments/Windows build/Migration roundtrip/Core quality、いずれも`success`）を確認後、Draft解除・マージ実施。merge commit `1a926ad`
+- `feature/manga-canvas-mvp`の現在のHEAD: `1a926ad`
+- 本記録は`feature/manga-canvas-mvp` @ `1a926ad`から作成した`docs/phase-d2-merge-sync-20260726`ブランチ（文書のみ更新、コード変更なし）
+
+### 完了
+
+- PR #37のCIチェック4件すべてが`completed`/`success`であることをGitHub APIで確認
+- PR #37のレビュー（`stockbusiness`、`APPROVED`、`COLLABORATOR`）が現在のhead commitに対して有効であることを確認
+- PR #37のDraftを解除（`draft: false`）し、`mergeable_state: "clean"`を確認後マージ（merge commit `1a926ad`）
+- 本ログ・`docs/CURRENT_TASK.md`を更新（コードは一切変更していない）
+
+### 未完了
+
+- コマンドパレット（§3.4）の実装要否・時期は責任者判断待ち
+- Phase D2で実装した共通コンポーネントの既存画面への適用（Phase D3）は未着手
+
+### 変更ファイル（本記録のみ）
+
+- `docs/HANDOFF_LOG.md`（本記録）
+- `docs/CURRENT_TASK.md`
+
+### 検証
+
+- 本ブランチはdocsのみの変更のため、コード品質ゲートは対象外（`git diff --check`のみ確認）
+
+---
+
 ## 2026-07-26（続き4） Claude Code（Phase D2実装: 共通コンポーネント単体実装）
 
 ### 状態
