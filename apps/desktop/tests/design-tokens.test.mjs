@@ -118,14 +118,16 @@ test("既存セレクタ・レイアウトクラスはPhase D1で変更されて
   assert.match(stylesSource, /@media \(forced-colors: active\)/);
 });
 
-test("glass系トークンは一時UI（フローティングツールバー）以外の常設UIセレクタへ適用されていない", () => {
+test("glass系トークンは一時UI（フローティングツールバー・コマンドパレット）以外の常設UIセレクタへ適用されていない", () => {
   // Phase D1ではglassトークンは:root内の定義のみだった。Phase D2で
   // DESKTOP_CREATIVE_STUDIO_SPEC.md §2.2が許可する一時UI
-  // （.ds-floating-toolbarとそのforced-colorsフォールバック）だけが
-  // これらのトークンを消費し始めた。常設UI（topbar/panel/nav/statusbar等）
-  // が引き続きglassを使っていないことを、CSSルールブロック単位で確認する。
+  // （.ds-floating-toolbar）が、Phase D3で.ds-command-paletteが
+  // これらのトークンを消費し始めた（いずれもforced-colorsフォールバックあり）。
+  // 常設UI（topbar/panel/nav/statusbar等）が引き続きglassを使っていないことを、
+  // CSSルールブロック単位で確認する。
   const ruleBlockPattern = /([^{}]+)\{([^{}]*)\}/g;
-  const allowedSelectorPattern = /(^|[\s,])\.ds-floating-toolbar\b/;
+  const allowedSelectorPattern =
+    /(^|[\s,])\.(ds-floating-toolbar|ds-command-palette)\b/;
   const offendingSelectors = [];
   let match;
   while ((match = ruleBlockPattern.exec(stylesSource)) !== null) {
