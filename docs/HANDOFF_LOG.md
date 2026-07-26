@@ -4,6 +4,127 @@
 
 ---
 
+## 2026-07-26（続き7） Claude Code（Phase D3: Home画面へのButton適用）
+
+### 状態
+
+READY_FOR_REVIEW（Home画面へのButton適用完了、push・Draft PR作成待ち）
+
+### 背景
+
+責任者より「コマンドパレット実装」「Phase D3（既存画面への適用）」の両方に着手する指示を受けた。2つの独立した変更のため別ブランチで並行して進めている。本記録はHome画面適用側（`design/phase-d3-home-screen`）。コマンドパレットは別記録（続き6）・PR #39。
+
+### スコープを絞った理由（重要）
+
+本コンテナ環境にはXサーバーがなくElectronアプリを実際にレンダリングして目視確認できない。`DESKTOP_CREATIVE_STUDIO_SPEC.md`§4.1が定義するHome画面の全面刷新（Projectカードのgrid化、hoverケバブメニュー、フィルタchip、下部ステータス帯等）は大規模なレイアウト変更で目視確認なしに進めるとリスクが高いため、本ブランチでは静的検証だけで確度高く正しさを確認できる範囲（Buttonコンポーネントの適用のみ）に限定した。詳細は`docs/design/PHASE_D3_HOME_SCREEN.md`§1参照。
+
+### ブランチ・コミット
+
+- 前段: PR #35〜#38はいずれもマージ済み。`feature/manga-canvas-mvp`の現在のHEAD: `2b4f97d`
+- Branch: `design/phase-d3-home-screen`
+- Base: `feature/manga-canvas-mvp` @ `2b4f97d5fbdc90a055b2173677236c9dd8511224`
+
+### 完了
+
+- `main.tsx`の11箇所のネイティブ`<button>`を`Button`コンポーネント（Phase D2実装済み）へ置き換え。テキスト・aria-label・ref・onClickロジックはすべて元のまま
+- 新規Projectモーダルの「作成」ボタンは`<form onSubmit>`内で暗黙にtype="submit"だったため、`type="submit"`を明示して置き換え、フォーム送信の回帰を防止
+- Projectカードのトリガー本体（`.project-open`）はButtonのvariant体系に馴染まない独自レイアウトのため意図的に変更せず、カードグリッド化と合わせて別フェーズへ
+- `design-components.test.mjs`の「新規コンポーネント未適用」テストからButtonを除外（Card/FormField/FloatingToolbarは引き続き検査）。`design-home-screen.test.mjs`を新規追加（4件）
+- 必須品質ゲート（deps:check/lint/typecheck/desktop:test/desktop:build/git diff --check）を実行
+- `docs/design/PHASE_D3_HOME_SCREEN.md`を作成。本ログ・`docs/CURRENT_TASK.md`を更新
+
+### 未完了
+
+- `design/phase-d3-home-screen`のpushとDraft PR作成
+- GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結果確認
+- 責任者によるレビュー・マージ判断
+- Home画面の全面ビジュアル刷新（カードグリッド化等）は、目視確認手段の確保または責任者の追加判断があるまで未着手
+
+### 変更ファイル
+
+- `apps/desktop/src/renderer/main.tsx`（11箇所のButton置き換え、ロジック無変更）
+- `apps/desktop/tests/design-components.test.mjs`（Button関連アサーションを更新）
+- `apps/desktop/tests/design-home-screen.test.mjs`（新規）
+- `apps/desktop/package.json`（testスクリプトへ1行追加）
+- `docs/design/PHASE_D3_HOME_SCREEN.md`（新規）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（root + Desktop）
+- desktop:test: PASS（124/124、既存120件+新規4件、回帰なし）
+- desktop:test:a11y（ローカル）: LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT
+- desktop:build: PASS
+- git diff --check: PASS
+
+### 失敗・BLOCKED
+
+- `npm run desktop:test:a11y`（ローカル）: 本コンテナにXサーバーがなくElectron起動不可。本フェーズはこの制約のためスコープを意図的に絞った（§スコープを絞った理由 参照）
+
+---
+
+## 2026-07-26（続き6） Claude Code（Phase D3: コマンドパレット単体実装）
+
+### 状態
+
+READY_FOR_REVIEW（コマンドパレット単体実装完了、push・Draft PR作成済み、PR #39）
+
+### 背景
+
+責任者より「コマンドパレット実装」「Phase D3（既存画面への適用）」の両方に着手する指示を受けた。2つの独立した変更のため、それぞれ別ブランチで並行して進める方針とした。本記録はコマンドパレット側（`design/phase-d3-command-palette`）。Home画面適用（`design/phase-d3-home-screen`）は別記録（続き7）。
+
+### ブランチ・コミット
+
+- 前段: PR #35〜#38はいずれもマージ済み。`feature/manga-canvas-mvp`の現在のHEAD: `2b4f97d`
+- Branch: `design/phase-d3-command-palette`
+- Base: `feature/manga-canvas-mvp` @ `2b4f97d5fbdc90a055b2173677236c9dd8511224`
+- Draft PR #39作成済み: https://github.com/team478a/manga/pull/39
+
+### 完了
+
+- `CommandPalette.tsx`を新規実装（`apps/desktop/src/renderer/components/common/`）。データ駆動（`sections`/`items`は呼び出し側が注入）で、Provider有効/無効切替APIを持たない
+- `styles.css`へ`.ds-command-palette*`（glassトークン使用）と`.ds-visually-hidden`（aria-live件数通知の視覚非表示化）を追加。`forced-colors`フォールバックも追加
+- 幅の切替は既存の`max-width: 1365px`ブレークポイントのみを使用（§5の未承認ブレークポイント再編は不使用）
+- `design-command-palette.test.mjs`を新規追加（7件）。`design-tokens.test.mjs`のglass allowlistへ`.ds-command-palette`を追加
+- `Ctrl+K`のグローバル配線、上部バートリガー、実データ統合は本フェーズのスコープ外とした（`docs/design/PHASE_D3_COMMAND_PALETTE.md`§1参照）
+- 必須品質ゲート（deps:check/lint/typecheck/desktop:test/desktop:build/git diff --check）を実行
+- `docs/design/PHASE_D3_COMMAND_PALETTE.md`を作成。本ログ・`docs/CURRENT_TASK.md`を更新（当時）
+- push・Draft PR #39作成
+
+### 未完了
+
+- GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結果確認
+- 責任者によるレビュー・マージ判断
+- `Ctrl+K`のグローバル配線・実データ統合（本PRのmerge後）
+
+### 変更ファイル
+
+- `apps/desktop/src/renderer/components/common/CommandPalette.tsx`（新規）
+- `apps/desktop/src/renderer/styles.css`（`.ds-command-palette*`/`.ds-visually-hidden`追加、既存部分は無変更）
+- `apps/desktop/tests/design-command-palette.test.mjs`（新規）
+- `apps/desktop/tests/design-tokens.test.mjs`（glass allowlistへ`.ds-command-palette`を追加）
+- `apps/desktop/package.json`（testスクリプトへ1行追加）
+- `docs/design/PHASE_D3_COMMAND_PALETTE.md`（新規）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（当時の記録）
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（root + Desktop）
+- desktop:test: PASS（127/127、既存120件+新規7件、回帰なし）
+- desktop:test:a11y（ローカル）: LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT
+- desktop:build: PASS
+- git diff --check: PASS
+
+### 失敗・BLOCKED
+
+- `npm run desktop:test:a11y`（ローカル）: 本コンテナにXサーバーがなくElectron起動不可。GitHub Actions Desktop Windows workflow側の結果はPR確認後に確認する
+
+---
+
 ## 2026-07-26（続き5） Claude Code（PR #37マージ・Phase D2完了）
 
 ### 状態

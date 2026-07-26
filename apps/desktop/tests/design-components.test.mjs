@@ -117,23 +117,24 @@ test("StatusBadge: activity=runningの脈動はreduced-motionの既存グロー�
   assert.match(stylesSource, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
-test("新規コンポーネントはPhase D2時点でどの既存画面からもimportされていない（単体実装のみ）", () => {
+test("Card/FormField/FloatingToolbarはPhase D3時点でもどの既存画面からもimportされていない（単体実装のみ）", () => {
+  // Phase D3でButtonはHome画面へ適用された（design-home-screen.test.mjs参照）。
+  // Card/FormField/FloatingToolbarは引き続き未適用であることを確認する。
   const screenFiles = listTsxFiles(rendererDir).filter(
     (file) => !file.startsWith(commonDir),
   );
-  const newComponentNames = [
-    "common/Button",
+  const unwiredComponentNames = [
     "common/Card",
     "common/FormField",
     "common/FloatingToolbar",
   ];
   for (const file of screenFiles) {
     const source = fs.readFileSync(file, "utf8");
-    for (const name of newComponentNames) {
+    for (const name of unwiredComponentNames) {
       assert.equal(
         source.includes(name),
         false,
-        `${path.relative(rendererDir, file)} should not yet import ${name} (Phase D2 is component-only)`,
+        `${path.relative(rendererDir, file)} should not yet import ${name} (not yet applied to any screen)`,
       );
     }
   }
