@@ -15,6 +15,7 @@ import { HubStatus } from "./features/hub-status/HubStatus";
 import { UpdateControl } from "./features/updater/UpdateControl";
 import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
 import type { StatusTone } from "./components/common/StatusBadge";
+import { Button } from "./components/common/Button";
 import { AppHeader } from "./components/app-shell/AppHeader";
 import {
   GlobalNav,
@@ -374,8 +375,8 @@ function App() {
             <span>{t("home.subtitle")}</span>
           </div>
           <div className="header-actions">
-            <button
-              className="secondary"
+            <Button
+              variant="secondary"
               disabled={autoBackup?.status === "running"}
               title={
                 autoBackup?.message
@@ -393,17 +394,18 @@ function App() {
               {autoBackup?.status === "running"
                 ? t("home.checkingBackup")
                 : t("home.autoBackup")}
-            </button>
-            <button className="secondary" onClick={restoreProject}>
+            </Button>
+            <Button variant="secondary" onClick={restoreProject}>
               {t("home.restore")}
-            </button>
-            <button
+            </Button>
+            <Button
+              variant="primary"
               ref={newProjectButtonRef}
               data-a11y-action="new-project"
               onClick={() => setCreating(true)}
             >
               {t("home.newProject")}
-            </button>
+            </Button>
           </div>
           <label className="home-language">
             <span>{t("settings.language")}</span>
@@ -460,13 +462,14 @@ function App() {
         {error && (
           <div className="error dismissible" role="alert">
             <span>{error}</span>
-            <button
-              className="secondary"
+            <Button
+              variant="secondary"
+              size="sm"
               aria-label={t("a11y.dismissError")}
               onClick={() => setError("")}
             >
               ×
-            </button>
+            </Button>
           </div>
         )}
         {creating && (
@@ -646,9 +649,9 @@ function App() {
                     placeholder="既定: Documents/MANGAI/projects/{projectId}"
                     title={form.storagePath || t("projectDialog.defaultFolder")}
                   />
-                  <button
+                  <Button
                     type="button"
-                    className="secondary"
+                    variant="secondary"
                     onClick={async () => {
                       const selected = await window.mangai.chooseProjectStorage(
                         form.storagePath || undefined,
@@ -661,21 +664,21 @@ function App() {
                     }}
                   >
                     {t("projectDialog.browse")}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
-                    className="secondary"
+                    variant="secondary"
                     disabled={!form.storagePath}
                     onClick={() => setForm({ ...form, storagePath: "" })}
                   >
                     {t("projectDialog.reset")}
-                  </button>
+                  </Button>
                 </div>
               </label>
               <footer>
-                <button
+                <Button
                   type="button"
-                  className="secondary"
+                  variant="secondary"
                   onClick={() => {
                     setCreating(false);
                     requestAnimationFrame(() =>
@@ -684,15 +687,17 @@ function App() {
                   }}
                 >
                   {t("projectDialog.cancel")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
                   disabled={
                     form.contentClass === "adult" &&
                     !form.adultProjectAcknowledged
                   }
                 >
                   {t("projectDialog.create")}
-                </button>
+                </Button>
               </footer>
             </form>
           </div>
@@ -733,7 +738,9 @@ function App() {
                 </button>
                 <div className="actions">
                   {p.contentClass === "general" && (
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (
@@ -750,26 +757,31 @@ function App() {
                       }}
                     >
                       {t("home.moveAdult")}
-                    </button>
+                    </Button>
                   )}
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       void backupProject(p.id);
                     }}
                   >
                     {t("home.backup")}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       void apply(window.mangai.duplicateProject(p.id));
                     }}
                   >
                     {t("home.duplicate")}
-                  </button>
-                  <button
-                    className="danger"
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       if (confirm(t("home.deleteConfirm", { title: p.title })))
@@ -780,7 +792,7 @@ function App() {
                     }}
                   >
                     {t("home.delete")}
-                  </button>
+                  </Button>
                 </div>
               </article>
             ))
