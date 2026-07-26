@@ -18,7 +18,7 @@
 
 ## 2. 変更内容
 
-`apps/desktop/src/renderer/main.tsx`の以下のネイティブ`<button>`要素を、Phase D2の`Button`コンポーネントへ置き換えた。**テキスト・aria-label・ref・onClick等のロジックはすべて元のまま**で、要素をButtonへ置き換えたのみ。
+`apps/desktop/src/renderer/main.tsx`の以下12箇所（`<Button`要素の出現数で計測）のネイティブ`<button>`要素を、Phase D2の`Button`コンポーネントへ置き換えた。**テキスト・aria-label・ref・onClick等のロジックはすべて元のまま**で、要素をButtonへ置き換えたのみ。（初版では「フォルダ選択」「リセット」の2ボタンを1行にまとめて「11箇所」と記載していたが、実際の置き換え対象は12個のボタン要素であるため本改訂で訂正した。）
 
 | 箇所 | 置き換え前 | 置き換え後 |
 | --- | --- | --- |
@@ -26,7 +26,8 @@
 | ヘッダー「復元」 | `<button className="secondary">` | `<Button variant="secondary">` |
 | ヘッダー「新規Project」 | `<button ref={newProjectButtonRef}>` | `<Button variant="primary" ref={newProjectButtonRef}>` |
 | エラー閉じるボタン（×） | `<button className="secondary">` | `<Button variant="secondary" size="sm">` |
-| 新規Projectモーダル: フォルダ選択/リセット | `<button type="button" className="secondary">` | `<Button type="button" variant="secondary">` |
+| 新規Projectモーダル: フォルダ選択 | `<button type="button" className="secondary">` | `<Button type="button" variant="secondary">` |
+| 新規Projectモーダル: リセット | `<button type="button" className="secondary">` | `<Button type="button" variant="secondary">` |
 | 新規Projectモーダル: キャンセル | `<button type="button" className="secondary">` | `<Button type="button" variant="secondary">` |
 | 新規Projectモーダル: 作成 | `<button>`（フォーム内、暗黙のtype="submit"） | `<Button type="submit" variant="primary">`（**type="submit"を明示** — Button既定値は"button"のため、明示しないとフォーム送信が壊れる） |
 | Project行: 成人向けへ移動 | `<button>` | `<Button variant="secondary" size="sm">` |
@@ -54,7 +55,7 @@
 
 | ファイル | 内容 |
 | --- | --- |
-| `apps/desktop/src/renderer/main.tsx` | Home画面の11箇所の`<button>`を`Button`コンポーネントへ置き換え（テキスト・ロジックは無変更） |
+| `apps/desktop/src/renderer/main.tsx` | Home画面の12箇所の`<button>`を`Button`コンポーネントへ置き換え（テキスト・ロジックは無変更） |
 | `apps/desktop/tests/design-components.test.mjs` | 「新規コンポーネントは未適用」テストからButtonを除外し、Card/FormField/FloatingToolbarのみを引き続き検査するよう更新 |
 | `apps/desktop/tests/design-home-screen.test.mjs`（新規） | Buttonのimport、主要操作への適用、Create ボタンの`type="submit"`維持、`.project-open`が未変更であることを確認する4件のテスト |
 | `apps/desktop/package.json` | `test`スクリプトへ`tests/design-home-screen.test.mjs`を追加 |
