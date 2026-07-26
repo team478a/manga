@@ -3,17 +3,37 @@
 ## 基本情報
 
 - 更新日: 2026-07-26
-- 状態: `READY_FOR_REVIEW`（Phase D3-Home画面へのButton適用完了、PR #39マージによるコンフリクトをmergeで解消済み。責任者レビュー・マージ判断待ち）
+- 状態: `READY_FOR_NEXT_PHASE_DECISION`（PR #39・#40マージ済み・最終確認完了。次フェーズ（Phase D3-B: Ctrl+Kグローバル配線、Phase D3-C: Home画面の全面ビジュアル刷新）は責任者の明示判断待ち）
 - リポジトリ: `team478a/manga`
-- 作業ブランチ: `design/phase-d3-home-screen`
-- Base: `feature/manga-canvas-mvp` @ `d68c8121ff9234ba461678de37e2deb3d73c5c3e`（PR #39マージ済みコミット。本ブランチはPR #39マージ後のコンフリクトを解消するため、`origin/feature/manga-canvas-mvp`をマージ済み）
-- 詳細記録: [`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)
+- 現在のベースブランチ: `feature/manga-canvas-mvp` @ `0fbf2fe9a9c278f24684f38ab641c97db635f677`（PR #40マージ済みコミット、このコミットで最終確認済み）
+- 作業ブランチ: `docs/phase-d3-merge-sync-20260726`（本PR、文書更新のみ）
+- 詳細記録: [`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)、[`docs/design/PHASE_D3_COMMAND_PALETTE.md`](design/PHASE_D3_COMMAND_PALETTE.md)
 
-**責任者からの指示（2026-07-26）**: コマンドパレット実装とPhase D3（既存画面への適用）の両方に着手する。コマンドパレット（`design/phase-d3-command-palette`、PR #39）はレビュー・CI確認のうえマージ済み。本ブランチ（`design/phase-d3-home-screen`、PR #40）はHome画面へのButton適用を担当している。
+## 直前の完了事項: Phase D3-Home画面へのButton適用（PR #40）マージ
 
-**本ブランチでのスコープ限定について**: 本コンテナ環境ではElectronアプリを実際にレンダリングして目視確認できない（Xサーバーなし）ため、Home画面の全面ビジュアル刷新（Projectカードのグリッド化等）は行わず、静的検証だけで正しさを確度高く確認できる範囲（Buttonコンポーネントの適用）に限定した。理由の詳細は[`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)§1を参照。
+`design/phase-d3-home-screen`（PR #40）は、PR #39マージによる`package.json`/`docs/CURRENT_TASK.md`/`docs/HANDOFF_LOG.md`のコンフリクトをmerge（rebaseではなく）で解消し全品質ゲート再実行（131/131 PASS）を確認のうえ、責任者承認（`stockbusiness`、APPROVED、commit `06a1049`時点）と全CIチェック成功を確認して**`feature/manga-canvas-mvp`へマージ済み**（merge commit `0fbf2fe`）。`main.tsx`の12箇所のネイティブボタン（`<Button>`要素数で計測。以前の記録で「11箇所」としていたのは、フォルダ選択/リセットの2ボタンを1行にまとめて数えていたための誤差であり本PRで訂正）を`Button`コンポーネントへ置き換えたのみで、Projectカードのグリッド化等の全面ビジュアル刷新は未着手。詳細は[`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)を参照。
 
-## 直前の完了事項: Phase D3-コマンドパレット単体実装（PR #39）マージ
+### PR #40マージ後の最終確認結果（2026-07-26、`feature/manga-canvas-mvp` @ `0fbf2fe`）
+
+| コマンド | 結果 |
+| --- | --- |
+| `npm install` | 完了（`npm audit`: high 11件、既存分・本タスクでは対応せず） |
+| `npm run deps:check` | PASS（5 packages, 21 source files, 違反0件） |
+| `npm run lint` | PASS |
+| `npm run typecheck` | PASS（root + Desktop） |
+| `npm run desktop:test` | PASS（**131/131**） |
+| `npm run desktop:build` | PASS |
+| `git diff --check` | PASS |
+
+GitHub Actions（PR #40のhead commit `06a1049`時点）: `Vercel Preview Comments`/`Migration roundtrip`/`Core quality`/`Windows build`の4件すべて`success`。`Windows build`ジョブ内に`Accessibility tests`ステップが含まれており（`.github/workflows/desktop-windows.yml`、`continue-on-error`指定なし）、ジョブ成功はAccessibility testsも成功したことを意味する。
+
+**外部環境で未確認の項目**:
+- `npm run desktop:test:a11y`のローカル実行は本コンテナにXサーバーがなく`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（GitHub Actions側で成功確認済みのため全体はBLOCKED扱いにしていない）
+- Windows実機での目視確認、Playwright等によるスクリーンショット比較は未実施（Phase D3-C着手条件、後述）
+
+**レビュー承認時の注意点（引き継ぎ）**: 本PRの承認時、責任者のスマートフォンがPR作成者と同一のGitHubアカウント（`team478a`）でログインされており、「Pull request authors can't approve their own pull requests」により承認できない事象が発生した。`stockbusiness`アカウントへ再ログイン後に承認できた。次回以降、承認者側の端末でログイン中のGitHubアカウントを確認するとスムーズ。
+
+## その前の完了事項: Phase D3-コマンドパレット単体実装（PR #39）マージ
 
 `design/phase-d3-command-palette`（PR #39）は責任者承認・全CIチェック成功を確認のうえマージ済み（merge commit `d68c812`）。データ駆動のコマンドパレットコンポーネントを新規実装したのみで、`Ctrl+K`のグローバル配線・実データ統合・既存画面への適用は行っていない。詳細は[`docs/design/PHASE_D3_COMMAND_PALETTE.md`](design/PHASE_D3_COMMAND_PALETTE.md)を参照。
 
@@ -29,36 +49,37 @@
 
 `integration/maintenance-stack-20260726`（PR #34）は責任者承認（`stockbusiness`、APPROVED）を経て**`feature/manga-canvas-mvp`へマージ済み**（merge commit `dc89e0b`）。詳細は[`docs/integration/MAINTENANCE_STACK_INTEGRATION_20260726.md`](integration/MAINTENANCE_STACK_INTEGRATION_20260726.md)を参照。
 
-## 完了済み（本ブランチ: Home画面へのButton適用）
+## 完了済み
 
-- [x] PR #34〜#39が`feature/manga-canvas-mvp`へマージ済みであることを確認
-- [x] `main.tsx`の11箇所のネイティブ`<button>`を`Button`コンポーネントへ置き換え（テキスト・ロジックは無変更）
-- [x] 新規Projectモーダルの「作成」ボタンに`type="submit"`を明示し、フォーム送信の回帰を防止
-- [x] `design-components.test.mjs`のButton関連アサーションを更新、`design-home-screen.test.mjs`を新規追加（4件）
-- [x] `docs/design/PHASE_D3_HOME_SCREEN.md`を作成（スコープを絞った理由を明記）
-- [x] 必須品質ゲートをすべて実行（詳細は下表）
-- [x] PR #39マージ後に発生した`package.json`/`docs/CURRENT_TASK.md`/`docs/HANDOFF_LOG.md`のコンフリクトを、`origin/feature/manga-canvas-mvp`のマージで解消（rebaseではなくmergeを使用、merge commit `a970046`）
-- [x] コンフリクト解消後、全品質ゲートを再実行し直してpush
-- [x] 本ファイル・`docs/HANDOFF_LOG.md`を更新
+- [x] PR #34〜#40が`feature/manga-canvas-mvp`へマージ済みであることを確認
+- [x] コマンドパレット（PR #39）・Home画面へのButton適用（PR #40）を並行実装し、いずれもマージ完了
+- [x] PR #40のレビュー（`stockbusiness`、APPROVED）とCI（4件すべて`success`）を確認
+- [x] PR #40のDraftを解除し、`feature/manga-canvas-mvp`へマージ（merge commit `0fbf2fe`）
+- [x] マージ後の`feature/manga-canvas-mvp`最新コミットで`npm install`＋全品質ゲートを再実行し、問題がないことを再確認
+- [x] Home画面のボタン置換11箇所→12箇所の表記誤りを訂正
+- [x] PR #14〜#28・#29・#33の整理案を調査（詳細は責任者への報告を参照。本ファイルには要点のみ記載）
+- [x] 本ファイル・`docs/HANDOFF_LOG.md`を更新（本記録、コードは無変更）
 
-## 品質ゲート結果（2026-07-26、`design/phase-d3-home-screen`でローカル実行、コンフリクト解消後）
+## 次の実装候補（責任者判断待ち、優先度順）
 
-| 項目 | 結果 |
-| --- | --- |
-| `npm run deps:check` | PASS（5 packages, 21 source files, 違反0件） |
-| `npm run lint` | PASS |
-| `npm run typecheck` | PASS（root + Desktop） |
-| `npm run desktop:test` | PASS（**131/131**。既存124件 + PR #39由来のdesign-command-palette.test.mjs 7件、回帰なし） |
-| `npm run desktop:test:a11y`（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT |
-| `npm run desktop:build` | PASS |
-| `git diff --check` | PASS |
+### Phase D3-B: コマンドパレットの実画面接続
+
+`design/phase-d3-command-palette`（PR #39）で実装済みの`CommandPalette`コンポーネントを、実際のDesktop画面へ接続する。対象: `Ctrl+K`によるグローバル起動、上部バーからの起動、Escでの終了とフォーカス復帰、画面移動コマンド、一般操作コマンド、最近開いたProject一覧。安全境界: AI Providerの直接有効化・成人向け処理の直接実行・外部送信承認の省略・課金/費用承認の迂回・APIキー変更は行わず、Provider関連コマンドは設定画面の該当セクションを開く操作のみに限定する（`DESKTOP_CREATIVE_STUDIO_SPEC.md`§3.4の安全境界を踏襲）。
+
+### Phase D3-C: Home画面のビジュアル刷新
+
+Projectカードのグリッド化、カバー画像表示、フィルタchip、hover操作メニュー、下部ステータスバー、空状態/読み込み状態/エラー状態の整備。**着手条件**: 本コンテナ環境ではElectron画面を目視確認できないため、次のいずれかが用意されるまで着手しない。
+- Windows実機での画面確認
+- Electronを起動できるCI（GUI付き）
+- Playwright等によるスクリーンショット比較の仕組み
+- 責任者が確認できる画面キャプチャー手順
 
 ## 未完了・次の作業
 
-1. `design/phase-d3-home-screen`をpushし、PR #40のコンフリクトが解消されたことを確認する
-2. GitHub Actions Desktop Windows workflowでAccessibility testsの結果を確認、責任者レビュー・マージ判断を待つ
-3. Home画面のProjectカードグリッド化・下部ステータス帯・フィルタchip等の全面ビジュアル刷新は、目視確認手段が整うか責任者の追加判断があるまで着手しない（理由は`docs/design/PHASE_D3_HOME_SCREEN.md`§1参照）
-4. `Ctrl+K`のグローバル配線・実データ統合（PR #39マージ後の次フェーズ）は、責任者の明示判断があるまで着手しない
+1. Phase D3-B（コマンドパレット実画面接続）は、責任者の明示判断があるまで着手しない
+2. Phase D3-C（Home画面ビジュアル刷新）は、上記いずれかの目視確認手段が整うか責任者の追加判断があるまで着手しない（理由は`docs/design/PHASE_D3_HOME_SCREEN.md`§1参照）
+3. PR #14〜#28・#29・#33の整理（Close等）は、責任者の承認後に実施する（本タスクでは調査・報告のみ）
+4. GitHub Actions Desktop Windows workflow内のAccessibility testsの個別ログ確認は任意で継続可能
 
 ## 禁止事項（本タスク中に遵守）
 
@@ -81,6 +102,19 @@
 3. `docs/AI_HANDOFF.md`
 4. 本ファイル（`docs/CURRENT_TASK.md`）
 5. [`docs/HANDOFF_LOG.md`](HANDOFF_LOG.md)
-6. [`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)（本ブランチの詳細記録）
-7. [`docs/design/PHASE_D3_COMMAND_PALETTE.md`](design/PHASE_D3_COMMAND_PALETTE.md)（マージ済みコマンドパレットPR #39の記録）
+6. [`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)（Home画面Button適用の詳細記録）
+7. [`docs/design/PHASE_D3_COMMAND_PALETTE.md`](design/PHASE_D3_COMMAND_PALETTE.md)（コマンドパレットの詳細記録）
 8. [`docs/design/DESKTOP_CREATIVE_STUDIO_SPEC.md`](design/DESKTOP_CREATIVE_STUDIO_SPEC.md)（コンポーネント仕様の正本）
+
+## 次担当者が最初に実行するコマンド
+
+```bash
+git fetch origin feature/manga-canvas-mvp
+git checkout feature/manga-canvas-mvp
+git reset --hard origin/feature/manga-canvas-mvp
+npm install
+npm run deps:check && npm run lint && npm run typecheck
+npm run desktop:test
+```
+
+Phase D3-Bへ着手する場合は`design/phase-d3-command-palette-wiring`のような新規ブランチを作成し、既存の`CommandPalette`コンポーネント（`apps/desktop/src/renderer/components/common/CommandPalette.tsx`）と安全境界（本ファイル§次の実装候補参照）を確認してから着手すること。
