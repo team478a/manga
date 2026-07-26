@@ -4,6 +4,64 @@
 
 ---
 
+## 2026-07-26（続き4） Claude Code（Phase D2実装: 共通コンポーネント単体実装）
+
+### 状態
+
+READY_FOR_REVIEW（Phase D2実装完了、push・Draft PR作成待ち）
+
+### ブランチ・コミット
+
+- 前段: PR #35・#36は責任者承認・全CI成功を経てマージ済み。`feature/manga-canvas-mvp`の現在のHEAD: `5e54a8d`
+- Branch: `design/phase-d2-desktop-components`
+- Base: `feature/manga-canvas-mvp` @ `5e54a8d7f714df17e5f58105dc26af294b10acfb`
+
+### 完了
+
+- `Button.tsx`/`Card.tsx`/`FormField.tsx`/`FloatingToolbar.tsx`を新規実装（`apps/desktop/src/renderer/components/common/`）
+- `StatusBadge.tsx`へ`activity?: "running"` propを追加（既存5トーン・`live` propは無変更）
+- `styles.css`へ`ds-`プレフィックスの新規クラスを追加（既存ルールは無変更）。glassトークンを消費するのは`.ds-floating-toolbar`のみで、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§2.2の「一時UI限定」方針を遵守
+- `.ds-floating-toolbar`用に`@media (forced-colors: active)`のフォールバック（不透明`--bg-panel`+`1px solid CanvasText`）を追加
+- `design-components.test.mjs`を新規追加（11件）。`design-tokens.test.mjs`のglass検査テストをPhase D2の実態に合わせて更新
+- コマンドパレット（§3.4）は本フェーズのスコープ外とした（理由は`docs/design/PHASE_D2_IMPLEMENTATION.md`§1参照）
+- 必須品質ゲート（deps:check/lint/typecheck/desktop:test/desktop:build/git diff --check）を実行
+- `docs/design/PHASE_D2_IMPLEMENTATION.md`を作成。本ログ・`docs/CURRENT_TASK.md`を更新
+
+### 未完了
+
+- `design/phase-d2-desktop-components`のpushとDraft PR作成
+- GitHub Actions Desktop Windows workflow（Accessibility testsを含む）の結果確認
+- 責任者によるレビュー・マージ判断
+- コマンドパレットの実装要否・時期の判断
+- 実装した共通コンポーネントの既存画面への適用（Phase D3以降）は未着手
+
+### 変更ファイル
+
+- `apps/desktop/src/renderer/components/common/{Button,Card,FormField,FloatingToolbar}.tsx`（新規）
+- `apps/desktop/src/renderer/components/common/StatusBadge.tsx`（`activity` prop追加）
+- `apps/desktop/src/renderer/styles.css`（`ds-`系クラス追加、既存部分は無変更）
+- `apps/desktop/tests/design-components.test.mjs`（新規）
+- `apps/desktop/tests/design-tokens.test.mjs`（glass検査テストを更新）
+- `apps/desktop/package.json`（testスクリプトへ1行追加）
+- `docs/design/PHASE_D2_IMPLEMENTATION.md`（新規）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（root + Desktop）
+- desktop:test: PASS（120/120、既存108件+新規11件、回帰なし）
+- desktop:test:a11y（ローカル）: LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT
+- desktop:build: PASS
+- git diff --check: PASS
+
+### 失敗・BLOCKED
+
+- `npm run desktop:test:a11y`（ローカル）: 本コンテナにXサーバーがなくElectron起動不可。GitHub Actions Desktop Windows workflow側の結果はpush・PR作成後に確認する
+
+---
+
 ## 2026-07-26（続き3） Claude Code（PR #35マージ・Phase D1完了）
 
 ### 状態
