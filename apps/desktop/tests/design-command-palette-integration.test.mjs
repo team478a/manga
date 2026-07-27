@@ -8,8 +8,10 @@ import {
 } from "../src/renderer/features/command-palette/use-command-palette.ts";
 import {
   buildCommandSections,
-  getRecentProjects,
 } from "../src/renderer/features/command-palette/command-palette-items.ts";
+import {
+  getRecentProjects,
+} from "../src/renderer/features/command-palette/recent-project-commands.ts";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rendererDir = path.join(here, "..", "src", "renderer");
@@ -33,6 +35,24 @@ const itemsSource = fs.readFileSync(
     "features",
     "command-palette",
     "command-palette-items.ts",
+  ),
+  "utf8",
+);
+const recentProjectsSource = fs.readFileSync(
+  path.join(
+    rendererDir,
+    "features",
+    "command-palette",
+    "recent-project-commands.ts",
+  ),
+  "utf8",
+);
+const useCommandPaletteSource = fs.readFileSync(
+  path.join(
+    rendererDir,
+    "features",
+    "command-palette",
+    "use-command-palette.ts",
   ),
   "utf8",
 );
@@ -103,15 +123,19 @@ test("CommandPalette: Escapeで閉じる実装を維持している", () => {
   assert.match(commandPaletteSource, /"Escape"/);
 });
 
-// --- 5: 上部バートリガーから開く ---
-test("Home画面の上部バーにコマンドパレットトリガーが存在する", () => {
-  assert.match(mainSource, /onClick=\{openCommandPalette\}/);
+// --- 5: 上部バートリガーから開く（起動ボタン再操作で閉じるトグル契約を含む） ---
+test("Home画面の上部バーにコマンドパレットトリガーが存在し、再操作でトグルする", () => {
+  assert.match(mainSource, /onClick=\{toggleCommandPalette\}/);
   assert.match(mainSource, /コマンドパレットを開く \(Ctrl\+K\)/);
 });
 
 test("AppHeader（制作ワークスペース上部バー）にコマンドパレットトリガーが配線されている", () => {
-  assert.match(appHeaderSource, /onOpenCommandPalette/);
-  assert.match(mainSource, /onOpenCommandPalette=\{openCommandPalette\}/);
+  assert.match(appHeaderSource, /onToggleCommandPalette/);
+  assert.match(mainSource, /onToggleCommandPalette=\{toggleCommandPalette\}/);
+});
+
+test("useCommandPalette: togglePaletteが開閉状態を反転させる契約を持つ", () => {
+  assert.match(useCommandPaletteSource, /togglePalette:\s*\(\)\s*=>\s*setOpen/);
 });
 
 // --- 6/7: 移動コマンド ---
@@ -165,13 +189,83 @@ test("最近開いたProjectセクションは存在しないProject IDを生成
   assert.equal(recent.items[0].id, "recent-only-one");
 });
 
+// --- 10: 無効なProjectを除外する ---
+test("id・titleを欠く無効なProjectレコードは最近開いたProjectから除外される", () => {
+  const projects = [
+    { id: "valid-1", title: "有効なProject", updatedAt: new Date(2026, 0, 5).toISOString() },
+    { id: "", title: "IDなし", updatedAt: new Date(2026, 0, 6).toISOString() },
+    { id: "valid-2", title: "", updatedAt: new Date(2026, 0, 7).toISOString() },
+    { id: "valid-3", title: "有効なProject2", updatedAt: new Date(2026, 0, 4).toISOString() },
+  ];
+  const recent = getRecentProjects(projects);
+  assert.deepEqual(
+    recent.map((p) => p.id).sort(),
+    ["valid-1", "valid-3"].sort(),
+  );
+});
+
+test("Projectが0件の場合、最近開いたProjectセクションはコマンド一覧に含まれない", () => {
+  const sections = buildCommandSections(
+    contextFor({ hasActiveProject: false, projects: [] }),
+  );
+  assert.equal(
+    sections.some((s) => s.id === "recent-projects"),
+    false,
+    "empty recent-projects section must be omitted rather than shown empty",
+  );
+});
+
+// --- 8(Project): 新規Projectコマンドが存在する ---
+test("Projectセクション: 新規Project作成コマンドが常に存在する", () => {
+  const withProject = buildCommandSections(contextFor({ hasActiveProject: true }));
+  const withoutProject = buildCommandSections(contextFor({ hasActiveProject: false }));
+  for (const sections of [withProject, withoutProject]) {
+    const project = sections.find((s) => s.id === "project");
+    assert.ok(project.items.some((item) => item.id === "project-new"));
+  }
+});
+
+// --- 14: Project削除コマンドが存在しない ---
+test("Projectセクション: 削除・成人向け移動・一括削除・初期化コマンドが存在しない", () => {
+  const sections = buildCommandSections(contextFor({ hasActiveProject: true }));
+  const allIds = sections.flatMap((s) => s.items.map((i) => i.id));
+  const allLabels = sections.flatMap((s) => s.items.map((i) => i.label));
+  for (const id of allIds) {
+    assert.doesNotMatch(id, /delete|remove|adult-move|reset-data/i);
+  }
+  for (const label of allLabels) {
+    assert.doesNotMatch(label, /削除|成人向けへ移動|初期化|一括/);
+  }
+});
+
+// --- 17: Event listenerがcleanupされる／同じショートカットが重複登録されない ---
+test("useCommandPalette: keydownリスナーをuseEffectのcleanupで確実に解除する", () => {
+  assert.match(
+    useCommandPaletteSource,
+    /return \(\) => document\.removeEventListener\("keydown", onKeyDown\);/,
+  );
+});
+
+test("useCommandPalette: disabled変更時に古いリスナーを解除してから再登録する（多重登録防止）", () => {
+  // useEffectの依存配列が [disabled] であること、かつ同一useEffect内で
+  // addEventListener/removeEventListenerが対になっていることを確認する。
+  // Reactの仕様上、依存変更時は次のeffect実行前に必ず前回のcleanupが
+  // 呼ばれるため、これにより同じリスナーの多重登録が起きない。
+  assert.match(useCommandPaletteSource, /}, \[disabled\]\);/);
+  const addCount = (
+    useCommandPaletteSource.match(/document\.addEventListener\("keydown"/g) ?? []
+  ).length;
+  const removeCount = (
+    useCommandPaletteSource.match(/document\.removeEventListener\("keydown"/g) ?? []
+  ).length;
+  assert.equal(addCount, 1);
+  assert.equal(removeCount, 1);
+});
+
 // --- 9/10/11: 安全境界（Provider直接有効化・成人向け直接実行・APIキー変更コマンドが存在しない） ---
 // コメント（安全境界の説明文そのもの）を誤検出しないよう、コメントを除去した
 // 実コードだけを対象に検査する。
 test("安全境界: Provider直接有効化・成人向け生成直接実行・APIキー変更のコマンドが存在しない（実コード）", () => {
-  const codeOnly = itemsSource
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .replace(/\/\/.*$/gm, "");
   const forbiddenPatterns = [
     /enableProvider/i,
     /toggleProvider/i,
@@ -184,12 +278,17 @@ test("安全境界: Provider直接有効化・成人向け生成直接実行・A
     /checkout/i,
     /課金/,
   ];
-  for (const pattern of forbiddenPatterns) {
-    assert.equal(
-      pattern.test(codeOnly),
-      false,
-      `command-palette-items.ts executable code must not contain a match for ${pattern}`,
-    );
+  for (const source of [itemsSource, recentProjectsSource]) {
+    const codeOnly = source
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/\/\/.*$/gm, "");
+    for (const pattern of forbiddenPatterns) {
+      assert.equal(
+        pattern.test(codeOnly),
+        false,
+        `command-palette feature code must not contain a match for ${pattern}`,
+      );
+    }
   }
 });
 
