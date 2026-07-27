@@ -361,6 +361,7 @@ function App() {
     open: commandPaletteOpen,
     openPalette: openCommandPalette,
     closePalette: closeCommandPalette,
+    togglePalette: toggleCommandPalette,
   } = useCommandPalette({ disabled: commandPaletteDisabled });
   const commandSections = buildCommandSections({
     hasActiveProject: Boolean(bundle),
@@ -421,8 +422,9 @@ function App() {
           <div className="header-actions">
             <Button
               variant="secondary"
-              onClick={openCommandPalette}
+              onClick={toggleCommandPalette}
               aria-label="コマンドパレットを開く (Ctrl+K)"
+              aria-pressed={commandPaletteOpen}
             >
               コマンド
               <kbd aria-hidden="true">Ctrl K</kbd>
@@ -1004,7 +1006,8 @@ function App() {
         rightPanelOpen={rightPanelOpen}
         history={history}
         exporting={Boolean(exportTask)}
-        onOpenCommandPalette={openCommandPalette}
+        onToggleCommandPalette={toggleCommandPalette}
+        commandPaletteOpen={commandPaletteOpen}
         onToggleLeftPanel={() => setLeftPanelOpen((value) => !value)}
         onToggleRightPanel={() => setRightPanelOpen((value) => !value)}
         onBackup={() => void backupProject(bundle.project.id)}

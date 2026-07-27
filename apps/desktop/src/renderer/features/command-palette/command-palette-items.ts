@@ -2,6 +2,7 @@ import type { Project } from "@mangai/project-core";
 import type {
   CommandSection,
 } from "../../components/common/CommandPalette";
+import { buildRecentProjectSection } from "./recent-project-commands.ts";
 
 export type CommandPaletteActions = {
   goHome: () => void;
@@ -23,22 +24,7 @@ export type CommandPaletteContext = {
   actions: CommandPaletteActions;
 };
 
-const RECENT_PROJECTS_LIMIT = 5;
-
-/**
- * 最近開いたProjectを既存の更新日時のみで並び替える（新しい並び替えロジックは導入しない）。
- * 成人向けProjectであってもtitle等のローカル表示情報のみを使用し、Prompt・画像等は扱わない。
- */
-export function getRecentProjects(
-  projects: Project[],
-  limit = RECENT_PROJECTS_LIMIT,
-): Project[] {
-  return [...projects]
-    .sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
-    )
-    .slice(0, limit);
-}
+export { getRecentProjects } from "./recent-project-commands.ts";
 
 /**
  * コマンドパレットへ渡すセクション一覧を組み立てる純粋関数。
@@ -138,17 +124,11 @@ export function buildCommandSections(
     ],
   };
 
-  const recentProjects = getRecentProjects(projects);
-  const recent: CommandSection = {
-    id: "recent-projects",
-    label: "最近開いたProject",
-    items: recentProjects.map((project) => ({
-      id: `recent-${project.id}`,
-      label: project.title,
-      hint: formatDateTime(project.updatedAt),
-      onSelect: () => actions.openProject(project.id),
-    })),
-  };
+  const recent = buildRecentProjectSection({
+    projects,
+    formatDateTime,
+    openProject: actions.openProject,
+  });
 
   return [navigation, projectSection, general, recent].filter(
     (section) => section.items.length > 0,

@@ -61,5 +61,7 @@ export function useCommandPalette({ disabled = false }: UseCommandPaletteOptions
     open,
     openPalette: () => setOpen(true),
     closePalette: () => setOpen(false),
+    // 起動ボタンを再操作した場合に閉じられるようにするトグル。
+    togglePalette: () => setOpen((current) => !current),
   };
 }

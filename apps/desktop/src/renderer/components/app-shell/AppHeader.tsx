@@ -32,7 +32,8 @@ export function AppHeader({
   onRedo,
   onImport,
   onExport,
-  onOpenCommandPalette,
+  onToggleCommandPalette,
+  commandPaletteOpen,
   updateControl,
 }: {
   projectTitle: string;
@@ -51,7 +52,8 @@ export function AppHeader({
   onRedo: () => void;
   onImport: () => void;
   onExport: () => void;
-  onOpenCommandPalette: () => void;
+  onToggleCommandPalette: () => void;
+  commandPaletteOpen: boolean;
   updateControl: React.ReactNode;
 }) {
   const { t, localizeMessage, localeCode } = useI18n();
@@ -72,8 +74,9 @@ export function AppHeader({
         <Button
           variant="secondary"
           size="sm"
-          onClick={onOpenCommandPalette}
+          onClick={onToggleCommandPalette}
           aria-label="コマンドパレットを開く (Ctrl+K)"
+          aria-pressed={commandPaletteOpen}
           title="コマンドパレットを開く (Ctrl+K)"
         >
           <span aria-hidden="true">⌘K</span>
