@@ -55,6 +55,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Accessibility tests
         shell: pwsh
+        env:
+          MANGAI_A11Y_REPORT: ${{ github.workspace }}\apps\desktop\artifacts\test-results\accessibility-home.json
         run: |
           npm run test:a11y *>&1 | Tee-Object -FilePath artifacts/test-results/accessibility-test.log
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

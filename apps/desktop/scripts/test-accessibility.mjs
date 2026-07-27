@@ -61,6 +61,23 @@ try {
     };
     process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
   }
+  const visualReportPath = path.join(
+    path.dirname(reportPath),
+    "command-palette-visual.json",
+  );
+  if (fs.existsSync(visualReportPath)) {
+    const visualReport = JSON.parse(fs.readFileSync(visualReportPath, "utf8"));
+    process.stdout.write(
+      `${JSON.stringify({ commandPaletteVisual: visualReport }, null, 2)}\n`,
+    );
+    const screenshotDir = path.join(path.dirname(reportPath), "screenshots");
+    if (fs.existsSync(screenshotDir)) {
+      const files = fs.readdirSync(screenshotDir);
+      process.stdout.write(
+        `Command palette screenshots (${files.length}): ${files.join(", ")}\n`,
+      );
+    }
+  }
   if (result.status !== 0) {
     if (result.error) process.stderr.write(`${result.error.stack}\n`);
     if (result.stdout) process.stderr.write(result.stdout);

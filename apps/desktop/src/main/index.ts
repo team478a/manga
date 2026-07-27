@@ -1494,6 +1494,355 @@ app
         throw new Error("Accessibility generation states were not seeded.");
       fs.mkdirSync(path.dirname(reportPath), { recursive: true });
       fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
+
+      // Phase D3-C準備: コマンドパレットの目視確認基盤。
+      // 既存のaxe監査（上記）とは別に、Electron組み込みのcapturePage()でスクリーンショットを
+      // artifactとして保存し、開閉・ショートカット・キーボード操作・安全境界を機械的に検証する。
+      // 新規npm依存パッケージは追加していない。
+      type VisualCheck = {
+        id: string;
+        label: string;
+        pass: boolean;
+        detail?: string;
+      };
+      const visualChecks: VisualCheck[] = [];
+      const screenshotDir = path.join(path.dirname(reportPath), "screenshots");
+      fs.mkdirSync(screenshotDir, { recursive: true });
+      const captureScreenshot = async (name: string) => {
+        try {
+          const image = await win.webContents.capturePage();
+          fs.writeFileSync(path.join(screenshotDir, `${name}.png`), image.toPNG());
+        } catch (cause) {
+          visualChecks.push({
+            id: `screenshot-${name}`,
+            label: `スクリーンショット取得: ${name}`,
+            pass: false,
+            detail: cause instanceof Error ? cause.message : String(cause),
+          });
+        }
+      };
+      const checkStep = async (
+        id: string,
+        label: string,
+        run: () => Promise<{ pass: boolean; detail?: string }>,
+      ) => {
+        try {
+          const { pass, detail } = await run();
+          visualChecks.push({ id, label, pass, detail });
+        } catch (cause) {
+          visualChecks.push({
+            id,
+            label,
+            pass: false,
+            detail: cause instanceof Error ? cause.message : String(cause),
+          });
+        }
+      };
+      const evalPage = <T,>(script: string) =>
+        win.webContents.executeJavaScript(script) as Promise<T>;
+
+      await checkStep(
+        "close-new-project-dialog",
+        "新規Projectダイアログを閉じて既知の状態へ戻す",
+        async () => {
+          const closed = await evalPage<boolean>(`
+            (async () => {
+              const cancel = document.querySelector('form[role="dialog"] footer button[type="button"]');
+              if (cancel) cancel.click();
+              const deadline = Date.now() + 5000;
+              while (document.querySelector('form[role="dialog"]')) {
+                if (Date.now() >= deadline) return false;
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              return true;
+            })()
+          `);
+          return { pass: closed, detail: closed ? undefined : "dialog did not close" };
+        },
+      );
+      await captureScreenshot("home-before-command-palette");
+
+      const TRIGGER_SELECTOR = '[aria-label="コマンドパレットを開く (Ctrl+K)"]';
+      const DIALOG_SELECTOR = '.ds-command-palette[role="dialog"]';
+      const INPUT_SELECTOR = '.ds-command-palette-input';
+
+      await checkStep(
+        "open-via-button",
+        "Home画面のボタンから開く（検索入力への自動フォーカスを含む）",
+        async () => {
+          const result = await evalPage<{ opened: boolean; focused: boolean }>(`
+            (async () => {
+              document.querySelector('${TRIGGER_SELECTOR}').click();
+              const deadline = Date.now() + 3000;
+              while (!document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= deadline) return { opened: false, focused: false };
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              await new Promise((resolve) => setTimeout(resolve, 100));
+              const input = document.querySelector('${INPUT_SELECTOR}');
+              return { opened: true, focused: document.activeElement === input };
+            })()
+          `);
+          return {
+            pass: result.opened && result.focused,
+            detail: `opened=${result.opened} focused=${result.focused}`,
+          };
+        },
+      );
+      await checkStep(
+        "no-forbidden-commands-rendered",
+        "AI Provider有効化・成人向け生成・APIキー変更・課金操作のコマンドが描画されていない",
+        async () => {
+          const forbidden = await evalPage<string[]>(`
+            (() => {
+              const forbiddenPattern = /provider.*有効化|成人向け.*(生成|実行)|api\\s*key|apiキー|stripe|checkout|課金|削除|一括削除/i;
+              return Array.from(document.querySelectorAll('.ds-command-palette-row-label'))
+                .map((el) => el.textContent || "")
+                .filter((label) => forbiddenPattern.test(label));
+            })()
+          `);
+          return {
+            pass: forbidden.length === 0,
+            detail: forbidden.length ? forbidden.join(", ") : undefined,
+          };
+        },
+      );
+      await captureScreenshot("command-palette-open-button");
+
+      await checkStep(
+        "toggle-close-via-button",
+        "起動ボタンを再操作すると閉じる（トグル）",
+        async () => {
+          const closed = await evalPage<boolean>(`
+            (async () => {
+              document.querySelector('${TRIGGER_SELECTOR}').click();
+              const deadline = Date.now() + 3000;
+              while (document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= deadline) return false;
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              return true;
+            })()
+          `);
+          return { pass: closed, detail: closed ? undefined : "did not close on toggle" };
+        },
+      );
+      await captureScreenshot("command-palette-closed-toggle");
+
+      await checkStep("open-via-ctrl-k", "Ctrl+Kから開く", async () => {
+        const opened = await evalPage<boolean>(`
+          (async () => {
+            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }));
+            const deadline = Date.now() + 3000;
+            while (!document.querySelector('${DIALOG_SELECTOR}')) {
+              if (Date.now() >= deadline) return false;
+              await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+            return true;
+          })()
+        `);
+        return { pass: opened, detail: opened ? undefined : "did not open via Ctrl+K" };
+      });
+      await captureScreenshot("command-palette-open-ctrlk");
+
+      await checkStep("close-via-escape", "Escapeで閉じる", async () => {
+        const closed = await evalPage<boolean>(`
+          (async () => {
+            const input = document.querySelector('${INPUT_SELECTOR}');
+            input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+            const deadline = Date.now() + 3000;
+            while (document.querySelector('${DIALOG_SELECTOR}')) {
+              if (Date.now() >= deadline) return false;
+              await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+            return true;
+          })()
+        `);
+        return { pass: closed, detail: closed ? undefined : "did not close on Escape" };
+      });
+      await captureScreenshot("command-palette-closed-escape");
+
+      await checkStep(
+        "arrow-key-navigation",
+        "上下キーで選択移動できる",
+        async () => {
+          const result = await evalPage<{ before: string | null; after: string | null }>(`
+            (async () => {
+              document.querySelector('${TRIGGER_SELECTOR}').click();
+              const deadline = Date.now() + 3000;
+              while (!document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= deadline) throw new Error("palette did not reopen");
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              const before = document.querySelector('.ds-command-palette-row-active')?.id || null;
+              const input = document.querySelector('${INPUT_SELECTOR}');
+              input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
+              await new Promise((resolve) => setTimeout(resolve, 150));
+              const after = document.querySelector('.ds-command-palette-row-active')?.id || null;
+              return { before, after };
+            })()
+          `);
+          return {
+            pass: Boolean(result.before) && Boolean(result.after) && result.before !== result.after,
+            detail: `before=${result.before} after=${result.after}`,
+          };
+        },
+      );
+      await captureScreenshot("command-palette-arrow-selection");
+
+      await checkStep(
+        "enter-executes-and-restores-focus",
+        "Enterでコマンドを実行でき、閉じた後に起動元へフォーカスが戻る",
+        async () => {
+          const result = await evalPage<{
+            activeId: string | null;
+            closed: boolean;
+            focusReturned: boolean;
+          }>(`
+            (async () => {
+              document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }));
+              const openDeadline = Date.now() + 3000;
+              while (!document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= openDeadline) throw new Error("palette did not reopen");
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              const activeRow = document.querySelector('.ds-command-palette-row-active');
+              const activeId = activeRow ? activeRow.id : null;
+              const input = document.querySelector('${INPUT_SELECTOR}');
+              input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+              const closeDeadline = Date.now() + 3000;
+              while (document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= closeDeadline) return { activeId, closed: false, focusReturned: false };
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              await new Promise((resolve) => setTimeout(resolve, 100));
+              const trigger = document.querySelector('${TRIGGER_SELECTOR}');
+              return { activeId, closed: true, focusReturned: document.activeElement === trigger };
+            })()
+          `);
+          return {
+            pass:
+              Boolean(result.activeId?.endsWith("-option-nav-home")) &&
+              result.closed &&
+              result.focusReturned,
+            detail: `activeId=${result.activeId} closed=${result.closed} focusReturned=${result.focusReturned}`,
+          };
+        },
+      );
+      await captureScreenshot("command-palette-after-select");
+
+      await checkStep(
+        "disabled-while-modal-open",
+        "既存モーダル操作中はCtrl+Kが奪われない（新規Projectダイアログとの共存）",
+        async () => {
+          const result = await evalPage<{ dialogOpened: boolean; paletteStayedClosed: boolean }>(`
+            (async () => {
+              document.querySelector('[data-a11y-action="new-project"]').click();
+              const deadline = Date.now() + 3000;
+              while (!document.querySelector('form[role="dialog"]')) {
+                if (Date.now() >= deadline) return { dialogOpened: false, paletteStayedClosed: false };
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }));
+              await new Promise((resolve) => setTimeout(resolve, 300));
+              const paletteStayedClosed = !document.querySelector('${DIALOG_SELECTOR}');
+              const cancel = document.querySelector('form[role="dialog"] footer button[type="button"]');
+              if (cancel) cancel.click();
+              const closeDeadline = Date.now() + 3000;
+              while (document.querySelector('form[role="dialog"]')) {
+                if (Date.now() >= closeDeadline) break;
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              return { dialogOpened: true, paletteStayedClosed };
+            })()
+          `);
+          return {
+            pass: result.dialogOpened && result.paletteStayedClosed,
+            detail: `dialogOpened=${result.dialogOpened} paletteStayedClosed=${result.paletteStayedClosed}`,
+          };
+        },
+      );
+
+      await checkStep(
+        "open-project-from-recent",
+        "コマンドパレットから最近開いたProjectを開ける",
+        async () => {
+          const result = await evalPage<{ found: boolean; entered: boolean }>(`
+            (async () => {
+              document.querySelector('${TRIGGER_SELECTOR}').click();
+              const openDeadline = Date.now() + 3000;
+              while (!document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= openDeadline) throw new Error("palette did not open");
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              const rows = Array.from(document.querySelectorAll('.ds-command-palette-row'));
+              const recentRow = rows.find((row) => {
+                const label = row.querySelector('.ds-command-palette-row-label');
+                return label && label.textContent === 'Accessibility Test Project';
+              });
+              if (!recentRow) return { found: false, entered: false };
+              recentRow.click();
+              const enterDeadline = Date.now() + 5000;
+              while (!document.querySelector('.manga-canvas-shell')) {
+                if (Date.now() >= enterDeadline) return { found: true, entered: false };
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              return { found: true, entered: true };
+            })()
+          `);
+          return {
+            pass: result.found && result.entered,
+            detail: `found=${result.found} entered=${result.entered}`,
+          };
+        },
+      );
+      await captureScreenshot("command-palette-project-opened");
+
+      await checkStep(
+        "navigate-to-settings",
+        "コマンドパレットから設定画面へ移動できる",
+        async () => {
+          const result = await evalPage<boolean>(`
+            (async () => {
+              document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }));
+              const openDeadline = Date.now() + 3000;
+              while (!document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= openDeadline) return false;
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              const rows = Array.from(document.querySelectorAll('[role="option"]'));
+              const settingsRow = rows.find((row) => row.id.endsWith('-option-nav-settings'));
+              if (!settingsRow) return false;
+              settingsRow.click();
+              const deadline = Date.now() + 3000;
+              while (!document.querySelector('[data-workspace-view="settings"][aria-current="page"]')) {
+                if (Date.now() >= deadline) return false;
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              return true;
+            })()
+          `);
+          return { pass: result, detail: result ? undefined : "settings view not reached" };
+        },
+      );
+      await captureScreenshot("command-palette-settings-open");
+
+      const visualReportPath = path.join(
+        path.dirname(reportPath),
+        "command-palette-visual.json",
+      );
+      fs.writeFileSync(
+        visualReportPath,
+        JSON.stringify({ checkedAt: new Date().toISOString(), checks: visualChecks }, null, 2),
+      );
+      const failedVisualChecks = visualChecks.filter((check) => !check.pass);
+      if (failedVisualChecks.length)
+        process.stderr.write(
+          `Command palette visual checks failed: ${failedVisualChecks
+            .map((check) => `${check.id}(${check.detail ?? "no detail"})`)
+            .join(", ")}\n`,
+        );
+
       const blocking = report.screens.flatMap((screen) =>
         screen.violations
           .filter((item) =>
@@ -1503,6 +1852,12 @@ app
       );
       if (blocking.length)
         throw new Error(`Accessibility audit failed: ${blocking.join(", ")}`);
+      if (failedVisualChecks.length)
+        throw new Error(
+          `Command palette visual validation failed: ${failedVisualChecks
+            .map((check) => check.id)
+            .join(", ")}`,
+        );
       app.quit();
       return;
     }
