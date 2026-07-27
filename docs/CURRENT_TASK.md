@@ -3,19 +3,23 @@
 ## 基本情報
 
 - 更新日: 2026-07-27
-- 状態: `MERGED`（Phase D3-BはPR #42として`feature/manga-canvas-mvp`へマージ済み。次フェーズ着手前の文書同期中）
+- 状態: `READY_FOR_PHASE_D3C_PREPARATION`（Phase D3-B・文書同期(PR #43)ともにマージ済み。目視確認手段の確立（PR-B）に着手する段階）
 - リポジトリ: `team478a/manga`
-- 作業ブランチ: `docs/phase-d3b-merge-sync-20260727`（本文書同期用、docsのみ）
-- Base branch: `feature/manga-canvas-mvp` @ `23d16ef5a31ae789ee17427d62a1a433bdfbbec1`（PR #42マージ済みコミット）
+- 作業ブランチ: `feature/manga-canvas-mvp`（基準ブランチ。現在進行中の実装専用ブランチはなし。個別作業は本ブランチ最新コミットから都度新規作成する）
+- Base branch: `feature/manga-canvas-mvp` @ `16f87769ce3a226942ff2e9cf082f67204f9cc2e`（PR #43マージ済みコミット）
 - 詳細記録: [`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)
 
-## 直前の完了事項: PR #42マージ（Phase D3-B）
+## 直前の完了事項: PR #43マージ（PR #42マージ後の文書同期）
+
+PR #43（`docs/CURRENT_TASK.md`・`docs/HANDOFF_LOG.md`をPR #42マージ後の状態へ同期する文書のみの変更）は、責任者承認（`team478a`によるAPPROVED、head commit `cdf6045`に対して）と全CIチェック成功（Core quality / Migration roundtrip / Windows build / Vercel Preview Comments）を確認のうえ、Draft解除→Merge commit方式で`feature/manga-canvas-mvp`へマージ済み（merge commit `16f8776`）。これにより、以前の記録にあった「PR #42へpush待ち・Draft PR作成待ち」という記載は解消済み。
+
+## 直前々の完了事項: PR #42マージ（Phase D3-B）
 
 PR #42（コマンドパレットのDesktop画面接続 + トグル化・ファイル分割・無効Project除外の精緻化）は、責任者承認（`team478a`によるAPPROVED、最新commit `54f7502`に対して）と全CIチェック成功（Core quality / Migration roundtrip / Windows build / Vercel Preview Comments）を確認のうえ、Draft解除→Merge commit方式で`feature/manga-canvas-mvp`へマージした（merge commit `23d16ef`）。
 
 マージ直前に、Windows build CIが`main.tsx`の未使用変数（`openCommandPalette`。両トリガーが`toggleCommandPalette`へ統一されたため不要化）でエラーになっていたのを検出・修正（`54f7502`）してから再度CIをパスさせている。
 
-## 直前々の完了事項: PR #41マージ・旧PR17件のClose
+## さらに前の完了事項: PR #41マージ・旧PR17件のClose
 
 PR #41（PR #39・#40マージ記録の反映）は責任者承認・全CIチェック成功を確認のうえ、Merge commit方式で`feature/manga-canvas-mvp`へマージ済み（merge commit `242334b`）。続けて、PR #14〜#28（保守性改善スタック、PR #34で統合済み）・PR #29（Codex→Claude Code引継ぎ基盤、後続文書で反映済み）・PR #33（デザイン仕様、Phase D1で反映済み）の計17件を、指定コメントを付けたうえでCloseした（マージ・base変更・ブランチ削除は行っていない。`merged: false`をGitHub APIで確認済み）。
 
@@ -49,24 +53,32 @@ PR #39で単体実装済みの`CommandPalette`を、`Ctrl+K`/`Meta+K`グロー�
 
 ## 未完了・次の作業
 
-1. 本文書同期（`docs/phase-d3b-merge-sync-20260727`）をpush・Draft PR作成し、責任者承認を経て`feature/manga-canvas-mvp`へマージする
-2. 目視確認（Windows実機、GUI付きCI、Playwright等のスクリーンショット比較のいずれか）が可能になり次第、実装記録§9の11項目（トグルで閉じる動作を含む）を確認する
-3. `test:a11y`（Accessibility tests）のGUIランナーでの実行結果を確認する
-4. Phase D3-C（Home画面ビジュアル刷新: Projectカードグリッド化等）は、目視確認手段が整うか責任者の追加判断があるまで着手しない
-5. ToolShell配下（設定/チャット/AI画像生成/Hub接続状態）の各画面へ個別のコマンドパレットトリガーボタンを追加するかは責任者判断待ち（Ctrl+Kは既に全画面で機能する）
+「MANGAI 次期実装指示書（Phase D3-C準備・Home画面刷新・依存関係安全確認）」（2026-07-27）に基づき、以下の順で進める。
+
+1. **目視確認手段の確立**（PR-B: `test/phase-d3c-visual-validation`）— WindowsまたはGUI環境でDesktop UIを再現可能に確認できる手段（自動UI確認テスト、またはそれが不可能な場合は`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`によるWindows実機手順）を整備する
+2. **コマンドパレットの実画面確認**: 上記の手段が確立した時点で、`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`§9の11項目（トグルで閉じる動作を含む）を実施する
+3. **Phase D3-C Home画面刷新**（PR-C）: PR-Aマージ済み・PR-Bで確認手段確立済み・PR-Bマージ済み・責任者の明示的な着手承認、の4条件がすべて揃った場合のみ着手する
+4. **RC外部環境受入れ**: Windows実署名、署名付き自動更新、クリーンWindows受入れ、Ollama/ComfyUI/Dezgo実環境E2E、Supabase staging、Stripe E2E等（`docs/REMAINING_TASKS.md`参照、外部環境待ち）
+5. **依存パッケージ更新の個別評価**: `npm audit`High 11件・Dependabot PR #4〜#13を、UI変更とは別ブランチ（`chore/dependency-security-triage-20260727`想定）で個別評価する。全件一括マージ・`npm audit fix --force`は行わない
+
+目視確認手段（PR-B）が確立できなかった場合、Phase D3-Cへは進まず、調査結果・阻害要因・推奨対応をPR-Bに記録して報告する。Home画面刷新を先に進め、後から目視確認する順序には戻さない。
+
+ToolShell配下（設定/チャット/AI画像生成/Hub接続状態）の各画面へ個別のコマンドパレットトリガーボタンを追加するかは、引き続き責任者判断待ち（Ctrl+Kは既に全画面で機能する）。
 
 ## 禁止事項（引き続き遵守）
 
-- Home画面のProjectカードグリッド化、カバー画像レイアウト変更、フィルタchip新設、下部ステータス帯新設（Phase D3-C範囲、未着手）
+- Home画面のProjectカードグリッド化、カバー画像レイアウト変更、フィルタchip新設、下部ステータス帯新設（Phase D3-C範囲。PR-A・PR-Bでは着手しない）
 - AppHeaderの高さ変更（トリガーボタン追加以外）、GlobalNavの幅変更
 - AI Providerの直接有効化・切替、成人向け生成の直接実行、外部送信確認・費用承認の省略、APIキー変更、課金設定変更、Stripe Checkoutの直接開始
 - Project削除・一括削除コマンドの追加
 - MangaCanvas、GenerationJobs、AISettingsの変更
 - API、DB、Storage、Desktop IPCの変更
-- 新規依存パッケージ追加、Tailwind導入
+- 新規依存パッケージ追加、Tailwind導入（PR-Bで自動確認手段の導入に新規パッケージが必要と判明した場合も、実装せず候補・理由・影響を文書化して責任者判断を待つ）
 - `DESKTOP_CREATIVE_STUDIO_SPEC.md`§5の未承認ブレークポイント再編
 - `feature/manga-canvas-mvp`への直接push、force push、既存migrationの書き換え
 - 責任者の明示的な承認・レビューなしのPRマージ
+- PR-A（文書修正）・PR-B（目視確認基盤）・PR-C（Home画面刷新）・依存関係調査を同一PRへ混在させること
+- Dependabot PR #4〜#13の一括自動マージ、`npm audit fix --force`
 
 上記はいずれも実施していない。
 
@@ -80,7 +92,8 @@ PR #39で単体実装済みの`CommandPalette`を、`Ctrl+K`/`Meta+K`グロー�
 6. [`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)（Phase D3-Bの詳細記録）
 7. [`docs/design/PHASE_D3_COMMAND_PALETTE.md`](design/PHASE_D3_COMMAND_PALETTE.md)（コマンドパレット単体実装の記録）
 8. [`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)（Home画面Button適用の記録）
-9. [`docs/design/DESKTOP_CREATIVE_STUDIO_SPEC.md`](design/DESKTOP_CREATIVE_STUDIO_SPEC.md)（コンポーネント仕様の正本）
+9. [`docs/design/DESKTOP_CREATIVE_STUDIO_SPEC.md`](design/DESKTOP_CREATIVE_STUDIO_SPEC.md)（コンポーネント仕様の正本。Phase D3-C着手時はこれを唯一の画面仕様正本として扱い、古いワイヤーフレームやアーカイブ文書を使用しない）
+10. [`docs/REMAINING_TASKS.md`](REMAINING_TASKS.md)（RC外部環境受入れの残タスク一覧）
 
 ## 次担当者が最初に実行するコマンド
 
@@ -102,3 +115,4 @@ npm run desktop:test
 - Phase D3: Home画面へのButton適用（PR #40、merge commit `0fbf2fe`） — 詳細: [`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)
 - 文書同期PR #41（merge commit `242334b`）、旧PR #14〜#28・#29・#33のClose（17件）
 - Phase D3-B: コマンドパレットのDesktop画面接続 + トグル化・ファイル分割・無効Project除外の精緻化（PR #42、merge commit `23d16ef`） — 詳細: [`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)
+- PR #42マージ後の文書同期（PR #43、merge commit `16f8776`）

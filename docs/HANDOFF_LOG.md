@@ -108,6 +108,55 @@ BLOCKED_CI（自動確認手段を実装したが、Windows CI上での実行結
 
 ---
 
+## 2026-07-27（続き12） Claude Code（PR-A: CURRENT_TASK.md状態修正）
+
+### 状態
+
+READY_FOR_REVIEW（PR-A: 文書のみの状態修正、push・Draft PR作成待ち）
+
+### 経緯
+
+責任者から「MANGAI 次期実装指示書（Phase D3-C準備・Home画面刷新・依存関係安全確認）」（2026-07-27付、基準コミット`16f8776`）を正本として提示され、これに基づき作業を開始した。指示書は、PR-A（引き継ぎ文書の状態修正）→PR-B（Desktop目視確認基盤）→（確立できた場合のみ）PR-C（Phase D3-C Home画面刷新）の順に、必ず別ブランチ・別Draft PRで進めるよう指定している。
+
+本記録はPR-Aの実施記録。`docs/CURRENT_TASK.md`には、PR #43（PR #42マージ後の文書同期）がマージ済みであるにもかかわらず「本文書同期をpush・Draft PR作成し…マージする」という、あたかもPR #43が未作成・未マージであるかのように読める記載が残っていた（続き11の記録作成時点ではPR #43自体が未作成だったため、この時点では正しい記載だったが、その後PR #43がマージされたことで古い前提になっていた）。
+
+### 実施内容
+
+1. `origin/feature/manga-canvas-mvp`（PR #43マージ後の最新コミット`16f8776`）から新規ブランチ`docs/phase-d3c-preparation-20260727`を作成
+2. `AGENTS.md`・`docs/AI_HANDOFF.md`・`docs/CURRENT_TASK.md`・`docs/REMAINING_TASKS.md`・`docs/design/PHASE_D3_HOME_SCREEN.md`を確認（`AGENTS.md`・`docs/AI_HANDOFF.md`はPR #34時点の記述のまま更新されておらず古いが、指示書のPR-Aスコープは`docs/CURRENT_TASK.md`・`docs/HANDOFF_LOG.md`に限定されているため、本PRでは変更していない）
+3. `docs/CURRENT_TASK.md`を修正:
+   - 状態を`MERGED`→`READY_FOR_PHASE_D3C_PREPARATION`へ変更（指示書の推奨状態どおり）
+   - 作業ブランチを過去の文書同期ブランチ（`docs/phase-d3b-merge-sync-20260727`）から基準ブランチ（`feature/manga-canvas-mvp`）へ変更
+   - Base branchのコミットをPR #43マージ後のコミット（`16f8776`）へ更新
+   - PR #43マージ情報（承認レビュー・CI結果・merge commit）を新しい節として追加し、既存の完了記録（PR #42・PR #41等）は削除せず「直前々」「さらに前」として残した
+   - 「未完了・次の作業」を指示書§9の優先順（目視確認手段の確立→コマンドパレット実画面確認→Phase D3-C→RC外部環境受入れ→依存パッケージ評価）へ整理し、Phase D3-Cへ進まない場合の停止条件を明記
+   - 禁止事項へ、PR-A/B/C/依存関係調査の混在禁止とDependabot一括マージ禁止を追加
+   - 参考リンクへPR #43を追加、次担当者が読むファイルへ`docs/REMAINING_TASKS.md`を追加
+4. `docs/HANDOFF_LOG.md`へ本記録を追記
+
+### 完了
+
+- `docs/CURRENT_TASK.md`のPR #43未反映記載の修正
+- `git diff --check`: PASS
+- 本ログへの追記
+
+### 未完了
+
+- 責任者レビュー・承認・CI確認を経てのマージ
+- PR-B（Desktop目視確認基盤の調査・整備）は、PR-Aのpush後に着手する
+
+### 変更ファイル
+
+- `docs/CURRENT_TASK.md`
+- `docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- `git diff --check`: PASS
+- 文書のみの変更のため、コード側の品質ゲートは対象外（前回PR #42・#43時点の結果を引き継ぐ）
+
+---
+
 ## 2026-07-27（続き11） Claude Code（PR #42マージ・文書同期）
 
 ### 状態
