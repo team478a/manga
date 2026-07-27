@@ -1709,6 +1709,11 @@ app
             focusReturned: boolean;
           }>(`
             (async () => {
+              // previouslyFocused内でdocument.activeElementを基準にするため、
+              // 直前のステップの残存フォーカス状態に依存せず、ここで明示的に
+              // トリガーボタンへフォーカスしてから開く（前提条件を自己完結させる）。
+              const trigger = document.querySelector('${TRIGGER_SELECTOR}');
+              trigger.focus();
               document.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', ctrlKey: true, bubbles: true, cancelable: true }));
               const openDeadline = Date.now() + 3000;
               while (!document.querySelector('${DIALOG_SELECTOR}')) {
@@ -1725,7 +1730,6 @@ app
                 await new Promise((resolve) => setTimeout(resolve, 50));
               }
               await new Promise((resolve) => setTimeout(resolve, 100));
-              const trigger = document.querySelector('${TRIGGER_SELECTOR}');
               return { activeId, closed: true, focusReturned: document.activeElement === trigger };
             })()
           `);
