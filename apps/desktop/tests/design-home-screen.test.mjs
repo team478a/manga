@@ -7,14 +7,22 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rendererDir = path.join(here, "..", "src", "renderer");
 const mainSource = fs.readFileSync(path.join(rendererDir, "main.tsx"), "utf8");
+const homeProjectCardSource = fs.readFileSync(
+  path.join(rendererDir, "components", "home", "HomeProjectCard.tsx"),
+  "utf8",
+);
 
 test("main.tsx: Phase D2のButtonコンポーネントをimportしている", () => {
   assert.match(mainSource, /import \{ Button \} from "\.\/components\/common\/Button";/);
 });
 
-test("Home画面: 主要操作(新規Project/削除)がButtonコンポーネントで実装されている", () => {
+test("Home画面: 新規Project作成ボタンがButtonコンポーネントで実装されている", () => {
   assert.match(mainSource, /<Button\s+variant="primary"\s+ref=\{newProjectButtonRef\}/);
-  assert.match(mainSource, /variant="danger"\s+size="sm"/);
+});
+
+test("Home画面: Projectカードの削除ボタン(danger)がButtonコンポーネントで実装されている", () => {
+  // Phase D3-CでProjectカードはHomeProjectCard.tsxへ分離された。
+  assert.match(homeProjectCardSource, /variant="danger"\s*\n?\s*size="sm"/);
 });
 
 test("新規Project作成モーダルのCreateボタンはtype=submitを維持している（フォーム送信の回帰防止）", () => {
@@ -26,9 +34,7 @@ test("新規Project作成モーダルのCreateボタンはtype=submitを維持�
   );
 });
 
-test("Project一覧のカードトリガー（.project-open）は本フェーズでは未変更（Cardコンポーネント適用は別フェーズ）", () => {
-  // カードグリッド・カバー画像レイアウトの全面再設計はビジュアル検証が
-  // 必要な大きな変更のため、本フェーズのスコープには含めていない。
-  assert.match(mainSource, /className="project-open"/);
-  assert.doesNotMatch(mainSource, /common\/Card/);
+test("Project一覧のカードトリガー（.project-open）はHomeProjectCard.tsxへ分離されたうえで維持されている（Phase D3-C）", () => {
+  assert.match(homeProjectCardSource, /className="project-open home-project-card-open"/);
+  assert.doesNotMatch(mainSource, /className="project-open"/);
 });
