@@ -2,22 +2,30 @@
 
 ## 基本情報
 
-- 更新日: 2026-07-26
-- 状態: `READY_FOR_REVIEW`（Phase D3-Bコマンドパレット画面接続の実装完了、責任者レビュー・マージ判断待ち）
+- 更新日: 2026-07-27
+- 状態: `READY_FOR_REVIEW`（Phase D3-Bコマンドパレット画面接続 + 追加指示による精緻化を実装完了、責任者レビュー・マージ判断待ち）
 - リポジトリ: `team478a/manga`
 - 作業ブランチ: `design/phase-d3b-command-palette-integration`
-- Base branch: `feature/manga-canvas-mvp` @ `242334b562ae2cb89c518cace8208db230d6a261`（PR #41マージ済みコミット）
+- Base branch: `feature/manga-canvas-mvp` @ `242334b562ae2cb89c518cace8208db230d6a261`（PR #41マージ済みコミット、変更なし）
+- Draft PR: **#42**（https://github.com/team478a/manga/pull/42、Draftのまま。マージ・Ready for review化は未実施）
 - 詳細記録: [`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)
 
 ## 直前の完了事項: PR #41マージ・旧PR17件のClose
 
 PR #41（PR #39・#40マージ記録の反映）は責任者承認・全CIチェック成功を確認のうえ、Merge commit方式で`feature/manga-canvas-mvp`へマージ済み（merge commit `242334b`）。続けて、PR #14〜#28（保守性改善スタック、PR #34で統合済み）・PR #29（Codex→Claude Code引継ぎ基盤、後続文書で反映済み）・PR #33（デザイン仕様、Phase D1で反映済み）の計17件を、指定コメントを付けたうえでCloseした（マージ・base変更・ブランチ削除は行っていない。`merged: false`をGitHub APIで確認済み）。
 
-## 今回の完了事項: Phase D3-B（コマンドパレットのDesktop画面接続）
+## 今回の完了事項: Phase D3-B（コマンドパレットのDesktop画面接続）+ 精緻化
 
-PR #39で単体実装済みの`CommandPalette`を、`Ctrl+K`/`Meta+K`グローバルショートカット・Home画面とAppHeaderの上部バートリガー・移動/Project/一般操作/最近開いたProjectの4セクションのコマンドで実画面へ接続した。詳細・安全境界・目視確認の実施状況は[`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)を参照。
+PR #39で単体実装済みの`CommandPalette`を、`Ctrl+K`/`Meta+K`グローバルショートカット・Home画面とAppHeaderの上部バートリガー・移動/Project/一般操作/最近開いたProjectの4セクションのコマンドで実画面へ接続した。さらに、追加指示に基づき以下を精緻化した。
 
-### 品質ゲート結果（2026-07-26、`design/phase-d3b-command-palette-integration`でローカル実行）
+- 上部バートリガーの**トグル化**: 開いている状態でトリガーボタンを再操作すると閉じる（`togglePalette`、`aria-pressed`で状態反映）。`AppHeader`の`onOpenCommandPalette` propは`onToggleCommandPalette`へ改名、`commandPaletteOpen: boolean`を追加。
+- **最近開いたProjectの変換処理の分離**: `recent-project-commands.ts`（新規）へ抽出し、`command-palette-items.ts`はそれを呼び出すだけの薄い組み立て役へ整理（3ファイル構成）。
+- **無効なProjectレコードの除外**: `id`または`title`を欠くProjectを`isValidProject`で除外し、最近開いたProjectセクションが0件の場合はセクション自体を出力しない。
+- ショートカットリスナーの**重複登録防止**・**unmount時の確実な解除**を、既存の`useEffect`クリーンアップ契約の維持として明示的にテストで確認。
+
+詳細・安全境界・目視確認の実施状況は[`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)を参照。
+
+### 品質ゲート結果（2026-07-27、`design/phase-d3b-command-palette-integration`でローカル実行、精緻化後）
 
 | コマンド | 結果 |
 | --- | --- |
@@ -25,21 +33,21 @@ PR #39で単体実装済みの`CommandPalette`を、`Ctrl+K`/`Meta+K`グロー�
 | `npm run deps:check` | PASS（5 packages, 21 source files, 違反0件） |
 | `npm run lint` | PASS |
 | `npm run typecheck` | PASS（root + Desktop） |
-| `npm run desktop:test` | PASS（**150/150**。既存131件 + 新規`design-command-palette-integration.test.mjs` 19件、既存テストの回帰なし） |
-| `npm run desktop:test:a11y`（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT（本コンテナにXサーバーがなくElectron起動不可） |
+| `npm run desktop:test` | PASS（**157/157**。既存131件 + 新規`design-command-palette-integration.test.mjs` 26件、既存テストの回帰なし） |
+| `npm run desktop:test:a11y`（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT（本コンテナにXサーバーがなくElectron起動不可。`Running as root without --no-sandbox is not supported`） |
 | `npm run desktop:build` | PASS |
 | `git diff --check` | PASS |
 
-GitHub Actions（Desktop Windows workflowのAccessibility testsを含む）の結果は、push・PR作成後にCI完了を待って確認する。
+GitHub Actions（Desktop Windows workflowのAccessibility testsを含む）の結果は、push後にCI完了を待って確認する。
 
 **目視確認は未実施**（本コンテナにXサーバーがないため）。詳細は実装記録§9を参照。
 
 ## 未完了・次の作業
 
-1. `design/phase-d3b-command-palette-integration`をpushし、Draft PRを作成する
+1. 本コミットをDraft PR #42へpushする（新しいPRは作成しない）
 2. GitHub Actions Desktop Windows workflowでAccessibility testsの結果を確認する
-3. 目視確認（Windows実機、GUI付きCI、Playwright等のスクリーンショット比較のいずれか）が可能になり次第、実装記録§9の11項目を確認する
-4. 責任者レビュー・マージ判断を待つ
+3. 目視確認（Windows実機、GUI付きCI、Playwright等のスクリーンショット比較のいずれか）が可能になり次第、実装記録§9の11項目（トグル閉じるを含む）を確認する
+4. 責任者レビュー・マージ判断を待つ（Draft PR #42は無断でReady for review化・マージしない）
 5. Phase D3-C（Home画面ビジュアル刷新: Projectカードグリッド化等）は、目視確認手段が整うか責任者の追加判断があるまで着手しない
 6. ToolShell配下（設定/チャット/AI画像生成/Hub接続状態）の各画面へ個別のコマンドパレットトリガーボタンを追加するかは責任者判断待ち（Ctrl+Kは既に全画面で機能する）
 

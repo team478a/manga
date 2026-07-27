@@ -4,6 +4,59 @@
 
 ---
 
+## 2026-07-27（続き10） Claude Code（Phase D3-B追加指示による精緻化）
+
+### 状態
+
+READY_FOR_REVIEW（Draft PR #42へ追加commit・push済み、責任者レビュー・マージ判断待ち）
+
+### 前提
+
+続き9の時点でDraft PR #42（`design/phase-d3b-command-palette-integration` → `feature/manga-canvas-mvp`、Base SHA `242334b`）は作成済み。本記録は同じブランチへの追加指示（より詳細なPhase D3-B実装指示書）に基づく精緻化を記録する。新しいPRは作成していない。
+
+### 実施内容
+
+1. **トグル動作の追加**: `use-command-palette.ts`の`useCommandPalette`フックに`togglePalette`を追加。Home画面・`AppHeader`のトリガーボタンの`onClick`を`toggleCommandPalette`へ変更し、`aria-pressed={commandPaletteOpen}`を付与。開いている状態でトリガーを再操作すると閉じる
+2. **`AppHeader.tsx`のprop改名**: `onOpenCommandPalette` → `onToggleCommandPalette`、`commandPaletteOpen: boolean`を追加
+3. **最近開いたProjectの変換処理を分離**: 新規`recent-project-commands.ts`を作成し、`getRecentProjects`・`buildRecentProjectSection`を実装。`isValidProject`で`id`または`title`を欠くProjectレコードを除外する防御的フィルタを追加。`command-palette-items.ts`は後方互換のため`getRecentProjects`を再エクスポートしつつ、`buildRecentProjectSection`を呼び出すだけに整理（3ファイル構成）
+4. **テスト拡充**: `design-command-palette-integration.test.mjs`を19件→**26件**へ拡張。追加: トグル契約、無効Project除外、Project0件時のセクション省略、新規Project作成コマンドの常時存在、削除・成人向け移動・一括削除・初期化コマンドの不在、keydownリスナーのcleanup確認、disabled変更時の多重登録防止確認。安全境界の実コードスキャンを`recent-project-commands.ts`にも拡張
+5. **ハマった点と修正**: Node（Electronバンドルv22.22.1）のネイティブESMローダーはVite（Bundler解決）と異なり拡張子省略の相対importを解決できないため、`command-palette-items.ts`の`recent-project-commands`への2箇所のimport/re-export文に明示的な`.ts`拡張子を付与して修正（`allowImportingTsExtensions: true`が両`tsconfig.json`に既存設定済みであることを確認済み）
+
+### 完了
+
+- 品質ゲート再実行: `deps:check`/`lint`/`typecheck`/`desktop:build`/`git diff --check` すべてPASS、`desktop:test` **157/157** PASS（既存131 + 新規26）
+- `desktop:test:a11y`（ローカル）: LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT（本コンテナにXサーバーがなくElectron起動不可。`electron_main_delegate.cc:216 Running as root without --no-sandbox is not supported`）
+- `docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`・`docs/CURRENT_TASK.md`・本ログを更新
+
+### 未完了
+
+- Draft PR #42へのpush後のGitHub Actions結果確認
+- **目視確認は未実施**（本コンテナにXサーバーがなくElectron起動不可のため）。トグルで閉じる動作を含め、実装記録§9の11項目はいずれも未確認
+- 責任者によるレビュー・マージ判断（Draft PR #42は無断でReady for review化・マージしていない）
+- Phase D3-C（Home画面ビジュアル刷新）は引き続き未着手
+
+### 変更ファイル
+
+- `apps/desktop/src/renderer/features/command-palette/recent-project-commands.ts`（新規）
+- `apps/desktop/src/renderer/features/command-palette/command-palette-items.ts`（`recent-project-commands.ts`へ委譲するよう整理）
+- `apps/desktop/src/renderer/features/command-palette/use-command-palette.ts`（`togglePalette`追加）
+- `apps/desktop/src/renderer/main.tsx`（`toggleCommandPalette`配線、`aria-pressed`追加）
+- `apps/desktop/src/renderer/components/app-shell/AppHeader.tsx`（`onToggleCommandPalette`・`commandPaletteOpen` prop）
+- `apps/desktop/tests/design-command-palette-integration.test.mjs`（19件→26件）
+- `docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`、`docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（root + Desktop）
+- desktop:test: PASS（157/157、既存131件+新規26件、回帰なし）
+- desktop:test:a11y（ローカル）: LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT
+- desktop:build: PASS
+- git diff --check: PASS
+
+---
+
 ## 2026-07-26（続き9） Claude Code（PR #41マージ・旧PR17件Close・Phase D3-B実装）
 
 ### 状態

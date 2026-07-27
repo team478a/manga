@@ -26,6 +26,8 @@ PR #39で単体実装した`CommandPalette`コンポーネント（`apps/desktop
 - Alt併用、Shift併用、Ctrl+Meta同時押しなど想定外の修飾キー組み合わせ
 - 新規Project作成モーダル（`creating`）またはExportダイアログ（`exportDialogOpen`）が開いている間（`disabled`フラグ）
 
+`useCommandPalette`のショートカット登録は単一の`useEffect`（依存配列`[disabled]`）にまとめており、`document.addEventListener("keydown", ...)`は1箇所のみ、対応する`removeEventListener`をクリーンアップ関数として返している。`disabled`が変化した場合もReactが再実行前に必ずクリーンアップを呼ぶため、リスナーが重複登録されることはない。Component unmount時も同じクリーンアップにより確実に解除される（`design-command-palette-integration.test.mjs`のソース検査テストで確認）。
+
 「アプリが閉じる途中」を検知する既存のフックや信号は本コードベースに存在しないため、個別の対応は行っていない（Electronのウィンドウ破棄後はイベントリスナー自体が発火しなくなるため、実害はないと判断）。
 
 ### 2.2 終了方法
@@ -35,6 +37,7 @@ PR #39で単体実装した`CommandPalette`コンポーネント（`apps/desktop
 - Escapeで閉じる
 - オーバーレイ（スクリム）クリックで閉じる
 - コマンド実行後に自動で閉じる
+- 起動ボタン（Home / AppHeader）を開いている状態で再操作すると閉じる（`togglePalette`、`aria-pressed`で開閉状態を反映）
 - 閉じた後、開いた時点でフォーカスしていた要素（トリガーボタン、またはCtrl+K押下時にフォーカスしていた要素）へ復帰する
 
 ### 2.3 上部バーのトリガー
@@ -56,11 +59,13 @@ Home画面と制作ワークスペース（`AppHeader`）の2箇所に設置し�
 | Project | Project復元画面を開く | 常時（既存の`restoreProject()`） |
 | 一般操作 | 設定を開く / Hub接続状態を開く | Projectが開いている時のみ |
 | 一般操作 | 更新を確認する | 常時（`window.mangai.updater.check()`を直接呼び出し） |
-| 最近開いたProject | Project名 + 更新日時 | 最大5件、`updatedAt`降順 |
+| 最近開いたProject | Project名 + 更新日時 | 最大5件、`updatedAt`降順。0件の場合はセクション自体を出力しない |
 
 **「診断画面を開く」は実装していない**: このコードベースにレンダラー側の診断画面（ナビゲーション可能なUI）が存在しないため、指示書にあった候補から除外した。存在しない画面へのリンクを作らないという制約を優先した。
 
 **削除・成人向け移動などの危険操作は追加していない**（指示書どおり）。
+
+**無効なProjectレコードの除外**: `id`または`title`を欠くProjectレコードは`recent-project-commands.ts`の`isValidProject`で最近開いたProjectから除外し、存在しない・不正なコマンドを生成しない。
 
 ### 2.5 検索
 
@@ -84,11 +89,12 @@ Provider関連の操作が必要な場合、コマンドパレットからは「
 
 ```
 apps/desktop/src/renderer/features/command-palette/
-├── command-palette-items.ts   コマンド項目の生成、最近開いたProjectの抽出（純粋関数）
-└── use-command-palette.ts     ショートカット起動判定（純粋関数）＋開閉状態フック
+├── command-palette-items.ts     セクション組み立て（移動/Project/一般操作/最近開いたProject）
+├── recent-project-commands.ts   最近開いたProjectの抽出・妥当性検証・セクション化（純粋関数）
+└── use-command-palette.ts       ショートカット起動判定（純粋関数）＋開閉・トグル状態フック
 ```
 
-指示書の例（4ファイル構成）よりも簡潔な2ファイル構成とした。理由: 本フェーズの規模では「画面側の表示状態」を`command-palette-items.ts`のcontext引数として渡すだけで十分であり、独立した`command-palette-controller.ts`・`types.ts`を設けるとかえって間接参照が増えるため。「ショートカット登録」「コマンド項目の生成」「Projectデータから最近使用項目を作る処理」「画面側の表示状態」の4つの責務は、この2ファイル＋`main.tsx`側の薄い配線コードに明確に分離されている。
+「最近開いたProjectの変換処理」（Projectレコードの妥当性検証、更新日時での並べ替え、上限件数の適用、コマンドセクションへの変換）は`recent-project-commands.ts`へ分離し、`command-palette-items.ts`はそれを呼び出すだけの薄い組み立て役に限定した。`command-palette-items.ts`は後方互換のため`getRecentProjects`を`recent-project-commands.ts`から再エクスポートしている。「ショートカット登録」「コマンド項目の生成」「Projectデータから最近使用項目を作る処理」「画面側の表示状態」の4つの責務は、この3ファイル＋`main.tsx`側の薄い配線コードに明確に分離されている。
 
 `CommandPalette.tsx`自体は、Project・AI Provider・DB・IPCの知識を一切持たない（Phase D3時点のまま無変更）。`command-palette-items.ts`もIPC呼び出しを直接実装せず、`main.tsx`が用意した`actions`コールバック経由でのみ既存関数（`apply`、`backupProject`、`restoreProject`、`window.mangai.updater.check`等）を呼び出す。
 
@@ -110,12 +116,13 @@ IME入力については、ショートカット判定側（`shouldOpenCommandPa
 
 | ファイル | 内容 |
 | --- | --- |
-| `apps/desktop/src/renderer/features/command-palette/command-palette-items.ts`（新規） | コマンド項目生成、最近開いたProject抽出 |
-| `apps/desktop/src/renderer/features/command-palette/use-command-palette.ts`（新規） | ショートカット判定（純粋関数）＋開閉状態フック |
-| `apps/desktop/src/renderer/main.tsx` | `CommandPalette`のimportと配線（6箇所のreturn文へ追加）、Home画面トリガーボタン追加、`openWorkspaceView`/`openProjects`の宣言位置を前方へ移動（配線コードから参照するため、ロジック自体は無変更） |
-| `apps/desktop/src/renderer/components/app-shell/AppHeader.tsx` | `onOpenCommandPalette` propとトリガーボタンを追加（既存props・既存ボタンは無変更） |
+| `apps/desktop/src/renderer/features/command-palette/command-palette-items.ts`（新規） | セクション組み立て。最近開いたProjectの実処理は`recent-project-commands.ts`へ委譲 |
+| `apps/desktop/src/renderer/features/command-palette/recent-project-commands.ts`（新規） | 最近開いたProjectの抽出・妥当性検証（`isValidProject`）・セクション化 |
+| `apps/desktop/src/renderer/features/command-palette/use-command-palette.ts`（新規） | ショートカット判定（純粋関数）＋開閉・トグル状態フック |
+| `apps/desktop/src/renderer/main.tsx` | `CommandPalette`のimportと配線（6箇所のreturn文へ追加）、Home画面トリガーボタン追加（`toggleCommandPalette`・`aria-pressed`）、`openWorkspaceView`/`openProjects`の宣言位置を前方へ移動（配線コードから参照するため、ロジック自体は無変更） |
+| `apps/desktop/src/renderer/components/app-shell/AppHeader.tsx` | `onOpenCommandPalette` propを`onToggleCommandPalette`へ改名し`commandPaletteOpen: boolean`を追加、トリガーボタンに`aria-pressed`を付与（既存の他props・既存ボタンは無変更） |
 | `apps/desktop/src/renderer/styles.css` | `.ds-button kbd`のスタイルを追加（既存ルールは無変更） |
-| `apps/desktop/tests/design-command-palette-integration.test.mjs`（新規） | 19件のテスト（詳細は§7） |
+| `apps/desktop/tests/design-command-palette-integration.test.mjs`（新規） | 26件のテスト（詳細は§7） |
 | `apps/desktop/tests/design-command-palette.test.mjs` | 「どの画面からもimportされていない」テストを、Phase D3-Bの実態（main.tsxのみが配線）に合わせて更新 |
 | `apps/desktop/package.json` | `test`スクリプトへ新規テストファイルを追加 |
 | `docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`（本ファイル、新規） | 本記録 |
@@ -132,12 +139,12 @@ IME入力については、ショートカット判定側（`shouldOpenCommandPa
 | `npm run deps:check` | PASS（5 packages, 21 source files, 違反0件） |
 | `npm run lint` | PASS |
 | `npm run typecheck` | PASS（root + Desktop） |
-| `npm run desktop:test` | PASS（**150/150**。既存131件 + 新規`design-command-palette-integration.test.mjs` 19件、既存`design-command-palette.test.mjs`は更新のうえ回帰なし） |
-| `npm run desktop:test:a11y`（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT（本コンテナにXサーバーがなくElectron起動不可） |
+| `npm run desktop:test` | PASS（**157/157**。既存131件 + 新規`design-command-palette-integration.test.mjs` 26件、既存`design-command-palette.test.mjs`は更新のうえ回帰なし） |
+| `npm run desktop:test:a11y`（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT（本コンテナにXサーバーがなくElectron起動不可。`electron_main_delegate.cc:216 Running as root without --no-sandbox is not supported`） |
 | `npm run desktop:build` | PASS |
 | `git diff --check` | PASS |
 
-新規テスト19件の内訳（STEP10の14項目に対応、複数観点を追加）:
+新規テスト26件の内訳（STEP10の14項目 + 追加要件に対応）:
 
 1. Ctrl+Kのショートカット登録（`shouldOpenCommandPalette`直接呼び出し）
 2. Meta+Kのショートカット登録
@@ -146,18 +153,25 @@ IME入力については、ショートカット判定側（`shouldOpenCommandPa
 5. 想定外の修飾キー組み合わせ（Alt併用・Shift併用・Ctrl+Meta同時）では起動しない
 6. K以外のキーでは起動しない
 7. Escapeで閉じる実装の維持（CommandPalette.tsx）
-8. Home画面の上部バートリガーの存在
-9. AppHeaderの上部バートリガーの配線
-10. Home移動コマンドの存在
-11. 設定移動コマンドはProjectが開いている時だけ存在する
-12. 最近開いたProjectは最大5件・更新日時降順
-13. 最近開いたProjectセクションは存在しないProject IDを生成しない
-14. 安全境界: Provider直接有効化・成人向け生成直接実行・APIキー変更コマンドが存在しない（実コード、コメント除く）
-15. 安全境界: 生成されるコマンドラベルに危険操作を示す語が含まれない
-16. コマンド実行後にonCloseが呼ばれる契約の維持
-17. フォーカス復帰契約の維持
-18. 新規npm依存パッケージが追加されていない（ルート）
-19. 新規npm依存パッケージが追加されていない（apps/desktop、依存キーの完全一致検査）
+8. Home画面の上部バートリガーの存在、および再操作でトグルする（`toggleCommandPalette`）配線の確認
+9. AppHeaderの上部バートリガーの配線（`onToggleCommandPalette`）
+10. `useCommandPalette`: `togglePalette`が開閉状態を反転させる契約を持つ
+11. 移動セクション: Home移動コマンドの存在
+12. 移動セクション: 設定移動コマンドはProjectが開いている時だけ存在する
+13. 最近開いたProjectは最大5件・更新日時降順
+14. 最近開いたProjectセクションは存在しないProject IDを生成しない
+15. id・titleを欠く無効なProjectレコードは最近開いたProjectから除外される（`isValidProject`）
+16. Projectが0件の場合、最近開いたProjectセクションはコマンド一覧に含まれない
+17. Projectセクション: 新規Project作成コマンドが常に存在する
+18. Projectセクション: 削除・成人向け移動・一括削除・初期化コマンドが存在しない
+19. `useCommandPalette`: keydownリスナーをuseEffectのcleanupで確実に解除する
+20. `useCommandPalette`: disabled変更時に古いリスナーを解除してから再登録する（多重登録防止）
+21. 安全境界: Provider直接有効化・成人向け生成直接実行・APIキー変更コマンドが存在しない（`command-palette-items.ts`・`recent-project-commands.ts`の実コード、コメント除く）
+22. 安全境界: 生成されるコマンドラベルに危険操作を示す語が含まれない
+23. コマンド実行後にonCloseが呼ばれる契約の維持
+24. フォーカス復帰契約の維持
+25. 新規npm依存パッケージが追加されていない（ルート）
+26. 新規npm依存パッケージが追加されていない（apps/desktop、依存キーの完全一致検査）
 
 ## 8. CI結果
 
@@ -168,6 +182,7 @@ CI実行後に追記する（Draft PR作成・push後、GitHub Actions完了を�
 **未実施。** 本コンテナ環境にはXサーバー（ディスプレイ）がなく、Electronアプリを実際にレンダリングして目視確認できないため、指示書STEP12の以下の項目はいずれも確認していない。
 
 - Home画面から上部バーボタンで開く
+- 開いている状態で上部バーボタンを再操作すると閉じる（トグル）
 - Ctrl+Kで開く
 - 検索入力が自動フォーカスされる
 - 上下キーとEnterで操作できる
