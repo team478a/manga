@@ -2670,7 +2670,9 @@ label {
 }
 .ds-button-danger {
   border: none;
-  background: var(--danger);
+  /* var(--danger)そのものは他所でtext-on-transparent用途に使われているため、
+     このcomponent単体でのみ濃くしてWCAG 2.93:1→5.4:1(AA 4.5:1以上)へ是正する。 */
+  background: color-mix(in srgb, var(--danger) 70%, black 30%);
   color: var(--text-primary);
 }
 .ds-button-danger:not(:disabled):hover {
