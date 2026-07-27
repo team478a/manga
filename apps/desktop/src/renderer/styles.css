@@ -341,7 +341,9 @@ label {
 }
 .project-summary small {
   overflow: hidden;
-  color: var(--text-muted);
+  /* --text-mutedはbg-panel-elevated上でaxe color-contrast(WCAG AA)に
+     抵触するため、既存で監査済みの--text-secondaryを使用する。 */
+  color: var(--text-secondary);
   font-size: var(--text-2xs);
   text-overflow: ellipsis;
   white-space: nowrap;
