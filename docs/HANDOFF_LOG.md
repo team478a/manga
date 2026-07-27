@@ -4,6 +4,53 @@
 
 ---
 
+## 2026-07-27（続き16） Claude Code（Phase D3-C: Windows CI失敗3回の切り分けと修正、CI成功確認）
+
+### 状態
+
+READY_FOR_REVIEW（Windows CI成功を確認。スクリーンショットartifact生成済み。責任者の目視確認・承認待ち）
+
+### 前提
+
+続き15でDraft PR #46を作成後、Windows CIが3回連続で失敗した。順を追って原因を切り分けた。
+
+### 実施内容
+
+1. **1回目の失敗**（commit `fa4db26`）: axe-coreの`color-contrast`違反（`serious`）が`home-en`・`new-project-dialog-en`の2画面で新規発生。ハーネス自体の`home-project-grid-*`チェックはすべて`pass:true`で、ロジックは正常。
+2. **修正試行1（誤り）**: `.project-summary small`の`color`を`--text-muted`から`--text-secondary`へ戻した（commit `c6ec3c9`）。目視での概算コントラスト計算に基づく推測だった。
+3. **2回目の失敗**（commit `c6ec3c9`）: 1回目と完全に同じ違反件数で再度失敗。修正試行1は無効だったと判明。これ以上推測で直すのは非効率と判断し、診断強化に切り替えた。
+4. **診断強化**（commit `bc69fa7`）: `apps/desktop/scripts/test-accessibility.mjs`のCI出力サマリーに、axeの`node.target`（CSSセレクタ）と`node.failureSummary`（実際の配色・コントラスト比）を追加。個人情報やPrompt等は含まれないaxeの構造情報のみであることを確認したうえで追加。
+5. **3回目の失敗（診断成功）**: ログから`.ds-button-danger`が実際の違反要素と判明（前景`#f3f5f7`・背景`var(--danger)`(`#ed6170`)で2.93:1、要求4.5:1）。これはPhase D2で実装された`Button`コンポーネントのdanger variantの配色そのもので、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§3.1の指定通りの配色だが、spec自体のコントラスト設計に不備があった。従来目立たなかったのは、続き15で修正した`.actions button`の詳細度バグが、たまたま`.ds-button-danger`の配色を別の（一見問題ない）色で上書きしていたため。
+6. **修正**（commit `f8386ed`）: `.ds-button-danger`のみ、`background`を`color-mix(in srgb, var(--danger) 70%, black 30%)`へ変更（計算上約5.4:1）。共有トークン`--danger`自体は他所（テキストonトランスペアレント用途）で広く使われているため変更していない。
+7. push後、Windows CIが成功（4チェックすべてgreen）。ログを取得し、`home-en`・`new-project-dialog-en`の`violations`が`[]`になったこと、`home-project-grid-rendered`/`home-project-filter-updates-grid`/`home-project-filter-restores-grid`がすべて`pass:true`であること、`home-project-grid-1366x768.png`・`home-project-grid-1920x1080.png`を含む13件のスクリーンショットが生成・artifactへアップロードされたことを確認した。
+
+### 完了
+
+- `.ds-button-danger`のWCAGコントラスト不備の修正（AA 4.5:1を満たす約5.4:1へ）
+- ローカル品質ゲート再実行: `lint`/`typecheck`/`desktop:test`(182/182)/`desktop:build`/`git diff --check`、すべてPASS
+- Windows CI（GitHub Actions）: 4チェックすべて成功を確認（`Windows build`/`Core quality`/`Migration roundtrip`/`Vercel Preview Comments`）
+- CIログから、新規追加した`home-project-grid-*`検証・スクリーンショット生成が意図通り動作したことをJSON出力で確認
+
+### 未完了
+
+- **スクリーンショットの目視（ピクセルレベル）確認**: 本セッションの利用可能ツールではCI artifact ZIP（`desktop-windows-results-1`）を直接ダウンロード・画像として開く手段がなく、実施できていない。構造的・振る舞い的な検証（カード件数・タイトル・Badge有無・フィルタ件数）はCIログのJSONで確認済みだが、実際の見た目（レイアウト崩れ・文字被り等）の確認は責任者またはartifact ZIPを開ける環境での確認が必要
+- 実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示、多数データ確認）への回答
+- 責任者によるレビュー・承認・マージ判断（Draftのまま維持）
+
+### 変更ファイル（追加分）
+
+- `apps/desktop/src/renderer/styles.css`（`.ds-button-danger`のコントラスト修正、コミット3件: `c6ec3c9`は後に無効と判明も履歴として残存）
+- `apps/desktop/scripts/test-accessibility.mjs`（診断出力強化: `targets`/`summaries`追加）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- lint / typecheck / desktop:test(182/182) / desktop:build / git diff --check: すべてPASS
+- Windows CI: **成功**（commit `f8386ed`、4チェックすべてgreen）
+- 目視確認: 構造的検証はCIログで確認済み。ピクセルレベルの目視確認は未実施（上記「未完了」参照）
+
+---
+
 ## 2026-07-27（続き15） Claude Code（Phase D3-C: Home画面ビジュアル刷新）
 
 ### 状態

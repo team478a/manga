@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-27
-- 状態: `READY_FOR_REVIEW`（Phase D3-C: Home画面ビジュアル刷新の実装完了。Windows CI・目視確認・責任者承認待ち）
+- 状態: `READY_FOR_REVIEW`（Phase D3-C: Home画面ビジュアル刷新の実装完了。**Windows CI成功確認済み**。ピクセルレベルの目視確認・責任者承認待ち）
 - リポジトリ: `team478a/manga`
 - 作業ブランチ: `codex/phase-d3c-home-visual-refresh`
 - Base branch: `feature/manga-canvas-mvp` @ `3fb5f24dede0961d1951c0479b6fc1bb996e2d6f`（PR #45マージ済みコミット）
@@ -53,16 +53,24 @@ PR #44→PR #45の順でマージしたため、PR #45側で`docs/HANDOFF_LOG.md
 | `npm run build`（Hub） | PASS |
 | `git diff --check` | PASS |
 
-**Windows CI（GUI自動検証・スクリーンショット）の実行結果は未確認**（本コンテナにXサーバーがなくローカルでElectronを起動できないため）。PR #45と同様、Draft PR作成後のCI結果が実質的な最初の検証になる。詳細は実装記録§10を参照。
+**Windows CI（GUI自動検証・スクリーンショット）は成功を確認済み**（`codex/phase-d3c-home-visual-refresh`、commit `f8386ed`。4チェックすべてgreen）。ただし、3回連続でCIが失敗した経緯があるため必ずこの経緯を把握したうえで引き継ぐこと。
+
+### Windows CI失敗3回・修正の経緯（2026-07-27）
+
+1. 1回目失敗（`fa4db26`）: axe-coreが`.ds-button-danger`（原因未特定時点）でWCAG `color-contrast`違反（`serious`）を`home-en`・`new-project-dialog-en`で新規検出
+2. 修正試行1（誤り、`c6ec3c9`）: `.project-summary small`の色を推測で変更 → 効果なし（2回目も同一件数で失敗）
+3. 診断強化（`bc69fa7`）: `test-accessibility.mjs`のCI出力へaxeの`target`/`failureSummary`を追加 → ログから`.ds-button-danger`（前景`#f3f5f7`/背景`var(--danger)` `#ed6170` = 2.93:1、要求4.5:1）が真因と判明
+4. 修正（`f8386ed`）: `.ds-button-danger`のみ`background`を`color-mix(in srgb, var(--danger) 70%, black 30%)`へ変更（約5.4:1）。共有`--danger`トークン自体は変更していない → **Windows CI成功**
+
+詳細は`docs/HANDOFF_LOG.md`「続き16」を参照。
 
 ## 未完了・次の作業
 
-1. `codex/phase-d3c-home-visual-refresh`をpush・Draft PR作成する
-2. **Windows CI（GitHub Actions）の実行結果を確認する**（次担当者が最初に確認すべき項目。失敗した場合はログ・artifactを見て原因を切り分け、追加commitで修正する）
-3. CI成功後、実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示、多数データ確認）の判断を仰ぐ
-4. 責任者承認・CI成功・スクリーンショット確認が揃うまでマージしない
-5. マージ後、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5（ブレークポイント再編）・設定画面2ペイン化・AI画像生成画面新設等、他画面のビジュアル刷新は別途責任者判断を待って着手する
-6. 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価は、本PRとは別ブランチ（`chore/dependency-security-triage-20260727`想定）で継続する（未着手）
+1. **スクリーンショットのピクセルレベル目視確認**（次担当者が最初に対応すべき項目）: 本セッションの環境ではCI artifact ZIP（`desktop-windows-results-1`、run `30275081135`）を直接ダウンロード・画像として開く手段がなく未実施。`home-project-grid-1366x768.png`・`home-project-grid-1920x1080.png`・`home-project-grid-populated.png`・`home-project-grid-filtered-empty.png`を含む13件のスクリーンショットは生成・アップロード済み
+2. CI成功・スクリーンショット目視確認が揃ったら、実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示、多数データ確認）の判断を仰ぐ
+3. 責任者承認・CI成功・スクリーンショット確認が揃うまでマージしない
+4. マージ後、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5（ブレークポイント再編）・設定画面2ペイン化・AI画像生成画面新設等、他画面のビジュアル刷新は別途責任者判断を待って着手する
+5. 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価は、本PRとは別ブランチ（`chore/dependency-security-triage-20260727`想定）で継続する（未着手）
 
 ## 禁止事項（引き続き遵守）
 
