@@ -1,7 +1,7 @@
 # Phase D3-C準備: Desktop目視確認基盤（PR-B）
 
-作成日: 2026-07-27
-状態: 自動確認手段を実装（第1候補＋第2候補を統合）。**Windows CI上での実行結果は未確認**（本コンテナにXサーバーがなくローカルでElectronを起動できないため）。
+作成日: 2026-07-27（2026-07-27 CI確認結果を反映し更新）
+状態: **確立完了**。Windows CI（`windows-latest`、GitHub Actions）上で、コマンドパレット目視確認12項目（11チェック）すべてがPASSしたことを確認済み（run: https://github.com/team478a/manga/actions/runs/30257023926 、job: `Windows build`、head SHA `ce4c8a8`）。
 Base branch: `feature/manga-canvas-mvp` @ `16f87769ce3a226942ff2e9cf082f67204f9cc2e`（PR #43マージ済みコミット）
 作業ブランチ: `test/phase-d3c-visual-validation`
 
@@ -101,24 +101,25 @@ npm run test:a11y
 
 失敗した場合は、`command-palette-visual.json`の`checks`配列から`pass: false`の項目とその`detail`を確認し、対応する`screenshots/`内のPNGと突き合わせて原因を切り分ける。
 
-## 5. 未確認事項（正直な申告）
+## 5. CI実行結果（確定）
 
-**本ブランチの実装は、Windows CI上での実行結果をまだ確認していない。** 本コンテナ環境にはXサーバーがなく、Electronアプリを実際にレンダリングして動作確認できないため（`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`§9以前と同一の制約）、以下は静的検証のみで、実際のGUI動作としては未検証である。
+本コンテナ環境にはXサーバーがなくローカルでElectronを起動できないため、実装直後は静的検証（型検査・lint・ビルド・注入JavaScriptの構文チェック）のみで、実際のGUI動作は未検証のままDraft PRを作成した。Windows CI（GitHub Actions、`windows-latest`）の実行結果を確認し、以下の2件の不具合を発見・修正した。
 
-- 静的に確認したこと: `tsc --noEmit`（root/Desktop）・`eslint`・`npm run desktop:build`はすべてPASS。注入している11個のJavaScriptブロックは`new Function()`による構文チェックでエラーなし
-- 未確認のこと: 実際のElectronウィンドウ上でこれらのDOM操作・イベント発火・`capturePage()`が意図通りに動作するか。特に、Reactの状態更新タイミング（`setTimeout`によるポーリング待機で吸収している想定）や、`--disable-gpu`環境での`capturePage()`のソフトウェアレンダリング結果
+1. **1回目の失敗**（head SHA `909b9f1`）: `enter-executes-and-restores-focus`が`activeId=project-new`（期待値`nav-home`）で失敗。原因はテストコード自体の状態管理ミス — 直前の`arrow-key-navigation`検証がパレットを開いたまま次のステップへ進んでいたため、次のCtrl+K（トグルではなく常時「開く」という実装どおりの仕様）が無反応になり、選択中インデックスが「project-new」のまま残ってEnterを誤実行していた。`arrow-key-navigation`の最後にEscapeで明示的に閉じるよう修正（commit `cf4699b`）
+2. **2回目の失敗**（head SHA `2146f43`）: `activeId`は`nav-home`に修正されたが、`focusReturned=false`のまま失敗。原因は、フォーカス復帰の判定が直前のステップで残っていた暗黙のフォーカス状態に依存しており、前提条件が自己完結していなかったこと。トリガーボタンへ明示的に`.focus()`してから開くよう修正し、`previouslyFocused`が確実にトリガーボタンを捕捉するようにした（commit `ce4c8a8`）
+3. **3回目の実行**（head SHA `ce4c8a8`）: **全11チェックPASS**。`Windows build`ジョブ成功（https://github.com/team478a/manga/actions/runs/30257023926 ）。`command-palette-visual.json`の全項目が`pass: true`、`enter-executes-and-restores-focus`は`activeId=nav-home closed=true focusReturned=true`で確認済み。スクリーンショット9枚、電子署名済み`pack:win`ビルドも成功
 
-このため、本PRのDraft PR作成後、GitHub Actions（Windows runner）の実行結果を確認し、失敗した場合はログとartifactを見て追加commitで修正する。**この初回CI結果が、本PRの実質的な検証となる。**
+いずれの不具合も、コマンドパレット本体（`CommandPalette.tsx`）・アプリ側のロジックの不具合ではなく、**目視確認ハーネス（テストコード）自体**に起因するものであり、修正はテストコードのみに閉じている。
 
 ## 6. 目視確認手段の確立: 判定
 
-- 自動UI確認テスト: 実装済み（本ファイル§3.1〜3.3）
+- 自動UI確認テスト: 実装済み・**Windows CIで成功確認済み**（本ファイル§3.1〜3.3、§5）
 - Windows CIジョブへの安全な追加: 実装済み（既存`Accessibility tests`ステップの拡張、新規ジョブ・新規ステップ追加なし）
-- screenshot artifact: 実装済み（既存`Upload Windows test results`ステップで自動的にアップロードされる）
-- 失敗時のログ: 実装済み（`command-palette-visual.json` + `accessibility-test.log`）
+- screenshot artifact: 実装済み・**確認済み**（`desktop-windows-results`artifactに9枚のPNGを含めて正常アップロード）
+- 失敗時のログ: 実装済み・**実際に2回の失敗で機能を確認済み**（`command-palette-visual.json` + `accessibility-test.log`から原因を特定できた）
 - 再実行手順: 本ファイル§4に記載
 
-**Windows CIでの実行成功を確認できた時点で、目視確認手段の確立を完了とする。** 現時点（Draft PR作成前のローカル静的検証のみ）では、CI結果確認前のため`BLOCKED_CI`（初回CI結果待ち）として扱う。
+**目視確認手段の確立は完了した。** `READY_FOR_REVIEW`として扱う。
 
 ## 7. Phase D3-Cへの示唆
 

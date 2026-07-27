@@ -4,6 +4,48 @@
 
 ---
 
+## 2026-07-27（続き14） Claude Code（PR-B: Windows CI確認結果）
+
+### 状態
+
+READY_FOR_REVIEW（Windows CIでコマンドパレット目視確認12項目すべての成功を確認済み。責任者レビュー・マージ判断待ち）
+
+### 経緯
+
+続き13でDraft PR #45（`test/phase-d3c-visual-validation`）を作成し、Windows CIの結果を待った。CIが実際に2回失敗し、いずれもテストハーネス自体の不具合（アプリ本体の不具合ではない）と判明したため、原因調査・修正・再pushを2回実施した。
+
+1. **1回目の失敗**（head `909b9f1`）: `enter-executes-and-restores-focus`が`activeId=project-new`（期待`nav-home`）で失敗。直前の`arrow-key-navigation`検証がパレットを開いたまま次のステップへ進み、Ctrl+K（トグルではなく常時「開く」という実装どおりの仕様）が無反応になっていたことが原因。`arrow-key-navigation`の最後にEscapeで明示的に閉じるよう修正（commit `cf4699b`）
+2. **2回目の失敗**（head `2146f43`）: `activeId`は修正されたが`focusReturned=false`のまま失敗。フォーカス復帰判定が前ステップの暗黙のフォーカス状態に依存していたことが原因。トリガーボタンへ明示的に`.focus()`してから開くよう修正（commit `ce4c8a8`）
+3. **3回目の実行**（head `ce4c8a8`）: **Windows buildジョブ成功、コマンドパレット目視確認11チェックすべてPASS**（`command-palette-visual.json`で確認）。スクリーンショット9枚・`pack:win`ビルドも成功
+
+いずれの修正もテストコード（`apps/desktop/src/main/index.ts`の目視確認ブロック）のみに閉じており、コマンドパレット本体（`CommandPalette.tsx`）やアプリのロジックは変更していない。
+
+### 完了
+
+- Windows CI（GitHub Actions）でのコマンドパレット目視確認基盤の動作確認（`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`§5・§6を更新）
+- 2件のCI失敗をいずれも即座に修正・push（放置していない）
+- PR #44・#45とも、CI: 4件すべてsuccess
+
+### 未完了
+
+- 責任者による承認レビュー（PR #44・#45とも0件）
+- 承認後、Draft解除・マージ（明示的な指示があるまで実施しない）
+- 目視確認手段が確立したため、次はPhase D3-C（Home画面ビジュアル刷新）の着手判断を責任者に仰ぐ段階
+
+### 変更ファイル（続き13からの追加分）
+
+- `apps/desktop/src/main/index.ts`（`arrow-key-navigation`ステップでのEscape明示クローズ、`enter-executes-and-restores-focus`でのトリガー明示フォーカスの2件の修正）
+- `docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`（CI確認結果を反映）
+- `docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- Windows CI: PASS（run https://github.com/team478a/manga/actions/runs/30257023926 、head `ce4c8a8`）
+- コマンドパレット目視確認: 11/11 PASS（`command-palette-visual.json`）
+- ローカル品質ゲート: 続き13から変更なし、修正commitごとにlint/typecheck/desktop:test(157/157)/desktop:build/git diff --checkを再実行しPASS確認済み
+
+---
+
 ## 2026-07-27（続き13） Claude Code（PR-B: Desktop目視確認基盤）
 
 ### 状態
