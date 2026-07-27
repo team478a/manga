@@ -4,6 +4,77 @@
 
 ---
 
+## 2026-07-27（続き15） Claude Code（Phase D3-C: Home画面ビジュアル刷新）
+
+### 状態
+
+READY_FOR_REVIEW（実装完了、Windows CI・目視確認・責任者承認待ち）
+
+### 前提
+
+責任者から「MANGAI PR #45（Desktop目視確認基盤）マージ済み」との報告を受けたが、GitHub APIで実際の状態を確認したところ、PR #45はまだDraftのままマージされておらず（承認レビューも直前のマージコンフリクト解消pushでDISMISSEDされたまま）、報告と実際の状態に食い違いがあった。これを報告し、責任者から再承認をいただいたうえでPR #45をマージした（merge commit `3fb5f24`）。その後、責任者から「最新の`feature/manga-canvas-mvp`から作業を開始し、Phase D3-C（Home画面ビジュアル刷新）に着手してください」という明示的な指示を受け、指定された`codex/phase-d3c-home-visual-refresh`ブランチを作成して本作業を実施した。
+
+### 実施内容
+
+1. 指定された9文書（`AGENTS.md`/`CLAUDE.md`/`docs/AI_HANDOFF.md`/`docs/CURRENT_TASK.md`/`docs/HANDOFF_LOG.md`/`DESKTOP_CREATIVE_STUDIO_SPEC.md`/`PHASE_D3C_VISUAL_VALIDATION_PLAN.md`/`PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`/`docs/REMAINING_TASKS.md`）を確認
+2. `DESKTOP_CREATIVE_STUDIO_SPEC.md`§8の「デザイン承認条件」チェックリストが文書としては未チェックのままである点を認識したが、責任者から今回のスコープ（Home画面ビジュアル刷新の具体的な実装対象・禁止事項を明記した指示）を直接受けていることを、この特定スコープへの明示的な着手承認として扱った（詳細は実装記録§1に明記）
+3. `Project`型（`packages/project-core`）・既存IPC（`window.mangai.listProjects`等）・既存CSS（`.projects`/`.project-open`/`.cover`等）・既存コンポーネント（`Card`/`Button`/`StatusBadge`）を調査
+4. `apps/desktop/src/renderer/features/home/project-view-model.ts`（新規）: Projectの検証（`isValidHomeProject`）・絞り込み（`filterHomeProjects`）・並び替え（`sortHomeProjects`）の純粋関数を実装
+5. `apps/desktop/src/renderer/components/home/`配下に`HomeProjectCard.tsx`・`HomeProjectGrid.tsx`・`HomeProjectFilters.tsx`（新規）を実装。`main.tsx`は配線のみに留め、大きく書き換えていない
+6. `main.tsx`のHome画面セクションを、上記コンポーネントを呼び出す形へ置き換え。既存のProject開閉・バックアップ・複製・成人向け移動・削除のIPC呼び出しは無変更のまま関数として切り出した（`moveProjectToAdult`/`deleteProject`）
+7. `styles.css`: `.projects`/`.project-open`/`.cover`/`.project-summary`/`.actions`を、カードグリッド用のレイアウトへ更新（`auto-fit`グリッド、Phase D1で追加済みの未使用トークンを使用）。既存の`.actions button`セレクタが`.ds-button-danger`等のPhase D2コンポーネントの配色をCSS詳細度で上書きしてしまう既存のバグ（`.actions`が今回初めて`Button`コンポーネントのみを含むようになったことで顕在化）を発見し、`.actions button`をセレクタから除去して修正
+8. `i18n.tsx`: フィルタ・並び替え・空状態のja/enキーを追加。`TranslationKey`型をexportし、新規コンポーネントで`t`関数の型を正しく受け取れるようにした
+9. `apps/desktop/src/main/index.ts`のPR-B目視確認ハーネスへ、Home Projectカードグリッド固有の検証（グリッド描画確認・フィルタ切替・`win.setContentSize()`による1920×1080/1366×768のスクリーンショット）を追加
+10. `design-components.test.mjs`・`design-home-screen.test.mjs`の「Card/`.project-open`は未変更」という古い前提のテストを、実態（Card適用済み、`.project-open`はHomeProjectCard.tsxへ移動）に合わせて更新
+11. `design-home-project-grid.test.mjs`（新規、24件）: 純粋関数の直接実行テスト、コンポーネントの静的検証、CSS検証、main.tsx配線検証、安全境界スキャンを実装
+12. `docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`（新規）を作成し、指示書の想定と異なる判断（お気に入りフィルタ未実装、ページ数非表示、説明文非表示の理由）を明記
+
+### 指示書の想定と異なる判断（責任者確認が必要、実装記録§8）
+
+1. 「お気に入り」フィルタは`Project`型にデータ項目がなくDB migrationが必要になるため未実装。代わりに「一般／成人向け」フィルタと「更新日時／タイトル」並び替えを実装
+2. 「ページ数」はDesktop IPCが返さないため非表示（新規IPC追加が必要）
+3. 説明文（subtitle/description）はカードへ非表示（表示領域の制約）
+4. 多数データ・長いタイトル・成人向けBadgeの実画面確認は、既存テストデータ（1件・一般のみ）の制約で未実施
+
+### 完了
+
+- 実装・テスト・`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`作成
+- ローカル品質ゲート: `deps:check`/`lint`/`typecheck`/`desktop:test`(182/182)/`hub:test`(116/116)/`canvas:test`(26/26)/`ai:test`(44/44)/`db:migrations:validate`/`desktop:build`/`build`(Hub)/`git diff --check`、すべてPASS
+- 注入JavaScript 14ブロックの構文チェック: エラーなし
+
+### 未完了
+
+- 本ブランチのpush・Draft PR作成
+- **Windows CI（GitHub Actions）での実行結果確認**— 次担当者が最初に確認すべき項目。PR #45と同様、初回CI結果が実質的な最初の検証になる
+- 実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示）への回答
+- 多数データ・長いタイトル・成人向けBadgeの目視確認（追加テストデータ投入またはWindows実機確認が必要）
+- 責任者によるレビュー・マージ判断
+
+### 変更ファイル
+
+- `apps/desktop/src/renderer/features/home/project-view-model.ts`（新規）
+- `apps/desktop/src/renderer/components/home/HomeProjectCard.tsx`（新規）
+- `apps/desktop/src/renderer/components/home/HomeProjectGrid.tsx`（新規）
+- `apps/desktop/src/renderer/components/home/HomeProjectFilters.tsx`（新規）
+- `apps/desktop/src/renderer/main.tsx`（Home画面セクションの配線置き換え）
+- `apps/desktop/src/renderer/styles.css`（`.projects`系セレクタをカードグリッド用へ更新、`.actions button`の詳細度バグ修正）
+- `apps/desktop/src/renderer/i18n.tsx`（フィルタ・並び替え等の新規キー追加、`TranslationKey`をexport）
+- `apps/desktop/src/main/index.ts`（PR-B目視確認ハーネスへHome Projectグリッド検証を追加）
+- `apps/desktop/tests/design-components.test.mjs`（Card適用済みの実態に合わせて更新）
+- `apps/desktop/tests/design-home-screen.test.mjs`（`.project-open`移動の実態に合わせて更新）
+- `apps/desktop/tests/design-home-project-grid.test.mjs`（新規、24件）
+- `apps/desktop/package.json`（testスクリプトへ1行追加）
+- `docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`（新規）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- deps:check / lint / typecheck / desktop:test(182/182) / hub:test(116/116) / canvas:test(26/26) / ai:test(44/44) / db:migrations:validate / desktop:build / build / git diff --check: すべてPASS
+- Windows CI: 未確認（Draft PR作成後に確認）
+- 目視確認: 未実施（本コンテナの制約。Windows CIのスクリーンショット・自動検証をもって代替を試みたが、実行結果自体が未確認のため目視確認完了とは判定していない）
+
+---
+
 ## 2026-07-27（続き14） Claude Code（PR-B: Windows CI確認結果）
 
 ### 状態
