@@ -2816,3 +2816,17 @@ label {
     border: 1px solid CanvasText;
   }
 }
+
+/*
+ * Phase D3-B command palette trigger (shortcut hint inside the trigger Button).
+ * Additive only — does not modify any existing rule.
+ */
+.ds-button kbd {
+  margin-left: var(--space-1);
+  padding: 1px var(--space-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xs);
+  background: var(--bg-app);
+  font: inherit;
+  font-size: var(--text-2xs);
+}

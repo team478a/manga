@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { OperationHistory } from "../../../preload/api";
 import { StatusBadge, type StatusTone } from "../common/StatusBadge";
+import { Button } from "../common/Button";
 import { useI18n } from "../../i18n";
 
 export function AppHeader({
@@ -31,6 +32,8 @@ export function AppHeader({
   onRedo,
   onImport,
   onExport,
+  onToggleCommandPalette,
+  commandPaletteOpen,
   updateControl,
 }: {
   projectTitle: string;
@@ -49,6 +52,8 @@ export function AppHeader({
   onRedo: () => void;
   onImport: () => void;
   onExport: () => void;
+  onToggleCommandPalette: () => void;
+  commandPaletteOpen: boolean;
   updateControl: React.ReactNode;
 }) {
   const { t, localizeMessage, localeCode } = useI18n();
@@ -66,6 +71,17 @@ export function AppHeader({
         {saving}
       </StatusBadge>
       <div className="app-header-actions">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onToggleCommandPalette}
+          aria-label="コマンドパレットを開く (Ctrl+K)"
+          aria-pressed={commandPaletteOpen}
+          title="コマンドパレットを開く (Ctrl+K)"
+        >
+          <span aria-hidden="true">⌘K</span>
+        </Button>
+        <span className="app-header-divider" />
         <button
           className={leftPanelOpen ? "selected" : "secondary"}
           aria-pressed={leftPanelOpen}

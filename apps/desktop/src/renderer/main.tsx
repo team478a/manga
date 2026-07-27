@@ -16,6 +16,9 @@ import { UpdateControl } from "./features/updater/UpdateControl";
 import { MangaCanvas } from "./features/manga-canvas/MangaCanvas";
 import type { StatusTone } from "./components/common/StatusBadge";
 import { Button } from "./components/common/Button";
+import { CommandPalette } from "./components/common/CommandPalette";
+import { useCommandPalette } from "./features/command-palette/use-command-palette";
+import { buildCommandSections } from "./features/command-palette/command-palette-items";
 import { AppHeader } from "./components/app-shell/AppHeader";
 import {
   GlobalNav,
@@ -346,6 +349,46 @@ function App() {
       setBulkTask(null);
     }
   };
+  const openWorkspaceView = (view: WorkspaceView) =>
+    setActiveTool(view === "editor" ? null : view);
+  const openProjects = () => {
+    setActiveTool(null);
+    setBundle(null);
+  };
+  // 新規Projectモーダル・Exportダイアログの操作中はCtrl+K/Meta+Kを奪わない。
+  const commandPaletteDisabled = creating || exportDialogOpen;
+  const {
+    open: commandPaletteOpen,
+    closePalette: closeCommandPalette,
+    togglePalette: toggleCommandPalette,
+  } = useCommandPalette({ disabled: commandPaletteDisabled });
+  const commandSections = buildCommandSections({
+    hasActiveProject: Boolean(bundle),
+    projects,
+    formatDateTime,
+    actions: {
+      goHome: openProjects,
+      goWorkspace: () => openWorkspaceView("editor"),
+      goGeneration: () => setActiveTool("jobs"),
+      goSettings: () => setActiveTool("settings"),
+      goHubStatus: () => setActiveTool("hub"),
+      openNewProjectDialog: () => setCreating(true),
+      openProject: (projectId) =>
+        void apply(window.mangai.openProject(projectId)),
+      backupActiveProject: () => {
+        if (bundle) void backupProject(bundle.project.id);
+      },
+      restoreProject: () => void restoreProject(),
+      checkForUpdate: () => void window.mangai.updater.check(),
+    },
+  });
+  const commandPaletteElement = (
+    <CommandPalette
+      open={commandPaletteOpen}
+      onClose={closeCommandPalette}
+      sections={commandSections}
+    />
+  );
   const bulkOperationStatus = bulkTask ? (
     <div className="bulk-operation" role="status" aria-live="polite">
       <span>
@@ -368,6 +411,7 @@ function App() {
   ) : null;
   if (!bundle)
     return (
+      <>
       <main id="main-content" className="home" tabIndex={-1}>
         <header>
           <div>
@@ -375,6 +419,15 @@ function App() {
             <span>{t("home.subtitle")}</span>
           </div>
           <div className="header-actions">
+            <Button
+              variant="secondary"
+              onClick={toggleCommandPalette}
+              aria-label="コマンドパレットを開く (Ctrl+K)"
+              aria-pressed={commandPaletteOpen}
+            >
+              コマンド
+              <kbd aria-hidden="true">Ctrl K</kbd>
+            </Button>
             <Button
               variant="secondary"
               disabled={autoBackup?.status === "running"}
@@ -801,6 +854,8 @@ function App() {
           )}
         </section>
       </main>
+      {commandPaletteElement}
+      </>
     );
   const episode =
       bundle.episodes.find((item) => item.id === selectedEpisode) ??
@@ -812,14 +867,9 @@ function App() {
     asset = bundle.assets.find(
       (a) => a.id === (page?.imageAssetId || selectedAsset),
     );
-  const openWorkspaceView = (view: WorkspaceView) =>
-    setActiveTool(view === "editor" ? null : view);
-  const openProjects = () => {
-    setActiveTool(null);
-    setBundle(null);
-  };
   if (activeTool === "settings")
     return (
+      <>
       <ToolShell
         active="settings"
         onSelect={openWorkspaceView}
@@ -827,9 +877,12 @@ function App() {
       >
         <AISettings onClose={() => setActiveTool(null)} />
       </ToolShell>
+      {commandPaletteElement}
+      </>
     );
   if (activeTool === "chat")
     return (
+      <>
       <ToolShell
         active="chat"
         onSelect={openWorkspaceView}
@@ -844,9 +897,12 @@ function App() {
           onClose={() => setActiveTool(null)}
         />
       </ToolShell>
+      {commandPaletteElement}
+      </>
     );
   if (activeTool === "jobs")
     return (
+      <>
       <ToolShell
         active="jobs"
         onSelect={openWorkspaceView}
@@ -864,9 +920,12 @@ function App() {
           onClose={() => setActiveTool(null)}
         />
       </ToolShell>
+      {commandPaletteElement}
+      </>
     );
   if (activeTool === "hub")
     return (
+      <>
       <ToolShell
         active="hub"
         onSelect={openWorkspaceView}
@@ -879,6 +938,8 @@ function App() {
           onClose={() => setActiveTool(null)}
         />
       </ToolShell>
+      {commandPaletteElement}
+      </>
     );
   const runExport = async () => {
     const requestId = crypto.randomUUID();
@@ -919,6 +980,7 @@ function App() {
     }
   };
   return (
+    <>
     <main
       id="main-content"
       className="app"
@@ -943,6 +1005,8 @@ function App() {
         rightPanelOpen={rightPanelOpen}
         history={history}
         exporting={Boolean(exportTask)}
+        onToggleCommandPalette={toggleCommandPalette}
+        commandPaletteOpen={commandPaletteOpen}
         onToggleLeftPanel={() => setLeftPanelOpen((value) => !value)}
         onToggleRightPanel={() => setRightPanelOpen((value) => !value)}
         onBackup={() => void backupProject(bundle.project.id)}
@@ -1093,6 +1157,8 @@ function App() {
         }
       />
     </main>
+    {commandPaletteElement}
+    </>
   );
 }
 

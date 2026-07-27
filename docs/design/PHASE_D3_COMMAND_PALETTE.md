@@ -1,7 +1,7 @@
 # Phase D3: コマンドパレット（Ctrl+K）単体実装
 
 作成日: 2026-07-26
-状態: 実装完了（コード変更あり）。グローバルショートカット配線・既存画面統合は未着手。
+状態: 実装完了（コード変更あり、PR #39でマージ済み）。**グローバルショートカット配線・既存画面統合はPhase D3-Bで完了した。** 詳細は[`PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)を参照。
 ブランチ: `design/phase-d3-command-palette`（base: `feature/manga-canvas-mvp` @ `2b4f97d`、PR #35〜#38マージ後）
 
 正本: [`DESKTOP_CREATIVE_STUDIO_SPEC.md`](DESKTOP_CREATIVE_STUDIO_SPEC.md)§3.4
