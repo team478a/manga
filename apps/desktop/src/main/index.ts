@@ -1679,6 +1679,15 @@ app
               input.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true }));
               await new Promise((resolve) => setTimeout(resolve, 150));
               const after = document.querySelector('.ds-command-palette-row-active')?.id || null;
+              // Ctrl+K only ever opens (never toggles), so leaving the palette open here
+              // would make the next open a no-op that keeps this stale activeIndex.
+              // Close it now so later steps reliably start from a fresh activeIndex=0.
+              input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+              const closeDeadline = Date.now() + 3000;
+              while (document.querySelector('${DIALOG_SELECTOR}')) {
+                if (Date.now() >= closeDeadline) break;
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
               return { before, after };
             })()
           `);
