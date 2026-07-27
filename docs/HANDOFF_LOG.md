@@ -4,6 +4,39 @@
 
 ---
 
+## 2026-07-27（続き11） Claude Code（PR #42マージ・文書同期）
+
+### 状態
+
+MERGED（Phase D3-Bは`feature/manga-canvas-mvp`へマージ済み。本記録は文書同期ブランチ`docs/phase-d3b-merge-sync-20260727`上での作業）
+
+### 実施内容
+
+1. 責任者から「マージ」の指示を受けたが、その時点でPR #42はDraft状態・承認レビュー0件・Windows build CI失敗（後述）だったため、これら3条件が揃うまでマージを保留し状況を報告した
+2. Windows build CI失敗の原因を調査: `apps/desktop/src/renderer/main.tsx`で`openCommandPalette`（`openPalette`のalias）が未使用のまま残っていた。root`eslint .`では検出されず、`apps/desktop`独自の`npm run lint`（`eslint src`）でのみ検出される差異だった。該当箇所を削除し、commit `54f7502`としてpush
+3. 責任者から「3以外は完了です」との連絡を受け、GitHub APIで実際の状態を確認したところ、逆に③CI（このタイミングで全green化）は完了・①Draft解除は未実施という食い違いを検出。これを報告し、Draft解除・マージの実行可否を確認した
+4. 「進めてください」との明示的な承認を得て、`update_pull_request`でDraft解除（`draft: false`）→ 状態・承認レビュー（`team478a`によるAPPROVED、commit `54f7502`に対して）・CI（4件success）を再確認 → `merge_pull_request`（merge_method: "merge"）でPR #42をマージ（merge commit `23d16ef5a31ae789ee17427d62a1a433bdfbbec1`）
+5. マージ後、`origin/feature/manga-canvas-mvp`から新規`docs/phase-d3b-merge-sync-20260727`ブランチを作成し、`docs/CURRENT_TASK.md`・本ログをマージ後の状態へ更新（本記録）
+
+### 完了
+
+- PR #42マージ（Draft解除・承認レビュー確認・CI全green確認済みのうえで実行。自己承認・無断Draft解除は行っていない。ユーザーの明示的な「進めてください」指示を得てから実行）
+- `docs/CURRENT_TASK.md`のマージ後最新化
+- 本ログへの追記
+
+### 未完了
+
+- `docs/phase-d3b-merge-sync-20260727`のpush・Draft PR作成・責任者承認を経たマージ
+- 目視確認（本コンテナにXサーバーがなくElectron起動不可のため、引き続き未実施）
+- `test:a11y`（Accessibility tests）のGUIランナーでの実行結果確認
+- Phase D3-C（Home画面ビジュアル刷新）は引き続き未着手
+
+### 検証
+
+本記録はdocsのみの変更のため、コード側の品質ゲート（lint/typecheck/test/build）はPR #42マージ時点のものを引き継ぐ（`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`§7参照）。`git diff --check`は本ブランチでも再実行し、PASSを確認する。
+
+---
+
 ## 2026-07-27（続き10） Claude Code（Phase D3-B追加指示による精緻化）
 
 ### 状態
