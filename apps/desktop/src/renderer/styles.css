@@ -144,15 +144,13 @@ summary:focus-visible {
   box-shadow: var(--focus-ring);
 }
 .secondary,
-.toolbar button,
-.actions button {
+.toolbar button {
   background: var(--bg-panel-elevated);
   color: var(--text-primary);
   border: 1px solid var(--border-strong);
 }
 .secondary:hover,
-.toolbar button:hover,
-.actions button:hover {
+.toolbar button:hover {
   background: var(--bg-hover);
 }
 .danger {
@@ -227,31 +225,78 @@ label {
   padding: 7px 8px;
 }
 .projects {
-  max-width: 1000px;
+  max-width: 1600px;
   margin: 42px auto;
-  padding: 0 24px;
+  padding: 0 var(--space-6);
 }
-.projects article {
-  display: grid;
-  grid-template-columns: 90px 1fr auto;
-  gap: 20px;
+.projects h1 {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-2xl);
+}
+.projects h2,
+.projects p {
+  margin: 0 0 7px;
+}
+
+/* Home Project grid (Phase D3-C, DESKTOP_CREATIVE_STUDIO_SPEC.md §4.1) */
+.home-project-filters {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 16px;
-  background: var(--bg-panel);
-  border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  margin: 12px 0;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
-.projects article:hover {
-  border-color: var(--border-strong);
+.home-project-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.home-filter-chip {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
   background: var(--bg-panel-elevated);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.home-filter-chip:hover {
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+.home-filter-chip-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.home-project-sort {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  white-space: nowrap;
+}
+.home-project-sort select {
+  width: auto;
+  padding: var(--space-1) var(--space-2);
+}
+.home-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+.home-project-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
 }
 .project-open {
-  grid-column: 1 / 3;
-  display: grid;
-  grid-template-columns: 90px minmax(0, 1fr);
-  gap: 20px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
   min-width: 0;
   padding: 0;
   border: 0;
@@ -262,26 +307,12 @@ label {
 .project-open:hover {
   background: transparent;
 }
-.project-summary {
-  display: grid;
-  gap: 7px;
-  min-width: 0;
-}
-.project-summary strong {
-  font-size: 1.5em;
-}
-.project-summary > span,
-.project-summary small {
-  overflow: hidden;
-  color: var(--text-secondary);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .cover {
   min-width: 0;
-  height: 70px;
+  aspect-ratio: 3 / 4;
+  height: auto;
   overflow: hidden;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: var(--accent-soft);
   color: var(--accent-text);
   display: grid;
@@ -294,15 +325,57 @@ label {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
 }
-.projects h2,
-.projects p {
-  margin: 0 0 7px;
+.project-summary {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.project-summary strong {
+  overflow: hidden;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.project-summary small {
+  overflow: hidden;
+  color: var(--text-muted);
+  font-size: var(--text-2xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.home-project-card-badges {
+  display: flex;
 }
 .actions {
   display: flex;
-  gap: 7px;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.home-project-empty {
+  grid-column: 1 / -1;
+}
+@media (max-width: 899px) {
+  .home-project-grid {
+    grid-template-columns: 1fr;
+  }
+  .home-project-card {
+    flex-direction: row;
+    align-items: center;
+  }
+  .home-project-card-open {
+    flex: 1;
+    flex-direction: row;
+    align-items: center;
+  }
+  .cover {
+    width: 64px;
+    height: 64px;
+    aspect-ratio: auto;
+    flex: 0 0 auto;
+  }
 }
 .modal {
   position: relative;

@@ -54,6 +54,15 @@ const ja = {
   "home.backupsFailed": " {count}件のバックアップを復元できませんでした。",
   "home.corruptArchive": "破損した原本の保管場所: {path}",
   "home.autoBackupStatus": "自動バックアップ:",
+  "home.filterLabel": "表示するProject",
+  "home.filterAll": "すべて",
+  "home.filterGeneral": "一般",
+  "home.filterAdult": "成人向け",
+  "home.sortLabel": "並び替え",
+  "home.sortRecent": "更新が新しい順",
+  "home.sortTitle": "タイトル順",
+  "home.noCover": "カバー画像なし",
+  "home.filteredNone": "この条件に一致するProjectはありません。",
   "projectDialog.title": "新規プロジェクト",
   "projectDialog.name": "タイトル",
   "projectDialog.subtitle": "サブタイトル",
@@ -1003,7 +1012,7 @@ const ja = {
     "未認証時は公開情報だけを照会します。認証後のトークンはOS機能で暗号化し、編集は本人の非公開下書きの作品名・説明だけに制限されます。公開・商品・価格・販売ファイル・決済には使用できません。Hubのログイン情報、Supabase Service Role Key、Stripe Secret KeyはDesktopへ保存しません。",
 } as const;
 
-type TranslationKey = keyof typeof ja;
+export type TranslationKey = keyof typeof ja;
 const en: Record<TranslationKey, string> = {
   "a11y.skipMain": "Skip to main content",
   "a11y.dismissError": "Dismiss error notification",
@@ -1056,6 +1065,15 @@ const en: Record<TranslationKey, string> = {
   "home.backupsFailed": " {count} backups could not be restored.",
   "home.corruptArchive": "Archived damaged database: {path}",
   "home.autoBackupStatus": "Automatic backup:",
+  "home.filterLabel": "Show projects",
+  "home.filterAll": "All",
+  "home.filterGeneral": "General",
+  "home.filterAdult": "Adult",
+  "home.sortLabel": "Sort",
+  "home.sortRecent": "Recently updated",
+  "home.sortTitle": "Title",
+  "home.noCover": "No cover image",
+  "home.filteredNone": "No projects match this filter.",
   "projectDialog.title": "New project",
   "projectDialog.name": "Title",
   "projectDialog.subtitle": "Subtitle",

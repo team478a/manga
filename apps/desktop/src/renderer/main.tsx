@@ -19,6 +19,13 @@ import { Button } from "./components/common/Button";
 import { CommandPalette } from "./components/common/CommandPalette";
 import { useCommandPalette } from "./features/command-palette/use-command-palette";
 import { buildCommandSections } from "./features/command-palette/command-palette-items";
+import { HomeProjectGrid } from "./components/home/HomeProjectGrid";
+import { HomeProjectFilters } from "./components/home/HomeProjectFilters";
+import {
+  buildHomeProjectView,
+  type HomeProjectFilter,
+  type HomeProjectSort,
+} from "./features/home/project-view-model";
 import { AppHeader } from "./components/app-shell/AppHeader";
 import {
   GlobalNav,
@@ -95,6 +102,10 @@ function App() {
     [projectCovers, setProjectCovers] = React.useState<Record<string, string>>(
       {},
     ),
+    [homeProjectFilter, setHomeProjectFilter] =
+      React.useState<HomeProjectFilter>("all"),
+    [homeProjectSort, setHomeProjectSort] =
+      React.useState<HomeProjectSort>("recent"),
     [bundle, setBundle] = React.useState<ProjectBundle | null>(null),
     [selectedEpisode, setSelectedEpisode] = React.useState<string | null>(null),
     [episodeTemplateId, setEpisodeTemplateId] =
@@ -409,6 +420,22 @@ function App() {
       </button>
     </div>
   ) : null;
+  const moveProjectToAdult = (project: Project) => {
+    if (!confirm(t("home.moveAdultConfirm", { title: project.title }))) return;
+    void window.mangai
+      .changeProjectContentClass(project.id, "adult")
+      .then(refresh)
+      .then(() => alert(t("home.moveAdultComplete")))
+      .catch(showError);
+  };
+  const deleteProject = (project: Project) => {
+    if (!confirm(t("home.deleteConfirm", { title: project.title }))) return;
+    window.mangai.deleteProject(project.id).then(refresh).catch(showError);
+  };
+  const homeProjects = buildHomeProjectView(projects, {
+    filter: homeProjectFilter,
+    sort: homeProjectSort,
+  });
   if (!bundle)
     return (
       <>
@@ -757,101 +784,29 @@ function App() {
         )}
         <section className="projects">
           <h1>{t("home.recent")}</h1>
-          {projects.length ? (
-            projects.map((p) => (
-              <article key={p.id}>
-                <button
-                  className="project-open"
-                  aria-label={t("home.openProject", { title: p.title })}
-                  onClick={() => apply(window.mangai.openProject(p.id))}
-                >
-                  <span className="cover">
-                    {projectCovers[p.id] ? (
-                      <img src={projectCovers[p.id]} alt="" />
-                    ) : (
-                      "M"
-                    )}
-                  </span>
-                  <span className="project-summary">
-                    <strong>{p.title}</strong>
-                    <small>
-                      {p.contentClass === "adult"
-                        ? t("projectDialog.contentAdult")
-                        : t("projectDialog.contentGeneral")}
-                    </small>
-                    <span>
-                      {p.subtitle || p.description || t("home.noDescription")}
-                    </span>
-                    <small>
-                      {t("home.updated", {
-                        value: formatDateTime(p.updatedAt),
-                      })}
-                    </small>
-                  </span>
-                </button>
-                <div className="actions">
-                  {p.contentClass === "general" && (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (
-                          !confirm(
-                            t("home.moveAdultConfirm", { title: p.title }),
-                          )
-                        )
-                          return;
-                        void window.mangai
-                          .changeProjectContentClass(p.id, "adult")
-                          .then(refresh)
-                          .then(() => alert(t("home.moveAdultComplete")))
-                          .catch(showError);
-                      }}
-                    >
-                      {t("home.moveAdult")}
-                    </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void backupProject(p.id);
-                    }}
-                  >
-                    {t("home.backup")}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void apply(window.mangai.duplicateProject(p.id));
-                    }}
-                  >
-                    {t("home.duplicate")}
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (confirm(t("home.deleteConfirm", { title: p.title })))
-                        window.mangai
-                          .deleteProject(p.id)
-                          .then(refresh)
-                          .catch(showError);
-                    }}
-                  >
-                    {t("home.delete")}
-                  </Button>
-                </div>
-              </article>
-            ))
-          ) : (
-            <div className="empty">{t("home.none")}</div>
+          {projects.length > 0 && (
+            <HomeProjectFilters
+              filter={homeProjectFilter}
+              onFilterChange={setHomeProjectFilter}
+              sort={homeProjectSort}
+              onSortChange={setHomeProjectSort}
+              t={t}
+            />
           )}
+          <HomeProjectGrid
+            projects={homeProjects}
+            totalCount={projects.length}
+            projectCovers={projectCovers}
+            t={t}
+            formatDateTime={formatDateTime}
+            onOpen={(projectId) => apply(window.mangai.openProject(projectId))}
+            onMoveAdult={moveProjectToAdult}
+            onBackup={(projectId) => void backupProject(projectId)}
+            onDuplicate={(projectId) =>
+              void apply(window.mangai.duplicateProject(projectId))
+            }
+            onDelete={deleteProject}
+          />
         </section>
       </main>
       {commandPaletteElement}
