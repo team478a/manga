@@ -1562,6 +1562,106 @@ app
       );
       await captureScreenshot("home-before-command-palette");
 
+      // Phase D3-C: Home画面Projectカードグリッドの目視確認。
+      await checkStep(
+        "home-project-grid-rendered",
+        "Projectカードグリッドがカバー画像・作品名・状態Badgeとともに描画される",
+        async () => {
+          const result = await evalPage<{
+            cardCount: number;
+            hasTitle: boolean;
+            hasBadge: boolean;
+          }>(`
+            (() => {
+              const grid = document.querySelector('.home-project-grid');
+              const cards = grid ? grid.querySelectorAll('.home-project-card') : [];
+              const firstCard = cards[0];
+              return {
+                cardCount: cards.length,
+                hasTitle: Boolean(
+                  firstCard &&
+                    firstCard.querySelector('.project-summary strong')?.textContent ===
+                      'Accessibility Test Project',
+                ),
+                hasBadge: Boolean(
+                  firstCard && firstCard.querySelector('.status-badge'),
+                ),
+              };
+            })()
+          `);
+          return {
+            pass: result.cardCount > 0 && result.hasTitle && result.hasBadge,
+            detail: `cardCount=${result.cardCount} hasTitle=${result.hasTitle} hasBadge=${result.hasBadge}`,
+          };
+        },
+      );
+      await captureScreenshot("home-project-grid-populated");
+
+      // フィルタchipはfilterHomeProjectsと同じ["all","general","adult"]の順で
+      // 描画される（HomeProjectFilters.tsxのFILTERS配列）ため、文言（ja/en）に
+      // 依存せず位置で選択する。
+      await checkStep(
+        "home-project-filter-updates-grid",
+        "成人向けフィルタへ切り替えると、一般Projectのみの一覧では0件表示になる",
+        async () => {
+          const result = await evalPage<{
+            filteredCount: number;
+            showsEmptyMessage: boolean;
+          }>(`
+            (async () => {
+              const chips = document.querySelectorAll('.home-filter-chip');
+              const adultChip = chips[2];
+              if (!adultChip) throw new Error('adult filter chip not found');
+              adultChip.click();
+              await new Promise((resolve) => setTimeout(resolve, 150));
+              return {
+                filteredCount: document.querySelectorAll('.home-project-card').length,
+                showsEmptyMessage: Boolean(document.querySelector('.home-project-empty')),
+              };
+            })()
+          `);
+          return {
+            pass: result.filteredCount === 0 && result.showsEmptyMessage,
+            detail: `filteredCount=${result.filteredCount} showsEmptyMessage=${result.showsEmptyMessage}`,
+          };
+        },
+      );
+      await captureScreenshot("home-project-grid-filtered-empty");
+
+      await checkStep(
+        "home-project-filter-restores-grid",
+        "「すべて」へ戻すとフィルタ前の件数に復帰する",
+        async () => {
+          const restoredCount = await evalPage<number>(`
+            (async () => {
+              const chips = document.querySelectorAll('.home-filter-chip');
+              const allChip = chips[0];
+              if (!allChip) throw new Error('all filter chip not found');
+              allChip.click();
+              await new Promise((resolve) => setTimeout(resolve, 150));
+              return document.querySelectorAll('.home-project-card').length;
+            })()
+          `);
+          return {
+            pass: restoredCount > 0,
+            detail: `restoredCount=${restoredCount}`,
+          };
+        },
+      );
+
+      // 指示書が明示する2解像度（DESKTOP_CREATIVE_STUDIO_SPEC.md §4.1）でのグリッド確認。
+      const defaultContentSize = win.getContentSize();
+      for (const [label, width, height] of [
+        ["1920x1080", 1920, 1080],
+        ["1366x768", 1366, 768],
+      ] as const) {
+        win.setContentSize(width, height);
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        await captureScreenshot(`home-project-grid-${label}`);
+      }
+      win.setContentSize(defaultContentSize[0], defaultContentSize[1]);
+      await new Promise((resolve) => setTimeout(resolve, 150));
+
       const TRIGGER_SELECTOR = '[aria-label="コマンドパレットを開く (Ctrl+K)"]';
       const DIALOG_SELECTOR = '.ds-command-palette[role="dialog"]';
       const INPUT_SELECTOR = '.ds-command-palette-input';
