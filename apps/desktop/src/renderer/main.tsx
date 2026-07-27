@@ -359,7 +359,6 @@ function App() {
   const commandPaletteDisabled = creating || exportDialogOpen;
   const {
     open: commandPaletteOpen,
-    openPalette: openCommandPalette,
     closePalette: closeCommandPalette,
     togglePalette: toggleCommandPalette,
   } = useCommandPalette({ disabled: commandPaletteDisabled });
