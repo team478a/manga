@@ -4,6 +4,68 @@
 
 ---
 
+## 2026-07-27（続き13） Claude Code（PR-B: Desktop目視確認基盤）
+
+### 状態
+
+BLOCKED_CI（自動確認手段を実装したが、Windows CI上での実行結果は未確認。CI結果確認が次の必須ステップ）
+
+### 前提
+
+「MANGAI 次期実装指示書（Phase D3-C準備・Home画面刷新・依存関係安全確認）」§3 PR-Bに対応する。本記録はPR-A（`docs/phase-d3c-preparation-20260727`、Draft PR #44）とは別ブランチ・別Draft PRで実施した。base commitは`16f8776`（PR-Aと同じ、PR-Aの変更は含まない）。
+
+### 調査結果
+
+指示書§3「最初に調査すること」の7項目を調査。詳細は`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`§1を参照。要点:
+
+- 既存の`npm run test:a11y`（`apps/desktop/scripts/test-accessibility.mjs` → `apps/desktop/src/main/index.ts`の`--mangai-accessibility-test`分岐）が、Windows CI（`.github/workflows/desktop-windows.yml`の`windows-build`ジョブ）上で既に実績のあるElectron自動操作ハーネスであることを確認
+- Playwright/Spectron/WebdriverIO等は未導入
+- Electron組み込みの`webContents.capturePage()`（`NativeImage.toPNG()`）で、新規npm依存パッケージなしにスクリーンショットを取得できることを確認
+
+### 実施内容
+
+指示書§3の第1候補（スクリーンショットartifact）と第2候補（既存アクセシビリティテストの拡張）を統合して実装した（第3候補の手動確認手順書は、自動化が成立したため作成していない）。
+
+1. `apps/desktop/src/main/index.ts`の`accessibilityTest`分岐へ、既存のaxe監査とは別ブロックとして、コマンドパレット専用の目視確認ブロックを追加。指示書§3「コマンドパレットの必須確認項目」12項目に対応する検証を実装（開閉・トグル・Escape・フォーカス・矢印キー・Enter実行・Project起動・設定画面遷移・モーダルとの共存・禁止コマンド不在）
+2. `win.webContents.capturePage()`で9箇所のスクリーンショットを`screenshots/`ディレクトリへPNG保存
+3. 各検証項目の pass/fail を`command-palette-visual.json`へ記録。失敗時は標準エラー出力へ詳細を出し、`test:a11y`全体を失敗させる（既存のaxe違反時の扱いと同様）
+4. `.github/workflows/desktop-windows.yml`の`Accessibility tests`ステップへ`MANGAI_A11Y_REPORT`環境変数を追加し、レポート・スクリーンショットの出力先を`apps/desktop/artifacts/test-results/`配下へ変更。既存の`Upload Windows test results`ステップがそのままartifactとしてアップロードするため、新規アップロードステップは追加していない
+5. `apps/desktop/scripts/test-accessibility.mjs`を拡張し、コマンドパレット目視確認レポートの要約とスクリーンショット一覧をログへ出力するようにした
+6. `docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`を新規作成し、調査結果・実装内容・再実行手順・未確認事項を記録
+
+### 正直な申告: 未確認事項
+
+**本コンテナにはXサーバーがなくElectronを実際にレンダリングできないため、上記の実装がWindows実行環境で意図通り動作するかは未確認である。** 静的に確認できたのは、TypeScript型検査・lint・`npm run desktop:build`のPASSと、注入している11個のJavaScriptブロックの`new Function()`による構文チェックのみ。実際のDOM操作・イベント発火・スクリーンショット取得が正しく動作するかは、Draft PR作成後のGitHub Actions（Windows runner）の実行結果で初めて検証される。失敗した場合はログとartifactを確認し、追加commitで修正する。
+
+### 完了
+
+- 調査・実装・`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`作成
+- ローカル品質ゲート: `deps:check`/`lint`/`typecheck`/`desktop:test`(157/157)/`hub:test`(116/116)/`canvas:test`(26/26)/`ai:test`(44/44)/`db:migrations:validate`/`desktop:build`/`build`(Hub)/`git diff --check`、すべてPASS
+- 注入JavaScript 11ブロックの構文チェック: エラーなし
+
+### 未完了
+
+- 本ブランチのpush・Draft PR作成
+- **Windows CI（GitHub Actions）での実行結果確認**— これが実質的な最初の検証であり、次担当者が最初に確認すべき項目
+- CI成功が確認できるまで、Phase D3-C（Home画面ビジュアル刷新）へは着手しない
+- CI失敗時は、失敗ログ・artifactを見て原因を切り分け、追加commitで修正する
+
+### 変更ファイル
+
+- `apps/desktop/src/main/index.ts`（コマンドパレット目視確認ブロックを追加。既存のaxe監査ロジックは無変更）
+- `apps/desktop/scripts/test-accessibility.mjs`（コマンドパレット目視確認レポートの要約出力を追加）
+- `.github/workflows/desktop-windows.yml`（`Accessibility tests`ステップへ`MANGAI_A11Y_REPORT`環境変数を追加）
+- `docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`（新規）
+- `docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- deps:check / lint / typecheck / desktop:test(157/157) / hub:test(116/116) / canvas:test(26/26) / ai:test(44/44) / db:migrations:validate / desktop:build / build / git diff --check: すべてPASS
+- Windows CI: 未確認（Draft PR作成後に確認）
+- 目視確認: 未実施（本コンテナの制約。自動確認手段の実装をもって代替を試みたが、Windows CIでの成功確認が未了のため、目視確認手段の確立自体もまだ完了と判定していない）
+
+---
+
 ## 2026-07-27（続き11） Claude Code（PR #42マージ・文書同期）
 
 ### 状態
