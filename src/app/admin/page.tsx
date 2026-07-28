@@ -1,5 +1,7 @@
-import Link from "next/link";
 import { BadgeJapaneseYen, Boxes, Bot, Image, PackageCheck, ReceiptText, Users } from "lucide-react";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { requireAdmin } from "@/lib/auth";
 import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -34,17 +36,24 @@ export default async function AdminPage() {
 
   return (
     <main className="page">
-      <h1 className="text-3xl font-bold">管理者ダッシュボード</h1>
-      <p className="mt-3 text-lg leading-relaxed text-stone-600">
-        ユーザー、作品、商品、申請、注文の状況を一目で確認できます。売上合計は支払い済み注文の金額を仮集計しています。
-      </p>
+      <PageHeader
+        title="管理者ダッシュボード"
+        description="ユーザー、作品、商品、申請、注文の状況を一目で確認できます。売上合計は支払い済み注文の金額を仮集計しています。"
+      />
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
-          <Link className="panel block transition hover:-translate-y-0.5 hover:border-leaf" href={card.href} key={card.title}>
-            <card.icon className="h-8 w-8 text-leaf" />
-            <p className="mt-4 text-lg text-stone-600">{card.title}</p>
-            <p className="mt-3 text-4xl font-bold">{card.count}</p>
-          </Link>
+          <ButtonLink
+            className="h-auto items-start justify-start whitespace-normal p-0 text-left"
+            href={card.href}
+            key={card.title}
+            variant="ghost"
+          >
+            <Card className="h-full w-full" variant="interactive">
+              <card.icon className="h-8 w-8 text-leaf" />
+              <p className="mt-4 text-lg text-text-secondary">{card.title}</p>
+              <p className="mt-3 text-4xl font-bold">{card.count}</p>
+            </Card>
+          </ButtonLink>
         ))}
       </div>
     </main>

@@ -4,6 +4,68 @@
 
 ---
 
+## 2026-07-29 Codex（Phase Cloud UI-1 実装・ローカル検証完了）
+
+### 状態
+
+`READY_FOR_REVIEW`。MANGAI Cloud先行公開へ方針を切り替え、Web表示層の共通基盤を実装した。Desktop Phase D3-DおよびDesktop新規実装には着手していない。
+
+### ブランチ・ベース
+
+- Branch: `codex/cloud-ui-foundation`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: 作成前（commit・push後に作成する）
+
+### 完了
+
+- 指定された12文書と現行Web UIを調査
+- `docs/design/CLOUD_UI_FOUNDATION_PLAN.md`を作成
+- Cloud共通Header、Dashboard／Creator／Admin layout・navigationを実装
+- `PageHeader`、`Button`、`Card`、`FormField`、`Alert`／`FlashMessage`、`StatusBadge`、`EmptyState`を共通化
+- semantic Tailwind token、共通CSS、skip link、focus-visibleを追加
+- 公開作品、認証、Dashboard、Creator、Adminの代表画面へ段階適用
+- Canvas Editor経路はCreator SectionShellの対象外とし、Editor本体を変更していない
+- UI基盤の構造テストを追加
+
+### 変更していない領域
+
+- `apps/desktop/**`
+- Cloud Canvas Editor本体
+- Cloud AI Queue／Worker、Provider Gateway
+- Supabase migration、DB、Storage
+- Stripe、認証処理、Marketplace業務ロジック、API契約
+- 成人向け製品境界
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（121/121）
+- build: PASS
+- responsive: PASS（390px、768px、1024px。横スクロールなし、Header切替とモバイルメニュー操作を確認）
+
+### 未完了
+
+- commit・push
+- Draft PR作成
+- PR上の全CI成功確認
+- 責任者レビュー・承認
+- merge（本タスクでは実施しない）
+
+### 次担当者が最初に行うこと
+
+1. Draft PRの変更範囲が表示層に限定されていることをレビューする
+2. CI結果とPreview上の390／768／1024／1440px表示を確認する
+3. 責任者承認前にmergeしない
+
+### 注意事項
+
+- Desktop Phase D3-D設定画面2ペイン化には着手しない
+- CI成功・レスポンシブ確認・責任者承認が揃うまでmergeしない
+
+---
+
 ## 2026-07-28（続き19） Claude Code（Phase D3-C: PR #46マージ完了、責任者の最終仕様確定、文書同期Draft PR作成）
 
 ### 状態

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   FileArchive,
   FileUp,
@@ -14,6 +13,11 @@ import {
   Bell,
 } from "lucide-react";
 import { updateProfile } from "@/app/actions";
+import { FlashMessage } from "@/components/ui/Alert";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { FormField } from "@/components/ui/FormField";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { requireProfile } from "@/lib/auth";
 import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
 
@@ -101,83 +105,75 @@ export default async function DashboardPage({
 
   return (
     <main className="page">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">マイページ</h1>
-          <p className="mt-2 text-lg text-stone-600">
-            作品、販売商品、グッズ申請をここから管理します。
-          </p>
-        </div>
-        <Link className="button" href="/dashboard/works/new">
+      <PageHeader
+        title="マイページ"
+        description="作品、販売商品、グッズ申請をここから管理します。"
+        actions={
+          <ButtonLink href="/dashboard/works/new">
           作品を投稿
-        </Link>
-      </div>
-      {params.message ? (
-        <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">
-          {params.message}
-        </p>
-      ) : null}
-      {params.error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
-          {params.error}
-        </p>
-      ) : null}
+          </ButtonLink>
+        }
+      />
+      <FlashMessage
+        className="mt-5"
+        error={params.error}
+        message={params.message}
+      />
       <section className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (
-          <Link
-            className="panel block transition hover:-translate-y-0.5 hover:border-leaf"
+          <ButtonLink
+            className="h-auto items-start justify-start whitespace-normal p-0 text-left"
             href={card.href}
             key={card.title}
+            variant="ghost"
           >
-            <card.icon className="h-9 w-9 text-leaf" />
-            <h2 className="mt-4 text-2xl font-bold">{card.title}</h2>
-            <p className="mt-3 text-lg leading-relaxed text-stone-600">
-              {card.body}
-            </p>
-          </Link>
+            <Card className="h-full w-full" variant="interactive">
+              <card.icon className="h-9 w-9 text-leaf" />
+              <h2 className="mt-4 text-2xl font-bold">{card.title}</h2>
+              <p className="mt-3 text-lg leading-relaxed text-text-secondary">
+                {card.body}
+              </p>
+            </Card>
+          </ButtonLink>
         ))}
       </section>
       <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_1fr]">
-        <form action={updateProfile} className="panel space-y-5">
+        <Card>
+          <form action={updateProfile} className="space-y-5">
           <h2 className="text-2xl font-bold">プロフィール</h2>
-          <div>
-            <label className="label" htmlFor="displayName">
-              表示名
-            </label>
+          <FormField id="displayName" label="表示名" required>
             <input
-              className="field"
+              className="ui-field"
               id="displayName"
               name="displayName"
               defaultValue={profile.display_name}
               maxLength={CREATOR_INPUT_LIMITS.displayName}
               required
             />
-          </div>
-          <div>
-            <label className="label" htmlFor="bio">
-              自己紹介
-            </label>
+          </FormField>
+          <FormField id="bio" label="自己紹介">
             <textarea
-              className="field min-h-32"
+              className="ui-field min-h-32"
               id="bio"
               name="bio"
               defaultValue={profile.bio ?? ""}
               maxLength={CREATOR_INPUT_LIMITS.bio}
             />
-          </div>
-          <button className="button" type="submit">
+          </FormField>
+          <Button type="submit">
             保存する
-          </button>
-        </form>
-        <section className="panel">
+          </Button>
+          </form>
+        </Card>
+        <Card>
           <h2 className="text-2xl font-bold">はじめに</h2>
-          <p className="mt-3 text-lg leading-relaxed text-stone-600">
+          <p className="mt-3 text-lg leading-relaxed text-text-secondary">
             まずは「作品をアップロード」から作品ページを作成してください。公開した作品は「作品を探す」に表示されます。
           </p>
-          <Link className="button mt-5" href="/dashboard/works/new">
+          <ButtonLink className="mt-5" href="/dashboard/works/new">
             作品をアップロード
-          </Link>
-        </section>
+          </ButtonLink>
+        </Card>
       </div>
     </main>
   );

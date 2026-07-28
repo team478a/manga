@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { WorkCard } from "@/components/WorkCard";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { FormField } from "@/components/ui/FormField";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
@@ -64,29 +68,30 @@ export default async function WorksPage({
 
   return (
     <main className="page">
-      <h1 className="text-3xl font-bold">公開作品</h1>
-      <p className="mt-3 text-lg text-stone-600">
-        クリエイターが公開した作品を検索できます。
-      </p>
+      <PageHeader
+        title="公開作品"
+        description="クリエイターが公開した作品を検索できます。"
+      />
 
-      <form className="panel mt-7" action="/works" method="get">
+      <Card className="mt-7">
+      <form action="/works" method="get">
         <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-          <label>
-            <span className="label">作品を検索</span>
+          <FormField id="works-search" label="作品を検索">
             <input
-              className="field"
+              className="ui-field"
+              id="works-search"
               name="q"
               defaultValue={keyword}
               placeholder="タイトルや説明を入力"
               maxLength={100}
             />
-          </label>
+          </FormField>
           {selectedTag ? (
             <input type="hidden" name="tag" value={selectedTag} />
           ) : null}
-          <button className="button" type="submit">
+          <Button type="submit">
             検索する
-          </button>
+          </Button>
         </div>
         {tags.length ? (
           <div className="mt-5">
@@ -118,6 +123,7 @@ export default async function WorksPage({
           </div>
         ) : null}
       </form>
+      </Card>
 
       <div className="mt-7 flex items-center justify-between gap-4">
         <p className="text-stone-600">{works?.length ?? 0}件の作品</p>
