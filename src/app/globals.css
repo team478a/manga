@@ -64,11 +64,11 @@ select {
   }
 
   .cloud-nav-link {
-    @apply inline-flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-text-secondary transition hover:bg-linen hover:text-ink;
+    @apply inline-flex min-h-9 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-text-secondary transition hover:bg-brand-50 hover:text-brand-700;
   }
 
   .cloud-nav-link-mobile {
-    @apply flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-left font-semibold text-text-secondary transition hover:bg-linen hover:text-ink;
+    @apply flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-left font-semibold text-text-secondary transition hover:bg-brand-50 hover:text-brand-700;
   }
 
   .ui-button {
@@ -85,6 +85,10 @@ select {
 
   .ui-button-primary {
     @apply bg-leaf text-white shadow-sm hover:bg-green-800;
+  }
+
+  .ui-button-brand {
+    @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700;
   }
 
   .ui-button-secondary {

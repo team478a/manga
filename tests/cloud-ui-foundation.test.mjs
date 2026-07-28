@@ -18,7 +18,7 @@ test("Cloud区画は専用layoutと共通SectionShellを持つ", async () => {
   assert.match(creator, /CreatorSectionLayout/);
   assert.match(admin, /SectionShell/);
   assert.match(shell, /SectionNav/);
-  assert.match(shell, /lg:grid-cols-\[240px_minmax\(0,1fr\)\]/);
+  assert.match(shell, /lg:grid-cols-\[208px_minmax\(0,1fr\)\]/);
 });
 
 test("Creator区画layoutはCanvas Editorを新規Shellの対象外にする", async () => {
@@ -40,7 +40,7 @@ test("共通UI部品は段階移行に必要なvariantと状態を公開する",
     source("../src/components/EmptyState.tsx"),
   ]);
 
-  for (const variant of ["primary", "secondary", "ghost", "danger"]) {
+  for (const variant of ["primary", "brand", "secondary", "ghost", "danger"]) {
     assert.match(button, new RegExp(`\\b${variant}\\b`));
   }
   for (const variant of ["default", "interactive", "muted"]) {

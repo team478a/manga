@@ -3,71 +3,70 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `READY_FOR_REVIEW`（Phase Cloud UI-1 実装完了、Draft PR #48のCI・Previewレスポンシブ確認成功、責任者承認待ち）
+- 状態: `IN_PROGRESS`（Phase Cloud UI-2 実装・ローカル検証完了、stacked Draft PR作成前）
 - リポジトリ: `team478a/manga`
-- Base: `feature/manga-canvas-mvp` (`7615d06`)
-- Branch: `codex/cloud-ui-foundation`
-- Draft PR: [#48](https://github.com/team478a/manga/pull/48)
-- 実装計画: [`docs/design/CLOUD_UI_FOUNDATION_PLAN.md`](design/CLOUD_UI_FOUNDATION_PLAN.md)
+- Base: `codex/cloud-ui-foundation`（Draft PR #48）
+- Branch: `codex/cloud-dashboard-redesign`
+- 実装計画: [`docs/design/CLOUD_DASHBOARD_REDESIGN_PLAN.md`](design/CLOUD_DASHBOARD_REDESIGN_PLAN.md)
 
 ## 今回の目的
 
-MANGAI Cloud先行公開を優先し、公開エリア・Dashboard・Creator・Adminへ段階適用できるWeb UI共通基盤を整える。
+責任者提示の参考画面を基準に、MANGAI Cloudのログイン後画面を、制作・販売状況を一画面で把握できるSaaS型Dashboardへ刷新する。
 
-Desktop Phase D3-D設定画面2ペイン化およびDesktopの新規実装には着手しない。
+PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックには触れない。
 
 ## 完了した実装
 
-- Cloud共通Header（認証・roleに応じた導線、モバイルメニュー）
-- Dashboard／Creator／Adminの区画別layoutとナビゲーション
-- CreatorのCloud Canvas Editor経路を新規SectionShellの対象外にする境界
-- 共通`PageHeader`
-- 共通`Button`／`ButtonLink`
-- 共通`Card`
-- 共通`FormField`
-- 共通`Alert`／`FlashMessage`
-- 共通`StatusBadge`
-- 拡張した共通`EmptyState`
-- semantic Tailwind tokenと共通CSS class
-- skip linkとfocus-visible
-- 公開作品、ログイン、新規登録、Dashboard、Creator、Admin代表画面への段階適用
-- UI基盤の構造回帰テスト
+- 紫系Cloud brand tokenとapp用shadow
+- 56pxのcompactなCloud Header
+- 208px Sidebarと薄いラベンダーのapp background
+- Dashboard／Creator／Admin navigationのgroup・icon・active表示
+- 共通Buttonの`brand` variant
+- Dashboardの実データKPI:
+  - 管理中作品数
+  - 公開作品数
+  - 販売中デジタル商品数
+  - 支払い済み注文の累計クリエイター売上
+- 最近の作品table
+- 未読通知、実装済み機能へのquick action
+- Creator／Admin role向けCloud Creator導線
+- profile編集機能の継続配置
+- Cloud UI-2構造回帰テスト
 
 ## 変更していないもの
 
 - Cloud Canvas Editor本体
 - Cloud AI Queue／Worker、Provider Gateway
-- Supabase migration、DB、Storage
+- Supabase migration、DB、Storage、RLS
 - Stripe、認証処理、Marketplace業務ロジック、API契約
 - `apps/desktop/**`
 - 成人向け製品境界
 
 ## 検証
 
-- `npm run deps:check`: PASS
 - `npm run lint`: PASS
 - `npm run typecheck`: PASS（Hub + Desktop。Desktopコード変更なし）
-- `npm run hub:test`: PASS（121/121）
+- `npm run hub:test`: PASS（124/124）
 - `npm run build`: PASS
-- PR #48 CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
-- レスポンシブ:
-  - 390px: 横スクロールなし、モバイルHeader／メニュー／認証フォームを確認
-  - 768px: 横スクロールなし、中央カラムを確認
-  - 1024px: Desktop Headerへ切り替わることを確認
-  - 1440px: Vercel PreviewでDesktop Headerと576px認証カラムを確認
+- 1440px: compact Headerを実表示確認
+- 390px: Header／認証画面を実表示し、`scrollWidth === clientWidth`を確認
 - `git diff --check`: PASS
 
 ## 未完了・次の作業
 
-1. 責任者がPR #48と実画面を確認し、承認する
-2. 責任者承認後にのみDraftを解除し、mergeを検討する
+1. commit／pushし、PR #48をbaseにstacked Draft PRを作成する
+2. Vercel Previewの認証済みDashboardを390／768／1024／1440pxで目視確認する
+3. CIを確認する
+4. 責任者が実画面を確認し、承認する
 
 ## 禁止事項
 
 - Desktop関連の新規実装、Phase D3-Dへの着手
 - 対象外の業務ロジック、API、DB、Storage、決済、認証の変更
-- `feature/manga-canvas-mvp`への直接push
+- 架空のKPI、成長率、市場分析、AI提案scoreの表示
+- `feature/manga-canvas-mvp`または`codex/cloud-ui-foundation`への直接push
 - force push
+- PR #48より先のmerge
 - 全CI成功・レスポンシブ確認・責任者承認前のmerge
 
 ## 次担当者が最初に読むファイル
@@ -78,7 +77,7 @@ Desktop Phase D3-D設定画面2ペイン化およびDesktopの新規実装には
 4. 本ファイル
 5. `docs/HANDOFF_LOG.md`
 6. `docs/design/CLOUD_UI_FOUNDATION_PLAN.md`
-7. `docs/design/CURRENT_UI_AUDIT.md`
-8. `docs/design/UI_REDESIGN_PLAN.md`
-9. `docs/design/DESIGN_SYSTEM.md`
-10. `docs/design/SCREEN_INVENTORY.md`
+7. `docs/design/CLOUD_DASHBOARD_REDESIGN_PLAN.md`
+8. `docs/design/CURRENT_UI_AUDIT.md`
+9. `docs/design/UI_REDESIGN_PLAN.md`
+10. `docs/design/DESIGN_SYSTEM.md`

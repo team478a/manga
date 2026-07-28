@@ -23,11 +23,11 @@ export function PageHeader({
     >
       <div className="min-w-0">
         {eyebrow ? (
-          <p className="text-sm font-bold uppercase tracking-[0.12em] text-leaf">
+          <p className="text-sm font-bold uppercase tracking-[0.12em] text-brand-600">
             {eyebrow}
           </p>
         ) : null}
-        <h1 className={clsx("text-3xl font-bold tracking-tight", eyebrow && "mt-2")}>
+        <h1 className={clsx("text-2xl font-bold tracking-tight sm:text-3xl", eyebrow && "mt-2")}>
           {title}
         </h1>
         {description ? (

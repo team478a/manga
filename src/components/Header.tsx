@@ -48,7 +48,7 @@ function Navigation({
             ログイン
           </Link>
           <Link
-            className={mobile ? "ui-button ui-button-primary ui-button-md mt-2" : "ui-button ui-button-primary ui-button-sm"}
+            className={mobile ? "ui-button ui-button-brand ui-button-md mt-2" : "ui-button ui-button-brand ui-button-sm"}
             href="/signup"
           >
             無料ではじめる
@@ -63,17 +63,17 @@ export async function Header() {
   const { profile } = await getCurrentProfile();
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border-subtle bg-white/95 backdrop-blur">
-      <div className="mx-auto flex min-h-[72px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 border-b border-brand-100 bg-white/95 backdrop-blur">
+      <div className="flex min-h-[56px] w-full items-center justify-between gap-4 px-4 sm:px-5 lg:px-6">
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-md text-xl font-black tracking-tight text-ink sm:text-2xl"
+          className="flex items-center gap-2 rounded-md text-lg font-black tracking-tight text-ink"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-leaf text-white shadow-sm">
-            <Sparkles className="h-5 w-5" aria-hidden="true" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-600 text-white shadow-sm">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
           </span>
           <span>MANGAI</span>
-          <span className="hidden text-sm font-semibold text-text-muted sm:inline">
+          <span className="hidden text-xs font-semibold text-text-muted sm:inline">
             Cloud
           </span>
         </Link>
