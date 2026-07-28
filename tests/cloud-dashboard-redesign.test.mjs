@@ -56,3 +56,17 @@ test("Cloud Dashboard刷新計画は変更境界と検証条件を記録する",
   assert.match(plan, /Desktop/);
   assert.match(plan, /レスポンシブ/);
 });
+
+test("主要Dashboard管理画面は同じSaaS UI部品へ移行する", async () => {
+  for (const relativePath of [
+    "../src/app/dashboard/works/page.tsx",
+    "../src/app/dashboard/products/page.tsx",
+    "../src/app/dashboard/sales/page.tsx",
+  ]) {
+    const page = await source(relativePath);
+    assert.match(page, /PageHeader/);
+    assert.match(page, /<Card/);
+    assert.match(page, /shadow-app/);
+    assert.doesNotMatch(page, /className="panel/);
+  }
+});

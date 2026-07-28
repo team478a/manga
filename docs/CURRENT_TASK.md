@@ -34,6 +34,9 @@ PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックに�
 - 未読通知、実装済み機能へのquick action
 - Creator／Admin role向けCloud Creator導線
 - profile編集機能の継続配置
+- 作品管理画面の共通PageHeader／Card／Status表示への移行
+- デジタル商品管理画面の共通PageHeader／Card／Status表示への移行
+- 売上管理画面の実データsummary／注文tableへの移行
 - Cloud UI-2構造回帰テスト
 
 ## 変更していないもの

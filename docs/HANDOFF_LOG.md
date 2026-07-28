@@ -1155,6 +1155,7 @@ IN_PROGRESS（Cloud UI-2実装・ローカル品質ゲート完了、Draft PR #4
 - 参考画面を実装可能なCloud Dashboard要件へ整理
 - purple brand、compact Header、208px Sidebar、group/icon navigationを実装
 - 共通・legacy action buttonと作品tag filterをpurple brandへ統一
+- 作品管理・デジタル商品管理・売上管理をDashboardと同じSaaS UIへ移行
 - 既存Supabase tableのread-only queryによる4 KPIと最近の作品を実装
 - 未読通知、quick action、Cloud Creator、profile編集を再構成
 - 架空の市場分析、AI score、成長率は実装対象外として維持
