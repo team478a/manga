@@ -4,6 +4,50 @@
 
 ---
 
+## 2026-07-28（続き18） Claude Code（Phase D3-C: commit e6fdae2のCI失敗2件を診断・修正、Windows CI成功確認）
+
+### 状態
+
+`READY_FOR_REVIEW`（Windows CI成功確認済み。ピクセルレベルの目視確認・実装記録§8の判断・責任者承認待ち）
+
+### 前提
+
+続き17でpushしたcommit `e6fdae2`のWindows CIが失敗した。ログを取得し原因を切り分けた。
+
+### 実施内容
+
+1. **`home-project-card-max-width-single-project`が`actionsVisible=false`で失敗**: `cardWidth=280 titleVisible=true actionsVisible=false`。原因は、指示書が明示する対象解像度（1920×1080/1366×768）ではないデフォルトのdev window size（1500×920）で「スクロールなしに操作領域が収まる」という過剰な要求を含めていたこと。この厳密な要求は解像度別チェック（`home-project-grid-layout-1920x1080`/`-1366x768`）で別途確認済み（実際に両方とも`pass:true`）であり重複していた。判定を「非表示（display:none等）になっていないか」のみへ緩和した
+2. **`open-project-from-recent`・`navigate-to-settings`が連鎖的に失敗**: `found=false entered=false`／`settings view not reached`。原因は、複数Project作成ブロック（4件・10件以上）を既存のコマンドパレット検証（`open-via-button`〜`navigate-to-settings`）より前に配置していたこと。10件までProjectを増やしたことで最初の"Accessibility Test Project"がコマンドパレットの「最近開いたProject」一覧から押し出され、`open-project-from-recent`が対象を発見できず失敗。この失敗時にコマンドパレットを開いたまま処理を終えていたため、直後の`navigate-to-settings`のCtrl+K押下が「開く」ではなく「（開いたままの）パレットを閉じる」動作になり、ダイアログ待機がタイムアウトして連鎖的に失敗していた。**複数Project作成ブロックを全コマンドパレット検証の後ろ（`navigate-to-settings`の後）へ移動**し、`return-home-before-seeding`（設定画面からHomeへ戻る）checkStepを追加して解消した
+3. 品質ゲート再実行、`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`§12へ追記、`docs/CURRENT_TASK.md`更新、commit `0fef460`としてpush
+4. Windows CI再実行結果を確認し、**4チェックすべてgreen**。新規追加した8件のcheckStep（`home-project-card-max-width-single-project`/`home-project-grid-layout-1920x1080`/`-1366x768`/`open-project-from-recent`/`navigate-to-settings`/`return-home-before-seeding`/`home-project-grid-scales-to-4-projects`/`-10-projects`）すべて`pass:true`、axe `violations`もすべての画面で`[]`を確認した
+5. `docs/CURRENT_TASK.md`の状態を`READY_FOR_REVIEW`へ更新、本記録を追加
+
+### 完了
+
+- ローカル品質ゲート: `lint`/`typecheck`/`desktop:test`(182/182)/`desktop:build`/`git diff --check`、すべてPASS
+- 注入JavaScript 23ブロックの構文チェック: エラーなし
+- **Windows CI: 成功**（commit `0fef460`、4チェックすべてgreen。ジョブ全体は約4分16秒で完了し、60秒のハーネスタイムアウトにも収まった）
+
+### 未完了
+
+- スクリーンショットのピクセルレベル目視確認（本コンテナ環境ではCI artifact ZIPを直接開けないため未実施。artifact `desktop-windows-results-1`、run `30346935309`、15件のスクリーンショットを含む）
+- 実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示、カバーありProjectの目視確認方法、キーボード実機操作確認、計5項目）への回答
+- 責任者によるレビュー・承認・マージ判断
+
+### 変更ファイル
+
+- `apps/desktop/src/main/index.ts`（`home-project-card-max-width-single-project`の判定緩和、複数Project作成ブロックの配置移動、`return-home-before-seeding`追加）
+- `docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`（§12末尾に追記）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- lint / typecheck / desktop:test(182/182) / desktop:build / git diff --check: すべてPASS
+- Windows CI: **成功**（commit `0fef460`、4チェックすべてgreen）
+- 目視確認: 構造的検証はCIログで確認済み。ピクセルレベルの目視確認は未実施（上記「未完了」参照）
+
+---
+
 ## 2026-07-28（続き17） Claude Code（Phase D3-C: 責任者レビュー指摘対応、CHANGES_REQUIRED→修正）
 
 ### 状態
