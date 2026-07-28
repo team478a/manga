@@ -3,10 +3,11 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Phase Cloud UI-2 実装・ローカル検証完了、stacked Draft PR作成前）
+- 状態: `IN_PROGRESS`（Phase Cloud UI-2 実装・ローカル検証完了、Draft PR #49のCI・Preview確認待ち）
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-ui-foundation`（Draft PR #48）
 - Branch: `codex/cloud-dashboard-redesign`
+- Draft PR: [#49](https://github.com/team478a/manga/pull/49)
 - 実装計画: [`docs/design/CLOUD_DASHBOARD_REDESIGN_PLAN.md`](design/CLOUD_DASHBOARD_REDESIGN_PLAN.md)
 
 ## 今回の目的
@@ -54,10 +55,9 @@ PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックに�
 
 ## 未完了・次の作業
 
-1. commit／pushし、PR #48をbaseにstacked Draft PRを作成する
-2. Vercel Previewの認証済みDashboardを390／768／1024／1440pxで目視確認する
-3. CIを確認する
-4. 責任者が実画面を確認し、承認する
+1. Vercel Previewの認証済みDashboardを390／768／1024／1440pxで目視確認する
+2. CIを確認する
+3. 責任者が実画面を確認し、承認する
 
 ## 禁止事項
 

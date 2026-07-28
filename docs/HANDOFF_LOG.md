@@ -1141,13 +1141,14 @@ READY_FOR_REVIEW（統合完了、Draft PR作成後は責任者レビュー待�
 
 ### 状態
 
-IN_PROGRESS（Cloud UI-2実装・ローカル品質ゲート完了、stacked Draft PR作成前）
+IN_PROGRESS（Cloud UI-2実装・ローカル品質ゲート完了、Draft PR #49のCI・Preview確認待ち）
 
 ### ブランチ・コミット
 
 - Branch: `codex/cloud-dashboard-redesign`
 - Base: `codex/cloud-ui-foundation`（Draft PR #48）
-- HEAD: commit前
+- HEAD: `0790d50`
+- Draft PR: [#49](https://github.com/team478a/manga/pull/49)
 
 ### 完了
 
@@ -1160,7 +1161,6 @@ IN_PROGRESS（Cloud UI-2実装・ローカル品質ゲート完了、stacked Dra
 
 ### 未完了
 
-- commit／push／stacked Draft PR
 - Vercel Previewで認証後Dashboardの4 viewport確認
 - CI確認と責任者承認
 
