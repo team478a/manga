@@ -4,6 +4,60 @@
 
 ---
 
+## 2026-07-28（続き19） Claude Code（Phase D3-C: PR #46マージ完了、責任者の最終仕様確定、文書同期Draft PR作成）
+
+### 状態
+
+`COMPLETED`（Phase D3-Cはマージ済み。本記録を含む文書同期は別Draft PRとして未マージ・責任者承認待ち）
+
+### 前提
+
+続き18でWindows CI成功（commit `0fef460`）を確認し、責任者へ報告した。責任者から以下を受けた。
+
+1. 実装記録§8の確認事項（フィルタ・並び替え方針、お気に入り、ページ数、説明文、カバーあり/キーボード実機確認）への最終回答
+2. commit `2f3a506` の承認（GitHub Review `4796116241`、`team478a`、APPROVED）
+3. 「最新CIがすべて成功していることを再確認し、PR #46をDraft解除してmerge commit方式で`feature/manga-canvas-mvp`へマージ、マージ後はCURRENT_TASK.md/HANDOFF_LOG.mdを更新する文書のみのDraft PRを作成する（このDraft PRも責任者承認なしにマージしない）」という明示的な指示
+
+### 実施内容
+
+1. マージ前の再検証（チャット上の通知を鵜呑みにせず、必ずAPIで確認する方針を継続）:
+   - `pull_request_read(get_reviews)`で承認レビューを確認: `commit_id: 2f3a506b8ad08b750a492ab50707f828b23f973d`（現在のHEADと完全一致）、`state: APPROVED`、`user: team478a`（PR作成者`stockbusiness`とは別アカウント）、dismiss等なし
+   - `pull_request_read(get_check_runs)`で4チェックすべて`success`（現在のHEADで実行済み）を確認
+   - `mergeable_state: "clean"`を確認
+2. `update_pull_request`で`draft: false`へ変更（Draft解除）
+3. `merge_pull_request`で`merge_method: "merge"`（merge commit方式）を指定してマージ → **merge commit `817dc69`**
+4. `git fetch origin feature/manga-canvas-mvp`でマージ後の状態を取得し、`docs/phase-d3c-completion-sync-20260728`ブランチを作成
+5. `docs/CURRENT_TASK.md`を全面更新: 状態を`COMPLETED`へ、PR #46のレビュー経緯を要約、責任者による最終仕様確定（6項目）を明記、次の作業（他画面刷新は§5含め責任者判断待ち、依存パッケージ評価は別ブランチ、本Draft PR自体も未承認マージ禁止）を更新
+6. `docs/HANDOFF_LOG.md`へ本記録を追加
+
+### 責任者による最終仕様確定（実装記録§8の決着）
+
+1. フィルタは「すべて／一般／成人向け」で確定（実装どおり）
+2. 並び替えは「更新が新しい順／タイトル順」で確定（実装どおり）
+3. 「お気に入り」フィルタは今回実装しない
+4. ページ数表示は今回実装しない
+5. 説明文（subtitle/description）はHomeカードに表示しない
+6. カバー画像ありProjectの目視確認・キーボード実機操作確認は、Windows実機のRC受入れ時に実施する
+
+### 完了
+
+- PR #46のマージ（merge commit `817dc69`、`feature/manga-canvas-mvp`）
+- `docs/CURRENT_TASK.md`・`docs/HANDOFF_LOG.md`の更新（`docs/phase-d3c-completion-sync-20260728`ブランチ、文書のみ）
+
+### 未完了
+
+- 文書同期用Draft PR（`docs/phase-d3c-completion-sync-20260728`）自体のpush・PR作成・責任者承認待ち（**このPRは承認なしにマージしない**）
+- カバー画像ありProject・キーボード実機操作の確認（Windows実機RC受入れ時）
+- 次画面（`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5ブレークポイント再編・設定画面2ペイン化・AI画像生成画面新設等）のビジュアル刷新は、責任者の着手承認待ち
+- 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価（別ブランチで継続予定、未着手）
+
+### 変更ファイル
+
+- `docs/CURRENT_TASK.md`（全面更新、状態をCOMPLETEDへ）
+- `docs/HANDOFF_LOG.md`（本記録）
+
+---
+
 ## 2026-07-28（続き18） Claude Code（Phase D3-C: commit e6fdae2のCI失敗2件を診断・修正、Windows CI成功確認）
 
 ### 状態
