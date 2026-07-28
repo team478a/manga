@@ -46,7 +46,7 @@
 
 ### 未完了
 
-- 文書同期用Draft PR（`docs/phase-d3c-completion-sync-20260728`）自体のpush・PR作成・責任者承認待ち（**このPRは承認なしにマージしない**）
+- 文書同期用Draft PR（`docs/phase-d3c-completion-sync-20260728`、**PR #47として作成済み**）: Required Quality・Desktop Windowsの完了確認待ち、責任者承認・マージ待ち（**このPRは承認なしにマージしない**）
 - カバー画像ありProject・キーボード実機操作の確認（Windows実機RC受入れ時）
 - 次画面（`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5ブレークポイント再編・設定画面2ペイン化・AI画像生成画面新設等）のビジュアル刷新は、責任者の着手承認待ち
 - 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価（別ブランチで継続予定、未着手）

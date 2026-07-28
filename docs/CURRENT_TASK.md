@@ -6,7 +6,7 @@
 - 状態: `COMPLETED`（Phase D3-C: Home画面ビジュアル刷新はPR #46として`feature/manga-canvas-mvp`へマージ済み。次フェーズは責任者判断待ち）
 - リポジトリ: `team478a/manga`
 - デフォルトブランチ: `feature/manga-canvas-mvp`（PR #46マージ済みコミット `817dc69` を含む）
-- 本ファイルの更新ブランチ: `docs/phase-d3c-completion-sync-20260728`（文書同期専用のDraft PR。責任者承認なしにマージしない）
+- 本ファイルの更新ブランチ: `docs/phase-d3c-completion-sync-20260728`（**PR #47として作成済み**。文書のみ。Required Quality・Desktop Windowsの完了確認待ち、責任者承認・マージ待ち。責任者承認なしにマージしない）
 - 詳細記録: [`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`](design/PHASE_D3C_HOME_VISUAL_REFRESH.md)
 
 ## 直前の完了事項: Phase D3-C（Home画面ビジュアル刷新、PR #46マージ済み）
@@ -45,7 +45,7 @@
 1. カバー画像あり・キーボード実機操作の確認は、次回のWindows実機RC受入れ機会に実施する（担当は未定。実施時は本ファイルまたは`docs/REMAINING_TASKS.md`へ結果を記録する）
 2. 次画面のビジュアル刷新（`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5ブレークポイント再編・設定画面2ペイン化・AI画像生成画面新設等）は、責任者の明示的な着手承認を待って着手する
 3. 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価は、別ブランチ（`chore/dependency-security-triage-20260727`想定）で継続する（未着手）
-4. **本ファイルを更新した`docs/phase-d3c-completion-sync-20260728`ブランチのDraft PR自体も、責任者の明示的な承認なしにマージしない**
+4. **本ファイルを更新したPR #47（`docs/phase-d3c-completion-sync-20260728`）は作成済み**。Required Quality・Desktop Windowsの完了確認待ち、責任者承認・マージ待ち。責任者の明示的な承認なしにマージしない
 
 ## 禁止事項（引き続き遵守）
 
