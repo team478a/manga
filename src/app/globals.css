@@ -11,7 +11,7 @@ html {
 }
 
 body {
-  background: #fffdf9;
+  background: #f7f8f5;
   color: #263238;
 }
 
@@ -19,6 +19,19 @@ input,
 textarea,
 select {
   font-size: 16px;
+}
+
+:focus-visible {
+  outline: 3px solid #256b45;
+  outline-offset: 3px;
+}
+
+.skip-link {
+  @apply fixed left-4 top-3 z-[100] -translate-y-24 rounded-md bg-ink px-4 py-3 font-semibold text-white shadow-dialog transition;
+}
+
+.skip-link:focus {
+  @apply translate-y-0;
 }
 
 @layer components {
@@ -48,5 +61,109 @@ select {
 
   .muted {
     @apply text-stone-600;
+  }
+
+  .cloud-nav-link {
+    @apply inline-flex min-h-10 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-text-secondary transition hover:bg-linen hover:text-ink;
+  }
+
+  .cloud-nav-link-mobile {
+    @apply flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-left font-semibold text-text-secondary transition hover:bg-linen hover:text-ink;
+  }
+
+  .ui-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition duration-150 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .ui-button-sm {
+    @apply min-h-10 px-4 py-2 text-sm;
+  }
+
+  .ui-button-md {
+    @apply min-h-12 px-5 py-3 text-base;
+  }
+
+  .ui-button-primary {
+    @apply bg-leaf text-white shadow-sm hover:bg-green-800;
+  }
+
+  .ui-button-secondary {
+    @apply border border-border-strong bg-white text-ink hover:bg-linen;
+  }
+
+  .ui-button-ghost {
+    @apply text-text-secondary hover:bg-linen hover:text-ink;
+  }
+
+  .ui-button-danger {
+    @apply bg-status-danger text-white hover:bg-red-800;
+  }
+
+  .ui-card {
+    @apply rounded-xl border p-5;
+  }
+
+  .ui-card-default {
+    @apply border-border-subtle bg-white shadow-panel;
+  }
+
+  .ui-card-interactive {
+    @apply border-border-subtle bg-white shadow-panel transition hover:-translate-y-0.5 hover:border-leaf hover:shadow-soft;
+  }
+
+  .ui-card-muted {
+    @apply border-border-subtle bg-surface-muted;
+  }
+
+  .ui-label {
+    @apply block text-base font-semibold text-ink;
+  }
+
+  .ui-field {
+    @apply w-full rounded-lg border border-border-strong bg-white px-4 py-3 text-base text-ink outline-none transition placeholder:text-stone-400 focus:border-leaf focus:ring-4 focus:ring-leaf/15;
+  }
+
+  .ui-alert {
+    @apply rounded-lg border px-4 py-3 text-sm leading-relaxed sm:text-base;
+  }
+
+  .ui-alert-info {
+    @apply border-blue-200 bg-blue-50 text-blue-900;
+  }
+
+  .ui-alert-success {
+    @apply border-green-200 bg-green-50 text-green-900;
+  }
+
+  .ui-alert-warning {
+    @apply border-amber-200 bg-amber-50 text-amber-950;
+  }
+
+  .ui-alert-danger {
+    @apply border-red-200 bg-red-50 text-red-800;
+  }
+
+  .ui-status {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold;
+  }
+
+  .ui-status-neutral {
+    @apply bg-stone-100 text-stone-700;
+  }
+
+  .ui-status-info {
+    @apply bg-blue-50 text-blue-800;
+  }
+
+  .ui-status-success {
+    @apply bg-green-50 text-green-800;
+  }
+
+  .ui-status-warning {
+    @apply bg-amber-50 text-amber-900;
+  }
+
+  .ui-status-danger {
+    @apply bg-red-50 text-red-800;
   }
 }

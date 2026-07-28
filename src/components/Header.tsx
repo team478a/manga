@@ -1,55 +1,102 @@
 import Link from "next/link";
-import { LogIn, LogOut, Search, UserPlus } from "lucide-react";
+import { LogOut, Menu, Sparkles } from "lucide-react";
 import { signOut } from "@/app/actions";
 import { getCurrentProfile } from "@/lib/auth";
+import type { Profile } from "@/lib/types";
+
+function Navigation({
+  profile,
+  mobile = false,
+}: {
+  profile: Profile | null;
+  mobile?: boolean;
+}) {
+  const linkClass = mobile ? "cloud-nav-link-mobile" : "cloud-nav-link";
+  return (
+    <>
+      <Link className={linkClass} href="/works">
+        作品を探す
+      </Link>
+      {profile?.role === "creator" || profile?.role === "admin" ? (
+        <Link className={linkClass} href="/creator">
+          Cloud Creator
+        </Link>
+      ) : null}
+      {profile ? (
+        <>
+          <Link className={linkClass} href="/dashboard">
+            Dashboard
+          </Link>
+          {profile.role === "admin" ? (
+            <Link className={linkClass} href="/admin">
+              Admin
+            </Link>
+          ) : null}
+          <form action={signOut}>
+            <button
+              className={mobile ? "cloud-nav-link-mobile w-full" : linkClass}
+              type="submit"
+            >
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              ログアウト
+            </button>
+          </form>
+        </>
+      ) : (
+        <>
+          <Link className={linkClass} href="/login">
+            ログイン
+          </Link>
+          <Link
+            className={mobile ? "ui-button ui-button-primary ui-button-md mt-2" : "ui-button ui-button-primary ui-button-sm"}
+            href="/signup"
+          >
+            無料ではじめる
+          </Link>
+        </>
+      )}
+    </>
+  );
+}
 
 export async function Header() {
   const { profile } = await getCurrentProfile();
 
   return (
-    <header className="border-b border-stone-200 bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <Link href="/" className="text-2xl font-bold tracking-normal text-ink">
-          MANGAI Creator
+    <header className="sticky top-0 z-50 border-b border-border-subtle bg-white/95 backdrop-blur">
+      <div className="mx-auto flex min-h-[72px] max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <Link
+          href="/"
+          className="flex items-center gap-2 rounded-md text-xl font-black tracking-tight text-ink sm:text-2xl"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-leaf text-white shadow-sm">
+            <Sparkles className="h-5 w-5" aria-hidden="true" />
+          </span>
+          <span>MANGAI</span>
+          <span className="hidden text-sm font-semibold text-text-muted sm:inline">
+            Cloud
+          </span>
         </Link>
-        <nav className="flex flex-wrap items-center gap-2 text-base">
-          <Link className="button-secondary" href="/works">
-            <Search className="mr-2 h-5 w-5" />
-            作品を探す
-          </Link>
-          <Link className="button-secondary" href="/sales-packages">
-            販売パッケージ
-          </Link>
-          {profile ? (
-            <>
-              {profile.role === "creator" || profile.role === "admin" ? (
-                <Link className="button-secondary" href="/creator">
-                  Cloud Creator
-                </Link>
-              ) : null}
-              <Link className="button-secondary" href="/dashboard">
-                マイページ
-              </Link>
-              <form action={signOut}>
-                <button className="button-secondary" type="submit">
-                  <LogOut className="mr-2 h-5 w-5" />
-                  ログアウト
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <Link className="button-secondary" href="/login">
-                <LogIn className="mr-2 h-5 w-5" />
-                ログイン
-              </Link>
-              <Link className="button" href="/signup">
-                <UserPlus className="mr-2 h-5 w-5" />
-                新規登録
-              </Link>
-            </>
-          )}
+
+        <nav
+          aria-label="Cloud共通メニュー"
+          className="hidden items-center gap-1 lg:flex"
+        >
+          <Navigation profile={profile} />
         </nav>
+
+        <details className="group relative lg:hidden">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-lg border border-border-subtle bg-white px-3 py-2 font-semibold marker:content-none">
+            <Menu className="h-5 w-5" aria-hidden="true" />
+            メニュー
+          </summary>
+          <nav
+            aria-label="Cloud共通モバイルメニュー"
+            className="absolute right-0 top-[calc(100%+0.5rem)] flex w-64 flex-col rounded-xl border border-border-subtle bg-white p-3 shadow-dialog"
+          >
+            <Navigation mobile profile={profile} />
+          </nav>
+        </details>
       </div>
     </header>
   );
