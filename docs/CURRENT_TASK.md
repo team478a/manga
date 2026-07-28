@@ -74,11 +74,16 @@ PR #44→PR #45の順でマージしたため、PR #45側で`docs/HANDOFF_LOG.md
 4. `@media (max-width: 899px)`を削除（`BrowserWindow`の`minWidth: 1100`により到達不可能なdead codeであり、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5未承認のブレークポイント再編に実質該当していた）
 5. 本ファイル・実装記録・PR本文を更新
 
-品質ゲート（lint/typecheck/desktop:test 182/182/hub:test/canvas:test/ai:test/db:migrations:validate/desktop:build/build/git diff --check）はすべてPASS。**Windows CIはpush直後で結果未確認。**
+品質ゲート（lint/typecheck/desktop:test 182/182/hub:test/canvas:test/ai:test/db:migrations:validate/desktop:build/build/git diff --check）はすべてPASS。commit `e6fdae2`のWindows CIは2件の新規失敗を検出した（詳細下記）。原因を切り分けて修正し、commit（本ブランチ最新）をpush済み。**再実行結果は未確認。**
+
+### commit `e6fdae2`のWindows CI失敗と修正（詳細は`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`§12末尾）
+
+1. `home-project-card-max-width-single-project`が`actionsVisible=false`で失敗: 対象解像度でないデフォルトwindow sizeでの「スクロールなしに収まる」という過剰な要求が原因。判定を「非表示になっていないか」のみへ緩和
+2. `open-project-from-recent`・`navigate-to-settings`が連鎖的に失敗: 複数Project作成ブロックを既存のコマンドパレット検証より前に置いていたため、"Accessibility Test Project"が「最近開いた」一覧から押し出されたことが原因。複数Project作成ブロックを全コマンドパレット検証の後ろへ移動して解消
 
 ## 未完了・次の作業
 
-1. **Windows CI再実行結果の確認**（次担当者が最初に対応すべき項目）: 上記修正commitをpush済み。今回追加した`home-project-card-max-width-single-project`・`home-project-grid-layout-1920x1080`・`home-project-grid-layout-1366x768`・`home-project-grid-scales-to-4-projects`・`home-project-grid-scales-to-10-projects`が実環境で成功するか要確認。失敗した場合はログ・artifactを見て原因を切り分け、追加commitで修正する
+1. **Windows CI再実行結果の確認**（次担当者が最初に対応すべき項目）: 上記2件の修正をpush済み。失敗した場合はログ・artifactを見て原因を切り分け、追加commitで修正する
 2. CI成功後、スクリーンショット（特に`home-project-grid-1366x768.png`・`-1920x1080.png`・`-4-projects.png`・`-10-projects.png`）のピクセルレベル目視確認
 3. 実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示、カバーありProjectの目視確認方法、キーボード実機操作確認）の判断を仰ぐ
 4. 責任者承認・CI成功・スクリーンショット確認が揃うまでマージしない

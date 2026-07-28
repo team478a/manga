@@ -158,7 +158,7 @@ PR-Bで整備した自動GUI検証基盤（`docs/design/PHASE_D3C_VISUAL_VALIDAT
 | `npm run build`（Hub） | PASS |
 | `git diff --check` | PASS |
 
-注入している22個のJavaScriptブロック（`--mangai-accessibility-test`ハーネスの`executeJavaScript`文字列）は`new Function()`による構文チェックでエラーなし（TypeScriptの`${...}`テンプレート補間箇所はダミー文字列へ置換したうえで検証）。
+注入している23個のJavaScriptブロック（`--mangai-accessibility-test`ハーネスの`executeJavaScript`文字列）は`new Function()`による構文チェックでエラーなし（TypeScriptの`${...}`テンプレート補間箇所はダミー文字列へ置換したうえで検証）。
 
 ## 10. 正直な申告: Windows CI結果は未確認（第1ラウンド時点の記録。§12で更新）
 
@@ -180,10 +180,19 @@ Windows CI成功後（`f8386ed`まで）、責任者がCI artifactのスクリ�
 | 2. Windows GUI検証への追加 | §6参照。1件時の幅チェック・1920×1080/1366×768ごとの幅・左寄せ・可視性チェックを追加 |
 | 3. テストデータ拡張 | §6・§7参照。1件・4件・10件以上・長いタイトル・一般／成人向け混在を自動確認対象に追加。カバーあり／なしは既存IPCの制約により未実装（§7・§8で理由と選択肢を明記） |
 | 4. `@media (max-width: 899px)`の整理 | `apps/desktop/src/main/index.ts`の`BrowserWindow`は`minWidth: 1100`のため、899px以下は実機で到達不可能なdead codeだった。DESKTOP_CREATIVE_STUDIO_SPEC.md §5（未承認のブレークポイント再編）に該当する新規ブレークポイントを実質追加してしまっていた不整合を、当該メディアクエリの削除により解消した（「ブレークポイントを変更していない」という記述と実態を一致させた） |
-| 5. PR本文・実装記録の更新 | 本セクションおよび§6〜§10で反映。ExecuteJavaScriptブロック数は22個（§9） |
+| 5. PR本文・実装記録の更新 | 本セクションおよび§6〜§10で反映。ExecuteJavaScriptブロック数は23個（§9） |
 
 **この指摘は`DESKTOP_CREATIVE_STUDIO_SPEC.md`§4.1が明示するグリッド仕様（`auto-fit, minmax(240px, 1fr)`）からの意図的な逸脱である。** 少数Project時の実害（カードの過度な拡大・操作領域の視認性低下）を優先し、責任者の直接指摘に基づいて`auto-fill` + 固定最大幅へ変更した。将来的に§4.1を更新するかどうかは別途責任者判断が必要。
 
 ### カバーありProjectの目視確認について（未実装の技術的理由）
 
 既存IPC `importDroppedAssets(projectId, files: File[])` は内部で`webUtils.getPathForFile(file)`を呼び出し、OSのドラッグ&ドロップまたはファイル選択ダイアログ由来の`File`オブジェクトが持つ実ファイルパスを取得する。ヘッドレスCI上でJavaScriptから合成した`File`/`Blob`オブジェクトはこの実ファイルパスを持たないため、既存IPCを変更せずにカバー画像付きProjectを自動生成する手段がない。新規のテスト専用IPC追加、またはAI生成パイプライン（本フェーズの明示的な禁止事項）を利用する以外に方法がなく、いずれも本フェーズの範囲外と判断した。§8で責任者判断を仰ぐ。
+
+### Windows CI 1回目の失敗と修正（commit `e6fdae2`）
+
+上記修正をpushした初回のWindows CIで2件の新規失敗を検出し、原因を切り分けて修正した。
+
+1. **`home-project-card-max-width-single-project`が`actionsVisible=false`で失敗**: 判定に「デフォルトのdev window size（1500×920、指示書が明示する対象解像度ではない）でスクロールなしに操作領域が収まる」という過剰な要求を含めていたことが原因。この「初期表示内に収まる」という厳密な要求は、指示書が明示する1366×768/1920×1080専用のチェック（`home-project-grid-layout-*`）で別途確認済み（実際にどちらも`pass:true`）であり、重複かつ過剰だった。判定を「非表示（display:none等）になっていないか」のみへ緩和した
+2. **`open-project-from-recent`・`navigate-to-settings`が連鎖的に失敗**: 複数Project作成のブロックを、既存のコマンドパレット検証（`open-via-button`〜`navigate-to-settings`）より前に配置していたため、10件までProjectを増やしたことで最初の"Accessibility Test Project"がコマンドパレットの「最近開いたProject」一覧から押し出され、`open-project-from-recent`が対象を発見できず失敗。この失敗時、コマンドパレットを開いたまま処理を終えていたため、直後の`navigate-to-settings`が「Ctrl+Kで開く」つもりが実際には「開いたままのパレットを閉じる」動作になり、ダイアログ待機がタイムアウトして連鎖的に失敗した。**複数Project作成のブロックを全コマンドパレット検証の後ろ（`navigate-to-settings`の後）へ移動し、既存チェックへの影響を排除した**
+
+修正後、注入JavaScriptブロック数は23個（構文チェックはエラーなし）。品質ゲートは全PASS。Windows CI再実行結果は本追記時点で未確認。
