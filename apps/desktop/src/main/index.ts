@@ -1560,6 +1560,37 @@ app
           return { pass: closed, detail: closed ? undefined : "dialog did not close" };
         },
       );
+
+      // 既存のaxe監査IIFEが処理の途中でロケールを英語へ切り替え、以降は戻さない仕様のため、
+      // このブロック以降のスクリーンショットは実際の日本語UIで撮影されるようロケールを戻す。
+      await checkStep(
+        "restore-japanese-locale",
+        "スクリーンショットを実際の日本語UIで撮影するため、ロケールを日本語へ戻す",
+        async () => {
+          const result = await evalPage<{ restored: boolean }>(`
+            (async () => {
+              const select = document.querySelector('[data-a11y-field="locale"]');
+              if (!select) return { restored: false };
+              const setter = Object.getOwnPropertyDescriptor(
+                HTMLSelectElement.prototype,
+                "value",
+              ).set;
+              setter.call(select, "ja");
+              select.dispatchEvent(new Event("change", { bubbles: true }));
+              const deadline = Date.now() + 5000;
+              while (document.documentElement.lang !== "ja") {
+                if (Date.now() >= deadline) return { restored: false };
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              return { restored: true };
+            })()
+          `);
+          return {
+            pass: result.restored,
+            detail: result.restored ? undefined : "locale did not switch back to ja",
+          };
+        },
+      );
       await captureScreenshot("home-before-command-palette");
 
       // Phase D3-C: Home画面Projectカードグリッドの目視確認。

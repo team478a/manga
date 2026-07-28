@@ -151,7 +151,7 @@ PR-Bで整備した自動GUI検証基盤（`docs/design/PHASE_D3C_VISUAL_VALIDAT
 | `npm run build`（Hub） | PASS |
 | `git diff --check` | PASS |
 
-注入している14個のJavaScriptブロック（`--mangai-accessibility-test`ハーネスの`executeJavaScript`文字列）は`new Function()`による構文チェックでエラーなし。
+注入している15個のJavaScriptブロック（`--mangai-accessibility-test`ハーネスの`executeJavaScript`文字列）は`new Function()`による構文チェックでエラーなし。
 
 ## 10. 正直な申告: Windows CI結果は未確認
 
