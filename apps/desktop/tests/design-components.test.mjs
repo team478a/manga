@@ -117,17 +117,13 @@ test("StatusBadge: activity=runningの脈動はreduced-motionの既存グロー�
   assert.match(stylesSource, /@media \(prefers-reduced-motion: reduce\)/);
 });
 
-test("Card/FormField/FloatingToolbarはPhase D3時点でもどの既存画面からもimportされていない（単体実装のみ）", () => {
-  // Phase D3でButtonはHome画面へ適用された（design-home-screen.test.mjs参照）。
-  // Card/FormField/FloatingToolbarは引き続き未適用であることを確認する。
+test("FormField/FloatingToolbarはPhase D3-C時点でもどの既存画面からもimportされていない（単体実装のみ）", () => {
+  // Phase D3でButtonはHome画面へ適用され、Phase D3-CでCardもHome画面へ適用された
+  // （design-home-screen.test.mjs参照）。FormField/FloatingToolbarは引き続き未適用であることを確認する。
   const screenFiles = listTsxFiles(rendererDir).filter(
     (file) => !file.startsWith(commonDir),
   );
-  const unwiredComponentNames = [
-    "common/Card",
-    "common/FormField",
-    "common/FloatingToolbar",
-  ];
+  const unwiredComponentNames = ["common/FormField", "common/FloatingToolbar"];
   for (const file of screenFiles) {
     const source = fs.readFileSync(file, "utf8");
     for (const name of unwiredComponentNames) {

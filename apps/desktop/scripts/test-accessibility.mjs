@@ -51,6 +51,10 @@ try {
           id: item.id,
           impact: item.impact,
           nodes: item.nodes.length,
+          // 修正対象を特定するため、失敗ノードのセレクタと概要のみ出力する
+          // （画像・Prompt等の利用者コンテンツは含まれないaxeの構造情報のみ）。
+          targets: item.nodes.map((node) => node.target),
+          summaries: item.nodes.map((node) => node.failureSummary),
         })),
         incomplete: screen.incomplete.map((item) => ({
           id: item.id,
