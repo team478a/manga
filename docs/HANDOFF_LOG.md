@@ -43,12 +43,11 @@
 - typecheck: PASS（Hub + Desktop）
 - hub:test: PASS（121/121）
 - build: PASS
-- responsive: PASS（390px、768px、1024px。横スクロールなし、Header切替とモバイルメニュー操作を確認）
+- PR CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
+- responsive: PASS（Vercel Previewの390px、768px、1024px、1440pxで横スクロールなし・Header切替を確認。ローカル390pxでモバイルメニュー操作も確認）
 
 ### 未完了
 
-- PR上の全CI成功確認
-- Preview上の最終レスポンシブ確認
 - 責任者レビュー・承認
 - merge（本タスクでは実施しない）
 

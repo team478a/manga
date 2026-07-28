@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `READY_FOR_REVIEW`（Phase Cloud UI-1 実装・ローカル検証完了、Draft PR #48作成済み）
+- 状態: `READY_FOR_REVIEW`（Phase Cloud UI-1 実装完了、Draft PR #48のCI・Previewレスポンシブ確認成功、責任者承認待ち）
 - リポジトリ: `team478a/manga`
 - Base: `feature/manga-canvas-mvp` (`7615d06`)
 - Branch: `codex/cloud-ui-foundation`
@@ -49,18 +49,18 @@ Desktop Phase D3-D設定画面2ペイン化およびDesktopの新規実装には
 - `npm run typecheck`: PASS（Hub + Desktop。Desktopコード変更なし）
 - `npm run hub:test`: PASS（121/121）
 - `npm run build`: PASS
+- PR #48 CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
 - レスポンシブ:
   - 390px: 横スクロールなし、モバイルHeader／メニュー／認証フォームを確認
   - 768px: 横スクロールなし、中央カラムを確認
   - 1024px: Desktop Headerへ切り替わることを確認
-- `git diff --check`: Draft PR作成前の最終確認で実行
+  - 1440px: Vercel PreviewでDesktop Headerと576px認証カラムを確認
+- `git diff --check`: PASS
 
 ## 未完了・次の作業
 
-1. PR #48上の全CI成功を確認する
-2. Previewで390／768／1024／1440pxの最終表示を確認する
-3. 責任者が実画面を確認し、承認する
-4. CI成功・レスポンシブ確認・責任者承認が揃った後にのみmergeを検討する
+1. 責任者がPR #48と実画面を確認し、承認する
+2. 責任者承認後にのみDraftを解除し、mergeを検討する
 
 ## 禁止事項
 
