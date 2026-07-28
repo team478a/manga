@@ -4,6 +4,55 @@
 
 ---
 
+## 2026-07-28（続き17） Claude Code（Phase D3-C: 責任者レビュー指摘対応、CHANGES_REQUIRED→修正）
+
+### 状態
+
+`CHANGES_REQUIRED`（責任者が目視確認で不具合を発見・push直後。Windows CI再実行結果の確認が次担当者の最初のタスク）
+
+### 前提
+
+続き16でWindows CIが成功し、責任者へスクリーンショット目視確認・実装記録§8の判断を依頼した。責任者がCI artifactを確認した結果、「Projectが1件のときカードが画面全幅まで拡大し、3:4のカバー領域が巨大化して作品名・Badge・操作ボタンが初期表示の下へ押し出されており、現状はマージ不可」との指摘を受けた（`auto-fit, minmax(240px, 1fr)`は少数Project時に1カラムが画面幅いっぱいまで伸びる仕様上の欠陥）。あわせて4件の追加修正指示を受けた。
+
+### 実施内容
+
+1. **カード最大幅の制限**: `apps/desktop/src/renderer/styles.css`の`.home-project-grid`を`grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))`から`repeat(auto-fill, minmax(240px, 280px))` + `justify-content: start`へ変更
+2. **Windows GUI検証への追加**（`apps/desktop/src/main/index.ts`）:
+   - `home-project-card-max-width-single-project`: 1件時のカード幅（320px以下）・作品名/操作領域の可視性
+   - `home-project-grid-layout-1920x1080`/`-1366x768`: 解像度ごとのカード幅・左寄せ（グリッド左端から4px未満）・可視性
+   - `home-project-grid-scales-to-4-projects`/`-10-projects`: 既存の「新規Project」ダイアログUI操作（`createProject` IPC）を反復してProjectを4件・10件へ増やし、カード幅超過なし・長いタイトルの省略記号発動・既存「成人向けへ移行」ボタン経由でのBadge反映を確認
+3. **テストデータ拡張**: 上記の中で1件は長いタイトル、1件は成人向けへ変更。**カバーあり／なしは未実装**（既存IPC`importDroppedAssets`が`webUtils.getPathForFile`に依存しており、ヘッドレスCIで合成したFile/Blobでは実ファイルパスを取得できないため。新規テスト専用IPC追加、またはAI生成パイプライン利用のいずれかが必要になり、どちらも本フェーズの禁止事項に抵触するため未実施。理由を実装記録§7・§8へ明記し、責任者判断を仰ぐ）
+4. **`@media (max-width: 899px)`の削除**: `BrowserWindow`が`minWidth: 1100`のため899px以下は実機で到達不可能なdead codeだったと判明。削除により「ブレークポイントを変更していない」という記述と実態の不一致を解消した（`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5未承認のブレークポイント再編に実質該当していた）
+5. **文書更新**: `docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`§6〜§8を更新し§12を新設、`docs/CURRENT_TASK.md`の状態を`CHANGES_REQUIRED`へ変更、本記録を追加
+6. **テスト更新**: `apps/desktop/tests/design-home-project-grid.test.mjs`のグリッドCSS検証を`auto-fill, minmax(240px, 280px)`へ更新、899pxブレークポイント不在の検証テストへ差し替え
+
+### 完了
+
+- ローカル品質ゲート再実行: `deps:check`/`lint`/`typecheck`/`desktop:test`(182/182)/`hub:test`(116/116)/`canvas:test`(26/26)/`ai:test`(44/44)/`db:migrations:validate`/`desktop:build`/`build`(Hub)/`git diff --check`、すべてPASS
+- 注入JavaScript 22ブロックの構文チェック（TypeScript `${...}`補間はダミー文字列へ置換して検証）: エラーなし
+
+### 未完了
+
+- **Windows CI再実行結果の確認**（次担当者が最初に対応すべき項目）。特に新規追加した5件のcheckStepが実環境で成功するか、既存の「新規Project」ダイアログUI操作を9回反復するタイミングが60秒のハーネスタイムアウト内に収まるかは、実機でしか確認できない
+- スクリーンショットのピクセルレベル目視確認（引き続き未実施）
+- 実装記録§8の責任者確認事項（カバーありProjectの目視確認方法を含め5項目）への回答
+- 責任者によるレビュー・承認・マージ判断
+
+### 変更ファイル
+
+- `apps/desktop/src/renderer/styles.css`（`.home-project-grid`のグリッド指定変更、`@media (max-width: 899px)`削除）
+- `apps/desktop/src/main/index.ts`（Windows GUI検証ブロックへ5件のcheckStep追加）
+- `apps/desktop/tests/design-home-project-grid.test.mjs`（グリッドCSS検証・ブレークポイント検証を更新）
+- `docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`（§6〜§8更新、§12新設）
+- `docs/CURRENT_TASK.md`、`docs/HANDOFF_LOG.md`（本記録）
+
+### 検証
+
+- lint / typecheck / desktop:test(182/182) / hub:test(116/116) / canvas:test(26/26) / ai:test(44/44) / db:migrations:validate / desktop:build / build / git diff --check: すべてPASS
+- Windows CI: **push直後、結果未確認**（次担当者が最初に確認すること）
+
+---
+
 ## 2026-07-27（続き16） Claude Code（Phase D3-C: Windows CI失敗3回の切り分けと修正、CI成功確認）
 
 ### 状態

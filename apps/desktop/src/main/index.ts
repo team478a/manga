@@ -1628,6 +1628,41 @@ app
       );
       await captureScreenshot("home-project-grid-populated");
 
+      // 責任者レビュー指摘: Projectが1件のときカードが画面全幅まで拡大し、
+      // 作品名・Badge・操作ボタンが初期表示の下へ押し出される不具合の回帰確認。
+      await checkStep(
+        "home-project-card-max-width-single-project",
+        "Projectが1件のときカード幅が過度に拡大せず（320px以下）、作品名・操作領域が初期表示内に収まる",
+        async () => {
+          const result = await evalPage<{
+            cardWidth: number;
+            titleVisible: boolean;
+            actionsVisible: boolean;
+          }>(`
+            (() => {
+              const card = document.querySelector('.home-project-card');
+              if (!card) {
+                return { cardWidth: 0, titleVisible: false, actionsVisible: false };
+              }
+              const inViewport = (el) => {
+                if (!el) return false;
+                const rect = el.getBoundingClientRect();
+                return rect.width > 0 && rect.bottom > 0 && rect.bottom <= window.innerHeight;
+              };
+              return {
+                cardWidth: card.getBoundingClientRect().width,
+                titleVisible: inViewport(card.querySelector('.project-summary strong')),
+                actionsVisible: inViewport(card.querySelector('.home-project-card-actions')),
+              };
+            })()
+          `);
+          return {
+            pass: result.cardWidth > 0 && result.cardWidth <= 320 && result.titleVisible && result.actionsVisible,
+            detail: `cardWidth=${Math.round(result.cardWidth)} titleVisible=${result.titleVisible} actionsVisible=${result.actionsVisible}`,
+          };
+        },
+      );
+
       // フィルタchipはfilterHomeProjectsと同じ["all","general","adult"]の順で
       // 描画される（HomeProjectFilters.tsxのFILTERS配列）ため、文言（ja/en）に
       // 依存せず位置で選択する。
@@ -1681,6 +1716,8 @@ app
       );
 
       // 指示書が明示する2解像度（DESKTOP_CREATIVE_STUDIO_SPEC.md §4.1）でのグリッド確認。
+      // Projectが1件の状態（責任者が不具合を発見した状態そのもの）で、カード幅・
+      // 左寄せ・タイトル/操作領域の可視性を解像度ごとに確認する。
       const defaultContentSize = win.getContentSize();
       for (const [label, width, height] of [
         ["1920x1080", 1920, 1080],
@@ -1688,10 +1725,185 @@ app
       ] as const) {
         win.setContentSize(width, height);
         await new Promise((resolve) => setTimeout(resolve, 150));
+        await checkStep(
+          `home-project-grid-layout-${label}`,
+          `${label}でカードが左寄せの適切な幅になり、作品名・操作領域が初期表示内に収まる`,
+          async () => {
+            const result = await evalPage<{
+              cardWidth: number;
+              leftOffset: number;
+              titleVisible: boolean;
+              actionsVisible: boolean;
+            }>(`
+              (() => {
+                const grid = document.querySelector('.home-project-grid');
+                const card = document.querySelector('.home-project-card');
+                if (!grid || !card) {
+                  return { cardWidth: 0, leftOffset: 9999, titleVisible: false, actionsVisible: false };
+                }
+                const gridRect = grid.getBoundingClientRect();
+                const cardRect = card.getBoundingClientRect();
+                const inViewport = (el) => {
+                  if (!el) return false;
+                  const rect = el.getBoundingClientRect();
+                  return rect.width > 0 && rect.bottom > 0 && rect.bottom <= window.innerHeight;
+                };
+                return {
+                  cardWidth: cardRect.width,
+                  leftOffset: cardRect.left - gridRect.left,
+                  titleVisible: inViewport(card.querySelector('.project-summary strong')),
+                  actionsVisible: inViewport(card.querySelector('.home-project-card-actions')),
+                };
+              })()
+            `);
+            const leftAligned = result.leftOffset >= 0 && result.leftOffset < 4;
+            return {
+              pass:
+                result.cardWidth > 0 &&
+                result.cardWidth <= 320 &&
+                leftAligned &&
+                result.titleVisible &&
+                result.actionsVisible,
+              detail: `cardWidth=${Math.round(result.cardWidth)} leftOffset=${Math.round(result.leftOffset)} titleVisible=${result.titleVisible} actionsVisible=${result.actionsVisible}`,
+            };
+          },
+        );
         await captureScreenshot(`home-project-grid-${label}`);
       }
       win.setContentSize(defaultContentSize[0], defaultContentSize[1]);
       await new Promise((resolve) => setTimeout(resolve, 150));
+
+      // 責任者レビュー指摘: 複数Project時（4件・10件以上・長いタイトル・一般／成人向け
+      // 混在）でカードグリッドが崩れないことを確認する。既存の「新規Project」ダイアログ
+      // UI操作（createProject IPC）のみを使用し、新規IPCは追加していない。
+      const createProjectViaDialog = async (title: string) => {
+        await evalPage<void>(`
+          (async () => {
+            document.querySelector('[data-a11y-action="new-project"]').click();
+            const fieldDeadline = Date.now() + 3000;
+            while (!document.querySelector('[data-a11y-field="project-title"]')) {
+              if (Date.now() >= fieldDeadline) throw new Error('project-title field not found');
+              await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+            const titleField = document.querySelector('[data-a11y-field="project-title"]');
+            const valueSetter = Object.getOwnPropertyDescriptor(
+              HTMLInputElement.prototype,
+              "value",
+            ).set;
+            valueSetter.call(titleField, ${JSON.stringify(title)});
+            titleField.dispatchEvent(new Event("input", { bubbles: true }));
+            document.querySelector('form[role="dialog"]').requestSubmit();
+            const editorDeadline = Date.now() + 5000;
+            while (!document.querySelector('[data-a11y-action="open-projects"]')) {
+              if (Date.now() >= editorDeadline) throw new Error('did not enter editor after create');
+              await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+            document.querySelector('[data-a11y-action="open-projects"]').click();
+            const homeDeadline = Date.now() + 5000;
+            while (!document.querySelector('[data-a11y-action="new-project"]')) {
+              if (Date.now() >= homeDeadline) throw new Error('did not return to home after create');
+              await new Promise((resolve) => setTimeout(resolve, 50));
+            }
+          })()
+        `);
+      };
+
+      await checkStep(
+        "home-project-grid-scales-to-4-projects",
+        "Projectが4件のとき、カードグリッドが複数列で崩れず描画される",
+        async () => {
+          for (const title of ["第二作品", "第三作品", "第四作品"]) {
+            await createProjectViaDialog(title);
+          }
+          const result = await evalPage<{ cardCount: number; anyOversized: boolean }>(`
+            (() => {
+              const cards = Array.from(document.querySelectorAll('.home-project-card'));
+              return {
+                cardCount: cards.length,
+                anyOversized: cards.some((card) => card.getBoundingClientRect().width > 320),
+              };
+            })()
+          `);
+          return {
+            pass: result.cardCount === 4 && !result.anyOversized,
+            detail: `cardCount=${result.cardCount} anyOversized=${result.anyOversized}`,
+          };
+        },
+      );
+      await captureScreenshot("home-project-grid-4-projects");
+
+      const LONG_TITLE =
+        "非常に長い作品タイトルの表示崩れを確認するためのテスト用プロジェクト名（省略記号が正しく機能することを確認する）";
+      await checkStep(
+        "home-project-grid-scales-to-10-projects",
+        "Projectが10件以上（長いタイトル・一般／成人向け混在含む）でもカードグリッドが崩れない",
+        async () => {
+          for (const title of ["第五作品", "第六作品", "第七作品", "第八作品", "第九作品", LONG_TITLE]) {
+            await createProjectViaDialog(title);
+          }
+          await evalPage<void>(`
+            (() => {
+              window.confirm = () => true;
+              window.alert = () => {};
+            })()
+          `);
+          const moved = await evalPage<boolean>(`
+            (async () => {
+              const cards = Array.from(document.querySelectorAll('.home-project-card'));
+              const targetCard = cards.find((card) =>
+                (card.querySelector('.project-summary strong')?.textContent || '').startsWith(${JSON.stringify(LONG_TITLE.slice(0, 12))}),
+              );
+              if (!targetCard) return false;
+              const moveButton = Array.from(targetCard.querySelectorAll('button')).find((b) =>
+                /成人向け|adult/i.test(b.textContent || ''),
+              );
+              if (!moveButton) return false;
+              moveButton.click();
+              const deadline = Date.now() + 5000;
+              while (Date.now() < deadline) {
+                const badge = targetCard.querySelector('.status-badge');
+                if (badge && /成人向け|adult/i.test(badge.textContent || '')) return true;
+                await new Promise((resolve) => setTimeout(resolve, 50));
+              }
+              return false;
+            })()
+          `);
+          const result = await evalPage<{
+            cardCount: number;
+            anyOversized: boolean;
+            longTitleEllipsized: boolean;
+            adultBadgeCount: number;
+          }>(`
+            (() => {
+              const cards = Array.from(document.querySelectorAll('.home-project-card'));
+              const longTitleCard = cards.find((card) =>
+                (card.querySelector('.project-summary strong')?.textContent || '').startsWith(${JSON.stringify(LONG_TITLE.slice(0, 12))}),
+              );
+              const strongEl = longTitleCard && longTitleCard.querySelector('.project-summary strong');
+              return {
+                cardCount: cards.length,
+                anyOversized: cards.some((card) => card.getBoundingClientRect().width > 320),
+                longTitleEllipsized: Boolean(strongEl && strongEl.scrollWidth > strongEl.clientWidth),
+                adultBadgeCount: cards.filter((card) =>
+                  Array.from(card.querySelectorAll('.status-badge')).some((badge) =>
+                    /成人向け|adult/i.test(badge.textContent || ''),
+                  ),
+                ).length,
+              };
+            })()
+          `);
+          return {
+            pass:
+              result.cardCount >= 10 &&
+              !result.anyOversized &&
+              result.longTitleEllipsized &&
+              moved &&
+              result.adultBadgeCount >= 1,
+            detail: `cardCount=${result.cardCount} anyOversized=${result.anyOversized} longTitleEllipsized=${result.longTitleEllipsized} moved=${moved} adultBadgeCount=${result.adultBadgeCount}`,
+          };
+        },
+      );
+      await captureScreenshot("home-project-grid-10-projects");
 
       const TRIGGER_SELECTOR = '[aria-label="コマンドパレットを開く (Ctrl+K)"]';
       const DIALOG_SELECTOR = '.ds-command-palette[role="dialog"]';

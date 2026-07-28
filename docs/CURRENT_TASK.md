@@ -2,8 +2,8 @@
 
 ## 基本情報
 
-- 更新日: 2026-07-27
-- 状態: `READY_FOR_REVIEW`（Phase D3-C: Home画面ビジュアル刷新の実装完了。**Windows CI成功確認済み**。ピクセルレベルの目視確認・責任者承認待ち）
+- 更新日: 2026-07-28
+- 状態: `CHANGES_REQUIRED`（責任者が目視確認で「Projectが1件のときカードが画面全幅まで拡大する」不具合を発見。修正・追加検証済みでpush直後。**Windows CI再実行結果の確認が次担当者の最初のタスク**。CI成功確認後に`READY_FOR_REVIEW`へ更新すること）
 - リポジトリ: `team478a/manga`
 - 作業ブランチ: `codex/phase-d3c-home-visual-refresh`
 - Base branch: `feature/manga-canvas-mvp` @ `3fb5f24dede0961d1951c0479b6fc1bb996e2d6f`（PR #45マージ済みコミット）
@@ -64,13 +64,26 @@ PR #44→PR #45の順でマージしたため、PR #45側で`docs/HANDOFF_LOG.md
 
 詳細は`docs/HANDOFF_LOG.md`「続き16」を参照。
 
+### 責任者レビュー指摘（第2ラウンド、2026-07-28）と対応
+
+`f8386ed`のスクリーンショットを目視確認した責任者から、「Projectが1件のときカードが画面全幅まで拡大し、カバー領域が巨大化して作品名・Badge・操作ボタンが初期表示の下へ押し出される」というマージ不可の指摘を受けた。以下を修正した（詳細は`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`§12）。
+
+1. `.home-project-grid`のグリッド指定を`auto-fit, minmax(240px, 1fr)`から`auto-fill, minmax(240px, 280px)` + `justify-content: start`へ変更（カード最大幅を制限）
+2. Windows GUI検証へ、1件時のカード幅チェック・解像度ごとの幅/左寄せ/可視性チェックを追加
+3. テストデータを4件・10件以上（長いタイトル・一般／成人向け混在含む）へ拡張（既存IPCのみ使用）。カバーあり／なしは既存IPCの技術的制約により未実装（理由は§7・§8）
+4. `@media (max-width: 899px)`を削除（`BrowserWindow`の`minWidth: 1100`により到達不可能なdead codeであり、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5未承認のブレークポイント再編に実質該当していた）
+5. 本ファイル・実装記録・PR本文を更新
+
+品質ゲート（lint/typecheck/desktop:test 182/182/hub:test/canvas:test/ai:test/db:migrations:validate/desktop:build/build/git diff --check）はすべてPASS。**Windows CIはpush直後で結果未確認。**
+
 ## 未完了・次の作業
 
-1. **スクリーンショットのピクセルレベル目視確認**（次担当者が最初に対応すべき項目）: 本セッションの環境ではCI artifact ZIP（`desktop-windows-results-1`、run `30275081135`）を直接ダウンロード・画像として開く手段がなく未実施。`home-project-grid-1366x768.png`・`home-project-grid-1920x1080.png`・`home-project-grid-populated.png`・`home-project-grid-filtered-empty.png`を含む13件のスクリーンショットは生成・アップロード済み
-2. CI成功・スクリーンショット目視確認が揃ったら、実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示、多数データ確認）の判断を仰ぐ
-3. 責任者承認・CI成功・スクリーンショット確認が揃うまでマージしない
-4. マージ後、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5（ブレークポイント再編）・設定画面2ペイン化・AI画像生成画面新設等、他画面のビジュアル刷新は別途責任者判断を待って着手する
-5. 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価は、本PRとは別ブランチ（`chore/dependency-security-triage-20260727`想定）で継続する（未着手）
+1. **Windows CI再実行結果の確認**（次担当者が最初に対応すべき項目）: 上記修正commitをpush済み。今回追加した`home-project-card-max-width-single-project`・`home-project-grid-layout-1920x1080`・`home-project-grid-layout-1366x768`・`home-project-grid-scales-to-4-projects`・`home-project-grid-scales-to-10-projects`が実環境で成功するか要確認。失敗した場合はログ・artifactを見て原因を切り分け、追加commitで修正する
+2. CI成功後、スクリーンショット（特に`home-project-grid-1366x768.png`・`-1920x1080.png`・`-4-projects.png`・`-10-projects.png`）のピクセルレベル目視確認
+3. 実装記録§8の責任者確認事項（フィルタ・並び替え方針、ページ数表示、説明文表示、カバーありProjectの目視確認方法、キーボード実機操作確認）の判断を仰ぐ
+4. 責任者承認・CI成功・スクリーンショット確認が揃うまでマージしない
+5. マージ後、`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5（ブレークポイント再編）・設定画面2ペイン化・AI画像生成画面新設等、他画面のビジュアル刷新は別途責任者判断を待って着手する
+6. 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価は、本PRとは別ブランチ（`chore/dependency-security-triage-20260727`想定）で継続する（未着手）
 
 ## 禁止事項（引き続き遵守）
 

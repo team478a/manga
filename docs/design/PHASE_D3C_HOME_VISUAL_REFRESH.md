@@ -96,42 +96,49 @@ Phase D3-Bで実装したコマンドパレット（`Ctrl+K`、Home画面上部�
 
 ## 6. Windows CI目視確認の拡張
 
-PR-Bで整備した自動GUI検証基盤（`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`）へ、以下を追加した。新規npm依存パッケージは追加していない（Electron組み込みの`webContents.capturePage()`と`win.setContentSize()`のみを使用）。
+PR-Bで整備した自動GUI検証基盤（`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`）へ、以下を追加した。新規npm依存パッケージは追加していない（Electron組み込みの`webContents.capturePage()`と`win.setContentSize()`、既存IPC（`createProject`/`changeProjectContentClass`）のみを使用）。
 
 | 検証項目 | 内容 |
 | --- | --- |
 | `home-project-grid-rendered` | Projectカードグリッドが実際に描画され、カバー・作品名・状態Badgeを含むことを確認 |
+| `home-project-card-max-width-single-project` | **（責任者レビュー指摘の回帰確認）** Projectが1件のときカード幅が320px以下、作品名・操作領域が初期表示内に収まることを確認 |
 | `home-project-filter-updates-grid` | 「成人向け」フィルタへ切り替えると、一般Projectのみのテストデータでは0件表示（Empty State文言）になることを確認 |
 | `home-project-filter-restores-grid` | 「すべて」へ戻すと件数が復帰することを確認 |
-| 1920×1080 / 1366×768 のスクリーンショット | `win.setContentSize()`で指示書が明示する2解像度へ変更し、それぞれのグリッド表示をスクリーンショットへ記録（自動判定はせず、画像として証跡を残す） |
+| `home-project-grid-layout-1920x1080` / `home-project-grid-layout-1366x768` | 指示書が明示する2解像度で、カード幅（320px以下）・左寄せ（グリッド左端からのオフセット4px未満）・作品名/操作領域の可視性を確認したうえでスクリーンショットを記録 |
+| `home-project-grid-scales-to-4-projects` | 「新規Project」ダイアログのUI操作を3回実行しProjectを4件へ増やし、カードが320pxを超えず複数列で描画されることを確認 |
+| `home-project-grid-scales-to-10-projects` | 同様に10件まで増やし（うち1件は長いタイトル）、カード幅超過なし・長いタイトルの省略記号（`scrollWidth > clientWidth`）・既存の「成人向けへ移行」ボタン経由で1件を成人向けへ変更しBadge反映を確認 |
 
-スクリーンショット: `home-project-grid-populated.png`、`home-project-grid-filtered-empty.png`、`home-project-grid-1920x1080.png`、`home-project-grid-1366x768.png`（既存の`screenshots/`ディレクトリへ追加、既存のCI artifactアップロードで自動的に回収される）。
+スクリーンショット: `home-project-grid-populated.png`、`home-project-grid-filtered-empty.png`、`home-project-grid-1920x1080.png`、`home-project-grid-1366x768.png`、`home-project-grid-4-projects.png`、`home-project-grid-10-projects.png`（既存の`screenshots/`ディレクトリへ追加、既存のCI artifactアップロードで自動的に回収される）。
 
-**フィルタchipの選択はja/en文言に依存せず、DOM上の出現順（`FILTERS`配列の順序）で選択している。** これは、このテストブロックが実行される時点で、既存のアクセシビリティテスト本体（Phase D3以前から存在）がすでに英語ロケールへ切り替えたあとの状態であるため。
+**フィルタchipの選択はja/en文言に依存せず、DOM上の出現順（`FILTERS`配列の順序）で選択している。** これは、このテストブロックが実行される時点で、既存のアクセシビリティテスト本体（Phase D3以前から存在）がすでに英語ロケールへ切り替えたあとの状態であるため（ロケール自体はPhase D3-C第2ラウンドの修正で日本語へ戻している。§12参照）。
+
+「成人向けへ移行」操作は既存の`confirm()`/`alert()`ネイティブダイアログを呼び出すため、ヘッドレスCIで処理が止まらないよう`window.confirm`/`window.alert`をこのブロック内でのみ自動承認へ差し替えている（既存の安全確認ロジック・IPC呼び出し自体は変更していない）。
 
 ## 7. データ0件・1件・多数件・長いタイトル・カバーなし・成人向けの確認状況
 
-指示書の「目視確認」表が求める組み合わせのうち、Windows CI上で自動的に確認できるのは以下の限りである（テストデータは既存のアクセシビリティテストが作成する"Accessibility Test Project"1件のみのため）。
+指示書の「目視確認」表が求める組み合わせのうち、Windows CI上で自動的に確認できるようになったのは以下のとおり（§6のPhase D3-C第2ラウンド拡張により、多数データ・長いタイトル・成人向けBadgeの一部が新たに自動確認対象になった）。
 
 | 条件 | 状況 |
 | --- | --- |
 | データ0件（Empty State） | フィルタ絞り込みによる0件表示は自動確認済み（§6）。Project未作成の初期状態のEmpty Stateは、`buildHomeProjectView([], ...)`のunit testで検証済み（`design-home-project-grid.test.mjs`）だが、実画面でのスクリーンショットは取得していない |
-| データ1件 | 自動確認済み（§6のスクリーンショット） |
-| データ多数（10件以上） | **未確認**。既存のアクセシビリティテストのテストデータ投入ロジックを大きく変更せずに複数Projectを作成する手段がなく、本フェーズでは追加していない |
-| 長いタイトル（2行以上） | **未確認**。テストデータのタイトルは固定文字列のため |
-| カバーなし | 自動確認済み（"Accessibility Test Project"はカバー未設定のため、既存の"M"プレースホルダが表示される） |
-| 成人向けBadge | **未確認**。既存のテストデータ投入ロジックは`contentClass: "general"`のみを作成する |
+| データ1件 | 自動確認済み（§6のスクリーンショット、カード最大幅の回帰確認込み） |
+| データ4件・10件以上 | **自動確認済み**（`home-project-grid-scales-to-4-projects`/`-10-projects`、既存の「新規Project」ダイアログUI操作でIPC呼び出しを反復） |
+| 長いタイトル（省略記号） | **自動確認済み**（10件目のProjectに長いタイトルを設定し、`scrollWidth > clientWidth`で省略記号の発動を確認） |
+| カバーなし | 自動確認済み（すべてのテストプロジェクトはカバー未設定のため、既存の"M"プレースホルダが表示される） |
+| カバーあり | **未確認・実装保留**。既存IPC（`importDroppedAssets`）はElectronの`webUtils.getPathForFile`に依存しており、テスト実行環境（headless CI）で生成した合成File／Blobでは実ファイルパスを取得できないため、既存IPCのみでカバー付きProjectを再現する手段がない。新規テスト専用IPCの追加、またはAI生成パイプライン（本フェーズの禁止事項）の利用が必要になり、いずれも本フェーズの範囲外。カバーあり／なしの分岐自体は`HomeProjectCard.tsx`の静的テストで検証済み |
+| 成人向けBadge | **自動確認済み**（既存の「成人向けへ移行」ボタン経由で1件を変更、Badge反映を確認。10件シナリオに含む） |
 | キーボード操作（Tab/Enter/Space/Escape） | 部分的に確認済み（コマンドパレットのキーボード操作はPhase D3-Bから継続確認。Projectカード自体のTab到達・Enter実行は静的テストのみで、実機操作は未確認） |
 | コマンドパレットとの共存 | 自動確認済み（§5、§6） |
 
-**多数データ・長いタイトル・成人向けBadgeの目視確認は、次の担当者が追加のテストデータ投入ロジックを用意するか、Windows実機で確認する必要がある。**
+**カバーあり状態の目視確認・キーボード操作の実機確認は、引き続き次の担当者の判断が必要（§8参照）。**
 
 ## 8. 責任者確認が必要な事項
 
 - フィルタ・並び替えの基準を「一般／成人向け」「更新日時／タイトル」で確定してよいか（`お気に入り`は実装していない。実装する場合は`Project`型へのフィールド追加が必要になり、DB migrationが発生する）
 - ページ数のカード表示を実装する場合、新規の読み取り専用IPC追加が必要になる旨の確認
 - 説明文（subtitle/description）をカードへ戻すかどうか
-- 多数データ・長いタイトル・成人向けBadgeの目視確認をどう完了させるか（追加テストデータ投入、またはWindows実機確認）
+- **カバーありProjectの目視確認方法**: 既存IPCのみでは実現できないため（§7参照）、(a) テスト専用の画像import IPCを新規追加して許可するか、(b) Windows実機での手動確認で代替するか、(c) 静的テストのカバー分岐検証で十分とするか
+- Projectカード自体のTab/Enter等のキーボード実機操作確認をどう完了させるか（追加ハーネス、またはWindows実機確認）
 
 ## 9. テスト結果
 
@@ -151,9 +158,9 @@ PR-Bで整備した自動GUI検証基盤（`docs/design/PHASE_D3C_VISUAL_VALIDAT
 | `npm run build`（Hub） | PASS |
 | `git diff --check` | PASS |
 
-注入している15個のJavaScriptブロック（`--mangai-accessibility-test`ハーネスの`executeJavaScript`文字列）は`new Function()`による構文チェックでエラーなし。
+注入している22個のJavaScriptブロック（`--mangai-accessibility-test`ハーネスの`executeJavaScript`文字列）は`new Function()`による構文チェックでエラーなし（TypeScriptの`${...}`テンプレート補間箇所はダミー文字列へ置換したうえで検証）。
 
-## 10. 正直な申告: Windows CI結果は未確認
+## 10. 正直な申告: Windows CI結果は未確認（第1ラウンド時点の記録。§12で更新）
 
 **本コンテナ環境にはXサーバーがなくElectronを実際にレンダリングできないため、本PRのGUI検証部分（§6）が実際のWindows環境で意図通り動作するかは未確認。** PR-B（PR #45）では同種の追加が2回のCI失敗を経て動作確認できた実績があるため、同様に初回のCI結果を見て修正が必要になる可能性がある。Draft PR作成後、GitHub Actions（Windows runner）の結果を確認し、失敗した場合はログ・artifactを見て追加commitで修正する。
 
@@ -162,3 +169,21 @@ PR-Bで整備した自動GUI検証基盤（`docs/design/PHASE_D3C_VISUAL_VALIDAT
 1. **本PR全体の取り消し**: ブランチ・PRをcloseすれば`feature/manga-canvas-mvp`には影響しない（未マージの間）。
 2. **カードグリッドのみ取り消す**: `main.tsx`から`HomeProjectGrid`/`HomeProjectFilters`のimportと配線を削除し、`features/home/`・`components/home/`配下の新規ファイルを削除すれば、Phase D3-B完了時点のHome画面（横長リスト表示）へ戻る。`styles.css`の`.projects`/`.project-open`/`.cover`/`.project-summary`/`.actions`ルールも元の値へ戻す必要がある。
 3. DB migration、API、Storage、IPCへの変更は一切ないため、ロールバックにデータ影響はない。
+
+## 12. 責任者レビュー指摘への対応（第2ラウンド）
+
+Windows CI成功後（`f8386ed`まで）、責任者がCI artifactのスクリーンショットを目視確認し、Projectが1件のときカードが画面全幅まで拡大し作品名・Badge・操作ボタンが初期表示の下へ押し出される不具合を発見した。以下のとおり対応した。
+
+| 指摘 | 対応 |
+| --- | --- |
+| 1. カード最大幅の制限 | `.home-project-grid`を`grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))`から`repeat(auto-fill, minmax(240px, 280px))` + `justify-content: start`へ変更。1件時でもカード幅が280px（実測上限320px）を超えず、カバー画像（3:4）も画面高を超えない |
+| 2. Windows GUI検証への追加 | §6参照。1件時の幅チェック・1920×1080/1366×768ごとの幅・左寄せ・可視性チェックを追加 |
+| 3. テストデータ拡張 | §6・§7参照。1件・4件・10件以上・長いタイトル・一般／成人向け混在を自動確認対象に追加。カバーあり／なしは既存IPCの制約により未実装（§7・§8で理由と選択肢を明記） |
+| 4. `@media (max-width: 899px)`の整理 | `apps/desktop/src/main/index.ts`の`BrowserWindow`は`minWidth: 1100`のため、899px以下は実機で到達不可能なdead codeだった。DESKTOP_CREATIVE_STUDIO_SPEC.md §5（未承認のブレークポイント再編）に該当する新規ブレークポイントを実質追加してしまっていた不整合を、当該メディアクエリの削除により解消した（「ブレークポイントを変更していない」という記述と実態を一致させた） |
+| 5. PR本文・実装記録の更新 | 本セクションおよび§6〜§10で反映。ExecuteJavaScriptブロック数は22個（§9） |
+
+**この指摘は`DESKTOP_CREATIVE_STUDIO_SPEC.md`§4.1が明示するグリッド仕様（`auto-fit, minmax(240px, 1fr)`）からの意図的な逸脱である。** 少数Project時の実害（カードの過度な拡大・操作領域の視認性低下）を優先し、責任者の直接指摘に基づいて`auto-fill` + 固定最大幅へ変更した。将来的に§4.1を更新するかどうかは別途責任者判断が必要。
+
+### カバーありProjectの目視確認について（未実装の技術的理由）
+
+既存IPC `importDroppedAssets(projectId, files: File[])` は内部で`webUtils.getPathForFile(file)`を呼び出し、OSのドラッグ&ドロップまたはファイル選択ダイアログ由来の`File`オブジェクトが持つ実ファイルパスを取得する。ヘッドレスCI上でJavaScriptから合成した`File`/`Blob`オブジェクトはこの実ファイルパスを持たないため、既存IPCを変更せずにカバー画像付きProjectを自動生成する手段がない。新規のテスト専用IPC追加、またはAI生成パイプライン（本フェーズの明示的な禁止事項）を利用する以外に方法がなく、いずれも本フェーズの範囲外と判断した。§8で責任者判断を仰ぐ。

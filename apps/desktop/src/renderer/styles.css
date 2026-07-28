@@ -284,7 +284,12 @@ label {
 }
 .home-project-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  /* auto-fit + 1frは、Project件数が少ないとカードが画面全幅まで拡大し、
+     カバー領域が巨大化して作品名・Badge・操作ボタンが初期表示の下へ
+     押し出される不具合を起こす（責任者レビュー指摘）。カード最大幅を
+     280pxへ固定し、余った領域は左詰めのまま空けることで防ぐ。 */
+  grid-template-columns: repeat(auto-fill, minmax(240px, 280px));
+  justify-content: start;
   gap: var(--space-4);
 }
 .home-project-card {
@@ -358,26 +363,6 @@ label {
 }
 .home-project-empty {
   grid-column: 1 / -1;
-}
-@media (max-width: 899px) {
-  .home-project-grid {
-    grid-template-columns: 1fr;
-  }
-  .home-project-card {
-    flex-direction: row;
-    align-items: center;
-  }
-  .home-project-card-open {
-    flex: 1;
-    flex-direction: row;
-    align-items: center;
-  }
-  .cover {
-    width: 64px;
-    height: 64px;
-    aspect-ratio: auto;
-    flex: 0 0 auto;
-  }
 }
 .modal {
   position: relative;

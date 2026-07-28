@@ -160,12 +160,14 @@ test("HomeProjectGrid: Projectが0件のときEmpty Stateを表示する", () =>
   assert.match(homeProjectGridSource, /t\("home\.filteredNone"\)/);
 });
 
-test("HomeProjectGrid: auto-fitグリッドを使用し、固定列数を指定していない（DESKTOP_CREATIVE_STUDIO_SPEC.md §4.1）", () => {
+test("HomeProjectGrid: auto-fillグリッドを使用し、固定列数を指定していない。カード最大幅は280pxに制限されている（責任者レビュー指摘: 1件時の過度な拡大防止）", () => {
   assert.match(
     stylesSource,
-    /\.home-project-grid\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fit,\s*minmax\(240px,\s*1fr\)\)/s,
+    /\.home-project-grid\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fill,\s*minmax\(240px,\s*280px\)\)/s,
   );
+  assert.match(stylesSource, /\.home-project-grid\s*\{[^}]*justify-content:\s*start/s);
   assert.doesNotMatch(stylesSource, /\.home-project-grid[^}]*grid-template-columns:\s*repeat\(\d/s);
+  assert.doesNotMatch(stylesSource, /\.home-project-grid[^}]*minmax\(240px,\s*1fr\)/s);
 });
 
 test("HomeProjectCard: 一般Projectのみ成人向け移行ボタンを表示する", () => {
@@ -225,11 +227,13 @@ test("main.tsx: Project一覧のフィルタ・並び替えstateはHome画面に
   assert.doesNotMatch(mainSource, /const \[bundle, setBundle\]\s*=\s*React\.useState<ProjectBundle \| null>\(null\),\s*\n\s*\[homeProjectFilter/);
 });
 
-test("狭い画面用レイアウト: 900px未満でカードグリッドが1カラムへ切り替わる", () => {
-  assert.match(
-    stylesSource,
-    /@media \(max-width: 899px\)\s*\{[^]*?\.home-project-grid\s*\{[^}]*grid-template-columns:\s*1fr/,
+test("ブレークポイント: Home画面カードグリッドは新規メディアクエリを追加していない（DESKTOP_CREATIVE_STUDIO_SPEC.md §5は未承認のため対象外。BrowserWindowのminWidth=1100pxにより899px以下は到達不可能だった）", () => {
+  assert.doesNotMatch(stylesSource, /@media \(max-width: 899px\)/);
+  const mainIndexSource = fs.readFileSync(
+    path.join(here, "..", "src", "main", "index.ts"),
+    "utf8",
   );
+  assert.match(mainIndexSource, /minWidth:\s*1100/);
 });
 
 test("安全境界: AI Provider有効化・成人向け生成の直接実行・APIキー変更・課金操作のコマンドが新規コンポーネントに存在しない", () => {
