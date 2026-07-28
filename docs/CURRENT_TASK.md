@@ -3,10 +3,11 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `READY_FOR_REVIEW`（Phase Cloud UI-1 実装・ローカル検証完了、Draft PR作成前）
+- 状態: `READY_FOR_REVIEW`（Phase Cloud UI-1 実装・ローカル検証完了、Draft PR #48作成済み）
 - リポジトリ: `team478a/manga`
 - Base: `feature/manga-canvas-mvp` (`7615d06`)
 - Branch: `codex/cloud-ui-foundation`
+- Draft PR: [#48](https://github.com/team478a/manga/pull/48)
 - 実装計画: [`docs/design/CLOUD_UI_FOUNDATION_PLAN.md`](design/CLOUD_UI_FOUNDATION_PLAN.md)
 
 ## 今回の目的
@@ -56,11 +57,10 @@ Desktop Phase D3-D設定画面2ペイン化およびDesktopの新規実装には
 
 ## 未完了・次の作業
 
-1. 変更をcommitし、`codex/cloud-ui-foundation`をpushする
-2. `feature/manga-canvas-mvp`向けDraft PRを作成する
-3. PR上の全CI成功を確認する
-4. 責任者が実画面を確認し、承認する
-5. CI成功・レスポンシブ確認・責任者承認が揃った後にのみmergeを検討する
+1. PR #48上の全CI成功を確認する
+2. Previewで390／768／1024／1440pxの最終表示を確認する
+3. 責任者が実画面を確認し、承認する
+4. CI成功・レスポンシブ確認・責任者承認が揃った後にのみmergeを検討する
 
 ## 禁止事項
 

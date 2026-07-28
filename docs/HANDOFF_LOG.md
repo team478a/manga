@@ -14,7 +14,7 @@
 
 - Branch: `codex/cloud-ui-foundation`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
-- Draft PR: 作成前（commit・push後に作成する）
+- Draft PR: [#48](https://github.com/team478a/manga/pull/48)
 
 ### 完了
 
@@ -47,9 +47,8 @@
 
 ### 未完了
 
-- commit・push
-- Draft PR作成
 - PR上の全CI成功確認
+- Preview上の最終レスポンシブ確認
 - 責任者レビュー・承認
 - merge（本タスクでは実施しない）
 
