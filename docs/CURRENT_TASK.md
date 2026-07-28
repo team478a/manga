@@ -23,6 +23,8 @@ PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックに�
 - 208px Sidebarと薄いラベンダーのapp background
 - Dashboard／Creator／Admin navigationのgroup・icon・active表示
 - 共通Buttonの`brand` variant
+- 共通Buttonと旧`.button` classのCloud brand紫への統一
+- 公開作品のtag filter buttonをCloud brand紫へ統一
 - Dashboardの実データKPI:
   - 管理中作品数
   - 公開作品数
@@ -49,6 +51,7 @@ PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックに�
 - `npm run typecheck`: PASS（Hub + Desktop。Desktopコード変更なし）
 - `npm run hub:test`: PASS（124/124）
 - `npm run build`: PASS
+- green action button残存検索: PASS（成功・警告などの状態色は対象外）
 - 1440px: compact Headerを実表示確認
 - 390px: Header／認証画面を実表示し、`scrollWidth === clientWidth`を確認
 - `git diff --check`: PASS

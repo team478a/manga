@@ -25,11 +25,12 @@ test("Dashboardは実データを使うSaaS型サマリーを表示する", asyn
 });
 
 test("Cloud UI-2はブランドtokenとコンパクトなアプリShellを持つ", async () => {
-  const [tailwind, header, shell, nav] = await Promise.all([
+  const [tailwind, header, shell, nav, globals] = await Promise.all([
     source("../tailwind.config.ts"),
     source("../src/components/Header.tsx"),
     source("../src/components/layout/SectionShell.tsx"),
     source("../src/components/layout/SectionNav.tsx"),
+    source("../src/app/globals.css"),
   ]);
 
   assert.match(tailwind, /brand:/);
@@ -39,6 +40,10 @@ test("Cloud UI-2はブランドtokenとコンパクトなアプリShellを持つ
   assert.match(shell, /bg-brand-50/);
   assert.match(nav, /item\.group/);
   assert.match(nav, /item\.icon/);
+  assert.match(globals, /\.button\s*\{[^}]*bg-brand-600/s);
+  assert.match(globals, /\.ui-button-primary\s*\{[^}]*bg-brand-600/s);
+  assert.doesNotMatch(globals, /\.button\s*\{[^}]*bg-leaf/s);
+  assert.doesNotMatch(globals, /\.ui-button-primary\s*\{[^}]*bg-leaf/s);
 });
 
 test("Cloud Dashboard刷新計画は変更境界と検証条件を記録する", async () => {

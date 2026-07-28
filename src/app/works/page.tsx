@@ -98,7 +98,7 @@ export default async function WorksPage({
             <p className="label">タグで絞り込む</p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Link
-                className={`rounded-full px-3 py-2 text-sm ${!selectedTag ? "bg-leaf text-white" : "bg-linen text-stone-700"}`}
+                className={`rounded-full px-3 py-2 text-sm font-semibold transition ${!selectedTag ? "bg-brand-600 text-white" : "bg-linen text-stone-700 hover:bg-brand-50 hover:text-brand-700"}`}
                 href={
                   keyword ? `/works?q=${encodeURIComponent(keyword)}` : "/works"
                 }
@@ -111,7 +111,7 @@ export default async function WorksPage({
                 query.set("tag", tag);
                 return (
                   <Link
-                    className={`rounded-full px-3 py-2 text-sm ${selectedTag === tag ? "bg-leaf text-white" : "bg-linen text-stone-700"}`}
+                    className={`rounded-full px-3 py-2 text-sm font-semibold transition ${selectedTag === tag ? "bg-brand-600 text-white" : "bg-linen text-stone-700 hover:bg-brand-50 hover:text-brand-700"}`}
                     href={`/works?${query}`}
                     key={tag}
                   >

@@ -22,7 +22,7 @@ select {
 }
 
 :focus-visible {
-  outline: 3px solid #256b45;
+  outline: 3px solid #5848c8;
   outline-offset: 3px;
 }
 
@@ -48,11 +48,11 @@ select {
   }
 
   .field {
-    @apply mt-2 w-full rounded-md border border-stone-300 bg-white px-4 py-3 text-base outline-none ring-leaf/20 focus:border-leaf focus:ring-4;
+    @apply mt-2 w-full rounded-md border border-stone-300 bg-white px-4 py-3 text-base outline-none ring-brand-500/20 focus:border-brand-500 focus:ring-4;
   }
 
   .button {
-    @apply inline-flex min-h-12 items-center justify-center rounded-md bg-leaf px-5 py-3 text-base font-semibold text-white transition hover:bg-green-800 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-12 items-center justify-center rounded-md bg-brand-600 px-5 py-3 text-base font-semibold text-white shadow-sm transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .button-secondary {
@@ -84,7 +84,7 @@ select {
   }
 
   .ui-button-primary {
-    @apply bg-leaf text-white shadow-sm hover:bg-green-800;
+    @apply bg-brand-600 text-white shadow-sm hover:bg-brand-700;
   }
 
   .ui-button-brand {
@@ -112,7 +112,7 @@ select {
   }
 
   .ui-card-interactive {
-    @apply border-border-subtle bg-white shadow-panel transition hover:-translate-y-0.5 hover:border-leaf hover:shadow-soft;
+    @apply border-border-subtle bg-white shadow-panel transition hover:-translate-y-0.5 hover:border-brand-500 hover:shadow-soft;
   }
 
   .ui-card-muted {
@@ -124,7 +124,7 @@ select {
   }
 
   .ui-field {
-    @apply w-full rounded-lg border border-border-strong bg-white px-4 py-3 text-base text-ink outline-none transition placeholder:text-stone-400 focus:border-leaf focus:ring-4 focus:ring-leaf/15;
+    @apply w-full rounded-lg border border-border-strong bg-white px-4 py-3 text-base text-ink outline-none transition placeholder:text-stone-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15;
   }
 
   .ui-alert {
