@@ -8,7 +8,7 @@
 
 ### 状態
 
-`IN_PROGRESS`。検索候補収集基盤にstackし、検証済み本文からの決定的な事実候補抽出と人手採用UIを実装した。ローカル品質ゲート成功。Draft PR #59作成済み。CI、外部E2E、責任者承認は未完了。
+`IN_PROGRESS`。検索候補収集基盤にstackし、検証済み本文からの決定的な事実候補抽出と人手採用UIを実装した。ローカル品質ゲートとDraft PR #59の全CIが成功。外部E2E、責任者承認待ち。
 
 ### ブランチ
 
@@ -36,10 +36,10 @@
 - migrations: PASS（23件）
 - build: PASS
 - git diff --check: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ### 未完了
 
-- Draft PR作成と全CI
 - Vercel Feature Flag・秘密値・allowlist設定
 - 実URLでの抽出、原文照合、採用、Report保存E2E
 - 候補抽出のgolden set評価、相反情報検出、複数出典照合

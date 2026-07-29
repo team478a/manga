@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（事実候補抽出のローカル実装完了、Draft PR／外部E2E／責任者承認待ち）
+- 状態: `IN_PROGRESS`（事実候補抽出の実装・全CI完了、外部E2E／責任者承認待ち）
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-research-search-foundation`（Draft PR #58）
 - Branch: `codex/cloud-research-claim-extraction`
@@ -116,7 +116,7 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 - production build: PASS
 - Draft PR #57 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 - Draft PR #58 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
-- Draft PR #59 CI: 実行中
+- Draft PR #59 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 - 外部環境E2E: 未実施
 
 ## 外部環境待ち
