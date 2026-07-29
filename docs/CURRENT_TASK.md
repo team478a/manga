@@ -3,91 +3,69 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Release 0＋Release 1実装・ローカル品質ゲート・実装HEAD CI完了、外部E2E待ち）
+- 状態: `IN_PROGRESS`（Release 2ローカル実装・品質ゲート完了、外部E2E待ち）
 - リポジトリ: `team478a/manga`
-- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
-- Branch: `codex/cloud-research-mvp`
-- Draft PR: [#50](https://github.com/team478a/manga/pull/50)
-- 計画: [`docs/cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md`](cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md)
-- 仕様: [`docs/cloud/CLOUD_RESEARCH_MVP_SPEC.md`](cloud/CLOUD_RESEARCH_MVP_SPEC.md)
-- 公開手順: [`docs/cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md`](cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md)
+- Base: `codex/cloud-research-mvp`（Draft PR #50）
+- Branch: `codex/cloud-proposal-mvp`
+- Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
+- 計画: [`docs/cloud/CLOUD_PROPOSAL_RELEASE_PLAN.md`](cloud/CLOUD_PROPOSAL_RELEASE_PLAN.md)
+- 仕様: [`docs/cloud/CLOUD_PROPOSAL_MVP_SPEC.md`](cloud/CLOUD_PROPOSAL_MVP_SPEC.md)
 
 ## 目的
 
-MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開する。広範なCloud UI刷新より先に、市場分析の入力・実行・保存・履歴・再表示を完走させる。
+完了した市場分析Reportから、一般向け漫画の企画候補を生成・保存・比較・再表示・採用できるRelease 2の縦型機能を完成させる。
 
-## 今回の範囲
+## 実装済み
 
-### Release 0
+- `CLOUD_PROPOSAL_MVP_ENABLED`（未設定時fail closed）
+- 完了済み・所有者本人・一般向けの市場分析Reportだけを入力に使用
+- `proposal-rules-v1`で方向性の異なる3候補を生成
+- 企画Runのimmutable保存、履歴、再表示
+- 3候補のレスポンシブ比較
+- Reportごとに1候補だけをsnapshotとして採用
+- 採用後のRelease 3引継ぎ条件表示
+- Run／Selectionの所有者RLSとDB側候補snapshot照合
+- migration／rollback／canonical schema／manifest
+- 計画・仕様文書
 
-- 最小限のCloud共通シェル
-- ワークフロー順の左サイドバー
-- Dashboard
-- 現在の制作進行
-- `CLOUD_RESEARCH_MVP_ENABLED` Feature Flag
+## 重要な設計判断
 
-### Release 1
+- 既存Cloud AI QueueはProject作成後の文章・画像生成契約であるため、市場分析直後の企画保存には流用しない。
+- Release 2初期engineは外部Provider非依存の`proposal-rules-v1`。保存・履歴・採用契約を先に固定する。
+- 全候補を`ai_inference`として表示し、市場の事実や販売予測として扱わない。
+- 根拠のない市場数値を生成しない。
+- 外部Provider実装は将来、生成interfaceの差し替えとして追加する。
+- Release 1の外部E2E未完了は解除せず、Release 2をstacked branchで先行している。
 
-- 市場分析の必須入力
-- HTTPS出典URL、取得日時、確認事実
-- 定性的な分析実行
-- Report保存
-- 履歴
-- Report再表示
-- 完了後だけ有効なAI企画提案への引継ぎ導線
+## 検証
 
-## 実装方針
-
-- Release 1は`research-rules-v1`で証拠に基づく定性的整理を行う。
-- 根拠のない市場規模、販売数、成長率を生成しない。
-- 全分析項目を`fact`または`ai_inference`へ区分する。
-- 任意URLのServer-side取得は行わず、利用者が確認した出典を保存する。
-- 成人向け区分は入力必須だが、既存のCloud／Desktop境界によりCloud実行を拒否する。
-- Reportはimmutable。修正は新規Reportとして作成する。
-- Feature Flag停止中は詳細URLへの直接アクセスでもDB照会前に停止する。
-- 出典は画面・Serverとも最大5件に統一し、同一URLの重複を拒否する。
-- 保存・一覧・詳細はDB非依存の永続化契約を通し、Supabase失敗詳細を秘匿する。
-- 不正なReport UUIDはDB照会前に未検出として停止する。
-
-## 変更しない範囲
-
-- Cloud Canvas Editor
-- Cloud AI Worker
-- Stripe
-- Marketplace
-- Desktop
-- シナリオ生成
-- マンガ生成
-- 販売準備
-- 収益ダッシュボード
-
-## 現在の検証
-
-- lint: PASS
-- typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析単体・保存層・UI構造テスト: PASS（17/17）
-- hub:test: PASS（133/133）
+- Hub proposal／researchを含む単体テスト: PASS（142/142）
 - deps:check: PASS
-- migration検証: PASS（17件）
-- build: PASS
-- git diff --check: PASS
-- 実装HEAD `3143c41`のGitHub CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
+- lint: PASS
+- typecheck: PASS（Hub + Desktop、Desktop変更なし）
+- migration検証: PASS（18件）
+- production build: PASS
+- 外部環境E2E: 未実施
 
-## 未完了
+## 外部環境待ち
 
-1. Supabase対象環境へ新規migrationを適用
-2. Vercel Previewで入力・保存・履歴・再表示E2E
-3. 別利用者によるRLSと390px／768px／1280px実ブラウザ受入れ
-4. 責任者承認
+1. Release 1 migrationを対象Supabaseへ適用
+2. Release 2 migrationを対象Supabaseへ適用
+3. Vercelで`CLOUD_RESEARCH_MVP_ENABLED=true`
+4. Vercelで`CLOUD_PROPOSAL_MVP_ENABLED=true`
+5. 入力 → 市場分析保存 → 企画3案生成 → 履歴 → 比較 → 採用の実ブラウザE2E
+6. 別利用者RLS確認
+7. 390px／768px／1280px受入れ
+8. 責任者承認
 
 ## 禁止事項
 
-- `feature/manga-canvas-mvp`への直接push
+- `feature/manga-canvas-mvp`への直接push／merge
+- Draft PR #50の外部ゲート未完了扱いの解除
 - 既存migrationの変更
-- Cloud AI Worker、Canvas、Stripe、Marketplace、Desktopへの変更
+- Cloud AI Queue／Worker／Provider Gateway、Canvas、Stripe、Marketplace、Desktopへの変更
 - 根拠のない市場数値の生成
-- 入力・保存・履歴・再表示が完走する前のmerge
-- 全CI成功・責任者承認前のmerge
+- 全CI・外部E2E・責任者承認前のmerge
 
 ## 次担当者が最初に読むファイル
 
@@ -96,5 +74,5 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 3. `docs/AI_HANDOFF.md`
 4. 本ファイル
 5. `docs/HANDOFF_LOG.md`
-6. `docs/cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md`
-7. `docs/cloud/CLOUD_RESEARCH_MVP_SPEC.md`
+6. `docs/cloud/CLOUD_PROPOSAL_RELEASE_PLAN.md`
+7. `docs/cloud/CLOUD_PROPOSAL_MVP_SPEC.md`

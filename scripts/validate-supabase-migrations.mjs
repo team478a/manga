@@ -133,6 +133,8 @@ for (const required of [
   "cloud_ai_notifications",
   "refresh_cloud_ai_notifications",
   "cloud_market_research_reports",
+  "cloud_story_proposal_runs",
+  "cloud_story_proposal_selections",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

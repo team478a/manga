@@ -24,7 +24,7 @@ type WorkflowItem = {
 
 const workflow: WorkflowItem[] = [
   { step: 1, label: "市場分析", href: "/dashboard/research", icon: BarChart3 },
-  { step: 2, label: "AI企画提案", icon: Lightbulb },
+  { step: 2, label: "AI企画提案", href: "/dashboard/proposals", icon: Lightbulb },
   { step: 3, label: "シナリオ生成", icon: FileText },
   { step: 4, label: "マンガ生成", icon: Sparkles },
   { step: 5, label: "作品管理", href: "/dashboard/works", icon: Images },
@@ -34,9 +34,11 @@ const workflow: WorkflowItem[] = [
 
 export function CloudWorkflowShell({
   researchEnabled,
+  proposalEnabled,
   children,
 }: {
   researchEnabled: boolean;
+  proposalEnabled: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -65,7 +67,8 @@ export function CloudWorkflowShell({
                 : false;
               const enabled =
                 Boolean(item.href) &&
-                (item.step !== 1 || researchEnabled);
+                (item.step !== 1 || researchEnabled) &&
+                (item.step !== 2 || (researchEnabled && proposalEnabled));
               const content = (
                 <>
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-current/10 text-[11px]">
@@ -104,9 +107,11 @@ export function CloudWorkflowShell({
         </nav>
         <div className="mt-6 hidden rounded-lg border border-violet-100 bg-violet-50 p-3 text-xs leading-relaxed text-violet-900 lg:block">
           <p className="font-bold">現在の制作進行</p>
-          <p className="mt-1">Release 1：市場分析MVP</p>
+          <p className="mt-1">Release 2：AI企画提案MVP</p>
           <p className="mt-2 text-violet-600">
-            {researchEnabled ? "Feature Flag 有効" : "Feature Flag 停止中"}
+            市場分析: {researchEnabled ? "有効" : "停止中"}
+            <br />
+            企画提案: {proposalEnabled ? "有効" : "停止中"}
           </p>
         </div>
       </aside>
