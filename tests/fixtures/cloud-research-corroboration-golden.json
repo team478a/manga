@@ -1,0 +1,58 @@
+[
+  {
+    "name": "same metric year unit and value",
+    "primary": "公式調査では電子コミック市場規模は2025年に100億円でした。",
+    "comparison": "業界調査による電子コミック市場規模は2025年で100億円です。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "corroborates"
+  },
+  {
+    "name": "same metric year and unit but different value",
+    "primary": "公式調査では電子コミック市場規模は2025年に100億円でした。",
+    "comparison": "業界調査による電子コミック市場規模は2025年で120億円です。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "potential_conflict"
+  },
+  {
+    "name": "different year is not treated as conflict",
+    "primary": "電子コミック市場規模は2024年に100億円でした。",
+    "comparison": "電子コミック市場規模は2025年に120億円でした。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "related"
+  },
+  {
+    "name": "same value for different metrics is not corroboration",
+    "primary": "電子コミックの売上は2025年に100億円でした。",
+    "comparison": "電子コミック市場規模は2025年に100億円でした。",
+    "primarySignals": ["市場"],
+    "comparisonSignals": ["市場"],
+    "expected": "related"
+  },
+  {
+    "name": "related qualitative statements",
+    "primary": "電子コミック市場の需要は若年読者を中心に拡大しています。",
+    "comparison": "電子コミック市場では読者の利用が継続しています。",
+    "primarySignals": ["市場", "需要", "読者"],
+    "comparisonSignals": ["市場", "利用", "読者"],
+    "expected": "related"
+  },
+  {
+    "name": "unrelated statements are omitted",
+    "primary": "電子コミック市場の需要について調査しました。",
+    "comparison": "女性読者の年齢構成について説明しています。",
+    "primarySignals": ["市場", "需要"],
+    "comparisonSignals": ["読者", "年齢"],
+    "expected": "insufficient"
+  },
+  {
+    "name": "one matching value in a range is supporting not conflicting",
+    "primary": "電子コミック市場規模は2025年に100億円から120億円の範囲でした。",
+    "comparison": "電子コミック市場規模は2025年に120億円と報告されました。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "corroborates"
+  }
+]
