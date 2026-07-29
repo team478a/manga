@@ -3,10 +3,10 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（複数出典照合の実装・全CI完了、外部E2E／責任者承認待ち）
+- 状態: `IN_PROGRESS`（Research Evaluation v1実装・Draft PR全CI完了、外部E2E／責任者承認待ち）
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-research-claim-extraction`（Draft PR #59）
-- Branch: `codex/cloud-research-corroboration`
+- Base: `codex/cloud-research-corroboration`（Draft PR #60）
+- Branch: `codex/cloud-research-evaluation-v1`
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
@@ -18,12 +18,39 @@
 - 検索候補収集 Draft PR: [#58](https://github.com/team478a/manga/pull/58)
 - 事実候補抽出 Draft PR: [#59](https://github.com/team478a/manga/pull/59)
 - 複数出典照合 Draft PR: [#60](https://github.com/team478a/manga/pull/60)
-- 計画: [`docs/cloud/CLOUD_RESEARCH_CORROBORATION_PLAN.md`](cloud/CLOUD_RESEARCH_CORROBORATION_PLAN.md)
-- 仕様: [`docs/cloud/CLOUD_RESEARCH_CORROBORATION_SPEC.md`](cloud/CLOUD_RESEARCH_CORROBORATION_SPEC.md)
+- Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
+- 計画: [`docs/cloud/CLOUD_RESEARCH_EVALUATION_V1_PLAN.md`](cloud/CLOUD_RESEARCH_EVALUATION_V1_PLAN.md)
+- 仕様: [`docs/cloud/CLOUD_RESEARCH_EVALUATION_V1_SPEC.md`](cloud/CLOUD_RESEARCH_EVALUATION_V1_SPEC.md)
 
 ## 現在の目的
 
-2つの検証済み出典から同じ分野の原文候補を照合し、定量根拠の一致・相反可能性・比較不能を人が確認できるResearch Corroborationを完成させる。
+市場リサーチの候補抽出と複数出典照合を固定fixtureで定量評価し、品質低下をRequired Quality CIで自動停止する。
+
+## Research Evaluation v1 実装済み
+
+- Claim extraction 7分野×3件、合計21件の固定fixture
+- Corroboration 4分類×7件、合計28件の固定fixture
+- Top-3命中率、禁止文漏出率、分野別件数の集計
+- confusion matrix、分類別Precision／Recall／F1、accuracy、macro F1の集計
+- 最低49件、Top-3命中率95%以上、漏出0件、accuracy 95%以上等の品質しきい値
+- `npm run research:eval`による決定的JSON reportと終了code
+- Required QualityのHub tests前に独立gateとして実行
+- CI artifact `cloud-research-evaluation.json`への結果保存
+- 外部network、DB、環境変数、現在日時を使わない再現可能な評価
+- 現fixture結果: 49/49正解、Top-3 100%、禁止文漏出0件、accuracy／macro F1 100%
+- 固定fixture合格は実Web精度の保証ではないことを仕様へ明記
+
+## Research Evaluation v1 検証
+
+- `npm run research:eval`: PASS（49/49）
+- `npm run hub:test`: PASS（201/201）
+- `npm run typecheck`: PASS（Hub + Desktop）
+- `npm run lint`: PASS
+- `npm run deps:check`: PASS
+- `npm run db:migrations:validate`: PASS（23件）
+- `npm run build`: PASS
+- `git diff --check`: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ## 複数出典照合 実装済み
 

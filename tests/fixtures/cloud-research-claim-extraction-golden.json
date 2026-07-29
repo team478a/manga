@@ -1,0 +1,149 @@
+[
+  {
+    "id": "demand-market-growth",
+    "topic": "demand",
+    "text": "調査の概要を掲載します。\n電子コミック市場は2025年に利用者が前年比12%増加し、需要の拡大が確認されました。\nプライバシーポリシーをご確認ください。",
+    "expectedContains": "需要の拡大が確認",
+    "forbiddenContains": ["プライバシーポリシー"]
+  },
+  {
+    "id": "demand-reader-purchase",
+    "topic": "demand",
+    "text": "更新履歴を記載しています。\n対象読者の購入意向は調査回答者の38%で、継続需要が示されています。\n会員登録はこちらから行えます。",
+    "expectedContains": "継続需要が示されて",
+    "forbiddenContains": ["会員登録"]
+  },
+  {
+    "id": "demand-sales-scale",
+    "topic": "demand",
+    "text": "編集部からのお知らせです。\nデジタル作品の売上規模は2024年に80億円となり、市場の成長が続きました。\nお問い合わせ窓口を案内します。",
+    "expectedContains": "市場の成長が続き",
+    "forbiddenContains": ["お問い合わせ"]
+  },
+  {
+    "id": "competition-share",
+    "topic": "competition",
+    "text": "集計方法を説明します。\n上位5作品の販売シェアは全体の42%で、競合が集中する傾向です。\n利用規約をご確認ください。",
+    "expectedContains": "競合が集中する傾向",
+    "forbiddenContains": ["利用規約"]
+  },
+  {
+    "id": "competition-ranking",
+    "topic": "competition",
+    "text": "週次情報を掲載します。\n恋愛作品は月間ランキング上位20件のうち8件を占め、出版各社の競争が続いています。\nログインして続きを読む。",
+    "expectedContains": "出版各社の競争が続いて",
+    "forbiddenContains": ["ログイン"]
+  },
+  {
+    "id": "competition-publishers",
+    "topic": "competition",
+    "text": "調査対象期間は1年間です。\n主要3出版社の新作は合計120作品で、競合タイトルの供給が増えました。\n無断転載を禁止します。",
+    "expectedContains": "競合タイトルの供給が増え",
+    "forbiddenContains": ["無断転載"]
+  },
+  {
+    "id": "audience-age",
+    "topic": "audience",
+    "text": "回答者属性を整理します。\n読者の中心年代は20代から30代で、回答者の61%を占めました。\nプライバシーについて説明します。",
+    "expectedContains": "回答者の61%を占め",
+    "forbiddenContains": ["プライバシー"]
+  },
+  {
+    "id": "audience-women",
+    "topic": "audience",
+    "text": "サンプル条件を掲載します。\n女性ユーザーは月間利用者の57%で、平日夜間の閲覧が多い結果でした。\n会員登録の案内です。",
+    "expectedContains": "平日夜間の閲覧が多い",
+    "forbiddenContains": ["会員登録"]
+  },
+  {
+    "id": "audience-demographic",
+    "topic": "audience",
+    "text": "集計誤差に注意してください。\n対象audienceでは18歳から24歳のuserが34%を占め、短編への関心が高い結果です。\nAll rights reserved.",
+    "expectedContains": "短編への関心が高い",
+    "forbiddenContains": ["All rights reserved"]
+  },
+  {
+    "id": "theme-popular",
+    "topic": "theme",
+    "text": "分類基準を説明します。\n人気テーマは異世界と恋愛で、上位30作品のうち17作品が該当しました。\nお問い合わせはこちらです。",
+    "expectedContains": "17作品が該当",
+    "forbiddenContains": ["お問い合わせ"]
+  },
+  {
+    "id": "theme-trend",
+    "topic": "theme",
+    "text": "月次観測の結果です。\n復讐ジャンルの検索トレンドは前年同月比24%増となりました。\n利用規約を掲載しています。",
+    "expectedContains": "前年同月比24%増",
+    "forbiddenContains": ["利用規約"]
+  },
+  {
+    "id": "theme-genre",
+    "topic": "theme",
+    "text": "分類不能作品は除外しました。\n縦読みgenreでは短い章構成がpopularとなり、調査対象の45%を占めました。\nログインが必要です。",
+    "expectedContains": "調査対象の45%を占め",
+    "forbiddenContains": ["ログイン"]
+  },
+  {
+    "id": "price-average",
+    "topic": "price",
+    "text": "税込表示で集計しています。\n単話の平均価格は120円で、購入作品の中央値も同水準でした。\nプライバシーポリシーを確認してください。",
+    "expectedContains": "平均価格は120円",
+    "forbiddenContains": ["プライバシーポリシー"]
+  },
+  {
+    "id": "price-range",
+    "topic": "price",
+    "text": "無料作品を除いています。\nまとめ買い価格は550円から800円の範囲に集中し、課金単価に差が見られました。\n会員登録はこちら。",
+    "expectedContains": "550円から800円",
+    "forbiddenContains": ["会員登録"]
+  },
+  {
+    "id": "price-cost",
+    "topic": "price",
+    "text": "キャンペーン期間外の記録です。\nEnglish editions had a median price of 6 dollars, while low-cost bundles attracted repeat purchases.\nAll rights reserved.",
+    "expectedContains": "median price of 6 dollars",
+    "forbiddenContains": ["All rights reserved"]
+  },
+  {
+    "id": "channel-store",
+    "topic": "channel",
+    "text": "対象地域は国内です。\n電子書籍ストア経由の販売は全体の68%で、主要な配信チャネルでした。\nお問い合わせを受け付けます。",
+    "expectedContains": "主要な配信チャネル",
+    "forbiddenContains": ["お問い合わせ"]
+  },
+  {
+    "id": "channel-app",
+    "topic": "channel",
+    "text": "重複購入は除外しました。\n漫画アプリでの販売件数は月間4,200件で、platform別では最多でした。\n利用規約を掲載します。",
+    "expectedContains": "月間4,200件",
+    "forbiddenContains": ["利用規約"]
+  },
+  {
+    "id": "channel-platform",
+    "topic": "channel",
+    "text": "調査方法の概要です。\nSubscription platform distribution reached 35% of releases and became the second-largest channel.\nPrivacy policy.",
+    "expectedContains": "second-largest channel",
+    "forbiddenContains": ["Privacy policy"]
+  },
+  {
+    "id": "risk-copyright",
+    "topic": "risk",
+    "text": "確認対象を整理します。\n生成素材の著作権リスクが課題となり、公開前の権利確認が必要です。\nログインして設定してください。",
+    "expectedContains": "公開前の権利確認が必要",
+    "forbiddenContains": ["ログイン"]
+  },
+  {
+    "id": "risk-regulation",
+    "topic": "risk",
+    "text": "法的助言ではありません。\n海外配信では年齢規制の変更に注意し、対象ストアの審査条件を確認する必要があります。\n無断転載を禁止します。",
+    "expectedContains": "審査条件を確認する必要",
+    "forbiddenContains": ["無断転載"]
+  },
+  {
+    "id": "risk-decline",
+    "topic": "risk",
+    "text": "観測期間は12か月です。\n特定ジャンルの需要は前年比9%減少し、継続販売のリスクとして記録されました。\nプライバシーに関する案内です。",
+    "expectedContains": "継続販売のリスク",
+    "forbiddenContains": ["プライバシー"]
+  }
+]
