@@ -8,7 +8,7 @@
 
 ### 状態
 
-`IN_PROGRESS`。Research Quality v2にstackし、安全な出典取得境界を実装した。ローカル品質ゲート完了、Draft PR #57作成済み。CI、外部環境E2E、責任者承認待ち。
+`IN_PROGRESS`。Research Quality v2にstackし、安全な出典取得境界を実装した。ローカル品質ゲートとDraft PR #57の全CIが成功。外部環境E2E、責任者承認待ち。
 
 ### ブランチ
 
@@ -36,10 +36,10 @@
 - migrations: PASS（23件）
 - build: PASS
 - git diff --check: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ### 未完了
 
-- Draft PR #57のCI確認
 - VercelでFeature Flagと信頼済みhost allowlist設定
 - 実URLを用いた取得・redirect・timeout・未検証表示の外部E2E
 - 検索Provider候補取得、claim抽出、相反検出、引用必須LLM、golden set eval
