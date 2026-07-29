@@ -146,6 +146,8 @@ test("市場分析UIは入力・履歴・再表示と完了後の企画導線を
   assert.match(files[2], /\/proposal/);
   assert.match(files[3], /Release 2/);
   for (const file of files.slice(2)) {
+    assert.match(file, /ResourceNotFoundError/);
+    assert.match(file, /notFound\(\)/);
     assert.ok(
       file.indexOf("cloudResearchFeatureEnabled()") <
         file.indexOf("getCloudResearchReport("),

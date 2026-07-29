@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
+import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 export default async function ProposalHandoffPage({
   params,
@@ -12,7 +13,12 @@ export default async function ProposalHandoffPage({
   const { profile } = await requireProfile();
   if (!cloudResearchFeatureEnabled()) redirect("/dashboard/research");
   const { reportId } = await params;
-  const report = await getCloudResearchReport(profile.id, reportId);
+  const report = await getCloudResearchReport(profile.id, reportId).catch(
+    (error) => {
+      if (error instanceof ResourceNotFoundError) notFound();
+      throw error;
+    },
+  );
   const next = report.result.findings.find(
     (finding) => finding.key === "next_proposal",
   );
