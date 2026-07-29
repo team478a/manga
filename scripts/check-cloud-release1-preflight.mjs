@@ -1,3 +1,5 @@
+import { pathToFileURL } from "node:url";
+
 const PASS = "PASS";
 const FAIL = "FAIL";
 const SKIP = "SKIP";
@@ -165,7 +167,10 @@ function printReport(report) {
   );
 }
 
-if (process.argv[1] && import.meta.url === new URL(`file:///${process.argv[1].replaceAll("\\", "/")}`).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   const report = checkCloudRelease1Environment();
   printReport(report);
   if (!report.passed) process.exitCode = 1;
