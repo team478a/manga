@@ -4,6 +4,45 @@
 
 ---
 
+## 2026-07-29 Codex（Cloud Release 1独立統合・公開前ハードニング）
+
+### 状態
+
+`IN_PROGRESS`。最新`feature/manga-canvas-mvp` (`7615d06`)から独立ブランチを作成し、市場分析に必要なPR #50、#56〜#62の機能commitだけを取り込んだ。既存PRの履歴は変更していない。
+
+### ブランチ
+
+- Branch: `codex/cloud-release1-integration-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: 作成後に追記
+
+### 統合判断
+
+- PR #50はRelease 0＋1の7 commitを順番に取り込んだ。
+- PR #56〜#62は市場分析の機能commitだけを取り込み、旧stack用の進捗文書commitは取り込まなかった。
+- PR #56の競合ではRelease 2〜6 migrationを除外し、Release 1の`202607290001`と品質v2の`202607290007`だけをmanifest・schema検査へ統合した。
+- PR #48〜#49、#51〜#55、#63〜#64、およびDesktop、Canvas、Cloud AI、Stripe、Marketplace、後続制作工程は除外した。
+
+### 追加ハードニング
+
+- Feature Flagを認証・DB照会前に評価
+- 検索API／出典検証未設定時の手動出典継続案内
+- loading、empty、error、not found状態
+- 成人向け拒否、不正UUID事前拒否、内部エラー秘匿、所有者限定参照の回帰検査
+- 390px、768px、1280pxの横overflow構造検査
+- 秘密値を表示しないRelease 1 preflight
+- Release 1限定公開runbookと受入れ表
+
+### 検証
+
+- 市場分析集中テスト: PASS（28/28）
+- migration静的検証: PASS（18/18）
+- deps、lint、typecheck、research eval、Hub test（174/174）、build: PASS
+- migration roundtrip: PASS（ローカルDocker PostgreSQL 16）
+- CI、Preview: Draft PR作成後に確認
+
+---
+
 ## 2026-07-29 Codex（Cloud Release 0＋1 市場分析MVP）
 
 ### 状態

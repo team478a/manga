@@ -10,8 +10,8 @@ export default async function ProposalHandoffPage({
 }: {
   params: Promise<{ reportId: string }>;
 }) {
-  const { profile } = await requireProfile();
   if (!cloudResearchFeatureEnabled()) redirect("/dashboard/research");
+  const { profile } = await requireProfile();
   const { reportId } = await params;
   const report = await getCloudResearchReport(profile.id, reportId).catch(
     (error) => {

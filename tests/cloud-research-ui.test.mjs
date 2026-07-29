@@ -40,6 +40,8 @@ test("市場分析画面とShellは390px向けの可変layout契約を維持す�
       "mobile幅を超える固定widthを追加しない",
     );
   }
+  assert.match(sources[2], /break-words/);
+  assert.match(sources[3], /<div className="min-w-0">/);
 });
 
 test("市場分析の主要操作はbuttonまたはlinkとして実装される", async () => {
@@ -81,5 +83,93 @@ test("利用者画面は内部分析ロジックと参照情報を隠し結果�
   assert.doesNotMatch(
     comparison,
     /comparison\.reason|comparison\.sharedMetrics|comparison\.sharedYears|comparison\.confidence/,
+  );
+});
+
+test("市場分析RouteはFeature Flag停止時に認証・DBより先にfail closedする", async () => {
+  const sources = await Promise.all(
+    [
+      "../src/app/dashboard/page.tsx",
+      "../src/app/dashboard/research/page.tsx",
+      "../src/app/dashboard/research/new/page.tsx",
+      "../src/app/dashboard/research/discover/page.tsx",
+      "../src/app/dashboard/research/[reportId]/page.tsx",
+      "../src/app/dashboard/research/[reportId]/proposal/page.tsx",
+      "../src/app/dashboard/research/actions.ts",
+      "../src/app/dashboard/research/discover/actions.ts",
+      "../src/app/dashboard/research/new/claim-actions.ts",
+      "../src/app/dashboard/research/new/corroboration-actions.ts",
+    ].map(readSource),
+  );
+
+  for (const source of sources) {
+    assert.ok(
+      source.indexOf("cloudResearchFeatureEnabled()") <
+        source.indexOf("requireProfile()"),
+      "Feature Flagを認証・市場分析DB処理より先に確認する",
+    );
+  }
+});
+
+test("検索・出典検証が未設定でも手動出典入力を継続できる", async () => {
+  const [form, discovery, verification] = await Promise.all([
+    readSource("../src/app/dashboard/research/new/page.tsx"),
+    readSource("../src/app/dashboard/research/discover/page.tsx"),
+    readSource("../src/lib/cloud-research-source-verification.ts"),
+  ]);
+
+  assert.match(form, /出典候補検索は未設定です/);
+  assert.match(form, /手動入力して市場分析を続けられます/);
+  assert.match(discovery, /市場分析入力画面で出典を手動入力できます/);
+  assert.match(form, /Server取得検証は現在無効です/);
+  assert.match(verification, /cloudResearchSourceVerificationEnabled\(\)[\s\S]*verifyCloudResearchSources\(input\)[\s\S]*: input/);
+});
+
+test("市場分析はloading・empty・error・not found状態を持つ", async () => {
+  const [loading, history, error, notFound] = await Promise.all([
+    readSource("../src/app/dashboard/research/loading.tsx"),
+    readSource("../src/app/dashboard/research/page.tsx"),
+    readSource("../src/app/dashboard/research/error.tsx"),
+    readSource("../src/app/dashboard/research/not-found.tsx"),
+  ]);
+
+  assert.match(loading, /aria-busy="true"/);
+  assert.match(history, /保存済みReportはありません/);
+  assert.match(error, /市場分析を表示できませんでした/);
+  assert.match(error, /内部情報は表示していません/);
+  assert.doesNotMatch(error, /error\.message|error\.stack|error\.digest/);
+  assert.match(notFound, /市場分析レポートが見つかりません/);
+  assert.match(notFound, /表示権限がない可能性/);
+});
+
+test("市場分析の390px・768px・1280px構造に画面幅を超える固定幅がない", async () => {
+  const files = [
+    "../src/app/dashboard/page.tsx",
+    "../src/app/dashboard/research/page.tsx",
+    "../src/app/dashboard/research/new/page.tsx",
+    "../src/app/dashboard/research/discover/page.tsx",
+    "../src/app/dashboard/research/discover/source-discovery-form.tsx",
+    "../src/app/dashboard/research/[reportId]/page.tsx",
+    "../src/app/dashboard/research/[reportId]/proposal/page.tsx",
+    "../src/app/dashboard/research/loading.tsx",
+    "../src/app/dashboard/research/error.tsx",
+    "../src/app/dashboard/research/not-found.tsx",
+    "../src/components/CloudWorkflowShell.tsx",
+  ];
+  const sources = await Promise.all(files.map(readSource));
+
+  for (const [index, source] of sources.entries()) {
+    assert.doesNotMatch(
+      source,
+      /(?:min-|max-)?w-\[(?:39[1-9]|[4-9]\d{2,}|\d{4,})px\]/,
+      `${files[index]}に390px viewportを超える固定幅を追加しない`,
+    );
+  }
+  assert.match(sources[0], /sm:flex-row/);
+  assert.match(sources[2], /sm:grid-cols-2/);
+  assert.match(sources[5], /lg:grid-cols-2/);
+  assert.match(
+    sources.at(-1),
+    /lg:grid-cols-\[216px_minmax\(0,1fr\)\]/,
   );
 });

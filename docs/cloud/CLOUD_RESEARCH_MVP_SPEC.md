@@ -30,7 +30,12 @@
 - 取得日時
 - 出典から利用者が確認した事実メモ
 
-Release 1は任意URLのServer-side取得を行わない。取得日時と事実メモは利用者が確認して入力する。これによりSSRF、robots、利用規約、動的Page解析の不確実性をRelease 1へ持ち込まない。
+最小構成では取得日時と事実メモを利用者が確認して入力する。検索とServer検証は任意機能であり、
+未設定または無効でも手動出典入力を継続できる。
+
+Server検証を有効にした場合だけ、完全一致allowlist、DNS／接続先のpublic IP確認、redirectごとの再検査、
+HTTPS、応答size・時間制限を通過したURLを取得する。検索snippetは事実として自動保存せず、
+利用者が原文を確認して明示的に採用する。
 
 ## 3. 分析結果
 
@@ -57,7 +62,8 @@ type ResearchFinding = {
 };
 ```
 
-Release 1の分析engineは`research-rules-v1`。入力条件と事実メモから定性的な整理だけを行い、市場規模、販売数、成長率などの数値を生成しない。
+Release 1統合の分析engineは`research-rules-v2`。入力条件、事実メモ、根拠分野、
+出典の独立性・鮮度・照合結果から定性的な整理だけを行い、市場規模、販売数、成長率などの数値を生成しない。
 
 ## 4. 保存契約
 
@@ -87,7 +93,16 @@ ReportはRelease 1ではimmutableとする。修正する場合は新しいRepor
 - `true`: 有効
 - 未設定または`false`: 無効
 - 無効時はDashboardの状態表示、入力画面、Server Actionの三層で停止する。
+- Routeでは認証・Profile・DB照会より先に評価する。
 - 対象Supabaseへmigrationを適用してから`true`へ切り替える。
+
+任意機能:
+
+- `CLOUD_RESEARCH_SOURCE_VERIFICATION_ENABLED`: 安全なServer出典検証
+- `CLOUD_RESEARCH_SEARCH_ENABLED`: 検索候補収集
+
+任意機能は未設定時falseとする。検索API Keyまたはallowlistがない場合は機能をfail closedし、
+市場分析本体の手動出典入力は停止しない。
 
 ## 7. 成人向け境界
 
@@ -108,7 +123,10 @@ ReportはRelease 1ではimmutableとする。修正する場合は新しいRepor
 - 入力とJSONの容量をServer validationとDB制約で制限する。
 - 不正なReport IDはDBへ照会せず未検出として扱う。
 - Feature Flag停止中は一覧・入力・詳細・企画引継ぎの全RouteでDB照会を行わない。
-- 390pxでPage全体の横スクロールを発生させない。
+- 別ProfileのReportは未検出として扱い、所有者の存在や内容を公開しない。
+- loading、empty、error、not foundを安全な利用者表示にする。
+- error表示へ例外message、stack、digest、DB／Provider詳細を含めない。
+- 390px、768px、1280pxでPage全体の横スクロールを発生させない。
 
 公開・受入れ・停止・rollback手順は
 [`CLOUD_RESEARCH_RELEASE_RUNBOOK.md`](CLOUD_RESEARCH_RELEASE_RUNBOOK.md)

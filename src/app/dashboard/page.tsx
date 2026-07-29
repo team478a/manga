@@ -5,9 +5,12 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
 
 export default async function DashboardPage() {
-  const { profile } = await requireProfile();
   const enabled = cloudResearchFeatureEnabled();
-  const reports = enabled ? await listCloudResearchReports(profile.id) : [];
+  const reports = enabled
+    ? await requireProfile().then(({ profile }) =>
+        listCloudResearchReports(profile.id),
+      )
+    : [];
   const latest = reports[0];
 
   return (

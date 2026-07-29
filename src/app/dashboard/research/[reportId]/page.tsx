@@ -13,8 +13,8 @@ export default async function CloudResearchReportPage({
   params: Promise<{ reportId: string }>;
   searchParams: Promise<{ message?: string }>;
 }) {
-  const { profile } = await requireProfile();
   if (!cloudResearchFeatureEnabled()) redirect("/dashboard/research");
+  const { profile } = await requireProfile();
   const { reportId } = await params;
   const { message } = await searchParams;
   const report = await getCloudResearchReport(profile.id, reportId).catch(
@@ -32,7 +32,7 @@ export default async function CloudResearchReportPage({
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-bold text-violet-700">市場分析結果</p>
-          <h1 className="mt-2 text-3xl font-bold">
+          <h1 className="mt-2 break-words text-3xl font-bold">
             {report.input.genre}・{report.input.theme}
           </h1>
           <p className="mt-2 text-stone-600">
@@ -68,7 +68,7 @@ export default async function CloudResearchReportPage({
           ].map(([label, value]) => (
             <div className="rounded-lg bg-stone-50 p-3" key={label}>
               <dt className="text-stone-500">{label}</dt>
-              <dd className="mt-1 font-bold">{value}</dd>
+              <dd className="mt-1 break-words font-bold">{value}</dd>
             </div>
           ))}
         </dl>
@@ -84,7 +84,9 @@ export default async function CloudResearchReportPage({
         {report.result.findings.map((finding) => (
           <article className="panel" key={finding.key}>
             <h3 className="text-xl font-bold">{finding.label}</h3>
-            <p className="mt-3 leading-relaxed text-stone-700">{finding.summary}</p>
+            <p className="mt-3 break-words leading-relaxed text-stone-700">
+              {finding.summary}
+            </p>
           </article>
         ))}
       </section>

@@ -5,9 +5,12 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
 
 export default async function CloudResearchHistoryPage() {
-  const { profile } = await requireProfile();
   const enabled = cloudResearchFeatureEnabled();
-  const reports = enabled ? await listCloudResearchReports(profile.id) : [];
+  const reports = enabled
+    ? await requireProfile().then(({ profile }) =>
+        listCloudResearchReports(profile.id),
+      )
+    : [];
 
   return (
     <main className="page max-w-5xl">
@@ -44,7 +47,7 @@ export default async function CloudResearchHistoryPage() {
             >
               <BarChart3 className="h-7 w-7 shrink-0 text-violet-700" />
               <div className="min-w-0 flex-1">
-                <h2 className="truncate text-lg font-bold">
+                <h2 className="min-w-0 truncate text-lg font-bold">
                   {report.input.genre}・{report.input.theme}
                 </h2>
                 <p className="mt-1 text-sm text-stone-600">

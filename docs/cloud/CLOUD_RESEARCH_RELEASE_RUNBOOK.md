@@ -4,7 +4,9 @@
 
 対象: Release 0＋Release 1
 
-対象PR: [#50](https://github.com/team478a/manga/pull/50)
+対象ブランチ: `codex/cloud-release1-integration-v1`
+
+対象PR: 本統合ブランチのDraft PR（作成後に統合報告へ記録）
 
 ## 1. 目的
 
@@ -14,7 +16,7 @@
 
 ## 2. 前提条件
 
-- PR #50のRequired Quality、Migration roundtrip、Windows build、Vercelがすべて成功
+- 統合Draft PRのRequired Quality、Migration roundtrip、Windows build、Vercelがすべて成功
 - 対象Supabase ProjectとVercel Projectを明示している
 - Supabaseのバックアップまたは復元可能な状態を確認済み
 - 一般向け試験データだけを使用
@@ -35,16 +37,23 @@
 
 ```powershell
 npm run db:migrations:validate
-gh pr checks 50 --repo team478a/manga
+npm run cloud:release1:preflight
+gh pr checks <統合Draft PR番号> --repo team478a/manga
 ```
+
+preflightは値を出力せず、設定項目ごとの`PASS`、`FAIL`、`SKIP`だけを表示する。
+`CLOUD_RESEARCH_MVP_ENABLED`未設定時は必ず失敗する。検索と出典検証は任意であり、
+無効時は`SKIP`として手動出典入力を継続できる。
 
 ## 4. Supabase migration適用
 
-対象ファイル:
+対象ファイル（順番を変更しない）:
 
 `supabase/migrations/202607290001_cloud_market_research.sql`
 
-Supabase SQL Editorで対象Projectを再確認してから、ファイル全体を1回実行する。途中の文だけを分割実行しない。
+`supabase/migrations/202607290007_cloud_research_quality_v2.sql`
+
+Supabase SQL Editorで対象Projectを再確認してから、各ファイル全体を順番に1回実行する。途中の文だけを分割実行しない。
 
 適用後、次の読み取り専用SQLで確認する。
 
@@ -85,7 +94,19 @@ DB確認が成功した後にだけ、対象Preview環境へ次を設定する�
 CLOUD_RESEARCH_MVP_ENABLED=true
 ```
 
-対象外Projectや他branchへ一括適用しない。設定後に対象Deploymentを再デプロイし、新しいDeployment IDとURLを記録する。
+任意機能は次のFlagで個別に有効化する。未設定または`false`なら手動出典入力を使用する。
+
+```text
+CLOUD_RESEARCH_SOURCE_VERIFICATION_ENABLED=false
+CLOUD_RESEARCH_SEARCH_ENABLED=false
+```
+
+出典検証を有効にする場合は`CLOUD_RESEARCH_SOURCE_ALLOWED_HOSTS`、検索を有効にする場合は
+`BRAVE_SEARCH_API_KEY`をServer環境だけへ設定する。いずれかを有効にする場合は
+`SUPABASE_SERVICE_ROLE_KEY`と`CLOUD_RESEARCH_SEARCH_RATE_LIMIT_SECRET`も必要である。
+
+対象外Projectや他branchへ一括適用しない。設定後に対象Deploymentを再デプロイし、
+`npm run cloud:release1:preflight`がPASSすること、新しいDeployment IDとURLを記録する。
 
 ## 6. 利用者Aの縦型E2E
 
@@ -161,4 +182,4 @@ from public.cloud_market_research_reports;
 - 未解決事項:
 ```
 
-すべてPASSかつ責任者承認後にのみ、PR #50のDraft解除とmerge判断へ進む。
+すべてPASSかつ責任者承認後にのみ、統合Draft PRのDraft解除とmerge判断へ進む。

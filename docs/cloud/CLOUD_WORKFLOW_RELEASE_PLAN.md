@@ -1,7 +1,10 @@
 # MANGAI Cloud 制作ワークフロー Release計画
 
 作成日: 2026-07-29  
-対象ブランチ: `codex/cloud-research-mvp`
+対象ブランチ: `codex/cloud-release1-integration-v1`
+
+Release 1はPR #50、#56〜#62の市場分析機能だけを最新の正式基点へ統合する。
+PR #48〜#49、#51〜#55、#63〜#64は依存せず、後続Releaseの機能も先行実装しない。
 
 ## 1. 公開順
 
@@ -69,6 +72,9 @@ AI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ
 - 全分析項目に`fact`または`ai_inference`区分がある。
 - 根拠のない市場数値を生成しない回帰テストが成功する。
 - 市場分析完了前はAI企画提案導線が無効である。
+- 検索・出典検証が未設定でも手動出典入力が完走する。
+- loading、empty、error、not found、所有者外参照拒否が確認できる。
+- Release 1 preflightが秘密値を出力せず設定状態だけを判定する。
 - lint、typecheck、Hub test、migration検証、production build、CIが成功する。
 
 公開・受入れ・停止・rollbackの実施手順は

@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（2026-07-29）
+
+過去の引継ぎ記録より本節を優先する。
+
+- Branch: `codex/cloud-release1-integration-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- 目的: 市場分析だけを限定公開できるRelease 1統合
+- 統合元: PR #50、#56〜#62
+- 除外: PR #48〜#49、#51〜#55、#63〜#64
+- 状態: 公開前ハードニングと全品質ゲートを実行中。merge・本番反映は禁止
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_RELEASE1_INTEGRATION_REPORT.md`、`docs/cloud/CLOUD_RELEASE1_BETA_ACCEPTANCE.md`
+
+既存PRは統合元としてそのまま保持し、rebase、force push、Closeを行わない。以下の節は保守性改善・Desktop作業時点の履歴として残す。
+
 ## 1. 引継ぎ情報
 
 - 更新日: 2026-07-26

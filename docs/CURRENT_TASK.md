@@ -3,91 +3,94 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Release 0＋Release 1実装・ローカル品質ゲート・実装HEAD CI完了、外部E2E待ち）
+- 状態: `IN_PROGRESS`（Release 1統合・公開前ハードニング中。merge・本番反映は禁止）
 - リポジトリ: `team478a/manga`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
-- Branch: `codex/cloud-research-mvp`
-- Draft PR: [#50](https://github.com/team478a/manga/pull/50)
+- Branch: `codex/cloud-release1-integration-v1`
+- 統合元: PR #50、#56、#57、#58、#59、#60、#61、#62
+- 除外: PR #48〜#49、#51〜#55、#63〜#64
+- Draft PR: 作成後に本欄を更新
 - 計画: [`docs/cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md`](cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_MVP_SPEC.md`](cloud/CLOUD_RESEARCH_MVP_SPEC.md)
+- 統合報告: [`docs/cloud/CLOUD_RELEASE1_INTEGRATION_REPORT.md`](cloud/CLOUD_RELEASE1_INTEGRATION_REPORT.md)
+- 受入れ: [`docs/cloud/CLOUD_RELEASE1_BETA_ACCEPTANCE.md`](cloud/CLOUD_RELEASE1_BETA_ACCEPTANCE.md)
 - 公開手順: [`docs/cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md`](cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md)
 
-## 目的
+## 現在の目的
 
-MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開する。広範なCloud UI刷新より先に、市場分析の入力・実行・保存・履歴・再表示を完走させる。
+新機能追加を停止し、市場分析だけを先に限定公開できる独立したRelease 1統合状態を作る。既存PRは変更せず、必要なcommitだけを最新の正式基点へ安全に取り込む。
 
-## 今回の範囲
+## 統合範囲
 
-### Release 0
+- Release 0の最小Cloud Shell、Dashboard、制作進行、Feature Flag
+- 市場分析の入力、実行、保存、履歴、再表示
+- Research Quality v2
+- 安全な出典Server検証
+- 検索候補収集
+- 事実候補抽出
+- 複数出典照合
+- Research Evaluation v1
+- 分析結果だけを表示する利用者UI
+- Release 1公開前ハードニング、preflight、runbook
 
-- 最小限のCloud共通シェル
-- ワークフロー順の左サイドバー
-- Dashboard
-- 現在の制作進行
-- `CLOUD_RESEARCH_MVP_ENABLED` Feature Flag
+## 公開前の安全境界
 
-### Release 1
+- `CLOUD_RESEARCH_MVP_ENABLED`が未設定または`false`なら、認証・DB照会より前にfail closedする。
+- 検索APIが無効または未設定でも、手動出典入力を継続できる。
+- 出典検証が無効または未設定なら、安全な手動確認案内を表示する。
+- 成人向け市場分析はCloudで拒否する。
+- 不正UUIDはDB照会前に拒否する。
+- DB／Providerの内部詳細を利用者へ返さない。
+- Reportは所有者だけが参照できる。
+- loading、empty、error、not foundを明示する。
+- 390px、768px、1280pxで画面幅を超える固定幅を持たない。
 
-- 市場分析の必須入力
-- HTTPS出典URL、取得日時、確認事実
-- 定性的な分析実行
-- Report保存
-- 履歴
-- Report再表示
-- 完了後だけ有効なAI企画提案への引継ぎ導線
+## 今回変更しない範囲
 
-## 実装方針
-
-- Release 1は`research-rules-v1`で証拠に基づく定性的整理を行う。
-- 根拠のない市場規模、販売数、成長率を生成しない。
-- 全分析項目を`fact`または`ai_inference`へ区分する。
-- 任意URLのServer-side取得は行わず、利用者が確認した出典を保存する。
-- 成人向け区分は入力必須だが、既存のCloud／Desktop境界によりCloud実行を拒否する。
-- Reportはimmutable。修正は新規Reportとして作成する。
-- Feature Flag停止中は詳細URLへの直接アクセスでもDB照会前に停止する。
-- 出典は画面・Serverとも最大5件に統一し、同一URLの重複を拒否する。
-- 保存・一覧・詳細はDB非依存の永続化契約を通し、Supabase失敗詳細を秘匿する。
-- 不正なReport UUIDはDB照会前に未検出として停止する。
-
-## 変更しない範囲
-
+- PR #48〜#49、#51〜#55、#63〜#64
+- Desktop
 - Cloud Canvas Editor
-- Cloud AI Worker
+- Cloud AI Queue／Worker
 - Stripe
 - Marketplace
-- Desktop
+- AI企画提案本体
 - シナリオ生成
 - マンガ生成
+- 作品管理
 - 販売準備
 - 収益ダッシュボード
 
 ## 現在の検証
 
-- lint: PASS
-- typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析単体・保存層・UI構造テスト: PASS（17/17）
-- hub:test: PASS（133/133）
-- deps:check: PASS
-- migration検証: PASS（17件）
-- build: PASS
-- git diff --check: PASS
-- 実装HEAD `3143c41`のGitHub CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
+- 市場分析集中テスト: PASS（28/28）
+- migration manifest: 18件を正規化
+- migration静的検証: PASS（18/18）
+- deps、lint、typecheck、research eval、Hub test（174/174）、build: PASS
+- migration roundtrip: PASS（ローカルDocker PostgreSQL 16）
+- GitHub CI、Vercel Preview: Draft PR作成後に確認
+
+## 停止条件
+
+Draft PRとVercel Previewを作成し、全CI結果を確認した時点で停止する。次は実施しない。
+
+- PRのmerge、既存PRのClose・rebase・force push
+- Feature Flagの本番有効化
+- Supabase stagingへのmigration適用
+- 外部APIの有料実行
+- 本番公開
 
 ## 未完了
 
-1. Supabase対象環境へ新規migrationを適用
-2. Vercel Previewで入力・保存・履歴・再表示E2E
-3. 別利用者によるRLSと390px／768px／1280px実ブラウザ受入れ
-4. 責任者承認
+1. 全品質ゲートの完走
+2. Draft PR作成とCI確認
+3. Vercel Preview確認
+4. 責任者によるPreview受入れ
+5. 責任者管理下でのmigration適用・preflight・限定公開判断
 
-## 禁止事項
+## 履歴の参照
 
-- `feature/manga-canvas-mvp`への直接push
-- 既存migrationの変更
-- Cloud AI Worker、Canvas、Stripe、Marketplace、Desktopへの変更
-- 根拠のない市場数値の生成
-- 入力・保存・履歴・再表示が完走する前のmerge
-- 全CI成功・責任者承認前のmerge
+PR #50単体でのRelease 0＋1実装記録、およびそれ以前のDesktop作業記録は
+[`docs/HANDOFF_LOG.md`](HANDOFF_LOG.md)に保持している。統合元PRはClose・履歴改変していない。
 
 ## 次担当者が最初に読むファイル
 
@@ -96,5 +99,6 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 3. `docs/AI_HANDOFF.md`
 4. 本ファイル
 5. `docs/HANDOFF_LOG.md`
-6. `docs/cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md`
-7. `docs/cloud/CLOUD_RESEARCH_MVP_SPEC.md`
+6. `docs/cloud/CLOUD_RELEASE1_INTEGRATION_REPORT.md`
+7. `docs/cloud/CLOUD_RELEASE1_BETA_ACCEPTANCE.md`
+8. `docs/cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md`

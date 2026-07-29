@@ -6,9 +6,9 @@ import { cloudResearchSourceVerificationEnabled } from "@/lib/cloud-research-sou
 import { SourceDiscoveryForm } from "./source-discovery-form";
 
 export default async function CloudResearchSourceDiscoveryPage() {
-  await requireProfile();
-  const enabled =
-    cloudResearchFeatureEnabled() && cloudResearchSearchEnabled();
+  const researchEnabled = cloudResearchFeatureEnabled();
+  if (researchEnabled) await requireProfile();
+  const enabled = researchEnabled && cloudResearchSearchEnabled();
 
   return (
     <main className="page max-w-4xl">
@@ -23,6 +23,11 @@ export default async function CloudResearchSourceDiscoveryPage() {
       <p className="mt-4 rounded-lg bg-amber-50 p-4 text-sm text-amber-950">
         検索snippetは確認済み事実ではありません。採用後も原文を読み、事実メモを自分で入力してください。
       </p>
+      {!enabled ? (
+        <p className="mt-4 rounded-lg bg-violet-50 p-4 text-sm text-violet-950">
+          検索を利用できない場合も、市場分析入力画面で出典を手動入力できます。
+        </p>
+      ) : null}
       <SourceDiscoveryForm
         enabled={enabled}
         verificationEnabled={cloudResearchSourceVerificationEnabled()}

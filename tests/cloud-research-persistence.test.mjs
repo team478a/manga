@@ -120,6 +120,22 @@ test("市場分析一覧と詳細は現在Profileだけを永続化層へ渡す"
   assert.deepEqual(calls.found, [{ ownerId: profileId, id: reportId }]);
 });
 
+test("別ProfileのReportは所有者限定検索で未検出になる", async () => {
+  const otherProfileId = "10000000-0000-4000-8000-000000000002";
+  const scoped = persistence({ findData: null });
+  await assert.rejects(
+    getCloudResearchReportWithPersistence({
+      profileId: otherProfileId,
+      reportId,
+      persistence: scoped.adapter,
+    }),
+    (error) => error.code === "RESOURCE_NOT_FOUND",
+  );
+  assert.deepEqual(scoped.calls.found, [
+    { ownerId: otherProfileId, id: reportId },
+  ]);
+});
+
 test("不正Report IDはDB照会せず未検出として扱う", async () => {
   const { adapter, calls } = persistence();
   await assert.rejects(

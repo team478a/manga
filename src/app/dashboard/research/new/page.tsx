@@ -2,7 +2,10 @@ import Link from "next/link";
 import { createCloudResearchReportAction } from "@/app/dashboard/research/actions";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
-import { parseCloudResearchSearchAdoption } from "@/lib/cloud-research-search";
+import {
+  cloudResearchSearchEnabled,
+  parseCloudResearchSearchAdoption,
+} from "@/lib/cloud-research-search";
 import { cloudResearchSourceVerificationEnabled } from "@/lib/cloud-research-source-verification";
 import { ClaimComparison } from "./claim-comparison";
 import { ClaimExtractor } from "./claim-extractor";
@@ -37,7 +40,8 @@ export default async function NewCloudResearchPage({
     candidatePublishedAt?: string;
   }>;
 }) {
-  await requireProfile();
+  const enabled = cloudResearchFeatureEnabled();
+  if (enabled) await requireProfile();
   const {
     error,
     candidateTitle,
@@ -51,7 +55,7 @@ export default async function NewCloudResearchPage({
     topic: candidateTopic,
     publishedAt: candidatePublishedAt,
   });
-  const enabled = cloudResearchFeatureEnabled();
+  const searchEnabled = enabled && cloudResearchSearchEnabled();
   const sourceVerificationEnabled = cloudResearchSourceVerificationEnabled();
   const now = new Date().toISOString().slice(0, 16);
 
@@ -62,12 +66,14 @@ export default async function NewCloudResearchPage({
       </Link>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <h1 className="text-3xl font-bold">新しい市場分析</h1>
-        <Link
-          className="button-secondary text-center"
-          href="/dashboard/research/discover"
-        >
-          出典候補を探す
-        </Link>
+        {searchEnabled ? (
+          <Link
+            className="button-secondary text-center"
+            href="/dashboard/research/discover"
+          >
+            出典候補を探す
+          </Link>
+        ) : null}
       </div>
       <p className="mt-2 text-stone-600">
         確認済みの出典だけを使い、定性的な分析Reportを作成します。
@@ -86,6 +92,14 @@ export default async function NewCloudResearchPage({
         </div>
       ) : (
         <>
+          {!searchEnabled ? (
+            <p
+              className="mt-5 rounded-lg bg-violet-50 p-4 text-sm text-violet-950"
+              role="status"
+            >
+              出典候補検索は未設定です。出典名・URL・確認した事実を手動入力して市場分析を続けられます。
+            </p>
+          ) : null}
           {adoptedCandidate ? (
             <>
               <ClaimExtractor
