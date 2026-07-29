@@ -15,7 +15,7 @@
 - Branch: `codex/cloud-adult-research-option-v1`
 - Base: `codex/cloud-release1-integration-v1` (`6491a7d`)
 - 親Draft PR: [#65](https://github.com/team478a/manga/pull/65)
-- Draft PR: 作成待ち
+- Draft PR: [#66](https://github.com/team478a/manga/pull/66)
 
 ### 実装
 

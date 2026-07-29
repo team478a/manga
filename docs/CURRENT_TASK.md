@@ -8,6 +8,7 @@
 - Base: `codex/cloud-release1-integration-v1` (`6491a7d`)
 - Branch: `codex/cloud-adult-research-option-v1`
 - 親Draft PR: [#65](https://github.com/team478a/manga/pull/65)
+- Draft PR: [#66](https://github.com/team478a/manga/pull/66)
 - 仕様: [`docs/cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md`](cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md)
 
 ## 現在の目的

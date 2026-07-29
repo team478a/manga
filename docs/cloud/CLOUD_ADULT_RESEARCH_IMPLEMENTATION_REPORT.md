@@ -1,5 +1,8 @@
 # MANGAI Cloud 成人向け市場分析オプション 実装報告
 
+Draft PR: [#66](https://github.com/team478a/manga/pull/66)  
+Base: Draft PR [#65](https://github.com/team478a/manga/pull/65)
+
 ## 1. 結論
 
 成人向け市場分析を、一般向けRelease 1から独立した許可制オプションとして実装した。成人向け画像・本文生成、成人向け作品公開、Stripe自動連携は追加していない。
