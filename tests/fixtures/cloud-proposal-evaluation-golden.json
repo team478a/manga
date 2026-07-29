@@ -1,0 +1,31 @@
+[
+  {"id":"fantasy-01","genre":"女性向けファンタジー","audience":"20代〜30代のWeb漫画読者","platform":"電子書籍ストア","theme":"再出発と仕事","referenceWorks":"参照作品F01","priceMin":300,"priceMax":800,"publicationFormat":"one_shot","pageCount":48},
+  {"id":"fantasy-02","genre":"女性向けファンタジー","audience":"10代後半のスマートフォン読者","platform":"漫画アプリ","theme":"約束と身分差","referenceWorks":"参照作品F02","priceMin":0,"priceMax":500,"publicationFormat":"series","pageCount":120},
+  {"id":"fantasy-03","genre":"女性向けファンタジー","audience":"30代の電子書籍読者","platform":"Webコミック","theme":"家族の再生","referenceWorks":"参照作品F03","priceMin":400,"priceMax":900,"publicationFormat":"one_shot","pageCount":64},
+  {"id":"fantasy-04","genre":"女性向けファンタジー","audience":"20代の恋愛漫画読者","platform":"電子コミック販売サイト","theme":"信頼と秘密","referenceWorks":"参照作品F04","priceMin":500,"priceMax":1000,"publicationFormat":"series","pageCount":180},
+
+  {"id":"romance-01","genre":"現代恋愛","audience":"20代の働く女性","platform":"漫画アプリ","theme":"仕事と友情の境界","referenceWorks":"参照作品R01","priceMin":0,"priceMax":400,"publicationFormat":"series","pageCount":96},
+  {"id":"romance-02","genre":"現代恋愛","audience":"30代〜40代の電子書籍読者","platform":"電子書籍ストア","theme":"再会と選択","referenceWorks":"参照作品R02","priceMin":400,"priceMax":900,"publicationFormat":"one_shot","pageCount":56},
+  {"id":"romance-03","genre":"現代恋愛","audience":"10代後半の学園漫画読者","platform":"Webコミック","theme":"本音を伝える勇気","referenceWorks":"参照作品R03","priceMin":0,"priceMax":300,"publicationFormat":"one_shot","pageCount":40},
+  {"id":"romance-04","genre":"現代恋愛","audience":"20代〜30代の恋愛漫画読者","platform":"電子コミック販売サイト","theme":"価値観の違いと共同生活","referenceWorks":"参照作品R04","priceMin":300,"priceMax":700,"publicationFormat":"series","pageCount":144},
+
+  {"id":"mystery-01","genre":"日常ミステリー","audience":"20代〜40代の謎解き読者","platform":"電子書籍ストア","theme":"小さな嘘と信頼","referenceWorks":"参照作品M01","priceMin":400,"priceMax":800,"publicationFormat":"one_shot","pageCount":72},
+  {"id":"mystery-02","genre":"日常ミステリー","audience":"10代後半の漫画アプリ利用者","platform":"漫画アプリ","theme":"失踪した手紙","referenceWorks":"参照作品M02","priceMin":0,"priceMax":400,"publicationFormat":"series","pageCount":128},
+  {"id":"mystery-03","genre":"日常ミステリー","audience":"30代の短編漫画読者","platform":"Webコミック","theme":"記憶の食い違い","referenceWorks":"参照作品M03","priceMin":200,"priceMax":600,"publicationFormat":"one_shot","pageCount":32},
+  {"id":"mystery-04","genre":"日常ミステリー","audience":"20代のミステリー読者","platform":"電子コミック販売サイト","theme":"閉店前の最後の依頼","referenceWorks":"参照作品M04","priceMin":500,"priceMax":1000,"publicationFormat":"series","pageCount":160},
+
+  {"id":"work-01","genre":"仕事ドラマ","audience":"20代の新社会人","platform":"漫画アプリ","theme":"失敗からの成長","referenceWorks":"参照作品W01","priceMin":0,"priceMax":300,"publicationFormat":"series","pageCount":120},
+  {"id":"work-02","genre":"仕事ドラマ","audience":"30代〜40代のビジネス漫画読者","platform":"電子書籍ストア","theme":"チーム再建","referenceWorks":"参照作品W02","priceMin":500,"priceMax":1200,"publicationFormat":"one_shot","pageCount":80},
+  {"id":"work-03","genre":"仕事ドラマ","audience":"フリーランスに関心がある読者","platform":"Webコミック","theme":"理想と収益の両立","referenceWorks":"参照作品W03","priceMin":300,"priceMax":700,"publicationFormat":"one_shot","pageCount":48},
+  {"id":"work-04","genre":"仕事ドラマ","audience":"20代〜30代のクリエイター","platform":"電子コミック販売サイト","theme":"競争から協働へ","referenceWorks":"参照作品W04","priceMin":400,"priceMax":900,"publicationFormat":"series","pageCount":180},
+
+  {"id":"comedy-01","genre":"日常コメディ","audience":"10代〜20代のスマートフォン読者","platform":"漫画アプリ","theme":"勘違いから始まる友情","referenceWorks":"参照作品C01","priceMin":0,"priceMax":300,"publicationFormat":"series","pageCount":96},
+  {"id":"comedy-02","genre":"日常コメディ","audience":"家族で読める作品を探す読者","platform":"Webコミック","theme":"家事分担の大作戦","referenceWorks":"参照作品C02","priceMin":0,"priceMax":500,"publicationFormat":"one_shot","pageCount":24},
+  {"id":"comedy-03","genre":"日常コメディ","audience":"20代〜30代の会社員","platform":"電子書籍ストア","theme":"秘密の副業","referenceWorks":"参照作品C03","priceMin":300,"priceMax":800,"publicationFormat":"one_shot","pageCount":48},
+  {"id":"comedy-04","genre":"日常コメディ","audience":"30代〜40代の日常漫画読者","platform":"電子コミック販売サイト","theme":"地域イベントの再生","referenceWorks":"参照作品C04","priceMin":400,"priceMax":900,"publicationFormat":"series","pageCount":144},
+
+  {"id":"sf-01","genre":"近未来SF","audience":"20代〜40代のSF読者","platform":"電子書籍ストア","theme":"記憶の所有権","referenceWorks":"参照作品S01","priceMin":500,"priceMax":1200,"publicationFormat":"one_shot","pageCount":88},
+  {"id":"sf-02","genre":"近未来SF","audience":"10代後半の漫画アプリ利用者","platform":"漫画アプリ","theme":"AIと共同生活","referenceWorks":"参照作品S02","priceMin":0,"priceMax":500,"publicationFormat":"series","pageCount":160},
+  {"id":"sf-03","genre":"近未来SF","audience":"20代の短編SF読者","platform":"Webコミック","theme":"最後の通信","referenceWorks":"参照作品S03","priceMin":200,"priceMax":700,"publicationFormat":"one_shot","pageCount":40},
+  {"id":"sf-04","genre":"近未来SF","audience":"30代の社会派漫画読者","platform":"電子コミック販売サイト","theme":"自動化と働く意味","referenceWorks":"参照作品S04","priceMin":500,"priceMax":1100,"publicationFormat":"series","pageCount":180}
+]
