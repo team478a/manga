@@ -3,10 +3,10 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Research Evaluation v1実装・Draft PR全CI完了、外部E2E／責任者承認待ち）
+- 状態: `IN_PROGRESS`（市場分析Result-only UI実装・Draft PR全CI完了、Preview確認／責任者承認待ち）
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-research-corroboration`（Draft PR #60）
-- Branch: `codex/cloud-research-evaluation-v1`
+- Base: `codex/cloud-research-evaluation-v1`（Draft PR #61）
+- Branch: `codex/cloud-research-result-only-ui`
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
@@ -19,12 +19,38 @@
 - 事実候補抽出 Draft PR: [#59](https://github.com/team478a/manga/pull/59)
 - 複数出典照合 Draft PR: [#60](https://github.com/team478a/manga/pull/60)
 - Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
-- 計画: [`docs/cloud/CLOUD_RESEARCH_EVALUATION_V1_PLAN.md`](cloud/CLOUD_RESEARCH_EVALUATION_V1_PLAN.md)
-- 仕様: [`docs/cloud/CLOUD_RESEARCH_EVALUATION_V1_SPEC.md`](cloud/CLOUD_RESEARCH_EVALUATION_V1_SPEC.md)
+- Result-only UI Draft PR: [#62](https://github.com/team478a/manga/pull/62)
+- 仕様: [`docs/cloud/CLOUD_RESEARCH_RESULT_ONLY_UI_SPEC.md`](cloud/CLOUD_RESEARCH_RESULT_ONLY_UI_SPEC.md)
 
 ## 現在の目的
 
-市場リサーチの候補抽出と複数出典照合を固定fixtureで定量評価し、品質低下をRequired Quality CIで自動停止する。
+市場分析の利用者画面から内部の分析・評価ロジックと参照情報を隠し、分析結果だけを簡潔に表示する。保存・検証・品質評価の内部契約は維持する。
+
+## Result-only UI 実装済み
+
+- Report見出しを「市場分析結果」へ統一
+- engine version、根拠品質score／内訳、根拠区分、confidence、内部limitationsを非表示
+- 分析結果は項目名と内容だけをCard表示
+- 参照情報セクション、URL、事実メモ、取得日時を利用者向けReportから削除
+- MIME、byte数、SHA-256、Server検証状態、source type、内部topicを非表示
+- 候補抽出の本文hash、一致語、原文offsetを非表示
+- 出典照合の判定理由、共通指標、共通年、confidenceを非表示
+- 相反可能性など利用者の判断に必要な結論labelと原文は維持
+- DB、分析結果schema、品質計算、根拠区分、Research Evaluation v1は変更なし
+- 参照URL、取得日時、事実メモ、検証情報は内部保存を維持
+
+## Result-only UI 検証
+
+- focused test: PASS（23/23）
+- `npm run research:eval`: PASS（49/49）
+- `npm run hub:test`: PASS（202/202）
+- `npm run typecheck`: PASS（Hub + Desktop）
+- `npm run lint`: PASS
+- `npm run deps:check`: PASS
+- `npm run db:migrations:validate`: PASS（23件）
+- `npm run build`: PASS
+- `git diff --check`: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ## Research Evaluation v1 実装済み
 

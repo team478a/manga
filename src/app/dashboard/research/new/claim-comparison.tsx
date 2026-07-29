@@ -162,9 +162,6 @@ export function ClaimComparison({
                     >
                       {presentation.label}
                     </p>
-                    <p className="mt-3 text-sm font-medium">
-                      {comparison.reason}
-                    </p>
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <blockquote className="rounded-lg bg-stone-50 p-3 text-sm leading-6">
                         <span className="mb-2 block text-xs font-bold text-stone-500">
@@ -179,11 +176,6 @@ export function ClaimComparison({
                         {comparison.comparison.text}
                       </blockquote>
                     </div>
-                    <p className="mt-3 text-xs text-stone-500">
-                      共通指標: {comparison.sharedMetrics.join("、") || "なし"}
-                      ／共通年: {comparison.sharedYears.join("、") || "未確認"}
-                      ／信頼度: {comparison.confidence === "medium" ? "中" : "低"}
-                    </p>
                     <button
                       className="button-secondary mt-4 w-full"
                       onClick={() =>

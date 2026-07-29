@@ -56,3 +56,30 @@ test("市場分析の主要操作はbuttonまたはlinkとして実装される"
     /<div[^>]*onClick=/,
   );
 });
+
+test("利用者画面は内部分析ロジックと参照情報を隠し結果だけを表示する", async () => {
+  const [report, extractor, comparison] = await Promise.all([
+    readSource("../src/app/dashboard/research/[reportId]/page.tsx"),
+    readSource(
+      "../src/app/dashboard/research/new/claim-extractor.tsx",
+    ),
+    readSource(
+      "../src/app/dashboard/research/new/claim-comparison.tsx",
+    ),
+  ]);
+
+  assert.match(report, /市場分析結果/);
+  assert.match(report, /finding\.summary/);
+  assert.doesNotMatch(
+    report,
+    /engine_version|result\.quality|evidenceBasis|finding\.confidence|finding\.limitations|report\.sources|source\.url|source\.retrievedAt|参照情報|verification\.contentType|verification\.sha256/,
+  );
+  assert.doesNotMatch(
+    extractor,
+    /candidate\.signals|candidate\.textStart|candidate\.textEnd|state\.textSha256/,
+  );
+  assert.doesNotMatch(
+    comparison,
+    /comparison\.reason|comparison\.sharedMetrics|comparison\.sharedYears|comparison\.confidence/,
+  );
+});
