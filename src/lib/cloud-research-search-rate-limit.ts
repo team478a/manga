@@ -8,6 +8,7 @@ import {
 const WINDOW_SECONDS = 60;
 const GLOBAL_LIMIT = 300;
 const USER_LIMIT = 10;
+const CLAIM_EXTRACTION_USER_LIMIT = 20;
 
 function subjectKey(value: string, secret?: string) {
   const resolved =
@@ -71,5 +72,36 @@ export async function enforceCloudResearchSearchRateLimit(
   if (!userAllowed)
     throw new RateLimitedError(
       "出典検索は1分間に10回までです。少し待ってからお試しください。",
+    );
+}
+
+export async function enforceCloudResearchClaimExtractionRateLimit(
+  profileId: string,
+  dependencies: { consume?: Consume; secret?: string } = {},
+) {
+  const consume = dependencies.consume ?? consumeWithDatabase;
+  const globalAllowed = await consume(
+    "global",
+    subjectKey(
+      "cloud-research-claim-extraction:global",
+      dependencies.secret,
+    ),
+    GLOBAL_LIMIT,
+  );
+  if (!globalAllowed)
+    throw new RateLimitedError(
+      "事実候補の抽出が混み合っています。1分後にお試しください。",
+    );
+  const userAllowed = await consume(
+    "user",
+    subjectKey(
+      `cloud-research-claim-extraction:user:${profileId}`,
+      dependencies.secret,
+    ),
+    CLAIM_EXTRACTION_USER_LIMIT,
+  );
+  if (!userAllowed)
+    throw new RateLimitedError(
+      "事実候補の抽出は1分間に20回までです。少し待ってからお試しください。",
     );
 }

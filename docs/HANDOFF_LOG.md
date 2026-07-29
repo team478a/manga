@@ -4,6 +4,53 @@
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（事実候補抽出）
+
+### 状態
+
+`IN_PROGRESS`。検索候補収集基盤にstackし、検証済み本文からの決定的な事実候補抽出と人手採用UIを実装した。ローカル品質ゲート成功。Draft PR作成、CI、外部E2E、責任者承認は未完了。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-claim-extraction`
+- Base: `codex/cloud-research-search-foundation` / Draft PR #58
+
+### 実装
+
+- HTML／plain text／JSONから一時的な正規化本文snapshotを生成
+- script、navigation、footer等のnoiseと重複行を除去
+- 選択分野の固定keywordと数値signalによる原文候補の決定的順位付け
+- 20〜500文字、最大8候補、原文位置と2種類のSHA-256を付与
+- 認証、Feature Flag、全体300回/分・Profile 20回/分のrate limit
+- 市場分析Form外の独立POST Actionと、人が確認してから事実メモへ転記するUI
+- full textをDB、log、Browser responseへ出さない契約
+- 計画・仕様・回帰テスト
+
+### 検証
+
+- hub:test: PASS（193/193）
+- typecheck:hub: PASS
+- lint: PASS
+- deps:check: PASS
+- migrations: PASS（23件）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+- Draft PR作成と全CI
+- Vercel Feature Flag・秘密値・allowlist設定
+- 実URLでの抽出、原文照合、採用、Report保存E2E
+- 候補抽出のgolden set評価、相反情報検出、複数出典照合
+
+### 注意事項
+
+- 抽出候補は事実の確定ではない。原文、調査方法、母集団、日時を人が確認する。
+- LLM、外部AI API、DB migrationは追加していない。
+- PR #50〜#58と本branchを外部ゲートと責任者承認なしにmergeしない。
+
+---
+
 ## 2026-07-29 Codex → 次担当AI（検索候補収集基盤）
 
 ### 状態

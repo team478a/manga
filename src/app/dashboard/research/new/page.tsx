@@ -4,6 +4,7 @@ import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { parseCloudResearchSearchAdoption } from "@/lib/cloud-research-search";
 import { cloudResearchSourceVerificationEnabled } from "@/lib/cloud-research-source-verification";
+import { ClaimExtractor } from "./claim-extractor";
 
 function Field({
   id,
@@ -83,7 +84,15 @@ export default async function NewCloudResearchPage({
           市場分析機能は現在停止中です。
         </div>
       ) : (
-        <form action={createCloudResearchReportAction} className="mt-6 space-y-6">
+        <>
+          {adoptedCandidate ? (
+            <ClaimExtractor
+              enabled={sourceVerificationEnabled}
+              topic={adoptedCandidate.topic}
+              url={adoptedCandidate.url}
+            />
+          ) : null}
+          <form action={createCloudResearchReportAction} className="mt-6 space-y-6">
           <section className="panel">
             <h2 className="text-xl font-bold">制作条件</h2>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
@@ -226,7 +235,8 @@ export default async function NewCloudResearchPage({
           <button className="button w-full bg-violet-700 hover:bg-violet-800" type="submit">
             市場分析を実行して保存
           </button>
-        </form>
+          </form>
+        </>
       )}
     </main>
   );
