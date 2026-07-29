@@ -3,10 +3,10 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（AI企画提案 Quality UI v1実装・Draft PR全CI完了、Preview実画面確認／責任者承認待ち）
+- 状態: `IN_PROGRESS`（AI企画提案 Evaluation v1実装・Draft PR #64全CI完了、外部E2E／責任者承認待ち）
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-research-result-only-ui`（Draft PR #62）
-- Branch: `codex/cloud-proposal-quality-ui-v1`
+- Base: `codex/cloud-proposal-quality-ui-v1`（Draft PR #63）
+- Branch: `codex/cloud-proposal-evaluation-v1`
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
@@ -21,11 +21,39 @@
 - Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
 - Result-only UI Draft PR: [#62](https://github.com/team478a/manga/pull/62)
 - AI企画提案 Quality UI v1 Draft PR: [#63](https://github.com/team478a/manga/pull/63)
-- 計画: [`docs/cloud/CLOUD_PROPOSAL_QUALITY_UI_V1_PLAN.md`](cloud/CLOUD_PROPOSAL_QUALITY_UI_V1_PLAN.md)
+- AI企画提案 Evaluation v1 Draft PR: [#64](https://github.com/team478a/manga/pull/64)
+- 計画: [`docs/cloud/CLOUD_PROPOSAL_EVALUATION_V1_PLAN.md`](cloud/CLOUD_PROPOSAL_EVALUATION_V1_PLAN.md)
 
 ## 現在の目的
 
-AI企画提案の利用者画面を結果中心に整理し、3案の違いを比較・採用しやすくする。内部の根拠追跡情報と保存契約を維持しながら、重複、模倣、根拠のない数値を保存前に検査する。
+AI企画提案の品質を固定fixtureで継続評価し、参考作品名流用、根拠のない数値、候補重複、内部根拠追跡欠落をCIで検出する。評価結果は内部artifactに限定し、利用者画面には表示しない。
+
+## AI企画提案 Evaluation v1 実装済み
+
+- 6ジャンル×4件、合計24件の固定制作条件
+- 読切12件／連載12件、複数の読者・公開先・価格帯・Page数
+- 実際の市場分析ルールから3企画を生成して品質検査
+- 生成成功率、3方向、必須項目、候補重複、参考作品名流用、未許可数値、根拠追跡を集計
+- 最低件数・ジャンル／形式網羅・合格率100%・issue 0件の閾値
+- `npm run proposal:eval`の決定的JSON reportと終了code
+- Required QualityのHub tests前に独立gateとして実行
+- CI artifact `cloud-proposal-evaluation.json`への内部保存
+- 外部network、DB、環境変数、現在日時に依存しない再現可能な評価
+- 現fixture結果: 24/24合格、生成失敗0件、全issue 0件
+- 固定fixture合格は実市場の正しさや販売成果を保証しないことを計画へ明記
+
+## AI企画提案 Evaluation v1 検証
+
+- `npm run proposal:eval`: PASS（24/24）
+- focused test: PASS（11/11）
+- `npm run research:eval`: PASS（49/49）
+- `npm run hub:test`: PASS（208/208）
+- `npm run typecheck`: PASS（Hub + Desktop）
+- `npm run lint`: PASS
+- `npm run deps:check`: PASS
+- `npm run db:migrations:validate`: PASS（23件）
+- `npm run build`: PASS
+- Draft PR #64 CI: PASS（Core quality、Migration roundtrip、Vercel Preview、Windows build）
 
 ## AI企画提案 Quality UI v1 実装済み
 

@@ -64,6 +64,11 @@ jobs:
         run: |
           set -o pipefail
           npm run --silent research:eval | tee artifacts/test-results/cloud-research-evaluation.json
+      - name: Cloud proposal evaluation
+        shell: bash
+        run: |
+          set -o pipefail
+          npm run --silent proposal:eval | tee artifacts/test-results/cloud-proposal-evaluation.json
       - name: Hub tests
         shell: bash
         run: |

@@ -2,6 +2,75 @@
 
 このファイルはAI間の作業交代記録です。新しい記録を上へ追記してください。
 
+## 2026-07-29 Codex → 次担当AI（AI企画提案 Evaluation v1）
+
+### 状態
+
+IN_PROGRESS（固定評価・CI gate実装、全ローカル検証・Draft PR #64全CI完了、外部E2E／責任者承認待ち）
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-proposal-evaluation-v1`
+- Base: `codex/cloud-proposal-quality-ui-v1` / Draft PR #63
+- HEAD: `b44e463`（評価実装・ローカル検証記録）
+- Draft PR: [#64](https://github.com/team478a/manga/pull/64)
+
+### 完了
+
+- Evaluation v1計画
+- 6ジャンル×4件、読切12件／連載12件の固定fixture
+- 市場分析から3企画を生成する24件の決定的評価
+- 生成成功率、候補差異、必須項目、参考作品名流用、未許可数値、根拠追跡の集計
+- 合格率100%、生成失敗0件、issue 0件のCI閾値
+- `npm run proposal:eval`
+- Required Quality gateと内部JSON artifact
+- 評価ロジック・結果を利用者画面へ表示しない契約
+
+### 未完了
+
+- PR #63の外部環境E2Eと責任者承認
+
+### 変更ファイル
+
+- `docs/cloud/CLOUD_PROPOSAL_EVALUATION_V1_PLAN.md`
+- `src/lib/cloud-proposal-evaluation.ts`
+- `scripts/evaluate-cloud-proposals.mjs`
+- `tests/fixtures/cloud-proposal-evaluation-golden.json`
+- `tests/cloud-proposal-evaluation.test.mjs`
+- `.github/workflows/quality.yml`
+- `package.json`
+- `docs/CURRENT_TASK.md`
+- `docs/HANDOFF_LOG.md`
+
+### 検証
+
+- proposal:eval: PASS（24/24）
+- proposal focused test: PASS（11/11）
+- research:eval: PASS（49/49）
+- lint: PASS
+- deps:check: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（208/208）
+- migrations: PASS（23件）
+- build: PASS
+- Draft PR #64 CI: PASS（Core quality、Migration roundtrip、Vercel Preview、Windows build）
+
+### 失敗・BLOCKED
+
+- 実Supabase縦型E2Eは外部環境待ち。Evaluation v1自体は外部環境を必要としない。
+
+### 次担当者が最初に行うこと
+
+1. Draft PRのCIと差分を確認する。
+2. PR #63の外部環境E2Eをまとめて実施する。
+
+### 注意事項
+
+- 固定fixtureの合格は実市場の正しさや販売成果を保証しない。
+- 評価fixture、score、issue、内部識別子を利用者画面へ表示しない。
+- DB、認証、Proposal保存契約、Desktopは変更していない。
+- 全CI・外部E2E・責任者承認前にmergeしない。
+
 ---
 
 ## 2026-07-29 Codex → 次担当AI（市場分析Result-only UI）
