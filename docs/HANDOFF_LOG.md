@@ -6,7 +6,7 @@
 
 ### 状態
 
-IN_PROGRESS（固定評価・CI gate実装、全ローカル検証完了、Draft PR #64 CI待ち）
+IN_PROGRESS（固定評価・CI gate実装、全ローカル検証・Draft PR #64全CI完了、外部E2E／責任者承認待ち）
 
 ### ブランチ・コミット
 
@@ -28,7 +28,6 @@ IN_PROGRESS（固定評価・CI gate実装、全ローカル検証完了、Draft
 
 ### 未完了
 
-- Draft PR #64 CI
 - PR #63の外部環境E2Eと責任者承認
 
 ### 変更ファイル
@@ -54,6 +53,7 @@ IN_PROGRESS（固定評価・CI gate実装、全ローカル検証完了、Draft
 - hub:test: PASS（208/208）
 - migrations: PASS（23件）
 - build: PASS
+- Draft PR #64 CI: PASS（Core quality、Migration roundtrip、Vercel Preview、Windows build）
 
 ### 失敗・BLOCKED
 
