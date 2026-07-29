@@ -6,6 +6,7 @@
 
 - Branch: `codex/cloud-release1-integration-v1`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: [#65](https://github.com/team478a/manga/pull/65)
 - 目的: 市場分析だけを限定公開できるRelease 1統合
 - 統合元: PR #50、#56〜#62
 - 除外: PR #48〜#49、#51〜#55、#63〜#64

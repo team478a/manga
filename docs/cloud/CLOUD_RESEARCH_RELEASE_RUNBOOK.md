@@ -6,7 +6,7 @@
 
 対象ブランチ: `codex/cloud-release1-integration-v1`
 
-対象PR: 本統合ブランチのDraft PR（作成後に統合報告へ記録）
+対象PR: [#65](https://github.com/team478a/manga/pull/65)
 
 ## 1. 目的
 

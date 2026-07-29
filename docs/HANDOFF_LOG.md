@@ -14,7 +14,7 @@
 
 - Branch: `codex/cloud-release1-integration-v1`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
-- Draft PR: 作成後に追記
+- Draft PR: [#65](https://github.com/team478a/manga/pull/65)
 
 ### 統合判断
 

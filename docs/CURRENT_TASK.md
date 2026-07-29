@@ -9,7 +9,7 @@
 - Branch: `codex/cloud-release1-integration-v1`
 - 統合元: PR #50、#56、#57、#58、#59、#60、#61、#62
 - 除外: PR #48〜#49、#51〜#55、#63〜#64
-- Draft PR: 作成後に本欄を更新
+- Draft PR: [#65](https://github.com/team478a/manga/pull/65)
 - 計画: [`docs/cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md`](cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_MVP_SPEC.md`](cloud/CLOUD_RESEARCH_MVP_SPEC.md)
 - 統合報告: [`docs/cloud/CLOUD_RELEASE1_INTEGRATION_REPORT.md`](cloud/CLOUD_RELEASE1_INTEGRATION_REPORT.md)
@@ -81,11 +81,10 @@ Draft PRとVercel Previewを作成し、全CI結果を確認した時点で停�
 
 ## 未完了
 
-1. 全品質ゲートの完走
-2. Draft PR作成とCI確認
-3. Vercel Preview確認
-4. 責任者によるPreview受入れ
-5. 責任者管理下でのmigration適用・preflight・限定公開判断
+1. Draft PR #65の全CI確認
+2. Vercel Preview確認
+3. 責任者によるPreview受入れ
+4. 責任者管理下でのmigration適用・preflight・限定公開判断
 
 ## 履歴の参照
 

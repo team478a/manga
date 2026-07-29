@@ -7,6 +7,7 @@
 - Repository: `team478a/manga`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
 - Branch: `codex/cloud-release1-integration-v1`
+- Draft PR: [#65](https://github.com/team478a/manga/pull/65)
 - 目的: 市場分析だけを限定公開できる独立したRelease 1
 - 状態: Draft PR・Preview・全CI確認まで作業中。merge・本番反映は禁止
 
@@ -113,8 +114,8 @@ Release 1統合で追加するのは次の2本だけ。
 | `npm run build` | PASS |
 | `git diff --check` | PASS |
 | migration roundtrip | PASS（ローカルDocker PostgreSQL 16） |
-| GitHub CI | Draft PR作成後に確認 |
-| Vercel Preview | Draft PR作成後に確認 |
+| GitHub CI | PR #65で確認中 |
+| Vercel Preview | PR #65で確認中 |
 
 ## 9. 外部環境でのみ完了できる事項
 
