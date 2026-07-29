@@ -48,14 +48,14 @@
 - migration検証: PASS（17件）
 - build: PASS
 - git diff --check: PASS
-- 直前commit `6aa5274`のCI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
+- 実装HEAD `3143c41`のCI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
 
 ### 未完了
 
 - Supabase対象環境へのmigration適用
 - Vercel Previewの認証済みE2E
 - 別利用者RLSと実ブラウザresponsive受入れ
-- 最新commitのCI・責任者承認
+- 責任者承認
 
 ---
 
