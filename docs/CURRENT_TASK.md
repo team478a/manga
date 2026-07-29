@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Release 0＋Release 1実装・ローカル品質ゲート・直前CI完了、外部E2E待ち）
+- 状態: `IN_PROGRESS`（Release 0＋Release 1実装・ローカル品質ゲート・実装HEAD CI完了、外部E2E待ち）
 - リポジトリ: `team478a/manga`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
 - Branch: `codex/cloud-research-mvp`
@@ -71,14 +71,14 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 - migration検証: PASS（17件）
 - build: PASS
 - git diff --check: PASS
-- 直前commit `6aa5274`のGitHub CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
+- 実装HEAD `3143c41`のGitHub CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
 
 ## 未完了
 
 1. Supabase対象環境へ新規migrationを適用
 2. Vercel Previewで入力・保存・履歴・再表示E2E
 3. 別利用者によるRLSと390px／768px／1280px実ブラウザ受入れ
-4. 最新commitのCIと責任者承認
+4. 責任者承認
 
 ## 禁止事項
 
