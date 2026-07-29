@@ -4,6 +4,61 @@
 
 ---
 
+## 2026-07-29 Codex（Cloud Release 0＋1 市場分析MVP）
+
+### 状態
+
+`IN_PROGRESS`。広範なCloud UI刷新から市場分析の縦型機能優先へ方針変更し、正式基点から独立ブランチを作成した。ローカル品質ゲート完了、Draft PR #50作成済み。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-mvp`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: [#50](https://github.com/team478a/manga/pull/50)
+
+### 実装
+
+- Cloud制作ワークフローRelease計画と市場分析MVP仕様
+- 最小Cloud Shell、ワークフローSidebar、Dashboard、制作進行、Feature Flag
+- 市場分析の入力、定性分析、保存、履歴、再表示
+- 出典URL、取得日時、確認事実、事実／AI推論区分の永続化
+- 完了Reportからだけ利用できるAI企画提案への引継ぎ導線
+- `cloud_market_research_reports`と所有者RLS、rollback
+- 根拠のない市場数値を生成しない回帰テスト
+- Feature Flag停止中の詳細・企画URLをDB照会前に停止
+- 出典入力を仕様どおり最大5件へ統一し、重複URLを拒否
+- 不正な取得日時を未知例外にせず入力エラーとして処理
+- DB非依存の市場分析永続化契約とモック統合テスト
+- 不正なReport UUIDをDB照会前に未検出として停止
+- FormのAlert／Status、補足説明、可変layoutの構造回帰テスト
+- migration、Feature Flag、縦型E2E、利用者間RLS、responsive、停止・rollbackをまとめた公開Runbook
+
+### 境界
+
+- Cloud Canvas Editor、Cloud AI Worker、Stripe、Marketplace、Desktopは変更していない
+- 成人向け分析は既存Cloud境界によりfail closed
+
+### 検証
+
+- lint: PASS
+- typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
+- 市場分析test: PASS（17/17）
+- hub:test: PASS（133/133）
+- deps:check: PASS
+- migration検証: PASS（17件）
+- build: PASS
+- git diff --check: PASS
+- 実装HEAD `3143c41`のCI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
+
+### 未完了
+
+- Supabase対象環境へのmigration適用
+- Vercel Previewの認証済みE2E
+- 別利用者RLSと実ブラウザresponsive受入れ
+- 責任者承認
+
+---
+
 ## 2026-07-28（続き19） Claude Code（Phase D3-C: PR #46マージ完了、責任者の最終仕様確定、文書同期Draft PR作成）
 
 ### 状態

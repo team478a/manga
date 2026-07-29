@@ -96,7 +96,13 @@
       "description": "Cloud AI Workerのlease heartbeatと期限切れtoken拒否を追加",
       "forwardSha256": "568f9f4741d43a40f971eb02b1e40c68bd155dcd82ef1e8cac480a30d358c78b",
       "rollbackSha256": "2a632c38a159c1d7332ed4ef9215ee1f773cdf5bf6e3107c2f9687a8f08dbc38"
+    },
+    {
+      "id": "202607290001_cloud_market_research",
+      "description": "出典付きCloud市場分析Reportと所有者RLSを追加",
+      "forwardSha256": "42a13356c4d87bffc0b73aa89c4979a0b88b855bb2efab52d27ad9267b1356c7",
+      "rollbackSha256": "fa651fbd1fd0244942bc4d297719b25c512c74dfe83f0d1cb3ba9da6d8ce35ca"
     }
   ],
-  "schemaSha256": "a45f17682c2573447b71195c984d85ea04924ae14b11316835d3ef685bd571ea"
+  "schemaSha256": "6e1a35c235a89dfa5ceb4c75f5d1e9583d2558d38521cbdd6bbdb6bbd771b9d4"
 }
