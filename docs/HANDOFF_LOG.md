@@ -34,6 +34,9 @@
 - migration静的検証: PASS（19/19）
 - migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
 - 成人向け集中テスト、Release 1 preflight、`git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7158e2-team478as-projects.vercel.app`
 
 ### 責任者待ち
 

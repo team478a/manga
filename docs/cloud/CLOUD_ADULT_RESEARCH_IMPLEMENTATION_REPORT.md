@@ -4,6 +4,8 @@ Draft PR: [#66](https://github.com/team478a/manga/pull/66)
 
 Base: Draft PR [#65](https://github.com/team478a/manga/pull/65)
 
+Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7158e2-team478as-projects.vercel.app`
+
 ## 1. 結論
 
 成人向け市場分析を、一般向けRelease 1から独立した許可制オプションとして実装した。成人向け画像・本文生成、成人向け作品公開、Stripe自動連携は追加していない。
@@ -73,6 +75,8 @@ SUPABASE_SERVICE_ROLE_KEY
 - `npm run build`: PASS
 - migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
 - `git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
 
 ## 8. 公開前に必要な責任者作業
 

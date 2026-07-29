@@ -9,7 +9,8 @@
 - 親Draft PR: [#65](https://github.com/team478a/manga/pull/65)
 - Draft PR: [#66](https://github.com/team478a/manga/pull/66)
 - 目的: 成人向け市場分析を購入者・管理者許可利用者へ提供できる許可制Cloudオプション
-- 状態: 実装・ローカル品質ゲート完了、stacked Draft PR作成済み、CIとPreview確認待ち
+- 状態: 実装・全CI完了、Vercel Preview Ready、責任者の実機受入れ待ち
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7158e2-team478as-projects.vercel.app`
 - 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md`、`docs/cloud/CLOUD_ADULT_RESEARCH_IMPLEMENTATION_REPORT.md`
 
 一般向け市場分析は成人向け権限に依存させない。成人向けの画像・本文生成、Stripe自動連携、作品公開・販売は対象外。migration適用、Feature Flag有効化、DB Kill Switch有効化、本番公開は責任者承認まで行わない。

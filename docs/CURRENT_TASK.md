@@ -52,6 +52,9 @@
 - migration静的検証: PASS（19/19）
 - migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
 - `git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7158e2-team478as-projects.vercel.app`
 
 ## 未完了
 
@@ -59,7 +62,7 @@
 2. Supabase stagingへのmigration適用（責任者作業）
 3. Vercel環境変数設定とDB Kill Switch有効化（責任者作業）
 4. 成人向け専用規約本文と運用対象者の責任者承認
-5. CI・Vercel Previewの確認
+5. PreviewはDeployment Protection有効のため、Vercel認証後に確認する
 
 ## 次担当者が最初に読むファイル
 
