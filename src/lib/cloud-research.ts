@@ -23,6 +23,19 @@ export const cloudResearchTopicSchema = z.enum([
 ]);
 export type CloudResearchTopic = z.infer<typeof cloudResearchTopicSchema>;
 
+const sourceVerificationSchema = z.object({
+  status: z.literal("verified"),
+  checkedAt: z.string().datetime(),
+  finalUrl: z.string().url(),
+  contentType: z.string().min(1).max(200),
+  byteSize: z.number().int().min(1).max(1_000_000),
+  sha256: z.string().regex(/^[0-9a-f]{64}$/),
+  documentTitle: z.string().max(300).optional(),
+});
+export type CloudResearchSourceVerification = z.infer<
+  typeof sourceVerificationSchema
+>;
+
 const evidenceSchema = z.object({
   title: z.string().trim().min(1).max(200),
   url: z.string().url().refine((value) => value.startsWith("https://"), {
@@ -33,6 +46,7 @@ const evidenceSchema = z.object({
   fact: z.string().trim().min(1).max(1000),
   sourceType: cloudResearchSourceTypeSchema,
   topics: z.array(cloudResearchTopicSchema).min(1).max(7),
+  verification: sourceVerificationSchema.optional(),
 }).refine(
   (value) =>
     !value.publishedAt ||
@@ -89,6 +103,7 @@ export type CloudResearchQuality = {
   level: "low" | "medium" | "high";
   independentDomains: number;
   freshSourceCount: number;
+  verifiedSourceCount?: number;
   coveragePercent: number;
   missingTopics: CloudResearchTopic[];
   warnings: string[];
@@ -311,6 +326,9 @@ export function evaluateCloudResearchQuality(
   const staleSourceCount = sourceAges.filter(
     (age) => age > 180 * 24 * 60 * 60 * 1000,
   ).length;
+  const verifiedSourceCount = input.evidence.filter(
+    (item) => item.verification?.status === "verified",
+  ).length;
   const authority =
     input.evidence.reduce(
       (total, item) => total + sourceWeights[item.sourceType],
@@ -318,10 +336,11 @@ export function evaluateCloudResearchQuality(
     ) / input.evidence.length;
   const coveragePercent = Math.round((covered.size / allTopics.length) * 100);
   const score = Math.round(
-    authority * 0.3 +
+    authority * 0.25 +
       Math.min(domains.size / 3, 1) * 25 +
       (coveragePercent / 100) * 25 +
-      (freshSourceCount / input.evidence.length) * 20,
+      (freshSourceCount / input.evidence.length) * 15 +
+      (verifiedSourceCount / input.evidence.length) * 10,
   );
   const warnings = [
     ...(domains.size < 2 ? ["独立した2ドメイン以上での照合がありません。"] : []),
@@ -330,6 +349,9 @@ export function evaluateCloudResearchQuality(
       : []),
     ...(futureSourceCount
       ? ["評価時点より未来の取得日時を持つ出典が含まれます。"]
+      : []),
+    ...(verifiedSourceCount < input.evidence.length
+      ? ["Serverで取得検証されていない出典が含まれます。"]
       : []),
     ...(missingTopics.length
       ? [`根拠が不足する分野: ${missingTopics.join("、")}`]
@@ -340,6 +362,7 @@ export function evaluateCloudResearchQuality(
     level: score >= 80 ? "high" : score >= 55 ? "medium" : "low",
     independentDomains: domains.size,
     freshSourceCount,
+    verifiedSourceCount,
     coveragePercent,
     missingTopics,
     warnings,

@@ -9,6 +9,7 @@ import {
   runCloudMarketAnalysis,
 } from "@/lib/cloud-research";
 import { createCloudResearchReport } from "@/lib/cloud-research-server";
+import { maybeVerifyCloudResearchSources } from "@/lib/cloud-research-source-verification";
 import { PermissionDeniedError } from "@/lib/domain-errors";
 
 export async function createCloudResearchReportAction(formData: FormData) {
@@ -17,7 +18,9 @@ export async function createCloudResearchReportAction(formData: FormData) {
     if (!cloudResearchFeatureEnabled())
       throw new PermissionDeniedError("市場分析機能は現在停止中です。");
     const { profile } = await requireProfile();
-    const input = parseCloudResearchForm(formData);
+    const input = await maybeVerifyCloudResearchSources(
+      parseCloudResearchForm(formData),
+    );
     const result = runCloudMarketAnalysis(input);
     reportId = await createCloudResearchReport({
       profileId: profile.id,
@@ -35,4 +38,3 @@ export async function createCloudResearchReportAction(formData: FormData) {
   }
   redirect(`/dashboard/research/${reportId}?message=市場分析を保存しました`);
 }
-
