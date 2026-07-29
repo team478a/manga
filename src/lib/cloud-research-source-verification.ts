@@ -22,11 +22,18 @@ const allowedContentTypes = new Set([
 ]);
 
 type LookupResult = { address: string; family: number };
-type VerificationDependencies = {
+export type VerificationDependencies = {
   fetcher?: typeof fetch;
   lookup?: (hostname: string) => Promise<LookupResult[]>;
   now?: () => Date;
   allowedHosts?: string[];
+};
+
+export type CloudResearchSourceSnapshot = {
+  verification: CloudResearchSourceVerification;
+  text: string;
+  textSha256: string;
+  textTruncated: boolean;
 };
 
 export const cloudResearchSourceVerificationEnabled = () =>
@@ -160,15 +167,135 @@ async function readLimitedBody(response: Response) {
   return bytes;
 }
 
-function documentTitle(bytes: Uint8Array, contentType: string) {
+function decodeBytes(bytes: Uint8Array, rawContentType: string) {
+  const charset = rawContentType.match(/charset\s*=\s*["']?([^;"'\s]+)/i)?.[1];
+  try {
+    return new TextDecoder(charset || "utf-8").decode(bytes);
+  } catch {
+    return new TextDecoder().decode(bytes);
+  }
+}
+
+function decodeHtmlEntities(value: string) {
+  const named: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    nbsp: " ",
+    quot: '"',
+  };
+  return value.replace(
+    /&(#x[0-9a-f]+|#\d+|amp|apos|gt|lt|nbsp|quot);/gi,
+    (entity, token: string) => {
+      const normalized = token.toLowerCase();
+      if (normalized.startsWith("#")) {
+        const codePoint = normalized.startsWith("#x")
+          ? Number.parseInt(normalized.slice(2), 16)
+          : Number.parseInt(normalized.slice(1), 10);
+        return Number.isInteger(codePoint) &&
+          codePoint >= 0 &&
+          codePoint <= 0x10ffff
+          ? String.fromCodePoint(codePoint)
+          : entity;
+      }
+      return named[normalized] ?? entity;
+    },
+  );
+}
+
+function normalizeDocumentText(value: string) {
+  const seen = new Set<string>();
+  return value
+    .normalize("NFKC")
+    .split(/\r?\n/u)
+    .map((line) => line.replace(/[\t\f\v ]+/gu, " ").trim())
+    .filter((line) => {
+      if (line.length < 3 || seen.has(line)) return false;
+      seen.add(line);
+      return true;
+    })
+    .join("\n")
+    .trim();
+}
+
+function htmlDocumentText(html: string) {
+  const withoutNoise = html
+    .replace(/<!--[\s\S]*?-->/gu, " ")
+    .replace(
+      /<(script|style|noscript|svg|template|nav|footer|header|aside|form)\b[^>]*>[\s\S]*?<\/\1\s*>/giu,
+      " ",
+    )
+    .replace(/<(br|hr)\b[^>]*\/?>/giu, "\n")
+    .replace(
+      /<\/?(article|blockquote|dd|div|dl|dt|figcaption|figure|h[1-6]|li|main|p|section|table|tbody|td|th|thead|tr|ul|ol)\b[^>]*>/giu,
+      "\n",
+    )
+    .replace(/<[^>]+>/gu, " ");
+  return normalizeDocumentText(decodeHtmlEntities(withoutNoise));
+}
+
+function jsonDocumentText(raw: string) {
+  let value: unknown;
+  try {
+    value = JSON.parse(raw);
+  } catch {
+    return normalizeDocumentText(raw);
+  }
+  const lines: string[] = [];
+  let textLength = 0;
+  const push = (line: string) => {
+    if (textLength >= 200_000) return;
+    lines.push(line);
+    textLength += line.length + 1;
+  };
+  const visit = (entry: unknown, depth: number) => {
+    if (depth > 8 || textLength >= 200_000) return;
+    if (
+      typeof entry === "string" ||
+      typeof entry === "number" ||
+      typeof entry === "boolean"
+    ) {
+      push(String(entry));
+      return;
+    }
+    if (Array.isArray(entry)) {
+      for (const item of entry.slice(0, 1_000)) visit(item, depth + 1);
+      return;
+    }
+    if (entry && typeof entry === "object") {
+      for (const [key, item] of Object.entries(entry).slice(0, 1_000)) {
+        push(key);
+        visit(item, depth + 1);
+      }
+    }
+  };
+  visit(value, 0);
+  return normalizeDocumentText(lines.join("\n"));
+}
+
+function documentText(
+  bytes: Uint8Array,
+  contentType: string,
+  rawContentType: string,
+) {
+  const decoded = decodeBytes(bytes, rawContentType);
+  if (contentType === "text/html") return htmlDocumentText(decoded);
+  if (contentType === "application/json") return jsonDocumentText(decoded);
+  return normalizeDocumentText(decoded);
+}
+
+function documentTitle(html: string, contentType: string) {
   if (contentType !== "text/html") return undefined;
-  const html = new TextDecoder().decode(bytes);
-  const title = html
-    .match(/<title(?:\s[^>]*)?>([\s\S]*?)<\/title>/i)?.[1]
-    ?.replace(/<[^>]+>/g, " ")
+  const rawTitle = html.match(
+    /<title(?:\s[^>]*)?>([\s\S]*?)<\/title>/i,
+  )?.[1];
+  const title = rawTitle
+    ? decodeHtmlEntities(rawTitle.replace(/<[^>]+>/g, " "))
     .replace(/\s+/g, " ")
     .trim()
-    .slice(0, 300);
+    .slice(0, 300)
+    : "";
   return title || undefined;
 }
 
@@ -176,6 +303,14 @@ export async function verifyCloudResearchSource(
   rawUrl: string,
   dependencies: VerificationDependencies = {},
 ): Promise<CloudResearchSourceVerification> {
+  return (await fetchCloudResearchSourceSnapshot(rawUrl, dependencies))
+    .verification;
+}
+
+export async function fetchCloudResearchSourceSnapshot(
+  rawUrl: string,
+  dependencies: VerificationDependencies = {},
+): Promise<CloudResearchSourceSnapshot> {
   const allowedHosts =
     dependencies.allowedHosts ?? configuredResearchSourceHosts();
   if (!allowedHosts.length)
@@ -222,7 +357,8 @@ export async function verifyCloudResearchSource(
     if (!response.ok)
       throw new ValidationError("出典URLから正常な応答を取得できません。");
 
-    const contentType = (response.headers.get("content-type") ?? "")
+    const rawContentType = response.headers.get("content-type") ?? "";
+    const contentType = rawContentType
       .split(";")[0]
       .trim()
       .toLowerCase();
@@ -233,14 +369,23 @@ export async function verifyCloudResearchSource(
     const bytes = await readLimitedBody(response);
     if (!bytes.byteLength)
       throw new ValidationError("出典本文が空です。");
-    return {
+    const decoded = decodeBytes(bytes, rawContentType);
+    const fullText = documentText(bytes, contentType, rawContentType);
+    const text = fullText.slice(0, 200_000);
+    const verification = {
       status: "verified",
       checkedAt: (dependencies.now?.() ?? new Date()).toISOString(),
       finalUrl: current.toString(),
       contentType,
       byteSize: bytes.byteLength,
       sha256: createHash("sha256").update(bytes).digest("hex"),
-      documentTitle: documentTitle(bytes, contentType),
+      documentTitle: documentTitle(decoded, contentType),
+    } satisfies CloudResearchSourceVerification;
+    return {
+      verification,
+      text,
+      textSha256: createHash("sha256").update(text, "utf8").digest("hex"),
+      textTruncated: fullText.length > text.length,
     };
   }
   throw new ValidationError("出典のリダイレクトを検証できません。");

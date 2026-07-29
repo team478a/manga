@@ -5,6 +5,7 @@ import test from "node:test";
 import {
   cloudResearchSourceVerificationEnabled,
   configuredResearchSourceHosts,
+  fetchCloudResearchSourceSnapshot,
   isPublicResearchAddress,
   verifyCloudResearchSource,
   verifyCloudResearchSources,
@@ -106,6 +107,69 @@ test("許可済みHTTPS出典から検証metadataとhashだけを作る", async 
   );
   assert.equal(result.checkedAt, "2026-07-29T10:00:00.000Z");
   assert.equal("body" in result, false);
+});
+
+test("snapshotはHTMLのnoiseを除去し本文位置用hashを作る", async () => {
+  const html = `
+    <html><head><title>市場 &amp; 読者</title><script>秘密の市場数値</script></head>
+    <body><header>共通メニュー</header><main>
+      <h1>電子コミック市場</h1>
+      <p>女性読者の利用動向を公式調査で確認できます。</p>
+      <p>女性読者の利用動向を公式調査で確認できます。</p>
+    </main><footer>利用規約</footer></body></html>`;
+  const snapshot = await fetchCloudResearchSourceSnapshot(
+    "https://official.example/report",
+    {
+      allowedHosts: ["official.example"],
+      lookup: publicLookup,
+      fetcher: async () => response(html),
+    },
+  );
+  assert.equal(snapshot.verification.documentTitle, "市場 & 読者");
+  assert.match(snapshot.text, /電子コミック市場/);
+  assert.match(snapshot.text, /女性読者の利用動向/);
+  assert.doesNotMatch(snapshot.text, /秘密の市場数値|共通メニュー|利用規約/);
+  assert.equal(
+    snapshot.text.split("女性読者の利用動向").length - 1,
+    1,
+  );
+  assert.equal(
+    snapshot.textSha256,
+    createHash("sha256").update(snapshot.text, "utf8").digest("hex"),
+  );
+  assert.equal(snapshot.textTruncated, false);
+  assert.equal("bytes" in snapshot, false);
+});
+
+test("snapshotはplain textとJSONのscalar値を正規化する", async () => {
+  const common = {
+    allowedHosts: ["official.example"],
+    lookup: publicLookup,
+  };
+  const plain = await fetchCloudResearchSourceSnapshot(
+    "https://official.example/plain",
+    {
+      ...common,
+      fetcher: async () =>
+        new Response(" 市場  需要 \r\n 価格は500円 ", {
+          headers: { "content-type": "text/plain; charset=utf-8" },
+        }),
+    },
+  );
+  assert.equal(plain.text, "市場 需要\n価格は500円");
+
+  const json = await fetchCloudResearchSourceSnapshot(
+    "https://official.example/data",
+    {
+      ...common,
+      fetcher: async () =>
+        new Response(
+          JSON.stringify({ report: { demand: "市場は成長", price: 500 } }),
+          { headers: { "content-type": "application/json" } },
+        ),
+    },
+  );
+  assert.match(json.text, /report\ndemand\n市場は成長\nprice\n500/);
 });
 
 test("未許可host・IP literal・private DNSをfetch前に拒否する", async () => {
