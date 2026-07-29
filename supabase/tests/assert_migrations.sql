@@ -238,6 +238,123 @@ end $$;
 
 begin;
 insert into auth.users(id,email) values
+  ('22000000-0000-4000-8000-000000000001','adult-plan-owner@example.test'),
+  ('22000000-0000-4000-8000-000000000002','adult-plan-other@example.test'),
+  ('22000000-0000-4000-8000-000000000003','adult-plan-admin@example.test');
+insert into public.profiles(id,user_id,role) values
+  ('32000000-0000-4000-8000-000000000001','22000000-0000-4000-8000-000000000001','creator'),
+  ('32000000-0000-4000-8000-000000000002','22000000-0000-4000-8000-000000000002','creator'),
+  ('32000000-0000-4000-8000-000000000003','22000000-0000-4000-8000-000000000003','admin');
+update public.cloud_adult_research_settings set enabled = true where singleton;
+insert into public.cloud_adult_research_entitlements (
+  profile_id,status,source,granted_by_profile_id
+) values (
+  '32000000-0000-4000-8000-000000000001','approved','admin_grant',
+  '32000000-0000-4000-8000-000000000003'
+);
+insert into public.cloud_adult_research_consents (
+  profile_id,age_confirmed_at,terms_version,terms_accepted_at
+) values (
+  '32000000-0000-4000-8000-000000000001',now(),'adult-research-v1',now()
+);
+insert into public.cloud_adult_feature_grants (
+  profile_id,feature_key,status,source,granted_by_profile_id
+) values (
+  '32000000-0000-4000-8000-000000000001','adult_planning','approved',
+  'admin_grant','32000000-0000-4000-8000-000000000003'
+);
+insert into public.cloud_market_research_reports (
+  id,owner_profile_id,status,input,sources,result,engine_version,completed_at
+) values (
+  '82000000-0000-4000-8000-000000000001',
+  '32000000-0000-4000-8000-000000000001',
+  'completed',
+  '{"contentClass":"adult"}',
+  '[{"url":"https://example.test/source"}]',
+  '{"containsGeneratedMarketNumbers":false}',
+  'research-rules-v2',
+  now()
+);
+
+select set_config(
+  'request.jwt.claim.sub',
+  '22000000-0000-4000-8000-000000000001',
+  true
+);
+select set_config('request.jwt.claim.role','authenticated',true);
+set local role authenticated;
+insert into public.cloud_adult_planning_briefs (
+  owner_profile_id,research_report_id,status,working_title,concept,
+  protagonist,protagonist_goal,central_conflict,reader_promise,tone,
+  differentiation,ending_direction,notes
+) values (
+  '32000000-0000-4000-8000-000000000001',
+  '82000000-0000-4000-8000-000000000001',
+  'draft','Test','Concept','Hero','Goal','Conflict','Promise','Tone',
+  'Difference','Ending',''
+);
+do $$
+begin
+  if (select count(*) from public.cloud_adult_planning_briefs) <> 1 then
+    raise exception 'Adult planning owner could not read their brief';
+  end if;
+end $$;
+
+select set_config(
+  'request.jwt.claim.sub',
+  '22000000-0000-4000-8000-000000000002',
+  true
+);
+do $$
+begin
+  if exists (select 1 from public.cloud_adult_planning_briefs) then
+    raise exception 'Other user could read an adult planning brief';
+  end if;
+  begin
+    insert into public.cloud_adult_planning_briefs (
+      owner_profile_id,research_report_id,status,working_title,concept,
+      protagonist,protagonist_goal,central_conflict,reader_promise,tone,
+      differentiation,ending_direction,notes
+    ) values (
+      '32000000-0000-4000-8000-000000000002',
+      '82000000-0000-4000-8000-000000000001',
+      'draft','Blocked','Blocked','Blocked','Blocked','Blocked','Blocked',
+      'Blocked','Blocked','Blocked',''
+    );
+    raise exception 'Other user inserted an adult planning brief';
+  exception
+    when insufficient_privilege then null;
+  end;
+end $$;
+reset role;
+rollback;
+
+do $$
+begin
+  if to_regclass('public.cloud_adult_feature_grants') is null
+     or to_regclass('public.cloud_adult_planning_briefs') is null then
+    raise exception 'Cloud adult planning tables missing';
+  end if;
+  if to_regprocedure('public.can_use_cloud_adult_feature(text)') is null
+     or to_regprocedure(
+       'public.set_cloud_adult_feature_grant(uuid,uuid,text,text,text,timestamp with time zone,text)'
+     ) is null then
+    raise exception 'Cloud adult planning functions missing';
+  end if;
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'cloud_adult_planning_briefs'
+      and policyname = 'cloud_adult_planning_owner_insert'
+      and with_check like '%can_use_cloud_adult_feature%'
+  ) then
+    raise exception 'Cloud adult planning RLS missing';
+  end if;
+end $$;
+
+begin;
+insert into auth.users(id,email) values
   ('20000000-0000-4000-8000-000000000001','phase1-owner@example.test'),
   ('20000000-0000-4000-8000-000000000002','phase1-other@example.test');
 insert into public.profiles(id,user_id,role) values

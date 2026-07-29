@@ -1,5 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（成人向け企画ブリーフ、2026-07-29）
+
+本節を、直後に残る成人向け市場分析と一般向けRelease 1統合記録より優先する。
+
+- Branch: `codex/cloud-adult-planning-option-v1`
+- Base: `codex/cloud-adult-research-option-v1` (`a9969ac`)
+- 親Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+- Draft PR: [#67](https://github.com/team478a/manga/pull/67)
+- 目的: 成人向け市場分析を完了した許可利用者へ、外部AIを使わない企画ブリーフを機能単位権限付きで提供する
+- 状態: 実装・全CI完了、Vercel Preview Ready、責任者の実機受入れ待ち
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-95f9df-team478as-projects.vercel.app`
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_ADULT_PLANNING_OPTION_SPEC.md`、`docs/cloud/CLOUD_ADULT_PLANNING_IMPLEMENTATION_REPORT.md`
+
+この段階では利用者入力の保存・履歴・再表示だけを提供する。成人向け文章・画像の自動生成、外部Provider送信、Stripe自動許可、作品公開・販売は行わない。migration適用とFeature Flag有効化は責任者承認まで禁止する。
+
+---
+
 ## 0. 現在の優先タスク（成人向け市場分析オプション、2026-07-29）
 
 本節を、直後に残る一般向けRelease 1統合記録より優先する。

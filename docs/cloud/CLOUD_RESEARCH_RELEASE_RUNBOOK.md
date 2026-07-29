@@ -8,6 +8,34 @@
 
 対象PR: [#65](https://github.com/team478a/manga/pull/65)
 
+## Release 1.2 成人向け企画ブリーフオプション
+
+成人向け企画ブリーフは、成人向け市場分析の利用条件に`adult_planning`機能許可を重ねる。外部AI、文章生成、画像生成は利用しない。
+
+### 追加設定
+
+- `CLOUD_ADULT_PLANNING_ENABLED=false`を初期値とする
+- migration `202607290009_cloud_adult_planning_option.sql`適用前に有効化しない
+- `CLOUD_ADULT_RESEARCH_ENABLED=true`と成人向け市場分析のDB Kill Switchを前提とする
+- `SUPABASE_SERVICE_ROLE_KEY`はVercel Server環境だけに設定する
+- `npm run cloud:release1:preflight`で値を表示せず依存FlagとServer設定を確認する
+
+### 有効化手順
+
+1. Release 1.1の成人向け市場分析E2Eが合格していることを確認する
+2. DB backupを確認する
+3. migration `202607290009`を適用する
+4. `/admin/users/[id]`でテスト利用者の`adult_planning`を`admin_grant`として許可する
+5. Previewだけで`CLOUD_ADULT_PLANNING_ENABLED=true`へ変更する
+6. 成人向けReportから企画ブリーフを入力、保存、履歴表示、再表示する
+7. 別利用者からReportとBriefを参照できないことを確認する
+8. 機能許可を停止し、入力・一覧・直リンク再表示がすべて拒否されることを確認する
+9. 一般向けReportでは従来のRelease 2案内が維持されることを確認する
+
+### 緊急停止
+
+最初にVercelの`CLOUD_ADULT_PLANNING_ENABLED=false`へ変更する。成人向け機能全体を停止する場合は、続いて成人向け市場分析のDB Kill Switchを停止する。一般向け市場分析は停止しない。
+
 ## Release 1.1 成人向け市場分析オプション
 
 成人向け市場分析は一般向けRelease 1とは独立した許可制オプションとして扱う。

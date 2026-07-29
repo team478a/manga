@@ -114,7 +114,13 @@
       "description": "許可制の成人向け市場分析権限・本人同意・監査・Report RLSを追加",
       "forwardSha256": "c123fdfff8df78acd018551ccc7ff790d8fe40e1cfd2f9843956238281a0724a",
       "rollbackSha256": "276b02443e7413645dc2595df15cd10644c047880e91dcddf674037ddc9734e9"
+    },
+    {
+      "id": "202607290009_cloud_adult_planning_option",
+      "description": "成人向け企画の機能単位許可・企画ブリーフ・所有者RLSを追加",
+      "forwardSha256": "a7d9ede8f0bef7281b600a10a93dddbe49c1d1bf545e90eb7911a84c2cf032fa",
+      "rollbackSha256": "79f92b2316099886e6be42b3b5f70ff3696e881659a3f64f23f0bbec265f3589"
     }
   ],
-  "schemaSha256": "9e8f202fab47d5f5d02707248372637050c8061a6c5aeb03f3b03b1b57dd9e10"
+  "schemaSha256": "ee522a58f233bc0394a1180bad8ed2b0e346b6835032469f0d9d9eab0fd12a8f"
 }

@@ -95,6 +95,25 @@ export function checkCloudRelease1Environment(env = process.env) {
     env,
     checks,
   );
+  const adultPlanningEnabled = flag(
+    "CLOUD_ADULT_PLANNING_ENABLED",
+    env,
+    checks,
+  );
+  if (adultPlanningEnabled) {
+    addRequired(
+      checks,
+      "CLOUD_ADULT_PLANNING_ENABLED",
+      true,
+      "成人向け企画機能Flagが有効です。",
+    );
+    addRequired(
+      checks,
+      "CLOUD_ADULT_RESEARCH_ENABLED",
+      adultResearchEnabled,
+      "成人向け企画機能には成人向け市場分析Flagも必要です。",
+    );
+  }
   if (verificationEnabled) {
     addRequired(
       checks,
@@ -125,7 +144,12 @@ export function checkCloudRelease1Environment(env = process.env) {
     });
   }
 
-  if (verificationEnabled || searchEnabled || adultResearchEnabled) {
+  if (
+    verificationEnabled ||
+    searchEnabled ||
+    adultResearchEnabled ||
+    adultPlanningEnabled
+  ) {
     addRequired(
       checks,
       "SUPABASE_SERVICE_ROLE_KEY",

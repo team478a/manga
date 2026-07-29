@@ -49,6 +49,30 @@ test("Release 1 preflightは成人向けオプション有効時に管理用設�
   );
 });
 
+test("成人向け企画Flagは成人向け市場分析Flagと管理用設定を要求する", () => {
+  const report = checkCloudRelease1Environment({
+    ...baseEnvironment,
+    CLOUD_ADULT_PLANNING_ENABLED: "true",
+  });
+  assert.equal(report.passed, false);
+  assert.equal(
+    report.checks.some(
+      (check) =>
+        check.name === "CLOUD_ADULT_RESEARCH_ENABLED" &&
+        check.status === "FAIL",
+    ),
+    true,
+  );
+  assert.equal(
+    report.checks.some(
+      (check) =>
+        check.name === "SUPABASE_SERVICE_ROLE_KEY" &&
+        check.status === "FAIL",
+    ),
+    true,
+  );
+});
+
 test("Release 1 preflightは有効化した任意機能のServer設定を要求する", () => {
   const report = checkCloudRelease1Environment({
     ...baseEnvironment,

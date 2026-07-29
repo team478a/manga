@@ -2,6 +2,14 @@
 
 do $$
 begin
+  if to_regclass('public.cloud_adult_feature_grants') is not null
+     or to_regclass('public.cloud_adult_planning_briefs') is not null
+     or to_regprocedure('public.can_use_cloud_adult_feature(text)') is not null
+     or to_regprocedure(
+       'public.set_cloud_adult_feature_grant(uuid,uuid,text,text,text,timestamp with time zone,text)'
+     ) is not null then
+    raise exception 'Cloud adult planning objects remain after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

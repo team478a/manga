@@ -41,7 +41,9 @@ MANGAI Cloudは、次の制作ワークフローを縦に完成させてから�
 - Report再表示
 - 完了Reportからだけ有効になる「AI企画提案へ進む」導線
 
-AI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ条件の表示までとする。
+一般向けのAI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ条件の表示までとする。
+
+成人向けはRelease 1.2の許可制オプションとして、利用者が自分で入力する企画ブリーフだけを先行提供する。外部AIへの送信、自動文章生成、画像生成は行わず、Release 2の一般向けAI企画提案とは分離する。
 
 ## 3. 後続Release
 
@@ -60,7 +62,8 @@ AI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ
 - 市場数値は出典に存在する値だけを事実として扱う。
 - 推論は必ず`ai_inference`として保存・表示する。
 - 出典なしの分析は実行しない。
-- 成人向け区分は入力として受け付けるが、既存境界によりCloud実行をfail closedで停止する。
+- 成人向け区分は一般公開ではfail closedで停止する。専用Flag、DB Kill Switch、個別許可、18歳以上確認、専用規約同意が揃う限定オプションだけ市場分析を許可する。
+- 成人向け企画ブリーフはさらに`adult_planning`の機能許可を要求し、外部Providerを呼び出さない。
 - Feature Flag無効時は画面とServer Actionの両方で実行を拒否する。
 - Feature Flagは未設定時falseとし、migration適用前の環境ではfail closedにする。
 

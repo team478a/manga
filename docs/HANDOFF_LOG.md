@@ -4,6 +4,55 @@
 
 ---
 
+## 2026-07-29 Codex（Cloud成人向け企画ブリーフ・機能単位権限）
+
+### 状態
+
+`READY_FOR_REVIEW`。成人向け市場分析オプションを基点に、外部AIを使わない企画ブリーフの入力・保存・履歴・再表示を追加した。
+
+### ブランチ
+
+- Branch: `codex/cloud-adult-planning-option-v1`
+- Base: `codex/cloud-adult-research-option-v1` (`a9969ac`)
+- 親Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+- Draft PR: [#67](https://github.com/team478a/manga/pull/67)
+
+### 実装
+
+- `adult_planning`機能単位許可と管理者操作
+- 成人向け市場分析Reportからの条件引継ぎ
+- 企画ブリーフの入力、保存、履歴、再表示
+- 所有者、成人向け基本権限、機能権限を重ねたRLS
+- 機能許可の監査ログ
+- Feature Flag、preflight、migration、rollback、canonical schema
+- 利用者画面から内部評価ロジック、出典URL、内部エラーを非表示
+
+### 安全境界
+
+- 外部AI、成人向け文章・画像の自動生成は追加していない
+- Stripe自動許可、作品公開・販売、Desktop、Canvasは変更していない
+- migration適用、Feature Flag有効化、本番公開は行っていない
+
+### 検証
+
+- deps、lint、typecheck、Research Evaluation、Hub test（185/185）、build: PASS
+- migration静的検証: PASS（20/20）
+- migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
+- 所有者RLSの実DB挙動検査、preflight、`git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-95f9df-team478as-projects.vercel.app`
+
+### 責任者待ち
+
+- 機能単位販売・付与方針の承認
+- staging migration適用
+- Preview環境Flag設定
+- 管理者許可、本人操作、権限停止の縦型E2E
+- 成人向け外部Providerを使う後続工程の別途審査
+
+---
+
 ## 2026-07-29 Codex（Cloud成人向け市場分析・許可制オプション）
 
 ### 状態
