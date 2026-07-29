@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（AI企画提案 Quality UI v1ローカル実装・品質ゲート完了、Draft PR／Preview確認待ち）
+- 状態: `IN_PROGRESS`（AI企画提案 Quality UI v1実装・Draft PR作成済み、CI／Preview確認待ち）
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-research-result-only-ui`（Draft PR #62）
 - Branch: `codex/cloud-proposal-quality-ui-v1`
@@ -20,7 +20,7 @@
 - 複数出典照合 Draft PR: [#60](https://github.com/team478a/manga/pull/60)
 - Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
 - Result-only UI Draft PR: [#62](https://github.com/team478a/manga/pull/62)
-- AI企画提案 Quality UI v1 Draft PR: 作成予定
+- AI企画提案 Quality UI v1 Draft PR: [#63](https://github.com/team478a/manga/pull/63)
 - 計画: [`docs/cloud/CLOUD_PROPOSAL_QUALITY_UI_V1_PLAN.md`](cloud/CLOUD_PROPOSAL_QUALITY_UI_V1_PLAN.md)
 
 ## 現在の目的
