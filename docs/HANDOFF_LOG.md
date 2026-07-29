@@ -8,12 +8,13 @@
 
 ### 状態
 
-`IN_PROGRESS`。事実候補抽出にstackし、2つの検証済み出典を決定的ルールで照合する機能を実装した。ローカル品質ゲート成功。Draft PR作成、CI、外部E2E、責任者承認は未完了。
+`IN_PROGRESS`。事実候補抽出にstackし、2つの検証済み出典を決定的ルールで照合する機能を実装した。ローカル品質ゲート成功。Draft PR #60作成済み。CI、外部E2E、責任者承認は未完了。
 
 ### ブランチ
 
 - Branch: `codex/cloud-research-corroboration`
 - Base: `codex/cloud-research-claim-extraction` / Draft PR #59
+- Draft PR: [#60](https://github.com/team478a/manga/pull/60)
 
 ### 実装
 
