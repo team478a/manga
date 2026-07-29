@@ -132,3 +132,16 @@ begin
     raise exception 'private Cloud Asset bucket is missing';
   end if;
 end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.cloud_market_research_reports'::regclass
+      and conname = 'cloud_market_research_reports_engine_version_check'
+      and pg_get_constraintdef(oid) like '%research-rules-v2%'
+  ) then
+    raise exception 'Current schema Cloud research v2 engine constraint missing';
+  end if;
+end $$;

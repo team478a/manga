@@ -6,6 +6,21 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
+const basisLabels = {
+  source_fact: "出典事実",
+  user_input: "利用者入力",
+  ai_inference: "AI推論",
+} as const;
+
+const sourceTypeLabels = {
+  official: "公的機関・公式一次情報",
+  platform: "販売プラットフォーム公式",
+  industry_report: "業界調査レポート",
+  news: "報道・ニュース",
+  store_ranking: "ストアランキング",
+  other: "その他",
+} as const;
+
 export default async function CloudResearchReportPage({
   params,
   searchParams,
@@ -75,6 +90,50 @@ export default async function CloudResearchReportPage({
         </dl>
       </section>
 
+      {report.result.quality ? (
+        <section className="panel mt-6" aria-labelledby="research-quality-title">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-bold" id="research-quality-title">
+                根拠品質
+              </h2>
+              <p className="mt-1 text-sm text-stone-600">
+                市場の正しさではなく、登録した出典の鮮度・独立性・分野網羅を評価します。
+              </p>
+            </div>
+            <span className="rounded-full bg-violet-100 px-4 py-2 font-bold text-violet-900">
+              {report.result.quality.score}/100・
+              {report.result.quality.level === "high"
+                ? "高"
+                : report.result.quality.level === "medium"
+                  ? "中"
+                  : "低"}
+            </span>
+          </div>
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+            <div className="rounded-lg bg-stone-50 p-3">
+              <dt className="text-stone-500">独立ドメイン</dt>
+              <dd className="mt-1 font-bold">{report.result.quality.independentDomains}件</dd>
+            </div>
+            <div className="rounded-lg bg-stone-50 p-3">
+              <dt className="text-stone-500">180日以内の出典</dt>
+              <dd className="mt-1 font-bold">{report.result.quality.freshSourceCount}件</dd>
+            </div>
+            <div className="rounded-lg bg-stone-50 p-3">
+              <dt className="text-stone-500">根拠分野の網羅率</dt>
+              <dd className="mt-1 font-bold">{report.result.quality.coveragePercent}%</dd>
+            </div>
+          </dl>
+          {report.result.quality.warnings.length ? (
+            <ul className="mt-4 space-y-1 rounded-lg bg-amber-50 p-4 text-sm text-amber-950">
+              {report.result.quality.warnings.map((warning) => (
+                <li key={warning}>・{warning}</li>
+              ))}
+            </ul>
+          ) : null}
+        </section>
+      ) : null}
+
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
         {report.result.findings.map((finding) => (
           <article className="panel" key={finding.key}>
@@ -85,13 +144,23 @@ export default async function CloudResearchReportPage({
                   ? "bg-blue-50 text-blue-800"
                   : "bg-violet-100 text-violet-800"
               }`}>
-                {finding.classification === "fact" ? "事実／入力条件" : "AI推論"}
+                {finding.evidenceBasis
+                  ? basisLabels[finding.evidenceBasis]
+                  : finding.classification === "fact"
+                    ? "事実／入力条件"
+                    : "AI推論"}
               </span>
             </div>
             <p className="mt-3 leading-relaxed text-stone-700">{finding.summary}</p>
             <p className="mt-4 text-xs text-stone-500">
               根拠URL {finding.sourceUrls.length}件
+              {finding.confidence ? `／確信度 ${finding.confidence}` : ""}
             </p>
+            {finding.limitations?.map((limitation) => (
+              <p className="mt-2 text-xs text-amber-800" key={limitation}>
+                注意: {limitation}
+              </p>
+            ))}
           </article>
         ))}
       </section>
@@ -109,6 +178,11 @@ export default async function CloudResearchReportPage({
               <p className="mt-2 text-xs text-stone-500">
                 取得日時: {new Date(source.retrievedAt).toLocaleString("ja-JP")}
               </p>
+              {source.sourceType ? (
+                <p className="mt-1 text-xs text-stone-500">
+                  種別: {sourceTypeLabels[source.sourceType]}／根拠分野: {source.topics?.join("、")}
+                </p>
+              ) : null}
             </article>
           ))}
         </div>

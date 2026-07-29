@@ -770,6 +770,19 @@ end $$;
 
 do $$
 begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.cloud_market_research_reports'::regclass
+      and conname = 'cloud_market_research_reports_engine_version_check'
+      and pg_get_constraintdef(oid) like '%research-rules-v2%'
+  ) then
+    raise exception 'Cloud research v2 engine constraint missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_sales_preparations') is null
      or to_regprocedure('public.sync_cloud_sales_preparation(uuid,bigint,text,text,integer,text)') is null then
     raise exception 'Cloud sales preparation objects are missing';
