@@ -70,3 +70,7 @@ AI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ
 - 根拠のない市場数値を生成しない回帰テストが成功する。
 - 市場分析完了前はAI企画提案導線が無効である。
 - lint、typecheck、Hub test、migration検証、production build、CIが成功する。
+
+公開・受入れ・停止・rollbackの実施手順は
+[`CLOUD_RESEARCH_RELEASE_RUNBOOK.md`](CLOUD_RESEARCH_RELEASE_RUNBOOK.md)
+に従う。

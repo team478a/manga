@@ -28,6 +28,10 @@
 - Feature Flag停止中の詳細・企画URLをDB照会前に停止
 - 出典入力を仕様どおり最大5件へ統一し、重複URLを拒否
 - 不正な取得日時を未知例外にせず入力エラーとして処理
+- DB非依存の市場分析永続化契約とモック統合テスト
+- 不正なReport UUIDをDB照会前に未検出として停止
+- FormのAlert／Status、補足説明、可変layoutの構造回帰テスト
+- migration、Feature Flag、縦型E2E、利用者間RLS、responsive、停止・rollbackをまとめた公開Runbook
 
 ### 境界
 
@@ -38,18 +42,20 @@
 
 - lint: PASS
 - typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析test: PASS（9/9）
-- hub:test: PASS（125/125）
+- 市場分析test: PASS（17/17）
+- hub:test: PASS（133/133）
 - deps:check: PASS
 - migration検証: PASS（17件）
 - build: PASS
 - git diff --check: PASS
+- 直前commit `6aa5274`のCI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
 
 ### 未完了
 
 - Supabase対象環境へのmigration適用
 - Vercel Previewの認証済みE2E
-- CI・責任者承認
+- 別利用者RLSと実ブラウザresponsive受入れ
+- 最新commitのCI・責任者承認
 
 ---
 

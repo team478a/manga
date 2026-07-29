@@ -106,5 +106,10 @@ ReportはRelease 1ではimmutableとする。修正する場合は新しいRepor
 - URLはHTTPSだけを許可する。
 - 同一Report内で同じ出典URLを重複登録しない。
 - 入力とJSONの容量をServer validationとDB制約で制限する。
+- 不正なReport IDはDBへ照会せず未検出として扱う。
 - Feature Flag停止中は一覧・入力・詳細・企画引継ぎの全RouteでDB照会を行わない。
 - 390pxでPage全体の横スクロールを発生させない。
+
+公開・受入れ・停止・rollback手順は
+[`CLOUD_RESEARCH_RELEASE_RUNBOOK.md`](CLOUD_RESEARCH_RELEASE_RUNBOOK.md)
+を正本とする。

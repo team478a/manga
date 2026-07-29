@@ -42,10 +42,17 @@ export default async function NewCloudResearchPage({
         確認済みの出典だけを使い、定性的な分析Reportを作成します。
       </p>
       {error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{error}</p>
+        <p
+          className="mt-5 rounded-md bg-red-50 p-4 text-red-700"
+          role="alert"
+        >
+          {error}
+        </p>
       ) : null}
       {!enabled ? (
-        <div className="panel mt-6">市場分析機能は現在停止中です。</div>
+        <div className="panel mt-6" role="status">
+          市場分析機能は現在停止中です。
+        </div>
       ) : (
         <form action={createCloudResearchReportAction} className="mt-6 space-y-6">
           <section className="panel">
@@ -94,11 +101,18 @@ export default async function NewCloudResearchPage({
 
           <section className="panel">
             <h2 className="text-xl font-bold">出典と確認した事実</h2>
-            <p className="mt-2 text-sm text-stone-600">
+            <p
+              className="mt-2 text-sm text-stone-600"
+              id="research-evidence-help"
+            >
               最低1件必須です。市場数値は出典に記載された内容だけを事実メモへ入力してください。
             </p>
             {[0, 1, 2, 3, 4].map((index) => (
-              <fieldset className="mt-5 rounded-lg border border-stone-200 p-4" key={index}>
+              <fieldset
+                aria-describedby="research-evidence-help"
+                className="mt-5 rounded-lg border border-stone-200 p-4"
+                key={index}
+              >
                 <legend className="px-2 font-bold">出典 {index + 1}{index === 0 ? "（必須）" : "（任意）"}</legend>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field id={`sourceTitle${index}`} label="出典名">

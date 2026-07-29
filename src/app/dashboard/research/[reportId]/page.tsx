@@ -45,7 +45,13 @@ export default async function CloudResearchReportPage({
         </span>
       </div>
       {message ? (
-        <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{message}</p>
+        <p
+          aria-live="polite"
+          className="mt-5 rounded-md bg-green-50 p-4 text-green-800"
+          role="status"
+        >
+          {message}
+        </p>
       ) : null}
 
       <section className="panel mt-6">

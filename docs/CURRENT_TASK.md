@@ -3,13 +3,14 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Release 0＋Release 1実装・ローカル品質ゲート完了、Draft PR #50のCI・外部E2E待ち）
+- 状態: `IN_PROGRESS`（Release 0＋Release 1実装・ローカル品質ゲート・直前CI完了、外部E2E待ち）
 - リポジトリ: `team478a/manga`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
 - Branch: `codex/cloud-research-mvp`
 - Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - 計画: [`docs/cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md`](cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_MVP_SPEC.md`](cloud/CLOUD_RESEARCH_MVP_SPEC.md)
+- 公開手順: [`docs/cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md`](cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md)
 
 ## 目的
 
@@ -45,6 +46,8 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 - Reportはimmutable。修正は新規Reportとして作成する。
 - Feature Flag停止中は詳細URLへの直接アクセスでもDB照会前に停止する。
 - 出典は画面・Serverとも最大5件に統一し、同一URLの重複を拒否する。
+- 保存・一覧・詳細はDB非依存の永続化契約を通し、Supabase失敗詳細を秘匿する。
+- 不正なReport UUIDはDB照会前に未検出として停止する。
 
 ## 変更しない範囲
 
@@ -62,18 +65,20 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 
 - lint: PASS
 - typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析単体・構造テスト: PASS（9/9）
-- hub:test: PASS（125/125）
+- 市場分析単体・保存層・UI構造テスト: PASS（17/17）
+- hub:test: PASS（133/133）
 - deps:check: PASS
 - migration検証: PASS（17件）
 - build: PASS
 - git diff --check: PASS
+- 直前commit `6aa5274`のGitHub CI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
 
 ## 未完了
 
 1. Supabase対象環境へ新規migrationを適用
 2. Vercel Previewで入力・保存・履歴・再表示E2E
-3. CIと責任者承認
+3. 別利用者によるRLSと390px／768px／1280px実ブラウザ受入れ
+4. 最新commitのCIと責任者承認
 
 ## 禁止事項
 
