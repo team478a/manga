@@ -4,6 +4,62 @@
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（Research Evaluation v1）
+
+### 状態
+
+`IN_PROGRESS`。複数出典照合にstackし、候補抽出と照合分類の決定的な定量評価基盤を実装した。全ローカル品質ゲートは成功。Draft PR、外部E2E、責任者承認は未完了。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-evaluation-v1`
+- Base: `codex/cloud-research-corroboration` / Draft PR #60
+- Draft PR: 作成準備中
+
+### 実装
+
+- 7分野×3件のClaim extraction golden set
+- 4分類×7件のCorroboration golden set
+- Top-3命中率、禁止文漏出、分野別集計
+- confusion matrix、Precision、Recall、F1、accuracy、macro F1
+- しきい値未達を終了code 1にする`npm run research:eval`
+- Required Qualityへの独立gateとJSON artifact
+- 評価器自体、しきい値失敗、決定性、CI契約の回帰テスト
+
+### 現時点の評価
+
+- 総fixture: 49件
+- Claim extraction: 21/21 Top-3命中、禁止文漏出0件
+- Corroboration: 28/28正解
+- accuracy: 100%
+- macro F1: 100%
+- 4分類のPrecision／Recall／F1: すべて100%
+
+### 未完了
+
+- Draft PR作成と全CI確認
+- 実allowlist出典から権利・privacyを確認した匿名化誤判定caseの追加
+- 実URLでの抽出・照合・Report保存E2E
+
+### 検証
+
+- research:eval: PASS（49/49）
+- hub:test: PASS（201/201）
+- typecheck: PASS（Hub + Desktop）
+- lint: PASS
+- deps:check: PASS
+- migrations: PASS（23件）
+- build: PASS
+- git diff --check: PASS
+
+### 注意事項
+
+- 現在の100%は設計境界を確認する合成fixture上の結果で、実Web精度を保証しない。
+- 外部network、DB、外部AI API、Desktop、migrationは変更していない。
+- PR #50〜#60と本branchを外部ゲートと責任者承認なしにmergeしない。
+
+---
+
 ## 2026-07-29 Codex → 次担当AI（複数出典照合）
 
 ### 状態

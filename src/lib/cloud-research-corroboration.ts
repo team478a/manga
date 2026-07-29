@@ -119,7 +119,7 @@ function quantityMap(quantities: Quantity[]) {
   return map;
 }
 
-function comparePair(
+export function classifyCloudResearchClaimPair(
   primary: CloudResearchClaimCandidate,
   comparison: CloudResearchClaimCandidate,
 ): CloudResearchClaimComparison {
@@ -217,7 +217,7 @@ export function compareCloudResearchClaimCandidates(
   const comparisons = primary.candidates
     .flatMap((primaryCandidate) =>
       comparison.candidates.map((comparisonCandidate) =>
-        comparePair(primaryCandidate, comparisonCandidate),
+        classifyCloudResearchClaimPair(primaryCandidate, comparisonCandidate),
       ),
     )
     .filter((item) => item.relation !== "insufficient")
