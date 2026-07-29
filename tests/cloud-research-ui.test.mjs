@@ -15,6 +15,8 @@ test("市場分析Formはlabel・補足説明・動的messageを支援技術へ�
   assert.match(form, /role="status"/);
   assert.match(form, /id="research-evidence-help"/);
   assert.match(form, /aria-describedby="research-evidence-help"/);
+  assert.match(form, /sourceType/);
+  assert.match(form, /sourceTopics/);
   assert.match(report, /aria-live="polite"/);
   assert.match(report, /role="status"/);
 });

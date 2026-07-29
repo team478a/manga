@@ -24,6 +24,7 @@ function result() {
     priceMin: "300", priceMax: "800", publicationFormat: "one_shot",
     pageCount: "48", sourceTitle0: "公式", sourceUrl0: "https://example.com",
     sourceRetrievedAt0: "2026-07-29T09:00", sourceFact0: "特集掲載。",
+    sourceType0: "official", sourceTopics0: "demand",
   })) form.set(key, value);
   const input = parseCloudResearchForm(form);
   const analysis = runCloudMarketAnalysis(input, "2026-07-29T00:00:00.000Z");

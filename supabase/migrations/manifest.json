@@ -132,7 +132,13 @@
       "description": "承認済みCloud作品を非公開作品・停止中商品へ同期",
       "forwardSha256": "feabd7b1af0c77a95bd8c5a9f2d0c21e22a3b8bcff2e564c455ac542e3cf1a90",
       "rollbackSha256": "59711f2c289907f3529db517e38b242106fd965475b6dd41e5e8b4a3732120eb"
+    },
+    {
+      "id": "202607290007_cloud_research_quality_v2",
+      "description": "市場分析Reportの根拠品質・分野別引用に対応するv2 engineを許可",
+      "forwardSha256": "df7dd46f4ecabce734182ae63ab4c4cda5143714393bb1529b6fe1c2afb44dd5",
+      "rollbackSha256": "117ae2ee2f19abd71dc0cdc4b1995cecc34b81903a404706e9c9e1487699895b"
     }
   ],
-  "schemaSha256": "8baa58f09540f786eb8188d66c2ebb799c69ff712fb4508d03f5821bfd9ea08f"
+  "schemaSha256": "092abb09e313a608468858564e47be835d7a940cc3473bd02875918b37a3f9ab"
 }

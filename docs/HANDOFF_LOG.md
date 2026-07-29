@@ -1337,6 +1337,55 @@ IN_PROGRESS（Release 6ローカル実装・品質ゲート完了、外部E2E待
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（Research Quality v2）
+
+### 状態
+
+IN_PROGRESS（ローカル実装・品質ゲート完了、外部E2E待ち）
+
+### ブランチ
+
+- Branch: `codex/cloud-research-quality-v2`
+- Base: `codex/cloud-sales-preparation-mvp` / Draft PR #55
+- Draft PR: 作成予定
+
+### 完了
+
+- Research Quality v2計画・仕様
+- 出典種別、公開日時、根拠分野の構造化入力
+- 分析項目単位の引用URLと、利用者入力／AI推論の分離
+- 項目別confidence・limitations
+- 出典の鮮度、独立ドメイン、7分野網羅率による根拠品質評価
+- 単一ドメイン、古い出典、未来日時、不足分野の警告
+- v1 Reportとの表示・企画引継ぎ互換
+- v2 engine migration／rollback／canonical schema
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（171/171）
+- Research〜Manga focused tests: PASS（42/42）
+- migrations: PASS（23件）
+- PostgreSQL migration往復／canonical schema: PASS
+- build: PASS
+
+### 次段階
+
+- 安全なServer-side出典取得と本文snapshot
+- 検索Provider契約、URL allowlist／SSRF防御、利用規約記録
+- 複数出典の主張照合と相反情報検出
+- 検索対応LLMの構造化引用、entailment検査、golden set eval
+
+### 注意事項
+
+- 品質scoreは市場の正しさや販売予測ではなく、登録された根拠の調査品質を示す。
+- 外部URL取得、検索API、LLMは今回追加していない。
+- PR #50〜#55の外部ゲート未完了扱いを解除しない。
+
+---
+
 ## 追記テンプレート
 
 ## 2026-07-29 Codex → 次担当AI

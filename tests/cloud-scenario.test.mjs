@@ -31,6 +31,8 @@ function fixture() {
     sourceUrl0: "https://example.com/ranking",
     sourceRetrievedAt0: "2026-07-29T09:00",
     sourceFact0: "公式特集に掲載されている。",
+    sourceType0: "platform",
+    sourceTopics0: "demand",
   })) form.set(key, value);
   const input = parseCloudResearchForm(form);
   const analysis = runCloudMarketAnalysis(input, "2026-07-29T00:00:00.000Z");

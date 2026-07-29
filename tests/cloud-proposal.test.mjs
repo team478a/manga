@@ -27,6 +27,8 @@ function research(contentClass = "general") {
     sourceUrl0: "https://example.com/ranking",
     sourceRetrievedAt0: "2026-07-29T09:00",
     sourceFact0: "公式特集に掲載されている。",
+    sourceType0: "platform",
+    sourceTopics0: "demand",
   })) form.set(key, value);
   const parsed = parseCloudResearchForm(form);
   const input =

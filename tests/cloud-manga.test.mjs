@@ -34,6 +34,8 @@ function scenario() {
     sourceUrl0: "https://example.com",
     sourceRetrievedAt0: "2026-07-29T09:00",
     sourceFact0: "公式特集に掲載。",
+    sourceType0: "platform",
+    sourceTopics0: "demand",
   }))
     form.set(key, value);
   const input = parseCloudResearchForm(form);

@@ -3,20 +3,37 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Release 6ローカル実装・品質ゲート完了、外部E2E待ち）
+- 状態: `IN_PROGRESS`（Research Quality v2ローカル実装・品質ゲート完了、外部E2E待ち）
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-work-management-mvp`（Draft PR #54）
-- Branch: `codex/cloud-sales-preparation-mvp`
+- Base: `codex/cloud-sales-preparation-mvp`（Draft PR #55）
+- Branch: `codex/cloud-research-quality-v2`
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
 - Release 4 Draft PR: [#53](https://github.com/team478a/manga/pull/53)
 - Release 5 Draft PR: [#54](https://github.com/team478a/manga/pull/54)
 - Release 6 Draft PR: [#55](https://github.com/team478a/manga/pull/55)
-- 計画: [`docs/cloud/CLOUD_SALES_PREPARATION_RELEASE_PLAN.md`](cloud/CLOUD_SALES_PREPARATION_RELEASE_PLAN.md)
-- 仕様: [`docs/cloud/CLOUD_SALES_PREPARATION_MVP_SPEC.md`](cloud/CLOUD_SALES_PREPARATION_MVP_SPEC.md)
+- Research Quality v2 Draft PR: 作成予定
+- 計画: [`docs/cloud/CLOUD_RESEARCH_QUALITY_V2_PLAN.md`](cloud/CLOUD_RESEARCH_QUALITY_V2_PLAN.md)
+- 仕様: [`docs/cloud/CLOUD_RESEARCH_QUALITY_V2_SPEC.md`](cloud/CLOUD_RESEARCH_QUALITY_V2_SPEC.md)
 
-## 目的
+## 現在の目的
+
+市場分析の根拠を項目単位で追跡し、出典の種類・鮮度・独立性・分野網羅を評価できるResearch Quality v2を完成させる。
+
+## Research Quality v2 実装済み
+
+- 出典種別、任意の公開日時、根拠分野の構造化入力
+- 分析項目ごとのclaim-level URL
+- 出典事実／利用者入力／AI推論の根拠区分
+- 項目別confidenceとlimitations
+- 0〜100の根拠品質score、独立ドメイン、180日以内の出典、分野網羅率
+- 不足分野、古い出典、未来日時、単一ドメイン依存の警告
+- `research-rules-v1` Reportの表示・後続工程互換
+- `research-rules-v2`を許可するmigration／rollback／canonical schema
+- 企画・シナリオ・マンガ生成までの回帰テスト
+
+## Release 6までの基盤
 
 Release 5で承認された一般向けCloud Projectを、非公開作品・販売停止商品として安全かつ冪等に販売準備へ同期できるRelease 6の縦型機能を完成させる。
 
@@ -48,12 +65,12 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 
 ## 検証
 
-- Hub全テスト: PASS（170/170）
-- 販売準備focused test: PASS（6/6）
+- Hub全テスト: PASS（171/171）
+- Research〜Manga回帰focused test: PASS（42/42）
 - deps:check: PASS
 - lint: PASS
 - typecheck: PASS（Hub + Desktop、Desktop変更なし）
-- migration検証: PASS（22件）
+- migration検証: PASS（23件）
 - PostgreSQL migration往復／canonical schema検査: PASS
 - PostgreSQL販売準備同期・冪等性・承認失効動作テスト: PASS
 - production build: PASS

@@ -4,14 +4,45 @@ import { ContentRejectedError, ValidationError } from "./domain-errors.ts";
 export const cloudResearchFeatureEnabled = () =>
   process.env.CLOUD_RESEARCH_MVP_ENABLED?.toLowerCase() === "true";
 
+export const cloudResearchSourceTypeSchema = z.enum([
+  "official",
+  "platform",
+  "industry_report",
+  "news",
+  "store_ranking",
+  "other",
+]);
+export const cloudResearchTopicSchema = z.enum([
+  "demand",
+  "competition",
+  "audience",
+  "theme",
+  "price",
+  "channel",
+  "risk",
+]);
+export type CloudResearchTopic = z.infer<typeof cloudResearchTopicSchema>;
+
 const evidenceSchema = z.object({
   title: z.string().trim().min(1).max(200),
   url: z.string().url().refine((value) => value.startsWith("https://"), {
     message: "出典URLはHTTPSで入力してください。",
   }),
   retrievedAt: z.string().datetime(),
+  publishedAt: z.string().datetime().optional(),
   fact: z.string().trim().min(1).max(1000),
-});
+  sourceType: cloudResearchSourceTypeSchema,
+  topics: z.array(cloudResearchTopicSchema).min(1).max(7),
+}).refine(
+  (value) =>
+    !value.publishedAt ||
+    new Date(value.publishedAt).getTime() <=
+      new Date(value.retrievedAt).getTime(),
+  {
+    message: "出典の公開日時は取得日時以前にしてください。",
+    path: ["publishedAt"],
+  },
+);
 
 export const cloudResearchInputSchema = z.object({
   genre: z.string().trim().min(1).max(80),
@@ -49,12 +80,25 @@ export type CloudResearchFinding = {
   summary: string;
   classification: FindingClassification;
   sourceUrls: string[];
+  evidenceBasis?: "source_fact" | "user_input" | "ai_inference";
+  confidence?: "low" | "medium" | "high";
+  limitations?: string[];
+};
+export type CloudResearchQuality = {
+  score: number;
+  level: "low" | "medium" | "high";
+  independentDomains: number;
+  freshSourceCount: number;
+  coveragePercent: number;
+  missingTopics: CloudResearchTopic[];
+  warnings: string[];
 };
 export type CloudResearchResult = {
-  engineVersion: "research-rules-v1";
+  engineVersion: "research-rules-v1" | "research-rules-v2";
   generatedAt: string;
   containsGeneratedMarketNumbers: false;
   findings: CloudResearchFinding[];
+  quality?: CloudResearchQuality;
 };
 
 function requiredText(formData: FormData, name: string) {
@@ -75,9 +119,16 @@ export function parseCloudResearchForm(formData: FormData) {
       retrievedAt: toIsoDateTime(
         requiredText(formData, `sourceRetrievedAt${index}`),
       ),
+      publishedAt: toIsoDateTime(
+        requiredText(formData, `sourcePublishedAt${index}`),
+      ) || undefined,
       fact: requiredText(formData, `sourceFact${index}`),
+      sourceType: requiredText(formData, `sourceType${index}`),
+      topics: formData
+        .getAll(`sourceTopics${index}`)
+        .map((value) => String(value)),
     }))
-    .filter((item) => item.title || item.url || item.fact || item.retrievedAt);
+    .filter((item) => item.title || item.url || item.fact);
 
   const parsed = cloudResearchInputSchema.safeParse({
     genre: requiredText(formData, "genre"),
@@ -107,77 +158,190 @@ export function runCloudMarketAnalysis(
   input: CloudResearchInput,
   generatedAt = new Date().toISOString(),
 ): CloudResearchResult {
-  const urls = input.evidence.map((item) => item.url);
-  const facts = input.evidence.map((item) => item.fact).join("／");
   const formatLabel = input.publicationFormat === "series" ? "連載" : "読切";
+  const evidenceFor = (...topics: CloudResearchTopic[]) =>
+    input.evidence.filter((item) =>
+      item.topics.some((topic) => topics.includes(topic)),
+    );
+  const urlsFor = (...topics: CloudResearchTopic[]) =>
+    [...new Set(evidenceFor(...topics).map((item) => item.url))];
+  const factsFor = (...topics: CloudResearchTopic[]) =>
+    evidenceFor(...topics).map((item) => item.fact).join("／");
+  const quality = evaluateCloudResearchQuality(input, generatedAt);
+  const inferred = (
+    topics: CloudResearchTopic[],
+    summary: string,
+  ): Pick<
+    CloudResearchFinding,
+    "summary" | "classification" | "sourceUrls" | "evidenceBasis" | "confidence" | "limitations"
+  > => {
+    const urls = urlsFor(...topics);
+    return {
+      summary,
+      classification: "ai_inference",
+      sourceUrls: urls,
+      evidenceBasis: "ai_inference",
+      confidence:
+        urls.length >= 2 && quality.level === "high"
+          ? "high"
+          : urls.length >= 1
+            ? "medium"
+            : "low",
+      limitations: urls.length
+        ? []
+        : [`${topics.join("・")}分野の直接根拠が登録されていません。`],
+    };
+  };
+  const userInput = (summary: string) => ({
+    summary,
+    classification: "fact" as const,
+    sourceUrls: [],
+    evidenceBasis: "user_input" as const,
+    confidence: "medium" as const,
+    limitations: ["利用者が指定した制作条件であり、市場事実ではありません。"],
+  });
   return {
-    engineVersion: "research-rules-v1",
+    engineVersion: "research-rules-v2",
     generatedAt,
     containsGeneratedMarketNumbers: false,
+    quality,
     findings: [
       {
         key: "market_demand",
         label: "市場需要",
-        summary: `確認済み出典では「${facts}」が示されています。${input.audience}向けの${input.genre}として需要仮説を検証してください。`,
-        classification: "ai_inference",
-        sourceUrls: urls,
+        ...inferred(
+          ["demand"],
+          factsFor("demand")
+            ? `需要分野の出典では「${factsFor("demand")}」が確認されています。${input.audience}向けの${input.genre}として需要仮説を検証してください。`
+            : `${input.audience}向けの${input.genre}という需要仮説は、需要分野の出典を追加して検証してください。`,
+        ),
       },
       {
         key: "competition",
         label: "競合度",
-        summary: `${input.platform}上の参考作品（${input.referenceWorks}）と同じ訴求だけでは競合しやすいため、公開前に作品一覧と訴求軸を再確認してください。`,
-        classification: "ai_inference",
-        sourceUrls: urls,
+        ...inferred(
+          ["competition"],
+          `${input.platform}上の参考作品（${input.referenceWorks}）と同じ訴求だけでは競合しやすいため、競合分野の出典と訴求軸を照合してください。`,
+        ),
       },
       {
         key: "reader_persona",
         label: "読者像",
-        summary: input.audience,
-        classification: "fact",
-        sourceUrls: urls,
+        ...userInput(input.audience),
       },
       {
         key: "popular_themes",
         label: "人気テーマ",
-        summary: `入力テーマ「${input.theme}」と、出典で確認した事実「${facts}」の重なりを優先候補とします。`,
-        classification: "ai_inference",
-        sourceUrls: urls,
+        ...inferred(
+          ["theme"],
+          factsFor("theme")
+            ? `入力テーマ「${input.theme}」と、テーマ分野の事実「${factsFor("theme")}」の重なりを優先候補とします。`
+            : `入力テーマ「${input.theme}」の人気度は、テーマ分野の出典を追加して検証してください。`,
+        ),
       },
       {
         key: "differentiation",
         label: "差別化案",
-        summary: `${formatLabel}${input.pageCount}Pageの制約を活かし、参考作品と異なる主人公の目的・舞台・読後感のうち最低1つを企画条件にしてください。`,
-        classification: "ai_inference",
-        sourceUrls: urls,
+        ...inferred(
+          ["competition", "theme"],
+          `${formatLabel}${input.pageCount}Pageの制約を活かし、参考作品と異なる主人公の目的・舞台・読後感のうち最低1つを企画条件にしてください。`,
+        ),
       },
       {
         key: "price",
         label: "価格帯",
-        summary: `検討価格は${input.priceMin.toLocaleString("ja-JP")}円〜${input.priceMax.toLocaleString("ja-JP")}円です。市場価格の事実ではなく、利用者が入力した検討条件として保存します。`,
-        classification: "fact",
-        sourceUrls: urls,
+        ...userInput(
+          `検討価格は${input.priceMin.toLocaleString("ja-JP")}円〜${input.priceMax.toLocaleString("ja-JP")}円です。`,
+        ),
       },
       {
         key: "channels",
         label: "販売チャネル",
-        summary: `主チャネル候補は${input.platform}です。各チャネルの手数料・表現規定・読者導線は公開前に公式情報で再確認してください。`,
-        classification: "ai_inference",
-        sourceUrls: urls,
+        ...inferred(
+          ["channel"],
+          `主チャネル候補は${input.platform}です。手数料・表現規定・読者導線をチャネル分野の公式情報で再確認してください。`,
+        ),
       },
       {
         key: "risks",
         label: "リスク",
-        summary: "出典の更新、参考作品への過度な類似、プラットフォーム規約、価格とPage数の不整合を主要確認項目とします。",
-        classification: "ai_inference",
-        sourceUrls: urls,
+        ...inferred(
+          ["risk"],
+          "出典の更新、参考作品への過度な類似、プラットフォーム規約、価格とPage数の不整合を主要確認項目とします。",
+        ),
       },
       {
         key: "next_proposal",
         label: "次の企画への推奨条件",
-        summary: `${input.genre}／${input.theme}／${input.audience}／${formatLabel}${input.pageCount}Page／${input.platform}を企画提案の必須条件として引き継ぎます。`,
-        classification: "ai_inference",
-        sourceUrls: urls,
+        ...userInput(
+          `${input.genre}／${input.theme}／${input.audience}／${formatLabel}${input.pageCount}Page／${input.platform}を企画提案の必須条件として引き継ぎます。`,
+        ),
       },
     ],
+  };
+}
+
+const sourceWeights: Record<CloudResearchInput["evidence"][number]["sourceType"], number> = {
+  official: 100,
+  platform: 90,
+  industry_report: 85,
+  store_ranking: 75,
+  news: 65,
+  other: 40,
+};
+
+export function evaluateCloudResearchQuality(
+  input: CloudResearchInput,
+  evaluatedAt = new Date().toISOString(),
+): CloudResearchQuality {
+  const allTopics = cloudResearchTopicSchema.options;
+  const covered = new Set(input.evidence.flatMap((item) => item.topics));
+  const missingTopics = allTopics.filter((topic) => !covered.has(topic));
+  const domains = new Set(
+    input.evidence.map((item) => new URL(item.url).hostname.replace(/^www\./, "")),
+  );
+  const evaluatedTime = new Date(evaluatedAt).getTime();
+  const sourceAges = input.evidence.map(
+    (item) => evaluatedTime - new Date(item.retrievedAt).getTime(),
+  );
+  const freshSourceCount = sourceAges.filter(
+    (age) => age >= 0 && age <= 180 * 24 * 60 * 60 * 1000,
+  ).length;
+  const futureSourceCount = sourceAges.filter((age) => age < 0).length;
+  const staleSourceCount = sourceAges.filter(
+    (age) => age > 180 * 24 * 60 * 60 * 1000,
+  ).length;
+  const authority =
+    input.evidence.reduce(
+      (total, item) => total + sourceWeights[item.sourceType],
+      0,
+    ) / input.evidence.length;
+  const coveragePercent = Math.round((covered.size / allTopics.length) * 100);
+  const score = Math.round(
+    authority * 0.3 +
+      Math.min(domains.size / 3, 1) * 25 +
+      (coveragePercent / 100) * 25 +
+      (freshSourceCount / input.evidence.length) * 20,
+  );
+  const warnings = [
+    ...(domains.size < 2 ? ["独立した2ドメイン以上での照合がありません。"] : []),
+    ...(staleSourceCount
+      ? ["取得から180日を超える出典が含まれます。"]
+      : []),
+    ...(futureSourceCount
+      ? ["評価時点より未来の取得日時を持つ出典が含まれます。"]
+      : []),
+    ...(missingTopics.length
+      ? [`根拠が不足する分野: ${missingTopics.join("、")}`]
+      : []),
+  ];
+  return {
+    score,
+    level: score >= 80 ? "high" : score >= 55 ? "medium" : "low",
+    independentDomains: domains.size,
+    freshSourceCount,
+    coveragePercent,
+    missingTopics,
+    warnings,
   };
 }

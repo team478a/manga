@@ -23,6 +23,8 @@ function validForm(overrides = {}) {
     sourceUrl0: "https://example.com/ranking",
     sourceRetrievedAt0: "2026-07-29T09:00",
     sourceFact0: "女性向けファンタジー作品が特集ページに掲載されている。",
+    sourceType0: "platform",
+    sourceTopics0: "demand",
     ...overrides,
   };
   const form = new FormData();
@@ -68,6 +70,8 @@ test("市場分析は価格逆転と重複出典を拒否する", () => {
           sourceUrl1: "https://example.com/ranking",
           sourceRetrievedAt1: "2026-07-29T09:10",
           sourceFact1: "同じURLから確認した別のメモ。",
+          sourceType1: "platform",
+          sourceTopics1: "demand",
         }),
       ),
     /重複/,
@@ -81,6 +85,8 @@ test("市場分析は最大5件の出典を保持する", () => {
     overrides[`sourceUrl${index}`] = `https://example.com/source-${index + 1}`;
     overrides[`sourceRetrievedAt${index}`] = `2026-07-29T09:0${index}`;
     overrides[`sourceFact${index}`] = `確認した事実${index + 1}`;
+    overrides[`sourceType${index}`] = "official";
+    overrides[`sourceTopics${index}`] = "theme";
   }
   assert.equal(parseCloudResearchForm(validForm(overrides)).evidence.length, 5);
 });
@@ -108,6 +114,7 @@ test("市場分析結果は全項目を事実とAI推論に区分し出典を保
     "2026-07-29T00:00:00.000Z",
   );
   assert.equal(result.containsGeneratedMarketNumbers, false);
+  assert.equal(result.engineVersion, "research-rules-v2");
   assert.equal(result.findings.length, 9);
   assert.deepEqual(
     result.findings.map((finding) => finding.key),
@@ -125,8 +132,46 @@ test("市場分析結果は全項目を事実とAI推論に区分し出典を保
   );
   for (const finding of result.findings) {
     assert.ok(["fact", "ai_inference"].includes(finding.classification));
-    assert.deepEqual(finding.sourceUrls, ["https://example.com/ranking"]);
+    assert.ok(["source_fact", "user_input", "ai_inference"].includes(finding.evidenceBasis));
+    assert.ok(["low", "medium", "high"].includes(finding.confidence));
   }
+  assert.deepEqual(
+    result.findings.find((finding) => finding.key === "market_demand").sourceUrls,
+    ["https://example.com/ranking"],
+  );
+  assert.deepEqual(
+    result.findings.find((finding) => finding.key === "price").sourceUrls,
+    [],
+  );
+  assert.equal(result.quality.independentDomains, 1);
+  assert.ok(result.quality.missingTopics.includes("competition"));
+});
+
+test("市場分析品質は独立ドメイン・鮮度・根拠分野の充足で向上する", () => {
+  const overrides = {
+    sourceTitle1: "業界調査",
+    sourceUrl1: "https://research.example.org/report",
+    sourceRetrievedAt1: "2026-07-29T09:00",
+    sourceFact1: "競合作品の公開状況を確認した。",
+    sourceType1: "industry_report",
+    sourceTopics1: "competition",
+    sourceTitle2: "公式規約",
+    sourceUrl2: "https://platform.example.net/rules",
+    sourceRetrievedAt2: "2026-07-29T09:00",
+    sourceFact2: "販売チャネルの条件を確認した。",
+    sourceType2: "official",
+    sourceTopics2: "channel",
+  };
+  const single = runCloudMarketAnalysis(
+    parseCloudResearchForm(validForm()),
+    "2026-07-29T10:00:00.000Z",
+  );
+  const diverse = runCloudMarketAnalysis(
+    parseCloudResearchForm(validForm(overrides)),
+    "2026-07-29T10:00:00.000Z",
+  );
+  assert.ok(diverse.quality.score > single.quality.score);
+  assert.equal(diverse.quality.independentDomains, 3);
 });
 
 test("市場分析UIは入力・履歴・再表示と完了後の企画導線を持つ", async () => {
