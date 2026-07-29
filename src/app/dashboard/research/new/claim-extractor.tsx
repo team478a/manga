@@ -92,7 +92,6 @@ export function ClaimExtractor({
           <p className="mt-2 break-all text-xs text-stone-500">
             取得: {new Date(state.extractedAt).toLocaleString("ja-JP")}
             {state.textTruncated ? "／本文上限までを抽出" : ""}
-            {state.textSha256 ? `／本文hash: ${state.textSha256.slice(0, 12)}…` : ""}
           </p>
           {state.candidates.length ? (
             <ol className="mt-4 space-y-3">
@@ -102,12 +101,8 @@ export function ClaimExtractor({
                     {candidate.text}
                   </p>
                   <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-xs text-stone-500">
-                      原文位置 {candidate.textStart}–{candidate.textEnd}
-                      ／一致語: {candidate.signals.join("、")}
-                    </p>
                     <button
-                      className="button-secondary shrink-0"
+                      className="button-secondary shrink-0 sm:ml-auto"
                       onClick={() => adopt(candidate.text)}
                       type="button"
                     >

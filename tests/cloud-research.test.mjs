@@ -187,7 +187,11 @@ test("市場分析UIは入力・履歴・再表示と完了後の企画導線を
   assert.match(files[0], /sourceFact/);
   assert.match(files[0], /\[0, 1, 2, 3, 4\]/);
   assert.match(files[1], /listCloudResearchReports/);
-  assert.match(files[2], /AI推論/);
+  assert.match(files[2], /市場分析結果/);
+  assert.doesNotMatch(
+    files[2],
+    /engine_version|result\.quality|evidenceBasis|finding\.confidence/,
+  );
   assert.match(files[2], /\/proposal/);
   assert.match(files[3], /Release 2/);
   for (const file of files.slice(2)) {
