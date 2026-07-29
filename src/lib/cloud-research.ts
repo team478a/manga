@@ -126,7 +126,10 @@ function toIsoDateTime(value: string) {
   return Number.isNaN(date.getTime()) ? value : date.toISOString();
 }
 
-export function parseCloudResearchForm(formData: FormData) {
+export function parseCloudResearchForm(
+  formData: FormData,
+  options: { allowAdult?: boolean } = {},
+) {
   const evidence = [0, 1, 2, 3, 4]
     .map((index) => ({
       title: requiredText(formData, `sourceTitle${index}`),
@@ -162,7 +165,7 @@ export function parseCloudResearchForm(formData: FormData) {
     throw new ValidationError(
       parsed.error.issues[0]?.message ?? "市場分析の入力を確認してください。",
     );
-  if (parsed.data.contentClass === "adult")
+  if (parsed.data.contentClass === "adult" && !options.allowAdult)
     throw new ContentRejectedError(
       "成人向け市場分析はCloudでは実行できません。MANGAI Desktop Adultを利用してください。",
     );

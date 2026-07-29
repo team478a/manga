@@ -5,6 +5,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
 
 type AdminUser = {
   id: string;
@@ -15,19 +16,42 @@ type AdminUser = {
   created_at: string;
 };
 
-export default async function AdminUserDetailPage({ params }: { params: Promise<{ id: string }> }) {
+type AdultResearchEntitlement = {
+  status: "approved" | "suspended" | "expired";
+  source: "purchase" | "legacy_purchase" | "admin_grant" | "campaign";
+  valid_until: string | null;
+  admin_note: string | null;
+};
+
+export default async function AdminUserDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
+}) {
   await requireAdmin();
   const { id } = await params;
+  const { error, message } = await searchParams;
   const supabase = await createClient();
   const { data: user } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle<AdminUser>();
 
   if (!user) notFound();
 
   let email = "未取得";
+  let adultEntitlement: AdultResearchEntitlement | null = null;
+  let adultEntitlementConfigured = true;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
     email = data.user?.email ?? "未設定";
+    const entitlementResult = await admin
+      .from("cloud_adult_research_entitlements")
+      .select("status,source,valid_until,admin_note")
+      .eq("profile_id", user.id)
+      .maybeSingle<AdultResearchEntitlement>();
+    adultEntitlement = entitlementResult.data;
+    adultEntitlementConfigured = !entitlementResult.error;
   }
 
   return (
@@ -39,6 +63,19 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
         </div>
         <Link className="button-secondary" href="/admin/users">一覧へ戻る</Link>
       </div>
+      {error ? (
+        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+          {error}
+        </p>
+      ) : null}
+      {message ? (
+        <p
+          className="mt-5 rounded-lg bg-green-50 p-4 text-green-800"
+          role="status"
+        >
+          {message}
+        </p>
+      ) : null}
       <section className="panel mt-6 space-y-4">
         <div>
           <p className="text-sm text-stone-500">表示名</p>
@@ -60,6 +97,90 @@ export default async function AdminUserDetailPage({ params }: { params: Promise<
           <p className="text-sm text-stone-500">自己紹介</p>
           <p className="whitespace-pre-wrap text-lg">{user.bio || "未設定"}</p>
         </div>
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">成人向け市場分析オプション</h2>
+        {!hasSupabaseAdminEnv() ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+            権限操作にはSupabase管理用設定が必要です。
+          </p>
+        ) : !adultEntitlementConfigured ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+            Release 1.1 migrationが未適用のため権限を操作できません。
+          </p>
+        ) : (
+          <form
+            action={setCloudAdultResearchEntitlementAction.bind(null, user.id)}
+            className="mt-5 space-y-5"
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="adultResearchStatus">
+                  利用状態
+                </label>
+                <select
+                  className="field"
+                  defaultValue={adultEntitlement?.status ?? "approved"}
+                  id="adultResearchStatus"
+                  name="status"
+                >
+                  <option value="approved">利用許可</option>
+                  <option value="suspended">一時停止</option>
+                  <option value="expired">期限切れ</option>
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="adultResearchSource">
+                  許可理由
+                </label>
+                <select
+                  className="field"
+                  defaultValue={adultEntitlement?.source ?? "admin_grant"}
+                  id="adultResearchSource"
+                  name="source"
+                >
+                  <option value="legacy_purchase">既存購入者</option>
+                  <option value="purchase">購入済み</option>
+                  <option value="admin_grant">管理者付与</option>
+                  <option value="campaign">キャンペーン</option>
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="adultResearchValidUntil">
+                  有効期限（任意）
+                </label>
+                <input
+                  className="field"
+                  defaultValue={adultEntitlement?.valid_until?.slice(0, 16)}
+                  id="adultResearchValidUntil"
+                  name="validUntil"
+                  type="datetime-local"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="adultResearchAdminNote">
+                管理者メモ
+              </label>
+              <textarea
+                className="field min-h-24"
+                defaultValue={adultEntitlement?.admin_note ?? ""}
+                id="adultResearchAdminNote"
+                maxLength={500}
+                name="adminNote"
+              />
+            </div>
+            <p className="text-sm text-stone-600">
+              利用許可後も、本人が18歳以上の確認と専用規約への同意を完了するまで成人向け分析は実行できません。
+            </p>
+            <button
+              className="button bg-violet-700 hover:bg-violet-800"
+              type="submit"
+            >
+              成人向け分析の許可を更新
+            </button>
+          </form>
+        )}
       </section>
     </main>
   );

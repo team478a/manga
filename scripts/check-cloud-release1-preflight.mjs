@@ -90,6 +90,11 @@ export function checkCloudRelease1Environment(env = process.env) {
     checks,
   );
   const searchEnabled = flag("CLOUD_RESEARCH_SEARCH_ENABLED", env, checks);
+  const adultResearchEnabled = flag(
+    "CLOUD_ADULT_RESEARCH_ENABLED",
+    env,
+    checks,
+  );
   if (verificationEnabled) {
     addRequired(
       checks,
@@ -120,13 +125,22 @@ export function checkCloudRelease1Environment(env = process.env) {
     });
   }
 
-  if (verificationEnabled || searchEnabled) {
+  if (verificationEnabled || searchEnabled || adultResearchEnabled) {
     addRequired(
       checks,
       "SUPABASE_SERVICE_ROLE_KEY",
       configured(env.SUPABASE_SERVICE_ROLE_KEY),
-      "Server側rate limit RPCに必要です。",
+      "Server側rate limitまたは成人向け利用許可の管理操作に必要です。",
     );
+  } else {
+    checks.push({
+      name: "SUPABASE_SERVICE_ROLE_KEY",
+      status: SKIP,
+      message:
+        "検索・Server検証・成人向けオプションが無効なためRelease 1追加用途では未使用です。",
+    });
+  }
+  if (verificationEnabled || searchEnabled) {
     const rateLimitSecret =
       env.CLOUD_RESEARCH_SEARCH_RATE_LIMIT_SECRET ??
       env.CLOUD_AI_RATE_LIMIT_SECRET ??
@@ -139,11 +153,6 @@ export function checkCloudRelease1Environment(env = process.env) {
       "32byte以上のServer専用秘密値が必要です。",
     );
   } else {
-    checks.push({
-      name: "SUPABASE_SERVICE_ROLE_KEY",
-      status: SKIP,
-      message: "検索・Server検証が無効なためRelease 1追加用途では未使用です。",
-    });
     checks.push({
       name: "CLOUD_RESEARCH_SEARCH_RATE_LIMIT_SECRET",
       status: SKIP,

@@ -217,6 +217,25 @@ begin
   end if;
 end $$;
 
+do $$
+begin
+  if to_regclass('public.cloud_adult_research_settings') is null
+     or to_regclass('public.cloud_adult_research_entitlements') is null
+     or to_regclass('public.cloud_adult_research_consents') is null
+     or to_regclass('public.cloud_adult_research_audit_logs') is null then
+    raise exception 'Cloud adult research migration tables missing';
+  end if;
+  if to_regprocedure('public.can_use_cloud_adult_research()') is null
+     or to_regprocedure(
+       'public.set_cloud_adult_research_enabled(uuid,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.set_cloud_adult_research_entitlement(uuid,uuid,text,text,timestamp with time zone,text)'
+     ) is null then
+    raise exception 'Cloud adult research migration functions missing';
+  end if;
+end $$;
+
 begin;
 insert into auth.users(id,email) values
   ('20000000-0000-4000-8000-000000000001','phase1-owner@example.test'),

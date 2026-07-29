@@ -106,7 +106,9 @@ ReportはRelease 1ではimmutableとする。修正する場合は新しいRepor
 
 ## 7. 成人向け境界
 
-入力UIは作品区分を必須で記録する。`adult`の場合、Cloud上の分析実行は`CONTENT_REJECTED`として停止し、MANGAI Desktop Adultを案内する。成人向け入力を一般向けCloud AIや外部Providerへ送らない。
+Release 1では入力UIが作品区分を必須で記録し、`adult`を既定で拒否する。
+
+Release 1.1では、`docs/cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md`に定義したFeature Flag、DB Kill Switch、管理者の個別許可、本人の18歳以上確認、専用規約同意がすべて揃った場合だけ、成人向けの市場分析を許可する。成人向け画像・本文生成は対象外とし、成人向け入力を一般向けCloud AIへ送らない。
 
 ## 8. AI企画提案への遷移
 

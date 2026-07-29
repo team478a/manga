@@ -133,6 +133,13 @@ for (const required of [
   "cloud_ai_notifications",
   "refresh_cloud_ai_notifications",
   "cloud_market_research_reports",
+  "cloud_adult_research_settings",
+  "cloud_adult_research_entitlements",
+  "cloud_adult_research_consents",
+  "cloud_adult_research_audit_logs",
+  "can_use_cloud_adult_research",
+  "set_cloud_adult_research_entitlement",
+  "set_cloud_adult_research_enabled",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

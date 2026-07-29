@@ -17,6 +17,7 @@ const baseEnvironment = {
   NEXT_PUBLIC_SITE_URL: "https://release1.example.jp",
   CLOUD_RESEARCH_SOURCE_VERIFICATION_ENABLED: "false",
   CLOUD_RESEARCH_SEARCH_ENABLED: "false",
+  CLOUD_ADULT_RESEARCH_ENABLED: "false",
 };
 
 test("Release 1 preflightは最小構成と手動出典入力を許可する", () => {
@@ -31,6 +32,20 @@ test("Release 1 preflightは最小構成と手動出典入力を許可する", (
       (item) => item.name === "CLOUD_RESEARCH_SOURCE_ALLOWED_HOSTS",
     )?.status,
     "SKIP",
+  );
+});
+
+test("Release 1 preflightは成人向けオプション有効時に管理用設定を要求する", () => {
+  const report = checkCloudRelease1Environment({
+    ...baseEnvironment,
+    CLOUD_ADULT_RESEARCH_ENABLED: "true",
+  });
+  assert.equal(report.passed, false);
+  assert.equal(
+    report.checks.find(
+      (item) => item.name === "SUPABASE_SERVICE_ROLE_KEY",
+    )?.status,
+    "FAIL",
   );
 });
 
