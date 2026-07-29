@@ -5,7 +5,10 @@ import {
   confirmCloudScenarioAction,
   reviseCloudScenarioAction,
 } from "@/app/dashboard/scenarios/actions";
+import { createCloudMangaAction } from "@/app/dashboard/manga/actions";
 import { requireProfile } from "@/lib/auth";
+import { cloudMangaFeatureEnabled } from "@/lib/cloud-manga";
+import { getCloudMangaGenerationByConfirmation } from "@/lib/cloud-manga-server";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
@@ -47,6 +50,14 @@ export default async function CloudScenarioRunPage({
     listCloudScenarioRuns(profile.id, run.proposal_selection_id),
     getCloudScenarioConfirmation(profile.id, run.proposal_selection_id),
   ]);
+  const mangaEnabled = cloudMangaFeatureEnabled();
+  const mangaGeneration =
+    confirmation && mangaEnabled
+      ? await getCloudMangaGenerationByConfirmation(
+          profile.id,
+          confirmation.id,
+        )
+      : null;
   const confirmed = confirmation?.scenario_run_id === run.id;
 
   return (
@@ -193,11 +204,37 @@ export default async function CloudScenarioRunPage({
       ) : (
         <section className="mt-6 rounded-lg border border-violet-200 bg-violet-50 p-5">
           <h2 className="text-xl font-bold text-violet-950">
-            Release 4への引継ぎ準備完了
+            マンガ下書き生成
           </h2>
           <p className="mt-2 text-violet-900">
-            確定Scenario snapshotを固定しました。漫画生成は次Releaseで実装します。
+            確定Scenario snapshotからCloud Projectと編集可能なCanvas Pageを作成します。
           </p>
+          {mangaGeneration ? (
+            <Link
+              className="button mt-4 bg-violet-700 hover:bg-violet-800"
+              href={`/dashboard/manga/${mangaGeneration.id}`}
+            >
+              作成済みマンガ下書きを開く
+            </Link>
+          ) : mangaEnabled ? (
+            <form action={createCloudMangaAction} className="mt-4">
+              <input
+                name="confirmationId"
+                type="hidden"
+                value={confirmation.id}
+              />
+              <button
+                className="button bg-violet-700 hover:bg-violet-800"
+                type="submit"
+              >
+                マンガ下書きとCanvas Pageを作成
+              </button>
+            </form>
+          ) : (
+            <p className="mt-3 text-sm text-violet-700">
+              Release 4 Feature Flagは停止中です。
+            </p>
+          )}
         </section>
       )}
     </main>

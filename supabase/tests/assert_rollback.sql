@@ -25,6 +25,11 @@ begin
      or to_regprocedure('public.refresh_cloud_ai_notifications()') is not null then
     raise exception 'Cloud AI notification objects remain after rollback';
   end if;
+  if to_regclass('public.cloud_manga_generations') is not null
+     or to_regprocedure('public.build_cloud_manga_panels(uuid,text,timestamptz)') is not null
+     or to_regprocedure('public.create_cloud_manga_generation(uuid,jsonb,timestamptz)') is not null then
+    raise exception 'Cloud manga generation objects remain after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

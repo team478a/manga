@@ -1181,6 +1181,56 @@ IN_PROGRESS（Release 3ローカル実装・品質ゲート完了、外部E2E待
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（Release 4）
+
+### 状態
+
+IN_PROGRESS（Release 4ローカル実装・品質ゲート完了、外部E2E待ち）
+
+### ブランチ
+
+- Branch: `codex/cloud-manga-mvp`
+- Base: `codex/cloud-scenario-mvp` / Draft PR #52
+- Draft PR: #53
+
+### 完了
+
+- Release 4計画・仕様
+- 確定シナリオからページ役割・シーン割当・コマ割りを生成する`manga-layout-rules-v1`
+- 1シナリオ確定1生成の冪等契約
+- Cloud Project、Episode、Page、編集可能なCanvas snapshot、Project versionの原子的作成
+- 生成履歴、詳細、ページ設計、既存Cloud Creator Editorへの導線
+- 所有者RLS、確定シナリオと生成traceのDB照合
+- 成人向け、200ページ超過、シーン範囲外、不正layoutの拒否
+- migration／rollback／canonical schema／manifest同期
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（160/160）
+- manga focused tests: PASS（8/8）
+- migrations: PASS（20件）
+- PostgreSQL migration往復／canonical schema検査: PASS
+- build: PASS
+
+### 外部環境待ち
+
+- Release 1〜4 migration適用
+- Vercelで4つのFeature Flagを有効化
+- 市場分析からマンガ下書き生成・Creator編集までの実ブラウザ縦型E2E
+- 別利用者RLS、重複生成冪等性、390／768／1280px受入れ
+- CI、責任者承認
+
+### 注意事項
+
+- Release 1〜3をDraft解除・mergeしていない。
+- 外部画像生成、Cloud AI Queue／Worker／Provider Gateway、Canvas Editor本体、Desktopは変更していない。
+- Release 4 branchはRelease 3にstackしている。外部ゲート完了までmergeしない。
+
+---
+
 ## 追記テンプレート
 
 ## 2026-07-29 Codex → 次担当AI

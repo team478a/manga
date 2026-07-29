@@ -8,8 +8,9 @@ import {
   type CloudScenarioRun,
 } from "@/lib/cloud-scenario-persistence";
 import type { CloudScenarioResult } from "@/lib/cloud-scenario";
-import { DomainError } from "@/lib/domain-errors";
+import { DomainError, ResourceNotFoundError } from "@/lib/domain-errors";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
 export type { CloudScenarioConfirmation, CloudScenarioRun };
 
@@ -112,6 +113,36 @@ export async function getCloudScenarioConfirmation(
       "INTERNAL_ERROR",
       "シナリオの確定状況を取得できませんでした。",
       { cause: result.error },
+    );
+  return result.data;
+}
+
+export async function getCloudScenarioConfirmationById(
+  profileId: string,
+  confirmationId: string,
+) {
+  if (!z.string().uuid().safeParse(confirmationId).success)
+    throw new ResourceNotFoundError(
+      "確定シナリオが見つかりません。",
+    );
+  const supabase = await createClient();
+  const result = await supabase
+    .from("cloud_scenario_confirmations")
+    .select(
+      "id,owner_profile_id,proposal_selection_id,scenario_run_id,scenario_snapshot,confirmed_at",
+    )
+    .eq("owner_profile_id", profileId)
+    .eq("id", confirmationId)
+    .maybeSingle<CloudScenarioConfirmation>();
+  if (result.error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "確定シナリオを取得できませんでした。",
+      { cause: result.error },
+    );
+  if (!result.data)
+    throw new ResourceNotFoundError(
+      "確定シナリオが見つかりません。",
     );
   return result.data;
 }

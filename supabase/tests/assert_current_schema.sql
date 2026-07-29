@@ -76,6 +76,11 @@ begin
      or to_regprocedure('public.refresh_cloud_ai_notifications()') is null then
     raise exception 'Cloud AI notification objects are missing';
   end if;
+  if to_regclass('public.cloud_manga_generations') is null
+     or to_regprocedure('public.build_cloud_manga_panels(uuid,text,timestamptz)') is null
+     or to_regprocedure('public.create_cloud_manga_generation(uuid,jsonb,timestamptz)') is null then
+    raise exception 'Cloud manga generation objects are missing';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null

@@ -767,3 +767,19 @@ begin
     raise exception 'expired authorization cleanup failed';
   end if;
 end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_manga_generations') is null
+     or to_regprocedure('public.build_cloud_manga_panels(uuid,text,timestamptz)') is null
+     or to_regprocedure('public.create_cloud_manga_generation(uuid,jsonb,timestamptz)') is null then
+    raise exception 'Cloud manga generation objects are missing';
+  end if;
+  if has_table_privilege(
+    'authenticated',
+    'public.cloud_manga_generations',
+    'insert'
+  ) then
+    raise exception 'authenticated users can insert Cloud manga generations directly';
+  end if;
+end $$;
