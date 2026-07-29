@@ -4,6 +4,55 @@
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（検索候補収集基盤）
+
+### 状態
+
+`IN_PROGRESS`。出典Server検証基盤にstackし、Research Discoveryを実装した。ローカル品質ゲート完了、Draft PR #58作成済み。CI、外部API設定・E2E、責任者承認待ち。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-search-foundation`
+- Base: `codex/cloud-research-source-verification` / Draft PR #57
+- Draft PR: [#58](https://github.com/team478a/manga/pull/58)
+
+### 実装
+
+- Provider中立検索契約、Brave Web Search adapter
+- strict safe search、日本語・日本向け、鮮度filter
+- POST Server Action、認証、Feature Flag、API key fail closed
+- timeout、512 KiB上限、Provider schema検査、安全URL正規化、重複除外
+- DB rate-limit RPCによる全体300回/分・Profile 10回/分の費用防御
+- allowlist適合状態、未確認snippet、原文確認の表示
+- 候補タイトル・URL・公開日時・根拠分野だけを市場分析Formへ引継ぎ
+- 検索snippetを事実メモへ自動転記しない回帰契約
+
+### 検証
+
+- hub:test: PASS（186/186）
+- typecheck: PASS（Hub + Desktop）
+- lint: PASS
+- deps:check: PASS
+- migrations: PASS（23件）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+- Draft PR #58 CI
+- Brave契約・課金承認・API key発行
+- Vercel Feature Flag・秘密値・allowlist設定
+- 実検索 → 原文確認 → 採用 → Server検証 → Report保存E2E
+- 本文snapshot、claim抽出、相反検出、引用必須LLM、golden set eval
+
+### 注意事項
+
+- 実Brave APIは呼び出しておらず、課金を発生させていない。
+- snippetは事実ではない。原文確認と事実メモ入力を省略しない。
+- PR #50〜#58を外部ゲートと責任者承認なしにmergeしない。
+
+---
+
 ## 2026-07-29 Codex → 次担当AI（出典Server検証基盤）
 
 ### 状態
