@@ -4,6 +4,54 @@
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（出典Server検証基盤）
+
+### 状態
+
+`IN_PROGRESS`。Research Quality v2にstackし、安全な出典取得境界を実装した。ローカル品質ゲートとDraft PR #57の全CIが成功。外部環境E2E、責任者承認待ち。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-source-verification`
+- Base: `codex/cloud-research-quality-v2` / Draft PR #56
+- Draft PR: [#57](https://github.com/team478a/manga/pull/57)
+
+### 実装
+
+- 完全一致host allowlist、HTTPS限定、危険URL拒否
+- DNS public IP確認、redirect先のhost／DNS再検証
+- 7秒timeout、3 redirect、MIME制限、streaming 1MB上限
+- private、loopback、link-local、CGNAT、benchmark、文書用予約IP等の拒否
+- 取得metadata、最終URL、SHA-256、HTML titleの保存（本文は非保存）
+- 検証済み件数をResearch Qualityへ反映
+- 入力画面とReport詳細で検証状態を明示
+- 計画・仕様とDNS rebindingに関する運用境界を文書化
+
+### 検証
+
+- hub:test: PASS（179/179）
+- typecheck: PASS（Hub + Desktop）
+- lint: PASS
+- deps:check: PASS
+- migrations: PASS（23件）
+- build: PASS
+- git diff --check: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
+
+### 未完了
+
+- VercelでFeature Flagと信頼済みhost allowlist設定
+- 実URLを用いた取得・redirect・timeout・未検証表示の外部E2E
+- 検索Provider候補取得、claim抽出、相反検出、引用必須LLM、golden set eval
+
+### 注意事項
+
+- 任意hostを許可しない。現在の通常fetchはDNS解決先IPを完全にはpinしないため、信頼済み公式hostに限定する。
+- URLの取得成功は主張の真偽や事実メモとの含意を保証しない。
+- PR #50〜#57を外部ゲートと責任者承認なしにmergeしない。
+
+---
+
 ## 2026-07-29 Codex（Cloud Release 0＋1 市場分析MVP）
 
 ### 状態

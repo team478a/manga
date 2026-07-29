@@ -3,10 +3,10 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Research Quality v2ローカル実装・品質ゲート完了、外部E2E待ち）
+- 状態: `IN_PROGRESS`（出典Server検証基盤の実装・全CI完了、外部E2E／責任者承認待ち）
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-sales-preparation-mvp`（Draft PR #55）
-- Branch: `codex/cloud-research-quality-v2`
+- Base: `codex/cloud-research-quality-v2`（Draft PR #56）
+- Branch: `codex/cloud-research-source-verification`
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
@@ -14,12 +14,25 @@
 - Release 5 Draft PR: [#54](https://github.com/team478a/manga/pull/54)
 - Release 6 Draft PR: [#55](https://github.com/team478a/manga/pull/55)
 - Research Quality v2 Draft PR: [#56](https://github.com/team478a/manga/pull/56)
-- 計画: [`docs/cloud/CLOUD_RESEARCH_QUALITY_V2_PLAN.md`](cloud/CLOUD_RESEARCH_QUALITY_V2_PLAN.md)
-- 仕様: [`docs/cloud/CLOUD_RESEARCH_QUALITY_V2_SPEC.md`](cloud/CLOUD_RESEARCH_QUALITY_V2_SPEC.md)
+- 出典Server検証 Draft PR: [#57](https://github.com/team478a/manga/pull/57)
+- 計画: [`docs/cloud/CLOUD_RESEARCH_SOURCE_VERIFICATION_PLAN.md`](cloud/CLOUD_RESEARCH_SOURCE_VERIFICATION_PLAN.md)
+- 仕様: [`docs/cloud/CLOUD_RESEARCH_SOURCE_VERIFICATION_SPEC.md`](cloud/CLOUD_RESEARCH_SOURCE_VERIFICATION_SPEC.md)
 
 ## 現在の目的
 
-市場分析の根拠を項目単位で追跡し、出典の種類・鮮度・独立性・分野網羅を評価できるResearch Quality v2を完成させる。
+検索ProviderやLLMを接続する前に、登録された出典URLをServerで安全に取得・検証し、未検証URLを根拠として扱わない境界を完成させる。
+
+## 出典Server検証 実装済み
+
+- 明示した完全一致hostだけを許可するFeature Flag付き外部取得
+- HTTPS、443番port、認証情報なし、IP literal禁止
+- DNS解決結果のpublic IP確認とredirectごとの再検証
+- private／loopback／link-local／予約アドレスの拒否
+- 7秒timeout、最大3 redirect、対応MIME制限、streaming 1MB上限
+- 最終URL、検証日時、MIME、byte数、SHA-256、HTML titleの保存
+- 取得本文をDBへ保存しない契約
+- 検証済み出典数のResearch Quality score反映と画面表示
+- 未検証時の明示表示と、Feature Flag無効時の既存フロー維持
 
 ## Research Quality v2 実装済み
 
@@ -65,7 +78,7 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 
 ## 検証
 
-- Hub全テスト: PASS（171/171）
+- Hub全テスト: PASS（179/179）
 - Research〜Manga回帰focused test: PASS（42/42）
 - deps:check: PASS
 - lint: PASS
@@ -74,26 +87,30 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 - PostgreSQL migration往復／canonical schema検査: PASS
 - PostgreSQL販売準備同期・冪等性・承認失効動作テスト: PASS
 - production build: PASS
+- Draft PR #57 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 - 外部環境E2E: 未実施
 
 ## 外部環境待ち
 
 1. Release 1〜6 migrationを対象Supabaseへ順番に適用
 2. Vercelで`CLOUD_RESEARCH_MVP_ENABLED=true`
-3. Vercelで`CLOUD_PROPOSAL_MVP_ENABLED=true`
-4. Vercelで`CLOUD_SCENARIO_MVP_ENABLED=true`
-5. Vercelで`CLOUD_MANGA_MVP_ENABLED=true`
-6. Vercelで`CLOUD_WORK_MANAGEMENT_MVP_ENABLED=true`
-7. Vercelで`CLOUD_SALES_PREPARATION_MVP_ENABLED=true`
-8. 市場分析 → 企画 → シナリオ → マンガ下書き → Creator編集 → Page確認 → 承認 → 販売準備同期の実ブラウザE2E
-9. 別利用者RLS、revision失効、二重送信、公開済み／販売中上書き拒否の確認
-10. 390px／768px／1280px受入れ
-11. 全CIと責任者承認
+3. Vercelで`CLOUD_RESEARCH_SOURCE_VERIFICATION_ENABLED=true`
+4. Vercelで`CLOUD_RESEARCH_SOURCE_ALLOWED_HOSTS`へ信頼済み公式hostを設定
+5. Vercelで`CLOUD_PROPOSAL_MVP_ENABLED=true`
+6. Vercelで`CLOUD_SCENARIO_MVP_ENABLED=true`
+7. Vercelで`CLOUD_MANGA_MVP_ENABLED=true`
+8. Vercelで`CLOUD_WORK_MANAGEMENT_MVP_ENABLED=true`
+9. Vercelで`CLOUD_SALES_PREPARATION_MVP_ENABLED=true`
+10. 市場分析 → 企画 → シナリオ → マンガ下書き → Creator編集 → Page確認 → 承認 → 販売準備同期の実ブラウザE2E
+11. 許可host、危険redirect、timeout、容量超過、未検証表示の実環境確認
+12. 別利用者RLS、revision失効、二重送信、公開済み／販売中上書き拒否の確認
+13. 390px／768px／1280px受入れ
+14. 全CIと責任者承認
 
 ## 禁止事項
 
 - `feature/manga-canvas-mvp`への直接push／merge
-- Draft PR #50〜#55の外部ゲート未完了扱いの解除
+- Draft PR #50〜#57の外部ゲート未完了扱いの解除
 - 既存migrationの変更
 - Cloud AI Queue／Worker／Provider Gateway、Canvas Editor本体、Stripe決済、Marketplace公開業務、Desktopへの変更
 - 成人向けコンテンツのCloud処理
@@ -106,5 +123,5 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 3. `docs/AI_HANDOFF.md`
 4. 本ファイル
 5. `docs/HANDOFF_LOG.md`
-6. `docs/cloud/CLOUD_SALES_PREPARATION_RELEASE_PLAN.md`
-7. `docs/cloud/CLOUD_SALES_PREPARATION_MVP_SPEC.md`
+6. `docs/cloud/CLOUD_RESEARCH_SOURCE_VERIFICATION_PLAN.md`
+7. `docs/cloud/CLOUD_RESEARCH_SOURCE_VERIFICATION_SPEC.md`
