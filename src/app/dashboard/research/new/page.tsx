@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createCloudResearchReportAction } from "@/app/dashboard/research/actions";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
+import { parseCloudResearchSearchAdoption } from "@/lib/cloud-research-search";
 import { cloudResearchSourceVerificationEnabled } from "@/lib/cloud-research-source-verification";
 
 function Field({
@@ -26,10 +27,28 @@ function Field({
 export default async function NewCloudResearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{
+    error?: string;
+    candidateTitle?: string;
+    candidateUrl?: string;
+    candidateTopic?: string;
+    candidatePublishedAt?: string;
+  }>;
 }) {
   await requireProfile();
-  const { error } = await searchParams;
+  const {
+    error,
+    candidateTitle,
+    candidateUrl,
+    candidateTopic,
+    candidatePublishedAt,
+  } = await searchParams;
+  const adoptedCandidate = parseCloudResearchSearchAdoption({
+    title: candidateTitle,
+    url: candidateUrl,
+    topic: candidateTopic,
+    publishedAt: candidatePublishedAt,
+  });
   const enabled = cloudResearchFeatureEnabled();
   const sourceVerificationEnabled = cloudResearchSourceVerificationEnabled();
   const now = new Date().toISOString().slice(0, 16);
@@ -39,7 +58,15 @@ export default async function NewCloudResearchPage({
       <Link className="text-violet-700 underline" href="/dashboard/research">
         ← 市場分析履歴へ
       </Link>
-      <h1 className="mt-4 text-3xl font-bold">新しい市場分析</h1>
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <h1 className="text-3xl font-bold">新しい市場分析</h1>
+        <Link
+          className="button-secondary text-center"
+          href="/dashboard/research/discover"
+        >
+          出典候補を探す
+        </Link>
+      </div>
       <p className="mt-2 text-stone-600">
         確認済みの出典だけを使い、定性的な分析Reportを作成します。
       </p>
@@ -109,6 +136,11 @@ export default async function NewCloudResearchPage({
             >
               最低1件必須です。出典種別と、その事実が支える分野を選択してください。市場数値は出典に記載された内容だけを事実メモへ入力してください。
             </p>
+            {adoptedCandidate ? (
+              <p className="mt-3 rounded-lg bg-violet-50 p-3 text-sm text-violet-950">
+                検索候補のタイトルとURLを出典1へ入力しました。原文を確認し、出典種別と確認した事実を入力してください。
+              </p>
+            ) : null}
             <p
               className={`mt-3 rounded-lg p-3 text-sm ${
                 sourceVerificationEnabled
@@ -130,7 +162,7 @@ export default async function NewCloudResearchPage({
                 <legend className="px-2 font-bold">出典 {index + 1}{index === 0 ? "（必須）" : "（任意）"}</legend>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field id={`sourceTitle${index}`} label="出典名">
-                    <input className="field" id={`sourceTitle${index}`} name={`sourceTitle${index}`} maxLength={200} required={index === 0} />
+                    <input className="field" id={`sourceTitle${index}`} name={`sourceTitle${index}`} maxLength={200} required={index === 0} defaultValue={index === 0 ? adoptedCandidate?.title : undefined} />
                   </Field>
                   <Field id={`sourceType${index}`} label="出典種別">
                     <select className="field" id={`sourceType${index}`} name={`sourceType${index}`} required={index === 0} defaultValue="">
@@ -147,12 +179,12 @@ export default async function NewCloudResearchPage({
                     <input className="field" id={`sourceRetrievedAt${index}`} name={`sourceRetrievedAt${index}`} type="datetime-local" defaultValue={index === 0 ? now : undefined} required={index === 0} />
                   </Field>
                   <Field id={`sourcePublishedAt${index}`} label="公開日時（任意）">
-                    <input className="field" id={`sourcePublishedAt${index}`} name={`sourcePublishedAt${index}`} type="datetime-local" />
+                    <input className="field" id={`sourcePublishedAt${index}`} name={`sourcePublishedAt${index}`} type="datetime-local" defaultValue={index === 0 ? adoptedCandidate?.publishedAt?.slice(0, 16) : undefined} />
                   </Field>
                 </div>
                 <div className="mt-4 space-y-4">
                   <Field id={`sourceUrl${index}`} label="出典URL（HTTPS）">
-                    <input className="field" id={`sourceUrl${index}`} name={`sourceUrl${index}`} type="url" placeholder="https://..." required={index === 0} />
+                    <input className="field" id={`sourceUrl${index}`} name={`sourceUrl${index}`} type="url" placeholder="https://..." required={index === 0} defaultValue={index === 0 ? adoptedCandidate?.url : undefined} />
                   </Field>
                   <Field id={`sourceFact${index}`} label="出典で確認した事実">
                     <textarea className="field min-h-24" id={`sourceFact${index}`} name={`sourceFact${index}`} maxLength={1000} required={index === 0} />
@@ -171,6 +203,9 @@ export default async function NewCloudResearchPage({
                       ].map(([value, label]) => (
                         <label className="flex items-center gap-2 text-sm" key={value}>
                           <input
+                            defaultChecked={
+                              index === 0 && adoptedCandidate?.topic === value
+                            }
                             name={`sourceTopics${index}`}
                             type="checkbox"
                             value={value}
