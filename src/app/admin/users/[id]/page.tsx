@@ -5,6 +5,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { setCloudAdultPlanningGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
 
 type AdminUser = {
@@ -23,6 +24,8 @@ type AdultResearchEntitlement = {
   admin_note: string | null;
 };
 
+type AdultPlanningGrant = AdultResearchEntitlement;
+
 export default async function AdminUserDetailPage({
   params,
   searchParams,
@@ -40,7 +43,9 @@ export default async function AdminUserDetailPage({
 
   let email = "未取得";
   let adultEntitlement: AdultResearchEntitlement | null = null;
+  let adultPlanningGrant: AdultPlanningGrant | null = null;
   let adultEntitlementConfigured = true;
+  let adultPlanningConfigured = true;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
@@ -52,6 +57,14 @@ export default async function AdminUserDetailPage({
       .maybeSingle<AdultResearchEntitlement>();
     adultEntitlement = entitlementResult.data;
     adultEntitlementConfigured = !entitlementResult.error;
+    const planningResult = await admin
+      .from("cloud_adult_feature_grants")
+      .select("status,source,valid_until,admin_note")
+      .eq("profile_id", user.id)
+      .eq("feature_key", "adult_planning")
+      .maybeSingle<AdultPlanningGrant>();
+    adultPlanningGrant = planningResult.data;
+    adultPlanningConfigured = !planningResult.error;
   }
 
   return (
@@ -178,6 +191,90 @@ export default async function AdminUserDetailPage({
               type="submit"
             >
               成人向け分析の許可を更新
+            </button>
+          </form>
+        )}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">成人向け企画機能</h2>
+        <p className="mt-2 text-sm text-stone-600">
+          成人向け市場分析の基本許可に加えて、この機能単位の許可が必要です。
+        </p>
+        {!hasSupabaseAdminEnv() ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+            権限操作にはSupabase管理用設定が必要です。
+          </p>
+        ) : !adultPlanningConfigured ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+            成人向け企画migrationが未適用のため権限を操作できません。
+          </p>
+        ) : (
+          <form
+            action={setCloudAdultPlanningGrantAction.bind(null, user.id)}
+            className="mt-5 space-y-5"
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="adultPlanningStatus">
+                  利用状態
+                </label>
+                <select
+                  className="field"
+                  defaultValue={adultPlanningGrant?.status ?? "approved"}
+                  id="adultPlanningStatus"
+                  name="status"
+                >
+                  <option value="approved">利用許可</option>
+                  <option value="suspended">一時停止</option>
+                  <option value="expired">期限切れ</option>
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="adultPlanningSource">
+                  許可理由
+                </label>
+                <select
+                  className="field"
+                  defaultValue={adultPlanningGrant?.source ?? "admin_grant"}
+                  id="adultPlanningSource"
+                  name="source"
+                >
+                  <option value="legacy_purchase">既存購入者</option>
+                  <option value="purchase">購入済み</option>
+                  <option value="admin_grant">管理者付与</option>
+                  <option value="campaign">キャンペーン</option>
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="adultPlanningValidUntil">
+                  有効期限（任意）
+                </label>
+                <input
+                  className="field"
+                  defaultValue={adultPlanningGrant?.valid_until?.slice(0, 16)}
+                  id="adultPlanningValidUntil"
+                  name="validUntil"
+                  type="datetime-local"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="adultPlanningAdminNote">
+                管理者メモ
+              </label>
+              <textarea
+                className="field min-h-24"
+                defaultValue={adultPlanningGrant?.admin_note ?? ""}
+                id="adultPlanningAdminNote"
+                maxLength={500}
+                name="adminNote"
+              />
+            </div>
+            <button
+              className="button bg-violet-700 hover:bg-violet-800"
+              type="submit"
+            >
+              成人向け企画機能の許可を更新
             </button>
           </form>
         )}

@@ -114,6 +114,30 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_adult_feature_grants') is null
+     or to_regclass('public.cloud_adult_planning_briefs') is null then
+    raise exception 'Current schema Cloud adult planning tables missing';
+  end if;
+  if to_regprocedure('public.can_use_cloud_adult_feature(text)') is null
+     or to_regprocedure(
+       'public.set_cloud_adult_feature_grant(uuid,uuid,text,text,text,timestamp with time zone,text)'
+     ) is null then
+    raise exception 'Current schema Cloud adult planning functions missing';
+  end if;
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'cloud_adult_planning_briefs'
+      and policyname = 'cloud_adult_planning_owner_insert'
+      and with_check like '%can_use_cloud_adult_feature%'
+  ) then
+    raise exception 'Current schema Cloud adult planning RLS missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_adult_research_settings') is null
      or to_regclass('public.cloud_adult_research_entitlements') is null
      or to_regclass('public.cloud_adult_research_consents') is null

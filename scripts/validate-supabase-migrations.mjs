@@ -140,6 +140,10 @@ for (const required of [
   "can_use_cloud_adult_research",
   "set_cloud_adult_research_entitlement",
   "set_cloud_adult_research_enabled",
+  "cloud_adult_feature_grants",
+  "cloud_adult_planning_briefs",
+  "can_use_cloud_adult_feature",
+  "set_cloud_adult_feature_grant",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

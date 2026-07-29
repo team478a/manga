@@ -5,64 +5,56 @@
 - 更新日: 2026-07-29
 - 状態: `READY_FOR_REVIEW`
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-release1-integration-v1` (`6491a7d`)
-- Branch: `codex/cloud-adult-research-option-v1`
-- 親Draft PR: [#65](https://github.com/team478a/manga/pull/65)
-- Draft PR: [#66](https://github.com/team478a/manga/pull/66)
-- 仕様: [`docs/cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md`](cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md)
+- Base: `codex/cloud-adult-research-option-v1` (`a9969ac`)
+- Branch: `codex/cloud-adult-planning-option-v1`
+- 親Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+- Draft PR: 作成待ち
+- Vercel Preview: 作成待ち
+- 仕様: [`docs/cloud/CLOUD_ADULT_PLANNING_OPTION_SPEC.md`](cloud/CLOUD_ADULT_PLANNING_OPTION_SPEC.md)
 
 ## 現在の目的
 
-成人向け市場分析を、購入済みまたは管理者許可済みユーザーへ早期提供できる許可制Cloudオプションとして追加する。一般向けRelease 1、成人向けDesktop生成、既存PRを変更しない。
+成人向け市場分析を完了した許可利用者が、外部AIへ内容を送信せずに企画ブリーフを入力・保存・履歴表示・再表示できる縦型機能を追加する。
 
 ## 実装範囲
 
-- 環境Feature FlagとDB Kill Switch
-- 管理者による個別利用許可・停止・期限・許可理由
-- 既存購入者を示す`legacy_purchase`
-- 利用者本人の18歳以上確認・専用規約同意・同意解除
-- 成人向けReportの作成・履歴・再表示
-- RLSによる作成・再表示の強制拒否
-- 管理操作と本人同意の監査ログ
-- migration、rollback、canonical schema、preflight
-- 管理者UI・利用者UI・テスト・runbook
+- `adult_planning`機能単位の追加許可
+- 成人向け企画用Feature Flag
+- 管理者による企画機能の許可・停止・期限設定
+- 成人向け市場分析Reportからの企画条件引継ぎ
+- 企画ブリーフの入力・保存・履歴・再表示
+- 所有者・成人向け権限・機能権限を強制するRLS
+- 管理操作の監査ログ
+- migration、rollback、canonical schema、preflight、テスト、runbook
 
 ## 安全境界
 
-- 一般向け市場分析は成人向け権限に依存しない。
-- 成人向けは環境Flag、DB Kill Switch、個別許可、有効期限、本人同意の全条件でfail closedする。
-- 管理者権限更新はService Role専用RPCで監査ログと原子的に保存する。
-- 成人向け画像・本文生成、Stripe自動連携、作品公開・販売は行わない。
-- 外部APIの有料実行、本番Feature Flag有効化、staging migration適用、本番公開は行わない。
+- 外部AI Providerを呼び出さない。
+- 成人向け文章・画像を自動生成しない。
+- 一般向け企画提案画面は従来のRelease 2案内を維持する。
+- 成人向け市場分析の全利用条件に加えて`adult_planning`個別許可を要求する。
+- Feature Flag未設定、migration未適用、権限不足、期限切れはfail closedする。
+- Stripe自動連携、作品公開・販売、Desktop、Canvasは変更しない。
+- staging migration適用、本番Flag有効化、本番公開は行わない。
 
-## migration
+## 完了
 
-- `202607290008_cloud_adult_research_option.sql`
-- 対応rollbackあり
-- manifestは19件へ更新
+- 設計文書
+- migration・rollback・canonical schema・所有者RLS
+- 管理者権限UIと監査
+- 企画ブリーフの入力・保存・履歴・再表示
+- Feature Flagと秘密値非表示preflight
+- deps、lint、typecheck、Research Evaluation、Hub test（185/185）、build
+- PostgreSQL 16 forward／rollback／reapply／canonical schema
 
-## 検証状況
+## 責任者待ち
 
-- 成人向け権限集中テスト: PASS
-- Release 1 preflightテスト: PASS
-- `deps:check`: PASS
-- lint／typecheck／build: PASS
-- Research Evaluation: PASS
-- Hub test: PASS（180/180）
-- migration静的検証: PASS（19/19）
-- migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
-- `git diff --check`: PASS
-- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
-- Vercel: PASS、Preview Ready
-- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7158e2-team478as-projects.vercel.app`
-
-## 未完了
-
-1. Previewでの管理者許可・本人同意・作成・停止後拒否の実機確認
-2. Supabase stagingへのmigration適用（責任者作業）
-3. Vercel環境変数設定とDB Kill Switch有効化（責任者作業）
-4. 成人向け専用規約本文と運用対象者の責任者承認
-5. PreviewはDeployment Protection有効のため、Vercel認証後に確認する
+1. stacked Draft PRとVercel Previewの確認
+2. 機能単位販売・付与方針の承認
+3. staging migration適用
+4. Preview環境Flag設定
+5. 管理者許可、本人操作、権限停止の実機E2E
+6. 本番公開判断
 
 ## 次担当者が最初に読むファイル
 
@@ -72,4 +64,4 @@
 4. 本ファイル
 5. `docs/HANDOFF_LOG.md`
 6. `docs/cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md`
-7. `docs/cloud/CLOUD_RESEARCH_RELEASE_RUNBOOK.md`
+7. `docs/cloud/CLOUD_ADULT_PLANNING_OPTION_SPEC.md`
