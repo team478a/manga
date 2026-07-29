@@ -105,7 +105,7 @@ export default async function NewCloudResearchPage({
               className="mt-2 text-sm text-stone-600"
               id="research-evidence-help"
             >
-              最低1件必須です。市場数値は出典に記載された内容だけを事実メモへ入力してください。
+              最低1件必須です。出典種別と、その事実が支える分野を選択してください。市場数値は出典に記載された内容だけを事実メモへ入力してください。
             </p>
             {[0, 1, 2, 3, 4].map((index) => (
               <fieldset
@@ -118,8 +118,22 @@ export default async function NewCloudResearchPage({
                   <Field id={`sourceTitle${index}`} label="出典名">
                     <input className="field" id={`sourceTitle${index}`} name={`sourceTitle${index}`} maxLength={200} required={index === 0} />
                   </Field>
+                  <Field id={`sourceType${index}`} label="出典種別">
+                    <select className="field" id={`sourceType${index}`} name={`sourceType${index}`} required={index === 0} defaultValue="">
+                      <option value="">選択してください</option>
+                      <option value="official">公的機関・公式一次情報</option>
+                      <option value="platform">販売プラットフォーム公式</option>
+                      <option value="industry_report">業界調査レポート</option>
+                      <option value="store_ranking">ストアランキング</option>
+                      <option value="news">報道・ニュース</option>
+                      <option value="other">その他</option>
+                    </select>
+                  </Field>
                   <Field id={`sourceRetrievedAt${index}`} label="取得日時">
                     <input className="field" id={`sourceRetrievedAt${index}`} name={`sourceRetrievedAt${index}`} type="datetime-local" defaultValue={index === 0 ? now : undefined} required={index === 0} />
+                  </Field>
+                  <Field id={`sourcePublishedAt${index}`} label="公開日時（任意）">
+                    <input className="field" id={`sourcePublishedAt${index}`} name={`sourcePublishedAt${index}`} type="datetime-local" />
                   </Field>
                 </div>
                 <div className="mt-4 space-y-4">
@@ -129,6 +143,29 @@ export default async function NewCloudResearchPage({
                   <Field id={`sourceFact${index}`} label="出典で確認した事実">
                     <textarea className="field min-h-24" id={`sourceFact${index}`} name={`sourceFact${index}`} maxLength={1000} required={index === 0} />
                   </Field>
+                  <fieldset>
+                    <legend className="label">この事実が支える分野</legend>
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {[
+                        ["demand", "市場需要"],
+                        ["competition", "競合"],
+                        ["audience", "読者"],
+                        ["theme", "人気テーマ"],
+                        ["price", "価格"],
+                        ["channel", "販売チャネル"],
+                        ["risk", "リスク"],
+                      ].map(([value, label]) => (
+                        <label className="flex items-center gap-2 text-sm" key={value}>
+                          <input
+                            name={`sourceTopics${index}`}
+                            type="checkbox"
+                            value={value}
+                          />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                  </fieldset>
                 </div>
               </fieldset>
             ))}

@@ -311,7 +311,7 @@ create table if not exists public.cloud_market_research_reports (
     and result->>'containsGeneratedMarketNumbers' = 'false'
     and pg_column_size(result) <= 131072
   ),
-  engine_version text not null check (engine_version = 'research-rules-v1'),
+  engine_version text not null check (engine_version in ('research-rules-v1', 'research-rules-v2')),
   completed_at timestamptz not null,
   created_at timestamptz not null default now()
 );
