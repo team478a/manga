@@ -62,7 +62,7 @@ export default async function CloudCreatorPage({
               variant="ghost"
             >
               <Card className="h-full w-full" variant="interactive">
-                <BookOpen className="h-8 w-8 text-leaf" />
+                <BookOpen className="h-8 w-8 text-brand-600" />
                 <h2 className="mt-4 text-xl font-bold">{project.title}</h2>
                 <p className="mt-2 line-clamp-2 min-h-12 text-text-secondary">
                   {project.description || "説明はまだありません。"}

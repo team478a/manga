@@ -19,7 +19,9 @@ export function EmptyState({
 }) {
   return (
     <Card className={`text-center ${className ?? ""}`}>
-      {icon ? <div className="mb-4 flex justify-center text-leaf">{icon}</div> : null}
+      {icon ? (
+        <div className="mb-4 flex justify-center text-brand-600">{icon}</div>
+      ) : null}
       <h2 className="text-2xl font-bold">{title}</h2>
       <p className="mx-auto mt-3 max-w-xl text-lg text-stone-600">{body}</p>
       {href && action ? (

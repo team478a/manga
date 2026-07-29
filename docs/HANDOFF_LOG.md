@@ -4,6 +4,49 @@
 
 ---
 
+## 2026-07-29 Codex（Phase Cloud UI-2 Creator主要画面刷新）
+
+### 状態
+
+`IN_PROGRESS`。Dashboard管理3画面に続き、Canvas Editor本体を除くCreator主要画面を同じSaaS UIへ移行した。ローカル品質ゲートは成功。Draft PR #49の最新CI・Preview確認待ち。
+
+### ブランチ・PR
+
+- Branch: `codex/cloud-dashboard-redesign`
+- Base: `codex/cloud-ui-foundation`（Draft PR #48）
+- Draft PR: [#49](https://github.com/team478a/manga/pull/49)
+
+### 完了
+
+- Creator一覧のbrand accent統一
+- 新規Project、ゴミ箱、Project詳細を共通PageHeader／Card／Button／FormField／Alert／Statusへ移行
+- Episode名編集とPage操作列をmobileで折り返す構造へ変更
+- Project、Episode、Page、Marketplaceの既存Server Actionとリンクを維持
+- Creator UI構造回帰テストを追加
+
+### 検証
+
+- lint: PASS
+- typecheck:hub: PASS
+- hub:test: PASS（126/126）
+- Cloud UI構造テスト: PASS（10/10）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+- Vercel PreviewでCreator主要画面を390／768／1024／1440px確認
+- 最新commitのCI確認
+- 責任者承認
+
+### 注意事項
+
+- Cloud Canvas Editor本体、Desktop、DB、API、認証、Stripe、Marketplace業務ロジックは変更していない
+- PR #48より先にmergeしない
+- 全CI成功・レスポンシブ確認・責任者承認前にmergeしない
+
+---
+
 ## 2026-07-29 Codex（Phase Cloud UI-1 実装・ローカル検証完了）
 
 ### 状態

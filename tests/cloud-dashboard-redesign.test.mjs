@@ -70,3 +70,23 @@ test("主要Dashboard管理画面は同じSaaS UI部品へ移行する", async (
     assert.doesNotMatch(page, /className="panel/);
   }
 });
+
+test("主要Creator画面は同じSaaS UI部品とmobile layoutへ移行する", async () => {
+  for (const relativePath of [
+    "../src/app/creator/new/page.tsx",
+    "../src/app/creator/trash/page.tsx",
+    "../src/app/creator/[projectId]/page.tsx",
+  ]) {
+    const page = await source(relativePath);
+    assert.match(page, /PageHeader/);
+    assert.match(page, /<Card/);
+    assert.match(page, /shadow-app/);
+    assert.doesNotMatch(page, /className="panel/);
+    assert.doesNotMatch(page, /className="button/);
+  }
+
+  const project = await source("../src/app/creator/[projectId]/page.tsx");
+  assert.match(project, /flex-col gap-2 sm:flex-row/);
+  assert.match(project, /flex flex-wrap gap-1/);
+  assert.doesNotMatch(project, /bg-green-50|text-leaf/);
+});

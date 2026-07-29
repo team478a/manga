@@ -32,6 +32,8 @@
 - 実装済み機能へのquick action
 - profile編集の継続配置
 - 作品管理／デジタル商品管理／売上管理のSaaS UI統一
+- CreatorのProject一覧／新規作成／ゴミ箱／Project詳細のSaaS UI統一
+- Creatorのフォーム、Episode／Page操作列のmobile layout調整
 - 390／768／1024／1440px レスポンシブ確認
 
 ## 4. 対象外

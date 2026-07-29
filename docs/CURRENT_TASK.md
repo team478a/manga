@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Phase Cloud UI-2 実装・ローカル検証完了、Draft PR #49のCI・Preview確認待ち）
+- 状態: `IN_PROGRESS`（Phase Cloud UI-2 Dashboard／Creator UI実装・ローカル検証完了、Draft PR #49の最新CI・Preview確認待ち）
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-ui-foundation`（Draft PR #48）
 - Branch: `codex/cloud-dashboard-redesign`
@@ -37,6 +37,11 @@ PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックに�
 - 作品管理画面の共通PageHeader／Card／Status表示への移行
 - デジタル商品管理画面の共通PageHeader／Card／Status表示への移行
 - 売上管理画面の実データsummary／注文tableへの移行
+- Creator一覧のbrand accent統一
+- 新規Project画面の共通PageHeader／Card／FormField／Alertへの移行
+- Creatorゴミ箱の共通PageHeader／Card／EmptyStateへの移行
+- Project詳細の共通PageHeader／Card／Button／FormField／Status表示への移行
+- Episode名編集・Page操作列のmobile折り返し対応
 - Cloud UI-2構造回帰テスト
 
 ## 変更していないもの
@@ -52,7 +57,7 @@ PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックに�
 
 - `npm run lint`: PASS
 - `npm run typecheck`: PASS（Hub + Desktop。Desktopコード変更なし）
-- `npm run hub:test`: PASS（124/124）
+- `npm run hub:test`: PASS（126/126）
 - `npm run build`: PASS
 - green action button残存検索: PASS（成功・警告などの状態色は対象外）
 - 1440px: compact Headerを実表示確認
@@ -61,8 +66,8 @@ PR #48の共通UI基盤を前提とし、Desktopおよび業務ロジックに�
 
 ## 未完了・次の作業
 
-1. Vercel Previewの認証済みDashboardを390／768／1024／1440pxで目視確認する
-2. CIを確認する
+1. Vercel Previewの認証済みDashboard／Creatorを390／768／1024／1440pxで目視確認する
+2. 最新commitのCIを確認する
 3. 責任者が実画面を確認し、承認する
 
 ## 禁止事項
