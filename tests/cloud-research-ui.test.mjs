@@ -57,7 +57,7 @@ test("市場分析の主要操作はbuttonまたはlinkとして実装される"
   );
 });
 
-test("利用者画面は内部分析ロジックを隠し結果と参照情報だけを表示する", async () => {
+test("利用者画面は内部分析ロジックと参照情報を隠し結果だけを表示する", async () => {
   const [report, extractor, comparison] = await Promise.all([
     readSource("../src/app/dashboard/research/[reportId]/page.tsx"),
     readSource(
@@ -69,13 +69,10 @@ test("利用者画面は内部分析ロジックを隠し結果と参照情報�
   ]);
 
   assert.match(report, /市場分析結果/);
-  assert.match(report, /参照情報/);
   assert.match(report, /finding\.summary/);
-  assert.match(report, /source\.url/);
-  assert.match(report, /source\.retrievedAt/);
   assert.doesNotMatch(
     report,
-    /engine_version|result\.quality|evidenceBasis|finding\.confidence|finding\.limitations|verification\.contentType|verification\.sha256/,
+    /engine_version|result\.quality|evidenceBasis|finding\.confidence|finding\.limitations|report\.sources|source\.url|source\.retrievedAt|参照情報|verification\.contentType|verification\.sha256/,
   );
   assert.doesNotMatch(
     extractor,
