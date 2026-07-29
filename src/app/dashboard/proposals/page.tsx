@@ -14,15 +14,13 @@ export default async function CloudProposalHistoryPage({
   const query = await searchParams;
   const enabled =
     cloudResearchFeatureEnabled() && cloudProposalFeatureEnabled();
-  const runs = enabled ? await listCloudProposalRuns(profile.id) : [];
+const runs = enabled ? await listCloudProposalRuns(profile.id) : [];
 
   return (
     <main className="page max-w-5xl">
       <p className="text-sm font-bold text-violet-700">WORKFLOW 2</p>
       <h1 className="mt-2 text-3xl font-bold">AI企画提案</h1>
-      <p className="mt-2 text-stone-600">
-        市場分析から生成した企画候補を比較・採用します。
-      </p>
+      <p className="mt-2 text-stone-600">3つの企画案を比較し、制作する1案を選びます。</p>
       {query.error ? (
         <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700" role="alert">
           {query.error}
@@ -50,12 +48,11 @@ export default async function CloudProposalHistoryPage({
                   {run.result.candidates.map((item) => item.title).join("／")}
                 </h2>
                 <p className="mt-1 text-xs text-stone-500">
-                  {new Date(run.completed_at).toLocaleString("ja-JP")}・
-                  {run.engine_version}
+                  {new Date(run.completed_at).toLocaleString("ja-JP")}に作成
                 </p>
               </div>
               <span className="inline-flex items-center text-sm font-bold text-violet-700">
-                比較する
+                企画案を見る
                 <ArrowRight className="ml-1 h-4 w-4" />
               </span>
             </Link>

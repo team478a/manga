@@ -3,6 +3,7 @@ import type {
   CloudResearchFinding,
   CloudResearchInput,
 } from "./cloud-research.ts";
+import { evaluateCloudProposalQuality } from "./cloud-proposal-quality.ts";
 import { ContentRejectedError, ValidationError } from "./domain-errors.ts";
 
 export const cloudProposalFeatureEnabled = () =>
@@ -135,11 +136,21 @@ export function runCloudStoryProposal(
     },
   ];
 
-  return cloudStoryProposalResultSchema.parse({
+  const result = cloudStoryProposalResultSchema.parse({
     engineVersion: "proposal-rules-v1",
     generatedAt,
     classification: "ai_inference",
     containsGeneratedMarketNumbers: false,
     candidates,
   });
+  const quality = evaluateCloudProposalQuality(
+    result,
+    research.input,
+    research.findings,
+  );
+  if (!quality.passed)
+    throw new ValidationError(
+      "企画候補の品質確認を完了できませんでした。市場分析の入力内容を確認してください。",
+    );
+  return result;
 }

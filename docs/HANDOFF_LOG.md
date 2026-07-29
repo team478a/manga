@@ -1728,6 +1728,76 @@ IN_PROGRESS（Release 2ローカル実装完了、外部E2E待ち）
 - Cloud AI Queue／Worker／Provider Gateway、Desktopは変更していない。
 - Release 2 branchはRelease 1にstackしている。外部ゲート完了までmergeしない。
 
+## 2026-07-29 Codex → 次担当AI（AI企画提案 Quality UI v1）
+
+### 状態
+
+IN_PROGRESS（ローカル実装・品質ゲート完了、Draft PR／Preview確認待ち）
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-proposal-quality-ui-v1`
+- Base: `codex/cloud-research-result-only-ui` / Draft PR #62
+- HEAD: commit前
+
+### 完了
+
+- AI企画提案 Quality UI v1計画
+- 企画生成前画面の結果中心化
+- 王道案／独自案／集中案のレスポンシブ比較Card
+- engine version、classification、出典URL、調査項目キー、評価ロジックの利用者画面非表示
+- 採用状態と採用後のシナリオ生成導線の明確化
+- 3方向、必須項目、候補重複、参考作品名流用、未許可数値、根拠追跡の品質検査
+- 保存schema、内部trace、Selection、後続シナリオ契約は変更なし
+
+### 未完了
+
+- Draft PR作成
+- Vercel Previewで390px／768px／1280px確認
+- 実Supabaseで生成→保存→履歴→再表示→採用E2E
+- CI、責任者承認
+
+### 変更ファイル
+
+- `docs/cloud/CLOUD_PROPOSAL_QUALITY_UI_V1_PLAN.md`
+- `docs/cloud/CLOUD_PROPOSAL_MVP_SPEC.md`
+- `src/lib/cloud-proposal-quality.ts`
+- `src/lib/cloud-proposal.ts`
+- `src/app/dashboard/research/[reportId]/proposal/page.tsx`
+- `src/app/dashboard/proposals/page.tsx`
+- `src/app/dashboard/proposals/[runId]/page.tsx`
+- `tests/cloud-proposal.test.mjs`
+- `docs/CURRENT_TASK.md`
+- `docs/HANDOFF_LOG.md`
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（204/204）
+- proposal focused test: PASS（7/7）
+- build: PASS
+- git diff --check: PASS
+
+### 失敗・BLOCKED
+
+- 実Supabase縦型E2EとPreviewの実画面確認は外部環境待ち。
+
+### 次担当者が最初に行うこと
+
+1. Draft PRとVercel Previewを確認する。
+2. 390px／768px／1280pxで生成前・履歴・比較・採用後を確認する。
+3. 実Supabaseで企画の生成→保存→履歴→再表示→採用を完走する。
+
+### 注意事項
+
+- PR #50〜#62をDraft解除・mergeしていない。
+- DB schema、RLS、Proposal保存形式、シナリオ契約、Desktopは変更していない。
+- 全CI・外部E2E・責任者承認前にmergeしない。
+
+---
+
 ```md
 ## YYYY-MM-DD HH:mm JST 担当AI → 次担当AI
 

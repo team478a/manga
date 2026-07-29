@@ -44,7 +44,7 @@ type CloudStoryProposalCandidate = {
 };
 ```
 
-候補は企画仮説であり、市場の事実ではない。画面にengine versionと生成日時を表示する。
+候補は企画仮説であり、市場の事実ではない。engine version、生成分類、出典URL、調査項目キーは内部保存するが、利用者画面には表示しない。
 
 ## 3. 保存
 
@@ -74,7 +74,9 @@ Runはimmutableとする。
 
 - `/dashboard/proposals`: 企画Run履歴
 - `/dashboard/research/[reportId]/proposal`: 引継ぎ確認と生成
-- `/dashboard/proposals/[runId]`: 3候補の比較、採用、採用結果
+- `/dashboard/proposals/[runId]`: 3候補の結果比較、採用、採用結果
+
+利用者画面では企画結果と制作上の注意点だけを表示する。生成ロジック、評価結果、出典URL、内部識別子は表示しない。
 
 市場分析未完了、他人のReport、不正UUID、Feature Flag停止中はDB詳細を露出せず停止する。
 
@@ -87,6 +89,7 @@ Runはimmutableとする。
 - Supabaseエラー詳細を利用者へ返さない。
 - JSON容量をServerとDBの両方で制限する。
 - RLSに加えServer queryでも所有者を限定する。
+- 3候補の方向性、必須項目、重複、参考作品名の流用、未許可数値、内部根拠追跡を保存前に検査する。
 
 ## 6. 次工程
 

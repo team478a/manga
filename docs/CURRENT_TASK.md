@@ -3,10 +3,10 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（市場分析Result-only UI実装・Draft PR全CI完了、Preview確認／責任者承認待ち）
+- 状態: `IN_PROGRESS`（AI企画提案 Quality UI v1ローカル実装・品質ゲート完了、Draft PR／Preview確認待ち）
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-research-evaluation-v1`（Draft PR #61）
-- Branch: `codex/cloud-research-result-only-ui`
+- Base: `codex/cloud-research-result-only-ui`（Draft PR #62）
+- Branch: `codex/cloud-proposal-quality-ui-v1`
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
@@ -20,11 +20,34 @@
 - 複数出典照合 Draft PR: [#60](https://github.com/team478a/manga/pull/60)
 - Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
 - Result-only UI Draft PR: [#62](https://github.com/team478a/manga/pull/62)
-- 仕様: [`docs/cloud/CLOUD_RESEARCH_RESULT_ONLY_UI_SPEC.md`](cloud/CLOUD_RESEARCH_RESULT_ONLY_UI_SPEC.md)
+- AI企画提案 Quality UI v1 Draft PR: 作成予定
+- 計画: [`docs/cloud/CLOUD_PROPOSAL_QUALITY_UI_V1_PLAN.md`](cloud/CLOUD_PROPOSAL_QUALITY_UI_V1_PLAN.md)
 
 ## 現在の目的
 
-市場分析の利用者画面から内部の分析・評価ロジックと参照情報を隠し、分析結果だけを簡潔に表示する。保存・検証・品質評価の内部契約は維持する。
+AI企画提案の利用者画面を結果中心に整理し、3案の違いを比較・採用しやすくする。内部の根拠追跡情報と保存契約を維持しながら、重複、模倣、根拠のない数値を保存前に検査する。
+
+## AI企画提案 Quality UI v1 実装済み
+
+- 企画生成前画面を「王道案／独自案／集中案」の説明と制作条件確認へ整理
+- 企画詳細を390px 1列、768px 2列、1280px 3列の比較Cardへ変更
+- 作品の核、読者体験、主人公、中心対立、舞台、強み、構成、販売方針、注意点を結果として表示
+- 採用状態と採用後のシナリオ生成導線を明確化
+- engine version、classification、出典URL、調査項目キー、評価ロジックを利用者画面から非表示
+- engine version、出典URL、調査項目キーは内部保存契約として維持
+- 3方向の完全性、必須項目、候補重複、参考作品名流用、未許可数値、根拠追跡を検査
+- 品質検査に失敗した企画は保存前に汎用メッセージで停止
+
+## AI企画提案 Quality UI v1 検証
+
+- focused test: PASS（7/7）
+- `npm run hub:test`: PASS（204/204）
+- `npm run typecheck`: PASS（Hub + Desktop）
+- `npm run lint`: PASS
+- `npm run deps:check`: PASS
+- `npm run build`: PASS
+- `git diff --check`: PASS
+- Vercel Preview／レスポンシブ実画面: Draft PR作成後に確認
 
 ## Result-only UI 実装済み
 

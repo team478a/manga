@@ -5,6 +5,7 @@ import {
   cloudProposalFeatureEnabled,
   runCloudStoryProposal,
 } from "../src/lib/cloud-proposal.ts";
+import { evaluateCloudProposalQuality } from "../src/lib/cloud-proposal-quality.ts";
 import {
   parseCloudResearchForm,
   runCloudMarketAnalysis,
@@ -73,6 +74,58 @@ test("市場分析から方向性の異なる3企画を生成する", () => {
   }
 });
 
+test("企画品質ゲートは3案の差異・根拠追跡・数値制約を確認する", () => {
+  const source = research();
+  const result = runCloudStoryProposal(
+    source,
+    "2026-07-29T01:00:00.000Z",
+  );
+  assert.deepEqual(
+    evaluateCloudProposalQuality(result, source.input, source.findings),
+    {
+      passed: true,
+      issues: [],
+    },
+  );
+
+  const duplicated = structuredClone(result);
+  duplicated.candidates[1].title = duplicated.candidates[0].title;
+  assert.deepEqual(
+    evaluateCloudProposalQuality(duplicated, source.input, source.findings)
+      .issues,
+    ["candidates_not_distinct"],
+  );
+
+  const unsupported = structuredClone(result);
+  unsupported.candidates[0].salesPositioning += " 売上12345件を見込みます。";
+  assert.ok(
+    evaluateCloudProposalQuality(
+      unsupported,
+      source.input,
+      source.findings,
+    ).issues.includes("unsupported_number"),
+  );
+});
+
+test("企画品質ゲートは参考作品名の流用と内部根拠欠落を拒否する", () => {
+  const source = research();
+  const result = runCloudStoryProposal(
+    source,
+    "2026-07-29T01:00:00.000Z",
+  );
+  const copied = structuredClone(result);
+  copied.candidates[0].title = "参考作品A 新章";
+  copied.candidates[1].sourceUrls = [];
+  const quality = evaluateCloudProposalQuality(
+    copied,
+    source.input,
+    source.findings,
+  );
+  assert.equal(quality.passed, false);
+  assert.ok(quality.issues.includes("reference_work_reused"));
+  assert.ok(quality.issues.includes("research_trace_missing"));
+});
+
 test("企画生成は出典なしと成人向けを拒否する", () => {
   assert.throws(
     () => runCloudStoryProposal({ ...research(), sourceUrls: [] }),
@@ -91,7 +144,12 @@ test("企画UIは生成・履歴・比較・採用を備える", async () => {
   assert.match(sources[1], /listCloudProposalRuns/);
   assert.match(sources[2], /selectCloudProposalAction/);
   assert.match(sources[2], /xl:grid-cols-3/);
-  assert.match(sources[2], /AI推論/);
+  assert.match(sources[2], /md:grid-cols-2/);
+  assert.match(sources[2], /この企画で進める/);
+  assert.doesNotMatch(sources.join("\n"), /run\.engine_version/);
+  assert.doesNotMatch(sources.join("\n"), /researchFindingKeys/);
+  assert.doesNotMatch(sources.join("\n"), /sourceUrls/);
+  assert.doesNotMatch(sources.join("\n"), /AI推論/);
 });
 
 test("企画migrationはimmutable Run・所有者RLS・1Report 1採用を持つ", async () => {
