@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-07-29 Codex（Cloud Release 0＋1 市場分析MVP）
+
+### 状態
+
+`READY_FOR_DRAFT_PR`。広範なCloud UI刷新から市場分析の縦型機能優先へ方針変更し、正式基点から独立ブランチを作成した。ローカル品質ゲートは完了。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-mvp`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+
+### 実装
+
+- Cloud制作ワークフローRelease計画と市場分析MVP仕様
+- 最小Cloud Shell、ワークフローSidebar、Dashboard、制作進行、Feature Flag
+- 市場分析の入力、定性分析、保存、履歴、再表示
+- 出典URL、取得日時、確認事実、事実／AI推論区分の永続化
+- 完了Reportからだけ利用できるAI企画提案への引継ぎ導線
+- `cloud_market_research_reports`と所有者RLS、rollback
+- 根拠のない市場数値を生成しない回帰テスト
+
+### 境界
+
+- Cloud Canvas Editor、Cloud AI Worker、Stripe、Marketplace、Desktopは変更していない
+- 成人向け分析は既存Cloud境界によりfail closed
+
+### 検証
+
+- lint: PASS
+- typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
+- 市場分析test: PASS（5/5）
+- hub:test: PASS（121/121）
+- deps:check: PASS
+- migration検証: PASS（17件）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+- push・Draft PR
+- Supabase対象環境へのmigration適用
+- Vercel Previewの認証済みE2E
+- CI・責任者承認
+
+---
+
 ## 2026-07-28（続き19） Claude Code（Phase D3-C: PR #46マージ完了、責任者の最終仕様確定、文書同期Draft PR作成）
 
 ### 状態
