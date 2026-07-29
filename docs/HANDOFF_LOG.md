@@ -35,8 +35,8 @@
 
 - lint: PASS
 - typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析test: PASS（5/5）
-- hub:test: PASS（121/121）
+- 市場分析test: PASS（6/6）
+- hub:test: PASS（122/122）
 - deps:check: PASS
 - migration検証: PASS（17件）
 - build: PASS

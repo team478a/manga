@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ContentRejectedError, ValidationError } from "./domain-errors.ts";
 
 export const cloudResearchFeatureEnabled = () =>
-  process.env.CLOUD_RESEARCH_MVP_ENABLED?.toLowerCase() !== "false";
+  process.env.CLOUD_RESEARCH_MVP_ENABLED?.toLowerCase() === "true";
 
 const evidenceSchema = z.object({
   title: z.string().trim().min(1).max(200),

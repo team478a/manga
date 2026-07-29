@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  cloudResearchFeatureEnabled,
   parseCloudResearchForm,
   runCloudMarketAnalysis,
 } from "../src/lib/cloud-research.ts";
@@ -42,6 +43,16 @@ test("市場分析は必須入力とHTTPS出典を検証する", () => {
       ),
     /HTTPS/,
   );
+});
+
+test("市場分析Feature Flagは未設定時にfail closedする", () => {
+  const previous = process.env.CLOUD_RESEARCH_MVP_ENABLED;
+  delete process.env.CLOUD_RESEARCH_MVP_ENABLED;
+  assert.equal(cloudResearchFeatureEnabled(), false);
+  process.env.CLOUD_RESEARCH_MVP_ENABLED = "true";
+  assert.equal(cloudResearchFeatureEnabled(), true);
+  if (previous === undefined) delete process.env.CLOUD_RESEARCH_MVP_ENABLED;
+  else process.env.CLOUD_RESEARCH_MVP_ENABLED = previous;
 });
 
 test("成人向け市場分析は既存Cloud境界で拒否する", () => {
@@ -109,4 +120,3 @@ test("市場分析migrationは所有者RLSとimmutableな保存範囲を持つ",
   assert.doesNotMatch(sql, /grant .*update.*authenticated/i);
   assert.match(sql, /containsGeneratedMarketNumbers/);
 });
-
