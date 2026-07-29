@@ -14,7 +14,7 @@
 
 - Branch: `codex/cloud-research-evaluation-v1`
 - Base: `codex/cloud-research-corroboration` / Draft PR #60
-- Draft PR: 作成準備中
+- Draft PR: [#61](https://github.com/team478a/manga/pull/61)
 
 ### 実装
 

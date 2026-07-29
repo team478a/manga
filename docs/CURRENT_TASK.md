@@ -18,6 +18,7 @@
 - 検索候補収集 Draft PR: [#58](https://github.com/team478a/manga/pull/58)
 - 事実候補抽出 Draft PR: [#59](https://github.com/team478a/manga/pull/59)
 - 複数出典照合 Draft PR: [#60](https://github.com/team478a/manga/pull/60)
+- Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
 - 計画: [`docs/cloud/CLOUD_RESEARCH_EVALUATION_V1_PLAN.md`](cloud/CLOUD_RESEARCH_EVALUATION_V1_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_EVALUATION_V1_SPEC.md`](cloud/CLOUD_RESEARCH_EVALUATION_V1_SPEC.md)
 
