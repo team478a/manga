@@ -1,16 +1,26 @@
 import Link from "next/link";
 import { ArrowRight, BarChart3, Lock } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
+import {
+  cloudAdultResearchFeatureEnabled,
+  getCloudAdultResearchAccess,
+} from "@/lib/cloud-adult-research";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
 
 export default async function CloudResearchHistoryPage() {
   const enabled = cloudResearchFeatureEnabled();
-  const reports = enabled
-    ? await requireProfile().then(({ profile }) =>
-        listCloudResearchReports(profile.id),
-      )
-    : [];
+  const authenticated = enabled ? await requireProfile() : null;
+  const reports =
+    enabled && authenticated
+      ? await listCloudResearchReports(authenticated.profile.id)
+      : [];
+  const adultAccess =
+    enabled &&
+    cloudAdultResearchFeatureEnabled() &&
+    authenticated
+      ? await getCloudAdultResearchAccess(authenticated.profile.id)
+      : null;
 
   return (
     <main className="page max-w-5xl">
@@ -28,6 +38,28 @@ export default async function CloudResearchHistoryPage() {
           </Link>
         ) : null}
       </div>
+      {enabled && cloudAdultResearchFeatureEnabled() ? (
+        <section className="mt-5 rounded-lg border border-violet-200 bg-violet-50 p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="font-bold text-violet-950">
+                成人向け市場分析オプション
+              </p>
+              <p className="mt-1 text-sm text-violet-900">
+                {adultAccess?.allowed
+                  ? "このアカウントは成人向け市場分析を利用できます。"
+                  : "利用には管理者の許可と18歳以上の確認・専用規約への同意が必要です。"}
+              </p>
+            </div>
+            <Link
+              className="button-secondary shrink-0 text-center"
+              href="/dashboard/research/adult-access"
+            >
+              利用状態を確認
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       {!enabled ? (
         <section className="panel mt-6 text-center">
@@ -51,6 +83,9 @@ export default async function CloudResearchHistoryPage() {
                   {report.input.genre}・{report.input.theme}
                 </h2>
                 <p className="mt-1 text-sm text-stone-600">
+                  {report.input.contentClass === "adult"
+                    ? "成人向け／"
+                    : "一般向け／"}
                   {report.input.platform}／
                   {report.input.publicationFormat === "series" ? "連載" : "読切"}
                   ／{report.input.pageCount}Page

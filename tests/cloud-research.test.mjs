@@ -101,10 +101,16 @@ test("市場分析Feature Flagは未設定時にfail closedする", () => {
   else process.env.CLOUD_RESEARCH_MVP_ENABLED = previous;
 });
 
-test("成人向け市場分析は既存Cloud境界で拒否する", () => {
+test("成人向け市場分析は既定で拒否し権限確認経路だけparseできる", () => {
   assert.throws(
     () => parseCloudResearchForm(validForm({ contentClass: "adult" })),
     /Desktop Adult/,
+  );
+  assert.equal(
+    parseCloudResearchForm(validForm({ contentClass: "adult" }), {
+      allowAdult: true,
+    }).contentClass,
+    "adult",
   );
 });
 

@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { createCloudResearchReportAction } from "@/app/dashboard/research/actions";
 import { requireProfile } from "@/lib/auth";
+import {
+  cloudAdultResearchFeatureEnabled,
+  getCloudAdultResearchAccess,
+} from "@/lib/cloud-adult-research";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import {
   cloudResearchSearchEnabled,
@@ -41,7 +45,12 @@ export default async function NewCloudResearchPage({
   }>;
 }) {
   const enabled = cloudResearchFeatureEnabled();
-  if (enabled) await requireProfile();
+  const authenticated = enabled ? await requireProfile() : null;
+  const adultFeatureEnabled = cloudAdultResearchFeatureEnabled();
+  const adultAccess =
+    enabled && adultFeatureEnabled && authenticated
+      ? await getCloudAdultResearchAccess(authenticated.profile.id)
+      : null;
   const {
     error,
     candidateTitle,
@@ -78,6 +87,17 @@ export default async function NewCloudResearchPage({
       <p className="mt-2 text-stone-600">
         確認済みの出典だけを使い、定性的な分析Reportを作成します。
       </p>
+      {enabled && adultFeatureEnabled ? (
+        <p className="mt-3 text-sm text-stone-600">
+          成人向け市場分析は許可制です。{" "}
+          <Link
+            className="font-bold text-violet-700 underline"
+            href="/dashboard/research/adult-access"
+          >
+            利用状態を確認
+          </Link>
+        </p>
+      ) : null}
       {error ? (
         <p
           className="mt-5 rounded-md bg-red-50 p-4 text-red-700"
@@ -127,7 +147,11 @@ export default async function NewCloudResearchPage({
               <Field id="contentClass" label="一般／成人向け区分">
                 <select className="field" id="contentClass" name="contentClass" required>
                   <option value="general">一般向け</option>
-                  <option value="adult">成人向け（Cloud実行対象外）</option>
+                  <option disabled={!adultAccess?.allowed} value="adult">
+                    {adultAccess?.allowed
+                      ? "成人向け（許可済み）"
+                      : "成人向け（利用許可が必要）"}
+                  </option>
                 </select>
               </Field>
               <Field id="publicationFormat" label="連載／読切">

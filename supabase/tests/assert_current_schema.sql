@@ -114,6 +114,35 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_adult_research_settings') is null
+     or to_regclass('public.cloud_adult_research_entitlements') is null
+     or to_regclass('public.cloud_adult_research_consents') is null
+     or to_regclass('public.cloud_adult_research_audit_logs') is null then
+    raise exception 'Cloud adult research access tables missing';
+  end if;
+  if to_regprocedure('public.can_use_cloud_adult_research()') is null
+     or to_regprocedure(
+       'public.set_cloud_adult_research_enabled(uuid,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.set_cloud_adult_research_entitlement(uuid,uuid,text,text,timestamp with time zone,text)'
+     ) is null then
+    raise exception 'Cloud adult research access functions missing';
+  end if;
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'cloud_market_research_reports'
+      and policyname = 'cloud_market_research_owner_insert'
+      and with_check like '%can_use_cloud_adult_research%'
+  ) then
+    raise exception 'Cloud adult research report RLS missing';
+  end if;
+end $$;
+
+do $$
+begin
   if not exists (
     select 1
     from pg_constraint

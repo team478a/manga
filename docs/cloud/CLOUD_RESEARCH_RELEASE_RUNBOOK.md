@@ -8,6 +8,33 @@
 
 対象PR: [#65](https://github.com/team478a/manga/pull/65)
 
+## Release 1.1 成人向け市場分析オプション
+
+成人向け市場分析は一般向けRelease 1とは独立した許可制オプションとして扱う。
+
+### 追加設定
+
+- `CLOUD_ADULT_RESEARCH_ENABLED=false`を初期値とする
+- migration `202607290008_cloud_adult_research_option.sql`適用前に有効化しない
+- `SUPABASE_SERVICE_ROLE_KEY`をVercel Server環境だけに設定する
+- `npm run cloud:release1:preflight`で値を表示せず設定状態を確認する
+
+### 有効化手順
+
+1. DB backupを確認する
+2. migration `202607290008`を適用する
+3. `/admin/adult-research`が「DB Kill Switch: 停止」を表示することを確認する
+4. `/admin/users/[id]`からテスト利用者へ`legacy_purchase`または`admin_grant`を付与する
+5. Previewだけで`CLOUD_ADULT_RESEARCH_ENABLED=true`へ変更する
+6. `/admin/adult-research`からDB Kill Switchを有効化する
+7. テスト利用者本人が18歳以上確認・専用規約同意を行う
+8. 成人向け市場分析の作成、保存、履歴、再表示を確認する
+9. 一時停止後、新規作成と過去Report再表示が拒否されることを確認する
+
+### 緊急停止
+
+最初に`/admin/adult-research`のDB Kill Switchを停止する。続いてVercelの`CLOUD_ADULT_RESEARCH_ENABLED=false`へ変更する。一般向け市場分析は停止しない。
+
 ## 1. 目的
 
 市場分析MVPを、DB適用前は停止した状態から安全に有効化し、入力・実行・保存・履歴・再表示・所有者RLSを確認する。
@@ -116,7 +143,7 @@ CLOUD_RESEARCH_SEARCH_ENABLED=false
 2. 必須制作条件を入力できる。
 3. HTTPS出典、取得日時、確認事実を1〜5件入力できる。
 4. HTTP URL、価格逆転、重複URL、不正日時が拒否される。
-5. 成人向け区分がDesktop Adult案内で拒否される。
+5. 一般向けRelease 1のE2Eでは一般向け区分を使用する。成人向けオプションは本書冒頭のRelease 1.1手順で別途確認する。
 6. 正常入力を実行するとReport詳細へ遷移する。
 7. 9分析項目、事実／入力条件・AI推論区分、根拠URL件数が表示される。
 8. 履歴へ戻ると新しいReportが先頭に表示される。

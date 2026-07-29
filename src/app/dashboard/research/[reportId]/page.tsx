@@ -39,9 +39,14 @@ export default async function CloudResearchReportPage({
             {new Date(report.completed_at).toLocaleString("ja-JP")}
           </p>
         </div>
-        <span className="rounded-full bg-green-50 px-4 py-2 text-sm font-bold text-green-800">
-          分析完了
-        </span>
+        <div className="flex flex-wrap gap-2">
+          <span className="rounded-full bg-stone-100 px-4 py-2 text-sm font-bold text-stone-700">
+            {report.input.contentClass === "adult" ? "成人向け" : "一般向け"}
+          </span>
+          <span className="rounded-full bg-green-50 px-4 py-2 text-sm font-bold text-green-800">
+            分析完了
+          </span>
+        </div>
       </div>
       {message ? (
         <p
@@ -60,6 +65,10 @@ export default async function CloudResearchReportPage({
             ["ジャンル", report.input.genre],
             ["想定読者", report.input.audience],
             ["プラットフォーム", report.input.platform],
+            [
+              "作品区分",
+              report.input.contentClass === "adult" ? "成人向け" : "一般向け",
+            ],
             ["テーマ", report.input.theme],
             ["参考作品", report.input.referenceWorks],
             ["価格帯", `${report.input.priceMin.toLocaleString("ja-JP")}〜${report.input.priceMax.toLocaleString("ja-JP")}円`],

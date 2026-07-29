@@ -108,7 +108,13 @@
       "description": "市場分析Reportの根拠品質・分野別引用に対応するv2 engineを許可",
       "forwardSha256": "df7dd46f4ecabce734182ae63ab4c4cda5143714393bb1529b6fe1c2afb44dd5",
       "rollbackSha256": "117ae2ee2f19abd71dc0cdc4b1995cecc34b81903a404706e9c9e1487699895b"
+    },
+    {
+      "id": "202607290008_cloud_adult_research_option",
+      "description": "許可制の成人向け市場分析権限・本人同意・監査・Report RLSを追加",
+      "forwardSha256": "c123fdfff8df78acd018551ccc7ff790d8fe40e1cfd2f9843956238281a0724a",
+      "rollbackSha256": "276b02443e7413645dc2595df15cd10644c047880e91dcddf674037ddc9734e9"
     }
   ],
-  "schemaSha256": "2c2b9126d8ed27e0a833662c73b3e634dd894631d7c995e411c428ed6d51003b"
+  "schemaSha256": "9e8f202fab47d5f5d02707248372637050c8061a6c5aeb03f3b03b1b57dd9e10"
 }

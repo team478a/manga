@@ -4,6 +4,47 @@
 
 ---
 
+## 2026-07-29 Codex（Cloud成人向け市場分析・許可制オプション）
+
+### 状態
+
+`READY_FOR_REVIEW`。一般向けRelease 1統合ブランチを基点に、成人向け市場分析だけを許可制Cloudオプションとして追加した。成人向け画像・本文生成、Stripe自動連携、作品公開・販売は追加していない。
+
+### ブランチ
+
+- Branch: `codex/cloud-adult-research-option-v1`
+- Base: `codex/cloud-release1-integration-v1` (`6491a7d`)
+- 親Draft PR: [#65](https://github.com/team478a/manga/pull/65)
+- Draft PR: 作成待ち
+
+### 実装
+
+- 環境FlagとDB Kill Switch
+- 管理者による個別許可、停止、期限、許可理由、メモ
+- 既存購入者用`legacy_purchase`
+- 本人の18歳以上確認、専用規約同意、同意解除
+- 成人向けReportの作成、履歴、再表示
+- RLSによる作成・再表示の強制拒否
+- 全体設定、個別権限、本人同意の監査ログ
+- migration、rollback、canonical schema、preflight、runbook
+
+### 検証
+
+- deps、lint、typecheck、Research Evaluation、Hub test（180/180）、build: PASS
+- migration静的検証: PASS（19/19）
+- migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
+- 成人向け集中テスト、Release 1 preflight、`git diff --check`: PASS
+
+### 責任者待ち
+
+- 成人向け専用規約本文と限定公開対象の承認
+- staging migration適用
+- Vercel環境FlagとDB Kill Switch有効化
+- Previewでの管理者許可・本人同意・縦型E2E
+- 本番公開判断
+
+---
+
 ## 2026-07-29 Codex（Cloud Release 1独立統合・公開前ハードニング）
 
 ### 状態
