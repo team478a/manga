@@ -4,6 +4,53 @@
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（複数出典照合）
+
+### 状態
+
+`IN_PROGRESS`。事実候補抽出にstackし、2つの検証済み出典を決定的ルールで照合する機能を実装した。ローカル品質ゲート成功。Draft PR作成、CI、外部E2E、責任者承認は未完了。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-corroboration`
+- Base: `codex/cloud-research-claim-extraction` / Draft PR #59
+
+### 実装
+
+- 2つの異なるHTTPS URLを認証・利用制限後に並行取得
+- 分野別候補から指標語、数値、単位、年を決定的抽出
+- 定量根拠一致、相反可能性、関連・比較不能の保守的分類
+- 相反可能性を優先し最大6組へ制限
+- 同一domainを独立した裏付けとして扱わない警告
+- 両原文を確認してから出典1・2へ明示採用するUI
+- full text、比較結果のDB／log保存なし
+- 7ケースのgolden setとAction／UI回帰テスト
+
+### 検証
+
+- hub:test: PASS（197/197）
+- typecheck: PASS（Hub + Desktop）
+- lint: PASS
+- deps:check: PASS
+- migrations: PASS（23件）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+- Draft PR作成と全CI
+- 実allowlist出典での一致・相反可能性・比較不能表示の確認
+- 原文確認 → 出典1・2採用 → Report保存E2E
+- golden setの実データ拡張とprecision／recall基準の策定
+
+### 注意事項
+
+- `potential_conflict`は誤りや虚偽の断定ではない。指標定義、母集団、時点、調査方法を人が確認する。
+- LLM、外部AI API、DB migrationは追加していない。
+- PR #50〜#59と本branchを外部ゲートと責任者承認なしにmergeしない。
+
+---
+
 ## 2026-07-29 Codex → 次担当AI（事実候補抽出）
 
 ### 状態
