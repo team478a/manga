@@ -4,6 +4,7 @@ import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { parseCloudResearchSearchAdoption } from "@/lib/cloud-research-search";
 import { cloudResearchSourceVerificationEnabled } from "@/lib/cloud-research-source-verification";
+import { ClaimComparison } from "./claim-comparison";
 import { ClaimExtractor } from "./claim-extractor";
 
 function Field({
@@ -86,11 +87,18 @@ export default async function NewCloudResearchPage({
       ) : (
         <>
           {adoptedCandidate ? (
-            <ClaimExtractor
-              enabled={sourceVerificationEnabled}
-              topic={adoptedCandidate.topic}
-              url={adoptedCandidate.url}
-            />
+            <>
+              <ClaimExtractor
+                enabled={sourceVerificationEnabled}
+                topic={adoptedCandidate.topic}
+                url={adoptedCandidate.url}
+              />
+              <ClaimComparison
+                enabled={sourceVerificationEnabled}
+                primaryUrl={adoptedCandidate.url}
+                topic={adoptedCandidate.topic}
+              />
+            </>
           ) : null}
           <form action={createCloudResearchReportAction} className="mt-6 space-y-6">
           <section className="panel">
