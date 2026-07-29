@@ -138,6 +138,9 @@ for (const required of [
   "cloud_scenario_runs",
   "create_cloud_scenario_run",
   "cloud_scenario_confirmations",
+  "cloud_manga_generations",
+  "create_cloud_manga_generation",
+  "build_cloud_manga_panels",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

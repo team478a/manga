@@ -114,7 +114,13 @@
       "description": "採用企画から生成するシナリオ版、確定snapshot、所有者RLSを追加",
       "forwardSha256": "ed6cd0a002df05599d80dd0e875c46c564d437633c6609a2ec8adaa744458a06",
       "rollbackSha256": "dc15b245b404bae5ee604e6efc99da307ad3c521c49038ff33185507ff9afd15"
+    },
+    {
+      "id": "202607290004_cloud_manga_generations",
+      "description": "確定シナリオからCloud ProjectとCanvas下書きを原子的に作成",
+      "forwardSha256": "baeafbe7cef00677f8f7a027b78dbbe10a7233bf4f574d50e3936d4895e01e8d",
+      "rollbackSha256": "87ce5cf0868060ab07c36e45fc73982fb0dbc887b3be68e6fea0c631b894324d"
     }
   ],
-  "schemaSha256": "0af62242c24670be7208fd8b6744645310c8100909465c213914299120bbb505"
+  "schemaSha256": "fe96f3ccd66a8957f057bbc33f238dd76efd6ba672754f4187ef62560044db17"
 }

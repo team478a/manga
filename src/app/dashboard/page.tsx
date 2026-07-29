@@ -7,6 +7,8 @@ import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
 import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
 import { listCloudScenarioRuns } from "@/lib/cloud-scenario-server";
+import { cloudMangaFeatureEnabled } from "@/lib/cloud-manga";
+import { listCloudMangaGenerations } from "@/lib/cloud-manga-server";
 
 export default async function DashboardPage() {
   const { profile } = await requireProfile();
@@ -21,6 +23,10 @@ export default async function DashboardPage() {
   const scenarioRuns = scenarioEnabled
     ? await listCloudScenarioRuns(profile.id)
     : [];
+  const mangaEnabled = scenarioEnabled && cloudMangaFeatureEnabled();
+  const mangaGenerations = mangaEnabled
+    ? await listCloudMangaGenerations(profile.id)
+    : [];
 
   return (
     <main className="page max-w-7xl">
@@ -33,7 +39,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">
-          Release 3
+          Release 4
         </span>
       </div>
 
@@ -113,8 +119,21 @@ export default async function DashboardPage() {
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </section>
+        <section className="panel">
+          <h2 className="text-xl font-bold">マンガ下書きの状況</h2>
+          <p className="mt-3 text-3xl font-bold text-violet-800">
+            {mangaGenerations.length}
+            <span className="ml-2 text-sm font-normal text-stone-500">
+              Cloud Project
+            </span>
+          </p>
+          <Link className="button-secondary mt-5 w-full" href="/dashboard/manga">
+            マンガ下書き履歴を見る
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </section>
         <section className="panel lg:col-span-2">
-          <h2 className="text-xl font-bold">Release 3 完了条件</h2>
+          <h2 className="text-xl font-bold">Release 4 完了条件</h2>
           <ul className="mt-4 space-y-3 text-sm text-stone-700">
             {[
               "制作条件を入力",
@@ -123,6 +142,7 @@ export default async function DashboardPage() {
               "履歴から再表示",
               "3案を比較して1案を採用",
               "初稿・改稿版を保存して1版を確定",
+              "全Pageのコマ割り下書きを作成してCanvasで開く",
             ].map((item) => (
               <li className="flex items-center gap-2" key={item}>
                 <CheckCircle2 className="h-4 w-4 text-violet-600" />
