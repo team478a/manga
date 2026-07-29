@@ -1,7 +1,9 @@
 # MANGAI Cloud 市場分析MVP公開・受入れ手順
 
-作成日: 2026-07-29  
-対象: Release 0＋Release 1  
+作成日: 2026-07-29
+
+対象: Release 0＋Release 1
+
 対象PR: [#50](https://github.com/team478a/manga/pull/50)
 
 ## 1. 目的
