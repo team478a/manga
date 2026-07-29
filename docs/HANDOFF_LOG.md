@@ -4,6 +4,54 @@
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（市場分析Result-only UI）
+
+### 状態
+
+`IN_PROGRESS`。Research Evaluation v1にstackし、利用者向け市場分析画面から内部ロジックを非表示にした。全ローカル品質ゲートは成功。Draft PR、責任者承認は未完了。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-result-only-ui`
+- Base: `codex/cloud-research-evaluation-v1` / Draft PR #61
+- Draft PR: 作成準備中
+
+### 実装
+
+- Reportは入力条件、分析結果、参照情報、次工程導線だけを表示
+- engine version、品質score／内訳、根拠区分、confidence、内部limitationsを非表示
+- 出典のMIME、byte数、hash、検証状態、内部分類を非表示
+- 候補抽出の一致語、offset、hashを非表示
+- 出典照合の理由、共通指標、共通年、confidenceを非表示
+- 内部保存・検証・Research Evaluation v1は維持
+- Result-only表示契約の回帰テストを追加
+
+### 検証
+
+- focused test: PASS（23/23）
+- research:eval: PASS（49/49）
+- hub:test: PASS（202/202）
+- typecheck: PASS（Hub + Desktop）
+- lint: PASS
+- deps:check: PASS
+- migrations: PASS（23件）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+- Draft PR作成と全CI確認
+- 認証済みPreviewでのReport表示確認
+- 責任者による表示項目確認
+
+### 注意事項
+
+- UIから隠しただけで、出典URL、取得日時、事実／推論区分、品質scoreは内部に保存される。
+- URLを採用できない理由など入力時の安全案内は維持する。
+- PR #50〜#61と本branchを外部ゲートと責任者承認なしにmergeしない。
+
+---
+
 ## 2026-07-29 Codex → 次担当AI（Research Evaluation v1）
 
 ### 状態

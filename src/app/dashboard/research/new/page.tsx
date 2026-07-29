@@ -238,7 +238,7 @@ export default async function NewCloudResearchPage({
           </section>
 
           <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-950">
-            分析結果は事実と自動推論を区分して保存します。根拠のない市場規模・販売数・成長率は生成しません。
+            出典を確認できる形で分析結果を保存します。根拠のない市場規模・販売数・成長率は表示しません。
           </p>
           <button className="button w-full bg-violet-700 hover:bg-violet-800" type="submit">
             市場分析を実行して保存
