@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createCloudResearchReportAction } from "@/app/dashboard/research/actions";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
+import { cloudResearchSourceVerificationEnabled } from "@/lib/cloud-research-source-verification";
 
 function Field({
   id,
@@ -30,6 +31,7 @@ export default async function NewCloudResearchPage({
   await requireProfile();
   const { error } = await searchParams;
   const enabled = cloudResearchFeatureEnabled();
+  const sourceVerificationEnabled = cloudResearchSourceVerificationEnabled();
   const now = new Date().toISOString().slice(0, 16);
 
   return (
@@ -106,6 +108,18 @@ export default async function NewCloudResearchPage({
               id="research-evidence-help"
             >
               最低1件必須です。出典種別と、その事実が支える分野を選択してください。市場数値は出典に記載された内容だけを事実メモへ入力してください。
+            </p>
+            <p
+              className={`mt-3 rounded-lg p-3 text-sm ${
+                sourceVerificationEnabled
+                  ? "bg-green-50 text-green-900"
+                  : "bg-amber-50 text-amber-950"
+              }`}
+              role="status"
+            >
+              {sourceVerificationEnabled
+                ? "Server取得検証は有効です。許可済みドメインのHTTPS出典だけを保存できます。"
+                : "Server取得検証は現在無効です。URLと事実メモは未検証の出典として保存されます。"}
             </p>
             {[0, 1, 2, 3, 4].map((index) => (
               <fieldset

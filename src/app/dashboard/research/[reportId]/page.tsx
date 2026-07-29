@@ -110,7 +110,7 @@ export default async function CloudResearchReportPage({
                   : "低"}
             </span>
           </div>
-          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
+          <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
             <div className="rounded-lg bg-stone-50 p-3">
               <dt className="text-stone-500">独立ドメイン</dt>
               <dd className="mt-1 font-bold">{report.result.quality.independentDomains}件</dd>
@@ -122,6 +122,12 @@ export default async function CloudResearchReportPage({
             <div className="rounded-lg bg-stone-50 p-3">
               <dt className="text-stone-500">根拠分野の網羅率</dt>
               <dd className="mt-1 font-bold">{report.result.quality.coveragePercent}%</dd>
+            </div>
+            <div className="rounded-lg bg-stone-50 p-3">
+              <dt className="text-stone-500">Server取得検証</dt>
+              <dd className="mt-1 font-bold">
+                {report.result.quality.verifiedSourceCount ?? 0}件
+              </dd>
             </div>
           </dl>
           {report.result.quality.warnings.length ? (
@@ -183,6 +189,15 @@ export default async function CloudResearchReportPage({
                   種別: {sourceTypeLabels[source.sourceType]}／根拠分野: {source.topics?.join("、")}
                 </p>
               ) : null}
+              {source.verification ? (
+                <p className="mt-2 rounded-md bg-green-50 p-2 text-xs text-green-800">
+                  Server取得検証済み／{source.verification.contentType}／
+                  {source.verification.byteSize.toLocaleString("ja-JP")} bytes／
+                  SHA-256 {source.verification.sha256.slice(0, 12)}…
+                </p>
+              ) : (
+                <p className="mt-2 text-xs text-amber-800">Server取得未検証</p>
+              )}
             </article>
           ))}
         </div>
