@@ -1293,7 +1293,7 @@ IN_PROGRESS（Release 6ローカル実装・品質ゲート完了、外部E2E待
 
 - Branch: `codex/cloud-sales-preparation-mvp`
 - Base: `codex/cloud-work-management-mvp` / Draft PR #54
-- Draft PR: 作成予定
+- Draft PR: [#55](https://github.com/team478a/manga/pull/55)
 
 ### 完了
 

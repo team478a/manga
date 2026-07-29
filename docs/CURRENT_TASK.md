@@ -12,7 +12,7 @@
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
 - Release 4 Draft PR: [#53](https://github.com/team478a/manga/pull/53)
 - Release 5 Draft PR: [#54](https://github.com/team478a/manga/pull/54)
-- Release 6 Draft PR: 作成予定
+- Release 6 Draft PR: [#55](https://github.com/team478a/manga/pull/55)
 - 計画: [`docs/cloud/CLOUD_SALES_PREPARATION_RELEASE_PLAN.md`](cloud/CLOUD_SALES_PREPARATION_RELEASE_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_SALES_PREPARATION_MVP_SPEC.md`](cloud/CLOUD_SALES_PREPARATION_MVP_SPEC.md)
 
