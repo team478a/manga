@@ -8,7 +8,7 @@
 
 ### 状態
 
-`IN_PROGRESS`。事実候補抽出にstackし、2つの検証済み出典を決定的ルールで照合する機能を実装した。ローカル品質ゲート成功。Draft PR #60作成済み。CI、外部E2E、責任者承認は未完了。
+`IN_PROGRESS`。事実候補抽出にstackし、2つの検証済み出典を決定的ルールで照合する機能を実装した。ローカル品質ゲートとDraft PR #60の全CIが成功。外部E2E、責任者承認待ち。
 
 ### ブランチ
 
@@ -36,10 +36,10 @@
 - migrations: PASS（23件）
 - build: PASS
 - git diff --check: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ### 未完了
 
-- Draft PR作成と全CI
 - 実allowlist出典での一致・相反可能性・比較不能表示の確認
 - 原文確認 → 出典1・2採用 → Report保存E2E
 - golden setの実データ拡張とprecision／recall基準の策定
