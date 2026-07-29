@@ -8,7 +8,7 @@
 
 ### 状態
 
-`IN_PROGRESS`。出典Server検証基盤にstackし、Research Discoveryを実装した。ローカル品質ゲート完了、Draft PR #58作成済み。CI、外部API設定・E2E、責任者承認待ち。
+`IN_PROGRESS`。出典Server検証基盤にstackし、Research Discoveryを実装した。ローカル品質ゲートとDraft PR #58の全CIが成功。外部API設定・E2E、責任者承認待ち。
 
 ### ブランチ
 
@@ -36,10 +36,10 @@
 - migrations: PASS（23件）
 - build: PASS
 - git diff --check: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ### 未完了
 
-- Draft PR #58 CI
 - Brave契約・課金承認・API key発行
 - Vercel Feature Flag・秘密値・allowlist設定
 - 実検索 → 原文確認 → 採用 → Server検証 → Report保存E2E
