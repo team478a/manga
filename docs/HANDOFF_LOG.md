@@ -1132,6 +1132,55 @@ READY_FOR_REVIEW（統合完了、Draft PR作成後は責任者レビュー待�
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（Release 3）
+
+### 状態
+
+IN_PROGRESS（Release 3ローカル実装・品質ゲート完了、外部E2E待ち）
+
+### ブランチ
+
+- Branch: `codex/cloud-scenario-mvp`
+- Base: `codex/cloud-proposal-mvp` / Draft PR #51
+
+### 完了
+
+- Release 3計画・仕様
+- 採用企画から人物、三幕、シーン、ページ配分を生成する`scenario-rules-v1`
+- 初稿・改稿Runのimmutable保存、履歴、詳細、版履歴
+- テンポ／人物変化／分かりやすさの改稿方針
+- 原子的な版番号採番と、1採用企画1確定snapshot
+- 確定後のみRelease 4への引継ぎ準備完了を表示
+- 所有者RLS、採用候補・Report・出典URL・ページ数のDB照合
+- 成人向け、出典なし、不正ページ数の拒否
+- AI推論・制作仮説であることの画面表示
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（152/152）
+- scenario focused tests: PASS（10/10）
+- migrations: PASS（19件）
+- build: PASS
+
+### 外部環境待ち
+
+- Release 1／2／3 migration適用
+- Vercelで3つのFeature Flagを有効化
+- 市場分析からシナリオ確定までの実ブラウザ縦型E2E
+- 別利用者RLS、確定後の改稿拒否、390／768／1280px受入れ
+- CI、責任者承認
+
+### 注意事項
+
+- Release 1／2をDraft解除・mergeしていない。
+- Cloud AI Queue／Worker／Provider Gateway、Desktopは変更していない。
+- Release 3 branchはRelease 2にstackしている。外部ゲート完了までmergeしない。
+
+---
+
 ## 追記テンプレート
 
 ## 2026-07-29 Codex → 次担当AI

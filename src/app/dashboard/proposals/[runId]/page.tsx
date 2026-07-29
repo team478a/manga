@@ -2,6 +2,7 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { selectCloudProposalAction } from "@/app/dashboard/proposals/actions";
+import { createCloudScenarioAction } from "@/app/dashboard/scenarios/actions";
 import { requireProfile } from "@/lib/auth";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import {
@@ -9,6 +10,8 @@ import {
   getCloudProposalSelection,
 } from "@/lib/cloud-proposal-server";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
+import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
+import { listCloudScenarioRuns } from "@/lib/cloud-scenario-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 const directionLabels = {
@@ -37,6 +40,11 @@ export default async function CloudProposalRunPage({
     profile.id,
     run.research_report_id,
   );
+  const scenarioEnabled = cloudScenarioFeatureEnabled();
+  const scenarioRuns =
+    selection && scenarioEnabled
+      ? await listCloudScenarioRuns(profile.id, selection.id)
+      : [];
 
   return (
     <main className="page max-w-7xl">
@@ -125,11 +133,30 @@ export default async function CloudProposalRunPage({
       {selection ? (
         <section className="mt-6 rounded-lg border border-violet-200 bg-violet-50 p-5">
           <h2 className="text-xl font-bold text-violet-950">
-            Release 3への引継ぎ準備完了
+            シナリオ生成へ
           </h2>
           <p className="mt-2 text-violet-900">
-            採用した企画snapshotを固定しました。シナリオ生成は次Releaseで実装します。
+            採用した企画snapshotを固定しました。この企画からページ配分付きの初稿を作成できます。
           </p>
+          {scenarioRuns[0] ? (
+            <Link
+              className="button mt-4 bg-violet-700 hover:bg-violet-800"
+              href={`/dashboard/scenarios/${scenarioRuns[0].id}`}
+            >
+              最新シナリオを開く
+            </Link>
+          ) : scenarioEnabled ? (
+            <form action={createCloudScenarioAction} className="mt-4">
+              <input name="selectionId" type="hidden" value={selection.id} />
+              <button className="button bg-violet-700 hover:bg-violet-800" type="submit">
+                シナリオ初稿を生成
+              </button>
+            </form>
+          ) : (
+            <p className="mt-4 text-sm font-bold text-violet-700">
+              シナリオ生成はFeature Flagが有効になるまで停止中です。
+            </p>
+          )}
         </section>
       ) : null}
     </main>

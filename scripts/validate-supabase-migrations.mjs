@@ -135,6 +135,9 @@ for (const required of [
   "cloud_market_research_reports",
   "cloud_story_proposal_runs",
   "cloud_story_proposal_selections",
+  "cloud_scenario_runs",
+  "create_cloud_scenario_run",
+  "cloud_scenario_confirmations",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

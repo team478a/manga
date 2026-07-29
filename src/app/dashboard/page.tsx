@@ -5,6 +5,8 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
+import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
+import { listCloudScenarioRuns } from "@/lib/cloud-scenario-server";
 
 export default async function DashboardPage() {
   const { profile } = await requireProfile();
@@ -14,6 +16,10 @@ export default async function DashboardPage() {
   const proposalEnabled = enabled && cloudProposalFeatureEnabled();
   const proposalRuns = proposalEnabled
     ? await listCloudProposalRuns(profile.id)
+    : [];
+  const scenarioEnabled = proposalEnabled && cloudScenarioFeatureEnabled();
+  const scenarioRuns = scenarioEnabled
+    ? await listCloudScenarioRuns(profile.id)
     : [];
 
   return (
@@ -27,7 +33,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">
-          Release 2
+          Release 3
         </span>
       </div>
 
@@ -96,8 +102,19 @@ export default async function DashboardPage() {
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </section>
+        <section className="panel">
+          <h2 className="text-xl font-bold">シナリオ生成の状況</h2>
+          <p className="mt-3 text-3xl font-bold text-violet-800">
+            {scenarioRuns.length}
+            <span className="ml-2 text-sm font-normal text-stone-500">保存済み版</span>
+          </p>
+          <Link className="button-secondary mt-5 w-full" href="/dashboard/scenarios">
+            シナリオ履歴を見る
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </section>
         <section className="panel lg:col-span-2">
-          <h2 className="text-xl font-bold">Release 2 完了条件</h2>
+          <h2 className="text-xl font-bold">Release 3 完了条件</h2>
           <ul className="mt-4 space-y-3 text-sm text-stone-700">
             {[
               "制作条件を入力",
@@ -105,6 +122,7 @@ export default async function DashboardPage() {
               "分析結果を保存",
               "履歴から再表示",
               "3案を比較して1案を採用",
+              "初稿・改稿版を保存して1版を確定",
             ].map((item) => (
               <li className="flex items-center gap-2" key={item}>
                 <CheckCircle2 className="h-4 w-4 text-violet-600" />
