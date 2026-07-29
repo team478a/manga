@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-07-30 Codex（市場分析AI自動化・管理画面API設定）
+
+### 状態
+
+`IMPLEMENTED_LOCAL`。一般向け市場分析をプルダウン中心の入力とOpenAI Web検索付き自動分析へ変更し、管理者がAPIキーをSupabase Vaultへ登録できる基盤を追加した。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-ai-auto-ux-v1`
+- Base: `codex/cloud-adult-planning-option-v1` (`58a18b9`)
+
+### 実装
+
+- 利用者の出典URL・確認事実入力を廃止
+- OpenAI Responses API、Web search、Structured Outputs
+- 引用のない応答を保存しない安全制御
+- 管理者用APIキー・model・停止設定
+- Supabase Vault保存とservice-role限定復号
+- 秘密値を含まない管理監査
+- migration、rollback、canonical schema、テスト
+
+### 安全境界
+
+- 一般向けだけを外部AIへ送信
+- 成人向けはProvider取得前に拒否
+- APIキーの再表示、ログ、URL、通常テーブル保存なし
+- migration適用、キー登録、有効化、本番公開は未実施
+
+---
+
 ## 2026-07-29 Codex（Cloud成人向け企画ブリーフ・機能単位権限）
 
 ### 状態

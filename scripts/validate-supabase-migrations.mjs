@@ -144,6 +144,10 @@ for (const required of [
   "cloud_adult_planning_briefs",
   "can_use_cloud_adult_feature",
   "set_cloud_adult_feature_grant",
+  "cloud_research_ai_settings",
+  "cloud_research_ai_audit_logs",
+  "set_cloud_research_ai_provider",
+  "get_cloud_research_ai_runtime_config",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

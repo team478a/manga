@@ -114,6 +114,20 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_research_ai_settings') is null
+     or to_regclass('public.cloud_research_ai_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_research_ai_provider(uuid,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_research_ai_runtime_config()'
+     ) is null then
+    raise exception 'Current schema Cloud research AI Provider objects missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_adult_feature_grants') is null
      or to_regclass('public.cloud_adult_planning_briefs') is null then
     raise exception 'Current schema Cloud adult planning tables missing';

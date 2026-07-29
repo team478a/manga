@@ -177,8 +177,5 @@ test("照合Actionは認証・利用制限後に2出典を取得し全文を返�
   assert.match(client, /両方を出典1・2へ採用/);
   assert.match(client, /sourceFact1/);
   assert.match(client, /出典2の種別/);
-  assert.ok(
-    page.indexOf("<ClaimComparison") <
-      page.indexOf("<form action={createCloudResearchReportAction}"),
-  );
+  assert.doesNotMatch(page, /<ClaimComparison/);
 });

@@ -85,3 +85,17 @@ begin
     raise exception 'sales package storage policies remain after rollback';
   end if;
 end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_research_ai_settings') is not null
+     or to_regclass('public.cloud_research_ai_audit_logs') is not null
+     or to_regprocedure(
+       'public.set_cloud_research_ai_provider(uuid,text,text,boolean)'
+     ) is not null
+     or to_regprocedure(
+       'public.get_cloud_research_ai_runtime_config()'
+     ) is not null then
+    raise exception 'Cloud research AI Provider objects remain after rollback';
+  end if;
+end $$;

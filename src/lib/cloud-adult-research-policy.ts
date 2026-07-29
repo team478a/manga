@@ -95,7 +95,7 @@ export function evaluateCloudAdultResearchAccess({
 }
 
 export function assertCloudResearchContentAllowed(
-  input: CloudResearchInput,
+  input: Pick<CloudResearchInput, "contentClass">,
   access: CloudAdultResearchAccess,
 ) {
   if (input.contentClass === "general") return;

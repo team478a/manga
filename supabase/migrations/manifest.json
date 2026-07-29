@@ -120,7 +120,13 @@
       "description": "成人向け企画の機能単位許可・企画ブリーフ・所有者RLSを追加",
       "forwardSha256": "a7d9ede8f0bef7281b600a10a93dddbe49c1d1bf545e90eb7911a84c2cf032fa",
       "rollbackSha256": "79f92b2316099886e6be42b3b5f70ff3696e881659a3f64f23f0bbec265f3589"
+    },
+    {
+      "id": "202607300001_cloud_research_ai_provider",
+      "description": "市場分析用OpenAI設定をSupabase Vaultへ保存し管理操作を監査",
+      "forwardSha256": "449e80c2862cefd84a17be646764ca51eeb898a84c47acbb540990002fd86a1d",
+      "rollbackSha256": "1a89e83fe8b569d4abe0c4cff6593f51306cb7e4073d17245277057fcdd96368"
     }
   ],
-  "schemaSha256": "ee522a58f233bc0394a1180bad8ed2b0e346b6835032469f0d9d9eab0fd12a8f"
+  "schemaSha256": "237444e57aa0949e7f796532a237c73f46f9198291e69679eaaa95ba481c2bf9"
 }

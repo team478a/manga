@@ -13,10 +13,9 @@ test("市場分析Formはlabel・補足説明・動的messageを支援技術へ�
   assert.match(form, /<label className="label" htmlFor=\{id\}>/);
   assert.match(form, /role="alert"/);
   assert.match(form, /role="status"/);
-  assert.match(form, /id="research-evidence-help"/);
-  assert.match(form, /aria-describedby="research-evidence-help"/);
-  assert.match(form, /sourceType/);
-  assert.match(form, /sourceTopics/);
+  assert.match(form, /出典URLや確認事実の手入力は不要/);
+  assert.match(form, /<select className="field"/);
+  assert.doesNotMatch(form, /sourceType|sourceTopics|sourceFact/);
   assert.match(report, /aria-live="polite"/);
   assert.match(report, /role="status"/);
 });
@@ -50,7 +49,7 @@ test("市場分析の主要操作はbuttonまたはlinkとして実装される"
     readSource("../src/app/dashboard/research/page.tsx"),
     readSource("../src/app/dashboard/research/[reportId]/page.tsx"),
   ]);
-  assert.match(form, /<button[\s\S]*type="submit"/);
+  assert.match(form, /<ResearchSubmitButton \/>/);
   assert.match(history, /<Link[\s\S]*新しい市場分析/);
   assert.match(report, /<Link[\s\S]*AI企画提案の準備へ/);
   assert.doesNotMatch(
@@ -111,17 +110,17 @@ test("市場分析RouteはFeature Flag停止時に認証・DBより先にfail cl
   }
 });
 
-test("検索・出典検証が未設定でも手動出典入力を継続できる", async () => {
+test("AI市場分析は利用者へ出典入力を要求せずProvider未設定を安全に案内する", async () => {
   const [form, discovery, verification] = await Promise.all([
     readSource("../src/app/dashboard/research/new/page.tsx"),
     readSource("../src/app/dashboard/research/discover/page.tsx"),
     readSource("../src/lib/cloud-research-source-verification.ts"),
   ]);
 
-  assert.match(form, /出典候補検索は未設定です/);
-  assert.match(form, /手動入力して市場分析を続けられます/);
+  assert.match(form, /出典URLや確認事実の手入力は不要/);
+  assert.doesNotMatch(form, /手動入力して市場分析を続けられます/);
   assert.match(discovery, /市場分析入力画面で出典を手動入力できます/);
-  assert.match(form, /Server取得検証は現在無効です/);
+  assert.doesNotMatch(form, /Server取得検証は現在無効です/);
   assert.match(verification, /cloudResearchSourceVerificationEnabled\(\)[\s\S]*verifyCloudResearchSources\(input\)[\s\S]*: input/);
 });
 

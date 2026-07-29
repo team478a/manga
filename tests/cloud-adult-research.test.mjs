@@ -115,14 +115,14 @@ test("一般向けは成人向け権限状態の影響を受けない", () => {
   );
 });
 
-test("成人向け権限確認は出典取得より前に実行される", async () => {
+test("成人向け権限確認は外部AI呼出より前に実行される", async () => {
   const action = await readFile(
     new URL("../src/app/dashboard/research/actions.ts", import.meta.url),
     "utf8",
   );
   assert.ok(
     action.indexOf("assertCloudResearchContentAllowed") <
-      action.indexOf("maybeVerifyCloudResearchSources"),
+      action.indexOf("runCloudResearchAiAnalysis"),
   );
 });
 
@@ -157,7 +157,8 @@ test("成人向けUIは許可・本人同意・管理者停止を提供する", 
       "utf8",
     ),
   ]);
-  assert.match(form, /disabled=\{!adultAccess\?\.allowed\}/);
+  assert.match(form, /成人向け（AI接続は準備中）/);
+  assert.match(form, /明示許可なしに外部AIへ送信しません/);
   assert.match(accessPage, /私は18歳以上です/);
   assert.match(accessPage, /専用規約/);
   assert.match(adminAction, /requireAdmin/);

@@ -297,15 +297,14 @@ test("複数出典検証は入力本文を変えずverificationだけを追加�
   assert.equal(input.evidence[0].verification, undefined);
 });
 
-test("保存Actionは分析と永続化より前にServer出典検証を通す", async () => {
+test("保存ActionはAIが確認した出典付き結果だけを永続化する", async () => {
   const source = await readFile(
     new URL("../src/app/dashboard/research/actions.ts", import.meta.url),
     "utf8",
   );
-  const verifyAt = source.indexOf("maybeVerifyCloudResearchSources(");
-  const analyzeAt = source.indexOf("runCloudMarketAnalysis(input)");
+  const analyzeAt = source.indexOf("runCloudResearchAiAnalysis({");
   const persistAt = source.indexOf("createCloudResearchReport({");
-  assert.ok(verifyAt >= 0);
-  assert.ok(verifyAt < analyzeAt);
+  assert.doesNotMatch(source, /maybeVerifyCloudResearchSources/);
+  assert.ok(analyzeAt >= 0);
   assert.ok(analyzeAt < persistAt);
 });
