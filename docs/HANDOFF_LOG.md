@@ -8,7 +8,7 @@
 
 ### 状態
 
-`IN_PROGRESS`。Research Evaluation v1にstackし、利用者向け市場分析画面から内部ロジックを非表示にした。全ローカル品質ゲートは成功。Draft PR、責任者承認は未完了。
+`IN_PROGRESS`。Research Evaluation v1にstackし、利用者向け市場分析画面から内部ロジックを非表示にした。全ローカル品質ゲートとDraft PR #62の全CIが成功。認証済みPreview確認、責任者承認待ち。
 
 ### ブランチ
 
@@ -37,10 +37,10 @@
 - migrations: PASS（23件）
 - build: PASS
 - git diff --check: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ### 未完了
 
-- Draft PR作成と全CI確認
 - 認証済みPreviewでのReport表示確認
 - 責任者による表示項目確認
 

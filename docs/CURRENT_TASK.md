@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（市場分析Result-only UI実装済み、全検証／Draft PR／責任者承認待ち）
+- 状態: `IN_PROGRESS`（市場分析Result-only UI実装・Draft PR全CI完了、Preview確認／責任者承認待ち）
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-research-evaluation-v1`（Draft PR #61）
 - Branch: `codex/cloud-research-result-only-ui`
@@ -49,6 +49,7 @@
 - `npm run db:migrations:validate`: PASS（23件）
 - `npm run build`: PASS
 - `git diff --check`: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ## Research Evaluation v1 実装済み
 
