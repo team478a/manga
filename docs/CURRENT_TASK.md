@@ -3,10 +3,10 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（検索候補収集基盤の実装・全CI完了、外部E2E／責任者承認待ち）
+- 状態: `IN_PROGRESS`（事実候補抽出の実装・全CI完了、外部E2E／責任者承認待ち）
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-research-source-verification`（Draft PR #57）
-- Branch: `codex/cloud-research-search-foundation`
+- Base: `codex/cloud-research-search-foundation`（Draft PR #58）
+- Branch: `codex/cloud-research-claim-extraction`
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
@@ -16,12 +16,26 @@
 - Research Quality v2 Draft PR: [#56](https://github.com/team478a/manga/pull/56)
 - 出典Server検証 Draft PR: [#57](https://github.com/team478a/manga/pull/57)
 - 検索候補収集 Draft PR: [#58](https://github.com/team478a/manga/pull/58)
-- 計画: [`docs/cloud/CLOUD_RESEARCH_SEARCH_FOUNDATION_PLAN.md`](cloud/CLOUD_RESEARCH_SEARCH_FOUNDATION_PLAN.md)
-- 仕様: [`docs/cloud/CLOUD_RESEARCH_SEARCH_FOUNDATION_SPEC.md`](cloud/CLOUD_RESEARCH_SEARCH_FOUNDATION_SPEC.md)
+- 事実候補抽出 Draft PR: [#59](https://github.com/team478a/manga/pull/59)
+- 計画: [`docs/cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_PLAN.md`](cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_PLAN.md)
+- 仕様: [`docs/cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_SPEC.md`](cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_SPEC.md)
 
 ## 現在の目的
 
-Web検索から出典候補を収集し、原文確認と安全なServer検証を経て市場分析へ採用できるResearch Discoveryを完成させる。
+検証済み出典から分野別の原文候補を抽出し、人が原文と照合したうえで事実メモへ採用できるResearch Claim Extractionを完成させる。
+
+## 事実候補抽出 実装済み
+
+- 検証済みresponseから一時的な正規化本文snapshotを作成
+- HTML noise除去、entity decode、plain text／JSON対応、重複行除去
+- raw 1MB／正規化本文20万文字の上限
+- 7分野の固定keyword、数値・割合・通貨・年の根拠signalによる決定的順位付け
+- 20〜500文字、最大8候補、boilerplate除外
+- 候補ごとの原文位置、raw source SHA-256、normalized text SHA-256
+- 認証、既存Feature Flag、全体300回/分・Profile 20回/分のrate limit
+- 候補抽出と市場分析保存を分離し、利用者操作で出典1の事実メモへ転記
+- 出典本文をDB、log、Action response、hidden fieldへ保存・返却しない契約
+- LLM／外部AI API／DB migrationを追加しない構成
 
 ## 検索候補収集 実装済み
 
@@ -91,7 +105,7 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 
 ## 検証
 
-- Hub全テスト: PASS（186/186）
+- Hub全テスト: PASS（193/193）
 - Research〜Manga回帰focused test: PASS（42/42）
 - deps:check: PASS
 - lint: PASS
@@ -102,6 +116,7 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 - production build: PASS
 - Draft PR #57 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 - Draft PR #58 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
+- Draft PR #59 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 - 外部環境E2E: 未実施
 
 ## 外部環境待ち
@@ -117,17 +132,17 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 9. Vercelで`CLOUD_MANGA_MVP_ENABLED=true`
 10. Vercelで`CLOUD_WORK_MANAGEMENT_MVP_ENABLED=true`
 11. Vercelで`CLOUD_SALES_PREPARATION_MVP_ENABLED=true`
-12. 実検索 → 原文確認 → 候補採用 → Server検証 → Report保存E2E
+12. 実検索 → 候補採用 → Server検証 → 事実候補抽出 → 原文照合 → 事実メモ採用 → Report保存E2E
 13. 市場分析 → 企画 → シナリオ → マンガ下書き → Creator編集 → Page確認 → 承認 → 販売準備同期の実ブラウザE2E
 14. 許可host、危険redirect、timeout、容量超過、未検証表示の実環境確認
 15. 別利用者RLS、revision失効、二重送信、公開済み／販売中上書き拒否の確認
 16. 390px／768px／1280px受入れ
-17. 全CIと責任者承認
+17. Draft PRの全CIと責任者承認
 
 ## 禁止事項
 
 - `feature/manga-canvas-mvp`への直接push／merge
-- Draft PR #50〜#58の外部ゲート未完了扱いの解除
+- Draft PR #50〜#58と事実候補抽出PRの外部ゲート未完了扱いの解除
 - 既存migrationの変更
 - Cloud AI Queue／Worker／Provider Gateway、Canvas Editor本体、Stripe決済、Marketplace公開業務、Desktopへの変更
 - 成人向けコンテンツのCloud処理
@@ -140,5 +155,5 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 3. `docs/AI_HANDOFF.md`
 4. 本ファイル
 5. `docs/HANDOFF_LOG.md`
-6. `docs/cloud/CLOUD_RESEARCH_SEARCH_FOUNDATION_PLAN.md`
-7. `docs/cloud/CLOUD_RESEARCH_SEARCH_FOUNDATION_SPEC.md`
+6. `docs/cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_PLAN.md`
+7. `docs/cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_SPEC.md`
