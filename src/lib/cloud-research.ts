@@ -25,10 +25,20 @@ export const cloudResearchInputSchema = z.object({
   publicationFormat: z.enum(["series", "one_shot"]),
   pageCount: z.coerce.number().int().min(1).max(2000),
   evidence: z.array(evidenceSchema).min(1).max(5),
-}).refine((value) => value.priceMin <= value.priceMax, {
-  message: "価格帯は下限を上限以下にしてください。",
-  path: ["priceMax"],
-});
+})
+  .refine((value) => value.priceMin <= value.priceMax, {
+    message: "価格帯は下限を上限以下にしてください。",
+    path: ["priceMax"],
+  })
+  .refine(
+    (value) =>
+      new Set(value.evidence.map((item) => item.url)).size ===
+      value.evidence.length,
+    {
+      message: "同じ出典URLを重複して登録できません。",
+      path: ["evidence"],
+    },
+  );
 
 export type CloudResearchInput = z.infer<typeof cloudResearchInputSchema>;
 export type CloudResearchEvidence = CloudResearchInput["evidence"][number];
@@ -51,14 +61,20 @@ function requiredText(formData: FormData, name: string) {
   return String(formData.get(name) ?? "");
 }
 
+function toIsoDateTime(value: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toISOString();
+}
+
 export function parseCloudResearchForm(formData: FormData) {
   const evidence = [0, 1, 2, 3, 4]
     .map((index) => ({
       title: requiredText(formData, `sourceTitle${index}`),
       url: requiredText(formData, `sourceUrl${index}`),
-      retrievedAt: requiredText(formData, `sourceRetrievedAt${index}`)
-        ? new Date(requiredText(formData, `sourceRetrievedAt${index}`)).toISOString()
-        : "",
+      retrievedAt: toIsoDateTime(
+        requiredText(formData, `sourceRetrievedAt${index}`),
+      ),
       fact: requiredText(formData, `sourceFact${index}`),
     }))
     .filter((item) => item.title || item.url || item.fact || item.retrievedAt);

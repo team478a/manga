@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
+import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
@@ -13,6 +14,7 @@ export default async function CloudResearchReportPage({
   searchParams: Promise<{ message?: string }>;
 }) {
   const { profile } = await requireProfile();
+  if (!cloudResearchFeatureEnabled()) redirect("/dashboard/research");
   const { reportId } = await params;
   const { message } = await searchParams;
   const report = await getCloudResearchReport(profile.id, reportId).catch(
@@ -119,4 +121,3 @@ export default async function CloudResearchReportPage({
     </main>
   );
 }
-

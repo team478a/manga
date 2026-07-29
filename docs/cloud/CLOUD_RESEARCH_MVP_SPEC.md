@@ -104,5 +104,7 @@ ReportはRelease 1ではimmutableとする。修正する場合は新しいRepor
 - Prompt、出典の事実メモ、利用者入力を通常ログへ出さない。
 - 未知例外の詳細を利用者へ返さない。
 - URLはHTTPSだけを許可する。
+- 同一Report内で同じ出典URLを重複登録しない。
 - 入力とJSONの容量をServer validationとDB制約で制限する。
+- Feature Flag停止中は一覧・入力・詳細・企画引継ぎの全RouteでDB照会を行わない。
 - 390pxでPage全体の横スクロールを発生させない。

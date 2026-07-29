@@ -45,6 +45,46 @@ test("市場分析は必須入力とHTTPS出典を検証する", () => {
   );
 });
 
+test("市場分析は不正な取得日時を安全にvalidation errorへ変換する", () => {
+  assert.throws(
+    () =>
+      parseCloudResearchForm(
+        validForm({ sourceRetrievedAt0: "not-a-date" }),
+      ),
+    /Invalid ISO datetime/,
+  );
+});
+
+test("市場分析は価格逆転と重複出典を拒否する", () => {
+  assert.throws(
+    () => parseCloudResearchForm(validForm({ priceMin: "900", priceMax: "300" })),
+    /下限を上限以下/,
+  );
+  assert.throws(
+    () =>
+      parseCloudResearchForm(
+        validForm({
+          sourceTitle1: "同じ公式ランキング",
+          sourceUrl1: "https://example.com/ranking",
+          sourceRetrievedAt1: "2026-07-29T09:10",
+          sourceFact1: "同じURLから確認した別のメモ。",
+        }),
+      ),
+    /重複/,
+  );
+});
+
+test("市場分析は最大5件の出典を保持する", () => {
+  const overrides = {};
+  for (let index = 1; index < 5; index += 1) {
+    overrides[`sourceTitle${index}`] = `公式情報${index + 1}`;
+    overrides[`sourceUrl${index}`] = `https://example.com/source-${index + 1}`;
+    overrides[`sourceRetrievedAt${index}`] = `2026-07-29T09:0${index}`;
+    overrides[`sourceFact${index}`] = `確認した事実${index + 1}`;
+  }
+  assert.equal(parseCloudResearchForm(validForm(overrides)).evidence.length, 5);
+});
+
 test("市場分析Feature Flagは未設定時にfail closedする", () => {
   const previous = process.env.CLOUD_RESEARCH_MVP_ENABLED;
   delete process.env.CLOUD_RESEARCH_MVP_ENABLED;
@@ -100,10 +140,18 @@ test("市場分析UIは入力・履歴・再表示と完了後の企画導線を
   );
   assert.match(files[0], /sourceRetrievedAt/);
   assert.match(files[0], /sourceFact/);
+  assert.match(files[0], /\[0, 1, 2, 3, 4\]/);
   assert.match(files[1], /listCloudResearchReports/);
   assert.match(files[2], /AI推論/);
   assert.match(files[2], /\/proposal/);
   assert.match(files[3], /Release 2/);
+  for (const file of files.slice(2)) {
+    assert.ok(
+      file.indexOf("cloudResearchFeatureEnabled()") <
+        file.indexOf("getCloudResearchReport("),
+      "詳細系RouteはDB照会前にFeature Flagを確認する",
+    );
+  }
 });
 
 test("市場分析migrationは所有者RLSとimmutableな保存範囲を持つ", async () => {

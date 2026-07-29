@@ -25,6 +25,9 @@
 - 完了Reportからだけ利用できるAI企画提案への引継ぎ導線
 - `cloud_market_research_reports`と所有者RLS、rollback
 - 根拠のない市場数値を生成しない回帰テスト
+- Feature Flag停止中の詳細・企画URLをDB照会前に停止
+- 出典入力を仕様どおり最大5件へ統一し、重複URLを拒否
+- 不正な取得日時を未知例外にせず入力エラーとして処理
 
 ### 境界
 
@@ -35,8 +38,8 @@
 
 - lint: PASS
 - typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析test: PASS（6/6）
-- hub:test: PASS（122/122）
+- 市場分析test: PASS（9/9）
+- hub:test: PASS（125/125）
 - deps:check: PASS
 - migration検証: PASS（17件）
 - build: PASS
