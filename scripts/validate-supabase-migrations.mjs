@@ -146,6 +146,8 @@ for (const required of [
   "set_cloud_work_page_review",
   "set_cloud_work_management_status",
   "reset_cloud_work_management_on_revision",
+  "cloud_sales_preparations",
+  "sync_cloud_sales_preparation",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

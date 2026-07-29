@@ -97,7 +97,7 @@ begin
   end if;
   if to_regprocedure('public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)') is null
      or has_function_privilege('anon','public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)','execute')
-     or not has_function_privilege('authenticated','public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)','execute') then
+     or has_function_privilege('authenticated','public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)','execute') then
     raise exception 'Cloud Marketplace draft function is missing or has invalid privileges';
   end if;
   if to_regclass('public.cloud_ai_admin_audit_logs') is null
@@ -765,6 +765,29 @@ begin
     where secret_hash = repeat('a', 64)
   ) then
     raise exception 'expired authorization cleanup failed';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_sales_preparations') is null
+     or to_regprocedure('public.sync_cloud_sales_preparation(uuid,bigint,text,text,integer,text)') is null then
+    raise exception 'Cloud sales preparation objects are missing';
+  end if;
+  if has_table_privilege(
+    'authenticated',
+    'public.cloud_sales_preparations',
+    'update'
+  ) or has_function_privilege(
+    'authenticated',
+    'public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)',
+    'execute'
+  ) or not has_function_privilege(
+    'authenticated',
+    'public.sync_cloud_sales_preparation(uuid,bigint,text,text,integer,text)',
+    'execute'
+  ) then
+    raise exception 'Cloud sales preparation privileges are invalid';
   end if;
 end $$;
 

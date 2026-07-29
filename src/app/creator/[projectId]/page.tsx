@@ -18,10 +18,8 @@ import {
   renameCloudEpisodeAction,
   renameCloudProjectAction,
   setCloudProjectCoverAction,
-  syncCloudMarketplaceDraftAction,
 } from "@/app/creator/actions";
 import { requireProfile } from "@/lib/auth";
-import { getCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { getCloudProjectWorkspace } from "@/lib/cloud-creator-server";
 
 export default async function CloudProjectPage({
@@ -45,14 +43,6 @@ export default async function CloudProjectPage({
     notFound();
   }
   const { project, episodes, pages } = workspace;
-  const marketplaceDraft = await getCloudMarketplaceDraft(projectId).catch(
-    () => null,
-  );
-  const marketplaceIsCurrent = Boolean(
-    marketplaceDraft?.product &&
-      new Date(marketplaceDraft.product.updated_at).getTime() >=
-        new Date(project.updated_at).getTime(),
-  );
   return (
     <main className="page">
       <Link className="text-leaf underline" href="/creator">
@@ -368,47 +358,17 @@ export default async function CloudProjectPage({
           <section className="panel">
             <h2 className="flex items-center text-xl font-bold">
               <ShoppingBag className="mr-2 h-5 w-5" />
-              Marketplaceへ受け渡す
+              販売準備
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-600">
-              全PageをPDFへ再生成し、非公開作品と停止中商品を作成・更新します。公開中・販売中のデータは上書きしません。
+              作品管理で全Pageを確認・承認してから、販売用PDFと表紙を作成します。
             </p>
-            {marketplaceDraft?.product ? (
-              <div className="mt-4 rounded-md bg-stone-50 p-3 text-sm">
-                <p className="font-semibold">
-                  {marketplaceIsCurrent ? "同期済み" : "Projectに未反映の変更あり"}
-                </p>
-                <Link
-                  className="mt-1 inline-block text-leaf underline"
-                  href={`/dashboard/products/${marketplaceDraft.product.id}/edit`}
-                >
-                  商品下書きを確認
-                </Link>
-              </div>
-            ) : null}
-            <form
-              action={syncCloudMarketplaceDraftAction.bind(null, projectId)}
-              className="mt-4"
+            <Link
+              className="button-secondary mt-4 w-full"
+              href={`/dashboard/projects/${projectId}`}
             >
-              <label className="label" htmlFor="marketplace-price">
-                販売価格（税込円）
-              </label>
-              <input
-                className="field"
-                id="marketplace-price"
-                name="price"
-                type="number"
-                min="0"
-                max="1000000"
-                defaultValue={marketplaceDraft?.product?.price ?? 500}
-                required
-              />
-              <button className="button mt-4 w-full" type="submit">
-                {marketplaceDraft?.product
-                  ? "下書きを再生成"
-                  : "販売下書きを作成"}
-              </button>
-            </form>
+              作品管理で確認
+            </Link>
           </section>
         </aside>
       </div>

@@ -17,7 +17,7 @@ insert into public.cloud_projects(
 
 set local "request.jwt.claim.sub"='81000000-0000-4000-8000-000000000001';
 set local "request.jwt.claim.role"='authenticated';
-set local role authenticated;
+set local role service_role;
 select * from public.sync_cloud_marketplace_draft(
   '83000000-0000-4000-8000-000000000001',3,
   'https://example.test/cover.png','general/market/main.pdf',900,'Sales'
@@ -44,7 +44,7 @@ end $$;
 
 update public.digital_products set status='active'
 where creator_id='82000000-0000-4000-8000-000000000001';
-set local role authenticated;
+set local role service_role;
 do $$
 begin
   perform public.sync_cloud_marketplace_draft(

@@ -59,6 +59,8 @@ begin
     raise exception 'Stripe Cloud entitlement objects remain after rollback';
   end if;
   if to_regclass('public.cloud_projects') is not null
+     or to_regclass('public.cloud_sales_preparations') is not null
+     or to_regprocedure('public.sync_cloud_sales_preparation(uuid,bigint,text,text,integer,text)') is not null
      or to_regclass('public.cloud_assets') is not null
      or to_regprocedure('public.save_cloud_page_snapshot(uuid,bigint,jsonb)') is not null
      or to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is not null

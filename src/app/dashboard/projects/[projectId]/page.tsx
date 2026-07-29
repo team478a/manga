@@ -17,6 +17,7 @@ import {
   cloudWorkStatusLabel,
 } from "@/lib/cloud-work-management";
 import { getCloudWorkManagementDetail } from "@/lib/cloud-work-management-server";
+import { cloudSalesPreparationFeatureEnabled } from "@/lib/cloud-sales-preparation";
 
 export default async function CloudProjectManagementPage({
   params,
@@ -41,6 +42,7 @@ export default async function CloudProjectManagementPage({
   const approvalIsCurrent =
     state.expected_project_revision === project.revision;
   const effectiveStatus = approvalIsCurrent ? state.status : "draft";
+  const salesPreparationEnabled = cloudSalesPreparationFeatureEnabled();
   return (
     <main className="page max-w-7xl">
       <Link className="text-violet-700 underline" href="/dashboard/projects">
@@ -255,10 +257,20 @@ export default async function CloudProjectManagementPage({
               <p className="mt-2 text-sm text-stone-600">
                 Release 6ではPDF、表紙、作品・商品差分を確認して販売下書きを作成します。
               </p>
-              <span className="button-secondary mt-4 w-full text-stone-400">
-                販売準備は次Release
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </span>
+              {salesPreparationEnabled ? (
+                <Link
+                  className="button mt-4 w-full"
+                  href={`/dashboard/sales-preparation/${project.id}`}
+                >
+                  販売準備へ進む
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              ) : (
+                <span className="button-secondary mt-4 w-full text-stone-400">
+                  販売準備は停止中
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </span>
+              )}
             </div>
           ) : null}
         </aside>
