@@ -4,13 +4,19 @@
 
 責任者が戻った後に実施する。チェックが揃うまでDraft解除・merge・本番公開を行わない。
 
+Draft PR: [#65](https://github.com/team478a/manga/pull/65)
+
+Preview: `https://mangai-hub-staging-git-codex-cloud-re-7ae648-team478as-projects.vercel.app`
+
+PreviewにはVercel Deployment Protectionが設定されている。責任者のVercel sessionで認証してから確認する。
+
 ## 1. 統合内容
 
 - [ ] Draft PRのbaseが`feature/manga-canvas-mvp`である。
 - [ ] 統合対象がPR #50、#56〜#62の市場分析だけである。
 - [ ] PR #48〜#49、#51〜#55、#63〜#64と後続制作工程が含まれない。
 - [ ] 既存PRがClose・rebase・force pushされていない。
-- [ ] Required Quality、Migration roundtrip、Windows build、Vercelがすべて成功している。
+- [x] Required Quality、Migration roundtrip、Windows build、Vercelがすべて成功している。
 
 ## 2. DB適用前
 

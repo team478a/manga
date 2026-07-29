@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（Release 1統合・公開前ハードニング中。merge・本番反映は禁止）
+- 状態: `READY_FOR_OWNER_ACCEPTANCE`（Release 1統合・公開前ハードニング・全CI完了。merge・本番反映は禁止）
 - リポジトリ: `team478a/manga`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
 - Branch: `codex/cloud-release1-integration-v1`
@@ -67,7 +67,9 @@
 - migration静的検証: PASS（18/18）
 - deps、lint、typecheck、research eval、Hub test（174/174）、build: PASS
 - migration roundtrip: PASS（ローカルDocker PostgreSQL 16）
-- GitHub CI、Vercel Preview: Draft PR作成後に確認
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-re-7ae648-team478as-projects.vercel.app`
 
 ## 停止条件
 
@@ -81,10 +83,10 @@ Draft PRとVercel Previewを作成し、全CI結果を確認した時点で停�
 
 ## 未完了
 
-1. Draft PR #65の全CI確認
-2. Vercel Preview確認
-3. 責任者によるPreview受入れ
-4. 責任者管理下でのmigration適用・preflight・限定公開判断
+1. Vercel Deployment Protectionへログイン後の責任者Preview受入れ
+2. 責任者管理下でのmigration適用・実環境preflight
+3. 認証済み縦型E2E・別利用者RLS・実ブラウザ3幅確認
+4. 限定公開とDraft解除・mergeの責任者判断
 
 ## 履歴の参照
 

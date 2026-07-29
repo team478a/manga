@@ -9,7 +9,7 @@
 - Branch: `codex/cloud-release1-integration-v1`
 - Draft PR: [#65](https://github.com/team478a/manga/pull/65)
 - 目的: 市場分析だけを限定公開できる独立したRelease 1
-- 状態: Draft PR・Preview・全CI確認まで作業中。merge・本番反映は禁止
+- 状態: Draft PR・Preview・全CI確認済み。責任者受入れ待ち。merge・本番反映は禁止
 
 ## 2. 統合したPRとcommit
 
@@ -114,13 +114,26 @@ Release 1統合で追加するのは次の2本だけ。
 | `npm run build` | PASS |
 | `git diff --check` | PASS |
 | migration roundtrip | PASS（ローカルDocker PostgreSQL 16） |
-| GitHub CI | PR #65で確認中 |
-| Vercel Preview | PR #65で確認中 |
+| GitHub Core quality | PASS |
+| GitHub Migration roundtrip | PASS |
+| GitHub Windows build | PASS |
+| Vercel | PASS（Deployment Ready） |
+| Vercel Preview Comments | PASS |
+
+初回Core qualityではpreflightの直接起動判定がWindowsパス形式に依存し、Linuxで標準出力が空になる1件だけが失敗した。
+commit `1856725`でNode標準`pathToFileURL`へ変更し、最新HEADの再実行ですべて成功した。
+
+Preview:
+
+`https://mangai-hub-staging-git-codex-cloud-re-7ae648-team478as-projects.vercel.app`
+
+Deployment Protectionが有効なため、未認証ブラウザではVercel loginへ遷移する。Previewの作成・Readyは確認済みだが、
+認証後の市場分析画面と縦型E2Eは責任者受入れに残す。
 
 ## 9. 外部環境でのみ完了できる事項
 
 - Supabase stagingへの2 migration適用
-- 実Vercel環境変数でのpreflight
+- Vercel Deployment Protection認証後の実環境preflight
 - 認証済み入力・保存・履歴・再表示E2E
 - 別利用者によるRLS実機確認
 - 390px、768px、1280pxの実ブラウザ確認

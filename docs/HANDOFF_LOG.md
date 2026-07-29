@@ -39,7 +39,11 @@
 - migration静的検証: PASS（18/18）
 - deps、lint、typecheck、research eval、Hub test（174/174）、build: PASS
 - migration roundtrip: PASS（ローカルDocker PostgreSQL 16）
-- CI、Preview: Draft PR作成後に確認
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-re-7ae648-team478as-projects.vercel.app`
+- PreviewはDeployment Protection有効。未認証確認ではVercel loginへ遷移したため、認証後の市場分析実画面受入れは責任者待ち
+- 初回Core qualityはpreflightのWindows依存CLI判定で1件失敗。`1856725`で`pathToFileURL`へ修正し、再実行で全チェック成功
 
 ---
 
