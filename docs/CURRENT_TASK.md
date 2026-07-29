@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（AI企画提案 Evaluation v1実装・ローカル検証完了、Draft PR／CI待ち）
+- 状態: `IN_PROGRESS`（AI企画提案 Evaluation v1実装・Draft PR #64作成、CI待ち）
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-proposal-quality-ui-v1`（Draft PR #63）
 - Branch: `codex/cloud-proposal-evaluation-v1`
@@ -21,6 +21,7 @@
 - Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
 - Result-only UI Draft PR: [#62](https://github.com/team478a/manga/pull/62)
 - AI企画提案 Quality UI v1 Draft PR: [#63](https://github.com/team478a/manga/pull/63)
+- AI企画提案 Evaluation v1 Draft PR: [#64](https://github.com/team478a/manga/pull/64)
 - 計画: [`docs/cloud/CLOUD_PROPOSAL_EVALUATION_V1_PLAN.md`](cloud/CLOUD_PROPOSAL_EVALUATION_V1_PLAN.md)
 
 ## 現在の目的
@@ -52,7 +53,7 @@ AI企画提案の品質を固定fixtureで継続評価し、参考作品名流�
 - `npm run deps:check`: PASS
 - `npm run db:migrations:validate`: PASS（23件）
 - `npm run build`: PASS
-- Draft PR CI: 作成後に確認
+- Draft PR #64 CI: 実行中
 
 ## AI企画提案 Quality UI v1 実装済み
 

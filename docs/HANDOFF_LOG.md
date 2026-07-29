@@ -6,13 +6,14 @@
 
 ### 状態
 
-IN_PROGRESS（固定評価・CI gate実装、全ローカル検証完了、Draft PR作成待ち）
+IN_PROGRESS（固定評価・CI gate実装、全ローカル検証完了、Draft PR #64 CI待ち）
 
 ### ブランチ・コミット
 
 - Branch: `codex/cloud-proposal-evaluation-v1`
 - Base: `codex/cloud-proposal-quality-ui-v1` / Draft PR #63
-- HEAD: コミット前
+- HEAD: `b44e463`（評価実装・ローカル検証記録）
+- Draft PR: [#64](https://github.com/team478a/manga/pull/64)
 
 ### 完了
 
@@ -27,7 +28,7 @@ IN_PROGRESS（固定評価・CI gate実装、全ローカル検証完了、Draft
 
 ### 未完了
 
-- Draft PR作成とCI
+- Draft PR #64 CI
 - PR #63の外部環境E2Eと責任者承認
 
 ### 変更ファイル
