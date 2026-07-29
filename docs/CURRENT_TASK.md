@@ -13,7 +13,7 @@
 - Release 4 Draft PR: [#53](https://github.com/team478a/manga/pull/53)
 - Release 5 Draft PR: [#54](https://github.com/team478a/manga/pull/54)
 - Release 6 Draft PR: [#55](https://github.com/team478a/manga/pull/55)
-- Research Quality v2 Draft PR: 作成予定
+- Research Quality v2 Draft PR: [#56](https://github.com/team478a/manga/pull/56)
 - 計画: [`docs/cloud/CLOUD_RESEARCH_QUALITY_V2_PLAN.md`](cloud/CLOUD_RESEARCH_QUALITY_V2_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_QUALITY_V2_SPEC.md`](cloud/CLOUD_RESEARCH_QUALITY_V2_SPEC.md)
 

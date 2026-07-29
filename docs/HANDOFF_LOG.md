@@ -1347,7 +1347,7 @@ IN_PROGRESS（ローカル実装・品質ゲート完了、外部E2E待ち）
 
 - Branch: `codex/cloud-research-quality-v2`
 - Base: `codex/cloud-sales-preparation-mvp` / Draft PR #55
-- Draft PR: 作成予定
+- Draft PR: [#56](https://github.com/team478a/manga/pull/56)
 
 ### 完了
 
