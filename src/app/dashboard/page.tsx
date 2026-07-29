@@ -3,12 +3,18 @@ import { ArrowRight, BarChart3, CheckCircle2, Lock } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
+import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
+import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
 
 export default async function DashboardPage() {
   const { profile } = await requireProfile();
   const enabled = cloudResearchFeatureEnabled();
   const reports = enabled ? await listCloudResearchReports(profile.id) : [];
   const latest = reports[0];
+  const proposalEnabled = enabled && cloudProposalFeatureEnabled();
+  const proposalRuns = proposalEnabled
+    ? await listCloudProposalRuns(profile.id)
+    : [];
 
   return (
     <main className="page max-w-7xl">
@@ -21,7 +27,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">
-          Release 1
+          Release 2
         </span>
       </div>
 
@@ -29,12 +35,21 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm font-bold text-violet-700">現在の制作進行</p>
-            <h2 className="mt-2 text-2xl font-bold">1. 市場分析</h2>
+            <h2 className="mt-2 text-2xl font-bold">
+              {latest ? "2. AI企画提案" : "1. 市場分析"}
+            </h2>
             <p className="mt-2 text-stone-600">
-              出典付きの市場分析を保存すると、次のAI企画提案へ進めます。
+              {latest
+                ? "完了した市場分析から3つの企画候補を生成・比較します。"
+                : "出典付きの市場分析を保存すると、次のAI企画提案へ進めます。"}
             </p>
           </div>
-          {enabled ? (
+          {latest && proposalEnabled ? (
+            <Link className="button bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${latest.id}/proposal`}>
+              AI企画提案へ
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          ) : enabled ? (
             <Link className="button bg-violet-700 hover:bg-violet-800" href="/dashboard/research/new">
               <BarChart3 className="mr-2 h-5 w-5" />
               市場分析を開始
@@ -71,13 +86,25 @@ export default async function DashboardPage() {
           </Link>
         </section>
         <section className="panel">
-          <h2 className="text-xl font-bold">Release 1 完了条件</h2>
+          <h2 className="text-xl font-bold">AI企画提案の状況</h2>
+          <p className="mt-3 text-3xl font-bold text-violet-800">
+            {proposalRuns.length}
+            <span className="ml-2 text-sm font-normal text-stone-500">保存済みRun</span>
+          </p>
+          <Link className="button-secondary mt-5 w-full" href="/dashboard/proposals">
+            企画履歴を見る
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </section>
+        <section className="panel lg:col-span-2">
+          <h2 className="text-xl font-bold">Release 2 完了条件</h2>
           <ul className="mt-4 space-y-3 text-sm text-stone-700">
             {[
               "制作条件を入力",
               "出典URL・取得日時・確認事実を登録",
               "分析結果を保存",
               "履歴から再表示",
+              "3案を比較して1案を採用",
             ].map((item) => (
               <li className="flex items-center gap-2" key={item}>
                 <CheckCircle2 className="h-4 w-4 text-violet-600" />

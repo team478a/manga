@@ -51,6 +51,10 @@ AI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ
 | 6 | 販売準備 | 作品・商品差分確認が完走 |
 | 7 | 収益Dashboard | 実決済データの集計契約確定 |
 
+### 2026-07-29 進行順の例外
+
+Release 1の実環境E2Eは、対象Supabase／Vercelへ接続できないため未完了のまま保持する。責任者の指示により、Release 2は`codex/cloud-proposal-mvp`のstacked branchで先行実装する。これはRelease 1の完了判定や公開許可を意味せず、両Releaseの外部受入れと承認が終わるまでmergeしない。
+
 ## 4. 安全境界
 
 - Cloud Canvas Editor、Cloud AI Worker、Stripe、Marketplace、Desktopは変更しない。

@@ -1134,6 +1134,48 @@ READY_FOR_REVIEW（統合完了、Draft PR作成後は責任者レビュー待�
 
 ## 追記テンプレート
 
+## 2026-07-29 Codex → 次担当AI
+
+### 状態
+
+IN_PROGRESS（Release 2ローカル実装完了、外部E2E待ち）
+
+### ブランチ
+
+- Branch: `codex/cloud-proposal-mvp`
+- Base: `codex/cloud-research-mvp` / Draft PR #50
+
+### 完了
+
+- Release 2計画・仕様
+- 市場分析Reportから3つの企画仮説を生成する`proposal-rules-v1`
+- 企画Run保存・履歴・比較・再表示・1案採用
+- Run／SelectionのRLS、immutable契約、候補snapshot照合
+- Release 3への引継ぎ状態表示
+- Release 1外部E2Eを未完了のまま保持するstacked進行の記録
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（142/142）
+- migrations: PASS（18件）
+- build: PASS
+
+### 外部環境待ち
+
+- Release 1／2 migration適用
+- Vercel Feature Flag有効化
+- 実ブラウザ縦型E2E、別利用者RLS、390／768／1280px受入れ
+- CI、責任者承認
+
+### 注意事項
+
+- PR #50をDraft解除・mergeしていない。
+- Cloud AI Queue／Worker／Provider Gateway、Desktopは変更していない。
+- Release 2 branchはRelease 1にstackしている。外部ゲート完了までmergeしない。
+
 ```md
 ## YYYY-MM-DD HH:mm JST 担当AI → 次担当AI
 
