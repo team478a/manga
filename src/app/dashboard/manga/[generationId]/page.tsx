@@ -72,13 +72,21 @@ export default async function CloudMangaGenerationPage({
             コマ
           </p>
         </div>
-        <Link
-          className="button"
-          href={`/creator/${generation.project_id}`}
-        >
-          Cloud Projectを開く
-          <ExternalLink className="ml-2 h-4 w-4" />
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link
+            className="button-secondary"
+            href={`/creator/${generation.project_id}`}
+          >
+            Cloud Projectを開く
+            <ExternalLink className="ml-2 h-4 w-4" />
+          </Link>
+          <Link
+            className="button"
+            href={`/dashboard/projects/${generation.project_id}`}
+          >
+            作品管理へ
+          </Link>
+        </div>
       </div>
       {query.message ? (
         <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800" role="status">

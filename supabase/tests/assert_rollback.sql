@@ -30,6 +30,13 @@ begin
      or to_regprocedure('public.create_cloud_manga_generation(uuid,jsonb,timestamptz)') is not null then
     raise exception 'Cloud manga generation objects remain after rollback';
   end if;
+  if to_regclass('public.cloud_work_management_states') is not null
+     or to_regclass('public.cloud_work_page_reviews') is not null
+     or to_regprocedure('public.set_cloud_work_page_review(uuid,uuid,boolean,text)') is not null
+     or to_regprocedure('public.set_cloud_work_management_status(uuid,text,text,bigint)') is not null
+     or to_regprocedure('public.reset_cloud_work_management_on_revision()') is not null then
+    raise exception 'Cloud work management objects remain after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

@@ -141,6 +141,11 @@ for (const required of [
   "cloud_manga_generations",
   "create_cloud_manga_generation",
   "build_cloud_manga_panels",
+  "cloud_work_management_states",
+  "cloud_work_page_reviews",
+  "set_cloud_work_page_review",
+  "set_cloud_work_management_status",
+  "reset_cloud_work_management_on_revision",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

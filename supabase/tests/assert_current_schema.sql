@@ -81,6 +81,13 @@ begin
      or to_regprocedure('public.create_cloud_manga_generation(uuid,jsonb,timestamptz)') is null then
     raise exception 'Cloud manga generation objects are missing';
   end if;
+  if to_regclass('public.cloud_work_management_states') is null
+     or to_regclass('public.cloud_work_page_reviews') is null
+     or to_regprocedure('public.set_cloud_work_page_review(uuid,uuid,boolean,text)') is null
+     or to_regprocedure('public.set_cloud_work_management_status(uuid,text,text,bigint)') is null
+     or to_regprocedure('public.reset_cloud_work_management_on_revision()') is null then
+    raise exception 'Cloud work management objects are missing';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null

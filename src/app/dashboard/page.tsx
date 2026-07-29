@@ -9,6 +9,11 @@ import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
 import { listCloudScenarioRuns } from "@/lib/cloud-scenario-server";
 import { cloudMangaFeatureEnabled } from "@/lib/cloud-manga";
 import { listCloudMangaGenerations } from "@/lib/cloud-manga-server";
+import {
+  cloudWorkManagementFeatureEnabled,
+  cloudWorkStatusLabel,
+} from "@/lib/cloud-work-management";
+import { listCloudManagedWorks } from "@/lib/cloud-work-management-server";
 
 export default async function DashboardPage() {
   const { profile } = await requireProfile();
@@ -27,6 +32,12 @@ export default async function DashboardPage() {
   const mangaGenerations = mangaEnabled
     ? await listCloudMangaGenerations(profile.id)
     : [];
+  const workManagementEnabled =
+    mangaEnabled && cloudWorkManagementFeatureEnabled();
+  const managedWorks = workManagementEnabled
+    ? await listCloudManagedWorks(profile.id)
+    : [];
+  const latestManagedWork = managedWorks[0];
 
   return (
     <main className="page max-w-7xl">
@@ -39,7 +50,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">
-          Release 4
+          Release 5
         </span>
       </div>
 
@@ -132,8 +143,26 @@ export default async function DashboardPage() {
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </section>
+        <section className="panel">
+          <h2 className="text-xl font-bold">作品管理の状況</h2>
+          <p className="mt-3 text-3xl font-bold text-violet-800">
+            {managedWorks.length}
+            <span className="ml-2 text-sm font-normal text-stone-500">
+              管理対象Project
+            </span>
+          </p>
+          <p className="mt-2 text-sm text-stone-600">
+            {latestManagedWork
+              ? `最新: ${cloudWorkStatusLabel(latestManagedWork.state.status)}`
+              : "マンガ下書き生成後に作品管理を開始できます。"}
+          </p>
+          <Link className="button-secondary mt-5 w-full" href="/dashboard/projects">
+            作品管理を開く
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </section>
         <section className="panel lg:col-span-2">
-          <h2 className="text-xl font-bold">Release 4 完了条件</h2>
+          <h2 className="text-xl font-bold">Release 5 完了条件</h2>
           <ul className="mt-4 space-y-3 text-sm text-stone-700">
             {[
               "制作条件を入力",
@@ -143,6 +172,8 @@ export default async function DashboardPage() {
               "3案を比較して1案を採用",
               "初稿・改稿版を保存して1版を確定",
               "全Pageのコマ割り下書きを作成してCanvasで開く",
+              "全Pageを確認し、公開前チェックを完了",
+              "販売準備への引継ぎを承認",
             ].map((item) => (
               <li className="flex items-center gap-2" key={item}>
                 <CheckCircle2 className="h-4 w-4 text-violet-600" />

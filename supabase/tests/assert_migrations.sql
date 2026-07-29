@@ -783,3 +783,25 @@ begin
     raise exception 'authenticated users can insert Cloud manga generations directly';
   end if;
 end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_work_management_states') is null
+     or to_regclass('public.cloud_work_page_reviews') is null
+     or to_regprocedure('public.set_cloud_work_page_review(uuid,uuid,boolean,text)') is null
+     or to_regprocedure('public.set_cloud_work_management_status(uuid,text,text,bigint)') is null
+     or to_regprocedure('public.reset_cloud_work_management_on_revision()') is null then
+    raise exception 'Cloud work management objects are missing';
+  end if;
+  if has_table_privilege(
+    'authenticated',
+    'public.cloud_work_management_states',
+    'update'
+  ) or has_table_privilege(
+    'authenticated',
+    'public.cloud_work_page_reviews',
+    'insert'
+  ) then
+    raise exception 'authenticated users can mutate Cloud work management tables directly';
+  end if;
+end $$;
