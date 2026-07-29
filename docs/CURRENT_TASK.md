@@ -16,6 +16,7 @@
 - Research Quality v2 Draft PR: [#56](https://github.com/team478a/manga/pull/56)
 - 出典Server検証 Draft PR: [#57](https://github.com/team478a/manga/pull/57)
 - 検索候補収集 Draft PR: [#58](https://github.com/team478a/manga/pull/58)
+- 事実候補抽出 Draft PR: [#59](https://github.com/team478a/manga/pull/59)
 - 計画: [`docs/cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_PLAN.md`](cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_SPEC.md`](cloud/CLOUD_RESEARCH_CLAIM_EXTRACTION_SPEC.md)
 
@@ -115,7 +116,7 @@ Release 5で承認された一般向けCloud Projectを、非公開作品・販�
 - production build: PASS
 - Draft PR #57 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 - Draft PR #58 CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
-- 事実候補抽出branch CI: Draft PR作成前
+- Draft PR #59 CI: 実行中
 - 外部環境E2E: 未実施
 
 ## 外部環境待ち

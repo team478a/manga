@@ -8,12 +8,13 @@
 
 ### 状態
 
-`IN_PROGRESS`。検索候補収集基盤にstackし、検証済み本文からの決定的な事実候補抽出と人手採用UIを実装した。ローカル品質ゲート成功。Draft PR作成、CI、外部E2E、責任者承認は未完了。
+`IN_PROGRESS`。検索候補収集基盤にstackし、検証済み本文からの決定的な事実候補抽出と人手採用UIを実装した。ローカル品質ゲート成功。Draft PR #59作成済み。CI、外部E2E、責任者承認は未完了。
 
 ### ブランチ
 
 - Branch: `codex/cloud-research-claim-extraction`
 - Base: `codex/cloud-research-search-foundation` / Draft PR #58
+- Draft PR: [#59](https://github.com/team478a/manga/pull/59)
 
 ### 実装
 
