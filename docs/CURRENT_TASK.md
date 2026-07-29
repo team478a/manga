@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `IN_PROGRESS`（AI企画提案 Quality UI v1実装・Draft PR作成済み、CI／Preview確認待ち）
+- 状態: `IN_PROGRESS`（AI企画提案 Quality UI v1実装・Draft PR全CI完了、Preview実画面確認／責任者承認待ち）
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-research-result-only-ui`（Draft PR #62）
 - Branch: `codex/cloud-proposal-quality-ui-v1`
@@ -47,7 +47,8 @@ AI企画提案の利用者画面を結果中心に整理し、3案の違いを�
 - `npm run deps:check`: PASS
 - `npm run build`: PASS
 - `git diff --check`: PASS
-- Vercel Preview／レスポンシブ実画面: Draft PR作成後に確認
+- Draft PR #63 CI: PASS（Core quality、Migration roundtrip、Vercel Preview、Windows build）
+- Vercel Previewのレスポンシブ実画面: 未確認
 
 ## Result-only UI 実装済み
 

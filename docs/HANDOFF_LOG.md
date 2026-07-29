@@ -1732,7 +1732,7 @@ IN_PROGRESS（Release 2ローカル実装完了、外部E2E待ち）
 
 ### 状態
 
-IN_PROGRESS（ローカル実装・品質ゲート完了、Draft PR #63作成済み、CI／Preview確認待ち）
+IN_PROGRESS（実装・Draft PR #63全CI完了、Preview実画面確認／責任者承認待ち）
 
 ### ブランチ・コミット
 
@@ -1753,7 +1753,7 @@ IN_PROGRESS（ローカル実装・品質ゲート完了、Draft PR #63作成済
 
 ### 未完了
 
-- Draft PR #63 CI確認
+- Vercel Previewで390px／768px／1280px確認
 - Vercel Previewで390px／768px／1280px確認
 - 実Supabaseで生成→保存→履歴→再表示→採用E2E
 - CI、責任者承認
@@ -1780,6 +1780,7 @@ IN_PROGRESS（ローカル実装・品質ゲート完了、Draft PR #63作成済
 - proposal focused test: PASS（7/7）
 - build: PASS
 - git diff --check: PASS
+- Draft PR #63 CI: PASS（Core quality、Migration roundtrip、Vercel Preview、Windows build）
 
 ### 失敗・BLOCKED
 
