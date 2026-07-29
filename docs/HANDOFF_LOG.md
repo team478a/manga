@@ -8,7 +8,7 @@
 
 ### 状態
 
-`IN_PROGRESS`。複数出典照合にstackし、候補抽出と照合分類の決定的な定量評価基盤を実装した。全ローカル品質ゲートは成功。Draft PR、外部E2E、責任者承認は未完了。
+`IN_PROGRESS`。複数出典照合にstackし、候補抽出と照合分類の決定的な定量評価基盤を実装した。全ローカル品質ゲートとDraft PR #61の全CIが成功。外部E2E、責任者承認待ち。
 
 ### ブランチ
 
@@ -37,7 +37,6 @@
 
 ### 未完了
 
-- Draft PR作成と全CI確認
 - 実allowlist出典から権利・privacyを確認した匿名化誤判定caseの追加
 - 実URLでの抽出・照合・Report保存E2E
 
@@ -51,6 +50,7 @@
 - migrations: PASS（23件）
 - build: PASS
 - git diff --check: PASS
+- Draft PR CI: PASS（Core quality、Migration roundtrip、Vercel、Windows build）
 
 ### 注意事項
 
