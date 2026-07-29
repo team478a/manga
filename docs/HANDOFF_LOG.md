@@ -1241,6 +1241,7 @@ IN_PROGRESS（Release 5ローカル実装・品質ゲート完了、外部E2E待
 
 - Branch: `codex/cloud-work-management-mvp`
 - Base: `codex/cloud-manga-mvp` / Draft PR #53
+- Draft PR: [#54](https://github.com/team478a/manga/pull/54)
 
 ### 完了
 
@@ -1275,7 +1276,7 @@ IN_PROGRESS（Release 5ローカル実装・品質ゲート完了、外部E2E待
 
 ### 注意事項
 
-- Release 1〜4をDraft解除・mergeしていない。
+- Release 1〜5（Draft PR #50〜#54）をDraft解除・mergeしていない。
 - 作品公開、Marketplace同期、PDF exportはRelease 6へ残している。
 - Canvas Editor、Cloud AI、Stripe、Desktopは変更していない。
 - Release 5 branchはRelease 4にstackしている。外部ゲート完了までmergeしない。
