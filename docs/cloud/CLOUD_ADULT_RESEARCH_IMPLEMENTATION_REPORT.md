@@ -1,6 +1,7 @@
 # MANGAI Cloud 成人向け市場分析オプション 実装報告
 
-Draft PR: [#66](https://github.com/team478a/manga/pull/66)  
+Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+
 Base: Draft PR [#65](https://github.com/team478a/manga/pull/65)
 
 ## 1. 結論
