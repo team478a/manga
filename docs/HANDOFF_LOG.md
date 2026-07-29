@@ -1191,6 +1191,7 @@ IN_PROGRESS（Release 4ローカル実装・品質ゲート完了、外部E2E待
 
 - Branch: `codex/cloud-manga-mvp`
 - Base: `codex/cloud-scenario-mvp` / Draft PR #52
+- Draft PR: #53
 
 ### 完了
 

@@ -10,6 +10,7 @@
 - Release 1 Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - Release 2 Draft PR: [#51](https://github.com/team478a/manga/pull/51)
 - Release 3 Draft PR: [#52](https://github.com/team478a/manga/pull/52)
+- Release 4 Draft PR: [#53](https://github.com/team478a/manga/pull/53)
 - 計画: [`docs/cloud/CLOUD_MANGA_RELEASE_PLAN.md`](cloud/CLOUD_MANGA_RELEASE_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_MANGA_MVP_SPEC.md`](cloud/CLOUD_MANGA_MVP_SPEC.md)
 
@@ -68,7 +69,7 @@
 ## 禁止事項
 
 - `feature/manga-canvas-mvp`への直接push／merge
-- Draft PR #50〜#52の外部ゲート未完了扱いの解除
+- Draft PR #50〜#53の外部ゲート未完了扱いの解除
 - 既存migrationの変更
 - Cloud AI Queue／Worker／Provider Gateway、Canvas Editor本体、Stripe、Marketplace、Desktopへの変更
 - 成人向けコンテンツのCloud処理
