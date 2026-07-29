@@ -1,39 +1,42 @@
 import Link from "next/link";
-import { ArrowRight, Lightbulb, Lock } from "lucide-react";
+import { ArrowRight, FileText, Lock } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
-import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
+import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
+import { listCloudScenarioRuns } from "@/lib/cloud-scenario-server";
 
-export default async function CloudProposalHistoryPage({
+export default async function CloudScenarioHistoryPage({
   searchParams,
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
   const { profile } = await requireProfile();
-  const query = await searchParams;
+  const { error } = await searchParams;
   const enabled =
-    cloudResearchFeatureEnabled() && cloudProposalFeatureEnabled();
-  const runs = enabled ? await listCloudProposalRuns(profile.id) : [];
+    cloudResearchFeatureEnabled() &&
+    cloudProposalFeatureEnabled() &&
+    cloudScenarioFeatureEnabled();
+  const runs = enabled ? await listCloudScenarioRuns(profile.id) : [];
 
   return (
     <main className="page max-w-5xl">
-      <p className="text-sm font-bold text-violet-700">WORKFLOW 2</p>
-      <h1 className="mt-2 text-3xl font-bold">AI企画提案</h1>
+      <p className="text-sm font-bold text-violet-700">WORKFLOW 3</p>
+      <h1 className="mt-2 text-3xl font-bold">シナリオ生成</h1>
       <p className="mt-2 text-stone-600">
-        市場分析から生成した企画候補を比較・採用します。
+        採用企画から生成した初稿と改稿版を管理します。
       </p>
-      {query.error ? (
+      {error ? (
         <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700" role="alert">
-          {query.error}
+          {error}
         </p>
       ) : null}
       {!enabled ? (
         <section className="panel mt-6 text-center">
           <Lock className="mx-auto h-8 w-8 text-stone-400" />
-          <h2 className="mt-3 text-xl font-bold">AI企画提案は現在停止中です</h2>
+          <h2 className="mt-3 text-xl font-bold">シナリオ生成は現在停止中です</h2>
           <p className="mt-2 text-stone-600">
-            Feature Flagと市場分析の公開後に利用できます。
+            前工程とFeature Flagの公開後に利用できます。
           </p>
         </section>
       ) : runs.length ? (
@@ -41,21 +44,24 @@ export default async function CloudProposalHistoryPage({
           {runs.map((run) => (
             <Link
               className="panel flex flex-col gap-4 transition hover:border-violet-300 sm:flex-row sm:items-center"
-              href={`/dashboard/proposals/${run.id}`}
+              href={`/dashboard/scenarios/${run.id}`}
               key={run.id}
             >
-              <Lightbulb className="h-7 w-7 shrink-0 text-violet-700" />
+              <FileText className="h-7 w-7 shrink-0 text-violet-700" />
               <div className="min-w-0 flex-1">
                 <h2 className="truncate text-lg font-bold">
-                  {run.result.candidates.map((item) => item.title).join("／")}
+                  {run.result.title}・第{run.revision_number}版
                 </h2>
+                <p className="mt-1 text-sm text-stone-600">
+                  全{run.result.totalPages}Page／{run.result.scenes.length}シーン
+                </p>
                 <p className="mt-1 text-xs text-stone-500">
                   {new Date(run.completed_at).toLocaleString("ja-JP")}・
                   {run.engine_version}
                 </p>
               </div>
               <span className="inline-flex items-center text-sm font-bold text-violet-700">
-                比較する
+                再表示
                 <ArrowRight className="ml-1 h-4 w-4" />
               </span>
             </Link>
@@ -63,13 +69,13 @@ export default async function CloudProposalHistoryPage({
         </section>
       ) : (
         <section className="panel mt-6 text-center">
-          <Lightbulb className="mx-auto h-8 w-8 text-violet-700" />
-          <h2 className="mt-3 text-xl font-bold">保存済み企画はありません</h2>
+          <FileText className="mx-auto h-8 w-8 text-violet-700" />
+          <h2 className="mt-3 text-xl font-bold">シナリオはまだありません</h2>
           <p className="mt-2 text-stone-600">
-            完了した市場分析Reportから企画候補を生成してください。
+            AI企画提案で1案を採用し、初稿を生成してください。
           </p>
-          <Link className="button-secondary mt-5" href="/dashboard/research">
-            市場分析履歴へ
+          <Link className="button-secondary mt-5" href="/dashboard/proposals">
+            企画履歴へ
           </Link>
         </section>
       )}

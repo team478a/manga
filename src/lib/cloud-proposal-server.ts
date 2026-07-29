@@ -8,8 +8,9 @@ import {
   type CloudStoryProposalSelection,
 } from "@/lib/cloud-proposal-persistence";
 import type { CloudStoryProposalResult } from "@/lib/cloud-proposal";
-import { DomainError } from "@/lib/domain-errors";
+import { DomainError, ResourceNotFoundError } from "@/lib/domain-errors";
 import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
 
 export type { CloudStoryProposalRun, CloudStoryProposalSelection };
 
@@ -104,6 +105,32 @@ export async function getCloudProposalSelection(
       "企画の採用状況を取得できませんでした。",
       { cause: result.error },
     );
+  return result.data;
+}
+
+export async function getCloudProposalSelectionById(
+  profileId: string,
+  selectionId: string,
+) {
+  if (!z.string().uuid().safeParse(selectionId).success)
+    throw new ResourceNotFoundError("採用企画が見つかりません。");
+  const supabase = await createClient();
+  const result = await supabase
+    .from("cloud_story_proposal_selections")
+    .select(
+      "id,owner_profile_id,research_report_id,proposal_run_id,candidate_id,candidate_snapshot,selected_at",
+    )
+    .eq("id", selectionId)
+    .eq("owner_profile_id", profileId)
+    .maybeSingle<CloudStoryProposalSelection>();
+  if (result.error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "採用企画を取得できませんでした。",
+      { cause: result.error },
+    );
+  if (!result.data)
+    throw new ResourceNotFoundError("採用企画が見つかりません。");
   return result.data;
 }
 

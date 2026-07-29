@@ -108,7 +108,13 @@
       "description": "市場分析に基づく企画候補Run、採用snapshot、所有者RLSを追加",
       "forwardSha256": "dce1f5001b589504f451ef11a7b10fe7364bd0cb122a09b4874cf49098f42142",
       "rollbackSha256": "a36dddbc1fd6abdf4c4375dbdf7142b94e5a2bfd5864963b7fdf802a1ec092a3"
+    },
+    {
+      "id": "202607290003_cloud_scenarios",
+      "description": "採用企画から生成するシナリオ版、確定snapshot、所有者RLSを追加",
+      "forwardSha256": "ed6cd0a002df05599d80dd0e875c46c564d437633c6609a2ec8adaa744458a06",
+      "rollbackSha256": "dc15b245b404bae5ee604e6efc99da307ad3c521c49038ff33185507ff9afd15"
     }
   ],
-  "schemaSha256": "17699bb927bf5ee701fe67333cb0344c70eb8e6c99875871e98b849a867128ff"
+  "schemaSha256": "0af62242c24670be7208fd8b6744645310c8100909465c213914299120bbb505"
 }
