@@ -60,8 +60,8 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 
 - lint: PASS
 - typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析単体・構造テスト: PASS（5/5）
-- hub:test: PASS（121/121）
+- 市場分析単体・構造テスト: PASS（6/6）
+- hub:test: PASS（122/122）
 - deps:check: PASS
 - migration検証: PASS（17件）
 - build: PASS

@@ -59,6 +59,7 @@ AI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ
 - 出典なしの分析は実行しない。
 - 成人向け区分は入力として受け付けるが、既存境界によりCloud実行をfail closedで停止する。
 - Feature Flag無効時は画面とServer Actionの両方で実行を拒否する。
+- Feature Flagは未設定時falseとし、migration適用前の環境ではfail closedにする。
 
 ## 5. Release 1完了条件
 
@@ -69,4 +70,3 @@ AI企画提案そのものはRelease 2で実装する。Release 1では引継ぎ
 - 根拠のない市場数値を生成しない回帰テストが成功する。
 - 市場分析完了前はAI企画提案導線が無効である。
 - lint、typecheck、Hub test、migration検証、production build、CIが成功する。
-

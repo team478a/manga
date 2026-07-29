@@ -84,9 +84,10 @@ ReportはRelease 1ではimmutableとする。修正する場合は新しいRepor
 
 `CLOUD_RESEARCH_MVP_ENABLED`
 
-- 未設定または`true`: 有効
-- `false`: 無効
+- `true`: 有効
+- 未設定または`false`: 無効
 - 無効時はDashboardの状態表示、入力画面、Server Actionの三層で停止する。
+- 対象Supabaseへmigrationを適用してから`true`へ切り替える。
 
 ## 7. 成人向け境界
 
@@ -105,4 +106,3 @@ ReportはRelease 1ではimmutableとする。修正する場合は新しいRepor
 - URLはHTTPSだけを許可する。
 - 入力とJSONの容量をServer validationとDB制約で制限する。
 - 390pxでPage全体の横スクロールを発生させない。
-
