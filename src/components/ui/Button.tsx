@@ -6,11 +6,17 @@ import type {
 } from "react";
 import clsx from "clsx";
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+export type ButtonVariant =
+  | "primary"
+  | "brand"
+  | "secondary"
+  | "ghost"
+  | "danger";
 export type ButtonSize = "sm" | "md";
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: "ui-button-primary",
+  brand: "ui-button-brand",
   secondary: "ui-button-secondary",
   ghost: "ui-button-ghost",
   danger: "ui-button-danger",

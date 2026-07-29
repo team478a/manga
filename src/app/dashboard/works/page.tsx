@@ -1,12 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
+import { ImageIcon, Pencil, Plus } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
+import { FlashMessage } from "@/components/ui/Alert";
+import { ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatusBadge, type StatusTone } from "@/components/ui/StatusBadge";
 import { requireProfile } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 
-export default async function DashboardWorksPage({ searchParams }: { searchParams: Promise<{ message?: string; error?: string }> }) {
+function statusTone(status: Work["status"]): StatusTone {
+  if (status === "published") return "success";
+  if (status === "archived") return "neutral";
+  return "warning";
+}
+
+export default async function DashboardWorksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string; error?: string }>;
+}) {
   const { profile } = await requireProfile();
   const params = await searchParams;
   const supabase = await createClient();
@@ -18,47 +34,98 @@ export default async function DashboardWorksPage({ searchParams }: { searchParam
     .returns<Work[]>();
 
   return (
-    <main className="page">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">作品管理</h1>
-          <p className="mt-2 text-lg text-stone-600">登録した作品の公開状態を確認し、編集できます。</p>
-        </div>
-        <Link className="button" href="/dashboard/works/new">作品をアップロード</Link>
+    <main className="w-full px-4 py-6 sm:px-6 lg:px-7 xl:px-8">
+      <div className="mx-auto max-w-[1600px]">
+        <PageHeader
+          eyebrow="Creation"
+          title="作品管理"
+          description="登録した作品の公開状態を確認し、編集できます。"
+          actions={
+            <ButtonLink
+              href="/dashboard/works/new"
+              size="sm"
+              variant="brand"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              作品をアップロード
+            </ButtonLink>
+          }
+        />
+        <FlashMessage
+          className="mt-5"
+          error={params.error}
+          message={params.message}
+        />
+
+        {works?.length ? (
+          <Card className="mt-6 overflow-hidden p-0 shadow-app">
+            <div className="border-b border-brand-100 px-4 py-3 sm:px-5">
+              <h2 className="font-bold">登録作品</h2>
+              <p className="mt-0.5 text-xs text-text-muted">
+                {works.length}件の作品
+              </p>
+            </div>
+            <div className="divide-y divide-brand-100">
+              {works.map((work) => (
+                <article
+                  className="grid gap-4 bg-white p-4 transition hover:bg-brand-50/50 sm:grid-cols-[104px_minmax(0,1fr)_auto] sm:items-center sm:px-5"
+                  key={work.id}
+                >
+                  <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-brand-50">
+                    {work.image_url ? (
+                      <Image
+                        src={work.image_url}
+                        alt={work.title}
+                        fill
+                        className="object-cover"
+                        sizes="104px"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-brand-400">
+                        <ImageIcon className="h-6 w-6" aria-hidden="true" />
+                        <span className="sr-only">画像なし</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="truncate text-lg font-bold">{work.title}</h3>
+                    <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-text-secondary">
+                      {work.description || "説明はまだありません。"}
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                      <StatusBadge tone={work.is_public ? "info" : "neutral"}>
+                        {work.is_public ? "公開" : "非公開"}
+                      </StatusBadge>
+                      <StatusBadge tone={statusTone(work.status)}>
+                        {statusLabel(work.status)}
+                      </StatusBadge>
+                      <span className="text-xs text-text-muted">
+                        {dateJa(work.created_at)}
+                      </span>
+                    </div>
+                  </div>
+                  <Link
+                    className="ui-button ui-button-secondary ui-button-sm w-full sm:w-auto"
+                    href={`/dashboard/works/${work.id}/edit`}
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                    編集
+                  </Link>
+                </article>
+              ))}
+            </div>
+          </Card>
+        ) : (
+          <div className="mt-6">
+            <EmptyState
+              title="作品はまだありません"
+              body="画像と説明を登録して、作品ページを作りましょう。"
+              href="/dashboard/works/new"
+              action="作品をアップロード"
+            />
+          </div>
+        )}
       </div>
-      {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
-      {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}
-      {works?.length ? (
-        <div className="mt-8 grid gap-4">
-          {works.map((work) => (
-            <article className="panel grid gap-4 sm:grid-cols-[160px_1fr_auto] sm:items-center" key={work.id}>
-              <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-linen">
-                {work.image_url ? (
-                  <Image src={work.image_url} alt={work.title} fill className="object-cover" sizes="160px" />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-sm text-stone-500">画像なし</div>
-                )}
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">{work.title}</h2>
-                <p className="mt-2 line-clamp-2 text-base text-stone-600">{work.description || "説明はまだありません。"}</p>
-                <div className="mt-3 flex flex-wrap gap-2 text-sm">
-                  <span className="rounded-full bg-linen px-3 py-1">{work.is_public ? "公開" : "非公開"}</span>
-                  <span className="rounded-full bg-linen px-3 py-1">{statusLabel(work.status)}</span>
-                  <span className="rounded-full bg-linen px-3 py-1">作成日：{dateJa(work.created_at)}</span>
-                </div>
-              </div>
-              <Link className="button-secondary whitespace-nowrap" href={`/dashboard/works/${work.id}/edit`}>
-                編集する
-              </Link>
-            </article>
-          ))}
-        </div>
-      ) : (
-        <div className="mt-8">
-          <EmptyState title="作品はまだありません" body="画像と説明を登録して、作品ページを作りましょう。" href="/dashboard/works/new" action="作品をアップロード" />
-        </div>
-      )}
     </main>
   );
 }

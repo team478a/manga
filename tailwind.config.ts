@@ -9,6 +9,14 @@ const config: Config = {
         leaf: "#3F7D58",
         linen: "#F8F5F0",
         rose: "#B86B77",
+        brand: {
+          50: "#F6F5FF",
+          100: "#ECE9FF",
+          200: "#D9D3FF",
+          500: "#6657D9",
+          600: "#5848C8",
+          700: "#4738AD"
+        },
         surface: {
           app: "#F7F8F5",
           DEFAULT: "#FFFFFF",
@@ -35,6 +43,7 @@ const config: Config = {
       boxShadow: {
         soft: "0 12px 32px rgba(38, 50, 56, 0.08)",
         panel: "0 8px 24px rgba(38, 50, 56, 0.06)",
+        app: "0 1px 2px rgba(71, 56, 173, 0.06), 0 8px 24px rgba(71, 56, 173, 0.05)",
         dialog: "0 24px 64px rgba(38, 50, 56, 0.18)"
       }
     }

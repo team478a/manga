@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  ArrowLeft,
   ArrowDown,
   ArrowUp,
   FilePlus2,
@@ -20,6 +21,12 @@ import {
   setCloudProjectCoverAction,
   syncCloudMarketplaceDraftAction,
 } from "@/app/creator/actions";
+import { FlashMessage } from "@/components/ui/Alert";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { FormField } from "@/components/ui/FormField";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import { requireProfile } from "@/lib/auth";
 import { getCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { getCloudProjectWorkspace } from "@/lib/cloud-creator-server";
@@ -55,40 +62,40 @@ export default async function CloudProjectPage({
   );
   return (
     <main className="page">
-      <Link className="text-leaf underline" href="/creator">
-        ← Project一覧へ
-      </Link>
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">{project.title}</h1>
-          <p className="mt-2 text-stone-600">
-            {project.width} × {project.height}px / {project.dpi}dpi・
-            {project.reading_direction === "rtl" ? "右綴じ" : "左綴じ"}
-          </p>
-        </div>
-        <span className="rounded-full bg-green-50 px-4 py-2 font-semibold text-green-800">
-          一般向けCloud
-        </span>
-      </div>
-      {query.message ? (
-        <div className="mt-5 rounded-md bg-green-50 p-4 text-green-800">
-          <p>{query.message}</p>
-          {query.productId ? (
-            <Link
-              className="mt-2 inline-block font-semibold underline"
-              href={`/dashboard/products/${query.productId}/edit`}
-            >
-              商品下書きを確認
-            </Link>
-          ) : null}
-        </div>
+      <PageHeader
+        eyebrow="Cloud Creator"
+        title={project.title}
+        description={`${project.width} × ${project.height}px / ${project.dpi}dpi・${
+          project.reading_direction === "rtl" ? "右綴じ" : "左綴じ"
+        }`}
+        actions={
+          <>
+            <StatusBadge className="justify-center" tone="info">
+              一般向けCloud
+            </StatusBadge>
+            <ButtonLink href="/creator" variant="secondary">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Project一覧へ
+            </ButtonLink>
+          </>
+        }
+      />
+      <FlashMessage
+        className="mt-5"
+        error={query.error}
+        message={query.message}
+      />
+      {query.message && query.productId ? (
+        <ButtonLink
+          className="mt-3"
+          href={`/dashboard/products/${query.productId}/edit`}
+          size="sm"
+          variant="secondary"
+        >
+          商品下書きを確認
+        </ButtonLink>
       ) : null}
-      {query.error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
-          {query.error}
-        </p>
-      ) : null}
-      <details className="panel mt-6">
+      <details className="ui-card ui-card-default mt-6 shadow-app">
         <summary className="cursor-pointer text-lg font-bold">
           <PencilLine className="mr-2 inline h-5 w-5" />
           Project情報を編集
@@ -97,44 +104,38 @@ export default async function CloudProjectPage({
           action={renameCloudProjectAction.bind(null, projectId)}
           className="mt-5 space-y-4"
         >
-          <div>
-            <label className="label" htmlFor="title">
-              Project名
-            </label>
+          <FormField id="title" label="Project名" required>
             <input
-              className="field"
+              className="ui-field"
               id="title"
               name="title"
               defaultValue={project.title}
               required
               maxLength={200}
             />
-          </div>
-          <div>
-            <label className="label" htmlFor="description">
-              説明
-            </label>
+          </FormField>
+          <FormField id="description" label="説明">
             <textarea
-              className="field min-h-24"
+              className="ui-field min-h-24"
               id="description"
               name="description"
               defaultValue={project.description}
               maxLength={5000}
             />
-          </div>
-          <button className="button" type="submit">
+          </FormField>
+          <Button type="submit">
             更新
-          </button>
+          </Button>
         </form>
       </details>
       <form
         action={deleteCloudProjectAction.bind(null, projectId)}
         className="mt-3 text-right"
       >
-        <button className="button-secondary text-red-700" type="submit">
+        <Button type="submit" variant="danger">
           <Trash2 className="mr-2 h-5 w-5" />
           Projectをゴミ箱へ移動
-        </button>
+        </Button>
       </form>
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-5">
@@ -143,7 +144,7 @@ export default async function CloudProjectPage({
               (page) => page.episode_id === episode.id,
             );
             return (
-              <article className="panel" key={episode.id}>
+              <Card className="shadow-app" key={episode.id}>
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
                   <form
                     action={renameCloudEpisodeAction.bind(
@@ -151,21 +152,21 @@ export default async function CloudProjectPage({
                       projectId,
                       episode.id,
                     )}
-                    className="flex min-w-0 flex-1 gap-2"
+                    className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row"
                   >
                     <input
                       aria-label="Episode名"
-                      className="field mt-0 font-bold"
+                      className="ui-field mt-0 font-bold"
                       name="title"
                       defaultValue={episode.title}
                       required
                       maxLength={200}
                     />
-                    <button className="button-secondary shrink-0" type="submit">
+                    <Button className="shrink-0" type="submit" variant="secondary">
                       名前を保存
-                    </button>
+                    </Button>
                   </form>
-                  <div className="flex gap-1">
+                  <div className="flex flex-wrap gap-1">
                     <form
                       action={moveCloudStructureAction.bind(
                         null,
@@ -175,13 +176,14 @@ export default async function CloudProjectPage({
                         -1,
                       )}
                     >
-                      <button
+                      <Button
                         aria-label="Episodeを上へ"
-                        className="button-secondary px-3"
+                        className="px-3"
                         type="submit"
+                        variant="secondary"
                       >
                         <ArrowUp className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </form>
                     <form
                       action={moveCloudStructureAction.bind(
@@ -192,13 +194,14 @@ export default async function CloudProjectPage({
                         1,
                       )}
                     >
-                      <button
+                      <Button
                         aria-label="Episodeを下へ"
-                        className="button-secondary px-3"
+                        className="px-3"
                         type="submit"
+                        variant="secondary"
                       >
                         <ArrowDown className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </form>
                     <form
                       action={deleteCloudStructureAction.bind(
@@ -208,35 +211,38 @@ export default async function CloudProjectPage({
                         episode.id,
                       )}
                     >
-                      <button
+                      <Button
                         aria-label="Episodeを削除"
-                        className="button-secondary px-3 text-red-700"
+                        className="px-3"
                         type="submit"
+                        variant="danger"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </form>
                   </div>
                 </div>
                 <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {episodePages.map((page) => (
                     <div
-                      className="rounded-lg border border-stone-200 bg-linen p-3"
+                      className="rounded-xl border border-border bg-surface-muted p-3 transition hover:border-brand-200 hover:bg-brand-50"
                       key={page.id}
                     >
                       <Link
-                        className="block transition hover:text-leaf"
+                        className="block transition hover:text-brand-700"
                         href={`/creator/${projectId}/pages/${page.id}`}
                       >
-                        <span className="text-sm text-stone-500">PAGE</span>
+                        <span className="text-sm font-semibold text-text-muted">
+                          PAGE
+                        </span>
                         <strong className="mt-1 block text-xl">
                           {page.page_number}ページ
                         </strong>
-                        <span className="mt-2 block text-sm text-stone-600">
+                        <span className="mt-2 block text-sm text-text-secondary">
                           revision {page.revision}
                         </span>
                       </Link>
-                      <div className="mt-3 flex gap-1 border-t border-stone-200 pt-2">
+                      <div className="mt-3 flex flex-wrap gap-1 border-t border-border pt-2">
                         <form
                           action={setCloudProjectCoverAction.bind(
                             null,
@@ -244,14 +250,20 @@ export default async function CloudProjectPage({
                             page.id,
                           )}
                         >
-                          <button
-                            className={`button-secondary min-h-10 px-3 py-2 text-xs ${project.cover_page_id === page.id ? "border-leaf bg-green-50 text-green-800" : ""}`}
+                          <Button
+                            className={
+                              project.cover_page_id === page.id
+                                ? "border-brand-300 bg-brand-100 px-3 text-brand-800"
+                                : "px-3"
+                            }
+                            size="sm"
                             type="submit"
+                            variant="secondary"
                           >
                             {project.cover_page_id === page.id
                               ? "表紙"
                               : "表紙に設定"}
-                          </button>
+                          </Button>
                         </form>
                         <form
                           action={moveCloudStructureAction.bind(
@@ -262,13 +274,15 @@ export default async function CloudProjectPage({
                             -1,
                           )}
                         >
-                          <button
+                          <Button
                             aria-label="Pageを前へ"
-                            className="button-secondary min-h-10 px-3 py-2"
+                            className="px-3"
+                            size="sm"
                             type="submit"
+                            variant="secondary"
                           >
                             <ArrowUp className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </form>
                         <form
                           action={moveCloudStructureAction.bind(
@@ -279,13 +293,15 @@ export default async function CloudProjectPage({
                             1,
                           )}
                         >
-                          <button
+                          <Button
                             aria-label="Pageを後へ"
-                            className="button-secondary min-h-10 px-3 py-2"
+                            className="px-3"
+                            size="sm"
                             type="submit"
+                            variant="secondary"
                           >
                             <ArrowDown className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </form>
                         <form
                           action={deleteCloudStructureAction.bind(
@@ -295,13 +311,15 @@ export default async function CloudProjectPage({
                             page.id,
                           )}
                         >
-                          <button
+                          <Button
                             aria-label="Pageを削除"
-                            className="button-secondary min-h-10 px-3 py-2 text-red-700"
+                            className="px-3"
+                            size="sm"
                             type="submit"
+                            variant="danger"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </Button>
                         </form>
                       </div>
                     </div>
@@ -311,105 +329,115 @@ export default async function CloudProjectPage({
                   action={addCloudPageAction.bind(null, projectId, episode.id)}
                   className="mt-4"
                 >
-                  <button className="button-secondary w-full" type="submit">
+                  <Button className="w-full" type="submit" variant="secondary">
                     <FilePlus2 className="mr-2 h-5 w-5" />
                     Pageを追加
-                  </button>
+                  </Button>
                 </form>
-              </article>
+              </Card>
             );
           })}
         </section>
         <aside className="space-y-5">
-          <form
-            action={addCloudEpisodeAction.bind(null, projectId)}
-            className="panel"
-          >
+          <Card className="shadow-app">
+            <form action={addCloudEpisodeAction.bind(null, projectId)}>
             <h2 className="text-xl font-bold">Episodeを追加</h2>
-            <label className="label mt-4 block" htmlFor="episode-title">
-              Episode名
-            </label>
-            <input
-              className="field"
+            <FormField
+              className="mt-4"
               id="episode-title"
-              name="title"
-              placeholder="第2話"
+              label="Episode名"
               required
-              maxLength={200}
-            />
-            <button className="button mt-4 w-full" type="submit">
+            >
+              <input
+                className="ui-field"
+                id="episode-title"
+                name="title"
+                placeholder="第2話"
+                required
+                maxLength={200}
+              />
+            </FormField>
+            <Button className="mt-4 w-full" type="submit">
               <Plus className="mr-2 h-5 w-5" />
               追加
-            </button>
-          </form>
-          <section className="panel">
+            </Button>
+            </form>
+          </Card>
+          <Card className="shadow-app">
             <h2 className="font-bold">Project状況</h2>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt className="text-stone-500">Episode</dt>
+                <dt className="text-text-muted">Episode</dt>
                 <dd className="text-xl font-bold">{episodes.length}</dd>
               </div>
               <div>
-                <dt className="text-stone-500">Page</dt>
+                <dt className="text-text-muted">Page</dt>
                 <dd className="text-xl font-bold">{pages.length}</dd>
               </div>
               <div>
-                <dt className="text-stone-500">Revision</dt>
+                <dt className="text-text-muted">Revision</dt>
                 <dd className="text-xl font-bold">{project.revision}</dd>
               </div>
               <div>
-                <dt className="text-stone-500">使用容量</dt>
+                <dt className="text-text-muted">使用容量</dt>
                 <dd className="text-xl font-bold">
                   {Math.ceil(project.storage_bytes / 1024)} KB
                 </dd>
               </div>
             </dl>
-          </section>
-          <section className="panel">
+          </Card>
+          <Card className="shadow-app">
             <h2 className="flex items-center text-xl font-bold">
               <ShoppingBag className="mr-2 h-5 w-5" />
               Marketplaceへ受け渡す
             </h2>
-            <p className="mt-3 text-sm leading-relaxed text-stone-600">
+            <p className="mt-3 text-sm leading-relaxed text-text-secondary">
               全PageをPDFへ再生成し、非公開作品と停止中商品を作成・更新します。公開中・販売中のデータは上書きしません。
             </p>
             {marketplaceDraft?.product ? (
-              <div className="mt-4 rounded-md bg-stone-50 p-3 text-sm">
-                <p className="font-semibold">
-                  {marketplaceIsCurrent ? "同期済み" : "Projectに未反映の変更あり"}
-                </p>
-                <Link
-                  className="mt-1 inline-block text-leaf underline"
+              <div className="mt-4 rounded-lg border border-border bg-surface-muted p-3 text-sm">
+                <StatusBadge tone={marketplaceIsCurrent ? "success" : "warning"}>
+                  {marketplaceIsCurrent
+                    ? "同期済み"
+                    : "Projectに未反映の変更あり"}
+                </StatusBadge>
+                <ButtonLink
+                  className="mt-3"
                   href={`/dashboard/products/${marketplaceDraft.product.id}/edit`}
+                  size="sm"
+                  variant="secondary"
                 >
                   商品下書きを確認
-                </Link>
+                </ButtonLink>
               </div>
             ) : null}
             <form
               action={syncCloudMarketplaceDraftAction.bind(null, projectId)}
               className="mt-4"
             >
-              <label className="label" htmlFor="marketplace-price">
-                販売価格（税込円）
-              </label>
-              <input
-                className="field"
+              <FormField
                 id="marketplace-price"
-                name="price"
-                type="number"
-                min="0"
-                max="1000000"
-                defaultValue={marketplaceDraft?.product?.price ?? 500}
+                label="販売価格（税込円）"
                 required
-              />
-              <button className="button mt-4 w-full" type="submit">
+              >
+                <input
+                  className="ui-field"
+                  id="marketplace-price"
+                  name="price"
+                  type="number"
+                  min="0"
+                  max="1000000"
+                  defaultValue={marketplaceDraft?.product?.price ?? 500}
+                  required
+                />
+              </FormField>
+              <Button className="mt-4 w-full" type="submit">
                 {marketplaceDraft?.product
                   ? "下書きを再生成"
                   : "販売下書きを作成"}
-              </button>
+              </Button>
             </form>
-          </section>
+          </Card>
         </aside>
       </div>
     </main>

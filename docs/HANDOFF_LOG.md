@@ -4,6 +4,49 @@
 
 ---
 
+## 2026-07-29 Codex（Phase Cloud UI-2 Creator主要画面刷新）
+
+### 状態
+
+`IN_PROGRESS`。Dashboard管理3画面に続き、Canvas Editor本体を除くCreator主要画面を同じSaaS UIへ移行した。ローカル品質ゲートは成功。Draft PR #49の最新CI・Preview確認待ち。
+
+### ブランチ・PR
+
+- Branch: `codex/cloud-dashboard-redesign`
+- Base: `codex/cloud-ui-foundation`（Draft PR #48）
+- Draft PR: [#49](https://github.com/team478a/manga/pull/49)
+
+### 完了
+
+- Creator一覧のbrand accent統一
+- 新規Project、ゴミ箱、Project詳細を共通PageHeader／Card／Button／FormField／Alert／Statusへ移行
+- Episode名編集とPage操作列をmobileで折り返す構造へ変更
+- Project、Episode、Page、Marketplaceの既存Server Actionとリンクを維持
+- Creator UI構造回帰テストを追加
+
+### 検証
+
+- lint: PASS
+- typecheck:hub: PASS
+- hub:test: PASS（126/126）
+- Cloud UI構造テスト: PASS（10/10）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+- Vercel PreviewでCreator主要画面を390／768／1024／1440px確認
+- 最新commitのCI確認
+- 責任者承認
+
+### 注意事項
+
+- Cloud Canvas Editor本体、Desktop、DB、API、認証、Stripe、Marketplace業務ロジックは変更していない
+- PR #48より先にmergeしない
+- 全CI成功・レスポンシブ確認・責任者承認前にmergeしない
+
+---
+
 ## 2026-07-29 Codex（Phase Cloud UI-1 実装・ローカル検証完了）
 
 ### 状態
@@ -1134,6 +1177,81 @@ READY_FOR_REVIEW（統合完了、Draft PR作成後は責任者レビュー待�
 - `feature/manga-canvas-mvp`への直接merge・push、PR #14〜#28の個別merge、PR #33のmerge・rebase・base変更、Phase D1のデザインコード実装、force push、既存migrationの書き換えのいずれも実施していない
 - PR #14〜#28の元のDraft PR自体は変更・merge・rebaseしておらず、そのまま残っている
 - `design/mangai-ui-refresh`（PR #33）は引き続き別ブランチ・別PRとして維持している
+
+---
+
+## 2026-07-29 08:23 JST Codex → 次担当AI
+
+### 状態
+
+IN_PROGRESS（Cloud UI-2実装・ローカル品質ゲート完了、Draft PR #49のCI・Preview確認待ち）
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-dashboard-redesign`
+- Base: `codex/cloud-ui-foundation`（Draft PR #48）
+- HEAD: `0790d50`
+- Draft PR: [#49](https://github.com/team478a/manga/pull/49)
+
+### 完了
+
+- 参考画面を実装可能なCloud Dashboard要件へ整理
+- purple brand、compact Header、208px Sidebar、group/icon navigationを実装
+- 共通・legacy action buttonと作品tag filterをpurple brandへ統一
+- 作品管理・デジタル商品管理・売上管理をDashboardと同じSaaS UIへ移行
+- 既存Supabase tableのread-only queryによる4 KPIと最近の作品を実装
+- 未読通知、quick action、Cloud Creator、profile編集を再構成
+- 架空の市場分析、AI score、成長率は実装対象外として維持
+- Cloud UI-2構造回帰テストを追加
+
+### 未完了
+
+- Vercel Previewで認証後Dashboardの4 viewport確認
+- CI確認と責任者承認
+
+### 変更ファイル
+
+- `src/app/dashboard/page.tsx`
+- `src/components/Header.tsx`
+- `src/components/layout/SectionNav.tsx`
+- `src/components/layout/SectionShell.tsx`
+- `src/app/dashboard/layout.tsx`
+- `src/app/creator/layout.tsx`
+- `src/app/admin/layout.tsx`
+- `src/components/ui/Button.tsx`
+- `src/components/ui/PageHeader.tsx`
+- `src/app/globals.css`
+- `tailwind.config.ts`
+- `tests/cloud-dashboard-redesign.test.mjs`
+- `tests/cloud-ui-foundation.test.mjs`
+- `docs/design/CLOUD_DASHBOARD_REDESIGN_PLAN.md`
+- `docs/CURRENT_TASK.md`
+- 本ログ
+
+### 検証
+
+- lint: PASS
+- typecheck: PASS
+- hub:test: PASS（124/124）
+- build: PASS
+- 1440px local: compact Headerを確認
+- 390px local: 横overflowなし
+- git diff --check: PASS
+
+### 失敗・BLOCKED
+
+- ローカルworktreeにSupabase環境変数がないため、認証後Dashboardの目視確認はVercel Preview発行後に実施する
+
+### 次担当者が最初に行うこと
+
+1. stacked Draft PRを発行する
+2. PreviewにログインしてDashboardを4 viewportで確認する
+3. CI成功後、責任者へ画面確認を依頼する
+
+### 注意事項
+
+- PR #48より先にmergeしない
+- Desktop、DB、API、認証、Stripe、Marketplace業務ロジックは変更していない
 
 ---
 
