@@ -88,6 +88,15 @@ begin
      or to_regprocedure('public.reset_cloud_work_management_on_revision()') is null then
     raise exception 'Cloud work management objects are missing';
   end if;
+  if to_regclass('public.cloud_sales_preparations') is null
+     or to_regprocedure('public.sync_cloud_sales_preparation(uuid,bigint,text,text,integer,text)') is null
+     or has_function_privilege(
+       'authenticated',
+       'public.sync_cloud_marketplace_draft(uuid,bigint,text,text,integer,text)',
+       'execute'
+     ) then
+    raise exception 'Cloud sales preparation objects or privileges are invalid';
+  end if;
   if to_regprocedure('public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer)') is null
      or to_regprocedure('public.add_cloud_episode(uuid,text)') is null
      or to_regprocedure('public.add_cloud_page(uuid)') is null

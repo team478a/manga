@@ -14,7 +14,6 @@ import {
   setCloudProjectDeleted,
   setCloudProjectCover,
 } from "@/lib/cloud-creator-server";
-import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
 
 const projectSchema = z.object({
@@ -213,37 +212,4 @@ export async function setCloudProjectCoverAction(
   }
   revalidatePath(`/creator/${projectId}`);
   redirect(`/creator/${projectId}?message=表紙Pageを設定しました`);
-}
-
-export async function syncCloudMarketplaceDraftAction(
-  projectId: string,
-  formData: FormData,
-) {
-  const parsed = z.coerce
-    .number()
-    .int()
-    .min(0)
-    .max(1_000_000)
-    .safeParse(value(formData, "price"));
-  if (!parsed.success)
-    redirect(`/creator/${projectId}?error=販売価格を確認してください`);
-  let result: Awaited<ReturnType<typeof syncCloudMarketplaceDraft>>;
-  try {
-    result = await syncCloudMarketplaceDraft({
-      projectId,
-      price: parsed.data,
-    });
-  } catch (error) {
-    const message = domainMessage(
-      error,
-      "Marketplace下書きを作成できませんでした。",
-    );
-    redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
-  }
-  revalidatePath(`/creator/${projectId}`);
-  revalidatePath("/dashboard/works");
-  revalidatePath("/dashboard/products");
-  redirect(
-    `/creator/${projectId}?message=${encodeURIComponent("Marketplace下書きを更新しました")}&productId=${result.productId}`,
-  );
 }

@@ -126,7 +126,13 @@
       "description": "Cloud ProjectのPage確認、公開前check、販売準備承認を追加",
       "forwardSha256": "4b5d8e7b0ef764c8a7c33edf32e6c89fbbe5256c0e9bece709185d00f2b72f48",
       "rollbackSha256": "edec14040341e5f26b33b327c4f13280243516b725d49edaac6c8a7d22600d05"
+    },
+    {
+      "id": "202607290006_cloud_sales_preparation",
+      "description": "承認済みCloud作品を非公開作品・停止中商品へ同期",
+      "forwardSha256": "feabd7b1af0c77a95bd8c5a9f2d0c21e22a3b8bcff2e564c455ac542e3cf1a90",
+      "rollbackSha256": "59711f2c289907f3529db517e38b242106fd965475b6dd41e5e8b4a3732120eb"
     }
   ],
-  "schemaSha256": "0188c684970f3593559c5ee4326fd443a31774b79c1fa9d85907fbf2fe549ab3"
+  "schemaSha256": "8baa58f09540f786eb8188d66c2ebb799c69ff712fb4508d03f5821bfd9ea08f"
 }

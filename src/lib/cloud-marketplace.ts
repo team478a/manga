@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { createCloudMarketplaceArtifacts } from "@/lib/cloud-canvas-export";
 import { assertCloudMarketplaceDraftMutable } from "@/lib/cloud-marketplace-policy";
+import { mapCloudSalesPreparationError } from "@/lib/cloud-sales-preparation-server";
 import {
   generalCloudStoragePath,
   ownedMarketplaceStoragePath,
@@ -136,7 +137,7 @@ export async function syncCloudMarketplaceDraft(input: {
     uploaded.push({ bucket: PRODUCTS_BUCKET, path: productPath });
 
     const { data: synced, error: syncError } = await supabase.rpc(
-      "sync_cloud_marketplace_draft",
+      "sync_cloud_sales_preparation",
       {
         p_project_id: input.projectId,
         p_expected_revision: artifacts.project.revision,
@@ -149,10 +150,8 @@ export async function syncCloudMarketplaceDraft(input: {
     const result = (synced ?? [])[0] as
       | { work_id: string; product_id: string }
       | undefined;
-    if (syncError || !result)
-      throw new Error(
-        syncError?.message || "Marketplace下書きを保存できませんでした。",
-      );
+    if (syncError) throw mapCloudSalesPreparationError(syncError);
+    if (!result) throw mapCloudSalesPreparationError({ message: "cloud_sales_sync_failed" });
     const oldProductPath = current.product?.file_url;
     if (
       oldProductPath &&

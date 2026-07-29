@@ -1283,6 +1283,60 @@ IN_PROGRESS（Release 5ローカル実装・品質ゲート完了、外部E2E待
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（Release 6）
+
+### 状態
+
+IN_PROGRESS（Release 6ローカル実装・品質ゲート完了、外部E2E待ち）
+
+### ブランチ
+
+- Branch: `codex/cloud-sales-preparation-mvp`
+- Base: `codex/cloud-work-management-mvp` / Draft PR #54
+- Draft PR: 作成予定
+
+### 完了
+
+- Release 6計画・仕様
+- 販売準備一覧・詳細と各工程からの段階導線
+- Release 5で現行revisionが承認済みの一般向けProjectだけを同期するDBゲート
+- 既存Cloud PDF／表紙exportを使った非公開作品・販売停止商品の作成
+- 1 Project 1作品・1商品の冪等同期
+- 同期済みrevision、価格、作品／商品ID、同期日時の記録
+- 未同期／同期済み／要再同期／販売中の状態表示
+- 承認失効、revision競合、公開済み作品、販売中商品、別利用者の拒否
+- migration／rollback／canonical schema／manifest／CI実動作検査
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（170/170）
+- sales preparation focused tests: PASS（6/6）
+- migrations: PASS（22件）
+- PostgreSQL migration往復／canonical schema: PASS
+- PostgreSQL販売準備同期・冪等性・承認失効テスト: PASS
+- build: PASS
+
+### 外部環境待ち
+
+- Release 1〜6 migration適用
+- Vercelで6つのFeature Flagを有効化
+- 市場分析から販売準備同期までの実ブラウザ縦型E2E
+- 別利用者RLS、revision失効、二重送信、公開済み／販売中上書き拒否
+- 390／768／1280px受入れ
+- CI、責任者承認
+
+### 注意事項
+
+- Release 1〜6（Draft PR #50〜#55）をDraft解除・mergeしていない。
+- 公開・販売開始は自動化せず、既存Dashboardでの人による最終確認を維持する。
+- Canvas Editor、Cloud AI、Stripe決済、Marketplace公開業務、Desktopは変更していない。
+- Release 6 branchはRelease 5にstackしている。外部ゲート完了までmergeしない。
+
+---
+
 ## 追記テンプレート
 
 ## 2026-07-29 Codex → 次担当AI

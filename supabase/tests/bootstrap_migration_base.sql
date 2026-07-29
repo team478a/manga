@@ -25,8 +25,13 @@ create table public.digital_products (
   id uuid primary key default gen_random_uuid(),
   work_id uuid not null references public.works(id) on delete cascade,
   creator_id uuid not null references public.profiles(id) on delete cascade,
+  title text not null default '',
+  description text,
+  file_url text,
   price integer not null default 0,
-  status text not null default 'active'
+  status text not null default 'active',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table public.goods_requests (

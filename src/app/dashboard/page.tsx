@@ -14,6 +14,8 @@ import {
   cloudWorkStatusLabel,
 } from "@/lib/cloud-work-management";
 import { listCloudManagedWorks } from "@/lib/cloud-work-management-server";
+import { cloudSalesPreparationFeatureEnabled } from "@/lib/cloud-sales-preparation";
+import { listCloudSalesPreparations } from "@/lib/cloud-sales-preparation-server";
 
 export default async function DashboardPage() {
   const { profile } = await requireProfile();
@@ -38,6 +40,12 @@ export default async function DashboardPage() {
     ? await listCloudManagedWorks(profile.id)
     : [];
   const latestManagedWork = managedWorks[0];
+  const salesPreparationEnabled =
+    workManagementEnabled && cloudSalesPreparationFeatureEnabled();
+  const salesPreparations = salesPreparationEnabled
+    ? await listCloudSalesPreparations(profile.id)
+    : [];
+  const latestSalesPreparation = salesPreparations[0];
 
   return (
     <main className="page max-w-7xl">
@@ -50,7 +58,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">
-          Release 5
+          Release 6
         </span>
       </div>
 
@@ -161,8 +169,31 @@ export default async function DashboardPage() {
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
         </section>
+        <section className="panel">
+          <h2 className="text-xl font-bold">販売準備の状況</h2>
+          <p className="mt-3 text-3xl font-bold text-violet-800">
+            {salesPreparations.length}
+            <span className="ml-2 text-sm font-normal text-stone-500">
+              承認済みProject
+            </span>
+          </p>
+          <p className="mt-2 text-sm text-stone-600">
+            {latestSalesPreparation?.current
+              ? "最新Projectは販売下書きへ同期済みです。"
+              : latestSalesPreparation
+                ? "販売下書きの同期が必要です。"
+                : "作品管理で承認後に販売準備へ進めます。"}
+          </p>
+          <Link
+            className="button-secondary mt-5 w-full"
+            href="/dashboard/sales-preparation"
+          >
+            販売準備を開く
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
+        </section>
         <section className="panel lg:col-span-2">
-          <h2 className="text-xl font-bold">Release 5 完了条件</h2>
+          <h2 className="text-xl font-bold">Release 6 完了条件</h2>
           <ul className="mt-4 space-y-3 text-sm text-stone-700">
             {[
               "制作条件を入力",
@@ -174,6 +205,8 @@ export default async function DashboardPage() {
               "全Pageのコマ割り下書きを作成してCanvasで開く",
               "全Pageを確認し、公開前チェックを完了",
               "販売準備への引継ぎを承認",
+              "PDF・表紙を生成して販売下書きへ同期",
+              "非公開作品と停止中商品の差分を確認",
             ].map((item) => (
               <li className="flex items-center gap-2" key={item}>
                 <CheckCircle2 className="h-4 w-4 text-violet-600" />
