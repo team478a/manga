@@ -8,12 +8,13 @@
 
 ### 状態
 
-`READY_FOR_DRAFT_PR`。広範なCloud UI刷新から市場分析の縦型機能優先へ方針変更し、正式基点から独立ブランチを作成した。ローカル品質ゲートは完了。
+`IN_PROGRESS`。広範なCloud UI刷新から市場分析の縦型機能優先へ方針変更し、正式基点から独立ブランチを作成した。ローカル品質ゲート完了、Draft PR #50作成済み。
 
 ### ブランチ
 
 - Branch: `codex/cloud-research-mvp`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 
 ### 実装
 
@@ -43,7 +44,6 @@
 
 ### 未完了
 
-- push・Draft PR
 - Supabase対象環境へのmigration適用
 - Vercel Previewの認証済みE2E
 - CI・責任者承認
