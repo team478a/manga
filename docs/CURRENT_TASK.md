@@ -3,10 +3,11 @@
 ## 基本情報
 
 - 更新日: 2026-07-29
-- 状態: `READY_FOR_DRAFT_PR`（Release 0＋Release 1実装・ローカル品質ゲート完了）
+- 状態: `IN_PROGRESS`（Release 0＋Release 1実装・ローカル品質ゲート完了、Draft PR #50のCI・外部E2E待ち）
 - リポジトリ: `team478a/manga`
 - Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
 - Branch: `codex/cloud-research-mvp`
+- Draft PR: [#50](https://github.com/team478a/manga/pull/50)
 - 計画: [`docs/cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md`](cloud/CLOUD_WORKFLOW_RELEASE_PLAN.md)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_MVP_SPEC.md`](cloud/CLOUD_RESEARCH_MVP_SPEC.md)
 
@@ -68,11 +69,9 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 
 ## 未完了
 
-1. commit・push
-2. Draft PR作成
-3. Supabase対象環境へ新規migrationを適用
-4. Vercel Previewで入力・保存・履歴・再表示E2E
-5. CIと責任者承認
+1. Supabase対象環境へ新規migrationを適用
+2. Vercel Previewで入力・保存・履歴・再表示E2E
+3. CIと責任者承認
 
 ## 禁止事項
 
