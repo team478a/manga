@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowRight, ExternalLink } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
@@ -87,27 +87,6 @@ export default async function CloudResearchReportPage({
             <p className="mt-3 leading-relaxed text-stone-700">{finding.summary}</p>
           </article>
         ))}
-      </section>
-
-      <section className="panel mt-6">
-        <h2 className="text-xl font-bold">参照情報</h2>
-        <p className="mt-2 text-sm text-stone-600">
-          分析結果を利用する前に、リンク先の情報をご確認ください。
-        </p>
-        <div className="mt-4 space-y-4">
-          {report.sources.map((source) => (
-            <article className="rounded-lg border border-stone-200 p-4" key={source.url}>
-              <a className="font-bold text-violet-700 underline" href={source.url} rel="noreferrer" target="_blank">
-                {source.title}
-                <ExternalLink className="ml-1 inline h-4 w-4" />
-              </a>
-              <p className="mt-2 text-sm text-stone-700">{source.fact}</p>
-              <p className="mt-2 text-xs text-stone-500">
-                取得日時: {new Date(source.retrievedAt).toLocaleString("ja-JP")}
-              </p>
-            </article>
-          ))}
-        </div>
       </section>
 
       <section className="mt-6 rounded-lg border border-violet-200 bg-violet-50 p-5">
