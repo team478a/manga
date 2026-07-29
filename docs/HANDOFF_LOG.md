@@ -15,6 +15,7 @@
 - Branch: `codex/cloud-adult-planning-option-v1`
 - Base: `codex/cloud-adult-research-option-v1` (`a9969ac`)
 - 親Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+- Draft PR: [#67](https://github.com/team478a/manga/pull/67)
 
 ### 実装
 
@@ -38,6 +39,9 @@
 - migration静的検証: PASS（20/20）
 - migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
 - 所有者RLSの実DB挙動検査、preflight、`git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-95f9df-team478as-projects.vercel.app`
 
 ### 責任者待ち
 

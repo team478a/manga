@@ -8,8 +8,8 @@
 - Base: `codex/cloud-adult-research-option-v1` (`a9969ac`)
 - Branch: `codex/cloud-adult-planning-option-v1`
 - 親Draft PR: [#66](https://github.com/team478a/manga/pull/66)
-- Draft PR: 作成待ち
-- Vercel Preview: 作成待ち
+- Draft PR: [#67](https://github.com/team478a/manga/pull/67)
+- Vercel Preview: `https://mangai-hub-staging-git-codex-cloud-ad-95f9df-team478as-projects.vercel.app`
 - 仕様: [`docs/cloud/CLOUD_ADULT_PLANNING_OPTION_SPEC.md`](cloud/CLOUD_ADULT_PLANNING_OPTION_SPEC.md)
 
 ## 現在の目的
@@ -46,10 +46,12 @@
 - Feature Flagと秘密値非表示preflight
 - deps、lint、typecheck、Research Evaluation、Hub test（185/185）、build
 - PostgreSQL 16 forward／rollback／reapply／canonical schema
+- GitHub CI（Core quality、Migration roundtrip、Windows build）
+- Vercel Preview build
 
 ## 責任者待ち
 
-1. stacked Draft PRとVercel Previewの確認
+1. stacked Draft PR #67とVercel Previewの実機確認
 2. 機能単位販売・付与方針の承認
 3. staging migration適用
 4. Preview環境Flag設定

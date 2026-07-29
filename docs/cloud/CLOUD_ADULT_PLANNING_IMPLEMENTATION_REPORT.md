@@ -2,6 +2,10 @@
 
 作成日: 2026-07-29
 
+Draft PR: [#67](https://github.com/team478a/manga/pull/67)
+
+Preview: `https://mangai-hub-staging-git-codex-cloud-ad-95f9df-team478as-projects.vercel.app`
+
 ## 1. 結論
 
 成人向け市場分析を完了した許可利用者が、外部AIを使わずに企画条件を入力・保存・履歴表示・再表示できる縦型機能を実装した。一般向け市場分析と一般向けRelease 2のAI企画提案には影響しない。
@@ -65,6 +69,8 @@ rollbackは企画ブリーフが存在する場合に停止し、利用者デー
 - PostgreSQL 16 migration forward／rollback／reapply／canonical schema: PASS
 - 実DB所有者RLS挙動: PASS
 - 秘密値を表示しないpreflight: PASS
+- GitHub CI（Core quality、Migration roundtrip、Windows build）: PASS
+- Vercel Preview build: PASS
 
 ## 8. 公開前の残作業
 
