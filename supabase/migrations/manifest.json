@@ -120,7 +120,13 @@
       "description": "確定シナリオからCloud ProjectとCanvas下書きを原子的に作成",
       "forwardSha256": "baeafbe7cef00677f8f7a027b78dbbe10a7233bf4f574d50e3936d4895e01e8d",
       "rollbackSha256": "87ce5cf0868060ab07c36e45fc73982fb0dbc887b3be68e6fea0c631b894324d"
+    },
+    {
+      "id": "202607290005_cloud_work_management",
+      "description": "Cloud ProjectのPage確認、公開前check、販売準備承認を追加",
+      "forwardSha256": "4b5d8e7b0ef764c8a7c33edf32e6c89fbbe5256c0e9bece709185d00f2b72f48",
+      "rollbackSha256": "edec14040341e5f26b33b327c4f13280243516b725d49edaac6c8a7d22600d05"
     }
   ],
-  "schemaSha256": "fe96f3ccd66a8957f057bbc33f238dd76efd6ba672754f4187ef62560044db17"
+  "schemaSha256": "0188c684970f3593559c5ee4326fd443a31774b79c1fa9d85907fbf2fe549ab3"
 }

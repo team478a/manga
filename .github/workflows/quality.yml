@@ -152,6 +152,7 @@ jobs:
             psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f "$file"
           done
           psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/assert_migrations.sql
+          psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/assert_cloud_work_management.sql
       - name: Roll back in reverse order
         run: |
           for file in $(find supabase/rollbacks -maxdepth 1 -name '*.sql' | sort -r); do
@@ -164,6 +165,7 @@ jobs:
             psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f "$file"
           done
           psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/assert_migrations.sql
+          psql -v ON_ERROR_STOP=1 -d migration_roundtrip -f supabase/tests/assert_cloud_work_management.sql
       - name: Verify canonical schema is idempotent
         run: |
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/bootstrap_supabase.sql
@@ -172,6 +174,7 @@ jobs:
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_current_schema.sql
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_schema_data_idempotency.sql
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_cloud_marketplace.sql
+          psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_cloud_work_management.sql
       - name: Run read-only staging preflight against test schema
         env:
           MANGAI_DB_ENV: staging

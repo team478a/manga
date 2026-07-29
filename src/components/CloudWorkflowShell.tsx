@@ -27,7 +27,7 @@ const workflow: WorkflowItem[] = [
   { step: 2, label: "AI企画提案", href: "/dashboard/proposals", icon: Lightbulb },
   { step: 3, label: "シナリオ生成", href: "/dashboard/scenarios", icon: FileText },
   { step: 4, label: "マンガ生成", href: "/dashboard/manga", icon: Sparkles },
-  { step: 5, label: "作品管理", href: "/dashboard/works", icon: Images },
+  { step: 5, label: "作品管理", href: "/dashboard/projects", icon: Images },
   { step: 6, label: "販売準備", icon: ShoppingBag },
   { step: 7, label: "収益ダッシュボード", icon: ReceiptText },
 ];
@@ -37,12 +37,14 @@ export function CloudWorkflowShell({
   proposalEnabled,
   scenarioEnabled,
   mangaEnabled,
+  workManagementEnabled,
   children,
 }: {
   researchEnabled: boolean;
   proposalEnabled: boolean;
   scenarioEnabled: boolean;
   mangaEnabled: boolean;
+  workManagementEnabled: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -74,7 +76,8 @@ export function CloudWorkflowShell({
                 (item.step !== 1 || researchEnabled) &&
                 (item.step !== 2 || (researchEnabled && proposalEnabled)) &&
                 (item.step !== 3 || (researchEnabled && proposalEnabled && scenarioEnabled)) &&
-                (item.step !== 4 || (researchEnabled && proposalEnabled && scenarioEnabled && mangaEnabled));
+                (item.step !== 4 || (researchEnabled && proposalEnabled && scenarioEnabled && mangaEnabled)) &&
+                (item.step !== 5 || (researchEnabled && proposalEnabled && scenarioEnabled && mangaEnabled && workManagementEnabled));
               const content = (
                 <>
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-current/10 text-[11px]">
@@ -113,7 +116,7 @@ export function CloudWorkflowShell({
         </nav>
         <div className="mt-6 hidden rounded-lg border border-violet-100 bg-violet-50 p-3 text-xs leading-relaxed text-violet-900 lg:block">
           <p className="font-bold">現在の制作進行</p>
-          <p className="mt-1">Release 4：マンガ下書き生成MVP</p>
+          <p className="mt-1">Release 5：作品管理MVP</p>
           <p className="mt-2 text-violet-600">
             市場分析: {researchEnabled ? "有効" : "停止中"}
             <br />
@@ -122,6 +125,8 @@ export function CloudWorkflowShell({
             シナリオ: {scenarioEnabled ? "有効" : "停止中"}
             <br />
             マンガ下書き: {mangaEnabled ? "有効" : "停止中"}
+            <br />
+            作品管理: {workManagementEnabled ? "有効" : "停止中"}
           </p>
         </div>
       </aside>

@@ -1231,6 +1231,58 @@ IN_PROGRESS（Release 4ローカル実装・品質ゲート完了、外部E2E待
 
 ---
 
+## 2026-07-29 Codex → 次担当AI（Release 5）
+
+### 状態
+
+IN_PROGRESS（Release 5ローカル実装・品質ゲート完了、外部E2E待ち）
+
+### ブランチ
+
+- Branch: `codex/cloud-work-management-mvp`
+- Base: `codex/cloud-manga-mvp` / Draft PR #53
+- Draft PR: [#54](https://github.com/team478a/manga/pull/54)
+
+### 完了
+
+- Release 5計画・仕様
+- Cloud Project作品管理一覧・詳細
+- Page単位の現行revision確認とメモ
+- 公開前チェックと`draft`／`review_ready`／`approved`の段階遷移
+- Project revision変更時の承認自動失効
+- 所有者RLS、table直接更新禁止、revision競合と別利用者拒否
+- 承認後だけRelease 6準備完了を表示
+- migration／rollback／canonical schema／manifest／CI実動作検査
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- hub:test: PASS（165/165）
+- work management focused tests: PASS（5/5）
+- migrations: PASS（21件）
+- PostgreSQL migration往復／canonical schema: PASS
+- PostgreSQL作品管理動作テスト: PASS
+- build: PASS
+
+### 外部環境待ち
+
+- Release 1〜5 migration適用
+- Vercelで5つのFeature Flagを有効化
+- 市場分析から作品管理承認までの実ブラウザ縦型E2E
+- 別利用者RLS、revision失効、段階遷移、390／768／1280px受入れ
+- CI、責任者承認
+
+### 注意事項
+
+- Release 1〜5（Draft PR #50〜#54）をDraft解除・mergeしていない。
+- 作品公開、Marketplace同期、PDF exportはRelease 6へ残している。
+- Canvas Editor、Cloud AI、Stripe、Desktopは変更していない。
+- Release 5 branchはRelease 4にstackしている。外部ゲート完了までmergeしない。
+
+---
+
 ## 追記テンプレート
 
 ## 2026-07-29 Codex → 次担当AI
