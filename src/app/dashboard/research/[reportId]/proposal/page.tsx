@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
+import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
 
 export default async function ProposalHandoffPage({
@@ -8,6 +10,7 @@ export default async function ProposalHandoffPage({
   params: Promise<{ reportId: string }>;
 }) {
   const { profile } = await requireProfile();
+  if (!cloudResearchFeatureEnabled()) redirect("/dashboard/research");
   const { reportId } = await params;
   const report = await getCloudResearchReport(profile.id, reportId);
   const next = report.result.findings.find(
@@ -31,4 +34,3 @@ export default async function ProposalHandoffPage({
     </main>
   );
 }
-

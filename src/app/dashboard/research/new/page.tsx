@@ -97,7 +97,7 @@ export default async function NewCloudResearchPage({
             <p className="mt-2 text-sm text-stone-600">
               最低1件必須です。市場数値は出典に記載された内容だけを事実メモへ入力してください。
             </p>
-            {[0, 1, 2].map((index) => (
+            {[0, 1, 2, 3, 4].map((index) => (
               <fieldset className="mt-5 rounded-lg border border-stone-200 p-4" key={index}>
                 <legend className="px-2 font-bold">出典 {index + 1}{index === 0 ? "（必須）" : "（任意）"}</legend>
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -131,4 +131,3 @@ export default async function NewCloudResearchPage({
     </main>
   );
 }
-

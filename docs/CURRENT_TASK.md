@@ -43,6 +43,8 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 - 任意URLのServer-side取得は行わず、利用者が確認した出典を保存する。
 - 成人向け区分は入力必須だが、既存のCloud／Desktop境界によりCloud実行を拒否する。
 - Reportはimmutable。修正は新規Reportとして作成する。
+- Feature Flag停止中は詳細URLへの直接アクセスでもDB照会前に停止する。
+- 出典は画面・Serverとも最大5件に統一し、同一URLの重複を拒否する。
 
 ## 変更しない範囲
 
@@ -60,8 +62,8 @@ MANGAI Cloudを市場分析から始まる制作ワークフロー順に公開�
 
 - lint: PASS
 - typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
-- 市場分析単体・構造テスト: PASS（6/6）
-- hub:test: PASS（122/122）
+- 市場分析単体・構造テスト: PASS（9/9）
+- hub:test: PASS（125/125）
 - deps:check: PASS
 - migration検証: PASS（17件）
 - build: PASS
