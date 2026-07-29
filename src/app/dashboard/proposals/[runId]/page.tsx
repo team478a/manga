@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, CircleAlert, Sparkles } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { selectCloudProposalAction } from "@/app/dashboard/proposals/actions";
 import { createCloudScenarioAction } from "@/app/dashboard/scenarios/actions";
@@ -15,9 +15,18 @@ import { listCloudScenarioRuns } from "@/lib/cloud-scenario-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 const directionLabels = {
-  balanced: "バランス型",
-  differentiated: "差別化型",
-  focused: "訴求集中型",
+  balanced: {
+    label: "王道案",
+    description: "市場とのバランスを重視",
+  },
+  differentiated: {
+    label: "独自案",
+    description: "差別化と意外性を重視",
+  },
+  focused: {
+    label: "集中案",
+    description: "読者への伝わりやすさを重視",
+  },
 };
 
 export default async function CloudProposalRunPage({
@@ -53,13 +62,9 @@ export default async function CloudProposalRunPage({
       </Link>
       <div className="mt-4">
         <p className="text-sm font-bold text-violet-700">WORKFLOW 2</p>
-        <h1 className="mt-2 text-3xl font-bold">企画候補を比較</h1>
+        <h1 className="mt-2 text-3xl font-bold">企画案を比較</h1>
         <p className="mt-2 text-stone-600">
-          すべて企画仮説（AI推論）です。市場の事実や販売予測ではありません。
-        </p>
-        <p className="mt-1 text-xs text-stone-500">
-          {run.engine_version}／
-          {new Date(run.completed_at).toLocaleString("ja-JP")}
+          方向性の違いを比べて、制作する企画を1つ選んでください。
         </p>
       </div>
       {query.error ? (
@@ -72,71 +77,103 @@ export default async function CloudProposalRunPage({
           {query.message}
         </p>
       ) : null}
-      <section className="mt-6 grid gap-5 xl:grid-cols-3">
+      <section
+        aria-label="企画案の比較"
+        className="mt-6 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3"
+      >
         {run.result.candidates.map((candidate) => {
           const selected = selection?.candidate_id === candidate.id;
+          const direction = directionLabels[candidate.direction];
           return (
             <article
-              className={`panel flex flex-col ${selected ? "border-violet-500 ring-2 ring-violet-100" : ""}`}
+              className={`panel relative flex flex-col overflow-hidden p-0 ${
+                selected
+                  ? "border-violet-500 ring-2 ring-violet-200"
+                  : "hover:border-violet-300"
+              }`}
               key={candidate.id}
             >
-              <div className="flex items-center justify-between gap-3">
-                <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-800">
-                  {directionLabels[candidate.direction]}
-                </span>
-                {selected ? (
-                  <span className="inline-flex items-center text-sm font-bold text-green-700">
-                    <CheckCircle2 className="mr-1 h-4 w-4" />
-                    採用済み
+              <div className="border-b border-violet-100 bg-violet-50 p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-violet-800 shadow-sm">
+                    {direction.label}
                   </span>
+                  {selected ? (
+                    <span className="inline-flex items-center text-sm font-bold text-emerald-700">
+                      <CheckCircle2 className="mr-1 h-4 w-4" />
+                      採用済み
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mt-3 text-sm font-medium text-violet-800">
+                  {direction.description}
+                </p>
+                <h2 className="mt-2 text-2xl font-bold text-stone-950">
+                  {candidate.title}
+                </h2>
+              </div>
+              <div className="flex flex-1 flex-col p-5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400">
+                  作品の核
+                </h3>
+                <p className="mt-2 leading-relaxed text-stone-700">
+                  {candidate.logline}
+                </p>
+                <dl className="mt-5 space-y-4 text-sm">
+                  {[
+                    ["読者が得られる体験", candidate.readerPromise],
+                    ["主人公", candidate.protagonist],
+                    ["乗り越える対立", candidate.centralConflict],
+                    ["物語の舞台", candidate.setting],
+                    ["この案の強み", candidate.differentiation],
+                    ["作品構成", candidate.formatPlan],
+                    ["販売方針", candidate.salesPositioning],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="font-bold text-stone-900">{label}</dt>
+                      <dd className="mt-1 leading-relaxed text-stone-600">
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-5 rounded-lg bg-amber-50 p-3">
+                  <h3 className="flex items-center gap-2 text-sm font-bold text-amber-950">
+                    <CircleAlert className="h-4 w-4" />
+                    制作時の注意点
+                  </h3>
+                  <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-950/80">
+                    {candidate.risks.map((risk) => (
+                      <li key={risk}>{risk}</li>
+                    ))}
+                  </ul>
+                </div>
+                {!selection ? (
+                  <form action={selectCloudProposalAction} className="mt-auto pt-6">
+                    <input name="runId" type="hidden" value={run.id} />
+                    <input name="candidateId" type="hidden" value={candidate.id} />
+                    <button
+                      className="button inline-flex w-full items-center justify-center gap-2 bg-violet-700 hover:bg-violet-800"
+                      type="submit"
+                    >
+                      この企画で進める
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </form>
                 ) : null}
               </div>
-              <h2 className="mt-4 text-2xl font-bold">{candidate.title}</h2>
-              <p className="mt-3 leading-relaxed text-stone-700">
-                {candidate.logline}
-              </p>
-              <dl className="mt-5 space-y-4 text-sm">
-                {[
-                  ["読者への約束", candidate.readerPromise],
-                  ["主人公", candidate.protagonist],
-                  ["中心対立", candidate.centralConflict],
-                  ["舞台", candidate.setting],
-                  ["差別化", candidate.differentiation],
-                  ["形式", candidate.formatPlan],
-                  ["販売位置づけ", candidate.salesPositioning],
-                ].map(([label, value]) => (
-                  <div key={label}>
-                    <dt className="font-bold text-stone-900">{label}</dt>
-                    <dd className="mt-1 leading-relaxed text-stone-600">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-              <div className="mt-5">
-                <h3 className="text-sm font-bold">確認リスク</h3>
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-stone-600">
-                  {candidate.risks.map((risk) => <li key={risk}>{risk}</li>)}
-                </ul>
-              </div>
-              {!selection ? (
-                <form action={selectCloudProposalAction} className="mt-auto pt-6">
-                  <input name="runId" type="hidden" value={run.id} />
-                  <input name="candidateId" type="hidden" value={candidate.id} />
-                  <button className="button w-full bg-violet-700 hover:bg-violet-800" type="submit">
-                    この企画を採用
-                  </button>
-                </form>
-              ) : null}
             </article>
           );
         })}
       </section>
       {selection ? (
         <section className="mt-6 rounded-lg border border-violet-200 bg-violet-50 p-5">
-          <h2 className="text-xl font-bold text-violet-950">
-            シナリオ生成へ
+          <h2 className="flex items-center gap-2 text-xl font-bold text-violet-950">
+            <Sparkles className="h-5 w-5" />
+            次はシナリオ生成です
           </h2>
           <p className="mt-2 text-violet-900">
-            採用した企画snapshotを固定しました。この企画からページ配分付きの初稿を作成できます。
+            選んだ企画をもとに、人物・三幕構成・シーン・ページ配分を作成できます。
           </p>
           {scenarioRuns[0] ? (
             <Link
