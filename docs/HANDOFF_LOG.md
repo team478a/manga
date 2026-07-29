@@ -14,7 +14,7 @@
 
 - Branch: `codex/cloud-research-result-only-ui`
 - Base: `codex/cloud-research-evaluation-v1` / Draft PR #61
-- Draft PR: 作成準備中
+- Draft PR: [#62](https://github.com/team478a/manga/pull/62)
 
 ### 実装
 

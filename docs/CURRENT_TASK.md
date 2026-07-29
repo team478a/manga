@@ -19,6 +19,7 @@
 - 事実候補抽出 Draft PR: [#59](https://github.com/team478a/manga/pull/59)
 - 複数出典照合 Draft PR: [#60](https://github.com/team478a/manga/pull/60)
 - Research Evaluation v1 Draft PR: [#61](https://github.com/team478a/manga/pull/61)
+- Result-only UI Draft PR: [#62](https://github.com/team478a/manga/pull/62)
 - 仕様: [`docs/cloud/CLOUD_RESEARCH_RESULT_ONLY_UI_SPEC.md`](cloud/CLOUD_RESEARCH_RESULT_ONLY_UI_SPEC.md)
 
 ## 現在の目的
