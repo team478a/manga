@@ -174,7 +174,13 @@
       "description": "許可済み成人向けネームを区分保持した非AI Canvas下書きへ変換し一般向け画像生成から分離",
       "forwardSha256": "ec3644992a86cbe4d3cbac6bebbf6631cf0db99cfaed664a0742360b5602289a",
       "rollbackSha256": "285bdb5af87082076a93425bec465b8293e37b8084fe070d9908bf5c434d5c5a"
+    },
+    {
+      "id": "202607300010_cloud_adult_work_management",
+      "description": "成人向けCanvasを所有者限定の非公開作品として制作状態付きで管理",
+      "forwardSha256": "fa55e5d06c9289450f35f0f5bea8eca1f6422531254fdd75a55160115b1f767a",
+      "rollbackSha256": "e24a06e80012aa93ef2a68b49b199a9b0ada4e255a9ba8fb4bc31350f3a83b75"
     }
   ],
-  "schemaSha256": "f0635c0362f45aa80f5a69784379677b05462a8da2b79cff1809f9ba50818dd3"
+  "schemaSha256": "58063ccf6a42953315dc8a2f21f55250cb4085bba5b21774dff409c841ea2b42"
 }

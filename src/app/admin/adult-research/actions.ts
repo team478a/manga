@@ -79,3 +79,30 @@ export async function setCloudAdultStoryboardEnabledAction(formData: FormData) {
   revalidatePath("/admin/adult-research");
   redirect(`/admin/adult-research?message=${encodeURIComponent("成人向けAIネームのDB側設定を更新しました")}`);
 }
+
+export async function setCloudAdultWorkManagementEnabledAction(
+  formData: FormData,
+) {
+  const { profile } = await requireAdmin();
+  const rawEnabled = formData.get("enabled");
+  if (rawEnabled !== "true" && rawEnabled !== "false")
+    redirect("/admin/adult-research?error=作品管理の全体設定を確認してください");
+  const { error } = await createAdminClient().rpc(
+    "set_cloud_adult_work_management_enabled",
+    {
+      p_actor_profile_id: profile.id,
+      p_enabled: rawEnabled === "true",
+    },
+  );
+  if (error)
+    redirect(
+      "/admin/adult-research?error=成人向け作品管理の全体設定を更新できませんでした",
+    );
+  revalidatePath("/admin/adult-research");
+  revalidatePath("/dashboard/adult-works");
+  redirect(
+    `/admin/adult-research?message=${encodeURIComponent(
+      "成人向け作品管理のDB側設定を更新しました",
+    )}`,
+  );
+}

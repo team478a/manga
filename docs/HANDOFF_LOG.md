@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-07-30 Codex: Cloud成人向け作品管理 v1
+
+- Branch: `codex/cloud-adult-work-management-v1`
+- Base: `codex/cloud-adult-canvas-v1` (`c256e4e`)
+- 成人向けCanvasを公開用`works`へ混在させず、`cloud_projects`を正本にした本人限定の作品管理を追加。
+- タイトル、説明、制作状態、非公開メモ、Canvas編集、PDF・連番画像を提供。
+- 専用Feature Flag、DB Kill Switch、所有者RLS、不正UUID拒否、一般向け・他人・公開Project拒否を追加。
+- 公開、共同編集、Marketplace、販売パッケージ、Cloud画像生成、外部Provider送信は引き続き遮断。
+- ローカル品質ゲート: deps:check、lint、typecheck、research:eval、hub:test（278/278）、集中テスト（4/4）、migration静的検証（30件）、build、git diff --checkがPASS。
+- preflightはローカル限定公開設定なしのため想定どおりFAILし、秘密値は表示していない。
+- migration適用、Preview実機E2E、Feature Flag有効化、本番公開、PR mergeは未実施。
+
+---
+
 ## 2026-07-30 Codex: Cloud成人向けAIネーム v1
 
 - Branch: `codex/cloud-adult-storyboard-v1`

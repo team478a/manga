@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（Cloud成人向け作品管理 v1、2026-07-30）
+
+- Branch: `codex/cloud-adult-work-management-v1`
+- Base: `codex/cloud-adult-canvas-v1` (`c256e4e`)
+- 目的: 成人向けCanvasを所有者限定の非公開作品として一覧・詳細管理する
+- 状態: ローカル実装・品質ゲート完了。Draft PR、Preview CI、実機受入れ待ち
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_ADULT_WORK_MANAGEMENT_V1.md`
+
+公開用`works`へ成人向けProjectを登録しない。公開、共同編集、Marketplace、販売パッケージ、Cloud画像生成、外部Provider送信を有効化しない。migration適用、Feature Flag変更、本番公開、PR mergeは責任者承認まで禁止する。
+
+---
+
 ## 0. 現在の優先タスク（Release 2 AI企画提案・限定公開準備、2026-07-30）
 
 - Branch: `codex/cloud-proposal-generation-v1`
