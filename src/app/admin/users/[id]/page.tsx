@@ -7,6 +7,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { setCloudAdultPlanningGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
+import {
+  activateCloudGeneralMonitorAction,
+  stopCloudGeneralMonitorAction,
+} from "./general-monitor-actions";
+import type { CloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
 
 type AdminUser = {
   id: string;
@@ -46,6 +51,8 @@ export default async function AdminUserDetailPage({
   let adultPlanningGrant: AdultPlanningGrant | null = null;
   let adultEntitlementConfigured = true;
   let adultPlanningConfigured = true;
+  let generalMonitor: CloudGeneralMonitorEnrollment | null = null;
+  let generalMonitorConfigured = true;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
@@ -65,6 +72,13 @@ export default async function AdminUserDetailPage({
       .maybeSingle<AdultPlanningGrant>();
     adultPlanningGrant = planningResult.data;
     adultPlanningConfigured = !planningResult.error;
+    const generalMonitorResult = await admin
+      .from("cloud_general_monitor_enrollments")
+      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at")
+      .eq("profile_id", user.id)
+      .maybeSingle<CloudGeneralMonitorEnrollment>();
+    generalMonitor = generalMonitorResult.data;
+    generalMonitorConfigured = !generalMonitorResult.error;
   }
 
   return (
@@ -110,6 +124,62 @@ export default async function AdminUserDetailPage({
           <p className="text-sm text-stone-500">自己紹介</p>
           <p className="whitespace-pre-wrap text-lg">{user.bio || "未設定"}</p>
         </div>
+      </section>
+      <section className="panel mt-6 border-violet-200">
+        <p className="text-sm font-bold text-violet-700">一般向け・無料限定公開</p>
+        <h2 className="mt-1 text-xl font-bold">モニター招待</h2>
+        <p className="mt-2 text-sm text-stone-600">
+          Stripeや購入状態には接続せず、一般向け制作フローの期限とAI利用数だけを管理します。
+        </p>
+        {!hasSupabaseAdminEnv() ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">Supabase管理用設定が必要です。</p>
+        ) : !generalMonitorConfigured ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">一般向けモニターmigrationを適用してください。</p>
+        ) : (
+          <>
+            {generalMonitor ? (
+              <dl className="mt-5 grid gap-3 rounded-xl bg-violet-50 p-4 sm:grid-cols-3">
+                <div><dt className="text-sm text-stone-500">状態</dt><dd className="font-bold">{generalMonitor.status}</dd></div>
+                <div><dt className="text-sm text-stone-500">AI利用数</dt><dd className="font-bold">{generalMonitor.ai_requests_used} / {generalMonitor.ai_request_limit}</dd></div>
+                <div><dt className="text-sm text-stone-500">期限</dt><dd className="font-bold">{new Date(generalMonitor.expires_at).toLocaleDateString("ja-JP")}</dd></div>
+              </dl>
+            ) : null}
+            <form action={activateCloudGeneralMonitorAction.bind(null, user.id)} className="mt-5 space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div><label className="label" htmlFor="generalMonitorCohort">グループ名</label>
+                  <input className="field" defaultValue={generalMonitor?.cohort ?? "general-preview-01"} id="generalMonitorCohort" maxLength={80} name="cohort" required />
+                </div>
+                <div><label className="label" htmlFor="generalMonitorLimit">AI利用上限</label>
+                  <input className="field" defaultValue={generalMonitor?.ai_request_limit ?? 30} id="generalMonitorLimit" max={200} min={1} name="aiRequestLimit" type="number" required />
+                </div>
+                <div><label className="label" htmlFor="generalMonitorExpiry">利用期限</label>
+                  <input className="field" id="generalMonitorExpiry" name="expiresAt" type="datetime-local" required />
+                </div>
+              </div>
+              <div><label className="label" htmlFor="generalMonitorNote">管理者メモ</label>
+                <textarea className="field min-h-20" id="generalMonitorNote" maxLength={500} name="adminNote" />
+              </div>
+              <button className="button bg-violet-700 hover:bg-violet-800" type="submit">
+                {generalMonitor ? "招待条件を更新" : "モニターへ招待"}
+              </button>
+            </form>
+            {generalMonitor ? (
+              <form action={stopCloudGeneralMonitorAction.bind(null, user.id)} className="mt-6 border-t border-stone-200 pt-5">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div><label className="label" htmlFor="generalMonitorStopStatus">終了状態</label>
+                    <select className="field" id="generalMonitorStopStatus" name="status">
+                      <option value="paused">一時停止</option><option value="completed">モニター完了</option><option value="revoked">招待取消</option>
+                    </select>
+                  </div>
+                  <div><label className="label" htmlFor="generalMonitorStopNote">停止理由</label>
+                    <input className="field" id="generalMonitorStopNote" maxLength={500} name="adminNote" required />
+                  </div>
+                </div>
+                <button className="button-secondary mt-4" type="submit">利用を停止</button>
+              </form>
+            ) : null}
+          </>
+        )}
       </section>
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">成人向け市場分析オプション</h2>

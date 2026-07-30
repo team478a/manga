@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-07-30 Codex（一般向け無料限定モニター）
+
+### 状態
+
+`IMPLEMENTED_VALIDATING`。一般向けRelease 1〜6を1〜3名へ招待制で公開する管理基盤を実装した。
+
+### 実装
+
+- 管理者による招待、期限、累計AI上限、更新、停止
+- 市場分析、AI企画、シナリオ、ネーム、コマ画像のAI実行前共通gate
+- 成人向け入力の拒否
+- 利用者フィードバックと管理者一覧
+- 所有者RLS、Service Role限定RPC、監査ログ
+- migration、rollback、canonical schema、preflight、受入表、runbook
+
+### 境界
+
+- Stripe、販売、Marketplace、成人向け権限へ接続しない
+- migration適用、Feature Flag変更、有料API実行、招待、本番公開、PR mergeは行わない
+
+---
+
 ## 2026-07-30 Codex（Cloud Release 6 コマ画像AIおまかせ生成）
 
 ### 状態

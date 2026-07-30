@@ -150,7 +150,13 @@
       "description": "最新採用ネームを冪等にCloud Canvas Projectへ変換",
       "forwardSha256": "d21f7970e08a399ca87202ab785399d5e9a2259f730f20f509ebba792179f0c0",
       "rollbackSha256": "0a768b5c1361a1a4afdd72daa0e901c0e54789f989526295bce04c71fa5755f8"
+    },
+    {
+      "id": "202607300006_cloud_general_monitor_beta",
+      "description": "一般向け無料モニターの招待・期限・累計AI上限・フィードバックを追加",
+      "forwardSha256": "e68200749c3672aa8f08c6e01434bd406a50adadd8853beb6390d3fe8bbaca7d",
+      "rollbackSha256": "03910c881a0e5182a47ab2a4ce20b7cc2715980ba885013c83b68a84569f82d4"
     }
   ],
-  "schemaSha256": "e90aa7ddaf79afdb7d2b0ec98da15b791cd5473ab532a944ee72957898b2249b"
+  "schemaSha256": "3452bcb242c0de867507f186dfe268c250b864b1c63f808c130e10ab9c24cded"
 }

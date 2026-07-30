@@ -21,6 +21,7 @@ import {
   selectCloudProposal,
 } from "@/lib/cloud-proposal-server";
 import { enforceCloudProposalAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
+import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor";
 
 export async function createCloudProposalAction(
   reportId: string,
@@ -34,6 +35,7 @@ export async function createCloudProposalAction(
     const report = await getCloudResearchReport(profile.id, reportId);
     if (report.input.contentClass !== "general")
       throw new PermissionDeniedError("一般向け市場分析Reportを選んでください。");
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "proposal");
     const result = await runCloudProposalAi({ profileId: profile.id, report });
     runId = await createCloudProposalRun({
       profileId: profile.id,

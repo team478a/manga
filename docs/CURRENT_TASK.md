@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-07-30 一般向け限定モニター公開
+
+- 状態: `IMPLEMENTED_VALIDATING`
+- Branch: `codex/cloud-general-monitor-beta-v1`
+- Base: `codex/cloud-panel-image-generation-v1`（Draft PR #73）
+- 対象: 一般向け市場分析、AI企画、シナリオ、ネーム、Canvas、コマ画像
+- 除外: Stripe、販売、Marketplace、成人向け、本番公開
+- migration: `202607300006_cloud_general_monitor_beta`
+- 文書:
+  - [`CLOUD_GENERAL_MONITOR_BETA_PLAN.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_PLAN.md)
+  - [`CLOUD_GENERAL_MONITOR_BETA_ACCEPTANCE.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_ACCEPTANCE.md)
+  - [`CLOUD_GENERAL_MONITOR_BETA_RUNBOOK.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_RUNBOOK.md)
+
+管理者による招待、期限、工程横断の累計AI上限、即時停止、利用者フィードバックを追加した。外部migration適用、Feature Flag変更、実API実行、モニター招待は未実施。
+
 ## 基本情報
 
 - 更新日: 2026-07-30

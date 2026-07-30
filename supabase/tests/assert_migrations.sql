@@ -219,6 +219,30 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_general_monitor_enrollments') is null
+    or to_regclass('public.cloud_general_monitor_ai_usage') is null
+    or to_regclass('public.cloud_general_monitor_feedback') is null
+    or to_regclass('public.cloud_general_monitor_audit_logs') is null
+  then
+    raise exception 'General monitor beta tables are missing';
+  end if;
+  if not exists (
+    select 1 from pg_class
+    where oid='public.cloud_general_monitor_enrollments'::regclass
+      and relrowsecurity
+  ) then
+    raise exception 'General monitor enrollment RLS is disabled';
+  end if;
+  if to_regprocedure('public.consume_cloud_general_monitor_ai_request(uuid,text)') is null
+    or to_regprocedure('public.activate_cloud_general_monitor(uuid,uuid,timestamp with time zone,integer,text,text)') is null
+    or to_regprocedure('public.stop_cloud_general_monitor(uuid,uuid,text,text)') is null
+  then
+    raise exception 'General monitor beta RPCs are missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_research_ai_settings') is null
      or to_regclass('public.cloud_research_ai_audit_logs') is null
      or to_regprocedure(
