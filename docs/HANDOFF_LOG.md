@@ -1630,6 +1630,8 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 - Branch: `codex/cloud-adult-scenario-v1`
 - Base: `codex/cloud-adult-ai-planning-v1` (`5f5ba8a`)
+- Draft PR: [#75](https://github.com/team478a/manga/pull/75)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-d9d7dd-team478as-projects.vercel.app`
 - 一般／成人のシナリオを`content_class`で分離。
 - 成人向け専用Feature Flag、DB Kill Switch、個別許可、本人同意を追加。
 - Provider呼出前と結果保存前に成人向け安全検査を実施。
@@ -1637,4 +1639,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 成人向けネーム工程は画面、Action、RLSで停止。
 - ローカル品質ゲート: deps:check、lint、typecheck、research:eval、hub:test（264/264）、migration静的検証（27件）、build、git diff --checkがPASS。
 - migration roundtripはローカルPostgreSQLなし・Docker daemon停止のためGitHub Actionsで確認する。
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercelが全てPASS。
 - staging migration、本番設定、有料API実行、PR mergeは未実施。

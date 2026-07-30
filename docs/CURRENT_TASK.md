@@ -7,10 +7,13 @@
 - 目的: 一般向けと成人向けを区別し、許可利用者へ成人向けAIシナリオの初稿・修正・履歴・採用を提供する。
 - 実装範囲: 専用Feature Flag、DB Kill Switch、個別許可、専用同意、前後安全検査、`content_class`保存、一般向けネーム工程の拒否。
 - 対象外: 成人向けネーム、Canvas、画像生成、公開、販売、migration適用、本番有効化、有料API実行。
-- 状態: 実装・ローカル品質ゲート完了。Draft PRとPreview CI確認前。
+- Draft PR: [#75](https://github.com/team478a/manga/pull/75)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-d9d7dd-team478as-projects.vercel.app`
+- 状態: `READY_FOR_REVIEW`。実装・ローカル品質ゲート・GitHub CI・Vercel Preview完了。
 - 正本: `docs/cloud/CLOUD_ADULT_SCENARIO_IMPLEMENTATION_PLAN.md`、`docs/cloud/CLOUD_ADULT_SCENARIO_V1.md`
 - 検証: deps:check PASS、lint PASS、typecheck PASS、research:eval PASS、hub:test 264/264 PASS、migration静的検証 27件 PASS、build PASS、git diff --check PASS。
 - ローカルmigration roundtrip: PostgreSQL未導入かつDocker daemon停止のため未実施。GitHub Actionsで確認する。
+- GitHub CI: Core quality PASS、Migration roundtrip PASS、Windows build PASS、Vercel PASS。
 
 ## 基本情報
 
