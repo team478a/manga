@@ -4,6 +4,39 @@
 
 ---
 
+## 2026-07-30 Codex（Cloud Release 2 限定公開前ハードニング）
+
+### 状態
+
+`READY_FOR_PREVIEW_ACCEPTANCE`。PR #69のAI企画提案に、実機受入れ前のUI状態・responsive・preflight・永続化回帰テスト・運用文書を追加した。
+
+### 実装
+
+- 企画生成と選択中のbutton無効化、状態表示
+- 企画未作成Empty State
+- 390pxで評価3項目を縦並びにし、長いAI生成文を折り返す
+- Release 2専用preflightと秘密値非表示テスト
+- 不正UUID、所有者外Run、選択snapshot、RLS照合の集中テスト
+- 限定公開RunbookとBeta受入れ表
+
+### 安全境界
+
+- 管理画面とSupabase Vaultの既存OpenAI接続を再利用
+- ローカル・VercelへAPIキーを複製していない
+- 実OpenAI有料実行、migration適用、Feature Flag変更、本番公開、PR mergeは未実施
+- 成人向けReportの外部AI拒否を維持
+
+### 検証
+
+- 集中テスト: PASS（17/17、追加永続化テスト11/11）
+- deps、lint、typecheck、research eval: PASS
+- Hub test: PASS（210/210）
+- migration静的検証: PASS（22/22）
+- Hub production build、`git diff --check`: PASS
+- GitHub CI、更新Vercel Preview、実ブラウザresponsive: push後確認
+
+---
+
 ## 2026-07-30 Codex（売れ筋優先・AIおまかせ市場分析UX）
 
 ### 状態

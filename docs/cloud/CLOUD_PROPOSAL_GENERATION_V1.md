@@ -41,3 +41,8 @@
 3. 管理画面の市場分析AI接続が有効であることを確認
 4. 一般向け市場分析から3案生成、再表示、選択を確認
 5. 成人向けReportが外部AI生成へ入らないことを確認
+
+詳細は次を正本とする。
+
+- [`CLOUD_RELEASE2_LIMITED_RELEASE_RUNBOOK.md`](CLOUD_RELEASE2_LIMITED_RELEASE_RUNBOOK.md)
+- [`CLOUD_RELEASE2_BETA_ACCEPTANCE.md`](CLOUD_RELEASE2_BETA_ACCEPTANCE.md)

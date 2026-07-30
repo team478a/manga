@@ -15,3 +15,17 @@ export function ProposalSubmitButton() {
     </button>
   );
 }
+
+export function ProposalSelectionButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      aria-disabled={pending}
+      className="button w-full bg-violet-700 hover:bg-violet-800 disabled:cursor-wait disabled:opacity-70"
+      disabled={pending}
+      type="submit"
+    >
+      {pending ? "企画を保存中…" : "この企画で進める"}
+    </button>
+  );
+}

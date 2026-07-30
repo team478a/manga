@@ -10,6 +10,7 @@ import {
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { selectCloudProposalAction } from "../../actions";
+import { ProposalSelectionButton } from "../../proposal-submit-button";
 
 const direction = {
   best_fit: ["本命案", "市場分析との適合を優先"],
@@ -60,16 +61,16 @@ export default async function ProposalComparisonPage({
                 {selected ? <span className="flex items-center gap-1 text-sm font-bold text-emerald-700"><CheckCircle2 className="h-4 w-4" />選択済み</span> : null}
               </div>
               <p className="mt-3 text-sm text-stone-500">{direction[candidate.direction][1]}</p>
-              <h2 className="mt-2 text-2xl font-bold">{candidate.title}</h2>
-              <p className="mt-3 leading-relaxed text-stone-700">{candidate.logline}</p>
-              <dl className="mt-5 grid grid-cols-3 gap-2 text-center text-xs">
+              <h2 className="mt-2 break-words text-2xl font-bold">{candidate.title}</h2>
+              <p className="mt-3 break-words leading-relaxed text-stone-700">{candidate.logline}</p>
+              <dl className="mt-5 grid grid-cols-1 gap-2 text-center text-xs sm:grid-cols-3">
                 {[["売れやすさ", fit[candidate.salesFit]], ["作りやすさ", fit[candidate.productionFit]], ["独自性", fit[candidate.originality]]].map(([label, value]) => (
                   <div className="rounded-lg bg-violet-50 p-2" key={label}><dt className="text-stone-500">{label}</dt><dd className="mt-1 font-bold text-violet-900">{value}</dd></div>
                 ))}
               </dl>
               <dl className="mt-5 space-y-4 text-sm">
                 {[["買われる理由", candidate.whyItCanSell], ["読者が得る体験", candidate.readerPromise], ["主人公", candidate.protagonist], ["主人公の目的", candidate.protagonistGoal], ["中心となる対立", candidate.centralConflict], ["差別化", candidate.differentiation], ["商品設計", candidate.productStrategy], ["結末の方向", candidate.endingDirection]].map(([label, value]) => (
-                  <div key={label}><dt className="font-bold">{label}</dt><dd className="mt-1 leading-relaxed text-stone-600">{value}</dd></div>
+                  <div key={label}><dt className="font-bold">{label}</dt><dd className="mt-1 break-words leading-relaxed text-stone-600">{value}</dd></div>
                 ))}
               </dl>
               <div className="mt-5 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">
@@ -79,7 +80,7 @@ export default async function ProposalComparisonPage({
               {!selection ? (
                 <form action={selectCloudProposalAction.bind(null, reportId, runId)} className="mt-auto pt-6">
                   <input name="candidateId" type="hidden" value={candidate.id} />
-                  <button className="button w-full bg-violet-700 hover:bg-violet-800" type="submit">この企画で進める</button>
+                  <ProposalSelectionButton />
                 </form>
               ) : null}
             </article>

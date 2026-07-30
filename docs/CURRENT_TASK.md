@@ -3,7 +3,7 @@
 ## 基本情報
 
 - 更新日: 2026-07-30
-- 状態: `IMPLEMENTED_LOCAL`
+- 状態: `READY_FOR_PREVIEW_ACCEPTANCE`
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-research-ai-auto-ux-v1` (`a21fd94`)
 - Branch: `codex/cloud-proposal-generation-v1`
@@ -34,11 +34,36 @@
 
 ## 責任者待ち
 
-1. migrationとAPIキー設定は2026-07-30に責任者が実施済み（秘密値は記録しない）
-2. 新migration適用後、Previewで3案生成・再表示・選択の実機E2E
-3. OpenAI利用料金・rate limit・プライバシー告知の承認
-4. 成人向け外部Provider送信を許可する場合の別途明示同意設計
-5. PRレビューと公開判断
+1. 市場分析AI Provider migrationとAPIキー設定は2026-07-30に責任者が実施済み（秘密値は記録しない）
+2. proposal migration `202607300002`の対象Preview DB適用状態確認
+3. 対象Preview branchだけの`CLOUD_PROPOSAL_GENERATION_ENABLED=true`確認
+4. Previewで3案生成・再表示・選択の実機E2E
+5. OpenAI利用料金・rate limit・プライバシー告知の承認
+6. 成人向け外部Provider送信を許可する場合の別途明示同意設計
+7. PRレビューと公開判断
+
+## 限定公開前ハードニング
+
+- 生成・選択buttonのpending状態と二重送信防止
+- 企画未作成Empty State
+- 390pxで評価項目を縦並びにし、AI生成文を折り返す構造
+- Release 2専用preflight（秘密値非表示）
+- 不正UUID、所有者外Run、selection snapshot、RLS契約の集中テスト
+- 限定公開RunbookとBeta受入れ表
+
+## 検証結果
+
+- 集中テスト: PASS（17/17、追加永続化テスト11/11）
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- research:eval: PASS
+- hub:test: PASS（210/210）
+- db:migrations:validate: PASS（22/22）
+- build: PASS
+- git diff --check: PASS
+- 実OpenAI生成: 未実施（有料実行・責任者実機受入れ）
+- 実ブラウザ390px／768px／1280px: 更新Preview作成後に確認予定
 
 ## 次担当者が最初に読むファイル
 
@@ -49,3 +74,5 @@
 5. `docs/HANDOFF_LOG.md`
 6. `docs/cloud/CLOUD_RESEARCH_AI_AUTO_UX_SPEC.md`
 7. `docs/cloud/CLOUD_PROPOSAL_GENERATION_V1.md`
+8. `docs/cloud/CLOUD_RELEASE2_LIMITED_RELEASE_RUNBOOK.md`
+9. `docs/cloud/CLOUD_RELEASE2_BETA_ACCEPTANCE.md`

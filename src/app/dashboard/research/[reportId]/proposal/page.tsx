@@ -123,7 +123,16 @@ export default async function ProposalHandoffPage({
               ))}
             </div>
           </section>
-        ) : null}
+        ) : (
+          <section className="panel mt-6 text-center" aria-labelledby="proposal-empty-title">
+            <h2 className="text-xl font-bold" id="proposal-empty-title">
+              企画はまだ作成されていません
+            </h2>
+            <p className="mt-2 text-stone-600">
+              下のボタンから、市場分析に合う3つの企画を作成できます。
+            </p>
+          </section>
+        )}
         {proposalEnabled ? (
           <form action={createCloudProposalAction.bind(null, report.id)} className="panel mt-6">
             <h2 className="text-xl font-bold">市場分析から企画を作る</h2>
