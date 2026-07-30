@@ -1658,3 +1658,17 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - migration roundtripはローカルPostgreSQLなし・Docker daemon停止のためGitHub Actionsで確認する。
 - GitHub CI: Core quality、Migration roundtrip、Windows build、Vercelが全てPASS。
 - staging migration、本番設定、有料API実行、PR mergeは未実施。
+
+# 2026-07-30 Codex: Cloud成人向けCanvas v1
+
+- Branch: `codex/cloud-adult-canvas-v1`
+- Base: `codex/cloud-adult-storyboard-v1` (`b095f38`)
+- 採用済み成人向けネームをコマ枠・吹き出し・文字レイヤーへ変換する非AI Canvas工程を追加。
+- 成人向けProjectは`content_class=adult`、`18歳以上`、private、所有者本人限定。
+- 一般向け画像生成APIは変換記録と元ネームの区分を二重確認し、成人向けをProvider呼出前に拒否。
+- 成人向け画像生成、外部送信、公開、共同編集、販売は対象外。
+- migration `202607300009_cloud_adult_canvas`、rollback、canonical schema、秘密値非表示preflight、自動テストを追加。
+- staging migration、本番Flag、有料API、PR mergeは責任者確認まで実施しない。
+- Draft PR: [#77](https://github.com/team478a/manga/pull/77)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7ceb67-team478as-projects.vercel.app`
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercelが全てPASS。

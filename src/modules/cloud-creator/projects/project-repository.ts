@@ -1,7 +1,7 @@
 import type { CloudCreatorClient } from "../auth-context";
 
 export const PROJECT_COLUMNS =
-  "id,title,description,age_rating,reading_direction,width,height,dpi,visibility,revision,storage_bytes,source_surface,cover_page_id,updated_at";
+  "id,title,description,content_class,age_rating,reading_direction,width,height,dpi,visibility,revision,storage_bytes,source_surface,cover_page_id,updated_at";
 
 export function findActiveProjects(supabase: CloudCreatorClient) {
   return supabase

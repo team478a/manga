@@ -721,12 +721,12 @@ export function CloudCanvasEditor({
               >
                 連番画像ZIP
               </a>
-              <a
+              {project.content_class === "general" ? <a
                 className="button-secondary"
-            href={creatorProjectExportUrl(project.id, "package")}
+                href={creatorProjectExportUrl(project.id, "package")}
               >
                 販売パッケージ
-              </a>
+              </a> : null}
             </div>
           </details>
           <button

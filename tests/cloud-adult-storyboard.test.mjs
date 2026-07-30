@@ -19,11 +19,12 @@ test("成人向けAIネームmigrationは許可・同意・Kill Switch・区分R
   assert.match(sql, /parent\.content_class=cloud_story_storyboard_versions\.content_class/);
 });
 
-test("成人向けネームはCanvasと画像生成の直前で停止する", async () => {
+test("成人向けネームは専用Canvasへの導線を持ち画像生成とは分離する", async () => {
   const detail = await readFile(new URL("../src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/storyboard/versions/[storyboardVersionId]/page.tsx", import.meta.url), "utf8");
   const actions = await readFile(new URL("../src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/storyboard/actions.ts", import.meta.url), "utf8");
-  assert.match(detail, /成人向けCanvas／画像生成には進みません/);
-  assert.match(actions, /version\.content_class !== "general"/);
+  assert.match(detail, /成人向けCanvas下書きを作成/);
+  assert.match(actions, /cloudAdultCanvasFeatureEnabled/);
+  assert.match(actions, /version\.content_class !== scenario\.content_class/);
   assert.doesNotMatch(detail, /min-w-\[/);
 });
 
