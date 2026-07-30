@@ -8,8 +8,10 @@ import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
 import { getCloudScenarioVersion, getLatestCloudScenarioAdoption } from "@/lib/cloud-scenario-server";
 import { cloudStoryboardFeatureEnabled } from "@/lib/cloud-storyboard";
 import { getCloudStoryboardVersion, getLatestCloudStoryboardAdoption } from "@/lib/cloud-storyboard-server";
+import { cloudStoryboardCanvasFeatureEnabled } from "@/lib/cloud-storyboard-materialization";
+import { getCloudStoryboardMaterialization } from "@/lib/cloud-storyboard-materialization-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
-import { adoptCloudStoryboardAction, reviseCloudStoryboardAction } from "../../actions";
+import { adoptCloudStoryboardAction, materializeCloudStoryboardAction, reviseCloudStoryboardAction } from "../../actions";
 import { StoryboardButton } from "../../storyboard-button";
 
 const shot = { extreme_close_up: "極端な寄り", close_up: "アップ", medium: "中景", wide: "引き", establishing: "状況説明", detail: "細部" } as const;
@@ -33,6 +35,9 @@ export default async function StoryboardVersionPage({ params, searchParams }: {
   if (scenarioAdoption?.scenario_version_id !== scenario.id) notFound();
   const adoption = await getLatestCloudStoryboardAdoption(profile.id, scenario.id);
   const adopted = adoption?.storyboard_version_id === storyboard.id;
+  const materialization = adopted && cloudStoryboardCanvasFeatureEnabled()
+    ? await getCloudStoryboardMaterialization(profile.id, storyboard.id)
+    : null;
   const result = storyboard.result;
   return <main className="page max-w-7xl">
     <Link className="text-violet-700 underline" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${scenario.id}/storyboard`}>← ネーム版履歴へ</Link>
@@ -50,6 +55,6 @@ export default async function StoryboardVersionPage({ params, searchParams }: {
       </article>)}</div></section>
     <section className="panel mt-8"><h2 className="text-xl font-bold">制作ノート</h2><p className="mt-3 text-stone-700">{result.productionNotes.pageRhythm}</p><div className="mt-4 grid gap-4 md:grid-cols-2"><div><h3 className="font-bold">視覚モチーフ</h3><ul className="mt-2 list-disc pl-5 text-stone-600">{result.productionNotes.visualMotifs.map((value) => <li key={value}>{value}</li>)}</ul></div><div><h3 className="font-bold">連続性の注意</h3><ul className="mt-2 list-disc pl-5 text-stone-600">{result.productionNotes.continuityRisks.map((value) => <li key={value}>{value}</li>)}</ul></div></div></section>
     <div className="mt-8 grid gap-5 lg:grid-cols-2"><form action={reviseCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="panel"><h2 className="text-xl font-bold">この版から修正版を作る</h2><label className="label mt-4" htmlFor="revisionInstruction">直したい内容</label><textarea className="field" id="revisionInstruction" maxLength={2000} name="revisionInstruction" required rows={5} placeholder="例：冒頭3ページの展開を速め、セリフを減らす" /><div className="mt-4"><StoryboardButton secondary>AIで修正版を作る</StoryboardButton></div></form>
-      <form action={adoptCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="panel"><h2 className="text-xl font-bold">{adopted ? "画像・Canvas工程の準備ができました" : "制作するネームを決定"}</h2><p className="mt-2 text-stone-600">{adopted ? "この版を次の画像生成またはCanvas変換へ引き継げます。" : "内容を確認し、次工程へ渡すネームを採用してください。"}</p>{!adopted ? <div className="mt-5"><StoryboardButton>このネームを採用</StoryboardButton></div> : null}</form></div>
+      <section className="panel"><h2 className="text-xl font-bold">{adopted ? "Cloud Canvas下書きへ進む" : "制作するネームを決定"}</h2><p className="mt-2 text-stone-600">{adopted ? "全ページのコマ枠・吹き出し・セリフを編集可能な下書きへ変換します。画像生成や課金は発生しません。" : "内容を確認し、次工程へ渡すネームを採用してください。"}</p>{!adopted ? <form action={adoptCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="mt-5"><StoryboardButton>このネームを採用</StoryboardButton></form> : materialization ? <Link className="button mt-5 inline-flex" href={`/creator/${materialization.project_id}/pages/${materialization.first_page_id}`}>作成済みCanvasを開く</Link> : cloudStoryboardCanvasFeatureEnabled() ? <form action={materializeCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="mt-5"><StoryboardButton>Canvas下書きを作成</StoryboardButton></form> : <p className="mt-5 rounded-lg bg-stone-100 p-3 text-sm text-stone-600">Canvas変換は現在準備中です。</p>}</section></div>
   </main>;
 }

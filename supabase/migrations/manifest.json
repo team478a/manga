@@ -144,7 +144,13 @@
       "description": "採用シナリオから生成したネーム版と採用履歴を追記型・所有者単位で保存",
       "forwardSha256": "5f07f0494e51b2bba09ebb50944fea1848fccfaab9b1b0206ffaff1d29a96752",
       "rollbackSha256": "668ce1aca9cfa42b5eeb4dcf0f21e837bc0f5cbbd62e55e5943d4237bfe5444b"
+    },
+    {
+      "id": "202607300005_cloud_storyboard_canvas_materialization",
+      "description": "最新採用ネームを冪等にCloud Canvas Projectへ変換",
+      "forwardSha256": "09379b9460c3eb5e32df630392670bd42da74bb4360e18cfcd71bd05c43f61d6",
+      "rollbackSha256": "0a768b5c1361a1a4afdd72daa0e901c0e54789f989526295bce04c71fa5755f8"
     }
   ],
-  "schemaSha256": "660f7f68e7278761f470f2df669dc3716550ce46e9544490e11e7a5d16650c2a"
+  "schemaSha256": "56611d599ff3c71bd1fb8a0dd587f44c86300bec6f21d20fcf04c62e10560820"
 }
