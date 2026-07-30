@@ -52,6 +52,10 @@
 - migration静的検証: PASS（30件）
 - Hub production build: PASS
 - `git diff --check`: PASS
+- GitHub Core quality: PASS
+- GitHub Migration roundtrip: PASS
+- GitHub Windows build: PASS
+- Vercel Preview: READY
 - preflight: ローカル環境変数未設定のため想定どおりFAIL。値は表示していない。
 
 ## 未実施
@@ -61,3 +65,8 @@
 - 所有者・別ユーザーでの実機E2E
 - 390px、768px、1280pxのPreview目視確認
 - PR merge、本番公開
+
+## Review
+
+- Draft PR: [#78](https://github.com/team478a/manga/pull/78)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-8c61d2-team478as-projects.vercel.app`

@@ -4,8 +4,10 @@
 
 - Branch: `codex/cloud-adult-work-management-v1`
 - Base: `codex/cloud-adult-canvas-v1` (`c256e4e`)
+- Draft PR: [#78](https://github.com/team478a/manga/pull/78)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-8c61d2-team478as-projects.vercel.app`
 - 目的: 成人向けCanvasを所有者限定の非公開作品として一覧・詳細管理する
-- 状態: ローカル実装・品質ゲート完了。Draft PR、Preview CI、実機受入れ待ち
+- 状態: 実装・全CI・Preview完了。責任者の実機受入れ待ち
 - 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_ADULT_WORK_MANAGEMENT_V1.md`
 
 公開用`works`へ成人向けProjectを登録しない。公開、共同編集、Marketplace、販売パッケージ、Cloud画像生成、外部Provider送信を有効化しない。migration適用、Feature Flag変更、本番公開、PR mergeは責任者承認まで禁止する。
