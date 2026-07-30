@@ -152,6 +152,8 @@ for (const required of [
   "cloud_story_proposal_selections",
   "cloud_story_scenario_versions",
   "cloud_story_scenario_adoptions",
+  "cloud_story_storyboard_versions",
+  "cloud_story_storyboard_adoptions",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

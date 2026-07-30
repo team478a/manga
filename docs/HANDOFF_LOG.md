@@ -1441,6 +1441,43 @@ READY_FOR_DRAFT_PR
 
 ---
 
+## 2026-07-30 Codex → 次担当AI（Release 4）
+
+### 状態
+
+READY_FOR_DRAFT_PR
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-storyboard-generation-v1`
+- Base: `codex/cloud-scenario-generation-v1` (`44cd0c7`)
+
+### 完了
+
+- Release 4「AIネーム・ページ構成生成」の仕様・実装計画を作成
+- 最新採用シナリオからページ・コマ単位のネームを構造化生成
+- 初稿、修正版、版履歴、詳細再表示、採用eventを実装
+- 同時採用の競合を既存eventへ安全に収束
+- Feature Flag、rate limit、成人向け拒否、所有者RLS、UUID検証を実装
+- migration `202607300004`、rollback、canonical schema、preflightを追加
+- Hubテスト235件、build、lint、typecheck、migration検証に成功
+
+### 未完了
+
+- Draft PR作成とVercel Preview確認
+- migration roundtripのGitHub CI確認
+- Preview DBへのmigration適用
+- 実OpenAI生成と実機E2E
+
+### 注意事項
+
+- Release 3 PR #70が未mergeのため、Release 4 PRのbaseはRelease 3 branchにする。
+- 成人向けデータを外部AIへ送信しない。
+- migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
+- Cloud Canvas Project化と画像生成は次工程であり、このbranchには含めない。
+
+---
+
 ## 追記テンプレート
 
 ```md
