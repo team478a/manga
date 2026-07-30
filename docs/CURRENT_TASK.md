@@ -7,8 +7,13 @@
 - 目的: 採用済み成人向けネームを、区分を保持した編集用Canvas下書きへ変換する。
 - 実装範囲: 専用Feature Flag、成人向けProject境界、所有者限定RLS、コマ枠・吹き出し・文字レイヤー変換、一般向け画像生成からの明示的分離。
 - 対象外: 成人向け画像生成、外部Provider送信、公開、共同編集、販売、migration適用、本番有効化。
-- 状態: `IN_PROGRESS`
+- Draft PR: [#77](https://github.com/team478a/manga/pull/77)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7ceb67-team478as-projects.vercel.app`
+- 状態: `READY_FOR_REVIEW`
 - 正本: `docs/cloud/CLOUD_ADULT_CANVAS_IMPLEMENTATION_PLAN.md`、`docs/cloud/CLOUD_ADULT_CANVAS_V1.md`
+- 検証: deps:check PASS、lint PASS、typecheck PASS、research:eval PASS、hub:test 273/273 PASS、集中テスト22/22 PASS、migration静的検証29件 PASS、build PASS、git diff --check PASS。
+- GitHub CI: Core quality PASS、Migration roundtrip PASS、Windows build PASS、Vercel PASS。
+- preflight: ローカル環境変数未設定のため想定どおりFAIL。秘密値は表示していない。
 
 ## 2026-07-30 Cloud成人向けAIネーム v1
 

@@ -1669,3 +1669,6 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 成人向け画像生成、外部送信、公開、共同編集、販売は対象外。
 - migration `202607300009_cloud_adult_canvas`、rollback、canonical schema、秘密値非表示preflight、自動テストを追加。
 - staging migration、本番Flag、有料API、PR mergeは責任者確認まで実施しない。
+- Draft PR: [#77](https://github.com/team478a/manga/pull/77)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7ceb67-team478as-projects.vercel.app`
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercelが全てPASS。
