@@ -11,7 +11,7 @@ export function ResearchSubmitButton() {
       disabled={pending}
       type="submit"
     >
-      {pending ? "AIが市場を分析しています…" : "AIで市場分析を実行して保存"}
+      {pending ? "AIが売れ筋を調査しています…" : "どんな作品が売れやすいか調べる"}
     </button>
   );
 }

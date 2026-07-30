@@ -197,7 +197,7 @@ export default async function ProposalHandoffPage({
               />
             </div>
             <Field
-              defaultValue={`${report.input.genre}として、${report.input.theme}を軸にした${report.input.publicationFormat === "series" ? "連載" : "読切"}企画。`}
+              defaultValue={`${report.input.genre}として、${report.input.theme}を軸にした${report.input.publicationFormat === "auto" ? "AI推奨形式" : report.input.publicationFormat === "series" ? "連載" : "読切"}企画。`}
               id="concept"
               label="企画コンセプト"
               maxLength={2000}

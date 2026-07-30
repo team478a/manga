@@ -16,6 +16,12 @@ const request = {
 };
 
 const output = {
+  winning_direction:
+    "仕事に行き詰まった30代女性が、地方で人生と恋をやり直す再出発漫画を狙います。",
+  why_it_sells:
+    "働く女性が自分を重ねやすい悩みと、逆転・癒やしの読後感を両立できるためです。",
+  recommended_product:
+    "短期連載として始め、電子書店で試し読みから購入へつなげる構成を推奨します。",
   market_demand: "公開情報を踏まえると、読者需要を検証する余地があります。",
   competition: "近い訴求の作品との差別化が必要です。",
   reader_persona: "スマートフォンで電子漫画を読む20代女性を中心に想定します。",
@@ -27,7 +33,7 @@ const output = {
   next_proposal: "読者、テーマ、差別化軸を企画条件へ引き継ぎます。",
 };
 
-test("AI市場分析はWeb出典を保存し構造化された9項目だけを返す", async () => {
+test("AI市場分析はWeb出典を保存し売れ筋を先頭にした12項目を返す", async () => {
   let requestBody;
   const fetchImplementation = async (_url, init) => {
     requestBody = JSON.parse(init.body);
@@ -72,8 +78,70 @@ test("AI市場分析はWeb出典を保存し構造化された9項目だけを�
   assert.ok(!JSON.stringify(requestBody).includes("sk-test"));
   assert.equal(analysis.input.evidence.length, 2);
   assert.equal(analysis.result.engineVersion, "openai-web-research-v1");
-  assert.equal(analysis.result.findings.length, 9);
+  assert.equal(analysis.result.findings.length, 12);
+  assert.equal(analysis.result.findings[0].key, "winning_direction");
+  assert.equal(analysis.result.findings[1].key, "why_it_sells");
+  assert.equal(analysis.result.findings[2].key, "recommended_product");
   assert.equal(analysis.result.containsGeneratedMarketNumbers, false);
+});
+
+test("AIおまかせ条件は制約ではなく最適案を選ぶようProviderへ指示する", async () => {
+  let requestBody;
+  await runCloudResearchAiAnalysis({
+    profileId: "46f3ad2e-3b9a-4aef-94ee-188978be9cf0",
+    request: {
+      ...request,
+      audience: "AIにおまかせ",
+      platform: "AIにおまかせ",
+      priceMin: 0,
+      priceMax: 0,
+      publicationFormat: "auto",
+      pageCount: 0,
+    },
+    fetchImplementation: async (_url, init) => {
+      requestBody = JSON.parse(init.body);
+      return new Response(
+        JSON.stringify({
+          output: [
+            {
+              type: "message",
+              content: [
+                {
+                  type: "output_text",
+                  text: JSON.stringify(output),
+                  annotations: [
+                    {
+                      type: "url_citation",
+                      url: "https://example.com/ranking",
+                      title: "公開ランキング",
+                    },
+                    {
+                      type: "url_citation",
+                      url: "https://example.org/store-feature",
+                      title: "電子書店特集",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    },
+    runtimeConfig: {
+      apiKey: "sk-test-00000000000000000000",
+      model: "gpt-5.6-terra",
+    },
+  });
+  const systemPrompt = requestBody.input[0].content;
+  assert.match(systemPrompt, /どんな漫画なら買われる可能性が高いか/);
+  assert.match(systemPrompt, /調査結果から最適案を選んでください/);
+  assert.equal(requestBody.input[1].content.includes('"analysisDate":'), true);
+  assert.equal(
+    requestBody.input[1].content.includes('"publicationFormat":"auto"'),
+    true,
+  );
 });
 
 test("成人向け入力はProvider設定を読む前に拒否する", async () => {
@@ -102,6 +170,6 @@ test("引用がないProvider応答は保存せず安全に失敗する", async 
         ),
       runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
     }),
-    /根拠を確認できる分析結果/,
+    /十分な根拠を確認できる分析結果/,
   );
 });

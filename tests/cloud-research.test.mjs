@@ -113,6 +113,27 @@ test("AI市場分析Formは選択値から制作条件を組み立て、出典�
   assert.equal("evidence" in request, false);
 });
 
+test("AI市場分析Formは価格・形式・ページ数をAIに任せられる", () => {
+  const form = new FormData();
+  for (const [key, value] of Object.entries({
+    genre: "恋愛",
+    audience: "AIにおまかせ",
+    platform: "AIにおまかせ",
+    contentClass: "general",
+    theme: "成長・再出発",
+    referenceWorks: "",
+    priceBand: "auto",
+    publicationFormat: "auto",
+    pageCount: "0",
+  }))
+    form.set(key, value);
+  const request = parseCloudResearchRequestForm(form);
+  assert.equal(request.priceMin, 0);
+  assert.equal(request.priceMax, 0);
+  assert.equal(request.publicationFormat, "auto");
+  assert.equal(request.pageCount, 0);
+});
+
 test("市場分析Feature Flagは未設定時にfail closedする", () => {
   const previous = process.env.CLOUD_RESEARCH_MVP_ENABLED;
   delete process.env.CLOUD_RESEARCH_MVP_ENABLED;
@@ -212,7 +233,7 @@ test("市場分析UIは入力・履歴・再表示と完了後の企画導線を
     ].map((path) => readFile(new URL(path, import.meta.url), "utf8")),
   );
   assert.match(files[0], /priceBand/);
-  assert.match(files[0], /出典URLや確認事実の手入力は不要/);
+  assert.match(files[0], /市場、販売先、価格の知識は不要/);
   assert.doesNotMatch(files[0], /sourceRetrievedAt|sourceFact/);
   assert.match(files[1], /listCloudResearchReports/);
   assert.match(files[2], /市場分析結果/);

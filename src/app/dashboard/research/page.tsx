@@ -87,8 +87,12 @@ export default async function CloudResearchHistoryPage() {
                     ? "成人向け／"
                     : "一般向け／"}
                   {report.input.platform}／
-                  {report.input.publicationFormat === "series" ? "連載" : "読切"}
-                  ／{report.input.pageCount}Page
+                  {report.input.publicationFormat === "auto"
+                    ? "AI推奨形式"
+                    : report.input.publicationFormat === "series"
+                      ? "連載"
+                      : "読切"}
+                  ／{report.input.pageCount === 0 ? "AI推奨ページ数" : `${report.input.pageCount}ページ`}
                 </p>
                 <p className="mt-1 text-xs text-stone-500">
                   {new Date(report.completed_at).toLocaleString("ja-JP")}・出典

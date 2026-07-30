@@ -19,6 +19,12 @@
 - model選択と停止操作を追加
 - 秘密値を含まない監査ログを追加
 - 成人向け入力をProvider設定取得前に拒否
+- ジャンルとテーマだけで実行できる「AIにおまかせ」Formへ簡略化
+- 読者、販売先、形式、価格、ページ数を任意の詳細設定へ移動
+- 「今、狙う作品」「買われる理由」「おすすめの商品設計」を結果の最上段へ追加
+- 直近12か月、需要と競合、異なる2ドメイン以上を調査条件として追加
+- 根拠が1ドメインだけの結果を保存しない品質境界を追加
+- 古い9項目Reportも従来どおり表示できる後方互換を維持
 
 ## Migration
 
@@ -37,15 +43,15 @@
 | `npm run lint` | PASS |
 | `npm run typecheck` | PASS |
 | `npm run research:eval` | PASS |
-| `npm run hub:test` | PASS（193/193） |
+| `npm run hub:test` | PASS（195/195） |
 | `npm run db:migrations:validate` | PASS（21/21） |
 | `npm run build` | PASS |
 | `git diff --check` | PASS |
 
 ## 未実施
 
-- staging migration適用
-- 実APIキー登録
+- staging migration適用（2026-07-30、責任者申告で完了）
+- 実APIキー登録（2026-07-30、責任者申告で完了。値は記録しない）
 - OpenAIの有料実行
 - Preview実機E2E
 - 本番有効化・公開

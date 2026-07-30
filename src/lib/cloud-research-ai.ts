@@ -17,18 +17,24 @@ import {
 } from "./domain-errors.ts";
 
 const findingKeys = [
-  ["market_demand", "市場需要"],
-  ["competition", "競合度"],
-  ["reader_persona", "読者像"],
-  ["popular_themes", "人気テーマ"],
-  ["differentiation", "差別化案"],
-  ["price", "価格帯"],
-  ["channels", "販売チャネル"],
-  ["risks", "リスク"],
-  ["next_proposal", "次の企画への推奨条件"],
+  ["winning_direction", "今、狙う作品"],
+  ["why_it_sells", "買われる理由"],
+  ["recommended_product", "おすすめの商品設計"],
+  ["market_demand", "今の需要"],
+  ["competition", "競合と狙い目"],
+  ["reader_persona", "購入しそうな読者"],
+  ["popular_themes", "反応されやすいテーマ"],
+  ["differentiation", "選ばれるための違い"],
+  ["price", "おすすめ価格"],
+  ["channels", "おすすめ販売先"],
+  ["risks", "売れにくくなる要因"],
+  ["next_proposal", "次に作る企画の条件"],
 ] as const;
 
 const aiOutputSchema = z.object({
+  winning_direction: z.string().trim().min(1).max(1000),
+  why_it_sells: z.string().trim().min(1).max(1000),
+  recommended_product: z.string().trim().min(1).max(1000),
   market_demand: z.string().trim().min(1).max(1000),
   competition: z.string().trim().min(1).max(1000),
   reader_persona: z.string().trim().min(1).max(1000),
@@ -50,7 +56,7 @@ const responseJsonSchema = {
       {
         type: "string",
         description:
-          "出典で確認できる事実と、そこから導く慎重な提案。根拠のない数値は含めない。",
+          "公開情報から確認した現在の傾向を根拠に、専門用語を使わず具体的な制作判断を示す。根拠のない数値は含めない。",
       },
     ]),
   ),
@@ -154,11 +160,29 @@ export async function runCloudResearchAiAnalysis(input: {
         {
           role: "system",
           content:
-            "あなたは日本の漫画市場を調査するアナリストです。Web検索で信頼できる公開情報を確認し、事実と推論を混同せず、日本語で簡潔に分析してください。出典で確認できない市場規模、販売数、成長率、順位などの数値は生成しないでください。一般向け作品のみ扱ってください。",
+            [
+              "あなたは日本の電子漫画市場に詳しい商品企画責任者です。",
+              "利用者が知りたい最重要事項は「今、どんな漫画なら買われる可能性が高いか」です。",
+              "Web検索を使い、公式ストアの特集・ランキング・カテゴリ情報、出版社や電子書店の公開情報、信頼できる業界情報から、現在の需要、競合、購入動機、価格、販売先を調べてください。",
+              "直近12か月の情報を優先し、需要を示す情報と競合を示す情報を、異なる2ドメイン以上で確認してください。",
+              "単なる人気ジャンルではなく、需要が確認でき、競合と違う購入理由を作れる隙間を探してください。",
+              "winning_directionでは、ジャンル、読者、感情的な魅力、物語のフックを組み合わせ、最もおすすめする作品像を一つだけ具体的に示してください。",
+              "why_it_sellsでは、その作品が買われると考える理由を、現在確認できる需要と競合状況から説明してください。",
+              "recommended_productでは、連載か読切、適切なボリューム、価格帯、最初に出す販売先を一つの実行案として示してください。",
+              "入力値が「AIにおまかせ」、形式がauto、価格が0〜0円、ページ数が0なら、その条件は制約ではなく、調査結果から最適案を選んでください。",
+              "利用者が指定した条件より売れやすい代替案がある場合は、理由とともに提案してください。",
+              "曖昧な一般論や「検討してください」だけで終わらず、次に何を作るか判断できる日本語で簡潔に書いてください。",
+              "売上を保証せず、出典で確認できない市場規模、販売数、成長率、順位などの数値は生成しないでください。",
+              "事実とAIの提案を混同せず、一般向け作品だけを扱ってください。",
+            ].join("\n"),
         },
         {
           role: "user",
-          content: JSON.stringify(input.request),
+          content: JSON.stringify({
+            analysisDate: generatedAt,
+            objective: "買われる可能性が高い漫画の商品企画を一つ決める",
+            preferences: input.request,
+          }),
         },
       ],
       text: {
@@ -197,9 +221,12 @@ export async function runCloudResearchAiAnalysis(input: {
     url,
     title,
   }));
-  if (!parsedOutput.success || citations.length === 0)
+  const citationDomains = new Set(
+    citations.map((citation) => new URL(citation.url).hostname.toLowerCase()),
+  );
+  if (!parsedOutput.success || citationDomains.size < 2)
     throw new ProviderUnavailableError(
-      "根拠を確認できる分析結果を作成できませんでした。条件を変えて再実行してください。",
+      "十分な根拠を確認できる分析結果を作成できませんでした。条件を変えて再実行してください。",
     );
   const evidence = toEvidence(citations, generatedAt);
   const completedInput = cloudResearchInputSchema.parse({
@@ -214,11 +241,8 @@ export async function runCloudResearchAiAnalysis(input: {
     classification: "ai_inference",
     sourceUrls,
     evidenceBasis: "ai_inference",
-    confidence: citations.length >= 2 ? "medium" : "low",
-    limitations:
-      citations.length >= 2
-        ? []
-        : ["独立した複数出典での照合が不足しています。"],
+    confidence: "medium",
+    limitations: [],
   }));
   return {
     input: completedInput,

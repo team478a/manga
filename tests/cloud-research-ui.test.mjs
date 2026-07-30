@@ -13,8 +13,10 @@ test("市場分析Formはlabel・補足説明・動的messageを支援技術へ�
   assert.match(form, /<label className="label" htmlFor=\{id\}>/);
   assert.match(form, /role="alert"/);
   assert.match(form, /role="status"/);
-  assert.match(form, /出典URLや確認事実の手入力は不要/);
+  assert.match(form, /市場、販売先、価格の知識は不要/);
   assert.match(form, /<select className="field"/);
+  assert.match(form, /希望がある場合だけ詳細を設定/);
+  assert.match(form, /AIにおまかせ/);
   assert.doesNotMatch(form, /sourceType|sourceTopics|sourceFact/);
   assert.match(report, /aria-live="polite"/);
   assert.match(report, /role="status"/);
@@ -71,6 +73,8 @@ test("利用者画面は内部分析ロジックと参照情報を隠し結果�
 
   assert.match(report, /市場分析結果/);
   assert.match(report, /finding\.summary/);
+  assert.match(report, /AIが選んだ、最も売れやすい方向/);
+  assert.match(report, /売上を保証するものではありません/);
   assert.doesNotMatch(
     report,
     /engine_version|result\.quality|evidenceBasis|finding\.confidence|finding\.limitations|report\.sources|source\.url|source\.retrievedAt|参照情報|verification\.contentType|verification\.sha256/,
@@ -117,7 +121,7 @@ test("AI市場分析は利用者へ出典入力を要求せずProvider未設定�
     readSource("../src/lib/cloud-research-source-verification.ts"),
   ]);
 
-  assert.match(form, /出典URLや確認事実の手入力は不要/);
+  assert.match(form, /市場、販売先、価格の知識は不要/);
   assert.doesNotMatch(form, /手動入力して市場分析を続けられます/);
   assert.match(discovery, /市場分析入力画面で出典を手動入力できます/);
   assert.doesNotMatch(form, /Server取得検証は現在無効です/);

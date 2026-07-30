@@ -67,8 +67,8 @@ export const cloudResearchRequestSchema = z.object({
   referenceWorks: z.string().trim().min(1).max(500),
   priceMin: z.coerce.number().int().min(0).max(1_000_000),
   priceMax: z.coerce.number().int().min(0).max(1_000_000),
-  publicationFormat: z.enum(["series", "one_shot"]),
-  pageCount: z.coerce.number().int().min(1).max(2000),
+  publicationFormat: z.enum(["auto", "series", "one_shot"]),
+  pageCount: z.coerce.number().int().min(0).max(2000),
 })
   .refine((value) => value.priceMin <= value.priceMax, {
     message: "価格帯は下限を上限以下にしてください。",
@@ -186,6 +186,7 @@ export function parseCloudResearchForm(
 export function parseCloudResearchRequestForm(formData: FormData) {
   const priceBand = requiredText(formData, "priceBand");
   const priceBands: Record<string, [number, number]> = {
+    auto: [0, 0],
     free: [0, 0],
     low: [100, 499],
     standard: [500, 999],
@@ -219,7 +220,12 @@ export function runCloudMarketAnalysis(
   input: CloudResearchInput,
   generatedAt = new Date().toISOString(),
 ): CloudResearchResult {
-  const formatLabel = input.publicationFormat === "series" ? "連載" : "読切";
+  const formatLabel =
+    input.publicationFormat === "auto"
+      ? "AI推奨形式"
+      : input.publicationFormat === "series"
+        ? "連載"
+        : "読切";
   const evidenceFor = (...topics: CloudResearchTopic[]) =>
     input.evidence.filter((item) =>
       item.topics.some((topic) => topics.includes(topic)),

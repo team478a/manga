@@ -23,6 +23,35 @@ export default async function CloudResearchReportPage({
       throw error;
     },
   );
+  const primaryKeys = [
+    "winning_direction",
+    "why_it_sells",
+    "recommended_product",
+  ];
+  const primaryFindings = primaryKeys
+    .map((key) => report.result.findings.find((finding) => finding.key === key))
+    .filter((finding) => finding !== undefined);
+  const detailFindings = primaryFindings.length
+    ? report.result.findings.filter(
+        (finding) => !primaryKeys.includes(finding.key),
+      )
+    : report.result.findings;
+  const formatLabel =
+    report.input.publicationFormat === "auto"
+      ? "AIにおまかせ"
+      : report.input.publicationFormat === "series"
+        ? "連載"
+        : "読切";
+  const priceLabel =
+    report.input.priceMin === 0 &&
+    report.input.priceMax === 0 &&
+    report.input.publicationFormat === "auto"
+      ? "AIにおまかせ"
+      : `${report.input.priceMin.toLocaleString("ja-JP")}〜${report.input.priceMax.toLocaleString("ja-JP")}円`;
+  const pageLabel =
+    report.input.pageCount === 0
+      ? "AIにおまかせ"
+      : `${report.input.pageCount}ページ`;
 
   return (
     <main className="page max-w-5xl">
@@ -58,8 +87,44 @@ export default async function CloudResearchReportPage({
         </p>
       ) : null}
 
-      <section className="panel mt-6">
-        <h2 className="text-xl font-bold">入力条件</h2>
+      {primaryFindings[0] ? (
+        <section className="mt-6 rounded-2xl border border-violet-300 bg-gradient-to-br from-violet-700 to-indigo-700 p-6 text-white shadow-lg sm:p-8">
+          <p className="text-sm font-bold text-violet-100">
+            AIが選んだ、最も売れやすい方向
+          </p>
+          <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
+            {primaryFindings[0].label}
+          </h2>
+          <p className="mt-4 break-words text-lg leading-relaxed text-white">
+            {primaryFindings[0].summary}
+          </p>
+          {primaryFindings.length > 1 ? (
+            <div className="mt-6 grid gap-4 md:grid-cols-2">
+              {primaryFindings.slice(1).map((finding) => (
+                <article
+                  className="rounded-xl bg-white/10 p-4 ring-1 ring-white/20"
+                  key={finding.key}
+                >
+                  <h3 className="font-bold text-violet-100">
+                    {finding.label}
+                  </h3>
+                  <p className="mt-2 break-words leading-relaxed">
+                    {finding.summary}
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : null}
+          <p className="mt-5 text-xs text-violet-100">
+            公開情報に基づくAI提案であり、売上を保証するものではありません。
+          </p>
+        </section>
+      ) : null}
+
+      <details className="panel mt-6">
+        <summary className="cursor-pointer text-lg font-bold">
+          分析に使った希望を見る
+        </summary>
         <dl className="mt-4 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
           {[
             ["ジャンル", report.input.genre],
@@ -70,10 +135,10 @@ export default async function CloudResearchReportPage({
               report.input.contentClass === "adult" ? "成人向け" : "一般向け",
             ],
             ["テーマ", report.input.theme],
-            ["参考作品", report.input.referenceWorks],
-            ["価格帯", `${report.input.priceMin.toLocaleString("ja-JP")}〜${report.input.priceMax.toLocaleString("ja-JP")}円`],
-            ["形式", report.input.publicationFormat === "series" ? "連載" : "読切"],
-            ["ページ数", `${report.input.pageCount}Page`],
+            ["作品イメージ", report.input.referenceWorks],
+            ["価格帯", priceLabel],
+            ["形式", formatLabel],
+            ["ページ数", pageLabel],
           ].map(([label, value]) => (
             <div className="rounded-lg bg-stone-50 p-3" key={label}>
               <dt className="text-stone-500">{label}</dt>
@@ -81,7 +146,7 @@ export default async function CloudResearchReportPage({
             </div>
           ))}
         </dl>
-      </section>
+      </details>
 
       <section
         className="mt-6 grid gap-4 lg:grid-cols-2"
@@ -90,7 +155,7 @@ export default async function CloudResearchReportPage({
         <h2 className="sr-only" id="research-results-title">
           分析結果
         </h2>
-        {report.result.findings.map((finding) => (
+        {detailFindings.map((finding) => (
           <article className="panel" key={finding.key}>
             <h3 className="text-xl font-bold">{finding.label}</h3>
             <p className="mt-3 break-words leading-relaxed text-stone-700">
