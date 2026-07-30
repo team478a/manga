@@ -138,7 +138,13 @@
       "description": "採用企画から生成したシナリオ版と採用履歴を追記型・所有者単位で保存",
       "forwardSha256": "cf4ddd57c83bb8030333460ed5ee640cbc6e1bc95306c5a27f3159296b3bc55c",
       "rollbackSha256": "d21bd2b08c02da44aab9d21313634e6b2646f736432bc0899b714fa308077367"
+    },
+    {
+      "id": "202607300004_cloud_story_storyboards",
+      "description": "採用シナリオから生成したネーム版と採用履歴を追記型・所有者単位で保存",
+      "forwardSha256": "5f07f0494e51b2bba09ebb50944fea1848fccfaab9b1b0206ffaff1d29a96752",
+      "rollbackSha256": "668ce1aca9cfa42b5eeb4dcf0f21e837bc0f5cbbd62e55e5943d4237bfe5444b"
     }
   ],
-  "schemaSha256": "9f67206a64bd6816a2788d58538d60f1c466a8a744f270d5b0871d0ade87b977"
+  "schemaSha256": "660f7f68e7278761f470f2df669dc3716550ce46e9544490e11e7a5d16650c2a"
 }

@@ -114,6 +114,14 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_story_storyboard_versions') is null
+     or to_regclass('public.cloud_story_storyboard_adoptions') is null then
+    raise exception 'Current schema Cloud storyboard tables missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_story_scenario_versions') is null
      or to_regclass('public.cloud_story_scenario_adoptions') is null then
     raise exception 'Current schema Cloud scenario tables missing';

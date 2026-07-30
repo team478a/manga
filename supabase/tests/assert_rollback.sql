@@ -2,6 +2,10 @@
 
 do $$
 begin
+  if to_regclass('public.cloud_story_storyboard_adoptions') is not null
+     or to_regclass('public.cloud_story_storyboard_versions') is not null then
+    raise exception 'Cloud story storyboard tables remain after rollback';
+  end if;
   if to_regclass('public.cloud_story_scenario_adoptions') is not null
      or to_regclass('public.cloud_story_scenario_versions') is not null then
     raise exception 'Cloud story scenario tables remain after rollback';

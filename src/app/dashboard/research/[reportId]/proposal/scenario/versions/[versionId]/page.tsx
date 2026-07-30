@@ -77,8 +77,9 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
         </form>
         <form action={adoptCloudScenarioAction.bind(null, reportId, version.id)} className="panel">
           <h2 className="text-xl font-bold">{adopted ? "マンガ生成の準備ができました" : "制作する版を決定"}</h2>
-          <p className="mt-2 text-stone-600">{adopted ? "この版はRelease 4へ引き継ぐ採用版です。" : "内容を確認し、マンガ生成へ渡すシナリオを採用してください。"}</p>
+          <p className="mt-2 text-stone-600">{adopted ? "この版からAIネーム・ページ構成を作成できます。" : "内容を確認し、マンガ生成へ渡すシナリオを採用してください。"}</p>
           {!adopted ? <div className="mt-5"><ScenarioSubmitButton>このシナリオを採用</ScenarioSubmitButton></div> : null}
+          {adopted ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${version.id}/storyboard`}>AIネーム生成へ進む</Link> : null}
         </form>
       </div>
     </main>

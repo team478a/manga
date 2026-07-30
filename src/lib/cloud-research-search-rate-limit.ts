@@ -12,6 +12,7 @@ const CLAIM_EXTRACTION_USER_LIMIT = 20;
 const AI_ANALYSIS_USER_LIMIT = 3;
 const AI_PROPOSAL_USER_LIMIT = 3;
 const AI_SCENARIO_USER_LIMIT = 2;
+const AI_STORYBOARD_USER_LIMIT = 2;
 
 function subjectKey(value: string, secret?: string) {
   const resolved =
@@ -185,4 +186,15 @@ export async function enforceCloudScenarioAiRateLimit(
     throw new RateLimitedError(
       "AIシナリオ生成は1分間に2回までです。少し待ってからお試しください。",
     );
+}
+
+export async function enforceCloudStoryboardAiRateLimit(
+  profileId: string,
+  dependencies: { consume?: Consume; secret?: string } = {},
+) {
+  const consume = dependencies.consume ?? consumeWithDatabase;
+  const globalAllowed = await consume("global", subjectKey("cloud-storyboard-ai:global", dependencies.secret), GLOBAL_LIMIT);
+  if (!globalAllowed) throw new RateLimitedError("AIネーム生成が混み合っています。1分後にお試しください。");
+  const userAllowed = await consume("user", subjectKey(`cloud-storyboard-ai:user:${profileId}`, dependencies.secret), AI_STORYBOARD_USER_LIMIT);
+  if (!userAllowed) throw new RateLimitedError("AIネーム生成は1分間に2回までです。少し待ってからお試しください。");
 }

@@ -28,7 +28,7 @@ function adapter(supabase: Client): CloudScenarioPersistence {
     async findLatestAdoption(profileId, selectionId) {
       return await supabase.from("cloud_story_scenario_adoptions").select("id,owner_profile_id,proposal_selection_id,scenario_version_id,adopted_at")
         .eq("owner_profile_id", profileId).eq("proposal_selection_id", selectionId)
-        .order("adopted_at", { ascending: false }).limit(1).maybeSingle();
+        .order("adopted_at", { ascending: false }).order("id", { ascending: false }).limit(1).maybeSingle();
     },
   };
 }
