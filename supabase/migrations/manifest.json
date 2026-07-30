@@ -132,7 +132,13 @@
       "description": "市場分析から生成した一般向けAI企画3案と選択snapshotを所有者単位で保存",
       "forwardSha256": "ad8c039512be5952e525b79dc928fa5fddf03c1ed005c4a6cd9893e11f0fd90b",
       "rollbackSha256": "a36dddbc1fd6abdf4c4375dbdf7142b94e5a2bfd5864963b7fdf802a1ec092a3"
+    },
+    {
+      "id": "202607300003_cloud_story_scenarios",
+      "description": "採用企画から生成したシナリオ版と採用履歴を追記型・所有者単位で保存",
+      "forwardSha256": "cf4ddd57c83bb8030333460ed5ee640cbc6e1bc95306c5a27f3159296b3bc55c",
+      "rollbackSha256": "d21bd2b08c02da44aab9d21313634e6b2646f736432bc0899b714fa308077367"
     }
   ],
-  "schemaSha256": "d87b413cd5e58d0ae759e64d15a31ca861e2e61c1e76f000f23377b8981cce78"
+  "schemaSha256": "9f67206a64bd6816a2788d58538d60f1c466a8a744f270d5b0871d0ade87b977"
 }
