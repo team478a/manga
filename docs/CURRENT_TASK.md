@@ -3,12 +3,12 @@
 ## 2026-07-31 一般向けモニター招待メール
 
 - 状態: `IMPLEMENTED_VALIDATING`
-- Provider: MailerSend Email API
+- Provider: 既存のResend Email API設定
 - 招待登録と同時に登録メールアドレスへ自動送信
 - 有効な招待は管理画面から再送可能
 - 送信失敗と招待登録失敗を区別して表示
 - API token、Provider response、内部エラーは画面へ露出しない
-- 外部作業: 認証済み送信ドメイン、API token、送信元、Preview URLの設定
+- 外部作業: Resendの認証済み送信ドメイン、API key、送信元、Preview URLの確認
 
 ## 2026-07-31 一般向けモニター運用機能強化
 

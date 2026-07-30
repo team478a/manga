@@ -12,9 +12,9 @@
 
 招待メールには次のServer環境変数も必要。
 
-- `MAILERSEND_API_TOKEN`
-- `MONITOR_INVITE_FROM_EMAIL`（MailerSendで認証済みの送信元）
-- `MONITOR_INVITE_FROM_NAME`
+- `RESEND_API_KEY`（既存のServer専用Resend API key）
+- `RESEND_FROM_EMAIL`（Resendで認証済みの送信元）
+- `RESEND_FROM_NAME`
 - `MONITOR_INVITE_SITE_URL`（対象PreviewのHTTPS origin）
 
 順序は必ず migration → Feature Flag → 招待とする。Feature Flagが停止中は、
@@ -44,4 +44,4 @@
 `CLOUD_GENERAL_MONITOR_BETA_ENABLED=false` に変更して再デプロイする。
 
 Stripe設定、販売設定、成人向け設定は変更しない。
-MailerSendの送信履歴でも受付状態を確認する。API tokenやProvider応答本文を問い合わせ文へ貼らない。
+Resendの送信履歴でも受付状態を確認する。API keyやProvider応答本文を問い合わせ文へ貼らない。

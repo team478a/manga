@@ -6,7 +6,7 @@
 
 ## 2026-07-31 Codex（一般向けモニター招待メール）
 
-MailerSend Email APIによる招待自動送信と再送を実装した。登録済みAuthメールだけを送信先に使い、利用開始URL・期限・AI上限を通知する。送信失敗は招待登録成功と分けて管理者へ案内し、API tokenやProviderエラー本文は露出しない。外部のMailerSend認証済み送信ドメインとVercel環境変数設定は未実施。
+既存のResend Email API設定を利用する招待自動送信と再送を実装した。登録済みAuthメールだけを送信先に使い、利用開始URL・期限・AI上限を通知する。送信失敗は招待登録成功と分けて管理者へ案内し、API keyやProviderエラー本文は露出しない。`RESEND_API_KEY` とResendで認証済みの送信元をServer環境変数から取得する。
 
 ---
 
@@ -27,7 +27,7 @@ MailerSend Email APIによる招待自動送信と再送を実装した。登録
 
 ### 境界
 
-- メールは自動送信しない。外部メールProvider契約後に別実装する。
+- 招待自動送信は後続変更で既存Resend設定へ接続済み。
 - migration適用、Feature Flag変更、招待、本番公開、PR mergeは実施しない。
 
 ---
