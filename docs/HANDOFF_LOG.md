@@ -33,7 +33,10 @@
 - Hub test: PASS（210/210）
 - migration静的検証: PASS（22/22）
 - Hub production build、`git diff --check`: PASS
-- GitHub CI、更新Vercel Preview、実ブラウザresponsive: push後確認
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel Preview: Ready
+- Preview未ログイン画面は390px／768px／1280pxで横overflowなし
+- 企画画面responsiveと実AI縦型E2EはPreviewドメインでMANGAIログインが必要なため`BLOCKED_EXTERNAL_ENVIRONMENT`
 
 ---
 

@@ -63,7 +63,10 @@
 - build: PASS
 - git diff --check: PASS
 - 実OpenAI生成: 未実施（有料実行・責任者実機受入れ）
-- 実ブラウザ390px／768px／1280px: 更新Preview作成後に確認予定
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel Preview: Ready
+- Preview未ログイン画面: 390px／768px／1280pxで横overflowなし
+- 企画画面の実ブラウザresponsive: PreviewドメインでMANGAIログインが必要なため`BLOCKED_EXTERNAL_ENVIRONMENT`
 
 ## 次担当者が最初に読むファイル
 
