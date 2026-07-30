@@ -50,16 +50,18 @@
 - 390pxで評価項目を縦並びにし、AI生成文を折り返す構造
 - Release 2専用preflight（秘密値非表示）
 - 不正UUID、所有者外Run、selection snapshot、RLS契約の集中テスト
+- timeout、429、不正JSON、過大応答、重複案の保存前拒否
+- OpenAI出力・Response容量上限と、同時選択の冪等処理
 - 限定公開RunbookとBeta受入れ表
 
 ## 検証結果
 
-- Release 2集中テスト: PASS（15/15）
+- Release 2集中テスト: PASS（19/19）
 - deps:check: PASS
 - lint: PASS
 - typecheck: PASS（Hub + Desktop）
 - research:eval: PASS
-- hub:test: PASS（210/210）
+- hub:test: PASS（214/214）
 - db:migrations:validate: PASS（22/22）
 - build: PASS
 - git diff --check: PASS

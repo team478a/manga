@@ -39,6 +39,43 @@ export const cloudStoryProposalResultSchema = z.object({
   classification: z.literal("ai_inference"),
   containsGeneratedMarketNumbers: z.literal(false),
   candidates: z.array(cloudStoryProposalCandidateSchema).length(3),
+}).superRefine((result, context) => {
+  const expectedDirections = new Map([
+    ["candidate-best-fit", "best_fit"],
+    ["candidate-differentiated", "differentiated"],
+    ["candidate-lean-test", "lean_test"],
+  ]);
+  const ids = new Set(result.candidates.map((candidate) => candidate.id));
+  const titles = new Set(
+    result.candidates.map((candidate) => candidate.title.toLocaleLowerCase()),
+  );
+  const loglines = new Set(
+    result.candidates.map((candidate) => candidate.logline.toLocaleLowerCase()),
+  );
+
+  if (ids.size !== 3) {
+    context.addIssue({
+      code: "custom",
+      message: "企画候補IDが重複しています。",
+      path: ["candidates"],
+    });
+  }
+  if (titles.size !== 3 || loglines.size !== 3) {
+    context.addIssue({
+      code: "custom",
+      message: "企画候補の内容が重複しています。",
+      path: ["candidates"],
+    });
+  }
+  result.candidates.forEach((candidate, index) => {
+    if (expectedDirections.get(candidate.id) !== candidate.direction) {
+      context.addIssue({
+        code: "custom",
+        message: "企画候補の方向性が一致しません。",
+        path: ["candidates", index, "direction"],
+      });
+    }
+  });
 });
 
 export type CloudStoryProposalCandidate = z.infer<

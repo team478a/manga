@@ -118,6 +118,82 @@ test("選択した企画は候補snapshotとしてそのまま保存する", asy
   assert.equal(saved.research_report_id, reportId);
 });
 
+test("同じ企画の同時選択は既存結果を返して冪等に完了する", async () => {
+  let lookupCount = 0;
+  const existingId = "40000000-0000-4000-8000-000000000002";
+  const selectionId = await selectCloudProposalWithPersistence({
+    profileId,
+    run,
+    candidateId: candidate.id,
+    persistence: persistence({
+      findSelection: async () => {
+        lookupCount += 1;
+        return lookupCount === 1
+          ? { data: null, error: null }
+          : {
+              data: {
+                id: existingId,
+                owner_profile_id: profileId,
+                research_report_id: reportId,
+                proposal_run_id: runId,
+                candidate_id: candidate.id,
+                candidate_snapshot: candidate,
+                selected_at: "2026-07-30T00:00:01.000Z",
+              },
+              error: null,
+            };
+      },
+      insertSelection: async () => ({
+        data: null,
+        error: { code: "23505", message: "private unique detail" },
+      }),
+    }),
+  });
+  assert.equal(selectionId, existingId);
+  assert.equal(lookupCount, 2);
+});
+
+test("別企画との同時選択は内部DB情報を出さず選択済みとして扱う", async () => {
+  let lookupCount = 0;
+  await assert.rejects(
+    selectCloudProposalWithPersistence({
+      profileId,
+      run,
+      candidateId: candidate.id,
+      persistence: persistence({
+        findSelection: async () => {
+          lookupCount += 1;
+          return lookupCount === 1
+            ? { data: null, error: null }
+            : {
+                data: {
+                  id: "40000000-0000-4000-8000-000000000003",
+                  owner_profile_id: profileId,
+                  research_report_id: reportId,
+                  proposal_run_id: runId,
+                  candidate_id: "candidate-differentiated",
+                  candidate_snapshot: {
+                    ...candidate,
+                    id: "candidate-differentiated",
+                    direction: "differentiated",
+                  },
+                  selected_at: "2026-07-30T00:00:01.000Z",
+                },
+                error: null,
+              };
+        },
+        insertSelection: async () => ({
+          data: null,
+          error: { code: "23505", message: "private unique detail" },
+        }),
+      }),
+    }),
+    (error) =>
+      /企画を選択済み/.test(error.message) &&
+      !error.message.includes("private unique detail"),
+  );
+});
+
 test("proposal migrationは所有者RLSとReport・Run照合を強制する", async () => {
   const migration = await readFile(
     new URL(

@@ -36,6 +36,13 @@ export type CloudProposalPersistence = {
 const uuid = z.string().uuid();
 const internal = (message: string, cause: unknown) =>
   new DomainError("INTERNAL_ERROR", message, { cause });
+const isUniqueViolation = (error: unknown) =>
+  Boolean(
+    error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "23505",
+  );
 
 export async function createCloudProposalRunWithPersistence(input: {
   profileId: string;
@@ -95,6 +102,19 @@ export async function selectCloudProposalWithPersistence(input: {
     candidate_id: candidate.id,
     candidate_snapshot: candidate,
   });
-  if (saved.error || !saved.data) throw internal("企画を選択できませんでした。", saved.error);
+  if (isUniqueViolation(saved.error)) {
+    const concurrent = await input.persistence.findSelection(
+      input.profileId,
+      input.run.research_report_id,
+    );
+    if (concurrent.error)
+      throw internal("選択状況を確認できませんでした。", concurrent.error);
+    if (concurrent.data?.candidate_id === candidate.id)
+      return concurrent.data.id;
+    if (concurrent.data)
+      throw new ValidationError("この市場分析では企画を選択済みです。");
+  }
+  if (saved.error || !saved.data)
+    throw internal("企画を選択できませんでした。", saved.error);
   return saved.data.id;
 }

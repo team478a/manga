@@ -12,6 +12,9 @@ import {
   RateLimitedError,
 } from "./domain-errors.ts";
 
+const MAX_OUTPUT_TOKENS = 8_000;
+const MAX_RESPONSE_BYTES = 512 * 1024;
+
 const candidateSchema = {
   type: "object",
   additionalProperties: false,
@@ -24,19 +27,29 @@ const candidateSchema = {
   properties: {
     id: { type: "string", enum: ["candidate-best-fit", "candidate-differentiated", "candidate-lean-test"] },
     direction: { type: "string", enum: ["best_fit", "differentiated", "lean_test"] },
-    title: { type: "string" },
-    logline: { type: "string" },
-    readerPromise: { type: "string" },
-    protagonist: { type: "string" },
-    protagonistGoal: { type: "string" },
-    centralConflict: { type: "string" },
-    tone: { type: "string" },
-    differentiation: { type: "string" },
-    endingDirection: { type: "string" },
-    productStrategy: { type: "string" },
-    whyItCanSell: { type: "string" },
-    strengths: { type: "array", minItems: 2, maxItems: 4, items: { type: "string" } },
-    tradeoffs: { type: "array", minItems: 1, maxItems: 3, items: { type: "string" } },
+    title: { type: "string", minLength: 1, maxLength: 200 },
+    logline: { type: "string", minLength: 1, maxLength: 1000 },
+    readerPromise: { type: "string", minLength: 1, maxLength: 1000 },
+    protagonist: { type: "string", minLength: 1, maxLength: 1000 },
+    protagonistGoal: { type: "string", minLength: 1, maxLength: 1000 },
+    centralConflict: { type: "string", minLength: 1, maxLength: 1000 },
+    tone: { type: "string", minLength: 1, maxLength: 500 },
+    differentiation: { type: "string", minLength: 1, maxLength: 1000 },
+    endingDirection: { type: "string", minLength: 1, maxLength: 1000 },
+    productStrategy: { type: "string", minLength: 1, maxLength: 1000 },
+    whyItCanSell: { type: "string", minLength: 1, maxLength: 1000 },
+    strengths: {
+      type: "array",
+      minItems: 2,
+      maxItems: 4,
+      items: { type: "string", minLength: 1, maxLength: 500 },
+    },
+    tradeoffs: {
+      type: "array",
+      minItems: 1,
+      maxItems: 3,
+      items: { type: "string", minLength: 1, maxLength: 500 },
+    },
     salesFit: { type: "string", enum: ["strong", "balanced", "challenging"] },
     productionFit: { type: "string", enum: ["strong", "balanced", "challenging"] },
     originality: { type: "string", enum: ["strong", "balanced", "challenging"] },
@@ -90,6 +103,7 @@ export async function runCloudProposalAi(input: {
       body: JSON.stringify({
         model: runtime.model,
         store: false,
+        max_output_tokens: MAX_OUTPUT_TOKENS,
         safety_identifier: createHash("sha256")
           .update(`mangai-proposal:${input.profileId}`)
           .digest("hex"),
@@ -139,11 +153,14 @@ export async function runCloudProposalAi(input: {
     throw new ProviderUnavailableError("企画を生成できませんでした。管理者へお問い合わせください。");
   let parsed: unknown;
   try {
-    parsed = JSON.parse(outputText(await response.json()));
+    const responseText = await response.text();
+    if (Buffer.byteLength(responseText, "utf8") > MAX_RESPONSE_BYTES)
+      throw new Error("response too large");
+    parsed = JSON.parse(outputText(JSON.parse(responseText)));
   } catch {
     throw new ProviderUnavailableError("企画結果を確認できませんでした。もう一度お試しください。");
   }
-  return cloudStoryProposalResultSchema.parse({
+  const validated = cloudStoryProposalResultSchema.safeParse({
     engineVersion: "openai-proposal-v1",
     generatedAt,
     model: runtime.model,
@@ -151,4 +168,9 @@ export async function runCloudProposalAi(input: {
     containsGeneratedMarketNumbers: false,
     ...(parsed as object),
   });
+  if (!validated.success)
+    throw new ProviderUnavailableError(
+      "企画結果を確認できませんでした。もう一度お試しください。",
+    );
+  return validated.data;
 }

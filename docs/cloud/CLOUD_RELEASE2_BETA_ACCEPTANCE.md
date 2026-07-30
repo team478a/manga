@@ -6,7 +6,7 @@
 
 | 項目 | 合格条件 | 状態 |
 | --- | --- | --- |
-| 企画AI契約 | 3案、一般向け限定、`store:false` | 自動テスト対象 |
+| 企画AI契約 | 一意な3案、一般向け限定、`store:false`、出力上限 | PASS |
 | UI状態 | loading、empty、error、not found、success | PASS |
 | 二重送信 | 生成・選択中にbutton無効 | PASS |
 | 内部情報秘匿 | 出典・内部評価・APIキー、内部例外を非表示 | PASS |
@@ -17,12 +17,15 @@
 
 2026-07-30再検証:
 
-- Release 2集中テスト: 15/15 PASS
-- Hubテスト: 210/210 PASS
+- Release 2集中テスト: 19/19 PASS
+- Hubテスト: 214/214 PASS
 - dependency境界、lint、Hub/Desktop typecheck、Research Evaluation: PASS
 - Supabase migration検査: 22/22 PASS
 - 企画提案配下に専用のloading／error／not found境界を追加
 - error／not foundはProvider、DB、所有者判定の内部情報を表示しない
+- timeout、429、不正JSON、過大応答、重複案を保存前に安全なエラーへ変換
+- OpenAI出力を8,000 token、受信Responseを512 KiBに制限
+- 同じ企画の同時選択は冪等に成功し、別企画との競合は選択済みとして案内
 
 ## 実機受入れ
 
