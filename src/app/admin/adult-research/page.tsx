@@ -3,7 +3,8 @@ import { requireAdmin } from "@/lib/auth";
 import { cloudAdultResearchFeatureEnabled } from "@/lib/cloud-adult-research";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { setCloudAdultResearchEnabledAction } from "./actions";
+import { setCloudAdultAiPlanningEnabledAction, setCloudAdultResearchEnabledAction } from "./actions";
+import { cloudAdultAiPlanningFeatureEnabled } from "@/lib/cloud-adult-ai-planning";
 
 export default async function AdminAdultResearchPage({
   searchParams,
@@ -16,9 +17,11 @@ export default async function AdminAdultResearchPage({
   let configured = false;
   let databaseEnabled = false;
   let approvedCount = 0;
+  let aiPlanningConfigured = false;
+  let aiPlanningDatabaseEnabled = false;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
-    const [settingsResult, approvedResult] = await Promise.all([
+    const [settingsResult, approvedResult, aiPlanningResult] = await Promise.all([
       admin
         .from("cloud_adult_research_settings")
         .select("enabled,updated_at")
@@ -28,10 +31,17 @@ export default async function AdminAdultResearchPage({
         .from("cloud_adult_research_entitlements")
         .select("profile_id", { count: "exact", head: true })
         .eq("status", "approved"),
+      admin
+        .from("cloud_adult_ai_planning_settings")
+        .select("enabled")
+        .eq("singleton", true)
+        .maybeSingle<{ enabled: boolean }>(),
     ]);
     configured = !settingsResult.error && Boolean(settingsResult.data);
     databaseEnabled = settingsResult.data?.enabled === true;
     approvedCount = approvedResult.count ?? 0;
+    aiPlanningConfigured = !aiPlanningResult.error && Boolean(aiPlanningResult.data);
+    aiPlanningDatabaseEnabled = aiPlanningResult.data?.enabled === true;
   }
 
   return (
@@ -116,6 +126,25 @@ export default async function AdminAdultResearchPage({
         <Link className="button-secondary mt-5" href="/admin/users">
           ユーザー管理へ
         </Link>
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">成人向けAI企画</h2>
+        <p className="mt-2 text-stone-600">
+          環境Flag: {cloudAdultAiPlanningFeatureEnabled() ? "有効" : "停止"} ／ DB Kill Switch: {aiPlanningConfigured ? (aiPlanningDatabaseEnabled ? "有効" : "停止") : "未設定"}
+        </p>
+        {aiPlanningConfigured ? (
+          <form action={setCloudAdultAiPlanningEnabledAction} className="mt-5 space-y-4">
+            <select className="field" defaultValue={aiPlanningDatabaseEnabled ? "true" : "false"} name="enabled">
+              <option value="false">停止</option>
+              <option value="true">有効</option>
+            </select>
+            <button className="button bg-rose-700 hover:bg-rose-800" type="submit">
+              成人向けAI企画の全体設定を更新
+            </button>
+          </form>
+        ) : (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">成人向けAI企画migrationを適用してください。</p>
+        )}
       </section>
     </main>
   );

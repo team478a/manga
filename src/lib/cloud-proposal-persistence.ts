@@ -10,6 +10,7 @@ export type CloudStoryProposalRun = {
   id: string;
   owner_profile_id: string;
   research_report_id: string;
+  content_class: "general" | "adult";
   status: "completed";
   result: CloudStoryProposalResult;
   engine_version: "openai-proposal-v1";
@@ -20,6 +21,7 @@ export type CloudStoryProposalSelection = {
   id: string;
   owner_profile_id: string;
   research_report_id: string;
+  content_class: "general" | "adult";
   proposal_run_id: string;
   candidate_id: string;
   candidate_snapshot: CloudStoryProposalCandidate;
@@ -47,6 +49,7 @@ const isUniqueViolation = (error: unknown) =>
 export async function createCloudProposalRunWithPersistence(input: {
   profileId: string;
   reportId: string;
+  contentClass?: "general" | "adult";
   result: CloudStoryProposalResult;
   persistence: CloudProposalPersistence;
 }) {
@@ -56,6 +59,7 @@ export async function createCloudProposalRunWithPersistence(input: {
   const saved = await input.persistence.insertRun({
     owner_profile_id: input.profileId,
     research_report_id: input.reportId,
+    content_class: input.contentClass ?? "general",
     status: "completed",
     result,
     engine_version: result.engineVersion,
@@ -98,6 +102,7 @@ export async function selectCloudProposalWithPersistence(input: {
   const saved = await input.persistence.insertSelection({
     owner_profile_id: input.profileId,
     research_report_id: input.run.research_report_id,
+    content_class: input.run.content_class,
     proposal_run_id: input.run.id,
     candidate_id: candidate.id,
     candidate_snapshot: candidate,

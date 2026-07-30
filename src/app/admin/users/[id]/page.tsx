@@ -5,7 +5,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { setCloudAdultPlanningGrantAction } from "./adult-feature-actions";
+import { setCloudAdultAiPlanningGrantAction, setCloudAdultPlanningGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
 
 type AdminUser = {
@@ -46,6 +46,8 @@ export default async function AdminUserDetailPage({
   let adultPlanningGrant: AdultPlanningGrant | null = null;
   let adultEntitlementConfigured = true;
   let adultPlanningConfigured = true;
+  let adultAiPlanningGrant: AdultPlanningGrant | null = null;
+  let adultAiPlanningConfigured = true;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
@@ -65,6 +67,14 @@ export default async function AdminUserDetailPage({
       .maybeSingle<AdultPlanningGrant>();
     adultPlanningGrant = planningResult.data;
     adultPlanningConfigured = !planningResult.error;
+    const aiPlanningResult = await admin
+      .from("cloud_adult_feature_grants")
+      .select("status,source,valid_until,admin_note")
+      .eq("profile_id", user.id)
+      .eq("feature_key", "adult_ai_planning")
+      .maybeSingle<AdultPlanningGrant>();
+    adultAiPlanningGrant = aiPlanningResult.data;
+    adultAiPlanningConfigured = !aiPlanningResult.error;
   }
 
   return (
@@ -276,6 +286,40 @@ export default async function AdminUserDetailPage({
             >
               成人向け企画機能の許可を更新
             </button>
+          </form>
+        )}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">成人向けAI企画機能</h2>
+        <p className="mt-2 text-sm text-stone-600">
+          成人向け市場分析とは別に、外部AIへ送信する企画生成を個別許可します。
+        </p>
+        {!adultAiPlanningConfigured ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">成人向けAI企画migrationを適用してください。</p>
+        ) : (
+          <form action={setCloudAdultAiPlanningGrantAction.bind(null, user.id)} className="mt-5 space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="adultAiPlanningStatus">利用状態</label>
+                <select className="field" defaultValue={adultAiPlanningGrant?.status ?? "approved"} id="adultAiPlanningStatus" name="status">
+                  <option value="approved">利用許可</option>
+                  <option value="suspended">一時停止</option>
+                  <option value="expired">期限切れ</option>
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="adultAiPlanningSource">許可理由</label>
+                <select className="field" defaultValue={adultAiPlanningGrant?.source ?? "admin_grant"} id="adultAiPlanningSource" name="source">
+                  <option value="legacy_purchase">既存購入者</option>
+                  <option value="purchase">購入済み</option>
+                  <option value="admin_grant">管理者付与</option>
+                  <option value="campaign">キャンペーン</option>
+                </select>
+              </div>
+            </div>
+            <input name="validUntil" type="hidden" value="" />
+            <textarea className="field min-h-24" defaultValue={adultAiPlanningGrant?.admin_note ?? ""} maxLength={500} name="adminNote" placeholder="管理者メモ" />
+            <button className="button bg-rose-700 hover:bg-rose-800" type="submit">成人向けAI企画の許可を更新</button>
           </form>
         )}
       </section>

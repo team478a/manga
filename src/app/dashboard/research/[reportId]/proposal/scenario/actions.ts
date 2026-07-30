@@ -33,6 +33,8 @@ export async function createCloudScenarioAction(reportId: string) {
       getCloudProposalSelection(profile.id, reportId),
     ]);
     if (!selection) throw new ResourceNotFoundError("採用済み企画が見つかりません。");
+    if (selection.content_class !== "general")
+      throw new PermissionDeniedError("成人向けシナリオ生成は現在準備中です。");
     const result = await runCloudScenarioAi({ profileId: profile.id, report, selection });
     versionId = await createCloudScenarioVersion({
       profileId: profile.id, reportId, selectionId: selection.id, result,
@@ -56,6 +58,8 @@ export async function reviseCloudScenarioAction(reportId: string, versionId: str
     ]);
     if (!selection || parent.research_report_id !== reportId || parent.proposal_selection_id !== selection.id)
       throw new ResourceNotFoundError("修正元シナリオが見つかりません。");
+    if (selection.content_class !== "general")
+      throw new PermissionDeniedError("成人向けシナリオ生成は現在準備中です。");
     const revisionInstruction = String(formData.get("revisionInstruction") ?? "").trim();
     const result = await runCloudScenarioAi({
       profileId: profile.id, report, selection, parentVersion: parent, revisionInstruction,
