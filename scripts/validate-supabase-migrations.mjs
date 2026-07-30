@@ -148,6 +148,8 @@ for (const required of [
   "cloud_research_ai_audit_logs",
   "set_cloud_research_ai_provider",
   "get_cloud_research_ai_runtime_config",
+  "cloud_story_proposal_runs",
+  "cloud_story_proposal_selections",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

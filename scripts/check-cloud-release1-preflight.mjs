@@ -100,6 +100,11 @@ export function checkCloudRelease1Environment(env = process.env) {
     env,
     checks,
   );
+  const proposalEnabled = flag(
+    "CLOUD_PROPOSAL_GENERATION_ENABLED",
+    env,
+    checks,
+  );
   if (adultPlanningEnabled) {
     addRequired(
       checks,
@@ -148,13 +153,14 @@ export function checkCloudRelease1Environment(env = process.env) {
     verificationEnabled ||
     searchEnabled ||
     adultResearchEnabled ||
-    adultPlanningEnabled
+    adultPlanningEnabled ||
+    proposalEnabled
   ) {
     addRequired(
       checks,
       "SUPABASE_SERVICE_ROLE_KEY",
       configured(env.SUPABASE_SERVICE_ROLE_KEY),
-      "Server側rate limitまたは成人向け利用許可の管理操作に必要です。",
+        "Server側rate limit、AI企画提案、または成人向け利用許可の管理操作に必要です。",
     );
   } else {
     checks.push({
@@ -163,6 +169,25 @@ export function checkCloudRelease1Environment(env = process.env) {
       message:
         "検索・Server検証・成人向けオプションが無効なためRelease 1追加用途では未使用です。",
     });
+  }
+  if (proposalEnabled) {
+    const rateLimitSecret =
+      env.CLOUD_RESEARCH_SEARCH_RATE_LIMIT_SECRET ??
+      env.CLOUD_AI_RATE_LIMIT_SECRET ??
+      env.SUPABASE_SERVICE_ROLE_KEY;
+    addRequired(
+      checks,
+      "CLOUD_PROPOSAL_GENERATION_ENABLED",
+      true,
+      "AI企画提案Feature Flagが有効です。",
+    );
+    addRequired(
+      checks,
+      "CLOUD_AI_RATE_LIMIT_SECRET",
+      configured(rateLimitSecret) &&
+        Buffer.byteLength(String(rateLimitSecret), "utf8") >= 32,
+      "AI企画提案には32byte以上のServer専用秘密値が必要です。",
+    );
   }
   if (verificationEnabled || searchEnabled) {
     const rateLimitSecret =

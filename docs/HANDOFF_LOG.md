@@ -4,6 +4,42 @@
 
 ---
 
+## 2026-07-30 Codex（Cloud Release 2 限定公開前ハードニング）
+
+### 状態
+
+`READY_FOR_PREVIEW_ACCEPTANCE`。PR #69のAI企画提案に、実機受入れ前のUI状態・responsive・preflight・永続化回帰テスト・運用文書を追加した。
+
+### 実装
+
+- 企画生成と選択中のbutton無効化、状態表示
+- 企画未作成Empty State
+- 390pxで評価3項目を縦並びにし、長いAI生成文を折り返す
+- Release 2専用preflightと秘密値非表示テスト
+- 不正UUID、所有者外Run、選択snapshot、RLS照合の集中テスト
+- 限定公開RunbookとBeta受入れ表
+
+### 安全境界
+
+- 管理画面とSupabase Vaultの既存OpenAI接続を再利用
+- ローカル・VercelへAPIキーを複製していない
+- 実OpenAI有料実行、migration適用、Feature Flag変更、本番公開、PR mergeは未実施
+- 成人向けReportの外部AI拒否を維持
+
+### 検証
+
+- 集中テスト: PASS（17/17、追加永続化テスト11/11）
+- deps、lint、typecheck、research eval: PASS
+- Hub test: PASS（210/210）
+- migration静的検証: PASS（22/22）
+- Hub production build、`git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel Preview: Ready
+- Preview未ログイン画面は390px／768px／1280pxで横overflowなし
+- 企画画面responsiveと実AI縦型E2EはPreviewドメインでMANGAIログインが必要なため`BLOCKED_EXTERNAL_ENVIRONMENT`
+
+---
+
 ## 2026-07-30 Codex（売れ筋優先・AIおまかせ市場分析UX）
 
 ### 状態
@@ -1326,6 +1362,47 @@ READY_FOR_REVIEW（統合完了、Draft PR作成後は責任者レビュー待�
 - `feature/manga-canvas-mvp`への直接merge・push、PR #14〜#28の個別merge、PR #33のmerge・rebase・base変更、Phase D1のデザインコード実装、force push、既存migrationの書き換えのいずれも実施していない
 - PR #14〜#28の元のDraft PR自体は変更・merge・rebaseしておらず、そのまま残っている
 - `design/mangai-ui-refresh`（PR #33）は引き続き別ブランチ・別PRとして維持している
+
+---
+
+## 2026-07-30 Codex — Cloud Release 2 AI企画提案
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ
+
+- `codex/cloud-proposal-generation-v1`
+- Base: `codex/cloud-research-ai-auto-ux-v1` (`a21fd94`)
+
+### 完了
+
+- 市場分析Reportから一般向け企画3案をOpenAI Responses APIで生成
+- 本命・差別化・小さく試す方向を比較し、1案を保存
+- 管理画面の既存OpenAI設定とSupabase Vaultを再利用
+- 出典URLと内部ロジックを利用者UIから非表示
+- 成人向け外部AI送信を拒否し、既存手動企画を維持
+- 所有者RLS、Feature Flag、rate limit、UUID検証、内部エラー秘匿
+- forward / rollback / canonical schemaを追加
+
+### 責任者待ち
+
+1. `202607300002_cloud_story_proposals.sql`のstaging適用
+2. 対象Preview branchへ`CLOUD_PROPOSAL_GENERATION_ENABLED=true`を設定
+3. 一般向けReportから生成・再表示・選択の実機確認
+4. OpenAI利用コストと公開判断
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: Hub PASS、Desktopは依存導入後PASS
+- research:eval: PASS
+- hub:test: PASS（198/198）
+- migrations: PASS（22件）
+- build: PASS
+- git diff --check: PASS
 
 ---
 

@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（Release 2 AI企画提案・限定公開準備、2026-07-30）
+
+- Branch: `codex/cloud-proposal-generation-v1`
+- Base: `codex/cloud-research-ai-auto-ux-v1` (`a21fd94`)
+- Draft PR: [#69](https://github.com/team478a/manga/pull/69)
+- 目的: 完了した一般向け市場分析から3企画を生成・比較・選択し、シナリオ生成へ引き継ぐ
+- 状態: 実装・限定公開前ハードニング・ローカル品質ゲート完了。更新Preview CIと責任者実機受入れ待ち
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_PROPOSAL_GENERATION_V1.md`、`docs/cloud/CLOUD_RELEASE2_LIMITED_RELEASE_RUNBOOK.md`
+
+管理画面で設定済みのOpenAI接続とSupabase Vaultを再利用する。APIキーをローカル・Vercelへ複製しない。成人向けReportを外部AIへ送信しない。
+
+---
+
 ## 0. 現在の優先タスク（売れ筋優先・AIおまかせ市場分析、2026-07-30）
 
 - Branch: `codex/cloud-research-ai-auto-ux-v1`
