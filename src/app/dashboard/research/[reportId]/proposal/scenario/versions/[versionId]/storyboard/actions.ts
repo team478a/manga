@@ -19,6 +19,7 @@ import {
   getCloudAdultStoryboardAccess,
   recordCloudAdultStoryboardConsent,
 } from "@/lib/cloud-adult-storyboard";
+import { consumeCloudAdultMonitorAiRequest } from "@/lib/cloud-adult-monitor";
 
 function enabled() {
   if (!cloudResearchFeatureEnabled() || !cloudProposalFeatureEnabled() || !cloudScenarioFeatureEnabled() || !cloudStoryboardFeatureEnabled())
@@ -43,6 +44,8 @@ export async function createCloudStoryboardAction(reportId: string, scenarioVers
       getCloudResearchReport(profile.id, reportId),
       adoptedScenario(profile.id, reportId, scenarioVersionId),
     ]);
+    if (scenario.content_class === "adult")
+      await consumeCloudAdultMonitorAiRequest(profile.id, "storyboard");
     const result = scenario.content_class === "adult"
       ? await runCloudAdultStoryboardAi({ profileId: profile.id, report, scenario })
       : await runCloudStoryboardAi({ profileId: profile.id, report, scenario });
@@ -68,6 +71,8 @@ export async function reviseCloudStoryboardAction(reportId: string, scenarioVers
     ]);
     if (parent.scenario_version_id !== scenario.id) throw new ResourceNotFoundError("修正元ネームが見つかりません。");
     if (parent.content_class !== scenario.content_class) throw new ResourceNotFoundError("修正元ネームが見つかりません。");
+    if (scenario.content_class === "adult")
+      await consumeCloudAdultMonitorAiRequest(profile.id, "storyboard");
     const revisionInstruction = String(formData.get("revisionInstruction") ?? "").trim();
     const result = scenario.content_class === "adult"
       ? await runCloudAdultStoryboardAi({ profileId: profile.id, report, scenario, parentVersion: parent, revisionInstruction })

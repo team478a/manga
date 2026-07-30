@@ -7,6 +7,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { grantCloudAdultWorkflowAccessAction, setCloudAdultAiPlanningGrantAction, setCloudAdultPlanningGrantAction, setCloudAdultScenarioGrantAction, setCloudAdultStoryboardGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
+import {
+  activateCloudAdultMonitorAction,
+  stopCloudAdultMonitorAction,
+} from "./adult-monitor-actions";
+import type { CloudAdultMonitorEnrollment } from "@/lib/cloud-adult-monitor";
 
 type AdminUser = {
   id: string;
@@ -52,6 +57,8 @@ export default async function AdminUserDetailPage({
   let adultScenarioConfigured = true;
   let adultStoryboardGrant: AdultPlanningGrant | null = null;
   let adultStoryboardConfigured = true;
+  let adultMonitor: CloudAdultMonitorEnrollment | null = null;
+  let adultMonitorConfigured = true;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
@@ -95,6 +102,13 @@ export default async function AdminUserDetailPage({
       .maybeSingle<AdultPlanningGrant>();
     adultStoryboardGrant = storyboardResult.data;
     adultStoryboardConfigured = !storyboardResult.error;
+    const monitorResult = await admin
+      .from("cloud_adult_monitor_enrollments")
+      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at")
+      .eq("profile_id", user.id)
+      .maybeSingle<CloudAdultMonitorEnrollment>();
+    adultMonitor = monitorResult.data;
+    adultMonitorConfigured = !monitorResult.error;
   }
 
   return (
@@ -307,6 +321,89 @@ export default async function AdminUserDetailPage({
               成人向け企画機能の許可を更新
             </button>
           </form>
+        )}
+      </section>
+      <section className="panel mt-6 border-violet-300 bg-violet-50">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-violet-700">第2段階・限定公開</p>
+            <h2 className="mt-1 text-xl font-bold">成人向け限定モニター</h2>
+            <p className="mt-2 text-sm leading-relaxed text-stone-700">
+              期間とAI利用上限を設定し、市場分析から作品管理までを一括許可します。
+              停止時は全工程の許可も同時に停止します。
+            </p>
+          </div>
+          <Link className="button-secondary" href="/admin/adult-monitors">モニター一覧</Link>
+        </div>
+        {!adultMonitorConfigured ? (
+          <p className="mt-4 rounded-lg bg-amber-50 p-4 text-amber-950">
+            限定モニターmigrationを適用してください。
+          </p>
+        ) : (
+          <>
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <div className="rounded-xl bg-white p-4">
+                <p className="text-sm text-stone-500">状態</p>
+                <p className="mt-1 font-bold">{adultMonitor?.status ?? "未登録"}</p>
+              </div>
+              <div className="rounded-xl bg-white p-4">
+                <p className="text-sm text-stone-500">AI利用数</p>
+                <p className="mt-1 font-bold">
+                  {adultMonitor ? `${adultMonitor.ai_requests_used} / ${adultMonitor.ai_request_limit}` : "—"}
+                </p>
+              </div>
+              <div className="rounded-xl bg-white p-4">
+                <p className="text-sm text-stone-500">期限</p>
+                <p className="mt-1 font-bold">
+                  {adultMonitor ? dateJa(adultMonitor.expires_at) : "—"}
+                </p>
+              </div>
+            </div>
+            <form action={activateCloudAdultMonitorAction.bind(null, user.id)} className="mt-5 space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="label" htmlFor="monitorSource">許可理由</label>
+                  <select className="field" defaultValue="legacy_purchase" id="monitorSource" name="source">
+                    <option value="legacy_purchase">既存購入者</option>
+                    <option value="purchase">購入済み</option>
+                    <option value="admin_grant">管理者付与</option>
+                    <option value="campaign">キャンペーン</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label" htmlFor="monitorCohort">モニター区分</label>
+                  <input className="field" defaultValue={adultMonitor?.cohort ?? "adult-beta-1"} id="monitorCohort" name="cohort" required />
+                </div>
+                <div>
+                  <label className="label" htmlFor="monitorLimit">AI利用上限</label>
+                  <input className="field" defaultValue={adultMonitor?.ai_request_limit ?? 20} id="monitorLimit" max={100} min={1} name="aiRequestLimit" required type="number" />
+                </div>
+                <div>
+                  <label className="label" htmlFor="monitorExpiresAt">有効期限</label>
+                  <input className="field" defaultValue={adultMonitor?.expires_at?.slice(0, 16)} id="monitorExpiresAt" name="expiresAt" required type="datetime-local" />
+                </div>
+              </div>
+              <textarea className="field min-h-20" defaultValue={adultMonitor ? "限定モニター設定を更新" : "限定モニター開始"} maxLength={500} name="adminNote" required />
+              <button className="button bg-violet-700 hover:bg-violet-800" type="submit">
+                モニター開始・全工程を一括許可
+              </button>
+            </form>
+            {adultMonitor ? (
+              <form action={stopCloudAdultMonitorAction.bind(null, user.id)} className="mt-6 border-t border-violet-200 pt-5">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <select className="field" defaultValue="paused" name="status">
+                    <option value="paused">一時停止</option>
+                    <option value="completed">モニター完了</option>
+                    <option value="revoked">許可取消</option>
+                  </select>
+                  <input className="field" maxLength={500} name="adminNote" placeholder="停止理由（必須）" required />
+                </div>
+                <button className="button-secondary mt-4 border-red-300 text-red-700" type="submit">
+                  モニターと全工程を停止
+                </button>
+              </form>
+            ) : null}
+          </>
         )}
       </section>
       <section className="panel mt-6 border-violet-200 bg-violet-50">

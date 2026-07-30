@@ -22,6 +22,7 @@ import {
 } from "@/lib/cloud-scenario-server";
 import { PermissionDeniedError, ResourceNotFoundError } from "@/lib/domain-errors";
 import { enforceCloudScenarioAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
+import { consumeCloudAdultMonitorAiRequest } from "@/lib/cloud-adult-monitor";
 
 function assertEnabled() {
   if (!cloudResearchFeatureEnabled() || !cloudProposalFeatureEnabled() || !cloudScenarioFeatureEnabled())
@@ -45,6 +46,8 @@ export async function createCloudScenarioAction(reportId: string) {
     ]);
     if (!selection) throw new ResourceNotFoundError("採用済み企画が見つかりません。");
     await assertContentClassAccess(profile.id, selection.content_class);
+    if (selection.content_class === "adult")
+      await consumeCloudAdultMonitorAiRequest(profile.id, "scenario");
     const result = selection.content_class === "adult"
       ? await runCloudAdultScenarioAi({ profileId: profile.id, report, selection })
       : await runCloudScenarioAi({ profileId: profile.id, report, selection });
@@ -74,6 +77,8 @@ export async function reviseCloudScenarioAction(reportId: string, versionId: str
     if (parent.content_class !== selection.content_class)
       throw new ResourceNotFoundError("修正元シナリオが見つかりません。");
     await assertContentClassAccess(profile.id, selection.content_class);
+    if (selection.content_class === "adult")
+      await consumeCloudAdultMonitorAiRequest(profile.id, "scenario");
     const revisionInstruction = String(formData.get("revisionInstruction") ?? "").trim();
     const aiInput = { profileId: profile.id, report, selection, parentVersion: parent, revisionInstruction };
     const result = selection.content_class === "adult"

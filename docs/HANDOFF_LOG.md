@@ -1653,6 +1653,18 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 -
 ```
+# 2026-07-30 Codex: 成人向け限定モニター 第2段階
+
+- Branch: `codex/cloud-adult-monitor-beta-v1`
+- 管理者が期間・AI上限・区分を指定して、成人向け制作全工程を一括許可できる。
+- 一時停止・完了・取消では市場分析と全機能許可を原子的に停止する。
+- 成人向け市場分析、AI企画、シナリオ、ネームのProvider呼出前に工程横断上限を消費する。
+- モニター本人のフィードバック画面と管理者一覧を追加。
+- 成人向け画像生成、公開、販売は引き続き対象外。
+- ローカル品質ゲート: deps:check、lint、typecheck:hub、research:eval、hub:test（284/284）、migration静的検証（32件）、build、git diff --checkがPASS。
+- preflightはローカル環境変数未設定のため想定どおりFAILし、秘密値は表示していない。
+- migration適用、Preview Flag設定、有料API実行、本番公開は未実施。
+
 # 2026-07-30 Codex: Cloud成人向けAI企画 v1
 
 - `content_class`で一般向け／成人向けProposalを分離。
