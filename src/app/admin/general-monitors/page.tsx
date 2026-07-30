@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { CloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
+import {
+  cloudGeneralMonitorBetaEnabled,
+  type CloudGeneralMonitorEnrollment,
+} from "@/lib/cloud-general-monitor";
 
 type Profile = { id: string; display_name: string };
 type Feedback = {
@@ -11,6 +14,17 @@ type Feedback = {
 
 export default async function GeneralMonitorsAdminPage() {
   await requireAdmin();
+  if (!cloudGeneralMonitorBetaEnabled()) {
+    return (
+      <main className="page">
+        <p className="font-semibold text-violet-700">一般向け・無料限定公開</p>
+        <h1 className="mt-1 text-3xl font-bold">モニター管理</h1>
+        <p className="mt-6 rounded-lg bg-stone-100 p-4 text-stone-700" role="status">
+          Feature Flagが停止中です。migration適用後に対象Previewブランチだけで有効化してください。
+        </p>
+      </main>
+    );
+  }
   const admin = createAdminClient();
   const [enrollmentsResult, feedbackResult, profilesResult] = await Promise.all([
     admin.from("cloud_general_monitor_enrollments")

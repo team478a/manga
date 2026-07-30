@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
+import { cloudGeneralMonitorBetaEnabled } from "@/lib/cloud-general-monitor";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const activationSchema = z.object({
@@ -30,6 +31,8 @@ export async function activateCloudGeneralMonitorAction(
   formData: FormData,
 ) {
   const { profile: actor } = await requireAdmin();
+  if (!cloudGeneralMonitorBetaEnabled())
+    redirect(`/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("一般向けモニターは現在停止中です")}`);
   const parsed = activationSchema.safeParse({
     profileId,
     cohort: value(formData, "cohort"),
@@ -62,6 +65,8 @@ export async function stopCloudGeneralMonitorAction(
   formData: FormData,
 ) {
   const { profile: actor } = await requireAdmin();
+  if (!cloudGeneralMonitorBetaEnabled())
+    redirect(`/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("一般向けモニターは現在停止中です")}`);
   const parsed = stopSchema.safeParse({
     profileId,
     status: value(formData, "status"),

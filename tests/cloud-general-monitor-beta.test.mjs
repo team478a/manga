@@ -8,6 +8,17 @@ test("一般向けモニターFeature Flagは未設定時fail closedする", asy
   assert.match(source, /CLOUD_GENERAL_MONITOR_BETA_ENABLED\?\.toLowerCase\(\) === "true"/);
 });
 
+test("管理画面もFeature Flag停止中はDB参照と招待操作を閉じる", async () => {
+  const [listPage, detailPage, actions] = await Promise.all([
+    readFile(new URL("../src/app/admin/general-monitors/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/admin/users/[id]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/admin/users/[id]/general-monitor-actions.ts", import.meta.url), "utf8"),
+  ]);
+  assert.match(listPage, /if \(!cloudGeneralMonitorBetaEnabled\(\)\)/);
+  assert.match(detailPage, /if \(generalMonitorEnabled\)/);
+  assert.match(actions, /if \(!cloudGeneralMonitorBetaEnabled\(\)\)/);
+});
+
 test("migrationは本人限定・期限・AI上限・管理者停止を強制する", async () => {
   const sql = await readFile(new URL("../supabase/migrations/202607300006_cloud_general_monitor_beta.sql", import.meta.url), "utf8");
   assert.match(sql, /owner_profile_id=public\.current_profile_id\(\)/);

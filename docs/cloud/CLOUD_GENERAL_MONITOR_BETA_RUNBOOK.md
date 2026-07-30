@@ -8,6 +8,9 @@
 4. `CLOUD_ADULT_RESEARCH_ENABLED=false`、`CLOUD_ADULT_PLANNING_ENABLED=false` を確認する。
 5. `npm run cloud:general-monitor:preflight` を実行する。出力に値は表示されない。
 
+順序は必ず migration → Feature Flag → 招待とする。Feature Flagが停止中は、
+管理画面もモニター用テーブルを参照せず、招待・停止操作を受け付けない。
+
 ## 2. 招待
 
 1. `/admin/users` から対象ユーザーを選ぶ。

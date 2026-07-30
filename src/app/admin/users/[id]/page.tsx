@@ -11,7 +11,10 @@ import {
   activateCloudGeneralMonitorAction,
   stopCloudGeneralMonitorAction,
 } from "./general-monitor-actions";
-import type { CloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
+import {
+  cloudGeneralMonitorBetaEnabled,
+  type CloudGeneralMonitorEnrollment,
+} from "@/lib/cloud-general-monitor";
 
 type AdminUser = {
   id: string;
@@ -53,6 +56,7 @@ export default async function AdminUserDetailPage({
   let adultPlanningConfigured = true;
   let generalMonitor: CloudGeneralMonitorEnrollment | null = null;
   let generalMonitorConfigured = true;
+  const generalMonitorEnabled = cloudGeneralMonitorBetaEnabled();
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
@@ -72,13 +76,15 @@ export default async function AdminUserDetailPage({
       .maybeSingle<AdultPlanningGrant>();
     adultPlanningGrant = planningResult.data;
     adultPlanningConfigured = !planningResult.error;
-    const generalMonitorResult = await admin
-      .from("cloud_general_monitor_enrollments")
-      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at")
-      .eq("profile_id", user.id)
-      .maybeSingle<CloudGeneralMonitorEnrollment>();
-    generalMonitor = generalMonitorResult.data;
-    generalMonitorConfigured = !generalMonitorResult.error;
+    if (generalMonitorEnabled) {
+      const generalMonitorResult = await admin
+        .from("cloud_general_monitor_enrollments")
+        .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at")
+        .eq("profile_id", user.id)
+        .maybeSingle<CloudGeneralMonitorEnrollment>();
+      generalMonitor = generalMonitorResult.data;
+      generalMonitorConfigured = !generalMonitorResult.error;
+    }
   }
 
   return (
@@ -131,7 +137,11 @@ export default async function AdminUserDetailPage({
         <p className="mt-2 text-sm text-stone-600">
           Stripeや購入状態には接続せず、一般向け制作フローの期限とAI利用数だけを管理します。
         </p>
-        {!hasSupabaseAdminEnv() ? (
+        {!generalMonitorEnabled ? (
+          <p className="mt-3 rounded-lg bg-stone-100 p-4 text-stone-700">
+            Feature Flagが停止中です。migration適用後に対象Previewブランチだけで有効化してください。
+          </p>
+        ) : !hasSupabaseAdminEnv() ? (
           <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">Supabase管理用設定が必要です。</p>
         ) : !generalMonitorConfigured ? (
           <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">一般向けモニターmigrationを適用してください。</p>
