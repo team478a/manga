@@ -10,6 +10,10 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { createCloudAdultPlanningBriefAction } from "./actions";
+import { createCloudProposalAction } from "./actions";
+import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
+import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
+import { ProposalSubmitButton } from "./proposal-submit-button";
 
 const accessLabel = {
   allowed: "利用可能",
@@ -76,7 +80,11 @@ export default async function ProposalHandoffPage({
     (finding) => finding.key === "differentiation",
   );
 
-  if (report.input.contentClass !== "adult")
+  if (report.input.contentClass !== "adult") {
+    const proposalEnabled = cloudProposalFeatureEnabled();
+    const runs = proposalEnabled
+      ? await listCloudProposalRuns(profile.id, report.id)
+      : [];
     return (
       <main className="page max-w-3xl">
         <Link
@@ -92,11 +100,46 @@ export default async function ProposalHandoffPage({
           <h2 className="mt-2 text-xl font-bold">引継ぎ条件</h2>
           <p className="mt-3 leading-relaxed text-stone-700">{next?.summary}</p>
         </section>
-        <div className="mt-5 rounded-lg bg-amber-50 p-4 text-amber-950">
-          一般向けAI企画生成はRelease 2で実装します。
-        </div>
+        {error ? (
+          <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+            {error}
+          </p>
+        ) : null}
+        {runs.length ? (
+          <section className="mt-6">
+            <h2 className="text-xl font-bold">作成済みの企画</h2>
+            <div className="mt-4 space-y-3">
+              {runs.map((run) => (
+                <Link
+                  className="panel block transition hover:border-violet-300"
+                  href={`/dashboard/research/${report.id}/proposal/runs/${run.id}`}
+                  key={run.id}
+                >
+                  <span className="font-bold">企画3案を比較する</span>
+                  <span className="ml-3 text-sm text-stone-600">
+                    {new Date(run.created_at).toLocaleString("ja-JP")}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        ) : null}
+        {proposalEnabled ? (
+          <form action={createCloudProposalAction.bind(null, report.id)} className="panel mt-6">
+            <h2 className="text-xl font-bold">市場分析から企画を作る</h2>
+            <p className="mt-2 text-stone-600">
+              分析結果をもとに、売れやすさ・作りやすさ・独自性が異なる3案をAIが提案します。
+            </p>
+            <ProposalSubmitButton />
+          </form>
+        ) : (
+          <div className="mt-5 rounded-lg bg-amber-50 p-4 text-amber-950">
+            AI企画提案は現在停止中です。
+          </div>
+        )}
       </main>
     );
+  }
 
   const planningEnabled = cloudAdultPlanningFeatureEnabled();
   const access = await getCloudAdultPlanningAccess(profile.id);

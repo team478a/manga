@@ -1329,6 +1329,47 @@ READY_FOR_REVIEW（統合完了、Draft PR作成後は責任者レビュー待�
 
 ---
 
+## 2026-07-30 Codex — Cloud Release 2 AI企画提案
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ
+
+- `codex/cloud-proposal-generation-v1`
+- Base: `codex/cloud-research-ai-auto-ux-v1` (`a21fd94`)
+
+### 完了
+
+- 市場分析Reportから一般向け企画3案をOpenAI Responses APIで生成
+- 本命・差別化・小さく試す方向を比較し、1案を保存
+- 管理画面の既存OpenAI設定とSupabase Vaultを再利用
+- 出典URLと内部ロジックを利用者UIから非表示
+- 成人向け外部AI送信を拒否し、既存手動企画を維持
+- 所有者RLS、Feature Flag、rate limit、UUID検証、内部エラー秘匿
+- forward / rollback / canonical schemaを追加
+
+### 責任者待ち
+
+1. `202607300002_cloud_story_proposals.sql`のstaging適用
+2. 対象Preview branchへ`CLOUD_PROPOSAL_GENERATION_ENABLED=true`を設定
+3. 一般向けReportから生成・再表示・選択の実機確認
+4. OpenAI利用コストと公開判断
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: Hub PASS、Desktopは依存導入後PASS
+- research:eval: PASS
+- hub:test: PASS（198/198）
+- migrations: PASS（22件）
+- build: PASS
+- git diff --check: PASS
+
+---
+
 ## 追記テンプレート
 
 ```md

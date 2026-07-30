@@ -126,7 +126,13 @@
       "description": "市場分析用OpenAI設定をSupabase Vaultへ保存し管理操作を監査",
       "forwardSha256": "449e80c2862cefd84a17be646764ca51eeb898a84c47acbb540990002fd86a1d",
       "rollbackSha256": "1a89e83fe8b569d4abe0c4cff6593f51306cb7e4073d17245277057fcdd96368"
+    },
+    {
+      "id": "202607300002_cloud_story_proposals",
+      "description": "市場分析から生成した一般向けAI企画3案と選択snapshotを所有者単位で保存",
+      "forwardSha256": "ad8c039512be5952e525b79dc928fa5fddf03c1ed005c4a6cd9893e11f0fd90b",
+      "rollbackSha256": "a36dddbc1fd6abdf4c4375dbdf7142b94e5a2bfd5864963b7fdf802a1ec092a3"
     }
   ],
-  "schemaSha256": "237444e57aa0949e7f796532a237c73f46f9198291e69679eaaa95ba481c2bf9"
+  "schemaSha256": "3ffda79cb8a591c3d9adbc6abb1768c30d1d2505022002b4fcd87c315d018af0"
 }
