@@ -11,6 +11,7 @@ import { getCloudStoryboardVersion, getLatestCloudStoryboardAdoption } from "@/l
 import { cloudStoryboardCanvasFeatureEnabled } from "@/lib/cloud-storyboard-materialization";
 import { getCloudStoryboardMaterialization } from "@/lib/cloud-storyboard-materialization-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
+import { getCloudAdultStoryboardAccess } from "@/lib/cloud-adult-storyboard";
 import { adoptCloudStoryboardAction, materializeCloudStoryboardAction, reviseCloudStoryboardAction } from "../../actions";
 import { StoryboardButton } from "../../storyboard-button";
 
@@ -30,18 +31,23 @@ export default async function StoryboardVersionPage({ params, searchParams }: {
     getCloudScenarioVersion(profile.id, versionId),
     getCloudStoryboardVersion(profile.id, storyboardVersionId),
   ]).catch((error) => { if (error instanceof ResourceNotFoundError) notFound(); throw error; });
-  if (scenario.research_report_id !== reportId || storyboard.scenario_version_id !== scenario.id) notFound();
+  if (scenario.research_report_id !== reportId ||
+      storyboard.scenario_version_id !== scenario.id ||
+      storyboard.content_class !== scenario.content_class) notFound();
+  if (storyboard.content_class === "adult" &&
+      !(await getCloudAdultStoryboardAccess(profile.id)).allowed)
+    redirect(`/dashboard/research/${reportId}/proposal/scenario/versions/${scenario.id}/storyboard`);
   const scenarioAdoption = await getLatestCloudScenarioAdoption(profile.id, scenario.proposal_selection_id);
   if (scenarioAdoption?.scenario_version_id !== scenario.id) notFound();
   const adoption = await getLatestCloudStoryboardAdoption(profile.id, scenario.id);
   const adopted = adoption?.storyboard_version_id === storyboard.id;
-  const materialization = adopted && cloudStoryboardCanvasFeatureEnabled()
+  const materialization = adopted && storyboard.content_class === "general" && cloudStoryboardCanvasFeatureEnabled()
     ? await getCloudStoryboardMaterialization(profile.id, storyboard.id)
     : null;
   const result = storyboard.result;
   return <main className="page max-w-7xl">
     <Link className="text-violet-700 underline" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${scenario.id}/storyboard`}>← ネーム版履歴へ</Link>
-    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm font-bold text-violet-700">WORKFLOW 4</p><h1 className="mt-2 text-3xl font-bold">{result.title}</h1><p className="mt-2 text-stone-600">{result.pageCount}ページ · 右綴じ</p></div>{adopted ? <span className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 font-bold text-emerald-800"><CheckCircle2 className="h-5 w-5" />採用版</span> : null}</div>
+    <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm font-bold text-violet-700">WORKFLOW 4</p><h1 className="mt-2 text-3xl font-bold">{result.title}</h1><p className="mt-2 text-stone-600">{result.pageCount}ページ · 右綴じ</p><span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-bold ${storyboard.content_class === "adult" ? "bg-rose-50 text-rose-800" : "bg-violet-50 text-violet-800"}`}>{storyboard.content_class === "adult" ? "成人向け" : "一般向け"}</span></div>{adopted ? <span className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 font-bold text-emerald-800"><CheckCircle2 className="h-5 w-5" />採用版</span> : null}</div>
     {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
     {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
     <section className="mt-8"><h2 className="text-2xl font-bold">ページ・コマ構成</h2><div className="mt-4 grid gap-5 xl:grid-cols-2">{result.pages.map((page) =>
@@ -55,6 +61,6 @@ export default async function StoryboardVersionPage({ params, searchParams }: {
       </article>)}</div></section>
     <section className="panel mt-8"><h2 className="text-xl font-bold">制作ノート</h2><p className="mt-3 text-stone-700">{result.productionNotes.pageRhythm}</p><div className="mt-4 grid gap-4 md:grid-cols-2"><div><h3 className="font-bold">視覚モチーフ</h3><ul className="mt-2 list-disc pl-5 text-stone-600">{result.productionNotes.visualMotifs.map((value) => <li key={value}>{value}</li>)}</ul></div><div><h3 className="font-bold">連続性の注意</h3><ul className="mt-2 list-disc pl-5 text-stone-600">{result.productionNotes.continuityRisks.map((value) => <li key={value}>{value}</li>)}</ul></div></div></section>
     <div className="mt-8 grid gap-5 lg:grid-cols-2"><form action={reviseCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="panel"><h2 className="text-xl font-bold">この版から修正版を作る</h2><label className="label mt-4" htmlFor="revisionInstruction">直したい内容</label><textarea className="field" id="revisionInstruction" maxLength={2000} name="revisionInstruction" required rows={5} placeholder="例：冒頭3ページの展開を速め、セリフを減らす" /><div className="mt-4"><StoryboardButton secondary>AIで修正版を作る</StoryboardButton></div></form>
-      <section className="panel"><h2 className="text-xl font-bold">{adopted ? "Cloud Canvas下書きへ進む" : "制作するネームを決定"}</h2><p className="mt-2 text-stone-600">{adopted ? "全ページのコマ枠・吹き出し・セリフを編集可能な下書きへ変換します。画像生成や課金は発生しません。" : "内容を確認し、次工程へ渡すネームを採用してください。"}</p>{!adopted ? <form action={adoptCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="mt-5"><StoryboardButton>このネームを採用</StoryboardButton></form> : materialization ? <Link className="button mt-5 inline-flex" href={`/creator/${materialization.project_id}/pages/${materialization.first_page_id}`}>作成済みCanvasを開く</Link> : cloudStoryboardCanvasFeatureEnabled() ? <form action={materializeCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="mt-5"><StoryboardButton>Canvas下書きを作成</StoryboardButton></form> : <p className="mt-5 rounded-lg bg-stone-100 p-3 text-sm text-stone-600">Canvas変換は現在準備中です。</p>}</section></div>
+      <section className="panel"><h2 className="text-xl font-bold">{adopted ? (storyboard.content_class === "adult" ? "成人向けネームを採用しました" : "Cloud Canvas下書きへ進む") : "制作するネームを決定"}</h2><p className="mt-2 text-stone-600">{adopted ? (storyboard.content_class === "adult" ? "成人向けCanvas・画像生成は次フェーズです。このネームは一般向けCanvasへ送られません。" : "全ページのコマ枠・吹き出し・セリフを編集可能な下書きへ変換します。画像生成や課金は発生しません。") : "内容を確認し、次工程へ渡すネームを採用してください。"}</p>{!adopted ? <form action={adoptCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="mt-5"><StoryboardButton>このネームを採用</StoryboardButton></form> : storyboard.content_class === "adult" ? <p className="mt-5 rounded-lg bg-rose-50 p-3 text-sm text-rose-900">成人向けCanvas／画像生成には進みません。</p> : materialization ? <Link className="button mt-5 inline-flex" href={`/creator/${materialization.project_id}/pages/${materialization.first_page_id}`}>作成済みCanvasを開く</Link> : cloudStoryboardCanvasFeatureEnabled() ? <form action={materializeCloudStoryboardAction.bind(null, reportId, scenario.id, storyboard.id)} className="mt-5"><StoryboardButton>Canvas下書きを作成</StoryboardButton></form> : <p className="mt-5 rounded-lg bg-stone-100 p-3 text-sm text-stone-600">Canvas変換は現在準備中です。</p>}</section></div>
   </main>;
 }

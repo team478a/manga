@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { cloudStoryboardFeatureEnabled, cloudStoryboardResultSchema } from "../src/lib/cloud-storyboard.ts";
-import { runCloudStoryboardAi } from "../src/lib/cloud-storyboard-ai.ts";
+import { runCloudAdultStoryboardAi, runCloudStoryboardAi } from "../src/lib/cloud-storyboard-ai.ts";
 import { createCloudStoryboardVersionWithPersistence, getCloudStoryboardVersionWithPersistence, adoptCloudStoryboardWithPersistence } from "../src/lib/cloud-storyboard-persistence.ts";
 
 const profileId = "10000000-0000-4000-8000-000000000001";
@@ -19,9 +19,9 @@ const body = {
   productionNotes: { pageRhythm: "前半を速く、終盤を大きく見せる。", visualMotifs: ["朝日"], continuityRisks: ["衣装の連続性"] },
 };
 const result = { engineVersion: "openai-storyboard-v1", generatedAt: "2026-07-30T00:00:00.000Z", model: "gpt-5.6-terra", classification: "ai_inference", containsGeneratedMarketNumbers: false, ...body };
-const scenario = { id: scenarioId, research_report_id: reportId, proposal_selection_id: "40000000-0000-4000-8000-000000000001", result: { pageCount: 8, title: "再出発の約束", scenes: [] } };
+const scenario = { id: scenarioId, research_report_id: reportId, proposal_selection_id: "40000000-0000-4000-8000-000000000001", content_class: "general", result: { pageCount: 8, title: "再出発の約束", scenes: [] } };
 const report = { id: reportId, input: { contentClass: "general" } };
-const version = { id: storyboardId, owner_profile_id: profileId, scenario_version_id: scenarioId, parent_version_id: null, revision_instruction: null, result, engine_version: "openai-storyboard-v1", completed_at: result.generatedAt, created_at: result.generatedAt };
+const version = { id: storyboardId, owner_profile_id: profileId, scenario_version_id: scenarioId, parent_version_id: null, revision_instruction: null, content_class: "general", result, engine_version: "openai-storyboard-v1", completed_at: result.generatedAt, created_at: result.generatedAt };
 const persistence = (overrides = {}) => ({
   insertVersion: async () => ({ data: { id: storyboardId }, error: null }),
   listVersions: async () => ({ data: [version], error: null }),
@@ -53,19 +53,31 @@ test("採用シナリオから構造化ネームを生成しProvider保存を無
   assert.equal(request.max_output_tokens, 32_000);
   assert.ok(!JSON.stringify(request).includes("sk-test"));
 });
-test("成人向けはProvider呼出前に拒否する", async () => {
+test("一般向けrunnerは成人向けをProvider呼出前に拒否する", async () => {
   let called = false;
   await assert.rejects(runCloudStoryboardAi({
-    profileId, report: { ...report, input: { contentClass: "adult" } }, scenario,
+    profileId, report: { ...report, input: { contentClass: "adult" } }, scenario: { ...scenario, content_class: "adult" },
     runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
     fetchImplementation: async () => { called = true; return new Response(); },
-  }), /外部AIへ送信しません/);
+  }), /区分を確認/);
   assert.equal(called, false);
+});
+test("成人向けrunnerは区分一致時に安全検査を通して生成する", async () => {
+  const generated = await runCloudAdultStoryboardAi({
+    profileId,
+    report: { ...report, input: { contentClass: "adult", theme: "架空の成人同士の合意ある恋愛" } },
+    scenario: { ...scenario, content_class: "adult" },
+    now: result.generatedAt,
+    runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
+    fetchImplementation: async () => new Response(JSON.stringify({ output_text: JSON.stringify(body) })),
+  });
+  assert.equal(generated.pages.length, 8);
 });
 test("ネームsnapshotを保存し不正UUIDをDB参照前に拒否する", async () => {
   let saved;
-  await createCloudStoryboardVersionWithPersistence({ profileId, scenarioVersionId: scenarioId, result, persistence: persistence({ insertVersion: async (value) => { saved = value; return { data: { id: storyboardId }, error: null }; } }) });
+  await createCloudStoryboardVersionWithPersistence({ profileId, scenarioVersionId: scenarioId, contentClass: "adult", result, persistence: persistence({ insertVersion: async (value) => { saved = value; return { data: { id: storyboardId }, error: null }; } }) });
   assert.deepEqual(saved.result, result);
+  assert.equal(saved.content_class, "adult");
   let queried = false;
   await assert.rejects(getCloudStoryboardVersionWithPersistence({ profileId, versionId: "invalid", persistence: persistence({ findVersion: async () => { queried = true; return { data: null, error: null }; } }) }), /見つかりません/);
   assert.equal(queried, false);

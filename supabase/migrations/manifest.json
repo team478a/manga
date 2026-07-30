@@ -162,7 +162,13 @@
       "description": "一般向けと成人向けAIシナリオを分離し、専用許可・同意・停止スイッチ・所有者RLSを追加",
       "forwardSha256": "de2efb4164b8a75fa0b5060df5a31d5a425ae30ea03b130e3797673bb4d8ddf6",
       "rollbackSha256": "ad3f250ae71015ebb6e8dc03b1e9fd28ee75d3f1107c2e7393750ffdf973fb1d"
+    },
+    {
+      "id": "202607300008_cloud_adult_storyboard",
+      "description": "一般向けと成人向けAIネームを分離し、専用許可・同意・停止スイッチ・所有者RLSを追加",
+      "forwardSha256": "61e36bf9ab6508abe3c1ce9ca12abcf17090d0b36b3ee4f663d9ea5918fbb653",
+      "rollbackSha256": "c1130cb6ffe1a98392effb90d64c1a03594a4a1a4921bcacef34ec228b8c8592"
     }
   ],
-  "schemaSha256": "86c3a92184942ce99962985af9059d016fa809365c9da60fc991aad3f90d9ad3"
+  "schemaSha256": "5df5bfe953d51aaf4e5c3311b992ad599781f3cc1b3f3dc91b3801683cc87350"
 }

@@ -80,10 +80,10 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
           <div className="mt-4"><ScenarioSubmitButton secondary>AIで修正版を作る</ScenarioSubmitButton></div>
         </form>
         <form action={adoptCloudScenarioAction.bind(null, reportId, version.id)} className="panel">
-          <h2 className="text-xl font-bold">{adopted ? (version.content_class === "adult" ? "成人向けシナリオを採用しました" : "マンガ生成の準備ができました") : "制作する版を決定"}</h2>
-          <p className="mt-2 text-stone-600">{adopted ? (version.content_class === "adult" ? "成人向けAIネーム生成は次フェーズで提供します。このシナリオは一般向け工程へ送られません。" : "この版からAIネーム・ページ構成を作成できます。") : "内容を確認し、次工程へ渡すシナリオを採用してください。"}</p>
+          <h2 className="text-xl font-bold">{adopted ? "AIネーム・ページ構成へ進む" : "制作する版を決定"}</h2>
+          <p className="mt-2 text-stone-600">{adopted ? "この版から、区分を維持したAIネーム・ページ構成を作成できます。" : "内容を確認し、次工程へ渡すシナリオを採用してください。"}</p>
           {!adopted ? <div className="mt-5"><ScenarioSubmitButton>このシナリオを採用</ScenarioSubmitButton></div> : null}
-          {adopted && version.content_class === "general" ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${version.id}/storyboard`}>AIネーム生成へ進む</Link> : null}
+          {adopted ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${version.id}/storyboard`}>{version.content_class === "adult" ? "成人向けAIネームへ進む" : "AIネーム生成へ進む"}</Link> : null}
         </form>
       </div>
     </main>

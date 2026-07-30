@@ -5,7 +5,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { setCloudAdultAiPlanningGrantAction, setCloudAdultPlanningGrantAction, setCloudAdultScenarioGrantAction } from "./adult-feature-actions";
+import { setCloudAdultAiPlanningGrantAction, setCloudAdultPlanningGrantAction, setCloudAdultScenarioGrantAction, setCloudAdultStoryboardGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
 
 type AdminUser = {
@@ -50,6 +50,8 @@ export default async function AdminUserDetailPage({
   let adultAiPlanningConfigured = true;
   let adultScenarioGrant: AdultPlanningGrant | null = null;
   let adultScenarioConfigured = true;
+  let adultStoryboardGrant: AdultPlanningGrant | null = null;
+  let adultStoryboardConfigured = true;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
@@ -85,6 +87,14 @@ export default async function AdminUserDetailPage({
       .maybeSingle<AdultPlanningGrant>();
     adultScenarioGrant = scenarioResult.data;
     adultScenarioConfigured = !scenarioResult.error;
+    const storyboardResult = await admin
+      .from("cloud_adult_feature_grants")
+      .select("status,source,valid_until,admin_note")
+      .eq("profile_id", user.id)
+      .eq("feature_key", "adult_storyboard")
+      .maybeSingle<AdultPlanningGrant>();
+    adultStoryboardGrant = storyboardResult.data;
+    adultStoryboardConfigured = !storyboardResult.error;
   }
 
   return (
@@ -364,6 +374,23 @@ export default async function AdminUserDetailPage({
             <input name="validUntil" type="hidden" value="" />
             <textarea className="field min-h-24" defaultValue={adultScenarioGrant?.admin_note ?? ""} maxLength={500} name="adminNote" placeholder="管理者メモ" />
             <button className="button bg-rose-700 hover:bg-rose-800" type="submit">成人向けAIシナリオの許可を更新</button>
+          </form>
+        )}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">成人向けAIネーム機能</h2>
+        <p className="mt-2 text-sm text-stone-600">成人向けAIシナリオ利用者へ、ページ・コマ構成工程を追加で個別許可します。</p>
+        {!adultStoryboardConfigured ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">成人向けAIネームmigrationを適用してください。</p>
+        ) : (
+          <form action={setCloudAdultStoryboardGrantAction.bind(null, user.id)} className="mt-5 space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div><label className="label" htmlFor="adultStoryboardStatus">利用状態</label><select className="field" defaultValue={adultStoryboardGrant?.status ?? "approved"} id="adultStoryboardStatus" name="status"><option value="approved">利用許可</option><option value="suspended">一時停止</option><option value="expired">期限切れ</option></select></div>
+              <div><label className="label" htmlFor="adultStoryboardSource">許可理由</label><select className="field" defaultValue={adultStoryboardGrant?.source ?? "admin_grant"} id="adultStoryboardSource" name="source"><option value="legacy_purchase">既存購入者</option><option value="purchase">購入済み</option><option value="admin_grant">管理者付与</option><option value="campaign">キャンペーン</option></select></div>
+            </div>
+            <input name="validUntil" type="hidden" value="" />
+            <textarea className="field min-h-24" defaultValue={adultStoryboardGrant?.admin_note ?? ""} maxLength={500} name="adminNote" placeholder="管理者メモ" />
+            <button className="button bg-rose-700 hover:bg-rose-800" type="submit">成人向けAIネームの許可を更新</button>
           </form>
         )}
       </section>
