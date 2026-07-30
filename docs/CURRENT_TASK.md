@@ -2,6 +2,8 @@
 
 ## 2026-07-31 成人向けGrok Provider v1
 
+- 追記: 一般向けOpenAIと成人向けGrokの両方を、管理画面でAPIキーを入力・保存すると自動利用開始し、同じ画面で差し替えられるUXへ統一。今後の外部Providerも`docs/cloud/API_KEY_ADMIN_MANAGEMENT_POLICY.md`に従う。
+
 - Branch: `codex/cloud-adult-grok-provider-v1`
 - Base: `codex/cloud-adult-monitor-beta-v1` (`90c4ad2`)
 - 目的: 一般向けOpenAIを維持し、許可済み成人向け市場分析・企画・シナリオ・ネームをxAI/Grokへ分離する。

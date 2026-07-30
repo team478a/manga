@@ -37,8 +37,14 @@ test("管理画面はAPIキーを再表示せず設定状態だけを表示す�
   assert.match(page, /type="password"/);
   assert.match(page, /settings\.configured/);
   assert.match(page, /APIキー本体や末尾文字は記録しません/);
+  assert.match(page, /APIキーを保存して利用開始/);
+  assert.match(page, /市場分析・企画・シナリオ・ネーム/);
+  assert.doesNotMatch(page, /実行状態/);
+  assert.doesNotMatch(page, /htmlFor="model"/);
   assert.doesNotMatch(page, /apiKey\.slice|secret_id/);
   assert.match(action, /requireAdmin/);
+  assert.match(action, /enabled: true/);
+  assert.match(action, /current\?\.model \?\? "gpt-5\.6-terra"/);
   assert.doesNotMatch(action, /console\.(?:log|error)/);
 });
 

@@ -30,8 +30,8 @@ export default async function AdminPage() {
     { title: "注文数", count: ordersCount.count ?? 0, href: "/admin/orders", icon: ReceiptText },
     { title: "売上合計（仮）", count: yen(salesTotal), href: "/admin/orders", icon: BadgeJapaneseYen },
     { title: "Cloud AI運用", count: "設定・監視", href: "/admin/cloud-ai", icon: Bot },
-    { title: "市場分析AI", count: "API・model設定", href: "/admin/research-ai", icon: BrainCircuit },
-    { title: "成人向けAI（Grok）", count: "分離Provider", href: "/admin/adult-grok", icon: BrainCircuit },
+    { title: "一般向けAI（OpenAI）", count: "APIキー設定", href: "/admin/research-ai", icon: BrainCircuit },
+    { title: "成人向けAI（Grok）", count: "APIキー設定", href: "/admin/adult-grok", icon: BrainCircuit },
     { title: "成人向け市場分析", count: "許可制", href: "/admin/adult-research", icon: ShieldCheck },
     { title: "限定モニター", count: "第2段階", href: "/admin/adult-monitors", icon: UserRoundCheck }
   ];

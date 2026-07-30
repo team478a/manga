@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-07-31 Codex: Provider APIキー管理UX統一
+
+- 一般向けOpenAIと成人向けGrokは、管理画面へAPIキーを入力して保存すると自動有効化する。
+- APIキー変更は同じ画面へ新しいキーを保存するだけで完了する。
+- モデル選択やDB有効化を通常画面から除外し、Server側の既存推奨値を維持する。
+- 今後の利用者管理Providerキーは`docs/cloud/API_KEY_ADMIN_MANAGEMENT_POLICY.md`を必須方針とする。
+
+---
+
 ## 2026-07-31 Codex: Cloud成人向けGrok Provider v1
 
 - Branch: `codex/cloud-adult-grok-provider-v1`
