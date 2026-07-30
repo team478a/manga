@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-07-30 Cloud成人向けAIネーム v1
+
+- Branch: `codex/cloud-adult-storyboard-v1`
+- Base: `codex/cloud-adult-scenario-v1` (`bfde09a`)
+- 目的: 成人向けシナリオから、許可制のAIネーム初稿・修正・履歴・採用を提供する。
+- 実装範囲: 専用Feature Flag、DB Kill Switch、個別許可、専用同意、前後安全検査、`content_class`保存、一般向けCanvasへの混入拒否。
+- 対象外: 成人向けCanvas、画像生成、公開、販売、migration適用、本番有効化、有料API実行。
+- 状態: `READY_FOR_DRAFT_PR`。実装・ローカル品質ゲート完了、Draft PR・Preview確認中。
+- 正本: `docs/cloud/CLOUD_ADULT_STORYBOARD_IMPLEMENTATION_PLAN.md`、`docs/cloud/CLOUD_ADULT_STORYBOARD_V1.md`
+- 検証: deps:check PASS、lint PASS、typecheck PASS、research:eval PASS、hub:test 269/269 PASS、migration静的検証 28件 PASS、build PASS、git diff --check PASS。
+- preflight: 想定どおりFAIL。ローカルに限定公開用環境変数を設定していない。秘密値は表示していない。
+- ローカルmigration roundtrip: PostgreSQL未導入かつDocker daemon停止のため未実施。GitHub Actionsで確認する。
+
 ## 2026-07-30 Cloud成人向けAIシナリオ v1
 
 - Branch: `codex/cloud-adult-scenario-v1`

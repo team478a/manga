@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-07-30 Codex: Cloud成人向けAIネーム v1
+
+- Branch: `codex/cloud-adult-storyboard-v1`
+- Base: `codex/cloud-adult-scenario-v1` (`bfde09a`)
+- 成人向けAIネームの初稿、修正、履歴、採用を一般向けと`content_class`で分離。
+- 専用Feature Flag、DB Kill Switch、個別許可、本人同意、Provider前後の安全検査を追加。
+- OpenAI設定は既存Supabase Vaultを再利用し、ローカルAPIキーは作成していない。
+- 成人向けCanvas・画像生成はAction、UI、RLS境界の手前で停止。
+- ローカル品質ゲート: deps:check、lint、typecheck、research:eval、hub:test（269/269）、migration静的検証（28件）、build、git diff --checkがPASS。
+- preflightはローカル限定公開設定なしのため想定どおりFAILし、秘密値は表示していない。
+- migration適用、本番設定、有料API実行、PR mergeは未実施。
+
+---
+
 ## 2026-07-30 Codex（Cloud Release 6 コマ画像AIおまかせ生成）
 
 ### 状態

@@ -19,12 +19,11 @@ test("成人向けAIシナリオmigrationは専用許可・同意・Kill Switch�
   assert.match(sql, /scenario\.content_class = 'general'/);
 });
 
-test("成人向けシナリオは一般向けネーム工程へ進めない", async () => {
+test("成人向けシナリオは区分を維持して成人向けネーム工程へ進む", async () => {
   const detail = await readFile(new URL("../src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/page.tsx", import.meta.url), "utf8");
   const actions = await readFile(new URL("../src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/storyboard/actions.ts", import.meta.url), "utf8");
   const page = await readFile(new URL("../src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/storyboard/page.tsx", import.meta.url), "utf8");
-  assert.match(detail, /version\.content_class === "general"/);
-  assert.match(detail, /成人向けAIネーム生成は次フェーズ/);
-  assert.match(actions, /scenario\.content_class !== "general"/);
-  assert.match(page, /scenario\.content_class !== "general"/);
+  assert.match(detail, /成人向けAIネームへ進む/);
+  assert.match(actions, /getCloudAdultStoryboardAccess/);
+  assert.match(page, /getCloudAdultStoryboardAccess/);
 });

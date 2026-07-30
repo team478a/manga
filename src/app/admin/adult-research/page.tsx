@@ -3,9 +3,10 @@ import { requireAdmin } from "@/lib/auth";
 import { cloudAdultResearchFeatureEnabled } from "@/lib/cloud-adult-research";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { setCloudAdultAiPlanningEnabledAction, setCloudAdultResearchEnabledAction, setCloudAdultScenarioEnabledAction } from "./actions";
+import { setCloudAdultAiPlanningEnabledAction, setCloudAdultResearchEnabledAction, setCloudAdultScenarioEnabledAction, setCloudAdultStoryboardEnabledAction } from "./actions";
 import { cloudAdultAiPlanningFeatureEnabled } from "@/lib/cloud-adult-ai-planning";
 import { cloudAdultScenarioFeatureEnabled } from "@/lib/cloud-adult-scenario";
+import { cloudAdultStoryboardFeatureEnabled } from "@/lib/cloud-adult-storyboard";
 
 export default async function AdminAdultResearchPage({
   searchParams,
@@ -22,9 +23,11 @@ export default async function AdminAdultResearchPage({
   let aiPlanningDatabaseEnabled = false;
   let scenarioConfigured = false;
   let scenarioDatabaseEnabled = false;
+  let storyboardConfigured = false;
+  let storyboardDatabaseEnabled = false;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
-    const [settingsResult, approvedResult, aiPlanningResult, scenarioResult] = await Promise.all([
+    const [settingsResult, approvedResult, aiPlanningResult, scenarioResult, storyboardResult] = await Promise.all([
       admin
         .from("cloud_adult_research_settings")
         .select("enabled,updated_at")
@@ -44,6 +47,11 @@ export default async function AdminAdultResearchPage({
         .select("enabled")
         .eq("singleton", true)
         .maybeSingle<{ enabled: boolean }>(),
+      admin
+        .from("cloud_adult_storyboard_settings")
+        .select("enabled")
+        .eq("singleton", true)
+        .maybeSingle<{ enabled: boolean }>(),
     ]);
     configured = !settingsResult.error && Boolean(settingsResult.data);
     databaseEnabled = settingsResult.data?.enabled === true;
@@ -52,6 +60,8 @@ export default async function AdminAdultResearchPage({
     aiPlanningDatabaseEnabled = aiPlanningResult.data?.enabled === true;
     scenarioConfigured = !scenarioResult.error && Boolean(scenarioResult.data);
     scenarioDatabaseEnabled = scenarioResult.data?.enabled === true;
+    storyboardConfigured = !storyboardResult.error && Boolean(storyboardResult.data);
+    storyboardDatabaseEnabled = storyboardResult.data?.enabled === true;
   }
 
   return (
@@ -153,6 +163,11 @@ export default async function AdminAdultResearchPage({
         ) : (
           <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">成人向けAIシナリオmigrationを適用してください。</p>
         )}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">成人向けAIネーム</h2>
+        <p className="mt-2 text-stone-600">環境Flag: {cloudAdultStoryboardFeatureEnabled() ? "有効" : "停止"} ／ DB Kill Switch: {storyboardConfigured ? (storyboardDatabaseEnabled ? "有効" : "停止") : "未設定"}</p>
+        {storyboardConfigured ? <form action={setCloudAdultStoryboardEnabledAction} className="mt-5 space-y-4"><select className="field" defaultValue={storyboardDatabaseEnabled ? "true" : "false"} name="enabled"><option value="false">停止</option><option value="true">有効</option></select><button className="button bg-rose-700 hover:bg-rose-800" type="submit">成人向けAIネームの全体設定を更新</button></form> : <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">成人向けAIネームmigrationを適用してください。</p>}
       </section>
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">成人向けAI企画</h2>
