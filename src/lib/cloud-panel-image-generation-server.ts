@@ -22,7 +22,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
 
   const { data: materialization, error: materializationError } = await supabase
     .from("cloud_story_storyboard_projects")
-    .select("owner_profile_id,storyboard_version_id,project_id")
+    .select("owner_profile_id,storyboard_version_id,project_id,content_class")
     .eq("project_id", request.projectId)
     .eq("owner_profile_id", profile.id)
     .maybeSingle();
@@ -32,12 +32,14 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
       "ネームとの関連を確認できませんでした。",
       { cause: materializationError },
     );
-  assertGeneralStoryboardProject({
-    materializationFound: Boolean(materialization),
-    ownerProfileId: materialization?.owner_profile_id ?? null,
-    expectedOwnerProfileId: profile.id,
-  });
-
+  if (
+    !materialization ||
+    materialization.owner_profile_id !== profile.id ||
+    materialization.content_class !== "general"
+  )
+    throw new PermissionDeniedError(
+      "一般向けの採用ネームから作成した本人のCanvasだけで利用できます。",
+    );
   const [{ data: page, error: pageError }, storyboardResult] =
     await Promise.all([
       supabase
@@ -49,8 +51,8 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         .maybeSingle(),
       supabase
         .from("cloud_story_storyboard_versions")
-        .select("owner_profile_id,result")
-        .eq("id", materialization!.storyboard_version_id)
+        .select("owner_profile_id,content_class,result")
+        .eq("id", materialization.storyboard_version_id)
         .eq("owner_profile_id", profile.id)
         .maybeSingle(),
     ]);
@@ -62,6 +64,13 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
     );
   if (!page || !storyboardResult.data)
     throw new ResourceNotFoundError("生成元のネームが見つかりません。");
+  assertGeneralStoryboardProject({
+    materializationFound: Boolean(materialization),
+    ownerProfileId: materialization?.owner_profile_id ?? null,
+    expectedOwnerProfileId: profile.id,
+    materializationContentClass: materialization?.content_class ?? null,
+    storyboardContentClass: storyboardResult.data.content_class ?? null,
+  });
 
   const { data: snapshot, error: snapshotError } = await supabase
     .from("cloud_canvas_snapshots")

@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-07-30 Cloud成人向けCanvas v1
+
+- Branch: `codex/cloud-adult-canvas-v1`
+- Base: `codex/cloud-adult-storyboard-v1` (`b095f38`)
+- 目的: 採用済み成人向けネームを、区分を保持した編集用Canvas下書きへ変換する。
+- 実装範囲: 専用Feature Flag、成人向けProject境界、所有者限定RLS、コマ枠・吹き出し・文字レイヤー変換、一般向け画像生成からの明示的分離。
+- 対象外: 成人向け画像生成、外部Provider送信、公開、共同編集、販売、migration適用、本番有効化。
+- 状態: `IN_PROGRESS`
+- 正本: `docs/cloud/CLOUD_ADULT_CANVAS_IMPLEMENTATION_PLAN.md`、`docs/cloud/CLOUD_ADULT_CANVAS_V1.md`
+
 ## 2026-07-30 Cloud成人向けAIネーム v1
 
 - Branch: `codex/cloud-adult-storyboard-v1`

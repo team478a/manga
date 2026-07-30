@@ -10,7 +10,7 @@ import { getCloudScenarioVersion, getLatestCloudScenarioAdoption } from "@/lib/c
 import { cloudStoryboardFeatureEnabled } from "@/lib/cloud-storyboard";
 import { runCloudAdultStoryboardAi, runCloudStoryboardAi } from "@/lib/cloud-storyboard-ai";
 import { adoptCloudStoryboard, createCloudStoryboardVersion, getCloudStoryboardVersion, getLatestCloudStoryboardAdoption } from "@/lib/cloud-storyboard-server";
-import { cloudStoryboardCanvasFeatureEnabled } from "@/lib/cloud-storyboard-materialization";
+import { cloudAdultCanvasFeatureEnabled, cloudStoryboardCanvasFeatureEnabled } from "@/lib/cloud-storyboard-materialization";
 import { materializeCloudStoryboard } from "@/lib/cloud-storyboard-materialization-server";
 import { enforceCloudStoryboardAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
 import { PermissionDeniedError, ResourceNotFoundError } from "@/lib/domain-errors";
@@ -86,6 +86,8 @@ export async function adoptCloudStoryboardAction(reportId: string, scenarioVersi
     enabled();
     const { profile } = await requireProfile();
     const scenario = await adoptedScenario(profile.id, reportId, scenarioVersionId);
+    if (scenario.content_class === "adult" && !cloudAdultCanvasFeatureEnabled())
+      throw new PermissionDeniedError("成人向けCanvas下書き作成機能は現在停止中です。");
     const version = await getCloudStoryboardVersion(profile.id, storyboardId);
     if (version.scenario_version_id !== scenarioVersionId ||
         version.content_class !== scenario.content_class)
@@ -115,7 +117,7 @@ export async function materializeCloudStoryboardAction(
     ]);
     if (
       version.scenario_version_id !== scenario.id ||
-      version.content_class !== "general" ||
+      version.content_class !== scenario.content_class ||
       adoption?.storyboard_version_id !== version.id
     )
       throw new PermissionDeniedError("現在の採用ネームを選んでください。");

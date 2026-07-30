@@ -168,7 +168,13 @@
       "description": "一般向けと成人向けAIネームを分離し、専用許可・同意・停止スイッチ・所有者RLSを追加",
       "forwardSha256": "61e36bf9ab6508abe3c1ce9ca12abcf17090d0b36b3ee4f663d9ea5918fbb653",
       "rollbackSha256": "c1130cb6ffe1a98392effb90d64c1a03594a4a1a4921bcacef34ec228b8c8592"
+    },
+    {
+      "id": "202607300009_cloud_adult_canvas",
+      "description": "許可済み成人向けネームを区分保持した非AI Canvas下書きへ変換し一般向け画像生成から分離",
+      "forwardSha256": "ec3644992a86cbe4d3cbac6bebbf6631cf0db99cfaed664a0742360b5602289a",
+      "rollbackSha256": "285bdb5af87082076a93425bec465b8293e37b8084fe070d9908bf5c434d5c5a"
     }
   ],
-  "schemaSha256": "5df5bfe953d51aaf4e5c3311b992ad599781f3cc1b3f3dc91b3801683cc87350"
+  "schemaSha256": "f0635c0362f45aa80f5a69784379677b05462a8da2b79cff1809f9ba50818dd3"
 }
