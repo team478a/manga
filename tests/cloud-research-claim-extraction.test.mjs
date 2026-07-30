@@ -136,8 +136,5 @@ test("抽出ActionとUIは本文を返さず人の確認後にだけ事実欄へ
   assert.match(client, /type="button"/);
   assert.match(client, /document\.getElementById\("sourceFact0"\)/);
   assert.match(client, /事実メモへ採用/);
-  assert.ok(
-    page.indexOf("<ClaimExtractor") <
-      page.indexOf("<form action={createCloudResearchReportAction}"),
-  );
+  assert.doesNotMatch(page, /<ClaimExtractor/);
 });

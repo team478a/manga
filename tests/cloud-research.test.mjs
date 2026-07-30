@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   cloudResearchFeatureEnabled,
   parseCloudResearchForm,
+  parseCloudResearchRequestForm,
   runCloudMarketAnalysis,
 } from "../src/lib/cloud-research.ts";
 
@@ -89,6 +90,48 @@ test("市場分析は最大5件の出典を保持する", () => {
     overrides[`sourceTopics${index}`] = "theme";
   }
   assert.equal(parseCloudResearchForm(validForm(overrides)).evidence.length, 5);
+});
+
+test("AI市場分析Formは選択値から制作条件を組み立て、出典入力を要求しない", () => {
+  const form = new FormData();
+  for (const [key, value] of Object.entries({
+    genre: "ファンタジー",
+    audience: "20代女性中心",
+    platform: "Amazon Kindle",
+    contentClass: "general",
+    theme: "成長・再出発",
+    referenceWorks: "",
+    priceBand: "standard",
+    publicationFormat: "series",
+    pageCount: "32",
+  }))
+    form.set(key, value);
+  const request = parseCloudResearchRequestForm(form);
+  assert.equal(request.priceMin, 500);
+  assert.equal(request.priceMax, 999);
+  assert.equal(request.referenceWorks, "指定なし");
+  assert.equal("evidence" in request, false);
+});
+
+test("AI市場分析Formは価格・形式・ページ数をAIに任せられる", () => {
+  const form = new FormData();
+  for (const [key, value] of Object.entries({
+    genre: "恋愛",
+    audience: "AIにおまかせ",
+    platform: "AIにおまかせ",
+    contentClass: "general",
+    theme: "成長・再出発",
+    referenceWorks: "",
+    priceBand: "auto",
+    publicationFormat: "auto",
+    pageCount: "0",
+  }))
+    form.set(key, value);
+  const request = parseCloudResearchRequestForm(form);
+  assert.equal(request.priceMin, 0);
+  assert.equal(request.priceMax, 0);
+  assert.equal(request.publicationFormat, "auto");
+  assert.equal(request.pageCount, 0);
 });
 
 test("市場分析Feature Flagは未設定時にfail closedする", () => {
@@ -189,9 +232,9 @@ test("市場分析UIは入力・履歴・再表示と完了後の企画導線を
       "../src/app/dashboard/research/[reportId]/proposal/page.tsx",
     ].map((path) => readFile(new URL(path, import.meta.url), "utf8")),
   );
-  assert.match(files[0], /sourceRetrievedAt/);
-  assert.match(files[0], /sourceFact/);
-  assert.match(files[0], /\[0, 1, 2, 3, 4\]/);
+  assert.match(files[0], /priceBand/);
+  assert.match(files[0], /市場、販売先、価格の知識は不要/);
+  assert.doesNotMatch(files[0], /sourceRetrievedAt|sourceFact/);
   assert.match(files[1], /listCloudResearchReports/);
   assert.match(files[2], /市場分析結果/);
   assert.doesNotMatch(

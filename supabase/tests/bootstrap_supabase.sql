@@ -17,6 +17,64 @@ end $$;
 
 create schema if not exists auth;
 create schema if not exists storage;
+create schema if not exists vault;
+
+create table if not exists vault.secrets (
+  id uuid primary key default gen_random_uuid(),
+  secret text not null,
+  name text unique,
+  description text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create or replace view vault.decrypted_secrets as
+select
+  id,
+  secret,
+  secret as decrypted_secret,
+  name,
+  description,
+  created_at,
+  updated_at
+from vault.secrets;
+
+create or replace function vault.create_secret(
+  new_secret text,
+  new_name text default null,
+  new_description text default null
+)
+returns uuid
+language plpgsql
+as $$
+declare
+  new_id uuid;
+begin
+  insert into vault.secrets(secret, name, description)
+  values (new_secret, new_name, new_description)
+  returning id into new_id;
+  return new_id;
+end;
+$$;
+
+create or replace function vault.update_secret(
+  secret_id uuid,
+  new_secret text default null,
+  new_name text default null,
+  new_description text default null
+)
+returns void
+language plpgsql
+as $$
+begin
+  update vault.secrets
+  set secret = coalesce(new_secret, secret),
+      name = coalesce(new_name, name),
+      description = coalesce(new_description, description),
+      updated_at = now()
+  where id = secret_id;
+end;
+$$;
 
 create table if not exists auth.users (
   id uuid primary key,

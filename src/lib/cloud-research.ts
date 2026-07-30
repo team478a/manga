@@ -58,7 +58,7 @@ const evidenceSchema = z.object({
   },
 );
 
-export const cloudResearchInputSchema = z.object({
+export const cloudResearchRequestSchema = z.object({
   genre: z.string().trim().min(1).max(80),
   audience: z.string().trim().min(1).max(300),
   platform: z.string().trim().min(1).max(120),
@@ -67,8 +67,15 @@ export const cloudResearchInputSchema = z.object({
   referenceWorks: z.string().trim().min(1).max(500),
   priceMin: z.coerce.number().int().min(0).max(1_000_000),
   priceMax: z.coerce.number().int().min(0).max(1_000_000),
-  publicationFormat: z.enum(["series", "one_shot"]),
-  pageCount: z.coerce.number().int().min(1).max(2000),
+  publicationFormat: z.enum(["auto", "series", "one_shot"]),
+  pageCount: z.coerce.number().int().min(0).max(2000),
+})
+  .refine((value) => value.priceMin <= value.priceMax, {
+    message: "価格帯は下限を上限以下にしてください。",
+    path: ["priceMax"],
+  });
+
+export const cloudResearchInputSchema = cloudResearchRequestSchema.extend({
   evidence: z.array(evidenceSchema).min(1).max(5),
 })
   .refine((value) => value.priceMin <= value.priceMax, {
@@ -86,6 +93,7 @@ export const cloudResearchInputSchema = z.object({
   );
 
 export type CloudResearchInput = z.infer<typeof cloudResearchInputSchema>;
+export type CloudResearchRequest = z.infer<typeof cloudResearchRequestSchema>;
 export type CloudResearchEvidence = CloudResearchInput["evidence"][number];
 export type FindingClassification = "fact" | "ai_inference";
 export type CloudResearchFinding = {
@@ -109,7 +117,10 @@ export type CloudResearchQuality = {
   warnings: string[];
 };
 export type CloudResearchResult = {
-  engineVersion: "research-rules-v1" | "research-rules-v2";
+  engineVersion:
+    | "research-rules-v1"
+    | "research-rules-v2"
+    | "openai-web-research-v1";
   generatedAt: string;
   containsGeneratedMarketNumbers: false;
   findings: CloudResearchFinding[];
@@ -172,11 +183,49 @@ export function parseCloudResearchForm(
   return parsed.data;
 }
 
+export function parseCloudResearchRequestForm(formData: FormData) {
+  const priceBand = requiredText(formData, "priceBand");
+  const priceBands: Record<string, [number, number]> = {
+    auto: [0, 0],
+    free: [0, 0],
+    low: [100, 499],
+    standard: [500, 999],
+    premium: [1000, 1999],
+    high: [2000, 10000],
+  };
+  const selectedPrice = priceBands[priceBand];
+  if (!selectedPrice)
+    throw new ValidationError("価格帯を選択してください。");
+  const parsed = cloudResearchRequestSchema.safeParse({
+    genre: requiredText(formData, "genre"),
+    audience: requiredText(formData, "audience"),
+    platform: requiredText(formData, "platform"),
+    contentClass: requiredText(formData, "contentClass"),
+    theme: requiredText(formData, "theme"),
+    referenceWorks:
+      requiredText(formData, "referenceWorks") || "指定なし",
+    priceMin: selectedPrice[0],
+    priceMax: selectedPrice[1],
+    publicationFormat: requiredText(formData, "publicationFormat"),
+    pageCount: requiredText(formData, "pageCount"),
+  });
+  if (!parsed.success)
+    throw new ValidationError(
+      parsed.error.issues[0]?.message ?? "市場分析の入力を確認してください。",
+    );
+  return parsed.data;
+}
+
 export function runCloudMarketAnalysis(
   input: CloudResearchInput,
   generatedAt = new Date().toISOString(),
 ): CloudResearchResult {
-  const formatLabel = input.publicationFormat === "series" ? "連載" : "読切";
+  const formatLabel =
+    input.publicationFormat === "auto"
+      ? "AI推奨形式"
+      : input.publicationFormat === "series"
+        ? "連載"
+        : "読切";
   const evidenceFor = (...topics: CloudResearchTopic[]) =>
     input.evidence.filter((item) =>
       item.topics.some((topic) => topics.includes(topic)),

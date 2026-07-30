@@ -4,6 +4,67 @@
 
 ---
 
+## 2026-07-30 Codex（売れ筋優先・AIおまかせ市場分析UX）
+
+### 状態
+
+`IMPLEMENTED_LOCAL`。市場分析の主目的を「何が売れる可能性が高いか」の意思決定へ絞り、入力と結果表示を再設計した。
+
+### 実装
+
+- ジャンルとテーマだけで実行できる簡単入力
+- 読者、販売先、形式、価格、ページ数は折りたたみ内でAIおまかせ
+- 作品イメージだけを任意入力
+- 今狙う作品、買われる理由、おすすめ商品設計を最上段へ表示
+- 直近12か月、需要と競合、異なる2ドメイン以上をAI調査条件に追加
+- 1ドメイン以下の根拠しかない応答は保存拒否
+- 旧Report表示と成人向け外部送信拒否を維持
+
+### 外部状態
+
+- AI Provider migration適用と管理画面APIキー設定は責任者申告で完了
+- APIキー本体・末尾・値は文書とログへ記録していない
+- 更新Previewでの実AI E2Eは未実施
+
+### 検証
+
+- deps、lint、typecheck、Research Evaluation: PASS
+- Hub test: PASS（195/195）
+- migration静的検証: PASS（21/21）
+- Hub production build、`git diff --check`: PASS
+
+---
+
+## 2026-07-30 Codex（市場分析AI自動化・管理画面API設定）
+
+### 状態
+
+`IMPLEMENTED_LOCAL`。一般向け市場分析をプルダウン中心の入力とOpenAI Web検索付き自動分析へ変更し、管理者がAPIキーをSupabase Vaultへ登録できる基盤を追加した。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-ai-auto-ux-v1`
+- Base: `codex/cloud-adult-planning-option-v1` (`58a18b9`)
+
+### 実装
+
+- 利用者の出典URL・確認事実入力を廃止
+- OpenAI Responses API、Web search、Structured Outputs
+- 引用のない応答を保存しない安全制御
+- 管理者用APIキー・model・停止設定
+- Supabase Vault保存とservice-role限定復号
+- 秘密値を含まない管理監査
+- migration、rollback、canonical schema、テスト
+
+### 安全境界
+
+- 一般向けだけを外部AIへ送信
+- 成人向けはProvider取得前に拒否
+- APIキーの再表示、ログ、URL、通常テーブル保存なし
+- migration適用、キー登録、有効化、本番公開は未実施
+
+---
+
 ## 2026-07-29 Codex（Cloud成人向け企画ブリーフ・機能単位権限）
 
 ### 状態

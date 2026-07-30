@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（売れ筋優先・AIおまかせ市場分析、2026-07-30）
+
+- Branch: `codex/cloud-research-ai-auto-ux-v1`
+- Base: `codex/cloud-adult-planning-option-v1` (`58a18b9`)
+- 目的: 簡単な希望だけで「今、どんな漫画が買われる可能性が高いか」を具体的に提示する
+- 状態: local実装済み。migrationと管理者キー登録は責任者申告で完了。更新Preview実機E2E、責任者承認待ち
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_RESEARCH_AI_AUTO_UX_SPEC.md`
+
+成人向け内容は外部AIへ送信しない。APIキーは通常テーブル、Client、URL、ログ、監査へ出さない。既存stacked PRをrebase、force push、Close、mergeしない。
+
+---
+
 ## 0. 現在の優先タスク（成人向け企画ブリーフ、2026-07-29）
 
 本節を、直後に残る成人向け市場分析と一般向けRelease 1統合記録より優先する。

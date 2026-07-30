@@ -238,3 +238,14 @@ from public.cloud_market_research_reports;
 ```
 
 すべてPASSかつ責任者承認後にのみ、統合Draft PRのDraft解除とmerge判断へ進む。
+# 市場分析AI Provider追加手順（2026-07-30）
+
+1. `202607300001_cloud_research_ai_provider.sql`をstagingへ適用する。
+2. 管理者で`/admin/research-ai`を開く。
+3. 自分で取得したOpenAI APIキーを入力する。
+4. modelは初期確認では`GPT-5.6 Terra`を選ぶ。
+5. 実行状態を`有効`にして保存する。
+6. 画面が`APIキー: 設定済み`になり、キー文字列が再表示されないことを確認する。
+7. 一般ユーザーで市場分析を1件実行し、履歴と詳細再表示を確認する。
+
+APIキーはVercel環境変数へ追加しない。成人向け内容はこのProviderへ送信しない。本番有効化は責任者承認後に行う。

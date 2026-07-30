@@ -219,6 +219,29 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_research_ai_settings') is null
+     or to_regclass('public.cloud_research_ai_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_research_ai_provider(uuid,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_research_ai_runtime_config()'
+     ) is null then
+    raise exception 'Cloud research AI Provider objects missing';
+  end if;
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.cloud_market_research_reports'::regclass
+      and conname = 'cloud_market_research_reports_engine_version_check'
+      and pg_get_constraintdef(oid) like '%openai-web-research-v1%'
+  ) then
+    raise exception 'Cloud research AI engine constraint missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_adult_research_settings') is null
      or to_regclass('public.cloud_adult_research_entitlements') is null
      or to_regclass('public.cloud_adult_research_consents') is null

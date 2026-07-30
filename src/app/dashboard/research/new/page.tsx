@@ -1,27 +1,19 @@
 import Link from "next/link";
 import { createCloudResearchReportAction } from "@/app/dashboard/research/actions";
 import { requireProfile } from "@/lib/auth";
-import {
-  cloudAdultResearchFeatureEnabled,
-  getCloudAdultResearchAccess,
-} from "@/lib/cloud-adult-research";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
-import {
-  cloudResearchSearchEnabled,
-  parseCloudResearchSearchAdoption,
-} from "@/lib/cloud-research-search";
-import { cloudResearchSourceVerificationEnabled } from "@/lib/cloud-research-source-verification";
-import { ClaimComparison } from "./claim-comparison";
-import { ClaimExtractor } from "./claim-extractor";
+import { ResearchSubmitButton } from "./research-submit-button";
 
 function Field({
   id,
   label,
   children,
+  help,
 }: {
   id: string;
   label: string;
   children: React.ReactNode;
+  help?: string;
 }) {
   return (
     <div>
@@ -29,6 +21,7 @@ function Field({
         {label}
       </label>
       {children}
+      {help ? <p className="mt-2 text-sm text-stone-500">{help}</p> : null}
     </div>
   );
 }
@@ -36,73 +29,26 @@ function Field({
 export default async function NewCloudResearchPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    error?: string;
-    candidateTitle?: string;
-    candidateUrl?: string;
-    candidateTopic?: string;
-    candidatePublishedAt?: string;
-  }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const enabled = cloudResearchFeatureEnabled();
-  const authenticated = enabled ? await requireProfile() : null;
-  const adultFeatureEnabled = cloudAdultResearchFeatureEnabled();
-  const adultAccess =
-    enabled && adultFeatureEnabled && authenticated
-      ? await getCloudAdultResearchAccess(authenticated.profile.id)
-      : null;
-  const {
-    error,
-    candidateTitle,
-    candidateUrl,
-    candidateTopic,
-    candidatePublishedAt,
-  } = await searchParams;
-  const adoptedCandidate = parseCloudResearchSearchAdoption({
-    title: candidateTitle,
-    url: candidateUrl,
-    topic: candidateTopic,
-    publishedAt: candidatePublishedAt,
-  });
-  const searchEnabled = enabled && cloudResearchSearchEnabled();
-  const sourceVerificationEnabled = cloudResearchSourceVerificationEnabled();
-  const now = new Date().toISOString().slice(0, 16);
+  if (enabled) await requireProfile();
+  const { error } = await searchParams;
 
   return (
     <main className="page max-w-4xl">
       <Link className="text-violet-700 underline" href="/dashboard/research">
         ← 市場分析履歴へ
       </Link>
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <h1 className="text-3xl font-bold">新しい市場分析</h1>
-        {searchEnabled ? (
-          <Link
-            className="button-secondary text-center"
-            href="/dashboard/research/discover"
-          >
-            出典候補を探す
-          </Link>
-        ) : null}
-      </div>
+      <h1 className="mt-4 text-3xl font-bold">AI市場分析</h1>
       <p className="mt-2 text-stone-600">
-        確認済みの出典だけを使い、定性的な分析Reportを作成します。
+        作りたい方向を選ぶだけで、AIが「今、どんな作品が売れやすいか」を調べます。
       </p>
-      {enabled && adultFeatureEnabled ? (
-        <p className="mt-3 text-sm text-stone-600">
-          成人向け市場分析は許可制です。{" "}
-          <Link
-            className="font-bold text-violet-700 underline"
-            href="/dashboard/research/adult-access"
-          >
-            利用状態を確認
-          </Link>
-        </p>
-      ) : null}
+      <p className="mt-4 rounded-lg bg-violet-50 p-4 text-sm text-violet-950" role="status">
+        市場、販売先、価格の知識は不要です。現在の需要と競合から、具体的なおすすめを提示します。
+      </p>
       {error ? (
-        <p
-          className="mt-5 rounded-md bg-red-50 p-4 text-red-700"
-          role="alert"
-        >
+        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
           {error}
         </p>
       ) : null}
@@ -111,178 +57,129 @@ export default async function NewCloudResearchPage({
           市場分析機能は現在停止中です。
         </div>
       ) : (
-        <>
-          {!searchEnabled ? (
-            <p
-              className="mt-5 rounded-lg bg-violet-50 p-4 text-sm text-violet-950"
-              role="status"
-            >
-              出典候補検索は未設定です。出典名・URL・確認した事実を手動入力して市場分析を続けられます。
-            </p>
-          ) : null}
-          {adoptedCandidate ? (
-            <>
-              <ClaimExtractor
-                enabled={sourceVerificationEnabled}
-                topic={adoptedCandidate.topic}
-                url={adoptedCandidate.url}
-              />
-              <ClaimComparison
-                enabled={sourceVerificationEnabled}
-                primaryUrl={adoptedCandidate.url}
-                topic={adoptedCandidate.topic}
-              />
-            </>
-          ) : null}
-          <form action={createCloudResearchReportAction} className="mt-6 space-y-6">
+        <form action={createCloudResearchReportAction} className="mt-6 space-y-6">
           <section className="panel">
-            <h2 className="text-xl font-bold">制作条件</h2>
+            <input name="contentClass" type="hidden" value="general" />
+            <h2 className="text-xl font-bold">作りたい作品を教えてください</h2>
+            <p className="mt-2 text-sm text-stone-600">
+              まずは2項目だけで分析できます。迷ったら「AIにおまかせ」を選んでください。
+            </p>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <Field id="genre" label="ジャンル">
-                <input className="field" id="genre" name="genre" maxLength={80} required />
-              </Field>
-              <Field id="platform" label="公開プラットフォーム">
-                <input className="field" id="platform" name="platform" maxLength={120} required />
-              </Field>
-              <Field id="contentClass" label="一般／成人向け区分">
-                <select className="field" id="contentClass" name="contentClass" required>
-                  <option value="general">一般向け</option>
-                  <option disabled={!adultAccess?.allowed} value="adult">
-                    {adultAccess?.allowed
-                      ? "成人向け（許可済み）"
-                      : "成人向け（利用許可が必要）"}
-                  </option>
+                <select className="field" defaultValue="AIにおまかせ" id="genre" name="genre" required>
+                  <option value="AIにおまかせ">AIにおまかせ</option>
+                  <option value="ファンタジー">ファンタジー</option>
+                  <option value="恋愛">恋愛</option>
+                  <option value="異世界">異世界</option>
+                  <option value="アクション">アクション</option>
+                  <option value="ミステリー・サスペンス">ミステリー・サスペンス</option>
+                  <option value="ホラー">ホラー</option>
+                  <option value="日常・ヒューマンドラマ">日常・ヒューマンドラマ</option>
+                  <option value="コメディ">コメディ</option>
+                  <option value="BL">BL</option>
+                  <option value="TL">TL</option>
                 </select>
               </Field>
-              <Field id="publicationFormat" label="連載／読切">
-                <select className="field" id="publicationFormat" name="publicationFormat" required>
-                  <option value="series">連載</option>
-                  <option value="one_shot">読切</option>
+              <Field id="theme" label="テーマ・読後感">
+                <select className="field" defaultValue="AIにおまかせ" id="theme" name="theme" required>
+                  <option value="AIにおまかせ">AIにおまかせ</option>
+                  <option value="成長・再出発">成長・再出発</option>
+                  <option value="恋愛・関係性">恋愛・関係性</option>
+                  <option value="復讐・逆転">復讐・逆転</option>
+                  <option value="冒険・探索">冒険・探索</option>
+                  <option value="仕事・キャリア">仕事・キャリア</option>
+                  <option value="家族・友情">家族・友情</option>
+                  <option value="謎解き・事件">謎解き・事件</option>
+                  <option value="癒やし・日常">癒やし・日常</option>
                 </select>
               </Field>
-              <Field id="priceMin" label="価格帯（下限・円）">
-                <input className="field" id="priceMin" name="priceMin" type="number" min={0} max={1000000} defaultValue={0} required />
-              </Field>
-              <Field id="priceMax" label="価格帯（上限・円）">
-                <input className="field" id="priceMax" name="priceMax" type="number" min={0} max={1000000} defaultValue={1000} required />
-              </Field>
-              <Field id="pageCount" label="ページ数">
-                <input className="field" id="pageCount" name="pageCount" type="number" min={1} max={2000} defaultValue={32} required />
-              </Field>
             </div>
-            <div className="mt-5 space-y-5">
-              <Field id="audience" label="想定読者">
-                <textarea className="field min-h-24" id="audience" name="audience" maxLength={300} required />
-              </Field>
-              <Field id="theme" label="テーマ">
-                <textarea className="field min-h-24" id="theme" name="theme" maxLength={300} required />
-              </Field>
-              <Field id="referenceWorks" label="参考作品">
-                <textarea className="field min-h-24" id="referenceWorks" name="referenceWorks" maxLength={500} required />
-              </Field>
-            </div>
-          </section>
-
-          <section className="panel">
-            <h2 className="text-xl font-bold">出典と確認した事実</h2>
-            <p
-              className="mt-2 text-sm text-stone-600"
-              id="research-evidence-help"
-            >
-              最低1件必須です。出典種別と、その事実が支える分野を選択してください。市場数値は出典に記載された内容だけを事実メモへ入力してください。
-            </p>
-            {adoptedCandidate ? (
-              <p className="mt-3 rounded-lg bg-violet-50 p-3 text-sm text-violet-950">
-                検索候補のタイトルとURLを出典1へ入力しました。原文を確認し、出典種別と確認した事実を入力してください。
-              </p>
-            ) : null}
-            <p
-              className={`mt-3 rounded-lg p-3 text-sm ${
-                sourceVerificationEnabled
-                  ? "bg-green-50 text-green-900"
-                  : "bg-amber-50 text-amber-950"
-              }`}
-              role="status"
-            >
-              {sourceVerificationEnabled
-                ? "Server取得検証は有効です。許可済みドメインのHTTPS出典だけを保存できます。"
-                : "Server取得検証は現在無効です。URLと事実メモは未検証の出典として保存されます。"}
-            </p>
-            {[0, 1, 2, 3, 4].map((index) => (
-              <fieldset
-                aria-describedby="research-evidence-help"
-                className="mt-5 rounded-lg border border-stone-200 p-4"
-                key={index}
+            <div className="mt-5">
+              <Field
+                id="referenceWorks"
+                label="作りたいイメージ（任意）"
+                help="雰囲気、主人公、舞台、参考作品など、決まっていることだけ入力してください。"
               >
-                <legend className="px-2 font-bold">出典 {index + 1}{index === 0 ? "（必須）" : "（任意）"}</legend>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Field id={`sourceTitle${index}`} label="出典名">
-                    <input className="field" id={`sourceTitle${index}`} name={`sourceTitle${index}`} maxLength={200} required={index === 0} defaultValue={index === 0 ? adoptedCandidate?.title : undefined} />
-                  </Field>
-                  <Field id={`sourceType${index}`} label="出典種別">
-                    <select className="field" id={`sourceType${index}`} name={`sourceType${index}`} required={index === 0} defaultValue="">
-                      <option value="">選択してください</option>
-                      <option value="official">公的機関・公式一次情報</option>
-                      <option value="platform">販売プラットフォーム公式</option>
-                      <option value="industry_report">業界調査レポート</option>
-                      <option value="store_ranking">ストアランキング</option>
-                      <option value="news">報道・ニュース</option>
-                      <option value="other">その他</option>
-                    </select>
-                  </Field>
-                  <Field id={`sourceRetrievedAt${index}`} label="取得日時">
-                    <input className="field" id={`sourceRetrievedAt${index}`} name={`sourceRetrievedAt${index}`} type="datetime-local" defaultValue={index === 0 ? now : undefined} required={index === 0} />
-                  </Field>
-                  <Field id={`sourcePublishedAt${index}`} label="公開日時（任意）">
-                    <input className="field" id={`sourcePublishedAt${index}`} name={`sourcePublishedAt${index}`} type="datetime-local" defaultValue={index === 0 ? adoptedCandidate?.publishedAt?.slice(0, 16) : undefined} />
-                  </Field>
-                </div>
-                <div className="mt-4 space-y-4">
-                  <Field id={`sourceUrl${index}`} label="出典URL（HTTPS）">
-                    <input className="field" id={`sourceUrl${index}`} name={`sourceUrl${index}`} type="url" placeholder="https://..." required={index === 0} defaultValue={index === 0 ? adoptedCandidate?.url : undefined} />
-                  </Field>
-                  <Field id={`sourceFact${index}`} label="出典で確認した事実">
-                    <textarea className="field min-h-24" id={`sourceFact${index}`} name={`sourceFact${index}`} maxLength={1000} required={index === 0} />
-                  </Field>
-                  <fieldset>
-                    <legend className="label">この事実が支える分野</legend>
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {[
-                        ["demand", "市場需要"],
-                        ["competition", "競合"],
-                        ["audience", "読者"],
-                        ["theme", "人気テーマ"],
-                        ["price", "価格"],
-                        ["channel", "販売チャネル"],
-                        ["risk", "リスク"],
-                      ].map(([value, label]) => (
-                        <label className="flex items-center gap-2 text-sm" key={value}>
-                          <input
-                            defaultChecked={
-                              index === 0 && adoptedCandidate?.topic === value
-                            }
-                            name={`sourceTopics${index}`}
-                            type="checkbox"
-                            value={value}
-                          />
-                          {label}
-                        </label>
-                      ))}
-                    </div>
-                  </fieldset>
-                </div>
-              </fieldset>
-            ))}
+                <input
+                  className="field"
+                  id="referenceWorks"
+                  maxLength={500}
+                  name="referenceWorks"
+                  placeholder="例：働く女性が人生をやり直す、読後感は爽快"
+                />
+              </Field>
+            </div>
+            <details className="mt-6 rounded-lg border border-stone-200 bg-stone-50 p-4">
+              <summary className="cursor-pointer font-bold">
+                希望がある場合だけ詳細を設定
+              </summary>
+              <p className="mt-2 text-sm text-stone-600">
+                未定の項目はAIが売れやすさを基準に提案します。
+              </p>
+              <div className="mt-5 grid gap-5 sm:grid-cols-2">
+                <Field id="audience" label="届けたい読者">
+                  <select className="field" defaultValue="AIにおまかせ" id="audience" name="audience" required>
+                    <option value="AIにおまかせ">AIにおまかせ</option>
+                    <option value="10代中心">10代中心</option>
+                    <option value="20代女性中心">20代女性中心</option>
+                    <option value="20代男性中心">20代男性中心</option>
+                    <option value="30〜40代女性中心">30〜40代女性中心</option>
+                    <option value="30〜40代男性中心">30〜40代男性中心</option>
+                    <option value="幅広い一般読者">幅広い一般読者</option>
+                    <option value="特定ジャンルのコア読者">特定ジャンルのコア読者</option>
+                  </select>
+                </Field>
+                <Field id="platform" label="販売先">
+                  <select className="field" defaultValue="AIにおまかせ" id="platform" name="platform" required>
+                    <option value="AIにおまかせ">AIにおまかせ</option>
+                    <option value="Amazon Kindle">Amazon Kindle</option>
+                    <option value="LINEマンガ">LINEマンガ</option>
+                    <option value="ピッコマ">ピッコマ</option>
+                    <option value="コミックシーモア">コミックシーモア</option>
+                    <option value="Webtoon">Webtoon</option>
+                    <option value="BOOTH">BOOTH</option>
+                    <option value="複数プラットフォーム">複数プラットフォーム</option>
+                  </select>
+                </Field>
+                <Field id="publicationFormat" label="連載／読切">
+                  <select className="field" defaultValue="auto" id="publicationFormat" name="publicationFormat" required>
+                    <option value="auto">AIにおまかせ</option>
+                    <option value="series">連載</option>
+                    <option value="one_shot">読切</option>
+                  </select>
+                </Field>
+                <Field id="priceBand" label="価格帯">
+                  <select className="field" defaultValue="auto" id="priceBand" name="priceBand" required>
+                    <option value="auto">AIにおまかせ</option>
+                    <option value="free">無料</option>
+                    <option value="low">100〜499円</option>
+                    <option value="standard">500〜999円</option>
+                    <option value="premium">1,000〜1,999円</option>
+                    <option value="high">2,000円以上</option>
+                  </select>
+                </Field>
+                <Field id="pageCount" label="ページ数">
+                  <select className="field" defaultValue="0" id="pageCount" name="pageCount" required>
+                    <option value="0">AIにおまかせ</option>
+                    <option value="16">16ページ</option>
+                    <option value="24">24ページ</option>
+                    <option value="32">32ページ</option>
+                    <option value="48">48ページ</option>
+                    <option value="64">64ページ</option>
+                    <option value="100">100ページ前後</option>
+                  </select>
+                </Field>
+              </div>
+            </details>
+            <p className="mt-4 text-xs text-stone-500">
+              成人向け（AI接続は準備中）の内容は、明示許可なしに外部AIへ送信しません。
+            </p>
           </section>
-
           <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-950">
-            出典を確認できる形で分析結果を保存します。根拠のない市場規模・販売数・成長率は表示しません。
+            実行には数十秒かかる場合があります。ボタンを押した後は画面を閉じずにお待ちください。
           </p>
-          <button className="button w-full bg-violet-700 hover:bg-violet-800" type="submit">
-            市場分析を実行して保存
-          </button>
-          </form>
-        </>
+          <ResearchSubmitButton />
+        </form>
       )}
     </main>
   );

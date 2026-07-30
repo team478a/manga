@@ -243,11 +243,6 @@ test("検索UIはPOST Actionを使いsnippetを事実へ自動転記しない", 
   assert.match(client, /原文を確認/);
   assert.match(client, /Feature Flag/);
   assert.match(page, /cloudResearchSearchEnabled/);
-  assert.match(researchForm, /adoptedCandidate\?\.title/);
-  assert.match(researchForm, /adoptedCandidate\?\.url/);
-  const factField = researchForm.slice(
-    researchForm.indexOf("sourceFact${index}"),
-    researchForm.indexOf("<fieldset>", researchForm.indexOf("sourceFact${index}")),
-  );
-  assert.doesNotMatch(factField, /adoptedCandidate/);
+  assert.match(researchForm, /AI市場分析/);
+  assert.doesNotMatch(researchForm, /adoptedCandidate|sourceFact/);
 });

@@ -9,11 +9,11 @@ import {
 } from "@/lib/cloud-adult-research";
 import {
   cloudResearchFeatureEnabled,
-  parseCloudResearchForm,
-  runCloudMarketAnalysis,
+  parseCloudResearchRequestForm,
 } from "@/lib/cloud-research";
+import { runCloudResearchAiAnalysis } from "@/lib/cloud-research-ai";
 import { createCloudResearchReport } from "@/lib/cloud-research-server";
-import { maybeVerifyCloudResearchSources } from "@/lib/cloud-research-source-verification";
+import { enforceCloudResearchAiAnalysisRateLimit } from "@/lib/cloud-research-search-rate-limit";
 import { PermissionDeniedError } from "@/lib/domain-errors";
 
 export async function createCloudResearchReportAction(formData: FormData) {
@@ -22,9 +22,9 @@ export async function createCloudResearchReportAction(formData: FormData) {
     if (!cloudResearchFeatureEnabled())
       throw new PermissionDeniedError("市場分析機能は現在停止中です。");
     const { profile } = await requireProfile();
-    const parsedInput = parseCloudResearchForm(formData, { allowAdult: true });
+    const request = parseCloudResearchRequestForm(formData);
     const adultAccess =
-      parsedInput.contentClass === "adult"
+      request.contentClass === "adult"
         ? await getCloudAdultResearchAccess(profile.id)
         : {
             allowed: false,
@@ -32,11 +32,12 @@ export async function createCloudResearchReportAction(formData: FormData) {
             entitlement: null,
             consent: null,
           };
-    assertCloudResearchContentAllowed(parsedInput, adultAccess);
-    const input = await maybeVerifyCloudResearchSources(
-      parsedInput,
-    );
-    const result = runCloudMarketAnalysis(input);
+    assertCloudResearchContentAllowed(request, adultAccess);
+    await enforceCloudResearchAiAnalysisRateLimit(profile.id);
+    const { input, result } = await runCloudResearchAiAnalysis({
+      profileId: profile.id,
+      request,
+    });
     reportId = await createCloudResearchReport({
       profileId: profile.id,
       input,
