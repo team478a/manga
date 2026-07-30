@@ -148,7 +148,7 @@ test("成人向け企画は入力・保存・履歴・再表示と権限管理�
   assert.match(page, /createCloudAdultProposalAction/);
   assert.match(
     page,
-    /市場分析をOpenAIへ送信し/,
+    /市場分析をxAI\/Grokへ送信し/,
   );
   assert.doesNotMatch(detail, /runCloudAdultProposalAi/);
 });

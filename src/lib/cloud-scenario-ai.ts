@@ -7,7 +7,11 @@ import {
   type CloudStoryScenarioResult,
 } from "./cloud-scenario.ts";
 import type { CloudStoryScenarioVersion } from "./cloud-scenario-persistence.ts";
-import { getCloudResearchAiRuntimeConfig } from "./cloud-research-ai-settings.ts";
+import {
+  providerSpecificRequestFields,
+  resolveCloudTextProviderRuntime,
+  type CloudTextProviderRuntimeOverride,
+} from "./cloud-text-provider-runtime.ts";
 import {
   ContentRejectedError,
   ProviderTimeoutError,
@@ -96,7 +100,7 @@ async function runScenarioAi(input: {
   revisionInstruction?: string | null;
   fetchImplementation?: typeof fetch;
   now?: string;
-  runtimeConfig?: Awaited<ReturnType<typeof getCloudResearchAiRuntimeConfig>>;
+  runtimeConfig?: CloudTextProviderRuntimeOverride;
 }): Promise<CloudStoryScenarioResult> {
   if (input.report.input.contentClass !== input.contentClass ||
       input.selection.content_class !== input.contentClass)
@@ -118,17 +122,20 @@ async function runScenarioAi(input: {
     if (!review.allowed)
       throw new ContentRejectedError("安全条件を満たさないため成人向けシナリオを生成できません。");
   }
-  const runtime = input.runtimeConfig ?? await getCloudResearchAiRuntimeConfig();
+  const runtime = await resolveCloudTextProviderRuntime(input.contentClass, input.runtimeConfig);
   const generatedAt = input.now ?? new Date().toISOString();
   const pageCount = scenarioPageCount(input.report.input);
-  const response = await (input.fetchImplementation ?? fetch)("https://api.openai.com/v1/responses", {
+  const response = await (input.fetchImplementation ?? fetch)(runtime.endpoint, {
     method: "POST",
     headers: { Authorization: `Bearer ${runtime.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: runtime.model,
       store: false,
       max_output_tokens: MAX_OUTPUT_TOKENS,
-      safety_identifier: createHash("sha256").update(`mangai-scenario:${input.profileId}`).digest("hex"),
+      ...providerSpecificRequestFields(
+        runtime,
+        createHash("sha256").update(`mangai-scenario:${input.profileId}`).digest("hex"),
+      ),
       reasoning: { effort: "medium" },
       input: [
         {
@@ -182,7 +189,8 @@ async function runScenarioAi(input: {
     throw new ProviderUnavailableError("シナリオ結果を確認できませんでした。もう一度お試しください。");
   }
   const result = cloudStoryScenarioResultSchema.safeParse({
-    engineVersion: "openai-scenario-v1", generatedAt, model: runtime.model,
+    engineVersion: runtime.provider === "xai" ? "xai-adult-scenario-v1" : "openai-scenario-v1",
+    generatedAt, model: runtime.model,
     classification: "ai_inference", containsGeneratedMarketNumbers: false, ...(parsed as object),
   });
   if (!result.success)

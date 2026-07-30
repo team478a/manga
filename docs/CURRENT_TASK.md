@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-07-31 成人向けGrok Provider v1
+
+- 追記: 一般向けOpenAIと成人向けGrokの両方を、管理画面でAPIキーを入力・保存すると自動利用開始し、同じ画面で差し替えられるUXへ統一。今後の外部Providerも`docs/cloud/API_KEY_ADMIN_MANAGEMENT_POLICY.md`に従う。
+
+- Branch: `codex/cloud-adult-grok-provider-v1`
+- Base: `codex/cloud-adult-monitor-beta-v1` (`90c4ad2`)
+- 目的: 一般向けOpenAIを維持し、許可済み成人向け市場分析・企画・シナリオ・ネームをxAI/Grokへ分離する。
+- 実装範囲: 専用Vault設定、管理画面、環境/DB二重停止、Provider routing、入力/出力安全審査、監査、migration、preflight。
+- 対象外: 成人向け画像生成、migration適用、有料API実行、本番有効化、一般公開、販売。
+- migration: `202607310001_cloud_adult_grok_provider`（未適用）
+- 状態: `IMPLEMENTING`
+- 正本: `docs/cloud/CLOUD_ADULT_GROK_PROVIDER_PLAN.md`、`docs/cloud/CLOUD_ADULT_GROK_PROVIDER_RUNBOOK.md`
+
+
 ## 2026-07-30 成人向け限定モニター 第2段階
 
 - Branch: `codex/cloud-adult-monitor-beta-v1`

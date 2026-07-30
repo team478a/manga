@@ -192,7 +192,13 @@
       "description": "成人向け限定モニターの期間・AI利用上限・一括開始停止・フィードバックを追加",
       "forwardSha256": "f9cd28a908460162338395f0f9af02bc36832d4c1b739d86ac25b5f27989fbd8",
       "rollbackSha256": "0daa5d0a38d82309bdf37e96988431d8264b4c8d06724b2fdb7c86c0a99f248a"
+    },
+    {
+      "id": "202607310001_cloud_adult_grok_provider",
+      "description": "成人向けテキストAIをxAI/Grokへ分離しVault設定・監査・保存形式を追加",
+      "forwardSha256": "76d0f94558876122510e2aff3851ff13c87c427fe1c48fd1892227102c3a42b0",
+      "rollbackSha256": "5d8078311b30d71f6eb10a2cd24eed2a312ca78227ba70230881b0a82c2f74be"
     }
   ],
-  "schemaSha256": "688af01bca406696ff5ea1a5333d73064e0f4317b83255b408fd0279f62440c3"
+  "schemaSha256": "bc4ed58ef412f295b7523e01dc379d22ec78191eef23efc2ff009ce389932998"
 }

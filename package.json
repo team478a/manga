@@ -39,6 +39,7 @@
     "cloud:adult-canvas:preflight": "node scripts/check-cloud-adult-canvas-preflight.mjs",
     "cloud:adult-work-management:preflight": "node scripts/check-cloud-adult-work-management-preflight.mjs",
     "cloud:adult-monitor:preflight": "node scripts/check-cloud-adult-monitor-beta-preflight.mjs",
+    "cloud:adult-grok:preflight": "node scripts/check-cloud-adult-grok-preflight.mjs",
     "db:migrations:validate": "node scripts/validate-supabase-migrations.mjs",
     "db:migrations:checksums:update": "node scripts/update-supabase-migration-checksums.mjs --write",
     "db:staging:preflight": "node scripts/check-supabase-staging.mjs",

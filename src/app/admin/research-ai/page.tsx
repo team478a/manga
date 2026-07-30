@@ -33,10 +33,10 @@ export default async function ResearchAiAdminPage({
       <Link className="text-violet-700 underline" href="/admin">
         ← 管理者ダッシュボード
       </Link>
-      <h1 className="mt-4 text-3xl font-bold">市場分析AI設定</h1>
+      <h1 className="mt-4 text-3xl font-bold">一般向けAI（OpenAI）設定</h1>
       <p className="mt-2 text-stone-600">
-        一般向け市場分析で利用するOpenAI接続を管理します。APIキーはSupabase
-        Vaultへ暗号化保存され、この画面や監査ログには再表示されません。
+        一般向けの市場分析・企画・シナリオ・ネームで共通利用するOpenAI接続です。
+        APIキーはSupabase Vaultへ暗号化保存され、この画面や監査ログには再表示されません。
       </p>
       {query.message ? (
         <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">
@@ -59,7 +59,7 @@ export default async function ResearchAiAdminPage({
         <form action={updateCloudResearchAiAction} className="panel mt-6 space-y-5">
           <div className="rounded-lg bg-violet-50 p-4">
             <p className="font-bold">
-              APIキー: {settings.configured ? "設定済み" : "未設定"}
+              利用状態: {settings.configured && settings.enabled ? "利用できます" : "APIキー未設定"}
             </p>
             <p className="mt-1 text-sm text-stone-600">
               最終更新: {new Date(settings.updatedAt).toLocaleString("ja-JP")}
@@ -74,42 +74,19 @@ export default async function ResearchAiAdminPage({
               name="apiKey"
               placeholder={
                 settings.configured
-                  ? "変更しない場合は空欄"
+                  ? "新しいAPIキーを入力して変更"
                   : "sk-... または sk-proj-..."
               }
+              required
               type="password"
             />
             <span className="mt-2 block text-sm font-normal text-stone-600">
-              入力した値は保存後に確認できません。交換すると以前のキーは上書きされます。
+              保存するとすぐ利用可能になります。変更時は新しいキーを入力して保存してください。
+              キーは保存後に表示せず、以前のキーは安全に上書きします。
             </span>
           </label>
-          <label className="label block" htmlFor="model">
-            モデル
-            <select
-              className="field mt-2"
-              defaultValue={settings.model}
-              id="model"
-              name="model"
-            >
-              <option value="gpt-5.6-terra">GPT-5.6 Terra（推奨）</option>
-              <option value="gpt-5.6-sol">GPT-5.6 Sol（高精度）</option>
-              <option value="gpt-5.6-luna">GPT-5.6 Luna（低コスト）</option>
-            </select>
-          </label>
-          <label className="label block" htmlFor="enabled">
-            実行状態
-            <select
-              className="field mt-2"
-              defaultValue={String(settings.enabled)}
-              id="enabled"
-              name="enabled"
-            >
-              <option value="false">停止</option>
-              <option value="true">有効</option>
-            </select>
-          </label>
           <button className="button w-full bg-violet-700 hover:bg-violet-800" type="submit">
-            安全に保存
+            APIキーを保存して利用開始
           </button>
         </form>
       )}

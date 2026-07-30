@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { requireAdmin } from "@/lib/auth";
 import {
-  cloudResearchAiModelSchema,
+  getCloudResearchAiSettings,
   setCloudResearchAiSettings,
 } from "@/lib/cloud-research-ai-settings";
 import { ValidationError } from "@/lib/domain-errors";
@@ -16,32 +16,24 @@ function field(formData: FormData, name: string) {
 }
 
 export async function updateCloudResearchAiAction(formData: FormData) {
-  let message = "市場分析AI設定を更新しました。";
   try {
     const { profile } = await requireAdmin();
-    const parsed = cloudResearchAiModelSchema.safeParse(
-      field(formData, "model"),
-    );
     const apiKey = field(formData, "apiKey").trim();
-    const enabled = field(formData, "enabled") === "true";
-    if (!parsed.success)
-      throw new ValidationError("AIモデルを確認してください。");
+    const current = await getCloudResearchAiSettings();
     if (
-      apiKey &&
-      (!apiKey.startsWith("sk-") ||
+      !apiKey ||
+      !apiKey.startsWith("sk-") ||
         apiKey.length < 20 ||
-        apiKey.length > 500)
+        apiKey.length > 500 ||
+        /\s/.test(apiKey)
     )
       throw new ValidationError("OpenAI APIキーの形式を確認してください。");
     await setCloudResearchAiSettings({
       actorProfileId: profile.id,
       apiKey,
-      model: parsed.data,
-      enabled,
+      model: current?.model ?? "gpt-5.6-terra",
+      enabled: true,
     });
-    message = apiKey
-      ? "APIキーを安全に保存し、市場分析AI設定を更新しました。"
-      : message;
   } catch (error) {
     const safeMessage = safeDomainErrorMessage(
       error,
@@ -50,5 +42,5 @@ export async function updateCloudResearchAiAction(formData: FormData) {
     redirect(`/admin/research-ai?error=${encodeURIComponent(safeMessage)}`);
   }
   revalidatePath("/admin/research-ai");
-  redirect(`/admin/research-ai?message=${encodeURIComponent(message)}`);
+  redirect(`/admin/research-ai?message=${encodeURIComponent("APIキーを安全に保存しました。一般向けAIを利用できます。")}`);
 }

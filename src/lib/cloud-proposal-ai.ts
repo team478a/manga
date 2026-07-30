@@ -4,7 +4,11 @@ import {
   cloudStoryProposalResultSchema,
   type CloudStoryProposalResult,
 } from "./cloud-proposal.ts";
-import { getCloudResearchAiRuntimeConfig } from "./cloud-research-ai-settings.ts";
+import {
+  providerSpecificRequestFields,
+  resolveCloudTextProviderRuntime,
+  type CloudTextProviderRuntimeOverride,
+} from "./cloud-text-provider-runtime.ts";
 import {
   ContentRejectedError,
   ProviderTimeoutError,
@@ -88,7 +92,7 @@ async function runProposalAi(input: {
   contentClass: "general" | "adult";
   fetchImplementation?: typeof fetch;
   now?: string;
-  runtimeConfig?: Awaited<ReturnType<typeof getCloudResearchAiRuntimeConfig>>;
+  runtimeConfig?: CloudTextProviderRuntimeOverride;
 }): Promise<CloudStoryProposalResult> {
   if (input.report.input.contentClass !== input.contentClass)
     throw new ContentRejectedError("市場分析の区分を確認してください。");
@@ -104,10 +108,10 @@ async function runProposalAi(input: {
         "安全条件を満たさないため成人向け企画を生成できません。",
       );
   }
-  const runtime = input.runtimeConfig ?? (await getCloudResearchAiRuntimeConfig());
+  const runtime = await resolveCloudTextProviderRuntime(input.contentClass, input.runtimeConfig);
   const generatedAt = input.now ?? new Date().toISOString();
   const response = await (input.fetchImplementation ?? fetch)(
-    "https://api.openai.com/v1/responses",
+    runtime.endpoint,
     {
       method: "POST",
       headers: {
@@ -118,9 +122,12 @@ async function runProposalAi(input: {
         model: runtime.model,
         store: false,
         max_output_tokens: MAX_OUTPUT_TOKENS,
-        safety_identifier: createHash("sha256")
-          .update(`mangai-proposal:${input.profileId}`)
-          .digest("hex"),
+        ...providerSpecificRequestFields(
+          runtime,
+          createHash("sha256")
+            .update(`mangai-proposal:${input.profileId}`)
+            .digest("hex"),
+        ),
         reasoning: { effort: "medium" },
         input: [
           {
@@ -183,7 +190,10 @@ async function runProposalAi(input: {
     throw new ProviderUnavailableError("企画結果を確認できませんでした。もう一度お試しください。");
   }
   const validated = cloudStoryProposalResultSchema.safeParse({
-    engineVersion: "openai-proposal-v1",
+    engineVersion:
+      runtime.provider === "xai"
+        ? "xai-adult-proposal-v1"
+        : "openai-proposal-v1",
     generatedAt,
     model: runtime.model,
     classification: "ai_inference",

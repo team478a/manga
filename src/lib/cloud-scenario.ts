@@ -33,7 +33,7 @@ const sceneSchema = z.object({
 
 export const cloudStoryScenarioResultSchema = z
   .object({
-    engineVersion: z.literal("openai-scenario-v1"),
+    engineVersion: z.enum(["openai-scenario-v1", "xai-adult-scenario-v1"]),
     generatedAt: z.string().datetime(),
     model: z.string().min(1).max(100),
     classification: z.literal("ai_inference"),

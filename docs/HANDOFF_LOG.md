@@ -4,6 +4,26 @@
 
 ---
 
+## 2026-07-31 Codex: Provider APIキー管理UX統一
+
+- 一般向けOpenAIと成人向けGrokは、管理画面へAPIキーを入力して保存すると自動有効化する。
+- APIキー変更は同じ画面へ新しいキーを保存するだけで完了する。
+- モデル選択やDB有効化を通常画面から除外し、Server側の既存推奨値を維持する。
+- 今後の利用者管理Providerキーは`docs/cloud/API_KEY_ADMIN_MANAGEMENT_POLICY.md`を必須方針とする。
+
+---
+
+## 2026-07-31 Codex: Cloud成人向けGrok Provider v1
+
+- Branch: `codex/cloud-adult-grok-provider-v1`
+- Base: `codex/cloud-adult-monitor-beta-v1` (`90c4ad2`)
+- 成人向け市場分析・企画・シナリオ・ネームを一般向けOpenAIからxAI/Grokへ分離。
+- 専用Supabase Vault、環境/DB二重停止、管理画面、監査、engine version、安全なroutingを追加。
+- 既存の成人向け権限、18歳以上確認、本人同意、限定モニター上限、入力/出力審査を維持。
+- 成人向け画像生成、migration適用、有料API実行、本番有効化は未実施。
+
+---
+
 ## 2026-07-30 Codex: Cloud成人向け作品管理 v1
 
 - Branch: `codex/cloud-adult-work-management-v1`

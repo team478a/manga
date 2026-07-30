@@ -302,7 +302,7 @@ test("保存ActionはAIが確認した出典付き結果だけを永続化する
     new URL("../src/app/dashboard/research/actions.ts", import.meta.url),
     "utf8",
   );
-  const analyzeAt = source.indexOf("runCloudResearchAiAnalysis({");
+  const analyzeAt = source.indexOf("await analyze({");
   const persistAt = source.indexOf("createCloudResearchReport({");
   assert.doesNotMatch(source, /maybeVerifyCloudResearchSources/);
   assert.ok(analyzeAt >= 0);
