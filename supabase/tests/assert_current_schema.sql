@@ -114,6 +114,22 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_story_scenario_versions') is null
+     or to_regclass('public.cloud_story_scenario_adoptions') is null then
+    raise exception 'Current schema Cloud scenario tables missing';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='public'
+      and tablename='cloud_story_scenario_versions'
+      and policyname='cloud_story_scenario_versions_owner_insert'
+  ) then
+    raise exception 'Current schema Cloud scenario RLS missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_research_ai_settings') is null
      or to_regclass('public.cloud_research_ai_audit_logs') is null
      or to_regprocedure(

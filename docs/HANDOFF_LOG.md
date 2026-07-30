@@ -1406,6 +1406,41 @@ READY_FOR_REVIEW
 
 ---
 
+## 2026-07-30 Codex → 次担当AI
+
+### 状態
+
+READY_FOR_DRAFT_PR
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-scenario-generation-v1`
+- Base: `codex/cloud-proposal-generation-v1` (`f5b176a`)
+
+### 完了
+
+- Release 3「シナリオ生成」の仕様・実装計画を作成
+- 採用企画から初稿シナリオを構造化生成
+- 修正版、版履歴、詳細再表示、採用eventを実装
+- Feature Flag、rate limit、成人向け拒否、所有者RLS、UUID検証を実装
+- migration `202607300003`、rollback、canonical schema、preflightを追加
+- Hubテスト223件、build、lint、typecheck、migration検証に成功
+
+### 未完了
+
+- Draft PR作成とVercel Preview確認
+- migration roundtripのGitHub CI確認
+- Preview DBへのmigration適用
+- 実OpenAI生成と実機E2E
+
+### 注意事項
+
+- Release 2 PR #69が未mergeのため、Release 3 PRのbaseはRelease 2 branchにする。
+- 成人向けデータを外部AIへ送信しない。
+- migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
+
+---
+
 ## 追記テンプレート
 
 ```md

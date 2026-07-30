@@ -90,7 +90,10 @@ export default async function ProposalComparisonPage({
       {selection ? (
         <section className="panel mt-6 border-violet-200 bg-violet-50">
           <h2 className="text-xl font-bold">シナリオ生成の準備ができました</h2>
-          <p className="mt-2 text-violet-950">選んだ企画は保存済みです。次のReleaseで人物・構成・シーンへ引き継ぎます。</p>
+          <p className="mt-2 text-violet-950">選んだ企画は保存済みです。人物・構成・シーンへ引き継げます。</p>
+          <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario`}>
+            シナリオ生成へ進む
+          </Link>
         </section>
       ) : null}
     </main>
