@@ -8,7 +8,7 @@
 
 ### 状態
 
-`IMPLEMENTED_LOCAL`。Release 5のCanvasでコマを選ぶだけで、採用ネームからServer側生成条件を作り、既存Cloud AI Queueへ登録できる縦型フローを実装した。
+`AWAITING_CI`。Release 5のCanvasでコマを選ぶだけで、採用ネームからServer側生成条件を作り、既存Cloud AI Queueへ登録できる縦型フローを実装した。Draft PRは[#73](https://github.com/team478a/manga/pull/73)。
 
 ### ブランチ
 

@@ -3,12 +3,12 @@
 ## 基本情報
 
 - 更新日: 2026-07-30
-- 状態: `IMPLEMENTED_LOCAL`
+- 状態: `AWAITING_CI`
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-storyboard-canvas-materialization-v1` (`80b71f6`, Draft PR #72)
 - Branch: `codex/cloud-panel-image-generation-v1`
-- Draft PR: 作成前
-- Vercel Preview: 作成前
+- Draft PR: [#73](https://github.com/team478a/manga/pull/73)
+- Vercel Preview: CI生成待ち
 - 仕様: [`docs/cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md`](cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md)
 - 計画: [`docs/cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md`](cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md)
 
