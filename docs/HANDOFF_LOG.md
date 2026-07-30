@@ -1618,3 +1618,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 -
 ```
+# 2026-07-30 Codex: Cloud成人向けAI企画 v1
+
+- `content_class`で一般向け／成人向けProposalを分離。
+- 成人向け専用のFeature Flag、DB Kill Switch、個別許可、外部AI送信同意を追加。
+- OpenAI設定は既存のSupabase Vaultを再利用し、新しいローカルAPIキーは作成していない。
+- 成人向けシナリオ導線は明示的に停止。
+- staging migration、本番設定、有料API実行は責任者確認まで未実施。

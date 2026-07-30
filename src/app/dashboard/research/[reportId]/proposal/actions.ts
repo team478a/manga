@@ -15,6 +15,12 @@ import { getCloudResearchReport } from "@/lib/cloud-research-server";
 import { PermissionDeniedError } from "@/lib/domain-errors";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { runCloudProposalAi } from "@/lib/cloud-proposal-ai";
+import { runCloudAdultProposalAi } from "@/lib/cloud-proposal-ai";
+import {
+  assertCloudAdultAiPlanningAllowed,
+  getCloudAdultAiPlanningAccess,
+  recordCloudAdultAiPlanningConsent,
+} from "@/lib/cloud-adult-ai-planning";
 import {
   createCloudProposalRun,
   getCloudProposalRun,
@@ -38,6 +44,7 @@ export async function createCloudProposalAction(
     runId = await createCloudProposalRun({
       profileId: profile.id,
       reportId: report.id,
+      contentClass: "general",
       result,
     });
   } catch (error) {
@@ -45,6 +52,46 @@ export async function createCloudProposalAction(
     redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal?error=${encodeURIComponent(message)}`);
   }
   redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/runs/${encodeURIComponent(runId)}?message=${encodeURIComponent("企画候補を3案作成しました")}`);
+}
+
+export async function consentCloudAdultAiPlanningAction(
+  reportId: string,
+  formData: FormData,
+) {
+  try {
+    const { profile } = await requireProfile();
+    const report = await getCloudResearchReport(profile.id, reportId);
+    if (report.input.contentClass !== "adult")
+      throw new PermissionDeniedError("成人向け市場分析Reportを選んでください。");
+    await recordCloudAdultAiPlanningConsent(profile.id, formData);
+  } catch (error) {
+    redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal?error=${encodeURIComponent(safeDomainErrorMessage(error, "同意を保存できませんでした。"))}`);
+  }
+  redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal?message=${encodeURIComponent("成人向けAI企画の利用条件に同意しました")}`);
+}
+
+export async function createCloudAdultProposalAction(reportId: string) {
+  let runId = "";
+  try {
+    if (!cloudResearchFeatureEnabled() || !cloudProposalFeatureEnabled())
+      throw new PermissionDeniedError("AI企画提案機能は現在停止中です。");
+    const { profile } = await requireProfile();
+    await enforceCloudProposalAiRateLimit(profile.id);
+    const report = await getCloudResearchReport(profile.id, reportId);
+    if (report.input.contentClass !== "adult")
+      throw new PermissionDeniedError("成人向け市場分析Reportを選んでください。");
+    assertCloudAdultAiPlanningAllowed(await getCloudAdultAiPlanningAccess(profile.id));
+    const result = await runCloudAdultProposalAi({ profileId: profile.id, report });
+    runId = await createCloudProposalRun({
+      profileId: profile.id,
+      reportId: report.id,
+      contentClass: "adult",
+      result,
+    });
+  } catch (error) {
+    redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal?error=${encodeURIComponent(safeDomainErrorMessage(error, "成人向け企画候補を生成できませんでした。"))}`);
+  }
+  redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/runs/${encodeURIComponent(runId)}?message=${encodeURIComponent("成人向け企画候補を3案作成しました")}`);
 }
 
 export async function selectCloudProposalAction(

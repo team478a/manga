@@ -19,6 +19,7 @@ export default async function ScenarioPage({ params, searchParams }: {
   const { profile } = await requireProfile();
   const selection = await getCloudProposalSelection(profile.id, reportId);
   if (!selection) notFound();
+  if (selection.content_class !== "general") redirect(`/dashboard/research/${reportId}/proposal`);
   const enabled = cloudScenarioFeatureEnabled();
   const [versions, adoption] = enabled
     ? await Promise.all([

@@ -77,3 +77,9 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - Release 5 PR #72が未mergeのため、Release 6 PRのbaseはRelease 5 branchにする。
 - migration適用、Feature Flag有効化、有料API実行、PR merge、本番公開は行わない。
 - Release 6は一般向けコマ画像生成だけを対象とし、成人向け画像生成は含まない。
+# 2026-07-30 追記: Cloud成人向けAI企画 v1
+
+- 作業ブランチ: `codex/cloud-adult-ai-planning-v1`
+- 一般向け企画を維持し、成人向けAI企画を専用権限・同意・Kill Switchで分離
+- 成人向けは企画3案の生成・保存・比較・選択まで。シナリオ以降は停止
+- migration、本番Flag、外部API実行は未実施

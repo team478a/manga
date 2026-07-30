@@ -150,7 +150,13 @@
       "description": "最新採用ネームを冪等にCloud Canvas Projectへ変換",
       "forwardSha256": "d21f7970e08a399ca87202ab785399d5e9a2259f730f20f509ebba792179f0c0",
       "rollbackSha256": "0a768b5c1361a1a4afdd72daa0e901c0e54789f989526295bce04c71fa5755f8"
+    },
+    {
+      "id": "202607300006_cloud_adult_ai_planning",
+      "description": "一般向けと成人向けAI企画を分離し、許可・同意・停止スイッチ・所有者RLSを追加",
+      "forwardSha256": "40304e77e3bf42588a2366d0c46238e295240e5c173ceef67603c1a07e139f36",
+      "rollbackSha256": "bdc549434fc6840008e6596b79bff56d83eb9a95a791fc2ce569a25b261ec3dc"
     }
   ],
-  "schemaSha256": "e90aa7ddaf79afdb7d2b0ec98da15b791cd5473ab532a944ee72957898b2249b"
+  "schemaSha256": "bde0fa6228b6c691384080bbaa9b77c7cfe97c770a7c1bb5b0f93a30c008d4a2"
 }
