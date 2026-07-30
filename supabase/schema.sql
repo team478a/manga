@@ -668,20 +668,6 @@ $$;
 
 grant execute on function public.can_use_cloud_adult_research() to authenticated;
 
-alter table public.cloud_market_research_reports drop constraint if exists cloud_market_research_reports_engine_version_check;
-alter table public.cloud_market_research_reports add constraint cloud_market_research_reports_engine_version_check check(engine_version in('research-rules-v1','research-rules-v2','openai-web-research-v1','xai-adult-web-research-v1'));
-alter table public.cloud_story_proposal_runs drop constraint if exists cloud_story_proposal_runs_result_check;
-alter table public.cloud_story_proposal_runs drop constraint if exists cloud_story_proposal_runs_engine_version_check;
-alter table public.cloud_story_proposal_runs add constraint cloud_story_proposal_runs_result_check check(jsonb_typeof(result)='object' and result->>'engineVersion' in('openai-proposal-v1','xai-adult-proposal-v1') and result->>'classification'='ai_inference' and result->>'containsGeneratedMarketNumbers'='false' and jsonb_typeof(result->'candidates')='array' and jsonb_array_length(result->'candidates')=3 and pg_column_size(result)<=131072);
-alter table public.cloud_story_proposal_runs add constraint cloud_story_proposal_runs_engine_version_check check(engine_version in('openai-proposal-v1','xai-adult-proposal-v1'));
-alter table public.cloud_story_scenario_versions drop constraint if exists cloud_story_scenario_versions_result_check;
-alter table public.cloud_story_scenario_versions drop constraint if exists cloud_story_scenario_versions_engine_version_check;
-alter table public.cloud_story_scenario_versions add constraint cloud_story_scenario_versions_result_check check(jsonb_typeof(result)='object' and result->>'engineVersion' in('openai-scenario-v1','xai-adult-scenario-v1') and result->>'classification'='ai_inference' and result->>'containsGeneratedMarketNumbers'='false' and jsonb_typeof(result->'characters')='array' and jsonb_typeof(result->'acts')='array' and jsonb_array_length(result->'acts')=3 and jsonb_typeof(result->'scenes')='array' and jsonb_array_length(result->'scenes') between 6 and 20 and pg_column_size(result)<=262144);
-alter table public.cloud_story_scenario_versions add constraint cloud_story_scenario_versions_engine_version_check check(engine_version in('openai-scenario-v1','xai-adult-scenario-v1'));
-alter table public.cloud_story_storyboard_versions drop constraint if exists cloud_story_storyboard_versions_result_check;
-alter table public.cloud_story_storyboard_versions drop constraint if exists cloud_story_storyboard_versions_engine_version_check;
-alter table public.cloud_story_storyboard_versions add constraint cloud_story_storyboard_versions_result_check check(jsonb_typeof(result)='object' and result->>'engineVersion' in('openai-storyboard-v1','xai-adult-storyboard-v1') and result->>'classification'='ai_inference' and result->>'containsGeneratedMarketNumbers'='false' and result->>'readingDirection'='rtl' and jsonb_typeof(result->'pages')='array' and jsonb_array_length(result->'pages') between 8 and 48 and pg_column_size(result)<=1048576);
-alter table public.cloud_story_storyboard_versions add constraint cloud_story_storyboard_versions_engine_version_check check(engine_version in('openai-storyboard-v1','xai-adult-storyboard-v1'));
 create table if not exists public.cloud_adult_grok_settings(singleton boolean primary key default true check(singleton),enabled boolean not null default false,model text not null default 'grok-4.5' check(model in('grok-4.5','grok-4.20')),secret_id uuid,updated_by_profile_id uuid references public.profiles(id) on delete set null,updated_at timestamptz not null default now());
 insert into public.cloud_adult_grok_settings(singleton,enabled,model) values(true,false,'grok-4.5') on conflict(singleton) do nothing;
 create table if not exists public.cloud_adult_grok_audit_logs(id uuid primary key default gen_random_uuid(),actor_profile_id uuid not null references public.profiles(id) on delete restrict,action text not null check(action in('configure','replace_key','enable','disable')),model text not null check(model in('grok-4.5','grok-4.20')),enabled boolean not null,created_at timestamptz not null default now());
@@ -2209,3 +2195,20 @@ create or replace function public.can_use_cloud_adult_research() returns boolean
   );
 $$;
 grant execute on function public.can_use_cloud_adult_research() to authenticated;
+
+-- Adult Grok engine constraints must be applied after every referenced table
+-- has been created in this canonical schema.
+alter table public.cloud_market_research_reports drop constraint if exists cloud_market_research_reports_engine_version_check;
+alter table public.cloud_market_research_reports add constraint cloud_market_research_reports_engine_version_check check(engine_version in('research-rules-v1','research-rules-v2','openai-web-research-v1','xai-adult-web-research-v1'));
+alter table public.cloud_story_proposal_runs drop constraint if exists cloud_story_proposal_runs_result_check;
+alter table public.cloud_story_proposal_runs drop constraint if exists cloud_story_proposal_runs_engine_version_check;
+alter table public.cloud_story_proposal_runs add constraint cloud_story_proposal_runs_result_check check(jsonb_typeof(result)='object' and result->>'engineVersion' in('openai-proposal-v1','xai-adult-proposal-v1') and result->>'classification'='ai_inference' and result->>'containsGeneratedMarketNumbers'='false' and jsonb_typeof(result->'candidates')='array' and jsonb_array_length(result->'candidates')=3 and pg_column_size(result)<=131072);
+alter table public.cloud_story_proposal_runs add constraint cloud_story_proposal_runs_engine_version_check check(engine_version in('openai-proposal-v1','xai-adult-proposal-v1'));
+alter table public.cloud_story_scenario_versions drop constraint if exists cloud_story_scenario_versions_result_check;
+alter table public.cloud_story_scenario_versions drop constraint if exists cloud_story_scenario_versions_engine_version_check;
+alter table public.cloud_story_scenario_versions add constraint cloud_story_scenario_versions_result_check check(jsonb_typeof(result)='object' and result->>'engineVersion' in('openai-scenario-v1','xai-adult-scenario-v1') and result->>'classification'='ai_inference' and result->>'containsGeneratedMarketNumbers'='false' and jsonb_typeof(result->'characters')='array' and jsonb_typeof(result->'acts')='array' and jsonb_array_length(result->'acts')=3 and jsonb_typeof(result->'scenes')='array' and jsonb_array_length(result->'scenes') between 6 and 20 and pg_column_size(result)<=262144);
+alter table public.cloud_story_scenario_versions add constraint cloud_story_scenario_versions_engine_version_check check(engine_version in('openai-scenario-v1','xai-adult-scenario-v1'));
+alter table public.cloud_story_storyboard_versions drop constraint if exists cloud_story_storyboard_versions_result_check;
+alter table public.cloud_story_storyboard_versions drop constraint if exists cloud_story_storyboard_versions_engine_version_check;
+alter table public.cloud_story_storyboard_versions add constraint cloud_story_storyboard_versions_result_check check(jsonb_typeof(result)='object' and result->>'engineVersion' in('openai-storyboard-v1','xai-adult-storyboard-v1') and result->>'classification'='ai_inference' and result->>'containsGeneratedMarketNumbers'='false' and result->>'readingDirection'='rtl' and jsonb_typeof(result->'pages')='array' and jsonb_array_length(result->'pages') between 8 and 48 and pg_column_size(result)<=1048576);
+alter table public.cloud_story_storyboard_versions add constraint cloud_story_storyboard_versions_engine_version_check check(engine_version in('openai-storyboard-v1','xai-adult-storyboard-v1'));
