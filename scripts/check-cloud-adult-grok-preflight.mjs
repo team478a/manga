@@ -16,8 +16,6 @@ for (const [label, relative] of checks) {
   console.log(`${ok ? "OK" : "NG"} ${label}`);
   failed ||= !ok;
 }
-const enabled = process.env.CLOUD_ADULT_GROK_ENABLED === "true";
-console.log(`${enabled ? "OK" : "INFO"} CLOUD_ADULT_GROK_ENABLED`);
 console.log("INFO xAI API key value is never read or printed by this preflight.");
-console.log("INFO Verify configured/enabled status in /admin/adult-grok after migration.");
+console.log("INFO Enter or replace the API key in /admin/adult-grok after migration.");
 if (failed) process.exitCode = 1;

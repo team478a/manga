@@ -10,12 +10,11 @@
 
 1. Supabase SQL Editorで`202607310001_cloud_adult_grok_provider.sql`を適用する。
 2. `/admin/adult-grok`を開く。
-3. xAI Consoleで発行したAPIキーを入力し、まずDB側実行状態は「停止」で保存する。
-4. Vercel Previewの対象ブランチだけに`CLOUD_ADULT_GROK_ENABLED=true`を設定する。
-5. Redeployする。
-6. `/admin/adult-grok`で環境Feature Flagが有効、APIキーが設定済みであることを確認する。
-7. DB側実行状態を有効にする。
-8. 既存の成人向け限定モニター1名で市場分析→企画→シナリオ→ネームを確認する。
+3. xAI Consoleで発行したAPIキーを入力して「APIキーを保存して利用開始」を押す。
+4. 「利用できます」と表示されることを確認する。
+5. 既存の成人向け限定モニター1名で市場分析→企画→シナリオ→ネームを確認する。
+
+APIキーを変更するときも、同じ画面へ新しいキーを入力して保存する。保存後から新しいキーが使われる。
 
 APIキーはVercelへ登録しない。Supabase Vaultだけを正本にする。
 
@@ -31,10 +30,9 @@ APIキーはVercelへ登録しない。Supabase Vaultだけを正本にする。
 
 ## 緊急停止
 
-1. `/admin/adult-grok`のDB側実行状態を「停止」にする。
-2. 必要ならVercel Previewの`CLOUD_ADULT_GROK_ENABLED`を`false`にしてRedeployする。
-3. 成人向け限定モニターを停止する。
-4. APIキー漏えいが疑われる場合はxAI Consoleで失効し、Vaultへ新しいキーを保存する。
+1. 成人向け限定モニターを停止する。
+2. 緊急時はDBの`cloud_adult_grok_settings.enabled`を`false`へ変更する。
+3. APIキー漏えいが疑われる場合はxAI Consoleで失効し、管理画面へ新しいキーを保存する。
 
 ## Rollback
 

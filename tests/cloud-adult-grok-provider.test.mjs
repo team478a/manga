@@ -37,17 +37,6 @@ test("xAI requestへOpenAI専用safety_identifierを送らない", () => {
   );
 });
 
-test("成人向けGrok Feature Flagは未設定時fail closedする", async () => {
-  const source = await import("../src/lib/cloud-adult-grok-settings.ts");
-  const previous = process.env.CLOUD_ADULT_GROK_ENABLED;
-  delete process.env.CLOUD_ADULT_GROK_ENABLED;
-  assert.equal(source.cloudAdultGrokFeatureEnabled(), false);
-  process.env.CLOUD_ADULT_GROK_ENABLED = "true";
-  assert.equal(source.cloudAdultGrokFeatureEnabled(), true);
-  if (previous === undefined) delete process.env.CLOUD_ADULT_GROK_ENABLED;
-  else process.env.CLOUD_ADULT_GROK_ENABLED = previous;
-});
-
 test("migrationはVault・service_role限定・監査・成人向けengineを定義する", async () => {
   const sql = await readFile(
     new URL("../supabase/migrations/202607310001_cloud_adult_grok_provider.sql", import.meta.url),
@@ -71,5 +60,17 @@ test("管理画面はkeyを再表示せず一般向けと成人向けを明示�
   assert.match(page, /Supabase Vault/);
   assert.match(page, /一般向けOpenAIとはキーも経路も分離/);
   assert.match(page, /type="password"/);
+  assert.match(page, /APIキーを保存して利用開始/);
+  assert.doesNotMatch(page, /環境Feature Flag/);
+  assert.doesNotMatch(page, /DB側実行状態/);
   assert.doesNotMatch(page, /settings\.apiKey/);
+});
+
+test("管理画面の保存操作はGrokを自動有効化する", async () => {
+  const action = await readFile(
+    new URL("../src/app/admin/adult-grok/actions.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(action, /enabled: true/);
+  assert.match(action, /current\?\.model \?\? "grok-4\.5"/);
 });

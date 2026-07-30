@@ -15,10 +15,6 @@ export type CloudAdultGrokSettings = {
   updatedAt: string;
 };
 
-export function cloudAdultGrokFeatureEnabled() {
-  return process.env.CLOUD_ADULT_GROK_ENABLED === "true";
-}
-
 export async function getCloudAdultGrokSettings(): Promise<CloudAdultGrokSettings | null> {
   const admin = createAdminClient();
   const { data, error } = await admin
@@ -64,10 +60,6 @@ export async function setCloudAdultGrokSettings(input: {
 }
 
 export async function getCloudAdultGrokRuntimeConfig() {
-  if (!cloudAdultGrokFeatureEnabled())
-    throw new ProviderUnavailableError(
-      "成人向けAIは現在準備中です。管理者へお問い合わせください。",
-    );
   const admin = createAdminClient();
   const { data, error } = await admin.rpc(
     "get_cloud_adult_grok_runtime_config",

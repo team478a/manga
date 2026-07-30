@@ -8,14 +8,14 @@
 
 - 一般向け: OpenAI、既存Vault設定、既存engine versionを維持
 - 成人向け: xAI Responses API、専用Vault secret、専用engine version
-- 実行条件: 各工程Feature Flag、成人向け権限、18歳以上確認、本人同意、DB Kill Switch、限定モニター枠、`CLOUD_ADULT_GROK_ENABLED=true`、Grok設定済み
+- 実行条件: 各工程Feature Flag、成人向け権限、18歳以上確認、本人同意、DB Kill Switch、限定モニター枠、Grok APIキー設定済み
 - 禁止: 未成年・年齢不詳・実在人物・非同意・搾取的内容
 - 保存前後: `reviewAdultGenerationPrompt`で入力と出力を審査
 - 秘密: APIキー、prompt、成人向け生成内容を画面・監査ログ・アプリログへ残さない
 
 ## 実装
 
-- `/admin/adult-grok`: xAI APIキー、モデル、DB側実行状態
+- `/admin/adult-grok`: xAI APIキーを入力して保存すると自動的に利用開始。新しいキーの保存で安全に差し替え
 - Supabase Vault secret: `mangai_cloud_adult_xai`
 - 対応モデル: `grok-4.5`、`grok-4.20`
 - 成人向けengine:
@@ -37,7 +37,7 @@
 
 - 一般向けはOpenAI endpointだけを使う
 - 成人向けはxAI endpointだけを使う
-- 成人向け環境Flag未設定時はDB・Providerアクセス前に停止
+- APIキー未設定またはDB停止時はProviderアクセス前に停止
 - 不正入力はProvider前、不正出力は保存前に拒否
 - Provider内部エラーとAPIキーを利用者へ露出しない
 - migration forward/rollback/canonical schemaが一致
