@@ -8,7 +8,7 @@
 
 ### 状態
 
-`AWAITING_CI`。Release 5のCanvasでコマを選ぶだけで、採用ネームからServer側生成条件を作り、既存Cloud AI Queueへ登録できる縦型フローを実装した。Draft PRは[#73](https://github.com/team478a/manga/pull/73)。
+`READY_FOR_REVIEW`。Release 5のCanvasでコマを選ぶだけで、採用ネームからServer側生成条件を作り、既存Cloud AI Queueへ登録できる縦型フローを実装した。Draft PRは[#73](https://github.com/team478a/manga/pull/73)、[Vercel Preview](https://mangai-hub-staging-git-codex-cloud-pa-e0d887-team478as-projects.vercel.app)はReady。
 
 ### ブランチ
 
@@ -45,6 +45,8 @@
 - Desktop accessibility: PASS（違反0）
 - migration静的検証: PASS（25/25、追加migrationなし）
 - Hub production build、Desktop build、`git diff --check`: PASS
+- GitHub Core quality、migration roundtrip、Windows build: PASS
+- Vercel Preview: READY
 - RC preflight: repository structure READY、外部設定・手動E2EはPENDING
 - Release 6 preflight: 限定公開用環境変数未設定のため想定どおりfail closed
 

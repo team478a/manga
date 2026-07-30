@@ -3,12 +3,12 @@
 ## 基本情報
 
 - 更新日: 2026-07-30
-- 状態: `AWAITING_CI`
+- 状態: `READY_FOR_REVIEW`
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-storyboard-canvas-materialization-v1` (`80b71f6`, Draft PR #72)
 - Branch: `codex/cloud-panel-image-generation-v1`
 - Draft PR: [#73](https://github.com/team478a/manga/pull/73)
-- Vercel Preview: CI生成待ち
+- Vercel Preview: [Release 6 Preview](https://mangai-hub-staging-git-codex-cloud-pa-e0d887-team478as-projects.vercel.app)
 - 仕様: [`docs/cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md`](cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md)
 - 計画: [`docs/cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md`](cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md)
 
@@ -54,6 +54,10 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - Hub production build: PASS
 - Desktop build: PASS
 - git diff --check: PASS
+- GitHub Core quality: PASS
+- GitHub migration roundtrip: PASS
+- GitHub Windows build: PASS
+- Vercel Preview: READY
 - rc:preflight: STRUCTURE READY、外部設定と手動E2Eは未実施
 - Release 6 preflight: 想定どおりFAIL（ローカルに限定公開用環境変数を設定していない）
 - 実Provider有料生成E2E: 未実施（停止条件）
