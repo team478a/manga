@@ -27,6 +27,7 @@ import {
   selectCloudProposal,
 } from "@/lib/cloud-proposal-server";
 import { enforceCloudProposalAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
+import { consumeCloudAdultMonitorAiRequest } from "@/lib/cloud-adult-monitor";
 
 export async function createCloudProposalAction(
   reportId: string,
@@ -81,6 +82,7 @@ export async function createCloudAdultProposalAction(reportId: string) {
     if (report.input.contentClass !== "adult")
       throw new PermissionDeniedError("成人向け市場分析Reportを選んでください。");
     assertCloudAdultAiPlanningAllowed(await getCloudAdultAiPlanningAccess(profile.id));
+    await consumeCloudAdultMonitorAiRequest(profile.id, "proposal");
     const result = await runCloudAdultProposalAi({ profileId: profile.id, report });
     runId = await createCloudProposalRun({
       profileId: profile.id,

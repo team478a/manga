@@ -49,6 +49,9 @@ export default async function CloudAdultWorksPage() {
           一般向け作品へ
         </Link>
       </div>
+      <Link className="button-secondary mt-4" href="/dashboard/adult-monitor">
+        モニターフィードバック
+      </Link>
       <div className="mt-5 flex flex-wrap gap-3 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-950">
         <span className="flex items-center gap-2">
           <LockKeyhole className="h-4 w-4" />

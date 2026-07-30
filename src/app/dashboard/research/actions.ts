@@ -15,6 +15,7 @@ import { runCloudResearchAiAnalysis } from "@/lib/cloud-research-ai";
 import { createCloudResearchReport } from "@/lib/cloud-research-server";
 import { enforceCloudResearchAiAnalysisRateLimit } from "@/lib/cloud-research-search-rate-limit";
 import { PermissionDeniedError } from "@/lib/domain-errors";
+import { consumeCloudAdultMonitorAiRequest } from "@/lib/cloud-adult-monitor";
 
 export async function createCloudResearchReportAction(formData: FormData) {
   let reportId: string;
@@ -34,6 +35,8 @@ export async function createCloudResearchReportAction(formData: FormData) {
           };
     assertCloudResearchContentAllowed(request, adultAccess);
     await enforceCloudResearchAiAnalysisRateLimit(profile.id);
+    if (request.contentClass === "adult")
+      await consumeCloudAdultMonitorAiRequest(profile.id, "research");
     const { input, result } = await runCloudResearchAiAnalysis({
       profileId: profile.id,
       request,

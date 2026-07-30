@@ -186,7 +186,13 @@
       "description": "成人向け制作ワークフローの市場分析からAIネームまでを原子的に一括許可",
       "forwardSha256": "aa44e979825f2b6cadb634126238093e69a741e88fc45256d60b8bb51dec1b7a",
       "rollbackSha256": "27a9f850a85292c8dd07993401935ad55753ea2434cafe1d9f5052680f3b7e4e"
+    },
+    {
+      "id": "202607300012_cloud_adult_monitor_beta",
+      "description": "成人向け限定モニターの期間・AI利用上限・一括開始停止・フィードバックを追加",
+      "forwardSha256": "f9cd28a908460162338395f0f9af02bc36832d4c1b739d86ac25b5f27989fbd8",
+      "rollbackSha256": "0daa5d0a38d82309bdf37e96988431d8264b4c8d06724b2fdb7c86c0a99f248a"
     }
   ],
-  "schemaSha256": "a29ab549754f1fc626975b1d79a8c81ce8a7070bbc7a910131bcf9c2f2e06725"
+  "schemaSha256": "688af01bca406696ff5ea1a5333d73064e0f4317b83255b408fd0279f62440c3"
 }

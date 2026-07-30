@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-07-30 成人向け限定モニター 第2段階
+
+- Branch: `codex/cloud-adult-monitor-beta-v1`
+- Base: `codex/cloud-adult-work-management-v1` (`86f80b1`)
+- 目的: 管理者が選んだ既存購入者など1〜3名へ、成人向け制作フローをVercel Previewで安全に限定公開する。
+- 実装範囲: モニター登録、期間、工程横断AI上限、全工程一括許可・停止、本人限定フィードバック、管理者一覧、preflight、runbook。
+- 対象外: 成人向け画像生成、一般公開、Marketplace、販売、本番有効化、有料API実行。
+- migration: `202607300012_cloud_adult_monitor_beta`（未適用）
+- 状態: `READY_FOR_DRAFT_PR`
+- 正本: `docs/cloud/CLOUD_ADULT_MONITOR_BETA_PLAN.md`、`docs/cloud/CLOUD_ADULT_MONITOR_BETA_ACCEPTANCE.md`、`docs/cloud/CLOUD_ADULT_MONITOR_BETA_RUNBOOK.md`
+- 検証: deps:check、lint、typecheck:hub、research:eval、hub:test（284/284）、migration静的検証（32件）、build、git diff --checkがPASS。
+- preflight: ローカル環境変数未設定のため想定どおりFAIL。秘密値は表示していない。
+
 ## 2026-07-30 Cloud成人向け作品管理 v1
 
 - Branch: `codex/cloud-adult-work-management-v1`
