@@ -8,6 +8,12 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { runCloudScenarioAi } from "@/lib/cloud-scenario-ai";
+import { runCloudAdultScenarioAi } from "@/lib/cloud-scenario-ai";
+import {
+  assertCloudAdultScenarioAllowed,
+  getCloudAdultScenarioAccess,
+  recordCloudAdultScenarioConsent,
+} from "@/lib/cloud-adult-scenario";
 import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
 import {
   adoptCloudScenario,
@@ -22,6 +28,11 @@ function assertEnabled() {
     throw new PermissionDeniedError("AIシナリオ生成機能は現在停止中です。");
 }
 
+async function assertContentClassAccess(profileId: string, contentClass: "general" | "adult") {
+  if (contentClass === "adult")
+    assertCloudAdultScenarioAllowed(await getCloudAdultScenarioAccess(profileId));
+}
+
 export async function createCloudScenarioAction(reportId: string) {
   let versionId = "";
   try {
@@ -33,11 +44,13 @@ export async function createCloudScenarioAction(reportId: string) {
       getCloudProposalSelection(profile.id, reportId),
     ]);
     if (!selection) throw new ResourceNotFoundError("採用済み企画が見つかりません。");
-    if (selection.content_class !== "general")
-      throw new PermissionDeniedError("成人向けシナリオ生成は現在準備中です。");
-    const result = await runCloudScenarioAi({ profileId: profile.id, report, selection });
+    await assertContentClassAccess(profile.id, selection.content_class);
+    const result = selection.content_class === "adult"
+      ? await runCloudAdultScenarioAi({ profileId: profile.id, report, selection })
+      : await runCloudScenarioAi({ profileId: profile.id, report, selection });
     versionId = await createCloudScenarioVersion({
-      profileId: profile.id, reportId, selectionId: selection.id, result,
+      profileId: profile.id, reportId, selectionId: selection.id,
+      contentClass: selection.content_class, result,
     });
   } catch (error) {
     redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario?error=${encodeURIComponent(safeDomainErrorMessage(error, "シナリオを生成できませんでした。"))}`);
@@ -58,15 +71,17 @@ export async function reviseCloudScenarioAction(reportId: string, versionId: str
     ]);
     if (!selection || parent.research_report_id !== reportId || parent.proposal_selection_id !== selection.id)
       throw new ResourceNotFoundError("修正元シナリオが見つかりません。");
-    if (selection.content_class !== "general")
-      throw new PermissionDeniedError("成人向けシナリオ生成は現在準備中です。");
+    if (parent.content_class !== selection.content_class)
+      throw new ResourceNotFoundError("修正元シナリオが見つかりません。");
+    await assertContentClassAccess(profile.id, selection.content_class);
     const revisionInstruction = String(formData.get("revisionInstruction") ?? "").trim();
-    const result = await runCloudScenarioAi({
-      profileId: profile.id, report, selection, parentVersion: parent, revisionInstruction,
-    });
+    const aiInput = { profileId: profile.id, report, selection, parentVersion: parent, revisionInstruction };
+    const result = selection.content_class === "adult"
+      ? await runCloudAdultScenarioAi(aiInput)
+      : await runCloudScenarioAi(aiInput);
     nextId = await createCloudScenarioVersion({
       profileId: profile.id, reportId, selectionId: selection.id, parentVersionId: parent.id,
-      revisionInstruction, result,
+      contentClass: selection.content_class, revisionInstruction, result,
     });
   } catch (error) {
     redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(versionId)}?error=${encodeURIComponent(safeDomainErrorMessage(error, "シナリオを修正できませんでした。"))}`);
@@ -80,9 +95,21 @@ export async function adoptCloudScenarioAction(reportId: string, versionId: stri
     const { profile } = await requireProfile();
     const version = await getCloudScenarioVersion(profile.id, versionId);
     if (version.research_report_id !== reportId) throw new ResourceNotFoundError("シナリオが見つかりません。");
+    await assertContentClassAccess(profile.id, version.content_class);
     await adoptCloudScenario(profile.id, version);
   } catch (error) {
     redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(versionId)}?error=${encodeURIComponent(safeDomainErrorMessage(error, "シナリオを採用できませんでした。"))}`);
   }
   redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(versionId)}?message=${encodeURIComponent("このシナリオを採用しました")}`);
+}
+
+export async function consentCloudAdultScenarioAction(reportId: string, formData: FormData) {
+  try {
+    assertEnabled();
+    const { profile } = await requireProfile();
+    await recordCloudAdultScenarioConsent(profile.id, formData);
+  } catch (error) {
+    redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario?error=${encodeURIComponent(safeDomainErrorMessage(error, "利用条件を保存できませんでした。"))}`);
+  }
+  redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario?message=${encodeURIComponent("成人向けAIシナリオの利用条件を確認しました")}`);
 }

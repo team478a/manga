@@ -156,7 +156,13 @@
       "description": "一般向けと成人向けAI企画を分離し、許可・同意・停止スイッチ・所有者RLSを追加",
       "forwardSha256": "40304e77e3bf42588a2366d0c46238e295240e5c173ceef67603c1a07e139f36",
       "rollbackSha256": "bdc549434fc6840008e6596b79bff56d83eb9a95a791fc2ce569a25b261ec3dc"
+    },
+    {
+      "id": "202607300007_cloud_adult_scenario",
+      "description": "一般向けと成人向けAIシナリオを分離し、専用許可・同意・停止スイッチ・所有者RLSを追加",
+      "forwardSha256": "de2efb4164b8a75fa0b5060df5a31d5a425ae30ea03b130e3797673bb4d8ddf6",
+      "rollbackSha256": "ad3f250ae71015ebb6e8dc03b1e9fd28ee75d3f1107c2e7393750ffdf973fb1d"
     }
   ],
-  "schemaSha256": "e3e97ca29a059a25ae3457c348740d2497801fe561585677a8e6ec9193ed1778"
+  "schemaSha256": "86c3a92184942ce99962985af9059d016fa809365c9da60fc991aad3f90d9ad3"
 }
