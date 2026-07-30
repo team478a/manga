@@ -5,7 +5,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { setCloudAdultAiPlanningGrantAction, setCloudAdultPlanningGrantAction, setCloudAdultScenarioGrantAction, setCloudAdultStoryboardGrantAction } from "./adult-feature-actions";
+import { grantCloudAdultWorkflowAccessAction, setCloudAdultAiPlanningGrantAction, setCloudAdultPlanningGrantAction, setCloudAdultScenarioGrantAction, setCloudAdultStoryboardGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
 
 type AdminUser = {
@@ -305,6 +305,58 @@ export default async function AdminUserDetailPage({
               type="submit"
             >
               成人向け企画機能の許可を更新
+            </button>
+          </form>
+        )}
+      </section>
+      <section className="panel mt-6 border-violet-200 bg-violet-50">
+        <h2 className="text-xl font-bold">成人向け制作機能を一括許可</h2>
+        <p className="mt-2 text-sm leading-relaxed text-stone-700">
+          市場分析、企画、AI企画、AIシナリオ、AIネームを1回の操作で許可します。
+          Canvasと作品管理はAIネーム許可を引き継ぎます。
+        </p>
+        {!hasSupabaseAdminEnv() ? (
+          <p className="mt-4 rounded-lg bg-amber-50 p-4 text-amber-950">
+            権限操作にはSupabase管理用設定が必要です。
+          </p>
+        ) : (
+          <form
+            action={grantCloudAdultWorkflowAccessAction.bind(null, user.id)}
+            className="mt-5 space-y-4"
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label" htmlFor="adultWorkflowSource">
+                  許可理由
+                </label>
+                <select className="field" id="adultWorkflowSource" name="source" defaultValue="admin_grant">
+                  <option value="legacy_purchase">既存購入者</option>
+                  <option value="purchase">購入済み</option>
+                  <option value="admin_grant">管理者付与</option>
+                  <option value="campaign">キャンペーン</option>
+                </select>
+              </div>
+              <div>
+                <label className="label" htmlFor="adultWorkflowValidUntil">
+                  有効期限（任意）
+                </label>
+                <input className="field" id="adultWorkflowValidUntil" name="validUntil" type="datetime-local" />
+              </div>
+            </div>
+            <div>
+              <label className="label" htmlFor="adultWorkflowAdminNote">
+                管理者メモ
+              </label>
+              <textarea
+                className="field min-h-20"
+                defaultValue="成人向け制作ワークフロー一括許可"
+                id="adultWorkflowAdminNote"
+                maxLength={500}
+                name="adminNote"
+              />
+            </div>
+            <button className="button bg-violet-700 hover:bg-violet-800" type="submit">
+              全工程を一括許可
             </button>
           </form>
         )}

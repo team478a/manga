@@ -76,6 +76,43 @@ export async function setCloudAdultPlanningGrantAction(
   );
 }
 
+export async function grantCloudAdultWorkflowAccessAction(
+  profileId: string,
+  formData: FormData,
+) {
+  const { profile: actor } = await requireAdmin();
+  const parsed = featureGrantSchema.safeParse({
+    profileId,
+    status: "approved",
+    source: value(formData, "source"),
+    validUntil: value(formData, "validUntil"),
+    adminNote: value(formData, "adminNote"),
+  });
+  if (!parsed.success)
+    redirect(
+      `/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("成人向け一括許可の設定を確認してください")}`,
+    );
+  const { error } = await createAdminClient().rpc(
+    "grant_cloud_adult_workflow_access",
+    {
+      p_actor_profile_id: actor.id,
+      p_target_profile_id: parsed.data.profileId,
+      p_source: parsed.data.source,
+      p_valid_until: parsed.data.validUntil,
+      p_admin_note: parsed.data.adminNote,
+    },
+  );
+  if (error)
+    redirect(
+      `/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("成人向け制作機能を一括許可できませんでした")}`,
+    );
+  revalidatePath(`/admin/users/${parsed.data.profileId}`);
+  revalidatePath("/admin/adult-research");
+  redirect(
+    `/admin/users/${parsed.data.profileId}?message=${encodeURIComponent("成人向け制作機能を一括許可しました")}`,
+  );
+}
+
 export async function setCloudAdultAiPlanningGrantAction(
   profileId: string,
   formData: FormData,

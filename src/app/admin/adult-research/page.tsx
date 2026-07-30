@@ -3,10 +3,11 @@ import { requireAdmin } from "@/lib/auth";
 import { cloudAdultResearchFeatureEnabled } from "@/lib/cloud-adult-research";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { setCloudAdultAiPlanningEnabledAction, setCloudAdultResearchEnabledAction, setCloudAdultScenarioEnabledAction, setCloudAdultStoryboardEnabledAction } from "./actions";
+import { setCloudAdultAiPlanningEnabledAction, setCloudAdultResearchEnabledAction, setCloudAdultScenarioEnabledAction, setCloudAdultStoryboardEnabledAction, setCloudAdultWorkManagementEnabledAction } from "./actions";
 import { cloudAdultAiPlanningFeatureEnabled } from "@/lib/cloud-adult-ai-planning";
 import { cloudAdultScenarioFeatureEnabled } from "@/lib/cloud-adult-scenario";
 import { cloudAdultStoryboardFeatureEnabled } from "@/lib/cloud-adult-storyboard";
+import { cloudAdultWorkManagementFeatureEnabled } from "@/lib/cloud-adult-work-management";
 
 export default async function AdminAdultResearchPage({
   searchParams,
@@ -25,9 +26,11 @@ export default async function AdminAdultResearchPage({
   let scenarioDatabaseEnabled = false;
   let storyboardConfigured = false;
   let storyboardDatabaseEnabled = false;
+  let workManagementConfigured = false;
+  let workManagementDatabaseEnabled = false;
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
-    const [settingsResult, approvedResult, aiPlanningResult, scenarioResult, storyboardResult] = await Promise.all([
+    const [settingsResult, approvedResult, aiPlanningResult, scenarioResult, storyboardResult, workManagementResult] = await Promise.all([
       admin
         .from("cloud_adult_research_settings")
         .select("enabled,updated_at")
@@ -52,6 +55,11 @@ export default async function AdminAdultResearchPage({
         .select("enabled")
         .eq("singleton", true)
         .maybeSingle<{ enabled: boolean }>(),
+      admin
+        .from("cloud_adult_work_management_settings")
+        .select("enabled")
+        .eq("singleton", true)
+        .maybeSingle<{ enabled: boolean }>(),
     ]);
     configured = !settingsResult.error && Boolean(settingsResult.data);
     databaseEnabled = settingsResult.data?.enabled === true;
@@ -62,6 +70,8 @@ export default async function AdminAdultResearchPage({
     scenarioDatabaseEnabled = scenarioResult.data?.enabled === true;
     storyboardConfigured = !storyboardResult.error && Boolean(storyboardResult.data);
     storyboardDatabaseEnabled = storyboardResult.data?.enabled === true;
+    workManagementConfigured = !workManagementResult.error && Boolean(workManagementResult.data);
+    workManagementDatabaseEnabled = workManagementResult.data?.enabled === true;
   }
 
   return (
@@ -168,6 +178,30 @@ export default async function AdminAdultResearchPage({
         <h2 className="text-xl font-bold">成人向けAIネーム</h2>
         <p className="mt-2 text-stone-600">環境Flag: {cloudAdultStoryboardFeatureEnabled() ? "有効" : "停止"} ／ DB Kill Switch: {storyboardConfigured ? (storyboardDatabaseEnabled ? "有効" : "停止") : "未設定"}</p>
         {storyboardConfigured ? <form action={setCloudAdultStoryboardEnabledAction} className="mt-5 space-y-4"><select className="field" defaultValue={storyboardDatabaseEnabled ? "true" : "false"} name="enabled"><option value="false">停止</option><option value="true">有効</option></select><button className="button bg-rose-700 hover:bg-rose-800" type="submit">成人向けAIネームの全体設定を更新</button></form> : <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">成人向けAIネームmigrationを適用してください。</p>}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">成人向け作品管理</h2>
+        <p className="mt-2 text-stone-600">
+          環境Flag: {cloudAdultWorkManagementFeatureEnabled() ? "有効" : "停止"} ／ DB Kill Switch: {workManagementConfigured ? (workManagementDatabaseEnabled ? "有効" : "停止") : "未設定"}
+        </p>
+        <p className="mt-2 text-sm text-stone-600">
+          成人向けCanvasを本人限定の非公開作品として管理します。公開・販売・画像生成は有効になりません。
+        </p>
+        {workManagementConfigured ? (
+          <form action={setCloudAdultWorkManagementEnabledAction} className="mt-5 space-y-4">
+            <select className="field" defaultValue={workManagementDatabaseEnabled ? "true" : "false"} name="enabled">
+              <option value="false">停止</option>
+              <option value="true">有効</option>
+            </select>
+            <button className="button bg-rose-700 hover:bg-rose-800" type="submit">
+              成人向け作品管理の全体設定を更新
+            </button>
+          </form>
+        ) : (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+            成人向け作品管理migrationを適用してください。
+          </p>
+        )}
       </section>
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">成人向けAI企画</h2>

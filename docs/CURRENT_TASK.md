@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-07-30 Cloud成人向け作品管理 v1
+
+- Branch: `codex/cloud-adult-work-management-v1`
+- Base: `codex/cloud-adult-canvas-v1` (`c256e4e`)
+- 目的: 成人向けCanvasを一般向け公開作品へ混在させず、本人限定の非公開作品として一覧・詳細管理する。
+- 実装範囲: 専用Feature Flag、DB Kill Switch、所有者限定RLS、制作状態、非公開メモ、Canvas編集、PDF・連番画像導線。
+- 対象外: 公開、共同編集、Marketplace、販売パッケージ、成人向け画像生成、外部Provider送信、migration適用、本番有効化。
+- Draft PR: [#78](https://github.com/team478a/manga/pull/78)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-8c61d2-team478as-projects.vercel.app`
+- 状態: `READY_FOR_REVIEW`
+- 正本: `docs/cloud/CLOUD_ADULT_WORK_MANAGEMENT_IMPLEMENTATION_PLAN.md`、`docs/cloud/CLOUD_ADULT_WORK_MANAGEMENT_V1.md`
+- 検証: deps:check、lint、typecheck、research:eval、hub:test（278/278）、集中テスト（4/4）、migration静的検証（30件）、build、git diff --checkがPASS。
+- preflight: ローカル環境変数未設定のため想定どおりFAIL。秘密値は表示していない。
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercelが全てPASS。
+- 追加実装: 管理者が市場分析からAIネームまでを1トランザクションで一括許可できる操作を追加。migration 011は未適用。
+- Preview設定: 責任者がmigration 002〜010、成人向け環境Flag、全DB Kill Switchを有効化済み。
+
 ## 2026-07-30 Cloud成人向けCanvas v1
 
 - Branch: `codex/cloud-adult-canvas-v1`
