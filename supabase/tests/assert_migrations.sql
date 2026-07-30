@@ -378,6 +378,16 @@ rollback;
 
 do $$
 begin
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_enrollments' and column_name='onboarding_completed_at')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='review_status')
+     or to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is null
+     or to_regprocedure('public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)') is null then
+    raise exception 'General monitor operations migration is incomplete';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_adult_feature_grants') is null
      or to_regclass('public.cloud_adult_planning_briefs') is null then
     raise exception 'Cloud adult planning tables missing';

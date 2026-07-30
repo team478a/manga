@@ -5,11 +5,13 @@ import {
   cloudGeneralMonitorBetaEnabled,
   type CloudGeneralMonitorEnrollment,
 } from "@/lib/cloud-general-monitor";
+import { reviewGeneralMonitorFeedbackAction } from "./actions";
 
 type Profile = { id: string; display_name: string };
 type Feedback = {
   id: string; owner_profile_id: string; workflow_step: string;
   rating: number; outcome: string; comment: string; created_at: string;
+  review_status: "new" | "reviewing" | "resolved"; admin_note: string | null;
 };
 
 export default async function GeneralMonitorsAdminPage() {
@@ -28,11 +30,11 @@ export default async function GeneralMonitorsAdminPage() {
   const admin = createAdminClient();
   const [enrollmentsResult, feedbackResult, profilesResult] = await Promise.all([
     admin.from("cloud_general_monitor_enrollments")
-      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at")
+      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
       .order("updated_at", { ascending: false })
       .returns<CloudGeneralMonitorEnrollment[]>(),
     admin.from("cloud_general_monitor_feedback")
-      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at")
+      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note")
       .order("created_at", { ascending: false }).limit(100).returns<Feedback[]>(),
     admin.from("profiles").select("id,display_name").returns<Profile[]>(),
   ]);
@@ -46,7 +48,10 @@ export default async function GeneralMonitorsAdminPage() {
           <h1 className="mt-1 text-3xl font-bold">モニター管理</h1>
           <p className="mt-2 text-stone-600">招待、期限、AI利用数、感想を確認します。</p>
         </div>
-        <Link className="button-secondary" href="/admin/users">ユーザーを招待</Link>
+        <div className="flex gap-2">
+          <Link className="button-secondary" href="/admin/general-monitors/export">CSV出力</Link>
+          <Link className="button-secondary" href="/admin/users">ユーザーを招待</Link>
+        </div>
       </div>
       {enrollmentsResult.error ? (
         <p className="mt-6 rounded-lg bg-amber-50 p-4 text-amber-950" role="alert">
@@ -83,6 +88,14 @@ export default async function GeneralMonitorsAdminPage() {
               </div>
               <p className="mt-2 whitespace-pre-wrap break-words text-stone-700">{item.comment}</p>
               <p className="mt-2 text-xs text-stone-500">{new Date(item.created_at).toLocaleString("ja-JP")}</p>
+              <form action={reviewGeneralMonitorFeedbackAction} className="mt-3 grid gap-3 sm:grid-cols-[12rem_1fr_auto]">
+                <input name="feedbackId" type="hidden" value={item.id} />
+                <select className="field" defaultValue={item.review_status} name="status">
+                  <option value="new">未対応</option><option value="reviewing">対応中</option><option value="resolved">対応済み</option>
+                </select>
+                <input className="field" defaultValue={item.admin_note ?? ""} maxLength={1000} name="adminNote" placeholder="管理メモ（利用者には非表示）" />
+                <button className="button-secondary" type="submit">更新</button>
+              </form>
             </article>
           ))}
           {!feedbackResult.data?.length ? <p className="text-stone-600">フィードバックはまだありません。</p> : null}

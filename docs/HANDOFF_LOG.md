@@ -4,6 +4,28 @@
 
 ---
 
+## 2026-07-31 Codex（一般向けモニター運用強化）
+
+### 状態
+
+`IMPLEMENTED_VALIDATING`。初回案内、期限・AI残数警告、招待文面、フィードバック対応管理、CSV出力を追加した。
+
+### 実装
+
+- `onboarding_completed_at` と本人用完了RPC
+- 期限3日前、AI残り5回以下、停止・期限切れ・上限到達の画面警告
+- 管理者が登録メール宛ての招待文面をメールアプリで開く導線
+- フィードバックの `new / reviewing / resolved`、管理メモ、担当管理者、確認日時
+- モニター状態・利用数・フィードバック集計のUTF-8 BOM付きCSV
+- migration、rollback、canonical schema、権限・UIテスト
+
+### 境界
+
+- メールは自動送信しない。外部メールProvider契約後に別実装する。
+- migration適用、Feature Flag変更、招待、本番公開、PR mergeは実施しない。
+
+---
+
 ## 2026-07-30 Codex（一般向け無料限定モニター）
 
 ### 状態

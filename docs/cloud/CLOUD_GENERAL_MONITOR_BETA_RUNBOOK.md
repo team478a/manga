@@ -3,7 +3,9 @@
 ## 1. Preview準備
 
 1. 対象ブランチをVercel Previewへデプロイする。
-2. migration `202607300006_cloud_general_monitor_beta.sql` をPreview用Supabaseへ適用する。
+2. migrationを次の順でPreview用Supabaseへ適用する。
+   - `202607300006_cloud_general_monitor_beta.sql`
+   - `202607310001_cloud_general_monitor_operations.sql`
 3. 一般向けFeature Flagと `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true` を対象Previewブランチだけに設定する。
 4. `CLOUD_ADULT_RESEARCH_ENABLED=false`、`CLOUD_ADULT_PLANNING_ENABLED=false` を確認する。
 5. `npm run cloud:general-monitor:preflight` を実行する。出力に値は表示されない。
@@ -16,12 +18,16 @@
 1. `/admin/users` から対象ユーザーを選ぶ。
 2. 一般向けモニター欄でグループ、AI上限、期限を入力する。
 3. 「モニターへ招待」を押す。
-4. PreviewのShareable Linkとテスト手順だけを本人へ案内する。
+4. 登録後に表示される「招待メール文面を開く」から、本人へ案内する。
+5. 本人は初回ログイン後に利用条件を確認してモニターを開始する。
 
 ## 3. 確認
 
 - `/admin/general-monitors` で状態、AI利用数、期限を確認する。
+- 未確認の初回案内、期限、残りAI回数を確認する。
 - 利用者は `/dashboard/monitor` から感想を送る。
+- フィードバックを未対応・対応中・対応済みに更新し、必要なら管理メモを残す。
+- 「CSV出力」で週次の利用状況を保存する。
 - 内部エラー、APIキー、Prompt、生成内容をログや連絡文へ貼らない。
 
 ## 4. 緊急停止
@@ -30,3 +36,4 @@
 `CLOUD_GENERAL_MONITOR_BETA_ENABLED=false` に変更して再デプロイする。
 
 Stripe設定、販売設定、成人向け設定は変更しない。
+自動メール送信は未実装。現在は管理者のメールアプリで招待文面を開く。

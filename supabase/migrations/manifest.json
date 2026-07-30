@@ -156,7 +156,13 @@
       "description": "一般向け無料モニターの招待・期限・累計AI上限・フィードバックを追加",
       "forwardSha256": "e68200749c3672aa8f08c6e01434bd406a50adadd8853beb6390d3fe8bbaca7d",
       "rollbackSha256": "03910c881a0e5182a47ab2a4ce20b7cc2715980ba885013c83b68a84569f82d4"
+    },
+    {
+      "id": "202607310001_cloud_general_monitor_operations",
+      "description": "一般向けモニターの初回案内完了とフィードバック対応管理を追加",
+      "forwardSha256": "7f372fecc270d21078db2fd876b64ffadbdb4d6835dcf26d087f396cb607ae61",
+      "rollbackSha256": "33f839d125c3a0834ccd816c84f8190229e5ed60b002b9543c42cd0b618471e3"
     }
   ],
-  "schemaSha256": "3452bcb242c0de867507f186dfe268c250b864b1c63f808c130e10ab9c24cded"
+  "schemaSha256": "7c2dda3b79ca776b2c7de9fd506e9c4b7430eba9eabf253d06536a951f3519fb"
 }

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向けモニター運用機能強化
+
+- 状態: `IMPLEMENTED_VALIDATING`
+- Branch: `codex/cloud-general-monitor-beta-v1`
+- Draft PR: [#80](https://github.com/team478a/manga/pull/80)
+- migration: `202607310001_cloud_general_monitor_operations`
+- 追加内容:
+  - 初回オンボーディングと本人の確認日時
+  - 期限3日前、AI残り5回以下、停止・期限切れ・上限到達の警告
+  - 管理者用の招待メール文面
+  - フィードバックの未対応・対応中・対応済み管理
+  - モニター一覧CSV出力
+- 境界: 外部メール送信、Stripe、成人向け、本番公開は変更しない
+
 ## 2026-07-30 一般向け限定モニター公開
 
 - 状態: `IMPLEMENTED_VALIDATING`

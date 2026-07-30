@@ -79,7 +79,7 @@ export default async function AdminUserDetailPage({
     if (generalMonitorEnabled) {
       const generalMonitorResult = await admin
         .from("cloud_general_monitor_enrollments")
-        .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at")
+        .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
         .eq("profile_id", user.id)
         .maybeSingle<CloudGeneralMonitorEnrollment>();
       generalMonitor = generalMonitorResult.data;
@@ -148,11 +148,20 @@ export default async function AdminUserDetailPage({
         ) : (
           <>
             {generalMonitor ? (
-              <dl className="mt-5 grid gap-3 rounded-xl bg-violet-50 p-4 sm:grid-cols-3">
+              <dl className="mt-5 grid gap-3 rounded-xl bg-violet-50 p-4 sm:grid-cols-4">
                 <div><dt className="text-sm text-stone-500">状態</dt><dd className="font-bold">{generalMonitor.status}</dd></div>
                 <div><dt className="text-sm text-stone-500">AI利用数</dt><dd className="font-bold">{generalMonitor.ai_requests_used} / {generalMonitor.ai_request_limit}</dd></div>
                 <div><dt className="text-sm text-stone-500">期限</dt><dd className="font-bold">{new Date(generalMonitor.expires_at).toLocaleDateString("ja-JP")}</dd></div>
+                <div><dt className="text-sm text-stone-500">初回案内</dt><dd className="font-bold">{generalMonitor.onboarding_completed_at ? "確認済み" : "未確認"}</dd></div>
               </dl>
+            ) : null}
+            {generalMonitor && email !== "未設定" && email !== "未取得" ? (
+              <a
+                className="button-secondary mt-4"
+                href={`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent("MANGAI 一般向けモニターのご案内")}&body=${encodeURIComponent(`MANGAI一般向けモニターへご招待しました。\n\n登録済みのメールアドレスでログインし、ダッシュボードの「初回案内」を確認してください。\n${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/dashboard/monitor/welcome\n\n利用期限: ${new Date(generalMonitor.expires_at).toLocaleDateString("ja-JP")}\nAI利用上限: ${generalMonitor.ai_request_limit}回\n\nパスワードやAPIキーを返信しないでください。`)}`}
+              >
+                招待メール文面を開く
+              </a>
             ) : null}
             <form action={activateCloudGeneralMonitorAction.bind(null, user.id)} className="mt-5 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">

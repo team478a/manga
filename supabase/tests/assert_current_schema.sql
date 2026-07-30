@@ -114,6 +114,20 @@ end $$;
 
 do $$
 begin
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_enrollments' and column_name='onboarding_completed_at')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='review_status')
+     or to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is null
+     or to_regprocedure('public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)') is null then
+    raise exception 'Current schema general monitor operations objects missing';
+  end if;
+  if not has_function_privilege('authenticated','public.complete_cloud_general_monitor_onboarding()','execute')
+     or has_function_privilege('authenticated','public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)','execute') then
+    raise exception 'General monitor operations privileges are invalid';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_story_storyboard_projects') is null
      or to_regprocedure(
        'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)'

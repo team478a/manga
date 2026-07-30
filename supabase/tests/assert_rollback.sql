@@ -2,6 +2,10 @@
 
 do $$
 begin
+  if to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is not null
+     or to_regprocedure('public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)') is not null then
+    raise exception 'General monitor operations functions remain after rollback';
+  end if;
   if to_regclass('public.cloud_story_storyboard_projects') is not null
      or to_regprocedure(
        'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)'

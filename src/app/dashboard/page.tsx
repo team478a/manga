@@ -3,7 +3,11 @@ import { ArrowRight, BarChart3, CheckCircle2, Lock } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
-import { getCloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
+import {
+  getCloudGeneralMonitorEnrollment,
+  getCloudGeneralMonitorNotice,
+  isCloudGeneralMonitorActive,
+} from "@/lib/cloud-general-monitor";
 
 export default async function DashboardPage() {
   const enabled = cloudResearchFeatureEnabled();
@@ -13,7 +17,9 @@ export default async function DashboardPage() {
     getCloudGeneralMonitorEnrollment(profile.id),
   ]);
   const latest = reports[0];
-  const monitorActive = monitor?.status === "active";
+  const monitorActive = isCloudGeneralMonitorActive(monitor) &&
+    Boolean(monitor && monitor.ai_requests_used < monitor.ai_request_limit);
+  const monitorNotice = getCloudGeneralMonitorNotice(monitor);
 
   return (
     <main className="page max-w-7xl">
@@ -52,6 +58,18 @@ export default async function DashboardPage() {
           )}
         </div>
       </section>
+      {monitor && !monitor.onboarding_completed_at ? (
+        <section className="mt-5 rounded-xl border border-violet-200 bg-violet-50 p-5">
+          <h2 className="font-bold text-violet-950">初回案内が未確認です</h2>
+          <p className="mt-1 text-sm text-violet-900">利用条件と制作の進め方を確認してから開始してください。</p>
+          <Link className="button mt-4 bg-violet-700 hover:bg-violet-800" href="/dashboard/monitor/welcome">初回案内を確認</Link>
+        </section>
+      ) : null}
+      {monitorNotice ? (
+        <p className={`mt-5 rounded-xl p-4 ${monitorNotice.level === "error" ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-950"}`} role="status">
+          {monitorNotice.message}
+        </p>
+      ) : null}
       <section className="panel mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold text-violet-700">限定モニター</p>

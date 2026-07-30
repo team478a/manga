@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
-import { getCloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
+import { getCloudGeneralMonitorEnrollment, getCloudGeneralMonitorNotice } from "@/lib/cloud-general-monitor";
 import { createClient } from "@/lib/supabase/server";
 import { submitCloudGeneralMonitorFeedbackAction } from "./actions";
 
@@ -21,6 +21,7 @@ export default async function GeneralMonitorPage({
   const { profile } = await requireProfile();
   const { error, message } = await searchParams;
   const enrollment = await getCloudGeneralMonitorEnrollment(profile.id);
+  const notice = getCloudGeneralMonitorNotice(enrollment);
   const { data: feedback } = await (await createClient())
     .from("cloud_general_monitor_feedback")
     .select("id,workflow_step,rating,outcome,comment,created_at")
@@ -55,6 +56,8 @@ export default async function GeneralMonitorPage({
               <div><p className="text-sm text-stone-500">期限</p><p className="font-bold">{new Date(enrollment.expires_at).toLocaleDateString("ja-JP")}</p></div>
             </div>
           </section>
+          {notice ? <p className={`mt-5 rounded-lg p-4 ${notice.level === "error" ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-950"}`} role="status">{notice.message}</p> : null}
+          {!enrollment.onboarding_completed_at ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href="/dashboard/monitor/welcome">初回案内を確認</Link> : null}
           {error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{error}</p> : null}
           {message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
           {enrollment.status === "active" ? (
