@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-07-30 Codex（Cloud Release 6 コマ画像AIおまかせ生成）
+
+### 状態
+
+`IMPLEMENTED_LOCAL`。Release 5のCanvasでコマを選ぶだけで、採用ネームからServer側生成条件を作り、既存Cloud AI Queueへ登録できる縦型フローを実装した。
+
+### ブランチ
+
+- Branch: `codex/cloud-panel-image-generation-v1`
+- Base: `codex/cloud-storyboard-canvas-materialization-v1` (`80b71f6`, Draft PR #72)
+
+### 実装
+
+- 選択panelと元ネームの同一ページ・同一順序コマを照合
+- 画角、構図、人物、背景、動作、感情、演出から一般向け画像PromptをServer側作成
+- コマ縦横比から生成寸法を自動決定
+- 既存moderation、quota、Provider Registry、Queueへの登録
+- Jobと対象panelの永続的な関連付け
+- 完了Assetの生成対象コマ配置
+- PromptをClient responseと画面から除外
+- Feature Flag、preflight、エラー状態、モックProviderテスト
+
+### 安全境界
+
+- Feature Flag未設定時は認証・DB・Providerより前にfail closed
+- 所有者本人のRelease 5一般向けProjectだけを許可
+- 既存Queue／Worker／料金予約を再実装・迂回しない
+- Desktop、成人向け画像生成、Stripe、Marketplaceは変更しない
+- 外部API有料実行、migration適用、Feature Flag変更、本番公開、PR mergeは未実施
+
+### 検証
+
+- Release 6集中テスト: PASS（10/10）
+- deps、lint、typecheck、Research Evaluation: PASS
+- Hub test: PASS（254/254）
+- Canvas test: PASS（26/26）
+- AI test: PASS（44/44）
+- Desktop test: PASS（182/182）
+- Desktop accessibility: PASS（違反0）
+- migration静的検証: PASS（25/25、追加migrationなし）
+- Hub production build、Desktop build、`git diff --check`: PASS
+- RC preflight: repository structure READY、外部設定・手動E2EはPENDING
+- Release 6 preflight: 限定公開用環境変数未設定のため想定どおりfail closed
+
+---
+
 ## 2026-07-30 Codex（Cloud Release 2 限定公開前ハードニング）
 
 ### 状態

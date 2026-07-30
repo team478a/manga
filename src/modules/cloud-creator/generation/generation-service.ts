@@ -74,7 +74,7 @@ export async function listCloudGenerationJobs(projectId: string) {
   const { data, error } = await supabase
     .from("cloud_generation_jobs")
     .select(
-      "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at",
+      "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input",
     )
     .eq("project_id", projectId)
     .order("created_at", { ascending: false })
@@ -85,7 +85,19 @@ export async function listCloudGenerationJobs(projectId: string) {
       "Cloud AI生成履歴を読み込めませんでした。",
       { cause: error },
     );
-  return (data ?? []) as CloudGenerationJob[];
+  return (data ?? []).map((row) => {
+    const input =
+      row.input && typeof row.input === "object"
+        ? (row.input as Record<string, unknown>)
+        : null;
+    const targetPanelId =
+      typeof input?.targetPanelId === "string" ? input.targetPanelId : null;
+    const { input: _privateInput, ...publicRow } = row;
+    return {
+      ...publicRow,
+      target_panel_id: targetPanelId,
+    } as CloudGenerationJob;
+  });
 }
 
 export async function cancelCloudGenerationJob(jobId: string) {
