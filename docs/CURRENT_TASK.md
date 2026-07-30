@@ -5,64 +5,75 @@
 - 更新日: 2026-07-30
 - 状態: `READY_FOR_REVIEW`
 - リポジトリ: `team478a/manga`
-- Base: `codex/cloud-storyboard-generation-v1` (`cf48c4d`)
-- Branch: `codex/cloud-storyboard-canvas-materialization-v1`
-- Draft PR: [#72](https://github.com/team478a/manga/pull/72)
-- Vercel Preview: [Release 5 Preview](https://mangai-hub-staging-git-codex-cloud-st-40d428-team478as-projects.vercel.app)
-- 仕様: [`docs/cloud/CLOUD_STORYBOARD_CANVAS_MATERIALIZATION_V1.md`](cloud/CLOUD_STORYBOARD_CANVAS_MATERIALIZATION_V1.md)
-- 計画: [`docs/cloud/CLOUD_RELEASE5_IMPLEMENTATION_PLAN.md`](cloud/CLOUD_RELEASE5_IMPLEMENTATION_PLAN.md)
+- Base: `codex/cloud-storyboard-canvas-materialization-v1` (`80b71f6`, Draft PR #72)
+- Branch: `codex/cloud-panel-image-generation-v1`
+- Draft PR: [#73](https://github.com/team478a/manga/pull/73)
+- Vercel Preview: [Release 6 Preview](https://mangai-hub-staging-git-codex-cloud-pa-e0d887-team478as-projects.vercel.app)
+- 仕様: [`docs/cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md`](cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md)
+- 計画: [`docs/cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md`](cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md)
 
 ## 現在の目的
 
-Release 4で採用した一般向けAIネームを、既存Cloud Creatorで編集できる非公開Canvas Projectへ変換する。画像生成より前に、ページ・コマ・吹き出し・文字を編集可能な下書きとして固定する。
+Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネームから一般向け漫画画像の生成条件をServer側で組み立て、既存Cloud AI Queueへ安全に登録する。利用者にはPrompt、Provider、モデル、解像度の知識を要求しない。
 
 ## 実装済み
 
-- 最新採用ネームだけを入力とするDB側検証
-- ネーム1版につきProject 1件の冪等変換とtransaction advisory lock
-- 8〜48ページを既存Cloud Project／Episode／Pageへ展開
-- 右綴じ2列以下のコマ配置
-- セリフ、心の声、ナレーションを吹き出し・縦書き文字へ変換
-- 元ネーム、Project、先頭Pageの追跡
-- 作成ボタン、作成済みCanvas再表示導線
-- Feature Flag、所有者RLS、不正UUID拒否、内部エラー秘匿
-- migration、rollback、canonical schema、preflight
-- 画像Asset、生成Job、外部Provider呼出を行わない構造検査
+- 選択コマと元ネームのページ・コマ対応解決
+- ネームの画角、構図、人物、背景、動作、感情からServer側Promptを作成
+- セリフ、吹き出し、文字を画像へ描かない生成指示
+- コマ縦横比に応じた生成寸法の自動決定
+- 既存moderation、quota、Provider Registry、Queueを通る専用API
+- Jobへ対象panel IDを非公開入力として保存し、PromptをClientへ返さない履歴契約
+- 完了Assetを生成対象コマへ配置するCanvas導線
+- loading、disabled、error状態
+- Feature Flag、UUID、所有者、Release 5由来Project、一般向け境界
+- Release 6 preflightとモックProvider自動テスト
 
 ## 安全境界
 
-- `CLOUD_STORYBOARD_CANVAS_ENABLED`未設定時はfail closed。
-- 一般向けの最新採用ネームだけをDB functionが許可する。
-- 所有者はServer側の`current_profile_id()`から決定する。
-- 画像生成、Cloud AI Queue、Storage Asset、外部AI、課金処理を呼び出さない。
-- Desktop、Stripe、Marketplace、成人向け処理は変更しない。
+- `CLOUD_PANEL_IMAGE_GENERATION_ENABLED`未設定時は認証・DB・Providerアクセス前にfail closed。
+- Release 5の一般向けProjectと所有者本人だけを許可する。
+- 既存moderation、quota、料金予約、Provider停止判定を迂回しない。
+- PromptをClient response、URL、画面、ログへ返さない。
+- 本番Provider、Worker、Feature Flag、有料生成は責任者が明示的に有効化する。
+- Desktop、Stripe、Marketplace、成人向け画像生成は変更しない。
 
 ## 検証結果
 
+- Release 6集中テスト: PASS（10/10）
 - deps:check: PASS
 - lint: PASS
 - typecheck: PASS（Hub + Desktop）
 - research:eval: PASS
-- hub:test: PASS（244/244）
-- db:migrations:validate: PASS（25/25）
-- build: PASS
+- hub:test: PASS（254/254）
+- canvas:test: PASS（26/26）
+- ai:test: PASS（44/44）
+- desktop:test: PASS（182/182）
+- desktop:test:a11y: PASS（違反0、既存color contrast要手動確認）
+- db:migrations:validate: PASS（25/25、Release 6追加migrationなし）
+- Hub production build: PASS
+- Desktop build: PASS
 - git diff --check: PASS
-- migration roundtrip: PASS（GitHub CI）
-- Windows build: PASS（GitHub CI）
+- GitHub Core quality: PASS
+- GitHub migration roundtrip: PASS
+- GitHub Windows build: PASS
 - Vercel Preview: READY
-- 実DB変換E2E: 未実施（Preview migrationを適用しない停止条件）
+- rc:preflight: STRUCTURE READY、外部設定と手動E2Eは未実施
+- Release 6 preflight: 想定どおりFAIL（ローカルに限定公開用環境変数を設定していない）
+- 実Provider有料生成E2E: 未実施（停止条件）
 
 ## 責任者が後で行うこと
 
-1. migration `202607300005_cloud_storyboard_canvas_materialization.sql`を対象Preview DBへ適用
-2. 対象Preview branchだけで`CLOUD_STORYBOARD_CANVAS_ENABLED=true`
-3. 採用ネームからProjectを作成し、ページ数・コマ・吹き出し・文字を実機確認
-4. 同じネームの再実行でProjectが増えないことを確認
-5. 390px、768px、1280px表示とCanvas編集・保存を確認
-6. PRレビュー後に次工程（画像生成）の開始可否を判断
+1. Release 2〜5のstacked migrationとFeature Flagを対象Preview環境で確認
+2. Release 6 Preview branchだけで`CLOUD_PANEL_IMAGE_GENERATION_ENABLED=true`
+3. 既存Cloud画像Provider、pricing、quota、Workerが検証用設定で動作することを確認
+4. Release 5由来Canvasでコマを選び、AIおまかせ生成を1件実行
+5. 完了Assetが元の対象コマへ配置され、保存・再表示できることを確認
+6. Promptや内部Provider情報が画面・Network response・ログへ露出しないことを確認
+7. 390px、768px、1280pxで横overflowと操作不能がないことを確認
 
 ## 注意事項
 
-- Release 4 PR #71が未mergeのため、Release 5 PRのbaseはRelease 4 branchにする。
-- migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
-- 本Releaseは画像生成を含まない。
+- Release 5 PR #72が未mergeのため、Release 6 PRのbaseはRelease 5 branchにする。
+- migration適用、Feature Flag有効化、有料API実行、PR merge、本番公開は行わない。
+- Release 6は一般向けコマ画像生成だけを対象とし、成人向け画像生成は含まない。

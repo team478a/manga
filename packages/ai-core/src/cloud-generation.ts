@@ -47,6 +47,7 @@ export const cloudGenerationInputSchema = z
       .nonnegative()
       .max(Number.MAX_SAFE_INTEGER)
       .optional(),
+    targetPanelId: z.string().uuid().optional(),
   })
   .superRefine((value, context) => {
     const imageTypes: CloudGenerationJobType[] = [

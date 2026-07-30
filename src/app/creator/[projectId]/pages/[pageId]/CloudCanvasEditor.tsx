@@ -46,6 +46,7 @@ import { createCanvasSvg } from "./services/canvas-svg";
 import {
   cancelGeneration,
   createGenerationJob,
+  createStoryboardPanelGenerationJob,
   creatorProjectExportUrl,
   getAiQuota,
   getAssetUrl,
@@ -72,6 +73,7 @@ export function CloudCanvasEditor({
   initialAssets,
   initialGenerationJobs,
   initialQuota,
+  storyboardPanelGenerationEnabled,
 }: {
   project: CloudProjectSummary;
   pages: CloudPage[];
@@ -80,10 +82,20 @@ export function CloudCanvasEditor({
   initialAssets: CloudAsset[];
   initialGenerationJobs: CloudGenerationJob[];
   initialQuota: CloudAiQuota | null;
+  storyboardPanelGenerationEnabled: boolean;
 }) {
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
   const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
+  const [generationTargets, setGenerationTargets] = useState<
+    Record<string, string>
+  >(() =>
+    Object.fromEntries(
+      initialGenerationJobs
+        .filter((job) => job.target_panel_id)
+        .map((job) => [job.id, job.target_panel_id!]),
+    ),
+  );
   const [quota, setQuota] = useState(initialQuota);
   const [generationPrompt, setGenerationPrompt] = useState("");
   const [generationType, setGenerationType] = useState<
@@ -370,12 +382,15 @@ export function CloudCanvasEditor({
     assetId: string,
     sourceJobId: string | null = null,
     layerType: PanelLayer["type"] = "background",
+    targetPanelId?: string,
   ) {
-    if (selection?.type !== "panel") return;
+    const panelId =
+      targetPanelId ?? (selection?.type === "panel" ? selection.id : null);
+    if (!panelId) return;
     const layerId = crypto.randomUUID();
     const timestamp = now();
     commit((draft) => {
-      const panel = draft.panels.find((item) => item.id === selection.id);
+      const panel = draft.panels.find((item) => item.id === panelId);
       if (!panel) return;
       panel.imageAssetId = assetId;
       const currentLayers = draft.panelLayers.filter(
@@ -429,6 +444,34 @@ export function CloudCanvasEditor({
         error instanceof Error
           ? error.message
           : "Cloud AI Jobを登録できませんでした。",
+      );
+    }
+  }
+
+  async function requestStoryboardPanelGeneration() {
+    if (selection?.type !== "panel") return;
+    const panelId = selection.id;
+    setMessage("ネームから画像生成を準備しています…");
+    try {
+      const result = await createStoryboardPanelGenerationJob({
+        projectId: project.id,
+        pageId: page.id,
+        panelId,
+        idempotencyKey: crypto.randomUUID(),
+      });
+      setGenerationTargets((current) => ({
+        ...current,
+        [result.id]: result.panelId,
+      }));
+      setMessage(
+        `${result.pageNumber}ページ ${result.panelNumber}コマ目の画像生成を開始しました。`,
+      );
+      await Promise.all([refreshGenerationJobs(), refreshQuota()]);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "ネームから画像生成を開始できませんでした。",
       );
     }
   }
@@ -514,7 +557,11 @@ export function CloudCanvasEditor({
   }
 
   async function placeGeneratedAsset(job: CloudGenerationJob) {
-    if (!job.output_asset_id || selection?.type !== "panel") return;
+    const targetPanelId =
+      generationTargets[job.id] ??
+      job.target_panel_id ??
+      (selection?.type === "panel" ? selection.id : null);
+    if (!job.output_asset_id || !targetPanelId) return;
     let nextAssets: CloudAsset[];
     try {
       nextAssets = await listProjectAssets(project.id);
@@ -535,8 +582,8 @@ export function CloudCanvasEditor({
           : job.job_type === "effect"
             ? "effect"
             : "background";
-    applyAsset(job.output_asset_id, job.id, layerType);
-    setMessage("生成Assetを選択中のコマへ配置しました。");
+    applyAsset(job.output_asset_id, job.id, layerType, targetPanelId);
+    setMessage("生成Assetを対象のコマへ配置しました。");
   }
 
   function movePanelLayer(layerId: string, delta: -1 | 1) {
@@ -805,6 +852,28 @@ export function CloudCanvasEditor({
                 </p>
               )}
             </div>
+            {storyboardPanelGenerationEnabled ? (
+              <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3">
+                <p className="text-sm font-bold text-violet-950">
+                  AIおまかせ画像生成
+                </p>
+                <p className="mt-1 text-xs text-violet-800">
+                  コマを選ぶだけで、ネームの構図・人物・背景から生成します。
+                </p>
+                <button
+                  className="button mt-3 w-full"
+                  disabled={
+                    selection?.type !== "panel" ||
+                    !quota?.generation_enabled ||
+                    remainingCredits <= 0
+                  }
+                  onClick={() => void requestStoryboardPanelGeneration()}
+                  type="button"
+                >
+                  選択したコマを生成
+                </button>
+              </div>
+            ) : null}
             <label
               className="mt-3 block text-xs font-bold"
               htmlFor="cloud-generation-type"
@@ -915,11 +984,17 @@ export function CloudCanvasEditor({
                   {job.status === "completed" && job.output_asset_id ? (
                     <button
                       className="button-secondary mt-2 w-full"
-                      disabled={selection?.type !== "panel"}
+                      disabled={
+                        !generationTargets[job.id] &&
+                        !job.target_panel_id &&
+                        selection?.type !== "panel"
+                      }
                       onClick={() => void placeGeneratedAsset(job)}
                       type="button"
                     >
-                      選択中のコマへ配置
+                      {generationTargets[job.id] || job.target_panel_id
+                        ? "生成対象のコマへ配置"
+                        : "選択中のコマへ配置"}
                     </button>
                   ) : null}
                   {job.status === "completed" &&
