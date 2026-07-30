@@ -2007,7 +2007,7 @@ grant execute on function public.grant_cloud_adult_workflow_access(
 ) to service_role;
 
 -- Adult monitor beta: closed Preview enrollment, cumulative AI cap and feedback.
-create table public.cloud_adult_monitor_enrollments (
+create table if not exists public.cloud_adult_monitor_enrollments (
   profile_id uuid primary key references public.profiles(id) on delete cascade,
   status text not null check (status in ('active','paused','completed','revoked')),
   cohort text not null default 'preview-01' check (char_length(cohort) between 1 and 80),
@@ -2021,13 +2021,13 @@ create table public.cloud_adult_monitor_enrollments (
   updated_at timestamptz not null default now(),
   check (expires_at>starts_at)
 );
-create table public.cloud_adult_monitor_ai_usage (
+create table if not exists public.cloud_adult_monitor_ai_usage (
   id uuid primary key default gen_random_uuid(),
   profile_id uuid not null references public.profiles(id) on delete cascade,
   operation text not null check (operation in ('research','proposal','scenario','storyboard')),
   created_at timestamptz not null default now()
 );
-create table public.cloud_adult_monitor_feedback (
+create table if not exists public.cloud_adult_monitor_feedback (
   id uuid primary key default gen_random_uuid(),
   owner_profile_id uuid not null references public.profiles(id) on delete cascade,
   workflow_step text not null check (workflow_step in ('overall','research','proposal','scenario','storyboard','canvas','works')),
@@ -2036,7 +2036,7 @@ create table public.cloud_adult_monitor_feedback (
   comment text check (comment is null or char_length(comment)<=2000),
   created_at timestamptz not null default now()
 );
-create table public.cloud_adult_monitor_audit_logs (
+create table if not exists public.cloud_adult_monitor_audit_logs (
   id uuid primary key default gen_random_uuid(),
   actor_profile_id uuid not null references public.profiles(id) on delete restrict,
   target_profile_id uuid not null references public.profiles(id) on delete restrict,
@@ -2045,10 +2045,10 @@ create table public.cloud_adult_monitor_audit_logs (
   after_value jsonb,
   created_at timestamptz not null default now()
 );
-create index cloud_adult_monitor_status_idx on public.cloud_adult_monitor_enrollments(status,expires_at);
-create index cloud_adult_monitor_usage_profile_idx on public.cloud_adult_monitor_ai_usage(profile_id,created_at desc);
-create index cloud_adult_monitor_feedback_profile_idx on public.cloud_adult_monitor_feedback(owner_profile_id,created_at desc);
-create index cloud_adult_monitor_audit_created_idx on public.cloud_adult_monitor_audit_logs(created_at desc);
+create index if not exists cloud_adult_monitor_status_idx on public.cloud_adult_monitor_enrollments(status,expires_at);
+create index if not exists cloud_adult_monitor_usage_profile_idx on public.cloud_adult_monitor_ai_usage(profile_id,created_at desc);
+create index if not exists cloud_adult_monitor_feedback_profile_idx on public.cloud_adult_monitor_feedback(owner_profile_id,created_at desc);
+create index if not exists cloud_adult_monitor_audit_created_idx on public.cloud_adult_monitor_audit_logs(created_at desc);
 alter table public.cloud_adult_monitor_enrollments enable row level security;
 alter table public.cloud_adult_monitor_ai_usage enable row level security;
 alter table public.cloud_adult_monitor_feedback enable row level security;
@@ -2056,8 +2056,11 @@ alter table public.cloud_adult_monitor_audit_logs enable row level security;
 grant select on public.cloud_adult_monitor_enrollments to authenticated;
 grant select,insert on public.cloud_adult_monitor_feedback to authenticated;
 grant select,insert,update,delete on public.cloud_adult_monitor_enrollments,public.cloud_adult_monitor_ai_usage,public.cloud_adult_monitor_feedback,public.cloud_adult_monitor_audit_logs to service_role;
+drop policy if exists "cloud_adult_monitor_enrollment_owner_read" on public.cloud_adult_monitor_enrollments;
 create policy "cloud_adult_monitor_enrollment_owner_read" on public.cloud_adult_monitor_enrollments for select using (profile_id=public.current_profile_id() or public.is_admin());
+drop policy if exists "cloud_adult_monitor_feedback_owner_read" on public.cloud_adult_monitor_feedback;
 create policy "cloud_adult_monitor_feedback_owner_read" on public.cloud_adult_monitor_feedback for select using (owner_profile_id=public.current_profile_id() or public.is_admin());
+drop policy if exists "cloud_adult_monitor_feedback_owner_insert" on public.cloud_adult_monitor_feedback;
 create policy "cloud_adult_monitor_feedback_owner_insert" on public.cloud_adult_monitor_feedback for insert with check (
   owner_profile_id=public.current_profile_id() and exists (
     select 1 from public.cloud_adult_monitor_enrollments enrollment
@@ -2065,6 +2068,7 @@ create policy "cloud_adult_monitor_feedback_owner_insert" on public.cloud_adult_
       and enrollment.starts_at<=now() and enrollment.expires_at>now()
   )
 );
+drop policy if exists "cloud_adult_monitor_audit_admin_read" on public.cloud_adult_monitor_audit_logs;
 create policy "cloud_adult_monitor_audit_admin_read" on public.cloud_adult_monitor_audit_logs for select using (public.is_admin());
 create or replace function public.can_use_cloud_adult_monitor() returns boolean language sql stable security definer set search_path=public as $$
   select exists (select 1 from public.cloud_adult_monitor_enrollments enrollment
