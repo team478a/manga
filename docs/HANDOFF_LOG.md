@@ -1445,12 +1445,14 @@ READY_FOR_DRAFT_PR
 
 ### 状態
 
-READY_FOR_DRAFT_PR
+READY_FOR_REVIEW
 
 ### ブランチ・コミット
 
 - Branch: `codex/cloud-storyboard-generation-v1`
 - Base: `codex/cloud-scenario-generation-v1` (`44cd0c7`)
+- Draft PR: `#71`
+- Preview: `https://mangai-hub-staging-git-codex-cloud-st-3a713a-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -1464,8 +1466,6 @@ READY_FOR_DRAFT_PR
 
 ### 未完了
 
-- Draft PR作成とVercel Preview確認
-- migration roundtripのGitHub CI確認
 - Preview DBへのmigration適用
 - 実OpenAI生成と実機E2E
 
@@ -1475,6 +1475,7 @@ READY_FOR_DRAFT_PR
 - 成人向けデータを外部AIへ送信しない。
 - migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
 - Cloud Canvas Project化と画像生成は次工程であり、このbranchには含めない。
+- Core quality、migration roundtrip、Windows build、VercelはすべてPASS。
 
 ---
 

@@ -3,10 +3,12 @@
 ## 基本情報
 
 - 更新日: 2026-07-30
-- 状態: `READY_FOR_DRAFT_PR`
+- 状態: `READY_FOR_REVIEW`
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-scenario-generation-v1` (`44cd0c7`)
 - Branch: `codex/cloud-storyboard-generation-v1`
+- Draft PR: [#71](https://github.com/team478a/manga/pull/71)
+- Vercel Preview: [Release 4 Preview](https://mangai-hub-staging-git-codex-cloud-st-3a713a-team478as-projects.vercel.app)
 - 仕様: [`docs/cloud/CLOUD_STORYBOARD_GENERATION_V1.md`](cloud/CLOUD_STORYBOARD_GENERATION_V1.md)
 - 計画: [`docs/cloud/CLOUD_RELEASE4_IMPLEMENTATION_PLAN.md`](cloud/CLOUD_RELEASE4_IMPLEMENTATION_PLAN.md)
 
@@ -46,8 +48,9 @@ Release 3で採用した一般向けシナリオを、ページ・コマ単位�
 - build: PASS
 - git diff --check: PASS
 - 実OpenAI生成: 未実施（有料実行を避ける）
-- migration roundtrip: CI実行待ち
-- Vercel Preview: Draft PR作成後に確認
+- migration roundtrip: PASS（GitHub CI）
+- Windows build: PASS（GitHub CI）
+- Vercel Preview: READY
 
 ## 責任者が後で行うこと
 
