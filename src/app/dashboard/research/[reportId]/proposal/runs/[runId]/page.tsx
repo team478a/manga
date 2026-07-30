@@ -92,17 +92,11 @@ export default async function ProposalComparisonPage({
       </section>
       {selection ? (
         <section className="panel mt-6 border-violet-200 bg-violet-50">
-          <h2 className="text-xl font-bold">{run.content_class === "adult" ? "成人向け企画を保存しました" : "シナリオ生成の準備ができました"}</h2>
+          <h2 className="text-xl font-bold">シナリオ生成の準備ができました</h2>
           <p className="mt-2 text-violet-950">選んだ企画は保存済みです。</p>
-          {run.content_class === "general" ? (
-            <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario`}>
-              シナリオ生成へ進む
-            </Link>
-          ) : (
-            <p className="mt-5 rounded-lg bg-rose-50 p-4 text-rose-900">
-              成人向けシナリオ生成は安全境界を整備する次フェーズで提供します。
-            </p>
-          )}
+          <Link className={`button mt-5 ${run.content_class === "adult" ? "bg-rose-700 hover:bg-rose-800" : "bg-violet-700 hover:bg-violet-800"}`} href={`/dashboard/research/${reportId}/proposal/scenario`}>
+            {run.content_class === "adult" ? "成人向けシナリオ生成へ進む" : "シナリオ生成へ進む"}
+          </Link>
         </section>
       ) : null}
     </main>

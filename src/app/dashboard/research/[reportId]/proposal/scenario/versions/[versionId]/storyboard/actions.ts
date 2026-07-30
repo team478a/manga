@@ -22,6 +22,8 @@ function enabled() {
 async function adoptedScenario(profileId: string, reportId: string, scenarioVersionId: string) {
   const scenario = await getCloudScenarioVersion(profileId, scenarioVersionId);
   if (scenario.research_report_id !== reportId) throw new ResourceNotFoundError("採用シナリオが見つかりません。");
+  if (scenario.content_class !== "general")
+    throw new PermissionDeniedError("成人向けAIネーム生成は現在準備中です。");
   const adoption = await getLatestCloudScenarioAdoption(profileId, scenario.proposal_selection_id);
   if (adoption?.scenario_version_id !== scenario.id) throw new PermissionDeniedError("現在の採用シナリオを選んでください。");
   return scenario;

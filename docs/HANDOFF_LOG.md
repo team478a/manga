@@ -1625,3 +1625,16 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - OpenAI設定は既存のSupabase Vaultを再利用し、新しいローカルAPIキーは作成していない。
 - 成人向けシナリオ導線は明示的に停止。
 - staging migration、本番設定、有料API実行は責任者確認まで未実施。
+
+# 2026-07-30 Codex: Cloud成人向けAIシナリオ v1
+
+- Branch: `codex/cloud-adult-scenario-v1`
+- Base: `codex/cloud-adult-ai-planning-v1` (`5f5ba8a`)
+- 一般／成人のシナリオを`content_class`で分離。
+- 成人向け専用Feature Flag、DB Kill Switch、個別許可、本人同意を追加。
+- Provider呼出前と結果保存前に成人向け安全検査を実施。
+- OpenAI設定は既存Supabase Vaultを再利用し、ローカルAPIキーは作成していない。
+- 成人向けネーム工程は画面、Action、RLSで停止。
+- ローカル品質ゲート: deps:check、lint、typecheck、research:eval、hub:test（264/264）、migration静的検証（27件）、build、git diff --checkがPASS。
+- migration roundtripはローカルPostgreSQLなし・Docker daemon停止のためGitHub Actionsで確認する。
+- staging migration、本番設定、有料API実行、PR mergeは未実施。

@@ -34,6 +34,7 @@
     "cloud:release5:preflight": "node scripts/check-cloud-release5-preflight.mjs",
     "cloud:release6:preflight": "node scripts/check-cloud-release6-preflight.mjs",
     "cloud:adult-ai-planning:preflight": "node scripts/check-cloud-adult-ai-planning-preflight.mjs",
+    "cloud:adult-scenario:preflight": "node scripts/check-cloud-adult-scenario-preflight.mjs",
     "db:migrations:validate": "node scripts/validate-supabase-migrations.mjs",
     "db:migrations:checksums:update": "node scripts/update-supabase-migration-checksums.mjs --write",
     "db:staging:preflight": "node scripts/check-supabase-staging.mjs",

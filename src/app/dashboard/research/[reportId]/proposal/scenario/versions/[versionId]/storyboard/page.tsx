@@ -20,6 +20,8 @@ export default async function StoryboardPage({ params, searchParams }: {
   const { profile } = await requireProfile();
   const scenario = await getCloudScenarioVersion(profile.id, versionId).catch(() => notFound());
   if (scenario.research_report_id !== reportId) notFound();
+  if (scenario.content_class !== "general")
+    redirect(`/dashboard/research/${reportId}/proposal/scenario/versions/${scenario.id}`);
   const scenarioAdoption = await getLatestCloudScenarioAdoption(profile.id, scenario.proposal_selection_id);
   if (scenarioAdoption?.scenario_version_id !== scenario.id) notFound();
   const featureEnabled = cloudStoryboardFeatureEnabled();
