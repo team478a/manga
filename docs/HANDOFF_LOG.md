@@ -18,6 +18,7 @@
 - preflightはローカル限定公開設定なしのため想定どおりFAILし、秘密値は表示していない。
 - GitHub CI: Core quality、Migration roundtrip、Windows build、Vercelが全てPASS。
 - migration適用、Preview実機E2E、Feature Flag有効化、本番公開、PR mergeは未実施。
+- 追記: 責任者がPreview用DBへmigration 002〜010を適用し、成人向け環境Flagと全DB Kill Switchを有効化。管理者向け原子的な5権限一括許可を追加し、migration 011適用待ち。
 
 ---
 

@@ -14,6 +14,8 @@
 - 検証: deps:check、lint、typecheck、research:eval、hub:test（278/278）、集中テスト（4/4）、migration静的検証（30件）、build、git diff --checkがPASS。
 - preflight: ローカル環境変数未設定のため想定どおりFAIL。秘密値は表示していない。
 - GitHub CI: Core quality、Migration roundtrip、Windows build、Vercelが全てPASS。
+- 追加実装: 管理者が市場分析からAIネームまでを1トランザクションで一括許可できる操作を追加。migration 011は未適用。
+- Preview設定: 責任者がmigration 002〜010、成人向け環境Flag、全DB Kill Switchを有効化済み。
 
 ## 2026-07-30 Cloud成人向けCanvas v1
 

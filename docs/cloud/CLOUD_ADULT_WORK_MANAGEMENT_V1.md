@@ -13,6 +13,13 @@
 - loading、empty、error、not found状態
 - 一般向け作品管理との明示的な切り替え
 
+### 管理者機能
+
+- 利用者詳細から市場分析、企画、AI企画、AIシナリオ、AIネームを一括許可
+- 一括許可は単一DBトランザクションで実行し、部分成功を残さない
+- 許可理由、有効期限、管理者メモを5権限へ共通保存
+- 個別許可は例外対応用として維持
+
 ### 境界
 
 - 成人向け作品の正本は`cloud_projects`であり、公開用`works`へ複製しない。
@@ -32,6 +39,7 @@
 ## Migration
 
 - forward: `202607300010_cloud_adult_work_management.sql`
+- bulk grant: `202607300011_cloud_adult_workflow_bulk_grant.sql`
 - rollback: `202607300010_cloud_adult_work_management.sql`
 - 追加:
   - `cloud_adult_work_management_settings`
@@ -65,6 +73,10 @@
 - 所有者・別ユーザーでの実機E2E
 - 390px、768px、1280pxのPreview目視確認
 - PR merge、本番公開
+
+2026-07-30に責任者がPreview用DBへmigration 002〜010を順次適用し、
+成人向け全体Feature FlagとDB Kill Switchを有効化済み。011の一括許可
+migrationと更新Previewの受入れは未実施。
 
 ## Review
 

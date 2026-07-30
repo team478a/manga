@@ -180,7 +180,13 @@
       "description": "成人向けCanvasを所有者限定の非公開作品として制作状態付きで管理",
       "forwardSha256": "fa55e5d06c9289450f35f0f5bea8eca1f6422531254fdd75a55160115b1f767a",
       "rollbackSha256": "e24a06e80012aa93ef2a68b49b199a9b0ada4e255a9ba8fb4bc31350f3a83b75"
+    },
+    {
+      "id": "202607300011_cloud_adult_workflow_bulk_grant",
+      "description": "成人向け制作ワークフローの市場分析からAIネームまでを原子的に一括許可",
+      "forwardSha256": "aa44e979825f2b6cadb634126238093e69a741e88fc45256d60b8bb51dec1b7a",
+      "rollbackSha256": "27a9f850a85292c8dd07993401935ad55753ea2434cafe1d9f5052680f3b7e4e"
     }
   ],
-  "schemaSha256": "58063ccf6a42953315dc8a2f21f55250cb4085bba5b21774dff409c841ea2b42"
+  "schemaSha256": "a29ab549754f1fc626975b1d79a8c81ce8a7070bbc7a910131bcf9c2f2e06725"
 }
