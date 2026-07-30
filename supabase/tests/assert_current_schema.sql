@@ -114,6 +114,77 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_story_storyboard_projects') is null
+     or to_regprocedure(
+       'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)'
+     ) is null
+     or to_regprocedure(
+       'public.materialize_cloud_storyboard_project(uuid)'
+     ) is null then
+    raise exception 'Current schema storyboard Canvas materialization objects missing';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='public'
+      and tablename='cloud_story_storyboard_projects'
+      and policyname='cloud_story_storyboard_projects_owner_read'
+  ) then
+    raise exception 'Current schema storyboard Canvas owner RLS missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)',
+       'execute'
+     ) then
+    raise exception 'Canvas builder must not be directly executable by authenticated users';
+  end if;
+  if not has_function_privilege(
+       'authenticated',
+       'public.materialize_cloud_storyboard_project(uuid)',
+       'execute'
+     ) then
+    raise exception 'Canvas materialization RPC privilege missing';
+  end if;
+end $$;
+
+do $$
+declare
+  v_page_id uuid := gen_random_uuid();
+  v_canvas jsonb;
+begin
+  select public.build_cloud_storyboard_canvas(
+    v_page_id,
+    1600,
+    2400,
+    jsonb_build_object(
+      'pageNumber', 1,
+      'panels', jsonb_build_array(
+        jsonb_build_object(
+          'panelNumber', 1,
+          'description', '導入',
+          'dialogue', jsonb_build_array(
+            jsonb_build_object(
+              'speaker', '主人公',
+              'text', '始めよう',
+              'type', 'speech'
+            )
+          )
+        )
+      )
+    )
+  ) into v_canvas;
+  if v_canvas->>'schemaVersion' <> '1'
+     or v_canvas->>'pageId' <> v_page_id::text
+     or jsonb_array_length(v_canvas->'panels') <> 1
+     or jsonb_array_length(v_canvas->'balloons') <> 1
+     or jsonb_array_length(v_canvas->'textObjects') <> 1
+     or jsonb_typeof(v_canvas->'panelLayers') <> 'array' then
+    raise exception 'Storyboard Canvas builder returned an invalid Canvas v1 document';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_story_storyboard_versions') is null
      or to_regclass('public.cloud_story_storyboard_adoptions') is null then
     raise exception 'Current schema Cloud storyboard tables missing';

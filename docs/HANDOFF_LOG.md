@@ -1479,6 +1479,43 @@ READY_FOR_REVIEW
 
 ---
 
+## 2026-07-30 Codex → 次担当AI（Release 5）
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-storyboard-canvas-materialization-v1`
+- Base: `codex/cloud-storyboard-generation-v1` (`cf48c4d`)
+- Draft PR: `#72`
+- Preview: `https://mangai-hub-staging-git-codex-cloud-st-40d428-team478as-projects.vercel.app`
+
+### 完了
+
+- Release 5「採用ネームのCanvas Project化」の仕様・実装計画を作成
+- 最新採用された一般向けネームだけを既存Cloud Creator構造へ変換
+- 全ページ、コマ、吹き出し、縦書き文字をCanvas schema v1へ展開
+- advisory lockと一意制約による冪等変換、所有者RLS、追跡recordを実装
+- Feature Flag、不正UUID拒否、内部エラー秘匿、preflightを実装
+- migration `202607300005`、rollback、canonical schema、schema fixture検査を追加
+- Hubテスト244件、build、lint、typecheck、migration静的検証に成功
+
+### 未完了
+
+- Preview DBへのmigration適用
+- 実データを使うCanvas変換・編集・保存E2E
+
+### 注意事項
+
+- Release 4 PR #71が未mergeのため、Release 5 PRのbaseはRelease 4 branchにする。
+- 画像生成、Asset作成、Cloud AI Queue登録、外部Provider呼出は含まない。
+- migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
+- Core quality、migration roundtrip、Windows build、VercelはすべてPASS。
+
+---
+
 ## 追記テンプレート
 
 ```md

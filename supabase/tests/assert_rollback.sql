@@ -2,6 +2,15 @@
 
 do $$
 begin
+  if to_regclass('public.cloud_story_storyboard_projects') is not null
+     or to_regprocedure(
+       'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)'
+     ) is not null
+     or to_regprocedure(
+       'public.materialize_cloud_storyboard_project(uuid)'
+     ) is not null then
+    raise exception 'Cloud storyboard Canvas materialization objects remain after rollback';
+  end if;
   if to_regclass('public.cloud_story_storyboard_adoptions') is not null
      or to_regclass('public.cloud_story_storyboard_versions') is not null then
     raise exception 'Cloud story storyboard tables remain after rollback';

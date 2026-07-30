@@ -154,6 +154,9 @@ for (const required of [
   "cloud_story_scenario_adoptions",
   "cloud_story_storyboard_versions",
   "cloud_story_storyboard_adoptions",
+  "cloud_story_storyboard_projects",
+  "build_cloud_storyboard_canvas",
+  "materialize_cloud_storyboard_project",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

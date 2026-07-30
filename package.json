@@ -31,6 +31,7 @@
     "cloud:release2:preflight": "node scripts/check-cloud-release2-preflight.mjs",
     "cloud:release3:preflight": "node scripts/check-cloud-release3-preflight.mjs",
     "cloud:release4:preflight": "node scripts/check-cloud-release4-preflight.mjs",
+    "cloud:release5:preflight": "node scripts/check-cloud-release5-preflight.mjs",
     "db:migrations:validate": "node scripts/validate-supabase-migrations.mjs",
     "db:migrations:checksums:update": "node scripts/update-supabase-migration-checksums.mjs --write",
     "db:staging:preflight": "node scripts/check-supabase-staging.mjs",

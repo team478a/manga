@@ -9,7 +9,9 @@ import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
 import { getCloudScenarioVersion, getLatestCloudScenarioAdoption } from "@/lib/cloud-scenario-server";
 import { cloudStoryboardFeatureEnabled } from "@/lib/cloud-storyboard";
 import { runCloudStoryboardAi } from "@/lib/cloud-storyboard-ai";
-import { adoptCloudStoryboard, createCloudStoryboardVersion, getCloudStoryboardVersion } from "@/lib/cloud-storyboard-server";
+import { adoptCloudStoryboard, createCloudStoryboardVersion, getCloudStoryboardVersion, getLatestCloudStoryboardAdoption } from "@/lib/cloud-storyboard-server";
+import { cloudStoryboardCanvasFeatureEnabled } from "@/lib/cloud-storyboard-materialization";
+import { materializeCloudStoryboard } from "@/lib/cloud-storyboard-materialization-server";
 import { enforceCloudStoryboardAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
 import { PermissionDeniedError, ResourceNotFoundError } from "@/lib/domain-errors";
 
@@ -73,4 +75,37 @@ export async function adoptCloudStoryboardAction(reportId: string, scenarioVersi
     redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(scenarioVersionId)}/storyboard/versions/${encodeURIComponent(storyboardId)}?error=${encodeURIComponent(safeDomainErrorMessage(error, "ネームを採用できませんでした。"))}`);
   }
   redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(scenarioVersionId)}/storyboard/versions/${encodeURIComponent(storyboardId)}?message=${encodeURIComponent("このネームを採用しました")}`);
+}
+
+export async function materializeCloudStoryboardAction(
+  reportId: string,
+  scenarioVersionId: string,
+  storyboardId: string,
+) {
+  let projectId = "";
+  try {
+    enabled();
+    if (!cloudStoryboardCanvasFeatureEnabled())
+      throw new PermissionDeniedError("Canvas下書き作成機能は現在停止中です。");
+    const { profile } = await requireProfile();
+    const scenario = await adoptedScenario(profile.id, reportId, scenarioVersionId);
+    const [version, adoption] = await Promise.all([
+      getCloudStoryboardVersion(profile.id, storyboardId),
+      getLatestCloudStoryboardAdoption(profile.id, scenario.id),
+    ]);
+    if (
+      version.scenario_version_id !== scenario.id ||
+      adoption?.storyboard_version_id !== version.id
+    )
+      throw new PermissionDeniedError("現在の採用ネームを選んでください。");
+    const result = await materializeCloudStoryboard(version.id);
+    projectId = result.project_id;
+  } catch (error) {
+    redirect(
+      `/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(scenarioVersionId)}/storyboard/versions/${encodeURIComponent(storyboardId)}?error=${encodeURIComponent(safeDomainErrorMessage(error, "Canvas下書きを作成できませんでした。"))}`,
+    );
+  }
+  redirect(
+    `/creator/${encodeURIComponent(projectId)}?message=${encodeURIComponent("採用ネームからCanvas下書きを作成しました")}`,
+  );
 }
