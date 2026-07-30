@@ -46,6 +46,7 @@
 
 - 生成・選択buttonのpending状態と二重送信防止
 - 企画未作成Empty State
+- 企画提案専用のloading、error、not found境界と内部情報を出さない案内
 - 390pxで評価項目を縦並びにし、AI生成文を折り返す構造
 - Release 2専用preflight（秘密値非表示）
 - 不正UUID、所有者外Run、selection snapshot、RLS契約の集中テスト
@@ -53,7 +54,7 @@
 
 ## 検証結果
 
-- 集中テスト: PASS（17/17、追加永続化テスト11/11）
+- Release 2集中テスト: PASS（15/15）
 - deps:check: PASS
 - lint: PASS
 - typecheck: PASS（Hub + Desktop）

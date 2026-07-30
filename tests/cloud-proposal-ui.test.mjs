@@ -5,13 +5,22 @@ import test from "node:test";
 const readSource = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("企画提案画面は生成中・空・失敗・成功状態を利用者へ示す", async () => {
-  const [handoff, button, comparison] = await Promise.all([
+  const [handoff, button, comparison, loading, error, notFound] = await Promise.all([
     readSource("../src/app/dashboard/research/[reportId]/proposal/page.tsx"),
     readSource(
       "../src/app/dashboard/research/[reportId]/proposal/proposal-submit-button.tsx",
     ),
     readSource(
       "../src/app/dashboard/research/[reportId]/proposal/runs/[runId]/page.tsx",
+    ),
+    readSource(
+      "../src/app/dashboard/research/[reportId]/proposal/loading.tsx",
+    ),
+    readSource(
+      "../src/app/dashboard/research/[reportId]/proposal/error.tsx",
+    ),
+    readSource(
+      "../src/app/dashboard/research/[reportId]/proposal/not-found.tsx",
     ),
   ]);
   assert.match(handoff, /企画はまだ作成されていません/);
@@ -20,6 +29,12 @@ test("企画提案画面は生成中・空・失敗・成功状態を利用者�
   assert.match(button, /企画を保存中/);
   assert.match(comparison, /role="status"/);
   assert.match(comparison, /シナリオ生成の準備ができました/);
+  assert.match(loading, /aria-busy="true"/);
+  assert.match(loading, /AI企画提案を読み込んでいます/);
+  assert.match(error, /role="alert"/);
+  assert.match(error, /内部情報は表示していません/);
+  assert.doesNotMatch(error, /\{error\.(?:message|stack|digest)\}/);
+  assert.match(notFound, /URLが不正、削除済み、または表示権限がない/);
 });
 
 test("企画比較画面は390pxで横幅を超える固定widthを持たない", async () => {

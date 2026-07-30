@@ -7,13 +7,22 @@
 | 項目 | 合格条件 | 状態 |
 | --- | --- | --- |
 | 企画AI契約 | 3案、一般向け限定、`store:false` | 自動テスト対象 |
-| UI状態 | loading、empty、error、success | 自動テスト対象 |
-| 二重送信 | 生成・選択中にbutton無効 | 自動テスト対象 |
-| 内部情報秘匿 | 出典・内部評価・APIキーを非表示 | 自動テスト対象 |
-| responsive構造 | 390px超の固定幅なし | 自動テスト対象 |
-| Feature Flag | 認証・DB処理前にfail closed | 自動テスト対象 |
-| 環境preflight | 秘密値を出力せず必須設定を確認 | 自動テスト対象 |
+| UI状態 | loading、empty、error、not found、success | PASS |
+| 二重送信 | 生成・選択中にbutton無効 | PASS |
+| 内部情報秘匿 | 出典・内部評価・APIキー、内部例外を非表示 | PASS |
+| responsive構造 | 390px超の固定幅なし | PASS |
+| Feature Flag | 認証・DB処理前にfail closed | PASS |
+| 環境preflight | 秘密値を出力せず必須設定を確認 | PASS |
 | migration | forward、rollback、reapply、canonical schema | GitHub Actions対象 |
+
+2026-07-30再検証:
+
+- Release 2集中テスト: 15/15 PASS
+- Hubテスト: 210/210 PASS
+- dependency境界、lint、Hub/Desktop typecheck、Research Evaluation: PASS
+- Supabase migration検査: 22/22 PASS
+- 企画提案配下に専用のloading／error／not found境界を追加
+- error／not foundはProvider、DB、所有者判定の内部情報を表示しない
 
 ## 実機受入れ
 
