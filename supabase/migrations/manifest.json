@@ -148,9 +148,9 @@
     {
       "id": "202607300005_cloud_storyboard_canvas_materialization",
       "description": "最新採用ネームを冪等にCloud Canvas Projectへ変換",
-      "forwardSha256": "09379b9460c3eb5e32df630392670bd42da74bb4360e18cfcd71bd05c43f61d6",
+      "forwardSha256": "d21f7970e08a399ca87202ab785399d5e9a2259f730f20f509ebba792179f0c0",
       "rollbackSha256": "0a768b5c1361a1a4afdd72daa0e901c0e54789f989526295bce04c71fa5755f8"
     }
   ],
-  "schemaSha256": "56611d599ff3c71bd1fb8a0dd587f44c86300bec6f21d20fcf04c62e10560820"
+  "schemaSha256": "e90aa7ddaf79afdb7d2b0ec98da15b791cd5473ab532a944ee72957898b2249b"
 }

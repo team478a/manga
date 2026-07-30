@@ -116,8 +116,10 @@ set search_path=public,pg_temp
 as $$
 declare
   v_profile_id uuid:=public.current_profile_id();
-  v_storyboard public.cloud_story_storyboard_versions%rowtype;
   v_existing public.cloud_story_storyboard_projects%rowtype;
+  v_storyboard_id uuid;
+  v_storyboard_scenario_id uuid;
+  v_storyboard_result jsonb;
   v_episode_id uuid;
   v_project_id uuid;
   v_page_id uuid;
@@ -140,8 +142,10 @@ begin
     return;
   end if;
 
-  select storyboard,report.input->>'contentClass'
-    into v_storyboard,v_content_class
+  select storyboard.id,storyboard.scenario_version_id,storyboard.result,
+    report.input->>'contentClass'
+    into v_storyboard_id,v_storyboard_scenario_id,v_storyboard_result,
+      v_content_class
   from public.cloud_story_storyboard_versions storyboard
   join public.cloud_story_scenario_versions scenario
     on scenario.id=storyboard.scenario_version_id
@@ -154,7 +158,7 @@ begin
   end if;
   if not exists(
     select 1 from public.cloud_story_storyboard_adoptions adoption
-    where adoption.storyboard_version_id=v_storyboard.id
+    where adoption.storyboard_version_id=v_storyboard_id
       and adoption.owner_profile_id=v_profile_id
       and not exists(
         select 1 from public.cloud_story_storyboard_adoptions newer
@@ -166,14 +170,14 @@ begin
   select created.project_id,created.episode_id,created.page_id
     into v_project_id,v_episode_id,v_page_id
   from public.create_cloud_project_with_first_page(
-    v_storyboard.result->>'title',
+    v_storyboard_result->>'title',
     '採用AIネームから作成した編集用Canvas下書きです。画像は未生成です。',
     '全年齢','rtl',1600,2400,300
   ) created;
   v_first_page_id:=v_page_id;
 
   for v_page in
-    select value from jsonb_array_elements(v_storyboard.result->'pages') value
+    select value from jsonb_array_elements(v_storyboard_result->'pages') value
     order by (value->>'pageNumber')::integer
   loop
     v_page_index:=v_page_index+1;
@@ -184,8 +188,8 @@ begin
       set canvas=public.build_cloud_storyboard_canvas(v_page_id,1600,2400,v_page)
       where page_id=v_page_id and revision=0;
   end loop;
-  if v_page_index<>jsonb_array_length(v_storyboard.result->'pages')
-     or v_page_index<>(v_storyboard.result->>'pageCount')::integer then
+  if v_page_index<>jsonb_array_length(v_storyboard_result->'pages')
+     or v_page_index<>(v_storyboard_result->>'pageCount')::integer then
     raise exception 'storyboard_page_count_mismatch';
   end if;
 
@@ -195,12 +199,12 @@ begin
   insert into public.cloud_project_versions(project_id,revision,manifest,created_by_profile_id)
   values(v_project_id,v_revision,jsonb_build_object(
     'event','storyboard_materialized',
-    'storyboardVersionId',v_storyboard.id,
+    'storyboardVersionId',v_storyboard_id,
     'pageCount',v_page_index
   ),v_profile_id);
   insert into public.cloud_story_storyboard_projects(
     owner_profile_id,storyboard_version_id,project_id,first_page_id
-  ) values(v_profile_id,v_storyboard.id,v_project_id,v_first_page_id);
+  ) values(v_profile_id,v_storyboard_id,v_project_id,v_first_page_id);
 
   project_id:=v_project_id;
   first_page_id:=v_first_page_id;
