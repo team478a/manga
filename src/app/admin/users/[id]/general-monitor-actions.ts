@@ -6,6 +6,10 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { cloudGeneralMonitorBetaEnabled } from "@/lib/cloud-general-monitor";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  cloudGeneralMonitorInviteEmailConfigured,
+  sendCloudGeneralMonitorInviteEmail,
+} from "@/lib/cloud-general-monitor-email";
 
 const activationSchema = z.object({
   profileId: z.string().uuid(),
@@ -25,6 +29,19 @@ const value = (formData: FormData, name: string) => {
   const entry = formData.get(name);
   return typeof entry === "string" ? entry : "";
 };
+
+async function getInviteRecipient(profileId: string) {
+  const admin = createAdminClient();
+  const { data: profile, error } = await admin
+    .from("profiles")
+    .select("user_id,display_name")
+    .eq("id", profileId)
+    .maybeSingle<{ user_id: string; display_name: string }>();
+  if (error || !profile) return null;
+  const { data } = await admin.auth.admin.getUserById(profile.user_id);
+  if (!data.user?.email) return null;
+  return { email: data.user.email, name: profile.display_name || "" };
+}
 
 export async function activateCloudGeneralMonitorAction(
   profileId: string,
@@ -55,9 +72,56 @@ export async function activateCloudGeneralMonitorAction(
   );
   if (error)
     redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("一般向けモニターを開始できませんでした")}`);
+  const recipient = await getInviteRecipient(parsed.data.profileId);
+  if (!recipient)
+    redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("招待登録は完了しましたが、送信先メールアドレスを取得できませんでした")}`);
+  if (!cloudGeneralMonitorInviteEmailConfigured())
+    redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("招待登録は完了しましたが、メール送信設定が未完了です")}`);
+  try {
+    await sendCloudGeneralMonitorInviteEmail({
+      recipientEmail: recipient.email,
+      recipientName: recipient.name,
+      expiresAt: new Date(parsed.data.expiresAt).toISOString(),
+      aiRequestLimit: parsed.data.aiRequestLimit,
+    });
+  } catch {
+    redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("招待登録は完了しましたが、メールを送信できませんでした。設定を確認して再送してください")}`);
+  }
   revalidatePath(`/admin/users/${parsed.data.profileId}`);
   revalidatePath("/admin/general-monitors");
-  redirect(`/admin/users/${parsed.data.profileId}?message=${encodeURIComponent("一般向けモニターへ招待しました")}`);
+  redirect(`/admin/users/${parsed.data.profileId}?message=${encodeURIComponent("一般向けモニターへ招待し、案内メールを送信しました")}`);
+}
+
+export async function resendCloudGeneralMonitorInviteAction(profileId: string) {
+  await requireAdmin();
+  if (!cloudGeneralMonitorBetaEnabled())
+    redirect(`/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("一般向けモニターは現在停止中です")}`);
+  const parsed = z.string().uuid().safeParse(profileId);
+  if (!parsed.success)
+    redirect("/admin/users?error=ユーザー情報を確認してください");
+  const admin = createAdminClient();
+  const [{ data: enrollment }, recipient] = await Promise.all([
+    admin.from("cloud_general_monitor_enrollments")
+      .select("status,expires_at,ai_request_limit")
+      .eq("profile_id", parsed.data)
+      .maybeSingle<{ status: string; expires_at: string; ai_request_limit: number }>(),
+    getInviteRecipient(parsed.data),
+  ]);
+  if (!enrollment || enrollment.status !== "active" || Date.parse(enrollment.expires_at) <= Date.now())
+    redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("有効なモニター招待がありません")}`);
+  if (!recipient || !cloudGeneralMonitorInviteEmailConfigured())
+    redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("送信先またはメール送信設定を確認してください")}`);
+  try {
+    await sendCloudGeneralMonitorInviteEmail({
+      recipientEmail: recipient.email,
+      recipientName: recipient.name,
+      expiresAt: enrollment.expires_at,
+      aiRequestLimit: enrollment.ai_request_limit,
+    });
+  } catch {
+    redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("招待メールを送信できませんでした")}`);
+  }
+  redirect(`/admin/users/${parsed.data}?message=${encodeURIComponent("招待メールを再送しました")}`);
 }
 
 export async function stopCloudGeneralMonitorAction(

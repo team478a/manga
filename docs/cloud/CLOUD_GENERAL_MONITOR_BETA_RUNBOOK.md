@@ -10,6 +10,13 @@
 4. `CLOUD_ADULT_RESEARCH_ENABLED=false`、`CLOUD_ADULT_PLANNING_ENABLED=false` を確認する。
 5. `npm run cloud:general-monitor:preflight` を実行する。出力に値は表示されない。
 
+招待メールには次のServer環境変数も必要。
+
+- `MAILERSEND_API_TOKEN`
+- `MONITOR_INVITE_FROM_EMAIL`（MailerSendで認証済みの送信元）
+- `MONITOR_INVITE_FROM_NAME`
+- `MONITOR_INVITE_SITE_URL`（対象PreviewのHTTPS origin）
+
 順序は必ず migration → Feature Flag → 招待とする。Feature Flagが停止中は、
 管理画面もモニター用テーブルを参照せず、招待・停止操作を受け付けない。
 
@@ -18,8 +25,9 @@
 1. `/admin/users` から対象ユーザーを選ぶ。
 2. 一般向けモニター欄でグループ、AI上限、期限を入力する。
 3. 「モニターへ招待」を押す。
-4. 登録後に表示される「招待メール文面を開く」から、本人へ案内する。
-5. 本人は初回ログイン後に利用条件を確認してモニターを開始する。
+4. 招待登録が成功すると、登録済みメールアドレスへ自動送信される。
+5. 送信失敗時は設定を確認し、「招待メールを再送」を押す。
+6. 本人は初回ログイン後に利用条件を確認してモニターを開始する。
 
 ## 3. 確認
 
@@ -36,4 +44,4 @@
 `CLOUD_GENERAL_MONITOR_BETA_ENABLED=false` に変更して再デプロイする。
 
 Stripe設定、販売設定、成人向け設定は変更しない。
-自動メール送信は未実装。現在は管理者のメールアプリで招待文面を開く。
+MailerSendの送信履歴でも受付状態を確認する。API tokenやProvider応答本文を問い合わせ文へ貼らない。

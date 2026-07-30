@@ -9,6 +9,7 @@ import { setCloudAdultPlanningGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
 import {
   activateCloudGeneralMonitorAction,
+  resendCloudGeneralMonitorInviteAction,
   stopCloudGeneralMonitorAction,
 } from "./general-monitor-actions";
 import {
@@ -155,13 +156,11 @@ export default async function AdminUserDetailPage({
                 <div><dt className="text-sm text-stone-500">初回案内</dt><dd className="font-bold">{generalMonitor.onboarding_completed_at ? "確認済み" : "未確認"}</dd></div>
               </dl>
             ) : null}
-            {generalMonitor && email !== "未設定" && email !== "未取得" ? (
-              <a
-                className="button-secondary mt-4"
-                href={`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent("MANGAI 一般向けモニターのご案内")}&body=${encodeURIComponent(`MANGAI一般向けモニターへご招待しました。\n\n登録済みのメールアドレスでログインし、ダッシュボードの「初回案内」を確認してください。\n${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/dashboard/monitor/welcome\n\n利用期限: ${new Date(generalMonitor.expires_at).toLocaleDateString("ja-JP")}\nAI利用上限: ${generalMonitor.ai_request_limit}回\n\nパスワードやAPIキーを返信しないでください。`)}`}
-              >
-                招待メール文面を開く
-              </a>
+            {generalMonitor?.status === "active" &&
+            email !== "未設定" && email !== "未取得" ? (
+              <form action={resendCloudGeneralMonitorInviteAction.bind(null, user.id)} className="mt-4">
+                <button className="button-secondary" type="submit">招待メールを再送</button>
+              </form>
             ) : null}
             <form action={activateCloudGeneralMonitorAction.bind(null, user.id)} className="mt-5 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
@@ -179,7 +178,7 @@ export default async function AdminUserDetailPage({
                 <textarea className="field min-h-20" id="generalMonitorNote" maxLength={500} name="adminNote" />
               </div>
               <button className="button bg-violet-700 hover:bg-violet-800" type="submit">
-                {generalMonitor ? "招待条件を更新" : "モニターへ招待"}
+                {generalMonitor ? "招待条件を更新してメール送信" : "招待してメール送信"}
               </button>
             </form>
             {generalMonitor ? (
