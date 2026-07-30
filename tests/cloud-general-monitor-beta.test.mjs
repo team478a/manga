@@ -19,6 +19,21 @@ test("管理画面もFeature Flag停止中はDB参照と招待操作を閉じる
   assert.match(actions, /if \(!cloudGeneralMonitorBetaEnabled\(\)\)/);
 });
 
+test("モニター向けガイドは専門知識不要の制作手順と安全案内を提供する", async () => {
+  const [guidePage, guideDocument, dashboard] = await Promise.all([
+    readFile(new URL("../src/app/dashboard/monitor/guide/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../docs/cloud/CLOUD_GENERAL_MONITOR_USER_GUIDE.md", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/dashboard/page.tsx", import.meta.url), "utf8"),
+  ]);
+  for (const value of ["AI市場分析", "AI企画提案", "シナリオ生成", "AIネーム", "Canvas・コマ画像"]) {
+    assert.match(guidePage, new RegExp(value.replace("・", "・")));
+  }
+  assert.match(guideDocument, /出典URLや市場データを利用者が入力する必要はありません/);
+  assert.match(guideDocument, /パスワード、APIキー、個人情報/);
+  assert.match(dashboard, /dashboard\/monitor\/guide/);
+  assert.doesNotMatch(dashboard, /出典URL・取得日時・確認事実を登録/);
+});
+
 test("migrationは本人限定・期限・AI上限・管理者停止を強制する", async () => {
   const sql = await readFile(new URL("../supabase/migrations/202607300006_cloud_general_monitor_beta.sql", import.meta.url), "utf8");
   assert.match(sql, /owner_profile_id=public\.current_profile_id\(\)/);

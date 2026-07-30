@@ -30,8 +30,15 @@ export default async function GeneralMonitorPage({
 
   return (
     <main className="page max-w-3xl">
-      <p className="font-semibold text-violet-700">一般向け・招待制</p>
-      <h1 className="mt-1 text-3xl font-bold">モニター状況とご意見</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-semibold text-violet-700">一般向け・招待制</p>
+          <h1 className="mt-1 text-3xl font-bold">モニター状況とご意見</h1>
+        </div>
+        <Link className="button-secondary" href="/dashboard/monitor/guide">
+          使い方を見る
+        </Link>
+      </div>
       {!enrollment ? (
         <section className="panel mt-6">
           <h2 className="text-xl font-bold">招待されたアカウントでログインしてください</h2>
@@ -98,7 +105,10 @@ export default async function GeneralMonitorPage({
           </section>
         </>
       )}
-      <Link className="button-secondary mt-6" href="/dashboard">ダッシュボードへ戻る</Link>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        <Link className="button-secondary" href="/dashboard/monitor/guide">使い方を見る</Link>
+        <Link className="button-secondary" href="/dashboard">ダッシュボードへ戻る</Link>
+      </div>
     </main>
   );
 }

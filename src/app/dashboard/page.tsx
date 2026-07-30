@@ -59,7 +59,10 @@ export default async function DashboardPage() {
             {monitor ? `AI利用数 ${monitor.ai_requests_used} / ${monitor.ai_request_limit}` : "招待状況を確認できます。"}
           </p>
         </div>
-        <Link className="button-secondary" href="/dashboard/monitor">状況・ご意見</Link>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link className="button-secondary" href="/dashboard/monitor/guide">使い方</Link>
+          <Link className="button-secondary" href="/dashboard/monitor">状況・ご意見</Link>
+        </div>
       </section>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
@@ -88,10 +91,10 @@ export default async function DashboardPage() {
           <h2 className="text-xl font-bold">Release 1 完了条件</h2>
           <ul className="mt-4 space-y-3 text-sm text-stone-700">
             {[
-              "制作条件を入力",
-              "出典URL・取得日時・確認事実を登録",
+              "ジャンルとテーマを選択",
+              "AIが売れやすい方向を分析",
               "分析結果を保存",
-              "履歴から再表示",
+              "AI企画提案へ引き継ぐ",
             ].map((item) => (
               <li className="flex items-center gap-2" key={item}>
                 <CheckCircle2 className="h-4 w-4 text-violet-600" />
