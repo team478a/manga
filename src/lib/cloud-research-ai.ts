@@ -8,13 +8,18 @@ import {
   type CloudResearchResult,
   evaluateCloudResearchQuality,
 } from "./cloud-research.ts";
-import { getCloudResearchAiRuntimeConfig } from "./cloud-research-ai-settings.ts";
+import {
+  providerSpecificRequestFields,
+  resolveCloudTextProviderRuntime,
+  type CloudTextProviderRuntimeOverride,
+} from "./cloud-text-provider-runtime.ts";
 import {
   ContentRejectedError,
   ProviderTimeoutError,
   ProviderUnavailableError,
   RateLimitedError,
 } from "./domain-errors.ts";
+import { reviewAdultGenerationPrompt } from "@mangai/ai-core";
 
 const findingKeys = [
   ["winning_direction", "今、狙う作品"],
@@ -126,22 +131,28 @@ function toEvidence(citations: Citation[], retrievedAt: string) {
   );
 }
 
-export async function runCloudResearchAiAnalysis(input: {
+async function runResearchAiAnalysis(input: {
   profileId: string;
   request: CloudResearchRequest;
+  contentClass: "general" | "adult";
   fetchImplementation?: typeof fetch;
   now?: string;
-  runtimeConfig?: Awaited<ReturnType<typeof getCloudResearchAiRuntimeConfig>>;
+  runtimeConfig?: CloudTextProviderRuntimeOverride;
 }): Promise<{ input: z.infer<typeof cloudResearchInputSchema>; result: CloudResearchResult }> {
-  if (input.request.contentClass !== "general")
+  if (input.request.contentClass !== input.contentClass)
+    throw new ContentRejectedError("市場分析の区分を確認してください。");
+  if (
+    input.contentClass === "adult" &&
+    !reviewAdultGenerationPrompt(JSON.stringify(input.request)).allowed
+  )
     throw new ContentRejectedError(
-      "成人向け内容は外部AIへ送信しません。現在は一般向けAI市場分析のみ利用できます。",
+      "安全条件を満たさないため成人向け市場分析を実行できません。",
     );
   const runtime =
-    input.runtimeConfig ?? (await getCloudResearchAiRuntimeConfig());
+    await resolveCloudTextProviderRuntime(input.contentClass, input.runtimeConfig);
   const fetchImplementation = input.fetchImplementation ?? fetch;
   const generatedAt = input.now ?? new Date().toISOString();
-  const response = await fetchImplementation("https://api.openai.com/v1/responses", {
+  const response = await fetchImplementation(runtime.endpoint, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${runtime.apiKey}`,
@@ -150,9 +161,12 @@ export async function runCloudResearchAiAnalysis(input: {
     body: JSON.stringify({
       model: runtime.model,
       store: false,
-      safety_identifier: createHash("sha256")
-        .update(`mangai-research:${input.profileId}`)
-        .digest("hex"),
+      ...providerSpecificRequestFields(
+        runtime,
+        createHash("sha256")
+          .update(`mangai-research:${input.profileId}`)
+          .digest("hex"),
+      ),
       reasoning: { effort: "medium" },
       tools: [{ type: "web_search" }],
       tool_choice: "auto",
@@ -161,7 +175,9 @@ export async function runCloudResearchAiAnalysis(input: {
           role: "system",
           content:
             [
-              "あなたは日本の電子漫画市場に詳しい商品企画責任者です。",
+              input.contentClass === "adult"
+                ? "あなたは日本の成人向け電子漫画市場に詳しい商品企画責任者です。"
+                : "あなたは日本の電子漫画市場に詳しい商品企画責任者です。",
               "利用者が知りたい最重要事項は「今、どんな漫画なら買われる可能性が高いか」です。",
               "Web検索を使い、公式ストアの特集・ランキング・カテゴリ情報、出版社や電子書店の公開情報、信頼できる業界情報から、現在の需要、競合、購入動機、価格、販売先を調べてください。",
               "直近12か月の情報を優先し、需要を示す情報と競合を示す情報を、異なる2ドメイン以上で確認してください。",
@@ -173,7 +189,9 @@ export async function runCloudResearchAiAnalysis(input: {
               "利用者が指定した条件より売れやすい代替案がある場合は、理由とともに提案してください。",
               "曖昧な一般論や「検討してください」だけで終わらず、次に何を作るか判断できる日本語で簡潔に書いてください。",
               "売上を保証せず、出典で確認できない市場規模、販売数、成長率、順位などの数値は生成しないでください。",
-              "事実とAIの提案を混同せず、一般向け作品だけを扱ってください。",
+              input.contentClass === "adult"
+                ? "事実とAIの提案を混同せず、架空かつ明示的に18歳以上の成人による合意のある非搾取的な作品だけを扱ってください。未成年・年齢不詳・実在人物・非同意・搾取的内容は禁止です。露骨な描写ではなく市場・商品設計を分析してください。"
+                : "事実とAIの提案を混同せず、一般向け作品だけを扱ってください。",
             ].join("\n"),
         },
         {
@@ -244,14 +262,36 @@ export async function runCloudResearchAiAnalysis(input: {
     confidence: "medium",
     limitations: [],
   }));
+  if (
+    input.contentClass === "adult" &&
+    !reviewAdultGenerationPrompt(JSON.stringify(findings)).allowed
+  )
+    throw new ContentRejectedError(
+      "安全条件を満たさない分析結果が含まれたため保存しませんでした。",
+    );
   return {
     input: completedInput,
     result: {
-      engineVersion: "openai-web-research-v1",
+      engineVersion:
+        runtime.provider === "xai"
+          ? "xai-adult-web-research-v1"
+          : "openai-web-research-v1",
       generatedAt,
       containsGeneratedMarketNumbers: false,
       findings,
       quality: evaluateCloudResearchQuality(completedInput, generatedAt),
     },
   };
+}
+
+export async function runCloudResearchAiAnalysis(
+  input: Omit<Parameters<typeof runResearchAiAnalysis>[0], "contentClass">,
+) {
+  return runResearchAiAnalysis({ ...input, contentClass: "general" });
+}
+
+export async function runCloudAdultResearchAiAnalysis(
+  input: Omit<Parameters<typeof runResearchAiAnalysis>[0], "contentClass">,
+) {
+  return runResearchAiAnalysis({ ...input, contentClass: "adult" });
 }

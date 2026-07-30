@@ -11,7 +11,7 @@ export type CloudStoryScenarioVersion = {
   parent_version_id: string | null;
   revision_instruction: string | null;
   result: CloudStoryScenarioResult;
-  engine_version: "openai-scenario-v1";
+  engine_version: "openai-scenario-v1" | "xai-adult-scenario-v1";
   completed_at: string;
   created_at: string;
 };

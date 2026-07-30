@@ -33,7 +33,7 @@ export const cloudStoryProposalCandidateSchema = z.object({
 });
 
 export const cloudStoryProposalResultSchema = z.object({
-  engineVersion: z.literal("openai-proposal-v1"),
+  engineVersion: z.enum(["openai-proposal-v1", "xai-adult-proposal-v1"]),
   generatedAt: z.string().datetime(),
   model: z.string().min(1).max(100),
   classification: z.literal("ai_inference"),

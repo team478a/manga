@@ -3,7 +3,11 @@ import type { CloudResearchReport } from "./cloud-research-server.ts";
 import type { CloudStoryScenarioVersion } from "./cloud-scenario-persistence.ts";
 import type { CloudStoryboardVersion } from "./cloud-storyboard-persistence.ts";
 import { assertStoryboardPageCount, cloudStoryboardResultSchema, type CloudStoryboardResult } from "./cloud-storyboard.ts";
-import { getCloudResearchAiRuntimeConfig } from "./cloud-research-ai-settings.ts";
+import {
+  providerSpecificRequestFields,
+  resolveCloudTextProviderRuntime,
+  type CloudTextProviderRuntimeOverride,
+} from "./cloud-text-provider-runtime.ts";
 import { ContentRejectedError, ProviderTimeoutError, ProviderUnavailableError, RateLimitedError, ValidationError } from "./domain-errors.ts";
 import { reviewAdultGenerationPrompt } from "@mangai/ai-core";
 
@@ -87,7 +91,7 @@ async function runStoryboardAi(input: {
   contentClass: "general" | "adult";
   parentVersion?: CloudStoryboardVersion | null; revisionInstruction?: string | null;
   fetchImplementation?: typeof fetch; now?: string;
-  runtimeConfig?: Awaited<ReturnType<typeof getCloudResearchAiRuntimeConfig>>;
+  runtimeConfig?: CloudTextProviderRuntimeOverride;
 }): Promise<CloudStoryboardResult> {
   if (input.report.input.contentClass !== input.contentClass ||
       input.scenario.content_class !== input.contentClass)
@@ -110,14 +114,17 @@ async function runStoryboardAi(input: {
   let pageCount: number;
   try { pageCount = assertStoryboardPageCount(input.scenario.result.pageCount); }
   catch { throw new ValidationError("ネーム生成v1は8〜48ページのシナリオに対応しています。"); }
-  const runtime = input.runtimeConfig ?? await getCloudResearchAiRuntimeConfig();
+  const runtime = await resolveCloudTextProviderRuntime(input.contentClass, input.runtimeConfig);
   const generatedAt = input.now ?? new Date().toISOString();
-  const response = await (input.fetchImplementation ?? fetch)("https://api.openai.com/v1/responses", {
+  const response = await (input.fetchImplementation ?? fetch)(runtime.endpoint, {
     method: "POST",
     headers: { Authorization: `Bearer ${runtime.apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: runtime.model, store: false, max_output_tokens: MAX_OUTPUT_TOKENS,
-      safety_identifier: createHash("sha256").update(`mangai-storyboard:${input.profileId}`).digest("hex"),
+      ...providerSpecificRequestFields(
+        runtime,
+        createHash("sha256").update(`mangai-storyboard:${input.profileId}`).digest("hex"),
+      ),
       reasoning: { effort: "medium" },
       input: [
         { role: "system", content: [
@@ -161,7 +168,8 @@ async function runStoryboardAi(input: {
     parsed = JSON.parse(outputText(JSON.parse(responseText)));
   } catch { throw new ProviderUnavailableError("ネーム結果を確認できませんでした。もう一度お試しください。"); }
   const result = cloudStoryboardResultSchema.safeParse({
-    engineVersion: "openai-storyboard-v1", generatedAt, model: runtime.model,
+    engineVersion: runtime.provider === "xai" ? "xai-adult-storyboard-v1" : "openai-storyboard-v1",
+    generatedAt, model: runtime.model,
     classification: "ai_inference", containsGeneratedMarketNumbers: false, ...(parsed as object),
   });
   if (!result.success || result.data.pageCount !== pageCount)

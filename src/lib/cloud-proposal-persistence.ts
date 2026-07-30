@@ -13,7 +13,7 @@ export type CloudStoryProposalRun = {
   content_class: "general" | "adult";
   status: "completed";
   result: CloudStoryProposalResult;
-  engine_version: "openai-proposal-v1";
+  engine_version: "openai-proposal-v1" | "xai-adult-proposal-v1";
   completed_at: string;
   created_at: string;
 };

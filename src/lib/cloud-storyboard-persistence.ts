@@ -10,7 +10,7 @@ export type CloudStoryboardVersion = {
   revision_instruction: string | null;
   content_class: "general" | "adult";
   result: CloudStoryboardResult;
-  engine_version: "openai-storyboard-v1";
+  engine_version: "openai-storyboard-v1" | "xai-adult-storyboard-v1";
   completed_at: string;
   created_at: string;
 };

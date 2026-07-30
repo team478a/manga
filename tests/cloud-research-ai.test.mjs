@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { runCloudResearchAiAnalysis } from "../src/lib/cloud-research-ai.ts";
+import {
+  runCloudAdultResearchAiAnalysis,
+  runCloudResearchAiAnalysis,
+} from "../src/lib/cloud-research-ai.ts";
 
 const request = {
   genre: "ファンタジー",
@@ -151,8 +154,48 @@ test("成人向け入力はProvider設定を読む前に拒否する", async () 
       request: { ...request, contentClass: "adult" },
       runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
     }),
-    /外部AIへ送信しません/,
+    /市場分析の区分を確認/,
   );
+});
+
+test("許可済み成人向け市場分析はxAI専用endpointを使い安全審査後に返す", async () => {
+  let endpoint;
+  let requestBody;
+  const analysis = await runCloudAdultResearchAiAnalysis({
+    profileId: "46f3ad2e-3b9a-4aef-94ee-188978be9cf0",
+    request: {
+      ...request,
+      contentClass: "adult",
+      audience: "30代以上の成人",
+      theme: "架空の18歳以上の成人同士による合意のある恋愛",
+    },
+    fetchImplementation: async (url, init) => {
+      endpoint = url;
+      requestBody = JSON.parse(init.body);
+      return new Response(JSON.stringify({
+        output: [{
+          type: "message",
+          content: [{
+            type: "output_text",
+            text: JSON.stringify(output),
+            annotations: [
+              { type: "url_citation", url: "https://example.com/adult-store", title: "公式ストア" },
+              { type: "url_citation", url: "https://example.org/adult-report", title: "公開調査" },
+            ],
+          }],
+        }],
+      }));
+    },
+    runtimeConfig: {
+      apiKey: "xai-test-000000000000000000",
+      model: "grok-4.5",
+    },
+    now: "2026-07-31T00:00:00.000Z",
+  });
+  assert.equal(endpoint, "https://api.x.ai/v1/responses");
+  assert.equal(requestBody.safety_identifier, undefined);
+  assert.match(requestBody.input[0].content, /未成年.*禁止/);
+  assert.equal(analysis.result.engineVersion, "xai-adult-web-research-v1");
 });
 
 test("引用がないProvider応答は保存せず安全に失敗する", async () => {

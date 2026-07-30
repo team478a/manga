@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（成人向けGrok Provider v1、2026-07-31）
+
+- Branch: `codex/cloud-adult-grok-provider-v1`
+- Base: `codex/cloud-adult-monitor-beta-v1` (`90c4ad2`)
+- 目的: 許可済み成人向けテキスト工程をxAI/Grokへ分離する
+- 状態: 実装・検証中
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_ADULT_GROK_PROVIDER_PLAN.md`、`docs/cloud/CLOUD_ADULT_GROK_PROVIDER_RUNBOOK.md`
+
+一般向けOpenAIを変更しない。成人向け画像生成、migration適用、Feature Flag変更、有料API実行、本番公開、既存PR mergeは責任者承認まで行わない。
+
+---
+
 ## 0. 現在の優先タスク（Cloud成人向け作品管理 v1、2026-07-30）
 
 - Branch: `codex/cloud-adult-work-management-v1`

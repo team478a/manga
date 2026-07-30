@@ -42,25 +42,22 @@ test("管理画面はAPIキーを再表示せず設定状態だけを表示す�
   assert.doesNotMatch(action, /console\.(?:log|error)/);
 });
 
-test("一般向けAI市場分析はキーをClientへ渡さず成人向けをProvider前に拒否する", async () => {
+test("一般向けAI市場分析はキーをClientへ渡さず区分不一致をProvider前に拒否する", async () => {
   const runtime = await readSource("../src/lib/cloud-research-ai.ts");
-  const functionBody = runtime.slice(
-    runtime.indexOf("export async function runCloudResearchAiAnalysis"),
-  );
-  assert.match(runtime, /input\.request\.contentClass !== "general"/);
+  assert.match(runtime, /input\.request\.contentClass !== input\.contentClass/);
   assert.ok(
-    functionBody.indexOf('input.request.contentClass !== "general"') <
-      functionBody.indexOf("await getCloudResearchAiRuntimeConfig"),
+    runtime.indexOf("input.request.contentClass !== input.contentClass") <
+      runtime.indexOf("await resolveCloudTextProviderRuntime"),
   );
   assert.match(runtime, /Authorization: `Bearer \$\{runtime\.apiKey\}`/);
   assert.match(runtime, /store: false/);
   assert.doesNotMatch(runtime, /console\.(?:log|error)/);
 });
 
-test("保存Actionは利用者rate limitの後にOpenAIへ接続する", async () => {
+test("保存Actionは利用者rate limitの後に区分別Providerへ接続する", async () => {
   const action = await readSource("../src/app/dashboard/research/actions.ts");
   assert.ok(
     action.indexOf("enforceCloudResearchAiAnalysisRateLimit(profile.id)") <
-      action.indexOf("runCloudResearchAiAnalysis({"),
+      action.indexOf("await analyze({"),
   );
 });
