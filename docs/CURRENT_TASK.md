@@ -7,8 +7,8 @@
 - リポジトリ: `team478a/manga`
 - Base: `codex/cloud-storyboard-generation-v1` (`cf48c4d`)
 - Branch: `codex/cloud-storyboard-canvas-materialization-v1`
-- Draft PR: 作成予定
-- Vercel Preview: 作成予定
+- Draft PR: [#72](https://github.com/team478a/manga/pull/72)
+- Vercel Preview: [Release 5 Preview](https://mangai-hub-staging-git-codex-cloud-st-40d428-team478as-projects.vercel.app)
 - 仕様: [`docs/cloud/CLOUD_STORYBOARD_CANVAS_MATERIALIZATION_V1.md`](cloud/CLOUD_STORYBOARD_CANVAS_MATERIALIZATION_V1.md)
 - 計画: [`docs/cloud/CLOUD_RELEASE5_IMPLEMENTATION_PLAN.md`](cloud/CLOUD_RELEASE5_IMPLEMENTATION_PLAN.md)
 
@@ -47,7 +47,9 @@ Release 4で採用した一般向けAIネームを、既存Cloud Creatorで編�
 - db:migrations:validate: PASS（25/25）
 - build: PASS
 - git diff --check: PASS
-- migration roundtrip: ローカルDocker未検出、GitHub CIで確認予定
+- migration roundtrip: PASS（GitHub CI）
+- Windows build: PASS（GitHub CI）
+- Vercel Preview: READY
 - 実DB変換E2E: 未実施（Preview migrationを適用しない停止条件）
 
 ## 責任者が後で行うこと

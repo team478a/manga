@@ -1489,8 +1489,8 @@ READY_FOR_REVIEW
 
 - Branch: `codex/cloud-storyboard-canvas-materialization-v1`
 - Base: `codex/cloud-storyboard-generation-v1` (`cf48c4d`)
-- Draft PR: 作成予定
-- Preview: 作成予定
+- Draft PR: `#72`
+- Preview: `https://mangai-hub-staging-git-codex-cloud-st-40d428-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -1506,13 +1506,13 @@ READY_FOR_REVIEW
 
 - Preview DBへのmigration適用
 - 実データを使うCanvas変換・編集・保存E2E
-- ローカルDocker未検出のためmigration roundtripはGitHub CIで確認
 
 ### 注意事項
 
 - Release 4 PR #71が未mergeのため、Release 5 PRのbaseはRelease 4 branchにする。
 - 画像生成、Asset作成、Cloud AI Queue登録、外部Provider呼出は含まない。
 - migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
+- Core quality、migration roundtrip、Windows build、VercelはすべてPASS。
 
 ---
 
