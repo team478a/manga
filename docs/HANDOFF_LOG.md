@@ -14,6 +14,8 @@ READY_FOR_REVIEW
 
 - Branch: `codex/cloud-monitor-guide-sync-v1`
 - Base: `feature/manga-canvas-mvp` (`ee6e2ca`、PR #92 merge後)
+- Draft PR: [#93](https://github.com/team478a/manga/pull/93)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-mo-eaf18e-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -23,10 +25,11 @@ READY_FOR_REVIEW
 - Cloud共通サイドバーへ常設「使い方」リンクを追加
 - スタッフ向け運用マニュアルの確認範囲と完走条件を更新
 - 集中テスト5/5、deps:check、lint、Hub typecheck、Hub test 279/279、production build、git diff checkに成功
+- 実装commit `25aaa92`のCore quality、Migration roundtrip、Windows build、Vercelに成功
 
 ### 未完了
 
-- push、Draft PR、CI、Vercel Preview、責任者画面確認
+- 責任者によるPreview画面確認・承認・マージ
 
 ### 変更ファイル
 

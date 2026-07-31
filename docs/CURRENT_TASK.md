@@ -16,7 +16,10 @@
 - 変更しない範囲: DB、migration、認証、AI生成・保存ロジック、Feature Flag、成人向け境界、Desktop
 - 検証: deps:check、lint、Hub typecheck、集中テスト5/5、Hub test 279/279、production build、git diff check成功
 - 注記: `npm ci`の既存依存監査でhigh severity 11件。今回の表示・文書変更とは分離して扱う
-- 未実施: Draft PR、CI、Vercel Preview、責任者画面確認
+- Draft PR: [#93](https://github.com/team478a/manga/pull/93)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-mo-eaf18e-team478as-projects.vercel.app`
+- CI: 実装commit `25aaa92`でCore quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 責任者によるPreview画面確認・承認・マージ
 
 ## 2026-07-31 一般向け制作工程の利用入口修正
 
