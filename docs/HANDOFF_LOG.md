@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-panel-inpainting-v1`
 - Base: `agent/manga-panel-revision-v1`（Draft PR #97）
+- Draft PR: [#98](https://github.com/team478a/manga/pull/98)
+- Preview: `https://mangai-hub-staging-jnew2urfq-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -34,7 +36,8 @@ IMPLEMENTED_AWAITING_REVIEW
 - Hub: 329/329、Canvas: 26/26、AI: 46/46、Desktop: 182/182
 - migration validate: 34/34
 - production build、git diff --check: PASS
-- migration roundtripはDraft PRのPostgreSQL CIで確認する。
+- migration roundtripはDraft PRのPostgreSQL CIで成功。
+- GitHub Core quality、Migration roundtrip、Windows build、Vercel: PASS
 
 ### 詳細
 

@@ -4,12 +4,15 @@
 
 - Branch: `agent/manga-panel-inpainting-v1`
 - Base: `agent/manga-panel-revision-v1`（Draft PR #97）
+- Draft PR: [#98](https://github.com/team478a/manga/pull/98)
+- Preview: `https://mangai-hub-staging-jnew2urfq-team478as-projects.vercel.app`
 - 目的: 採用画像の利用者が塗った範囲だけを修正候補として生成する
 - 実装: タッチ対応マスク、専用inpainting operation、BFL Fill、private Asset再検証、correction layer採用
 - Feature Flag: `CLOUD_PANEL_INPAINTING_ENABLED`。未設定時はUI・サーバー・Provider registryで停止
 - migration: `202608010002_cloud_panel_inpainting.sql`
 - 詳細: `docs/cloud/MANGA_PANEL_INPAINTING_V1.md`
 - 注意: 一般向けCloudのみ。Outpainting、自動マスク、成人向け、Desktopは対象外
+- 状態: ローカル全品質ゲート、GitHub全CI、Vercel成功。責任者確認待ち
 - 未実施: staging migration、実Provider有料生成、実ブラウザ確認、責任者承認、親PR #97後のマージ
 
 ---
