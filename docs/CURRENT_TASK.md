@@ -1,5 +1,31 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向け制作工程の利用入口修正
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-workflow-entrypoints-v1`
+- Base: `feature/manga-canvas-mvp` (`38c1481`、PR #91 merge後)
+- 対象: Cloud共通サイドバー、企画・シナリオ・ネームの工程入口
+- 実装:
+  - 実装済みのAI企画提案・シナリオ作成・ネーム作成をクリック可能に変更
+  - 各Feature Flagを個別に確認し、有効時は「利用可能」、無効時は「停止中」と表示
+  - 利用者本人の一般向け制作データから最新の進行先を安全に解決
+  - 前工程が未完了の場合は、必要な工程と遷移ボタンを表示
+  - 他利用者データおよび成人向けデータを工程入口の候補から除外
+  - 現在の制作進行表示を、閲覧中の工程に合わせて更新
+- 変更しない範囲: DB、migration、AI生成・保存ロジック、成人向け境界、Desktop
+- 検証:
+  - deps:check: PASS
+  - lint: PASS
+  - Hub typecheck: PASS
+  - 集中テスト: PASS（4/4）
+  - Hub test: PASS（279/279）
+  - Hub production build: PASS
+  - git diff --check: PASS
+- 注記: `npm ci`の既存依存監査でhigh severity 11件。今回の変更とは分離して扱う
+- Draft PR: [#92](https://github.com/team478a/manga/pull/92)
+- 未実施: CI、Vercel Preview、本番Feature Flag確認
+
 ## 2026-07-31 一般向け制作工程の表示整理
 
 - 状態: `IMPLEMENTED`
