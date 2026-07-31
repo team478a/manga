@@ -1,5 +1,92 @@
 # MANGAI Current Task
 
+## 2026-07-31 長編マンガ制作 M1: キャラクター設定・作品全体進捗
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
+- 実装:
+  - 採用シナリオから人物名、役割、望み、恐れ、葛藤、変化を読み取り、
+    作品画面へ基本キャラクター設定表として表示
+  - キャラクター情報を複製DBへ保存せず、既存のシナリオ→ネーム→作品参照を利用
+  - 対象コマの人物設定を画像生成Promptへサーバー側で自動追加
+  - ページごとの画像配置数、待機中、処理中、失敗Jobを作品画面へ集約
+  - 最新のコマ別Jobだけを採用し、古い失敗Jobを現在状態へ混入させない
+  - 完成、生成中、要確認、未着手を日本語表示し、対象ページへ直接移動
+- セキュリティ: 所有者RLS下の既存データだけを利用。service-role、秘密値、
+  Provider内部エラー、技術Promptは利用者画面へ表示しない
+- 変更しない範囲: DB、migration、Provider、Worker、成人向け、Desktop、販売処理
+- 検証: deps、lint、Hub/Desktop typecheck、集中テスト16/16、
+  Hub 302/302、production build、diff check成功
+- 次: 実ブラウザで8ページ作品の設定表・進捗・Editor→PDFを責任者確認し、
+  M1受入れ完了後にM2の編集可能な外見・衣装・場所・画風Profileへ進む
+- 未実施: 実ブラウザ確認、実Provider有料生成、責任者承認、マージ
+
+## 2026-07-31 長編マンガ制作 M1: 8ページ原稿チェック・書き出し検証
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
+- 実装:
+  - 作品画面で表紙、ページ順、空コマ、画像素材欠落を自動確認
+  - 背景画像の仕上がり解像度不足を警告
+  - 縦書き・横書き・ルビを含む文字layoutでoverflowを検出
+  - 8ページ基準と画像配置済みコマ数を表示
+  - 修正項目から対象ページの編集画面へ直接移動
+  - 問題件数が多い作品は表示上限と残件数を保持
+  - 8ページfixtureを実際に8ページPDFと`001.png`〜`008.png`へ出力
+- セキュリティ: 所有者RLS下のCanvasとAssetメタデータだけを読み、
+  Storage本体やservice-roleを原稿チェックに使用しない
+- 変更しない範囲: 販売処理、DB、migration、Provider、Worker、成人向け、Desktop
+- 検証: lint、Hub typecheck、原稿チェック5/5、8ページ出力3/3、
+  Hub 295/295、production build、diff check成功
+- 次: 実ブラウザでM1全体の画面・生成・書き出しを受入れ確認
+- 未実施: 実ブラウザ確認、実作品でのPDF目視比較、責任者承認、マージ
+
+## 2026-07-31 長編マンガ制作 M1: コマ候補の比較・採用・再実行
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
+- 対象: 一般向けCloud Canvasのネーム連動コマ画像生成
+- 実装:
+  - 1コマにつき2〜4候補を一度の操作で受付
+  - ネームの構図を維持しつつ、表情、視線誘導、背景を変えた候補を生成
+  - 完成候補をサムネイルで比較し、選んだ候補をコマの背景layerへ配置
+  - 失敗理由やProvider内部情報を表示せず、失敗候補だけ再実行
+  - 利用枠不足などで一部だけ受付できた場合は、完了数を安全に案内
+  - 再読込後もJobの`targetPanelId`から採用先と再実行対象を復元
+- 変更しない範囲: DB、migration、Provider、Worker、成人向け、Desktop
+- 検証: lint、Hub typecheck、集中テスト12/12、Hub 287/287、
+  production build、diff check成功
+- 次: ページ／全8ページの進捗表示、基本キャラクター設定表、原稿preflight、
+  8ページfixtureによるPDF／連番PNGの完走検証
+- 未実施: CI完了、Vercel Preview確認、実Provider有料生成、責任者画面確認
+
+## 2026-07-31 長編マンガ制作 M0: Cloudページ合成基盤
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
+- Base: `codex/cloud-general-image-v1` (`56ab885`)
+- 計画:
+  [`MANGA_100_PAGE_IMPLEMENTATION_PLAN.md`](cloud/MANGA_100_PAGE_IMPLEMENTATION_PLAN.md)
+- 対象: 一般向けCloud Canvasの編集表示、プレビュー、PNG/PDF、販売パッケージ
+- 実装:
+  - ブラウザとServer書き出しが同じSVGページ合成器を利用
+  - コマ内の背景・人物・小物・効果・トーン・補正を順番どおりに合成
+  - cover/contain/manual、位置、倍率、回転、透明度、blend modeを反映
+  - mask layer、斜め・曲線コマ、吹き出し尻尾、縦横文字・ルビを反映
+  - 編集画面のコマ表示を最上位画像1枚から全レイヤー合成へ変更
+  - Export時に最上位だけでなく必要な全レイヤーAssetを収集
+  - 旧`flattened_legacy`だけのPageは従来画像へfallback
+- Desktop方針:
+  同じCanvas schemaと描画規則を維持し、将来の成人向けDesktopへ作品を
+  引き渡せる境界を保持。今回Desktopコードと成人向けProviderは変更しない
+- 検証: deps、lint、Hub typecheck、Hub 284/284、production build、
+  Cloud Canvas集中テスト5/5、diff check成功
+- 未実施: CI完了、Vercel Preview確認、実ブラウザでの編集→保存→PDF比較
+
 ## 2026-07-31 一般向けクラウド画像生成Provider接続
 
 - 状態: `READY_FOR_REVIEW`

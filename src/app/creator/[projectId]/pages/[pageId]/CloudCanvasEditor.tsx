@@ -65,6 +65,10 @@ function now() {
   return new Date().toISOString();
 }
 
+function svgDataUrl(svg: string) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 export function CloudCanvasEditor({
   project,
   pages,
@@ -109,6 +113,7 @@ export function CloudCanvasEditor({
   const [message, setMessage] = useState("");
   const [requestingPanelGeneration, setRequestingPanelGeneration] =
     useState(false);
+  const [panelCandidateCount, setPanelCandidateCount] = useState(3);
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -136,15 +141,48 @@ export function CloudCanvasEditor({
     () => new Map(assets.map((asset) => [asset.id, asset])),
     [assets],
   );
-  const previewUrl = useMemo(
+  const canvasSvgAssets = useMemo(
     () =>
-      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-        createCanvasSvg(
-          canvas,
-          new Map(assets.map((asset) => [asset.id, asset.url])),
-        ),
-      )}`,
-    [assets, canvas],
+      new Map(
+        assets.map((asset) => [
+          asset.id,
+          {
+            href: asset.url,
+            width: asset.width,
+            height: asset.height,
+          },
+        ]),
+      ),
+    [assets],
+  );
+  const previewUrl = useMemo(
+    () => svgDataUrl(createCanvasSvg(canvas, canvasSvgAssets)),
+    [canvas, canvasSvgAssets],
+  );
+  const panelPreviewUrls = useMemo(
+    () =>
+      new Map(
+        canvas.panels.map((panel) => {
+          const panelCanvas: PageCanvas = {
+            schemaVersion: 1,
+            pageId: canvas.pageId,
+            width: panel.width,
+            height: panel.height,
+            backgroundColor: "transparent",
+            panels: [{ ...panel, x: 0, y: 0, rotation: 0, zIndex: 0 }],
+            panelLayers: canvas.panelLayers.filter(
+              (layer) => layer.panelId === panel.id,
+            ),
+            balloons: [],
+            textObjects: [],
+          };
+          return [
+            panel.id,
+            svgDataUrl(createCanvasSvg(panelCanvas, canvasSvgAssets)),
+          ];
+        }),
+      ),
+    [canvas, canvasSvgAssets],
   );
   const items = useMemo(
     () =>
@@ -187,6 +225,19 @@ export function CloudCanvasEditor({
     }, 3000);
     return () => window.clearInterval(timer);
   }, [generationJobs, refreshGenerationJobs, refreshQuota]);
+
+  useEffect(() => {
+    const hasUnloadedGeneratedAsset = generationJobs.some(
+      (job) =>
+        job.status === "completed" &&
+        Boolean(job.output_asset_id) &&
+        !assetMap.has(job.output_asset_id!),
+    );
+    if (!hasUnloadedGeneratedAsset) return;
+    void listProjectAssets(project.id)
+      .then(setAssets)
+      .catch(() => undefined);
+  }, [assetMap, generationJobs, project.id]);
 
   const remainingCredits = quota
     ? Math.max(
@@ -450,24 +501,34 @@ export function CloudCanvasEditor({
     }
   }
 
-  async function requestStoryboardPanelGeneration() {
-    if (selection?.type !== "panel" || requestingPanelGeneration) return;
-    const panelId = selection.id;
+  async function requestStoryboardPanelGeneration(options?: {
+    panelId?: string;
+    candidateCount?: number;
+  }) {
+    const panelId =
+      options?.panelId ?? (selection?.type === "panel" ? selection.id : null);
+    if (!panelId || requestingPanelGeneration) return;
+    const candidateCount = options?.candidateCount ?? panelCandidateCount;
     setRequestingPanelGeneration(true);
-    setMessage("ネームから画像生成を準備しています…");
+    setMessage(`${candidateCount}案の画像生成を準備しています…`);
     try {
       const result = await createStoryboardPanelGenerationJob({
         projectId: project.id,
         pageId: page.id,
         panelId,
         idempotencyKey: crypto.randomUUID(),
+        candidateCount,
       });
-      setGenerationTargets((current) => ({
-        ...current,
-        [result.id]: result.panelId,
-      }));
+      setGenerationTargets((current) =>
+        result.jobs.reduce(
+          (next, job) => ({ ...next, [job.id]: result.panelId }),
+          current,
+        ),
+      );
       setMessage(
-        `${result.pageNumber}ページ ${result.panelNumber}コマ目の画像生成を開始しました。`,
+        result.partial
+          ? `${result.pageNumber}ページ ${result.panelNumber}コマ目は${result.jobs.length}案を開始しました。残りは利用枠を確認して再実行してください。`
+          : `${result.pageNumber}ページ ${result.panelNumber}コマ目の候補${result.jobs.length}案を開始しました。`,
       );
       await Promise.all([refreshGenerationJobs(), refreshQuota()]);
     } catch (error) {
@@ -863,8 +924,26 @@ export function CloudCanvasEditor({
                   AIおまかせ画像生成
                 </p>
                 <p className="mt-1 text-xs text-violet-800">
-                  コマを選ぶだけで、ネームの構図・人物・背景から生成します。
+                  コマを選ぶだけで、ネームから比較用の候補を生成します。
                 </p>
+                <label
+                  className="mt-3 block text-xs font-bold text-violet-950"
+                  htmlFor="panel-candidate-count"
+                >
+                  生成する候補数
+                </label>
+                <select
+                  className="field mt-1 w-full"
+                  id="panel-candidate-count"
+                  value={panelCandidateCount}
+                  onChange={(event) =>
+                    setPanelCandidateCount(Number(event.target.value))
+                  }
+                >
+                  <option value={2}>2案（節約）</option>
+                  <option value={3}>3案（おすすめ）</option>
+                  <option value={4}>4案（比較重視）</option>
+                </select>
                 <button
                   className="button mt-3 w-full"
                   disabled={
@@ -878,7 +957,7 @@ export function CloudCanvasEditor({
                 >
                   {requestingPanelGeneration
                     ? "画像生成を受付中…"
-                    : "選択したコマを生成"}
+                    : `選択したコマを${panelCandidateCount}案生成`}
                 </button>
               </div>
             ) : null}
@@ -967,7 +1046,7 @@ export function CloudCanvasEditor({
               一般向け文章を生成
             </button>
             <div className="mt-3 space-y-2" aria-live="polite">
-              {generationJobs.slice(0, 5).map((job) => (
+              {generationJobs.slice(0, 8).map((job) => (
                 <div
                   className="rounded border border-stone-200 bg-white p-2 text-xs"
                   key={job.id}
@@ -986,8 +1065,32 @@ export function CloudCanvasEditor({
                       </button>
                     ) : null}
                   </div>
-                  {job.error_message ? (
-                    <p className="mt-1 text-red-700">{job.error_message}</p>
+                  {job.output_asset_id && assetMap.get(job.output_asset_id) ? (
+                    <img
+                      alt="生成されたコマ候補"
+                      className="mt-2 aspect-video w-full rounded border border-stone-200 object-cover"
+                      src={assetMap.get(job.output_asset_id)!.url}
+                    />
+                  ) : null}
+                  {job.status === "failed" ? (
+                    <div className="mt-2 rounded bg-red-50 p-2 text-red-800">
+                      <p>生成に失敗しました。この候補だけ再実行できます。</p>
+                      {job.target_panel_id ? (
+                        <button
+                          className="mt-1 font-bold underline"
+                          disabled={requestingPanelGeneration}
+                          onClick={() =>
+                            void requestStoryboardPanelGeneration({
+                              panelId: job.target_panel_id!,
+                              candidateCount: 1,
+                            })
+                          }
+                          type="button"
+                        >
+                          このコマだけ再実行
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                   {job.status === "completed" && job.output_asset_id ? (
                     <button
@@ -1001,7 +1104,7 @@ export function CloudCanvasEditor({
                       type="button"
                     >
                       {generationTargets[job.id] || job.target_panel_id
-                        ? "生成対象のコマへ配置"
+                        ? "この候補を採用してコマへ配置"
                         : "選択中のコマへ配置"}
                     </button>
                   ) : null}
@@ -1070,21 +1173,9 @@ export function CloudCanvasEditor({
               .filter((item) => item.visible)
               .sort((a, b) => a.zIndex - b.zIndex)
               .map((panel) => {
-                const panelLayers = canvas.panelLayers
-                  .filter(
-                    (layer) =>
-                      layer.panelId === panel.id &&
-                      layer.visible &&
-                      layer.assetId,
-                  )
-                  .sort((a, b) => a.orderIndex - b.orderIndex);
-                const topLayer = panelLayers.at(-1);
-                const asset = assetMap.get(
-                  topLayer?.assetId ?? panel.imageAssetId ?? "",
-                );
                 return (
                   <div
-                    className={`absolute overflow-hidden ${selection?.type === "panel" && selection.id === panel.id ? "ring-4 ring-blue-500" : ""}`}
+                    className={`absolute ${selection?.type === "panel" && selection.id === panel.id ? "ring-4 ring-blue-500" : ""}`}
                     key={panel.id}
                     onPointerDown={(event) =>
                       pointerDown(event, { type: "panel", id: panel.id }, panel)
@@ -1098,22 +1189,15 @@ export function CloudCanvasEditor({
                       height: `${(panel.height / canvas.height) * 100}%`,
                       zIndex: panel.zIndex,
                       transform: `rotate(${panel.rotation}deg)`,
-                      background: panel.fillColor,
-                      border: `${Math.max(1, (panel.borderWidth * canvasElement.current?.clientWidth!) / canvas.width || 1)}px solid ${panel.borderColor}`,
                       touchAction: "none",
                     }}
                   >
-                    {asset ? (
-                      <img
-                        alt=""
-                        draggable={false}
-                        className="h-full w-full object-cover"
-                        src={asset.url}
-                        style={{
-                          opacity: topLayer?.opacity ?? panel.imageOpacity,
-                        }}
-                      />
-                    ) : null}
+                    <img
+                      alt=""
+                      draggable={false}
+                      className="h-full w-full"
+                      src={panelPreviewUrls.get(panel.id)}
+                    />
                   </div>
                 );
               })}

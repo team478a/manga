@@ -4,6 +4,61 @@
 
 ---
 
+## 2026-07-31 Codex: M1キャラクター設定表・作品全体生成進捗
+
+- `codex/manga-production-m0-v1`へM1の残りである人物設定と全体進捗を追加した。
+- `cloud_story_storyboard_projects`から採用ネームとシナリオをたどり、人物の
+  役割、望み、恐れ、葛藤、変化を作品画面へ読み取り専用で表示する。
+- 人物情報は新規テーブルへ複製せず、既存の所有者RLS経路を利用する。
+- コマ画像生成時はネーム上の登場人物と一致する人物設定をServer側Promptへ
+  自動追加し、通常利用者へ技術Promptを表示しない。
+- 原稿解析へページ別の総コマ数・画像配置数を追加し、最新のコマ別画像Jobと
+  統合して完成、生成中、要確認、未着手を表示する。
+- DB、migration、Provider、Worker、成人向け、Desktop、販売処理は変更していない。
+- 検証: deps、lint、Hub/Desktop typecheck、集中テスト16/16、Hub 302/302、
+  production build、`git diff --check`成功。
+- 未完了: 実ブラウザでの8ページ受入れ、実Provider有料生成、Editor／PDFの
+  目視比較、責任者承認、マージ。
+- 次はM1受入れ後、M2で編集可能な外見、衣装、場所、画風Profileと
+  ページ横断の一貫性評価を実装する。
+
+---
+
+## 2026-07-31 Codex: M1 8ページ原稿preflightと書き出しfixture
+
+- `codex/manga-production-m0-v1`へ作品単位の原稿チェックを追加した。
+- 表紙、連続ページ番号、空コマ、素材欠落、背景の低解像度、縦横文字の
+  overflowをCanvas snapshotとAssetメタデータから検出する。
+- 作品画面に8ページ基準、画像配置済みコマ、要修正、確認推奨を表示し、
+  各警告から対象ページへ移動できる。
+- RLS下の所有者データだけを読み、原稿チェックではStorage downloadや
+  service-roleを使用しない。DB migrationも追加していない。
+- 8ページfixtureを8ページPDFと`001.png`〜`008.png`の連番画像へ実際に
+  変換するテストを追加した。
+- lint、Hub typecheck、原稿チェック5/5、8ページ出力3/3、
+  Hub 295/295、production build、diff checkが成功した。
+- stacked Draft PRは [#88](https://github.com/team478a/manga/pull/88)。
+
+---
+
+## 2026-07-31 Codex: M1コマ画像の複数候補・採用・失敗再実行
+
+- `codex/manga-production-m0-v1`上でM1のコマ生成フローを拡張した。
+- ネーム連動生成は1コマ2〜4候補を一度に登録でき、各候補へ構図、表情、
+  視線誘導、背景の差分指示を安全に追加する。
+- 既存の一般向けmoderation、quota、rate limit、Queue、Worker、private Storageを
+  そのまま通し、DB migrationは追加していない。
+- Canvasで候補画像を比較し、採用画像を対象コマの背景layerへ配置できる。
+- 失敗時は内部エラーを露出せず、対象の1コマ・1候補だけ再実行できる。
+- Jobの`targetPanelId`を利用するため、ブラウザー再読込後も採用先を復元する。
+- lint、Hub typecheck、集中テスト12/12、Hub 287/287、production build、
+  diff checkが成功した。
+- stacked Draft PR [#88](https://github.com/team478a/manga/pull/88)を作成した。
+- 次はページ／作品単位の進捗、キャラクター設定表、原稿preflight、
+  8ページfixtureによる完成PDF／連番PNGの完走検証を進める。
+
+---
+
 ## 2026-07-31 Codex: 一般向けコマ画像生成をBFL FLUXへ接続
 
 - 最新`feature/manga-canvas-mvp`から`codex/cloud-general-image-v1`を作成した。
@@ -1816,6 +1871,68 @@ READY_FOR_REVIEW
 - 成人向け画像をBFLへ送信しない。
 - APIキー、Worker署名Secret、生成Promptをログや画面へ出さない。
 - migration適用、有料生成、本番公開、mergeは責任者判断まで行わない。
+
+---
+
+## 2026-07-31 Codex → 次担当AI（長編マンガ制作 M0ページ合成基盤）
+
+### 状態
+
+IMPLEMENTED
+
+### ブランチ・コミット
+
+- Branch: `codex/manga-production-m0-v1`
+- Base: `codex/cloud-general-image-v1` (`56ab885`)
+- HEAD: コミット後に更新
+
+### 完了
+
+- 100ページ制作を目標とする段階実装計画を追加
+- Cloud編集表示、SVG preview、PNG/PDF、販売packageを共通描画器へ統合
+- 分離Panel Layerの順序、fit、変形、opacity、blend、maskを反映
+- Panel shape、吹き出しtail、縦横文字、ルビをServer描画へ反映
+- Exportが表示に必要な全Panel Layer Assetを収集するよう修正
+- 複数画像が最終PNGへ残る回帰テストを追加
+
+### 未完了
+
+- 実ブラウザで編集表示とPreview/PDFの一致を確認
+- M1の8ページ縦切りE2E fixture
+- キャラクター設定表、ページ横断整合性、差分再生成
+- Draft PR、CI、Vercel Preview、責任者確認
+
+### 変更ファイル
+
+- `src/lib/cloud-canvas-svg.ts`
+- `src/lib/cloud-canvas-render.ts`
+- `src/lib/cloud-canvas-export.ts`
+- `src/app/creator/[projectId]/pages/[pageId]/services/canvas-svg.ts`
+- `src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx`
+- `tests/cloud-canvas-render.test.mjs`
+- `docs/cloud/MANGA_100_PAGE_IMPLEMENTATION_PLAN.md`
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub）
+- hub:test: PASS（284/284）
+- Cloud Canvas集中テスト: PASS（5/5）
+- build: PASS
+- git diff --check: PASS
+
+### 次担当者が最初に行うこと
+
+1. 8ページfixtureで編集表示、Preview、PNG/PDFの視覚差分を確認する。
+2. 1ページ内の複数コマ一括生成と、失敗コマだけの再実行を実装する。
+3. M1完了後にキャラクター参照とseedを持つ整合性契約へ進む。
+
+### 注意事項
+
+- 一般向けCloudを先に完成させ、成人向け画像を一般向けProviderへ送信しない。
+- 成人向けDesktopは将来の主要実行環境として残し、Canvas schema互換を壊さない。
+- migration、Feature Flag、本番公開、外部有料生成は今回実施していない。
 
 ---
 
