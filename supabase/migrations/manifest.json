@@ -174,7 +174,13 @@
       "description": "一般向けモニター招待メールの件名・本文テンプレートを管理画面で変更可能にする",
       "forwardSha256": "b7d973533950cdcfa12bc90bcbf5b071d36d09bd5aa7169ee6ce47577b0a2d81",
       "rollbackSha256": "feab2a175488d79fbae8d8415fea5f05d4f95e4ce6d1fad891aa14d36df3755f"
+    },
+    {
+      "id": "202607310004_cloud_general_image_provider",
+      "description": "一般向け画像生成BFL FLUX設定をSupabase Vaultで管理し原価上限を登録",
+      "forwardSha256": "38ac1e9a68541479ff459006d214dbd7416a1d0b2fa4fc57e5854576a7da5097",
+      "rollbackSha256": "2de6d9cb5a09cd47e251891d7dc4133a27e99646e486876a70d204624566cec3"
     }
   ],
-  "schemaSha256": "b6e3b86a6f486bedf6ebe50356c8481b607b63525da137e68ba8c7c52380fec8"
+  "schemaSha256": "121785faad477fedbc7c9756561eea3bf0a4307300b6b24c7898eb7b98bbe69d"
 }

@@ -1,5 +1,37 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向けクラウド画像生成Provider接続
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-general-image-v1`
+- Base: 最新`feature/manga-canvas-mvp` (`7eb783f`)
+- Draft PR: [#87](https://github.com/team478a/manga/pull/87)
+- Preview:
+  `https://mangai-hub-staging-git-codex-cloud-ge-f2885c-team478as-projects.vercel.app`
+- 対象: 一般向けRelease 6のコマ画像生成、`/admin/cloud-ai`
+- 実装:
+  - BFL FLUX.2固定版の非同期API adapter
+  - 管理画面からAPIキー・モデル・有効状態を保存
+  - APIキーをSupabase Vaultへ保存し、service-role限定で復号
+  - Provider価格と原価上限をmigrationで登録
+  - BFLのpolling URL・画像URLをHTTPSかつBFL domainへ限定
+  - 既存の一般向けモデレーション、quota、Queue、Worker、画像検査、
+    private Storage、コマ配置を維持
+  - モニター公開チェックへ画像Provider設定とWorker実行条件を追加
+  - Worker停止・短い署名Secretをpreflightで秘密値なしに拒否
+  - 画像生成受付中はボタンを無効化し、二重Job登録を防止
+- migration:
+  `202607310004_cloud_general_image_provider.sql`
+- 成人向け境界:
+  成人向け画像はBFLへ送信せず、将来の独立GPU/VPS APIまで停止
+- 文書:
+  [`CLOUD_GENERAL_IMAGE_PROVIDER_V1.md`](cloud/CLOUD_GENERAL_IMAGE_PROVIDER_V1.md)
+- 検証: deps、lint、Hub/Desktop typecheck、research eval、Hub 283/283、
+  migration 30/30、production build、diff check成功
+- GitHub CI (`c5e54d7`): Core quality、migration roundtrip、Windows build、
+  Vercel Previewがすべて成功
+- 未実施: 実API有料生成、staging migration、責任者確認、本番公開
+
 ## 2026-07-31 クラウド制作の日本語化・初回ガイド
 
 - 状態: `IMPLEMENTED`

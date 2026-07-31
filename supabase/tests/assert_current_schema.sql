@@ -114,6 +114,29 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_general_image_provider_settings') is null
+     or to_regclass('public.cloud_general_image_provider_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_general_image_provider(uuid,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_general_image_runtime_config()'
+     ) is null then
+    raise exception 'Cloud general image Provider objects missing';
+  end if;
+  if not exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-2-pro'
+      and pricing_version = 'bfl-flux2-2026-03'
+      and active
+  ) then
+    raise exception 'Cloud general image Provider prices missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_general_monitor_email_settings') is null
      or to_regclass('public.cloud_general_monitor_email_audit_logs') is null
      or to_regprocedure(

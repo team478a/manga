@@ -4,6 +4,33 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けコマ画像生成をBFL FLUXへ接続
+
+- 最新`feature/manga-canvas-mvp`から`codex/cloud-general-image-v1`を作成した。
+- Release 6のQueue/WorkerへBFL FLUX.2固定版adapterを追加した。
+- `/admin/cloud-ai`からBFL APIキー、モデル、有効状態を保存できる。
+- APIキーはSupabase Vaultだけへ保存し、画面・Client・通常テーブル・
+  監査ログには再表示しない。
+- migrationでモデル別・Job別の原価上限を登録し、既存quotaとkill switchを通す。
+- BFLへは一般向けモデレーション通過後だけ送信し、
+  `safety_tolerance=1`を固定した。
+- 成人向け画像は対象外であり、将来の独立GPU/VPS APIまで停止を維持する。
+- migration:
+  `202607310004_cloud_general_image_provider.sql`
+- 文書:
+  `docs/cloud/CLOUD_GENERAL_IMAGE_PROVIDER_V1.md`
+- deps、lint、Hub/Desktop typecheck、research eval、Hub 282/282、
+  migration 30/30、production build、diff checkが成功した。
+- Docker Desktopが停止中のためmigration roundtripはGitHub CIで確認する。
+- Draft PR:
+  [#87](https://github.com/team478a/manga/pull/87)
+- Preview:
+  `https://mangai-hub-staging-git-codex-cloud-ge-f2885c-team478as-projects.vercel.app`
+- 実装commit `c5e54d7`のCore quality、migration roundtrip、
+  Windows build、Vercel Previewがすべて成功した。
+
+---
+
 ## 2026-07-31 Codex: クラウド制作を日本語化し初回ガイドを追加
 
 - 最新`feature/manga-canvas-mvp`から
@@ -1734,6 +1761,61 @@ READY_FOR_REVIEW
 - 画像生成、Asset作成、Cloud AI Queue登録、外部Provider呼出は含まない。
 - migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
 - Core quality、migration roundtrip、Windows build、VercelはすべてPASS。
+
+---
+
+## 2026-07-31 Codex → 次担当AI（一般向け画像生成の公開前補強）
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-general-image-v1`
+- Base: `feature/manga-canvas-mvp` (`7eb783f`)
+- Draft PR: `#87`
+- HEAD: コミット後に更新
+
+### 完了
+
+- 一般向けモニター公開チェックへBFL画像Providerの設定状態を追加
+- Worker有効化と32文字以上の署名Secretを公開チェック・preflightへ追加
+- 秘密値本体を画面、preflight結果、文書へ表示しない
+- AIおまかせ画像生成の受付中表示と二重送信防止を追加
+- Worker scheduler未稼働時は画像Jobが完了しないことを運用文書へ明記
+
+### 未完了
+
+- migration `202607310004_cloud_general_image_provider.sql`の本番適用
+- 管理画面でのBFL APIキー保存
+- Worker schedulerの認証付き定期実行
+- 一般向け1コマの実API有料生成E2E
+- 責任者のPreview確認とPR merge
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- research:eval: PASS
+- hub:test: PASS（283/283）
+- migrations: PASS（30/30）
+- build: PASS
+- diff check: PASS
+
+### 次担当者が最初に行うこと
+
+1. PR #87の最新CIとPreviewを確認する。
+2. migration適用後、`/admin/cloud-ai`でBFL設定を保存する。
+3. Worker実行基盤を設定し、`/admin/general-monitors/readiness`を確認する。
+4. 一般向けテスト作品の1コマだけで有料E2Eを行う。
+
+### 注意事項
+
+- 成人向け画像をBFLへ送信しない。
+- APIキー、Worker署名Secret、生成Promptをログや画面へ出さない。
+- migration適用、有料生成、本番公開、mergeは責任者判断まで行わない。
 
 ---
 

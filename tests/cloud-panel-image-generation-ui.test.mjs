@@ -24,6 +24,8 @@ test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提
   assert.match(editor, /選択したコマを生成/);
   assert.match(editor, /生成対象のコマへ配置/);
   assert.match(editor, /target_panel_id/);
+  assert.match(editor, /画像生成を受付中…/);
+  assert.match(editor, /requestingPanelGeneration/);
 });
 
 test("専用Routeも既存rate limitとAPI Error契約を通る", () => {

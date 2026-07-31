@@ -6,6 +6,10 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { DomainError } from "@/lib/domain-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  cloudGeneralImageModelSchema,
+  setCloudGeneralImageSettings,
+} from "@/lib/cloud-general-image-settings";
 
 const micros = z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 
@@ -83,6 +87,43 @@ export async function updateCloudAiSettingsAction(formData: FormData) {
   });
   revalidatePath("/admin/cloud-ai");
   redirect("/admin/cloud-ai?message=Cloud AI運用設定を更新しました");
+}
+
+export async function updateCloudGeneralImageProviderAction(
+  formData: FormData,
+) {
+  const { profile } = await requireAdmin();
+  const parsed = z
+    .object({
+      apiKey: z.string().trim().max(500),
+      model: cloudGeneralImageModelSchema,
+      enabled: z.enum(["true", "false"]),
+    })
+    .safeParse({
+      apiKey: field(formData, "apiKey"),
+      model: field(formData, "model"),
+      enabled: field(formData, "enabled"),
+    });
+  if (!parsed.success)
+    redirect("/admin/cloud-ai?error=画像生成AI設定を確認してください");
+  try {
+    await setCloudGeneralImageSettings({
+      actorProfileId: profile.id,
+      apiKey: parsed.data.apiKey,
+      model: parsed.data.model,
+      enabled: parsed.data.enabled === "true",
+    });
+  } catch {
+    redirect(
+      `/admin/cloud-ai?error=${encodeURIComponent(
+        "画像生成AI設定を保存できませんでした。migrationとAPIキーを確認してください",
+      )}`,
+    );
+  }
+  revalidatePath("/admin/cloud-ai");
+  redirect(
+    "/admin/cloud-ai?message=一般向け画像生成AI設定を保存しました",
+  );
 }
 
 export async function updateCloudAiPlanAction(

@@ -57,6 +57,8 @@ preflightとreadiness checkは、成人向けFlagが有効な場合に失敗す�
 - `CLOUD_STORYBOARD_GENERATION_ENABLED`
 - `CLOUD_STORYBOARD_CANVAS_ENABLED`
 - `CLOUD_PANEL_IMAGE_GENERATION_ENABLED`
+- `MANGAI_CLOUD_AI_WORKER_ENABLED`
+- `MANGAI_CLOUD_AI_WORKER_SECRET`
 
 `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`は、
 いずれも `https://app.mang-ai.com` の同一originにする。
@@ -98,8 +100,9 @@ AI Provider keyとResend API keyは、環境変数へ日常運用値として置
 7. Productionをredeployする。
 8. `/admin/general-monitors/readiness`の全項目を確認する。
 9. 管理画面でAI ProviderとResendを設定する。
-10. スタッフ1名で招待、受信、ログイン、市場分析保存まで確認する。
-11. 2〜3名へ拡大し、問題がなければ残りへ拡大する。
+10. Worker schedulerから認証付き実行が継続されることを確認する。
+11. スタッフ1名で招待、受信、ログイン、市場分析保存と1コマ画像生成まで確認する。
+12. 2〜3名へ拡大し、問題がなければ残りへ拡大する。
 
 ## 停止条件
 
