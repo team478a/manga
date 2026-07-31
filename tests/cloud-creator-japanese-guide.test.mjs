@@ -2,14 +2,15 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-test("クラウド制作の入口は日本語表記と3ステップガイドを表示する", async () => {
+test("原稿編集の入口は日本語表記と3ステップガイドを表示する", async () => {
   const source = await readFile(
     new URL("../src/app/creator/page.tsx", import.meta.url),
     "utf8",
   );
 
   assert.match(source, /クラウド制作/);
-  assert.match(source, /まずはこの3ステップで作品を作ります/);
+  assert.match(source, /原稿編集/);
+  assert.match(source, /まずはこの3ステップで原稿を編集します/);
   assert.match(source, /ステップ1/);
   assert.match(source, /作品を作成/);
   assert.match(source, /ステップ2/);
@@ -71,10 +72,14 @@ test("クラウド制作は紫基調の制作ワークフローシェルを使�
 
   assert.match(layout, /CloudWorkflowShell/);
   assert.match(layout, /cloud-studio-scope/);
-  assert.match(shell, /label: "マンガ生成", href: "\/creator"/);
-  assert.match(shell, /ステップ4：マンガ生成/);
+  assert.match(shell, /label: "ネーム作成"/);
+  assert.match(shell, /label: "原稿編集", href: "\/creator"/);
+  assert.match(shell, /label: "販売準備"[\s\S]*availability: "coming-soon"/);
+  assert.match(shell, /label: "収益管理"[\s\S]*availability: "coming-soon"/);
+  assert.match(shell, /ステップ5：原稿編集/);
+  assert.doesNotMatch(shell, /label: "マンガ生成"/);
   assert.match(styles, /\.cloud-studio-scope \.button/);
   assert.match(styles, /bg-violet-700/);
-  assert.match(creator, /制作ステップ 4/);
+  assert.match(creator, /制作ステップ 5/);
   assert.match(creator, /from-white to-violet-50/);
 });

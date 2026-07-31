@@ -28,11 +28,11 @@ export default async function DashboardPage() {
           <p className="text-sm font-bold text-violet-700">MANGAI Cloud</p>
           <h1 className="mt-2 text-3xl font-bold">ダッシュボード</h1>
           <p className="mt-2 text-stone-600">
-            市場分析から販売まで、制作工程を順番に進めます。
+            市場分析から原稿編集まで、制作工程を順番に進めます。
           </p>
         </div>
         <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">
-          Release 1
+          一般向けモニター
         </span>
       </div>
 
@@ -106,7 +106,7 @@ export default async function DashboardPage() {
           </Link>
         </section>
         <section className="panel">
-          <h2 className="text-xl font-bold">Release 1 完了条件</h2>
+          <h2 className="text-xl font-bold">市場分析の完了条件</h2>
           <ul className="mt-4 space-y-3 text-sm text-stone-700">
             {[
               "ジャンルとテーマを選択",
