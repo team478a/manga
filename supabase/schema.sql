@@ -2309,7 +2309,7 @@ alter table public.cloud_story_storyboard_versions
 add constraint cloud_story_storyboard_versions_engine_version_check
 check (engine_version in ('openai-storyboard-v1', 'xai-adult-storyboard-v1'));
 
-create table public.cloud_adult_grok_settings (
+create table if not exists public.cloud_adult_grok_settings (
   singleton boolean primary key default true check (singleton),
   enabled boolean not null default false,
   model text not null default 'grok-4.5'
@@ -2319,9 +2319,10 @@ create table public.cloud_adult_grok_settings (
   updated_at timestamptz not null default now()
 );
 insert into public.cloud_adult_grok_settings(singleton, enabled, model)
-values (true, false, 'grok-4.5');
+values (true, false, 'grok-4.5')
+on conflict (singleton) do nothing;
 
-create table public.cloud_adult_grok_audit_logs (
+create table if not exists public.cloud_adult_grok_audit_logs (
   id uuid primary key default gen_random_uuid(),
   actor_profile_id uuid not null references public.profiles(id) on delete restrict,
   action text not null check (action in ('configure', 'replace_key', 'enable', 'disable')),
@@ -2329,7 +2330,7 @@ create table public.cloud_adult_grok_audit_logs (
   enabled boolean not null,
   created_at timestamptz not null default now()
 );
-create index cloud_adult_grok_audit_created_idx
+create index if not exists cloud_adult_grok_audit_created_idx
 on public.cloud_adult_grok_audit_logs(created_at desc);
 
 alter table public.cloud_adult_grok_settings enable row level security;
@@ -2338,8 +2339,12 @@ grant select on public.cloud_adult_grok_settings to authenticated;
 grant select on public.cloud_adult_grok_audit_logs to authenticated;
 grant select, insert, update, delete on public.cloud_adult_grok_settings to service_role;
 grant select, insert on public.cloud_adult_grok_audit_logs to service_role;
+drop policy if exists "cloud_adult_grok_settings_admin_read"
+on public.cloud_adult_grok_settings;
 create policy "cloud_adult_grok_settings_admin_read"
 on public.cloud_adult_grok_settings for select using (public.is_admin());
+drop policy if exists "cloud_adult_grok_audit_admin_read"
+on public.cloud_adult_grok_audit_logs;
 create policy "cloud_adult_grok_audit_admin_read"
 on public.cloud_adult_grok_audit_logs for select using (public.is_admin());
 
