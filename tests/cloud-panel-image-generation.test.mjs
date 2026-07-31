@@ -4,6 +4,7 @@ import sharp from "sharp";
 import {
   buildStoryboardPanelGeneration,
   cloudPanelImageGenerationFeatureEnabled,
+  cloudPanelInpaintingFeatureEnabled,
   cloudPanelImageGenerationRequestSchema,
 } from "../src/lib/cloud-panel-image-generation.ts";
 import { MockCloudImageProvider } from "../src/lib/cloud-ai-mock-provider.ts";
@@ -110,6 +111,16 @@ test("選択コマのネームから利用者入力なしで画像生成条件�
   assert.ok(result.generation.height >= 256);
 });
 
+test("部分修正Feature Flagも未設定時fail closedする", () => {
+  const previous = process.env.CLOUD_PANEL_INPAINTING_ENABLED;
+  delete process.env.CLOUD_PANEL_INPAINTING_ENABLED;
+  assert.equal(cloudPanelInpaintingFeatureEnabled(), false);
+  process.env.CLOUD_PANEL_INPAINTING_ENABLED = "true";
+  assert.equal(cloudPanelInpaintingFeatureEnabled(), true);
+  if (previous === undefined) delete process.env.CLOUD_PANEL_INPAINTING_ENABLED;
+  else process.env.CLOUD_PANEL_INPAINTING_ENABLED = previous;
+});
+
 test("採用済み画像を先頭参照に固定して修正候補を作る", () => {
   const sourceAssetId = "74000000-0000-4000-8000-000000000021";
   const result = buildStoryboardPanelGeneration({
@@ -130,6 +141,27 @@ test("採用済み画像を先頭参照に固定して修正候補を作る", ()
   assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
   assert.match(result.generation.prompt, /手指の本数・関節/);
   assert.match(result.generation.prompt, /右手で鞄を持たせる/);
+});
+
+test("元画像とマスクを固定して部分修正Jobを作る", () => {
+  const sourceAssetId = "74000000-0000-4000-8000-000000000031";
+  const maskAssetId = "75000000-0000-4000-8000-000000000031";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    revision: {
+      sourceAssetId,
+      maskAssetId,
+      preset: "face",
+      instruction: "目線だけを右へ向ける",
+    },
+  });
+  assert.equal(result.generation.operation, "inpainting");
+  assert.equal(result.generation.sourceAssetId, sourceAssetId);
+  assert.equal(result.generation.maskAssetId, maskAssetId);
+  assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
 });
 
 test("修正指定は元画像と修正内容の組を必須にする", () => {

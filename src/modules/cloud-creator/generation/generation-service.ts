@@ -99,11 +99,18 @@ export async function listCloudGenerationJobs(projectId: string) {
     const revisionPreset = parsedRevisionPreset.success
       ? parsedRevisionPreset.data
       : null;
+    const generationOperation =
+      input?.operation === "text_to_image" ||
+      input?.operation === "image_to_image" ||
+      input?.operation === "inpainting"
+        ? input.operation
+        : null;
     const { input: _privateInput, ...publicRow } = row;
     return {
       ...publicRow,
       target_panel_id: targetPanelId,
       revision_preset: revisionPreset,
+      generation_operation: generationOperation,
     } as CloudGenerationJob;
   });
 }

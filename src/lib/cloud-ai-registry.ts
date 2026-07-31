@@ -18,6 +18,7 @@ export function configuredCapabilities(): CloudProviderCapability[] {
       modelId: process.env.MANGAI_CLOUD_IMAGE_MODEL ?? "general-image-v1",
       kind: "image",
       jobTypes: ["background", "prop", "effect", "character_base"],
+      operations: ["text_to_image", "image_to_image"],
       policyVersion: "general-v1",
       pricingVersion: imagePricingVersion || "unconfigured",
       enabled:
@@ -46,6 +47,7 @@ export function configuredCapabilities(): CloudProviderCapability[] {
         modelId: "mock-image-v1",
         kind: "image",
         jobTypes: ["background", "prop", "effect", "character_base"],
+        operations: ["text_to_image", "image_to_image"],
         policyVersion: "general-v1",
         pricingVersion: "mock-free-v1",
         enabled: true,
@@ -77,11 +79,25 @@ export async function configuredRuntimeCapabilities() {
         modelId: image.model,
         kind: "image",
         jobTypes: ["background", "prop", "effect", "character_base"],
+        operations: ["text_to_image", "image_to_image"],
         policyVersion: "general-v1",
         pricingVersion: image.pricingVersion,
         enabled: true,
       }),
     );
+    if (process.env.CLOUD_PANEL_INPAINTING_ENABLED === "true")
+      capabilities.unshift(
+        cloudProviderCapabilitySchema.parse({
+          providerId: "black-forest-labs",
+          modelId: "flux-pro-1.0-fill",
+          kind: "image",
+          jobTypes: ["background"],
+          operations: ["inpainting"],
+          policyVersion: "general-v1",
+          pricingVersion: "bfl-flux1-fill-2026-08",
+          enabled: true,
+        }),
+      );
   } catch {
     // The Vault-backed provider is intentionally fail closed until configured.
   }
@@ -89,11 +105,14 @@ export async function configuredRuntimeCapabilities() {
 }
 
 export async function selectCloudProvider(input: CloudGenerationInput) {
+  const operation =
+    input.kind === "image" ? (input.operation ?? "text_to_image") : undefined;
   const capability = (await configuredRuntimeCapabilities()).find(
     (candidate) =>
       candidate.enabled &&
       candidate.kind === input.kind &&
-      candidate.jobTypes.includes(input.jobType),
+      candidate.jobTypes.includes(input.jobType) &&
+      (!operation || !candidate.operations || candidate.operations.includes(operation)),
   );
   if (!capability)
     throw new Error(

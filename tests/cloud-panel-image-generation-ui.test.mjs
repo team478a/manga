@@ -18,6 +18,10 @@ const generationService = fs.readFileSync(
   "src/modules/cloud-creator/generation/generation-service.ts",
   "utf8",
 );
+const inpaintingDialog = fs.readFileSync(
+  "src/app/creator/[projectId]/pages/[pageId]/PanelInpaintingDialog.tsx",
+  "utf8",
+);
 
 test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提供する", () => {
   assert.match(editor, /AIおまかせ画像生成/);
@@ -38,7 +42,17 @@ test("Canvasは採用画像を残したまま部位別の修正候補を生成�
   assert.match(editor, /衣装を設定に合わせる/);
   assert.match(editor, /元画像はレイヤーに残る/);
   assert.match(editor, /sourceAssetId: selectedRevisionLayer/);
-  assert.match(editor, /範囲を塗って一部分だけを置換する編集にはまだ対応していません/);
+  assert.match(editor, /直す範囲を塗って部分修正/);
+  assert.match(editor, /maskAssetId: maskAsset\.id/);
+});
+
+test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {
+  assert.match(inpaintingDialog, /直したい範囲を塗る/);
+  assert.match(inpaintingDialog, /黒い範囲は元画像を維持/);
+  assert.match(inpaintingDialog, /destination-out/);
+  assert.match(inpaintingDialog, /fillStyle = "#000000"/);
+  assert.match(inpaintingDialog, /drawImage\(strokes/);
+  assert.match(inpaintingDialog, /image\/png/);
 });
 
 test("専用Serviceは修正元Assetの所有権と選択コマへの配置を検証する", () => {
@@ -46,6 +60,8 @@ test("専用Serviceは修正元Assetの所有権と選択コマへの配置を�
   assert.match(service, /layer\.assetId === revision\.sourceAssetId/);
   assert.match(service, /\.eq\("owner_profile_id", profile\.id\)/);
   assert.match(service, /この画像を修正元として利用できません/);
+  assert.match(service, /maskAsset\.data\.width !== sourceAsset\.data\.width/);
+  assert.match(service, /maskAsset\.data\.mime_type !== "image\/png"/);
 });
 
 test("専用Serviceは同じコマの複数候補を別Jobとして登録する", () => {
@@ -70,12 +86,16 @@ test("Feature Flagは認証・DB・Providerより前にfail closedする", () =>
   assert.ok(flag >= 0);
   assert.ok(flag < service.indexOf("cloudCreatorContext()"));
   assert.ok(flag < service.lastIndexOf("await enqueueCloudGenerationJob("));
+  const inpaintingFlag = service.indexOf("cloudPanelInpaintingFeatureEnabled()");
+  assert.ok(inpaintingFlag > flag);
+  assert.ok(inpaintingFlag < service.indexOf("cloudCreatorContext()"));
 });
 
 test("生成PromptはJob一覧responseから除外し対象panel IDだけを返す", () => {
   assert.match(generationService, /input: _privateInput/);
   assert.match(generationService, /target_panel_id: targetPanelId/);
   assert.match(generationService, /revision_preset: revisionPreset/);
+  assert.match(generationService, /generation_operation: generationOperation/);
   assert.doesNotMatch(editor, /job\.input|generation\.prompt/);
 });
 

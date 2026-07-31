@@ -4,6 +4,44 @@
 
 ---
 
+## 2026-08-01 Codex: M3-2 マスク付きコマ部分修正
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-panel-inpainting-v1`
+- Base: `agent/manga-panel-revision-v1`（Draft PR #97）
+
+### 完了
+
+- 採用済み画像の上へタッチ／マウスで修正範囲を描くマスクUIを追加。
+- sourceとmaskを同一作品・所有者・コマ・寸法で検証し、private署名URLをWorker内で発行。
+- `inpainting` operationとBFL `flux-pro-1.0-fill` adapterを追加。
+- 候補採用を元画像を残す`correction` layerとして保存。
+- 専用Feature Flag、価格migration、rollback、canonical schemaを追加。
+
+### 未完了
+
+- staging migration、実Provider有料生成、実ブラウザ／タッチ確認、責任者承認。
+- Outpainting、自動マスク、修正前後スライダー。
+
+### 検証
+
+- deps:check、lint、Hub/Desktop typecheck: PASS
+- Hub: 329/329、Canvas: 26/26、AI: 46/46、Desktop: 182/182
+- migration validate: 34/34
+- production build、git diff --check: PASS
+- migration roundtripはDraft PRのPostgreSQL CIで確認する。
+
+### 詳細
+
+- `docs/cloud/MANGA_PANEL_INPAINTING_V1.md`
+
+---
+
 ## 2026-08-01 Codex: M3-1 コマ修正候補生成
 
 ### 状態

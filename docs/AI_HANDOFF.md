@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M3-2 マスク付きコマ部分修正、2026-08-01）
+
+- Branch: `agent/manga-panel-inpainting-v1`
+- Base: `agent/manga-panel-revision-v1`（Draft PR #97）
+- 目的: 採用画像の利用者が塗った範囲だけを修正候補として生成する
+- 実装: タッチ対応マスク、専用inpainting operation、BFL Fill、private Asset再検証、correction layer採用
+- Feature Flag: `CLOUD_PANEL_INPAINTING_ENABLED`。未設定時はUI・サーバー・Provider registryで停止
+- migration: `202608010002_cloud_panel_inpainting.sql`
+- 詳細: `docs/cloud/MANGA_PANEL_INPAINTING_V1.md`
+- 注意: 一般向けCloudのみ。Outpainting、自動マスク、成人向け、Desktopは対象外
+- 未実施: staging migration、実Provider有料生成、実ブラウザ確認、責任者承認、親PR #97後のマージ
+
+---
+
 ## 0. 現在の優先タスク（M3-1 コマ修正候補生成、2026-08-01）
 
 - Branch: `agent/manga-panel-revision-v1`

@@ -247,6 +247,18 @@ begin
   ) then
     raise exception 'Cloud general image Provider price migration missing';
   end if;
+  if not exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-pro-1.0-fill'
+      and job_type = 'background'
+      and pricing_version = 'bfl-flux1-fill-2026-08'
+      and credits = 3
+      and max_cost_micros = 50000
+      and active
+  ) then
+    raise exception 'Cloud panel inpainting price migration missing';
+  end if;
 end $$;
 
 do $$

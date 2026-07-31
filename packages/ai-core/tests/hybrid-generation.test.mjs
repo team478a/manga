@@ -78,6 +78,34 @@ test("cloud image-to-image requires its source in image references", () => {
   );
 });
 
+test("cloud inpainting requires both a referenced source and a mask", () => {
+  const sourceAssetId = randomUUID();
+  const maskAssetId = randomUUID();
+  const base = {
+    kind: "image",
+    jobType: "background",
+    prompt: "repair the selected hand only",
+    negativePrompt: "",
+    operation: "inpainting",
+    sourceAssetId,
+    referenceAssetIds: [sourceAssetId],
+    revisionPreset: "hands",
+  };
+  assert.equal(cloudGenerationInputSchema.safeParse(base).success, false);
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({ ...base, maskAssetId }).success,
+    true,
+  );
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      operation: "image_to_image",
+      maskAssetId,
+    }).success,
+    false,
+  );
+});
+
 test("adult reference-image evaluation fails closed", () => {
   const base = {
     personPresence: "present",

@@ -43,6 +43,7 @@ import {
 } from "./hooks/useCanvasPointer";
 import { downloadCanvasPng } from "./services/canvas-download";
 import { createCanvasSvg } from "./services/canvas-svg";
+import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
 import {
   cancelGeneration,
   createGenerationJob,
@@ -94,6 +95,7 @@ export function CloudCanvasEditor({
   initialGenerationJobs,
   initialQuota,
   storyboardPanelGenerationEnabled,
+  panelInpaintingEnabled,
 }: {
   project: CloudProjectSummary;
   pages: CloudPage[];
@@ -103,6 +105,7 @@ export function CloudCanvasEditor({
   initialGenerationJobs: CloudGenerationJob[];
   initialQuota: CloudAiQuota | null;
   storyboardPanelGenerationEnabled: boolean;
+  panelInpaintingEnabled: boolean;
 }) {
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
@@ -133,6 +136,7 @@ export function CloudCanvasEditor({
   const [revisionPreset, setRevisionPreset] =
     useState<RevisionPreset>("face");
   const [revisionInstruction, setRevisionInstruction] = useState("");
+  const [inpaintingDialogOpen, setInpaintingDialogOpen] = useState(false);
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -524,6 +528,7 @@ export function CloudCanvasEditor({
     panelId?: string;
     candidateCount?: number;
     sourceAssetId?: string;
+    maskAssetId?: string;
     revisionPreset?: RevisionPreset;
     revisionInstruction?: string;
   }) {
@@ -541,6 +546,7 @@ export function CloudCanvasEditor({
         idempotencyKey: crypto.randomUUID(),
         candidateCount,
         sourceAssetId: options?.sourceAssetId,
+        maskAssetId: options?.maskAssetId,
         revisionPreset: options?.revisionPreset,
         revisionInstruction: options?.revisionInstruction,
       });
@@ -564,6 +570,28 @@ export function CloudCanvasEditor({
       );
     } finally {
       setRequestingPanelGeneration(false);
+    }
+  }
+
+  async function requestPanelInpainting(maskFile: File) {
+    if (!selectedRevisionLayer?.assetId) return;
+    setMessage("修正範囲を安全に保存しています…");
+    try {
+      const maskAsset = await uploadProjectAsset(project.id, maskFile);
+      await requestStoryboardPanelGeneration({
+        candidateCount: panelCandidateCount,
+        sourceAssetId: selectedRevisionLayer.assetId,
+        maskAssetId: maskAsset.id,
+        revisionPreset,
+        revisionInstruction: revisionInstruction.trim() || undefined,
+      });
+      setInpaintingDialogOpen(false);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "部分修正を開始できませんでした。",
+      );
     }
   }
 
@@ -666,7 +694,9 @@ export function CloudCanvasEditor({
     }
     setAssets(nextAssets);
     const layerType =
-      job.job_type === "character_base"
+      job.generation_operation === "inpainting"
+        ? "correction"
+        : job.job_type === "character_base"
         ? "character"
         : job.job_type === "prop"
           ? "prop"
@@ -738,6 +768,9 @@ export function CloudCanvasEditor({
   const selectedRevisionLayer = selectedPanelLayers.find(
     (layer) => layer.visible && Boolean(layer.assetId),
   );
+  const selectedRevisionAsset = selectedRevisionLayer?.assetId
+    ? assetMap.get(selectedRevisionLayer.assetId)
+    : undefined;
 
   return (
     <div
@@ -1058,9 +1091,26 @@ export function CloudCanvasEditor({
                       ? "修正候補を受付中…"
                       : `修正候補を${panelCandidateCount}案生成`}
                   </button>
-                  <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
-                    現段階は元画像を参照した候補の再生成です。範囲を塗って一部分だけを置換する編集にはまだ対応していません。
-                  </p>
+                  {panelInpaintingEnabled ? (
+                    <>
+                      <button
+                        className="button mt-2 w-full"
+                        disabled={
+                          !selectedRevisionAsset ||
+                          !quota?.generation_enabled ||
+                          remainingCredits <= 0 ||
+                          requestingPanelGeneration
+                        }
+                        onClick={() => setInpaintingDialogOpen(true)}
+                        type="button"
+                      >
+                        直す範囲を塗って部分修正
+                      </button>
+                      <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                        部分修正では白く塗った範囲だけを置換します。元画像はレイヤーに残ります。
+                      </p>
+                    </>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -1157,7 +1207,7 @@ export function CloudCanvasEditor({
                   <div className="flex items-center justify-between gap-2">
                     <span>
                       {job.revision_preset
-                        ? `修正候補・${revisionPresetLabels[job.revision_preset]}`
+                        ? `${job.generation_operation === "inpainting" ? "部分修正" : "修正候補"}・${revisionPresetLabels[job.revision_preset]}`
                         : job.job_type} / {job.status} / {job.progress}%
                     </span>
                     {job.status === "queued" || job.status === "running" ? (
@@ -1620,6 +1670,16 @@ export function CloudCanvasEditor({
           </section>
         </aside>
       </div>
+      {inpaintingDialogOpen && selectedRevisionAsset ? (
+        <PanelInpaintingDialog
+          onCancel={() => setInpaintingDialogOpen(false)}
+          onSubmit={requestPanelInpainting}
+          sourceHeight={selectedRevisionAsset.height}
+          sourceUrl={selectedRevisionAsset.url}
+          sourceWidth={selectedRevisionAsset.width}
+          submitting={requestingPanelGeneration}
+        />
+      ) : null}
       {preview ? (
         <div
           aria-modal="true"

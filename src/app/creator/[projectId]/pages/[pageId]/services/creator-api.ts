@@ -114,6 +114,7 @@ export async function createStoryboardPanelGenerationJob(body: {
   idempotencyKey: string;
   candidateCount?: number;
   sourceAssetId?: string;
+  maskAssetId?: string;
   revisionPreset?: "face" | "hands" | "expression" | "costume" | "background" | "polish";
   revisionInstruction?: string;
 }) {

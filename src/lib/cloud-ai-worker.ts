@@ -332,6 +332,7 @@ export async function processNextCloudGenerationJob(input: {
       pageId: job.page_id ?? undefined,
       idempotencyKey: job.idempotency_key,
       referenceImageUrls: [] as string[],
+      maskImageUrl: undefined as string | undefined,
     };
     if (generation.kind === "image" && generation.referenceAssetIds?.length) {
       const { data: referenceAssets, error: referenceError } = await client
@@ -362,6 +363,32 @@ export async function processNextCloudGenerationJob(input: {
           );
         context.referenceImageUrls.push(signed.signedUrl);
       }
+    }
+    if (generation.kind === "image" && generation.maskAssetId) {
+      const { data: maskAsset, error: maskError } = await client
+        .from("cloud_assets")
+        .select("storage_path")
+        .eq("id", generation.maskAssetId)
+        .eq("project_id", job.project_id)
+        .eq("owner_profile_id", job.created_by_profile_id)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (maskError || !maskAsset?.storage_path)
+        throw new AIProviderError(
+          "provider_rejected",
+          "修正範囲を確認できませんでした。",
+          false,
+        );
+      const { data: signedMask, error: signedMaskError } = await client.storage
+        .from(CLOUD_ASSET_BUCKET)
+        .createSignedUrl(maskAsset.storage_path, 600);
+      if (signedMaskError || !signedMask?.signedUrl)
+        throw new AIProviderError(
+          "provider_rejected",
+          "修正範囲を準備できませんでした。",
+          false,
+        );
+      context.maskImageUrl = signedMask.signedUrl;
     }
     let output: Record<string, unknown>;
     let outputAssetId: string | null = null;

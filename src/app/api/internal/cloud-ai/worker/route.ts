@@ -195,6 +195,21 @@ export async function POST(request: Request) {
           capability,
         }),
       );
+    const fillCapability = (await configuredRuntimeCapabilities()).find(
+      (candidate) =>
+        candidate.providerId === "black-forest-labs" &&
+        candidate.modelId === "flux-pro-1.0-fill" &&
+        candidate.kind === "image" &&
+        candidate.enabled,
+    );
+    if (fillCapability)
+      providers.push(
+        new BlackForestLabsFluxImageProvider({
+          apiKey: image.apiKey,
+          model: "flux-pro-1.0-fill",
+          capability: fillCapability,
+        }),
+      );
   } catch {
     // Keep processing text or Gateway jobs when the image provider is disabled.
   }

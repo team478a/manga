@@ -198,7 +198,13 @@
       "description": "一般向けCloud作品へ参照画像とコマ単位の明示設定割当を追加",
       "forwardSha256": "87311cd283fd1531ea363c999988380cdcb458f78be521027a812a0005d2d3d6",
       "rollbackSha256": "a6db08946b9b1c2e77a52bad012af29a7dac486b02aade1461070081fc1ecadf"
+    },
+    {
+      "id": "202608010002_cloud_panel_inpainting",
+      "description": "一般向けCloudコマ部分修正用BFL Fillモデルの価格上限を追加",
+      "forwardSha256": "30c0a8f8505b00e532a41698236763d42ad37a51d541bcc4db8a62452d8b4660",
+      "rollbackSha256": "f759d47a3221285f97585637d865dffa679165fa39280d23833f560f1ec79a71"
     }
   ],
-  "schemaSha256": "d8d52d9c0938616cd46493b4d32fa3ddfd0a80a9f0cf2916ac523b54954799c5"
+  "schemaSha256": "4937394d97399cef73e326b639c84abb0a875b09f4f3b0613cbf343ed934dc0e"
 }
