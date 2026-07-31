@@ -39,11 +39,11 @@ export default async function GeneralMonitorStaffGuidePage() {
         </div>
         <ul className="mt-4 space-y-3">
           {[
-            "Preview Supabaseへ指定された3つのmigrationを順番に適用した",
-            "一般向けFeature Flagだけを対象Previewブランチで有効にした",
+            "一般向けモニター用migrationが適用済みであることを公開チェック画面で確認した",
+            "一般向けFeature Flagを対象環境で有効にした",
             "成人向け、Stripe、販売、Marketplaceは停止している",
             "招待メール設定でResend APIキーと認証済み送信元を保存した",
-            "スタッフ1名で招待メールから市場分析まで事前確認した",
+            "スタッフ1名で招待メールから作品管理まで事前確認した",
           ].map((item) => (
             <li className="flex gap-2" key={item}>
               <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
@@ -111,6 +111,14 @@ export default async function GeneralMonitorStaffGuidePage() {
       </section>
 
       <section className="panel mt-8">
+        <h2 className="text-2xl font-bold">今回確認する8工程</h2>
+        <p className="mt-2 leading-relaxed text-stone-600">
+          市場分析、AI企画提案、シナリオ作成、ネーム作成、原稿編集、作品管理の
+          6工程を確認します。販売準備と収益管理は「準備中」であり、今回の完走条件には含めません。
+        </p>
+      </section>
+
+      <section className="panel mt-8">
         <h2 className="text-2xl font-bold">スタッフの日次確認</h2>
         <p className="mt-2 text-stone-600">
           1日1回、同じ担当者が確認し、問い合わせの重複対応を防ぎます。
@@ -164,7 +172,7 @@ export default async function GeneralMonitorStaffGuidePage() {
         <ul className="mt-4 space-y-2 text-stone-700">
           <li>・10名全員がログインと初回案内を完了した</li>
           <li>・市場分析を保存し、履歴から再表示できた</li>
-          <li>・少なくとも数名が企画以降の工程へ進めた</li>
+          <li>・少なくとも数名が企画から作品管理までの一般向け6工程を完走した</li>
           <li>・スマートフォンとPCの両方で操作結果が集まった</li>
           <li>・重大な権限漏れ、秘密情報露出、横スクロールがない</li>
           <li>・未対応の重大フィードバックがない</li>

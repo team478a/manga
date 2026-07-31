@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けモニターWebマニュアル同期
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-monitor-guide-sync-v1`
+- Base: `feature/manga-canvas-mvp` (`ee6e2ca`、PR #92 merge後)
+- Draft PR: [#93](https://github.com/team478a/manga/pull/93)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-mo-eaf18e-team478as-projects.vercel.app`
+
+### 完了
+
+- 利用者向けWebマニュアルを現在の8工程へ同期
+- 工程1〜6の直接導線、工程7〜8の「準備中」表示を追加
+- スマートフォン操作とFeature Flag停止中の説明を追加
+- Cloud共通サイドバーへ常設「使い方」リンクを追加
+- スタッフ向け運用マニュアルの確認範囲と完走条件を更新
+- 集中テスト5/5、deps:check、lint、Hub typecheck、Hub test 279/279、production build、git diff checkに成功
+- 実装commit `25aaa92`のCore quality、Migration roundtrip、Windows build、Vercelに成功
+
+### 未完了
+
+- 責任者によるPreview画面確認・承認・マージ
+
+### 変更ファイル
+
+- `src/app/dashboard/monitor/guide/page.tsx`
+- `src/app/admin/general-monitors/guide/page.tsx`
+- `src/components/CloudWorkflowShell.tsx`
+- `tests/cloud-general-monitor-web-guide.test.mjs`
+- `tests/cloud-general-monitor-beta.test.mjs`
+- `tests/cloud-creator-japanese-guide.test.mjs`
+- `docs/CURRENT_TASK.md`
+- `docs/AI_HANDOFF.md`
+- `docs/HANDOFF_LOG.md`
+- `docs/cloud/CLOUD_GENERAL_MONITOR_USER_GUIDE.md`
+
+### 注意事項
+
+- DB、migration、AI処理、Feature Flag値、成人向け境界、Desktopは変更していない。
+
+---
+
 ## 2026-07-31 Codex: 一般向け制作工程の表示を実装状態に合わせて整理
 
 - 最新`feature/manga-canvas-mvp`から`codex/cloud-workflow-labels-v1`を作成した。

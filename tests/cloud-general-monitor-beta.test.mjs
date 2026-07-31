@@ -25,7 +25,16 @@ test("モニター向けガイドは専門知識不要の制作手順と安全�
     readFile(new URL("../docs/cloud/CLOUD_GENERAL_MONITOR_USER_GUIDE.md", import.meta.url), "utf8"),
     readFile(new URL("../src/app/dashboard/page.tsx", import.meta.url), "utf8"),
   ]);
-  for (const value of ["AI市場分析", "AI企画提案", "シナリオ生成", "AIネーム", "Canvas・コマ画像"]) {
+  for (const value of [
+    "市場分析",
+    "AI企画提案",
+    "シナリオ作成",
+    "ネーム作成",
+    "原稿編集",
+    "作品管理",
+    "販売準備",
+    "収益管理",
+  ]) {
     assert.match(guidePage, new RegExp(value.replace("・", "・")));
   }
   assert.match(guideDocument, /出典URLや市場データを利用者が入力する必要はありません/);

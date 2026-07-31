@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  BookOpenCheck,
   FileText,
   FilePenLine,
   Images,
@@ -115,6 +116,18 @@ export function CloudWorkflowShell({
           >
             <LayoutDashboard className="h-4 w-4" />
             ダッシュボード
+          </Link>
+          <Link
+            aria-current={pathname === "/dashboard/monitor/guide" ? "page" : undefined}
+            className={`mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold ${
+              pathname === "/dashboard/monitor/guide"
+                ? "bg-violet-100 text-violet-800"
+                : "text-stone-700 hover:bg-violet-50"
+            }`}
+            href="/dashboard/monitor/guide"
+          >
+            <BookOpenCheck className="h-4 w-4" />
+            使い方
           </Link>
           <p className="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-stone-400">
             制作ワークフロー

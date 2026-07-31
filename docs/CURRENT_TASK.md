@@ -1,5 +1,26 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向けモニターWebマニュアル同期
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-monitor-guide-sync-v1`
+- Base: `feature/manga-canvas-mvp` (`ee6e2ca`、PR #92 merge後)
+- 対象: 利用者向けWebマニュアル、スタッフ向け運用マニュアル、Cloud共通サイドバー
+- 実装:
+  - 利用者向けマニュアルを現在の8工程へ同期
+  - 実装済みの工程1〜6へマニュアルから直接移動できる導線を追加
+  - 販売準備・収益管理を「準備中」と明示
+  - スマートフォン操作とFeature Flag停止時の案内を追加
+  - Cloud共通サイドバーへ常設の「使い方」リンクを追加
+  - スタッフ向け完走条件を一般向け6工程へ更新
+- 変更しない範囲: DB、migration、認証、AI生成・保存ロジック、Feature Flag、成人向け境界、Desktop
+- 検証: deps:check、lint、Hub typecheck、集中テスト5/5、Hub test 279/279、production build、git diff check成功
+- 注記: `npm ci`の既存依存監査でhigh severity 11件。今回の表示・文書変更とは分離して扱う
+- Draft PR: [#93](https://github.com/team478a/manga/pull/93)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-mo-eaf18e-team478as-projects.vercel.app`
+- CI: 実装commit `25aaa92`でCore quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 責任者によるPreview画面確認・承認・マージ
+
 ## 2026-07-31 一般向け制作工程の利用入口修正
 
 - 状態: `READY_FOR_REVIEW`

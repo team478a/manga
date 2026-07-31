@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（一般向けモニターWebマニュアル同期、2026-07-31）
+
+- Branch: `codex/cloud-monitor-guide-sync-v1`
+- Base: `feature/manga-canvas-mvp` (`ee6e2ca`、PR #92 merge後)
+- 目的: モニターが現在の8工程と利用可能範囲を迷わず理解し、制作画面からいつでもマニュアルを開けるようにする
+- 対象: `/dashboard/monitor/guide`、`/admin/general-monitors/guide`、Cloud共通サイドバー
+- Draft PR: [#93](https://github.com/team478a/manga/pull/93)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-mo-eaf18e-team478as-projects.vercel.app`
+- 状態: 実装・ローカル全品質ゲート・実装commitの全CI・Vercel成功、責任者確認待ち
+- 変更しない範囲: DB、migration、認証、AI生成・保存ロジック、Feature Flag、成人向け境界、Desktop
+
+---
+
 ## 0. 現在の優先タスク（一般向け制作工程の利用入口修正、2026-07-31）
 
 - Branch: `codex/cloud-workflow-entrypoints-v1`
