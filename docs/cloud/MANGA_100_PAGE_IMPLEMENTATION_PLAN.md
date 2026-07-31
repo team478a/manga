@@ -250,6 +250,14 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 
 目的: 同じキャラクターがページをまたいでも同一人物に見える確率を高める。
 
+進捗（2026-07-31）:
+
+- M2-1 Character Profile CRUD、版履歴、所有者RLSを実装
+- 年齢、体格、髪、衣装、配色、固定特徴、追加・除外条件を保存
+- ネーム上の人物名とProfileを照合し、コマ画像生成条件へ自動適用
+- 画像生成Job入力へ参照したProfile IDとversionを保存
+- 参照画像、Style Bible、Location／Prop、継続性警告は後続M2
+
 実装:
 
 - Character Profile CRUD

@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-07-31 Codex: M2-1 編集可能なキャラクター設定
+
+- `codex/manga-character-profiles-v1`をM1ブランチから作成し、M2を独立したstacked changeとして開始した。
+- 一般向けCloud作品にCharacter Profileと不変version snapshotを追加した。
+- 年齢、体格、髪、衣装、配色、固定特徴、追加条件、除外条件を日本語画面から保存できる。
+- 所有者RLSとSecurity Definer RPCを用い、他利用者の作品・設定を更新できない。
+- ネーム上の人物名と最新Profileを照合し、コマ画像生成条件へ自動適用する。
+- 生成Jobには参照したProfile IDとversionを保存し、後から使用設定を追跡できる。
+- migration未適用時は既存作品を壊さず準備案内を表示する。
+- 未完了: staging migration、実Provider生成、実ブラウザ確認、参照画像、Style Bible、Location／Prop、継続性警告。
+
+---
+
 ## 2026-07-31 Codex: M1キャラクター設定表・作品全体生成進捗
 
 - `codex/manga-production-m0-v1`へM1の残りである人物設定と全体進捗を追加した。

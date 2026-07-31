@@ -35,6 +35,11 @@ export {
   getCloudProductionProgress,
 } from "@/modules/cloud-creator/projects/manuscript-preflight-service";
 export { getCloudProjectCharacterSheet } from "@/modules/cloud-creator/projects/character-sheet-service";
+export {
+  deleteCloudCharacterProfile,
+  listCloudCharacterProfiles,
+  saveCloudCharacterProfile,
+} from "@/modules/cloud-creator/projects/character-profile-service";
 
 export {
   addCloudEpisode,

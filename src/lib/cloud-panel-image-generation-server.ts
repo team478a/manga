@@ -15,6 +15,7 @@ import {
   ResourceNotFoundError,
 } from "./domain-errors.ts";
 import { consumeCloudGeneralMonitorAiRequest } from "./cloud-general-monitor.ts";
+import type { CloudCharacterProfile } from "./cloud-character-profile.ts";
 
 export async function enqueueStoryboardPanelImage(input: unknown) {
   if (!cloudPanelImageGenerationFeatureEnabled())
@@ -90,6 +91,46 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
   const characterProfiles = cloudStoryScenarioResultSchema.safeParse(
     scenarioVersion?.result,
   );
+  let visualCharacterProfiles: CloudCharacterProfile[] = [];
+  const profileRows = await supabase
+    .from("cloud_character_profiles")
+    .select("id,project_id,name,role,current_version,updated_at")
+    .eq("project_id", request.projectId)
+    .eq("owner_profile_id", profile.id)
+    .is("deleted_at", null);
+  if (profileRows.error && profileRows.error.code !== "42P01")
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "キャラクター設定を読み込めませんでした。",
+      { cause: profileRows.error },
+    );
+  if (!profileRows.error && (profileRows.data?.length ?? 0) > 0) {
+    const versionRows = await supabase
+      .from("cloud_character_profile_versions")
+      .select(
+        "profile_id,version_number,appearance_age,body_build,hair,costume,color_palette,immutable_traits,prompt,negative_prompt",
+      )
+      .in(
+        "profile_id",
+        profileRows.data!.map((item) => item.id),
+      );
+    if (versionRows.error)
+      throw new DomainError(
+        "INTERNAL_ERROR",
+        "キャラクター設定を読み込めませんでした。",
+        { cause: versionRows.error },
+      );
+    visualCharacterProfiles = profileRows.data!.flatMap((profileRow) => {
+      const version = versionRows.data?.find(
+        (item) =>
+          item.profile_id === profileRow.id &&
+          item.version_number === profileRow.current_version,
+      );
+      return version
+        ? [{ ...profileRow, ...version } as CloudCharacterProfile]
+        : [];
+    });
+  }
   const canvas = pageCanvasSchema.parse(snapshot.canvas);
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
   let resolved: ReturnType<typeof buildStoryboardPanelGeneration> | null = null;
@@ -106,6 +147,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         characterProfiles: characterProfiles.success
           ? characterProfiles.data.characters
           : undefined,
+        visualCharacterProfiles,
       });
       await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
       const id = await enqueueCloudGenerationJob({

@@ -265,6 +265,9 @@ export default async function CloudProjectPage({
         <p className="mt-2 text-sm text-stone-600">
           採用したシナリオの人物設定です。画像生成時の人物一貫性にも利用します。
         </p>
+        <Link className="button-secondary mt-4 inline-flex" href={`/creator/${projectId}/characters`}>
+          外見・衣装の設定を編集
+        </Link>
         {characters.length ? (
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {characters.map((character) => (

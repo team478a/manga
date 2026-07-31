@@ -48,6 +48,15 @@ export const cloudGenerationInputSchema = z
       .max(Number.MAX_SAFE_INTEGER)
       .optional(),
     targetPanelId: z.string().uuid().optional(),
+    characterProfileVersions: z
+      .array(
+        z.object({
+          profileId: z.string().uuid(),
+          version: z.number().int().positive(),
+        }),
+      )
+      .max(12)
+      .optional(),
   })
   .superRefine((value, context) => {
     const imageTypes: CloudGenerationJobType[] = [

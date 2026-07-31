@@ -10,6 +10,7 @@ import {
   ValidationError,
 } from "./domain-errors.ts";
 import type { CloudStoryScenarioResult } from "./cloud-scenario.ts";
+import type { CloudCharacterProfile } from "./cloud-character-profile.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED?.toLowerCase() === "true";
@@ -70,6 +71,7 @@ export function buildStoryboardPanelGeneration(input: {
   candidateIndex?: number;
   candidateCount?: number;
   characterProfiles?: CloudStoryScenarioResult["characters"];
+  visualCharacterProfiles?: CloudCharacterProfile[];
 }) {
   const storyboard = cloudStoryboardResultSchema.parse(input.storyboard);
   const canvas: PageCanvas = pageCanvasSchema.parse(input.canvas);
@@ -106,6 +108,29 @@ export function buildStoryboardPanelGeneration(input: {
       (character) =>
         `${character.name}（役割:${character.role}、望み:${character.desire}、恐れ:${character.fear}、葛藤:${character.conflict}）`,
     );
+  const visualProfiles = storyboardPanel.characters
+    .map((name) =>
+      input.visualCharacterProfiles?.find(
+        (character) =>
+          character.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+      ),
+    )
+    .filter((profile): profile is CloudCharacterProfile => Boolean(profile));
+  const visualDetails = visualProfiles.map((profile) =>
+    [
+      `${profile.name}（外見設定v${profile.current_version}`,
+      profile.appearance_age && `見た目年齢:${profile.appearance_age}`,
+      profile.body_build && `体格:${profile.body_build}`,
+      profile.hair && `髪:${profile.hair}`,
+      profile.costume && `衣装:${profile.costume}`,
+      profile.color_palette && `配色:${profile.color_palette}`,
+      profile.immutable_traits.length &&
+        `変えてはいけない特徴:${profile.immutable_traits.join("、")}`,
+      profile.prompt && `追加指定:${profile.prompt}`,
+    ]
+      .filter(Boolean)
+      .join("、") + "）",
+  );
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
   const candidateIndex = Math.max(
     0,
@@ -126,6 +151,9 @@ export function buildStoryboardPanelGeneration(input: {
     characterDetails.length
       ? `人物設定: ${characterDetails.join(" / ")}。同一人物の顔立ち、髪型、体格、服装の一貫性を保つ。`
       : "登場人物がいる場合は、前後のコマと外見の一貫性を保つ。",
+    visualDetails.length
+      ? `固定ビジュアル設定: ${visualDetails.join(" / ")}。この設定を最優先し、別人化や衣装変更を避ける。`
+      : "固定ビジュアル設定がない人物は、ネームと前後のコマから自然に補完する。",
     `背景: ${storyboardPanel.background}。`,
     `動作: ${storyboardPanel.action}。`,
     `感情: ${storyboardPanel.emotion}。`,
@@ -142,8 +170,17 @@ export function buildStoryboardPanelGeneration(input: {
       kind: "image" as const,
       jobType: "background" as const,
       prompt,
-      negativePrompt: "文字、字幕、ロゴ、透かし、低品質、崩れた構図",
+      negativePrompt: [
+        "文字、字幕、ロゴ、透かし、低品質、崩れた構図、別人、髪型の変化、衣装の無断変更",
+        ...visualProfiles
+          .map((profile) => profile.negative_prompt)
+          .filter(Boolean),
+      ].join("、"),
       targetPanelId: canvasPanel.id,
+      characterProfileVersions: visualProfiles.map((profile) => ({
+        profileId: profile.id,
+        version: profile.current_version,
+      })),
       ...imageSize(canvasPanel.width, canvasPanel.height),
     },
     panelId: canvasPanel.id,
