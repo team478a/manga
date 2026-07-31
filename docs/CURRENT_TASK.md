@@ -4,6 +4,7 @@
 
 - 状態: `IMPLEMENTED`
 - Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
 - 対象: 一般向けCloud Canvasのネーム連動コマ画像生成
 - 実装:
   - 1コマにつき2〜4候補を一度の操作で受付
@@ -17,12 +18,13 @@
   production build、diff check成功
 - 次: ページ／全8ページの進捗表示、基本キャラクター設定表、原稿preflight、
   8ページfixtureによるPDF／連番PNGの完走検証
-- 未実施: Draft PR、CI、Vercel Preview、実Provider有料生成、責任者画面確認
+- 未実施: CI完了、Vercel Preview確認、実Provider有料生成、責任者画面確認
 
 ## 2026-07-31 長編マンガ制作 M0: Cloudページ合成基盤
 
 - 状態: `IMPLEMENTED`
 - Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
 - Base: `codex/cloud-general-image-v1` (`56ab885`)
 - 計画:
   [`MANGA_100_PAGE_IMPLEMENTATION_PLAN.md`](cloud/MANGA_100_PAGE_IMPLEMENTATION_PLAN.md)
@@ -40,7 +42,7 @@
   引き渡せる境界を保持。今回Desktopコードと成人向けProviderは変更しない
 - 検証: deps、lint、Hub typecheck、Hub 284/284、production build、
   Cloud Canvas集中テスト5/5、diff check成功
-- 未実施: Draft PR、CI、Vercel Preview、実ブラウザでの編集→保存→PDF比較
+- 未実施: CI完了、Vercel Preview確認、実ブラウザでの編集→保存→PDF比較
 
 ## 2026-07-31 一般向けクラウド画像生成Provider接続
 

@@ -16,6 +16,7 @@
 - Jobの`targetPanelId`を利用するため、ブラウザー再読込後も採用先を復元する。
 - lint、Hub typecheck、集中テスト12/12、Hub 287/287、production build、
   diff checkが成功した。
+- stacked Draft PR [#88](https://github.com/team478a/manga/pull/88)を作成した。
 - 次はページ／作品単位の進捗、キャラクター設定表、原稿preflight、
   8ページfixtureによる完成PDF／連番PNGの完走検証を進める。
 
