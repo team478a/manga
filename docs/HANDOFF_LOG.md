@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-panel-outpainting-v1`
 - Base: `agent/manga-panel-inpainting-v1`（Draft PR #98）
+- Draft PR: [#99](https://github.com/team478a/manga/pull/99)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-f7bc01-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -34,6 +36,7 @@ IMPLEMENTED_AWAITING_REVIEW
 - Hub: 333/333、Canvas: 26/26、AI: 47/47、Desktop: 182/182
 - migration validate: 34/34（今回追加なし）
 - production build、git diff --check: PASS
+- GitHub Core quality、Migration roundtrip、Windows build、Vercel: PASS
 
 ### 詳細
 

@@ -5,11 +5,14 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `agent/manga-panel-outpainting-v1`
 - Base: `agent/manga-panel-inpainting-v1`（Draft PR #98）
+- Draft PR: [#99](https://github.com/team478a/manga/pull/99)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-f7bc01-team478as-projects.vercel.app`
 - 目的: 採用画像を維持したまま、左・右・上・下・全方向へ背景と構図を延長する
 - 実装: 方向選択、Worker内の余白・マスク生成、BFL Fill、元画像の所有権・コマ配置検証、2〜4案比較、correction layer採用
 - Feature Flag: `CLOUD_PANEL_OUTPAINTING_ENABLED`（未設定時fail closed）
 - migration: なし。既存Fill価格行を再利用
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 333/333、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 詳細: `docs/cloud/MANGA_PANEL_OUTPAINTING_V1.md`
 - 未実施: 実Provider有料生成、実ブラウザ確認、責任者承認、親PR #98後のマージ
 
