@@ -13,7 +13,7 @@ function adapter(supabase: Client): CloudStoryboardMaterializationPersistence {
     async find(profileId, storyboardVersionId) {
       return await supabase
         .from("cloud_story_storyboard_projects")
-        .select("id,owner_profile_id,storyboard_version_id,project_id,first_page_id,created_at")
+        .select("id,owner_profile_id,storyboard_version_id,project_id,first_page_id,content_class,created_at")
         .eq("owner_profile_id", profileId)
         .eq("storyboard_version_id", storyboardVersionId)
         .maybeSingle<CloudStoryboardMaterialization>();

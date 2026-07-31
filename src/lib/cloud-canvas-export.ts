@@ -14,6 +14,7 @@ import {
 import { CONTENT_POLICY_VERSION } from "@mangai/shared";
 import { stageCloudProjectExportBundle } from "@/lib/cloud-creator-server";
 import { renderCloudCanvasPng } from "@/lib/cloud-canvas-render";
+import { PermissionDeniedError } from "@/lib/domain-errors";
 
 type StagedPage = {
   fileName: string;
@@ -188,6 +189,10 @@ export async function createCloudProjectExport(
 ) {
   const staged = await stageExport(projectId);
   try {
+    if (format === "package" && staged.bundle.project.content_class !== "general")
+      throw new PermissionDeniedError(
+        "成人向けCanvasは販売パッケージへ出力できません。",
+      );
     const outputPath = path.join(staged.directory, `output.${format === "pdf" ? "pdf" : "zip"}`);
     if (format === "images") {
       await writeZip(

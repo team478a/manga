@@ -45,9 +45,10 @@ export default async function CloudProjectPage({
     notFound();
   }
   const { project, episodes, pages } = workspace;
-  const marketplaceDraft = await getCloudMarketplaceDraft(projectId).catch(
-    () => null,
-  );
+  const marketplaceDraft =
+    project.content_class === "general"
+      ? await getCloudMarketplaceDraft(projectId).catch(() => null)
+      : null;
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product &&
       new Date(marketplaceDraft.product.updated_at).getTime() >=
@@ -66,8 +67,12 @@ export default async function CloudProjectPage({
             {project.reading_direction === "rtl" ? "右綴じ" : "左綴じ"}
           </p>
         </div>
-        <span className="rounded-full bg-green-50 px-4 py-2 font-semibold text-green-800">
-          一般向け・クラウド制作
+        <span className={`rounded-full px-4 py-2 font-semibold ${
+          project.content_class === "adult"
+            ? "bg-rose-50 text-rose-800"
+            : "bg-green-50 text-green-800"
+        }`}>
+          {project.content_class === "adult" ? "成人向け・非公開" : "一般向け・クラウド制作"}
         </span>
       </div>
       {query.message ? (
@@ -365,7 +370,7 @@ export default async function CloudProjectPage({
               </div>
             </dl>
           </section>
-          <section className="panel">
+          {project.content_class === "general" ? <section className="panel">
             <h2 className="flex items-center text-xl font-bold">
               <ShoppingBag className="mr-2 h-5 w-5" />
               販売準備へ進む
@@ -409,7 +414,12 @@ export default async function CloudProjectPage({
                   : "販売下書きを作成"}
               </button>
             </form>
-          </section>
+          </section> : <section className="panel border-rose-200 bg-rose-50">
+            <h2 className="text-xl font-bold text-rose-900">成人向け非公開Canvas</h2>
+            <p className="mt-3 text-sm leading-relaxed text-rose-900">
+              このProjectは編集専用です。AI画像生成、公開、共同編集、Marketplaceへの受け渡しは利用できません。
+            </p>
+          </section>}
         </aside>
       </div>
     </main>

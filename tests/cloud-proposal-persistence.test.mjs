@@ -33,6 +33,7 @@ const run = {
   id: runId,
   owner_profile_id: profileId,
   research_report_id: reportId,
+  content_class: "general",
   status: "completed",
   result: {
     engineVersion: "openai-proposal-v1",
@@ -116,6 +117,7 @@ test("選択した企画は候補snapshotとしてそのまま保存する", asy
   assert.deepEqual(saved.candidate_snapshot, candidate);
   assert.equal(saved.owner_profile_id, profileId);
   assert.equal(saved.research_report_id, reportId);
+  assert.equal(saved.content_class, "general");
 });
 
 test("同じ企画の同時選択は既存結果を返して冪等に完了する", async () => {

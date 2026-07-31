@@ -63,7 +63,10 @@ export function CloudWorkflowShell({
           <ol className="mt-2 flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
             {workflow.map((item) => {
               const active = item.href
-                ? pathname === item.href || pathname.startsWith(`${item.href}/`)
+                ? pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`) ||
+                  (item.step === 5 &&
+                    pathname.startsWith("/dashboard/adult-works"))
                 : false;
               const enabled =
                 Boolean(item.href) &&

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { cloudScenarioFeatureEnabled, cloudStoryScenarioResultSchema, scenarioPageCount } from "../src/lib/cloud-scenario.ts";
-import { runCloudScenarioAi } from "../src/lib/cloud-scenario-ai.ts";
+import { runCloudAdultScenarioAi, runCloudScenarioAi } from "../src/lib/cloud-scenario-ai.ts";
 import {
   adoptCloudScenarioWithPersistence,
   createCloudScenarioVersionWithPersistence,
@@ -52,13 +52,14 @@ const report = {
 };
 const selection = {
   id: selectionId, owner_profile_id: profileId, research_report_id: reportId,
+  content_class: "general",
   proposal_run_id: "30000000-0000-4000-8000-000000000001", candidate_id: "candidate-best-fit",
   candidate_snapshot: { title: "再出発の約束", logline: "主人公が期限付きの目的へ挑む。" },
   selected_at: "2026-07-30T00:00:00.000Z",
 };
 const version = {
   id: versionId, owner_profile_id: profileId, research_report_id: reportId,
-  proposal_selection_id: selectionId, parent_version_id: null, revision_instruction: null,
+  proposal_selection_id: selectionId, content_class: "general", parent_version_id: null, revision_instruction: null,
   result: scenario, engine_version: "openai-scenario-v1", completed_at: scenario.generatedAt, created_at: scenario.generatedAt,
 };
 const persistence = (overrides = {}) => ({
@@ -102,23 +103,62 @@ test("採用企画から構造化シナリオを生成しProvider保存を無効
   assert.ok(!JSON.stringify(body).includes("sk-test"));
 });
 
-test("成人向けデータはProvider呼出前に拒否する", async () => {
+test("一般向けrunnerは成人向けデータをProvider呼出前に拒否する", async () => {
   let called = false;
   await assert.rejects(runCloudScenarioAi({
-    profileId, report: { ...report, input: { ...report.input, contentClass: "adult" } }, selection,
+    profileId, report: { ...report, input: { ...report.input, contentClass: "adult" } },
+    selection: { ...selection, content_class: "adult" },
     runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
     fetchImplementation: async () => { called = true; return new Response(); },
-  }), /外部AIへ送信しません/);
+  }), /区分を確認/);
   assert.equal(called, false);
+});
+
+test("成人向けrunnerは区分を維持し安全検査後に構造化シナリオを返す", async () => {
+  const adultReport = {
+    ...report,
+    input: { ...report.input, contentClass: "adult", audience: "30代の成人女性" },
+  };
+  const adultSelection = {
+    ...selection,
+    content_class: "adult",
+    candidate_snapshot: {
+      ...selection.candidate_snapshot,
+      protagonist: "架空の25歳の成人女性",
+      readerPromise: "合意のある成人同士の関係と感情の変化を描く",
+    },
+  };
+  let body;
+  const generated = await runCloudAdultScenarioAi({
+    profileId,
+    report: adultReport,
+    selection: adultSelection,
+    runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
+    now: scenario.generatedAt,
+    fetchImplementation: async (_url, init) => {
+      body = JSON.parse(init.body);
+      return new Response(JSON.stringify({ output_text: JSON.stringify({
+        ...resultBody,
+        characters: [
+          { ...resultBody.characters[0], name: "成人の明日香", desire: "合意のある関係を築く" },
+          { ...resultBody.characters[1], name: "成人の蓮", desire: "相手の意思を尊重する" },
+        ],
+      }) }));
+    },
+  });
+  assert.equal(generated.pageCount, 32);
+  assert.match(body.input[0].content, /架空かつ明示的に18歳以上/);
+  assert.equal(body.store, false);
 });
 
 test("版はsnapshotとして保存し、不正UUIDと別所有者相当の欠損をnot foundにする", async () => {
   let saved;
   await createCloudScenarioVersionWithPersistence({
-    profileId, reportId, selectionId, result: scenario,
+    profileId, reportId, selectionId, contentClass: "adult", result: scenario,
     persistence: persistence({ insertVersion: async (value) => { saved = value; return { data: { id: versionId }, error: null }; } }),
   });
   assert.deepEqual(saved.result, scenario);
+  assert.equal(saved.content_class, "adult");
   let queried = false;
   await assert.rejects(getCloudScenarioVersionWithPersistence({
     profileId, versionId: "invalid",

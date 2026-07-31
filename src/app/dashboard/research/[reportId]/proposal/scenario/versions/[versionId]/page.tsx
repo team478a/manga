@@ -13,6 +13,7 @@ import {
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { adoptCloudScenarioAction, reviseCloudScenarioAction } from "../../actions";
 import { ScenarioSubmitButton } from "../../scenario-buttons";
+import { getCloudAdultScenarioAccess } from "@/lib/cloud-adult-scenario";
 
 const role = { protagonist: "主人公", supporting: "主要人物", antagonist: "対立人物" } as const;
 const act = { setup: "第1幕・導入", confrontation: "第2幕・対立", resolution: "第3幕・解決" } as const;
@@ -32,7 +33,10 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
   });
   if (version.research_report_id !== reportId) notFound();
   const selection = await getCloudProposalSelection(profile.id, reportId);
-  if (!selection || selection.id !== version.proposal_selection_id) notFound();
+  if (!selection || selection.id !== version.proposal_selection_id ||
+      selection.content_class !== version.content_class) notFound();
+  if (version.content_class === "adult" && !(await getCloudAdultScenarioAccess(profile.id)).allowed)
+    redirect(`/dashboard/research/${reportId}/proposal/scenario`);
   const adoption = await getLatestCloudScenarioAdoption(profile.id, selection.id);
   const adopted = adoption?.scenario_version_id === version.id;
   const result = version.result;
@@ -40,7 +44,7 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
     <main className="page max-w-6xl">
       <Link className="text-violet-700 underline" href={`/dashboard/research/${reportId}/proposal/scenario`}>← シナリオ版履歴へ</Link>
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div><p className="text-sm font-bold text-violet-700">WORKFLOW 3</p><h1 className="mt-2 break-words text-3xl font-bold">{result.title}</h1></div>
+        <div><p className="text-sm font-bold text-violet-700">WORKFLOW 3</p><h1 className="mt-2 break-words text-3xl font-bold">{result.title}</h1><span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-bold ${version.content_class === "adult" ? "bg-rose-50 text-rose-800" : "bg-violet-50 text-violet-800"}`}>{version.content_class === "adult" ? "成人向け" : "一般向け"}</span></div>
         {adopted ? <span className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 font-bold text-emerald-800"><CheckCircle2 className="h-5 w-5" />採用版</span> : null}
       </div>
       <p className="mt-3 break-words text-lg leading-relaxed text-stone-700">{result.oneSentencePitch}</p>
@@ -76,10 +80,10 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
           <div className="mt-4"><ScenarioSubmitButton secondary>AIで修正版を作る</ScenarioSubmitButton></div>
         </form>
         <form action={adoptCloudScenarioAction.bind(null, reportId, version.id)} className="panel">
-          <h2 className="text-xl font-bold">{adopted ? "マンガ生成の準備ができました" : "制作する版を決定"}</h2>
-          <p className="mt-2 text-stone-600">{adopted ? "この版からAIネーム・ページ構成を作成できます。" : "内容を確認し、マンガ生成へ渡すシナリオを採用してください。"}</p>
+          <h2 className="text-xl font-bold">{adopted ? "AIネーム・ページ構成へ進む" : "制作する版を決定"}</h2>
+          <p className="mt-2 text-stone-600">{adopted ? "この版から、区分を維持したAIネーム・ページ構成を作成できます。" : "内容を確認し、次工程へ渡すシナリオを採用してください。"}</p>
           {!adopted ? <div className="mt-5"><ScenarioSubmitButton>このシナリオを採用</ScenarioSubmitButton></div> : null}
-          {adopted ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${version.id}/storyboard`}>AIネーム生成へ進む</Link> : null}
+          {adopted ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${version.id}/storyboard`}>{version.content_class === "adult" ? "成人向けAIネームへ進む" : "AIネーム生成へ進む"}</Link> : null}
         </form>
       </div>
     </main>

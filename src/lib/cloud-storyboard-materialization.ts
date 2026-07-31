@@ -4,12 +4,16 @@ import { DomainError, ResourceNotFoundError } from "./domain-errors.ts";
 export const cloudStoryboardCanvasFeatureEnabled = () =>
   process.env.CLOUD_STORYBOARD_CANVAS_ENABLED?.toLowerCase() === "true";
 
+export const cloudAdultCanvasFeatureEnabled = () =>
+  process.env.CLOUD_ADULT_CANVAS_ENABLED?.toLowerCase() === "true";
+
 export type CloudStoryboardMaterialization = {
   id: string;
   owner_profile_id: string;
   storyboard_version_id: string;
   project_id: string;
   first_page_id: string;
+  content_class: "general" | "adult";
   created_at: string;
 };
 

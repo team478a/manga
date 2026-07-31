@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { runCloudProposalAi } from "../src/lib/cloud-proposal-ai.ts";
+import { runCloudAdultProposalAi, runCloudProposalAi } from "../src/lib/cloud-proposal-ai.ts";
 import { cloudProposalFeatureEnabled } from "../src/lib/cloud-proposal.ts";
 
 const candidates = [
@@ -82,9 +82,56 @@ test("成人向けReportはProviderへ送る前に拒否する", async () => {
       runtimeConfig,
       fetchImplementation: async () => { called = true; return new Response(); },
     }),
-    /外部AIへ送信しません/,
+    /市場分析の区分を確認/,
   );
   assert.equal(called, false);
+});
+
+test("成人向けAI企画は専用経路で一般版と区別し安全条件をProviderへ渡す", async () => {
+  let body;
+  const result = await runCloudAdultProposalAi({
+    profileId: "10000000-0000-4000-8000-000000000001",
+    report: {
+      ...report,
+      input: {
+        ...report.input,
+        contentClass: "adult",
+        audience: "30代の成人",
+        theme: "架空の成人同士の恋愛",
+      },
+    },
+    runtimeConfig,
+    now: "2026-07-30T00:00:00.000Z",
+    fetchImplementation: async (_url, init) => {
+      body = JSON.parse(init.body);
+      return new Response(JSON.stringify({ output_text: JSON.stringify({ candidates }) }));
+    },
+  });
+  assert.equal(result.candidates.length, 3);
+  assert.match(body.input[0].content, /架空の18歳以上/);
+  assert.match(body.input[0].content, /未成年.*禁止/);
+});
+
+test("成人向けAI企画は未成年・実在人物・非同意をProvider呼出前に拒否する", async () => {
+  for (const theme of ["高校生の恋愛", "実在人物を題材にする", "非同意の関係"]) {
+    let called = false;
+    await assert.rejects(
+      runCloudAdultProposalAi({
+        profileId: "10000000-0000-4000-8000-000000000001",
+        report: {
+          ...report,
+          input: { ...report.input, contentClass: "adult", theme },
+        },
+        runtimeConfig,
+        fetchImplementation: async () => {
+          called = true;
+          return new Response();
+        },
+      }),
+      /安全条件を満たさない/,
+    );
+    assert.equal(called, false);
+  }
 });
 
 test("Provider内部エラーを利用者へ露出しない", async () => {

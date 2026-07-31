@@ -4,7 +4,8 @@ export type CloudProjectSummary = {
   id: string;
   title: string;
   description: string;
-  age_rating: "全年齢" | "12歳以上" | "15歳以上";
+  content_class: "general" | "adult";
+  age_rating: "全年齢" | "12歳以上" | "15歳以上" | "18歳以上";
   reading_direction: "rtl" | "ltr";
   width: number;
   height: number;
