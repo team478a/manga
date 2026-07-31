@@ -13,7 +13,11 @@
 - モニター招待・再送・停止、成人向け利用許可、フィードバック対応、
   招待メール設定、利用者フィードバック、初回開始へ段階適用した。
 - 業務ロジック、認証、DB、API、Feature Flag、Desktopは変更していない。
-- deps、lint、Hub typecheck、Hub 274/274、diff checkが成功した。
+- Draft PR [#83](https://github.com/team478a/manga/pull/83)を作成した。
+- deps、lint、Hub typecheck、Hub 274/274、production build、diff check、
+  Core quality、migration roundtrip、Windows build、Vercelが成功した。
+- Preview:
+  `https://mangai-hub-staging-hvbsecmo4-team478as-projects.vercel.app`
 
 ---
 
