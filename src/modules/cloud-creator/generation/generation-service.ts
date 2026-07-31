@@ -44,7 +44,7 @@ export async function enqueueCloudGenerationJob(input: {
     throw cloudModerationRejectedError(moderation.reasons);
   }
 
-  const capability = selectCloudProvider(generation);
+  const capability = await selectCloudProvider(generation);
   const { supabase } = await cloudCreatorContext();
   const promptSha256 = crypto
     .createHash("sha256")

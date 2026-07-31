@@ -3,6 +3,9 @@ import {
   type CloudGenerationInput,
   type CloudProviderCapability,
 } from "@mangai/ai-core";
+import {
+  getCloudGeneralImageRuntimeConfig,
+} from "./cloud-general-image-settings.ts";
 
 export function configuredCapabilities(): CloudProviderCapability[] {
   const imagePricingVersion =
@@ -64,8 +67,29 @@ export function listCloudProviderCapabilities() {
   return configuredCapabilities().map((capability) => ({ ...capability }));
 }
 
-export function selectCloudProvider(input: CloudGenerationInput) {
-  const capability = configuredCapabilities().find(
+export async function configuredRuntimeCapabilities() {
+  const capabilities = configuredCapabilities();
+  try {
+    const image = await getCloudGeneralImageRuntimeConfig();
+    capabilities.unshift(
+      cloudProviderCapabilitySchema.parse({
+        providerId: "black-forest-labs",
+        modelId: image.model,
+        kind: "image",
+        jobTypes: ["background", "prop", "effect", "character_base"],
+        policyVersion: "general-v1",
+        pricingVersion: image.pricingVersion,
+        enabled: true,
+      }),
+    );
+  } catch {
+    // The Vault-backed provider is intentionally fail closed until configured.
+  }
+  return capabilities;
+}
+
+export async function selectCloudProvider(input: CloudGenerationInput) {
+  const capability = (await configuredRuntimeCapabilities()).find(
     (candidate) =>
       candidate.enabled &&
       candidate.kind === input.kind &&

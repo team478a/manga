@@ -119,6 +119,20 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_general_image_provider_settings') is not null
+     or to_regclass('public.cloud_general_image_provider_audit_logs') is not null
+     or to_regprocedure(
+       'public.set_cloud_general_image_provider(uuid,text,text,boolean)'
+     ) is not null
+     or to_regprocedure(
+       'public.get_cloud_general_image_runtime_config()'
+     ) is not null then
+    raise exception 'Cloud general image Provider objects remain after rollback';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_research_ai_settings') is not null
      or to_regclass('public.cloud_research_ai_audit_logs') is not null
      or to_regprocedure(

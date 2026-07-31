@@ -12,12 +12,17 @@ import {
   processNextCloudGenerationJob,
   processPendingCloudStorageCleanup,
 } from "@/lib/cloud-ai-worker";
-import { configuredCapabilities } from "@/lib/cloud-ai-registry";
+import {
+  configuredCapabilities,
+  configuredRuntimeCapabilities,
+} from "@/lib/cloud-ai-registry";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   MangaiCloudGatewayImageProvider,
   MangaiCloudGatewayTextProvider,
 } from "@/lib/cloud-ai-gateway-provider";
+import { BlackForestLabsFluxImageProvider } from "@/lib/cloud-flux-image-provider";
+import { getCloudGeneralImageRuntimeConfig } from "@/lib/cloud-general-image-settings";
 import { toApiError } from "@/lib/api-errors";
 import {
   AuthenticationRequiredError,
@@ -114,7 +119,7 @@ export async function GET(request: Request) {
         failed: failed.count ?? 0,
         staleLeases: stale.count ?? 0,
       },
-      providers: configuredCapabilities().map((capability) => ({
+      providers: (await configuredRuntimeCapabilities()).map((capability) => ({
         providerId: capability.providerId,
         modelId: capability.modelId,
         kind: capability.kind,
@@ -173,6 +178,26 @@ export async function POST(request: Request) {
     process.env.MANGAI_CLOUD_AI_MOCK_ENABLED === "true"
       ? [new MockCloudImageProvider(), new MockCloudTextProvider()]
       : [];
+  try {
+    const image = await getCloudGeneralImageRuntimeConfig();
+    const capability = (await configuredRuntimeCapabilities()).find(
+      (candidate) =>
+        candidate.providerId === "black-forest-labs" &&
+        candidate.modelId === image.model &&
+        candidate.kind === "image" &&
+        candidate.enabled,
+    );
+    if (capability)
+      providers.push(
+        new BlackForestLabsFluxImageProvider({
+          apiKey: image.apiKey,
+          model: image.model,
+          capability,
+        }),
+      );
+  } catch {
+    // Keep processing text or Gateway jobs when the image provider is disabled.
+  }
   const gatewayEndpoint = process.env.MANGAI_CLOUD_AI_GATEWAY_ENDPOINT;
   const gatewayKey = process.env.MANGAI_CLOUD_AI_GATEWAY_KEY;
   if (gatewayEndpoint && gatewayKey) {
