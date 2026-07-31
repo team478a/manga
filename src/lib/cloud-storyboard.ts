@@ -30,7 +30,7 @@ const pageSchema = z.object({
 });
 
 export const cloudStoryboardResultSchema = z.object({
-  engineVersion: z.literal("openai-storyboard-v1"),
+  engineVersion: z.enum(["openai-storyboard-v1", "xai-adult-storyboard-v1"]),
   generatedAt: z.string().datetime(),
   model: z.string().min(1).max(100),
   classification: z.literal("ai_inference"),

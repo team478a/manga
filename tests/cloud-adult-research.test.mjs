@@ -157,8 +157,8 @@ test("成人向けUIは許可・本人同意・管理者停止を提供する", 
       "utf8",
     ),
   ]);
-  assert.match(form, /成人向け（AI接続は準備中）/);
-  assert.match(form, /明示許可なしに外部AIへ送信しません/);
+  assert.match(form, /成人向けは明示許可・本人同意・管理者設定/);
+  assert.match(form, /xAI\/Grokへ送信します/);
   assert.match(accessPage, /私は18歳以上です/);
   assert.match(accessPage, /専用規約/);
   assert.match(adminAction, /requireAdmin/);

@@ -48,6 +48,9 @@ export default async function ProposalComparisonPage({
       </Link>
       <p className="mt-5 text-sm font-bold text-violet-700">WORKFLOW 2</p>
       <h1 className="mt-2 text-3xl font-bold">企画案を比較</h1>
+      <span className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-bold ${run.content_class === "adult" ? "bg-rose-50 text-rose-800" : "bg-violet-50 text-violet-800"}`}>
+        {run.content_class === "adult" ? "成人向け" : "一般向け"}
+      </span>
       <p className="mt-2 text-stone-600">方向性を比べ、制作する企画を1つ選んでください。</p>
       {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
       {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
@@ -90,9 +93,9 @@ export default async function ProposalComparisonPage({
       {selection ? (
         <section className="panel mt-6 border-violet-200 bg-violet-50">
           <h2 className="text-xl font-bold">シナリオ生成の準備ができました</h2>
-          <p className="mt-2 text-violet-950">選んだ企画は保存済みです。人物・構成・シーンへ引き継げます。</p>
-          <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario`}>
-            シナリオ生成へ進む
+          <p className="mt-2 text-violet-950">選んだ企画は保存済みです。</p>
+          <Link className={`button mt-5 ${run.content_class === "adult" ? "bg-rose-700 hover:bg-rose-800" : "bg-violet-700 hover:bg-violet-800"}`} href={`/dashboard/research/${reportId}/proposal/scenario`}>
+            {run.content_class === "adult" ? "成人向けシナリオ生成へ進む" : "シナリオ生成へ進む"}
           </Link>
         </section>
       ) : null}

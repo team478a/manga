@@ -8,8 +8,9 @@ export type CloudStoryboardVersion = {
   scenario_version_id: string;
   parent_version_id: string | null;
   revision_instruction: string | null;
+  content_class: "general" | "adult";
   result: CloudStoryboardResult;
-  engine_version: "openai-storyboard-v1";
+  engine_version: "openai-storyboard-v1" | "xai-adult-storyboard-v1";
   completed_at: string;
   created_at: string;
 };
@@ -35,7 +36,8 @@ const unique = (error: unknown) =>
 
 export async function createCloudStoryboardVersionWithPersistence(input: {
   profileId: string; scenarioVersionId: string; parentVersionId?: string | null;
-  revisionInstruction?: string | null; result: CloudStoryboardResult; persistence: CloudStoryboardPersistence;
+  revisionInstruction?: string | null; contentClass?: "general" | "adult";
+  result: CloudStoryboardResult; persistence: CloudStoryboardPersistence;
 }) {
   if (!uuid.safeParse(input.scenarioVersionId).success ||
       (input.parentVersionId && !uuid.safeParse(input.parentVersionId).success))
@@ -46,6 +48,7 @@ export async function createCloudStoryboardVersionWithPersistence(input: {
   const saved = await input.persistence.insertVersion({
     owner_profile_id: input.profileId, scenario_version_id: input.scenarioVersionId,
     parent_version_id: input.parentVersionId ?? null, revision_instruction: instruction,
+    content_class: input.contentClass ?? "general",
     result, engine_version: result.engineVersion, completed_at: result.generatedAt,
   });
   if (saved.error || !saved.data) throw internal("ネームを保存できませんでした。", saved.error);

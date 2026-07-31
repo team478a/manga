@@ -7,10 +7,11 @@ export type CloudStoryScenarioVersion = {
   owner_profile_id: string;
   research_report_id: string;
   proposal_selection_id: string;
+  content_class: "general" | "adult";
   parent_version_id: string | null;
   revision_instruction: string | null;
   result: CloudStoryScenarioResult;
-  engine_version: "openai-scenario-v1";
+  engine_version: "openai-scenario-v1" | "xai-adult-scenario-v1";
   completed_at: string;
   created_at: string;
 };
@@ -37,6 +38,7 @@ export async function createCloudScenarioVersionWithPersistence(input: {
   profileId: string;
   reportId: string;
   selectionId: string;
+  contentClass?: "general" | "adult";
   parentVersionId?: string | null;
   revisionInstruction?: string | null;
   result: CloudStoryScenarioResult;
@@ -53,6 +55,7 @@ export async function createCloudScenarioVersionWithPersistence(input: {
     owner_profile_id: input.profileId,
     research_report_id: input.reportId,
     proposal_selection_id: input.selectionId,
+    content_class: input.contentClass ?? "general",
     parent_version_id: input.parentVersionId ?? null,
     revision_instruction: instruction,
     result,

@@ -8,18 +8,28 @@ import {
   getCloudGeneralMonitorNotice,
   isCloudGeneralMonitorActive,
 } from "@/lib/cloud-general-monitor";
+import {
+  getCloudAdultMonitorEnrollment,
+  isCloudAdultMonitorActive,
+} from "@/lib/cloud-adult-monitor";
 
 export default async function DashboardPage() {
   const enabled = cloudResearchFeatureEnabled();
   const { profile } = await requireProfile();
-  const [reports, monitor] = await Promise.all([
+  const [reports, monitor, adultMonitor] = await Promise.all([
     enabled ? listCloudResearchReports(profile.id) : Promise.resolve([]),
     getCloudGeneralMonitorEnrollment(profile.id),
+    getCloudAdultMonitorEnrollment(profile.id),
   ]);
   const latest = reports[0];
   const monitorActive = isCloudGeneralMonitorActive(monitor) &&
     Boolean(monitor && monitor.ai_requests_used < monitor.ai_request_limit);
   const monitorNotice = getCloudGeneralMonitorNotice(monitor);
+  const adultMonitorActive = Boolean(
+    isCloudAdultMonitorActive(adultMonitor) &&
+    adultMonitor &&
+    adultMonitor.ai_requests_used < adultMonitor.ai_request_limit,
+  );
 
   return (
     <main className="page max-w-7xl">
@@ -45,7 +55,7 @@ export default async function DashboardPage() {
               出典付きの市場分析を保存すると、次のAI企画提案へ進めます。
             </p>
           </div>
-          {enabled && monitorActive ? (
+          {enabled && (monitorActive || adultMonitorActive) ? (
             <Link className="button bg-violet-700 hover:bg-violet-800" href="/dashboard/research/new">
               <BarChart3 className="mr-2 h-5 w-5" />
               市場分析を開始
@@ -65,6 +75,13 @@ export default async function DashboardPage() {
           <Link className="button mt-4 bg-violet-700 hover:bg-violet-800" href="/dashboard/monitor/welcome">初回案内を確認</Link>
         </section>
       ) : null}
+      {adultMonitor && !adultMonitor.onboarding_completed_at ? (
+        <section className="mt-5 rounded-xl border border-violet-300 bg-violet-50 p-5">
+          <h2 className="font-bold text-violet-950">成人向けモニターの初回案内が未確認です</h2>
+          <p className="mt-1 text-sm text-violet-900">18歳以上の確認、利用条件、非公開範囲を確認してください。</p>
+          <Link className="button mt-4 bg-violet-700 hover:bg-violet-800" href="/dashboard/adult-monitor/welcome">成人向け初回案内を確認</Link>
+        </section>
+      ) : null}
       {monitorNotice ? (
         <p className={`mt-5 rounded-xl p-4 ${monitorNotice.level === "error" ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-950"}`} role="status">
           {monitorNotice.message}
@@ -82,6 +99,18 @@ export default async function DashboardPage() {
           <Link className="button-secondary" href="/dashboard/monitor">状況・ご意見</Link>
         </div>
       </section>
+      {adultMonitor ? (
+        <section className="panel mt-5 flex flex-col gap-4 border-violet-200 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-violet-700">成人向け限定モニター</p>
+            <p className="mt-1 text-stone-600">AI利用数 {adultMonitor.ai_requests_used} / {adultMonitor.ai_request_limit}・作品は非公開</p>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Link className="button-secondary" href="/dashboard/adult-monitor/guide">使い方</Link>
+            <Link className="button-secondary" href="/dashboard/adult-monitor">状況・ご意見</Link>
+          </div>
+        </section>
+      ) : null}
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">
         <section className="panel">

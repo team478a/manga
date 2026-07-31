@@ -1619,6 +1619,544 @@ $$;
 revoke execute on function public.materialize_cloud_storyboard_project(uuid) from public,anon;
 grant execute on function public.materialize_cloud_storyboard_project(uuid) to authenticated,service_role;
 
+-- Release 2.1: permissioned adult AI planning (general/adult proposal boundary).
+alter table public.cloud_adult_feature_grants drop constraint cloud_adult_feature_grants_feature_key_check;
+alter table public.cloud_adult_feature_grants add constraint cloud_adult_feature_grants_feature_key_check check(feature_key in('adult_planning','adult_ai_planning','adult_scenario'));
+create or replace function public.set_cloud_adult_feature_grant(p_actor_profile_id uuid,p_target_profile_id uuid,p_feature_key text,p_status text,p_source text,p_valid_until timestamptz,p_admin_note text) returns void language plpgsql security definer set search_path=public as $$
+declare v_before jsonb;v_after jsonb;v_action text;
+begin
+if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin') then raise exception 'cloud_adult_feature_admin_required';end if;
+if p_feature_key not in('adult_planning','adult_ai_planning','adult_scenario') or p_status not in('approved','suspended','expired') or p_source not in('purchase','legacy_purchase','admin_grant','campaign') or char_length(coalesce(p_admin_note,''))>500 then raise exception 'cloud_adult_feature_grant_invalid';end if;
+select to_jsonb(g) into v_before from public.cloud_adult_feature_grants g where g.profile_id=p_target_profile_id and g.feature_key=p_feature_key;
+insert into public.cloud_adult_feature_grants(profile_id,feature_key,status,source,granted_by_profile_id,valid_until,admin_note) values(p_target_profile_id,p_feature_key,p_status,p_source,p_actor_profile_id,p_valid_until,nullif(p_admin_note,'')) on conflict(profile_id,feature_key) do update set status=excluded.status,source=excluded.source,granted_by_profile_id=excluded.granted_by_profile_id,valid_until=excluded.valid_until,admin_note=excluded.admin_note,updated_at=now();
+select to_jsonb(g) into v_after from public.cloud_adult_feature_grants g where g.profile_id=p_target_profile_id and g.feature_key=p_feature_key;
+v_action:=case when p_status='suspended' then 'suspend_feature' when p_status='expired' then 'expire_feature' when v_before is null then 'grant_feature' else 'update_feature' end;
+insert into public.cloud_adult_research_audit_logs(actor_profile_id,action,target_profile_id,before_value,after_value) values(p_actor_profile_id,v_action,p_target_profile_id,v_before,v_after);
+end;
+$$;
+create or replace function public.can_use_cloud_adult_feature(p_feature_key text) returns boolean language sql stable security definer set search_path=public as $$
+select p_feature_key in('adult_planning','adult_ai_planning','adult_scenario') and public.can_use_cloud_adult_research() and exists(select 1 from public.cloud_adult_feature_grants g where g.profile_id=public.current_profile_id() and g.feature_key=p_feature_key and g.status='approved' and(g.valid_until is null or g.valid_until>now()));
+$$;
+create table if not exists public.cloud_adult_ai_planning_settings(singleton boolean primary key default true check(singleton),enabled boolean not null default false,updated_by_profile_id uuid references public.profiles(id) on delete set null,updated_at timestamptz not null default now());
+insert into public.cloud_adult_ai_planning_settings(singleton,enabled) values(true,false) on conflict(singleton) do nothing;
+alter table public.cloud_adult_ai_planning_settings enable row level security;
+grant select on public.cloud_adult_ai_planning_settings to authenticated;
+grant select,update on public.cloud_adult_ai_planning_settings to service_role;
+drop policy if exists "cloud_adult_ai_planning_settings_read" on public.cloud_adult_ai_planning_settings;
+create policy "cloud_adult_ai_planning_settings_read" on public.cloud_adult_ai_planning_settings for select using(true);
+create table if not exists public.cloud_adult_ai_planning_consents(profile_id uuid primary key references public.profiles(id) on delete cascade,confirmed_18_plus boolean not null check(confirmed_18_plus),fictional_adults_only boolean not null check(fictional_adults_only),consensual_non_exploitative_only boolean not null check(consensual_non_exploitative_only),no_real_person boolean not null check(no_real_person),provider_disclosure_accepted boolean not null check(provider_disclosure_accepted),terms_version text not null check(terms_version='adult-ai-planning-v1'),consented_at timestamptz not null default now(),revoked_at timestamptz,updated_at timestamptz not null default now());
+alter table public.cloud_adult_ai_planning_consents enable row level security;
+grant select,insert,update on public.cloud_adult_ai_planning_consents to authenticated;
+grant select,insert,update,delete on public.cloud_adult_ai_planning_consents to service_role;
+drop policy if exists "cloud_adult_ai_planning_consents_owner_read" on public.cloud_adult_ai_planning_consents;
+drop policy if exists "cloud_adult_ai_planning_consents_owner_insert" on public.cloud_adult_ai_planning_consents;
+drop policy if exists "cloud_adult_ai_planning_consents_owner_update" on public.cloud_adult_ai_planning_consents;
+create policy "cloud_adult_ai_planning_consents_owner_read" on public.cloud_adult_ai_planning_consents for select using(profile_id=public.current_profile_id() or public.is_admin());
+create policy "cloud_adult_ai_planning_consents_owner_insert" on public.cloud_adult_ai_planning_consents for insert with check(profile_id=public.current_profile_id());
+create policy "cloud_adult_ai_planning_consents_owner_update" on public.cloud_adult_ai_planning_consents for update using(profile_id=public.current_profile_id()) with check(profile_id=public.current_profile_id());
+create or replace function public.can_use_cloud_adult_ai_planning() returns boolean language sql stable security definer set search_path=public as $$
+select public.can_use_cloud_adult_feature('adult_ai_planning') and exists(select 1 from public.cloud_adult_ai_planning_settings s where s.singleton and s.enabled) and exists(select 1 from public.cloud_adult_ai_planning_consents c where c.profile_id=public.current_profile_id() and c.terms_version='adult-ai-planning-v1' and c.revoked_at is null and c.confirmed_18_plus and c.fictional_adults_only and c.consensual_non_exploitative_only and c.no_real_person and c.provider_disclosure_accepted);
+$$;
+grant execute on function public.can_use_cloud_adult_ai_planning() to authenticated;
+create or replace function public.set_cloud_adult_ai_planning_enabled(p_actor_profile_id uuid,p_enabled boolean) returns void language plpgsql security definer set search_path=public as $$
+begin if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin') then raise exception 'cloud_adult_ai_planning_admin_required';end if;update public.cloud_adult_ai_planning_settings set enabled=p_enabled,updated_by_profile_id=p_actor_profile_id,updated_at=now() where singleton;end;
+$$;
+grant execute on function public.set_cloud_adult_ai_planning_enabled(uuid,boolean) to service_role;
+alter table public.cloud_story_proposal_runs add column if not exists content_class text not null default 'general' check(content_class in('general','adult'));
+alter table public.cloud_story_proposal_selections add column if not exists content_class text not null default 'general' check(content_class in('general','adult'));
+drop policy "cloud_story_proposal_runs_owner_read" on public.cloud_story_proposal_runs;
+drop policy "cloud_story_proposal_runs_owner_insert" on public.cloud_story_proposal_runs;
+create policy "cloud_story_proposal_runs_owner_read" on public.cloud_story_proposal_runs for select using(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_ai_planning()));
+create policy "cloud_story_proposal_runs_owner_insert" on public.cloud_story_proposal_runs for insert with check(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_ai_planning()) and exists(select 1 from public.cloud_market_research_reports r where r.id=research_report_id and r.owner_profile_id=public.current_profile_id() and r.status='completed' and r.input->>'contentClass'=content_class));
+drop policy "cloud_story_proposal_selections_owner_read" on public.cloud_story_proposal_selections;
+drop policy "cloud_story_proposal_selections_owner_insert" on public.cloud_story_proposal_selections;
+create policy "cloud_story_proposal_selections_owner_read" on public.cloud_story_proposal_selections for select using(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_ai_planning()));
+create policy "cloud_story_proposal_selections_owner_insert" on public.cloud_story_proposal_selections for insert with check(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_ai_planning()) and exists(select 1 from public.cloud_story_proposal_runs r where r.id=proposal_run_id and r.owner_profile_id=public.current_profile_id() and r.research_report_id=research_report_id and r.content_class=content_class and exists(select 1 from jsonb_array_elements(r.result->'candidates') c where c->>'id'=candidate_id and c=candidate_snapshot)));
+
+-- Release 3.1: permissioned adult AI scenario generation.
+create table if not exists public.cloud_adult_scenario_settings(singleton boolean primary key default true check(singleton),enabled boolean not null default false,updated_by_profile_id uuid references public.profiles(id) on delete set null,updated_at timestamptz not null default now());
+insert into public.cloud_adult_scenario_settings(singleton,enabled) values(true,false) on conflict(singleton) do nothing;
+alter table public.cloud_adult_scenario_settings enable row level security;
+grant select on public.cloud_adult_scenario_settings to authenticated;
+grant select,update on public.cloud_adult_scenario_settings to service_role;
+drop policy if exists "cloud_adult_scenario_settings_read" on public.cloud_adult_scenario_settings;
+create policy "cloud_adult_scenario_settings_read" on public.cloud_adult_scenario_settings for select using(true);
+create table if not exists public.cloud_adult_scenario_consents(profile_id uuid primary key references public.profiles(id) on delete cascade,confirmed_18_plus boolean not null check(confirmed_18_plus),fictional_adults_only boolean not null check(fictional_adults_only),consensual_non_exploitative_only boolean not null check(consensual_non_exploitative_only),no_real_person boolean not null check(no_real_person),provider_disclosure_accepted boolean not null check(provider_disclosure_accepted),terms_version text not null check(terms_version='adult-ai-scenario-v1'),consented_at timestamptz not null default now(),revoked_at timestamptz,updated_at timestamptz not null default now());
+alter table public.cloud_adult_scenario_consents enable row level security;
+grant select,insert,update on public.cloud_adult_scenario_consents to authenticated;
+grant select,insert,update,delete on public.cloud_adult_scenario_consents to service_role;
+drop policy if exists "cloud_adult_scenario_consents_owner_read" on public.cloud_adult_scenario_consents;
+drop policy if exists "cloud_adult_scenario_consents_owner_insert" on public.cloud_adult_scenario_consents;
+drop policy if exists "cloud_adult_scenario_consents_owner_update" on public.cloud_adult_scenario_consents;
+create policy "cloud_adult_scenario_consents_owner_read" on public.cloud_adult_scenario_consents for select using(profile_id=public.current_profile_id() or public.is_admin());
+create policy "cloud_adult_scenario_consents_owner_insert" on public.cloud_adult_scenario_consents for insert with check(profile_id=public.current_profile_id());
+create policy "cloud_adult_scenario_consents_owner_update" on public.cloud_adult_scenario_consents for update using(profile_id=public.current_profile_id()) with check(profile_id=public.current_profile_id());
+create or replace function public.can_use_cloud_adult_scenario() returns boolean language sql stable security definer set search_path=public as $$
+select public.can_use_cloud_adult_ai_planning() and public.can_use_cloud_adult_feature('adult_scenario') and exists(select 1 from public.cloud_adult_scenario_settings s where s.singleton and s.enabled) and exists(select 1 from public.cloud_adult_scenario_consents c where c.profile_id=public.current_profile_id() and c.terms_version='adult-ai-scenario-v1' and c.revoked_at is null and c.confirmed_18_plus and c.fictional_adults_only and c.consensual_non_exploitative_only and c.no_real_person and c.provider_disclosure_accepted);
+$$;
+grant execute on function public.can_use_cloud_adult_scenario() to authenticated;
+create or replace function public.set_cloud_adult_scenario_enabled(p_actor_profile_id uuid,p_enabled boolean) returns void language plpgsql security definer set search_path=public as $$
+begin if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin') then raise exception 'cloud_adult_scenario_admin_required';end if;update public.cloud_adult_scenario_settings set enabled=p_enabled,updated_by_profile_id=p_actor_profile_id,updated_at=now() where singleton;end;
+$$;
+grant execute on function public.set_cloud_adult_scenario_enabled(uuid,boolean) to service_role;
+alter table public.cloud_story_scenario_versions add column if not exists content_class text not null default 'general' check(content_class in('general','adult'));
+drop policy if exists "cloud_story_scenario_versions_owner_read" on public.cloud_story_scenario_versions;
+drop policy if exists "cloud_story_scenario_versions_owner_insert" on public.cloud_story_scenario_versions;
+create policy "cloud_story_scenario_versions_owner_read" on public.cloud_story_scenario_versions for select using(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_scenario()));
+create policy "cloud_story_scenario_versions_owner_insert" on public.cloud_story_scenario_versions for insert with check(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_scenario()) and exists(select 1 from public.cloud_story_proposal_selections selection join public.cloud_market_research_reports report on report.id=selection.research_report_id where selection.id=proposal_selection_id and selection.owner_profile_id=public.current_profile_id() and selection.research_report_id=research_report_id and selection.content_class=cloud_story_scenario_versions.content_class and report.owner_profile_id=public.current_profile_id() and report.input->>'contentClass'=cloud_story_scenario_versions.content_class) and(parent_version_id is null or exists(select 1 from public.cloud_story_scenario_versions parent where parent.id=parent_version_id and parent.owner_profile_id=public.current_profile_id() and parent.proposal_selection_id=proposal_selection_id and parent.content_class=cloud_story_scenario_versions.content_class)));
+drop policy if exists "cloud_story_scenario_adoptions_owner_read" on public.cloud_story_scenario_adoptions;
+drop policy if exists "cloud_story_scenario_adoptions_owner_insert" on public.cloud_story_scenario_adoptions;
+create policy "cloud_story_scenario_adoptions_owner_read" on public.cloud_story_scenario_adoptions for select using(owner_profile_id=public.current_profile_id() and exists(select 1 from public.cloud_story_scenario_versions version where version.id=scenario_version_id and(version.content_class='general' or public.can_use_cloud_adult_scenario())));
+create policy "cloud_story_scenario_adoptions_owner_insert" on public.cloud_story_scenario_adoptions for insert with check(owner_profile_id=public.current_profile_id() and exists(select 1 from public.cloud_story_scenario_versions version where version.id=scenario_version_id and version.owner_profile_id=public.current_profile_id() and version.proposal_selection_id=proposal_selection_id and(version.content_class='general' or public.can_use_cloud_adult_scenario())));
+drop policy if exists "cloud_story_storyboard_versions_owner_insert" on public.cloud_story_storyboard_versions;
+create policy "cloud_story_storyboard_versions_owner_insert" on public.cloud_story_storyboard_versions for insert with check(owner_profile_id=public.current_profile_id() and exists(select 1 from public.cloud_story_scenario_versions scenario where scenario.id=scenario_version_id and scenario.owner_profile_id=public.current_profile_id() and scenario.content_class='general' and exists(select 1 from public.cloud_story_scenario_adoptions adoption where adoption.scenario_version_id=scenario.id and adoption.owner_profile_id=public.current_profile_id() and not exists(select 1 from public.cloud_story_scenario_adoptions newer where newer.proposal_selection_id=adoption.proposal_selection_id and(newer.adopted_at,newer.id)>(adoption.adopted_at,adoption.id)))) and(parent_version_id is null or exists(select 1 from public.cloud_story_storyboard_versions parent where parent.id=parent_version_id and parent.owner_profile_id=public.current_profile_id() and parent.scenario_version_id=scenario_version_id)));
+
+-- Release 4.1: permissioned adult AI storyboard generation.
+alter table public.cloud_adult_feature_grants drop constraint cloud_adult_feature_grants_feature_key_check;
+alter table public.cloud_adult_feature_grants add constraint cloud_adult_feature_grants_feature_key_check check(feature_key in('adult_planning','adult_ai_planning','adult_scenario','adult_storyboard'));
+create or replace function public.set_cloud_adult_feature_grant(p_actor_profile_id uuid,p_target_profile_id uuid,p_feature_key text,p_status text,p_source text,p_valid_until timestamptz,p_admin_note text) returns void language plpgsql security definer set search_path=public as $$
+declare v_before jsonb;v_after jsonb;v_action text;
+begin
+if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin') then raise exception 'cloud_adult_feature_admin_required';end if;
+if p_feature_key not in('adult_planning','adult_ai_planning','adult_scenario','adult_storyboard') or p_status not in('approved','suspended','expired') or p_source not in('purchase','legacy_purchase','admin_grant','campaign') or char_length(coalesce(p_admin_note,''))>500 then raise exception 'cloud_adult_feature_grant_invalid';end if;
+select to_jsonb(g) into v_before from public.cloud_adult_feature_grants g where g.profile_id=p_target_profile_id and g.feature_key=p_feature_key;
+insert into public.cloud_adult_feature_grants(profile_id,feature_key,status,source,granted_by_profile_id,valid_until,admin_note) values(p_target_profile_id,p_feature_key,p_status,p_source,p_actor_profile_id,p_valid_until,nullif(p_admin_note,'')) on conflict(profile_id,feature_key) do update set status=excluded.status,source=excluded.source,granted_by_profile_id=excluded.granted_by_profile_id,valid_until=excluded.valid_until,admin_note=excluded.admin_note,updated_at=now();
+select to_jsonb(g) into v_after from public.cloud_adult_feature_grants g where g.profile_id=p_target_profile_id and g.feature_key=p_feature_key;
+v_action:=case when p_status='suspended' then 'suspend_feature' when p_status='expired' then 'expire_feature' when v_before is null then 'grant_feature' else 'update_feature' end;
+insert into public.cloud_adult_research_audit_logs(actor_profile_id,action,target_profile_id,before_value,after_value) values(p_actor_profile_id,v_action,p_target_profile_id,v_before,v_after);
+end;
+$$;
+create or replace function public.can_use_cloud_adult_feature(p_feature_key text) returns boolean language sql stable security definer set search_path=public as $$
+select p_feature_key in('adult_planning','adult_ai_planning','adult_scenario','adult_storyboard') and public.can_use_cloud_adult_research() and exists(select 1 from public.cloud_adult_feature_grants g where g.profile_id=public.current_profile_id() and g.feature_key=p_feature_key and g.status='approved' and(g.valid_until is null or g.valid_until>now()));
+$$;
+create table if not exists public.cloud_adult_storyboard_settings(singleton boolean primary key default true check(singleton),enabled boolean not null default false,updated_by_profile_id uuid references public.profiles(id) on delete set null,updated_at timestamptz not null default now());
+insert into public.cloud_adult_storyboard_settings(singleton,enabled) values(true,false) on conflict(singleton) do nothing;
+alter table public.cloud_adult_storyboard_settings enable row level security;
+grant select on public.cloud_adult_storyboard_settings to authenticated;
+grant select,update on public.cloud_adult_storyboard_settings to service_role;
+drop policy if exists "cloud_adult_storyboard_settings_read" on public.cloud_adult_storyboard_settings;
+create policy "cloud_adult_storyboard_settings_read" on public.cloud_adult_storyboard_settings for select using(true);
+create table if not exists public.cloud_adult_storyboard_consents(profile_id uuid primary key references public.profiles(id) on delete cascade,confirmed_18_plus boolean not null check(confirmed_18_plus),fictional_adults_only boolean not null check(fictional_adults_only),consensual_non_exploitative_only boolean not null check(consensual_non_exploitative_only),no_real_person boolean not null check(no_real_person),provider_disclosure_accepted boolean not null check(provider_disclosure_accepted),terms_version text not null check(terms_version='adult-ai-storyboard-v1'),consented_at timestamptz not null default now(),revoked_at timestamptz,updated_at timestamptz not null default now());
+alter table public.cloud_adult_storyboard_consents enable row level security;
+grant select,insert,update on public.cloud_adult_storyboard_consents to authenticated;
+grant select,insert,update,delete on public.cloud_adult_storyboard_consents to service_role;
+drop policy if exists "cloud_adult_storyboard_consents_owner_read" on public.cloud_adult_storyboard_consents;
+drop policy if exists "cloud_adult_storyboard_consents_owner_insert" on public.cloud_adult_storyboard_consents;
+drop policy if exists "cloud_adult_storyboard_consents_owner_update" on public.cloud_adult_storyboard_consents;
+create policy "cloud_adult_storyboard_consents_owner_read" on public.cloud_adult_storyboard_consents for select using(profile_id=public.current_profile_id() or public.is_admin());
+create policy "cloud_adult_storyboard_consents_owner_insert" on public.cloud_adult_storyboard_consents for insert with check(profile_id=public.current_profile_id());
+create policy "cloud_adult_storyboard_consents_owner_update" on public.cloud_adult_storyboard_consents for update using(profile_id=public.current_profile_id()) with check(profile_id=public.current_profile_id());
+create or replace function public.can_use_cloud_adult_storyboard() returns boolean language sql stable security definer set search_path=public as $$
+select public.can_use_cloud_adult_scenario() and public.can_use_cloud_adult_feature('adult_storyboard') and exists(select 1 from public.cloud_adult_storyboard_settings s where s.singleton and s.enabled) and exists(select 1 from public.cloud_adult_storyboard_consents c where c.profile_id=public.current_profile_id() and c.terms_version='adult-ai-storyboard-v1' and c.revoked_at is null and c.confirmed_18_plus and c.fictional_adults_only and c.consensual_non_exploitative_only and c.no_real_person and c.provider_disclosure_accepted);
+$$;
+grant execute on function public.can_use_cloud_adult_storyboard() to authenticated;
+create or replace function public.set_cloud_adult_storyboard_enabled(p_actor_profile_id uuid,p_enabled boolean) returns void language plpgsql security definer set search_path=public as $$
+begin if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin') then raise exception 'cloud_adult_storyboard_admin_required';end if;update public.cloud_adult_storyboard_settings set enabled=p_enabled,updated_by_profile_id=p_actor_profile_id,updated_at=now() where singleton;end;
+$$;
+grant execute on function public.set_cloud_adult_storyboard_enabled(uuid,boolean) to service_role;
+alter table public.cloud_story_storyboard_versions add column if not exists content_class text not null default 'general' check(content_class in('general','adult'));
+drop policy if exists "cloud_story_storyboard_versions_owner_read" on public.cloud_story_storyboard_versions;
+drop policy if exists "cloud_story_storyboard_versions_owner_insert" on public.cloud_story_storyboard_versions;
+create policy "cloud_story_storyboard_versions_owner_read" on public.cloud_story_storyboard_versions for select using(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_storyboard()));
+create policy "cloud_story_storyboard_versions_owner_insert" on public.cloud_story_storyboard_versions for insert with check(owner_profile_id=public.current_profile_id() and(content_class='general' or public.can_use_cloud_adult_storyboard()) and exists(select 1 from public.cloud_story_scenario_versions scenario where scenario.id=scenario_version_id and scenario.owner_profile_id=public.current_profile_id() and scenario.content_class=cloud_story_storyboard_versions.content_class and exists(select 1 from public.cloud_story_scenario_adoptions adoption where adoption.scenario_version_id=scenario.id and adoption.owner_profile_id=public.current_profile_id() and not exists(select 1 from public.cloud_story_scenario_adoptions newer where newer.proposal_selection_id=adoption.proposal_selection_id and(newer.adopted_at,newer.id)>(adoption.adopted_at,adoption.id)))) and(parent_version_id is null or exists(select 1 from public.cloud_story_storyboard_versions parent where parent.id=parent_version_id and parent.owner_profile_id=public.current_profile_id() and parent.scenario_version_id=scenario_version_id and parent.content_class=cloud_story_storyboard_versions.content_class)));
+drop policy if exists "cloud_story_storyboard_adoptions_owner_read" on public.cloud_story_storyboard_adoptions;
+drop policy if exists "cloud_story_storyboard_adoptions_owner_insert" on public.cloud_story_storyboard_adoptions;
+create policy "cloud_story_storyboard_adoptions_owner_read" on public.cloud_story_storyboard_adoptions for select using(owner_profile_id=public.current_profile_id() and exists(select 1 from public.cloud_story_storyboard_versions version where version.id=storyboard_version_id and(version.content_class='general' or public.can_use_cloud_adult_storyboard())));
+create policy "cloud_story_storyboard_adoptions_owner_insert" on public.cloud_story_storyboard_adoptions for insert with check(owner_profile_id=public.current_profile_id() and exists(select 1 from public.cloud_story_storyboard_versions version where version.id=storyboard_version_id and version.owner_profile_id=public.current_profile_id() and version.scenario_version_id=scenario_version_id and(version.content_class='general' or public.can_use_cloud_adult_storyboard())));
+
+-- Permissioned adult Canvas materialization. Adult projects remain private,
+-- owner-only, and ineligible for general Cloud image generation/Marketplace.
+alter table public.cloud_projects drop constraint if exists cloud_projects_content_class_check;
+alter table public.cloud_projects add constraint cloud_projects_content_class_check check(content_class in('general','adult'));
+alter table public.cloud_projects drop constraint if exists cloud_projects_age_rating_check;
+alter table public.cloud_projects add constraint cloud_projects_age_rating_check check(age_rating in('全年齢','12歳以上','15歳以上','18歳以上'));
+alter table public.cloud_story_storyboard_projects add column if not exists content_class text not null default 'general' check(content_class in('general','adult'));
+
+create or replace function public.cloud_project_can_read(p_project_id uuid) returns boolean language sql stable security definer set search_path=public as $$
+select exists(select 1 from public.cloud_projects p where p.id=p_project_id and(
+  (p.content_class='general' and(public.is_admin() or p.owner_profile_id=public.current_profile_id() or(p.deleted_at is null and(p.visibility in('public','unlisted') or exists(select 1 from public.cloud_project_collaborators c where c.project_id=p.id and c.invitee_profile_id=public.current_profile_id() and c.status='accepted')))))
+  or(p.content_class='adult' and p.owner_profile_id=public.current_profile_id() and public.can_use_cloud_adult_storyboard())
+));
+$$;
+create or replace function public.cloud_project_can_edit(p_project_id uuid) returns boolean language sql stable security definer set search_path=public as $$
+select exists(select 1 from public.cloud_projects p where p.id=p_project_id and p.deleted_at is null and(
+  (p.content_class='general' and(public.is_admin() or p.owner_profile_id=public.current_profile_id() or exists(select 1 from public.cloud_project_collaborators c where c.project_id=p.id and c.invitee_profile_id=public.current_profile_id() and c.status='accepted' and c.role='editor')))
+  or(p.content_class='adult' and p.owner_profile_id=public.current_profile_id() and public.can_use_cloud_adult_storyboard())
+));
+$$;
+drop policy if exists "cloud_projects_insert" on public.cloud_projects;
+drop policy if exists "cloud_projects_update" on public.cloud_projects;
+create policy "cloud_projects_insert" on public.cloud_projects for insert with check(owner_profile_id=public.current_profile_id() and(content_class='general' or(content_class='adult' and public.can_use_cloud_adult_storyboard())));
+create policy "cloud_projects_update" on public.cloud_projects for update using(public.cloud_project_can_edit(id)) with check(public.cloud_project_can_edit(id) and(content_class='general' or(content_class='adult' and public.can_use_cloud_adult_storyboard())));
+drop policy if exists "cloud_story_storyboard_projects_owner_read" on public.cloud_story_storyboard_projects;
+create policy "cloud_story_storyboard_projects_owner_read" on public.cloud_story_storyboard_projects for select using(owner_profile_id=public.current_profile_id() and(content_class='general' or(content_class='adult' and public.can_use_cloud_adult_storyboard())));
+
+create or replace function public.materialize_cloud_storyboard_project(p_storyboard_version_id uuid)
+returns table(project_id uuid,first_page_id uuid,was_created boolean)
+language plpgsql security definer set search_path=public,pg_temp as $$
+declare
+  v_profile_id uuid:=public.current_profile_id();v_existing public.cloud_story_storyboard_projects%rowtype;
+  v_storyboard_id uuid;v_storyboard_result jsonb;v_episode_id uuid;v_project_id uuid;
+  v_page_id uuid;v_first_page_id uuid;v_page jsonb;v_page_index integer:=0;
+  v_content_class text;v_revision bigint;
+begin
+  if v_profile_id is null then raise exception 'profile_required';end if;
+  perform pg_advisory_xact_lock(hashtextextended(p_storyboard_version_id::text,0));
+  select * into v_existing from public.cloud_story_storyboard_projects where storyboard_version_id=p_storyboard_version_id and owner_profile_id=v_profile_id;
+  if found then project_id:=v_existing.project_id;first_page_id:=v_existing.first_page_id;was_created:=false;return next;return;end if;
+  select b.id,b.result,b.content_class into v_storyboard_id,v_storyboard_result,v_content_class
+  from public.cloud_story_storyboard_versions b
+  join public.cloud_story_scenario_versions s on s.id=b.scenario_version_id and s.content_class=b.content_class
+  join public.cloud_market_research_reports r on r.id=s.research_report_id and r.input->>'contentClass'=b.content_class
+  where b.id=p_storyboard_version_id and b.owner_profile_id=v_profile_id;
+  if not found or v_content_class not in('general','adult') then raise exception 'adopted_storyboard_required';end if;
+  if v_content_class='adult' and not public.can_use_cloud_adult_storyboard() then raise exception 'adult_canvas_not_allowed';end if;
+  if not exists(select 1 from public.cloud_story_storyboard_adoptions a where a.storyboard_version_id=v_storyboard_id and a.owner_profile_id=v_profile_id and not exists(select 1 from public.cloud_story_storyboard_adoptions n where n.scenario_version_id=a.scenario_version_id and(n.adopted_at,n.id)>(a.adopted_at,a.id))) then raise exception 'latest_adopted_storyboard_required';end if;
+  if v_content_class='general' then
+    select c.project_id,c.episode_id,c.page_id into v_project_id,v_episode_id,v_page_id from public.create_cloud_project_with_first_page(v_storyboard_result->>'title','採用AIネームから作成した編集用Canvas下書きです。画像は未生成です。','全年齢','rtl',1600,2400,300)c;
+  else
+    v_project_id:=gen_random_uuid();v_episode_id:=gen_random_uuid();v_page_id:=gen_random_uuid();
+    insert into public.cloud_projects(id,owner_profile_id,source_surface,content_class,title,description,age_rating,reading_direction,width,height,dpi) values(v_project_id,v_profile_id,'cloud','adult',trim(v_storyboard_result->>'title'),'採用成人向けネームから作成した編集用Canvas下書きです。AI画像は未生成です。','18歳以上','rtl',1600,2400,300);
+    insert into public.cloud_episodes(id,project_id,title,order_index) values(v_episode_id,v_project_id,'第1話',0);
+    insert into public.cloud_pages(id,project_id,episode_id,page_number,order_index,width,height) values(v_page_id,v_project_id,v_episode_id,1,0,1600,2400);
+    insert into public.cloud_canvas_snapshots(project_id,page_id,revision,canvas,created_by_profile_id) values(v_project_id,v_page_id,0,jsonb_build_object('schemaVersion',1,'pageId',v_page_id,'width',1600,'height',2400,'backgroundColor','#ffffff','panels',jsonb_build_array(),'panelLayers',jsonb_build_array(),'balloons',jsonb_build_array(),'textObjects',jsonb_build_array()),v_profile_id);
+    insert into public.cloud_project_versions(project_id,revision,manifest,created_by_profile_id) values(v_project_id,0,jsonb_build_object('event','adult_storyboard_project_created','episodeId',v_episode_id,'pageId',v_page_id,'contentClass','adult'),v_profile_id);
+  end if;
+  v_first_page_id:=v_page_id;
+  for v_page in select value from jsonb_array_elements(v_storyboard_result->'pages') value order by(value->>'pageNumber')::integer loop
+    v_page_index:=v_page_index+1;if v_page_index>1 then select public.add_cloud_page(v_episode_id) into v_page_id;end if;
+    update public.cloud_canvas_snapshots set canvas=public.build_cloud_storyboard_canvas(v_page_id,1600,2400,v_page) where page_id=v_page_id and revision=0;
+  end loop;
+  if v_page_index<>jsonb_array_length(v_storyboard_result->'pages') or v_page_index<>(v_storyboard_result->>'pageCount')::integer then raise exception 'storyboard_page_count_mismatch';end if;
+  update public.cloud_projects p set cover_page_id=v_first_page_id,revision=revision+1,updated_at=now() where p.id=v_project_id returning p.revision into v_revision;
+  insert into public.cloud_project_versions(project_id,revision,manifest,created_by_profile_id) values(v_project_id,v_revision,jsonb_build_object('event','storyboard_materialized','storyboardVersionId',v_storyboard_id,'pageCount',v_page_index,'contentClass',v_content_class),v_profile_id);
+  insert into public.cloud_story_storyboard_projects(owner_profile_id,storyboard_version_id,project_id,first_page_id,content_class) values(v_profile_id,v_storyboard_id,v_project_id,v_first_page_id,v_content_class);
+  project_id:=v_project_id;first_page_id:=v_first_page_id;was_created:=true;return next;
+end;
+$$;
+create table if not exists public.cloud_adult_work_management_settings(
+  singleton boolean primary key default true check(singleton),
+  enabled boolean not null default false,
+  updated_by_profile_id uuid references public.profiles(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+insert into public.cloud_adult_work_management_settings(singleton,enabled)
+values(true,false) on conflict(singleton) do nothing;
+alter table public.cloud_adult_work_management_settings enable row level security;
+grant select on public.cloud_adult_work_management_settings to authenticated;
+grant select,update on public.cloud_adult_work_management_settings to service_role;
+drop policy if exists "cloud_adult_work_management_settings_read"
+on public.cloud_adult_work_management_settings;
+create policy "cloud_adult_work_management_settings_read"
+on public.cloud_adult_work_management_settings for select using(true);
+create or replace function public.can_use_cloud_adult_work_management()
+returns boolean language sql stable security definer set search_path=public as $$
+select public.can_use_cloud_adult_storyboard()
+and exists(select 1 from public.cloud_adult_work_management_settings settings
+where settings.singleton and settings.enabled);
+$$;
+grant execute on function public.can_use_cloud_adult_work_management()
+to authenticated;
+create or replace function public.set_cloud_adult_work_management_enabled(
+  p_actor_profile_id uuid,p_enabled boolean
+) returns void language plpgsql security definer set search_path=public as $$
+begin
+  if auth.role()<>'service_role' or not exists(
+    select 1 from public.profiles where id=p_actor_profile_id and role='admin'
+  ) then raise exception 'cloud_adult_work_management_admin_required';end if;
+  update public.cloud_adult_work_management_settings
+  set enabled=p_enabled,updated_by_profile_id=p_actor_profile_id,updated_at=now()
+  where singleton;
+end;
+$$;
+grant execute on function public.set_cloud_adult_work_management_enabled(
+  uuid,boolean
+) to service_role;
+create table if not exists public.cloud_adult_work_records(
+  project_id uuid primary key references public.cloud_projects(id) on delete cascade,
+  owner_profile_id uuid not null references public.profiles(id) on delete cascade,
+  status text not null default 'draft'
+    check(status in('draft','editing','review','completed','archived')),
+  notes text not null default '' check(char_length(notes)<=2000),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+create index if not exists cloud_adult_work_records_owner_updated_idx
+on public.cloud_adult_work_records(owner_profile_id,updated_at desc);
+alter table public.cloud_adult_work_records enable row level security;
+grant select,insert,update on public.cloud_adult_work_records to authenticated;
+grant select,insert,update,delete on public.cloud_adult_work_records to service_role;
+drop policy if exists "cloud_adult_work_records_owner_read"
+on public.cloud_adult_work_records;
+create policy "cloud_adult_work_records_owner_read"
+on public.cloud_adult_work_records for select using(
+  owner_profile_id=public.current_profile_id()
+  and public.can_use_cloud_adult_work_management()
+  and exists(select 1 from public.cloud_projects project
+    where project.id=project_id
+      and project.owner_profile_id=public.current_profile_id()
+      and project.content_class='adult'
+      and project.visibility='private'
+      and project.deleted_at is null)
+);
+drop policy if exists "cloud_adult_work_records_owner_insert"
+on public.cloud_adult_work_records;
+create policy "cloud_adult_work_records_owner_insert"
+on public.cloud_adult_work_records for insert with check(
+  owner_profile_id=public.current_profile_id()
+  and public.can_use_cloud_adult_work_management()
+  and exists(select 1 from public.cloud_projects project
+    where project.id=project_id
+      and project.owner_profile_id=public.current_profile_id()
+      and project.content_class='adult'
+      and project.visibility='private'
+      and project.deleted_at is null)
+);
+drop policy if exists "cloud_adult_work_records_owner_update"
+on public.cloud_adult_work_records;
+create policy "cloud_adult_work_records_owner_update"
+on public.cloud_adult_work_records for update using(
+  owner_profile_id=public.current_profile_id()
+  and public.can_use_cloud_adult_work_management()
+) with check(
+  owner_profile_id=public.current_profile_id()
+  and public.can_use_cloud_adult_work_management()
+);
+create or replace function public.register_cloud_adult_work()
+returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  if new.content_class='adult' then
+    insert into public.cloud_adult_work_records(project_id,owner_profile_id)
+    values(new.id,new.owner_profile_id) on conflict(project_id) do nothing;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists cloud_projects_register_adult_work
+on public.cloud_projects;
+create trigger cloud_projects_register_adult_work after insert
+on public.cloud_projects for each row
+execute function public.register_cloud_adult_work();
+insert into public.cloud_adult_work_records(project_id,owner_profile_id)
+select project.id,project.owner_profile_id from public.cloud_projects project
+where project.content_class='adult' on conflict(project_id) do nothing;
+create or replace function public.update_cloud_adult_work(
+  p_project_id uuid,p_title text,p_description text,p_status text,p_notes text
+) returns void language plpgsql security definer set search_path=public as $$
+declare v_profile_id uuid:=public.current_profile_id();
+begin
+  if v_profile_id is null or not public.can_use_cloud_adult_work_management()
+  then raise exception 'cloud_adult_work_not_allowed';end if;
+  if char_length(trim(coalesce(p_title,''))) not between 1 and 200
+    or char_length(coalesce(p_description,''))>5000
+    or p_status not in('draft','editing','review','completed','archived')
+    or char_length(coalesce(p_notes,''))>2000
+  then raise exception 'cloud_adult_work_invalid';end if;
+  if not exists(select 1 from public.cloud_projects project
+    where project.id=p_project_id and project.owner_profile_id=v_profile_id
+      and project.content_class='adult' and project.visibility='private'
+      and project.deleted_at is null)
+  then raise exception 'cloud_adult_work_not_found';end if;
+  update public.cloud_projects set title=trim(p_title),
+    description=coalesce(p_description,''),visibility='private',
+    age_rating='18歳以上',revision=revision+1,updated_at=now()
+  where id=p_project_id and owner_profile_id=v_profile_id;
+  insert into public.cloud_adult_work_records(
+    project_id,owner_profile_id,status,notes
+  ) values(p_project_id,v_profile_id,p_status,coalesce(p_notes,''))
+  on conflict(project_id) do update set status=excluded.status,
+    notes=excluded.notes,updated_at=now()
+  where cloud_adult_work_records.owner_profile_id=v_profile_id;
+end;
+$$;
+grant execute on function public.update_cloud_adult_work(
+  uuid,text,text,text,text
+) to authenticated;
+create or replace function public.grant_cloud_adult_workflow_access(
+  p_actor_profile_id uuid,p_target_profile_id uuid,p_source text,
+  p_valid_until timestamptz,p_admin_note text
+) returns void language plpgsql security definer set search_path=public as $$
+declare v_feature_key text;
+begin
+  if auth.role()<>'service_role' or not exists(
+    select 1 from public.profiles
+    where id=p_actor_profile_id and role='admin'
+  ) then raise exception 'cloud_adult_workflow_admin_required';end if;
+  if p_source not in('purchase','legacy_purchase','admin_grant','campaign')
+    or char_length(coalesce(p_admin_note,''))>500
+  then raise exception 'cloud_adult_workflow_grant_invalid';end if;
+  perform public.set_cloud_adult_research_entitlement(
+    p_actor_profile_id,p_target_profile_id,'approved',p_source,
+    p_valid_until,p_admin_note
+  );
+  foreach v_feature_key in array array[
+    'adult_planning','adult_ai_planning','adult_scenario','adult_storyboard'
+  ] loop
+    perform public.set_cloud_adult_feature_grant(
+      p_actor_profile_id,p_target_profile_id,v_feature_key,'approved',
+      p_source,p_valid_until,p_admin_note
+    );
+  end loop;
+end;
+$$;
+revoke all on function public.grant_cloud_adult_workflow_access(
+  uuid,uuid,text,timestamptz,text
+) from public,anon,authenticated;
+grant execute on function public.grant_cloud_adult_workflow_access(
+  uuid,uuid,text,timestamptz,text
+) to service_role;
+
+-- Adult monitor beta: closed Preview enrollment, cumulative AI cap and feedback.
+create table if not exists public.cloud_adult_monitor_enrollments (
+  profile_id uuid primary key references public.profiles(id) on delete cascade,
+  status text not null check (status in ('active','paused','completed','revoked')),
+  cohort text not null default 'preview-01' check (char_length(cohort) between 1 and 80),
+  ai_request_limit integer not null default 20 check (ai_request_limit between 1 and 100),
+  ai_requests_used integer not null default 0 check (ai_requests_used between 0 and ai_request_limit),
+  starts_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  granted_by_profile_id uuid not null references public.profiles(id) on delete restrict,
+  admin_note text check (admin_note is null or char_length(admin_note)<=500),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (expires_at>starts_at)
+);
+create table if not exists public.cloud_adult_monitor_ai_usage (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  operation text not null check (operation in ('research','proposal','scenario','storyboard')),
+  created_at timestamptz not null default now()
+);
+create table if not exists public.cloud_adult_monitor_feedback (
+  id uuid primary key default gen_random_uuid(),
+  owner_profile_id uuid not null references public.profiles(id) on delete cascade,
+  workflow_step text not null check (workflow_step in ('overall','research','proposal','scenario','storyboard','canvas','works')),
+  rating integer not null check (rating between 1 and 5),
+  outcome text not null check (outcome in ('very_useful','useful','neutral','difficult','blocked')),
+  comment text check (comment is null or char_length(comment)<=2000),
+  created_at timestamptz not null default now()
+);
+create table if not exists public.cloud_adult_monitor_audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_profile_id uuid not null references public.profiles(id) on delete restrict,
+  target_profile_id uuid not null references public.profiles(id) on delete restrict,
+  action text not null check (action in ('activate','pause','complete','revoke','update')),
+  before_value jsonb,
+  after_value jsonb,
+  created_at timestamptz not null default now()
+);
+create index if not exists cloud_adult_monitor_status_idx on public.cloud_adult_monitor_enrollments(status,expires_at);
+create index if not exists cloud_adult_monitor_usage_profile_idx on public.cloud_adult_monitor_ai_usage(profile_id,created_at desc);
+create index if not exists cloud_adult_monitor_feedback_profile_idx on public.cloud_adult_monitor_feedback(owner_profile_id,created_at desc);
+create index if not exists cloud_adult_monitor_audit_created_idx on public.cloud_adult_monitor_audit_logs(created_at desc);
+alter table public.cloud_adult_monitor_enrollments enable row level security;
+alter table public.cloud_adult_monitor_ai_usage enable row level security;
+alter table public.cloud_adult_monitor_feedback enable row level security;
+alter table public.cloud_adult_monitor_audit_logs enable row level security;
+grant select on public.cloud_adult_monitor_enrollments to authenticated;
+grant select,insert on public.cloud_adult_monitor_feedback to authenticated;
+grant select,insert,update,delete on public.cloud_adult_monitor_enrollments,public.cloud_adult_monitor_ai_usage,public.cloud_adult_monitor_feedback,public.cloud_adult_monitor_audit_logs to service_role;
+drop policy if exists "cloud_adult_monitor_enrollment_owner_read" on public.cloud_adult_monitor_enrollments;
+create policy "cloud_adult_monitor_enrollment_owner_read" on public.cloud_adult_monitor_enrollments for select using (profile_id=public.current_profile_id() or public.is_admin());
+drop policy if exists "cloud_adult_monitor_feedback_owner_read" on public.cloud_adult_monitor_feedback;
+create policy "cloud_adult_monitor_feedback_owner_read" on public.cloud_adult_monitor_feedback for select using (owner_profile_id=public.current_profile_id() or public.is_admin());
+drop policy if exists "cloud_adult_monitor_feedback_owner_insert" on public.cloud_adult_monitor_feedback;
+create policy "cloud_adult_monitor_feedback_owner_insert" on public.cloud_adult_monitor_feedback for insert with check (
+  owner_profile_id=public.current_profile_id() and exists (
+    select 1 from public.cloud_adult_monitor_enrollments enrollment
+    where enrollment.profile_id=public.current_profile_id() and enrollment.status='active'
+      and enrollment.starts_at<=now() and enrollment.expires_at>now()
+  )
+);
+drop policy if exists "cloud_adult_monitor_audit_admin_read" on public.cloud_adult_monitor_audit_logs;
+create policy "cloud_adult_monitor_audit_admin_read" on public.cloud_adult_monitor_audit_logs for select using (public.is_admin());
+create or replace function public.can_use_cloud_adult_monitor() returns boolean language sql stable security definer set search_path=public as $$
+  select exists (select 1 from public.cloud_adult_monitor_enrollments enrollment
+    where enrollment.profile_id=public.current_profile_id() and enrollment.status='active'
+      and enrollment.starts_at<=now() and enrollment.expires_at>now()
+      and enrollment.ai_requests_used<=enrollment.ai_request_limit);
+$$;
+revoke all on function public.can_use_cloud_adult_monitor() from public,anon;
+grant execute on function public.can_use_cloud_adult_monitor() to authenticated,service_role;
+create or replace function public.consume_cloud_adult_monitor_ai_request(p_profile_id uuid,p_operation text)
+returns table(requests_used integer,request_limit integer) language plpgsql security definer set search_path=public as $$
+begin
+  if auth.role()<>'service_role' then raise exception 'cloud_adult_monitor_service_required'; end if;
+  if p_operation not in ('research','proposal','scenario','storyboard') then raise exception 'cloud_adult_monitor_operation_invalid'; end if;
+  return query update public.cloud_adult_monitor_enrollments enrollment
+    set ai_requests_used=enrollment.ai_requests_used+1,updated_at=now()
+    where enrollment.profile_id=p_profile_id and enrollment.status='active'
+      and enrollment.starts_at<=now() and enrollment.expires_at>now()
+      and enrollment.ai_requests_used<enrollment.ai_request_limit
+    returning enrollment.ai_requests_used,enrollment.ai_request_limit;
+  if not found then raise exception 'cloud_adult_monitor_unavailable'; end if;
+  insert into public.cloud_adult_monitor_ai_usage(profile_id,operation) values(p_profile_id,p_operation);
+end;
+$$;
+revoke all on function public.consume_cloud_adult_monitor_ai_request(uuid,text) from public,anon,authenticated;
+grant execute on function public.consume_cloud_adult_monitor_ai_request(uuid,text) to service_role;
+create or replace function public.activate_cloud_adult_monitor(
+  p_actor_profile_id uuid,p_target_profile_id uuid,p_source text,p_expires_at timestamptz,
+  p_ai_request_limit integer,p_cohort text,p_admin_note text
+) returns void language plpgsql security definer set search_path=public as $$
+declare v_before jsonb; v_after jsonb;
+begin
+  if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin')
+    then raise exception 'cloud_adult_monitor_admin_required'; end if;
+  if p_expires_at<=now() or p_ai_request_limit not between 1 and 100
+    or char_length(trim(coalesce(p_cohort,''))) not between 1 and 80
+    or char_length(coalesce(p_admin_note,''))>500 then raise exception 'cloud_adult_monitor_input_invalid'; end if;
+  select to_jsonb(enrollment) into v_before from public.cloud_adult_monitor_enrollments enrollment where enrollment.profile_id=p_target_profile_id;
+  perform public.grant_cloud_adult_workflow_access(p_actor_profile_id,p_target_profile_id,p_source,p_expires_at,p_admin_note);
+  insert into public.cloud_adult_monitor_enrollments(profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,granted_by_profile_id,admin_note)
+  values(p_target_profile_id,'active',trim(p_cohort),p_ai_request_limit,0,now(),p_expires_at,p_actor_profile_id,nullif(trim(p_admin_note),''))
+  on conflict(profile_id) do update set status='active',cohort=excluded.cohort,ai_request_limit=excluded.ai_request_limit,
+    ai_requests_used=0,starts_at=now(),expires_at=excluded.expires_at,granted_by_profile_id=excluded.granted_by_profile_id,
+    admin_note=excluded.admin_note,updated_at=now();
+  select to_jsonb(enrollment) into v_after from public.cloud_adult_monitor_enrollments enrollment where enrollment.profile_id=p_target_profile_id;
+  insert into public.cloud_adult_monitor_audit_logs(actor_profile_id,target_profile_id,action,before_value,after_value)
+    values(p_actor_profile_id,p_target_profile_id,case when v_before is null then 'activate' else 'update' end,v_before,v_after);
+end;
+$$;
+revoke all on function public.activate_cloud_adult_monitor(uuid,uuid,text,timestamptz,integer,text,text) from public,anon,authenticated;
+grant execute on function public.activate_cloud_adult_monitor(uuid,uuid,text,timestamptz,integer,text,text) to service_role;
+create or replace function public.stop_cloud_adult_monitor(
+  p_actor_profile_id uuid,p_target_profile_id uuid,p_status text,p_admin_note text
+) returns void language plpgsql security definer set search_path=public as $$
+declare v_feature_key text; v_before jsonb; v_after jsonb; v_source text;
+begin
+  if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin')
+    then raise exception 'cloud_adult_monitor_admin_required'; end if;
+  if p_status not in ('paused','completed','revoked') or char_length(coalesce(p_admin_note,''))>500
+    then raise exception 'cloud_adult_monitor_input_invalid'; end if;
+  select to_jsonb(enrollment) into v_before from public.cloud_adult_monitor_enrollments enrollment where enrollment.profile_id=p_target_profile_id for update;
+  if v_before is null then raise exception 'cloud_adult_monitor_not_found'; end if;
+  select entitlement.source into v_source from public.cloud_adult_research_entitlements entitlement where entitlement.profile_id=p_target_profile_id;
+  v_source:=coalesce(v_source,'admin_grant');
+  perform public.set_cloud_adult_research_entitlement(p_actor_profile_id,p_target_profile_id,'suspended',v_source,null,p_admin_note);
+  foreach v_feature_key in array array['adult_planning','adult_ai_planning','adult_scenario','adult_storyboard'] loop
+    perform public.set_cloud_adult_feature_grant(p_actor_profile_id,p_target_profile_id,v_feature_key,'suspended',v_source,null,p_admin_note);
+  end loop;
+  update public.cloud_adult_monitor_enrollments set status=p_status,admin_note=nullif(trim(p_admin_note),''),updated_at=now() where profile_id=p_target_profile_id;
+  select to_jsonb(enrollment) into v_after from public.cloud_adult_monitor_enrollments enrollment where enrollment.profile_id=p_target_profile_id;
+  insert into public.cloud_adult_monitor_audit_logs(actor_profile_id,target_profile_id,action,before_value,after_value)
+    values(p_actor_profile_id,p_target_profile_id,case p_status when 'paused' then 'pause' when 'completed' then 'complete' else 'revoke' end,v_before,v_after);
+end;
+$$;
+revoke all on function public.stop_cloud_adult_monitor(uuid,uuid,text,text) from public,anon,authenticated;
+grant execute on function public.stop_cloud_adult_monitor(uuid,uuid,text,text) to service_role;
+create or replace function public.can_use_cloud_adult_research() returns boolean language sql stable security definer set search_path=public as $$
+  select public.can_use_cloud_adult_monitor() and exists (
+    select 1 from public.cloud_adult_research_settings settings
+    join public.cloud_adult_research_entitlements entitlement on true
+    join public.cloud_adult_research_consents consent on consent.profile_id=entitlement.profile_id
+    where settings.singleton and settings.enabled and entitlement.profile_id=public.current_profile_id()
+      and entitlement.status='approved' and (entitlement.valid_until is null or entitlement.valid_until>now())
+      and consent.terms_version='adult-research-v1' and consent.withdrawn_at is null
+  );
+$$;
+grant execute on function public.can_use_cloud_adult_research() to authenticated;
+
 -- General monitor beta: invitation, cumulative AI cap and owner feedback.
 create table if not exists public.cloud_general_monitor_enrollments(profile_id uuid primary key references public.profiles(id) on delete cascade,status text not null check(status in('active','paused','completed','revoked')),cohort text not null default 'general-preview-01' check(char_length(cohort) between 1 and 80),ai_request_limit integer not null default 30 check(ai_request_limit between 1 and 200),ai_requests_used integer not null default 0 check(ai_requests_used between 0 and ai_request_limit),starts_at timestamptz not null default now(),expires_at timestamptz not null,invited_by_profile_id uuid not null references public.profiles(id) on delete restrict,admin_note text check(admin_note is null or char_length(admin_note)<=500),created_at timestamptz not null default now(),updated_at timestamptz not null default now(),check(expires_at>starts_at));
 create table if not exists public.cloud_general_monitor_ai_usage(id uuid primary key default gen_random_uuid(),profile_id uuid not null references public.profiles(id) on delete cascade,operation text not null check(operation in('research','proposal','scenario','storyboard','panel_image')),created_at timestamptz not null default now());
@@ -1690,3 +2228,316 @@ create or replace function public.set_cloud_general_monitor_email_provider(p_act
 create or replace function public.get_cloud_general_monitor_email_runtime_config() returns table(enabled boolean,api_key text,from_email text,from_name text) language plpgsql security definer set search_path=public,vault as $$begin if auth.role()<>'service_role' then raise exception 'cloud_general_monitor_email_service_required';end if;return query select settings.enabled,secrets.decrypted_secret,settings.from_email,settings.from_name from public.cloud_general_monitor_email_settings settings left join vault.decrypted_secrets secrets on secrets.id=settings.secret_id where settings.singleton=true;end $$;
 create or replace function public.set_cloud_general_monitor_email_template(p_actor_profile_id uuid,p_subject_template text,p_body_template text) returns void language plpgsql security definer set search_path=public as $$declare v_subject text:=btrim(coalesce(p_subject_template,''));v_body text:=btrim(coalesce(p_body_template,''));v_unknown_tokens text;v_from_email text;begin if auth.role()<>'service_role' or not exists(select 1 from public.profiles where id=p_actor_profile_id and role='admin') then raise exception 'cloud_general_monitor_email_admin_required';end if;v_unknown_tokens:=regexp_replace(v_subject||E'\n'||v_body,'\{\{(recipient_name|welcome_url|expires_on|ai_request_limit)\}\}','','g');if char_length(v_subject) not between 1 and 120 or v_subject~E'[\r\n]' or char_length(v_body) not between 20 and 5000 or position('{{welcome_url}}' in v_body)=0 or v_unknown_tokens~'\{\{[a-z_]+\}\}' then raise exception 'cloud_general_monitor_email_template_invalid';end if;update public.cloud_general_monitor_email_settings set subject_template=v_subject,body_template=v_body,updated_by_profile_id=p_actor_profile_id,updated_at=now() where singleton=true returning from_email into v_from_email;insert into public.cloud_general_monitor_email_audit_logs(actor_profile_id,action,from_email) values(p_actor_profile_id,'update_template',coalesce(v_from_email,''));end $$;
 revoke all on function public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean) from public,anon,authenticated;revoke all on function public.get_cloud_general_monitor_email_runtime_config() from public,anon,authenticated;revoke all on function public.set_cloud_general_monitor_email_template(uuid,text,text) from public,anon,authenticated;grant execute on function public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean) to service_role;grant execute on function public.get_cloud_general_monitor_email_runtime_config() to service_role;grant execute on function public.set_cloud_general_monitor_email_template(uuid,text,text) to service_role;
+
+-- Adult Grok Provider canonical schema.
+do $$
+begin
+  if to_regprocedure('vault.create_secret(text,text,text)') is null then
+    execute 'create extension if not exists supabase_vault with schema vault';
+  end if;
+end $$;
+
+alter table public.cloud_market_research_reports
+drop constraint if exists cloud_market_research_reports_engine_version_check;
+alter table public.cloud_market_research_reports
+add constraint cloud_market_research_reports_engine_version_check
+check (engine_version in (
+  'research-rules-v1',
+  'research-rules-v2',
+  'openai-web-research-v1',
+  'xai-adult-web-research-v1'
+));
+
+alter table public.cloud_story_proposal_runs
+drop constraint if exists cloud_story_proposal_runs_result_check;
+alter table public.cloud_story_proposal_runs
+drop constraint if exists cloud_story_proposal_runs_engine_version_check;
+alter table public.cloud_story_proposal_runs
+add constraint cloud_story_proposal_runs_result_check
+check (
+  jsonb_typeof(result) = 'object'
+  and result->>'engineVersion' in ('openai-proposal-v1', 'xai-adult-proposal-v1')
+  and result->>'classification' = 'ai_inference'
+  and result->>'containsGeneratedMarketNumbers' = 'false'
+  and jsonb_typeof(result->'candidates') = 'array'
+  and jsonb_array_length(result->'candidates') = 3
+  and pg_column_size(result) <= 131072
+);
+alter table public.cloud_story_proposal_runs
+add constraint cloud_story_proposal_runs_engine_version_check
+check (engine_version in ('openai-proposal-v1', 'xai-adult-proposal-v1'));
+
+alter table public.cloud_story_scenario_versions
+drop constraint if exists cloud_story_scenario_versions_result_check;
+alter table public.cloud_story_scenario_versions
+drop constraint if exists cloud_story_scenario_versions_engine_version_check;
+alter table public.cloud_story_scenario_versions
+add constraint cloud_story_scenario_versions_result_check
+check (
+  jsonb_typeof(result) = 'object'
+  and result->>'engineVersion' in ('openai-scenario-v1', 'xai-adult-scenario-v1')
+  and result->>'classification' = 'ai_inference'
+  and result->>'containsGeneratedMarketNumbers' = 'false'
+  and jsonb_typeof(result->'characters') = 'array'
+  and jsonb_typeof(result->'acts') = 'array'
+  and jsonb_array_length(result->'acts') = 3
+  and jsonb_typeof(result->'scenes') = 'array'
+  and jsonb_array_length(result->'scenes') between 6 and 20
+  and pg_column_size(result) <= 262144
+);
+alter table public.cloud_story_scenario_versions
+add constraint cloud_story_scenario_versions_engine_version_check
+check (engine_version in ('openai-scenario-v1', 'xai-adult-scenario-v1'));
+
+alter table public.cloud_story_storyboard_versions
+drop constraint if exists cloud_story_storyboard_versions_result_check;
+alter table public.cloud_story_storyboard_versions
+drop constraint if exists cloud_story_storyboard_versions_engine_version_check;
+alter table public.cloud_story_storyboard_versions
+add constraint cloud_story_storyboard_versions_result_check
+check (
+  jsonb_typeof(result) = 'object'
+  and result->>'engineVersion' in ('openai-storyboard-v1', 'xai-adult-storyboard-v1')
+  and result->>'classification' = 'ai_inference'
+  and result->>'containsGeneratedMarketNumbers' = 'false'
+  and result->>'readingDirection' = 'rtl'
+  and jsonb_typeof(result->'pages') = 'array'
+  and jsonb_array_length(result->'pages') between 8 and 48
+  and pg_column_size(result) <= 1048576
+);
+alter table public.cloud_story_storyboard_versions
+add constraint cloud_story_storyboard_versions_engine_version_check
+check (engine_version in ('openai-storyboard-v1', 'xai-adult-storyboard-v1'));
+
+create table if not exists public.cloud_adult_grok_settings (
+  singleton boolean primary key default true check (singleton),
+  enabled boolean not null default false,
+  model text not null default 'grok-4.5'
+    check (model in ('grok-4.5', 'grok-4.20')),
+  secret_id uuid,
+  updated_by_profile_id uuid references public.profiles(id) on delete set null,
+  updated_at timestamptz not null default now()
+);
+insert into public.cloud_adult_grok_settings(singleton, enabled, model)
+values (true, false, 'grok-4.5')
+on conflict (singleton) do nothing;
+
+create table if not exists public.cloud_adult_grok_audit_logs (
+  id uuid primary key default gen_random_uuid(),
+  actor_profile_id uuid not null references public.profiles(id) on delete restrict,
+  action text not null check (action in ('configure', 'replace_key', 'enable', 'disable')),
+  model text not null check (model in ('grok-4.5', 'grok-4.20')),
+  enabled boolean not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists cloud_adult_grok_audit_created_idx
+on public.cloud_adult_grok_audit_logs(created_at desc);
+
+alter table public.cloud_adult_grok_settings enable row level security;
+alter table public.cloud_adult_grok_audit_logs enable row level security;
+grant select on public.cloud_adult_grok_settings to authenticated;
+grant select on public.cloud_adult_grok_audit_logs to authenticated;
+grant select, insert, update, delete on public.cloud_adult_grok_settings to service_role;
+grant select, insert on public.cloud_adult_grok_audit_logs to service_role;
+drop policy if exists "cloud_adult_grok_settings_admin_read"
+on public.cloud_adult_grok_settings;
+create policy "cloud_adult_grok_settings_admin_read"
+on public.cloud_adult_grok_settings for select using (public.is_admin());
+drop policy if exists "cloud_adult_grok_audit_admin_read"
+on public.cloud_adult_grok_audit_logs;
+create policy "cloud_adult_grok_audit_admin_read"
+on public.cloud_adult_grok_audit_logs for select using (public.is_admin());
+
+create or replace function public.set_cloud_adult_grok_provider(
+  p_actor_profile_id uuid,
+  p_api_key text,
+  p_model text,
+  p_enabled boolean
+) returns void language plpgsql security definer set search_path = public, vault as $$
+declare
+  v_settings public.cloud_adult_grok_settings%rowtype;
+  v_secret_id uuid;
+  v_action text;
+  v_api_key text := nullif(btrim(coalesce(p_api_key, '')), '');
+begin
+  if auth.role() <> 'service_role' or not exists (
+    select 1 from public.profiles
+    where id = p_actor_profile_id and role = 'admin'
+  ) then raise exception 'cloud_adult_grok_admin_required'; end if;
+  if p_model not in ('grok-4.5', 'grok-4.20') then
+    raise exception 'cloud_adult_grok_model_invalid';
+  end if;
+  if v_api_key is not null and (
+    char_length(v_api_key) < 20 or char_length(v_api_key) > 500 or v_api_key ~ '\s'
+  ) then raise exception 'cloud_adult_grok_key_invalid'; end if;
+
+  select * into v_settings from public.cloud_adult_grok_settings
+  where singleton = true for update;
+  v_secret_id := v_settings.secret_id;
+  if v_api_key is not null then
+    if v_secret_id is null then
+      v_secret_id := vault.create_secret(
+        v_api_key,
+        'mangai_cloud_adult_xai',
+        'MANGAI Cloud adult text xAI API key'
+      );
+      v_action := 'configure';
+    else
+      perform vault.update_secret(
+        v_secret_id,
+        v_api_key,
+        'mangai_cloud_adult_xai',
+        'MANGAI Cloud adult text xAI API key'
+      );
+      v_action := 'replace_key';
+    end if;
+  elsif p_enabled and v_secret_id is null then
+    raise exception 'cloud_adult_grok_key_required';
+  else
+    v_action := case when p_enabled then 'enable' else 'disable' end;
+  end if;
+
+  update public.cloud_adult_grok_settings
+  set enabled = p_enabled,
+      model = p_model,
+      secret_id = v_secret_id,
+      updated_by_profile_id = p_actor_profile_id,
+      updated_at = now()
+  where singleton = true;
+  insert into public.cloud_adult_grok_audit_logs(actor_profile_id, action, model, enabled)
+  values (p_actor_profile_id, v_action, p_model, p_enabled);
+end;
+$$;
+
+create or replace function public.get_cloud_adult_grok_runtime_config()
+returns table(enabled boolean, model text, api_key text)
+language plpgsql security definer set search_path = public, vault as $$
+begin
+  if auth.role() <> 'service_role' then
+    raise exception 'cloud_adult_grok_service_role_required';
+  end if;
+  return query
+  select settings.enabled, settings.model, secrets.decrypted_secret
+  from public.cloud_adult_grok_settings settings
+  left join vault.decrypted_secrets secrets on secrets.id = settings.secret_id
+  where settings.singleton = true;
+end;
+$$;
+
+revoke all on function public.set_cloud_adult_grok_provider(uuid,text,text,boolean)
+from public, anon, authenticated;
+revoke all on function public.get_cloud_adult_grok_runtime_config()
+from public, anon, authenticated;
+grant execute on function public.set_cloud_adult_grok_provider(uuid,text,text,boolean)
+to service_role;
+grant execute on function public.get_cloud_adult_grok_runtime_config()
+to service_role;
+
+-- Adult monitor operations canonical schema.
+alter table public.cloud_adult_monitor_enrollments
+  add column if not exists onboarding_completed_at timestamptz;
+
+alter table public.cloud_adult_monitor_feedback
+  add column if not exists review_status text not null default 'new'
+    check(review_status in('new','reviewing','resolved')),
+  add column if not exists admin_note text
+    check(admin_note is null or char_length(admin_note)<=1000),
+  add column if not exists reviewed_by_profile_id uuid
+    references public.profiles(id) on delete set null,
+  add column if not exists reviewed_at timestamptz;
+
+create index if not exists cloud_adult_monitor_feedback_review_idx
+  on public.cloud_adult_monitor_feedback(review_status,created_at desc);
+
+alter table public.cloud_general_monitor_email_settings
+  add column if not exists adult_subject_template text not null default
+    'MANGAI 成人向け限定モニターのご案内',
+  add column if not exists adult_body_template text not null default
+    $template${{recipient_name}}
+
+MANGAI成人向け限定モニターへご招待しました。
+18歳以上の確認、利用条件への同意後、市場分析から非公開作品管理までお試しいただけます。
+
+利用開始: {{welcome_url}}
+利用期限: {{expires_on}}
+AI利用上限: {{ai_request_limit}}回
+
+成人向け画像生成、公開、販売は今回のモニター対象外です。
+このメールへパスワード、APIキー、個人情報を返信しないでください。$template$;
+
+alter table public.cloud_general_monitor_email_settings
+  drop constraint if exists cloud_adult_monitor_email_subject_template_check,
+  drop constraint if exists cloud_adult_monitor_email_body_template_check;
+alter table public.cloud_general_monitor_email_settings
+  add constraint cloud_adult_monitor_email_subject_template_check
+    check(char_length(adult_subject_template) between 1 and 120 and adult_subject_template!~E'[\r\n]'),
+  add constraint cloud_adult_monitor_email_body_template_check
+    check(char_length(adult_body_template) between 20 and 5000 and position('{{welcome_url}}' in adult_body_template)>0);
+
+alter table public.cloud_general_monitor_email_audit_logs
+  drop constraint if exists cloud_general_monitor_email_audit_logs_action_check;
+alter table public.cloud_general_monitor_email_audit_logs
+  add constraint cloud_general_monitor_email_audit_logs_action_check
+    check(action in('configure','replace_key','update_template','update_adult_template'));
+
+create or replace function public.complete_cloud_adult_monitor_onboarding()
+returns void language plpgsql security definer set search_path=public as $$
+begin
+  update public.cloud_adult_monitor_enrollments
+  set onboarding_completed_at=coalesce(onboarding_completed_at,now()),updated_at=now()
+  where profile_id=public.current_profile_id() and status='active'
+    and starts_at<=now() and expires_at>now();
+  if not found then raise exception 'cloud_adult_monitor_unavailable';end if;
+end;$$;
+
+create or replace function public.review_cloud_adult_monitor_feedback(
+  p_actor_profile_id uuid,p_feedback_id uuid,p_status text,p_admin_note text
+) returns void language plpgsql security definer set search_path=public as $$
+begin
+  if auth.role()<>'service_role' or not exists(
+    select 1 from public.profiles where id=p_actor_profile_id and role='admin'
+  ) then raise exception 'cloud_adult_monitor_admin_required';end if;
+  if p_status not in('new','reviewing','resolved') or char_length(coalesce(p_admin_note,''))>1000
+    then raise exception 'cloud_adult_monitor_input_invalid';end if;
+  update public.cloud_adult_monitor_feedback
+  set review_status=p_status,admin_note=nullif(trim(coalesce(p_admin_note,'')),''),
+      reviewed_by_profile_id=p_actor_profile_id,reviewed_at=now()
+  where id=p_feedback_id;
+  if not found then raise exception 'cloud_adult_monitor_feedback_not_found';end if;
+end;$$;
+
+create or replace function public.set_cloud_adult_monitor_email_template(
+  p_actor_profile_id uuid,p_subject_template text,p_body_template text
+) returns void language plpgsql security definer set search_path=public as $$
+declare
+  v_subject text:=btrim(coalesce(p_subject_template,''));
+  v_body text:=btrim(coalesce(p_body_template,''));
+  v_unknown_tokens text;
+  v_from_email text;
+begin
+  if auth.role()<>'service_role' or not exists(
+    select 1 from public.profiles where id=p_actor_profile_id and role='admin'
+  ) then raise exception 'cloud_general_monitor_email_admin_required';end if;
+  v_unknown_tokens:=regexp_replace(
+    v_subject||E'\n'||v_body,
+    '\{\{(recipient_name|welcome_url|expires_on|ai_request_limit)\}\}','','g'
+  );
+  if char_length(v_subject) not between 1 and 120 or v_subject~E'[\r\n]'
+    or char_length(v_body) not between 20 and 5000
+    or position('{{welcome_url}}' in v_body)=0
+    or v_unknown_tokens~'\{\{[a-z_]+\}\}'
+  then raise exception 'cloud_adult_monitor_email_template_invalid';end if;
+  update public.cloud_general_monitor_email_settings
+  set adult_subject_template=v_subject,adult_body_template=v_body,
+      updated_by_profile_id=p_actor_profile_id,updated_at=now()
+  where singleton=true returning from_email into v_from_email;
+  insert into public.cloud_general_monitor_email_audit_logs(actor_profile_id,action,from_email)
+  values(p_actor_profile_id,'update_adult_template',coalesce(v_from_email,''));
+end;$$;
+
+revoke all on function public.complete_cloud_adult_monitor_onboarding() from public,anon;
+revoke all on function public.review_cloud_adult_monitor_feedback(uuid,uuid,text,text) from public,anon,authenticated;
+revoke all on function public.set_cloud_adult_monitor_email_template(uuid,text,text) from public,anon,authenticated;
+grant execute on function public.complete_cloud_adult_monitor_onboarding() to authenticated,service_role;
+grant execute on function public.review_cloud_adult_monitor_feedback(uuid,uuid,text,text) to service_role;
+grant execute on function public.set_cloud_adult_monitor_email_template(uuid,text,text) to service_role;

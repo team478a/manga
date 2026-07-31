@@ -120,7 +120,8 @@ export type CloudResearchResult = {
   engineVersion:
     | "research-rules-v1"
     | "research-rules-v2"
-    | "openai-web-research-v1";
+    | "openai-web-research-v1"
+    | "xai-adult-web-research-v1";
   generatedAt: string;
   containsGeneratedMarketNumbers: false;
   findings: CloudResearchFinding[];

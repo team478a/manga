@@ -44,7 +44,10 @@ export default async function CloudCanvasPage({
       initialAssets={assets}
       initialGenerationJobs={generationJobs}
       initialQuota={quota}
-      storyboardPanelGenerationEnabled={cloudPanelImageGenerationFeatureEnabled()}
+      storyboardPanelGenerationEnabled={
+        workspace.project.content_class === "general" &&
+        cloudPanelImageGenerationFeatureEnabled()
+      }
     />
   );
 }

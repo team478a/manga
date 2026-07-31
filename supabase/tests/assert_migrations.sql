@@ -344,6 +344,14 @@ insert into public.cloud_adult_feature_grants (
   '32000000-0000-4000-8000-000000000001','adult_planning','approved',
   'admin_grant','32000000-0000-4000-8000-000000000003'
 );
+insert into public.cloud_adult_monitor_enrollments (
+  profile_id,status,cohort,ai_request_limit,ai_requests_used,
+  starts_at,expires_at,granted_by_profile_id,admin_note
+) values (
+  '32000000-0000-4000-8000-000000000001','active','migration-test',
+  20,0,now(),now()+interval '1 day',
+  '32000000-0000-4000-8000-000000000003','roundtrip fixture'
+);
 insert into public.cloud_market_research_reports (
   id,owner_profile_id,status,input,sources,result,engine_version,completed_at
 ) values (

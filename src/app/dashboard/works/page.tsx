@@ -5,6 +5,7 @@ import { requireProfile } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
+import { cloudAdultWorkManagementFeatureEnabled } from "@/lib/cloud-adult-work-management";
 
 export default async function DashboardWorksPage({ searchParams }: { searchParams: Promise<{ message?: string; error?: string }> }) {
   const { profile } = await requireProfile();
@@ -24,7 +25,17 @@ export default async function DashboardWorksPage({ searchParams }: { searchParam
           <h1 className="text-3xl font-bold">作品管理</h1>
           <p className="mt-2 text-lg text-stone-600">登録した作品の公開状態を確認し、編集できます。</p>
         </div>
-        <Link className="button" href="/dashboard/works/new">作品をアップロード</Link>
+        <div className="flex flex-wrap gap-2">
+          {cloudAdultWorkManagementFeatureEnabled() ? (
+            <Link
+              className="button-secondary border-rose-200 text-rose-800"
+              href="/dashboard/adult-works"
+            >
+              成人向け作品を管理
+            </Link>
+          ) : null}
+          <Link className="button" href="/dashboard/works/new">作品をアップロード</Link>
+        </div>
       </div>
       {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
       {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}

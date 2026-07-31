@@ -144,8 +144,11 @@ test("成人向け企画は入力・保存・履歴・再表示と権限管理�
   assert.match(migration, /cloud_adult_planning_briefs/);
   assert.match(migration, /can_use_cloud_adult_feature\('adult_planning'\)/);
   assert.match(migration, /input->>'contentClass' = 'adult'/);
-  assert.doesNotMatch(
-    `${page}\n${action}\n${detail}`,
-    /openai|anthropic|dezgo|provider.*generate/iu,
+  assert.match(page, /createCloudAdultPlanningBriefAction/);
+  assert.match(page, /createCloudAdultProposalAction/);
+  assert.match(
+    page,
+    /市場分析をxAI\/Grokへ送信し/,
   );
+  assert.doesNotMatch(detail, /runCloudAdultProposalAi/);
 });

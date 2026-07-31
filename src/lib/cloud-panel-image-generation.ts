@@ -120,12 +120,16 @@ export function assertGeneralStoryboardProject(input: {
   materializationFound: boolean;
   ownerProfileId: string | null;
   expectedOwnerProfileId: string;
+  materializationContentClass: "general" | "adult" | null;
+  storyboardContentClass: "general" | "adult" | null;
 }) {
   if (
     !input.materializationFound ||
-    input.ownerProfileId !== input.expectedOwnerProfileId
+    input.ownerProfileId !== input.expectedOwnerProfileId ||
+    input.materializationContentClass !== "general" ||
+    input.storyboardContentClass !== "general"
   )
     throw new PermissionDeniedError(
-      "採用ネームから作成した本人のCanvasだけで利用できます。",
+      "一般向けの採用ネームから作成した本人のCanvasだけで利用できます。",
     );
 }

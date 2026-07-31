@@ -13,7 +13,7 @@ import { createClient } from "./supabase/server.ts";
 export type { CloudStoryScenarioVersion };
 type Client = Awaited<ReturnType<typeof createClient>>;
 function adapter(supabase: Client): CloudScenarioPersistence {
-  const fields = "id,owner_profile_id,research_report_id,proposal_selection_id,parent_version_id,revision_instruction,result,engine_version,completed_at,created_at";
+  const fields = "id,owner_profile_id,research_report_id,proposal_selection_id,content_class,parent_version_id,revision_instruction,result,engine_version,completed_at,created_at";
   return {
     async insertVersion(value) { return await supabase.from("cloud_story_scenario_versions").insert(value).select("id").single<{ id: string }>(); },
     async listVersions(profileId, selectionId) {
@@ -34,7 +34,7 @@ function adapter(supabase: Client): CloudScenarioPersistence {
 }
 export async function createCloudScenarioVersion(input: {
   profileId: string; reportId: string; selectionId: string; parentVersionId?: string | null;
-  revisionInstruction?: string | null; result: CloudStoryScenarioResult;
+  contentClass?: "general" | "adult"; revisionInstruction?: string | null; result: CloudStoryScenarioResult;
 }) {
   return createCloudScenarioVersionWithPersistence({ ...input, persistence: adapter(await createClient()) });
 }

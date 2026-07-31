@@ -9,7 +9,7 @@ import { createClient } from "./supabase/server.ts";
 export type { CloudStoryboardVersion };
 type Client = Awaited<ReturnType<typeof createClient>>;
 function adapter(supabase: Client): CloudStoryboardPersistence {
-  const fields = "id,owner_profile_id,scenario_version_id,parent_version_id,revision_instruction,result,engine_version,completed_at,created_at";
+  const fields = "id,owner_profile_id,scenario_version_id,parent_version_id,revision_instruction,content_class,result,engine_version,completed_at,created_at";
   return {
     async insertVersion(value) { return await supabase.from("cloud_story_storyboard_versions").insert(value).select("id").single<{ id: string }>(); },
     async listVersions(profileId, scenarioVersionId) { return await supabase.from("cloud_story_storyboard_versions").select(fields).eq("owner_profile_id", profileId).eq("scenario_version_id", scenarioVersionId).order("created_at", { ascending: false }).limit(50).returns<CloudStoryboardVersion[]>(); },
@@ -18,7 +18,7 @@ function adapter(supabase: Client): CloudStoryboardPersistence {
     async findLatestAdoption(profileId, scenarioVersionId) { return await supabase.from("cloud_story_storyboard_adoptions").select("id,owner_profile_id,scenario_version_id,storyboard_version_id,adopted_at").eq("owner_profile_id", profileId).eq("scenario_version_id", scenarioVersionId).order("adopted_at", { ascending: false }).order("id", { ascending: false }).limit(1).maybeSingle(); },
   };
 }
-export async function createCloudStoryboardVersion(input: { profileId: string; scenarioVersionId: string; parentVersionId?: string | null; revisionInstruction?: string | null; result: CloudStoryboardResult }) {
+export async function createCloudStoryboardVersion(input: { profileId: string; scenarioVersionId: string; parentVersionId?: string | null; revisionInstruction?: string | null; contentClass?: "general" | "adult"; result: CloudStoryboardResult }) {
   return createCloudStoryboardVersionWithPersistence({ ...input, persistence: adapter(await createClient()) });
 }
 export async function listCloudStoryboardVersions(profileId: string, scenarioVersionId: string) {

@@ -23,6 +23,21 @@ AI利用上限: {{ai_request_limit}}回
 
 このメールへパスワード、APIキー、個人情報を返信しないでください。`;
 
+export const DEFAULT_ADULT_MONITOR_INVITE_SUBJECT =
+  "MANGAI 成人向け限定モニターのご案内";
+
+export const DEFAULT_ADULT_MONITOR_INVITE_BODY = `{{recipient_name}}
+
+MANGAI成人向け限定モニターへご招待しました。
+18歳以上の確認、利用条件への同意後、市場分析から非公開作品管理までお試しいただけます。
+
+利用開始: {{welcome_url}}
+利用期限: {{expires_on}}
+AI利用上限: {{ai_request_limit}}回
+
+成人向け画像生成、公開、販売は今回のモニター対象外です。
+このメールへパスワード、APIキー、個人情報を返信しないでください。`;
+
 export type CloudGeneralMonitorEmailSettings = {
   enabled: boolean;
   configured: boolean;
@@ -30,6 +45,8 @@ export type CloudGeneralMonitorEmailSettings = {
   fromName: string;
   subjectTemplate: string;
   bodyTemplate: string;
+  adultSubjectTemplate: string;
+  adultBodyTemplate: string;
   templateAvailable: boolean;
   updatedAt: string;
 };
@@ -51,11 +68,13 @@ export async function getCloudGeneralMonitorEmailSettings(): Promise<
   if (error || !data) return null;
   const { data: template, error: templateError } = await createAdminClient()
     .from("cloud_general_monitor_email_settings")
-    .select("subject_template,body_template")
+    .select("subject_template,body_template,adult_subject_template,adult_body_template")
     .eq("singleton", true)
     .maybeSingle<{
       subject_template: string;
       body_template: string;
+      adult_subject_template?: string;
+      adult_body_template?: string;
     }>();
   return {
     enabled: data.enabled,
@@ -65,9 +84,53 @@ export async function getCloudGeneralMonitorEmailSettings(): Promise<
     subjectTemplate:
       template?.subject_template ?? DEFAULT_MONITOR_INVITE_SUBJECT,
     bodyTemplate: template?.body_template ?? DEFAULT_MONITOR_INVITE_BODY,
+    adultSubjectTemplate:
+      template?.adult_subject_template ?? DEFAULT_ADULT_MONITOR_INVITE_SUBJECT,
+    adultBodyTemplate:
+      template?.adult_body_template ?? DEFAULT_ADULT_MONITOR_INVITE_BODY,
     templateAvailable: !templateError && Boolean(template),
     updatedAt: data.updated_at,
   };
+}
+
+export async function getCloudAdultMonitorEmailRuntimeConfig() {
+  const base = await getCloudGeneralMonitorEmailRuntimeConfig();
+  const { data } = await createAdminClient()
+    .from("cloud_general_monitor_email_settings")
+    .select("adult_subject_template,adult_body_template")
+    .eq("singleton", true)
+    .maybeSingle<{
+      adult_subject_template: string;
+      adult_body_template: string;
+    }>();
+  return {
+    ...base,
+    subjectTemplate:
+      data?.adult_subject_template ?? DEFAULT_ADULT_MONITOR_INVITE_SUBJECT,
+    bodyTemplate:
+      data?.adult_body_template ?? DEFAULT_ADULT_MONITOR_INVITE_BODY,
+  };
+}
+
+export async function setCloudAdultMonitorEmailTemplate(input: {
+  actorProfileId: string;
+  subjectTemplate: string;
+  bodyTemplate: string;
+}) {
+  const { error } = await createAdminClient().rpc(
+    "set_cloud_adult_monitor_email_template",
+    {
+      p_actor_profile_id: input.actorProfileId,
+      p_subject_template: input.subjectTemplate,
+      p_body_template: input.bodyTemplate,
+    },
+  );
+  if (error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "成人向け招待メールの文面を保存できませんでした。",
+      { cause: error },
+    );
 }
 
 export async function setCloudGeneralMonitorEmailSettings(input: {

@@ -41,6 +41,8 @@ git diff feature/manga-canvas-mvp...HEAD --stat
 - OpenAI、Grok、Resendなど外部ProviderのAPIキーは、管理者画面で入力・保存・差し替えできる構造を標準とする。Supabase Vaultへ保存し、保存後は画面・通常テーブル・監査ログへ本体や末尾文字を再表示しない。保存完了時は明示的な追加操作なしで利用可能にする。Supabase URL・service role、Stripe webhook secret、署名鍵など基盤秘密情報は対象外で、デプロイ環境変数または専用Secret Storeを使う。
 - Prompt、画像、成人向けコンテンツ、個人情報をログへ出力しない。
 - 外部AI Providerへの送信は既存の明示承認、分類、費用上限、fail-closed方針を維持する。
+- 利用者が取得・交換する外部Provider APIキーは、管理画面で入力・保存・差し替えできるように実装し、Supabase Vault等の暗号化secret storeだけを正本にする。キーを画面へ再表示せず、Client、URL、通常テーブル、ログ、監査ログへ出さない。保存成功時は利用開始まで完結させ、日常運用で環境変数やSQL操作を要求しない。
+- Supabase service role、Stripe署名鍵、アプリ署名secretなどの基盤credentialは上記の管理画面対象に含めず、デプロイ環境のsecretとして分離する。
 - 成人向け処理はローカル優先を維持し、明示承認なしに外部送信経路を有効化しない。
 - Supabase migrationの既存履歴を変更・削除しない。追加時は冪等性、checksum、rollbackを確認する。
 - PR #34、PR #33を無断でrebase、squash、base変更、mergeしない。

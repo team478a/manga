@@ -1,4 +1,7 @@
-import { getCloudGeneralMonitorEmailRuntimeConfig } from "./cloud-general-monitor-email-settings.ts";
+import {
+  getCloudAdultMonitorEmailRuntimeConfig,
+  getCloudGeneralMonitorEmailRuntimeConfig,
+} from "./cloud-general-monitor-email-settings.ts";
 
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
 
@@ -8,6 +11,8 @@ type InviteEmailInput = {
   expiresAt: string;
   aiRequestLimit: number;
 };
+
+type InviteKind = "general" | "adult";
 
 type InviteTemplateValues = {
   recipientName: string;
@@ -33,13 +38,18 @@ export function renderCloudGeneralMonitorInviteTemplate(
   );
 }
 
-function inviteSiteUrl() {
+function inviteSiteUrl(kind: InviteKind = "general") {
   const configured =
     process.env.MONITOR_INVITE_SITE_URL ??
     process.env.NEXT_PUBLIC_SITE_URL ??
     (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "");
   if (!configured) throw new Error("monitor_invite_site_url_missing");
-  const url = new URL("/dashboard/monitor/welcome", configured);
+  const url = new URL(
+    kind === "adult"
+      ? "/dashboard/adult-monitor/welcome"
+      : "/dashboard/monitor/welcome",
+    configured,
+  );
   if (
     url.protocol !== "https:" &&
     !(process.env.NODE_ENV !== "production" && ["localhost", "127.0.0.1"].includes(url.hostname))
@@ -107,6 +117,47 @@ export async function sendCloudGeneralMonitorInviteEmail(
     signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) throw new Error("monitor_invite_email_send_failed");
+  const result = await response.json().catch(() => null) as { id?: unknown } | null;
+  return { messageId: typeof result?.id === "string" ? result.id : null };
+}
+
+export async function sendCloudAdultMonitorInviteEmail(
+  input: InviteEmailInput,
+  request: typeof fetch = fetch,
+  loadConfig = getCloudAdultMonitorEmailRuntimeConfig,
+) {
+  const config = await loadConfig();
+  const welcomeUrl = inviteSiteUrl("adult");
+  const expiry = new Date(input.expiresAt).toLocaleDateString("ja-JP", {
+    timeZone: "Asia/Tokyo",
+  });
+  const values = {
+    recipientName: input.recipientName.trim()
+      ? `${input.recipientName.trim()} 様`
+      : "MANGAIモニター様",
+    welcomeUrl,
+    expiresOn: expiry,
+    aiRequestLimit: input.aiRequestLimit,
+  };
+  const response = await request(RESEND_EMAIL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      from: formatFrom(config.fromEmail, config.fromName),
+      to: [input.recipientEmail],
+      subject: renderCloudGeneralMonitorInviteTemplate(
+        config.subjectTemplate,
+        values,
+      ),
+      text: renderCloudGeneralMonitorInviteTemplate(config.bodyTemplate, values),
+    }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error("adult_monitor_invite_email_send_failed");
   const result = await response.json().catch(() => null) as { id?: unknown } | null;
   return { messageId: typeof result?.id === "string" ? result.id : null };
 }

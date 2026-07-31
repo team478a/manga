@@ -14,6 +14,14 @@ import { createCloudProposalAction } from "./actions";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
 import { ProposalSubmitButton } from "./proposal-submit-button";
+import {
+  cloudAdultAiPlanningFeatureEnabled,
+  getCloudAdultAiPlanningAccess,
+} from "@/lib/cloud-adult-ai-planning";
+import {
+  consentCloudAdultAiPlanningAction,
+  createCloudAdultProposalAction,
+} from "./actions";
 
 const accessLabel = {
   allowed: "利用可能",
@@ -61,12 +69,12 @@ export default async function ProposalHandoffPage({
   searchParams,
 }: {
   params: Promise<{ reportId: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   if (!cloudResearchFeatureEnabled()) redirect("/dashboard/research");
   const { profile } = await requireProfile();
   const { reportId } = await params;
-  const { error } = await searchParams;
+  const { error, message } = await searchParams;
   const report = await getCloudResearchReport(profile.id, reportId).catch(
     (cause) => {
       if (cause instanceof ResourceNotFoundError) notFound();
@@ -152,6 +160,12 @@ export default async function ProposalHandoffPage({
 
   const planningEnabled = cloudAdultPlanningFeatureEnabled();
   const access = await getCloudAdultPlanningAccess(profile.id);
+  const aiPlanningEnabled =
+    cloudProposalFeatureEnabled() && cloudAdultAiPlanningFeatureEnabled();
+  const aiAccess = await getCloudAdultAiPlanningAccess(profile.id);
+  const adultRuns = aiAccess.allowed
+    ? await listCloudProposalRuns(profile.id, report.id)
+    : [];
   const briefs = access.allowed
     ? await listCloudAdultPlanningBriefs(profile.id, report.id)
     : [];
@@ -174,6 +188,11 @@ export default async function ProposalHandoffPage({
           {error}
         </p>
       ) : null}
+      {message ? (
+        <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">
+          {message}
+        </p>
+      ) : null}
 
       <section className="panel mt-6 border-violet-200">
         <p className="text-sm font-bold text-violet-700">市場分析からの引継ぎ</p>
@@ -188,6 +207,50 @@ export default async function ProposalHandoffPage({
             成人向け企画機能のFeature Flagが有効になるまで保存できません。
           </p>
         ) : null}
+      </section>
+
+      <section className="panel mt-6 border-rose-200">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-xl font-bold">AIで成人向け企画を3案作る</h2>
+          <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-800">成人向け</span>
+        </div>
+        <p className="mt-3 text-stone-600">
+          市場分析をxAI/Grokへ送信し、架空の18歳以上・合意のある非搾取的な内容に限定して企画を提案します。
+        </p>
+        {adultRuns.length ? (
+          <div className="mt-5 space-y-3">
+            {adultRuns.map((run) => (
+              <Link className="block rounded-lg border border-rose-100 p-4 hover:border-rose-300" href={`/dashboard/research/${report.id}/proposal/runs/${run.id}`} key={run.id}>
+                成人向け企画3案を比較 · {new Date(run.created_at).toLocaleString("ja-JP")}
+              </Link>
+            ))}
+          </div>
+        ) : null}
+        {aiAccess.reason === "consent_required" ? (
+          <form action={consentCloudAdultAiPlanningAction.bind(null, report.id)} className="mt-5 space-y-3 rounded-lg bg-rose-50 p-4">
+            {[
+              ["confirmed18Plus", "私は18歳以上です"],
+              ["fictionalAdultsOnly", "架空の18歳以上の成人だけを扱います"],
+              ["consensualOnly", "合意のある非搾取的な内容だけを扱います"],
+              ["noRealPerson", "実在人物を扱いません"],
+              ["providerDisclosureAccepted", "入力した市場分析がxAI/Grokへ送信されることに同意します"],
+            ].map(([name, label]) => (
+              <label className="flex gap-3 text-sm" key={name}>
+                <input name={name} type="checkbox" value="true" />
+                <span>{label}</span>
+              </label>
+            ))}
+            <button className="button bg-rose-700 hover:bg-rose-800" type="submit">利用条件に同意</button>
+          </form>
+        ) : aiAccess.allowed ? (
+          <form action={createCloudAdultProposalAction.bind(null, report.id)} className="mt-5">
+            <ProposalSubmitButton />
+          </form>
+        ) : (
+          <p className="mt-5 rounded-lg bg-amber-50 p-4 text-amber-950">
+            {aiPlanningEnabled ? "管理者による成人向けAI企画の個別許可とDB側許可が必要です。" : "成人向けAI企画は現在停止中です。"}
+          </p>
+        )}
       </section>
 
       {access.allowed ? (

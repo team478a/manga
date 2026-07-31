@@ -1,6 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
-## 0. 現在の優先タスク（クラウド制作の日本語化・初回ガイド、2026-07-31）
+## 0. 成人向け限定モニター運用基盤（2026-07-31）
+
+- Branch: `codex/cloud-adult-monitor-ops-v1`
+- 成人向け制作stackとGrok管理を最新Cloud基盤へ統合。
+- 招待メール、初回案内、Webマニュアル、readiness、フィードバック対応を追加。
+- 新規migration: `202607310004_cloud_adult_monitor_operations.sql`
+- 成人向け画像生成、公開、販売は引き続き対象外。
+- 本番migration・Feature Flag・招待は責任者確認後に実施する。
+
+## 1. 現在の優先タスク（クラウド制作の日本語化・初回ガイド、2026-07-31）
 
 - Branch: `codex/cloud-creator-ja-guide-v1`
 - Base: `feature/manga-canvas-mvp` (`3d16839`)

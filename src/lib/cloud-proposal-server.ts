@@ -14,8 +14,8 @@ import { createClient } from "./supabase/server.ts";
 export type { CloudStoryProposalRun, CloudStoryProposalSelection };
 type Client = Awaited<ReturnType<typeof createClient>>;
 function adapter(supabase: Client): CloudProposalPersistence {
-  const runFields = "id,owner_profile_id,research_report_id,status,result,engine_version,completed_at,created_at";
-  const selectionFields = "id,owner_profile_id,research_report_id,proposal_run_id,candidate_id,candidate_snapshot,selected_at";
+  const runFields = "id,owner_profile_id,research_report_id,content_class,status,result,engine_version,completed_at,created_at";
+  const selectionFields = "id,owner_profile_id,research_report_id,content_class,proposal_run_id,candidate_id,candidate_snapshot,selected_at";
   return {
     async insertRun(value) {
       return await supabase.from("cloud_story_proposal_runs").insert(value).select("id").single<{ id: string }>();
@@ -40,7 +40,7 @@ function adapter(supabase: Client): CloudProposalPersistence {
   };
 }
 export async function createCloudProposalRun(input: {
-  profileId: string; reportId: string; result: CloudStoryProposalResult;
+  profileId: string; reportId: string; contentClass?: "general" | "adult"; result: CloudStoryProposalResult;
 }) {
   return createCloudProposalRunWithPersistence({ ...input, persistence: adapter(await createClient()) });
 }

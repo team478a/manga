@@ -152,10 +152,58 @@
       "rollbackSha256": "0a768b5c1361a1a4afdd72daa0e901c0e54789f989526295bce04c71fa5755f8"
     },
     {
+      "id": "202607300006_cloud_adult_ai_planning",
+      "description": "一般向けと成人向けAI企画を分離し、許可・同意・停止スイッチ・所有者RLSを追加",
+      "forwardSha256": "40304e77e3bf42588a2366d0c46238e295240e5c173ceef67603c1a07e139f36",
+      "rollbackSha256": "bdc549434fc6840008e6596b79bff56d83eb9a95a791fc2ce569a25b261ec3dc"
+    },
+    {
       "id": "202607300006_cloud_general_monitor_beta",
       "description": "一般向け無料モニターの招待・期限・累計AI上限・フィードバックを追加",
       "forwardSha256": "e68200749c3672aa8f08c6e01434bd406a50adadd8853beb6390d3fe8bbaca7d",
       "rollbackSha256": "03910c881a0e5182a47ab2a4ce20b7cc2715980ba885013c83b68a84569f82d4"
+    },
+    {
+      "id": "202607300007_cloud_adult_scenario",
+      "description": "一般向けと成人向けAIシナリオを分離し、専用許可・同意・停止スイッチ・所有者RLSを追加",
+      "forwardSha256": "de2efb4164b8a75fa0b5060df5a31d5a425ae30ea03b130e3797673bb4d8ddf6",
+      "rollbackSha256": "ad3f250ae71015ebb6e8dc03b1e9fd28ee75d3f1107c2e7393750ffdf973fb1d"
+    },
+    {
+      "id": "202607300008_cloud_adult_storyboard",
+      "description": "一般向けと成人向けAIネームを分離し、専用許可・同意・停止スイッチ・所有者RLSを追加",
+      "forwardSha256": "61e36bf9ab6508abe3c1ce9ca12abcf17090d0b36b3ee4f663d9ea5918fbb653",
+      "rollbackSha256": "c1130cb6ffe1a98392effb90d64c1a03594a4a1a4921bcacef34ec228b8c8592"
+    },
+    {
+      "id": "202607300009_cloud_adult_canvas",
+      "description": "許可済み成人向けネームを区分保持した非AI Canvas下書きへ変換し一般向け画像生成から分離",
+      "forwardSha256": "ec3644992a86cbe4d3cbac6bebbf6631cf0db99cfaed664a0742360b5602289a",
+      "rollbackSha256": "285bdb5af87082076a93425bec465b8293e37b8084fe070d9908bf5c434d5c5a"
+    },
+    {
+      "id": "202607300010_cloud_adult_work_management",
+      "description": "成人向けCanvasを所有者限定の非公開作品として制作状態付きで管理",
+      "forwardSha256": "fa55e5d06c9289450f35f0f5bea8eca1f6422531254fdd75a55160115b1f767a",
+      "rollbackSha256": "e24a06e80012aa93ef2a68b49b199a9b0ada4e255a9ba8fb4bc31350f3a83b75"
+    },
+    {
+      "id": "202607300011_cloud_adult_workflow_bulk_grant",
+      "description": "成人向け制作ワークフローの市場分析からAIネームまでを原子的に一括許可",
+      "forwardSha256": "aa44e979825f2b6cadb634126238093e69a741e88fc45256d60b8bb51dec1b7a",
+      "rollbackSha256": "27a9f850a85292c8dd07993401935ad55753ea2434cafe1d9f5052680f3b7e4e"
+    },
+    {
+      "id": "202607300012_cloud_adult_monitor_beta",
+      "description": "成人向け限定モニターの期間・AI利用上限・一括開始停止・フィードバックを追加",
+      "forwardSha256": "f9cd28a908460162338395f0f9af02bc36832d4c1b739d86ac25b5f27989fbd8",
+      "rollbackSha256": "0daa5d0a38d82309bdf37e96988431d8264b4c8d06724b2fdb7c86c0a99f248a"
+    },
+    {
+      "id": "202607310001_cloud_adult_grok_provider",
+      "description": "成人向けテキストAIをxAI/Grokへ分離しVault設定・監査・保存形式を追加",
+      "forwardSha256": "76d0f94558876122510e2aff3851ff13c87c427fe1c48fd1892227102c3a42b0",
+      "rollbackSha256": "5d8078311b30d71f6eb10a2cd24eed2a312ca78227ba70230881b0a82c2f74be"
     },
     {
       "id": "202607310001_cloud_general_monitor_operations",
@@ -174,7 +222,13 @@
       "description": "一般向けモニター招待メールの件名・本文テンプレートを管理画面で変更可能にする",
       "forwardSha256": "b7d973533950cdcfa12bc90bcbf5b071d36d09bd5aa7169ee6ce47577b0a2d81",
       "rollbackSha256": "feab2a175488d79fbae8d8415fea5f05d4f95e4ce6d1fad891aa14d36df3755f"
+    },
+    {
+      "id": "202607310004_cloud_adult_monitor_operations",
+      "description": "成人向け限定モニターの招待・初回案内・フィードバック対応管理を追加",
+      "forwardSha256": "f2eab9aa5dacfbd9a84f6214a507d8ac9a835a71cb7c38b6e194fe836041089c",
+      "rollbackSha256": "c6fbcf404442f8999296ff27339e3f36f91af0628c12ce54db707c57ad23ebae"
     }
   ],
-  "schemaSha256": "b6e3b86a6f486bedf6ebe50356c8481b607b63525da137e68ba8c7c52380fec8"
+  "schemaSha256": "83af6bbb5e41f6261ea620cf68474c9a4f2ea042bef8d260e29ca394012f1cdb"
 }
