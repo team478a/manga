@@ -180,7 +180,13 @@
       "description": "一般向け画像生成BFL FLUX設定をSupabase Vaultで管理し原価上限を登録",
       "forwardSha256": "38ac1e9a68541479ff459006d214dbd7416a1d0b2fa4fc57e5854576a7da5097",
       "rollbackSha256": "2de6d9cb5a09cd47e251891d7dc4133a27e99646e486876a70d204624566cec3"
+    },
+    {
+      "id": "202607310005_cloud_character_profiles",
+      "description": "一般向けCloud作品へ版管理されたキャラクター外見・衣装設定を追加",
+      "forwardSha256": "ae3323489594261041c9579fd2cc46e4d6f9bb91a213000d2937bec62ccbdfa5",
+      "rollbackSha256": "aebe84667f324b3be3f5decf523d23aa1dfe97e8f23d40d5477a60bcbfc8d3cd"
     }
   ],
-  "schemaSha256": "121785faad477fedbc7c9756561eea3bf0a4307300b6b24c7898eb7b98bbe69d"
+  "schemaSha256": "3c39939a0444af8c6169685eac6e25075d803177250fac531be4611caca2bc8c"
 }

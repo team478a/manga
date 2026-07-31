@@ -132,6 +132,41 @@ test("シナリオの人物設定を画像生成条件へ引き継ぐ", () => {
   assert.match(result.generation.prompt, /服装の一貫性/);
 });
 
+test("版管理された外見設定を生成条件と監査用入力へ固定する", () => {
+  const profileId = "70000000-0000-4000-8000-000000000001";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    visualCharacterProfiles: [
+      {
+        id: profileId,
+        project_id: "50000000-0000-4000-8000-000000000001",
+        name: "明日香",
+        role: "protagonist",
+        current_version: 3,
+        appearance_age: "20代前半",
+        body_build: "小柄",
+        hair: "黒髪のショートボブ",
+        costume: "白いシャツと紺のジャケット",
+        color_palette: "黒、白、紺",
+        immutable_traits: ["左目の下のほくろ"],
+        prompt: "切れ長の目",
+        negative_prompt: "長髪",
+        updated_at: "2026-07-31T00:00:00.000Z",
+      },
+    ],
+  });
+  assert.match(result.generation.prompt, /外見設定v3/);
+  assert.match(result.generation.prompt, /黒髪のショートボブ/);
+  assert.match(result.generation.prompt, /左目の下のほくろ/);
+  assert.match(result.generation.negativePrompt, /長髪/);
+  assert.deepEqual(result.generation.characterProfileVersions, [
+    { profileId, version: 3 },
+  ]);
+});
+
 test("1回の要求で最大4候補まで安全に指定できる", () => {
   const request = cloudPanelImageGenerationRequestSchema.parse({
     projectId: "50000000-0000-4000-8000-000000000001",
