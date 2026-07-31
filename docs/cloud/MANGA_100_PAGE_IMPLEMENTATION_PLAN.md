@@ -256,7 +256,10 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 - 年齢、体格、髪、衣装、配色、固定特徴、追加・除外条件を保存
 - ネーム上の人物名とProfileを照合し、コマ画像生成条件へ自動適用
 - 画像生成Job入力へ参照したProfile IDとversionを保存
-- 参照画像、Style Bible、Location／Prop、継続性警告は後続M2
+- M2-2 Style Bible、Location／Prop ProfileのCRUDと版履歴を実装
+- 画風を全コマ、名前が一致する場所・小物を対象コマの生成条件へ自動適用
+- 画像生成Job入力へStyle Bible／Location／PropのIDとversionを保存
+- 参照画像、コマへの明示割当、継続性警告は後続M2
 
 実装:
 

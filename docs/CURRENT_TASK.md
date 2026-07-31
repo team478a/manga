@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-07-31 長編マンガ制作 M2-2: 画風・場所・小物設定
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/manga-world-bible-v1`
+- Base: `codex/manga-character-profiles-v1`（Draft PR #89）
+- Draft PR: [#90](https://github.com/team478a/manga/pull/90)
+- 実装:
+  - 作品単位のStyle Bibleとversion snapshot
+  - 場所・小物Profileの作成・更新・削除とversion snapshot
+  - 画風、線、陰影、背景密度、構図ルール、固定特徴、配色、禁止変更
+  - 画風を全コマ、名前が一致する場所・小物を対象コマへ自動適用
+  - 生成Job入力へ利用したBible/Profile IDとversionを保存
+  - 所有者RLS、所有者確認RPC、migration未適用時の安全な案内
+- 変更しない範囲: 成人向け、Desktop、Provider、Worker、Stripe、Marketplace
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 311/311、migration 32/32、local roundtrip、production build、diff check成功
+- 次: 参照画像、コマへの明示割当、継続性評価・警告
+- 未実施: staging migration、実Provider生成、実ブラウザ確認、責任者承認、マージ
+
 ## 2026-07-31 長編マンガ制作 M2-1: 編集可能なキャラクター設定
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

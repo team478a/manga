@@ -40,6 +40,12 @@ export {
   listCloudCharacterProfiles,
   saveCloudCharacterProfile,
 } from "@/modules/cloud-creator/projects/character-profile-service";
+export {
+  deleteCloudWorldProfile,
+  getCloudWorldBible,
+  saveCloudStyleBible,
+  saveCloudWorldProfile,
+} from "@/modules/cloud-creator/projects/world-bible-service";
 
 export {
   addCloudEpisode,

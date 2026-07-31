@@ -57,6 +57,22 @@ export const cloudGenerationInputSchema = z
       )
       .max(12)
       .optional(),
+    styleBibleVersion: z
+      .object({
+        bibleId: z.string().uuid(),
+        version: z.number().int().positive(),
+      })
+      .optional(),
+    worldProfileVersions: z
+      .array(
+        z.object({
+          profileId: z.string().uuid(),
+          version: z.number().int().positive(),
+          kind: z.enum(["location", "prop"]),
+        }),
+      )
+      .max(12)
+      .optional(),
   })
   .superRefine((value, context) => {
     const imageTypes: CloudGenerationJobType[] = [
