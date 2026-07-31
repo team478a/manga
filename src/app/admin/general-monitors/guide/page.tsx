@@ -92,6 +92,12 @@ export default async function GeneralMonitorStaffGuidePage() {
           ))}
         </ol>
         <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <Link
+            className="button bg-violet-700 hover:bg-violet-800"
+            href="/admin/general-monitors/readiness"
+          >
+            テスト公開チェックを開く
+          </Link>
           <Link className="button-secondary" href="/admin/users">
             ユーザー管理を開く
           </Link>

@@ -32,6 +32,12 @@ export default async function GeneralMonitorsAdminPage() {
         </Link>
         <Link
           className="button-secondary ml-2 mt-4"
+          href="/admin/general-monitors/readiness"
+        >
+          テスト公開チェック
+        </Link>
+        <Link
+          className="button-secondary ml-2 mt-4"
           href="/admin/general-monitors/email"
         >
           招待メール設定
@@ -61,6 +67,7 @@ export default async function GeneralMonitorsAdminPage() {
           <p className="mt-2 text-stone-600">招待、期限、AI利用数、感想を確認します。</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link className="button bg-violet-700 hover:bg-violet-800" href="/admin/general-monitors/readiness">テスト公開チェック</Link>
           <Link className="button-secondary" href="/admin/general-monitors/guide">スタッフマニュアル</Link>
           <Link className="button-secondary" href="/admin/general-monitors/email">招待メール設定</Link>
           <Link className="button-secondary" href="/admin/general-monitors/export">CSV出力</Link>

@@ -10,6 +10,7 @@
 3. 一般向けFeature Flagと `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true` を対象Previewブランチだけに設定する。
 4. `CLOUD_ADULT_RESEARCH_ENABLED=false`、`CLOUD_ADULT_PLANNING_ENABLED=false` を確認する。
 5. `npm run cloud:general-monitor:preflight` を実行する。出力に値は表示されない。
+6. `/admin/general-monitors/readiness`を開き、全項目が「準備完了」になることを確認する。
 
 招待メールは、migration適用後に`/admin/general-monitors/email`で次を設定する。
 
@@ -29,6 +30,10 @@ APIキーはSupabase Vaultへ暗号化保存され、画面、通常テーブル
 約10名を同一コホートとして管理する。例:
 `general-monitor-2026-08`。期限とAI上限は原則として全員で統一し、
 個別に変更した場合は管理メモへ理由を残す。
+
+一斉招待は行わず、スタッフ1名 → 2〜3名 → 残りの順に段階公開する。
+各段階でメール受信、ログイン、市場分析の保存、未対応フィードバックを確認してから
+次の対象者を招待する。
 
 1. `/admin/users` から対象ユーザーを選ぶ。
 2. 一般向けモニター欄でグループ、AI上限、期限を入力する。

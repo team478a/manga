@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けモニター・テスト公開チェック
+
+- `/admin/general-monitors/readiness`へ秘密値を表示しない公開前チェックを追加した。
+- 一般向けFeature Flag、成人向け停止、モニターDB、管理画面保存済みAI接続、
+  Resend招待メール、招待先HTTPS URLを一画面で判定する。
+- 登録済み、利用中、初回確認済み、未完了フィードバックの件数を表示する。
+- 公開順をスタッフ1名、2〜3名、残りへ分け、一斉招待による障害拡大を防ぐ。
+- 集中テスト13/13、deps、lint、Hub typecheck、Hub test 271/271、
+  migration 28/28、Hub build、diff checkが成功した。
+- 外部作業はPreview実環境の判定確認と、スタッフ1名による招待・メール・
+  市場分析保存のスモークテスト。
+
+---
+
 ## 2026-07-31 Codex: 約10名モニター向けWebマニュアル
 
 - `/dashboard/monitor/guide`を利用者向けWebマニュアルとして再構成した。
