@@ -1,28 +1,31 @@
 # MANGAI Current Task
 
-## 2026-07-31 一般向けモニター・テスト公開チェック
+## 2026-07-31 一般向けモニター・本番限定公開チェック
 
 - 状態: `READY_FOR_REVIEW`
 - 管理者画面: `/admin/general-monitors/readiness`
 - 追加内容:
   - 一般向け制作Feature Flag、成人向け停止、モニターDB、AI接続、招待メール、
     招待先HTTPS URLを秘密値なしで一括判定
+  - `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`が同じHTTPS本番originで
+    あることを検査し、Previewや別ドメインへの誤招待を防止
   - 登録済み、利用中、初回確認済み、未完了フィードバック件数の表示
   - スタッフ1名 → 2〜3名 → 残りの順で段階公開する手順
   - モニター管理、スタッフマニュアル、各設定画面への導線
 - 境界: 設定値、APIキー、内部DBエラーは表示しない。招待、Feature Flag変更、
   migration適用、本番公開は自動実行しない
 - 検証:
-  - 集中テスト: PASS（13/13）
+  - 本番公開保護の集中テスト: PASS（9/9）
   - deps:check: PASS
   - lint: PASS
   - Hub typecheck: PASS
-  - Hub test: PASS（271/271）
+  - Hub test: PASS（272/272）
   - migration静的検証: PASS（28/28）
   - Hub production build: PASS
   - git diff --check: PASS
-- 外部確認: Previewで管理者ログイン後、全項目の実環境判定とスタッフ1名の
-  招待・メール受信・市場分析保存を確認する
+- 公開形態: 一般公開ではなく、本番環境上の招待制・無料・段階公開
+- 外部確認: protected branchの承認とCI成功後に本番へ反映し、管理者画面の
+  全項目が正常であることと、スタッフ1名の招待・メール受信・市場分析保存を確認する
 
 ## 2026-07-31 約10名モニター向けWebマニュアル
 

@@ -40,14 +40,19 @@ function enabled(value: string | undefined) {
   return value?.trim().toLowerCase() === "true";
 }
 
-function validInviteOrigin(value: string | undefined) {
-  if (!value) return false;
+function parseHttpsOrigin(value: string | undefined) {
+  if (!value) return null;
   try {
     const url = new URL(value);
-    return url.protocol === "https:" && url.pathname === "/" &&
-      !url.search && !url.hash;
+    if (
+      url.protocol !== "https:" ||
+      url.pathname !== "/" ||
+      url.search ||
+      url.hash
+    ) return null;
+    return url.origin;
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -60,7 +65,11 @@ export async function getCloudGeneralMonitorReadiness(
   const adultFlagsStopped = requiredDisabledFlags.every((key) =>
     !enabled(env[key])
   );
-  const inviteOriginReady = validInviteOrigin(env.MONITOR_INVITE_SITE_URL);
+  const siteOrigin = parseHttpsOrigin(env.NEXT_PUBLIC_SITE_URL);
+  const inviteOrigin = parseHttpsOrigin(env.MONITOR_INVITE_SITE_URL);
+  const inviteOriginReady = Boolean(
+    siteOrigin && inviteOrigin && siteOrigin === inviteOrigin,
+  );
 
   let databaseReady = false;
   let enrolled: number | null = null;
@@ -168,8 +177,8 @@ export async function getCloudGeneralMonitorReadiness(
       label: "招待先URL",
       ready: inviteOriginReady,
       detail: inviteOriginReady
-        ? "HTTPSのテスト公開URLが設定されています。"
-        : "MONITOR_INVITE_SITE_URLへ対象PreviewのHTTPS originを設定してください。",
+        ? "招待メールとアプリが同じ本番HTTPS originを使用します。"
+        : "NEXT_PUBLIC_SITE_URLとMONITOR_INVITE_SITE_URLを同じ本番HTTPS originにしてください。",
     },
   ];
 

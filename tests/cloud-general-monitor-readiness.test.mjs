@@ -30,6 +30,7 @@ test("テスト公開チェックは秘密値を表示せず主要な公開条�
     "CLOUD_PANEL_IMAGE_GENERATION_ENABLED",
     "CLOUD_ADULT_RESEARCH_ENABLED",
     "CLOUD_ADULT_PLANNING_ENABLED",
+    "NEXT_PUBLIC_SITE_URL",
     "MONITOR_INVITE_SITE_URL",
   ]) {
     assert.match(readiness, new RegExp(key));
@@ -41,6 +42,7 @@ test("テスト公開チェックは秘密値を表示せず主要な公開条�
   assert.doesNotMatch(page, /apiKey|secret_id|SUPABASE_SERVICE_ROLE_KEY/);
   assert.match(page, /スタッフ1名/);
   assert.match(page, /2〜3名/);
+  assert.match(readiness, /siteOrigin === inviteOrigin/);
   assert.match(page, /テスト公開チェック/);
 });
 

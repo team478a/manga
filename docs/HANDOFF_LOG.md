@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けモニターを本番招待制で公開するための保護
+
+- モニターテストの対象をPreviewから本番環境上の招待制・無料・段階公開へ変更した。
+- `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`が同一のHTTPS originで
+  ない場合はpreflightと管理者公開チェックを失敗させる。
+- URLやAPIキーなどの値は出力せず、設定状態と一致判定だけを表示する。
+- 本番反映後はスタッフ1名、2〜3名、残りの順で招待する。
+- 障害時は一般向けモニターFeature Flagを停止し、新規利用を止めてから
+  deployment rollbackを判断する。
+- 本番公開保護の集中テスト9/9、deps、lint、Hub typecheck、Hub test 272/272、
+  migration 28/28、Hub production build、diff checkが成功した。
+- protected production branchの承認、migration適用、Feature Flag変更、
+  実招待、本番公開そのものは未実施。
+
+---
+
 ## 2026-07-31 Codex: 一般向けモニター・テスト公開チェック
 
 - `/admin/general-monitors/readiness`へ秘密値を表示しない公開前チェックを追加した。

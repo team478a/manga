@@ -25,7 +25,7 @@ export default async function GeneralMonitorReadinessPage() {
         <p className="text-sm font-bold text-violet-700">秘密値を表示しない事前確認</p>
         <h1 className="mt-1 text-3xl font-bold">テスト公開チェック</h1>
         <p className="mt-2 leading-relaxed text-stone-600">
-          約10名を招待する前に、一般向けモニターの実行条件をまとめて確認します。
+          本番環境で約10名を招待する前に、一般向けモニターの実行条件をまとめて確認します。
           APIキー本体や内部エラーは表示しません。
         </p>
       </header>

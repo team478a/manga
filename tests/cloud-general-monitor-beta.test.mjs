@@ -68,12 +68,35 @@ test("preflightは値を表示せず一般Flagと成人向け停止を確認す�
     NEXT_PUBLIC_SUPABASE_URL: "hidden-value",
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "hidden-value",
     SUPABASE_SERVICE_ROLE_KEY: "hidden-value",
-    MONITOR_INVITE_SITE_URL: "https://preview.example.com",
+    NEXT_PUBLIC_SITE_URL: "https://app.example.com",
+    MONITOR_INVITE_SITE_URL: "https://app.example.com",
     ...Object.fromEntries(enabled.map((key) => [key, "true"])),
     CLOUD_ADULT_RESEARCH_ENABLED: "false",
     CLOUD_ADULT_PLANNING_ENABLED: "false",
   };
   const result = checkCloudGeneralMonitorBetaEnvironment(env);
   assert.equal(result.passed, true);
+  assert.equal(result.productionOriginReady, true);
   assert.equal(JSON.stringify(result).includes("hidden-value"), false);
+});
+
+test("本番サイトと招待先のorigin不一致を拒否する", () => {
+  const enabled = [
+    "CLOUD_GENERAL_MONITOR_BETA_ENABLED", "CLOUD_RESEARCH_MVP_ENABLED",
+    "CLOUD_PROPOSAL_GENERATION_ENABLED", "CLOUD_SCENARIO_GENERATION_ENABLED",
+    "CLOUD_STORYBOARD_GENERATION_ENABLED", "CLOUD_STORYBOARD_CANVAS_ENABLED",
+    "CLOUD_PANEL_IMAGE_GENERATION_ENABLED",
+  ];
+  const result = checkCloudGeneralMonitorBetaEnvironment({
+    NEXT_PUBLIC_SUPABASE_URL: "hidden-value",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: "hidden-value",
+    SUPABASE_SERVICE_ROLE_KEY: "hidden-value",
+    NEXT_PUBLIC_SITE_URL: "https://app.example.com",
+    MONITOR_INVITE_SITE_URL: "https://preview.example.com",
+    ...Object.fromEntries(enabled.map((key) => [key, "true"])),
+    CLOUD_ADULT_RESEARCH_ENABLED: "false",
+    CLOUD_ADULT_PLANNING_ENABLED: "false",
+  });
+  assert.equal(result.passed, false);
+  assert.equal(result.productionOriginReady, false);
 });

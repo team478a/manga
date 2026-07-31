@@ -1,16 +1,17 @@
 # 一般向け限定モニター運用手順
 
-## 1. Preview準備
+## 1. 本番限定公開の準備
 
-1. 対象ブランチをVercel Previewへデプロイする。
-2. migrationを次の順でPreview用Supabaseへ適用する。
+1. 保護ブランチのレビューと必須CIを完了し、本番候補をVercel Productionへデプロイする。
+2. migrationを次の順で本番用Supabaseへ適用する。
    - `202607300006_cloud_general_monitor_beta.sql`
    - `202607310001_cloud_general_monitor_operations.sql`
    - `202607310002_cloud_general_monitor_email_provider.sql`
-3. 一般向けFeature Flagと `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true` を対象Previewブランチだけに設定する。
+3. 一般向けFeature Flagと `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true` をProduction環境へ設定する。
 4. `CLOUD_ADULT_RESEARCH_ENABLED=false`、`CLOUD_ADULT_PLANNING_ENABLED=false` を確認する。
-5. `npm run cloud:general-monitor:preflight` を実行する。出力に値は表示されない。
-6. `/admin/general-monitors/readiness`を開き、全項目が「準備完了」になることを確認する。
+5. `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`を同じ本番HTTPS originにする。
+6. `npm run cloud:general-monitor:preflight` をProduction相当の設定で実行する。出力に値は表示されない。
+7. 本番の`/admin/general-monitors/readiness`を開き、全項目が「準備完了」になることを確認する。
 
 招待メールは、migration適用後に`/admin/general-monitors/email`で次を設定する。
 
@@ -20,9 +21,9 @@
 
 APIキーはSupabase Vaultへ暗号化保存され、画面、通常テーブル、監査ログには
 再表示されない。変更時も同じ画面へ新しいキーを入力して保存する。
-対象PreviewのHTTPS originだけは`MONITOR_INVITE_SITE_URL`へ設定する。
+本番サイトと同じHTTPS originだけを`MONITOR_INVITE_SITE_URL`へ設定する。
 
-順序は必ず migration → Feature Flag → 招待とする。Feature Flagが停止中は、
+順序は必ずレビュー・CI → 本番デプロイ → migration → Feature Flag → スタッフ招待とする。Feature Flagが停止中は、
 管理画面もモニター用テーブルを参照せず、招待・停止操作を受け付けない。
 
 ## 2. 招待
@@ -61,3 +62,8 @@ APIキーはSupabase Vaultへ暗号化保存され、画面、通常テーブル
 
 Stripe設定、販売設定、成人向け設定は変更しない。
 Resendの送信履歴でも受付状態を確認する。API keyやProvider応答本文を問い合わせ文へ貼らない。
+
+本番デプロイ自体は維持し、障害時は最初に
+`CLOUD_GENERAL_MONITOR_BETA_ENABLED=false`へ変更して再デプロイする。
+ロールバックより先にモニターAI実行を止め、既存の公開作品閲覧や認証への影響を
+最小化する。
