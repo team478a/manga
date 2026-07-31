@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-07-31 長編マンガ制作 M2-1: 編集可能なキャラクター設定
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/manga-character-profiles-v1`
+- Base: `codex/manga-production-m0-v1`（Draft PR #88）
+- Draft PR: [#89](https://github.com/team478a/manga/pull/89)
+- 実装:
+  - 一般向けCloud作品ごとのCharacter Profile作成・更新・削除
+  - 年齢、体格、髪、衣装、配色、固定特徴、追加・除外条件
+  - 更新ごとの不変version snapshotと所有者RLS
+  - 保存・削除中表示、空状態、migration未適用時の安全な案内
+  - ネーム上の人物名と照合し、最新設定を画像生成条件へ自動反映
+  - 生成Job入力へProfile IDとversionを保存
+- 変更しない範囲: 成人向け、Desktop、Provider、Worker、Stripe、Marketplace
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 306/306、migration 31/31、production build、diff check成功
+- 次: 参照画像、Style Bible、Location／Prop Profile、継続性警告
+- 未実施: staging migration、実Provider生成、実ブラウザ確認、責任者承認、マージ
+
 ## 2026-07-31 長編マンガ制作 M1: キャラクター設定・作品全体進捗
 
 - 状態: `IMPLEMENTED`
