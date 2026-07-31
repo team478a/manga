@@ -21,28 +21,32 @@ type WorkflowItem = {
   label: string;
   href?: string;
   icon: LucideIcon;
-  availability?: "contextual" | "coming-soon";
+  feature?: "research" | "proposal" | "scenario" | "storyboard";
+  availability?: "coming-soon";
 };
 
 const workflow: WorkflowItem[] = [
-  { step: 1, label: "市場分析", href: "/dashboard/research", icon: BarChart3 },
+  { step: 1, label: "市場分析", href: "/dashboard/research", icon: BarChart3, feature: "research" },
   {
     step: 2,
     label: "AI企画提案",
+    href: "/dashboard/workflow/proposal",
     icon: Lightbulb,
-    availability: "contextual",
+    feature: "proposal",
   },
   {
     step: 3,
     label: "シナリオ作成",
+    href: "/dashboard/workflow/scenario",
     icon: FileText,
-    availability: "contextual",
+    feature: "scenario",
   },
   {
     step: 4,
     label: "ネーム作成",
+    href: "/dashboard/workflow/storyboard",
     icon: Sparkles,
-    availability: "contextual",
+    feature: "storyboard",
   },
   { step: 5, label: "原稿編集", href: "/creator", icon: FilePenLine },
   { step: 6, label: "作品管理", href: "/dashboard/works", icon: Images },
@@ -68,8 +72,11 @@ function activeWorkflowStep(pathname: string) {
   )
     return 6;
   if (pathname.includes("/storyboard")) return 4;
+  if (pathname === "/dashboard/workflow/storyboard") return 4;
   if (pathname.includes("/proposal/scenario")) return 3;
+  if (pathname === "/dashboard/workflow/scenario") return 3;
   if (pathname.includes("/proposal")) return 2;
+  if (pathname === "/dashboard/workflow/proposal") return 2;
   if (
     pathname === "/dashboard/research" ||
     pathname.startsWith("/dashboard/research/")
@@ -80,14 +87,20 @@ function activeWorkflowStep(pathname: string) {
 
 export function CloudWorkflowShell({
   researchEnabled,
+  proposalEnabled,
+  scenarioEnabled,
+  storyboardEnabled,
   children,
 }: {
   researchEnabled: boolean;
+  proposalEnabled: boolean;
+  scenarioEnabled: boolean;
+  storyboardEnabled: boolean;
   children: ReactNode;
 }) {
   const pathname = usePathname();
   const currentStep = activeWorkflowStep(pathname);
-  const creatorActive = currentStep === 5;
+  const currentItem = workflow.find((item) => item.step === currentStep);
   return (
     <div className="min-h-[calc(100vh-81px)] bg-[#f7f6ff] lg:grid lg:grid-cols-[216px_minmax(0,1fr)]">
       <aside className="border-b border-violet-100 bg-white px-3 py-4 lg:border-b-0 lg:border-r">
@@ -109,15 +122,22 @@ export function CloudWorkflowShell({
           <ol className="mt-2 flex gap-1 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible">
             {workflow.map((item) => {
               const active = currentStep === item.step;
-              const enabled =
-                Boolean(item.href) &&
-                (item.step !== 1 || researchEnabled);
+              const featureEnabled = item.feature === "research"
+                ? researchEnabled
+                : item.feature === "proposal"
+                  ? proposalEnabled
+                  : item.feature === "scenario"
+                    ? scenarioEnabled
+                    : item.feature === "storyboard"
+                      ? storyboardEnabled
+                      : true;
+              const enabled = Boolean(item.href) && featureEnabled;
               const status = item.availability === "coming-soon"
                 ? "準備中"
-                : item.availability === "contextual"
-                  ? "前工程の完了後"
-                  : item.step === 1 && !researchEnabled
-                    ? "停止中"
+                : !featureEnabled
+                  ? "停止中"
+                  : item.step >= 2 && item.step <= 4
+                    ? "利用可能"
                     : null;
               const content = (
                 <>
@@ -169,18 +189,24 @@ export function CloudWorkflowShell({
         </nav>
         <div className="mt-6 hidden rounded-lg border border-violet-100 bg-violet-50 p-3 text-xs leading-relaxed text-violet-900 lg:block">
           <p className="font-bold">現在の制作進行</p>
-          {creatorActive ? (
+          {currentItem ? (
             <>
-              <p className="mt-1">ステップ5：原稿編集</p>
+              <p className="mt-1">
+                ステップ{currentItem.step}：{currentItem.label}
+              </p>
               <p className="mt-2 text-violet-600">
-                作品・話・ページを編集
+                {currentItem.step <= 4
+                  ? "保存した制作データから次工程へ進めます"
+                  : currentItem.step === 5
+                    ? "作品・話・ページを編集"
+                    : "制作した作品を管理"}
               </p>
             </>
           ) : (
             <>
-              <p className="mt-1">Release 1：市場分析MVP</p>
+              <p className="mt-1">一般向け制作ワークフロー</p>
               <p className="mt-2 text-violet-600">
-                {researchEnabled ? "Feature Flag 有効" : "Feature Flag 停止中"}
+                左のメニューから工程を選択
               </p>
             </>
           )}

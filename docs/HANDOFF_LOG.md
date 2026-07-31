@@ -1755,6 +1755,69 @@ READY_FOR_REVIEW
 
 ---
 
+## 2026-07-31 Codex → 次担当AI（一般向け制作工程の利用入口）
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-workflow-entrypoints-v1`
+- Base: `feature/manga-canvas-mvp` (`38c1481`)
+- HEAD: この変更を含むcommit
+
+### 完了
+
+- AI企画提案、シナリオ作成、ネーム作成を共通メニューから開ける入口を追加。
+- Feature Flag停止と前工程未完了を区別して案内。
+- 利用者本人の一般向けデータだけから最新の遷移先を解決。
+- 現在の制作進行表示を閲覧工程と同期。
+
+### 未完了
+
+- Draft PR、CI、Vercel Preview、本番環境のFeature Flag確認。
+
+### 変更ファイル
+
+- `src/components/CloudWorkflowShell.tsx`
+- `src/app/dashboard/layout.tsx`
+- `src/app/creator/layout.tsx`
+- `src/app/dashboard/workflow/[stage]/page.tsx`
+- `src/lib/cloud-workflow-entrypoints-server.ts`
+- `tests/cloud-creator-japanese-guide.test.mjs`
+- `tests/cloud-workflow-entrypoints.test.mjs`
+- `docs/AI_HANDOFF.md`
+- `docs/CURRENT_TASK.md`
+- `docs/HANDOFF_LOG.md`
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- Hub typecheck: PASS
+- focused tests: PASS（4/4）
+- hub:test: PASS（279/279）
+- Hub build: PASS
+- git diff --check: PASS
+
+### 失敗・BLOCKED
+
+- 本番Feature Flagの値は外部環境で確認が必要。
+- `npm ci`に既存high severity 11件。今回の変更とは分離。
+
+### 次担当者が最初に行うこと
+
+1. Draft PRのCIとVercel Previewを確認する。
+2. Previewでステップ2〜4の遷移と前工程案内を一般向けモニターで確認する。
+3. 本番反映時に一般向け4つのFeature Flagを確認する。
+
+### 注意事項
+
+- DB、migration、AI生成ロジック、成人向け境界は変更していない。
+
+---
+
 ## 追記テンプレート
 
 ```md
