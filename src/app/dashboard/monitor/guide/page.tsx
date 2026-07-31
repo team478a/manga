@@ -4,11 +4,15 @@ import {
   BookOpenCheck,
   CheckCircle2,
   FileText,
-  ImageIcon,
+  FilePenLine,
+  Images,
   Lightbulb,
   MessageSquare,
-  PanelsTopLeft,
+  ReceiptText,
   ShieldCheck,
+  ShoppingBag,
+  Sparkles,
+  Smartphone,
   TriangleAlert,
 } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
@@ -17,6 +21,7 @@ import { getCloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
 const sections = [
   { href: "#quick-start", label: "最初の5分" },
   { href: "#workflow", label: "制作手順" },
+  { href: "#mobile", label: "スマートフォン" },
   { href: "#feedback", label: "感想の送り方" },
   { href: "#troubleshooting", label: "困ったとき" },
   { href: "#safety", label: "安全上の注意" },
@@ -25,13 +30,14 @@ const sections = [
 const steps = [
   {
     number: 1,
-    title: "AI市場分析",
+    title: "市場分析",
     icon: BarChart3,
     before: "ジャンル、読者、テーマを選びます。迷う項目は「AIにおまかせ」で構いません。",
     action: "「どんな作品が売れやすいか調べる」を1回押します。",
     result: "売れやすい方向、想定読者、価格、販売先、注意点が表示されます。",
-    href: "/dashboard/research/new",
+    href: "/dashboard/research",
     linkLabel: "市場分析を開始",
+    availability: "available",
   },
   {
     number: 2,
@@ -40,30 +46,75 @@ const steps = [
     before: "保存した市場分析から「AI企画提案の準備へ」を選びます。",
     action: "「AI企画を3案作成」を押し、本命案・差別化案・小さく試す案を比較します。",
     result: "売れやすさ、作りやすさ、買われる理由を見て、制作する1案を採用します。",
+    href: "/dashboard/workflow/proposal",
+    linkLabel: "AI企画提案を開く",
+    availability: "available",
   },
   {
     number: 3,
-    title: "シナリオ生成",
+    title: "シナリオ作成",
     icon: FileText,
     before: "採用した企画から「シナリオ生成へ進む」を選びます。",
     action: "初稿を作り、人物、三幕構成、シーン、ページ配分を確認します。",
     result: "必要なら修正版を作り、使用するシナリオを採用します。",
+    href: "/dashboard/workflow/scenario",
+    linkLabel: "シナリオ作成を開く",
+    availability: "available",
   },
   {
     number: 4,
-    title: "AIネーム",
-    icon: PanelsTopLeft,
+    title: "ネーム作成",
+    icon: Sparkles,
     before: "採用シナリオから「AIネーム生成へ進む」を選びます。",
     action: "初稿を作り、ページ、コマ割り、構図、セリフを確認します。",
     result: "必要なら修正版を作り、使用するネームを採用します。",
+    href: "/dashboard/workflow/storyboard",
+    linkLabel: "ネーム作成を開く",
+    availability: "available",
   },
   {
     number: 5,
-    title: "Canvas・コマ画像",
-    icon: ImageIcon,
+    title: "原稿編集",
+    icon: FilePenLine,
     before: "採用ネームからCanvas下書きを作成します。",
     action: "コマ枠、吹き出し、テキストを調整し、必要なコマだけ画像生成します。",
     result: "保存表示を確認すると、次回も続きから編集できます。",
+    href: "/creator",
+    linkLabel: "原稿編集を開く",
+    availability: "available",
+  },
+  {
+    number: 6,
+    title: "作品管理",
+    icon: Images,
+    before: "作成した作品の状態や公開準備状況を一覧で確認します。",
+    action: "確認したい作品を選び、作品情報や現在の状態を確認します。",
+    result: "制作した作品を一覧から再表示できます。",
+    href: "/dashboard/works",
+    linkLabel: "作品管理を開く",
+    availability: "available",
+  },
+  {
+    number: 7,
+    title: "販売準備",
+    icon: ShoppingBag,
+    before: "作品情報、販売形式、価格などを整える工程です。",
+    action: "現在はモニターテスト対象外です。操作は必要ありません。",
+    result: "今後の更新で利用可能になる予定です。",
+    href: null,
+    linkLabel: null,
+    availability: "coming-soon",
+  },
+  {
+    number: 8,
+    title: "収益管理",
+    icon: ReceiptText,
+    before: "販売後の売上や作品ごとの状況を確認する工程です。",
+    action: "現在はモニターテスト対象外です。操作は必要ありません。",
+    result: "今後の更新で利用可能になる予定です。",
+    href: null,
+    linkLabel: null,
+    availability: "coming-soon",
   },
 ] as const;
 
@@ -108,7 +159,8 @@ export default async function GeneralMonitorGuidePage() {
           <h1 className="mt-1 text-3xl font-bold">MANGAI Web使い方マニュアル</h1>
           <p className="mt-2 leading-relaxed text-stone-600">
             市場やAIの専門知識は必要ありません。上から順番に操作すると、
-            市場分析から漫画の下書きまで進められます。
+            市場分析から原稿編集・作品管理まで、8工程の順番に進められます。
+            現在準備中の工程も、このページで確認できます。
           </p>
         </div>
       </header>
@@ -163,7 +215,7 @@ export default async function GeneralMonitorGuidePage() {
             "招待メールを受け取ったメールアドレスでログインする",
             "モニター状況で利用期限とAI利用上限を確認する",
             "このマニュアルを一度最後まで確認する",
-            "市場分析を1件作成する",
+            "サイドバーの「市場分析」から分析を1件作成する",
             "迷った場所や結果の感想を送る",
           ].map((item, index) => (
             <li className="flex gap-3" key={item}>
@@ -224,7 +276,11 @@ export default async function GeneralMonitorGuidePage() {
                         </dd>
                       </div>
                     </dl>
-                    {"href" in step ? (
+                    {step.availability === "coming-soon" ? (
+                      <span className="mt-4 inline-flex rounded-full bg-stone-100 px-3 py-1.5 text-sm font-bold text-stone-500">
+                        準備中
+                      </span>
+                    ) : step.href && step.linkLabel ? (
                       <Link
                         className="button-secondary mt-4 w-full sm:w-auto"
                         href={step.href}
@@ -237,6 +293,22 @@ export default async function GeneralMonitorGuidePage() {
               </article>
             );
           })}
+        </div>
+      </section>
+
+      <section className="mt-9 scroll-mt-6" id="mobile">
+        <div className="panel border-violet-200 bg-violet-50">
+          <div className="flex items-center gap-2">
+            <Smartphone className="h-6 w-6 text-violet-700" aria-hidden="true" />
+            <h2 className="text-2xl font-bold">スマートフォンで操作する方へ</h2>
+          </div>
+          <ul className="mt-4 list-disc space-y-2 pl-5 leading-relaxed text-stone-700">
+            <li>制作工程のメニューは、横へ指で動かすと続きの工程を確認できます。</li>
+            <li>ボタンは1回だけ押し、「処理中」の表示が消えるまで待ってください。</li>
+            <li>入力中はブラウザの戻る操作を避け、保存完了を確認してから移動してください。</li>
+            <li>古い表示が残る場合は、画面を下へ引いて再読み込みしてください。</li>
+            <li>不具合報告では、端末名・ブラウザ名・画面名とスクリーンショットを添えてください。</li>
+          </ul>
         </div>
       </section>
 
@@ -291,6 +363,11 @@ export default async function GeneralMonitorGuidePage() {
               </p>
             </details>
           ))}
+        </div>
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
+          <strong>「停止中」は故障ではありません。</strong>
+          運営が安全確認や利用範囲の調整のために工程を止めている状態です。
+          何度も操作せず、モニター状況からスタッフへご連絡ください。
         </div>
       </section>
 

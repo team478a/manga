@@ -81,6 +81,8 @@ test("クラウド制作は紫基調の制作ワークフローシェルを使�
   assert.match(shell, /storyboardEnabled/);
   assert.doesNotMatch(shell, /前工程の完了後/);
   assert.match(shell, /label: "原稿編集", href: "\/creator"/);
+  assert.match(shell, /href="\/dashboard\/monitor\/guide"/);
+  assert.match(shell, />\s*使い方\s*</);
   assert.match(shell, /label: "販売準備"[\s\S]*availability: "coming-soon"/);
   assert.match(shell, /label: "収益管理"[\s\S]*availability: "coming-soon"/);
   assert.match(shell, /ステップ\{currentItem.step\}：\{currentItem.label\}/);
