@@ -107,6 +107,8 @@ export function CloudCanvasEditor({
   >("speech_bubble");
   const [selection, setSelection] = useState<CanvasSelection>(null);
   const [message, setMessage] = useState("");
+  const [requestingPanelGeneration, setRequestingPanelGeneration] =
+    useState(false);
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -449,8 +451,9 @@ export function CloudCanvasEditor({
   }
 
   async function requestStoryboardPanelGeneration() {
-    if (selection?.type !== "panel") return;
+    if (selection?.type !== "panel" || requestingPanelGeneration) return;
     const panelId = selection.id;
+    setRequestingPanelGeneration(true);
     setMessage("ネームから画像生成を準備しています…");
     try {
       const result = await createStoryboardPanelGenerationJob({
@@ -473,6 +476,8 @@ export function CloudCanvasEditor({
           ? error.message
           : "ネームから画像生成を開始できませんでした。",
       );
+    } finally {
+      setRequestingPanelGeneration(false);
     }
   }
 
@@ -865,12 +870,15 @@ export function CloudCanvasEditor({
                   disabled={
                     selection?.type !== "panel" ||
                     !quota?.generation_enabled ||
-                    remainingCredits <= 0
+                    remainingCredits <= 0 ||
+                    requestingPanelGeneration
                   }
                   onClick={() => void requestStoryboardPanelGeneration()}
                   type="button"
                 >
-                  選択したコマを生成
+                  {requestingPanelGeneration
+                    ? "画像生成を受付中…"
+                    : "選択したコマを生成"}
                 </button>
               </div>
             ) : null}

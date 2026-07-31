@@ -86,13 +86,16 @@
   - BFLのpolling URL・画像URLをHTTPSかつBFL domainへ限定
   - 既存の一般向けモデレーション、quota、Queue、Worker、画像検査、
     private Storage、コマ配置を維持
+  - モニター公開チェックへ画像Provider設定とWorker実行条件を追加
+  - Worker停止・短い署名Secretをpreflightで秘密値なしに拒否
+  - 画像生成受付中はボタンを無効化し、二重Job登録を防止
 - migration:
   `202607310004_cloud_general_image_provider.sql`
 - 成人向け境界:
   成人向け画像はBFLへ送信せず、将来の独立GPU/VPS APIまで停止
 - 文書:
   [`CLOUD_GENERAL_IMAGE_PROVIDER_V1.md`](cloud/CLOUD_GENERAL_IMAGE_PROVIDER_V1.md)
-- 検証: deps、lint、Hub/Desktop typecheck、research eval、Hub 282/282、
+- 検証: deps、lint、Hub/Desktop typecheck、research eval、Hub 283/283、
   migration 30/30、production build、diff check成功
 - migration roundtrip: ローカルDocker停止中のためGitHub CIで確認
 - 未実施: 実API有料生成、staging migration、Draft PR、CI、Preview、
