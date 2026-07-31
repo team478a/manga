@@ -14,6 +14,7 @@ import { cloudStoryboardCanvasFeatureEnabled } from "@/lib/cloud-storyboard-mate
 import { materializeCloudStoryboard } from "@/lib/cloud-storyboard-materialization-server";
 import { enforceCloudStoryboardAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
 import { PermissionDeniedError, ResourceNotFoundError } from "@/lib/domain-errors";
+import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor";
 
 function enabled() {
   if (!cloudResearchFeatureEnabled() || !cloudProposalFeatureEnabled() || !cloudScenarioFeatureEnabled() || !cloudStoryboardFeatureEnabled())
@@ -36,6 +37,9 @@ export async function createCloudStoryboardAction(reportId: string, scenarioVers
       getCloudResearchReport(profile.id, reportId),
       adoptedScenario(profile.id, reportId, scenarioVersionId),
     ]);
+    if (report.input.contentClass !== "general")
+      throw new PermissionDeniedError("一般向けシナリオを選んでください。");
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "storyboard");
     const result = await runCloudStoryboardAi({ profileId: profile.id, report, scenario });
     storyboardId = await createCloudStoryboardVersion({ profileId: profile.id, scenarioVersionId, result });
   } catch (error) {
@@ -55,7 +59,10 @@ export async function reviseCloudStoryboardAction(reportId: string, scenarioVers
       getCloudStoryboardVersion(profile.id, storyboardId),
     ]);
     if (parent.scenario_version_id !== scenario.id) throw new ResourceNotFoundError("修正元ネームが見つかりません。");
+    if (report.input.contentClass !== "general")
+      throw new PermissionDeniedError("一般向けシナリオを選んでください。");
     const revisionInstruction = String(formData.get("revisionInstruction") ?? "").trim();
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "storyboard");
     const result = await runCloudStoryboardAi({ profileId: profile.id, report, scenario, parentVersion: parent, revisionInstruction });
     nextId = await createCloudStoryboardVersion({ profileId: profile.id, scenarioVersionId, parentVersionId: parent.id, revisionInstruction, result });
   } catch (error) {

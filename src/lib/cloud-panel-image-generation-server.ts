@@ -13,6 +13,7 @@ import {
   PermissionDeniedError,
   ResourceNotFoundError,
 } from "./domain-errors.ts";
+import { consumeCloudGeneralMonitorAiRequest } from "./cloud-general-monitor.ts";
 
 export async function enqueueStoryboardPanelImage(input: unknown) {
   if (!cloudPanelImageGenerationFeatureEnabled())
@@ -82,6 +83,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
     canvas: pageCanvasSchema.parse(snapshot.canvas),
     panelId: request.panelId,
   });
+  await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
   const id = await enqueueCloudGenerationJob({
     projectId: request.projectId,
     pageId: request.pageId,

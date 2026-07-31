@@ -150,7 +150,25 @@
       "description": "最新採用ネームを冪等にCloud Canvas Projectへ変換",
       "forwardSha256": "d21f7970e08a399ca87202ab785399d5e9a2259f730f20f509ebba792179f0c0",
       "rollbackSha256": "0a768b5c1361a1a4afdd72daa0e901c0e54789f989526295bce04c71fa5755f8"
+    },
+    {
+      "id": "202607300006_cloud_general_monitor_beta",
+      "description": "一般向け無料モニターの招待・期限・累計AI上限・フィードバックを追加",
+      "forwardSha256": "e68200749c3672aa8f08c6e01434bd406a50adadd8853beb6390d3fe8bbaca7d",
+      "rollbackSha256": "03910c881a0e5182a47ab2a4ce20b7cc2715980ba885013c83b68a84569f82d4"
+    },
+    {
+      "id": "202607310001_cloud_general_monitor_operations",
+      "description": "一般向けモニターの初回案内完了とフィードバック対応管理を追加",
+      "forwardSha256": "7f372fecc270d21078db2fd876b64ffadbdb4d6835dcf26d087f396cb607ae61",
+      "rollbackSha256": "33f839d125c3a0834ccd816c84f8190229e5ed60b002b9543c42cd0b618471e3"
+    },
+    {
+      "id": "202607310002_cloud_general_monitor_email_provider",
+      "description": "一般向けモニター招待メールのResend APIキーをSupabase Vaultで管理",
+      "forwardSha256": "08d2b5a6bd50e4816d58b545482d359ee21d01ac91432b05c8aab0edeafb7a91",
+      "rollbackSha256": "361fbaadd701198bdbb74da190f5d7c96f3fcfd523f5376d50fd6c654a3b56a1"
     }
   ],
-  "schemaSha256": "e90aa7ddaf79afdb7d2b0ec98da15b791cd5473ab532a944ee72957898b2249b"
+  "schemaSha256": "2d4a9dd437e9700a60542e2c824a5e8c6e4bbe025454dc306823463d11c57646"
 }

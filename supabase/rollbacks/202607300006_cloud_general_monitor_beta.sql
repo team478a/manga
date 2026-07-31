@@ -1,0 +1,10 @@
+begin;
+drop function if exists public.stop_cloud_general_monitor(uuid,uuid,text,text);
+drop function if exists public.activate_cloud_general_monitor(uuid,uuid,timestamptz,integer,text,text);
+drop function if exists public.consume_cloud_general_monitor_ai_request(uuid,text);
+drop function if exists public.can_use_cloud_general_monitor();
+drop table if exists public.cloud_general_monitor_audit_logs;
+drop table if exists public.cloud_general_monitor_feedback;
+drop table if exists public.cloud_general_monitor_ai_usage;
+drop table if exists public.cloud_general_monitor_enrollments;
+commit;

@@ -4,6 +4,111 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けモニターを本番招待制で公開するための保護
+
+- モニターテストの対象をPreviewから本番環境上の招待制・無料・段階公開へ変更した。
+- `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`が同一のHTTPS originで
+  ない場合はpreflightと管理者公開チェックを失敗させる。
+- URLやAPIキーなどの値は出力せず、設定状態と一致判定だけを表示する。
+- 本番反映後はスタッフ1名、2〜3名、残りの順で招待する。
+- 障害時は一般向けモニターFeature Flagを停止し、新規利用を止めてから
+  deployment rollbackを判断する。
+- 本番公開保護の集中テスト9/9、deps、lint、Hub typecheck、Hub test 272/272、
+  migration 28/28、Hub production build、diff checkが成功した。
+- protected production branchの承認、migration適用、Feature Flag変更、
+  実招待、本番公開そのものは未実施。
+
+---
+
+## 2026-07-31 Codex: 一般向けモニター・テスト公開チェック
+
+- `/admin/general-monitors/readiness`へ秘密値を表示しない公開前チェックを追加した。
+- 一般向けFeature Flag、成人向け停止、モニターDB、管理画面保存済みAI接続、
+  Resend招待メール、招待先HTTPS URLを一画面で判定する。
+- 登録済み、利用中、初回確認済み、未完了フィードバックの件数を表示する。
+- 公開順をスタッフ1名、2〜3名、残りへ分け、一斉招待による障害拡大を防ぐ。
+- 集中テスト13/13、deps、lint、Hub typecheck、Hub test 271/271、
+  migration 28/28、Hub build、diff checkが成功した。
+- 外部作業はPreview実環境の判定確認と、スタッフ1名による招待・メール・
+  市場分析保存のスモークテスト。
+
+---
+
+## 2026-07-31 Codex: 約10名モニター向けWebマニュアル
+
+- `/dashboard/monitor/guide`を利用者向けWebマニュアルとして再構成した。
+- 入力、操作、完了の目印を工程ごとに分離し、スマートフォン用アンカーメニュー、
+  折りたたみトラブル対応、フィードバック記載項目、安全上の注意を追加した。
+- `/admin/general-monitors/guide`へスタッフ専用の10名招待、日次確認、
+  問い合わせ、停止判断、テスト完了条件を追加した。
+- 管理画面、初回案内、モニター状況から各Webマニュアルへ移動できる。
+- 検証は集中テスト8/8、lint、Hub typecheck、Hub test 269/269、
+  production build、diff checkが成功した。
+
+---
+
+## 2026-07-31 Codex: 一般向けモニター招待メールの管理画面設定
+
+- Resend APIキー、認証済み送信元、送信者名を管理画面で保存・変更できるようにした。
+- APIキーはSupabase Vaultへ保存し、画面、Client、通常テーブル、監査ログへ再表示しない。
+- 保存成功時に自動有効化し、招待と再送はVaultのruntime設定だけを利用する。
+- `RESEND_API_KEY`等の日常運用用環境変数を廃止し、Preview URLだけを環境設定に残した。
+- migration `202607310002_cloud_general_monitor_email_provider`、rollback、canonical schema、権限assertionを追加した。
+- 検証は集中テスト9/9、deps、lint、typecheck（Hub + Desktop）、Research Evaluation、Hub 267/267、migration 28/28、Hub build、preflight、diff checkが成功した。
+- 外部作業はPreview Supabaseへのmigration適用、管理画面での実Resend設定、実メール送信、1〜3名E2E。PR mergeと本番公開は未実施。
+
+---
+
+## 2026-07-31 Codex（一般向けモニター招待メール）
+
+既存のResend Email API設定を利用する招待自動送信と再送を実装した。登録済みAuthメールだけを送信先に使い、利用開始URL・期限・AI上限を通知する。送信失敗は招待登録成功と分けて管理者へ案内し、API keyやProviderエラー本文は露出しない。`RESEND_API_KEY` とResendで認証済みの送信元をServer環境変数から取得する。
+
+---
+
+## 2026-07-31 Codex（一般向けモニター運用強化）
+
+### 状態
+
+`IMPLEMENTED_VALIDATING`。初回案内、期限・AI残数警告、招待文面、フィードバック対応管理、CSV出力を追加した。
+
+### 実装
+
+- `onboarding_completed_at` と本人用完了RPC
+- 期限3日前、AI残り5回以下、停止・期限切れ・上限到達の画面警告
+- 管理者が登録メール宛ての招待文面をメールアプリで開く導線
+- フィードバックの `new / reviewing / resolved`、管理メモ、担当管理者、確認日時
+- モニター状態・利用数・フィードバック集計のUTF-8 BOM付きCSV
+- migration、rollback、canonical schema、権限・UIテスト
+
+### 境界
+
+- 招待自動送信は後続変更で既存Resend設定へ接続済み。
+- migration適用、Feature Flag変更、招待、本番公開、PR mergeは実施しない。
+
+---
+
+## 2026-07-30 Codex（一般向け無料限定モニター）
+
+### 状態
+
+`IMPLEMENTED_VALIDATING`。一般向けRelease 1〜6を1〜3名へ招待制で公開する管理基盤を実装した。
+
+### 実装
+
+- 管理者による招待、期限、累計AI上限、更新、停止
+- 市場分析、AI企画、シナリオ、ネーム、コマ画像のAI実行前共通gate
+- 成人向け入力の拒否
+- 利用者フィードバックと管理者一覧
+- 所有者RLS、Service Role限定RPC、監査ログ
+- migration、rollback、canonical schema、preflight、受入表、runbook
+
+### 境界
+
+- Stripe、販売、Marketplace、成人向け権限へ接続しない
+- migration適用、Feature Flag変更、有料API実行、招待、本番公開、PR mergeは行わない
+
+---
+
 ## 2026-07-30 Codex（Cloud Release 6 コマ画像AIおまかせ生成）
 
 ### 状態

@@ -219,6 +219,51 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_general_monitor_email_settings') is null
+     or to_regclass('public.cloud_general_monitor_email_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_general_monitor_email_runtime_config()'
+     ) is null then
+    raise exception 'General monitor email Provider objects missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.get_cloud_general_monitor_email_runtime_config()',
+       'execute'
+     ) then
+    raise exception 'General monitor email runtime config exposed';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_general_monitor_enrollments') is null
+    or to_regclass('public.cloud_general_monitor_ai_usage') is null
+    or to_regclass('public.cloud_general_monitor_feedback') is null
+    or to_regclass('public.cloud_general_monitor_audit_logs') is null
+  then
+    raise exception 'General monitor beta tables are missing';
+  end if;
+  if not exists (
+    select 1 from pg_class
+    where oid='public.cloud_general_monitor_enrollments'::regclass
+      and relrowsecurity
+  ) then
+    raise exception 'General monitor enrollment RLS is disabled';
+  end if;
+  if to_regprocedure('public.consume_cloud_general_monitor_ai_request(uuid,text)') is null
+    or to_regprocedure('public.activate_cloud_general_monitor(uuid,uuid,timestamp with time zone,integer,text,text)') is null
+    or to_regprocedure('public.stop_cloud_general_monitor(uuid,uuid,text,text)') is null
+  then
+    raise exception 'General monitor beta RPCs are missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_research_ai_settings') is null
      or to_regclass('public.cloud_research_ai_audit_logs') is null
      or to_regprocedure(
@@ -351,6 +396,16 @@ begin
 end $$;
 reset role;
 rollback;
+
+do $$
+begin
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_enrollments' and column_name='onboarding_completed_at')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='review_status')
+     or to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is null
+     or to_regprocedure('public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)') is null then
+    raise exception 'General monitor operations migration is incomplete';
+  end if;
+end $$;
 
 do $$
 begin

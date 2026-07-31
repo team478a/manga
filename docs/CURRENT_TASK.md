@@ -1,5 +1,104 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向けモニター・本番限定公開チェック
+
+- 状態: `READY_FOR_REVIEW`
+- 管理者画面: `/admin/general-monitors/readiness`
+- 追加内容:
+  - 一般向け制作Feature Flag、成人向け停止、モニターDB、AI接続、招待メール、
+    招待先HTTPS URLを秘密値なしで一括判定
+  - `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`が同じHTTPS本番originで
+    あることを検査し、Previewや別ドメインへの誤招待を防止
+  - 登録済み、利用中、初回確認済み、未完了フィードバック件数の表示
+  - スタッフ1名 → 2〜3名 → 残りの順で段階公開する手順
+  - モニター管理、スタッフマニュアル、各設定画面への導線
+- 境界: 設定値、APIキー、内部DBエラーは表示しない。招待、Feature Flag変更、
+  migration適用、本番公開は自動実行しない
+- 検証:
+  - 本番公開保護の集中テスト: PASS（9/9）
+  - deps:check: PASS
+  - lint: PASS
+  - Hub typecheck: PASS
+  - Hub test: PASS（272/272）
+  - migration静的検証: PASS（28/28）
+  - Hub production build: PASS
+  - git diff --check: PASS
+- 公開形態: 一般公開ではなく、本番環境上の招待制・無料・段階公開
+- 外部確認: protected branchの承認とCI成功後に本番へ反映し、管理者画面の
+  全項目が正常であることと、スタッフ1名の招待・メール受信・市場分析保存を確認する
+
+## 2026-07-31 約10名モニター向けWebマニュアル
+
+- 状態: `READY_FOR_REVIEW`
+- 利用者向け: `/dashboard/monitor/guide`
+- スタッフ向け: `/admin/general-monitors/guide`
+- 内容:
+  - 最初の5分、制作5工程、完了の目印、フィードバック、トラブル、安全上の注意
+  - 約10名の同一コホート招待、日次確認、問い合わせ対応、停止判断、完了条件
+  - スマートフォンで操作できるアンカーメニューと折りたたみFAQ
+- 境界: 一般向け限定。成人向け、Stripe、販売、Marketplaceは変更しない
+- 検証:
+  - Webマニュアル集中テスト: PASS（8/8）
+  - lint: PASS
+  - typecheck: PASS（Hub）
+  - hub:test: PASS（269/269）
+  - Hub production build: PASS
+  - git diff --check: PASS
+- 未実施: Preview上での390px・768px・1280px実画面確認
+
+## 2026-07-31 一般向けモニター招待メール
+
+- 状態: `READY_FOR_REVIEW`
+- Provider: 管理画面で設定するResend Email API
+- APIキーと送信元は`/admin/general-monitors/email`で保存・変更し、Supabase Vaultだけを正本にする
+- migration: `202607310002_cloud_general_monitor_email_provider`
+- 招待登録と同時に登録メールアドレスへ自動送信
+- 有効な招待は管理画面から再送可能
+- 送信失敗と招待登録失敗を区別して表示
+- API token、Provider response、内部エラーは画面へ露出しない
+- 外部作業: Resendの認証済み送信ドメイン、API key、送信元、Preview URLの確認
+- 検証:
+  - 集中テスト: PASS（9/9）
+  - deps:check: PASS
+  - lint: PASS
+  - typecheck: PASS（Hub + Desktop）
+  - research:eval: PASS
+  - hub:test: PASS（267/267）
+  - db:migrations:validate: PASS（28/28）
+  - Hub production build: PASS
+  - 一般向けモニターpreflight: PASS（テスト値、値非表示）
+  - git diff --check: PASS
+- 未実施: Preview Supabaseへのmigration適用、実Resend送信、1〜3名の実機E2E、PR merge、本番公開
+
+## 2026-07-31 一般向けモニター運用機能強化
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-general-monitor-beta-v1`
+- Draft PR: [#80](https://github.com/team478a/manga/pull/80)
+- migration: `202607310001_cloud_general_monitor_operations`
+- 追加内容:
+  - 初回オンボーディングと本人の確認日時
+  - 期限3日前、AI残り5回以下、停止・期限切れ・上限到達の警告
+  - 管理者用の招待メール文面
+  - フィードバックの未対応・対応中・対応済み管理
+  - モニター一覧CSV出力
+- 境界: Stripe、成人向け、本番公開は変更しない
+
+## 2026-07-30 一般向け限定モニター公開
+
+- 状態: `IMPLEMENTED_VALIDATING`
+- Branch: `codex/cloud-general-monitor-beta-v1`
+- Base: `codex/cloud-panel-image-generation-v1`（Draft PR #73）
+- 対象: 一般向け市場分析、AI企画、シナリオ、ネーム、Canvas、コマ画像
+- 除外: Stripe、販売、Marketplace、成人向け、本番公開
+- migration: `202607300006_cloud_general_monitor_beta`
+- 文書:
+  - [`CLOUD_GENERAL_MONITOR_BETA_PLAN.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_PLAN.md)
+  - [`CLOUD_GENERAL_MONITOR_BETA_ACCEPTANCE.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_ACCEPTANCE.md)
+  - [`CLOUD_GENERAL_MONITOR_BETA_RUNBOOK.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_RUNBOOK.md)
+
+管理者による招待、期限、工程横断の累計AI上限、即時停止、利用者フィードバックを追加した。外部migration適用、Feature Flag変更、実API実行、モニター招待は未実施。
+
 ## 基本情報
 
 - 更新日: 2026-07-30

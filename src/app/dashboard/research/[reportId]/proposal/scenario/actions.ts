@@ -16,6 +16,7 @@ import {
 } from "@/lib/cloud-scenario-server";
 import { PermissionDeniedError, ResourceNotFoundError } from "@/lib/domain-errors";
 import { enforceCloudScenarioAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
+import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor";
 
 function assertEnabled() {
   if (!cloudResearchFeatureEnabled() || !cloudProposalFeatureEnabled() || !cloudScenarioFeatureEnabled())
@@ -33,6 +34,9 @@ export async function createCloudScenarioAction(reportId: string) {
       getCloudProposalSelection(profile.id, reportId),
     ]);
     if (!selection) throw new ResourceNotFoundError("採用済み企画が見つかりません。");
+    if (report.input.contentClass !== "general")
+      throw new PermissionDeniedError("一般向け企画を選んでください。");
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "scenario");
     const result = await runCloudScenarioAi({ profileId: profile.id, report, selection });
     versionId = await createCloudScenarioVersion({
       profileId: profile.id, reportId, selectionId: selection.id, result,
@@ -56,7 +60,10 @@ export async function reviseCloudScenarioAction(reportId: string, versionId: str
     ]);
     if (!selection || parent.research_report_id !== reportId || parent.proposal_selection_id !== selection.id)
       throw new ResourceNotFoundError("修正元シナリオが見つかりません。");
+    if (report.input.contentClass !== "general")
+      throw new PermissionDeniedError("一般向け企画を選んでください。");
     const revisionInstruction = String(formData.get("revisionInstruction") ?? "").trim();
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "scenario");
     const result = await runCloudScenarioAi({
       profileId: profile.id, report, selection, parentVersion: parent, revisionInstruction,
     });
