@@ -72,19 +72,21 @@ function pageAssetIds(canvas: {
     assetId: string | null;
     visible: boolean;
     orderIndex: number;
+    type?: string;
   }>;
 }) {
   const ids = new Set<string>();
   for (const panel of canvas.panels.filter((item) => item.visible)) {
-    const assetId =
-      canvas.panelLayers
-        .filter(
-          (layer) =>
-            layer.panelId === panel.id && layer.visible && layer.assetId,
-        )
-        .sort((a, b) => a.orderIndex - b.orderIndex)
-        .at(-1)?.assetId ?? panel.imageAssetId;
-    if (assetId) ids.add(assetId);
+    const layers = canvas.panelLayers.filter(
+      (layer) => layer.panelId === panel.id,
+    );
+    const separatedLayers = layers.filter(
+      (layer) => layer.type !== "flattened_legacy",
+    );
+    if (separatedLayers.length) {
+      for (const layer of separatedLayers)
+        if (layer.visible && layer.assetId) ids.add(layer.assetId);
+    } else if (panel.imageAssetId) ids.add(panel.imageAssetId);
   }
   return ids;
 }
