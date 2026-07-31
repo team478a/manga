@@ -6,16 +6,20 @@
 2. migrationを次の順でPreview用Supabaseへ適用する。
    - `202607300006_cloud_general_monitor_beta.sql`
    - `202607310001_cloud_general_monitor_operations.sql`
+   - `202607310002_cloud_general_monitor_email_provider.sql`
 3. 一般向けFeature Flagと `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true` を対象Previewブランチだけに設定する。
 4. `CLOUD_ADULT_RESEARCH_ENABLED=false`、`CLOUD_ADULT_PLANNING_ENABLED=false` を確認する。
 5. `npm run cloud:general-monitor:preflight` を実行する。出力に値は表示されない。
 
-招待メールには次のServer環境変数も必要。
+招待メールは、migration適用後に`/admin/general-monitors/email`で次を設定する。
 
-- `RESEND_API_KEY`（既存のServer専用Resend API key）
-- `RESEND_FROM_EMAIL`（Resendで認証済みの送信元）
-- `RESEND_FROM_NAME`
-- `MONITOR_INVITE_SITE_URL`（対象PreviewのHTTPS origin）
+- Resend APIキー
+- Resendで認証済みの送信元メールアドレス
+- 送信者名
+
+APIキーはSupabase Vaultへ暗号化保存され、画面、通常テーブル、監査ログには
+再表示されない。変更時も同じ画面へ新しいキーを入力して保存する。
+対象PreviewのHTTPS originだけは`MONITOR_INVITE_SITE_URL`へ設定する。
 
 順序は必ず migration → Feature Flag → 招待とする。Feature Flagが停止中は、
 管理画面もモニター用テーブルを参照せず、招待・停止操作を受け付けない。

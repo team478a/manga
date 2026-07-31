@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けモニター招待メールの管理画面設定
+
+- Resend APIキー、認証済み送信元、送信者名を管理画面で保存・変更できるようにした。
+- APIキーはSupabase Vaultへ保存し、画面、Client、通常テーブル、監査ログへ再表示しない。
+- 保存成功時に自動有効化し、招待と再送はVaultのruntime設定だけを利用する。
+- `RESEND_API_KEY`等の日常運用用環境変数を廃止し、Preview URLだけを環境設定に残した。
+- migration `202607310002_cloud_general_monitor_email_provider`、rollback、canonical schema、権限assertionを追加した。
+- 検証は集中テスト9/9、deps、lint、typecheck（Hub + Desktop）、Research Evaluation、Hub 267/267、migration 28/28、Hub build、preflight、diff checkが成功した。
+- 外部作業はPreview Supabaseへのmigration適用、管理画面での実Resend設定、実メール送信、1〜3名E2E。PR mergeと本番公開は未実施。
+
+---
+
 ## 2026-07-31 Codex（一般向けモニター招待メール）
 
 既存のResend Email API設定を利用する招待自動送信と再送を実装した。登録済みAuthメールだけを送信先に使い、利用開始URL・期限・AI上限を通知する。送信失敗は招待登録成功と分けて管理者へ案内し、API keyやProviderエラー本文は露出しない。`RESEND_API_KEY` とResendで認証済みの送信元をServer環境変数から取得する。

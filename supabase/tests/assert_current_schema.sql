@@ -114,6 +114,23 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_general_monitor_email_settings') is null
+     or to_regclass('public.cloud_general_monitor_email_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_general_monitor_email_runtime_config()'
+     ) is null then
+    raise exception 'Current schema General monitor email Provider missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.get_cloud_general_monitor_email_runtime_config()',
+       'execute'
+     ) then
+    raise exception 'Current schema General monitor email runtime config exposed';
+  end if;
   if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_enrollments' and column_name='onboarding_completed_at')
      or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='review_status')
      or to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is null

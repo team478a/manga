@@ -1,19 +1,12 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   cloudGeneralMonitorInviteEmailConfigured,
   sendCloudGeneralMonitorInviteEmail,
 } from "../src/lib/cloud-general-monitor-email.ts";
 
-const resendEnvironmentKeys = [
-  "RESEND_API_KEY",
-  "RESEND_FROM_EMAIL",
-  "RESEND_FROM_NAME",
-  "EMAIL_FROM",
-  "MONITOR_INVITE_FROM_EMAIL",
-  "MONITOR_INVITE_FROM_NAME",
-  "MONITOR_INVITE_SITE_URL",
-];
+const resendEnvironmentKeys = ["MONITOR_INVITE_SITE_URL"];
 
 function preserveEnvironment() {
   return Object.fromEntries(resendEnvironmentKeys.map((key) => [key, process.env[key]]));
@@ -29,10 +22,12 @@ function restoreEnvironment(previous) {
 test("Resend招待メールはServer設定と安全な利用開始URLだけを送る", async () => {
   const previous = preserveEnvironment();
   Object.assign(process.env, {
-    RESEND_API_KEY: "secret-token",
-    RESEND_FROM_EMAIL: "monitor@mang-ai.example",
-    RESEND_FROM_NAME: "MANGAI運営",
     MONITOR_INVITE_SITE_URL: "https://preview.mang-ai.example",
+  });
+  const loadConfig = async () => ({
+    apiKey: "re_secret-token-for-test",
+    fromEmail: "monitor@mang-ai.example",
+    fromName: "MANGAI運営",
   });
   let captured;
   const request = async (url, init) => {
@@ -42,13 +37,16 @@ test("Resend招待メールはServer設定と安全な利用開始URLだけを�
     });
   };
   try {
-    assert.equal(cloudGeneralMonitorInviteEmailConfigured(), true);
+    assert.equal(
+      await cloudGeneralMonitorInviteEmailConfigured(loadConfig),
+      true,
+    );
     const result = await sendCloudGeneralMonitorInviteEmail({
       recipientEmail: "reader@example.com",
       recipientName: "山田",
       expiresAt: "2026-08-31T00:00:00.000Z",
       aiRequestLimit: 30,
-    }, request);
+    }, request, loadConfig);
     assert.equal(result.messageId, "message-1");
     assert.equal(captured.url, "https://api.resend.com/emails");
     const body = JSON.parse(captured.init.body);
@@ -56,7 +54,10 @@ test("Resend招待メールはServer設定と安全な利用開始URLだけを�
     assert.equal(body.to[0], "reader@example.com");
     assert.match(body.text, /https:\/\/preview\.mang-ai\.example\/dashboard\/monitor\/welcome/);
     assert.doesNotMatch(body.text, /secret-token/);
-    assert.equal(captured.init.headers.Authorization, "Bearer secret-token");
+    assert.equal(
+      captured.init.headers.Authorization,
+      "Bearer re_secret-token-for-test",
+    );
   } finally {
     restoreEnvironment(previous);
   }
@@ -66,20 +67,72 @@ test("Providerエラー本文を上位へ露出しない", async () => {
   const previous = preserveEnvironment();
   try {
     Object.assign(process.env, {
-      RESEND_API_KEY: "secret-token",
-      RESEND_FROM_EMAIL: "monitor@mang-ai.example",
       MONITOR_INVITE_SITE_URL: "https://preview.mang-ai.example",
     });
+    const loadConfig = async () => ({
+      apiKey: "re_secret-token-for-test",
+      fromEmail: "monitor@mang-ai.example",
+      fromName: "MANGAI運営",
+    });
     await assert.rejects(
-      sendCloudGeneralMonitorInviteEmail({
-        recipientEmail: "reader@example.com",
-        recipientName: "",
-        expiresAt: "2026-08-31T00:00:00.000Z",
-        aiRequestLimit: 10,
-      }, async () => new Response('{"message":"provider-secret-detail"}', { status: 422 })),
+      sendCloudGeneralMonitorInviteEmail(
+        {
+          recipientEmail: "reader@example.com",
+          recipientName: "",
+          expiresAt: "2026-08-31T00:00:00.000Z",
+          aiRequestLimit: 10,
+        },
+        async () =>
+          new Response('{"message":"provider-secret-detail"}', { status: 422 }),
+        loadConfig,
+      ),
       (error) => error.message === "monitor_invite_email_send_failed",
     );
   } finally {
     restoreEnvironment(previous);
   }
+});
+
+test("Resend APIキーは管理画面からVaultへ保存し再表示しない", async () => {
+  const [page, action, settings, migration, example] = await Promise.all([
+    readFile(
+      new URL(
+        "../src/app/admin/general-monitors/email/page.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/app/admin/general-monitors/email/actions.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/lib/cloud-general-monitor-email-settings.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/migrations/202607310002_cloud_general_monitor_email_provider.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(new URL("../.env.example", import.meta.url), "utf8"),
+  ]);
+  assert.match(page, /type="password"/);
+  assert.match(page, /APIキーを保存して利用開始/);
+  assert.doesNotMatch(page, /settings\.apiKey/);
+  assert.match(action, /setCloudGeneralMonitorEmailSettings/);
+  assert.match(settings, /set_cloud_general_monitor_email_provider/);
+  assert.match(settings, /get_cloud_general_monitor_email_runtime_config/);
+  assert.match(migration, /vault\.create_secret/);
+  assert.match(migration, /vault\.update_secret/);
+  assert.match(migration, /auth\.role\(\)<>'service_role'/);
+  assert.doesNotMatch(example, /RESEND_API_KEY|RESEND_FROM_EMAIL|RESEND_FROM_NAME/);
 });

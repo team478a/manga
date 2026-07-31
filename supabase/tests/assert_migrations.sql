@@ -219,6 +219,27 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_general_monitor_email_settings') is null
+     or to_regclass('public.cloud_general_monitor_email_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_general_monitor_email_runtime_config()'
+     ) is null then
+    raise exception 'General monitor email Provider objects missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.get_cloud_general_monitor_email_runtime_config()',
+       'execute'
+     ) then
+    raise exception 'General monitor email runtime config exposed';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_general_monitor_enrollments') is null
     or to_regclass('public.cloud_general_monitor_ai_usage') is null
     or to_regclass('public.cloud_general_monitor_feedback') is null

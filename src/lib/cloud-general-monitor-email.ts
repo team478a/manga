@@ -1,3 +1,5 @@
+import { getCloudGeneralMonitorEmailRuntimeConfig } from "./cloud-general-monitor-email-settings.ts";
+
 const RESEND_EMAIL_ENDPOINT = "https://api.resend.com/emails";
 
 type InviteEmailInput = {
@@ -21,46 +23,29 @@ function inviteSiteUrl() {
   return url.toString();
 }
 
-function inviteFromEmail() {
-  return (
-    process.env.RESEND_FROM_EMAIL?.trim() ||
-    process.env.EMAIL_FROM?.trim() ||
-    process.env.MONITOR_INVITE_FROM_EMAIL?.trim()
-  );
-}
-
-function inviteFromName() {
-  return (
-    process.env.RESEND_FROM_NAME?.trim() ||
-    process.env.MONITOR_INVITE_FROM_NAME?.trim() ||
-    "MANGAI運営"
-  );
-}
-
-function formatFrom(fromEmail: string) {
+function formatFrom(fromEmail: string, fromName: string) {
   if (/<[^>]+>$/.test(fromEmail)) return fromEmail;
-  return `${inviteFromName()} <${fromEmail}>`;
+  return `${fromName} <${fromEmail}>`;
 }
 
-export function cloudGeneralMonitorInviteEmailConfigured() {
-  return Boolean(
-    process.env.RESEND_API_KEY?.trim() &&
-    inviteFromEmail() &&
-    (
-      process.env.MONITOR_INVITE_SITE_URL?.trim() ||
-      process.env.NEXT_PUBLIC_SITE_URL?.trim() ||
-      process.env.VERCEL_URL?.trim()
-    ),
-  );
+export async function cloudGeneralMonitorInviteEmailConfigured(
+  loadConfig = getCloudGeneralMonitorEmailRuntimeConfig,
+) {
+  try {
+    await loadConfig();
+    inviteSiteUrl();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function sendCloudGeneralMonitorInviteEmail(
   input: InviteEmailInput,
   request: typeof fetch = fetch,
+  loadConfig = getCloudGeneralMonitorEmailRuntimeConfig,
 ) {
-  const token = process.env.RESEND_API_KEY?.trim();
-  const fromEmail = inviteFromEmail();
-  if (!token || !fromEmail) throw new Error("monitor_invite_email_not_configured");
+  const config = await loadConfig();
   const welcomeUrl = inviteSiteUrl();
   const expiry = new Date(input.expiresAt).toLocaleDateString("ja-JP", {
     timeZone: "Asia/Tokyo",
@@ -81,12 +66,12 @@ AI利用上限: ${input.aiRequestLimit}回
   const response = await request(RESEND_EMAIL_ENDPOINT, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${config.apiKey}`,
       "Content-Type": "application/json",
       Accept: "application/json",
     },
     body: JSON.stringify({
-      from: formatFrom(fromEmail),
+      from: formatFrom(config.fromEmail, config.fromName),
       to: [input.recipientEmail],
       subject: "MANGAI 一般向けモニターのご案内",
       text,

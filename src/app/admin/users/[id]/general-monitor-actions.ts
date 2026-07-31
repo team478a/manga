@@ -75,7 +75,7 @@ export async function activateCloudGeneralMonitorAction(
   const recipient = await getInviteRecipient(parsed.data.profileId);
   if (!recipient)
     redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("招待登録は完了しましたが、送信先メールアドレスを取得できませんでした")}`);
-  if (!cloudGeneralMonitorInviteEmailConfigured())
+  if (!(await cloudGeneralMonitorInviteEmailConfigured()))
     redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("招待登録は完了しましたが、メール送信設定が未完了です")}`);
   try {
     await sendCloudGeneralMonitorInviteEmail({
@@ -109,7 +109,7 @@ export async function resendCloudGeneralMonitorInviteAction(profileId: string) {
   ]);
   if (!enrollment || enrollment.status !== "active" || Date.parse(enrollment.expires_at) <= Date.now())
     redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("有効なモニター招待がありません")}`);
-  if (!recipient || !cloudGeneralMonitorInviteEmailConfigured())
+  if (!recipient || !(await cloudGeneralMonitorInviteEmailConfigured()))
     redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("送信先またはメール送信設定を確認してください")}`);
   try {
     await sendCloudGeneralMonitorInviteEmail({

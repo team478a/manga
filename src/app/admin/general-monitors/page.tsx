@@ -24,6 +24,12 @@ export default async function GeneralMonitorsAdminPage() {
         <p className="mt-6 rounded-lg bg-stone-100 p-4 text-stone-700" role="status">
           Feature Flagが停止中です。migration適用後に対象Previewブランチだけで有効化してください。
         </p>
+        <Link
+          className="button-secondary mt-4"
+          href="/admin/general-monitors/email"
+        >
+          招待メール設定
+        </Link>
       </main>
     );
   }
@@ -49,6 +55,7 @@ export default async function GeneralMonitorsAdminPage() {
           <p className="mt-2 text-stone-600">招待、期限、AI利用数、感想を確認します。</p>
         </div>
         <div className="flex gap-2">
+          <Link className="button-secondary" href="/admin/general-monitors/email">招待メール設定</Link>
           <Link className="button-secondary" href="/admin/general-monitors/export">CSV出力</Link>
           <Link className="button-secondary" href="/admin/users">ユーザーを招待</Link>
         </div>

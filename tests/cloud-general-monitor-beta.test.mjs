@@ -68,8 +68,6 @@ test("preflightは値を表示せず一般Flagと成人向け停止を確認す�
     NEXT_PUBLIC_SUPABASE_URL: "hidden-value",
     NEXT_PUBLIC_SUPABASE_ANON_KEY: "hidden-value",
     SUPABASE_SERVICE_ROLE_KEY: "hidden-value",
-    RESEND_API_KEY: "hidden-value",
-    RESEND_FROM_EMAIL: "monitor@example.com",
     MONITOR_INVITE_SITE_URL: "https://preview.example.com",
     ...Object.fromEntries(enabled.map((key) => [key, "true"])),
     CLOUD_ADULT_RESEARCH_ENABLED: "false",

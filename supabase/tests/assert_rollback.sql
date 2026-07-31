@@ -2,6 +2,16 @@
 
 do $$
 begin
+  if to_regclass('public.cloud_general_monitor_email_settings') is not null
+     or to_regclass('public.cloud_general_monitor_email_audit_logs') is not null
+     or to_regprocedure(
+       'public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean)'
+     ) is not null
+     or to_regprocedure(
+       'public.get_cloud_general_monitor_email_runtime_config()'
+     ) is not null then
+    raise exception 'General monitor email Provider objects remain after rollback';
+  end if;
   if to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is not null
      or to_regprocedure('public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)') is not null then
     raise exception 'General monitor operations functions remain after rollback';

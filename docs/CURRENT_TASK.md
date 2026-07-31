@@ -2,17 +2,31 @@
 
 ## 2026-07-31 一般向けモニター招待メール
 
-- 状態: `IMPLEMENTED_VALIDATING`
-- Provider: 既存のResend Email API設定
+- 状態: `READY_FOR_REVIEW`
+- Provider: 管理画面で設定するResend Email API
+- APIキーと送信元は`/admin/general-monitors/email`で保存・変更し、Supabase Vaultだけを正本にする
+- migration: `202607310002_cloud_general_monitor_email_provider`
 - 招待登録と同時に登録メールアドレスへ自動送信
 - 有効な招待は管理画面から再送可能
 - 送信失敗と招待登録失敗を区別して表示
 - API token、Provider response、内部エラーは画面へ露出しない
 - 外部作業: Resendの認証済み送信ドメイン、API key、送信元、Preview URLの確認
+- 検証:
+  - 集中テスト: PASS（9/9）
+  - deps:check: PASS
+  - lint: PASS
+  - typecheck: PASS（Hub + Desktop）
+  - research:eval: PASS
+  - hub:test: PASS（267/267）
+  - db:migrations:validate: PASS（28/28）
+  - Hub production build: PASS
+  - 一般向けモニターpreflight: PASS（テスト値、値非表示）
+  - git diff --check: PASS
+- 未実施: Preview Supabaseへのmigration適用、実Resend送信、1〜3名の実機E2E、PR merge、本番公開
 
 ## 2026-07-31 一般向けモニター運用機能強化
 
-- 状態: `IMPLEMENTED_VALIDATING`
+- 状態: `READY_FOR_REVIEW`
 - Branch: `codex/cloud-general-monitor-beta-v1`
 - Draft PR: [#80](https://github.com/team478a/manga/pull/80)
 - migration: `202607310001_cloud_general_monitor_operations`

@@ -162,7 +162,13 @@
       "description": "一般向けモニターの初回案内完了とフィードバック対応管理を追加",
       "forwardSha256": "7f372fecc270d21078db2fd876b64ffadbdb4d6835dcf26d087f396cb607ae61",
       "rollbackSha256": "33f839d125c3a0834ccd816c84f8190229e5ed60b002b9543c42cd0b618471e3"
+    },
+    {
+      "id": "202607310002_cloud_general_monitor_email_provider",
+      "description": "一般向けモニター招待メールのResend APIキーをSupabase Vaultで管理",
+      "forwardSha256": "08d2b5a6bd50e4816d58b545482d359ee21d01ac91432b05c8aab0edeafb7a91",
+      "rollbackSha256": "361fbaadd701198bdbb74da190f5d7c96f3fcfd523f5376d50fd6c654a3b56a1"
     }
   ],
-  "schemaSha256": "7c2dda3b79ca776b2c7de9fd506e9c4b7430eba9eabf253d06536a951f3519fb"
+  "schemaSha256": "2d4a9dd437e9700a60542e2c824a5e8c6e4bbe025454dc306823463d11c57646"
 }
