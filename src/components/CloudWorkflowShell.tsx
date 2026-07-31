@@ -26,7 +26,7 @@ const workflow: WorkflowItem[] = [
   { step: 1, label: "市場分析", href: "/dashboard/research", icon: BarChart3 },
   { step: 2, label: "AI企画提案", icon: Lightbulb },
   { step: 3, label: "シナリオ生成", icon: FileText },
-  { step: 4, label: "マンガ生成", icon: Sparkles },
+  { step: 4, label: "マンガ生成", href: "/creator", icon: Sparkles },
   { step: 5, label: "作品管理", href: "/dashboard/works", icon: Images },
   { step: 6, label: "販売準備", icon: ShoppingBag },
   { step: 7, label: "収益ダッシュボード", icon: ReceiptText },
@@ -40,6 +40,8 @@ export function CloudWorkflowShell({
   children: ReactNode;
 }) {
   const pathname = usePathname();
+  const creatorActive =
+    pathname === "/creator" || pathname.startsWith("/creator/");
   return (
     <div className="min-h-[calc(100vh-81px)] bg-[#f7f6ff] lg:grid lg:grid-cols-[216px_minmax(0,1fr)]">
       <aside className="border-b border-violet-100 bg-white px-3 py-4 lg:border-b-0 lg:border-r">
@@ -104,10 +106,21 @@ export function CloudWorkflowShell({
         </nav>
         <div className="mt-6 hidden rounded-lg border border-violet-100 bg-violet-50 p-3 text-xs leading-relaxed text-violet-900 lg:block">
           <p className="font-bold">現在の制作進行</p>
-          <p className="mt-1">Release 1：市場分析MVP</p>
-          <p className="mt-2 text-violet-600">
-            {researchEnabled ? "Feature Flag 有効" : "Feature Flag 停止中"}
-          </p>
+          {creatorActive ? (
+            <>
+              <p className="mt-1">ステップ4：マンガ生成</p>
+              <p className="mt-2 text-violet-600">
+                作品・話・ページを編集
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="mt-1">Release 1：市場分析MVP</p>
+              <p className="mt-2 text-violet-600">
+                {researchEnabled ? "Feature Flag 有効" : "Feature Flag 停止中"}
+              </p>
+            </>
+          )}
         </div>
       </aside>
       <div className="min-w-0">{children}</div>

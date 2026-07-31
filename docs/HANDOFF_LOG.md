@@ -10,12 +10,15 @@
   `codex/cloud-creator-ja-guide-v1`を作成した。
 - `/creator`と関連画面の`Project`、`Episode`、`Page`を
   「作品」「話」「ページ」へ統一した。
+- `/creator`配下を`CloudWorkflowShell`へ統合し、Dashboardと同じ左サイドバー、
+  紫基調のCard・Button・Formへ移行した。
+- 制作ワークフローのステップ4「マンガ生成」を`/creator`へ接続した。
 - 入口へ「作品作成→話とページの整理→ページ編集」の3ステップガイドを追加し、
   作品がない場合は開始ボタンを強調した。
 - ページ編集の`Preview`、`Asset Library`、AI Job等の主要表示と、
   Server Action・Domain Errorの利用者向け文言も日本語化した。
 - DB、API契約、認証、制作・保存ロジック、Desktopは変更していない。
-- deps、lint、Hub typecheck、集中12/12、Hub 277/277、
+- deps、lint、Hub typecheck、集中テスト、Hub 278/278、
   production build、diff checkが成功した。
 
 ---

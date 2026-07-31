@@ -9,11 +9,14 @@
 - 実装:
   - 利用者向けの`Project`、`Episode`、`Page`を「作品」「話」「ページ」へ統一
   - `Cloud Creator`を「クラウド制作」へ変更
+  - `/creator`配下を紫基調の`CloudWorkflowShell`へ統合し、左サイドバーを表示
+  - 制作ワークフローのステップ4「マンガ生成」からクラウド制作へ遷移
+  - Creator配下のButton、Card、FormをDashboardと同じ紫基調へ統一
   - 入口へ「作品作成→話とページの整理→ページ編集」の3ステップガイドを追加
   - 作品がない場合は「作品づくりを始める」を最初の操作として強調
   - エラー・完了メッセージとページ編集の主要英語表記も日本語化
 - 変更しない範囲: DB、API契約、認証、制作・保存ロジック、Desktop
-- 検証: deps、lint、Hub typecheck、集中12/12、Hub 277/277、
+- 検証: deps、lint、Hub typecheck、集中テスト、Hub 278/278、
   production build、diff check成功
 - 注記: root `typecheck`のHub部分は成功。Desktop部分はworktree内の
   Desktop依存未導入により実行不可で、今回のHub表示変更とは無関係

@@ -49,4 +49,24 @@ select {
   .muted {
     @apply text-stone-600;
   }
+
+  .cloud-studio-scope .panel {
+    @apply rounded-xl border-violet-100 shadow-soft;
+  }
+
+  .cloud-studio-scope .button {
+    @apply bg-violet-700 hover:bg-violet-800;
+  }
+
+  .cloud-studio-scope .button-secondary {
+    @apply hover:border-violet-300 hover:bg-violet-50;
+  }
+
+  .cloud-studio-scope .field {
+    @apply ring-violet-200 focus:border-violet-500;
+  }
+
+  .cloud-studio-scope .text-leaf {
+    @apply text-violet-700;
+  }
 }

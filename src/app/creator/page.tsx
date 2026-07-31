@@ -24,13 +24,15 @@ export default async function CloudCreatorPage({
     searchParams,
   ]);
   return (
-    <main className="page">
+    <main className="page max-w-7xl">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-semibold text-leaf">一般漫画・ブラウザー制作</p>
+          <div className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
+            制作ステップ 4
+          </div>
           <h1 className="mt-1 text-3xl font-bold">クラウド制作</h1>
           <p className="mt-2 text-lg text-stone-600">
-            作品を作成し、話とページを編集します。
+            作品を作成し、話とページを編集してマンガを仕上げます。
           </p>
         </div>
         <div className="flex gap-2">
@@ -49,13 +51,13 @@ export default async function CloudCreatorPage({
           {query.message}
         </p>
       ) : null}
-      <p className="mt-6 rounded-md bg-amber-50 p-4 text-amber-950">
+      <p className="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
         クラウド制作は一般向け作品専用です。成人向け作品はMANGAI
         Desktop Adultで制作してください。
       </p>
       <section
         aria-labelledby="creator-start-guide"
-        className="panel mt-6 border-violet-200 bg-violet-50/60"
+        className="panel mt-6 border-violet-200 bg-gradient-to-br from-white to-violet-50"
       >
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -110,11 +112,11 @@ export default async function CloudCreatorPage({
         <section className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <Link
-              className="panel block transition hover:-translate-y-0.5 hover:border-leaf"
+              className="panel block transition hover:-translate-y-0.5 hover:border-violet-300 hover:shadow-lg"
               href={`/creator/${project.id}`}
               key={project.id}
             >
-              <BookOpen className="h-8 w-8 text-leaf" />
+              <BookOpen className="h-8 w-8 text-violet-700" />
               <h2 className="mt-4 text-xl font-bold">{project.title}</h2>
               <p className="mt-2 line-clamp-2 min-h-12 text-stone-600">
                 {project.description || "説明はまだありません。"}

@@ -54,3 +54,27 @@ test("作品作成・構成・ゴミ箱・ヘッダーは利用者向け用語�
   assert.match(editor, /プレビュー/);
   assert.match(editor, /画像素材/);
 });
+
+test("クラウド制作は紫基調の制作ワークフローシェルを使用する", async () => {
+  const [layout, shell, styles, creator] = await Promise.all([
+    readFile(
+      new URL("../src/app/creator/layout.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../src/components/CloudWorkflowShell.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(new URL("../src/app/globals.css", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/creator/page.tsx", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(layout, /CloudWorkflowShell/);
+  assert.match(layout, /cloud-studio-scope/);
+  assert.match(shell, /label: "マンガ生成", href: "\/creator"/);
+  assert.match(shell, /ステップ4：マンガ生成/);
+  assert.match(styles, /\.cloud-studio-scope \.button/);
+  assert.match(styles, /bg-violet-700/);
+  assert.match(creator, /制作ステップ 4/);
+  assert.match(creator, /from-white to-violet-50/);
+});
