@@ -11,10 +11,10 @@ type StructureDatabaseError = {
 type StructureOperation = "add" | "rename" | "move" | "delete";
 
 const operationFallbacks: Record<StructureOperation, string> = {
-  add: "Episode／Pageを追加できませんでした。",
-  rename: "Episode名を更新できませんでした。",
-  move: "Episode／Pageを移動できませんでした。",
-  delete: "Episode／Pageを削除できませんでした。",
+  add: "話／ページを追加できませんでした。",
+  rename: "話の名前を更新できませんでした。",
+  move: "話／ページを移動できませんでした。",
+  delete: "話／ページを削除できませんでした。",
 };
 
 export function mapCloudStructureError(
@@ -27,12 +27,12 @@ export function mapCloudStructureError(
     case "cloud_episode_not_editable":
     case "cloud_page_not_editable":
       return new PermissionDeniedError(
-        "このEpisode／Pageを編集する権限がありません。",
+        "この話／ページを編集する権限がありません。",
       );
     case "last_episode_cannot_be_deleted":
-      return new ValidationError("最後のEpisodeは削除できません。");
+      return new ValidationError("最後の話は削除できません。");
     case "last_page_cannot_be_deleted":
-      return new ValidationError("最後のPageは削除できません。");
+      return new ValidationError("最後のページは削除できません。");
     case "invalid_move_direction":
       return new ValidationError("移動方向が不正です。");
     default:

@@ -16,16 +16,16 @@ export function mapCanvasPersistenceError(error: CanvasDatabaseError) {
   switch (signal) {
     case "revision_conflict":
       return new RevisionConflictError(
-        "保存競合を検出しました。Pageを再読込してください。",
+        "保存競合を検出しました。ページを再読み込みしてください。",
       );
     case "page_not_found":
-      return new ResourceNotFoundError("Pageが見つかりません。");
+      return new ResourceNotFoundError("ページが見つかりません。");
     case "invalid_snapshot_input":
       return new ValidationError("Canvas snapshotが不正です。");
     default:
       return new DomainError(
         "INTERNAL_ERROR",
-        "Pageを保存できませんでした。",
+        "ページを保存できませんでした。",
         { cause: error },
       );
   }

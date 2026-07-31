@@ -47,16 +47,16 @@ export async function createCloudProjectAction(formData: FormData) {
     dpi: value(formData, "dpi"),
   });
   if (!parsed.success)
-    redirect("/creator/new?error=Project設定を確認してください");
+    redirect("/creator/new?error=作品設定を確認してください");
   let result: Awaited<ReturnType<typeof createCloudProject>>;
   try {
     result = await createCloudProject(parsed.data);
   } catch (error) {
-    const message = domainMessage(error, "Projectを作成できませんでした。");
+    const message = domainMessage(error, "作品を作成できませんでした。");
     redirect(`/creator/new?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
-  redirect(`/creator/${result.project_id}?message=Projectを作成しました`);
+  redirect(`/creator/${result.project_id}?message=作品を作成しました`);
 }
 
 export async function addCloudEpisodeAction(
@@ -70,15 +70,15 @@ export async function addCloudEpisodeAction(
     .max(200)
     .safeParse(value(formData, "title"));
   if (!parsed.success)
-    redirect(`/creator/${projectId}?error=Episode名を入力してください`);
+    redirect(`/creator/${projectId}?error=話の名前を入力してください`);
   try {
     await addCloudEpisode(projectId, parsed.data);
   } catch (error) {
-    const message = domainMessage(error, "Episodeを追加できませんでした。");
+    const message = domainMessage(error, "話を追加できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=Episodeを追加しました`);
+  redirect(`/creator/${projectId}?message=話を追加しました`);
 }
 
 export async function addCloudPageAction(projectId: string, episodeId: string) {
@@ -86,7 +86,7 @@ export async function addCloudPageAction(projectId: string, episodeId: string) {
   try {
     pageId = await addCloudPage(episodeId);
   } catch (error) {
-    const message = domainMessage(error, "Pageを追加できませんでした。");
+    const message = domainMessage(error, "ページを追加できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
@@ -107,7 +107,7 @@ export async function renameCloudProjectAction(
       description: value(formData, "description"),
     });
   if (!parsed.success)
-    redirect(`/creator/${projectId}?error=Project情報を確認してください`);
+    redirect(`/creator/${projectId}?error=作品情報を確認してください`);
   try {
     await renameCloudProject(
       projectId,
@@ -115,11 +115,11 @@ export async function renameCloudProjectAction(
       parsed.data.description,
     );
   } catch (error) {
-    const message = domainMessage(error, "Projectを更新できませんでした。");
+    const message = domainMessage(error, "作品を更新できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=Project情報を更新しました`);
+  redirect(`/creator/${projectId}?message=作品情報を更新しました`);
 }
 
 export async function renameCloudEpisodeAction(
@@ -134,15 +134,15 @@ export async function renameCloudEpisodeAction(
     .max(200)
     .safeParse(value(formData, "title"));
   if (!parsed.success)
-    redirect(`/creator/${projectId}?error=Episode名を確認してください`);
+    redirect(`/creator/${projectId}?error=話の名前を確認してください`);
   try {
     await renameCloudEpisode(episodeId, parsed.data);
   } catch (error) {
-    const message = domainMessage(error, "Episodeを更新できませんでした。");
+    const message = domainMessage(error, "話の名前を更新できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=Episode名を更新しました`);
+  redirect(`/creator/${projectId}?message=話の名前を更新しました`);
 }
 
 export async function moveCloudStructureAction(
@@ -173,7 +173,7 @@ export async function deleteCloudStructureAction(
   }
   revalidatePath(`/creator/${projectId}`);
   redirect(
-    `/creator/${projectId}?message=${kind === "episode" ? "Episode" : "Page"}をゴミ箱へ移動しました`,
+    `/creator/${projectId}?message=${kind === "episode" ? "話" : "ページ"}をゴミ箱へ移動しました`,
   );
 }
 
@@ -181,24 +181,24 @@ export async function deleteCloudProjectAction(projectId: string) {
   try {
     await setCloudProjectDeleted(projectId, true);
   } catch (error) {
-    const message = domainMessage(error, "Projectを削除できませんでした。");
+    const message = domainMessage(error, "作品を削除できませんでした。");
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
   revalidatePath("/creator/trash");
-  redirect("/creator?message=Projectをゴミ箱へ移動しました");
+  redirect("/creator?message=作品をゴミ箱へ移動しました");
 }
 
 export async function restoreCloudProjectAction(projectId: string) {
   try {
     await setCloudProjectDeleted(projectId, false);
   } catch (error) {
-    const message = domainMessage(error, "Projectを復元できませんでした。");
+    const message = domainMessage(error, "作品を復元できませんでした。");
     redirect(`/creator/trash?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
   revalidatePath("/creator/trash");
-  redirect(`/creator/${projectId}?message=Projectを復元しました`);
+  redirect(`/creator/${projectId}?message=作品を復元しました`);
 }
 
 export async function setCloudProjectCoverAction(
@@ -212,7 +212,7 @@ export async function setCloudProjectCoverAction(
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=表紙Pageを設定しました`);
+  redirect(`/creator/${projectId}?message=表紙ページを設定しました`);
 }
 
 export async function syncCloudMarketplaceDraftAction(
@@ -236,7 +236,7 @@ export async function syncCloudMarketplaceDraftAction(
   } catch (error) {
     const message = domainMessage(
       error,
-      "Marketplace下書きを作成できませんでした。",
+      "販売用の下書きを作成できませんでした。",
     );
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
@@ -244,6 +244,6 @@ export async function syncCloudMarketplaceDraftAction(
   revalidatePath("/dashboard/works");
   revalidatePath("/dashboard/products");
   redirect(
-    `/creator/${projectId}?message=${encodeURIComponent("Marketplace下書きを更新しました")}&productId=${result.productId}`,
+    `/creator/${projectId}?message=${encodeURIComponent("販売用の下書きを更新しました")}&productId=${result.productId}`,
   );
 }

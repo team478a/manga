@@ -421,7 +421,7 @@ export function CloudCanvasEditor({
 
   async function requestCloudGeneration() {
     if (!generationPrompt.trim()) return;
-    setMessage("Cloud AI Jobを登録しています…");
+    setMessage("AI画像生成を受け付けています…");
     try {
       await createGenerationJob({
         projectId: project.id,
@@ -437,13 +437,13 @@ export function CloudCanvasEditor({
         },
       });
       setGenerationPrompt("");
-      setMessage("Cloud AI Jobを登録しました。");
+      setMessage("AI画像生成を受け付けました。");
       await Promise.all([refreshGenerationJobs(), refreshQuota()]);
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Cloud AI Jobを登録できませんでした。",
+          : "AI画像生成を受け付けられませんでした。",
       );
     }
   }
@@ -478,7 +478,7 @@ export function CloudCanvasEditor({
 
   async function requestCloudTextGeneration() {
     if (!textGenerationPrompt.trim()) return;
-    setMessage("Cloud AI文章Jobを登録しています…");
+    setMessage("AI文章生成を受け付けています…");
     try {
       await createGenerationJob({
         projectId: project.id,
@@ -492,13 +492,13 @@ export function CloudCanvasEditor({
         },
       });
       setTextGenerationPrompt("");
-      setMessage("Cloud AI文章Jobを登録しました。");
+      setMessage("AI文章生成を受け付けました。");
       await Promise.all([refreshGenerationJobs(), refreshQuota()]);
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Cloud AI文章Jobを登録できませんでした。",
+          : "AI文章生成を受け付けられませんでした。",
       );
     }
   }
@@ -545,13 +545,13 @@ export function CloudCanvasEditor({
   async function cancelGenerationJob(jobId: string) {
     try {
       await cancelGeneration(jobId);
-      setMessage("Cloud AI Jobをキャンセルしました。");
+      setMessage("AI生成をキャンセルしました。");
       await Promise.all([refreshGenerationJobs(), refreshQuota()]);
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Jobをキャンセルできませんでした。",
+          : "AI生成をキャンセルできませんでした。",
       );
     }
   }
@@ -694,7 +694,7 @@ export function CloudCanvasEditor({
             type="button"
           >
             <Eye className="mr-1 h-4 w-4" />
-            Preview
+            プレビュー
           </button>
           <button
             className="button-secondary"
@@ -782,7 +782,7 @@ export function CloudCanvasEditor({
       <div className="mx-auto grid max-w-[1600px] gap-4 p-4 xl:grid-cols-[220px_minmax(480px,1fr)_320px]">
         <aside className="space-y-4">
           <section className="panel p-4">
-            <h2 className="font-bold">Page</h2>
+            <h2 className="font-bold">ページ</h2>
             <div className="mt-3 grid grid-cols-3 gap-2 xl:grid-cols-2">
               {pages.map((entry) => (
                 <Link
@@ -827,14 +827,14 @@ export function CloudCanvasEditor({
           </section>
           <section className="panel p-4">
             <h2 className="flex items-center gap-2 font-bold">
-              <Sparkles className="h-5 w-5" /> Cloud AI
+              <Sparkles className="h-5 w-5" /> AI制作アシスト
             </h2>
             <div className="mt-3 rounded border border-stone-200 bg-stone-50 p-2 text-xs">
               {quota ? (
                 <>
                   <p className="font-bold">
                     {quota.plan_key.toUpperCase()}プラン・残り
-                    {remainingCredits} credit
+                    {remainingCredits} クレジット
                   </p>
                   <p className="mt-1 text-stone-600">
                     使用 {quota.credits_used} / 予約 {quota.credits_reserved} /
@@ -897,7 +897,7 @@ export function CloudCanvasEditor({
               className="mt-3 block text-xs font-bold"
               htmlFor="cloud-generation-prompt"
             >
-              Prompt
+              生成内容
             </label>
             <textarea
               className="field mt-1 min-h-24 w-full"
@@ -940,7 +940,7 @@ export function CloudCanvasEditor({
               <option value="story">物語案</option>
             </select>
             <textarea
-              aria-label="文章生成Prompt"
+              aria-label="文章の生成内容"
               className="field mt-2 min-h-20 w-full"
               maxLength={20000}
               value={textGenerationPrompt}
@@ -1013,7 +1013,7 @@ export function CloudCanvasEditor({
             </div>
           </section>
           <section className="panel p-4">
-            <h2 className="font-bold">Asset Library</h2>
+            <h2 className="font-bold">画像素材</h2>
             <label className="button-secondary mt-3 w-full cursor-pointer">
               <ImagePlus className="mr-2 h-5 w-5" />
               画像を追加
@@ -1049,7 +1049,7 @@ export function CloudCanvasEditor({
         <main className="flex items-start justify-center overflow-auto rounded-lg bg-stone-300 p-4 sm:p-8">
           <div
             ref={canvasElement}
-            aria-label={`${page.page_number}ページ Canvas`}
+            aria-label={`${page.page_number}ページの編集画面`}
             className="relative w-full max-w-[720px] overflow-hidden bg-white shadow-2xl"
             onPointerDown={() => setSelection(null)}
             role="application"
@@ -1439,10 +1439,10 @@ export function CloudCanvasEditor({
               onClick={() => setPreview(false)}
               type="button"
             >
-              Previewを閉じる
+              プレビューを閉じる
             </button>
             <img
-              alt={`${project.title} ${page.page_number}ページのPreview`}
+              alt={`${project.title} ${page.page_number}ページのプレビュー`}
               className="mx-auto max-h-[80vh] max-w-[80vw] bg-white object-contain"
               src={previewUrl}
             />

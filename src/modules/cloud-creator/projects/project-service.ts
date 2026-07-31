@@ -23,7 +23,7 @@ export async function listCloudProjects() {
   if (error)
     throw new DomainError(
       "INTERNAL_ERROR",
-      "Cloud Project一覧を読み込めませんでした。",
+      "作品一覧を読み込めませんでした。",
       { cause: error },
     );
   return (data ?? []) as CloudProjectSummary[];
@@ -35,7 +35,7 @@ export async function listDeletedCloudProjects() {
   if (error)
     throw new DomainError(
       "INTERNAL_ERROR",
-      "Cloud Projectのゴミ箱を読み込めませんでした。",
+      "作品のゴミ箱を読み込めませんでした。",
       { cause: error },
     );
   return (data ?? []) as Array<CloudProjectSummary & { deleted_at: string }>;
@@ -50,11 +50,11 @@ export async function getCloudProjectWorkspace(projectId: string) {
       findProjectPages(supabase, projectId),
     ]);
   if (projectError || !project)
-    throw new ResourceNotFoundError("Cloud Projectが見つかりません。");
+    throw new ResourceNotFoundError("作品が見つかりません。");
   if (episodesResult.error || pagesResult.error)
     throw new DomainError(
       "INTERNAL_ERROR",
-      "Episode／Pageを読み込めませんでした。",
+      "話／ページを読み込めませんでした。",
       { cause: episodesResult.error ?? pagesResult.error },
     );
   return {

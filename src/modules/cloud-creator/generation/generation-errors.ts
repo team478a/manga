@@ -47,7 +47,7 @@ export function mapCloudGenerationEnqueueError(
     case "general_cloud_project_required":
     case "cloud_page_not_found":
       return new PermissionDeniedError(
-        "このCloud Projectでは生成できません。",
+        "この作品では生成できません。",
       );
     default:
       return new DomainError(
