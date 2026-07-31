@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-panel-revision-v1`
 - Base: `agent/manga-continuity-review-v1`（Draft PR #96）
+- Draft PR: [#97](https://github.com/team478a/manga/pull/97)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-2b4a4e-team478as-projects.vercel.app`
 
 ### 完了
 

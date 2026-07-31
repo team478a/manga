@@ -4,6 +4,8 @@
 
 - Branch: `agent/manga-panel-revision-v1`
 - Base: `agent/manga-continuity-review-v1`（Draft PR #96）
+- Draft PR: [#97](https://github.com/team478a/manga/pull/97)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-2b4a4e-team478as-projects.vercel.app`
 - 目的: 採用済みコマ画像を残したまま、気になる部分の修正候補を生成する
 - 実装: 6修正preset、任意追加要望、元画像先頭参照、設定version継承、2〜4候補、非破壊レイヤー採用
 - DB: 新規migrationなし

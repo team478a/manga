@@ -5,6 +5,8 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `agent/manga-panel-revision-v1`
 - Base: `agent/manga-continuity-review-v1`（Draft PR #96）
+- Draft PR: [#97](https://github.com/team478a/manga/pull/97)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-2b4a4e-team478as-projects.vercel.app`
 - 実装: 採用画像を参照したImage-to-Image候補、顔・手・表情・衣装・背景・仕上げpreset、追加要望、2〜4案比較、非破壊レイヤー採用
 - 安全性: 修正元は選択コマの表示中Assetに限定し、作品・所有者をサーバーで再検証。非公開Job入力を利用者へ返さない
 - 境界: v1は参照画像による候補再生成。マスク付きInpaintingではない
