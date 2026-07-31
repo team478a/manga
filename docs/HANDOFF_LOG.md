@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-07-31 Codex: モニター操作へ処理中表示を追加
+
+- `feature/manga-canvas-mvp`の最新から
+  `codex/cloud-action-pending-feedback-v1`を作成した。
+- 共通`PendingSubmitButton`を追加し、Server Action送信中はスピナーと
+  用途別メッセージを表示して二重送信を防止する。
+- モニター招待・再送・停止、成人向け利用許可、フィードバック対応、
+  招待メール設定、利用者フィードバック、初回開始へ段階適用した。
+- 業務ロジック、認証、DB、API、Feature Flag、Desktopは変更していない。
+- deps、lint、Hub typecheck、Hub 274/274、diff checkが成功した。
+
+---
+
 ## 2026-07-31 Codex: 一般向けモニター本番候補を独立統合
 
 - `feature/manga-canvas-mvp`の最新から

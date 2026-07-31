@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -115,7 +116,9 @@ export default async function GeneralMonitorsAdminPage() {
                   <option value="new">未対応</option><option value="reviewing">対応中</option><option value="resolved">対応済み</option>
                 </select>
                 <input className="field" defaultValue={item.admin_note ?? ""} maxLength={1000} name="adminNote" placeholder="管理メモ（利用者には非表示）" />
-                <button className="button-secondary" type="submit">更新</button>
+                <PendingSubmitButton className="button-secondary" pendingLabel="更新中…">
+                  更新
+                </PendingSubmitButton>
               </form>
             </article>
           ))}

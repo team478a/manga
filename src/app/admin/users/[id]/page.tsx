@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
@@ -159,7 +160,9 @@ export default async function AdminUserDetailPage({
             {generalMonitor?.status === "active" &&
             email !== "未設定" && email !== "未取得" ? (
               <form action={resendCloudGeneralMonitorInviteAction.bind(null, user.id)} className="mt-4">
-                <button className="button-secondary" type="submit">招待メールを再送</button>
+                <PendingSubmitButton className="button-secondary" pendingLabel="招待メールを送信中…">
+                  招待メールを再送
+                </PendingSubmitButton>
               </form>
             ) : null}
             <form action={activateCloudGeneralMonitorAction.bind(null, user.id)} className="mt-5 space-y-4">
@@ -177,9 +180,12 @@ export default async function AdminUserDetailPage({
               <div><label className="label" htmlFor="generalMonitorNote">管理者メモ</label>
                 <textarea className="field min-h-20" id="generalMonitorNote" maxLength={500} name="adminNote" />
               </div>
-              <button className="button bg-violet-700 hover:bg-violet-800" type="submit">
+              <PendingSubmitButton
+                className="button bg-violet-700 hover:bg-violet-800"
+                pendingLabel="招待処理中…"
+              >
                 {generalMonitor ? "招待条件を更新してメール送信" : "招待してメール送信"}
-              </button>
+              </PendingSubmitButton>
             </form>
             {generalMonitor ? (
               <form action={stopCloudGeneralMonitorAction.bind(null, user.id)} className="mt-6 border-t border-stone-200 pt-5">
@@ -193,7 +199,9 @@ export default async function AdminUserDetailPage({
                     <input className="field" id="generalMonitorStopNote" maxLength={500} name="adminNote" required />
                   </div>
                 </div>
-                <button className="button-secondary mt-4" type="submit">利用を停止</button>
+                <PendingSubmitButton className="button-secondary mt-4" pendingLabel="停止処理中…">
+                  利用を停止
+                </PendingSubmitButton>
               </form>
             ) : null}
           </>
@@ -274,12 +282,12 @@ export default async function AdminUserDetailPage({
             <p className="text-sm text-stone-600">
               利用許可後も、本人が18歳以上の確認と専用規約への同意を完了するまで成人向け分析は実行できません。
             </p>
-            <button
+            <PendingSubmitButton
               className="button bg-violet-700 hover:bg-violet-800"
-              type="submit"
+              pendingLabel="許可を更新中…"
             >
               成人向け分析の許可を更新
-            </button>
+            </PendingSubmitButton>
           </form>
         )}
       </section>
@@ -358,12 +366,12 @@ export default async function AdminUserDetailPage({
                 name="adminNote"
               />
             </div>
-            <button
+            <PendingSubmitButton
               className="button bg-violet-700 hover:bg-violet-800"
-              type="submit"
+              pendingLabel="許可を更新中…"
             >
               成人向け企画機能の許可を更新
-            </button>
+            </PendingSubmitButton>
           </form>
         )}
       </section>

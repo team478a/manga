@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（モニター操作の処理中表示、2026-07-31）
+
+- Branch: `codex/cloud-action-pending-feedback-v1`
+- Base: `feature/manga-canvas-mvp` (`6ebdbaa`)
+- 目的: ボタンクリック直後に処理中表示を出し、無反応に見える状態と二重送信を防ぐ
+- 対象: モニター招待・運用・設定・フィードバック・初回開始
+- 変更範囲: 表示層のみ。Server Action、認証、DB、API、Desktopは変更しない
+- 状態: 実装とローカル品質ゲート完了、Draft PR準備中
+
+---
+
 ## 0. 現在の優先タスク（一般向けモニター本番統合、2026-07-31）
 
 - Branch: `codex/cloud-monitor-production-v1`
