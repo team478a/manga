@@ -16,6 +16,7 @@ import {
 } from "./domain-errors.ts";
 import { consumeCloudGeneralMonitorAiRequest } from "./cloud-general-monitor.ts";
 import type { CloudCharacterProfile } from "./cloud-character-profile.ts";
+import type { CloudStyleBible, CloudWorldProfile } from "./cloud-world-bible.ts";
 
 export async function enqueueStoryboardPanelImage(input: unknown) {
   if (!cloudPanelImageGenerationFeatureEnabled())
@@ -131,6 +132,42 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         : [];
     });
   }
+  let styleBible: CloudStyleBible | null = null;
+  let worldProfiles: CloudWorldProfile[] = [];
+  const [styleRow, worldRows] = await Promise.all([
+    supabase.from("cloud_style_bibles")
+      .select("id,project_id,current_version,updated_at")
+      .eq("project_id", request.projectId).eq("owner_profile_id", profile.id)
+      .maybeSingle(),
+    supabase.from("cloud_world_profiles")
+      .select("id,project_id,kind,name,current_version,updated_at")
+      .eq("project_id", request.projectId).eq("owner_profile_id", profile.id)
+      .is("deleted_at", null),
+  ]);
+  const worldBibleUnavailable =
+    styleRow.error?.code === "42P01" || worldRows.error?.code === "42P01";
+  if (!worldBibleUnavailable && (styleRow.error || worldRows.error))
+    throw new DomainError("INTERNAL_ERROR", "画風・世界観設定を読み込めませんでした。", {
+      cause: styleRow.error ?? worldRows.error,
+    });
+  if (!worldBibleUnavailable && styleRow.data) {
+    const version = await supabase.from("cloud_style_bible_versions")
+      .select("art_style,linework,shading,background_detail,composition_rules,negative_prompt")
+      .eq("bible_id", styleRow.data.id)
+      .eq("version_number", styleRow.data.current_version).maybeSingle();
+    if (version.error) throw new DomainError("INTERNAL_ERROR", "画風設定を読み込めませんでした。", { cause: version.error });
+    if (version.data) styleBible = { ...styleRow.data, ...version.data } as CloudStyleBible;
+  }
+  if (!worldBibleUnavailable && (worldRows.data?.length ?? 0) > 0) {
+    const versions = await supabase.from("cloud_world_profile_versions")
+      .select("profile_id,version_number,description,visual_traits,color_palette,continuity_rules,prompt,negative_prompt")
+      .in("profile_id", worldRows.data!.map((item) => item.id));
+    if (versions.error) throw new DomainError("INTERNAL_ERROR", "場所・小物設定を読み込めませんでした。", { cause: versions.error });
+    worldProfiles = worldRows.data!.flatMap((profileRow) => {
+      const version = versions.data?.find((item) => item.profile_id === profileRow.id && item.version_number === profileRow.current_version);
+      return version ? [{ ...profileRow, ...version } as CloudWorldProfile] : [];
+    });
+  }
   const canvas = pageCanvasSchema.parse(snapshot.canvas);
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
   let resolved: ReturnType<typeof buildStoryboardPanelGeneration> | null = null;
@@ -148,6 +185,8 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
           ? characterProfiles.data.characters
           : undefined,
         visualCharacterProfiles,
+        styleBible,
+        worldProfiles,
       });
       await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
       const id = await enqueueCloudGenerationJob({

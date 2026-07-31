@@ -65,6 +65,18 @@ READY_FOR_REVIEW
   production build、diff checkが成功した。
 - `npm ci`の既存依存監査にはhigh severity 11件が残るが、今回の表示変更では
   依存更新を行っていない。
+## 2026-07-31 Codex: M2-2 画風・場所・小物設定
+
+- `codex/manga-world-bible-v1`をM2-1ブランチから作成した。
+- 一般向け作品へ版管理されたStyle BibleとLocation／Prop Profileを追加した。
+- 画風は全コマへ、場所・小物はネームの背景・動作・構図に名前が一致するコマだけへ自動適用する。
+- 生成Jobへ利用したBible/Profile IDとversionを保存し、後から生成条件を追跡可能にした。
+- 所有者RLSとSecurity Definer RPCを使用し、通常利用者へ技術PromptやProvider設定を表示しない。
+- deps、lint、Hub/Desktop typecheck、Hub 311/311、migration 32/32、Docker上のforward／rollback／reapply／canonical schema、production build、diff checkが成功した。
+- 未完了: staging migration、実Provider生成、実ブラウザ確認、参照画像、明示割当、継続性警告。
+
+---
+
 ## 2026-07-31 Codex: M2-1 編集可能なキャラクター設定
 
 - `codex/manga-character-profiles-v1`をM1ブランチから作成し、M2を独立したstacked changeとして開始した。

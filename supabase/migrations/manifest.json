@@ -186,7 +186,13 @@
       "description": "一般向けCloud作品へ版管理されたキャラクター外見・衣装設定を追加",
       "forwardSha256": "ae3323489594261041c9579fd2cc46e4d6f9bb91a213000d2937bec62ccbdfa5",
       "rollbackSha256": "aebe84667f324b3be3f5decf523d23aa1dfe97e8f23d40d5477a60bcbfc8d3cd"
+    },
+    {
+      "id": "202607310006_cloud_world_bible",
+      "description": "一般向けCloud作品へ版管理された画風・場所・小物設定を追加",
+      "forwardSha256": "322467f27b227655a99fae2d397e5a5f99658eee30c487c825434437a0a094d0",
+      "rollbackSha256": "72badcd12e2477e1bc3b4199bd2f5408c561069caf30829eb9d3fe34891c92ed"
     }
   ],
-  "schemaSha256": "3c39939a0444af8c6169685eac6e25075d803177250fac531be4611caca2bc8c"
+  "schemaSha256": "188bf3df2928553fd35644fc10ac2a2e6fd054b7161f8ee6dd32fbc33e706f00"
 }

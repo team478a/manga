@@ -167,6 +167,68 @@ test("版管理された外見設定を生成条件と監査用入力へ固定�
   ]);
 });
 
+test("画風と該当する場所・小物だけを生成条件へ固定する", () => {
+  const bibleId = "71000000-0000-4000-8000-000000000001";
+  const locationId = "72000000-0000-4000-8000-000000000001";
+  const propId = "73000000-0000-4000-8000-000000000001";
+  const base = {
+    project_id: "50000000-0000-4000-8000-000000000001",
+    current_version: 2,
+    color_palette: "白、青",
+    visual_traits: [],
+    continuity_rules: [],
+    prompt: "",
+    negative_prompt: "",
+    updated_at: "2026-07-31T00:00:00.000Z",
+  };
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    styleBible: {
+      id: bibleId,
+      project_id: base.project_id,
+      current_version: 4,
+      art_style: "繊細な青年漫画",
+      linework: "細い均一線",
+      shading: "網点中心",
+      background_detail: "主要コマは詳細",
+      composition_rules: "視線誘導を右から左へ",
+      negative_prompt: "厚塗り",
+      updated_at: base.updated_at,
+    },
+    worldProfiles: [
+      {
+        ...base,
+        id: locationId,
+        kind: "location",
+        name: "駅前",
+        description: "時計塔のある広場",
+        continuity_rules: ["時計塔は左奥"],
+      },
+      {
+        ...base,
+        id: propId,
+        kind: "prop",
+        name: "赤い傘",
+        description: "主人公の傘",
+      },
+    ],
+  });
+  assert.match(result.generation.prompt, /繊細な青年漫画/);
+  assert.match(result.generation.prompt, /時計塔のある広場/);
+  assert.doesNotMatch(result.generation.prompt, /赤い傘/);
+  assert.match(result.generation.negativePrompt, /厚塗り/);
+  assert.deepEqual(result.generation.styleBibleVersion, {
+    bibleId,
+    version: 4,
+  });
+  assert.deepEqual(result.generation.worldProfileVersions, [
+    { profileId: locationId, version: 2, kind: "location" },
+  ]);
+});
+
 test("1回の要求で最大4候補まで安全に指定できる", () => {
   const request = cloudPanelImageGenerationRequestSchema.parse({
     projectId: "50000000-0000-4000-8000-000000000001",
