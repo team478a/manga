@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { getCloudAdultMonitorEnrollment } from "@/lib/cloud-adult-monitor";
 import { createClient } from "@/lib/supabase/server";
@@ -24,14 +25,19 @@ export default async function AdultMonitorPage({
   const { data: feedback } = await (await createClient())
     .from("cloud_adult_monitor_feedback")
     .select("id,workflow_step,rating,outcome,comment,created_at")
-    .eq("profile_id", profile.id)
+    .eq("owner_profile_id", profile.id)
     .order("created_at", { ascending: false })
     .returns<Feedback[]>();
 
   return (
     <main className="page max-w-3xl">
-      <p className="font-semibold text-violet-700">許可制・限定公開</p>
-      <h1 className="mt-1 text-3xl font-bold">モニターフィードバック</h1>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="font-semibold text-violet-700">許可制・限定公開</p>
+          <h1 className="mt-1 text-3xl font-bold">モニター状況とご意見</h1>
+        </div>
+        <Link className="button-secondary" href="/dashboard/adult-monitor/guide">Webマニュアル</Link>
+      </div>
       {!enrollment ? (
         <section className="panel mt-6">
           <h2 className="text-xl font-bold">限定モニター登録が必要です</h2>
@@ -46,6 +52,11 @@ export default async function AdultMonitorPage({
               <div><p className="text-sm text-stone-500">期限</p><p className="font-bold">{new Date(enrollment.expires_at).toLocaleDateString("ja-JP")}</p></div>
             </div>
           </section>
+          {!enrollment.onboarding_completed_at ? (
+            <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href="/dashboard/adult-monitor/welcome">
+              初回案内を確認
+            </Link>
+          ) : null}
           {error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{error}</p> : null}
           {message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
           {enrollment.status === "active" ? (
@@ -57,7 +68,9 @@ export default async function AdultMonitorPage({
                 <div className="sm:col-span-2"><label className="label" htmlFor="outcome">結果</label><select className="field" id="outcome" name="outcome"><option value="very_useful">とても役立った</option><option value="useful">役立った</option><option value="neutral">どちらでもない</option><option value="difficult">操作が難しい</option><option value="blocked">途中で進めなかった</option></select></div>
               </div>
               <textarea className="field min-h-32" maxLength={2000} name="comment" placeholder="良かった点、迷った点、止まった画面などを入力してください" required />
-              <button className="button bg-violet-700 hover:bg-violet-800" type="submit">フィードバックを送信</button>
+              <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" pendingLabel="フィードバックを送信中…">
+                フィードバックを送信
+              </PendingSubmitButton>
             </form>
           ) : null}
           <section className="panel mt-6">

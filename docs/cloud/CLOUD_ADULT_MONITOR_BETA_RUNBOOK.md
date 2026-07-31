@@ -1,5 +1,10 @@
 # 成人向け限定モニター運用手順
 
+> 2026-07-31更新: 招待メール、初回案内、Webマニュアル、公開前チェック、
+> フィードバック対応管理は
+> [`CLOUD_ADULT_MONITOR_OPERATIONS_V1.md`](./CLOUD_ADULT_MONITOR_OPERATIONS_V1.md)
+> を正として運用します。
+
 ## 公開範囲
 
 対象は管理者が選んだ既存購入者など1〜3名です。Vercel Previewだけで実施し、本番公開、一般募集、成人向け画像生成、Marketplace、販売は行いません。

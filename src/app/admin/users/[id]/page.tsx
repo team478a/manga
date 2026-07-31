@@ -19,6 +19,7 @@ import {
 } from "@/lib/cloud-general-monitor";
 import {
   activateCloudAdultMonitorAction,
+  resendCloudAdultMonitorInviteAction,
   stopCloudAdultMonitorAction,
 } from "./adult-monitor-actions";
 import type { CloudAdultMonitorEnrollment } from "@/lib/cloud-adult-monitor";
@@ -455,6 +456,13 @@ export default async function AdminUserDetailPage({
                 </p>
               </div>
             </div>
+            {adultMonitor?.status === "active" ? (
+              <form action={resendCloudAdultMonitorInviteAction.bind(null, user.id)} className="mt-4">
+                <PendingSubmitButton className="button-secondary" pendingLabel="成人向け招待メールを送信中…">
+                  成人向け招待メールを再送
+                </PendingSubmitButton>
+              </form>
+            ) : null}
             <form action={activateCloudAdultMonitorAction.bind(null, user.id)} className="mt-5 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -480,9 +488,9 @@ export default async function AdminUserDetailPage({
                 </div>
               </div>
               <textarea className="field min-h-20" defaultValue={adultMonitor ? "限定モニター設定を更新" : "限定モニター開始"} maxLength={500} name="adminNote" required />
-              <button className="button bg-violet-700 hover:bg-violet-800" type="submit">
+              <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" pendingLabel="許可と招待を処理中…">
                 モニター開始・全工程を一括許可
-              </button>
+              </PendingSubmitButton>
             </form>
             {adultMonitor ? (
               <form action={stopCloudAdultMonitorAction.bind(null, user.id)} className="mt-6 border-t border-violet-200 pt-5">
@@ -494,9 +502,9 @@ export default async function AdminUserDetailPage({
                   </select>
                   <input className="field" maxLength={500} name="adminNote" placeholder="停止理由（必須）" required />
                 </div>
-                <button className="button-secondary mt-4 border-red-300 text-red-700" type="submit">
+                <PendingSubmitButton className="button-secondary mt-4 border-red-300 text-red-700" pendingLabel="停止処理中…">
                   モニターと全工程を停止
-                </button>
+                </PendingSubmitButton>
               </form>
             ) : null}
           </>

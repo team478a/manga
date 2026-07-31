@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-07-31 成人向け限定モニター運用基盤
+
+- 状態: `IMPLEMENTED / VERIFYING`
+- Branch: `codex/cloud-adult-monitor-ops-v1`
+- Base: 最新`feature/manga-canvas-mvp`
+- 実装:
+  - 成人向け制作フローとGrok Provider管理を最新一般向け基盤へ統合
+  - 成人向け招待メール、初回案内、利用者Webマニュアル
+  - 公開前readiness、スタッフ手順、フィードバック対応管理
+  - Dashboardから成人向けモニター状況と開始導線を表示
+  - ボタン送信中表示、招待再送、秘密値非表示
+- 対象外: 成人向け画像生成、作品公開、販売、本番Flag変更、migration適用
+- migration: `202607310004_cloud_adult_monitor_operations.sql`
+
+
 ## 2026-07-31 クラウド制作の日本語化・初回ガイド
 
 - 状態: `IMPLEMENTED`

@@ -222,7 +222,13 @@
       "description": "一般向けモニター招待メールの件名・本文テンプレートを管理画面で変更可能にする",
       "forwardSha256": "b7d973533950cdcfa12bc90bcbf5b071d36d09bd5aa7169ee6ce47577b0a2d81",
       "rollbackSha256": "feab2a175488d79fbae8d8415fea5f05d4f95e4ce6d1fad891aa14d36df3755f"
+    },
+    {
+      "id": "202607310004_cloud_adult_monitor_operations",
+      "description": "成人向け限定モニターの招待・初回案内・フィードバック対応管理を追加",
+      "forwardSha256": "f2eab9aa5dacfbd9a84f6214a507d8ac9a835a71cb7c38b6e194fe836041089c",
+      "rollbackSha256": "c6fbcf404442f8999296ff27339e3f36f91af0628c12ce54db707c57ad23ebae"
     }
   ],
-  "schemaSha256": "b6e3b86a6f486bedf6ebe50356c8481b607b63525da137e68ba8c7c52380fec8"
+  "schemaSha256": "b757f9fa9cc09fc7e2cc8175105cd2ae9674ccf163e21795fb9f0b8a28c42942"
 }

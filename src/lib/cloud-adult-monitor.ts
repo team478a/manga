@@ -22,6 +22,7 @@ export type CloudAdultMonitorEnrollment = {
   ai_requests_used: number;
   starts_at: string;
   expires_at: string;
+  onboarding_completed_at: string | null;
   updated_at: string;
 };
 
@@ -34,12 +35,18 @@ export async function getCloudAdultMonitorEnrollment(profileId: string) {
   const { data, error } = await createAdminClient()
     .from("cloud_adult_monitor_enrollments")
     .select(
-      "profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at",
+      "profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at",
     )
     .eq("profile_id", profileId)
     .maybeSingle<CloudAdultMonitorEnrollment>();
   if (error) return null;
   return data;
+}
+
+export async function requireCloudAdultMonitor(profileId: string) {
+  const enrollment = await getCloudAdultMonitorEnrollment(profileId);
+  assertCloudAdultMonitorActive(enrollment);
+  return enrollment!;
 }
 
 export function assertCloudAdultMonitorActive(
@@ -58,6 +65,19 @@ export function assertCloudAdultMonitorActive(
     throw new PermissionDeniedError(
       "成人向け機能は限定モニターとして利用許可されたアカウントだけが利用できます。",
     );
+}
+
+export function isCloudAdultMonitorActive(
+  enrollment: CloudAdultMonitorEnrollment | null,
+  now = Date.now(),
+) {
+  return Boolean(
+    cloudAdultMonitorBetaEnabled() &&
+    enrollment &&
+    enrollment.status === "active" &&
+    Date.parse(enrollment.starts_at) <= now &&
+    Date.parse(enrollment.expires_at) > now,
+  );
 }
 
 export async function consumeCloudAdultMonitorAiRequest(

@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { CloudAdultMonitorEnrollment } from "@/lib/cloud-adult-monitor";
+import { reviewAdultMonitorFeedbackAction } from "./actions";
 
 type Profile = { id: string; display_name: string; user_id: string };
 type Feedback = {
@@ -12,6 +14,8 @@ type Feedback = {
   outcome: string;
   comment: string;
   created_at: string;
+  review_status: "new" | "reviewing" | "resolved";
+  admin_note: string | null;
 };
 
 export default async function AdultMonitorsAdminPage() {
@@ -20,12 +24,12 @@ export default async function AdultMonitorsAdminPage() {
   const [enrollmentsResult, feedbackResult, profilesResult] = await Promise.all([
     admin
       .from("cloud_adult_monitor_enrollments")
-      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,updated_at")
+      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
       .order("updated_at", { ascending: false })
       .returns<CloudAdultMonitorEnrollment[]>(),
     admin
       .from("cloud_adult_monitor_feedback")
-      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at")
+      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note")
       .order("created_at", { ascending: false })
       .limit(100)
       .returns<Feedback[]>(),
@@ -45,7 +49,12 @@ export default async function AdultMonitorsAdminPage() {
             利用期限、工程横断のAI上限、フィードバックを確認します。
           </p>
         </div>
-        <Link className="button-secondary" href="/admin/users">ユーザーを選ぶ</Link>
+        <div className="flex flex-wrap gap-2">
+          <Link className="button bg-violet-700 hover:bg-violet-800" href="/admin/adult-monitors/readiness">公開前チェック</Link>
+          <Link className="button-secondary" href="/admin/adult-monitors/guide">スタッフマニュアル</Link>
+          <Link className="button-secondary" href="/admin/adult-monitors/email">招待メール文面</Link>
+          <Link className="button-secondary" href="/admin/users">ユーザーを選ぶ</Link>
+        </div>
       </div>
       {enrollmentsResult.error ? (
         <p className="mt-6 rounded-lg bg-amber-50 p-4 text-amber-950" role="alert">
@@ -93,6 +102,16 @@ export default async function AdultMonitorsAdminPage() {
               </div>
               <p className="mt-2 whitespace-pre-wrap break-words text-stone-700">{feedback.comment}</p>
               <p className="mt-2 text-xs text-stone-500">{new Date(feedback.created_at).toLocaleString("ja-JP")}</p>
+              <form action={reviewAdultMonitorFeedbackAction} className="mt-3 grid gap-3 sm:grid-cols-[12rem_1fr_auto]">
+                <input name="feedbackId" type="hidden" value={feedback.id} />
+                <select className="field" defaultValue={feedback.review_status} name="status">
+                  <option value="new">未対応</option>
+                  <option value="reviewing">対応中</option>
+                  <option value="resolved">対応済み</option>
+                </select>
+                <input className="field" defaultValue={feedback.admin_note ?? ""} maxLength={1000} name="adminNote" placeholder="管理メモ（利用者には非表示）" />
+                <PendingSubmitButton className="button-secondary" pendingLabel="更新中…">更新</PendingSubmitButton>
+              </form>
             </article>
           ))}
           {!feedbackResult.data?.length ? <p className="text-stone-600">フィードバックはまだありません。</p> : null}
