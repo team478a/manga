@@ -68,3 +68,12 @@ pricing versionを追加してから切り替える。
 
 成人向け画像生成はこのProviderの対象外であり、将来の独立GPU/VPS APIまで
 停止状態を維持する。
+
+`/admin/general-monitors/readiness`では、APIキー本体を表示せずに次を確認する。
+
+- 一般向け画像生成AIが設定済みかつ有効
+- `MANGAI_CLOUD_AI_WORKER_ENABLED=true`
+- `MANGAI_CLOUD_AI_WORKER_SECRET`が32文字以上
+
+Workerが停止している場合、画像JobはQueueに登録されても完了しないため、
+モニター招待前の必須条件として扱う。

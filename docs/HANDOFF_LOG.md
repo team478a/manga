@@ -1764,6 +1764,61 @@ READY_FOR_REVIEW
 
 ---
 
+## 2026-07-31 Codex → 次担当AI（一般向け画像生成の公開前補強）
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-general-image-v1`
+- Base: `feature/manga-canvas-mvp` (`7eb783f`)
+- Draft PR: `#87`
+- HEAD: コミット後に更新
+
+### 完了
+
+- 一般向けモニター公開チェックへBFL画像Providerの設定状態を追加
+- Worker有効化と32文字以上の署名Secretを公開チェック・preflightへ追加
+- 秘密値本体を画面、preflight結果、文書へ表示しない
+- AIおまかせ画像生成の受付中表示と二重送信防止を追加
+- Worker scheduler未稼働時は画像Jobが完了しないことを運用文書へ明記
+
+### 未完了
+
+- migration `202607310004_cloud_general_image_provider.sql`の本番適用
+- 管理画面でのBFL APIキー保存
+- Worker schedulerの認証付き定期実行
+- 一般向け1コマの実API有料生成E2E
+- 責任者のPreview確認とPR merge
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- research:eval: PASS
+- hub:test: PASS（283/283）
+- migrations: PASS（30/30）
+- build: PASS
+- diff check: PASS
+
+### 次担当者が最初に行うこと
+
+1. PR #87の最新CIとPreviewを確認する。
+2. migration適用後、`/admin/cloud-ai`でBFL設定を保存する。
+3. Worker実行基盤を設定し、`/admin/general-monitors/readiness`を確認する。
+4. 一般向けテスト作品の1コマだけで有料E2Eを行う。
+
+### 注意事項
+
+- 成人向け画像をBFLへ送信しない。
+- APIキー、Worker署名Secret、生成Promptをログや画面へ出さない。
+- migration適用、有料生成、本番公開、mergeは責任者判断まで行わない。
+
+---
+
 ## 追記テンプレート
 
 ```md

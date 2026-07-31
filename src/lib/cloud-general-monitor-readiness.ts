@@ -1,4 +1,5 @@
 import { getCloudGeneralMonitorEmailSettings } from "@/lib/cloud-general-monitor-email-settings";
+import { getCloudGeneralImageSettings } from "@/lib/cloud-general-image-settings";
 import { getCloudResearchAiSettings } from "@/lib/cloud-research-ai-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -78,6 +79,7 @@ export async function getCloudGeneralMonitorReadiness(
   let openFeedback: number | null = null;
   let emailReady = false;
   let researchAiReady = false;
+  let imageAiReady = false;
 
   try {
     const admin = createAdminClient();
@@ -129,6 +131,20 @@ export async function getCloudGeneralMonitorReadiness(
     researchAiReady = false;
   }
 
+  try {
+    const settings = await getCloudGeneralImageSettings();
+    imageAiReady = Boolean(settings?.enabled && settings.configured);
+  } catch {
+    imageAiReady = false;
+  }
+
+  const workerReady =
+    enabled(env.MANGAI_CLOUD_AI_WORKER_ENABLED) &&
+    Boolean(
+      env.MANGAI_CLOUD_AI_WORKER_SECRET &&
+        env.MANGAI_CLOUD_AI_WORKER_SECRET.length >= 32,
+    );
+
   const checks: GeneralMonitorReadinessCheck[] = [
     {
       key: "workflow_flags",
@@ -162,6 +178,24 @@ export async function getCloudGeneralMonitorReadiness(
         ? "管理画面で保存したAI接続を利用できます。"
         : "市場分析AIのAPIキーと利用状態を確認してください。",
       href: "/admin/research-ai",
+    },
+    {
+      key: "image_ai",
+      label: "一般向け画像生成AI",
+      ready: imageAiReady,
+      detail: imageAiReady
+        ? "管理画面で保存した一般向け画像生成接続を利用できます。"
+        : "BFL APIキーと一般向け画像生成の利用状態を確認してください。",
+      href: "/admin/cloud-ai",
+    },
+    {
+      key: "cloud_ai_worker",
+      label: "画像生成Worker",
+      ready: workerReady,
+      detail: workerReady
+        ? "画像生成Jobを処理するWorkerの実行条件が設定されています。"
+        : "Workerの有効状態と32文字以上の署名Secretを確認してください。",
+      href: "/admin/cloud-ai",
     },
     {
       key: "email",
