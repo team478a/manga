@@ -17,11 +17,11 @@ export default async function CloudProjectTrashPage({
   return (
     <main className="page max-w-4xl">
       <Link className="text-leaf underline" href="/creator">
-        ← Project一覧へ
+        ← 作品一覧へ
       </Link>
-      <h1 className="mt-4 text-3xl font-bold">Cloud Projectのゴミ箱</h1>
+      <h1 className="mt-4 text-3xl font-bold">作品のゴミ箱</h1>
       <p className="mt-2 text-stone-600">
-        削除から30日以内のProjectを復元できます。
+        削除から30日以内の作品を復元できます。
       </p>
       {query.error ? (
         <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">

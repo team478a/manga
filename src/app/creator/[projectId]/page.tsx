@@ -56,7 +56,7 @@ export default async function CloudProjectPage({
   return (
     <main className="page">
       <Link className="text-leaf underline" href="/creator">
-        ← Project一覧へ
+        ← 作品一覧へ
       </Link>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -67,7 +67,7 @@ export default async function CloudProjectPage({
           </p>
         </div>
         <span className="rounded-full bg-green-50 px-4 py-2 font-semibold text-green-800">
-          一般向けCloud
+          一般向け・クラウド制作
         </span>
       </div>
       {query.message ? (
@@ -91,7 +91,7 @@ export default async function CloudProjectPage({
       <details className="panel mt-6">
         <summary className="cursor-pointer text-lg font-bold">
           <PencilLine className="mr-2 inline h-5 w-5" />
-          Project情報を編集
+          作品情報を編集
         </summary>
         <form
           action={renameCloudProjectAction.bind(null, projectId)}
@@ -99,7 +99,7 @@ export default async function CloudProjectPage({
         >
           <div>
             <label className="label" htmlFor="title">
-              Project名
+              作品名
             </label>
             <input
               className="field"
@@ -133,7 +133,7 @@ export default async function CloudProjectPage({
       >
         <button className="button-secondary text-red-700" type="submit">
           <Trash2 className="mr-2 h-5 w-5" />
-          Projectをゴミ箱へ移動
+          作品をゴミ箱へ移動
         </button>
       </form>
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_320px]">
@@ -154,7 +154,7 @@ export default async function CloudProjectPage({
                     className="flex min-w-0 flex-1 gap-2"
                   >
                     <input
-                      aria-label="Episode名"
+                      aria-label="話の名前"
                       className="field mt-0 font-bold"
                       name="title"
                       defaultValue={episode.title}
@@ -176,7 +176,7 @@ export default async function CloudProjectPage({
                       )}
                     >
                       <button
-                        aria-label="Episodeを上へ"
+                        aria-label="話を上へ"
                         className="button-secondary px-3"
                         type="submit"
                       >
@@ -193,7 +193,7 @@ export default async function CloudProjectPage({
                       )}
                     >
                       <button
-                        aria-label="Episodeを下へ"
+                        aria-label="話を下へ"
                         className="button-secondary px-3"
                         type="submit"
                       >
@@ -209,7 +209,7 @@ export default async function CloudProjectPage({
                       )}
                     >
                       <button
-                        aria-label="Episodeを削除"
+                        aria-label="話を削除"
                         className="button-secondary px-3 text-red-700"
                         type="submit"
                       >
@@ -228,12 +228,12 @@ export default async function CloudProjectPage({
                         className="block transition hover:text-leaf"
                         href={`/creator/${projectId}/pages/${page.id}`}
                       >
-                        <span className="text-sm text-stone-500">PAGE</span>
+                        <span className="text-sm text-stone-500">ページ</span>
                         <strong className="mt-1 block text-xl">
                           {page.page_number}ページ
                         </strong>
                         <span className="mt-2 block text-sm text-stone-600">
-                          revision {page.revision}
+                          更新番号 {page.revision}
                         </span>
                       </Link>
                       <div className="mt-3 flex gap-1 border-t border-stone-200 pt-2">
@@ -263,7 +263,7 @@ export default async function CloudProjectPage({
                           )}
                         >
                           <button
-                            aria-label="Pageを前へ"
+                            aria-label="ページを前へ"
                             className="button-secondary min-h-10 px-3 py-2"
                             type="submit"
                           >
@@ -280,7 +280,7 @@ export default async function CloudProjectPage({
                           )}
                         >
                           <button
-                            aria-label="Pageを後へ"
+                            aria-label="ページを後へ"
                             className="button-secondary min-h-10 px-3 py-2"
                             type="submit"
                           >
@@ -296,7 +296,7 @@ export default async function CloudProjectPage({
                           )}
                         >
                           <button
-                            aria-label="Pageを削除"
+                            aria-label="ページを削除"
                             className="button-secondary min-h-10 px-3 py-2 text-red-700"
                             type="submit"
                           >
@@ -313,7 +313,7 @@ export default async function CloudProjectPage({
                 >
                   <button className="button-secondary w-full" type="submit">
                     <FilePlus2 className="mr-2 h-5 w-5" />
-                    Pageを追加
+                    ページを追加
                   </button>
                 </form>
               </article>
@@ -325,9 +325,9 @@ export default async function CloudProjectPage({
             action={addCloudEpisodeAction.bind(null, projectId)}
             className="panel"
           >
-            <h2 className="text-xl font-bold">Episodeを追加</h2>
+            <h2 className="text-xl font-bold">話を追加</h2>
             <label className="label mt-4 block" htmlFor="episode-title">
-              Episode名
+              話の名前
             </label>
             <input
               className="field"
@@ -343,18 +343,18 @@ export default async function CloudProjectPage({
             </button>
           </form>
           <section className="panel">
-            <h2 className="font-bold">Project状況</h2>
+            <h2 className="font-bold">作品の状況</h2>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
               <div>
-                <dt className="text-stone-500">Episode</dt>
+                <dt className="text-stone-500">話数</dt>
                 <dd className="text-xl font-bold">{episodes.length}</dd>
               </div>
               <div>
-                <dt className="text-stone-500">Page</dt>
+                <dt className="text-stone-500">ページ数</dt>
                 <dd className="text-xl font-bold">{pages.length}</dd>
               </div>
               <div>
-                <dt className="text-stone-500">Revision</dt>
+                <dt className="text-stone-500">更新番号</dt>
                 <dd className="text-xl font-bold">{project.revision}</dd>
               </div>
               <div>
@@ -368,15 +368,15 @@ export default async function CloudProjectPage({
           <section className="panel">
             <h2 className="flex items-center text-xl font-bold">
               <ShoppingBag className="mr-2 h-5 w-5" />
-              Marketplaceへ受け渡す
+              販売準備へ進む
             </h2>
             <p className="mt-3 text-sm leading-relaxed text-stone-600">
-              全PageをPDFへ再生成し、非公開作品と停止中商品を作成・更新します。公開中・販売中のデータは上書きしません。
+              全ページをPDFへ再生成し、非公開作品と停止中商品を作成・更新します。公開中・販売中のデータは上書きしません。
             </p>
             {marketplaceDraft?.product ? (
               <div className="mt-4 rounded-md bg-stone-50 p-3 text-sm">
                 <p className="font-semibold">
-                  {marketplaceIsCurrent ? "同期済み" : "Projectに未反映の変更あり"}
+                  {marketplaceIsCurrent ? "同期済み" : "作品に未反映の変更あり"}
                 </p>
                 <Link
                   className="mt-1 inline-block text-leaf underline"

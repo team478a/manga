@@ -12,11 +12,11 @@ export default async function NewCloudProjectPage({
   return (
     <main className="page max-w-3xl">
       <Link className="text-leaf underline" href="/creator">
-        ← Cloud Creatorへ戻る
+        ← クラウド制作へ戻る
       </Link>
-      <h1 className="mt-4 text-3xl font-bold">新しいProject</h1>
+      <h1 className="mt-4 text-3xl font-bold">新しい作品</h1>
       <p className="mt-2 text-lg text-stone-600">
-        一般漫画用の第1話と1Page目を一緒に作成します。
+        タイトルと基本設定を入力してください。第1話と1ページ目は自動で作られます。
       </p>
       {params.error ? (
         <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
@@ -26,7 +26,7 @@ export default async function NewCloudProjectPage({
       <form action={createCloudProjectAction} className="panel mt-6 space-y-5">
         <div>
           <label className="label" htmlFor="title">
-            Project名
+            作品名
           </label>
           <input
             className="field"
@@ -74,7 +74,7 @@ export default async function NewCloudProjectPage({
           </div>
         </div>
         <fieldset>
-          <legend className="label">Page設定</legend>
+          <legend className="label">ページ設定</legend>
           <div className="mt-2 grid grid-cols-3 gap-3">
             <label>
               幅
@@ -119,7 +119,7 @@ export default async function NewCloudProjectPage({
           Adultを使用してください。
         </p>
         <button className="button w-full" type="submit">
-          Projectを作成
+          作品を作成
         </button>
       </form>
     </main>

@@ -36,7 +36,7 @@ test("未知のProject DB signalを操作別INTERNAL_ERRORとして秘匿する"
     "fallback",
   );
   assert.deepEqual(response.body, {
-    error: "Cloud Projectをゴミ箱へ移動できませんでした。",
+    error: "作品をゴミ箱へ移動できませんでした。",
     errorCode: "INTERNAL_ERROR",
   });
   assert.equal(response.status, 500);

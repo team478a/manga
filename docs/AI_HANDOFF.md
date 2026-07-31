@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（クラウド制作の日本語化・初回ガイド、2026-07-31）
+
+- Branch: `codex/cloud-creator-ja-guide-v1`
+- Base: `feature/manga-canvas-mvp` (`3d16839`)
+- 目的: モニターが英語の内部用語に迷わず、最初の制作操作を理解できるようにする
+- 対象: `/creator`と関連する作品作成・構成・ゴミ箱・ページ編集
+- 状態: 実装とローカル主要品質ゲート完了、Draft PR準備中
+- 変更しない範囲: DB、API契約、認証、制作・保存ロジック、Desktop
+
+---
+
 ## 0. 現在の優先タスク（招待メール文面編集、2026-07-31）
 
 - Branch: `codex/cloud-monitor-email-template-v1`

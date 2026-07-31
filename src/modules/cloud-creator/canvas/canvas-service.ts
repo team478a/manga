@@ -24,7 +24,7 @@ export async function getCloudPageSnapshot(pageId: string) {
   const { supabase } = await cloudCreatorContext();
   const { data: page, error } = await findPage(supabase, pageId);
   if (error || !page)
-    throw new ResourceNotFoundError("Pageが見つかりません。");
+    throw new ResourceNotFoundError("ページが見つかりません。");
 
   const { data: snapshot, error: snapshotError } = await findPageSnapshot(
     supabase,

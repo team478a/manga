@@ -69,14 +69,14 @@ export async function uploadCloudAsset(input: {
     input.projectId,
   );
   if (projectError || !project)
-    throw new ResourceNotFoundError("Cloud Projectが見つかりません。");
+    throw new ResourceNotFoundError("作品が見つかりません。");
   const storedBytes = Number(project.storage_bytes);
   if (
     !Number.isSafeInteger(storedBytes) ||
     storedBytes < 0 ||
     storedBytes + validation.byteSize > CLOUD_PROJECT_MAX_BYTES
   ) {
-    throw new QuotaExceededError("Projectの保存容量上限2GBを超えます。");
+    throw new QuotaExceededError("作品の保存容量上限2GBを超えます。");
   }
 
   const assetId = input.assetId ?? crypto.randomUUID();

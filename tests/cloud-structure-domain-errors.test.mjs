@@ -4,10 +4,10 @@ import test from "node:test";
 import { toApiError } from "../src/lib/api-errors.ts";
 import { mapCloudStructureError } from "../src/modules/cloud-creator/structure/structure-errors.ts";
 
-test("最後のEpisode／Page削除禁止をVALIDATION_ERRORへ変換する", () => {
+test("最後の話／ページ削除禁止をVALIDATION_ERRORへ変換する", () => {
   for (const [signal, message] of [
-    ["last_episode_cannot_be_deleted", "最後のEpisodeは削除できません。"],
-    ["last_page_cannot_be_deleted", "最後のPageは削除できません。"],
+    ["last_episode_cannot_be_deleted", "最後の話は削除できません。"],
+    ["last_page_cannot_be_deleted", "最後のページは削除できません。"],
   ]) {
     const response = toApiError(
       mapCloudStructureError({ message: signal }, "delete"),
@@ -48,10 +48,10 @@ test("移動方向不正をVALIDATION_ERRORへ変換する", () => {
 
 test("未知のStructure DB signalを操作別INTERNAL_ERRORとして秘匿する", () => {
   for (const [operation, message] of [
-    ["add", "Episode／Pageを追加できませんでした。"],
-    ["rename", "Episode名を更新できませんでした。"],
-    ["move", "Episode／Pageを移動できませんでした。"],
-    ["delete", "Episode／Pageを削除できませんでした。"],
+    ["add", "話／ページを追加できませんでした。"],
+    ["rename", "話の名前を更新できませんでした。"],
+    ["move", "話／ページを移動できませんでした。"],
+    ["delete", "話／ページを削除できませんでした。"],
   ]) {
     const response = toApiError(
       mapCloudStructureError(

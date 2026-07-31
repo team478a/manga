@@ -22,7 +22,7 @@ export async function cloudCreatorContext() {
     throw new PermissionDeniedError("プロフィールが必要です。");
   if (profile.role !== "creator" && profile.role !== "admin") {
     throw new PermissionDeniedError(
-      "Cloud Creatorを利用するにはクリエイター登録が必要です。",
+      "クラウド制作を利用するにはクリエイター登録が必要です。",
     );
   }
   return { supabase, user, profile };
