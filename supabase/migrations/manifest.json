@@ -168,7 +168,13 @@
       "description": "一般向けモニター招待メールのResend APIキーをSupabase Vaultで管理",
       "forwardSha256": "08d2b5a6bd50e4816d58b545482d359ee21d01ac91432b05c8aab0edeafb7a91",
       "rollbackSha256": "361fbaadd701198bdbb74da190f5d7c96f3fcfd523f5376d50fd6c654a3b56a1"
+    },
+    {
+      "id": "202607310003_cloud_general_monitor_email_template",
+      "description": "一般向けモニター招待メールの件名・本文テンプレートを管理画面で変更可能にする",
+      "forwardSha256": "b7d973533950cdcfa12bc90bcbf5b071d36d09bd5aa7169ee6ce47577b0a2d81",
+      "rollbackSha256": "feab2a175488d79fbae8d8415fea5f05d4f95e4ce6d1fad891aa14d36df3755f"
     }
   ],
-  "schemaSha256": "2d4a9dd437e9700a60542e2c824a5e8c6e4bbe025454dc306823463d11c57646"
+  "schemaSha256": "b6e3b86a6f486bedf6ebe50356c8481b607b63525da137e68ba8c7c52380fec8"
 }

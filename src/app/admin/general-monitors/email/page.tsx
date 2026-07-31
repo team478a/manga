@@ -3,7 +3,10 @@ import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { getCloudGeneralMonitorEmailSettings } from "@/lib/cloud-general-monitor-email-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { updateGeneralMonitorEmailSettingsAction } from "./actions";
+import {
+  updateGeneralMonitorEmailSettingsAction,
+  updateGeneralMonitorEmailTemplateAction,
+} from "./actions";
 
 type Audit = {
   id: string;
@@ -55,67 +58,127 @@ export default async function GeneralMonitorEmailSettingsPage({
           </p>
         </section>
       ) : (
-        <form
-          action={updateGeneralMonitorEmailSettingsAction}
-          className="panel mt-6 space-y-5"
-        >
-          <div className="rounded-lg bg-violet-50 p-4">
-            <p className="font-bold">
-              利用状態:{" "}
-              {settings.configured && settings.enabled
-                ? "利用できます"
-                : "APIキー未設定"}
-            </p>
-            <p className="mt-1 text-sm text-stone-600">
-              最終更新: {new Date(settings.updatedAt).toLocaleString("ja-JP")}
-            </p>
-          </div>
-          <label className="label block" htmlFor="apiKey">
-            Resend APIキー
-            <input
-              autoComplete="new-password"
-              className="field mt-2"
-              id="apiKey"
-              name="apiKey"
-              placeholder={
-                settings.configured
-                  ? "新しいAPIキーを入力して変更"
-                  : "re_..."
-              }
-              required
-              type="password"
-            />
-          </label>
-          <label className="label block" htmlFor="fromEmail">
-            送信元メールアドレス
-            <input
-              className="field mt-2"
-              defaultValue={settings.fromEmail}
-              id="fromEmail"
-              name="fromEmail"
-              placeholder="monitor@example.com"
-              required
-              type="email"
-            />
-          </label>
-          <label className="label block" htmlFor="fromName">
-            送信者名
-            <input
-              className="field mt-2"
-              defaultValue={settings.fromName}
-              id="fromName"
-              maxLength={80}
-              name="fromName"
-              required
-            />
-          </label>
-          <PendingSubmitButton
-            className="button w-full bg-violet-700 hover:bg-violet-800"
-            pendingLabel="設定を保存中…"
+        <>
+          <form
+            action={updateGeneralMonitorEmailSettingsAction}
+            className="panel mt-6 space-y-5"
           >
-            APIキーを保存して利用開始
-          </PendingSubmitButton>
-        </form>
+            <div className="rounded-lg bg-violet-50 p-4">
+              <p className="font-bold">
+                利用状態:{" "}
+                {settings.configured && settings.enabled
+                  ? "利用できます"
+                  : "APIキー未設定"}
+              </p>
+              <p className="mt-1 text-sm text-stone-600">
+                最終更新: {new Date(settings.updatedAt).toLocaleString("ja-JP")}
+              </p>
+            </div>
+            <label className="label block" htmlFor="apiKey">
+              Resend APIキー
+              <input
+                autoComplete="new-password"
+                className="field mt-2"
+                id="apiKey"
+                name="apiKey"
+                placeholder={
+                  settings.configured
+                    ? "新しいAPIキーを入力して変更"
+                    : "re_..."
+                }
+                required
+                type="password"
+              />
+            </label>
+            <label className="label block" htmlFor="fromEmail">
+              送信元メールアドレス
+              <input
+                className="field mt-2"
+                defaultValue={settings.fromEmail}
+                id="fromEmail"
+                name="fromEmail"
+                placeholder="monitor@example.com"
+                required
+                type="email"
+              />
+            </label>
+            <label className="label block" htmlFor="fromName">
+              送信者名
+              <input
+                className="field mt-2"
+                defaultValue={settings.fromName}
+                id="fromName"
+                maxLength={80}
+                name="fromName"
+                required
+              />
+            </label>
+            <PendingSubmitButton
+              className="button w-full bg-violet-700 hover:bg-violet-800"
+              pendingLabel="設定を保存中…"
+            >
+              APIキーを保存して利用開始
+            </PendingSubmitButton>
+          </form>
+          {settings.templateAvailable ? (
+            <form
+              action={updateGeneralMonitorEmailTemplateAction}
+              className="panel mt-6 space-y-5"
+            >
+              <div>
+                <h2 className="text-xl font-bold">招待メールの文面</h2>
+                <p className="mt-2 text-sm text-stone-600">
+                  APIキーを再入力せず、次回送信分から件名と本文を変更できます。
+                  メールはプレーンテキストで送信されます。
+                </p>
+              </div>
+              <label className="label block" htmlFor="subjectTemplate">
+                件名
+                <input
+                  className="field mt-2"
+                  defaultValue={settings.subjectTemplate}
+                  id="subjectTemplate"
+                  maxLength={120}
+                  name="subjectTemplate"
+                  required
+                />
+              </label>
+              <label className="label block" htmlFor="bodyTemplate">
+                本文
+                <textarea
+                  className="field mt-2 min-h-80 font-mono text-sm"
+                  defaultValue={settings.bodyTemplate}
+                  id="bodyTemplate"
+                  maxLength={5000}
+                  name="bodyTemplate"
+                  required
+                />
+              </label>
+              <div className="rounded-lg bg-stone-50 p-4 text-sm text-stone-700">
+                <p className="font-bold">利用できる差し込み項目</p>
+                <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+                  <li><code>{"{{recipient_name}}"}</code> 宛名</li>
+                  <li><code>{"{{welcome_url}}"}</code> 利用開始URL（必須）</li>
+                  <li><code>{"{{expires_on}}"}</code> 利用期限</li>
+                  <li><code>{"{{ai_request_limit}}"}</code> AI利用上限</li>
+                </ul>
+              </div>
+              <PendingSubmitButton
+                className="button w-full bg-violet-700 hover:bg-violet-800"
+                pendingLabel="文面を保存中…"
+              >
+                件名と本文を保存
+              </PendingSubmitButton>
+            </form>
+          ) : (
+            <section className="panel mt-6">
+              <h2 className="text-xl font-bold">招待メールの文面</h2>
+              <p className="mt-2 text-stone-600">
+                文面編集migrationを適用すると、件名と本文を管理画面から変更できます。
+              </p>
+            </section>
+          )}
+        </>
       )}
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">設定変更履歴</h2>

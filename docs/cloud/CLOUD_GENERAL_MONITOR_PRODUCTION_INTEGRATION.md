@@ -80,6 +80,7 @@ AI Provider keyとResend API keyは、環境変数へ日常運用値として置
 10. `202607300006_cloud_general_monitor_beta.sql`
 11. `202607310001_cloud_general_monitor_operations.sql`
 12. `202607310002_cloud_general_monitor_email_provider.sql`
+13. `202607310003_cloud_general_monitor_email_template.sql`
 
 適用済みmigrationは再実行せず、migration履歴とcanonical schemaの一致を確認する。
 成人向けのテーブルが存在しても、一般向けモニター公開時は環境FlagとDB側設定を

@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-07-31 招待メール文面の管理画面編集
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/cloud-monitor-email-template-v1`
+- Base: `feature/manga-canvas-mvp` (`506cf2b`)
+- 管理画面: `/admin/general-monitors/email`
+- 実装:
+  - APIキーを再入力せず、招待メールの件名・本文を保存・変更
+  - 宛名、利用開始URL、期限、AI利用上限の安全な差し込み
+  - 利用開始URLがない本文、改行を含む件名、未知の差し込み項目を保存拒否
+  - 文面変更を監査ログへ記録し、既存APIキーはVaultへ保持
+  - migration未適用時も従来の既定文面で招待送信を継続
+- migration:
+  `202607310003_cloud_general_monitor_email_template.sql`
+- 検証: deps、lint、Hub typecheck、Hub 275/275、migration 29/29、
+  production build、diff check成功
+- 未実施: Draft PR、CI、migration適用、Production redeploy
+
 ## 2026-07-31 モニター操作の処理中フィードバック
 
 - 状態: `READY_FOR_REVIEW`

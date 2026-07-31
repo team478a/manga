@@ -9,6 +9,30 @@ type InviteEmailInput = {
   aiRequestLimit: number;
 };
 
+type InviteTemplateValues = {
+  recipientName: string;
+  welcomeUrl: string;
+  expiresOn: string;
+  aiRequestLimit: number;
+};
+
+export function renderCloudGeneralMonitorInviteTemplate(
+  template: string,
+  values: InviteTemplateValues,
+) {
+  const replacements: Record<string, string> = {
+    "{{recipient_name}}": values.recipientName,
+    "{{welcome_url}}": values.welcomeUrl,
+    "{{expires_on}}": values.expiresOn,
+    "{{ai_request_limit}}": String(values.aiRequestLimit),
+  };
+  return Object.entries(replacements).reduce(
+    (rendered, [placeholder, value]) =>
+      rendered.replaceAll(placeholder, value),
+    template,
+  );
+}
+
 function inviteSiteUrl() {
   const configured =
     process.env.MONITOR_INVITE_SITE_URL ??
@@ -53,16 +77,20 @@ export async function sendCloudGeneralMonitorInviteEmail(
   const greeting = input.recipientName.trim()
     ? `${input.recipientName.trim()} 様`
     : "MANGAIモニター様";
-  const text = `${greeting}
-
-MANGAI一般向けモニターへご招待しました。
-登録済みのメールアドレスでログインし、初回案内をご確認ください。
-
-利用開始: ${welcomeUrl}
-利用期限: ${expiry}
-AI利用上限: ${input.aiRequestLimit}回
-
-このメールへパスワード、APIキー、個人情報を返信しないでください。`;
+  const templateValues = {
+    recipientName: greeting,
+    welcomeUrl,
+    expiresOn: expiry,
+    aiRequestLimit: input.aiRequestLimit,
+  };
+  const subject = renderCloudGeneralMonitorInviteTemplate(
+    config.subjectTemplate,
+    templateValues,
+  );
+  const text = renderCloudGeneralMonitorInviteTemplate(
+    config.bodyTemplate,
+    templateValues,
+  );
   const response = await request(RESEND_EMAIL_ENDPOINT, {
     method: "POST",
     headers: {
@@ -73,7 +101,7 @@ AI利用上限: ${input.aiRequestLimit}回
     body: JSON.stringify({
       from: formatFrom(config.fromEmail, config.fromName),
       to: [input.recipientEmail],
-      subject: "MANGAI 一般向けモニターのご案内",
+      subject,
       text,
     }),
     signal: AbortSignal.timeout(10_000),

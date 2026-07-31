@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（招待メール文面編集、2026-07-31）
+
+- Branch: `codex/cloud-monitor-email-template-v1`
+- Base: `feature/manga-canvas-mvp` (`506cf2b`)
+- 目的: 管理画面からモニター招待メールの件名・本文を安全に変更する
+- 管理画面: `/admin/general-monitors/email`
+- migration: `202607310003_cloud_general_monitor_email_template.sql`
+- 状態: 実装とローカル主要品質ゲート完了、Draft PR準備中
+
+---
+
 ## 0. 現在の優先タスク（モニター操作の処理中表示、2026-07-31）
 
 - Branch: `codex/cloud-action-pending-feedback-v1`

@@ -7,6 +7,7 @@
    - `202607300006_cloud_general_monitor_beta.sql`
    - `202607310001_cloud_general_monitor_operations.sql`
    - `202607310002_cloud_general_monitor_email_provider.sql`
+   - `202607310003_cloud_general_monitor_email_template.sql`
 3. 一般向けFeature Flagと `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true` をProduction環境へ設定する。
 4. `CLOUD_ADULT_RESEARCH_ENABLED=false`、`CLOUD_ADULT_PLANNING_ENABLED=false` を確認する。
 5. `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`を同じ本番HTTPS originにする。
@@ -18,9 +19,13 @@
 - Resend APIキー
 - Resendで認証済みの送信元メールアドレス
 - 送信者名
+- 招待メールの件名・本文
 
 APIキーはSupabase Vaultへ暗号化保存され、画面、通常テーブル、監査ログには
 再表示されない。変更時も同じ画面へ新しいキーを入力して保存する。
+件名・本文はAPIキー設定と分離されているため、APIキーを再入力せず変更できる。
+本文には利用開始URLの差し込み項目`{{welcome_url}}`を必ず残す。
+`{{recipient_name}}`、`{{expires_on}}`、`{{ai_request_limit}}`も使用できる。
 本番サイトと同じHTTPS originだけを`MONITOR_INVITE_SITE_URL`へ設定する。
 
 順序は必ずレビュー・CI → 本番デプロイ → migration → Feature Flag → スタッフ招待とする。Feature Flagが停止中は、
