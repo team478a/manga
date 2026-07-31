@@ -1,5 +1,79 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（Release 2 AI企画提案・限定公開準備、2026-07-30）
+
+- Branch: `codex/cloud-proposal-generation-v1`
+- Base: `codex/cloud-research-ai-auto-ux-v1` (`a21fd94`)
+- Draft PR: [#69](https://github.com/team478a/manga/pull/69)
+- 目的: 完了した一般向け市場分析から3企画を生成・比較・選択し、シナリオ生成へ引き継ぐ
+- 状態: 実装・限定公開前ハードニング・ローカル品質ゲート完了。更新Preview CIと責任者実機受入れ待ち
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_PROPOSAL_GENERATION_V1.md`、`docs/cloud/CLOUD_RELEASE2_LIMITED_RELEASE_RUNBOOK.md`
+
+管理画面で設定済みのOpenAI接続とSupabase Vaultを再利用する。APIキーをローカル・Vercelへ複製しない。成人向けReportを外部AIへ送信しない。
+
+---
+
+## 0. 現在の優先タスク（売れ筋優先・AIおまかせ市場分析、2026-07-30）
+
+- Branch: `codex/cloud-research-ai-auto-ux-v1`
+- Base: `codex/cloud-adult-planning-option-v1` (`58a18b9`)
+- 目的: 簡単な希望だけで「今、どんな漫画が買われる可能性が高いか」を具体的に提示する
+- 状態: local実装済み。migrationと管理者キー登録は責任者申告で完了。更新Preview実機E2E、責任者承認待ち
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_RESEARCH_AI_AUTO_UX_SPEC.md`
+
+成人向け内容は外部AIへ送信しない。APIキーは通常テーブル、Client、URL、ログ、監査へ出さない。既存stacked PRをrebase、force push、Close、mergeしない。
+
+---
+
+## 0. 現在の優先タスク（成人向け企画ブリーフ、2026-07-29）
+
+本節を、直後に残る成人向け市場分析と一般向けRelease 1統合記録より優先する。
+
+- Branch: `codex/cloud-adult-planning-option-v1`
+- Base: `codex/cloud-adult-research-option-v1` (`a9969ac`)
+- 親Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+- Draft PR: [#67](https://github.com/team478a/manga/pull/67)
+- 目的: 成人向け市場分析を完了した許可利用者へ、外部AIを使わない企画ブリーフを機能単位権限付きで提供する
+- 状態: 実装・全CI完了、Vercel Preview Ready、責任者の実機受入れ待ち
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-95f9df-team478as-projects.vercel.app`
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_ADULT_PLANNING_OPTION_SPEC.md`、`docs/cloud/CLOUD_ADULT_PLANNING_IMPLEMENTATION_REPORT.md`
+
+この段階では利用者入力の保存・履歴・再表示だけを提供する。成人向け文章・画像の自動生成、外部Provider送信、Stripe自動許可、作品公開・販売は行わない。migration適用とFeature Flag有効化は責任者承認まで禁止する。
+
+---
+
+## 0. 現在の優先タスク（成人向け市場分析オプション、2026-07-29）
+
+本節を、直後に残る一般向けRelease 1統合記録より優先する。
+
+- Branch: `codex/cloud-adult-research-option-v1`
+- Base: `codex/cloud-release1-integration-v1` (`6491a7d`)
+- 親Draft PR: [#65](https://github.com/team478a/manga/pull/65)
+- Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+- 目的: 成人向け市場分析を購入者・管理者許可利用者へ提供できる許可制Cloudオプション
+- 状態: 実装・全CI完了、Vercel Preview Ready、責任者の実機受入れ待ち
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7158e2-team478as-projects.vercel.app`
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_ADULT_RESEARCH_OPTION_SPEC.md`、`docs/cloud/CLOUD_ADULT_RESEARCH_IMPLEMENTATION_REPORT.md`
+
+一般向け市場分析は成人向け権限に依存させない。成人向けの画像・本文生成、Stripe自動連携、作品公開・販売は対象外。migration適用、Feature Flag有効化、DB Kill Switch有効化、本番公開は責任者承認まで行わない。
+
+---
+
+## 0. 現在の優先タスク（2026-07-29）
+
+過去の引継ぎ記録より本節を優先する。
+
+- Branch: `codex/cloud-release1-integration-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: [#65](https://github.com/team478a/manga/pull/65)
+- 目的: 市場分析だけを限定公開できるRelease 1統合
+- 統合元: PR #50、#56〜#62
+- 除外: PR #48〜#49、#51〜#55、#63〜#64
+- 状態: 公開前ハードニングと全品質ゲートを実行中。merge・本番反映は禁止
+- 正本: `docs/CURRENT_TASK.md`、`docs/cloud/CLOUD_RELEASE1_INTEGRATION_REPORT.md`、`docs/cloud/CLOUD_RELEASE1_BETA_ACCEPTANCE.md`
+
+既存PRは統合元としてそのまま保持し、rebase、force push、Closeを行わない。以下の節は保守性改善・Desktop作業時点の履歴として残す。
+
 ## 1. 引継ぎ情報
 
 - 更新日: 2026-07-26

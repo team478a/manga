@@ -2,6 +2,45 @@
 
 do $$
 begin
+  if to_regclass('public.cloud_general_monitor_email_settings') is not null
+     or to_regclass('public.cloud_general_monitor_email_audit_logs') is not null
+     or to_regprocedure(
+       'public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean)'
+     ) is not null
+     or to_regprocedure(
+       'public.get_cloud_general_monitor_email_runtime_config()'
+     ) is not null then
+    raise exception 'General monitor email Provider objects remain after rollback';
+  end if;
+  if to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is not null
+     or to_regprocedure('public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)') is not null then
+    raise exception 'General monitor operations functions remain after rollback';
+  end if;
+  if to_regclass('public.cloud_story_storyboard_projects') is not null
+     or to_regprocedure(
+       'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)'
+     ) is not null
+     or to_regprocedure(
+       'public.materialize_cloud_storyboard_project(uuid)'
+     ) is not null then
+    raise exception 'Cloud storyboard Canvas materialization objects remain after rollback';
+  end if;
+  if to_regclass('public.cloud_story_storyboard_adoptions') is not null
+     or to_regclass('public.cloud_story_storyboard_versions') is not null then
+    raise exception 'Cloud story storyboard tables remain after rollback';
+  end if;
+  if to_regclass('public.cloud_story_scenario_adoptions') is not null
+     or to_regclass('public.cloud_story_scenario_versions') is not null then
+    raise exception 'Cloud story scenario tables remain after rollback';
+  end if;
+  if to_regclass('public.cloud_adult_feature_grants') is not null
+     or to_regclass('public.cloud_adult_planning_briefs') is not null
+     or to_regprocedure('public.can_use_cloud_adult_feature(text)') is not null
+     or to_regprocedure(
+       'public.set_cloud_adult_feature_grant(uuid,uuid,text,text,text,timestamp with time zone,text)'
+     ) is not null then
+    raise exception 'Cloud adult planning objects remain after rollback';
+  end if;
   if exists (
     select 1 from information_schema.columns
     where table_schema = 'public'
@@ -75,5 +114,19 @@ begin
       and policyname in ('works_creator_delete', 'digital_products_creator_delete')
   ) then
     raise exception 'sales package storage policies remain after rollback';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_research_ai_settings') is not null
+     or to_regclass('public.cloud_research_ai_audit_logs') is not null
+     or to_regprocedure(
+       'public.set_cloud_research_ai_provider(uuid,text,text,boolean)'
+     ) is not null
+     or to_regprocedure(
+       'public.get_cloud_research_ai_runtime_config()'
+     ) is not null then
+    raise exception 'Cloud research AI Provider objects remain after rollback';
   end if;
 end $$;

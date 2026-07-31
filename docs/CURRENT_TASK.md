@@ -1,100 +1,178 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向けモニター・本番限定公開チェック
+
+- 状態: `READY_FOR_REVIEW`
+- 管理者画面: `/admin/general-monitors/readiness`
+- 追加内容:
+  - 一般向け制作Feature Flag、成人向け停止、モニターDB、AI接続、招待メール、
+    招待先HTTPS URLを秘密値なしで一括判定
+  - `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`が同じHTTPS本番originで
+    あることを検査し、Previewや別ドメインへの誤招待を防止
+  - 登録済み、利用中、初回確認済み、未完了フィードバック件数の表示
+  - スタッフ1名 → 2〜3名 → 残りの順で段階公開する手順
+  - モニター管理、スタッフマニュアル、各設定画面への導線
+- 境界: 設定値、APIキー、内部DBエラーは表示しない。招待、Feature Flag変更、
+  migration適用、本番公開は自動実行しない
+- 検証:
+  - 本番公開保護の集中テスト: PASS（9/9）
+  - deps:check: PASS
+  - lint: PASS
+  - Hub typecheck: PASS
+  - Hub test: PASS（272/272）
+  - migration静的検証: PASS（28/28）
+  - Hub production build: PASS
+  - git diff --check: PASS
+- 公開形態: 一般公開ではなく、本番環境上の招待制・無料・段階公開
+- 外部確認: protected branchの承認とCI成功後に本番へ反映し、管理者画面の
+  全項目が正常であることと、スタッフ1名の招待・メール受信・市場分析保存を確認する
+
+## 2026-07-31 約10名モニター向けWebマニュアル
+
+- 状態: `READY_FOR_REVIEW`
+- 利用者向け: `/dashboard/monitor/guide`
+- スタッフ向け: `/admin/general-monitors/guide`
+- 内容:
+  - 最初の5分、制作5工程、完了の目印、フィードバック、トラブル、安全上の注意
+  - 約10名の同一コホート招待、日次確認、問い合わせ対応、停止判断、完了条件
+  - スマートフォンで操作できるアンカーメニューと折りたたみFAQ
+- 境界: 一般向け限定。成人向け、Stripe、販売、Marketplaceは変更しない
+- 検証:
+  - Webマニュアル集中テスト: PASS（8/8）
+  - lint: PASS
+  - typecheck: PASS（Hub）
+  - hub:test: PASS（269/269）
+  - Hub production build: PASS
+  - git diff --check: PASS
+- 未実施: Preview上での390px・768px・1280px実画面確認
+
+## 2026-07-31 一般向けモニター招待メール
+
+- 状態: `READY_FOR_REVIEW`
+- Provider: 管理画面で設定するResend Email API
+- APIキーと送信元は`/admin/general-monitors/email`で保存・変更し、Supabase Vaultだけを正本にする
+- migration: `202607310002_cloud_general_monitor_email_provider`
+- 招待登録と同時に登録メールアドレスへ自動送信
+- 有効な招待は管理画面から再送可能
+- 送信失敗と招待登録失敗を区別して表示
+- API token、Provider response、内部エラーは画面へ露出しない
+- 外部作業: Resendの認証済み送信ドメイン、API key、送信元、Preview URLの確認
+- 検証:
+  - 集中テスト: PASS（9/9）
+  - deps:check: PASS
+  - lint: PASS
+  - typecheck: PASS（Hub + Desktop）
+  - research:eval: PASS
+  - hub:test: PASS（267/267）
+  - db:migrations:validate: PASS（28/28）
+  - Hub production build: PASS
+  - 一般向けモニターpreflight: PASS（テスト値、値非表示）
+  - git diff --check: PASS
+- 未実施: Preview Supabaseへのmigration適用、実Resend送信、1〜3名の実機E2E、PR merge、本番公開
+
+## 2026-07-31 一般向けモニター運用機能強化
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-general-monitor-beta-v1`
+- Draft PR: [#80](https://github.com/team478a/manga/pull/80)
+- migration: `202607310001_cloud_general_monitor_operations`
+- 追加内容:
+  - 初回オンボーディングと本人の確認日時
+  - 期限3日前、AI残り5回以下、停止・期限切れ・上限到達の警告
+  - 管理者用の招待メール文面
+  - フィードバックの未対応・対応中・対応済み管理
+  - モニター一覧CSV出力
+- 境界: Stripe、成人向け、本番公開は変更しない
+
+## 2026-07-30 一般向け限定モニター公開
+
+- 状態: `IMPLEMENTED_VALIDATING`
+- Branch: `codex/cloud-general-monitor-beta-v1`
+- Base: `codex/cloud-panel-image-generation-v1`（Draft PR #73）
+- 対象: 一般向け市場分析、AI企画、シナリオ、ネーム、Canvas、コマ画像
+- 除外: Stripe、販売、Marketplace、成人向け、本番公開
+- migration: `202607300006_cloud_general_monitor_beta`
+- 文書:
+  - [`CLOUD_GENERAL_MONITOR_BETA_PLAN.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_PLAN.md)
+  - [`CLOUD_GENERAL_MONITOR_BETA_ACCEPTANCE.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_ACCEPTANCE.md)
+  - [`CLOUD_GENERAL_MONITOR_BETA_RUNBOOK.md`](cloud/CLOUD_GENERAL_MONITOR_BETA_RUNBOOK.md)
+
+管理者による招待、期限、工程横断の累計AI上限、即時停止、利用者フィードバックを追加した。外部migration適用、Feature Flag変更、実API実行、モニター招待は未実施。
+
 ## 基本情報
 
-- 更新日: 2026-07-28
-- 状態: `COMPLETED`（Phase D3-C: Home画面ビジュアル刷新はPR #46として`feature/manga-canvas-mvp`へマージ済み。次フェーズは責任者判断待ち）
+- 更新日: 2026-07-30
+- 状態: `READY_FOR_REVIEW`
 - リポジトリ: `team478a/manga`
-- デフォルトブランチ: `feature/manga-canvas-mvp`（PR #46マージ済みコミット `817dc69` を含む）
-- 本ファイルの更新ブランチ: `docs/phase-d3c-completion-sync-20260728`（**PR #47として作成済み**。文書のみ。Required Quality・Desktop Windowsの完了確認待ち、責任者承認・マージ待ち。責任者承認なしにマージしない）
-- 詳細記録: [`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`](design/PHASE_D3C_HOME_VISUAL_REFRESH.md)
+- Base: `codex/cloud-storyboard-canvas-materialization-v1` (`80b71f6`, Draft PR #72)
+- Branch: `codex/cloud-panel-image-generation-v1`
+- Draft PR: [#73](https://github.com/team478a/manga/pull/73)
+- Vercel Preview: [Release 6 Preview](https://mangai-hub-staging-git-codex-cloud-pa-e0d887-team478as-projects.vercel.app)
+- 仕様: [`docs/cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md`](cloud/CLOUD_PANEL_IMAGE_GENERATION_V1.md)
+- 計画: [`docs/cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md`](cloud/CLOUD_RELEASE6_IMPLEMENTATION_PLAN.md)
 
-## 直前の完了事項: Phase D3-C（Home画面ビジュアル刷新、PR #46マージ済み）
+## 現在の目的
 
-`DESKTOP_CREATIVE_STUDIO_SPEC.md`§4.1に基づき、Home画面のProject一覧を横長リストからカードグリッドへ刷新した（PR #46、merge commit `817dc69`）。
+Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネームから一般向け漫画画像の生成条件をServer側で組み立て、既存Cloud AI Queueへ安全に登録する。利用者にはPrompt、Provider、モデル、解像度の知識を要求しない。
 
-- Project一覧を`auto-fill`の可変カードグリッド化（カード最大幅280px。固定列数なし）
-- カバー画像中心のProjectカード（アスペクト比3:4）
-- 作品名・更新日時・状態（一般／成人向け）Badgeの整理
-- フィルタ（すべて／一般／成人向け）・並び替え（更新日時順／タイトル順）
-- 操作ボタン（成人向け移行/バックアップ/複製/削除）は常時表示のまま維持（hoverだけに依存しない操作）
-- `main.tsx`を大きく書き換えず、`features/home/project-view-model.ts`（純粋関数）・`components/home/HomeProjectCard.tsx`・`HomeProjectGrid.tsx`・`HomeProjectFilters.tsx`へ分離
-- Windows CIの目視確認基盤（PR-Bで整備）へ、Home Projectカードグリッド固有の検証（描画確認・カード最大幅回帰確認・フィルタ切替・解像度別レイアウト確認・4件/10件以上スケール確認・1920×1080/1366×768のスクリーンショット）を追加
+## 実装済み
 
-### レビューの経緯（詳細は`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`§9〜§12）
+- 選択コマと元ネームのページ・コマ対応解決
+- ネームの画角、構図、人物、背景、動作、感情からServer側Promptを作成
+- セリフ、吹き出し、文字を画像へ描かない生成指示
+- コマ縦横比に応じた生成寸法の自動決定
+- 既存moderation、quota、Provider Registry、Queueを通る専用API
+- Jobへ対象panel IDを非公開入力として保存し、PromptをClientへ返さない履歴契約
+- 完了Assetを生成対象コマへ配置するCanvas導線
+- loading、disabled、error状態
+- Feature Flag、UUID、所有者、Release 5由来Project、一般向け境界
+- Release 6 preflightとモックProvider自動テスト
 
-1. Windows CI 1〜3回目失敗: axe-coreの`color-contrast`違反（`.ds-button-danger`、Phase D2由来の既存不備）を診断・修正し成功（commit `f8386ed`）
-2. ロケール修正（commit `681f38d`）: Home画面のスクリーンショットが実際の日本語UIで撮影されるよう修正
-3. 責任者レビュー指摘（第2ラウンド）: 「Projectが1件のときカードが画面全幅まで拡大し、作品名・Badge・操作ボタンが初期表示の下へ押し出される」不具合を発見。`.home-project-grid`を`auto-fit, minmax(240px, 1fr)`から`auto-fill, minmax(240px, 280px)` + `justify-content: start`へ修正し、Windows GUI検証・テストデータ（4件・10件以上・長いタイトル・一般／成人向け混在）を拡張。あわせて未承認だった`@media (max-width: 899px)`（`BrowserWindow`の`minWidth: 1100`により実機で到達不可能なdead code）を削除
-4. 上記修正の初回push（commit `e6fdae2`）でWindows CIが2件の新規失敗（過剰なチェック条件、複数Project作成による既存コマンドパレット検証への副作用）を検出 → 原因を切り分けて修正（commit `0fef460`）→ **Windows CI成功**（4チェックすべてgreen）
-5. 責任者が commit `2f3a506` を承認（review `4796116241`）。CI・承認を再確認のうえDraft解除・merge commit方式でマージ（`817dc69`）
+## 安全境界
 
-## 責任者による最終仕様確定（2026-07-28）
+- `CLOUD_PANEL_IMAGE_GENERATION_ENABLED`未設定時は認証・DB・Providerアクセス前にfail closed。
+- Release 5の一般向けProjectと所有者本人だけを許可する。
+- 既存moderation、quota、料金予約、Provider停止判定を迂回しない。
+- PromptをClient response、URL、画面、ログへ返さない。
+- 本番Provider、Worker、Feature Flag、有料生成は責任者が明示的に有効化する。
+- Desktop、Stripe、Marketplace、成人向け画像生成は変更しない。
 
-実装記録§8の確認事項について、責任者から以下の最終回答を得た。以後、これらは「未決定事項」ではなく確定仕様として扱う。
+## 検証結果
 
-1. **フィルタは「すべて／一般／成人向け」で確定**（実装どおり）
-2. **並び替えは「更新が新しい順／タイトル順」で確定**（実装どおり）
-3. **「お気に入り」フィルタは今回実装しない**（将来必要になった場合は`Project`型へのフィールド追加・DB migrationの提案から着手する）
-4. **ページ数表示は今回実装しない**（将来必要になった場合は新規の読み取り専用IPC追加の提案から着手する）
-5. **説明文（subtitle/description）はHomeカードに表示しない**（実装どおり）
-6. **カバー画像ありProjectの目視確認・キーボード実機操作確認は、Windows実機によるRC受入れ時に実施する**（本フェーズのWindows CIはカバーなしテストデータのみで完了扱いとする。既存IPCの制約で自動生成できない理由は§7・§8参照）
+- Release 6集中テスト: PASS（10/10）
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub + Desktop）
+- research:eval: PASS
+- hub:test: PASS（254/254）
+- canvas:test: PASS（26/26）
+- ai:test: PASS（44/44）
+- desktop:test: PASS（182/182）
+- desktop:test:a11y: PASS（違反0、既存color contrast要手動確認）
+- db:migrations:validate: PASS（25/25、Release 6追加migrationなし）
+- Hub production build: PASS
+- Desktop build: PASS
+- git diff --check: PASS
+- GitHub Core quality: PASS
+- GitHub migration roundtrip: PASS
+- GitHub Windows build: PASS
+- Vercel Preview: READY
+- rc:preflight: STRUCTURE READY、外部設定と手動E2Eは未実施
+- Release 6 preflight: 想定どおりFAIL（ローカルに限定公開用環境変数を設定していない）
+- 実Provider有料生成E2E: 未実施（停止条件）
 
-## 未完了・次の作業
+## 責任者が後で行うこと
 
-1. カバー画像あり・キーボード実機操作の確認は、次回のWindows実機RC受入れ機会に実施する（担当は未定。実施時は本ファイルまたは`docs/REMAINING_TASKS.md`へ結果を記録する）
-2. 次画面のビジュアル刷新（`DESKTOP_CREATIVE_STUDIO_SPEC.md`§5ブレークポイント再編・設定画面2ペイン化・AI画像生成画面新設等）は、責任者の明示的な着手承認を待って着手する
-3. 依存パッケージ（`npm audit`High 11件・Dependabot PR #4〜#13）の個別評価は、別ブランチ（`chore/dependency-security-triage-20260727`想定）で継続する（未着手）
-4. **本ファイルを更新したPR #47（`docs/phase-d3c-completion-sync-20260728`）は作成済み**。Required Quality・Desktop Windowsの完了確認待ち、責任者承認・マージ待ち。責任者の明示的な承認なしにマージしない
+1. Release 2〜5のstacked migrationとFeature Flagを対象Preview環境で確認
+2. Release 6 Preview branchだけで`CLOUD_PANEL_IMAGE_GENERATION_ENABLED=true`
+3. 既存Cloud画像Provider、pricing、quota、Workerが検証用設定で動作することを確認
+4. Release 5由来Canvasでコマを選び、AIおまかせ生成を1件実行
+5. 完了Assetが元の対象コマへ配置され、保存・再表示できることを確認
+6. Promptや内部Provider情報が画面・Network response・ログへ露出しないことを確認
+7. 390px、768px、1280pxで横overflowと操作不能がないことを確認
 
-## 禁止事項（引き続き遵守）
+## 注意事項
 
-- API、DB、Storage、Desktop IPC、SQLite schemaの変更（ページ数表示等、必要な場合は新規IPCを別途提案してから着手する）
-- AI Provider routing、成人向け生成の直接実行・安全ポリシーの緩和
-- Stripe、認証まわりの変更
-- 新規依存パッケージ追加、Tailwind導入
-- `DESKTOP_CREATIVE_STUDIO_SPEC.md`§5の未承認ブレークポイント再編
-- `MangaCanvas`、`GenerationJobs`、`AISettings`、Chat画面、Hub接続画面、Cloud Editorの変更
-- `AppHeader`の高さ、`GlobalNav`の幅の変更
-- `feature/manga-canvas-mvp`への直接push、force push、既存migrationの書き換え
-- 責任者の明示的な承認・レビューなしのPRマージ
-
-上記はいずれも実施していない。
-
-## 次担当者が最初に読むファイル
-
-1. `AGENTS.md`
-2. `CLAUDE.md`
-3. `docs/AI_HANDOFF.md`
-4. 本ファイル（`docs/CURRENT_TASK.md`）
-5. [`docs/HANDOFF_LOG.md`](HANDOFF_LOG.md)
-6. [`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`](design/PHASE_D3C_HOME_VISUAL_REFRESH.md)（Phase D3-Cの詳細記録。マージ済み）
-7. [`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`](design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md)（Windows CI目視確認基盤の記録）
-8. [`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)（コマンドパレット画面接続の記録）
-9. [`docs/design/DESKTOP_CREATIVE_STUDIO_SPEC.md`](design/DESKTOP_CREATIVE_STUDIO_SPEC.md)（コンポーネント仕様の正本。§5は未承認のまま残っている点に注意。§8のHome画面関連項目は本ファイルの「責任者による最終仕様確定」で決着済み）
-10. [`docs/REMAINING_TASKS.md`](REMAINING_TASKS.md)（RC外部環境受入れの残タスク一覧）
-
-## 次担当者が最初に実行するコマンド
-
-```bash
-git fetch origin feature/manga-canvas-mvp
-git checkout feature/manga-canvas-mvp
-git reset --hard origin/feature/manga-canvas-mvp
-npm install
-npm run deps:check && npm run lint && npm run typecheck
-npm run desktop:test
-```
-
-## 参考: これまでの完了事項
-
-- 保守性改善PR #14〜#28の統合（PR #34、merge commit `dc89e0b`） — 詳細: [`docs/integration/MAINTENANCE_STACK_INTEGRATION_20260726.md`](integration/MAINTENANCE_STACK_INTEGRATION_20260726.md)
-- Phase D1: デザイントークン基盤整備（PR #35・#36） — 詳細: [`docs/design/PHASE_D1_IMPLEMENTATION.md`](design/PHASE_D1_IMPLEMENTATION.md)
-- Phase D2: 共通コンポーネント単体実装（PR #37・#38） — 詳細: [`docs/design/PHASE_D2_IMPLEMENTATION.md`](design/PHASE_D2_IMPLEMENTATION.md)
-- Phase D3: コマンドパレット単体実装（PR #39） — 詳細: [`docs/design/PHASE_D3_COMMAND_PALETTE.md`](design/PHASE_D3_COMMAND_PALETTE.md)
-- Phase D3: Home画面へのButton適用（PR #40） — 詳細: [`docs/design/PHASE_D3_HOME_SCREEN.md`](design/PHASE_D3_HOME_SCREEN.md)
-- 文書同期PR #41（merge commit `242334b`）、旧PR #14〜#28・#29・#33のClose（17件）
-- Phase D3-B: コマンドパレットのDesktop画面接続 + 精緻化（PR #42、merge commit `23d16ef`） — 詳細: [`docs/design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md`](design/PHASE_D3B_COMMAND_PALETTE_INTEGRATION.md)
-- PR #42マージ後の文書同期（PR #43、merge commit `16f8776`）
-- Phase D3-C準備 PR-A: 引き継ぎ文書の状態修正（PR #44、merge commit `3cb1ad0`）
-- Phase D3-C準備 PR-B: Desktop目視確認基盤（PR #45、merge commit `3fb5f24`） — 詳細: [`docs/design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md`](design/PHASE_D3C_VISUAL_VALIDATION_PLAN.md)
-- **Phase D3-C: Home画面ビジュアル刷新（PR #46、merge commit `817dc69`）** — 詳細: [`docs/design/PHASE_D3C_HOME_VISUAL_REFRESH.md`](design/PHASE_D3C_HOME_VISUAL_REFRESH.md)
+- Release 5 PR #72が未mergeのため、Release 6 PRのbaseはRelease 5 branchにする。
+- migration適用、Feature Flag有効化、有料API実行、PR merge、本番公開は行わない。
+- Release 6は一般向けコマ画像生成だけを対象とし、成人向け画像生成は含まない。

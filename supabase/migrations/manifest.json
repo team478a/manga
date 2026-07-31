@@ -96,7 +96,79 @@
       "description": "Cloud AI Workerのlease heartbeatと期限切れtoken拒否を追加",
       "forwardSha256": "568f9f4741d43a40f971eb02b1e40c68bd155dcd82ef1e8cac480a30d358c78b",
       "rollbackSha256": "2a632c38a159c1d7332ed4ef9215ee1f773cdf5bf6e3107c2f9687a8f08dbc38"
+    },
+    {
+      "id": "202607290001_cloud_market_research",
+      "description": "出典付きCloud市場分析Reportと所有者RLSを追加",
+      "forwardSha256": "42a13356c4d87bffc0b73aa89c4979a0b88b855bb2efab52d27ad9267b1356c7",
+      "rollbackSha256": "fa651fbd1fd0244942bc4d297719b25c512c74dfe83f0d1cb3ba9da6d8ce35ca"
+    },
+    {
+      "id": "202607290007_cloud_research_quality_v2",
+      "description": "市場分析Reportの根拠品質・分野別引用に対応するv2 engineを許可",
+      "forwardSha256": "df7dd46f4ecabce734182ae63ab4c4cda5143714393bb1529b6fe1c2afb44dd5",
+      "rollbackSha256": "117ae2ee2f19abd71dc0cdc4b1995cecc34b81903a404706e9c9e1487699895b"
+    },
+    {
+      "id": "202607290008_cloud_adult_research_option",
+      "description": "許可制の成人向け市場分析権限・本人同意・監査・Report RLSを追加",
+      "forwardSha256": "c123fdfff8df78acd018551ccc7ff790d8fe40e1cfd2f9843956238281a0724a",
+      "rollbackSha256": "276b02443e7413645dc2595df15cd10644c047880e91dcddf674037ddc9734e9"
+    },
+    {
+      "id": "202607290009_cloud_adult_planning_option",
+      "description": "成人向け企画の機能単位許可・企画ブリーフ・所有者RLSを追加",
+      "forwardSha256": "a7d9ede8f0bef7281b600a10a93dddbe49c1d1bf545e90eb7911a84c2cf032fa",
+      "rollbackSha256": "79f92b2316099886e6be42b3b5f70ff3696e881659a3f64f23f0bbec265f3589"
+    },
+    {
+      "id": "202607300001_cloud_research_ai_provider",
+      "description": "市場分析用OpenAI設定をSupabase Vaultへ保存し管理操作を監査",
+      "forwardSha256": "449e80c2862cefd84a17be646764ca51eeb898a84c47acbb540990002fd86a1d",
+      "rollbackSha256": "1a89e83fe8b569d4abe0c4cff6593f51306cb7e4073d17245277057fcdd96368"
+    },
+    {
+      "id": "202607300002_cloud_story_proposals",
+      "description": "市場分析から生成した一般向けAI企画3案と選択snapshotを所有者単位で保存",
+      "forwardSha256": "ad8c039512be5952e525b79dc928fa5fddf03c1ed005c4a6cd9893e11f0fd90b",
+      "rollbackSha256": "a36dddbc1fd6abdf4c4375dbdf7142b94e5a2bfd5864963b7fdf802a1ec092a3"
+    },
+    {
+      "id": "202607300003_cloud_story_scenarios",
+      "description": "採用企画から生成したシナリオ版と採用履歴を追記型・所有者単位で保存",
+      "forwardSha256": "cf4ddd57c83bb8030333460ed5ee640cbc6e1bc95306c5a27f3159296b3bc55c",
+      "rollbackSha256": "d21bd2b08c02da44aab9d21313634e6b2646f736432bc0899b714fa308077367"
+    },
+    {
+      "id": "202607300004_cloud_story_storyboards",
+      "description": "採用シナリオから生成したネーム版と採用履歴を追記型・所有者単位で保存",
+      "forwardSha256": "5f07f0494e51b2bba09ebb50944fea1848fccfaab9b1b0206ffaff1d29a96752",
+      "rollbackSha256": "668ce1aca9cfa42b5eeb4dcf0f21e837bc0f5cbbd62e55e5943d4237bfe5444b"
+    },
+    {
+      "id": "202607300005_cloud_storyboard_canvas_materialization",
+      "description": "最新採用ネームを冪等にCloud Canvas Projectへ変換",
+      "forwardSha256": "d21f7970e08a399ca87202ab785399d5e9a2259f730f20f509ebba792179f0c0",
+      "rollbackSha256": "0a768b5c1361a1a4afdd72daa0e901c0e54789f989526295bce04c71fa5755f8"
+    },
+    {
+      "id": "202607300006_cloud_general_monitor_beta",
+      "description": "一般向け無料モニターの招待・期限・累計AI上限・フィードバックを追加",
+      "forwardSha256": "e68200749c3672aa8f08c6e01434bd406a50adadd8853beb6390d3fe8bbaca7d",
+      "rollbackSha256": "03910c881a0e5182a47ab2a4ce20b7cc2715980ba885013c83b68a84569f82d4"
+    },
+    {
+      "id": "202607310001_cloud_general_monitor_operations",
+      "description": "一般向けモニターの初回案内完了とフィードバック対応管理を追加",
+      "forwardSha256": "7f372fecc270d21078db2fd876b64ffadbdb4d6835dcf26d087f396cb607ae61",
+      "rollbackSha256": "33f839d125c3a0834ccd816c84f8190229e5ed60b002b9543c42cd0b618471e3"
+    },
+    {
+      "id": "202607310002_cloud_general_monitor_email_provider",
+      "description": "一般向けモニター招待メールのResend APIキーをSupabase Vaultで管理",
+      "forwardSha256": "08d2b5a6bd50e4816d58b545482d359ee21d01ac91432b05c8aab0edeafb7a91",
+      "rollbackSha256": "361fbaadd701198bdbb74da190f5d7c96f3fcfd523f5376d50fd6c654a3b56a1"
     }
   ],
-  "schemaSha256": "a45f17682c2573447b71195c984d85ea04924ae14b11316835d3ef685bd571ea"
+  "schemaSha256": "2d4a9dd437e9700a60542e2c824a5e8c6e4bbe025454dc306823463d11c57646"
 }
