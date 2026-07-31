@@ -2,9 +2,12 @@
 
 ## 2026-07-31 一般向けクラウド画像生成Provider接続
 
-- 状態: `IMPLEMENTED_LOCAL`
+- 状態: `READY_FOR_REVIEW`
 - Branch: `codex/cloud-general-image-v1`
 - Base: 最新`feature/manga-canvas-mvp` (`7eb783f`)
+- Draft PR: [#87](https://github.com/team478a/manga/pull/87)
+- Preview:
+  `https://mangai-hub-staging-git-codex-cloud-ge-f2885c-team478as-projects.vercel.app`
 - 対象: 一般向けRelease 6のコマ画像生成、`/admin/cloud-ai`
 - 実装:
   - BFL FLUX.2固定版の非同期API adapter
@@ -22,9 +25,9 @@
   [`CLOUD_GENERAL_IMAGE_PROVIDER_V1.md`](cloud/CLOUD_GENERAL_IMAGE_PROVIDER_V1.md)
 - 検証: deps、lint、Hub/Desktop typecheck、research eval、Hub 282/282、
   migration 30/30、production build、diff check成功
-- migration roundtrip: ローカルDocker停止中のためGitHub CIで確認
-- 未実施: 実API有料生成、staging migration、Draft PR、CI、Preview、
-  責任者確認、本番公開
+- GitHub CI (`c5e54d7`): Core quality、migration roundtrip、Windows build、
+  Vercel Previewがすべて成功
+- 未実施: 実API有料生成、staging migration、責任者確認、本番公開
 
 ## 2026-07-31 クラウド制作の日本語化・初回ガイド
 

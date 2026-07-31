@@ -22,6 +22,12 @@
 - deps、lint、Hub/Desktop typecheck、research eval、Hub 282/282、
   migration 30/30、production build、diff checkが成功した。
 - Docker Desktopが停止中のためmigration roundtripはGitHub CIで確認する。
+- Draft PR:
+  [#87](https://github.com/team478a/manga/pull/87)
+- Preview:
+  `https://mangai-hub-staging-git-codex-cloud-ge-f2885c-team478as-projects.vercel.app`
+- 実装commit `c5e54d7`のCore quality、migration roundtrip、
+  Windows build、Vercel Previewがすべて成功した。
 
 ---
 
