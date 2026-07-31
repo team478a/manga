@@ -11,7 +11,10 @@ import {
   cloudResearchFeatureEnabled,
   parseCloudResearchRequestForm,
 } from "@/lib/cloud-research";
-import { runCloudResearchAiAnalysis } from "@/lib/cloud-research-ai";
+import {
+  runCloudAdultResearchAiAnalysis,
+  runCloudResearchAiAnalysis,
+} from "@/lib/cloud-research-ai";
 import { createCloudResearchReport } from "@/lib/cloud-research-server";
 import { enforceCloudResearchAiAnalysisRateLimit } from "@/lib/cloud-research-search-rate-limit";
 import { PermissionDeniedError } from "@/lib/domain-errors";
@@ -40,7 +43,11 @@ export async function createCloudResearchReportAction(formData: FormData) {
       await consumeCloudAdultMonitorAiRequest(profile.id, "research");
     else
       await consumeCloudGeneralMonitorAiRequest(profile.id, "research");
-    const { input, result } = await runCloudResearchAiAnalysis({
+    const analyze =
+      request.contentClass === "adult"
+        ? runCloudAdultResearchAiAnalysis
+        : runCloudResearchAiAnalysis;
+    const { input, result } = await analyze({
       profileId: profile.id,
       request,
     });

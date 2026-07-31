@@ -200,6 +200,12 @@
       "rollbackSha256": "0daa5d0a38d82309bdf37e96988431d8264b4c8d06724b2fdb7c86c0a99f248a"
     },
     {
+      "id": "202607310001_cloud_adult_grok_provider",
+      "description": "成人向けテキストAIをxAI/Grokへ分離しVault設定・監査・保存形式を追加",
+      "forwardSha256": "76d0f94558876122510e2aff3851ff13c87c427fe1c48fd1892227102c3a42b0",
+      "rollbackSha256": "5d8078311b30d71f6eb10a2cd24eed2a312ca78227ba70230881b0a82c2f74be"
+    },
+    {
       "id": "202607310001_cloud_general_monitor_operations",
       "description": "一般向けモニターの初回案内完了とフィードバック対応管理を追加",
       "forwardSha256": "7f372fecc270d21078db2fd876b64ffadbdb4d6835dcf26d087f396cb607ae61",

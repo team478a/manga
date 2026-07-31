@@ -89,6 +89,7 @@ test("成人向けReportはProviderへ送る前に拒否する", async () => {
 
 test("成人向けAI企画は専用経路で一般版と区別し安全条件をProviderへ渡す", async () => {
   let body;
+  let endpoint;
   const result = await runCloudAdultProposalAi({
     profileId: "10000000-0000-4000-8000-000000000001",
     report: {
@@ -102,12 +103,16 @@ test("成人向けAI企画は専用経路で一般版と区別し安全条件を
     },
     runtimeConfig,
     now: "2026-07-30T00:00:00.000Z",
-    fetchImplementation: async (_url, init) => {
+    fetchImplementation: async (url, init) => {
+      endpoint = url;
       body = JSON.parse(init.body);
       return new Response(JSON.stringify({ output_text: JSON.stringify({ candidates }) }));
     },
   });
   assert.equal(result.candidates.length, 3);
+  assert.equal(result.engineVersion, "xai-adult-proposal-v1");
+  assert.equal(endpoint, "https://api.x.ai/v1/responses");
+  assert.equal(body.safety_identifier, undefined);
   assert.match(body.input[0].content, /架空の18歳以上/);
   assert.match(body.input[0].content, /未成年.*禁止/);
 });

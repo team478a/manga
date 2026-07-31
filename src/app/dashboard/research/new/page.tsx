@@ -172,7 +172,7 @@ export default async function NewCloudResearchPage({
               </div>
             </details>
             <p className="mt-4 text-xs text-stone-500">
-              成人向け（AI接続は準備中）の内容は、明示許可なしに外部AIへ送信しません。
+              成人向けは明示許可・本人同意・管理者設定が揃った場合だけ、xAI/Grokへ送信します。
             </p>
           </section>
           <p className="rounded-lg bg-amber-50 p-4 text-sm text-amber-950">

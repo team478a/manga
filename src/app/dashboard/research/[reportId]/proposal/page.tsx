@@ -215,7 +215,7 @@ export default async function ProposalHandoffPage({
           <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-bold text-rose-800">成人向け</span>
         </div>
         <p className="mt-3 text-stone-600">
-          市場分析をOpenAIへ送信し、架空の18歳以上・合意のある非搾取的な内容に限定して企画を提案します。
+          市場分析をxAI/Grokへ送信し、架空の18歳以上・合意のある非搾取的な内容に限定して企画を提案します。
         </p>
         {adultRuns.length ? (
           <div className="mt-5 space-y-3">
@@ -233,7 +233,7 @@ export default async function ProposalHandoffPage({
               ["fictionalAdultsOnly", "架空の18歳以上の成人だけを扱います"],
               ["consensualOnly", "合意のある非搾取的な内容だけを扱います"],
               ["noRealPerson", "実在人物を扱いません"],
-              ["providerDisclosureAccepted", "入力した市場分析がOpenAIへ送信されることに同意します"],
+              ["providerDisclosureAccepted", "入力した市場分析がxAI/Grokへ送信されることに同意します"],
             ].map(([name, label]) => (
               <label className="flex gap-3 text-sm" key={name}>
                 <input name={name} type="checkbox" value="true" />

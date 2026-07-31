@@ -1,22 +1,38 @@
-# 外部Provider APIキー管理方針
+# APIキー管理画面方針
 
 ## 対象
 
-OpenAI、Grok、Resend、および今後追加する検索・生成ProviderのAPIキーは、
-管理者画面から入力、保存、差し替えできるようにする。
+管理者または利用者が外部Providerで取得し、運用中に交換するAPIキーを対象とする。
 
-## 必須要件
+- 一般向けテキストAI: OpenAI
+- 成人向けテキストAI: xAI / Grok
+- モニター招待メール: Resend
+- 今後追加する検索、生成、翻訳等の外部Provider
 
-- APIキーはServer Actionだけで受け取る。
-- 保存先はSupabase Vaultとし、通常テーブルにはVaultのsecret IDだけを保持する。
-- 保存後はAPIキー本体、先頭・末尾文字、fingerprintを画面や監査ログへ再表示しない。
-- 管理画面では「設定済み／未設定」と更新日時だけを表示する。
-- 新しいキーを保存したら、その設定を自動的に有効化する。
-- 実行時の復号はservice role専用RPCからのみ行う。
-- Providerのエラー本文や認証情報を利用者向け表示・ログへ露出しない。
-- 設定変更は操作者、変更種別、日時を監査ログへ記録する。
+## 必須UX
+
+1. 管理画面でAPIキーを入力する。
+2. 「APIキーを保存して利用開始」を押す。
+3. 暗号化secret storeへ保存し、Providerを自動的に利用可能にする。
+4. 変更時は同じ画面へ新しいキーを入力して保存する。
+5. 保存済みキーは画面、Client、URL、通常テーブル、ログ、監査ログへ再表示しない。
+
+モデル、endpoint、timeout等はServer側の安全な推奨値を使用し、通常の管理者に技術設定を要求しない。
 
 ## 対象外
 
-Supabase URL・service role、Stripe webhook secret、署名鍵などの基盤秘密情報は
-管理画面へ移さない。Vercelなどのデプロイ環境変数、または専用Secret Storeで管理する。
+以下はアプリ基盤credentialであり、管理画面へ入力させない。
+
+- Supabase URL、anon key、service role key
+- Stripe secret、Webhook署名鍵
+- アプリ内署名secret、DB接続情報
+
+これらはVercel等のデプロイ環境secretとして管理する。
+
+## 安全要件
+
+- APIキーの復号はServerのservice roleだけに許可する。
+- 保存操作は管理者権限、入力形式、CSRF対策、rate limitを維持する。
+- APIキー未設定、復号失敗、Provider停止時は外部送信前にfail closedする。
+- Providerエラー本文や秘密値を利用者へ返さない。
+- 成人向けはAPIキー設定だけでは許可せず、年齢確認、本人同意、個別許可、安全審査を別途要求する。
