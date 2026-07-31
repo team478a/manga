@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-07-31 モニター操作の処理中フィードバック
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-action-pending-feedback-v1`
+- Base: `feature/manga-canvas-mvp` (`6ebdbaa`)
+- Draft PR: [#83](https://github.com/team478a/manga/pull/83)
+- Preview:
+  `https://mangai-hub-staging-hvbsecmo4-team478as-projects.vercel.app`
+- 対象: モニター招待・再送・停止、利用許可更新、フィードバック対応、
+  招待メール設定、利用者フィードバック送信、初回モニター開始
+- 実装:
+  - 共通`PendingSubmitButton`でクリック直後にスピナーと用途別メッセージを表示
+  - Server Action完了までボタンを無効化し、二重送信を防止
+  - `aria-busy`と`aria-disabled`で支援技術へ処理中状態を通知
+- 変更しない範囲: Server Action、認証、DB、API、Feature Flag、Desktop
+- 検証: deps、lint、Hub typecheck、Hub 274/274、production build、diff check、
+  Core quality、migration roundtrip、Windows build、Vercelが成功
+- 未実施: 責任者承認、merge、Production redeploy
+
 ## 2026-07-31 一般向けモニター本番統合
 
 - 状態: `READY_FOR_REVIEW`

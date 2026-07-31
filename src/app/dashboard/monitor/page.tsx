@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { getCloudGeneralMonitorEnrollment, getCloudGeneralMonitorNotice } from "@/lib/cloud-general-monitor";
 import { createClient } from "@/lib/supabase/server";
@@ -91,7 +92,12 @@ export default async function GeneralMonitorPage({
                 </div>
               </div>
               <textarea className="field min-h-32" maxLength={2000} name="comment" placeholder="良かった点、迷った点、止まった画面など" required />
-              <button className="button bg-violet-700 hover:bg-violet-800" type="submit">フィードバックを送信</button>
+              <PendingSubmitButton
+                className="button bg-violet-700 hover:bg-violet-800"
+                pendingLabel="フィードバックを送信中…"
+              >
+                フィードバックを送信
+              </PendingSubmitButton>
             </form>
           ) : null}
           <section className="panel mt-6">

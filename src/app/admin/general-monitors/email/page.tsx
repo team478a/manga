@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { getCloudGeneralMonitorEmailSettings } from "@/lib/cloud-general-monitor-email-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -108,12 +109,12 @@ export default async function GeneralMonitorEmailSettingsPage({
               required
             />
           </label>
-          <button
+          <PendingSubmitButton
             className="button w-full bg-violet-700 hover:bg-violet-800"
-            type="submit"
+            pendingLabel="設定を保存中…"
           >
             APIキーを保存して利用開始
-          </button>
+          </PendingSubmitButton>
         </form>
       )}
       <section className="panel mt-6">

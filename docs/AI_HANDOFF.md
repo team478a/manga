@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（モニター操作の処理中表示、2026-07-31）
+
+- Branch: `codex/cloud-action-pending-feedback-v1`
+- Base: `feature/manga-canvas-mvp` (`6ebdbaa`)
+- 目的: ボタンクリック直後に処理中表示を出し、無反応に見える状態と二重送信を防ぐ
+- 対象: モニター招待・運用・設定・フィードバック・初回開始
+- 変更範囲: 表示層のみ。Server Action、認証、DB、API、Desktopは変更しない
+- Draft PR: [#83](https://github.com/team478a/manga/pull/83)
+- Preview:
+  `https://mangai-hub-staging-hvbsecmo4-team478as-projects.vercel.app`
+- 状態: 実装、ローカル品質ゲート、全CI、Vercel Preview成功。責任者確認待ち
+
+---
+
 ## 0. 現在の優先タスク（一般向けモニター本番統合、2026-07-31）
 
 - Branch: `codex/cloud-monitor-production-v1`
