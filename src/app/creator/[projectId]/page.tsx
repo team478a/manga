@@ -274,6 +274,9 @@ export default async function CloudProjectPage({
         <Link className="button-secondary mt-4 ml-3 inline-flex" href={`/creator/${projectId}/references`}>
           参照画像とコマ割当
         </Link>
+        <Link className="button-secondary mt-4 ml-3 inline-flex" href={`/creator/${projectId}/continuity`}>
+          一貫性をチェック
+        </Link>
         {characters.length ? (
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {characters.map((character) => (
