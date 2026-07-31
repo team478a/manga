@@ -271,6 +271,9 @@ export default async function CloudProjectPage({
         <Link className="button-secondary mt-4 ml-3 inline-flex" href={`/creator/${projectId}/bible`}>
           画風・場所・小物を設定
         </Link>
+        <Link className="button-secondary mt-4 ml-3 inline-flex" href={`/creator/${projectId}/references`}>
+          参照画像とコマ割当
+        </Link>
         {characters.length ? (
           <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {characters.map((character) => (

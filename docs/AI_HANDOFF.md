@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M2-3 参照画像・コマ明示割当、2026-08-01）
+
+- Branch: `agent/manga-reference-assets-v1`
+- Base: `agent/manga-generation-integration-v1`（Draft PR #94）
+- 目的: 人物・画風・場所・小物の参照画像と明示割当を一般向けコマ生成へ安全に反映する
+- 実装: 非公開asset関連付け、コマ割当、Job監査入力、短時間署名URL、BFL FLUX.2 multi-reference
+- migration: `202608010001_cloud_visual_references.sql`
+- 詳細: `docs/cloud/MANGA_VISUAL_REFERENCES_V1.md`
+- 変更しない範囲: 成人向け、Desktop、Stripe、Marketplace、自動参照昇格
+
+---
+
 ## 0. 現在の優先タスク（一般向け漫画生成の統合、2026-07-31）
 
 - Branch: `agent/manga-generation-integration-v1`

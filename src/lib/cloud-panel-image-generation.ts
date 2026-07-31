@@ -79,6 +79,13 @@ export function buildStoryboardPanelGeneration(input: {
   visualCharacterProfiles?: CloudCharacterProfile[];
   styleBible?: CloudStyleBible | null;
   worldProfiles?: CloudWorldProfile[];
+  explicitCharacterProfileIds?: string[];
+  explicitWorldProfileIds?: string[];
+  referenceAssets?: Array<{
+    subjectKind: "character" | "style" | "location" | "prop";
+    subjectId: string;
+    assetId: string;
+  }>;
 }) {
   const storyboard = cloudStoryboardResultSchema.parse(input.storyboard);
   const canvas: PageCanvas = pageCanvasSchema.parse(input.canvas);
@@ -115,7 +122,7 @@ export function buildStoryboardPanelGeneration(input: {
       (character) =>
         `${character.name}（役割:${character.role}、望み:${character.desire}、恐れ:${character.fear}、葛藤:${character.conflict}）`,
     );
-  const visualProfiles = storyboardPanel.characters
+  const automaticVisualProfiles = storyboardPanel.characters
     .map((name) =>
       input.visualCharacterProfiles?.find(
         (character) =>
@@ -123,6 +130,16 @@ export function buildStoryboardPanelGeneration(input: {
       ),
     )
     .filter((profile): profile is CloudCharacterProfile => Boolean(profile));
+  const visualProfiles = Array.from(
+    new Map(
+      [
+        ...automaticVisualProfiles,
+        ...(input.visualCharacterProfiles ?? []).filter((profile) =>
+          input.explicitCharacterProfileIds?.includes(profile.id),
+        ),
+      ].map((profile) => [profile.id, profile]),
+    ).values(),
+  );
   const visualDetails = visualProfiles.map((profile) =>
     [
       `${profile.name}（外見設定v${profile.current_version}`,
@@ -138,9 +155,19 @@ export function buildStoryboardPanelGeneration(input: {
       .filter(Boolean)
       .join("、") + "）",
   );
-  const worldProfiles = resolveWorldProfilesForPanel(
+  const automaticWorldProfiles = resolveWorldProfilesForPanel(
     input.worldProfiles ?? [],
     storyboardPanel,
+  );
+  const worldProfiles = Array.from(
+    new Map(
+      [
+        ...automaticWorldProfiles,
+        ...(input.worldProfiles ?? []).filter((profile) =>
+          input.explicitWorldProfileIds?.includes(profile.id),
+        ),
+      ].map((profile) => [profile.id, profile]),
+    ).values(),
   );
   const worldDetails = worldProfiles.map((profile) =>
     [
@@ -165,6 +192,20 @@ export function buildStoryboardPanelGeneration(input: {
           `構図ルール:${input.styleBible.composition_rules}`,
       ].filter(Boolean).join("、")
     : "";
+  const referenceSubjectIds = new Set([
+    ...visualProfiles.map((profile) => `character:${profile.id}`),
+    ...worldProfiles.map((profile) => `${profile.kind}:${profile.id}`),
+    ...(input.styleBible ? [`style:${input.styleBible.id}`] : []),
+  ]);
+  const referenceAssetIds = Array.from(
+    new Set(
+      (input.referenceAssets ?? [])
+        .filter((reference) =>
+          referenceSubjectIds.has(`${reference.subjectKind}:${reference.subjectId}`),
+        )
+        .map((reference) => reference.assetId),
+    ),
+  ).slice(0, 8);
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
   const candidateIndex = Math.max(
     0,
@@ -232,6 +273,7 @@ export function buildStoryboardPanelGeneration(input: {
         version: profile.current_version,
         kind: profile.kind,
       })),
+      referenceAssetIds,
       ...imageSize(canvasPanel.width, canvasPanel.height),
     },
     panelId: canvasPanel.id,

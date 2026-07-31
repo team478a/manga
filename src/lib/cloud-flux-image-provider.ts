@@ -112,6 +112,16 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
       const prompt = input.negativePrompt.trim()
         ? `${input.prompt}\nAvoid: ${input.negativePrompt}`
         : input.prompt;
+      const referenceImageUrls = (context.referenceImageUrls ?? []).slice(
+        0,
+        this.config.model === "flux-2-klein-9b" ? 4 : 8,
+      );
+      const referenceImages = Object.fromEntries(
+        referenceImageUrls.map((url, index) => [
+          index === 0 ? "input_image" : `input_image_${index + 1}`,
+          url,
+        ]),
+      );
       const submitted = await fetcher(
         `https://api.bfl.ai/v1/${this.config.model}`,
         {
@@ -124,6 +134,7 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
           },
           body: JSON.stringify({
             prompt,
+            ...referenceImages,
             width: normalizeDimension(input.width),
             height: normalizeDimension(input.height),
             seed: input.seed,

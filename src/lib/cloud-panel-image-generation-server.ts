@@ -169,6 +169,72 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
     });
   }
   const canvas = pageCanvasSchema.parse(snapshot.canvas);
+  let explicitCharacterProfileIds: string[] = [];
+  let explicitWorldProfileIds: string[] = [];
+  let referenceAssets: Array<{
+    subjectKind: "character" | "style" | "location" | "prop";
+    subjectId: string;
+    assetId: string;
+  }> = [];
+  const assignments = await supabase
+    .from("cloud_panel_subject_assignments")
+    .select("subject_kind,subject_id")
+    .eq("project_id", request.projectId)
+    .eq("page_id", request.pageId)
+    .eq("panel_id", request.panelId)
+    .eq("owner_profile_id", profile.id);
+  if (assignments.error && assignments.error.code !== "42P01")
+    throw new DomainError("INTERNAL_ERROR", "コマの固定設定を読み込めませんでした。", {
+      cause: assignments.error,
+    });
+  if (!assignments.error) {
+    explicitCharacterProfileIds = (assignments.data ?? [])
+      .filter((item) => item.subject_kind === "character")
+      .map((item) => item.subject_id);
+    explicitWorldProfileIds = (assignments.data ?? [])
+      .filter((item) => item.subject_kind === "location" || item.subject_kind === "prop")
+      .map((item) => item.subject_id);
+    const selected = buildStoryboardPanelGeneration({
+      storyboard,
+      pageNumber: page.page_number,
+      canvas,
+      panelId: request.panelId,
+      characterProfiles: characterProfiles.success
+        ? characterProfiles.data.characters
+        : undefined,
+      visualCharacterProfiles,
+      styleBible,
+      worldProfiles,
+      explicitCharacterProfileIds,
+      explicitWorldProfileIds,
+    });
+    const relevantSubjectIds = [
+      ...(selected.generation.characterProfileVersions ?? []).map((item) => item.profileId),
+      ...(selected.generation.worldProfileVersions ?? []).map((item) => item.profileId),
+      ...(selected.generation.styleBibleVersion
+        ? [selected.generation.styleBibleVersion.bibleId]
+        : []),
+    ];
+    if (relevantSubjectIds.length) {
+      const references = await supabase
+        .from("cloud_visual_reference_assets")
+        .select("subject_kind,subject_id,asset_id")
+        .eq("project_id", request.projectId)
+        .eq("owner_profile_id", profile.id)
+        .in("subject_id", relevantSubjectIds)
+        .order("created_at", { ascending: true })
+        .limit(8);
+      if (references.error && references.error.code !== "42P01")
+        throw new DomainError("INTERNAL_ERROR", "参照画像を読み込めませんでした。", {
+          cause: references.error,
+        });
+      referenceAssets = (references.data ?? []).map((item) => ({
+        subjectKind: item.subject_kind as "character" | "style" | "location" | "prop",
+        subjectId: item.subject_id,
+        assetId: item.asset_id,
+      }));
+    }
+  }
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
   let resolved: ReturnType<typeof buildStoryboardPanelGeneration> | null = null;
   let partial = false;
@@ -187,6 +253,9 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         visualCharacterProfiles,
         styleBible,
         worldProfiles,
+        explicitCharacterProfileIds,
+        explicitWorldProfileIds,
+        referenceAssets,
       });
       await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
       const id = await enqueueCloudGenerationJob({

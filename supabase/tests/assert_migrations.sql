@@ -217,6 +217,15 @@ begin
   end if;
 end $$;
 
+do $$ begin
+  if to_regclass('public.cloud_visual_reference_assets') is null
+    or to_regclass('public.cloud_panel_subject_assignments') is null
+    or to_regprocedure('public.save_cloud_visual_reference(uuid,text,uuid,uuid,text)') is null
+    or to_regprocedure('public.save_cloud_panel_subject_assignment(uuid,uuid,uuid,text,uuid)') is null then
+    raise exception 'Cloud visual reference objects missing';
+  end if;
+end $$;
+
 do $$
 begin
   if to_regclass('public.cloud_general_image_provider_settings') is null

@@ -46,6 +46,13 @@ export {
   saveCloudStyleBible,
   saveCloudWorldProfile,
 } from "@/modules/cloud-creator/projects/world-bible-service";
+export {
+  deleteCloudPanelSubjectAssignment,
+  deleteCloudVisualReference,
+  getCloudVisualReferenceWorkspace,
+  saveCloudPanelSubjectAssignment,
+  saveCloudVisualReference,
+} from "@/modules/cloud-creator/projects/visual-reference-service";
 
 export {
   addCloudEpisode,

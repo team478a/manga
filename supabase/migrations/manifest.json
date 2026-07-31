@@ -192,7 +192,13 @@
       "description": "一般向けCloud作品へ版管理された画風・場所・小物設定を追加",
       "forwardSha256": "322467f27b227655a99fae2d397e5a5f99658eee30c487c825434437a0a094d0",
       "rollbackSha256": "72badcd12e2477e1bc3b4199bd2f5408c561069caf30829eb9d3fe34891c92ed"
+    },
+    {
+      "id": "202608010001_cloud_visual_references",
+      "description": "一般向けCloud作品へ参照画像とコマ単位の明示設定割当を追加",
+      "forwardSha256": "87311cd283fd1531ea363c999988380cdcb458f78be521027a812a0005d2d3d6",
+      "rollbackSha256": "a6db08946b9b1c2e77a52bad012af29a7dac486b02aade1461070081fc1ecadf"
     }
   ],
-  "schemaSha256": "188bf3df2928553fd35644fc10ac2a2e6fd054b7161f8ee6dd32fbc33e706f00"
+  "schemaSha256": "d8d52d9c0938616cd46493b4d32fa3ddfd0a80a9f0cf2916ac523b54954799c5"
 }
