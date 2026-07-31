@@ -1,5 +1,31 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向け制作工程の表示整理
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/cloud-workflow-labels-v1`
+- Base: `feature/manga-canvas-mvp` (`7eb783f`)
+- 対象: Cloud共通サイドバー、Dashboard、`/creator`、シナリオ採用画面
+- 実装:
+  - 「マンガ生成」を「ネーム作成」と「原稿編集」へ分離
+  - 原稿編集を制作ステップ5、作品管理をステップ6へ整理
+  - 販売準備と収益管理へ「準備中」を表示
+  - AI企画提案・シナリオ作成・ネーム作成へ「前工程の完了後」を表示
+  - 企画・シナリオ・ネームの詳細URLに応じて現在工程を正しく強調
+  - DashboardのRelease 1表記を「一般向けモニター」へ変更
+  - `/creator`を「原稿編集」として案内し、初回3ステップも原稿編集用に統一
+- 変更しない範囲: DB、API、認証、制作・保存ロジック、Feature Flag、Desktop
+- 検証:
+  - 集中テスト: PASS（11/11）
+  - deps:check: PASS
+  - lint: PASS
+  - Hub typecheck: PASS（共通package build後）
+  - Hub test: PASS（278/278）
+  - Hub production build: PASS
+  - git diff --check: PASS
+- 注記: `npm ci`の既存依存監査でhigh severity 11件。今回の表示変更とは分離して扱う
+- 未実施: push、Draft PR、CI、Vercel Preview、責任者画面確認
+
 ## 2026-07-31 クラウド制作の日本語化・初回ガイド
 
 - 状態: `IMPLEMENTED`

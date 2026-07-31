@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（一般向け制作工程の表示整理、2026-07-31）
+
+- Branch: `codex/cloud-workflow-labels-v1`
+- Base: `feature/manga-canvas-mvp` (`7eb783f`)
+- 目的: 一般向けモニターへ、実装済み工程と準備中工程を誤解なく案内する
+- 対象: Cloud共通サイドバー、Dashboard、`/creator`、シナリオ採用画面
+- 状態: 実装・ローカル主要品質ゲート完了、Draft PR作成前
+- 変更しない範囲: DB、API、認証、制作・保存ロジック、Feature Flag、Desktop
+
+---
+
 ## 0. 現在の優先タスク（クラウド制作の日本語化・初回ガイド、2026-07-31）
 
 - Branch: `codex/cloud-creator-ja-guide-v1`

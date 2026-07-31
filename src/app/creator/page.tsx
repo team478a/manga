@@ -28,11 +28,11 @@ export default async function CloudCreatorPage({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-bold text-violet-700">
-            制作ステップ 4
+            制作ステップ 5
           </div>
-          <h1 className="mt-1 text-3xl font-bold">クラウド制作</h1>
+          <h1 className="mt-1 text-3xl font-bold">原稿編集</h1>
           <p className="mt-2 text-lg text-stone-600">
-            作品を作成し、話とページを編集してマンガを仕上げます。
+            作品・話・ページを作成し、マンガの原稿を編集します。
           </p>
         </div>
         <div className="flex gap-2">
@@ -65,7 +65,7 @@ export default async function CloudCreatorPage({
               はじめての方へ
             </p>
             <h2 id="creator-start-guide" className="mt-1 text-xl font-bold">
-              まずはこの3ステップで作品を作ります
+              まずはこの3ステップで原稿を編集します
             </h2>
           </div>
           {!projects.length ? (

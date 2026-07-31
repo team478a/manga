@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向け制作工程の表示を実装状態に合わせて整理
+
+- 最新`feature/manga-canvas-mvp`から`codex/cloud-workflow-labels-v1`を作成した。
+- サイドバーの「マンガ生成」を「ネーム作成」と「原稿編集」へ分離した。
+- 原稿編集をステップ5、作品管理をステップ6とし、販売準備・収益管理には
+  「準備中」、前工程が必要なAI工程には「前工程の完了後」を表示した。
+- URLから企画・シナリオ・ネーム・原稿編集・作品管理の現在工程を判定し、
+  該当項目を正しく強調するようにした。
+- Dashboardの「Release 1」を「一般向けモニター」へ変更し、`/creator`を
+  「原稿編集」として説明・初回ガイド・工程番号を統一した。
+- DB、API、認証、保存ロジック、Feature Flag、Desktopは変更していない。
+- 集中テスト11/11、deps、lint、Hub typecheck、Hub 278/278、
+  production build、diff checkが成功した。
+- `npm ci`の既存依存監査にはhigh severity 11件が残るが、今回の表示変更では
+  依存更新を行っていない。
+
+---
+
 ## 2026-07-31 Codex: クラウド制作を日本語化し初回ガイドを追加
 
 - 最新`feature/manga-canvas-mvp`から
