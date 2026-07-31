@@ -30,6 +30,8 @@ export {
   setCloudProjectDeleted,
 } from "@/modules/cloud-creator/projects/project-service";
 
+export { getCloudManuscriptPreflight } from "@/modules/cloud-creator/projects/manuscript-preflight-service";
+
 export {
   addCloudEpisode,
   addCloudPage,

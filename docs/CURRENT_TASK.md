@@ -1,5 +1,26 @@
 # MANGAI Current Task
 
+## 2026-07-31 長編マンガ制作 M1: 8ページ原稿チェック・書き出し検証
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
+- 実装:
+  - 作品画面で表紙、ページ順、空コマ、画像素材欠落を自動確認
+  - 背景画像の仕上がり解像度不足を警告
+  - 縦書き・横書き・ルビを含む文字layoutでoverflowを検出
+  - 8ページ基準と画像配置済みコマ数を表示
+  - 修正項目から対象ページの編集画面へ直接移動
+  - 問題件数が多い作品は表示上限と残件数を保持
+  - 8ページfixtureを実際に8ページPDFと`001.png`〜`008.png`へ出力
+- セキュリティ: 所有者RLS下のCanvasとAssetメタデータだけを読み、
+  Storage本体やservice-roleを原稿チェックに使用しない
+- 変更しない範囲: 販売処理、DB、migration、Provider、Worker、成人向け、Desktop
+- 検証: lint、Hub typecheck、原稿チェック5/5、8ページ出力3/3、
+  Hub 295/295、production build、diff check成功
+- 次: ページ／作品単位の生成進捗表示と基本キャラクター設定表
+- 未実施: 実ブラウザ確認、実作品でのPDF目視比較、責任者承認、マージ
+
 ## 2026-07-31 長編マンガ制作 M1: コマ候補の比較・採用・再実行
 
 - 状態: `IMPLEMENTED`

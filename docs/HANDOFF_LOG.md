@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-07-31 Codex: M1 8ページ原稿preflightと書き出しfixture
+
+- `codex/manga-production-m0-v1`へ作品単位の原稿チェックを追加した。
+- 表紙、連続ページ番号、空コマ、素材欠落、背景の低解像度、縦横文字の
+  overflowをCanvas snapshotとAssetメタデータから検出する。
+- 作品画面に8ページ基準、画像配置済みコマ、要修正、確認推奨を表示し、
+  各警告から対象ページへ移動できる。
+- RLS下の所有者データだけを読み、原稿チェックではStorage downloadや
+  service-roleを使用しない。DB migrationも追加していない。
+- 8ページfixtureを8ページPDFと`001.png`〜`008.png`の連番画像へ実際に
+  変換するテストを追加した。
+- lint、Hub typecheck、原稿チェック5/5、8ページ出力3/3、
+  Hub 295/295、production build、diff checkが成功した。
+- stacked Draft PRは [#88](https://github.com/team478a/manga/pull/88)。
+
+---
+
 ## 2026-07-31 Codex: M1コマ画像の複数候補・採用・失敗再実行
 
 - `codex/manga-production-m0-v1`上でM1のコマ生成フローを拡張した。
