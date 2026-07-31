@@ -2153,7 +2153,9 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - Branch: `agent/manga-continuity-review-v1`
 - Base: `agent/manga-reference-assets-v1` (`38f7bf4`、Draft PR #95)
-- HEAD: 作業中
+- HEAD: `29040af feat(cloud): add manga continuity review`
+- Draft PR: [#96](https://github.com/team478a/manga/pull/96)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-df707f-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -2184,6 +2186,7 @@ IMPLEMENTED_AWAITING_REVIEW
 - migrations: PASS（33/33、今回追加なし）
 - build: PASS
 - git diff --check: PASS
+- GitHub: Core quality / Migration roundtrip / Windows build / Vercel PASS
 
 ### 変更ファイル
 
