@@ -10,6 +10,8 @@ import {
   Plus,
   ShoppingBag,
   Trash2,
+  Users,
+  WandSparkles,
 } from "lucide-react";
 import {
   addCloudEpisodeAction,
@@ -25,7 +27,8 @@ import {
 import { requireProfile } from "@/lib/auth";
 import { getCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import {
-  getCloudManuscriptPreflight,
+  getCloudProductionProgress,
+  getCloudProjectCharacterSheet,
   getCloudProjectWorkspace,
 } from "@/lib/cloud-creator-server";
 
@@ -50,10 +53,12 @@ export default async function CloudProjectPage({
     notFound();
   }
   const { project, episodes, pages } = workspace;
-  const [marketplaceDraft, manuscript] = await Promise.all([
+  const [marketplaceDraft, productionProgress, characters] = await Promise.all([
     getCloudMarketplaceDraft(projectId).catch(() => null),
-    getCloudManuscriptPreflight(projectId).catch(() => null),
+    getCloudProductionProgress(projectId).catch(() => null),
+    getCloudProjectCharacterSheet(projectId).catch(() => []),
   ]);
+  const manuscript = productionProgress?.manuscript ?? null;
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product &&
       new Date(marketplaceDraft.product.updated_at).getTime() >=
@@ -189,6 +194,106 @@ export default async function CloudProjectPage({
           )}
         </section>
       ) : null}
+      {productionProgress ? (
+        <section className="panel mt-6" aria-labelledby="production-progress">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-xl font-bold" id="production-progress">
+                <WandSparkles className="h-6 w-6 text-violet-700" />
+                作品全体の生成進捗
+              </h2>
+              <p className="mt-2 text-sm text-stone-600">
+                ページごとの画像配置と、実行中・失敗した画像生成をまとめて確認できます。
+              </p>
+            </div>
+            <span className="w-fit rounded-full bg-violet-50 px-3 py-1 text-sm font-bold text-violet-800">
+              完成 {productionProgress.completePageCount}/{productionProgress.pages.length}ページ
+            </span>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {productionProgress.pages.map((page) => {
+              const label =
+                page.status === "complete"
+                  ? "完成"
+                  : page.status === "generating"
+                    ? "生成中"
+                    : page.status === "needs_attention"
+                      ? "要確認"
+                      : "未着手";
+              const style =
+                page.status === "complete"
+                  ? "border-green-200 bg-green-50 text-green-900"
+                  : page.status === "generating"
+                    ? "border-violet-200 bg-violet-50 text-violet-900"
+                    : page.status === "needs_attention"
+                      ? "border-red-200 bg-red-50 text-red-900"
+                      : "border-stone-200 bg-stone-50 text-stone-800";
+              return (
+                <Link
+                  className={`rounded-lg border p-4 transition hover:-translate-y-0.5 hover:shadow-sm ${style}`}
+                  href={`/creator/${projectId}/pages/${page.pageId}`}
+                  key={page.pageId}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <strong>{page.pageNumber}ページ</strong>
+                    <span className="text-xs font-bold">{label}</span>
+                  </div>
+                  <p className="mt-2 text-sm">
+                    画像配置 {page.completedPanelCount}/{page.totalPanelCount}コマ
+                  </p>
+                  {page.queuedPanelCount + page.runningPanelCount > 0 ? (
+                    <p className="mt-1 text-xs">
+                      待機 {page.queuedPanelCount}・処理中 {page.runningPanelCount}
+                    </p>
+                  ) : null}
+                  {page.failedPanelCount > 0 ? (
+                    <p className="mt-1 text-xs font-bold">
+                      再実行が必要 {page.failedPanelCount}コマ
+                    </p>
+                  ) : null}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+      <section className="panel mt-6" aria-labelledby="character-sheet">
+        <h2 className="flex items-center gap-2 text-xl font-bold" id="character-sheet">
+          <Users className="h-6 w-6 text-violet-700" />
+          キャラクター設定表
+        </h2>
+        <p className="mt-2 text-sm text-stone-600">
+          採用したシナリオの人物設定です。画像生成時の人物一貫性にも利用します。
+        </p>
+        {characters.length ? (
+          <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {characters.map((character) => (
+              <article className="rounded-lg border border-violet-100 bg-violet-50/50 p-4" key={character.id}>
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-lg font-bold">{character.name}</h3>
+                  <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold text-violet-800">
+                    {character.role === "protagonist"
+                      ? "主人公"
+                      : character.role === "antagonist"
+                        ? "対立人物"
+                        : "登場人物"}
+                  </span>
+                </div>
+                <dl className="mt-3 space-y-2 text-sm leading-relaxed">
+                  <div><dt className="font-semibold text-stone-500">望み</dt><dd>{character.desire}</dd></div>
+                  <div><dt className="font-semibold text-stone-500">恐れ</dt><dd>{character.fear}</dd></div>
+                  <div><dt className="font-semibold text-stone-500">葛藤</dt><dd>{character.conflict}</dd></div>
+                  <div><dt className="font-semibold text-stone-500">物語での変化</dt><dd>{character.arc}</dd></div>
+                </dl>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-5 rounded-lg border border-dashed border-stone-300 bg-stone-50 p-5 text-sm text-stone-600">
+            この作品にはシナリオ由来のキャラクター設定がありません。AIシナリオから作品を作成すると、ここへ自動表示されます。
+          </div>
+        )}
+      </section>
       <details className="panel mt-6">
         <summary className="cursor-pointer text-lg font-bold">
           <PencilLine className="mr-2 inline h-5 w-5" />

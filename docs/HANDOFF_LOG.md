@@ -65,6 +65,26 @@ READY_FOR_REVIEW
   production build、diff checkが成功した。
 - `npm ci`の既存依存監査にはhigh severity 11件が残るが、今回の表示変更では
   依存更新を行っていない。
+## 2026-07-31 Codex: M1キャラクター設定表・作品全体生成進捗
+
+- `codex/manga-production-m0-v1`へM1の残りである人物設定と全体進捗を追加した。
+- `cloud_story_storyboard_projects`から採用ネームとシナリオをたどり、人物の
+  役割、望み、恐れ、葛藤、変化を作品画面へ読み取り専用で表示する。
+- 人物情報は新規テーブルへ複製せず、既存の所有者RLS経路を利用する。
+- コマ画像生成時はネーム上の登場人物と一致する人物設定をServer側Promptへ
+  自動追加し、通常利用者へ技術Promptを表示しない。
+- 原稿解析へページ別の総コマ数・画像配置数を追加し、最新のコマ別画像Jobと
+  統合して完成、生成中、要確認、未着手を表示する。
+- DB、migration、Provider、Worker、成人向け、Desktop、販売処理は変更していない。
+- 検証: deps、lint、Hub/Desktop typecheck、集中テスト16/16、Hub 302/302、
+  production build、`git diff --check`成功。
+- 未完了: 実ブラウザでの8ページ受入れ、実Provider有料生成、Editor／PDFの
+  目視比較、責任者承認、マージ。
+- 次はM1受入れ後、M2で編集可能な外見、衣装、場所、画風Profileと
+  ページ横断の一貫性評価を実装する。
+
+---
+
 ## 2026-07-31 Codex: M1 8ページ原稿preflightと書き出しfixture
 
 - `codex/manga-production-m0-v1`へ作品単位の原稿チェックを追加した。

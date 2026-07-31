@@ -93,6 +93,13 @@ test("8ページ全コマに画像があれば完成原稿として判定する"
   assert.equal(report.completedPanelCount, 8);
   assert.equal(report.totalPanelCount, 8);
   assert.equal(report.errorCount, 0);
+  assert.equal(report.pageProgress.length, 8);
+  assert.deepEqual(report.pageProgress[0], {
+    pageId: "page-1",
+    pageNumber: 1,
+    totalPanelCount: 1,
+    completedPanelCount: 1,
+  });
 });
 
 test("表紙・順番・空コマ・素材・解像度・文字overflowをまとめて検出する", () => {

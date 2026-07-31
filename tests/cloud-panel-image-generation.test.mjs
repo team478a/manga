@@ -110,6 +110,28 @@ test("選択コマのネームから利用者入力なしで画像生成条件�
   assert.ok(result.generation.height >= 256);
 });
 
+test("シナリオの人物設定を画像生成条件へ引き継ぐ", () => {
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    characterProfiles: [
+      {
+        id: "character-1",
+        name: "明日香",
+        role: "protagonist",
+        desire: "自分の進路を決めたい",
+        fear: "大切な人を失うこと",
+        conflict: "期待と本心の間で揺れる",
+        arc: "自分で一歩を選ぶ",
+      },
+    ],
+  });
+  assert.match(result.generation.prompt, /自分の進路を決めたい/);
+  assert.match(result.generation.prompt, /服装の一貫性/);
+});
+
 test("1回の要求で最大4候補まで安全に指定できる", () => {
   const request = cloudPanelImageGenerationRequestSchema.parse({
     projectId: "50000000-0000-4000-8000-000000000001",

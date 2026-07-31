@@ -8,6 +8,7 @@ import {
   cloudPanelImageGenerationRequestSchema,
 } from "./cloud-panel-image-generation.ts";
 import { cloudStoryboardResultSchema } from "./cloud-storyboard.ts";
+import { cloudStoryScenarioResultSchema } from "./cloud-scenario.ts";
 import {
   DomainError,
   PermissionDeniedError,
@@ -50,7 +51,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         .maybeSingle(),
       supabase
         .from("cloud_story_storyboard_versions")
-        .select("owner_profile_id,result")
+        .select("owner_profile_id,scenario_version_id,result")
         .eq("id", materialization!.storyboard_version_id)
         .eq("owner_profile_id", profile.id)
         .maybeSingle(),
@@ -80,6 +81,15 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
   const storyboard = cloudStoryboardResultSchema.parse(
     storyboardResult.data.result,
   );
+  const { data: scenarioVersion } = await supabase
+    .from("cloud_story_scenario_versions")
+    .select("result")
+    .eq("id", storyboardResult.data.scenario_version_id)
+    .eq("owner_profile_id", profile.id)
+    .maybeSingle();
+  const characterProfiles = cloudStoryScenarioResultSchema.safeParse(
+    scenarioVersion?.result,
+  );
   const canvas = pageCanvasSchema.parse(snapshot.canvas);
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
   let resolved: ReturnType<typeof buildStoryboardPanelGeneration> | null = null;
@@ -93,6 +103,9 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         panelId: request.panelId,
         candidateIndex,
         candidateCount: request.candidateCount,
+        characterProfiles: characterProfiles.success
+          ? characterProfiles.data.characters
+          : undefined,
       });
       await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
       const id = await enqueueCloudGenerationJob({
