@@ -21,6 +21,8 @@ export const cloudPanelImageGenerationFeatureEnabled = () =>
   process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED?.toLowerCase() === "true";
 export const cloudPanelInpaintingFeatureEnabled = () =>
   process.env.CLOUD_PANEL_INPAINTING_ENABLED?.toLowerCase() === "true";
+export const cloudPanelOutpaintingFeatureEnabled = () =>
+  process.env.CLOUD_PANEL_OUTPAINTING_ENABLED?.toLowerCase() === "true";
 
 export const cloudPanelImageGenerationRequestSchema = z.object({
   projectId: z.string().uuid(),
@@ -30,6 +32,9 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
   candidateCount: z.number().int().min(1).max(4).default(1),
   sourceAssetId: z.string().uuid().optional(),
   maskAssetId: z.string().uuid().optional(),
+  outpaintingDirection: z
+    .enum(["left", "right", "top", "bottom", "all"])
+    .optional(),
   revisionPreset: z
     .enum(["face", "hands", "expression", "costume", "background", "polish"])
     .optional(),
@@ -38,6 +43,7 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
   const revisionValues = [
     value.sourceAssetId,
     value.maskAssetId,
+    value.outpaintingDirection,
     value.revisionPreset,
     value.revisionInstruction,
   ].filter(Boolean).length;
@@ -52,6 +58,18 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
       code: "custom",
       path: ["maskAssetId"],
       message: "部分修正には修正元画像が必要です。",
+    });
+  if (value.outpaintingDirection && !value.sourceAssetId)
+    context.addIssue({
+      code: "custom",
+      path: ["outpaintingDirection"],
+      message: "画角拡張には修正元画像が必要です。",
+    });
+  if (value.maskAssetId && value.outpaintingDirection)
+    context.addIssue({
+      code: "custom",
+      path: ["outpaintingDirection"],
+      message: "部分修正と画角拡張は同時に指定できません。",
     });
 });
 
@@ -82,6 +100,14 @@ const angleLabels: Record<
   top_down: "真上",
   dynamic: "躍動的な角度",
 };
+
+const outpaintingDirectionLabels = {
+  left: "左側",
+  right: "右側",
+  top: "上側",
+  bottom: "下側",
+  all: "全方向",
+} as const;
 
 function imageSize(width: number, height: number) {
   const safeWidth = Math.max(1, width);
@@ -116,6 +142,7 @@ export function buildStoryboardPanelGeneration(input: {
   revision?: {
     sourceAssetId: string;
     maskAssetId?: string;
+    outpaintingDirection?: "left" | "right" | "top" | "bottom" | "all";
     preset: "face" | "hands" | "expression" | "costume" | "background" | "polish";
     instruction?: string;
   };
@@ -284,6 +311,9 @@ export function buildStoryboardPanelGeneration(input: {
     input.revision
       ? `修正指示: ${revisionDirections[input.revision.preset]}${input.revision.instruction ? ` 追加要望:${input.revision.instruction}` : ""}`
       : "",
+    input.revision?.outpaintingDirection
+      ? `画角拡張: ${outpaintingDirectionLabels[input.revision.outpaintingDirection]}へ自然に背景と構図を延長する。元画像内の人物、衣装、表情、線、色を変更しない。`
+      : "",
     "吹き出し、セリフ、字幕、ロゴ、透かしは描かない。",
   ].filter(Boolean).join("\n");
   if (prompt.length > 20_000)
@@ -325,11 +355,14 @@ export function buildStoryboardPanelGeneration(input: {
       ).slice(0, 8),
       operation: input.revision?.maskAssetId
         ? ("inpainting" as const)
-        : input.revision
-          ? ("image_to_image" as const)
-          : ("text_to_image" as const),
+        : input.revision?.outpaintingDirection
+          ? ("outpainting" as const)
+          : input.revision
+            ? ("image_to_image" as const)
+            : ("text_to_image" as const),
       sourceAssetId: input.revision?.sourceAssetId,
       maskAssetId: input.revision?.maskAssetId,
+      outpaintingDirection: input.revision?.outpaintingDirection,
       revisionPreset: input.revision?.preset,
       revisionInstruction: input.revision?.instruction,
       ...imageSize(canvasPanel.width, canvasPanel.height),

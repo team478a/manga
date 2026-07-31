@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import sharp from "sharp";
 import { BlackForestLabsFluxImageProvider } from "../src/lib/cloud-flux-image-provider.ts";
 
 const capability = {
@@ -196,4 +197,84 @@ test("BFL Fill adapterは元画像と白黒マスクをbase64で送信する", a
   assert.equal(request.mask, Buffer.from([137, 80, 78, 71]).toString("base64"));
   assert.equal("input_image" in request, false);
   assert.equal(result.usage.actualCostMicros, 50_000);
+});
+
+test("BFL Fill adapterは元画像を右へ拡張して余白だけを白マスクにする", async () => {
+  const source = await sharp({
+    create: {
+      width: 400,
+      height: 300,
+      channels: 3,
+      background: { r: 60, g: 80, b: 100 },
+    },
+  }).png().toBuffer();
+  const calls = [];
+  const fillCapability = {
+    ...capability,
+    modelId: "flux-pro-1.0-fill",
+    operations: ["inpainting", "outpainting"],
+    pricingVersion: "bfl-flux1-fill-2026-08",
+  };
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-pro-1.0-fill",
+    capability: fillCapability,
+    pollIntervalMs: 1,
+    fetcher: async (url, init) => {
+      calls.push({ url: String(url), init });
+      if (calls.length === 1)
+        return new Response(source, {
+          status: 200,
+          headers: { "content-type": "image/png" },
+        });
+      if (calls.length === 2)
+        return new Response(JSON.stringify({
+          id: "bfl-outpaint-1",
+          polling_url: "https://api.bfl.ai/v1/get_result?id=bfl-outpaint-1",
+        }), { status: 200 });
+      if (calls.length === 3)
+        return new Response(JSON.stringify({
+          status: "Ready",
+          result: { sample: "https://delivery.bfl.ai/result/outpaint.png" },
+        }), { status: 200 });
+      return new Response(source, { status: 200 });
+    },
+  });
+  await provider.generate({
+    kind: "image",
+    jobType: "background",
+    prompt: "extend the station platform",
+    negativePrompt: "letters",
+    operation: "outpainting",
+    outpaintingDirection: "right",
+    sourceAssetId: "40000000-0000-4000-8000-000000000041",
+    referenceAssetIds: ["40000000-0000-4000-8000-000000000041"],
+    revisionPreset: "background",
+  }, {
+    ...context,
+    referenceImageUrls: ["https://project.supabase.co/source.png?token=three"],
+  });
+  const request = JSON.parse(calls[1].init.body);
+  const preparedImage = Buffer.from(request.image, "base64");
+  const preparedMask = Buffer.from(request.mask, "base64");
+  const imageMetadata = await sharp(preparedImage).metadata();
+  const maskMetadata = await sharp(preparedMask).metadata();
+  assert.deepEqual(
+    { width: imageMetadata.width, height: imageMetadata.height },
+    { width: 500, height: 300 },
+  );
+  assert.deepEqual(
+    { width: maskMetadata.width, height: maskMetadata.height },
+    { width: 500, height: 300 },
+  );
+  const existingPixel = await sharp(preparedMask)
+    .extract({ left: 200, top: 150, width: 1, height: 1 })
+    .raw()
+    .toBuffer();
+  const extendedPixel = await sharp(preparedMask)
+    .extract({ left: 450, top: 150, width: 1, height: 1 })
+    .raw()
+    .toBuffer();
+  assert.equal(existingPixel[0], 0);
+  assert.equal(extendedPixel[0], 255);
 });

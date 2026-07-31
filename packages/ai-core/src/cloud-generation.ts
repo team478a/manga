@@ -86,10 +86,13 @@ export const cloudGenerationInputSchema = z
       .optional(),
     referenceAssetIds: z.array(z.string().uuid()).max(8).optional(),
     operation: z
-      .enum(["text_to_image", "image_to_image", "inpainting"])
+      .enum(["text_to_image", "image_to_image", "inpainting", "outpainting"])
       .optional(),
     sourceAssetId: z.string().uuid().optional(),
     maskAssetId: z.string().uuid().optional(),
+    outpaintingDirection: z
+      .enum(["left", "right", "top", "bottom", "all"])
+      .optional(),
     revisionPreset: cloudImageRevisionPresetSchema.optional(),
     revisionInstruction: z.string().trim().max(1000).optional(),
   })
@@ -114,7 +117,8 @@ export const cloudGenerationInputSchema = z
       });
     if (
       (value.operation === "image_to_image" ||
-        value.operation === "inpainting") &&
+        value.operation === "inpainting" ||
+        value.operation === "outpainting") &&
       !value.sourceAssetId
     )
       context.addIssue({
@@ -143,6 +147,18 @@ export const cloudGenerationInputSchema = z
         code: "custom",
         path: ["maskAssetId"],
         message: "マスク画像は部分修正でのみ指定できます。",
+      });
+    if (value.operation === "outpainting" && !value.outpaintingDirection)
+      context.addIssue({
+        code: "custom",
+        path: ["outpaintingDirection"],
+        message: "画像を拡張する方向を指定してください。",
+      });
+    if (value.operation !== "outpainting" && value.outpaintingDirection)
+      context.addIssue({
+        code: "custom",
+        path: ["outpaintingDirection"],
+        message: "拡張方向は画角拡張でのみ指定できます。",
       });
   });
 export type CloudGenerationInput = z.output<typeof cloudGenerationInputSchema>;
@@ -205,7 +221,9 @@ export const cloudProviderCapabilitySchema = z.object({
   kind: cloudGenerationKindSchema,
   jobTypes: z.array(cloudGenerationJobTypeSchema).min(1),
   operations: z
-    .array(z.enum(["text_to_image", "image_to_image", "inpainting"]))
+    .array(
+      z.enum(["text_to_image", "image_to_image", "inpainting", "outpainting"]),
+    )
     .min(1)
     .optional(),
   policyVersion: z.string().trim().min(1).max(100),

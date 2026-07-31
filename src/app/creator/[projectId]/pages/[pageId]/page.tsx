@@ -11,6 +11,7 @@ import { CloudCanvasEditor } from "./CloudCanvasEditor";
 import {
   cloudPanelImageGenerationFeatureEnabled,
   cloudPanelInpaintingFeatureEnabled,
+  cloudPanelOutpaintingFeatureEnabled,
 } from "@/lib/cloud-panel-image-generation";
 
 export default async function CloudCanvasPage({
@@ -49,6 +50,7 @@ export default async function CloudCanvasPage({
       initialQuota={quota}
       storyboardPanelGenerationEnabled={cloudPanelImageGenerationFeatureEnabled()}
       panelInpaintingEnabled={cloudPanelInpaintingFeatureEnabled()}
+      panelOutpaintingEnabled={cloudPanelOutpaintingFeatureEnabled()}
     />
   );
 }

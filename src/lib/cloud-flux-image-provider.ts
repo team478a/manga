@@ -1,4 +1,5 @@
 import { z } from "zod";
+import sharp from "sharp";
 import {
   AIProviderError,
   type CloudGenerationContext,
@@ -77,7 +78,7 @@ function providerError(status: number) {
   );
 }
 
-async function fetchBase64Image(
+async function fetchImageBytes(
   fetcher: typeof fetch,
   url: string,
   signal: AbortSignal,
@@ -115,7 +116,82 @@ async function fetchBase64Image(
       "修正元画像が処理上限を超えました。",
       false,
     );
-  return Buffer.from(bytes).toString("base64");
+  return bytes;
+}
+
+type OutpaintingDirection = "left" | "right" | "top" | "bottom" | "all";
+
+function extensionSize(size: number, bothSides: boolean) {
+  const available = 2048 - size;
+  const requested = Math.max(16, Math.round(size * (bothSides ? 0.125 : 0.25)));
+  return bothSides
+    ? Math.min(requested, Math.floor(available / 2))
+    : Math.min(requested, available);
+}
+
+async function prepareOutpainting(
+  bytes: Uint8Array,
+  direction: OutpaintingDirection,
+) {
+  const source = Buffer.from(bytes);
+  const metadata = await sharp(source, { limitInputPixels: 50_000_000 }).metadata();
+  if (!metadata.width || !metadata.height)
+    throw new AIProviderError(
+      "provider_rejected",
+      "画角拡張する画像のサイズを確認できませんでした。",
+      false,
+    );
+  const horizontal = direction === "all"
+    ? extensionSize(metadata.width, true)
+    : direction === "left" || direction === "right"
+      ? extensionSize(metadata.width, false)
+      : 0;
+  const vertical = direction === "all"
+    ? extensionSize(metadata.height, true)
+    : direction === "top" || direction === "bottom"
+      ? extensionSize(metadata.height, false)
+      : 0;
+  if ((direction === "all" && (!horizontal || !vertical)) ||
+      (direction !== "all" && !horizontal && !vertical))
+    throw new AIProviderError(
+      "provider_rejected",
+      "画像サイズが画角拡張の上限に達しています。",
+      false,
+    );
+  const extend = {
+    left: direction === "left" || direction === "all" ? horizontal : 0,
+    right: direction === "right" || direction === "all" ? horizontal : 0,
+    top: direction === "top" || direction === "all" ? vertical : 0,
+    bottom: direction === "bottom" || direction === "all" ? vertical : 0,
+  };
+  const image = await sharp(source, { limitInputPixels: 50_000_000 })
+    .extend({ ...extend, background: { r: 255, g: 255, b: 255, alpha: 1 } })
+    .png()
+    .toBuffer();
+  const blackMask = await sharp({
+    create: {
+      width: metadata.width,
+      height: metadata.height,
+      channels: 3,
+      background: { r: 0, g: 0, b: 0 },
+    },
+  })
+    .png()
+    .toBuffer();
+  const mask = await sharp(blackMask)
+    .extend({ ...extend, background: { r: 255, g: 255, b: 255 } })
+    .png()
+    .toBuffer();
+  if (image.length > 25_000_000 || mask.length > 25_000_000)
+    throw new AIProviderError(
+      "response_too_large",
+      "画角拡張用画像が処理上限を超えました。",
+      false,
+    );
+  return {
+    image: image.toString("base64"),
+    mask: mask.toString("base64"),
+  };
 }
 
 export class BlackForestLabsFluxImageProvider implements CloudImageGenerationProvider {
@@ -154,8 +230,10 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
       const prompt = input.negativePrompt.trim()
         ? `${input.prompt}\nAvoid: ${input.negativePrompt}`
         : input.prompt;
-      const isInpainting = this.config.model === "flux-pro-1.0-fill";
-      if (isInpainting !== (input.operation === "inpainting"))
+      const usesFill =
+        input.operation === "inpainting" || input.operation === "outpainting";
+      const isFillModel = this.config.model === "flux-pro-1.0-fill";
+      if (isFillModel !== usesFill)
         throw new AIProviderError(
           "provider_rejected",
           "画像修正方式とProvider設定が一致しません。",
@@ -165,19 +243,39 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
         0,
         this.config.model === "flux-2-klein-9b" ? 4 : 8,
       );
-      const requestBody = isInpainting
+      let fillInput: { image: string; mask: string } | null = null;
+      if (input.operation === "inpainting") {
+        const [image, mask] = await Promise.all([
+          fetchImageBytes(
+            fetcher,
+            referenceImageUrls[0] ?? "",
+            controller.signal,
+          ),
+          fetchImageBytes(
+            fetcher,
+            context.maskImageUrl ?? "",
+            controller.signal,
+          ),
+        ]);
+        fillInput = {
+          image: Buffer.from(image).toString("base64"),
+          mask: Buffer.from(mask).toString("base64"),
+        };
+      } else if (input.operation === "outpainting") {
+        const source = await fetchImageBytes(
+          fetcher,
+          referenceImageUrls[0] ?? "",
+          controller.signal,
+        );
+        fillInput = await prepareOutpainting(
+          source,
+          input.outpaintingDirection!,
+        );
+      }
+      const requestBody = fillInput
         ? {
             prompt,
-            image: await fetchBase64Image(
-              fetcher,
-              referenceImageUrls[0] ?? "",
-              controller.signal,
-            ),
-            mask: await fetchBase64Image(
-              fetcher,
-              context.maskImageUrl ?? "",
-              controller.signal,
-            ),
+            ...fillInput,
             output_format: "png",
             safety_tolerance: 1,
           }

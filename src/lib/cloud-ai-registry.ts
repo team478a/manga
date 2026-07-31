@@ -85,14 +85,17 @@ export async function configuredRuntimeCapabilities() {
         enabled: true,
       }),
     );
-    if (process.env.CLOUD_PANEL_INPAINTING_ENABLED === "true")
+    if (
+      process.env.CLOUD_PANEL_INPAINTING_ENABLED === "true" ||
+      process.env.CLOUD_PANEL_OUTPAINTING_ENABLED === "true"
+    )
       capabilities.unshift(
         cloudProviderCapabilitySchema.parse({
           providerId: "black-forest-labs",
           modelId: "flux-pro-1.0-fill",
           kind: "image",
           jobTypes: ["background"],
-          operations: ["inpainting"],
+          operations: ["inpainting", "outpainting"],
           policyVersion: "general-v1",
           pricingVersion: "bfl-flux1-fill-2026-08",
           enabled: true,

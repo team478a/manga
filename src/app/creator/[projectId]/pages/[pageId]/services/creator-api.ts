@@ -115,6 +115,7 @@ export async function createStoryboardPanelGenerationJob(body: {
   candidateCount?: number;
   sourceAssetId?: string;
   maskAssetId?: string;
+  outpaintingDirection?: "left" | "right" | "top" | "bottom" | "all";
   revisionPreset?: "face" | "hands" | "expression" | "costume" | "background" | "polish";
   revisionInstruction?: string;
 }) {

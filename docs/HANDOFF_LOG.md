@@ -4,6 +4,46 @@
 
 ---
 
+## 2026-08-01 Codex: M3-3 コマ画角拡張
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-panel-outpainting-v1`
+- Base: `agent/manga-panel-inpainting-v1`（Draft PR #98）
+- Draft PR: [#99](https://github.com/team478a/manga/pull/99)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-f7bc01-team478as-projects.vercel.app`
+
+### 完了
+
+- 採用画像を左・右・上・下・全方向へ広げる操作を原稿編集へ追加。
+- Worker内で元画像へ余白を追加し、元領域が黒・追加領域が白のマスクを生成。
+- `outpainting` operationをBFL FLUX.1 Fillへ接続。
+- 元画像のコマ配置・作品・所有者を検証し、候補採用を非破壊layerにした。
+- 専用Feature Flagを認証・DBアクセス前にfail closed。
+
+### 未完了
+
+- 実Provider有料生成、実ブラウザ確認、責任者承認。
+- 自動被写体マスク、修正前後スライダー。
+
+### 検証
+
+- deps:check、lint、Hub/Desktop typecheck: PASS
+- Hub: 333/333、Canvas: 26/26、AI: 47/47、Desktop: 182/182
+- migration validate: 34/34（今回追加なし）
+- production build、git diff --check: PASS
+- GitHub Core quality、Migration roundtrip、Windows build、Vercel: PASS
+
+### 詳細
+
+- `docs/cloud/MANGA_PANEL_OUTPAINTING_V1.md`
+
+---
+
 ## 2026-08-01 Codex: M3-2 マスク付きコマ部分修正
 
 ### 状態

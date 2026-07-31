@@ -77,8 +77,7 @@ Cloud Adult OptionはDesktop Adultを置き換えない。Desktopが利用でき
 - 一般向け画像生成と成人向けProvider変更が単一の統合リリースへ揃っていない
 - Cloud rendererが全Panel layerを最終原稿へ忠実に合成できない
 - キャラクター・衣装・場所・小物・画風の作品全体管理が弱い
-- 参照画像によるコマ修正候補生成とマスク付きInpaintingは実装済みだが、
-  Outpaintingがない
+- 参照画像によるコマ修正候補生成、マスク付きInpainting、方向指定Outpaintingを実装済み
 - シナリオ変更後の下流成果物の無効化・差分更新がない
 - 大量ページ向けの章・シーン管理、仮想化一覧、生成キュー操作がない
 - 大規模PDF／ZIPの永続export Job、再開、分割生成がない
@@ -299,7 +298,9 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 - M3-2 選択範囲をPNGマスクとして保存するマスク付きInpaintingを実装
 - 同一作品・所有者・コマ・寸法をサーバーで再検証し、private署名URLをWorker内だけで利用
 - BFL FLUX.1 Fill [pro]へ接続し、候補採用を`correction` layerとして非破壊保存
-- Outpainting、自動マスク、修正前後スライダーは未実装
+- M3-3 左・右・上・下・全方向のOutpaintingを実装
+- Worker内で元画像へ余白を追加し、追加領域だけを白マスクにしてBFL Fillへ送信
+- 自動マスク、修正前後スライダーは未実装
 
 実装:
 

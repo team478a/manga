@@ -6,6 +6,7 @@ import {
   buildStoryboardPanelGeneration,
   cloudPanelImageGenerationFeatureEnabled,
   cloudPanelInpaintingFeatureEnabled,
+  cloudPanelOutpaintingFeatureEnabled,
   cloudPanelImageGenerationRequestSchema,
 } from "./cloud-panel-image-generation.ts";
 import { cloudStoryboardResultSchema } from "./cloud-storyboard.ts";
@@ -26,6 +27,11 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
   const request = cloudPanelImageGenerationRequestSchema.parse(input);
   if (request.maskAssetId && !cloudPanelInpaintingFeatureEnabled())
     throw new PermissionDeniedError("コマの部分修正は現在停止中です。");
+  if (
+    request.outpaintingDirection &&
+    !cloudPanelOutpaintingFeatureEnabled()
+  )
+    throw new PermissionDeniedError("コマの画角拡張は現在停止中です。");
   const { supabase, profile } = await cloudCreatorContext();
 
   const { data: materialization, error: materializationError } = await supabase
@@ -177,6 +183,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
     ? {
         sourceAssetId: request.sourceAssetId,
         maskAssetId: request.maskAssetId,
+        outpaintingDirection: request.outpaintingDirection,
         preset: request.revisionPreset,
         instruction: request.revisionInstruction,
       }
