@@ -4,6 +4,7 @@ import sharp from "sharp";
 import {
   buildStoryboardPanelGeneration,
   cloudPanelImageGenerationFeatureEnabled,
+  cloudPanelImageGenerationRequestSchema,
 } from "../src/lib/cloud-panel-image-generation.ts";
 import { MockCloudImageProvider } from "../src/lib/cloud-ai-mock-provider.ts";
 
@@ -107,6 +108,47 @@ test("選択コマのネームから利用者入力なしで画像生成条件�
   assert.doesNotMatch(result.generation.prompt, /行こう/);
   assert.ok(result.generation.width >= 256);
   assert.ok(result.generation.height >= 256);
+});
+
+test("1回の要求で最大4候補まで安全に指定できる", () => {
+  const request = cloudPanelImageGenerationRequestSchema.parse({
+    projectId: "50000000-0000-4000-8000-000000000001",
+    pageId,
+    panelId,
+    idempotencyKey: "60000000-0000-4000-8000-000000000001",
+    candidateCount: 4,
+  });
+  assert.equal(request.candidateCount, 4);
+  assert.throws(
+    () =>
+      cloudPanelImageGenerationRequestSchema.parse({
+        ...request,
+        candidateCount: 5,
+      }),
+    /Too big|less than or equal to 4/i,
+  );
+});
+
+test("候補ごとに同じネームを保ちながら異なる制作指示を付ける", () => {
+  const prompts = Array.from({ length: 4 }, (_, candidateIndex) =>
+    buildStoryboardPanelGeneration({
+      storyboard,
+      pageNumber: 1,
+      canvas,
+      panelId,
+      candidateIndex,
+      candidateCount: 4,
+    }),
+  );
+  assert.deepEqual(
+    prompts.map((result) => result.candidateNumber),
+    [1, 2, 3, 4],
+  );
+  assert.equal(new Set(prompts.map((result) => result.generation.prompt)).size, 4);
+  for (const result of prompts) {
+    assert.match(result.generation.prompt, /朝の駅前/);
+    assert.equal(result.candidateCount, 4);
+  }
 });
 
 test("追加コマや存在しないコマはProvider呼出前に拒否する", () => {

@@ -220,6 +220,16 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 8. 表紙、ページ順、空コマ、低解像度、文字overflowのpreflight
 9. 8ページPDF／連番PNG出力
 
+2026-07-31進捗:
+
+- 完了: 1、2、3
+- 今回完了: 4の複数候補受付・比較表示、5の候補採用配置、
+  6の失敗候補だけの再実行
+- 継続: ページ全体の生成進捗、キャラクター設定表、原稿preflight、
+  8ページfixtureによるPDF／連番PNG完走検証
+- 候補生成は既存Queue・quota・moderation・private Storageを維持し、
+  migrationなしで1コマ2〜4案を別Jobとして管理する
+
 完了条件:
 
 - 市場分析を省略しても作品を開始できる

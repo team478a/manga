@@ -112,12 +112,16 @@ export async function createStoryboardPanelGenerationJob(body: {
   pageId: string;
   panelId: string;
   idempotencyKey: string;
+  candidateCount?: number;
 }) {
   return responseJson<{
     id: string;
+    jobs: Array<{ id: string; candidateNumber: number }>;
     panelId: string;
     pageNumber: number;
     panelNumber: number;
+    requestedCandidateCount: number;
+    partial: boolean;
   }>(
     await fetch("/api/creator/storyboard-panel-generation", {
       method: "POST",
