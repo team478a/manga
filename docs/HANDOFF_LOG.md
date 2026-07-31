@@ -1938,6 +1938,68 @@ READY_FOR_REVIEW
 
 ---
 
+## 2026-07-31 Codex → 次担当AI（長編マンガ制作 M0ページ合成基盤）
+
+### 状態
+
+IMPLEMENTED
+
+### ブランチ・コミット
+
+- Branch: `codex/manga-production-m0-v1`
+- Base: `codex/cloud-general-image-v1` (`56ab885`)
+- HEAD: コミット後に更新
+
+### 完了
+
+- 100ページ制作を目標とする段階実装計画を追加
+- Cloud編集表示、SVG preview、PNG/PDF、販売packageを共通描画器へ統合
+- 分離Panel Layerの順序、fit、変形、opacity、blend、maskを反映
+- Panel shape、吹き出しtail、縦横文字、ルビをServer描画へ反映
+- Exportが表示に必要な全Panel Layer Assetを収集するよう修正
+- 複数画像が最終PNGへ残る回帰テストを追加
+
+### 未完了
+
+- 実ブラウザで編集表示とPreview/PDFの一致を確認
+- M1の8ページ縦切りE2E fixture
+- キャラクター設定表、ページ横断整合性、差分再生成
+- Draft PR、CI、Vercel Preview、責任者確認
+
+### 変更ファイル
+
+- `src/lib/cloud-canvas-svg.ts`
+- `src/lib/cloud-canvas-render.ts`
+- `src/lib/cloud-canvas-export.ts`
+- `src/app/creator/[projectId]/pages/[pageId]/services/canvas-svg.ts`
+- `src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx`
+- `tests/cloud-canvas-render.test.mjs`
+- `docs/cloud/MANGA_100_PAGE_IMPLEMENTATION_PLAN.md`
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub）
+- hub:test: PASS（284/284）
+- Cloud Canvas集中テスト: PASS（5/5）
+- build: PASS
+- git diff --check: PASS
+
+### 次担当者が最初に行うこと
+
+1. 8ページfixtureで編集表示、Preview、PNG/PDFの視覚差分を確認する。
+2. 1ページ内の複数コマ一括生成と、失敗コマだけの再実行を実装する。
+3. M1完了後にキャラクター参照とseedを持つ整合性契約へ進む。
+
+### 注意事項
+
+- 一般向けCloudを先に完成させ、成人向け画像を一般向けProviderへ送信しない。
+- 成人向けDesktopは将来の主要実行環境として残し、Canvas schema互換を壊さない。
+- migration、Feature Flag、本番公開、外部有料生成は今回実施していない。
+
+---
+
 ## 追記テンプレート
 
 ```md

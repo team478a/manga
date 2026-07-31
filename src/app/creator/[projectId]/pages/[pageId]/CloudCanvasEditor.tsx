@@ -65,6 +65,10 @@ function now() {
   return new Date().toISOString();
 }
 
+function svgDataUrl(svg: string) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 export function CloudCanvasEditor({
   project,
   pages,
@@ -136,15 +140,48 @@ export function CloudCanvasEditor({
     () => new Map(assets.map((asset) => [asset.id, asset])),
     [assets],
   );
-  const previewUrl = useMemo(
+  const canvasSvgAssets = useMemo(
     () =>
-      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-        createCanvasSvg(
-          canvas,
-          new Map(assets.map((asset) => [asset.id, asset.url])),
-        ),
-      )}`,
-    [assets, canvas],
+      new Map(
+        assets.map((asset) => [
+          asset.id,
+          {
+            href: asset.url,
+            width: asset.width,
+            height: asset.height,
+          },
+        ]),
+      ),
+    [assets],
+  );
+  const previewUrl = useMemo(
+    () => svgDataUrl(createCanvasSvg(canvas, canvasSvgAssets)),
+    [canvas, canvasSvgAssets],
+  );
+  const panelPreviewUrls = useMemo(
+    () =>
+      new Map(
+        canvas.panels.map((panel) => {
+          const panelCanvas: PageCanvas = {
+            schemaVersion: 1,
+            pageId: canvas.pageId,
+            width: panel.width,
+            height: panel.height,
+            backgroundColor: "transparent",
+            panels: [{ ...panel, x: 0, y: 0, rotation: 0, zIndex: 0 }],
+            panelLayers: canvas.panelLayers.filter(
+              (layer) => layer.panelId === panel.id,
+            ),
+            balloons: [],
+            textObjects: [],
+          };
+          return [
+            panel.id,
+            svgDataUrl(createCanvasSvg(panelCanvas, canvasSvgAssets)),
+          ];
+        }),
+      ),
+    [canvas, canvasSvgAssets],
   );
   const items = useMemo(
     () =>
@@ -1070,21 +1107,9 @@ export function CloudCanvasEditor({
               .filter((item) => item.visible)
               .sort((a, b) => a.zIndex - b.zIndex)
               .map((panel) => {
-                const panelLayers = canvas.panelLayers
-                  .filter(
-                    (layer) =>
-                      layer.panelId === panel.id &&
-                      layer.visible &&
-                      layer.assetId,
-                  )
-                  .sort((a, b) => a.orderIndex - b.orderIndex);
-                const topLayer = panelLayers.at(-1);
-                const asset = assetMap.get(
-                  topLayer?.assetId ?? panel.imageAssetId ?? "",
-                );
                 return (
                   <div
-                    className={`absolute overflow-hidden ${selection?.type === "panel" && selection.id === panel.id ? "ring-4 ring-blue-500" : ""}`}
+                    className={`absolute ${selection?.type === "panel" && selection.id === panel.id ? "ring-4 ring-blue-500" : ""}`}
                     key={panel.id}
                     onPointerDown={(event) =>
                       pointerDown(event, { type: "panel", id: panel.id }, panel)
@@ -1098,22 +1123,15 @@ export function CloudCanvasEditor({
                       height: `${(panel.height / canvas.height) * 100}%`,
                       zIndex: panel.zIndex,
                       transform: `rotate(${panel.rotation}deg)`,
-                      background: panel.fillColor,
-                      border: `${Math.max(1, (panel.borderWidth * canvasElement.current?.clientWidth!) / canvas.width || 1)}px solid ${panel.borderColor}`,
                       touchAction: "none",
                     }}
                   >
-                    {asset ? (
-                      <img
-                        alt=""
-                        draggable={false}
-                        className="h-full w-full object-cover"
-                        src={asset.url}
-                        style={{
-                          opacity: topLayer?.opacity ?? panel.imageOpacity,
-                        }}
-                      />
-                    ) : null}
+                    <img
+                      alt=""
+                      draggable={false}
+                      className="h-full w-full"
+                      src={panelPreviewUrls.get(panel.id)}
+                    />
                   </div>
                 );
               })}

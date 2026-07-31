@@ -1,5 +1,28 @@
 # MANGAI Current Task
 
+## 2026-07-31 長編マンガ制作 M0: Cloudページ合成基盤
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- Base: `codex/cloud-general-image-v1` (`56ab885`)
+- 計画:
+  [`MANGA_100_PAGE_IMPLEMENTATION_PLAN.md`](cloud/MANGA_100_PAGE_IMPLEMENTATION_PLAN.md)
+- 対象: 一般向けCloud Canvasの編集表示、プレビュー、PNG/PDF、販売パッケージ
+- 実装:
+  - ブラウザとServer書き出しが同じSVGページ合成器を利用
+  - コマ内の背景・人物・小物・効果・トーン・補正を順番どおりに合成
+  - cover/contain/manual、位置、倍率、回転、透明度、blend modeを反映
+  - mask layer、斜め・曲線コマ、吹き出し尻尾、縦横文字・ルビを反映
+  - 編集画面のコマ表示を最上位画像1枚から全レイヤー合成へ変更
+  - Export時に最上位だけでなく必要な全レイヤーAssetを収集
+  - 旧`flattened_legacy`だけのPageは従来画像へfallback
+- Desktop方針:
+  同じCanvas schemaと描画規則を維持し、将来の成人向けDesktopへ作品を
+  引き渡せる境界を保持。今回Desktopコードと成人向けProviderは変更しない
+- 検証: deps、lint、Hub typecheck、Hub 284/284、production build、
+  Cloud Canvas集中テスト5/5、diff check成功
+- 未実施: Draft PR、CI、Vercel Preview、実ブラウザでの編集→保存→PDF比較
+
 ## 2026-07-31 一般向けモニターWebマニュアル同期
 
 - 状態: `READY_FOR_REVIEW`
