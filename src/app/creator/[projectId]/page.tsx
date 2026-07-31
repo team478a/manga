@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import {
   ArrowDown,
   ArrowUp,
+  AlertTriangle,
+  CheckCircle2,
   FilePlus2,
   PencilLine,
   Plus,
@@ -22,7 +24,10 @@ import {
 } from "@/app/creator/actions";
 import { requireProfile } from "@/lib/auth";
 import { getCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
-import { getCloudProjectWorkspace } from "@/lib/cloud-creator-server";
+import {
+  getCloudManuscriptPreflight,
+  getCloudProjectWorkspace,
+} from "@/lib/cloud-creator-server";
 
 export default async function CloudProjectPage({
   params,
@@ -45,9 +50,10 @@ export default async function CloudProjectPage({
     notFound();
   }
   const { project, episodes, pages } = workspace;
-  const marketplaceDraft = await getCloudMarketplaceDraft(projectId).catch(
-    () => null,
-  );
+  const [marketplaceDraft, manuscript] = await Promise.all([
+    getCloudMarketplaceDraft(projectId).catch(() => null),
+    getCloudManuscriptPreflight(projectId).catch(() => null),
+  ]);
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product &&
       new Date(marketplaceDraft.product.updated_at).getTime() >=
@@ -87,6 +93,101 @@ export default async function CloudProjectPage({
         <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
           {query.error}
         </p>
+      ) : null}
+      {manuscript ? (
+        <section className="panel mt-6" aria-labelledby="manuscript-status">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2
+                className="flex items-center gap-2 text-xl font-bold"
+                id="manuscript-status"
+              >
+                {manuscript.ready ? (
+                  <CheckCircle2 className="h-6 w-6 text-green-700" />
+                ) : (
+                  <AlertTriangle className="h-6 w-6 text-amber-700" />
+                )}
+                原稿チェック
+              </h2>
+              <p className="mt-2 text-sm text-stone-600">
+                表紙、ページ順、空コマ、画像解像度、文字の収まりを自動確認します。
+              </p>
+            </div>
+            <span
+              className={`w-fit rounded-full px-3 py-1 text-sm font-bold ${
+                manuscript.ready
+                  ? "bg-green-50 text-green-800"
+                  : "bg-amber-50 text-amber-900"
+              }`}
+            >
+              {manuscript.ready ? "書き出し準備完了" : "修正項目あり"}
+            </span>
+          </div>
+          <dl className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="rounded-lg bg-stone-50 p-3">
+              <dt className="text-xs text-stone-500">8ページ基準</dt>
+              <dd className="mt-1 text-xl font-bold">
+                {manuscript.pageCount}/{manuscript.targetPageCount}
+              </dd>
+            </div>
+            <div className="rounded-lg bg-stone-50 p-3">
+              <dt className="text-xs text-stone-500">画像配置済みコマ</dt>
+              <dd className="mt-1 text-xl font-bold">
+                {manuscript.completedPanelCount}/{manuscript.totalPanelCount}
+              </dd>
+            </div>
+            <div className="rounded-lg bg-red-50 p-3">
+              <dt className="text-xs text-red-700">要修正</dt>
+              <dd className="mt-1 text-xl font-bold text-red-800">
+                {manuscript.errorCount}
+              </dd>
+            </div>
+            <div className="rounded-lg bg-amber-50 p-3">
+              <dt className="text-xs text-amber-700">確認推奨</dt>
+              <dd className="mt-1 text-xl font-bold text-amber-900">
+                {manuscript.warningCount}
+              </dd>
+            </div>
+          </dl>
+          {manuscript.issues.length ? (
+            <ul className="mt-5 space-y-2">
+              {manuscript.issues.slice(0, 12).map((issue, index) => (
+                <li
+                  className={`rounded-lg border p-3 text-sm ${
+                    issue.severity === "error"
+                      ? "border-red-200 bg-red-50 text-red-900"
+                      : "border-amber-200 bg-amber-50 text-amber-950"
+                  }`}
+                  key={`${issue.code}-${issue.pageId ?? "project"}-${issue.panelId ?? index}`}
+                >
+                  {issue.pageId ? (
+                    <Link
+                      className="font-semibold underline"
+                      href={`/creator/${projectId}/pages/${issue.pageId}`}
+                    >
+                      {issue.message}
+                    </Link>
+                  ) : (
+                    <span className="font-semibold">{issue.message}</span>
+                  )}
+                </li>
+              ))}
+              {manuscript.issues.length > 12 ||
+              manuscript.truncatedIssueCount > 0 ? (
+                <li className="text-sm text-stone-600">
+                  ほか
+                  {Math.max(0, manuscript.issues.length - 12) +
+                    manuscript.truncatedIssueCount}
+                  件あります。上から順に修正してください。
+                </li>
+              ) : null}
+            </ul>
+          ) : (
+            <p className="mt-5 rounded-lg bg-green-50 p-3 text-sm font-semibold text-green-800">
+              原稿チェックで問題は見つかりませんでした。
+            </p>
+          )}
+        </section>
       ) : null}
       <details className="panel mt-6">
         <summary className="cursor-pointer text-lg font-bold">
