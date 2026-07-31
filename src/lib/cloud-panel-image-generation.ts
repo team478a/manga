@@ -26,6 +26,23 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
   panelId: z.string().uuid(),
   idempotencyKey: z.string().uuid(),
   candidateCount: z.number().int().min(1).max(4).default(1),
+  sourceAssetId: z.string().uuid().optional(),
+  revisionPreset: z
+    .enum(["face", "hands", "expression", "costume", "background", "polish"])
+    .optional(),
+  revisionInstruction: z.string().trim().max(1000).optional(),
+}).superRefine((value, context) => {
+  const revisionValues = [
+    value.sourceAssetId,
+    value.revisionPreset,
+    value.revisionInstruction,
+  ].filter(Boolean).length;
+  if (revisionValues > 0 && (!value.sourceAssetId || !value.revisionPreset))
+    context.addIssue({
+      code: "custom",
+      path: ["sourceAssetId"],
+      message: "修正元画像と修正内容を指定してください。",
+    });
 });
 
 export type CloudPanelImageGenerationRequest = z.infer<
@@ -86,6 +103,11 @@ export function buildStoryboardPanelGeneration(input: {
     subjectId: string;
     assetId: string;
   }>;
+  revision?: {
+    sourceAssetId: string;
+    preset: "face" | "hands" | "expression" | "costume" | "background" | "polish";
+    instruction?: string;
+  };
 }) {
   const storyboard = cloudStoryboardResultSchema.parse(input.storyboard);
   const canvas: PageCanvas = pageCanvasSchema.parse(input.canvas);
@@ -217,6 +239,14 @@ export function buildStoryboardPanelGeneration(input: {
     "視線誘導と明暗の演出を強めた別案にする。",
     "背景情報と奥行きを明瞭にした別案にする。",
   ];
+  const revisionDirections = {
+    face: "元画像の構図・人物・衣装・背景を維持し、顔立ちと目鼻の崩れだけを自然に修正する。",
+    hands: "元画像の構図・人物・衣装・背景を維持し、手指の本数・関節・持ち方の崩れだけを自然に修正する。",
+    expression: "元画像の構図・人物・衣装・背景を維持し、ネームで指定した感情が伝わる表情へ修正する。",
+    costume: "元画像の構図・人物・背景を維持し、登録済み人物設定どおりの衣装へ修正する。",
+    background: "元画像の人物・ポーズ・表情を維持し、ネームと場所設定に沿う背景へ修正する。",
+    polish: "元画像の内容と構図を維持し、線の乱れ、形状破綻、不要物だけを整えて完成度を上げる。",
+  } as const;
   const prompt = [
     "一般向け日本漫画の完成原稿用モノクロ1コマ。",
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
@@ -240,8 +270,11 @@ export function buildStoryboardPanelGeneration(input: {
     candidateCount > 1
       ? `候補${candidateIndex + 1}/${candidateCount}: ${variationDirections[candidateIndex]}`
       : variationDirections[0],
+    input.revision
+      ? `修正指示: ${revisionDirections[input.revision.preset]}${input.revision.instruction ? ` 追加要望:${input.revision.instruction}` : ""}`
+      : "",
     "吹き出し、セリフ、字幕、ロゴ、透かしは描かない。",
-  ].join("\n");
+  ].filter(Boolean).join("\n");
   if (prompt.length > 20_000)
     throw new ValidationError("生成条件が長すぎます。");
   return {
@@ -273,7 +306,16 @@ export function buildStoryboardPanelGeneration(input: {
         version: profile.current_version,
         kind: profile.kind,
       })),
-      referenceAssetIds,
+      referenceAssetIds: Array.from(
+        new Set([
+          ...(input.revision ? [input.revision.sourceAssetId] : []),
+          ...referenceAssetIds,
+        ]),
+      ).slice(0, 8),
+      operation: input.revision ? ("image_to_image" as const) : ("text_to_image" as const),
+      sourceAssetId: input.revision?.sourceAssetId,
+      revisionPreset: input.revision?.preset,
+      revisionInstruction: input.revision?.instruction,
       ...imageSize(canvasPanel.width, canvasPanel.height),
     },
     panelId: canvasPanel.id,

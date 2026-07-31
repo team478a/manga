@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M3-1 コマ修正候補生成、2026-08-01）
+
+- Branch: `agent/manga-panel-revision-v1`
+- Base: `agent/manga-continuity-review-v1`（Draft PR #96）
+- 目的: 採用済みコマ画像を残したまま、気になる部分の修正候補を生成する
+- 実装: 6修正preset、任意追加要望、元画像先頭参照、設定version継承、2〜4候補、非破壊レイヤー採用
+- DB: 新規migrationなし
+- 詳細: `docs/cloud/MANGA_PANEL_REVISION_V1.md`
+- 注意: マスク付きInpaintingではなく、参照画像を使うガイド付きImage-to-Image
+- 未実施: 実Provider生成、実ブラウザ確認、責任者承認、親PR #96後のマージ
+
+---
+
 ## 0. 現在の優先タスク（M2-4 生成履歴の一貫性チェック、2026-08-01）
 
 - Branch: `agent/manga-continuity-review-v1`

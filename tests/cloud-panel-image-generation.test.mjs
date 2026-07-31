@@ -110,6 +110,41 @@ test("選択コマのネームから利用者入力なしで画像生成条件�
   assert.ok(result.generation.height >= 256);
 });
 
+test("採用済み画像を先頭参照に固定して修正候補を作る", () => {
+  const sourceAssetId = "74000000-0000-4000-8000-000000000021";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    revision: {
+      sourceAssetId,
+      preset: "hands",
+      instruction: "右手で鞄を持たせる",
+    },
+  });
+
+  assert.equal(result.generation.operation, "image_to_image");
+  assert.equal(result.generation.sourceAssetId, sourceAssetId);
+  assert.equal(result.generation.revisionPreset, "hands");
+  assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
+  assert.match(result.generation.prompt, /手指の本数・関節/);
+  assert.match(result.generation.prompt, /右手で鞄を持たせる/);
+});
+
+test("修正指定は元画像と修正内容の組を必須にする", () => {
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      projectId: "50000000-0000-4000-8000-000000000001",
+      pageId,
+      panelId,
+      idempotencyKey: "60000000-0000-4000-8000-000000000001",
+      revisionPreset: "face",
+    }).success,
+    false,
+  );
+});
+
 test("シナリオの人物設定を画像生成条件へ引き継ぐ", () => {
   const result = buildStoryboardPanelGeneration({
     storyboard,

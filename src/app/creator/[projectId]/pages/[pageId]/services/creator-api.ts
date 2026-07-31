@@ -113,6 +113,9 @@ export async function createStoryboardPanelGenerationJob(body: {
   panelId: string;
   idempotencyKey: string;
   candidateCount?: number;
+  sourceAssetId?: string;
+  revisionPreset?: "face" | "hands" | "expression" | "costume" | "background" | "polish";
+  revisionInstruction?: string;
 }) {
   return responseJson<{
     id: string;

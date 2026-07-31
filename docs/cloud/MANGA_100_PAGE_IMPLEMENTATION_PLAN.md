@@ -77,7 +77,8 @@ Cloud Adult OptionはDesktop Adultを置き換えない。Desktopが利用でき
 - 一般向け画像生成と成人向けProvider変更が単一の統合リリースへ揃っていない
 - Cloud rendererが全Panel layerを最終原稿へ忠実に合成できない
 - キャラクター・衣装・場所・小物・画風の作品全体管理が弱い
-- 複数候補の比較、部分修正、inpainting、image-to-imageがない
+- 参照画像によるコマ修正候補生成はあるが、マスク付きInpaintingと
+  Outpaintingがない
 - シナリオ変更後の下流成果物の無効化・差分更新がない
 - 大量ページ向けの章・シーン管理、仮想化一覧、生成キュー操作がない
 - 大規模PDF／ZIPの永続export Job、再開、分割生成がない
@@ -288,6 +289,14 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 目安: 6〜10 iteration
 
 目的: 全体を作り直さず、漫画として必要な修正を短時間で行えるようにする。
+
+進捗（2026-08-01）:
+
+- M3-1 採用済み画像を参照したガイド付きImage-to-Image候補生成を実装
+- 顔、手・指、表情、衣装、背景、全体仕上げの修正presetを実装
+- 修正元画像、追加要望、既存の人物・画風・世界設定をJobへ固定
+- 候補採用時は新規Panel layerを追加し、元画像を非破壊で保持
+- マスク付きInpainting、Outpainting、厳密な範囲固定は未実装
 
 実装:
 

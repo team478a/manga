@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import {
   cloudGenerationInputSchema,
+  cloudImageRevisionPresetSchema,
   moderateGeneralCloudPrompt,
 } from "@mangai/ai-core";
 import { selectCloudProvider } from "@/lib/cloud-ai-registry";
@@ -92,10 +93,17 @@ export async function listCloudGenerationJobs(projectId: string) {
         : null;
     const targetPanelId =
       typeof input?.targetPanelId === "string" ? input.targetPanelId : null;
+    const parsedRevisionPreset = cloudImageRevisionPresetSchema.safeParse(
+      input?.revisionPreset,
+    );
+    const revisionPreset = parsedRevisionPreset.success
+      ? parsedRevisionPreset.data
+      : null;
     const { input: _privateInput, ...publicRow } = row;
     return {
       ...publicRow,
       target_panel_id: targetPanelId,
+      revision_preset: revisionPreset,
     } as CloudGenerationJob;
   });
 }

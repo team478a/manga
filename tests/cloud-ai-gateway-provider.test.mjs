@@ -31,12 +31,14 @@ const textCapability = {
 
 test("Gateway image adapter sends idempotency and decodes an allowed image", async () => {
   let headers;
+  let body;
   const provider = new MangaiCloudGatewayImageProvider({
     endpoint: "http://localhost:9999/image",
     apiKey: "test-key-at-least-16-characters",
     capability: imageCapability,
     fetcher: async (_url, init) => {
       headers = init.headers;
+      body = JSON.parse(init.body);
       return new Response(
         JSON.stringify({
           providerJobId: "provider-1",
@@ -61,9 +63,15 @@ test("Gateway image adapter sends idempotency and decodes an allowed image", asy
       prompt: "forest",
       negativePrompt: "",
     },
-    context,
+    {
+      ...context,
+      referenceImageUrls: ["https://example.test/private-reference.png"],
+    },
   );
   assert.equal(headers["x-mangai-idempotency-key"], context.idempotencyKey);
+  assert.deepEqual(body.context.referenceImageUrls, [
+    "https://example.test/private-reference.png",
+  ]);
   assert.equal(result.images[0].fileName, "output.png");
   assert.equal(result.usage.actualCostMicros, 1200);
   assert.equal(result.providerModeration.decision, "allow");

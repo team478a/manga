@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-08-01 Codex: M3-1 コマ修正候補生成
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-panel-revision-v1`
+- Base: `agent/manga-continuity-review-v1`（Draft PR #96）
+
+### 完了
+
+- 採用済みの表示中コマ画像を先頭参照に固定するImage-to-Image入力を追加。
+- 顔、手・指、表情、衣装、背景、仕上げの修正presetと任意要望を追加。
+- 修正元Assetのコマ配置、作品、所有者、削除状態をProvider前に検証。
+- BFLとCloud Gatewayの参照画像経路を維持し、候補採用を非破壊レイヤー追加にした。
+
+### 未完了
+
+- 実Providerによる修正前後比較、実ブラウザ確認、責任者承認。
+- マスク付きInpainting、Outpainting、専用比較スライダー。
+
+### 検証
+
+- deps:check、lint、Hub/Desktop typecheck: PASS
+- Hub: 325/325、Canvas: 26/26、AI: 45/45、Desktop: 182/182
+- migration validate: 33/33（今回追加なし）
+- production build、git diff --check: PASS
+
+### 注意事項
+
+- v1は参照画像による候補再生成であり、マスク範囲だけの置換ではない。
+- 新規migration、成人向け、Desktop、Stripe、Marketplaceは変更しない。
+
+---
+
 ## 2026-08-01 Codex: M2-3 参照画像・コマ明示割当
 
 ### 状態

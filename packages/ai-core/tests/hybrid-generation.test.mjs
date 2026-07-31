@@ -56,6 +56,28 @@ test("adult reference-image assessment is internally consistent", () => {
   );
 });
 
+test("cloud image-to-image requires its source in image references", () => {
+  const sourceAssetId = randomUUID();
+  const base = {
+    kind: "image",
+    jobType: "background",
+    prompt: "general manga panel",
+    negativePrompt: "",
+    operation: "image_to_image",
+    sourceAssetId,
+  };
+
+  assert.equal(cloudGenerationInputSchema.safeParse(base).success, false);
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      referenceAssetIds: [sourceAssetId],
+      revisionPreset: "face",
+    }).success,
+    true,
+  );
+});
+
 test("adult reference-image evaluation fails closed", () => {
   const base = {
     personPresence: "present",

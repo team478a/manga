@@ -12,6 +12,17 @@ export const cloudGenerationJobTypeSchema = z.enum([
   "storyboard",
   "speech_bubble",
 ]);
+export const cloudImageRevisionPresetSchema = z.enum([
+  "face",
+  "hands",
+  "expression",
+  "costume",
+  "background",
+  "polish",
+]);
+export type CloudImageRevisionPreset = z.infer<
+  typeof cloudImageRevisionPresetSchema
+>;
 export type CloudGenerationJobType = z.infer<
   typeof cloudGenerationJobTypeSchema
 >;
@@ -74,6 +85,10 @@ export const cloudGenerationInputSchema = z
       .max(12)
       .optional(),
     referenceAssetIds: z.array(z.string().uuid()).max(8).optional(),
+    operation: z.enum(["text_to_image", "image_to_image"]).optional(),
+    sourceAssetId: z.string().uuid().optional(),
+    revisionPreset: cloudImageRevisionPresetSchema.optional(),
+    revisionInstruction: z.string().trim().max(1000).optional(),
   })
   .superRefine((value, context) => {
     const imageTypes: CloudGenerationJobType[] = [
@@ -93,6 +108,22 @@ export const cloudGenerationInputSchema = z
         code: "custom",
         path: ["jobType"],
         message: "文章生成で利用できないJob種別です。",
+      });
+    if (value.operation === "image_to_image" && !value.sourceAssetId)
+      context.addIssue({
+        code: "custom",
+        path: ["sourceAssetId"],
+        message: "修正元画像を指定してください。",
+      });
+    if (
+      value.sourceAssetId &&
+      (!value.referenceAssetIds?.includes(value.sourceAssetId) ||
+        value.kind !== "image")
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["sourceAssetId"],
+        message: "修正元画像を参照画像として指定してください。",
       });
   });
 export type CloudGenerationInput = z.output<typeof cloudGenerationInputSchema>;
