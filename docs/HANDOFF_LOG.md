@@ -7,6 +7,7 @@
 ## 2026-07-31 Codex: M2-2 画風・場所・小物設定
 
 - `codex/manga-world-bible-v1`をM2-1ブランチから作成した。
+- stacked Draft PRは [#90](https://github.com/team478a/manga/pull/90)。親はM2-1 Draft PR #89。
 - 一般向け作品へ版管理されたStyle BibleとLocation／Prop Profileを追加した。
 - 画風は全コマへ、場所・小物はネームの背景・動作・構図に名前が一致するコマだけへ自動適用する。
 - 生成Jobへ利用したBible/Profile IDとversionを保存し、後から生成条件を追跡可能にした。

@@ -5,6 +5,7 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `codex/manga-world-bible-v1`
 - Base: `codex/manga-character-profiles-v1`（Draft PR #89）
+- Draft PR: [#90](https://github.com/team478a/manga/pull/90)
 - 実装:
   - 作品単位のStyle Bibleとversion snapshot
   - 場所・小物Profileの作成・更新・削除とversion snapshot
