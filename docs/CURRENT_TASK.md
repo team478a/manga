@@ -2,7 +2,7 @@
 
 ## 2026-07-31 一般向け制作工程の利用入口修正
 
-- 状態: `IMPLEMENTED`
+- 状態: `READY_FOR_REVIEW`
 - Branch: `codex/cloud-workflow-entrypoints-v1`
 - Base: `feature/manga-canvas-mvp` (`38c1481`、PR #91 merge後)
 - 対象: Cloud共通サイドバー、企画・シナリオ・ネームの工程入口
@@ -23,7 +23,8 @@
   - Hub production build: PASS
   - git diff --check: PASS
 - 注記: `npm ci`の既存依存監査でhigh severity 11件。今回の変更とは分離して扱う
-- 未実施: Draft PR、CI、Vercel Preview、本番Feature Flag確認
+- Draft PR: [#92](https://github.com/team478a/manga/pull/92)
+- 未実施: CI、Vercel Preview、本番Feature Flag確認
 
 ## 2026-07-31 一般向け制作工程の表示整理
 

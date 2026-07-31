@@ -1765,7 +1765,8 @@ READY_FOR_REVIEW
 
 - Branch: `codex/cloud-workflow-entrypoints-v1`
 - Base: `feature/manga-canvas-mvp` (`38c1481`)
-- HEAD: この変更を含むcommit
+- HEAD: `c48b0ac`
+- Draft PR: [#92](https://github.com/team478a/manga/pull/92)
 
 ### 完了
 
@@ -1776,7 +1777,7 @@ READY_FOR_REVIEW
 
 ### 未完了
 
-- Draft PR、CI、Vercel Preview、本番環境のFeature Flag確認。
+- CI、Vercel Preview、本番環境のFeature Flag確認。
 
 ### 変更ファイル
 

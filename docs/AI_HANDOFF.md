@@ -6,7 +6,8 @@
 - Base: `feature/manga-canvas-mvp` (`38c1481`、PR #91 merge後)
 - 目的: 市場分析以外の実装済み工程を、共通メニューから実際に利用可能にする
 - 対象: Cloud共通サイドバー、工程入口Route、利用者本人の進行先解決
-- 状態: 実装・ローカル主要品質ゲート完了、Draft PR作成前
+- Draft PR: [#92](https://github.com/team478a/manga/pull/92)
+- 状態: 実装・ローカル主要品質ゲート完了、CI・Vercel Preview確認中
 - 変更しない範囲: DB、migration、AI生成・保存ロジック、成人向け境界、Desktop
 
 ---
