@@ -37,7 +37,7 @@ export default async function GeneralMonitorPage({
           <h1 className="mt-1 text-3xl font-bold">モニター状況とご意見</h1>
         </div>
         <Link className="button-secondary" href="/dashboard/monitor/guide">
-          使い方を見る
+          Webマニュアル
         </Link>
       </div>
       {!enrollment ? (
@@ -109,7 +109,7 @@ export default async function GeneralMonitorPage({
         </>
       )}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Link className="button-secondary" href="/dashboard/monitor/guide">使い方を見る</Link>
+        <Link className="button-secondary" href="/dashboard/monitor/guide">Webマニュアル</Link>
         <Link className="button-secondary" href="/dashboard">ダッシュボードへ戻る</Link>
       </div>
     </main>

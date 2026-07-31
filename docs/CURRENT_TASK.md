@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-07-31 約10名モニター向けWebマニュアル
+
+- 状態: `READY_FOR_REVIEW`
+- 利用者向け: `/dashboard/monitor/guide`
+- スタッフ向け: `/admin/general-monitors/guide`
+- 内容:
+  - 最初の5分、制作5工程、完了の目印、フィードバック、トラブル、安全上の注意
+  - 約10名の同一コホート招待、日次確認、問い合わせ対応、停止判断、完了条件
+  - スマートフォンで操作できるアンカーメニューと折りたたみFAQ
+- 境界: 一般向け限定。成人向け、Stripe、販売、Marketplaceは変更しない
+- 検証:
+  - Webマニュアル集中テスト: PASS（8/8）
+  - lint: PASS
+  - typecheck: PASS（Hub）
+  - hub:test: PASS（269/269）
+  - Hub production build: PASS
+  - git diff --check: PASS
+- 未実施: Preview上での390px・768px・1280px実画面確認
+
 ## 2026-07-31 一般向けモニター招待メール
 
 - 状態: `READY_FOR_REVIEW`

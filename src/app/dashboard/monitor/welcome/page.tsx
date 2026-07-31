@@ -42,7 +42,7 @@ export default async function GeneralMonitorWelcomePage({
           内容を確認してモニターを開始
         </button>
       </form>
-      <Link className="button-secondary mt-3 w-full" href="/dashboard/monitor/guide">詳しい使い方を見る</Link>
+      <Link className="button-secondary mt-3 w-full" href="/dashboard/monitor/guide">Webマニュアルを見る</Link>
     </main>
   );
 }
