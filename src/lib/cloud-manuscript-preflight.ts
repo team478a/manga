@@ -27,8 +27,16 @@ export type CloudManuscriptPreflightReport = {
   completedPanelCount: number;
   errorCount: number;
   warningCount: number;
+  pageProgress: CloudManuscriptPageProgress[];
   issues: CloudManuscriptPreflightIssue[];
   truncatedIssueCount: number;
+};
+
+export type CloudManuscriptPageProgress = {
+  pageId: string;
+  pageNumber: number;
+  totalPanelCount: number;
+  completedPanelCount: number;
 };
 
 type PreflightPage = {
@@ -85,6 +93,7 @@ export function analyzeCloudManuscript(input: {
   const pageIds = new Set(orderedPages.map((page) => page.id));
   let totalPanelCount = 0;
   let completedPanelCount = 0;
+  const pageProgress: CloudManuscriptPageProgress[] = [];
 
   const addIssue = (issue: CloudManuscriptPreflightIssue) => issues.push(issue);
   if (!input.coverPageId || !pageIds.has(input.coverPageId)) {
@@ -99,6 +108,8 @@ export function analyzeCloudManuscript(input: {
   }
 
   orderedPages.forEach((page, index) => {
+    let pageTotalPanelCount = 0;
+    let pageCompletedPanelCount = 0;
     if (page.page_number !== index + 1) {
       addIssue({
         code: "page_order",
@@ -111,6 +122,7 @@ export function analyzeCloudManuscript(input: {
     }
     for (const panel of page.canvas.panels.filter((item) => item.visible)) {
       totalPanelCount += 1;
+      pageTotalPanelCount += 1;
       const layers = page.canvas.panelLayers.filter(
         (layer) =>
           layer.panelId === panel.id && layer.visible && Boolean(layer.assetId),
@@ -145,6 +157,7 @@ export function analyzeCloudManuscript(input: {
         continue;
       }
       completedPanelCount += 1;
+      pageCompletedPanelCount += 1;
       const primaryLayers = layers.filter(
         (layer) =>
           layer.type === "background" || layer.type === "flattened_legacy",
@@ -179,6 +192,12 @@ export function analyzeCloudManuscript(input: {
         panelId: null,
       });
     }
+    pageProgress.push({
+      pageId: page.id,
+      pageNumber: page.page_number,
+      totalPanelCount: pageTotalPanelCount,
+      completedPanelCount: pageCompletedPanelCount,
+    });
   });
 
   const errorCount = issues.filter((issue) => issue.severity === "error").length;
@@ -191,6 +210,7 @@ export function analyzeCloudManuscript(input: {
     completedPanelCount,
     errorCount,
     warningCount,
+    pageProgress,
     issues: issues.slice(0, issueLimit),
     truncatedIssueCount: Math.max(0, issues.length - issueLimit),
   };

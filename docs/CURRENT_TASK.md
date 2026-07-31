@@ -1,5 +1,27 @@
 # MANGAI Current Task
 
+## 2026-07-31 長編マンガ制作 M1: キャラクター設定・作品全体進捗
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- Draft PR: [#88](https://github.com/team478a/manga/pull/88)
+- 実装:
+  - 採用シナリオから人物名、役割、望み、恐れ、葛藤、変化を読み取り、
+    作品画面へ基本キャラクター設定表として表示
+  - キャラクター情報を複製DBへ保存せず、既存のシナリオ→ネーム→作品参照を利用
+  - 対象コマの人物設定を画像生成Promptへサーバー側で自動追加
+  - ページごとの画像配置数、待機中、処理中、失敗Jobを作品画面へ集約
+  - 最新のコマ別Jobだけを採用し、古い失敗Jobを現在状態へ混入させない
+  - 完成、生成中、要確認、未着手を日本語表示し、対象ページへ直接移動
+- セキュリティ: 所有者RLS下の既存データだけを利用。service-role、秘密値、
+  Provider内部エラー、技術Promptは利用者画面へ表示しない
+- 変更しない範囲: DB、migration、Provider、Worker、成人向け、Desktop、販売処理
+- 検証: deps、lint、Hub/Desktop typecheck、集中テスト16/16、
+  Hub 302/302、production build、diff check成功
+- 次: 実ブラウザで8ページ作品の設定表・進捗・Editor→PDFを責任者確認し、
+  M1受入れ完了後にM2の編集可能な外見・衣装・場所・画風Profileへ進む
+- 未実施: 実ブラウザ確認、実Provider有料生成、責任者承認、マージ
+
 ## 2026-07-31 長編マンガ制作 M1: 8ページ原稿チェック・書き出し検証
 
 - 状態: `IMPLEMENTED`
@@ -18,7 +40,7 @@
 - 変更しない範囲: 販売処理、DB、migration、Provider、Worker、成人向け、Desktop
 - 検証: lint、Hub typecheck、原稿チェック5/5、8ページ出力3/3、
   Hub 295/295、production build、diff check成功
-- 次: ページ／作品単位の生成進捗表示と基本キャラクター設定表
+- 次: 実ブラウザでM1全体の画面・生成・書き出しを受入れ確認
 - 未実施: 実ブラウザ確認、実作品でのPDF目視比較、責任者承認、マージ
 
 ## 2026-07-31 長編マンガ制作 M1: コマ候補の比較・採用・再実行

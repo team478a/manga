@@ -9,6 +9,7 @@ import {
   ResourceNotFoundError,
   ValidationError,
 } from "./domain-errors.ts";
+import type { CloudStoryScenarioResult } from "./cloud-scenario.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED?.toLowerCase() === "true";
@@ -68,6 +69,7 @@ export function buildStoryboardPanelGeneration(input: {
   panelId: string;
   candidateIndex?: number;
   candidateCount?: number;
+  characterProfiles?: CloudStoryScenarioResult["characters"];
 }) {
   const storyboard = cloudStoryboardResultSchema.parse(input.storyboard);
   const canvas: PageCanvas = pageCanvasSchema.parse(input.canvas);
@@ -90,6 +92,20 @@ export function buildStoryboardPanelGeneration(input: {
   const characters = storyboardPanel.characters.length
     ? storyboardPanel.characters.join("、")
     : "人物なし";
+  const characterDetails = storyboardPanel.characters
+    .map((name) =>
+      input.characterProfiles?.find(
+        (character) => character.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+      ),
+    )
+    .filter(
+      (character): character is CloudStoryScenarioResult["characters"][number] =>
+        Boolean(character),
+    )
+    .map(
+      (character) =>
+        `${character.name}（役割:${character.role}、望み:${character.desire}、恐れ:${character.fear}、葛藤:${character.conflict}）`,
+    );
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
   const candidateIndex = Math.max(
     0,
@@ -107,6 +123,9 @@ export function buildStoryboardPanelGeneration(input: {
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
     `構図: ${storyboardPanel.composition}。`,
     `登場人物: ${characters}。`,
+    characterDetails.length
+      ? `人物設定: ${characterDetails.join(" / ")}。同一人物の顔立ち、髪型、体格、服装の一貫性を保つ。`
+      : "登場人物がいる場合は、前後のコマと外見の一貫性を保つ。",
     `背景: ${storyboardPanel.background}。`,
     `動作: ${storyboardPanel.action}。`,
     `感情: ${storyboardPanel.emotion}。`,
