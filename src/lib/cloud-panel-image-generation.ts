@@ -11,6 +11,11 @@ import {
 } from "./domain-errors.ts";
 import type { CloudStoryScenarioResult } from "./cloud-scenario.ts";
 import type { CloudCharacterProfile } from "./cloud-character-profile.ts";
+import {
+  resolveWorldProfilesForPanel,
+  type CloudStyleBible,
+  type CloudWorldProfile,
+} from "./cloud-world-bible.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED?.toLowerCase() === "true";
@@ -72,6 +77,8 @@ export function buildStoryboardPanelGeneration(input: {
   candidateCount?: number;
   characterProfiles?: CloudStoryScenarioResult["characters"];
   visualCharacterProfiles?: CloudCharacterProfile[];
+  styleBible?: CloudStyleBible | null;
+  worldProfiles?: CloudWorldProfile[];
 }) {
   const storyboard = cloudStoryboardResultSchema.parse(input.storyboard);
   const canvas: PageCanvas = pageCanvasSchema.parse(input.canvas);
@@ -131,6 +138,33 @@ export function buildStoryboardPanelGeneration(input: {
       .filter(Boolean)
       .join("、") + "）",
   );
+  const worldProfiles = resolveWorldProfilesForPanel(
+    input.worldProfiles ?? [],
+    storyboardPanel,
+  );
+  const worldDetails = worldProfiles.map((profile) =>
+    [
+      `${profile.kind === "location" ? "場所" : "小物"}:${profile.name}（設定v${profile.current_version}`,
+      profile.description && `概要:${profile.description}`,
+      profile.visual_traits.length && `特徴:${profile.visual_traits.join("、")}`,
+      profile.color_palette && `配色:${profile.color_palette}`,
+      profile.continuity_rules.length &&
+        `変えてはいけない点:${profile.continuity_rules.join("、")}`,
+      profile.prompt && `追加指定:${profile.prompt}`,
+    ].filter(Boolean).join("、") + "）",
+  );
+  const styleDetails = input.styleBible
+    ? [
+        `作品画風（設定v${input.styleBible.current_version}）`,
+        input.styleBible.art_style && `画風:${input.styleBible.art_style}`,
+        input.styleBible.linework && `線:${input.styleBible.linework}`,
+        input.styleBible.shading && `陰影:${input.styleBible.shading}`,
+        input.styleBible.background_detail &&
+          `背景密度:${input.styleBible.background_detail}`,
+        input.styleBible.composition_rules &&
+          `構図ルール:${input.styleBible.composition_rules}`,
+      ].filter(Boolean).join("、")
+    : "";
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
   const candidateIndex = Math.max(
     0,
@@ -154,6 +188,10 @@ export function buildStoryboardPanelGeneration(input: {
     visualDetails.length
       ? `固定ビジュアル設定: ${visualDetails.join(" / ")}。この設定を最優先し、別人化や衣装変更を避ける。`
       : "固定ビジュアル設定がない人物は、ネームと前後のコマから自然に補完する。",
+    styleDetails || "作品全体で漫画の線、陰影、背景密度を統一する。",
+    worldDetails.length
+      ? `固定世界設定: ${worldDetails.join(" / ")}。同じ場所・小物の形状と配置規則を維持する。`
+      : "登録済みの場所・小物名に一致しない場合は、ネームの背景指定を優先する。",
     `背景: ${storyboardPanel.background}。`,
     `動作: ${storyboardPanel.action}。`,
     `感情: ${storyboardPanel.emotion}。`,
@@ -175,11 +213,24 @@ export function buildStoryboardPanelGeneration(input: {
         ...visualProfiles
           .map((profile) => profile.negative_prompt)
           .filter(Boolean),
+        input.styleBible?.negative_prompt ?? "",
+        ...worldProfiles.map((profile) => profile.negative_prompt).filter(Boolean),
       ].join("、"),
       targetPanelId: canvasPanel.id,
       characterProfileVersions: visualProfiles.map((profile) => ({
         profileId: profile.id,
         version: profile.current_version,
+      })),
+      styleBibleVersion: input.styleBible
+        ? {
+            bibleId: input.styleBible.id,
+            version: input.styleBible.current_version,
+          }
+        : undefined,
+      worldProfileVersions: worldProfiles.map((profile) => ({
+        profileId: profile.id,
+        version: profile.current_version,
+        kind: profile.kind,
       })),
       ...imageSize(canvasPanel.width, canvasPanel.height),
     },
