@@ -261,7 +261,9 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 - 画像生成Job入力へStyle Bible／Location／PropのIDとversionを保存
 - M2-3 Character／Style／Location／Propの非公開参照画像を実装
 - コマへの人物・場所・小物の明示割当とFLUX.2 multi-reference入力を実装
-- 継続性評価・警告は後続M2
+- M2-4 採用画像の生成履歴から設定version・参照画像の使用状況を照合
+- 人物・衣装・場所・小物・画風の古い設定、設定漏れ、version混在を警告
+- v1は画像ピクセルを解析しない。実際の見た目のVision評価は任意の後続機能
 
 実装:
 

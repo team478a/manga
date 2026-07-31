@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M2-4 生成履歴の一貫性チェック、2026-08-01）
+
+- Branch: `agent/manga-continuity-review-v1`
+- Base: `agent/manga-reference-assets-v1`（Draft PR #95）
+- 目的: 採用済み生成画像が人物・衣装・場所・小物・画風の現在設定と参照画像を継続使用しているか確認する
+- 実装: 設定版・参照asset・Job追跡の照合、混在警告、ページ／設定修正導線
+- DB: 新規migrationなし
+- 詳細: `docs/cloud/MANGA_CONTINUITY_REVIEW_V1.md`
+- 注意: v1は画像ピクセルを解析せず、見た目の一致を保証しない
+- 変更しない範囲: 成人向け、Desktop、Provider、Worker、Stripe、Marketplace
+
+---
+
 ## 0. 現在の優先タスク（M2-3 参照画像・コマ明示割当、2026-08-01）
 
 - Branch: `agent/manga-reference-assets-v1`

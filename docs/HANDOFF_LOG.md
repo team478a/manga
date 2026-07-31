@@ -2143,6 +2143,70 @@ IMPLEMENTED
 
 ---
 
+## 2026-08-01 M2-4 生成履歴の一貫性チェック
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `agent/manga-continuity-review-v1`
+- Base: `agent/manga-reference-assets-v1` (`38f7bf4`、Draft PR #95)
+- HEAD: 作業中
+
+### 完了
+
+- 採用画像の`PanelLayer.sourceJobId`から生成Job入力を追跡
+- 人物・衣装・場所・小物・画風の現在versionとの照合
+- 登録済み参照画像の生成利用確認
+- 同じ固定対象に複数versionが混在した場合の作品単位警告
+- ページ編集、参照画像・コマ割当への修正導線
+- loading対象なし、DB未適用、警告なし、警告ありの表示分岐
+- 判定が画像ピクセル検査ではないことを利用者へ明示
+
+### 未完了
+
+- 実ブラウザで8ページ作品の警告→再生成→警告解消を確認
+- 実Provider有料生成
+- 責任者承認、親PR #95後のマージ
+- 任意の画像Vision評価（後続。現在版の完了条件には含めない）
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: PASS（Hub / Desktop）
+- hub:test: PASS（321/321）
+- canvas:test: PASS（26/26）
+- ai:test: PASS（44/44）
+- desktop:test: PASS（182/182）
+- migrations: PASS（33/33、今回追加なし）
+- build: PASS
+- git diff --check: PASS
+
+### 変更ファイル
+
+- `src/lib/cloud-continuity-review.ts`
+- `src/modules/cloud-creator/projects/continuity-review-service.ts`
+- `src/app/creator/[projectId]/continuity/page.tsx`
+- `src/app/creator/[projectId]/page.tsx`
+- `src/lib/cloud-creator-server.ts`
+- `tests/cloud-continuity-review.test.mjs`
+- `docs/cloud/MANGA_CONTINUITY_REVIEW_V1.md`
+- `docs/cloud/MANGA_100_PAGE_IMPLEMENTATION_PLAN.md`
+- `docs/CURRENT_TASK.md`
+- `docs/AI_HANDOFF.md`
+- `docs/HANDOFF_LOG.md`
+
+### 注意事項
+
+- 新規migrationなし。既存所有者RLSの範囲だけで読み込む。
+- Provider、Worker、成人向け、Desktop、販売処理は変更しない。
+- 画像の実見た目を検査したとは表示しない。
+
+---
+
 ## 追記テンプレート
 
 ```md

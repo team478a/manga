@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M2-4: 生成履歴の一貫性チェック
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-continuity-review-v1`
+- Base: `agent/manga-reference-assets-v1`（Draft PR #95）
+- 実装: 採用画像の生成Job追跡、人物・衣装・場所・小物・画風の設定版照合、参照画像使用確認、version混在警告、ページ／設定修正導線
+- 判定境界: 画像ピクセルではなく、Canvas・生成履歴・固定設定・参照画像の整合性を検査。見た目を確認したとは表示しない
+- DB: 新規migrationなし。既存RLS下のデータだけを利用
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 321/321、Canvas 26/26、AI 44/44、Desktop 182/182、migration 33/33、production build成功
+- 詳細: `docs/cloud/MANGA_CONTINUITY_REVIEW_V1.md`
+- 次: 8ページ実作品で警告→再生成→警告解消のブラウザ受入れ、将来の任意Vision評価設計
+- 未実施: 実Provider有料生成、実ブラウザ確認、責任者承認、親PR #95後のマージ
+
 ## 2026-08-01 長編マンガ制作 M2-3: 参照画像・コマ明示割当
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
