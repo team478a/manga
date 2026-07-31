@@ -6,6 +6,8 @@
 
 - 基点: `feature/manga-canvas-mvp` (`ae1279e`)
 - 統合ブランチ: `agent/manga-generation-integration-v1`
+- Draft PR: [#94](https://github.com/team478a/manga/pull/94)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ge-907c74-team478as-projects.vercel.app`
 - 既存の積み上げPR #87〜#90は変更・Closeせず、機能commitだけを取り込む
 - 一般向けCloud漫画制作だけを対象とし、成人向け、Desktop、Stripe、Marketplaceは変更しない
 
@@ -68,7 +70,10 @@
 - `npm run db:migrations:validate`: PASS（32/32）
 - `npm run build`: PASS
 
-Migration roundtripは新しいDraft PRのGitHub Actionsで確認する。
+- GitHub Core quality: PASS
+- GitHub Migration roundtrip: PASS
+- GitHub Windows build: PASS
+- Vercel Preview: PASS
 
 ## 残タスク
 

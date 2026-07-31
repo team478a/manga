@@ -4,10 +4,12 @@
 
 - Branch: `agent/manga-generation-integration-v1`
 - Base: `feature/manga-canvas-mvp` (`ae1279e`)
+- Draft PR: [#94](https://github.com/team478a/manga/pull/94)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ge-907c74-team478as-projects.vercel.app`
 - 目的: PR #87〜#90の一般向け漫画生成機能を最新Cloud基盤へ安全に統合する
 - 範囲: FLUXコマ生成、候補比較、レイヤー合成、原稿検査、作品進捗、
   キャラクター設定、画風・場所・小物設定
-- 状態: ローカル品質ゲート成功、Draft PR・GitHub CI・Vercel確認待ち
+- 状態: ローカル品質ゲート、GitHub全CI、Vercel Preview成功。責任者確認待ち
 - 詳細: `docs/cloud/MANGA_GENERATION_INTEGRATION_REPORT.md`
 - 未実施: migration適用、実Provider有料生成、実ブラウザ確認、マージ
 - 変更しない範囲: 成人向け、Desktop、Stripe、Marketplace

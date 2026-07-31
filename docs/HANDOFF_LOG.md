@@ -14,6 +14,8 @@ READY_FOR_REVIEW
 
 - `agent/manga-generation-integration-v1`
 - Base: `feature/manga-canvas-mvp` (`ae1279e`)
+- Draft PR: [#94](https://github.com/team478a/manga/pull/94)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ge-907c74-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -24,10 +26,10 @@ READY_FOR_REVIEW
 - 既存の積み上げPRはrebase、force push、Closeしていない。
 - deps、lint、Hub/Desktop typecheck、Hub 312/312、Canvas 26/26、AI 44/44、
   Desktop 182/182、migration 32/32、production buildに成功した。
+- Draft PR #94のCore quality、Migration roundtrip、Windows build、Vercelに成功した。
 
 ### 未完了
 
-- 新しいDraft PRのGitHub CI、Migration roundtrip、Vercel Preview確認
 - staging migration、実Provider有料生成、8ページ実ブラウザ目視、責任者承認、マージ
 
 ### 詳細
