@@ -3,8 +3,13 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
   cloudGeneralMonitorInviteEmailConfigured,
+  renderCloudGeneralMonitorInviteTemplate,
   sendCloudGeneralMonitorInviteEmail,
 } from "../src/lib/cloud-general-monitor-email.ts";
+import {
+  DEFAULT_MONITOR_INVITE_BODY,
+  DEFAULT_MONITOR_INVITE_SUBJECT,
+} from "../src/lib/cloud-general-monitor-email-settings.ts";
 
 const resendEnvironmentKeys = ["MONITOR_INVITE_SITE_URL"];
 
@@ -28,6 +33,8 @@ test("Resend招待メールはServer設定と安全な利用開始URLだけを�
     apiKey: "re_secret-token-for-test",
     fromEmail: "monitor@mang-ai.example",
     fromName: "MANGAI運営",
+    subjectTemplate: DEFAULT_MONITOR_INVITE_SUBJECT,
+    bodyTemplate: DEFAULT_MONITOR_INVITE_BODY,
   });
   let captured;
   const request = async (url, init) => {
@@ -52,6 +59,8 @@ test("Resend招待メールはServer設定と安全な利用開始URLだけを�
     const body = JSON.parse(captured.init.body);
     assert.equal(body.from, "MANGAI運営 <monitor@mang-ai.example>");
     assert.equal(body.to[0], "reader@example.com");
+    assert.equal(body.subject, "MANGAI 一般向けモニターのご案内");
+    assert.match(body.text, /山田 様/);
     assert.match(body.text, /https:\/\/preview\.mang-ai\.example\/dashboard\/monitor\/welcome/);
     assert.doesNotMatch(body.text, /secret-token/);
     assert.equal(
@@ -73,6 +82,8 @@ test("Providerエラー本文を上位へ露出しない", async () => {
       apiKey: "re_secret-token-for-test",
       fromEmail: "monitor@mang-ai.example",
       fromName: "MANGAI運営",
+      subjectTemplate: DEFAULT_MONITOR_INVITE_SUBJECT,
+      bodyTemplate: DEFAULT_MONITOR_INVITE_BODY,
     });
     await assert.rejects(
       sendCloudGeneralMonitorInviteEmail(
@@ -93,8 +104,24 @@ test("Providerエラー本文を上位へ露出しない", async () => {
   }
 });
 
+test("管理画面で保存した件名と本文へ安全な差し込み値を反映する", () => {
+  const rendered = renderCloudGeneralMonitorInviteTemplate(
+    "{{recipient_name}} / {{expires_on}} / {{ai_request_limit}} / {{welcome_url}}",
+    {
+      recipientName: "田中 様",
+      welcomeUrl: "https://app.mang-ai.com/dashboard/monitor/welcome",
+      expiresOn: "2026/08/31",
+      aiRequestLimit: 30,
+    },
+  );
+  assert.equal(
+    rendered,
+    "田中 様 / 2026/08/31 / 30 / https://app.mang-ai.com/dashboard/monitor/welcome",
+  );
+});
+
 test("Resend APIキーは管理画面からVaultへ保存し再表示しない", async () => {
-  const [page, action, settings, migration, example] = await Promise.all([
+  const [page, action, settings, migration, templateMigration, example] = await Promise.all([
     readFile(
       new URL(
         "../src/app/admin/general-monitors/email/page.tsx",
@@ -123,6 +150,13 @@ test("Resend APIキーは管理画面からVaultへ保存し再表示しない",
       ),
       "utf8",
     ),
+    readFile(
+      new URL(
+        "../supabase/migrations/202607310003_cloud_general_monitor_email_template.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
     readFile(new URL("../.env.example", import.meta.url), "utf8"),
   ]);
   assert.match(page, /type="password"/);
@@ -131,8 +165,18 @@ test("Resend APIキーは管理画面からVaultへ保存し再表示しない",
   assert.match(action, /setCloudGeneralMonitorEmailSettings/);
   assert.match(settings, /set_cloud_general_monitor_email_provider/);
   assert.match(settings, /get_cloud_general_monitor_email_runtime_config/);
+  assert.match(page, /招待メールの文面/);
+  assert.match(page, /subjectTemplate/);
+  assert.match(page, /bodyTemplate/);
+  assert.match(page, /\{\{welcome_url\}\}/);
+  assert.match(action, /updateGeneralMonitorEmailTemplateAction/);
+  assert.match(action, /value\.includes\("\{\{welcome_url\}\}"\)/);
+  assert.match(settings, /set_cloud_general_monitor_email_template/);
   assert.match(migration, /vault\.create_secret/);
   assert.match(migration, /vault\.update_secret/);
   assert.match(migration, /auth\.role\(\)<>'service_role'/);
+  assert.match(templateMigration, /set_cloud_general_monitor_email_template/);
+  assert.match(templateMigration, /update_template/);
+  assert.match(templateMigration, /\{\{welcome_url\}\}/);
   assert.doesNotMatch(example, /RESEND_API_KEY|RESEND_FROM_EMAIL|RESEND_FROM_NAME/);
 });

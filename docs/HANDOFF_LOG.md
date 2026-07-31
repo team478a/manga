@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-07-31 Codex: 招待メールの件名・本文を管理画面で編集
+
+- `feature/manga-canvas-mvp`の最新から
+  `codex/cloud-monitor-email-template-v1`を作成した。
+- `/admin/general-monitors/email`へ件名・本文の独立フォームを追加した。
+- APIキーを再入力せず変更でき、次回招待・再送から保存文面を使用する。
+- 宛名、開始URL、期限、AI上限を送信時に差し込み、開始URL欠落・未知項目・
+  件名改行をアプリとDBの両方で拒否する。
+- `202607310003_cloud_general_monitor_email_template.sql`とrollback、
+  canonical schema、DB assertion、manifestを追加・同期した。
+- deps、lint、Hub typecheck、Hub 275/275、migration 29/29、
+  production build、diff checkが成功した。
+
+---
+
 ## 2026-07-31 Codex: モニター操作へ処理中表示を追加
 
 - `feature/manga-canvas-mvp`の最新から

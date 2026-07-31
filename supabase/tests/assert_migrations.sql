@@ -226,8 +226,21 @@ begin
      ) is null
      or to_regprocedure(
        'public.get_cloud_general_monitor_email_runtime_config()'
+     ) is null
+     or to_regprocedure(
+       'public.set_cloud_general_monitor_email_template(uuid,text,text)'
      ) is null then
     raise exception 'General monitor email Provider objects missing';
+  end if;
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public'
+      and table_name='cloud_general_monitor_email_settings'
+      and column_name in ('subject_template','body_template')
+    group by table_schema,table_name
+    having count(*)=2
+  ) then
+    raise exception 'General monitor email templates missing';
   end if;
   if has_function_privilege(
        'authenticated',
