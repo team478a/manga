@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M3-2: マスク付きコマ部分修正
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-panel-inpainting-v1`
+- Base: `agent/manga-panel-revision-v1`（Draft PR #97）
+- Draft PR: [#98](https://github.com/team478a/manga/pull/98)
+- Preview: `https://mangai-hub-staging-jnew2urfq-team478as-projects.vercel.app`
+- 目的: 採用画像の選択範囲だけをFill Providerで描き直し、元画像を保持して採用する
+- 実装: タッチ対応マスク描画、Fill専用operation、所有権・コマ・PNG・寸法検証、private署名URL、2〜4案比較、correction layer採用
+- Provider: BFL `flux-pro-1.0-fill`。管理画面に保存済みの一般向けBFL APIキーを再利用
+- Feature Flag: `CLOUD_PANEL_INPAINTING_ENABLED`（未設定時fail closed）
+- migration: `202608010002_cloud_panel_inpainting.sql`（価格行追加）
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 329/329、Canvas 26/26、AI 46/46、Desktop 182/182、migration 34/34、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 詳細: `docs/cloud/MANGA_PANEL_INPAINTING_V1.md`
+- 未実施: staging migration、実Provider生成、タッチを含む実ブラウザ確認、責任者承認、親PR #97後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M3-1: コマ修正候補生成
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

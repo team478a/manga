@@ -85,8 +85,11 @@ export const cloudGenerationInputSchema = z
       .max(12)
       .optional(),
     referenceAssetIds: z.array(z.string().uuid()).max(8).optional(),
-    operation: z.enum(["text_to_image", "image_to_image"]).optional(),
+    operation: z
+      .enum(["text_to_image", "image_to_image", "inpainting"])
+      .optional(),
     sourceAssetId: z.string().uuid().optional(),
+    maskAssetId: z.string().uuid().optional(),
     revisionPreset: cloudImageRevisionPresetSchema.optional(),
     revisionInstruction: z.string().trim().max(1000).optional(),
   })
@@ -109,7 +112,11 @@ export const cloudGenerationInputSchema = z
         path: ["jobType"],
         message: "文章生成で利用できないJob種別です。",
       });
-    if (value.operation === "image_to_image" && !value.sourceAssetId)
+    if (
+      (value.operation === "image_to_image" ||
+        value.operation === "inpainting") &&
+      !value.sourceAssetId
+    )
       context.addIssue({
         code: "custom",
         path: ["sourceAssetId"],
@@ -124,6 +131,18 @@ export const cloudGenerationInputSchema = z
         code: "custom",
         path: ["sourceAssetId"],
         message: "修正元画像を参照画像として指定してください。",
+      });
+    if (value.operation === "inpainting" && !value.maskAssetId)
+      context.addIssue({
+        code: "custom",
+        path: ["maskAssetId"],
+        message: "修正範囲のマスク画像を指定してください。",
+      });
+    if (value.operation !== "inpainting" && value.maskAssetId)
+      context.addIssue({
+        code: "custom",
+        path: ["maskAssetId"],
+        message: "マスク画像は部分修正でのみ指定できます。",
       });
   });
 export type CloudGenerationInput = z.output<typeof cloudGenerationInputSchema>;
@@ -185,6 +204,10 @@ export const cloudProviderCapabilitySchema = z.object({
   modelId: z.string().trim().min(1).max(200),
   kind: cloudGenerationKindSchema,
   jobTypes: z.array(cloudGenerationJobTypeSchema).min(1),
+  operations: z
+    .array(z.enum(["text_to_image", "image_to_image", "inpainting"]))
+    .min(1)
+    .optional(),
   policyVersion: z.string().trim().min(1).max(100),
   pricingVersion: z.string().trim().min(1).max(100),
   enabled: z.boolean(),
@@ -199,6 +222,7 @@ export type CloudGenerationContext = {
   pageId?: string;
   idempotencyKey: string;
   referenceImageUrls?: string[];
+  maskImageUrl?: string;
 };
 
 export type CloudGenerationUsage = {

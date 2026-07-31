@@ -8,7 +8,10 @@ import {
   getMyCloudAiQuota,
 } from "@/lib/cloud-creator-server";
 import { CloudCanvasEditor } from "./CloudCanvasEditor";
-import { cloudPanelImageGenerationFeatureEnabled } from "@/lib/cloud-panel-image-generation";
+import {
+  cloudPanelImageGenerationFeatureEnabled,
+  cloudPanelInpaintingFeatureEnabled,
+} from "@/lib/cloud-panel-image-generation";
 
 export default async function CloudCanvasPage({
   params,
@@ -45,6 +48,7 @@ export default async function CloudCanvasPage({
       initialGenerationJobs={generationJobs}
       initialQuota={quota}
       storyboardPanelGenerationEnabled={cloudPanelImageGenerationFeatureEnabled()}
+      panelInpaintingEnabled={cloudPanelInpaintingFeatureEnabled()}
     />
   );
 }

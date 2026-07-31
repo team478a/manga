@@ -142,3 +142,58 @@ test("BFL adapterは署名済み参照画像をmulti-reference入力へ渡す", 
   assert.match(request.input_image, /a\.png/);
   assert.match(request.input_image_2, /b\.png/);
 });
+
+test("BFL Fill adapterは元画像と白黒マスクをbase64で送信する", async () => {
+  const calls = [];
+  const fillCapability = {
+    ...capability,
+    modelId: "flux-pro-1.0-fill",
+    operations: ["inpainting"],
+    pricingVersion: "bfl-flux1-fill-2026-08",
+  };
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-pro-1.0-fill",
+    capability: fillCapability,
+    pollIntervalMs: 1,
+    fetcher: async (url, init) => {
+      calls.push({ url: String(url), init });
+      if (calls.length <= 2)
+        return new Response(new Uint8Array([137, 80, 78, 71]), {
+          status: 200,
+          headers: { "content-type": "image/png" },
+        });
+      if (calls.length === 3)
+        return new Response(JSON.stringify({
+          id: "bfl-fill-1",
+          polling_url: "https://api.bfl.ai/v1/get_result?id=bfl-fill-1",
+        }), { status: 200 });
+      if (calls.length === 4)
+        return new Response(JSON.stringify({
+          status: "Ready",
+          result: { sample: "https://delivery.bfl.ai/result/fill.png" },
+        }), { status: 200 });
+      return new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
+    },
+  });
+  const result = await provider.generate({
+    kind: "image",
+    jobType: "background",
+    prompt: "repair only the selected hand",
+    negativePrompt: "letters",
+    operation: "inpainting",
+    sourceAssetId: "40000000-0000-4000-8000-000000000031",
+    maskAssetId: "50000000-0000-4000-8000-000000000031",
+    referenceAssetIds: ["40000000-0000-4000-8000-000000000031"],
+  }, {
+    ...context,
+    referenceImageUrls: ["https://project.supabase.co/source.png?token=one"],
+    maskImageUrl: "https://project.supabase.co/mask.png?token=two",
+  });
+  const request = JSON.parse(calls[2].init.body);
+  assert.equal(calls[2].url, "https://api.bfl.ai/v1/flux-pro-1.0-fill");
+  assert.equal(request.image, Buffer.from([137, 80, 78, 71]).toString("base64"));
+  assert.equal(request.mask, Buffer.from([137, 80, 78, 71]).toString("base64"));
+  assert.equal("input_image" in request, false);
+  assert.equal(result.usage.actualCostMicros, 50_000);
+});

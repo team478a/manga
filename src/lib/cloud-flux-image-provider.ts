@@ -24,6 +24,7 @@ const modelCostMicros = {
   "flux-2-klein-9b": 15_000,
   "flux-2-pro": 30_000,
   "flux-2-max": 70_000,
+  "flux-pro-1.0-fill": 50_000,
 } as const;
 
 type FluxModel = keyof typeof modelCostMicros;
@@ -76,6 +77,47 @@ function providerError(status: number) {
   );
 }
 
+async function fetchBase64Image(
+  fetcher: typeof fetch,
+  url: string,
+  signal: AbortSignal,
+) {
+  if (!url)
+    throw new AIProviderError(
+      "provider_rejected",
+      "部分修正に必要な画像を確認できませんでした。",
+      false,
+    );
+  const response = await fetcher(url, {
+    method: "GET",
+    redirect: "error",
+    signal,
+  });
+  if (!response.ok) throw providerError(response.status);
+  const contentType = response.headers.get("content-type")?.split(";")[0];
+  if (!contentType?.startsWith("image/"))
+    throw new AIProviderError(
+      "provider_rejected",
+      "修正元画像を検証できませんでした。",
+      false,
+    );
+  const declaredLength = Number(response.headers.get("content-length") ?? 0);
+  if (declaredLength > 25_000_000)
+    throw new AIProviderError(
+      "response_too_large",
+      "修正元画像が処理上限を超えました。",
+      false,
+    );
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  if (!bytes.length || bytes.length > 25_000_000)
+    throw new AIProviderError(
+      "response_too_large",
+      "修正元画像が処理上限を超えました。",
+      false,
+    );
+  return Buffer.from(bytes).toString("base64");
+}
+
 export class BlackForestLabsFluxImageProvider implements CloudImageGenerationProvider {
   readonly capability: CloudProviderCapability & { kind: "image" };
   private readonly config: FluxProviderConfig;
@@ -112,16 +154,47 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
       const prompt = input.negativePrompt.trim()
         ? `${input.prompt}\nAvoid: ${input.negativePrompt}`
         : input.prompt;
+      const isInpainting = this.config.model === "flux-pro-1.0-fill";
+      if (isInpainting !== (input.operation === "inpainting"))
+        throw new AIProviderError(
+          "provider_rejected",
+          "画像修正方式とProvider設定が一致しません。",
+          false,
+        );
       const referenceImageUrls = (context.referenceImageUrls ?? []).slice(
         0,
         this.config.model === "flux-2-klein-9b" ? 4 : 8,
       );
-      const referenceImages = Object.fromEntries(
-        referenceImageUrls.map((url, index) => [
-          index === 0 ? "input_image" : `input_image_${index + 1}`,
-          url,
-        ]),
-      );
+      const requestBody = isInpainting
+        ? {
+            prompt,
+            image: await fetchBase64Image(
+              fetcher,
+              referenceImageUrls[0] ?? "",
+              controller.signal,
+            ),
+            mask: await fetchBase64Image(
+              fetcher,
+              context.maskImageUrl ?? "",
+              controller.signal,
+            ),
+            output_format: "png",
+            safety_tolerance: 1,
+          }
+        : {
+            prompt,
+            ...Object.fromEntries(
+              referenceImageUrls.map((url, index) => [
+                index === 0 ? "input_image" : `input_image_${index + 1}`,
+                url,
+              ]),
+            ),
+            width: normalizeDimension(input.width),
+            height: normalizeDimension(input.height),
+            seed: input.seed,
+            output_format: "png",
+            safety_tolerance: 1,
+          };
       const submitted = await fetcher(
         `https://api.bfl.ai/v1/${this.config.model}`,
         {
@@ -132,15 +205,7 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
             "content-type": "application/json",
             "x-key": this.config.apiKey,
           },
-          body: JSON.stringify({
-            prompt,
-            ...referenceImages,
-            width: normalizeDimension(input.width),
-            height: normalizeDimension(input.height),
-            seed: input.seed,
-            output_format: "png",
-            safety_tolerance: 1,
-          }),
+          body: JSON.stringify(requestBody),
           signal: controller.signal,
         },
       );

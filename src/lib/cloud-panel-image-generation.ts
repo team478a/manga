@@ -19,6 +19,8 @@ import {
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED?.toLowerCase() === "true";
+export const cloudPanelInpaintingFeatureEnabled = () =>
+  process.env.CLOUD_PANEL_INPAINTING_ENABLED?.toLowerCase() === "true";
 
 export const cloudPanelImageGenerationRequestSchema = z.object({
   projectId: z.string().uuid(),
@@ -27,6 +29,7 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
   idempotencyKey: z.string().uuid(),
   candidateCount: z.number().int().min(1).max(4).default(1),
   sourceAssetId: z.string().uuid().optional(),
+  maskAssetId: z.string().uuid().optional(),
   revisionPreset: z
     .enum(["face", "hands", "expression", "costume", "background", "polish"])
     .optional(),
@@ -34,6 +37,7 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
 }).superRefine((value, context) => {
   const revisionValues = [
     value.sourceAssetId,
+    value.maskAssetId,
     value.revisionPreset,
     value.revisionInstruction,
   ].filter(Boolean).length;
@@ -42,6 +46,12 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
       code: "custom",
       path: ["sourceAssetId"],
       message: "修正元画像と修正内容を指定してください。",
+    });
+  if (value.maskAssetId && !value.sourceAssetId)
+    context.addIssue({
+      code: "custom",
+      path: ["maskAssetId"],
+      message: "部分修正には修正元画像が必要です。",
     });
 });
 
@@ -105,6 +115,7 @@ export function buildStoryboardPanelGeneration(input: {
   }>;
   revision?: {
     sourceAssetId: string;
+    maskAssetId?: string;
     preset: "face" | "hands" | "expression" | "costume" | "background" | "polish";
     instruction?: string;
   };
@@ -312,8 +323,13 @@ export function buildStoryboardPanelGeneration(input: {
           ...referenceAssetIds,
         ]),
       ).slice(0, 8),
-      operation: input.revision ? ("image_to_image" as const) : ("text_to_image" as const),
+      operation: input.revision?.maskAssetId
+        ? ("inpainting" as const)
+        : input.revision
+          ? ("image_to_image" as const)
+          : ("text_to_image" as const),
       sourceAssetId: input.revision?.sourceAssetId,
+      maskAssetId: input.revision?.maskAssetId,
       revisionPreset: input.revision?.preset,
       revisionInstruction: input.revision?.instruction,
       ...imageSize(canvasPanel.width, canvasPanel.height),

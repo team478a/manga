@@ -5,6 +5,7 @@ import {
   assertGeneralStoryboardProject,
   buildStoryboardPanelGeneration,
   cloudPanelImageGenerationFeatureEnabled,
+  cloudPanelInpaintingFeatureEnabled,
   cloudPanelImageGenerationRequestSchema,
 } from "./cloud-panel-image-generation.ts";
 import { cloudStoryboardResultSchema } from "./cloud-storyboard.ts";
@@ -13,6 +14,7 @@ import {
   DomainError,
   PermissionDeniedError,
   ResourceNotFoundError,
+  ValidationError,
 } from "./domain-errors.ts";
 import { consumeCloudGeneralMonitorAiRequest } from "./cloud-general-monitor.ts";
 import type { CloudCharacterProfile } from "./cloud-character-profile.ts";
@@ -22,6 +24,8 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
   if (!cloudPanelImageGenerationFeatureEnabled())
     throw new PermissionDeniedError("ネーム画像生成は現在停止中です。");
   const request = cloudPanelImageGenerationRequestSchema.parse(input);
+  if (request.maskAssetId && !cloudPanelInpaintingFeatureEnabled())
+    throw new PermissionDeniedError("コマの部分修正は現在停止中です。");
   const { supabase, profile } = await cloudCreatorContext();
 
   const { data: materialization, error: materializationError } = await supabase
@@ -172,6 +176,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
   const revision = request.sourceAssetId && request.revisionPreset
     ? {
         sourceAssetId: request.sourceAssetId,
+        maskAssetId: request.maskAssetId,
         preset: request.revisionPreset,
         instruction: request.revisionInstruction,
       }
@@ -189,7 +194,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
       );
     const sourceAsset = await supabase
       .from("cloud_assets")
-      .select("id")
+      .select("id,width,height,mime_type")
       .eq("id", revision.sourceAssetId)
       .eq("project_id", request.projectId)
       .eq("owner_profile_id", profile.id)
@@ -203,6 +208,31 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
       );
     if (!sourceAsset.data)
       throw new PermissionDeniedError("この画像を修正元として利用できません。");
+    if (revision.maskAssetId) {
+      const maskAsset = await supabase
+        .from("cloud_assets")
+        .select("id,width,height,mime_type")
+        .eq("id", revision.maskAssetId)
+        .eq("project_id", request.projectId)
+        .eq("owner_profile_id", profile.id)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (maskAsset.error)
+        throw new DomainError(
+          "INTERNAL_ERROR",
+          "修正範囲を確認できませんでした。",
+          { cause: maskAsset.error },
+        );
+      if (!maskAsset.data || maskAsset.data.mime_type !== "image/png")
+        throw new PermissionDeniedError("この修正範囲を利用できません。");
+      if (
+        maskAsset.data.width !== sourceAsset.data.width ||
+        maskAsset.data.height !== sourceAsset.data.height
+      )
+        throw new ValidationError(
+          "修正範囲と元画像のサイズが一致しません。もう一度範囲を指定してください。",
+        );
+    }
   }
   let explicitCharacterProfileIds: string[] = [];
   let explicitWorldProfileIds: string[] = [];
