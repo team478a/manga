@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M2-3: 参照画像・コマ明示割当
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-reference-assets-v1`
+- Base: `agent/manga-generation-integration-v1`（Draft PR #94）
+- 実装: Character／Style／Location／Propの非公開参照画像、コマ単位の人物・場所・小物割当、生成Jobへの参照asset固定、Workerでの短時間署名URL発行、BFL FLUX.2 multi-reference入力
+- セキュリティ: 一般向け所有作品だけ、所有者RLS、検証済みRPC、別作品asset拒否、秘密URL非表示、migration未適用時fail-safe
+- migration: `202608010001_cloud_visual_references.sql`
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 317/317、Canvas 26/26、AI 44/44、Desktop 182/182、migration 33/33、forward/rollback/reapply/canonical schema、production build成功
+- 詳細: `docs/cloud/MANGA_VISUAL_REFERENCES_V1.md`
+- 次: キャラクター・衣装・場所の継続性評価と警告
+- 未実施: staging migration、実Provider有料生成、実ブラウザ確認、責任者承認、親PR #94後のマージ
+
 ## 2026-07-31 一般向け漫画生成の最新Cloud基盤への統合
 
 - 状態: `READY_FOR_REVIEW`

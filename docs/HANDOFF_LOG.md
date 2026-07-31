@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-08-01 Codex: M2-3 参照画像・コマ明示割当
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-reference-assets-v1`
+- Base: `agent/manga-generation-integration-v1`（Draft PR #94）
+
+### 完了
+
+- Character／Style／Location／Propへ非公開参照画像を関連付ける画面とRPCを追加した。
+- 人物・場所・小物をページ内のコマへ明示割当できるようにした。
+- 自動照合と明示割当を生成Promptへ統合し、参照asset IDをJob入力へ固定した。
+- Workerが所有権を再検証して短時間署名URLを発行し、BFL FLUX.2へ最大8枚を渡すようにした。
+- 所有者RLS、rollback、canonical schema、migration assertion、集中テストを追加した。
+- deps、lint、Hub/Desktop typecheck、Hub 317/317、Canvas 26/26、AI 44/44、Desktop 182/182、migration roundtrip、production buildに成功した。
+
+### 未完了
+
+- staging migration、実Provider有料生成、実ブラウザ確認、責任者承認、親PR #94後のマージ
+
+### 詳細
+
+- `docs/cloud/MANGA_VISUAL_REFERENCES_V1.md`
+
+---
+
 ## 2026-07-31 Codex: 一般向け漫画生成を最新Cloud基盤へ統合
 
 ### 状態

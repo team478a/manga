@@ -117,6 +117,15 @@ begin
   end if;
 end $$;
 
+do $$ begin
+  if to_regclass('public.cloud_visual_reference_assets') is not null
+    or to_regclass('public.cloud_panel_subject_assignments') is not null
+    or to_regprocedure('public.save_cloud_visual_reference(uuid,text,uuid,uuid,text)') is not null
+    or to_regprocedure('public.save_cloud_panel_subject_assignment(uuid,uuid,uuid,text,uuid)') is not null then
+    raise exception 'Cloud visual reference objects remain after rollback';
+  end if;
+end $$;
+
 do $$
 begin
   if to_regclass('public.cloud_general_image_provider_settings') is not null

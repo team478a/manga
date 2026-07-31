@@ -105,3 +105,40 @@ test("BFL adapter rejects untrusted polling URLs before making a second request"
   );
   assert.equal(calls, 1);
 });
+
+test("BFL adapterは署名済み参照画像をmulti-reference入力へ渡す", async () => {
+  const calls = [];
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-2-pro",
+    capability,
+    pollIntervalMs: 1,
+    fetcher: async (url, init) => {
+      calls.push({ url: String(url), init });
+      if (calls.length === 1) return new Response(JSON.stringify({
+        id: "bfl-job-reference",
+        polling_url: "https://api.bfl.ai/v1/get_result?id=bfl-job-reference",
+      }), { status: 200 });
+      if (calls.length === 2) return new Response(JSON.stringify({
+        status: "Ready",
+        result: { sample: "https://delivery.bfl.ai/result/reference.png" },
+      }), { status: 200 });
+      return new Response(new Uint8Array([137,80,78,71]), { status: 200 });
+    },
+  });
+  await provider.generate({
+    kind: "image",
+    jobType: "background",
+    prompt: "manga panel",
+    negativePrompt: "",
+  }, {
+    ...context,
+    referenceImageUrls: [
+      "https://project.supabase.co/storage/v1/object/sign/cloud-assets/a.png?token=one",
+      "https://project.supabase.co/storage/v1/object/sign/cloud-assets/b.png?token=two",
+    ],
+  });
+  const request = JSON.parse(calls[0].init.body);
+  assert.match(request.input_image, /a\.png/);
+  assert.match(request.input_image_2, /b\.png/);
+});

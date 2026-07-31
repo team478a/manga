@@ -229,6 +229,44 @@ test("画風と該当する場所・小物だけを生成条件へ固定する",
   ]);
 });
 
+test("明示割当と参照画像IDを生成Jobへ固定する", () => {
+  const characterId = "70000000-0000-4000-8000-000000000011";
+  const assetId = "74000000-0000-4000-8000-000000000011";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    visualCharacterProfiles: [{
+      id: characterId,
+      project_id: "50000000-0000-4000-8000-000000000001",
+      name: "ネームにない人物",
+      role: "supporting",
+      current_version: 1,
+      appearance_age: "30代",
+      body_build: "長身",
+      hair: "黒髪",
+      costume: "コート",
+      color_palette: "黒",
+      immutable_traits: [],
+      prompt: "",
+      negative_prompt: "",
+      updated_at: "2026-08-01T00:00:00.000Z",
+    }],
+    explicitCharacterProfileIds: [characterId],
+    referenceAssets: [{
+      subjectKind: "character",
+      subjectId: characterId,
+      assetId,
+    }],
+  });
+  assert.match(result.generation.prompt, /ネームにない人物/);
+  assert.deepEqual(result.generation.characterProfileVersions, [
+    { profileId: characterId, version: 1 },
+  ]);
+  assert.deepEqual(result.generation.referenceAssetIds, [assetId]);
+});
+
 test("1回の要求で最大4候補まで安全に指定できる", () => {
   const request = cloudPanelImageGenerationRequestSchema.parse({
     projectId: "50000000-0000-4000-8000-000000000001",

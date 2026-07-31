@@ -112,6 +112,15 @@ begin
   end if;
 end $$;
 
+do $$ begin
+  if to_regclass('public.cloud_visual_reference_assets') is null
+    or to_regclass('public.cloud_panel_subject_assignments') is null
+    or not coalesce((select relrowsecurity from pg_class where oid='public.cloud_visual_reference_assets'::regclass),false)
+    or not coalesce((select relrowsecurity from pg_class where oid='public.cloud_panel_subject_assignments'::regclass),false) then
+    raise exception 'Current schema Cloud visual reference objects missing or RLS disabled';
+  end if;
+end $$;
+
 do $$
 begin
   if to_regclass('public.cloud_general_image_provider_settings') is null

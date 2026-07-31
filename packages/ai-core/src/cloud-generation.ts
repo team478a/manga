@@ -73,6 +73,7 @@ export const cloudGenerationInputSchema = z
       )
       .max(12)
       .optional(),
+    referenceAssetIds: z.array(z.string().uuid()).max(8).optional(),
   })
   .superRefine((value, context) => {
     const imageTypes: CloudGenerationJobType[] = [
@@ -166,6 +167,7 @@ export type CloudGenerationContext = {
   projectId: string;
   pageId?: string;
   idempotencyKey: string;
+  referenceImageUrls?: string[];
 };
 
 export type CloudGenerationUsage = {

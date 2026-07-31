@@ -259,7 +259,9 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 - M2-2 Style Bible、Location／Prop ProfileのCRUDと版履歴を実装
 - 画風を全コマ、名前が一致する場所・小物を対象コマの生成条件へ自動適用
 - 画像生成Job入力へStyle Bible／Location／PropのIDとversionを保存
-- 参照画像、コマへの明示割当、継続性警告は後続M2
+- M2-3 Character／Style／Location／Propの非公開参照画像を実装
+- コマへの人物・場所・小物の明示割当とFLUX.2 multi-reference入力を実装
+- 継続性評価・警告は後続M2
 
 実装:
 
