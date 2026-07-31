@@ -1,0 +1,254 @@
+[
+  {
+    "id": "corroborates-market-size",
+    "name": "same metric year unit and value",
+    "primary": "公式調査では電子コミック市場規模は2025年に100億円でした。",
+    "comparison": "業界調査による電子コミック市場規模は2025年で100億円です。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "corroborates"
+  },
+  {
+    "id": "corroborates-price",
+    "name": "same price without explicit year",
+    "primary": "電子コミックの平均価格は600円と報告されています。",
+    "comparison": "調査対象作品の価格中央値は600円でした。",
+    "primarySignals": ["価格"],
+    "comparisonSignals": ["価格"],
+    "expected": "corroborates"
+  },
+  {
+    "id": "corroborates-growth-rate",
+    "name": "same growth rate and year",
+    "primary": "電子出版の成長率は2024年に8.5%でした。",
+    "comparison": "2024年の電子出版成長率は8.5％とされています。",
+    "primarySignals": ["成長"],
+    "comparisonSignals": ["成長"],
+    "expected": "corroborates"
+  },
+  {
+    "id": "corroborates-readers",
+    "name": "same readers quantity",
+    "primary": "月間読者は2025年に250,000人へ到達しました。",
+    "comparison": "2025年の月間読者は250,000人と発表されました。",
+    "primarySignals": ["読者"],
+    "comparisonSignals": ["読者"],
+    "expected": "corroborates"
+  },
+  {
+    "id": "corroborates-sales",
+    "name": "same sales quantity",
+    "primary": "対象カテゴリの売上は2023年に40億円でした。",
+    "comparison": "2023年の対象カテゴリ売上は40億円です。",
+    "primarySignals": ["売上"],
+    "comparisonSignals": ["売上"],
+    "expected": "corroborates"
+  },
+  {
+    "id": "corroborates-share",
+    "name": "same market share",
+    "primary": "電子版のシェアは2025年に32%でした。",
+    "comparison": "2025年の電子版シェアは32％と記録されています。",
+    "primarySignals": ["シェア"],
+    "comparisonSignals": ["シェア"],
+    "expected": "corroborates"
+  },
+  {
+    "id": "corroborates-range",
+    "name": "one matching value in a range is supporting not conflicting",
+    "primary": "電子コミック市場規模は2025年に100億円から120億円の範囲でした。",
+    "comparison": "電子コミック市場規模は2025年に120億円と報告されました。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "corroborates"
+  },
+  {
+    "id": "conflict-market-size",
+    "name": "same metric year and unit but different value",
+    "primary": "公式調査では電子コミック市場規模は2025年に100億円でした。",
+    "comparison": "業界調査による電子コミック市場規模は2025年で120億円です。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "potential_conflict"
+  },
+  {
+    "id": "conflict-price",
+    "name": "different price in same year",
+    "primary": "作品の平均価格は2025年に550円でした。",
+    "comparison": "作品の平均価格は2025年に700円と報告されました。",
+    "primarySignals": ["価格"],
+    "comparisonSignals": ["価格"],
+    "expected": "potential_conflict"
+  },
+  {
+    "id": "conflict-growth-rate",
+    "name": "different growth rate in same year",
+    "primary": "市場の成長率は2024年に6%でした。",
+    "comparison": "市場の成長率は2024年に9％とされています。",
+    "primarySignals": ["成長"],
+    "comparisonSignals": ["成長"],
+    "expected": "potential_conflict"
+  },
+  {
+    "id": "conflict-users",
+    "name": "different users in same year",
+    "primary": "サービス利用者は2025年に300,000人でした。",
+    "comparison": "サービス利用者は2025年に450,000人と公表されました。",
+    "primarySignals": ["利用"],
+    "comparisonSignals": ["利用"],
+    "expected": "potential_conflict"
+  },
+  {
+    "id": "conflict-sales",
+    "name": "different sales in same year",
+    "primary": "電子部門の売上は2023年に15億円でした。",
+    "comparison": "電子部門の売上は2023年に18億円とされています。",
+    "primarySignals": ["売上"],
+    "comparisonSignals": ["売上"],
+    "expected": "potential_conflict"
+  },
+  {
+    "id": "conflict-readers",
+    "name": "different readers in same year",
+    "primary": "月間読者は2024年に120,000人でした。",
+    "comparison": "月間読者は2024年に160,000人と報告されました。",
+    "primarySignals": ["読者"],
+    "comparisonSignals": ["読者"],
+    "expected": "potential_conflict"
+  },
+  {
+    "id": "conflict-share",
+    "name": "different share in same year",
+    "primary": "電子書籍のシェアは2025年に28%でした。",
+    "comparison": "電子書籍のシェアは2025年に35％とされています。",
+    "primarySignals": ["シェア"],
+    "comparisonSignals": ["シェア"],
+    "expected": "potential_conflict"
+  },
+  {
+    "id": "related-different-year",
+    "name": "different year is not treated as conflict",
+    "primary": "電子コミック市場規模は2024年に100億円でした。",
+    "comparison": "電子コミック市場規模は2025年に120億円でした。",
+    "primarySignals": ["市場", "規模"],
+    "comparisonSignals": ["市場", "規模"],
+    "expected": "related"
+  },
+  {
+    "id": "related-different-metric",
+    "name": "same value for different metrics is not corroboration",
+    "primary": "電子コミックの売上は2025年に100億円でした。",
+    "comparison": "電子コミック市場規模は2025年に100億円でした。",
+    "primarySignals": ["市場"],
+    "comparisonSignals": ["市場"],
+    "expected": "related"
+  },
+  {
+    "id": "related-qualitative",
+    "name": "related qualitative statements",
+    "primary": "電子コミック市場の需要は若年読者を中心に拡大しています。",
+    "comparison": "電子コミック市場では読者の利用が継続しています。",
+    "primarySignals": ["市場", "需要", "読者"],
+    "comparisonSignals": ["市場", "利用", "読者"],
+    "expected": "related"
+  },
+  {
+    "id": "related-no-shared-year",
+    "name": "different value without shared year is related",
+    "primary": "作品価格は550円が中心です。",
+    "comparison": "作品価格は700円が中心です。",
+    "primarySignals": ["価格"],
+    "comparisonSignals": ["価格"],
+    "expected": "related"
+  },
+  {
+    "id": "related-unit-mismatch",
+    "name": "same metric with unmatched units is related",
+    "primary": "2025年の販売数は300冊でした。",
+    "comparison": "2025年の販売数は300部でした。",
+    "primarySignals": ["販売"],
+    "comparisonSignals": ["販売"],
+    "expected": "related"
+  },
+  {
+    "id": "related-signals-only",
+    "name": "shared signal without metric is related",
+    "primary": "若年層の購入意向が強い傾向です。",
+    "comparison": "若年層の購入頻度を調べました。",
+    "primarySignals": ["購入"],
+    "comparisonSignals": ["購入"],
+    "expected": "related"
+  },
+  {
+    "id": "related-metric-only",
+    "name": "shared metric without same quantity is related",
+    "primary": "読者の構成比を調査しました。",
+    "comparison": "読者行動の変化を確認しました。",
+    "primarySignals": ["構成"],
+    "comparisonSignals": ["行動"],
+    "expected": "related"
+  },
+  {
+    "id": "insufficient-unrelated",
+    "name": "unrelated statements are insufficient",
+    "primary": "電子コミック市場の需要について調査しました。",
+    "comparison": "女性層の年齢構成について説明しています。",
+    "primarySignals": ["市場", "需要"],
+    "comparisonSignals": ["年齢"],
+    "expected": "insufficient"
+  },
+  {
+    "id": "insufficient-theme-channel",
+    "name": "theme and channel statements do not overlap",
+    "primary": "異世界テーマの動向を整理しました。",
+    "comparison": "書店アプリでの配信方法を説明します。",
+    "primarySignals": ["テーマ"],
+    "comparisonSignals": ["配信"],
+    "expected": "insufficient"
+  },
+  {
+    "id": "insufficient-risk-audience",
+    "name": "risk and audience statements do not overlap",
+    "primary": "著作権上の注意事項を確認しました。",
+    "comparison": "若年女性の嗜好を集計しました。",
+    "primarySignals": ["著作権"],
+    "comparisonSignals": ["女性"],
+    "expected": "insufficient"
+  },
+  {
+    "id": "insufficient-platform-genre",
+    "name": "platform and genre statements do not overlap",
+    "primary": "配信アプリの機能を比較しました。",
+    "comparison": "恋愛ジャンルの傾向を整理しました。",
+    "primarySignals": ["配信"],
+    "comparisonSignals": ["ジャンル"],
+    "expected": "insufficient"
+  },
+  {
+    "id": "insufficient-purchase-regulation",
+    "name": "purchase and regulation statements do not overlap",
+    "primary": "購入頻度の変化を観察しました。",
+    "comparison": "海外規制の改定内容を確認しました。",
+    "primarySignals": ["購入"],
+    "comparisonSignals": ["規制"],
+    "expected": "insufficient"
+  },
+  {
+    "id": "insufficient-ranking-copyright",
+    "name": "ranking and copyright statements do not overlap",
+    "primary": "週間ランキングの掲載順を記録しました。",
+    "comparison": "著作権許諾の手順を説明しています。",
+    "primarySignals": ["ランキング"],
+    "comparisonSignals": ["著作権"],
+    "expected": "insufficient"
+  },
+  {
+    "id": "insufficient-demographic-store",
+    "name": "demographic and store statements do not overlap",
+    "primary": "年代別の閲覧傾向を整理しました。",
+    "comparison": "電子書店への登録手順を確認しました。",
+    "primarySignals": ["年代"],
+    "comparisonSignals": ["ストア"],
+    "expected": "insufficient"
+  }
+]

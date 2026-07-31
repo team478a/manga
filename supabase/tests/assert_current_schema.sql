@@ -111,3 +111,209 @@ begin
     raise exception 'private Cloud Asset bucket is missing';
   end if;
 end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_general_monitor_email_settings') is null
+     or to_regclass('public.cloud_general_monitor_email_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_general_monitor_email_provider(uuid,text,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_general_monitor_email_runtime_config()'
+     ) is null then
+    raise exception 'Current schema General monitor email Provider missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.get_cloud_general_monitor_email_runtime_config()',
+       'execute'
+     ) then
+    raise exception 'Current schema General monitor email runtime config exposed';
+  end if;
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_enrollments' and column_name='onboarding_completed_at')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='review_status')
+     or to_regprocedure('public.complete_cloud_general_monitor_onboarding()') is null
+     or to_regprocedure('public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)') is null then
+    raise exception 'Current schema general monitor operations objects missing';
+  end if;
+  if not has_function_privilege('authenticated','public.complete_cloud_general_monitor_onboarding()','execute')
+     or has_function_privilege('authenticated','public.review_cloud_general_monitor_feedback(uuid,uuid,text,text)','execute') then
+    raise exception 'General monitor operations privileges are invalid';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_story_storyboard_projects') is null
+     or to_regprocedure(
+       'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)'
+     ) is null
+     or to_regprocedure(
+       'public.materialize_cloud_storyboard_project(uuid)'
+     ) is null then
+    raise exception 'Current schema storyboard Canvas materialization objects missing';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='public'
+      and tablename='cloud_story_storyboard_projects'
+      and policyname='cloud_story_storyboard_projects_owner_read'
+  ) then
+    raise exception 'Current schema storyboard Canvas owner RLS missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.build_cloud_storyboard_canvas(uuid,integer,integer,jsonb)',
+       'execute'
+     ) then
+    raise exception 'Canvas builder must not be directly executable by authenticated users';
+  end if;
+  if not has_function_privilege(
+       'authenticated',
+       'public.materialize_cloud_storyboard_project(uuid)',
+       'execute'
+     ) then
+    raise exception 'Canvas materialization RPC privilege missing';
+  end if;
+end $$;
+
+do $$
+declare
+  v_page_id uuid := gen_random_uuid();
+  v_canvas jsonb;
+begin
+  select public.build_cloud_storyboard_canvas(
+    v_page_id,
+    1600,
+    2400,
+    jsonb_build_object(
+      'pageNumber', 1,
+      'panels', jsonb_build_array(
+        jsonb_build_object(
+          'panelNumber', 1,
+          'description', '導入',
+          'dialogue', jsonb_build_array(
+            jsonb_build_object(
+              'speaker', '主人公',
+              'text', '始めよう',
+              'type', 'speech'
+            )
+          )
+        )
+      )
+    )
+  ) into v_canvas;
+  if v_canvas->>'schemaVersion' <> '1'
+     or v_canvas->>'pageId' <> v_page_id::text
+     or jsonb_array_length(v_canvas->'panels') <> 1
+     or jsonb_array_length(v_canvas->'balloons') <> 1
+     or jsonb_array_length(v_canvas->'textObjects') <> 1
+     or jsonb_typeof(v_canvas->'panelLayers') <> 'array' then
+    raise exception 'Storyboard Canvas builder returned an invalid Canvas v1 document';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_story_storyboard_versions') is null
+     or to_regclass('public.cloud_story_storyboard_adoptions') is null then
+    raise exception 'Current schema Cloud storyboard tables missing';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_story_scenario_versions') is null
+     or to_regclass('public.cloud_story_scenario_adoptions') is null then
+    raise exception 'Current schema Cloud scenario tables missing';
+  end if;
+  if not exists (
+    select 1 from pg_policies
+    where schemaname='public'
+      and tablename='cloud_story_scenario_versions'
+      and policyname='cloud_story_scenario_versions_owner_insert'
+  ) then
+    raise exception 'Current schema Cloud scenario RLS missing';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_research_ai_settings') is null
+     or to_regclass('public.cloud_research_ai_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_research_ai_provider(uuid,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_research_ai_runtime_config()'
+     ) is null then
+    raise exception 'Current schema Cloud research AI Provider objects missing';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_adult_feature_grants') is null
+     or to_regclass('public.cloud_adult_planning_briefs') is null then
+    raise exception 'Current schema Cloud adult planning tables missing';
+  end if;
+  if to_regprocedure('public.can_use_cloud_adult_feature(text)') is null
+     or to_regprocedure(
+       'public.set_cloud_adult_feature_grant(uuid,uuid,text,text,text,timestamp with time zone,text)'
+     ) is null then
+    raise exception 'Current schema Cloud adult planning functions missing';
+  end if;
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'cloud_adult_planning_briefs'
+      and policyname = 'cloud_adult_planning_owner_insert'
+      and with_check like '%can_use_cloud_adult_feature%'
+  ) then
+    raise exception 'Current schema Cloud adult planning RLS missing';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_adult_research_settings') is null
+     or to_regclass('public.cloud_adult_research_entitlements') is null
+     or to_regclass('public.cloud_adult_research_consents') is null
+     or to_regclass('public.cloud_adult_research_audit_logs') is null then
+    raise exception 'Cloud adult research access tables missing';
+  end if;
+  if to_regprocedure('public.can_use_cloud_adult_research()') is null
+     or to_regprocedure(
+       'public.set_cloud_adult_research_enabled(uuid,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.set_cloud_adult_research_entitlement(uuid,uuid,text,text,timestamp with time zone,text)'
+     ) is null then
+    raise exception 'Cloud adult research access functions missing';
+  end if;
+  if not exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'cloud_market_research_reports'
+      and policyname = 'cloud_market_research_owner_insert'
+      and with_check like '%can_use_cloud_adult_research%'
+  ) then
+    raise exception 'Cloud adult research report RLS missing';
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.cloud_market_research_reports'::regclass
+      and conname = 'cloud_market_research_reports_engine_version_check'
+      and pg_get_constraintdef(oid) like '%research-rules-v2%'
+  ) then
+    raise exception 'Current schema Cloud research v2 engine constraint missing';
+  end if;
+end $$;

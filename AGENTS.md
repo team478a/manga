@@ -38,6 +38,7 @@ git diff feature/manga-canvas-mvp...HEAD --stat
 - 大規模な一括変更を避け、レビュー可能な単位でコミットする。
 - 新しい仕様判断が必要な場合は、実装で先回りせず`docs/CURRENT_TASK.md`の未決事項へ記録する。
 - `.env*`、APIキー、署名鍵、認証情報、利用者コンテンツをコミットしない。
+- OpenAI、Grok、Resendなど外部ProviderのAPIキーは、管理者画面で入力・保存・差し替えできる構造を標準とする。Supabase Vaultへ保存し、保存後は画面・通常テーブル・監査ログへ本体や末尾文字を再表示しない。保存完了時は明示的な追加操作なしで利用可能にする。Supabase URL・service role、Stripe webhook secret、署名鍵など基盤秘密情報は対象外で、デプロイ環境変数または専用Secret Storeを使う。
 - Prompt、画像、成人向けコンテンツ、個人情報をログへ出力しない。
 - 外部AI Providerへの送信は既存の明示承認、分類、費用上限、fail-closed方針を維持する。
 - 成人向け処理はローカル優先を維持し、明示承認なしに外部送信経路を有効化しない。

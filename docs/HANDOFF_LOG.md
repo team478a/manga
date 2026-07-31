@@ -4,6 +4,464 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けモニター本番候補を独立統合
+
+- `feature/manga-canvas-mvp`の最新から
+  `codex/cloud-monitor-production-v1`を作成した。
+- `codex/cloud-general-monitor-beta-v1`をmerge commitで非破壊的に統合した。
+- 一般向けRelease 1〜6、モニター運用、招待メール、Webマニュアル、
+  readiness checkを本番候補とした。
+- Stripe、課金、販売、Marketplace、Desktop、成人向け後続branchは統合しない。
+- 履歴に含まれる成人向け市場分析・企画は、Productionの成人向けFlagを
+  未設定または`false`に保ち、一般向けモニターへ公開しない。
+- 本番URLは`https://app.mang-ai.com`。Supabase Auth URL、migration、
+  Provider設定、redeploy、実招待はPR承認後に順番に実施する。
+- 詳細は
+  [`CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md`](cloud/CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md)。
+
+---
+
+## 2026-07-31 Codex: 一般向けモニターを本番招待制で公開するための保護
+
+- モニターテストの対象をPreviewから本番環境上の招待制・無料・段階公開へ変更した。
+- `NEXT_PUBLIC_SITE_URL`と`MONITOR_INVITE_SITE_URL`が同一のHTTPS originで
+  ない場合はpreflightと管理者公開チェックを失敗させる。
+- URLやAPIキーなどの値は出力せず、設定状態と一致判定だけを表示する。
+- 本番反映後はスタッフ1名、2〜3名、残りの順で招待する。
+- 障害時は一般向けモニターFeature Flagを停止し、新規利用を止めてから
+  deployment rollbackを判断する。
+- 本番公開保護の集中テスト9/9、deps、lint、Hub typecheck、Hub test 272/272、
+  migration 28/28、Hub production build、diff checkが成功した。
+- protected production branchの承認、migration適用、Feature Flag変更、
+  実招待、本番公開そのものは未実施。
+
+---
+
+## 2026-07-31 Codex: 一般向けモニター・テスト公開チェック
+
+- `/admin/general-monitors/readiness`へ秘密値を表示しない公開前チェックを追加した。
+- 一般向けFeature Flag、成人向け停止、モニターDB、管理画面保存済みAI接続、
+  Resend招待メール、招待先HTTPS URLを一画面で判定する。
+- 登録済み、利用中、初回確認済み、未完了フィードバックの件数を表示する。
+- 公開順をスタッフ1名、2〜3名、残りへ分け、一斉招待による障害拡大を防ぐ。
+- 集中テスト13/13、deps、lint、Hub typecheck、Hub test 271/271、
+  migration 28/28、Hub build、diff checkが成功した。
+- 外部作業はPreview実環境の判定確認と、スタッフ1名による招待・メール・
+  市場分析保存のスモークテスト。
+
+---
+
+## 2026-07-31 Codex: 約10名モニター向けWebマニュアル
+
+- `/dashboard/monitor/guide`を利用者向けWebマニュアルとして再構成した。
+- 入力、操作、完了の目印を工程ごとに分離し、スマートフォン用アンカーメニュー、
+  折りたたみトラブル対応、フィードバック記載項目、安全上の注意を追加した。
+- `/admin/general-monitors/guide`へスタッフ専用の10名招待、日次確認、
+  問い合わせ、停止判断、テスト完了条件を追加した。
+- 管理画面、初回案内、モニター状況から各Webマニュアルへ移動できる。
+- 検証は集中テスト8/8、lint、Hub typecheck、Hub test 269/269、
+  production build、diff checkが成功した。
+
+---
+
+## 2026-07-31 Codex: 一般向けモニター招待メールの管理画面設定
+
+- Resend APIキー、認証済み送信元、送信者名を管理画面で保存・変更できるようにした。
+- APIキーはSupabase Vaultへ保存し、画面、Client、通常テーブル、監査ログへ再表示しない。
+- 保存成功時に自動有効化し、招待と再送はVaultのruntime設定だけを利用する。
+- `RESEND_API_KEY`等の日常運用用環境変数を廃止し、Preview URLだけを環境設定に残した。
+- migration `202607310002_cloud_general_monitor_email_provider`、rollback、canonical schema、権限assertionを追加した。
+- 検証は集中テスト9/9、deps、lint、typecheck（Hub + Desktop）、Research Evaluation、Hub 267/267、migration 28/28、Hub build、preflight、diff checkが成功した。
+- 外部作業はPreview Supabaseへのmigration適用、管理画面での実Resend設定、実メール送信、1〜3名E2E。PR mergeと本番公開は未実施。
+
+---
+
+## 2026-07-31 Codex（一般向けモニター招待メール）
+
+既存のResend Email API設定を利用する招待自動送信と再送を実装した。登録済みAuthメールだけを送信先に使い、利用開始URL・期限・AI上限を通知する。送信失敗は招待登録成功と分けて管理者へ案内し、API keyやProviderエラー本文は露出しない。`RESEND_API_KEY` とResendで認証済みの送信元をServer環境変数から取得する。
+
+---
+
+## 2026-07-31 Codex（一般向けモニター運用強化）
+
+### 状態
+
+`IMPLEMENTED_VALIDATING`。初回案内、期限・AI残数警告、招待文面、フィードバック対応管理、CSV出力を追加した。
+
+### 実装
+
+- `onboarding_completed_at` と本人用完了RPC
+- 期限3日前、AI残り5回以下、停止・期限切れ・上限到達の画面警告
+- 管理者が登録メール宛ての招待文面をメールアプリで開く導線
+- フィードバックの `new / reviewing / resolved`、管理メモ、担当管理者、確認日時
+- モニター状態・利用数・フィードバック集計のUTF-8 BOM付きCSV
+- migration、rollback、canonical schema、権限・UIテスト
+
+### 境界
+
+- 招待自動送信は後続変更で既存Resend設定へ接続済み。
+- migration適用、Feature Flag変更、招待、本番公開、PR mergeは実施しない。
+
+---
+
+## 2026-07-30 Codex（一般向け無料限定モニター）
+
+### 状態
+
+`IMPLEMENTED_VALIDATING`。一般向けRelease 1〜6を1〜3名へ招待制で公開する管理基盤を実装した。
+
+### 実装
+
+- 管理者による招待、期限、累計AI上限、更新、停止
+- 市場分析、AI企画、シナリオ、ネーム、コマ画像のAI実行前共通gate
+- 成人向け入力の拒否
+- 利用者フィードバックと管理者一覧
+- 所有者RLS、Service Role限定RPC、監査ログ
+- migration、rollback、canonical schema、preflight、受入表、runbook
+
+### 境界
+
+- Stripe、販売、Marketplace、成人向け権限へ接続しない
+- migration適用、Feature Flag変更、有料API実行、招待、本番公開、PR mergeは行わない
+
+---
+
+## 2026-07-30 Codex（Cloud Release 6 コマ画像AIおまかせ生成）
+
+### 状態
+
+`READY_FOR_REVIEW`。Release 5のCanvasでコマを選ぶだけで、採用ネームからServer側生成条件を作り、既存Cloud AI Queueへ登録できる縦型フローを実装した。Draft PRは[#73](https://github.com/team478a/manga/pull/73)、[Vercel Preview](https://mangai-hub-staging-git-codex-cloud-pa-e0d887-team478as-projects.vercel.app)はReady。
+
+### ブランチ
+
+- Branch: `codex/cloud-panel-image-generation-v1`
+- Base: `codex/cloud-storyboard-canvas-materialization-v1` (`80b71f6`, Draft PR #72)
+
+### 実装
+
+- 選択panelと元ネームの同一ページ・同一順序コマを照合
+- 画角、構図、人物、背景、動作、感情、演出から一般向け画像PromptをServer側作成
+- コマ縦横比から生成寸法を自動決定
+- 既存moderation、quota、Provider Registry、Queueへの登録
+- Jobと対象panelの永続的な関連付け
+- 完了Assetの生成対象コマ配置
+- PromptをClient responseと画面から除外
+- Feature Flag、preflight、エラー状態、モックProviderテスト
+
+### 安全境界
+
+- Feature Flag未設定時は認証・DB・Providerより前にfail closed
+- 所有者本人のRelease 5一般向けProjectだけを許可
+- 既存Queue／Worker／料金予約を再実装・迂回しない
+- Desktop、成人向け画像生成、Stripe、Marketplaceは変更しない
+- 外部API有料実行、migration適用、Feature Flag変更、本番公開、PR mergeは未実施
+
+### 検証
+
+- Release 6集中テスト: PASS（10/10）
+- deps、lint、typecheck、Research Evaluation: PASS
+- Hub test: PASS（254/254）
+- Canvas test: PASS（26/26）
+- AI test: PASS（44/44）
+- Desktop test: PASS（182/182）
+- Desktop accessibility: PASS（違反0）
+- migration静的検証: PASS（25/25、追加migrationなし）
+- Hub production build、Desktop build、`git diff --check`: PASS
+- GitHub Core quality、migration roundtrip、Windows build: PASS
+- Vercel Preview: READY
+- RC preflight: repository structure READY、外部設定・手動E2EはPENDING
+- Release 6 preflight: 限定公開用環境変数未設定のため想定どおりfail closed
+
+---
+
+## 2026-07-30 Codex（Cloud Release 2 限定公開前ハードニング）
+
+### 状態
+
+`READY_FOR_PREVIEW_ACCEPTANCE`。PR #69のAI企画提案に、実機受入れ前のUI状態・responsive・preflight・永続化回帰テスト・運用文書を追加した。
+
+### 実装
+
+- 企画生成と選択中のbutton無効化、状態表示
+- 企画未作成Empty State
+- 390pxで評価3項目を縦並びにし、長いAI生成文を折り返す
+- Release 2専用preflightと秘密値非表示テスト
+- 不正UUID、所有者外Run、選択snapshot、RLS照合の集中テスト
+- 限定公開RunbookとBeta受入れ表
+
+### 安全境界
+
+- 管理画面とSupabase Vaultの既存OpenAI接続を再利用
+- ローカル・VercelへAPIキーを複製していない
+- 実OpenAI有料実行、migration適用、Feature Flag変更、本番公開、PR mergeは未実施
+- 成人向けReportの外部AI拒否を維持
+
+### 検証
+
+- 集中テスト: PASS（17/17、追加永続化テスト11/11）
+- deps、lint、typecheck、research eval: PASS
+- Hub test: PASS（210/210）
+- migration静的検証: PASS（22/22）
+- Hub production build、`git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel Preview: Ready
+- Preview未ログイン画面は390px／768px／1280pxで横overflowなし
+- 企画画面responsiveと実AI縦型E2EはPreviewドメインでMANGAIログインが必要なため`BLOCKED_EXTERNAL_ENVIRONMENT`
+
+---
+
+## 2026-07-30 Codex（売れ筋優先・AIおまかせ市場分析UX）
+
+### 状態
+
+`IMPLEMENTED_LOCAL`。市場分析の主目的を「何が売れる可能性が高いか」の意思決定へ絞り、入力と結果表示を再設計した。
+
+### 実装
+
+- ジャンルとテーマだけで実行できる簡単入力
+- 読者、販売先、形式、価格、ページ数は折りたたみ内でAIおまかせ
+- 作品イメージだけを任意入力
+- 今狙う作品、買われる理由、おすすめ商品設計を最上段へ表示
+- 直近12か月、需要と競合、異なる2ドメイン以上をAI調査条件に追加
+- 1ドメイン以下の根拠しかない応答は保存拒否
+- 旧Report表示と成人向け外部送信拒否を維持
+
+### 外部状態
+
+- AI Provider migration適用と管理画面APIキー設定は責任者申告で完了
+- APIキー本体・末尾・値は文書とログへ記録していない
+- 更新Previewでの実AI E2Eは未実施
+
+### 検証
+
+- deps、lint、typecheck、Research Evaluation: PASS
+- Hub test: PASS（195/195）
+- migration静的検証: PASS（21/21）
+- Hub production build、`git diff --check`: PASS
+
+---
+
+## 2026-07-30 Codex（市場分析AI自動化・管理画面API設定）
+
+### 状態
+
+`IMPLEMENTED_LOCAL`。一般向け市場分析をプルダウン中心の入力とOpenAI Web検索付き自動分析へ変更し、管理者がAPIキーをSupabase Vaultへ登録できる基盤を追加した。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-ai-auto-ux-v1`
+- Base: `codex/cloud-adult-planning-option-v1` (`58a18b9`)
+
+### 実装
+
+- 利用者の出典URL・確認事実入力を廃止
+- OpenAI Responses API、Web search、Structured Outputs
+- 引用のない応答を保存しない安全制御
+- 管理者用APIキー・model・停止設定
+- Supabase Vault保存とservice-role限定復号
+- 秘密値を含まない管理監査
+- migration、rollback、canonical schema、テスト
+
+### 安全境界
+
+- 一般向けだけを外部AIへ送信
+- 成人向けはProvider取得前に拒否
+- APIキーの再表示、ログ、URL、通常テーブル保存なし
+- migration適用、キー登録、有効化、本番公開は未実施
+
+---
+
+## 2026-07-29 Codex（Cloud成人向け企画ブリーフ・機能単位権限）
+
+### 状態
+
+`READY_FOR_REVIEW`。成人向け市場分析オプションを基点に、外部AIを使わない企画ブリーフの入力・保存・履歴・再表示を追加した。
+
+### ブランチ
+
+- Branch: `codex/cloud-adult-planning-option-v1`
+- Base: `codex/cloud-adult-research-option-v1` (`a9969ac`)
+- 親Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+- Draft PR: [#67](https://github.com/team478a/manga/pull/67)
+
+### 実装
+
+- `adult_planning`機能単位許可と管理者操作
+- 成人向け市場分析Reportからの条件引継ぎ
+- 企画ブリーフの入力、保存、履歴、再表示
+- 所有者、成人向け基本権限、機能権限を重ねたRLS
+- 機能許可の監査ログ
+- Feature Flag、preflight、migration、rollback、canonical schema
+- 利用者画面から内部評価ロジック、出典URL、内部エラーを非表示
+
+### 安全境界
+
+- 外部AI、成人向け文章・画像の自動生成は追加していない
+- Stripe自動許可、作品公開・販売、Desktop、Canvasは変更していない
+- migration適用、Feature Flag有効化、本番公開は行っていない
+
+### 検証
+
+- deps、lint、typecheck、Research Evaluation、Hub test（185/185）、build: PASS
+- migration静的検証: PASS（20/20）
+- migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
+- 所有者RLSの実DB挙動検査、preflight、`git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-95f9df-team478as-projects.vercel.app`
+
+### 責任者待ち
+
+- 機能単位販売・付与方針の承認
+- staging migration適用
+- Preview環境Flag設定
+- 管理者許可、本人操作、権限停止の縦型E2E
+- 成人向け外部Providerを使う後続工程の別途審査
+
+---
+
+## 2026-07-29 Codex（Cloud成人向け市場分析・許可制オプション）
+
+### 状態
+
+`READY_FOR_REVIEW`。一般向けRelease 1統合ブランチを基点に、成人向け市場分析だけを許可制Cloudオプションとして追加した。成人向け画像・本文生成、Stripe自動連携、作品公開・販売は追加していない。
+
+### ブランチ
+
+- Branch: `codex/cloud-adult-research-option-v1`
+- Base: `codex/cloud-release1-integration-v1` (`6491a7d`)
+- 親Draft PR: [#65](https://github.com/team478a/manga/pull/65)
+- Draft PR: [#66](https://github.com/team478a/manga/pull/66)
+
+### 実装
+
+- 環境FlagとDB Kill Switch
+- 管理者による個別許可、停止、期限、許可理由、メモ
+- 既存購入者用`legacy_purchase`
+- 本人の18歳以上確認、専用規約同意、同意解除
+- 成人向けReportの作成、履歴、再表示
+- RLSによる作成・再表示の強制拒否
+- 全体設定、個別権限、本人同意の監査ログ
+- migration、rollback、canonical schema、preflight、runbook
+
+### 検証
+
+- deps、lint、typecheck、Research Evaluation、Hub test（180/180）、build: PASS
+- migration静的検証: PASS（19/19）
+- migration forward／rollback／reapply／canonical schema: PASS（PostgreSQL 16）
+- 成人向け集中テスト、Release 1 preflight、`git diff --check`: PASS
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ad-7158e2-team478as-projects.vercel.app`
+
+### 責任者待ち
+
+- 成人向け専用規約本文と限定公開対象の承認
+- staging migration適用
+- Vercel環境FlagとDB Kill Switch有効化
+- Previewでの管理者許可・本人同意・縦型E2E
+- 本番公開判断
+
+---
+
+## 2026-07-29 Codex（Cloud Release 1独立統合・公開前ハードニング）
+
+### 状態
+
+`IN_PROGRESS`。最新`feature/manga-canvas-mvp` (`7615d06`)から独立ブランチを作成し、市場分析に必要なPR #50、#56〜#62の機能commitだけを取り込んだ。既存PRの履歴は変更していない。
+
+### ブランチ
+
+- Branch: `codex/cloud-release1-integration-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: [#65](https://github.com/team478a/manga/pull/65)
+
+### 統合判断
+
+- PR #50はRelease 0＋1の7 commitを順番に取り込んだ。
+- PR #56〜#62は市場分析の機能commitだけを取り込み、旧stack用の進捗文書commitは取り込まなかった。
+- PR #56の競合ではRelease 2〜6 migrationを除外し、Release 1の`202607290001`と品質v2の`202607290007`だけをmanifest・schema検査へ統合した。
+- PR #48〜#49、#51〜#55、#63〜#64、およびDesktop、Canvas、Cloud AI、Stripe、Marketplace、後続制作工程は除外した。
+
+### 追加ハードニング
+
+- Feature Flagを認証・DB照会前に評価
+- 検索API／出典検証未設定時の手動出典継続案内
+- loading、empty、error、not found状態
+- 成人向け拒否、不正UUID事前拒否、内部エラー秘匿、所有者限定参照の回帰検査
+- 390px、768px、1280pxの横overflow構造検査
+- 秘密値を表示しないRelease 1 preflight
+- Release 1限定公開runbookと受入れ表
+
+### 検証
+
+- 市場分析集中テスト: PASS（28/28）
+- migration静的検証: PASS（18/18）
+- deps、lint、typecheck、research eval、Hub test（174/174）、build: PASS
+- migration roundtrip: PASS（ローカルDocker PostgreSQL 16）
+- GitHub CI: PASS（Core quality、Migration roundtrip、Windows build）
+- Vercel: PASS、Preview Ready
+- Preview: `https://mangai-hub-staging-git-codex-cloud-re-7ae648-team478as-projects.vercel.app`
+- PreviewはDeployment Protection有効。未認証確認ではVercel loginへ遷移したため、認証後の市場分析実画面受入れは責任者待ち
+- 初回Core qualityはpreflightのWindows依存CLI判定で1件失敗。`1856725`で`pathToFileURL`へ修正し、再実行で全チェック成功
+
+---
+
+## 2026-07-29 Codex（Cloud Release 0＋1 市場分析MVP）
+
+### 状態
+
+`IN_PROGRESS`。広範なCloud UI刷新から市場分析の縦型機能優先へ方針変更し、正式基点から独立ブランチを作成した。ローカル品質ゲート完了、Draft PR #50作成済み。
+
+### ブランチ
+
+- Branch: `codex/cloud-research-mvp`
+- Base: `origin/feature/manga-canvas-mvp` (`7615d06`)
+- Draft PR: [#50](https://github.com/team478a/manga/pull/50)
+
+### 実装
+
+- Cloud制作ワークフローRelease計画と市場分析MVP仕様
+- 最小Cloud Shell、ワークフローSidebar、Dashboard、制作進行、Feature Flag
+- 市場分析の入力、定性分析、保存、履歴、再表示
+- 出典URL、取得日時、確認事実、事実／AI推論区分の永続化
+- 完了Reportからだけ利用できるAI企画提案への引継ぎ導線
+- `cloud_market_research_reports`と所有者RLS、rollback
+- 根拠のない市場数値を生成しない回帰テスト
+- Feature Flag停止中の詳細・企画URLをDB照会前に停止
+- 出典入力を仕様どおり最大5件へ統一し、重複URLを拒否
+- 不正な取得日時を未知例外にせず入力エラーとして処理
+- DB非依存の市場分析永続化契約とモック統合テスト
+- 不正なReport UUIDをDB照会前に未検出として停止
+- FormのAlert／Status、補足説明、可変layoutの構造回帰テスト
+- migration、Feature Flag、縦型E2E、利用者間RLS、responsive、停止・rollbackをまとめた公開Runbook
+
+### 境界
+
+- Cloud Canvas Editor、Cloud AI Worker、Stripe、Marketplace、Desktopは変更していない
+- 成人向け分析は既存Cloud境界によりfail closed
+
+### 検証
+
+- lint: PASS
+- typecheck: PASS（Hub + Desktop、Desktopコード変更なし）
+- 市場分析test: PASS（17/17）
+- hub:test: PASS（133/133）
+- deps:check: PASS
+- migration検証: PASS（17件）
+- build: PASS
+- git diff --check: PASS
+- 実装HEAD `3143c41`のCI: PASS（Core quality、Migration roundtrip、Windows build、Vercel）
+
+### 未完了
+
+- Supabase対象環境へのmigration適用
+- Vercel Previewの認証済みE2E
+- 別利用者RLSと実ブラウザresponsive受入れ
+- 責任者承認
+
+---
+
 ## 2026-07-28（続き19） Claude Code（Phase D3-C: PR #46マージ完了、責任者の最終仕様確定、文書同期Draft PR作成）
 
 ### 状態
@@ -1074,6 +1532,157 @@ READY_FOR_REVIEW（統合完了、Draft PR作成後は責任者レビュー待�
 - `feature/manga-canvas-mvp`への直接merge・push、PR #14〜#28の個別merge、PR #33のmerge・rebase・base変更、Phase D1のデザインコード実装、force push、既存migrationの書き換えのいずれも実施していない
 - PR #14〜#28の元のDraft PR自体は変更・merge・rebaseしておらず、そのまま残っている
 - `design/mangai-ui-refresh`（PR #33）は引き続き別ブランチ・別PRとして維持している
+
+---
+
+## 2026-07-30 Codex — Cloud Release 2 AI企画提案
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ
+
+- `codex/cloud-proposal-generation-v1`
+- Base: `codex/cloud-research-ai-auto-ux-v1` (`a21fd94`)
+
+### 完了
+
+- 市場分析Reportから一般向け企画3案をOpenAI Responses APIで生成
+- 本命・差別化・小さく試す方向を比較し、1案を保存
+- 管理画面の既存OpenAI設定とSupabase Vaultを再利用
+- 出典URLと内部ロジックを利用者UIから非表示
+- 成人向け外部AI送信を拒否し、既存手動企画を維持
+- 所有者RLS、Feature Flag、rate limit、UUID検証、内部エラー秘匿
+- forward / rollback / canonical schemaを追加
+
+### 責任者待ち
+
+1. `202607300002_cloud_story_proposals.sql`のstaging適用
+2. 対象Preview branchへ`CLOUD_PROPOSAL_GENERATION_ENABLED=true`を設定
+3. 一般向けReportから生成・再表示・選択の実機確認
+4. OpenAI利用コストと公開判断
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck: Hub PASS、Desktopは依存導入後PASS
+- research:eval: PASS
+- hub:test: PASS（198/198）
+- migrations: PASS（22件）
+- build: PASS
+- git diff --check: PASS
+
+---
+
+## 2026-07-30 Codex → 次担当AI
+
+### 状態
+
+READY_FOR_DRAFT_PR
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-scenario-generation-v1`
+- Base: `codex/cloud-proposal-generation-v1` (`f5b176a`)
+
+### 完了
+
+- Release 3「シナリオ生成」の仕様・実装計画を作成
+- 採用企画から初稿シナリオを構造化生成
+- 修正版、版履歴、詳細再表示、採用eventを実装
+- Feature Flag、rate limit、成人向け拒否、所有者RLS、UUID検証を実装
+- migration `202607300003`、rollback、canonical schema、preflightを追加
+- Hubテスト223件、build、lint、typecheck、migration検証に成功
+
+### 未完了
+
+- Draft PR作成とVercel Preview確認
+- migration roundtripのGitHub CI確認
+- Preview DBへのmigration適用
+- 実OpenAI生成と実機E2E
+
+### 注意事項
+
+- Release 2 PR #69が未mergeのため、Release 3 PRのbaseはRelease 2 branchにする。
+- 成人向けデータを外部AIへ送信しない。
+- migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
+
+---
+
+## 2026-07-30 Codex → 次担当AI（Release 4）
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-storyboard-generation-v1`
+- Base: `codex/cloud-scenario-generation-v1` (`44cd0c7`)
+- Draft PR: `#71`
+- Preview: `https://mangai-hub-staging-git-codex-cloud-st-3a713a-team478as-projects.vercel.app`
+
+### 完了
+
+- Release 4「AIネーム・ページ構成生成」の仕様・実装計画を作成
+- 最新採用シナリオからページ・コマ単位のネームを構造化生成
+- 初稿、修正版、版履歴、詳細再表示、採用eventを実装
+- 同時採用の競合を既存eventへ安全に収束
+- Feature Flag、rate limit、成人向け拒否、所有者RLS、UUID検証を実装
+- migration `202607300004`、rollback、canonical schema、preflightを追加
+- Hubテスト235件、build、lint、typecheck、migration検証に成功
+
+### 未完了
+
+- Preview DBへのmigration適用
+- 実OpenAI生成と実機E2E
+
+### 注意事項
+
+- Release 3 PR #70が未mergeのため、Release 4 PRのbaseはRelease 3 branchにする。
+- 成人向けデータを外部AIへ送信しない。
+- migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
+- Cloud Canvas Project化と画像生成は次工程であり、このbranchには含めない。
+- Core quality、migration roundtrip、Windows build、VercelはすべてPASS。
+
+---
+
+## 2026-07-30 Codex → 次担当AI（Release 5）
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `codex/cloud-storyboard-canvas-materialization-v1`
+- Base: `codex/cloud-storyboard-generation-v1` (`cf48c4d`)
+- Draft PR: `#72`
+- Preview: `https://mangai-hub-staging-git-codex-cloud-st-40d428-team478as-projects.vercel.app`
+
+### 完了
+
+- Release 5「採用ネームのCanvas Project化」の仕様・実装計画を作成
+- 最新採用された一般向けネームだけを既存Cloud Creator構造へ変換
+- 全ページ、コマ、吹き出し、縦書き文字をCanvas schema v1へ展開
+- advisory lockと一意制約による冪等変換、所有者RLS、追跡recordを実装
+- Feature Flag、不正UUID拒否、内部エラー秘匿、preflightを実装
+- migration `202607300005`、rollback、canonical schema、schema fixture検査を追加
+- Hubテスト244件、build、lint、typecheck、migration静的検証に成功
+
+### 未完了
+
+- Preview DBへのmigration適用
+- 実データを使うCanvas変換・編集・保存E2E
+
+### 注意事項
+
+- Release 4 PR #71が未mergeのため、Release 5 PRのbaseはRelease 4 branchにする。
+- 画像生成、Asset作成、Cloud AI Queue登録、外部Provider呼出は含まない。
+- migration適用、Feature Flag有効化、PR merge、本番公開は責任者判断まで行わない。
+- Core quality、migration roundtrip、Windows build、VercelはすべてPASS。
 
 ---
 

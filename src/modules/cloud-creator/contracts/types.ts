@@ -53,6 +53,7 @@ export type CloudGenerationJob = {
   actual_cost_micros: number | null;
   output: Record<string, unknown> | null;
   output_asset_id: string | null;
+  target_panel_id: string | null;
   error_code: string | null;
   error_message: string | null;
   created_at: string;

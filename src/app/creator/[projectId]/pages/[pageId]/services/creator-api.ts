@@ -107,6 +107,27 @@ export async function createGenerationJob(body: {
   );
 }
 
+export async function createStoryboardPanelGenerationJob(body: {
+  projectId: string;
+  pageId: string;
+  panelId: string;
+  idempotencyKey: string;
+}) {
+  return responseJson<{
+    id: string;
+    panelId: string;
+    pageNumber: number;
+    panelNumber: number;
+  }>(
+    await fetch("/api/creator/storyboard-panel-generation", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    }),
+    "ネームから画像生成を開始できませんでした。",
+  );
+}
+
 export async function cancelGeneration(jobId: string) {
   return responseJson<Record<string, never>>(
     await fetch(
