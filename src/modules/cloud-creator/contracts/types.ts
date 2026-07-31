@@ -54,6 +54,7 @@ export type CloudGenerationJob = {
   output: Record<string, unknown> | null;
   output_asset_id: string | null;
   target_panel_id: string | null;
+  revision_preset: "face" | "hands" | "expression" | "costume" | "background" | "polish" | null;
   error_code: string | null;
   error_message: string | null;
   created_at: string;

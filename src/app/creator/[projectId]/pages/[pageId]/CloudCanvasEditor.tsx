@@ -56,6 +56,22 @@ import {
 } from "./services/creator-api";
 
 type CanvasItem = Panel | Balloon | TextObject;
+type RevisionPreset =
+  | "face"
+  | "hands"
+  | "expression"
+  | "costume"
+  | "background"
+  | "polish";
+
+const revisionPresetLabels: Record<RevisionPreset, string> = {
+  face: "顔の崩れを直す",
+  hands: "手・指の崩れを直す",
+  expression: "表情を整える",
+  costume: "衣装を設定に合わせる",
+  background: "背景を整える",
+  polish: "全体を仕上げる",
+};
 
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
   return structuredClone(canvas);
@@ -114,6 +130,9 @@ export function CloudCanvasEditor({
   const [requestingPanelGeneration, setRequestingPanelGeneration] =
     useState(false);
   const [panelCandidateCount, setPanelCandidateCount] = useState(3);
+  const [revisionPreset, setRevisionPreset] =
+    useState<RevisionPreset>("face");
+  const [revisionInstruction, setRevisionInstruction] = useState("");
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -504,6 +523,9 @@ export function CloudCanvasEditor({
   async function requestStoryboardPanelGeneration(options?: {
     panelId?: string;
     candidateCount?: number;
+    sourceAssetId?: string;
+    revisionPreset?: RevisionPreset;
+    revisionInstruction?: string;
   }) {
     const panelId =
       options?.panelId ?? (selection?.type === "panel" ? selection.id : null);
@@ -518,6 +540,9 @@ export function CloudCanvasEditor({
         panelId,
         idempotencyKey: crypto.randomUUID(),
         candidateCount,
+        sourceAssetId: options?.sourceAssetId,
+        revisionPreset: options?.revisionPreset,
+        revisionInstruction: options?.revisionInstruction,
       });
       setGenerationTargets((current) =>
         result.jobs.reduce(
@@ -710,6 +735,9 @@ export function CloudCanvasEditor({
           .filter((layer) => layer.panelId === selection.id)
           .sort((a, b) => b.orderIndex - a.orderIndex)
       : [];
+  const selectedRevisionLayer = selectedPanelLayers.find(
+    (layer) => layer.visible && Boolean(layer.assetId),
+  );
 
   return (
     <div
@@ -959,6 +987,81 @@ export function CloudCanvasEditor({
                     ? "画像生成を受付中…"
                     : `選択したコマを${panelCandidateCount}案生成`}
                 </button>
+                <div className="mt-4 border-t border-violet-200 pt-4">
+                  <p className="text-sm font-bold text-violet-950">
+                    採用画像の気になる部分を直す
+                  </p>
+                  <p className="mt-1 text-xs text-violet-800">
+                    選択中のコマ画像を参照し、構図を保った修正候補を作ります。
+                    元画像はレイヤーに残るので、採用後も表示を戻せます。
+                  </p>
+                  <label
+                    className="mt-3 block text-xs font-bold text-violet-950"
+                    htmlFor="panel-revision-preset"
+                  >
+                    直したいところ
+                  </label>
+                  <select
+                    className="field mt-1 w-full"
+                    id="panel-revision-preset"
+                    value={revisionPreset}
+                    onChange={(event) =>
+                      setRevisionPreset(event.target.value as RevisionPreset)
+                    }
+                  >
+                    {Object.entries(revisionPresetLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  <label
+                    className="mt-3 block text-xs font-bold text-violet-950"
+                    htmlFor="panel-revision-instruction"
+                  >
+                    追加の要望（任意）
+                  </label>
+                  <textarea
+                    className="field mt-1 min-h-20 w-full"
+                    id="panel-revision-instruction"
+                    maxLength={1000}
+                    placeholder="例：主人公の目線を少し右へ"
+                    value={revisionInstruction}
+                    onChange={(event) =>
+                      setRevisionInstruction(event.target.value)
+                    }
+                  />
+                  {!selectedRevisionLayer ? (
+                    <p className="mt-2 text-xs text-amber-800">
+                      画像を配置済みのコマを選ぶと修正できます。
+                    </p>
+                  ) : null}
+                  <button
+                    className="button-secondary mt-3 w-full"
+                    disabled={
+                      !selectedRevisionLayer?.assetId ||
+                      !quota?.generation_enabled ||
+                      remainingCredits <= 0 ||
+                      requestingPanelGeneration
+                    }
+                    onClick={() =>
+                      void requestStoryboardPanelGeneration({
+                        candidateCount: panelCandidateCount,
+                        sourceAssetId: selectedRevisionLayer?.assetId ?? undefined,
+                        revisionPreset,
+                        revisionInstruction: revisionInstruction.trim() || undefined,
+                      })
+                    }
+                    type="button"
+                  >
+                    {requestingPanelGeneration
+                      ? "修正候補を受付中…"
+                      : `修正候補を${panelCandidateCount}案生成`}
+                  </button>
+                  <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                    現段階は元画像を参照した候補の再生成です。範囲を塗って一部分だけを置換する編集にはまだ対応していません。
+                  </p>
+                </div>
               </div>
             ) : null}
             <label
@@ -1053,7 +1156,9 @@ export function CloudCanvasEditor({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span>
-                      {job.job_type} / {job.status} / {job.progress}%
+                      {job.revision_preset
+                        ? `修正候補・${revisionPresetLabels[job.revision_preset]}`
+                        : job.job_type} / {job.status} / {job.progress}%
                     </span>
                     {job.status === "queued" || job.status === "running" ? (
                       <button

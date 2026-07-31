@@ -169,6 +169,41 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
     });
   }
   const canvas = pageCanvasSchema.parse(snapshot.canvas);
+  const revision = request.sourceAssetId && request.revisionPreset
+    ? {
+        sourceAssetId: request.sourceAssetId,
+        preset: request.revisionPreset,
+        instruction: request.revisionInstruction,
+      }
+    : undefined;
+  if (revision) {
+    const sourceLayer = canvas.panelLayers.find(
+      (layer) =>
+        layer.panelId === request.panelId &&
+        layer.visible &&
+        layer.assetId === revision.sourceAssetId,
+    );
+    if (!sourceLayer)
+      throw new ResourceNotFoundError(
+        "選択したコマに修正元画像が見つかりません。保存後に再度お試しください。",
+      );
+    const sourceAsset = await supabase
+      .from("cloud_assets")
+      .select("id")
+      .eq("id", revision.sourceAssetId)
+      .eq("project_id", request.projectId)
+      .eq("owner_profile_id", profile.id)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (sourceAsset.error)
+      throw new DomainError(
+        "INTERNAL_ERROR",
+        "修正元画像を確認できませんでした。",
+        { cause: sourceAsset.error },
+      );
+    if (!sourceAsset.data)
+      throw new PermissionDeniedError("この画像を修正元として利用できません。");
+  }
   let explicitCharacterProfileIds: string[] = [];
   let explicitWorldProfileIds: string[] = [];
   let referenceAssets: Array<{
@@ -207,6 +242,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
       worldProfiles,
       explicitCharacterProfileIds,
       explicitWorldProfileIds,
+      revision,
     });
     const relevantSubjectIds = [
       ...(selected.generation.characterProfileVersions ?? []).map((item) => item.profileId),
@@ -256,6 +292,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         explicitCharacterProfileIds,
         explicitWorldProfileIds,
         referenceAssets,
+        revision,
       });
       await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
       const id = await enqueueCloudGenerationJob({

@@ -31,6 +31,23 @@ test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提
   assert.match(editor, /requestingPanelGeneration/);
 });
 
+test("Canvasは採用画像を残したまま部位別の修正候補を生成する", () => {
+  assert.match(editor, /採用画像の気になる部分を直す/);
+  assert.match(editor, /顔の崩れを直す/);
+  assert.match(editor, /手・指の崩れを直す/);
+  assert.match(editor, /衣装を設定に合わせる/);
+  assert.match(editor, /元画像はレイヤーに残る/);
+  assert.match(editor, /sourceAssetId: selectedRevisionLayer/);
+  assert.match(editor, /範囲を塗って一部分だけを置換する編集にはまだ対応していません/);
+});
+
+test("専用Serviceは修正元Assetの所有権と選択コマへの配置を検証する", () => {
+  assert.match(service, /layer\.panelId === request\.panelId/);
+  assert.match(service, /layer\.assetId === revision\.sourceAssetId/);
+  assert.match(service, /\.eq\("owner_profile_id", profile\.id\)/);
+  assert.match(service, /この画像を修正元として利用できません/);
+});
+
 test("専用Serviceは同じコマの複数候補を別Jobとして登録する", () => {
   assert.match(service, /request\.candidateCount/);
   assert.match(service, /candidateIndex/);
@@ -58,6 +75,7 @@ test("Feature Flagは認証・DB・Providerより前にfail closedする", () =>
 test("生成PromptはJob一覧responseから除外し対象panel IDだけを返す", () => {
   assert.match(generationService, /input: _privateInput/);
   assert.match(generationService, /target_panel_id: targetPanelId/);
+  assert.match(generationService, /revision_preset: revisionPreset/);
   assert.doesNotMatch(editor, /job\.input|generation\.prompt/);
 });
 
