@@ -46,6 +46,20 @@ test("Canvasは採用画像を残したまま部位別の修正候補を生成�
   assert.match(editor, /maskAssetId: maskAsset\.id/);
 });
 
+test("Canvasは方向を選び採用画像を残したまま画角拡張候補を生成する", () => {
+  assert.match(editor, /画角を広げる方向/);
+  assert.match(editor, /左側/);
+  assert.match(editor, /右側/);
+  assert.match(editor, /上側/);
+  assert.match(editor, /下側/);
+  assert.match(editor, /全方向/);
+  assert.match(editor, /画角を広げた候補を/);
+  assert.match(editor, /outpaintingDirection/);
+  assert.match(editor, /requestPanelOutpainting/);
+  assert.match(editor, /job\.generation_operation === "outpainting"/);
+  assert.match(editor, /\? "correction"/);
+});
+
 test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {
   assert.match(inpaintingDialog, /直したい範囲を塗る/);
   assert.match(inpaintingDialog, /黒い範囲は元画像を維持/);
@@ -89,6 +103,9 @@ test("Feature Flagは認証・DB・Providerより前にfail closedする", () =>
   const inpaintingFlag = service.indexOf("cloudPanelInpaintingFeatureEnabled()");
   assert.ok(inpaintingFlag > flag);
   assert.ok(inpaintingFlag < service.indexOf("cloudCreatorContext()"));
+  const outpaintingFlag = service.indexOf("cloudPanelOutpaintingFeatureEnabled()");
+  assert.ok(outpaintingFlag > flag);
+  assert.ok(outpaintingFlag < service.indexOf("cloudCreatorContext()"));
 });
 
 test("生成PromptはJob一覧responseから除外し対象panel IDだけを返す", () => {
@@ -96,6 +113,7 @@ test("生成PromptはJob一覧responseから除外し対象panel IDだけを返�
   assert.match(generationService, /target_panel_id: targetPanelId/);
   assert.match(generationService, /revision_preset: revisionPreset/);
   assert.match(generationService, /generation_operation: generationOperation/);
+  assert.match(generationService, /"outpainting"/);
   assert.doesNotMatch(editor, /job\.input|generation\.prompt/);
 });
 

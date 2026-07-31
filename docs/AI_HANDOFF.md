@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M3-3 コマ画角拡張、2026-08-01）
+
+- Branch: `agent/manga-panel-outpainting-v1`
+- Base: `agent/manga-panel-inpainting-v1`（Draft PR #98）
+- 目的: 採用済みコマを非破壊で左・右・上・下・全方向へ延長する
+- 実装: 方向UI、Outpainting operation、Worker内余白・白黒マスク生成、BFL Fill、correction layer採用
+- Feature Flag: `CLOUD_PANEL_OUTPAINTING_ENABLED`。未設定時は認証・DB・Providerより前に停止
+- migration: なし。既存Fill Providerと価格設定を再利用
+- 詳細: `docs/cloud/MANGA_PANEL_OUTPAINTING_V1.md`
+- 注意: 一般向けCloudのみ。成人向け、Desktop、自動マスクは対象外
+- 未実施: 実Provider有料生成、実ブラウザ確認、責任者承認、親PR #98後のマージ
+
+---
+
 ## 0. 現在の優先タスク（M3-2 マスク付きコマ部分修正、2026-08-01）
 
 - Branch: `agent/manga-panel-inpainting-v1`

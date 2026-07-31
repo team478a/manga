@@ -64,6 +64,7 @@ type RevisionPreset =
   | "costume"
   | "background"
   | "polish";
+type OutpaintingDirection = "left" | "right" | "top" | "bottom" | "all";
 
 const revisionPresetLabels: Record<RevisionPreset, string> = {
   face: "顔の崩れを直す",
@@ -72,6 +73,13 @@ const revisionPresetLabels: Record<RevisionPreset, string> = {
   costume: "衣装を設定に合わせる",
   background: "背景を整える",
   polish: "全体を仕上げる",
+};
+const outpaintingDirectionLabels: Record<OutpaintingDirection, string> = {
+  left: "左側を広げる",
+  right: "右側を広げる",
+  top: "上側を広げる",
+  bottom: "下側を広げる",
+  all: "全方向を広げる",
 };
 
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
@@ -96,6 +104,7 @@ export function CloudCanvasEditor({
   initialQuota,
   storyboardPanelGenerationEnabled,
   panelInpaintingEnabled,
+  panelOutpaintingEnabled,
 }: {
   project: CloudProjectSummary;
   pages: CloudPage[];
@@ -106,6 +115,7 @@ export function CloudCanvasEditor({
   initialQuota: CloudAiQuota | null;
   storyboardPanelGenerationEnabled: boolean;
   panelInpaintingEnabled: boolean;
+  panelOutpaintingEnabled: boolean;
 }) {
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
@@ -137,6 +147,8 @@ export function CloudCanvasEditor({
     useState<RevisionPreset>("face");
   const [revisionInstruction, setRevisionInstruction] = useState("");
   const [inpaintingDialogOpen, setInpaintingDialogOpen] = useState(false);
+  const [outpaintingDirection, setOutpaintingDirection] =
+    useState<OutpaintingDirection>("all");
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -529,6 +541,7 @@ export function CloudCanvasEditor({
     candidateCount?: number;
     sourceAssetId?: string;
     maskAssetId?: string;
+    outpaintingDirection?: OutpaintingDirection;
     revisionPreset?: RevisionPreset;
     revisionInstruction?: string;
   }) {
@@ -547,6 +560,7 @@ export function CloudCanvasEditor({
         candidateCount,
         sourceAssetId: options?.sourceAssetId,
         maskAssetId: options?.maskAssetId,
+        outpaintingDirection: options?.outpaintingDirection,
         revisionPreset: options?.revisionPreset,
         revisionInstruction: options?.revisionInstruction,
       });
@@ -593,6 +607,17 @@ export function CloudCanvasEditor({
           : "部分修正を開始できませんでした。",
       );
     }
+  }
+
+  async function requestPanelOutpainting() {
+    if (!selectedRevisionLayer?.assetId) return;
+    await requestStoryboardPanelGeneration({
+      candidateCount: panelCandidateCount,
+      sourceAssetId: selectedRevisionLayer.assetId,
+      outpaintingDirection,
+      revisionPreset: "background",
+      revisionInstruction: revisionInstruction.trim() || undefined,
+    });
   }
 
   async function requestCloudTextGeneration() {
@@ -694,7 +719,8 @@ export function CloudCanvasEditor({
     }
     setAssets(nextAssets);
     const layerType =
-      job.generation_operation === "inpainting"
+      job.generation_operation === "inpainting" ||
+      job.generation_operation === "outpainting"
         ? "correction"
         : job.job_type === "character_base"
         ? "character"
@@ -1111,6 +1137,52 @@ export function CloudCanvasEditor({
                       </p>
                     </>
                   ) : null}
+                  {panelOutpaintingEnabled ? (
+                    <div className="mt-3 rounded-lg border border-violet-200 bg-white/70 p-3">
+                      <label
+                        className="block text-xs font-bold text-violet-950"
+                        htmlFor="panel-outpainting-direction"
+                      >
+                        画角を広げる方向
+                      </label>
+                      <select
+                        className="field mt-1 w-full"
+                        id="panel-outpainting-direction"
+                        onChange={(event) =>
+                          setOutpaintingDirection(
+                            event.target.value as OutpaintingDirection,
+                          )
+                        }
+                        value={outpaintingDirection}
+                      >
+                        {Object.entries(outpaintingDirectionLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                      <button
+                        className="button-secondary mt-2 w-full"
+                        disabled={
+                          !selectedRevisionAsset ||
+                          !quota?.generation_enabled ||
+                          remainingCredits <= 0 ||
+                          requestingPanelGeneration
+                        }
+                        onClick={() => void requestPanelOutpainting()}
+                        type="button"
+                      >
+                        {requestingPanelGeneration
+                          ? "画角拡張を受付中…"
+                          : `画角を広げた候補を${panelCandidateCount}案生成`}
+                      </button>
+                      <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                        元画像の外側だけをAIが補完し、より広い構図の候補を作ります。元画像は残ります。
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -1207,7 +1279,7 @@ export function CloudCanvasEditor({
                   <div className="flex items-center justify-between gap-2">
                     <span>
                       {job.revision_preset
-                        ? `${job.generation_operation === "inpainting" ? "部分修正" : "修正候補"}・${revisionPresetLabels[job.revision_preset]}`
+                        ? `${job.generation_operation === "inpainting" ? "部分修正" : job.generation_operation === "outpainting" ? "画角拡張" : "修正候補"}・${revisionPresetLabels[job.revision_preset]}`
                         : job.job_type} / {job.status} / {job.progress}%
                     </span>
                     {job.status === "queued" || job.status === "running" ? (

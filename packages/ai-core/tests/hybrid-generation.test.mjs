@@ -106,6 +106,36 @@ test("cloud inpainting requires both a referenced source and a mask", () => {
   );
 });
 
+test("cloud outpainting requires a referenced source and one direction", () => {
+  const sourceAssetId = randomUUID();
+  const base = {
+    kind: "image",
+    jobType: "background",
+    prompt: "extend the manga background",
+    negativePrompt: "",
+    operation: "outpainting",
+    sourceAssetId,
+    referenceAssetIds: [sourceAssetId],
+    revisionPreset: "background",
+  };
+  assert.equal(cloudGenerationInputSchema.safeParse(base).success, false);
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      outpaintingDirection: "right",
+    }).success,
+    true,
+  );
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      operation: "image_to_image",
+      outpaintingDirection: "right",
+    }).success,
+    false,
+  );
+});
+
 test("adult reference-image evaluation fails closed", () => {
   const base = {
     personPresence: "present",

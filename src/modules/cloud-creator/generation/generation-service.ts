@@ -102,7 +102,8 @@ export async function listCloudGenerationJobs(projectId: string) {
     const generationOperation =
       input?.operation === "text_to_image" ||
       input?.operation === "image_to_image" ||
-      input?.operation === "inpainting"
+      input?.operation === "inpainting" ||
+      input?.operation === "outpainting"
         ? input.operation
         : null;
     const { input: _privateInput, ...publicRow } = row;

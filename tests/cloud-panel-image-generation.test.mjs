@@ -5,6 +5,7 @@ import {
   buildStoryboardPanelGeneration,
   cloudPanelImageGenerationFeatureEnabled,
   cloudPanelInpaintingFeatureEnabled,
+  cloudPanelOutpaintingFeatureEnabled,
   cloudPanelImageGenerationRequestSchema,
 } from "../src/lib/cloud-panel-image-generation.ts";
 import { MockCloudImageProvider } from "../src/lib/cloud-ai-mock-provider.ts";
@@ -162,6 +163,38 @@ test("元画像とマスクを固定して部分修正Jobを作る", () => {
   assert.equal(result.generation.sourceAssetId, sourceAssetId);
   assert.equal(result.generation.maskAssetId, maskAssetId);
   assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
+});
+
+test("元画像と方向を固定して画角拡張Jobを作る", () => {
+  const sourceAssetId = "74000000-0000-4000-8000-000000000041";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    revision: {
+      sourceAssetId,
+      outpaintingDirection: "right",
+      preset: "background",
+      instruction: "駅のホームを自然につなげる",
+    },
+  });
+  assert.equal(result.generation.operation, "outpainting");
+  assert.equal(result.generation.sourceAssetId, sourceAssetId);
+  assert.equal(result.generation.outpaintingDirection, "right");
+  assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
+  assert.match(result.generation.prompt, /右側へ自然に背景と構図を延長/);
+  assert.match(result.generation.prompt, /元画像内の人物、衣装、表情/);
+});
+
+test("画角拡張Feature Flagは未設定時に停止する", () => {
+  const previous = process.env.CLOUD_PANEL_OUTPAINTING_ENABLED;
+  delete process.env.CLOUD_PANEL_OUTPAINTING_ENABLED;
+  assert.equal(cloudPanelOutpaintingFeatureEnabled(), false);
+  process.env.CLOUD_PANEL_OUTPAINTING_ENABLED = "true";
+  assert.equal(cloudPanelOutpaintingFeatureEnabled(), true);
+  if (previous === undefined) delete process.env.CLOUD_PANEL_OUTPAINTING_ENABLED;
+  else process.env.CLOUD_PANEL_OUTPAINTING_ENABLED = previous;
 });
 
 test("修正指定は元画像と修正内容の組を必須にする", () => {
