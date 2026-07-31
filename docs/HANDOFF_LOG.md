@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向けモニター本番候補を独立統合
+
+- `feature/manga-canvas-mvp`の最新から
+  `codex/cloud-monitor-production-v1`を作成した。
+- `codex/cloud-general-monitor-beta-v1`をmerge commitで非破壊的に統合した。
+- 一般向けRelease 1〜6、モニター運用、招待メール、Webマニュアル、
+  readiness checkを本番候補とした。
+- Stripe、課金、販売、Marketplace、Desktop、成人向け後続branchは統合しない。
+- 履歴に含まれる成人向け市場分析・企画は、Productionの成人向けFlagを
+  未設定または`false`に保ち、一般向けモニターへ公開しない。
+- 本番URLは`https://app.mang-ai.com`。Supabase Auth URL、migration、
+  Provider設定、redeploy、実招待はPR承認後に順番に実施する。
+- 詳細は
+  [`CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md`](cloud/CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md)。
+
+---
+
 ## 2026-07-31 Codex: 一般向けモニターを本番招待制で公開するための保護
 
 - モニターテストの対象をPreviewから本番環境上の招待制・無料・段階公開へ変更した。

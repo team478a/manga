@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向けモニター本番統合
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/cloud-monitor-production-v1`
+- Base: `feature/manga-canvas-mvp`
+- 統合元: `codex/cloud-general-monitor-beta-v1`
+- 本番URL: `https://app.mang-ai.com`
+- 対象: 一般向けRelease 1〜6、モニター招待・運用、Webマニュアル、
+  管理画面Provider設定、公開前readiness check
+- 除外: Stripe、課金、販売、Marketplace、成人向け公開、Desktop
+- 成人向け境界: Productionの成人向けFlagは未設定または`false`を必須とする
+- 文書:
+  [`CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md`](cloud/CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md)
+- 検証: deps、lint、typecheck、research eval、Hub 272/272、
+  migration 28/28、production build、Production相当preflight、diff checkが成功
+- 未実施: Draft PR、CI、責任者承認、protected branch merge、本番migration、
+  Production redeploy、実招待
+
 ## 2026-07-31 一般向けモニター・本番限定公開チェック
 
 - 状態: `READY_FOR_REVIEW`

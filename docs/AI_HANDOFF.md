@@ -1,5 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（一般向けモニター本番統合、2026-07-31）
+
+- Branch: `codex/cloud-monitor-production-v1`
+- Base: `feature/manga-canvas-mvp`
+- 本番URL: `https://app.mang-ai.com`
+- 目的: 一般向けRelease 1〜6を約10名へ本番招待制で段階公開する
+- 除外: Stripe、販売、Marketplace、成人向け公開、Desktop
+- 状態: 統合済み、品質ゲートとDraft PR作成中
+- 正本:
+  [`cloud/CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md`](cloud/CLOUD_GENERAL_MONITOR_PRODUCTION_INTEGRATION.md)
+
+成人向け市場分析・企画のコードが統合履歴に含まれても、Productionの成人向け
+Feature Flagは未設定または`false`を必須とする。本番マージ、migration適用、
+Feature Flag有効化、redeploy、実招待はDraft PRの全CIと責任者承認後に行う。
+
+---
+
 ## 0. 現在の優先タスク（Release 2 AI企画提案・限定公開準備、2026-07-30）
 
 - Branch: `codex/cloud-proposal-generation-v1`
