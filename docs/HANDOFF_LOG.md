@@ -4,6 +4,38 @@
 
 ---
 
+## 2026-07-31 Codex: 一般向け漫画生成を最新Cloud基盤へ統合
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ
+
+- `agent/manga-generation-integration-v1`
+- Base: `feature/manga-canvas-mvp` (`ae1279e`)
+
+### 完了
+
+- PR #87〜#90から一般向け漫画生成の機能commitだけを安全に統合した。
+- FLUXコマ生成、2〜4候補比較、採用、失敗候補再実行を統合した。
+- Canvas、PDF、PNGのレイヤー合成を共通化した。
+- 8ページ原稿検査、作品全体進捗、キャラクター設定、画風・場所・小物設定を統合した。
+- 既存の積み上げPRはrebase、force push、Closeしていない。
+- deps、lint、Hub/Desktop typecheck、Hub 312/312、Canvas 26/26、AI 44/44、
+  Desktop 182/182、migration 32/32、production buildに成功した。
+
+### 未完了
+
+- 新しいDraft PRのGitHub CI、Migration roundtrip、Vercel Preview確認
+- staging migration、実Provider有料生成、8ページ実ブラウザ目視、責任者承認、マージ
+
+### 詳細
+
+- `docs/cloud/MANGA_GENERATION_INTEGRATION_REPORT.md`
+
+---
+
 ## 2026-07-31 Codex: 一般向けモニターWebマニュアル同期
 
 ### 状態

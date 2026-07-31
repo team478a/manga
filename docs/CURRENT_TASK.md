@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-07-31 一般向け漫画生成の最新Cloud基盤への統合
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `agent/manga-generation-integration-v1`
+- Base: `feature/manga-canvas-mvp` (`ae1279e`)
+- 対象: PR #87〜#90の一般向け漫画生成に必要な機能commit
+- 完了: FLUXコマ生成、候補比較・採用・再実行、共通レイヤー合成、
+  8ページ原稿検査、作品進捗、キャラクター設定、画風・場所・小物設定
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 312/312、Canvas 26/26、
+  AI 44/44、Desktop 182/182、migration 32/32、production build成功
+- 統合記録: `docs/cloud/MANGA_GENERATION_INTEGRATION_REPORT.md`
+- 未完了: GitHub CI、Vercel Preview、staging migration、実Provider有料生成、
+  8ページ実ブラウザ目視、責任者承認、マージ
+- 次: 新しいDraft PRの全CI確認後、一般向けモニター用の実機受入れへ進む
+
 ## 2026-07-31 長編マンガ制作 M2-2: 画風・場所・小物設定
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
