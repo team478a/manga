@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-07-31 長編マンガ制作 M1: コマ候補の比較・採用・再実行
+
+- 状態: `IMPLEMENTED`
+- Branch: `codex/manga-production-m0-v1`
+- 対象: 一般向けCloud Canvasのネーム連動コマ画像生成
+- 実装:
+  - 1コマにつき2〜4候補を一度の操作で受付
+  - ネームの構図を維持しつつ、表情、視線誘導、背景を変えた候補を生成
+  - 完成候補をサムネイルで比較し、選んだ候補をコマの背景layerへ配置
+  - 失敗理由やProvider内部情報を表示せず、失敗候補だけ再実行
+  - 利用枠不足などで一部だけ受付できた場合は、完了数を安全に案内
+  - 再読込後もJobの`targetPanelId`から採用先と再実行対象を復元
+- 変更しない範囲: DB、migration、Provider、Worker、成人向け、Desktop
+- 検証: lint、Hub typecheck、集中テスト12/12、Hub 287/287、
+  production build、diff check成功
+- 次: ページ／全8ページの進捗表示、基本キャラクター設定表、原稿preflight、
+  8ページfixtureによるPDF／連番PNGの完走検証
+- 未実施: Draft PR、CI、Vercel Preview、実Provider有料生成、責任者画面確認
+
 ## 2026-07-31 長編マンガ制作 M0: Cloudページ合成基盤
 
 - 状態: `IMPLEMENTED`

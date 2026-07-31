@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-07-31 Codex: M1コマ画像の複数候補・採用・失敗再実行
+
+- `codex/manga-production-m0-v1`上でM1のコマ生成フローを拡張した。
+- ネーム連動生成は1コマ2〜4候補を一度に登録でき、各候補へ構図、表情、
+  視線誘導、背景の差分指示を安全に追加する。
+- 既存の一般向けmoderation、quota、rate limit、Queue、Worker、private Storageを
+  そのまま通し、DB migrationは追加していない。
+- Canvasで候補画像を比較し、採用画像を対象コマの背景layerへ配置できる。
+- 失敗時は内部エラーを露出せず、対象の1コマ・1候補だけ再実行できる。
+- Jobの`targetPanelId`を利用するため、ブラウザー再読込後も採用先を復元する。
+- lint、Hub typecheck、集中テスト12/12、Hub 287/287、production build、
+  diff checkが成功した。
+- 次はページ／作品単位の進捗、キャラクター設定表、原稿preflight、
+  8ページfixtureによる完成PDF／連番PNGの完走検証を進める。
+
+---
+
 ## 2026-07-31 Codex: 一般向けコマ画像生成をBFL FLUXへ接続
 
 - 最新`feature/manga-canvas-mvp`から`codex/cloud-general-image-v1`を作成した。

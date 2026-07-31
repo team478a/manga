@@ -21,11 +21,21 @@ const generationService = fs.readFileSync(
 
 test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提供する", () => {
   assert.match(editor, /AIおまかせ画像生成/);
-  assert.match(editor, /選択したコマを生成/);
-  assert.match(editor, /生成対象のコマへ配置/);
+  assert.match(editor, /生成する候補数/);
+  assert.match(editor, /3案（おすすめ）/);
+  assert.match(editor, /この候補を採用してコマへ配置/);
+  assert.match(editor, /このコマだけ再実行/);
+  assert.match(editor, /生成されたコマ候補/);
   assert.match(editor, /target_panel_id/);
   assert.match(editor, /画像生成を受付中…/);
   assert.match(editor, /requestingPanelGeneration/);
+});
+
+test("専用Serviceは同じコマの複数候補を別Jobとして登録する", () => {
+  assert.match(service, /request\.candidateCount/);
+  assert.match(service, /candidateIndex/);
+  assert.match(service, /:candidate:/);
+  assert.match(service, /partial/);
 });
 
 test("専用Routeも既存rate limitとAPI Error契約を通る", () => {

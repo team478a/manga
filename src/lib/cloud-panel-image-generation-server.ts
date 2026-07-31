@@ -77,23 +77,49 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
   if (!snapshot)
     throw new ResourceNotFoundError("Canvasが見つかりません。");
 
-  const resolved = buildStoryboardPanelGeneration({
-    storyboard: cloudStoryboardResultSchema.parse(storyboardResult.data.result),
-    pageNumber: page.page_number,
-    canvas: pageCanvasSchema.parse(snapshot.canvas),
-    panelId: request.panelId,
-  });
-  await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
-  const id = await enqueueCloudGenerationJob({
-    projectId: request.projectId,
-    pageId: request.pageId,
-    idempotencyKey: request.idempotencyKey,
-    generation: resolved.generation,
-  });
+  const storyboard = cloudStoryboardResultSchema.parse(
+    storyboardResult.data.result,
+  );
+  const canvas = pageCanvasSchema.parse(snapshot.canvas);
+  const jobs: Array<{ id: string; candidateNumber: number }> = [];
+  let resolved: ReturnType<typeof buildStoryboardPanelGeneration> | null = null;
+  let partial = false;
+  for (let candidateIndex = 0; candidateIndex < request.candidateCount; candidateIndex += 1) {
+    try {
+      resolved = buildStoryboardPanelGeneration({
+        storyboard,
+        pageNumber: page.page_number,
+        canvas,
+        panelId: request.panelId,
+        candidateIndex,
+        candidateCount: request.candidateCount,
+      });
+      await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
+      const id = await enqueueCloudGenerationJob({
+        projectId: request.projectId,
+        pageId: request.pageId,
+        idempotencyKey:
+          candidateIndex === 0
+            ? request.idempotencyKey
+            : `${request.idempotencyKey}:candidate:${candidateIndex + 1}`,
+        generation: resolved.generation,
+      });
+      jobs.push({ id, candidateNumber: resolved.candidateNumber });
+    } catch (error) {
+      if (!jobs.length) throw error;
+      partial = true;
+      break;
+    }
+  }
+  if (!resolved || !jobs.length)
+    throw new DomainError("INTERNAL_ERROR", "画像生成を開始できませんでした。");
   return {
-    id,
+    id: jobs[0].id,
+    jobs,
     panelId: resolved.panelId,
     pageNumber: resolved.pageNumber,
     panelNumber: resolved.panelNumber,
+    requestedCandidateCount: request.candidateCount,
+    partial,
   };
 }
