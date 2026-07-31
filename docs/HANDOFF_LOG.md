@@ -65,6 +65,24 @@ READY_FOR_REVIEW
   production build、diff checkが成功した。
 - `npm ci`の既存依存監査にはhigh severity 11件が残るが、今回の表示変更では
   依存更新を行っていない。
+## 2026-07-31 Codex: 一般向けコマ画像生成をBFL FLUXへ接続
+
+- 最新`feature/manga-canvas-mvp`から`codex/cloud-general-image-v1`を作成した。
+- Release 6のQueue/WorkerへBFL FLUX.2固定版adapterを追加した。
+- `/admin/cloud-ai`からBFL APIキー、モデル、有効状態を保存できる。
+- APIキーはSupabase Vaultだけへ保存し、画面・Client・通常テーブル・
+  監査ログには再表示しない。
+- migrationでモデル別・Job別の原価上限を登録し、既存quotaとkill switchを通す。
+- BFLへは一般向けモデレーション通過後だけ送信し、
+  `safety_tolerance=1`を固定した。
+- 成人向け画像は対象外であり、将来の独立GPU/VPS APIまで停止を維持する。
+- migration:
+  `202607310004_cloud_general_image_provider.sql`
+- 文書:
+  `docs/cloud/CLOUD_GENERAL_IMAGE_PROVIDER_V1.md`
+- deps、lint、Hub/Desktop typecheck、research eval、Hub 282/282、
+  migration 30/30、production build、diff checkが成功した。
+- Docker Desktopが停止中のためmigration roundtripはGitHub CIで確認する。
 
 ---
 

@@ -72,6 +72,31 @@
   - git diff --check: PASS
 - 注記: `npm ci`の既存依存監査でhigh severity 11件。今回の表示変更とは分離して扱う
 - 未実施: push、Draft PR、CI、Vercel Preview、責任者画面確認
+## 2026-07-31 一般向けクラウド画像生成Provider接続
+
+- 状態: `IMPLEMENTED_LOCAL`
+- Branch: `codex/cloud-general-image-v1`
+- Base: 最新`feature/manga-canvas-mvp` (`7eb783f`)
+- 対象: 一般向けRelease 6のコマ画像生成、`/admin/cloud-ai`
+- 実装:
+  - BFL FLUX.2固定版の非同期API adapter
+  - 管理画面からAPIキー・モデル・有効状態を保存
+  - APIキーをSupabase Vaultへ保存し、service-role限定で復号
+  - Provider価格と原価上限をmigrationで登録
+  - BFLのpolling URL・画像URLをHTTPSかつBFL domainへ限定
+  - 既存の一般向けモデレーション、quota、Queue、Worker、画像検査、
+    private Storage、コマ配置を維持
+- migration:
+  `202607310004_cloud_general_image_provider.sql`
+- 成人向け境界:
+  成人向け画像はBFLへ送信せず、将来の独立GPU/VPS APIまで停止
+- 文書:
+  [`CLOUD_GENERAL_IMAGE_PROVIDER_V1.md`](cloud/CLOUD_GENERAL_IMAGE_PROVIDER_V1.md)
+- 検証: deps、lint、Hub/Desktop typecheck、research eval、Hub 282/282、
+  migration 30/30、production build、diff check成功
+- migration roundtrip: ローカルDocker停止中のためGitHub CIで確認
+- 未実施: 実API有料生成、staging migration、Draft PR、CI、Preview、
+  責任者確認、本番公開
 
 ## 2026-07-31 クラウド制作の日本語化・初回ガイド
 

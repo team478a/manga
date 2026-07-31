@@ -4,9 +4,12 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import {
   createCloudAiPriceAction,
   setCloudAiPriceActiveAction,
+  updateCloudGeneralImageProviderAction,
   updateCloudAiPlanAction,
   updateCloudAiSettingsAction,
 } from "./actions";
+import { getCloudGeneralImageSettings } from "@/lib/cloud-general-image-settings";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 const money = (micros: number) => `$${(micros / 1_000_000).toFixed(4)}`;
 
@@ -14,7 +17,7 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
   await requireAdmin();
   const query=await searchParams;
   const admin=createAdminClient();
-  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult]=await Promise.all([
+  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings]=await Promise.all([
     admin.from("cloud_ai_settings").select("*").eq("singleton",true).single(),
     admin.from("cloud_ai_plans").select("*").order("plan_key"),
     admin.from("cloud_ai_provider_prices").select("*").order("created_at",{ascending:false}).limit(50),
@@ -22,6 +25,7 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
     admin.from("cloud_generation_jobs").select("id,provider_id,model_id,job_type,status,error_code,error_message,actual_cost_micros,created_at").in("status",["failed","running"]).order("created_at",{ascending:false}).limit(30),
     admin.from("cloud_ai_admin_audit_logs").select("id,action,target_type,target_id,created_at,profiles:actor_profile_id(display_name)").order("created_at",{ascending:false}).limit(20),
     admin.from("cloud_ai_notifications").select("id,notification_type,severity,title,body,created_at").eq("audience","admin").order("created_at",{ascending:false}).limit(20),
+    getCloudGeneralImageSettings(),
   ]);
   const settings=settingsResult.data as null|{generation_enabled:boolean;daily_cost_limit_micros:number;warning_percent:number};
   const today=costsResult.data?.[0] as undefined|{usage_date:string;cost_reserved_micros:number;cost_actual_micros:number};
@@ -49,6 +53,54 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
         <p className={`mt-3 font-semibold ${percent>=(settings?.warning_percent??80)?"text-red-700":"text-green-700"}`}>{percent}% 使用</p>
       </section>
     </div>
+    <section className="panel mt-6">
+      <h2 className="text-xl font-bold">一般向け画像生成AI</h2>
+      <p className="mt-2 text-stone-600">
+        Black Forest Labs FLUXを一般向けマンガのコマ画像生成に使用します。APIキーはSupabase Vaultへ暗号化保存され、この画面や監査ログには再表示されません。
+      </p>
+      {imageSettings ? (
+        <form action={updateCloudGeneralImageProviderAction} className="mt-4 grid gap-4 md:grid-cols-3">
+          <label className="label">
+            BFL APIキー
+            <input
+              autoComplete="off"
+              className="field"
+              name="apiKey"
+              placeholder={imageSettings.configured ? "変更時のみ入力" : "APIキーを入力"}
+              type="password"
+            />
+          </label>
+          <label className="label">
+            画像モデル
+            <select className="field" name="model" defaultValue={imageSettings.model}>
+              <option value="flux-2-klein-9b">FLUX.2 Klein 9B（低コスト）</option>
+              <option value="flux-2-pro">FLUX.2 Pro（推奨）</option>
+              <option value="flux-2-max">FLUX.2 Max（高品質）</option>
+            </select>
+          </label>
+          <label className="label">
+            接続状態
+            <select className="field" name="enabled" defaultValue={String(imageSettings.enabled)}>
+              <option value="true">有効</option>
+              <option value="false">停止</option>
+            </select>
+          </label>
+          <p className="text-sm text-stone-600 md:col-span-3">
+            現在: {imageSettings.configured ? "APIキー設定済み" : "未設定"} / {imageSettings.enabled ? "有効" : "停止"}。成人向け画像はこの接続へ送信されません。
+          </p>
+          <PendingSubmitButton
+            className="button md:col-span-3"
+            pendingLabel="画像生成AI設定を保存中…"
+          >
+            画像生成AI設定を保存
+          </PendingSubmitButton>
+        </form>
+      ) : (
+        <p className="mt-4 rounded bg-amber-50 p-4 text-amber-900">
+          画像生成Provider migrationを適用すると設定できます。
+        </p>
+      )}
+    </section>
     <section className="mt-6 grid gap-4 lg:grid-cols-3">
       {(plansResult.data??[]).map((plan:any)=><form className="panel" action={updateCloudAiPlanAction.bind(null,plan.plan_key)} key={plan.plan_key}>
         <h2 className="text-xl font-bold">{plan.display_name}</h2>
