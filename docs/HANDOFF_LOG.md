@@ -4,6 +4,44 @@
 
 ---
 
+## 2026-08-01 Codex: M3-4 修正前後の比較表示
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-revision-comparison-v1`
+- Base: `agent/manga-panel-outpainting-v1`（Draft PR #99）
+- Draft PR: [#100](https://github.com/team478a/manga/pull/100)
+
+### 完了
+
+- Image-to-Image、Inpainting、Outpaintingの完了候補へ比較導線を追加。
+- タッチ・マウス・キーボード対応range sliderで修正前と候補を重ねて比較。
+- Outpaintingの各方向で元画像の寸法と位置を候補へ合わせる計算を追加。
+- 比較画面から既存の非破壊layer採用を実行可能にした。
+- private Job inputは隠したまま、本人の比較に必要なAsset IDと方向だけを公開。
+
+### 未完了
+
+- 実ブラウザでの3方式比較、責任者承認。
+- 自動被写体マスク。
+
+### 検証
+
+- deps:check、lint、Hub/Desktop typecheck: PASS
+- Hub: 337/337、Canvas: 26/26、AI: 47/47、Desktop: 182/182
+- migration validate: 34/34（今回追加なし）
+- production build、git diff --check: PASS
+
+### 詳細
+
+- `docs/cloud/MANGA_REVISION_COMPARISON_V1.md`
+
+---
+
 ## 2026-08-01 Codex: M3-3 コマ画角拡張
 
 ### 状態

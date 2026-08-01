@@ -54,6 +54,8 @@ export type CloudGenerationJob = {
   output: Record<string, unknown> | null;
   output_asset_id: string | null;
   target_panel_id: string | null;
+  source_asset_id: string | null;
+  outpainting_direction: "left" | "right" | "top" | "bottom" | "all" | null;
   revision_preset: "face" | "hands" | "expression" | "costume" | "background" | "polish" | null;
   generation_operation:
     | "text_to_image"

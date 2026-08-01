@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M3-4 修正前後の比較表示、2026-08-01）
+
+- Branch: `agent/manga-revision-comparison-v1`
+- Base: `agent/manga-panel-outpainting-v1`（Draft PR #99）
+- Draft PR: [#100](https://github.com/team478a/manga/pull/100)
+- 目的: 修正候補を採用する前に元画像との差分を視覚的に確認する
+- 実装: range比較スライダー、Outpainting方向・寸法に応じた元画像位置補正、比較からの非破壊採用
+- API: private inputは返さず、本人所有Jobの比較用Asset IDと拡張方向だけを安全に公開
+- migration / Feature Flag: 追加なし
+- 詳細: `docs/cloud/MANGA_REVISION_COMPARISON_V1.md`
+- 注意: 一般向けCloudの表示機能のみ。成人向け、Desktop、生成Providerは対象外
+- 状態: ローカル全品質ゲート成功。GitHub CI、Vercel、責任者確認待ち
+- 未実施: 実ブラウザ確認、責任者承認、親PR #99後のマージ
+
+---
+
 ## 0. 現在の優先タスク（M3-3 コマ画角拡張、2026-08-01）
 
 - Branch: `agent/manga-panel-outpainting-v1`

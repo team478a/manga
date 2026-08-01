@@ -93,6 +93,16 @@ export async function listCloudGenerationJobs(projectId: string) {
         : null;
     const targetPanelId =
       typeof input?.targetPanelId === "string" ? input.targetPanelId : null;
+    const sourceAssetId =
+      typeof input?.sourceAssetId === "string" ? input.sourceAssetId : null;
+    const outpaintingDirection =
+      input?.outpaintingDirection === "left" ||
+      input?.outpaintingDirection === "right" ||
+      input?.outpaintingDirection === "top" ||
+      input?.outpaintingDirection === "bottom" ||
+      input?.outpaintingDirection === "all"
+        ? input.outpaintingDirection
+        : null;
     const parsedRevisionPreset = cloudImageRevisionPresetSchema.safeParse(
       input?.revisionPreset,
     );
@@ -110,6 +120,8 @@ export async function listCloudGenerationJobs(projectId: string) {
     return {
       ...publicRow,
       target_panel_id: targetPanelId,
+      source_asset_id: sourceAssetId,
+      outpainting_direction: outpaintingDirection,
       revision_preset: revisionPreset,
       generation_operation: generationOperation,
     } as CloudGenerationJob;

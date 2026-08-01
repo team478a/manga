@@ -22,6 +22,10 @@ const inpaintingDialog = fs.readFileSync(
   "src/app/creator/[projectId]/pages/[pageId]/PanelInpaintingDialog.tsx",
   "utf8",
 );
+const comparisonDialog = fs.readFileSync(
+  "src/app/creator/[projectId]/pages/[pageId]/PanelImageComparisonDialog.tsx",
+  "utf8",
+);
 
 test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提供する", () => {
   assert.match(editor, /AIおまかせ画像生成/);
@@ -58,6 +62,18 @@ test("Canvasは方向を選び採用画像を残したまま画角拡張候補�
   assert.match(editor, /requestPanelOutpainting/);
   assert.match(editor, /job\.generation_operation === "outpainting"/);
   assert.match(editor, /\? "correction"/);
+});
+
+test("修正候補は修正前との比較スライダーから採用できる", () => {
+  assert.match(editor, /修正前と比較/);
+  assert.match(editor, /source_asset_id/);
+  assert.match(editor, /outpainting_direction/);
+  assert.match(editor, /PanelImageComparisonDialog/);
+  assert.match(comparisonDialog, /修正前と候補を比較/);
+  assert.match(comparisonDialog, /type="range"/);
+  assert.match(comparisonDialog, /比較位置/);
+  assert.match(comparisonDialog, /この候補を採用/);
+  assert.match(comparisonDialog, /resolveComparisonSourceFrame/);
 });
 
 test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {
@@ -113,6 +129,8 @@ test("生成PromptはJob一覧responseから除外し対象panel IDだけを返�
   assert.match(generationService, /target_panel_id: targetPanelId/);
   assert.match(generationService, /revision_preset: revisionPreset/);
   assert.match(generationService, /generation_operation: generationOperation/);
+  assert.match(generationService, /source_asset_id: sourceAssetId/);
+  assert.match(generationService, /outpainting_direction: outpaintingDirection/);
   assert.match(generationService, /"outpainting"/);
   assert.doesNotMatch(editor, /job\.input|generation\.prompt/);
 });

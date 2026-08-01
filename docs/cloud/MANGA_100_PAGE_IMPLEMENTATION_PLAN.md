@@ -300,7 +300,9 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 - BFL FLUX.1 Fill [pro]へ接続し、候補採用を`correction` layerとして非破壊保存
 - M3-3 左・右・上・下・全方向のOutpaintingを実装
 - Worker内で元画像へ余白を追加し、追加領域だけを白マスクにしてBFL Fillへ送信
-- 自動マスク、修正前後スライダーは未実装
+- M3-4 Image-to-Image、Inpainting、Outpainting候補の修正前後比較スライダーを実装
+- Outpaintingは各方向の拡張位置と画像寸法を合わせて比較
+- 自動マスクは未実装
 
 実装:
 
