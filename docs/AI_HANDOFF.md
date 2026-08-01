@@ -4,11 +4,14 @@
 
 - Branch: `agent/manga-production-status-v1`
 - Base: `agent/manga-batch-production-v1`（Draft PR #106）
+- Draft PR: [#107](https://github.com/team478a/manga/pull/107)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pr-7ff6fc-team478as-projects.vercel.app`
 - 目的: 長編制作のページ状態、全体進捗、確認・修正・確定を制作ボードで管理する
 - 実装: 5状態、Job連動、確定編集ロック、設定変更revision、絞り込み、migration未適用fallback
 - migration: `202608010005_cloud_production_status.sql`、rollback、canonical schema同期
 - 詳細: `docs/cloud/CLOUD_PRODUCTION_STATUS_V1.md`
-- 状態: コード実装済み。自動検証、Draft PR、Previewを作成中
+- 検証: deps、lint、Hub 363/363、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、migration forward／rollback／reapply／canonical、build成功
+- 状態: 実装・Draft PR・Preview完了。Supabase staging適用、実ブラウザ確認、責任者承認待ち
 
 ---
 

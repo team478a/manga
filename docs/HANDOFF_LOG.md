@@ -2624,4 +2624,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 生成Jobに状態を連動し、確定ページの編集・一括生成をDBとUIの両方で拒否
 - キャラクター・画風・場所・小物・参照画像更新後に確定ページへ再確認警告を表示
 - migration 37本目、rollback、canonical、静的テストを追加
+- Draft PR #107、Vercel Preview、自動検証を完了
 - Supabase staging適用、有料Provider実行、マージは未実施
