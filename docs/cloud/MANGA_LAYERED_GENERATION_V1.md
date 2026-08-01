@@ -1,5 +1,8 @@
 # MANGA 背景・人物・効果の分離生成 v1
 
+- Draft PR: [#103](https://github.com/team478a/manga/pull/103)
+- Preview: `https://mangai-hub-staging-git-agent-manga-la-a0ee14-team478as-projects.vercel.app`
+
 ## 目的
 
 一般向けCloud Canvasで、完成コマを毎回一枚として作り直さず、背景・人物・効果を別々に生成、比較、採用できるようにする。
@@ -67,3 +70,4 @@ v1は白地素材と乗算合成を使う一般向けモノクロ漫画向けの
 - `npm run db:migrations:validate`: 34/34成功
 - `npm run build`: 成功
 - `git diff --check`: 成功
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel成功

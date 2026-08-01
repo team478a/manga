@@ -4,13 +4,16 @@
 
 - Branch: `agent/manga-layered-generation-v1`
 - Base: `agent/manga-composition-control-v1`（Draft PR #102）
+- Draft PR: [#103](https://github.com/team478a/manga/pull/103)
+- Preview: `https://mangai-hub-staging-git-agent-manga-la-a0ee14-team478as-projects.vercel.app`
 - 目的: 通常のコマ生成を完成コマ、背景、人物、効果へ分け、非破壊レイヤーとして採用する
 - 実装: 対象選択UI、対象別Job・Prompt・参照分離、背景の下層配置、人物・効果の乗算合成
 - 互換性: `generationTarget`未指定時は完成コマ。既存の修正生成は変更しない
 - migration / Feature Flag / Provider / 料金: 追加なし
 - 詳細: `docs/cloud/MANGA_LAYERED_GENERATION_V1.md`
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 348/348、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
-- 状態: ローカル実装・全品質ゲート完了。Draft PR、Preview、実ブラウザ確認待ち
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 状態: 実装・全自動検証・Preview完了。実Provider、実ブラウザ確認、責任者承認待ち
 
 ---
 

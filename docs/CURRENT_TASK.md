@@ -5,13 +5,16 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `agent/manga-layered-generation-v1`
 - Base: `agent/manga-composition-control-v1`（Draft PR #102）
+- Draft PR: [#103](https://github.com/team478a/manga/pull/103)
+- Preview: `https://mangai-hub-staging-git-agent-manga-la-a0ee14-team478as-projects.vercel.app`
 - 目的: 完成コマを作り直さず、背景・人物・効果を別々に生成・採用する
 - 実装: 4対象の選択、対象別Prompt・参照分離、背景／人物／効果レイヤー採用、人物・効果の乗算合成
 - 互換性: 未指定時は従来どおり完成コマ。修正、Inpainting、Outpaintingは変更しない
 - migration / Feature Flag / Provider / 料金: 追加なし
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 348/348、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 詳細: `docs/cloud/MANGA_LAYERED_GENERATION_V1.md`
-- 未実施: Draft PR / Preview、実Provider生成、実ブラウザ合成確認、責任者承認、親PR #102後のマージ
+- 未実施: 実Provider生成、実ブラウザ合成確認、責任者承認、親PR #102後のマージ
 
 
 ## 2026-08-01 長編マンガ制作 M3-6: ポーズ・構図制御

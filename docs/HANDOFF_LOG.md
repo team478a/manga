@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-layered-generation-v1`
 - Base: `agent/manga-composition-control-v1`（Draft PR #102）
+- Draft PR: [#103](https://github.com/team478a/manga/pull/103)
+- Preview: `https://mangai-hub-staging-git-agent-manga-la-a0ee14-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -23,11 +25,12 @@ IMPLEMENTED_AWAITING_REVIEW
 - APIは許可した生成対象だけを受け付け、未指定時は従来の完成コマになる。
 - DB、migration、Feature Flag、Provider、料金、成人向け、Desktopは変更していない。
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 348/348、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
 - 詳細: `docs/cloud/MANGA_LAYERED_GENERATION_V1.md`
 
 ### 次
 
-- Draft PRとPreviewを作成し、実Providerと実ブラウザで白地素材の合成品質を確認する。
+- 実Providerと実ブラウザで白地素材の合成品質を確認し、親PR #102後に責任者が承認する。
 
 ---
 
