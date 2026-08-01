@@ -165,6 +165,10 @@ for (const required of [
   "cloud_storage_cleanup",
   "claim_cloud_page_thumbnail",
   "claim_cloud_storage_cleanup",
+  "cloud_continuity_facts",
+  "cloud_plot_threads",
+  "save_cloud_continuity_fact",
+  "save_cloud_plot_thread",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

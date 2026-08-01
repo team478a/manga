@@ -1,22 +1,36 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, CheckCircle2, Info, ScanSearch } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, ScanSearch, Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import {
   getCloudContinuityReview,
+  getCloudNarrativeContinuity,
   getCloudProjectWorkspace,
 } from "@/lib/cloud-creator-server";
+import {
+  deleteContinuityFactAction,
+  deletePlotThreadAction,
+  saveContinuityFactAction,
+  savePlotThreadAction,
+} from "./actions";
+
+const factKindLabels = { appearance:"外見・衣装",location:"場所",relationship:"人物関係",timeline:"時系列",prop:"小物",speech:"口調・呼称" } as const;
+const threadStatusLabels = { planned:"予定",planted:"提示済み",resolved:"回収済み",dropped:"不採用" } as const;
 
 export default async function CloudContinuityPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string }>;
+  searchParams: Promise<{ message?: string; error?: string }>;
 }) {
   await requireProfile();
   const { projectId } = await params;
-  const [workspace, result] = await Promise.all([
+  const query = await searchParams;
+  const [workspace, result, narrative] = await Promise.all([
     getCloudProjectWorkspace(projectId).catch(() => null),
     getCloudContinuityReview(projectId).catch(() => null),
+    getCloudNarrativeContinuity(projectId).catch(() => null),
   ]);
   if (!workspace) notFound();
 
@@ -33,9 +47,63 @@ export default async function CloudContinuityPage({
         </div>
       </div>
       <div className="mt-5 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-950">
-        採用画像の生成履歴から、人物・衣装・場所・小物・画風に使った設定版と参照画像を確認します。
-        画像の見た目そのものを判定する機能ではありません。
+        作品内の事実と伏線を記録し、ページ範囲が重なる矛盾を自動検出します。採用画像については、
+        人物・衣装・場所・小物・画風に使った設定版と参照画像も確認します。画像の見た目そのものを判定する機能ではありません。
       </div>
+
+      {query.message ? <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-900">{query.message}</div> : null}
+      {query.error ? <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-900">{query.error}</div> : null}
+
+      {!narrative ? (
+        <section className="panel mt-6"><h2 className="text-xl font-bold">物語設定を読み込めませんでした</h2><p className="mt-2 text-stone-600">時間をおいて再度確認してください。</p></section>
+      ) : !narrative.available ? (
+        <section className="panel mt-6"><h2 className="text-xl font-bold">物語の連続性台帳は準備中です</h2><p className="mt-2 text-stone-600">最新のデータベース構成を適用すると、事実と伏線を保存できます。従来の画像設定チェックは引き続き利用できます。</p></section>
+      ) : (
+        <>
+          <section className="mt-6 grid gap-4 sm:grid-cols-4">
+            <div className="panel"><p className="text-sm text-stone-500">登録した事実</p><p className="mt-1 text-3xl font-bold">{narrative.review.factCount}</p></div>
+            <div className="panel"><p className="text-sm text-stone-500">伏線</p><p className="mt-1 text-3xl font-bold">{narrative.review.threadCount}</p></div>
+            <div className="panel"><p className="text-sm text-stone-500">未回収</p><p className="mt-1 text-3xl font-bold">{narrative.review.openThreadCount}</p></div>
+            <div className="panel"><p className="text-sm text-stone-500">物語の要確認</p><p className="mt-1 text-3xl font-bold text-amber-800">{narrative.review.warningCount}</p></div>
+          </section>
+
+          {narrative.review.issues.length ? <section className="panel mt-6"><h2 className="flex items-center gap-2 text-xl font-bold"><AlertTriangle className="h-6 w-6 text-amber-700" />物語設定の確認項目</h2><ul className="mt-4 space-y-3">{narrative.review.issues.map((issue,index)=><li className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950" key={`${issue.code}-${issue.threadId ?? index}`}>{issue.message}</li>)}</ul></section> : null}
+
+          <section className="mt-6 grid gap-6 xl:grid-cols-2">
+            <div className="panel">
+              <h2 className="text-xl font-bold">事実を登録</h2><p className="mt-2 text-sm text-stone-600">衣装、居場所、関係、時系列、所持品、呼び方を有効なページ範囲と一緒に記録します。</p>
+              <form action={saveContinuityFactAction.bind(null,projectId)} className="mt-5 grid gap-4 sm:grid-cols-2">
+                <label><span className="label">種類</span><select className="field" name="factKind" defaultValue="appearance">{Object.entries(factKindLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label>
+                <label><span className="label">対象</span><input className="field" name="subject" required maxLength={100} placeholder="例：主人公" /></label>
+                <label><span className="label">項目</span><input className="field" name="attribute" required maxLength={100} placeholder="例：上着" /></label>
+                <label><span className="label">設定内容</span><input className="field" name="factValue" required maxLength={500} placeholder="例：青いコート" /></label>
+                <label><span className="label">開始ページ</span><input className="field" name="startPage" type="number" min={1} max={1000} defaultValue={1} required /></label>
+                <label><span className="label">終了ページ</span><input className="field" name="endPage" type="number" min={1} max={1000} defaultValue={Math.max(workspace.pages.length,1)} required /></label>
+                <label><span className="label">確認元ページ（任意）</span><input className="field" name="sourcePage" type="number" min={1} max={1000} /></label>
+                <label><span className="label">メモ（任意）</span><input className="field" name="notes" maxLength={1000} /></label>
+                <button className="button-primary sm:col-span-2" type="submit">事実を保存</button>
+              </form>
+            </div>
+            <div className="panel">
+              <h2 className="text-xl font-bold">伏線を登録</h2><p className="mt-2 text-sm text-stone-600">提示ページと回収予定を記録すると、回収漏れを警告します。</p>
+              <form action={savePlotThreadAction.bind(null,projectId)} className="mt-5 grid gap-4 sm:grid-cols-2">
+                <label className="sm:col-span-2"><span className="label">伏線</span><input className="field" name="title" required maxLength={150} placeholder="例：壊れた懐中時計の持ち主" /></label>
+                <label><span className="label">提示ページ</span><input className="field" name="setupPage" type="number" min={1} max={1000} defaultValue={1} required /></label>
+                <label><span className="label">回収予定ページ</span><input className="field" name="targetPayoffPage" type="number" min={1} max={1000} /></label>
+                <label><span className="label">状態</span><select className="field" name="status" defaultValue="planned">{Object.entries(threadStatusLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label>
+                <label><span className="label">回収ページ（回収済み時）</span><input className="field" name="payoffPage" type="number" min={1} max={1000} /></label>
+                <label className="sm:col-span-2"><span className="label">メモ（任意）</span><input className="field" name="notes" maxLength={1000} /></label>
+                <button className="button-primary sm:col-span-2" type="submit">伏線を保存</button>
+              </form>
+            </div>
+          </section>
+
+          <section className="mt-6 grid gap-6 xl:grid-cols-2">
+            <div className="panel"><h2 className="text-xl font-bold">事実台帳</h2>{narrative.facts.length ? <ul className="mt-4 space-y-3">{narrative.facts.map((fact)=><li className="rounded-lg border border-stone-200 p-4" key={fact.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{fact.subject}・{fact.attribute}</p><p className="mt-1 text-stone-700">{fact.fact_value}</p><p className="mt-2 text-xs text-stone-500">{factKindLabels[fact.fact_kind]}／{fact.start_page}〜{fact.end_page}ページ</p></div><form action={deleteContinuityFactAction.bind(null,projectId,fact.id)}><button className="button-secondary" aria-label="事実を削除" type="submit"><Trash2 className="h-4 w-4" /></button></form></div></li>)}</ul> : <p className="mt-3 text-stone-600">まだ事実はありません。</p>}</div>
+            <div className="panel"><h2 className="text-xl font-bold">伏線台帳</h2>{narrative.threads.length ? <ul className="mt-4 space-y-3">{narrative.threads.map((thread)=><li className="rounded-lg border border-stone-200 p-4" key={thread.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{thread.title}</p><p className="mt-2 text-xs text-stone-500">{threadStatusLabels[thread.status]}／提示 {thread.setup_page}ページ{thread.target_payoff_page ? `／回収予定 ${thread.target_payoff_page}ページ` : ""}{thread.payoff_page ? `／回収 ${thread.payoff_page}ページ` : ""}</p></div><form action={deletePlotThreadAction.bind(null,projectId,thread.id)}><button className="button-secondary" aria-label="伏線を削除" type="submit"><Trash2 className="h-4 w-4" /></button></form></div><form action={savePlotThreadAction.bind(null,projectId)} className="mt-3 flex flex-wrap items-end gap-2"><input name="threadId" type="hidden" value={thread.id} /><input name="title" type="hidden" value={thread.title} /><input name="setupPage" type="hidden" value={thread.setup_page} /><input name="targetPayoffPage" type="hidden" value={thread.target_payoff_page ?? ""} /><input name="notes" type="hidden" value={thread.notes} /><label><span className="label">状態を更新</span><select className="field" name="status" defaultValue={thread.status}>{Object.entries(threadStatusLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label><label><span className="label">回収ページ</span><input className="field w-32" name="payoffPage" type="number" min={thread.setup_page} max={1000} defaultValue={thread.payoff_page ?? ""} /></label><button className="button-secondary" type="submit">更新</button></form></li>)}</ul> : <p className="mt-3 text-stone-600">まだ伏線はありません。</p>}</div>
+          </section>
+        </>
+      )}
 
       {!result ? (
         <section className="panel mt-6">

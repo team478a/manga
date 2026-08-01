@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-1 物語の連続性台帳、2026-08-01）
+
+- Branch: `agent/manga-continuity-foundation-v1`
+- Base: `agent/manga-storage-lifecycle-v1`（Draft PR #109）
+- 目的: 長編の事実と伏線をページ範囲付きで管理し、決定的に検出できる矛盾を表示する
+- 実装: `cloud_continuity_facts`、`cloud_plot_threads`、owner-only RPC、事実・伏線UI、矛盾・回収漏れ評価
+- migration: `202608010008_cloud_narrative_continuity.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/MANGA_NARRATIVE_CONTINUITY_V1.md`
+- 状態: 実装、migration実DB往復、全ローカル品質ゲート完了。Draft PR、Preview、CIを確認中
+
+---
+
+
 ## 0. 現在の優先タスク（M4 Storageライフサイクル、2026-08-01）
 
 - Branch: `agent/manga-storage-lifecycle-v1`

@@ -234,7 +234,13 @@
       "description": "ページサムネイルcache、revision整合性、書き出し中間物の限定清掃を追加",
       "forwardSha256": "a447aea53ad9aecdba2d9d2207c25c7b71102f265dc795224f5982dcc3c29164",
       "rollbackSha256": "70c91bcbd3e03a29c11125a3f78acd2f6b93de9776f15ed2a0ee8d5efe6fad9b"
+    },
+    {
+      "id": "202608010008_cloud_narrative_continuity",
+      "description": "長編作品の事実台帳、伏線管理、ページ範囲の決定的矛盾検出を追加",
+      "forwardSha256": "cad117ff907f920153a33be0c97398eab04e7aaf712d637cdf460ee99a3c73ed",
+      "rollbackSha256": "73a26d821b1061d0041a65e4ced6935c98346437f89e2ccc3a8d523355bbbed9"
     }
   ],
-  "schemaSha256": "c31362e1ec683c12009473d5174e0cf61ad0271220ef363a2a938d7720d21a20"
+  "schemaSha256": "6ed3b51a51bdea0af6effbf0de2b3c7f6d54c9f4c5c1b09d7bc9d90aabedbd59"
 }

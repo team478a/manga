@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M5-1: 物語の連続性台帳
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-continuity-foundation-v1`
+- Base: `agent/manga-storage-lifecycle-v1`（Draft PR #109）
+- 目的: 100ページ制作で衣装、居場所、人物関係、時系列、小物、口調・呼称、伏線を見失わないようにする
+- 実装: ページ範囲付き事実台帳、伏線台帳、重複範囲の矛盾検出、回収漏れ警告、保存・削除・状態更新UI
+- 判定境界: 登録済みの構造化事実だけを決定的に比較し、画像や本文から未確認の事実を推測しない
+- migration: `202608010008_cloud_narrative_continuity.sql`（40本目）
+- 検証: deps、lint、Hub 379/379、Canvas 26/26、AI 48/48、Desktop、Desktop a11y、Hub/Desktop typecheck、migration往復、canonical二重適用、production build成功
+- 詳細: `docs/cloud/MANGA_NARRATIVE_CONTINUITY_V1.md`
+- 未実施: Supabase staging適用、実ブラウザ、実作品語彙調整、責任者承認、親PR後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M4完成: Storageサムネイル・派生物整理
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
