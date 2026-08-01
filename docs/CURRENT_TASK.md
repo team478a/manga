@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M3-4: 修正前後の比較表示
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-revision-comparison-v1`
+- Base: `agent/manga-panel-outpainting-v1`（Draft PR #99）
+- 目的: Image-to-Image、Inpainting、Outpainting候補を採用前に修正前画像と比較する
+- 実装: タッチ・キーボード対応比較スライダー、Outpainting方向別の元画像位置補正、比較画面からの非破壊採用
+- 公開データ: private Job inputは除外したまま、本人の`source_asset_id`と`outpainting_direction`だけを返す
+- migration / Feature Flag: 追加なし
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 337/337、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
+- 詳細: `docs/cloud/MANGA_REVISION_COMPARISON_V1.md`
+- 未実施: 実ブラウザでの3方式比較、責任者承認、親PR #99後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M3-3: コマ画角拡張
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

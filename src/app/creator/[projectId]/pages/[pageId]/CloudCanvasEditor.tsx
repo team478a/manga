@@ -44,6 +44,7 @@ import {
 import { downloadCanvasPng } from "./services/canvas-download";
 import { createCanvasSvg } from "./services/canvas-svg";
 import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
+import { PanelImageComparisonDialog } from "./PanelImageComparisonDialog";
 import {
   cancelGeneration,
   createGenerationJob,
@@ -149,6 +150,7 @@ export function CloudCanvasEditor({
   const [inpaintingDialogOpen, setInpaintingDialogOpen] = useState(false);
   const [outpaintingDirection, setOutpaintingDirection] =
     useState<OutpaintingDirection>("all");
+  const [comparisonJobId, setComparisonJobId] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -797,6 +799,15 @@ export function CloudCanvasEditor({
   const selectedRevisionAsset = selectedRevisionLayer?.assetId
     ? assetMap.get(selectedRevisionLayer.assetId)
     : undefined;
+  const comparisonJob = comparisonJobId
+    ? generationJobs.find((job) => job.id === comparisonJobId)
+    : undefined;
+  const comparisonBeforeAsset = comparisonJob?.source_asset_id
+    ? assetMap.get(comparisonJob.source_asset_id)
+    : undefined;
+  const comparisonAfterAsset = comparisonJob?.output_asset_id
+    ? assetMap.get(comparisonJob.output_asset_id)
+    : undefined;
 
   return (
     <div
@@ -1299,6 +1310,21 @@ export function CloudCanvasEditor({
                       src={assetMap.get(job.output_asset_id)!.url}
                     />
                   ) : null}
+                  {job.status === "completed" &&
+                  job.kind === "image" &&
+                  job.revision_preset &&
+                  job.source_asset_id &&
+                  job.output_asset_id &&
+                  assetMap.has(job.source_asset_id) &&
+                  assetMap.has(job.output_asset_id) ? (
+                    <button
+                      className="button-secondary mt-2 w-full"
+                      onClick={() => setComparisonJobId(job.id)}
+                      type="button"
+                    >
+                      修正前と比較
+                    </button>
+                  ) : null}
                   {job.status === "failed" ? (
                     <div className="mt-2 rounded bg-red-50 p-2 text-red-800">
                       <p>生成に失敗しました。この候補だけ再実行できます。</p>
@@ -1750,6 +1776,18 @@ export function CloudCanvasEditor({
           sourceUrl={selectedRevisionAsset.url}
           sourceWidth={selectedRevisionAsset.width}
           submitting={requestingPanelGeneration}
+        />
+      ) : null}
+      {comparisonJob && comparisonBeforeAsset && comparisonAfterAsset ? (
+        <PanelImageComparisonDialog
+          after={comparisonAfterAsset}
+          before={comparisonBeforeAsset}
+          direction={comparisonJob.outpainting_direction}
+          onAdopt={() => {
+            setComparisonJobId(null);
+            void placeGeneratedAsset(comparisonJob);
+          }}
+          onClose={() => setComparisonJobId(null)}
         />
       ) : null}
       {preview ? (
