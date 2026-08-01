@@ -4,13 +4,16 @@
 
 - Branch: `agent/manga-32page-foundation-v1`
 - Base: `agent/manga-transparent-layers-v1`（Draft PR #104）
+- Draft PR: [#105](https://github.com/team478a/manga/pull/105)
+- Preview: `https://mangai-hub-staging-git-agent-manga-32-fc91ac-team478as-projects.vercel.app`
 - 目的: 32ページ読切を章・話・シーン単位で整理し、ページ一覧のDOM負荷を制限する
 - 実装: Chapter／Scene schemaとRLS、既存作品backfill、階層追加、同一話内drag reorder、単ページ／見開き、12ページずつ追加表示
 - fallback: migration未適用時は旧画面を継続し、構造編集だけ停止
 - migration: `202608010003_cloud_longform_structure.sql`、rollbackとcanonical schema同期済み
 - 詳細: `docs/cloud/MANGA_32_PAGE_FOUNDATION_V1.md`
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 354/354、Canvas 26/26、AI 48/48、Desktop 182/182、migration往復、production build成功
-- 状態: ローカル実装・全自動検証完了。Draft PR、Preview、GitHub CI、責任者確認待ち
+- CI: Core quality、Migration roundtrip、Windows accessibility/build、Vercel成功
+- 状態: 実装・全自動検証・Preview完了。Supabase staging適用、実ブラウザ確認、責任者承認待ち
 
 ---
 

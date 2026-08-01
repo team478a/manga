@@ -2496,7 +2496,7 @@ READY_FOR_REVIEW
 
 - Branch: `agent/manga-32page-foundation-v1`
 - Base: `agent/manga-transparent-layers-v1` / `17563eb`
-- HEAD: Draft PR作成時に追記
+- HEAD: `9c1fa84`（実装）、Draft PR [#105](https://github.com/team478a/manga/pull/105)
 
 ### 完了
 
@@ -2522,6 +2522,8 @@ READY_FOR_REVIEW
 - ai:test: 48/48
 - desktop:test: 182/182
 - migrations: 35本のvalidate、forward、rollback、reapply、canonical二重適用成功
+- CI: Core quality、Migration roundtrip、Windows accessibility/build、Vercel成功
+- Preview: `https://mangai-hub-staging-git-agent-manga-32-fc91ac-team478as-projects.vercel.app`
 
 ### 注意事項
 
