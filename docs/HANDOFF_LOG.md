@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-composition-control-v1`
 - Base: `agent/manga-smart-mask-v1`（Draft PR #101）
+- Draft PR: [#102](https://github.com/team478a/manga/pull/102)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-048dc2-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -23,11 +25,12 @@ IMPLEMENTED_AWAITING_REVIEW
 - 修正、Inpainting、Outpaintingには構図選択を暗黙適用しない。
 - DB、migration、Feature Flag、Provider、料金、成人向け、Desktopは変更していない。
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 345/345、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
 - 詳細: `docs/cloud/MANGA_COMPOSITION_CONTROL_V1.md`
 
 ### 次
 
-- 全品質ゲート後にDraft PRとPreviewを作成し、390pxを含む実ブラウザで選択・生成を確認する。
+- 390pxを含む実ブラウザで選択・生成を確認し、親PR #101後に責任者が承認する。
 
 ---
 
