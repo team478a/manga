@@ -33,6 +33,8 @@ function build() {
     threads: [{ id: crypto.randomUUID(), project_id: projectId, title: "懐中時計", setup_page: 1, target_payoff_page: 4, payoff_page: null, status: "planted", notes: "", updated_at: new Date().toISOString() }],
     issues: [{ code: "payoff_overdue", severity: "warning", factIds: [], threadId: "thread", message: "未回収" }],
     characterNames: ["師匠", "主人公", "主人公"],
+    chapterPlans: [{ id: crypto.randomUUID(), project_id: projectId, chapter_id: chapterId, priority: "urgent", assignee_name: "田中", due_date: "2026-07-31", notes: "確認", updated_at: new Date().toISOString() }],
+    today: "2026-08-01",
   });
 }
 
@@ -46,6 +48,9 @@ test("長編制作の進捗、章、シーン、未割当ページを集約す�
   assert.equal(result.completionPercent, 25);
   assert.equal(result.chapters[0].scenes[0].pages.length, 2);
   assert.equal(result.unassignedPages.length, 2);
+  assert.equal(result.overdueChapterCount, 1);
+  assert.equal(result.priorityChapterCount, 1);
+  assert.equal(result.nextChapter.id, chapterId);
 });
 
 test("確認済みの人物・伏線・関係時系列だけを表示用に整理する", () => {
@@ -80,4 +85,15 @@ test("コックピットUIは章・制作状態フィルターと段階表示を
   assert.match(component, /確認・修正が必要/);
   assert.match(component, /次の.*ページを表示/);
   assert.match(component, /<details/);
+  assert.match(component, /制作計画を保存/);
+  assert.match(component, /期限超過/);
+});
+
+test("章制作計画は所有者限定RPCと未適用時の安全な案内を持つ", async () => {
+  const migration = await readFile("supabase/migrations/202608010009_cloud_chapter_production_plans.sql", "utf8");
+  const service = await readFile("src/modules/cloud-creator/projects/chapter-production-plan-service.ts", "utf8");
+  assert.match(migration, /cloud_project_can_edit/);
+  assert.match(migration, /cloud_chapter_production_plans_owner_read/);
+  assert.match(service, /42P01/);
+  assert.match(service, /制作計画を読み込めませんでした/);
 });

@@ -169,6 +169,8 @@ for (const required of [
   "cloud_plot_threads",
   "save_cloud_continuity_fact",
   "save_cloud_plot_thread",
+  "cloud_chapter_production_plans",
+  "save_cloud_chapter_production_plan",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

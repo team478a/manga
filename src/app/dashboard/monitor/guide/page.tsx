@@ -5,15 +5,20 @@ import {
   CheckCircle2,
   FileText,
   FilePenLine,
+  FileCheck2,
+  GitBranch,
   Images,
+  LayoutDashboard,
   Lightbulb,
   MessageSquare,
+  Palette,
   ReceiptText,
   ShieldCheck,
   ShoppingBag,
   Sparkles,
   Smartphone,
   TriangleAlert,
+  Users,
 } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { getCloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
@@ -21,10 +26,70 @@ import { getCloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
 const sections = [
   { href: "#quick-start", label: "最初の5分" },
   { href: "#workflow", label: "制作手順" },
+  { href: "#manga-production", label: "漫画原稿の作り方" },
   { href: "#mobile", label: "スマートフォン" },
   { href: "#feedback", label: "感想の送り方" },
   { href: "#troubleshooting", label: "困ったとき" },
   { href: "#safety", label: "安全上の注意" },
+] as const;
+
+const mangaProductionSteps = [
+  {
+    number: 1,
+    title: "最初は4〜8ページで試す",
+    icon: BookOpenCheck,
+    description:
+      "「原稿編集」から作品を作り、まず短いページ数で保存・画像生成・確定まで試します。操作に慣れてから32〜100ページへ広げてください。",
+  },
+  {
+    number: 2,
+    title: "人物・画風・世界観を固定する",
+    icon: Palette,
+    description:
+      "作品画面の「外見・衣装の設定を編集」と「画風・場所・小物を設定」から、ページをまたいで変えたくない特徴を先に保存します。",
+  },
+  {
+    number: 3,
+    title: "章・話・シーン・ページを並べる",
+    icon: GitBranch,
+    description:
+      "作品画面で章を追加し、各章の話・シーン・ページを順番に整理します。ページを開く前に全体の流れを大まかに決めます。",
+  },
+  {
+    number: 4,
+    title: "参照画像を登録してコマへ割り当てる",
+    icon: Users,
+    description:
+      "キャラクター、画風、場所、小物の見本画像を保存します。必要な人物・場所・小物を各コマへ割り当てると、画像生成条件として優先されます。",
+  },
+  {
+    number: 5,
+    title: "コマ画像を生成・比較・採用する",
+    icon: Sparkles,
+    description:
+      "ページを開き、対象コマと生成するレイヤーを選びます。候補を比較して使用する画像だけを採用し、保存完了を確認します。",
+  },
+  {
+    number: 6,
+    title: "4〜8ページずつ制作状態を進める",
+    icon: Images,
+    description:
+      "作品画面で4〜8ページを選んで一括生成できます。生成後は「要確認」から、直す場合は「要修正」、完成した場合は「確定」へ進めます。",
+  },
+  {
+    number: 7,
+    title: "連続性と章の予定を確認する",
+    icon: LayoutDashboard,
+    description:
+      "「一貫性をチェック」で人物・衣装・場所・伏線を確認し、「長編コックピット」で進捗、期限、次に着手する章を確認します。",
+  },
+  {
+    number: 8,
+    title: "全ページを確定してPDFを書き出す",
+    icon: FileCheck2,
+    description:
+      "原稿チェックの修正項目を解消し、全ページを「確定」にします。「PDF書き出しを開始」を押し、完了後にPDFをダウンロードします。",
+  },
 ] as const;
 
 const steps = [
@@ -136,6 +201,10 @@ const troubleItems = [
     answer: "同じボタンを連打せず、少し待って画面を再読み込みし、一度だけ再試行してください。",
   },
   {
+    title: "PDF書き出しを開始できない",
+    answer: "原稿チェックの修正項目を解消し、すべてのページを「確定」にしてください。生成中のページがある場合は、完了してから再確認してください。",
+  },
+  {
     title: "スマートフォンで表示が崩れる",
     answer: "画面を再読み込みしてください。直らない場合は画面名、端末、ブラウザ、スクリーンショットを送ってください。",
   },
@@ -159,8 +228,8 @@ export default async function GeneralMonitorGuidePage() {
           <h1 className="mt-1 text-3xl font-bold">MANGAI Web使い方マニュアル</h1>
           <p className="mt-2 leading-relaxed text-stone-600">
             市場やAIの専門知識は必要ありません。上から順番に操作すると、
-            市場分析から原稿編集・作品管理まで、8工程の順番に進められます。
-            現在準備中の工程も、このページで確認できます。
+            市場分析から原稿編集・作品管理まで順番に進められます。
+            原稿編集では、短い試作から最大100ページの作品とPDF書き出しまで確認できます。
           </p>
         </div>
       </header>
@@ -294,6 +363,49 @@ export default async function GeneralMonitorGuidePage() {
             );
           })}
         </div>
+      </section>
+
+      <section className="mt-9 scroll-mt-6" id="manga-production">
+        <h2 className="text-2xl font-bold">漫画原稿を完成させる手順</h2>
+        <p className="mt-2 leading-relaxed text-stone-600">
+          いきなり100ページを生成せず、最初は4〜8ページで一巡してください。
+          人物や画風を先に固定すると、ページを増やしたときの見た目の変化を減らせます。
+        </p>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {mangaProductionSteps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <article className="panel min-w-0" key={step.number}>
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 font-bold text-violet-700">
+                    {step.number}
+                  </span>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-5 w-5 shrink-0 text-violet-700" aria-hidden="true" />
+                      <h3 className="font-bold">{step.title}</h3>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+        <div className="panel mt-5 border-emerald-200 bg-emerald-50">
+          <h3 className="font-bold text-emerald-950">完成の目印</h3>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-emerald-950">
+            <li>人物・画風・場所・小物の固定設定が保存されている</li>
+            <li>必要なコマへ画像が採用され、保存完了が表示されている</li>
+            <li>連続性の警告と原稿チェックの修正項目を確認している</li>
+            <li>全ページが「確定」になり、完成原稿PDFをダウンロードできる</li>
+          </ul>
+        </div>
+        <Link className="button mt-5 w-full sm:w-auto" href="/creator">
+          原稿編集を開く
+        </Link>
       </section>
 
       <section className="mt-9 scroll-mt-6" id="mobile">

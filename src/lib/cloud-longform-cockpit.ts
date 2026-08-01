@@ -9,6 +9,7 @@ import type {
   CloudPlotThread,
   NarrativeContinuityIssue,
 } from "@/lib/cloud-narrative-continuity";
+import type { CloudChapterProductionPlan } from "@/lib/cloud-chapter-production-plan";
 
 export type CloudCockpitPageStatus =
   | "not_started"
@@ -27,6 +28,9 @@ export type CloudCockpitChapter = {
   id: string;
   title: string;
   episodeCount: number;
+  plan: CloudChapterProductionPlan | null;
+  complete: boolean;
+  overdue: boolean;
   pages: CloudCockpitPageItem[];
   scenes: Array<{
     id: string;
@@ -73,6 +77,8 @@ export function buildCloudLongformCockpit(input: {
   threads: CloudPlotThread[];
   issues: NarrativeContinuityIssue[];
   characterNames: string[];
+  chapterPlans?: CloudChapterProductionPlan[];
+  today?: string;
 }) {
   const stateByPage = new Map(input.productionStates.map((state) => [state.pageId, state]));
   const orderedPages = [...input.pages].sort((left, right) => left.order_index - right.order_index);
@@ -102,6 +108,8 @@ export function buildCloudLongformCockpit(input: {
     const chapterId = input.longform.episodeChapterIds[episode.id] ?? "unassigned";
     episodesByChapter.set(chapterId, [...(episodesByChapter.get(chapterId) ?? []), episode]);
   }
+  const planByChapter = new Map((input.chapterPlans ?? []).map((plan) => [plan.chapter_id, plan]));
+  const today = input.today ?? new Date().toISOString().slice(0, 10);
   const chapters = input.longform.chapters.map((chapter) => {
     const episodes = (episodesByChapter.get(chapter.id) ?? []).sort((a, b) => a.order_index - b.order_index);
     const episodeIds = new Set(episodes.map((episode) => episode.id));
@@ -116,8 +124,19 @@ export function buildCloudLongformCockpit(input: {
       const source = input.pages.find((item) => item.id === page.id);
       return Boolean(source && episodeIds.has(source.episode_id));
     });
-    return { id: chapter.id, title: chapter.title, episodeCount: episodes.length, scenes, pages: chapterPages };
+    const plan = planByChapter.get(chapter.id) ?? null;
+    const complete = chapterPages.length > 0 && chapterPages.every((page) => page.status === "finalized");
+    return { id: chapter.id, title: chapter.title, episodeCount: episodes.length, scenes, pages: chapterPages, plan, complete, overdue: Boolean(plan?.due_date && !complete && plan.due_date < today) };
   });
+
+  const priorityRank = { urgent: 0, high: 1, normal: 2, low: 3 } as const;
+  const activeChapters = chapters.filter((chapter) => !chapter.complete);
+  const nextChapter = [...activeChapters].sort((left, right) => {
+    const leftRank = left.plan ? priorityRank[left.plan.priority] : priorityRank.normal;
+    const rightRank = right.plan ? priorityRank[right.plan.priority] : priorityRank.normal;
+    if (leftRank !== rightRank) return leftRank - rightRank;
+    return (left.plan?.due_date ?? "9999-12-31").localeCompare(right.plan?.due_date ?? "9999-12-31");
+  })[0] ?? null;
 
   return {
     totalPages: pageItems.length,
@@ -131,6 +150,9 @@ export function buildCloudLongformCockpit(input: {
     issues: input.issues,
     timeline,
     chapters,
+    overdueChapterCount: chapters.filter((chapter) => chapter.overdue).length,
+    priorityChapterCount: chapters.filter((chapter) => !chapter.complete && (chapter.plan?.priority === "urgent" || chapter.plan?.priority === "high")).length,
+    nextChapter,
     unassignedPages: pageItems.filter((page) => !input.longform.pageSceneIds[page.id]),
   };
 }

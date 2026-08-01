@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M5-5: 章単位の制作計画
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-chapter-production-plans-v1`
+- Base: `agent/manga-cockpit-navigation-v1`（Draft PR #113）
+- Draft PR: [#114](https://github.com/team478a/manga/pull/114)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ch-9a2d97-team478as-projects.vercel.app`
+- 目的: 32〜100ページ制作で章ごとの優先度・担当名・期限・作業メモを管理する
+- 実装: 章制作計画、期限超過、優先章数、次着手章、所有者限定RLS/RPC、未適用時の安全な縮退表示
+- migration: `202608010009_cloud_chapter_production_plans.sql`（Supabase staging適用・テーブル／RPC／RLS／index確認済み）
+- DB適用: `202607310005`、`202607310006`、`202608010001`、`202608010003`〜`202608010009`を一括監査し、全10項目が正常。`202608010002`は既適用
+- 利用者マニュアル: `/dashboard/monitor/guide`と`docs/cloud/CLOUD_GENERAL_MONITOR_USER_GUIDE.md`へ、4〜8ページの試作から人物・画風・参照設定、一括生成、連続性確認、最大100ページ、完成原稿PDFまでの手順を追加
+- 検証: deps、lint、Hub 391/391、Canvas 26/26、AI 48/48、Hub/Desktop typecheck、migration 41本静的検査、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 実ブラウザでの長編制作フロー確認、Worker実行、責任者承認、親PR後のマージ
+- 詳細: `docs/cloud/MANGA_CHAPTER_PRODUCTION_PLANS_V1.md`
+
 ## 2026-08-01 長編マンガ制作 M5-4: 100ページナビゲーション
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

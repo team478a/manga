@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-08-01 Codex: M5-5 章単位の制作計画
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-chapter-production-plans-v1`
+- Base: `agent/manga-cockpit-navigation-v1`（Draft PR #113）
+- Draft PR: [#114](https://github.com/team478a/manga/pull/114)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ch-9a2d97-team478as-projects.vercel.app`
+
+### 完了
+
+- 章ごとの優先度、担当名、期限、作業メモを追加した。
+- 期限超過、優先章数、次に着手する章をコックピットへ追加した。
+- 所有者限定RLS/RPCとmigration未適用時の縮退表示を追加した。
+- 全ローカル品質ゲートと全GitHub CIが成功した。
+
+### 未実施
+
+- Supabase migration適用、実ブラウザ確認、責任者承認、親PR後のマージ。
+
+---
+
 ## 2026-08-01 Codex: M4 永続PDFエクスポート
 
 ### 状態
@@ -2712,3 +2738,19 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Hub 388/388、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
 - Draft PR #113、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - 実ブラウザ確認、100ページ実データ操作確認、マージは未実施
+
+## 2026-08-01 Codex: 長編制作Supabase適用・品質再確認
+
+- Supabase stagingへ`202607310005`、`202607310006`、`202608010001`、`202608010003`〜`202608010009`を順番に適用
+- テーブル、列、RPC、RLS、trigger、Storage bucket、indexを各migration後に確認し、最終一括監査10/10成功
+- `202608010002_cloud_panel_inpainting.sql`は既適用のため再実行していない
+- deps:check、lint、Hub/Desktop typecheck、Hub 391/391、Canvas 26/26、AI 48/48、migration 41本検査、production build成功
+- Draft PR #114のCore quality、Migration roundtrip、Windows build、Vercelはすべて成功
+- 未実施は実ブラウザ長編制作フロー、実Worker、責任者承認、stack順のマージ
+
+## 2026-08-01 Codex: モニター向け長編マンガ制作マニュアル
+
+- Webマニュアル`/dashboard/monitor/guide`へ「漫画原稿を完成させる手順」を追加
+- 4〜8ページの試作、人物・画風・世界観、章・話・シーン・ページ、参照画像、一括生成、制作状態、連続性、100ページ対応、完成原稿PDFを案内
+- `docs/cloud/CLOUD_GENERAL_MONITOR_USER_GUIDE.md`も同じ実装状態へ同期
+- 専用Webマニュアルテスト、Hub/Desktop typecheck、Lint、差分検査に成功
