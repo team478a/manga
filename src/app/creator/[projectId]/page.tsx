@@ -31,6 +31,7 @@ import {
   getCloudProductionProgress,
   getCloudProjectCharacterSheet,
   getCloudProjectWorkspace,
+  listCloudGenerationBatches,
 } from "@/lib/cloud-creator-server";
 import { LongformPageManager } from "./LongformPageManager";
 
@@ -54,6 +55,9 @@ export default async function CloudProjectPage({
   } catch {
     notFound();
   }
+  const generationBatches = workspace.longform.available
+    ? await listCloudGenerationBatches(projectId).catch(() => [])
+    : [];
   const { project, episodes, pages, longform } = workspace;
   const [marketplaceDraft, productionProgress, characters] = await Promise.all([
     getCloudMarketplaceDraft(projectId).catch(() => null),
@@ -360,6 +364,7 @@ export default async function CloudProjectPage({
         <section className="space-y-5">
           {longform.available ? (
             <LongformPageManager
+              batches={generationBatches}
               coverPageId={project.cover_page_id}
               episodes={episodes}
               pages={pages}

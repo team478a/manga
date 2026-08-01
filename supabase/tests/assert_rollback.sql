@@ -11,6 +11,18 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_generation_batches') is not null
+     or to_regclass('public.cloud_generation_batch_jobs') is not null
+     or to_regclass('public.cloud_page_edit_locks') is not null
+     or to_regprocedure('public.create_cloud_generation_batch(uuid,uuid[],text)') is not null
+     or to_regprocedure('public.replace_cloud_generation_batch_job(uuid,uuid)') is not null
+     or to_regprocedure('public.acquire_cloud_page_edit_lock(uuid,uuid,integer)') is not null then
+    raise exception 'Cloud batch production rollback failed';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_general_monitor_email_settings') is not null
      or to_regclass('public.cloud_general_monitor_email_audit_logs') is not null
      or to_regprocedure(

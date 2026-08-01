@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { BookOpen, FilePlus2, GripVertical, LayoutGrid, PanelsTopLeft, Plus, Trash2 } from "lucide-react";
-import type { CloudChapter, CloudEpisode, CloudLongformStructure, CloudPage } from "@/lib/cloud-creator-server";
+import { BookOpen, FilePlus2, GripVertical, LayoutGrid, PanelsTopLeft, Pause, Play, Plus, RotateCcw, Sparkles, Trash2, XCircle } from "lucide-react";
+import type { CloudChapter, CloudEpisode, CloudGenerationBatch, CloudLongformStructure, CloudPage } from "@/lib/cloud-creator-server";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import {
   addCloudEpisodeToChapterAction,
   addCloudPageToSceneAction,
@@ -11,6 +12,9 @@ import {
   deleteCloudStructureAction,
   moveCloudPageBeforeAction,
   setCloudProjectCoverAction,
+  retryFailedCloudGenerationJobAction,
+  setCloudGenerationBatchStateAction,
+  startCloudPageGenerationBatchAction,
 } from "@/app/creator/actions";
 
 const PAGE_BATCH = 12;
@@ -22,6 +26,7 @@ export function LongformPageManager({
   episodes,
   pages,
   structure,
+  batches,
 }: {
   projectId: string;
   readingDirection: "rtl" | "ltr";
@@ -29,6 +34,7 @@ export function LongformPageManager({
   episodes: CloudEpisode[];
   pages: CloudPage[];
   structure: CloudLongformStructure;
+  batches: CloudGenerationBatch[];
 }) {
   const [view, setView] = useState<"single" | "spread">("single");
   const [visibleCount, setVisibleCount] = useState(PAGE_BATCH);
@@ -71,6 +77,25 @@ export function LongformPageManager({
         </div>
         <p className="mt-3 text-sm" aria-live="polite">{isMoving ? "ページを移動しています…" : moveMessage || `${Math.min(visibleCount, pages.length)}/${pages.length}ページを表示`}</p>
       </div>
+
+      <form action={startCloudPageGenerationBatchAction.bind(null, projectId)} className="panel">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div><h3 className="text-lg font-bold">4〜8ページをまとめて生成</h3><p className="mt-1 text-sm text-stone-600">下のページにチェックを付けて開始します。各ページの全コマを既存の安全な生成Queueへ登録します。</p></div>
+          <PendingSubmitButton className="button shrink-0" pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />選択ページを生成</PendingSubmitButton>
+        </div>
+        <p className="mt-2 text-xs text-stone-500">最大64コマ。画面を閉じてもWorker処理は継続します。</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className="flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm" key={page.id}><input name="pageId" type="checkbox" value={page.id} />{page.page_number}ページ</label>)}
+        </div>
+      </form>
+
+      {batches.length ? <section className="panel" aria-label="一括生成履歴"><h3 className="text-lg font-bold">一括生成の進行状況</h3><div className="mt-3 space-y-3">{batches.map((batch) => <article className="rounded-lg border border-stone-200 p-3" key={batch.id}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><strong>{batch.status === "paused" ? "一時停止中" : batch.status === "canceled" ? "中止" : batch.status === "completed" ? "完了" : "処理中"}</strong><p className="text-sm text-stone-600">完了 {batch.completedJobs}/{batch.totalJobs}・待機 {batch.queuedJobs}・処理中 {batch.runningJobs}・失敗 {batch.failedJobs}</p></div><div className="flex flex-wrap gap-2">
+          {batch.status === "active" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "paused")}><PendingSubmitButton className="button-secondary" pendingLabel="停止中…"><Pause className="mr-1 h-4 w-4" />一時停止</PendingSubmitButton></form> : batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "active")}><PendingSubmitButton className="button-secondary" pendingLabel="再開中…"><Play className="mr-1 h-4 w-4" />再開</PendingSubmitButton></form> : null}
+          {batch.status === "active" || batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "canceled")}><PendingSubmitButton className="button-secondary text-red-700" pendingLabel="中止中…"><XCircle className="mr-1 h-4 w-4" />中止</PendingSubmitButton></form> : null}
+        </div></div>
+        {(batch.status === "active" || batch.status === "paused") && batch.failedJobIds.length ? <div className="mt-3 flex flex-wrap gap-2">{batch.failedJobIds.map((jobId, index) => <form action={retryFailedCloudGenerationJobAction.bind(null, projectId, jobId)} key={jobId}><PendingSubmitButton className="button-secondary" pendingLabel="再登録中…"><RotateCcw className="mr-1 h-4 w-4" />失敗{index + 1}を再実行</PendingSubmitButton></form>)}</div> : null}
+      </article>)}</div></section> : null}
 
       {structure.chapters.map((chapter) => {
         const chapterEpisodes = episodes.filter((episode) => structure.episodeChapterIds[episode.id] === chapter.id);

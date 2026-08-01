@@ -18,6 +18,9 @@ import {
   renameCloudProject,
   setCloudProjectDeleted,
   setCloudProjectCover,
+  retryFailedCloudGenerationJob,
+  setCloudGenerationBatchState,
+  startCloudPageGenerationBatch,
 } from "@/lib/cloud-creator-server";
 import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
@@ -327,4 +330,36 @@ export async function syncCloudMarketplaceDraftAction(
   redirect(
     `/creator/${projectId}?message=${encodeURIComponent("販売用の下書きを更新しました")}&productId=${result.productId}`,
   );
+}
+
+export async function startCloudPageGenerationBatchAction(projectId: string, formData: FormData) {
+  const parsedProjectId = z.string().uuid().safeParse(projectId);
+  if (!parsedProjectId.success) redirect("/creator?error=作品IDを確認してください");
+  const parsed = z.array(z.string().uuid()).min(4).max(8).safeParse(formData.getAll("pageId"));
+  if (!parsed.success) redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent("一括生成するページを4〜8ページ選んでください。")}`);
+  try {
+    const result = await startCloudPageGenerationBatch(parsedProjectId.data, parsed.data);
+    revalidatePath(`/creator/${parsedProjectId.data}`);
+    redirect(`/creator/${parsedProjectId.data}?message=${encodeURIComponent(`${result.queued}コマの一括生成を開始しました`)}`);
+  } catch (error) {
+    redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent(domainMessage(error, "一括生成を開始できませんでした。"))}`);
+  }
+}
+
+export async function setCloudGenerationBatchStateAction(projectId: string, batchId: string, status: "active" | "paused" | "canceled") {
+  const ids = z.object({ projectId: z.string().uuid(), batchId: z.string().uuid() }).safeParse({ projectId, batchId });
+  if (!ids.success) redirect("/creator?error=一括生成のIDを確認してください");
+  try { await setCloudGenerationBatchState(ids.data.batchId, status); }
+  catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "一括生成の状態を変更できませんでした。"))}`); }
+  revalidatePath(`/creator/${ids.data.projectId}`);
+  redirect(`/creator/${ids.data.projectId}?message=${encodeURIComponent(status === "paused" ? "一括生成を一時停止しました" : status === "active" ? "一括生成を再開しました" : "一括生成を中止しました")}`);
+}
+
+export async function retryFailedCloudGenerationJobAction(projectId: string, jobId: string) {
+  const ids = z.object({ projectId: z.string().uuid(), jobId: z.string().uuid() }).safeParse({ projectId, jobId });
+  if (!ids.success) redirect("/creator?error=再実行対象のIDを確認してください");
+  try { await retryFailedCloudGenerationJob(ids.data.jobId); }
+  catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "失敗Jobを再実行できませんでした。"))}`); }
+  revalidatePath(`/creator/${ids.data.projectId}`);
+  redirect(`/creator/${ids.data.projectId}?message=${encodeURIComponent("失敗Jobを再実行しました")}`);
 }

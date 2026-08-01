@@ -4,6 +4,37 @@
 
 ---
 
+## 2026-08-01 Codex: M4後半 4〜8ページ一括生成・編集ロック
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-batch-production-v1`
+- Base: `agent/manga-32page-foundation-v1`（Draft PR #105）
+- Draft PR: [#106](https://github.com/team478a/manga/pull/106)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ba-fd5369-team478as-projects.vercel.app`
+
+### 完了
+
+- 4〜8ページ・最大64コマを既存の永続Queueへ登録するBatchを追加した。
+- 進捗集計、一時停止、再開、中止、失敗Jobだけの安全な再実行を追加した。
+- 停止・中止中のBatch JobをWorkerがclaimしないDB契約へ更新した。
+- Canvasへ期限付き編集leaseを追加し、別画面からの同時上書きを停止した。
+- 所有者RLS、RPC権限、rollback、canonical schema、集中テストを追加した。
+- PostgreSQL 16でforward、rollback、reapply、canonical schema二重適用に成功した。
+- deps、lint、Hub/Desktop typecheck、Hub 359/359、Canvas 26/26、AI 48/48、Desktop 182/182、production buildに成功した。
+- GitHub CIのCore quality、Migration roundtrip、Windows build、Vercelに成功した。
+- Provider、料金、成人向け、Desktop、既存Canvas保存契約は変更していない。
+
+### 次
+
+- 責任者がstaging migrationを適用後、実ブラウザでQueue制御と2画面編集lockを確認する。
+
+---
+
 ## 2026-08-01 Codex: M3-8 人物・効果レイヤー白背景透明化
 
 ### 状態
