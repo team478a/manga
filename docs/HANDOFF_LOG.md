@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-batch-production-v1`
 - Base: `agent/manga-32page-foundation-v1`（Draft PR #105）
+- Draft PR: [#106](https://github.com/team478a/manga/pull/106)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ba-fd5369-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -24,11 +26,11 @@ IMPLEMENTED_AWAITING_REVIEW
 - 所有者RLS、RPC権限、rollback、canonical schema、集中テストを追加した。
 - PostgreSQL 16でforward、rollback、reapply、canonical schema二重適用に成功した。
 - deps、lint、Hub/Desktop typecheck、Hub 359/359、Canvas 26/26、AI 48/48、Desktop 182/182、production buildに成功した。
+- GitHub CIのCore quality、Migration roundtrip、Windows build、Vercelに成功した。
 - Provider、料金、成人向け、Desktop、既存Canvas保存契約は変更していない。
 
 ### 次
 
-- Draft PRのCIとVercel Previewを確認する。
 - 責任者がstaging migrationを適用後、実ブラウザでQueue制御と2画面編集lockを確認する。
 
 ---

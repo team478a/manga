@@ -4,11 +4,14 @@
 
 - Branch: `agent/manga-batch-production-v1`
 - Base: `agent/manga-32page-foundation-v1`（Draft PR #105）
+- Draft PR: [#106](https://github.com/team478a/manga/pull/106)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ba-fd5369-team478as-projects.vercel.app`
 - 目的: 4〜8ページ単位の永続生成Queueと、Canvas同時編集の安全境界を追加する
 - 実装: Batch永続化、Job紐付け、進捗集計、停止／再開／中止、失敗分retry、120秒の編集lease
 - migration: `202608010004_cloud_batch_production.sql`、rollback、canonical schema同期済み
 - 詳細: `docs/cloud/MANGA_BATCH_PRODUCTION_V1.md`
-- 状態: コードとDB往復検証完了。Supabase staging適用、実Provider、実ブラウザ、責任者承認待ち
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 状態: コード、DB往復、Draft PR、Preview完了。Supabase staging適用、実Provider、実ブラウザ、責任者承認待ち
 
 ---
 

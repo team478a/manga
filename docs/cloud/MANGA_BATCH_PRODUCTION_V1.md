@@ -41,6 +41,9 @@
 - canonical schema二重適用とassertion: 成功
 - 集中テスト: 5/5
 - 全体検証: deps、lint、Hub/Desktop typecheck、Hub 359/359、Canvas 26/26、AI 48/48、Desktop 182/182、production build成功
+- Draft PR: [#106](https://github.com/team478a/manga/pull/106)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ba-fd5369-team478as-projects.vercel.app`
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 
 ## 外部作業
 
