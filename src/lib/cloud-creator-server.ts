@@ -50,7 +50,7 @@ export {
 } from "@/modules/cloud-creator/projects/manuscript-preflight-service";
 export { getCloudProjectCharacterSheet } from "@/modules/cloud-creator/projects/character-sheet-service";
 export { getCloudContinuityReview } from "@/modules/cloud-creator/projects/continuity-review-service";
-export { deleteCloudContinuityFact, deleteCloudPlotThread, getCloudNarrativeContinuity, saveCloudContinuityFact, saveCloudPlotThread } from "@/modules/cloud-creator/projects/narrative-continuity-service";
+export { deleteCloudContinuityFact, deleteCloudPlotThread, getCloudContinuitySuggestions, getCloudNarrativeContinuity, saveCloudContinuityFact, saveCloudPlotThread } from "@/modules/cloud-creator/projects/narrative-continuity-service";
 export {
   deleteCloudCharacterProfile,
   listCloudCharacterProfiles,

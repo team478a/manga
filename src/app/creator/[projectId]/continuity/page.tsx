@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, CheckCircle2, Info, ScanSearch, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, ListPlus, ScanSearch, Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import {
   getCloudContinuityReview,
+  getCloudContinuitySuggestions,
   getCloudNarrativeContinuity,
   getCloudProjectWorkspace,
 } from "@/lib/cloud-creator-server";
@@ -27,10 +28,11 @@ export default async function CloudContinuityPage({
   await requireProfile();
   const { projectId } = await params;
   const query = await searchParams;
-  const [workspace, result, narrative] = await Promise.all([
+  const [workspace, result, narrative, candidateResult] = await Promise.all([
     getCloudProjectWorkspace(projectId).catch(() => null),
     getCloudContinuityReview(projectId).catch(() => null),
     getCloudNarrativeContinuity(projectId).catch(() => null),
+    getCloudContinuitySuggestions(projectId).catch(() => null),
   ]);
   if (!workspace) notFound();
 
@@ -65,6 +67,48 @@ export default async function CloudContinuityPage({
             <div className="panel"><p className="text-sm text-stone-500">伏線</p><p className="mt-1 text-3xl font-bold">{narrative.review.threadCount}</p></div>
             <div className="panel"><p className="text-sm text-stone-500">未回収</p><p className="mt-1 text-3xl font-bold">{narrative.review.openThreadCount}</p></div>
             <div className="panel"><p className="text-sm text-stone-500">物語の要確認</p><p className="mt-1 text-3xl font-bold text-amber-800">{narrative.review.warningCount}</p></div>
+          </section>
+
+          <section className="panel mt-6">
+            <div className="flex items-start gap-3">
+              <ListPlus className="mt-1 h-6 w-6 text-violet-700" />
+              <div>
+                <h2 className="text-xl font-bold">確定済み設定から見つかった候補</h2>
+                <p className="mt-2 text-sm text-stone-600">
+                  キャラクター、場所・小物、ページに割り当てたシーン構成だけを読み取っています。内容を確認して登録した候補だけが正式な事実になります。
+                </p>
+              </div>
+            </div>
+            {!candidateResult ? (
+              <p className="mt-4 rounded-lg bg-stone-50 p-4 text-sm text-stone-600">候補を読み込めませんでした。手動登録は引き続き利用できます。</p>
+            ) : !candidateResult.available ? (
+              <p className="mt-4 rounded-lg bg-stone-50 p-4 text-sm text-stone-600">設定候補の抽出は準備中です。キャラクター・作品設定機能を適用後に利用できます。</p>
+            ) : candidateResult.suggestions.length ? (
+              <ul className="mt-5 grid gap-3 lg:grid-cols-2">
+                {candidateResult.suggestions.slice(0, 24).map((candidate) => (
+                  <li className="rounded-lg border border-violet-100 bg-violet-50/40 p-4" key={candidate.id}>
+                    <p className="text-xs font-semibold text-violet-700">{candidate.sourceLabel}</p>
+                    <p className="mt-1 font-bold">{candidate.subject}・{candidate.attribute}</p>
+                    <p className="mt-1 break-words text-sm text-stone-700">{candidate.factValue}</p>
+                    <p className="mt-2 text-xs text-stone-500">{candidate.startPage}〜{candidate.endPage}ページの候補</p>
+                    <form action={saveContinuityFactAction.bind(null, projectId)} className="mt-3">
+                      <input name="factKind" type="hidden" value={candidate.factKind} />
+                      <input name="subject" type="hidden" value={candidate.subject} />
+                      <input name="attribute" type="hidden" value={candidate.attribute} />
+                      <input name="factValue" type="hidden" value={candidate.factValue} />
+                      <input name="startPage" type="hidden" value={candidate.startPage} />
+                      <input name="endPage" type="hidden" value={candidate.endPage} />
+                      <input name="sourcePage" type="hidden" value={candidate.sourcePage ?? ""} />
+                      <input name="notes" type="hidden" value={candidate.notes} />
+                      <button className="button-secondary" type="submit">確認して台帳へ登録</button>
+                    </form>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-4 rounded-lg bg-green-50 p-4 text-sm text-green-900">新しい候補はありません。設定を追加・更新すると、未登録の候補がここに表示されます。</p>
+            )}
+            {candidateResult && candidateResult.suggestions.length > 24 ? <p className="mt-3 text-xs text-stone-500">候補が多いため先頭24件を表示しています。登録後に残りの候補が表示されます。</p> : null}
           </section>
 
           {narrative.review.issues.length ? <section className="panel mt-6"><h2 className="flex items-center gap-2 text-xl font-bold"><AlertTriangle className="h-6 w-6 text-amber-700" />物語設定の確認項目</h2><ul className="mt-4 space-y-3">{narrative.review.issues.map((issue,index)=><li className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950" key={`${issue.code}-${issue.threadId ?? index}`}>{issue.message}</li>)}</ul></section> : null}

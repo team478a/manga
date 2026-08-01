@@ -2678,3 +2678,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Hub 379/379、Canvas 26/26、AI 48/48、Desktop、a11y、型検査、Lint、production buildを完了
 - Draft PR #110、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - Supabase staging適用、実ブラウザ確認、マージは未実施
+
+## 2026-08-01 Codex: M5-2 連続性設定候補
+
+- `agent/manga-continuity-suggestions-v1` を `agent/manga-continuity-foundation-v1`（Draft PR #110）から作成
+- キャラクター、場所・小物、ページ割当済みシーンの確定情報を未登録候補へ変換
+- Provider用Prompt、画像推測、自由文AI解析を候補から除外
+- 利用者が確認した候補だけ既存の事実保存Actionとowner-only RPCへ渡す
+- 同一内容・同一ページ範囲の登録済み候補を表示から除外
+- migration、環境変数、外部Providerは追加なし
+- 専用4テスト、Hub 383/383、Canvas 26/26、AI 48/48、Desktop、a11y、型検査、Lint、production buildを完了
+- Draft PR、Preview、実ブラウザ確認、マージは未実施
