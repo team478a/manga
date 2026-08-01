@@ -10,10 +10,11 @@
 - 目的: 32〜100ページ制作で作品ごとの生成クレジット、概算費用、Storage使用量を把握し、上限超過をDBで停止する
 - 実装: 月間クレジット／費用／容量上限、警告割合、作品別停止スイッチ、コックピット集計、owner/admin保存RPC、Job／Asset強制停止trigger
 - 表示境界: 利用者には集計値だけを表示し、Provider、モデル、API単価、内部計算式を表示しない
-- migration: `202608010010_cloud_project_resource_budgets.sql`（未適用）
+- migration: `202608010010_cloud_project_resource_budgets.sql`（Supabase staging適用済み）
+- DB確認: table、使用量RPC、保存RPC、RLS、生成Job trigger、Storage trigger、既存作品backfillがすべて正常
 - 検証: deps、lint、Hub 394/394、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 42本、production build成功
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
-- 未実施: Supabase staging適用、実Providerでの上限停止、100ページ実データ、実ブラウザ、責任者承認
+- 未実施: 実Providerでの上限停止、100ページ実データ、実ブラウザ、責任者承認
 - 詳細: `docs/cloud/MANGA_PROJECT_RESOURCE_BUDGET_V1.md`
 
 ## 2026-08-01 長編マンガ制作 M5-5: 章単位の制作計画

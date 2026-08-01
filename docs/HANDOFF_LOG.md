@@ -2765,4 +2765,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - migration 42本目、rollback、canonical schema、静的検査を追加
 - Hub 394/394、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
 - Draft PR #115、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
-- Supabase staging適用、実Provider、100ページ実データ、実ブラウザ確認は未実施
+- Supabase stagingへmigrationを適用し、table、使用量RPC、保存RPC、RLS、生成Job trigger、Storage trigger、既存作品backfillを確認
+- 実Provider、100ページ実データ、実ブラウザ確認は未実施
