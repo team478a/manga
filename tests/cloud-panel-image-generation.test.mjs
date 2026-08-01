@@ -112,6 +112,54 @@ test("選択コマのネームから利用者入力なしで画像生成条件�
   assert.ok(result.generation.height >= 256);
 });
 
+test("選択式の画角・カメラ・人物配置・視線を生成条件へ固定する", () => {
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    compositionControl: {
+      shot: "full_body",
+      cameraAngle: "low",
+      subjectPlacement: "right",
+      gazeDirection: "left",
+      instruction: "右手を前に伸ばす",
+    },
+  });
+
+  assert.match(result.generation.prompt, /頭から足先まで/);
+  assert.match(result.generation.prompt, /下から見上げる/);
+  assert.match(result.generation.prompt, /主役を画面右側/);
+  assert.match(result.generation.prompt, /視線を画面左/);
+  assert.match(result.generation.prompt, /右手を前に伸ばす/);
+});
+
+test("構図指定は許可した選択肢だけを受け付ける", () => {
+  const base = {
+    projectId: "50000000-0000-4000-8000-000000000001",
+    pageId,
+    panelId,
+    idempotencyKey: "60000000-0000-4000-8000-000000000001",
+  };
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      shotOverride: "full_body",
+      cameraAngleOverride: "high",
+      subjectPlacement: "two_shot",
+      gazeDirection: "partner",
+    }).success,
+    true,
+  );
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      shotOverride: "arbitrary-camera-command",
+    }).success,
+    false,
+  );
+});
+
 test("部分修正Feature Flagも未設定時fail closedする", () => {
   const previous = process.env.CLOUD_PANEL_INPAINTING_ENABLED;
   delete process.env.CLOUD_PANEL_INPAINTING_ENABLED;

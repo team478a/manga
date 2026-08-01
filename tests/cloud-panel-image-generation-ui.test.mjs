@@ -39,6 +39,20 @@ test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提
   assert.match(editor, /requestingPanelGeneration/);
 });
 
+test("Canvasは画角・カメラ・人物配置・視線を選んで通常生成だけへ送る", () => {
+  assert.match(editor, /画角・ポーズを調整（任意）/);
+  assert.match(editor, /カメラ位置/);
+  assert.match(editor, /人物配置/);
+  assert.match(editor, /視線方向/);
+  assert.match(editor, /全身・ポーズ/);
+  assert.match(editor, /二人を並べる/);
+  assert.match(editor, /shotOverride,/);
+  assert.match(editor, /cameraAngleOverride,/);
+  assert.match(editor, /subjectPlacement,/);
+  assert.match(editor, /gazeDirection,/);
+  assert.match(service, /compositionControl/);
+});
+
 test("Canvasは採用画像を残したまま部位別の修正候補を生成する", () => {
   assert.match(editor, /採用画像の気になる部分を直す/);
   assert.match(editor, /顔の崩れを直す/);

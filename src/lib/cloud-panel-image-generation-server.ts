@@ -188,6 +188,20 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         instruction: request.revisionInstruction,
       }
     : undefined;
+  const compositionControl =
+    request.shotOverride ||
+    request.cameraAngleOverride ||
+    request.subjectPlacement ||
+    request.gazeDirection ||
+    request.compositionInstruction
+      ? {
+          shot: request.shotOverride ?? "storyboard",
+          cameraAngle: request.cameraAngleOverride ?? "storyboard",
+          subjectPlacement: request.subjectPlacement ?? "storyboard",
+          gazeDirection: request.gazeDirection ?? "storyboard",
+          instruction: request.compositionInstruction,
+        }
+      : undefined;
   if (revision) {
     const sourceLayer = canvas.panelLayers.find(
       (layer) =>
@@ -280,6 +294,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
       explicitCharacterProfileIds,
       explicitWorldProfileIds,
       revision,
+      compositionControl,
     });
     const relevantSubjectIds = [
       ...(selected.generation.characterProfileVersions ?? []).map((item) => item.profileId),
@@ -330,6 +345,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         explicitWorldProfileIds,
         referenceAssets,
         revision,
+        compositionControl,
       });
       await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
       const id = await enqueueCloudGenerationJob({
