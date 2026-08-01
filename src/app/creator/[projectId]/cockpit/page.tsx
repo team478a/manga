@@ -5,9 +5,10 @@ import { requireProfile } from "@/lib/auth";
 import { getCloudLongformCockpit } from "@/lib/cloud-creator-server";
 import { CockpitStructure } from "./CockpitStructure";
 
-export default async function LongformCockpitPage({ params }: { params: Promise<{ projectId: string }> }) {
+export default async function LongformCockpitPage({ params, searchParams }: { params: Promise<{ projectId: string }>; searchParams: Promise<{ message?: string; error?: string }> }) {
   await requireProfile();
   const { projectId } = await params;
+  const query = await searchParams;
   const data = await getCloudLongformCockpit(projectId).catch(() => null);
   if (!data) notFound();
   const { project, cockpit } = data;
@@ -22,6 +23,8 @@ export default async function LongformCockpitPage({ params }: { params: Promise<
         </div>
         <Link className="button w-fit" href={`/creator/${projectId}/continuity`}>一貫性台帳を編集</Link>
       </div>
+      {query.message ? <p className="mt-4 rounded-lg bg-green-50 p-4 text-green-900" role="status">{query.message}</p> : null}
+      {query.error ? <p className="mt-4 rounded-lg bg-red-50 p-4 text-red-900" role="alert">{query.error}</p> : null}
 
       <section className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-5" aria-label="作品進捗">
         {[
@@ -35,11 +38,17 @@ export default async function LongformCockpitPage({ params }: { params: Promise<
         ))}
       </section>
 
+      <section className="mt-4 grid gap-3 sm:grid-cols-3" aria-label="章の制作計画">
+        <div className="rounded-xl border border-red-100 bg-white p-4"><p className="text-xs text-stone-500">期限超過</p><p className="mt-1 text-2xl font-bold text-red-700">{cockpit.overdueChapterCount}章</p></div>
+        <div className="rounded-xl border border-amber-100 bg-white p-4"><p className="text-xs text-stone-500">優先度 高以上</p><p className="mt-1 text-2xl font-bold text-amber-800">{cockpit.priorityChapterCount}章</p></div>
+        <div className="rounded-xl border border-violet-100 bg-white p-4"><p className="text-xs text-stone-500">次に着手</p><p className="mt-1 break-words text-lg font-bold text-violet-800">{cockpit.nextChapter?.title ?? "全章完了"}</p></div>
+      </section>
+
       <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
         <section className="panel min-w-0" aria-labelledby="structure-heading">
           <h2 className="flex items-center gap-2 text-xl font-bold" id="structure-heading"><BookOpen className="h-5 w-5 text-violet-700" />章・シーン進捗</h2>
           {!data.longformAvailable ? <p className="mt-4 rounded-lg bg-amber-50 p-4 text-amber-900">長編構成migrationの適用後に章・シーン別表示を利用できます。</p> : null}
-          {cockpit.chapters.length || cockpit.unassignedPages.length ? <CockpitStructure chapters={cockpit.chapters} projectId={projectId} unassignedPages={cockpit.unassignedPages} /> : <p className="mt-4 rounded-lg border border-dashed border-stone-300 p-5 text-stone-600">章を追加すると、ここに長編構成が表示されます。</p>}
+          {cockpit.chapters.length || cockpit.unassignedPages.length ? <CockpitStructure chapters={cockpit.chapters} plansAvailable={data.chapterPlansAvailable} projectId={projectId} unassignedPages={cockpit.unassignedPages} /> : <p className="mt-4 rounded-lg border border-dashed border-stone-300 p-5 text-stone-600">章を追加すると、ここに長編構成が表示されます。</p>}
         </section>
 
         <aside className="min-w-0 space-y-6">

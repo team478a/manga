@@ -240,7 +240,13 @@
       "description": "長編作品の事実台帳、伏線管理、ページ範囲の決定的矛盾検出を追加",
       "forwardSha256": "cad117ff907f920153a33be0c97398eab04e7aaf712d637cdf460ee99a3c73ed",
       "rollbackSha256": "73a26d821b1061d0041a65e4ced6935c98346437f89e2ccc3a8d523355bbbed9"
+    },
+    {
+      "id": "202608010009_cloud_chapter_production_plans",
+      "description": "長編作品の章ごとの優先度、担当名、期限、作業メモを追加",
+      "forwardSha256": "598820ce098302dec6c932658bec55f543a09167061a60fa60899fc5dc7f913e",
+      "rollbackSha256": "5440715a83aef541ada77cb8c9eee51ecab46c1d563c03a181384df27269e3b6"
     }
   ],
-  "schemaSha256": "6ed3b51a51bdea0af6effbf0de2b3c7f6d54c9f4c5c1b09d7bc9d90aabedbd59"
+  "schemaSha256": "a32a485a9d2dc335efd728341cc7bcbd812b640d7f78f758dad0a0280f8c7560"
 }

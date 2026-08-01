@@ -9,6 +9,8 @@ import {
   type CloudCockpitPageStatus,
   type CloudCockpitStatusFilter,
 } from "@/lib/cloud-longform-cockpit";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { saveCloudChapterProductionPlanAction } from "./actions";
 
 const PAGE_BATCH = 24;
 const statusLabel: Record<CloudCockpitPageStatus, string> = {
@@ -20,11 +22,13 @@ const statusStyle: Record<CloudCockpitPageStatus, string> = {
   review_required: "bg-amber-100 text-amber-900", revision_required: "bg-red-100 text-red-800",
   finalized: "bg-green-100 text-green-800",
 };
+const priorityLabel = { low: "低", normal: "通常", high: "高", urgent: "最優先" } as const;
 
-export function CockpitStructure({ projectId, chapters, unassignedPages }: {
+export function CockpitStructure({ projectId, chapters, unassignedPages, plansAvailable }: {
   projectId: string;
   chapters: CloudCockpitChapter[];
   unassignedPages: CloudCockpitPageItem[];
+  plansAvailable: boolean;
 }) {
   const [chapterId, setChapterId] = useState("all");
   const [status, setStatus] = useState<CloudCockpitStatusFilter>("all");
@@ -56,9 +60,16 @@ export function CockpitStructure({ projectId, chapters, unassignedPages }: {
       const scenes = chapter.scenes.map((scene) => ({ ...scene, pages: scene.pages.filter((page) => visibleIds.has(page.id)) })).filter((scene) => scene.pages.length);
       if (!pages.length) return null;
       return <details className="min-w-0 rounded-xl border border-stone-200 p-4" key={chapter.id} open>
-        <summary className="cursor-pointer font-bold">{chapter.title}<span className="ml-2 text-xs font-normal text-stone-500">{chapter.episodeCount}話・{pages.length}ページ表示</span></summary>
+        <summary className="cursor-pointer font-bold">{chapter.title}<span className="ml-2 text-xs font-normal text-stone-500">{chapter.episodeCount}話・{pages.length}ページ表示</span>{chapter.overdue ? <span className="ml-2 rounded-full bg-red-100 px-2 py-1 text-xs text-red-800">期限超過</span> : chapter.plan ? <span className="ml-2 rounded-full bg-violet-100 px-2 py-1 text-xs text-violet-800">優先度 {priorityLabel[chapter.plan.priority]}</span> : null}</summary>
         <div className="mt-3 flex flex-wrap gap-2">{pages.map((page) => <Link className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyle[page.status]}`} href={`/creator/${projectId}/pages/${page.id}`} key={page.id}>{page.pageNumber}P {statusLabel[page.status]}</Link>)}</div>
         {scenes.length ? <div className="mt-4 space-y-2">{scenes.map((scene) => <div className="min-w-0 rounded-lg bg-stone-50 p-3" key={scene.id}><div className="flex flex-wrap items-center justify-between gap-2"><strong>{scene.title}</strong><span className="text-xs text-stone-500">{scene.pages.map((page) => `${page.pageNumber}P`).join("・")}</span></div>{scene.summary ? <p className="mt-1 break-words text-sm text-stone-600">{scene.summary}</p> : null}</div>)}</div> : null}
+        {plansAvailable ? <form action={saveCloudChapterProductionPlanAction.bind(null, projectId, chapter.id)} className="mt-4 grid gap-3 rounded-lg border border-violet-100 bg-violet-50 p-3 sm:grid-cols-2">
+          <label className="text-sm font-bold">優先度<select className="field mt-1" defaultValue={chapter.plan?.priority ?? "normal"} name="priority"><option value="low">低</option><option value="normal">通常</option><option value="high">高</option><option value="urgent">最優先</option></select></label>
+          <label className="text-sm font-bold">担当名<input className="field mt-1" defaultValue={chapter.plan?.assignee_name ?? ""} maxLength={100} name="assigneeName" placeholder="例：田中" /></label>
+          <label className="text-sm font-bold">期限<input className="field mt-1" defaultValue={chapter.plan?.due_date ?? ""} name="dueDate" type="date" /></label>
+          <label className="text-sm font-bold sm:col-span-2">作業メモ<textarea className="field mt-1 min-h-20" defaultValue={chapter.plan?.notes ?? ""} maxLength={1000} name="notes" /></label>
+          <div className="sm:col-span-2"><PendingSubmitButton className="button" pendingLabel="保存中…">制作計画を保存</PendingSubmitButton></div>
+        </form> : <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">制作計画migrationの適用後に優先度・担当・期限を設定できます。</p>}
       </details>;
     })}
     {chapterId === "unassigned" ? (() => { const pages = unassignedPages.filter((page) => visibleIds.has(page.id)); return pages.length ? <details className="rounded-xl border border-amber-200 bg-amber-50 p-4" open><summary className="cursor-pointer font-bold text-amber-950">シーン未割当（{pages.length}ページ表示）</summary><div className="mt-3 flex flex-wrap gap-2">{pages.map((page) => <Link className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyle[page.status]}`} href={`/creator/${projectId}/pages/${page.id}`} key={page.id}>{page.pageNumber}P {statusLabel[page.status]}</Link>)}</div></details> : null; })() : null}

@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M5-5: 章単位の制作計画
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-chapter-production-plans-v1`
+- Base: `agent/manga-cockpit-navigation-v1`（Draft PR #113）
+- 目的: 32〜100ページ制作で章ごとの優先度・担当名・期限・作業メモを管理する
+- 実装: 章制作計画、期限超過、優先章数、次着手章、所有者限定RLS/RPC、未適用時の安全な縮退表示
+- migration: `202608010009_cloud_chapter_production_plans.sql`（外部環境へ未適用）
+- 詳細: `docs/cloud/MANGA_CHAPTER_PRODUCTION_PLANS_V1.md`
+
 ## 2026-08-01 長編マンガ制作 M5-4: 100ページナビゲーション
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
