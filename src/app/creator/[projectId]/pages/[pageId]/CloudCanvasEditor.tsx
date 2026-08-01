@@ -66,6 +66,33 @@ type RevisionPreset =
   | "background"
   | "polish";
 type OutpaintingDirection = "left" | "right" | "top" | "bottom" | "all";
+type ShotOverride =
+  | "storyboard"
+  | "close_up"
+  | "medium"
+  | "wide"
+  | "full_body";
+type CameraAngleOverride =
+  | "storyboard"
+  | "eye_level"
+  | "high"
+  | "low"
+  | "over_shoulder"
+  | "dynamic";
+type SubjectPlacement =
+  | "storyboard"
+  | "center"
+  | "left"
+  | "right"
+  | "two_shot"
+  | "foreground_background";
+type GazeDirection =
+  | "storyboard"
+  | "camera"
+  | "left"
+  | "right"
+  | "partner"
+  | "off_frame";
 
 const revisionPresetLabels: Record<RevisionPreset, string> = {
   face: "顔の崩れを直す",
@@ -81,6 +108,37 @@ const outpaintingDirectionLabels: Record<OutpaintingDirection, string> = {
   top: "上側を広げる",
   bottom: "下側を広げる",
   all: "全方向を広げる",
+};
+const shotOverrideLabels: Record<ShotOverride, string> = {
+  storyboard: "ネームどおり",
+  close_up: "顔・表情を大きく",
+  medium: "上半身と動作",
+  wide: "人物と背景を広く",
+  full_body: "全身・ポーズ",
+};
+const cameraAngleOverrideLabels: Record<CameraAngleOverride, string> = {
+  storyboard: "ネームどおり",
+  eye_level: "目線の高さ",
+  high: "上から見下ろす",
+  low: "下から見上げる",
+  over_shoulder: "肩越し",
+  dynamic: "躍動的な角度",
+};
+const subjectPlacementLabels: Record<SubjectPlacement, string> = {
+  storyboard: "ネームどおり",
+  center: "主役を中央",
+  left: "主役を左",
+  right: "主役を右",
+  two_shot: "二人を並べる",
+  foreground_background: "手前と奥に分ける",
+};
+const gazeDirectionLabels: Record<GazeDirection, string> = {
+  storyboard: "ネームどおり",
+  camera: "カメラを見る",
+  left: "画面左を見る",
+  right: "画面右を見る",
+  partner: "会話相手を見る",
+  off_frame: "画面外を見る",
 };
 
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
@@ -144,6 +202,15 @@ export function CloudCanvasEditor({
   const [requestingPanelGeneration, setRequestingPanelGeneration] =
     useState(false);
   const [panelCandidateCount, setPanelCandidateCount] = useState(3);
+  const [shotOverride, setShotOverride] =
+    useState<ShotOverride>("storyboard");
+  const [cameraAngleOverride, setCameraAngleOverride] =
+    useState<CameraAngleOverride>("storyboard");
+  const [subjectPlacement, setSubjectPlacement] =
+    useState<SubjectPlacement>("storyboard");
+  const [gazeDirection, setGazeDirection] =
+    useState<GazeDirection>("storyboard");
+  const [compositionInstruction, setCompositionInstruction] = useState("");
   const [revisionPreset, setRevisionPreset] =
     useState<RevisionPreset>("face");
   const [revisionInstruction, setRevisionInstruction] = useState("");
@@ -546,6 +613,11 @@ export function CloudCanvasEditor({
     outpaintingDirection?: OutpaintingDirection;
     revisionPreset?: RevisionPreset;
     revisionInstruction?: string;
+    shotOverride?: ShotOverride;
+    cameraAngleOverride?: CameraAngleOverride;
+    subjectPlacement?: SubjectPlacement;
+    gazeDirection?: GazeDirection;
+    compositionInstruction?: string;
   }) {
     const panelId =
       options?.panelId ?? (selection?.type === "panel" ? selection.id : null);
@@ -565,6 +637,11 @@ export function CloudCanvasEditor({
         outpaintingDirection: options?.outpaintingDirection,
         revisionPreset: options?.revisionPreset,
         revisionInstruction: options?.revisionInstruction,
+        shotOverride: options?.shotOverride,
+        cameraAngleOverride: options?.cameraAngleOverride,
+        subjectPlacement: options?.subjectPlacement,
+        gazeDirection: options?.gazeDirection,
+        compositionInstruction: options?.compositionInstruction,
       });
       setGenerationTargets((current) =>
         result.jobs.reduce(
@@ -1024,6 +1101,100 @@ export function CloudCanvasEditor({
                 <p className="mt-1 text-xs text-violet-800">
                   コマを選ぶだけで、ネームから比較用の候補を生成します。
                 </p>
+                <details className="mt-3 rounded-lg border border-violet-200 bg-white/70 p-3">
+                  <summary className="cursor-pointer text-xs font-bold text-violet-950">
+                    画角・ポーズを調整（任意）
+                  </summary>
+                  <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                    変更しなければネームの指定をそのまま使います。
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <label className="text-xs font-bold text-violet-950">
+                      画角
+                      <select
+                        className="field mt-1 w-full"
+                        value={shotOverride}
+                        onChange={(event) =>
+                          setShotOverride(event.target.value as ShotOverride)
+                        }
+                      >
+                        {Object.entries(shotOverrideLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="text-xs font-bold text-violet-950">
+                      カメラ位置
+                      <select
+                        className="field mt-1 w-full"
+                        value={cameraAngleOverride}
+                        onChange={(event) =>
+                          setCameraAngleOverride(
+                            event.target.value as CameraAngleOverride,
+                          )
+                        }
+                      >
+                        {Object.entries(cameraAngleOverrideLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="text-xs font-bold text-violet-950">
+                      人物配置
+                      <select
+                        className="field mt-1 w-full"
+                        value={subjectPlacement}
+                        onChange={(event) =>
+                          setSubjectPlacement(
+                            event.target.value as SubjectPlacement,
+                          )
+                        }
+                      >
+                        {Object.entries(subjectPlacementLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="text-xs font-bold text-violet-950">
+                      視線方向
+                      <select
+                        className="field mt-1 w-full"
+                        value={gazeDirection}
+                        onChange={(event) =>
+                          setGazeDirection(event.target.value as GazeDirection)
+                        }
+                      >
+                        {Object.entries(gazeDirectionLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                  </div>
+                  <label
+                    className="mt-3 block text-xs font-bold text-violet-950"
+                    htmlFor="panel-composition-instruction"
+                  >
+                    追加の構図指定（任意）
+                  </label>
+                  <input
+                    className="field mt-1 w-full"
+                    id="panel-composition-instruction"
+                    maxLength={500}
+                    placeholder="例：右手を前に伸ばす"
+                    value={compositionInstruction}
+                    onChange={(event) =>
+                      setCompositionInstruction(event.target.value)
+                    }
+                  />
+                </details>
                 <label
                   className="mt-3 block text-xs font-bold text-violet-950"
                   htmlFor="panel-candidate-count"
@@ -1050,7 +1221,16 @@ export function CloudCanvasEditor({
                     remainingCredits <= 0 ||
                     requestingPanelGeneration
                   }
-                  onClick={() => void requestStoryboardPanelGeneration()}
+                  onClick={() =>
+                    void requestStoryboardPanelGeneration({
+                      shotOverride,
+                      cameraAngleOverride,
+                      subjectPlacement,
+                      gazeDirection,
+                      compositionInstruction:
+                        compositionInstruction.trim() || undefined,
+                    })
+                  }
                   type="button"
                 >
                   {requestingPanelGeneration

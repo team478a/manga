@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M3-6 ポーズ・構図制御、2026-08-01）
+
+- Branch: `agent/manga-composition-control-v1`
+- Base: `agent/manga-smart-mask-v1`（Draft PR #101）
+- 目的: 通常のコマ画像生成で、画角・カメラ位置・人物配置・視線方向を選択可能にする
+- 実装: 4項目の選択UI、500文字以内の追加指定、API enum検証、生成Promptへの構図調整追加
+- 互換性: すべて「ネームどおり」が初期値。修正生成には自動適用しない
+- migration / Feature Flag / Provider / 料金: 追加なし
+- 詳細: `docs/cloud/MANGA_COMPOSITION_CONTROL_V1.md`
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 345/345、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
+- 状態: ローカル全品質ゲート成功。Draft PR、Preview、実ブラウザ確認待ち
+
+---
+
 ## 0. 現在の優先タスク（M3-5 修正領域おすすめ、2026-08-01）
 
 - Branch: `agent/manga-smart-mask-v1`

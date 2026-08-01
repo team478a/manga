@@ -39,6 +39,19 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
     .enum(["face", "hands", "expression", "costume", "background", "polish"])
     .optional(),
   revisionInstruction: z.string().trim().max(1000).optional(),
+  shotOverride: z
+    .enum(["storyboard", "close_up", "medium", "wide", "full_body"])
+    .optional(),
+  cameraAngleOverride: z
+    .enum(["storyboard", "eye_level", "high", "low", "over_shoulder", "dynamic"])
+    .optional(),
+  subjectPlacement: z
+    .enum(["storyboard", "center", "left", "right", "two_shot", "foreground_background"])
+    .optional(),
+  gazeDirection: z
+    .enum(["storyboard", "camera", "left", "right", "partner", "off_frame"])
+    .optional(),
+  compositionInstruction: z.string().trim().max(500).optional(),
 }).superRefine((value, context) => {
   const revisionValues = [
     value.sourceAssetId,
@@ -109,6 +122,41 @@ const outpaintingDirectionLabels = {
   all: "全方向",
 } as const;
 
+const shotOverrideDirections = {
+  storyboard: "ネームで指定した画角を維持する",
+  close_up: "顔と表情が主役になるクローズアップにする",
+  medium: "人物の上半身と動作が分かる中景にする",
+  wide: "人物と背景の関係が分かる広い画角にする",
+  full_body: "頭から足先まで入り、全身のポーズが分かる画角にする",
+} as const;
+
+const cameraAngleOverrideDirections = {
+  storyboard: "ネームで指定したカメラ位置を維持する",
+  eye_level: "人物の目線と同じ高さから撮る",
+  high: "人物を上から見下ろす俯瞰にする",
+  low: "人物を下から見上げるあおりにする",
+  over_shoulder: "手前人物の肩越しに相手を見る構図にする",
+  dynamic: "奥行きと動きを強調する躍動的な角度にする",
+} as const;
+
+const subjectPlacementDirections = {
+  storyboard: "ネームで指定した人物配置を維持する",
+  center: "主役を中央に置き、視線を一点へ集める",
+  left: "主役を画面左側に置き、右側に視線と動きの余白を作る",
+  right: "主役を画面右側に置き、左側に視線と動きの余白を作る",
+  two_shot: "二人の表情と位置関係が同時に分かる配置にする",
+  foreground_background: "手前と奥に人物を分け、距離と関係性を見せる",
+} as const;
+
+const gazeDirectionDirections = {
+  storyboard: "ネームで指定した視線を維持する",
+  camera: "主役の視線をカメラへ向ける",
+  left: "主役の視線を画面左へ向ける",
+  right: "主役の視線を画面右へ向ける",
+  partner: "主役の視線を会話相手へ向ける",
+  off_frame: "主役の視線を画面外の対象へ向け、続きを意識させる",
+} as const;
+
 function imageSize(width: number, height: number) {
   const safeWidth = Math.max(1, width);
   const safeHeight = Math.max(1, height);
@@ -144,6 +192,13 @@ export function buildStoryboardPanelGeneration(input: {
     maskAssetId?: string;
     outpaintingDirection?: "left" | "right" | "top" | "bottom" | "all";
     preset: "face" | "hands" | "expression" | "costume" | "background" | "polish";
+    instruction?: string;
+  };
+  compositionControl?: {
+    shot: keyof typeof shotOverrideDirections;
+    cameraAngle: keyof typeof cameraAngleOverrideDirections;
+    subjectPlacement: keyof typeof subjectPlacementDirections;
+    gazeDirection: keyof typeof gazeDirectionDirections;
     instruction?: string;
   };
 }) {
@@ -290,6 +345,18 @@ export function buildStoryboardPanelGeneration(input: {
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
     `構図: ${storyboardPanel.composition}。`,
+    input.compositionControl
+      ? [
+          "構図調整:",
+          `${shotOverrideDirections[input.compositionControl.shot]}。`,
+          `${cameraAngleOverrideDirections[input.compositionControl.cameraAngle]}。`,
+          `${subjectPlacementDirections[input.compositionControl.subjectPlacement]}。`,
+          `${gazeDirectionDirections[input.compositionControl.gazeDirection]}。`,
+          input.compositionControl.instruction
+            ? `追加指定:${input.compositionControl.instruction}。`
+            : "",
+        ].join("")
+      : "",
     `登場人物: ${characters}。`,
     characterDetails.length
       ? `人物設定: ${characterDetails.join(" / ")}。同一人物の顔立ち、髪型、体格、服装の一貫性を保つ。`

@@ -118,6 +118,11 @@ export async function createStoryboardPanelGenerationJob(body: {
   outpaintingDirection?: "left" | "right" | "top" | "bottom" | "all";
   revisionPreset?: "face" | "hands" | "expression" | "costume" | "background" | "polish";
   revisionInstruction?: string;
+  shotOverride?: "storyboard" | "close_up" | "medium" | "wide" | "full_body";
+  cameraAngleOverride?: "storyboard" | "eye_level" | "high" | "low" | "over_shoulder" | "dynamic";
+  subjectPlacement?: "storyboard" | "center" | "left" | "right" | "two_shot" | "foreground_background";
+  gazeDirection?: "storyboard" | "camera" | "left" | "right" | "partner" | "off_frame";
+  compositionInstruction?: string;
 }) {
   return responseJson<{
     id: string;
