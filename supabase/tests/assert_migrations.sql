@@ -1076,3 +1076,13 @@ do $$ begin
     raise exception 'Durable export migration objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_page_thumbnails') is null
+     or to_regclass('public.cloud_storage_cleanup') is null
+     or to_regprocedure('public.claim_cloud_page_thumbnail(text,integer)') is null
+     or to_regprocedure('public.claim_cloud_storage_cleanup(text,integer)') is null
+     or not exists(select 1 from storage.buckets where id='cloud-cache' and public=false) then
+    raise exception 'Cloud storage lifecycle migration objects missing';
+  end if;
+end $$;

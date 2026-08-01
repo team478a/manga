@@ -155,7 +155,11 @@ export function LongformPageManager({
                                   <div className="mb-2 flex flex-wrap items-center justify-between gap-1"><span className={`rounded-full px-2 py-1 text-xs font-bold ${status === "finalized" ? "bg-green-100 text-green-800" : status === "revision_required" || state?.isStale ? "bg-amber-100 text-amber-900" : status === "generating" ? "bg-blue-100 text-blue-800" : "bg-stone-100 text-stone-700"}`}>{labels[status]}</span>{state?.isStale ? <span className="flex items-center gap-1 text-xs font-bold text-amber-800"><AlertTriangle className="h-3 w-3" />設定変更あり</span> : null}</div>
                                   <div className="relative mx-auto aspect-[2/3] w-full max-w-36 rounded border border-stone-300 bg-gradient-to-br from-white to-stone-100">
                                     <GripVertical className="absolute left-1 top-1 h-4 w-4 text-stone-400" />
-                                    <span className="absolute inset-0 grid place-items-center text-2xl font-bold text-stone-300">{page.page_number}</span>
+                                    {page.thumbnail_url ? (
+                                      // Signed private URLs are short-lived and cannot be configured as a static image origin.
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img alt={`${page.page_number}ページのプレビュー`} className="h-full w-full rounded object-contain" src={page.thumbnail_url} />
+                                    ) : <span className="absolute inset-0 grid place-items-center text-2xl font-bold text-stone-300">{page.page_number}</span>}
                                     {coverPageId === page.id ? <span className="absolute bottom-1 left-1 rounded bg-violet-700 px-2 py-1 text-xs font-bold text-white">表紙</span> : null}
                                   </div>
                                   {status === "finalized" ? <p className="mt-2 text-center text-sm font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />編集ロック中</p> : <Link className="mt-2 block text-center font-bold text-violet-800 underline" href={`/creator/${projectId}/pages/${page.id}`}>{page.page_number}ページを編集</Link>}

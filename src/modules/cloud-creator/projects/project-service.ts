@@ -20,6 +20,10 @@ import {
 } from "./project-repository";
 import { mapCloudProjectError } from "./project-errors";
 import {
+  attachPageThumbnailUrls,
+  attachProjectThumbnailUrls,
+} from "../assets/thumbnail-service";
+import {
   DomainError,
   ResourceNotFoundError,
 } from "../../../lib/domain-errors.ts";
@@ -33,7 +37,10 @@ export async function listCloudProjects() {
       "作品一覧を読み込めませんでした。",
       { cause: error },
     );
-  return (data ?? []) as CloudProjectSummary[];
+  return attachProjectThumbnailUrls(
+    supabase,
+    (data ?? []) as CloudProjectSummary[],
+  );
 }
 
 export async function listDeletedCloudProjects() {
@@ -76,7 +83,10 @@ export async function getCloudProjectWorkspace(projectId: string) {
       { cause: episodesResult.error ?? pagesResult.error },
     );
   const episodes = (episodesResult.data ?? []) as CloudEpisode[];
-  const pages = (pagesResult.data ?? []) as CloudPage[];
+  const pages = await attachPageThumbnailUrls(
+    supabase,
+    (pagesResult.data ?? []) as CloudPage[],
+  );
   const structureAvailable = !(
     chaptersResult.error ||
     scenesResult.error ||
