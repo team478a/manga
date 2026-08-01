@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-3 長編作品コックピット、2026-08-01）
+
+- Branch: `agent/manga-longform-cockpit-v1`
+- Base: `agent/manga-continuity-suggestions-v1`（Draft PR #111）
+- 目的: 32〜100ページ作品の構成、進捗、伏線、人物関係を横断確認する
+- 実装: `/creator/[projectId]/cockpit` と決定的な集計helper
+- 安全境界: 既存の保存済み情報だけを集計し、Providerや外部AIは利用しない
+- migration／環境変数: 追加なし
+- 詳細: `docs/cloud/MANGA_LONGFORM_COCKPIT_V1.md`
+
+---
+
+
 ## 0. 現在の優先タスク（M5-2 連続性設定候補、2026-08-01）
 
 - Branch: `agent/manga-continuity-suggestions-v1`

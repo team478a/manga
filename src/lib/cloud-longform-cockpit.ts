@@ -1,0 +1,89 @@
+import type {
+  CloudEpisode,
+  CloudLongformStructure,
+  CloudPage,
+  CloudPageProductionState,
+} from "@/modules/cloud-creator/contracts/types";
+import type {
+  CloudContinuityFact,
+  CloudPlotThread,
+  NarrativeContinuityIssue,
+} from "@/lib/cloud-narrative-continuity";
+
+export type CloudCockpitPageStatus =
+  | "not_started"
+  | "generating"
+  | "review_required"
+  | "revision_required"
+  | "finalized";
+
+export function buildCloudLongformCockpit(input: {
+  episodes: CloudEpisode[];
+  pages: CloudPage[];
+  longform: CloudLongformStructure;
+  productionStates: CloudPageProductionState[];
+  facts: CloudContinuityFact[];
+  threads: CloudPlotThread[];
+  issues: NarrativeContinuityIssue[];
+  characterNames: string[];
+}) {
+  const stateByPage = new Map(input.productionStates.map((state) => [state.pageId, state]));
+  const orderedPages = [...input.pages].sort((left, right) => left.order_index - right.order_index);
+  const pageItems = orderedPages.map((page) => {
+    const state = stateByPage.get(page.id);
+    const status: CloudCockpitPageStatus = state?.isStale
+      ? "revision_required"
+      : state?.status ?? "not_started";
+    return { id: page.id, pageNumber: page.page_number, status };
+  });
+  const count = (status: CloudCockpitPageStatus) => pageItems.filter((page) => page.status === status).length;
+  const openThreads = input.threads.filter((thread) => thread.status === "planned" || thread.status === "planted");
+  const timeline = input.facts
+    .filter((fact) => fact.fact_kind === "relationship" || fact.fact_kind === "timeline")
+    .sort((left, right) => left.start_page - right.start_page)
+    .map((fact) => ({
+      id: fact.id,
+      kind: fact.fact_kind,
+      subject: fact.subject,
+      label: `${fact.attribute}: ${fact.fact_value}`,
+      startPage: fact.start_page,
+      endPage: fact.end_page,
+    }));
+
+  const episodesByChapter = new Map<string, CloudEpisode[]>();
+  for (const episode of input.episodes) {
+    const chapterId = input.longform.episodeChapterIds[episode.id] ?? "unassigned";
+    episodesByChapter.set(chapterId, [...(episodesByChapter.get(chapterId) ?? []), episode]);
+  }
+  const chapters = input.longform.chapters.map((chapter) => {
+    const episodes = (episodesByChapter.get(chapter.id) ?? []).sort((a, b) => a.order_index - b.order_index);
+    const episodeIds = new Set(episodes.map((episode) => episode.id));
+    const scenes = input.longform.scenes
+      .filter((scene) => scene.chapter_id === chapter.id || episodeIds.has(scene.episode_id))
+      .sort((a, b) => a.order_index - b.order_index)
+      .map((scene) => {
+        const pages = pageItems.filter((page) => input.longform.pageSceneIds[page.id] === scene.id);
+        return { id: scene.id, title: scene.title, summary: scene.summary, pages };
+      });
+    const chapterPages = pageItems.filter((page) => {
+      const source = input.pages.find((item) => item.id === page.id);
+      return Boolean(source && episodeIds.has(source.episode_id));
+    });
+    return { id: chapter.id, title: chapter.title, episodeCount: episodes.length, scenes, pages: chapterPages };
+  });
+
+  return {
+    totalPages: pageItems.length,
+    finalizedPages: count("finalized"),
+    generatingPages: count("generating"),
+    reviewPages: count("review_required") + count("revision_required"),
+    notStartedPages: count("not_started"),
+    completionPercent: pageItems.length ? Math.round((count("finalized") / pageItems.length) * 100) : 0,
+    characterNames: [...new Set(input.characterNames)].sort((a, b) => a.localeCompare(b, "ja")),
+    openThreads,
+    issues: input.issues,
+    timeline,
+    chapters,
+    unassignedPages: pageItems.filter((page) => !input.longform.pageSceneIds[page.id]),
+  };
+}

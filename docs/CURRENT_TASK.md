@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M5-3: 長編作品コックピット
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-longform-cockpit-v1`
+- Base: `agent/manga-continuity-suggestions-v1`（Draft PR #111）
+- 目的: 章・シーン・ページ制作状態・伏線・人物関係を一画面へ集約する
+- 実装: 作品別コックピット、制作状態集計、章／シーン進捗、警告／伏線、人物／関係時系列表示
+- データ境界: 保存済み構造化データだけを表示し、推測・外部AI呼び出しは行わない
+- migration／環境変数: 追加なし
+- 詳細: `docs/cloud/MANGA_LONGFORM_COCKPIT_V1.md`
+
+
 ## 2026-08-01 長編マンガ制作 M5-2: 連続性設定候補
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
