@@ -4,6 +4,7 @@
 
 - Branch: `agent/manga-smart-mask-v1`
 - Base: `agent/manga-revision-comparison-v1`（Draft PR #100）
+- Draft PR: [#101](https://github.com/team478a/manga/pull/101)
 - 目的: Inpaintingの修正範囲を修正内容からワンタップ提案し、手描き調整を残す
 - 実装: 顔・表情・手・衣装・背景・全体の比率ベース初期マスク、候補切替、手動補正
 - 境界: v1は画像認識ではなく目安。外部Vision API、DB、Provider、料金の変更なし

@@ -14,6 +14,7 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-smart-mask-v1`
 - Base: `agent/manga-revision-comparison-v1`（Draft PR #100）
+- Draft PR: [#101](https://github.com/team478a/manga/pull/101)
 
 ### 完了
 

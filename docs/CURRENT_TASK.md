@@ -5,6 +5,7 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `agent/manga-smart-mask-v1`
 - Base: `agent/manga-revision-comparison-v1`（Draft PR #100）
+- Draft PR: [#101](https://github.com/team478a/manga/pull/101)
 - 目的: 部分修正で白いマスクを毎回ゼロから描く負担を減らす
 - 実装: 修正preset別の初期範囲自動配置、顔・表情・両手／左右の手・衣装・背景・全体候補、手動補正
 - 正確性: v1は画像認識ではなく比率ベースの目安。検出済みとは表示せず、利用者が元画像上で確認する
