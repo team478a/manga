@@ -34,10 +34,12 @@ import {
   getCloudProjectWorkspace,
   listCloudPageProductionStates,
   listCloudGenerationBatches,
+  listCloudProjectCheckpoints,
 } from "@/lib/cloud-creator-server";
 import { listCloudExportJobs } from "@/modules/cloud-creator/export/durable-export-service";
 import { LongformPageManager } from "./LongformPageManager";
 import { DurableExportPanel } from "./DurableExportPanel";
+import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 
 export default async function CloudProjectPage({
   params,
@@ -63,12 +65,13 @@ export default async function CloudProjectPage({
     ? await listCloudGenerationBatches(projectId).catch(() => [])
     : [];
   const { project, episodes, pages, longform } = workspace;
-  const [marketplaceDraft, productionProgress, characters, exportReadiness, exportHistory] = await Promise.all([
+  const [marketplaceDraft, productionProgress, characters, exportReadiness, exportHistory, checkpointHistory] = await Promise.all([
     getCloudMarketplaceDraft(projectId).catch(() => null),
     getCloudProductionProgress(projectId).catch(() => null),
     getCloudProjectCharacterSheet(projectId).catch(() => []),
     getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }).catch(() => null),
     listCloudExportJobs(projectId).catch(() => ({ available: false, jobs: [] })),
+    listCloudProjectCheckpoints(projectId).catch(() => ({ available: false, checkpoints: [] })),
   ]);
   const pageProductionStates = longform.available
     ? await listCloudPageProductionStates(projectId, pages).catch(() => [])
@@ -277,6 +280,12 @@ export default async function CloudProjectPage({
         jobs={exportHistory.jobs}
         projectId={projectId}
         ready={Boolean(exportReadiness?.ready)}
+      />
+      <ProjectCheckpointPanel
+        available={checkpointHistory.available}
+        checkpoints={checkpointHistory.checkpoints}
+        projectId={projectId}
+        releaseReady={Boolean(exportReadiness?.ready)}
       />
       <section className="panel mt-6" aria-labelledby="character-sheet">
         <h2 className="flex items-center gap-2 text-xl font-bold" id="character-sheet">

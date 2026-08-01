@@ -252,7 +252,13 @@
       "description": "作品別の生成credit、費用、保存容量の集計・警告・hard limitを追加",
       "forwardSha256": "4e86b0c41264a900ab33169363eed46f773374e5de45bd404f196faf40c82c43",
       "rollbackSha256": "c355bae9650a134ca925ee1950c882877695bd1f8958ac6a818281463d1802cb"
+    },
+    {
+      "id": "202608010011_cloud_project_checkpoints",
+      "description": "100ページ作品の差分重複排除バックアップと完成版固定を追加",
+      "forwardSha256": "493138e847b17a0081224d45d6713fb90a4c3be4d7eb5502bb5024d250ff3950",
+      "rollbackSha256": "e186f4bee4c6676a14ccc2f2b9cf3054b62db49c9a823ea86fb5e4e196520b2f"
     }
   ],
-  "schemaSha256": "24eb61ea63d07e9e0a7c5a2d85ffe2b0c2c6a75125379593355679806eaf6adb"
+  "schemaSha256": "61f3e3ee44f659fc3a7fa71b8e6c7391994cbc5cd8cd951b295c540ad02a236e"
 }

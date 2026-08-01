@@ -11,6 +11,7 @@ import {
   addCloudPageToScene,
   addCloudScene,
   createCloudProject,
+  createCloudProjectCheckpoint,
   deleteCloudStructure,
   moveCloudPageBefore,
   moveCloudStructure,
@@ -393,6 +394,19 @@ export async function startCloudExportAction(projectId: string) {
   }
   revalidatePath(`/creator/${parsed.data}`);
   redirect(`/creator/${parsed.data}?message=${encodeURIComponent("PDF書き出しを受け付けました")}`);
+}
+
+export async function createCloudProjectCheckpointAction(projectId: string, kind: "checkpoint" | "release", formData: FormData) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    kind: z.enum(["checkpoint", "release"]),
+    label: z.string().trim().min(1).max(100),
+  }).safeParse({ projectId, kind, label: value(formData, "label") });
+  if (!parsed.success) redirect(`/creator?error=${encodeURIComponent("固定版の入力内容を確認してください。")}`);
+  try { await createCloudProjectCheckpoint(parsed.data); }
+  catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "作品の固定版を作成できませんでした。"))}`); }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(parsed.data.kind === "release" ? "完成版を固定しました" : "バックアップを作成しました")}`);
 }
 
 export async function setCloudExportStateAction(
