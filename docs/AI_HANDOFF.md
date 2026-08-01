@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M4制作管理 ページ状態・確定ロック、2026-08-01）
+
+- Branch: `agent/manga-production-status-v1`
+- Base: `agent/manga-batch-production-v1`（Draft PR #106）
+- Draft PR: [#107](https://github.com/team478a/manga/pull/107)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pr-7ff6fc-team478as-projects.vercel.app`
+- 目的: 長編制作のページ状態、全体進捗、確認・修正・確定を制作ボードで管理する
+- 実装: 5状態、Job連動、確定編集ロック、設定変更revision、絞り込み、migration未適用fallback
+- migration: `202608010005_cloud_production_status.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/CLOUD_PRODUCTION_STATUS_V1.md`
+- 検証: deps、lint、Hub 363/363、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、migration forward／rollback／reapply／canonical、build成功
+- 状態: 実装・Draft PR・Preview完了。Supabase staging適用、実ブラウザ確認、責任者承認待ち
+
+---
+
+
 ## 0. 現在の優先タスク（M4後半 一括生成・編集ロック、2026-08-01）
 
 - Branch: `agent/manga-batch-production-v1`

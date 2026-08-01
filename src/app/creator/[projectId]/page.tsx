@@ -31,6 +31,7 @@ import {
   getCloudProductionProgress,
   getCloudProjectCharacterSheet,
   getCloudProjectWorkspace,
+  listCloudPageProductionStates,
   listCloudGenerationBatches,
 } from "@/lib/cloud-creator-server";
 import { LongformPageManager } from "./LongformPageManager";
@@ -64,6 +65,9 @@ export default async function CloudProjectPage({
     getCloudProductionProgress(projectId).catch(() => null),
     getCloudProjectCharacterSheet(projectId).catch(() => []),
   ]);
+  const pageProductionStates = longform.available
+    ? await listCloudPageProductionStates(projectId, pages).catch(() => [])
+    : [];
   const manuscript = productionProgress?.manuscript ?? null;
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product &&
@@ -368,6 +372,7 @@ export default async function CloudProjectPage({
               coverPageId={project.cover_page_id}
               episodes={episodes}
               pages={pages}
+              productionStates={pageProductionStates}
               projectId={projectId}
               readingDirection={project.reading_direction}
               structure={longform}

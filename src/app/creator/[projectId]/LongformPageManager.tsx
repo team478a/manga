@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
-import { BookOpen, FilePlus2, GripVertical, LayoutGrid, PanelsTopLeft, Pause, Play, Plus, RotateCcw, Sparkles, Trash2, XCircle } from "lucide-react";
-import type { CloudChapter, CloudEpisode, CloudGenerationBatch, CloudLongformStructure, CloudPage } from "@/lib/cloud-creator-server";
+import { AlertTriangle, BookOpen, CheckCircle2, FilePlus2, GripVertical, LayoutGrid, PanelsTopLeft, Pause, Play, Plus, RotateCcw, Sparkles, Trash2, XCircle } from "lucide-react";
+import type { CloudEpisode, CloudGenerationBatch, CloudLongformStructure, CloudPage, CloudPageProductionState, CloudPageProductionStatus } from "@/lib/cloud-creator-server";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import {
   addCloudEpisodeToChapterAction,
@@ -13,6 +13,7 @@ import {
   moveCloudPageBeforeAction,
   setCloudProjectCoverAction,
   retryFailedCloudGenerationJobAction,
+  setCloudPageProductionStatusAction,
   setCloudGenerationBatchStateAction,
   startCloudPageGenerationBatchAction,
 } from "@/app/creator/actions";
@@ -27,6 +28,7 @@ export function LongformPageManager({
   pages,
   structure,
   batches,
+  productionStates,
 }: {
   projectId: string;
   readingDirection: "rtl" | "ltr";
@@ -35,14 +37,28 @@ export function LongformPageManager({
   pages: CloudPage[];
   structure: CloudLongformStructure;
   batches: CloudGenerationBatch[];
+  productionStates: CloudPageProductionState[];
 }) {
   const [view, setView] = useState<"single" | "spread">("single");
   const [visibleCount, setVisibleCount] = useState(PAGE_BATCH);
   const [draggedPageId, setDraggedPageId] = useState<string | null>(null);
   const [moveMessage, setMoveMessage] = useState("");
   const [isMoving, startMove] = useTransition();
+  const [filter, setFilter] = useState<"all" | "attention" | "generating" | "finalized">("all");
   const orderedPages = useMemo(() => [...pages].sort((a, b) => a.page_number - b.page_number), [pages]);
-  const visibleIds = useMemo(() => new Set(orderedPages.slice(0, visibleCount).map((page) => page.id)), [orderedPages, visibleCount]);
+  const stateByPage = useMemo(() => new Map(productionStates.map((state) => [state.pageId, state])), [productionStates]);
+  const statusOf = (pageId: string): CloudPageProductionStatus => stateByPage.get(pageId)?.status ?? "not_started";
+  const filteredPages = useMemo(() => orderedPages.filter((page) => {
+    const state = stateByPage.get(page.id);
+    if (filter === "all") return true;
+    if (filter === "attention") return state?.isStale || state?.status === "review_required" || state?.status === "revision_required";
+    return state?.status === filter;
+  }), [filter, orderedPages, stateByPage]);
+  const visibleIds = useMemo(() => new Set(filteredPages.slice(0, visibleCount).map((page) => page.id)), [filteredPages, visibleCount]);
+  const finalizedCount = productionStates.filter((state) => state.status === "finalized" && !state.isStale).length;
+  const attentionCount = productionStates.filter((state) => state.isStale || state.status === "review_required" || state.status === "revision_required").length;
+  const generatingCount = productionStates.filter((state) => state.status === "generating").length;
+  const progress = pages.length ? Math.round((finalizedCount / pages.length) * 100) : 0;
 
   const moveBefore = (targetPageId: string) => {
     if (!draggedPageId || draggedPageId === targetPageId) return;
@@ -75,7 +91,16 @@ export function LongformPageManager({
             <button className={`rounded-md px-3 py-2 text-sm font-bold ${view === "spread" ? "bg-violet-100 text-violet-800" : "text-stone-600"}`} onClick={() => setView("spread")} type="button"><PanelsTopLeft className="mr-1 inline h-4 w-4" />見開き</button>
           </div>
         </div>
-        <p className="mt-3 text-sm" aria-live="polite">{isMoving ? "ページを移動しています…" : moveMessage || `${Math.min(visibleCount, pages.length)}/${pages.length}ページを表示`}</p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-4">
+          <div className="rounded-lg bg-violet-50 p-3"><p className="text-xs text-stone-600">完成進捗</p><strong className="text-2xl text-violet-800">{progress}%</strong><div className="mt-2 h-2 overflow-hidden rounded-full bg-white"><div className="h-full bg-violet-600" style={{ width: `${progress}%` }} /></div></div>
+          <div className="rounded-lg border border-stone-200 p-3"><p className="text-xs text-stone-600">確定</p><strong>{finalizedCount}/{pages.length}ページ</strong></div>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3"><p className="text-xs text-amber-800">要確認・要修正</p><strong>{attentionCount}ページ</strong></div>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3"><p className="text-xs text-blue-800">生成中</p><strong>{generatingCount}ページ</strong></div>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2" aria-label="制作状態で絞り込み">
+          {([['all','すべて'],['attention','確認が必要'],['generating','生成中'],['finalized','確定済み']] as const).map(([key,label]) => <button className={filter === key ? "button" : "button-secondary"} key={key} onClick={() => { setFilter(key); setVisibleCount(PAGE_BATCH); }} type="button">{label}</button>)}
+        </div>
+        <p className="mt-3 text-sm" aria-live="polite">{isMoving ? "ページを移動しています…" : moveMessage || `${Math.min(visibleCount, filteredPages.length)}/${filteredPages.length}ページを表示`}</p>
       </div>
 
       <form action={startCloudPageGenerationBatchAction.bind(null, projectId)} className="panel">
@@ -85,7 +110,7 @@ export function LongformPageManager({
         </div>
         <p className="mt-2 text-xs text-stone-500">最大64コマ。画面を閉じてもWorker処理は継続します。</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className="flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm" key={page.id}><input name="pageId" type="checkbox" value={page.id} />{page.page_number}ページ</label>)}
+          {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className={`flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm ${statusOf(page.id) === "finalized" ? "opacity-50" : ""}`} key={page.id}><input disabled={statusOf(page.id) === "finalized"} name="pageId" type="checkbox" value={page.id} />{page.page_number}ページ</label>)}
         </div>
       </form>
 
@@ -126,16 +151,22 @@ export function LongformPageManager({
                             <div className={`mt-3 grid gap-3 ${view === "spread" ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4"}`} dir={view === "spread" && readingDirection === "rtl" ? "rtl" : "ltr"}>
                               {scenePages.map((page) => (
                                 <article className="group rounded-lg border border-stone-200 bg-white p-2 shadow-sm" draggable onDragEnd={() => setDraggedPageId(null)} onDragOver={(event) => event.preventDefault()} onDragStart={() => setDraggedPageId(page.id)} onDrop={() => moveBefore(page.id)} key={page.id}>
+                                  {(() => { const state = stateByPage.get(page.id); const status = state?.status ?? "not_started"; const labels: Record<CloudPageProductionStatus,string> = { not_started: "未着手", generating: "生成中", review_required: "要確認", revision_required: "要修正", finalized: "確定" }; return <>
+                                  <div className="mb-2 flex flex-wrap items-center justify-between gap-1"><span className={`rounded-full px-2 py-1 text-xs font-bold ${status === "finalized" ? "bg-green-100 text-green-800" : status === "revision_required" || state?.isStale ? "bg-amber-100 text-amber-900" : status === "generating" ? "bg-blue-100 text-blue-800" : "bg-stone-100 text-stone-700"}`}>{labels[status]}</span>{state?.isStale ? <span className="flex items-center gap-1 text-xs font-bold text-amber-800"><AlertTriangle className="h-3 w-3" />設定変更あり</span> : null}</div>
                                   <div className="relative mx-auto aspect-[2/3] w-full max-w-36 rounded border border-stone-300 bg-gradient-to-br from-white to-stone-100">
                                     <GripVertical className="absolute left-1 top-1 h-4 w-4 text-stone-400" />
                                     <span className="absolute inset-0 grid place-items-center text-2xl font-bold text-stone-300">{page.page_number}</span>
                                     {coverPageId === page.id ? <span className="absolute bottom-1 left-1 rounded bg-violet-700 px-2 py-1 text-xs font-bold text-white">表紙</span> : null}
                                   </div>
-                                  <Link className="mt-2 block text-center font-bold text-violet-800 underline" href={`/creator/${projectId}/pages/${page.id}`}>{page.page_number}ページを編集</Link>
+                                  {status === "finalized" ? <p className="mt-2 text-center text-sm font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />編集ロック中</p> : <Link className="mt-2 block text-center font-bold text-violet-800 underline" href={`/creator/${projectId}/pages/${page.id}`}>{page.page_number}ページを編集</Link>}
+                                  <div className="mt-2 flex flex-wrap justify-center gap-1" dir="ltr">
+                                    {status === "finalized" ? <form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "revision_required")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="再開中…">編集を再開</PendingSubmitButton></form> : status === "review_required" ? <><form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "revision_required")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="更新中…">要修正</PendingSubmitButton></form><form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "finalized")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="確定中…">確定</PendingSubmitButton></form></> : status !== "generating" ? <form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "review_required")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="更新中…">確認待ちへ</PendingSubmitButton></form> : null}
+                                  </div>
                                   <div className="mt-2 flex justify-center gap-1" dir="ltr">
                                     <form action={setCloudProjectCoverAction.bind(null, projectId, page.id)}><button className="button-secondary min-h-9 px-2 py-1 text-xs" type="submit">表紙</button></form>
                                     <form action={deleteCloudStructureAction.bind(null, projectId, "page", page.id)}><button aria-label={`${page.page_number}ページを削除`} className="button-secondary min-h-9 px-2 py-1 text-red-700" type="submit"><Trash2 className="h-4 w-4" /></button></form>
                                   </div>
+                                  </>; })()}
                                 </article>
                               ))}
                             </div>
@@ -158,7 +189,7 @@ export function LongformPageManager({
           </article>
         );
       })}
-      {visibleCount < pages.length ? <button className="button-secondary w-full" onClick={() => setVisibleCount((count) => count + PAGE_BATCH)} type="button">次の{Math.min(PAGE_BATCH, pages.length - visibleCount)}ページを表示</button> : null}
+      {visibleCount < filteredPages.length ? <button className="button-secondary w-full" onClick={() => setVisibleCount((count) => count + PAGE_BATCH)} type="button">次の{Math.min(PAGE_BATCH, filteredPages.length - visibleCount)}ページを表示</button> : null}
     </section>
   );
 }

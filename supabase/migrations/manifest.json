@@ -216,7 +216,13 @@
       "description": "4〜8ページの一括画像生成、進捗制御、再試行、期限付き編集ロックを追加",
       "forwardSha256": "a9b081d039b6e2c091e65b69a31620b190ad27f0ab2816a71c681b9056b07ae1",
       "rollbackSha256": "5c4255c9a7e68c7ac4ca68bc04bb343290f58a29a17ddd91445f295b903f5d63"
+    },
+    {
+      "id": "202608010005_cloud_production_status",
+      "description": "長編制作のページ状態、設定変更後の再確認、確定編集ロックを追加",
+      "forwardSha256": "3e805bcba4bdf2ae67d524ff9ae13b815f014ffa1045e13986da352cee3c1801",
+      "rollbackSha256": "5ca5416a49e47f666f247cdafc99c6edba61393afc3d9dd7303d9bd7730d3b1a"
     }
   ],
-  "schemaSha256": "8704323bea066f4d43d35f0d7ee4e76689ec821a67f981eddfdc3a0200f97d2e"
+  "schemaSha256": "97ee30ebce88aaec0eba6b8076c54b96144b36ab0de977a5ecbcfdecff806c33"
 }

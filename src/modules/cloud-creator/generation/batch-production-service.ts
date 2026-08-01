@@ -27,6 +27,12 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
   if (uniquePageIds.length < 4 || uniquePageIds.length > 8)
     throw new ValidationError("一括生成するページを4〜8ページ選んでください。");
   const { supabase } = await cloudCreatorContext();
+  const productionStates = await supabase.from("cloud_pages")
+    .select("id,production_status").eq("project_id", projectId).in("id", uniquePageIds).is("deleted_at", null);
+  if (productionStates.error && productionStates.error.code !== "42703")
+    throw new DomainError("INTERNAL_ERROR", "ページの制作状態を確認できませんでした。", { cause: productionStates.error });
+  if ((productionStates.data ?? []).some((page) => page.production_status === "finalized"))
+    throw new ValidationError("確定済みページは一括生成できません。編集を再開してから実行してください。");
   const snapshots = await supabase
     .from("cloud_pages")
     .select("id,revision,cloud_canvas_snapshots!inner(canvas,revision)")

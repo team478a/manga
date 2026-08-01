@@ -64,6 +64,23 @@ export type CloudPage = {
   revision: number;
 };
 
+export type CloudPageProductionStatus =
+  | "not_started"
+  | "generating"
+  | "review_required"
+  | "revision_required"
+  | "finalized";
+
+export type CloudPageProductionState = {
+  pageId: string;
+  status: CloudPageProductionStatus;
+  statusUpdatedAt: string | null;
+  finalizedRevision: number | null;
+  reviewedContextRevision: number | null;
+  contextRevision: number;
+  isStale: boolean;
+};
+
 export type CloudGenerationJob = {
   id: string;
   project_id: string;
