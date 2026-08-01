@@ -2655,3 +2655,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - migration 37本目、rollback、canonical、静的テストを追加
 - Draft PR #107、Vercel Preview、自動検証を完了
 - Supabase staging適用、有料Provider実行、マージは未実施
+
+## 2026-08-01 Codex: M4 Storageサムネイル・派生物整理
+
+- `agent/manga-storage-lifecycle-v1` を `agent/manga-durable-export-v1`（Draft PR #108）から作成
+- Canvas保存revisionに追従するprivate WebPサムネイルQueueと署名URL表示を追加
+- 作品一覧とページ制作ボードに軽量サムネイルを段階適用し、未生成時は従来表示へfallback
+- 完成PDFを除く期限切れExport中間物と差し替え済みサムネイルだけをcleanup対象に限定
+- 保存中の再編集を検出し、古いサムネイルを公開せず再生成する競合処理を追加
+- migration 39本目、rollback、canonical、実DB往復、全品質ゲートを完了
+- Supabase staging適用、Worker環境設定、実ブラウザ確認、マージは未実施

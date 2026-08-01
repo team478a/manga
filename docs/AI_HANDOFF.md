@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M4 Storageライフサイクル、2026-08-01）
+
+- Branch: `agent/manga-storage-lifecycle-v1`
+- Base: `agent/manga-durable-export-v1`（Draft PR #108）
+- 目的: 長編作品のページサムネイル生成と不要な派生ファイルの安全な整理を追加する
+- 実装: `cloud-cache`、ページrevision別WebP、署名URL、thumbnail／cleanup Queue、lease Worker
+- 保護対象: 採用済み生成画像、Canvas保存データ、完成`manuscript.pdf`はcleanup対象外
+- migration: `202608010007_cloud_storage_lifecycle.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/MANGA_STORAGE_LIFECYCLE_V1.md`
+- 状態: 実装とローカル品質ゲート完了。Draft PR、Preview、CI確認を実施中
+
+---
+
+
 ## 0. 現在の優先タスク（M4 永続PDFエクスポート、2026-08-01）
 
 - Branch: `agent/manga-durable-export-v1`

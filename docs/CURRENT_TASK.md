@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M4完成: Storageサムネイル・派生物整理
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-storage-lifecycle-v1`
+- Base: `agent/manga-durable-export-v1`（Draft PR #108）
+- 目的: ページ一覧の軽量表示と、完成原稿を保護した安全な派生ファイル整理を提供する
+- 実装: private WebPサムネイル、revision追従Queue、署名URL、期限付きExport中間物cleanup、lease Worker
+- 安全性: 採用済み画像と完成`manuscript.pdf`は削除対象外。保存競合時は古いサムネイルを公開せず再生成
+- migration: `202608010007_cloud_storage_lifecycle.sql`（39本目）
+- 検証: deps、lint、Hub 374/374、Canvas 26/26、AI 48/48、Desktop、Desktop a11y、Hub/Desktop typecheck、migration往復、production build成功
+- 詳細: `docs/cloud/MANGA_STORAGE_LIFECYCLE_V1.md`
+- 未実施: Supabase staging適用、Worker環境設定、実ブラウザ、責任者承認、親PR後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M4完成: 永続PDFエクスポート
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
