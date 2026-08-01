@@ -1,0 +1,15 @@
+begin;
+drop function if exists public.fail_cloud_storage_cleanup(uuid,uuid,text);
+drop function if exists public.complete_cloud_storage_cleanup(uuid,uuid);
+drop function if exists public.claim_cloud_storage_cleanup(text,integer);
+drop function if exists public.queue_expired_cloud_storage_artifacts();
+drop function if exists public.fail_cloud_page_thumbnail(uuid,uuid,text,boolean);
+drop function if exists public.complete_cloud_page_thumbnail(uuid,uuid,bigint,text,integer,integer);
+drop function if exists public.claim_cloud_page_thumbnail(text,integer);
+drop trigger if exists cloud_canvas_snapshot_thumbnail_queue on public.cloud_canvas_snapshots;
+drop function if exists public.queue_cloud_page_thumbnail();
+drop policy if exists "cloud_cache_storage_read" on storage.objects;
+drop table if exists public.cloud_storage_cleanup;
+drop table if exists public.cloud_page_thumbnails;
+delete from storage.buckets where id='cloud-cache';
+commit;

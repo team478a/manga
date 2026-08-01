@@ -161,6 +161,10 @@ for (const required of [
   "cloud_scenes",
   "add_cloud_page_to_scene",
   "move_cloud_page_before",
+  "cloud_page_thumbnails",
+  "cloud_storage_cleanup",
+  "claim_cloud_page_thumbnail",
+  "claim_cloud_storage_cleanup",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

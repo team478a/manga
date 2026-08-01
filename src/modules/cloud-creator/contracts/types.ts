@@ -14,6 +14,7 @@ export type CloudProjectSummary = {
   storage_bytes: number;
   source_surface: "cloud" | "desktop";
   cover_page_id: string | null;
+  thumbnail_url?: string | null;
   updated_at: string;
 };
 
@@ -62,6 +63,7 @@ export type CloudPage = {
   height: number;
   background_color: string;
   revision: number;
+  thumbnail_url?: string | null;
 };
 
 export type CloudPageProductionStatus =

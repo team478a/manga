@@ -183,3 +183,12 @@ do $$ begin
     raise exception 'Durable export objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_page_thumbnails') is not null
+     or to_regclass('public.cloud_storage_cleanup') is not null
+     or to_regprocedure('public.claim_cloud_page_thumbnail(text,integer)') is not null
+     or exists(select 1 from storage.buckets where id='cloud-cache') then
+    raise exception 'Cloud storage lifecycle objects remain after rollback';
+  end if;
+end $$;

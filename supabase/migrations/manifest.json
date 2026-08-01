@@ -228,7 +228,13 @@
       "description": "32〜100ページ原稿の分割処理、再開可能なPDF書き出し、非公開成果物保存を追加",
       "forwardSha256": "5b95703734a4f09e444142656fd52b136c52329e42698b6ba2d27deec91caade",
       "rollbackSha256": "7159628145c7e46c6f7daa42c7e6888744b694d4ca837a5699d0fe82bbb2fbbf"
+    },
+    {
+      "id": "202608010007_cloud_storage_lifecycle",
+      "description": "ページサムネイルcache、revision整合性、書き出し中間物の限定清掃を追加",
+      "forwardSha256": "a447aea53ad9aecdba2d9d2207c25c7b71102f265dc795224f5982dcc3c29164",
+      "rollbackSha256": "70c91bcbd3e03a29c11125a3f78acd2f6b93de9776f15ed2a0ee8d5efe6fad9b"
     }
   ],
-  "schemaSha256": "ae5f697889dcd9f1871332ea28197839d3ff1ba8e20d6427dddd45b9226246b1"
+  "schemaSha256": "c31362e1ec683c12009473d5174e0cf61ad0271220ef363a2a938d7720d21a20"
 }
