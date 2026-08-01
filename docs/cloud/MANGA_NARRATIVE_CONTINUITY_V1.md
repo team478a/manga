@@ -2,6 +2,9 @@
 
 更新日: 2026-08-01
 
+- Draft PR: [#110](https://github.com/team478a/manga/pull/110)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-654703-team478as-projects.vercel.app`
+
 ## 目的
 
 32〜100ページの制作で、衣装、居場所、人物関係、時系列、小物、口調・呼称と伏線の状態を見失わないようにする。外部AIを呼ばなくても確定的に判定できる範囲を先に提供し、将来のAI連続性検査の入力根拠にする。
@@ -41,6 +44,7 @@
 - dependency境界、Lint、Hub/Desktop型検査、Desktop統合・a11y
 - 40 migrationの静的検査、実DB forward／rollback／reapply
 - canonical schema二重適用、data idempotency、production build、`git diff --check`
+- GitHub Core quality、Migration roundtrip、Windows build、Vercel Preview
 
 ## 外部作業
 

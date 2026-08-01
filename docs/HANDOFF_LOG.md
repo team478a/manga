@@ -2676,4 +2676,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 所有者RLS、編集権限RPC、入力検証、内部エラー秘匿を追加
 - migration 40本目、rollback、canonical、実DB forward／rollback／reapply／二重適用を完了
 - Hub 379/379、Canvas 26/26、AI 48/48、Desktop、a11y、型検査、Lint、production buildを完了
+- Draft PR #110、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - Supabase staging適用、実ブラウザ確認、マージは未実施
