@@ -295,6 +295,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
       explicitWorldProfileIds,
       revision,
       compositionControl,
+      generationTarget: request.generationTarget,
     });
     const relevantSubjectIds = [
       ...(selected.generation.characterProfileVersions ?? []).map((item) => item.profileId),
@@ -346,6 +347,7 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         referenceAssets,
         revision,
         compositionControl,
+        generationTarget: request.generationTarget,
       });
       await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
       const id = await enqueueCloudGenerationJob({

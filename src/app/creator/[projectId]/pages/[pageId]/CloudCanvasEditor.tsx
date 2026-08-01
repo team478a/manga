@@ -93,6 +93,11 @@ type GazeDirection =
   | "right"
   | "partner"
   | "off_frame";
+type PanelGenerationTarget =
+  | "composite"
+  | "background"
+  | "character"
+  | "effect";
 
 const revisionPresetLabels: Record<RevisionPreset, string> = {
   face: "顔の崩れを直す",
@@ -139,6 +144,12 @@ const gazeDirectionLabels: Record<GazeDirection, string> = {
   right: "画面右を見る",
   partner: "会話相手を見る",
   off_frame: "画面外を見る",
+};
+const panelGenerationTargetLabels: Record<PanelGenerationTarget, string> = {
+  composite: "完成コマ（背景・人物・効果）",
+  background: "背景だけ",
+  character: "人物だけ",
+  effect: "効果だけ",
 };
 
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
@@ -202,6 +213,8 @@ export function CloudCanvasEditor({
   const [requestingPanelGeneration, setRequestingPanelGeneration] =
     useState(false);
   const [panelCandidateCount, setPanelCandidateCount] = useState(3);
+  const [panelGenerationTarget, setPanelGenerationTarget] =
+    useState<PanelGenerationTarget>("composite");
   const [shotOverride, setShotOverride] =
     useState<ShotOverride>("storyboard");
   const [cameraAngleOverride, setCameraAngleOverride] =
@@ -549,20 +562,36 @@ export function CloudCanvasEditor({
     commit((draft) => {
       const panel = draft.panels.find((item) => item.id === panelId);
       if (!panel) return;
-      panel.imageAssetId = assetId;
+      if (layerType === "background" || layerType === "correction")
+        panel.imageAssetId = assetId;
       const currentLayers = draft.panelLayers.filter(
         (layer) => layer.panelId === panel.id,
       );
+      const layerName =
+        layerType === "character"
+          ? "AI人物レイヤー"
+          : layerType === "effect"
+            ? "AI効果レイヤー"
+            : layerType === "background"
+              ? "AI背景レイヤー"
+              : assetMap.get(assetId)?.file_name ?? "画像レイヤー";
+      const orderIndex =
+        layerType === "background"
+          ? Math.min(0, ...currentLayers.map((layer) => layer.orderIndex)) - 1
+          : Math.max(-1, ...currentLayers.map((layer) => layer.orderIndex)) + 1;
       draft.panelLayers.push({
         id: layerId,
         panelId: panel.id,
-        name: assetMap.get(assetId)?.file_name ?? "画像レイヤー",
+        name: layerName,
         type: layerType,
-        orderIndex: currentLayers.length,
+        orderIndex,
         visible: true,
         locked: false,
         opacity: 1,
-        blendMode: "normal",
+        blendMode:
+          layerType === "character" || layerType === "effect"
+            ? "multiply"
+            : "normal",
         assetId,
         sourceJobId,
         imageFit: "cover",
@@ -618,6 +647,7 @@ export function CloudCanvasEditor({
     subjectPlacement?: SubjectPlacement;
     gazeDirection?: GazeDirection;
     compositionInstruction?: string;
+    generationTarget?: PanelGenerationTarget;
   }) {
     const panelId =
       options?.panelId ?? (selection?.type === "panel" ? selection.id : null);
@@ -642,6 +672,7 @@ export function CloudCanvasEditor({
         subjectPlacement: options?.subjectPlacement,
         gazeDirection: options?.gazeDirection,
         compositionInstruction: options?.compositionInstruction,
+        generationTarget: options?.generationTarget,
       });
       setGenerationTargets((current) =>
         result.jobs.reduce(
@@ -1101,6 +1132,33 @@ export function CloudCanvasEditor({
                 <p className="mt-1 text-xs text-violet-800">
                   コマを選ぶだけで、ネームから比較用の候補を生成します。
                 </p>
+                <label
+                  className="mt-3 block text-xs font-bold text-violet-950"
+                  htmlFor="panel-generation-target"
+                >
+                  生成するレイヤー
+                </label>
+                <select
+                  className="field mt-1 w-full"
+                  id="panel-generation-target"
+                  value={panelGenerationTarget}
+                  onChange={(event) =>
+                    setPanelGenerationTarget(
+                      event.target.value as PanelGenerationTarget,
+                    )
+                  }
+                >
+                  {Object.entries(panelGenerationTargetLabels).map(
+                    ([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ),
+                  )}
+                </select>
+                {panelGenerationTarget !== "composite" ? (
+                  <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                    分離素材は別レイヤーとして採用され、背景・人物・効果を個別に表示・並べ替えできます。
+                  </p>
+                ) : null}
                 <details className="mt-3 rounded-lg border border-violet-200 bg-white/70 p-3">
                   <summary className="cursor-pointer text-xs font-bold text-violet-950">
                     画角・ポーズを調整（任意）
@@ -1229,6 +1287,7 @@ export function CloudCanvasEditor({
                       gazeDirection,
                       compositionInstruction:
                         compositionInstruction.trim() || undefined,
+                      generationTarget: panelGenerationTarget,
                     })
                   }
                   type="button"

@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-08-01 Codex: M3-7 背景・人物・効果の分離生成
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-layered-generation-v1`
+- Base: `agent/manga-composition-control-v1`（Draft PR #102）
+- Draft PR: [#103](https://github.com/team478a/manga/pull/103)
+- Preview: `https://mangai-hub-staging-git-agent-manga-la-a0ee14-team478as-projects.vercel.app`
+
+### 完了
+
+- 一般向けCloud Canvasの通常コマ生成へ、完成コマ・背景・人物・効果の選択を追加した。
+- 対象ごとに生成Prompt、Job種別、利用する人物・世界参照を分離した。
+- 背景を下層の通常レイヤー、人物と効果を純白地の乗算レイヤーとして非破壊採用する。
+- APIは許可した生成対象だけを受け付け、未指定時は従来の完成コマになる。
+- DB、migration、Feature Flag、Provider、料金、成人向け、Desktopは変更していない。
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 348/348、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
+- 詳細: `docs/cloud/MANGA_LAYERED_GENERATION_V1.md`
+
+### 次
+
+- 実Providerと実ブラウザで白地素材の合成品質を確認し、親PR #102後に責任者が承認する。
+
+---
+
 ## 2026-08-01 Codex: M3-6 ポーズ・構図制御
 
 ### 状態

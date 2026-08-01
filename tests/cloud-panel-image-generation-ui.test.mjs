@@ -53,6 +53,20 @@ test("Canvasは画角・カメラ・人物配置・視線を選んで通常生�
   assert.match(service, /compositionControl/);
 });
 
+test("Canvasは完成コマ・背景・人物・効果を分けて生成し別レイヤーへ採用する", () => {
+  assert.match(editor, /生成するレイヤー/);
+  assert.match(editor, /完成コマ（背景・人物・効果）/);
+  assert.match(editor, /背景だけ/);
+  assert.match(editor, /人物だけ/);
+  assert.match(editor, /効果だけ/);
+  assert.match(editor, /generationTarget: panelGenerationTarget/);
+  assert.match(editor, /AI人物レイヤー/);
+  assert.match(editor, /AI効果レイヤー/);
+  assert.match(editor, /layerType === "character" \|\| layerType === "effect"/);
+  assert.match(editor, /\? "multiply"/);
+  assert.match(service, /generationTarget: request\.generationTarget/);
+});
+
 test("Canvasは採用画像を残したまま部位別の修正候補を生成する", () => {
   assert.match(editor, /採用画像の気になる部分を直す/);
   assert.match(editor, /顔の崩れを直す/);

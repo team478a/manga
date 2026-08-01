@@ -52,6 +52,9 @@ export const cloudPanelImageGenerationRequestSchema = z.object({
     .enum(["storyboard", "camera", "left", "right", "partner", "off_frame"])
     .optional(),
   compositionInstruction: z.string().trim().max(500).optional(),
+  generationTarget: z
+    .enum(["composite", "background", "character", "effect"])
+    .default("composite"),
 }).superRefine((value, context) => {
   const revisionValues = [
     value.sourceAssetId,
@@ -201,6 +204,7 @@ export function buildStoryboardPanelGeneration(input: {
     gazeDirection: keyof typeof gazeDirectionDirections;
     instruction?: string;
   };
+  generationTarget?: "composite" | "background" | "character" | "effect";
 }) {
   const storyboard = cloudStoryboardResultSchema.parse(input.storyboard);
   const canvas: PageCanvas = pageCanvasSchema.parse(input.canvas);
@@ -307,9 +311,16 @@ export function buildStoryboardPanelGeneration(input: {
           `構図ルール:${input.styleBible.composition_rules}`,
       ].filter(Boolean).join("、")
     : "";
+  const generationTarget = input.generationTarget ?? "composite";
+  const usesCharacters =
+    generationTarget === "composite" || generationTarget === "character";
+  const usesWorld =
+    generationTarget === "composite" || generationTarget === "background";
+  const selectedVisualProfiles = usesCharacters ? visualProfiles : [];
+  const selectedWorldProfiles = usesWorld ? worldProfiles : [];
   const referenceSubjectIds = new Set([
-    ...visualProfiles.map((profile) => `character:${profile.id}`),
-    ...worldProfiles.map((profile) => `${profile.kind}:${profile.id}`),
+    ...selectedVisualProfiles.map((profile) => `character:${profile.id}`),
+    ...selectedWorldProfiles.map((profile) => `${profile.kind}:${profile.id}`),
     ...(input.styleBible ? [`style:${input.styleBible.id}`] : []),
   ]);
   const referenceAssetIds = Array.from(
@@ -326,12 +337,32 @@ export function buildStoryboardPanelGeneration(input: {
     0,
     Math.min(candidateCount - 1, input.candidateIndex ?? 0),
   );
-  const variationDirections = [
-    "ネームの構図と人物配置を最優先し、読みやすい基準案にする。",
-    "人物の表情と感情の伝わりやすさを優先した別案にする。",
-    "視線誘導と明暗の演出を強めた別案にする。",
-    "背景情報と奥行きを明瞭にした別案にする。",
-  ];
+  const variationDirections = {
+    composite: [
+      "ネームの構図と人物配置を最優先し、読みやすい基準案にする。",
+      "人物の表情と感情の伝わりやすさを優先した別案にする。",
+      "視線誘導と明暗の演出を強めた別案にする。",
+      "背景情報と奥行きを明瞭にした別案にする。",
+    ],
+    background: [
+      "ネームの空間配置を最優先した読みやすい背景にする。",
+      "遠近感と奥行きを強調した背景にする。",
+      "光と影で時間帯と雰囲気を強調した背景にする。",
+      "場所を識別できる情報量を増やした背景にする。",
+    ],
+    character: [
+      "ネームのポーズとシルエットを最優先した人物素材にする。",
+      "表情と感情の伝わりやすさを優先した人物素材にする。",
+      "手足の動きと重心を明瞭にした人物素材にする。",
+      "衣装と外見設定の再現を優先した人物素材にする。",
+    ],
+    effect: [
+      "ネームの演出意図を最優先した読みやすい効果にする。",
+      "視線誘導を強める効果線の別案にする。",
+      "明暗とコントラストを強めた効果の別案にする。",
+      "線の密度とリズムを変えた効果の別案にする。",
+    ],
+  } as const;
   const revisionDirections = {
     face: "元画像の構図・人物・衣装・背景を維持し、顔立ちと目鼻の崩れだけを自然に修正する。",
     hands: "元画像の構図・人物・衣装・背景を維持し、手指の本数・関節・持ち方の崩れだけを自然に修正する。",
@@ -340,8 +371,19 @@ export function buildStoryboardPanelGeneration(input: {
     background: "元画像の人物・ポーズ・表情を維持し、ネームと場所設定に沿う背景へ修正する。",
     polish: "元画像の内容と構図を維持し、線の乱れ、形状破綻、不要物だけを整えて完成度を上げる。",
   } as const;
+  const targetDirections = {
+    composite:
+      "背景・人物・演出を含む完成コマとして描く。各要素を一枚の画像として自然に統合する。",
+    background:
+      "背景だけを描く。人物、人物の影、前景の人物、吹き出し、文字、集中線は描かず、後から人物を重ねられる空間を確保する。",
+    character:
+      "人物だけを描く。背景、建物、家具、風景、効果線は描かない。背景は純白にし、黒い漫画線と必要最小限の網点で全身とポーズを明瞭にする。",
+    effect:
+      "漫画の効果だけを描く。人物、背景、物体、文字は描かない。背景は純白にし、効果線、集中線、スピード線、衝撃、光、影の演出だけを黒い線と網点で描く。",
+  } as const;
   const prompt = [
     "一般向け日本漫画の完成原稿用モノクロ1コマ。",
+    `生成対象: ${targetDirections[generationTarget]}`,
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
     `構図: ${storyboardPanel.composition}。`,
@@ -350,31 +392,43 @@ export function buildStoryboardPanelGeneration(input: {
           "構図調整:",
           `${shotOverrideDirections[input.compositionControl.shot]}。`,
           `${cameraAngleOverrideDirections[input.compositionControl.cameraAngle]}。`,
-          `${subjectPlacementDirections[input.compositionControl.subjectPlacement]}。`,
-          `${gazeDirectionDirections[input.compositionControl.gazeDirection]}。`,
+          usesCharacters
+            ? `${subjectPlacementDirections[input.compositionControl.subjectPlacement]}。`
+            : "",
+          usesCharacters
+            ? `${gazeDirectionDirections[input.compositionControl.gazeDirection]}。`
+            : "",
           input.compositionControl.instruction
             ? `追加指定:${input.compositionControl.instruction}。`
             : "",
         ].join("")
       : "",
-    `登場人物: ${characters}。`,
-    characterDetails.length
+    usesCharacters ? `登場人物: ${characters}。` : "",
+    usesCharacters && characterDetails.length
       ? `人物設定: ${characterDetails.join(" / ")}。同一人物の顔立ち、髪型、体格、服装の一貫性を保つ。`
-      : "登場人物がいる場合は、前後のコマと外見の一貫性を保つ。",
-    visualDetails.length
+      : usesCharacters
+        ? "登場人物がいる場合は、前後のコマと外見の一貫性を保つ。"
+        : "",
+    usesCharacters && visualDetails.length
       ? `固定ビジュアル設定: ${visualDetails.join(" / ")}。この設定を最優先し、別人化や衣装変更を避ける。`
-      : "固定ビジュアル設定がない人物は、ネームと前後のコマから自然に補完する。",
+      : usesCharacters
+        ? "固定ビジュアル設定がない人物は、ネームと前後のコマから自然に補完する。"
+        : "",
     styleDetails || "作品全体で漫画の線、陰影、背景密度を統一する。",
-    worldDetails.length
+    usesWorld && worldDetails.length
       ? `固定世界設定: ${worldDetails.join(" / ")}。同じ場所・小物の形状と配置規則を維持する。`
-      : "登録済みの場所・小物名に一致しない場合は、ネームの背景指定を優先する。",
-    `背景: ${storyboardPanel.background}。`,
-    `動作: ${storyboardPanel.action}。`,
-    `感情: ${storyboardPanel.emotion}。`,
-    `演出: ${storyboardPanel.visualDirection}。`,
+      : usesWorld
+        ? "登録済みの場所・小物名に一致しない場合は、ネームの背景指定を優先する。"
+        : "",
+    usesWorld ? `背景: ${storyboardPanel.background}。` : "",
+    usesCharacters ? `動作: ${storyboardPanel.action}。` : "",
+    usesCharacters ? `感情: ${storyboardPanel.emotion}。` : "",
+    generationTarget === "composite" || generationTarget === "effect"
+      ? `演出: ${storyboardPanel.visualDirection}。`
+      : "",
     candidateCount > 1
-      ? `候補${candidateIndex + 1}/${candidateCount}: ${variationDirections[candidateIndex]}`
-      : variationDirections[0],
+      ? `候補${candidateIndex + 1}/${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`
+      : variationDirections[generationTarget][0],
     input.revision
       ? `修正指示: ${revisionDirections[input.revision.preset]}${input.revision.instruction ? ` 追加要望:${input.revision.instruction}` : ""}`
       : "",
@@ -388,18 +442,25 @@ export function buildStoryboardPanelGeneration(input: {
   return {
     generation: {
       kind: "image" as const,
-      jobType: "background" as const,
+      jobType:
+        generationTarget === "character"
+          ? ("character_base" as const)
+          : generationTarget === "effect"
+            ? ("effect" as const)
+            : ("background" as const),
       prompt,
       negativePrompt: [
         "文字、字幕、ロゴ、透かし、低品質、崩れた構図、別人、髪型の変化、衣装の無断変更",
-        ...visualProfiles
+        ...selectedVisualProfiles
           .map((profile) => profile.negative_prompt)
           .filter(Boolean),
         input.styleBible?.negative_prompt ?? "",
-        ...worldProfiles.map((profile) => profile.negative_prompt).filter(Boolean),
+        ...selectedWorldProfiles
+          .map((profile) => profile.negative_prompt)
+          .filter(Boolean),
       ].join("、"),
       targetPanelId: canvasPanel.id,
-      characterProfileVersions: visualProfiles.map((profile) => ({
+      characterProfileVersions: selectedVisualProfiles.map((profile) => ({
         profileId: profile.id,
         version: profile.current_version,
       })),
@@ -409,7 +470,7 @@ export function buildStoryboardPanelGeneration(input: {
             version: input.styleBible.current_version,
           }
         : undefined,
-      worldProfileVersions: worldProfiles.map((profile) => ({
+      worldProfileVersions: selectedWorldProfiles.map((profile) => ({
         profileId: profile.id,
         version: profile.current_version,
         kind: profile.kind,

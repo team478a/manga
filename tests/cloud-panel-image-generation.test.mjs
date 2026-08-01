@@ -160,6 +160,67 @@ test("構図指定は許可した選択肢だけを受け付ける", () => {
   );
 });
 
+test("背景・人物・効果を別Job種別と専用Promptで生成する", () => {
+  const background = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "background",
+  });
+  const character = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "character",
+  });
+  const effect = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "effect",
+  });
+
+  assert.equal(background.generation.jobType, "background");
+  assert.match(background.generation.prompt, /背景だけを描く/);
+  assert.doesNotMatch(background.generation.prompt, /登場人物:/);
+  assert.equal(character.generation.jobType, "character_base");
+  assert.match(character.generation.prompt, /人物だけを描く/);
+  assert.match(character.generation.prompt, /背景は純白/);
+  assert.doesNotMatch(character.generation.prompt, /背景: 朝の駅前/);
+  assert.equal(effect.generation.jobType, "effect");
+  assert.match(effect.generation.prompt, /漫画の効果だけを描く/);
+  assert.match(effect.generation.prompt, /朝日を逆光/);
+  assert.doesNotMatch(effect.generation.prompt, /登場人物:/);
+});
+
+test("分離生成対象は許可値だけを受け付け既定値は完成コマにする", () => {
+  const base = {
+    projectId: "50000000-0000-4000-8000-000000000001",
+    pageId,
+    panelId,
+    idempotencyKey: "60000000-0000-4000-8000-000000000001",
+  };
+  const defaultResult = cloudPanelImageGenerationRequestSchema.parse(base);
+  assert.equal(defaultResult.generationTarget, "composite");
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      generationTarget: "character",
+    }).success,
+    true,
+  );
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      generationTarget: "unknown-layer",
+    }).success,
+    false,
+  );
+});
+
 test("部分修正Feature Flagも未設定時fail closedする", () => {
   const previous = process.env.CLOUD_PANEL_INPAINTING_ENABLED;
   delete process.env.CLOUD_PANEL_INPAINTING_ENABLED;
@@ -413,6 +474,38 @@ test("明示割当と参照画像IDを生成Jobへ固定する", () => {
     { profileId: characterId, version: 1 },
   ]);
   assert.deepEqual(result.generation.referenceAssetIds, [assetId]);
+
+  const backgroundOnly = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "background",
+    visualCharacterProfiles: [{
+      id: characterId,
+      project_id: "50000000-0000-4000-8000-000000000001",
+      name: "ネームにない人物",
+      role: "supporting",
+      current_version: 1,
+      appearance_age: "30代",
+      body_build: "長身",
+      hair: "黒髪",
+      costume: "コート",
+      color_palette: "黒",
+      immutable_traits: [],
+      prompt: "",
+      negative_prompt: "",
+      updated_at: "2026-08-01T00:00:00.000Z",
+    }],
+    explicitCharacterProfileIds: [characterId],
+    referenceAssets: [{
+      subjectKind: "character",
+      subjectId: characterId,
+      assetId,
+    }],
+  });
+  assert.deepEqual(backgroundOnly.generation.characterProfileVersions, []);
+  assert.deepEqual(backgroundOnly.generation.referenceAssetIds, []);
 });
 
 test("1回の要求で最大4候補まで安全に指定できる", () => {
