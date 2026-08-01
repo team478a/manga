@@ -112,6 +112,23 @@ begin
   end if;
 end $$;
 
+do $$
+begin
+  if to_regclass('public.cloud_chapters') is null
+     or to_regclass('public.cloud_scenes') is null
+     or to_regprocedure('public.add_cloud_chapter(uuid,text)') is null
+     or to_regprocedure('public.add_cloud_episode_to_chapter(uuid,text)') is null
+     or to_regprocedure('public.add_cloud_scene(uuid,text,text)') is null
+     or to_regprocedure('public.add_cloud_page_to_scene(uuid)') is null
+     or to_regprocedure('public.move_cloud_page_before(uuid,uuid)') is null then
+    raise exception 'Current schema long-form manga structure missing';
+  end if;
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_episodes' and column_name='chapter_id')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_pages' and column_name='scene_id') then
+    raise exception 'Current schema long-form links missing';
+  end if;
+end $$;
+
 do $$ begin
   if to_regclass('public.cloud_visual_reference_assets') is null
     or to_regclass('public.cloud_panel_subject_assignments') is null

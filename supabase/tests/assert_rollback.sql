@@ -2,6 +2,15 @@
 
 do $$
 begin
+  if to_regclass('public.cloud_chapters') is not null
+     or to_regclass('public.cloud_scenes') is not null
+     or to_regprocedure('public.move_cloud_page_before(uuid,uuid)') is not null then
+    raise exception 'Long-form manga structure rollback failed';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_general_monitor_email_settings') is not null
      or to_regclass('public.cloud_general_monitor_email_audit_logs') is not null
      or to_regprocedure(

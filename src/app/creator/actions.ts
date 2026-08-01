@@ -4,10 +4,15 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
+  addCloudChapter,
   addCloudEpisode,
+  addCloudEpisodeToChapter,
   addCloudPage,
+  addCloudPageToScene,
+  addCloudScene,
   createCloudProject,
   deleteCloudStructure,
+  moveCloudPageBefore,
   moveCloudStructure,
   renameCloudEpisode,
   renameCloudProject,
@@ -91,6 +96,82 @@ export async function addCloudPageAction(projectId: string, episodeId: string) {
   }
   revalidatePath(`/creator/${projectId}`);
   redirect(`/creator/${projectId}/pages/${pageId}`);
+}
+
+export async function addCloudChapterAction(
+  projectId: string,
+  formData: FormData,
+) {
+  const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
+  if (!parsed.success) redirect(`/creator/${projectId}?error=章の名前を入力してください`);
+  try {
+    await addCloudChapter(projectId, parsed.data);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "章を追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}?message=章を追加しました`);
+}
+
+export async function addCloudEpisodeToChapterAction(
+  projectId: string,
+  chapterId: string,
+  formData: FormData,
+) {
+  const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
+  if (!parsed.success) redirect(`/creator/${projectId}?error=話の名前を入力してください`);
+  try {
+    await addCloudEpisodeToChapter(chapterId, parsed.data);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "話を追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}?message=話を追加しました`);
+}
+
+export async function addCloudSceneAction(
+  projectId: string,
+  episodeId: string,
+  formData: FormData,
+) {
+  const parsed = z.object({
+    title: z.string().trim().min(1).max(200),
+    summary: z.string().max(2000),
+  }).safeParse({ title: value(formData, "title"), summary: value(formData, "summary") });
+  if (!parsed.success) redirect(`/creator/${projectId}?error=シーン設定を確認してください`);
+  try {
+    await addCloudScene(episodeId, parsed.data.title, parsed.data.summary);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "シーンを追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}?message=シーンを追加しました`);
+}
+
+export async function addCloudPageToSceneAction(projectId: string, sceneId: string) {
+  let pageId: string;
+  try {
+    pageId = await addCloudPageToScene(sceneId);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "ページを追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}/pages/${pageId}`);
+}
+
+export async function moveCloudPageBeforeAction(
+  projectId: string,
+  pageId: string,
+  targetPageId: string,
+) {
+  const parsed = z.object({ projectId: z.string().uuid(), pageId: z.string().uuid(), targetPageId: z.string().uuid() }).safeParse({ projectId, pageId, targetPageId });
+  if (!parsed.success) throw new Error("invalid_page_move");
+  try {
+    await moveCloudPageBefore(parsed.data.pageId, parsed.data.targetPageId);
+  } catch (error) {
+    throw new Error(domainMessage(error, "ページを並べ替えできませんでした。"));
+  }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
 }
 
 export async function renameCloudProjectAction(

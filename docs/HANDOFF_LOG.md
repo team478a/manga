@@ -2486,6 +2486,50 @@ IMPLEMENTED_AWAITING_REVIEW
 
 ---
 
+## 2026-08-01 Codex: M4前半 32ページ制作基盤
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・コミット
+
+- Branch: `agent/manga-32page-foundation-v1`
+- Base: `agent/manga-transparent-layers-v1` / `17563eb`
+- HEAD: Draft PR作成時に追記
+
+### 完了
+
+- Chapter／Scene schema、RLS、既存作品backfill
+- 新規作品の第1章・第1話・シーン1・1ページ目同時作成
+- 章・話・シーン・ページ追加
+- ページ順・所属シーン変更、作品全体page number再採番
+- 単ページ／見開き表示、初期12件・12件単位の追加表示
+- migration未適用時の旧画面fallback
+
+### 未完了
+
+- Supabase staging適用
+- 実ログインブラウザでのdrag・390px／768px／1280px確認
+- 実Provider生成、責任者承認、PRマージ
+- Phase M4後半（batch、Queue制御、制作状態、永続Export、Storage thumbnail）
+
+### 検証
+
+- deps:check / lint / typecheck / build: 成功
+- hub:test: 354/354
+- canvas:test: 26/26
+- ai:test: 48/48
+- desktop:test: 182/182
+- migrations: 35本のvalidate、forward、rollback、reapply、canonical二重適用成功
+
+### 注意事項
+
+- migration、外部API有料生成、本番Feature Flag、マージは実行していない。
+- M4はM3-8の上に積んだstacked branch。親PR #104を先に扱う。
+
+---
+
 ## 追記テンプレート
 
 ```md

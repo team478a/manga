@@ -25,6 +25,33 @@ export type CloudEpisode = {
   revision: number;
 };
 
+export type CloudChapter = {
+  id: string;
+  project_id: string;
+  title: string;
+  order_index: number;
+  revision: number;
+};
+
+export type CloudScene = {
+  id: string;
+  project_id: string;
+  chapter_id: string;
+  episode_id: string;
+  title: string;
+  summary: string;
+  order_index: number;
+  revision: number;
+};
+
+export type CloudLongformStructure = {
+  available: boolean;
+  chapters: CloudChapter[];
+  scenes: CloudScene[];
+  episodeChapterIds: Record<string, string>;
+  pageSceneIds: Record<string, string>;
+};
+
 export type CloudPage = {
   id: string;
   project_id: string;

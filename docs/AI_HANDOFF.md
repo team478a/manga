@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M4前半 32ページ制作基盤、2026-08-01）
+
+- Branch: `agent/manga-32page-foundation-v1`
+- Base: `agent/manga-transparent-layers-v1`（Draft PR #104）
+- 目的: 32ページ読切を章・話・シーン単位で整理し、ページ一覧のDOM負荷を制限する
+- 実装: Chapter／Scene schemaとRLS、既存作品backfill、階層追加、同一話内drag reorder、単ページ／見開き、12ページずつ追加表示
+- fallback: migration未適用時は旧画面を継続し、構造編集だけ停止
+- migration: `202608010003_cloud_longform_structure.sql`、rollbackとcanonical schema同期済み
+- 詳細: `docs/cloud/MANGA_32_PAGE_FOUNDATION_V1.md`
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 354/354、Canvas 26/26、AI 48/48、Desktop 182/182、migration往復、production build成功
+- 状態: ローカル実装・全自動検証完了。Draft PR、Preview、GitHub CI、責任者確認待ち
+
+---
+
 ## 0. 現在の優先タスク（M3-8 人物・効果レイヤー白背景透明化、2026-08-01）
 
 - Branch: `agent/manga-transparent-layers-v1`

@@ -204,7 +204,13 @@
       "description": "一般向けCloudコマ部分修正用BFL Fillモデルの価格上限を追加",
       "forwardSha256": "30c0a8f8505b00e532a41698236763d42ad37a51d541bcc4db8a62452d8b4660",
       "rollbackSha256": "f759d47a3221285f97585637d865dffa679165fa39280d23833f560f1ec79a71"
+    },
+    {
+      "id": "202608010003_cloud_longform_structure",
+      "description": "32ページ制作向けの章・シーン階層とページ並べ替えを追加",
+      "forwardSha256": "69de8bc92ba164e5ff42e4821d73fa6c17a41be93d6657eb8f135c2c488430dd",
+      "rollbackSha256": "a0dc3acb35b98c56c7b014421da2bf3dacc7f7f73184d66f7e7bf260fbae223f"
     }
   ],
-  "schemaSha256": "4937394d97399cef73e326b639c84abb0a875b09f4f3b0613cbf343ed934dc0e"
+  "schemaSha256": "8c880da47c457a8dd6d2a3a818858607aa37a022ec1a54a68c4fd203ec113ed5"
 }
