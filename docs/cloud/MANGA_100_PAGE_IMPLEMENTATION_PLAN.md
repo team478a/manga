@@ -331,7 +331,7 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 
 目安: 8〜12 iteration
 
-進捗（2026-08-01）: 前半3項目（Chapter／Scene、ページ制作ボードと並べ替え・見開き、12件単位の遅延表示）を`agent/manga-32page-foundation-v1`で実装。続いて4〜8ページbatch生成、進捗、一時停止／再開／中止、失敗Job単位retry、期限付きCanvas編集lockを`agent/manga-batch-production-v1`で実装した。残りは制作状態、確定lock、stale表示、永続Export、Storage thumbnail。
+進捗（2026-08-01）: Chapter／Scene、ページ制作ボード、見開き・並べ替え・遅延表示、4〜8ページbatch生成、編集lock、制作状態、確定lock、stale表示を実装済み。`agent/manga-durable-export-v1`で4ページ分割・停止／再開／再試行・完成PDF結合を備えた永続Exportを追加した。Phase M4の残りはStorage thumbnail／cacheと不要中間生成物の整理。
 
 目的: 章・シーン単位で32ページ読切を安定制作できるようにする。
 

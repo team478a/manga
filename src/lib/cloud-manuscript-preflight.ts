@@ -11,7 +11,10 @@ export type CloudManuscriptPreflightIssue = {
     | "empty_panel"
     | "missing_asset"
     | "low_resolution"
-    | "text_overflow";
+    | "text_overflow"
+    | "page_not_finalized"
+    | "page_stale"
+    | "generation_active";
   severity: "error" | "warning";
   message: string;
   pageId: string | null;
@@ -51,6 +54,12 @@ type PreflightAsset = {
   height: number;
 };
 
+type PreflightProductionState = {
+  pageId: string;
+  status: string;
+  isStale: boolean;
+};
+
 function textOverflows(canvas: PageCanvas) {
   return canvas.textObjects.filter((text) => {
     if (!text.visible || !text.text.trim()) return false;
@@ -82,6 +91,9 @@ export function analyzeCloudManuscript(input: {
   assets: PreflightAsset[];
   targetPageCount?: number;
   issueLimit?: number;
+  productionStates?: PreflightProductionState[];
+  activeGenerationPageIds?: string[];
+  requireFinalizedPages?: boolean;
 }): CloudManuscriptPreflightReport {
   const targetPageCount = input.targetPageCount ?? 8;
   const issueLimit = input.issueLimit ?? 100;
@@ -91,6 +103,10 @@ export function analyzeCloudManuscript(input: {
     (left, right) => left.page_number - right.page_number,
   );
   const pageIds = new Set(orderedPages.map((page) => page.id));
+  const productionByPage = new Map(
+    (input.productionStates ?? []).map((state) => [state.pageId, state]),
+  );
+  const activeGenerationPageIds = new Set(input.activeGenerationPageIds ?? []);
   let totalPanelCount = 0;
   let completedPanelCount = 0;
   const pageProgress: CloudManuscriptPageProgress[] = [];
@@ -110,6 +126,38 @@ export function analyzeCloudManuscript(input: {
   orderedPages.forEach((page, index) => {
     let pageTotalPanelCount = 0;
     let pageCompletedPanelCount = 0;
+    if (input.requireFinalizedPages) {
+      const production = productionByPage.get(page.id);
+      if (production?.isStale) {
+        addIssue({
+          code: "page_stale",
+          severity: "error",
+          message: `${page.page_number}ページは設定変更後の再確認が必要です。`,
+          pageId: page.id,
+          pageNumber: page.page_number,
+          panelId: null,
+        });
+      } else if (production?.status !== "finalized") {
+        addIssue({
+          code: "page_not_finalized",
+          severity: "error",
+          message: `${page.page_number}ページを確認して確定してください。`,
+          pageId: page.id,
+          pageNumber: page.page_number,
+          panelId: null,
+        });
+      }
+      if (activeGenerationPageIds.has(page.id)) {
+        addIssue({
+          code: "generation_active",
+          severity: "error",
+          message: `${page.page_number}ページの画像生成が完了していません。`,
+          pageId: page.id,
+          pageNumber: page.page_number,
+          panelId: null,
+        });
+      }
+    }
     if (page.page_number !== index + 1) {
       addIssue({
         code: "page_order",

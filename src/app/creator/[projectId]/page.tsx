@@ -29,12 +29,15 @@ import { requireProfile } from "@/lib/auth";
 import { getCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import {
   getCloudProductionProgress,
+  getCloudManuscriptPreflight,
   getCloudProjectCharacterSheet,
   getCloudProjectWorkspace,
   listCloudPageProductionStates,
   listCloudGenerationBatches,
 } from "@/lib/cloud-creator-server";
+import { listCloudExportJobs } from "@/modules/cloud-creator/export/durable-export-service";
 import { LongformPageManager } from "./LongformPageManager";
+import { DurableExportPanel } from "./DurableExportPanel";
 
 export default async function CloudProjectPage({
   params,
@@ -60,10 +63,12 @@ export default async function CloudProjectPage({
     ? await listCloudGenerationBatches(projectId).catch(() => [])
     : [];
   const { project, episodes, pages, longform } = workspace;
-  const [marketplaceDraft, productionProgress, characters] = await Promise.all([
+  const [marketplaceDraft, productionProgress, characters, exportReadiness, exportHistory] = await Promise.all([
     getCloudMarketplaceDraft(projectId).catch(() => null),
     getCloudProductionProgress(projectId).catch(() => null),
     getCloudProjectCharacterSheet(projectId).catch(() => []),
+    getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }).catch(() => null),
+    listCloudExportJobs(projectId).catch(() => ({ available: false, jobs: [] })),
   ]);
   const pageProductionStates = longform.available
     ? await listCloudPageProductionStates(projectId, pages).catch(() => [])
@@ -267,6 +272,12 @@ export default async function CloudProjectPage({
           </div>
         </section>
       ) : null}
+      <DurableExportPanel
+        available={exportHistory.available}
+        jobs={exportHistory.jobs}
+        projectId={projectId}
+        ready={Boolean(exportReadiness?.ready)}
+      />
       <section className="panel mt-6" aria-labelledby="character-sheet">
         <h2 className="flex items-center gap-2 text-xl font-bold" id="character-sheet">
           <Users className="h-6 w-6 text-violet-700" />

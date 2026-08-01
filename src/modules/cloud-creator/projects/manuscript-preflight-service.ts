@@ -4,12 +4,16 @@ import { buildCloudProductionProgress } from "@/lib/cloud-production-progress";
 import { cloudCreatorContext } from "../auth-context";
 import { normalizeCloudCanvas } from "../canvas/canvas-normalizer";
 import { getCloudProjectWorkspace } from "./project-service";
+import { listCloudPageProductionStates } from "../production/production-status-service";
 
-export async function getCloudManuscriptPreflight(projectId: string) {
+export async function getCloudManuscriptPreflight(
+  projectId: string,
+  options?: { requireFinalizedPages?: boolean },
+) {
   const { supabase } = await cloudCreatorContext();
   const workspace = await getCloudProjectWorkspace(projectId);
   const pageIds = workspace.pages.map((page) => page.id);
-  const [snapshotsResult, assetsResult] = await Promise.all([
+  const [snapshotsResult, assetsResult, activeJobsResult] = await Promise.all([
     pageIds.length
       ? supabase
           .from("cloud_canvas_snapshots")
@@ -22,18 +26,28 @@ export async function getCloudManuscriptPreflight(projectId: string) {
       .select("id,width,height")
       .eq("project_id", projectId)
       .is("deleted_at", null),
+    options?.requireFinalizedPages && pageIds.length
+      ? supabase
+          .from("cloud_generation_jobs")
+          .select("page_id")
+          .in("page_id", pageIds)
+          .in("status", ["queued", "running"])
+      : Promise.resolve({ data: [], error: null }),
   ]);
-  if (snapshotsResult.error || assetsResult.error)
+  if (snapshotsResult.error || assetsResult.error || activeJobsResult.error)
     throw new DomainError(
       "INTERNAL_ERROR",
       "原稿の完成状況を確認できませんでした。",
-      { cause: snapshotsResult.error ?? assetsResult.error },
+      { cause: snapshotsResult.error ?? assetsResult.error ?? activeJobsResult.error },
     );
   const latestSnapshots = new Map<string, unknown>();
   for (const snapshot of snapshotsResult.data ?? []) {
     if (!latestSnapshots.has(snapshot.page_id))
       latestSnapshots.set(snapshot.page_id, snapshot.canvas);
   }
+  const productionStates = options?.requireFinalizedPages
+    ? await listCloudPageProductionStates(projectId, workspace.pages)
+    : undefined;
   return analyzeCloudManuscript({
     coverPageId: workspace.project.cover_page_id,
     pages: workspace.pages.map((page) => ({
@@ -42,6 +56,11 @@ export async function getCloudManuscriptPreflight(projectId: string) {
       canvas: normalizeCloudCanvas(page, latestSnapshots.get(page.id)),
     })),
     assets: assetsResult.data ?? [],
+    productionStates,
+    activeGenerationPageIds: (activeJobsResult.data ?? [])
+      .map((row) => row.page_id)
+      .filter((id): id is string => Boolean(id)),
+    requireFinalizedPages: options?.requireFinalizedPages,
   });
 }
 

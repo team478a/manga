@@ -1,0 +1,10 @@
+begin;
+drop function if exists public.fail_cloud_export_job(uuid,uuid,text,boolean);
+drop function if exists public.complete_cloud_export_segment(uuid,uuid,integer,integer,text,jsonb,text,bigint);
+drop function if exists public.claim_cloud_export_job(text,integer);
+drop function if exists public.set_cloud_export_job_state(uuid,text);
+drop function if exists public.create_cloud_export_job(uuid,text);
+drop table if exists public.cloud_export_segments;
+drop table if exists public.cloud_export_jobs;
+delete from storage.buckets where id='cloud-exports';
+commit;

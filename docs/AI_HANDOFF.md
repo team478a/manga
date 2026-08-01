@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M4 永続PDFエクスポート、2026-08-01）
+
+- Branch: `agent/manga-durable-export-v1`
+- Base: `agent/manga-production-status-v1`（Draft PR #107）
+- 目的: 32〜100ページ原稿を4ページsegmentで永続処理し、完成PDFへ安全に結合する
+- 実装: Export Job／segment、停止・再開・中止・retry、private Storage、署名download、厳格preflight
+- migration: `202608010006_cloud_durable_export.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/MANGA_DURABLE_EXPORT_V1.md`
+- 状態: 実装済み。検証、Draft PR、Preview作成を継続中
+
+---
+
+
 ## 0. 現在の優先タスク（M4制作管理 ページ状態・確定ロック、2026-08-01）
 
 - Branch: `agent/manga-production-status-v1`
