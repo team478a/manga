@@ -2666,3 +2666,15 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - migration 39本目、rollback、canonical、実DB往復、全品質ゲートを完了
 - Draft PR #109、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - Supabase staging適用、Worker環境設定、実ブラウザ確認、マージは未実施
+
+## 2026-08-01 Codex: M5-1 物語の連続性台帳
+
+- `agent/manga-continuity-foundation-v1` を `agent/manga-storage-lifecycle-v1`（Draft PR #109）から作成
+- 衣装、場所、人物関係、時系列、小物、口調・呼称をページ範囲付きで保存する事実台帳を追加
+- 伏線の提示、回収予定、状態、回収ページを管理する台帳を追加
+- 同じ対象・項目の重複範囲に異なる値がある場合と、伏線の回収漏れを決定的に警告
+- 所有者RLS、編集権限RPC、入力検証、内部エラー秘匿を追加
+- migration 40本目、rollback、canonical、実DB forward／rollback／reapply／二重適用を完了
+- Hub 379/379、Canvas 26/26、AI 48/48、Desktop、a11y、型検査、Lint、production buildを完了
+- Draft PR #110、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
+- Supabase staging適用、実ブラウザ確認、マージは未実施

@@ -1086,3 +1086,12 @@ do $$ begin
     raise exception 'Cloud storage lifecycle migration objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_continuity_facts') is null
+     or to_regclass('public.cloud_plot_threads') is null
+     or to_regprocedure('public.save_cloud_continuity_fact(uuid,uuid,text,text,text,text,integer,integer,integer,text)') is null
+     or to_regprocedure('public.save_cloud_plot_thread(uuid,uuid,text,integer,integer,integer,text,text)') is null then
+    raise exception 'Cloud narrative continuity migration objects missing';
+  end if;
+end $$;
