@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M5-2: 連続性設定候補
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-continuity-suggestions-v1`
+- Base: `agent/manga-continuity-foundation-v1`（Draft PR #110）
+- Draft PR: [#111](https://github.com/team478a/manga/pull/111)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-2eb954-team478as-projects.vercel.app`
+- 目的: 確定済み設定から未登録の連続性候補を提示し、確認したものだけ事実台帳へ登録する
+- 抽出元: キャラクター設定、場所・小物設定、ページ割当済みシーン要約
+- 除外: Provider用Prompt、画像推測、未確定の本文解析、外部AI
+- migration／環境変数: 追加なし
+- 検証: deps、lint、Hub 383/383、Canvas 26/26、AI 48/48、Desktop、Desktop a11y、Hub/Desktop typecheck、migration 40本静的検査、production build成功
+- 詳細: `docs/cloud/MANGA_CONTINUITY_SUGGESTIONS_V1.md`
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 実ブラウザ、実作品語彙調整、責任者承認、親PR後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M5-1: 物語の連続性台帳
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

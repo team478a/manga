@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-2 連続性設定候補、2026-08-01）
+
+- Branch: `agent/manga-continuity-suggestions-v1`
+- Base: `agent/manga-continuity-foundation-v1`（Draft PR #110）
+- Draft PR: [#111](https://github.com/team478a/manga/pull/111)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-2eb954-team478as-projects.vercel.app`
+- 目的: 確定済みの構造化設定を候補化し、利用者が確認した項目だけM5-1台帳へ保存する
+- 実装: キャラクター／場所／小物／ページ割当済みシーン候補、登録済み除外、確認登録UI
+- 安全境界: Promptや画像を解析せず、外部AIを呼ばず、候補は未確認のまま保存しない
+- migration／環境変数: 追加なし
+- 詳細: `docs/cloud/MANGA_CONTINUITY_SUGGESTIONS_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実作品確認と責任者承認待ち
+
+---
+
 ## 0. 現在の優先タスク（M5-1 物語の連続性台帳、2026-08-01）
 
 - Branch: `agent/manga-continuity-foundation-v1`

@@ -6,6 +6,9 @@ import {
   type CloudPlotThreadInput,
 } from "@/lib/cloud-narrative-continuity";
 import { DomainError } from "@/lib/domain-errors";
+import { buildCloudContinuitySuggestions } from "@/lib/cloud-continuity-suggestions";
+import type { CloudCharacterProfile } from "@/lib/cloud-character-profile";
+import type { CloudWorldProfile } from "@/lib/cloud-world-bible";
 import { cloudCreatorContext } from "../auth-context";
 import { getCloudProjectWorkspace } from "./project-service";
 
@@ -23,6 +26,58 @@ export async function getCloudNarrativeContinuity(projectId: string) {
   const factRows = (facts.data ?? []) as CloudContinuityFact[];
   const threadRows = (threads.data ?? []) as CloudPlotThread[];
   return { available: true, facts: factRows, threads: threadRows, review: evaluateNarrativeContinuity(factRows, threadRows, workspace.pages.length) };
+}
+
+export async function getCloudContinuitySuggestions(projectId: string) {
+  const { supabase } = await cloudCreatorContext();
+  const workspace = await getCloudProjectWorkspace(projectId);
+  const [characters, worlds, facts] = await Promise.all([
+    supabase.from("cloud_character_profiles")
+      .select("id,project_id,name,role,current_version,updated_at")
+      .eq("project_id", projectId).is("deleted_at", null),
+    supabase.from("cloud_world_profiles")
+      .select("id,project_id,kind,name,current_version,updated_at")
+      .eq("project_id", projectId).is("deleted_at", null),
+    supabase.from("cloud_continuity_facts")
+      .select("id,project_id,fact_kind,subject,attribute,fact_value,start_page,end_page,source_page,notes,updated_at")
+      .eq("project_id", projectId),
+  ]);
+  if ([characters, worlds, facts].some((result) => result.error?.code === "42P01"))
+    return { available: false, suggestions: [] };
+  const failure = [characters, worlds, facts].find((result) => result.error);
+  if (failure?.error)
+    throw new DomainError("INTERNAL_ERROR", "設定候補を読み込めませんでした。", { cause: failure.error });
+  const characterIds = (characters.data ?? []).map((profile) => profile.id);
+  const worldIds = (worlds.data ?? []).map((profile) => profile.id);
+  const [characterVersions, worldVersions] = await Promise.all([
+    characterIds.length ? supabase.from("cloud_character_profile_versions")
+      .select("profile_id,version_number,appearance_age,body_build,hair,costume,color_palette,immutable_traits,prompt,negative_prompt")
+      .in("profile_id", characterIds) : Promise.resolve({ data: [], error: null }),
+    worldIds.length ? supabase.from("cloud_world_profile_versions")
+      .select("profile_id,version_number,description,visual_traits,color_palette,continuity_rules,prompt,negative_prompt")
+      .in("profile_id", worldIds) : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (characterVersions.error || worldVersions.error)
+    throw new DomainError("INTERNAL_ERROR", "設定候補を読み込めませんでした。", { cause: characterVersions.error ?? worldVersions.error });
+  const characterProfiles = (characters.data ?? []).flatMap((profile) => {
+    const version = (characterVersions.data ?? []).find((item) => item.profile_id === profile.id && item.version_number === profile.current_version);
+    return version ? [{ ...profile, ...version } as CloudCharacterProfile] : [];
+  });
+  const worldProfiles = (worlds.data ?? []).flatMap((profile) => {
+    const version = (worldVersions.data ?? []).find((item) => item.profile_id === profile.id && item.version_number === profile.current_version);
+    return version ? [{ ...profile, ...version } as CloudWorldProfile] : [];
+  });
+  return {
+    available: true,
+    suggestions: buildCloudContinuitySuggestions({
+      projectId,
+      pages: workspace.pages,
+      longform: workspace.longform,
+      characters: characterProfiles,
+      worlds: worldProfiles,
+      existingFacts: (facts.data ?? []) as CloudContinuityFact[],
+    }),
+  };
 }
 
 export async function saveCloudContinuityFact(input: CloudContinuityFactInput) {
