@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M5-3: 長編作品コックピット
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-longform-cockpit-v1`
+- Base: `agent/manga-continuity-suggestions-v1`（Draft PR #111）
+- Draft PR: [#112](https://github.com/team478a/manga/pull/112)
+- Preview: `https://mangai-hub-staging-git-agent-manga-lo-7b90ee-team478as-projects.vercel.app`
+- 目的: 章・シーン・ページ制作状態・伏線・人物関係を一画面へ集約する
+- 実装: 作品別コックピット、制作状態集計、章／シーン進捗、警告／伏線、人物／関係時系列表示
+- データ境界: 保存済み構造化データだけを表示し、推測・外部AI呼び出しは行わない
+- migration／環境変数: 追加なし
+- 検証: deps、lint、Hub 386/386、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 40本静的検査、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 実ブラウザ、100ページ実データの表示確認、責任者承認、親PR後のマージ
+- 詳細: `docs/cloud/MANGA_LONGFORM_COCKPIT_V1.md`
+
+
 ## 2026-08-01 長編マンガ制作 M5-2: 連続性設定候補
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

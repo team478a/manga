@@ -2690,3 +2690,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 専用4テスト、Hub 383/383、Canvas 26/26、AI 48/48、Desktop、a11y、型検査、Lint、production buildを完了
 - Draft PR #111、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - 実ブラウザ確認、実作品語彙調整、マージは未実施
+
+## 2026-08-01 Codex: M5-3 長編作品コックピット
+
+- `agent/manga-longform-cockpit-v1` を `agent/manga-continuity-suggestions-v1`（Draft PR #111）から作成
+- 章、シーン、ページ制作状態、伏線、人物関係を作品別コックピットへ集約
+- staleな確定ページを再確認として数え、ページ編集へ直接移動できる状態表示を追加
+- 一貫性警告、未回収伏線、登録済み人物、関係・時系列を確認できる導線を追加
+- 保存済み構造化データだけを表示し、推測・Provider呼び出し・migration・環境変数は追加していない
+- Hub 386/386、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
+- Draft PR #112、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
+- 実ブラウザ確認、100ページ実データ確認、マージは未実施
