@@ -4,6 +4,33 @@
 
 ---
 
+## 2026-08-01 Codex: M3-5 修正領域おすすめ
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-smart-mask-v1`
+- Base: `agent/manga-revision-comparison-v1`（Draft PR #100）
+- Draft PR: [#101](https://github.com/team478a/manga/pull/101)
+
+### 完了
+
+- 一般向けCloudの部分修正へ、修正preset別の初期マスク自動配置を追加した。
+- 顔・表情・両手／左右の手・衣装・背景・全体を選び直せ、従来のブラシ・消しゴム・全消去で補正できる。
+- v1は画像認識ではなく比率ベースの目安であり、検出済みとは表示しない。
+- DB、migration、Feature Flag、Provider、料金、成人向け、Desktopは変更していない。
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 342/342、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功。
+- 詳細: `docs/cloud/MANGA_SMART_MASK_V1.md`
+
+### 次
+
+- Draft PRとPreviewを作成し、スマートフォンを含む実ブラウザで範囲切替・手描き補正を確認する。
+
+---
+
 ## 2026-08-01 Codex: M3-4 修正前後の比較表示
 
 ### 状態

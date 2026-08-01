@@ -2,12 +2,19 @@
 /* eslint-disable @next/next/no-img-element -- Private signed asset URLs are drawn at their exact source dimensions. */
 
 import { useEffect, useRef, useState } from "react";
-import { Brush, Eraser, RotateCcw, X } from "lucide-react";
+import { Brush, Check, Eraser, RotateCcw, Sparkles, X } from "lucide-react";
+import {
+  defaultMaskSuggestion,
+  maskSuggestionsForPreset,
+  type MaskRevisionPreset,
+  type MaskSuggestion,
+} from "./services/panel-mask-suggestions";
 
 export function PanelInpaintingDialog({
   sourceUrl,
   sourceWidth,
   sourceHeight,
+  revisionPreset,
   submitting,
   onCancel,
   onSubmit,
@@ -15,6 +22,7 @@ export function PanelInpaintingDialog({
   sourceUrl: string;
   sourceWidth: number;
   sourceHeight: number;
+  revisionPreset: MaskRevisionPreset;
   submitting: boolean;
   onCancel: () => void;
   onSubmit: (mask: File) => Promise<void>;
@@ -25,6 +33,49 @@ export function PanelInpaintingDialog({
   const [tool, setTool] = useState<"brush" | "eraser">("brush");
   const [brushPercent, setBrushPercent] = useState(6);
   const [hasMask, setHasMask] = useState(false);
+  const [activeSuggestionId, setActiveSuggestionId] = useState<string | null>(
+    null,
+  );
+  const suggestions = maskSuggestionsForPreset(revisionPreset);
+
+  function paintSuggestion(suggestion: MaskSuggestion) {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext("2d");
+    if (!canvas || !context) return;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    context.fillStyle = "#ffffff";
+    for (const shape of suggestion.shapes) {
+      if (shape.kind === "rectangle") {
+        context.fillRect(
+          shape.x * canvas.width,
+          shape.y * canvas.height,
+          shape.width * canvas.width,
+          shape.height * canvas.height,
+        );
+        continue;
+      }
+      context.beginPath();
+      context.ellipse(
+        shape.centerX * canvas.width,
+        shape.centerY * canvas.height,
+        shape.radiusX * canvas.width,
+        shape.radiusY * canvas.height,
+        0,
+        0,
+        Math.PI * 2,
+      );
+      context.fill();
+    }
+    context.restore();
+    setHasMask(true);
+    setActiveSuggestionId(suggestion.id);
+  }
+
+  // A newly mounted dialog owns a fresh canvas, so preset/source changes reset it.
+  useEffect(() => {
+    paintSuggestion(defaultMaskSuggestion(revisionPreset));
+  }, [revisionPreset, sourceUrl]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -63,6 +114,7 @@ export function PanelInpaintingDialog({
     context.stroke();
     context.restore();
     lastPointRef.current = to;
+    setActiveSuggestionId(null);
     if (tool === "brush") setHasMask(true);
   }
 
@@ -70,6 +122,7 @@ export function PanelInpaintingDialog({
     const canvas = canvasRef.current;
     canvas?.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
     setHasMask(false);
+    setActiveSuggestionId(null);
   }
 
   async function submit() {
@@ -108,7 +161,7 @@ export function PanelInpaintingDialog({
               直したい範囲を塗る
             </h2>
             <p className="mt-1 text-sm text-stone-600">
-              白く塗った範囲だけをAIが修正します。黒い範囲は元画像を維持します。
+              おすすめ範囲を自動配置しました。白い範囲だけをAIが修正し、黒い範囲は元画像を維持します。
             </p>
           </div>
           <button
@@ -120,6 +173,36 @@ export function PanelInpaintingDialog({
           >
             <X className="h-5 w-5" />
           </button>
+        </div>
+        <div className="border-b border-violet-200 bg-violet-50 p-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-violet-950">
+            <Sparkles className="h-4 w-4" /> 修正範囲のおすすめ
+          </div>
+          <p className="mt-1 text-xs text-violet-800">
+            修正内容に合わせた目安です。画像を見ながら「塗る」「消す」で調整してください。
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {suggestions.map((suggestion) => (
+              <button
+                aria-pressed={activeSuggestionId === suggestion.id}
+                className={
+                  activeSuggestionId === suggestion.id
+                    ? "button"
+                    : "button-secondary"
+                }
+                disabled={submitting}
+                key={suggestion.id}
+                onClick={() => paintSuggestion(suggestion)}
+                title={suggestion.description}
+                type="button"
+              >
+                {activeSuggestionId === suggestion.id ? (
+                  <Check className="mr-1 h-4 w-4" />
+                ) : null}
+                {suggestion.label}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 border-b border-stone-200 bg-stone-50 p-3">
           <button

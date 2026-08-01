@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M3-5: 修正領域おすすめ
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-smart-mask-v1`
+- Base: `agent/manga-revision-comparison-v1`（Draft PR #100）
+- Draft PR: [#101](https://github.com/team478a/manga/pull/101)
+- 目的: 部分修正で白いマスクを毎回ゼロから描く負担を減らす
+- 実装: 修正preset別の初期範囲自動配置、顔・表情・両手／左右の手・衣装・背景・全体候補、手動補正
+- 正確性: v1は画像認識ではなく比率ベースの目安。検出済みとは表示せず、利用者が元画像上で確認する
+- migration / Feature Flag / Provider / 料金: 追加なし
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 342/342、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
+- 詳細: `docs/cloud/MANGA_SMART_MASK_V1.md`
+- 未実施: 実ブラウザでのマウス・タッチ確認、責任者承認、親PR #100後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M3-4: 修正前後の比較表示
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

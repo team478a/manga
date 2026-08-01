@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M3-5 修正領域おすすめ、2026-08-01）
+
+- Branch: `agent/manga-smart-mask-v1`
+- Base: `agent/manga-revision-comparison-v1`（Draft PR #100）
+- Draft PR: [#101](https://github.com/team478a/manga/pull/101)
+- 目的: Inpaintingの修正範囲を修正内容からワンタップ提案し、手描き調整を残す
+- 実装: 顔・表情・手・衣装・背景・全体の比率ベース初期マスク、候補切替、手動補正
+- 境界: v1は画像認識ではなく目安。外部Vision API、DB、Provider、料金の変更なし
+- 詳細: `docs/cloud/MANGA_SMART_MASK_V1.md`
+- 状態: ローカル全品質ゲート成功。Draft PR、GitHub CI、Vercel、責任者確認待ち
+- 未実施: 実ブラウザのマウス・タッチ確認、責任者承認、親PR #100後のマージ
+
+---
+
 ## 0. 現在の優先タスク（M3-4 修正前後の比較表示、2026-08-01）
 
 - Branch: `agent/manga-revision-comparison-v1`

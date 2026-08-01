@@ -1772,6 +1772,7 @@ export function CloudCanvasEditor({
         <PanelInpaintingDialog
           onCancel={() => setInpaintingDialogOpen(false)}
           onSubmit={requestPanelInpainting}
+          revisionPreset={revisionPreset}
           sourceHeight={selectedRevisionAsset.height}
           sourceUrl={selectedRevisionAsset.url}
           sourceWidth={selectedRevisionAsset.width}
