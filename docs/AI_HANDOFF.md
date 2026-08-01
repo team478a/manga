@@ -7,8 +7,9 @@
 - Draft PR: [#114](https://github.com/team478a/manga/pull/114)
 - Preview: `https://mangai-hub-staging-git-agent-manga-ch-9a2d97-team478as-projects.vercel.app`
 - 実装: 章ごとの優先度・担当名・期限・メモ、期限超過、優先章数、次着手章
-- migration: `202608010009_cloud_chapter_production_plans.sql`（未適用）
-- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。migration適用・実ブラウザ・責任者承認待ち
+- migration: `202608010009_cloud_chapter_production_plans.sql`（Supabase staging適用・構造確認済み）
+- DB適用: 長編制作関連の未適用10項目を一括監査し、すべて正常。`202608010002`は既適用
+- 状態: 実装、DB適用、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ・Worker実行・責任者承認待ち
 
 ---
 

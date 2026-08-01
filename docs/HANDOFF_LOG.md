@@ -2738,3 +2738,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Hub 388/388、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
 - Draft PR #113、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - 実ブラウザ確認、100ページ実データ操作確認、マージは未実施
+
+## 2026-08-01 Codex: 長編制作Supabase適用・品質再確認
+
+- Supabase stagingへ`202607310005`、`202607310006`、`202608010001`、`202608010003`〜`202608010009`を順番に適用
+- テーブル、列、RPC、RLS、trigger、Storage bucket、indexを各migration後に確認し、最終一括監査10/10成功
+- `202608010002_cloud_panel_inpainting.sql`は既適用のため再実行していない
+- deps:check、lint、Hub/Desktop typecheck、Hub 391/391、Canvas 26/26、AI 48/48、migration 41本検査、production build成功
+- Draft PR #114のCore quality、Migration roundtrip、Windows build、Vercelはすべて成功
+- 未実施は実ブラウザ長編制作フロー、実Worker、責任者承認、stack順のマージ
