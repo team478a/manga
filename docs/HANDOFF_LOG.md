@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-durable-export-v1`
 - Base: `agent/manga-production-status-v1`（Draft PR #107）
+- Draft PR: [#108](https://github.com/team478a/manga/pull/108)
+- Preview: `https://mangai-hub-staging-git-agent-manga-du-4a6dbe-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -23,6 +25,7 @@ IMPLEMENTED_AWAITING_REVIEW
 - 全ページ確定、revision一致、制作設定再確認、画像生成停止をUIとDBで二重検証した。
 - 所有者RLS、service role限定Worker RPC、署名download、同一作品1 active Jobを追加した。
 - migration、rollback、canonical schema、preflight、集中テストを追加した。
+- deps、lint、Hub 369/369、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、typecheck、PostgreSQL 16 roundtrip、buildに成功した。
 
 ### 次
 
