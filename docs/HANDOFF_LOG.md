@@ -2664,4 +2664,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 完成PDFを除く期限切れExport中間物と差し替え済みサムネイルだけをcleanup対象に限定
 - 保存中の再編集を検出し、古いサムネイルを公開せず再生成する競合処理を追加
 - migration 39本目、rollback、canonical、実DB往復、全品質ゲートを完了
+- Draft PR #109、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - Supabase staging適用、Worker環境設定、実ブラウザ確認、マージは未実施
