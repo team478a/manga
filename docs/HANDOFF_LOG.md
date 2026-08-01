@@ -2747,3 +2747,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - deps:check、lint、Hub/Desktop typecheck、Hub 391/391、Canvas 26/26、AI 48/48、migration 41本検査、production build成功
 - Draft PR #114のCore quality、Migration roundtrip、Windows build、Vercelはすべて成功
 - 未実施は実ブラウザ長編制作フロー、実Worker、責任者承認、stack順のマージ
+
+## 2026-08-01 Codex: モニター向け長編マンガ制作マニュアル
+
+- Webマニュアル`/dashboard/monitor/guide`へ「漫画原稿を完成させる手順」を追加
+- 4〜8ページの試作、人物・画風・世界観、章・話・シーン・ページ、参照画像、一括生成、制作状態、連続性、100ページ対応、完成原稿PDFを案内
+- `docs/cloud/CLOUD_GENERAL_MONITOR_USER_GUIDE.md`も同じ実装状態へ同期
+- 専用Webマニュアルテスト、Hub/Desktop typecheck、Lint、差分検査に成功
