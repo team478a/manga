@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-transparent-layers-v1`
 - Base: `agent/manga-layered-generation-v1`（Draft PR #103）
+- Draft PR: [#104](https://github.com/team478a/manga/pull/104)
+- Preview: `https://mangai-hub-staging-git-agent-manga-tr-46b68e-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -24,11 +26,12 @@ IMPLEMENTED_AWAITING_REVIEW
 - 単体テストとWorker保存経路の統合テストを追加した。
 - DB、migration、Feature Flag、Provider、料金、成人向け、Desktopは変更していない。
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 350/350、Canvas 26/26、AI 48/48、Desktop 182/182、migration 34/34、production build成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
 - 詳細: `docs/cloud/MANGA_TRANSPARENT_LAYER_OUTPUT_V1.md`
 
 ### 次
 
-- Draft PRとPreviewを作成し、実Providerと実ブラウザで細線・網点・白縁を確認する。
+- 実Providerと実ブラウザで細線・網点・白縁を確認し、親PR #103後に責任者が承認する。
 
 ---
 

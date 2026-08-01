@@ -1,5 +1,8 @@
 # MANGA 人物・効果レイヤー白背景透明化 v1
 
+- Draft PR: [#104](https://github.com/team478a/manga/pull/104)
+- Preview: `https://mangai-hub-staging-git-agent-manga-tr-46b68e-team478as-projects.vercel.app`
+
 ## 目的
 
 一般向けCloud Canvasで個別生成した人物・効果素材から白い背景を自動除去し、背景レイヤーへ自然に重ねられる透明PNGとして保存する。
@@ -58,3 +61,4 @@
 - `npm run db:migrations:validate`: 34/34成功
 - `npm run build`: 成功
 - `git diff --check`: 成功
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel成功
