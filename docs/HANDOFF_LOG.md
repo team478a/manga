@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `codex/manga-checkpoint-restore-v1`
 - Base: `codex/manga-version-freeze-v1`（Draft PR #116）
+- Draft PR: [#117](https://github.com/team478a/manga/pull/117)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ch-e4a0cd-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -23,6 +25,7 @@ IMPLEMENTED_AWAITING_REVIEW
 - 明示確認、処理中表示、復元履歴を作品詳細へ追加した。
 - M5-7 migration `202608010011`のSupabase staging適用と構造確認を記録した。
 - Hub 403/403、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、production build、44 migration roundtripが成功した。
+- Core quality、Migration roundtrip、Windows build、Vercelの全CIが成功した。
 
 ### 未実施
 

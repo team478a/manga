@@ -5,11 +5,14 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `codex/manga-checkpoint-restore-v1`
 - Base: `codex/manga-version-freeze-v1`（Draft PR #116）
+- Draft PR: [#117](https://github.com/team478a/manga/pull/117)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ch-e4a0cd-team478as-projects.vercel.app`
 - 目的: 作業バックアップ／完成版から作品構造とCanvasを安全に復元する
 - 実装: 復元前自動バックアップ、所有権検査、生成／編集ロック検査、復元監査、明示確認UI、処理中表示
 - 安全条件: revision単調増加、復元ページは要再確認、欠損blob時は全rollback、別作品checkpoint拒否
 - migration: `202608020001_cloud_project_checkpoint_restore.sql`（未適用）
 - 検証: deps、lint、Hub 403/403、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本の静的検査とforward／rollback／reapply、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 未実施: Supabase staging適用、実ブラウザ、100ページ実データ、責任者承認
 - 詳細: `docs/cloud/MANGA_PROJECT_CHECKPOINT_RESTORE_V1.md`
 
