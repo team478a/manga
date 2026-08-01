@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M4後半: 4〜8ページ一括生成・編集ロック
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-batch-production-v1`
+- Base: `agent/manga-32page-foundation-v1`（Draft PR #105）
+- 目的: 4〜8ページ単位で永続Queueへ登録し、進捗・停止・再開・中止・失敗分再実行と同時編集防止を提供する
+- 実装: Batch／Job対応、停止中claim除外、進捗UI、部分retry、期限付きCanvas編集lease
+- 互換性: migration未適用時はBatch履歴と編集lockだけをfallback。既存Queue、quota、Provider、Canvas保存契約は維持
+- migration: `202608010004_cloud_batch_production.sql`（36本目、rollback・canonical同期済み）
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 359/359、Canvas 26/26、AI 48/48、Desktop 182/182、migration forward/rollback/reapply/canonical、production build成功
+- 詳細: `docs/cloud/MANGA_BATCH_PRODUCTION_V1.md`
+- 未実施: Supabase staging適用、有料Provider実行、実ブラウザ確認、責任者承認、マージ
+
+
 ## 2026-08-01 長編マンガ制作 M4前半: 32ページ制作基盤
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

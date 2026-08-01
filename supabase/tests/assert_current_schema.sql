@@ -129,6 +129,26 @@ begin
   end if;
 end $$;
 
+do $$
+begin
+  if to_regclass('public.cloud_generation_batches') is null
+     or to_regclass('public.cloud_generation_batch_jobs') is null
+     or to_regclass('public.cloud_page_edit_locks') is null
+     or to_regprocedure('public.create_cloud_generation_batch(uuid,uuid[],text)') is null
+     or to_regprocedure('public.attach_cloud_generation_batch_job(uuid,uuid)') is null
+     or to_regprocedure('public.replace_cloud_generation_batch_job(uuid,uuid)') is null
+     or to_regprocedure('public.set_cloud_generation_batch_state(uuid,text)') is null
+     or to_regprocedure('public.acquire_cloud_page_edit_lock(uuid,uuid,integer)') is null
+     or to_regprocedure('public.release_cloud_page_edit_lock(uuid,uuid)') is null then
+    raise exception 'Current schema batch production objects missing';
+  end if;
+  if not coalesce((select relrowsecurity from pg_class where oid='public.cloud_generation_batches'::regclass),false)
+     or not coalesce((select relrowsecurity from pg_class where oid='public.cloud_page_edit_locks'::regclass),false)
+     or not has_function_privilege('authenticated','public.create_cloud_generation_batch(uuid,uuid[],text)','execute') then
+    raise exception 'Current schema batch production access controls invalid';
+  end if;
+end $$;
+
 do $$ begin
   if to_regclass('public.cloud_visual_reference_assets') is null
     or to_regclass('public.cloud_panel_subject_assignments') is null

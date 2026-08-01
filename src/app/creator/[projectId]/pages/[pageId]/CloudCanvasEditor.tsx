@@ -43,6 +43,10 @@ import {
 } from "./hooks/useCanvasPointer";
 import { downloadCanvasPng } from "./services/canvas-download";
 import { createCanvasSvg } from "./services/canvas-svg";
+import {
+  acquirePageEditLease,
+  releasePageEditLease,
+} from "./services/page-edit-lock-client";
 import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
 import { PanelImageComparisonDialog } from "./PanelImageComparisonDialog";
 import {
@@ -187,6 +191,23 @@ export function CloudCanvasEditor({
   panelInpaintingEnabled: boolean;
   panelOutpaintingEnabled: boolean;
 }) {
+  const [pageLockState, setPageLockState] = useState<"checking" | "acquired" | "locked" | "unavailable">("checking");
+  const pageLockToken = useRef(crypto.randomUUID());
+  useEffect(() => {
+    let active = true;
+    const lockToken = pageLockToken.current;
+    const renew = async () => {
+      const state = await acquirePageEditLease(page.id, lockToken);
+      if (active) setPageLockState(state);
+    };
+    void renew();
+    const timer = window.setInterval(renew, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      void releasePageEditLease(page.id, lockToken);
+    };
+  }, [page.id]);
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
   const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
@@ -919,7 +940,7 @@ export function CloudCanvasEditor({
 
   return (
     <div
-      className="min-h-screen bg-stone-100"
+      className="relative min-h-screen bg-stone-100"
       onClickCapture={(event) => {
         const anchor = (event.target as HTMLElement).closest("a[href]");
         if (
@@ -934,6 +955,8 @@ export function CloudCanvasEditor({
         event.stopPropagation();
       }}
     >
+      {pageLockState === "locked" ? <div className="absolute inset-0 z-50 grid place-items-center bg-stone-950/70 p-5"><div className="max-w-md rounded-xl bg-white p-6 text-center shadow-xl"><Lock className="mx-auto h-8 w-8 text-violet-700" /><h1 className="mt-3 text-xl font-bold">このページは別の画面で編集中です</h1><p className="mt-2 text-sm text-stone-600">別の画面を閉じて約2分待ってから再読み込みしてください。上書きを防ぐため、この画面では編集できません。</p><Link className="button-secondary mt-4 inline-flex" href={`/creator/${project.id}`}>作品画面へ戻る</Link></div></div> : null}
+      {pageLockState === "checking" ? <p className="m-2 rounded-lg bg-violet-50 p-2 text-center text-sm text-violet-800" aria-live="polite">編集状態を確認しています…</p> : null}
       <header className="sticky top-0 z-30 border-b border-stone-300 bg-white px-4 py-3">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-2">
           <Link className="button-secondary" href={`/creator/${project.id}`}>

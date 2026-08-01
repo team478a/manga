@@ -217,6 +217,22 @@ begin
   end if;
 end $$;
 
+do $$
+begin
+  if to_regclass('public.cloud_generation_batches') is null
+     or to_regclass('public.cloud_generation_batch_jobs') is null
+     or to_regclass('public.cloud_page_edit_locks') is null
+     or to_regprocedure('public.create_cloud_generation_batch(uuid,uuid[],text)') is null
+     or to_regprocedure('public.replace_cloud_generation_batch_job(uuid,uuid)') is null
+     or to_regprocedure('public.acquire_cloud_page_edit_lock(uuid,uuid,integer)') is null then
+    raise exception 'Cloud batch production migration objects missing';
+  end if;
+  if has_function_privilege('anon','public.create_cloud_generation_batch(uuid,uuid[],text)','execute')
+     or not has_function_privilege('authenticated','public.release_cloud_page_edit_lock(uuid,uuid)','execute') then
+    raise exception 'Cloud batch production function privileges invalid';
+  end if;
+end $$;
+
 do $$ begin
   if to_regclass('public.cloud_visual_reference_assets') is null
     or to_regclass('public.cloud_panel_subject_assignments') is null

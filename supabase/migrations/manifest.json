@@ -210,7 +210,13 @@
       "description": "32ページ制作向けの章・シーン階層とページ並べ替えを追加",
       "forwardSha256": "69de8bc92ba164e5ff42e4821d73fa6c17a41be93d6657eb8f135c2c488430dd",
       "rollbackSha256": "a0dc3acb35b98c56c7b014421da2bf3dacc7f7f73184d66f7e7bf260fbae223f"
+    },
+    {
+      "id": "202608010004_cloud_batch_production",
+      "description": "4〜8ページの一括画像生成、進捗制御、再試行、期限付き編集ロックを追加",
+      "forwardSha256": "a9b081d039b6e2c091e65b69a31620b190ad27f0ab2816a71c681b9056b07ae1",
+      "rollbackSha256": "5c4255c9a7e68c7ac4ca68bc04bb343290f58a29a17ddd91445f295b903f5d63"
     }
   ],
-  "schemaSha256": "8c880da47c457a8dd6d2a3a818858607aa37a022ec1a54a68c4fd203ec113ed5"
+  "schemaSha256": "8704323bea066f4d43d35f0d7ee4e76689ec821a67f981eddfdc3a0200f97d2e"
 }

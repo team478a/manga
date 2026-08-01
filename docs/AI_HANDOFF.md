@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M4後半 一括生成・編集ロック、2026-08-01）
+
+- Branch: `agent/manga-batch-production-v1`
+- Base: `agent/manga-32page-foundation-v1`（Draft PR #105）
+- 目的: 4〜8ページ単位の永続生成Queueと、Canvas同時編集の安全境界を追加する
+- 実装: Batch永続化、Job紐付け、進捗集計、停止／再開／中止、失敗分retry、120秒の編集lease
+- migration: `202608010004_cloud_batch_production.sql`、rollback、canonical schema同期済み
+- 詳細: `docs/cloud/MANGA_BATCH_PRODUCTION_V1.md`
+- 状態: コードとDB往復検証完了。Supabase staging適用、実Provider、実ブラウザ、責任者承認待ち
+
+---
+
 ## 0. 現在の優先タスク（M4前半 32ページ制作基盤、2026-08-01）
 
 - Branch: `agent/manga-32page-foundation-v1`
