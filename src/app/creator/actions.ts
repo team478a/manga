@@ -18,6 +18,7 @@ import {
   renameCloudProject,
   setCloudProjectDeleted,
   setCloudProjectCover,
+  setCloudPageProductionStatus,
   retryFailedCloudGenerationJob,
   setCloudGenerationBatchState,
   startCloudPageGenerationBatch,
@@ -362,4 +363,21 @@ export async function retryFailedCloudGenerationJobAction(projectId: string, job
   catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "失敗Jobを再実行できませんでした。"))}`); }
   revalidatePath(`/creator/${ids.data.projectId}`);
   redirect(`/creator/${ids.data.projectId}?message=${encodeURIComponent("失敗Jobを再実行しました")}`);
+}
+
+export async function setCloudPageProductionStatusAction(
+  projectId: string,
+  pageId: string,
+  status: "not_started" | "review_required" | "revision_required" | "finalized",
+) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    pageId: z.string().uuid(),
+    status: z.enum(["not_started", "review_required", "revision_required", "finalized"]),
+  }).safeParse({ projectId, pageId, status });
+  if (!parsed.success) redirect("/creator?error=制作状態を確認してください");
+  try { await setCloudPageProductionStatus(parsed.data.pageId, parsed.data.status); }
+  catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "制作状態を更新できませんでした。"))}`); }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "finalized" ? "ページを確定しました" : "ページの制作状態を更新しました")}`);
 }

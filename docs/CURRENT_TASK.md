@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M4制作管理: ページ状態・確定ロック
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-production-status-v1`
+- Base: `agent/manga-batch-production-v1`（Draft PR #106）
+- 目的: 32ページ制作の未着手、生成中、要確認、要修正、確定を永続管理する
+- 実装: 完成率、状態フィルター、生成Job連動、設定変更後の再確認警告、確定ページの編集・再生成DB拒否
+- fallback: migration未適用時は全ページを未着手表示とし、従来の編集・生成を継続
+- migration: `202608010005_cloud_production_status.sql`（37本目）
+- 詳細: `docs/cloud/CLOUD_PRODUCTION_STATUS_V1.md`
+- 未実施: Supabase staging適用、実Provider、実ブラウザ、責任者承認、親PR後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M4後半: 4〜8ページ一括生成・編集ロック
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

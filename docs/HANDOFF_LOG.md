@@ -2617,3 +2617,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 -
 ```
+## 2026-08-01 Codex: M4制作管理 ページ状態・確定ロック
+
+- `agent/manga-production-status-v1` を `agent/manga-batch-production-v1` から作成
+- 未着手／生成中／要確認／要修正／確定と作品全体の完成率を追加
+- 生成Jobに状態を連動し、確定ページの編集・一括生成をDBとUIの両方で拒否
+- キャラクター・画風・場所・小物・参照画像更新後に確定ページへ再確認警告を表示
+- migration 37本目、rollback、canonical、静的テストを追加
+- Supabase staging適用、有料Provider実行、マージは未実施

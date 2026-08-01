@@ -12,9 +12,13 @@ export type {
   CloudGenerationJob,
   CloudLongformStructure,
   CloudPage,
+  CloudPageProductionState,
+  CloudPageProductionStatus,
   CloudProjectSummary,
   CloudScene,
 } from "@/modules/cloud-creator/contracts/types";
+
+export { listCloudPageProductionStates, setCloudPageProductionStatus } from "@/modules/cloud-creator/production/production-status-service";
 
 export {
   cancelCloudGenerationJob,
