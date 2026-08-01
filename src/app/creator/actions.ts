@@ -17,6 +17,7 @@ import {
   moveCloudStructure,
   renameCloudEpisode,
   renameCloudProject,
+  restoreCloudProjectCheckpoint,
   setCloudProjectDeleted,
   setCloudProjectCover,
   setCloudPageProductionStatus,
@@ -407,6 +408,20 @@ export async function createCloudProjectCheckpointAction(projectId: string, kind
   catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "作品の固定版を作成できませんでした。"))}`); }
   revalidatePath(`/creator/${parsed.data.projectId}`);
   redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(parsed.data.kind === "release" ? "完成版を固定しました" : "バックアップを作成しました")}`);
+}
+
+export async function restoreCloudProjectCheckpointAction(projectId: string, checkpointId: string, formData: FormData) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    checkpointId: z.string().uuid(),
+    confirm: z.literal("restore"),
+  }).safeParse({ projectId, checkpointId, confirm: value(formData, "confirm") });
+  if (!parsed.success) redirect(`/creator?error=${encodeURIComponent("復元確認にチェックを入れてください。")}`);
+  try { await restoreCloudProjectCheckpoint(parsed.data); }
+  catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "固定版を復元できませんでした。"))}`); }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  revalidatePath(`/creator/${parsed.data.projectId}/cockpit`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("固定版を復元しました。現在の内容は復元前バックアップとして保存されています。")}`);
 }
 
 export async function setCloudExportStateAction(

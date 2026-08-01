@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-08-02 Codex: M5-8 チェックポイント復元
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `codex/manga-checkpoint-restore-v1`
+- Base: `codex/manga-version-freeze-v1`（Draft PR #116）
+
+### 完了
+
+- 復元前自動バックアップと作品構造／Canvasのtransaction復元を追加した。
+- 所有権、別作品、生成中、ページ編集ロック、欠損blobをDBで検査する。
+- revisionを単調増加させ、復元ページを要再確認へ戻す。
+- 明示確認、処理中表示、復元履歴を作品詳細へ追加した。
+- M5-7 migration `202608010011`のSupabase staging適用と構造確認を記録した。
+- Hub 403/403、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、production build、44 migration roundtripが成功した。
+
+### 未実施
+
+- `202608020001`のSupabase staging適用、実ブラウザ、100ページ実データ、責任者承認。
+
+---
+
 ## 2026-08-01 Codex: M5-5 章単位の制作計画
 
 ### 状態

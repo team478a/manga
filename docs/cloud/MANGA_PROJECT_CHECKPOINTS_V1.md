@@ -51,9 +51,14 @@ select
   coalesce((select relrowsecurity from pg_class where oid='public.cloud_project_checkpoints'::regclass),false) as checkpoints_rls;
 ```
 
+## 適用状況
+
+- `202608010011_cloud_project_checkpoints.sql`はSupabase stagingへ適用済み
+- table、作成RPC、RLSがすべて存在することを確認済み
+
 ## v1の境界
 
 - v1は固定版の作成・履歴・差分重複排除まで
-- 固定版を現在の作品へ復元する操作は次のタスク
+- 固定版を現在の作品へ復元する操作はM5-8で実装
 - blob本体の利用者向け表示・ダウンロードは行わない
-- Supabase staging適用、実ブラウザ、100ページ実データの確認は未実施
+- 実ブラウザ、100ページ実データの確認は未実施

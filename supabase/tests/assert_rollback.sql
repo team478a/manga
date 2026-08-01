@@ -209,3 +209,10 @@ do $$ begin
     raise exception 'Cloud project checkpoint objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_checkpoint_restores') is not null
+     or to_regprocedure('public.restore_cloud_project_checkpoint(uuid,uuid)') is not null then
+    raise exception 'Cloud project checkpoint restore objects remain after rollback';
+  end if;
+end $$;

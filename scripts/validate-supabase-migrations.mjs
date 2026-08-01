@@ -180,6 +180,8 @@ for (const required of [
   "cloud_project_checkpoints",
   "cloud_project_checkpoint_pages",
   "create_cloud_project_checkpoint",
+  "cloud_project_checkpoint_restores",
+  "restore_cloud_project_checkpoint",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 
