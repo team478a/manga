@@ -2778,4 +2778,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Provider、モデル、APIキー、料金ロジックは固定版と利用者画面に含めない
 - migration 43本目、rollback、canonical schema、静的検査を追加
 - deps、lint、Hub 398/398、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、production buildに成功
+- Draft PR #116、Vercel Preview、Core quality、Migration roundtrip、Windows buildに成功
 - Supabase staging、実ブラウザ、100ページ実データ、固定版からの復元は未実施

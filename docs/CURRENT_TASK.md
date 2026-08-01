@@ -5,11 +5,14 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `codex/manga-version-freeze-v1`
 - Base: `codex/manga-cost-budget-v1`（Draft PR #115）
+- Draft PR: [#116](https://github.com/team478a/manga/pull/116)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ve-2950ce-team478as-projects.vercel.app`
 - 目的: 32〜100ページ作品を変更ページ分だけバックアップし、原稿確認後の完成版を不変の履歴として固定する
 - 実装: SHA-256重複排除Canvas blob、作品manifest、作業バックアップ、完成版固定、現在revision一致表示、作成中表示
 - 安全条件: 実行中生成なし、全ページsnapshotあり、完成版は全ページ確定・最新Context確認済みの場合だけDBで作成
 - migration: `202608010011_cloud_project_checkpoints.sql`（未適用）
 - 検証: deps、lint、Hub 398/398、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 43本、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 未実施: Supabase staging適用、実ブラウザ、100ページ実データ、固定版からの復元、責任者承認
 - 詳細: `docs/cloud/MANGA_PROJECT_CHECKPOINTS_V1.md`
 
