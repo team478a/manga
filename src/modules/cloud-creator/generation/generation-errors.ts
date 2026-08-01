@@ -27,6 +27,14 @@ export function mapCloudGenerationEnqueueError(
       return new QuotaExceededError(
         "本日のCloud AI運用予算に達したため停止中です。",
       );
+    case "cloud_project_credit_limit_exceeded":
+      return new QuotaExceededError("この作品の月間生成上限に達しました。");
+    case "cloud_project_cost_limit_exceeded":
+      return new QuotaExceededError("この作品の月間費用上限に達しました。");
+    case "cloud_project_storage_limit_exceeded":
+      return new QuotaExceededError("この作品の保存容量上限に達しました。");
+    case "cloud_project_generation_disabled":
+      return new ProviderUnavailableError("この作品のAI生成は停止中です。");
     case "cloud_generation_rate_limited":
       return new RateLimitedError(
         "Cloud AI要求が集中しています。1分後に再試行してください。",

@@ -440,3 +440,11 @@ do $$ begin
     raise exception 'Current schema narrative continuity objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_resource_budgets') is null
+     or to_regprocedure('public.save_cloud_project_resource_budget(uuid,integer,bigint,bigint,integer,boolean)') is null
+     or to_regprocedure('public.get_cloud_project_resource_usage(uuid)') is null then
+    raise exception 'Current schema project resource budget objects missing';
+  end if;
+end $$;

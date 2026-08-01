@@ -1095,3 +1095,13 @@ do $$ begin
     raise exception 'Cloud narrative continuity migration objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_resource_budgets') is null
+     or to_regprocedure('public.save_cloud_project_resource_budget(uuid,integer,bigint,bigint,integer,boolean)') is null
+     or to_regprocedure('public.get_cloud_project_resource_usage(uuid)') is null
+     or to_regprocedure('public.enforce_cloud_project_generation_budget()') is null
+     or to_regprocedure('public.enforce_cloud_project_storage_budget()') is null then
+    raise exception 'Cloud project resource budget objects missing';
+  end if;
+end $$;

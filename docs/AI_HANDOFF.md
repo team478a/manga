@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-6 作品別リソース予算、2026-08-01）
+
+- Branch: `codex/manga-cost-budget-v1`
+- Base: `agent/manga-chapter-production-plans-v1`（Draft PR #114）
+- Draft PR: [#115](https://github.com/team478a/manga/pull/115)
+- Preview: `https://mangai-hub-staging-git-codex-manga-co-1eab8d-team478as-projects.vercel.app`
+- 実装: 作品別月間クレジット・概算費用・容量上限、警告割合、生成停止、コックピット集計
+- DB: owner/admin保存RPC、owner read RLS、JobとAssetへの強制上限trigger
+- migration: `202608010010_cloud_project_resource_budgets.sql`（Supabase staging適用済み）
+- DB確認: table／RPC／RLS／生成Job trigger／Storage trigger／既存作品backfillがすべて正常
+- 表示境界: 利用者には合計だけを表示し、Provider／モデル／料金計算ロジックを公開しない
+- 詳細: `docs/cloud/MANGA_PROJECT_RESOURCE_BUDGET_V1.md`
+- 状態: 全ローカル品質ゲート、Draft PR、Preview、全GitHub CI、Supabase staging適用成功。実Provider・実ブラウザ・責任者承認待ち
+
+---
+
 ## 0. 現在の優先タスク（M5-5 章単位の制作計画、2026-08-01）
 
 - Branch: `agent/manga-chapter-production-plans-v1`

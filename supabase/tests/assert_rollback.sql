@@ -192,3 +192,11 @@ do $$ begin
     raise exception 'Cloud storage lifecycle objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_resource_budgets') is not null
+     or to_regprocedure('public.save_cloud_project_resource_budget(uuid,integer,bigint,bigint,integer,boolean)') is not null
+     or to_regprocedure('public.get_cloud_project_resource_usage(uuid)') is not null then
+    raise exception 'Cloud project resource budget objects remain after rollback';
+  end if;
+end $$;
