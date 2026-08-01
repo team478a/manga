@@ -3,21 +3,7 @@ import { notFound } from "next/navigation";
 import { AlertTriangle, BookOpen, CheckCircle2, GitBranch, Users } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { getCloudLongformCockpit } from "@/lib/cloud-creator-server";
-
-const statusLabel = {
-  not_started: "未着手",
-  generating: "生成中",
-  review_required: "確認待ち",
-  revision_required: "再確認",
-  finalized: "確定",
-} as const;
-const statusStyle = {
-  not_started: "bg-stone-100 text-stone-700",
-  generating: "bg-violet-100 text-violet-800",
-  review_required: "bg-amber-100 text-amber-900",
-  revision_required: "bg-red-100 text-red-800",
-  finalized: "bg-green-100 text-green-800",
-} as const;
+import { CockpitStructure } from "./CockpitStructure";
 
 export default async function LongformCockpitPage({ params }: { params: Promise<{ projectId: string }> }) {
   await requireProfile();
@@ -53,13 +39,7 @@ export default async function LongformCockpitPage({ params }: { params: Promise<
         <section className="panel min-w-0" aria-labelledby="structure-heading">
           <h2 className="flex items-center gap-2 text-xl font-bold" id="structure-heading"><BookOpen className="h-5 w-5 text-violet-700" />章・シーン進捗</h2>
           {!data.longformAvailable ? <p className="mt-4 rounded-lg bg-amber-50 p-4 text-amber-900">長編構成migrationの適用後に章・シーン別表示を利用できます。</p> : null}
-          {cockpit.chapters.length ? <div className="mt-4 space-y-4">{cockpit.chapters.map((chapter) => (
-            <article className="min-w-0 rounded-xl border border-stone-200 p-4" key={chapter.id}>
-              <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-bold">{chapter.title}</h3><span className="text-xs text-stone-500">{chapter.episodeCount}話・{chapter.pages.length}ページ</span></div>
-              <div className="mt-3 flex flex-wrap gap-2">{chapter.pages.map((page) => <Link className={`rounded-full px-3 py-1 text-xs font-bold ${statusStyle[page.status]}`} href={`/creator/${projectId}/pages/${page.id}`} key={page.id}>{page.pageNumber}P {statusLabel[page.status]}</Link>)}</div>
-              {chapter.scenes.length ? <div className="mt-4 space-y-2">{chapter.scenes.map((scene) => <div className="min-w-0 rounded-lg bg-stone-50 p-3" key={scene.id}><div className="flex flex-wrap items-center justify-between gap-2"><strong>{scene.title}</strong><span className="text-xs text-stone-500">{scene.pages.map((page) => `${page.pageNumber}P`).join("・") || "ページ未割当"}</span></div>{scene.summary ? <p className="mt-1 break-words text-sm text-stone-600">{scene.summary}</p> : null}</div>)}</div> : <p className="mt-3 text-sm text-stone-500">シーンはまだありません。</p>}
-            </article>
-          ))}</div> : <p className="mt-4 rounded-lg border border-dashed border-stone-300 p-5 text-stone-600">章を追加すると、ここに長編構成が表示されます。</p>}
+          {cockpit.chapters.length || cockpit.unassignedPages.length ? <CockpitStructure chapters={cockpit.chapters} projectId={projectId} unassignedPages={cockpit.unassignedPages} /> : <p className="mt-4 rounded-lg border border-dashed border-stone-300 p-5 text-stone-600">章を追加すると、ここに長編構成が表示されます。</p>}
         </section>
 
         <aside className="min-w-0 space-y-6">

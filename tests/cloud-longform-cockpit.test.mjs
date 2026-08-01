@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { buildCloudLongformCockpit } from "../src/lib/cloud-longform-cockpit.ts";
+import { buildCloudLongformCockpit, filterCloudCockpitStructure } from "../src/lib/cloud-longform-cockpit.ts";
 
 const projectId = crypto.randomUUID();
 const episodeId = crypto.randomUUID();
@@ -62,4 +62,22 @@ test("作品詳細から長編コックピットへ移動できる", async () =>
   assert.match(detail, /長編コックピット/);
   assert.match(cockpit, /章・シーン進捗/);
   assert.match(cockpit, /関係・時系列/);
+});
+
+test("100ページ向け一覧は章・状態で絞り込み24ページずつ表示する", () => {
+  const cockpit = build();
+  const attention = filterCloudCockpitStructure({ chapters: cockpit.chapters, unassignedPages: cockpit.unassignedPages, chapterId: "all", status: "attention", limit: 24 });
+  assert.equal(attention.totalMatches, 1);
+  assert.deepEqual(attention.visiblePageIds, [pages[2].id]);
+  const chapter = filterCloudCockpitStructure({ chapters: cockpit.chapters, unassignedPages: cockpit.unassignedPages, chapterId, status: "all", limit: 1 });
+  assert.equal(chapter.totalMatches, 4);
+  assert.equal(chapter.visiblePageIds.length, 1);
+});
+
+test("コックピットUIは章・制作状態フィルターと段階表示を持つ", async () => {
+  const component = await readFile("src/app/creator/[projectId]/cockpit/CockpitStructure.tsx", "utf8");
+  assert.match(component, /すべての章/);
+  assert.match(component, /確認・修正が必要/);
+  assert.match(component, /次の.*ページを表示/);
+  assert.match(component, /<details/);
 });

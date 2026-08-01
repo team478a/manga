@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-4 100ページナビゲーション、2026-08-01）
+
+- Branch: `agent/manga-cockpit-navigation-v1`
+- Base: `agent/manga-longform-cockpit-v1`（Draft PR #112）
+- Draft PR: [#113](https://github.com/team478a/manga/pull/113)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-4977d4-team478as-projects.vercel.app`
+- 目的: 長編コックピットのDOMと認知負荷を100ページ規模で抑える
+- 実装: 章／状態絞り込み、未割当抽出、折りたたみ、24ページ段階表示
+- migration／環境変数／外部Provider: 追加なし
+- 詳細: `docs/cloud/MANGA_COCKPIT_NAVIGATION_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。100ページ実データ確認と責任者承認待ち
+
+---
+
+
 ## 0. 現在の優先タスク（M5-3 長編作品コックピット、2026-08-01）
 
 - Branch: `agent/manga-longform-cockpit-v1`

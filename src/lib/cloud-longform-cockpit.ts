@@ -17,6 +17,53 @@ export type CloudCockpitPageStatus =
   | "revision_required"
   | "finalized";
 
+export type CloudCockpitPageItem = {
+  id: string;
+  pageNumber: number;
+  status: CloudCockpitPageStatus;
+};
+
+export type CloudCockpitChapter = {
+  id: string;
+  title: string;
+  episodeCount: number;
+  pages: CloudCockpitPageItem[];
+  scenes: Array<{
+    id: string;
+    title: string;
+    summary: string;
+    pages: CloudCockpitPageItem[];
+  }>;
+};
+
+export type CloudCockpitStatusFilter = "all" | "attention" | CloudCockpitPageStatus;
+
+export function filterCloudCockpitStructure(input: {
+  chapters: CloudCockpitChapter[];
+  unassignedPages: CloudCockpitPageItem[];
+  chapterId: string;
+  status: CloudCockpitStatusFilter;
+  limit: number;
+}) {
+  const chapterPages = input.chapters.flatMap((chapter) =>
+    chapter.pages.map((page) => ({ ...page, chapterId: chapter.id })),
+  );
+  const allPages = input.chapterId === "unassigned"
+    ? input.unassignedPages.map((page) => ({ ...page, chapterId: "unassigned" }))
+    : chapterPages;
+  const matches = allPages.filter((page) => {
+    if (input.chapterId !== "all" && page.chapterId !== input.chapterId) return false;
+    if (input.status === "all") return true;
+    if (input.status === "attention")
+      return page.status === "review_required" || page.status === "revision_required";
+    return page.status === input.status;
+  });
+  return {
+    totalMatches: matches.length,
+    visiblePageIds: matches.slice(0, Math.max(1, input.limit)).map((page) => page.id),
+  };
+}
+
 export function buildCloudLongformCockpit(input: {
   episodes: CloudEpisode[];
   pages: CloudPage[];

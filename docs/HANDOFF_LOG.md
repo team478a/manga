@@ -2701,3 +2701,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Hub 386/386、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
 - Draft PR #112、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - 実ブラウザ確認、100ページ実データ確認、マージは未実施
+
+## 2026-08-01 Codex: M5-4 100ページナビゲーション
+
+- `agent/manga-cockpit-navigation-v1` を `agent/manga-longform-cockpit-v1`（Draft PR #112）から作成
+- 長編コックピットへ章・制作状態・シーン未割当フィルターを追加
+- 章をnative detailsで折りたためるようにし、ページを24件ずつ段階表示
+- 絞り込み結果件数をaria-liveで通知し、スマートフォンでも横幅を超えない構造を維持
+- migration、環境変数、外部Providerは追加なし
+- Hub 388/388、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
+- Draft PR #113、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
+- 実ブラウザ確認、100ページ実データ操作確認、マージは未実施
