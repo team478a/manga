@@ -184,13 +184,16 @@ test("背景・人物・効果を別Job種別と専用Promptで生成する", ()
   });
 
   assert.equal(background.generation.jobType, "background");
+  assert.equal(background.generation.outputAlphaMode, "preserve");
   assert.match(background.generation.prompt, /背景だけを描く/);
   assert.doesNotMatch(background.generation.prompt, /登場人物:/);
   assert.equal(character.generation.jobType, "character_base");
+  assert.equal(character.generation.outputAlphaMode, "remove_white");
   assert.match(character.generation.prompt, /人物だけを描く/);
   assert.match(character.generation.prompt, /背景は純白/);
   assert.doesNotMatch(character.generation.prompt, /背景: 朝の駅前/);
   assert.equal(effect.generation.jobType, "effect");
+  assert.equal(effect.generation.outputAlphaMode, "remove_white");
   assert.match(effect.generation.prompt, /漫画の効果だけを描く/);
   assert.match(effect.generation.prompt, /朝日を逆光/);
   assert.doesNotMatch(effect.generation.prompt, /登場人物:/);

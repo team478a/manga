@@ -493,6 +493,10 @@ export function buildStoryboardPanelGeneration(input: {
       outpaintingDirection: input.revision?.outpaintingDirection,
       revisionPreset: input.revision?.preset,
       revisionInstruction: input.revision?.instruction,
+      outputAlphaMode:
+        generationTarget === "character" || generationTarget === "effect"
+          ? ("remove_white" as const)
+          : ("preserve" as const),
       ...imageSize(canvasPanel.width, canvasPanel.height),
     },
     panelId: canvasPanel.id,

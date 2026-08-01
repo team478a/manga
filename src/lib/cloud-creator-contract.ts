@@ -132,6 +132,54 @@ export async function sanitizeCloudGeneratedImage(bytes: Uint8Array) {
   return { bytes: sanitized, ...validation };
 }
 
+/**
+ * Converts a monochrome manga layer drawn on white into a black PNG layer
+ * whose tone density is carried by alpha. Pixels close to white are removed
+ * completely so provider background noise does not leave a visible matte.
+ */
+export async function removeWhiteBackgroundFromMangaLayer(
+  bytes: Uint8Array,
+) {
+  const sanitized = await sanitizeCloudGeneratedImage(bytes);
+  const { data, info } = await sharp(sanitized.bytes, {
+    failOn: "error",
+    limitInputPixels: 100_000_000,
+  })
+    .removeAlpha()
+    .toColourspace("srgb")
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const rgba = Buffer.alloc(info.width * info.height * 4);
+  const whiteCutoff = 245;
+  for (let source = 0, target = 0; source < data.length; source += 3, target += 4) {
+    const luminance = Math.round(
+      (data[source] * 54 + data[source + 1] * 183 + data[source + 2] * 19) /
+        256,
+    );
+    const alpha =
+      luminance >= whiteCutoff
+        ? 0
+        : Math.round(((whiteCutoff - luminance) * 255) / whiteCutoff);
+    rgba[target] = 0;
+    rgba[target + 1] = 0;
+    rgba[target + 2] = 0;
+    rgba[target + 3] = alpha;
+  }
+  const transparent = new Uint8Array(
+    await sharp(rgba, {
+      raw: { width: info.width, height: info.height, channels: 4 },
+      limitInputPixels: 100_000_000,
+    })
+      .png({ compressionLevel: 9 })
+      .toBuffer(),
+  );
+  const validation = await validateCloudAssetBytes({
+    bytes: transparent,
+    declaredMimeType: "image/png",
+  });
+  return { bytes: transparent, ...validation };
+}
+
 export function sumCloudAssetBytes(
   assets: Array<{ byteSize: number; deletedAt?: string | null }>,
 ) {
