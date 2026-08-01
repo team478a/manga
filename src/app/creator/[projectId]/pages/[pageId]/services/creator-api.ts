@@ -123,6 +123,7 @@ export async function createStoryboardPanelGenerationJob(body: {
   subjectPlacement?: "storyboard" | "center" | "left" | "right" | "two_shot" | "foreground_background";
   gazeDirection?: "storyboard" | "camera" | "left" | "right" | "partner" | "off_frame";
   compositionInstruction?: string;
+  generationTarget?: "composite" | "background" | "character" | "effect";
 }) {
   return responseJson<{
     id: string;
