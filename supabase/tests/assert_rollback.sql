@@ -200,3 +200,12 @@ do $$ begin
     raise exception 'Cloud project resource budget objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_backup_blobs') is not null
+     or to_regclass('public.cloud_project_checkpoints') is not null
+     or to_regclass('public.cloud_project_checkpoint_pages') is not null
+     or to_regprocedure('public.create_cloud_project_checkpoint(uuid,text,text)') is not null then
+    raise exception 'Cloud project checkpoint objects remain after rollback';
+  end if;
+end $$;

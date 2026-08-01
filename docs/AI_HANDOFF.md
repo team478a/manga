@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-7 増分バックアップと完成版固定、2026-08-01）
+
+- Branch: `codex/manga-version-freeze-v1`
+- Base: `codex/manga-cost-budget-v1`（Draft PR #115）
+- Draft PR: [#116](https://github.com/team478a/manga/pull/116)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ve-2950ce-team478as-projects.vercel.app`
+- 実装: Canvas SHA-256重複排除、作品manifest、作業バックアップ、完成版固定、固定履歴
+- 完成版条件: 生成停止中、全ページsnapshot、全ページ確定、revision／Context一致
+- migration: `202608010011_cloud_project_checkpoints.sql`（未適用）
+- 詳細: `docs/cloud/MANGA_PROJECT_CHECKPOINTS_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。Supabase staging、実ブラウザ、責任者承認待ち
+
+---
+
 ## 0. 現在の優先タスク（M5-6 作品別リソース予算、2026-08-01）
 
 - Branch: `codex/manga-cost-budget-v1`

@@ -448,3 +448,12 @@ do $$ begin
     raise exception 'Current schema project resource budget objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_backup_blobs') is null
+     or to_regclass('public.cloud_project_checkpoints') is null
+     or to_regclass('public.cloud_project_checkpoint_pages') is null
+     or to_regprocedure('public.create_cloud_project_checkpoint(uuid,text,text)') is null then
+    raise exception 'Current schema project checkpoint objects missing';
+  end if;
+end $$;

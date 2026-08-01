@@ -2767,3 +2767,16 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Draft PR #115、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
 - Supabase stagingへmigrationを適用し、table、使用量RPC、保存RPC、RLS、生成Job trigger、Storage trigger、既存作品backfillを確認
 - 実Provider、100ページ実データ、実ブラウザ確認は未実施
+
+## 2026-08-01 Codex: M5-7 増分バックアップと完成版固定
+
+- `codex/manga-version-freeze-v1`を`codex/manga-cost-budget-v1`（Draft PR #115）から作成
+- Canvas JSONを作品内SHA-256で重複排除する増分バックアップを追加
+- 作品、章、話、シーン、ページ、Asset metadataを不変manifestへ固定
+- 作業バックアップと、全ページ確定後だけ作れる完成版を作品詳細へ追加
+- 実行中生成、snapshot不足、未確定ページをDB RPCで拒否
+- Provider、モデル、APIキー、料金ロジックは固定版と利用者画面に含めない
+- migration 43本目、rollback、canonical schema、静的検査を追加
+- deps、lint、Hub 398/398、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、production buildに成功
+- Draft PR #116、Vercel Preview、Core quality、Migration roundtrip、Windows buildに成功
+- Supabase staging、実ブラウザ、100ページ実データ、固定版からの復元は未実施

@@ -176,6 +176,10 @@ for (const required of [
   "get_cloud_project_resource_usage",
   "enforce_cloud_project_generation_budget",
   "enforce_cloud_project_storage_budget",
+  "cloud_project_backup_blobs",
+  "cloud_project_checkpoints",
+  "cloud_project_checkpoint_pages",
+  "create_cloud_project_checkpoint",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 
