@@ -2698,3 +2698,6 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - staleな確定ページを再確認として数え、ページ編集へ直接移動できる状態表示を追加
 - 一貫性警告、未回収伏線、登録済み人物、関係・時系列を確認できる導線を追加
 - 保存済み構造化データだけを表示し、推測・Provider呼び出し・migration・環境変数は追加していない
+- Hub 386/386、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
+- Draft PR #112、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
+- 実ブラウザ確認、100ページ実データ確認、マージは未実施

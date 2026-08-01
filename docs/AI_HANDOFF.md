@@ -4,11 +4,14 @@
 
 - Branch: `agent/manga-longform-cockpit-v1`
 - Base: `agent/manga-continuity-suggestions-v1`（Draft PR #111）
+- Draft PR: [#112](https://github.com/team478a/manga/pull/112)
+- Preview: `https://mangai-hub-staging-git-agent-manga-lo-7b90ee-team478as-projects.vercel.app`
 - 目的: 32〜100ページ作品の構成、進捗、伏線、人物関係を横断確認する
 - 実装: `/creator/[projectId]/cockpit` と決定的な集計helper
 - 安全境界: 既存の保存済み情報だけを集計し、Providerや外部AIは利用しない
 - migration／環境変数: 追加なし
 - 詳細: `docs/cloud/MANGA_LONGFORM_COCKPIT_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実作品確認と責任者承認待ち
 
 ---
 
