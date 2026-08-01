@@ -14,6 +14,7 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `agent/manga-revision-comparison-v1`
 - Base: `agent/manga-panel-outpainting-v1`（Draft PR #99）
+- Draft PR: [#100](https://github.com/team478a/manga/pull/100)
 
 ### 完了
 

@@ -5,6 +5,7 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `agent/manga-revision-comparison-v1`
 - Base: `agent/manga-panel-outpainting-v1`（Draft PR #99）
+- Draft PR: [#100](https://github.com/team478a/manga/pull/100)
 - 目的: Image-to-Image、Inpainting、Outpainting候補を採用前に修正前画像と比較する
 - 実装: タッチ・キーボード対応比較スライダー、Outpainting方向別の元画像位置補正、比較画面からの非破壊採用
 - 公開データ: private Job inputは除外したまま、本人の`source_asset_id`と`outpainting_direction`だけを返す
