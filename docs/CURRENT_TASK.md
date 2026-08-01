@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M4前半: 32ページ制作基盤
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-32page-foundation-v1`
+- Base: `agent/manga-transparent-layers-v1`（Draft PR #104）
+- Draft PR: [#105](https://github.com/team478a/manga/pull/105)
+- Preview: `https://mangai-hub-staging-git-agent-manga-32-fc91ac-team478as-projects.vercel.app`
+- 目的: 章・話・シーン・ページの階層と、32ページを一括展開しない制作ボードを追加する
+- 実装: Chapter／Scene永続化、既存作品backfill、単ページ／見開き、同一話内drag並べ替え、12件単位の遅延表示
+- 互換性: migration未適用時は既存の話・ページ画面へfallback。Canvas、Provider、料金、成人向け、Desktop契約は変更しない
+- migration: `202608010003_cloud_longform_structure.sql`（35本目、rollback・canonical同期済み）
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 354/354、Canvas 26/26、AI 48/48、Desktop 182/182、migration forward/rollback/reapply/canonical、production build成功
+- CI: Core quality、Migration roundtrip、Windows accessibility/build、Vercel成功
+- 詳細: `docs/cloud/MANGA_32_PAGE_FOUNDATION_V1.md`
+- 未実施: Supabase staging適用、実ログインブラウザ確認、責任者承認、親PR #104後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M3-8: 人物・効果レイヤー白背景透明化
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

@@ -331,6 +331,8 @@ Editor preview、PNG、PDF、ZIPで同一の描画契約を利用する。
 
 目安: 8〜12 iteration
 
+進捗（2026-08-01）: 前半3項目（Chapter／Scene、ページ制作ボードと並べ替え・見開き、12件単位の遅延表示）を`agent/manga-32page-foundation-v1`で実装。後半のbatch生成、Queue制御、制作状態、永続Export、Storage thumbnailは未着手。
+
 目的: 章・シーン単位で32ページ読切を安定制作できるようにする。
 
 実装:

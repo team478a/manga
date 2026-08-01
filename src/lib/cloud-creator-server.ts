@@ -7,10 +7,13 @@
 export type {
   CloudAiQuota,
   CloudAsset,
+  CloudChapter,
   CloudEpisode,
   CloudGenerationJob,
+  CloudLongformStructure,
   CloudPage,
   CloudProjectSummary,
+  CloudScene,
 } from "@/modules/cloud-creator/contracts/types";
 
 export {
@@ -56,9 +59,14 @@ export {
 } from "@/modules/cloud-creator/projects/visual-reference-service";
 
 export {
+  addCloudChapter,
   addCloudEpisode,
+  addCloudEpisodeToChapter,
   addCloudPage,
+  addCloudPageToScene,
+  addCloudScene,
   deleteCloudStructure,
+  moveCloudPageBefore,
   moveCloudStructure,
   renameCloudEpisode,
 } from "@/modules/cloud-creator/structure/structure-service";

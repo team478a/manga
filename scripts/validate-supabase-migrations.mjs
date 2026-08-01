@@ -157,6 +157,10 @@ for (const required of [
   "cloud_story_storyboard_projects",
   "build_cloud_storyboard_canvas",
   "materialize_cloud_storyboard_project",
+  "cloud_chapters",
+  "cloud_scenes",
+  "add_cloud_page_to_scene",
+  "move_cloud_page_before",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 
