@@ -168,3 +168,26 @@ test("大量の修正項目は上限を設け、残件数を保持する", () =>
   assert.equal(report.issues.length, 3);
   assert.equal(report.truncatedIssueCount, 6);
 });
+
+test("永続書き出し前に未確定・stale・生成中ページを拒否する", () => {
+  const fixture = makeEightPageManuscript();
+  const productionStates = fixture.pages.map((page) => ({
+    pageId: page.id,
+    status: "finalized",
+    isStale: false,
+  }));
+  productionStates[1].status = "review_required";
+  productionStates[2].isStale = true;
+  const report = analyzeCloudManuscript({
+    coverPageId: fixture.pages[0].id,
+    ...fixture,
+    productionStates,
+    activeGenerationPageIds: [fixture.pages[3].id],
+    requireFinalizedPages: true,
+  });
+  assert.equal(report.ready, false);
+  const codes = new Set(report.issues.map((issue) => issue.code));
+  assert.ok(codes.has("page_not_finalized"));
+  assert.ok(codes.has("page_stale"));
+  assert.ok(codes.has("generation_active"));
+});

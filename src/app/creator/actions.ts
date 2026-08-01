@@ -23,6 +23,7 @@ import {
   setCloudGenerationBatchState,
   startCloudPageGenerationBatch,
 } from "@/lib/cloud-creator-server";
+import { createCloudExportJob, setCloudExportJobState } from "@/modules/cloud-creator/export/durable-export-service";
 import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
 
@@ -380,4 +381,32 @@ export async function setCloudPageProductionStatusAction(
   catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "制作状態を更新できませんでした。"))}`); }
   revalidatePath(`/creator/${parsed.data.projectId}`);
   redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "finalized" ? "ページを確定しました" : "ページの制作状態を更新しました")}`);
+}
+
+export async function startCloudExportAction(projectId: string) {
+  const parsed = z.string().uuid().safeParse(projectId);
+  if (!parsed.success) redirect("/creator?error=作品IDを確認してください");
+  try {
+    await createCloudExportJob(parsed.data);
+  } catch (error) {
+    redirect(`/creator/${parsed.data}?error=${encodeURIComponent(domainMessage(error, "書き出しを開始できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${parsed.data}`);
+  redirect(`/creator/${parsed.data}?message=${encodeURIComponent("PDF書き出しを受け付けました")}`);
+}
+
+export async function setCloudExportStateAction(
+  projectId: string,
+  jobId: string,
+  status: "queued" | "paused" | "canceled",
+) {
+  const parsed = z.object({ projectId: z.string().uuid(), jobId: z.string().uuid(), status: z.enum(["queued", "paused", "canceled"]) }).safeParse({ projectId, jobId, status });
+  if (!parsed.success) redirect("/creator?error=書き出しIDを確認してください");
+  try {
+    await setCloudExportJobState(parsed.data.jobId, parsed.data.status);
+  } catch (error) {
+    redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "書き出し状態を変更できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "paused" ? "書き出しを一時停止しました" : status === "queued" ? "書き出しを再開しました" : "書き出しを中止しました")}`);
 }

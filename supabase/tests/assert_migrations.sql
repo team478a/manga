@@ -1067,3 +1067,12 @@ begin
     raise exception 'Cloud research v2 engine constraint missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_export_jobs') is null
+     or to_regclass('public.cloud_export_segments') is null
+     or to_regprocedure('public.complete_cloud_export_segment(uuid,uuid,integer,integer,text,jsonb,text,bigint)') is null
+     or not exists(select 1 from storage.buckets where id='cloud-exports') then
+    raise exception 'Durable export migration objects missing';
+  end if;
+end $$;

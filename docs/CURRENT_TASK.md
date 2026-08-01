@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M4完成: 永続PDFエクスポート
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-durable-export-v1`
+- Base: `agent/manga-production-status-v1`（Draft PR #107）
+- Draft PR: [#108](https://github.com/team478a/manga/pull/108)
+- Preview: `https://mangai-hub-staging-git-agent-manga-du-4a6dbe-team478as-projects.vercel.app`
+- 目的: 32〜100ページを4ページ単位で処理し、中断・再開できる完成PDF出力を提供する
+- 実装: 永続Job、lease Worker、一時停止／再開／中止／再試行、非公開Storage、分割PDF結合、署名download
+- 安全性: 全ページ確定・staleなし・生成JobなしをUIとDBで二重検査し、同一作品のactive Exportを1件へ制限
+- migration: `202608010006_cloud_durable_export.sql`（38本目）
+- 検証: deps、lint、Hub 369/369、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration往復、production build成功
+- 詳細: `docs/cloud/MANGA_DURABLE_EXPORT_V1.md`
+- 未実施: Supabase staging適用、Worker環境設定、実ブラウザ、責任者承認、親PR後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M4制作管理: ページ状態・確定ロック
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

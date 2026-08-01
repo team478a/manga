@@ -174,3 +174,12 @@ begin
     raise exception 'Cloud research AI Provider objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_export_jobs') is not null
+     or to_regclass('public.cloud_export_segments') is not null
+     or to_regprocedure('public.create_cloud_export_job(uuid,text)') is not null
+     or exists(select 1 from storage.buckets where id='cloud-exports') then
+    raise exception 'Durable export objects remain after rollback';
+  end if;
+end $$;

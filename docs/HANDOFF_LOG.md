@@ -4,6 +4,35 @@
 
 ---
 
+## 2026-08-01 Codex: M4 永続PDFエクスポート
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-durable-export-v1`
+- Base: `agent/manga-production-status-v1`（Draft PR #107）
+- Draft PR: [#108](https://github.com/team478a/manga/pull/108)
+- Preview: `https://mangai-hub-staging-git-agent-manga-du-4a6dbe-team478as-projects.vercel.app`
+
+### 完了
+
+- 32〜100ページを4ページずつ処理する永続Export Jobを追加した。
+- 停止、再開、中止、失敗segmentからの再試行とlease回収を追加した。
+- ページPNG、分割PDF、完成PDFを非公開`cloud-exports` bucketへ保存するWorkerを追加した。
+- 全ページ確定、revision一致、制作設定再確認、画像生成停止をUIとDBで二重検証した。
+- 所有者RLS、service role限定Worker RPC、署名download、同一作品1 active Jobを追加した。
+- migration、rollback、canonical schema、preflight、集中テストを追加した。
+- deps、lint、Hub 369/369、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、typecheck、PostgreSQL 16 roundtrip、buildに成功した。
+
+### 次
+
+- CIとPreview確認後、責任者がstaging migration、Worker設定、実ブラウザPDF確認を行う。
+
+---
+
 ## 2026-08-01 Codex: M4後半 4〜8ページ一括生成・編集ロック
 
 ### 状態

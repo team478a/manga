@@ -222,7 +222,13 @@
       "description": "長編制作のページ状態、設定変更後の再確認、確定編集ロックを追加",
       "forwardSha256": "3e805bcba4bdf2ae67d524ff9ae13b815f014ffa1045e13986da352cee3c1801",
       "rollbackSha256": "5ca5416a49e47f666f247cdafc99c6edba61393afc3d9dd7303d9bd7730d3b1a"
+    },
+    {
+      "id": "202608010006_cloud_durable_export",
+      "description": "32〜100ページ原稿の分割処理、再開可能なPDF書き出し、非公開成果物保存を追加",
+      "forwardSha256": "5b95703734a4f09e444142656fd52b136c52329e42698b6ba2d27deec91caade",
+      "rollbackSha256": "7159628145c7e46c6f7daa42c7e6888744b694d4ca837a5699d0fe82bbb2fbbf"
     }
   ],
-  "schemaSha256": "97ee30ebce88aaec0eba6b8076c54b96144b36ab0de977a5ecbcfdecff806c33"
+  "schemaSha256": "ae5f697889dcd9f1871332ea28197839d3ff1ba8e20d6427dddd45b9226246b1"
 }

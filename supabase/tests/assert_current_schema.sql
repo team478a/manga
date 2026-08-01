@@ -411,3 +411,13 @@ begin
     raise exception 'Current schema Cloud research v2 engine constraint missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_export_jobs') is null
+     or to_regclass('public.cloud_export_segments') is null
+     or to_regprocedure('public.create_cloud_export_job(uuid,text)') is null
+     or to_regprocedure('public.claim_cloud_export_job(text,integer)') is null
+     or not exists(select 1 from storage.buckets where id='cloud-exports') then
+    raise exception 'Current schema durable export objects missing';
+  end if;
+end $$;
