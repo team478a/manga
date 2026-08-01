@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M3-8: 人物・効果レイヤー白背景透明化
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `agent/manga-transparent-layers-v1`
+- Base: `agent/manga-layered-generation-v1`（Draft PR #103）
+- Draft PR: [#104](https://github.com/team478a/manga/pull/104)
+- Preview: `https://mangai-hub-staging-git-agent-manga-tr-46b68e-team478as-projects.vercel.app`
+- 目的: 人物・効果の白地素材を、背景へ自然に重ねられる透明PNGとして保存する
+- 実装: Jobごとのalpha mode、白〜薄灰色除去、線・網点濃度のalpha化、Worker保存前変換
+- 互換性: 未指定、完成コマ、背景、修正生成は`preserve`で無加工
+- migration / Feature Flag / Provider / 料金: 追加なし
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 350/350、Canvas 26/26、AI 48/48、Desktop 182/182、migration 34/34、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 詳細: `docs/cloud/MANGA_TRANSPARENT_LAYER_OUTPUT_V1.md`
+- 未実施: 実Provider生成、実ブラウザ合成確認、責任者承認、親PR #103後のマージ
+
+
 ## 2026-08-01 長編マンガ制作 M3-7: 背景・人物・効果の分離生成
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

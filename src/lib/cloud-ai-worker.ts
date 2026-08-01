@@ -10,6 +10,7 @@ import { createAdminClient } from "./supabase/admin.ts";
 import {
   CLOUD_ASSET_BUCKET,
   cloudAssetStoragePath,
+  removeWhiteBackgroundFromMangaLayer,
   sanitizeCloudGeneratedImage,
 } from "./cloud-creator-contract.ts";
 import {
@@ -161,8 +162,12 @@ async function uploadGeneratedAsset(
   client: AdminClient,
   job: ClaimedJob,
   image: { bytes: Uint8Array; fileName: string },
+  outputAlphaMode: "preserve" | "remove_white",
 ): Promise<UploadedGeneratedAsset> {
-  const sanitized = await sanitizeCloudGeneratedImage(image.bytes);
+  const sanitized =
+    outputAlphaMode === "remove_white"
+      ? await removeWhiteBackgroundFromMangaLayer(image.bytes)
+      : await sanitizeCloudGeneratedImage(image.bytes);
   const assetId = crypto.randomUUID();
   const storagePath = cloudAssetStoragePath({
     profileId: job.created_by_profile_id,
@@ -403,7 +408,12 @@ export async function processNextCloudGenerationJob(input: {
       if (!result.images.length)
         throw new Error("Providerから画像が返されませんでした。");
       await heartbeat.assertLease();
-      uploadedAsset = await uploadGeneratedAsset(client, job, result.images[0]);
+      uploadedAsset = await uploadGeneratedAsset(
+        client,
+        job,
+        result.images[0],
+        generation.outputAlphaMode,
+      );
       await heartbeat.assertLease();
       outputAssetId = uploadedAsset.assetId;
       providerJobId = result.providerJobId ?? null;

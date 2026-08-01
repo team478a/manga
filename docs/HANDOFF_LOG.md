@@ -4,6 +4,37 @@
 
 ---
 
+## 2026-08-01 Codex: M3-8 人物・効果レイヤー白背景透明化
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-transparent-layers-v1`
+- Base: `agent/manga-layered-generation-v1`（Draft PR #103）
+- Draft PR: [#104](https://github.com/team478a/manga/pull/104)
+- Preview: `https://mangai-hub-staging-git-agent-manga-tr-46b68e-team478as-projects.vercel.app`
+
+### 完了
+
+- Cloud生成入力へ安全な`outputAlphaMode`を追加し、未指定時は無加工にした。
+- 人物・効果の分離生成だけを白背景除去対象としてServer側で固定した。
+- 白〜薄灰色を透明化し、黒線・網点の濃度をalphaへ変換するPNG処理を追加した。
+- Workerが画像検証後、private Storageへ保存する直前に指定された素材だけを透明化する。
+- 単体テストとWorker保存経路の統合テストを追加した。
+- DB、migration、Feature Flag、Provider、料金、成人向け、Desktopは変更していない。
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 350/350、Canvas 26/26、AI 48/48、Desktop 182/182、migration 34/34、production build成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
+- 詳細: `docs/cloud/MANGA_TRANSPARENT_LAYER_OUTPUT_V1.md`
+
+### 次
+
+- 実Providerと実ブラウザで細線・網点・白縁を確認し、親PR #103後に責任者が承認する。
+
+---
+
 ## 2026-08-01 Codex: M3-7 背景・人物・効果の分離生成
 
 ### 状態

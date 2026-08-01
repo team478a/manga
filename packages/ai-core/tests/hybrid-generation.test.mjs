@@ -78,6 +78,33 @@ test("cloud image-to-image requires its source in image references", () => {
   );
 });
 
+test("cloud image output alpha mode defaults safely and rejects unknown values", () => {
+  const base = {
+    kind: "image",
+    jobType: "character_base",
+    prompt: "general manga character on white",
+    negativePrompt: "",
+  };
+  assert.equal(
+    cloudGenerationInputSchema.parse(base).outputAlphaMode,
+    "preserve",
+  );
+  assert.equal(
+    cloudGenerationInputSchema.parse({
+      ...base,
+      outputAlphaMode: "remove_white",
+    }).outputAlphaMode,
+    "remove_white",
+  );
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      outputAlphaMode: "remove_everything",
+    }).success,
+    false,
+  );
+});
+
 test("cloud inpainting requires both a referenced source and a mask", () => {
   const sourceAssetId = randomUUID();
   const maskAssetId = randomUUID();

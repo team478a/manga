@@ -95,6 +95,9 @@ export const cloudGenerationInputSchema = z
       .optional(),
     revisionPreset: cloudImageRevisionPresetSchema.optional(),
     revisionInstruction: z.string().trim().max(1000).optional(),
+    outputAlphaMode: z
+      .enum(["preserve", "remove_white"])
+      .default("preserve"),
   })
   .superRefine((value, context) => {
     const imageTypes: CloudGenerationJobType[] = [
