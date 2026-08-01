@@ -1114,3 +1114,10 @@ do $$ begin
     raise exception 'Cloud project checkpoint objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_checkpoint_restores') is null
+     or to_regprocedure('public.restore_cloud_project_checkpoint(uuid,uuid)') is null then
+    raise exception 'Cloud project checkpoint restore objects missing';
+  end if;
+end $$;

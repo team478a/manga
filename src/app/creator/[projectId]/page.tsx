@@ -71,7 +71,7 @@ export default async function CloudProjectPage({
     getCloudProjectCharacterSheet(projectId).catch(() => []),
     getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }).catch(() => null),
     listCloudExportJobs(projectId).catch(() => ({ available: false, jobs: [] })),
-    listCloudProjectCheckpoints(projectId).catch(() => ({ available: false, checkpoints: [] })),
+    listCloudProjectCheckpoints(projectId).catch(() => ({ available: false, restoreAvailable: false, checkpoints: [] })),
   ]);
   const pageProductionStates = longform.available
     ? await listCloudPageProductionStates(projectId, pages).catch(() => [])
@@ -286,6 +286,7 @@ export default async function CloudProjectPage({
         checkpoints={checkpointHistory.checkpoints}
         projectId={projectId}
         releaseReady={Boolean(exportReadiness?.ready)}
+        restoreAvailable={Boolean(checkpointHistory.restoreAvailable)}
       />
       <section className="panel mt-6" aria-labelledby="character-sheet">
         <h2 className="flex items-center gap-2 text-xl font-bold" id="character-sheet">

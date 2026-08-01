@@ -258,7 +258,13 @@
       "description": "100ページ作品の差分重複排除バックアップと完成版固定を追加",
       "forwardSha256": "493138e847b17a0081224d45d6713fb90a4c3be4d7eb5502bb5024d250ff3950",
       "rollbackSha256": "e186f4bee4c6676a14ccc2f2b9cf3054b62db49c9a823ea86fb5e4e196520b2f"
+    },
+    {
+      "id": "202608020001_cloud_project_checkpoint_restore",
+      "description": "復元前自動バックアップ付きの固定版復元と監査履歴を追加",
+      "forwardSha256": "9e69b5cc4890100cedc552d41ce3e016bb1442d04b9087c3b860b92df544353c",
+      "rollbackSha256": "3f4b98e5ac62aac45fd915da33c4091984fdc77b39cde4ded468fda3f2a8a1bf"
     }
   ],
-  "schemaSha256": "61f3e3ee44f659fc3a7fa71b8e6c7391994cbc5cd8cd951b295c540ad02a236e"
+  "schemaSha256": "ba97fdbc74ce2688cc1b692d4f2ec294192bf64541f1b67a92015943d1035a09"
 }
