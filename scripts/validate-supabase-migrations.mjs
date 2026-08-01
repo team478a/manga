@@ -171,6 +171,11 @@ for (const required of [
   "save_cloud_plot_thread",
   "cloud_chapter_production_plans",
   "save_cloud_chapter_production_plan",
+  "cloud_project_resource_budgets",
+  "save_cloud_project_resource_budget",
+  "get_cloud_project_resource_usage",
+  "enforce_cloud_project_generation_budget",
+  "enforce_cloud_project_storage_budget",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

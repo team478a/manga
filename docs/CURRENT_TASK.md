@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-01 長編マンガ制作 M5-6: 作品別リソース予算
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/manga-cost-budget-v1`
+- Base: `agent/manga-chapter-production-plans-v1`（Draft PR #114）
+- 目的: 32〜100ページ制作で作品ごとの生成クレジット、概算費用、Storage使用量を把握し、上限超過をDBで停止する
+- 実装: 月間クレジット／費用／容量上限、警告割合、作品別停止スイッチ、コックピット集計、owner/admin保存RPC、Job／Asset強制停止trigger
+- 表示境界: 利用者には集計値だけを表示し、Provider、モデル、API単価、内部計算式を表示しない
+- migration: `202608010010_cloud_project_resource_budgets.sql`（未適用）
+- 未実施: Supabase staging適用、実Providerでの上限停止、100ページ実データ、実ブラウザ、責任者承認
+- 詳細: `docs/cloud/MANGA_PROJECT_RESOURCE_BUDGET_V1.md`
+
 ## 2026-08-01 長編マンガ制作 M5-5: 章単位の制作計画
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

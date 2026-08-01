@@ -47,6 +47,7 @@ export {
 export { getCloudManuscriptPreflight, getCloudProductionProgress } from "@/modules/cloud-creator/projects/manuscript-preflight-service";
 export { getCloudProjectCharacterSheet } from "@/modules/cloud-creator/projects/character-sheet-service";
 export { getCloudLongformCockpit } from "@/modules/cloud-creator/projects/longform-cockpit-service";
+export { getCloudProjectResourceUsage, saveCloudProjectBudget } from "@/modules/cloud-creator/projects/project-budget-service";
 export { getCloudContinuityReview } from "@/modules/cloud-creator/projects/continuity-review-service";
 export { deleteCloudContinuityFact, deleteCloudPlotThread, getCloudContinuitySuggestions, getCloudNarrativeContinuity, saveCloudContinuityFact, saveCloudPlotThread } from "@/modules/cloud-creator/projects/narrative-continuity-service";
 export {

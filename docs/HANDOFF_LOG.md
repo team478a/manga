@@ -2754,3 +2754,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 4〜8ページの試作、人物・画風・世界観、章・話・シーン・ページ、参照画像、一括生成、制作状態、連続性、100ページ対応、完成原稿PDFを案内
 - `docs/cloud/CLOUD_GENERAL_MONITOR_USER_GUIDE.md`も同じ実装状態へ同期
 - 専用Webマニュアルテスト、Hub/Desktop typecheck、Lint、差分検査に成功
+
+## 2026-08-01 Codex: M5-6 作品別リソース予算
+
+- `codex/manga-cost-budget-v1`を`agent/manga-chapter-production-plans-v1`（Draft PR #114）から作成
+- 作品別の月間生成クレジット、月間概算費用、Storage容量、警告割合、生成停止を追加
+- 長編作品コックピットへ使用量・上限・警告・設定フォームを追加
+- Job登録前とAsset容量変更前にDB側で上限を強制し、並行Job登録時は予算行をlock
+- Provider、モデル、API単価、内部計算式は利用者画面に表示しない
+- migration 42本目、rollback、canonical schema、静的検査を追加
+- Supabase staging適用、実Provider、100ページ実データ、実ブラウザ確認は未実施
