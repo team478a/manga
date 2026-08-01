@@ -2710,3 +2710,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 絞り込み結果件数をaria-liveで通知し、スマートフォンでも横幅を超えない構造を維持
 - migration、環境変数、外部Providerは追加なし
 - Hub 388/388、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、Lint、production buildを完了
+- Draft PR #113、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
+- 実ブラウザ確認、100ページ実データ操作確認、マージは未実施

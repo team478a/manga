@@ -5,11 +5,15 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `agent/manga-cockpit-navigation-v1`
 - Base: `agent/manga-longform-cockpit-v1`（Draft PR #112）
+- Draft PR: [#113](https://github.com/team478a/manga/pull/113)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-4977d4-team478as-projects.vercel.app`
 - 目的: 100ページ作品でもコックピットを軽く、迷わず確認できるようにする
 - 実装: 章／制作状態フィルター、シーン未割当抽出、章折りたたみ、24ページ段階表示、件数読み上げ
 - データ境界: 保存済みデータのブラウザー内フィルターだけを使用
 - migration／環境変数: 追加なし
 - 検証: deps、lint、Hub 388/388、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 40本静的検査、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 実ブラウザ、100ページ実データの操作確認、責任者承認、親PR後のマージ
 - 詳細: `docs/cloud/MANGA_COCKPIT_NAVIGATION_V1.md`
 
 
