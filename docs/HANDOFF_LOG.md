@@ -2688,4 +2688,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 同一内容・同一ページ範囲の登録済み候補を表示から除外
 - migration、環境変数、外部Providerは追加なし
 - 専用4テスト、Hub 383/383、Canvas 26/26、AI 48/48、Desktop、a11y、型検査、Lint、production buildを完了
-- Draft PR、Preview、実ブラウザ確認、マージは未実施
+- Draft PR #111、Vercel Preview、Core quality、Migration roundtrip、Windows buildを完了
+- 実ブラウザ確認、実作品語彙調整、マージは未実施

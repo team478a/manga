@@ -2,6 +2,9 @@
 
 更新日: 2026-08-01
 
+- Draft PR: [#111](https://github.com/team478a/manga/pull/111)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-2eb954-team478as-projects.vercel.app`
+
 ## 目的
 
 長編作品で設定台帳への転記負担を減らす。確定済みの構造化情報だけから候補を作り、利用者が内容を確認して登録した項目だけを正式な連続性事実として保存する。
@@ -40,3 +43,4 @@ Provider用Prompt、Negative Prompt、画像の見た目、未確定の本文解
 - Hub `383/383`、Canvas `26/26`、AI `48/48`
 - dependency境界、Lint、Hub/Desktop型検査、Desktop統合・a11y
 - 既存40 migration静的検査、production build、`git diff --check`
+- GitHub Core quality、Migration roundtrip、Windows build、Vercel Preview
