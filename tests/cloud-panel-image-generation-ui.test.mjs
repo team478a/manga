@@ -85,6 +85,14 @@ test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送
   assert.match(inpaintingDialog, /image\/png/);
 });
 
+test("部分修正UIは修正内容に合う範囲を自動配置して手動調整も残す", () => {
+  assert.match(inpaintingDialog, /修正範囲のおすすめ/);
+  assert.match(inpaintingDialog, /defaultMaskSuggestion/);
+  assert.match(inpaintingDialog, /paintSuggestion/);
+  assert.match(inpaintingDialog, /画像を見ながら「塗る」「消す」で調整/);
+  assert.match(editor, /revisionPreset=\{revisionPreset\}/);
+});
+
 test("専用Serviceは修正元Assetの所有権と選択コマへの配置を検証する", () => {
   assert.match(service, /layer\.panelId === request\.panelId/);
   assert.match(service, /layer\.assetId === revision\.sourceAssetId/);
