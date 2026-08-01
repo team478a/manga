@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-08-01 Codex: M5-5 章単位の制作計画
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `agent/manga-chapter-production-plans-v1`
+- Base: `agent/manga-cockpit-navigation-v1`（Draft PR #113）
+- Draft PR: [#114](https://github.com/team478a/manga/pull/114)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ch-9a2d97-team478as-projects.vercel.app`
+
+### 完了
+
+- 章ごとの優先度、担当名、期限、作業メモを追加した。
+- 期限超過、優先章数、次に着手する章をコックピットへ追加した。
+- 所有者限定RLS/RPCとmigration未適用時の縮退表示を追加した。
+- 全ローカル品質ゲートと全GitHub CIが成功した。
+
+### 未実施
+
+- Supabase migration適用、実ブラウザ確認、責任者承認、親PR後のマージ。
+
+---
+
 ## 2026-08-01 Codex: M4 永続PDFエクスポート
 
 ### 状態

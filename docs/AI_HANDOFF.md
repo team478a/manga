@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-5 章単位の制作計画、2026-08-01）
+
+- Branch: `agent/manga-chapter-production-plans-v1`
+- Base: `agent/manga-cockpit-navigation-v1`（Draft PR #113）
+- Draft PR: [#114](https://github.com/team478a/manga/pull/114)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ch-9a2d97-team478as-projects.vercel.app`
+- 実装: 章ごとの優先度・担当名・期限・メモ、期限超過、優先章数、次着手章
+- migration: `202608010009_cloud_chapter_production_plans.sql`（未適用）
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。migration適用・実ブラウザ・責任者承認待ち
+
+---
+
 ## 0. 現在の優先タスク（M5-4 100ページナビゲーション、2026-08-01）
 
 - Branch: `agent/manga-cockpit-navigation-v1`

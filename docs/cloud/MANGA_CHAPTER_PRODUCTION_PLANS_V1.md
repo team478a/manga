@@ -18,3 +18,9 @@
 ## 外部作業
 
 `202608010009_cloud_chapter_production_plans.sql` は未適用。責任者確認後にSupabaseへ適用する。
+
+## レビュー
+
+- Draft PR: [#114](https://github.com/team478a/manga/pull/114)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ch-9a2d97-team478as-projects.vercel.app`
+- Core quality、Migration roundtrip、Windows build、Vercel: 成功
