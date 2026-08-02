@@ -5,11 +5,12 @@
 - Branch: `codex/manga-100-page-acceptance-v1`
 - Base: `codex/manga-longform-readiness-v1`（Draft PR #119）
 - Draft PR: [#120](https://github.com/team478a/manga/pull/120)
+- Preview: `https://mangai-hub-staging-git-codex-manga-10-9b7089-team478as-projects.vercel.app`
 - Fixture: 100ページ、10章、10話、20シーン、100コマ・100素材、全ページ確定済み
 - 検査: 長編集約、24ページ段階表示、原稿preflight、制作進捗、固定版差分、4ページ×25分割PDF結合
 - migration／環境変数／外部Provider: 追加なし
 - 詳細: `docs/cloud/MANGA_100_PAGE_ACCEPTANCE_V1.md`
-- 状態: 専用受入れ4/4と全ローカル品質ゲート成功。Draft PR作成済み、PreviewとCIを確認中
+- 状態: 専用受入れ4/4、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ、実画像、実DB復元訓練、責任者承認待ち
 
 ---
 

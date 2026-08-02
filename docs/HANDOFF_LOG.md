@@ -15,6 +15,7 @@ IMPLEMENTED_AWAITING_REVIEW
 - `codex/manga-100-page-acceptance-v1`
 - Base: `codex/manga-longform-readiness-v1`（Draft PR #119）
 - Draft PR: [#120](https://github.com/team478a/manga/pull/120)
+- Preview: `https://mangai-hub-staging-git-codex-manga-10-9b7089-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -25,10 +26,11 @@ IMPLEMENTED_AWAITING_REVIEW
 - `npm run cloud:longform:acceptance`を追加し、初回4/4成功を確認した。
 - migration、環境変数、外部Provider、製品ロジックは変更していない。
 - deps、lint、Hub 414/414、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production buildが成功した。
+- Core quality、Migration roundtrip、Windows build、Vercelの全CIが成功した。
 
 ### 未実施
 
-- Preview、CI、実ブラウザ、実画像、実DB復元訓練、責任者承認。
+- 実ブラウザ、実画像、実DB復元訓練、責任者承認。
 
 ---
 
