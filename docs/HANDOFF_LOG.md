@@ -14,6 +14,7 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `codex/manga-100-page-acceptance-v1`
 - Base: `codex/manga-longform-readiness-v1`（Draft PR #119）
+- Draft PR: [#120](https://github.com/team478a/manga/pull/120)
 
 ### 完了
 
@@ -27,7 +28,7 @@ IMPLEMENTED_AWAITING_REVIEW
 
 ### 未実施
 
-- Draft PR、Preview、CI、実ブラウザ、実画像、実DB復元訓練、責任者承認。
+- Preview、CI、実ブラウザ、実画像、実DB復元訓練、責任者承認。
 
 ---
 
