@@ -13,7 +13,10 @@
 - 変更しない範囲: 認証処理、Supabase設定、DB、migration、Desktop
 - 検証: 集中テスト6/6、deps:check、lint、Hub typecheck、Hub test 280/280、migration検証29件、production build、git diff check成功
 - 注記: `npm ci`の既存依存監査でhigh severity 3件。今回の表示変更とは分離して扱う
-- 未実施: Draft PRのCI、Vercel Preview、責任者による画面確認
+- Draft PR: [#122](https://github.com/team478a/manga/pull/122)
+- Preview: `https://mangai-hub-staging-git-codex-signup-p-23f2b6-team478as-projects.vercel.app/signup`
+- CI: 実装commit `eeafe85`でCore quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 責任者によるPreview画面確認・承認・マージ
 
 ## 2026-07-31 一般向けモニターWebマニュアル同期
 

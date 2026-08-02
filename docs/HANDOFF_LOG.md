@@ -14,6 +14,8 @@ READY_FOR_REVIEW
 
 - Branch: `codex/signup-pending-feedback-v1`
 - Base: `origin/feature/manga-canvas-mvp` (`ae1279e`)
+- Draft PR: [#122](https://github.com/team478a/manga/pull/122)
+- Preview: `https://mangai-hub-staging-git-codex-signup-p-23f2b6-team478as-projects.vercel.app/signup`
 
 ### 完了
 
@@ -21,10 +23,11 @@ READY_FOR_REVIEW
 - 処理中のボタン無効化により二重送信を防止
 - 既存の登録Server Actionと認証契約は変更なし
 - 集中テスト6/6、deps:check、lint、Hub typecheck、Hub test 280/280、migration検証29件、production build、git diff checkに成功
+- 実装commit `eeafe85`のCore quality、Migration roundtrip、Windows build、Vercelに成功
 
 ### 未完了
 
-- Draft PRのCI、Vercel Preview、責任者による画面確認
+- 責任者によるPreview画面確認・承認・マージ
 
 ### 変更ファイル
 
