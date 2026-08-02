@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-08-02 Codex: M5-10 長編完成準備チェック
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `codex/manga-longform-readiness-v1`
+- Base: `codex/manga-checkpoint-diff-preview-v1`（Draft PR #118）
+
+### 完了
+
+- 原稿確定、復旧可能な固定版、完成版固定、完成PDFを決定的に判定するhelperを追加した。
+- 作品画面へ4段階の日本語ガイドと、最初の未完了工程への導線を追加した。
+- 完成用preflightの確定状態エラーを原稿チェック欄にも表示するよう統一した。
+- `202608020001`のSupabase staging適用とtable／function／RLSの確認成功を記録した。
+- migration、環境変数、外部Providerは追加していない。
+- deps、lint、Hub 410/410、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production buildが成功した。
+
+### 未実施
+
+- Draft PR、Preview、CI、実ブラウザ、100ページfixture、責任者承認。
+
+---
+
 ## 2026-08-02 Codex: M5-9 復元前の差分確認
 
 ### 状態

@@ -40,6 +40,8 @@ import { listCloudExportJobs } from "@/modules/cloud-creator/export/durable-expo
 import { LongformPageManager } from "./LongformPageManager";
 import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
+import { LongformReadinessPanel } from "./LongformReadinessPanel";
+import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
 
 export default async function CloudProjectPage({
   params,
@@ -76,12 +78,24 @@ export default async function CloudProjectPage({
   const pageProductionStates = longform.available
     ? await listCloudPageProductionStates(projectId, pages).catch(() => [])
     : [];
-  const manuscript = productionProgress?.manuscript ?? null;
+  const manuscript = exportReadiness ?? productionProgress?.manuscript ?? null;
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product &&
       new Date(marketplaceDraft.product.updated_at).getTime() >=
         new Date(project.updated_at).getTime(),
   );
+  const longformReadiness = buildCloudLongformReadiness({
+    manuscriptAvailable: Boolean(exportReadiness),
+    manuscriptReady: Boolean(exportReadiness?.ready),
+    manuscriptErrorCount: exportReadiness?.errorCount ?? 0,
+    checkpointAvailable: checkpointHistory.available,
+    restoreAvailable: checkpointHistory.restoreAvailable,
+    checkpointCount: checkpointHistory.checkpoints.length,
+    releaseCount: checkpointHistory.checkpoints.filter((item) => item.kind === "release").length,
+    exportAvailable: exportHistory.available,
+    completedExportCount: exportHistory.jobs.filter((item) => item.status === "completed" && item.downloadable).length,
+    activeExport: exportHistory.jobs.some((item) => ["queued", "running", "paused"].includes(item.status)),
+  });
   return (
     <main className="page">
       <Link className="text-leaf underline" href="/creator">
@@ -117,6 +131,7 @@ export default async function CloudProjectPage({
           {query.error}
         </p>
       ) : null}
+      <LongformReadinessPanel readiness={longformReadiness} />
       {manuscript ? (
         <section className="panel mt-6" aria-labelledby="manuscript-status">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
