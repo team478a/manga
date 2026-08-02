@@ -1,6 +1,7 @@
 import { DomainError, ValidationError } from "@/lib/domain-errors";
 import { cloudCreatorContext } from "../auth-context";
 import { getCloudManuscriptPreflight } from "./manuscript-preflight-service";
+import { summarizeCloudCheckpointDiff, type CloudCheckpointDiff } from "./project-checkpoint-diff";
 
 export type CloudProjectCheckpoint = {
   id: string;
@@ -12,6 +13,7 @@ export type CloudProjectCheckpoint = {
   manifestSha256: string;
   createdAt: string;
   lastRestoredAt: string | null;
+  diff: CloudCheckpointDiff;
   isCurrent: boolean;
 };
 
@@ -19,9 +21,9 @@ export async function listCloudProjectCheckpoints(projectId: string) {
   const { supabase } = await cloudCreatorContext();
   const [checkpoints, project, restores] = await Promise.all([
     supabase.from("cloud_project_checkpoints")
-      .select("id,kind,label,project_revision,production_context_revision,page_count,manifest_sha256,created_at")
+      .select("id,kind,label,project_revision,production_context_revision,page_count,manifest_sha256,manifest,created_at")
       .eq("project_id", projectId).order("created_at", { ascending: false }).limit(20),
-    supabase.from("cloud_projects").select("revision,production_context_revision").eq("id", projectId).maybeSingle(),
+    supabase.from("cloud_projects").select("revision,production_context_revision,title,description,reading_direction,width,height,dpi").eq("id", projectId).maybeSingle(),
     supabase.from("cloud_project_checkpoint_restores")
       .select("checkpoint_id,result_project_revision,restored_at")
       .eq("project_id", projectId).order("restored_at", { ascending: false }).limit(20),
@@ -31,6 +33,26 @@ export async function listCloudProjectCheckpoints(projectId: string) {
     throw new DomainError("INTERNAL_ERROR", "作品の固定版履歴を読み込めませんでした。", { cause: checkpoints.error ?? project.error });
   const projectRevision = Number(project.data.revision);
   const productionContextRevision = Number(project.data.production_context_revision);
+  const [pages, chapters, episodes, scenes, assets] = await Promise.all([
+    supabase.from("cloud_pages").select("id,revision").eq("project_id", projectId).is("deleted_at", null),
+    supabase.from("cloud_chapters").select("id").eq("project_id", projectId).is("deleted_at", null),
+    supabase.from("cloud_episodes").select("id").eq("project_id", projectId).is("deleted_at", null),
+    supabase.from("cloud_scenes").select("id").eq("project_id", projectId).is("deleted_at", null),
+    supabase.from("cloud_assets").select("id").eq("project_id", projectId).is("deleted_at", null),
+  ]);
+  const diffAvailable = !pages.error && !chapters.error && !episodes.error && !scenes.error && !assets.error;
+  const currentComparable = {
+    project: {
+      title: project.data.title,
+      description: project.data.description ?? "",
+      readingDirection: project.data.reading_direction,
+      width: Number(project.data.width),
+      height: Number(project.data.height),
+      dpi: Number(project.data.dpi),
+    },
+    pages: (pages.data ?? []).map((row) => ({ id: row.id, revision: Number(row.revision) })),
+    chapters: chapters.data ?? [], episodes: episodes.data ?? [], scenes: scenes.data ?? [], assets: assets.data ?? [],
+  };
   const restoreAvailable = !restores.error;
   const restoreByCheckpoint = new Map<string, { revision: number; restoredAt: string }>();
   if (restoreAvailable) for (const row of restores.data ?? []) {
@@ -51,6 +73,9 @@ export async function listCloudProjectCheckpoints(projectId: string) {
       manifestSha256: row.manifest_sha256,
       createdAt: row.created_at,
       lastRestoredAt: restoreByCheckpoint.get(row.id)?.restoredAt ?? null,
+      diff: diffAvailable
+        ? summarizeCloudCheckpointDiff(row.manifest, currentComparable)
+        : { available: false, pagesToRestore: 0, pagesToRemove: 0, structureChanges: 0, assetChanges: 0, projectSettingsChanged: false, hasChanges: false },
       isCurrent: (Number(row.project_revision) === projectRevision
         && Number(row.production_context_revision) === productionContextRevision)
         || restoreByCheckpoint.get(row.id)?.revision === projectRevision,
