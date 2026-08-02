@@ -15,7 +15,10 @@
 - 変更しない範囲: DB、migration、制作データ、成人向け境界、Desktop
 - 検証: 集中テスト4/4、deps:check、lint、Hub typecheck、Hub test 281/281、migration検証29件、production build、git diff check成功
 - 注記: `npm ci`の既存依存監査でhigh severity 3件。今回の管理機能変更とは分離して扱う
-- 未実施: Draft PRのCI、Vercel Preview、責任者による画面確認
+- Draft PR: [#123](https://github.com/team478a/manga/pull/123)
+- Preview: `https://mangai-hub-staging-git-codex-admin-us-83467b-team478as-projects.vercel.app/admin/users`
+- CI: 実装commit `32f8570`でCore quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 責任者によるPreview画面確認・承認・マージ
 
 ## 2026-07-31 一般向けモニターWebマニュアル同期
 

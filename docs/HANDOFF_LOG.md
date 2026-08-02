@@ -14,6 +14,8 @@ READY_FOR_REVIEW
 
 - Branch: `codex/admin-user-lifecycle-v1`
 - Base: `origin/feature/manga-canvas-mvp` (`ae1279e`)
+- Draft PR: [#123](https://github.com/team478a/manga/pull/123)
+- Preview: `https://mangai-hub-staging-git-codex-admin-us-83467b-team478as-projects.vercel.app/admin/users`
 
 ### 完了
 
@@ -22,10 +24,11 @@ READY_FOR_REVIEW
 - 管理者本人・他の管理者をServer ActionとUIの両方で保護
 - DB・migration・制作データは変更なし
 - 集中テスト4/4、deps:check、lint、Hub typecheck、Hub test 281/281、migration検証29件、production build、git diff checkに成功
+- 実装commit `32f8570`のCore quality、Migration roundtrip、Windows build、Vercelに成功
 
 ### 未完了
 
-- Draft PRのCI、Vercel Preview、責任者による画面確認
+- 責任者によるPreview画面確認・承認・マージ
 
 ### 変更ファイル
 
