@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-9 復元前の差分確認、2026-08-02）
+
+- Branch: `codex/manga-checkpoint-diff-preview-v1`
+- Base: `codex/manga-checkpoint-restore-v1`（Draft PR #117）
+- 実装: ページrevision、構成ID、素材ID、作品基本設定の決定的な差分集計と日本語UI
+- 情報境界: manifest、ハッシュ、Canvas、Storage path、Provider情報は非表示
+- migration／環境変数／外部Provider: 追加なし
+- 詳細: `docs/cloud/MANGA_CHECKPOINT_DIFF_PREVIEW_V1.md`
+- 状態: 実装、全ローカル品質ゲート成功。Draft PR、Preview、CI待ち
+
+---
+
 ## 0. 現在の優先タスク（M5-8 チェックポイント復元、2026-08-02）
 
 - Branch: `codex/manga-checkpoint-restore-v1`

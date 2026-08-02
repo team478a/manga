@@ -42,6 +42,16 @@ export function ProjectCheckpointPanel({ available, checkpoints, projectId, rele
             {!item.isCurrent ? <details className="mt-3 rounded-lg border border-amber-200 bg-white p-3">
               <summary className="cursor-pointer text-sm font-bold text-amber-900">この固定版へ復元</summary>
               <form action={restoreCloudProjectCheckpointAction.bind(null, projectId, item.id)} className="mt-3">
+                {item.diff.available ? <div className="mb-3 rounded-lg bg-stone-50 p-3 text-xs text-stone-700">
+                  <p className="font-bold text-stone-900">現在との差分</p>
+                  {item.diff.hasChanges ? <ul className="mt-2 grid gap-1 sm:grid-cols-2">
+                    <li>戻すページ: {item.diff.pagesToRestore}ページ</li>
+                    <li>現在から外れるページ: {item.diff.pagesToRemove}ページ</li>
+                    <li>章・話・シーン構成: {item.diff.structureChanges ? `${item.diff.structureChanges}件変更` : "変更なし"}</li>
+                    <li>素材: {item.diff.assetChanges ? `${item.diff.assetChanges}件変更` : "変更なし"}</li>
+                    <li className="sm:col-span-2">作品の基本設定: {item.diff.projectSettingsChanged ? "変更あり" : "変更なし"}</li>
+                  </ul> : <p className="mt-2">復元対象となる内容差分はありません。</p>}
+                </div> : <p className="mb-3 text-xs text-stone-600">差分を取得できませんでした。復元前バックアップは作成されます。</p>}
                 <p className="text-xs leading-relaxed text-stone-700">現在の内容は自動バックアップ後に置き換わります。復元したページはすべて「要再確認」になります。</p>
                 <label className="mt-3 flex items-start gap-2 text-sm"><input className="mt-1" name="confirm" required type="checkbox" value="restore" /><span>内容を確認し、この固定版へ復元します</span></label>
                 <PendingSubmitButton className="button-secondary mt-3" disabled={!restoreAvailable} pendingLabel="復元中…">固定版を復元</PendingSubmitButton>

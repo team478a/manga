@@ -4,6 +4,31 @@
 
 ---
 
+## 2026-08-02 Codex: M5-9 復元前の差分確認
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `codex/manga-checkpoint-diff-preview-v1`
+- Base: `codex/manga-checkpoint-restore-v1`（Draft PR #117）
+
+### 完了
+
+- 固定版と現在作品のページ、構成、素材、基本設定を決定的に比較するhelperを追加した。
+- 復元確認欄へ、戻すページと現在から外れるページを含む日本語の差分要約を追加した。
+- manifest、ハッシュ、Canvas、Storage path、Provider情報を利用者へ表示しない境界を維持した。
+- migration、環境変数、外部Providerは追加していない。
+- deps、lint、Hub 406/406、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production buildが成功した。
+
+### 未実施
+
+- PR #117 migration適用後の実ブラウザ、100ページ実データ、責任者承認。
+
+---
+
 ## 2026-08-02 Codex: M5-8 チェックポイント復元
 
 ### 状態
