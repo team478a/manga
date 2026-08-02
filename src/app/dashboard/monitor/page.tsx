@@ -12,7 +12,17 @@ type Feedback = {
   outcome: string;
   comment: string;
   created_at: string;
+  target_scope: "general" | "page" | "panel";
+  page_number_snapshot: number | null;
+  panel_name_snapshot: string | null;
+  verdict: "accepted" | "needs_revision" | "unusable" | null;
 };
+
+const qualityVerdictLabels = {
+  accepted: "採用可",
+  needs_revision: "要修正",
+  unusable: "作り直し",
+} as const;
 
 export default async function GeneralMonitorPage({
   searchParams,
@@ -25,7 +35,7 @@ export default async function GeneralMonitorPage({
   const notice = getCloudGeneralMonitorNotice(enrollment);
   const { data: feedback } = await (await createClient())
     .from("cloud_general_monitor_feedback")
-    .select("id,workflow_step,rating,outcome,comment,created_at")
+    .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict")
     .eq("owner_profile_id", profile.id)
     .order("created_at", { ascending: false })
     .returns<Feedback[]>();
@@ -106,6 +116,11 @@ export default async function GeneralMonitorPage({
               {(feedback ?? []).map((item) => (
                 <article className="rounded-xl border border-stone-200 p-4" key={item.id}>
                   <p className="text-sm font-bold">{item.workflow_step}・{item.rating}/5・{item.outcome}</p>
+                  {item.target_scope !== "general" ? (
+                    <p className="mt-1 text-xs font-semibold text-violet-800">
+                      {item.page_number_snapshot}ページ{item.panel_name_snapshot ? `・${item.panel_name_snapshot}` : "全体"}・{item.verdict ? qualityVerdictLabels[item.verdict] : "評価済み"}
+                    </p>
+                  ) : null}
                   <p className="mt-2 whitespace-pre-wrap break-words text-stone-700">{item.comment}</p>
                 </article>
               ))}

@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-02 長編マンガ制作 M6-1: 限定モニター品質フィードバック
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/manga-monitor-quality-feedback-v1`
+- Base: `codex/manga-100-page-acceptance-v1`（Draft PR #120）
+- 目的: ページ／コマ評価と生成品質・費用指標を漫画Editorから収集する
+- 実装: 採用／要修正／作り直し、問題種別、影響度、コメント、生成回数、Provider／model、概算費用、時間の保存と管理集計
+- migration: `202608020002_cloud_general_monitor_quality_feedback.sql`（未適用）
+- 環境変数／外部Provider実行: 追加なし
+- 検証: 専用4/4、Hub 418/418、deps、Hub typecheck、lint、migration 45本、production build、公開画面390／768／1280px overflowなし
+- 未実施: Supabase適用、認証済みPreviewでの保存、実モニター試験、責任者承認
+- 詳細: `docs/cloud/MANGA_MONITOR_QUALITY_FEEDBACK_V1.md`
+
 ## 2026-08-02 長編マンガ制作 M5-11: 100ページ決定的受入れfixture
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

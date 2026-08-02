@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M6-1 限定モニター品質フィードバック、2026-08-02）
+
+- Branch: `codex/manga-monitor-quality-feedback-v1`
+- Base: `codex/manga-100-page-acceptance-v1`（Draft PR #120）
+- 実装: Editor内のページ／コマ評価、生成Job由来の品質・費用指標、管理者集計
+- migration: `202608020002_cloud_general_monitor_quality_feedback.sql`（未適用）
+- 環境変数／外部Provider実行: 追加なし
+- 詳細: `docs/cloud/MANGA_MONITOR_QUALITY_FEEDBACK_V1.md`
+- 状態: 実装と静的検証済み。Supabase適用、認証済みPreview、実モニター試験、責任者承認待ち
+
+---
+
 ## 0. 現在の優先タスク（M5-11 100ページ決定的受入れfixture、2026-08-02）
 
 - Branch: `codex/manga-100-page-acceptance-v1`
