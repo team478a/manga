@@ -5,11 +5,13 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `codex/manga-longform-readiness-v1`
 - Base: `codex/manga-checkpoint-diff-preview-v1`（Draft PR #118）
+- Draft PR: [#119](https://github.com/team478a/manga/pull/119)
+- Preview: `https://mangai-hub-staging-git-codex-manga-lo-109f0d-team478as-projects.vercel.app`
 - 目的: 原稿確定、復旧用固定版、完成版、PDFの順に次の操作を一画面で案内する
 - 実装: 4段階の決定的な完成判定、最初の未完了工程への日本語導線、完成用preflight表示の統一
 - migration／環境変数／外部Provider: 追加なし
 - 検証: deps、lint、Hub 410/410、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production build成功
-- CI: Draft PR作成後に確認
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 未実施: 実ブラウザ、100ページfixture、責任者承認
 - 詳細: `docs/cloud/MANGA_LONGFORM_READINESS_V1.md`
 

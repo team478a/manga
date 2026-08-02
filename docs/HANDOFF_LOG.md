@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `codex/manga-longform-readiness-v1`
 - Base: `codex/manga-checkpoint-diff-preview-v1`（Draft PR #118）
+- Draft PR: [#119](https://github.com/team478a/manga/pull/119)
+- Preview: `https://mangai-hub-staging-git-codex-manga-lo-109f0d-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -23,10 +25,11 @@ IMPLEMENTED_AWAITING_REVIEW
 - `202608020001`のSupabase staging適用とtable／function／RLSの確認成功を記録した。
 - migration、環境変数、外部Providerは追加していない。
 - deps、lint、Hub 410/410、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production buildが成功した。
+- Core quality、Migration roundtrip、Windows build、Vercelの全CIが成功した。
 
 ### 未実施
 
-- Draft PR、Preview、CI、実ブラウザ、100ページfixture、責任者承認。
+- 実ブラウザ、100ページfixture、責任者承認。
 
 ---
 
