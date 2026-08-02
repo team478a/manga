@@ -1904,6 +1904,50 @@ READY_FOR_REVIEW
 
 ## 追記テンプレート
 
+## 2026-08-02 管理者ユーザー運用表示の改善
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ・PR
+
+- Branch: `codex/admin-user-lifecycle-v1`
+- PR: [#123](https://github.com/team478a/manga/pull/123)
+
+### 完了
+
+- 削除済みユーザーを一覧から除外し、削除後の詳細画面を404化
+- 招待メールの送信済み日時・再送回数・未送信を一覧表示
+- メール確認済み、未ログイン、最終ログイン日時を一覧表示
+- 招待メール成功時だけ監査付き送信履歴を記録
+- migration、rollback、canonical schema、assertionを同期
+
+### 検証
+
+- deps:check: PASS
+- lint: PASS
+- typecheck:hub: PASS
+- focused tests: PASS（3/3）
+- hub:test: PASS（282/282）
+- db:migrations:validate: PASS（30/30）
+- build: PASS
+- git diff --check: PASS
+
+### 未完了
+
+1. `202608020001_cloud_general_monitor_invite_tracking.sql`を対象Supabaseへ適用
+2. 対象環境を再デプロイ
+3. 管理画面で招待送信、再送、ログイン日時、削除後非表示を実機確認
+4. CI、Vercel Preview、責任者レビューを確認してからmerge
+
+### 注意事項
+
+- ログイン状況はSupabase Authの`last_sign_in_at`を表示し、閲覧内容や操作内容は記録しない。
+- 削除済みユーザーは画面から除外するが、監査・参照整合性のためDBレコードを破壊的に消去しない。
+
+---
+
 ```md
 ## YYYY-MM-DD HH:mm JST 担当AI → 次担当AI
 

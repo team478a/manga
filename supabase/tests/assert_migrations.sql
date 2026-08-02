@@ -270,8 +270,30 @@ begin
   if to_regprocedure('public.consume_cloud_general_monitor_ai_request(uuid,text)') is null
     or to_regprocedure('public.activate_cloud_general_monitor(uuid,uuid,timestamp with time zone,integer,text,text)') is null
     or to_regprocedure('public.stop_cloud_general_monitor(uuid,uuid,text,text)') is null
+    or to_regprocedure('public.record_cloud_general_monitor_invite_email_sent(uuid,uuid)') is null
   then
     raise exception 'General monitor beta RPCs are missing';
+  end if;
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public'
+      and table_name='cloud_general_monitor_enrollments'
+      and column_name in ('invite_email_sent_at','invite_email_send_count')
+    group by table_schema,table_name
+    having count(*)=2
+  ) then
+    raise exception 'General monitor invite delivery tracking is missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.record_cloud_general_monitor_invite_email_sent(uuid,uuid)',
+       'execute'
+     ) or not has_function_privilege(
+       'service_role',
+       'public.record_cloud_general_monitor_invite_email_sent(uuid,uuid)',
+       'execute'
+     ) then
+    raise exception 'General monitor invite recorder privileges are invalid';
   end if;
 end $$;
 

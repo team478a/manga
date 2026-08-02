@@ -62,6 +62,7 @@ export default async function AdminUserDetailPage({
   if (hasSupabaseAdminEnv()) {
     const admin = createAdminClient();
     const { data } = await admin.auth.admin.getUserById(user.user_id);
+    if (!data.user || data.user.deleted_at) notFound();
     email = data.user?.email ?? "未設定";
     const entitlementResult = await admin
       .from("cloud_adult_research_entitlements")
