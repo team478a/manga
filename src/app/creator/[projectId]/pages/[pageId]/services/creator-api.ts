@@ -9,14 +9,6 @@ import {
   type CompatibleApiErrorEnvelope,
 } from "@/lib/api-error-contract";
 
-export function creatorProjectExportUrl(
-  projectId: string,
-  format: "pdf" | "images" | "package",
-) {
-  const query = new URLSearchParams({ format });
-  return `/api/creator/projects/${encodeURIComponent(projectId)}/export?${query}`;
-}
-
 async function responseJson<T>(response: Response, fallback: string) {
   const result = (await response.json()) as T & CompatibleApiErrorEnvelope;
   if (!response.ok) throw new Error(readApiErrorMessage(result, fallback));

@@ -6,6 +6,7 @@ import {
   hasUnsavedCanvasChanges,
   shouldRetryCanvasSave,
 } from "../src/lib/canvas-autosave-policy.ts";
+import { readFileSync } from "node:fs";
 
 test("Canvas保存retryは指数backoffし上限で止まる", () => {
   assert.deepEqual(
@@ -29,4 +30,24 @@ test("未保存・保存中・error・競合は離脱警告対象になる", () 
   assert.equal(hasUnsavedCanvasChanges("saved"), false);
   for (const state of ["dirty", "saving", "error", "conflict"])
     assert.equal(hasUnsavedCanvasChanges(state), true);
+});
+
+test("保存競合と通信障害を異なる回復操作として案内する", () => {
+  const editor = readFileSync(
+    new URL(
+      "../src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  const autosave = readFileSync(
+    new URL(
+      "../src/app/creator/[projectId]/pages/[pageId]/hooks/useCanvasAutosave.ts",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+  assert.match(autosave, /別のタブまたは端末/);
+  assert.match(editor, /未保存変更は破棄されます/);
+  assert.match(editor, /未保存内容を保ったまま再試行/);
 });

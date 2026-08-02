@@ -2,6 +2,7 @@ import { Download, FileCheck2, Pause, Play, RotateCcw, XCircle } from "lucide-re
 import type { CloudExportJob } from "@/modules/cloud-creator/export/durable-export-service";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { setCloudExportStateAction, startCloudExportAction } from "@/app/creator/actions";
+import { DurableExportAutoRefresh } from "./DurableExportAutoRefresh";
 
 export function DurableExportPanel({ projectId, available, ready, jobs }: {
   projectId: string;
@@ -22,6 +23,7 @@ export function DurableExportPanel({ projectId, available, ready, jobs }: {
         </form>
       </div>
       {!available ? <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">長編書き出し用migrationの適用後に利用できます。</p> : !ready ? <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">原稿チェックを解消し、すべてのページを確定すると開始できます。</p> : null}
+      <DurableExportAutoRefresh active={Boolean(active)} />
       {jobs.length ? <div className="mt-5 space-y-3">{jobs.map((job) => {
         const label = job.status === "completed" ? "完了" : job.status === "failed" ? "失敗" : job.status === "paused" ? "一時停止中" : job.status === "canceled" ? "中止" : job.status === "running" ? "処理中" : "待機中";
         return <article className="rounded-lg border border-stone-200 p-4" key={job.id}>

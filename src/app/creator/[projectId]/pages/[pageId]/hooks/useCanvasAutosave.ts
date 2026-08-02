@@ -128,7 +128,7 @@ export function useCanvasAutosave({
           retryAttempt.current = 0;
           updateSaveState("conflict");
           setMessage(
-            "別の編集と競合しました。最新状態を再読込してください。",
+            "別のタブまたは端末で同じページが更新されました。未保存内容を確認してから最新状態を読み込んでください。",
           );
         } else if (shouldRetryCanvasSave(response.status)) {
           scheduleRetry("保存応答を読み取れませんでした。");
@@ -147,7 +147,7 @@ export function useCanvasAutosave({
         setMessage(
           readApiErrorMessage(
             result,
-            "別の編集と競合しました。最新状態を再読込してください。",
+            "別のタブまたは端末で同じページが更新されました。未保存内容を確認してから最新状態を読み込んでください。",
           ),
         );
         return;

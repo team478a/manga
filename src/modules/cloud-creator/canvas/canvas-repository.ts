@@ -16,7 +16,7 @@ export function mapCanvasPersistenceError(error: CanvasDatabaseError) {
   switch (signal) {
     case "revision_conflict":
       return new RevisionConflictError(
-        "保存競合を検出しました。ページを再読み込みしてください。",
+        "別のタブまたは端末で同じページが更新されました。最新状態を確認してください。",
       );
     case "page_not_found":
       return new ResourceNotFoundError("ページが見つかりません。");

@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { processNextCloudStorageLifecycleJob } from "@/lib/cloud-storage-lifecycle-worker";
 
 export const runtime = "nodejs";
+// Thumbnail rendering downloads source assets before rendering and upload.
+export const maxDuration = 180;
 
 function authorized(request: Request) {
   const expected = process.env.MANGAI_CLOUD_STORAGE_WORKER_SECRET;

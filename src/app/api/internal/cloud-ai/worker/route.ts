@@ -36,6 +36,9 @@ import {
 } from "@/lib/hub-logger";
 
 export const runtime = "nodejs";
+// Provider polling is bounded at 120 seconds. Keep enough time for lease checks,
+// persistence, compensation, and notification refreshes to complete safely.
+export const maxDuration = 180;
 
 function authorized(request: Request) {
   const expected = process.env.MANGAI_CLOUD_AI_WORKER_SECRET;
