@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-02 長編マンガ制作 M5-10: 長編完成準備チェック
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/manga-longform-readiness-v1`
+- Base: `codex/manga-checkpoint-diff-preview-v1`（Draft PR #118）
+- Draft PR: [#119](https://github.com/team478a/manga/pull/119)
+- Preview: `https://mangai-hub-staging-git-codex-manga-lo-109f0d-team478as-projects.vercel.app`
+- 目的: 原稿確定、復旧用固定版、完成版、PDFの順に次の操作を一画面で案内する
+- 実装: 4段階の決定的な完成判定、最初の未完了工程への日本語導線、完成用preflight表示の統一
+- migration／環境変数／外部Provider: 追加なし
+- 検証: deps、lint、Hub 410/410、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 実ブラウザ、100ページfixture、責任者承認
+- 詳細: `docs/cloud/MANGA_LONGFORM_READINESS_V1.md`
+
 ## 2026-08-02 長編マンガ制作 M5-9: 復元前の差分確認
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -13,7 +28,8 @@
 - migration／環境変数／外部Provider: 追加なし
 - 検証: deps、lint、Hub 406/406、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production build成功
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
-- 未実施: PR #117 migration適用後の実ブラウザ、100ページ実データ、責任者承認
+- DB適用: `202608020001_cloud_project_checkpoint_restore.sql`をSupabase stagingへ適用し、table／function／RLSがすべてtrue
+- 未実施: 実ブラウザ、100ページ実データ、責任者承認
 - 詳細: `docs/cloud/MANGA_CHECKPOINT_DIFF_PREVIEW_V1.md`
 
 ## 2026-08-02 長編マンガ制作 M5-8: チェックポイント復元
@@ -26,10 +42,10 @@
 - 目的: 作業バックアップ／完成版から作品構造とCanvasを安全に復元する
 - 実装: 復元前自動バックアップ、所有権検査、生成／編集ロック検査、復元監査、明示確認UI、処理中表示
 - 安全条件: revision単調増加、復元ページは要再確認、欠損blob時は全rollback、別作品checkpoint拒否
-- migration: `202608020001_cloud_project_checkpoint_restore.sql`（未適用）
+- migration: `202608020001_cloud_project_checkpoint_restore.sql`（Supabase staging適用・構造確認済み）
 - 検証: deps、lint、Hub 403/403、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本の静的検査とforward／rollback／reapply、production build成功
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
-- 未実施: Supabase staging適用、実ブラウザ、100ページ実データ、責任者承認
+- 未実施: 実ブラウザ、100ページ実データ、責任者承認
 - 詳細: `docs/cloud/MANGA_PROJECT_CHECKPOINT_RESTORE_V1.md`
 
 ## 2026-08-01 長編マンガ制作 M5-7: 増分バックアップと完成版固定

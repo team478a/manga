@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-10 長編完成準備チェック、2026-08-02）
+
+- Branch: `codex/manga-longform-readiness-v1`
+- Base: `codex/manga-checkpoint-diff-preview-v1`（Draft PR #118）
+- Draft PR: [#119](https://github.com/team478a/manga/pull/119)
+- Preview: `https://mangai-hub-staging-git-codex-manga-lo-109f0d-team478as-projects.vercel.app`
+- 実装: 原稿確定、復旧用固定版、完成版固定、完成PDFの4段階判定と次アクションUI
+- migration／環境変数／外部Provider: 追加なし
+- DB: `202608020001`はSupabase staging適用・table／function／RLS確認済み
+- 詳細: `docs/cloud/MANGA_LONGFORM_READINESS_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ、100ページfixture、責任者承認待ち
+
+---
+
 ## 0. 現在の優先タスク（M5-9 復元前の差分確認、2026-08-02）
 
 - Branch: `codex/manga-checkpoint-diff-preview-v1`
@@ -22,7 +36,7 @@
 - Preview: `https://mangai-hub-staging-git-codex-manga-ch-e4a0cd-team478as-projects.vercel.app`
 - 実装: 復元前自動バックアップ、作品構造／Canvas復元、復元監査、明示確認UI
 - 安全条件: 生成中／編集中は拒否、別作品拒否、revision単調増加、復元ページは要再確認
-- migration: `202608020001_cloud_project_checkpoint_restore.sql`（未適用）
+- migration: `202608020001_cloud_project_checkpoint_restore.sql`（Supabase staging適用・構造確認済み）
 - 詳細: `docs/cloud/MANGA_PROJECT_CHECKPOINT_RESTORE_V1.md`
 - 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。Supabase staging、実ブラウザ、責任者承認待ち
 
