@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-02 長編マンガ制作 M5-11: 100ページ決定的受入れfixture
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/manga-100-page-acceptance-v1`
+- Base: `codex/manga-longform-readiness-v1`（Draft PR #119）
+- Draft PR: [#120](https://github.com/team478a/manga/pull/120)
+- Preview: `https://mangai-hub-staging-git-codex-manga-10-9b7089-team478as-projects.vercel.app`
+- 目的: 100ページ長編の構造、preflight、進捗、固定版差分、分割PDFを外部環境なしで横断検査する
+- Fixture: 100ページ、10章、10話、20シーン、全ページ確定済み
+- 実装: `cloud:longform:acceptance`とHub testへ4件の決定的受入れを追加
+- migration／環境変数／外部Provider: 追加なし
+- 検証: 専用受入れ4/4、deps、lint、Hub 414/414、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 実ブラウザ、実画像、実DB復元訓練、責任者承認
+- 詳細: `docs/cloud/MANGA_100_PAGE_ACCEPTANCE_V1.md`
+
 ## 2026-08-02 長編マンガ制作 M5-10: 長編完成準備チェック
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

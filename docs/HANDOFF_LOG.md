@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-08-02 Codex: M5-11 100ページ決定的受入れfixture
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `codex/manga-100-page-acceptance-v1`
+- Base: `codex/manga-longform-readiness-v1`（Draft PR #119）
+- Draft PR: [#120](https://github.com/team478a/manga/pull/120)
+- Preview: `https://mangai-hub-staging-git-codex-manga-10-9b7089-team478as-projects.vercel.app`
+
+### 完了
+
+- 100ページ、10章、10話、20シーンの固定fixtureを追加した。
+- 100ページの長編集約、24ページ段階表示、原稿preflight、制作進捗を検査した。
+- 変更された10ページだけを復元対象とする固定版差分を検査した。
+- 4ページ単位25分割から100ページPDFへの結合を検査した。
+- `npm run cloud:longform:acceptance`を追加し、初回4/4成功を確認した。
+- migration、環境変数、外部Provider、製品ロジックは変更していない。
+- deps、lint、Hub 414/414、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production buildが成功した。
+- Core quality、Migration roundtrip、Windows build、Vercelの全CIが成功した。
+
+### 未実施
+
+- 実ブラウザ、実画像、実DB復元訓練、責任者承認。
+
+---
+
 ## 2026-08-02 Codex: M5-10 長編完成準備チェック
 
 ### 状態
