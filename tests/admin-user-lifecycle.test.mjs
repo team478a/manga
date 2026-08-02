@@ -25,10 +25,39 @@ test("ユーザー一覧は確認付き操作と処理中表示を提供する",
     ),
   ]);
   assert.match(page, /停止中/);
-  assert.match(page, /削除済み/);
+  assert.match(page, /state !== "deleted"/);
+  assert.match(page, /招待メール/);
+  assert.match(page, /invite_email_sent_at/);
+  assert.match(page, /lastSignInAt/);
+  assert.match(page, /最終/);
   assert.match(page, /user\.role !== "admin"/);
   assert.match(controls, /window\.confirm/);
   assert.match(controls, /pendingLabel="停止中…"/);
   assert.match(controls, /pendingLabel="再開中…"/);
   assert.match(controls, /pendingLabel="削除中…"/);
+});
+
+test("招待メール成功時だけ送信日時と回数を記録する", async () => {
+  const [actions, migration] = await Promise.all([
+    readFile(
+      new URL(
+        "../src/app/admin/users/[id]/general-monitor-actions.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../supabase/migrations/202608020001_cloud_general_monitor_invite_tracking.sql",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  assert.match(actions, /sendCloudGeneralMonitorInviteEmail/);
+  assert.match(actions, /recordInviteDelivery/);
+  assert.match(actions, /record_cloud_general_monitor_invite_email_sent/);
+  assert.match(migration, /invite_email_sent_at/);
+  assert.match(migration, /invite_email_send_count/);
+  assert.match(migration, /auth\.role\(\)<>'service_role'/);
 });

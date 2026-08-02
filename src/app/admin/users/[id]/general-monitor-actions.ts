@@ -43,6 +43,25 @@ async function getInviteRecipient(profileId: string) {
   return { email: data.user.email, name: profile.display_name || "" };
 }
 
+async function inviteTrackingConfigured() {
+  const { error } = await createAdminClient()
+    .from("cloud_general_monitor_enrollments")
+    .select("invite_email_sent_at,invite_email_send_count")
+    .limit(1);
+  return !error;
+}
+
+async function recordInviteDelivery(actorProfileId: string, profileId: string) {
+  const { error } = await createAdminClient().rpc(
+    "record_cloud_general_monitor_invite_email_sent",
+    {
+      p_actor_profile_id: actorProfileId,
+      p_target_profile_id: profileId,
+    },
+  );
+  return !error;
+}
+
 export async function activateCloudGeneralMonitorAction(
   profileId: string,
   formData: FormData,
@@ -50,6 +69,8 @@ export async function activateCloudGeneralMonitorAction(
   const { profile: actor } = await requireAdmin();
   if (!cloudGeneralMonitorBetaEnabled())
     redirect(`/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("一般向けモニターは現在停止中です")}`);
+  if (!(await inviteTrackingConfigured()))
+    redirect(`/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("招待メール送信履歴のmigrationを先に適用してください")}`);
   const parsed = activationSchema.safeParse({
     profileId,
     cohort: value(formData, "cohort"),
@@ -87,18 +108,22 @@ export async function activateCloudGeneralMonitorAction(
   } catch {
     redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("招待登録は完了しましたが、メールを送信できませんでした。設定を確認して再送してください")}`);
   }
+  if (!(await recordInviteDelivery(actor.id, parsed.data.profileId)))
+    redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("メールは送信されましたが、送信履歴を保存できませんでした")}`);
   revalidatePath(`/admin/users/${parsed.data.profileId}`);
   revalidatePath("/admin/general-monitors");
   redirect(`/admin/users/${parsed.data.profileId}?message=${encodeURIComponent("一般向けモニターへ招待し、案内メールを送信しました")}`);
 }
 
 export async function resendCloudGeneralMonitorInviteAction(profileId: string) {
-  await requireAdmin();
+  const { profile: actor } = await requireAdmin();
   if (!cloudGeneralMonitorBetaEnabled())
     redirect(`/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("一般向けモニターは現在停止中です")}`);
   const parsed = z.string().uuid().safeParse(profileId);
   if (!parsed.success)
     redirect("/admin/users?error=ユーザー情報を確認してください");
+  if (!(await inviteTrackingConfigured()))
+    redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("招待メール送信履歴のmigrationを先に適用してください")}`);
   const admin = createAdminClient();
   const [{ data: enrollment }, recipient] = await Promise.all([
     admin.from("cloud_general_monitor_enrollments")
@@ -121,6 +146,8 @@ export async function resendCloudGeneralMonitorInviteAction(profileId: string) {
   } catch {
     redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("招待メールを送信できませんでした")}`);
   }
+  if (!(await recordInviteDelivery(actor.id, parsed.data)))
+    redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("メールは送信されましたが、送信履歴を保存できませんでした")}`);
   redirect(`/admin/users/${parsed.data}?message=${encodeURIComponent("招待メールを再送しました")}`);
 }
 

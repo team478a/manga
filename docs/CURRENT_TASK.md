@@ -269,6 +269,18 @@
 
 管理者による招待、期限、工程横断の累計AI上限、即時停止、利用者フィードバックを追加した。外部migration適用、Feature Flag変更、実API実行、モニター招待は未実施。
 
+## 2026-08-02 管理者ユーザー運用表示の改善
+
+- Branch: `codex/admin-user-lifecycle-v1`
+- PR: [#123](https://github.com/team478a/manga/pull/123)
+- 状態: `READY_FOR_REVIEW`
+- 削除済み・Auth削除済みユーザーをユーザー一覧から除外し、詳細URLも404にした。
+- 一般向けモニター招待メールの最終送信日時と送信回数を一覧表示した。
+- Supabase Authのメール確認日時・最終ログイン日時を一覧表示した。
+- 招待メール送信成功後だけ監査付きで送信状態を記録する。
+- 追加migration: `202608020001_cloud_general_monitor_invite_tracking.sql`
+- 外部作業: migration適用、再デプロイ、管理画面での実機確認。
+
 ## 基本情報
 
 - 更新日: 2026-07-30
