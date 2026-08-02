@@ -4,11 +4,13 @@
 
 - Branch: `codex/manga-checkpoint-diff-preview-v1`
 - Base: `codex/manga-checkpoint-restore-v1`（Draft PR #117）
+- Draft PR: [#118](https://github.com/team478a/manga/pull/118)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ch-52453e-team478as-projects.vercel.app`
 - 実装: ページrevision、構成ID、素材ID、作品基本設定の決定的な差分集計と日本語UI
 - 情報境界: manifest、ハッシュ、Canvas、Storage path、Provider情報は非表示
 - migration／環境変数／外部Provider: 追加なし
 - 詳細: `docs/cloud/MANGA_CHECKPOINT_DIFF_PREVIEW_V1.md`
-- 状態: 実装、全ローカル品質ゲート成功。Draft PR、Preview、CI待ち
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ、100ページ実データ、責任者承認待ち
 
 ---
 

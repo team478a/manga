@@ -5,12 +5,14 @@
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
 - Branch: `codex/manga-checkpoint-diff-preview-v1`
 - Base: `codex/manga-checkpoint-restore-v1`（Draft PR #117）
+- Draft PR: [#118](https://github.com/team478a/manga/pull/118)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ch-52453e-team478as-projects.vercel.app`
 - 目的: 固定版復元前に現在の作品から変わる内容を漫画制作上の件数で確認する
 - 実装: 戻すページ、外れるページ、章／話／シーン、素材、作品基本設定の決定的な差分集計と日本語表示
 - 情報境界: manifest、Canvas JSON、SHA-256、Storage path、Provider情報は利用者へ表示しない
 - migration／環境変数／外部Provider: 追加なし
 - 検証: deps、lint、Hub 406/406、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production build成功
-- CI: Draft PR作成後に確認
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 未実施: PR #117 migration適用後の実ブラウザ、100ページ実データ、責任者承認
 - 詳細: `docs/cloud/MANGA_CHECKPOINT_DIFF_PREVIEW_V1.md`
 

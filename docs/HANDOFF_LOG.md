@@ -14,6 +14,8 @@ IMPLEMENTED_AWAITING_REVIEW
 
 - `codex/manga-checkpoint-diff-preview-v1`
 - Base: `codex/manga-checkpoint-restore-v1`（Draft PR #117）
+- Draft PR: [#118](https://github.com/team478a/manga/pull/118)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ch-52453e-team478as-projects.vercel.app`
 
 ### 完了
 
@@ -22,6 +24,7 @@ IMPLEMENTED_AWAITING_REVIEW
 - manifest、ハッシュ、Canvas、Storage path、Provider情報を利用者へ表示しない境界を維持した。
 - migration、環境変数、外部Providerは追加していない。
 - deps、lint、Hub 406/406、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration 44本、production buildが成功した。
+- Core quality、Migration roundtrip、Windows build、Vercelの全CIが成功した。
 
 ### 未実施
 
