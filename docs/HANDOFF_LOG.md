@@ -4,6 +4,32 @@
 
 ---
 
+## 2026-08-02 Codex: M6-1 限定モニター品質フィードバック
+
+### 状態
+
+IMPLEMENTED_AWAITING_REVIEW
+
+### ブランチ
+
+- `codex/manga-monitor-quality-feedback-v1`
+- Base: `codex/manga-100-page-acceptance-v1`（Draft PR #120）
+
+### 完了
+
+- 限定モニターがEditorからページまたは選択コマを評価できるUIとAPIを追加した。
+- 採用、要修正、作り直し、問題種別、影響度、コメントを保存できる。
+- 生成回数、Provider、model、概算費用、時間を保存済みJobからサーバー側で導出する。
+- 管理者画面へ採用／修正／作り直し件数と生成指標の集計を追加した。
+- 有効モニターかつ編集可能作品だけを許可するRLSとServer検証を追加した。
+- 専用4/4、Hub 418/418、deps、Hub typecheck、lint、migration 45本、production build、公開画面のレスポンシブ構造検査が成功した。
+
+### 未実施
+
+- `202608020002`のSupabase適用、認証済みPreviewでの保存、実モニター試験、責任者承認。
+
+---
+
 ## 2026-08-02 Codex: M5-11 100ページ決定的受入れfixture
 
 ### 状態

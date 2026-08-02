@@ -49,6 +49,7 @@ import {
 } from "./services/page-edit-lock-client";
 import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
 import { PanelImageComparisonDialog } from "./PanelImageComparisonDialog";
+import { MonitorQualityFeedback } from "./MonitorQualityFeedback";
 import {
   cancelGeneration,
   createGenerationJob,
@@ -179,6 +180,7 @@ export function CloudCanvasEditor({
   storyboardPanelGenerationEnabled,
   panelInpaintingEnabled,
   panelOutpaintingEnabled,
+  monitorQualityFeedbackEnabled,
 }: {
   project: CloudProjectSummary;
   pages: CloudPage[];
@@ -190,6 +192,7 @@ export function CloudCanvasEditor({
   storyboardPanelGenerationEnabled: boolean;
   panelInpaintingEnabled: boolean;
   panelOutpaintingEnabled: boolean;
+  monitorQualityFeedbackEnabled: boolean;
 }) {
   const [pageLockState, setPageLockState] = useState<"checking" | "acquired" | "locked" | "unavailable">("checking");
   const pageLockToken = useRef(crypto.randomUUID());
@@ -1671,6 +1674,15 @@ export function CloudCanvasEditor({
               ))}
             </div>
           </section>
+          {monitorQualityFeedbackEnabled ? (
+            <MonitorQualityFeedback
+              pageId={page.id}
+              pageNumber={page.page_number}
+              panels={canvas.panels.map((panel) => ({ id: panel.id, name: panel.name }))}
+              projectId={project.id}
+              selectedPanelId={selection?.type === "panel" ? selection.id : null}
+            />
+          ) : null}
         </aside>
         <main className="flex items-start justify-center overflow-auto rounded-lg bg-stone-300 p-4 sm:p-8">
           <div

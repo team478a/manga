@@ -13,6 +13,29 @@ type Feedback = {
   id: string; owner_profile_id: string; workflow_step: string;
   rating: number; outcome: string; comment: string; created_at: string;
   review_status: "new" | "reviewing" | "resolved"; admin_note: string | null;
+  target_scope: "general" | "page" | "panel";
+  project_id: string | null; page_id: string | null; panel_id: string | null;
+  page_number_snapshot: number | null; panel_name_snapshot: string | null;
+  verdict: "accepted" | "needs_revision" | "unusable" | null;
+  issue_type: string | null; severity: string | null;
+  provider_id: string | null; model_id: string | null;
+  generation_count: number; generation_cost_micros: number; generation_elapsed_ms: number;
+};
+
+const verdictLabels = {
+  accepted: "採用可",
+  needs_revision: "要修正",
+  unusable: "作り直し",
+} as const;
+
+const issueLabels: Record<string, string> = {
+  none: "問題なし", face: "顔・表情", hands: "手・指", composition: "構図・ポーズ",
+  consistency: "一貫性", text: "文字・吹き出し", image_quality: "画質・崩れ",
+  missing_content: "不足・欠落", operation: "操作", other: "その他",
+};
+
+const severityLabels: Record<string, string> = {
+  none: "影響なし", minor: "軽微", major: "大きい", blocked: "進行不能",
 };
 
 export default async function GeneralMonitorsAdminPage() {
@@ -53,11 +76,17 @@ export default async function GeneralMonitorsAdminPage() {
       .order("updated_at", { ascending: false })
       .returns<CloudGeneralMonitorEnrollment[]>(),
     admin.from("cloud_general_monitor_feedback")
-      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note")
+      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms")
       .order("created_at", { ascending: false }).limit(100).returns<Feedback[]>(),
     admin.from("profiles").select("id,display_name").returns<Profile[]>(),
   ]);
   const profiles = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
+  const qualityFeedback = (feedbackResult.data ?? []).filter((item) => item.target_scope !== "general");
+  const acceptedCount = qualityFeedback.filter((item) => item.verdict === "accepted").length;
+  const revisionCount = qualityFeedback.filter((item) => item.verdict === "needs_revision").length;
+  const unusableCount = qualityFeedback.filter((item) => item.verdict === "unusable").length;
+  const totalGenerationCount = qualityFeedback.reduce((sum, item) => sum + item.generation_count, 0);
+  const totalGenerationCostMicros = qualityFeedback.reduce((sum, item) => sum + item.generation_cost_micros, 0);
 
   return (
     <main className="page">
@@ -101,6 +130,15 @@ export default async function GeneralMonitorsAdminPage() {
       )}
       <section className="panel mt-7">
         <h2 className="text-xl font-bold">モニターの声</h2>
+        {qualityFeedback.length ? (
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <div className="rounded-xl bg-green-50 p-3"><dt className="text-xs text-green-800">採用可</dt><dd className="mt-1 text-2xl font-bold text-green-950">{acceptedCount}</dd></div>
+            <div className="rounded-xl bg-amber-50 p-3"><dt className="text-xs text-amber-800">要修正</dt><dd className="mt-1 text-2xl font-bold text-amber-950">{revisionCount}</dd></div>
+            <div className="rounded-xl bg-red-50 p-3"><dt className="text-xs text-red-800">作り直し</dt><dd className="mt-1 text-2xl font-bold text-red-950">{unusableCount}</dd></div>
+            <div className="rounded-xl bg-violet-50 p-3"><dt className="text-xs text-violet-800">1評価あたり生成数</dt><dd className="mt-1 text-2xl font-bold text-violet-950">{(totalGenerationCount / qualityFeedback.length).toFixed(1)}</dd></div>
+            <div className="rounded-xl bg-violet-50 p-3"><dt className="text-xs text-violet-800">記録原価</dt><dd className="mt-1 text-2xl font-bold text-violet-950">${(totalGenerationCostMicros / 1_000_000).toFixed(2)}</dd></div>
+          </dl>
+        ) : null}
         <div className="mt-4 space-y-3">
           {(feedbackResult.data ?? []).map((item) => (
             <article className="rounded-xl border border-stone-200 p-4" key={item.id}>
@@ -108,7 +146,23 @@ export default async function GeneralMonitorsAdminPage() {
                 <strong>{profiles.get(item.owner_profile_id)?.display_name || "利用者"}</strong>
                 <span>{item.workflow_step}</span><span>評価 {item.rating}/5</span><span>{item.outcome}</span>
               </div>
+              {item.target_scope !== "general" && item.verdict ? (
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <span className="rounded-full bg-violet-100 px-2 py-1 font-bold text-violet-900">
+                    {item.page_number_snapshot}ページ{item.panel_name_snapshot ? `・${item.panel_name_snapshot}` : "全体"}
+                  </span>
+                  <span className="rounded-full bg-stone-100 px-2 py-1">{verdictLabels[item.verdict]}</span>
+                  <span className="rounded-full bg-stone-100 px-2 py-1">{issueLabels[item.issue_type ?? ""] ?? item.issue_type}</span>
+                  <span className="rounded-full bg-stone-100 px-2 py-1">{severityLabels[item.severity ?? ""] ?? item.severity}</span>
+                </div>
+              ) : null}
               <p className="mt-2 whitespace-pre-wrap break-words text-stone-700">{item.comment}</p>
+              {item.target_scope !== "general" ? (
+                <p className="mt-2 break-words text-xs text-stone-500">
+                  {item.provider_id && item.model_id ? `${item.provider_id} / ${item.model_id}・` : ""}
+                  生成 {item.generation_count}回・原価 ${(item.generation_cost_micros / 1_000_000).toFixed(4)} USD・所要 {(item.generation_elapsed_ms / 1000).toFixed(1)}秒
+                </p>
+              ) : null}
               <p className="mt-2 text-xs text-stone-500">{new Date(item.created_at).toLocaleString("ja-JP")}</p>
               <form action={reviewGeneralMonitorFeedbackAction} className="mt-3 grid gap-3 sm:grid-cols-[12rem_1fr_auto]">
                 <input name="feedbackId" type="hidden" value={item.id} />

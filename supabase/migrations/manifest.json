@@ -264,7 +264,13 @@
       "description": "復元前自動バックアップ付きの固定版復元と監査履歴を追加",
       "forwardSha256": "9e69b5cc4890100cedc552d41ce3e016bb1442d04b9087c3b860b92df544353c",
       "rollbackSha256": "3f4b98e5ac62aac45fd915da33c4091984fdc77b39cde4ded468fda3f2a8a1bf"
+    },
+    {
+      "id": "202608020002_cloud_general_monitor_quality_feedback",
+      "description": "限定モニターのページ・コマ品質評価と生成品質・費用指標を追加",
+      "forwardSha256": "15189500bf5fc6e9612beec60cbbf02581f3fafa5473f5ab8681f67b77151bdd",
+      "rollbackSha256": "2316fb802fa967e50e5cd269d1b9b9eec118e8052e2c4acb52db25570bb324e3"
     }
   ],
-  "schemaSha256": "ba97fdbc74ce2688cc1b692d4f2ec294192bf64541f1b67a92015943d1035a09"
+  "schemaSha256": "bbd1b3462e13c08708bb877f15016e22048d850b892bc24467817a66067d9c3d"
 }
