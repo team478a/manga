@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-08-02 Codex: 管理者ユーザー停止・削除
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ
+
+- Branch: `codex/admin-user-lifecycle-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`ae1279e`)
+
+### 完了
+
+- 一覧から一般ユーザーを停止・再開・安全に削除できる操作を追加
+- 状態表示、確認ダイアログ、処理中表示、二重送信防止を追加
+- 管理者本人・他の管理者をServer ActionとUIの両方で保護
+- DB・migration・制作データは変更なし
+- 集中テスト4/4、deps:check、lint、Hub typecheck、Hub test 281/281、migration検証29件、production build、git diff checkに成功
+
+### 未完了
+
+- Draft PRのCI、Vercel Preview、責任者による画面確認
+
+### 変更ファイル
+
+- `src/app/admin/users/account-actions.ts`
+- `src/app/admin/users/AdminUserAccountActions.tsx`
+- `src/app/admin/users/page.tsx`
+- `tests/admin-user-lifecycle.test.mjs`
+- `docs/CURRENT_TASK.md`
+- `docs/HANDOFF_LOG.md`
+
+---
+
 ## 2026-07-31 Codex: 一般向けモニターWebマニュアル同期
 
 ### 状態

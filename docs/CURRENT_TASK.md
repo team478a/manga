@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-02 管理者ユーザー停止・削除
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/admin-user-lifecycle-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`ae1279e`)
+- 対象: `/admin/users`、Supabase Auth管理操作
+- 実装:
+  - 一覧から一般ユーザーを停止・再開・削除
+  - 停止中・削除済み状態を一覧へ表示
+  - 停止・削除前の確認と処理中表示、二重送信防止
+  - 管理者本人と他の管理者を保護
+  - 削除は関連制作データを破壊しないSupabase Authの安全な削除を使用
+- 変更しない範囲: DB、migration、制作データ、成人向け境界、Desktop
+- 検証: 集中テスト4/4、deps:check、lint、Hub typecheck、Hub test 281/281、migration検証29件、production build、git diff check成功
+- 注記: `npm ci`の既存依存監査でhigh severity 3件。今回の管理機能変更とは分離して扱う
+- 未実施: Draft PRのCI、Vercel Preview、責任者による画面確認
+
 ## 2026-07-31 一般向けモニターWebマニュアル同期
 
 - 状態: `READY_FOR_REVIEW`
