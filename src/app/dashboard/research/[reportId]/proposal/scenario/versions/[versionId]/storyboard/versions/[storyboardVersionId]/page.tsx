@@ -14,6 +14,9 @@ import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { adoptCloudStoryboardAction, materializeCloudStoryboardAction, reviseCloudStoryboardAction } from "../../actions";
 import { StoryboardButton } from "../../storyboard-button";
 
+// Storyboard revision is a provider-backed Server Action on this page.
+export const maxDuration = 180;
+
 const shot = { extreme_close_up: "極端な寄り", close_up: "アップ", medium: "中景", wide: "引き", establishing: "状況説明", detail: "細部" } as const;
 const angle = { eye_level: "目線", high: "俯瞰", low: "煽り", over_shoulder: "肩越し", top_down: "真上", dynamic: "動的" } as const;
 const dialogueType = { speech: "セリフ", thought: "心の声", narration: "ナレーション" } as const;
