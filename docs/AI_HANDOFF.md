@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M5-11 100ページ決定的受入れfixture、2026-08-02）
+
+- Branch: `codex/manga-100-page-acceptance-v1`
+- Base: `codex/manga-longform-readiness-v1`（Draft PR #119）
+- Fixture: 100ページ、10章、10話、20シーン、100コマ・100素材、全ページ確定済み
+- 検査: 長編集約、24ページ段階表示、原稿preflight、制作進捗、固定版差分、4ページ×25分割PDF結合
+- migration／環境変数／外部Provider: 追加なし
+- 詳細: `docs/cloud/MANGA_100_PAGE_ACCEPTANCE_V1.md`
+- 状態: 専用受入れ4/4と全ローカル品質ゲート成功。Draft PR、Preview、CIを確認中
+
+---
+
 ## 0. 現在の優先タスク（M5-10 長編完成準備チェック、2026-08-02）
 
 - Branch: `codex/manga-longform-readiness-v1`
