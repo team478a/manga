@@ -1904,6 +1904,41 @@ READY_FOR_REVIEW
 
 ## 追記テンプレート
 
+## 2026-08-02 管理者ユーザー一覧の検索・絞り込み
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ
+
+- Branch: `codex/admin-user-list-operations-v1`
+- Base: `feature/manga-canvas-mvp` (`d224762`)
+
+### 完了
+
+- 表示名・メールアドレス検索を追加
+- 利用状態、招待メール、ログイン状況の絞り込みを追加
+- 表示件数、条件クリア、0件表示を追加
+- DB・認証・既存ユーザー操作は変更なし
+
+### 検証
+
+- focused tests: PASS（3/3）
+- deps:check: PASS
+- lint: PASS
+- typecheck:hub: PASS
+- hub:test: PASS（282/282）
+- build: PASS
+- git diff --check: PASS
+
+### 注意事項
+
+- `npm ci`で既存high severity 3件。今回の表示変更とは分離して扱う。
+- 外部migrationや環境変数の追加は不要。
+
+---
+
 ## 2026-08-02 管理者ユーザー運用表示の改善
 
 ### 状態

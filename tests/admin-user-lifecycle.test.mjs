@@ -30,6 +30,12 @@ test("ユーザー一覧は確認付き操作と処理中表示を提供する",
   assert.match(page, /invite_email_sent_at/);
   assert.match(page, /lastSignInAt/);
   assert.match(page, /最終/);
+  assert.match(page, /ユーザーを検索/);
+  assert.match(page, /name="account"/);
+  assert.match(page, /name="invite"/);
+  assert.match(page, /name="login"/);
+  assert.match(page, /filteredUsers/);
+  assert.match(page, /条件に一致するユーザーはいません/);
   assert.match(page, /user\.role !== "admin"/);
   assert.match(controls, /window\.confirm/);
   assert.match(controls, /pendingLabel="停止中…"/);

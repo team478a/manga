@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-02 管理者ユーザー一覧の検索・絞り込み
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/admin-user-list-operations-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`d224762`、PR #124 merge後)
+- 対象: `/admin/users`
+- 実装:
+  - 表示名・メールアドレスの部分一致検索
+  - 利用中・停止中の状態絞り込み
+  - 招待メール送信済み・未送信・対象外の絞り込み
+  - ログイン済み・メール確認済み未ログイン・未ログインの絞り込み
+  - 表示件数、条件クリア、0件時の案内
+  - 不正なURL絞り込み値は安全な既定値へ戻す
+- DB、migration、認証、停止・削除処理は変更しない。
+- 検証: 集中テスト3/3、deps:check、lint、Hub typecheck、Hub test 282/282、production build、git diff check成功
+
+
 ## 2026-08-02 管理者ユーザー停止・削除
 
 - 状態: `READY_FOR_REVIEW`
