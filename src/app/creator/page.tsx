@@ -116,7 +116,19 @@ export default async function CloudCreatorPage({
               href={`/creator/${project.id}`}
               key={project.id}
             >
-              <BookOpen className="h-8 w-8 text-violet-700" />
+              {project.thumbnail_url ? (
+                // Signed private URLs expire quickly and are never persisted.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  alt={`${project.title}の表紙`}
+                  className="aspect-[2/3] w-full rounded-lg border border-stone-200 bg-stone-50 object-contain"
+                  src={project.thumbnail_url}
+                />
+              ) : (
+                <div className="grid aspect-[2/3] w-full place-items-center rounded-lg border border-stone-200 bg-gradient-to-br from-white to-violet-50">
+                  <BookOpen className="h-10 w-10 text-violet-300" />
+                </div>
+              )}
               <h2 className="mt-4 text-xl font-bold">{project.title}</h2>
               <p className="mt-2 line-clamp-2 min-h-12 text-stone-600">
                 {project.description || "説明はまだありません。"}

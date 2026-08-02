@@ -4,6 +4,9 @@ import sharp from "sharp";
 import {
   buildStoryboardPanelGeneration,
   cloudPanelImageGenerationFeatureEnabled,
+  cloudPanelInpaintingFeatureEnabled,
+  cloudPanelOutpaintingFeatureEnabled,
+  cloudPanelImageGenerationRequestSchema,
 } from "../src/lib/cloud-panel-image-generation.ts";
 import { MockCloudImageProvider } from "../src/lib/cloud-ai-mock-provider.ts";
 
@@ -107,6 +110,446 @@ test("選択コマのネームから利用者入力なしで画像生成条件�
   assert.doesNotMatch(result.generation.prompt, /行こう/);
   assert.ok(result.generation.width >= 256);
   assert.ok(result.generation.height >= 256);
+});
+
+test("選択式の画角・カメラ・人物配置・視線を生成条件へ固定する", () => {
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    compositionControl: {
+      shot: "full_body",
+      cameraAngle: "low",
+      subjectPlacement: "right",
+      gazeDirection: "left",
+      instruction: "右手を前に伸ばす",
+    },
+  });
+
+  assert.match(result.generation.prompt, /頭から足先まで/);
+  assert.match(result.generation.prompt, /下から見上げる/);
+  assert.match(result.generation.prompt, /主役を画面右側/);
+  assert.match(result.generation.prompt, /視線を画面左/);
+  assert.match(result.generation.prompt, /右手を前に伸ばす/);
+});
+
+test("構図指定は許可した選択肢だけを受け付ける", () => {
+  const base = {
+    projectId: "50000000-0000-4000-8000-000000000001",
+    pageId,
+    panelId,
+    idempotencyKey: "60000000-0000-4000-8000-000000000001",
+  };
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      shotOverride: "full_body",
+      cameraAngleOverride: "high",
+      subjectPlacement: "two_shot",
+      gazeDirection: "partner",
+    }).success,
+    true,
+  );
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      shotOverride: "arbitrary-camera-command",
+    }).success,
+    false,
+  );
+});
+
+test("背景・人物・効果を別Job種別と専用Promptで生成する", () => {
+  const background = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "background",
+  });
+  const character = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "character",
+  });
+  const effect = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "effect",
+  });
+
+  assert.equal(background.generation.jobType, "background");
+  assert.equal(background.generation.outputAlphaMode, "preserve");
+  assert.match(background.generation.prompt, /背景だけを描く/);
+  assert.doesNotMatch(background.generation.prompt, /登場人物:/);
+  assert.equal(character.generation.jobType, "character_base");
+  assert.equal(character.generation.outputAlphaMode, "remove_white");
+  assert.match(character.generation.prompt, /人物だけを描く/);
+  assert.match(character.generation.prompt, /背景は純白/);
+  assert.doesNotMatch(character.generation.prompt, /背景: 朝の駅前/);
+  assert.equal(effect.generation.jobType, "effect");
+  assert.equal(effect.generation.outputAlphaMode, "remove_white");
+  assert.match(effect.generation.prompt, /漫画の効果だけを描く/);
+  assert.match(effect.generation.prompt, /朝日を逆光/);
+  assert.doesNotMatch(effect.generation.prompt, /登場人物:/);
+});
+
+test("分離生成対象は許可値だけを受け付け既定値は完成コマにする", () => {
+  const base = {
+    projectId: "50000000-0000-4000-8000-000000000001",
+    pageId,
+    panelId,
+    idempotencyKey: "60000000-0000-4000-8000-000000000001",
+  };
+  const defaultResult = cloudPanelImageGenerationRequestSchema.parse(base);
+  assert.equal(defaultResult.generationTarget, "composite");
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      generationTarget: "character",
+    }).success,
+    true,
+  );
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      ...base,
+      generationTarget: "unknown-layer",
+    }).success,
+    false,
+  );
+});
+
+test("部分修正Feature Flagも未設定時fail closedする", () => {
+  const previous = process.env.CLOUD_PANEL_INPAINTING_ENABLED;
+  delete process.env.CLOUD_PANEL_INPAINTING_ENABLED;
+  assert.equal(cloudPanelInpaintingFeatureEnabled(), false);
+  process.env.CLOUD_PANEL_INPAINTING_ENABLED = "true";
+  assert.equal(cloudPanelInpaintingFeatureEnabled(), true);
+  if (previous === undefined) delete process.env.CLOUD_PANEL_INPAINTING_ENABLED;
+  else process.env.CLOUD_PANEL_INPAINTING_ENABLED = previous;
+});
+
+test("採用済み画像を先頭参照に固定して修正候補を作る", () => {
+  const sourceAssetId = "74000000-0000-4000-8000-000000000021";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    revision: {
+      sourceAssetId,
+      preset: "hands",
+      instruction: "右手で鞄を持たせる",
+    },
+  });
+
+  assert.equal(result.generation.operation, "image_to_image");
+  assert.equal(result.generation.sourceAssetId, sourceAssetId);
+  assert.equal(result.generation.revisionPreset, "hands");
+  assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
+  assert.match(result.generation.prompt, /手指の本数・関節/);
+  assert.match(result.generation.prompt, /右手で鞄を持たせる/);
+});
+
+test("元画像とマスクを固定して部分修正Jobを作る", () => {
+  const sourceAssetId = "74000000-0000-4000-8000-000000000031";
+  const maskAssetId = "75000000-0000-4000-8000-000000000031";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    revision: {
+      sourceAssetId,
+      maskAssetId,
+      preset: "face",
+      instruction: "目線だけを右へ向ける",
+    },
+  });
+  assert.equal(result.generation.operation, "inpainting");
+  assert.equal(result.generation.sourceAssetId, sourceAssetId);
+  assert.equal(result.generation.maskAssetId, maskAssetId);
+  assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
+});
+
+test("元画像と方向を固定して画角拡張Jobを作る", () => {
+  const sourceAssetId = "74000000-0000-4000-8000-000000000041";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    revision: {
+      sourceAssetId,
+      outpaintingDirection: "right",
+      preset: "background",
+      instruction: "駅のホームを自然につなげる",
+    },
+  });
+  assert.equal(result.generation.operation, "outpainting");
+  assert.equal(result.generation.sourceAssetId, sourceAssetId);
+  assert.equal(result.generation.outpaintingDirection, "right");
+  assert.equal(result.generation.referenceAssetIds[0], sourceAssetId);
+  assert.match(result.generation.prompt, /右側へ自然に背景と構図を延長/);
+  assert.match(result.generation.prompt, /元画像内の人物、衣装、表情/);
+});
+
+test("画角拡張Feature Flagは未設定時に停止する", () => {
+  const previous = process.env.CLOUD_PANEL_OUTPAINTING_ENABLED;
+  delete process.env.CLOUD_PANEL_OUTPAINTING_ENABLED;
+  assert.equal(cloudPanelOutpaintingFeatureEnabled(), false);
+  process.env.CLOUD_PANEL_OUTPAINTING_ENABLED = "true";
+  assert.equal(cloudPanelOutpaintingFeatureEnabled(), true);
+  if (previous === undefined) delete process.env.CLOUD_PANEL_OUTPAINTING_ENABLED;
+  else process.env.CLOUD_PANEL_OUTPAINTING_ENABLED = previous;
+});
+
+test("修正指定は元画像と修正内容の組を必須にする", () => {
+  assert.equal(
+    cloudPanelImageGenerationRequestSchema.safeParse({
+      projectId: "50000000-0000-4000-8000-000000000001",
+      pageId,
+      panelId,
+      idempotencyKey: "60000000-0000-4000-8000-000000000001",
+      revisionPreset: "face",
+    }).success,
+    false,
+  );
+});
+
+test("シナリオの人物設定を画像生成条件へ引き継ぐ", () => {
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    characterProfiles: [
+      {
+        id: "character-1",
+        name: "明日香",
+        role: "protagonist",
+        desire: "自分の進路を決めたい",
+        fear: "大切な人を失うこと",
+        conflict: "期待と本心の間で揺れる",
+        arc: "自分で一歩を選ぶ",
+      },
+    ],
+  });
+  assert.match(result.generation.prompt, /自分の進路を決めたい/);
+  assert.match(result.generation.prompt, /服装の一貫性/);
+});
+
+test("版管理された外見設定を生成条件と監査用入力へ固定する", () => {
+  const profileId = "70000000-0000-4000-8000-000000000001";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    visualCharacterProfiles: [
+      {
+        id: profileId,
+        project_id: "50000000-0000-4000-8000-000000000001",
+        name: "明日香",
+        role: "protagonist",
+        current_version: 3,
+        appearance_age: "20代前半",
+        body_build: "小柄",
+        hair: "黒髪のショートボブ",
+        costume: "白いシャツと紺のジャケット",
+        color_palette: "黒、白、紺",
+        immutable_traits: ["左目の下のほくろ"],
+        prompt: "切れ長の目",
+        negative_prompt: "長髪",
+        updated_at: "2026-07-31T00:00:00.000Z",
+      },
+    ],
+  });
+  assert.match(result.generation.prompt, /外見設定v3/);
+  assert.match(result.generation.prompt, /黒髪のショートボブ/);
+  assert.match(result.generation.prompt, /左目の下のほくろ/);
+  assert.match(result.generation.negativePrompt, /長髪/);
+  assert.deepEqual(result.generation.characterProfileVersions, [
+    { profileId, version: 3 },
+  ]);
+});
+
+test("画風と該当する場所・小物だけを生成条件へ固定する", () => {
+  const bibleId = "71000000-0000-4000-8000-000000000001";
+  const locationId = "72000000-0000-4000-8000-000000000001";
+  const propId = "73000000-0000-4000-8000-000000000001";
+  const base = {
+    project_id: "50000000-0000-4000-8000-000000000001",
+    current_version: 2,
+    color_palette: "白、青",
+    visual_traits: [],
+    continuity_rules: [],
+    prompt: "",
+    negative_prompt: "",
+    updated_at: "2026-07-31T00:00:00.000Z",
+  };
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    styleBible: {
+      id: bibleId,
+      project_id: base.project_id,
+      current_version: 4,
+      art_style: "繊細な青年漫画",
+      linework: "細い均一線",
+      shading: "網点中心",
+      background_detail: "主要コマは詳細",
+      composition_rules: "視線誘導を右から左へ",
+      negative_prompt: "厚塗り",
+      updated_at: base.updated_at,
+    },
+    worldProfiles: [
+      {
+        ...base,
+        id: locationId,
+        kind: "location",
+        name: "駅前",
+        description: "時計塔のある広場",
+        continuity_rules: ["時計塔は左奥"],
+      },
+      {
+        ...base,
+        id: propId,
+        kind: "prop",
+        name: "赤い傘",
+        description: "主人公の傘",
+      },
+    ],
+  });
+  assert.match(result.generation.prompt, /繊細な青年漫画/);
+  assert.match(result.generation.prompt, /時計塔のある広場/);
+  assert.doesNotMatch(result.generation.prompt, /赤い傘/);
+  assert.match(result.generation.negativePrompt, /厚塗り/);
+  assert.deepEqual(result.generation.styleBibleVersion, {
+    bibleId,
+    version: 4,
+  });
+  assert.deepEqual(result.generation.worldProfileVersions, [
+    { profileId: locationId, version: 2, kind: "location" },
+  ]);
+});
+
+test("明示割当と参照画像IDを生成Jobへ固定する", () => {
+  const characterId = "70000000-0000-4000-8000-000000000011";
+  const assetId = "74000000-0000-4000-8000-000000000011";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    visualCharacterProfiles: [{
+      id: characterId,
+      project_id: "50000000-0000-4000-8000-000000000001",
+      name: "ネームにない人物",
+      role: "supporting",
+      current_version: 1,
+      appearance_age: "30代",
+      body_build: "長身",
+      hair: "黒髪",
+      costume: "コート",
+      color_palette: "黒",
+      immutable_traits: [],
+      prompt: "",
+      negative_prompt: "",
+      updated_at: "2026-08-01T00:00:00.000Z",
+    }],
+    explicitCharacterProfileIds: [characterId],
+    referenceAssets: [{
+      subjectKind: "character",
+      subjectId: characterId,
+      assetId,
+    }],
+  });
+  assert.match(result.generation.prompt, /ネームにない人物/);
+  assert.deepEqual(result.generation.characterProfileVersions, [
+    { profileId: characterId, version: 1 },
+  ]);
+  assert.deepEqual(result.generation.referenceAssetIds, [assetId]);
+
+  const backgroundOnly = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "background",
+    visualCharacterProfiles: [{
+      id: characterId,
+      project_id: "50000000-0000-4000-8000-000000000001",
+      name: "ネームにない人物",
+      role: "supporting",
+      current_version: 1,
+      appearance_age: "30代",
+      body_build: "長身",
+      hair: "黒髪",
+      costume: "コート",
+      color_palette: "黒",
+      immutable_traits: [],
+      prompt: "",
+      negative_prompt: "",
+      updated_at: "2026-08-01T00:00:00.000Z",
+    }],
+    explicitCharacterProfileIds: [characterId],
+    referenceAssets: [{
+      subjectKind: "character",
+      subjectId: characterId,
+      assetId,
+    }],
+  });
+  assert.deepEqual(backgroundOnly.generation.characterProfileVersions, []);
+  assert.deepEqual(backgroundOnly.generation.referenceAssetIds, []);
+});
+
+test("1回の要求で最大4候補まで安全に指定できる", () => {
+  const request = cloudPanelImageGenerationRequestSchema.parse({
+    projectId: "50000000-0000-4000-8000-000000000001",
+    pageId,
+    panelId,
+    idempotencyKey: "60000000-0000-4000-8000-000000000001",
+    candidateCount: 4,
+  });
+  assert.equal(request.candidateCount, 4);
+  assert.throws(
+    () =>
+      cloudPanelImageGenerationRequestSchema.parse({
+        ...request,
+        candidateCount: 5,
+      }),
+    /Too big|less than or equal to 4/i,
+  );
+});
+
+test("候補ごとに同じネームを保ちながら異なる制作指示を付ける", () => {
+  const prompts = Array.from({ length: 4 }, (_, candidateIndex) =>
+    buildStoryboardPanelGeneration({
+      storyboard,
+      pageNumber: 1,
+      canvas,
+      panelId,
+      candidateIndex,
+      candidateCount: 4,
+    }),
+  );
+  assert.deepEqual(
+    prompts.map((result) => result.candidateNumber),
+    [1, 2, 3, 4],
+  );
+  assert.equal(new Set(prompts.map((result) => result.generation.prompt)).size, 4);
+  for (const result of prompts) {
+    assert.match(result.generation.prompt, /朝の駅前/);
+    assert.equal(result.candidateCount, 4);
+  }
 });
 
 test("追加コマや存在しないコマはProvider呼出前に拒否する", () => {

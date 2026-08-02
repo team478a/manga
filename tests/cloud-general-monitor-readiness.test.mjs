@@ -30,6 +30,8 @@ test("テスト公開チェックは秘密値を表示せず主要な公開条�
     "CLOUD_PANEL_IMAGE_GENERATION_ENABLED",
     "CLOUD_ADULT_RESEARCH_ENABLED",
     "CLOUD_ADULT_PLANNING_ENABLED",
+    "MANGAI_CLOUD_AI_WORKER_ENABLED",
+    "MANGAI_CLOUD_AI_WORKER_SECRET",
     "NEXT_PUBLIC_SITE_URL",
     "MONITOR_INVITE_SITE_URL",
   ]) {
@@ -37,6 +39,7 @@ test("テスト公開チェックは秘密値を表示せず主要な公開条�
   }
   assert.match(readiness, /getCloudGeneralMonitorEmailSettings/);
   assert.match(readiness, /getCloudResearchAiSettings/);
+  assert.match(readiness, /getCloudGeneralImageSettings/);
   assert.match(readiness, /cloud_general_monitor_enrollments/);
   assert.match(readiness, /cloud_general_monitor_feedback/);
   assert.doesNotMatch(page, /apiKey|secret_id|SUPABASE_SERVICE_ROLE_KEY/);
@@ -44,6 +47,8 @@ test("テスト公開チェックは秘密値を表示せず主要な公開条�
   assert.match(page, /2〜3名/);
   assert.match(readiness, /siteOrigin === inviteOrigin/);
   assert.match(page, /テスト公開チェック/);
+  assert.match(readiness, /一般向け画像生成AI/);
+  assert.match(readiness, /画像生成Worker/);
 });
 
 test("モニター管理とスタッフマニュアルから公開チェックへ移動できる", async () => {

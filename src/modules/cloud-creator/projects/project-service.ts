@@ -1,17 +1,28 @@
 import { cloudCreatorContext } from "../auth-context";
 import type {
+  CloudChapter,
   CloudEpisode,
+  CloudLongformStructure,
   CloudPage,
   CloudProjectSummary,
+  CloudScene,
 } from "../contracts/types";
 import {
   findActiveProjects,
   findDeletedProjects,
+  findEpisodeChapterMappings,
+  findPageSceneMappings,
   findProject,
+  findProjectChapters,
   findProjectEpisodes,
   findProjectPages,
+  findProjectScenes,
 } from "./project-repository";
 import { mapCloudProjectError } from "./project-errors";
+import {
+  attachPageThumbnailUrls,
+  attachProjectThumbnailUrls,
+} from "../assets/thumbnail-service";
 import {
   DomainError,
   ResourceNotFoundError,
@@ -26,7 +37,10 @@ export async function listCloudProjects() {
       "作品一覧を読み込めませんでした。",
       { cause: error },
     );
-  return (data ?? []) as CloudProjectSummary[];
+  return attachProjectThumbnailUrls(
+    supabase,
+    (data ?? []) as CloudProjectSummary[],
+  );
 }
 
 export async function listDeletedCloudProjects() {
@@ -43,11 +57,22 @@ export async function listDeletedCloudProjects() {
 
 export async function getCloudProjectWorkspace(projectId: string) {
   const { supabase } = await cloudCreatorContext();
-  const [{ data: project, error: projectError }, episodesResult, pagesResult] =
-    await Promise.all([
+  const [
+    { data: project, error: projectError },
+    episodesResult,
+    pagesResult,
+    chaptersResult,
+    scenesResult,
+    episodeMappingsResult,
+    pageMappingsResult,
+  ] = await Promise.all([
       findProject(supabase, projectId),
       findProjectEpisodes(supabase, projectId),
       findProjectPages(supabase, projectId),
+      findProjectChapters(supabase, projectId),
+      findProjectScenes(supabase, projectId),
+      findEpisodeChapterMappings(supabase, projectId),
+      findPageSceneMappings(supabase, projectId),
     ]);
   if (projectError || !project)
     throw new ResourceNotFoundError("作品が見つかりません。");
@@ -57,10 +82,69 @@ export async function getCloudProjectWorkspace(projectId: string) {
       "話／ページを読み込めませんでした。",
       { cause: episodesResult.error ?? pagesResult.error },
     );
+  const episodes = (episodesResult.data ?? []) as CloudEpisode[];
+  const pages = await attachPageThumbnailUrls(
+    supabase,
+    (pagesResult.data ?? []) as CloudPage[],
+  );
+  const structureAvailable = !(
+    chaptersResult.error ||
+    scenesResult.error ||
+    episodeMappingsResult.error ||
+    pageMappingsResult.error
+  );
+  const fallbackChapterId = `legacy-${projectId}`;
+  const fallbackChapters: CloudChapter[] = [
+    {
+      id: fallbackChapterId,
+      project_id: projectId,
+      title: "章構成（準備中）",
+      order_index: 0,
+      revision: 0,
+    },
+  ];
+  const fallbackScenes: CloudScene[] = episodes.map((episode) => ({
+    id: `legacy-${episode.id}`,
+    project_id: projectId,
+    chapter_id: fallbackChapterId,
+    episode_id: episode.id,
+    title: "シーン1",
+    summary: "",
+    order_index: 0,
+    revision: 0,
+  }));
+  const longform: CloudLongformStructure = {
+    available: structureAvailable,
+    chapters: structureAvailable
+      ? ((chaptersResult.data ?? []) as CloudChapter[])
+      : fallbackChapters,
+    scenes: structureAvailable
+      ? ((scenesResult.data ?? []) as CloudScene[])
+      : fallbackScenes,
+    episodeChapterIds: structureAvailable
+      ? Object.fromEntries(
+          (episodeMappingsResult.data ?? []).flatMap((entry) =>
+            typeof entry.chapter_id === "string"
+              ? [[entry.id, entry.chapter_id]]
+              : [],
+          ),
+        )
+      : Object.fromEntries(episodes.map((episode) => [episode.id, fallbackChapterId])),
+    pageSceneIds: structureAvailable
+      ? Object.fromEntries(
+          (pageMappingsResult.data ?? []).flatMap((entry) =>
+            typeof entry.scene_id === "string" ? [[entry.id, entry.scene_id]] : [],
+          ),
+        )
+      : Object.fromEntries(
+          pages.map((page) => [page.id, `legacy-${page.episode_id}`]),
+        ),
+  };
   return {
     project: project as CloudProjectSummary,
-    episodes: (episodesResult.data ?? []) as CloudEpisode[],
-    pages: (pagesResult.data ?? []) as CloudPage[],
+    episodes,
+    pages,
+    longform,
   };
 }
 

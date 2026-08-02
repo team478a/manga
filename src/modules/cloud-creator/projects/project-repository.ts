@@ -53,3 +53,51 @@ export function findProjectPages(
     .is("deleted_at", null)
     .order("page_number");
 }
+
+export function findProjectChapters(
+  supabase: CloudCreatorClient,
+  projectId: string,
+) {
+  return supabase
+    .from("cloud_chapters")
+    .select("id,project_id,title,order_index,revision")
+    .eq("project_id", projectId)
+    .is("deleted_at", null)
+    .order("order_index");
+}
+
+export function findProjectScenes(
+  supabase: CloudCreatorClient,
+  projectId: string,
+) {
+  return supabase
+    .from("cloud_scenes")
+    .select(
+      "id,project_id,chapter_id,episode_id,title,summary,order_index,revision",
+    )
+    .eq("project_id", projectId)
+    .is("deleted_at", null)
+    .order("order_index");
+}
+
+export function findEpisodeChapterMappings(
+  supabase: CloudCreatorClient,
+  projectId: string,
+) {
+  return supabase
+    .from("cloud_episodes")
+    .select("id,chapter_id")
+    .eq("project_id", projectId)
+    .is("deleted_at", null);
+}
+
+export function findPageSceneMappings(
+  supabase: CloudCreatorClient,
+  projectId: string,
+) {
+  return supabase
+    .from("cloud_pages")
+    .select("id,scene_id")
+    .eq("project_id", projectId)
+    .is("deleted_at", null);
+}

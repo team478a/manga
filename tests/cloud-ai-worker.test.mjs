@@ -9,7 +9,10 @@ import {
   processNextCloudGenerationJob,
   processPendingCloudStorageCleanup,
 } from "../src/lib/cloud-ai-worker.ts";
-import { sanitizeCloudGeneratedImage } from "../src/lib/cloud-creator-contract.ts";
+import {
+  removeWhiteBackgroundFromMangaLayer,
+  sanitizeCloudGeneratedImage,
+} from "../src/lib/cloud-creator-contract.ts";
 
 const context = {
   jobId: "10000000-0000-4000-8000-000000000001",
@@ -38,6 +41,36 @@ test("mock Cloud image Provider generates a verifiable stripped PNG", async () =
   assert.match(sanitized.sha256, /^[0-9a-f]{64}$/);
 });
 
+test("白背景の漫画素材を黒線の透明PNGへ安全に変換する", async () => {
+  const source = await sharp({
+    create: {
+      width: 3,
+      height: 1,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  })
+    .composite([
+      {
+        input: Buffer.from([0, 0, 0, 128, 128, 128]),
+        raw: { width: 2, height: 1, channels: 3 },
+        left: 0,
+        top: 0,
+      },
+    ])
+    .png()
+    .toBuffer();
+  const converted = await removeWhiteBackgroundFromMangaLayer(source);
+  const { data, info } = await sharp(converted.bytes)
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  assert.equal(info.channels, 4);
+  assert.deepEqual([data[0], data[1], data[2], data[3]], [0, 0, 0, 255]);
+  assert.deepEqual([data[4], data[5], data[6]], [0, 0, 0]);
+  assert.ok(data[7] > 100 && data[7] < 140);
+  assert.deepEqual([data[8], data[9], data[10], data[11]], [0, 0, 0, 0]);
+});
+
 test("mock Cloud text Provider returns usage without a billable cost", async () => {
   const result = await new MockCloudTextProvider().generate(
     {
@@ -57,6 +90,7 @@ function workerClient({
   completionState = "running",
   removeFails = false,
   extendFails = false,
+  outputAlphaMode = "preserve",
 } = {}) {
   const calls = {
     removed: [],
@@ -65,6 +99,7 @@ function workerClient({
     extended: [],
     finished: [],
     uploaded: 0,
+    uploadedBytes: null,
   };
   const job = {
     id: "10000000-0000-4000-8000-000000000001",
@@ -82,6 +117,7 @@ function workerClient({
       negativePrompt: "",
       width: 256,
       height: 256,
+      outputAlphaMode,
     },
     attempt_count: 1,
     max_attempts: 1,
@@ -143,8 +179,9 @@ function workerClient({
     },
     storage: {
       from: () => ({
-        upload: async () => {
+        upload: async (_path, bytes) => {
           calls.uploaded += 1;
+          calls.uploadedBytes = new Uint8Array(bytes);
           return { data: null, error: null };
         },
         remove: async (paths) => {
@@ -170,6 +207,44 @@ test("DB確定失敗時は生成Storageを補償削除する", async () => {
   assert.equal(result.status, "failed");
   assert.equal(calls.removed.length, 1);
   assert.equal(calls.cleanup.length, 0);
+});
+
+test("Workerは指定された人物・効果素材だけを透明化して保存する", async () => {
+  const { client, calls } = workerClient({ outputAlphaMode: "remove_white" });
+  const bytes = await sharp({
+    create: {
+      width: 2,
+      height: 1,
+      channels: 3,
+      background: { r: 255, g: 255, b: 255 },
+    },
+  })
+    .composite([{
+      input: Buffer.from([0, 0, 0]),
+      raw: { width: 1, height: 1, channels: 3 },
+      left: 0,
+      top: 0,
+    }])
+    .png()
+    .toBuffer();
+  const base = new MockCloudImageProvider();
+  const provider = {
+    capability: base.capability,
+    async generate() {
+      return {
+        images: [{ bytes: new Uint8Array(bytes), mimeType: "image/png", fileName: "layer.png" }],
+        usage: { actualCostMicros: 0 },
+      };
+    },
+  };
+  await processNextCloudGenerationJob({
+    workerId: "transparent-layer-worker",
+    providers: [provider],
+    client,
+  });
+  const raw = await sharp(calls.uploadedBytes).raw().toBuffer();
+  assert.equal(raw[3], 255);
+  assert.equal(raw[7], 0);
 });
 
 test("補償削除失敗時はcleanup対象として記録する", async () => {

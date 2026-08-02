@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import {
   cloudGenerationInputSchema,
+  cloudImageRevisionPresetSchema,
   moderateGeneralCloudPrompt,
 } from "@mangai/ai-core";
 import { selectCloudProvider } from "@/lib/cloud-ai-registry";
@@ -44,7 +45,7 @@ export async function enqueueCloudGenerationJob(input: {
     throw cloudModerationRejectedError(moderation.reasons);
   }
 
-  const capability = selectCloudProvider(generation);
+  const capability = await selectCloudProvider(generation);
   const { supabase } = await cloudCreatorContext();
   const promptSha256 = crypto
     .createHash("sha256")
@@ -92,10 +93,37 @@ export async function listCloudGenerationJobs(projectId: string) {
         : null;
     const targetPanelId =
       typeof input?.targetPanelId === "string" ? input.targetPanelId : null;
+    const sourceAssetId =
+      typeof input?.sourceAssetId === "string" ? input.sourceAssetId : null;
+    const outpaintingDirection =
+      input?.outpaintingDirection === "left" ||
+      input?.outpaintingDirection === "right" ||
+      input?.outpaintingDirection === "top" ||
+      input?.outpaintingDirection === "bottom" ||
+      input?.outpaintingDirection === "all"
+        ? input.outpaintingDirection
+        : null;
+    const parsedRevisionPreset = cloudImageRevisionPresetSchema.safeParse(
+      input?.revisionPreset,
+    );
+    const revisionPreset = parsedRevisionPreset.success
+      ? parsedRevisionPreset.data
+      : null;
+    const generationOperation =
+      input?.operation === "text_to_image" ||
+      input?.operation === "image_to_image" ||
+      input?.operation === "inpainting" ||
+      input?.operation === "outpainting"
+        ? input.operation
+        : null;
     const { input: _privateInput, ...publicRow } = row;
     return {
       ...publicRow,
       target_panel_id: targetPanelId,
+      source_asset_id: sourceAssetId,
+      outpainting_direction: outpaintingDirection,
+      revision_preset: revisionPreset,
+      generation_operation: generationOperation,
     } as CloudGenerationJob;
   });
 }

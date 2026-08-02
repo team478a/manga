@@ -1,5 +1,431 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（M6-1 限定モニター品質フィードバック、2026-08-02）
+
+- Branch: `codex/manga-monitor-quality-feedback-v1`
+- Base: `codex/manga-100-page-acceptance-v1`（Draft PR #120）
+- 実装: Editor内のページ／コマ評価、生成Job由来の品質・費用指標、管理者集計
+- migration: `202608020002_cloud_general_monitor_quality_feedback.sql`（未適用）
+- 環境変数／外部Provider実行: 追加なし
+- 詳細: `docs/cloud/MANGA_MONITOR_QUALITY_FEEDBACK_V1.md`
+- 状態: 実装と静的検証済み。Supabase適用、認証済みPreview、実モニター試験、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-11 100ページ決定的受入れfixture、2026-08-02）
+
+- Branch: `codex/manga-100-page-acceptance-v1`
+- Base: `codex/manga-longform-readiness-v1`（Draft PR #119）
+- Draft PR: [#120](https://github.com/team478a/manga/pull/120)
+- Preview: `https://mangai-hub-staging-git-codex-manga-10-9b7089-team478as-projects.vercel.app`
+- Fixture: 100ページ、10章、10話、20シーン、100コマ・100素材、全ページ確定済み
+- 検査: 長編集約、24ページ段階表示、原稿preflight、制作進捗、固定版差分、4ページ×25分割PDF結合
+- migration／環境変数／外部Provider: 追加なし
+- 詳細: `docs/cloud/MANGA_100_PAGE_ACCEPTANCE_V1.md`
+- 状態: 専用受入れ4/4、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ、実画像、実DB復元訓練、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-10 長編完成準備チェック、2026-08-02）
+
+- Branch: `codex/manga-longform-readiness-v1`
+- Base: `codex/manga-checkpoint-diff-preview-v1`（Draft PR #118）
+- Draft PR: [#119](https://github.com/team478a/manga/pull/119)
+- Preview: `https://mangai-hub-staging-git-codex-manga-lo-109f0d-team478as-projects.vercel.app`
+- 実装: 原稿確定、復旧用固定版、完成版固定、完成PDFの4段階判定と次アクションUI
+- migration／環境変数／外部Provider: 追加なし
+- DB: `202608020001`はSupabase staging適用・table／function／RLS確認済み
+- 詳細: `docs/cloud/MANGA_LONGFORM_READINESS_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ、100ページfixture、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-9 復元前の差分確認、2026-08-02）
+
+- Branch: `codex/manga-checkpoint-diff-preview-v1`
+- Base: `codex/manga-checkpoint-restore-v1`（Draft PR #117）
+- Draft PR: [#118](https://github.com/team478a/manga/pull/118)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ch-52453e-team478as-projects.vercel.app`
+- 実装: ページrevision、構成ID、素材ID、作品基本設定の決定的な差分集計と日本語UI
+- 情報境界: manifest、ハッシュ、Canvas、Storage path、Provider情報は非表示
+- migration／環境変数／外部Provider: 追加なし
+- 詳細: `docs/cloud/MANGA_CHECKPOINT_DIFF_PREVIEW_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ、100ページ実データ、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-8 チェックポイント復元、2026-08-02）
+
+- Branch: `codex/manga-checkpoint-restore-v1`
+- Base: `codex/manga-version-freeze-v1`（Draft PR #116）
+- Draft PR: [#117](https://github.com/team478a/manga/pull/117)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ch-e4a0cd-team478as-projects.vercel.app`
+- 実装: 復元前自動バックアップ、作品構造／Canvas復元、復元監査、明示確認UI
+- 安全条件: 生成中／編集中は拒否、別作品拒否、revision単調増加、復元ページは要再確認
+- migration: `202608020003_cloud_project_checkpoint_restore.sql`（旧ファイル名`202608020001`でSupabase staging適用・構造確認済み。招待追跡とのID競合解消のためリポジトリ上で改番）
+- 詳細: `docs/cloud/MANGA_PROJECT_CHECKPOINT_RESTORE_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。Supabase staging、実ブラウザ、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-7 増分バックアップと完成版固定、2026-08-01）
+
+- Branch: `codex/manga-version-freeze-v1`
+- Base: `codex/manga-cost-budget-v1`（Draft PR #115）
+- Draft PR: [#116](https://github.com/team478a/manga/pull/116)
+- Preview: `https://mangai-hub-staging-git-codex-manga-ve-2950ce-team478as-projects.vercel.app`
+- 実装: Canvas SHA-256重複排除、作品manifest、作業バックアップ、完成版固定、固定履歴
+- 完成版条件: 生成停止中、全ページsnapshot、全ページ確定、revision／Context一致
+- migration: `202608010011_cloud_project_checkpoints.sql`（Supabase staging適用・構造確認済み）
+- 詳細: `docs/cloud/MANGA_PROJECT_CHECKPOINTS_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI、Supabase staging適用成功。実ブラウザ、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-6 作品別リソース予算、2026-08-01）
+
+- Branch: `codex/manga-cost-budget-v1`
+- Base: `agent/manga-chapter-production-plans-v1`（Draft PR #114）
+- Draft PR: [#115](https://github.com/team478a/manga/pull/115)
+- Preview: `https://mangai-hub-staging-git-codex-manga-co-1eab8d-team478as-projects.vercel.app`
+- 実装: 作品別月間クレジット・概算費用・容量上限、警告割合、生成停止、コックピット集計
+- DB: owner/admin保存RPC、owner read RLS、JobとAssetへの強制上限trigger
+- migration: `202608010010_cloud_project_resource_budgets.sql`（Supabase staging適用済み）
+- DB確認: table／RPC／RLS／生成Job trigger／Storage trigger／既存作品backfillがすべて正常
+- 表示境界: 利用者には合計だけを表示し、Provider／モデル／料金計算ロジックを公開しない
+- 詳細: `docs/cloud/MANGA_PROJECT_RESOURCE_BUDGET_V1.md`
+- 状態: 全ローカル品質ゲート、Draft PR、Preview、全GitHub CI、Supabase staging適用成功。実Provider・実ブラウザ・責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-5 章単位の制作計画、2026-08-01）
+
+- Branch: `agent/manga-chapter-production-plans-v1`
+- Base: `agent/manga-cockpit-navigation-v1`（Draft PR #113）
+- Draft PR: [#114](https://github.com/team478a/manga/pull/114)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ch-9a2d97-team478as-projects.vercel.app`
+- 実装: 章ごとの優先度・担当名・期限・メモ、期限超過、優先章数、次着手章
+- migration: `202608010009_cloud_chapter_production_plans.sql`（Supabase staging適用・構造確認済み）
+- DB適用: 長編制作関連の未適用10項目を一括監査し、すべて正常。`202608010002`は既適用
+- 利用者マニュアル: `/dashboard/monitor/guide`とMarkdown版へ、短編試作から100ページ制作・PDF出力までの実操作手順を反映
+- 状態: 実装、DB適用、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実ブラウザ・Worker実行・責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-4 100ページナビゲーション、2026-08-01）
+
+- Branch: `agent/manga-cockpit-navigation-v1`
+- Base: `agent/manga-longform-cockpit-v1`（Draft PR #112）
+- Draft PR: [#113](https://github.com/team478a/manga/pull/113)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-4977d4-team478as-projects.vercel.app`
+- 目的: 長編コックピットのDOMと認知負荷を100ページ規模で抑える
+- 実装: 章／状態絞り込み、未割当抽出、折りたたみ、24ページ段階表示
+- migration／環境変数／外部Provider: 追加なし
+- 詳細: `docs/cloud/MANGA_COCKPIT_NAVIGATION_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。100ページ実データ確認と責任者承認待ち
+
+---
+
+
+## 0. 現在の優先タスク（M5-3 長編作品コックピット、2026-08-01）
+
+- Branch: `agent/manga-longform-cockpit-v1`
+- Base: `agent/manga-continuity-suggestions-v1`（Draft PR #111）
+- Draft PR: [#112](https://github.com/team478a/manga/pull/112)
+- Preview: `https://mangai-hub-staging-git-agent-manga-lo-7b90ee-team478as-projects.vercel.app`
+- 目的: 32〜100ページ作品の構成、進捗、伏線、人物関係を横断確認する
+- 実装: `/creator/[projectId]/cockpit` と決定的な集計helper
+- 安全境界: 既存の保存済み情報だけを集計し、Providerや外部AIは利用しない
+- migration／環境変数: 追加なし
+- 詳細: `docs/cloud/MANGA_LONGFORM_COCKPIT_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実作品確認と責任者承認待ち
+
+---
+
+
+## 0. 現在の優先タスク（M5-2 連続性設定候補、2026-08-01）
+
+- Branch: `agent/manga-continuity-suggestions-v1`
+- Base: `agent/manga-continuity-foundation-v1`（Draft PR #110）
+- Draft PR: [#111](https://github.com/team478a/manga/pull/111)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-2eb954-team478as-projects.vercel.app`
+- 目的: 確定済みの構造化設定を候補化し、利用者が確認した項目だけM5-1台帳へ保存する
+- 実装: キャラクター／場所／小物／ページ割当済みシーン候補、登録済み除外、確認登録UI
+- 安全境界: Promptや画像を解析せず、外部AIを呼ばず、候補は未確認のまま保存しない
+- migration／環境変数: 追加なし
+- 詳細: `docs/cloud/MANGA_CONTINUITY_SUGGESTIONS_V1.md`
+- 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実作品確認と責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M5-1 物語の連続性台帳、2026-08-01）
+
+- Branch: `agent/manga-continuity-foundation-v1`
+- Base: `agent/manga-storage-lifecycle-v1`（Draft PR #109）
+- Draft PR: [#110](https://github.com/team478a/manga/pull/110)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-654703-team478as-projects.vercel.app`
+- 目的: 長編の事実と伏線をページ範囲付きで管理し、決定的に検出できる矛盾を表示する
+- 実装: `cloud_continuity_facts`、`cloud_plot_threads`、owner-only RPC、事実・伏線UI、矛盾・回収漏れ評価
+- migration: `202608010008_cloud_narrative_continuity.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/MANGA_NARRATIVE_CONTINUITY_V1.md`
+- 状態: 実装、migration実DB往復、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。外部環境適用と責任者承認待ち
+
+---
+
+
+## 0. 現在の優先タスク（M4 Storageライフサイクル、2026-08-01）
+
+- Branch: `agent/manga-storage-lifecycle-v1`
+- Base: `agent/manga-durable-export-v1`（Draft PR #108）
+- Draft PR: [#109](https://github.com/team478a/manga/pull/109)
+- Preview: `https://mangai-hub-staging-git-agent-manga-st-723bbf-team478as-projects.vercel.app`
+- 目的: 長編作品のページサムネイル生成と不要な派生ファイルの安全な整理を追加する
+- 実装: `cloud-cache`、ページrevision別WebP、署名URL、thumbnail／cleanup Queue、lease Worker
+- 保護対象: 採用済み生成画像、Canvas保存データ、完成`manuscript.pdf`はcleanup対象外
+- migration: `202608010007_cloud_storage_lifecycle.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/MANGA_STORAGE_LIFECYCLE_V1.md`
+- 状態: 実装、ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。外部環境適用と責任者承認待ち
+
+---
+
+
+## 0. 現在の優先タスク（M4 永続PDFエクスポート、2026-08-01）
+
+- Branch: `agent/manga-durable-export-v1`
+- Base: `agent/manga-production-status-v1`（Draft PR #107）
+- Draft PR: [#108](https://github.com/team478a/manga/pull/108)
+- Preview: `https://mangai-hub-staging-git-agent-manga-du-4a6dbe-team478as-projects.vercel.app`
+- 目的: 32〜100ページ原稿を4ページsegmentで永続処理し、完成PDFへ安全に結合する
+- 実装: Export Job／segment、停止・再開・中止・retry、private Storage、署名download、厳格preflight
+- migration: `202608010006_cloud_durable_export.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/MANGA_DURABLE_EXPORT_V1.md`
+- 状態: 実装、ローカル検証、Draft PR、Preview完了。GitHub CI確認中
+
+---
+
+
+## 0. 現在の優先タスク（M4制作管理 ページ状態・確定ロック、2026-08-01）
+
+- Branch: `agent/manga-production-status-v1`
+- Base: `agent/manga-batch-production-v1`（Draft PR #106）
+- Draft PR: [#107](https://github.com/team478a/manga/pull/107)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pr-7ff6fc-team478as-projects.vercel.app`
+- 目的: 長編制作のページ状態、全体進捗、確認・修正・確定を制作ボードで管理する
+- 実装: 5状態、Job連動、確定編集ロック、設定変更revision、絞り込み、migration未適用fallback
+- migration: `202608010005_cloud_production_status.sql`、rollback、canonical schema同期
+- 詳細: `docs/cloud/CLOUD_PRODUCTION_STATUS_V1.md`
+- 検証: deps、lint、Hub 363/363、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、migration forward／rollback／reapply／canonical、build成功
+- 状態: 実装・Draft PR・Preview完了。Supabase staging適用、実ブラウザ確認、責任者承認待ち
+
+---
+
+
+## 0. 現在の優先タスク（M4後半 一括生成・編集ロック、2026-08-01）
+
+- Branch: `agent/manga-batch-production-v1`
+- Base: `agent/manga-32page-foundation-v1`（Draft PR #105）
+- Draft PR: [#106](https://github.com/team478a/manga/pull/106)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ba-fd5369-team478as-projects.vercel.app`
+- 目的: 4〜8ページ単位の永続生成Queueと、Canvas同時編集の安全境界を追加する
+- 実装: Batch永続化、Job紐付け、進捗集計、停止／再開／中止、失敗分retry、120秒の編集lease
+- migration: `202608010004_cloud_batch_production.sql`、rollback、canonical schema同期済み
+- 詳細: `docs/cloud/MANGA_BATCH_PRODUCTION_V1.md`
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 状態: コード、DB往復、Draft PR、Preview完了。Supabase staging適用、実Provider、実ブラウザ、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M4前半 32ページ制作基盤、2026-08-01）
+
+- Branch: `agent/manga-32page-foundation-v1`
+- Base: `agent/manga-transparent-layers-v1`（Draft PR #104）
+- Draft PR: [#105](https://github.com/team478a/manga/pull/105)
+- Preview: `https://mangai-hub-staging-git-agent-manga-32-fc91ac-team478as-projects.vercel.app`
+- 目的: 32ページ読切を章・話・シーン単位で整理し、ページ一覧のDOM負荷を制限する
+- 実装: Chapter／Scene schemaとRLS、既存作品backfill、階層追加、同一話内drag reorder、単ページ／見開き、12ページずつ追加表示
+- fallback: migration未適用時は旧画面を継続し、構造編集だけ停止
+- migration: `202608010003_cloud_longform_structure.sql`、rollbackとcanonical schema同期済み
+- 詳細: `docs/cloud/MANGA_32_PAGE_FOUNDATION_V1.md`
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 354/354、Canvas 26/26、AI 48/48、Desktop 182/182、migration往復、production build成功
+- CI: Core quality、Migration roundtrip、Windows accessibility/build、Vercel成功
+- 状態: 実装・全自動検証・Preview完了。Supabase staging適用、実ブラウザ確認、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M3-8 人物・効果レイヤー白背景透明化、2026-08-01）
+
+- Branch: `agent/manga-transparent-layers-v1`
+- Base: `agent/manga-layered-generation-v1`（Draft PR #103）
+- Draft PR: [#104](https://github.com/team478a/manga/pull/104)
+- Preview: `https://mangai-hub-staging-git-agent-manga-tr-46b68e-team478as-projects.vercel.app`
+- 目的: 分離生成した人物・効果を白い矩形ではなく透明PNGレイヤーとして保存する
+- 実装: `outputAlphaMode`の許可値検証、人物・効果Jobへの固定、Sharpによる白地除去、Worker保存前変換
+- 互換性: 既定値は`preserve`。完成コマ、背景、修正、既存Jobは変更しない
+- migration / Feature Flag / Provider / 料金: 追加なし
+- 詳細: `docs/cloud/MANGA_TRANSPARENT_LAYER_OUTPUT_V1.md`
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 350/350、Canvas 26/26、AI 48/48、Desktop 182/182、migration 34/34、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 状態: 実装・全自動検証・Preview完了。実Provider、実ブラウザ確認、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M3-7 背景・人物・効果の分離生成、2026-08-01）
+
+- Branch: `agent/manga-layered-generation-v1`
+- Base: `agent/manga-composition-control-v1`（Draft PR #102）
+- Draft PR: [#103](https://github.com/team478a/manga/pull/103)
+- Preview: `https://mangai-hub-staging-git-agent-manga-la-a0ee14-team478as-projects.vercel.app`
+- 目的: 通常のコマ生成を完成コマ、背景、人物、効果へ分け、非破壊レイヤーとして採用する
+- 実装: 対象選択UI、対象別Job・Prompt・参照分離、背景の下層配置、人物・効果の乗算合成
+- 互換性: `generationTarget`未指定時は完成コマ。既存の修正生成は変更しない
+- migration / Feature Flag / Provider / 料金: 追加なし
+- 詳細: `docs/cloud/MANGA_LAYERED_GENERATION_V1.md`
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 348/348、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 状態: 実装・全自動検証・Preview完了。実Provider、実ブラウザ確認、責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M3-6 ポーズ・構図制御、2026-08-01）
+
+- Branch: `agent/manga-composition-control-v1`
+- Base: `agent/manga-smart-mask-v1`（Draft PR #101）
+- Draft PR: [#102](https://github.com/team478a/manga/pull/102)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-048dc2-team478as-projects.vercel.app`
+- 目的: 通常のコマ画像生成で、画角・カメラ位置・人物配置・視線方向を選択可能にする
+- 実装: 4項目の選択UI、500文字以内の追加指定、API enum検証、生成Promptへの構図調整追加
+- 互換性: すべて「ネームどおり」が初期値。修正生成には自動適用しない
+- migration / Feature Flag / Provider / 料金: 追加なし
+- 詳細: `docs/cloud/MANGA_COMPOSITION_CONTROL_V1.md`
+- 検証: deps、lint、Hub/Desktop typecheck、Hub 345/345、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 状態: 実装・自動検証完了。実ブラウザ確認と責任者承認待ち
+
+---
+
+## 0. 現在の優先タスク（M3-5 修正領域おすすめ、2026-08-01）
+
+- Branch: `agent/manga-smart-mask-v1`
+- Base: `agent/manga-revision-comparison-v1`（Draft PR #100）
+- Draft PR: [#101](https://github.com/team478a/manga/pull/101)
+- 目的: Inpaintingの修正範囲を修正内容からワンタップ提案し、手描き調整を残す
+- 実装: 顔・表情・手・衣装・背景・全体の比率ベース初期マスク、候補切替、手動補正
+- 境界: v1は画像認識ではなく目安。外部Vision API、DB、Provider、料金の変更なし
+- 詳細: `docs/cloud/MANGA_SMART_MASK_V1.md`
+- 状態: ローカル全品質ゲート成功。Draft PR、GitHub CI、Vercel、責任者確認待ち
+- 未実施: 実ブラウザのマウス・タッチ確認、責任者承認、親PR #100後のマージ
+
+---
+
+## 0. 現在の優先タスク（M3-4 修正前後の比較表示、2026-08-01）
+
+- Branch: `agent/manga-revision-comparison-v1`
+- Base: `agent/manga-panel-outpainting-v1`（Draft PR #99）
+- Draft PR: [#100](https://github.com/team478a/manga/pull/100)
+- 目的: 修正候補を採用する前に元画像との差分を視覚的に確認する
+- 実装: range比較スライダー、Outpainting方向・寸法に応じた元画像位置補正、比較からの非破壊採用
+- API: private inputは返さず、本人所有Jobの比較用Asset IDと拡張方向だけを安全に公開
+- migration / Feature Flag: 追加なし
+- 詳細: `docs/cloud/MANGA_REVISION_COMPARISON_V1.md`
+- 注意: 一般向けCloudの表示機能のみ。成人向け、Desktop、生成Providerは対象外
+- 状態: ローカル全品質ゲート成功。GitHub CI、Vercel、責任者確認待ち
+- 未実施: 実ブラウザ確認、責任者承認、親PR #99後のマージ
+
+---
+
+## 0. 現在の優先タスク（M3-3 コマ画角拡張、2026-08-01）
+
+- Branch: `agent/manga-panel-outpainting-v1`
+- Base: `agent/manga-panel-inpainting-v1`（Draft PR #98）
+- Draft PR: [#99](https://github.com/team478a/manga/pull/99)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-f7bc01-team478as-projects.vercel.app`
+- 目的: 採用済みコマを非破壊で左・右・上・下・全方向へ延長する
+- 実装: 方向UI、Outpainting operation、Worker内余白・白黒マスク生成、BFL Fill、correction layer採用
+- Feature Flag: `CLOUD_PANEL_OUTPAINTING_ENABLED`。未設定時は認証・DB・Providerより前に停止
+- migration: なし。既存Fill Providerと価格設定を再利用
+- 詳細: `docs/cloud/MANGA_PANEL_OUTPAINTING_V1.md`
+- 注意: 一般向けCloudのみ。成人向け、Desktop、自動マスクは対象外
+- 状態: ローカル全品質ゲート、GitHub全CI、Vercel成功。責任者確認待ち
+- 未実施: 実Provider有料生成、実ブラウザ確認、責任者承認、親PR #98後のマージ
+
+---
+
+## 0. 現在の優先タスク（M3-2 マスク付きコマ部分修正、2026-08-01）
+
+- Branch: `agent/manga-panel-inpainting-v1`
+- Base: `agent/manga-panel-revision-v1`（Draft PR #97）
+- Draft PR: [#98](https://github.com/team478a/manga/pull/98)
+- Preview: `https://mangai-hub-staging-jnew2urfq-team478as-projects.vercel.app`
+- 目的: 採用画像の利用者が塗った範囲だけを修正候補として生成する
+- 実装: タッチ対応マスク、専用inpainting operation、BFL Fill、private Asset再検証、correction layer採用
+- Feature Flag: `CLOUD_PANEL_INPAINTING_ENABLED`。未設定時はUI・サーバー・Provider registryで停止
+- migration: `202608010002_cloud_panel_inpainting.sql`
+- 詳細: `docs/cloud/MANGA_PANEL_INPAINTING_V1.md`
+- 注意: 一般向けCloudのみ。Outpainting、自動マスク、成人向け、Desktopは対象外
+- 状態: ローカル全品質ゲート、GitHub全CI、Vercel成功。責任者確認待ち
+- 未実施: staging migration、実Provider有料生成、実ブラウザ確認、責任者承認、親PR #97後のマージ
+
+---
+
+## 0. 現在の優先タスク（M3-1 コマ修正候補生成、2026-08-01）
+
+- Branch: `agent/manga-panel-revision-v1`
+- Base: `agent/manga-continuity-review-v1`（Draft PR #96）
+- Draft PR: [#97](https://github.com/team478a/manga/pull/97)
+- Preview: `https://mangai-hub-staging-git-agent-manga-pa-2b4a4e-team478as-projects.vercel.app`
+- 目的: 採用済みコマ画像を残したまま、気になる部分の修正候補を生成する
+- 実装: 6修正preset、任意追加要望、元画像先頭参照、設定version継承、2〜4候補、非破壊レイヤー採用
+- DB: 新規migrationなし
+- 詳細: `docs/cloud/MANGA_PANEL_REVISION_V1.md`
+- 注意: マスク付きInpaintingではなく、参照画像を使うガイド付きImage-to-Image
+- 未実施: 実Provider生成、実ブラウザ確認、責任者承認、親PR #96後のマージ
+
+---
+
+## 0. 現在の優先タスク（M2-4 生成履歴の一貫性チェック、2026-08-01）
+
+- Branch: `agent/manga-continuity-review-v1`
+- Base: `agent/manga-reference-assets-v1`（Draft PR #95）
+- Draft PR: [#96](https://github.com/team478a/manga/pull/96)
+- Preview: `https://mangai-hub-staging-git-agent-manga-co-df707f-team478as-projects.vercel.app`
+- 目的: 採用済み生成画像が人物・衣装・場所・小物・画風の現在設定と参照画像を継続使用しているか確認する
+- 実装: 設定版・参照asset・Job追跡の照合、混在警告、ページ／設定修正導線
+- DB: 新規migrationなし
+- 詳細: `docs/cloud/MANGA_CONTINUITY_REVIEW_V1.md`
+- 注意: v1は画像ピクセルを解析せず、見た目の一致を保証しない
+- 状態: ローカル全品質ゲート、GitHub全CI、Vercel成功。責任者確認待ち
+- 変更しない範囲: 成人向け、Desktop、Provider、Worker、Stripe、Marketplace
+
+---
+
+## 0. 現在の優先タスク（M2-3 参照画像・コマ明示割当、2026-08-01）
+
+- Branch: `agent/manga-reference-assets-v1`
+- Base: `agent/manga-generation-integration-v1`（Draft PR #94）
+- 目的: 人物・画風・場所・小物の参照画像と明示割当を一般向けコマ生成へ安全に反映する
+- 実装: 非公開asset関連付け、コマ割当、Job監査入力、短時間署名URL、BFL FLUX.2 multi-reference
+- migration: `202608010001_cloud_visual_references.sql`
+- 詳細: `docs/cloud/MANGA_VISUAL_REFERENCES_V1.md`
+- 変更しない範囲: 成人向け、Desktop、Stripe、Marketplace、自動参照昇格
+
+---
+
+## 0. 現在の優先タスク（一般向け漫画生成の統合、2026-07-31）
+
+- Branch: `agent/manga-generation-integration-v1`
+- Base: `feature/manga-canvas-mvp` (`ae1279e`)
+- Draft PR: [#94](https://github.com/team478a/manga/pull/94)
+- Preview: `https://mangai-hub-staging-git-agent-manga-ge-907c74-team478as-projects.vercel.app`
+- 目的: PR #87〜#90の一般向け漫画生成機能を最新Cloud基盤へ安全に統合する
+- 範囲: FLUXコマ生成、候補比較、レイヤー合成、原稿検査、作品進捗、
+  キャラクター設定、画風・場所・小物設定
+- 状態: ローカル品質ゲート、GitHub全CI、Vercel Preview成功。責任者確認待ち
+- 詳細: `docs/cloud/MANGA_GENERATION_INTEGRATION_REPORT.md`
+- 未実施: migration適用、実Provider有料生成、実ブラウザ確認、マージ
+- 変更しない範囲: 成人向け、Desktop、Stripe、Marketplace
+
+---
+
 ## 0. 現在の優先タスク（一般向けモニターWebマニュアル同期、2026-07-31）
 
 - Branch: `codex/cloud-monitor-guide-sync-v1`

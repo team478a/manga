@@ -114,6 +114,87 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_chapters') is null
+     or to_regclass('public.cloud_scenes') is null
+     or to_regprocedure('public.add_cloud_chapter(uuid,text)') is null
+     or to_regprocedure('public.add_cloud_episode_to_chapter(uuid,text)') is null
+     or to_regprocedure('public.add_cloud_scene(uuid,text,text)') is null
+     or to_regprocedure('public.add_cloud_page_to_scene(uuid)') is null
+     or to_regprocedure('public.move_cloud_page_before(uuid,uuid)') is null then
+    raise exception 'Current schema long-form manga structure missing';
+  end if;
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_episodes' and column_name='chapter_id')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_pages' and column_name='scene_id') then
+    raise exception 'Current schema long-form links missing';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_generation_batches') is null
+     or to_regclass('public.cloud_generation_batch_jobs') is null
+     or to_regclass('public.cloud_page_edit_locks') is null
+     or to_regprocedure('public.create_cloud_generation_batch(uuid,uuid[],text)') is null
+     or to_regprocedure('public.attach_cloud_generation_batch_job(uuid,uuid)') is null
+     or to_regprocedure('public.replace_cloud_generation_batch_job(uuid,uuid)') is null
+     or to_regprocedure('public.set_cloud_generation_batch_state(uuid,text)') is null
+     or to_regprocedure('public.acquire_cloud_page_edit_lock(uuid,uuid,integer)') is null
+     or to_regprocedure('public.release_cloud_page_edit_lock(uuid,uuid)') is null then
+    raise exception 'Current schema batch production objects missing';
+  end if;
+  if not coalesce((select relrowsecurity from pg_class where oid='public.cloud_generation_batches'::regclass),false)
+     or not coalesce((select relrowsecurity from pg_class where oid='public.cloud_page_edit_locks'::regclass),false)
+     or not has_function_privilege('authenticated','public.create_cloud_generation_batch(uuid,uuid[],text)','execute') then
+    raise exception 'Current schema batch production access controls invalid';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_visual_reference_assets') is null
+    or to_regclass('public.cloud_panel_subject_assignments') is null
+    or not coalesce((select relrowsecurity from pg_class where oid='public.cloud_visual_reference_assets'::regclass),false)
+    or not coalesce((select relrowsecurity from pg_class where oid='public.cloud_panel_subject_assignments'::regclass),false) then
+    raise exception 'Current schema Cloud visual reference objects missing or RLS disabled';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_general_image_provider_settings') is null
+     or to_regclass('public.cloud_general_image_provider_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_general_image_provider(uuid,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_general_image_runtime_config()'
+     ) is null then
+    raise exception 'Cloud general image Provider objects missing';
+  end if;
+  if not exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-2-pro'
+      and pricing_version = 'bfl-flux2-2026-03'
+      and active
+  ) then
+    raise exception 'Cloud general image Provider prices missing';
+  end if;
+  if not exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-pro-1.0-fill'
+      and job_type = 'background'
+      and pricing_version = 'bfl-flux1-fill-2026-08'
+      and credits = 3
+      and max_cost_micros = 50000
+      and active
+  ) then
+    raise exception 'Cloud panel inpainting price missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_general_monitor_email_settings') is null
      or to_regclass('public.cloud_general_monitor_email_audit_logs') is null
      or to_regprocedure(
@@ -328,5 +409,58 @@ begin
       and pg_get_constraintdef(oid) like '%research-rules-v2%'
   ) then
     raise exception 'Current schema Cloud research v2 engine constraint missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_export_jobs') is null
+     or to_regclass('public.cloud_export_segments') is null
+     or to_regprocedure('public.create_cloud_export_job(uuid,text)') is null
+     or to_regprocedure('public.claim_cloud_export_job(text,integer)') is null
+     or not exists(select 1 from storage.buckets where id='cloud-exports') then
+    raise exception 'Current schema durable export objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_page_thumbnails') is null
+     or to_regclass('public.cloud_storage_cleanup') is null
+     or to_regprocedure('public.claim_cloud_page_thumbnail(text,integer)') is null
+     or to_regprocedure('public.claim_cloud_storage_cleanup(text,integer)') is null
+     or not exists(select 1 from storage.buckets where id='cloud-cache' and public=false) then
+    raise exception 'Current schema storage lifecycle objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_continuity_facts') is null
+     or to_regclass('public.cloud_plot_threads') is null
+     or to_regprocedure('public.save_cloud_continuity_fact(uuid,uuid,text,text,text,text,integer,integer,integer,text)') is null
+     or to_regprocedure('public.save_cloud_plot_thread(uuid,uuid,text,integer,integer,integer,text,text)') is null then
+    raise exception 'Current schema narrative continuity objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_resource_budgets') is null
+     or to_regprocedure('public.save_cloud_project_resource_budget(uuid,integer,bigint,bigint,integer,boolean)') is null
+     or to_regprocedure('public.get_cloud_project_resource_usage(uuid)') is null then
+    raise exception 'Current schema project resource budget objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_backup_blobs') is null
+     or to_regclass('public.cloud_project_checkpoints') is null
+     or to_regclass('public.cloud_project_checkpoint_pages') is null
+     or to_regprocedure('public.create_cloud_project_checkpoint(uuid,text,text)') is null then
+    raise exception 'Current schema project checkpoint objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_checkpoint_restores') is null
+     or to_regprocedure('public.restore_cloud_project_checkpoint(uuid,uuid)') is null then
+    raise exception 'Current schema project checkpoint restore objects missing';
   end if;
 end $$;

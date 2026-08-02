@@ -14,6 +14,7 @@ export type CloudProjectSummary = {
   storage_bytes: number;
   source_surface: "cloud" | "desktop";
   cover_page_id: string | null;
+  thumbnail_url?: string | null;
   updated_at: string;
 };
 
@@ -23,6 +24,33 @@ export type CloudEpisode = {
   title: string;
   order_index: number;
   revision: number;
+};
+
+export type CloudChapter = {
+  id: string;
+  project_id: string;
+  title: string;
+  order_index: number;
+  revision: number;
+};
+
+export type CloudScene = {
+  id: string;
+  project_id: string;
+  chapter_id: string;
+  episode_id: string;
+  title: string;
+  summary: string;
+  order_index: number;
+  revision: number;
+};
+
+export type CloudLongformStructure = {
+  available: boolean;
+  chapters: CloudChapter[];
+  scenes: CloudScene[];
+  episodeChapterIds: Record<string, string>;
+  pageSceneIds: Record<string, string>;
 };
 
 export type CloudPage = {
@@ -35,6 +63,24 @@ export type CloudPage = {
   height: number;
   background_color: string;
   revision: number;
+  thumbnail_url?: string | null;
+};
+
+export type CloudPageProductionStatus =
+  | "not_started"
+  | "generating"
+  | "review_required"
+  | "revision_required"
+  | "finalized";
+
+export type CloudPageProductionState = {
+  pageId: string;
+  status: CloudPageProductionStatus;
+  statusUpdatedAt: string | null;
+  finalizedRevision: number | null;
+  reviewedContextRevision: number | null;
+  contextRevision: number;
+  isStale: boolean;
 };
 
 export type CloudGenerationJob = {
@@ -54,6 +100,15 @@ export type CloudGenerationJob = {
   output: Record<string, unknown> | null;
   output_asset_id: string | null;
   target_panel_id: string | null;
+  source_asset_id: string | null;
+  outpainting_direction: "left" | "right" | "top" | "bottom" | "all" | null;
+  revision_preset: "face" | "hands" | "expression" | "costume" | "background" | "polish" | null;
+  generation_operation:
+    | "text_to_image"
+    | "image_to_image"
+    | "inpainting"
+    | "outpainting"
+    | null;
   error_code: string | null;
   error_message: string | null;
   created_at: string;
