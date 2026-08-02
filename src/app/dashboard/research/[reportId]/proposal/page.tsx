@@ -15,6 +15,9 @@ import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
 import { ProposalSubmitButton } from "./proposal-submit-button";
 
+// Proposal generation is performed by a Server Action on this page.
+export const maxDuration = 180;
+
 const accessLabel = {
   allowed: "利用可能",
   feature_disabled: "現在停止中",

@@ -10,6 +10,9 @@ import { getLatestCloudStoryboardAdoption, listCloudStoryboardVersions } from "@
 import { createCloudStoryboardAction } from "./actions";
 import { StoryboardButton } from "./storyboard-button";
 
+// Storyboard generation may use the provider for up to 120 seconds.
+export const maxDuration = 180;
+
 export default async function StoryboardPage({ params, searchParams }: {
   params: Promise<{ reportId: string; versionId: string }>;
   searchParams: Promise<{ error?: string }>;

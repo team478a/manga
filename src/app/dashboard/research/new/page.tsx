@@ -4,6 +4,10 @@ import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { ResearchSubmitButton } from "./research-submit-button";
 
+// OpenAI web search can take close to a minute. Keep the Server Action alive
+// long enough to save the completed report and redirect to the result page.
+export const maxDuration = 180;
+
 function Field({
   id,
   label,

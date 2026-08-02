@@ -14,6 +14,9 @@ import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { adoptCloudScenarioAction, reviseCloudScenarioAction } from "../../actions";
 import { ScenarioSubmitButton } from "../../scenario-buttons";
 
+// Scenario revision is a provider-backed Server Action on this page.
+export const maxDuration = 180;
+
 const role = { protagonist: "主人公", supporting: "主要人物", antagonist: "対立人物" } as const;
 const act = { setup: "第1幕・導入", confrontation: "第2幕・対立", resolution: "第3幕・解決" } as const;
 

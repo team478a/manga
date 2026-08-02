@@ -9,6 +9,9 @@ import { getLatestCloudScenarioAdoption, listCloudScenarioVersions } from "@/lib
 import { createCloudScenarioAction } from "./actions";
 import { ScenarioSubmitButton } from "./scenario-buttons";
 
+// Scenario generation may use the provider for up to 90 seconds.
+export const maxDuration = 180;
+
 export default async function ScenarioPage({ params, searchParams }: {
   params: Promise<{ reportId: string }>;
   searchParams: Promise<{ error?: string; message?: string }>;
