@@ -49,7 +49,7 @@ export function persistPageSnapshot(
 export function findPage(supabase: CloudCreatorClient, pageId: string) {
   return supabase
     .from("cloud_pages")
-    .select("id,project_id,revision,width,height,background_color,updated_at")
+    .select("id,project_id,page_number,revision,width,height,background_color,updated_at")
     .eq("id", pageId)
     .is("deleted_at", null)
     .single();

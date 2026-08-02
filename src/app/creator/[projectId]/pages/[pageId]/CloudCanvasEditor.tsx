@@ -44,6 +44,13 @@ import {
 import { downloadCanvasPng } from "./services/canvas-download";
 import { createCanvasSvg } from "./services/canvas-svg";
 import {
+  acquirePageEditLease,
+  releasePageEditLease,
+} from "./services/page-edit-lock-client";
+import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
+import { PanelImageComparisonDialog } from "./PanelImageComparisonDialog";
+import { MonitorQualityFeedback } from "./MonitorQualityFeedback";
+import {
   cancelGeneration,
   createGenerationJob,
   createStoryboardPanelGenerationJob,
@@ -56,6 +63,99 @@ import {
 } from "./services/creator-api";
 
 type CanvasItem = Panel | Balloon | TextObject;
+type RevisionPreset =
+  | "face"
+  | "hands"
+  | "expression"
+  | "costume"
+  | "background"
+  | "polish";
+type OutpaintingDirection = "left" | "right" | "top" | "bottom" | "all";
+type ShotOverride =
+  | "storyboard"
+  | "close_up"
+  | "medium"
+  | "wide"
+  | "full_body";
+type CameraAngleOverride =
+  | "storyboard"
+  | "eye_level"
+  | "high"
+  | "low"
+  | "over_shoulder"
+  | "dynamic";
+type SubjectPlacement =
+  | "storyboard"
+  | "center"
+  | "left"
+  | "right"
+  | "two_shot"
+  | "foreground_background";
+type GazeDirection =
+  | "storyboard"
+  | "camera"
+  | "left"
+  | "right"
+  | "partner"
+  | "off_frame";
+type PanelGenerationTarget =
+  | "composite"
+  | "background"
+  | "character"
+  | "effect";
+
+const revisionPresetLabels: Record<RevisionPreset, string> = {
+  face: "顔の崩れを直す",
+  hands: "手・指の崩れを直す",
+  expression: "表情を整える",
+  costume: "衣装を設定に合わせる",
+  background: "背景を整える",
+  polish: "全体を仕上げる",
+};
+const outpaintingDirectionLabels: Record<OutpaintingDirection, string> = {
+  left: "左側を広げる",
+  right: "右側を広げる",
+  top: "上側を広げる",
+  bottom: "下側を広げる",
+  all: "全方向を広げる",
+};
+const shotOverrideLabels: Record<ShotOverride, string> = {
+  storyboard: "ネームどおり",
+  close_up: "顔・表情を大きく",
+  medium: "上半身と動作",
+  wide: "人物と背景を広く",
+  full_body: "全身・ポーズ",
+};
+const cameraAngleOverrideLabels: Record<CameraAngleOverride, string> = {
+  storyboard: "ネームどおり",
+  eye_level: "目線の高さ",
+  high: "上から見下ろす",
+  low: "下から見上げる",
+  over_shoulder: "肩越し",
+  dynamic: "躍動的な角度",
+};
+const subjectPlacementLabels: Record<SubjectPlacement, string> = {
+  storyboard: "ネームどおり",
+  center: "主役を中央",
+  left: "主役を左",
+  right: "主役を右",
+  two_shot: "二人を並べる",
+  foreground_background: "手前と奥に分ける",
+};
+const gazeDirectionLabels: Record<GazeDirection, string> = {
+  storyboard: "ネームどおり",
+  camera: "カメラを見る",
+  left: "画面左を見る",
+  right: "画面右を見る",
+  partner: "会話相手を見る",
+  off_frame: "画面外を見る",
+};
+const panelGenerationTargetLabels: Record<PanelGenerationTarget, string> = {
+  composite: "完成コマ（背景・人物・効果）",
+  background: "背景だけ",
+  character: "人物だけ",
+  effect: "効果だけ",
+};
 
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
   return structuredClone(canvas);
@@ -63,6 +163,10 @@ function cloneCanvas(canvas: PageCanvas): PageCanvas {
 
 function now() {
   return new Date().toISOString();
+}
+
+function svgDataUrl(svg: string) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 export function CloudCanvasEditor({
@@ -74,6 +178,9 @@ export function CloudCanvasEditor({
   initialGenerationJobs,
   initialQuota,
   storyboardPanelGenerationEnabled,
+  panelInpaintingEnabled,
+  panelOutpaintingEnabled,
+  monitorQualityFeedbackEnabled,
 }: {
   project: CloudProjectSummary;
   pages: CloudPage[];
@@ -83,7 +190,27 @@ export function CloudCanvasEditor({
   initialGenerationJobs: CloudGenerationJob[];
   initialQuota: CloudAiQuota | null;
   storyboardPanelGenerationEnabled: boolean;
+  panelInpaintingEnabled: boolean;
+  panelOutpaintingEnabled: boolean;
+  monitorQualityFeedbackEnabled: boolean;
 }) {
+  const [pageLockState, setPageLockState] = useState<"checking" | "acquired" | "locked" | "unavailable">("checking");
+  const pageLockToken = useRef(crypto.randomUUID());
+  useEffect(() => {
+    let active = true;
+    const lockToken = pageLockToken.current;
+    const renew = async () => {
+      const state = await acquirePageEditLease(page.id, lockToken);
+      if (active) setPageLockState(state);
+    };
+    void renew();
+    const timer = window.setInterval(renew, 60_000);
+    return () => {
+      active = false;
+      window.clearInterval(timer);
+      void releasePageEditLease(page.id, lockToken);
+    };
+  }, [page.id]);
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
   const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
@@ -107,6 +234,27 @@ export function CloudCanvasEditor({
   >("speech_bubble");
   const [selection, setSelection] = useState<CanvasSelection>(null);
   const [message, setMessage] = useState("");
+  const [requestingPanelGeneration, setRequestingPanelGeneration] =
+    useState(false);
+  const [panelCandidateCount, setPanelCandidateCount] = useState(3);
+  const [panelGenerationTarget, setPanelGenerationTarget] =
+    useState<PanelGenerationTarget>("composite");
+  const [shotOverride, setShotOverride] =
+    useState<ShotOverride>("storyboard");
+  const [cameraAngleOverride, setCameraAngleOverride] =
+    useState<CameraAngleOverride>("storyboard");
+  const [subjectPlacement, setSubjectPlacement] =
+    useState<SubjectPlacement>("storyboard");
+  const [gazeDirection, setGazeDirection] =
+    useState<GazeDirection>("storyboard");
+  const [compositionInstruction, setCompositionInstruction] = useState("");
+  const [revisionPreset, setRevisionPreset] =
+    useState<RevisionPreset>("face");
+  const [revisionInstruction, setRevisionInstruction] = useState("");
+  const [inpaintingDialogOpen, setInpaintingDialogOpen] = useState(false);
+  const [outpaintingDirection, setOutpaintingDirection] =
+    useState<OutpaintingDirection>("all");
+  const [comparisonJobId, setComparisonJobId] = useState<string | null>(null);
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -134,15 +282,48 @@ export function CloudCanvasEditor({
     () => new Map(assets.map((asset) => [asset.id, asset])),
     [assets],
   );
-  const previewUrl = useMemo(
+  const canvasSvgAssets = useMemo(
     () =>
-      `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-        createCanvasSvg(
-          canvas,
-          new Map(assets.map((asset) => [asset.id, asset.url])),
-        ),
-      )}`,
-    [assets, canvas],
+      new Map(
+        assets.map((asset) => [
+          asset.id,
+          {
+            href: asset.url,
+            width: asset.width,
+            height: asset.height,
+          },
+        ]),
+      ),
+    [assets],
+  );
+  const previewUrl = useMemo(
+    () => svgDataUrl(createCanvasSvg(canvas, canvasSvgAssets)),
+    [canvas, canvasSvgAssets],
+  );
+  const panelPreviewUrls = useMemo(
+    () =>
+      new Map(
+        canvas.panels.map((panel) => {
+          const panelCanvas: PageCanvas = {
+            schemaVersion: 1,
+            pageId: canvas.pageId,
+            width: panel.width,
+            height: panel.height,
+            backgroundColor: "transparent",
+            panels: [{ ...panel, x: 0, y: 0, rotation: 0, zIndex: 0 }],
+            panelLayers: canvas.panelLayers.filter(
+              (layer) => layer.panelId === panel.id,
+            ),
+            balloons: [],
+            textObjects: [],
+          };
+          return [
+            panel.id,
+            svgDataUrl(createCanvasSvg(panelCanvas, canvasSvgAssets)),
+          ];
+        }),
+      ),
+    [canvas, canvasSvgAssets],
   );
   const items = useMemo(
     () =>
@@ -185,6 +366,19 @@ export function CloudCanvasEditor({
     }, 3000);
     return () => window.clearInterval(timer);
   }, [generationJobs, refreshGenerationJobs, refreshQuota]);
+
+  useEffect(() => {
+    const hasUnloadedGeneratedAsset = generationJobs.some(
+      (job) =>
+        job.status === "completed" &&
+        Boolean(job.output_asset_id) &&
+        !assetMap.has(job.output_asset_id!),
+    );
+    if (!hasUnloadedGeneratedAsset) return;
+    void listProjectAssets(project.id)
+      .then(setAssets)
+      .catch(() => undefined);
+  }, [assetMap, generationJobs, project.id]);
 
   const remainingCredits = quota
     ? Math.max(
@@ -392,20 +586,36 @@ export function CloudCanvasEditor({
     commit((draft) => {
       const panel = draft.panels.find((item) => item.id === panelId);
       if (!panel) return;
-      panel.imageAssetId = assetId;
+      if (layerType === "background" || layerType === "correction")
+        panel.imageAssetId = assetId;
       const currentLayers = draft.panelLayers.filter(
         (layer) => layer.panelId === panel.id,
       );
+      const layerName =
+        layerType === "character"
+          ? "AI人物レイヤー"
+          : layerType === "effect"
+            ? "AI効果レイヤー"
+            : layerType === "background"
+              ? "AI背景レイヤー"
+              : assetMap.get(assetId)?.file_name ?? "画像レイヤー";
+      const orderIndex =
+        layerType === "background"
+          ? Math.min(0, ...currentLayers.map((layer) => layer.orderIndex)) - 1
+          : Math.max(-1, ...currentLayers.map((layer) => layer.orderIndex)) + 1;
       draft.panelLayers.push({
         id: layerId,
         panelId: panel.id,
-        name: assetMap.get(assetId)?.file_name ?? "画像レイヤー",
+        name: layerName,
         type: layerType,
-        orderIndex: currentLayers.length,
+        orderIndex,
         visible: true,
         locked: false,
         opacity: 1,
-        blendMode: "normal",
+        blendMode:
+          layerType === "character" || layerType === "effect"
+            ? "multiply"
+            : "normal",
         assetId,
         sourceJobId,
         imageFit: "cover",
@@ -448,23 +658,56 @@ export function CloudCanvasEditor({
     }
   }
 
-  async function requestStoryboardPanelGeneration() {
-    if (selection?.type !== "panel") return;
-    const panelId = selection.id;
-    setMessage("ネームから画像生成を準備しています…");
+  async function requestStoryboardPanelGeneration(options?: {
+    panelId?: string;
+    candidateCount?: number;
+    sourceAssetId?: string;
+    maskAssetId?: string;
+    outpaintingDirection?: OutpaintingDirection;
+    revisionPreset?: RevisionPreset;
+    revisionInstruction?: string;
+    shotOverride?: ShotOverride;
+    cameraAngleOverride?: CameraAngleOverride;
+    subjectPlacement?: SubjectPlacement;
+    gazeDirection?: GazeDirection;
+    compositionInstruction?: string;
+    generationTarget?: PanelGenerationTarget;
+  }) {
+    const panelId =
+      options?.panelId ?? (selection?.type === "panel" ? selection.id : null);
+    if (!panelId || requestingPanelGeneration) return;
+    const candidateCount = options?.candidateCount ?? panelCandidateCount;
+    setRequestingPanelGeneration(true);
+    setMessage(`${candidateCount}案の画像生成を準備しています…`);
     try {
       const result = await createStoryboardPanelGenerationJob({
         projectId: project.id,
         pageId: page.id,
         panelId,
         idempotencyKey: crypto.randomUUID(),
+        candidateCount,
+        sourceAssetId: options?.sourceAssetId,
+        maskAssetId: options?.maskAssetId,
+        outpaintingDirection: options?.outpaintingDirection,
+        revisionPreset: options?.revisionPreset,
+        revisionInstruction: options?.revisionInstruction,
+        shotOverride: options?.shotOverride,
+        cameraAngleOverride: options?.cameraAngleOverride,
+        subjectPlacement: options?.subjectPlacement,
+        gazeDirection: options?.gazeDirection,
+        compositionInstruction: options?.compositionInstruction,
+        generationTarget: options?.generationTarget,
       });
-      setGenerationTargets((current) => ({
-        ...current,
-        [result.id]: result.panelId,
-      }));
+      setGenerationTargets((current) =>
+        result.jobs.reduce(
+          (next, job) => ({ ...next, [job.id]: result.panelId }),
+          current,
+        ),
+      );
       setMessage(
-        `${result.pageNumber}ページ ${result.panelNumber}コマ目の画像生成を開始しました。`,
+        result.partial
+          ? `${result.pageNumber}ページ ${result.panelNumber}コマ目は${result.jobs.length}案を開始しました。残りは利用枠を確認して再実行してください。`
+          : `${result.pageNumber}ページ ${result.panelNumber}コマ目の候補${result.jobs.length}案を開始しました。`,
       );
       await Promise.all([refreshGenerationJobs(), refreshQuota()]);
     } catch (error) {
@@ -473,7 +716,42 @@ export function CloudCanvasEditor({
           ? error.message
           : "ネームから画像生成を開始できませんでした。",
       );
+    } finally {
+      setRequestingPanelGeneration(false);
     }
+  }
+
+  async function requestPanelInpainting(maskFile: File) {
+    if (!selectedRevisionLayer?.assetId) return;
+    setMessage("修正範囲を安全に保存しています…");
+    try {
+      const maskAsset = await uploadProjectAsset(project.id, maskFile);
+      await requestStoryboardPanelGeneration({
+        candidateCount: panelCandidateCount,
+        sourceAssetId: selectedRevisionLayer.assetId,
+        maskAssetId: maskAsset.id,
+        revisionPreset,
+        revisionInstruction: revisionInstruction.trim() || undefined,
+      });
+      setInpaintingDialogOpen(false);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "部分修正を開始できませんでした。",
+      );
+    }
+  }
+
+  async function requestPanelOutpainting() {
+    if (!selectedRevisionLayer?.assetId) return;
+    await requestStoryboardPanelGeneration({
+      candidateCount: panelCandidateCount,
+      sourceAssetId: selectedRevisionLayer.assetId,
+      outpaintingDirection,
+      revisionPreset: "background",
+      revisionInstruction: revisionInstruction.trim() || undefined,
+    });
   }
 
   async function requestCloudTextGeneration() {
@@ -575,7 +853,10 @@ export function CloudCanvasEditor({
     }
     setAssets(nextAssets);
     const layerType =
-      job.job_type === "character_base"
+      job.generation_operation === "inpainting" ||
+      job.generation_operation === "outpainting"
+        ? "correction"
+        : job.job_type === "character_base"
         ? "character"
         : job.job_type === "prop"
           ? "prop"
@@ -644,10 +925,25 @@ export function CloudCanvasEditor({
           .filter((layer) => layer.panelId === selection.id)
           .sort((a, b) => b.orderIndex - a.orderIndex)
       : [];
+  const selectedRevisionLayer = selectedPanelLayers.find(
+    (layer) => layer.visible && Boolean(layer.assetId),
+  );
+  const selectedRevisionAsset = selectedRevisionLayer?.assetId
+    ? assetMap.get(selectedRevisionLayer.assetId)
+    : undefined;
+  const comparisonJob = comparisonJobId
+    ? generationJobs.find((job) => job.id === comparisonJobId)
+    : undefined;
+  const comparisonBeforeAsset = comparisonJob?.source_asset_id
+    ? assetMap.get(comparisonJob.source_asset_id)
+    : undefined;
+  const comparisonAfterAsset = comparisonJob?.output_asset_id
+    ? assetMap.get(comparisonJob.output_asset_id)
+    : undefined;
 
   return (
     <div
-      className="min-h-screen bg-stone-100"
+      className="relative min-h-screen bg-stone-100"
       onClickCapture={(event) => {
         const anchor = (event.target as HTMLElement).closest("a[href]");
         if (
@@ -662,6 +958,8 @@ export function CloudCanvasEditor({
         event.stopPropagation();
       }}
     >
+      {pageLockState === "locked" ? <div className="absolute inset-0 z-50 grid place-items-center bg-stone-950/70 p-5"><div className="max-w-md rounded-xl bg-white p-6 text-center shadow-xl"><Lock className="mx-auto h-8 w-8 text-violet-700" /><h1 className="mt-3 text-xl font-bold">このページは別の画面で編集中です</h1><p className="mt-2 text-sm text-stone-600">別の画面を閉じて約2分待ってから再読み込みしてください。上書きを防ぐため、この画面では編集できません。</p><Link className="button-secondary mt-4 inline-flex" href={`/creator/${project.id}`}>作品画面へ戻る</Link></div></div> : null}
+      {pageLockState === "checking" ? <p className="m-2 rounded-lg bg-violet-50 p-2 text-center text-sm text-violet-800" aria-live="polite">編集状態を確認しています…</p> : null}
       <header className="sticky top-0 z-30 border-b border-stone-300 bg-white px-4 py-3">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-2">
           <Link className="button-secondary" href={`/creator/${project.id}`}>
@@ -858,20 +1156,310 @@ export function CloudCanvasEditor({
                   AIおまかせ画像生成
                 </p>
                 <p className="mt-1 text-xs text-violet-800">
-                  コマを選ぶだけで、ネームの構図・人物・背景から生成します。
+                  コマを選ぶだけで、ネームから比較用の候補を生成します。
                 </p>
+                <label
+                  className="mt-3 block text-xs font-bold text-violet-950"
+                  htmlFor="panel-generation-target"
+                >
+                  生成するレイヤー
+                </label>
+                <select
+                  className="field mt-1 w-full"
+                  id="panel-generation-target"
+                  value={panelGenerationTarget}
+                  onChange={(event) =>
+                    setPanelGenerationTarget(
+                      event.target.value as PanelGenerationTarget,
+                    )
+                  }
+                >
+                  {Object.entries(panelGenerationTargetLabels).map(
+                    ([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ),
+                  )}
+                </select>
+                {panelGenerationTarget !== "composite" ? (
+                  <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                    分離素材は別レイヤーとして採用され、背景・人物・効果を個別に表示・並べ替えできます。
+                  </p>
+                ) : null}
+                <details className="mt-3 rounded-lg border border-violet-200 bg-white/70 p-3">
+                  <summary className="cursor-pointer text-xs font-bold text-violet-950">
+                    画角・ポーズを調整（任意）
+                  </summary>
+                  <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                    変更しなければネームの指定をそのまま使います。
+                  </p>
+                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                    <label className="text-xs font-bold text-violet-950">
+                      画角
+                      <select
+                        className="field mt-1 w-full"
+                        value={shotOverride}
+                        onChange={(event) =>
+                          setShotOverride(event.target.value as ShotOverride)
+                        }
+                      >
+                        {Object.entries(shotOverrideLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="text-xs font-bold text-violet-950">
+                      カメラ位置
+                      <select
+                        className="field mt-1 w-full"
+                        value={cameraAngleOverride}
+                        onChange={(event) =>
+                          setCameraAngleOverride(
+                            event.target.value as CameraAngleOverride,
+                          )
+                        }
+                      >
+                        {Object.entries(cameraAngleOverrideLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="text-xs font-bold text-violet-950">
+                      人物配置
+                      <select
+                        className="field mt-1 w-full"
+                        value={subjectPlacement}
+                        onChange={(event) =>
+                          setSubjectPlacement(
+                            event.target.value as SubjectPlacement,
+                          )
+                        }
+                      >
+                        {Object.entries(subjectPlacementLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                    <label className="text-xs font-bold text-violet-950">
+                      視線方向
+                      <select
+                        className="field mt-1 w-full"
+                        value={gazeDirection}
+                        onChange={(event) =>
+                          setGazeDirection(event.target.value as GazeDirection)
+                        }
+                      >
+                        {Object.entries(gazeDirectionLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>{label}</option>
+                          ),
+                        )}
+                      </select>
+                    </label>
+                  </div>
+                  <label
+                    className="mt-3 block text-xs font-bold text-violet-950"
+                    htmlFor="panel-composition-instruction"
+                  >
+                    追加の構図指定（任意）
+                  </label>
+                  <input
+                    className="field mt-1 w-full"
+                    id="panel-composition-instruction"
+                    maxLength={500}
+                    placeholder="例：右手を前に伸ばす"
+                    value={compositionInstruction}
+                    onChange={(event) =>
+                      setCompositionInstruction(event.target.value)
+                    }
+                  />
+                </details>
+                <label
+                  className="mt-3 block text-xs font-bold text-violet-950"
+                  htmlFor="panel-candidate-count"
+                >
+                  生成する候補数
+                </label>
+                <select
+                  className="field mt-1 w-full"
+                  id="panel-candidate-count"
+                  value={panelCandidateCount}
+                  onChange={(event) =>
+                    setPanelCandidateCount(Number(event.target.value))
+                  }
+                >
+                  <option value={2}>2案（節約）</option>
+                  <option value={3}>3案（おすすめ）</option>
+                  <option value={4}>4案（比較重視）</option>
+                </select>
                 <button
                   className="button mt-3 w-full"
                   disabled={
                     selection?.type !== "panel" ||
                     !quota?.generation_enabled ||
-                    remainingCredits <= 0
+                    remainingCredits <= 0 ||
+                    requestingPanelGeneration
                   }
-                  onClick={() => void requestStoryboardPanelGeneration()}
+                  onClick={() =>
+                    void requestStoryboardPanelGeneration({
+                      shotOverride,
+                      cameraAngleOverride,
+                      subjectPlacement,
+                      gazeDirection,
+                      compositionInstruction:
+                        compositionInstruction.trim() || undefined,
+                      generationTarget: panelGenerationTarget,
+                    })
+                  }
                   type="button"
                 >
-                  選択したコマを生成
+                  {requestingPanelGeneration
+                    ? "画像生成を受付中…"
+                    : `選択したコマを${panelCandidateCount}案生成`}
                 </button>
+                <div className="mt-4 border-t border-violet-200 pt-4">
+                  <p className="text-sm font-bold text-violet-950">
+                    採用画像の気になる部分を直す
+                  </p>
+                  <p className="mt-1 text-xs text-violet-800">
+                    選択中のコマ画像を参照し、構図を保った修正候補を作ります。
+                    元画像はレイヤーに残るので、採用後も表示を戻せます。
+                  </p>
+                  <label
+                    className="mt-3 block text-xs font-bold text-violet-950"
+                    htmlFor="panel-revision-preset"
+                  >
+                    直したいところ
+                  </label>
+                  <select
+                    className="field mt-1 w-full"
+                    id="panel-revision-preset"
+                    value={revisionPreset}
+                    onChange={(event) =>
+                      setRevisionPreset(event.target.value as RevisionPreset)
+                    }
+                  >
+                    {Object.entries(revisionPresetLabels).map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  <label
+                    className="mt-3 block text-xs font-bold text-violet-950"
+                    htmlFor="panel-revision-instruction"
+                  >
+                    追加の要望（任意）
+                  </label>
+                  <textarea
+                    className="field mt-1 min-h-20 w-full"
+                    id="panel-revision-instruction"
+                    maxLength={1000}
+                    placeholder="例：主人公の目線を少し右へ"
+                    value={revisionInstruction}
+                    onChange={(event) =>
+                      setRevisionInstruction(event.target.value)
+                    }
+                  />
+                  {!selectedRevisionLayer ? (
+                    <p className="mt-2 text-xs text-amber-800">
+                      画像を配置済みのコマを選ぶと修正できます。
+                    </p>
+                  ) : null}
+                  <button
+                    className="button-secondary mt-3 w-full"
+                    disabled={
+                      !selectedRevisionLayer?.assetId ||
+                      !quota?.generation_enabled ||
+                      remainingCredits <= 0 ||
+                      requestingPanelGeneration
+                    }
+                    onClick={() =>
+                      void requestStoryboardPanelGeneration({
+                        candidateCount: panelCandidateCount,
+                        sourceAssetId: selectedRevisionLayer?.assetId ?? undefined,
+                        revisionPreset,
+                        revisionInstruction: revisionInstruction.trim() || undefined,
+                      })
+                    }
+                    type="button"
+                  >
+                    {requestingPanelGeneration
+                      ? "修正候補を受付中…"
+                      : `修正候補を${panelCandidateCount}案生成`}
+                  </button>
+                  {panelInpaintingEnabled ? (
+                    <>
+                      <button
+                        className="button mt-2 w-full"
+                        disabled={
+                          !selectedRevisionAsset ||
+                          !quota?.generation_enabled ||
+                          remainingCredits <= 0 ||
+                          requestingPanelGeneration
+                        }
+                        onClick={() => setInpaintingDialogOpen(true)}
+                        type="button"
+                      >
+                        直す範囲を塗って部分修正
+                      </button>
+                      <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                        部分修正では白く塗った範囲だけを置換します。元画像はレイヤーに残ります。
+                      </p>
+                    </>
+                  ) : null}
+                  {panelOutpaintingEnabled ? (
+                    <div className="mt-3 rounded-lg border border-violet-200 bg-white/70 p-3">
+                      <label
+                        className="block text-xs font-bold text-violet-950"
+                        htmlFor="panel-outpainting-direction"
+                      >
+                        画角を広げる方向
+                      </label>
+                      <select
+                        className="field mt-1 w-full"
+                        id="panel-outpainting-direction"
+                        onChange={(event) =>
+                          setOutpaintingDirection(
+                            event.target.value as OutpaintingDirection,
+                          )
+                        }
+                        value={outpaintingDirection}
+                      >
+                        {Object.entries(outpaintingDirectionLabels).map(
+                          ([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ),
+                        )}
+                      </select>
+                      <button
+                        className="button-secondary mt-2 w-full"
+                        disabled={
+                          !selectedRevisionAsset ||
+                          !quota?.generation_enabled ||
+                          remainingCredits <= 0 ||
+                          requestingPanelGeneration
+                        }
+                        onClick={() => void requestPanelOutpainting()}
+                        type="button"
+                      >
+                        {requestingPanelGeneration
+                          ? "画角拡張を受付中…"
+                          : `画角を広げた候補を${panelCandidateCount}案生成`}
+                      </button>
+                      <p className="mt-2 text-[11px] leading-relaxed text-violet-700">
+                        元画像の外側だけをAIが補完し、より広い構図の候補を作ります。元画像は残ります。
+                      </p>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             ) : null}
             <label
@@ -959,14 +1547,16 @@ export function CloudCanvasEditor({
               一般向け文章を生成
             </button>
             <div className="mt-3 space-y-2" aria-live="polite">
-              {generationJobs.slice(0, 5).map((job) => (
+              {generationJobs.slice(0, 8).map((job) => (
                 <div
                   className="rounded border border-stone-200 bg-white p-2 text-xs"
                   key={job.id}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <span>
-                      {job.job_type} / {job.status} / {job.progress}%
+                      {job.revision_preset
+                        ? `${job.generation_operation === "inpainting" ? "部分修正" : job.generation_operation === "outpainting" ? "画角拡張" : "修正候補"}・${revisionPresetLabels[job.revision_preset]}`
+                        : job.job_type} / {job.status} / {job.progress}%
                     </span>
                     {job.status === "queued" || job.status === "running" ? (
                       <button
@@ -978,8 +1568,47 @@ export function CloudCanvasEditor({
                       </button>
                     ) : null}
                   </div>
-                  {job.error_message ? (
-                    <p className="mt-1 text-red-700">{job.error_message}</p>
+                  {job.output_asset_id && assetMap.get(job.output_asset_id) ? (
+                    <img
+                      alt="生成されたコマ候補"
+                      className="mt-2 aspect-video w-full rounded border border-stone-200 object-cover"
+                      src={assetMap.get(job.output_asset_id)!.url}
+                    />
+                  ) : null}
+                  {job.status === "completed" &&
+                  job.kind === "image" &&
+                  job.revision_preset &&
+                  job.source_asset_id &&
+                  job.output_asset_id &&
+                  assetMap.has(job.source_asset_id) &&
+                  assetMap.has(job.output_asset_id) ? (
+                    <button
+                      className="button-secondary mt-2 w-full"
+                      onClick={() => setComparisonJobId(job.id)}
+                      type="button"
+                    >
+                      修正前と比較
+                    </button>
+                  ) : null}
+                  {job.status === "failed" ? (
+                    <div className="mt-2 rounded bg-red-50 p-2 text-red-800">
+                      <p>生成に失敗しました。この候補だけ再実行できます。</p>
+                      {job.target_panel_id ? (
+                        <button
+                          className="mt-1 font-bold underline"
+                          disabled={requestingPanelGeneration}
+                          onClick={() =>
+                            void requestStoryboardPanelGeneration({
+                              panelId: job.target_panel_id!,
+                              candidateCount: 1,
+                            })
+                          }
+                          type="button"
+                        >
+                          このコマだけ再実行
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                   {job.status === "completed" && job.output_asset_id ? (
                     <button
@@ -993,7 +1622,7 @@ export function CloudCanvasEditor({
                       type="button"
                     >
                       {generationTargets[job.id] || job.target_panel_id
-                        ? "生成対象のコマへ配置"
+                        ? "この候補を採用してコマへ配置"
                         : "選択中のコマへ配置"}
                     </button>
                   ) : null}
@@ -1045,6 +1674,15 @@ export function CloudCanvasEditor({
               ))}
             </div>
           </section>
+          {monitorQualityFeedbackEnabled ? (
+            <MonitorQualityFeedback
+              pageId={page.id}
+              pageNumber={page.page_number}
+              panels={canvas.panels.map((panel) => ({ id: panel.id, name: panel.name }))}
+              projectId={project.id}
+              selectedPanelId={selection?.type === "panel" ? selection.id : null}
+            />
+          ) : null}
         </aside>
         <main className="flex items-start justify-center overflow-auto rounded-lg bg-stone-300 p-4 sm:p-8">
           <div
@@ -1062,21 +1700,9 @@ export function CloudCanvasEditor({
               .filter((item) => item.visible)
               .sort((a, b) => a.zIndex - b.zIndex)
               .map((panel) => {
-                const panelLayers = canvas.panelLayers
-                  .filter(
-                    (layer) =>
-                      layer.panelId === panel.id &&
-                      layer.visible &&
-                      layer.assetId,
-                  )
-                  .sort((a, b) => a.orderIndex - b.orderIndex);
-                const topLayer = panelLayers.at(-1);
-                const asset = assetMap.get(
-                  topLayer?.assetId ?? panel.imageAssetId ?? "",
-                );
                 return (
                   <div
-                    className={`absolute overflow-hidden ${selection?.type === "panel" && selection.id === panel.id ? "ring-4 ring-blue-500" : ""}`}
+                    className={`absolute ${selection?.type === "panel" && selection.id === panel.id ? "ring-4 ring-blue-500" : ""}`}
                     key={panel.id}
                     onPointerDown={(event) =>
                       pointerDown(event, { type: "panel", id: panel.id }, panel)
@@ -1090,22 +1716,15 @@ export function CloudCanvasEditor({
                       height: `${(panel.height / canvas.height) * 100}%`,
                       zIndex: panel.zIndex,
                       transform: `rotate(${panel.rotation}deg)`,
-                      background: panel.fillColor,
-                      border: `${Math.max(1, (panel.borderWidth * canvasElement.current?.clientWidth!) / canvas.width || 1)}px solid ${panel.borderColor}`,
                       touchAction: "none",
                     }}
                   >
-                    {asset ? (
-                      <img
-                        alt=""
-                        draggable={false}
-                        className="h-full w-full object-cover"
-                        src={asset.url}
-                        style={{
-                          opacity: topLayer?.opacity ?? panel.imageOpacity,
-                        }}
-                      />
-                    ) : null}
+                    <img
+                      alt=""
+                      draggable={false}
+                      className="h-full w-full"
+                      src={panelPreviewUrls.get(panel.id)}
+                    />
                   </div>
                 );
               })}
@@ -1423,6 +2042,29 @@ export function CloudCanvasEditor({
           </section>
         </aside>
       </div>
+      {inpaintingDialogOpen && selectedRevisionAsset ? (
+        <PanelInpaintingDialog
+          onCancel={() => setInpaintingDialogOpen(false)}
+          onSubmit={requestPanelInpainting}
+          revisionPreset={revisionPreset}
+          sourceHeight={selectedRevisionAsset.height}
+          sourceUrl={selectedRevisionAsset.url}
+          sourceWidth={selectedRevisionAsset.width}
+          submitting={requestingPanelGeneration}
+        />
+      ) : null}
+      {comparisonJob && comparisonBeforeAsset && comparisonAfterAsset ? (
+        <PanelImageComparisonDialog
+          after={comparisonAfterAsset}
+          before={comparisonBeforeAsset}
+          direction={comparisonJob.outpainting_direction}
+          onAdopt={() => {
+            setComparisonJobId(null);
+            void placeGeneratedAsset(comparisonJob);
+          }}
+          onClose={() => setComparisonJobId(null)}
+        />
+      ) : null}
       {preview ? (
         <div
           aria-modal="true"

@@ -1,0 +1,11 @@
+begin;
+drop trigger if exists cloud_assets_project_storage_budget on public.cloud_assets;
+drop trigger if exists cloud_generation_jobs_project_budget on public.cloud_generation_jobs;
+drop trigger if exists cloud_projects_provision_resource_budget on public.cloud_projects;
+drop function if exists public.enforce_cloud_project_storage_budget();
+drop function if exists public.enforce_cloud_project_generation_budget();
+drop function if exists public.get_cloud_project_resource_usage(uuid);
+drop function if exists public.save_cloud_project_resource_budget(uuid,integer,bigint,bigint,integer,boolean);
+drop function if exists public.provision_cloud_project_resource_budget();
+drop table if exists public.cloud_project_resource_budgets;
+commit;

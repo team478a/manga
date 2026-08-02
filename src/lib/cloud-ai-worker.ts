@@ -10,6 +10,7 @@ import { createAdminClient } from "./supabase/admin.ts";
 import {
   CLOUD_ASSET_BUCKET,
   cloudAssetStoragePath,
+  removeWhiteBackgroundFromMangaLayer,
   sanitizeCloudGeneratedImage,
 } from "./cloud-creator-contract.ts";
 import {
@@ -161,8 +162,12 @@ async function uploadGeneratedAsset(
   client: AdminClient,
   job: ClaimedJob,
   image: { bytes: Uint8Array; fileName: string },
+  outputAlphaMode: "preserve" | "remove_white",
 ): Promise<UploadedGeneratedAsset> {
-  const sanitized = await sanitizeCloudGeneratedImage(image.bytes);
+  const sanitized =
+    outputAlphaMode === "remove_white"
+      ? await removeWhiteBackgroundFromMangaLayer(image.bytes)
+      : await sanitizeCloudGeneratedImage(image.bytes);
   const assetId = crypto.randomUUID();
   const storagePath = cloudAssetStoragePath({
     profileId: job.created_by_profile_id,
@@ -331,7 +336,65 @@ export async function processNextCloudGenerationJob(input: {
       projectId: job.project_id,
       pageId: job.page_id ?? undefined,
       idempotencyKey: job.idempotency_key,
+      referenceImageUrls: [] as string[],
+      maskImageUrl: undefined as string | undefined,
     };
+    if (generation.kind === "image" && generation.referenceAssetIds?.length) {
+      const { data: referenceAssets, error: referenceError } = await client
+        .from("cloud_assets")
+        .select("id,storage_path")
+        .eq("project_id", job.project_id)
+        .eq("owner_profile_id", job.created_by_profile_id)
+        .is("deleted_at", null)
+        .in("id", generation.referenceAssetIds);
+      if (referenceError || referenceAssets?.length !== generation.referenceAssetIds.length)
+        throw new AIProviderError(
+          "provider_rejected",
+          "参照画像を確認できませんでした。",
+          false,
+        );
+      const byId = new Map(referenceAssets.map((asset) => [asset.id, asset.storage_path]));
+      for (const assetId of generation.referenceAssetIds) {
+        const storagePath = byId.get(assetId);
+        if (!storagePath) continue;
+        const { data: signed, error: signedError } = await client.storage
+          .from(CLOUD_ASSET_BUCKET)
+          .createSignedUrl(storagePath, 600);
+        if (signedError || !signed?.signedUrl)
+          throw new AIProviderError(
+            "provider_rejected",
+            "参照画像を準備できませんでした。",
+            false,
+          );
+        context.referenceImageUrls.push(signed.signedUrl);
+      }
+    }
+    if (generation.kind === "image" && generation.maskAssetId) {
+      const { data: maskAsset, error: maskError } = await client
+        .from("cloud_assets")
+        .select("storage_path")
+        .eq("id", generation.maskAssetId)
+        .eq("project_id", job.project_id)
+        .eq("owner_profile_id", job.created_by_profile_id)
+        .is("deleted_at", null)
+        .maybeSingle();
+      if (maskError || !maskAsset?.storage_path)
+        throw new AIProviderError(
+          "provider_rejected",
+          "修正範囲を確認できませんでした。",
+          false,
+        );
+      const { data: signedMask, error: signedMaskError } = await client.storage
+        .from(CLOUD_ASSET_BUCKET)
+        .createSignedUrl(maskAsset.storage_path, 600);
+      if (signedMaskError || !signedMask?.signedUrl)
+        throw new AIProviderError(
+          "provider_rejected",
+          "修正範囲を準備できませんでした。",
+          false,
+        );
+      context.maskImageUrl = signedMask.signedUrl;
+    }
     let output: Record<string, unknown>;
     let outputAssetId: string | null = null;
     let providerJobId: string | null = null;
@@ -345,7 +408,12 @@ export async function processNextCloudGenerationJob(input: {
       if (!result.images.length)
         throw new Error("Providerから画像が返されませんでした。");
       await heartbeat.assertLease();
-      uploadedAsset = await uploadGeneratedAsset(client, job, result.images[0]);
+      uploadedAsset = await uploadGeneratedAsset(
+        client,
+        job,
+        result.images[0],
+        generation.outputAlphaMode,
+      );
       await heartbeat.assertLease();
       outputAssetId = uploadedAsset.assetId;
       providerJobId = result.providerJobId ?? null;

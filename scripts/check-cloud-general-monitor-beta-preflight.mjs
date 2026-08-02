@@ -13,6 +13,7 @@ const required = [
   "CLOUD_STORYBOARD_GENERATION_ENABLED",
   "CLOUD_STORYBOARD_CANVAS_ENABLED",
   "CLOUD_PANEL_IMAGE_GENERATION_ENABLED",
+  "MANGAI_CLOUD_AI_WORKER_ENABLED",
 ];
 
 const mustRemainDisabled = [
@@ -41,7 +42,7 @@ export function checkCloudGeneralMonitorBetaEnvironment(env = process.env) {
     key,
     configured: Boolean(env[key]?.trim()),
     enabled:
-      key.startsWith("CLOUD_") && key.endsWith("_ENABLED")
+      key.endsWith("_ENABLED")
         ? env[key]?.trim().toLowerCase() === "true"
         : undefined,
   }));
@@ -54,14 +55,19 @@ export function checkCloudGeneralMonitorBetaEnvironment(env = process.env) {
   const productionOriginReady = Boolean(
     siteOrigin && inviteOrigin && siteOrigin === inviteOrigin,
   );
+  const workerSecretReady =
+    typeof env.MANGAI_CLOUD_AI_WORKER_SECRET === "string" &&
+    env.MANGAI_CLOUD_AI_WORKER_SECRET.length >= 32;
   return {
     passed:
       checks.every((check) => check.configured && check.enabled !== false) &&
       exclusions.every((check) => check.disabled) &&
-      productionOriginReady,
+      productionOriginReady &&
+      workerSecretReady,
     checks,
     exclusions,
     productionOriginReady,
+    workerSecretReady,
   };
 }
 
@@ -73,6 +79,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     console.log(`${check.disabled ? "OK_DISABLED" : "MUST_DISABLE"} ${check.key}`);
   console.log(
     `${report.productionOriginReady ? "OK" : "MISMATCH"} PRODUCTION_SITE_ORIGIN`,
+  );
+  console.log(
+    `${report.workerSecretReady ? "OK" : "MISSING"} MANGAI_CLOUD_AI_WORKER_SECRET`,
   );
   console.log("INFO Values and credentials are never printed.");
   console.log("INFO Stripe, sales and adult features are outside this monitor.");

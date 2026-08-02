@@ -8,14 +8,19 @@ import {
   getMyCloudAiQuota,
 } from "@/lib/cloud-creator-server";
 import { CloudCanvasEditor } from "./CloudCanvasEditor";
-import { cloudPanelImageGenerationFeatureEnabled } from "@/lib/cloud-panel-image-generation";
+import { getCloudGeneralMonitorEnrollment, isCloudGeneralMonitorActive } from "@/lib/cloud-general-monitor";
+import {
+  cloudPanelImageGenerationFeatureEnabled,
+  cloudPanelInpaintingFeatureEnabled,
+  cloudPanelOutpaintingFeatureEnabled,
+} from "@/lib/cloud-panel-image-generation";
 
 export default async function CloudCanvasPage({
   params,
 }: {
   params: Promise<{ projectId: string; pageId: string }>;
 }) {
-  await requireProfile();
+  const { profile } = await requireProfile();
   const { projectId, pageId } = await params;
   let workspace: Awaited<ReturnType<typeof getCloudProjectWorkspace>>;
   let snapshot: Awaited<ReturnType<typeof getCloudPageSnapshot>>;
@@ -35,6 +40,9 @@ export default async function CloudCanvasPage({
   const page = workspace.pages.find((candidate) => candidate.id === pageId);
   if (!page || snapshot.project_id !== projectId) notFound();
   const quota = await quotaPromise;
+  const monitorQualityFeedbackEnabled = isCloudGeneralMonitorActive(
+    await getCloudGeneralMonitorEnrollment(profile.id),
+  );
   return (
     <CloudCanvasEditor
       project={workspace.project}
@@ -45,6 +53,9 @@ export default async function CloudCanvasPage({
       initialGenerationJobs={generationJobs}
       initialQuota={quota}
       storyboardPanelGenerationEnabled={cloudPanelImageGenerationFeatureEnabled()}
+      panelInpaintingEnabled={cloudPanelInpaintingFeatureEnabled()}
+      panelOutpaintingEnabled={cloudPanelOutpaintingFeatureEnabled()}
+      monitorQualityFeedbackEnabled={monitorQualityFeedbackEnabled}
     />
   );
 }

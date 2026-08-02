@@ -56,6 +56,113 @@ test("adult reference-image assessment is internally consistent", () => {
   );
 });
 
+test("cloud image-to-image requires its source in image references", () => {
+  const sourceAssetId = randomUUID();
+  const base = {
+    kind: "image",
+    jobType: "background",
+    prompt: "general manga panel",
+    negativePrompt: "",
+    operation: "image_to_image",
+    sourceAssetId,
+  };
+
+  assert.equal(cloudGenerationInputSchema.safeParse(base).success, false);
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      referenceAssetIds: [sourceAssetId],
+      revisionPreset: "face",
+    }).success,
+    true,
+  );
+});
+
+test("cloud image output alpha mode defaults safely and rejects unknown values", () => {
+  const base = {
+    kind: "image",
+    jobType: "character_base",
+    prompt: "general manga character on white",
+    negativePrompt: "",
+  };
+  assert.equal(
+    cloudGenerationInputSchema.parse(base).outputAlphaMode,
+    "preserve",
+  );
+  assert.equal(
+    cloudGenerationInputSchema.parse({
+      ...base,
+      outputAlphaMode: "remove_white",
+    }).outputAlphaMode,
+    "remove_white",
+  );
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      outputAlphaMode: "remove_everything",
+    }).success,
+    false,
+  );
+});
+
+test("cloud inpainting requires both a referenced source and a mask", () => {
+  const sourceAssetId = randomUUID();
+  const maskAssetId = randomUUID();
+  const base = {
+    kind: "image",
+    jobType: "background",
+    prompt: "repair the selected hand only",
+    negativePrompt: "",
+    operation: "inpainting",
+    sourceAssetId,
+    referenceAssetIds: [sourceAssetId],
+    revisionPreset: "hands",
+  };
+  assert.equal(cloudGenerationInputSchema.safeParse(base).success, false);
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({ ...base, maskAssetId }).success,
+    true,
+  );
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      operation: "image_to_image",
+      maskAssetId,
+    }).success,
+    false,
+  );
+});
+
+test("cloud outpainting requires a referenced source and one direction", () => {
+  const sourceAssetId = randomUUID();
+  const base = {
+    kind: "image",
+    jobType: "background",
+    prompt: "extend the manga background",
+    negativePrompt: "",
+    operation: "outpainting",
+    sourceAssetId,
+    referenceAssetIds: [sourceAssetId],
+    revisionPreset: "background",
+  };
+  assert.equal(cloudGenerationInputSchema.safeParse(base).success, false);
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      outpaintingDirection: "right",
+    }).success,
+    true,
+  );
+  assert.equal(
+    cloudGenerationInputSchema.safeParse({
+      ...base,
+      operation: "image_to_image",
+      outpaintingDirection: "right",
+    }).success,
+    false,
+  );
+});
+
 test("adult reference-image evaluation fails closed", () => {
   const base = {
     personPresence: "present",

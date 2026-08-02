@@ -88,6 +88,7 @@ async function gatewayRequest(
             jobId: context.jobId,
             projectId: context.projectId,
             pageId: context.pageId,
+            referenceImageUrls: context.referenceImageUrls,
           },
         }),
         signal: controller.signal,

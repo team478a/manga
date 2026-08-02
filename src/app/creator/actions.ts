@@ -4,16 +4,28 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import {
+  addCloudChapter,
   addCloudEpisode,
+  addCloudEpisodeToChapter,
   addCloudPage,
+  addCloudPageToScene,
+  addCloudScene,
   createCloudProject,
+  createCloudProjectCheckpoint,
   deleteCloudStructure,
+  moveCloudPageBefore,
   moveCloudStructure,
   renameCloudEpisode,
   renameCloudProject,
+  restoreCloudProjectCheckpoint,
   setCloudProjectDeleted,
   setCloudProjectCover,
+  setCloudPageProductionStatus,
+  retryFailedCloudGenerationJob,
+  setCloudGenerationBatchState,
+  startCloudPageGenerationBatch,
 } from "@/lib/cloud-creator-server";
+import { createCloudExportJob, setCloudExportJobState } from "@/modules/cloud-creator/export/durable-export-service";
 import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
 
@@ -91,6 +103,82 @@ export async function addCloudPageAction(projectId: string, episodeId: string) {
   }
   revalidatePath(`/creator/${projectId}`);
   redirect(`/creator/${projectId}/pages/${pageId}`);
+}
+
+export async function addCloudChapterAction(
+  projectId: string,
+  formData: FormData,
+) {
+  const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
+  if (!parsed.success) redirect(`/creator/${projectId}?error=章の名前を入力してください`);
+  try {
+    await addCloudChapter(projectId, parsed.data);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "章を追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}?message=章を追加しました`);
+}
+
+export async function addCloudEpisodeToChapterAction(
+  projectId: string,
+  chapterId: string,
+  formData: FormData,
+) {
+  const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
+  if (!parsed.success) redirect(`/creator/${projectId}?error=話の名前を入力してください`);
+  try {
+    await addCloudEpisodeToChapter(chapterId, parsed.data);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "話を追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}?message=話を追加しました`);
+}
+
+export async function addCloudSceneAction(
+  projectId: string,
+  episodeId: string,
+  formData: FormData,
+) {
+  const parsed = z.object({
+    title: z.string().trim().min(1).max(200),
+    summary: z.string().max(2000),
+  }).safeParse({ title: value(formData, "title"), summary: value(formData, "summary") });
+  if (!parsed.success) redirect(`/creator/${projectId}?error=シーン設定を確認してください`);
+  try {
+    await addCloudScene(episodeId, parsed.data.title, parsed.data.summary);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "シーンを追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}?message=シーンを追加しました`);
+}
+
+export async function addCloudPageToSceneAction(projectId: string, sceneId: string) {
+  let pageId: string;
+  try {
+    pageId = await addCloudPageToScene(sceneId);
+  } catch (error) {
+    redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "ページを追加できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${projectId}`);
+  redirect(`/creator/${projectId}/pages/${pageId}`);
+}
+
+export async function moveCloudPageBeforeAction(
+  projectId: string,
+  pageId: string,
+  targetPageId: string,
+) {
+  const parsed = z.object({ projectId: z.string().uuid(), pageId: z.string().uuid(), targetPageId: z.string().uuid() }).safeParse({ projectId, pageId, targetPageId });
+  if (!parsed.success) throw new Error("invalid_page_move");
+  try {
+    await moveCloudPageBefore(parsed.data.pageId, parsed.data.targetPageId);
+  } catch (error) {
+    throw new Error(domainMessage(error, "ページを並べ替えできませんでした。"));
+  }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
 }
 
 export async function renameCloudProjectAction(
@@ -246,4 +334,108 @@ export async function syncCloudMarketplaceDraftAction(
   redirect(
     `/creator/${projectId}?message=${encodeURIComponent("販売用の下書きを更新しました")}&productId=${result.productId}`,
   );
+}
+
+export async function startCloudPageGenerationBatchAction(projectId: string, formData: FormData) {
+  const parsedProjectId = z.string().uuid().safeParse(projectId);
+  if (!parsedProjectId.success) redirect("/creator?error=作品IDを確認してください");
+  const parsed = z.array(z.string().uuid()).min(4).max(8).safeParse(formData.getAll("pageId"));
+  if (!parsed.success) redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent("一括生成するページを4〜8ページ選んでください。")}`);
+  try {
+    const result = await startCloudPageGenerationBatch(parsedProjectId.data, parsed.data);
+    revalidatePath(`/creator/${parsedProjectId.data}`);
+    redirect(`/creator/${parsedProjectId.data}?message=${encodeURIComponent(`${result.queued}コマの一括生成を開始しました`)}`);
+  } catch (error) {
+    redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent(domainMessage(error, "一括生成を開始できませんでした。"))}`);
+  }
+}
+
+export async function setCloudGenerationBatchStateAction(projectId: string, batchId: string, status: "active" | "paused" | "canceled") {
+  const ids = z.object({ projectId: z.string().uuid(), batchId: z.string().uuid() }).safeParse({ projectId, batchId });
+  if (!ids.success) redirect("/creator?error=一括生成のIDを確認してください");
+  try { await setCloudGenerationBatchState(ids.data.batchId, status); }
+  catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "一括生成の状態を変更できませんでした。"))}`); }
+  revalidatePath(`/creator/${ids.data.projectId}`);
+  redirect(`/creator/${ids.data.projectId}?message=${encodeURIComponent(status === "paused" ? "一括生成を一時停止しました" : status === "active" ? "一括生成を再開しました" : "一括生成を中止しました")}`);
+}
+
+export async function retryFailedCloudGenerationJobAction(projectId: string, jobId: string) {
+  const ids = z.object({ projectId: z.string().uuid(), jobId: z.string().uuid() }).safeParse({ projectId, jobId });
+  if (!ids.success) redirect("/creator?error=再実行対象のIDを確認してください");
+  try { await retryFailedCloudGenerationJob(ids.data.jobId); }
+  catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "失敗Jobを再実行できませんでした。"))}`); }
+  revalidatePath(`/creator/${ids.data.projectId}`);
+  redirect(`/creator/${ids.data.projectId}?message=${encodeURIComponent("失敗Jobを再実行しました")}`);
+}
+
+export async function setCloudPageProductionStatusAction(
+  projectId: string,
+  pageId: string,
+  status: "not_started" | "review_required" | "revision_required" | "finalized",
+) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    pageId: z.string().uuid(),
+    status: z.enum(["not_started", "review_required", "revision_required", "finalized"]),
+  }).safeParse({ projectId, pageId, status });
+  if (!parsed.success) redirect("/creator?error=制作状態を確認してください");
+  try { await setCloudPageProductionStatus(parsed.data.pageId, parsed.data.status); }
+  catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "制作状態を更新できませんでした。"))}`); }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "finalized" ? "ページを確定しました" : "ページの制作状態を更新しました")}`);
+}
+
+export async function startCloudExportAction(projectId: string) {
+  const parsed = z.string().uuid().safeParse(projectId);
+  if (!parsed.success) redirect("/creator?error=作品IDを確認してください");
+  try {
+    await createCloudExportJob(parsed.data);
+  } catch (error) {
+    redirect(`/creator/${parsed.data}?error=${encodeURIComponent(domainMessage(error, "書き出しを開始できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${parsed.data}`);
+  redirect(`/creator/${parsed.data}?message=${encodeURIComponent("PDF書き出しを受け付けました")}`);
+}
+
+export async function createCloudProjectCheckpointAction(projectId: string, kind: "checkpoint" | "release", formData: FormData) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    kind: z.enum(["checkpoint", "release"]),
+    label: z.string().trim().min(1).max(100),
+  }).safeParse({ projectId, kind, label: value(formData, "label") });
+  if (!parsed.success) redirect(`/creator?error=${encodeURIComponent("固定版の入力内容を確認してください。")}`);
+  try { await createCloudProjectCheckpoint(parsed.data); }
+  catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "作品の固定版を作成できませんでした。"))}`); }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(parsed.data.kind === "release" ? "完成版を固定しました" : "バックアップを作成しました")}`);
+}
+
+export async function restoreCloudProjectCheckpointAction(projectId: string, checkpointId: string, formData: FormData) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    checkpointId: z.string().uuid(),
+    confirm: z.literal("restore"),
+  }).safeParse({ projectId, checkpointId, confirm: value(formData, "confirm") });
+  if (!parsed.success) redirect(`/creator?error=${encodeURIComponent("復元確認にチェックを入れてください。")}`);
+  try { await restoreCloudProjectCheckpoint(parsed.data); }
+  catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "固定版を復元できませんでした。"))}`); }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  revalidatePath(`/creator/${parsed.data.projectId}/cockpit`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("固定版を復元しました。現在の内容は復元前バックアップとして保存されています。")}`);
+}
+
+export async function setCloudExportStateAction(
+  projectId: string,
+  jobId: string,
+  status: "queued" | "paused" | "canceled",
+) {
+  const parsed = z.object({ projectId: z.string().uuid(), jobId: z.string().uuid(), status: z.enum(["queued", "paused", "canceled"]) }).safeParse({ projectId, jobId, status });
+  if (!parsed.success) redirect("/creator?error=書き出しIDを確認してください");
+  try {
+    await setCloudExportJobState(parsed.data.jobId, parsed.data.status);
+  } catch (error) {
+    redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "書き出し状態を変更できませんでした。"))}`);
+  }
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "paused" ? "書き出しを一時停止しました" : status === "queued" ? "書き出しを再開しました" : "書き出しを中止しました")}`);
 }

@@ -219,6 +219,66 @@ end $$;
 
 do $$
 begin
+  if to_regclass('public.cloud_generation_batches') is null
+     or to_regclass('public.cloud_generation_batch_jobs') is null
+     or to_regclass('public.cloud_page_edit_locks') is null
+     or to_regprocedure('public.create_cloud_generation_batch(uuid,uuid[],text)') is null
+     or to_regprocedure('public.replace_cloud_generation_batch_job(uuid,uuid)') is null
+     or to_regprocedure('public.acquire_cloud_page_edit_lock(uuid,uuid,integer)') is null then
+    raise exception 'Cloud batch production migration objects missing';
+  end if;
+  if has_function_privilege('anon','public.create_cloud_generation_batch(uuid,uuid[],text)','execute')
+     or not has_function_privilege('authenticated','public.release_cloud_page_edit_lock(uuid,uuid)','execute') then
+    raise exception 'Cloud batch production function privileges invalid';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_visual_reference_assets') is null
+    or to_regclass('public.cloud_panel_subject_assignments') is null
+    or to_regprocedure('public.save_cloud_visual_reference(uuid,text,uuid,uuid,text)') is null
+    or to_regprocedure('public.save_cloud_panel_subject_assignment(uuid,uuid,uuid,text,uuid)') is null then
+    raise exception 'Cloud visual reference objects missing';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_general_image_provider_settings') is null
+     or to_regclass('public.cloud_general_image_provider_audit_logs') is null
+     or to_regprocedure(
+       'public.set_cloud_general_image_provider(uuid,text,text,boolean)'
+     ) is null
+     or to_regprocedure(
+       'public.get_cloud_general_image_runtime_config()'
+     ) is null then
+    raise exception 'Cloud general image Provider migration missing';
+  end if;
+  if not exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-2-pro'
+      and pricing_version = 'bfl-flux2-2026-03'
+      and active
+  ) then
+    raise exception 'Cloud general image Provider price migration missing';
+  end if;
+  if not exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-pro-1.0-fill'
+      and job_type = 'background'
+      and pricing_version = 'bfl-flux1-fill-2026-08'
+      and credits = 3
+      and max_cost_micros = 50000
+      and active
+  ) then
+    raise exception 'Cloud panel inpainting price migration missing';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_general_monitor_email_settings') is null
      or to_regclass('public.cloud_general_monitor_email_audit_logs') is null
      or to_regprocedure(
@@ -1027,5 +1087,59 @@ begin
       and pg_get_constraintdef(oid) like '%research-rules-v2%'
   ) then
     raise exception 'Cloud research v2 engine constraint missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_export_jobs') is null
+     or to_regclass('public.cloud_export_segments') is null
+     or to_regprocedure('public.complete_cloud_export_segment(uuid,uuid,integer,integer,text,jsonb,text,bigint)') is null
+     or not exists(select 1 from storage.buckets where id='cloud-exports') then
+    raise exception 'Durable export migration objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_page_thumbnails') is null
+     or to_regclass('public.cloud_storage_cleanup') is null
+     or to_regprocedure('public.claim_cloud_page_thumbnail(text,integer)') is null
+     or to_regprocedure('public.claim_cloud_storage_cleanup(text,integer)') is null
+     or not exists(select 1 from storage.buckets where id='cloud-cache' and public=false) then
+    raise exception 'Cloud storage lifecycle migration objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_continuity_facts') is null
+     or to_regclass('public.cloud_plot_threads') is null
+     or to_regprocedure('public.save_cloud_continuity_fact(uuid,uuid,text,text,text,text,integer,integer,integer,text)') is null
+     or to_regprocedure('public.save_cloud_plot_thread(uuid,uuid,text,integer,integer,integer,text,text)') is null then
+    raise exception 'Cloud narrative continuity migration objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_resource_budgets') is null
+     or to_regprocedure('public.save_cloud_project_resource_budget(uuid,integer,bigint,bigint,integer,boolean)') is null
+     or to_regprocedure('public.get_cloud_project_resource_usage(uuid)') is null
+     or to_regprocedure('public.enforce_cloud_project_generation_budget()') is null
+     or to_regprocedure('public.enforce_cloud_project_storage_budget()') is null then
+    raise exception 'Cloud project resource budget objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_backup_blobs') is null
+     or to_regclass('public.cloud_project_checkpoints') is null
+     or to_regclass('public.cloud_project_checkpoint_pages') is null
+     or to_regprocedure('public.create_cloud_project_checkpoint(uuid,text,text)') is null then
+    raise exception 'Cloud project checkpoint objects missing';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_checkpoint_restores') is null
+     or to_regprocedure('public.restore_cloud_project_checkpoint(uuid,uuid)') is null then
+    raise exception 'Cloud project checkpoint restore objects missing';
   end if;
 end $$;

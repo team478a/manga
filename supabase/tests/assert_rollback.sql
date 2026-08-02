@@ -2,6 +2,27 @@
 
 do $$
 begin
+  if to_regclass('public.cloud_chapters') is not null
+     or to_regclass('public.cloud_scenes') is not null
+     or to_regprocedure('public.move_cloud_page_before(uuid,uuid)') is not null then
+    raise exception 'Long-form manga structure rollback failed';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_generation_batches') is not null
+     or to_regclass('public.cloud_generation_batch_jobs') is not null
+     or to_regclass('public.cloud_page_edit_locks') is not null
+     or to_regprocedure('public.create_cloud_generation_batch(uuid,uuid[],text)') is not null
+     or to_regprocedure('public.replace_cloud_generation_batch_job(uuid,uuid)') is not null
+     or to_regprocedure('public.acquire_cloud_page_edit_lock(uuid,uuid,integer)') is not null then
+    raise exception 'Cloud batch production rollback failed';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_general_monitor_email_settings') is not null
      or to_regclass('public.cloud_general_monitor_email_audit_logs') is not null
      or to_regprocedure(
@@ -117,6 +138,29 @@ begin
   end if;
 end $$;
 
+do $$ begin
+  if to_regclass('public.cloud_visual_reference_assets') is not null
+    or to_regclass('public.cloud_panel_subject_assignments') is not null
+    or to_regprocedure('public.save_cloud_visual_reference(uuid,text,uuid,uuid,text)') is not null
+    or to_regprocedure('public.save_cloud_panel_subject_assignment(uuid,uuid,uuid,text,uuid)') is not null then
+    raise exception 'Cloud visual reference objects remain after rollback';
+  end if;
+end $$;
+
+do $$
+begin
+  if to_regclass('public.cloud_general_image_provider_settings') is not null
+     or to_regclass('public.cloud_general_image_provider_audit_logs') is not null
+     or to_regprocedure(
+       'public.set_cloud_general_image_provider(uuid,text,text,boolean)'
+     ) is not null
+     or to_regprocedure(
+       'public.get_cloud_general_image_runtime_config()'
+     ) is not null then
+    raise exception 'Cloud general image Provider objects remain after rollback';
+  end if;
+end $$;
+
 do $$
 begin
   if to_regclass('public.cloud_research_ai_settings') is not null
@@ -128,5 +172,47 @@ begin
        'public.get_cloud_research_ai_runtime_config()'
      ) is not null then
     raise exception 'Cloud research AI Provider objects remain after rollback';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_export_jobs') is not null
+     or to_regclass('public.cloud_export_segments') is not null
+     or to_regprocedure('public.create_cloud_export_job(uuid,text)') is not null
+     or exists(select 1 from storage.buckets where id='cloud-exports') then
+    raise exception 'Durable export objects remain after rollback';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_page_thumbnails') is not null
+     or to_regclass('public.cloud_storage_cleanup') is not null
+     or to_regprocedure('public.claim_cloud_page_thumbnail(text,integer)') is not null
+     or exists(select 1 from storage.buckets where id='cloud-cache') then
+    raise exception 'Cloud storage lifecycle objects remain after rollback';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_resource_budgets') is not null
+     or to_regprocedure('public.save_cloud_project_resource_budget(uuid,integer,bigint,bigint,integer,boolean)') is not null
+     or to_regprocedure('public.get_cloud_project_resource_usage(uuid)') is not null then
+    raise exception 'Cloud project resource budget objects remain after rollback';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_backup_blobs') is not null
+     or to_regclass('public.cloud_project_checkpoints') is not null
+     or to_regclass('public.cloud_project_checkpoint_pages') is not null
+     or to_regprocedure('public.create_cloud_project_checkpoint(uuid,text,text)') is not null then
+    raise exception 'Cloud project checkpoint objects remain after rollback';
+  end if;
+end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_project_checkpoint_restores') is not null
+     or to_regprocedure('public.restore_cloud_project_checkpoint(uuid,uuid)') is not null then
+    raise exception 'Cloud project checkpoint restore objects remain after rollback';
   end if;
 end $$;

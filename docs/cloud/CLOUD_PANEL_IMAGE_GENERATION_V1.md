@@ -34,3 +34,12 @@
 - 成人向け、実在人物、未成年リスク等は既存moderationで拒否
 - PromptをClient response、URL、画面、ログへ返さない
 - 本番Provider、Worker、Feature Flagは責任者が明示的に有効化する
+
+## 一般向け本番Provider
+
+- BFL FLUX.2の固定版を`/admin/cloud-ai`から設定する
+- APIキーはSupabase Vaultだけへ保存し、Vercel環境変数へ複製しない
+- 接続仕様と初回設定は
+  [CLOUD_GENERAL_IMAGE_PROVIDER_V1.md](CLOUD_GENERAL_IMAGE_PROVIDER_V1.md)
+  を正本とする
+- 成人向け画像生成は対象外とし、同じAPIキー・Queueへ送信しない

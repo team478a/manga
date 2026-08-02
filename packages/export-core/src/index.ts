@@ -247,6 +247,17 @@ export async function createPagesPdf(
   return pdf.save();
 }
 
+export async function mergePagesPdfs(documents: Uint8Array[]) {
+  const output = await PDFDocument.create();
+  for (const bytes of documents) {
+    const source = await PDFDocument.load(bytes);
+    const pages = await output.copyPages(source, source.getPageIndices());
+    for (const page of pages) output.addPage(page);
+  }
+  if (output.getPageCount() === 0) output.addPage([595.28, 841.89]);
+  return output.save();
+}
+
 export function createProjectManifest(value: unknown) {
   return new TextEncoder().encode(JSON.stringify(value, null, 2));
 }

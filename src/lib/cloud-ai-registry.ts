@@ -3,6 +3,9 @@ import {
   type CloudGenerationInput,
   type CloudProviderCapability,
 } from "@mangai/ai-core";
+import {
+  getCloudGeneralImageRuntimeConfig,
+} from "./cloud-general-image-settings.ts";
 
 export function configuredCapabilities(): CloudProviderCapability[] {
   const imagePricingVersion =
@@ -15,6 +18,7 @@ export function configuredCapabilities(): CloudProviderCapability[] {
       modelId: process.env.MANGAI_CLOUD_IMAGE_MODEL ?? "general-image-v1",
       kind: "image",
       jobTypes: ["background", "prop", "effect", "character_base"],
+      operations: ["text_to_image", "image_to_image"],
       policyVersion: "general-v1",
       pricingVersion: imagePricingVersion || "unconfigured",
       enabled:
@@ -43,6 +47,7 @@ export function configuredCapabilities(): CloudProviderCapability[] {
         modelId: "mock-image-v1",
         kind: "image",
         jobTypes: ["background", "prop", "effect", "character_base"],
+        operations: ["text_to_image", "image_to_image"],
         policyVersion: "general-v1",
         pricingVersion: "mock-free-v1",
         enabled: true,
@@ -64,12 +69,53 @@ export function listCloudProviderCapabilities() {
   return configuredCapabilities().map((capability) => ({ ...capability }));
 }
 
-export function selectCloudProvider(input: CloudGenerationInput) {
-  const capability = configuredCapabilities().find(
+export async function configuredRuntimeCapabilities() {
+  const capabilities = configuredCapabilities();
+  try {
+    const image = await getCloudGeneralImageRuntimeConfig();
+    capabilities.unshift(
+      cloudProviderCapabilitySchema.parse({
+        providerId: "black-forest-labs",
+        modelId: image.model,
+        kind: "image",
+        jobTypes: ["background", "prop", "effect", "character_base"],
+        operations: ["text_to_image", "image_to_image"],
+        policyVersion: "general-v1",
+        pricingVersion: image.pricingVersion,
+        enabled: true,
+      }),
+    );
+    if (
+      process.env.CLOUD_PANEL_INPAINTING_ENABLED === "true" ||
+      process.env.CLOUD_PANEL_OUTPAINTING_ENABLED === "true"
+    )
+      capabilities.unshift(
+        cloudProviderCapabilitySchema.parse({
+          providerId: "black-forest-labs",
+          modelId: "flux-pro-1.0-fill",
+          kind: "image",
+          jobTypes: ["background"],
+          operations: ["inpainting", "outpainting"],
+          policyVersion: "general-v1",
+          pricingVersion: "bfl-flux1-fill-2026-08",
+          enabled: true,
+        }),
+      );
+  } catch {
+    // The Vault-backed provider is intentionally fail closed until configured.
+  }
+  return capabilities;
+}
+
+export async function selectCloudProvider(input: CloudGenerationInput) {
+  const operation =
+    input.kind === "image" ? (input.operation ?? "text_to_image") : undefined;
+  const capability = (await configuredRuntimeCapabilities()).find(
     (candidate) =>
       candidate.enabled &&
       candidate.kind === input.kind &&
-      candidate.jobTypes.includes(input.jobType),
+      candidate.jobTypes.includes(input.jobType) &&
+      (!operation || !candidate.operations || candidate.operations.includes(operation)),
   );
   if (!capability)
     throw new Error(

@@ -18,6 +18,13 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "ネーム作成",
     "原稿編集",
     "作品管理",
+    "漫画原稿を完成させる手順",
+    "人物・画風・世界観を固定する",
+    "章・話・シーン・ページを並べる",
+    "参照画像を登録してコマへ割り当てる",
+    "4〜8ページずつ制作状態を進める",
+    "全ページを確定してPDFを書き出す",
+    "完成の目印",
     "販売準備",
     "収益管理",
     "スマートフォンで操作する方へ",
@@ -34,6 +41,7 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
   assert.match(source, /dashboard\/workflow\/scenario/);
   assert.match(source, /dashboard\/workflow\/storyboard/);
   assert.match(source, /href: "\/creator"/);
+  assert.match(source, /href="\/creator"/);
   assert.match(source, /href: "\/dashboard\/works"/);
   assert.match(source, /availability: "coming-soon"/);
   assert.match(source, /dashboard\/monitor/);

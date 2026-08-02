@@ -176,11 +176,107 @@
       "rollbackSha256": "feab2a175488d79fbae8d8415fea5f05d4f95e4ce6d1fad891aa14d36df3755f"
     },
     {
+      "id": "202607310004_cloud_general_image_provider",
+      "description": "一般向け画像生成BFL FLUX設定をSupabase Vaultで管理し原価上限を登録",
+      "forwardSha256": "38ac1e9a68541479ff459006d214dbd7416a1d0b2fa4fc57e5854576a7da5097",
+      "rollbackSha256": "2de6d9cb5a09cd47e251891d7dc4133a27e99646e486876a70d204624566cec3"
+    },
+    {
+      "id": "202607310005_cloud_character_profiles",
+      "description": "一般向けCloud作品へ版管理されたキャラクター外見・衣装設定を追加",
+      "forwardSha256": "ae3323489594261041c9579fd2cc46e4d6f9bb91a213000d2937bec62ccbdfa5",
+      "rollbackSha256": "aebe84667f324b3be3f5decf523d23aa1dfe97e8f23d40d5477a60bcbfc8d3cd"
+    },
+    {
+      "id": "202607310006_cloud_world_bible",
+      "description": "一般向けCloud作品へ版管理された画風・場所・小物設定を追加",
+      "forwardSha256": "322467f27b227655a99fae2d397e5a5f99658eee30c487c825434437a0a094d0",
+      "rollbackSha256": "72badcd12e2477e1bc3b4199bd2f5408c561069caf30829eb9d3fe34891c92ed"
+    },
+    {
+      "id": "202608010001_cloud_visual_references",
+      "description": "一般向けCloud作品へ参照画像とコマ単位の明示設定割当を追加",
+      "forwardSha256": "87311cd283fd1531ea363c999988380cdcb458f78be521027a812a0005d2d3d6",
+      "rollbackSha256": "a6db08946b9b1c2e77a52bad012af29a7dac486b02aade1461070081fc1ecadf"
+    },
+    {
+      "id": "202608010002_cloud_panel_inpainting",
+      "description": "一般向けCloudコマ部分修正用BFL Fillモデルの価格上限を追加",
+      "forwardSha256": "30c0a8f8505b00e532a41698236763d42ad37a51d541bcc4db8a62452d8b4660",
+      "rollbackSha256": "f759d47a3221285f97585637d865dffa679165fa39280d23833f560f1ec79a71"
+    },
+    {
+      "id": "202608010003_cloud_longform_structure",
+      "description": "32ページ制作向けの章・シーン階層とページ並べ替えを追加",
+      "forwardSha256": "69de8bc92ba164e5ff42e4821d73fa6c17a41be93d6657eb8f135c2c488430dd",
+      "rollbackSha256": "a0dc3acb35b98c56c7b014421da2bf3dacc7f7f73184d66f7e7bf260fbae223f"
+    },
+    {
+      "id": "202608010004_cloud_batch_production",
+      "description": "4〜8ページの一括画像生成、進捗制御、再試行、期限付き編集ロックを追加",
+      "forwardSha256": "a9b081d039b6e2c091e65b69a31620b190ad27f0ab2816a71c681b9056b07ae1",
+      "rollbackSha256": "5c4255c9a7e68c7ac4ca68bc04bb343290f58a29a17ddd91445f295b903f5d63"
+    },
+    {
+      "id": "202608010005_cloud_production_status",
+      "description": "長編制作のページ状態、設定変更後の再確認、確定編集ロックを追加",
+      "forwardSha256": "3e805bcba4bdf2ae67d524ff9ae13b815f014ffa1045e13986da352cee3c1801",
+      "rollbackSha256": "5ca5416a49e47f666f247cdafc99c6edba61393afc3d9dd7303d9bd7730d3b1a"
+    },
+    {
+      "id": "202608010006_cloud_durable_export",
+      "description": "32〜100ページ原稿の分割処理、再開可能なPDF書き出し、非公開成果物保存を追加",
+      "forwardSha256": "5b95703734a4f09e444142656fd52b136c52329e42698b6ba2d27deec91caade",
+      "rollbackSha256": "7159628145c7e46c6f7daa42c7e6888744b694d4ca837a5699d0fe82bbb2fbbf"
+    },
+    {
+      "id": "202608010007_cloud_storage_lifecycle",
+      "description": "ページサムネイルcache、revision整合性、書き出し中間物の限定清掃を追加",
+      "forwardSha256": "a447aea53ad9aecdba2d9d2207c25c7b71102f265dc795224f5982dcc3c29164",
+      "rollbackSha256": "70c91bcbd3e03a29c11125a3f78acd2f6b93de9776f15ed2a0ee8d5efe6fad9b"
+    },
+    {
+      "id": "202608010008_cloud_narrative_continuity",
+      "description": "長編作品の事実台帳、伏線管理、ページ範囲の決定的矛盾検出を追加",
+      "forwardSha256": "cad117ff907f920153a33be0c97398eab04e7aaf712d637cdf460ee99a3c73ed",
+      "rollbackSha256": "73a26d821b1061d0041a65e4ced6935c98346437f89e2ccc3a8d523355bbbed9"
+    },
+    {
+      "id": "202608010009_cloud_chapter_production_plans",
+      "description": "長編作品の章ごとの優先度、担当名、期限、作業メモを追加",
+      "forwardSha256": "598820ce098302dec6c932658bec55f543a09167061a60fa60899fc5dc7f913e",
+      "rollbackSha256": "5440715a83aef541ada77cb8c9eee51ecab46c1d563c03a181384df27269e3b6"
+    },
+    {
+      "id": "202608010010_cloud_project_resource_budgets",
+      "description": "作品別の生成credit、費用、保存容量の集計・警告・hard limitを追加",
+      "forwardSha256": "4e86b0c41264a900ab33169363eed46f773374e5de45bd404f196faf40c82c43",
+      "rollbackSha256": "c355bae9650a134ca925ee1950c882877695bd1f8958ac6a818281463d1802cb"
+    },
+    {
+      "id": "202608010011_cloud_project_checkpoints",
+      "description": "100ページ作品の差分重複排除バックアップと完成版固定を追加",
+      "forwardSha256": "493138e847b17a0081224d45d6713fb90a4c3be4d7eb5502bb5024d250ff3950",
+      "rollbackSha256": "e186f4bee4c6676a14ccc2f2b9cf3054b62db49c9a823ea86fb5e4e196520b2f"
+    },
+    {
       "id": "202608020001_cloud_general_monitor_invite_tracking",
       "description": "一般向けモニター招待メールの送信日時と送信回数を監査付きで記録",
       "forwardSha256": "dc373f1683f9bfee7081c851e67bffe0734d9594fe6ab26da7b503843abf8b2a",
       "rollbackSha256": "260dff8e2cd1bd7d7cbfdf9ed30436890d5b1146f7b1084549d6df13a392bdcd"
+    },
+    {
+      "id": "202608020002_cloud_general_monitor_quality_feedback",
+      "description": "限定モニターのページ・コマ品質評価と生成品質・費用指標を追加",
+      "forwardSha256": "15189500bf5fc6e9612beec60cbbf02581f3fafa5473f5ab8681f67b77151bdd",
+      "rollbackSha256": "2316fb802fa967e50e5cd269d1b9b9eec118e8052e2c4acb52db25570bb324e3"
+    },
+    {
+      "id": "202608020003_cloud_project_checkpoint_restore",
+      "description": "復元前自動バックアップ付きの固定版復元と監査履歴を追加",
+      "forwardSha256": "9e69b5cc4890100cedc552d41ce3e016bb1442d04b9087c3b860b92df544353c",
+      "rollbackSha256": "3f4b98e5ac62aac45fd915da33c4091984fdc77b39cde4ded468fda3f2a8a1bf"
     }
   ],
-  "schemaSha256": "116c85c303503036f93d5fd3e18b2a621b2955f732d05d4e1fe1747b79786d58"
+  "schemaSha256": "096fe8fefa97c6fb1cba440a0177927f046bb4d58bbc3fa3935cc09fb0f94099"
 }
