@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-08-02 新規登録ボタンの処理中表示
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/signup-pending-feedback-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`ae1279e`)
+- 対象: `/signup`の登録ボタン
+- 実装:
+  - クリック直後にスピナー付きの「登録しています…」表示へ切り替え
+  - 処理中はボタンを無効化し、二重送信を防止
+  - 共通`PendingSubmitButton`を再利用し、既存の登録処理は変更しない
+- 変更しない範囲: 認証処理、Supabase設定、DB、migration、Desktop
+- 検証: 集中テスト6/6、deps:check、lint、Hub typecheck、Hub test 280/280、migration検証29件、production build、git diff check成功
+- 注記: `npm ci`の既存依存監査でhigh severity 3件。今回の表示変更とは分離して扱う
+- Draft PR: [#122](https://github.com/team478a/manga/pull/122)
+- Preview: `https://mangai-hub-staging-git-codex-signup-p-23f2b6-team478as-projects.vercel.app/signup`
+- CI: 実装commit `eeafe85`でCore quality、Migration roundtrip、Windows build、Vercel成功
+- 未実施: 責任者によるPreview画面確認・承認・マージ
+
 ## 2026-07-31 一般向けモニターWebマニュアル同期
 
 - 状態: `READY_FOR_REVIEW`

@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-08-02 Codex: 新規登録ボタンの処理中表示
+
+### 状態
+
+READY_FOR_REVIEW
+
+### ブランチ
+
+- Branch: `codex/signup-pending-feedback-v1`
+- Base: `origin/feature/manga-canvas-mvp` (`ae1279e`)
+- Draft PR: [#122](https://github.com/team478a/manga/pull/122)
+- Preview: `https://mangai-hub-staging-git-codex-signup-p-23f2b6-team478as-projects.vercel.app/signup`
+
+### 完了
+
+- 新規登録ボタンへスピナー付き「登録しています…」表示を追加
+- 処理中のボタン無効化により二重送信を防止
+- 既存の登録Server Actionと認証契約は変更なし
+- 集中テスト6/6、deps:check、lint、Hub typecheck、Hub test 280/280、migration検証29件、production build、git diff checkに成功
+- 実装commit `eeafe85`のCore quality、Migration roundtrip、Windows build、Vercelに成功
+
+### 未完了
+
+- 責任者によるPreview画面確認・承認・マージ
+
+### 変更ファイル
+
+- `src/app/signup/page.tsx`
+- `tests/auth-recovery.test.mjs`
+- `docs/CURRENT_TASK.md`
+- `docs/HANDOFF_LOG.md`
+
+---
+
 ## 2026-07-31 Codex: 一般向けモニターWebマニュアル同期
 
 ### 状態

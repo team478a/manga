@@ -11,6 +11,15 @@ test("登録Actionはパスワード確認を要求する", async () => {
   assert.match(source, /passwordSchema = z\.string\(\)\.min\(8\)/);
 });
 
+test("新規登録は送信中表示と二重送信防止を提供する", async () => {
+  const source = await readFile(
+    new URL("../src/app/signup/page.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /PendingSubmitButton/);
+  assert.match(source, /pendingLabel="登録しています…"/);
+});
+
 test("パスワード再設定は利用者の存在を応答へ露出しない", async () => {
   const source = await readFile(
     new URL("../src/app/actions/auth-actions.ts", import.meta.url),
