@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-04 Codex: Cloud AI Worker稼働監視
+
+- Branch: `codex/cloud-ai-worker-health`
+- Base: `origin/feature/manga-canvas-mvp` (`00ced51`、PR #144 merge後)
+- Draft PR: [#145](https://github.com/team478a/manga/pull/145)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ai-ebbdd4-team478as-projects.vercel.app/admin/cloud-ai`
+- `/admin/cloud-ai`へQueue滞留、期限切れlease、24時間内失敗の稼働判定を追加した。
+- Worker未設定は停止中、stale leaseまたは24時間内3件以上の失敗は要対応、10分以上の待機は滞留として表示する。
+- 件数・時刻だけを使い、Prompt、画像、Provider応答、秘密値は扱わない。
+- migration、環境変数、外部Provider実行なし。
+- 専用4/4、Hub test 456/456、deps:check、lint、Hub typecheck、migration validate（48本）、production build、git diff --check成功。
+- Core quality、Migration roundtrip、Windows build、Vercelの全CI成功。
+- 責任者によるPreview画面確認・承認・マージ待ち。
+
 ## 2026-08-04 Codex: Cloud AI Job運用改善
 
 - Branch: `codex/cloud-ai-job-operations`
