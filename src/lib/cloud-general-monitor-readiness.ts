@@ -24,6 +24,7 @@ export type GeneralMonitorReadinessCheck = {
   ready: boolean;
   detail: string;
   href?: string;
+  nextSteps?: string[];
 };
 
 export type GeneralMonitorReadiness = {
@@ -80,6 +81,7 @@ export async function getCloudGeneralMonitorReadiness(
   let emailReady = false;
   let researchAiReady = false;
   let imageAiReady = false;
+  let imageAiSchemaReady = false;
 
   try {
     const admin = createAdminClient();
@@ -132,18 +134,24 @@ export async function getCloudGeneralMonitorReadiness(
   }
 
   try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("cloud_general_image_provider_settings")
+      .select("singleton", { count: "exact", head: true });
+    imageAiSchemaReady = !error;
     const settings = await getCloudGeneralImageSettings();
     imageAiReady = Boolean(settings?.enabled && settings.configured);
   } catch {
     imageAiReady = false;
+    imageAiSchemaReady = false;
   }
 
-  const workerReady =
-    enabled(env.MANGAI_CLOUD_AI_WORKER_ENABLED) &&
-    Boolean(
-      env.MANGAI_CLOUD_AI_WORKER_SECRET &&
-        env.MANGAI_CLOUD_AI_WORKER_SECRET.length >= 32,
-    );
+  const workerEnabled = enabled(env.MANGAI_CLOUD_AI_WORKER_ENABLED);
+  const workerSecretReady = Boolean(
+    env.MANGAI_CLOUD_AI_WORKER_SECRET &&
+      env.MANGAI_CLOUD_AI_WORKER_SECRET.length >= 32,
+  );
+  const workerReady = workerEnabled && workerSecretReady;
 
   const checks: GeneralMonitorReadinessCheck[] = [
     {
@@ -185,8 +193,21 @@ export async function getCloudGeneralMonitorReadiness(
       ready: imageAiReady,
       detail: imageAiReady
         ? "管理画面で保存した一般向け画像生成接続を利用できます。"
-        : "BFL APIキーと一般向け画像生成の利用状態を確認してください。",
+        : imageAiSchemaReady
+          ? "BFL APIキー、モデル、利用状態のいずれかが未設定です。"
+          : "画像生成Provider用のデータベース準備が未適用です。",
       href: "/admin/cloud-ai",
+      nextSteps: imageAiReady
+        ? undefined
+        : imageAiSchemaReady
+          ? [
+              "設定画面でBFL APIキーと利用モデルを保存する。",
+              "一般向け画像生成AIを「有効」にして保存する。",
+            ]
+          : [
+              "Supabaseへ202607310004_cloud_general_image_provider.sqlを適用する。",
+              "この画面を再読み込みし、BFL設定画面を開く。",
+            ],
     },
     {
       key: "cloud_ai_worker",
@@ -194,8 +215,21 @@ export async function getCloudGeneralMonitorReadiness(
       ready: workerReady,
       detail: workerReady
         ? "画像生成Jobを処理するWorkerの実行条件が設定されています。"
-        : "Workerの有効状態と32文字以上の署名Secretを確認してください。",
+        : "Vercel ProductionのWorker設定に不足があります。",
       href: "/admin/cloud-ai",
+      nextSteps: workerReady
+        ? undefined
+        : [
+            ...(workerEnabled
+              ? []
+              : ["MANGAI_CLOUD_AI_WORKER_ENABLED=trueを設定する。"]),
+            ...(workerSecretReady
+              ? []
+              : [
+                  "MANGAI_CLOUD_AI_WORKER_SECRETへ32文字以上のランダム値を設定する。",
+                ]),
+            "Productionを再デプロイし、Workerの定期呼び出しを確認する。",
+          ],
     },
     {
       key: "email",
