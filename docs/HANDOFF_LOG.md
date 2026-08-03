@@ -3018,3 +3018,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 予期しない描画失敗用のroute error boundaryに再読み込みと管理画面TOP導線を追加。
 - migration、環境変数、外部API実行は追加なし。
 - 検証: 専用3/3、Hub 442/442、deps、Hub typecheck、lint、production build、diff check成功。
+
+## 2026-08-03 Codex: 管理画面全体の耐障害化
+
+- `src/app/admin/error.tsx`を追加し、Admin配下の予期しない描画失敗を日本語の再試行画面へ変換。
+- 共通の`safelyLoadAdminData`と`AdminDataUnavailable`を追加し、DB／Auth／Storage接続例外を内部情報を含まない案内へ変換。
+- 成人向け市場分析、Cloud AI、モニター管理、招待メール、報告キュー、市場分析AI、ユーザー一覧・詳細へ適用。
+- モニター添付画像の署名URL取得は`Promise.allSettled`で部分失敗を許容し、CSV出力は例外時に503を返す。
+- 成人向け全体設定、モニター対応、報告キュー、ユーザー停止・再開・削除、成人向け個別権限の更新例外を安全な日本語案内へ変換。
+- migration、環境変数、外部API実行は追加なし。
+- 検証: 専用4/4、Hub 446/446、deps、Hub/Desktop typecheck、lint、migration 48本、production build、diff check成功。

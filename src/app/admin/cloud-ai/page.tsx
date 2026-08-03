@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -16,17 +18,21 @@ const money = (micros: number) => `$${(micros / 1_000_000).toFixed(4)}`;
 export default async function CloudAiAdminPage({searchParams}:{searchParams:Promise<{message?:string;error?:string}>}) {
   await requireAdmin();
   const query=await searchParams;
-  const admin=createAdminClient();
-  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings]=await Promise.all([
-    admin.from("cloud_ai_settings").select("*").eq("singleton",true).single(),
-    admin.from("cloud_ai_plans").select("*").order("plan_key"),
-    admin.from("cloud_ai_provider_prices").select("*").order("created_at",{ascending:false}).limit(50),
-    admin.from("cloud_ai_daily_costs").select("*").order("usage_date",{ascending:false}).limit(14),
-    admin.from("cloud_generation_jobs").select("id,provider_id,model_id,job_type,status,error_code,error_message,actual_cost_micros,created_at").in("status",["failed","running"]).order("created_at",{ascending:false}).limit(30),
-    admin.from("cloud_ai_admin_audit_logs").select("id,action,target_type,target_id,created_at,profiles:actor_profile_id(display_name)").order("created_at",{ascending:false}).limit(20),
-    admin.from("cloud_ai_notifications").select("id,notification_type,severity,title,body,created_at").eq("audience","admin").order("created_at",{ascending:false}).limit(20),
-    getCloudGeneralImageSettings(),
-  ]);
+  const loaded=await safelyLoadAdminData("cloud-ai",async()=>{
+    const admin=createAdminClient();
+    return Promise.all([
+      admin.from("cloud_ai_settings").select("*").eq("singleton",true).single(),
+      admin.from("cloud_ai_plans").select("*").order("plan_key"),
+      admin.from("cloud_ai_provider_prices").select("*").order("created_at",{ascending:false}).limit(50),
+      admin.from("cloud_ai_daily_costs").select("*").order("usage_date",{ascending:false}).limit(14),
+      admin.from("cloud_generation_jobs").select("id,provider_id,model_id,job_type,status,error_code,error_message,actual_cost_micros,created_at").in("status",["failed","running"]).order("created_at",{ascending:false}).limit(30),
+      admin.from("cloud_ai_admin_audit_logs").select("id,action,target_type,target_id,created_at,profiles:actor_profile_id(display_name)").order("created_at",{ascending:false}).limit(20),
+      admin.from("cloud_ai_notifications").select("id,notification_type,severity,title,body,created_at").eq("audience","admin").order("created_at",{ascending:false}).limit(20),
+      getCloudGeneralImageSettings(),
+    ]);
+  });
+  if(!loaded.ok)return <AdminDataUnavailable title="Cloud AI運用"/>;
+  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings]=loaded.value;
   const settings=settingsResult.data as null|{generation_enabled:boolean;daily_cost_limit_micros:number;warning_percent:number};
   const today=costsResult.data?.[0] as undefined|{usage_date:string;cost_reserved_micros:number;cost_actual_micros:number};
   const percent=settings&&today&&settings.daily_cost_limit_micros>0?Math.round((today.cost_actual_micros/settings.daily_cost_limit_micros)*100):0;

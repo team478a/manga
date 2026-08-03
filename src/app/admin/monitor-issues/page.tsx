@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { updateMonitorIssueTaskAction } from "./actions";
@@ -49,24 +51,29 @@ export default async function MonitorIssuesAdminPage({
 }) {
   await requireAdmin();
   const { error, message } = await searchParams;
-  const admin = createAdminClient();
-  const tasksResult = await admin
-    .from("cloud_monitor_issue_tasks")
-    .select("id,request_type,workflow_step,priority,status,primary_feedback_id,latest_feedback_id,occurrence_count,first_reported_at,last_reported_at,claimed_by,reproduction_summary,suggested_test_scope,github_issue_url,draft_pr_url,last_error")
-    .order("last_reported_at", { ascending: false })
-    .limit(100)
-    .returns<IssueTask[]>();
-  const feedbackIds = [...new Set((tasksResult.data ?? []).flatMap((task) => [task.latest_feedback_id, task.primary_feedback_id]).filter(Boolean))] as string[];
-  const feedbackResult = feedbackIds.length
-    ? await admin.from("cloud_general_monitor_feedback")
-      .select("id,title,comment,page_url,environment,severity,client_context,attachment_path,public_status")
-      .in("id", feedbackIds)
-      .returns<FeedbackSummary[]>()
-    : { data: [] as FeedbackSummary[], error: null };
+  const loaded = await safelyLoadAdminData("monitor-issues", async () => {
+    const admin = createAdminClient();
+    const tasksResult = await admin
+      .from("cloud_monitor_issue_tasks")
+      .select("id,request_type,workflow_step,priority,status,primary_feedback_id,latest_feedback_id,occurrence_count,first_reported_at,last_reported_at,claimed_by,reproduction_summary,suggested_test_scope,github_issue_url,draft_pr_url,last_error")
+      .order("last_reported_at", { ascending: false })
+      .limit(100)
+      .returns<IssueTask[]>();
+    const feedbackIds = [...new Set((tasksResult.data ?? []).flatMap((task) => [task.latest_feedback_id, task.primary_feedback_id]).filter(Boolean))] as string[];
+    const feedbackResult = feedbackIds.length
+      ? await admin.from("cloud_general_monitor_feedback")
+        .select("id,title,comment,page_url,environment,severity,client_context,attachment_path,public_status")
+        .in("id", feedbackIds)
+        .returns<FeedbackSummary[]>()
+      : { data: [] as FeedbackSummary[], error: null };
+    return { admin, tasksResult, feedbackResult };
+  });
+  if (!loaded.ok) return <AdminDataUnavailable title="報告・自動修正キュー" />;
+  const { admin, tasksResult, feedbackResult } = loaded.value;
   const feedback = new Map((feedbackResult.data ?? []).map((item) => [item.id, item]));
   const attachmentPaths = [...new Set((feedbackResult.data ?? []).map((item) => item.attachment_path).filter(Boolean))] as string[];
   const attachmentUrls = new Map<string, string>();
-  await Promise.all(attachmentPaths.map(async (path) => {
+  await Promise.allSettled(attachmentPaths.map(async (path) => {
     const { data } = await admin.storage.from("monitor-feedback").createSignedUrl(path, 600);
     if (data?.signedUrl) attachmentUrls.set(path, data.signedUrl);
   }));

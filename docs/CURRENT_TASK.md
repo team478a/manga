@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-03 管理画面全体の耐障害化
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/admin-resilience-v1`
+- 目的: 更新情報管理と同種のDB／Storage／Auth接続失敗が、ほかの管理画面で黒い汎用エラー画面になる問題を横断的に防ぐ
+- 実装: Admin共通error boundary、安全なデータ取得、主要更新操作の例外変換、添付署名URLの部分失敗許容、CSVの503応答
+- 対象: 成人向け市場分析、Cloud AI、モニター管理、招待メール、報告キュー、市場分析AI、ユーザー一覧・詳細・権限操作
+- 安全性: 内部Providerエラー本文を画面へ露出せず、操作失敗時は日本語案内と再試行・管理画面TOP導線を表示
+- migration／環境変数／外部API: 追加なし
+- 検証: 専用4/4、Hub 446/446、deps、Hub/Desktop typecheck、lint、migration 48本、production build、diff check成功
+- 未完了: Draft PR、Vercel Preview、本番管理画面の再読み込み確認
+
 ## 2026-08-03 更新情報管理の耐障害化
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

@@ -5,6 +5,8 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { AdminUserAccountActions } from "./AdminUserAccountActions";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 
 type AdminUser = {
   id: string;
@@ -67,34 +69,45 @@ export default async function AdminUsersPage({
   const accountFilter = selectFilter(params.account, accountFilters, "all");
   const inviteFilter = selectFilter(params.invite, inviteFilters, "all");
   const loginFilter = selectFilter(params.login, loginFilters, "all");
-  const supabase = await createClient();
-  const { data: users } = await supabase.from("profiles").select("id,user_id,display_name,role,created_at").order("created_at", { ascending: false }).returns<AdminUser[]>();
+  const profilesLoaded = await safelyLoadAdminData("users/profiles", async () => {
+    const supabase = await createClient();
+    return supabase.from("profiles").select("id,user_id,display_name,role,created_at").order("created_at", { ascending: false }).returns<AdminUser[]>();
+  });
+  if (!profilesLoaded.ok) return <AdminDataUnavailable title="ユーザー管理" />;
+  const { data: users } = profilesLoaded.value;
 
   const authByUserId = new Map<string, AuthAccount>();
   const inviteByProfileId = new Map<string, InviteDelivery>();
   let inviteTrackingConfigured = true;
   if (hasSupabaseAdminEnv()) {
-    const admin = createAdminClient();
-    const [{ data }, inviteResult] = await Promise.all([
-      admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-      admin
-        .from("cloud_general_monitor_enrollments")
-        .select("profile_id,invite_email_sent_at,invite_email_send_count")
-        .returns<InviteDelivery[]>(),
-    ]);
-    data.users.forEach((user) => {
-      const isSuspended = Boolean(user.banned_until);
-      authByUserId.set(user.id, {
-        email: user.email ?? "",
-        state: user.deleted_at ? "deleted" : isSuspended ? "suspended" : "active",
-        emailConfirmedAt: user.email_confirmed_at ?? null,
-        lastSignInAt: user.last_sign_in_at ?? null,
-      });
+    const authLoaded = await safelyLoadAdminData("users/auth", async () => {
+      const admin = createAdminClient();
+      return Promise.all([
+        admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
+        admin
+          .from("cloud_general_monitor_enrollments")
+          .select("profile_id,invite_email_sent_at,invite_email_send_count")
+          .returns<InviteDelivery[]>(),
+      ]);
     });
-    inviteTrackingConfigured = !inviteResult.error;
-    (inviteResult.data ?? []).forEach((invite) =>
-      inviteByProfileId.set(invite.profile_id, invite),
-    );
+    if (authLoaded.ok) {
+      const [{ data }, inviteResult] = authLoaded.value;
+      data.users.forEach((user) => {
+        const isSuspended = Boolean(user.banned_until);
+        authByUserId.set(user.id, {
+          email: user.email ?? "",
+          state: user.deleted_at ? "deleted" : isSuspended ? "suspended" : "active",
+          emailConfirmedAt: user.email_confirmed_at ?? null,
+          lastSignInAt: user.last_sign_in_at ?? null,
+        });
+      });
+      inviteTrackingConfigured = !inviteResult.error;
+      (inviteResult.data ?? []).forEach((invite) =>
+        inviteByProfileId.set(invite.profile_id, invite),
+      );
+    } else {
+      return <AdminDataUnavailable title="ユーザー管理" />;
+    }
   }
 
   const visibleUsers = hasSupabaseAdminEnv()

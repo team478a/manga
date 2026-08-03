@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { getCloudGeneralMonitorEmailSettings } from "@/lib/cloud-general-monitor-email-settings";
@@ -22,13 +24,18 @@ export default async function GeneralMonitorEmailSettingsPage({
 }) {
   await requireAdmin();
   const query = await searchParams;
-  const settings = await getCloudGeneralMonitorEmailSettings();
-  const { data: audits } = await createAdminClient()
-    .from("cloud_general_monitor_email_audit_logs")
-    .select("id,action,from_email,created_at")
-    .order("created_at", { ascending: false })
-    .limit(20)
-    .returns<Audit[]>();
+  const loaded = await safelyLoadAdminData("general-monitors/email", async () => {
+    const settings = await getCloudGeneralMonitorEmailSettings();
+    const { data: audits } = await createAdminClient()
+      .from("cloud_general_monitor_email_audit_logs")
+      .select("id,action,from_email,created_at")
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .returns<Audit[]>();
+    return { settings, audits };
+  });
+  if (!loaded.ok) return <AdminDataUnavailable title="招待メール設定" />;
+  const { settings, audits } = loaded.value;
 
   return (
     <main className="page max-w-4xl">

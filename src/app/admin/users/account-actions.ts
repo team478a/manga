@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 
 type TargetProfile = {
   id: string;
@@ -28,12 +29,19 @@ async function manageableTarget(profileId: string) {
     redirect(usersRedirect("error", "Supabase管理用設定が必要です。"));
   }
 
-  const admin = createAdminClient();
-  const { data: target, error } = await admin
-    .from("profiles")
-    .select("id,user_id,role")
-    .eq("id", parsed.data)
-    .maybeSingle<TargetProfile>();
+  const targetLoaded = await safelyLoadAdminData("users/action/target", async () => {
+    const admin = createAdminClient();
+    const result = await admin
+      .from("profiles")
+      .select("id,user_id,role")
+      .eq("id", parsed.data)
+      .maybeSingle<TargetProfile>();
+    return { admin, result };
+  });
+  if (!targetLoaded.ok) {
+    redirect(usersRedirect("error", "対象ユーザーを確認できませんでした。"));
+  }
+  const { admin, result: { data: target, error } } = targetLoaded.value;
 
   if (error || !target) {
     redirect(usersRedirect("error", "対象ユーザーを確認できませんでした。"));
@@ -52,10 +60,10 @@ function refreshUserPages(profileId: string) {
 
 export async function suspendAdminUserAction(profileId: string) {
   const { admin, target } = await manageableTarget(profileId);
-  const { error } = await admin.auth.admin.updateUserById(target.user_id, {
-    ban_duration: "876000h",
-  });
-  if (error) {
+  const operation = await safelyLoadAdminData("users/action/suspend", async () => admin.auth.admin.updateUserById(target.user_id, {
+      ban_duration: "876000h",
+    }));
+  if (!operation.ok || operation.value.error) {
     redirect(usersRedirect("error", "ユーザーを停止できませんでした。"));
   }
   refreshUserPages(target.id);
@@ -64,10 +72,10 @@ export async function suspendAdminUserAction(profileId: string) {
 
 export async function restoreAdminUserAction(profileId: string) {
   const { admin, target } = await manageableTarget(profileId);
-  const { error } = await admin.auth.admin.updateUserById(target.user_id, {
-    ban_duration: "none",
-  });
-  if (error) {
+  const operation = await safelyLoadAdminData("users/action/restore", async () => admin.auth.admin.updateUserById(target.user_id, {
+      ban_duration: "none",
+    }));
+  if (!operation.ok || operation.value.error) {
     redirect(usersRedirect("error", "ユーザーを再開できませんでした。"));
   }
   refreshUserPages(target.id);
@@ -76,8 +84,8 @@ export async function restoreAdminUserAction(profileId: string) {
 
 export async function deleteAdminUserAction(profileId: string) {
   const { admin, target } = await manageableTarget(profileId);
-  const { error } = await admin.auth.admin.deleteUser(target.user_id, true);
-  if (error) {
+  const operation = await safelyLoadAdminData("users/action/delete", async () => admin.auth.admin.deleteUser(target.user_id, true));
+  if (!operation.ok || operation.value.error) {
     redirect(usersRedirect("error", "ユーザーを削除できませんでした。"));
   }
   refreshUserPages(target.id);

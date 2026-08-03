@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -78,17 +80,22 @@ export default async function GeneralMonitorsAdminPage() {
       </main>
     );
   }
-  const admin = createAdminClient();
-  const [enrollmentsResult, feedbackResult, profilesResult] = await Promise.all([
-    admin.from("cloud_general_monitor_enrollments")
-      .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
-      .order("updated_at", { ascending: false })
-      .returns<CloudGeneralMonitorEnrollment[]>(),
-    admin.from("cloud_general_monitor_feedback")
-      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment,client_context,attachment_path,public_status,status_updated_at")
-      .order("created_at", { ascending: false }).limit(100).returns<Feedback[]>(),
-    admin.from("profiles").select("id,display_name").returns<Profile[]>(),
-  ]);
+  const loaded = await safelyLoadAdminData("general-monitors", async () => {
+    const admin = createAdminClient();
+    const [enrollmentsResult, feedbackResult, profilesResult] = await Promise.all([
+      admin.from("cloud_general_monitor_enrollments")
+        .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
+        .order("updated_at", { ascending: false })
+        .returns<CloudGeneralMonitorEnrollment[]>(),
+      admin.from("cloud_general_monitor_feedback")
+        .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment,client_context,attachment_path,public_status,status_updated_at")
+        .order("created_at", { ascending: false }).limit(100).returns<Feedback[]>(),
+      admin.from("profiles").select("id,display_name").returns<Profile[]>(),
+    ]);
+    return { admin, enrollmentsResult, feedbackResult, profilesResult };
+  });
+  if (!loaded.ok) return <AdminDataUnavailable title="モニター管理" />;
+  const { admin, enrollmentsResult, feedbackResult, profilesResult } = loaded.value;
   const profiles = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
   const qualityFeedback = (feedbackResult.data ?? []).filter((item) => item.target_scope !== "general");
   const acceptedCount = qualityFeedback.filter((item) => item.verdict === "accepted").length;
@@ -102,7 +109,7 @@ export default async function GeneralMonitorsAdminPage() {
   const urgentFeedbackCount = generalFeedback.filter((item) => ["major", "blocked"].includes(item.severity ?? "")).length;
   const attachmentPaths = [...new Set(generalFeedback.map((item) => item.attachment_path).filter(Boolean))] as string[];
   const attachmentUrls = new Map<string, string>();
-  await Promise.all(attachmentPaths.map(async (path) => {
+  await Promise.allSettled(attachmentPaths.map(async (path) => {
     const { data } = await admin.storage.from("monitor-feedback").createSignedUrl(path, 600);
     if (data?.signedUrl) attachmentUrls.set(path, data.signedUrl);
   }));

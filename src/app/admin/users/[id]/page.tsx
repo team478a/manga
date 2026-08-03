@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
@@ -46,8 +48,12 @@ export default async function AdminUserDetailPage({
   await requireAdmin();
   const { id } = await params;
   const { error, message } = await searchParams;
-  const supabase = await createClient();
-  const { data: user } = await supabase.from("profiles").select("*").eq("id", id).maybeSingle<AdminUser>();
+  const profileLoaded = await safelyLoadAdminData("users/detail/profile", async () => {
+    const supabase = await createClient();
+    return supabase.from("profiles").select("*").eq("id", id).maybeSingle<AdminUser>();
+  });
+  if (!profileLoaded.ok) return <AdminDataUnavailable title="ユーザー詳細" />;
+  const { data: user } = profileLoaded.value;
 
   if (!user) notFound();
 
@@ -60,31 +66,39 @@ export default async function AdminUserDetailPage({
   let generalMonitorConfigured = true;
   const generalMonitorEnabled = cloudGeneralMonitorBetaEnabled();
   if (hasSupabaseAdminEnv()) {
-    const admin = createAdminClient();
-    const { data } = await admin.auth.admin.getUserById(user.user_id);
-    if (!data.user || data.user.deleted_at) notFound();
-    email = data.user?.email ?? "未設定";
-    const entitlementResult = await admin
-      .from("cloud_adult_research_entitlements")
-      .select("status,source,valid_until,admin_note")
-      .eq("profile_id", user.id)
-      .maybeSingle<AdultResearchEntitlement>();
+    const detailLoaded = await safelyLoadAdminData("users/detail/admin", async () => {
+      const admin = createAdminClient();
+      const authResult = await admin.auth.admin.getUserById(user.user_id);
+      const entitlementResult = await admin
+        .from("cloud_adult_research_entitlements")
+        .select("status,source,valid_until,admin_note")
+        .eq("profile_id", user.id)
+        .maybeSingle<AdultResearchEntitlement>();
+      const planningResult = await admin
+        .from("cloud_adult_feature_grants")
+        .select("status,source,valid_until,admin_note")
+        .eq("profile_id", user.id)
+        .eq("feature_key", "adult_planning")
+        .maybeSingle<AdultPlanningGrant>();
+      let generalMonitorResult = null;
+      if (generalMonitorEnabled) {
+        generalMonitorResult = await admin
+          .from("cloud_general_monitor_enrollments")
+          .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
+          .eq("profile_id", user.id)
+          .maybeSingle<CloudGeneralMonitorEnrollment>();
+      }
+      return { authResult, entitlementResult, planningResult, generalMonitorResult };
+    });
+    if (!detailLoaded.ok) return <AdminDataUnavailable title="ユーザー詳細" />;
+    const { authResult, entitlementResult, planningResult, generalMonitorResult } = detailLoaded.value;
+    if (!authResult.data.user || authResult.data.user.deleted_at) notFound();
+    email = authResult.data.user.email ?? "未設定";
     adultEntitlement = entitlementResult.data;
     adultEntitlementConfigured = !entitlementResult.error;
-    const planningResult = await admin
-      .from("cloud_adult_feature_grants")
-      .select("status,source,valid_until,admin_note")
-      .eq("profile_id", user.id)
-      .eq("feature_key", "adult_planning")
-      .maybeSingle<AdultPlanningGrant>();
     adultPlanningGrant = planningResult.data;
     adultPlanningConfigured = !planningResult.error;
-    if (generalMonitorEnabled) {
-      const generalMonitorResult = await admin
-        .from("cloud_general_monitor_enrollments")
-        .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
-        .eq("profile_id", user.id)
-        .maybeSingle<CloudGeneralMonitorEnrollment>();
+    if (generalMonitorResult) {
       generalMonitor = generalMonitorResult.data;
       generalMonitorConfigured = !generalMonitorResult.error;
     }
