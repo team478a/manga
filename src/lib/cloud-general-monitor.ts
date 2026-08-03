@@ -56,6 +56,27 @@ export function isCloudGeneralMonitorActive(
   );
 }
 
+export function getCloudGeneralMonitorUnavailableMessage(
+  enrollment: CloudGeneralMonitorEnrollment | null,
+  now = Date.now(),
+) {
+  if (!cloudGeneralMonitorBetaEnabled())
+    return "一般向けモニターは現在停止中です。再開のお知らせをお待ちください。";
+  if (!enrollment)
+    return "招待されたアカウントを確認できませんでした。招待メールを受け取ったアカウントでログインしてください。";
+  if (enrollment.status === "paused")
+    return "このアカウントのモニター利用は一時停止中です。管理者へお問い合わせください。";
+  if (enrollment.status === "completed")
+    return "このアカウントのモニター期間は完了しています。";
+  if (enrollment.status === "revoked")
+    return "このアカウントのモニター利用は終了しています。";
+  if (Date.parse(enrollment.starts_at) > now)
+    return `モニター利用は${new Date(enrollment.starts_at).toLocaleDateString("ja-JP")}から開始できます。`;
+  if (Date.parse(enrollment.expires_at) <= now)
+    return "このアカウントのモニター利用期限は終了しています。";
+  return "モニター利用状況を確認できませんでした。管理者へお問い合わせください。";
+}
+
 export function getCloudGeneralMonitorNotice(
   enrollment: CloudGeneralMonitorEnrollment | null,
   now = Date.now(),

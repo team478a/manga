@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
-import { getCloudGeneralMonitorEnrollment, getCloudGeneralMonitorNotice } from "@/lib/cloud-general-monitor";
+import { getCloudGeneralMonitorEnrollment, getCloudGeneralMonitorNotice, isCloudGeneralMonitorActive } from "@/lib/cloud-general-monitor";
 import { createClient } from "@/lib/supabase/server";
 import { MonitorFeedbackForm } from "./MonitorFeedbackForm";
 
@@ -88,7 +88,7 @@ export default async function GeneralMonitorPage({
             </div>
           </section>
           {notice ? <p className={`mt-5 rounded-lg p-4 ${notice.level === "error" ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-950"}`} role="status">{notice.message}</p> : null}
-          {!enrollment.onboarding_completed_at ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href="/dashboard/monitor/welcome">初回案内を確認</Link> : null}
+          {isCloudGeneralMonitorActive(enrollment) && !enrollment.onboarding_completed_at ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href="/dashboard/monitor/welcome">初回案内を確認</Link> : null}
           {error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{error}</p> : null}
           {message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
           {enrollment.status === "active" ? <MonitorFeedbackForm /> : null}

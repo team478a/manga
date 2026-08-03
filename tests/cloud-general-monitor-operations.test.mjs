@@ -19,16 +19,25 @@ test("運用migrationは本人オンボーディングと管理者レビュー�
   assert.match(sql,/revoke all .*authenticated/);
 });
 
-test("警告と初回案内は利用者画面に組み込まれる",async()=>{
-  const [library,dashboard,welcome]=await Promise.all([
+test("警告と初回案内は利用可能なモニターだけに表示される",async()=>{
+  const [library,dashboard,monitor,welcome,welcomeAction]=await Promise.all([
     readFile(new URL("../src/lib/cloud-general-monitor.ts",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/page.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../src/app/dashboard/monitor/page.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/monitor/welcome/page.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../src/app/dashboard/monitor/welcome/actions.ts",import.meta.url),"utf8"),
   ]);
   assert.match(library,/remaining <= 5/);
   assert.match(library,/daysRemaining <= 3/);
+  assert.match(library,/getCloudGeneralMonitorUnavailableMessage/);
   assert.match(dashboard,/初回案内が未確認です/);
+  assert.match(dashboard,/monitorActive && monitor && !monitor\.onboarding_completed_at/);
+  assert.match(monitor,/isCloudGeneralMonitorActive\(enrollment\) && !enrollment\.onboarding_completed_at/);
   assert.match(welcome,/APIキー、パスワード、個人情報/);
+  assert.match(welcome,/getCloudGeneralMonitorEnrollment/);
+  assert.doesNotMatch(welcome,/requireCloudGeneralMonitor/);
+  assert.match(welcome,/モニターを開始できません/);
+  assert.match(welcomeAction,/safeDomainErrorMessage/);
 });
 
 test("管理画面はフィードバック対応とCSVを提供する",async()=>{
