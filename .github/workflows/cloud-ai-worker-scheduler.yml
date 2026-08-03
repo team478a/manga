@@ -1,0 +1,33 @@
+name: Cloud AI Worker scheduler
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloud-ai-worker-production
+  cancel-in-progress: false
+
+jobs:
+  run-worker:
+    name: Process the general-audience AI queue
+    if: ${{ vars.MANGAI_CLOUD_AI_SCHEDULER_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Process a bounded queue batch
+        env:
+          MANGAI_CLOUD_AI_SCHEDULER_ENABLED: "true"
+          MANGAI_CLOUD_AI_WORKER_URL: ${{ secrets.MANGAI_CLOUD_AI_WORKER_URL }}
+          MANGAI_CLOUD_AI_WORKER_SECRET: ${{ secrets.MANGAI_CLOUD_AI_WORKER_SECRET }}
+          MANGAI_CLOUD_AI_SCHEDULER_MAX_JOBS: "3"
+          MANGAI_CLOUD_AI_SCHEDULER_TIMEOUT_SECONDS: "170"
+        run: node scripts/run-cloud-ai-worker-scheduler.mjs
