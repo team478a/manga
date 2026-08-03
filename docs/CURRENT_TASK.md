@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-03 モニター開始後ダッシュボード安定化
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/fix-dashboard-after-monitor-start-v1`
+- 目的: モニター開始完了後の`/dashboard`で、一部データ取得失敗により画面全体がServer Errorになる問題を解消する
+- 実装: 市場分析、モニター状態、更新情報、通知の取得を独立化し、取得可能な情報だけで描画する
+- UI: 開始成功メッセージを表示し、想定外の描画失敗にも日本語のroute error boundaryを提供
+- migration／環境変数／外部API: 追加なし
+- 未完了: 品質ゲート、Draft PR、Vercel Preview、本番確認
+
 ## 2026-08-03 モニター開始API化
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
