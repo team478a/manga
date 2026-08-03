@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-04 Cloud AI Worker定期実行
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-ai-worker-scheduler`
+- Draft PR: [#146](https://github.com/team478a/manga/pull/146)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ai-65a675-team478as-projects.vercel.app`
+- Base: `origin/feature/manga-canvas-mvp` (`280cb4c`、PR #145 merge後)
+- 目的: 一般向けCloud AI Queueを管理者の手動操作なしで安全に少量ずつ処理する
+- 実装: GitHub Actionsから5分間隔、1回最大3件、直列・重複なしで既存Worker endpointを実行
+- Fail closed: Repository variable未設定、Secret不足、不正URLでは外部通信前に停止
+- 回復: idle／retrying／lease_lostで即停止し、Provider応答本文や秘密値をログへ出さない
+- migration／Vercel Cron／外部Provider実行: 追加・実行なし
+- 検証: Scheduler専用7/7、Hub 463/463、deps:check、lint、Hub typecheck、migration validate（48本）、production build、git diff --check成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未完了: 責任者によるActions Secrets設定と限定E2E、承認、マージ
+
 ## 2026-08-04 Cloud AI Worker稼働監視
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

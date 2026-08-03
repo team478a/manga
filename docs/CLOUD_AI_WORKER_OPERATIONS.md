@@ -1,12 +1,16 @@
 # Cloud AI Worker 運用手順
 
-更新日: 2026-07-18
+更新日: 2026-08-04
 
 ## 構成
 
 Webアプリは画像・文章Providerを直接呼ばず、Server専用のMANGAI Cloud AI Gatewayへ送信する。Gateway側で実ProviderのAPI、非同期polling／webhook、Provider固有の認証と応答形式を吸収する。ブラウザーへGateway keyやProvider keyを渡さない。
 
 Workerは`POST /api/internal/cloud-ai/worker`を1回呼ぶごとに、永続QueueからJobを最大1件claimして処理する。定期実行基盤はこのendpointを短い間隔で呼び、同時実行数は費用上限に合わせて制御する。
+
+現在の定期実行基盤は`.github/workflows/cloud-ai-worker-scheduler.yml`である。5分間隔の
+起動ごとに最大3件を直列処理し、未設定時はfail closedで通信しない。設定、起動、停止は
+[`docs/cloud/CLOUD_AI_WORKER_SCHEDULER.md`](cloud/CLOUD_AI_WORKER_SCHEDULER.md)を参照する。
 
 ## 必須環境変数
 
@@ -59,7 +63,9 @@ Invoke-RestMethod -Method Get -Uri "https://app.example.com/api/internal/cloud-a
 - schedulerのHTTP 401、500、503
 - Provider実費が運用上限へ到達する
 
-停止時は最初に`MANGAI_CLOUD_AI_WORKER_ENABLED=false`へ変更する。編集、保存、書き出しは継続し、新しい生成要求はProvider registryを無効化することでfail closedにできる。
+停止時は最初にGitHub Repository variableの`MANGAI_CLOUD_AI_SCHEDULER_ENABLED=false`、
+続いて即時停止が必要なら`MANGAI_CLOUD_AI_WORKER_ENABLED=false`へ変更する。編集、保存、
+書き出しは継続し、新しい生成要求はProvider registryを無効化することでfail closedにできる。
 
 ## Staging受入れ
 

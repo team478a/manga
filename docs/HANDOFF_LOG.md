@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-04 Codex: Cloud AI Worker定期実行
+
+- Branch: `codex/cloud-ai-worker-scheduler`
+- Base: `origin/feature/manga-canvas-mvp` (`280cb4c`、PR #145 merge後)
+- Draft PR: [#146](https://github.com/team478a/manga/pull/146)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ai-65a675-team478as-projects.vercel.app`
+- GitHub Actions scheduled workflowで一般向けCloud AI Queueを5分間隔、1回最大3件処理する基盤を追加した。
+- Repository variable未設定、Secret不足、不正URLは外部通信前にfail closedとなる。
+- 同時実行を禁止し、idle／retrying／lease_lostで停止する。秘密値、Provider応答本文、Job IDはログへ出さない。
+- Vercel Cron、migration、外部Providerの有料実行は追加・実施していない。
+- Scheduler専用7/7、Hub 463/463、deps:check、lint、Hub typecheck、migration validate（48本）、production build、git diff --check成功。
+- Core quality、Migration roundtrip、Windows build、Vercelの全CI成功。
+- 運用開始にはGitHub ActionsのVariable／Secrets設定、手動1回、一般向けテストJob 1件の限定E2Eが必要。
+
 ## 2026-08-04 Codex: Cloud AI Worker稼働監視
 
 - Branch: `codex/cloud-ai-worker-health`
