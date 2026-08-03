@@ -15,6 +15,7 @@ import {
 import { getCloudGeneralImageSettings } from "@/lib/cloud-general-image-settings";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { getCloudAiWorkerConfiguration } from "@/lib/cloud-ai-worker-admin";
+import { getCloudAiWorkerHealth } from "@/lib/cloud-ai-worker-health";
 
 export const maxDuration = 180;
 
@@ -40,6 +41,8 @@ function elapsedLabel(value: string) {
 export default async function CloudAiAdminPage({searchParams}:{searchParams:Promise<{message?:string;error?:string}>}) {
   await requireAdmin();
   const query=await searchParams;
+  const checkedAt=new Date();
+  const failedSince=new Date(checkedAt.getTime()-24*60*60*1000).toISOString();
   const loaded=await safelyLoadAdminData("cloud-ai",async()=>{
     const admin=createAdminClient();
     return Promise.all([
@@ -54,11 +57,16 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
       admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","queued"),
       admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","running"),
       admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","failed"),
+      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","failed").gte("updated_at",failedSince),
+      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","running").lt("lease_expires_at",checkedAt.toISOString()),
+      admin.from("cloud_generation_jobs").select("created_at").eq("status","queued").order("created_at",{ascending:true}).limit(1).maybeSingle(),
     ]);
   });
   if(!loaded.ok)return <AdminDataUnavailable title="Cloud AI運用"/>;
-  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings,queuedResult,runningResult,failedResult]=loaded.value;
+  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings,queuedResult,runningResult,failedResult,recentFailedResult,staleLeaseResult,oldestQueuedResult]=loaded.value;
   const workerConfiguration=getCloudAiWorkerConfiguration();
+  const workerHealth=getCloudAiWorkerHealth({workerReady:workerConfiguration.ready,queued:queuedResult.count??0,running:runningResult.count??0,failedLast24Hours:recentFailedResult.count??0,staleLeases:staleLeaseResult.count??0,oldestQueuedAt:oldestQueuedResult.data?.created_at,now:checkedAt});
+  const healthClass={stopped:"border-stone-300 bg-stone-50 text-stone-800",critical:"border-red-300 bg-red-50 text-red-900",warning:"border-amber-300 bg-amber-50 text-amber-900",active:"border-blue-300 bg-blue-50 text-blue-900",idle:"border-green-300 bg-green-50 text-green-900"}[workerHealth.status];
   const settings=settingsResult.data as null|{generation_enabled:boolean;daily_cost_limit_micros:number;warning_percent:number};
   const today=costsResult.data?.[0] as undefined|{usage_date:string;cost_reserved_micros:number;cost_actual_micros:number};
   const percent=settings&&today&&settings.daily_cost_limit_micros>0?Math.round((today.cost_actual_micros/settings.daily_cost_limit_micros)*100):0;
@@ -101,6 +109,10 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
         <div className="rounded-lg bg-violet-50 p-4"><p className="text-sm text-stone-600">処理待ち</p><p className="mt-1 text-2xl font-bold text-violet-700">{queuedResult.count??0}</p></div>
         <div className="rounded-lg bg-blue-50 p-4"><p className="text-sm text-stone-600">実行中</p><p className="mt-1 text-2xl font-bold text-blue-700">{runningResult.count??0}</p></div>
         <div className="rounded-lg bg-red-50 p-4"><p className="text-sm text-stone-600">失敗</p><p className="mt-1 text-2xl font-bold text-red-700">{failedResult.count??0}</p></div>
+      </div>
+      <div className={`mt-4 rounded-lg border p-4 ${healthClass}`} role="status">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><strong>稼働状態: {workerHealth.label}</strong><span className="text-sm">24時間以内の失敗 {recentFailedResult.count??0}件 / 期限切れ処理 {staleLeaseResult.count??0}件</span></div>
+        <p className="mt-2 text-sm">{workerHealth.message}</p>
       </div>
       {workerConfiguration.ready ? (
         <form action={runCloudAiWorkerOnceAction} className="mt-5">

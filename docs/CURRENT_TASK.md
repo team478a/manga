@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-04 Cloud AI Worker稼働監視
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-ai-worker-health`
+- 目的: Worker自動運転前に、Queue滞留・期限切れlease・直近失敗を管理者が画面上で検知できるようにする
+- 実装: `/admin/cloud-ai`へ停止中、要対応、滞留あり、失敗あり、処理中、正常の決定的な稼働判定を追加
+- 判定: 期限切れlease、24時間内3件以上の失敗、10分以上の最古queued Jobを警告し、確認対象を日本語で案内
+- 安全性: DBの件数と時刻だけを利用し、Prompt、画像、Provider応答、秘密値は取得・表示しない
+- migration／環境変数／外部API: 追加・実行なし
+- 検証: 専用4/4、Hub test 456/456、deps:check、lint、Hub typecheck、migration validate（48本）、production build、git diff --check成功
+- 未完了: Draft PR、Vercel Preview、GitHub CI、責任者による画面確認
+
 ## 2026-08-04 Cloud AI Job運用改善
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
