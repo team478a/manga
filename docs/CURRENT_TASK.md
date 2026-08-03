@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-03 管理画面共通TOP導線
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/admin-home-navigation-v1`
+- 目的: ユーザー管理を含むすべての管理画面から管理者ダッシュボードへ迷わず戻れるようにする
+- 実装: `src/app/admin/layout.tsx`に共通ナビゲーションを追加し、Admin配下へ一括適用
+- UI: 「管理画面TOPへ」をアイコン付きで常時表示し、キーボードfocusとスマートフォン幅に対応
+- migration／環境変数／外部API: 追加なし
+- 検証: 専用1/1、Hub 439/439、deps、Hub typecheck、lint、production build、diff check成功
+- 未完了: Draft PR、Vercel Preview、本番確認
+
 ## 2026-08-03 モニター開始後ダッシュボード安定化
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
