@@ -25,7 +25,7 @@ test("モニター運用の送信操作は用途別の処理中表示を使う",
     ),
     readFile(new URL("../src/app/dashboard/monitor/MonitorFeedbackForm.tsx", import.meta.url), "utf8"),
     readFile(
-      new URL("../src/app/dashboard/monitor/welcome/page.tsx", import.meta.url),
+      new URL("../src/app/dashboard/monitor/welcome/MonitorStartButton.tsx", import.meta.url),
       "utf8",
     ),
   ]);

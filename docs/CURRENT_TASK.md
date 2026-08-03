@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-03 モニター開始API化
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/fix-monitor-start-api-v3`
+- 目的: 本番のモニター開始時にNext.jsの予期しないServer Action応答で画面全体がエラーになる問題を解消する
+- 実装: Server Actionを廃止し、認証済み同一origin API、処理中表示、画面内エラー、成功時遷移へ置換
+- 安全性: APIは未ログイン、権限不足、別origin、DB失敗を日本語の安全なJSON応答へ変換し、内部エラーを表示しない
+- migration／環境変数／外部API: 追加なし
+- 未完了: 品質ゲート、Draft PR、Vercel Preview、本番での開始確認
+
 ## 2026-08-02 一般向けCloud漫画制作スタック統合
 
 - 状態: `INTEGRATING`

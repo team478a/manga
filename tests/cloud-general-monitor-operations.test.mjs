@@ -20,12 +20,13 @@ test("運用migrationは本人オンボーディングと管理者レビュー�
 });
 
 test("警告と初回案内は利用可能なモニターだけに表示される",async()=>{
-  const [library,dashboard,monitor,welcome,welcomeAction,welcomeError]=await Promise.all([
+  const [library,dashboard,monitor,welcome,startButton,onboardingApi,welcomeError]=await Promise.all([
     readFile(new URL("../src/lib/cloud-general-monitor.ts",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/page.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/monitor/page.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/monitor/welcome/page.tsx",import.meta.url),"utf8"),
-    readFile(new URL("../src/app/dashboard/monitor/welcome/actions.ts",import.meta.url),"utf8"),
+    readFile(new URL("../src/app/dashboard/monitor/welcome/MonitorStartButton.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../src/app/api/monitor/onboarding/route.ts",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/monitor/welcome/error.tsx",import.meta.url),"utf8"),
   ]);
   assert.match(library,/remaining <= 5/);
@@ -38,10 +39,16 @@ test("警告と初回案内は利用可能なモニターだけに表示され�
   assert.match(welcome,/getCloudGeneralMonitorEnrollment/);
   assert.doesNotMatch(welcome,/requireCloudGeneralMonitor/);
   assert.match(welcome,/モニターを開始できません/);
-  assert.match(welcomeAction,/safeDomainErrorMessage/);
-  assert.match(welcomeAction,/let actionError/);
-  assert.match(welcomeAction,/catch \(error\) \{[\s\S]*?actionError = safeDomainErrorMessage/);
-  assert.match(welcomeAction,/if \(actionError\)[\s\S]*?redirect\(/);
+  assert.match(welcome,/MonitorStartButton/);
+  assert.doesNotMatch(welcome,/<form action=/);
+  assert.match(startButton,/fetch\("\/api\/monitor\/onboarding"/);
+  assert.match(startButton,/開始準備中/);
+  assert.match(startButton,/role="alert"/);
+  assert.match(onboardingApi,/getCurrentProfile/);
+  assert.match(onboardingApi,/requireCloudGeneralMonitor/);
+  assert.match(onboardingApi,/complete_cloud_general_monitor_onboarding/);
+  assert.match(onboardingApi,/toApiError/);
+  assert.match(onboardingApi,/isSameOriginRequest/);
   assert.match(welcomeError,/画面を読み込めませんでした/);
   assert.match(welcomeError,/reset/);
 });
