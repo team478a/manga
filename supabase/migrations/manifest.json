@@ -288,7 +288,13 @@
       "description": "モニター報告の診断情報、非公開画像、状況通知、投稿制限を追加",
       "forwardSha256": "179ac9bf8b6fa8c7917593e70400de3e0578630e0436570081851a378970d43e",
       "rollbackSha256": "3a0531a1c1d3501e685c74148ba4477f5f7a08da9dfb6bce2933b11c0cfde9dc"
+    },
+    {
+      "id": "202608030003_cloud_product_update_notifications",
+      "description": "公開した更新情報を有効な一般モニターへ重複なく通知",
+      "forwardSha256": "22f03e93bb4c694d2f2f7270a02992a3ad912e2b257a3b47b0faba811ec534ba",
+      "rollbackSha256": "22188c9e6a04dcd4c2c5dd81f644ebec7ef993a01e2b15d19e97559ae3296553"
     }
   ],
-  "schemaSha256": "1ce2ffc7627ba680b95d53577dc14d7b7c261040ce43b1ba0c68aaeb531f4a98"
+  "schemaSha256": "3aac3d3c6b4b5f0291cc1a6f9575988d977dcbb4e8aeb0d08b247bc03b7368f5"
 }

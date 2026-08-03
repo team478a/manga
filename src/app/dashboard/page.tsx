@@ -122,6 +122,7 @@ export default async function DashboardPage({
               </article>
             ))}
           </div>
+          <Link className="mt-5 inline-flex font-semibold text-violet-700" href="/dashboard/updates">すべての更新情報を見る →</Link>
         </section>
       ) : null}
       <section className="panel mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -2,6 +2,16 @@
 
 do $$
 begin
+  if to_regprocedure('public.sync_cloud_product_update_notifications()') is null then
+    raise exception 'cloud product update notification function is missing';
+  end if;
+  if not exists(select 1 from pg_trigger where tgname='cloud_product_update_notifications' and not tgisinternal) then
+    raise exception 'cloud product update notification trigger is missing';
+  end if;
+end $$;
+
+do $$
+begin
   if not exists (
     select 1 from information_schema.columns
     where table_schema = 'public'

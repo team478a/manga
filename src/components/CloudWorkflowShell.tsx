@@ -10,6 +10,7 @@ import {
   Images,
   LayoutDashboard,
   Lightbulb,
+  Megaphone,
   ReceiptText,
   ShoppingBag,
   Sparkles,
@@ -128,6 +129,18 @@ export function CloudWorkflowShell({
           >
             <BookOpenCheck className="h-4 w-4" />
             使い方
+          </Link>
+          <Link
+            aria-current={pathname.startsWith("/dashboard/updates") ? "page" : undefined}
+            className={`mt-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold ${
+              pathname.startsWith("/dashboard/updates")
+                ? "bg-violet-100 text-violet-800"
+                : "text-stone-700 hover:bg-violet-50"
+            }`}
+            href="/dashboard/updates"
+          >
+            <Megaphone className="h-4 w-4" />
+            更新情報
           </Link>
           <p className="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-stone-400">
             制作ワークフロー
