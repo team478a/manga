@@ -76,6 +76,15 @@ export default async function GeneralMonitorReadinessPage() {
             <p className="mt-2 break-words text-sm leading-relaxed text-stone-600">
               {check.detail}
             </p>
+            {!check.ready && check.nextSteps?.length ? (
+              <ol className="mt-3 list-decimal space-y-1.5 pl-5 text-sm leading-relaxed text-stone-700">
+                {check.nextSteps.map((step) => (
+                  <li className="break-words" key={step}>
+                    {step}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
             {check.href ? (
               <Link className="mt-4 inline-block text-sm font-bold text-violet-700 underline" href={check.href}>
                 設定画面を開く

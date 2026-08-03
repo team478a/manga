@@ -49,6 +49,14 @@ test("テスト公開チェックは秘密値を表示せず主要な公開条�
   assert.match(page, /テスト公開チェック/);
   assert.match(readiness, /一般向け画像生成AI/);
   assert.match(readiness, /画像生成Worker/);
+  assert.match(
+    readiness,
+    /202607310004_cloud_general_image_provider\.sql/,
+  );
+  assert.match(readiness, /MANGAI_CLOUD_AI_WORKER_ENABLED=true/);
+  assert.match(readiness, /32文字以上のランダム値/);
+  assert.match(page, /check\.nextSteps/);
+  assert.match(page, /list-decimal/);
 });
 
 test("モニター管理とスタッフマニュアルから公開チェックへ移動できる", async () => {
