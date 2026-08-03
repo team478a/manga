@@ -4,12 +4,20 @@ import { useEffect, useRef } from "react";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { submitCloudGeneralMonitorFeedbackAction } from "./actions";
 
-export function MonitorFeedbackForm() {
+export function MonitorFeedbackForm({
+  initialPagePath,
+}: {
+  initialPagePath?: string;
+}) {
   const diagnosticRef = useRef<HTMLInputElement>(null);
   const pageUrlRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (pageUrlRef.current) pageUrlRef.current.value = window.location.href.split(/[?#]/)[0];
+    if (pageUrlRef.current) {
+      pageUrlRef.current.value = initialPagePath?.startsWith("/")
+        ? `${window.location.origin}${initialPagePath}`
+        : window.location.href.split(/[?#]/)[0];
+    }
     if (diagnosticRef.current) diagnosticRef.current.value = JSON.stringify({
       userAgent: navigator.userAgent,
       language: navigator.language,
@@ -19,10 +27,10 @@ export function MonitorFeedbackForm() {
       capturedAt: new Date().toISOString(),
       online: navigator.onLine,
     });
-  }, []);
+  }, [initialPagePath]);
 
   return (
-    <form action={submitCloudGeneralMonitorFeedbackAction} className="panel mt-6 space-y-4">
+    <form action={submitCloudGeneralMonitorFeedbackAction} className="panel mt-6 scroll-mt-6 space-y-4" id="feedback-form">
       <input name="diagnostic" ref={diagnosticRef} type="hidden" />
       <div>
         <h2 className="text-xl font-bold">感想・不具合・ご要望を送る</h2>

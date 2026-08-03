@@ -10,6 +10,7 @@ import {
   Images,
   LayoutDashboard,
   Lightbulb,
+  MessageSquareWarning,
   ReceiptText,
   ShoppingBag,
   Sparkles,
@@ -128,6 +129,18 @@ export function CloudWorkflowShell({
           >
             <BookOpenCheck className="h-4 w-4" />
             使い方
+          </Link>
+          <Link
+            aria-current={pathname === "/dashboard/monitor" ? "page" : undefined}
+            className={`mt-1 flex items-center gap-3 rounded-lg border px-3 py-2.5 text-sm font-bold transition ${
+              pathname === "/dashboard/monitor"
+                ? "border-amber-300 bg-amber-100 text-amber-950"
+                : "border-amber-200 bg-amber-50 text-amber-900 hover:bg-amber-100"
+            }`}
+            href={`/dashboard/monitor?from=${encodeURIComponent(pathname)}#feedback-form`}
+          >
+            <MessageSquareWarning className="h-4 w-4" />
+            不具合・ご意見
           </Link>
           <p className="mt-5 px-3 text-xs font-bold uppercase tracking-wider text-stone-400">
             制作ワークフロー
