@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   createCloudAiPriceAction,
+  runCloudAiWorkerOnceAction,
   setCloudAiPriceActiveAction,
   updateCloudGeneralImageProviderAction,
   updateCloudAiPlanAction,
@@ -12,6 +13,9 @@ import {
 } from "./actions";
 import { getCloudGeneralImageSettings } from "@/lib/cloud-general-image-settings";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { getCloudAiWorkerConfiguration } from "@/lib/cloud-ai-worker-admin";
+
+export const maxDuration = 180;
 
 const money = (micros: number) => `$${(micros / 1_000_000).toFixed(4)}`;
 
@@ -29,10 +33,14 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
       admin.from("cloud_ai_admin_audit_logs").select("id,action,target_type,target_id,created_at,profiles:actor_profile_id(display_name)").order("created_at",{ascending:false}).limit(20),
       admin.from("cloud_ai_notifications").select("id,notification_type,severity,title,body,created_at").eq("audience","admin").order("created_at",{ascending:false}).limit(20),
       getCloudGeneralImageSettings(),
+      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","queued"),
+      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","running"),
+      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","failed"),
     ]);
   });
   if(!loaded.ok)return <AdminDataUnavailable title="Cloud AI運用"/>;
-  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings]=loaded.value;
+  const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings,queuedResult,runningResult,failedResult]=loaded.value;
+  const workerConfiguration=getCloudAiWorkerConfiguration();
   const settings=settingsResult.data as null|{generation_enabled:boolean;daily_cost_limit_micros:number;warning_percent:number};
   const today=costsResult.data?.[0] as undefined|{usage_date:string;cost_reserved_micros:number;cost_actual_micros:number};
   const percent=settings&&today&&settings.daily_cost_limit_micros>0?Math.round((today.cost_actual_micros/settings.daily_cost_limit_micros)*100):0;
@@ -59,6 +67,38 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
         <p className={`mt-3 font-semibold ${percent>=(settings?.warning_percent??80)?"text-red-700":"text-green-700"}`}>{percent}% 使用</p>
       </section>
     </div>
+    <section className="panel mt-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <h2 className="text-xl font-bold">Cloud AI Worker</h2>
+          <p className="mt-2 text-stone-600">
+            Cloud AI Queueの状態を確認し、診断目的で待機中Jobを1件だけ処理します。署名Secretはブラウザーへ表示されません。
+          </p>
+        </div>
+        <Link className="button-secondary whitespace-nowrap" href="/admin/general-monitors/readiness">
+          公開チェックを確認
+        </Link>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-lg bg-violet-50 p-4"><p className="text-sm text-stone-600">処理待ち</p><p className="mt-1 text-2xl font-bold text-violet-700">{queuedResult.count??0}</p></div>
+        <div className="rounded-lg bg-blue-50 p-4"><p className="text-sm text-stone-600">実行中</p><p className="mt-1 text-2xl font-bold text-blue-700">{runningResult.count??0}</p></div>
+        <div className="rounded-lg bg-red-50 p-4"><p className="text-sm text-stone-600">失敗</p><p className="mt-1 text-2xl font-bold text-red-700">{failedResult.count??0}</p></div>
+      </div>
+      {workerConfiguration.ready ? (
+        <form action={runCloudAiWorkerOnceAction} className="mt-5">
+          <PendingSubmitButton className="button" pendingLabel="Workerを実行中…">
+            待機中Jobを1件実行
+          </PendingSubmitButton>
+          <p className="mt-3 text-sm text-stone-600">
+            この操作は診断用です。継続運用では認証付きSchedulerを別途稼働させてください。
+          </p>
+        </form>
+      ) : (
+        <p className="mt-5 rounded-lg bg-amber-50 p-4 text-sm text-amber-900">
+          Workerは停止中です。公開チェック画面の手順に沿って環境変数を設定し、再デプロイしてください。
+        </p>
+      )}
+    </section>
     <section className="panel mt-6">
       <h2 className="text-xl font-bold">一般向け画像生成AI</h2>
       <p className="mt-2 text-stone-600">

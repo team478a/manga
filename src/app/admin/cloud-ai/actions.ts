@@ -10,8 +10,23 @@ import {
   cloudGeneralImageModelSchema,
   setCloudGeneralImageSettings,
 } from "@/lib/cloud-general-image-settings";
+import {
+  getCloudAiWorkerConfiguration,
+  getCloudAiWorkerInvocationUrl,
+} from "@/lib/cloud-ai-worker-admin";
 
 const micros = z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
+const workerResultSchema = z.object({
+  status: z.enum([
+    "idle",
+    "completed",
+    "canceled",
+    "lease_lost",
+    "retrying",
+    "resolved",
+  ]),
+  jobId: z.string().uuid().optional(),
+});
 
 function field(formData: FormData, name: string) {
   const value = formData.get(name);
@@ -41,6 +56,60 @@ async function audit(input: {
       "管理操作の監査ログを保存できませんでした。",
       { cause: error },
     );
+}
+
+export async function runCloudAiWorkerOnceAction() {
+  const { profile } = await requireAdmin();
+  const configuration = getCloudAiWorkerConfiguration();
+  const workerUrl = getCloudAiWorkerInvocationUrl();
+  const secret = process.env.MANGAI_CLOUD_AI_WORKER_SECRET;
+  if (!configuration.ready || !workerUrl || !secret)
+    redirect(
+      `/admin/cloud-ai?error=${encodeURIComponent(
+        "Worker環境設定を確認してください。公開チェック画面に必要な手順を表示しています",
+      )}`,
+    );
+
+  let result: z.infer<typeof workerResultSchema>;
+  try {
+    const response = await fetch(workerUrl, {
+      method: "POST",
+      headers: { authorization: `Bearer ${secret}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(175_000),
+    });
+    if (!response.ok) throw new Error("worker_request_failed");
+    const parsed = workerResultSchema.safeParse(await response.json());
+    if (!parsed.success) throw new Error("worker_response_invalid");
+    result = parsed.data;
+  } catch {
+    redirect(
+      `/admin/cloud-ai?error=${encodeURIComponent(
+        "Workerを実行できませんでした。環境設定とデプロイ状態を確認してください",
+      )}`,
+    );
+  }
+
+  await audit({
+    actorId: profile.id,
+    action: "run_worker_once",
+    targetType: "cloud_ai_worker",
+    targetId: result.jobId ?? "queue",
+    before: null,
+    after: { status: result.status },
+  });
+  revalidatePath("/admin/cloud-ai");
+  const message =
+    result.status === "idle"
+      ? "Workerを実行しました。処理待ちJobはありません"
+      : result.status === "completed"
+        ? "WorkerがCloud AI Jobを1件完了しました"
+        : result.status === "canceled"
+          ? "Workerがキャンセル済みJobを確認しました"
+          : result.status === "lease_lost"
+            ? "Workerの処理権限が更新されました。Queue状態を再確認してください"
+            : "Workerを実行しました。Queue状態を再確認してください";
+  redirect(`/admin/cloud-ai?message=${encodeURIComponent(message)}`);
 }
 
 export async function updateCloudAiSettingsAction(formData: FormData) {
