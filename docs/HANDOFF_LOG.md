@@ -2979,3 +2979,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 利用者の報告履歴と通知導線、管理者の集計・診断・署名URL画像確認を追加。
 - 実Worker、自動マージ、Supabase適用、本番公開は未実施。
 - 検証: 専用6/6、Hub 438/438、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。
+
+## 2026-08-03 Codex: Cloudアカウント管理
+
+- ブランチ: `codex/cloud-account-management`（base: `feature/manga-canvas-mvp`）
+- 利用者自身が登録情報、プロフィール、メールアドレス、パスワードを確認・変更できる画面を追加。
+- ヘッダーとダッシュボードから `/dashboard/account` へ移動可能。
+- メール変更はSupabase確認メール、パスワード変更後は再ログインを要求する。
+- 退会は関連データ保護のため自動化せず、管理者対応として案内する。
+- migration、環境変数、外部Providerの追加なし。
+- 検証: 専用2/2、Hub 440/440、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。

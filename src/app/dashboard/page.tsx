@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, CheckCircle2, Lock, Megaphone } from "lucide-react";
+import { ArrowRight, BarChart3, CheckCircle2, Lock, Megaphone, UserRound } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
@@ -12,7 +12,7 @@ import {
 
 export default async function DashboardPage() {
   const enabled = cloudResearchFeatureEnabled();
-  const { profile } = await requireProfile();
+  const { profile, user } = await requireProfile();
   const supabase = await createClient();
   const [reports, monitor, updatesResult, notificationsResult] = await Promise.all([
     enabled ? listCloudResearchReports(profile.id) : Promise.resolve([]),
@@ -117,6 +117,17 @@ export default async function DashboardPage() {
           <Link className="button-secondary" href="/dashboard/monitor">状況・ご意見</Link>
           <Link className="button-secondary" href="/dashboard/notifications">通知 {notificationsResult.count ?? 0}件</Link>
         </div>
+      </section>
+
+      <section className="panel mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <UserRound className="h-6 w-6 shrink-0 text-violet-700" />
+          <div className="min-w-0">
+            <p className="font-bold">アカウント管理</p>
+            <p className="mt-1 truncate text-sm text-stone-600">{profile.display_name}・{user.email ?? "メール未設定"}</p>
+          </div>
+        </div>
+        <Link className="button-secondary shrink-0" href="/dashboard/account">登録情報を確認・変更</Link>
       </section>
 
       <div className="mt-6 grid gap-5 lg:grid-cols-2">

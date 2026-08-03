@@ -15,7 +15,7 @@ export async function updateProfile(formData: FormData) {
   });
   if (!input.success) {
     redirect(
-      `/dashboard?error=${encodeURIComponent(firstValidationMessage(input.error))}`,
+      `/dashboard/account?error=${encodeURIComponent(firstValidationMessage(input.error))}`,
     );
   }
 
@@ -30,8 +30,9 @@ export async function updateProfile(formData: FormData) {
 
   if (error)
     redirect(
-      `/dashboard?error=${encodeURIComponent("プロフィールを保存できませんでした")}`,
+      `/dashboard/account?error=${encodeURIComponent("プロフィールを保存できませんでした")}`,
     );
+  revalidatePath("/dashboard/account");
   revalidatePath("/dashboard");
-  redirect("/dashboard?message=保存しました");
+  redirect("/dashboard/account?message=プロフィールを保存しました");
 }
