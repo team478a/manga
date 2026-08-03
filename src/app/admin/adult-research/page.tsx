@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { cloudAdultResearchFeatureEnabled } from "@/lib/cloud-adult-research";
 import { hasSupabaseAdminEnv } from "@/lib/env";
@@ -17,18 +19,22 @@ export default async function AdminAdultResearchPage({
   let databaseEnabled = false;
   let approvedCount = 0;
   if (hasSupabaseAdminEnv()) {
-    const admin = createAdminClient();
-    const [settingsResult, approvedResult] = await Promise.all([
-      admin
-        .from("cloud_adult_research_settings")
-        .select("enabled,updated_at")
-        .eq("singleton", true)
-        .maybeSingle<{ enabled: boolean; updated_at: string }>(),
-      admin
-        .from("cloud_adult_research_entitlements")
-        .select("profile_id", { count: "exact", head: true })
-        .eq("status", "approved"),
-    ]);
+    const loaded = await safelyLoadAdminData("adult-research", async () => {
+      const admin = createAdminClient();
+      return Promise.all([
+        admin
+          .from("cloud_adult_research_settings")
+          .select("enabled,updated_at")
+          .eq("singleton", true)
+          .maybeSingle<{ enabled: boolean; updated_at: string }>(),
+        admin
+          .from("cloud_adult_research_entitlements")
+          .select("profile_id", { count: "exact", head: true })
+          .eq("status", "approved"),
+      ]);
+    });
+    if (!loaded.ok) return <AdminDataUnavailable title="成人向け市場分析の運用" />;
+    const [settingsResult, approvedResult] = loaded.value;
     configured = !settingsResult.error && Boolean(settingsResult.data);
     databaseEnabled = settingsResult.data?.enabled === true;
     approvedCount = approvedResult.count ?? 0;

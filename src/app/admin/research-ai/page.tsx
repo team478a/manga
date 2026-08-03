@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { getCloudResearchAiSettings } from "@/lib/cloud-research-ai-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -19,14 +21,18 @@ export default async function ResearchAiAdminPage({
 }) {
   await requireAdmin();
   const query = await searchParams;
-  const settings = await getCloudResearchAiSettings();
-  const admin = createAdminClient();
-  const { data: audits } = await admin
-    .from("cloud_research_ai_audit_logs")
-    .select("id,action,model,enabled,created_at")
-    .order("created_at", { ascending: false })
-    .limit(20)
-    .returns<Audit[]>();
+  const loaded = await safelyLoadAdminData("research-ai", async () => {
+    const settings = await getCloudResearchAiSettings();
+    const { data: audits } = await createAdminClient()
+      .from("cloud_research_ai_audit_logs")
+      .select("id,action,model,enabled,created_at")
+      .order("created_at", { ascending: false })
+      .limit(20)
+      .returns<Audit[]>();
+    return { settings, audits };
+  });
+  if (!loaded.ok) return <AdminDataUnavailable title="市場分析AI設定" />;
+  const { settings, audits } = loaded.value;
 
   return (
     <main className="page max-w-4xl">

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
 
 export async function setCloudAdultResearchEnabledAction(formData: FormData) {
   const { profile } = await requireAdmin();
@@ -11,12 +12,14 @@ export async function setCloudAdultResearchEnabledAction(formData: FormData) {
   if (rawEnabled !== "true" && rawEnabled !== "false")
     redirect("/admin/adult-research?error=全体設定を確認してください");
 
-  const admin = createAdminClient();
-  const { error } = await admin.rpc("set_cloud_adult_research_enabled", {
-    p_actor_profile_id: profile.id,
-    p_enabled: rawEnabled === "true",
+  const operation = await safelyLoadAdminData("adult-research/action", async () => {
+    const admin = createAdminClient();
+    return admin.rpc("set_cloud_adult_research_enabled", {
+      p_actor_profile_id: profile.id,
+      p_enabled: rawEnabled === "true",
+    });
   });
-  if (error)
+  if (!operation.ok || operation.value.error)
     redirect(
       "/admin/adult-research?error=成人向け市場分析の全体設定を更新できませんでした",
     );
