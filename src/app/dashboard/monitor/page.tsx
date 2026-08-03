@@ -16,7 +16,17 @@ type Feedback = {
   page_number_snapshot: number | null;
   panel_name_snapshot: string | null;
   verdict: "accepted" | "needs_revision" | "unusable" | null;
+  request_type: "feedback" | "bug" | "improvement" | "feature_request";
+  title: string | null;
+  severity: "none" | "minor" | "major" | "blocked" | null;
 };
+
+const requestTypeLabels = {
+  feedback: "感想",
+  bug: "不具合報告",
+  improvement: "改善依頼",
+  feature_request: "機能リクエスト",
+} as const;
 
 const qualityVerdictLabels = {
   accepted: "採用可",
@@ -35,7 +45,7 @@ export default async function GeneralMonitorPage({
   const notice = getCloudGeneralMonitorNotice(enrollment);
   const { data: feedback } = await (await createClient())
     .from("cloud_general_monitor_feedback")
-    .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict")
+    .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict,request_type,title,severity")
     .eq("owner_profile_id", profile.id)
     .order("created_at", { ascending: false })
     .returns<Feedback[]>();
@@ -73,8 +83,15 @@ export default async function GeneralMonitorPage({
           {message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
           {enrollment.status === "active" ? (
             <form action={submitCloudGeneralMonitorFeedbackAction} className="panel mt-6 space-y-4">
-              <h2 className="text-xl font-bold">使ってみた感想</h2>
+              <h2 className="text-xl font-bold">感想・不具合・ご要望を送る</h2>
               <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="label" htmlFor="requestType">報告の種類</label>
+                  <select className="field" id="requestType" name="requestType">
+                    <option value="feedback">感想</option><option value="bug">不具合報告</option>
+                    <option value="improvement">改善依頼</option><option value="feature_request">機能リクエスト</option>
+                  </select>
+                </div>
                 <div>
                   <label className="label" htmlFor="workflowStep">対象工程</label>
                   <select className="field" id="workflowStep" name="workflowStep">
@@ -83,6 +100,10 @@ export default async function GeneralMonitorPage({
                     <option value="storyboard">ネーム</option><option value="canvas">Canvas</option>
                     <option value="panel_image">コマ画像</option>
                   </select>
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="label" htmlFor="feedback-title">件名</label>
+                  <input className="field" id="feedback-title" maxLength={160} name="title" placeholder="例：市場分析の結果画面から先へ進めない" required />
                 </div>
                 <div>
                   <label className="label" htmlFor="rating">評価</label>
@@ -100,8 +121,26 @@ export default async function GeneralMonitorPage({
                     <option value="blocked">途中で進めなかった</option>
                   </select>
                 </div>
+                <div>
+                  <label className="label" htmlFor="severity">影響</label>
+                  <select className="field" id="severity" name="severity">
+                    <option value="none">影響なし</option><option value="minor">少し困る</option>
+                    <option value="major">大きく困る</option><option value="blocked">作業を続けられない</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="label" htmlFor="environment">利用環境（任意）</label>
+                  <input className="field" id="environment" maxLength={200} name="environment" placeholder="例：iPhone Safari / Windows Chrome" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="label" htmlFor="pageUrl">発生した画面URL（任意）</label>
+                  <input className="field" id="pageUrl" maxLength={500} name="pageUrl" placeholder="https://app.mang-ai.com/..." />
+                </div>
               </div>
-              <textarea className="field min-h-32" maxLength={2000} name="comment" placeholder="良かった点、迷った点、止まった画面など" required />
+              <div>
+                <label className="label" htmlFor="feedback-comment">詳しい内容</label>
+                <textarea className="field min-h-32" id="feedback-comment" maxLength={2000} name="comment" placeholder="何をした時に、何が起きたか。期待していた結果も入力してください。" required />
+              </div>
               <PendingSubmitButton
                 className="button bg-violet-700 hover:bg-violet-800"
                 pendingLabel="フィードバックを送信中…"
@@ -115,7 +154,8 @@ export default async function GeneralMonitorPage({
             <div className="mt-4 space-y-3">
               {(feedback ?? []).map((item) => (
                 <article className="rounded-xl border border-stone-200 p-4" key={item.id}>
-                  <p className="text-sm font-bold">{item.workflow_step}・{item.rating}/5・{item.outcome}</p>
+                  <p className="text-sm font-bold">{requestTypeLabels[item.request_type]}・{item.workflow_step}・{item.rating}/5</p>
+                  {item.title ? <h3 className="mt-1 font-bold">{item.title}</h3> : null}
                   {item.target_scope !== "general" ? (
                     <p className="mt-1 text-xs font-semibold text-violet-800">
                       {item.page_number_snapshot}ページ{item.panel_name_snapshot ? `・${item.panel_name_snapshot}` : "全体"}・{item.verdict ? qualityVerdictLabels[item.verdict] : "評価済み"}

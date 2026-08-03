@@ -1143,3 +1143,18 @@ do $$ begin
     raise exception 'Cloud project checkpoint restore objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_product_updates') is null
+     or to_regclass('public.cloud_monitor_issue_tasks') is null
+     or to_regprocedure('public.claim_cloud_monitor_issue_task(text)') is null
+     or to_regprocedure('public.complete_cloud_monitor_issue_task(uuid,text,text,text,text,text,text)') is null
+     or not exists (
+       select 1 from information_schema.columns
+       where table_schema='public'
+         and table_name='cloud_general_monitor_feedback'
+         and column_name='request_type'
+     ) then
+    raise exception 'Cloud monitor operations hub objects missing';
+  end if;
+end $$;

@@ -464,3 +464,26 @@ do $$ begin
     raise exception 'Current schema project checkpoint restore objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_product_updates') is null
+     or to_regclass('public.cloud_monitor_issue_tasks') is null
+     or to_regprocedure('public.claim_cloud_monitor_issue_task(text)') is null
+     or to_regprocedure('public.complete_cloud_monitor_issue_task(uuid,text,text,text,text,text,text)') is null
+     or not exists (
+       select 1 from information_schema.columns
+       where table_schema='public'
+         and table_name='cloud_general_monitor_feedback'
+         and column_name='request_type'
+     )
+     or not exists (
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public' and c.relname='cloud_product_updates' and c.relrowsecurity
+     )
+     or not exists (
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public' and c.relname='cloud_monitor_issue_tasks' and c.relrowsecurity
+     ) then
+    raise exception 'Current schema monitor operations hub objects missing';
+  end if;
+end $$;

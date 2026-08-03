@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, BarChart3, CheckCircle2, Lock } from "lucide-react";
+import { ArrowRight, BarChart3, CheckCircle2, Lock, Megaphone } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
+import { createClient } from "@/lib/supabase/server";
 import {
   getCloudGeneralMonitorEnrollment,
   getCloudGeneralMonitorNotice,
@@ -12,9 +13,14 @@ import {
 export default async function DashboardPage() {
   const enabled = cloudResearchFeatureEnabled();
   const { profile } = await requireProfile();
-  const [reports, monitor] = await Promise.all([
+  const supabase = await createClient();
+  const [reports, monitor, updatesResult] = await Promise.all([
     enabled ? listCloudResearchReports(profile.id) : Promise.resolve([]),
     getCloudGeneralMonitorEnrollment(profile.id),
+    supabase.from("cloud_product_updates")
+      .select("id,title,summary,category,action_url,published_at")
+      .order("published_at", { ascending: false })
+      .limit(3),
   ]);
   const latest = reports[0];
   const monitorActive = isCloudGeneralMonitorActive(monitor) &&
@@ -69,6 +75,31 @@ export default async function DashboardPage() {
         <p className={`mt-5 rounded-xl p-4 ${monitorNotice.level === "error" ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-950"}`} role="status">
           {monitorNotice.message}
         </p>
+      ) : null}
+      {!updatesResult.error && updatesResult.data?.length ? (
+        <section className="panel mt-5 border-violet-200">
+          <div className="flex items-center gap-2">
+            <Megaphone className="h-5 w-5 text-violet-700" />
+            <h2 className="text-xl font-bold">更新情報</h2>
+          </div>
+          <div className="mt-4 divide-y divide-stone-200">
+            {updatesResult.data.map((item) => (
+              <article className="py-4 first:pt-0 last:pb-0" key={item.id}>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="text-xs font-bold text-violet-700">
+                      {item.category === "release" ? "新機能" : item.category === "improvement" ? "改善" : item.category === "fix" ? "不具合修正" : "メンテナンス"}
+                    </p>
+                    <h3 className="mt-1 font-bold">{item.title}</h3>
+                    <p className="mt-1 text-sm text-stone-600">{item.summary}</p>
+                  </div>
+                  <p className="shrink-0 text-xs text-stone-500">{item.published_at ? new Date(item.published_at).toLocaleDateString("ja-JP") : ""}</p>
+                </div>
+                {item.action_url ? <Link className="mt-2 inline-flex text-sm font-semibold text-violet-700" href={item.action_url}>関連画面を見る →</Link> : null}
+              </article>
+            ))}
+          </div>
+        </section>
       ) : null}
       <section className="panel mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

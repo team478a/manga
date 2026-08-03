@@ -2955,3 +2955,17 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - deps、lint、Hub 398/398、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、型検査、production buildに成功
 - Draft PR #116、Vercel Preview、Core quality、Migration roundtrip、Windows buildに成功
 - Supabase staging、実ブラウザ、100ページ実データ、固定版からの復元は未実施
+
+## 2026-08-03 Codex: 更新情報・モニター報告・安全な自動修正キュー
+
+- ブランチ: `codex/cloud-monitor-ops-v1`
+- 利用者ダッシュボードへ公開済み更新情報を最大3件表示する基盤を追加。
+- 管理者画面 `/admin/product-updates` で下書き、即時公開、公開停止、アーカイブが可能。
+- `/dashboard/monitor` の報告を4種類に分類し、タイトル、影響度、環境、発生URLを保存。
+- `cloud_monitor_issue_tasks` で同種報告を重複集約し、発生件数と優先度を更新。
+- `/admin/monitor-issues` で自動修正許可、再試行、対応済み、却下を管理。
+- Worker APIは32文字以上のBearer秘密鍵と明示的な有効フラグの両方が必要。未設定時はfail closed。
+- Workerの完了状態は修正候補、要レビュー、失敗のみ。マージ、migration適用、Feature Flag変更、デプロイを自動化しない。
+- 詳細: `docs/cloud/CLOUD_MONITOR_OPERATIONS_PLAN.md`
+- 検証: 専用テスト 5/5、Hub 432/432、deps、Lint、Hub typecheck、migration 47本、production build、差分検査に成功。
+- 未実施: Supabase migration適用、外部Worker接続、実ブラウザE2E、責任者承認。

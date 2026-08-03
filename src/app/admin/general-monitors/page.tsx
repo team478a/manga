@@ -20,6 +20,8 @@ type Feedback = {
   issue_type: string | null; severity: string | null;
   provider_id: string | null; model_id: string | null;
   generation_count: number; generation_cost_micros: number; generation_elapsed_ms: number;
+  request_type: "feedback" | "bug" | "improvement" | "feature_request";
+  title: string | null; page_url: string | null; environment: string | null;
 };
 
 const verdictLabels = {
@@ -76,7 +78,7 @@ export default async function GeneralMonitorsAdminPage() {
       .order("updated_at", { ascending: false })
       .returns<CloudGeneralMonitorEnrollment[]>(),
     admin.from("cloud_general_monitor_feedback")
-      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms")
+      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment")
       .order("created_at", { ascending: false }).limit(100).returns<Feedback[]>(),
     admin.from("profiles").select("id,display_name").returns<Profile[]>(),
   ]);
@@ -101,6 +103,7 @@ export default async function GeneralMonitorsAdminPage() {
           <Link className="button-secondary" href="/admin/general-monitors/guide">スタッフマニュアル</Link>
           <Link className="button-secondary" href="/admin/general-monitors/email">招待メール設定</Link>
           <Link className="button-secondary" href="/admin/general-monitors/export">CSV出力</Link>
+          <Link className="button-secondary" href="/admin/monitor-issues">報告・自動修正キュー</Link>
           <Link className="button-secondary" href="/admin/users">ユーザーを招待</Link>
         </div>
       </div>
@@ -144,8 +147,9 @@ export default async function GeneralMonitorsAdminPage() {
             <article className="rounded-xl border border-stone-200 p-4" key={item.id}>
               <div className="flex flex-wrap gap-2 text-sm">
                 <strong>{profiles.get(item.owner_profile_id)?.display_name || "利用者"}</strong>
-                <span>{item.workflow_step}</span><span>評価 {item.rating}/5</span><span>{item.outcome}</span>
+                <span>{item.request_type}</span><span>{item.workflow_step}</span><span>評価 {item.rating}/5</span><span>{item.outcome}</span>
               </div>
+              {item.title ? <h3 className="mt-2 font-bold">{item.title}</h3> : null}
               {item.target_scope !== "general" && item.verdict ? (
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-violet-100 px-2 py-1 font-bold text-violet-900">
