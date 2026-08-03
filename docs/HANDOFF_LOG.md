@@ -8,11 +8,13 @@
 
 - Branch: `codex/cloud-ai-job-operations`
 - Base: `origin/feature/manga-canvas-mvp` (`1d9f7b7`、PR #143 merge後)
+- Draft PR: [#144](https://github.com/team478a/manga/pull/144)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-ai-50aa87-team478as-projects.vercel.app/admin/cloud-ai`
 - `/admin/cloud-ai`でqueued／running／failed Jobを作品・利用者・試行回数・経過時間とともに確認可能にした。
 - queued／running Jobは既存`cancel_cloud_generation_job` RPCで取消し、課金予約の解放と管理者監査を維持する。
 - Provider生error messageは表示せず、失敗Jobは利用者側の部分再生成へ案内する。
 - migration、環境変数、外部Provider実行なし。
-- 専用2/2、Hub 452/452、deps、lint、Hub typecheck、migration 48本、production build、diff check成功。Draft PRとPreview確認後に責任者へ引き継ぐ。
+- 専用2/2、Hub 452/452、deps、lint、Hub typecheck、migration 48本、production build、diff check成功。Core quality、Migration roundtrip、Windows build、Vercelも成功し、責任者の実ブラウザ確認待ち。
 
 ## 2026-08-04 Codex: 一般向け画像生成Worker運用診断
 
