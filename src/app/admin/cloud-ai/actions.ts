@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { DomainError } from "@/lib/domain-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import {
   cloudGeneralImageModelSchema,
   setCloudGeneralImageSettings,
@@ -110,6 +111,50 @@ export async function runCloudAiWorkerOnceAction() {
             ? "Workerの処理権限が更新されました。Queue状態を再確認してください"
             : "Workerを実行しました。Queue状態を再確認してください";
   redirect(`/admin/cloud-ai?message=${encodeURIComponent(message)}`);
+}
+
+export async function cancelCloudAiJobAction(jobId: string) {
+  const { profile } = await requireAdmin();
+  const parsedJobId = z.string().uuid().safeParse(jobId);
+  if (!parsedJobId.success)
+    redirect("/admin/cloud-ai?error=Job IDを確認してください");
+
+  const admin = createAdminClient();
+  const { data: before, error: loadError } = await admin
+    .from("cloud_generation_jobs")
+    .select("id,status,project_id,created_by_profile_id,job_type,created_at")
+    .eq("id", parsedJobId.data)
+    .maybeSingle();
+  if (loadError || !before || !["queued", "running"].includes(before.status))
+    redirect(
+      `/admin/cloud-ai?error=${encodeURIComponent(
+        "このJobは取消できない状態です。画面を再読み込みしてください",
+      )}`,
+    );
+
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("cancel_cloud_generation_job", {
+    p_job_id: parsedJobId.data,
+  });
+  if (error)
+    redirect(
+      `/admin/cloud-ai?error=${encodeURIComponent(
+        "Jobを取消できませんでした。状態を確認してから再度お試しください",
+      )}`,
+    );
+
+  await audit({
+    actorId: profile.id,
+    action: "cancel_generation_job",
+    targetType: "cloud_generation_job",
+    targetId: parsedJobId.data,
+    before,
+    after: { status: "canceled" },
+  });
+  revalidatePath("/admin/cloud-ai");
+  redirect(
+    `/admin/cloud-ai?message=${encodeURIComponent("Cloud AI Jobを取消しました")}`,
+  );
 }
 
 export async function updateCloudAiSettingsAction(formData: FormData) {

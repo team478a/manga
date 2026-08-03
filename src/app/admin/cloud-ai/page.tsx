@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   createCloudAiPriceAction,
+  cancelCloudAiJobAction,
   runCloudAiWorkerOnceAction,
   setCloudAiPriceActiveAction,
   updateCloudGeneralImageProviderAction,
@@ -19,6 +20,23 @@ export const maxDuration = 180;
 
 const money = (micros: number) => `$${(micros / 1_000_000).toFixed(4)}`;
 
+const jobStatusLabel: Record<string, string> = {
+  queued: "処理待ち",
+  running: "実行中",
+  failed: "失敗",
+};
+
+function elapsedLabel(value: string) {
+  const elapsedMinutes = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(value).getTime()) / 60_000),
+  );
+  if (elapsedMinutes < 60) return `${elapsedMinutes}分前`;
+  const hours = Math.floor(elapsedMinutes / 60);
+  if (hours < 24) return `${hours}時間前`;
+  return `${Math.floor(hours / 24)}日前`;
+}
+
 export default async function CloudAiAdminPage({searchParams}:{searchParams:Promise<{message?:string;error?:string}>}) {
   await requireAdmin();
   const query=await searchParams;
@@ -29,7 +47,7 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
       admin.from("cloud_ai_plans").select("*").order("plan_key"),
       admin.from("cloud_ai_provider_prices").select("*").order("created_at",{ascending:false}).limit(50),
       admin.from("cloud_ai_daily_costs").select("*").order("usage_date",{ascending:false}).limit(14),
-      admin.from("cloud_generation_jobs").select("id,provider_id,model_id,job_type,status,error_code,error_message,actual_cost_micros,created_at").in("status",["failed","running"]).order("created_at",{ascending:false}).limit(30),
+      admin.from("cloud_generation_jobs").select("id,project_id,page_id,created_by_profile_id,provider_id,model_id,job_type,status,error_code,actual_cost_micros,attempt_count,max_attempts,created_at,updated_at,owner:profiles!cloud_generation_jobs_created_by_profile_id_fkey(display_name),project:cloud_projects!cloud_generation_jobs_project_id_fkey(title)").in("status",["queued","failed","running"]).order("created_at",{ascending:false}).limit(50),
       admin.from("cloud_ai_admin_audit_logs").select("id,action,target_type,target_id,created_at,profiles:actor_profile_id(display_name)").order("created_at",{ascending:false}).limit(20),
       admin.from("cloud_ai_notifications").select("id,notification_type,severity,title,body,created_at").eq("audience","admin").order("created_at",{ascending:false}).limit(20),
       getCloudGeneralImageSettings(),
@@ -168,7 +186,7 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
       <div className="mt-5 overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr><th>Provider / Model</th><th>Job</th><th>Version</th><th>credit</th><th>最大原価</th><th>状態</th></tr></thead><tbody>{(pricesResult.data??[]).map((price:any)=><tr className="border-t" key={price.id}><td className="py-3">{price.provider_id}<br/>{price.model_id}</td><td>{price.kind}/{price.job_type}</td><td>{price.pricing_version}</td><td>{price.credits}</td><td>{money(price.max_cost_micros)}</td><td><form action={setCloudAiPriceActiveAction.bind(null,price.id,!price.active)}><button className="button-secondary" type="submit">{price.active?"停止":"有効化"}</button></form></td></tr>)}</tbody></table></div>
     </section>
     <section className="panel mt-6"><h2 className="text-xl font-bold">運用通知</h2><div className="mt-4 grid gap-3 md:grid-cols-2">{(notificationsResult.data??[]).map((notice:any)=><article className={`rounded border p-3 ${notice.severity==="critical"?"border-red-300 bg-red-50":"border-amber-300 bg-amber-50"}`} key={notice.id}><strong>{notice.title}</strong><p className="mt-1 text-sm">{notice.body}</p><p className="mt-2 text-xs text-stone-500">{new Date(notice.created_at).toLocaleString("ja-JP")}</p></article>)}{!notificationsResult.data?.length?<p className="text-stone-500">運用通知はありません。</p>:null}</div></section>
-    <div className="mt-6 grid gap-6 lg:grid-cols-2"><section className="panel"><h2 className="text-xl font-bold">失敗・実行中Job</h2><div className="mt-4 space-y-3">{(jobsResult.data??[]).map((job:any)=><div className="rounded border p-3 text-sm" key={job.id}><strong>{job.status}・{job.provider_id}/{job.model_id}</strong><p>{job.job_type}・{job.error_code??"errorなし"}</p><p className="text-stone-500">{job.error_message??job.id}</p></div>)}{!jobsResult.data?.length?<p className="text-stone-500">対象Jobはありません。</p>:null}</div></section>
+    <div className="mt-6 grid gap-6 lg:grid-cols-2"><section className="panel"><h2 className="text-xl font-bold">生成Jobの確認・取消</h2><p className="mt-2 text-sm text-stone-600">処理待ち・実行中・失敗Jobを確認できます。失敗Jobの再生成は作品編集画面から行ってください。</p><div className="mt-4 space-y-3">{(jobsResult.data??[]).map((job:any)=><article className="rounded border p-4 text-sm" key={job.id}><div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><strong>{jobStatusLabel[job.status]??job.status}・{job.job_type}</strong><p className="mt-1 text-stone-700">作品: {job.project?.title??"名称未取得"} / 利用者: {job.owner?.display_name??"名称未取得"}</p><p className="mt-1 text-stone-500">{job.provider_id}/{job.model_id}・試行 {job.attempt_count}/{job.max_attempts}・{elapsedLabel(job.updated_at??job.created_at)}</p>{job.status==="failed"?<p className="mt-2 rounded bg-red-50 px-3 py-2 text-red-800">処理に失敗しました（{job.error_code??"原因未分類"}）。利用者は作品編集画面から対象だけを再生成できます。</p>:null}</div>{["queued","running"].includes(job.status)?<form action={cancelCloudAiJobAction.bind(null,job.id)}><PendingSubmitButton className="button-secondary whitespace-nowrap" pendingLabel="取消中…">Jobを取消</PendingSubmitButton></form>:null}</div><details className="mt-3"><summary className="cursor-pointer text-stone-600">管理用IDを表示</summary><p className="mt-2 break-all font-mono text-xs text-stone-500">{job.id}</p></details></article>)}{!jobsResult.data?.length?<p className="text-stone-500">対象Jobはありません。</p>:null}</div></section>
       <section className="panel"><h2 className="text-xl font-bold">管理操作監査</h2><div className="mt-4 space-y-3">{(auditsResult.data??[]).map((log:any)=><div className="border-b pb-3 text-sm" key={log.id}><strong>{log.action}</strong><p>{log.target_type} / {log.target_id}</p><p className="text-stone-500">{new Date(log.created_at).toLocaleString("ja-JP")}</p></div>)}</div></section></div>
   </main>;
 }
