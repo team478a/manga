@@ -1074,7 +1074,7 @@ export function CloudCanvasEditor({
           {message}
         </p>
       ) : null}
-      <div className="mx-auto grid max-w-[1600px] gap-4 p-4 xl:grid-cols-[220px_minmax(480px,1fr)_320px]">
+      <div className="mx-auto grid max-w-[1600px] gap-4 p-4 min-[1360px]:grid-cols-[220px_minmax(480px,1fr)_320px]">
         <aside className="space-y-4">
           <section className="panel p-4">
             <h2 className="font-bold">ページ</h2>
