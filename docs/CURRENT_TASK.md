@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-04 一般向け画像生成Worker運用診断
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-ai-worker-operations`
+- 目的: 一般向け画像生成を自動運転へ進める前に、管理者がQueue状態とWorkerの実行可否を秘密値なしで確認できるようにする
+- 実装: `/admin/cloud-ai`へ待機中・実行中・失敗Job件数、公開チェック導線、管理者限定の1件手動実行、処理中・完了・失敗案内を追加
+- 安全性: Worker署名Secretをブラウザーへ返さず、実行先は現在のVercel deploymentまたは設定済み本番originへ固定する
+- migration／外部API: 追加なし。手動実行時だけ設定済みProviderでCloud AI Jobを最大1件処理する
+- 検証: 専用3/3、Hub 450/450、deps、Hub typecheck、lint、migration 48本、production build、diff check成功
+- 未完了: Draft PR、Vercel Preview、実Providerを使わないQueue空状態の実ブラウザ確認
+
 ## 2026-08-03 管理画面全体の耐障害化
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

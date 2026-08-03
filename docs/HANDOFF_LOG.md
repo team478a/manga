@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-04 Codex: 一般向け画像生成Worker運用診断
+
+- Branch: `codex/cloud-ai-worker-operations`
+- `/admin/cloud-ai`へQueueの待機中・実行中・失敗件数を追加した。
+- 環境有効化と32文字以上の署名Secretが揃った場合だけ、管理者が待機中Jobを1件処理できる診断操作を追加した。
+- Worker署名SecretはServer Action内だけで利用し、Client、URL、監査ログへ保存しない。
+- Worker呼び出し先は現在のVercel deploymentを優先し、任意hostへの送信を拒否する。
+- 継続処理には外部Schedulerが必要であり、手動実行は診断用であることを画面へ明記した。
+- migration、Feature Flag、Provider設定、本番環境は変更していない。
+- 専用3/3、Hub 450/450、deps、Hub typecheck、lint、migration 48本、production build、diff checkが成功した。
+
 ## 2026-08-02 Codex: 一般向けCloud漫画制作スタック統合
 
 ### 状態
