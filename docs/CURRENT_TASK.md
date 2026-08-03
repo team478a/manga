@@ -962,3 +962,12 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 管理画面へ直近7日、未完了、重大報告の集計と診断・添付確認を追加。
 - Workerの自動マージ・本番反映は禁止を維持。Phase 1ブランチをbaseとするstacked Draft PRで確認する。
 - 検証: 専用6/6、Hub 438/438、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。
+
+## 2026-08-03 Codex: Cloudアカウント管理
+
+- `/dashboard/account`で本人の表示名、メール、権限、メール確認、登録日時、最終ログインを確認可能にする。
+- 表示名・自己紹介、確認メール方式のメールアドレス、パスワードを本人が変更できるようにする。
+- ヘッダーとダッシュボードへ常設導線を追加し、各更新操作は処理中表示と二重送信防止を行う。
+- 未知のSupabase認証エラーは画面へ露出しない。退会は作品・購入データ保護のため管理者対応を維持する。
+- migration、環境変数、外部Providerの追加はない。
+- 検証: 専用2/2、Hub 440/440、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。

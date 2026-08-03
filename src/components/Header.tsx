@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogIn, LogOut, Search, UserPlus } from "lucide-react";
+import { LogIn, LogOut, Search, UserPlus, UserRound } from "lucide-react";
 import { signOut } from "@/app/actions";
 import { getCurrentProfile } from "@/lib/auth";
 
@@ -29,6 +29,10 @@ export async function Header() {
               ) : null}
               <Link className="button-secondary" href="/dashboard">
                 マイページ
+              </Link>
+              <Link className="button-secondary" href="/dashboard/account">
+                <UserRound className="mr-2 h-5 w-5" />
+                アカウント
               </Link>
               <form action={signOut}>
                 <button className="button-secondary" type="submit">
