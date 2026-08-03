@@ -9,20 +9,28 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function completeGeneralMonitorOnboardingAction() {
   const { profile } = await requireProfile();
+  let actionError: string | null = null;
+
   try {
     await requireCloudGeneralMonitor(profile.id);
+    const supabase = await createClient();
+    const { error } = await supabase.rpc(
+      "complete_cloud_general_monitor_onboarding",
+    );
+    if (error) {
+      actionError =
+        "初回案内を完了できませんでした。時間をおいてもう一度お試しください。";
+    }
   } catch (error) {
-    const message = safeDomainErrorMessage(
+    actionError = safeDomainErrorMessage(
       error,
       "モニター利用状況を確認できませんでした。管理者へお問い合わせください。",
     );
-    redirect(`/dashboard/monitor/welcome?error=${encodeURIComponent(message)}`);
   }
-  const { error } = await (await createClient()).rpc(
-    "complete_cloud_general_monitor_onboarding",
-  );
-  if (error)
-    redirect("/dashboard/monitor/welcome?error=初回案内を完了できませんでした");
+
+  if (actionError)
+    redirect(`/dashboard/monitor/welcome?error=${encodeURIComponent(actionError)}`);
+
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/monitor");
   redirect("/dashboard?message=モニター利用を開始しました");

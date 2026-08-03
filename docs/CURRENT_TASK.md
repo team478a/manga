@@ -962,3 +962,10 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 管理画面へ直近7日、未完了、重大報告の集計と診断・添付確認を追加。
 - Workerの自動マージ・本番反映は禁止を維持。Phase 1ブランチをbaseとするstacked Draft PRで確認する。
 - 検証: 専用6/6、Hub 438/438、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。
+
+## 2026-08-03 Codex: モニター開始画面の例外処理強化
+
+- `/dashboard/monitor/welcome` の開始操作でDB接続またはRPCが例外終了しても、Next.jsの汎用エラー画面へ落とさず日本語の再試行案内へ戻す。
+- モニター情報取得時の一時的な管理クライアント生成失敗を安全に未取得として扱う。
+- ページ固有のError Boundaryを追加し、再読み込みとダッシュボード復帰を提供する。
+- migration、環境変数、DB schemaの変更はない。

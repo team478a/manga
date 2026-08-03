@@ -33,15 +33,21 @@ export function cloudGeneralMonitorBetaEnabled() {
 
 export async function getCloudGeneralMonitorEnrollment(profileId: string) {
   if (!cloudGeneralMonitorBetaEnabled()) return null;
-  const { data, error } = await createAdminClient()
-    .from("cloud_general_monitor_enrollments")
-    .select(
-      "profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at",
-    )
-    .eq("profile_id", profileId)
-    .maybeSingle<CloudGeneralMonitorEnrollment>();
-  if (error) return null;
-  return data;
+  try {
+    const { data, error } = await createAdminClient()
+      .from("cloud_general_monitor_enrollments")
+      .select(
+        "profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at",
+      )
+      .eq("profile_id", profileId)
+      .maybeSingle<CloudGeneralMonitorEnrollment>();
+    if (error) return null;
+    return data;
+  } catch {
+    // A missing server credential or a temporary database failure must not
+    // turn a monitor-facing page into the framework's generic error screen.
+    return null;
+  }
 }
 
 export function isCloudGeneralMonitorActive(

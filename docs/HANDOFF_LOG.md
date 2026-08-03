@@ -2979,3 +2979,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 利用者の報告履歴と通知導線、管理者の集計・診断・署名URL画像確認を追加。
 - 実Worker、自動マージ、Supabase適用、本番公開は未実施。
 - 検証: 専用6/6、Hub 438/438、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。
+
+## 2026-08-03 Codex: モニター開始Server Actionの再修正
+
+- 本番の`/dashboard/monitor/welcome`は再読み込みで表示できる一方、開始ボタン実行時にServer Actionの未処理例外で黒い汎用エラー画面へ遷移することを確認。
+- 初回開始ActionのDB/RPC経路を全体的に捕捉し、失敗時は同ページの日本語エラー表示へ戻す構造へ変更。
+- モニター情報取得とページ表示にも例外時の安全なフォールバックを追加。
+- migration、環境変数、外部API実行は追加なし。
