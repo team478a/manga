@@ -2994,3 +2994,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 開始ボタンは二重送信防止、`開始準備中…`、画面内エラー、成功時ダッシュボード遷移を提供。
 - APIは同一origin、認証、モニター権限を検査し、すべての失敗を内部情報を含まないJSONへ変換。
 - migration、環境変数、外部API実行は追加なし。
+
+## 2026-08-03 Codex: モニター開始後ダッシュボード安定化
+
+- PR #134のAPI化により開始RPCと`/dashboard?message=...`への遷移成功を本番で確認。
+- 遷移後のダッシュボードServer Renderで、一部データ取得失敗がページ全体へ波及する問題を修正。
+- 市場分析履歴、モニター情報、更新情報、通知を`Promise.allSettled`で独立取得し、失敗時は安全な既定値へフォールバック。
+- 開始成功メッセージとダッシュボード専用の日本語error boundaryを追加。
+- migration、環境変数、外部API実行は追加なし。

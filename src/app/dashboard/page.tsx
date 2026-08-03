@@ -10,11 +10,16 @@ import {
   isCloudGeneralMonitorActive,
 } from "@/lib/cloud-general-monitor";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ message?: string }>;
+}) {
   const enabled = cloudResearchFeatureEnabled();
   const { profile } = await requireProfile();
   const supabase = await createClient();
-  const [reports, monitor, updatesResult, notificationsResult] = await Promise.all([
+  const { message } = await searchParams;
+  const [reportsResult, monitorResult, updatesQueryResult, notificationsQueryResult] = await Promise.allSettled([
     enabled ? listCloudResearchReports(profile.id) : Promise.resolve([]),
     getCloudGeneralMonitorEnrollment(profile.id),
     supabase.from("cloud_product_updates")
@@ -26,6 +31,14 @@ export default async function DashboardPage() {
       .eq("profile_id", profile.id)
       .is("read_at", null),
   ]);
+  const reports = reportsResult.status === "fulfilled" ? reportsResult.value : [];
+  const monitor = monitorResult.status === "fulfilled" ? monitorResult.value : null;
+  const updatesResult = updatesQueryResult.status === "fulfilled"
+    ? updatesQueryResult.value
+    : { data: null, error: true };
+  const notificationsResult = notificationsQueryResult.status === "fulfilled"
+    ? notificationsQueryResult.value
+    : { count: 0, error: true };
   const latest = reports[0];
   const monitorActive = isCloudGeneralMonitorActive(monitor) &&
     Boolean(monitor && monitor.ai_requests_used < monitor.ai_request_limit);
@@ -45,6 +58,12 @@ export default async function DashboardPage() {
           一般向けモニター
         </span>
       </div>
+
+      {message ? (
+        <p className="mt-5 rounded-xl bg-green-50 p-4 text-green-800" role="status">
+          {message}
+        </p>
+      ) : null}
 
       <section className="panel mt-7 border-violet-200 shadow-soft">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
