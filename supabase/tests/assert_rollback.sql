@@ -2,6 +2,13 @@
 
 do $$
 begin
+  if to_regprocedure('public.sync_cloud_product_update_notifications()') is not null then
+    raise exception 'cloud product update notification function still exists after rollback';
+  end if;
+end $$;
+
+do $$
+begin
   if to_regclass('public.cloud_chapters') is not null
      or to_regclass('public.cloud_scenes') is not null
      or to_regprocedure('public.move_cloud_page_before(uuid,uuid)') is not null then

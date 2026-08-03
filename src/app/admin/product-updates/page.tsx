@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { changeProductUpdateStateAction, createProductUpdateAction } from "./actions";
+import { changeProductUpdateStateAction, createAutomaticProductUpdateDraftAction, createProductUpdateAction } from "./actions";
 
 type ProductUpdate = {
   id: string;
@@ -49,6 +49,20 @@ export default async function ProductUpdatesAdminPage({
           更新情報用migrationが未適用です。適用後に再読み込みしてください。
         </p>
       ) : null}
+
+      <form action={createAutomaticProductUpdateDraftAction} className="panel mt-6 space-y-4 border-violet-200">
+        <div>
+          <p className="text-sm font-bold text-violet-700">かんたん作成</p>
+          <h2 className="mt-1 text-xl font-bold">変更メモから下書きを自動作成</h2>
+          <p className="mt-1 text-sm text-stone-600">実装した内容を短く入力すると、利用者向けのタイトルと説明を作ります。自動公開はしません。</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="sm:col-span-2"><label className="label" htmlFor="draft-change-memo">変更内容</label><textarea className="field min-h-28" id="draft-change-memo" maxLength={5000} name="changeMemo" placeholder="例：ダッシュボードから不具合や改善要望を送れるようにした" required /></div>
+          <div><label className="label" htmlFor="draft-category">種類</label><select className="field" id="draft-category" name="category"><option value="release">新機能</option><option value="improvement">改善</option><option value="fix">不具合修正</option><option value="maintenance">メンテナンス</option></select></div>
+          <div><label className="label" htmlFor="draft-action-url">関連画面（任意）</label><input className="field" id="draft-action-url" maxLength={500} name="actionUrl" placeholder="/dashboard/monitor" /></div>
+        </div>
+        <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" pendingLabel="下書き作成中…">下書きを自動作成</PendingSubmitButton>
+      </form>
 
       <form action={createProductUpdateAction} className="panel mt-6 space-y-4">
         <h2 className="text-xl font-bold">更新情報を追加</h2>

@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-03 更新情報の自動通知と公開センター
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/product-update-notifications-v1`
+- 目的: 管理者が確認して公開した更新情報を、利用者のダッシュボードと通知へ自動反映する
+- 実装: 変更メモからの安全な下書き作成、公開時の有効モニター通知、非公開時の通知取下げ、更新情報一覧・詳細画面
+- 安全性: 下書きは自動公開せず、公開判断は管理者に限定。通知は一意キーで重複を防止
+- migration: `202608030003_cloud_product_update_notifications.sql`
+- 環境変数／外部API: 追加なし
+- 検証: 専用3/3、Hub 441/441、deps、Hub typecheck、Lint、49 migration静的検査、PostgreSQL 16 forward／rollback／reapply／canonical二重適用、production build成功
+- 未完了: Draft PR、Vercel Preview、Supabase適用、実ブラウザ確認
+
 ## 2026-08-03 モニター開始後ダッシュボード安定化
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

@@ -3002,3 +3002,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 市場分析履歴、モニター情報、更新情報、通知を`Promise.allSettled`で独立取得し、失敗時は安全な既定値へフォールバック。
 - 開始成功メッセージとダッシュボード専用の日本語error boundaryを追加。
 - migration、環境変数、外部API実行は追加なし。
+
+## 2026-08-03 Codex: 更新情報の自動通知と公開センター
+
+- 管理画面の変更メモから、利用者向け更新情報の下書きを自動作成できるようにした。
+- 自動作成は必ず下書きで止め、管理者が内容を確認して公開する運用境界を維持した。
+- 公開時は有効期限内の一般モニターへ通知を重複なく作成し、非公開・アーカイブ時は通知を取り下げるDB triggerを追加した。
+- 利用者向け`/dashboard/updates`一覧、詳細画面、通知からの詳細導線、サイドバー導線を追加した。
+- migration: `202608030003_cloud_product_update_notifications.sql`。環境変数と外部APIは追加なし。
+- 専用3/3、Hub 441/441、deps、typecheck、lint、49 migration、PostgreSQL 16往復、canonical二重適用、production buildに成功した。
