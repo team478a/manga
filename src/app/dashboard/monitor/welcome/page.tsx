@@ -2,7 +2,11 @@ import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
-import { requireCloudGeneralMonitor } from "@/lib/cloud-general-monitor";
+import {
+  getCloudGeneralMonitorEnrollment,
+  getCloudGeneralMonitorUnavailableMessage,
+  isCloudGeneralMonitorActive,
+} from "@/lib/cloud-general-monitor";
 import { completeGeneralMonitorOnboardingAction } from "./actions";
 
 export default async function GeneralMonitorWelcomePage({
@@ -11,8 +15,29 @@ export default async function GeneralMonitorWelcomePage({
   searchParams: Promise<{ error?: string }>;
 }) {
   const { profile } = await requireProfile();
-  const enrollment = await requireCloudGeneralMonitor(profile.id);
+  const enrollment = await getCloudGeneralMonitorEnrollment(profile.id);
   const { error } = await searchParams;
+  const monitorActive = isCloudGeneralMonitorActive(enrollment);
+
+  if (!enrollment || !monitorActive) {
+    const unavailableMessage = getCloudGeneralMonitorUnavailableMessage(enrollment);
+
+    return (
+      <main className="page max-w-3xl">
+        <p className="font-semibold text-violet-700">一般向け・招待制モニター</p>
+        <h1 className="mt-2 text-3xl font-bold">モニターを開始できません</h1>
+        <section className="panel mt-6" role="alert">
+          <h2 className="text-xl font-bold">利用状況をご確認ください</h2>
+          <p className="mt-3 text-stone-600">{unavailableMessage}</p>
+        </section>
+        <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <Link className="button-secondary" href="/dashboard">ダッシュボードへ戻る</Link>
+          <Link className="button-secondary" href="/dashboard/monitor">モニター状況を確認</Link>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="page max-w-3xl">
       <p className="font-semibold text-violet-700">一般向け・招待制モニター</p>

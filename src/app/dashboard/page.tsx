@@ -68,7 +68,7 @@ export default async function DashboardPage() {
           )}
         </div>
       </section>
-      {monitor && !monitor.onboarding_completed_at ? (
+      {monitorActive && monitor && !monitor.onboarding_completed_at ? (
         <section className="mt-5 rounded-xl border border-violet-200 bg-violet-50 p-5">
           <h2 className="font-bold text-violet-950">初回案内が未確認です</h2>
           <p className="mt-1 text-sm text-violet-900">利用条件と制作の進め方を確認してから開始してください。</p>
