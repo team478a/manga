@@ -8,6 +8,7 @@
 
 - Branch: `codex/cloud-ai-worker-scheduler`
 - Base: `origin/feature/manga-canvas-mvp` (`280cb4c`、PR #145 merge後)
+- Draft PR: [#146](https://github.com/team478a/manga/pull/146)
 - GitHub Actions scheduled workflowで一般向けCloud AI Queueを5分間隔、1回最大3件処理する基盤を追加した。
 - Repository variable未設定、Secret不足、不正URLは外部通信前にfail closedとなる。
 - 同時実行を禁止し、idle／retrying／lease_lostで停止する。秘密値、Provider応答本文、Job IDはログへ出さない。
