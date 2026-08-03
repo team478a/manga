@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-03 モニター報告導線の常設
+
+- 状態: `IMPLEMENTED_AWAITING_REVIEW`
+- Branch: `codex/add-monitor-feedback-navigation-v1`
+- 目的: 制作中のどの画面からでも不具合・改善依頼・機能リクエストを迷わず送信できるようにする
+- 実装: 共通左ナビへ目立つ「不具合・ご意見」を追加し、報告フォームへ直接スクロールする
+- 診断: 遷移元pathnameを安全に引き継ぎ、発生画面URLへ自動設定する
+- migration／環境変数／外部API: 追加なし
+- 未完了: 品質ゲート、Draft PR、Vercel Preview、本番確認
+
 ## 2026-08-03 モニター開始後ダッシュボード安定化
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`

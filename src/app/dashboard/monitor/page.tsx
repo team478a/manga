@@ -47,10 +47,13 @@ const publicStatusLabels = {
 export default async function GeneralMonitorPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; message?: string }>;
+  searchParams: Promise<{ error?: string; message?: string; from?: string }>;
 }) {
   const { profile } = await requireProfile();
-  const { error, message } = await searchParams;
+  const { error, message, from } = await searchParams;
+  const sourcePagePath = from?.startsWith("/") && !from.startsWith("//")
+    ? from
+    : undefined;
   const enrollment = await getCloudGeneralMonitorEnrollment(profile.id);
   const notice = getCloudGeneralMonitorNotice(enrollment);
   const { data: feedback } = await (await createClient())
@@ -91,7 +94,9 @@ export default async function GeneralMonitorPage({
           {isCloudGeneralMonitorActive(enrollment) && !enrollment.onboarding_completed_at ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href="/dashboard/monitor/welcome">初回案内を確認</Link> : null}
           {error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{error}</p> : null}
           {message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
-          {enrollment.status === "active" ? <MonitorFeedbackForm /> : null}
+          {enrollment.status === "active" ? (
+            <MonitorFeedbackForm initialPagePath={sourcePagePath} />
+          ) : null}
           <section className="panel mt-6">
             <h2 className="text-xl font-bold">送信履歴</h2>
             <div className="mt-4 space-y-3">

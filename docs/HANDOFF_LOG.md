@@ -3002,3 +3002,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 市場分析履歴、モニター情報、更新情報、通知を`Promise.allSettled`で独立取得し、失敗時は安全な既定値へフォールバック。
 - 開始成功メッセージとダッシュボード専用の日本語error boundaryを追加。
 - migration、環境変数、外部API実行は追加なし。
+
+## 2026-08-03 Codex: 不具合・ご意見導線の常設
+
+- DashboardとCloud Creatorで共有する左ナビへ、アンバー色の「不具合・ご意見」を常設。
+- クリックすると`/dashboard/monitor#feedback-form`へ直接移動し、フォーム位置までスクロール。
+- 遷移元pathnameをqueryで渡し、報告フォームの「発生した画面URL」へ同一origin URLとして自動設定。
+- `//`で始まる値を拒否し、外部URLを自動設定しない。
+- migration、環境変数、外部API実行は追加なし。

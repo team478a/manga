@@ -20,11 +20,13 @@ test("運用migrationは本人オンボーディングと管理者レビュー�
 });
 
 test("警告と初回案内は利用可能なモニターだけに表示される",async()=>{
-  const [library,dashboard,dashboardError,monitor,welcome,startButton,onboardingApi,welcomeError]=await Promise.all([
+  const [library,dashboard,dashboardError,shell,monitor,feedbackForm,welcome,startButton,onboardingApi,welcomeError]=await Promise.all([
     readFile(new URL("../src/lib/cloud-general-monitor.ts",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/page.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/error.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../src/components/CloudWorkflowShell.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/monitor/page.tsx",import.meta.url),"utf8"),
+    readFile(new URL("../src/app/dashboard/monitor/MonitorFeedbackForm.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/monitor/welcome/page.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/dashboard/monitor/welcome/MonitorStartButton.tsx",import.meta.url),"utf8"),
     readFile(new URL("../src/app/api/monitor/onboarding/route.ts",import.meta.url),"utf8"),
@@ -40,6 +42,12 @@ test("警告と初回案内は利用可能なモニターだけに表示され�
   assert.match(dashboardError,/reset/);
   assert.match(dashboard,/monitorActive && monitor && !monitor\.onboarding_completed_at/);
   assert.match(monitor,/isCloudGeneralMonitorActive\(enrollment\) && !enrollment\.onboarding_completed_at/);
+  assert.match(shell,/不具合・ご意見/);
+  assert.match(shell,/encodeURIComponent\(pathname\)/);
+  assert.match(shell,/#feedback-form/);
+  assert.match(monitor,/initialPagePath=\{sourcePagePath\}/);
+  assert.match(feedbackForm,/id="feedback-form"/);
+  assert.match(feedbackForm,/window\.location\.origin/);
   assert.match(welcome,/APIキー、パスワード、個人情報/);
   assert.match(welcome,/getCloudGeneralMonitorEnrollment/);
   assert.doesNotMatch(welcome,/requireCloudGeneralMonitor/);
