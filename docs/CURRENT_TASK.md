@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-04 Cloud AI Job運用改善
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-ai-job-operations`
+- 目的: 管理者がCloud AIの処理待ち・実行中・失敗Jobを安全に把握し、不要な待機／実行中Jobを取り消せるようにする
+- 実装: `/admin/cloud-ai`へ作品名、利用者名、状態、試行回数、経過時間、管理用ID、取消操作と処理中表示を追加
+- 安全性: 取消は既存の課金補償RPCを認証済み管理者として実行し、予約credit／原価を解放する。Providerの生error message、Prompt、秘密値は表示・監査しない
+- 再生成: 失敗Jobは管理者が所有者を代行して再登録せず、利用者が作品編集画面から対象だけを再生成する既存境界を維持
+- migration／環境変数／外部API: 追加・実行なし
+- 検証: 専用2/2、Hub 452/452、deps、lint、Hub typecheck、migration 48本、production build、diff check成功
+- 未完了: Draft PR、Vercel Preview、認証済み管理画面での実ブラウザ確認
+
 ## 2026-08-04 一般向け画像生成Worker運用診断
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
