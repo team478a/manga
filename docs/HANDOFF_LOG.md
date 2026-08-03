@@ -3002,3 +3002,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 市場分析履歴、モニター情報、更新情報、通知を`Promise.allSettled`で独立取得し、失敗時は安全な既定値へフォールバック。
 - 開始成功メッセージとダッシュボード専用の日本語error boundaryを追加。
 - migration、環境変数、外部API実行は追加なし。
+
+## 2026-08-03 Codex: 管理画面共通TOP導線
+
+- Admin配下に共通layoutを追加し、ユーザー管理を含むすべての管理画面へ「管理画面TOPへ」を常時表示。
+- 各ページへの個別実装ではなく`src/app/admin/layout.tsx`で一括適用し、今後追加する管理画面にも自動適用。
+- スマートフォン幅、キーボードfocus、管理画面ナビゲーションのaria labelに対応。
+- migration、環境変数、外部API実行は追加なし。
+- 検証: 専用1/1、Hub 439/439、deps、Hub typecheck、lint、production build、diff check成功。
