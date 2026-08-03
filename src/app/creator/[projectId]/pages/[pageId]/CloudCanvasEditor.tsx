@@ -54,7 +54,6 @@ import {
   cancelGeneration,
   createGenerationJob,
   createStoryboardPanelGenerationJob,
-  creatorProjectExportUrl,
   getAiQuota,
   getAssetUrl,
   listGenerationJobs,
@@ -1007,24 +1006,15 @@ export function CloudCanvasEditor({
               作品を書き出す
             </summary>
             <div className="absolute right-0 z-40 mt-2 grid w-60 gap-2 rounded-lg border border-stone-200 bg-white p-3 shadow-xl">
-              <a
+              <Link
                 className="button-secondary"
-            href={creatorProjectExportUrl(project.id, "pdf")}
+                href={`/creator/${project.id}#durable-export`}
               >
-                本編PDF
-              </a>
-              <a
-                className="button-secondary"
-            href={creatorProjectExportUrl(project.id, "images")}
-              >
-                連番画像ZIP
-              </a>
-              <a
-                className="button-secondary"
-            href={creatorProjectExportUrl(project.id, "package")}
-              >
-                販売パッケージ
-              </a>
+                安全な完成PDF書き出しへ
+              </Link>
+              <p className="text-xs leading-5 text-stone-600">
+                作品画面で4ページずつ処理します。画面を閉じても継続し、失敗箇所から再開できます。
+              </p>
             </div>
           </details>
           <button
@@ -1057,10 +1047,17 @@ export function CloudCanvasEditor({
           {saveState === "conflict" ? (
             <button
               className="button-secondary"
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    "別のタブまたは端末で保存された最新状態を読み込みます。この画面の未保存変更は破棄されます。続けますか？",
+                  )
+                )
+                  window.location.reload();
+              }}
               type="button"
             >
-              最新状態を再読込
+              最新状態を読み込む
             </button>
           ) : (
             <button
@@ -1068,7 +1065,7 @@ export function CloudCanvasEditor({
               onClick={() => void save()}
               type="button"
             >
-              今すぐ再試行
+              未保存内容を保ったまま再試行
             </button>
           )}
         </div>

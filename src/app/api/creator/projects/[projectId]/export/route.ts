@@ -7,6 +7,10 @@ import { toApiError } from "@/lib/api-errors";
 
 const formatSchema = z.enum(["pdf", "images", "package"]);
 
+// Kept as a compatibility fallback. The editor routes long-form exports through
+// the durable segmented worker instead of calling this synchronous endpoint.
+export const maxDuration = 300;
+
 export async function GET(
   request: Request,
   context: { params: Promise<{ projectId: string }> },

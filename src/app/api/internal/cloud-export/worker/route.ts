@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { processNextCloudExportJob } from "@/lib/cloud-export-worker";
 
 export const runtime = "nodejs";
+// A segment renders up to eight pages and the last segment also merges the PDF.
+export const maxDuration = 300;
 
 function authorized(request: Request) {
   const expected = process.env.MANGAI_CLOUD_EXPORT_WORKER_SECRET;

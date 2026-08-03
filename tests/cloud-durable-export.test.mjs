@@ -55,8 +55,13 @@ test("Workerはページ画像・分割PDF・完成PDFを非公開Storageへ保�
 
 test("作品画面は進捗・停止・再開・失敗箇所からの再開を表示する", () => {
   const component = read("src/app/creator/[projectId]/DurableExportPanel.tsx");
+  const autoRefresh = read("src/app/creator/[projectId]/DurableExportAutoRefresh.tsx");
   assert.match(component, /4ページずつ安全に処理/);
   assert.match(component, /一時停止/);
   assert.match(component, /失敗箇所から再開/);
   assert.match(component, /PDFをダウンロード/);
+  assert.match(component, /DurableExportAutoRefresh/);
+  assert.match(autoRefresh, /window\.setInterval/);
+  assert.match(autoRefresh, /router\.refresh/);
+  assert.match(autoRefresh, /5秒ごとに自動更新/);
 });
