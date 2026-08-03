@@ -3010,3 +3010,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - スマートフォン幅、キーボードfocus、管理画面ナビゲーションのaria labelに対応。
 - migration、環境変数、外部API実行は追加なし。
 - 検証: 専用1/1、Hub 439/439、deps、Hub typecheck、lint、production build、diff check成功。
+
+## 2026-08-03 Codex: 更新情報管理の耐障害化
+
+- `/admin/product-updates`のDB取得・接続例外を捕捉し、黒い汎用エラー画面ではなく画面内の安全な案内へ変換。
+- 利用不可時は更新情報フォームを無効化し、保存・公開状態変更の例外も内部情報を露出しない日本語メッセージへ変換。
+- 予期しない描画失敗用のroute error boundaryに再読み込みと管理画面TOP導線を追加。
+- migration、環境変数、外部API実行は追加なし。
+- 検証: 専用3/3、Hub 442/442、deps、Hub typecheck、lint、production build、diff check成功。

@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-03 更新情報管理の耐障害化
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/fix-admin-product-updates-v1`
+- 目的: `/admin/product-updates`のDB接続・取得失敗で黒い汎用エラー画面になる問題を解消する
+- 実装: 読み込み、保存、公開状態変更の例外を安全な日本語案内へ変換し、利用不可時は入力を停止
+- UI: 予期しない描画失敗にも専用の再読み込み・管理画面TOP導線を表示
+- migration／環境変数／外部API: 追加なし
+- 検証: 専用3/3、Hub 442/442、deps、Hub typecheck、lint、production build、diff check成功
+- 未完了: Draft PR、Vercel Preview、本番確認
+
 ## 2026-08-03 管理画面共通TOP導線
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

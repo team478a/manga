@@ -23,6 +23,30 @@ const categoryLabels = {
   maintenance: "メンテナンス",
 } as const;
 
+async function loadProductUpdates() {
+  try {
+    const result = await createAdminClient()
+      .from("cloud_product_updates")
+      .select("id,title,summary,details,category,action_url,published_at,archived_at,created_at")
+      .order("created_at", { ascending: false })
+      .limit(100)
+      .returns<ProductUpdate[]>();
+
+    if (result.error) {
+      console.error("[admin/product-updates] query failed", result.error.code);
+      return { updates: [] as ProductUpdate[], unavailable: true };
+    }
+
+    return { updates: result.data ?? [], unavailable: false };
+  } catch (error) {
+    console.error(
+      "[admin/product-updates] connection failed",
+      error instanceof Error ? error.name : "unknown",
+    );
+    return { updates: [] as ProductUpdate[], unavailable: true };
+  }
+}
+
 export default async function ProductUpdatesAdminPage({
   searchParams,
 }: {
@@ -30,12 +54,7 @@ export default async function ProductUpdatesAdminPage({
 }) {
   await requireAdmin();
   const { error, message } = await searchParams;
-  const result = await createAdminClient()
-    .from("cloud_product_updates")
-    .select("id,title,summary,details,category,action_url,published_at,archived_at,created_at")
-    .order("created_at", { ascending: false })
-    .limit(100)
-    .returns<ProductUpdate[]>();
+  const { updates, unavailable } = await loadProductUpdates();
 
   return (
     <main className="page max-w-5xl">
@@ -44,15 +63,15 @@ export default async function ProductUpdatesAdminPage({
       <p className="mt-2 text-stone-600">モニターのダッシュボードへ表示する新機能・改善・修正情報を管理します。</p>
       {error ? <p className="mt-5 rounded-xl bg-red-50 p-4 text-red-800" role="alert">{error}</p> : null}
       {message ? <p className="mt-5 rounded-xl bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
-      {result.error ? (
+      {unavailable ? (
         <p className="mt-5 rounded-xl bg-amber-50 p-4 text-amber-950" role="alert">
-          更新情報用migrationが未適用です。適用後に再読み込みしてください。
+          更新情報を一時的に読み込めませんでした。時間をおいて再読み込みしてください。解消しない場合は、管理者設定とmigrationの適用状況を確認してください。
         </p>
       ) : null}
 
       <form action={createProductUpdateAction} className="panel mt-6 space-y-4">
         <h2 className="text-xl font-bold">更新情報を追加</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <fieldset className="grid gap-4 sm:grid-cols-2" disabled={unavailable}>
           <div className="sm:col-span-2">
             <label className="label" htmlFor="update-title">タイトル</label>
             <input className="field" id="update-title" maxLength={120} name="title" required />
@@ -78,19 +97,21 @@ export default async function ProductUpdatesAdminPage({
             <label className="label" htmlFor="update-details">詳しい説明（任意）</label>
             <textarea className="field min-h-32" id="update-details" maxLength={5000} name="details" />
           </div>
-        </div>
-        <label className="flex items-center gap-2 text-sm font-semibold">
-          <input name="publishNow" type="checkbox" />
-          保存と同時に公開する
-        </label>
-        <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" pendingLabel="保存中…">
-          更新情報を保存
-        </PendingSubmitButton>
+          <label className="flex items-center gap-2 text-sm font-semibold sm:col-span-2">
+            <input name="publishNow" type="checkbox" />
+            保存と同時に公開する
+          </label>
+          <div className="sm:col-span-2">
+            <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" pendingLabel="保存中…">
+              更新情報を保存
+            </PendingSubmitButton>
+          </div>
+        </fieldset>
       </form>
 
       <section className="mt-7 space-y-3">
         <h2 className="text-xl font-bold">登録済み</h2>
-        {(result.data ?? []).map((item) => (
+        {updates.map((item) => (
           <article className="panel" key={item.id}>
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
@@ -122,7 +143,7 @@ export default async function ProductUpdatesAdminPage({
             </div>
           </article>
         ))}
-        {!result.data?.length && !result.error ? <p className="panel text-stone-600">更新情報はまだありません。</p> : null}
+        {!updates.length && !unavailable ? <p className="panel text-stone-600">更新情報はまだありません。</p> : null}
       </section>
     </main>
   );
