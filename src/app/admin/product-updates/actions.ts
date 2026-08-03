@@ -34,16 +34,22 @@ export async function createProductUpdateAction(formData: FormData) {
     publishNow: formData.get("publishNow") === "on",
   });
   if (!parsed.success) redirect("/admin/product-updates?error=更新情報の入力内容を確認してください");
-  const { error } = await createAdminClient().from("cloud_product_updates").insert({
-    title: parsed.data.title,
-    summary: parsed.data.summary,
-    details: parsed.data.details || null,
-    category: parsed.data.category,
-    action_url: parsed.data.actionUrl || null,
-    published_at: parsed.data.publishNow ? new Date().toISOString() : null,
-    created_by_profile_id: profile.id,
-  });
-  if (error) redirect("/admin/product-updates?error=更新情報を保存できませんでした。migrationを確認してください");
+  let saveFailed = false;
+  try {
+    const { error } = await createAdminClient().from("cloud_product_updates").insert({
+      title: parsed.data.title,
+      summary: parsed.data.summary,
+      details: parsed.data.details || null,
+      category: parsed.data.category,
+      action_url: parsed.data.actionUrl || null,
+      published_at: parsed.data.publishNow ? new Date().toISOString() : null,
+      created_by_profile_id: profile.id,
+    });
+    saveFailed = Boolean(error);
+  } catch {
+    saveFailed = true;
+  }
+  if (saveFailed) redirect("/admin/product-updates?error=更新情報を保存できませんでした。設定を確認してもう一度お試しください");
   revalidatePath("/dashboard");
   revalidatePath("/admin/product-updates");
   redirect("/admin/product-updates?message=更新情報を保存しました");
@@ -62,11 +68,17 @@ export async function changeProductUpdateStateAction(formData: FormData) {
     : parsed.data.operation === "unpublish"
       ? { published_at: null, updated_at: now }
       : { archived_at: now, updated_at: now };
-  const { error } = await createAdminClient()
-    .from("cloud_product_updates")
-    .update(values)
-    .eq("id", parsed.data.updateId);
-  if (error) redirect("/admin/product-updates?error=公開状態を変更できませんでした");
+  let updateFailed = false;
+  try {
+    const { error } = await createAdminClient()
+      .from("cloud_product_updates")
+      .update(values)
+      .eq("id", parsed.data.updateId);
+    updateFailed = Boolean(error);
+  } catch {
+    updateFailed = true;
+  }
+  if (updateFailed) redirect("/admin/product-updates?error=公開状態を変更できませんでした。時間をおいてもう一度お試しください");
   revalidatePath("/dashboard");
   revalidatePath("/admin/product-updates");
   redirect("/admin/product-updates?message=公開状態を更新しました");
