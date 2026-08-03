@@ -2986,3 +2986,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 初回開始ActionのDB/RPC経路を全体的に捕捉し、失敗時は同ページの日本語エラー表示へ戻す構造へ変更。
 - モニター情報取得とページ表示にも例外時の安全なフォールバックを追加。
 - migration、環境変数、外部API実行は追加なし。
+
+## 2026-08-03 Codex: モニター開始処理を通常APIへ移行
+
+- 本番ブラウザで開始操作が`An unexpected response was received from the server.`となり、route error boundaryへ到達することを確認。
+- フレームワーク固有のServer Action transportを廃止し、`POST /api/monitor/onboarding`へ置換。
+- 開始ボタンは二重送信防止、`開始準備中…`、画面内エラー、成功時ダッシュボード遷移を提供。
+- APIは同一origin、認証、モニター権限を検査し、すべての失敗を内部情報を含まないJSONへ変換。
+- migration、環境変数、外部API実行は追加なし。

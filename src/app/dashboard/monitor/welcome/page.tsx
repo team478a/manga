@@ -1,13 +1,12 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import {
   getCloudGeneralMonitorEnrollment,
   getCloudGeneralMonitorUnavailableMessage,
   isCloudGeneralMonitorActive,
 } from "@/lib/cloud-general-monitor";
-import { completeGeneralMonitorOnboardingAction } from "./actions";
+import { MonitorStartButton } from "./MonitorStartButton";
 
 export default async function GeneralMonitorWelcomePage({
   searchParams,
@@ -63,14 +62,7 @@ export default async function GeneralMonitorWelcomePage({
           ))}
         </ul>
       </section>
-      <form action={completeGeneralMonitorOnboardingAction} className="mt-6">
-        <PendingSubmitButton
-          className="button w-full bg-violet-700 hover:bg-violet-800"
-          pendingLabel="開始準備中…"
-        >
-          内容を確認してモニターを開始
-        </PendingSubmitButton>
-      </form>
+      <MonitorStartButton />
       <Link className="button-secondary mt-3 w-full" href="/dashboard/monitor/guide">Webマニュアルを見る</Link>
     </main>
   );
