@@ -30,6 +30,9 @@ type FeedbackSummary = {
   page_url: string | null;
   environment: string | null;
   severity: string | null;
+  client_context: Record<string, unknown> | null;
+  attachment_path: string | null;
+  public_status: string;
 };
 
 const requestLabels = { bug: "不具合", improvement: "改善依頼", feature_request: "機能リクエスト" } as const;
@@ -56,11 +59,17 @@ export default async function MonitorIssuesAdminPage({
   const feedbackIds = [...new Set((tasksResult.data ?? []).flatMap((task) => [task.latest_feedback_id, task.primary_feedback_id]).filter(Boolean))] as string[];
   const feedbackResult = feedbackIds.length
     ? await admin.from("cloud_general_monitor_feedback")
-      .select("id,title,comment,page_url,environment,severity")
+      .select("id,title,comment,page_url,environment,severity,client_context,attachment_path,public_status")
       .in("id", feedbackIds)
       .returns<FeedbackSummary[]>()
     : { data: [] as FeedbackSummary[], error: null };
   const feedback = new Map((feedbackResult.data ?? []).map((item) => [item.id, item]));
+  const attachmentPaths = [...new Set((feedbackResult.data ?? []).map((item) => item.attachment_path).filter(Boolean))] as string[];
+  const attachmentUrls = new Map<string, string>();
+  await Promise.all(attachmentPaths.map(async (path) => {
+    const { data } = await admin.storage.from("monitor-feedback").createSignedUrl(path, 600);
+    if (data?.signedUrl) attachmentUrls.set(path, data.signedUrl);
+  }));
   const openTasks = (tasksResult.data ?? []).filter((task) => !["resolved", "rejected"].includes(task.status));
 
   return (
@@ -108,6 +117,8 @@ export default async function MonitorIssuesAdminPage({
                   <div className="mt-3 space-y-1 text-xs text-stone-500">
                     {latest?.page_url ? <p className="break-all">画面: {latest.page_url}</p> : null}
                     {latest?.environment ? <p>環境: {latest.environment}</p> : null}
+                    {latest?.client_context ? <p>診断: {String(latest.client_context.pathname ?? "画面不明")}・{String(latest.client_context.timezone ?? "地域不明")}</p> : null}
+                    {latest?.attachment_path && attachmentUrls.get(latest.attachment_path) ? <p><a className="font-semibold text-violet-700" href={attachmentUrls.get(latest.attachment_path)} rel="noreferrer" target="_blank">添付画像を確認</a></p> : null}
                     <p>初回 {new Date(task.first_reported_at).toLocaleString("ja-JP")}・最終 {new Date(task.last_reported_at).toLocaleString("ja-JP")}</p>
                   </div>
                   {task.reproduction_summary ? <p className="mt-3 rounded-lg bg-stone-50 p-3 text-sm"><strong>自動解析:</strong> {task.reproduction_summary}</p> : null}

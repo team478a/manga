@@ -2969,3 +2969,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 詳細: `docs/cloud/CLOUD_MONITOR_OPERATIONS_PLAN.md`
 - 検証: 専用テスト 5/5、Hub 432/432、deps、Lint、Hub typecheck、migration 47本、production build、差分検査に成功。
 - 未実施: Supabase migration適用、外部Worker接続、実ブラウザE2E、責任者承認。
+
+## 2026-08-03 Codex: モニター報告 Phase 2
+
+- ブランチ: `codex/cloud-monitor-ops-v2`（base: `codex/cloud-monitor-ops-v1`）
+- 自動診断、任意画像添付、PII・secretマスク、URL query除去を追加。
+- 非公開`monitor-feedback` bucket、所有者Storage policy、5MB/MIME制限を追加。
+- DBで報告レート制限、受付通知、修正キューおよび管理者レビューからの状態通知を追加。
+- 利用者の報告履歴と通知導線、管理者の集計・診断・署名URL画像確認を追加。
+- 実Worker、自動マージ、Supabase適用、本番公開は未実施。
+- 検証: 専用6/6、Hub 438/438、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。

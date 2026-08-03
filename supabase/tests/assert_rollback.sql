@@ -231,3 +231,15 @@ do $$ begin
     raise exception 'Cloud monitor operations hub objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='client_context')
+     or exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='attachment_path')
+     or exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='public_status')
+     or to_regprocedure('public.limit_cloud_monitor_feedback_rate()') is not null
+     or to_regprocedure('public.notify_cloud_monitor_feedback_received()') is not null
+     or to_regprocedure('public.sync_cloud_monitor_issue_public_status()') is not null
+     or exists(select 1 from storage.buckets where id='monitor-feedback') then
+    raise exception 'Cloud monitor operations Phase 2 objects remain after rollback';
+  end if;
+end $$;

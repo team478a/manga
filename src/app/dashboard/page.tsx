@@ -14,13 +14,17 @@ export default async function DashboardPage() {
   const enabled = cloudResearchFeatureEnabled();
   const { profile } = await requireProfile();
   const supabase = await createClient();
-  const [reports, monitor, updatesResult] = await Promise.all([
+  const [reports, monitor, updatesResult, notificationsResult] = await Promise.all([
     enabled ? listCloudResearchReports(profile.id) : Promise.resolve([]),
     getCloudGeneralMonitorEnrollment(profile.id),
     supabase.from("cloud_product_updates")
       .select("id,title,summary,category,action_url,published_at")
       .order("published_at", { ascending: false })
       .limit(3),
+    supabase.from("cloud_ai_notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("profile_id", profile.id)
+      .is("read_at", null),
   ]);
   const latest = reports[0];
   const monitorActive = isCloudGeneralMonitorActive(monitor) &&
@@ -111,6 +115,7 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-2 sm:flex-row">
           <Link className="button-secondary" href="/dashboard/monitor/guide">使い方</Link>
           <Link className="button-secondary" href="/dashboard/monitor">状況・ご意見</Link>
+          <Link className="button-secondary" href="/dashboard/notifications">通知 {notificationsResult.count ?? 0}件</Link>
         </div>
       </section>
 

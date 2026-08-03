@@ -487,3 +487,15 @@ do $$ begin
     raise exception 'Current schema monitor operations hub objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='client_context')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='attachment_path')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='public_status')
+     or to_regprocedure('public.limit_cloud_monitor_feedback_rate()') is null
+     or to_regprocedure('public.notify_cloud_monitor_feedback_received()') is null
+     or to_regprocedure('public.sync_cloud_monitor_issue_public_status()') is null
+     or not exists(select 1 from storage.buckets where id='monitor-feedback' and public=false and file_size_limit=5242880) then
+    raise exception 'Current schema monitor operations Phase 2 objects missing';
+  end if;
+end $$;
