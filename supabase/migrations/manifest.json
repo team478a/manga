@@ -276,7 +276,19 @@
       "description": "復元前自動バックアップ付きの固定版復元と監査履歴を追加",
       "forwardSha256": "9e69b5cc4890100cedc552d41ce3e016bb1442d04b9087c3b860b92df544353c",
       "rollbackSha256": "3f4b98e5ac62aac45fd915da33c4091984fdc77b39cde4ded468fda3f2a8a1bf"
+    },
+    {
+      "id": "202608030001_cloud_monitor_operations_hub",
+      "description": "更新情報、構造化モニター報告、安全な自動修正キューを追加",
+      "forwardSha256": "503041e4231c01e513543d78a61f61b9700102dd7ec3ab120800239781c4bca3",
+      "rollbackSha256": "6d43b2c37116ee591de9696db80642e065a996175924f8f3f75e06f6f7a62437"
+    },
+    {
+      "id": "202608030002_cloud_monitor_operations_phase2",
+      "description": "モニター報告の診断情報、非公開画像、状況通知、投稿制限を追加",
+      "forwardSha256": "179ac9bf8b6fa8c7917593e70400de3e0578630e0436570081851a378970d43e",
+      "rollbackSha256": "3a0531a1c1d3501e685c74148ba4477f5f7a08da9dfb6bce2933b11c0cfde9dc"
     }
   ],
-  "schemaSha256": "096fe8fefa97c6fb1cba440a0177927f046bb4d58bbc3fa3935cc09fb0f94099"
+  "schemaSha256": "1ce2ffc7627ba680b95d53577dc14d7b7c261040ce43b1ba0c68aaeb531f4a98"
 }

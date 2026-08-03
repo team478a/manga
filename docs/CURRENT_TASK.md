@@ -944,3 +944,21 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - Release 5 PR #72が未mergeのため、Release 6 PRのbaseはRelease 5 branchにする。
 - migration適用、Feature Flag有効化、有料API実行、PR merge、本番公開は行わない。
 - Release 6は一般向けコマ画像生成だけを対象とし、成人向け画像生成は含まない。
+
+## 2026-08-03 Codex: モニター運用ハブ
+
+- 更新情報を管理画面で作成・公開し、公開済み情報をダッシュボードへ表示する。
+- モニター報告を感想、不具合、改善依頼、機能リクエストに分類し、影響度・環境・画面URLとともに保存する。
+- 不具合と改善依頼を指紋で重複集約し、優先度と発生件数を管理する。
+- 管理者が許可した修正候補だけを外部Workerへ渡す内部APIを追加する。
+- 自動処理の上限は再現確認、テスト、GitHub IssueまたはDraft PR作成までとし、自動マージ・本番デプロイは行わない。
+- migration `202608030001_cloud_monitor_operations_hub` は未適用。外部Worker環境変数も未設定のため、現時点では安全に停止する。
+
+## 2026-08-03 Codex: モニター運用ハブ Phase 2
+
+- モニター報告へブラウザー診断、任意スクリーンショット、個人情報・秘密情報マスクを追加。
+- 画像は5MB以下のPNG/JPEG/WebPを非公開bucketへ保存し、所有者RLSと管理者署名URLで保護。
+- 10分5件、24時間30件のDB投稿制限、受付通知、状態変更通知、利用者向け履歴を追加。
+- 管理画面へ直近7日、未完了、重大報告の集計と診断・添付確認を追加。
+- Workerの自動マージ・本番反映は禁止を維持。Phase 1ブランチをbaseとするstacked Draft PRで確認する。
+- 検証: 専用6/6、Hub 438/438、deps、lint、Hub typecheck、48 migration静的検査、production build、diff check成功。

@@ -20,7 +20,16 @@ type Feedback = {
   issue_type: string | null; severity: string | null;
   provider_id: string | null; model_id: string | null;
   generation_count: number; generation_cost_micros: number; generation_elapsed_ms: number;
+  request_type: "feedback" | "bug" | "improvement" | "feature_request";
+  title: string | null; page_url: string | null; environment: string | null;
+  client_context: Record<string, unknown> | null; attachment_path: string | null;
+  public_status: "submitted" | "triaged" | "in_progress" | "resolved" | "closed";
+  status_updated_at: string;
 };
+
+const publicStatusLabels = {
+  submitted: "受付済み", triaged: "確認済み", in_progress: "対応中", resolved: "対応済み", closed: "完了",
+} as const;
 
 const verdictLabels = {
   accepted: "採用可",
@@ -76,7 +85,7 @@ export default async function GeneralMonitorsAdminPage() {
       .order("updated_at", { ascending: false })
       .returns<CloudGeneralMonitorEnrollment[]>(),
     admin.from("cloud_general_monitor_feedback")
-      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms")
+      .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment,client_context,attachment_path,public_status,status_updated_at")
       .order("created_at", { ascending: false }).limit(100).returns<Feedback[]>(),
     admin.from("profiles").select("id,display_name").returns<Profile[]>(),
   ]);
@@ -87,6 +96,16 @@ export default async function GeneralMonitorsAdminPage() {
   const unusableCount = qualityFeedback.filter((item) => item.verdict === "unusable").length;
   const totalGenerationCount = qualityFeedback.reduce((sum, item) => sum + item.generation_count, 0);
   const totalGenerationCostMicros = qualityFeedback.reduce((sum, item) => sum + item.generation_cost_micros, 0);
+  const generalFeedback = (feedbackResult.data ?? []).filter((item) => item.target_scope === "general");
+  const recentFeedbackCount = generalFeedback.length;
+  const openFeedbackCount = generalFeedback.filter((item) => !["resolved", "closed"].includes(item.public_status)).length;
+  const urgentFeedbackCount = generalFeedback.filter((item) => ["major", "blocked"].includes(item.severity ?? "")).length;
+  const attachmentPaths = [...new Set(generalFeedback.map((item) => item.attachment_path).filter(Boolean))] as string[];
+  const attachmentUrls = new Map<string, string>();
+  await Promise.all(attachmentPaths.map(async (path) => {
+    const { data } = await admin.storage.from("monitor-feedback").createSignedUrl(path, 600);
+    if (data?.signedUrl) attachmentUrls.set(path, data.signedUrl);
+  }));
 
   return (
     <main className="page">
@@ -101,6 +120,7 @@ export default async function GeneralMonitorsAdminPage() {
           <Link className="button-secondary" href="/admin/general-monitors/guide">スタッフマニュアル</Link>
           <Link className="button-secondary" href="/admin/general-monitors/email">招待メール設定</Link>
           <Link className="button-secondary" href="/admin/general-monitors/export">CSV出力</Link>
+          <Link className="button-secondary" href="/admin/monitor-issues">報告・自動修正キュー</Link>
           <Link className="button-secondary" href="/admin/users">ユーザーを招待</Link>
         </div>
       </div>
@@ -130,6 +150,11 @@ export default async function GeneralMonitorsAdminPage() {
       )}
       <section className="panel mt-7">
         <h2 className="text-xl font-bold">モニターの声</h2>
+        <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl bg-violet-50 p-3"><dt className="text-xs text-violet-800">直近100件内の報告</dt><dd className="mt-1 text-2xl font-bold text-violet-950">{recentFeedbackCount}</dd></div>
+          <div className="rounded-xl bg-amber-50 p-3"><dt className="text-xs text-amber-800">対応中・未対応</dt><dd className="mt-1 text-2xl font-bold text-amber-950">{openFeedbackCount}</dd></div>
+          <div className="rounded-xl bg-red-50 p-3"><dt className="text-xs text-red-800">影響大・進行不能</dt><dd className="mt-1 text-2xl font-bold text-red-950">{urgentFeedbackCount}</dd></div>
+        </dl>
         {qualityFeedback.length ? (
           <dl className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
             <div className="rounded-xl bg-green-50 p-3"><dt className="text-xs text-green-800">採用可</dt><dd className="mt-1 text-2xl font-bold text-green-950">{acceptedCount}</dd></div>
@@ -144,8 +169,15 @@ export default async function GeneralMonitorsAdminPage() {
             <article className="rounded-xl border border-stone-200 p-4" key={item.id}>
               <div className="flex flex-wrap gap-2 text-sm">
                 <strong>{profiles.get(item.owner_profile_id)?.display_name || "利用者"}</strong>
-                <span>{item.workflow_step}</span><span>評価 {item.rating}/5</span><span>{item.outcome}</span>
+                <span>{item.request_type}</span><span>{item.workflow_step}</span><span>評価 {item.rating}/5</span><span>{item.outcome}</span>
               </div>
+              {item.title ? <h3 className="mt-2 font-bold">{item.title}</h3> : null}
+              {item.target_scope === "general" ? (
+                <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                  <span className="rounded-full bg-violet-100 px-2 py-1 font-bold text-violet-900">{publicStatusLabels[item.public_status]}</span>
+                  {item.attachment_path && attachmentUrls.get(item.attachment_path) ? <a className="rounded-full bg-blue-100 px-2 py-1 font-bold text-blue-900" href={attachmentUrls.get(item.attachment_path)} rel="noreferrer" target="_blank">添付画像を確認</a> : null}
+                </div>
+              ) : null}
               {item.target_scope !== "general" && item.verdict ? (
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-violet-100 px-2 py-1 font-bold text-violet-900">
@@ -157,6 +189,11 @@ export default async function GeneralMonitorsAdminPage() {
                 </div>
               ) : null}
               <p className="mt-2 whitespace-pre-wrap break-words text-stone-700">{item.comment}</p>
+              {item.target_scope === "general" && item.client_context ? (
+                <p className="mt-2 break-words text-xs text-stone-500">
+                  診断: {String(item.client_context.pathname ?? "画面不明")}・{String(item.client_context.viewport && typeof item.client_context.viewport === "object" ? `${(item.client_context.viewport as { width?: unknown }).width ?? "?"}×${(item.client_context.viewport as { height?: unknown }).height ?? "?"}` : "画面幅不明")}・{String(item.client_context.timezone ?? "地域不明")}
+                </p>
+              ) : null}
               {item.target_scope !== "general" ? (
                 <p className="mt-2 break-words text-xs text-stone-500">
                   {item.provider_id && item.model_id ? `${item.provider_id} / ${item.model_id}・` : ""}

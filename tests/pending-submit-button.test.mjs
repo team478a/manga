@@ -23,7 +23,7 @@ test("モニター運用の送信操作は用途別の処理中表示を使う",
       new URL("../src/app/admin/general-monitors/email/page.tsx", import.meta.url),
       "utf8",
     ),
-    readFile(new URL("../src/app/dashboard/monitor/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/dashboard/monitor/MonitorFeedbackForm.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../src/app/dashboard/monitor/welcome/page.tsx", import.meta.url),
       "utf8",
@@ -35,6 +35,6 @@ test("モニター運用の送信操作は用途別の処理中表示を使う",
   assert.match(user, /停止処理中…/);
   assert.match(monitors, /更新中…/);
   assert.match(email, /設定を保存中…/);
-  assert.match(dashboard, /フィードバックを送信中…/);
+  assert.match(dashboard, /報告を安全に送信中…/);
   assert.match(welcome, /開始準備中…/);
 });
