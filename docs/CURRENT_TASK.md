@@ -5,12 +5,13 @@
 - 状態: `VERIFIED_AWAITING_REVIEW`
 - Branch: `codex/general-image-acceptance-v1`
 - Base: `origin/feature/manga-canvas-mvp`（PR #162 merge後）
+- Draft PR: [#163](https://github.com/team478a/manga/pull/163)
 - 公開チェックへCloud AI全体の生成受付、選択中BFLモデルの必須価格、画像Jobの待機・実行・24時間失敗件数を追加。
 - 管理画面から1コマ生成、Worker実行、候補採用・再生成、保存、PDF／PNG確認まで進められる受入れ導線を追加。
 - 手順書: `docs/cloud/CLOUD_GENERAL_IMAGE_ACCEPTANCE.md`
 - APIキー、DB、migration、Feature Flagは変更しない。外部APIの有料実行は行わない。
-- 検証: 専用回帰、deps:check、lint、Hub typecheck、Hub test、migration validate、production build、git diff checkを実施。
-- 未完了: Draft PR、Preview、CI、実Provider 1コマ受入れ。
+- 検証: 専用2/2、deps:check、lint、Hub typecheck、Hub 482/482、migration 48/48、production build、git diff check成功。
+- 未完了: Preview、CI、実Provider 1コマ受入れ。
 
 ## 2026-08-04 一般向けCloud漫画制作 正本統合監査
 
