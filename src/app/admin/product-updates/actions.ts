@@ -23,8 +23,18 @@ const stateSchema = z.object({
   operation: z.enum(["publish", "unpublish", "archive"]),
 });
 
+const editSchema = updateSchema.omit({ publishNow: true }).extend({
+  updateId: z.string().uuid(),
+});
+
 const productUpdatesTarget = (kind: "message" | "error", text: string) =>
   `/admin/product-updates?${kind}=${encodeURIComponent(text)}`;
+
+const productUpdateEditTarget = (
+  updateId: string,
+  kind: "message" | "error",
+  text: string,
+) => `/admin/product-updates/${updateId}/edit?${kind}=${encodeURIComponent(text)}`;
 
 type RecentProductUpdate = {
   title: string;
@@ -130,4 +140,52 @@ export async function changeProductUpdateStateAction(formData: FormData) {
   revalidatePath("/dashboard");
   revalidatePath("/admin/product-updates");
   redirect(productUpdatesTarget("message", "公開状態を更新しました"));
+}
+
+export async function editProductUpdateAction(formData: FormData) {
+  await requireAdmin();
+  const parsed = editSchema.safeParse({
+    updateId: formData.get("updateId"),
+    title: formData.get("title"),
+    summary: formData.get("summary"),
+    details: formData.get("details"),
+    category: formData.get("category"),
+    actionUrl: formData.get("actionUrl"),
+  });
+  if (!parsed.success) {
+    redirect(productUpdatesTarget("error", "編集内容を確認してください"));
+  }
+
+  let updateFailed = false;
+  try {
+    const result = await createAdminClient()
+      .from("cloud_product_updates")
+      .update({
+        title: parsed.data.title,
+        summary: parsed.data.summary,
+        details: parsed.data.details || null,
+        category: parsed.data.category,
+        action_url: parsed.data.actionUrl || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", parsed.data.updateId)
+      .is("archived_at", null)
+      .select("id")
+      .maybeSingle();
+    updateFailed = Boolean(result.error || !result.data);
+  } catch {
+    updateFailed = true;
+  }
+
+  if (updateFailed) {
+    redirect(productUpdateEditTarget(
+      parsed.data.updateId,
+      "error",
+      "更新情報を編集できませんでした。公開状態を確認してもう一度お試しください",
+    ));
+  }
+  revalidatePath("/dashboard");
+  revalidatePath("/admin/product-updates");
+  revalidatePath(`/admin/product-updates/${parsed.data.updateId}/edit`);
+  redirect(productUpdatesTarget("message", "更新情報を編集しました"));
 }
