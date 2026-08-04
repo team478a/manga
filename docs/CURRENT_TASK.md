@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-04 認証ボタンの操作フィードバック
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/auth-action-feedback-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #152 merge後）
+- ログイン、新規登録、再設定メール送信、パスワード更新を共通`PendingSubmitButton`へ統一。
+- 送信中はスピナーと用途別メッセージを表示し、ボタンを無効化して二重送信を防止。
+- 認証処理、Supabase設定、migration、環境変数の変更はない。
+- 検証: 専用1/1、Hub 477/477、deps:check、Hub typecheck、lint、production build、git diff --check成功。
+- 未完了: Draft PR、Vercel Preview、CI、責任者レビュー、マージ。
+
 ## 2026-08-04 Cloud制作ワークフロー全体の耐障害化
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
