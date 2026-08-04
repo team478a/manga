@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-04 Codex: Cloud AI Scheduler安全確認導線
+
+- Branch: `codex/cloud-ai-scheduler-readiness`
+- Base: `origin/feature/manga-canvas-mvp` (`483ef8b`、PR #146 merge後)
+- Draft PR: [#148](https://github.com/team478a/manga/pull/148)
+- Actionsの手動実行を通信なし`check`既定に変更し、`run`の明示選択と有効化変数が揃った場合だけWorkerを実行する。
+- `/admin/cloud-ai`にScheduler Actionsと本番公開チェックへの導線、check／runの安全な順序を追加した。
+- Actionsの設定値をアプリへ取得せず、GitHub SecretsとVercelの秘密情報境界を維持する。
+- migration、環境変数追加、外部Provider実行なし。
+- 専用11/11、Hub 464/464、deps:check、lint、Hub typecheck、migration validate（48本）、production build、git diff --check成功。
+
 ## 2026-08-04 Codex: Cloud AI Worker定期実行
 
 - Branch: `codex/cloud-ai-worker-scheduler`

@@ -42,6 +42,9 @@ test("管理画面は秘密鍵を表示せずQueueと手動実行を提供する
   assert.match(page, /待機中Jobを1件実行/);
   assert.match(page, /Workerを実行中/);
   assert.match(page, /queuedResult\.count/);
+  assert.match(page, /Scheduler設定確認を開く/);
+  assert.match(page, /最初は「check」を実行/);
+  assert.match(page, /cloud-ai-worker-scheduler\.yml/);
   assert.match(actions, /requireAdmin/);
   assert.match(actions, /authorization: `Bearer \$\{secret\}`/);
   assert.doesNotMatch(page, /MANGAI_CLOUD_AI_WORKER_SECRET/);
