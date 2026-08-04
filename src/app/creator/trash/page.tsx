@@ -3,6 +3,7 @@ import { RotateCcw } from "lucide-react";
 import { restoreCloudProjectAction } from "@/app/creator/actions";
 import { requireProfile } from "@/lib/auth";
 import { listDeletedCloudProjects } from "@/lib/cloud-creator-server";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function CloudProjectTrashPage({
   searchParams,
@@ -43,10 +44,10 @@ export default async function CloudProjectTrashPage({
                 </p>
               </div>
               <form action={restoreCloudProjectAction.bind(null, project.id)}>
-                <button className="button" type="submit">
+                <PendingSubmitButton className="button" pendingLabel="復元中…">
                   <RotateCcw className="mr-2 h-5 w-5" />
                   復元
-                </button>
+                </PendingSubmitButton>
               </form>
             </article>
           ))
