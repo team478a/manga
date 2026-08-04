@@ -88,6 +88,7 @@ export default async function ProductUpdateEditPage({
             <div>
               <label className="label" htmlFor="update-action-url">関連画面（任意）</label>
               <input className="field" defaultValue={update.action_url ?? ""} id="update-action-url" maxLength={500} name="actionUrl" />
+              <p className="mt-1 text-xs text-stone-500">例: /dashboard/research（外部サイトのURLは登録できません）</p>
             </div>
           </div>
           <div>

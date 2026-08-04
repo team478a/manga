@@ -3195,3 +3195,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 公開中情報は編集後にダッシュボードを再検証し、アーカイブ済み情報と不正UUIDは編集対象外にする。
 - DB schema、migration、環境変数の変更はない。
 - 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
+## 2026-08-04 Codex: 更新情報の関連リンク安全化
+
+- Branch: `codex/product-update-link-hardening-v1`
+- Base: `feature/manga-canvas-mvp` (`a813a56`、PR #159 merge後。PR #160へ非依存)
+- 更新情報に登録できる関連画面をアプリ内相対パスへ限定し、表示時にも再検査する。
+- 外部遷移、protocol-relative URL、バックスラッシュ、制御文字を拒否する共通関数と回帰テストを追加する。
+- DB schema、migration、環境変数の変更はない。
+- 検証: 専用2/2、Hub 484/484、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。

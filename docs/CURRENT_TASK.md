@@ -1217,3 +1217,11 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 保存中表示、Provider障害時の安全な日本語案内、一覧へ戻る導線を提供する。
 - DB schema、migration、環境変数、公開状態は変更しない。
 - 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
+## 2026-08-04 Codex: 更新情報の関連リンク安全化
+
+- 更新情報の関連画面は、`/`から始まるMANGAIアプリ内パスだけを登録・表示できるようにする。
+- 外部URL、protocol-relative URL、バックスラッシュ経由の外部遷移、制御文字を拒否する。
+- 登録、編集、利用者ダッシュボードで同じ検査関数を利用し、既存の危険な値も表示しない。
+- DB schema、migration、環境変数、既存データは変更しない。
+- 検証: 専用2/2、Hub 484/484、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
