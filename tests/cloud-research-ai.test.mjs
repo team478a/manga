@@ -75,6 +75,9 @@ test("AI市場分析はWeb出典を保存し売れ筋を先頭にした12項目�
   });
   assert.equal(requestBody.store, false);
   assert.equal(requestBody.tools[0].type, "web_search");
+  assert.deepEqual(requestBody.include, ["web_search_call.action.sources"]);
+  assert.equal(requestBody.reasoning.effort, "low");
+  assert.equal(requestBody.max_output_tokens, 4_000);
   assert.ok(!JSON.stringify(requestBody).includes("sk-test"));
   assert.equal(analysis.input.evidence.length, 2);
   assert.equal(analysis.result.engineVersion, "openai-web-research-v1");
@@ -83,6 +86,39 @@ test("AI市場分析はWeb出典を保存し売れ筋を先頭にした12項目�
   assert.equal(analysis.result.findings[1].key, "why_it_sells");
   assert.equal(analysis.result.findings[2].key, "recommended_product");
   assert.equal(analysis.result.containsGeneratedMarketNumbers, false);
+});
+
+test("Web検索のsources一覧だけで返った出典も分析根拠として保存する", async () => {
+  const analysis = await runCloudResearchAiAnalysis({
+    profileId: "46f3ad2e-3b9a-4aef-94ee-188978be9cf0",
+    request,
+    fetchImplementation: async () =>
+      new Response(
+        JSON.stringify({
+          output_text: JSON.stringify(output),
+          output: [
+            {
+              type: "web_search_call",
+              action: {
+                type: "search",
+                sources: [
+                  { type: "url", url: "https://example.com/feature", title: "電子書店特集" },
+                  { type: "url", url: "https://example.org/report", title: "業界情報" },
+                ],
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
+  });
+
+  assert.equal(analysis.input.evidence.length, 2);
+  assert.deepEqual(
+    analysis.input.evidence.map((item) => item.url),
+    ["https://example.com/feature", "https://example.org/report"],
+  );
 });
 
 test("AIおまかせ条件は制約ではなく最適案を選ぶようProviderへ指示する", async () => {

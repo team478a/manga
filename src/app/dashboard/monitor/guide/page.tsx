@@ -100,7 +100,7 @@ const steps = [
     before: "ジャンル、読者、テーマを選びます。迷う項目は「AIにおまかせ」で構いません。",
     action: "「どんな作品が売れやすいか調べる」を1回押します。",
     result: "売れやすい方向、想定読者、価格、販売先、注意点が表示されます。",
-    href: "/dashboard/research",
+    href: "/dashboard/research/new",
     linkLabel: "市場分析を開始",
     availability: "available",
   },

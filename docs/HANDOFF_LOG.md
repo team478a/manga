@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-04 Codex: 市場分析・モニター添付の本番障害復旧
+
+- Branch: `codex/cloud-research-runtime-recovery`
+- Base: `origin/feature/manga-canvas-mvp` (`36a1e5b`、PR #150 merge後)
+- 市場分析履歴の取得を部分失敗可能にし、障害時も新規分析を開始できるようにした。使い方画面も新規入力へ直接リンクする。
+- モニター画像は認証・モニター認可後に管理Storageで保存し、Storage token/policy driftによる添付失敗を回避する。報告DBは従来どおり本人RLSで保存する。
+- Responses APIの`web_search_call.action.sources`を取得・出典保存し、最大出力、低reasoning、110秒timeoutを設定した。
+- AI利用回数はProvider成功後にだけ消費し、実行前には上限を確認する。
+- APIキーの参照・変更、migration、環境変数、外部有料API実行は行っていない。
+- 検証: 専用回帰テスト17/17、Hub 471/471、deps:check、lint、Hub typecheck、research:eval、48 migration静的検査、production build、git diff --check成功。
+- Draft PR、Preview、CI、本番ブラウザ確認は未完了。
+
 ## 2026-08-04 Codex: クラウド制作の操作フィードバック統一
 
 - Branch: `codex/cloud-creator-action-feedback-v2`

@@ -10,8 +10,11 @@ import {
 import { runCloudResearchAiAnalysis } from "@/lib/cloud-research-ai";
 import { createCloudResearchReport } from "@/lib/cloud-research-server";
 import { enforceCloudResearchAiAnalysisRateLimit } from "@/lib/cloud-research-search-rate-limit";
-import { PermissionDeniedError } from "@/lib/domain-errors";
-import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor";
+import { PermissionDeniedError, QuotaExceededError } from "@/lib/domain-errors";
+import {
+  consumeCloudGeneralMonitorAiRequest,
+  requireCloudGeneralMonitor,
+} from "@/lib/cloud-general-monitor";
 
 export async function createCloudResearchReportAction(formData: FormData) {
   let reportId: string;
@@ -25,11 +28,16 @@ export async function createCloudResearchReportAction(formData: FormData) {
         "今回の限定モニターは一般向け作品のみ利用できます。",
       );
     await enforceCloudResearchAiAnalysisRateLimit(profile.id);
-    await consumeCloudGeneralMonitorAiRequest(profile.id, "research");
+    const enrollment = await requireCloudGeneralMonitor(profile.id);
+    if (enrollment.ai_requests_used >= enrollment.ai_request_limit)
+      throw new QuotaExceededError(
+        "モニター期間中のAI利用上限に達しました。管理者へご連絡ください。",
+      );
     const { input, result } = await runCloudResearchAiAnalysis({
       profileId: profile.id,
       request,
     });
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "research");
     reportId = await createCloudResearchReport({
       profileId: profile.id,
       input,

@@ -11,16 +11,23 @@ import { listCloudResearchReports } from "@/lib/cloud-research-server";
 export default async function CloudResearchHistoryPage() {
   const enabled = cloudResearchFeatureEnabled();
   const authenticated = enabled ? await requireProfile() : null;
-  const reports =
+  const adultFeatureEnabled = enabled && cloudAdultResearchFeatureEnabled();
+  const [reportsResult, adultAccessResult] =
     enabled && authenticated
-      ? await listCloudResearchReports(authenticated.profile.id)
-      : [];
+      ? await Promise.allSettled([
+          listCloudResearchReports(authenticated.profile.id),
+          adultFeatureEnabled
+            ? getCloudAdultResearchAccess(authenticated.profile.id)
+            : Promise.resolve(null),
+        ])
+      : [
+          { status: "fulfilled", value: [] } as const,
+          { status: "fulfilled", value: null } as const,
+        ];
+  const reports = reportsResult.status === "fulfilled" ? reportsResult.value : [];
   const adultAccess =
-    enabled &&
-    cloudAdultResearchFeatureEnabled() &&
-    authenticated
-      ? await getCloudAdultResearchAccess(authenticated.profile.id)
-      : null;
+    adultAccessResult.status === "fulfilled" ? adultAccessResult.value : null;
+  const historyUnavailable = reportsResult.status === "rejected";
 
   return (
     <main className="page max-w-5xl">
@@ -38,7 +45,7 @@ export default async function CloudResearchHistoryPage() {
           </Link>
         ) : null}
       </div>
-      {enabled && cloudAdultResearchFeatureEnabled() ? (
+      {enabled && adultFeatureEnabled ? (
         <section className="mt-5 rounded-lg border border-violet-200 bg-violet-50 p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -61,6 +68,18 @@ export default async function CloudResearchHistoryPage() {
         </section>
       ) : null}
 
+      {historyUnavailable ? (
+        <section className="mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4" role="status">
+          <p className="font-bold text-amber-950">保存済みの分析履歴を一時的に読み込めません</p>
+          <p className="mt-1 text-sm text-amber-900">
+            新しい市場分析はそのまま開始できます。履歴は時間をおいて再度ご確認ください。
+          </p>
+          <Link className="button mt-4 bg-violet-700 hover:bg-violet-800" href="/dashboard/research/new">
+            新しい市場分析を開始
+          </Link>
+        </section>
+      ) : null}
+
       {!enabled ? (
         <section className="panel mt-6 text-center">
           <Lock className="mx-auto h-8 w-8 text-stone-400" />
@@ -69,7 +88,7 @@ export default async function CloudResearchHistoryPage() {
             Feature Flagが有効になるまで実行できません。
           </p>
         </section>
-      ) : reports.length ? (
+      ) : historyUnavailable ? null : reports.length ? (
         <section className="mt-6 space-y-3">
           {reports.map((report) => (
             <Link

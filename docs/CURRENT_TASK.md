@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-04 市場分析・モニター添付の本番障害復旧
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-research-runtime-recovery`
+- Base: `origin/feature/manga-canvas-mvp` (`36a1e5b`、PR #150 merge後)
+- 市場分析履歴のDB読込失敗をページ全体へ波及させず、画面内案内と新規分析への導線を残す。
+- 使い方画面の「市場分析を開始」は履歴画面を経由せず`/dashboard/research/new`へ直接進む。
+- モニター画像添付は、本人認証とモニター認可の後だけ管理Storage経由で保存し、DB所有者RLSは維持する。
+- AI市場分析はWeb Searchのsources一覧も出典として取得し、110秒で安全に中断する。失敗したProvider実行ではモニター利用回数を消費しない。
+- APIキー、migration、DB schema、環境変数の変更はない。外部AIの有料実行は未実施。
+- 検証: 専用回帰テスト17/17、Hub 471/471、deps:check、lint、Hub typecheck、research:eval、48 migration静的検査、production build、git diff --check成功。
+- 未完了: Draft PR、Vercel Preview、CI、本番ブラウザでの3経路再確認。
+
 ## 2026-08-04 クラウド制作の操作フィードバック統一
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
