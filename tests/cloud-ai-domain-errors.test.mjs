@@ -68,8 +68,7 @@ test("moderation拒否とWorker lease喪失が型付きcodeを持つ", () => {
 
 test("Cloud AI API Routeは日本語メッセージ部分一致で分岐しない", async () => {
   for (const relative of [
-    "../src/app/api/creator/generation-jobs/route.ts",
-    "../src/app/api/creator/generation-jobs/[jobId]/route.ts",
+    "../src/modules/cloud-ai/presentation/generation-route.ts",
     "../src/app/api/creator/ai-quota/route.ts",
     "../src/app/api/internal/cloud-ai/worker/route.ts",
     "../src/modules/cloud-creator/generation/generation-service.ts",
