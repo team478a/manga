@@ -3186,3 +3186,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 重複時は追加insertを行わず保存済み案内を表示する。確認不能時はfail closedし、Provider内部エラーを利用者へ表示しない。
 - DB schema、migration、環境変数の変更はない。
 - 検証: 専用5/5、Hub 481/481、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
+## 2026-08-04 Codex: 更新情報の編集
+
+- Branch: `codex/product-update-editing-v1`
+- Base: `feature/manga-canvas-mvp` (`23dadf2`、PR #158 merge後)
+- 更新情報一覧から専用編集画面へ移動し、本文・種類・関連URLを修正できるようにした。
+- 公開中情報は編集後にダッシュボードを再検証し、アーカイブ済み情報と不正UUIDは編集対象外にする。
+- DB schema、migration、環境変数の変更はない。
+- 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。

@@ -67,3 +67,21 @@ test("予期しない描画失敗でも日本語の回復画面を表示する",
   assert.match(boundary, /管理画面TOPへ/);
   assert.doesNotMatch(boundary, /error\.message/);
 });
+
+test("管理者は更新情報を安全に編集できる", async () => {
+  const [listPage, editPage, actions] = await Promise.all([
+    readFile(new URL("../src/app/admin/product-updates/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/admin/product-updates/[updateId]/edit/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/admin/product-updates/actions.ts", import.meta.url), "utf8"),
+  ]);
+
+  assert.match(listPage, /href=\{`\/admin\/product-updates\/\$\{item\.id\}\/edit`\}/);
+  assert.match(editPage, /更新情報を編集/);
+  assert.match(editPage, /PendingSubmitButton/);
+  assert.match(editPage, /z\.string\(\)\.uuid\(\)/);
+  assert.match(editPage, /\.is\("archived_at", null\)/);
+  assert.match(actions, /export async function editProductUpdateAction/);
+  assert.match(actions, /\.select\("id"\)\s*\.maybeSingle\(\)/);
+  assert.match(actions, /revalidatePath\("\/dashboard"\)/);
+  assert.match(actions, /更新情報を編集しました/);
+});

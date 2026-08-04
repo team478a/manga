@@ -124,6 +124,9 @@ export default async function ProductUpdatesAdminPage({
               </div>
               {!item.archived_at ? (
                 <div className="flex flex-wrap gap-2">
+                  <Link className="button-secondary" href={`/admin/product-updates/${item.id}/edit`}>
+                    編集
+                  </Link>
                   <form action={changeProductUpdateStateAction}>
                     <input name="updateId" type="hidden" value={item.id} />
                     <input name="operation" type="hidden" value={item.published_at ? "unpublish" : "publish"} />

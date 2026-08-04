@@ -1208,3 +1208,12 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - アーカイブ済み情報は重複判定から除外し、意図した再掲載を妨げない。
 - DB schema、migration、公開済み更新情報は変更しない。
 - 検証: 専用5/5、Hub 481/481、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
+## 2026-08-04 Codex: 更新情報の編集
+
+- 管理者が登録済み更新情報のタイトル、種類、関連画面、短い説明、詳しい説明を編集できる。
+- 公開中の更新情報は保存後にダッシュボードへ即時反映する。
+- UUID、管理者権限、アーカイブ状態をServer側で再確認し、存在しない情報やアーカイブ済み情報は編集しない。
+- 保存中表示、Provider障害時の安全な日本語案内、一覧へ戻る導線を提供する。
+- DB schema、migration、環境変数、公開状態は変更しない。
+- 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
