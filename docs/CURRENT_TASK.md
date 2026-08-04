@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-04 PR-R1 モジュール境界の固定
+
+- 状態: `VERIFIED_LOCAL_AWAITING_DRAFT_PR`
+- Branch: `codex/refactor-r1-module-boundaries`
+- Base: `origin/feature/manga-canvas-mvp`（PR #168 merge後、`dd483c0`）
+- 目的: 既存コードを一括移動せず、domain/application/infrastructure/presentation/contractsの依存方向をCIで固定する。
+- 実装: module境界、module循環、Client秘密値、成人向けProvider経路、App Routerのadmin client、未使用Feature Flagを検査するscriptを追加した。
+- 肥大化防止: merge base以降の新規source fileについて800行超を失敗、500行超と明示的`any`を警告する。
+- CI: Required Qualityのcheckoutを全履歴取得へ変更し、既存`deps:check`へ3検査を統合した。
+- 文書: `docs/architecture/MODULE_BOUNDARY_POLICY.md`
+- 変更しない範囲: 既存moduleの一括移動、DB、migration、環境変数、API契約、Provider、Feature Flag値、成人向け境界。
+- 現在の警告: `src/app/**`からSupabase admin clientを直接利用する既存33ファイル。後続PRで段階移行し、このPRでは挙動を変更しない。
+- 検証: npm ci、deps（5 packages／21 files、module 0 error／33 warning）、lint、Hub／Desktop typecheck、市場分析評価、Hub 502、Canvas 26、AI 48、Desktop 182、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、所有者分離7、100ページ受入れ4、diff check成功。
+- 既知の非失敗警告: npm audit 1 moderate／2 high、Desktop renderer chunk 500kB超、App Router admin client直接利用33件。
+- 未完了: Draft PR、Preview、全GitHub CI、責任者レビュー。
+
 ## 2026-08-04 MANGAI Cloud 本番公開ルート smoke 検査
 
 - 状態: `VERIFIED_LOCAL_AND_PRODUCTION_READ_ONLY`

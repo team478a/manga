@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-04 Codex: PR-R1 モジュール境界の固定
+
+- Branch: `codex/refactor-r1-module-boundaries`
+- Base: `origin/feature/manga-canvas-mvp`（PR #168 merge後、`dd483c0`）
+- package境界検査を維持したまま、module層、秘密情報、成人向けProvider経路、循環依存、Feature Flag、新規source fileの肥大化を検査する品質ゲートを追加した。
+- App Routerの既存admin client直接利用33件はwarningとして可視化し、PR-R1ではコード移動や業務挙動の変更をしていない。
+- Required Qualityでmerge baseを確実に取得するためcheckoutを`fetch-depth: 0`にした。
+- DB、migration、環境変数、外部Provider、API契約、Feature Flag値、成人向け境界は変更していない。
+- 検証: npm ci、deps（5 packages／21 files、module 0 error／33 warning）、lint、Hub／Desktop typecheck、市場分析評価、Hub 502、Canvas 26、AI 48、Desktop 182、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、所有者分離7、100ページ受入れ4、専用8、diff check成功。
+- 既知の非失敗警告はnpm audit 1 moderate／2 high、Desktop renderer chunk 500kB超、App Router admin client直接利用33件。Draft PR、Preview、全GitHub CI、責任者レビューは未完了。
+
 ## 2026-08-04 Codex: MANGAI Cloud 本番公開ルート smoke 検査
 
 - Branch: `codex/cloud-production-route-smoke-v1`
