@@ -11,6 +11,7 @@ import {
 } from "@/lib/cloud-research-search";
 import { enforceCloudResearchSearchRateLimit } from "@/lib/cloud-research-search-rate-limit";
 import { PermissionDeniedError } from "@/lib/domain-errors";
+import { discoverResearchSources } from "@/modules/research/application/discover-sources";
 
 export type CloudResearchDiscoveryState = {
   error?: string;
@@ -39,9 +40,13 @@ export async function discoverCloudResearchSourcesAction(
         error:
           parsed.error.issues[0]?.message ?? "検索条件を確認してください。",
       };
-    const provider = configuredCloudResearchSearchProvider();
-    await enforceCloudResearchSearchRateLimit(profile.id);
-    const result = await provider.search(parsed.data);
+    const result = await discoverResearchSources(
+      { profileId: profile.id, search: parsed.data },
+      {
+        provider: configuredCloudResearchSearchProvider(),
+        enforceRateLimit: enforceCloudResearchSearchRateLimit,
+      },
+    );
     return result;
   } catch (error) {
     return {

@@ -24,7 +24,7 @@ test("provider-backed workflow pages allow the Server Action to finish", async (
 
 test("workflow provider timeouts stay below the page execution limit", async () => {
   const providers = [
-    "../src/lib/cloud-research-ai.ts",
+    "../src/modules/research/infrastructure/openai-report-generator.ts",
     "../src/lib/cloud-proposal-ai.ts",
     "../src/lib/cloud-scenario-ai.ts",
     "../src/lib/cloud-storyboard-ai.ts",

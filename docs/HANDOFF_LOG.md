@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-05 Codex: PR-R2A 市場分析モジュール分離
+
+- Branch: `codex/refactor-r2a-research-module`
+- Base: `origin/feature/manga-canvas-mvp`（PR #169 merge後、`2385a7c`）
+- Draft PR: [#170](https://github.com/team478a/manga/pull/170)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-22745e-team478as-projects.vercel.app`
+- 市場分析の検索、出典検証、事実候補抽出、照合、Report生成、評価、永続化を5レイヤーへ分離した。
+- 旧 `src/lib/cloud-research*.ts` は既存利用箇所の互換性を保つ再exportアダプターとして残した。
+- Report生成はFeature Flag、一般向け境界、rate limit、利用枠、AI分析、利用枠消費、保存の順序をApplication Serviceで固定した。
+- 検索、Provider障害、所有者限定取得、内部エラー非公開を専用・既存テストで検証する。
+- DB、migration、環境変数、API契約、Provider挙動、Feature Flag値、成人向け境界は変更していない。
+- ローカル検証はnpm ci、境界、lint、Hub／Desktop型、評価、focused 58、Hub 507、Canvas 26、AI 48、Desktop 182、migration 48/48、両build、Cloud漫画受入れ、所有者分離、100ページ受入れ、diff checkが成功した。
+- Release 1/2 preflightは本番環境値がローカルにないため安全に停止した。GitHub CIはCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsが成功した。責任者レビュー前にPR-R2Bへは進まない。
+
 ## 2026-08-04 Codex: PR-R1 モジュール境界の固定
 
 - Branch: `codex/refactor-r1-module-boundaries`

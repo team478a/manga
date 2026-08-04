@@ -34,9 +34,18 @@ test("認証済みモニターの添付は認可後に管理Storage経由で保�
 
 test("AI利用回数はProvider成功前に消費せず上限は事前確認する", async () => {
   const action = await source("../src/app/dashboard/research/actions.ts");
-  const requireAt = action.indexOf("requireCloudGeneralMonitor(profile.id)");
-  const limitAt = action.indexOf("enrollment.ai_requests_used >= enrollment.ai_request_limit");
-  const analyzeAt = action.indexOf("runCloudResearchAiAnalysis({");
-  const consumeAt = action.indexOf('consumeCloudGeneralMonitorAiRequest(profile.id, "research")');
-  assert.ok(requireAt > -1 && limitAt > requireAt && analyzeAt > limitAt && consumeAt > analyzeAt);
+  const application = await source(
+    "../src/modules/research/application/generate-report.ts",
+  );
+  assert.match(action, /generateResearchReport/);
+  const allowanceAt = application.indexOf("getMonitorAllowance");
+  const limitAt = application.indexOf("allowance.used >= allowance.limit");
+  const analyzeAt = application.indexOf("dependencies.analyze");
+  const consumeAt = application.indexOf("dependencies.consumeAllowance");
+  assert.ok(
+    allowanceAt > -1 &&
+      limitAt > allowanceAt &&
+      analyzeAt > limitAt &&
+      consumeAt > analyzeAt,
+  );
 });
