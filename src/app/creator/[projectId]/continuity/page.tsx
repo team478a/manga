@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, CheckCircle2, Info, ListPlus, ScanSearch, Trash2 } from "lucide-react";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import {
   getCloudContinuityReview,
@@ -100,7 +101,7 @@ export default async function CloudContinuityPage({
                       <input name="endPage" type="hidden" value={candidate.endPage} />
                       <input name="sourcePage" type="hidden" value={candidate.sourcePage ?? ""} />
                       <input name="notes" type="hidden" value={candidate.notes} />
-                      <button className="button-secondary" type="submit">確認して台帳へ登録</button>
+                      <PendingSubmitButton className="button-secondary" pendingLabel="登録中…">確認して台帳へ登録</PendingSubmitButton>
                     </form>
                   </li>
                 ))}
@@ -125,7 +126,7 @@ export default async function CloudContinuityPage({
                 <label><span className="label">終了ページ</span><input className="field" name="endPage" type="number" min={1} max={1000} defaultValue={Math.max(workspace.pages.length,1)} required /></label>
                 <label><span className="label">確認元ページ（任意）</span><input className="field" name="sourcePage" type="number" min={1} max={1000} /></label>
                 <label><span className="label">メモ（任意）</span><input className="field" name="notes" maxLength={1000} /></label>
-                <button className="button-primary sm:col-span-2" type="submit">事実を保存</button>
+                <PendingSubmitButton className="button-primary sm:col-span-2" pendingLabel="保存中…">事実を保存</PendingSubmitButton>
               </form>
             </div>
             <div className="panel">
@@ -137,14 +138,14 @@ export default async function CloudContinuityPage({
                 <label><span className="label">状態</span><select className="field" name="status" defaultValue="planned">{Object.entries(threadStatusLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label>
                 <label><span className="label">回収ページ（回収済み時）</span><input className="field" name="payoffPage" type="number" min={1} max={1000} /></label>
                 <label className="sm:col-span-2"><span className="label">メモ（任意）</span><input className="field" name="notes" maxLength={1000} /></label>
-                <button className="button-primary sm:col-span-2" type="submit">伏線を保存</button>
+                <PendingSubmitButton className="button-primary sm:col-span-2" pendingLabel="保存中…">伏線を保存</PendingSubmitButton>
               </form>
             </div>
           </section>
 
           <section className="mt-6 grid gap-6 xl:grid-cols-2">
-            <div className="panel"><h2 className="text-xl font-bold">事実台帳</h2>{narrative.facts.length ? <ul className="mt-4 space-y-3">{narrative.facts.map((fact)=><li className="rounded-lg border border-stone-200 p-4" key={fact.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{fact.subject}・{fact.attribute}</p><p className="mt-1 text-stone-700">{fact.fact_value}</p><p className="mt-2 text-xs text-stone-500">{factKindLabels[fact.fact_kind]}／{fact.start_page}〜{fact.end_page}ページ</p></div><form action={deleteContinuityFactAction.bind(null,projectId,fact.id)}><button className="button-secondary" aria-label="事実を削除" type="submit"><Trash2 className="h-4 w-4" /></button></form></div></li>)}</ul> : <p className="mt-3 text-stone-600">まだ事実はありません。</p>}</div>
-            <div className="panel"><h2 className="text-xl font-bold">伏線台帳</h2>{narrative.threads.length ? <ul className="mt-4 space-y-3">{narrative.threads.map((thread)=><li className="rounded-lg border border-stone-200 p-4" key={thread.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{thread.title}</p><p className="mt-2 text-xs text-stone-500">{threadStatusLabels[thread.status]}／提示 {thread.setup_page}ページ{thread.target_payoff_page ? `／回収予定 ${thread.target_payoff_page}ページ` : ""}{thread.payoff_page ? `／回収 ${thread.payoff_page}ページ` : ""}</p></div><form action={deletePlotThreadAction.bind(null,projectId,thread.id)}><button className="button-secondary" aria-label="伏線を削除" type="submit"><Trash2 className="h-4 w-4" /></button></form></div><form action={savePlotThreadAction.bind(null,projectId)} className="mt-3 flex flex-wrap items-end gap-2"><input name="threadId" type="hidden" value={thread.id} /><input name="title" type="hidden" value={thread.title} /><input name="setupPage" type="hidden" value={thread.setup_page} /><input name="targetPayoffPage" type="hidden" value={thread.target_payoff_page ?? ""} /><input name="notes" type="hidden" value={thread.notes} /><label><span className="label">状態を更新</span><select className="field" name="status" defaultValue={thread.status}>{Object.entries(threadStatusLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label><label><span className="label">回収ページ</span><input className="field w-32" name="payoffPage" type="number" min={thread.setup_page} max={1000} defaultValue={thread.payoff_page ?? ""} /></label><button className="button-secondary" type="submit">更新</button></form></li>)}</ul> : <p className="mt-3 text-stone-600">まだ伏線はありません。</p>}</div>
+            <div className="panel"><h2 className="text-xl font-bold">事実台帳</h2>{narrative.facts.length ? <ul className="mt-4 space-y-3">{narrative.facts.map((fact)=><li className="rounded-lg border border-stone-200 p-4" key={fact.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{fact.subject}・{fact.attribute}</p><p className="mt-1 text-stone-700">{fact.fact_value}</p><p className="mt-2 text-xs text-stone-500">{factKindLabels[fact.fact_kind]}／{fact.start_page}〜{fact.end_page}ページ</p></div><form action={deleteContinuityFactAction.bind(null,projectId,fact.id)}><PendingSubmitButton className="button-secondary" aria-label="事実を削除" pendingLabel="削除中…"><Trash2 className="h-4 w-4" /></PendingSubmitButton></form></div></li>)}</ul> : <p className="mt-3 text-stone-600">まだ事実はありません。</p>}</div>
+            <div className="panel"><h2 className="text-xl font-bold">伏線台帳</h2>{narrative.threads.length ? <ul className="mt-4 space-y-3">{narrative.threads.map((thread)=><li className="rounded-lg border border-stone-200 p-4" key={thread.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{thread.title}</p><p className="mt-2 text-xs text-stone-500">{threadStatusLabels[thread.status]}／提示 {thread.setup_page}ページ{thread.target_payoff_page ? `／回収予定 ${thread.target_payoff_page}ページ` : ""}{thread.payoff_page ? `／回収 ${thread.payoff_page}ページ` : ""}</p></div><form action={deletePlotThreadAction.bind(null,projectId,thread.id)}><PendingSubmitButton className="button-secondary" aria-label="伏線を削除" pendingLabel="削除中…"><Trash2 className="h-4 w-4" /></PendingSubmitButton></form></div><form action={savePlotThreadAction.bind(null,projectId)} className="mt-3 flex flex-wrap items-end gap-2"><input name="threadId" type="hidden" value={thread.id} /><input name="title" type="hidden" value={thread.title} /><input name="setupPage" type="hidden" value={thread.setup_page} /><input name="targetPayoffPage" type="hidden" value={thread.target_payoff_page ?? ""} /><input name="notes" type="hidden" value={thread.notes} /><label><span className="label">状態を更新</span><select className="field" name="status" defaultValue={thread.status}>{Object.entries(threadStatusLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label><label><span className="label">回収ページ</span><input className="field w-32" name="payoffPage" type="number" min={thread.setup_page} max={1000} defaultValue={thread.payoff_page ?? ""} /></label><PendingSubmitButton className="button-secondary" pendingLabel="更新中…">更新</PendingSubmitButton></form></li>)}</ul> : <p className="mt-3 text-stone-600">まだ伏線はありません。</p>}</div>
           </section>
         </>
       )}

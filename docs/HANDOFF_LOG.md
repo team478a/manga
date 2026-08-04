@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-04 Codex: 一貫性台帳の操作フィードバック
+
+- Branch: `codex/cloud-continuity-action-feedback`
+- Base: `origin/feature/manga-canvas-mvp` (`32ccfb4`)
+- キャラクター・場所・小物・シーン構成からの候補抽出は既に実装済みであることを確認し、重複実装を避けた。
+- 候補登録、事実保存、伏線保存、伏線更新、事実・伏線削除を共通`PendingSubmitButton`へ統一した。
+- 操作中は`登録中…`、`保存中…`、`更新中…`、`削除中…`とスピナーを表示し、ボタンを無効化する。
+- migration、環境変数、外部Provider呼び出しは追加していない。
+- 検証: Hub 465/465、deps:check、Hub typecheck、lint、production build、git diff --check成功。CIはDraft PRで確認する。
+
+---
+
 ## 2026-08-04 Codex: Cloud AI Scheduler安全確認導線
 
 - Branch: `codex/cloud-ai-scheduler-readiness`

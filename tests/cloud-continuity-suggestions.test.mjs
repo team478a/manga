@@ -66,3 +66,11 @@ test("候補は確認操作を経て既存の事実保存Actionへ渡される",
   assert.match(page, /確認して台帳へ登録/);
   assert.match(page, /saveContinuityFactAction/);
 });
+
+test("一貫性台帳の更新操作は処理中表示と二重送信防止を備える", async () => {
+  const page = await readFile("src/app/creator/[projectId]/continuity/page.tsx", "utf8");
+  assert.match(page, /PendingSubmitButton/);
+  for (const label of ["登録中…", "保存中…", "更新中…", "削除中…"])
+    assert.match(page, new RegExp(label));
+  assert.doesNotMatch(page, /<button className="button-primary sm:col-span-2" type="submit">/);
+});
