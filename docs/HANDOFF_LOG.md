@@ -3195,3 +3195,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 公開中情報は編集後にダッシュボードを再検証し、アーカイブ済み情報と不正UUIDは編集対象外にする。
 - DB schema、migration、環境変数の変更はない。
 - 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+## 2026-08-04 Codex: 一般向けCloud漫画制作 正本統合監査
+
+- `codex/cloud-manga-canonical-audit-v1`を最新`feature/manga-canvas-mvp`から作成。
+- Draft PR: [#162](https://github.com/team478a/manga/pull/162)
+- PR #94が旧PR #87〜#90の必要機能commitを移植し、PR #126がPR #94〜#121の一般向け漫画制作スタックを統合済みであることを確認。
+- PR #95〜#121のhead commitが現在の正本branchの祖先であることをGit履歴で確認。
+- 旧積み上げPRは追加マージ不要。履歴保全のためrebase、force push、Closeは実施していない。
+- 次の必須作業を、実Provider 1コマ生成、候補比較・採用・再実行、8ページPDF／PNG目視、390／768／1280確認、一般向け工程E2Eへ限定。
+- deps:check、lint、Hub typecheck、Hub 482/482、migration 48/48、diff checkに成功。
+- 詳細: `docs/cloud/CLOUD_MANGA_CANONICAL_INTEGRATION_AUDIT.md`
