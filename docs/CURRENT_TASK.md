@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-04 Cloud漫画制作 所有者分離の強化
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-manga-owner-isolation-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #164 merge後）
+- Draft PR: [#165](https://github.com/team478a/manga/pull/165)
+- 非公開作品、生成Job、書き出し、品質フィードバックの所有者境界を横断監査した。
+- 書き出し履歴と署名URL発行に、RLSに加えてJob作成者本人の明示条件を追加した。
+- 所有者分離の専用repository checkを追加し、Cloud漫画制作の受入れpreflightへ統合した。
+- 手順書: `docs/cloud/CLOUD_MANGA_OWNER_ISOLATION.md`
+- migration、DB、Feature Flag、Provider、Worker、成人向け処理は変更しない。
+- 検証: 所有者分離7/7、Cloud漫画repository preflight、deps:check、lint、Hub typecheck、Hub 486/486、migration 48/48、production build、git diff check成功。
+- 未完了: Preview、CI、ステージング2ユーザー実機確認、責任者レビュー、マージ。
+
 ## 2026-08-04 Cloud漫画制作 受入れ自動化
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

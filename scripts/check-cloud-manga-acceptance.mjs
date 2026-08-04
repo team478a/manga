@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { checkCloudGeneralMonitorBetaEnvironment } from "./check-cloud-general-monitor-beta-preflight.mjs";
+import { checkCloudOwnerIsolation } from "./check-cloud-owner-isolation.mjs";
 
 const requiredArtifacts = [
   "supabase/migrations/202607180004_cloud_ai_queue.sql",
@@ -47,9 +48,11 @@ export function checkCloudMangaAcceptance({
     return { path: relativePath, ready: !widerThanMobile.test(source) };
   });
   const environment = checkCloudGeneralMonitorBetaEnvironment(env);
+  const ownerIsolation = checkCloudOwnerIsolation({ root });
   const repositoryPassed =
     artifacts.every((item) => item.ready) &&
-    responsive.every((item) => item.ready);
+    responsive.every((item) => item.ready) &&
+    ownerIsolation.passed;
 
   return {
     passed: repositoryPassed && (repositoryOnly || environment.passed),
@@ -57,12 +60,13 @@ export function checkCloudMangaAcceptance({
     environmentPassed: environment.passed,
     artifacts,
     responsive,
+    ownerIsolation,
     manual: [
       "実Providerで1コマだけ生成する",
       "候補比較・採用・再生成・復元を確認する",
       "8ページを編集・保存してPDF／PNGを目視比較する",
       "実ブラウザの390px・768px・1280pxで操作する",
-      "別ユーザーの作品・Job・出力を参照できないことを確認する",
+      "ステージングの2つの一般ユーザーで、非公開作品・Job・出力を相互参照できないことを最終確認する",
     ],
   };
 }
@@ -73,6 +77,8 @@ function printReport(report, repositoryOnly) {
     console.log(`${item.ready ? "PASS" : "FAIL"} artifact ${item.path}`);
   for (const item of report.responsive)
     console.log(`${item.ready ? "PASS" : "FAIL"} responsive-structure ${item.path}`);
+  for (const item of report.ownerIsolation.checks)
+    console.log(`${item.passed ? "PASS" : "FAIL"} owner-isolation ${item.name}`);
   console.log(
     `${report.environmentPassed ? "PASS" : repositoryOnly ? "INFO" : "FAIL"} environment configuration`,
   );
