@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { approveDesktopDevice } from "../actions";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function AuthorizeDevicePage({
   searchParams,
@@ -76,9 +77,9 @@ export default async function AuthorizeDevicePage({
               公開状態、商品、価格、販売ファイル、決済情報は変更できません。
             </p>
           </div>
-          <button className="button w-full" type="submit">
+          <PendingSubmitButton className="button w-full" pendingLabel="承認中…">
             このDesktop端末を承認
-          </button>
+          </PendingSubmitButton>
         </form>
         <Link className="button-secondary w-full" href="/dashboard/devices">
           端末一覧へ戻る

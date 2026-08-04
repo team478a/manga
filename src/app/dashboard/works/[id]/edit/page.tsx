@@ -5,6 +5,7 @@ import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function EditWorkPage({
   params,
@@ -79,7 +80,7 @@ export default async function EditWorkPage({
             </label>
           </div>
         </fieldset>
-        <button className="button w-full" type="submit">更新する</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="更新中…">更新する</PendingSubmitButton>
       </form>
     </main>
   );

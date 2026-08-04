@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revokeDesktopDevice } from "./actions";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 type Device = {
   id: string;
@@ -81,9 +82,9 @@ export default async function DevicesPage({
               </div>
               <form action={revokeDesktopDevice}>
                 <input name="id" type="hidden" value={device.id} />
-                <button className="button-secondary" type="submit">
+                <PendingSubmitButton className="button-secondary" pendingLabel="解除中…">
                   認証を解除
-                </button>
+                </PendingSubmitButton>
               </form>
             </article>
           ))
