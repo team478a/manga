@@ -3195,3 +3195,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 公開中情報は編集後にダッシュボードを再検証し、アーカイブ済み情報と不正UUIDは編集対象外にする。
 - DB schema、migration、環境変数の変更はない。
 - 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
+## 2026-08-04 Codex: 利用者向け更新履歴
+
+- Branch: `codex/product-update-user-history-v1`
+- Base: `feature/manga-canvas-mvp` (`a813a56`、PR #159 merge後)
+- 利用者が最新3件だけでなく、公開済み更新の一覧、本文、関連画面を確認できる導線を追加する。
+- 公開状態の明示条件、不正UUID拒否、接続失敗時の画面内回復、内部相対URLだけの関連導線を実装する。
+- DB schema、migration、環境変数の変更はない。
+- 検証: 専用1/1、Hub 483/483、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。

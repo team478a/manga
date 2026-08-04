@@ -1217,3 +1217,11 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 保存中表示、Provider障害時の安全な日本語案内、一覧へ戻る導線を提供する。
 - DB schema、migration、環境変数、公開状態は変更しない。
 - 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
+## 2026-08-04 Codex: 利用者向け更新履歴
+
+- ダッシュボードの最新更新から、公開済み更新情報の一覧と詳細へ移動できるようにする。
+- 公開前、非公開、アーカイブ済み情報は明示的な条件とRLSの両方で表示対象外にする。
+- 不正UUID、DB接続失敗、危険な外部遷移を安全に拒否し、日本語の再試行案内を表示する。
+- DB schema、migration、環境変数、既存の公開状態は変更しない。
+- 検証: 専用1/1、Hub 483/483、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。

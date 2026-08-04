@@ -24,6 +24,9 @@ export default async function DashboardPage({
     getCloudGeneralMonitorEnrollment(profile.id),
     supabase.from("cloud_product_updates")
       .select("id,title,summary,category,action_url,published_at")
+      .not("published_at", "is", null)
+      .lte("published_at", new Date().toISOString())
+      .is("archived_at", null)
       .order("published_at", { ascending: false })
       .limit(3),
     supabase.from("cloud_ai_notifications")
@@ -101,9 +104,14 @@ export default async function DashboardPage({
       ) : null}
       {!updatesResult.error && updatesResult.data?.length ? (
         <section className="panel mt-5 border-violet-200">
-          <div className="flex items-center gap-2">
-            <Megaphone className="h-5 w-5 text-violet-700" />
-            <h2 className="text-xl font-bold">更新情報</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Megaphone className="h-5 w-5 text-violet-700" />
+              <h2 className="text-xl font-bold">更新情報</h2>
+            </div>
+            <Link className="text-sm font-semibold text-violet-700" href="/dashboard/updates">
+              すべての更新を見る →
+            </Link>
           </div>
           <div className="mt-4 divide-y divide-stone-200">
             {updatesResult.data.map((item) => (
@@ -113,7 +121,11 @@ export default async function DashboardPage({
                     <p className="text-xs font-bold text-violet-700">
                       {item.category === "release" ? "新機能" : item.category === "improvement" ? "改善" : item.category === "fix" ? "不具合修正" : "メンテナンス"}
                     </p>
-                    <h3 className="mt-1 font-bold">{item.title}</h3>
+                    <h3 className="mt-1 font-bold">
+                      <Link className="hover:text-violet-700 hover:underline" href={`/dashboard/updates/${item.id}`}>
+                        {item.title}
+                      </Link>
+                    </h3>
                     <p className="mt-1 text-sm text-stone-600">{item.summary}</p>
                   </div>
                   <p className="shrink-0 text-xs text-stone-500">{item.published_at ? new Date(item.published_at).toLocaleDateString("ja-JP") : ""}</p>
