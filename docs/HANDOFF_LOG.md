@@ -3217,6 +3217,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 # 2026-08-04 Codex: Cloud漫画制作 受入れ自動化
 
 - Branch: `codex/cloud-manga-acceptance-automation-v1`
+- Draft PR: [#164](https://github.com/team478a/manga/pull/164)
 - `cloud:manga:acceptance:repo`と`cloud:manga:acceptance:preflight`を追加した。
 - 漫画制作の必須artifact、可変幅構造、一般向けモニター環境を秘密値なしで一括確認する。
 - 実Provider・候補操作・8ページ目視・実ブラウザ3幅・別ユーザー分離は手動項目として出力する。
