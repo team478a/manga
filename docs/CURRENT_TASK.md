@@ -5,6 +5,8 @@
 - 状態: `VERIFIED_AWAITING_REVIEW`
 - Branch: `codex/cloud-workflow-runtime-hardening-v1`
 - Base: `codex/cloud-research-runtime-recovery`（Draft PR #152）
+- Draft PR: [#153](https://github.com/team478a/manga/pull/153)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-wo-520cdc-team478as-projects.vercel.app`
 - 目的: 市場分析後の企画提案、シナリオ、ネーム、原稿編集、モニター報告でも、一部のDB読込失敗をページ全体の停止へ波及させない。
 - 共通化: 安全な補助データloader、部分障害Notice、Creator配下の日本語回復画面を追加。
 - 企画・シナリオ・ネーム: 本文と履歴・採用状態を分離して読み込み、補助状態を確認できない間は既存内容を表示したまま重複生成・採用だけを停止。
@@ -12,7 +14,8 @@
 - モニター: 報告履歴を取得できない場合も新しい報告フォームは利用可能。
 - 利用者へDB・Providerの内部エラー内容は表示しない。migration、環境変数、外部API実行は追加なし。
 - 検証: 専用回帰5/5、Hub 476/476、deps:check、Hub typecheck、lint、migration 48本、production build、git diff --check成功。
-- 未完了: Draft PR、Vercel Preview、CI、責任者レビュー、PR #152との順序確認、マージ。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
+- 未完了: 責任者レビュー、PR #152との順序確認、本番ブラウザ確認、マージ。
 
 ## 2026-08-04 市場分析・モニター添付の本番障害復旧
 

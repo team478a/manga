@@ -3145,3 +3145,4 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 共通`CloudDataNotice`、安全なloader、Creator route error boundaryを追加。内部例外本文は利用者へ表示しない。
 - migration、環境変数、Provider、料金処理の変更なし。
 - 検証: 専用5/5、Hub 476/476、deps:check、Hub typecheck、lint、migration validate 48本、production build、git diff --check成功。
+- Draft PR #153、Vercel Preview、Core quality、Migration roundtrip、Windows buildに成功。PR #152を先に扱う積み上げ構成。
