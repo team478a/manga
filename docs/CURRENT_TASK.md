@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-04 MANGAI Cloud 本番公開ルート smoke 検査
+
+- 状態: `VERIFIED_LOCAL_AND_PRODUCTION_READ_ONLY`
+- Branch: `codex/cloud-production-route-smoke-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #166 merge後）
+- `https://app.mang-ai.com`の公開5ページと認証必須4ページを、Cookieなし・読み取り専用GETで検査するCLIを追加した。
+- 公開ページは2xx、認証必須ページは同一originの`/login`への3xxだけを合格とし、5xx、外部redirect、通信失敗を拒否する。
+- 明示確認値がない場合はHTTPアクセス前にfail closedする。ログイン、フォーム送信、DB更新、有料Provider実行は行わない。
+- 本番実行結果: 9/9成功（`/`、`/login`、`/signup`、`/forgot-password`、`/works`、`/dashboard`、`/creator`、`/dashboard/monitor/welcome`、`/admin`）。
+- 手順書: `docs/cloud/CLOUD_PRODUCTION_ROUTE_SMOKE.md`
+- 検証: 専用4/4、deps:check、lint、Hub typecheck、Hub 494/494、migration 48/48、production build、git diff check成功。
+- 未完了: 認証済み実ブラウザの390px／768px／1280px表示確認、実作品操作、責任者レビュー。
+
 ## 2026-08-04 Cloud漫画制作 2ユーザー所有者分離受入れ
 
 - 状態: `VERIFIED_LOCAL / BLOCKED_EXTERNAL_ENVIRONMENT`
