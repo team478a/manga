@@ -3198,6 +3198,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 ## 2026-08-04 Codex: 一般向けCloud漫画制作 正本統合監査
 
 - `codex/cloud-manga-canonical-audit-v1`を最新`feature/manga-canvas-mvp`から作成。
+- Draft PR: [#162](https://github.com/team478a/manga/pull/162)
 - PR #94が旧PR #87〜#90の必要機能commitを移植し、PR #126がPR #94〜#121の一般向け漫画制作スタックを統合済みであることを確認。
 - PR #95〜#121のhead commitが現在の正本branchの祖先であることをGit履歴で確認。
 - 旧積み上げPRは追加マージ不要。履歴保全のためrebase、force push、Closeは実施していない。

@@ -5,13 +5,14 @@
 - 状態: `VERIFIED_AWAITING_REVIEW`
 - Branch: `codex/cloud-manga-canonical-audit-v1`
 - Base: `origin/feature/manga-canvas-mvp` (`a813a56`)
+- Draft PR: [#162](https://github.com/team478a/manga/pull/162)
 - PR #94が旧PR #87〜#90の必要機能を統合し、PR #126がPR #94〜#121の一般向け漫画制作スタックを正本へ統合済みであることを確認。
 - PR #95〜#121の各head commitは現在の正本branchの祖先であり、追加マージは不要。
 - migration、実装、テスト、100ページfixtureの存在を確認し、残作業を実Provider・8ページ出力・レスポンシブ・長編実データ受入れへ限定。
 - 監査結果: `docs/cloud/CLOUD_MANGA_CANONICAL_INTEGRATION_AUDIT.md`
 - 既存PRのrebase、force push、Close、マージは行っていない。
 - 検証: deps:check、lint、Hub typecheck、Hub 482/482、migration 48/48、git diff check成功。
-- 未完了: 文書レビュー、Draft PR、実Provider・実ブラウザ・実作品受入れ。
+- 未完了: CI／Preview確認、文書レビュー、実Provider・実ブラウザ・実作品受入れ。
 
 ## 2026-08-04 更新情報保存後の遷移修正
 
