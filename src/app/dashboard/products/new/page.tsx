@@ -3,6 +3,7 @@ import { createDigitalProduct } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function NewProductPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { profile } = await requireProfile();
@@ -80,7 +81,7 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
             </label>
           </div>
         </fieldset>
-        <button className="button w-full" type="submit">保存する</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="商品を保存中…">保存する</PendingSubmitButton>
       </form>
     </main>
   );

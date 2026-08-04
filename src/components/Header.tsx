@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LogIn, LogOut, Search, UserPlus } from "lucide-react";
 import { signOut } from "@/app/actions";
 import { getCurrentProfile } from "@/lib/auth";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export async function Header() {
   const { profile } = await getCurrentProfile();
@@ -31,10 +32,10 @@ export async function Header() {
                 マイページ
               </Link>
               <form action={signOut}>
-                <button className="button-secondary" type="submit">
+                <PendingSubmitButton className="button-secondary" pendingLabel="ログアウト中…">
                   <LogOut className="mr-2 h-5 w-5" />
                   ログアウト
-                </button>
+                </PendingSubmitButton>
               </form>
             </>
           ) : (
