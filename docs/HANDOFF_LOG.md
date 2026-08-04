@@ -3163,3 +3163,9 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Stripe、成人向け機能、業務ロジック、DB、migration、環境変数の変更はない。
 - 検証: 専用3/3、Hub 478/478、deps:check、typecheck、lint、migration 48本、production build、git diff --check成功。
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
+# 2026-08-04 Codex: 更新情報保存後の遷移修正
+
+- Branch: `codex/product-update-save-redirect-fix`
+- 更新情報の保存・公開状態変更後に日本語の結果メッセージを安全にURLエンコードするよう修正した。
+- DB、migration、環境変数、既存データは変更していない。
+- 検証: 専用4/4、Hub 479/479、deps:check、Hub typecheck、lint、migration 48本、production build、git diff --check成功。
