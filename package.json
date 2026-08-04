@@ -34,6 +34,8 @@
     "cloud:release5:preflight": "node scripts/check-cloud-release5-preflight.mjs",
     "cloud:release6:preflight": "node scripts/check-cloud-release6-preflight.mjs",
     "cloud:general-monitor:preflight": "node scripts/check-cloud-general-monitor-beta-preflight.mjs",
+    "cloud:manga:acceptance:preflight": "node scripts/check-cloud-manga-acceptance.mjs",
+    "cloud:manga:acceptance:repo": "node scripts/check-cloud-manga-acceptance.mjs --repository-only",
     "cloud:ai-worker:scheduler": "node scripts/run-cloud-ai-worker-scheduler.mjs",
     "cloud:ai-worker:scheduler:preflight": "node scripts/run-cloud-ai-worker-scheduler.mjs --check",
     "cloud:export:preflight": "node scripts/check-cloud-export-preflight.mjs",
