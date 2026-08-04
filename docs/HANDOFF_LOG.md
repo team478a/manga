@@ -3157,7 +3157,9 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 - Branch: `codex/general-monitor-action-feedback-v2`
 - Draft PR: [#155](https://github.com/team478a/manga/pull/155)
+- Preview: `https://mangai-hub-staging-git-codex-general-f1aea6-team478as-projects.vercel.app`
 - ログアウト、通知、作品・商品、グッズ申請、Desktop端末管理の残存する通常submitボタンを共通の処理中表示へ移行した。
 - 操作中はスピナーと日本語メッセージを表示し、二重送信を防止する。
 - Stripe、成人向け機能、業務ロジック、DB、migration、環境変数の変更はない。
 - 検証: 専用3/3、Hub 478/478、deps:check、typecheck、lint、migration 48本、production build、git diff --check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
