@@ -95,6 +95,50 @@ export default async function GeneralMonitorReadinessPage() {
       </section>
 
       <section className="panel mt-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-violet-700">一般向け画像生成</p>
+            <h2 className="mt-1 text-2xl font-bold">1コマ受入れチェック</h2>
+            <p className="mt-2 text-sm leading-relaxed text-stone-600">
+              有料APIを誤って連続実行しないよう、スタッフ用作品の1コマだけで順番に確認します。
+            </p>
+          </div>
+          <Link className="button-secondary whitespace-nowrap" href="/admin/cloud-ai">
+            画像生成AI管理
+          </Link>
+        </div>
+        <dl className="mt-5 grid gap-3 sm:grid-cols-3">
+          {[
+            ["処理待ち", readiness.stats.imageQueued],
+            ["実行中", readiness.stats.imageRunning],
+            ["24時間以内の失敗", readiness.stats.imageFailedLast24Hours],
+          ].map(([label, value]) => (
+            <div className="rounded-xl bg-stone-50 p-4" key={label}>
+              <dt className="text-sm text-stone-500">{label}</dt>
+              <dd className="mt-1 text-2xl font-bold">
+                {value === null ? "確認不可" : `${value}件`}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <ol className="mt-5 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-stone-700">
+          <li>上の公開条件をすべて「準備完了」にする。</li>
+          <li>スタッフ用の一般向け作品を開き、1コマだけ画像生成を依頼する。</li>
+          <li>処理待ちになったことを確認し、Workerを1回実行する。</li>
+          <li>候補画像を比較し、採用・再生成・元に戻す操作を確認する。</li>
+          <li>ページを保存し、PDFとPNGに採用画像が反映されることを確認する。</li>
+        </ol>
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <Link className="button bg-violet-700 hover:bg-violet-800" href="/creator">
+            スタッフ用作品を開く
+          </Link>
+          <Link className="button-secondary" href="/admin/cloud-ai">
+            QueueとWorkerを確認
+          </Link>
+        </div>
+      </section>
+
+      <section className="panel mt-8">
         <h2 className="text-2xl font-bold">現在のテスト状況</h2>
         <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {[

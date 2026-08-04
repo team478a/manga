@@ -49,6 +49,14 @@ test("テスト公開チェックは秘密値を表示せず主要な公開条�
   assert.match(page, /テスト公開チェック/);
   assert.match(readiness, /一般向け画像生成AI/);
   assert.match(readiness, /画像生成Worker/);
+  assert.match(readiness, /cloud_ai_settings/);
+  assert.match(readiness, /cloud_ai_provider_prices/);
+  assert.match(readiness, /cloud_generation_jobs/);
+  assert.match(readiness, /画像生成の全体設定/);
+  assert.match(readiness, /画像生成の利用価格/);
+  assert.match(page, /1コマ受入れチェック/);
+  assert.match(page, /24時間以内の失敗/);
+  assert.match(page, /候補画像を比較/);
   assert.match(
     readiness,
     /202607310004_cloud_general_image_provider\.sql/,
