@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-04 クラウド制作の操作フィードバック統一
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-creator-action-feedback-v2`
+- Base: `origin/feature/manga-canvas-mvp` (`4542398`、PR #149 merge後)
+- 目的: クラウド制作で保存・追加・移動・削除を押した後に反応が分からず、再クリックされる問題を防ぐ
+- 実装: 作品作成、名称変更、話・章・ページ・シーン追加、並べ替え、表紙設定、販売下書き、削除、復元を共通`PendingSubmitButton`へ統一
+- 表示: 操作ごとのスピナーと`作成中…`、`保存中…`、`追加中…`、`移動中…`、`設定中…`、`削除中…`、`復元中…`を表示し、処理中はボタンを無効化
+- migration／環境変数／外部API: 追加・実行なし
+- 検証: 専用回帰テストを含むHub 466/466、deps:check、Hub typecheck、lint、migration validate（48本）、production build、git diff --check成功
+- 未完了: Draft PR、Vercel Preview、責任者確認
+
 ## 2026-08-04 一貫性台帳の操作フィードバック
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
@@ -12,7 +24,7 @@
 - migration／環境変数／外部API: 追加・実行なし
 - 検証: 専用テストを含むHub 465/465、deps:check、Hub typecheck、lint、production build、git diff --check成功
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
-- 未完了: 責任者確認・マージ
+- 完了: PR #149は`4542398`でマージ済み
 
 ## 2026-08-04 Cloud AI Scheduler安全確認導線
 

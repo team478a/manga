@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-04 Codex: クラウド制作の操作フィードバック統一
+
+- Branch: `codex/cloud-creator-action-feedback-v2`
+- Base: `origin/feature/manga-canvas-mvp` (`4542398`、PR #149 merge後)
+- 作品作成、名称変更、話・章・ページ・シーン追加、並べ替え、表紙設定、販売下書き作成、削除、復元へ処理中表示と二重送信防止を追加した。
+- 共通`PendingSubmitButton`を使い、操作に応じた日本語の進行表示とスピナーを表示する。
+- DB、migration、環境変数、API契約、外部Provider処理は変更していない。
+- 専用回帰テストを追加し、対象画面に未対応の生のsubmit buttonが戻らないことを検査する。
+- Hub 466/466、deps:check、Hub typecheck、lint、migration validate（48本）、production build、git diff --check成功。
+
+---
+
 ## 2026-08-04 Codex: 一貫性台帳の操作フィードバック
 
 - Branch: `codex/cloud-continuity-action-feedback`

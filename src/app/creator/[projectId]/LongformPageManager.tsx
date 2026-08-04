@@ -130,7 +130,7 @@ export function LongformPageManager({
               <h3 className="text-xl font-bold">{chapter.title}</h3>
               <form action={addCloudEpisodeToChapterAction.bind(null, projectId, chapter.id)} className="flex gap-2">
                 <input aria-label={`${chapter.title}へ追加する話の名前`} className="field mt-0 min-w-0" maxLength={200} name="title" placeholder="新しい話" required />
-                <button className="button-secondary shrink-0" type="submit"><Plus className="mr-1 inline h-4 w-4" />話を追加</button>
+                <PendingSubmitButton className="button-secondary shrink-0" pendingLabel="追加中…"><Plus className="mr-1 inline h-4 w-4" />話を追加</PendingSubmitButton>
               </form>
             </div>
             <div className="mt-4 space-y-4">
@@ -146,7 +146,7 @@ export function LongformPageManager({
                           <section className="rounded-lg border border-stone-200 bg-stone-50 p-3" key={scene.id}>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                               <div><h5 className="font-bold">{scene.title}</h5>{scene.summary ? <p className="mt-1 text-sm text-stone-600">{scene.summary}</p> : null}</div>
-                              <form action={addCloudPageToSceneAction.bind(null, projectId, scene.id)}><button className="button-secondary" type="submit"><FilePlus2 className="mr-1 inline h-4 w-4" />ページ追加</button></form>
+                              <form action={addCloudPageToSceneAction.bind(null, projectId, scene.id)}><PendingSubmitButton className="button-secondary" pendingLabel="追加中…"><FilePlus2 className="mr-1 inline h-4 w-4" />ページ追加</PendingSubmitButton></form>
                             </div>
                             <div className={`mt-3 grid gap-3 ${view === "spread" ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4"}`} dir={view === "spread" && readingDirection === "rtl" ? "rtl" : "ltr"}>
                               {scenePages.map((page) => (
@@ -167,8 +167,8 @@ export function LongformPageManager({
                                     {status === "finalized" ? <form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "revision_required")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="再開中…">編集を再開</PendingSubmitButton></form> : status === "review_required" ? <><form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "revision_required")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="更新中…">要修正</PendingSubmitButton></form><form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "finalized")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="確定中…">確定</PendingSubmitButton></form></> : status !== "generating" ? <form action={setCloudPageProductionStatusAction.bind(null, projectId, page.id, "review_required")}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="更新中…">確認待ちへ</PendingSubmitButton></form> : null}
                                   </div>
                                   <div className="mt-2 flex justify-center gap-1" dir="ltr">
-                                    <form action={setCloudProjectCoverAction.bind(null, projectId, page.id)}><button className="button-secondary min-h-9 px-2 py-1 text-xs" type="submit">表紙</button></form>
-                                    <form action={deleteCloudStructureAction.bind(null, projectId, "page", page.id)}><button aria-label={`${page.page_number}ページを削除`} className="button-secondary min-h-9 px-2 py-1 text-red-700" type="submit"><Trash2 className="h-4 w-4" /></button></form>
+                                    <form action={setCloudProjectCoverAction.bind(null, projectId, page.id)}><PendingSubmitButton className="button-secondary min-h-9 px-2 py-1 text-xs" pendingLabel="設定中…">表紙</PendingSubmitButton></form>
+                                    <form action={deleteCloudStructureAction.bind(null, projectId, "page", page.id)}><PendingSubmitButton aria-label={`${page.page_number}ページを削除`} className="button-secondary min-h-9 px-2 py-1 text-red-700" pendingLabel="削除中…"><Trash2 className="h-4 w-4" /></PendingSubmitButton></form>
                                   </div>
                                   </>; })()}
                                 </article>
@@ -183,7 +183,7 @@ export function LongformPageManager({
                       <form action={addCloudSceneAction.bind(null, projectId, episode.id)} className="mt-3 grid gap-2 sm:grid-cols-2">
                         <input className="field mt-0" maxLength={200} name="title" placeholder="シーン名" required />
                         <input className="field mt-0" maxLength={2000} name="summary" placeholder="場面の概要（任意）" />
-                        <button className="button-secondary sm:col-span-2" type="submit">追加</button>
+                        <PendingSubmitButton className="button-secondary sm:col-span-2" pendingLabel="追加中…">追加</PendingSubmitButton>
                       </form>
                     </details>
                   </section>

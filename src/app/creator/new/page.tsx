@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createCloudProjectAction } from "@/app/creator/actions";
 import { requireProfile } from "@/lib/auth";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function NewCloudProjectPage({
   searchParams,
@@ -118,9 +119,9 @@ export default async function NewCloudProjectPage({
           成人向けへ変更することはできません。成人向け制作にはDesktop
           Adultを使用してください。
         </p>
-        <button className="button w-full" type="submit">
+        <PendingSubmitButton className="button w-full" pendingLabel="作品を作成中…">
           作品を作成
-        </button>
+        </PendingSubmitButton>
       </form>
     </main>
   );

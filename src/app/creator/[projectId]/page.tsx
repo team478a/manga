@@ -42,6 +42,7 @@ import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function CloudProjectPage({
   params,
@@ -389,19 +390,22 @@ export default async function CloudProjectPage({
               maxLength={5000}
             />
           </div>
-          <button className="button" type="submit">
+          <PendingSubmitButton className="button" pendingLabel="更新中…">
             更新
-          </button>
+          </PendingSubmitButton>
         </form>
       </details>
       <form
         action={deleteCloudProjectAction.bind(null, projectId)}
         className="mt-3 text-right"
       >
-        <button className="button-secondary text-red-700" type="submit">
+        <PendingSubmitButton
+          className="button-secondary text-red-700"
+          pendingLabel="移動中…"
+        >
           <Trash2 className="mr-2 h-5 w-5" />
           作品をゴミ箱へ移動
-        </button>
+        </PendingSubmitButton>
       </form>
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_320px]">
         <section className="space-y-5">
@@ -444,9 +448,12 @@ export default async function CloudProjectPage({
                       required
                       maxLength={200}
                     />
-                    <button className="button-secondary shrink-0" type="submit">
+                    <PendingSubmitButton
+                      className="button-secondary shrink-0"
+                      pendingLabel="保存中…"
+                    >
                       名前を保存
-                    </button>
+                    </PendingSubmitButton>
                   </form>
                   <div className="flex gap-1">
                     <form
@@ -458,13 +465,13 @@ export default async function CloudProjectPage({
                         -1,
                       )}
                     >
-                      <button
+                      <PendingSubmitButton
                         aria-label="話を上へ"
                         className="button-secondary px-3"
-                        type="submit"
+                        pendingLabel="移動中…"
                       >
                         <ArrowUp className="h-4 w-4" />
-                      </button>
+                      </PendingSubmitButton>
                     </form>
                     <form
                       action={moveCloudStructureAction.bind(
@@ -475,13 +482,13 @@ export default async function CloudProjectPage({
                         1,
                       )}
                     >
-                      <button
+                      <PendingSubmitButton
                         aria-label="話を下へ"
                         className="button-secondary px-3"
-                        type="submit"
+                        pendingLabel="移動中…"
                       >
                         <ArrowDown className="h-4 w-4" />
-                      </button>
+                      </PendingSubmitButton>
                     </form>
                     <form
                       action={deleteCloudStructureAction.bind(
@@ -491,13 +498,13 @@ export default async function CloudProjectPage({
                         episode.id,
                       )}
                     >
-                      <button
+                      <PendingSubmitButton
                         aria-label="話を削除"
                         className="button-secondary px-3 text-red-700"
-                        type="submit"
+                        pendingLabel="削除中…"
                       >
                         <Trash2 className="h-4 w-4" />
-                      </button>
+                      </PendingSubmitButton>
                     </form>
                   </div>
                 </div>
@@ -527,14 +534,14 @@ export default async function CloudProjectPage({
                             page.id,
                           )}
                         >
-                          <button
+                          <PendingSubmitButton
                             className={`button-secondary min-h-10 px-3 py-2 text-xs ${project.cover_page_id === page.id ? "border-leaf bg-green-50 text-green-800" : ""}`}
-                            type="submit"
+                            pendingLabel="設定中…"
                           >
                             {project.cover_page_id === page.id
                               ? "表紙"
                               : "表紙に設定"}
-                          </button>
+                          </PendingSubmitButton>
                         </form>
                         <form
                           action={moveCloudStructureAction.bind(
@@ -545,13 +552,13 @@ export default async function CloudProjectPage({
                             -1,
                           )}
                         >
-                          <button
+                          <PendingSubmitButton
                             aria-label="ページを前へ"
                             className="button-secondary min-h-10 px-3 py-2"
-                            type="submit"
+                            pendingLabel="移動中…"
                           >
                             <ArrowUp className="h-4 w-4" />
-                          </button>
+                          </PendingSubmitButton>
                         </form>
                         <form
                           action={moveCloudStructureAction.bind(
@@ -562,13 +569,13 @@ export default async function CloudProjectPage({
                             1,
                           )}
                         >
-                          <button
+                          <PendingSubmitButton
                             aria-label="ページを後へ"
                             className="button-secondary min-h-10 px-3 py-2"
-                            type="submit"
+                            pendingLabel="移動中…"
                           >
                             <ArrowDown className="h-4 w-4" />
-                          </button>
+                          </PendingSubmitButton>
                         </form>
                         <form
                           action={deleteCloudStructureAction.bind(
@@ -578,13 +585,13 @@ export default async function CloudProjectPage({
                             page.id,
                           )}
                         >
-                          <button
+                          <PendingSubmitButton
                             aria-label="ページを削除"
                             className="button-secondary min-h-10 px-3 py-2 text-red-700"
-                            type="submit"
+                            pendingLabel="削除中…"
                           >
                             <Trash2 className="h-4 w-4" />
-                          </button>
+                          </PendingSubmitButton>
                         </form>
                       </div>
                     </div>
@@ -594,10 +601,13 @@ export default async function CloudProjectPage({
                   action={addCloudPageAction.bind(null, projectId, episode.id)}
                   className="mt-4"
                 >
-                  <button className="button-secondary w-full" type="submit">
+                  <PendingSubmitButton
+                    className="button-secondary w-full"
+                    pendingLabel="追加中…"
+                  >
                     <FilePlus2 className="mr-2 h-5 w-5" />
                     ページを追加
-                  </button>
+                  </PendingSubmitButton>
                 </form>
               </article>
             );
@@ -611,7 +621,7 @@ export default async function CloudProjectPage({
             <h2 className="text-xl font-bold">章を追加</h2>
             <label className="label mt-4 block" htmlFor="chapter-title">章の名前</label>
             <input className="field" id="chapter-title" name="title" placeholder="第2章" required maxLength={200} />
-            <button className="button mt-4 w-full" type="submit"><Plus className="mr-2 h-5 w-5" />追加</button>
+            <PendingSubmitButton className="button mt-4 w-full" pendingLabel="追加中…"><Plus className="mr-2 h-5 w-5" />追加</PendingSubmitButton>
           </form>
           ) : (
           <form
@@ -630,10 +640,13 @@ export default async function CloudProjectPage({
               required
               maxLength={200}
             />
-            <button className="button mt-4 w-full" type="submit">
+            <PendingSubmitButton
+              className="button mt-4 w-full"
+              pendingLabel="追加中…"
+            >
               <Plus className="mr-2 h-5 w-5" />
               追加
-            </button>
+            </PendingSubmitButton>
           </form>
           )}
           <section className="panel">
@@ -697,11 +710,14 @@ export default async function CloudProjectPage({
                 defaultValue={marketplaceDraft?.product?.price ?? 500}
                 required
               />
-              <button className="button mt-4 w-full" type="submit">
+              <PendingSubmitButton
+                className="button mt-4 w-full"
+                pendingLabel="作成中…"
+              >
                 {marketplaceDraft?.product
                   ? "下書きを再生成"
                   : "販売下書きを作成"}
-              </button>
+              </PendingSubmitButton>
             </form>
           </section>
         </aside>
