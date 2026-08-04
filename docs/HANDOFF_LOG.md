@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-04 Codex: MANGAI Cloud 本番公開ルート smoke 検査
+
+- Branch: `codex/cloud-production-route-smoke-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #166 merge後）
+- Draft PR: [#167](https://github.com/team478a/manga/pull/167)
+- `cloud:production:routes`と事前検査を追加し、`https://app.mang-ai.com`の主要9ルートを読み取り専用で検査できるようにした。
+- 公開5ルートの2xx、認証必須4ルートの同一originログイン誘導を確認し、5xx、外部redirect、通信失敗を失敗扱いにする。
+- 明示確認値なしでは通信前に停止し、Cookie、認証情報、利用者データ、query値を扱わない。
+- 本番読み取り検査は9/9成功。ブラウザ操作接続はタイムアウトしたため、認証済み3幅表示と実作品操作は未実施。
+- migration、環境変数の永続設定、DB、Feature Flag、Provider、Worker、成人向け処理は変更していない。
+- 検証: 専用4/4、deps:check、lint、Hub typecheck、Hub 494/494、migration 48/48、production build、git diff check成功。
+
 ## 2026-08-04 Codex: Cloud漫画制作 所有者分離の強化
 
 - Branch: `codex/cloud-manga-owner-isolation-v1`

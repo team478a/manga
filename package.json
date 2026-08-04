@@ -39,6 +39,8 @@
     "cloud:manga:owner-isolation": "node scripts/check-cloud-owner-isolation.mjs",
     "cloud:manga:owner-isolation:staging": "node scripts/check-cloud-owner-isolation-staging.mjs",
     "cloud:manga:owner-isolation:staging:preflight": "node scripts/check-cloud-owner-isolation-staging.mjs --preflight",
+    "cloud:production:routes": "node scripts/check-cloud-production-routes.mjs",
+    "cloud:production:routes:preflight": "node scripts/check-cloud-production-routes.mjs --preflight",
     "cloud:ai-worker:scheduler": "node scripts/run-cloud-ai-worker-scheduler.mjs",
     "cloud:ai-worker:scheduler:preflight": "node scripts/run-cloud-ai-worker-scheduler.mjs --check",
     "cloud:export:preflight": "node scripts/check-cloud-export-preflight.mjs",
