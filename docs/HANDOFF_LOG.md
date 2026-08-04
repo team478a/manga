@@ -8,6 +8,7 @@
 
 - Branch: `codex/cloud-ai-scheduler-readiness`
 - Base: `origin/feature/manga-canvas-mvp` (`483ef8b`、PR #146 merge後)
+- Draft PR: [#148](https://github.com/team478a/manga/pull/148)
 - Actionsの手動実行を通信なし`check`既定に変更し、`run`の明示選択と有効化変数が揃った場合だけWorkerを実行する。
 - `/admin/cloud-ai`にScheduler Actionsと本番公開チェックへの導線、check／runの安全な順序を追加した。
 - Actionsの設定値をアプリへ取得せず、GitHub SecretsとVercelの秘密情報境界を維持する。
