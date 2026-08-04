@@ -3156,6 +3156,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 # 2026-08-04 Codex: 一般向けモニター操作フィードバック第2弾
 
 - Branch: `codex/general-monitor-action-feedback-v2`
+- Draft PR: [#155](https://github.com/team478a/manga/pull/155)
 - ログアウト、通知、作品・商品、グッズ申請、Desktop端末管理の残存する通常submitボタンを共通の処理中表示へ移行した。
 - 操作中はスピナーと日本語メッセージを表示し、二重送信を防止する。
 - Stripe、成人向け機能、業務ロジック、DB、migration、環境変数の変更はない。
