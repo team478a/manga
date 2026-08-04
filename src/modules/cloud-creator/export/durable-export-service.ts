@@ -34,11 +34,12 @@ function mapJob(row: Record<string, unknown>): CloudExportJob {
 }
 
 export async function listCloudExportJobs(projectId: string) {
-  const { supabase } = await cloudCreatorContext();
+  const { supabase, profile } = await cloudCreatorContext();
   const { data, error } = await supabase
     .from("cloud_export_jobs")
     .select("id,project_id,format,status,total_pages,completed_pages,progress,error_code,output_storage_path,created_at,finished_at")
     .eq("project_id", projectId)
+    .eq("created_by_profile_id", profile.id)
     .order("created_at", { ascending: false })
     .limit(10);
   if (error?.code === "42P01") return { available: false, jobs: [] as CloudExportJob[] };
@@ -65,11 +66,12 @@ export async function setCloudExportJobState(jobId: string, status: "queued" | "
 }
 
 export async function createCloudExportDownloadUrl(jobId: string) {
-  const { supabase } = await cloudCreatorContext();
+  const { supabase, profile } = await cloudCreatorContext();
   const { data, error } = await supabase
     .from("cloud_export_jobs")
     .select("output_bucket,output_storage_path,status")
     .eq("id", jobId)
+    .eq("created_by_profile_id", profile.id)
     .maybeSingle();
   if (error || !data || data.status !== "completed" || !data.output_storage_path)
     throw new ValidationError("完成した書き出しファイルがありません。");

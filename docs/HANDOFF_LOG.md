@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-04 Codex: Cloud漫画制作 所有者分離の強化
+
+- Branch: `codex/cloud-manga-owner-isolation-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #164 merge後）
+- 非公開作品、生成Job、書き出し、品質フィードバックの認証・RLS・Server境界を監査した。
+- 管理StorageでPDF署名URLを発行する前に、認証済みprofileと書き出しJob作成者を明示照合する防御を追加した。
+- `cloud:manga:owner-isolation`で7つの所有者分離契約を自動検査し、既存のCloud漫画受入れpreflightにも組み込んだ。
+- migration、DB、環境変数、外部Provider呼び出しは追加していない。
+- 検証: 所有者分離7/7、Cloud漫画repository preflight、deps:check、lint、Hub typecheck、Hub 486/486、migration 48/48、production build、git diff check成功。
+- Preview、CI、ステージング2ユーザー実機確認、責任者レビュー、マージは未完了。
+
 ## 2026-08-04 Codex: 市場分析・モニター添付の本番障害復旧
 
 - Branch: `codex/cloud-research-runtime-recovery`
