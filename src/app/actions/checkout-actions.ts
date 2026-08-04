@@ -15,14 +15,14 @@ export async function createPendingOrder(formData: FormData) {
   try {
     buyerEmail = normalizeBuyerEmail(formText(formData, "buyerEmail"));
   } catch {
-    redirect(`/checkout/${productId}?error=メールアドレスを確認してください`);
+    redirect(encodeURI(`/checkout/${productId}?error=メールアドレスを確認してください`));
   }
   if (!productId) {
-    redirect(`/checkout/${productId}?error=メールアドレスを確認してください`);
+    redirect(encodeURI(`/checkout/${productId}?error=メールアドレスを確認してください`));
   }
   if (!hasSupabaseAdminEnv()) {
     redirect(
-      `/checkout/${productId}?error=Supabaseの管理用環境変数が設定されていません`,
+      encodeURI(`/checkout/${productId}?error=Supabaseの管理用環境変数が設定されていません`),
     );
   }
 
@@ -54,7 +54,7 @@ export async function createPendingOrder(formData: FormData) {
       works: { id: string; is_public: boolean } | null;
     }>();
   if (!product || product.status !== "active" || !product.works?.is_public) {
-    redirect(`/checkout/${productId}?error=この商品は現在購入できません`);
+    redirect(encodeURI(`/checkout/${productId}?error=この商品は現在購入できません`));
   }
 
   const amount = Math.round(product.price);
@@ -76,7 +76,7 @@ export async function createPendingOrder(formData: FormData) {
     .select("id")
     .single<{ id: string }>();
   if (error || !order) {
-    redirect(`/checkout/${productId}?error=仮注文の作成に失敗しました`);
+    redirect(encodeURI(`/checkout/${productId}?error=仮注文の作成に失敗しました`));
   }
 
   let checkoutUrl = "";

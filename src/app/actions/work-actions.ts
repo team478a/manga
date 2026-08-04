@@ -80,13 +80,13 @@ export async function createWork(formData: FormData) {
   }
   revalidatePath("/dashboard/works");
   revalidatePath("/works");
-  redirect("/dashboard/works?message=作品を保存しました");
+  redirect(encodeURI("/dashboard/works?message=作品を保存しました"));
 }
 
 export async function updateWork(formData: FormData) {
   const { user, profile } = await requireProfile();
   const id = formText(formData, "id");
-  if (!id) redirect("/dashboard/works?error=作品を保存できませんでした");
+  if (!id) redirect(encodeURI("/dashboard/works?error=作品を保存できませんでした"));
 
   const input = workInputSchema.safeParse({
     title: formText(formData, "title"),
@@ -111,7 +111,7 @@ export async function updateWork(formData: FormData) {
     .maybeSingle();
   if (!ownedWork) {
     redirect(
-      "/dashboard/works?error=作品が見つからないか、編集権限がありません",
+      encodeURI("/dashboard/works?error=作品が見つからないか、編集権限がありません"),
     );
   }
 
@@ -174,5 +174,5 @@ export async function updateWork(formData: FormData) {
   }
   revalidatePath("/dashboard/works");
   revalidatePath(`/works/${id}`);
-  redirect("/dashboard/works?message=作品を更新しました");
+  redirect(encodeURI("/dashboard/works?message=作品を更新しました"));
 }

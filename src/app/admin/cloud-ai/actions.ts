@@ -117,7 +117,7 @@ export async function cancelCloudAiJobAction(jobId: string) {
   const { profile } = await requireAdmin();
   const parsedJobId = z.string().uuid().safeParse(jobId);
   if (!parsedJobId.success)
-    redirect("/admin/cloud-ai?error=Job IDを確認してください");
+    redirect(encodeURI("/admin/cloud-ai?error=Job IDを確認してください"));
 
   const admin = createAdminClient();
   const { data: before, error: loadError } = await admin
@@ -171,7 +171,7 @@ export async function updateCloudAiSettingsAction(formData: FormData) {
       warningPercent: field(formData, "warningPercent"),
     });
   if (!parsed.success)
-    redirect("/admin/cloud-ai?error=運用設定を確認してください");
+    redirect(encodeURI("/admin/cloud-ai?error=運用設定を確認してください"));
   const admin = createAdminClient();
   const { data: before } = await admin
     .from("cloud_ai_settings")
@@ -200,7 +200,7 @@ export async function updateCloudAiSettingsAction(formData: FormData) {
     after,
   });
   revalidatePath("/admin/cloud-ai");
-  redirect("/admin/cloud-ai?message=Cloud AI運用設定を更新しました");
+  redirect(encodeURI("/admin/cloud-ai?message=Cloud AI運用設定を更新しました"));
 }
 
 export async function updateCloudGeneralImageProviderAction(
@@ -219,7 +219,7 @@ export async function updateCloudGeneralImageProviderAction(
       enabled: field(formData, "enabled"),
     });
   if (!parsed.success)
-    redirect("/admin/cloud-ai?error=画像生成AI設定を確認してください");
+    redirect(encodeURI("/admin/cloud-ai?error=画像生成AI設定を確認してください"));
   try {
     await setCloudGeneralImageSettings({
       actorProfileId: profile.id,
@@ -236,7 +236,7 @@ export async function updateCloudGeneralImageProviderAction(
   }
   revalidatePath("/admin/cloud-ai");
   redirect(
-    "/admin/cloud-ai?message=一般向け画像生成AI設定を保存しました",
+    encodeURI("/admin/cloud-ai?message=一般向け画像生成AI設定を保存しました"),
   );
 }
 
@@ -261,7 +261,7 @@ export async function updateCloudAiPlanAction(
       active: field(formData, "active"),
     });
   if (!parsed.success || !["free", "trial", "creator"].includes(planKey))
-    redirect("/admin/cloud-ai?error=Plan設定を確認してください");
+    redirect(encodeURI("/admin/cloud-ai?error=Plan設定を確認してください"));
   const admin = createAdminClient();
   const { data: before } = await admin
     .from("cloud_ai_plans")
@@ -286,7 +286,7 @@ export async function updateCloudAiPlanAction(
     );
   await audit({ actorId: profile.id, action: "update_plan", targetType: "cloud_ai_plan", targetId: planKey, before, after });
   revalidatePath("/admin/cloud-ai");
-  redirect("/admin/cloud-ai?message=Plan設定を更新しました");
+  redirect(encodeURI("/admin/cloud-ai?message=Plan設定を更新しました"));
 }
 
 export async function createCloudAiPriceAction(formData: FormData) {
@@ -306,7 +306,7 @@ export async function createCloudAiPriceAction(formData: FormData) {
     pricingVersion: field(formData,"pricingVersion"), credits: field(formData,"credits"),
     maxCostMicros: field(formData,"maxCostMicros"), currency: field(formData,"currency").toUpperCase(),
   });
-  if (!parsed.success) redirect("/admin/cloud-ai?error=価格情報を確認してください");
+  if (!parsed.success) redirect(encodeURI("/admin/cloud-ai?error=価格情報を確認してください"));
   const admin = createAdminClient();
   const values = {
     provider_id: parsed.data.providerId, model_id: parsed.data.modelId,
@@ -321,14 +321,14 @@ export async function createCloudAiPriceAction(formData: FormData) {
     );
   await audit({ actorId: profile.id, action: "create_price", targetType: "cloud_ai_provider_price", targetId: data.id, before: null, after: values });
   revalidatePath("/admin/cloud-ai");
-  redirect("/admin/cloud-ai?message=価格versionを停止状態で登録しました");
+  redirect(encodeURI("/admin/cloud-ai?message=価格versionを停止状態で登録しました"));
 }
 
 export async function setCloudAiPriceActiveAction(id: string, active: boolean) {
   const { profile } = await requireAdmin();
   const parsedPriceId = z.string().uuid().safeParse(id);
   if (!parsedPriceId.success)
-    redirect("/admin/cloud-ai?error=価格IDを確認してください");
+    redirect(encodeURI("/admin/cloud-ai?error=価格IDを確認してください"));
   const priceId = parsedPriceId.data;
   const admin = createAdminClient();
   const { data: before } = await admin.from("cloud_ai_provider_prices").select("*").eq("id",priceId).single();

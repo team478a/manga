@@ -10,7 +10,7 @@ export async function setCloudAdultResearchEnabledAction(formData: FormData) {
   const { profile } = await requireAdmin();
   const rawEnabled = formData.get("enabled");
   if (rawEnabled !== "true" && rawEnabled !== "false")
-    redirect("/admin/adult-research?error=全体設定を確認してください");
+    redirect(encodeURI("/admin/adult-research?error=全体設定を確認してください"));
 
   const operation = await safelyLoadAdminData("adult-research/action", async () => {
     const admin = createAdminClient();
@@ -21,7 +21,7 @@ export async function setCloudAdultResearchEnabledAction(formData: FormData) {
   });
   if (!operation.ok || operation.value.error)
     redirect(
-      "/admin/adult-research?error=成人向け市場分析の全体設定を更新できませんでした",
+      encodeURI("/admin/adult-research?error=成人向け市場分析の全体設定を更新できませんでした"),
     );
 
   revalidatePath("/admin/adult-research");

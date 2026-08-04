@@ -121,7 +121,7 @@ export async function resendCloudGeneralMonitorInviteAction(profileId: string) {
     redirect(`/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("一般向けモニターは現在停止中です")}`);
   const parsed = z.string().uuid().safeParse(profileId);
   if (!parsed.success)
-    redirect("/admin/users?error=ユーザー情報を確認してください");
+    redirect(encodeURI("/admin/users?error=ユーザー情報を確認してください"));
   if (!(await inviteTrackingConfigured()))
     redirect(`/admin/users/${parsed.data}?error=${encodeURIComponent("招待メール送信履歴のmigrationを先に適用してください")}`);
   const admin = createAdminClient();

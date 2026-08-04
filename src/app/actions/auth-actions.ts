@@ -11,7 +11,7 @@ const passwordSchema = z.string().min(8);
 
 export async function signUp(formData: FormData) {
   if (!hasSupabaseEnv()) {
-    redirect("/signup?error=Supabaseの環境変数を設定すると新規登録できます。");
+    redirect(encodeURI("/signup?error=Supabaseの環境変数を設定すると新規登録できます。"));
   }
 
   const schema = z
@@ -58,7 +58,7 @@ export async function signUp(formData: FormData) {
 
 export async function signIn(formData: FormData) {
   if (!hasSupabaseEnv()) {
-    redirect("/login?error=Supabaseの環境変数を設定するとログインできます。");
+    redirect(encodeURI("/login?error=Supabaseの環境変数を設定するとログインできます。"));
   }
 
   const supabase = await createClient();

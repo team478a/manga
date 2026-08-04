@@ -33,5 +33,5 @@ export async function updateProfile(formData: FormData) {
       `/dashboard?error=${encodeURIComponent("プロフィールを保存できませんでした")}`,
     );
   revalidatePath("/dashboard");
-  redirect("/dashboard?message=保存しました");
+  redirect(encodeURI("/dashboard?message=保存しました"));
 }

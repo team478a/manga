@@ -23,7 +23,7 @@ export async function createDigitalProduct(formData: FormData) {
     formText(formData, "status") === "paused" ? "paused" : "active";
   if (!title || !workId || Number.isNaN(price) || price < 0) {
     redirect(
-      "/dashboard/products/new?error=商品名、作品、価格を確認してください",
+      encodeURI("/dashboard/products/new?error=商品名、作品、価格を確認してください"),
     );
   }
 
@@ -37,7 +37,7 @@ export async function createDigitalProduct(formData: FormData) {
     .maybeSingle();
   if (!work) {
     redirect(
-      "/dashboard/products/new?error=自分の作品だけを商品に紐づけできます",
+      encodeURI("/dashboard/products/new?error=自分の作品だけを商品に紐づけできます"),
     );
   }
 
@@ -80,7 +80,7 @@ export async function createDigitalProduct(formData: FormData) {
     );
   }
   revalidatePath("/dashboard/products");
-  redirect("/dashboard/products?message=販売商品を登録しました");
+  redirect(encodeURI("/dashboard/products?message=販売商品を登録しました"));
 }
 
 export async function updateDigitalProduct(formData: FormData) {
@@ -92,7 +92,7 @@ export async function updateDigitalProduct(formData: FormData) {
   const status =
     formText(formData, "status") === "paused" ? "paused" : "active";
   if (!id || !title || !workId || Number.isNaN(price) || price < 0) {
-    redirect("/dashboard/products?error=商品情報を確認してください");
+    redirect(encodeURI("/dashboard/products?error=商品情報を確認してください"));
   }
 
   const supabase = await createClient();
@@ -113,12 +113,12 @@ export async function updateDigitalProduct(formData: FormData) {
   ]);
   if (!product) {
     redirect(
-      "/dashboard/products?error=商品が見つからないか、編集権限がありません",
+      encodeURI("/dashboard/products?error=商品が見つからないか、編集権限がありません"),
     );
   }
   if (!work) {
     redirect(
-      `/dashboard/products/${id}/edit?error=自分の作品だけを商品に紐づけできます`,
+      encodeURI(`/dashboard/products/${id}/edit?error=自分の作品だけを商品に紐づけできます`),
     );
   }
 
@@ -168,5 +168,5 @@ export async function updateDigitalProduct(formData: FormData) {
     );
   }
   revalidatePath("/dashboard/products");
-  redirect("/dashboard/products?message=販売商品を更新しました");
+  redirect(encodeURI("/dashboard/products?message=販売商品を更新しました"));
 }

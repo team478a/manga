@@ -52,5 +52,5 @@ export async function createCloudResearchReportAction(formData: FormData) {
       `/dashboard/research/new?error=${encodeURIComponent(message)}`,
     );
   }
-  redirect(`/dashboard/research/${reportId}?message=市場分析を保存しました`);
+  redirect(encodeURI(`/dashboard/research/${reportId}?message=市場分析を保存しました`));
 }
