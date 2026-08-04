@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-05 Codex: PR-R2B-1 Cloud AI Creator Queue API分離
+
+- Branch: `codex/refactor-r2b1-cloud-ai-queue`
+- Base: `origin/feature/manga-canvas-mvp`（PR #170 merge後、`842bd6b`）
+- Draft PR: [#171](https://github.com/team478a/manga/pull/171)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-6bd0eb-team478as-projects.vercel.app`
+- 正本の1,500行上限に従い、Cloud AI責務分離を4つの連続PRへ分割した。
+- PR-R2B-1はCreator Queue API、生成要求契約、enqueue／cancel application entrypointだけを対象にする。
+- 既存App Router URLはpresentationを呼ぶ薄いadapterへ縮小し、既存generation serviceとRPC契約を維持した。
+- Worker lifecycle、Provider、private Storage、監視、管理操作、旧lib互換entrypointは後続PRへ残した。
+- Provider、model、pricing、retry回数、timeout、Scheduler頻度、API key保存方式、DB、migration、RPC、環境変数は変更していない。
+- 文書: `docs/architecture/CLOUD_AI_MODULE_PIPELINE.md`
+- 分割後のdeps、lint、Hub／Desktop typecheck、市場分析評価、Hub 510、Canvas 26、AI 48、Desktop 182、migration 48、Hub／Desktop build、Cloud漫画受入れ、所有者分離7、100ページ受入れ4、diff checkに成功した。
+- GitHub CIはCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsが成功した。責任者レビュー待ちで停止し、PR-R2B-2へは進まない。
+
 ## 2026-08-05 Codex: PR-R2A 市場分析モジュール分離
 
 - Branch: `codex/refactor-r2a-research-module`

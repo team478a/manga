@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-05 PR-R2B-1 Cloud AI Creator Queue API分離
+
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
+- Branch: `codex/refactor-r2b1-cloud-ai-queue`
+- Base: `origin/feature/manga-canvas-mvp`（PR #170 merge後、`842bd6b`）
+- Draft PR: [#171](https://github.com/team478a/manga/pull/171)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-6bd0eb-team478as-projects.vercel.app`
+- 目的: 正本の1,500行上限を守り、最初にCreator Queue API、生成要求契約、enqueue／cancel application entrypointを分離する。
+- 実装: 生成Job一覧・受付・取消routeをCloud AI presentationへの薄いadapterにし、既存generation serviceへのapplication委譲を追加した。
+- 互換性: URL、HTTP method、request／response、status、認証、所有者分離、rate limit、idempotency、credit予約、budget kill switchを維持する。
+- 後続: Worker lifecycle、Provider、Storage、監視、管理操作、旧lib互換entrypointはPR-R2B-2以降で分離する。
+- 変更しない範囲: Provider、model、pricing、retry回数、timeout、Scheduler頻度、API key保存方式、DB、migration、RPC、環境変数、成人向け境界。
+- 文書: `docs/architecture/CLOUD_AI_MODULE_PIPELINE.md`
+- 検証済み: deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、市場分析評価、Hub 510/510、Canvas 26/26、AI 48/48、Desktop 182/182、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、所有者分離7/7、100ページ受入れ4/4、diff check成功。
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- 未完了: 責任者レビュー。承認前にPR-R2B-2へ進まず、このPRはマージしない。
+
 ## 2026-08-05 PR-R2A 市場分析モジュール分離
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
