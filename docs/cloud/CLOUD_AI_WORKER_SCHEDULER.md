@@ -44,9 +44,11 @@ Repositoryの`Settings > Secrets and variables > Actions`へ次を設定する�
 2. 本番管理画面`/admin/cloud-ai`でQueue、期限切れlease、直近失敗を確認する
 3. GitHub Actions Secretsを保存する
 4. Repository variableを`true`にする
-5. `Cloud AI Worker scheduler`を`Run workflow`で1回だけ手動実行する
-6. 実行ログが`idle`または安全な終了状態であることを確認する
-7. 一般向けテストJobを1件登録し、次回実行で完了することを確認する
+5. `Cloud AI Worker scheduler`の`Run workflow`で既定の`check`を実行する
+6. `Check scheduler settings without a worker request`が成功することを確認する。この時点ではWorker通信も課金も発生しない
+7. 一般向けテストJobを1件だけ登録する
+8. `Run workflow`で`run`を明示選択し、実行ログが`completed`または安全な終了状態であることを確認する
+9. 定期実行を開始する場合だけRepository variableを`true`にする
 
 この実装作業では実Providerへの有料リクエストを行わない。
 
@@ -73,3 +75,6 @@ node --test tests/cloud-ai-worker-scheduler.test.mjs
 ```
 
 停止時のpreflightは`DISABLED`を表示し、外部通信を行わない。
+
+管理画面`/admin/cloud-ai`の「Scheduler設定確認を開く」から同じActions画面へ移動できる。
+手動実行の既定値は常に`check`であり、`run`を明示選択しない限りWorkerへ送信しない。

@@ -117,3 +117,15 @@ test("workflow is bounded, serialized, and disabled by default", async () => {
   assert.match(workflow, /MANGAI_CLOUD_AI_WORKER_SECRET: \$\{\{ secrets\./);
   assert.doesNotMatch(workflow, /Bearer\s+[A-Za-z0-9_-]{20}/);
 });
+
+test("manual dispatch checks settings by default and requires an explicit run choice", async () => {
+  const workflow = await readFile(".github/workflows/cloud-ai-worker-scheduler.yml", "utf8");
+  assert.match(workflow, /default: check/);
+  assert.match(workflow, /inputs\.mode == 'check'/);
+  assert.match(workflow, /run-cloud-ai-worker-scheduler\.mjs --check/);
+  assert.match(workflow, /inputs\.mode == 'run'/);
+  assert.match(
+    workflow,
+    /MANGAI_CLOUD_AI_SCHEDULER_ENABLED == 'true'.*inputs\.mode == 'run'/,
+  );
+});

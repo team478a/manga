@@ -128,6 +128,29 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
           Workerは停止中です。公開チェック画面の手順に沿って環境変数を設定し、再デプロイしてください。
         </p>
       )}
+      <div className="mt-5 rounded-lg border border-violet-200 bg-violet-50 p-4">
+        <h3 className="font-bold text-violet-950">定期実行Scheduler</h3>
+        <p className="mt-2 text-sm text-violet-900">
+          最初は「check」を実行すると、Workerへ通信せずActions側のURLとSecret設定だけを確認できます。
+          「run」は設定確認後の限定テストでのみ選択してください。
+        </p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <a
+            className="button-secondary"
+            href="https://github.com/team478a/manga/actions/workflows/cloud-ai-worker-scheduler.yml"
+            rel="noreferrer"
+            target="_blank"
+          >
+            Scheduler設定確認を開く
+          </a>
+          <Link className="button-secondary" href="/admin/general-monitors/readiness">
+            本番公開チェックを開く
+          </Link>
+        </div>
+        <p className="mt-3 text-xs text-violet-800">
+          Actions側の設定値や実行結果はこの画面へ取得せず、秘密情報の境界を維持します。
+        </p>
+      </div>
     </section>
     <section className="panel mt-6">
       <h2 className="text-xl font-bold">一般向け画像生成AI</h2>

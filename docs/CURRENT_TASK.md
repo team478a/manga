@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-04 Cloud AI Scheduler安全確認導線
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-ai-scheduler-readiness`
+- Base: `origin/feature/manga-canvas-mvp` (`483ef8b`、PR #146 merge後)
+- 目的: Scheduler設定確認で誤って有料Jobを実行することを防ぎ、管理画面から確認手順へ直接進めるようにする
+- 実装: Actions手動実行の既定を通信なし`check`とし、明示的な`run`と有効化変数が揃った場合だけWorkerを実行
+- UI: `/admin/cloud-ai`にScheduler確認導線、check／runの説明、本番公開チェック導線を追加
+- migration／環境変数／外部Provider実行: 追加・実行なし
+- 検証: 専用11/11、Hub 464/464、deps:check、lint、Hub typecheck、migration validate（48本）、production build、git diff --check成功
+- 未完了: Draft PR、Vercel Preview、責任者確認
+
 ## 2026-08-04 Cloud AI Worker定期実行
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
