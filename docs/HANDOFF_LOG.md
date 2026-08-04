@@ -3178,3 +3178,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - モニター開始API／Client fallbackとStripe Checkout完了・キャンセルURLを追加で安全化した。
 - `tests/action-redirect-encoding.test.mjs`により、未エンコードの日本語`message`／`error` queryを今後のHub testで拒否する。
 - migration、環境変数、外部API実行、Feature Flagの変更はない。
+## 2026-08-04 Codex: 更新情報の二重登録防止
+
+- Branch: `codex/product-update-idempotency-v1`
+- Base: `feature/manga-canvas-mvp` (`86c4ca8`、PR #157 merge後)
+- 管理者の二重クリック、フォーム再送、ブラウザー／ネットワーク再試行で同一更新情報が重複しないよう、直近10分の同一管理者・同一内容をServer Actionで確認する。
+- 重複時は追加insertを行わず保存済み案内を表示する。確認不能時はfail closedし、Provider内部エラーを利用者へ表示しない。
+- DB schema、migration、環境変数の変更はない。
+- 検証: 専用5/5、Hub 481/481、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。

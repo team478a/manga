@@ -42,6 +42,20 @@ test("更新情報Actionは日本語の結果メッセージを安全にURLへ�
   assert.doesNotMatch(actions, /redirect\("\/admin\/product-updates\?(?:message|error)=[^"$]/);
 });
 
+test("更新情報は短時間の同一内容を二重登録しない", async () => {
+  const actions = await readFile(
+    new URL("../src/app/admin/product-updates/actions.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(actions, /Date\.now\(\) - 10 \* 60 \* 1000/);
+  assert.match(actions, /\.eq\("created_by_profile_id", profile\.id\)/);
+  assert.match(actions, /\.is\("archived_at", null\)/);
+  assert.match(actions, /\.some\(\(update\) => isSameProductUpdate\(update, parsed\.data\)\)/);
+  assert.match(actions, /同じ更新情報はすでに保存されています/);
+  assert.match(actions, /二重登録の確認ができませんでした/);
+});
+
 test("予期しない描画失敗でも日本語の回復画面を表示する", async () => {
   const boundary = await readFile(
     new URL("../src/app/admin/product-updates/error.tsx", import.meta.url),
