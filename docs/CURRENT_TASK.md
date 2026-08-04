@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-04 一般向けモニター操作フィードバック第2弾
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/general-monitor-action-feedback-v2`
+- Base: `origin/feature/manga-canvas-mvp`（PR #154 merge後）
+- ログアウト、通知の既読化、作品登録・更新、デジタル商品登録・更新、グッズ申請、Desktop端末承認・解除を共通`PendingSubmitButton`へ統一。
+- 処理中は用途別メッセージとスピナーを表示し、ボタンを無効化して二重送信を防止。
+- Stripe、成人向け機能、認証処理、DB、migration、環境変数は変更しない。
+- 検証: 専用3/3、Hub 478/478、deps:check、typecheck、lint、migration 48本、production build、git diff --check成功。
+- 未完了: Draft PR、Vercel Preview、CI、責任者レビュー、マージ。
+
 ## 2026-08-04 認証ボタンの操作フィードバック
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

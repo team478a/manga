@@ -3,6 +3,7 @@ import { createGoodsRequest } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 const productTypes = ["Tシャツ", "パーカー", "トートバッグ", "ステッカー", "アクリルスタンド", "ポスター", "マグカップ", "その他"];
 
@@ -61,7 +62,7 @@ export default async function NewGoodsRequestPage({ searchParams }: { searchPara
           <p className="mt-1 text-base text-stone-600">希望サイズ、色、販売イメージ、確認してほしい点などを書けます。</p>
           <textarea className="field min-h-40" id="note" name="note" placeholder="例：淡い色のTシャツにしたいです。販売前に印刷イメージを確認したいです。" />
         </div>
-        <button className="button w-full" type="submit">申請を送信する</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="申請を送信中…">申請を送信する</PendingSubmitButton>
       </form>
     </main>
   );
