@@ -4,6 +4,7 @@ import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { listCloudResearchReports } from "@/lib/cloud-research-server";
 import { createClient } from "@/lib/supabase/server";
+import { isSafeInternalPath } from "@/lib/safe-internal-path";
 import {
   getCloudGeneralMonitorEnrollment,
   getCloudGeneralMonitorNotice,
@@ -118,7 +119,7 @@ export default async function DashboardPage({
                   </div>
                   <p className="shrink-0 text-xs text-stone-500">{item.published_at ? new Date(item.published_at).toLocaleDateString("ja-JP") : ""}</p>
                 </div>
-                {item.action_url ? <Link className="mt-2 inline-flex text-sm font-semibold text-violet-700" href={item.action_url}>関連画面を見る →</Link> : null}
+                {isSafeInternalPath(item.action_url) ? <Link className="mt-2 inline-flex text-sm font-semibold text-violet-700" href={item.action_url}>関連画面を見る →</Link> : null}
               </article>
             ))}
           </div>

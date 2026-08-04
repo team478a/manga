@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
+import { isSafeInternalPath } from "@/lib/safe-internal-path";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 const updateSchema = z.object({
@@ -12,8 +13,8 @@ const updateSchema = z.object({
   details: z.string().trim().max(5000),
   category: z.enum(["release", "improvement", "fix", "maintenance"]),
   actionUrl: z.string().trim().max(500).refine(
-    (value) => !value || value.startsWith("/") || value.startsWith("https://"),
-    "リンクを確認してください",
+    (value) => !value || isSafeInternalPath(value),
+    "関連画面は /dashboard から始まるアプリ内のパスを入力してください",
   ),
   publishNow: z.boolean(),
 });
