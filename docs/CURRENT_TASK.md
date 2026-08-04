@@ -5,6 +5,7 @@
 - 状態: `VERIFIED_LOCAL_AND_PRODUCTION_READ_ONLY`
 - Branch: `codex/cloud-production-route-smoke-v1`
 - Base: `origin/feature/manga-canvas-mvp`（PR #166 merge後）
+- Draft PR: [#167](https://github.com/team478a/manga/pull/167)
 - `https://app.mang-ai.com`の公開5ページと認証必須4ページを、Cookieなし・読み取り専用GETで検査するCLIを追加した。
 - 公開ページは2xx、認証必須ページは同一originの`/login`への3xxだけを合格とし、5xx、外部redirect、通信失敗を拒否する。
 - 明示確認値がない場合はHTTPアクセス前にfail closedする。ログイン、フォーム送信、DB更新、有料Provider実行は行わない。

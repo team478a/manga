@@ -8,6 +8,7 @@
 
 - Branch: `codex/cloud-production-route-smoke-v1`
 - Base: `origin/feature/manga-canvas-mvp`（PR #166 merge後）
+- Draft PR: [#167](https://github.com/team478a/manga/pull/167)
 - `cloud:production:routes`と事前検査を追加し、`https://app.mang-ai.com`の主要9ルートを読み取り専用で検査できるようにした。
 - 公開5ルートの2xx、認証必須4ルートの同一originログイン誘導を確認し、5xx、外部redirect、通信失敗を失敗扱いにする。
 - 明示確認値なしでは通信前に停止し、Cookie、認証情報、利用者データ、query値を扱わない。
