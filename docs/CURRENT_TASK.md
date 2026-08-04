@@ -2,9 +2,11 @@
 
 ## 2026-08-04 PR-R1 モジュール境界の固定
 
-- 状態: `VERIFIED_LOCAL_AWAITING_DRAFT_PR`
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
 - Branch: `codex/refactor-r1-module-boundaries`
 - Base: `origin/feature/manga-canvas-mvp`（PR #168 merge後、`dd483c0`）
+- Draft PR: [#169](https://github.com/team478a/manga/pull/169)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-44ab32-team478as-projects.vercel.app`
 - 目的: 既存コードを一括移動せず、domain/application/infrastructure/presentation/contractsの依存方向をCIで固定する。
 - 実装: module境界、module循環、Client秘密値、成人向けProvider経路、App Routerのadmin client、未使用Feature Flagを検査するscriptを追加した。
 - 肥大化防止: merge base以降の新規source fileについて800行超を失敗、500行超と明示的`any`を警告する。
@@ -14,7 +16,8 @@
 - 現在の警告: `src/app/**`からSupabase admin clientを直接利用する既存33ファイル。後続PRで段階移行し、このPRでは挙動を変更しない。
 - 検証: npm ci、deps（5 packages／21 files、module 0 error／33 warning）、lint、Hub／Desktop typecheck、市場分析評価、Hub 502、Canvas 26、AI 48、Desktop 182、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、所有者分離7、100ページ受入れ4、diff check成功。
 - 既知の非失敗警告: npm audit 1 moderate／2 high、Desktop renderer chunk 500kB超、App Router admin client直接利用33件。
-- 未完了: Draft PR、Preview、全GitHub CI、責任者レビュー。
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- 未完了: 責任者レビュー。PR-R2には進まず、マージしない。
 
 ## 2026-08-04 MANGAI Cloud 本番公開ルート smoke 検査
 
