@@ -3235,3 +3235,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 実Provider・候補操作・8ページ目視・実ブラウザ3幅・別ユーザー分離は手動項目として出力する。
 - DB、migration、環境変数、外部API実行は追加していない。
 - 専用3/3、repository preflight、deps:check、lint、Hub typecheck、Hub 485/485、migration 48/48、production build、git diff check成功。
+# 2026-08-04 Codex: Cloud漫画制作 2ユーザー所有者分離受入れ
+
+- Branch: `codex/cloud-manga-owner-isolation-e2e-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #165 merge後）
+- `cloud:manga:owner-isolation:staging`と事前検査を追加し、2アカウント間の非公開データ分離を読み取り専用で確認できるようにした。
+- 対象は作品、生成Job、書き出し、品質フィードバック。所有者1件、別ユーザー0件を合格条件とする。
+- 秘密値や識別子を出力せず、staging指定・確認値・必須環境変数が不足する場合はDBアクセス前に停止する。
+- データ作成、更新、削除、有料Provider実行、Feature Flag変更、migration適用は行わない。
+- 専用4/4、既存所有者分離7/7、Cloud漫画repository preflight、deps:check、lint、Hub typecheck、Hub 490/490、migration 48/48、production build、git diff check成功。
+- 未完了: ステージング認証情報と受入れ用データを用いた実行、署名URL・生成キャンセル・共同編集者の実ブラウザ確認。
