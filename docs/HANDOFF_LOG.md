@@ -3205,3 +3205,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次の必須作業を、実Provider 1コマ生成、候補比較・採用・再実行、8ページPDF／PNG目視、390／768／1280確認、一般向け工程E2Eへ限定。
 - deps:check、lint、Hub typecheck、Hub 482/482、migration 48/48、diff checkに成功。
 - 詳細: `docs/cloud/CLOUD_MANGA_CANONICAL_INTEGRATION_AUDIT.md`
+# 2026-08-04 Codex: 一般向け画像生成 受入れ基盤
+
+- Branch: `codex/general-image-acceptance-v1`
+- 一般向けモニター公開チェックに、Cloud AI全体設定、選択中画像モデルの必須価格、画像Job件数を追加した。
+- 管理画面に1コマ受入れの実施順と、作品・Queueへの導線を追加した。
+- `docs/cloud/CLOUD_GENERAL_IMAGE_ACCEPTANCE.md`へ合格条件と禁止事項を記録した。
+- 外部Provider呼び出し、DB／migration、環境変数、Feature Flag変更は行っていない。
+- 専用回帰、deps:check、lint、Hub typecheck、Hub test、migration validate、production build、git diff checkで検証する。

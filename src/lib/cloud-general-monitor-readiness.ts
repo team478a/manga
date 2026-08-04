@@ -35,6 +35,9 @@ export type GeneralMonitorReadiness = {
     active: number | null;
     onboarded: number | null;
     openFeedback: number | null;
+    imageQueued: number | null;
+    imageRunning: number | null;
+    imageFailedLast24Hours: number | null;
   };
 };
 
@@ -82,6 +85,11 @@ export async function getCloudGeneralMonitorReadiness(
   let researchAiReady = false;
   let imageAiReady = false;
   let imageAiSchemaReady = false;
+  let cloudAiGenerationReady = false;
+  let imagePricingReady = false;
+  let imageQueued: number | null = null;
+  let imageRunning: number | null = null;
+  let imageFailedLast24Hours: number | null = null;
 
   try {
     const admin = createAdminClient();
@@ -141,9 +149,59 @@ export async function getCloudGeneralMonitorReadiness(
     imageAiSchemaReady = !error;
     const settings = await getCloudGeneralImageSettings();
     imageAiReady = Boolean(settings?.enabled && settings.configured);
+    if (settings) {
+      const failedSince = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const [runtime, prices, queued, running, failed] = await Promise.all([
+        admin
+          .from("cloud_ai_settings")
+          .select("generation_enabled")
+          .eq("singleton", true)
+          .maybeSingle<{ generation_enabled: boolean }>(),
+        admin
+          .from("cloud_ai_provider_prices")
+          .select("job_type")
+          .eq("provider_id", "black-forest-labs")
+          .eq("model_id", settings.model)
+          .eq("kind", "image")
+          .eq("active", true),
+        admin
+          .from("cloud_generation_jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("kind", "image")
+          .eq("status", "queued"),
+        admin
+          .from("cloud_generation_jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("kind", "image")
+          .eq("status", "running"),
+        admin
+          .from("cloud_generation_jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("kind", "image")
+          .eq("status", "failed")
+          .gte("updated_at", failedSince),
+      ]);
+      cloudAiGenerationReady = Boolean(
+        !runtime.error && runtime.data?.generation_enabled,
+      );
+      const activeJobTypes = new Set(
+        (prices.data ?? []).map((row) => row.job_type),
+      );
+      imagePricingReady = Boolean(
+        !prices.error &&
+          ["background", "prop", "effect", "character_base"].every((jobType) =>
+            activeJobTypes.has(jobType),
+          ),
+      );
+      if (!queued.error) imageQueued = queued.count ?? 0;
+      if (!running.error) imageRunning = running.count ?? 0;
+      if (!failed.error) imageFailedLast24Hours = failed.count ?? 0;
+    }
   } catch {
     imageAiReady = false;
     imageAiSchemaReady = false;
+    cloudAiGenerationReady = false;
+    imagePricingReady = false;
   }
 
   const workerEnabled = enabled(env.MANGAI_CLOUD_AI_WORKER_ENABLED);
@@ -232,6 +290,36 @@ export async function getCloudGeneralMonitorReadiness(
           ],
     },
     {
+      key: "cloud_ai_generation",
+      label: "画像生成の全体設定",
+      ready: cloudAiGenerationReady,
+      detail: cloudAiGenerationReady
+        ? "Cloud AIの画像生成受付は有効です。"
+        : "Cloud AI全体の生成受付が停止中、または設定を確認できません。",
+      href: "/admin/cloud-ai",
+      nextSteps: cloudAiGenerationReady
+        ? undefined
+        : [
+            "Cloud AI管理で「生成を許可」を有効にする。",
+            "日次原価上限が0になっていないことを確認して保存する。",
+          ],
+    },
+    {
+      key: "image_pricing",
+      label: "画像生成の利用価格",
+      ready: imagePricingReady,
+      detail: imagePricingReady
+        ? "選択中モデルで背景・小物・効果・人物の生成価格を利用できます。"
+        : "選択中モデルに必要な有効価格が不足しています。",
+      href: "/admin/cloud-ai",
+      nextSteps: imagePricingReady
+        ? undefined
+        : [
+            "画像生成Provider migrationの価格データを確認する。",
+            "選択中モデルのbackground・prop・effect・character_baseを有効にする。",
+          ],
+    },
+    {
       key: "email",
       label: "招待メール",
       ready: emailReady,
@@ -253,6 +341,14 @@ export async function getCloudGeneralMonitorReadiness(
   return {
     ready: checks.every((check) => check.ready),
     checks,
-    stats: { enrolled, active, onboarded, openFeedback },
+    stats: {
+      enrolled,
+      active,
+      onboarded,
+      openFeedback,
+      imageQueued,
+      imageRunning,
+      imageFailedLast24Hours,
+    },
   };
 }
