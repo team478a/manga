@@ -15,6 +15,7 @@ import {
   saveContinuityFactAction,
   savePlotThreadAction,
 } from "./actions";
+import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 const factKindLabels = { appearance:"外見・衣装",location:"場所",relationship:"人物関係",timeline:"時系列",prop:"小物",speech:"口調・呼称" } as const;
 const threadStatusLabels = { planned:"予定",planted:"提示済み",resolved:"回収済み",dropped:"不採用" } as const;
@@ -29,14 +30,16 @@ export default async function CloudContinuityPage({
   await requireProfile();
   const { projectId } = await params;
   const query = await searchParams;
+  const workspacePromise = getCloudProjectWorkspace(projectId).catch((error) => {
+    if (error instanceof ResourceNotFoundError) notFound();
+    throw error;
+  });
   const [workspace, result, narrative, candidateResult] = await Promise.all([
-    getCloudProjectWorkspace(projectId).catch(() => null),
+    workspacePromise,
     getCloudContinuityReview(projectId).catch(() => null),
     getCloudNarrativeContinuity(projectId).catch(() => null),
     getCloudContinuitySuggestions(projectId).catch(() => null),
   ]);
-  if (!workspace) notFound();
-
   return (
     <main className="page">
       <Link className="text-violet-700 underline" href={`/creator/${projectId}`}>

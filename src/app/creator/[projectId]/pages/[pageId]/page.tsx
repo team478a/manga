@@ -14,6 +14,7 @@ import {
   cloudPanelInpaintingFeatureEnabled,
   cloudPanelOutpaintingFeatureEnabled,
 } from "@/lib/cloud-panel-image-generation";
+import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 export default async function CloudCanvasPage({
   params,
@@ -34,8 +35,9 @@ export default async function CloudCanvasPage({
       listCloudAssets(projectId),
       listCloudGenerationJobs(projectId),
     ]);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof ResourceNotFoundError) notFound();
+    throw error;
   }
   const page = workspace.pages.find((candidate) => candidate.id === pageId);
   if (!page || snapshot.project_id !== projectId) notFound();
