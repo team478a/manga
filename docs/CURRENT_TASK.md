@@ -4,12 +4,15 @@
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
 - Branch: `codex/cloud-dashboard-action-feedback`
+- Draft PR: [#151](https://github.com/team478a/manga/pull/151)
+- Preview: `https://mangai-hub-staging-8gv0g6ujc-team478as-projects.vercel.app`
 - Base: `origin/feature/manga-canvas-mvp` (`36a1e5b`、PR #150 merge後)
 - 目的: 一般向けモニターが作品・商品・申請・端末・通知を操作した際、送信中か分からず再クリックする問題を防ぐ
 - 実装: 作品保存／更新、商品保存／更新、グッズ申請、端末承認／解除、通知既読を共通`PendingSubmitButton`へ統一
 - migration／環境変数／外部API: 追加・実行なし
 - 検証: 専用回帰テストを含むHub 467/467、deps:check、Hub typecheck、lint、migration validate（48本）、production build、git diff --check成功
-- 未完了: Draft PR、Vercel Preview、責任者確認
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未完了: 責任者確認・マージ
 
 ## 2026-08-04 クラウド制作の操作フィードバック統一
 
