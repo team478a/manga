@@ -11,7 +11,7 @@ import {
 import {
   processNextCloudGenerationJob,
   processPendingCloudStorageCleanup,
-} from "@/lib/cloud-ai-worker";
+} from "@/modules/cloud-ai/application/process-generation";
 import {
   configuredCapabilities,
   configuredRuntimeCapabilities,

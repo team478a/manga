@@ -42,6 +42,42 @@ App Routerの次のrouteは、presentation関数だけを再公開する薄いad
 - Domain Errorだけを安定codeへ変換し、DB／Provider内部情報をレスポンスへ出さない。
 - presentationはSupabase admin client、service role、DB RPCを直接扱わない。
 
+## PR-R2B-2の対象
+
+```text
+Internal Worker route
+  → src/modules/cloud-ai/application/process-generation.ts
+  → 既存Worker orchestration（互換bridge）
+      → application/claim-next-job.ts
+      → application/lease-heartbeat.ts
+      → domain/cloud-ai-errors.ts
+      → domain/retry-policy.ts
+      → infrastructure/cloud-ai-repository.ts
+
+Admin worker monitoring
+  → application/inspect-worker-health.ts
+  → 旧lib entrypointから互換再export
+```
+
+PR-R2B-2では、claim、lease heartbeat、lease喪失、失敗分類、retry判定、Worker healthをCloud AI moduleへ分離します。Worker routeはapplication entrypointを参照し、既存の`src/lib/cloud-ai-worker.ts`はProvider実行と生成物Storageを保持する暫定orchestratorとして残します。
+
+既存のclaim／lease RPC名、lease秒数、heartbeat間隔、retry回数、失敗状態、Worker route URL、最大実行時間は変更しません。既存import利用者向けにlease heartbeat、lease error、Worker healthの旧entrypointも維持します。
+
+### PR-R2B-2で意図的に残すもの
+
+- Provider registry、Provider選択、Provider adapter、moderation（PR-R2B-3）
+- 生成物変換、private Storage upload、補償削除、cleanup queue（PR-R2B-4）
+- credit確定・解放、原価ledger、Job完了／失敗RPCの最終repository分離（PR-R2B-4）
+- Scheduler頻度、Provider、model、pricing、timeout、API key保存方式、DB、migration、環境変数
+
+### PR-R2B-2回帰検査
+
+- Worker routeがCloud AI application boundaryへ入ること。
+- claim、lease、error分類、retry policyが新しい責務境界から利用されること。
+- domain層がSupabase admin client、RPC、Storageへ依存しないこと。
+- 旧Worker／health importが継続して動作すること。
+- Provider、Storage、API、DBの既存契約と実行結果を維持すること。
+
 ## 後続PRへ残す責務
 
 - Worker claim、lease heartbeat、retry、完了／失敗処理
