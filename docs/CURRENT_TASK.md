@@ -5,12 +5,14 @@
 - 状態: `VERIFIED_AWAITING_REVIEW`
 - Branch: `codex/cloud-continuity-action-feedback`
 - Draft PR: [#149](https://github.com/team478a/manga/pull/149)
+- Preview: Vercel check成功（PR #149）
 - Base: `origin/feature/manga-canvas-mvp` (`32ccfb4`、PR #148 merge後)
 - 目的: 長編制作の一貫性候補登録、事実・伏線の保存、更新、削除で二重送信と操作結果の分かりにくさを防ぐ
 - 実装: 一貫性台帳の全送信操作へスピナー、用途別の処理中表示、送信中の無効化を追加
 - migration／環境変数／外部API: 追加・実行なし
 - 検証: 専用テストを含むHub 465/465、deps:check、Hub typecheck、lint、production build、git diff --check成功
-- 未完了: Vercel Preview、責任者確認
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
+- 未完了: 責任者確認・マージ
 
 ## 2026-08-04 Cloud AI Scheduler安全確認導線
 

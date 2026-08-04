@@ -9,6 +9,7 @@
 - Branch: `codex/cloud-continuity-action-feedback`
 - Base: `origin/feature/manga-canvas-mvp` (`32ccfb4`)
 - Draft PR: [#149](https://github.com/team478a/manga/pull/149)
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - キャラクター・場所・小物・シーン構成からの候補抽出は既に実装済みであることを確認し、重複実装を避けた。
 - 候補登録、事実保存、伏線保存、伏線更新、事実・伏線削除を共通`PendingSubmitButton`へ統一した。
 - 操作中は`登録中…`、`保存中…`、`更新中…`、`削除中…`とスピナーを表示し、ボタンを無効化する。
