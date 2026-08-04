@@ -14,6 +14,8 @@ import { createCloudProposalAction } from "./actions";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
 import { listCloudProposalRuns } from "@/lib/cloud-proposal-server";
 import { ProposalSubmitButton } from "./proposal-submit-button";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
 // Proposal generation is performed by a Server Action on this page.
 export const maxDuration = 180;
@@ -85,9 +87,14 @@ export default async function ProposalHandoffPage({
 
   if (report.input.contentClass !== "adult") {
     const proposalEnabled = cloudProposalFeatureEnabled();
-    const runs = proposalEnabled
-      ? await listCloudProposalRuns(profile.id, report.id)
-      : [];
+    const runLoad = proposalEnabled
+      ? await safelyLoadCloudData(
+          "proposal/history",
+          () => listCloudProposalRuns(profile.id, report.id),
+          [],
+        )
+      : { ok: true as const, value: [] };
+    const runs = runLoad.value;
     return (
       <main className="page max-w-3xl">
         <Link
@@ -107,6 +114,11 @@ export default async function ProposalHandoffPage({
           <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
             {error}
           </p>
+        ) : null}
+        {!runLoad.ok ? (
+          <CloudDataNotice className="mt-5">
+            作成済み企画の履歴を一時的に確認できません。新しい企画の作成はそのまま利用できます。
+          </CloudDataNotice>
         ) : null}
         {runs.length ? (
           <section className="mt-6">
@@ -154,10 +166,24 @@ export default async function ProposalHandoffPage({
   }
 
   const planningEnabled = cloudAdultPlanningFeatureEnabled();
-  const access = await getCloudAdultPlanningAccess(profile.id);
-  const briefs = access.allowed
-    ? await listCloudAdultPlanningBriefs(profile.id, report.id)
-    : [];
+  const accessLoad = await safelyLoadCloudData(
+    "adult-proposal/access",
+    () => getCloudAdultPlanningAccess(profile.id),
+    {
+      allowed: false as const,
+      reason: "configuration_unavailable" as const,
+      grant: null,
+    },
+  );
+  const access = accessLoad.value;
+  const briefLoad = access.allowed
+    ? await safelyLoadCloudData(
+        "adult-proposal/history",
+        () => listCloudAdultPlanningBriefs(profile.id, report.id),
+        [],
+      )
+    : { ok: true as const, value: [] };
+  const briefs = briefLoad.value;
 
   return (
     <main className="page max-w-4xl">
@@ -176,6 +202,11 @@ export default async function ProposalHandoffPage({
         <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
           {error}
         </p>
+      ) : null}
+      {!accessLoad.ok ? (
+        <CloudDataNotice className="mt-5">
+          成人向け企画の利用状態を一時的に確認できません。安全のため保存操作を停止しています。
+        </CloudDataNotice>
       ) : null}
 
       <section className="panel mt-6 border-violet-200">
@@ -197,6 +228,11 @@ export default async function ProposalHandoffPage({
         <>
           <section className="mt-6">
             <h2 className="text-xl font-bold">保存済み企画ブリーフ</h2>
+            {!briefLoad.ok ? (
+              <CloudDataNotice className="mt-4">
+                保存済み企画の履歴を一時的に確認できません。入力中の内容は失われていません。
+              </CloudDataNotice>
+            ) : null}
             {briefs.length ? (
               <div className="mt-4 space-y-3">
                 {briefs.map((brief) => (

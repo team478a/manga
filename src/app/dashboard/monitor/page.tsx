@@ -3,6 +3,8 @@ import { requireProfile } from "@/lib/auth";
 import { getCloudGeneralMonitorEnrollment, getCloudGeneralMonitorNotice, isCloudGeneralMonitorActive } from "@/lib/cloud-general-monitor";
 import { createClient } from "@/lib/supabase/server";
 import { MonitorFeedbackForm } from "./MonitorFeedbackForm";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
 type Feedback = {
   id: string;
@@ -53,12 +55,21 @@ export default async function GeneralMonitorPage({
   const { error, message } = await searchParams;
   const enrollment = await getCloudGeneralMonitorEnrollment(profile.id);
   const notice = getCloudGeneralMonitorNotice(enrollment);
-  const { data: feedback } = await (await createClient())
-    .from("cloud_general_monitor_feedback")
-    .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict,request_type,title,severity,public_status,status_updated_at,attachment_path")
-    .eq("owner_profile_id", profile.id)
-    .order("created_at", { ascending: false })
-    .returns<Feedback[]>();
+  const feedbackLoad = await safelyLoadCloudData(
+    "monitor/feedback-history",
+    async () => {
+      const { data, error } = await (await createClient())
+        .from("cloud_general_monitor_feedback")
+        .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict,request_type,title,severity,public_status,status_updated_at,attachment_path")
+        .eq("owner_profile_id", profile.id)
+        .order("created_at", { ascending: false })
+        .returns<Feedback[]>();
+      if (error) throw error;
+      return data ?? [];
+    },
+    [],
+  );
+  const feedback = feedbackLoad.value;
 
   return (
     <main className="page max-w-3xl">
@@ -94,6 +105,7 @@ export default async function GeneralMonitorPage({
           {enrollment.status === "active" ? <MonitorFeedbackForm /> : null}
           <section className="panel mt-6">
             <h2 className="text-xl font-bold">送信履歴</h2>
+            {!feedbackLoad.ok ? <CloudDataNotice className="mt-4">送信履歴を一時的に確認できません。新しい報告はそのまま送信できます。</CloudDataNotice> : null}
             <div className="mt-4 space-y-3">
               {(feedback ?? []).map((item) => (
                 <article className="rounded-xl border border-stone-200 p-4" key={item.id}>

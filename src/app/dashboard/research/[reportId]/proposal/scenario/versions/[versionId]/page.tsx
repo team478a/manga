@@ -13,6 +13,8 @@ import {
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { adoptCloudScenarioAction, reviseCloudScenarioAction } from "../../actions";
 import { ScenarioSubmitButton } from "../../scenario-buttons";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
 // Scenario revision is a provider-backed Server Action on this page.
 export const maxDuration = 180;
@@ -34,10 +36,23 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
     throw error;
   });
   if (version.research_report_id !== reportId) notFound();
-  const selection = await getCloudProposalSelection(profile.id, reportId);
-  if (!selection || selection.id !== version.proposal_selection_id) notFound();
-  const adoption = await getLatestCloudScenarioAdoption(profile.id, selection.id);
+  const selectionLoad = await safelyLoadCloudData(
+    "scenario-version/selected-proposal",
+    () => getCloudProposalSelection(profile.id, reportId),
+    null,
+  );
+  const selection = selectionLoad.value;
+  if (selectionLoad.ok && (!selection || selection.id !== version.proposal_selection_id)) notFound();
+  const adoptionLoad = selection
+    ? await safelyLoadCloudData(
+        "scenario-version/adoption",
+        () => getLatestCloudScenarioAdoption(profile.id, selection.id),
+        null,
+      )
+    : { ok: false as const, value: null };
+  const adoption = adoptionLoad.value;
   const adopted = adoption?.scenario_version_id === version.id;
+  const workflowStateAvailable = selectionLoad.ok && adoptionLoad.ok;
   const result = version.result;
   return (
     <main className="page max-w-6xl">
@@ -50,6 +65,7 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
       <p className="mt-2 text-sm text-stone-500">{result.pageCount}ページ · {new Date(version.created_at).toLocaleString("ja-JP")}</p>
       {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
       {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
+      {!workflowStateAvailable ? <CloudDataNotice className="mt-5">採用状態を一時的に確認できません。シナリオ本文は閲覧できますが、採用と次工程への移動を停止しています。</CloudDataNotice> : null}
 
       <section className="mt-8"><h2 className="text-2xl font-bold">登場人物</h2><div className="mt-4 grid gap-4 md:grid-cols-2">
         {result.characters.map((character) => <article className="panel" key={character.id}>
@@ -78,12 +94,12 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
           <textarea className="field" id="revisionInstruction" maxLength={2000} name="revisionInstruction" placeholder="例：主人公の決断を早め、最終シーンの読後感を明るくする" required rows={5} />
           <div className="mt-4"><ScenarioSubmitButton secondary>AIで修正版を作る</ScenarioSubmitButton></div>
         </form>
-        <form action={adoptCloudScenarioAction.bind(null, reportId, version.id)} className="panel">
+        {workflowStateAvailable ? <form action={adoptCloudScenarioAction.bind(null, reportId, version.id)} className="panel">
           <h2 className="text-xl font-bold">{adopted ? "ネーム作成の準備ができました" : "制作する版を決定"}</h2>
           <p className="mt-2 text-stone-600">{adopted ? "この版からAIネーム・ページ構成を作成できます。" : "内容を確認し、ネーム作成へ渡すシナリオを採用してください。"}</p>
           {!adopted ? <div className="mt-5"><ScenarioSubmitButton>このシナリオを採用</ScenarioSubmitButton></div> : null}
           {adopted ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${version.id}/storyboard`}>AIネーム生成へ進む</Link> : null}
-        </form>
+        </form> : <section className="panel"><h2 className="text-xl font-bold">制作する版の決定</h2><p className="mt-2 text-stone-600">利用状態を再確認できるまで操作を停止しています。時間をおいて再読み込みしてください。</p></section>}
       </div>
     </main>
   );

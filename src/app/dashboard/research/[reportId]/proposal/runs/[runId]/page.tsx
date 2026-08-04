@@ -11,6 +11,8 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { selectCloudProposalAction } from "../../actions";
 import { ProposalSelectionButton } from "../../proposal-submit-button";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
 const direction = {
   best_fit: ["本命案", "市場分析との適合を優先"],
@@ -40,7 +42,12 @@ export default async function ProposalComparisonPage({
     throw error;
   });
   if (run.research_report_id !== reportId) notFound();
-  const selection = await getCloudProposalSelection(profile.id, reportId);
+  const selectionLoad = await safelyLoadCloudData(
+    "proposal-comparison/selection",
+    () => getCloudProposalSelection(profile.id, reportId),
+    null,
+  );
+  const selection = selectionLoad.value;
   return (
     <main className="page max-w-7xl">
       <Link className="text-violet-700 underline" href={`/dashboard/research/${reportId}/proposal`}>
@@ -51,6 +58,7 @@ export default async function ProposalComparisonPage({
       <p className="mt-2 text-stone-600">方向性を比べ、制作する企画を1つ選んでください。</p>
       {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
       {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
+      {!selectionLoad.ok ? <CloudDataNotice className="mt-5">現在の選択状態を一時的に確認できません。企画案は比較できますが、重複選択を防ぐため決定操作を停止しています。</CloudDataNotice> : null}
       <section className="mt-6 grid gap-5 lg:grid-cols-3">
         {run.result.candidates.map((candidate) => {
           const selected = selection?.candidate_id === candidate.id;
@@ -77,7 +85,7 @@ export default async function ProposalComparisonPage({
                 <p className="font-bold">注意点</p>
                 <ul className="mt-2 list-disc space-y-1 pl-5">{candidate.tradeoffs.map((value) => <li key={value}>{value}</li>)}</ul>
               </div>
-              {!selection ? (
+              {selectionLoad.ok && !selection ? (
                 <form action={selectCloudProposalAction.bind(null, reportId, runId)} className="mt-auto pt-6">
                   <input name="candidateId" type="hidden" value={candidate.id} />
                   <ProposalSelectionButton />
