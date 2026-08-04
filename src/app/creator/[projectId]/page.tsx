@@ -43,6 +43,7 @@ import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 export default async function CloudProjectPage({
   params,
@@ -61,8 +62,9 @@ export default async function CloudProjectPage({
   let workspace: Awaited<ReturnType<typeof getCloudProjectWorkspace>>;
   try {
     workspace = await getCloudProjectWorkspace(projectId);
-  } catch {
-    notFound();
+  } catch (error) {
+    if (error instanceof ResourceNotFoundError) notFound();
+    throw error;
   }
   const generationBatches = workspace.longform.available
     ? await listCloudGenerationBatches(projectId).catch(() => [])

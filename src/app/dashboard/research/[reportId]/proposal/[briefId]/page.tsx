@@ -9,6 +9,8 @@ import {
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { getCloudResearchReport } from "@/lib/cloud-research-server";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
 const rows = [
   ["企画コンセプト", "concept"],
@@ -44,7 +46,17 @@ export default async function AdultPlanningBriefPage({
     },
   );
   if (report.input.contentClass !== "adult") notFound();
-  const access = await getCloudAdultPlanningAccess(profile.id);
+  const accessLoad = await safelyLoadCloudData(
+    "adult-proposal-brief/access",
+    () => getCloudAdultPlanningAccess(profile.id),
+    {
+      allowed: false as const,
+      reason: "configuration_unavailable" as const,
+      grant: null,
+    },
+  );
+  const access = accessLoad.value;
+  if (!accessLoad.ok) return <main className="page max-w-3xl"><h1 className="text-3xl font-bold">成人向け企画ブリーフ</h1><CloudDataNotice className="mt-6">利用許可を一時的に確認できません。安全のため内容表示を停止しています。</CloudDataNotice><Link className="button-secondary mt-5" href={`/dashboard/research/${report.id}/proposal`}>企画ブリーフ一覧へ戻る</Link></main>;
   if (!access.allowed) notFound();
   const brief = await getCloudAdultPlanningBrief(
     profile.id,

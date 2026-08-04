@@ -15,6 +15,9 @@ import {
   ProviderUnavailableError,
   RateLimitedError,
 } from "./domain-errors.ts";
+import { logHubEvent } from "./hub-logger.ts";
+
+const RESEARCH_MAX_OUTPUT_TOKENS = 4_000;
 
 const findingKeys = [
   ["winning_direction", "今、狙う作品"],
@@ -71,11 +74,7 @@ function collectCitations(value: unknown, citations = new Map<string, string>())
     return citations;
   }
   const object = value as Record<string, unknown>;
-  if (
-    object.type === "url_citation" &&
-    typeof object.url === "string" &&
-    object.url.startsWith("https://")
-  ) {
+  if (typeof object.url === "string" && object.url.startsWith("https://")) {
     citations.set(
       object.url,
       typeof object.title === "string" && object.title.trim()
@@ -150,10 +149,12 @@ export async function runCloudResearchAiAnalysis(input: {
     body: JSON.stringify({
       model: runtime.model,
       store: false,
+      max_output_tokens: RESEARCH_MAX_OUTPUT_TOKENS,
+      include: ["web_search_call.action.sources"],
       safety_identifier: createHash("sha256")
         .update(`mangai-research:${input.profileId}`)
         .digest("hex"),
-      reasoning: { effort: "medium" },
+      reasoning: { effort: "low" },
       tools: [{ type: "web_search" }],
       tool_choice: "auto",
       input: [
@@ -194,9 +195,12 @@ export async function runCloudResearchAiAnalysis(input: {
         },
       },
     }),
-    signal: AbortSignal.timeout(60_000),
+    signal: AbortSignal.timeout(110_000),
   }).catch((error: unknown) => {
-    if (error instanceof Error && error.name === "TimeoutError")
+    if (
+      error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError")
+    )
       throw new ProviderTimeoutError(
         "AI市場分析に時間がかかっています。しばらくしてから再実行してください。",
       );
@@ -208,15 +212,27 @@ export async function runCloudResearchAiAnalysis(input: {
     throw new RateLimitedError(
       "AI市場分析が混み合っています。しばらくしてから再実行してください。",
     );
-  if (!response.ok)
+  if (!response.ok) {
+    logHubEvent("warn", "cloud_research_ai_provider_rejected", {
+      status: response.status,
+      requestId: response.headers.get("x-request-id"),
+    });
     throw new ProviderUnavailableError(
       "AI市場分析を完了できませんでした。管理者へお問い合わせください。",
     );
+  }
 
   const payload: unknown = await response.json();
-  const parsedOutput = aiOutputSchema.safeParse(
-    JSON.parse(extractOutputText(payload)),
-  );
+  let output: unknown;
+  try {
+    output = JSON.parse(extractOutputText(payload));
+  } catch (error) {
+    logHubEvent("warn", "cloud_research_ai_output_invalid", { error });
+    throw new ProviderUnavailableError(
+      "AI市場分析の結果を確認できませんでした。もう一度お試しください。",
+    );
+  }
+  const parsedOutput = aiOutputSchema.safeParse(output);
   const citations = [...collectCitations(payload)].map(([url, title]) => ({
     url,
     title,

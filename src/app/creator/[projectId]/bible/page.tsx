@@ -9,6 +9,9 @@ import {
   saveStyleBibleAction,
   saveWorldProfileAction,
 } from "./actions";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
+import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 export default async function WorldBiblePage({ params, searchParams }: {
   params: Promise<{ projectId: string }>;
@@ -17,16 +20,27 @@ export default async function WorldBiblePage({ params, searchParams }: {
   await requireProfile();
   const { projectId } = await params;
   const query = await searchParams;
-  const workspace = await getCloudProjectWorkspace(projectId).catch(() => null);
-  if (!workspace) notFound();
-  const result = await getCloudWorldBible(projectId);
+  const workspaceLoad = await safelyLoadCloudData(
+    "creator/world-bible/workspace",
+    () => getCloudProjectWorkspace(projectId),
+    null,
+    { shouldRethrow: (error) => error instanceof ResourceNotFoundError },
+  ).catch(() => notFound());
+  if (!workspaceLoad.ok || !workspaceLoad.value) return <main className="page"><h1 className="text-3xl font-bold">画風・世界観設定</h1><CloudDataNotice className="mt-6">作品情報を一時的に読み込めません。時間をおいて再読み込みしてください。</CloudDataNotice><Link className="button-secondary mt-5" href="/creator">作品一覧へ戻る</Link></main>;
+  const workspace = workspaceLoad.value;
+  const resultLoad = await safelyLoadCloudData(
+    "creator/world-bible/settings",
+    () => getCloudWorldBible(projectId),
+    { available: false, styleBible: null, profiles: [] },
+  );
+  const result = resultLoad.value;
   return <main className="page">
     <Link className="text-violet-700 underline" href={`/creator/${projectId}`}>← {workspace.project.title}へ戻る</Link>
     <h1 className="mt-4 text-3xl font-bold">画風・世界観設定</h1>
     <p className="mt-2 text-stone-600">作品全体でそろえる画風、場所、小物の見た目を保存します。技術的なAI設定は必要ありません。</p>
     {query.message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800">{query.message}</p> : null}
     {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-800">{query.error}</p> : null}
-    {!result.available ? <section className="panel mt-6"><h2 className="text-xl font-bold">準備が必要です</h2><p className="mt-2">画風・世界観migrationを適用すると利用できます。</p></section> : <>
+    {!resultLoad.ok ? <CloudDataNotice className="mt-6">画風・世界観設定を一時的に読み込めません。作品とページの編集は影響を受けません。</CloudDataNotice> : !result.available ? <section className="panel mt-6"><h2 className="text-xl font-bold">準備が必要です</h2><p className="mt-2">画風・世界観migrationを適用すると利用できます。</p></section> : <>
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">作品全体の画風 {result.styleBible ? `・設定 v${result.styleBible.current_version}` : ""}</h2>
         <form action={saveStyleBibleAction.bind(null, projectId)} className="mt-5 grid gap-4 md:grid-cols-2">

@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-04 Codex: 市場分析・モニター添付の本番障害復旧
+
+- Branch: `codex/cloud-research-runtime-recovery`
+- Base: `origin/feature/manga-canvas-mvp` (`36a1e5b`、PR #150 merge後)
+- Draft PR: [#152](https://github.com/team478a/manga/pull/152)
+- Preview: `https://mangai-hub-staging-git-codex-cloud-re-f40b12-team478as-projects.vercel.app`
+- 市場分析履歴の取得を部分失敗可能にし、障害時も新規分析を開始できるようにした。使い方画面も新規入力へ直接リンクする。
+- モニター画像は認証・モニター認可後に管理Storageで保存し、Storage token/policy driftによる添付失敗を回避する。報告DBは従来どおり本人RLSで保存する。
+- Responses APIの`web_search_call.action.sources`を取得・出典保存し、最大出力、低reasoning、110秒timeoutを設定した。
+- AI利用回数はProvider成功後にだけ消費し、実行前には上限を確認する。
+- APIキーの参照・変更、migration、環境変数、外部有料API実行は行っていない。
+- 検証: 専用回帰テスト17/17、Hub 471/471、deps:check、lint、Hub typecheck、research:eval、48 migration静的検査、production build、git diff --check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
+- 責任者レビュー、本番ブラウザ確認、マージは未完了。
+
 ## 2026-08-04 Codex: クラウド制作の操作フィードバック統一
 
 - Branch: `codex/cloud-creator-action-feedback-v2`
@@ -3119,3 +3134,15 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 成人向け全体設定、モニター対応、報告キュー、ユーザー停止・再開・削除、成人向け個別権限の更新例外を安全な日本語案内へ変換。
 - migration、環境変数、外部API実行は追加なし。
 - 検証: 専用4/4、Hub 446/446、deps、Hub/Desktop typecheck、lint、migration 48本、production build、diff check成功。
+
+## 2026-08-04 Codex: Cloud制作ワークフロー全体の耐障害化
+
+- `codex/cloud-research-runtime-recovery`（Draft PR #152）を土台に`codex/cloud-workflow-runtime-hardening-v1`を作成。
+- 企画提案、比較、シナリオ、ネームの本文読込と履歴・採用状態を分離し、補助データ障害時も作成済み本文を表示する。
+- 状態を確認できない間は重複生成、採用、次工程への更新操作だけを停止し、再読み込み案内を表示する。
+- Creatorの作品・ページ・一貫性台帳は、DB障害をnot foundへ誤変換しない。キャラクター、世界観、参照資料には部分障害フォールバックを追加。
+- モニター報告履歴の障害をフォームから分離し、新しい報告を継続できるようにした。
+- 共通`CloudDataNotice`、安全なloader、Creator route error boundaryを追加。内部例外本文は利用者へ表示しない。
+- migration、環境変数、Provider、料金処理の変更なし。
+- 検証: 専用5/5、Hub 476/476、deps:check、Hub typecheck、lint、migration validate 48本、production build、git diff --check成功。
+- Draft PR #153、Vercel Preview、Core quality、Migration roundtrip、Windows buildに成功。PR #152を先に扱う積み上げ構成。

@@ -74,7 +74,13 @@ export async function getCloudProjectWorkspace(projectId: string) {
       findEpisodeChapterMappings(supabase, projectId),
       findPageSceneMappings(supabase, projectId),
     ]);
-  if (projectError || !project)
+  if (projectError)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "作品を読み込めませんでした。",
+      { cause: projectError },
+    );
+  if (!project)
     throw new ResourceNotFoundError("作品が見つかりません。");
   if (episodesResult.error || pagesResult.error)
     throw new DomainError(

@@ -4,6 +4,9 @@ import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { getCloudProjectWorkspace, listCloudCharacterProfiles } from "@/lib/cloud-creator-server";
 import { deleteCharacterProfileAction, saveCharacterProfileAction } from "./actions";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
+import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 const roleLabel = { protagonist: "主人公", supporting: "登場人物", antagonist: "対立人物", other: "その他" } as const;
 
@@ -13,16 +16,27 @@ export default async function CharacterProfilesPage({ params, searchParams }: {
 }) {
   await requireProfile();
   const { projectId } = await params;const query = await searchParams;
-  const workspace = await getCloudProjectWorkspace(projectId).catch(() => null);
-  if (!workspace) notFound();
-  const result = await listCloudCharacterProfiles(projectId);
+  const workspaceLoad = await safelyLoadCloudData(
+    "creator/characters/workspace",
+    () => getCloudProjectWorkspace(projectId),
+    null,
+    { shouldRethrow: (error) => error instanceof ResourceNotFoundError },
+  ).catch(() => notFound());
+  if (!workspaceLoad.ok || !workspaceLoad.value) return <main className="page"><h1 className="text-3xl font-bold">キャラクター設定</h1><CloudDataNotice className="mt-6">作品情報を一時的に読み込めません。時間をおいて再読み込みしてください。</CloudDataNotice><Link className="button-secondary mt-5" href="/creator">作品一覧へ戻る</Link></main>;
+  const workspace = workspaceLoad.value;
+  const resultLoad = await safelyLoadCloudData(
+    "creator/characters/profiles",
+    () => listCloudCharacterProfiles(projectId),
+    { available: false, profiles: [] },
+  );
+  const result = resultLoad.value;
   return <main className="page">
     <Link className="text-violet-700 underline" href={`/creator/${projectId}`}>← {workspace.project.title}へ戻る</Link>
     <h1 className="mt-4 text-3xl font-bold">キャラクター設定</h1>
     <p className="mt-2 text-stone-600">ページをまたいで変えない外見・衣装・特徴を保存します。更新するたびに履歴が残ります。</p>
     {query.message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800">{query.message}</p> : null}
     {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-800">{query.error}</p> : null}
-    {!result.available ? <section className="panel mt-6"><h2 className="text-xl font-bold">準備が必要です</h2><p className="mt-2">キャラクターProfile migrationを適用すると利用できます。</p></section> : <>
+    {!resultLoad.ok ? <CloudDataNotice className="mt-6">キャラクター設定を一時的に読み込めません。作品とページの編集は影響を受けません。</CloudDataNotice> : !result.available ? <section className="panel mt-6"><h2 className="text-xl font-bold">準備が必要です</h2><p className="mt-2">キャラクターProfile migrationを適用すると利用できます。</p></section> : <>
       <section className="panel mt-6"><h2 className="text-xl font-bold">新しいキャラクター</h2><CharacterForm projectId={projectId} /></section>
       <section className="mt-6 space-y-4" aria-label="保存済みキャラクター">
         {result.profiles.map((profile) => <details className="panel" key={profile.id}>

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireProfile } from "@/lib/auth";
 import { requireCloudGeneralMonitor } from "@/lib/cloud-general-monitor";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { ValidationError } from "@/lib/domain-errors";
 import {
@@ -54,9 +55,10 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
     const feedbackId = crypto.randomUUID();
     const diagnostic = parseMonitorDiagnostic(formData.get("diagnostic"));
     const supabase = await createClient();
+    const storage = createAdminClient().storage.from("monitor-feedback");
     const attachmentPath = screenshot ? `${profile.id}/${feedbackId}.${screenshot.extension}` : null;
     if (screenshot && attachmentPath) {
-      const upload = await supabase.storage.from("monitor-feedback").upload(attachmentPath, screenshot.file, {
+      const upload = await storage.upload(attachmentPath, screenshot.file, {
         contentType: screenshot.file.type,
         upsert: false,
       });
@@ -80,7 +82,7 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
         attachment_path: attachmentPath,
       });
     if (error) {
-      if (attachmentPath) await supabase.storage.from("monitor-feedback").remove([attachmentPath]);
+      if (attachmentPath) await storage.remove([attachmentPath]);
       if (error.message.includes("cloud_monitor_feedback_rate_limited")) {
         throw new ValidationError("短時間に多くの報告が送信されています。10分ほど待ってから再度お試しください。");
       }

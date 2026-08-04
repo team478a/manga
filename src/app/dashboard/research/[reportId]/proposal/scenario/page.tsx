@@ -8,6 +8,8 @@ import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
 import { getLatestCloudScenarioAdoption, listCloudScenarioVersions } from "@/lib/cloud-scenario-server";
 import { createCloudScenarioAction } from "./actions";
 import { ScenarioSubmitButton } from "./scenario-buttons";
+import { CloudDataNotice } from "@/components/CloudDataNotice";
+import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
 // Scenario generation may use the provider for up to 90 seconds.
 export const maxDuration = 180;
@@ -20,15 +22,43 @@ export default async function ScenarioPage({ params, searchParams }: {
   const { reportId } = await params;
   const query = await searchParams;
   const { profile } = await requireProfile();
-  const selection = await getCloudProposalSelection(profile.id, reportId);
+  const selectionLoad = await safelyLoadCloudData(
+    "scenario/selected-proposal",
+    () => getCloudProposalSelection(profile.id, reportId),
+    null,
+  );
+  if (!selectionLoad.ok) {
+    return (
+      <main className="page max-w-4xl">
+        <h1 className="text-3xl font-bold">シナリオ生成</h1>
+        <CloudDataNotice className="mt-6">
+          採用済み企画を一時的に確認できません。内容は失われていません。時間をおいて再読み込みしてください。
+        </CloudDataNotice>
+        <Link className="button-secondary mt-5" href={`/dashboard/research/${reportId}/proposal`}>
+          AI企画提案へ戻る
+        </Link>
+      </main>
+    );
+  }
+  const selection = selectionLoad.value;
   if (!selection) notFound();
   const enabled = cloudScenarioFeatureEnabled();
-  const [versions, adoption] = enabled
-    ? await Promise.all([
-        listCloudScenarioVersions(profile.id, selection.id),
-        getLatestCloudScenarioAdoption(profile.id, selection.id),
-      ])
-    : [[], null];
+  const versionLoad = enabled
+    ? await safelyLoadCloudData(
+        "scenario/history",
+        () => listCloudScenarioVersions(profile.id, selection.id),
+        [],
+      )
+    : { ok: true as const, value: [] };
+  const adoptionLoad = enabled
+    ? await safelyLoadCloudData(
+        "scenario/adoption",
+        () => getLatestCloudScenarioAdoption(profile.id, selection.id),
+        null,
+      )
+    : { ok: true as const, value: null };
+  const versions = versionLoad.value;
+  const adoption = adoptionLoad.value;
   return (
     <main className="page max-w-4xl">
       <Link className="text-violet-700 underline" href={`/dashboard/research/${reportId}/proposal`}>
@@ -39,6 +69,8 @@ export default async function ScenarioPage({ params, searchParams }: {
       <p className="mt-2 text-stone-600">採用した企画を、人物・三幕構成・ページ単位のシーンへ具体化します。</p>
       {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
       {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
+      {!versionLoad.ok ? <CloudDataNotice className="mt-5">シナリオ版履歴を一時的に確認できません。重複作成を防ぐため、新規生成を停止しています。</CloudDataNotice> : null}
+      {!adoptionLoad.ok ? <CloudDataNotice className="mt-5">採用状態を一時的に確認できません。シナリオ本文と履歴は引き続き確認できます。</CloudDataNotice> : null}
       <section className="panel mt-6 border-violet-200">
         <p className="text-sm font-bold text-violet-700">採用済み企画</p>
         <h2 className="mt-2 text-2xl font-bold">{selection.candidate_snapshot.title}</h2>
@@ -46,7 +78,7 @@ export default async function ScenarioPage({ params, searchParams }: {
       </section>
       {!enabled ? (
         <p className="mt-6 rounded-lg bg-amber-50 p-4 text-amber-950">AIシナリオ生成は現在停止中です。</p>
-      ) : versions.length ? (
+      ) : !versionLoad.ok ? null : versions.length ? (
         <section className="mt-6">
           <h2 className="text-xl font-bold">シナリオ版履歴</h2>
           <div className="mt-4 space-y-3">
