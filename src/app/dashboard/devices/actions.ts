@@ -17,7 +17,7 @@ const idSchema = z.string().uuid();
 export async function approveDesktopDevice(formData: FormData) {
   const parsed = codeSchema.safeParse(formData.get("code"));
   if (!parsed.success)
-    redirect("/dashboard/devices/authorize?error=認証コードを確認してください");
+    redirect(encodeURI("/dashboard/devices/authorize?error=認証コードを確認してください"));
   const { profile } = await requireProfile();
   const admin = createAdminClient();
   const now = new Date();
@@ -33,7 +33,7 @@ export async function approveDesktopDevice(formData: FormData) {
     );
   if (!authorization || new Date(authorization.expires_at) <= now)
     redirect(
-      "/dashboard/devices/authorize?error=認証コードが無効または期限切れです",
+      encodeURI("/dashboard/devices/authorize?error=認証コードが無効または期限切れです"),
     );
   const expectedScopeConfirmation = [...authorization.scopes].sort().join(",");
   if (formData.get("scopeConfirmation") !== expectedScopeConfirmation)
@@ -62,15 +62,15 @@ export async function approveDesktopDevice(formData: FormData) {
     );
   if (!updated)
     redirect(
-      "/dashboard/devices/authorize?error=認証コードが無効または期限切れです",
+      encodeURI("/dashboard/devices/authorize?error=認証コードが無効または期限切れです"),
     );
   revalidatePath("/dashboard/devices");
-  redirect("/dashboard/devices?message=Desktop端末を認証しました");
+  redirect(encodeURI("/dashboard/devices?message=Desktop端末を認証しました"));
 }
 
 export async function revokeDesktopDevice(formData: FormData) {
   const parsed = idSchema.safeParse(formData.get("id"));
-  if (!parsed.success) redirect("/dashboard/devices?error=端末IDが不正です");
+  if (!parsed.success) redirect(encodeURI("/dashboard/devices?error=端末IDが不正です"));
   const { profile } = await requireProfile();
   const admin = createAdminClient();
   const { error } = await admin
@@ -84,5 +84,5 @@ export async function revokeDesktopDevice(formData: FormData) {
       `/dashboard/devices?error=${encodeURIComponent("端末認証を解除できませんでした")}`,
     );
   revalidatePath("/dashboard/devices");
-  redirect("/dashboard/devices?message=端末認証を解除しました");
+  redirect(encodeURI("/dashboard/devices?message=端末認証を解除しました"));
 }

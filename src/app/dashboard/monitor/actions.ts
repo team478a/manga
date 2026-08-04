@@ -92,5 +92,5 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
     redirect(`/dashboard/monitor?error=${encodeURIComponent(safeDomainErrorMessage(error, "フィードバックを保存できませんでした。"))}`);
   }
   revalidatePath("/dashboard/monitor");
-  redirect("/dashboard/monitor?message=フィードバックを送信しました");
+  redirect(encodeURI("/dashboard/monitor?message=フィードバックを送信しました"));
 }

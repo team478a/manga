@@ -26,7 +26,7 @@ export async function updateMonitorIssueTaskAction(formData: FormData) {
     taskId: formData.get("taskId"),
     operation: formData.get("operation"),
   });
-  if (!parsed.success) redirect("/admin/monitor-issues?error=対象タスクを確認してください");
+  if (!parsed.success) redirect(encodeURI("/admin/monitor-issues?error=対象タスクを確認してください"));
   const status = operationStatus[parsed.data.operation];
   const operation = await safelyLoadAdminData("monitor-issues/action", async () =>
     createAdminClient()
@@ -38,7 +38,7 @@ export async function updateMonitorIssueTaskAction(formData: FormData) {
       })
       .eq("id", parsed.data.taskId),
   );
-  if (!operation.ok || operation.value.error) redirect("/admin/monitor-issues?error=自動修正タスクを更新できませんでした");
+  if (!operation.ok || operation.value.error) redirect(encodeURI("/admin/monitor-issues?error=自動修正タスクを更新できませんでした"));
   revalidatePath("/admin/monitor-issues");
   redirect(`/admin/monitor-issues?message=${encodeURIComponent(status === "queued" ? "自動修正キューへ追加しました" : "対応状態を更新しました")}`);
 }

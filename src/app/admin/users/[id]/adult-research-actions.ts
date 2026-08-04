@@ -65,7 +65,7 @@ export async function setCloudAdultResearchEntitlementAction(
   if (!operation.ok)
     redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("成人向け市場分析の許可を更新できませんでした")}`);
   if (!operation.value.targetFound)
-    redirect("/admin/users?error=対象ユーザーが見つかりません");
+    redirect(encodeURI("/admin/users?error=対象ユーザーが見つかりません"));
   if (operation.value.error)
     redirect(
       `/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("成人向け市場分析の許可を更新できませんでした")}`,

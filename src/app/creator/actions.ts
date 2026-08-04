@@ -59,7 +59,7 @@ export async function createCloudProjectAction(formData: FormData) {
     dpi: value(formData, "dpi"),
   });
   if (!parsed.success)
-    redirect("/creator/new?error=作品設定を確認してください");
+    redirect(encodeURI("/creator/new?error=作品設定を確認してください"));
   let result: Awaited<ReturnType<typeof createCloudProject>>;
   try {
     result = await createCloudProject(parsed.data);
@@ -68,7 +68,7 @@ export async function createCloudProjectAction(formData: FormData) {
     redirect(`/creator/new?error=${encodeURIComponent(message)}`);
   }
   revalidatePath("/creator");
-  redirect(`/creator/${result.project_id}?message=作品を作成しました`);
+  redirect(encodeURI(`/creator/${result.project_id}?message=作品を作成しました`));
 }
 
 export async function addCloudEpisodeAction(
@@ -82,7 +82,7 @@ export async function addCloudEpisodeAction(
     .max(200)
     .safeParse(value(formData, "title"));
   if (!parsed.success)
-    redirect(`/creator/${projectId}?error=話の名前を入力してください`);
+    redirect(encodeURI(`/creator/${projectId}?error=話の名前を入力してください`));
   try {
     await addCloudEpisode(projectId, parsed.data);
   } catch (error) {
@@ -90,7 +90,7 @@ export async function addCloudEpisodeAction(
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=話を追加しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=話を追加しました`));
 }
 
 export async function addCloudPageAction(projectId: string, episodeId: string) {
@@ -110,14 +110,14 @@ export async function addCloudChapterAction(
   formData: FormData,
 ) {
   const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
-  if (!parsed.success) redirect(`/creator/${projectId}?error=章の名前を入力してください`);
+  if (!parsed.success) redirect(encodeURI(`/creator/${projectId}?error=章の名前を入力してください`));
   try {
     await addCloudChapter(projectId, parsed.data);
   } catch (error) {
     redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "章を追加できませんでした。"))}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=章を追加しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=章を追加しました`));
 }
 
 export async function addCloudEpisodeToChapterAction(
@@ -126,14 +126,14 @@ export async function addCloudEpisodeToChapterAction(
   formData: FormData,
 ) {
   const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
-  if (!parsed.success) redirect(`/creator/${projectId}?error=話の名前を入力してください`);
+  if (!parsed.success) redirect(encodeURI(`/creator/${projectId}?error=話の名前を入力してください`));
   try {
     await addCloudEpisodeToChapter(chapterId, parsed.data);
   } catch (error) {
     redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "話を追加できませんでした。"))}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=話を追加しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=話を追加しました`));
 }
 
 export async function addCloudSceneAction(
@@ -145,14 +145,14 @@ export async function addCloudSceneAction(
     title: z.string().trim().min(1).max(200),
     summary: z.string().max(2000),
   }).safeParse({ title: value(formData, "title"), summary: value(formData, "summary") });
-  if (!parsed.success) redirect(`/creator/${projectId}?error=シーン設定を確認してください`);
+  if (!parsed.success) redirect(encodeURI(`/creator/${projectId}?error=シーン設定を確認してください`));
   try {
     await addCloudScene(episodeId, parsed.data.title, parsed.data.summary);
   } catch (error) {
     redirect(`/creator/${projectId}?error=${encodeURIComponent(domainMessage(error, "シーンを追加できませんでした。"))}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=シーンを追加しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=シーンを追加しました`));
 }
 
 export async function addCloudPageToSceneAction(projectId: string, sceneId: string) {
@@ -195,7 +195,7 @@ export async function renameCloudProjectAction(
       description: value(formData, "description"),
     });
   if (!parsed.success)
-    redirect(`/creator/${projectId}?error=作品情報を確認してください`);
+    redirect(encodeURI(`/creator/${projectId}?error=作品情報を確認してください`));
   try {
     await renameCloudProject(
       projectId,
@@ -207,7 +207,7 @@ export async function renameCloudProjectAction(
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=作品情報を更新しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=作品情報を更新しました`));
 }
 
 export async function renameCloudEpisodeAction(
@@ -222,7 +222,7 @@ export async function renameCloudEpisodeAction(
     .max(200)
     .safeParse(value(formData, "title"));
   if (!parsed.success)
-    redirect(`/creator/${projectId}?error=話の名前を確認してください`);
+    redirect(encodeURI(`/creator/${projectId}?error=話の名前を確認してください`));
   try {
     await renameCloudEpisode(episodeId, parsed.data);
   } catch (error) {
@@ -230,7 +230,7 @@ export async function renameCloudEpisodeAction(
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=話の名前を更新しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=話の名前を更新しました`));
 }
 
 export async function moveCloudStructureAction(
@@ -274,7 +274,7 @@ export async function deleteCloudProjectAction(projectId: string) {
   }
   revalidatePath("/creator");
   revalidatePath("/creator/trash");
-  redirect("/creator?message=作品をゴミ箱へ移動しました");
+  redirect(encodeURI("/creator?message=作品をゴミ箱へ移動しました"));
 }
 
 export async function restoreCloudProjectAction(projectId: string) {
@@ -286,7 +286,7 @@ export async function restoreCloudProjectAction(projectId: string) {
   }
   revalidatePath("/creator");
   revalidatePath("/creator/trash");
-  redirect(`/creator/${projectId}?message=作品を復元しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=作品を復元しました`));
 }
 
 export async function setCloudProjectCoverAction(
@@ -300,7 +300,7 @@ export async function setCloudProjectCoverAction(
     redirect(`/creator/${projectId}?error=${encodeURIComponent(message)}`);
   }
   revalidatePath(`/creator/${projectId}`);
-  redirect(`/creator/${projectId}?message=表紙ページを設定しました`);
+  redirect(encodeURI(`/creator/${projectId}?message=表紙ページを設定しました`));
 }
 
 export async function syncCloudMarketplaceDraftAction(
@@ -314,7 +314,7 @@ export async function syncCloudMarketplaceDraftAction(
     .max(1_000_000)
     .safeParse(value(formData, "price"));
   if (!parsed.success)
-    redirect(`/creator/${projectId}?error=販売価格を確認してください`);
+    redirect(encodeURI(`/creator/${projectId}?error=販売価格を確認してください`));
   let result: Awaited<ReturnType<typeof syncCloudMarketplaceDraft>>;
   try {
     result = await syncCloudMarketplaceDraft({
@@ -338,7 +338,7 @@ export async function syncCloudMarketplaceDraftAction(
 
 export async function startCloudPageGenerationBatchAction(projectId: string, formData: FormData) {
   const parsedProjectId = z.string().uuid().safeParse(projectId);
-  if (!parsedProjectId.success) redirect("/creator?error=作品IDを確認してください");
+  if (!parsedProjectId.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));
   const parsed = z.array(z.string().uuid()).min(4).max(8).safeParse(formData.getAll("pageId"));
   if (!parsed.success) redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent("一括生成するページを4〜8ページ選んでください。")}`);
   try {
@@ -352,7 +352,7 @@ export async function startCloudPageGenerationBatchAction(projectId: string, for
 
 export async function setCloudGenerationBatchStateAction(projectId: string, batchId: string, status: "active" | "paused" | "canceled") {
   const ids = z.object({ projectId: z.string().uuid(), batchId: z.string().uuid() }).safeParse({ projectId, batchId });
-  if (!ids.success) redirect("/creator?error=一括生成のIDを確認してください");
+  if (!ids.success) redirect(encodeURI("/creator?error=一括生成のIDを確認してください"));
   try { await setCloudGenerationBatchState(ids.data.batchId, status); }
   catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "一括生成の状態を変更できませんでした。"))}`); }
   revalidatePath(`/creator/${ids.data.projectId}`);
@@ -361,7 +361,7 @@ export async function setCloudGenerationBatchStateAction(projectId: string, batc
 
 export async function retryFailedCloudGenerationJobAction(projectId: string, jobId: string) {
   const ids = z.object({ projectId: z.string().uuid(), jobId: z.string().uuid() }).safeParse({ projectId, jobId });
-  if (!ids.success) redirect("/creator?error=再実行対象のIDを確認してください");
+  if (!ids.success) redirect(encodeURI("/creator?error=再実行対象のIDを確認してください"));
   try { await retryFailedCloudGenerationJob(ids.data.jobId); }
   catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "失敗Jobを再実行できませんでした。"))}`); }
   revalidatePath(`/creator/${ids.data.projectId}`);
@@ -378,7 +378,7 @@ export async function setCloudPageProductionStatusAction(
     pageId: z.string().uuid(),
     status: z.enum(["not_started", "review_required", "revision_required", "finalized"]),
   }).safeParse({ projectId, pageId, status });
-  if (!parsed.success) redirect("/creator?error=制作状態を確認してください");
+  if (!parsed.success) redirect(encodeURI("/creator?error=制作状態を確認してください"));
   try { await setCloudPageProductionStatus(parsed.data.pageId, parsed.data.status); }
   catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "制作状態を更新できませんでした。"))}`); }
   revalidatePath(`/creator/${parsed.data.projectId}`);
@@ -387,7 +387,7 @@ export async function setCloudPageProductionStatusAction(
 
 export async function startCloudExportAction(projectId: string) {
   const parsed = z.string().uuid().safeParse(projectId);
-  if (!parsed.success) redirect("/creator?error=作品IDを確認してください");
+  if (!parsed.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));
   try {
     await createCloudExportJob(parsed.data);
   } catch (error) {
@@ -430,7 +430,7 @@ export async function setCloudExportStateAction(
   status: "queued" | "paused" | "canceled",
 ) {
   const parsed = z.object({ projectId: z.string().uuid(), jobId: z.string().uuid(), status: z.enum(["queued", "paused", "canceled"]) }).safeParse({ projectId, jobId, status });
-  if (!parsed.success) redirect("/creator?error=書き出しIDを確認してください");
+  if (!parsed.success) redirect(encodeURI("/creator?error=書き出しIDを確認してください"));
   try {
     await setCloudExportJobState(parsed.data.jobId, parsed.data.status);
   } catch (error) {

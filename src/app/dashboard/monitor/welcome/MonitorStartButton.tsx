@@ -35,7 +35,7 @@ export function MonitorStartButton() {
       }
 
       window.location.assign(
-        result.redirectTo || "/dashboard?message=モニター利用を開始しました",
+        result.redirectTo || encodeURI("/dashboard?message=モニター利用を開始しました"),
       );
     } catch {
       setError(fallbackMessage);

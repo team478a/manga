@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     revalidatePath("/dashboard/monitor");
     return NextResponse.json({
       ok: true,
-      redirectTo: "/dashboard?message=モニター利用を開始しました",
+      redirectTo: encodeURI("/dashboard?message=モニター利用を開始しました"),
     });
   } catch (error) {
     const response = toApiError(

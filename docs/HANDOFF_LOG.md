@@ -3169,3 +3169,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 更新情報の保存・公開状態変更後に日本語の結果メッセージを安全にURLエンコードするよう修正した。
 - DB、migration、環境変数、既存データは変更していない。
 - 検証: 専用4/4、Hub 479/479、deps:check、Hub typecheck、lint、migration 48本、production build、git diff --check成功。
+
+# 2026-08-04 Codex: 日本語Action遷移の横断安全化
+
+- Branch: `codex/safe-action-redirect-audit-v1`
+- PR #156で修正した更新情報管理と同型のURL遷移を`src`全体から抽出した。
+- 18個のServer Actionファイルに残っていた84件の日本語結果遷移をURLエンコードした。
+- モニター開始API／Client fallbackとStripe Checkout完了・キャンセルURLを追加で安全化した。
+- `tests/action-redirect-encoding.test.mjs`により、未エンコードの日本語`message`／`error` queryを今後のHub testで拒否する。
+- migration、環境変数、外部API実行、Feature Flagの変更はない。

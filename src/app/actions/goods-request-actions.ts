@@ -12,7 +12,7 @@ export async function createGoodsRequest(formData: FormData) {
   const productType = formText(formData, "productType");
   if (!workId || !productType) {
     redirect(
-      "/dashboard/goods-requests/new?error=作品とグッズの種類を選んでください",
+      encodeURI("/dashboard/goods-requests/new?error=作品とグッズの種類を選んでください"),
     );
   }
 
@@ -25,7 +25,7 @@ export async function createGoodsRequest(formData: FormData) {
     .eq("content_class", "general")
     .maybeSingle();
   if (!work) {
-    redirect("/dashboard/goods-requests/new?error=自分の作品だけ申請できます");
+    redirect(encodeURI("/dashboard/goods-requests/new?error=自分の作品だけ申請できます"));
   }
   const { error } = await supabase.from("goods_requests").insert({
     work_id: workId,
@@ -40,7 +40,7 @@ export async function createGoodsRequest(formData: FormData) {
     );
   }
   revalidatePath("/dashboard/goods-requests");
-  redirect("/dashboard/goods-requests?message=グッズ販売申請を受け付けました");
+  redirect(encodeURI("/dashboard/goods-requests?message=グッズ販売申請を受け付けました"));
 }
 
 export async function updateGoodsRequestAdmin(formData: FormData) {
@@ -55,7 +55,7 @@ export async function updateGoodsRequestAdmin(formData: FormData) {
     "completed",
   ];
   if (!id || !allowedStatuses.includes(status)) {
-    redirect("/admin/goods-requests?error=状態を確認してください");
+    redirect(encodeURI("/admin/goods-requests?error=状態を確認してください"));
   }
 
   const supabase = await createClient();
@@ -72,5 +72,5 @@ export async function updateGoodsRequestAdmin(formData: FormData) {
     );
   }
   revalidatePath("/admin/goods-requests");
-  redirect("/admin/goods-requests?message=グッズ申請を更新しました");
+  redirect(encodeURI("/admin/goods-requests?message=グッズ申請を更新しました"));
 }

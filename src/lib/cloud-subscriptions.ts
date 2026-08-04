@@ -93,8 +93,8 @@ export async function createCloudSubscriptionCheckout(request: Request) {
         : (user.email ?? undefined),
       client_reference_id: profile.id,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${siteOrigin(request)}/dashboard/billing?message=申込みを受け付けました`,
-      cancel_url: `${siteOrigin(request)}/dashboard/billing?message=申込みをキャンセルしました`,
+      success_url: encodeURI(`${siteOrigin(request)}/dashboard/billing?message=申込みを受け付けました`),
+      cancel_url: encodeURI(`${siteOrigin(request)}/dashboard/billing?message=申込みをキャンセルしました`),
       metadata: {
         profile_id: profile.id,
         product_surface: "mangai-cloud-ai",
