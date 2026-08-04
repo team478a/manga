@@ -3146,3 +3146,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - migration、環境変数、Provider、料金処理の変更なし。
 - 検証: 専用5/5、Hub 476/476、deps:check、Hub typecheck、lint、migration validate 48本、production build、git diff --check成功。
 - Draft PR #153、Vercel Preview、Core quality、Migration roundtrip、Windows buildに成功。PR #152を先に扱う積み上げ構成。
+
+## 2026-08-04 Codex: 認証ボタンの操作フィードバック
+
+- ログイン、新規登録、再設定メール送信、パスワード更新のボタンを共通処理中表示へ変更。
+- 実行中はスピナーと`ログイン中…`、`登録中…`、`送信中…`、`更新中…`を表示し、再クリックを防ぐ。
+- 認証ロジック、Supabase、migration、環境変数は変更していない。
+- 検証: 専用1/1、Hub 477/477、deps、Hub typecheck、lint、production build、diff check成功。

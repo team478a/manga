@@ -1,4 +1,5 @@
 import { updatePassword } from "@/app/actions";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function UpdatePasswordPage({
   searchParams,
@@ -33,7 +34,9 @@ export default async function UpdatePasswordPage({
             required
           />
         </div>
-        <button className="button w-full" type="submit">パスワードを更新する</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="更新中…">
+          パスワードを更新する
+        </PendingSubmitButton>
       </form>
     </main>
   );

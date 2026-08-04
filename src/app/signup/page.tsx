@@ -1,4 +1,5 @@
 import { signUp } from "@/app/actions";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
   const params = await searchParams;
@@ -34,7 +35,9 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
             required
           />
         </div>
-        <button className="button w-full" type="submit">登録する</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="登録中…">
+          登録する
+        </PendingSubmitButton>
       </form>
     </main>
   );

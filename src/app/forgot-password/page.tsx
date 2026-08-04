@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requestPasswordReset } from "@/app/actions";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function ForgotPasswordPage({
   searchParams,
@@ -22,7 +23,9 @@ export default async function ForgotPasswordPage({
           <label className="label" htmlFor="email">メールアドレス</label>
           <input className="field" id="email" name="email" type="email" required />
         </div>
-        <button className="button w-full" type="submit">再設定メールを送る</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="送信中…">
+          再設定メールを送る
+        </PendingSubmitButton>
       </form>
       <p className="mt-5 text-center">
         <Link className="font-medium text-green-800 hover:underline" href="/login">

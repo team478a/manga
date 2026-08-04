@@ -1,4 +1,5 @@
 import { signIn } from "@/app/actions";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import Link from "next/link";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
@@ -24,7 +25,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </Link>
           </div>
         </div>
-        <button className="button w-full" type="submit">ログインする</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="ログイン中…">
+          ログインする
+        </PendingSubmitButton>
       </form>
     </main>
   );
