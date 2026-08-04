@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-04 Cloud漫画制作 受入れ自動化
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-manga-acceptance-automation-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #163 merge後）
+- Draft PR: [#164](https://github.com/team478a/manga/pull/164)
+- 一般向け漫画制作に必要なmigration、Worker、生成API、Editor、候補比較、8ページ出力テストの存在を専用preflightで一括確認する。
+- Creator主要画面に390pxを超える固定pixel幅が混入していないことを構造検査する。
+- 環境込み検査とrepository-only検査を分離し、秘密値は出力しない。
+- 実Provider、PDF／PNG目視、実ブラウザ3幅、別ユーザー分離は手動受入れとして明示する。
+- DB、migration、Feature Flag、Provider処理は変更しない。
+- 検証: 専用3/3、repository preflight、deps:check、lint、Hub typecheck、Hub 485/485、migration 48/48、production build、git diff check成功。
+- 未完了: Preview、CI、手動受入れ。
+
 ## 2026-08-04 一般向け画像生成 受入れ基盤
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

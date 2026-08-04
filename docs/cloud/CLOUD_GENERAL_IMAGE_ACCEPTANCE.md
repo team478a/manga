@@ -17,6 +17,20 @@
 
 画面は秘密値を表示せず、設定済みかどうかだけを判定する。
 
+リポジトリだけを先に確認する場合:
+
+```powershell
+npm run cloud:manga:acceptance:repo
+```
+
+Vercel環境変数を安全なローカル環境へ取得した後、環境設定も含めて確認する場合:
+
+```powershell
+npm run cloud:manga:acceptance:preflight
+```
+
+どちらのコマンドもAPIキーや署名Secretの値は表示しない。構造検査は実ブラウザ確認の代替ではない。
+
 ## 1コマ受入れ
 
 1. スタッフ用の一般向け作品を作成する。

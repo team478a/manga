@@ -3214,3 +3214,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - `docs/cloud/CLOUD_GENERAL_IMAGE_ACCEPTANCE.md`へ合格条件と禁止事項を記録した。
 - 外部Provider呼び出し、DB／migration、環境変数、Feature Flag変更は行っていない。
 - 専用2/2、deps:check、lint、Hub typecheck、Hub 482/482、migration 48/48、production build、git diff check成功。
+# 2026-08-04 Codex: Cloud漫画制作 受入れ自動化
+
+- Branch: `codex/cloud-manga-acceptance-automation-v1`
+- Draft PR: [#164](https://github.com/team478a/manga/pull/164)
+- `cloud:manga:acceptance:repo`と`cloud:manga:acceptance:preflight`を追加した。
+- 漫画制作の必須artifact、可変幅構造、一般向けモニター環境を秘密値なしで一括確認する。
+- 実Provider・候補操作・8ページ目視・実ブラウザ3幅・別ユーザー分離は手動項目として出力する。
+- DB、migration、環境変数、外部API実行は追加していない。
+- 専用3/3、repository preflight、deps:check、lint、Hub typecheck、Hub 485/485、migration 48/48、production build、git diff check成功。
