@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-04 更新情報保存後の遷移修正
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/product-update-save-redirect-fix`
+- Base: `origin/feature/manga-canvas-mvp`（PR #155 merge後）
+- 更新情報の保存・公開状態変更後に、日本語メッセージを未エンコードで遷移URLへ渡していた問題を修正。
+- 成功時と失敗時の全遷移を共通の安全なURL生成へ統一し、入力内容やDB内部情報は露出しない。
+- DB、migration、環境変数、既存の更新情報データは変更しない。
+- 検証: 専用4/4、Hub 479/479、deps:check、Hub typecheck、lint、migration 48本、production build、git diff --check成功。
+- 未完了: Draft PR、Vercel Preview、CI、本番での更新情報掲載、責任者レビュー、マージ。
+
 ## 2026-08-04 一般向けモニター操作フィードバック第2弾
 
 - 状態: `VERIFIED_AWAITING_REVIEW`

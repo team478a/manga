@@ -23,6 +23,9 @@ const stateSchema = z.object({
   operation: z.enum(["publish", "unpublish", "archive"]),
 });
 
+const productUpdatesTarget = (kind: "message" | "error", text: string) =>
+  `/admin/product-updates?${kind}=${encodeURIComponent(text)}`;
+
 export async function createProductUpdateAction(formData: FormData) {
   const { profile } = await requireAdmin();
   const parsed = updateSchema.safeParse({
@@ -33,7 +36,7 @@ export async function createProductUpdateAction(formData: FormData) {
     actionUrl: formData.get("actionUrl"),
     publishNow: formData.get("publishNow") === "on",
   });
-  if (!parsed.success) redirect("/admin/product-updates?error=更新情報の入力内容を確認してください");
+  if (!parsed.success) redirect(productUpdatesTarget("error", "更新情報の入力内容を確認してください"));
   let saveFailed = false;
   try {
     const { error } = await createAdminClient().from("cloud_product_updates").insert({
@@ -49,10 +52,10 @@ export async function createProductUpdateAction(formData: FormData) {
   } catch {
     saveFailed = true;
   }
-  if (saveFailed) redirect("/admin/product-updates?error=更新情報を保存できませんでした。設定を確認してもう一度お試しください");
+  if (saveFailed) redirect(productUpdatesTarget("error", "更新情報を保存できませんでした。設定を確認してもう一度お試しください"));
   revalidatePath("/dashboard");
   revalidatePath("/admin/product-updates");
-  redirect("/admin/product-updates?message=更新情報を保存しました");
+  redirect(productUpdatesTarget("message", "更新情報を保存しました"));
 }
 
 export async function changeProductUpdateStateAction(formData: FormData) {
@@ -61,7 +64,7 @@ export async function changeProductUpdateStateAction(formData: FormData) {
     updateId: formData.get("updateId"),
     operation: formData.get("operation"),
   });
-  if (!parsed.success) redirect("/admin/product-updates?error=更新対象を確認してください");
+  if (!parsed.success) redirect(productUpdatesTarget("error", "更新対象を確認してください"));
   const now = new Date().toISOString();
   const values = parsed.data.operation === "publish"
     ? { published_at: now, archived_at: null, updated_at: now }
@@ -78,8 +81,8 @@ export async function changeProductUpdateStateAction(formData: FormData) {
   } catch {
     updateFailed = true;
   }
-  if (updateFailed) redirect("/admin/product-updates?error=公開状態を変更できませんでした。時間をおいてもう一度お試しください");
+  if (updateFailed) redirect(productUpdatesTarget("error", "公開状態を変更できませんでした。時間をおいてもう一度お試しください"));
   revalidatePath("/dashboard");
   revalidatePath("/admin/product-updates");
-  redirect("/admin/product-updates?message=公開状態を更新しました");
+  redirect(productUpdatesTarget("message", "公開状態を更新しました"));
 }

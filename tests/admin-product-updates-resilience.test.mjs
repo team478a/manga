@@ -29,6 +29,19 @@ test("更新情報の保存と公開変更はProvider例外を安全な案内へ
   assert.doesNotMatch(actions, /error\.message/);
 });
 
+test("更新情報Actionは日本語の結果メッセージを安全にURLへ渡す", async () => {
+  const actions = await readFile(
+    new URL("../src/app/admin/product-updates/actions.ts", import.meta.url),
+    "utf8",
+  );
+
+  assert.match(actions, /const productUpdatesTarget/);
+  assert.match(actions, /encodeURIComponent\(text\)/);
+  assert.match(actions, /productUpdatesTarget\("message", "更新情報を保存しました"\)/);
+  assert.match(actions, /productUpdatesTarget\("error", "更新情報を保存できませんでした/);
+  assert.doesNotMatch(actions, /redirect\("\/admin\/product-updates\?(?:message|error)=[^"$]/);
+});
+
 test("予期しない描画失敗でも日本語の回復画面を表示する", async () => {
   const boundary = await readFile(
     new URL("../src/app/admin/product-updates/error.tsx", import.meta.url),
