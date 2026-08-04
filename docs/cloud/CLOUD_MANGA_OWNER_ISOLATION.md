@@ -33,6 +33,37 @@ npm run cloud:manga:owner-isolation
 
 内部DBエラー、Storageパス、署名情報は画面へ表示しません。
 
+### 読み取り専用の2ユーザー検査
+
+最終ブラウザ確認の前に、2ユーザーのRLS分離を読み取り専用で確認できます。認証情報はローカル環境変数だけに設定し、リポジトリ、ログ、結果文書へ記録しません。
+
+必要な環境変数:
+
+```text
+MANGAI_DB_ENV=staging
+MANGAI_OWNER_TEST_SUPABASE_URL
+MANGAI_OWNER_TEST_SUPABASE_ANON_KEY
+MANGAI_OWNER_TEST_USER_A_EMAIL
+MANGAI_OWNER_TEST_USER_A_PASSWORD
+MANGAI_OWNER_TEST_USER_B_EMAIL
+MANGAI_OWNER_TEST_USER_B_PASSWORD
+MANGAI_OWNER_TEST_CONFIRM=READ_ONLY_STAGING
+```
+
+値を表示せず設定不足だけを確認します。
+
+```powershell
+npm run cloud:manga:owner-isolation:staging:preflight
+```
+
+ユーザーAに一般向け非公開作品、生成Job、書き出しJob、作品紐付き品質報告が揃った後に実行します。
+
+```powershell
+npm run cloud:manga:owner-isolation:staging
+```
+
+検査はデータの作成、更新、取消、削除、署名URL発行を行いません。ユーザーAが各対象を1件参照でき、ユーザーBからは0件になることだけを確認します。署名URL、キャンセル操作、共同編集者はブラウザで別途確認します。
+
 ## 変更しないもの
 
 - Supabase migrationとRLS定義

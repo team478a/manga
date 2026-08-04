@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-04 Cloud漫画制作 2ユーザー所有者分離受入れ
+
+- 状態: `VERIFIED_LOCAL / BLOCKED_EXTERNAL_ENVIRONMENT`
+- Branch: `codex/cloud-manga-owner-isolation-e2e-v1`
+- Base: `origin/feature/manga-canvas-mvp`（PR #165 merge後）
+- Draft PR: [#166](https://github.com/team478a/manga/pull/166)
+- ステージングの2アカウントを使い、非公開作品、生成Job、書き出し、品質フィードバックについて、所有者は1件・別ユーザーは0件となることを読み取り専用で検証するCLIを追加した。
+- 認証情報は環境変数だけで受け取り、メールアドレス、パスワード、UUID、秘密値を出力しない。
+- `MANGAI_DB_ENV=staging`と明示確認値が揃わない場合はfail closedとし、データの作成、更新、削除、外部Provider実行は行わない。
+- 必要な受入れデータが存在しない場合は自動作成せず、準備不足として安全に停止する。
+- 手順書: `docs/cloud/CLOUD_MANGA_OWNER_ISOLATION.md`
+- 検証: 専用4/4、既存所有者分離7/7、Cloud漫画repository preflight、deps:check、lint、Hub typecheck、Hub 490/490、migration 48/48、production build、git diff check成功。
+- 未完了: ステージング2ユーザー実行、署名URL・生成キャンセル・共同編集者の実ブラウザ確認、Preview、CI、責任者レビュー。
+
 ## 2026-08-04 Cloud漫画制作 所有者分離の強化
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
