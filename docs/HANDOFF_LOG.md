@@ -8,6 +8,8 @@
 
 - Branch: `codex/refactor-r2b1-cloud-ai-queue`
 - Base: `origin/feature/manga-canvas-mvp`（PR #170 merge後、`842bd6b`）
+- Draft PR: [#171](https://github.com/team478a/manga/pull/171)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-6bd0eb-team478as-projects.vercel.app`
 - 正本の1,500行上限に従い、Cloud AI責務分離を4つの連続PRへ分割した。
 - PR-R2B-1はCreator Queue API、生成要求契約、enqueue／cancel application entrypointだけを対象にする。
 - 既存App Router URLはpresentationを呼ぶ薄いadapterへ縮小し、既存generation serviceとRPC契約を維持した。
