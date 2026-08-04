@@ -4,6 +4,7 @@ import { updateDigitalProduct } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { DigitalProduct, Work } from "@/lib/types";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function EditProductPage({
   params,
@@ -87,7 +88,7 @@ export default async function EditProductPage({
             </label>
           </div>
         </fieldset>
-        <button className="button w-full" type="submit">更新する</button>
+        <PendingSubmitButton className="button w-full" pendingLabel="更新中…">更新する</PendingSubmitButton>
       </form>
     </main>
   );

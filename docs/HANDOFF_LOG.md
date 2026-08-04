@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-04 Codex: 一般向けダッシュボードの操作フィードバック
+
+- Branch: `codex/cloud-dashboard-action-feedback`
+- Base: `origin/feature/manga-canvas-mvp` (`36a1e5b`、PR #150 merge後)
+- 作品、商品、グッズ申請、端末認証、通知の主要送信操作へ用途別の処理中表示と二重送信防止を追加した。
+- 市場分析からネーム生成までのAI工程は既存の処理中表示を維持し、重複実装していない。
+- DB、migration、環境変数、API契約、Stripe、外部Provider処理は変更していない。
+- 専用回帰テストで対象画面に未対応の生のsubmit buttonが戻らないことを検査する。
+- Hub 467/467、deps:check、Hub typecheck、lint、migration validate（48本）、production build、git diff --check成功。
+
+---
+
 ## 2026-08-04 Codex: クラウド制作の操作フィードバック統一
 
 - Branch: `codex/cloud-creator-action-feedback-v2`

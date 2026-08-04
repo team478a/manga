@@ -1,6 +1,7 @@
 import { createWork } from "@/app/actions";
 import { requireProfile } from "@/lib/auth";
 import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function NewWorkPage({
   searchParams,
@@ -127,9 +128,9 @@ export default async function NewWorkPage({
             </label>
           </div>
         </fieldset>
-        <button className="button w-full" type="submit">
+        <PendingSubmitButton className="button w-full" pendingLabel="保存中…">
           保存する
-        </button>
+        </PendingSubmitButton>
       </form>
     </main>
   );

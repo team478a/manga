@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-04 一般向けダッシュボードの操作フィードバック
+
+- 状態: `VERIFIED_AWAITING_REVIEW`
+- Branch: `codex/cloud-dashboard-action-feedback`
+- Base: `origin/feature/manga-canvas-mvp` (`36a1e5b`、PR #150 merge後)
+- 目的: 一般向けモニターが作品・商品・申請・端末・通知を操作した際、送信中か分からず再クリックする問題を防ぐ
+- 実装: 作品保存／更新、商品保存／更新、グッズ申請、端末承認／解除、通知既読を共通`PendingSubmitButton`へ統一
+- migration／環境変数／外部API: 追加・実行なし
+- 検証: 専用回帰テストを含むHub 467/467、deps:check、Hub typecheck、lint、migration validate（48本）、production build、git diff --check成功
+- 未完了: Draft PR、Vercel Preview、責任者確認
+
 ## 2026-08-04 クラウド制作の操作フィードバック統一
 
 - 状態: `VERIFIED_AWAITING_REVIEW`
@@ -13,7 +24,7 @@
 - migration／環境変数／外部API: 追加・実行なし
 - 検証: 専用回帰テストを含むHub 466/466、deps:check、Hub typecheck、lint、migration validate（48本）、production build、git diff --check成功
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
-- 未完了: 責任者確認・マージ
+- 完了: PR #150は`36a1e5b`でマージ済み
 
 ## 2026-08-04 一貫性台帳の操作フィードバック
 
