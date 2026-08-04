@@ -8,6 +8,7 @@
 
 - Branch: `codex/cloud-manga-owner-isolation-v1`
 - Base: `origin/feature/manga-canvas-mvp`（PR #164 merge後）
+- Draft PR: [#165](https://github.com/team478a/manga/pull/165)
 - 非公開作品、生成Job、書き出し、品質フィードバックの認証・RLS・Server境界を監査した。
 - 管理StorageでPDF署名URLを発行する前に、認証済みprofileと書き出しJob作成者を明示照合する防御を追加した。
 - `cloud:manga:owner-isolation`で7つの所有者分離契約を自動検査し、既存のCloud漫画受入れpreflightにも組み込んだ。
