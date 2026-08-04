@@ -17,6 +17,7 @@ import {
   fetchCloudResearchSourceSnapshot,
 } from "@/lib/cloud-research-source-verification";
 import { PermissionDeniedError } from "@/lib/domain-errors";
+import { verifyResearchSource } from "@/modules/research/application/verify-source";
 
 const inputSchema = z.object({
   url: z
@@ -62,7 +63,10 @@ export async function extractCloudResearchClaimsAction(
       };
 
     await enforceCloudResearchClaimExtractionRateLimit(profile.id);
-    const snapshot = await fetchCloudResearchSourceSnapshot(parsed.data.url);
+    const snapshot = await verifyResearchSource(
+      parsed.data.url,
+      fetchCloudResearchSourceSnapshot,
+    );
     const result = extractCloudResearchClaimCandidates(
       snapshot,
       parsed.data.topic,

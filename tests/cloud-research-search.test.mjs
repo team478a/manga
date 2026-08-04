@@ -202,10 +202,17 @@ test("検索rate limitは全体と利用者をProvider呼出前に制限する",
 });
 
 test("検索UIはPOST Actionを使いsnippetを事実へ自動転記しない", async () => {
-  const [action, client, page, researchForm] = await Promise.all([
+  const [action, service, client, page, researchForm] = await Promise.all([
     readFile(
       new URL(
         "../src/app/dashboard/research/discover/actions.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/modules/research/application/discover-sources.ts",
         import.meta.url,
       ),
       "utf8",
@@ -235,9 +242,10 @@ test("検索UIはPOST Actionを使いsnippetを事実へ自動転記しない", 
       action.indexOf("configuredCloudResearchSearchProvider()"),
   );
   assert.ok(
-    action.indexOf("enforceCloudResearchSearchRateLimit(profile.id)") <
-      action.indexOf("provider.search(parsed.data)"),
+    service.indexOf("enforceRateLimit(input.profileId)") <
+      service.indexOf("provider.search(input.search)"),
   );
+  assert.match(action, /discoverResearchSources/);
   assert.match(client, /useActionState/);
   assert.match(client, /検索snippet（未確認）/);
   assert.match(client, /原文を確認/);

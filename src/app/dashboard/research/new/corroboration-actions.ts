@@ -18,6 +18,8 @@ import {
   fetchCloudResearchSourceSnapshot,
 } from "@/lib/cloud-research-source-verification";
 import { PermissionDeniedError } from "@/lib/domain-errors";
+import { verifyResearchSource } from "@/modules/research/application/verify-source";
+import { areDistinctResearchSources } from "@/modules/research/domain/source-policy";
 
 const httpsUrl = z
   .string()
@@ -32,13 +34,8 @@ const inputSchema = z
     comparisonUrl: httpsUrl,
     topic: cloudResearchTopicSchema,
   })
-  .refine((value) => {
-    const primary = new URL(value.primaryUrl);
-    const comparison = new URL(value.comparisonUrl);
-    primary.hash = "";
-    comparison.hash = "";
-    return primary.toString() !== comparison.toString();
-  }, {
+  .refine((value) =>
+    areDistinctResearchSources(value.primaryUrl, value.comparisonUrl), {
       message: "比較する2つの出典URLは異なるものを指定してください。",
       path: ["comparisonUrl"],
     });
@@ -74,8 +71,14 @@ export async function compareCloudResearchClaimsAction(
 
     await enforceCloudResearchClaimExtractionRateLimit(profile.id);
     const [primarySnapshot, comparisonSnapshot] = await Promise.all([
-      fetchCloudResearchSourceSnapshot(parsed.data.primaryUrl),
-      fetchCloudResearchSourceSnapshot(parsed.data.comparisonUrl),
+      verifyResearchSource(
+        parsed.data.primaryUrl,
+        fetchCloudResearchSourceSnapshot,
+      ),
+      verifyResearchSource(
+        parsed.data.comparisonUrl,
+        fetchCloudResearchSourceSnapshot,
+      ),
     ]);
     const primary = extractCloudResearchClaimCandidates(
       primarySnapshot,

@@ -125,10 +125,10 @@ test("抽出ActionとUIは本文を返さず人の確認後にだけ事実欄へ
   );
   assert.ok(
     actionBody.indexOf("enforceCloudResearchClaimExtractionRateLimit(profile.id)") <
-      actionBody.indexOf("fetchCloudResearchSourceSnapshot(parsed.data.url)"),
+      actionBody.indexOf("verifyResearchSource("),
   );
   assert.ok(
-    actionBody.indexOf("fetchCloudResearchSourceSnapshot(parsed.data.url)") <
+    actionBody.indexOf("verifyResearchSource(") <
       actionBody.indexOf("extractCloudResearchClaimCandidates("),
   );
   assert.doesNotMatch(actionBody.slice(actionBody.indexOf("return {")), /text:\s*snapshot\.text/);

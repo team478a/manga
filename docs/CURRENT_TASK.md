@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-05 PR-R2A 市場分析モジュール分離
+
+- 状態: `VERIFIED_LOCAL_AWAITING_GITHUB_CI`
+- Branch: `codex/refactor-r2a-research-module`
+- Base: `origin/feature/manga-canvas-mvp`（PR #169 merge後、`2385a7c`）
+- 目的: 市場分析を `domain/application/infrastructure/presentation/contracts` に分離し、既存entrypointを互換アダプターへ縮小する。
+- 実装: 検索、出典検証、候補抽出、複数出典照合、Report生成、評価、所有者限定永続化をmodule境界へ移した。
+- Action: Report生成と出典検索をApplication Serviceへ委譲し、Feature Flag、一般向け境界、利用枠、Provider、保存の順序を明示した。
+- 互換性: 旧 `src/lib/cloud-research*.ts` のexportを維持し、URL、Form、DB、migration、環境変数、Provider契約、成人向け境界は変更しない。
+- 文書: `docs/architecture/RESEARCH_MODULE_PIPELINE.md`
+- 検証済み: npm ci、deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、市場分析評価、focused 58、Hub 507、Canvas 26、AI 48、Desktop 182、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、所有者分離7、100ページ受入れ4、diff check成功。
+- 外部確認: Release 1/2 preflightはローカルに本番環境値を置かないためfail closed。秘密値は表示していない。
+- 未完了: Draft PR、Preview、GitHub CI、責任者レビュー。完了前にPR-R2Bへ進まない。
+
 ## 2026-08-04 PR-R1 モジュール境界の固定
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`

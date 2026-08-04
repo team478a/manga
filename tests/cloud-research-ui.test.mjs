@@ -118,7 +118,9 @@ test("AI市場分析は利用者へ出典入力を要求せずProvider未設定�
   const [form, discovery, verification] = await Promise.all([
     readSource("../src/app/dashboard/research/new/page.tsx"),
     readSource("../src/app/dashboard/research/discover/page.tsx"),
-    readSource("../src/lib/cloud-research-source-verification.ts"),
+    readSource(
+      "../src/modules/research/infrastructure/source-fetcher.ts",
+    ),
   ]);
 
   assert.match(form, /市場、販売先、価格の知識は不要/);

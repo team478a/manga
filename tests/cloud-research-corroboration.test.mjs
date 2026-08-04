@@ -170,8 +170,8 @@ test("照合Actionは認証・利用制限後に2出典を取得し全文を返�
     actionBody.indexOf("enforceCloudResearchClaimExtractionRateLimit(profile.id)") <
       actionBody.indexOf("Promise.all"),
   );
-  assert.match(actionBody, /fetchCloudResearchSourceSnapshot\(parsed\.data\.primaryUrl\)/);
-  assert.match(actionBody, /fetchCloudResearchSourceSnapshot\(parsed\.data\.comparisonUrl\)/);
+  assert.match(actionBody, /verifyResearchSource\(\s*parsed\.data\.primaryUrl/);
+  assert.match(actionBody, /verifyResearchSource\(\s*parsed\.data\.comparisonUrl/);
   assert.doesNotMatch(actionBody, /text:\s*(primary|comparison)Snapshot\.text/);
   assert.match(client, /相反表示は誤りの断定ではなく/);
   assert.match(client, /両方を出典1・2へ採用/);

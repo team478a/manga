@@ -298,13 +298,23 @@ test("複数出典検証は入力本文を変えずverificationだけを追加�
 });
 
 test("保存ActionはAIが確認した出典付き結果だけを永続化する", async () => {
-  const source = await readFile(
-    new URL("../src/app/dashboard/research/actions.ts", import.meta.url),
-    "utf8",
-  );
-  const analyzeAt = source.indexOf("runCloudResearchAiAnalysis({");
-  const persistAt = source.indexOf("createCloudResearchReport({");
-  assert.doesNotMatch(source, /maybeVerifyCloudResearchSources/);
+  const [action, service] = await Promise.all([
+    readFile(
+      new URL("../src/app/dashboard/research/actions.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/modules/research/application/generate-report.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  const analyzeAt = service.indexOf("dependencies.analyze(input)");
+  const persistAt = service.indexOf("dependencies.save({");
+  assert.doesNotMatch(service, /maybeVerifyCloudResearchSources/);
   assert.ok(analyzeAt >= 0);
   assert.ok(analyzeAt < persistAt);
+  assert.match(action, /generateResearchReport/);
 });

@@ -43,7 +43,9 @@ test("管理画面はAPIキーを再表示せず設定状態だけを表示す�
 });
 
 test("一般向けAI市場分析はキーをClientへ渡さず成人向けをProvider前に拒否する", async () => {
-  const runtime = await readSource("../src/lib/cloud-research-ai.ts");
+  const runtime = await readSource(
+    "../src/modules/research/infrastructure/openai-report-generator.ts",
+  );
   const functionBody = runtime.slice(
     runtime.indexOf("export async function runCloudResearchAiAnalysis"),
   );
@@ -58,9 +60,14 @@ test("一般向けAI市場分析はキーをClientへ渡さず成人向けをPro
 });
 
 test("保存Actionは利用者rate limitの後にOpenAIへ接続する", async () => {
-  const action = await readSource("../src/app/dashboard/research/actions.ts");
+  const [action, service] = await Promise.all([
+    readSource("../src/app/dashboard/research/actions.ts"),
+    readSource("../src/modules/research/application/generate-report.ts"),
+  ]);
   assert.ok(
-    action.indexOf("enforceCloudResearchAiAnalysisRateLimit(profile.id)") <
-      action.indexOf("runCloudResearchAiAnalysis({"),
+    service.indexOf("dependencies.enforceRateLimit(input.profileId)") <
+      service.indexOf("dependencies.analyze(input)"),
   );
+  assert.match(action, /enforceRateLimit: enforceCloudResearchAiAnalysisRateLimit/);
+  assert.match(action, /analyze: runCloudResearchAiAnalysis/);
 });
