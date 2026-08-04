@@ -5,6 +5,7 @@
 - 状態: `VERIFIED_LOCAL / BLOCKED_EXTERNAL_ENVIRONMENT`
 - Branch: `codex/cloud-manga-owner-isolation-e2e-v1`
 - Base: `origin/feature/manga-canvas-mvp`（PR #165 merge後）
+- Draft PR: [#166](https://github.com/team478a/manga/pull/166)
 - ステージングの2アカウントを使い、非公開作品、生成Job、書き出し、品質フィードバックについて、所有者は1件・別ユーザーは0件となることを読み取り専用で検証するCLIを追加した。
 - 認証情報は環境変数だけで受け取り、メールアドレス、パスワード、UUID、秘密値を出力しない。
 - `MANGAI_DB_ENV=staging`と明示確認値が揃わない場合はfail closedとし、データの作成、更新、削除、外部Provider実行は行わない。

@@ -3239,6 +3239,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 - Branch: `codex/cloud-manga-owner-isolation-e2e-v1`
 - Base: `origin/feature/manga-canvas-mvp`（PR #165 merge後）
+- Draft PR: [#166](https://github.com/team478a/manga/pull/166)
 - `cloud:manga:owner-isolation:staging`と事前検査を追加し、2アカウント間の非公開データ分離を読み取り専用で確認できるようにした。
 - 対象は作品、生成Job、書き出し、品質フィードバック。所有者1件、別ユーザー0件を合格条件とする。
 - 秘密値や識別子を出力せず、staging指定・確認値・必須環境変数が不足する場合はDBアクセス前に停止する。
