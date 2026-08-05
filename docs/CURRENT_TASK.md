@@ -2,7 +2,7 @@
 
 ## 2026-08-05 PR-R2C-2 候補比較・採用・再生成境界
 
-- 状態: `DRAFT_PR_CI_RUNNING`
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
 - Branch: `codex/refactor-r2c2-panel-candidate-boundary`
 - Base: `origin/feature/manga-canvas-mvp`（PR #176 merge後、`e709f08`）
 - 目的: 2〜4候補の比較、候補採用、再生成、Image-to-Image、Inpainting、Outpainting、構図制御、マスク提案、背景／人物／効果の分離生成、透明レイヤーの純粋判断をManga domain／application境界へ集約する。
@@ -13,6 +13,8 @@
 - 検証: focused 11/11、deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、research eval、Hub 523/523、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、owner isolation 7/7、100ページ長編4/4、diff checkに成功した。
 - 実Provider: R2C完了後に実施するため、このPRでは呼び出さない。
 - Draft PR: [#177](https://github.com/team478a/manga/pull/177)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-3cebd4-team478as-projects.vercel.app`
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft、MERGEABLE。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。承認前にPR-R2C-3へ進まない。
 
 ## 2026-08-05 PR-R2C-1 コマ生成受付application境界
