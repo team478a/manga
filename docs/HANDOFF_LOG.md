@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-06 Codex: マイページ導線・ログイン中アカウント表示
+
+- Branch: `codex/fix-account-navigation-identity`
+- Base: `origin/feature/manga-canvas-mvp`（`4a62a53`）
+- Dashboard／Creator共通サイドメニューに「ログイン中」とプロフィール表示名を追加した。
+- サイドメニュー先頭の`/dashboard`導線を「マイページ」と明示し、現在地も既存の`aria-current`で示す。
+- 表示名未設定時は「表示名未設定」とし、認証、DB、migration、API、URLを変更していない。
+- 専用2/2、deps、typecheck、lint、Hub全体、production build、diff checkに成功した。
+- 次: commit／push後にDraft PRを作成し、全CIとVercel Preview成功を確認する。
+
+---
+
 ## 2026-08-05 Codex: PR-R2C-1 コマ生成受付application境界
 
 - Branch: `codex/refactor-r2c1-panel-generation-boundary`、Base: `a7b4bfb`。

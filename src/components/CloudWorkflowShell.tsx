@@ -8,11 +8,11 @@ import {
   FileText,
   FilePenLine,
   Images,
-  LayoutDashboard,
   Lightbulb,
   ReceiptText,
   ShoppingBag,
   Sparkles,
+  UserRound,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
@@ -87,12 +87,14 @@ function activeWorkflowStep(pathname: string) {
 }
 
 export function CloudWorkflowShell({
+  accountDisplayName,
   researchEnabled,
   proposalEnabled,
   scenarioEnabled,
   storyboardEnabled,
   children,
 }: {
+  accountDisplayName: string;
   researchEnabled: boolean;
   proposalEnabled: boolean;
   scenarioEnabled: boolean;
@@ -105,6 +107,14 @@ export function CloudWorkflowShell({
   return (
     <div className="min-h-[calc(100vh-81px)] bg-[#f7f6ff] lg:grid lg:grid-cols-[216px_minmax(0,1fr)]">
       <aside className="border-b border-violet-100 bg-white px-3 py-4 lg:border-b-0 lg:border-r">
+        <div className="mb-4 rounded-lg border border-violet-100 bg-violet-50 px-3 py-3 text-violet-950">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-violet-500">
+            ログイン中
+          </p>
+          <p className="mt-1 break-words text-sm font-bold" title={accountDisplayName}>
+            {accountDisplayName}
+          </p>
+        </div>
         <nav aria-label="MANGAI Cloud制作ワークフロー">
           <Link
             className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-bold ${
@@ -114,8 +124,8 @@ export function CloudWorkflowShell({
             }`}
             href="/dashboard"
           >
-            <LayoutDashboard className="h-4 w-4" />
-            ダッシュボード
+            <UserRound className="h-4 w-4" />
+            マイページ
           </Link>
           <Link
             aria-current={pathname === "/dashboard/monitor/guide" ? "page" : undefined}

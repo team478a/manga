@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-06 マイページ導線・ログイン中アカウント表示
+
+- 状態: `IMPLEMENTED_LOCAL_VERIFIED`
+- Branch: `codex/fix-account-navigation-identity`
+- Base: `origin/feature/manga-canvas-mvp`（PR #177 merge後、`4a62a53`）
+- 目的: マイページへの導線をサイドメニューで明示し、ログイン中アカウントの表示名をDashboard／Creator全画面で確認できるようにする。
+- 実装: 共通サイドメニュー上部へ「ログイン中」と`profiles.display_name`を表示し、先頭導線を「ダッシュボード」から「マイページ」へ明確化した。表示名未設定時は安全な代替文言を表示する。
+- 不変条件: 認証、DB、migration、API、URL、Feature Flag、Provider、Canvas、Desktopは変更しない。
+- 検証: 専用2/2、deps:check、Hub／Desktop typecheck、lint、Hub全体、production build、diff check成功。
+- 未完了: Draft PR、Vercel Preview、GitHub CI、認証済みPreviewでのPC／スマートフォン実機確認。
+
 ## 2026-08-05 PR-R2C-2 候補比較・採用・再生成境界
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
