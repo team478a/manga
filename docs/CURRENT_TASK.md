@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-05 PR-R2B-3 Cloud AI Provider境界分離
+
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
+- Branch: `codex/refactor-r2b3-cloud-ai-providers`
+- Base: `origin/feature/manga-canvas-mvp`（PR #172 merge後、`983e2a7`）
+- 目的: Provider capability選択、BFL／Gateway／Mock adapter、Worker用Provider構築をCloud AI infrastructureへ分離する。
+- 実装: Worker routeから具体Provider生成を除去し、`provider-registry`だけを参照する構造へ変更した。
+- 互換性: 旧Registry、BFL、Mock entrypointを再exportとして維持し、Gatewayは新module入口から既存実装へ委譲する。
+- 安全性: Gateway moderation、HTTPS制約、idempotency header、BFL URL検証、120秒timeout、原価情報を変更しない。
+- 変更しない範囲: Provider、model、pricing、retry回数、timeout、Scheduler頻度、API key保存方式、DB、migration、RPC、環境変数、成人向け境界。
+- 後続: 生成物Storage、管理操作、互換entrypoint完成はPR-R2B-4で扱う。
+- Draft PR: [#173](https://github.com/team478a/manga/pull/173)（Preview作成済み）
+- 検証: Provider／Worker 23/23、Hub 515/515、全ローカル品質ゲート、Core quality、migration roundtrip、Windows build、Vercel成功。責任者レビュー待ちで停止する。
+
 ## 2026-08-05 PR-R2B-2 Cloud AI Worker lifecycle分離
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`

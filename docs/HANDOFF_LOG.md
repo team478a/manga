@@ -3233,6 +3233,17 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 実行中はスピナーと`ログイン中…`、`登録中…`、`送信中…`、`更新中…`を表示し、再クリックを防ぐ。
 - 認証ロジック、Supabase、migration、環境変数は変更していない。
 - 検証: 専用1/1、Hub 477/477、deps、Hub typecheck、lint、production build、diff check成功。
+# 2026-08-05 Codex: PR-R2B-3 Cloud AI Provider境界分離
+
+- Branch: `codex/refactor-r2b3-cloud-ai-providers`
+- Base: `origin/feature/manga-canvas-mvp`（PR #172 merge後、`983e2a7`）
+- BFL、Gateway、Mock adapterとcapability registryを`src/modules/cloud-ai/infrastructure`へ移した。
+- Worker routeの具体Provider組み立てを`createConfiguredCloudProviders`へ集約し、routeはProvider registryだけを参照する。
+- 旧Registry、BFL、Mock importは互換再exportとして維持し、Gatewayは新module入口から既存実装へ委譲する。
+- Provider、model、pricing、retry、timeout、Scheduler、API key保存、DB、migration、RPC、環境変数は変更していない。
+- Gateway moderation、BFL URL検証、idempotency、原価情報、一般／成人向け境界は維持する。
+- focused Provider／Worker 23/23、Hub 515/515、全ローカル品質ゲート、Core quality、migration roundtrip、Windows build、Vercelに成功。Draft PR [#173](https://github.com/team478a/manga/pull/173)とPreviewを作成し、責任者レビュー待ちで停止する。
+
 # 2026-08-04 Codex: 一般向けモニター操作フィードバック第2弾
 
 - Branch: `codex/general-monitor-action-feedback-v2`

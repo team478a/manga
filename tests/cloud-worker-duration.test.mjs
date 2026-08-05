@@ -21,7 +21,9 @@ test("長時間Workerと同期Export fallbackは実行時間を明示する", ()
 });
 
 test("Worker処理は実行上限内で失敗を記録し再試行可能にする", () => {
-  const imageProvider = read("src/lib/cloud-flux-image-provider.ts");
+  const imageProvider = read(
+    "src/modules/cloud-ai/infrastructure/bfl-provider.ts",
+  );
   const gatewayProvider = read("src/lib/cloud-ai-gateway-provider.ts");
   const aiWorker = read("src/lib/cloud-ai-worker.ts");
   const retryPolicy = read("src/modules/cloud-ai/domain/retry-policy.ts");
