@@ -2,7 +2,6 @@ import crypto from "node:crypto";
 import {
   AIProviderError,
   cloudGenerationInputSchema,
-  shouldRetryCloudGeneration,
   type CloudImageGenerationProvider,
   type CloudTextGenerationProvider,
 } from "@mangai/ai-core";
@@ -13,157 +12,31 @@ import {
   removeWhiteBackgroundFromMangaLayer,
   sanitizeCloudGeneratedImage,
 } from "./cloud-creator-contract.ts";
-import {
-  DomainError,
-  LeaseLostError,
-  isDomainError,
-} from "./domain-errors.ts";
 import { logHubError } from "./hub-logger.ts";
+import { claimNextCloudGenerationJob } from "../modules/cloud-ai/application/claim-next-job.ts";
+import { createCloudJobLeaseHeartbeat } from "../modules/cloud-ai/application/lease-heartbeat.ts";
+import {
+  CloudGenerationLeaseLostError,
+  classifyCloudAiWorkerError,
+} from "../modules/cloud-ai/domain/cloud-ai-errors.ts";
+import type {
+  ClaimedCloudGenerationJob,
+  UploadedCloudGeneratedAsset,
+} from "../modules/cloud-ai/domain/generation-job.ts";
+import { shouldRetryGeneration } from "../modules/cloud-ai/domain/retry-policy.ts";
+
+export { createCloudJobLeaseHeartbeat } from "../modules/cloud-ai/application/lease-heartbeat.ts";
+export { CloudGenerationLeaseLostError } from "../modules/cloud-ai/domain/cloud-ai-errors.ts";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type CloudProvider = CloudImageGenerationProvider | CloudTextGenerationProvider;
 
-type ClaimedJob = {
-  id: string;
-  project_id: string;
-  page_id: string | null;
-  created_by_profile_id: string;
-  kind: "image" | "text";
-  provider_id: string;
-  model_id: string;
-  idempotency_key: string;
-  input: unknown;
-  attempt_count: number;
-  max_attempts: number;
-  lease_token: string;
-};
-
-type UploadedGeneratedAsset = {
-  assetId: string;
-  storagePath: string;
-  fileName: string;
-  byteSize: number;
-  width: number;
-  height: number;
-  sha256: string;
-};
-
-export class CloudGenerationLeaseLostError extends LeaseLostError {
-  constructor() {
-    super("Cloud AI Jobのleaseを失いました。");
-    this.name = "CloudGenerationLeaseLostError";
-  }
-}
-
-export function createCloudJobLeaseHeartbeat(input: {
-  client: AdminClient;
-  job: ClaimedJob;
-  leaseSeconds: number;
-  intervalMs?: number;
-  toleratedFailures?: number;
-}) {
-  const controller = new AbortController();
-  const intervalMs = Math.max(10, input.intervalMs ?? 60_000);
-  const toleratedFailures = Math.max(0, input.toleratedFailures ?? 1);
-  let consecutiveFailures = 0;
-  let lost = false;
-  let stopped = false;
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  let inFlight: Promise<void> | undefined;
-
-  const extend = async () => {
-    const { error } = await input.client.rpc(
-      "extend_cloud_generation_job_lease",
-      {
-        p_job_id: input.job.id,
-        p_lease_token: input.job.lease_token,
-        p_lease_seconds: input.leaseSeconds,
-      },
-    );
-    if (error) throw new CloudGenerationLeaseLostError();
-  };
-  const schedule = () => {
-    if (stopped || lost) return;
-    timer = setTimeout(() => {
-      inFlight = (async () => {
-        try {
-          await extend();
-          consecutiveFailures = 0;
-        } catch {
-          consecutiveFailures += 1;
-          if (consecutiveFailures > toleratedFailures) {
-            lost = true;
-            controller.abort();
-          }
-        } finally {
-          inFlight = undefined;
-          schedule();
-        }
-      })();
-    }, intervalMs);
-  };
-  schedule();
-
-  return {
-    signal: controller.signal,
-    get leaseLost() {
-      return lost;
-    },
-    async assertLease() {
-      if (lost) throw new CloudGenerationLeaseLostError();
-      try {
-        await extend();
-        consecutiveFailures = 0;
-      } catch {
-        lost = true;
-        controller.abort();
-        throw new CloudGenerationLeaseLostError();
-      }
-    },
-    async stop() {
-      stopped = true;
-      if (timer) clearTimeout(timer);
-      await inFlight;
-    },
-  };
-}
-
-function classifyWorkerError(error: unknown) {
-  if (error instanceof AIProviderError)
-    return {
-      code: error.code,
-      message: error.message,
-      retryable: error.retryable,
-    };
-  if (error instanceof Error && error.name === "AbortError")
-    return {
-      code: "timeout",
-      message: "Providerがタイムアウトしました。",
-      retryable: true,
-    };
-  if (isDomainError(error))
-    return {
-      code: error.code.toLowerCase(),
-      message: error.message,
-      retryable:
-        error.code === "PROVIDER_TIMEOUT" ||
-        error.code === "PROVIDER_UNAVAILABLE" ||
-        error.code === "RATE_LIMITED",
-    };
-  return {
-    code: "provider_error",
-    message:
-      error instanceof Error ? error.message : "Provider処理に失敗しました。",
-    retryable: false,
-  };
-}
-
 async function uploadGeneratedAsset(
   client: AdminClient,
-  job: ClaimedJob,
+  job: ClaimedCloudGenerationJob,
   image: { bytes: Uint8Array; fileName: string },
   outputAlphaMode: "preserve" | "remove_white",
-): Promise<UploadedGeneratedAsset> {
+): Promise<UploadedCloudGeneratedAsset> {
   const sanitized =
     outputAlphaMode === "remove_white"
       ? await removeWhiteBackgroundFromMangaLayer(image.bytes)
@@ -208,8 +81,8 @@ async function readJobState(client: AdminClient, jobId: string) {
 
 async function compensateUploadedAsset(
   client: AdminClient,
-  job: ClaimedJob,
-  asset: UploadedGeneratedAsset,
+  job: ClaimedCloudGenerationJob,
+  asset: UploadedCloudGeneratedAsset,
 ) {
   const { error: removeError } = await client.storage
     .from(CLOUD_ASSET_BUCKET)
@@ -295,17 +168,11 @@ export async function processNextCloudGenerationJob(input: {
   heartbeatToleratedFailures?: number;
 }) {
   const client = input.client ?? createAdminClient();
-  const { data, error } = await client.rpc("claim_cloud_generation_job", {
-    p_worker_id: input.workerId,
-    p_lease_seconds: input.leaseSeconds ?? 300,
+  const job = await claimNextCloudGenerationJob({
+    client,
+    workerId: input.workerId,
+    leaseSeconds: input.leaseSeconds,
   });
-  if (error)
-    throw new DomainError(
-      "INTERNAL_ERROR",
-      "Cloud AI Jobを取得できませんでした。",
-      { cause: error },
-    );
-  const job = data?.[0] as ClaimedJob | undefined;
   if (!job) return { status: "idle" as const };
   const leaseSeconds = input.leaseSeconds ?? 300;
   const heartbeat = createCloudJobLeaseHeartbeat({
@@ -315,7 +182,7 @@ export async function processNextCloudGenerationJob(input: {
     intervalMs: input.heartbeatIntervalMs,
     toleratedFailures: input.heartbeatToleratedFailures,
   });
-  let uploadedAsset: UploadedGeneratedAsset | null = null;
+  let uploadedAsset: UploadedCloudGeneratedAsset | null = null;
   try {
     const generation = cloudGenerationInputSchema.parse(job.input);
     const provider = input.providers.find(
@@ -499,10 +366,10 @@ export async function processNextCloudGenerationJob(input: {
     } catch {
       return { status: "lease_lost" as const, jobId: job.id };
     }
-    const failure = classifyWorkerError(error);
+    const failure = classifyCloudAiWorkerError(error);
     const retryable =
       failure.retryable &&
-      shouldRetryCloudGeneration({
+      shouldRetryGeneration({
         attempt: job.attempt_count,
         maxAttempts: job.max_attempts,
         errorCode: failure.code,

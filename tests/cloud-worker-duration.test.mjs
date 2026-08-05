@@ -24,12 +24,14 @@ test("Worker処理は実行上限内で失敗を記録し再試行可能にす�
   const imageProvider = read("src/lib/cloud-flux-image-provider.ts");
   const gatewayProvider = read("src/lib/cloud-ai-gateway-provider.ts");
   const aiWorker = read("src/lib/cloud-ai-worker.ts");
+  const retryPolicy = read("src/modules/cloud-ai/domain/retry-policy.ts");
   const exportWorker = read("src/lib/cloud-export-worker.ts");
   const storageWorker = read("src/lib/cloud-storage-lifecycle-worker.ts");
 
   assert.match(imageProvider, /timeoutMs \?\? 120_000/);
   assert.match(gatewayProvider, /timeoutMs \?\? 120_000/);
-  assert.match(aiWorker, /shouldRetryCloudGeneration/);
+  assert.match(retryPolicy, /shouldRetryCloudGeneration/);
+  assert.match(aiWorker, /shouldRetryGeneration/);
   assert.match(aiWorker, /status: retryable \? \("retrying" as const\) : \("failed" as const\)/);
   assert.match(exportWorker, /slice\(start, start \+ job\.segment_size\)/);
   assert.match(exportWorker, /p_retryable: true/);

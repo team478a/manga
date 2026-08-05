@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-05 Codex: PR-R2B-2 Cloud AI Worker lifecycle分離
+
+- Branch: `codex/refactor-r2b2-cloud-ai-worker`
+- Base: `origin/feature/manga-canvas-mvp`（PR #171 merge後、`2d112fc`）
+- Draft PR: [#172](https://github.com/team478a/manga/pull/172)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-e43dc2-team478as-projects.vercel.app`
+- claim、lease heartbeat、lease喪失、失敗分類、retry判定、Worker healthをCloud AI moduleへ分離した。
+- Internal Worker routeはapplication entrypointを参照し、旧Workerとhealth importは互換entrypointとして維持する。
+- Provider実行と生成物Storageは既存orchestratorへ残し、PR-R2B-3／R2B-4との責務境界を明示した。
+- Provider、model、pricing、retry回数、timeout、Scheduler頻度、API key保存方式、DB、migration、RPC、環境変数、成人向け境界は変更していない。
+- deps、lint、Hub／Desktop typecheck、市場分析評価、Worker focused 27、Hub 514、Canvas 26、AI 48、Desktop 182、migration 48、Hub／Desktop build、Cloud漫画受入れ、所有者分離7、100ページ受入れ4、diff checkに成功した。
+- GitHub CIはCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsが成功した。責任者レビュー待ちで停止し、PR-R2B-3へは進まない。
+
 ## 2026-08-05 Codex: PR-R2B-1 Cloud AI Creator Queue API分離
 
 - Branch: `codex/refactor-r2b1-cloud-ai-queue`
