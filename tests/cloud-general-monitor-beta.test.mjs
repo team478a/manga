@@ -58,7 +58,7 @@ test("一般向け各AI実行前にモニター上限を消費する", async () 
     "../src/app/dashboard/research/[reportId]/proposal/actions.ts",
     "../src/app/dashboard/research/[reportId]/proposal/scenario/actions.ts",
     "../src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/storyboard/actions.ts",
-    "../src/lib/cloud-panel-image-generation-server.ts",
+    "../src/modules/manga/application/enqueue-panel-candidates.ts",
   ];
   for (const file of files) {
     const source = await readFile(new URL(file, import.meta.url), "utf8");

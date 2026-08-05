@@ -3,7 +3,7 @@ import { enforceCloudAiRateLimit } from "@/lib/cloud-ai-rate-limit";
 import {
   cloudPanelImageGenerationFeatureEnabled,
 } from "@/lib/cloud-panel-image-generation";
-import { enqueueStoryboardPanelImage } from "@/lib/cloud-panel-image-generation-server";
+import { enqueueStoryboardPanelImage } from "@/modules/manga/presentation/panel-generation-route";
 import { toApiError } from "@/lib/api-errors";
 import { PermissionDeniedError, RateLimitedError } from "@/lib/domain-errors";
 

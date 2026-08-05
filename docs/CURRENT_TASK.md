@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-05 PR-R2C-1 コマ生成受付application境界
+
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
+- Branch: `codex/refactor-r2c1-panel-generation-boundary`
+- Base: `origin/feature/manga-canvas-mvp`（PR #175 merge後、`a7b4bfb`）
+- 目的: コマ画像生成、2〜4候補、Image-to-Image、Inpainting、Outpainting、構図制御、背景／人物／効果分離の受付をManga application境界へ集約する。
+- 実装: 既存orchestrator実体を `src/modules/manga/application/enqueue-panel-candidates.ts` へ移し、App Routeはpresentation入口、公開schemaはcontracts入口を参照する。
+- 互換性: `src/lib/cloud-panel-image-generation-server.ts` は旧import向け再exportとして維持し、一括生成からの既存経路も維持する。
+- 不変条件: request／response、202、rate limit、Feature Flag順、候補部分成功、所有者分離、moderation、monitor上限、Provider、model、pricing、retry、timeout、DB、migration、RPC、Storage、Canvas、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 回帰: 専用module、既存コマ生成、UI、一括生成、monitor、制作進捗testで入口と契約を固定する。
+- 検証: focused 53/53、deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y test、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、owner isolation 7/7、100ページ長編4/4、diff checkに成功した。
+- 実Provider: R2C完了後に実施するため、このPRでは呼び出していない。
+- Draft PR: [#176](https://github.com/team478a/manga/pull/176)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-b2d5c6-team478as-projects.vercel.app`
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft、MERGEABLE。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。承認前にPR-R2C-2へ進まない。
+
 ## 2026-08-05 PR-R2C-0 Cloud漫画生成module監査・分割計画
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
