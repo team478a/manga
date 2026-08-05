@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-08-05 Codex: PR-R2B-4 Cloud AI infrastructure境界完成
+
+- Branch: `codex/refactor-r2b4-cloud-ai-completion`、Base: `aef996c`。
+- 生成画像のsanitization／private Storage／補償cleanupと、Job完了／失敗RPCをinfrastructureへ分離した。
+- Gateway実体と管理設定helperをmoduleへ移し、旧`src/lib`入口は互換再exportとして維持した。
+- Scheduler App Routeは既存application委譲を維持し、HTTP認証・health・ログ契約を変更していない。
+- Provider、model、pricing、retry、timeout、Scheduler頻度、API key保存、DB、migration、RPC、成人向け境界は未変更。
+- Draft PR [#174](https://github.com/team478a/manga/pull/174)、Preview作成済み。全ローカル品質ゲートとGitHub CIが成功し、責任者レビュー待ちで停止する。
+
 ## 2026-08-05 Codex: PR-R2B-2 Cloud AI Worker lifecycle分離
 
 - Branch: `codex/refactor-r2b2-cloud-ai-worker`

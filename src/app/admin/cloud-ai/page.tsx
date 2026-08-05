@@ -14,7 +14,7 @@ import {
 } from "./actions";
 import { getCloudGeneralImageSettings } from "@/lib/cloud-general-image-settings";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
-import { getCloudAiWorkerConfiguration } from "@/lib/cloud-ai-worker-admin";
+import { getCloudAiWorkerConfiguration } from "@/modules/cloud-ai/presentation/admin-actions";
 import { getCloudAiWorkerHealth } from "@/lib/cloud-ai-worker-health";
 
 export const maxDuration = 180;

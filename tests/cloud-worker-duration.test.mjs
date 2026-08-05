@@ -24,8 +24,12 @@ test("Worker処理は実行上限内で失敗を記録し再試行可能にす�
   const imageProvider = read(
     "src/modules/cloud-ai/infrastructure/bfl-provider.ts",
   );
-  const gatewayProvider = read("src/lib/cloud-ai-gateway-provider.ts");
-  const aiWorker = read("src/lib/cloud-ai-worker.ts");
+  const gatewayProvider = read(
+    "src/modules/cloud-ai/infrastructure/gateway-provider.ts",
+  );
+  const aiWorker = read(
+    "src/modules/cloud-ai/application/process-generation.ts",
+  );
   const retryPolicy = read("src/modules/cloud-ai/domain/retry-policy.ts");
   const exportWorker = read("src/lib/cloud-export-worker.ts");
   const storageWorker = read("src/lib/cloud-storage-lifecycle-worker.ts");
