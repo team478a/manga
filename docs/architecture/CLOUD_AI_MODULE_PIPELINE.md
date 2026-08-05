@@ -89,6 +89,39 @@ PR-R2B-2では、claim、lease heartbeat、lease喪失、失敗分類、retry判
 
 後続責務は現在の既存実装をそのまま利用し、PR-R2B-1では移動も変更もしません。
 
+## PR-R2B-3の対象
+
+```text
+Internal Worker route
+  → infrastructure/provider-registry.ts
+      → infrastructure/bfl-provider.ts
+      → infrastructure/gateway-provider.ts
+      → infrastructure/mock-provider.ts
+  → application/process-generation.ts
+```
+
+Provider capability一覧、実行時capability、Provider選択、Worker用Provider構築をProvider registryへ集約します。Worker routeはBFL、Gateway、Mockの具体classを直接参照しません。
+
+既存のProvider ID、model ID、pricing version、job type、operation、enabled条件、BFL／Gateway endpoint、120秒timeout、Gateway moderation、idempotency header、BFL URL検証、原価情報は変更しません。Vaultから画像設定を読む既存方式と、設定不備時に画像Providerだけをfail closedにして他のJob処理を継続する挙動も維持します。
+
+旧Registry、BFL、Mock entrypointは互換再exportとして維持します。Gatewayは1,500行上限を守るため、このPRでは新しいinfrastructure entrypointから既存実装へ委譲し、実体移動はPR-R2B-4で行います。
+
+### PR-R2B-3で意図的に残すもの
+
+- 生成物変換、metadata除去、private Storage、補償削除、cleanup queue（PR-R2B-4）
+- credit確定・解放、原価ledger、Job完了／失敗RPCの最終repository分離（PR-R2B-4）
+- Scheduler route、管理者1件実行、管理者取消（PR-R2B-4）
+- Gateway adapter実体と旧Provider entrypointの最終整理（PR-R2B-4）
+- Provider、model、pricing、retry回数、timeout、Scheduler頻度、API key保存方式、DB、migration、環境変数
+
+### PR-R2B-3回帰検査
+
+- Worker routeがProvider registryだけを参照し、具体Providerを生成しないこと。
+- BFL、Gateway、Mock adapterがCloud AI infrastructure配下にあること。
+- 旧Provider importから既存classと関数を利用できること。
+- Gateway moderation、BFL／Gateway timeout、BFL原価情報が維持されること。
+- Provider adapter既存テストとWorker lifecycle既存テストが成功すること。
+
 ## 回帰検査
 
 - Creator Queue routeがpresentationへの薄いadapterであること。

@@ -1,28 +1,14 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
-import type {
-  CloudImageGenerationProvider,
-  CloudTextGenerationProvider,
-} from "@mangai/ai-core";
-import {
-  MockCloudImageProvider,
-  MockCloudTextProvider,
-} from "@/lib/cloud-ai-mock-provider";
 import {
   processNextCloudGenerationJob,
   processPendingCloudStorageCleanup,
 } from "@/modules/cloud-ai/application/process-generation";
 import {
-  configuredCapabilities,
+  createConfiguredCloudProviders,
   configuredRuntimeCapabilities,
-} from "@/lib/cloud-ai-registry";
+} from "@/modules/cloud-ai/infrastructure/provider-registry";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  MangaiCloudGatewayImageProvider,
-  MangaiCloudGatewayTextProvider,
-} from "@/lib/cloud-ai-gateway-provider";
-import { BlackForestLabsFluxImageProvider } from "@/lib/cloud-flux-image-provider";
-import { getCloudGeneralImageRuntimeConfig } from "@/lib/cloud-general-image-settings";
 import { toApiError } from "@/lib/api-errors";
 import {
   AuthenticationRequiredError,
@@ -174,69 +160,7 @@ export async function POST(request: Request) {
       logContext,
     );
   }
-  const providers: Array<
-    CloudImageGenerationProvider | CloudTextGenerationProvider
-  > =
-    process.env.NODE_ENV !== "production" &&
-    process.env.MANGAI_CLOUD_AI_MOCK_ENABLED === "true"
-      ? [new MockCloudImageProvider(), new MockCloudTextProvider()]
-      : [];
-  try {
-    const image = await getCloudGeneralImageRuntimeConfig();
-    const capability = (await configuredRuntimeCapabilities()).find(
-      (candidate) =>
-        candidate.providerId === "black-forest-labs" &&
-        candidate.modelId === image.model &&
-        candidate.kind === "image" &&
-        candidate.enabled,
-    );
-    if (capability)
-      providers.push(
-        new BlackForestLabsFluxImageProvider({
-          apiKey: image.apiKey,
-          model: image.model,
-          capability,
-        }),
-      );
-    const fillCapability = (await configuredRuntimeCapabilities()).find(
-      (candidate) =>
-        candidate.providerId === "black-forest-labs" &&
-        candidate.modelId === "flux-pro-1.0-fill" &&
-        candidate.kind === "image" &&
-        candidate.enabled,
-    );
-    if (fillCapability)
-      providers.push(
-        new BlackForestLabsFluxImageProvider({
-          apiKey: image.apiKey,
-          model: "flux-pro-1.0-fill",
-          capability: fillCapability,
-        }),
-      );
-  } catch {
-    // Keep processing text or Gateway jobs when the image provider is disabled.
-  }
-  const gatewayEndpoint = process.env.MANGAI_CLOUD_AI_GATEWAY_ENDPOINT;
-  const gatewayKey = process.env.MANGAI_CLOUD_AI_GATEWAY_KEY;
-  if (gatewayEndpoint && gatewayKey) {
-    for (const capability of configuredCapabilities().filter(
-      (candidate) =>
-        candidate.enabled && !candidate.providerId.includes("mock"),
-    ))
-      providers.push(
-        capability.kind === "image"
-          ? new MangaiCloudGatewayImageProvider({
-              endpoint: `${gatewayEndpoint.replace(/\/$/, "")}/image`,
-              apiKey: gatewayKey,
-              capability,
-            })
-          : new MangaiCloudGatewayTextProvider({
-              endpoint: `${gatewayEndpoint.replace(/\/$/, "")}/text`,
-              apiKey: gatewayKey,
-              capability,
-            }),
-      );
-  }
+  const providers = await createConfiguredCloudProviders();
   try {
     const client = createAdminClient();
     const { error: orphanQueueError } = await client.rpc(
