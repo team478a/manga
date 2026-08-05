@@ -12,6 +12,7 @@
 - 2〜4候補、Image-to-Image、Inpainting、Outpainting、構図制御、背景／人物／効果分離、Feature Flag fail-closed、部分成功、所有者分離、monitor上限の挙動は未変更。
 - DB、migration、RPC、Storage、API、URL、Provider、model、pricing、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは未変更。
 - focused 53/53と全ローカル品質ゲート、Cloud漫画repository受入れ、owner isolation 7/7、100ページ長編4/4に成功した。実ProviderはR2C完了後まで実行しない。
+- Draft PR [#176](https://github.com/team478a/manga/pull/176)、Preview作成済み。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsに成功し、責任者確認待ちで停止する。
 
 ## 2026-08-05 Codex: PR-R2B-4 Cloud AI infrastructure境界完成
 
