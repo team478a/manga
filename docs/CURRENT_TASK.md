@@ -2,7 +2,7 @@
 
 ## 2026-08-05 PR-R2B-2 Cloud AI Worker lifecycle分離
 
-- 状態: `CI_IN_PROGRESS_AWAITING_OWNER_REVIEW`
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
 - Branch: `codex/refactor-r2b2-cloud-ai-worker`
 - Base: `origin/feature/manga-canvas-mvp`（PR #171 merge後、`2d112fc`）
 - Draft PR: [#172](https://github.com/team478a/manga/pull/172)
@@ -14,7 +14,8 @@
 - 変更しない範囲: Provider、model、pricing、retry回数、timeout、Scheduler頻度、API key保存方式、DB、migration、RPC、環境変数、成人向け境界。
 - 文書: `docs/architecture/CLOUD_AI_MODULE_PIPELINE.md`
 - 検証済み: deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、市場分析評価、Worker focused 27/27、Hub 514/514、Canvas 26/26、AI 48/48、Desktop 182/182、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、所有者分離7/7、100ページ受入れ4/4、diff check成功。
-- 未完了: GitHub CI完了確認、責任者レビュー。承認前にPR-R2B-3へ進まず、このPRはマージしない。
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- 未完了: 責任者レビュー。承認前にPR-R2B-3へ進まず、このPRはマージしない。
 
 ## 2026-08-05 PR-R2B-1 Cloud AI Creator Queue API分離
 
