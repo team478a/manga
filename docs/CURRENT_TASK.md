@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-05 PR-R2C-0 Cloud漫画生成module監査・分割計画
+
+- 状態: `VERIFIED_LOCAL_AWAITING_DRAFT_PR`
+- Branch: `codex/refactor-r2c0-manga-module-plan`
+- Base: `origin/feature/manga-canvas-mvp`（`f3fc11f`、PR #174 merge後）
+- 完了済み: PR #168〜#174は正本へmerge済み。PR-R0、PR-R1、PR-R2A、PR-R2B-1〜R2B-4は完了した。
+- 目的: Cloud漫画生成の現行ファイル、関数、依存、外部契約、責務混在を監査し、application責務を外部挙動なしで分離するR2C-1〜R2C-4計画を作成する。
+- 文書: `docs/architecture/MANGA_MODULE_REFACTOR_PLAN.md`
+- 分割: R2C-1はコマ生成受付、R2C-2は比較／採用／再生成、R2C-3は一括／制作状態／長編、R2C-4はPDF／PNG出力境界を扱う。各PRは1,500行以下とする。
+- 不変条件: application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、DesktopをR2C-0では変更しない。
+- 旧漫画制作PR: 必要機能は正本へ統合済みであり、追加mergeは不要。既存PRのClose、コメント、rebase、force push、mergeを行わない。
+- 実Provider受入れ: R2C-1〜R2C-4完了後に別工程で実施し、途中PRでは有料Providerを呼ばない。
+- 検証: deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y test、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、owner isolation 7/7、100ページ長編4/4、diff checkに成功した。
+- 外部確認: release preflightはrepository structure READY。Supabase／Stripe／staging秘密値と手動E2Eはローカル未設定のためPENDINGであり、成功扱いにしない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。承認前にPR-R2C-1へ進まない。
+
 ## 2026-08-05 PR-R2B-4 Cloud AI infrastructure境界完成
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
