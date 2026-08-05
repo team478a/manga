@@ -14,7 +14,7 @@ import {
 import {
   getCloudAiWorkerConfiguration,
   getCloudAiWorkerInvocationUrl,
-} from "@/lib/cloud-ai-worker-admin";
+} from "@/modules/cloud-ai/presentation/admin-actions";
 
 const micros = z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const workerResultSchema = z.object({

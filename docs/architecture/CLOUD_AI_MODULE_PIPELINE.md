@@ -122,6 +122,26 @@ Provider capability一覧、実行時capability、Provider選択、Worker用Prov
 - Gateway moderation、BFL／Gateway timeout、BFL原価情報が維持されること。
 - Provider adapter既存テストとWorker lifecycle既存テストが成功すること。
 
+## PR-R2B-4の対象
+
+```text
+Internal Worker route → application/process-generation.ts
+  → infrastructure/generated-asset-storage.ts
+  → infrastructure/cloud-ai-repository.ts
+  → infrastructure/provider-registry.ts → infrastructure/gateway-provider.ts
+Admin App Router → presentation/admin-actions.ts
+```
+
+生成画像のmetadata除去、private Storage upload、補償削除、cleanup queueをStorage境界へ分離します。Job完了／失敗、credit確定・解放、原価ledgerは既存RPC契約のままrepository境界へ集約します。旧Worker、Gateway、管理設定入口は再exportで互換性を維持します。
+
+Scheduler routeは既にapplicationを参照する薄いHTTP境界であり、認証、health、最大実行時間、ログを保持するためApp Routerに残します。Provider、model、pricing、retry、timeout、Scheduler頻度、API key保存方式、DB、migration、RPC、環境変数は変更しません。
+
+### PR-R2B-4回帰検査
+
+- 画像sanitization、private bucket、補償cleanupとJob完了／失敗RPCがinfrastructureにあること。
+- Gateway moderationと旧Worker／Gateway／管理設定importが維持されること。
+- Scheduler routeがapplicationへ委譲し、Provider responseやpromptをログへ出さないこと。
+
 ## 回帰検査
 
 - Creator Queue routeがpresentationへの薄いadapterであること。

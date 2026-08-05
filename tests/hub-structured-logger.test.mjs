@@ -133,7 +133,7 @@ test("主要Hub運用経路は共通loggerを使いconsoleへ直書きしない"
     "../src/app/api/desktop/device/authorize/route.ts",
     "../src/app/api/desktop/device/token/route.ts",
     "../src/app/api/desktop/projects/[sourceProjectId]/status/route.ts",
-    "../src/lib/cloud-ai-worker.ts",
+    "../src/modules/cloud-ai/infrastructure/generated-asset-storage.ts",
   ]) {
     const source = await readFile(new URL(relative, import.meta.url), "utf8");
     assert.match(source, /logHub(?:Error|Event)/, relative);
