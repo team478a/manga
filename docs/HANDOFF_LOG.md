@@ -3353,3 +3353,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 1,500行上限、全ローカル品質ゲート、Draft PR、全CI／Vercel成功後に責任者確認待ちで停止する。
 - focused 32/32、境界11/11、deps、lint、typecheck、Hub 527、Canvas 26、AI 48、Desktop 182、a11y、migration 48、build、Cloud漫画受入れ、owner isolation 7、100ページ4、diff checkに成功した。
 - Draft PR: [#178](https://github.com/team478a/manga/pull/178)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-2f2bd3-team478as-projects.vercel.app`
+- 全GitHub CI成功、Draft、MERGEABLE。責任者確認前にPR-R2C-4へ進まない。
