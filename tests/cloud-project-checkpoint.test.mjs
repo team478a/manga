@@ -3,7 +3,7 @@ import fs from "node:fs";
 import test from "node:test";
 
 const migration = fs.readFileSync("supabase/migrations/202608010011_cloud_project_checkpoints.sql", "utf8");
-const service = fs.readFileSync("src/modules/cloud-creator/projects/project-checkpoint-service.ts", "utf8");
+const service = fs.readFileSync("src/modules/manga/application/manage-checkpoint.ts", "utf8");
 const panel = fs.readFileSync("src/app/creator/[projectId]/ProjectCheckpointPanel.tsx", "utf8");
 
 test("変更のないCanvasはハッシュ単位で再利用する", () => {
