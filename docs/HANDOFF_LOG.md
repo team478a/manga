@@ -3242,7 +3242,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 旧Registry、BFL、Mock importは互換再exportとして維持し、Gatewayは新module入口から既存実装へ委譲する。
 - Provider、model、pricing、retry、timeout、Scheduler、API key保存、DB、migration、RPC、環境変数は変更していない。
 - Gateway moderation、BFL URL検証、idempotency、原価情報、一般／成人向け境界は維持する。
-- 現在はfocused Provider／Worker 23件とHub typecheckに成功。全品質ゲート、Draft PR、Preview、CIは未実施。
+- focused Provider／Worker 23/23、Hub 515/515、全ローカル品質ゲート、Core quality、migration roundtrip、Vercelに成功。Draft PR [#173](https://github.com/team478a/manga/pull/173)とPreviewを作成し、Windows CI完了後は責任者レビュー待ちで停止する。
 
 # 2026-08-04 Codex: 一般向けモニター操作フィードバック第2弾
 
