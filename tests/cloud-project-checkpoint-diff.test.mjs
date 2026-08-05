@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { summarizeCloudCheckpointDiff } from "../src/modules/cloud-creator/projects/project-checkpoint-diff.ts";
+import { summarizeCloudCheckpointDiff } from "../src/modules/manga/domain/checkpoint-diff.ts";
 
 const current = {
   project: { title: "現在", description: "説明", readingDirection: "rtl", width: 1200, height: 1800, dpi: 300 },

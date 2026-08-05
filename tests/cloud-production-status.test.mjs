@@ -14,7 +14,7 @@ test("production migration provides review states and durable finalization", () 
 });
 
 test("status service fails safely before migration and hides database errors", () => {
-  const service = read("src/modules/cloud-creator/production/production-status-service.ts");
+  const service = read("src/modules/manga/application/manage-production-state.ts");
   assert.match(service, /error\?\.code === "42703"/);
   assert.match(service, /ページの制作状況を読み込めませんでした/);
   assert.match(service, /status === "finalized" && reviewed != null && reviewed < contextRevision/);
@@ -31,7 +31,7 @@ test("production board exposes progress filters review and reopen controls", () 
 });
 
 test("batch generation rejects finalized pages before queue creation", () => {
-  const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
+  const service = read("src/modules/manga/application/manage-generation-batch.ts");
   assert.match(service, /select\("id,production_status"\)/);
   assert.match(service, /production_status === "finalized"/);
   assert.match(service, /確定済みページは一括生成できません/);

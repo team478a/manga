@@ -19,7 +19,7 @@ test("コマ生成RouteはManga presentation境界からapplicationへ入る", a
 test("旧入口と公開schemaは互換性を維持する", async () => {
   const legacy = await read("src/lib/cloud-panel-image-generation-server.ts");
   const contract = await read("src/modules/manga/contracts/panel-generation.ts");
-  const batch = await read("src/modules/cloud-creator/generation/batch-production-service.ts");
+  const batch = await read("src/modules/manga/application/manage-generation-batch.ts");
 
   assert.match(legacy, /modules\/manga\/application\/enqueue-panel-candidates/);
   assert.match(contract, /cloudPanelImageGenerationRequestSchema/);

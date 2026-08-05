@@ -24,7 +24,7 @@ test("page locks expire and require an opaque token", () => {
 });
 
 test("batch service reuses the billed queue and bounds panel work", () => {
-  const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
+  const service = read("src/modules/manga/application/manage-generation-batch.ts");
   assert.match(service, /uniquePageIds\.length < 4 \|\| uniquePageIds\.length > 8/);
   assert.match(service, /targets\.length > 64/);
   assert.match(service, /enqueueStoryboardPanelImage/);

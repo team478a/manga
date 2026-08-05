@@ -6,7 +6,7 @@ import { createPagesPdf, mergePagesPdfs } from "../packages/export-core/src/inde
 import { analyzeCloudManuscript } from "../src/lib/cloud-manuscript-preflight.ts";
 import { buildCloudLongformCockpit, filterCloudCockpitStructure } from "../src/lib/cloud-longform-cockpit.ts";
 import { buildCloudProductionProgress } from "../src/lib/cloud-production-progress.ts";
-import { summarizeCloudCheckpointDiff } from "../src/modules/cloud-creator/projects/project-checkpoint-diff.ts";
+import { summarizeCloudCheckpointDiff } from "../src/modules/manga/domain/checkpoint-diff.ts";
 import { makeCloudLongform100PageFixture } from "./fixtures/cloud-longform-100-page.mjs";
 
 test("100ページ作品を章・シーン単位で集約し24ページずつ表示する", () => {

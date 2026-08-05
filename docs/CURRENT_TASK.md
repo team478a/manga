@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R2C-3 一括・制作状態・長編application境界
+
+- 状態: `LOCAL_VERIFIED_CREATING_DRAFT_PR`
+- Branch: `codex/refactor-r2c3-longform-application-boundary`
+- Base: `origin/feature/manga-canvas-mvp`（PR #177 merge後、`4a62a53`）
+- 目的: 一括生成、ページ制作状態、長編制作、連続性、作品予算、checkpoint、差分・復元の既存use caseをManga application／domain境界へ集約する。
+- 実装: 一括生成、制作状態、物語連続性、作品予算、checkpoint管理を `src/modules/manga/application` へ移し、決定的checkpoint差分をdomainへ移す。旧Cloud Creator serviceは互換再exportとして維持する。
+- 互換性: 4〜8ページ／最大64コマ、確定page拒否、部分enqueue、pause／cancel／retry補償、production revision、budget kill switch、checkpoint作成／復元、既存Server Actionのform／redirectを変更しない。
+- 不変条件: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 行数上限: merge baseから1,500行以下。超過時はcheckpoint分割を責任者へ再提案し、無断でR2C-3bを開始しない。
+- 検証: focused 32/32、境界再確認11/11、deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、research eval、Hub 527/527、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、owner isolation 7/7、100ページ長編4/4、diff checkに成功した。
+- 実Provider: R2C完了後に実施するため、このPRでは呼び出さない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。承認前にPR-R2C-4へ進まない。
+
 ## 2026-08-05 PR-R2C-2 候補比較・採用・再生成境界
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`

@@ -3344,3 +3344,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - データ作成、更新、削除、有料Provider実行、Feature Flag変更、migration適用は行わない。
 - 専用4/4、既存所有者分離7/7、Cloud漫画repository preflight、deps:check、lint、Hub typecheck、Hub 490/490、migration 48/48、production build、git diff check成功。
 - 未完了: ステージング認証情報と受入れ用データを用いた実行、署名URL・生成キャンセル・共同編集者の実ブラウザ確認。
+# 2026-08-06 Codex: PR-R2C-3 一括・制作状態・長編application境界
+
+- Branch: `codex/refactor-r2c3-longform-application-boundary`
+- Base: `origin/feature/manga-canvas-mvp`（PR #177 merge後、`4a62a53`）
+- 一括生成、制作状態、連続性、作品予算、checkpointの実体をManga applicationへ、checkpoint差分をdomainへ移す。
+- 旧Cloud Creator serviceは互換re-exportとして残し、URL、API、DB、RPC、Storage、Canvas、PDF／PNG、Provider契約を変更しない。
+- 1,500行上限、全ローカル品質ゲート、Draft PR、全CI／Vercel成功後に責任者確認待ちで停止する。
+- focused 32/32、境界11/11、deps、lint、typecheck、Hub 527、Canvas 26、AI 48、Desktop 182、a11y、migration 48、build、Cloud漫画受入れ、owner isolation 7、100ページ4、diff checkに成功した。
