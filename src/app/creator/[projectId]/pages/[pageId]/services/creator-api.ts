@@ -99,24 +99,9 @@ export async function createGenerationJob(body: {
   );
 }
 
-export async function createStoryboardPanelGenerationJob(body: {
-  projectId: string;
-  pageId: string;
-  panelId: string;
-  idempotencyKey: string;
-  candidateCount?: number;
-  sourceAssetId?: string;
-  maskAssetId?: string;
-  outpaintingDirection?: "left" | "right" | "top" | "bottom" | "all";
-  revisionPreset?: "face" | "hands" | "expression" | "costume" | "background" | "polish";
-  revisionInstruction?: string;
-  shotOverride?: "storyboard" | "close_up" | "medium" | "wide" | "full_body";
-  cameraAngleOverride?: "storyboard" | "eye_level" | "high" | "low" | "over_shoulder" | "dynamic";
-  subjectPlacement?: "storyboard" | "center" | "left" | "right" | "two_shot" | "foreground_background";
-  gazeDirection?: "storyboard" | "camera" | "left" | "right" | "partner" | "off_frame";
-  compositionInstruction?: string;
-  generationTarget?: "composite" | "background" | "character" | "effect";
-}) {
+export async function createStoryboardPanelGenerationJob(
+  body: import("@/modules/manga/contracts/panel-generation").CloudPanelImageGenerationRequestInput,
+) {
   return responseJson<{
     id: string;
     jobs: Array<{ id: string; candidateNumber: number }>;
@@ -137,10 +122,9 @@ export async function createStoryboardPanelGenerationJob(body: {
 
 export async function cancelGeneration(jobId: string) {
   return responseJson<Record<string, never>>(
-    await fetch(
-      `/api/creator/generation-jobs/${encodeURIComponent(jobId)}`,
-      { method: "DELETE" },
-    ),
+    await fetch(`/api/creator/generation-jobs/${encodeURIComponent(jobId)}`, {
+      method: "DELETE",
+    }),
     "Jobをキャンセルできませんでした。",
   );
 }

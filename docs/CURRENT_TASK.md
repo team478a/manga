@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-05 PR-R2C-2 候補比較・採用・再生成境界
+
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
+- Branch: `codex/refactor-r2c2-panel-candidate-boundary`
+- Base: `origin/feature/manga-canvas-mvp`（PR #176 merge後、`e709f08`）
+- 目的: 2〜4候補の比較、候補採用、再生成、Image-to-Image、Inpainting、Outpainting、構図制御、マスク提案、背景／人物／効果の分離生成、透明レイヤーの純粋判断をManga domain／application境界へ集約する。
+- 実装: 候補の対象コマ解決とlayer分類、比較frame、Canvas採用patch、再生成request組立、マスク提案を `src/modules/manga` へ移す。Editorは既存UI状態と副作用の調停だけを維持する。
+- 互換性: 旧比較／マスクserviceは再exportとして維持し、request payload、候補数、採用先、元画像、layer順／表示／透明合成、undo／redo、snapshotを変更しない。
+- 不変条件: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 回帰: left／right／overlay比較、2〜4候補、対象コマ採用、背景／人物／prop／effect／correction layer、元画像保持、mask／outpainting、undo／redo、snapshot payloadを確認する。
+- 検証: focused 11/11、deps（5 packages／21 files、module error 0）、lint、Hub／Desktop typecheck、research eval、Hub 523/523、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、owner isolation 7/7、100ページ長編4/4、diff checkに成功した。
+- 実Provider: R2C完了後に実施するため、このPRでは呼び出さない。
+- Draft PR: [#177](https://github.com/team478a/manga/pull/177)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-3cebd4-team478as-projects.vercel.app`
+- GitHub CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft、MERGEABLE。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。承認前にPR-R2C-3へ進まない。
+
 ## 2026-08-05 PR-R2C-1 コマ生成受付application境界
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
@@ -597,7 +614,6 @@
 - 未実施: 実ブラウザ、100ページ実データの操作確認、責任者承認、親PR後のマージ
 - 詳細: `docs/cloud/MANGA_COCKPIT_NAVIGATION_V1.md`
 
-
 ## 2026-08-01 長編マンガ制作 M5-3: 長編作品コックピット
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -613,7 +629,6 @@
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 未実施: 実ブラウザ、100ページ実データの表示確認、責任者承認、親PR後のマージ
 - 詳細: `docs/cloud/MANGA_LONGFORM_COCKPIT_V1.md`
-
 
 ## 2026-08-01 長編マンガ制作 M5-2: 連続性設定候補
 
@@ -631,7 +646,6 @@
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 未実施: 実ブラウザ、実作品語彙調整、責任者承認、親PR後のマージ
 
-
 ## 2026-08-01 長編マンガ制作 M5-1: 物語の連続性台帳
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -648,7 +662,6 @@
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 未実施: Supabase staging適用、実ブラウザ、実作品語彙調整、責任者承認、親PR後のマージ
 
-
 ## 2026-08-01 長編マンガ制作 M4完成: Storageサムネイル・派生物整理
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -663,7 +676,6 @@
 - 検証: deps、lint、Hub 374/374、Canvas 26/26、AI 48/48、Desktop、Desktop a11y、Hub/Desktop typecheck、migration往復、production build、GitHub Core quality／Migration roundtrip／Windows build／Vercel成功
 - 詳細: `docs/cloud/MANGA_STORAGE_LIFECYCLE_V1.md`
 - 未実施: Supabase staging適用、Worker環境設定、実ブラウザ、責任者承認、親PR後のマージ
-
 
 ## 2026-08-01 長編マンガ制作 M4完成: 永続PDFエクスポート
 
@@ -680,7 +692,6 @@
 - 詳細: `docs/cloud/MANGA_DURABLE_EXPORT_V1.md`
 - 未実施: Supabase staging適用、Worker環境設定、実ブラウザ、責任者承認、親PR後のマージ
 
-
 ## 2026-08-01 長編マンガ制作 M4制作管理: ページ状態・確定ロック
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -695,7 +706,6 @@
 - 検証: deps、lint、Hub 363/363、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、Hub/Desktop typecheck、migration往復、production build成功
 - 詳細: `docs/cloud/CLOUD_PRODUCTION_STATUS_V1.md`
 - 未実施: Supabase staging適用、実Provider、実ブラウザ、責任者承認、親PR後のマージ
-
 
 ## 2026-08-01 長編マンガ制作 M4後半: 4〜8ページ一括生成・編集ロック
 
@@ -713,7 +723,6 @@
 - 詳細: `docs/cloud/MANGA_BATCH_PRODUCTION_V1.md`
 - 未実施: Supabase staging適用、有料Provider実行、実ブラウザ確認、責任者承認、マージ
 
-
 ## 2026-08-01 長編マンガ制作 M4前半: 32ページ制作基盤
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -729,7 +738,6 @@
 - CI: Core quality、Migration roundtrip、Windows accessibility/build、Vercel成功
 - 詳細: `docs/cloud/MANGA_32_PAGE_FOUNDATION_V1.md`
 - 未実施: Supabase staging適用、実ログインブラウザ確認、責任者承認、親PR #104後のマージ
-
 
 ## 2026-08-01 長編マンガ制作 M3-8: 人物・効果レイヤー白背景透明化
 
@@ -747,7 +755,6 @@
 - 詳細: `docs/cloud/MANGA_TRANSPARENT_LAYER_OUTPUT_V1.md`
 - 未実施: 実Provider生成、実ブラウザ合成確認、責任者承認、親PR #103後のマージ
 
-
 ## 2026-08-01 長編マンガ制作 M3-7: 背景・人物・効果の分離生成
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -763,7 +770,6 @@
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 詳細: `docs/cloud/MANGA_LAYERED_GENERATION_V1.md`
 - 未実施: 実Provider生成、実ブラウザ合成確認、責任者承認、親PR #102後のマージ
-
 
 ## 2026-08-01 長編マンガ制作 M3-6: ポーズ・構図制御
 
@@ -781,7 +787,6 @@
 - 詳細: `docs/cloud/MANGA_COMPOSITION_CONTROL_V1.md`
 - 未実施: 実Provider生成、実ブラウザ確認、責任者承認、親PR #101後のマージ
 
-
 ## 2026-08-01 長編マンガ制作 M3-5: 修正領域おすすめ
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -796,7 +801,6 @@
 - 詳細: `docs/cloud/MANGA_SMART_MASK_V1.md`
 - 未実施: 実ブラウザでのマウス・タッチ確認、責任者承認、親PR #100後のマージ
 
-
 ## 2026-08-01 長編マンガ制作 M3-4: 修正前後の比較表示
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -810,7 +814,6 @@
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 337/337、Canvas 26/26、AI 47/47、Desktop 182/182、migration 34/34、production build成功
 - 詳細: `docs/cloud/MANGA_REVISION_COMPARISON_V1.md`
 - 未実施: 実ブラウザでの3方式比較、責任者承認、親PR #99後のマージ
-
 
 ## 2026-08-01 長編マンガ制作 M3-3: コマ画角拡張
 
@@ -827,7 +830,6 @@
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功
 - 詳細: `docs/cloud/MANGA_PANEL_OUTPAINTING_V1.md`
 - 未実施: 実Provider有料生成、実ブラウザ確認、責任者承認、親PR #98後のマージ
-
 
 ## 2026-08-01 長編マンガ制作 M3-2: マスク付きコマ部分修正
 
@@ -846,7 +848,6 @@
 - 詳細: `docs/cloud/MANGA_PANEL_INPAINTING_V1.md`
 - 未実施: staging migration、実Provider生成、タッチを含む実ブラウザ確認、責任者承認、親PR #97後のマージ
 
-
 ## 2026-08-01 長編マンガ制作 M3-1: コマ修正候補生成
 
 - 状態: `IMPLEMENTED_AWAITING_REVIEW`
@@ -861,7 +862,6 @@
 - 検証: deps、lint、Hub/Desktop typecheck、Hub 325/325、Canvas 26/26、AI 45/45、Desktop 182/182、migration 33/33、production build成功
 - 詳細: `docs/cloud/MANGA_PANEL_REVISION_V1.md`
 - 未実施: 実Provider生成、実ブラウザ比較、責任者承認、親PR #96後のマージ
-
 
 ## 2026-08-01 長編マンガ制作 M2-4: 生成履歴の一貫性チェック
 
@@ -1100,6 +1100,7 @@
   - git diff --check: PASS
 - 注記: `npm ci`の既存依存監査でhigh severity 11件。今回の表示変更とは分離して扱う
 - 未実施: push、Draft PR、CI、Vercel Preview、責任者画面確認
+
 ## 2026-07-31 一般向けクラウド画像生成Provider接続
 
 - 状態: `IMPLEMENTED_LOCAL`
