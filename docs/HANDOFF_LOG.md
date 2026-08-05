@@ -3352,3 +3352,4 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 旧Cloud Creator serviceは互換re-exportとして残し、URL、API、DB、RPC、Storage、Canvas、PDF／PNG、Provider契約を変更しない。
 - 1,500行上限、全ローカル品質ゲート、Draft PR、全CI／Vercel成功後に責任者確認待ちで停止する。
 - focused 32/32、境界11/11、deps、lint、typecheck、Hub 527、Canvas 26、AI 48、Desktop 182、a11y、migration 48、build、Cloud漫画受入れ、owner isolation 7、100ページ4、diff checkに成功した。
+- Draft PR: [#178](https://github.com/team478a/manga/pull/178)
