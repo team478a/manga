@@ -12,7 +12,7 @@
 - 変更しない範囲: Provider、model、pricing、retry回数、timeout、Scheduler頻度、API key保存方式、DB、migration、RPC、環境変数、成人向け境界。
 - 後続: 生成物Storage、管理操作、互換entrypoint完成はPR-R2B-4で扱う。
 - Draft PR: [#173](https://github.com/team478a/manga/pull/173)（Preview作成済み）
-- 検証: Provider／Worker 23/23、Hub 515/515、全ローカル品質ゲート、Core quality、migration roundtrip、Vercel成功。Windows CI完了後に責任者レビュー待ちで停止する。
+- 検証: Provider／Worker 23/23、Hub 515/515、全ローカル品質ゲート、Core quality、migration roundtrip、Windows build、Vercel成功。責任者レビュー待ちで停止する。
 
 ## 2026-08-05 PR-R2B-2 Cloud AI Worker lifecycle分離
 
