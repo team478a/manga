@@ -2,14 +2,16 @@
 
 ## 2026-08-05 PR-R2B-4 Cloud AI infrastructure境界完成
 
-- 状態: `IMPLEMENTED_VALIDATING`
+- 状態: `VERIFIED_AWAITING_OWNER_REVIEW`
 - Branch: `codex/refactor-r2b4-cloud-ai-completion`
 - Base: `origin/feature/manga-canvas-mvp`（PR #173 merge後、`aef996c`）
 - 目的: 生成物Storage、完了／失敗repository、Gateway実体、管理設定compatibility entrypointをCloud AI moduleへ集約する。
 - 実装: 画像sanitization・private upload・補償削除・cleanup、完了／失敗RPCをinfrastructureへ分離し、旧importを再exportで維持した。
 - Route: Scheduler App Routeは既にapplicationへ委譲しているため、1,500行上限内で物理移動せずHTTP境界として維持する。
 - 不変条件: Provider、model、pricing、retry、timeout、Scheduler頻度、API key保存、DB、migration、RPC、成人向け境界は変更しない。
-- 未完了: 全品質ゲート、Draft PR、CI、Preview、責任者レビュー。承認前にPR-R2Cへ進まない。
+- Draft PR: [#174](https://github.com/team478a/manga/pull/174)
+- Preview: `https://mangai-hub-staging-g30bqhc69-team478as-projects.vercel.app`
+- 検証: 全ローカル品質ゲート、Core quality、migration roundtrip、Windows build、Vercel成功。責任者承認前にPR-R2Cへ進まない。
 
 ## 2026-08-05 PR-R2B-3 Cloud AI Provider境界分離
 
