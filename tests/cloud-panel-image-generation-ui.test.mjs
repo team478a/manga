@@ -26,6 +26,14 @@ const comparisonDialog = fs.readFileSync(
   "src/app/creator/[projectId]/pages/[pageId]/PanelImageComparisonDialog.tsx",
   "utf8",
 );
+const candidateDomain = fs.readFileSync(
+  "src/modules/manga/domain/panel-candidate.ts",
+  "utf8",
+);
+const adoptionDomain = fs.readFileSync(
+  "src/modules/manga/domain/panel-adoption.ts",
+  "utf8",
+);
 
 test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提供する", () => {
   assert.match(editor, /AIおまかせ画像生成/);
@@ -60,10 +68,10 @@ test("Canvasは完成コマ・背景・人物・効果を分けて生成し別�
   assert.match(editor, /人物だけ/);
   assert.match(editor, /効果だけ/);
   assert.match(editor, /generationTarget: panelGenerationTarget/);
-  assert.match(editor, /AI人物レイヤー/);
-  assert.match(editor, /AI効果レイヤー/);
-  assert.match(editor, /layerType === "character" \|\| layerType === "effect"/);
-  assert.match(editor, /\? "multiply"/);
+  assert.match(adoptionDomain, /AI人物レイヤー/);
+  assert.match(adoptionDomain, /AI効果レイヤー/);
+  assert.match(adoptionDomain, /adoption\.layerType === "character"/);
+  assert.match(adoptionDomain, /\? "multiply"/);
   assert.match(service, /generationTarget: request\.generationTarget/);
 });
 
@@ -88,8 +96,8 @@ test("Canvasは方向を選び採用画像を残したまま画角拡張候補�
   assert.match(editor, /画角を広げた候補を/);
   assert.match(editor, /outpaintingDirection/);
   assert.match(editor, /requestPanelOutpainting/);
-  assert.match(editor, /job\.generation_operation === "outpainting"/);
-  assert.match(editor, /\? "correction"/);
+  assert.match(candidateDomain, /job\.generation_operation === "outpainting"/);
+  assert.match(candidateDomain, /return "correction"/);
 });
 
 test("修正候補は修正前との比較スライダーから採用できる", () => {

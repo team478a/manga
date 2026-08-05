@@ -35,6 +35,13 @@ import type {
   CloudPage,
   CloudProjectSummary,
 } from "@/lib/cloud-creator-server";
+import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
+import { applyPanelCandidateAdoption } from "@/modules/manga/domain/panel-adoption";
+import {
+  classifyCandidateLayer,
+  resolveCandidateTargetPanelId,
+  type PanelGenerationTarget,
+} from "@/modules/manga/domain/panel-candidate";
 import { useCanvasAutosave } from "./hooks/useCanvasAutosave";
 import { useCanvasHistory } from "./hooks/useCanvasHistory";
 import {
@@ -97,12 +104,6 @@ type GazeDirection =
   | "right"
   | "partner"
   | "off_frame";
-type PanelGenerationTarget =
-  | "composite"
-  | "background"
-  | "character"
-  | "effect";
-
 const revisionPresetLabels: Record<RevisionPreset, string> = {
   face: "顔の崩れを直す",
   hands: "手・指の崩れを直す",
@@ -583,47 +584,14 @@ export function CloudCanvasEditor({
     const layerId = crypto.randomUUID();
     const timestamp = now();
     commit((draft) => {
-      const panel = draft.panels.find((item) => item.id === panelId);
-      if (!panel) return;
-      if (layerType === "background" || layerType === "correction")
-        panel.imageAssetId = assetId;
-      const currentLayers = draft.panelLayers.filter(
-        (layer) => layer.panelId === panel.id,
-      );
-      const layerName =
-        layerType === "character"
-          ? "AI人物レイヤー"
-          : layerType === "effect"
-            ? "AI効果レイヤー"
-            : layerType === "background"
-              ? "AI背景レイヤー"
-              : assetMap.get(assetId)?.file_name ?? "画像レイヤー";
-      const orderIndex =
-        layerType === "background"
-          ? Math.min(0, ...currentLayers.map((layer) => layer.orderIndex)) - 1
-          : Math.max(-1, ...currentLayers.map((layer) => layer.orderIndex)) + 1;
-      draft.panelLayers.push({
-        id: layerId,
-        panelId: panel.id,
-        name: layerName,
-        type: layerType,
-        orderIndex,
-        visible: true,
-        locked: false,
-        opacity: 1,
-        blendMode:
-          layerType === "character" || layerType === "effect"
-            ? "multiply"
-            : "normal",
+      applyPanelCandidateAdoption(draft, {
         assetId,
+        assetFileName: assetMap.get(assetId)?.file_name,
+        layerId,
+        layerType,
         sourceJobId,
-        imageFit: "cover",
-        imageOffsetX: 0,
-        imageOffsetY: 0,
-        imageScale: 1,
-        imageRotation: 0,
-        createdAt: timestamp,
-        updatedAt: timestamp,
+        targetPanelId: panelId,
+        timestamp,
       });
     });
   }
@@ -679,24 +647,14 @@ export function CloudCanvasEditor({
     setRequestingPanelGeneration(true);
     setMessage(`${candidateCount}案の画像生成を準備しています…`);
     try {
-      const result = await createStoryboardPanelGenerationJob({
+      const result = await createStoryboardPanelGenerationJob(buildPanelRevisionRequest({
         projectId: project.id,
         pageId: page.id,
         panelId,
         idempotencyKey: crypto.randomUUID(),
         candidateCount,
-        sourceAssetId: options?.sourceAssetId,
-        maskAssetId: options?.maskAssetId,
-        outpaintingDirection: options?.outpaintingDirection,
-        revisionPreset: options?.revisionPreset,
-        revisionInstruction: options?.revisionInstruction,
-        shotOverride: options?.shotOverride,
-        cameraAngleOverride: options?.cameraAngleOverride,
-        subjectPlacement: options?.subjectPlacement,
-        gazeDirection: options?.gazeDirection,
-        compositionInstruction: options?.compositionInstruction,
-        generationTarget: options?.generationTarget,
-      });
+        options,
+      }));
       setGenerationTargets((current) =>
         result.jobs.reduce(
           (next, job) => ({ ...next, [job.id]: result.panelId }),
@@ -834,10 +792,11 @@ export function CloudCanvasEditor({
   }
 
   async function placeGeneratedAsset(job: CloudGenerationJob) {
-    const targetPanelId =
-      generationTargets[job.id] ??
-      job.target_panel_id ??
-      (selection?.type === "panel" ? selection.id : null);
+    const targetPanelId = resolveCandidateTargetPanelId({
+      job,
+      generationTargets,
+      selectedPanelId: selection?.type === "panel" ? selection.id : null,
+    });
     if (!job.output_asset_id || !targetPanelId) return;
     let nextAssets: CloudAsset[];
     try {
@@ -851,17 +810,7 @@ export function CloudCanvasEditor({
       return;
     }
     setAssets(nextAssets);
-    const layerType =
-      job.generation_operation === "inpainting" ||
-      job.generation_operation === "outpainting"
-        ? "correction"
-        : job.job_type === "character_base"
-        ? "character"
-        : job.job_type === "prop"
-          ? "prop"
-          : job.job_type === "effect"
-            ? "effect"
-            : "background";
+    const layerType = classifyCandidateLayer(job);
     applyAsset(job.output_asset_id, job.id, layerType, targetPanelId);
     setMessage("生成Assetを対象のコマへ配置しました。");
   }
