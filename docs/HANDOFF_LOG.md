@@ -12,7 +12,8 @@
 - サイドメニュー先頭の`/dashboard`導線を「マイページ」と明示し、現在地も既存の`aria-current`で示す。
 - 表示名未設定時は「表示名未設定」とし、認証、DB、migration、API、URLを変更していない。
 - 専用2/2、deps、typecheck、lint、Hub全体、production build、diff checkに成功した。
-- 次: commit／push後にDraft PRを作成し、全CIとVercel Preview成功を確認する。
+- Draft PR [#179](https://github.com/team478a/manga/pull/179)を作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsに成功した。PRはDraft、MERGEABLE。
+- 次: 認証済みPreviewでPC／スマートフォン表示とマイページ遷移を確認し、責任者レビューを待つ。
 
 ---
 
