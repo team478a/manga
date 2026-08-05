@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-08-05 Codex: PR-R2C-1 コマ生成受付application境界
+
+- Branch: `codex/refactor-r2c1-panel-generation-boundary`、Base: `a7b4bfb`。
+- コマ生成orchestrator実体をManga applicationへ移し、App Routeはpresentation、schemaはcontractsから参照する構造へ変更した。
+- 旧 `cloud-panel-image-generation-server.ts` は互換再exportとして維持し、一括生成の旧importも変えていない。
+- 2〜4候補、Image-to-Image、Inpainting、Outpainting、構図制御、背景／人物／効果分離、Feature Flag fail-closed、部分成功、所有者分離、monitor上限の挙動は未変更。
+- DB、migration、RPC、Storage、API、URL、Provider、model、pricing、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは未変更。
+- focused 53/53と全ローカル品質ゲート、Cloud漫画repository受入れ、owner isolation 7/7、100ページ長編4/4に成功した。実ProviderはR2C完了後まで実行しない。
+
 ## 2026-08-05 Codex: PR-R2B-4 Cloud AI infrastructure境界完成
 
 - Branch: `codex/refactor-r2b4-cloud-ai-completion`、Base: `aef996c`。

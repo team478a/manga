@@ -12,7 +12,7 @@ const progressService = fs.readFileSync(
   "utf8",
 );
 const generationServer = fs.readFileSync(
-  "src/lib/cloud-panel-image-generation-server.ts",
+  "src/modules/manga/application/enqueue-panel-candidates.ts",
   "utf8",
 );
 

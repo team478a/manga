@@ -11,7 +11,7 @@ const route = fs.readFileSync(
   "utf8",
 );
 const service = fs.readFileSync(
-  "src/lib/cloud-panel-image-generation-server.ts",
+  "src/modules/manga/application/enqueue-panel-candidates.ts",
   "utf8",
 );
 const generationService = fs.readFileSync(
