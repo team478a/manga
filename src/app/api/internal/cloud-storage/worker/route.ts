@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { processNextCloudStorageLifecycleJob } from "@/lib/cloud-storage-lifecycle-worker";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 // Thumbnail rendering downloads source assets before rendering and upload.
@@ -24,7 +25,7 @@ function authorized(request: Request) {
 export async function POST(request: Request) {
   if (!authorized(request))
     return NextResponse.json({ error: "認証できません。" }, { status: 401 });
-  if (process.env.MANGAI_CLOUD_STORAGE_WORKER_ENABLED !== "true")
+  if (!featureFlagEnabled("MANGAI_CLOUD_STORAGE_WORKER_ENABLED"))
     return NextResponse.json(
       { error: "Storage Workerは停止中です。" },
       { status: 503 },

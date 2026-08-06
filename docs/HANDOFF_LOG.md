@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-06 Codex: PR-R3-2 Auth／owner／Feature Flag共通契約
+
+- Branch: `codex/refactor-r3-2-auth-feature-flags`
+- Base: `origin/feature/manga-canvas-mvp`@`ca9ef20`（PR #190 merge後）
+- profile/admin redirectとowner ID完全一致を純粋guardへ分離し、監査済み21個のFeature Flag registryを追加した。
+- 責任者承認により、Inpainting／OutpaintingはProvider registryと同じ小文字`true`だけを許可するfail-closed契約へ統一した。他のFlag解釈は維持した。
+- DB、RLS、migration、RPC、Storage、URL、API、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向けProvider境界、Desktopの変更なし。
+- focused、deps、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止し、PR-R3-3またはPR-R4へ進まない。
+
+---
+
 ## 2026-08-06 Codex: PR-R3-1 Action／redirect／validation共通契約
 
 - Branch: `codex/refactor-r3-1-action-contracts`

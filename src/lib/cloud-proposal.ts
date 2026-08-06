@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { featureFlagEnabled } from "./feature-flags.ts";
 
 export const cloudProposalFeatureEnabled = () =>
-  process.env.CLOUD_PROPOSAL_GENERATION_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_PROPOSAL_GENERATION_ENABLED");
 
 export const cloudProposalDirectionSchema = z.enum([
   "best_fit",

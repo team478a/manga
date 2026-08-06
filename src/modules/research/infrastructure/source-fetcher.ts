@@ -12,6 +12,7 @@ import {
   ProviderUnavailableError,
   ValidationError,
 } from "../../../lib/domain-errors.ts";
+import { featureFlagEnabled } from "../../../lib/feature-flags.ts";
 
 const MAX_SOURCE_BYTES = 1_000_000;
 const MAX_REDIRECTS = 3;
@@ -33,8 +34,7 @@ export type VerificationDependencies = {
 export type { CloudResearchSourceSnapshot } from "../domain/evidence.ts";
 
 export const cloudResearchSourceVerificationEnabled = () =>
-  process.env.CLOUD_RESEARCH_SOURCE_VERIFICATION_ENABLED?.toLowerCase() ===
-  "true";
+  featureFlagEnabled("CLOUD_RESEARCH_SOURCE_VERIFICATION_ENABLED");
 
 export function configuredResearchSourceHosts() {
   return [

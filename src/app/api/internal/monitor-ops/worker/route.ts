@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -29,7 +30,7 @@ function authorized(request: Request) {
 
 export async function POST(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: "認証できません。" }, { status: 401 });
-  if (process.env.MANGAI_MONITOR_OPS_WORKER_ENABLED !== "true") {
+  if (!featureFlagEnabled("MANGAI_MONITOR_OPS_WORKER_ENABLED")) {
     return NextResponse.json({ error: "自動修正Workerは停止中です。" }, { status: 503 });
   }
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));

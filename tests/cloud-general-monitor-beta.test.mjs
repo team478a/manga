@@ -5,7 +5,7 @@ import { checkCloudGeneralMonitorBetaEnvironment } from "../scripts/check-cloud-
 
 test("一般向けモニターFeature Flagは未設定時fail closedする", async () => {
   const source = await readFile(new URL("../src/lib/cloud-general-monitor.ts", import.meta.url), "utf8");
-  assert.match(source, /CLOUD_GENERAL_MONITOR_BETA_ENABLED\?\.toLowerCase\(\) === "true"/);
+  assert.match(source, /featureFlagEnabled\("CLOUD_GENERAL_MONITOR_BETA_ENABLED"\)/);
 });
 
 test("管理画面もFeature Flag停止中はDB参照と招待操作を閉じる", async () => {

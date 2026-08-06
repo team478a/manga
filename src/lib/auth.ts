@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { hasSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
+import { adminAccessRedirect, profileAccessRedirect } from "@/lib/access-guards";
 
 export async function getCurrentProfile() {
   if (!hasSupabaseEnv()) return { user: null, profile: null as Profile | null };
@@ -24,13 +25,14 @@ export async function getCurrentProfile() {
 
 export async function requireProfile() {
   const { user, profile } = await getCurrentProfile();
-  if (!user) redirect("/login");
-  if (!profile) redirect("/signup?message=profile");
-  return { user, profile };
+  const destination = profileAccessRedirect(Boolean(user), profile);
+  if (destination) redirect(destination);
+  return { user: user!, profile: profile! };
 }
 
 export async function requireAdmin() {
   const { user, profile } = await requireProfile();
-  if (profile.role !== "admin") redirect("/dashboard");
+  const destination = adminAccessRedirect(profile);
+  if (destination) redirect(destination);
   return { user, profile };
 }

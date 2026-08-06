@@ -20,6 +20,7 @@ import {
   logHubError,
   logHubEvent,
 } from "@/lib/hub-logger";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 // Provider polling is bounded at 120 seconds. Keep enough time for lease checks,
@@ -96,7 +97,7 @@ export async function GET(request: Request) {
     )?.error;
     if (databaseError) throw databaseError;
     const body = {
-      enabled: process.env.MANGAI_CLOUD_AI_WORKER_ENABLED === "true",
+      enabled: featureFlagEnabled("MANGAI_CLOUD_AI_WORKER_ENABLED"),
       lease: {
         seconds: workerLeaseSeconds(),
         heartbeatSeconds: workerHeartbeatIntervalMs() / 1000,
@@ -149,7 +150,7 @@ export async function POST(request: Request) {
       logContext,
     );
   }
-  if (process.env.MANGAI_CLOUD_AI_WORKER_ENABLED !== "true") {
+  if (!featureFlagEnabled("MANGAI_CLOUD_AI_WORKER_ENABLED")) {
     logHubEvent("warn", "cloud_ai_worker_run_disabled", logContext);
     const response = toApiError(
       new ProviderUnavailableError("Cloud AI Workerは停止中です。"),

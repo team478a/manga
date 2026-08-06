@@ -1,2 +1,4 @@
+import { featureFlagEnabled } from "../../../lib/feature-flags.ts";
+
 export const cloudResearchFeatureEnabled = () =>
-  process.env.CLOUD_RESEARCH_MVP_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_RESEARCH_MVP_ENABLED");

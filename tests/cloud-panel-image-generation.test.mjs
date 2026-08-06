@@ -230,6 +230,8 @@ test("部分修正Feature Flagも未設定時fail closedする", () => {
   assert.equal(cloudPanelInpaintingFeatureEnabled(), false);
   process.env.CLOUD_PANEL_INPAINTING_ENABLED = "true";
   assert.equal(cloudPanelInpaintingFeatureEnabled(), true);
+  process.env.CLOUD_PANEL_INPAINTING_ENABLED = "TRUE";
+  assert.equal(cloudPanelInpaintingFeatureEnabled(), false);
   if (previous === undefined) delete process.env.CLOUD_PANEL_INPAINTING_ENABLED;
   else process.env.CLOUD_PANEL_INPAINTING_ENABLED = previous;
 });
@@ -305,6 +307,8 @@ test("画角拡張Feature Flagは未設定時に停止する", () => {
   assert.equal(cloudPanelOutpaintingFeatureEnabled(), false);
   process.env.CLOUD_PANEL_OUTPAINTING_ENABLED = "true";
   assert.equal(cloudPanelOutpaintingFeatureEnabled(), true);
+  process.env.CLOUD_PANEL_OUTPAINTING_ENABLED = "TRUE";
+  assert.equal(cloudPanelOutpaintingFeatureEnabled(), false);
   if (previous === undefined) delete process.env.CLOUD_PANEL_OUTPAINTING_ENABLED;
   else process.env.CLOUD_PANEL_OUTPAINTING_ENABLED = previous;
 });

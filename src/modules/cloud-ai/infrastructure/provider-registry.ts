@@ -9,6 +9,7 @@ import {
   getCloudGeneralImageRuntimeConfig,
 } from "../../../lib/cloud-general-image-settings.ts";
 import { logHubEvent } from "../../../lib/hub-logger.ts";
+import { featureFlagEnabled } from "../../../lib/feature-flags.ts";
 import { BlackForestLabsFluxImageProvider } from "./bfl-provider.ts";
 import {
   MangaiCloudGatewayImageProvider,
@@ -34,7 +35,7 @@ export function configuredCapabilities(): CloudProviderCapability[] {
       policyVersion: "general-v1",
       pricingVersion: imagePricingVersion || "unconfigured",
       enabled:
-        process.env.MANGAI_CLOUD_IMAGE_ENABLED === "true" &&
+        featureFlagEnabled("MANGAI_CLOUD_IMAGE_ENABLED") &&
         Boolean(imagePricingVersion),
     }),
     cloudProviderCapabilitySchema.parse({
@@ -45,13 +46,13 @@ export function configuredCapabilities(): CloudProviderCapability[] {
       policyVersion: "general-v1",
       pricingVersion: textPricingVersion || "unconfigured",
       enabled:
-        process.env.MANGAI_CLOUD_TEXT_ENABLED === "true" &&
+        featureFlagEnabled("MANGAI_CLOUD_TEXT_ENABLED") &&
         Boolean(textPricingVersion),
     }),
   ];
   if (
     process.env.NODE_ENV !== "production" &&
-    process.env.MANGAI_CLOUD_AI_MOCK_ENABLED === "true"
+    featureFlagEnabled("MANGAI_CLOUD_AI_MOCK_ENABLED")
   )
     capabilities.unshift(
       cloudProviderCapabilitySchema.parse({
@@ -98,8 +99,8 @@ export async function configuredRuntimeCapabilities() {
       }),
     );
     if (
-      process.env.CLOUD_PANEL_INPAINTING_ENABLED === "true" ||
-      process.env.CLOUD_PANEL_OUTPAINTING_ENABLED === "true"
+      featureFlagEnabled("CLOUD_PANEL_INPAINTING_ENABLED") ||
+      featureFlagEnabled("CLOUD_PANEL_OUTPAINTING_ENABLED")
     )
       capabilities.unshift(
         cloudProviderCapabilitySchema.parse({
@@ -143,7 +144,7 @@ export async function createConfiguredCloudProviders(): Promise<
     CloudImageGenerationProvider | CloudTextGenerationProvider
   > =
     process.env.NODE_ENV !== "production" &&
-    process.env.MANGAI_CLOUD_AI_MOCK_ENABLED === "true"
+    featureFlagEnabled("MANGAI_CLOUD_AI_MOCK_ENABLED")
       ? [new MockCloudImageProvider(), new MockCloudTextProvider()]
       : [];
 

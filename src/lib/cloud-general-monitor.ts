@@ -3,6 +3,7 @@ import {
   PermissionDeniedError,
   QuotaExceededError,
 } from "@/lib/domain-errors";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 
 export const CLOUD_GENERAL_MONITOR_OPERATIONS = [
   "research",
@@ -28,7 +29,7 @@ export type CloudGeneralMonitorEnrollment = {
 };
 
 export function cloudGeneralMonitorBetaEnabled() {
-  return process.env.CLOUD_GENERAL_MONITOR_BETA_ENABLED?.toLowerCase() === "true";
+  return featureFlagEnabled("CLOUD_GENERAL_MONITOR_BETA_ENABLED");
 }
 
 export async function getCloudGeneralMonitorEnrollment(profileId: string) {

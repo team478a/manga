@@ -16,6 +16,7 @@ import {
   RateLimitedError,
   ValidationError,
 } from "../../../lib/domain-errors.ts";
+import { featureFlagEnabled } from "../../../lib/feature-flags.ts";
 
 const BRAVE_SEARCH_ENDPOINT =
   "https://api.search.brave.com/res/v1/web/search";
@@ -24,7 +25,7 @@ const MAX_RESPONSE_BYTES = 512 * 1024;
 const MAX_RESULTS = 10;
 
 export const cloudResearchSearchEnabled = () =>
-  process.env.CLOUD_RESEARCH_SEARCH_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_RESEARCH_SEARCH_ENABLED");
 
 export {
   cloudResearchSearchInputSchema,
