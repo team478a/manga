@@ -43,14 +43,14 @@ test("更新情報Actionは日本語の結果メッセージを安全にURLへ�
 });
 
 test("更新情報は短時間の同一内容を二重登録しない", async () => {
-  const actions = await readFile(
-    new URL("../src/app/admin/product-updates/actions.ts", import.meta.url),
-    "utf8",
-  );
+  const [actions, repository] = await Promise.all([
+    readFile(new URL("../src/app/admin/product-updates/actions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/modules/product-updates/infrastructure/admin-repository.ts", import.meta.url), "utf8"),
+  ]);
 
   assert.match(actions, /Date\.now\(\) - 10 \* 60 \* 1000/);
-  assert.match(actions, /\.eq\("created_by_profile_id", profile\.id\)/);
-  assert.match(actions, /\.is\("archived_at", null\)/);
+  assert.match(repository, /\.eq\("created_by_profile_id", actorProfileId\)/);
+  assert.match(repository, /\.is\("archived_at", null\)/);
   assert.match(actions, /\.some\(\(update\) => isSameProductUpdate\(update, parsed\.data\)\)/);
   assert.match(actions, /同じ更新情報はすでに保存されています/);
   assert.match(actions, /二重登録の確認ができませんでした/);
@@ -69,19 +69,20 @@ test("予期しない描画失敗でも日本語の回復画面を表示する",
 });
 
 test("管理者は更新情報を安全に編集できる", async () => {
-  const [listPage, editPage, actions] = await Promise.all([
+  const [listPage, editPage, actions, repository] = await Promise.all([
     readFile(new URL("../src/app/admin/product-updates/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/app/admin/product-updates/[updateId]/edit/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/app/admin/product-updates/actions.ts", import.meta.url), "utf8"),
+    readFile(new URL("../src/modules/product-updates/infrastructure/admin-repository.ts", import.meta.url), "utf8"),
   ]);
 
   assert.match(listPage, /href=\{`\/admin\/product-updates\/\$\{item\.id\}\/edit`\}/);
   assert.match(editPage, /更新情報を編集/);
   assert.match(editPage, /PendingSubmitButton/);
   assert.match(editPage, /z\.string\(\)\.uuid\(\)/);
-  assert.match(editPage, /\.is\("archived_at", null\)/);
+  assert.match(repository, /\.is\("archived_at", null\)/);
   assert.match(actions, /export async function editProductUpdateAction/);
-  assert.match(actions, /\.select\("id"\)\s*\.maybeSingle\(\)/);
+  assert.match(repository, /\.select\("id"\)\s*\.maybeSingle\(\)/);
   assert.match(actions, /revalidatePath\("\/dashboard"\)/);
   assert.match(actions, /更新情報を編集しました/);
 });

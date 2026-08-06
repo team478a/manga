@@ -3,26 +3,12 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { findProductUpdate } from "@/modules/product-updates/infrastructure/admin-repository";
 import { editProductUpdateAction } from "../../actions";
-
-type EditableProductUpdate = {
-  id: string;
-  title: string;
-  summary: string;
-  details: string | null;
-  category: "release" | "improvement" | "fix" | "maintenance";
-  action_url: string | null;
-};
 
 async function loadProductUpdate(updateId: string) {
   try {
-    const result = await createAdminClient()
-      .from("cloud_product_updates")
-      .select("id,title,summary,details,category,action_url")
-      .eq("id", updateId)
-      .is("archived_at", null)
-      .maybeSingle<EditableProductUpdate>();
+    const result = await findProductUpdate(updateId);
 
     if (result.error) {
       console.error("[admin/product-updates/edit] query failed", result.error.code);
