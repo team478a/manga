@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R3-0 共通処理重複監査・分割計画
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-0-shared-platform-audit`
+- Base: `origin/feature/manga-canvas-mvp`（PR #188 merge後、`b2dfb1b`）
+- 完了済み: PR-R0、PR-R1、PR-R2A、PR-R2B、PR-R2C。実Provider本番受入れも完了済み。
+- 現在: PR-R3-0だけを実施し、共通処理の重複監査、service-role利用台帳、R3分割計画を文書化する。PR-R3の実装は未開始。
+- 履歴整理: 旧PR #178はPR #182で置換済みのため追加merge不要。旧漫画制作PRはPR #126へ統合済みのため追加merge不要。
+- 非対象: このPRでは旧PR、branch、文書履歴を削除・archiveしない。application code、React component、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。責任者確認前にPR-R3-1またはPR-R4へ進まない。
+
 ## 2026-08-06 PR-R2C 実Provider本番受入れ完了
 
 - 状態: `PRODUCTION_ACCEPTED_AWAITING_OWNER_REVIEW`

@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-06 Codex: PR-R3-0 共通処理重複監査・分割計画
+
+- Branch: `codex/refactor-r3-0-shared-platform-audit`
+- Base: `origin/feature/manga-canvas-mvp`@`b2dfb1b`（PR #188 merge後）
+- `SHARED_PLATFORM_REFACTOR_PLAN.md`、`SHARED_PLATFORM_DUPLICATION_INVENTORY.md`、`SUPABASE_ADMIN_CLIENT_AUDIT.md`を作成し、共通処理候補、非統合境界、`src/app/**`のadmin client直接利用32ファイル、PR-R3-1〜R3-5の分割を記録した。
+- open redirect、認証前の任意service-role DB操作、成人向けから一般向けProviderへの越境に該当する重大停止条件は確認されなかった。
+- application code、React component、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更しない。
+- deps、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、diff checkに成功した。
+- Draft PRと全CI／Vercel Preview成功後に停止し、責任者確認前にPR-R3-1またはPR-R4へ進まない。
+
+---
+
 ## 2026-08-06 Codex: PR-R2C-3 一括・制作状態・長編application境界
 
 - Branch: `codex/refactor-r2c3-longform-application`、Base: `origin/feature/manga-canvas-mvp`@`2edacba`。
