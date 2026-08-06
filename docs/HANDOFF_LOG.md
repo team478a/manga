@@ -3425,3 +3425,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Provider request、model、pricing、retry、timeout、API、DB、migration、RPC、Storage、秘密境界、成人向け境界は変更しない。
 - BFL focused 7/7、deps、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。
 - Draft PRと全CI／Vercel Preview成功後に停止し、merge／本番反映前に実Providerを再実行しない。
+# 2026-08-06 Codex: 生成画像のコマ採用永続化修正
+
+- Branch: `codex/fix-generated-panel-adoption-persistence`
+- Base: `origin/feature/manga-canvas-mvp`@`f8c8525`（PR #186 merge後）
+- 本番実機でBFL生成、credit確定、private Asset保存まで成功したが、候補配置後の再オープンでコマ画像が消えることを確認した。
+- 背景候補の`orderIndex=-1`がCanvas schemaの0以上制約に違反し、履歴commitが変更を破棄していた。背景を0、既存レイヤーを順序維持で1以降へ正規化し、commit拒否時の誤った成功表示も防止する。
+- API、DB、migration、RPC、Storage、Provider、model、pricing、Canvas schema、成人向け境界、Desktopの変更なし。追加の実Provider生成は不要。
+- focused 4/4と全ローカル品質ゲート、migration 48/48、Hub／Desktop build、release structure preflight、diff checkに成功。

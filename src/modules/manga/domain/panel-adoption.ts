@@ -34,9 +34,16 @@ export function applyPanelCandidateAdoption(
         : adoption.layerType === "background"
           ? "AI背景レイヤー"
           : (adoption.assetFileName ?? "画像レイヤー");
+  if (adoption.layerType === "background") {
+    currentLayers
+      .sort((a, b) => a.orderIndex - b.orderIndex)
+      .forEach((layer, index) => {
+        layer.orderIndex = index + 1;
+      });
+  }
   const orderIndex =
     adoption.layerType === "background"
-      ? Math.min(0, ...currentLayers.map((layer) => layer.orderIndex)) - 1
+      ? 0
       : Math.max(-1, ...currentLayers.map((layer) => layer.orderIndex)) + 1;
   canvas.panelLayers.push({
     id: adoption.layerId,
