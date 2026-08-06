@@ -1,20 +1,11 @@
 import Link from "next/link";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  listProductUpdates,
+  type ProductUpdateRecord,
+} from "@/modules/product-updates/infrastructure/admin-repository";
 import { changeProductUpdateStateAction, createProductUpdateAction } from "./actions";
-
-type ProductUpdate = {
-  id: string;
-  title: string;
-  summary: string;
-  details: string | null;
-  category: "release" | "improvement" | "fix" | "maintenance";
-  action_url: string | null;
-  published_at: string | null;
-  archived_at: string | null;
-  created_at: string;
-};
 
 const categoryLabels = {
   release: "新機能",
@@ -25,16 +16,11 @@ const categoryLabels = {
 
 async function loadProductUpdates() {
   try {
-    const result = await createAdminClient()
-      .from("cloud_product_updates")
-      .select("id,title,summary,details,category,action_url,published_at,archived_at,created_at")
-      .order("created_at", { ascending: false })
-      .limit(100)
-      .returns<ProductUpdate[]>();
+    const result = await listProductUpdates();
 
     if (result.error) {
       console.error("[admin/product-updates] query failed", result.error.code);
-      return { updates: [] as ProductUpdate[], unavailable: true };
+      return { updates: [] as ProductUpdateRecord[], unavailable: true };
     }
 
     return { updates: result.data ?? [], unavailable: false };
@@ -43,7 +29,7 @@ async function loadProductUpdates() {
       "[admin/product-updates] connection failed",
       error instanceof Error ? error.name : "unknown",
     );
-    return { updates: [] as ProductUpdate[], unavailable: true };
+    return { updates: [] as ProductUpdateRecord[], unavailable: true };
   }
 }
 

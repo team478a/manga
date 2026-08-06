@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R3-3a 成人向け研究・更新情報admin repository境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-3a-admin-repositories`
+- Base: `origin/feature/manga-canvas-mvp`（PR #191 merge後、`4675d17`）
+- 目的: PR-R3-3を安全な小PRへ分割し、成人向け研究管理と更新情報管理のApp Router／Server Actionに残るservice-role DB操作をmodule infrastructure repositoryへ移す。
+- 実装: admin認証をpresentation入口に維持し、成人向け研究設定・entitlement集計・設定RPCと、更新情報の一覧・取得・重複確認・作成・更新を各module repositoryへ集約した。既存query、filter、order、limit、redirect、message、例外処理を維持するcharacterization testを更新した。
+- 不変条件: DB、RLS、migration、RPC名・引数、Storage、URL、API、Auth／admin順序、owner条件、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向けProvider境界、Desktopを変更しない。
+- 分割理由: 監査対象32ファイル・4,449行はR3上限（50 files／1,500 churn）を超えるため、認可とdata accessを機能単位で完結させる。本PR完了時のadmin client直接利用警告見込みは32件から27件。
+- 検証: focused 11/11、deps（error 0、admin client warning 27）、lint、Hub／Desktop typecheck、research eval、Hub 548/548、Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。責任者確認前にPR-R3-3b、PR-R3-4、PR-R4へ進まない。
+
 ## 2026-08-06 PR-R3-2 Auth／owner／Feature Flag共通契約
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

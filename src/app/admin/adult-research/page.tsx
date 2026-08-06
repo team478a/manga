@@ -4,7 +4,7 @@ import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { cloudAdultResearchFeatureEnabled } from "@/lib/cloud-adult-research";
 import { hasSupabaseAdminEnv } from "@/lib/env";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { loadAdultResearchAdminOverview } from "@/modules/adult-research/infrastructure/admin-repository";
 import { setCloudAdultResearchEnabledAction } from "./actions";
 
 export default async function AdminAdultResearchPage({
@@ -20,18 +20,7 @@ export default async function AdminAdultResearchPage({
   let approvedCount = 0;
   if (hasSupabaseAdminEnv()) {
     const loaded = await safelyLoadAdminData("adult-research", async () => {
-      const admin = createAdminClient();
-      return Promise.all([
-        admin
-          .from("cloud_adult_research_settings")
-          .select("enabled,updated_at")
-          .eq("singleton", true)
-          .maybeSingle<{ enabled: boolean; updated_at: string }>(),
-        admin
-          .from("cloud_adult_research_entitlements")
-          .select("profile_id", { count: "exact", head: true })
-          .eq("status", "approved"),
-      ]);
+      return loadAdultResearchAdminOverview();
     });
     if (!loaded.ok) return <AdminDataUnavailable title="成人向け市場分析の運用" />;
     const [settingsResult, approvedResult] = loaded.value;

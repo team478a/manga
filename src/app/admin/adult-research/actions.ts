@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
+import { setAdultResearchEnabled } from "@/modules/adult-research/infrastructure/admin-repository";
 
 export async function setCloudAdultResearchEnabledAction(formData: FormData) {
   const { profile } = await requireAdmin();
@@ -13,11 +13,7 @@ export async function setCloudAdultResearchEnabledAction(formData: FormData) {
     redirect(encodeURI("/admin/adult-research?error=全体設定を確認してください"));
 
   const operation = await safelyLoadAdminData("adult-research/action", async () => {
-    const admin = createAdminClient();
-    return admin.rpc("set_cloud_adult_research_enabled", {
-      p_actor_profile_id: profile.id,
-      p_enabled: rawEnabled === "true",
-    });
+    return setAdultResearchEnabled(profile.id, rawEnabled === "true");
   });
   if (!operation.ok || operation.value.error)
     redirect(

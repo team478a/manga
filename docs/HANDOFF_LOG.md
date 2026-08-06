@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-06 Codex: PR-R3-3a 成人向け研究・更新情報admin repository境界
+
+- Branch: `codex/refactor-r3-3a-admin-repositories`
+- Base: `origin/feature/manga-canvas-mvp`@`4675d17`（PR #191 merge後）
+- R3-0監査の32ファイル・4,449行を一括変更せず、PR-R3-3の最初の機能完結sliceとして成人向け研究管理2ファイルと更新情報管理3ファイルのservice-role DB操作をmodule infrastructure repositoryへ移した。
+- admin認証順序、成人向け研究設定RPCのactor引数、entitlement集計、更新情報query/filter/order/limit、redirect、message、例外処理を維持し、characterization testのquery検査先だけをrepositoryへ同期した。
+- DB、RLS、migration、RPC、Storage、URL、API、Auth／owner、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向けProvider境界、Desktopの変更なし。
+- focused 11/11、deps（error 0、admin client warning 27）、lint、Hub／Desktop typecheck、research eval、Hub 548/548、Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- Draft PRと全CI／Vercel Preview成功を確認して停止し、責任者確認前にPR-R3-3b、PR-R3-4、PR-R4へ進まない。
+
+---
+
 ## 2026-08-06 Codex: PR-R3-2 Auth／owner／Feature Flag共通契約
 
 - Branch: `codex/refactor-r3-2-auth-feature-flags`
