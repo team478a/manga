@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-06 BFL poll待機応答の互換修正
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/fix-bfl-poll-null-result`
+- Base: `origin/feature/manga-canvas-mvp`（PR #185 merge後、`02251dc`）
+- 実機診断: BFL送信は成功し、`poll / response_invalid`で失敗した。BFL OpenAPIでは待機中の`result`はnullを許可するが、adapter schemaがobjectだけを許可していた。
+- 修正: poll待機中の`result: null`を正規応答として継続し、Ready後の画像取得へ進める。Provider、model、pricing、retry、timeout、API、DB、migration、RPC、Storage、成人向け境界は変更しない。
+- 検証: BFL focused 7/7、deps、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後に停止する。merge／本番反映前に実Providerを再実行しない。
+
 ## 2026-08-06 BFL実Provider拒否の安全な診断
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

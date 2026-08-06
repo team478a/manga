@@ -3416,3 +3416,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - API key、Prompt、画像、Provider response body、URL、Job ID、利用者情報はログへ追加しない。Provider request、model、pricing、retry、timeout、DB、migration、RPC、Storage、成人向け境界は変更しない。
 - BFL focused 6/6、deps、lint、Hub／Desktop typecheck、research eval、AI 48/48、Hub／Canvas／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。Draft PR、CI、Vercel Preview確認を継続する。
 - merge／本番再デプロイ後に新規Jobを1件だけ実行し、診断eventから拒否段階を特定する。それまでは実Providerを再実行しない。
+# 2026-08-06 Codex: BFL poll待機応答の互換修正
+
+- Branch: `codex/fix-bfl-poll-null-result`
+- Base: `origin/feature/manga-canvas-mvp`@`02251dc`
+- PR #185の診断を本番へ反映し、新規背景画像Jobを1件だけ実行した。診断eventは`stage=poll`、`outcome=response_invalid`で、送信自体は成功していた。
+- BFL公式OpenAPIのResultResponseは待機中の`result`にnullを許可する。adapter schemaだけがobjectを必須としていたため、nullを正規待機応答として許可する。
+- Provider request、model、pricing、retry、timeout、API、DB、migration、RPC、Storage、秘密境界、成人向け境界は変更しない。
+- BFL focused 7/7、deps、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。
+- Draft PRと全CI／Vercel Preview成功後に停止し、merge／本番反映前に実Providerを再実行しない。

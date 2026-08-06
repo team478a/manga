@@ -142,6 +142,60 @@ test("BFL adapter reports only sanitized rejection stage and HTTP status", async
   assert.doesNotMatch(JSON.stringify(diagnostics), /must not be logged/);
 });
 
+test("BFL adapter accepts a pending poll with null result before Ready", async () => {
+  let calls = 0;
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-2-pro",
+    capability,
+    pollIntervalMs: 1,
+    fetcher: async () => {
+      calls += 1;
+      if (calls === 1)
+        return new Response(
+          JSON.stringify({
+            id: "bfl-job-pending",
+            polling_url:
+              "https://api.bfl.ai/v1/get_result?id=bfl-job-pending",
+          }),
+          { status: 200 },
+        );
+      if (calls === 2)
+        return new Response(
+          JSON.stringify({ status: "Pending", result: null }),
+          { status: 200 },
+        );
+      if (calls === 3)
+        return new Response(
+          JSON.stringify({
+            status: "Ready",
+            result: { sample: "https://delivery.bfl.ai/result/pending.png" },
+          }),
+          { status: 200 },
+        );
+      return new Response(new Uint8Array([137, 80, 78, 71]), {
+        status: 200,
+        headers: { "content-type": "image/png" },
+      });
+    },
+  });
+
+  const result = await provider.generate(
+    {
+      kind: "image",
+      jobType: "background",
+      prompt: "quiet manga park",
+      negativePrompt: "",
+      width: 1024,
+      height: 1024,
+    },
+    context,
+  );
+
+  assert.equal(calls, 4);
+  assert.equal(result.providerJobId, "bfl-job-pending");
+});
+
 test("BFL adapterは署名済み参照画像をmulti-reference入力へ渡す", async () => {
   const calls = [];
   const provider = new BlackForestLabsFluxImageProvider({
