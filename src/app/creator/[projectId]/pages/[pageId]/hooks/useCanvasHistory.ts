@@ -81,11 +81,12 @@ export function useCanvasHistory({
     (update: (draft: PageCanvas) => void) => {
       const draft = cloneCanvas(canvas);
       update(draft);
-      if (!pageCanvasSchema.safeParse(draft).success) return;
+      if (!pageCanvasSchema.safeParse(draft).success) return false;
       recordCanvasSnapshot(history.current, canvas, limit);
       syncHistoryState();
       setCanvas(draft);
       onChange();
+      return true;
     },
     [canvas, limit, onChange, setCanvas, syncHistoryState],
   );

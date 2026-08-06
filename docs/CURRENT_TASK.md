@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-06 生成画像のコマ採用永続化修正
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/fix-generated-panel-adoption-persistence`
+- Base: `origin/feature/manga-canvas-mvp`（PR #186 merge後、`f8c8525`）
+- 実機結果: BFL生成、2クレジット確定、private Asset保存は成功した。生成Assetの配置直後は「保存済み」と表示されたが、ページ再オープン後にコマ画像が白紙へ戻った。
+- 原因: 背景候補を最背面へ追加する際に`orderIndex=-1`を作成し、0以上を要求するCanvas schemaが変更を拒否していた。Editorは拒否結果を確認せず成功表示していた。
+- 修正: 背景レイヤーを0、既存レイヤーを表示順を保った1以降へ正規化する。Canvas変更がschema不適合で拒否された場合は成功表示しない。
+- 不変条件: API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 検証: focused 4/4、deps、lint、Hub／Desktop typecheck、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。
+- 次: Draft PR、全CI／Vercel Preview成功後に停止する。merge／本番反映後、既存生成Assetだけを再配置して保存・再表示を確認し、追加の実Provider生成は行わない。
+
 ## 2026-08-06 BFL poll待機応答の互換修正
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

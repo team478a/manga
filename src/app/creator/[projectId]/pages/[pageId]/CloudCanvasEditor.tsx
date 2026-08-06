@@ -583,7 +583,7 @@ export function CloudCanvasEditor({
     if (!panelId) return;
     const layerId = crypto.randomUUID();
     const timestamp = now();
-    commit((draft) => {
+    return commit((draft) => {
       applyPanelCandidateAdoption(draft, {
         assetId,
         assetFileName: assetMap.get(assetId)?.file_name,
@@ -811,8 +811,9 @@ export function CloudCanvasEditor({
     }
     setAssets(nextAssets);
     const layerType = classifyCandidateLayer(job);
-    applyAsset(job.output_asset_id, job.id, layerType, targetPanelId);
-    setMessage("生成Assetを対象のコマへ配置しました。");
+    if (applyAsset(job.output_asset_id, job.id, layerType, targetPanelId))
+      setMessage("生成Assetを対象のコマへ配置しました。");
+    else setMessage("生成Assetをコマへ配置できませんでした。");
   }
 
   function movePanelLayer(layerId: string, delta: -1 | 1) {

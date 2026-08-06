@@ -82,7 +82,7 @@ test("背景候補の採用はpanel imageと最背面layerを同じ値で更新�
     panelId: "panel-1",
     name: "AI背景レイヤー",
     type: "background",
-    orderIndex: -1,
+    orderIndex: 0,
     visible: true,
     locked: false,
     opacity: 1,
@@ -97,6 +97,10 @@ test("背景候補の採用はpanel imageと最背面layerを同じ値で更新�
     createdAt: "2026-08-05T00:00:00.000Z",
     updatedAt: "2026-08-05T00:00:00.000Z",
   });
+  assert.deepEqual(
+    canvas.panelLayers.slice(0, 2).map((layer) => layer.orderIndex),
+    [1, 2],
+  );
 });
 
 test("透明人物候補はpanel imageを置換せず最前面multiply layerへ採用する", () => {
