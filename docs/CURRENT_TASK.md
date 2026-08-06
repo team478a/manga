@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R2C 実Provider本番受入れ完了
+
+- 状態: `PRODUCTION_ACCEPTED_AWAITING_OWNER_REVIEW`
+- Branch: `codex/r2c-provider-acceptance-complete`
+- Base: `origin/feature/manga-canvas-mvp`（PR #187 merge後、`fd87cfb`）
+- 実Provider: Black Forest Labs `flux-2-pro`の一般向け背景画像Jobを1件だけ本番実行し、completed 100%を確認した。
+- 利用量: 予約2クレジットを確定し、FREEプランは使用2／予約0／残り18。追加再実行は行っていない。
+- Storage: 生成画像をprivate Asset `AI-de96a4d6-8f76-4500-a685-6c27e7e639a4.png`として保存し、Creator候補と画像素材で表示できた。
+- Canvas: PR #187反映後、既存Assetをコマ1へ配置し、AI背景レイヤー、自動保存、タブ終了、ロック期限切れ後の再オープンで画像とレイヤーが復元された。
+- 合格範囲: Provider送信、poll、download、credit確定、private Storage、候補表示、コマ採用、Canvas保存・再表示。
+- 不変条件: Provider、model、pricing、retry、timeout、API、DB、migration、RPC、Storage契約、Feature Flag、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更していない。
+- 停止条件: PR-R2Cと実Provider受入れは完了。責任者確認前にPR-R3へ進まない。
+
 ## 2026-08-06 生成画像のコマ採用永続化修正
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

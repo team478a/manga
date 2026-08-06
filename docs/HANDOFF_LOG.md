@@ -3433,3 +3433,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 背景候補の`orderIndex=-1`がCanvas schemaの0以上制約に違反し、履歴commitが変更を破棄していた。背景を0、既存レイヤーを順序維持で1以降へ正規化し、commit拒否時の誤った成功表示も防止する。
 - API、DB、migration、RPC、Storage、Provider、model、pricing、Canvas schema、成人向け境界、Desktopの変更なし。追加の実Provider生成は不要。
 - focused 4/4と全ローカル品質ゲート、migration 48/48、Hub／Desktop build、release structure preflight、diff checkに成功。
+# 2026-08-06 Codex: PR-R2C 実Provider本番受入れ完了
+
+- Base: `origin/feature/manga-canvas-mvp`@`fd87cfb`（PR #187 merge後）
+- BFL `flux-2-pro`の一般向け背景画像Jobを本番で1件だけ完了し、2クレジット確定、private Asset保存、候補表示を確認した。
+- PR #187反映後は追加生成せず既存Assetだけをコマ1へ配置した。AI背景レイヤー、自動保存、タブ終了、編集ロック期限切れ後の再オープンで画像とレイヤーが復元された。
+- PR-R2Cの実Provider受入れ合格条件を満たした。Provider、model、pricing、retry、timeout、API、DB、migration、RPC、Storage契約、Canvas schema、成人向け境界、Desktopの変更なし。
+- 責任者確認前にPR-R3へ進まない。
