@@ -1,10 +1,11 @@
 import { z } from "zod";
 import { PermissionDeniedError, ValidationError } from "./domain-errors.ts";
+import { featureFlagEnabled } from "./feature-flags.ts";
 
 export const CLOUD_ADULT_PLANNING_FEATURE_KEY = "adult_planning";
 
 export const cloudAdultPlanningFeatureEnabled = () =>
-  process.env.CLOUD_ADULT_PLANNING_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_ADULT_PLANNING_ENABLED");
 
 export const cloudAdultPlanningInputSchema = z.object({
   status: z.enum(["draft", "ready"]),

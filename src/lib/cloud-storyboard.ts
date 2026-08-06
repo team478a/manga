@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { ValidationError } from "./domain-errors.ts";
+import { featureFlagEnabled } from "./feature-flags.ts";
 
 export const cloudStoryboardFeatureEnabled = () =>
-  process.env.CLOUD_STORYBOARD_GENERATION_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_STORYBOARD_GENERATION_ENABLED");
 
 const dialogueSchema = z.object({
   type: z.enum(["speech", "thought", "narration"]),

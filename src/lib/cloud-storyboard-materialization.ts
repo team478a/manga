@@ -1,8 +1,9 @@
 import { z } from "zod";
 import { DomainError, ResourceNotFoundError } from "./domain-errors.ts";
+import { featureFlagEnabled } from "./feature-flags.ts";
 
 export const cloudStoryboardCanvasFeatureEnabled = () =>
-  process.env.CLOUD_STORYBOARD_CANVAS_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_STORYBOARD_CANVAS_ENABLED");
 
 export type CloudStoryboardMaterialization = {
   id: string;

@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R3-2 Auth／owner／Feature Flag共通契約
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-2-auth-feature-flags`
+- Base: `origin/feature/manga-canvas-mvp`（PR #190 merge後、`ca9ef20`）
+- 目的: Auth／admin／owner判定を純粋guardで固定し、監査済み21個のFeature Flag名と既存解釈をregistryへ集約する。
+- 責任者判断: `CLOUD_PANEL_INPAINTING_ENABLED`と`CLOUD_PANEL_OUTPAINTING_ENABLED`の解釈不一致は、小文字`true`だけを許可するfail-closed契約へ統一する。他の`CLOUD_*`の大文字小文字非依存、`MANGAI_*`の厳密比較は維持する。
+- 実装: profile/admin redirect、owner ID完全一致判定を純粋化した。研究、企画、シナリオ、ネーム、Canvas、画像、成人向け、monitor、Worker、Provider、legacyのFlag判定をregistryへ移した。
+- 不変条件: redirect先、Auth／admin／owner順序、DB、RLS、migration、RPC、Storage、URL、API、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向けProvider境界、Desktopを変更しない。
+- 検証: focused、deps（error 0）、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。責任者確認前にPR-R3-3またはPR-R4へ進まない。
+
 ## 2026-08-06 PR-R3-1 Action／redirect／validation共通契約
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

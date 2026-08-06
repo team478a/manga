@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { featureFlagEnabled } from "./feature-flags.ts";
 
 export const cloudScenarioFeatureEnabled = () =>
-  process.env.CLOUD_SCENARIO_GENERATION_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_SCENARIO_GENERATION_ENABLED");
 
 const characterSchema = z.object({
   id: z.string().regex(/^character-[1-6]$/),

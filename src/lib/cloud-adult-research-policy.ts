@@ -1,10 +1,11 @@
 import type { CloudResearchInput } from "./cloud-research.ts";
 import { PermissionDeniedError } from "./domain-errors.ts";
+import { featureFlagEnabled } from "./feature-flags.ts";
 
 export const CLOUD_ADULT_RESEARCH_TERMS_VERSION = "adult-research-v1";
 
 export const cloudAdultResearchFeatureEnabled = () =>
-  process.env.CLOUD_ADULT_RESEARCH_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_ADULT_RESEARCH_ENABLED");
 
 export type CloudAdultResearchEntitlement = {
   profile_id: string;

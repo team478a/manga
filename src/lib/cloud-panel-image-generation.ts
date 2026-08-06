@@ -11,6 +11,7 @@ import {
 } from "./domain-errors.ts";
 import type { CloudStoryScenarioResult } from "./cloud-scenario.ts";
 import type { CloudCharacterProfile } from "./cloud-character-profile.ts";
+import { featureFlagEnabled } from "./feature-flags.ts";
 import {
   resolveWorldProfilesForPanel,
   type CloudStyleBible,
@@ -18,11 +19,11 @@ import {
 } from "./cloud-world-bible.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
-  process.env.CLOUD_PANEL_IMAGE_GENERATION_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_PANEL_IMAGE_GENERATION_ENABLED");
 export const cloudPanelInpaintingFeatureEnabled = () =>
-  process.env.CLOUD_PANEL_INPAINTING_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_PANEL_INPAINTING_ENABLED");
 export const cloudPanelOutpaintingFeatureEnabled = () =>
-  process.env.CLOUD_PANEL_OUTPAINTING_ENABLED?.toLowerCase() === "true";
+  featureFlagEnabled("CLOUD_PANEL_OUTPAINTING_ENABLED");
 
 export const cloudPanelImageGenerationRequestSchema = z.object({
   projectId: z.string().uuid(),

@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { processNextCloudExportJob } from "@/lib/cloud-export-worker";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 
 export const runtime = "nodejs";
 // A segment renders up to eight pages and the last segment also merges the PDF.
@@ -15,7 +16,7 @@ function authorized(request: Request) {
 
 export async function POST(request: Request) {
   if (!authorized(request)) return NextResponse.json({ error: "認証できません。" }, { status: 401 });
-  if (process.env.MANGAI_CLOUD_EXPORT_WORKER_ENABLED !== "true")
+  if (!featureFlagEnabled("MANGAI_CLOUD_EXPORT_WORKER_ENABLED"))
     return NextResponse.json({ error: "書き出しWorkerは停止中です。" }, { status: 503 });
   try {
     const result = await processNextCloudExportJob({

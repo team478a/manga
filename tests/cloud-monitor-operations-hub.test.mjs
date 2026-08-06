@@ -50,7 +50,7 @@ test("Worker APIは秘密鍵と停止フラグでfail closedする", async () =>
   const worker = await read("../src/app/api/internal/monitor-ops/worker/route.ts");
   assert.match(worker, /MANGAI_MONITOR_OPS_WORKER_SECRET/);
   assert.match(worker, /expected\.length < 32/);
-  assert.match(worker, /MANGAI_MONITOR_OPS_WORKER_ENABLED !== "true"/);
+  assert.match(worker, /!featureFlagEnabled\("MANGAI_MONITOR_OPS_WORKER_ENABLED"\)/);
   assert.match(worker, /claim_cloud_monitor_issue_task/);
   assert.match(worker, /complete_cloud_monitor_issue_task/);
   assert.doesNotMatch(worker, /mergePullRequest|production deploy/i);

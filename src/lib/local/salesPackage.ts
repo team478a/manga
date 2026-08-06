@@ -4,13 +4,14 @@ import DatabaseConstructor from "better-sqlite3";
 import type { Database as SqliteDatabase } from "better-sqlite3";
 import JSZip from "jszip";
 import os from "node:os";
+import { featureFlagEnabled } from "../feature-flags.ts";
 
 const MANGAI_ROOT = path.join(os.homedir(), "Documents", "MANGAI");
 const PROJECTS_ROOT = path.join(MANGAI_ROOT, "projects");
 const DB_PATH = path.join(MANGAI_ROOT, "mangai_local.sqlite");
 
 export function isLegacyLocalSalesEnabled() {
-  return process.env.MANGAI_ENABLE_LEGACY_LOCAL_TOOLS === "true";
+  return featureFlagEnabled("MANGAI_ENABLE_LEGACY_LOCAL_TOOLS");
 }
 
 const ADULT_NOTICE_LINES = [
