@@ -19,8 +19,9 @@ import {
   RateLimitedError,
   ValidationError,
 } from "@/lib/domain-errors";
+import { actionIdSchema } from "@/lib/action-contracts";
 
-const uuidSchema = z.string().uuid();
+const uuidSchema = actionIdSchema;
 const sha256Schema = z.string().regex(/^[0-9a-f]{64}$/);
 
 export async function GET(request: Request) {

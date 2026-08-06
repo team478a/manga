@@ -18,10 +18,11 @@ import {
   logHubError,
   logHubEvent,
 } from "@/lib/hub-logger";
+import { actionIdSchema } from "@/lib/action-contracts";
 
 export const dynamic = "force-dynamic";
 
-const paramsSchema = z.object({ sourceProjectId: z.string().uuid() });
+const paramsSchema = z.object({ sourceProjectId: actionIdSchema });
 const updateSchema = z.object({
   title: z.string().trim().min(1).max(200),
   description: z.string().trim().max(5000),

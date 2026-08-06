@@ -7,6 +7,7 @@ import { requireAdmin } from "@/lib/auth";
 import { CLOUD_ADULT_PLANNING_FEATURE_KEY } from "@/lib/cloud-adult-planning";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
+import { formString } from "@/app/actions/shared/form-data";
 
 const featureGrantSchema = z.object({
   profileId: z.string().uuid(),
@@ -23,11 +24,6 @@ const featureGrantSchema = z.object({
   adminNote: z.string().trim().max(500),
 });
 
-function value(formData: FormData, name: string) {
-  const entry = formData.get(name);
-  return typeof entry === "string" ? entry : "";
-}
-
 export async function setCloudAdultPlanningGrantAction(
   profileId: string,
   formData: FormData,
@@ -35,10 +31,10 @@ export async function setCloudAdultPlanningGrantAction(
   const { profile: actor } = await requireAdmin();
   const parsed = featureGrantSchema.safeParse({
     profileId,
-    status: value(formData, "status"),
-    source: value(formData, "source"),
-    validUntil: value(formData, "validUntil"),
-    adminNote: value(formData, "adminNote"),
+    status: formString(formData, "status"),
+    source: formString(formData, "source"),
+    validUntil: formString(formData, "validUntil"),
+    adminNote: formString(formData, "adminNote"),
   });
   if (!parsed.success)
     redirect(

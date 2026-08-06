@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R3-1 Action／redirect／validation共通契約
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-1-action-contracts`
+- Base: `origin/feature/manga-canvas-mvp`（PR #189 merge後、`030c25b`）
+- 目的: R3-0台帳に従い、ActionのUUID、FormData文字列、message/error redirect、内部redirect allowlistの共通primitiveとcharacterization testを追加する。
+- 実装: raw/trim済みFormDataの意味を分離し、代表的なCreator／管理者Actionへ適用した。UUID schemaを5経路で共有し、Auth callbackは完全一致allowlist helper、管理Actionは既存query encodingを維持するfeedback helperを使用する。
+- 不変条件: URL、query名、message/error文言、encoding、invalid時の遷移、API、DB、migration、RPC、Storage、Auth／owner、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 検証: focused 16/16、deps（error 0）、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。責任者確認前にPR-R3-2またはPR-R4へ進まない。
+
 ## 2026-08-06 PR-R3-0 共通処理重複監査・分割計画
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

@@ -31,6 +31,8 @@ test("認証callbackは許可した遷移先だけを使用する", async () => 
     "utf8",
   );
   assert.match(source, /exchangeCodeForSession/);
-  assert.match(source, /next === "\/update-password"/);
+  assert.match(source, /allowedInternalRedirect/);
+  assert.match(source, /\["\/update-password"\]/);
+  assert.match(source, /"\/dashboard"/);
   assert.doesNotMatch(source, /NextResponse\.redirect\(next\)/);
 });

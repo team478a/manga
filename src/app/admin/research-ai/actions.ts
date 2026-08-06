@@ -9,21 +9,17 @@ import {
   setCloudResearchAiSettings,
 } from "@/lib/cloud-research-ai-settings";
 import { ValidationError } from "@/lib/domain-errors";
-
-function field(formData: FormData, name: string) {
-  const value = formData.get(name);
-  return typeof value === "string" ? value : "";
-}
+import { formString } from "@/app/actions/shared/form-data";
 
 export async function updateCloudResearchAiAction(formData: FormData) {
   let message = "市場分析AI設定を更新しました。";
   try {
     const { profile } = await requireAdmin();
     const parsed = cloudResearchAiModelSchema.safeParse(
-      field(formData, "model"),
+      formString(formData, "model"),
     );
-    const apiKey = field(formData, "apiKey").trim();
-    const enabled = field(formData, "enabled") === "true";
+    const apiKey = formString(formData, "apiKey").trim();
+    const enabled = formString(formData, "enabled") === "true";
     if (!parsed.success)
       throw new ValidationError("AIモデルを確認してください。");
     if (

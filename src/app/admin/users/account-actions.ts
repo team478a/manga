@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
+import { actionFeedbackTarget, actionIdSchema } from "@/lib/action-contracts";
 
 type TargetProfile = {
   id: string;
@@ -14,10 +14,10 @@ type TargetProfile = {
   role: string;
 };
 
-const profileIdSchema = z.string().uuid();
+const profileIdSchema = actionIdSchema;
 
 const usersRedirect = (kind: "error" | "message", text: string) =>
-  `/admin/users?${kind}=${encodeURIComponent(text)}`;
+  actionFeedbackTarget("/admin/users", kind, text);
 
 async function manageableTarget(profileId: string) {
   const { user: actorUser } = await requireAdmin();

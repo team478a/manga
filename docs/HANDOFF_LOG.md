@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-06 Codex: PR-R3-1 Action／redirect／validation共通契約
+
+- Branch: `codex/refactor-r3-1-action-contracts`
+- Base: `origin/feature/manga-canvas-mvp`@`030c25b`（PR #189 merge後）
+- UUID、raw/trim済みFormData、message/error redirect、完全一致内部redirect allowlistの共通primitiveを追加し、代表的なAction／Routeへ外部挙動不変で適用した。
+- 日本語query encoding、悪意ある外部redirect、UUID不正、File/missing FormDataをcharacterization testで固定した。
+- URL、API、DB、migration、RPC、Storage、Auth／owner、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopの変更なし。
+- focused 16/16、deps、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止し、PR-R3-2またはPR-R4へ進まない。
+
+---
+
 ## 2026-08-06 Codex: PR-R3-0 共通処理重複監査・分割計画
 
 - Branch: `codex/refactor-r3-0-shared-platform-audit`

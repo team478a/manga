@@ -15,6 +15,7 @@ import {
   getCloudAiWorkerConfiguration,
   getCloudAiWorkerInvocationUrl,
 } from "@/modules/cloud-ai/presentation/admin-actions";
+import { formString } from "@/app/actions/shared/form-data";
 
 const micros = z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const workerResultSchema = z.object({
@@ -28,11 +29,6 @@ const workerResultSchema = z.object({
   ]),
   jobId: z.string().uuid().optional(),
 });
-
-function field(formData: FormData, name: string) {
-  const value = formData.get(name);
-  return typeof value === "string" ? value : "";
-}
 
 async function audit(input: {
   actorId: string;
@@ -166,9 +162,9 @@ export async function updateCloudAiSettingsAction(formData: FormData) {
       warningPercent: z.coerce.number().int().min(1).max(100),
     })
     .safeParse({
-      generationEnabled: field(formData, "generationEnabled"),
-      dailyCostLimitMicros: field(formData, "dailyCostLimitMicros"),
-      warningPercent: field(formData, "warningPercent"),
+      generationEnabled: formString(formData, "generationEnabled"),
+      dailyCostLimitMicros: formString(formData, "dailyCostLimitMicros"),
+      warningPercent: formString(formData, "warningPercent"),
     });
   if (!parsed.success)
     redirect(encodeURI("/admin/cloud-ai?error=運用設定を確認してください"));
@@ -214,9 +210,9 @@ export async function updateCloudGeneralImageProviderAction(
       enabled: z.enum(["true", "false"]),
     })
     .safeParse({
-      apiKey: field(formData, "apiKey"),
-      model: field(formData, "model"),
-      enabled: field(formData, "enabled"),
+      apiKey: formString(formData, "apiKey"),
+      model: formString(formData, "model"),
+      enabled: formString(formData, "enabled"),
     });
   if (!parsed.success)
     redirect(encodeURI("/admin/cloud-ai?error=画像生成AI設定を確認してください"));
@@ -254,11 +250,11 @@ export async function updateCloudAiPlanAction(
       active: z.enum(["true", "false"]),
     })
     .safeParse({
-      monthlyCredits: field(formData, "monthlyCredits"),
-      monthlyCostLimitMicros: field(formData, "monthlyCostLimitMicros"),
-      userRate: field(formData, "userRate"),
-      projectRate: field(formData, "projectRate"),
-      active: field(formData, "active"),
+      monthlyCredits: formString(formData, "monthlyCredits"),
+      monthlyCostLimitMicros: formString(formData, "monthlyCostLimitMicros"),
+      userRate: formString(formData, "userRate"),
+      projectRate: formString(formData, "projectRate"),
+      active: formString(formData, "active"),
     });
   if (!parsed.success || !["free", "trial", "creator"].includes(planKey))
     redirect(encodeURI("/admin/cloud-ai?error=Plan設定を確認してください"));
@@ -301,10 +297,10 @@ export async function createCloudAiPriceAction(formData: FormData) {
     maxCostMicros: micros,
     currency: z.string().trim().regex(/^[A-Z]{3}$/),
   }).safeParse({
-    providerId: field(formData,"providerId"), modelId: field(formData,"modelId"),
-    kind: field(formData,"kind"), jobType: field(formData,"jobType"),
-    pricingVersion: field(formData,"pricingVersion"), credits: field(formData,"credits"),
-    maxCostMicros: field(formData,"maxCostMicros"), currency: field(formData,"currency").toUpperCase(),
+    providerId: formString(formData,"providerId"), modelId: formString(formData,"modelId"),
+    kind: formString(formData,"kind"), jobType: formString(formData,"jobType"),
+    pricingVersion: formString(formData,"pricingVersion"), credits: formString(formData,"credits"),
+    maxCostMicros: formString(formData,"maxCostMicros"), currency: formString(formData,"currency").toUpperCase(),
   });
   if (!parsed.success) redirect(encodeURI("/admin/cloud-ai?error=価格情報を確認してください"));
   const admin = createAdminClient();

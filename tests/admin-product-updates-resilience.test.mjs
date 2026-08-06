@@ -36,7 +36,7 @@ test("更新情報Actionは日本語の結果メッセージを安全にURLへ�
   );
 
   assert.match(actions, /const productUpdatesTarget/);
-  assert.match(actions, /encodeURIComponent\(text\)/);
+  assert.match(actions, /actionFeedbackTarget\("\/admin\/product-updates", kind, text\)/);
   assert.match(actions, /productUpdatesTarget\("message", "更新情報を保存しました"\)/);
   assert.match(actions, /productUpdatesTarget\("error", "更新情報を保存できませんでした/);
   assert.doesNotMatch(actions, /redirect\("\/admin\/product-updates\?(?:message|error)=[^"$]/);
