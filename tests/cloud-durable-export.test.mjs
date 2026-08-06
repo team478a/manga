@@ -45,12 +45,16 @@ test("Export preflightは秘密値を表示せず必須設定だけを判定す�
 });
 
 test("Workerはページ画像・分割PDF・完成PDFを非公開Storageへ保存する", () => {
-  const worker = read("src/lib/cloud-export-worker.ts");
-  assert.match(worker, /slice\(start, start \+ job\.segment_size\)/);
+  const worker = read("src/modules/cloud-creator/export/process-export-segment.ts");
+  const plan = read("src/modules/cloud-creator/export/export-plan.ts");
+  const repository = read("src/modules/cloud-creator/export/manga-export-repository.ts");
+  const storage = read("src/modules/cloud-creator/export/manga-export-storage.ts");
+  assert.match(plan, /slice\(/);
   assert.match(worker, /segments\//);
   assert.match(worker, /mergePagesPdfs/);
   assert.match(worker, /manuscript\.pdf/);
-  assert.match(worker, /fail_cloud_export_job/);
+  assert.match(repository, /fail_cloud_export_job/);
+  assert.match(storage, /cloud-exports/);
 });
 
 test("作品画面は進捗・停止・再開・失敗箇所からの再開を表示する", () => {

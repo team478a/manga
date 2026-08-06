@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R2C-4 PDF／PNG出力application／infrastructure境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r2c4-export-boundary`
+- Base: `origin/feature/manga-canvas-mvp`（PR #182 merge後、`c7a4719`）
+- 目的: 同期PDF／PNG／販売package出力と長編分割Workerを、純粋なexport plan、application調停、repository、Storageへ分離する。
+- 実装: 4ページsegment、ページ名・Storage path、表示Asset選択を純粋planへ移した。長編WorkerのDB／RPCをrepository、private Storage入出力をStorage adapter、描画・PDF結合・完了／失敗調停をapplicationへ分離した。同期Export実体もapplication入口へ移し、旧lib入口は互換再exportとして維持する。
+- 互換性: URL、API、DB、migration、RPC名・引数、Storage bucket／path／content type、署名URL、Worker secret／300秒、lease／retry、4ページ分割、PNG／PDF／package内容を変更しない。
+- 変更量: 1,304行相当で1,500行上限内。
+- 検証: focused 17/17、deps（module error 0）、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、owner isolation、100ページ4/4、diff check成功。
+- 実Provider: R2C-4 merge後の別工程で実施するため、このPRでは呼び出さない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。R2C完了承認前にPR-R3へ進まない。
+
 ## 2026-08-06 PR-R2C-3 一括・制作状態・長編application境界
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

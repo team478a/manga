@@ -31,7 +31,13 @@ test("Worker処理は実行上限内で失敗を記録し再試行可能にす�
     "src/modules/cloud-ai/application/process-generation.ts",
   );
   const retryPolicy = read("src/modules/cloud-ai/domain/retry-policy.ts");
-  const exportWorker = read("src/lib/cloud-export-worker.ts");
+  const exportWorker = read(
+    "src/modules/cloud-creator/export/process-export-segment.ts",
+  );
+  const exportPlan = read("src/modules/cloud-creator/export/export-plan.ts");
+  const exportRepository = read(
+    "src/modules/cloud-creator/export/manga-export-repository.ts",
+  );
   const storageWorker = read("src/lib/cloud-storage-lifecycle-worker.ts");
 
   assert.match(imageProvider, /timeoutMs \?\? 120_000/);
@@ -39,8 +45,9 @@ test("Worker処理は実行上限内で失敗を記録し再試行可能にす�
   assert.match(retryPolicy, /shouldRetryCloudGeneration/);
   assert.match(aiWorker, /shouldRetryGeneration/);
   assert.match(aiWorker, /status: retryable \? \("retrying" as const\) : \("failed" as const\)/);
-  assert.match(exportWorker, /slice\(start, start \+ job\.segment_size\)/);
-  assert.match(exportWorker, /p_retryable: true/);
+  assert.match(exportPlan, /slice\(/);
+  assert.match(exportWorker, /failExportJob/);
+  assert.match(exportRepository, /p_retryable: true/);
   assert.match(storageWorker, /fail_cloud_page_thumbnail/);
   assert.match(storageWorker, /fail_cloud_storage_cleanup/);
 });

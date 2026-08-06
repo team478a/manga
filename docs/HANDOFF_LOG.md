@@ -3388,3 +3388,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - データ作成、更新、削除、有料Provider実行、Feature Flag変更、migration適用は行わない。
 - 専用4/4、既存所有者分離7/7、Cloud漫画repository preflight、deps:check、lint、Hub typecheck、Hub 490/490、migration 48/48、production build、git diff check成功。
 - 未完了: ステージング認証情報と受入れ用データを用いた実行、署名URL・生成キャンセル・共同編集者の実ブラウザ確認。
+# 2026-08-06 Codex: PR-R2C-4 PDF／PNG出力application／infrastructure境界
+
+- Branch: `codex/refactor-r2c4-export-boundary`
+- Base: `origin/feature/manga-canvas-mvp`（PR #182 merge後、`c7a4719`）
+- 同期Export実体をapplication入口へ移し、旧`cloud-canvas-export`は互換再exportとして維持した。
+- 長編Workerをexport plan、application、repository、Storageへ分離し、旧`cloud-export-worker`入口を維持した。
+- page／layer選択、legacy fallback、4ページsegment、Storage path、content type、PDF merge、lease／retry／failure RPC、Worker secret／300秒、package manifest／checksumの契約は変更していない。
+- DB、migration、RPC、Storage schema、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG仕様、成人向け境界、Desktopは変更していない。
+- focused 17/17、全ローカル品質ゲート、Cloud漫画repository受入れ、owner isolation、100ページ長編4/4に成功。実ProviderはR2C完了後の別工程まで呼び出さない。
+- Draft PRと全CI／Vercel Preview成功後に停止し、責任者のR2C完了承認前にPR-R3へ進まない。
