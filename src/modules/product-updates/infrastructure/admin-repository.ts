@@ -119,4 +119,3 @@ export function editProductUpdate(input: {
     .select("id")
     .maybeSingle();
 }
-

@@ -21,4 +21,3 @@ export function setAdultResearchEnabled(actorProfileId: string, enabled: boolean
     p_enabled: enabled,
   });
 }
-
