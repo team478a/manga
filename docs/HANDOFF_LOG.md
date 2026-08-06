@@ -3398,3 +3398,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - DB、migration、RPC、Storage schema、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG仕様、成人向け境界、Desktopは変更していない。
 - focused 17/17、全ローカル品質ゲート、Cloud漫画repository受入れ、owner isolation、100ページ長編4/4に成功。実ProviderはR2C完了後の別工程まで呼び出さない。
 - Draft PRと全CI／Vercel Preview成功後に停止し、責任者のR2C完了承認前にPR-R3へ進まない。
+
+# 2026-08-06 Codex: 本番Cloud AI Worker手動実行URL修正
+
+- Branch: `codex/fix-cloud-ai-worker-invocation-url`
+- Base: `origin/feature/manga-canvas-mvp`@`ec1c6ee`
+- 本番実機検証でBFL、pricing、全体設定、Worker readinessは正常だが、管理画面の手動実行がProvider呼び出し前に失敗した。
+- 原因は本番でも`VERCEL_URL`を優先し、保護付き固有デプロイURLへ自己fetchしていたこと。productionのみ公開`NEXT_PUBLIC_SITE_URL`を優先し、Preview分離を回帰テストで固定した。
+- 待機中の一般向け背景画像Jobは再実行していない。PR mergeと本番再デプロイ後、管理画面から1件だけ処理してBFL実Provider、Asset保存、Canvas採用まで確認する。
+- DB、migration、RPC、Storage、Provider契約、価格、Scheduler、成人向け境界、Desktopの変更なし。

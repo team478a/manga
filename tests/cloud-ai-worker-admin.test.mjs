@@ -23,10 +23,29 @@ test("Worker設定は有効状態と32文字以上の秘密鍵を両方要求す
   );
 });
 
-test("Worker呼び出し先は現在のVercel deploymentを優先して固定する", () => {
+test("Worker呼び出し先は本番公開URLとPreview deploymentを安全に使い分ける", () => {
   assert.equal(
-    getCloudAiWorkerInvocationUrl({ VERCEL_URL: "preview.example.vercel.app" }),
+    getCloudAiWorkerInvocationUrl({
+      VERCEL_ENV: "preview",
+      VERCEL_URL: "preview.example.vercel.app",
+      NEXT_PUBLIC_SITE_URL: "https://app.example.com",
+    }),
     "https://preview.example.vercel.app/api/internal/cloud-ai/worker",
+  );
+  assert.equal(
+    getCloudAiWorkerInvocationUrl({
+      VERCEL_ENV: "production",
+      VERCEL_URL: "protected.example.vercel.app",
+      NEXT_PUBLIC_SITE_URL: "https://app.example.com",
+    }),
+    "https://app.example.com/api/internal/cloud-ai/worker",
+  );
+  assert.equal(
+    getCloudAiWorkerInvocationUrl({
+      VERCEL_ENV: "production",
+      VERCEL_URL: "production.example.vercel.app",
+    }),
+    "https://production.example.vercel.app/api/internal/cloud-ai/worker",
   );
   assert.equal(
     getCloudAiWorkerInvocationUrl({ NEXT_PUBLIC_SITE_URL: "javascript:alert(1)" }),

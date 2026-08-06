@@ -14,9 +14,13 @@ export function getCloudAiWorkerConfiguration(
 export function getCloudAiWorkerInvocationUrl(
   env: CloudAiWorkerEnvironment = process.env,
 ) {
-  const baseUrl = env.VERCEL_URL
+  const deploymentUrl = env.VERCEL_URL
     ? `https://${env.VERCEL_URL}`
-    : env.NEXT_PUBLIC_SITE_URL;
+    : undefined;
+  const baseUrl =
+    env.VERCEL_ENV === "production"
+      ? env.NEXT_PUBLIC_SITE_URL ?? deploymentUrl
+      : deploymentUrl ?? env.NEXT_PUBLIC_SITE_URL;
   if (!baseUrl) return null;
   try {
     const parsed = new URL(baseUrl);

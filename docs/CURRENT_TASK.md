@@ -1495,3 +1495,13 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 保存中表示、Provider障害時の安全な日本語案内、一覧へ戻る導線を提供する。
 - DB schema、migration、環境変数、公開状態は変更しない。
 - 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
+# 2026-08-06 Codex: 本番Cloud AI Worker手動実行URL修正
+
+- Branch: `codex/fix-cloud-ai-worker-invocation-url`
+- Base: `origin/feature/manga-canvas-mvp`（PR #183 merge後、`ec1c6ee`）
+- 実Provider受入れで、管理画面の手動Worker実行が本番でも保護付き`VERCEL_URL`を優先し、内部Worker endpointへ到達できないことを確認した。
+- 本番は`NEXT_PUBLIC_SITE_URL`を優先し、Previewは従来どおり自身の`VERCEL_URL`を使用する。公開URL未設定時の既存fallbackとHTTPS検証は維持する。
+- API、DB、migration、RPC、Storage、Provider、model、pricing、retry、timeout、Scheduler、Feature Flag、成人向け境界、Desktopは変更していない。
+- focused 8/8、deps:check、lint、typecheck、Hub／Canvas／AI／Desktop test、migration 48本、Hub／Desktop build、release structure preflight、diff checkに成功。
+- 実Provider Jobは1件待機中。修正PRの全CIとVercel Preview成功、責任者のmerge、本番再デプロイ後に手動Workerを1回だけ再実行する。それまでは追加Jobを登録しない。
