@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-06 Codex: 管理者向け外部API設定の集約
+
+- Branch: `codex/admin-provider-settings-hub`、Base: `origin/feature/manga-canvas-mvp`@`74c0faf`。
+- `/admin/provider-settings`へOpenAI、BFL、ResendのAPIキー入力、状態、関連設定、公式取得手順を集約した。
+- 旧画面からAPIキー入力欄を撤去し、既存URLは転送または集約画面への導線として維持した。
+- 既存Vault保存関数、管理者認証、監査、非再表示、成人向け非送信境界を再利用し、DB／migration／Provider契約は変更していない。
+- 専用3/3、関連10/10、Hub全体530/530、deps、Hub／Desktop typecheck、lint、production build、diff check成功。Draft PR、CI／Vercelは未完了。
+
+---
+
 ## 2026-08-06 Codex: モニター市場分析・報告保存のServer境界修正
 
 - Branch: `codex/fix-monitor-persistence-r2`、Base: `origin/feature/manga-canvas-mvp`@`7ca64c4`。

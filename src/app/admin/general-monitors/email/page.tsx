@@ -6,7 +6,6 @@ import { requireAdmin } from "@/lib/auth";
 import { getCloudGeneralMonitorEmailSettings } from "@/lib/cloud-general-monitor-email-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
-  updateGeneralMonitorEmailSettingsAction,
   updateGeneralMonitorEmailTemplateAction,
 } from "./actions";
 
@@ -66,10 +65,7 @@ export default async function GeneralMonitorEmailSettingsPage({
         </section>
       ) : (
         <>
-          <form
-            action={updateGeneralMonitorEmailSettingsAction}
-            className="panel mt-6 space-y-5"
-          >
+          <section className="panel mt-6 space-y-5">
             <div className="rounded-lg bg-violet-50 p-4">
               <p className="font-bold">
                 利用状態:{" "}
@@ -81,52 +77,13 @@ export default async function GeneralMonitorEmailSettingsPage({
                 最終更新: {new Date(settings.updatedAt).toLocaleString("ja-JP")}
               </p>
             </div>
-            <label className="label block" htmlFor="apiKey">
-              Resend APIキー
-              <input
-                autoComplete="new-password"
-                className="field mt-2"
-                id="apiKey"
-                name="apiKey"
-                placeholder={
-                  settings.configured
-                    ? "新しいAPIキーを入力して変更"
-                    : "re_..."
-                }
-                required
-                type="password"
-              />
-            </label>
-            <label className="label block" htmlFor="fromEmail">
-              送信元メールアドレス
-              <input
-                className="field mt-2"
-                defaultValue={settings.fromEmail}
-                id="fromEmail"
-                name="fromEmail"
-                placeholder="monitor@example.com"
-                required
-                type="email"
-              />
-            </label>
-            <label className="label block" htmlFor="fromName">
-              送信者名
-              <input
-                className="field mt-2"
-                defaultValue={settings.fromName}
-                id="fromName"
-                maxLength={80}
-                name="fromName"
-                required
-              />
-            </label>
-            <PendingSubmitButton
-              className="button w-full bg-violet-700 hover:bg-violet-800"
-              pendingLabel="設定を保存中…"
-            >
-              APIキーを保存して利用開始
-            </PendingSubmitButton>
-          </form>
+            <p className="text-sm text-stone-600">
+              APIキーと送信元情報は外部API設定へ集約しました。この画面では招待メールの文面だけを編集します。
+            </p>
+            <Link className="button-secondary inline-flex" href="/admin/provider-settings#resend">
+              外部API設定で変更
+            </Link>
+          </section>
           {settings.templateAvailable ? (
             <form
               action={updateGeneralMonitorEmailTemplateAction}

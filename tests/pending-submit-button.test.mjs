@@ -16,13 +16,14 @@ test("共通送信ボタンは処理中表示と二重送信防止を提供す�
 });
 
 test("モニター運用の送信操作は用途別の処理中表示を使う", async () => {
-  const [user, monitors, email, dashboard, welcome] = await Promise.all([
+  const [user, monitors, email, providers, dashboard, welcome] = await Promise.all([
     readFile(new URL("../src/app/admin/users/[id]/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/app/admin/general-monitors/page.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../src/app/admin/general-monitors/email/page.tsx", import.meta.url),
       "utf8",
     ),
+    readFile(new URL("../src/app/admin/provider-settings/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/app/dashboard/monitor/MonitorFeedbackForm.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../src/app/dashboard/monitor/welcome/MonitorStartButton.tsx", import.meta.url),
@@ -34,7 +35,8 @@ test("モニター運用の送信操作は用途別の処理中表示を使う",
   assert.match(user, /招待処理中…/);
   assert.match(user, /停止処理中…/);
   assert.match(monitors, /更新中…/);
-  assert.match(email, /設定を保存中…/);
+  assert.match(email, /文面を保存中…/);
+  assert.match(providers, /Resend設定を保存中…/);
   assert.match(dashboard, /報告を安全に送信中…/);
   assert.match(welcome, /開始準備中…/);
 });
