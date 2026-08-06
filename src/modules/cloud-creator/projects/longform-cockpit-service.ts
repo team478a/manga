@@ -1,4 +1,4 @@
-import { buildCloudLongformCockpit } from "@/lib/cloud-longform-cockpit";
+import { inspectLongformProduction } from "../../manga/application/inspect-longform-production";
 import { getCloudNarrativeContinuity } from "./narrative-continuity-service";
 import { listCloudCharacterProfiles } from "./character-profile-service";
 import { getCloudProjectWorkspace } from "./project-service";
@@ -7,37 +7,15 @@ import { listCloudChapterProductionPlans } from "./chapter-production-plan-servi
 import { getCloudProjectResourceUsage } from "./project-budget-service";
 
 export async function getCloudLongformCockpit(projectId: string) {
-  const workspace = await getCloudProjectWorkspace(projectId);
-  const [productionStates, continuity, characters, chapterPlans, resources] = await Promise.all([
-    listCloudPageProductionStates(projectId, workspace.pages).catch(() => []),
-    getCloudNarrativeContinuity(projectId).catch(() => ({
-      available: false,
-      facts: [],
-      threads: [],
-      review: { factCount: 0, threadCount: 0, openThreadCount: 0, warningCount: 0, issues: [] },
-    })),
-    listCloudCharacterProfiles(projectId).catch(() => ({ available: false, profiles: [] })),
-    listCloudChapterProductionPlans(projectId).catch(() => ({ available: false, plans: [] })),
-    getCloudProjectResourceUsage(projectId).catch(() => ({ available: false as const, usage: null })),
-  ]);
-  return {
-    project: workspace.project,
-    longformAvailable: workspace.longform.available,
-    continuityAvailable: continuity.available,
-    chapterPlansAvailable: chapterPlans.available,
-    resourceBudgetAvailable: resources.available,
-    resourceUsage: resources.usage,
-    cockpit: buildCloudLongformCockpit({
-      episodes: workspace.episodes,
-      pages: workspace.pages,
-      longform: workspace.longform,
-      productionStates,
-      facts: continuity.facts,
-      threads: continuity.threads,
-      issues: continuity.review.issues,
-      characterNames: characters.profiles.map((profile) => profile.name),
-      chapterPlans: chapterPlans.plans,
-      today: new Date().toISOString().slice(0, 10),
-    }),
-  };
+  return inspectLongformProduction({
+    projectId,
+    loadWorkspace: getCloudProjectWorkspace,
+    loadProductionStates: (workspace) => listCloudPageProductionStates(projectId, workspace.pages),
+    loadContinuity: () => getCloudNarrativeContinuity(projectId),
+    loadCharacters: () => listCloudCharacterProfiles(projectId),
+    loadChapterPlans: () => listCloudChapterProductionPlans(projectId),
+    loadResourceUsage: () => getCloudProjectResourceUsage(projectId),
+    selectWorkspace: (workspace) => workspace,
+    today: new Date().toISOString().slice(0, 10),
+  });
 }

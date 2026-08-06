@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-06 Codex: PR-R2C-3 一括・制作状態・長編application境界
+
+- Branch: `codex/refactor-r2c3-longform-application`、Base: `origin/feature/manga-canvas-mvp`@`2edacba`。
+- 一括生成の選択・64コマ上限・履歴集計と、制作状態／context revision判定をManga domainへ抽出した。
+- 長編cockpitのproduction／continuity／character／chapter plan／budget部分失敗調停と、checkpoint完成版preflight／作成／復元順序をManga applicationへ抽出した。
+- 既存`cloud-creator` serviceはSupabase／Auth／RPC adapterとして維持し、Action、DB、RPC、Storage、Provider、Canvas、PDF／PNG契約を変更していない。
+- focused 73/73、新規5/5、全ローカル品質ゲート、Hub 535/535、Cloud漫画repository／owner isolation／100ページ受入れに成功。外部環境と手動E2EはPENDING、実Providerは未実行。
+- 次: Draft PR、Core quality、Migration roundtrip、Windows build、Vercel Preview成功後に停止し、責任者確認前にR2C-4へ進まない。
+
+---
+
 ## 2026-08-06 Codex: 管理者向け外部API設定の集約
 
 - Branch: `codex/admin-provider-settings-hub`、Base: `origin/feature/manga-canvas-mvp`@`74c0faf`。

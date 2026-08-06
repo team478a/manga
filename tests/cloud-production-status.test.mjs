@@ -15,9 +15,11 @@ test("production migration provides review states and durable finalization", () 
 
 test("status service fails safely before migration and hides database errors", () => {
   const service = read("src/modules/cloud-creator/production/production-status-service.ts");
+  const policy = read("src/modules/manga/domain/production-state.ts");
   assert.match(service, /error\?\.code === "42703"/);
   assert.match(service, /ページの制作状況を読み込めませんでした/);
-  assert.match(service, /status === "finalized" && reviewed != null && reviewed < contextRevision/);
+  assert.match(service, /buildPageProductionStates/);
+  assert.match(policy, /status === "finalized" && reviewed != null && reviewed < contextRevision/);
 });
 
 test("production board exposes progress filters review and reopen controls", () => {

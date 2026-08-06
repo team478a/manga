@@ -1,0 +1,85 @@
+import { pageCanvasSchema } from "@mangai/canvas-core";
+import { ResourceNotFoundError, ValidationError } from "../../../lib/domain-errors.ts";
+
+export type MangaGenerationBatch = {
+  id: string;
+  status: "active" | "paused" | "completed" | "canceled";
+  requested_page_ids: string[];
+  created_at: string;
+  totalJobs: number;
+  queuedJobs: number;
+  runningJobs: number;
+  completedJobs: number;
+  failedJobs: number;
+  failedJobIds: string[];
+};
+
+export function normalizeGenerationBatchPageIds(pageIds: string[]) {
+  const uniquePageIds = [...new Set(pageIds)];
+  if (uniquePageIds.length < 4 || uniquePageIds.length > 8)
+    throw new ValidationError("一括生成するページを4〜8ページ選んでください。");
+  return uniquePageIds;
+}
+
+export function planGenerationBatchTargets(input: {
+  requestedPageIds: string[];
+  pages: Array<{
+    id: string;
+    revision: number;
+    cloud_canvas_snapshots: unknown;
+  }>;
+}) {
+  if (input.pages.length !== input.requestedPageIds.length)
+    throw new ResourceNotFoundError("一括生成対象のページが見つかりません。");
+  const targets = input.pages.flatMap((page) => {
+    const versions = Array.isArray(page.cloud_canvas_snapshots)
+      ? page.cloud_canvas_snapshots
+      : [];
+    const current = versions.find(
+      (snapshot): snapshot is { revision: number; canvas: unknown } =>
+        typeof snapshot === "object" &&
+        snapshot !== null &&
+        "revision" in snapshot &&
+        snapshot.revision === page.revision &&
+        "canvas" in snapshot,
+    );
+    if (!current) return [];
+    const canvas = pageCanvasSchema.parse(current.canvas);
+    return canvas.panels.map((panel) => ({ pageId: page.id, panelId: panel.id }));
+  });
+  if (!targets.length)
+    throw new ValidationError("選択したページに生成可能なコマがありません。");
+  if (targets.length > 64)
+    throw new ValidationError("一度に生成できるコマは64個までです。ページを分けてください。");
+  return targets;
+}
+
+export function summarizeGenerationBatches(input: {
+  batches: Array<{
+    id: string;
+    status: MangaGenerationBatch["status"];
+    requested_page_ids: string[];
+    created_at: string;
+  }>;
+  links: Array<{ batch_id: string; job_id: string; status: string }>;
+}): MangaGenerationBatch[] {
+  return input.batches.map((batch) => {
+    const jobs = input.links.filter((link) => link.batch_id === batch.id);
+    const count = (status: string) =>
+      jobs.filter((job) => job.status === status).length;
+    const status =
+      batch.status === "active" && jobs.length > 0 && count("completed") === jobs.length
+        ? "completed"
+        : batch.status;
+    return {
+      ...batch,
+      status,
+      totalJobs: jobs.length,
+      queuedJobs: count("queued"),
+      runningJobs: count("running"),
+      completedJobs: count("completed"),
+      failedJobs: count("failed"),
+      failedJobIds: jobs.filter((job) => job.status === "failed").map((job) => job.job_id),
+    };
+  });
+}
