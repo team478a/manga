@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-06 管理者向け外部API設定の集約
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/admin-provider-settings-hub`
+- Base: `origin/feature/manga-canvas-mvp`（PR #180 merge後、`74c0faf`）
+- 目的: OpenAI、Black Forest Labs、ResendのAPIキー入力、設定状態、公式取得手順を単一の管理画面へ集約する。
+- 実装: `/admin/provider-settings`を追加し、旧市場分析AI URLは集約画面へ転送する。Cloud AI運用と招待メール設定はAPIキー入力を撤去し、既存の運用情報・メール文面編集を残して集約画面へ案内する。
+- Security: 管理者認証、Supabase Vault、非再表示、監査、一般向け／成人向け境界を維持する。キーを環境変数、通常テーブル、ログへ追加しない。
+- 不変条件: DB、migration、RPC、Storage、Provider、model選択肢、pricing、retry、timeout、Scheduler、API、既存URLを変更しない。
+- 検証: 専用3/3、関連10/10、Hub全体530/530、deps:check、Hub／Desktop typecheck、lint、production build、diff check成功。Draft PR、CI／Vercelは確認中。
+
 ## 2026-08-06 モニター市場分析・報告保存のServer境界修正
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

@@ -31,12 +31,12 @@ test("市場分析AI設定はVaultへ保存しservice roleだけが復号でき�
 
 test("管理画面はAPIキーを再表示せず設定状態だけを表示する", async () => {
   const [page, action] = await Promise.all([
-    readSource("../src/app/admin/research-ai/page.tsx"),
-    readSource("../src/app/admin/research-ai/actions.ts"),
+    readSource("../src/app/admin/provider-settings/page.tsx"),
+    readSource("../src/app/admin/provider-settings/actions.ts"),
   ]);
   assert.match(page, /type="password"/);
-  assert.match(page, /settings\.configured/);
-  assert.match(page, /APIキー本体や末尾文字は記録しません/);
+  assert.match(page, /openAi\.configured/);
+  assert.match(page, /保存後は再表示しません/);
   assert.doesNotMatch(page, /apiKey\.slice|secret_id/);
   assert.match(action, /requireAdmin/);
   assert.doesNotMatch(action, /console\.(?:log|error)/);

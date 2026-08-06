@@ -121,12 +121,20 @@ test("管理画面で保存した件名と本文へ安全な差し込み値を�
 });
 
 test("Resend APIキーは管理画面からVaultへ保存し再表示しない", async () => {
-  const [page, action, settings, migration, templateMigration, example] = await Promise.all([
+  const [page, providerPage, providerAction, action, settings, migration, templateMigration, example] = await Promise.all([
     readFile(
       new URL(
         "../src/app/admin/general-monitors/email/page.tsx",
         import.meta.url,
       ),
+      "utf8",
+    ),
+    readFile(
+      new URL("../src/app/admin/provider-settings/page.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../src/app/admin/provider-settings/actions.ts", import.meta.url),
       "utf8",
     ),
     readFile(
@@ -159,10 +167,10 @@ test("Resend APIキーは管理画面からVaultへ保存し再表示しない",
     ),
     readFile(new URL("../.env.example", import.meta.url), "utf8"),
   ]);
-  assert.match(page, /type="password"/);
-  assert.match(page, /APIキーを保存して利用開始/);
+  assert.match(providerPage, /type="password"/);
+  assert.match(providerPage, /Resend設定を保存/);
   assert.doesNotMatch(page, /settings\.apiKey/);
-  assert.match(action, /setCloudGeneralMonitorEmailSettings/);
+  assert.match(providerAction, /setCloudGeneralMonitorEmailSettings/);
   assert.match(settings, /set_cloud_general_monitor_email_provider/);
   assert.match(settings, /get_cloud_general_monitor_email_runtime_config/);
   assert.match(page, /招待メールの文面/);

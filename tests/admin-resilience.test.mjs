@@ -29,7 +29,7 @@ test("接続依存の強い管理ページは安全な読み込みを使用す�
     "src/app/admin/general-monitors/page.tsx",
     "src/app/admin/general-monitors/email/page.tsx",
     "src/app/admin/monitor-issues/page.tsx",
-    "src/app/admin/research-ai/page.tsx",
+    "src/app/admin/provider-settings/page.tsx",
     "src/app/admin/users/page.tsx",
     "src/app/admin/users/[id]/page.tsx",
   ];

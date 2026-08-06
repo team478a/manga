@@ -8,7 +8,6 @@ import {
   cancelCloudAiJobAction,
   runCloudAiWorkerOnceAction,
   setCloudAiPriceActiveAction,
-  updateCloudGeneralImageProviderAction,
   updateCloudAiPlanAction,
   updateCloudAiSettingsAction,
 } from "./actions";
@@ -158,42 +157,14 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
         Black Forest Labs FLUXを一般向けマンガのコマ画像生成に使用します。APIキーはSupabase Vaultへ暗号化保存され、この画面や監査ログには再表示されません。
       </p>
       {imageSettings ? (
-        <form action={updateCloudGeneralImageProviderAction} className="mt-4 grid gap-4 md:grid-cols-3">
-          <label className="label">
-            BFL APIキー
-            <input
-              autoComplete="off"
-              className="field"
-              name="apiKey"
-              placeholder={imageSettings.configured ? "変更時のみ入力" : "APIキーを入力"}
-              type="password"
-            />
-          </label>
-          <label className="label">
-            画像モデル
-            <select className="field" name="model" defaultValue={imageSettings.model}>
-              <option value="flux-2-klein-9b">FLUX.2 Klein 9B（低コスト）</option>
-              <option value="flux-2-pro">FLUX.2 Pro（推奨）</option>
-              <option value="flux-2-max">FLUX.2 Max（高品質）</option>
-            </select>
-          </label>
-          <label className="label">
-            接続状態
-            <select className="field" name="enabled" defaultValue={String(imageSettings.enabled)}>
-              <option value="true">有効</option>
-              <option value="false">停止</option>
-            </select>
-          </label>
-          <p className="text-sm text-stone-600 md:col-span-3">
+        <div className="mt-4">
+          <p className="text-sm text-stone-600">
             現在: {imageSettings.configured ? "APIキー設定済み" : "未設定"} / {imageSettings.enabled ? "有効" : "停止"}。成人向け画像はこの接続へ送信されません。
           </p>
-          <PendingSubmitButton
-            className="button md:col-span-3"
-            pendingLabel="画像生成AI設定を保存中…"
-          >
-            画像生成AI設定を保存
-          </PendingSubmitButton>
-        </form>
+          <Link className="button-secondary mt-4 inline-flex" href="/admin/provider-settings#bfl">
+            外部API設定で変更
+          </Link>
+        </div>
       ) : (
         <p className="mt-4 rounded bg-amber-50 p-4 text-amber-900">
           画像生成Provider migrationを適用すると設定できます。

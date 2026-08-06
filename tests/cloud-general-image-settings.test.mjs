@@ -34,9 +34,9 @@ test("一般向け画像生成APIキーはVaultへ保存しservice roleだけが
 });
 
 test("管理画面はBFL APIキーを再表示せず一般向け接続として表示する", async () => {
-  const page = await readSource("../src/app/admin/cloud-ai/page.tsx");
+  const page = await readSource("../src/app/admin/provider-settings/page.tsx");
   assert.match(page, /type="password"/);
-  assert.match(page, /imageSettings\.configured/);
-  assert.match(page, /成人向け画像はこの接続へ送信されません/);
+  assert.match(page, /image\.configured/);
+  assert.match(page, /成人向け画像は送信されません/);
   assert.doesNotMatch(page, /apiKey\.slice|secret_id/);
 });
