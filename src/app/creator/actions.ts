@@ -28,6 +28,7 @@ import {
 import { createCloudExportJob, setCloudExportJobState } from "@/modules/cloud-creator/export/durable-export-service";
 import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
+import { formString } from "@/app/actions/shared/form-data";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -39,24 +40,19 @@ const projectSchema = z.object({
   dpi: z.coerce.number().int().min(72).max(1200),
 });
 
-function value(formData: FormData, name: string) {
-  const entry = formData.get(name);
-  return typeof entry === "string" ? entry : "";
-}
-
 function domainMessage(error: unknown, fallback: string) {
   return isDomainError(error) ? error.message : fallback;
 }
 
 export async function createCloudProjectAction(formData: FormData) {
   const parsed = projectSchema.safeParse({
-    title: value(formData, "title"),
-    description: value(formData, "description"),
-    ageRating: value(formData, "ageRating"),
-    readingDirection: value(formData, "readingDirection"),
-    width: value(formData, "width"),
-    height: value(formData, "height"),
-    dpi: value(formData, "dpi"),
+    title: formString(formData, "title"),
+    description: formString(formData, "description"),
+    ageRating: formString(formData, "ageRating"),
+    readingDirection: formString(formData, "readingDirection"),
+    width: formString(formData, "width"),
+    height: formString(formData, "height"),
+    dpi: formString(formData, "dpi"),
   });
   if (!parsed.success)
     redirect(encodeURI("/creator/new?error=作品設定を確認してください"));
@@ -80,7 +76,7 @@ export async function addCloudEpisodeAction(
     .trim()
     .min(1)
     .max(200)
-    .safeParse(value(formData, "title"));
+    .safeParse(formString(formData, "title"));
   if (!parsed.success)
     redirect(encodeURI(`/creator/${projectId}?error=話の名前を入力してください`));
   try {
@@ -109,7 +105,7 @@ export async function addCloudChapterAction(
   projectId: string,
   formData: FormData,
 ) {
-  const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
+  const parsed = z.string().trim().min(1).max(200).safeParse(formString(formData, "title"));
   if (!parsed.success) redirect(encodeURI(`/creator/${projectId}?error=章の名前を入力してください`));
   try {
     await addCloudChapter(projectId, parsed.data);
@@ -125,7 +121,7 @@ export async function addCloudEpisodeToChapterAction(
   chapterId: string,
   formData: FormData,
 ) {
-  const parsed = z.string().trim().min(1).max(200).safeParse(value(formData, "title"));
+  const parsed = z.string().trim().min(1).max(200).safeParse(formString(formData, "title"));
   if (!parsed.success) redirect(encodeURI(`/creator/${projectId}?error=話の名前を入力してください`));
   try {
     await addCloudEpisodeToChapter(chapterId, parsed.data);
@@ -144,7 +140,7 @@ export async function addCloudSceneAction(
   const parsed = z.object({
     title: z.string().trim().min(1).max(200),
     summary: z.string().max(2000),
-  }).safeParse({ title: value(formData, "title"), summary: value(formData, "summary") });
+  }).safeParse({ title: formString(formData, "title"), summary: formString(formData, "summary") });
   if (!parsed.success) redirect(encodeURI(`/creator/${projectId}?error=シーン設定を確認してください`));
   try {
     await addCloudScene(episodeId, parsed.data.title, parsed.data.summary);
@@ -191,8 +187,8 @@ export async function renameCloudProjectAction(
       description: z.string().max(5000),
     })
     .safeParse({
-      title: value(formData, "title"),
-      description: value(formData, "description"),
+      title: formString(formData, "title"),
+      description: formString(formData, "description"),
     });
   if (!parsed.success)
     redirect(encodeURI(`/creator/${projectId}?error=作品情報を確認してください`));
@@ -220,7 +216,7 @@ export async function renameCloudEpisodeAction(
     .trim()
     .min(1)
     .max(200)
-    .safeParse(value(formData, "title"));
+    .safeParse(formString(formData, "title"));
   if (!parsed.success)
     redirect(encodeURI(`/creator/${projectId}?error=話の名前を確認してください`));
   try {
@@ -312,7 +308,7 @@ export async function syncCloudMarketplaceDraftAction(
     .int()
     .min(0)
     .max(1_000_000)
-    .safeParse(value(formData, "price"));
+    .safeParse(formString(formData, "price"));
   if (!parsed.success)
     redirect(encodeURI(`/creator/${projectId}?error=販売価格を確認してください`));
   let result: Awaited<ReturnType<typeof syncCloudMarketplaceDraft>>;
@@ -402,7 +398,7 @@ export async function createCloudProjectCheckpointAction(projectId: string, kind
     projectId: z.string().uuid(),
     kind: z.enum(["checkpoint", "release"]),
     label: z.string().trim().min(1).max(100),
-  }).safeParse({ projectId, kind, label: value(formData, "label") });
+  }).safeParse({ projectId, kind, label: formString(formData, "label") });
   if (!parsed.success) redirect(`/creator?error=${encodeURIComponent("固定版の入力内容を確認してください。")}`);
   try { await createCloudProjectCheckpoint(parsed.data); }
   catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "作品の固定版を作成できませんでした。"))}`); }
@@ -415,7 +411,7 @@ export async function restoreCloudProjectCheckpointAction(projectId: string, che
     projectId: z.string().uuid(),
     checkpointId: z.string().uuid(),
     confirm: z.literal("restore"),
-  }).safeParse({ projectId, checkpointId, confirm: value(formData, "confirm") });
+  }).safeParse({ projectId, checkpointId, confirm: formString(formData, "confirm") });
   if (!parsed.success) redirect(`/creator?error=${encodeURIComponent("復元確認にチェックを入れてください。")}`);
   try { await restoreCloudProjectCheckpoint(parsed.data); }
   catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "固定版を復元できませんでした。"))}`); }

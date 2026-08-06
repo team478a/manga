@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { actionFeedbackTarget, actionIdSchema } from "@/lib/action-contracts";
 
 const updateSchema = z.object({
   title: z.string().trim().min(1).max(120),
@@ -19,16 +20,16 @@ const updateSchema = z.object({
 });
 
 const stateSchema = z.object({
-  updateId: z.string().uuid(),
+  updateId: actionIdSchema,
   operation: z.enum(["publish", "unpublish", "archive"]),
 });
 
 const editSchema = updateSchema.omit({ publishNow: true }).extend({
-  updateId: z.string().uuid(),
+  updateId: actionIdSchema,
 });
 
 const productUpdatesTarget = (kind: "message" | "error", text: string) =>
-  `/admin/product-updates?${kind}=${encodeURIComponent(text)}`;
+  actionFeedbackTarget("/admin/product-updates", kind, text);
 
 const productUpdateEditTarget = (
   updateId: string,

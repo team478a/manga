@@ -15,30 +15,31 @@ import {
   setCloudResearchAiSettings,
 } from "@/lib/cloud-research-ai-settings";
 import { ValidationError } from "@/lib/domain-errors";
+import { actionFeedbackTarget } from "@/lib/action-contracts";
+import { formText } from "@/app/actions/shared/form-data";
 
 const destination = "/admin/provider-settings";
 
-function field(formData: FormData, name: string) {
-  const value = formData.get(name);
-  return typeof value === "string" ? value.trim() : "";
-}
-
 function success(message: string) {
   revalidatePath(destination);
-  redirect(`${destination}?message=${encodeURIComponent(message)}`);
+  redirect(actionFeedbackTarget(destination, "message", message));
 }
 
 function failure(error: unknown, fallback: string) {
   redirect(
-    `${destination}?error=${encodeURIComponent(safeDomainErrorMessage(error, fallback))}`,
+    actionFeedbackTarget(
+      destination,
+      "error",
+      safeDomainErrorMessage(error, fallback),
+    ),
   );
 }
 
 export async function updateOpenAiProviderAction(formData: FormData) {
   try {
     const { profile } = await requireAdmin();
-    const model = cloudResearchAiModelSchema.safeParse(field(formData, "model"));
-    const apiKey = field(formData, "apiKey");
+    const model = cloudResearchAiModelSchema.safeParse(formText(formData, "model"));
+    const apiKey = formText(formData, "apiKey");
     if (!model.success) throw new ValidationError("AIモデルを確認してください。");
     if (apiKey && (!apiKey.startsWith("sk-") || apiKey.length < 20 || apiKey.length > 500))
       throw new ValidationError("OpenAI APIキーの形式を確認してください。");
@@ -46,7 +47,7 @@ export async function updateOpenAiProviderAction(formData: FormData) {
       actorProfileId: profile.id,
       apiKey,
       model: model.data,
-      enabled: field(formData, "enabled") === "true",
+      enabled: formText(formData, "enabled") === "true",
     });
   } catch (error) {
     failure(error, "OpenAI設定を保存できませんでした。");
@@ -62,9 +63,9 @@ export async function updateImageProviderAction(formData: FormData) {
       model: cloudGeneralImageModelSchema,
       enabled: z.enum(["true", "false"]),
     }).safeParse({
-      apiKey: field(formData, "apiKey"),
-      model: field(formData, "model"),
-      enabled: field(formData, "enabled"),
+      apiKey: formText(formData, "apiKey"),
+      model: formText(formData, "model"),
+      enabled: formText(formData, "enabled"),
     });
     if (!parsed.success) throw new ValidationError("画像生成AI設定を確認してください。");
     await setCloudGeneralImageSettings({
@@ -87,9 +88,9 @@ export async function updateResendProviderAction(formData: FormData) {
       fromEmail: z.string().email().max(254),
       fromName: z.string().min(1).max(80),
     }).safeParse({
-      apiKey: field(formData, "apiKey"),
-      fromEmail: field(formData, "fromEmail"),
-      fromName: field(formData, "fromName"),
+      apiKey: formText(formData, "apiKey"),
+      fromEmail: formText(formData, "fromEmail"),
+      fromName: formText(formData, "fromName"),
     });
     if (!parsed.success)
       throw new ValidationError(parsed.error.issues[0]?.message ?? "Resend設定を確認してください。");

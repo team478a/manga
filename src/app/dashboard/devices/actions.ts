@@ -6,13 +6,14 @@ import { z } from "zod";
 import { requireProfile } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { DEVICE_TOKEN_DAYS } from "@/lib/desktop-auth";
+import { actionIdSchema } from "@/lib/action-contracts";
 
 const codeSchema = z
   .string()
   .trim()
   .toUpperCase()
   .regex(/^[A-Z2-9]{4}-[A-Z2-9]{4}$/);
-const idSchema = z.string().uuid();
+const idSchema = actionIdSchema;
 
 export async function approveDesktopDevice(formData: FormData) {
   const parsed = codeSchema.safeParse(formData.get("code"));
