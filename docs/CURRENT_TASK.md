@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-06 BFL実Provider拒否の安全な診断
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/fix-bfl-provider-rejection-diagnostics`
+- Base: `origin/feature/manga-canvas-mvp`（PR #184 merge後、`3c2073f`）
+- 事象: BFL credits追加後も実背景画像Jobが`provider_rejected`となり、従来ログでは送信、poll、画像取得のどこで拒否されたか判別できない。
+- 変更: BFL adapterから固定された失敗段階、結果区分、HTTP statusだけを診断callbackへ渡し、本番では`cloud_ai_bfl_provider_rejected`として記録する。
+- 秘密境界: API key、Prompt、画像、Provider response body、polling URL、Job ID、利用者情報は診断へ含めない。利用者向けerror code、retry、timeout、Provider request、DB、migration、RPC、Storage、価格は変更しない。
+- 検証: BFL focused 6/6、deps、lint、Hub／Desktop typecheck、research eval、AI 48/48、Hub／Canvas／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。Draft PR／CI／Vercel Previewを確認中。
+- 次: merge／本番反映後に新規Jobを1件だけ実行し、診断eventで原因を特定する。責任者確認前に追加の実Provider再試行やPR-R3へ進まない。
+
 ## 2026-08-06 PR-R2C-4 PDF／PNG出力application／infrastructure境界
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

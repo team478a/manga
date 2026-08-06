@@ -8,6 +8,7 @@ import {
 import {
   getCloudGeneralImageRuntimeConfig,
 } from "../../../lib/cloud-general-image-settings.ts";
+import { logHubEvent } from "../../../lib/hub-logger.ts";
 import { BlackForestLabsFluxImageProvider } from "./bfl-provider.ts";
 import {
   MangaiCloudGatewayImageProvider,
@@ -161,6 +162,12 @@ export async function createConfiguredCloudProviders(): Promise<
           apiKey: image.apiKey,
           model: image.model,
           capability,
+          onDiagnostic: (diagnostic) =>
+            logHubEvent("warn", "cloud_ai_bfl_provider_rejected", {
+              provider: "black-forest-labs",
+              model: image.model,
+              ...diagnostic,
+            }),
         }),
       );
     const fillCapability = (await configuredRuntimeCapabilities()).find(
