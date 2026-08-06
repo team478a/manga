@@ -37,6 +37,13 @@ type FluxProviderConfig = {
   fetcher?: typeof fetch;
   pollIntervalMs?: number;
   timeoutMs?: number;
+  onDiagnostic?: (diagnostic: BflProviderDiagnostic) => void;
+};
+
+export type BflProviderDiagnostic = {
+  stage: "submit" | "poll" | "download";
+  outcome: "http_rejected" | "provider_failed" | "response_invalid";
+  httpStatus?: number;
 };
 
 function safeBflUrl(value: string) {
@@ -58,7 +65,13 @@ function normalizeDimension(value: number | undefined) {
   return Math.round(bounded / 16) * 16;
 }
 
-function providerError(status: number) {
+function providerError(
+  status: number,
+  stage?: BflProviderDiagnostic["stage"],
+  onDiagnostic?: FluxProviderConfig["onDiagnostic"],
+) {
+  if (stage)
+    onDiagnostic?.({ stage, outcome: "http_rejected", httpStatus: status });
   if (status === 429)
     return new AIProviderError(
       "rate_limited",
@@ -226,6 +239,7 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
     );
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
+    let diagnosticStage: BflProviderDiagnostic["stage"] = "submit";
     try {
       const prompt = input.negativePrompt.trim()
         ? `${input.prompt}\nAvoid: ${input.negativePrompt}`
@@ -307,11 +321,17 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
           signal: controller.signal,
         },
       );
-      if (!submitted.ok) throw providerError(submitted.status);
+      if (!submitted.ok)
+        throw providerError(
+          submitted.status,
+          "submit",
+          this.config.onDiagnostic,
+        );
       const job = submitResponseSchema.parse(await submitted.json());
       const pollingUrl = safeBflUrl(job.polling_url);
       const startedAt = Date.now();
       while (Date.now() - startedAt < (this.config.timeoutMs ?? 120_000)) {
+        diagnosticStage = "poll";
         await new Promise<void>((resolve, reject) => {
           const timer = setTimeout(
             resolve,
@@ -332,14 +352,24 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
           headers: { accept: "application/json", "x-key": this.config.apiKey },
           signal: controller.signal,
         });
-        if (!response.ok) throw providerError(response.status);
+        if (!response.ok)
+          throw providerError(
+            response.status,
+            "poll",
+            this.config.onDiagnostic,
+          );
         const result = pollResponseSchema.parse(await response.json());
-        if (result.status === "Error" || result.status === "Failed")
+        if (result.status === "Error" || result.status === "Failed") {
+          this.config.onDiagnostic?.({
+            stage: "poll",
+            outcome: "provider_failed",
+          });
           throw new AIProviderError(
             "provider_rejected",
             "画像生成サービスが生成を完了できませんでした。",
             false,
           );
+        }
         if (result.status !== "Ready") continue;
         if (!result.result?.sample)
           throw new AIProviderError(
@@ -348,12 +378,18 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
             false,
           );
         const imageUrl = safeBflUrl(result.result.sample);
+        diagnosticStage = "download";
         const imageResponse = await fetcher(imageUrl, {
           method: "GET",
           redirect: "error",
           signal: controller.signal,
         });
-        if (!imageResponse.ok) throw providerError(imageResponse.status);
+        if (!imageResponse.ok)
+          throw providerError(
+            imageResponse.status,
+            "download",
+            this.config.onDiagnostic,
+          );
         const length = Number(imageResponse.headers.get("content-length") ?? 0);
         if (length > 25_000_000)
           throw new AIProviderError(
@@ -398,12 +434,17 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
           "画像生成がタイムアウトしました。",
           true,
         );
-      if (error instanceof z.ZodError)
+      if (error instanceof z.ZodError) {
+        this.config.onDiagnostic?.({
+          stage: diagnosticStage,
+          outcome: "response_invalid",
+        });
         throw new AIProviderError(
           "provider_rejected",
           "画像生成サービスの応答を検証できませんでした。",
           false,
         );
+      }
       throw new AIProviderError(
         "network_error",
         "画像生成サービスへ接続できませんでした。",

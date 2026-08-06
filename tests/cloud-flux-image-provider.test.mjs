@@ -107,6 +107,41 @@ test("BFL adapter rejects untrusted polling URLs before making a second request"
   assert.equal(calls, 1);
 });
 
+test("BFL adapter reports only sanitized rejection stage and HTTP status", async () => {
+  const diagnostics = [];
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-safe-length",
+    model: "flux-2-pro",
+    capability,
+    onDiagnostic: (diagnostic) => diagnostics.push(diagnostic),
+    fetcher: async () =>
+      new Response(JSON.stringify({ detail: "must not be logged" }), {
+        status: 402,
+        headers: { "content-type": "application/json" },
+      }),
+  });
+
+  await assert.rejects(
+    () =>
+      provider.generate(
+        {
+          kind: "image",
+          jobType: "background",
+          prompt: "safe diagnostic request",
+          negativePrompt: "",
+          width: 1024,
+          height: 1024,
+        },
+        context,
+      ),
+    (error) => error.code === "provider_rejected" && !error.retryable,
+  );
+  assert.deepEqual(diagnostics, [
+    { stage: "submit", outcome: "http_rejected", httpStatus: 402 },
+  ]);
+  assert.doesNotMatch(JSON.stringify(diagnostics), /must not be logged/);
+});
+
 test("BFL adapterは署名済み参照画像をmulti-reference入力へ渡す", async () => {
   const calls = [];
   const provider = new BlackForestLabsFluxImageProvider({

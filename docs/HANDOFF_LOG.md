@@ -3407,3 +3407,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 原因は本番でも`VERCEL_URL`を優先し、保護付き固有デプロイURLへ自己fetchしていたこと。productionのみ公開`NEXT_PUBLIC_SITE_URL`を優先し、Preview分離を回帰テストで固定した。
 - 待機中の一般向け背景画像Jobは再実行していない。PR mergeと本番再デプロイ後、管理画面から1件だけ処理してBFL実Provider、Asset保存、Canvas採用まで確認する。
 - DB、migration、RPC、Storage、Provider契約、価格、Scheduler、成人向け境界、Desktopの変更なし。
+# 2026-08-06 Codex: BFL実Provider拒否の安全な診断
+
+- Branch: `codex/fix-bfl-provider-rejection-diagnostics`
+- Base: `origin/feature/manga-canvas-mvp`@`3c2073f`
+- credits追加後の本番受入れで新規背景画像Jobを1件だけ実行したが、再度`provider_rejected`となった。Queueと予約原価は解放済みで、追加実行は停止した。
+- BFL adapterへ`submit`／`poll`／`download`の固定段階、固定結果区分、HTTP statusだけを渡す診断callbackを追加した。本番eventは`cloud_ai_bfl_provider_rejected`。
+- API key、Prompt、画像、Provider response body、URL、Job ID、利用者情報はログへ追加しない。Provider request、model、pricing、retry、timeout、DB、migration、RPC、Storage、成人向け境界は変更しない。
+- BFL focused 6/6、deps、lint、Hub／Desktop typecheck、research eval、AI 48/48、Hub／Canvas／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。Draft PR、CI、Vercel Preview確認を継続する。
+- merge／本番再デプロイ後に新規Jobを1件だけ実行し、診断eventから拒否段階を特定する。それまでは実Providerを再実行しない。
