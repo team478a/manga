@@ -57,8 +57,9 @@ test("8ページfixtureを001〜008の連番PNGとしてまとめる", async () 
 });
 
 test("Cloud書き出しはページ番号で整列して3桁の連番名を使う", () => {
-  const source = fs.readFileSync("src/lib/cloud-canvas-export.ts", "utf8");
+  const source = fs.readFileSync("src/modules/cloud-creator/export/prepare-project-export.ts", "utf8");
+  const plan = fs.readFileSync("src/modules/cloud-creator/export/export-plan.ts", "utf8");
   assert.match(source, /page_number - b\.page_number/);
-  assert.match(source, /padStart\(3, "0"\)/);
+  assert.match(plan, /padStart\(3, "0"\)/);
   assert.match(source, /createPagesPdf\(images/);
 });
