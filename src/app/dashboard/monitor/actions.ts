@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireProfile } from "@/lib/auth";
 import { requireCloudGeneralMonitor } from "@/lib/cloud-general-monitor";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { ValidationError } from "@/lib/domain-errors";
@@ -54,8 +53,8 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
     }
     const feedbackId = crypto.randomUUID();
     const diagnostic = parseMonitorDiagnostic(formData.get("diagnostic"));
-    const supabase = await createClient();
-    const storage = createAdminClient().storage.from("monitor-feedback");
+    const admin = createAdminClient();
+    const storage = admin.storage.from("monitor-feedback");
     const attachmentPath = screenshot ? `${profile.id}/${feedbackId}.${screenshot.extension}` : null;
     if (screenshot && attachmentPath) {
       const upload = await storage.upload(attachmentPath, screenshot.file, {
@@ -64,7 +63,7 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
       });
       if (upload.error) throw new ValidationError("スクリーンショットを保存できませんでした。画像を確認してください。");
     }
-    const { error } = await supabase
+    const { error } = await admin
       .from("cloud_general_monitor_feedback")
       .insert({
         id: feedbackId,

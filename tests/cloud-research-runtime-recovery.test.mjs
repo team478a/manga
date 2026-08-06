@@ -26,9 +26,15 @@ test("使い方画面の市場分析開始は履歴を経由せず新規入力�
 test("認証済みモニターの添付は認可後に管理Storage経由で保存する", async () => {
   const action = await source("../src/app/dashboard/monitor/actions.ts");
   const authorizeAt = action.indexOf("requireCloudGeneralMonitor(profile.id)");
-  const adminStorageAt = action.indexOf('createAdminClient().storage.from("monitor-feedback")');
+  const adminClientAt = action.indexOf("const admin = createAdminClient()");
+  const adminStorageAt = action.indexOf('admin.storage.from("monitor-feedback")');
   const uploadAt = action.indexOf("storage.upload(");
-  assert.ok(authorizeAt > -1 && adminStorageAt > authorizeAt && uploadAt > adminStorageAt);
+  assert.ok(
+    authorizeAt > -1 &&
+      adminClientAt > authorizeAt &&
+      adminStorageAt > adminClientAt &&
+      uploadAt > adminStorageAt,
+  );
   assert.doesNotMatch(action, /supabase\.storage\.from\("monitor-feedback"\)\.upload/);
 });
 
