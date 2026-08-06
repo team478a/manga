@@ -2,6 +2,11 @@ import { DomainError, ValidationError } from "@/lib/domain-errors";
 import { cloudCreatorContext } from "../auth-context";
 import { getCloudManuscriptPreflight } from "./manuscript-preflight-service";
 import { summarizeCloudCheckpointDiff, type CloudCheckpointDiff } from "./project-checkpoint-diff";
+import {
+  createProjectCheckpoint,
+  restoreProjectCheckpoint,
+  type ProjectCheckpointCommandRepository,
+} from "../../manga/application/manage-project-checkpoint";
 
 export type CloudProjectCheckpoint = {
   id: string;
@@ -83,35 +88,44 @@ export async function listCloudProjectCheckpoints(projectId: string) {
   };
 }
 
+const checkpointCommands: ProjectCheckpointCommandRepository = {
+  async restore(input) {
+    const { supabase } = await cloudCreatorContext();
+    const { data, error } = await supabase.rpc("restore_cloud_project_checkpoint", {
+      p_project_id: input.projectId,
+      p_checkpoint_id: input.checkpointId,
+    });
+    if (error?.code === "42883") throw new ValidationError("固定版復元用migrationを適用してください。");
+    if (error?.message?.includes("generation_active")) throw new ValidationError("画像生成が完了してから復元してください。");
+    if (error?.message?.includes("page_locked")) throw new ValidationError("開いているページ編集を終了してから復元してください。");
+    if (error?.message?.includes("blob_missing")) throw new ValidationError("固定版データが不足しているため復元できません。");
+    if (error || !data) throw new DomainError("INTERNAL_ERROR", "固定版を復元できませんでした。", { cause: error });
+    return String(data);
+  },
+  async create(input) {
+    const { supabase } = await cloudCreatorContext();
+    const { data, error } = await supabase.rpc("create_cloud_project_checkpoint", {
+      p_project_id: input.projectId,
+      p_label: input.label,
+      p_kind: input.kind,
+    });
+    if (error?.code === "42883") throw new ValidationError("作品バックアップ用migrationを適用してください。");
+    if (error?.message?.includes("generation_active")) throw new ValidationError("画像生成が完了してから固定版を作成してください。");
+    if (error?.message?.includes("snapshot_missing")) throw new ValidationError("すべてのページを一度保存してから固定版を作成してください。");
+    if (error?.message?.includes("pages_not_finalized")) throw new ValidationError("すべてのページを確認して確定してください。");
+    if (error || !data) throw new DomainError("INTERNAL_ERROR", "作品の固定版を作成できませんでした。", { cause: error });
+    return String(data);
+  },
+};
+
 export async function restoreCloudProjectCheckpoint(input: { projectId: string; checkpointId: string }) {
-  const { supabase } = await cloudCreatorContext();
-  const { data, error } = await supabase.rpc("restore_cloud_project_checkpoint", {
-    p_project_id: input.projectId,
-    p_checkpoint_id: input.checkpointId,
-  });
-  if (error?.code === "42883") throw new ValidationError("固定版復元用migrationを適用してください。");
-  if (error?.message?.includes("generation_active")) throw new ValidationError("画像生成が完了してから復元してください。");
-  if (error?.message?.includes("page_locked")) throw new ValidationError("開いているページ編集を終了してから復元してください。");
-  if (error?.message?.includes("blob_missing")) throw new ValidationError("固定版データが不足しているため復元できません。");
-  if (error || !data) throw new DomainError("INTERNAL_ERROR", "固定版を復元できませんでした。", { cause: error });
-  return String(data);
+  return restoreProjectCheckpoint({ ...input, repository: checkpointCommands });
 }
 
 export async function createCloudProjectCheckpoint(input: { projectId: string; label: string; kind: "checkpoint" | "release" }) {
-  if (input.kind === "release") {
-    const report = await getCloudManuscriptPreflight(input.projectId, { requireFinalizedPages: true });
-    if (!report.ready) throw new ValidationError("原稿チェックを解消し、すべてのページを確定してから完成版を固定してください。");
-  }
-  const { supabase } = await cloudCreatorContext();
-  const { data, error } = await supabase.rpc("create_cloud_project_checkpoint", {
-    p_project_id: input.projectId,
-    p_label: input.label,
-    p_kind: input.kind,
+  return createProjectCheckpoint({
+    ...input,
+    repository: checkpointCommands,
+    inspectRelease: (projectId) => getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }),
   });
-  if (error?.code === "42883") throw new ValidationError("作品バックアップ用migrationを適用してください。");
-  if (error?.message?.includes("generation_active")) throw new ValidationError("画像生成が完了してから固定版を作成してください。");
-  if (error?.message?.includes("snapshot_missing")) throw new ValidationError("すべてのページを一度保存してから固定版を作成してください。");
-  if (error?.message?.includes("pages_not_finalized")) throw new ValidationError("すべてのページを確認して確定してください。");
-  if (error || !data) throw new DomainError("INTERNAL_ERROR", "作品の固定版を作成できませんでした。", { cause: error });
-  return String(data);
 }

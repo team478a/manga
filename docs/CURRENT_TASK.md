@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-06 PR-R2C-3 一括・制作状態・長編application境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r2c3-longform-application`
+- Base: `origin/feature/manga-canvas-mvp`（PR #181 merge後、`2edacba`）
+- 目的: 一括生成、ページ制作状態、長編制作、連続性、作品予算、checkpoint、差分・復元の純粋判断とapplication調停を、既存Supabase／Auth adapterから分離する。
+- 実装: 一括対象4〜8ページ・64コマ上限・履歴集計、制作状態とcontext revision判定をManga domainへ移した。長編cockpitの部分失敗調停、完成版preflight後のcheckpoint作成、復元commandをManga applicationへ移した。
+- 互換性: 既存`cloud-creator` serviceをrepository／infrastructure adapterとして維持し、Server Action、DB query、RPC名・引数、4〜8ページ、途中enqueue、pause／cancel／retry補償、production revision、continuity／budget表示、checkpoint diff／restore errorを変更しない。
+- 不変条件: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 変更量: 1,500行上限内。checkpointをR2C-3bへ分割する必要なし。
+- 検証: focused 73/73、新規境界5/5、deps（module error 0）、lint、Hub／Desktop typecheck、research eval、Hub 535/535、Canvas 26/26、AI 48/48、Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository受入れ、owner isolation、100ページ4/4、diff check成功。
+- 外部確認: release structureはREADY。Supabase／Stripe／staging秘密値と手動E2Eはローカル未設定のためPENDING。実ProviderはR2C-4完了後まで呼び出さない。
+
 ## 2026-08-06 管理者向け外部API設定の集約
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`

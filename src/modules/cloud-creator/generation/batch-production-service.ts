@@ -1,31 +1,23 @@
 import crypto from "node:crypto";
 import { cloudGenerationInputSchema } from "@mangai/ai-core";
-import { pageCanvasSchema } from "@mangai/canvas-core";
 import { cloudCreatorContext } from "../auth-context";
-import { DomainError, ResourceNotFoundError, ValidationError } from "@/lib/domain-errors";
+import { DomainError, ValidationError } from "@/lib/domain-errors";
 import { enqueueStoryboardPanelImage } from "@/lib/cloud-panel-image-generation-server";
+import {
+  normalizeGenerationBatchPageIds,
+  planGenerationBatchTargets,
+  summarizeGenerationBatches,
+  type MangaGenerationBatch,
+} from "../../manga/domain/generation-batch";
 import {
   cancelCloudGenerationJob,
   enqueueCloudGenerationJob,
 } from "./generation-service";
 
-export type CloudGenerationBatch = {
-  id: string;
-  status: "active" | "paused" | "completed" | "canceled";
-  requested_page_ids: string[];
-  created_at: string;
-  totalJobs: number;
-  queuedJobs: number;
-  runningJobs: number;
-  completedJobs: number;
-  failedJobs: number;
-  failedJobIds: string[];
-};
+export type CloudGenerationBatch = MangaGenerationBatch;
 
 export async function startCloudPageGenerationBatch(projectId: string, pageIds: string[]) {
-  const uniquePageIds = [...new Set(pageIds)];
-  if (uniquePageIds.length < 4 || uniquePageIds.length > 8)
-    throw new ValidationError("一括生成するページを4〜8ページ選んでください。");
+  const uniquePageIds = normalizeGenerationBatchPageIds(pageIds);
   const { supabase } = await cloudCreatorContext();
   const productionStates = await supabase.from("cloud_pages")
     .select("id,production_status").eq("project_id", projectId).in("id", uniquePageIds).is("deleted_at", null);
@@ -41,17 +33,10 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     .is("deleted_at", null);
   if (snapshots.error)
     throw new DomainError("INTERNAL_ERROR", "一括生成対象を読み込めませんでした。", { cause: snapshots.error });
-  if ((snapshots.data?.length ?? 0) !== uniquePageIds.length)
-    throw new ResourceNotFoundError("一括生成対象のページが見つかりません。");
-  const targets = (snapshots.data ?? []).flatMap((page) => {
-    const versions = Array.isArray(page.cloud_canvas_snapshots) ? page.cloud_canvas_snapshots : [];
-    const current = versions.find((snapshot) => snapshot.revision === page.revision);
-    if (!current) return [];
-    const canvas = pageCanvasSchema.parse(current.canvas);
-    return canvas.panels.map((panel) => ({ pageId: page.id, panelId: panel.id }));
+  const targets = planGenerationBatchTargets({
+    requestedPageIds: uniquePageIds,
+    pages: snapshots.data ?? [],
   });
-  if (!targets.length) throw new ValidationError("選択したページに生成可能なコマがありません。");
-  if (targets.length > 64) throw new ValidationError("一度に生成できるコマは64個までです。ページを分けてください。");
   const batchKey = crypto.randomUUID();
   const created = await supabase.rpc("create_cloud_generation_batch", {
     p_project_id: projectId,
@@ -99,22 +84,14 @@ export async function listCloudGenerationBatches(projectId: string): Promise<Clo
   const links = await supabase.from("cloud_generation_batch_jobs")
     .select("batch_id,job_id,cloud_generation_jobs!inner(status)").in("batch_id", ids);
   if (links.error) throw new DomainError("INTERNAL_ERROR", "一括生成状況を読み込めませんでした。", { cause: links.error });
-  return (batches.data ?? []).map((batch) => {
-    const jobs = (links.data ?? []).filter((link) => link.batch_id === batch.id).map((link) => {
+  return summarizeGenerationBatches({
+    batches: (batches.data ?? []) as Array<{
+      id: string; status: CloudGenerationBatch["status"]; requested_page_ids: string[]; created_at: string;
+    }>,
+    links: (links.data ?? []).map((link) => {
       const joined = Array.isArray(link.cloud_generation_jobs) ? link.cloud_generation_jobs[0] : link.cloud_generation_jobs;
-      return { id: link.job_id, status: joined?.status as string };
-    });
-    const count = (status: string) => jobs.filter((job) => job.status === status).length;
-    const displayedStatus = batch.status === "active" && jobs.length > 0 && count("completed") === jobs.length
-      ? "completed"
-      : batch.status;
-    return {
-      ...batch,
-      status: displayedStatus,
-      totalJobs: jobs.length,
-      queuedJobs: count("queued"), runningJobs: count("running"), completedJobs: count("completed"), failedJobs: count("failed"),
-      failedJobIds: jobs.filter((job) => job.status === "failed").map((job) => job.id),
-    } as CloudGenerationBatch;
+      return { batch_id: link.batch_id, job_id: link.job_id, status: joined?.status as string };
+    }),
   });
 }
 

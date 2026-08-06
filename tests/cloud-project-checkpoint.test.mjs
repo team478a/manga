@@ -4,6 +4,7 @@ import test from "node:test";
 
 const migration = fs.readFileSync("supabase/migrations/202608010011_cloud_project_checkpoints.sql", "utf8");
 const service = fs.readFileSync("src/modules/cloud-creator/projects/project-checkpoint-service.ts", "utf8");
+const application = fs.readFileSync("src/modules/manga/application/manage-project-checkpoint.ts", "utf8");
 const panel = fs.readFileSync("src/app/creator/[projectId]/ProjectCheckpointPanel.tsx", "utf8");
 
 test("変更のないCanvasはハッシュ単位で再利用する", () => {
@@ -22,7 +23,8 @@ test("実行中生成と未確定ページがある完成版固定をDBで拒否
 
 test("完成版作成は原稿preflightを通り、UIは処理中状態を表示する", () => {
   assert.match(service, /requireFinalizedPages: true/);
-  assert.match(service, /if \(!report\.ready\)/);
+  assert.match(service, /createProjectCheckpoint/);
+  assert.match(application, /if \(!report\.ready\)/);
   assert.match(panel, /pendingLabel="作成中…"/);
   assert.match(panel, /pendingLabel="固定中…"/);
   assert.match(panel, /disabled={!releaseReady}/);
