@@ -18,6 +18,7 @@ const pollResponseSchema = z.object({
     .object({
       sample: z.string().url(),
     })
+    .nullable()
     .optional(),
 });
 
