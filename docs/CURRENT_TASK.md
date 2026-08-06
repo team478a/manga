@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-06 モニター市場分析・報告保存のServer境界修正
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/fix-monitor-persistence-r2`
+- Base: `origin/feature/manga-canvas-mvp`（PR #179 merge後、`7ca64c4`）
+- 事象: activeモニターでAI利用数は増える一方、市場分析Reportとモニター報告が保存できない。
+- 原因境界: 招待確認と利用数加算は信頼済みServer経路だが、Report／報告INSERTだけがブラウザーのRLSセッションへ依存していた。
+- 修正: Server Actionで本人プロフィールとactiveモニターを確認した後、市場分析Reportとモニター報告をSupabase Server管理経路で保存する。所有者IDは認証済みプロフィールからのみ設定する。
+- 不変条件: DB、migration、RPC、URL、API、Feature Flag、Provider、model、pricing、成人向け境界は変更しない。
+- 検証: 関連12/12、Hub全体527/527、deps:check、Hub／Desktop typecheck、lint、production build、diff check成功。Draft PR、CI／Vercelは確認中。
+
 ## 2026-08-06 マイページ導線・ログイン中アカウント表示
 
 - 状態: `VERIFIED_AWAITING_OWNER_REVIEW`

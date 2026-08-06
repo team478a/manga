@@ -10,6 +10,7 @@ import {
   type CloudResearchReport,
 } from "../application/list-reports.ts";
 import { createClient } from "../../../lib/supabase/server.ts";
+import { createAdminClient } from "../../../lib/supabase/admin.ts";
 
 export type { CloudResearchReport };
 
@@ -59,7 +60,10 @@ export async function createCloudResearchReport({
   input: CloudResearchInput;
   result: CloudResearchResult;
 }) {
-  const supabase = await createClient();
+  // The caller has already authenticated the profile and verified the active
+  // monitor enrollment. Persist through the trusted server client so a stale
+  // browser RLS context cannot discard a completed, quota-counted analysis.
+  const supabase = createAdminClient();
   return createCloudResearchReportWithPersistence({
     profileId,
     input,

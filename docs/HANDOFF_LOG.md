@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-06 Codex: モニター市場分析・報告保存のServer境界修正
+
+- Branch: `codex/fix-monitor-persistence-r2`、Base: `origin/feature/manga-canvas-mvp`@`7ca64c4`。
+- activeモニターで利用数加算後に市場分析Reportが保存できず、同じ利用者のモニター報告も保存できない事象を対象とする。
+- 本人プロフィールとactive enrollmentを既存Server Actionで確認した後、2つのINSERTを信頼済みServer clientへ統一した。
+- owner IDは認証済みプロフィールから設定し、Client入力、別ユーザー指定、RLS緩和、DB／migration変更は追加していない。
+- 関連12/12、Hub全体527/527、deps、Hub／Desktop typecheck、lint、production build、diff check成功。Draft PR、CI／Vercelは未完了。
+
+---
+
 ## 2026-08-06 Codex: マイページ導線・ログイン中アカウント表示
 
 - Branch: `codex/fix-account-navigation-identity`
