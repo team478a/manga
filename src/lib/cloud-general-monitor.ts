@@ -70,7 +70,7 @@ export function getCloudGeneralMonitorUnavailableMessage(
   if (!cloudGeneralMonitorBetaEnabled())
     return "一般向けモニターは現在停止中です。再開のお知らせをお待ちください。";
   if (!enrollment)
-    return "招待されたアカウントを確認できませんでした。招待メールを受け取ったアカウントでログインしてください。";
+    return "モニター利用設定を確認できませんでした。招待メールの完了状況とは別に利用枠の設定が必要です。設定済みの場合は管理者へお問い合わせください。";
   if (enrollment.status === "paused")
     return "このアカウントのモニター利用は一時停止中です。管理者へお問い合わせください。";
   if (enrollment.status === "completed")
