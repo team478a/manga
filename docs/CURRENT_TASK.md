@@ -2,9 +2,11 @@
 
 ## 2026-08-08 PR-Q0 漫画品質評価ログ基盤
 
-- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/manga-quality-q0`
 - Base: `origin/feature/manga-canvas-mvp`（`1d32024`、PR #192 merge後）
+- Draft PR: [#194](https://github.com/team478a/manga/pull/194)
+- Preview: `https://mangai-hub-staging-git-codex-manga-qu-3b65fc-team478as-projects.vercel.app`
 - 指示書: `MANGAI_漫画生成品質向上_実装指示書_Q0-Q2_20260807.docx`
 - 現在: PR-Q0だけを実施する。Q1のPanel Specification／品質Judge、Q2のCharacter Identityへ進まない。
 - 実装: `src/modules/manga-quality/`へfailure category、品質ログ契約、候補イベント記録application／repository、KPI純粋集計を追加した。候補表示・採用を既存Canvasへbest-effort接続し、ログ障害で制作を停止しない。
@@ -13,7 +15,8 @@
 - 不変条件: Provider、model、pricing、retry、timeout、Scheduler、既存URL／API、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
 - 検証済み: focused 10/10、deps（0 errors／既知27 warnings）、lint、Hub／Desktop typecheck、research eval、Hub（Q0 3件を含む）／Canvas 26／AI 48／Desktop／a11y、migration manifest 49/49、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - 外部環境: ローカルに`psql`とstaging資格情報がないためmigration roundtrip実行はGitHub Actionsで確認する。release preflightの外部Provider／Stripe／staging／手動E2E pendingは既存環境条件でありQ0の失敗ではない。
-- 未完了: commit／push、Draft PR、GitHub migration roundtripを含む全CI、Vercel Preview確認。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft／MERGEABLE。
+- 未完了: 責任者レビューとmerge。migrationの環境適用は本PRでは実施しない。
 - 注意: PR #193は未マージのため、本PRへ内容を混在させていない。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後に停止する。責任者確認前にPR-Q1へ進まない。
 
