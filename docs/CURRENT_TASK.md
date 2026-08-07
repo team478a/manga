@@ -4,7 +4,7 @@
 
 - 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/manga-quality-q0`
-- Base: `origin/feature/manga-canvas-mvp`（`1d32024`、PR #192 merge後）
+- Base: `origin/feature/manga-canvas-mvp`（`3c09650`、PR #193 merge後）
 - Draft PR: [#194](https://github.com/team478a/manga/pull/194)
 - Preview: `https://mangai-hub-staging-git-codex-manga-qu-3b65fc-team478as-projects.vercel.app`
 - 指示書: `MANGAI_漫画生成品質向上_実装指示書_Q0-Q2_20260807.docx`
@@ -17,8 +17,19 @@
 - 外部環境: ローカルに`psql`とstaging資格情報がないためmigration roundtrip実行はGitHub Actionsで確認する。release preflightの外部Provider／Stripe／staging／手動E2E pendingは既存環境条件でありQ0の失敗ではない。
 - CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft／MERGEABLE。
 - 未完了: 責任者レビューとmerge。migrationの環境適用は本PRでは実施しない。
-- 注意: PR #193は未マージのため、本PRへ内容を混在させていない。
+- 注意: PR #193は`3c09650`でマージ済み。通常mergeで最新基準を取り込み、Q0差分とのコード競合がないことを確認した。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後に停止する。責任者確認前にPR-Q1へ進まない。
+
+## 2026-08-07 本番実機受入れ案内の修正
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/fix-production-acceptance-guidance`
+- Base: `origin/feature/manga-canvas-mvp`（PR #192 merge後、`1d32024`）
+- 実機事象: モニター利用枠を取得できない場合に、招待メール完了状況と無関係に「招待が必要です」と断定していた。また、採用ネーム由来でないテスト作品の画像生成は安全に拒否されたが、利用者が生成可能な作品の作成手順を判断できなかった。
+- 修正: 未登録・確認失敗時の表示を「モニター利用設定を確認」へ変更し、招待メールとは別に管理画面の利用枠が必要と案内する。AI画像生成対象外では、AIシナリオからネームを採用し、そのネームから本人の作品を作る手順を案内する。
+- 安全境界: モニター利用枠、所有者照合、採用ネーム由来条件、編集ロック、DB、migration、RPC、Storage、URL、API、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 検証: focused、deps（error 0、warning 27）、lint、Hub／Desktop typecheck、research eval、Hub 550/550、Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。実Providerの追加実行は、採用ネーム由来の一般向け作品を用意してから別工程で行う。
 
 ## 2026-08-06 PR-R3-3a 成人向け研究・更新情報admin repository境界
 

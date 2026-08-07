@@ -82,7 +82,7 @@ export default async function DashboardPage({
           ) : (
             <span className="button-secondary text-stone-400">
               <Lock className="mr-2 h-5 w-5" />
-              {enabled ? "招待が必要です" : "現在停止中"}
+              {enabled ? "モニター利用設定を確認" : "現在停止中"}
             </span>
           )}
         </div>
@@ -128,7 +128,7 @@ export default async function DashboardPage({
         <div>
           <p className="text-sm font-bold text-violet-700">限定モニター</p>
           <p className="mt-1 text-stone-600">
-            {monitor ? `AI利用数 ${monitor.ai_requests_used} / ${monitor.ai_request_limit}` : "招待状況を確認できます。"}
+            {monitor ? `AI利用数 ${monitor.ai_requests_used} / ${monitor.ai_request_limit}` : "モニター利用設定と現在の状態を確認できます。"}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">

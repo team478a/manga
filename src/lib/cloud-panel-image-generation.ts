@@ -518,6 +518,6 @@ export function assertGeneralStoryboardProject(input: {
     input.ownerProfileId !== input.expectedOwnerProfileId
   )
     throw new PermissionDeniedError(
-      "採用ネームから作成した本人のCanvasだけで利用できます。",
+      "この作品ではAI画像を生成できません。AIシナリオからネームを採用し、そのネームから作成した本人の作品で実行してください。",
     );
 }

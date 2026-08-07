@@ -84,9 +84,9 @@ export default async function GeneralMonitorPage({
       </div>
       {!enrollment ? (
         <section className="panel mt-6">
-          <h2 className="text-xl font-bold">招待されたアカウントでログインしてください</h2>
+          <h2 className="text-xl font-bold">モニター利用設定を確認できません</h2>
           <p className="mt-2 text-stone-600">
-            モニター登録前はAI制作機能を利用できません。
+            招待メールの完了状況とは別に、管理画面のモニター利用枠が必要です。設定済みの場合は、時間をおいて再読み込みするか管理者へお問い合わせください。
           </p>
         </section>
       ) : (

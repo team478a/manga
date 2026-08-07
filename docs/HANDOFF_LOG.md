@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-07 Codex: 本番実機受入れ案内の修正
+
+- Branch: `codex/fix-production-acceptance-guidance`
+- Base: `origin/feature/manga-canvas-mvp`@`1d32024`（PR #192 merge後）
+- 本番実機で、モニター利用枠なしを「招待が必要」と断定する表示と、採用ネーム由来でない作品の画像生成拒否後に作成手順が分からない問題を確認した。
+- モニター未登録・確認失敗時は招待メールと利用枠を区別して案内し、画像生成対象外ではAIシナリオ→ネーム採用→本人作品作成の手順を表示するよう変更した。
+- モニター利用枠、所有者照合、採用ネーム由来条件、編集ロック、DB、migration、RPC、Storage、URL、API、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopの変更なし。
+- focused、deps（error 0、warning 27）、lint、Hub／Desktop typecheck、research eval、Hub 550/550、Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- Draft PRと全CI／Vercel Preview成功後に停止し、採用ネーム由来の一般向け作品を用意するまで追加の実Provider生成を行わない。
+
+---
+
 ## 2026-08-06 Codex: PR-R3-3a 成人向け研究・更新情報admin repository境界
 
 - Branch: `codex/refactor-r3-3a-admin-repositories`
@@ -3500,6 +3512,6 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Migration: `202608080001_cloud_manga_quality_logs`、rollback、canonical schema、migration assertionsを追加。
 - Validation: focused 10/10、deps、lint、全typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、manifest 49/49、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
 - External: ローカル`psql`とstaging資格情報なし。migration roundtripはGitHub Actionsで確認する。
-- Existing PR: PR #193はOPENのまま。変更を本ブランチへ取り込んでいない。
+- Base sync: PR #193は`3c09650`でマージ済み。Q0ブランチへ通常mergeで取り込み、コード競合なし。`CURRENT_TASK.md`だけ両方の記録を保持して解消した。
 - CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - Next: 責任者レビュー・merge待ち。PR-Q1へ進まない。
