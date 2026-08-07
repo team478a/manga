@@ -65,6 +65,7 @@ import {
   getAssetUrl,
   listGenerationJobs,
   listProjectAssets,
+  recordMangaQualityEvent,
   uploadProjectAsset,
 } from "./services/creator-api";
 
@@ -214,6 +215,7 @@ export function CloudCanvasEditor({
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
   const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
+  const recordedDisplayedJobIds = useRef(new Set<string>());
   const [generationTargets, setGenerationTargets] = useState<
     Record<string, string>
   >(() =>
@@ -366,6 +368,22 @@ export function CloudCanvasEditor({
     }, 3000);
     return () => window.clearInterval(timer);
   }, [generationJobs, refreshGenerationJobs, refreshQuota]);
+
+  useEffect(() => {
+    for (const job of generationJobs) {
+      if (
+        job.status !== "completed" ||
+        !job.output_asset_id ||
+        recordedDisplayedJobIds.current.has(job.id)
+      )
+        continue;
+      recordedDisplayedJobIds.current.add(job.id);
+      void recordMangaQualityEvent({
+        event: "displayed",
+        generationJobId: job.id,
+      }).catch(() => recordedDisplayedJobIds.current.delete(job.id));
+    }
+  }, [generationJobs]);
 
   useEffect(() => {
     const hasUnloadedGeneratedAsset = generationJobs.some(
@@ -811,9 +829,13 @@ export function CloudCanvasEditor({
     }
     setAssets(nextAssets);
     const layerType = classifyCandidateLayer(job);
-    if (applyAsset(job.output_asset_id, job.id, layerType, targetPanelId))
+    if (applyAsset(job.output_asset_id, job.id, layerType, targetPanelId)) {
+      void recordMangaQualityEvent({
+        event: "selected",
+        generationJobId: job.id,
+      }).catch(() => undefined);
       setMessage("生成Assetを対象のコマへ配置しました。");
-    else setMessage("生成Assetをコマへ配置できませんでした。");
+    } else setMessage("生成Assetをコマへ配置できませんでした。");
   }
 
   function movePanelLayer(layerId: string, delta: -1 | 1) {

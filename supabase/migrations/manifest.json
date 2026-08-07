@@ -288,7 +288,13 @@
       "description": "モニター報告の診断情報、非公開画像、状況通知、投稿制限を追加",
       "forwardSha256": "179ac9bf8b6fa8c7917593e70400de3e0578630e0436570081851a378970d43e",
       "rollbackSha256": "3a0531a1c1d3501e685c74148ba4477f5f7a08da9dfb6bce2933b11c0cfde9dc"
+    },
+    {
+      "id": "202608080001_cloud_manga_quality_logs",
+      "description": "漫画候補の表示・採用・却下と品質KPI用の追記型ログを追加",
+      "forwardSha256": "b4cb6031d67181d30fe91c8a3fe63317320d847db0ea01af03f0dfa3cf4b8e0f",
+      "rollbackSha256": "71580061544865c25a76bd45d8da53077b66e231d018d6ab74a1332eee28ad59"
     }
   ],
-  "schemaSha256": "1ce2ffc7627ba680b95d53577dc14d7b7c261040ce43b1ba0c68aaeb531f4a98"
+  "schemaSha256": "33c19912e27122cb74d28fed73c5cfc5985ca8346c9251cf773bca334f8b4d35"
 }
