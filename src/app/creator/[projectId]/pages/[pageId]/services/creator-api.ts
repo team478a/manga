@@ -128,3 +128,16 @@ export async function cancelGeneration(jobId: string) {
     "Jobをキャンセルできませんでした。",
   );
 }
+
+export async function recordMangaQualityEvent(body: {
+  event: "displayed" | "selected" | "rejected";
+  generationJobId: string;
+  rejectedReason?: string;
+}) {
+  const response = await fetch("/api/creator/manga-quality-events", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error("品質ログを保存できませんでした。");
+}

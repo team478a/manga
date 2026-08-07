@@ -3488,3 +3488,15 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - PR #187反映後は追加生成せず既存Assetだけをコマ1へ配置した。AI背景レイヤー、自動保存、タブ終了、編集ロック期限切れ後の再オープンで画像とレイヤーが復元された。
 - PR-R2Cの実Provider受入れ合格条件を満たした。Provider、model、pricing、retry、timeout、API、DB、migration、RPC、Storage契約、Canvas schema、成人向け境界、Desktopの変更なし。
 - 責任者確認前にPR-R3へ進まない。
+
+# 2026-08-08 Codex — PR-Q0 漫画品質評価ログ基盤（実装・検証中）
+
+- Branch: `codex/manga-quality-q0`
+- Base: `origin/feature/manga-canvas-mvp` @ `1d32024`
+- Scope: Q0のみ。追記型品質イベント、failure category、表示／採用／却下記録、KPI最小集計。
+- Safety: 既存生成・課金・Canvas保存を変更せず、品質ログは所有者確認RPCへbest-effort送信する。Q1／Q2は未着手。
+- Migration: `202608080001_cloud_manga_quality_logs`、rollback、canonical schema、migration assertionsを追加。
+- Validation: focused 10/10、deps、lint、全typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、manifest 49/49、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ受入れ、release structure、diff check成功。
+- External: ローカル`psql`とstaging資格情報なし。migration roundtripはGitHub Actionsで確認する。
+- Existing PR: PR #193はOPENのまま。変更を本ブランチへ取り込んでいない。
+- Next: commit／push、Draft PR、全CI／Vercel確認。PR-Q1へ進まない。

@@ -218,6 +218,13 @@ do $$ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.cloud_manga_quality_logs') is not null
+     or to_regprocedure('public.record_cloud_manga_quality_event(uuid,text,text)') is not null then
+    raise exception 'Cloud manga quality Q0 objects remain after rollback';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.cloud_product_updates') is not null
      or to_regclass('public.cloud_monitor_issue_tasks') is not null
      or to_regprocedure('public.claim_cloud_monitor_issue_task(text)') is not null

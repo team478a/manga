@@ -1145,6 +1145,13 @@ do $$ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.cloud_manga_quality_logs') is null
+     or to_regprocedure('public.record_cloud_manga_quality_event(uuid,text,text)') is null then
+    raise exception 'Cloud manga quality Q0 objects missing';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.cloud_product_updates') is null
      or to_regclass('public.cloud_monitor_issue_tasks') is null
      or to_regprocedure('public.claim_cloud_monitor_issue_task(text)') is null
