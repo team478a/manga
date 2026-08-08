@@ -1,11 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-3d 成人向け管理entitlement repository境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-3d-adult-entitlement-repositories`
+- Base: `origin/feature/manga-canvas-mvp`（`cd37f79`、PR #198 merge後）
+- 現在: PR-R3-3dだけを実施する。R3-3a〜R3-3cは完了・マージ済み。管理者ユーザー詳細の成人向け企画grant／成人向け市場分析entitlement更新を、各domainのrepositoryへ移す。
+- 実装: `adult-planning`と`adult-research`のinfrastructure repositoryへtarget profile存在確認とRPCを集約する。Server Actionはadmin認証、FormData validation、resilience、redirect／revalidateを維持する。
+- 契約維持: `requireAdmin`をrepository呼出しより前に維持し、target profile UUID確認、actor／target profile ID、`set_cloud_adult_feature_grant`／`set_cloud_adult_research_entitlement`、Feature Key、status／source／validUntil／adminNote、redirect文言を変更しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを20件から18件へ削減する。ユーザー一覧・詳細読取、account停止／再開／削除、Cloud AI、Desktop、checkout、利用者feedbackは本PRに含めない。
+- 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Auth順序、Feature Flag、成人向け本人同意／外部送信境界、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、Stripe、Desktopを変更しない。
+- 検証: focused 16/16、deps（0 errors／既知18 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 571/571、Canvas 26/26、AI 48/48、Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3dの失敗ではない。本PRはDB、migration、Provider、利用者画面を変更しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前に次のR3 slice、R3-4、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-3c モニターissue管理repository境界
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3c-monitor-issues-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`3cce998`、PR #197 merge後）
 - Draft PR: [#198](https://github.com/team478a/manga/pull/198)
+- Merge: `cd37f7997e1e3d775935614bd60fa9be6a5ebb9d`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-584fdb-team478as-projects.vercel.app`
 - 現在: PR-R3-3cだけを実施する。R3-3a／R3-3bは完了・マージ済み。管理者向けモニターissue一覧・添付署名URL・状態更新を機能完結sliceとしてrepositoryへ移す。
 - 実装: `src/modules/monitor-operations/infrastructure/admin-monitor-issue-repository.ts`へtask／feedback読取、署名URL生成、状態更新を集約する。App Routerはadmin認証、validation、resilience、redirect、表示を維持する。

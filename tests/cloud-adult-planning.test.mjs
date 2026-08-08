@@ -97,7 +97,7 @@ test("企画ブリーフ入力を長さと必須項目で検証する", () => {
 });
 
 test("成人向け企画は入力・保存・履歴・再表示と権限管理を持つ", async () => {
-  const [page, action, detail, adminAction, migration] = await Promise.all([
+  const [page, action, detail, adminAction, adminRepository, migration] = await Promise.all([
     readFile(
       new URL(
         "../src/app/dashboard/research/[reportId]/proposal/page.tsx",
@@ -128,6 +128,13 @@ test("成人向け企画は入力・保存・履歴・再表示と権限管理�
     ),
     readFile(
       new URL(
+        "../src/modules/adult-planning/infrastructure/admin-repository.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
         "../supabase/migrations/202607290009_cloud_adult_planning_option.sql",
         import.meta.url,
       ),
@@ -139,7 +146,8 @@ test("成人向け企画は入力・保存・履歴・再表示と権限管理�
   assert.match(action, /assertCloudAdultPlanningAllowed/);
   assert.match(action, /createCloudAdultPlanningBrief/);
   assert.match(detail, /getCloudAdultPlanningBrief/);
-  assert.match(adminAction, /set_cloud_adult_feature_grant/);
+  assert.match(adminAction, /setAdultPlanningGrant/);
+  assert.match(adminRepository, /set_cloud_adult_feature_grant/);
   assert.match(migration, /cloud_adult_feature_grants/);
   assert.match(migration, /cloud_adult_planning_briefs/);
   assert.match(migration, /can_use_cloud_adult_feature\('adult_planning'\)/);

@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-3d 成人向け管理entitlement repository境界
+
+- Branch: `codex/refactor-r3-3d-adult-entitlement-repositories`、Base: `origin/feature/manga-canvas-mvp`@`cd37f79`（PR #198 merge後）。R3-3a〜R3-3cは完了・マージ済み。
+- 管理者ユーザー詳細の成人向け企画grantと成人向け市場分析entitlementに残っていたtarget profile確認・service-role RPCを、各domainのinfrastructure repositoryへ移した。
+- Server Actionには`requireAdmin`、FormData validation、resilience、redirect／revalidateを残し、target UUID、actor／target ID、RPC名・引数、Feature Key、status／source／期限／管理メモを維持した。
+- `src/app/**`のadmin-client直接利用warningは20件から18件へ減少。ユーザー一覧・詳細読取、account操作、Cloud AI、Desktop、checkout、利用者feedbackは除外した。
+- DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、成人向け本人同意／外部送信境界、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、Stripe、Desktopは変更しない。
+- focused 16/16、deps（0 errors／既知18 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 571/571、Canvas 26/26、AI 48/48、Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。Draft PR、GitHub CI、Vercel Previewを確認後に停止し、責任者確認前に次工程へ進まない。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-3c モニターissue管理repository境界
 
 - Branch: `codex/refactor-r3-3c-monitor-issues-repository`、Base: `origin/feature/manga-canvas-mvp`@`3cce998`（PR #197 merge後）。R3-3a／R3-3bは完了・マージ済み。
