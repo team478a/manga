@@ -4,8 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
+import { updateAdminMonitorIssueTask } from "@/modules/monitor-operations/infrastructure/admin-monitor-issue-repository";
 
 const taskSchema = z.object({
   taskId: z.string().uuid(),
@@ -29,14 +29,11 @@ export async function updateMonitorIssueTaskAction(formData: FormData) {
   if (!parsed.success) redirect(encodeURI("/admin/monitor-issues?error=対象タスクを確認してください"));
   const status = operationStatus[parsed.data.operation];
   const operation = await safelyLoadAdminData("monitor-issues/action", async () =>
-    createAdminClient()
-      .from("cloud_monitor_issue_tasks")
-      .update({
-        status,
-        updated_at: new Date().toISOString(),
-        ...(parsed.data.operation === "retry" ? { claimed_by: null, claimed_at: null, last_error: null } : {}),
-      })
-      .eq("id", parsed.data.taskId),
+    updateAdminMonitorIssueTask({
+      taskId: parsed.data.taskId,
+      status,
+      resetClaim: parsed.data.operation === "retry",
+    }),
   );
   if (!operation.ok || operation.value.error) redirect(encodeURI("/admin/monitor-issues?error=自動修正タスクを更新できませんでした"));
   revalidatePath("/admin/monitor-issues");

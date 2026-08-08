@@ -42,14 +42,14 @@ test("接続依存の強い管理ページは安全な読み込みを使用す�
 });
 
 test("添付URLとCSVの障害は管理画面全体を停止させない", async () => {
-  const [monitorRepository, issues, csv] = await Promise.all([
+  const [monitorRepository, issueRepository, csv] = await Promise.all([
     read("src/modules/general-monitor/infrastructure/admin-monitor-repository.ts"),
-    read("src/app/admin/monitor-issues/page.tsx"),
+    read("src/modules/monitor-operations/infrastructure/admin-monitor-issue-repository.ts"),
     read("src/app/admin/general-monitors/export/route.ts"),
   ]);
 
   assert.match(monitorRepository, /Promise\.allSettled/);
-  assert.match(issues, /Promise\.allSettled/);
+  assert.match(issueRepository, /Promise\.allSettled/);
   assert.match(csv, /catch \(error\)/);
   assert.match(csv, /status:503/);
   assert.doesNotMatch(csv, /error\.message/);

@@ -1,11 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-3c モニターissue管理repository境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-3c-monitor-issues-repository`
+- Base: `origin/feature/manga-canvas-mvp`（`3cce998`、PR #197 merge後）
+- 現在: PR-R3-3cだけを実施する。R3-3a／R3-3bは完了・マージ済み。管理者向けモニターissue一覧・添付署名URL・状態更新を機能完結sliceとしてrepositoryへ移す。
+- 実装: `src/modules/monitor-operations/infrastructure/admin-monitor-issue-repository.ts`へtask／feedback読取、署名URL生成、状態更新を集約する。App Routerはadmin認証、validation、resilience、redirect、表示を維持する。
+- 契約維持: `requireAdmin`をrepository呼出しより前に維持し、query列、`last_reported_at`降順、100件上限、feedback ID条件、Storage bucket `monitor-feedback`、署名URL TTL 600秒、status mapping、retry時のclaim／error初期化、redirect文言を変更しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを22件から20件へ削減する。`src/app/api/internal/monitor-ops/worker/route.ts`は認証済みA分類composition rootとして維持し、Cloud AI、account、Desktop、checkout、利用者feedbackは本PRに含めない。
+- 不変条件: DB、RLS、migration、RPC、Storage bucket／path／TTL、URL、API、Auth順序、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Worker lease、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 18/18、deps（0 errors／既知20 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 568/568、Canvas 26/26、AI 48/48、Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3cの失敗ではない。本PRはDB、migration、Provider、利用者画面を変更しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前に次のR3 slice、R3-4、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-3b 一般モニター運営repository境界
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3b-monitor-repositories`
 - Base: `origin/feature/manga-canvas-mvp`（`aa8b127`、PR #196 merge後）
 - Draft PR: [#197](https://github.com/team478a/manga/pull/197)
+- Merge: `3cce998a47318be895a684219a7fe32ffe7addb5`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-36074a-team478as-projects.vercel.app`
 - 現在: PR-R3-3bだけを実施する。Q0〜Q2は完了・マージ済み。R3-3aに続き、一般モニター運営管理の機能完結sliceをrepositoryへ移す。
 - 実装: モニター一覧、feedbackレビュー、招待メール監査、CSV用読取、招待／再送／停止のservice-role DB・Auth Admin・Storage署名URL操作を`src/modules/general-monitor/infrastructure/admin-monitor-repository.ts`へ集約する。App Routerは認証、Feature Flag、validation、redirect、表示、メール送信調停を維持する。
