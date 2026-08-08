@@ -12,7 +12,8 @@
 - Judgeは観測済み固定属性だけを人物一致スコアへ反映する。未観測は中立75点を維持し、不一致は`face_mismatch`／`continuity_break`として内部記録する。新しい画像解析Providerは呼ばない。
 - 生成Prompt、Provider入力、候補表示、課金、DB／Storage、URL／API、Feature Flag、Canvas schema、Provider、model、pricing、retry、timeout、Scheduler、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
 - focused 30/30、deps（0 errors／既知27 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 563/563、Canvas／AI／Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。release preflightの外部資格情報と手動E2Eは既存pending。
-- Draft PR、GitHub CI、Vercel Previewを確認後に停止し、責任者確認前に次工程へ進まない。
+- Draft PR [#196](https://github.com/team478a/manga/pull/196)、Preview `https://mangai-hub-staging-git-codex-manga-qu-78fb5f-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者確認待ちで停止し、確認前に次工程へ進まない。
 
 ---
 
