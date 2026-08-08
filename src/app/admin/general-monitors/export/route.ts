@@ -2,17 +2,12 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { cloudGeneralMonitorBetaEnabled } from "@/lib/cloud-general-monitor";
 import { buildGeneralMonitorCsv } from "@/lib/cloud-general-monitor-export";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { loadGeneralMonitorExportData } from "@/modules/general-monitor/infrastructure/admin-monitor-repository";
 export async function GET(){
   await requireAdmin();
   if(!cloudGeneralMonitorBetaEnabled()) return new NextResponse("Not Found",{status:404});
   try {
-    const admin=createAdminClient();
-    const [enrollments,profiles,feedback]=await Promise.all([
-      admin.from("cloud_general_monitor_enrollments").select("*").order("created_at"),
-      admin.from("profiles").select("id,display_name"),
-      admin.from("cloud_general_monitor_feedback").select("owner_profile_id,rating"),
-    ]);
+    const {enrollments,profiles,feedback}=await loadGeneralMonitorExportData();
     if(enrollments.error||profiles.error||feedback.error) return new NextResponse("CSVを作成できませんでした",{status:503});
     const names=new Map((profiles.data??[]).map(item=>[item.id,item.display_name]));
     const csv=buildGeneralMonitorCsv((enrollments.data??[]).map(item=>{

@@ -49,11 +49,12 @@ test("非公開添付・投稿制限・状況通知をDBで強制する", async 
 });
 
 test("利用者画面と管理画面は診断・添付・進捗を表示する", async () => {
-  const [form, action, monitor, admin, issues, dashboard] = await Promise.all([
+  const [form, action, monitor, admin, monitorRepository, issues, dashboard] = await Promise.all([
     read("../src/app/dashboard/monitor/MonitorFeedbackForm.tsx"),
     read("../src/app/dashboard/monitor/actions.ts"),
     read("../src/app/dashboard/monitor/page.tsx"),
     read("../src/app/admin/general-monitors/page.tsx"),
+    read("../src/modules/general-monitor/infrastructure/admin-monitor-repository.ts"),
     read("../src/app/admin/monitor-issues/page.tsx"),
     read("../src/app/dashboard/page.tsx"),
   ]);
@@ -62,7 +63,8 @@ test("利用者画面と管理画面は診断・添付・進捗を表示する",
   assert.match(action, /sanitizeMonitorText/);
   assert.match(action, /\.remove\(\[attachmentPath\]\)/);
   assert.match(monitor, /publicStatusLabels/);
-  assert.match(admin, /createSignedUrl/);
+  assert.match(admin, /attachmentUrls/);
+  assert.match(monitorRepository, /createSignedUrl/);
   assert.match(admin, /直近100件内の報告/);
   assert.match(issues, /添付画像を確認/);
   assert.match(dashboard, /通知 \{notificationsResult\.count/);

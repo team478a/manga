@@ -4,17 +4,10 @@ import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireAdmin } from "@/lib/auth";
 import { getCloudGeneralMonitorEmailSettings } from "@/lib/cloud-general-monitor-email-settings";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { loadGeneralMonitorEmailAudits } from "@/modules/general-monitor/infrastructure/admin-monitor-repository";
 import {
   updateGeneralMonitorEmailTemplateAction,
 } from "./actions";
-
-type Audit = {
-  id: string;
-  action: string;
-  from_email: string;
-  created_at: string;
-};
 
 export default async function GeneralMonitorEmailSettingsPage({
   searchParams,
@@ -25,12 +18,7 @@ export default async function GeneralMonitorEmailSettingsPage({
   const query = await searchParams;
   const loaded = await safelyLoadAdminData("general-monitors/email", async () => {
     const settings = await getCloudGeneralMonitorEmailSettings();
-    const { data: audits } = await createAdminClient()
-      .from("cloud_general_monitor_email_audit_logs")
-      .select("id,action,from_email,created_at")
-      .order("created_at", { ascending: false })
-      .limit(20)
-      .returns<Audit[]>();
+    const audits = await loadGeneralMonitorEmailAudits();
     return { settings, audits };
   });
   if (!loaded.ok) return <AdminDataUnavailable title="招待メール設定" />;

@@ -6,6 +6,8 @@ PR-R3-0は、PR-R0〜R2Cと実Provider本番受入れ完了後の`b2dfb1bdd00d3b
 
 `npm run deps:check`の基準結果はmodule boundary error 0、warning 32。warningはすべて`src/app/**`からのSupabase admin client直接利用である。重大停止条件（open redirect、認証前の任意service-role DB操作、成人向けから一般向けProviderへの越境、raw Provider/DB error露出の新規発見）は確認されなかった。
 
+実装後の進捗は、PR-R3-3aで32件から27件、PR-R3-3bの一般モニター運営sliceで27件から22件へ削減した。各基準値は監査時点の履歴として維持し、残件の分類は`SUPABASE_ADMIN_CLIENT_AUDIT.md`を正本とする。
+
 ## 2. 重複一覧
 
 詳細は[SHARED_PLATFORM_DUPLICATION_INVENTORY.md](./SHARED_PLATFORM_DUPLICATION_INVENTORY.md)。主要19候補はUUID、redirect、Action error、owner/admin/monitor確認、Feature Flag、admin client、signed URL、pending/partial/empty/error UI、audit、rate limit、readiness、Worker secret、FormData、部分失敗読取である。
