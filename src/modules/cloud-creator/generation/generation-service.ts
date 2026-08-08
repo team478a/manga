@@ -86,7 +86,7 @@ export async function listCloudGenerationJobs(projectId: string) {
       "Cloud AI生成履歴を読み込めませんでした。",
       { cause: error },
     );
-  return (data ?? []).map((row) => {
+  const publicRows = (data ?? []).map((row) => {
     const input =
       row.input && typeof row.input === "object"
         ? (row.input as Record<string, unknown>)
@@ -125,6 +125,48 @@ export async function listCloudGenerationJobs(projectId: string) {
       revision_preset: revisionPreset,
       generation_operation: generationOperation,
     } as CloudGenerationJob;
+  });
+  const completedIds = publicRows
+    .filter((row) => row.status === "completed" && row.target_panel_id)
+    .map((row) => row.id);
+  if (!completedIds.length) return publicRows;
+  const evaluations = await supabase
+    .from("cloud_manga_quality_evaluations")
+    .select("generation_job_id,overall_score")
+    .in("generation_job_id", completedIds);
+  if (evaluations.error) return publicRows;
+  const scoreByJobId = new Map(
+    (evaluations.data ?? []).map((item) => [
+      item.generation_job_id,
+      Number(item.overall_score),
+    ]),
+  );
+  const rankedByPanel = new Map<string, CloudGenerationJob[]>();
+  for (const row of publicRows) {
+    if (row.status !== "completed" || !row.target_panel_id) continue;
+    const panelRows = rankedByPanel.get(row.target_panel_id) ?? [];
+    panelRows.push(row);
+    rankedByPanel.set(row.target_panel_id, panelRows);
+  }
+  for (const [panelId, panelRows] of rankedByPanel)
+    rankedByPanel.set(
+      panelId,
+      [...panelRows].sort((left, right) => {
+        const scoreDifference =
+          (scoreByJobId.get(right.id) ?? -1) -
+          (scoreByJobId.get(left.id) ?? -1);
+        if (scoreDifference) return scoreDifference;
+        const timeDifference =
+          Date.parse(right.created_at) - Date.parse(left.created_at);
+        return timeDifference || left.id.localeCompare(right.id);
+      }),
+    );
+  const panelOffsets = new Map<string, number>();
+  return publicRows.map((row) => {
+    if (row.status !== "completed" || !row.target_panel_id) return row;
+    const offset = panelOffsets.get(row.target_panel_id) ?? 0;
+    panelOffsets.set(row.target_panel_id, offset + 1);
+    return rankedByPanel.get(row.target_panel_id)?.[offset] ?? row;
   });
 }
 

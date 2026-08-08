@@ -27,6 +27,7 @@ import {
   completeCloudGenerationJob,
   failCloudGenerationJob,
 } from "../infrastructure/cloud-ai-repository.ts";
+import { evaluateCompletedPanelCandidate } from "../../manga-quality/application/evaluate-completed-panel.ts";
 
 export { createCloudJobLeaseHeartbeat } from "./lease-heartbeat.ts";
 export { CloudGenerationLeaseLostError } from "../domain/cloud-ai-errors.ts";
@@ -196,6 +197,21 @@ export async function processNextCloudGenerationJob(input: {
       providerJobId,
       actualCostMicros,
     });
+    if (generation.kind === "image") {
+      try {
+        await evaluateCompletedPanelCandidate({
+          client,
+          generationJobId: job.id,
+          assetAvailable: Boolean(outputAssetId),
+          expectedWidth: generation.width,
+          expectedHeight: generation.height,
+          actualWidth: uploadedAsset?.width,
+          actualHeight: uploadedAsset?.height,
+        });
+      } catch {
+        // Evaluation is best-effort and must not turn a completed job into a retry.
+      }
+    }
     return { status: "completed" as const, jobId: job.id, outputAssetId };
   } catch (error) {
     if (uploadedAsset) {

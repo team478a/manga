@@ -17,6 +17,7 @@ import {
   type CloudStyleBible,
   type CloudWorldProfile,
 } from "./cloud-world-bible.ts";
+import { panelSpecificationSchema } from "../modules/manga-quality/domain/panel-specification.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   featureFlagEnabled("CLOUD_PANEL_IMAGE_GENERATION_ENABLED");
@@ -505,6 +506,26 @@ export function buildStoryboardPanelGeneration(input: {
     panelNumber: storyboardPanel.index,
     candidateNumber: candidateIndex + 1,
     candidateCount,
+    panelSpecification: panelSpecificationSchema.parse({
+      version: 1,
+      panelId: canvasPanel.id,
+      characterNames: usesCharacters ? storyboardPanel.characters : [],
+      expectedCharacterCount: usesCharacters ? storyboardPanel.characters.length : 0,
+      expression: usesCharacters ? storyboardPanel.emotion : "",
+      composition: [
+        storyboardPanel.composition,
+        input.compositionControl?.instruction,
+      ].filter(Boolean).join(" / "),
+      background: usesWorld ? storyboardPanel.background : "",
+      props: selectedWorldProfiles
+        .filter((profile) => profile.kind === "prop")
+        .map((profile) => profile.name),
+      action: usesCharacters ? storyboardPanel.action : "",
+      shot: input.compositionControl?.shot ?? storyboardPanel.shot,
+      cameraAngle:
+        input.compositionControl?.cameraAngle ?? storyboardPanel.cameraAngle,
+      generationTarget,
+    }),
   };
 }
 

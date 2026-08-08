@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-08 Codex: PR-Q1 Panel Specification／初期品質Judge
+
+- Branch: `codex/manga-quality-q1`、Base: `origin/feature/manga-canvas-mvp`@`c8ec95d`（PR #194 merge後）。
+- ネーム由来のPanel SpecificationをPrompt外の独立した正本としてJob単位で保存し、完了画像へ8スコア、failure category、90／75閾値の表示帯を記録する初期ルールベースJudgeを追加した。
+- 意味解析の証拠がない項目は中立75点とし、実Provider／modelを追加しない。候補は削除せず、同一コマ内で評価済みoverall scoreを並び順にだけ利用する。評価基盤障害は生成成功を失敗へ戻さない。
+- 所有者RLS、Specification保存RPC、service-role限定評価保存RPCを追加した。既存URL／APIレスポンス、Canvas schema、生成・課金・Q0ログ契約は維持する。
+- Provider、model、pricing、retry、timeout、Scheduler、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。Draft PRと全CI／Vercel Preview成功後に停止し、責任者確認前にPR-Q2へ進まない。
+- focused 36/36、deps、lint、Hub／Desktop typecheck、research eval、Hub全件、Canvas 26、AI 48、Desktop 182、migration 50/50、Hub build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。Desktop Vite buildはsandbox制約のためWindows CIへ委ねる。
+
+---
+
 ## 2026-08-07 Codex: 本番実機受入れ案内の修正
 
 - Branch: `codex/fix-production-acceptance-guidance`
