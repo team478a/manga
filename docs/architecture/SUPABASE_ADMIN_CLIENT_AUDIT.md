@@ -10,6 +10,12 @@
 
 `npm run deps:check`が報告する`src/app/**`の直接利用は32ファイル。今回の監査では、認証されていない利用者入力だけで任意のownerデータへ到達する経路は確認されなかった。Dに確定できる経路もない。admin clientをbrowserへ戻す判断はRLSと戻り値契約の実証後に限る。
 
+## 実装進捗
+
+- PR-R3-3a: 成人向け研究管理と更新情報管理の5ファイルをrepositoryへ移し、32件から27件へ削減した。
+- PR-R3-3b: 一般モニター管理の一覧、feedbackレビュー、メール監査、CSV、利用者別招待操作の5ファイルを`src/modules/general-monitor/infrastructure/admin-monitor-repository.ts`へ移し、27件から22件へ削減した。
+- `src/app/api/internal/monitor-ops/worker/route.ts`はA分類のcomposition rootとして維持する。利用者feedback、monitor issue、Cloud AI、account、Desktop、checkoutは後続の機能完結sliceまたは各分類の計画で扱う。
+
 | File | Function | Auth確認 | Owner確認 | 用途 | 分類 | 推奨移行先 |
 |---|---|---|---|---|---|---|
 | `src/app/actions/checkout-actions.ts` | `createPendingOrder` | Supabase user取得 | user/profile由来でorder作成 | pending order作成 | B | checkout repository |

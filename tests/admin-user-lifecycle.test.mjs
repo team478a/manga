@@ -44,10 +44,17 @@ test("ユーザー一覧は確認付き操作と処理中表示を提供する",
 });
 
 test("招待メール成功時だけ送信日時と回数を記録する", async () => {
-  const [actions, migration] = await Promise.all([
+  const [actions, repository, migration] = await Promise.all([
     readFile(
       new URL(
         "../src/app/admin/users/[id]/general-monitor-actions.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/modules/general-monitor/infrastructure/admin-monitor-repository.ts",
         import.meta.url,
       ),
       "utf8",
@@ -61,8 +68,8 @@ test("招待メール成功時だけ送信日時と回数を記録する", async
     ),
   ]);
   assert.match(actions, /sendCloudGeneralMonitorInviteEmail/);
-  assert.match(actions, /recordInviteDelivery/);
-  assert.match(actions, /record_cloud_general_monitor_invite_email_sent/);
+  assert.match(actions, /recordGeneralMonitorInviteDelivery/);
+  assert.match(repository, /record_cloud_general_monitor_invite_email_sent/);
   assert.match(migration, /invite_email_sent_at/);
   assert.match(migration, /invite_email_send_count/);
   assert.match(migration, /auth\.role\(\)<>'service_role'/);

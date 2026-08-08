@@ -1,11 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-3b 一般モニター運営repository境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-3b-monitor-repositories`
+- Base: `origin/feature/manga-canvas-mvp`（`aa8b127`、PR #196 merge後）
+- 現在: PR-R3-3bだけを実施する。Q0〜Q2は完了・マージ済み。R3-3aに続き、一般モニター運営管理の機能完結sliceをrepositoryへ移す。
+- 実装: モニター一覧、feedbackレビュー、招待メール監査、CSV用読取、招待／再送／停止のservice-role DB・Auth Admin・Storage署名URL操作を`src/modules/general-monitor/infrastructure/admin-monitor-repository.ts`へ集約する。App Routerは認証、Feature Flag、validation、redirect、表示、メール送信調停を維持する。
+- 契約維持: `requireAdmin`をrepository呼出しより前に維持し、actor／target profile ID、RPC名・引数、query、並び順、100件上限、署名URL TTL 600秒、CSV status／header、redirect文言を変更しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを27件から22件へ削減する。monitor worker、利用者feedback送信、issue task、Cloud AI、Desktop、checkoutは本PRに含めない。
+- 不変条件: DB、RLS、migration、RPC、Storage bucket／path／TTL、URL、API、Auth／admin順序、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 40/40、deps（0 errors／既知22 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 565/565、Canvas／AI／Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
+- 外部環境: release preflightのSupabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3bの失敗ではない。本PRはDB、migration、Provider、実利用画面を変更しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前に次のR3 slice、R3-4、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-Q2 Character Identity／人物一貫性基盤
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/manga-quality-q2`
 - Base: `origin/feature/manga-canvas-mvp`（`fd4365d`、PR #195 merge commit `fd4365dc5ea413770e3029789bb3d1b04a758ab7`）
 - Draft PR: [#196](https://github.com/team478a/manga/pull/196)
+- Merge: `aa8b127012615f2d557281ff8cc41e26a0410e8f`
 - Preview: `https://mangai-hub-staging-git-codex-manga-qu-78fb5f-team478as-projects.vercel.app`
 - 指示書: `MANGAI_漫画生成品質向上_実装指示書_Q0-Q2_20260807.docx`
 - 現在: PR-Q2だけを実施する。PR-Q0、Q1は完了・マージ済み。責任者確認前にQ2より先へ進まない。

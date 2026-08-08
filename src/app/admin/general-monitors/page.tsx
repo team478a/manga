@@ -3,31 +3,9 @@ import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  cloudGeneralMonitorBetaEnabled,
-  type CloudGeneralMonitorEnrollment,
-} from "@/lib/cloud-general-monitor";
+import { cloudGeneralMonitorBetaEnabled } from "@/lib/cloud-general-monitor";
+import { loadGeneralMonitorAdminWorkspace } from "@/modules/general-monitor/infrastructure/admin-monitor-repository";
 import { reviewGeneralMonitorFeedbackAction } from "./actions";
-
-type Profile = { id: string; display_name: string };
-type Feedback = {
-  id: string; owner_profile_id: string; workflow_step: string;
-  rating: number; outcome: string; comment: string; created_at: string;
-  review_status: "new" | "reviewing" | "resolved"; admin_note: string | null;
-  target_scope: "general" | "page" | "panel";
-  project_id: string | null; page_id: string | null; panel_id: string | null;
-  page_number_snapshot: number | null; panel_name_snapshot: string | null;
-  verdict: "accepted" | "needs_revision" | "unusable" | null;
-  issue_type: string | null; severity: string | null;
-  provider_id: string | null; model_id: string | null;
-  generation_count: number; generation_cost_micros: number; generation_elapsed_ms: number;
-  request_type: "feedback" | "bug" | "improvement" | "feature_request";
-  title: string | null; page_url: string | null; environment: string | null;
-  client_context: Record<string, unknown> | null; attachment_path: string | null;
-  public_status: "submitted" | "triaged" | "in_progress" | "resolved" | "closed";
-  status_updated_at: string;
-};
 
 const publicStatusLabels = {
   submitted: "受付済み", triaged: "確認済み", in_progress: "対応中", resolved: "対応済み", closed: "完了",
@@ -80,22 +58,17 @@ export default async function GeneralMonitorsAdminPage() {
       </main>
     );
   }
-  const loaded = await safelyLoadAdminData("general-monitors", async () => {
-    const admin = createAdminClient();
-    const [enrollmentsResult, feedbackResult, profilesResult] = await Promise.all([
-      admin.from("cloud_general_monitor_enrollments")
-        .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
-        .order("updated_at", { ascending: false })
-        .returns<CloudGeneralMonitorEnrollment[]>(),
-      admin.from("cloud_general_monitor_feedback")
-        .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment,client_context,attachment_path,public_status,status_updated_at")
-        .order("created_at", { ascending: false }).limit(100).returns<Feedback[]>(),
-      admin.from("profiles").select("id,display_name").returns<Profile[]>(),
-    ]);
-    return { admin, enrollmentsResult, feedbackResult, profilesResult };
-  });
+  const loaded = await safelyLoadAdminData(
+    "general-monitors",
+    loadGeneralMonitorAdminWorkspace,
+  );
   if (!loaded.ok) return <AdminDataUnavailable title="モニター管理" />;
-  const { admin, enrollmentsResult, feedbackResult, profilesResult } = loaded.value;
+  const {
+    enrollmentsResult,
+    feedbackResult,
+    profilesResult,
+    attachmentUrls,
+  } = loaded.value;
   const profiles = new Map((profilesResult.data ?? []).map((profile) => [profile.id, profile]));
   const qualityFeedback = (feedbackResult.data ?? []).filter((item) => item.target_scope !== "general");
   const acceptedCount = qualityFeedback.filter((item) => item.verdict === "accepted").length;
@@ -107,13 +80,6 @@ export default async function GeneralMonitorsAdminPage() {
   const recentFeedbackCount = generalFeedback.length;
   const openFeedbackCount = generalFeedback.filter((item) => !["resolved", "closed"].includes(item.public_status)).length;
   const urgentFeedbackCount = generalFeedback.filter((item) => ["major", "blocked"].includes(item.severity ?? "")).length;
-  const attachmentPaths = [...new Set(generalFeedback.map((item) => item.attachment_path).filter(Boolean))] as string[];
-  const attachmentUrls = new Map<string, string>();
-  await Promise.allSettled(attachmentPaths.map(async (path) => {
-    const { data } = await admin.storage.from("monitor-feedback").createSignedUrl(path, 600);
-    if (data?.signedUrl) attachmentUrls.set(path, data.signedUrl);
-  }));
-
   return (
     <main className="page">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
