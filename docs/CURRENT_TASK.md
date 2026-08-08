@@ -1,9 +1,25 @@
 # MANGAI Current Task
 
-## 2026-08-08 PR-Q1 Panel Specification／初期品質Judge
+## 2026-08-09 PR-Q2 Character Identity／人物一貫性基盤
 
 - 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/manga-quality-q2`
+- Base: `origin/feature/manga-canvas-mvp`（`fd4365d`、PR #195 merge commit `fd4365dc5ea413770e3029789bb3d1b04a758ab7`）
+- 指示書: `MANGAI_漫画生成品質向上_実装指示書_Q0-Q2_20260807.docx`
+- 現在: PR-Q2だけを実施する。PR-Q0、Q1は完了・マージ済み。責任者確認前にQ2より先へ進まない。
+- 実装: 既存の版管理済みCharacter Profileとprivate参照画像asset IDからCharacter Identityスナップショットを組み立て、`lockedAttributes`とともにPanel Specificationへ付加する。Profile／参照画像を編集正本として再利用し、重複DBや新規UIを追加しない。
+- Judge: 固定属性に対する観測済み証拠だけを人物一致スコアへ反映し、不一致を`face_mismatch`／`continuity_break`へ分類する。意味解析証拠がない属性は従来どおり中立75点で、実画像解析Providerは追加しない。
+- 参照画像: 現行データに用途分類がないため、全てidentity referenceとしてasset UUIDを保存する。表情／全身用途をラベル等から推測しない。
+- 不変条件: DB、migration、RPC、Storage、既存URL／API、Canvas schema、生成Prompt、Provider入力、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、課金、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: Q1／Q2／画像生成focused 30/30、deps（0 errors／既知27 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 563/563、Canvas／AI／Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
+- 外部環境: release preflightのSupabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。Q2では実Providerを呼び出さず、生成Prompt／Provider入力不変を回帰テストで確認する。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後に停止する。責任者確認前に次工程へ進まない。
+
+## 2026-08-08 PR-Q1 Panel Specification／初期品質Judge
+
+- 状態: `MERGED`
 - Branch: `codex/manga-quality-q1`
+- Merge: PR #195、`fd4365dc5ea413770e3029789bb3d1b04a758ab7`
 - Base: `origin/feature/manga-canvas-mvp`（`c8ec95d`、PR #194 merge後）
 - 指示書: `MANGAI_漫画生成品質向上_実装指示書_Q0-Q2_20260807.docx`
 - 現在: PR-Q1だけを実施する。PR-Q0は完了済み。Q2のCharacter Identity／参照画像強化へ進まない。

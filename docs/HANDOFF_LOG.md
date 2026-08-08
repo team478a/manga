@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-09 Codex: PR-Q2 Character Identity／人物一貫性基盤
+
+- Branch: `codex/manga-quality-q2`、Base: `origin/feature/manga-canvas-mvp`@`fd4365d`（PR #195 merge後）。PR-Q0／Q1は完了・マージ済み。
+- 既存の版管理済みCharacter Profileとprivate参照画像asset IDを編集正本として再利用し、生成時点のCharacter Identity、固定属性、参照asset IDをPanel Specificationへ保存する。DB、migration、RPC、新規UIは追加しない。
+- 現行Profileに存在する年齢印象、体格、髪、基本衣装、固有特徴だけを初期lockとする。目色等の欠落値や表情／全身参照用途を推測しない。
+- Judgeは観測済み固定属性だけを人物一致スコアへ反映する。未観測は中立75点を維持し、不一致は`face_mismatch`／`continuity_break`として内部記録する。新しい画像解析Providerは呼ばない。
+- 生成Prompt、Provider入力、候補表示、課金、DB／Storage、URL／API、Feature Flag、Canvas schema、Provider、model、pricing、retry、timeout、Scheduler、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- focused 30/30、deps（0 errors／既知27 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 563/563、Canvas／AI／Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。release preflightの外部資格情報と手動E2Eは既存pending。
+- Draft PR、GitHub CI、Vercel Previewを確認後に停止し、責任者確認前に次工程へ進まない。
+
+---
+
 ## 2026-08-08 Codex: PR-Q1 Panel Specification／初期品質Judge
 
 - Branch: `codex/manga-quality-q1`、Base: `origin/feature/manga-canvas-mvp`@`c8ec95d`（PR #194 merge後）。
