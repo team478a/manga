@@ -2,9 +2,11 @@
 
 ## 2026-08-09 PR-R3-3d 成人向け管理entitlement repository境界
 
-- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/refactor-r3-3d-adult-entitlement-repositories`
 - Base: `origin/feature/manga-canvas-mvp`（`cd37f79`、PR #198 merge後）
+- Draft PR: [#199](https://github.com/team478a/manga/pull/199)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-32ee08-team478as-projects.vercel.app`
 - 現在: PR-R3-3dだけを実施する。R3-3a〜R3-3cは完了・マージ済み。管理者ユーザー詳細の成人向け企画grant／成人向け市場分析entitlement更新を、各domainのrepositoryへ移す。
 - 実装: `adult-planning`と`adult-research`のinfrastructure repositoryへtarget profile存在確認とRPCを集約する。Server Actionはadmin認証、FormData validation、resilience、redirect／revalidateを維持する。
 - 契約維持: `requireAdmin`をrepository呼出しより前に維持し、target profile UUID確認、actor／target profile ID、`set_cloud_adult_feature_grant`／`set_cloud_adult_research_entitlement`、Feature Key、status／source／validUntil／adminNote、redirect文言を変更しない。
@@ -12,6 +14,7 @@
 - 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Auth順序、Feature Flag、成人向け本人同意／外部送信境界、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、Stripe、Desktopを変更しない。
 - 検証: focused 16/16、deps（0 errors／既知18 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 571/571、Canvas 26/26、AI 48/48、Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3dの失敗ではない。本PRはDB、migration、Provider、利用者画面を変更しない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft／MERGEABLE。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前に次のR3 slice、R3-4、R3-5、R4へ進まない。
 
 ## 2026-08-09 PR-R3-3c モニターissue管理repository境界
