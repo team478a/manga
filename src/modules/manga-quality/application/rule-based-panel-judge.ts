@@ -1,6 +1,10 @@
 import type { MangaQualityFailureCategory } from "../domain/failure-category.ts";
 import type { PanelSpecification } from "../domain/panel-specification.ts";
 import {
+  evaluateCharacterConsistency,
+  type CharacterIdentityEvidence,
+} from "../domain/character-consistency.ts";
+import {
   classifyPanelQuality,
   panelQualityEvaluationSchema,
   type PanelQualityEvaluation,
@@ -21,6 +25,7 @@ export type PanelCandidateEvidence = {
   propMatch?: number;
   anatomyQuality?: number;
   continuityMatch?: number;
+  characterIdentityEvidence?: CharacterIdentityEvidence[];
 };
 
 const neutral = (value: number | undefined) => value ?? 75;
@@ -31,6 +36,13 @@ export function evaluatePanelCandidate(
   evidence: PanelCandidateEvidence,
 ): PanelQualityEvaluation {
   const failures = new Set<MangaQualityFailureCategory>();
+  const identityConsistency = evaluateCharacterConsistency(
+    specification.characterIdentities,
+    evidence.characterIdentityEvidence ?? [],
+  );
+  const identityMismatches = identityConsistency.characters.flatMap(
+    (character) => character.mismatchedAttributes,
+  );
   if (!evidence.assetAvailable) failures.add("low_readability");
   if (
     evidence.detectedCharacterCount !== undefined &&
@@ -42,6 +54,12 @@ export function evaluatePanelCandidate(
   if ((evidence.propMatch ?? 100) < 60) failures.add("missing_prop");
   if ((evidence.anatomyQuality ?? 100) < 60) failures.add("body_distortion");
   if ((evidence.continuityMatch ?? 100) < 60) failures.add("continuity_break");
+  if (identityMismatches.length) failures.add("continuity_break");
+  if (
+    identityMismatches.some((attribute) =>
+      ["faceSummary", "hairStyle", "hairColor", "eyeColor"].includes(attribute),
+    )
+  ) failures.add("face_mismatch");
 
   let compositionScore = neutral(evidence.compositionMatch);
   if (
@@ -54,7 +72,11 @@ export function evaluatePanelCandidate(
     compositionScore = round((compositionScore + ratioScore) / 2);
   }
   const scores: Omit<PanelQualityScores, "overallScore"> = {
-    characterMatchScore: neutral(evidence.characterMatch),
+    characterMatchScore: identityConsistency.semanticEvidenceAvailable
+      ? evidence.characterMatch === undefined
+        ? identityConsistency.overallScore
+        : round((evidence.characterMatch + identityConsistency.overallScore) / 2)
+      : neutral(evidence.characterMatch),
     expressionScore: neutral(evidence.expressionMatch),
     compositionScore,
     backgroundScore: neutral(evidence.backgroundMatch),
@@ -75,7 +97,10 @@ export function evaluatePanelCandidate(
       evaluatedFields: Object.entries(evidence)
         .filter(([, value]) => value !== undefined)
         .map(([key]) => key),
-      semanticEvidenceAvailable: evidence.detectedCharacterCount !== undefined,
+      semanticEvidenceAvailable:
+        evidence.detectedCharacterCount !== undefined ||
+        identityConsistency.semanticEvidenceAvailable,
+      characterConsistency: identityConsistency,
     },
   });
 }

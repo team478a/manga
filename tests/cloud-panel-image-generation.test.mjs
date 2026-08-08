@@ -481,6 +481,28 @@ test("明示割当と参照画像IDを生成Jobへ固定する", () => {
     { profileId: characterId, version: 1 },
   ]);
   assert.deepEqual(result.generation.referenceAssetIds, [assetId]);
+  assert.deepEqual(result.panelSpecification.characterIdentities, [
+    {
+      version: 1,
+      characterId,
+      displayName: "ネームにない人物",
+      ageRange: "30代",
+      bodyType: "長身",
+      heightClass: "",
+      faceSummary: "",
+      hairStyle: "黒髪",
+      hairColor: "",
+      eyeColor: "",
+      skinTone: "",
+      defaultOutfit: "コート",
+      alternateOutfits: [],
+      distinguishingFeatures: [],
+      identityReferenceImages: [assetId],
+      expressionReferenceImages: [],
+      fullBodyReferenceImages: [],
+      lockedAttributes: ["ageRange", "bodyType", "hairStyle", "defaultOutfit"],
+    },
+  ]);
 
   const backgroundOnly = buildStoryboardPanelGeneration({
     storyboard,
@@ -513,6 +535,7 @@ test("明示割当と参照画像IDを生成Jobへ固定する", () => {
   });
   assert.deepEqual(backgroundOnly.generation.characterProfileVersions, []);
   assert.deepEqual(backgroundOnly.generation.referenceAssetIds, []);
+  assert.deepEqual(backgroundOnly.panelSpecification.characterIdentities, []);
 });
 
 test("1回の要求で最大4候補まで安全に指定できる", () => {

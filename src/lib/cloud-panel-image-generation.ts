@@ -18,6 +18,8 @@ import {
   type CloudWorldProfile,
 } from "./cloud-world-bible.ts";
 import { panelSpecificationSchema } from "../modules/manga-quality/domain/panel-specification.ts";
+import { registerCharacterIdentity } from "../modules/manga-quality/application/manage-character-identity.ts";
+import { attachCharacterIdentities } from "../modules/manga-quality/application/attach-character-identities.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   featureFlagEnabled("CLOUD_PANEL_IMAGE_GENERATION_ENABLED");
@@ -334,6 +336,24 @@ export function buildStoryboardPanelGeneration(input: {
         .map((reference) => reference.assetId),
     ),
   ).slice(0, 8);
+  const characterIdentities = selectedVisualProfiles.map((profile) =>
+    registerCharacterIdentity({
+      id: profile.id,
+      name: profile.name,
+      appearanceAge: profile.appearance_age,
+      bodyBuild: profile.body_build,
+      hair: profile.hair,
+      costume: profile.costume,
+      immutableTraits: profile.immutable_traits,
+      referenceAssetIds: (input.referenceAssets ?? [])
+        .filter(
+          (reference) =>
+            reference.subjectKind === "character" &&
+            reference.subjectId === profile.id,
+        )
+        .map((reference) => reference.assetId),
+    }),
+  );
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
   const candidateIndex = Math.max(
     0,
@@ -506,26 +526,29 @@ export function buildStoryboardPanelGeneration(input: {
     panelNumber: storyboardPanel.index,
     candidateNumber: candidateIndex + 1,
     candidateCount,
-    panelSpecification: panelSpecificationSchema.parse({
-      version: 1,
-      panelId: canvasPanel.id,
-      characterNames: usesCharacters ? storyboardPanel.characters : [],
-      expectedCharacterCount: usesCharacters ? storyboardPanel.characters.length : 0,
-      expression: usesCharacters ? storyboardPanel.emotion : "",
-      composition: [
-        storyboardPanel.composition,
-        input.compositionControl?.instruction,
-      ].filter(Boolean).join(" / "),
-      background: usesWorld ? storyboardPanel.background : "",
-      props: selectedWorldProfiles
-        .filter((profile) => profile.kind === "prop")
-        .map((profile) => profile.name),
-      action: usesCharacters ? storyboardPanel.action : "",
-      shot: input.compositionControl?.shot ?? storyboardPanel.shot,
-      cameraAngle:
-        input.compositionControl?.cameraAngle ?? storyboardPanel.cameraAngle,
-      generationTarget,
-    }),
+    panelSpecification: attachCharacterIdentities(
+      panelSpecificationSchema.parse({
+        version: 1,
+        panelId: canvasPanel.id,
+        characterNames: usesCharacters ? storyboardPanel.characters : [],
+        expectedCharacterCount: usesCharacters ? storyboardPanel.characters.length : 0,
+        expression: usesCharacters ? storyboardPanel.emotion : "",
+        composition: [
+          storyboardPanel.composition,
+          input.compositionControl?.instruction,
+        ].filter(Boolean).join(" / "),
+        background: usesWorld ? storyboardPanel.background : "",
+        props: selectedWorldProfiles
+          .filter((profile) => profile.kind === "prop")
+          .map((profile) => profile.name),
+        action: usesCharacters ? storyboardPanel.action : "",
+        shot: input.compositionControl?.shot ?? storyboardPanel.shot,
+        cameraAngle:
+          input.compositionControl?.cameraAngle ?? storyboardPanel.cameraAngle,
+        generationTarget,
+      }),
+      characterIdentities,
+    ),
   };
 }
 
