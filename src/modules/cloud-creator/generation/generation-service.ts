@@ -18,7 +18,6 @@ import {
   DomainError,
   ValidationError,
 } from "@/lib/domain-errors";
-import { rankPanelCandidates } from "@/modules/manga-quality/application/rule-based-panel-judge";
 
 export async function getMyCloudAiQuota() {
   const { supabase } = await cloudCreatorContext();
@@ -150,7 +149,18 @@ export async function listCloudGenerationJobs(projectId: string) {
     rankedByPanel.set(row.target_panel_id, panelRows);
   }
   for (const [panelId, panelRows] of rankedByPanel)
-    rankedByPanel.set(panelId, rankPanelCandidates(panelRows, scoreByJobId));
+    rankedByPanel.set(
+      panelId,
+      [...panelRows].sort((left, right) => {
+        const scoreDifference =
+          (scoreByJobId.get(right.id) ?? -1) -
+          (scoreByJobId.get(left.id) ?? -1);
+        if (scoreDifference) return scoreDifference;
+        const timeDifference =
+          Date.parse(right.created_at) - Date.parse(left.created_at);
+        return timeDifference || left.id.localeCompare(right.id);
+      }),
+    );
   const panelOffsets = new Map<string, number>();
   return publicRows.map((row) => {
     if (row.status !== "completed" || !row.target_panel_id) return row;
