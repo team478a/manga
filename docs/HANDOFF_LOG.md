@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-3c モニターissue管理repository境界
+
+- Branch: `codex/refactor-r3-3c-monitor-issues-repository`、Base: `origin/feature/manga-canvas-mvp`@`3cce998`（PR #197 merge後）。R3-3a／R3-3bは完了・マージ済み。
+- 管理者向けモニターissue一覧、関連feedback読取、添付署名URL、状態更新に残っていたservice-role DB／Storage操作を`monitor-operations` infrastructure repositoryへ移した。
+- App Routerには`requireAdmin`、validation、resilience、redirect、表示を残し、query列、order／limit、feedback ID条件、Storage bucket／TTL 600秒、status mapping、retry時のclaim／error初期化を維持した。
+- `src/app/**`のadmin-client直接利用warningは22件から20件へ減少。monitor ops Workerは認証済みA分類composition rootとして維持し、Cloud AI、account、Desktop、checkout、利用者feedbackは除外した。
+- DB、RLS、migration、RPC、Storage契約、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Worker lease、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- focused 18/18、deps（0 errors／既知20 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 568/568、Canvas 26/26、AI 48/48、Desktop／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。Draft PR、GitHub CI、Vercel Previewを確認後に停止し、責任者確認前に次工程へ進まない。
+- Draft PR [#198](https://github.com/team478a/manga/pull/198)、Preview `https://mangai-hub-staging-git-codex-refactor-584fdb-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-3b 一般モニター運営repository境界
 
 - Branch: `codex/refactor-r3-3b-monitor-repositories`、Base: `origin/feature/manga-canvas-mvp`@`aa8b127`（PR #196 merge後）。Q0〜Q2は完了・マージ済み。
