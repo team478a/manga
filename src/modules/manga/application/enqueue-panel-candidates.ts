@@ -20,6 +20,7 @@ import {
 import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor.ts";
 import type { CloudCharacterProfile } from "@/lib/cloud-character-profile.ts";
 import type { CloudStyleBible, CloudWorldProfile } from "@/lib/cloud-world-bible.ts";
+import { savePanelSpecification } from "@/modules/manga-quality/infrastructure/panel-quality-repository";
 
 export async function enqueueStoryboardPanelImage(input: unknown) {
   if (!cloudPanelImageGenerationFeatureEnabled())
@@ -359,6 +360,15 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
             : `${request.idempotencyKey}:candidate:${candidateIndex + 1}`,
         generation: resolved.generation,
       });
+      try {
+        await savePanelSpecification({
+          client: supabase,
+          generationJobId: id,
+          specification: resolved.panelSpecification,
+        });
+      } catch {
+        // Quality telemetry must never prevent an already queued generation.
+      }
       jobs.push({ id, candidateNumber: resolved.candidateNumber });
     } catch (error) {
       if (!jobs.length) throw error;

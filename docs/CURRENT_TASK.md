@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-08 PR-Q1 Panel Specification／初期品質Judge
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/manga-quality-q1`
+- Base: `origin/feature/manga-canvas-mvp`（`c8ec95d`、PR #194 merge後）
+- 指示書: `MANGAI_漫画生成品質向上_実装指示書_Q0-Q2_20260807.docx`
+- 現在: PR-Q1だけを実施する。PR-Q0は完了済み。Q2のCharacter Identity／参照画像強化へ進まない。
+- 実装: ネーム由来のPanel Specificationを生成Promptと分離してJob単位で保存し、生成完了後に初期ルールベースJudgeで8スコア、failure category、表示帯を内部記録する。90以上／75以上／75未満の閾値を固定する。
+- 候補方針: 初期段階では候補を自動除外しない。同一コマの候補を内部overall scoreで並べるだけとし、評価未記録候補も表示対象に残す。
+- Judge境界: 実画像の意味解析Providerは追加しない。画像内容の証拠がない人物・表情等は中立75点とし、Asset存在と寸法比など観測可能な情報だけで初期評価する。評価保存障害は完了済み生成Jobを失敗・retryへ戻さない。
+- DB: 所有者RLS付きPanel Specification／品質評価テーブルと、所有者を検証するSpecification保存RPC、service-role限定評価保存RPCを追加する。既存Job、Q0追記ログ、課金契約は変更しない。
+- 不変条件: Provider、model、pricing、retry、timeout、Scheduler、既存URL／API、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 36/36、deps（0 errors／既知27 warnings）、lint、Hub／Desktop typecheck、research eval、Hub全件、Canvas 26、AI 48、Desktop 182、migration 50/50、Hub build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。Desktop Vite buildは実行sandboxがドライブ上位を読めず停止したため、Desktop無変更を前提にWindows CIで確認する。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後に停止する。責任者確認前にPR-Q2へ進まない。
+
 ## 2026-08-08 PR-Q0 漫画品質評価ログ基盤
 
 - 状態: `READY_FOR_OWNER_REVIEW`

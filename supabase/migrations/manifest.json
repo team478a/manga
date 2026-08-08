@@ -294,7 +294,13 @@
       "description": "漫画候補の表示・採用・却下と品質KPI用の追記型ログを追加",
       "forwardSha256": "b4cb6031d67181d30fe91c8a3fe63317320d847db0ea01af03f0dfa3cf4b8e0f",
       "rollbackSha256": "71580061544865c25a76bd45d8da53077b66e231d018d6ab74a1332eee28ad59"
+    },
+    {
+      "id": "202608080002_cloud_manga_quality_judge",
+      "description": "Panel Specificationと初期品質Judgeの内部評価保存を追加",
+      "forwardSha256": "e4fb86163a726b9087c7bac619f386d86c6eb211eecc9cb9c07ef2f10d0aeb0c",
+      "rollbackSha256": "dc52eb186731f9d2a1dc13bfb4f17ef4bcbbb18aa590e5a60a917b630527daea"
     }
   ],
-  "schemaSha256": "33c19912e27122cb74d28fed73c5cfc5985ca8346c9251cf773bca334f8b4d35"
+  "schemaSha256": "95149f1a73743937f76240a95f6904b521a0f60d22bb5e11f53300e8bc6b6f68"
 }
