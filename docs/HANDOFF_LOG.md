@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-3j checkout result repository境界
+
+- Branch: `codex/refactor-r3-3j-checkout-result-repository`、Base: `origin/feature/manga-canvas-mvp`@`88fd9d6`（PR #204 merge後）。R3-3a〜R3-3iは完了・マージ済み。
+- checkout success／cancel画面に残っていたservice-role DB／private Storage操作を、既存`src/modules/checkout/infrastructure/checkout-order-repository.ts`へ移した。
+- App RouterにはStripe Session取得／支払反映、paid reference判定、cancel token検証、admin環境確認、message／表示を残した。paid注文＋product一致、private bucket、TTL 300秒、download option、pendingだけをcanceledへ更新する条件を維持し、cancel tokenに有効期限は追加しない。
+- `src/app/**`のadmin-client直接利用warningは10件から8件へ減少。残件はDesktop 6件とA分類Worker composition root 2件で、本PRから除外した。
+- DB、RLS、migration、RPC、Storage契約、URL、API、Stripe Session／metadata／webhook／success／cancel、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更しない。
+- focused 17/17、deps（0 errors／既知8 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 590/590、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。実Stripe／Storageを呼び出さず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-3i checkout pending order repository境界
 
 - Branch: `codex/refactor-r3-3i-checkout-order-repository`、Base: `origin/feature/manga-canvas-mvp`@`02fb6cf`（PR #203 merge後）。R3-3a〜R3-3hは完了・マージ済み。
@@ -14,6 +26,7 @@
 - focused 24/24、deps（0 errors／既知10 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 586/586、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。実Stripe Checkoutを行わず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#204](https://github.com/team478a/manga/pull/204)、Preview `https://mangai-hub-staging-git-codex-refactor-8799f2-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+- Merge: `88fd9d6762578e7eb09b67677828daf9f0964b57`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 

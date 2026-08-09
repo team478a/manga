@@ -1,11 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-3j checkout result repository境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-3j-checkout-result-repository`
+- Base: `origin/feature/manga-canvas-mvp`（`88fd9d6`、PR #204 merge後）
+- 現在: PR-R3-3jだけを実施する。R3-3a〜R3-3iは完了・マージ済み。checkout success／cancel画面に残るservice-role DB／private Storage操作を、既存`checkout` infrastructure repositoryへ移す。
+- 実装: paid注文とproduct IDの照合、private商品fileの300秒署名URL生成、署名済みcancel token検証後のpending注文cancel更新をrepositoryへ集約する。App RouterにはStripe Session取得／支払反映、paid reference判定、環境確認、既存message／表示を維持する。
+- 契約維持: Stripeのpaid session確認をdownload queryより前に、cancel token検証とadmin環境確認をDB更新より前に維持する。注文ID／商品ID／paid status照合、bucket `digital-products`、file path、TTL 300秒、`download:true`、pendingだけをcanceledへ更新する条件を変更しない。cancel tokenに現行存在しない有効期限仕様は追加しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを10件から8件へ削減する。残件はDesktop 6件と、A分類Worker composition root 2件だけ。本PRではいずれも変更しない。
+- 不変条件: DB、RLS、migration、RPC、Storage bucket／path／private設定、URL、API、Stripe Session／metadata／webhook／success／cancel契約、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 検証: focused 17/17、deps（0 errors／既知8 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 590/590、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3jの失敗ではない。実Stripe／Storageは呼び出さない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にDesktop repository slice、R3-4、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-3i checkout pending order repository境界
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3i-checkout-order-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`02fb6cf`、PR #203 merge後）
 - Draft PR: [#204](https://github.com/team478a/manga/pull/204)
+- Merge: `88fd9d6762578e7eb09b67677828daf9f0964b57`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-8799f2-team478as-projects.vercel.app`
 - 現在: PR-R3-3iだけを実施する。R3-3a〜R3-3hは完了・マージ済み。checkout開始時のpending注文作成に残るservice-role DB insertを、`checkout` infrastructure repositoryへ移す。
 - 実装: `src/modules/checkout/infrastructure/checkout-order-repository.ts`へpending注文insertを集約する。Server Actionには購入者メール検証、任意ログインprofile照合、商品取得／公開状態確認、金額／手数料計算、Stripe Checkout調停、redirectを維持する。
