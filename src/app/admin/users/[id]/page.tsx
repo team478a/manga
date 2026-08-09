@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { StatusBadge } from "@/components/StatusBadge";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
@@ -83,9 +84,9 @@ export default async function AdminUserDetailPage({
         <Link className="button-secondary" href="/admin/users">一覧へ戻る</Link>
       </div>
       {error ? (
-        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+        <InlineErrorMessage radius="lg" role="alert">
           {error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       {message ? (
         <p

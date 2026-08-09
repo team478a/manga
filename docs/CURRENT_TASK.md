@@ -1,11 +1,27 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R3-4f inline alert error visual shell
+
+- 状態: `LOCAL_VALIDATED`
+- Branch: `codex/refactor-r3-4f-inline-alert-errors`
+- Base: `origin/feature/manga-canvas-mvp`（`169a3cd`、PR #212 merge後）
+- Draft PR: 作成前
+- Preview: 作成前
+- 現在: PR-R3-4fだけを実施する。管理、一般モニター、市場分析、企画、シナリオ、ネームの10画面11箇所で完全一致する`rounded-lg`のinline alert error visual shellを既存共通componentへ移す。
+- 実装: `InlineErrorMessage`へ`radius="md" | "lg"`を追加し、R3-4eの21箇所は既定の`md`のまま維持する。今回の11箇所だけ`radius="lg"`を指定し、`p`要素、`mt-5 rounded-lg bg-red-50 p-4 text-red-700`、既存`role="alert"`、文言、表示条件を維持する。
+- 分割: R3-4fは要素、全visual class、ARIAが一致する11箇所だけに限定する。色、余白、要素、ARIAが異なるerror表示、成功／警告、error boundaryは対象外。empty stateとpaginationは要素、CTA、見出し、件数、状態resetが異なるためR3-4g以降で再監査する。
+- 不変条件: 情報設計、文言、表示条件、query名／encoding、Server Action、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 9/9（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 613/613、Canvas 26/26、AI 48/48、Desktop 182/182／a11y違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。Desktop testは並列時181/182の一時失敗後、単独再実行で182/182成功。Hub buildも単独実行で成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-4fの失敗ではない。実DB、実Provider、Desktopアプリコードは変更／実行しない。
+- 停止条件: Draft PRと最終HEADの全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4g、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-4e inline error visual shell
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-4e-inline-error-shell`
 - Base: `origin/feature/manga-canvas-mvp`（`96b22a9`、PR #211 merge後）
 - Draft PR: [#212](https://github.com/team478a/manga/pull/212)
+- Merge: `169a3cd710394402561c3e13383e919702f5ac9e`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-bc0c4d-team478as-projects.vercel.app`
 - 現在: PR-R3-4eだけを実施する。認証、購入、作品、商品、グッズ申請、Desktop端末、Cloud作品の20画面21箇所で完全一致するinline error visual shellを共通componentへ移す。
 - 実装: `src/components/InlineErrorMessage.tsx`に`p`要素と`mt-5 rounded-md bg-red-50 p-4 text-red-700`だけを集約する。表示条件、error値、購入不可文言、唯一既存の`role=alert`は各画面に維持する。

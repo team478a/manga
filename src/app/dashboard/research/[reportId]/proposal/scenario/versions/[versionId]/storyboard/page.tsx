@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { cloudProposalFeatureEnabled } from "@/lib/cloud-proposal";
@@ -58,7 +59,7 @@ export default async function StoryboardPage({ params, searchParams }: {
     <p className="mt-5 text-sm font-bold text-violet-700">WORKFLOW 4</p>
     <h1 className="mt-2 text-3xl font-bold">AIネーム・ページ構成</h1>
     <p className="mt-2 text-stone-600">採用シナリオを、右綴じ漫画のページとコマへ具体化します。</p>
-    {error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{error}</p> : null}
+    {error ? <InlineErrorMessage radius="lg" role="alert">{error}</InlineErrorMessage> : null}
     {!scenarioAdoptionLoad.ok ? <CloudDataNotice className="mt-5">採用シナリオの状態を一時的に確認できません。本文は閲覧できますが、ネーム生成を停止しています。</CloudDataNotice> : null}
     {scenarioAdoptionLoad.ok && !versionLoad.ok ? <CloudDataNotice className="mt-5">ネーム版履歴を一時的に確認できません。重複作成を防ぐため、新規生成を停止しています。</CloudDataNotice> : null}
     {!adoptionLoad.ok && scenarioAdoptionLoad.ok ? <CloudDataNotice className="mt-5">ネームの採用状態を一時的に確認できません。保存済みの履歴は引き続き確認できます。</CloudDataNotice> : null}

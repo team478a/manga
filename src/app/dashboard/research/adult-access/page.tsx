@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { requireProfile } from "@/lib/auth";
 import {
   cloudAdultResearchFeatureEnabled,
@@ -43,9 +44,9 @@ export default async function AdultResearchAccessPage({
         成人向け作品の市場傾向を分析する、許可制のオプション機能です。画像・本文の生成機能ではありません。
       </p>
       {error ? (
-        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+        <InlineErrorMessage radius="lg" role="alert">
           {error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       {message ? (
         <p

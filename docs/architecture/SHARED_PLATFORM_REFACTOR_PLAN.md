@@ -70,6 +70,8 @@ PR-R3-4dでは管理者／制作者の作品、商品、グッズ申請、ユー
 
 PR-R3-4eでは認証、購入、作品、商品、グッズ申請、Desktop端末、Cloud作品の20画面21箇所で完全一致するinline error visual shellだけを`InlineErrorMessage.tsx`へ移す。共通責務は`p`要素と`mt-5 rounded-md bg-red-50 p-4 text-red-700`に限定し、表示条件、error値、購入不可文言、既存ARIAは各画面に残す。角丸、色、余白、ARIAが異なるerror表示、成功／警告、error boundaryは統合しない。empty stateとpaginationはR3-4f以降で再監査する。
 
+PR-R3-4fでは管理、一般モニター、市場分析、企画、シナリオ、ネームの10画面11箇所で完全一致する`rounded-lg` inline alert errorだけを、既存`InlineErrorMessage`の`radius` variantへ移す。R3-4eの21箇所は既定の`rounded-md`を維持し、合計30画面32箇所の`p`要素、色、余白、ARIA、文言、表示条件を固定する。異なるerror variant、成功／警告、error boundaryは統合せず、empty stateとpaginationは要素、CTA、見出し、件数、状態resetの差があるためR3-4g以降で再監査する。
+
 ## 9. Feature Flag台帳
 
 21個を確認した。すべて未設定時falseを維持する。

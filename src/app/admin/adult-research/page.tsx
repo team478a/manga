@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
@@ -39,9 +40,9 @@ export default async function AdminAdultResearchPage({
         環境変数とDB側Kill Switchの両方が有効で、個別許可と本人同意が揃った利用者だけが実行できます。
       </p>
       {error ? (
-        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+        <InlineErrorMessage radius="lg" role="alert">
           {error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       {message ? (
         <p
