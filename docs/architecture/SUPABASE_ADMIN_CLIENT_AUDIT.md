@@ -20,7 +20,8 @@
 - PR-R3-3f: Cloud AI管理のworkspace読取、Job取消、運用設定／Plan／価格更新、監査ログ保存の2ファイルを`src/modules/cloud-ai/infrastructure/admin-cloud-ai-repository.ts`へ移し、15件から13件へ削減した。
 - PR-R3-3g: 一般利用者の購入履歴query 1ファイルを`src/modules/purchases/infrastructure/purchase-query-repository.ts`へ移し、13件から12件へ削減した。
 - PR-R3-3h: 一般モニターfeedback送信のservice-role DB／private Storage操作1ファイルを`src/modules/general-monitor/infrastructure/monitor-feedback-repository.ts`へ移し、12件から11件へ削減した。
-- Cloud AI／monitor opsのWorker routeはA分類のcomposition rootとして維持する。Desktop、checkoutは後続の機能完結sliceまたは各分類の計画で扱う。
+- PR-R3-3i: checkout開始時のpending注文insert 1ファイルを`src/modules/checkout/infrastructure/checkout-order-repository.ts`へ移し、11件から10件へ削減した。guest checkout、商品確認、手数料計算、Stripe Session作成順序はServer Actionに維持した。
+- Cloud AI／monitor opsのWorker routeはA分類のcomposition rootとして維持する。Desktopは後続の機能完結sliceで扱う。checkout success／cancelは署名済みstate契約を先に固定するE分類として維持する。
 
 | File | Function | Auth確認 | Owner確認 | 用途 | 分類 | 推奨移行先 |
 |---|---|---|---|---|---|---|
