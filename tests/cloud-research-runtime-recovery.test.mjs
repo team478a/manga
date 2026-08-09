@@ -24,17 +24,21 @@ test("使い方画面の市場分析開始は履歴を経由せず新規入力�
 });
 
 test("認証済みモニターの添付は認可後に管理Storage経由で保存する", async () => {
-  const action = await source("../src/app/dashboard/monitor/actions.ts");
+  const [action, repository] = await Promise.all([
+    source("../src/app/dashboard/monitor/actions.ts"),
+    source("../src/modules/general-monitor/infrastructure/monitor-feedback-repository.ts"),
+  ]);
   const authorizeAt = action.indexOf("requireCloudGeneralMonitor(profile.id)");
-  const adminClientAt = action.indexOf("const admin = createAdminClient()");
-  const adminStorageAt = action.indexOf('admin.storage.from("monitor-feedback")');
-  const uploadAt = action.indexOf("storage.upload(");
+  const repositoryAt = action.indexOf("saveGeneralMonitorFeedback({");
   assert.ok(
     authorizeAt > -1 &&
-      adminClientAt > authorizeAt &&
-      adminStorageAt > adminClientAt &&
-      uploadAt > adminStorageAt,
+      repositoryAt > authorizeAt,
   );
+  const adminClientAt = repository.indexOf("const admin = createAdminClient()");
+  const adminStorageAt = repository.indexOf('admin.storage.from("monitor-feedback")');
+  const uploadAt = repository.indexOf("storage.upload(");
+  assert.ok(adminClientAt > -1 && adminStorageAt > adminClientAt && uploadAt > adminStorageAt);
+  assert.doesNotMatch(action, /createAdminClient|@\/lib\/supabase\/admin/);
   assert.doesNotMatch(action, /supabase\.storage\.from\("monitor-feedback"\)\.upload/);
 });
 

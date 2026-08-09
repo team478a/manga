@@ -19,7 +19,8 @@
 - PR-R3-3e: 管理者ユーザー一覧・詳細とaccount停止／再開／soft deleteの3ファイルを`src/modules/account/infrastructure/admin-user-repository.ts`へ移し、18件から15件へ削減した。
 - PR-R3-3f: Cloud AI管理のworkspace読取、Job取消、運用設定／Plan／価格更新、監査ログ保存の2ファイルを`src/modules/cloud-ai/infrastructure/admin-cloud-ai-repository.ts`へ移し、15件から13件へ削減した。
 - PR-R3-3g: 一般利用者の購入履歴query 1ファイルを`src/modules/purchases/infrastructure/purchase-query-repository.ts`へ移し、13件から12件へ削減した。
-- Cloud AI／monitor opsのWorker routeはA分類のcomposition rootとして維持する。利用者feedback、Desktop、checkoutは後続の機能完結sliceまたは各分類の計画で扱う。
+- PR-R3-3h: 一般モニターfeedback送信のservice-role DB／private Storage操作1ファイルを`src/modules/general-monitor/infrastructure/monitor-feedback-repository.ts`へ移し、12件から11件へ削減した。
+- Cloud AI／monitor opsのWorker routeはA分類のcomposition rootとして維持する。Desktop、checkoutは後続の機能完結sliceまたは各分類の計画で扱う。
 
 | File | Function | Auth確認 | Owner確認 | 用途 | 分類 | 推奨移行先 |
 |---|---|---|---|---|---|---|

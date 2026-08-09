@@ -5,7 +5,6 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireProfile } from "@/lib/auth";
 import { requireCloudGeneralMonitor } from "@/lib/cloud-general-monitor";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { ValidationError } from "@/lib/domain-errors";
 import {
@@ -14,6 +13,7 @@ import {
   sanitizeMonitorUrl,
   validateMonitorScreenshot,
 } from "@/lib/monitor-feedback";
+import { saveGeneralMonitorFeedback } from "@/modules/general-monitor/infrastructure/monitor-feedback-repository";
 
 const feedbackSchema = z.object({
   requestType: z.enum(["feedback", "bug", "improvement", "feature_request"]),
@@ -53,35 +53,22 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
     }
     const feedbackId = crypto.randomUUID();
     const diagnostic = parseMonitorDiagnostic(formData.get("diagnostic"));
-    const admin = createAdminClient();
-    const storage = admin.storage.from("monitor-feedback");
-    const attachmentPath = screenshot ? `${profile.id}/${feedbackId}.${screenshot.extension}` : null;
-    if (screenshot && attachmentPath) {
-      const upload = await storage.upload(attachmentPath, screenshot.file, {
-        contentType: screenshot.file.type,
-        upsert: false,
-      });
-      if (upload.error) throw new ValidationError("スクリーンショットを保存できませんでした。画像を確認してください。");
-    }
-    const { error } = await admin
-      .from("cloud_general_monitor_feedback")
-      .insert({
-        id: feedbackId,
-        owner_profile_id: profile.id,
-        request_type: parsed.requestType,
-        title: sanitizeMonitorText(parsed.title),
-        workflow_step: parsed.workflowStep,
-        rating: parsed.rating,
-        outcome: parsed.outcome,
-        severity: parsed.severity,
-        page_url: sanitizeMonitorUrl(parsed.pageUrl) || null,
-        environment: sanitizeMonitorText(parsed.environment) || null,
-        comment: sanitizeMonitorText(parsed.comment),
-        client_context: diagnostic,
-        attachment_path: attachmentPath,
-      });
+    const { error } = await saveGeneralMonitorFeedback({
+      feedbackId,
+      ownerProfileId: profile.id,
+      requestType: parsed.requestType,
+      title: sanitizeMonitorText(parsed.title),
+      workflowStep: parsed.workflowStep,
+      rating: parsed.rating,
+      outcome: parsed.outcome,
+      severity: parsed.severity,
+      pageUrl: sanitizeMonitorUrl(parsed.pageUrl) || null,
+      environment: sanitizeMonitorText(parsed.environment) || null,
+      comment: sanitizeMonitorText(parsed.comment),
+      clientContext: diagnostic,
+      screenshot,
+    });
     if (error) {
-      if (attachmentPath) await storage.remove([attachmentPath]);
       if (error.message.includes("cloud_monitor_feedback_rate_limited")) {
         throw new ValidationError("短時間に多くの報告が送信されています。10分ほど待ってから再度お試しください。");
       }
