@@ -1,4 +1,3 @@
-import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import {
   processNextCloudGenerationJob,
@@ -21,6 +20,7 @@ import {
   logHubEvent,
 } from "@/lib/hub-logger";
 import { featureFlagEnabled } from "@/lib/feature-flags";
+import { hasValidInternalWorkerAuthorization } from "@/lib/internal-worker-auth";
 
 export const runtime = "nodejs";
 // Provider polling is bounded at 120 seconds. Keep enough time for lease checks,
@@ -28,18 +28,10 @@ export const runtime = "nodejs";
 export const maxDuration = 180;
 
 function authorized(request: Request) {
-  const expected = process.env.MANGAI_CLOUD_AI_WORKER_SECRET;
-  const supplied = request.headers
-    .get("authorization")
-    ?.replace(/^Bearer\s+/i, "");
-  if (
-    !expected ||
-    !supplied ||
-    expected.length < 32 ||
-    supplied.length !== expected.length
-  )
-    return false;
-  return crypto.timingSafeEqual(Buffer.from(supplied), Buffer.from(expected));
+  return hasValidInternalWorkerAuthorization(
+    request,
+    process.env.MANGAI_CLOUD_AI_WORKER_SECRET,
+  );
 }
 
 function workerLeaseSeconds() {

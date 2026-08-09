@@ -1,11 +1,29 @@
 # MANGAI Current Task
 
-## 2026-08-10 PR-R3-4g Cloud市場分析not-found visual shell
+## 2026-08-10 PR-R3-5a internal Worker auth primitive
 
 - 状態: `READY_FOR_OWNER_REVIEW`
+- Branch: `codex/refactor-r3-5a-internal-worker-auth`
+- Base: `origin/feature/manga-canvas-mvp`（`1ce0d98`、PR #214 merge後）
+- Draft PR: [#215](https://github.com/team478a/manga/pull/215)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-ff4eaa-team478as-projects.vercel.app`
+- 現在: PR-R3-5aだけを実施する。Cloud AI、Cloud Export、Cloud Storage、Monitor Opsの4つのinternal Worker Routeで重複するBearer secret比較を`src/lib/internal-worker-auth.ts`へ集約する。
+- 実装: Authorization headerのcase-insensitiveな`Bearer`除去、secret未設定／header欠落／32文字未満／文字列長不一致の拒否、同一長だけの`crypto.timingSafeEqual`を共通helperへ移す。各Routeには既存の環境変数名、feature flag、401／503、response body、ログ、Worker処理順を維持する。
+- R3-4完了: PR #214は`1ce0d98a405171e71a8d023a49bc1080d23ae0ed`でマージ済み。通常一覧のempty stateとpaginationは要素、CTA、権限、件数、状態reset、ページ意味が異なるため統合しないことを最終判断とし、R3-4を完了する。
+- 不変条件: secret値、環境変数名、認証失敗status／body、Feature Flag、Auth、DB、RLS、migration、RPC、Storage、URL、API、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 29/29、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 616/616、Canvas 26/26、AI 48/48、Desktop 182/182／a11y 29画面・違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
+- CI: 最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-5aの失敗ではない。実DB、実Provider、Storage、Desktopアプリコードは変更／実行しない。
+- 残件見込み: R3-5b以降はaudit log境界、rate-limit低水準interface、signed URL低水準境界、readiness／resilience監査（必要なら0〜2 PR）、R3完了監査で概ね4〜6 Draft PR。
+- 停止条件: Draft PRと最終HEADの全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-5b、R4へ進まない。
+
+## 2026-08-10 PR-R3-4g Cloud市場分析not-found visual shell
+
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-4g-research-not-found-shell`
 - Base: `origin/feature/manga-canvas-mvp`（`c488e41`、PR #213 merge後）
 - Draft PR: [#214](https://github.com/team478a/manga/pull/214)
+- Merge: `1ce0d98a405171e71a8d023a49bc1080d23ae0ed`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-568040-team478as-projects.vercel.app`
 - 現在: PR-R3-4gだけを実施する。Cloud市場分析、企画、シナリオ、ネームのApp Router上にある全4つの`not-found.tsx`で完全一致するpage／panel visual shellを既存共通componentへ移す。
 - 実装: 4画面の`main.page.max-w-3xl`を`AsyncStatePage`、`section.panel.text-center`を`AsyncStatePanel`へ委譲する。見出し要素・class・文言、説明、`FileQuestion`アイコンと既存ARIA、Link要素・class・文言、`/dashboard/research` URLは各画面に維持する。新規componentは追加しない。
