@@ -20,13 +20,18 @@
 | DUP-010 | UI | pending button | `src/components/PendingSubmitButton.tsx`と専用submit components | 5系統以上 | 既存`PendingSubmitButton` | 二重送信制御や遷移方式の差 | R3-4 |
 | DUP-011 | UI | partial data notice | admin/creator dashboardの部分失敗表示、`admin-resilience.ts`利用箇所 | 8以上 | 共通表示component＋既存loader | 警告をfatal errorへ変えない | R3-4 |
 | DUP-012 | UI | empty state | `src/components/EmptyState.tsx`とinline empty panels | 10以上 | 既存`EmptyState` | CTA、権限、検索結果0件の意味が異なる | R3-4 |
-| DUP-013 | UI | error boundary | `src/app/creator/error.tsx`、`admin/error.tsx`、`dashboard/error.tsx`、機能別境界 | 8以上 | 共通visual shellのみ | reset範囲・ログcontextを失う | R3-4 |
+| DUP-013 | UI | error boundary | `src/components/AsyncStateShell.tsx`、9つのerror boundary、4つのloading boundary | 9 error／4 loading | 共通visual shellのみ | reset範囲・ログcontextを失う | R3-4a |
 | DUP-014 | Audit | 監査ログ書込み | Cloud AI admin、general monitor、provider settings、account operation | 5系統以上 | shared port＋domain別event schema | event名・payload・秘匿境界の破壊 | R3-5 |
 | DUP-015 | Infra | rate limit | `cloud-ai-rate-limit.ts`、`cloud-research-search-rate-limit.ts`、`desktop-device-rate-limit.ts` | 3実装 | interface/clockのみ共通候補 | key、window、上限、failure statusが外部契約 | R3-5 |
 | DUP-016 | Readiness | Provider readiness | Cloud AI readiness、general monitor readiness、provider settings | 3系統以上 | shared result shapeのみ候補 | 成人向け/一般向けProvider境界の混同 | R3-5 |
 | DUP-017 | Worker auth | secret比較 | Cloud AI/export/storage/monitor worker routes | 4 | `src/lib/internal-worker-auth.ts`（新設候補） | status/body、secret名、比較順の差 | R3-5 |
 | DUP-018 | Forms | FormData文字列取得 | `src/app/actions/shared/form-data.ts`と各Actionの`field`/`value` | 8以上 | 既存`formText` | trim、空文字、optionalの意味が異なる | R3-1 |
 | DUP-019 | Resilience | optional readの部分失敗化 | `admin-resilience.ts`、`cloud-runtime-resilience.ts` | 2基盤＋多数利用 | 既存2 helperの責務整理 | adminと利用者画面のログ/表示契約差 | R3-5 |
+
+## 実装進捗
+
+- PR-R3-4a: page／panel／action rowだけを`AsyncStateShell.tsx`へ共通化し、9つのerror boundaryと4つのloading boundaryを移行した。固有文言、CTA、URL、reset範囲、ログcontext、ARIA、spinner／skeletonは各featureに維持した。
+- DUP-010〜012と、status badge、pagination、confirmation feedback、form errorはR3-4aに含めず、後続R3-4b以降で同義性を確認してから扱う。
 
 ## 統合しない重複
 

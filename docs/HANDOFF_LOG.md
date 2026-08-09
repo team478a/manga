@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-4a error／loading visual shell
+
+- Branch: `codex/refactor-r3-4a-ui-state-primitives`、Base: `origin/feature/manga-canvas-mvp`@`d8ac7cd`（PR #207 merge後）。R3-1〜R3-3は完了・マージ済み。
+- `src/components/AsyncStateShell.tsx`へpage、panel、action rowの薄いvisual shellを追加し、9つのerror boundaryと4つのloading boundaryを同等markupへ移した。
+- 各boundaryの固有文言、reset callback、Link、ログcontext、`role`／`aria-live`、spinner／skeleton、max widthは各featureに維持した。error詳細の表示、reset範囲、CTA／URL、loading方式を変更しない。
+- R3-4全体は見込み上限が大きいため、本PRはerror／loadingだけへ限定する。pending、empty、partial notice、status badge、pagination、confirmation feedback、form errorは後続R3-4b以降で扱う。
+- 情報設計、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- 専用4/4、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 606/606、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+- Draft PR [#208](https://github.com/team478a/manga/pull/208)、Preview `https://mangai-hub-staging-git-codex-refactor-9758c5-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-3l Desktop project status repository境界
 
 - Branch: `codex/refactor-r3-3l-desktop-project-status-repository`、Base: `origin/feature/manga-canvas-mvp`@`b2810bd`（PR #206 merge後）。R3-3a〜R3-3kは完了・マージ済み。
@@ -14,6 +27,7 @@
 - focused 23/23（専用6/6）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 602/602、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。Desktopアプリコード、実DB、実端末認証、実Providerを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#207](https://github.com/team478a/manga/pull/207)、Preview `https://mangai-hub-staging-git-codex-refactor-11cce2-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+- Merge: `d8ac7cdf24012dee2dfadacd422de7df210a1194`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 

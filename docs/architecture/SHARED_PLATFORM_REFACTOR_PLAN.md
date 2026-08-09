@@ -60,6 +60,8 @@ PR-R3-0は、PR-R0〜R2Cと実Provider本番受入れ完了後の`b2dfb1bdd00d3b
 
 候補はpending button、empty state、partial-data notice、error shell、status badge、loading skeleton、pagination、confirmation/action feedback、form field errorsの9分類。R3-4でvisual shellを共通化しても、CTA、reset範囲、log context、権限、partial/fatalの区別は各featureが保持する。
 
+PR-R3-4aでは9つのerror boundaryと4つのloading boundaryについて、page／panel／action rowだけを`AsyncStateShell.tsx`へ移す。文言、CTA、URL、reset、ログ、ARIA、spinner／skeletonは移動しない。残るpending／empty／partial等はR3-4b以降へ分割する。
+
 ## 9. Feature Flag台帳
 
 21個を確認した。すべて未設定時falseを維持する。

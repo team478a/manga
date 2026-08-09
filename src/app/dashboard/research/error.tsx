@@ -2,6 +2,11 @@
 
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
+import {
+  AsyncStateActions,
+  AsyncStatePage,
+  AsyncStatePanel,
+} from "@/components/AsyncStateShell";
 
 export default function CloudResearchError({
   reset,
@@ -10,8 +15,8 @@ export default function CloudResearchError({
   reset: () => void;
 }) {
   return (
-    <main className="page max-w-3xl">
-      <section className="panel text-center" role="alert">
+    <AsyncStatePage className="max-w-3xl">
+      <AsyncStatePanel className="text-center" role="alert">
         <AlertTriangle className="mx-auto h-8 w-8 text-red-600" />
         <h1 className="mt-3 text-xl font-bold">
           市場分析を表示できませんでした
@@ -19,15 +24,15 @@ export default function CloudResearchError({
         <p className="mt-2 text-stone-600">
           内部情報は表示していません。時間をおいて再度お試しください。
         </p>
-        <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
+        <AsyncStateActions className="mt-5 flex-col justify-center gap-3 sm:flex-row">
           <button className="button" onClick={reset} type="button">
             再試行
           </button>
           <Link className="button-secondary" href="/dashboard/research">
             市場分析履歴へ
           </Link>
-        </div>
-      </section>
-    </main>
+        </AsyncStateActions>
+      </AsyncStatePanel>
+    </AsyncStatePage>
   );
 }
