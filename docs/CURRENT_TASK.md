@@ -2,9 +2,11 @@
 
 ## 2026-08-09 PR-R3-3g 購入履歴query repository境界
 
-- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/refactor-r3-3g-purchase-query-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`de42c5b`、PR #201 merge後）
+- Draft PR: [#202](https://github.com/team478a/manga/pull/202)
+- Preview: `https://mangai-hub-staging-1wwopie3h-team478as-projects.vercel.app`
 - 現在: PR-R3-3gだけを実施する。R3-3a〜R3-3fは完了・マージ済み。一般利用者の購入履歴画面に残るservice-role queryを、`purchases` infrastructure repositoryへ移す。
 - 実装: `src/modules/purchases/infrastructure/purchase-query-repository.ts`へ購入履歴型と本人購入queryを集約する。App Routerにはprofile認証、表示、download URL、空状態を維持する。
 - 契約維持: `requireProfile`をrepository呼出しより前に維持し、認証済み`profile.id`だけをowner IDとして渡す。`orders`の列／join、`buyer_profile_id` filter、`paid`／`refunded`条件、`paid_at`降順、既存download routeを変更しない。
@@ -12,6 +14,7 @@
 - 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Stripe checkout／webhook／download、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
 - 検証: focused 8/8、deps（0 errors／既知12 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 580/580、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3gの失敗ではない。Stripe／download実行は行わない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft／MERGEABLE。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前に次のR3 slice、R3-4、R3-5、R4へ進まない。
 
 ## 2026-08-09 PR-R3-3f Cloud AI管理repository境界
