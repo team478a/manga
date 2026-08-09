@@ -2,16 +2,17 @@
 
 ## 2026-08-10 PR-R3-4g Cloud市場分析not-found visual shell
 
-- 状態: `LOCAL_VALIDATED`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/refactor-r3-4g-research-not-found-shell`
 - Base: `origin/feature/manga-canvas-mvp`（`c488e41`、PR #213 merge後）
-- Draft PR: 作成前
-- Preview: 作成前
+- Draft PR: [#214](https://github.com/team478a/manga/pull/214)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-568040-team478as-projects.vercel.app`
 - 現在: PR-R3-4gだけを実施する。Cloud市場分析、企画、シナリオ、ネームのApp Router上にある全4つの`not-found.tsx`で完全一致するpage／panel visual shellを既存共通componentへ移す。
 - 実装: 4画面の`main.page.max-w-3xl`を`AsyncStatePage`、`section.panel.text-center`を`AsyncStatePanel`へ委譲する。見出し要素・class・文言、説明、`FileQuestion`アイコンと既存ARIA、Link要素・class・文言、`/dashboard/research` URLは各画面に維持する。新規componentは追加しない。
 - 分割: R3-4gはApp Router上の全not-found boundary 4画面だけに限定する。通常一覧のempty stateは要素、icon、margin、CTA、権限、検索結果0件の意味が異なるため対象外。paginationも表示件数、状態reset、ページ意味が異なるため統合しない。
 - 不変条件: 情報設計、文言、Link、URL、query名／encoding、Server Action、business state、Auth、DB、RLS、migration、RPC、Storage、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
 - 検証: focused 21/21（AsyncState専用5/5）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 614/614、Canvas 26/26、AI 48/48、Desktop 182/182／a11y違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-4gの失敗ではない。実DB、実Provider、Desktopアプリコードは変更／実行しない。
 - 停止条件: Draft PRと最終HEADの全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4h、R3-5、R4へ進まない。
 
