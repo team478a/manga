@@ -1,7 +1,9 @@
 # MANGAI PR-R4 Release Candidate統合計画
 
-最終監査日: 2026-08-10  
-対象ブランチ: `feature/manga-canvas-mvp`  
+最終監査日: 2026-08-10
+
+対象ブランチ: `feature/manga-canvas-mvp`
+
 実装基準: `78f4503f6ca235c1c949cddc33c91e7efcc34fa3`（PR #216 merge commit）
 
 ## 1. 目的
