@@ -10,6 +10,7 @@
 - Desktop端末認証の開始／poll／期限切れ／token解除と、利用者による承認／解除／一覧に残っていたservice-role DB操作5ファイルを`src/modules/desktop-device/infrastructure/desktop-device-repository.ts`へ移した。
 - Route／Action／Pageにはrate limit、cleanup、token生成／hash、Bearer token、`requireProfile`、scope確認、期限計算、API response／redirect／表示を残した。user code衝突時5回retry、`23505`、pending 15分、token 90日、scope名、owner filter、status遷移を維持した。
 - `src/app/**`のadmin-client直接利用warningは8件から3件へ減少。残件はDesktop Hub project status route 1件とA分類Worker composition root 2件。project statusはowner／revision conflict契約が異なるため後続R3-3lへ分割する。
+- Draft PR [#206](https://github.com/team478a/manga/pull/206)、Preview `https://mangai-hub-staging-git-codex-refactor-a897d0-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
 - DB、RLS、migration、RPC、Storage、URL、API、Desktop protocol／IPC／保存形式、認証期間／scope／rate limit、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripeは変更しない。
 - focused 23/23（専用6/6）、deps（0 errors／既知3 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 596/596、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - release preflightは構造READY。Desktop rate-limit署名鍵、Supabase staging資格情報と実端末認証はローカル環境外の既存pending。Desktopアプリコードと実DBを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
