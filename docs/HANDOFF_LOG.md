@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R3-5a internal Worker auth primitive
+
+- Branch: `codex/refactor-r3-5a-internal-worker-auth`、Base: `origin/feature/manga-canvas-mvp`@`1ce0d98`（PR #214 merge後）。R3-1〜R3-4は完了・マージ済み。
+- Cloud AI、Cloud Export、Cloud Storage、Monitor Opsの4つのinternal Worker Routeで重複していたBearer secret比較を`src/lib/internal-worker-auth.ts`へ移した。
+- headerからのcase-insensitiveな`Bearer`除去、secret未設定／header欠落／32文字未満／文字列長不一致の拒否、同一長だけの`crypto.timingSafeEqual`を維持した。4つの環境変数名、feature flag、401／503、response body、ログ、Worker処理順は各Routeに残した。
+- R3-4gは`1ce0d98a405171e71a8d023a49bc1080d23ae0ed`でマージ済み。通常一覧のempty stateとpaginationは意味と契約が異なるため統合しない判断を確定し、R3-4を完了した。
+- Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- focused 29/29、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 616/616、Canvas 26/26、AI 48/48、Desktop 182/182／a11y 29画面・違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
+- release preflightは構造READY。外部資格情報と手動E2Eはローカル環境外の既存pending。Draft PR、GitHub CI、Vercel Previewを確認後、R3-5bへ進まず責任者確認待ちで停止する。
+
+---
+
 ## 2026-08-10 Codex: PR-R3-4g Cloud市場分析not-found visual shell
 
 - Branch: `codex/refactor-r3-4g-research-not-found-shell`、Base: `origin/feature/manga-canvas-mvp`@`c488e41`（PR #213 merge後）。R3-4a〜R3-4fは完了・マージ済み。
@@ -14,6 +26,7 @@
 - focused 21/21（AsyncState専用5/5）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 614/614、Canvas 26/26、AI 48/48、Desktop 182/182／a11y違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#214](https://github.com/team478a/manga/pull/214)、Preview `https://mangai-hub-staging-git-codex-refactor-568040-team478as-projects.vercel.app`。最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。最終文書同期後のHEADでも同じ5チェックを再確認して責任者確認待ちとする。
+- Merge: `1ce0d98a405171e71a8d023a49bc1080d23ae0ed`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 

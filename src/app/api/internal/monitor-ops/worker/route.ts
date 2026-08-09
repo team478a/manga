@@ -1,8 +1,8 @@
-import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { featureFlagEnabled } from "@/lib/feature-flags";
+import { hasValidInternalWorkerAuthorization } from "@/lib/internal-worker-auth";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -22,10 +22,10 @@ const requestSchema = z.discriminatedUnion("action", [
 ]);
 
 function authorized(request: Request) {
-  const expected = process.env.MANGAI_MONITOR_OPS_WORKER_SECRET;
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!expected || !supplied || expected.length < 32 || expected.length !== supplied.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(supplied));
+  return hasValidInternalWorkerAuthorization(
+    request,
+    process.env.MANGAI_MONITOR_OPS_WORKER_SECRET,
+  );
 }
 
 export async function POST(request: Request) {

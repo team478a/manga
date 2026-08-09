@@ -47,9 +47,14 @@ test("同種報告は指紋で集約し管理者許可後だけ自動修正キ�
 });
 
 test("Worker APIは秘密鍵と停止フラグでfail closedする", async () => {
-  const worker = await read("../src/app/api/internal/monitor-ops/worker/route.ts");
+  const [worker, workerAuth] = await Promise.all([
+    read("../src/app/api/internal/monitor-ops/worker/route.ts"),
+    read("../src/lib/internal-worker-auth.ts"),
+  ]);
   assert.match(worker, /MANGAI_MONITOR_OPS_WORKER_SECRET/);
-  assert.match(worker, /expected\.length < 32/);
+  assert.match(worker, /hasValidInternalWorkerAuthorization/);
+  assert.match(workerAuth, /expected\.length < 32/);
+  assert.match(workerAuth, /timingSafeEqual/);
   assert.match(worker, /!featureFlagEnabled\("MANGAI_MONITOR_OPS_WORKER_ENABLED"\)/);
   assert.match(worker, /claim_cloud_monitor_issue_task/);
   assert.match(worker, /complete_cloud_monitor_issue_task/);

@@ -1,17 +1,17 @@
-import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { processNextCloudExportJob } from "@/lib/cloud-export-worker";
 import { featureFlagEnabled } from "@/lib/feature-flags";
+import { hasValidInternalWorkerAuthorization } from "@/lib/internal-worker-auth";
 
 export const runtime = "nodejs";
 // A segment renders up to eight pages and the last segment also merges the PDF.
 export const maxDuration = 300;
 
 function authorized(request: Request) {
-  const expected = process.env.MANGAI_CLOUD_EXPORT_WORKER_SECRET;
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
-  if (!expected || !supplied || expected.length < 32 || expected.length !== supplied.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(supplied));
+  return hasValidInternalWorkerAuthorization(
+    request,
+    process.env.MANGAI_CLOUD_EXPORT_WORKER_SECRET,
+  );
 }
 
 export async function POST(request: Request) {

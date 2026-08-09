@@ -1,25 +1,17 @@
-import crypto from "node:crypto";
 import { NextResponse } from "next/server";
 import { processNextCloudStorageLifecycleJob } from "@/lib/cloud-storage-lifecycle-worker";
 import { featureFlagEnabled } from "@/lib/feature-flags";
+import { hasValidInternalWorkerAuthorization } from "@/lib/internal-worker-auth";
 
 export const runtime = "nodejs";
 // Thumbnail rendering downloads source assets before rendering and upload.
 export const maxDuration = 180;
 
 function authorized(request: Request) {
-  const expected = process.env.MANGAI_CLOUD_STORAGE_WORKER_SECRET;
-  const supplied = request.headers
-    .get("authorization")
-    ?.replace(/^Bearer\s+/i, "");
-  if (
-    !expected ||
-    !supplied ||
-    expected.length < 32 ||
-    expected.length !== supplied.length
-  )
-    return false;
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(supplied));
+  return hasValidInternalWorkerAuthorization(
+    request,
+    process.env.MANGAI_CLOUD_STORAGE_WORKER_SECRET,
+  );
 }
 
 export async function POST(request: Request) {

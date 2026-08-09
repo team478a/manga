@@ -74,6 +74,10 @@ PR-R3-4fでは管理、一般モニター、市場分析、企画、シナリオ
 
 PR-R3-4gではCloud市場分析workflowのApp Router上にある全4つの`not-found.tsx`で完全一致するpage／panel visual shellだけを、既存`AsyncStatePage`／`AsyncStatePanel`へ移す。出力する`main.page.max-w-3xl`と`section.panel.text-center`を維持し、見出し、説明、icon、ARIA、Link、URLは各boundaryに残す。通常一覧のempty stateとpaginationは要素、icon、margin、CTA、権限、件数、状態reset、ページ意味が異なるため統合しない。
 
+R3-4はPR-R3-4gのマージで完了する。通常一覧のempty stateとpaginationは意味・契約が異なるため、追加の機械的な共通化を行わない。
+
+PR-R3-5aではCloud AI、Cloud Export、Cloud Storage、Monitor Opsの4つのinternal Worker Routeから、Bearer secret比較primitiveだけを`src/lib/internal-worker-auth.ts`へ移す。各環境変数名、feature flag、status/body、ログ、Worker処理順はRouteに残し、secret値、最小長、比較方式を変更しない。audit event、rate-limit、signed URL、readiness、resilienceはR3-5b以降へ分割する。
+
 ## 9. Feature Flag台帳
 
 21個を確認した。すべて未設定時falseを維持する。
@@ -128,6 +132,8 @@ domain固有のowner条件、Provider readiness、成人向け境界、rate-limi
 | R3-3 | `src/app` admin clientをmodule repositoryへ移動 | DB/RPC変更、A分類composition rootの強制移動 |
 | R3-4 | pending/empty/partial/error等の共通UI state | 情報設計、文言、URL、business state |
 | R3-5 | Worker auth、audit port、rate-limit interface、signed URL低水準infra | policy値、Provider、Scheduler、Storage契約 |
+
+R3-5a完了後の残件は、audit log境界、rate-limit低水準interface、signed URL低水準境界、readiness／resilience監査（必要なら0〜2 PR）、R3完了監査の概ね4〜6 Draft PRを見込む。各候補は同義性が確認できなければ統合せず、監査結果だけを記録する。
 
 R3-2またはR3-3が上限を超える場合は`a/b`へ分割し、認可とdata accessを同一PRで中途半端に跨がせない。
 
