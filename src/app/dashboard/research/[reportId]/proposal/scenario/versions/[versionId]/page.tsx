@@ -13,6 +13,7 @@ import {
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { adoptCloudScenarioAction, reviseCloudScenarioAction } from "../../actions";
 import { ScenarioSubmitButton } from "../../scenario-buttons";
+import { CloudActionFeedback } from "@/components/CloudActionFeedback";
 import { CloudDataNotice } from "@/components/CloudDataNotice";
 import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
@@ -63,8 +64,7 @@ export default async function ScenarioVersionPage({ params, searchParams }: {
       </div>
       <p className="mt-3 break-words text-lg leading-relaxed text-stone-700">{result.oneSentencePitch}</p>
       <p className="mt-2 text-sm text-stone-500">{result.pageCount}ページ · {new Date(version.created_at).toLocaleString("ja-JP")}</p>
-      {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
-      {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
+      <CloudActionFeedback error={query.error} message={query.message} />
       {!workflowStateAvailable ? <CloudDataNotice className="mt-5">採用状態を一時的に確認できません。シナリオ本文は閲覧できますが、採用と次工程への移動を停止しています。</CloudDataNotice> : null}
 
       <section className="mt-8"><h2 className="text-2xl font-bold">登場人物</h2><div className="mt-4 grid gap-4 md:grid-cols-2">

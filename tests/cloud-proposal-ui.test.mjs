@@ -5,7 +5,7 @@ import test from "node:test";
 const readSource = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("企画提案画面は生成中・空・失敗・成功状態を利用者へ示す", async () => {
-  const [handoff, button, comparison, loading, error, notFound] = await Promise.all([
+  const [handoff, button, comparison, feedback, loading, error, notFound] = await Promise.all([
     readSource("../src/app/dashboard/research/[reportId]/proposal/page.tsx"),
     readSource(
       "../src/app/dashboard/research/[reportId]/proposal/proposal-submit-button.tsx",
@@ -13,6 +13,7 @@ test("企画提案画面は生成中・空・失敗・成功状態を利用者�
     readSource(
       "../src/app/dashboard/research/[reportId]/proposal/runs/[runId]/page.tsx",
     ),
+    readSource("../src/components/CloudActionFeedback.tsx"),
     readSource(
       "../src/app/dashboard/research/[reportId]/proposal/loading.tsx",
     ),
@@ -27,7 +28,8 @@ test("企画提案画面は生成中・空・失敗・成功状態を利用者�
   assert.match(handoff, /role="alert"/);
   assert.match(button, /AIが企画を作成中/);
   assert.match(button, /企画を保存中/);
-  assert.match(comparison, /role="status"/);
+  assert.match(comparison, /CloudActionFeedback/);
+  assert.match(feedback, /role="status"/);
   assert.match(comparison, /シナリオ生成の準備ができました/);
   assert.match(loading, /aria-busy="true"/);
   assert.match(loading, /AI企画提案を読み込んでいます/);
