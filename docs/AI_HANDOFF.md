@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-0 Release Candidate統合監査・計画、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `78f4503f6ca235c1c949cddc33c91e7efcc34fa3`（PR #216 merge commit）
+- Branch: `codex/release-r4-0-acceptance-plan`
+- Draft PR: [#217](https://github.com/team478a/manga/pull/217)
+- Preview: `https://mangai-hub-staging-git-codex-release-e49113-team478as-projects.vercel.app`
+- R3: PR-R3-1〜R3-5bはすべてマージ済みで、実装残件は0。
+- 今回: `docs/RELEASE_CANDIDATE_R4_PLAN.md`を作成し、現在地、RC台帳、実環境受入れ、証拠、rollback、停止条件を統合する文書限定PR。
+- 後続: R4-1へHub／Supabase／Vercel／Stripe、R4-2へDesktop実AI／アクセシビリティ／Windows署名・更新／最終RCをまとめる。
+- RC状態: 2 passed、11 pending、2 blocked。資格情報、費用承認、実端末、信頼された証明書がない項目を成功扱いしない。
+- 対象外: 成人向けDezgo production接続、依存更新、旧PR整理、新機能、UI redesign。
+- 検証: 完全ローカルRCゲート、補助受入れ、初回HEADのCore quality／Migration roundtrip／Windows build／Vercel／Vercel Preview Comments成功。
+- 停止: 最終文書同期後のHEADでも全CI／Vercel Previewを再確認して停止し、責任者確認前にR4-1へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（M6-1 限定モニター品質フィードバック、2026-08-02）
 
 - Branch: `codex/manga-monitor-quality-feedback-v1`

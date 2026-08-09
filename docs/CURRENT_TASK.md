@@ -1,21 +1,40 @@
 # MANGAI Current Task
 
-## 2026-08-10 PR-R3-5b shared infrastructure closeout
+## 2026-08-10 PR-R4-0 Release Candidate統合監査・計画
 
 - 状態: `READY_FOR_OWNER_REVIEW`
+- Branch: `codex/release-r4-0-acceptance-plan`
+- Base: `origin/feature/manga-canvas-mvp`（`78f4503`、PR #216 merge後）
+- Draft PR: [#217](https://github.com/team478a/manga/pull/217)
+- Preview: `https://mangai-hub-staging-git-codex-release-e49113-team478as-projects.vercel.app`
+- 現在: R0〜R3完了後の残件を、R4-0（文書・台帳）、R4-1（Hub／Supabase／Vercel／Stripe実受入れ）、R4-2（Desktop実AI／アクセシビリティ／Windows配布／最終RC）の3工程へ統合する。
+- 今回: `docs/RELEASE_CANDIDATE_R4_PLAN.md`を新設し、CURRENT_TASK、HANDOFF、roadmap、RC台帳を現行基準へ同期する。コードや外部環境は変更しない。
+- R3完了: PR #216は`78f4503f6ca235c1c949cddc33c91e7efcc34fa3`でマージ済み。PR-R3-1〜R3-5bの実装残件は0。
+- RC現状: ローカル品質ゲートとDesktopローカル受入れはpassed。実サービス、実ブラウザ、実Windows受入れは11 pending、署名／署名付き更新は2 blockedであり、未実施を成功扱いしない。
+- 不変条件: application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop codeを変更しない。
+- 除外: 成人向けDezgo production接続、依存更新、旧PR整理、新機能、UI redesign。
+- 検証: RC台帳2 passed／11 pending／2 blocked、release構造READY、deps 0 errors／承認済み2 warnings、lint、Hub／Desktop typecheck、research eval、Hub 620/620、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4が成功。
+- CI: 初回HEAD `00f645f`でCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 残件: 本PR後は統合したR4-1とR4-2の2工程。資格情報、費用承認、実Windows環境、信頼された証明書が必要な項目は外部条件が揃うまでpending／blockedを維持する。
+- 停止条件: 最終文書同期後のHEADでも全CI／Vercel Previewを再確認して停止する。責任者確認前にR4-1へ進まない。
+
+## 2026-08-10 PR-R3-5b shared infrastructure closeout
+
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-5b-shared-infra-closeout`
 - Base: `origin/feature/manga-canvas-mvp`（`0884a1f`、PR #215 merge後）
 - Draft PR: [#216](https://github.com/team478a/manga/pull/216)
+- Merge: `78f4503f6ca235c1c949cddc33c91e7efcc34fa3`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-8989d9-team478as-projects.vercel.app`
 - 現在: R3に残るaudit log、rate-limit、signed URL、readiness、resilienceを一括監査し、外部契約を変えず安全に一致する低水準primitiveだけを共通化してR3-5を完了する。
 - 実装: `src/lib/rate-limit-primitives.ts`へHMAC-SHA256 subject hashと、`cf-connecting-ip`→`x-real-ip`→`x-forwarded-for`の有効IP抽出を移す。Cloud AI、Cloud市場分析、Desktop端末認証のsecret解決、最小長、key prefix、window、上限、RPC、例外、status/bodyは各機能に維持する。
 - 統合しない判断: auditはCloud AIの直接INSERTと、Provider／一般モニター／成人向けのtransaction内RPC・triggerが異なるため統合しない。signed URLはbucket、path、TTL、download、owner、failure処理が異なるため統合しない。readinessは一般／成人向けProvider境界、resilienceは管理画面のfatal fallbackと利用者画面の部分継続が異なるため統合しない。
-- R3完了判定: R3-1〜R3-4とR3-5aはマージ済み。本PRがマージされ、責任者がR3完了を承認すればR3の実装残件は0。R4は別途指示があるまで開始しない。
+- R3完了判定: R3-1〜R3-5bはすべてマージ済みで、R3の実装残件は0。責任者の指示により後続はPR-R4-0へ移行した。
 - 不変条件: rate-limit値、secret名、key prefix、RPC、status/body、audit event／payload／transaction、Storage bucket/path/TTL/download/owner、readiness、resilience、Auth、DB、RLS、migration、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop protocolを変更しない。
 - 検証: focused 4/4、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 620/620、Canvas 26/26、AI 48/48、Desktop 182/182／a11y 29画面・違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
-- CI: 最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft。
+- CI: 最終HEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draftのままマージ済み。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。本PRはProvider呼出し境界を変更しないため、有料Provider再実行は不要。
-- 停止条件: Draft PRと最終HEADの全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR4へ進まない。
+- 停止条件: 最終HEADの全CI／Vercel Preview成功と責任者確認を完了し、PR-R4-0へ移行済み。
 
 ## 2026-08-10 PR-R3-5a internal Worker auth primitive
 
