@@ -1,11 +1,25 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-4c Cloud制作Action feedback境界
+
+- 状態: `LOCAL_VALIDATED`
+- Branch: `codex/refactor-r3-4c-action-feedback`
+- Base: `origin/feature/manga-canvas-mvp`（`be7d436`、PR #209 merge後）
+- 現在: PR-R3-4cだけを実施する。企画比較、シナリオ履歴、シナリオ版、ネーム版の4画面で完全一致するAction成功／失敗feedbackを共通componentへ移す。
+- 実装: `src/components/CloudActionFeedback.tsx`にerrorとmessageの表示を集約する。error→messageの順序、`p`要素、赤／緑class、`role=alert`／`role=status`、query値のReact text表示を維持する。
+- 分割: R3-4cはconfirmation/action feedbackの完全一致4画面だけに限定する。partial noticeは既存`CloudDataNotice`へ集約済み。empty state、status badge、pagination、form field errorは見出し階層、CTA、意味、表示形状が異なるため後続R3-4d以降で再監査する。
+- 不変条件: 情報設計、文言、query名／encoding、Server Action、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 12/12（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 609/609、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-4cの失敗ではない。実DB、実Provider、Desktopアプリコードは変更／実行しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4d、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-4b AI送信pending操作境界
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-4b-pending-actions`
 - Base: `origin/feature/manga-canvas-mvp`（`388e8ee`、PR #208 merge後）
 - Draft PR: [#209](https://github.com/team478a/manga/pull/209)
+- Merge: `be7d4363c65fd5fa656715c158e5027e9e357fcf`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-6da17d-team478as-projects.vercel.app`
 - 現在: PR-R3-4bだけを実施する。市場分析、企画生成／採用、シナリオ生成／採用、ネーム生成／採用に残る4つの専用`useFormStatus`実装を、既存`PendingSubmitButton`へ委譲する。
 - 実装: 専用component名と呼び出し側は維持し、内部のpending検出、二重送信防止、`aria-busy`／`aria-disabled`、spinnerを共通componentへ集約する。通常時／処理中の日本語文言、primary／secondary class、幅、Server Actionは変更しない。

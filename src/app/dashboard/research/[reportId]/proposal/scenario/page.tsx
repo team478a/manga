@@ -8,6 +8,7 @@ import { cloudScenarioFeatureEnabled } from "@/lib/cloud-scenario";
 import { getLatestCloudScenarioAdoption, listCloudScenarioVersions } from "@/lib/cloud-scenario-server";
 import { createCloudScenarioAction } from "./actions";
 import { ScenarioSubmitButton } from "./scenario-buttons";
+import { CloudActionFeedback } from "@/components/CloudActionFeedback";
 import { CloudDataNotice } from "@/components/CloudDataNotice";
 import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
@@ -67,8 +68,7 @@ export default async function ScenarioPage({ params, searchParams }: {
       <p className="mt-5 text-sm font-bold text-violet-700">WORKFLOW 3</p>
       <h1 className="mt-2 text-3xl font-bold">シナリオ生成</h1>
       <p className="mt-2 text-stone-600">採用した企画を、人物・三幕構成・ページ単位のシーンへ具体化します。</p>
-      {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
-      {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
+      <CloudActionFeedback error={query.error} message={query.message} />
       {!versionLoad.ok ? <CloudDataNotice className="mt-5">シナリオ版履歴を一時的に確認できません。重複作成を防ぐため、新規生成を停止しています。</CloudDataNotice> : null}
       {!adoptionLoad.ok ? <CloudDataNotice className="mt-5">採用状態を一時的に確認できません。シナリオ本文と履歴は引き続き確認できます。</CloudDataNotice> : null}
       <section className="panel mt-6 border-violet-200">

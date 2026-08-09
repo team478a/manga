@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-4c Cloud制作Action feedback境界
+
+- Branch: `codex/refactor-r3-4c-action-feedback`、Base: `origin/feature/manga-canvas-mvp`@`be7d436`（PR #209 merge後）。R3-4a〜R3-4bは完了・マージ済み。
+- 企画比較、シナリオ履歴、シナリオ版、ネーム版の4画面で完全一致していたAction成功／失敗feedbackを`src/components/CloudActionFeedback.tsx`へ移した。
+- error→messageの表示順、`p`要素、赤／緑class、`role=alert`／`role=status`、query値のReact text表示、query名／encoding、Server Actionを維持した。
+- partial noticeは既存`CloudDataNotice`へ集約済み。empty state、status badge、pagination、form field errorは見出し階層、CTA、意味、表示形状が異なるためR3-4cに含めない。
+- 情報設計、文言、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- focused 12/12（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 609/609、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-4b AI送信pending操作境界
 
 - Branch: `codex/refactor-r3-4b-pending-actions`、Base: `origin/feature/manga-canvas-mvp`@`388e8ee`（PR #208 merge後）。R3-4aは完了・マージ済み。
@@ -14,6 +26,7 @@
 - focused 15/15（専用1/1）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 607/607、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#209](https://github.com/team478a/manga/pull/209)、Preview `https://mangai-hub-staging-git-codex-refactor-6da17d-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+- Merge: `be7d4363c65fd5fa656715c158e5027e9e357fcf`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 

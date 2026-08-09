@@ -13,6 +13,7 @@ import { getCloudStoryboardMaterialization } from "@/lib/cloud-storyboard-materi
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { adoptCloudStoryboardAction, materializeCloudStoryboardAction, reviseCloudStoryboardAction } from "../../actions";
 import { StoryboardButton } from "../../storyboard-button";
+import { CloudActionFeedback } from "@/components/CloudActionFeedback";
 import { CloudDataNotice } from "@/components/CloudDataNotice";
 import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
@@ -65,8 +66,7 @@ export default async function StoryboardVersionPage({ params, searchParams }: {
   return <main className="page max-w-7xl">
     <Link className="text-violet-700 underline" href={`/dashboard/research/${reportId}/proposal/scenario/versions/${scenario.id}/storyboard`}>← ネーム版履歴へ</Link>
     <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"><div><p className="text-sm font-bold text-violet-700">WORKFLOW 4</p><h1 className="mt-2 text-3xl font-bold">{result.title}</h1><p className="mt-2 text-stone-600">{result.pageCount}ページ · 右綴じ</p></div>{adopted ? <span className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 font-bold text-emerald-800"><CheckCircle2 className="h-5 w-5" />採用版</span> : null}</div>
-    {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
-    {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
+    <CloudActionFeedback error={query.error} message={query.message} />
     {!workflowStateAvailable ? <CloudDataNotice className="mt-5">採用またはCanvas変換の状態を一時的に確認できません。ネーム本文は閲覧できますが、状態を変更する操作を停止しています。</CloudDataNotice> : null}
     <section className="mt-8"><h2 className="text-2xl font-bold">ページ・コマ構成</h2><div className="mt-4 grid gap-5 xl:grid-cols-2">{result.pages.map((page) =>
       <article className="panel min-w-0" key={page.pageNumber}><div className="flex items-start justify-between gap-3"><div><p className="text-sm font-bold text-violet-700">PAGE {page.pageNumber} · SCENE {page.sceneIndex}</p><h3 className="mt-1 font-bold">{page.purpose}</h3></div><span className="shrink-0 rounded-full bg-violet-50 px-3 py-1 text-xs font-bold">{page.panels.length}コマ</span></div>

@@ -11,6 +11,7 @@ import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import { selectCloudProposalAction } from "../../actions";
 import { ProposalSelectionButton } from "../../proposal-submit-button";
+import { CloudActionFeedback } from "@/components/CloudActionFeedback";
 import { CloudDataNotice } from "@/components/CloudDataNotice";
 import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 
@@ -56,8 +57,7 @@ export default async function ProposalComparisonPage({
       <p className="mt-5 text-sm font-bold text-violet-700">WORKFLOW 2</p>
       <h1 className="mt-2 text-3xl font-bold">企画案を比較</h1>
       <p className="mt-2 text-stone-600">方向性を比べ、制作する企画を1つ選んでください。</p>
-      {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
-      {query.message ? <p className="mt-5 rounded-lg bg-emerald-50 p-4 text-emerald-800" role="status">{query.message}</p> : null}
+      <CloudActionFeedback error={query.error} message={query.message} />
       {!selectionLoad.ok ? <CloudDataNotice className="mt-5">現在の選択状態を一時的に確認できません。企画案は比較できますが、重複選択を防ぐため決定操作を停止しています。</CloudDataNotice> : null}
       <section className="mt-6 grid gap-5 lg:grid-cols-3">
         {run.result.candidates.map((candidate) => {
