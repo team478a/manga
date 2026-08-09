@@ -36,7 +36,8 @@
 - PR-R3-4d: 管理者／制作者の作品、商品、グッズ申請、ユーザー画面の8画面で一致するlinen色のstatus badge visual shellを`StatusBadge.tsx`へ移した。`statusLabel`、公開／非公開判断、role表示、配置classは各画面に維持した。色付きアカウント状態badgeと作成日chipは統合しない。
 - PR-R3-4e: 認証、購入、作品、商品、グッズ申請、Desktop端末、Cloud作品の20画面21箇所で完全一致するinline error visual shellを`InlineErrorMessage.tsx`へ移した。表示条件、error値、購入不可文言、既存ARIAは各画面に維持した。角丸、色、余白、ARIAが異なるerror表示は統合しない。
 - PR-R3-4f: 管理、一般モニター、市場分析、企画、シナリオ、ネームの10画面11箇所で完全一致する`rounded-lg` inline alert errorを既存`InlineErrorMessage`へ追加統合した。`radius` variantはvisual radiusだけを選び、既存21箇所の`rounded-md`、全32箇所の要素、色、余白、ARIA、文言、表示条件を維持する。
-- DUP-011のpartial noticeは既存`CloudDataNotice`へ集約済み。DUP-012とpagination、色・余白・要素・ARIAが異なるerror variantはR3-4fに含めず、後続R3-4g以降で要素、見出し階層、CTA、件数、状態reset、ARIAの同義性を確認してから扱う。
+- PR-R3-4g: Cloud市場分析workflowのApp Router上にある全4つのnot-found boundaryで完全一致するpage／panel visual shellを、既存`AsyncStatePage`／`AsyncStatePanel`へ移した。見出し、説明、icon、ARIA、Link、URLは各boundaryに維持する。
+- DUP-011のpartial noticeは既存`CloudDataNotice`へ集約済み。通常一覧のDUP-012は要素、icon、margin、CTA、権限、検索結果0件の意味が異なるためR3-4gで統合しない。paginationも表示件数、状態reset、ページ意味が異なるため統合しない。
 
 ## 統合しない重複
 

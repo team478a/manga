@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { FileQuestion } from "lucide-react";
+import {
+  AsyncStatePage,
+  AsyncStatePanel,
+} from "@/components/AsyncStateShell";
 
 export default function CloudProposalNotFound() {
   return (
-    <main className="page max-w-3xl">
-      <section className="panel text-center">
+    <AsyncStatePage className="max-w-3xl">
+      <AsyncStatePanel className="text-center">
         <FileQuestion
           aria-hidden="true"
           className="mx-auto h-8 w-8 text-stone-500"
@@ -18,7 +22,7 @@ export default function CloudProposalNotFound() {
         <Link className="button-secondary mt-5" href="/dashboard/research">
           市場分析履歴へ
         </Link>
-      </section>
-    </main>
+      </AsyncStatePanel>
+    </AsyncStatePage>
   );
 }

@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R3-4g Cloud市場分析not-found visual shell
+
+- Branch: `codex/refactor-r3-4g-research-not-found-shell`、Base: `origin/feature/manga-canvas-mvp`@`c488e41`（PR #213 merge後）。R3-4a〜R3-4fは完了・マージ済み。
+- Cloud市場分析、企画、シナリオ、ネームのApp Router上にある全4つの`not-found.tsx`から、完全一致するpage／panel visual shellを既存`AsyncStatePage`／`AsyncStatePanel`へ移した。新規componentは追加していない。
+- 出力する`main.page.max-w-3xl`と`section.panel.text-center`を維持し、見出し要素・class・文言、説明、`FileQuestion`アイコンと既存ARIA、Link要素・class・文言、`/dashboard/research` URLは各画面に残した。
+- 通常一覧のempty stateは要素、icon、margin、CTA、権限、検索結果0件の意味が異なるため対象外。paginationも表示件数、状態reset、ページ意味が異なるため統合しない。
+- 情報設計、文言、Link、URL、query名／encoding、Server Action、business state、Auth、DB、RLS、migration、RPC、Storage、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- focused 21/21（AsyncState専用5/5）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 614/614、Canvas 26/26、AI 48/48、Desktop 182/182／a11y違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+- Draft PR [#214](https://github.com/team478a/manga/pull/214)、Preview `https://mangai-hub-staging-git-codex-refactor-568040-team478as-projects.vercel.app`。最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。最終文書同期後のHEADでも同じ5チェックを再確認して責任者確認待ちとする。
+
+---
+
 ## 2026-08-10 Codex: PR-R3-4f inline alert error visual shell
 
 - Branch: `codex/refactor-r3-4f-inline-alert-errors`、Base: `origin/feature/manga-canvas-mvp`@`169a3cd`（PR #212 merge後）。R3-4a〜R3-4eは完了・マージ済み。
@@ -14,6 +27,7 @@
 - focused 9/9（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 613/613、Canvas 26/26、AI 48/48、Desktop 182/182／a11y違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。Desktop testは並列時181/182の一時失敗後、単独再実行で182/182成功。Hub buildも単独実行で成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#213](https://github.com/team478a/manga/pull/213)、Preview `https://mangai-hub-staging-git-codex-refactor-b33029-team478as-projects.vercel.app`。最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。最終文書同期後のHEADでも同じ5チェックを再確認して責任者確認待ちとする。
+- Merge: `c488e41b0241310e27d5c7a785afa30dfbc57566`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 
