@@ -1,11 +1,28 @@
 # MANGAI Current Task
 
-## 2026-08-09 PR-R3-4a error／loading visual shell
+## 2026-08-09 PR-R3-4b AI送信pending操作境界
 
 - 状態: `READY_FOR_OWNER_REVIEW`
+- Branch: `codex/refactor-r3-4b-pending-actions`
+- Base: `origin/feature/manga-canvas-mvp`（`388e8ee`、PR #208 merge後）
+- Draft PR: [#209](https://github.com/team478a/manga/pull/209)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-6da17d-team478as-projects.vercel.app`
+- 現在: PR-R3-4bだけを実施する。市場分析、企画生成／採用、シナリオ生成／採用、ネーム生成／採用に残る4つの専用`useFormStatus`実装を、既存`PendingSubmitButton`へ委譲する。
+- 実装: 専用component名と呼び出し側は維持し、内部のpending検出、二重送信防止、`aria-busy`／`aria-disabled`、spinnerを共通componentへ集約する。通常時／処理中の日本語文言、primary／secondary class、幅、Server Actionは変更しない。
+- 分割: R3-4bはDUP-010のAI送信操作だけに限定する。empty state、partial notice、status badge、pagination、confirmation feedback、form errorは後続R3-4c以降で同義性を再確認する。
+- 不変条件: 情報設計、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 15/15（専用1/1）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 607/607、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-4bの失敗ではない。実DB、実Provider、Desktopアプリコードは変更／実行しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4c、R3-5、R4へ進まない。
+
+## 2026-08-09 PR-R3-4a error／loading visual shell
+
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-4a-ui-state-primitives`
 - Base: `origin/feature/manga-canvas-mvp`（`d8ac7cd`、PR #207 merge後）
 - Draft PR: [#208](https://github.com/team478a/manga/pull/208)
+- Merge: `388e8ee10356fa6e1c0c072c15d80d5d521dc246`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-9758c5-team478as-projects.vercel.app`
 - 現在: PR-R3-4aだけを実施する。R3-1〜R3-3は完了・マージ済み。9つのerror boundaryと4つのloading boundaryで重複するpage／panel／action rowのvisual shellを共通化する。
 - 実装: `src/components/AsyncStateShell.tsx`に`AsyncStatePage`、`AsyncStatePanel`、`AsyncStateActions`を追加する。各boundaryには固有文言、reset callback、Link、ログcontext、`role`／`aria-live`、spinner／skeleton、max widthを残す。

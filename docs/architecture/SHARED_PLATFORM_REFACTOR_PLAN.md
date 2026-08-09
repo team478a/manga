@@ -62,6 +62,8 @@ PR-R3-0は、PR-R0〜R2Cと実Provider本番受入れ完了後の`b2dfb1bdd00d3b
 
 PR-R3-4aでは9つのerror boundaryと4つのloading boundaryについて、page／panel／action rowだけを`AsyncStateShell.tsx`へ移す。文言、CTA、URL、reset、ログ、ARIA、spinner／skeletonは移動しない。残るpending／empty／partial等はR3-4b以降へ分割する。
 
+PR-R3-4bではDUP-010のうち、市場分析、企画、シナリオ、ネームに残る4つの専用submit componentだけを既存`PendingSubmitButton`へ委譲する。component名、通常時／処理中の文言、primary／secondary class、Server Actionは維持する。empty、partial、status badge、pagination、confirmation feedback、form errorはR3-4c以降へ分割する。
+
 ## 9. Feature Flag台帳
 
 21個を確認した。すべて未設定時falseを維持する。
