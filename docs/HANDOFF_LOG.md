@@ -13,6 +13,7 @@
 - DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、成人向け本人同意／外部送信境界、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、Stripe、Desktopは変更しない。
 - focused 21/21、deps（0 errors／既知15 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 574/574、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。Draft PR、GitHub CI、Vercel Previewを確認後に停止し、責任者確認前に次工程へ進まない。
+- Draft PR [#200](https://github.com/team478a/manga/pull/200)、Preview `https://mangai-hub-staging-git-codex-refactor-453f9b-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
 
 ---
 
