@@ -13,6 +13,7 @@
 - Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop protocolは変更しない。
 - focused 4/4、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 620/620、Canvas 26/26、AI 48/48、Desktop 182/182／a11y 29画面・違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
 - 本PRのマージと責任者のR3完了承認後、R3実装残件は0。Draft PR、GitHub CI、Vercel Preview確認後、R4へ進まず停止する。
+- Draft PR [#216](https://github.com/team478a/manga/pull/216)、Preview `https://mangai-hub-staging-git-codex-refactor-8989d9-team478as-projects.vercel.app`。最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。最終文書同期後のHEADでも同じ5チェックを再確認する。
 
 ---
 

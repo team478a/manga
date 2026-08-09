@@ -2,16 +2,18 @@
 
 ## 2026-08-10 PR-R3-5b shared infrastructure closeout
 
-- 状態: `LOCAL_VALIDATED`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/refactor-r3-5b-shared-infra-closeout`
 - Base: `origin/feature/manga-canvas-mvp`（`0884a1f`、PR #215 merge後）
-- Draft PR／Preview: 作成前
+- Draft PR: [#216](https://github.com/team478a/manga/pull/216)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-8989d9-team478as-projects.vercel.app`
 - 現在: R3に残るaudit log、rate-limit、signed URL、readiness、resilienceを一括監査し、外部契約を変えず安全に一致する低水準primitiveだけを共通化してR3-5を完了する。
 - 実装: `src/lib/rate-limit-primitives.ts`へHMAC-SHA256 subject hashと、`cf-connecting-ip`→`x-real-ip`→`x-forwarded-for`の有効IP抽出を移す。Cloud AI、Cloud市場分析、Desktop端末認証のsecret解決、最小長、key prefix、window、上限、RPC、例外、status/bodyは各機能に維持する。
 - 統合しない判断: auditはCloud AIの直接INSERTと、Provider／一般モニター／成人向けのtransaction内RPC・triggerが異なるため統合しない。signed URLはbucket、path、TTL、download、owner、failure処理が異なるため統合しない。readinessは一般／成人向けProvider境界、resilienceは管理画面のfatal fallbackと利用者画面の部分継続が異なるため統合しない。
 - R3完了判定: R3-1〜R3-4とR3-5aはマージ済み。本PRがマージされ、責任者がR3完了を承認すればR3の実装残件は0。R4は別途指示があるまで開始しない。
 - 不変条件: rate-limit値、secret名、key prefix、RPC、status/body、audit event／payload／transaction、Storage bucket/path/TTL/download/owner、readiness、resilience、Auth、DB、RLS、migration、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop protocolを変更しない。
 - 検証: focused 4/4、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 620/620、Canvas 26/26、AI 48/48、Desktop 182/182／a11y 29画面・違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
+- CI: 最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。本PRはProvider呼出し境界を変更しないため、有料Provider再実行は不要。
 - 停止条件: Draft PRと最終HEADの全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR4へ進まない。
 
