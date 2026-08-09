@@ -2,19 +2,14 @@ import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
 import { hasSupabaseAdminEnv } from "@/lib/env";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { AdminUserAccountActions } from "./AdminUserAccountActions";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
-
-type AdminUser = {
-  id: string;
-  user_id: string;
-  display_name: string;
-  role: string;
-  created_at: string;
-};
+import {
+  loadAdminUserDirectoryData,
+  loadAdminUserProfiles,
+  type AdminUserInviteDelivery,
+} from "@/modules/account/infrastructure/admin-user-repository";
 
 type AccountState = "active" | "suspended" | "deleted" | "unknown";
 
@@ -23,12 +18,6 @@ type AuthAccount = {
   state: AccountState;
   emailConfirmedAt: string | null;
   lastSignInAt: string | null;
-};
-
-type InviteDelivery = {
-  profile_id: string;
-  invite_email_sent_at: string | null;
-  invite_email_send_count: number;
 };
 
 type AccountFilter = "all" | "active" | "suspended";
@@ -69,27 +58,21 @@ export default async function AdminUsersPage({
   const accountFilter = selectFilter(params.account, accountFilters, "all");
   const inviteFilter = selectFilter(params.invite, inviteFilters, "all");
   const loginFilter = selectFilter(params.login, loginFilters, "all");
-  const profilesLoaded = await safelyLoadAdminData("users/profiles", async () => {
-    const supabase = await createClient();
-    return supabase.from("profiles").select("id,user_id,display_name,role,created_at").order("created_at", { ascending: false }).returns<AdminUser[]>();
-  });
+  const profilesLoaded = await safelyLoadAdminData(
+    "users/profiles",
+    loadAdminUserProfiles,
+  );
   if (!profilesLoaded.ok) return <AdminDataUnavailable title="ユーザー管理" />;
   const { data: users } = profilesLoaded.value;
 
   const authByUserId = new Map<string, AuthAccount>();
-  const inviteByProfileId = new Map<string, InviteDelivery>();
+  const inviteByProfileId = new Map<string, AdminUserInviteDelivery>();
   let inviteTrackingConfigured = true;
   if (hasSupabaseAdminEnv()) {
-    const authLoaded = await safelyLoadAdminData("users/auth", async () => {
-      const admin = createAdminClient();
-      return Promise.all([
-        admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
-        admin
-          .from("cloud_general_monitor_enrollments")
-          .select("profile_id,invite_email_sent_at,invite_email_send_count")
-          .returns<InviteDelivery[]>(),
-      ]);
-    });
+    const authLoaded = await safelyLoadAdminData(
+      "users/auth",
+      loadAdminUserDirectoryData,
+    );
     if (authLoaded.ok) {
       const [{ data }, inviteResult] = authLoaded.value;
       data.users.forEach((user) => {

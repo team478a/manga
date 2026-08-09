@@ -6,8 +6,6 @@ import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { setCloudAdultPlanningGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
 import {
@@ -19,24 +17,12 @@ import {
   cloudGeneralMonitorBetaEnabled,
   type CloudGeneralMonitorEnrollment,
 } from "@/lib/cloud-general-monitor";
-
-type AdminUser = {
-  id: string;
-  user_id: string;
-  display_name: string;
-  bio: string | null;
-  role: string;
-  created_at: string;
-};
-
-type AdultResearchEntitlement = {
-  status: "approved" | "suspended" | "expired";
-  source: "purchase" | "legacy_purchase" | "admin_grant" | "campaign";
-  valid_until: string | null;
-  admin_note: string | null;
-};
-
-type AdultPlanningGrant = AdultResearchEntitlement;
+import {
+  loadAdminUserDetailData,
+  loadAdminUserProfile,
+  type AdultPlanningGrant,
+  type AdultResearchEntitlement,
+} from "@/modules/account/infrastructure/admin-user-repository";
 
 export default async function AdminUserDetailPage({
   params,
@@ -48,10 +34,9 @@ export default async function AdminUserDetailPage({
   await requireAdmin();
   const { id } = await params;
   const { error, message } = await searchParams;
-  const profileLoaded = await safelyLoadAdminData("users/detail/profile", async () => {
-    const supabase = await createClient();
-    return supabase.from("profiles").select("*").eq("id", id).maybeSingle<AdminUser>();
-  });
+  const profileLoaded = await safelyLoadAdminData("users/detail/profile", () =>
+    loadAdminUserProfile(id),
+  );
   if (!profileLoaded.ok) return <AdminDataUnavailable title="ユーザー詳細" />;
   const { data: user } = profileLoaded.value;
 
@@ -66,30 +51,13 @@ export default async function AdminUserDetailPage({
   let generalMonitorConfigured = true;
   const generalMonitorEnabled = cloudGeneralMonitorBetaEnabled();
   if (hasSupabaseAdminEnv()) {
-    const detailLoaded = await safelyLoadAdminData("users/detail/admin", async () => {
-      const admin = createAdminClient();
-      const authResult = await admin.auth.admin.getUserById(user.user_id);
-      const entitlementResult = await admin
-        .from("cloud_adult_research_entitlements")
-        .select("status,source,valid_until,admin_note")
-        .eq("profile_id", user.id)
-        .maybeSingle<AdultResearchEntitlement>();
-      const planningResult = await admin
-        .from("cloud_adult_feature_grants")
-        .select("status,source,valid_until,admin_note")
-        .eq("profile_id", user.id)
-        .eq("feature_key", "adult_planning")
-        .maybeSingle<AdultPlanningGrant>();
-      let generalMonitorResult = null;
-      if (generalMonitorEnabled) {
-        generalMonitorResult = await admin
-          .from("cloud_general_monitor_enrollments")
-          .select("profile_id,status,cohort,ai_request_limit,ai_requests_used,starts_at,expires_at,onboarding_completed_at,updated_at")
-          .eq("profile_id", user.id)
-          .maybeSingle<CloudGeneralMonitorEnrollment>();
-      }
-      return { authResult, entitlementResult, planningResult, generalMonitorResult };
-    });
+    const detailLoaded = await safelyLoadAdminData("users/detail/admin", () =>
+      loadAdminUserDetailData({
+        userId: user.user_id,
+        profileId: user.id,
+        includeGeneralMonitor: generalMonitorEnabled,
+      }),
+    );
     if (!detailLoaded.ok) return <AdminDataUnavailable title="ユーザー詳細" />;
     const { authResult, entitlementResult, planningResult, generalMonitorResult } = detailLoaded.value;
     if (!authResult.data.user || authResult.data.user.deleted_at) notFound();

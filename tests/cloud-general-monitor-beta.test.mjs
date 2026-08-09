@@ -9,13 +9,15 @@ test("一般向けモニターFeature Flagは未設定時fail closedする", asy
 });
 
 test("管理画面もFeature Flag停止中はDB参照と招待操作を閉じる", async () => {
-  const [listPage, detailPage, actions] = await Promise.all([
+  const [listPage, detailPage, detailRepository, actions] = await Promise.all([
     readFile(new URL("../src/app/admin/general-monitors/page.tsx", import.meta.url), "utf8"),
     readFile(new URL("../src/app/admin/users/[id]/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/modules/account/infrastructure/admin-user-repository.ts", import.meta.url), "utf8"),
     readFile(new URL("../src/app/admin/users/[id]/general-monitor-actions.ts", import.meta.url), "utf8"),
   ]);
   assert.match(listPage, /if \(!cloudGeneralMonitorBetaEnabled\(\)\)/);
-  assert.match(detailPage, /if \(generalMonitorEnabled\)/);
+  assert.match(detailPage, /includeGeneralMonitor: generalMonitorEnabled/);
+  assert.match(detailRepository, /if \(input\.includeGeneralMonitor\)/);
   assert.match(actions, /if \(!cloudGeneralMonitorBetaEnabled\(\)\)/);
 });
 
