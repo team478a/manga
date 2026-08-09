@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { createAdminClient } from "@/lib/supabase/admin";
 import {
   DEVICE_PENDING_MINUTES,
   generateDeviceSecret,
@@ -25,6 +24,7 @@ import {
   logHubError,
   logHubEvent,
 } from "@/lib/hub-logger";
+import { createDesktopDeviceRepository } from "@/modules/desktop-device/infrastructure/desktop-device-repository";
 
 const requestSchema = z.object({
   deviceName: z.string().trim().min(1).max(100),
@@ -63,23 +63,20 @@ export async function POST(request: Request) {
     );
     if (!parsed.success)
       throw new ValidationError("端末名が不正です。");
-    const admin = createAdminClient();
+    const repository = createDesktopDeviceRepository();
     const deviceToken = generateDeviceSecret();
     const expiresAt = new Date(
       Date.now() + DEVICE_PENDING_MINUTES * 60_000,
     ).toISOString();
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const userCode = generateUserCode();
-      const { error } = await admin
-        .from("desktop_device_authorizations")
-        .insert({
-          device_name: parsed.data.deviceName,
-          secret_hash: hashDeviceSecret(deviceToken),
-          user_code: userCode,
-          status: "pending",
-          expires_at: expiresAt,
-          scopes: [...new Set(parsed.data.scopes)],
-        });
+      const { error } = await repository.insertPendingAuthorization({
+        deviceName: parsed.data.deviceName,
+        secretHash: hashDeviceSecret(deviceToken),
+        userCode,
+        expiresAt,
+        scopes: [...new Set(parsed.data.scopes)],
+      });
       if (!error) {
         logHubEvent("info", "desktop_device_authorization_started", {
           ...logContext,

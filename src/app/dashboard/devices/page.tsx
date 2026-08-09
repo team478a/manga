@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { revokeDesktopDevice } from "./actions";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
-
-type Device = {
-  id: string;
-  device_name: string;
-  approved_at: string | null;
-  last_used_at: string | null;
-  token_expires_at: string | null;
-};
+import { createDesktopDeviceRepository } from "@/modules/desktop-device/infrastructure/desktop-device-repository";
 
 export default async function DevicesPage({
   searchParams,
@@ -19,14 +11,9 @@ export default async function DevicesPage({
 }) {
   const { profile } = await requireProfile();
   const params = await searchParams;
-  const admin = createAdminClient();
-  const { data } = await admin
-    .from("desktop_device_authorizations")
-    .select("id, device_name, approved_at, last_used_at, token_expires_at")
-    .eq("profile_id", profile.id)
-    .eq("status", "approved")
-    .order("approved_at", { ascending: false })
-    .returns<Device[]>();
+  const { data } = await createDesktopDeviceRepository().listApprovedForProfile(
+    profile.id,
+  );
   return (
     <main className="page max-w-4xl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
 import { approveDesktopDevice } from "../actions";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { createDesktopDeviceRepository } from "@/modules/desktop-device/infrastructure/desktop-device-repository";
 
 export default async function AuthorizeDevicePage({
   searchParams,
@@ -13,12 +13,9 @@ export default async function AuthorizeDevicePage({
   const params = await searchParams;
   const normalizedCode = params.code?.trim().toUpperCase() ?? "";
   const authorization = /^[A-Z2-9]{4}-[A-Z2-9]{4}$/.test(normalizedCode)
-    ? await createAdminClient()
-        .from("desktop_device_authorizations")
-        .select("scopes")
-        .eq("user_code", normalizedCode)
-        .eq("status", "pending")
-        .maybeSingle<{ scopes: string[] }>()
+    ? await createDesktopDeviceRepository().findPendingScopesByUserCode(
+        normalizedCode,
+      )
     : { data: null };
   const canWriteDraft =
     authorization.data?.scopes.includes("works:write:draft") ?? false;
