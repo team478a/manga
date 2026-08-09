@@ -1,13 +1,8 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { markCheckoutSessionPaid } from "@/lib/payments";
 import { createStripeClient } from "@/lib/stripe";
 import { paidSessionReference } from "@/lib/checkout-policy";
-
-type DownloadOrder = {
-  status: string;
-  digital_products: { title: string; file_url: string | null } | null;
-};
+import { getPaidCheckoutDownload } from "@/modules/checkout/infrastructure/checkout-order-repository";
 
 export default async function CheckoutSuccessPage({
   searchParams,
@@ -27,22 +22,10 @@ export default async function CheckoutSuccessPage({
       const paid = await markCheckoutSessionPaid(session);
       const reference = paid ? paidSessionReference(session) : null;
       if (reference) {
-        const supabase = createAdminClient();
-        const { data: order } = await supabase
-          .from("orders")
-          .select("status,digital_products:product_id(title,file_url)")
-          .eq("id", reference.orderId)
-          .eq("product_id", reference.productId)
-          .eq("status", "paid")
-          .maybeSingle<DownloadOrder>();
+        const { order, signedUrl } = await getPaidCheckoutDownload(reference);
 
         if (order?.digital_products?.file_url) {
-          const { data } = await supabase.storage
-            .from("digital-products")
-            .createSignedUrl(order.digital_products.file_url, 300, {
-              download: true,
-            });
-          downloadUrl = data?.signedUrl ?? null;
+          downloadUrl = signedUrl;
           productTitle = order.digital_products.title;
           message = downloadUrl
             ? "決済が確認できました。ダウンロードリンクは5分間有効です。"

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { hasSupabaseAdminEnv } from "@/lib/env";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyCheckoutCancelToken } from "@/lib/checkout-policy";
+import { cancelPendingCheckoutOrder } from "@/modules/checkout/infrastructure/checkout-order-repository";
 
 export default async function CheckoutCancelPage({
   searchParams,
@@ -22,12 +22,7 @@ export default async function CheckoutCancelPage({
       message =
         "キャンセル情報を確認できなかったため、注文状態は変更していません。";
     } else if (hasSupabaseAdminEnv()) {
-      const supabase = createAdminClient();
-      const { error } = await supabase
-        .from("orders")
-        .update({ status: "canceled" })
-        .eq("id", params.order_id)
-        .eq("status", "pending");
+      const { error } = await cancelPendingCheckoutOrder(params.order_id);
       message = error
         ? "決済はキャンセルされましたが、注文状態の更新に失敗しました。"
         : "決済はキャンセルされ、仮注文をキャンセル状態にしました。";

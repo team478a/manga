@@ -21,7 +21,8 @@
 - PR-R3-3g: 一般利用者の購入履歴query 1ファイルを`src/modules/purchases/infrastructure/purchase-query-repository.ts`へ移し、13件から12件へ削減した。
 - PR-R3-3h: 一般モニターfeedback送信のservice-role DB／private Storage操作1ファイルを`src/modules/general-monitor/infrastructure/monitor-feedback-repository.ts`へ移し、12件から11件へ削減した。
 - PR-R3-3i: checkout開始時のpending注文insert 1ファイルを`src/modules/checkout/infrastructure/checkout-order-repository.ts`へ移し、11件から10件へ削減した。guest checkout、商品確認、手数料計算、Stripe Session作成順序はServer Actionに維持した。
-- Cloud AI／monitor opsのWorker routeはA分類のcomposition rootとして維持する。Desktopは後続の機能完結sliceで扱う。checkout success／cancelは署名済みstate契約を先に固定するE分類として維持する。
+- PR-R3-3j: checkout success／cancel 2ファイルのpaid注文照合、private Storage署名URL、pending注文cancel更新を同repositoryへ移し、10件から8件へ削減した。paid Session／order＋product照合、cancel token、TTL 300秒をcharacterization testで固定した。
+- Cloud AI／monitor opsのWorker routeはA分類のcomposition rootとして維持する。残る移行対象はDesktop 6ファイルであり、後続の機能完結sliceで扱う。
 
 | File | Function | Auth確認 | Owner確認 | 用途 | 分類 | 推奨移行先 |
 |---|---|---|---|---|---|---|
