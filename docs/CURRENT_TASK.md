@@ -2,16 +2,17 @@
 
 ## 2026-08-09 PR-R3-4d status badge visual shell
 
-- 状態: `LOCAL_VALIDATED`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/refactor-r3-4d-status-badges`
 - Base: `origin/feature/manga-canvas-mvp`（`4ce9c6c`、PR #210 merge後）
-- Draft PR: 作成前
-- Preview: 作成前
+- Draft PR: [#211](https://github.com/team478a/manga/pull/211)
+- Preview: `https://mangai-hub-staging-drbv62wn1-team478as-projects.vercel.app`
 - 現在: PR-R3-4dだけを実施する。管理者／制作者の作品、商品、グッズ申請、ユーザー画面の8画面で一致するlinen色のstatus badge visual shellを共通componentへ移す。
 - 実装: `src/components/StatusBadge.tsx`に`span`、`rounded-full bg-linen px-3 py-1`だけを集約する。各画面の`statusLabel`、公開／非公開判断、role表示、配置・文字サイズclassは各画面に維持する。
 - 分割: R3-4dは同じ要素・色・paddingを持つ8画面だけに限定する。色付きアカウント状態badge、作成日chipは意味と色が異なるため対象外。empty state、pagination、form field errorは要素、見出し階層、CTA、状態管理、ARIAが異なるためR3-4e以降で再監査する。
 - 不変条件: 情報設計、文言、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
 - 検証: focused 6/6（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 611/611、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-4dの失敗ではない。実DB、実Provider、Desktopアプリコードは変更／実行しない。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4e、R3-5、R4へ進まない。
 
