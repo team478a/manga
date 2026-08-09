@@ -25,6 +25,8 @@ import {
   setCloudProjectCoverAction,
   syncCloudMarketplaceDraftAction,
 } from "@/app/creator/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { getCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import {
@@ -42,7 +44,6 @@ import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 export default async function CloudProjectPage({
@@ -130,9 +131,9 @@ export default async function CloudProjectPage({
         </div>
       ) : null}
       {query.error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
+        <InlineErrorMessage>
           {query.error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       <LongformReadinessPanel readiness={longformReadiness} />
       {manuscript ? (

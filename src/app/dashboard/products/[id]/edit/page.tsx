@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { updateDigitalProduct } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { DigitalProduct, Work } from "@/lib/types";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function EditProductPage({
   params,
@@ -37,7 +38,7 @@ export default async function EditProductPage({
           一覧へ戻る
         </Link>
       </div>
-      {messages.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{messages.error}</p> : null}
+      {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
 
       <form action={updateDigitalProduct} className="panel mt-6 space-y-5">
         <input name="id" type="hidden" value={product.id} />

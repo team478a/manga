@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPendingOrder } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
@@ -62,8 +63,8 @@ export default async function CheckoutPage({
           <p className="mt-5 whitespace-pre-wrap text-lg leading-relaxed text-stone-700">{product.description || "商品説明はまだありません。"}</p>
 
           {messages.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{messages.message}</p> : null}
-          {messages.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{messages.error}</p> : null}
-          {!canPurchase ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">この商品は現在購入できません。</p> : null}
+          {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
+          {!canPurchase ? <InlineErrorMessage>この商品は現在購入できません。</InlineErrorMessage> : null}
 
           <form action={createPendingOrder} className="mt-6 space-y-5">
             <input name="productId" type="hidden" value={product.id} />

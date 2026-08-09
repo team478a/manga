@@ -1,7 +1,8 @@
 import { createWork } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function NewWorkPage({
   searchParams,
@@ -22,9 +23,9 @@ export default async function NewWorkPage({
         Desktop Adultで管理してください。
       </p>
       {params.error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
+        <InlineErrorMessage>
           {params.error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       <form action={createWork} className="panel mt-6 space-y-5">
         <div>

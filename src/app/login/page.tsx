@@ -1,4 +1,5 @@
 import { signIn } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import Link from "next/link";
 
@@ -10,7 +11,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <h1 className="text-3xl font-bold">ログイン</h1>
       <p className="mt-3 text-lg text-stone-600">登録したメールアドレスで入れます。</p>
       {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
-      {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}
+      {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
       <form action={signIn} className="panel mt-6 space-y-5">
         <div>
           <label className="label" htmlFor="email">メールアドレス</label>

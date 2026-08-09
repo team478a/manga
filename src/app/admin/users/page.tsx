@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { StatusBadge } from "@/components/StatusBadge";
 import { requireAdmin } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
@@ -130,7 +131,7 @@ export default async function AdminUsersPage({
       <h1 className="text-3xl font-bold">ユーザー管理</h1>
       <p className="mt-3 text-lg text-stone-600">登録ユーザーの確認、利用停止、再開、削除ができます。</p>
       {message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
-      {error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700" role="alert">{error}</p> : null}
+      {error ? <InlineErrorMessage role="alert">{error}</InlineErrorMessage> : null}
       {!hasSupabaseAdminEnv() ? (
         <p className="mt-5 rounded-md bg-yellow-50 p-4 text-yellow-800">メールアドレス表示には `SUPABASE_SERVICE_ROLE_KEY` が必要です。</p>
       ) : null}

@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { createDigitalProduct } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function NewProductPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { profile } = await requireProfile();
@@ -29,7 +30,7 @@ export default async function NewProductPage({ searchParams }: { searchParams: P
           一覧へ戻る
         </Link>
       </div>
-      {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}
+      {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
 
       <form action={createDigitalProduct} className="panel mt-6 space-y-5">
         <div>

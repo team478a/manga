@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import { restoreCloudProjectAction } from "@/app/creator/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { listDeletedCloudProjects } from "@/lib/cloud-creator-server";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function CloudProjectTrashPage({
   searchParams,
@@ -25,9 +26,9 @@ export default async function CloudProjectTrashPage({
         削除から30日以内の作品を復元できます。
       </p>
       {query.error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
+        <InlineErrorMessage>
           {query.error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       <section className="mt-6 space-y-3">
         {projects.length ? (

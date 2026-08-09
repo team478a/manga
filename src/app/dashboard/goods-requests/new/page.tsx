@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { createGoodsRequest } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 const productTypes = ["Tシャツ", "パーカー", "トートバッグ", "ステッカー", "アクリルスタンド", "ポスター", "マグカップ", "その他"];
 
@@ -31,7 +32,7 @@ export default async function NewGoodsRequestPage({ searchParams }: { searchPara
           一覧へ戻る
         </Link>
       </div>
-      {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}
+      {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
 
       <form action={createGoodsRequest} className="panel mt-6 space-y-5">
         <div>

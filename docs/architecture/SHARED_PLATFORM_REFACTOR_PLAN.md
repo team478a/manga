@@ -68,6 +68,8 @@ PR-R3-4cでは企画比較、シナリオ履歴、シナリオ版、ネーム版
 
 PR-R3-4dでは管理者／制作者の作品、商品、グッズ申請、ユーザー画面の8画面で一致するlinen色のstatus badge visual shellだけを`StatusBadge.tsx`へ移す。共通責務は`span`と`rounded-full bg-linen px-3 py-1`に限定し、`statusLabel`、公開／非公開判断、role表示、配置classは各画面に残す。色付きアカウント状態badgeと作成日chipは統合しない。empty state、pagination、form field errorは要素、見出し階層、CTA、状態管理、ARIAの差をR3-4e以降で再監査する。
 
+PR-R3-4eでは認証、購入、作品、商品、グッズ申請、Desktop端末、Cloud作品の20画面21箇所で完全一致するinline error visual shellだけを`InlineErrorMessage.tsx`へ移す。共通責務は`p`要素と`mt-5 rounded-md bg-red-50 p-4 text-red-700`に限定し、表示条件、error値、購入不可文言、既存ARIAは各画面に残す。角丸、色、余白、ARIAが異なるerror表示、成功／警告、error boundaryは統合しない。empty stateとpaginationはR3-4f以降で再監査する。
+
 ## 9. Feature Flag台帳
 
 21個を確認した。すべて未設定時falseを維持する。

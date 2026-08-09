@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-4e inline error visual shell
+
+- Branch: `codex/refactor-r3-4e-inline-error-shell`、Base: `origin/feature/manga-canvas-mvp`@`96b22a9`（PR #211 merge後）。R3-4a〜R3-4dは完了・マージ済み。
+- 認証、購入、作品、商品、グッズ申請、Desktop端末、Cloud作品の20画面21箇所で完全一致するinline error visual shellを`src/components/InlineErrorMessage.tsx`へ移した。
+- 共通責務は`p`要素と`mt-5 rounded-md bg-red-50 p-4 text-red-700`だけとし、表示条件、error値、購入不可文言、唯一既存の`role=alert`は各画面に維持した。
+- 角丸、色、余白、ARIAが異なるerror表示、成功／警告、error boundaryは対象外。empty stateとpaginationは要素、見出し、CTA、状態管理が異なるためR3-4f以降へ分割する。
+- 情報設計、文言、query名／encoding、Server Action、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- focused 9/9（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 613/613、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。Hub buildは並列実行時のtimeout後、単独再実行で成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-4d status badge visual shell
 
 - Branch: `codex/refactor-r3-4d-status-badges`、Base: `origin/feature/manga-canvas-mvp`@`4ce9c6c`（PR #210 merge後）。R3-4a〜R3-4cは完了・マージ済み。
@@ -14,6 +26,7 @@
 - focused 6/6（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 611/611、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#211](https://github.com/team478a/manga/pull/211)、Preview `https://mangai-hub-staging-drbv62wn1-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+- Merge: `96b22a9111edd8b7ccc5c50ce2d37eb3e21e80db`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 
