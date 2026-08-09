@@ -2,9 +2,11 @@
 
 ## 2026-08-09 PR-R3-3i checkout pending order repository境界
 
-- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/refactor-r3-3i-checkout-order-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`02fb6cf`、PR #203 merge後）
+- Draft PR: [#204](https://github.com/team478a/manga/pull/204)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-8799f2-team478as-projects.vercel.app`
 - 現在: PR-R3-3iだけを実施する。R3-3a〜R3-3hは完了・マージ済み。checkout開始時のpending注文作成に残るservice-role DB insertを、`checkout` infrastructure repositoryへ移す。
 - 実装: `src/modules/checkout/infrastructure/checkout-order-repository.ts`へpending注文insertを集約する。Server Actionには購入者メール検証、任意ログインprofile照合、商品取得／公開状態確認、金額／手数料計算、Stripe Checkout調停、redirectを維持する。
 - 契約維持: guest checkoutを維持し、任意の認証済みprofileはメール一致時だけ`buyer_profile_id`へ使用する。商品query、20% platform fee、注文列、`pending` status、注文作成後だけStripe Sessionを作る順序、`orderId` metadata／redirectを変更しない。
@@ -12,6 +14,7 @@
 - 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Stripe Session／metadata／success／cancel契約、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
 - 検証: focused 24/24、deps（0 errors／既知10 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 586/586、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3iの失敗ではない。実Stripe Checkoutは行わない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft／MERGEABLE。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にcheckout result E分類、Desktop、Worker、R3-4、R3-5、R4へ進まない。
 
 ## 2026-08-09 PR-R3-3h 一般モニターfeedback repository境界
