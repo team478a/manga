@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-3g 購入履歴query repository境界
+
+- Branch: `codex/refactor-r3-3g-purchase-query-repository`、Base: `origin/feature/manga-canvas-mvp`@`de42c5b`（PR #201 merge後）。R3-3a〜R3-3fは完了・マージ済み。
+- 一般利用者の購入履歴画面に残っていたservice-role queryと購入履歴型を`src/modules/purchases/infrastructure/purchase-query-repository.ts`へ移した。
+- App Routerには`requireProfile`、表示、download URL、空状態を残し、認証済み`profile.id`だけをowner IDとしてrepositoryへ渡す。`orders`列／join、owner filter、status条件、並び順を維持した。
+- `src/app/**`のadmin-client直接利用warningは13件から12件へ減少。Worker composition root、checkout、Desktop、dashboard monitor feedbackは除外した。
+- DB、RLS、migration、RPC、Storage、URL、API、Stripe checkout／webhook／download、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更しない。
+- focused 8/8、deps（0 errors／既知12 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 580/580、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。Stripe／downloadを実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+- Draft PR [#202](https://github.com/team478a/manga/pull/202)、Preview `https://mangai-hub-staging-1wwopie3h-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-3f Cloud AI管理repository境界
 
 - Branch: `codex/refactor-r3-3f-cloud-ai-admin-repository`、Base: `origin/feature/manga-canvas-mvp`@`1b49639`（PR #200 merge後）。R3-3a〜R3-3eは完了・マージ済み。
@@ -14,6 +27,7 @@
 - focused 20/20、deps（0 errors／既知13 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 577/577、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pending。実Provider／Workerを呼び出さず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#201](https://github.com/team478a/manga/pull/201)、Preview `https://mangai-hub-staging-8c0pu318j-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+- Merge: `de42c5b2f88ae5bde803fb00aff3e9f784156805`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 

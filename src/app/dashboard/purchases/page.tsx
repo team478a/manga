@@ -1,33 +1,11 @@
 import Link from "next/link";
 import { requireProfile } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { yen } from "@/lib/format";
-
-type Purchase = {
-  id: string;
-  amount: number;
-  status: "paid" | "refunded";
-  paid_at: string | null;
-  download_count: number;
-  digital_products: {
-    title: string;
-    file_url: string | null;
-    works: { title: string } | null;
-  } | null;
-};
+import { listPurchaseHistoryForProfile } from "@/modules/purchases/infrastructure/purchase-query-repository";
 
 export default async function PurchasesPage() {
   const { profile } = await requireProfile();
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("orders")
-    .select(
-      "id,amount,status,paid_at,download_count,digital_products:product_id(title,file_url,works:work_id(title))",
-    )
-    .eq("buyer_profile_id", profile.id)
-    .in("status", ["paid", "refunded"])
-    .order("paid_at", { ascending: false })
-    .returns<Purchase[]>();
+  const { data } = await listPurchaseHistoryForProfile(profile.id);
   const purchases = data ?? [];
   return (
     <main className="page max-w-5xl">
