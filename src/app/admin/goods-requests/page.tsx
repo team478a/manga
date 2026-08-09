@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { updateGoodsRequestAdmin } from "@/app/actions";
+import { StatusBadge } from "@/components/StatusBadge";
 import { dateJa, statusLabel } from "@/lib/format";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -60,7 +61,7 @@ export default async function AdminGoodsRequestsPage({ searchParams }: { searchP
                   <p className="mt-1 text-stone-700">希望商品タイプ：{request.product_type}</p>
                   <p className="mt-1 text-sm text-stone-500">申請日：{dateJa(request.created_at)}</p>
                 </div>
-                <span className="w-fit rounded-full bg-linen px-3 py-1 text-sm">{statusLabel(request.status)}</span>
+                <StatusBadge className="w-fit text-sm">{statusLabel(request.status)}</StatusBadge>
               </div>
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 <div className="rounded-md border border-stone-200 p-4">

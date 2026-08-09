@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { StatusBadge } from "@/components/StatusBadge";
 import { requireProfile } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -51,7 +52,7 @@ export default async function GoodsRequestsPage({ searchParams }: { searchParams
                   <p className="mt-2 text-base text-stone-600">紐づく作品：{request.works?.title ?? "不明"}</p>
                   <p className="mt-1 text-sm text-stone-500">申請日：{dateJa(request.created_at)}</p>
                 </div>
-                <span className="w-fit rounded-full bg-linen px-3 py-1 text-sm">{statusLabel(request.status)}</span>
+                <StatusBadge className="w-fit text-sm">{statusLabel(request.status)}</StatusBadge>
               </div>
               <div className="mt-4 grid gap-3 lg:grid-cols-2">
                 <div className="rounded-md border border-stone-200 p-4">

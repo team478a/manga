@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-4d status badge visual shell
+
+- Branch: `codex/refactor-r3-4d-status-badges`、Base: `origin/feature/manga-canvas-mvp`@`4ce9c6c`（PR #210 merge後）。R3-4a〜R3-4cは完了・マージ済み。
+- 管理者／制作者の作品、商品、グッズ申請、ユーザー画面の8画面で一致するlinen色のstatus badge visual shellを`src/components/StatusBadge.tsx`へ移した。
+- 共通責務は`span`、`rounded-full bg-linen px-3 py-1`だけとし、`statusLabel`、公開／非公開判断、role表示、配置・文字サイズclassは各画面に維持した。
+- 色付きアカウント状態badgeと作成日chipは意味と色が異なるため対象外。empty state、pagination、form field errorは要素、見出し階層、CTA、状態管理、ARIAが異なるためR3-4e以降へ分割する。
+- 情報設計、文言、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- focused 6/6（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 611/611、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-4c Cloud制作Action feedback境界
 
 - Branch: `codex/refactor-r3-4c-action-feedback`、Base: `origin/feature/manga-canvas-mvp`@`be7d436`（PR #209 merge後）。R3-4a〜R3-4bは完了・マージ済み。
@@ -14,6 +26,7 @@
 - focused 12/12（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 609/609、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。実DB、実Provider、Desktopアプリコードを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
 - Draft PR [#210](https://github.com/team478a/manga/pull/210)、Preview `https://mangai-hub-staging-git-codex-refactor-6fab4e-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE、責任者確認待ち。
+- Merge: `4ce9c6cc0d454b0dc32b376be9aab37fe1cea478`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 

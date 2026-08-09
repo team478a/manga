@@ -66,6 +66,8 @@ PR-R3-4bではDUP-010のうち、市場分析、企画、シナリオ、ネー�
 
 PR-R3-4cでは企画比較、シナリオ履歴、シナリオ版、ネーム版で完全一致するAction成功／失敗feedbackだけを`CloudActionFeedback.tsx`へ移す。表示順、`p`要素、色class、ARIA、query値、Server Actionは維持する。partial noticeは既存`CloudDataNotice`を正本とし、empty、status badge、pagination、form field errorはR3-4d以降へ分割する。
 
+PR-R3-4dでは管理者／制作者の作品、商品、グッズ申請、ユーザー画面の8画面で一致するlinen色のstatus badge visual shellだけを`StatusBadge.tsx`へ移す。共通責務は`span`と`rounded-full bg-linen px-3 py-1`に限定し、`statusLabel`、公開／非公開判断、role表示、配置classは各画面に残す。色付きアカウント状態badgeと作成日chipは統合しない。empty state、pagination、form field errorは要素、見出し階層、CTA、状態管理、ARIAの差をR3-4e以降で再監査する。
+
 ## 9. Feature Flag台帳
 
 21個を確認した。すべて未設定時falseを維持する。

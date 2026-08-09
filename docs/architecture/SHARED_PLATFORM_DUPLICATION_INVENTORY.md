@@ -33,7 +33,8 @@
 - PR-R3-4a: page／panel／action rowだけを`AsyncStateShell.tsx`へ共通化し、9つのerror boundaryと4つのloading boundaryを移行した。固有文言、CTA、URL、reset範囲、ログcontext、ARIA、spinner／skeletonは各featureに維持した。
 - PR-R3-4b: 市場分析からネームまでの4つの専用submit componentを既存`PendingSubmitButton`へ委譲し、DUP-010のAI送信pending検出、二重送信防止、busy通知、spinnerを共通化した。専用component名、文言、class、Server Actionは維持した。
 - PR-R3-4c: 企画比較からネーム版までの4画面で完全一致するAction成功／失敗feedbackを`CloudActionFeedback.tsx`へ移した。表示順、要素、class、ARIA、query値、Server Actionは維持した。
-- DUP-011のpartial noticeは既存`CloudDataNotice`へ集約済み。DUP-012とstatus badge、pagination、form field errorはR3-4cに含めず、後続R3-4d以降で同義性を確認してから扱う。
+- PR-R3-4d: 管理者／制作者の作品、商品、グッズ申請、ユーザー画面の8画面で一致するlinen色のstatus badge visual shellを`StatusBadge.tsx`へ移した。`statusLabel`、公開／非公開判断、role表示、配置classは各画面に維持した。色付きアカウント状態badgeと作成日chipは統合しない。
+- DUP-011のpartial noticeは既存`CloudDataNotice`へ集約済み。DUP-012とpagination、form field errorはR3-4dに含めず、後続R3-4e以降で要素、見出し階層、CTA、状態管理、ARIAの同義性を確認してから扱う。
 
 ## 統合しない重複
 

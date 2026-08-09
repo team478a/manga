@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { StatusBadge } from "@/components/StatusBadge";
 import { dateJa, statusLabel } from "@/lib/format";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
@@ -41,8 +42,8 @@ export default async function AdminWorksPage() {
               <h2 className="text-2xl font-bold">{work.title}</h2>
               <p className="mt-2 text-stone-600">クリエイター：{work.profiles?.display_name ?? "不明"}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="rounded-full bg-linen px-3 py-1 text-sm">{work.is_public ? "公開" : "非公開"}</span>
-                <span className="rounded-full bg-linen px-3 py-1 text-sm">{statusLabel(work.status)}</span>
+                <StatusBadge className="text-sm">{work.is_public ? "公開" : "非公開"}</StatusBadge>
+                <StatusBadge className="text-sm">{statusLabel(work.status)}</StatusBadge>
                 <span className="rounded-full bg-linen px-3 py-1 text-sm">作成日：{dateJa(work.created_at)}</span>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { StatusBadge } from "@/components/StatusBadge";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
@@ -105,7 +106,7 @@ export default async function AdminUserDetailPage({
         </div>
         <div>
           <p className="text-sm text-stone-500">権限</p>
-          <span className="mt-2 inline-flex rounded-full bg-linen px-3 py-1 text-sm">{statusLabel(user.role)}</span>
+          <StatusBadge className="mt-2 inline-flex text-sm">{statusLabel(user.role)}</StatusBadge>
         </div>
         <div>
           <p className="text-sm text-stone-500">登録日</p>
