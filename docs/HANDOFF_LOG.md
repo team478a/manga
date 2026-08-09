@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-09 Codex: PR-R3-3l Desktop project status repository境界
+
+- Branch: `codex/refactor-r3-3l-desktop-project-status-repository`、Base: `origin/feature/manga-canvas-mvp`@`b2810bd`（PR #206 merge後）。R3-3a〜R3-3kは完了・マージ済み。
+- Desktop Hub project status Routeの端末認証済みservice-role queryを`src/modules/desktop-project/infrastructure/desktop-project-repository.ts`へ移した。未認証の公開GETは既存RLS clientをRouteに維持する。
+- Routeには入力validation、端末認証／scope、domain error mapping、response／loggingを残した。認証済みprofile owner、一般作品、最新1件、非公開draft、`updated_at`楽観ロック、販売status集計、公開GETのstatus／body／messageを維持した。
+- `src/app/**`のadmin-client直接利用warningは3件から2件へ減少。残るCloud AI／monitor ops Worker 2件は認証済みA分類composition rootとして維持する。
+- DB、RLS、migration、RPC、Storage、URL、API、Desktop protocol／IPC／保存形式、認証期間／scope／rate limit、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripeは変更しない。
+- focused 23/23（専用6/6）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 602/602、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pending。Desktopアプリコード、実DB、実端末認証、実Providerを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+
+---
+
 ## 2026-08-09 Codex: PR-R3-3k Desktop端末認証repository境界
 
 - Branch: `codex/refactor-r3-3k-desktop-device-repository`、Base: `origin/feature/manga-canvas-mvp`@`5228399`（PR #205 merge後）。R3-3a〜R3-3jは完了・マージ済み。
@@ -14,6 +26,7 @@
 - DB、RLS、migration、RPC、Storage、URL、API、Desktop protocol／IPC／保存形式、認証期間／scope／rate limit、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripeは変更しない。
 - focused 23/23（専用6/6）、deps（0 errors／既知3 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 596/596、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - release preflightは構造READY。Desktop rate-limit署名鍵、Supabase staging資格情報と実端末認証はローカル環境外の既存pending。Desktopアプリコードと実DBを変更／実行せず、Draft PR、GitHub CI、Vercel Previewを確認後に停止する。
+- Merge: `b2810bdd17884db64ac4f822e475f672b66539c8`で`feature/manga-canvas-mvp`へマージ済み。
 
 ---
 
