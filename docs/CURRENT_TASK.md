@@ -2,9 +2,11 @@
 
 ## 2026-08-09 PR-R3-3j checkout result repository境界
 
-- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/refactor-r3-3j-checkout-result-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`88fd9d6`、PR #204 merge後）
+- Draft PR: [#205](https://github.com/team478a/manga/pull/205)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-eb9c81-team478as-projects.vercel.app`
 - 現在: PR-R3-3jだけを実施する。R3-3a〜R3-3iは完了・マージ済み。checkout success／cancel画面に残るservice-role DB／private Storage操作を、既存`checkout` infrastructure repositoryへ移す。
 - 実装: paid注文とproduct IDの照合、private商品fileの300秒署名URL生成、署名済みcancel token検証後のpending注文cancel更新をrepositoryへ集約する。App RouterにはStripe Session取得／支払反映、paid reference判定、環境確認、既存message／表示を維持する。
 - 契約維持: Stripeのpaid session確認をdownload queryより前に、cancel token検証とadmin環境確認をDB更新より前に維持する。注文ID／商品ID／paid status照合、bucket `digital-products`、file path、TTL 300秒、`download:true`、pendingだけをcanceledへ更新する条件を変更しない。cancel tokenに現行存在しない有効期限仕様は追加しない。
@@ -12,6 +14,7 @@
 - 不変条件: DB、RLS、migration、RPC、Storage bucket／path／private設定、URL、API、Stripe Session／metadata／webhook／success／cancel契約、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
 - 検証: focused 17/17、deps（0 errors／既知8 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 590/590、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
 - 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3jの失敗ではない。実Stripe／Storageは呼び出さない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PRはDraft／MERGEABLE。
 - 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にDesktop repository slice、R3-4、R3-5、R4へ進まない。
 
 ## 2026-08-09 PR-R3-3i checkout pending order repository境界
