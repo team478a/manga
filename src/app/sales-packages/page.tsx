@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Download, FileText, Sparkles } from "lucide-react";
 import { exportSalesPackageAction, generateSalesTextAction, saveSalesPackageAction } from "@/app/sales-packages/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { getProjectDir, getSalesPackage, isLegacyLocalSalesEnabled, listGeneratedImages } from "@/lib/local/salesPackage";
 
 export default async function SalesPackagesPage({
@@ -41,7 +42,7 @@ export default async function SalesPackagesPage({
       </div>
 
       {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
-      {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}
+      {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
 
       <form className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.9fr]" encType="multipart/form-data">
         <input name="packageId" type="hidden" value={record?.id ?? ""} />

@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { revokeDesktopDevice } from "./actions";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { createDesktopDeviceRepository } from "@/modules/desktop-device/infrastructure/desktop-device-repository";
 
 export default async function DevicesPage({
@@ -38,9 +39,9 @@ export default async function DevicesPage({
         </p>
       ) : null}
       {params.error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
+        <InlineErrorMessage>
           {params.error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       <section className="mt-8 space-y-4">
         {data?.length ? (

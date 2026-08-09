@@ -1,11 +1,12 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { updateWork } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
-import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function EditWorkPage({
   params,
@@ -30,7 +31,7 @@ export default async function EditWorkPage({
   return (
     <main className="page max-w-3xl">
       <h1 className="text-3xl font-bold">作品編集</h1>
-      {messages.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{messages.error}</p> : null}
+      {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
       <form action={updateWork} className="panel mt-6 space-y-5">
         <input name="id" type="hidden" value={work.id} />
         {work.image_url ? (

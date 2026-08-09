@@ -1,11 +1,28 @@
 # MANGAI Current Task
 
-## 2026-08-09 PR-R3-4d status badge visual shell
+## 2026-08-09 PR-R3-4e inline error visual shell
 
 - 状態: `READY_FOR_OWNER_REVIEW`
+- Branch: `codex/refactor-r3-4e-inline-error-shell`
+- Base: `origin/feature/manga-canvas-mvp`（`96b22a9`、PR #211 merge後）
+- Draft PR: [#212](https://github.com/team478a/manga/pull/212)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-bc0c4d-team478as-projects.vercel.app`
+- 現在: PR-R3-4eだけを実施する。認証、購入、作品、商品、グッズ申請、Desktop端末、Cloud作品の20画面21箇所で完全一致するinline error visual shellを共通componentへ移す。
+- 実装: `src/components/InlineErrorMessage.tsx`に`p`要素と`mt-5 rounded-md bg-red-50 p-4 text-red-700`だけを集約する。表示条件、error値、購入不可文言、唯一既存の`role=alert`は各画面に維持する。
+- 分割: R3-4eは要素と全classが一致する21箇所だけに限定する。角丸、色、余白、ARIAが異なるerror表示、成功／警告、error boundaryは対象外。empty stateとpaginationは要素、見出し、CTA、状態管理が異なるためR3-4f以降で再監査する。
+- 不変条件: 情報設計、文言、表示条件、query名／encoding、Server Action、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 9/9（専用2/2）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 613/613、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。Hub buildは並列実行時のtimeout後、単独再実行で成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-4eの失敗ではない。実DB、実Provider、Desktopアプリコードは変更／実行しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4f、R3-5、R4へ進まない。
+
+## 2026-08-09 PR-R3-4d status badge visual shell
+
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-4d-status-badges`
 - Base: `origin/feature/manga-canvas-mvp`（`4ce9c6c`、PR #210 merge後）
 - Draft PR: [#211](https://github.com/team478a/manga/pull/211)
+- Merge: `96b22a9111edd8b7ccc5c50ce2d37eb3e21e80db`
 - Preview: `https://mangai-hub-staging-drbv62wn1-team478as-projects.vercel.app`
 - 現在: PR-R3-4dだけを実施する。管理者／制作者の作品、商品、グッズ申請、ユーザー画面の8画面で一致するlinen色のstatus badge visual shellを共通componentへ移す。
 - 実装: `src/components/StatusBadge.tsx`に`span`、`rounded-full bg-linen px-3 py-1`だけを集約する。各画面の`statusLabel`、公開／非公開判断、role表示、配置・文字サイズclassは各画面に維持する。

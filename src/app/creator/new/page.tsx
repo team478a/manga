@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { createCloudProjectAction } from "@/app/creator/actions";
-import { requireProfile } from "@/lib/auth";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { requireProfile } from "@/lib/auth";
 
 export default async function NewCloudProjectPage({
   searchParams,
@@ -20,9 +21,9 @@ export default async function NewCloudProjectPage({
         タイトルと基本設定を入力してください。第1話と1ページ目は自動で作られます。
       </p>
       {params.error ? (
-        <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">
+        <InlineErrorMessage>
           {params.error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       <form action={createCloudProjectAction} className="panel mt-6 space-y-5">
         <div>

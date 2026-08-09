@@ -1,4 +1,5 @@
 import { signUp } from "@/app/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export default async function SignupPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
@@ -9,7 +10,7 @@ export default async function SignupPage({ searchParams }: { searchParams: Promi
       <h1 className="text-3xl font-bold">新規登録</h1>
       <p className="mt-3 text-lg text-stone-600">まずは無料で作品投稿の準備を始めましょう。</p>
       {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
-      {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}
+      {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
       <form action={signUp} className="panel mt-6 space-y-5">
         <div>
           <label className="label" htmlFor="displayName">表示名</label>

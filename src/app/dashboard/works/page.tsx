@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { StatusBadge } from "@/components/StatusBadge";
 import { requireProfile } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
@@ -28,7 +29,7 @@ export default async function DashboardWorksPage({ searchParams }: { searchParam
         <Link className="button" href="/dashboard/works/new">作品をアップロード</Link>
       </div>
       {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
-      {params.error ? <p className="mt-5 rounded-md bg-red-50 p-4 text-red-700">{params.error}</p> : null}
+      {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
       {works?.length ? (
         <div className="mt-8 grid gap-4">
           {works.map((work) => (
