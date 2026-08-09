@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CheckCircle2 } from "lucide-react";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { requireProfile } from "@/lib/auth";
 import {
   getCloudGeneralMonitorEnrollment,
@@ -44,7 +45,7 @@ export default async function GeneralMonitorWelcomePage({
       <p className="mt-3 text-stone-600">
         専門知識は不要です。市場分析から順番に進み、実際に漫画制作が進められるかをお試しください。
       </p>
-      {error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{error}</p> : null}
+      {error ? <InlineErrorMessage radius="lg" role="alert">{error}</InlineErrorMessage> : null}
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">モニター条件</h2>
         <ul className="mt-4 space-y-3">

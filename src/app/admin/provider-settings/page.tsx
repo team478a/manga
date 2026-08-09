@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
@@ -39,7 +40,7 @@ export default async function ProviderSettingsPage({
         OpenAI、Black Forest Labs、ResendのAPIキーをこの画面で一括管理します。キーはSupabase Vaultへ暗号化保存し、保存後は再表示しません。
       </p>
       {query.message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">{query.message}</p> : null}
-      {query.error ? <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">{query.error}</p> : null}
+      {query.error ? <InlineErrorMessage radius="lg" role="alert">{query.error}</InlineErrorMessage> : null}
 
       <section className="panel mt-6 scroll-mt-6" id="openai">
         <h2 className="text-xl font-bold">1. OpenAI（市場分析）</h2>

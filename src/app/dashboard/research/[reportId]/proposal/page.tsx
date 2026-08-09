@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { requireProfile } from "@/lib/auth";
 import {
   cloudAdultPlanningFeatureEnabled,
@@ -111,9 +112,9 @@ export default async function ProposalHandoffPage({
           <p className="mt-3 leading-relaxed text-stone-700">{next?.summary}</p>
         </section>
         {error ? (
-          <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+          <InlineErrorMessage radius="lg" role="alert">
             {error}
-          </p>
+          </InlineErrorMessage>
         ) : null}
         {!runLoad.ok ? (
           <CloudDataNotice className="mt-5">
@@ -199,9 +200,9 @@ export default async function ProposalHandoffPage({
         市場分析の条件を、次の制作工程で使う企画へ整理します。外部AIには送信されません。
       </p>
       {error ? (
-        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+        <InlineErrorMessage radius="lg" role="alert">
           {error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       {!accessLoad.ok ? (
         <CloudDataNotice className="mt-5">

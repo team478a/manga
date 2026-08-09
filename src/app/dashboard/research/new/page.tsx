@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createCloudResearchReportAction } from "@/app/dashboard/research/actions";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { requireProfile } from "@/lib/auth";
 import { cloudResearchFeatureEnabled } from "@/lib/cloud-research";
 import { ResearchSubmitButton } from "./research-submit-button";
@@ -52,9 +53,9 @@ export default async function NewCloudResearchPage({
         市場、販売先、価格の知識は不要です。現在の需要と競合から、具体的なおすすめを提示します。
       </p>
       {error ? (
-        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+        <InlineErrorMessage radius="lg" role="alert">
           {error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       {!enabled ? (
         <div className="panel mt-6" role="status">

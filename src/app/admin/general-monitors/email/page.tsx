@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
@@ -40,9 +41,9 @@ export default async function GeneralMonitorEmailSettingsPage({
         </p>
       ) : null}
       {query.error ? (
-        <p className="mt-5 rounded-lg bg-red-50 p-4 text-red-700" role="alert">
+        <InlineErrorMessage radius="lg" role="alert">
           {query.error}
-        </p>
+        </InlineErrorMessage>
       ) : null}
       {!settings ? (
         <section className="panel mt-6">
