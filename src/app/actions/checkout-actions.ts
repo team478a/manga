@@ -5,8 +5,8 @@ import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { createStripeCheckoutSession } from "@/lib/checkout";
 import { normalizeBuyerEmail } from "@/lib/checkout-policy";
 import { hasSupabaseAdminEnv } from "@/lib/env";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { insertPendingCheckoutOrder } from "@/modules/checkout/infrastructure/checkout-order-repository";
 import { formText } from "./shared/form-data";
 
 export async function createPendingOrder(formData: FormData) {
@@ -60,21 +60,15 @@ export async function createPendingOrder(formData: FormData) {
   const amount = Math.round(product.price);
   const platformFee = Math.floor(amount * 0.2);
   const creatorRevenue = amount - platformFee;
-  const adminSupabase = createAdminClient();
-  const { data: order, error } = await adminSupabase
-    .from("orders")
-    .insert({
-      buyer_email: buyerEmail,
-      buyer_profile_id: buyerProfileId,
-      product_id: product.id,
-      creator_id: product.creator_id,
-      amount,
-      platform_fee: platformFee,
-      creator_revenue: creatorRevenue,
-      status: "pending",
-    })
-    .select("id")
-    .single<{ id: string }>();
+  const { data: order, error } = await insertPendingCheckoutOrder({
+    buyerEmail,
+    buyerProfileId,
+    productId: product.id,
+    creatorId: product.creator_id,
+    amount,
+    platformFee,
+    creatorRevenue,
+  });
   if (error || !order) {
     redirect(encodeURI(`/checkout/${productId}?error=仮注文の作成に失敗しました`));
   }
