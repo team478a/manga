@@ -1,11 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-4a error／loading visual shell
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-4a-ui-state-primitives`
+- Base: `origin/feature/manga-canvas-mvp`（`d8ac7cd`、PR #207 merge後）
+- 現在: PR-R3-4aだけを実施する。R3-1〜R3-3は完了・マージ済み。9つのerror boundaryと4つのloading boundaryで重複するpage／panel／action rowのvisual shellを共通化する。
+- 実装: `src/components/AsyncStateShell.tsx`に`AsyncStatePage`、`AsyncStatePanel`、`AsyncStateActions`を追加する。各boundaryには固有文言、reset callback、Link、ログcontext、`role`／`aria-live`、spinner／skeleton、max widthを残す。
+- 分割: R3-4全体は20〜35ファイル／700〜1,200行見込みのため、error／loadingだけをR3-4aへ限定する。pending、empty、partial notice、status badge、pagination、confirmation feedback、form errorは後続R3-4b以降で別途確認する。
+- 契約維持: 出力する`main`／`section`／`div`、`page`／`panel`／`flex` class、既存文言、CTA、URL、reset範囲、ログcontext、alert/status role、aria属性を変更しない。error詳細を新たに表示せず、loading方式も統合しない。
+- 不変条件: 情報設計、business state、Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: 専用4/4、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 606/606、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-4aの失敗ではない。実DB、実Provider、Desktopアプリコードは変更／実行しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4b、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-3l Desktop project status repository境界
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3l-desktop-project-status-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`b2810bd`、PR #206 merge後）
 - Draft PR: [#207](https://github.com/team478a/manga/pull/207)
+- Merge: `d8ac7cdf24012dee2dfadacd422de7df210a1194`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-11cce2-team478as-projects.vercel.app`
 - 現在: PR-R3-3lだけを実施する。R3-3a〜R3-3kは完了・マージ済み。Desktop Hub project status Routeに残る端末認証済みservice-role DB操作を`desktop-project` infrastructure repositoryへ移す。
 - 実装: `src/modules/desktop-project/infrastructure/desktop-project-repository.ts`へowner限定の一般作品読取、非公開draftの楽観ロック更新、認証済みstatus読取、owner限定販売status読取を集約する。Routeには入力validation、端末認証／scope、domain error mapping、response／loggingと未認証公開GETのRLS clientを維持する。

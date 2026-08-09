@@ -1,14 +1,18 @@
 import { LoaderCircle } from "lucide-react";
+import {
+  AsyncStatePage,
+  AsyncStatePanel,
+} from "@/components/AsyncStateShell";
 
 export default function CloudProposalLoading() {
   return (
-    <main
+    <AsyncStatePage
       aria-busy="true"
       aria-live="polite"
       className="page max-w-5xl"
       role="status"
     >
-      <section className="panel text-center">
+      <AsyncStatePanel className="text-center">
         <LoaderCircle
           aria-hidden="true"
           className="mx-auto h-8 w-8 animate-spin text-violet-700"
@@ -19,7 +23,7 @@ export default function CloudProposalLoading() {
         <p className="mt-2 text-stone-600">
           画面を移動せずにお待ちください。
         </p>
-      </section>
-    </main>
+      </AsyncStatePanel>
+    </AsyncStatePage>
   );
 }
