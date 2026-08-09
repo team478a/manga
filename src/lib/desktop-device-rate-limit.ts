@@ -1,28 +1,17 @@
-import { createHmac } from "node:crypto";
-import { isIP } from "node:net";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   DomainError,
   ProviderUnavailableError,
 } from "@/lib/domain-errors";
+import {
+  hashRateLimitSubject,
+  readRequestClientAddress,
+} from "@/lib/rate-limit-primitives";
 
 const WINDOW_SECONDS = 15 * 60;
 const GLOBAL_REQUEST_LIMIT = 300;
 const CLIENT_REQUEST_LIMIT = 10;
 const UNKNOWN_CLIENT_REQUEST_LIMIT = 50;
-
-function clientAddress(request: Request) {
-  const candidates = [
-    request.headers.get("cf-connecting-ip"),
-    request.headers.get("x-real-ip"),
-    ...(request.headers.get("x-forwarded-for")?.split(",") ?? []),
-  ];
-  for (const candidate of candidates) {
-    const value = candidate?.trim();
-    if (value && isIP(value)) return value;
-  }
-  return null;
-}
 
 function rateLimitKey(value: string) {
   const secret =
@@ -32,7 +21,7 @@ function rateLimitKey(value: string) {
     throw new ProviderUnavailableError(
       "端末認証rate limit用に32byte以上のサーバー秘密値が必要です。",
     );
-  return createHmac("sha256", secret).update(value, "utf8").digest("hex");
+  return hashRateLimitSubject(value, secret);
 }
 
 async function consume(keyHash: string, requestLimit: number) {
@@ -59,7 +48,7 @@ export async function enforceDesktopDeviceRateLimit(request: Request) {
   if (!globalAllowed)
     return { allowed: false as const, retryAfterSeconds: WINDOW_SECONDS };
 
-  const address = clientAddress(request);
+  const address = readRequestClientAddress(request);
   const clientAllowed = await consume(
     rateLimitKey(`desktop-device-authorize:${address ?? "unknown"}`),
     address ? CLIENT_REQUEST_LIMIT : UNKNOWN_CLIENT_REQUEST_LIMIT,

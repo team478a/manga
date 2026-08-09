@@ -1,5 +1,5 @@
-import { createHmac } from "node:crypto";
 import { createAdminClient } from "./supabase/admin.ts";
+import { hashRateLimitSubject } from "./rate-limit-primitives.ts";
 import {
   ProviderUnavailableError,
   RateLimitedError,
@@ -24,7 +24,7 @@ function subjectKey(value: string, secret?: string) {
     throw new ProviderUnavailableError(
       "出典検索の利用制限設定が不足しています。",
     );
-  return createHmac("sha256", resolved).update(value).digest("hex");
+  return hashRateLimitSubject(value, resolved);
 }
 
 type Consume = (

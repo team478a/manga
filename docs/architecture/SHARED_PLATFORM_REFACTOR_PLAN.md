@@ -78,6 +78,8 @@ R3-4はPR-R3-4gのマージで完了する。通常一覧のempty stateとpagina
 
 PR-R3-5aではCloud AI、Cloud Export、Cloud Storage、Monitor Opsの4つのinternal Worker Routeから、Bearer secret比較primitiveだけを`src/lib/internal-worker-auth.ts`へ移す。各環境変数名、feature flag、status/body、ログ、Worker処理順はRouteに残し、secret値、最小長、比較方式を変更しない。audit event、rate-limit、signed URL、readiness、resilienceはR3-5b以降へ分割する。
 
+PR-R3-5bでは残候補を一括closeoutする。rate-limitはHMAC-SHA256 subject hashとclient IP抽出だけを`rate-limit-primitives.ts`へ移し、secret、key、window、上限、RPC、例外、status/bodyを各機能に残す。auditは直接INSERTとtransaction内RPC／trigger、signed URLはbucket/path/TTL/download/owner/failure、readinessは一般／成人向け境界、resilienceは管理画面のfatal fallbackと利用者画面の部分継続が異なるため統合しない。characterizationで差を固定し、R3-5とR3実装を完了する。
+
 ## 9. Feature Flag台帳
 
 21個を確認した。すべて未設定時falseを維持する。
@@ -133,7 +135,7 @@ domain固有のowner条件、Provider readiness、成人向け境界、rate-limi
 | R3-4 | pending/empty/partial/error等の共通UI state | 情報設計、文言、URL、business state |
 | R3-5 | Worker auth、audit port、rate-limit interface、signed URL低水準infra | policy値、Provider、Scheduler、Storage契約 |
 
-R3-5a完了後の残件は、audit log境界、rate-limit低水準interface、signed URL低水準境界、readiness／resilience監査（必要なら0〜2 PR）、R3完了監査の概ね4〜6 Draft PRを見込む。各候補は同義性が確認できなければ統合せず、監査結果だけを記録する。
+R3-5bのマージ後、R3実装残件は0とする。責任者がR3完了を明示承認するまでR4を開始しない。
 
 R3-2またはR3-3が上限を超える場合は`a/b`へ分割し、認可とdata accessを同一PRで中途半端に跨がせない。
 
