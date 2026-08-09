@@ -1,31 +1,25 @@
 "use client";
 
-import { useFormStatus } from "react-dom";
+import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 
 export function ProposalSubmitButton() {
-  const { pending } = useFormStatus();
   return (
-    <button
-      aria-disabled={pending}
-      className="button mt-5 bg-violet-700 hover:bg-violet-800 disabled:cursor-wait disabled:opacity-70"
-      disabled={pending}
-      type="submit"
+    <PendingSubmitButton
+      className="button mt-5 bg-violet-700 hover:bg-violet-800"
+      pendingLabel="AIが企画を作成中…"
     >
-      {pending ? "AIが企画を作成中…" : "AI企画を3案作成"}
-    </button>
+      AI企画を3案作成
+    </PendingSubmitButton>
   );
 }
 
 export function ProposalSelectionButton() {
-  const { pending } = useFormStatus();
   return (
-    <button
-      aria-disabled={pending}
-      className="button w-full bg-violet-700 hover:bg-violet-800 disabled:cursor-wait disabled:opacity-70"
-      disabled={pending}
-      type="submit"
+    <PendingSubmitButton
+      className="button w-full bg-violet-700 hover:bg-violet-800"
+      pendingLabel="企画を保存中…"
     >
-      {pending ? "企画を保存中…" : "この企画で進める"}
-    </button>
+      この企画で進める
+    </PendingSubmitButton>
   );
 }
