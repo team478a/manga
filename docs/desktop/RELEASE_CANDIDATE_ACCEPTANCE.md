@@ -1,5 +1,7 @@
 # MANGAI 配布候補版（RC）受入れ手順
 
+2026-08-10監査時点の正式状態は2 passed、11 pending、2 blocked。R4の統合順序と停止条件は[`../RELEASE_CANDIDATE_R4_PLAN.md`](../RELEASE_CANDIDATE_R4_PLAN.md)を参照し、本書の手順と[`RC_ACCEPTANCE_STATUS.json`](RC_ACCEPTANCE_STATUS.json)の証拠要件を維持する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。
@@ -142,7 +144,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 
 | 判定                  | 完了条件                            | 現在                                       |
 | --------------------- | ----------------------------------- | ------------------------------------------ |
-| ローカル品質ゲート    | `npm run rc:validate`成功           | 2026-07-15成功（Desktop 39/39、Hub 10/10） |
+| ローカル品質ゲート    | `npm run rc:validate`成功           | 2026-08-10成功（Desktop 182/182、Hub 620/620） |
 | Desktopローカル受入れ | 第4節を製品版で完了                 | 2026-07-15完了                             |
 | Ollama                | 第5節を実サービスで完了             | 外部サービス待ち                           |
 | ComfyUI               | 第6節を実サービスで完了             | 外部サービス待ち                           |

@@ -1,5 +1,16 @@
 # MANGAI 現在の実装状況と今後のロードマップ
 
+## 2026-08-10 現在地（R3完了・R4 Release Candidate受入れ）
+
+- 現行基準は`feature/manga-canvas-mvp`の`78f4503f6ca235c1c949cddc33c91e7efcc34fa3`（PR #216 merge commit）。
+- PR-R0、R1、R2A、R2B、R2C、R3は完了し、architecture共通化の実装残件は0。
+- Cloud漫画制作、Hub、Desktopの主要コード機能とローカル品質ゲートは揃っている。次は新機能追加ではなく実環境Release Candidate受入れを行う。
+- R4はR4-0（文書・台帳）、R4-1（Hub／Supabase／Vercel／Stripe）、R4-2（Desktop実AI／アクセシビリティ／Windows配布／最終RC）の3工程へ統合する。詳細は[`RELEASE_CANDIDATE_R4_PLAN.md`](RELEASE_CANDIDATE_R4_PLAN.md)。
+- RC台帳は2 passed、11 pending、2 blocked。信頼されたWindowsコード署名証明書と署名済み2version／公開update URLが揃うまで署名関連はblocked。
+- 成人向けDezgo production接続、依存更新、旧PRの追加merge／closeはR4の対象外。
+
+以下は2026-07-18時点の履歴として保持する。
+
 最終確認日: 2026-07-18
 対象ブランチ: `feature/manga-canvas-mvp`
 実装基準コミット: `026ab21`

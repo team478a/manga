@@ -135,7 +135,7 @@ domain固有のowner条件、Provider readiness、成人向け境界、rate-limi
 | R3-4 | pending/empty/partial/error等の共通UI state | 情報設計、文言、URL、business state |
 | R3-5 | Worker auth、audit port、rate-limit interface、signed URL低水準infra | policy値、Provider、Scheduler、Storage契約 |
 
-R3-5bのマージ後、R3実装残件は0とする。責任者がR3完了を明示承認するまでR4を開始しない。
+R3-5bはPR #216として`78f4503f6ca235c1c949cddc33c91e7efcc34fa3`でマージ済み。R3実装残件は0で、責任者承認後のR4は`docs/RELEASE_CANDIDATE_R4_PLAN.md`へ引き継ぐ。
 
 R3-2またはR3-3が上限を超える場合は`a/b`へ分割し、認可とdata accessを同一PRで中途半端に跨がせない。
 

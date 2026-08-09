@@ -4,16 +4,29 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-0 Release Candidate統合監査・計画
+
+- PR #216は`78f4503f6ca235c1c949cddc33c91e7efcc34fa3`で`feature/manga-canvas-mvp`へマージ済み。PR-R3実装残件は0。
+- 残るRelease Candidate作業をR4-0（文書・台帳）、R4-1（Hub／Supabase／Vercel／Stripe実受入れ）、R4-2（Desktop実AI／アクセシビリティ／Windows配布／最終RC）の3工程へ統合した。
+- `docs/RELEASE_CANDIDATE_R4_PLAN.md`を正本として、実施項目、証拠ルール、外部契約、rollback、工程ごとの停止条件を固定する。
+- RC台帳の現状は2 passed、11 pending、2 blocked。ローカル品質ゲート成功を実Provider、実決済、実Windows、署名の代替にしない。
+- 成人向けDezgo production接続、依存更新、旧PR整理、新機能はR4統合受入れの対象外。
+- 今回は文書だけを変更し、application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop codeを変更しない。
+- Draft PRと最終HEADの全CI／Vercel Preview成功後に停止し、責任者確認前にR4-1へ進まない。
+
+---
+
 ## 2026-08-10 Codex: PR-R3-5b shared infrastructure closeout
 
+- PR #216は`78f4503f6ca235c1c949cddc33c91e7efcc34fa3`でマージ済み。
 - Branch: `codex/refactor-r3-5b-shared-infra-closeout`、Base: `origin/feature/manga-canvas-mvp`@`0884a1f`（PR #215 merge後）。R3-1〜R3-4とR3-5aは完了・マージ済み。
 - 3つのrate-limit実装で一致するHMAC-SHA256 subject hashと、Cloud AI／Desktop端末認証で一致するclient IP抽出だけを`src/lib/rate-limit-primitives.ts`へ移した。
 - secret名・fallback・最小長、key prefix、window、上限、RPC、例外文言、status/bodyは各機能に維持した。Cloud AIのglobal/IP、Cloud市場分析のglobal/user、Desktop端末認証のglobal/clientというpolicy差を統合していない。
 - audit logは直接INSERTとtransaction内RPC／trigger、signed URLはbucket/path/TTL/download/owner/failure、readinessは一般／成人向け境界、resilienceはfatal／partial継続の意味が異なるため、characterizationを追加して統合禁止を確定した。
 - Auth、DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop protocolは変更しない。
 - focused 4/4、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 620/620、Canvas 26/26、AI 48/48、Desktop 182/182／a11y 29画面・違反0、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure成功。
-- 本PRのマージと責任者のR3完了承認後、R3実装残件は0。Draft PR、GitHub CI、Vercel Preview確認後、R4へ進まず停止する。
-- Draft PR [#216](https://github.com/team478a/manga/pull/216)、Preview `https://mangai-hub-staging-git-codex-refactor-8989d9-team478as-projects.vercel.app`。最初のHEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。最終文書同期後のHEADでも同じ5チェックを再確認する。
+- PR #216のマージと責任者のR3完了承認により、R3実装残件は0。後続はPR-R4-0へ移行済み。
+- Draft PR [#216](https://github.com/team478a/manga/pull/216)、Preview `https://mangai-hub-staging-git-codex-refactor-8989d9-team478as-projects.vercel.app`。最終HEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
 
 ---
 

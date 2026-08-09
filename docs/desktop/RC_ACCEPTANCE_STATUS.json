@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseVersion": "0.1.0",
-  "updatedAt": "2026-07-24",
+  "updatedAt": "2026-08-10",
   "requirements": [
     {
       "id": "local-quality-gate",
@@ -10,9 +10,11 @@
       "completedAt": "2026-07-17",
       "verifier": "Codex automated validation",
       "evidence": [
-        "Desktop 90/90 tests",
-        "ai-core 44/44 tests",
-        "axe 29 states / 726 passes / 0 violations"
+        "PR #216 final HEAD 342927c / merge 78f4503",
+        "Hub 620/620, Canvas 26/26, ai-core 48/48 tests",
+        "Desktop 182/182 tests",
+        "axe 29 screens / 0 violations",
+        "Supabase migrations 50/50, Hub and Desktop production builds"
       ]
     },
     {
