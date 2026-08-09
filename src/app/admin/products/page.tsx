@@ -1,3 +1,4 @@
+import { StatusBadge } from "@/components/StatusBadge";
 import { requireAdmin } from "@/lib/auth";
 import { statusLabel, yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -42,7 +43,7 @@ export default async function AdminProductsPage() {
                 <td className="py-3">{product.works?.title ?? "不明"}</td>
                 <td className="py-3">{product.profiles?.display_name ?? "不明"}</td>
                 <td className="py-3">{yen(product.price)}</td>
-                <td className="py-3"><span className="rounded-full bg-linen px-3 py-1 text-sm">{statusLabel(product.status)}</span></td>
+                <td className="py-3"><StatusBadge className="text-sm">{statusLabel(product.status)}</StatusBadge></td>
               </tr>
             ))}
           </tbody>

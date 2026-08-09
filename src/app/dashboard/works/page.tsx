@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { StatusBadge } from "@/components/StatusBadge";
 import { requireProfile } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -43,8 +44,8 @@ export default async function DashboardWorksPage({ searchParams }: { searchParam
                 <h2 className="text-2xl font-bold">{work.title}</h2>
                 <p className="mt-2 line-clamp-2 text-base text-stone-600">{work.description || "説明はまだありません。"}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-sm">
-                  <span className="rounded-full bg-linen px-3 py-1">{work.is_public ? "公開" : "非公開"}</span>
-                  <span className="rounded-full bg-linen px-3 py-1">{statusLabel(work.status)}</span>
+                  <StatusBadge>{work.is_public ? "公開" : "非公開"}</StatusBadge>
+                  <StatusBadge>{statusLabel(work.status)}</StatusBadge>
                   <span className="rounded-full bg-linen px-3 py-1">作成日：{dateJa(work.created_at)}</span>
                 </div>
               </div>

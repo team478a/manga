@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
+import { StatusBadge } from "@/components/StatusBadge";
 import { requireProfile } from "@/lib/auth";
 import { dateJa, statusLabel, yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -52,7 +53,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Pro
                 <p className="mt-2 text-sm text-stone-500">作成日：{dateJa(product.created_at)}</p>
               </div>
               <p className="text-xl font-bold">{yen(product.price)}</p>
-              <span className="w-fit rounded-full bg-linen px-3 py-1 text-sm">{statusLabel(product.status)}</span>
+              <StatusBadge className="w-fit text-sm">{statusLabel(product.status)}</StatusBadge>
               <Link className="button-secondary whitespace-nowrap" href={`/dashboard/products/${product.id}/edit`}>
                 編集する
               </Link>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StatusBadge } from "@/components/StatusBadge";
 import { requireAdmin } from "@/lib/auth";
 import { dateJa, statusLabel } from "@/lib/format";
 import { hasSupabaseAdminEnv } from "@/lib/env";
@@ -211,7 +212,7 @@ export default async function AdminUsersPage({
               <tr className="border-b border-stone-100" key={user.id}>
                 <td className="py-3 font-semibold">{user.display_name || "未設定"}</td>
                 <td className="py-3">{auth?.email || "未取得"}</td>
-                <td className="py-3"><span className="rounded-full bg-linen px-3 py-1 text-sm">{statusLabel(user.role)}</span></td>
+                <td className="py-3"><StatusBadge className="text-sm">{statusLabel(user.role)}</StatusBadge></td>
                 <td className="py-3">{dateJa(user.created_at)}</td>
                 <td className="py-3 text-sm">
                   {invite?.invite_email_sent_at ? (
