@@ -12,7 +12,9 @@
 - RC台帳の現状は2 passed、11 pending、2 blocked。ローカル品質ゲート成功を実Provider、実決済、実Windows、署名の代替にしない。
 - 成人向けDezgo production接続、依存更新、旧PR整理、新機能はR4統合受入れの対象外。
 - 今回は文書だけを変更し、application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop codeを変更しない。
-- Draft PRと最終HEADの全CI／Vercel Preview成功後に停止し、責任者確認前にR4-1へ進まない。
+- ローカル検証はRC台帳2 passed／11 pending／2 blocked、release構造READY、deps、lint、typecheck、research eval、Hub 620、Canvas 26、AI 48、Desktop 182／a11y、migration 50、両build、Cloud漫画repository／owner isolation／100ページ4件が成功。
+- Draft PR [#217](https://github.com/team478a/manga/pull/217)、Preview `https://mangai-hub-staging-git-codex-release-e49113-team478as-projects.vercel.app`。初回HEAD `00f645f`でCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 最終文書同期後のHEADでも同じ5チェックを再確認して停止し、責任者確認前にR4-1へ進まない。
 
 ---
 
