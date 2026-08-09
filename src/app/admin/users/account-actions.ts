@@ -4,15 +4,14 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { hasSupabaseAdminEnv } from "@/lib/env";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { actionFeedbackTarget, actionIdSchema } from "@/lib/action-contracts";
-
-type TargetProfile = {
-  id: string;
-  user_id: string;
-  role: string;
-};
+import {
+  loadAdminUserActionTarget,
+  restoreAdminUser,
+  softDeleteAdminUser,
+  suspendAdminUser,
+} from "@/modules/account/infrastructure/admin-user-repository";
 
 const profileIdSchema = actionIdSchema;
 
@@ -30,18 +29,12 @@ async function manageableTarget(profileId: string) {
   }
 
   const targetLoaded = await safelyLoadAdminData("users/action/target", async () => {
-    const admin = createAdminClient();
-    const result = await admin
-      .from("profiles")
-      .select("id,user_id,role")
-      .eq("id", parsed.data)
-      .maybeSingle<TargetProfile>();
-    return { admin, result };
+    return loadAdminUserActionTarget(parsed.data);
   });
   if (!targetLoaded.ok) {
     redirect(usersRedirect("error", "対象ユーザーを確認できませんでした。"));
   }
-  const { admin, result: { data: target, error } } = targetLoaded.value;
+  const { data: target, error } = targetLoaded.value;
 
   if (error || !target) {
     redirect(usersRedirect("error", "対象ユーザーを確認できませんでした。"));
@@ -50,7 +43,7 @@ async function manageableTarget(profileId: string) {
     redirect(usersRedirect("error", "管理者アカウントはこの画面から停止・削除できません。"));
   }
 
-  return { admin, target };
+  return target;
 }
 
 function refreshUserPages(profileId: string) {
@@ -59,10 +52,10 @@ function refreshUserPages(profileId: string) {
 }
 
 export async function suspendAdminUserAction(profileId: string) {
-  const { admin, target } = await manageableTarget(profileId);
-  const operation = await safelyLoadAdminData("users/action/suspend", async () => admin.auth.admin.updateUserById(target.user_id, {
-      ban_duration: "876000h",
-    }));
+  const target = await manageableTarget(profileId);
+  const operation = await safelyLoadAdminData("users/action/suspend", () =>
+    suspendAdminUser(target.user_id),
+  );
   if (!operation.ok || operation.value.error) {
     redirect(usersRedirect("error", "ユーザーを停止できませんでした。"));
   }
@@ -71,10 +64,10 @@ export async function suspendAdminUserAction(profileId: string) {
 }
 
 export async function restoreAdminUserAction(profileId: string) {
-  const { admin, target } = await manageableTarget(profileId);
-  const operation = await safelyLoadAdminData("users/action/restore", async () => admin.auth.admin.updateUserById(target.user_id, {
-      ban_duration: "none",
-    }));
+  const target = await manageableTarget(profileId);
+  const operation = await safelyLoadAdminData("users/action/restore", () =>
+    restoreAdminUser(target.user_id),
+  );
   if (!operation.ok || operation.value.error) {
     redirect(usersRedirect("error", "ユーザーを再開できませんでした。"));
   }
@@ -83,8 +76,10 @@ export async function restoreAdminUserAction(profileId: string) {
 }
 
 export async function deleteAdminUserAction(profileId: string) {
-  const { admin, target } = await manageableTarget(profileId);
-  const operation = await safelyLoadAdminData("users/action/delete", async () => admin.auth.admin.deleteUser(target.user_id, true));
+  const target = await manageableTarget(profileId);
+  const operation = await safelyLoadAdminData("users/action/delete", () =>
+    softDeleteAdminUser(target.user_id),
+  );
   if (!operation.ok || operation.value.error) {
     redirect(usersRedirect("error", "ユーザーを削除できませんでした。"));
   }

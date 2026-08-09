@@ -1,11 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-3e 管理者アカウントrepository境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-3e-account-admin-repository`
+- Base: `origin/feature/manga-canvas-mvp`（`ccb0ff5`、PR #199 merge後）
+- 現在: PR-R3-3eだけを実施する。R3-3a〜R3-3dは完了・マージ済み。管理者ユーザー一覧・詳細と一般ユーザーの停止／再開／soft deleteを、`account` infrastructure repositoryへ移す。
+- 実装: profile読取、Auth Adminの一覧／詳細／更新、monitor招待履歴、成人向けentitlement／企画grant、一般モニター状態の読取をrepositoryへ集約する。App Routerにはadmin認証、環境確認、filter／表示、resilience、自己／admin保護、redirect／revalidateを維持する。
+- 契約維持: `requireAdmin`をrepository呼出しより前に維持し、query列／順序、Auth一覧1000件、削除済み除外、Feature Flag停止時のmonitor非参照、`ban_duration`の`876000h`／`none`、soft delete `true`、日本語feedbackを変更しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを18件から15件へ削減する。Cloud AI、Worker composition root、Desktop、checkout、利用者monitor／購入履歴は本PRに含めない。
+- 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Auth順序、Feature Flag、成人向け本人同意／外部送信境界、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、Stripe、Desktopを変更しない。
+- 検証: focused 21/21、deps（0 errors／既知15 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 574/574、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、diff check成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3eの失敗ではない。本PRはDB、migration、Provider、利用者画面を変更しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前に次のR3 slice、R3-4、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-3d 成人向け管理entitlement repository境界
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3d-adult-entitlement-repositories`
 - Base: `origin/feature/manga-canvas-mvp`（`cd37f79`、PR #198 merge後）
 - Draft PR: [#199](https://github.com/team478a/manga/pull/199)
+- Merge: `ccb0ff508aa71b9397d7b345c34d186bc0131d85`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-32ee08-team478as-projects.vercel.app`
 - 現在: PR-R3-3dだけを実施する。R3-3a〜R3-3cは完了・マージ済み。管理者ユーザー詳細の成人向け企画grant／成人向け市場分析entitlement更新を、各domainのrepositoryへ移す。
 - 実装: `adult-planning`と`adult-research`のinfrastructure repositoryへtarget profile存在確認とRPCを集約する。Server Actionはadmin認証、FormData validation、resilience、redirect／revalidateを維持する。

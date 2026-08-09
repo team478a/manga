@@ -3,16 +3,28 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("管理者は一般ユーザーを停止・再開・安全に削除できる", async () => {
-  const actions = await readFile(
-    new URL("../src/app/admin/users/account-actions.ts", import.meta.url),
-    "utf8",
-  );
+  const [actions, repository] = await Promise.all([
+    readFile(
+      new URL("../src/app/admin/users/account-actions.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/modules/account/infrastructure/admin-user-repository.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
   assert.match(actions, /requireAdmin/);
   assert.match(actions, /target\.user_id === actorUser\.id/);
   assert.match(actions, /target\.role === "admin"/);
-  assert.match(actions, /ban_duration: "876000h"/);
-  assert.match(actions, /ban_duration: "none"/);
-  assert.match(actions, /deleteUser\(target\.user_id, true\)/);
+  assert.match(actions, /suspendAdminUser\(target\.user_id\)/);
+  assert.match(actions, /restoreAdminUser\(target\.user_id\)/);
+  assert.match(actions, /softDeleteAdminUser\(target\.user_id\)/);
+  assert.match(repository, /ban_duration: "876000h"/);
+  assert.match(repository, /ban_duration: "none"/);
+  assert.match(repository, /deleteUser\(userId, true\)/);
   assert.doesNotMatch(actions, /error\.message/);
 });
 
