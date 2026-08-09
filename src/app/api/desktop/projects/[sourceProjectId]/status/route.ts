@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { authorizeDesktopRequest } from "@/lib/desktop-auth";
 import { DESKTOP_DRAFT_WRITE_SCOPE } from "@/lib/desktop-auth";
 import { toMessageApiError } from "@/lib/api-errors";
@@ -19,6 +18,7 @@ import {
   logHubEvent,
 } from "@/lib/hub-logger";
 import { actionIdSchema } from "@/lib/action-contracts";
+import { createDesktopProjectRepository } from "@/modules/desktop-project/infrastructure/desktop-project-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -48,21 +48,12 @@ export async function PATCH(
         "下書き更新の端末権限がありません。",
       );
 
-    const admin = createAdminClient();
-    const { data: current, error: currentError } = await admin
-      .from("works")
-      .select("id, status, is_public, updated_at")
-      .eq("creator_id", authorization.profileId)
-      .eq("source_project_id", params.data.sourceProjectId)
-      .eq("content_class", "general")
-      .order("updated_at", { ascending: false })
-      .limit(1)
-      .maybeSingle<{
-        id: string;
-        status: "draft" | "published" | "archived";
-        is_public: boolean;
-        updated_at: string;
-      }>();
+    const repository = createDesktopProjectRepository();
+    const { data: current, error: currentError } =
+      await repository.findOwnedGeneralDraftCandidate(
+        authorization.profileId,
+        params.data.sourceProjectId,
+      );
     if (currentError)
       throw new ProviderUnavailableError(
         "Hub下書きを確認できませんでした。",
@@ -78,25 +69,14 @@ export async function PATCH(
         "Hub側で作品が更新されています。再確認してからやり直してください。",
       );
 
-    const { data: updated, error: updateError } = await admin
-      .from("works")
-      .update({
+    const { data: updated, error: updateError } =
+      await repository.updateOwnedGeneralDraft({
+        id: current.id,
+        profileId: authorization.profileId,
         title: input.data.title,
-        description: input.data.description || null,
-      })
-      .eq("id", current.id)
-      .eq("creator_id", authorization.profileId)
-      .eq("content_class", "general")
-      .eq("status", "draft")
-      .eq("is_public", false)
-      .eq("updated_at", input.data.expectedUpdatedAt)
-      .select("id, title, description, updated_at")
-      .maybeSingle<{
-        id: string;
-        title: string;
-        description: string | null;
-        updated_at: string;
-      }>();
+        description: input.data.description,
+        expectedUpdatedAt: input.data.expectedUpdatedAt,
+      });
     if (updateError)
       throw new ProviderUnavailableError(
         "Hub下書きを更新できませんでした。",
@@ -163,23 +143,12 @@ export async function GET(
           },
           { status: 401 },
         );
-      const admin = createAdminClient();
-      const { data: work, error } = await admin
-        .from("works")
-        .select("id, title, description, status, is_public, updated_at")
-        .eq("creator_id", authorization.profileId)
-        .eq("source_project_id", parsed.data.sourceProjectId)
-        .eq("content_class", "general")
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle<{
-          id: string;
-          title: string;
-          description: string | null;
-          status: "draft" | "published" | "archived";
-          is_public: boolean;
-          updated_at: string;
-        }>();
+      const repository = createDesktopProjectRepository();
+      const { data: work, error } =
+        await repository.findOwnedGeneralWorkStatus(
+          authorization.profileId,
+          parsed.data.sourceProjectId,
+        );
       if (error)
         throw new ProviderUnavailableError(
           "Hub作品を確認できませんでした。",
@@ -193,12 +162,11 @@ export async function GET(
           },
           { status: 404 },
         );
-      const { data: products, error: productError } = await admin
-        .from("digital_products")
-        .select("status")
-        .eq("creator_id", authorization.profileId)
-        .eq("work_id", work.id)
-        .returns<Array<{ status: "active" | "paused" | "archived" }>>();
+      const { data: products, error: productError } =
+        await repository.listOwnedProductStatuses(
+          authorization.profileId,
+          work.id,
+        );
       if (productError)
         throw new ProviderUnavailableError(
           "Hub販売状況を確認できませんでした。",

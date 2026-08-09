@@ -23,7 +23,8 @@
 - PR-R3-3i: checkout開始時のpending注文insert 1ファイルを`src/modules/checkout/infrastructure/checkout-order-repository.ts`へ移し、11件から10件へ削減した。guest checkout、商品確認、手数料計算、Stripe Session作成順序はServer Actionに維持した。
 - PR-R3-3j: checkout success／cancel 2ファイルのpaid注文照合、private Storage署名URL、pending注文cancel更新を同repositoryへ移し、10件から8件へ削減した。paid Session／order＋product照合、cancel token、TTL 300秒をcharacterization testで固定した。
 - PR-R3-3k: Desktop端末認証の開始／poll／期限切れ／token解除／profile承認／owner解除／一覧5ファイルを`src/modules/desktop-device/infrastructure/desktop-device-repository.ts`へ移し、8件から3件へ削減した。
-- Cloud AI／monitor opsのWorker routeはA分類のcomposition rootとして維持する。残る移行対象はDesktop Hub project status route 1ファイルであり、owner／revision conflict契約を保つ後続R3-3lで扱う。
+- PR-R3-3l: Desktop Hub project status Routeの端末認証済み作品読取、非公開draft楽観ロック更新、販売status読取を`src/modules/desktop-project/infrastructure/desktop-project-repository.ts`へ移し、3件から2件へ削減した。未認証公開GETのRLS clientはRouteに維持した。
+- Cloud AI／monitor opsのWorker route 2件は認証済みA分類のcomposition rootとして維持する。R3-3の移行対象は完了し、この2件だけを承認済み残件とする。
 
 | File | Function | Auth確認 | Owner確認 | 用途 | 分類 | 推奨移行先 |
 |---|---|---|---|---|---|---|

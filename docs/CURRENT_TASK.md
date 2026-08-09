@@ -1,11 +1,29 @@
 # MANGAI Current Task
 
-## 2026-08-09 PR-R3-3k Desktop端末認証repository境界
+## 2026-08-09 PR-R3-3l Desktop project status repository境界
 
 - 状態: `READY_FOR_OWNER_REVIEW`
+- Branch: `codex/refactor-r3-3l-desktop-project-status-repository`
+- Base: `origin/feature/manga-canvas-mvp`（`b2810bd`、PR #206 merge後）
+- Draft PR: [#207](https://github.com/team478a/manga/pull/207)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-11cce2-team478as-projects.vercel.app`
+- 現在: PR-R3-3lだけを実施する。R3-3a〜R3-3kは完了・マージ済み。Desktop Hub project status Routeに残る端末認証済みservice-role DB操作を`desktop-project` infrastructure repositoryへ移す。
+- 実装: `src/modules/desktop-project/infrastructure/desktop-project-repository.ts`へowner限定の一般作品読取、非公開draftの楽観ロック更新、認証済みstatus読取、owner限定販売status読取を集約する。Routeには入力validation、端末認証／scope、domain error mapping、response／loggingと未認証公開GETのRLS clientを維持する。
+- 契約維持: `authorizeDesktopRequest`をrepository生成より前に維持し、認証済みprofile IDだけをowner条件へ渡す。作品／商品列、`creator_id`／`source_project_id`／`content_class=general`、最新1件、非公開draft、`updated_at`楽観ロック、公開GET、API status/body／messageを変更しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを3件から2件へ削減する。残る2件はCloud AI／monitor opsの認証済みA分類Worker composition rootであり、R3-3の承認済み残件として維持する。
+- 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Desktop protocol／IPC／保存形式、認証期間／scope／rate limit、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripeを変更しない。
+- 検証: focused 23/23（専用6/6）、deps（0 errors／承認済み2 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 602/602、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報、実端末認証と手動E2Eはローカル環境外の既存pendingであり、R3-3lの失敗ではない。Desktopアプリコード、実DB、実端末認証、実Providerは変更／実行しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-4、R3-5、R4へ進まない。
+
+## 2026-08-09 PR-R3-3k Desktop端末認証repository境界
+
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3k-desktop-device-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`5228399`、PR #205 merge後）
 - Draft PR: [#206](https://github.com/team478a/manga/pull/206)
+- Merge: `b2810bdd17884db64ac4f822e475f672b66539c8`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-a897d0-team478as-projects.vercel.app`
 - 現在: PR-R3-3kだけを実施する。R3-3a〜R3-3jは完了・マージ済み。Desktop端末認証の開始／poll／期限切れ／token解除と、利用者による承認／解除／一覧に残るservice-role DB操作5ファイルを`desktop-device` infrastructure repositoryへ移す。
 - 実装: `src/modules/desktop-device/infrastructure/desktop-device-repository.ts`へ認証開始insert、secret hash poll、pending期限切れ、token revoke、user code検索、profile承認、owner revoke、scope確認、承認済み端末一覧の9操作を集約する。Route／Action／Pageにはrate limit、cleanup、token生成／hash、Bearer token、`requireProfile`、scope確認、期限計算、API response／redirect／表示を維持する。
