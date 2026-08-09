@@ -19,18 +19,18 @@ test("更新情報は公開済みだけをダッシュボードへ表示する",
 });
 
 test("モニター報告は種類・影響度・環境を構造化して保存する", async () => {
-  const [migration, page, actions] = await Promise.all([
+  const [migration, page, repository] = await Promise.all([
     read("../supabase/migrations/202608030001_cloud_monitor_operations_hub.sql"),
     read("../src/app/dashboard/monitor/page.tsx"),
-    read("../src/app/dashboard/monitor/actions.ts"),
+    read("../src/modules/general-monitor/infrastructure/monitor-feedback-repository.ts"),
   ]);
   for (const type of ["bug", "improvement", "feature_request"]) {
     assert.match(migration, new RegExp(type));
     assert.match(page, new RegExp(type));
   }
-  assert.match(actions, /request_type/);
-  assert.match(actions, /page_url/);
-  assert.match(actions, /environment/);
+  assert.match(repository, /request_type/);
+  assert.match(repository, /page_url/);
+  assert.match(repository, /environment/);
 });
 
 test("同種報告は指紋で集約し管理者許可後だけ自動修正キューへ入る", async () => {

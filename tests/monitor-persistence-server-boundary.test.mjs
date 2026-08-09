@@ -17,12 +17,19 @@ test("completed research reports persist through the trusted server client", asy
 });
 
 test("monitor feedback persists after server-side profile and enrollment checks", async () => {
-  const source = await readSource("../src/app/dashboard/monitor/actions.ts");
-  assert.match(source, /await requireProfile\(\)/);
-  assert.match(source, /await requireCloudGeneralMonitor\(profile\.id\)/);
-  assert.match(source, /const admin = createAdminClient\(\)/);
+  const [action, repository] = await Promise.all([
+    readSource("../src/app/dashboard/monitor/actions.ts"),
+    readSource("../src/modules/general-monitor/infrastructure/monitor-feedback-repository.ts"),
+  ]);
+  assert.match(action, /await requireProfile\(\)/);
+  assert.match(action, /await requireCloudGeneralMonitor\(profile\.id\)/);
+  assert.ok(
+    action.indexOf("await requireCloudGeneralMonitor(profile.id)") <
+      action.indexOf("saveGeneralMonitorFeedback({"),
+  );
+  assert.match(repository, /const admin = createAdminClient\(\)/);
   assert.match(
-    source,
-    /await admin\s*\.from\("cloud_general_monitor_feedback"\)\s*\.insert/,
+    repository,
+    /await admin\.from\("cloud_general_monitor_feedback"\)\.insert/,
   );
 });
