@@ -2,7 +2,6 @@ import Link from "next/link";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 import {
   createCloudAiPriceAction,
   cancelCloudAiJobAction,
@@ -11,10 +10,10 @@ import {
   updateCloudAiPlanAction,
   updateCloudAiSettingsAction,
 } from "./actions";
-import { getCloudGeneralImageSettings } from "@/lib/cloud-general-image-settings";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { getCloudAiWorkerConfiguration } from "@/modules/cloud-ai/presentation/admin-actions";
 import { getCloudAiWorkerHealth } from "@/lib/cloud-ai-worker-health";
+import { loadCloudAiAdminWorkspace } from "@/modules/cloud-ai/infrastructure/admin-cloud-ai-repository";
 
 export const maxDuration = 180;
 
@@ -42,25 +41,7 @@ export default async function CloudAiAdminPage({searchParams}:{searchParams:Prom
   const query=await searchParams;
   const checkedAt=new Date();
   const failedSince=new Date(checkedAt.getTime()-24*60*60*1000).toISOString();
-  const loaded=await safelyLoadAdminData("cloud-ai",async()=>{
-    const admin=createAdminClient();
-    return Promise.all([
-      admin.from("cloud_ai_settings").select("*").eq("singleton",true).single(),
-      admin.from("cloud_ai_plans").select("*").order("plan_key"),
-      admin.from("cloud_ai_provider_prices").select("*").order("created_at",{ascending:false}).limit(50),
-      admin.from("cloud_ai_daily_costs").select("*").order("usage_date",{ascending:false}).limit(14),
-      admin.from("cloud_generation_jobs").select("id,project_id,page_id,created_by_profile_id,provider_id,model_id,job_type,status,error_code,actual_cost_micros,attempt_count,max_attempts,created_at,updated_at,owner:profiles!cloud_generation_jobs_created_by_profile_id_fkey(display_name),project:cloud_projects!cloud_generation_jobs_project_id_fkey(title)").in("status",["queued","failed","running"]).order("created_at",{ascending:false}).limit(50),
-      admin.from("cloud_ai_admin_audit_logs").select("id,action,target_type,target_id,created_at,profiles:actor_profile_id(display_name)").order("created_at",{ascending:false}).limit(20),
-      admin.from("cloud_ai_notifications").select("id,notification_type,severity,title,body,created_at").eq("audience","admin").order("created_at",{ascending:false}).limit(20),
-      getCloudGeneralImageSettings(),
-      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","queued"),
-      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","running"),
-      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","failed"),
-      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","failed").gte("updated_at",failedSince),
-      admin.from("cloud_generation_jobs").select("id",{count:"exact",head:true}).eq("status","running").lt("lease_expires_at",checkedAt.toISOString()),
-      admin.from("cloud_generation_jobs").select("created_at").eq("status","queued").order("created_at",{ascending:true}).limit(1).maybeSingle(),
-    ]);
-  });
+  const loaded=await safelyLoadAdminData("cloud-ai",()=>loadCloudAiAdminWorkspace({checkedAt:checkedAt.toISOString(),failedSince}));
   if(!loaded.ok)return <AdminDataUnavailable title="Cloud AI運用"/>;
   const [settingsResult,plansResult,pricesResult,costsResult,jobsResult,auditsResult,notificationsResult,imageSettings,queuedResult,runningResult,failedResult,recentFailedResult,staleLeaseResult,oldestQueuedResult]=loaded.value;
   const workerConfiguration=getCloudAiWorkerConfiguration();

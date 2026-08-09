@@ -1,11 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-09 PR-R3-3f Cloud AI管理repository境界
+
+- 状態: `LOCAL_VERIFIED_DRAFT_PR_PENDING`
+- Branch: `codex/refactor-r3-3f-cloud-ai-admin-repository`
+- Base: `origin/feature/manga-canvas-mvp`（`1b49639`、PR #200 merge後）
+- 現在: PR-R3-3fだけを実施する。R3-3a〜R3-3eは完了・マージ済み。Cloud AI管理画面のworkspace読取、Job取消、運用設定／Plan／価格更新、管理監査ログ保存を`cloud-ai` infrastructure repositoryへ移す。
+- 実装: `src/modules/cloud-ai/infrastructure/admin-cloud-ai-repository.ts`へservice-role DB読取／更新と既存取消RPCを集約する。App Routerにはadmin認証、Worker実行、FormData validation、取消可能状態の判定、redirect／revalidate、表示とresilienceを維持する。
+- 契約維持: `requireAdmin`をrepository呼出しより前に維持し、14本のworkspace query、列／filter／order／limit、取消対象`queued`／`running`、`cancel_cloud_generation_job`、監査before／after、Worker secret非表示、175秒timeoutを変更しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを15件から13件へ削減する。Worker composition root、checkout、Desktop、dashboard monitor／購入履歴は本PRに含めない。
+- 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Worker挙動、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: focused 20/20、deps（0 errors／既知13 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 577/577、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- 外部環境: release preflightは構造READY。Supabase／Stripe／staging資格情報と手動E2Eはローカル環境外の既存pendingであり、R3-3fの失敗ではない。Provider／Workerの実呼出しは行わない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前に次のR3 slice、R3-4、R3-5、R4へ進まない。
+
 ## 2026-08-09 PR-R3-3e 管理者アカウントrepository境界
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3e-account-admin-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`ccb0ff5`、PR #199 merge後）
 - Draft PR: [#200](https://github.com/team478a/manga/pull/200)
+- Merge: `1b496399e4c7d90a5b8a63dff19a1e9055cab6ef`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-453f9b-team478as-projects.vercel.app`
 - 現在: PR-R3-3eだけを実施する。R3-3a〜R3-3dは完了・マージ済み。管理者ユーザー一覧・詳細と一般ユーザーの停止／再開／soft deleteを、`account` infrastructure repositoryへ移す。
 - 実装: profile読取、Auth Adminの一覧／詳細／更新、monitor招待履歴、成人向けentitlement／企画grant、一般モニター状態の読取をrepositoryへ集約する。App Routerにはadmin認証、環境確認、filter／表示、resilience、自己／admin保護、redirect／revalidateを維持する。

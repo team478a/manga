@@ -80,10 +80,19 @@ test("通知と管理Actionは入力・DB失敗を型付きErrorへ変換する"
   assert.match(notifications, /new DomainError/);
   assert.doesNotMatch(notifications, /\.uuid\(\)\.parse\(/);
 
-  const admin = await readFile(
-    new URL("../src/app/admin/cloud-ai/actions.ts", import.meta.url),
-    "utf8",
-  );
-  assert.match(admin, /new DomainError/);
-  assert.match(admin, /safeParse\(id\)/);
+  const [adminActions, adminRepository] = await Promise.all([
+    readFile(
+      new URL("../src/app/admin/cloud-ai/actions.ts", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/modules/cloud-ai/infrastructure/admin-cloud-ai-repository.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+  ]);
+  assert.match(adminRepository, /new DomainError/);
+  assert.match(adminActions, /safeParse\(id\)/);
 });

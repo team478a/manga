@@ -4,9 +4,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
-import { DomainError } from "@/lib/domain-errors";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import {
   cloudGeneralImageModelSchema,
   setCloudGeneralImageSettings,
@@ -16,6 +13,15 @@ import {
   getCloudAiWorkerInvocationUrl,
 } from "@/modules/cloud-ai/presentation/admin-actions";
 import { formString } from "@/app/actions/shared/form-data";
+import {
+  cancelCloudAiGenerationJob,
+  createCloudAiAdminPrice,
+  loadCloudAiJobForCancel,
+  recordCloudAiAdminAudit,
+  setCloudAiAdminPriceActive,
+  updateCloudAiAdminPlan,
+  updateCloudAiAdminSettings,
+} from "@/modules/cloud-ai/infrastructure/admin-cloud-ai-repository";
 
 const micros = z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER);
 const workerResultSchema = z.object({
@@ -29,31 +35,6 @@ const workerResultSchema = z.object({
   ]),
   jobId: z.string().uuid().optional(),
 });
-
-async function audit(input: {
-  actorId: string;
-  action: string;
-  targetType: string;
-  targetId: string;
-  before: unknown;
-  after: unknown;
-}) {
-  const admin = createAdminClient();
-  const { error } = await admin.from("cloud_ai_admin_audit_logs").insert({
-    actor_profile_id: input.actorId,
-    action: input.action,
-    target_type: input.targetType,
-    target_id: input.targetId,
-    before_value: input.before,
-    after_value: input.after,
-  });
-  if (error)
-    throw new DomainError(
-      "INTERNAL_ERROR",
-      "管理操作の監査ログを保存できませんでした。",
-      { cause: error },
-    );
-}
 
 export async function runCloudAiWorkerOnceAction() {
   const { profile } = await requireAdmin();
@@ -87,7 +68,7 @@ export async function runCloudAiWorkerOnceAction() {
     );
   }
 
-  await audit({
+  await recordCloudAiAdminAudit({
     actorId: profile.id,
     action: "run_worker_once",
     targetType: "cloud_ai_worker",
@@ -115,12 +96,8 @@ export async function cancelCloudAiJobAction(jobId: string) {
   if (!parsedJobId.success)
     redirect(encodeURI("/admin/cloud-ai?error=Job IDを確認してください"));
 
-  const admin = createAdminClient();
-  const { data: before, error: loadError } = await admin
-    .from("cloud_generation_jobs")
-    .select("id,status,project_id,created_by_profile_id,job_type,created_at")
-    .eq("id", parsedJobId.data)
-    .maybeSingle();
+  const { data: before, error: loadError } =
+    await loadCloudAiJobForCancel(parsedJobId.data);
   if (loadError || !before || !["queued", "running"].includes(before.status))
     redirect(
       `/admin/cloud-ai?error=${encodeURIComponent(
@@ -128,10 +105,7 @@ export async function cancelCloudAiJobAction(jobId: string) {
       )}`,
     );
 
-  const supabase = await createClient();
-  const { error } = await supabase.rpc("cancel_cloud_generation_job", {
-    p_job_id: parsedJobId.data,
-  });
+  const { error } = await cancelCloudAiGenerationJob(parsedJobId.data);
   if (error)
     redirect(
       `/admin/cloud-ai?error=${encodeURIComponent(
@@ -139,7 +113,7 @@ export async function cancelCloudAiJobAction(jobId: string) {
       )}`,
     );
 
-  await audit({
+  await recordCloudAiAdminAudit({
     actorId: profile.id,
     action: "cancel_generation_job",
     targetType: "cloud_generation_job",
@@ -168,26 +142,17 @@ export async function updateCloudAiSettingsAction(formData: FormData) {
     });
   if (!parsed.success)
     redirect(encodeURI("/admin/cloud-ai?error=運用設定を確認してください"));
-  const admin = createAdminClient();
-  const { data: before } = await admin
-    .from("cloud_ai_settings")
-    .select("generation_enabled,daily_cost_limit_micros,warning_percent")
-    .eq("singleton", true)
-    .single();
   const after = {
     generation_enabled: parsed.data.generationEnabled === "true",
     daily_cost_limit_micros: parsed.data.dailyCostLimitMicros,
     warning_percent: parsed.data.warningPercent,
   };
-  const { error } = await admin
-    .from("cloud_ai_settings")
-    .update(after)
-    .eq("singleton", true);
+  const { before, error } = await updateCloudAiAdminSettings(after);
   if (error)
     redirect(
       `/admin/cloud-ai?error=${encodeURIComponent("Cloud AI運用設定を更新できませんでした")}`,
     );
-  await audit({
+  await recordCloudAiAdminAudit({
     actorId: profile.id,
     action: "update_settings",
     targetType: "cloud_ai_settings",
@@ -258,12 +223,6 @@ export async function updateCloudAiPlanAction(
     });
   if (!parsed.success || !["free", "trial", "creator"].includes(planKey))
     redirect(encodeURI("/admin/cloud-ai?error=Plan設定を確認してください"));
-  const admin = createAdminClient();
-  const { data: before } = await admin
-    .from("cloud_ai_plans")
-    .select("*")
-    .eq("plan_key", planKey)
-    .single();
   const after = {
     monthly_credits: parsed.data.monthlyCredits,
     monthly_cost_limit_micros: parsed.data.monthlyCostLimitMicros,
@@ -272,15 +231,12 @@ export async function updateCloudAiPlanAction(
     active: parsed.data.active === "true",
     updated_at: new Date().toISOString(),
   };
-  const { error } = await admin
-    .from("cloud_ai_plans")
-    .update(after)
-    .eq("plan_key", planKey);
+  const { before, error } = await updateCloudAiAdminPlan(planKey, after);
   if (error)
     redirect(
       `/admin/cloud-ai?error=${encodeURIComponent("Cloud AI Plan設定を更新できませんでした")}`,
     );
-  await audit({ actorId: profile.id, action: "update_plan", targetType: "cloud_ai_plan", targetId: planKey, before, after });
+  await recordCloudAiAdminAudit({ actorId: profile.id, action: "update_plan", targetType: "cloud_ai_plan", targetId: planKey, before, after });
   revalidatePath("/admin/cloud-ai");
   redirect(encodeURI("/admin/cloud-ai?message=Plan設定を更新しました"));
 }
@@ -303,19 +259,18 @@ export async function createCloudAiPriceAction(formData: FormData) {
     maxCostMicros: formString(formData,"maxCostMicros"), currency: formString(formData,"currency").toUpperCase(),
   });
   if (!parsed.success) redirect(encodeURI("/admin/cloud-ai?error=価格情報を確認してください"));
-  const admin = createAdminClient();
   const values = {
     provider_id: parsed.data.providerId, model_id: parsed.data.modelId,
     kind: parsed.data.kind, job_type: parsed.data.jobType,
     pricing_version: parsed.data.pricingVersion, credits: parsed.data.credits,
     max_cost_micros: parsed.data.maxCostMicros, currency: parsed.data.currency, active: false,
   };
-  const { data, error } = await admin.from("cloud_ai_provider_prices").insert(values).select("id").single<{id:string}>();
+  const { data, error } = await createCloudAiAdminPrice(values);
   if (error || !data)
     redirect(
       `/admin/cloud-ai?error=${encodeURIComponent("価格を登録できませんでした")}`,
     );
-  await audit({ actorId: profile.id, action: "create_price", targetType: "cloud_ai_provider_price", targetId: data.id, before: null, after: values });
+  await recordCloudAiAdminAudit({ actorId: profile.id, action: "create_price", targetType: "cloud_ai_provider_price", targetId: data.id, before: null, after: values });
   revalidatePath("/admin/cloud-ai");
   redirect(encodeURI("/admin/cloud-ai?message=価格versionを停止状態で登録しました"));
 }
@@ -326,9 +281,7 @@ export async function setCloudAiPriceActiveAction(id: string, active: boolean) {
   if (!parsedPriceId.success)
     redirect(encodeURI("/admin/cloud-ai?error=価格IDを確認してください"));
   const priceId = parsedPriceId.data;
-  const admin = createAdminClient();
-  const { data: before } = await admin.from("cloud_ai_provider_prices").select("*").eq("id",priceId).single();
-  const { error } = await admin.from("cloud_ai_provider_prices").update({active,updated_at:new Date().toISOString()}).eq("id",priceId);
+  const { before, error } = await setCloudAiAdminPriceActive(priceId, active);
   if (error)
     redirect(
       `/admin/cloud-ai?error=${encodeURIComponent(
@@ -337,6 +290,6 @@ export async function setCloudAiPriceActiveAction(id: string, active: boolean) {
           : "価格versionを停止できませんでした",
       )}`,
     );
-  await audit({ actorId: profile.id, action: active ? "activate_price" : "deactivate_price", targetType: "cloud_ai_provider_price", targetId: priceId, before, after: {...before,active} });
+  await recordCloudAiAdminAudit({ actorId: profile.id, action: active ? "activate_price" : "deactivate_price", targetType: "cloud_ai_provider_price", targetId: priceId, before, after: {...before,active} });
   revalidatePath("/admin/cloud-ai");
 }
