@@ -4,9 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { formString } from "@/app/actions/shared/form-data";
+import { setAdultResearchEntitlement } from "@/modules/adult-research/infrastructure/admin-repository";
 
 const entitlementSchema = z.object({
   profileId: z.string().uuid(),
@@ -40,24 +40,16 @@ export async function setCloudAdultResearchEntitlementAction(
       `/admin/users/${encodeURIComponent(profileId)}?error=${encodeURIComponent("成人向け市場分析の許可設定を確認してください")}`,
     );
 
-  const operation = await safelyLoadAdminData("users/adult-research/action", async () => {
-    const admin = createAdminClient();
-    const targetResult = await admin
-      .from("profiles")
-      .select("id")
-      .eq("id", parsed.data.profileId)
-      .maybeSingle<{ id: string }>();
-    if (!targetResult.data || targetResult.error) return { targetFound: false, error: targetResult.error };
-    const result = await admin.rpc("set_cloud_adult_research_entitlement", {
-      p_actor_profile_id: actor.id,
-      p_target_profile_id: parsed.data.profileId,
-      p_status: parsed.data.status,
-      p_source: parsed.data.source,
-      p_valid_until: parsed.data.validUntil,
-      p_admin_note: parsed.data.adminNote,
-    });
-    return { targetFound: true, error: result.error };
-  });
+  const operation = await safelyLoadAdminData("users/adult-research/action", () =>
+    setAdultResearchEntitlement({
+      actorProfileId: actor.id,
+      targetProfileId: parsed.data.profileId,
+      status: parsed.data.status,
+      source: parsed.data.source,
+      validUntil: parsed.data.validUntil,
+      adminNote: parsed.data.adminNote,
+    }),
+  );
   if (!operation.ok)
     redirect(`/admin/users/${parsed.data.profileId}?error=${encodeURIComponent("成人向け市場分析の許可を更新できませんでした")}`);
   if (!operation.value.targetFound)

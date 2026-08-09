@@ -127,7 +127,7 @@ test("成人向け権限確認は外部AI呼出より前に実行される", asy
 });
 
 test("成人向けUIは許可・本人同意・管理者停止を提供する", async () => {
-  const [form, accessPage, adminAction, migration] = await Promise.all([
+  const [form, accessPage, adminAction, adminRepository, migration] = await Promise.all([
     readFile(
       new URL(
         "../src/app/dashboard/research/new/page.tsx",
@@ -151,6 +151,13 @@ test("成人向けUIは許可・本人同意・管理者停止を提供する", 
     ),
     readFile(
       new URL(
+        "../src/modules/adult-research/infrastructure/admin-repository.ts",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
         "../supabase/migrations/202607290008_cloud_adult_research_option.sql",
         import.meta.url,
       ),
@@ -162,7 +169,8 @@ test("成人向けUIは許可・本人同意・管理者停止を提供する", 
   assert.match(accessPage, /私は18歳以上です/);
   assert.match(accessPage, /専用規約/);
   assert.match(adminAction, /requireAdmin/);
-  assert.match(adminAction, /set_cloud_adult_research_entitlement/);
+  assert.match(adminAction, /setAdultResearchEntitlement/);
+  assert.match(adminRepository, /set_cloud_adult_research_entitlement/);
   assert.match(migration, /public\.can_use_cloud_adult_research\(\)/);
   assert.match(migration, /cloud_adult_research_settings/);
   assert.match(migration, /set_cloud_adult_research_enabled/);

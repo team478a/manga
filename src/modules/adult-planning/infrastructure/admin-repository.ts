@@ -1,28 +1,7 @@
+import { CLOUD_ADULT_PLANNING_FEATURE_KEY } from "@/lib/cloud-adult-planning-policy";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function loadAdultResearchAdminOverview() {
-  const admin = createAdminClient();
-  return Promise.all([
-    admin
-      .from("cloud_adult_research_settings")
-      .select("enabled,updated_at")
-      .eq("singleton", true)
-      .maybeSingle<{ enabled: boolean; updated_at: string }>(),
-    admin
-      .from("cloud_adult_research_entitlements")
-      .select("profile_id", { count: "exact", head: true })
-      .eq("status", "approved"),
-  ]);
-}
-
-export function setAdultResearchEnabled(actorProfileId: string, enabled: boolean) {
-  return createAdminClient().rpc("set_cloud_adult_research_enabled", {
-    p_actor_profile_id: actorProfileId,
-    p_enabled: enabled,
-  });
-}
-
-export async function setAdultResearchEntitlement(input: {
+export async function setAdultPlanningGrant(input: {
   actorProfileId: string;
   targetProfileId: string;
   status: "approved" | "suspended" | "expired";
@@ -38,9 +17,10 @@ export async function setAdultResearchEntitlement(input: {
     .maybeSingle<{ id: string }>();
   if (!targetResult.data || targetResult.error)
     return { targetFound: false, error: targetResult.error };
-  const result = await admin.rpc("set_cloud_adult_research_entitlement", {
+  const result = await admin.rpc("set_cloud_adult_feature_grant", {
     p_actor_profile_id: input.actorProfileId,
     p_target_profile_id: input.targetProfileId,
+    p_feature_key: CLOUD_ADULT_PLANNING_FEATURE_KEY,
     p_status: input.status,
     p_source: input.source,
     p_valid_until: input.validUntil,
