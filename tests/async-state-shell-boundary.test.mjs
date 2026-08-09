@@ -68,6 +68,29 @@ const loadingContracts = [
   ],
 ];
 
+const notFoundContracts = [
+  [
+    "src/app/dashboard/research/not-found.tsx",
+    "市場分析レポートが見つかりません",
+    "市場分析履歴へ",
+  ],
+  [
+    "src/app/dashboard/research/[reportId]/proposal/not-found.tsx",
+    "AI企画提案が見つかりません",
+    "市場分析履歴へ",
+  ],
+  [
+    "src/app/dashboard/research/[reportId]/proposal/scenario/not-found.tsx",
+    "シナリオが見つかりません",
+    "市場分析へ戻る",
+  ],
+  [
+    "src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/storyboard/not-found.tsx",
+    "採用シナリオが見つかりません",
+    "市場分析へ戻る",
+  ],
+];
+
 test("async state primitives preserve page, panel, and action elements", async () => {
   const shell = await read("src/components/AsyncStateShell.tsx");
 
@@ -138,5 +161,19 @@ test("loading boundaries retain labels and accessibility contracts", async () =>
     const source = await read(path);
     assert.match(source, /animate-pulse/, path);
     assert.match(source, /as="div"/, path);
+  }
+});
+
+test("not-found boundaries use only the shared visual shell", async () => {
+  for (const [path, title, action] of notFoundContracts) {
+    const source = await read(path);
+    assert.match(source, /@\/components\/AsyncStateShell/, path);
+    assert.match(source, /AsyncStatePage/, path);
+    assert.match(source, /AsyncStatePanel/, path);
+    assert.doesNotMatch(source, /<main\s+className="page/, path);
+    assert.doesNotMatch(source, /<section\s+className="panel/, path);
+    assert.ok(source.includes(title), `${path}: ${title}`);
+    assert.ok(source.includes(action), `${path}: ${action}`);
+    assert.match(source, /href="\/dashboard\/research"/, path);
   }
 });

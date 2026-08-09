@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { FileQuestion } from "lucide-react";
+import {
+  AsyncStatePage,
+  AsyncStatePanel,
+} from "@/components/AsyncStateShell";
 
 export default function CloudResearchNotFound() {
   return (
-    <main className="page max-w-3xl">
-      <section className="panel text-center">
+    <AsyncStatePage className="max-w-3xl">
+      <AsyncStatePanel className="text-center">
         <FileQuestion className="mx-auto h-8 w-8 text-stone-500" />
         <h1 className="mt-3 text-xl font-bold">
           市場分析レポートが見つかりません
@@ -15,7 +19,7 @@ export default function CloudResearchNotFound() {
         <Link className="button-secondary mt-5" href="/dashboard/research">
           市場分析履歴へ
         </Link>
-      </section>
-    </main>
+      </AsyncStatePanel>
+    </AsyncStatePage>
   );
 }
