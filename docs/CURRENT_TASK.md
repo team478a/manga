@@ -1,11 +1,29 @@
 # MANGAI Current Task
 
-## 2026-08-09 PR-R3-3j checkout result repository境界
+## 2026-08-09 PR-R3-3k Desktop端末認証repository境界
 
 - 状態: `READY_FOR_OWNER_REVIEW`
+- Branch: `codex/refactor-r3-3k-desktop-device-repository`
+- Base: `origin/feature/manga-canvas-mvp`（`5228399`、PR #205 merge後）
+- Draft PR: [#206](https://github.com/team478a/manga/pull/206)
+- Preview: `https://mangai-hub-staging-git-codex-refactor-a897d0-team478as-projects.vercel.app`
+- 現在: PR-R3-3kだけを実施する。R3-3a〜R3-3jは完了・マージ済み。Desktop端末認証の開始／poll／期限切れ／token解除と、利用者による承認／解除／一覧に残るservice-role DB操作5ファイルを`desktop-device` infrastructure repositoryへ移す。
+- 実装: `src/modules/desktop-device/infrastructure/desktop-device-repository.ts`へ認証開始insert、secret hash poll、pending期限切れ、token revoke、user code検索、profile承認、owner revoke、scope確認、承認済み端末一覧の9操作を集約する。Route／Action／Pageにはrate limit、cleanup、token生成／hash、Bearer token、`requireProfile`、scope確認、期限計算、API response／redirect／表示を維持する。
+- 契約維持: rate limitとcleanup、request validationをrepository生成より前に、Bearer tokenと`requireProfile`をrepository accessより前に維持する。table／列、user code衝突時5回retry、Postgres `23505`、pending 15分、token 90日、scope名、secret／profile owner filter、status遷移、API status/body、redirect文言を変更しない。
+- 警告: `src/app/**`のadmin-client直接利用warningを8件から3件へ削減する。残件はDesktop Hub project status route 1件と、A分類Worker composition root 2件。project statusはowner／revision conflict契約が異なるため後続R3-3lへ分割する。
+- 不変条件: DB、RLS、migration、RPC、Storage、URL、API、Desktop protocol／IPC／保存形式、認証期間／scope／rate limit、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripeを変更しない。
+- 検証: focused 23/23（専用6/6）、deps（0 errors／既知3 warnings）、lint、Hub／Desktop typecheck、research eval、Hub 596/596、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4、release structure、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 外部環境: release preflightは構造READY。Desktop rate-limit署名鍵、Supabase staging資格情報と実端末認証はローカル環境外の既存pendingであり、R3-3kの失敗ではない。Desktopアプリコードと実DBは変更／実行しない。
+- 停止条件: Draft PRと全CI／Vercel Preview成功後、責任者確認待ちで停止する。確認前にR3-3l、R3-4、R3-5、R4へ進まない。
+
+## 2026-08-09 PR-R3-3j checkout result repository境界
+
+- 状態: `MERGED`
 - Branch: `codex/refactor-r3-3j-checkout-result-repository`
 - Base: `origin/feature/manga-canvas-mvp`（`88fd9d6`、PR #204 merge後）
 - Draft PR: [#205](https://github.com/team478a/manga/pull/205)
+- Merge: `52283992a26350f303f16660880ab2cb29f1ec03`
 - Preview: `https://mangai-hub-staging-git-codex-refactor-eb9c81-team478as-projects.vercel.app`
 - 現在: PR-R3-3jだけを実施する。R3-3a〜R3-3iは完了・マージ済み。checkout success／cancel画面に残るservice-role DB／private Storage操作を、既存`checkout` infrastructure repositoryへ移す。
 - 実装: paid注文とproduct IDの照合、private商品fileの300秒署名URL生成、署名済みcancel token検証後のpending注文cancel更新をrepositoryへ集約する。App RouterにはStripe Session取得／支払反映、paid reference判定、環境確認、既存message／表示を維持する。

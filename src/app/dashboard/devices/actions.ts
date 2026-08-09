@@ -4,9 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireProfile } from "@/lib/auth";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { DEVICE_TOKEN_DAYS } from "@/lib/desktop-auth";
 import { actionIdSchema } from "@/lib/action-contracts";
+import { createDesktopDeviceRepository } from "@/modules/desktop-device/infrastructure/desktop-device-repository";
 
 const codeSchema = z
   .string()
@@ -20,14 +20,10 @@ export async function approveDesktopDevice(formData: FormData) {
   if (!parsed.success)
     redirect(encodeURI("/dashboard/devices/authorize?error=認証コードを確認してください"));
   const { profile } = await requireProfile();
-  const admin = createAdminClient();
+  const repository = createDesktopDeviceRepository();
   const now = new Date();
-  const { data: authorization, error } = await admin
-    .from("desktop_device_authorizations")
-    .select("id, expires_at, scopes")
-    .eq("user_code", parsed.data)
-    .eq("status", "pending")
-    .maybeSingle<{ id: string; expires_at: string; scopes: string[] }>();
+  const { data: authorization, error } =
+    await repository.findPendingByUserCode(parsed.data);
   if (error)
     redirect(
       `/dashboard/devices/authorize?error=${encodeURIComponent("認証コードを確認できませんでした")}`,
@@ -44,19 +40,13 @@ export async function approveDesktopDevice(formData: FormData) {
   const tokenExpiresAt = new Date(
     now.getTime() + DEVICE_TOKEN_DAYS * 86_400_000,
   ).toISOString();
-  const { data: updated, error: updateError } = await admin
-    .from("desktop_device_authorizations")
-    .update({
-      profile_id: profile.id,
-      status: "approved",
-      approved_at: now.toISOString(),
-      token_expires_at: tokenExpiresAt,
-    })
-    .eq("id", authorization.id)
-    .eq("status", "pending")
-    .gt("expires_at", now.toISOString())
-    .select("id")
-    .maybeSingle<{ id: string }>();
+  const { data: updated, error: updateError } =
+    await repository.approvePendingAuthorization({
+      id: authorization.id,
+      profileId: profile.id,
+      approvedAt: now.toISOString(),
+      tokenExpiresAt,
+    });
   if (updateError)
     redirect(
       `/dashboard/devices/authorize?error=${encodeURIComponent("Desktop端末を認証できませんでした")}`,
@@ -73,13 +63,12 @@ export async function revokeDesktopDevice(formData: FormData) {
   const parsed = idSchema.safeParse(formData.get("id"));
   if (!parsed.success) redirect(encodeURI("/dashboard/devices?error=端末IDが不正です"));
   const { profile } = await requireProfile();
-  const admin = createAdminClient();
-  const { error } = await admin
-    .from("desktop_device_authorizations")
-    .update({ status: "revoked", revoked_at: new Date().toISOString() })
-    .eq("id", parsed.data)
-    .eq("profile_id", profile.id)
-    .eq("status", "approved");
+  const repository = createDesktopDeviceRepository();
+  const { error } = await repository.revokeApprovedAuthorization({
+    id: parsed.data,
+    profileId: profile.id,
+    revokedAt: new Date().toISOString(),
+  });
   if (error)
     redirect(
       `/dashboard/devices?error=${encodeURIComponent("端末認証を解除できませんでした")}`,

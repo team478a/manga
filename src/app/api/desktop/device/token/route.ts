@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { bearerToken, hashDeviceSecret } from "@/lib/desktop-auth";
 import { toMessageApiError } from "@/lib/api-errors";
 import {
@@ -12,6 +11,7 @@ import {
   logHubError,
   logHubEvent,
 } from "@/lib/hub-logger";
+import { createDesktopDeviceRepository } from "@/modules/desktop-device/infrastructure/desktop-device-repository";
 
 export async function GET(request: Request) {
   const logContext = createHubRequestContext(request);
@@ -19,19 +19,10 @@ export async function GET(request: Request) {
   try {
     if (!token)
       throw new AuthenticationRequiredError("端末トークンが不正です。");
-    const admin = createAdminClient();
-    const { data, error } = await admin
-      .from("desktop_device_authorizations")
-      .select("id, status, expires_at, token_expires_at, approved_at, scopes")
-      .eq("secret_hash", hashDeviceSecret(token))
-      .maybeSingle<{
-        id: string;
-        status: "pending" | "approved" | "denied" | "expired" | "revoked";
-        expires_at: string;
-        token_expires_at: string | null;
-        approved_at: string | null;
-        scopes: string[];
-      }>();
+    const repository = createDesktopDeviceRepository();
+    const { data, error } = await repository.findBySecretHash(
+      hashDeviceSecret(token),
+    );
     if (error)
       throw new ProviderUnavailableError(
         "端末認証を確認できませんでした。",
@@ -42,10 +33,7 @@ export async function GET(request: Request) {
       data.status === "pending" &&
       new Date(data.expires_at).getTime() <= Date.now()
     ) {
-      await admin
-        .from("desktop_device_authorizations")
-        .update({ status: "expired" })
-        .eq("id", data.id);
+      await repository.expireAuthorization(data.id);
       return NextResponse.json({ status: "expired" }, { status: 410 });
     }
     if (data.status === "approved")
@@ -82,11 +70,11 @@ export async function DELETE(request: Request) {
   try {
     if (!token)
       throw new AuthenticationRequiredError("端末トークンが不正です。");
-    const admin = createAdminClient();
-    const { error } = await admin
-      .from("desktop_device_authorizations")
-      .update({ status: "revoked", revoked_at: new Date().toISOString() })
-      .eq("secret_hash", hashDeviceSecret(token));
+    const repository = createDesktopDeviceRepository();
+    const { error } = await repository.revokeBySecretHash(
+      hashDeviceSecret(token),
+      new Date().toISOString(),
+    );
     if (error)
       throw new ProviderUnavailableError(
         "端末認証を解除できませんでした。",
