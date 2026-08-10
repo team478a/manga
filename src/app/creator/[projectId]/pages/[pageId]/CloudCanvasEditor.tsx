@@ -202,6 +202,7 @@ export function CloudCanvasEditor({
   );
   useEffect(() => {
     let active = true;
+    setPageLockState("checking");
     const renew = async () => {
       const state = await acquirePageEditLease(page.id, pageLockToken);
       if (active) setPageLockState(state);
@@ -436,6 +437,7 @@ export function CloudCanvasEditor({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
+      if (pageLockState !== "acquired") return;
       const target = event.target as HTMLElement | null;
       if (target?.matches("input, textarea, select")) return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
@@ -454,7 +456,7 @@ export function CloudCanvasEditor({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [deleteSelected, redo, undo]);
+  }, [deleteSelected, pageLockState, redo, undo]);
 
   function addPanel() {
     const id = crypto.randomUUID();
@@ -914,9 +916,11 @@ export function CloudCanvasEditor({
   const comparisonAfterAsset = comparisonJob?.output_asset_id
     ? assetMap.get(comparisonJob.output_asset_id)
     : undefined;
+  const editingBlocked = pageLockState !== "acquired";
 
   return (
     <div
+      aria-busy={pageLockState === "checking"}
       className="relative min-h-screen bg-stone-100"
       onClickCapture={(event) => {
         const anchor = (event.target as HTMLElement).closest("a[href]");
@@ -932,9 +936,69 @@ export function CloudCanvasEditor({
         event.stopPropagation();
       }}
     >
-      {pageLockState === "locked" ? <div className="absolute inset-0 z-50 grid place-items-center bg-stone-950/70 p-5"><div className="max-w-md rounded-xl bg-white p-6 text-center shadow-xl"><Lock className="mx-auto h-8 w-8 text-violet-700" /><h1 className="mt-3 text-xl font-bold">このページは別の画面で編集中です</h1><p className="mt-2 text-sm text-stone-600">別の画面を閉じて約2分待ってから再読み込みしてください。上書きを防ぐため、この画面では編集できません。</p><Link className="button-secondary mt-4 inline-flex" href={`/creator/${project.id}`}>作品画面へ戻る</Link></div></div> : null}
-      {pageLockState === "checking" ? <p className="m-2 rounded-lg bg-violet-50 p-2 text-center text-sm text-violet-800" aria-live="polite">編集状態を確認しています…</p> : null}
-      <header className="sticky top-0 z-30 border-b border-stone-300 bg-white px-4 py-3">
+      {editingBlocked ? (
+        <div
+          aria-modal="true"
+          aria-live="polite"
+          className="fixed inset-0 z-50 grid place-items-center bg-stone-950/70 p-5"
+          role="dialog"
+        >
+          <div className="max-w-md rounded-xl bg-white p-6 text-center shadow-xl">
+            <Lock className="mx-auto h-8 w-8 text-violet-700" />
+            {pageLockState === "checking" ? (
+              <>
+                <h1 className="mt-3 text-xl font-bold">
+                  編集状態を確認しています
+                </h1>
+                <p className="mt-2 text-sm text-stone-600">
+                  確認が完了するまで編集操作をお待ちください。
+                </p>
+              </>
+            ) : pageLockState === "locked" ? (
+              <>
+                <h1 className="mt-3 text-xl font-bold">
+                  このページは別の画面で編集中です
+                </h1>
+                <p className="mt-2 text-sm text-stone-600">
+                  別の画面を閉じて約2分待ってから再読み込みしてください。上書きを防ぐため、この画面では編集できません。
+                </p>
+                <Link
+                  className="button-secondary mt-4 inline-flex"
+                  href={`/creator/${project.id}`}
+                >
+                  作品画面へ戻る
+                </Link>
+              </>
+            ) : (
+              <>
+                <h1 className="mt-3 text-xl font-bold">
+                  編集状態を確認できませんでした
+                </h1>
+                <p className="mt-2 text-sm text-stone-600">
+                  通信状態を確認して再読み込みしてください。安全のため、この画面では編集できません。
+                </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  <button
+                    className="button"
+                    onClick={() => window.location.reload()}
+                    type="button"
+                  >
+                    再読み込み
+                  </button>
+                  <Link
+                    className="button-secondary"
+                    href={`/creator/${project.id}`}
+                  >
+                    作品画面へ戻る
+                  </Link>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      ) : null}
+      <div aria-hidden={editingBlocked} inert={editingBlocked}>
+        <header className="sticky top-0 z-30 border-b border-stone-300 bg-white px-4 py-3">
         <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-2">
           <Link className="button-secondary" href={`/creator/${project.id}`}>
             ← 構成
@@ -2063,6 +2127,7 @@ export function CloudCanvasEditor({
           </div>
         </div>
       ) : null}
+      </div>
     </div>
   );
 }

@@ -76,3 +76,16 @@ test("canvas editor preserves a server edit lease across same-tab reloads", () =
   assert.match(client, /method: "DELETE"/);
   assert.match(client, /keepalive: true/);
 });
+
+test("canvas editor blocks all editing until the server lease is acquired", () => {
+  const editor = read("src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx");
+  assert.match(editor, /setPageLockState\("checking"\)/);
+  assert.match(editor, /pageLockState !== "acquired"/);
+  assert.match(editor, /if \(pageLockState !== "acquired"\) return/);
+  assert.match(editor, /aria-hidden=\{editingBlocked\}/);
+  assert.match(editor, /inert=\{editingBlocked\}/);
+  assert.match(editor, /確認が完了するまで編集操作をお待ちください/);
+  assert.match(editor, /編集状態を確認できませんでした/);
+  assert.match(editor, /安全のため、この画面では編集できません/);
+  assert.doesNotMatch(editor, /pageLockState === "checking" \? <p/);
+});
