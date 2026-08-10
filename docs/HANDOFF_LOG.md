@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-1 Cloud統合受入れ（partial）
+
+- PR #217は`ba93db0429ce1abc66a89b35deb8d1648ebc60ec`で`feature/manga-canvas-mvp`へマージ済み。
+- Branch `codex/release-r4-1-cloud-acceptance`で、production Vercel／Hub、Provider readiness、既存Cloud漫画作品／生成履歴を認証済みbrowserから読み取り確認した。本番書込み、Provider呼出し、決済は行っていない。
+- VercelのSupabase変数3件はProduction／Previewに存在する。Stripe変数はProject／Sharedともに0件。Stripe Dashboardは未ログインで、利用者がスマートフォン操作中のためtest E2Eを保留した。
+- GitHub Actions Schedulerは直近scheduled runがskippedで、repository variable／secretは0件。Worker通信なしcheck run [31343333031](https://github.com/team478a/manga/actions/runs/31343333031)がWorker URL／secret不足を検出した。Provider費用は発生していない。
+- 現在のSupabase Dashboard accountでは対象project `vmdsyxykcrgxcdbrwlkv`を参照できない。市場分析production保存、実DB照合、8ページexport、2利用者owner isolationは未実施のためpassedにしない。
+- repository検証はCloud漫画受入れ、owner isolation、100ページ4/4、research eval、migration 50/50成功。外部資格情報preflightのpendingはコード障害と区別した。
+- 詳細は[`RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1_EVIDENCE.md)。Draft PR [#218](https://github.com/team478a/manga/pull/218)の全CI／Vercel Preview確認後に停止し、R4-2へ進まない。
+
+---
+
 ## 2026-08-10 Codex: PR-R4-0 Release Candidate統合監査・計画
 
 - PR #216は`78f4503f6ca235c1c949cddc33c91e7efcc34fa3`で`feature/manga-canvas-mvp`へマージ済み。PR-R3実装残件は0。
