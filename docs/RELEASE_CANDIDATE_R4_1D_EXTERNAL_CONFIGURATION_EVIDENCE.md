@@ -10,7 +10,7 @@
 
 Draft PR: [#222](https://github.com/team478a/manga/pull/222)
 
-Preview: 未作成
+Preview: `https://mangai-hub-staging-git-codex-release-68a981-team478as-projects.vercel.app`
 
 ## 1. 判定
 
