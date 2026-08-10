@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1b Production API追加受入れ、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `7a304834fd1ccea553590f922f132b4d99b7be01`（PR #218 merge commit）
+- Branch: `codex/release-r4-1b-production-api-acceptance`
+- 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
+- 完了: production BFL背景画像1件、Queue／credit／手動Worker／cost settlement、private Asset、Canvas配置・保存・再読込、1ページPNG。
+- 判明: productionは作品checkpoint migration不足。同一タブ再読込後のpage lock待機、Cloud Editor文章Job登録前拒否も再現。市場分析は対象モニター本人sessionがなく未確認。
+- 検証: RC台帳、Cloud漫画repository、migration 50/50、全`rc:validate`成功。Desktop初回一時失敗は単独／全体再実行で182/182成功、Hub 620/620、production build成功。
+- 証跡: [`RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md)
+- 停止: 文書限定Draft PRと最終HEADの全CI／Vercel Preview後に停止する。R4-1はpartialを維持し、責任者確認前に修正PRやR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1 Cloud統合受入れ、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `ba93db0429ce1abc66a89b35deb8d1648ebc60ec`（PR #217 merge commit）

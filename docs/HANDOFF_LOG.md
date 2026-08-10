@@ -3843,3 +3843,16 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Base sync: PR #193は`3c09650`でマージ済み。Q0ブランチへ通常mergeで取り込み、コード競合なし。`CURRENT_TASK.md`だけ両方の記録を保持して解消した。
 - CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - Next: 責任者レビュー・merge待ち。PR-Q1へ進まない。
+
+# 2026-08-10 Codex: PR-R4-1b Production API追加受入れ
+
+- Branch: `codex/release-r4-1b-production-api-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`@`7a30483`（PR #218 merge後）
+- ProductionでBFL `flux-2-pro`の一般向け背景画像を1件生成し、Queue、2 credit予約／確定、手動Worker、実コスト`$0.0300`、private Asset、Canvas配置、自動保存、再読込、1ページPNGを確認した。
+- 検証用既存作品へページ1件、Asset1件、AI背景layer1件を追加した。破壊的な削除は行っていない。
+- 作品バックアップは`202608010011_cloud_project_checkpoints.sql`未適用相当で失敗し、checkpointは作成されていない。
+- 同一タブ再読込／再入場後にpage edit lockが最大約2分残る事象を再現した。lease期限後に復帰し、保存dataは保持された。
+- Cloud Editor文章Jobは登録前に失敗し、OpenAI呼出し、credit予約、課金は発生していない。市場分析は対象モニター本人sessionがないため未確認。
+- application code、DB、migration、RPC、Storage設定、Provider、pricing、Scheduler、Canvas schema、PDF／PNG仕様、成人向け境界、Stripe、Desktop codeは変更していない。
+- RC台帳、Cloud漫画repository、migration 50/50、全`rc:validate`成功。Desktop初回181/182は単独／全体再実行で182/182成功し、Hub 620/620とproduction buildも成功した。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`。文書限定Draft PRと最終HEADの全CI／Vercel Preview後に停止し、R4-2へ進まない。

@@ -4,6 +4,8 @@
 
 同日のR4-1 partial監査では、production Vercel／Hub、既存Cloud漫画生成結果とrepository受入れは確認済み。一方、Stripe変数／login、Scheduler Worker認証、対象Supabase project access、本番市場分析保存、8ページexport、2利用者実owner isolationが未完了のため、`hub-production-acceptance`と`stripe-test-e2e`はpendingを維持する。詳細証跡と安全な再開手順は[`../RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1_EVIDENCE.md)を参照する。
 
+追補のR4-1bではproduction BFL画像生成、Canvas配置・保存・再読込、1ページPNGが成功した。一方、checkpoint migration不足、同一タブ再読込時の編集lock待機、Cloud Editor文章Job登録前拒否、対象モニター本人の市場分析未確認を検出したため、`hub-production-acceptance`はpendingのままとする。詳細は[`../RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。
