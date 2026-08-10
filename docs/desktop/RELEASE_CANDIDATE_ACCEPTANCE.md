@@ -8,6 +8,8 @@
 
 R4-1cではPR #220反映後のProductionで、同一タブ再読込／再入場が即時復帰し、別タブの編集遮断と元タブの継続編集も維持されることを確認した。編集lock待機は解決したが、他のR4-1残件があるため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md)を参照する。
 
+R4-1eではProduction Worker secretをVercel／GitHub Actionsへ同値ローテーションし、Production再deploy、通信なしcheck、Queue空の限定run、5分cronの自動runを確認した。限定runと定期runはいずれも`idle`、processed 0で、Provider生成・credit消費なし。Scheduler残件は解消したが、checkpoint、Cloud text、市場分析、8ページE2E、2利用者owner isolation、Stripe test E2Eが残るため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。

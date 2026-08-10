@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-1e Production Scheduler受入れ
+
+- PR #222は`2e3a1d5350ae2db3d1c0f158020e573e6f6267d5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1e-scheduler-acceptance`をこの基準から作成した。
+- Draft PR: [#223](https://github.com/team478a/manga/pull/223)。Preview `https://mangai-hub-staging-git-codex-release-47537d-team478as-projects.vercel.app`。
+- VercelのSensitive Worker secretは取得不可のため、責任者承認に基づいてProduction／PreviewとGitHub Actionsへ同値ローテーションした。秘密値は文書、ログ、commitへ記録せず、一時ファイルも登録直後に削除した。
+- Productionは`2e3a1d5`を再deployしReady。通信なしcheck [31359117746](https://github.com/team478a/manga/actions/runs/31359117746)が成功した。
+- `/admin/cloud-ai`で処理待ち0、実行中0、稼働状態正常、24時間以内の失敗0を確認してSchedulerを有効化した。限定run [31359171708](https://github.com/team478a/manga/actions/runs/31359171708)は`idle`、requests 1、processed 0で、Provider生成・credit消費なし。
+- 定期run [31359786321](https://github.com/team478a/manga/actions/runs/31359786321)が`event=schedule`で成功。`idle`、requests 1、processed 0で、実行後もQueue 0件／Worker正常を確認した。
+- application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler workflow／頻度、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop code、本番作品dataを変更しない。
+- RC台帳2 passed／11 pending／2 blocked、full `rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- 詳細は[`RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md)。Draft PRと全CI／Vercel Preview確認後に停止し、R4-1はpending、R4-2は未着手を維持する。
+
+---
+
 ## 2026-08-10 Codex: PR-R4-1d Production外部構成照合
 
 - Branch `codex/release-r4-1d-checkpoint-acceptance`をPR #221 merge commit `84773f75c9f42715a33b540dd96dcde4fe6e74cd`から作成した。
