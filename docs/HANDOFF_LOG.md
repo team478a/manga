@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-1i Production checkpoint受入れ
+
+- Branch: `codex/release-r4-1i-checkpoint-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`@`f954403`（PR #226 merge commit）
+- 対象Supabaseへ`202608100001_cloud_project_checkpoint_digest_schema.sql`を適用し、`extensions.digest`と既存RPC契約・権限を確認した。
+- Productionの8ページ検証作品でcheckpoint作成、基本設定差分、復元前自動checkpoint、復元、再読込に成功した。一時変更した説明は元へ戻った。
+- DBはcheckpoint 2件、restore 1件、checkpoint page 16行。生成Job／cost ledgerは受入れ中に変更なし。Assetは復元仕様で更新時刻のみ変わり、SHA-256、容量、寸法、有効状態はmanifestと一致した。
+- AI単独30/30とfull `rc:validate`再実行に成功した。最終結果はDesktop 182/182、Hub 627/627、migration 51/51、Hub／Desktop production build成功。初回のDesktop 181/182はComfyUI timeout mockの並列タイミング競合で再現しなかった。
+- 本PRは証跡と台帳だけを変更する。Cloud text、市場分析、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2Eは未完了のためR4-1全体はpendingを維持する。
+- Draft PRの全CI／Vercel Preview成功後に停止し、R4-2へ進まない。
+
+---
+
 ## 2026-08-10 Codex: PR-R4-1h Production checkpoint digest修正
 
 - PR #225は`c1660e21b13d5e9a11e1f2a56e9df9329e828ab5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-r4-checkpoint-digest-schema`をこの基準から作成した。

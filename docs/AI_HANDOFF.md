@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1i Production checkpoint受入れ、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `f9544035a82256ce2128f4ec1c6b4473cd4b9404`（PR #226 merge commit）
+- Branch: `codex/release-r4-1i-checkpoint-acceptance`
+- 状態: `READY_FOR_OWNER_REVIEW`（checkpoint受入れ合格、R4-1全体はpending）
+- Production migration: `202608100001_cloud_project_checkpoint_digest_schema.sql`を対象Supabaseへ適用し、`extensions.digest`、RPC契約、権限を確認した。
+- Production実機: checkpoint作成、作品基本設定の差分、復元前自動checkpoint、復元、再読込後の元説明復帰に成功した。
+- DB: checkpoint 2件、restore 1件、checkpoint page 16行。生成Job／cost ledgerは受入れ中に変更なし。Asset内容と有効状態はcheckpoint manifestと一致した。
+- 検証: AI単独30/30とfull `rc:validate`再実行成功（Desktop 182/182、Hub 627/627、migration 51/51、Hub／Desktop production build）。初回Desktop 181/182のtimeout mock競合は再現しなかった。
+- 証跡: [`RELEASE_CANDIDATE_R4_1I_CHECKPOINT_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1I_CHECKPOINT_ACCEPTANCE_EVIDENCE.md)
+- 残件: Cloud text実Job、対象モニター本人の市場分析、AIネーム由来8ページE2E、2利用者実owner isolation、Stripe test E2E。
+- 停止: 文書限定Draft PRの全CI／Vercel Previewを確認し、責任者確認前にR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1h Production checkpoint digest修正、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `c1660e21b13d5e9a11e1f2a56e9df9329e828ab5`（PR #225 merge commit）
