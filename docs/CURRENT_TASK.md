@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R4-1e Production Scheduler受入れ
+
+- 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
+- Branch: `codex/release-r4-1e-scheduler-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`2e3a1d5`、PR #222 merge commit）
+- Draft PR: 作成後に追記
+- Preview: 作成後に追記
+- 証跡: [`RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md)
+- Production: Worker secretをVercel Production／PreviewとGitHub Actionsへ同値ローテーションし、`2e3a1d5`を再deployしてReadyを確認。値は文書、ログ、commitへ記録しない。
+- Scheduler: 通信なしcheck [31359117746](https://github.com/team478a/manga/actions/runs/31359117746)成功。Queue 0件／Worker正常を確認して有効化し、限定run [31359171708](https://github.com/team478a/manga/actions/runs/31359171708)は`idle`、requests 1、processed 0で成功。Provider生成・credit消費なし。
+- 定期実行: 自動run [31359786321](https://github.com/team478a/manga/actions/runs/31359786321)が`event=schedule`で成功。`idle`、requests 1、processed 0。実行後もQueue 0件／Worker正常を確認。
+- 変更範囲: 外部Worker認証、GitHub Actions secrets／variable、Production再deploy、証跡文書だけ。application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler workflow／頻度、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop code、本番作品dataを変更しない。
+- 検証: RC台帳2 passed／11 pending／2 blocked、full `rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- 残件: checkpoint migration、Cloud text、対象モニター本人の市場分析、AIネーム由来8ページE2E、2利用者実owner isolation、Stripe test E2E。
+- 停止条件: 文書限定Draft PRの全CI／Vercel Previewを確認し、R4-1と`hub-production-acceptance`をpendingのまま責任者確認待ちとする。R4-2へ進まない。
+
 ## 2026-08-10 PR-R4-1d Production外部構成照合
 
 - 状態: `EXTERNAL_CONFIGURATION_REQUIRED`

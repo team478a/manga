@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1e Production Scheduler受入れ、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `2e3a1d5350ae2db3d1c0f158020e573e6f6267d5`（PR #222 merge commit）
+- Branch: `codex/release-r4-1e-scheduler-acceptance`
+- Draft PR／Preview: 作成後に追記
+- 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
+- 外部設定: Vercel Production／PreviewとGitHub ActionsのWorker secretを同値ローテーションし、Worker URL secretとScheduler enabled variableを設定。値は記録しない。
+- Production: `2e3a1d5`を再deployしReady。通信なしcheck成功後、Queue 0件／Worker正常を確認してSchedulerを有効化した。
+- 限定run: [31359171708](https://github.com/team478a/manga/actions/runs/31359171708)は`idle`、requests 1、processed 0。Provider生成・credit消費なし。
+- 定期run: [31359786321](https://github.com/team478a/manga/actions/runs/31359786321)が`event=schedule`で成功。`idle`、requests 1、processed 0。実行後もQueue 0件／Worker正常。
+- 検証: RC台帳2 passed／11 pending／2 blocked、full `rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- 証跡: [`RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md)
+- 停止: 文書限定Draft PRの最終HEADで全CI／Vercel Previewを確認し、残るcheckpoint、Cloud text、市場分析、8ページE2E、2利用者owner isolation、Stripe test E2Eを未完了としてR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1d Production外部構成照合、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `84773f75c9f42715a33b540dd96dcde4fe6e74cd`（PR #221 merge commit）
