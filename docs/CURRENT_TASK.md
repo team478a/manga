@@ -2,10 +2,10 @@
 
 ## 2026-08-10 PR-R4-1h Production checkpoint digest修正
 
-- 状態: `IN_PROGRESS`（R4-1全体はpending）
+- 状態: `WAITING_FOR_CI`（R4-1全体はpending）
 - Branch: `codex/fix-r4-checkpoint-digest-schema`
 - Base: `origin/feature/manga-canvas-mvp`（`c1660e2`、PR #225 merge commit）
-- Draft PR: 作成前
+- Draft PR: [#226](https://github.com/team478a/manga/pull/226)
 - Production再現: checkpoint作成が42883となり、UIはmigration不足として表示。checkpoint、Provider Job、Asset、credit、費用の増加なし。
 - DB診断: 対象Supabaseにtable／RPC／権限／RLSが存在し、Production作品IDも同じprojectに存在。ROLLBACK付きRPC診断で未修飾`digest()`が`extensions` schemaを解決できないことを確定した。
 - 修正: 追加migrationで`digest()`の2呼出しだけを`extensions.digest()`へ明示修飾する。RPC signature、権限、Security Definer、固定search path、manifest、hash方式は維持する。

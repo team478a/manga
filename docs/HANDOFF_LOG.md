@@ -7,6 +7,7 @@
 ## 2026-08-10 Codex: PR-R4-1h Production checkpoint digest修正
 
 - PR #225は`c1660e21b13d5e9a11e1f2a56e9df9329e828ab5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-r4-checkpoint-digest-schema`をこの基準から作成した。
+- Draft PR: [#226](https://github.com/team478a/manga/pull/226)。
 - Productionのcheckpoint作成は42883で失敗。対象Supabaseにはcheckpoint／restore table、RPC、RLS、EXECUTE権限が存在し、Production作品IDも同じprojectに存在した。
 - PostgREST cache reload後も再現。認証contextを合わせたROLLBACK付きDB診断で、固定`search_path=public,pg_temp`から未修飾`digest()`が`extensions` schemaを解決できないことを確定した。永続checkpointは0件のまま。
 - 追加migrationでcanvas／manifest hashの2呼出しだけを`extensions.digest()`へ修正する。RPC signature、権限、Security Definer、search path、hash方式、application codeは変更しない。

@@ -4,7 +4,8 @@
 
 - Base: `feature/manga-canvas-mvp` / `c1660e21b13d5e9a11e1f2a56e9df9329e828ab5`（PR #225 merge commit）
 - Branch: `codex/fix-r4-checkpoint-digest-schema`
-- 状態: `IN_PROGRESS`（R4-1全体はpending）
+- Draft PR: [#226](https://github.com/team478a/manga/pull/226)
+- 状態: `WAITING_FOR_CI`（R4-1全体はpending）
 - Production: checkpoint作成が42883で失敗し、checkpoint、Provider Job、Asset、credit、費用は増加していない。
 - 診断: 対象DBにはRPC／table／RLS／権限が存在し、Production作品も同じDBに存在する。ROLLBACK付き実行で`digest(bytea,unknown)`未解決を確定した。
 - 修正: 追加migrationで2箇所を`extensions.digest`へ明示修飾し、canonical schemaとmigration assertionを同期する。RPC signature、権限、固定search path、hash仕様は変更しない。
