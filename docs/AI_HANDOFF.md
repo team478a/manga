@@ -4,8 +4,8 @@
 
 - Base: `feature/manga-canvas-mvp` / `0754e0b09b7b530fb6de64974d5d1e1099c6887a`（PR #223 merge commit）
 - Branch: `codex/fix-empty-generation-batch-on-rejection`
-- Draft PR: 作成前
-- 状態: `IMPLEMENTED_VALIDATING`（R4-1全体はpending）
+- Draft PR: [#224](https://github.com/team478a/manga/pull/224)
+- 状態: `CI_RUNNING`（R4-1全体はpending）
 - Production: 既存一般向け検証作品を8ページ／9コマへ拡張。手動作品からの7コマ一括生成はAIネーム関連境界でJob登録前に拒否され、Provider、Asset、credit、外部費用の増加なし。
 - 検出: 拒否前にBatchだけが作成され、「処理中0/0」が残る。検証Batchは製品UIで中止済み。
 - 修正: 最初のQueue拒否時にBatchを`canceled`へ補償し、未紐付けJobをキャンセルする。Job 0件のcanceled Batchは利用者履歴から除外し、DB記録は保持する。

@@ -7,6 +7,7 @@
 ## 2026-08-10 Codex: PR-R4-1f 一括生成開始拒否の本番再現・修正
 
 - PR #223は`0754e0b09b7b530fb6de64974d5d1e1099c6887a`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-empty-generation-batch-on-rejection`をこの基準から作成した。
+- Draft PR: [#224](https://github.com/team478a/manga/pull/224)。
 - Productionの既存一般向け検証作品を8ページ／9コマへ拡張した。2〜8ページの7コマ一括生成は、手動作品にAIネーム関連がないため最初のJob登録前に安全拒否された。Provider、Asset、画像、credit、費用は増えていない。
 - 拒否時に「処理中0/0」Batchが残る問題を再現した。検証BatchはUIで中止済み。初回Queue拒否時のBatch cancel補償、未紐付けJob cancel、Job 0件canceled履歴の非表示を実装した。
 - 同じsessionの市場分析は一般モニター資格境界で拒否され、保存・Provider呼出し・費用なし。対象モニター本人sessionが必要。

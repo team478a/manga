@@ -2,13 +2,13 @@
 
 最終更新: 2026-08-10
 
-状態: `IMPLEMENTED_VALIDATING`
+状態: `CI_RUNNING`
 
 対象branch: `codex/fix-empty-generation-batch-on-rejection`
 
 基準commit: `0754e0b09b7b530fb6de64974d5d1e1099c6887a`（PR #223 merge commit）
 
-Draft PR: 作成前
+Draft PR: [#224](https://github.com/team478a/manga/pull/224)
 
 ## 1. 本番確認結果
 

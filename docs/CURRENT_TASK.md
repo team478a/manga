@@ -2,10 +2,10 @@
 
 ## 2026-08-10 PR-R4-1f 一括生成開始拒否の本番再現・修正
 
-- 状態: `IMPLEMENTED_VALIDATING`（R4-1全体はpending）
+- 状態: `CI_RUNNING`（R4-1全体はpending）
 - Branch: `codex/fix-empty-generation-batch-on-rejection`
 - Base: `origin/feature/manga-canvas-mvp`（`0754e0b`、PR #223 merge commit）
-- Draft PR: 作成前
+- Draft PR: [#224](https://github.com/team478a/manga/pull/224)
 - 証跡: [`RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md)
 - Production再現: 既存検証作品を8ページ／9コマへ拡張。手動作品のため7コマ一括生成はAIネーム関連境界でJob登録前に拒否され、Provider／Asset／credit／費用増加なし。拒否時に「処理中0/0」Batchが残る問題を確認し、検証Batchは中止済み。
 - 修正: 初回Queue拒否時は作成済みBatchを`canceled`へ補償し、Batch未紐付けJobもキャンセルする。Job 0件のcanceled Batchは利用者履歴へ表示しない。DB上の記録は削除しない。
