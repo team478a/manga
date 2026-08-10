@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-1h Production checkpoint digest修正
+
+- PR #225は`c1660e21b13d5e9a11e1f2a56e9df9329e828ab5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-r4-checkpoint-digest-schema`をこの基準から作成した。
+- Productionのcheckpoint作成は42883で失敗。対象Supabaseにはcheckpoint／restore table、RPC、RLS、EXECUTE権限が存在し、Production作品IDも同じprojectに存在した。
+- PostgREST cache reload後も再現。認証contextを合わせたROLLBACK付きDB診断で、固定`search_path=public,pg_temp`から未修飾`digest()`が`extensions` schemaを解決できないことを確定した。永続checkpointは0件のまま。
+- 追加migrationでcanvas／manifest hashの2呼出しだけを`extensions.digest()`へ修正する。RPC signature、権限、Security Definer、search path、hash方式、application codeは変更しない。
+- canonical schema、migration assertion、rollback、証跡を同期する。詳細は[`RELEASE_CANDIDATE_R4_1H_CHECKPOINT_DIGEST_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1H_CHECKPOINT_DIGEST_EVIDENCE.md)。
+- Production DBで修正後RPCを同一transaction内実行してUUID返却を確認し、ROLLBACK後にcheckpoint 0件、関数定義未変更を確認した。集中21/21、migration manifest 51件、full `rc:validate`（Hub 627/627、Hub／Desktop production build）成功。
+- Draft PRの全CI／Vercel Preview確認後に停止し、merge後のProduction migration適用とcheckpoint作成・差分・復元を行う。R4-2へ進まない。
+
+---
+
 ## 2026-08-10 Codex: PR-R4-1g Cloud Canvas編集lease確認ゲート
 
 - PR #224は`0f704d80095edcac41d7279e2f5236489f52e1f0`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-page-edit-lock-checking-gate`をこの基準から作成した。
