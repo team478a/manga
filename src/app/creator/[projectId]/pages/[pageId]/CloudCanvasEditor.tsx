@@ -52,7 +52,7 @@ import { downloadCanvasPng } from "./services/canvas-download";
 import { createCanvasSvg } from "./services/canvas-svg";
 import {
   acquirePageEditLease,
-  releasePageEditLease,
+  getOrCreatePageEditLockToken,
 } from "./services/page-edit-lock-client";
 import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
 import { PanelImageComparisonDialog } from "./PanelImageComparisonDialog";
@@ -196,12 +196,14 @@ export function CloudCanvasEditor({
   monitorQualityFeedbackEnabled: boolean;
 }) {
   const [pageLockState, setPageLockState] = useState<"checking" | "acquired" | "locked" | "unavailable">("checking");
-  const pageLockToken = useRef(crypto.randomUUID());
+  const pageLockToken = useMemo(
+    () => getOrCreatePageEditLockToken(page.id),
+    [page.id],
+  );
   useEffect(() => {
     let active = true;
-    const lockToken = pageLockToken.current;
     const renew = async () => {
-      const state = await acquirePageEditLease(page.id, lockToken);
+      const state = await acquirePageEditLease(page.id, pageLockToken);
       if (active) setPageLockState(state);
     };
     void renew();
@@ -209,9 +211,10 @@ export function CloudCanvasEditor({
     return () => {
       active = false;
       window.clearInterval(timer);
-      void releasePageEditLease(page.id, lockToken);
+      // A reload can mount the replacement before an asynchronous DELETE
+      // completes. The server lease expires closed tabs after 120 seconds.
     };
-  }, [page.id]);
+  }, [page.id, pageLockToken]);
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
   const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);

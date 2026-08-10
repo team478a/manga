@@ -47,12 +47,14 @@ test("batch UI exposes progress, pause, cancel and safe retry", () => {
   assert.match(component, /batch\.status === "active" \|\| batch\.status === "paused"/);
 });
 
-test("canvas editor obtains and releases a server edit lease", () => {
+test("canvas editor preserves a server edit lease across same-tab reloads", () => {
   const editor = read("src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx");
   const client = read("src/app/creator/[projectId]/pages/[pageId]/services/page-edit-lock-client.ts");
   assert.match(editor, /acquirePageEditLease/);
-  assert.match(editor, /releasePageEditLease/);
+  assert.match(editor, /getOrCreatePageEditLockToken/);
+  assert.doesNotMatch(editor, /releasePageEditLease/);
   assert.match(editor, /別の画面で編集中です/);
+  assert.match(client, /window\.sessionStorage/);
   assert.match(client, /\/api\/creator\/page-locks\/\$\{encodeURIComponent\(pageId\)\}/);
   assert.match(client, /method: "DELETE"/);
   assert.match(client, /keepalive: true/);
