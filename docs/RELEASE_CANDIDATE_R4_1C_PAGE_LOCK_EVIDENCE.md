@@ -2,13 +2,15 @@
 
 最終更新: 2026-08-10
 
-状態: `DRAFT_PR_CI_PENDING`
+状態: `READY_FOR_OWNER_REVIEW`
 
 対象branch: `codex/release-r4-1c-page-lock-acceptance`
 
 基準commit: `d40d8d4f4e30ff57fcb160f7842afb7b780069d5`（PR #220 merge commit）
 
 Draft PR: [#221](https://github.com/team478a/manga/pull/221)
+
+Preview: `https://mangai-hub-staging-git-codex-release-61ff0c-team478as-projects.vercel.app`
 
 ## 1. 判定
 
@@ -66,6 +68,8 @@ Productionで次の境界を確認した。
 | `npm run rc:preflight` | PASS。repository structure READY。外部資格情報と手動E2Eは既知のpending |
 | `npm run rc:validate` | PASS。Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build |
 | `git diff --check` | PASS |
+
+Draft PRのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Draft／MERGEABLEを確認した。
 
 ## 7. Rollback
 

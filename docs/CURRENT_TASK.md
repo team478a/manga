@@ -2,14 +2,16 @@
 
 ## 2026-08-10 PR-R4-1c Production編集ロック再受入れ
 
-- 状態: `DRAFT_PR_CI_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/release-r4-1c-page-lock-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`d40d8d4`、PR #220 merge commit）
 - Draft PR: [#221](https://github.com/team478a/manga/pull/221)
+- Preview: `https://mangai-hub-staging-git-codex-release-61ff0c-team478as-projects.vercel.app`
 - 証跡: [`RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md)
 - Production合格: 同一タブ即時再読込、作品画面からの同一タブ再入場、別タブ排他、元タブ継続編集、保存済み表示、既存生成画像表示。
 - 変更範囲: Productionでは編集leaseだけを取得。ページ内容、Canvas、Asset、作品状態、Provider、credit、課金、外部設定は変更しない。本PRは証跡、CURRENT_TASK、handoff、RC台帳だけを変更する。
 - 検証: RC台帳2 passed／11 pending／2 blocked、全`rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - R4-1残件: checkpoint migration、Cloud text readiness、対象モニター本人の市場分析、AIネーム由来8ページE2E、Scheduler、2利用者owner isolation、Stripe test E2E。
 - 停止条件: 文書限定Draft PRの最終HEADで全CI／Vercel Previewを確認し、R4-1と`hub-production-acceptance`をpendingのまま責任者確認待ちとする。R4-2へ進まない。
 
