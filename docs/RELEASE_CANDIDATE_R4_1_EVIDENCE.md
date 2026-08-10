@@ -8,6 +8,8 @@
 
 基準commit: `ba93db0429ce1abc66a89b35deb8d1648ebc60ec`（PR #217 merge commit）
 
+Draft PR: [#218](https://github.com/team478a/manga/pull/218)
+
 ## 1. 判定
 
 資格情報や費用を必要としない確認は完了した。Vercel production、Hub productionの認証済み読み取り、Cloud漫画制作の既存生成結果、repository受入れ、owner isolation、100ページ長編、研究評価、migration manifestは正常だった。

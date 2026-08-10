@@ -12,7 +12,7 @@
 - GitHub Actions Schedulerは直近scheduled runがskippedで、repository variable／secretは0件。Worker通信なしcheck run [31343333031](https://github.com/team478a/manga/actions/runs/31343333031)がWorker URL／secret不足を検出した。Provider費用は発生していない。
 - 現在のSupabase Dashboard accountでは対象project `vmdsyxykcrgxcdbrwlkv`を参照できない。市場分析production保存、実DB照合、8ページexport、2利用者owner isolationは未実施のためpassedにしない。
 - repository検証はCloud漫画受入れ、owner isolation、100ページ4/4、research eval、migration 50/50成功。外部資格情報preflightのpendingはコード障害と区別した。
-- 詳細は[`RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1_EVIDENCE.md)。文書限定Draft PRと全CI／Vercel Preview確認後に停止し、R4-2へ進まない。
+- 詳細は[`RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1_EVIDENCE.md)。Draft PR [#218](https://github.com/team478a/manga/pull/218)の全CI／Vercel Preview確認後に停止し、R4-2へ進まない。
 
 ---
 

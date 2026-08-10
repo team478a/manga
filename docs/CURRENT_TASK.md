@@ -5,6 +5,7 @@
 - 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
 - Branch: `codex/release-r4-1-cloud-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`ba93db0`、PR #217 merge後）
+- Draft PR: [#218](https://github.com/team478a/manga/pull/218)
 - 証跡: [`RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1_EVIDENCE.md)
 - 完了確認: production Vercel deployment／domain、認証済みHubのアカウント名・Dashboard・Creator、Provider readiness、既存Cloud作品と生成履歴を読み取り確認。Cloud漫画repository、owner isolation、100ページ4/4、research eval、migration 50/50が成功。
 - 外部設定: VercelのSupabase変数3件は存在するがStripe変数はProject／Sharedともに0件。GitHub Actions Schedulerはrepository variable／secretがなく、通信なしcheck run [31343333031](https://github.com/team478a/manga/actions/runs/31343333031)でWorker URL／secret不足を確認。対象Supabase projectは現在のDashboard accountから参照できない。

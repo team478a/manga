@@ -4,6 +4,7 @@
 
 - Base: `feature/manga-canvas-mvp` / `ba93db0429ce1abc66a89b35deb8d1648ebc60ec`（PR #217 merge commit）
 - Branch: `codex/release-r4-1-cloud-acceptance`
+- Draft PR: [#218](https://github.com/team478a/manga/pull/218)
 - 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
 - 完了: production Vercel／Hubの読み取り実機確認、既存Cloud生成結果、repository受入れ、owner isolation、100ページ、研究評価、migration manifest。
 - 外部不足: Stripe変数0件・Dashboard未ログイン、Scheduler Worker URL／secretなし、対象Supabase projectへDashboard accessなし。本番市場分析保存、8ページexport、2利用者実owner isolationは未実施。
