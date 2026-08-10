@@ -7,6 +7,7 @@
 ## 2026-08-10 Codex: Cloud Canvas同一タブ編集ロック修正
 
 - PR #219は`39cb9e670ff8b100b2f37a91fe5aed807aa94549`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-page-edit-lock-reload`をこの基準から作成した。
+- Draft PR: [#220](https://github.com/team478a/manga/pull/220)。Draft／MERGEABLE。最終文書同期後のHEADで全CI／Vercel Previewを確認する。
 - Productionで確認した同一タブ再読込／再入場後の自己lockは、component instanceごとに新しいUUIDを作り、直前の未失効120秒leaseと異なるtokenで取得していたことが原因。
 - ページごとのlock tokenをタブ専用`sessionStorage`へ保持する。同一タブは再読込／再入場後も同じtokenでrenewでき、別タブ／別ページは別tokenを使うため既存の上書き防止を維持する。
 - unmount時の非同期DELETEは、再読込後の取得より遅れて新しいleaseを削除できるため自動実行しない。タブを閉じた場合は既存server contractの120秒lease expiryで解放する。DELETE API自体は変更しない。
