@@ -2,13 +2,15 @@
 
 最終更新: 2026-08-10
 
-状態: `CI_RUNNING`
+状態: `READY_FOR_OWNER_REVIEW`
 
 対象branch: `codex/fix-empty-generation-batch-on-rejection`
 
 基準commit: `0754e0b09b7b530fb6de64974d5d1e1099c6887a`（PR #223 merge commit）
 
 Draft PR: [#224](https://github.com/team478a/manga/pull/224)
+
+Preview: `https://mangai-hub-staging-juvn34ftl-team478as-projects.vercel.app`
 
 ## 1. 本番確認結果
 
@@ -54,6 +56,12 @@ Productionの既存一般向け検証作品を8ページへ拡張し、1ペー�
 | `npm run rc:acceptance` | PASS、2 passed／11 pending／2 blocked |
 | `npm run rc:validate` | PASS、Hub 625/625、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build |
 | `git diff --check` | PASS |
+| GitHub Core quality | PASS |
+| GitHub Migration roundtrip | PASS |
+| GitHub Windows build | PASS |
+| Vercel／Vercel Preview Comments | PASS |
+
+PRはDraft、`MERGEABLE`。上記Preview deploymentは`success`を確認した。
 
 ## 6. Rollback
 

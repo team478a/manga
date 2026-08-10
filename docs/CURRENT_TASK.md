@@ -2,15 +2,17 @@
 
 ## 2026-08-10 PR-R4-1f 一括生成開始拒否の本番再現・修正
 
-- 状態: `CI_RUNNING`（R4-1全体はpending）
+- 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
 - Branch: `codex/fix-empty-generation-batch-on-rejection`
 - Base: `origin/feature/manga-canvas-mvp`（`0754e0b`、PR #223 merge commit）
 - Draft PR: [#224](https://github.com/team478a/manga/pull/224)
+- Preview: `https://mangai-hub-staging-juvn34ftl-team478as-projects.vercel.app`
 - 証跡: [`RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md)
 - Production再現: 既存検証作品を8ページ／9コマへ拡張。手動作品のため7コマ一括生成はAIネーム関連境界でJob登録前に拒否され、Provider／Asset／credit／費用増加なし。拒否時に「処理中0/0」Batchが残る問題を確認し、検証Batchは中止済み。
 - 修正: 初回Queue拒否時は作成済みBatchを`canceled`へ補償し、Batch未紐付けJobもキャンセルする。Job 0件のcanceled Batchは利用者履歴へ表示しない。DB上の記録は削除しない。
 - 市場分析: 現sessionは一般モニター資格境界で拒否。保存・Provider呼出し・費用なし。対象モニター本人session待ち。
 - 検証: 集中15/15、lint、Hub／Desktop typecheck、full `rc:validate`成功（Hub 625/625、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 残件: checkpoint migration、Cloud text、対象モニター本人の市場分析、AIネーム由来8ページE2E、2利用者実owner isolation、Stripe test E2E。
 - 停止条件: Draft PRの全CI／Vercel Previewを確認して停止し、R4-1と`hub-production-acceptance`をpendingのまま責任者確認待ちとする。R4-2へ進まない。
 
