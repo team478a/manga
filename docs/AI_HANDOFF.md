@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1g Cloud Canvas編集lease確認ゲート、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `0f704d80095edcac41d7279e2f5236489f52e1f0`（PR #224 merge commit）
+- Branch: `codex/fix-page-edit-lock-checking-gate`
+- Draft PR: 作成後に追記
+- 状態: `CI_RUNNING`（R4-1全体はpending）
+- Production: ページ遷移直後のlease `checking`中も編集UIが操作できるfail-openと、確認通知消失時のレイアウト移動を再現した。一時変更したコマ名は元へ戻して保存済み。
+- 修正: `acquired`以外は編集UIを`inert`化し、Undo／Redo／削除のwindow shortcutも遮断する。`checking`／`locked`／`unavailable`を固定overlayで案内する。
+- 外部契約: API、DB、migration、RPC、Storage、Feature Flag、lease token／時間、Canvas schema、Provider、model、pricing、retry、timeout、Scheduler、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: 集中15/15、lint、Hub／Desktop typecheck、deps、research eval、full `rc:validate`成功（Hub 626/626、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- 証跡: [`RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md)
+- 停止: Draft PRの最終HEADで全CI／Vercel Previewを確認し、R4-1はpending、R4-2は未着手を維持する。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1f 一括生成開始拒否の本番再現・修正、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `0754e0b09b7b530fb6de64974d5d1e1099c6887a`（PR #223 merge commit）
