@@ -8,6 +8,8 @@
 
 基準commit: `7a304834fd1ccea553590f922f132b4d99b7be01`（PR #218 merge commit）
 
+Draft PR: [#219](https://github.com/team478a/manga/pull/219)
+
 ## 1. 判定
 
 責任者のproduction利用承認に基づき、一般向けCloud漫画制作で実Providerを1件だけ呼び出した。BFL画像生成、課金予約、Worker実行、private Asset、Canvas配置、自動保存、再読込、1ページPNGは成功した。

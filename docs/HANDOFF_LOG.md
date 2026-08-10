@@ -3848,6 +3848,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 - Branch: `codex/release-r4-1b-production-api-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`@`7a30483`（PR #218 merge後）
+- Draft PR: [#219](https://github.com/team478a/manga/pull/219)
 - ProductionでBFL `flux-2-pro`の一般向け背景画像を1件生成し、Queue、2 credit予約／確定、手動Worker、実コスト`$0.0300`、private Asset、Canvas配置、自動保存、再読込、1ページPNGを確認した。
 - 検証用既存作品へページ1件、Asset1件、AI背景layer1件を追加した。破壊的な削除は行っていない。
 - 作品バックアップは`202608010011_cloud_project_checkpoints.sql`未適用相当で失敗し、checkpointは作成されていない。

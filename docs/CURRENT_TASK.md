@@ -5,6 +5,7 @@
 - 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
 - Branch: `codex/release-r4-1b-production-api-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`7a30483`、PR #218 merge後）
+- Draft PR: [#219](https://github.com/team478a/manga/pull/219)
 - 証跡: [`RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md)
 - Production成功: BFL `flux-2-pro`背景画像1件、Queue、2 credit予約／確定、手動Worker、private Asset、Canvas配置、自動保存、再読込、1ページPNG。実コスト`$0.0300`、予約解放、直近24時間の失敗0件。
 - Production未解決: `202608010011_cloud_project_checkpoints.sql`未適用相当でバックアップ不可。同一タブ再読込／再入場後に編集lockが最大約2分残る。Cloud Editor文章Jobは登録前拒否でOpenAI未呼出し・課金なし。

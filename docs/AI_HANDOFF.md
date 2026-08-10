@@ -4,6 +4,7 @@
 
 - Base: `feature/manga-canvas-mvp` / `7a304834fd1ccea553590f922f132b4d99b7be01`（PR #218 merge commit）
 - Branch: `codex/release-r4-1b-production-api-acceptance`
+- Draft PR: [#219](https://github.com/team478a/manga/pull/219)
 - 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
 - 完了: production BFL背景画像1件、Queue／credit／手動Worker／cost settlement、private Asset、Canvas配置・保存・再読込、1ページPNG。
 - 判明: productionは作品checkpoint migration不足。同一タブ再読込後のpage lock待機、Cloud Editor文章Job登録前拒否も再現。市場分析は対象モニター本人sessionがなく未確認。
