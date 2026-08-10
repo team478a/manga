@@ -63,15 +63,16 @@ export function summarizeGenerationBatches(input: {
   }>;
   links: Array<{ batch_id: string; job_id: string; status: string }>;
 }): MangaGenerationBatch[] {
-  return input.batches.map((batch) => {
+  return input.batches.flatMap((batch) => {
     const jobs = input.links.filter((link) => link.batch_id === batch.id);
+    if (batch.status === "canceled" && jobs.length === 0) return [];
     const count = (status: string) =>
       jobs.filter((job) => job.status === status).length;
     const status =
       batch.status === "active" && jobs.length > 0 && count("completed") === jobs.length
         ? "completed"
         : batch.status;
-    return {
+    return [{
       ...batch,
       status,
       totalJobs: jobs.length,
@@ -80,6 +81,6 @@ export function summarizeGenerationBatches(input: {
       completedJobs: count("completed"),
       failedJobs: count("failed"),
       failedJobIds: jobs.filter((job) => job.status === "failed").map((job) => job.job_id),
-    };
+    }];
   });
 }

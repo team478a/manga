@@ -47,6 +47,7 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     throw new DomainError("INTERNAL_ERROR", "一括生成を開始できませんでした。", { cause: created.error });
   let queued = 0;
   for (const target of targets) {
+    let unattachedJobIds: string[] = [];
     try {
       const result = await enqueueStoryboardPanelImage({
         projectId,
@@ -56,16 +57,33 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
         candidateCount: 1,
         generationTarget: "composite",
       });
+      unattachedJobIds = result.jobs.map((job) => job.id);
       for (const job of result.jobs) {
         const attached = await supabase.rpc("attach_cloud_generation_batch_job", {
           p_batch_id: created.data,
           p_job_id: job.id,
         });
         if (attached.error) throw attached.error;
+        unattachedJobIds = unattachedJobIds.filter((jobId) => jobId !== job.id);
         queued += 1;
       }
     } catch (error) {
-      if (!queued) throw error;
+      await Promise.all(
+        unattachedJobIds.map((jobId) =>
+          cancelCloudGenerationJob(jobId).catch(() => undefined),
+        ),
+      );
+      if (!queued) {
+        const canceled = await supabase.rpc("set_cloud_generation_batch_state", {
+          p_batch_id: created.data,
+          p_status: "canceled",
+        });
+        if (canceled.error)
+          throw new DomainError("INTERNAL_ERROR", "一括生成を開始できませんでした。", {
+            cause: canceled.error,
+          });
+        throw error;
+      }
       break;
     }
   }
