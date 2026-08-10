@@ -6,7 +6,7 @@
 - 日付: 2026-08-10
 - Base: `feature/manga-canvas-mvp` / `0f704d80095edcac41d7279e2f5236489f52e1f0`（PR #224 merge commit）
 - Branch: `codex/fix-page-edit-lock-checking-gate`
-- Draft PR: 作成後に追記
+- Draft PR: [#225](https://github.com/team478a/manga/pull/225)
 
 ## Production再現
 

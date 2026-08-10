@@ -7,6 +7,7 @@
 ## 2026-08-10 Codex: PR-R4-1g Cloud Canvas編集lease確認ゲート
 
 - PR #224は`0f704d80095edcac41d7279e2f5236489f52e1f0`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-page-edit-lock-checking-gate`をこの基準から作成した。
+- Draft PR: [#225](https://github.com/team478a/manga/pull/225)。
 - Productionでページ遷移直後のlease `checking`中もキャンバスとツールが操作可能で、確認通知消失時にレイアウトが移動する問題を再現した。検証用の一時コマ名は`コマ1`へ戻して保存済み。Provider、Asset、credit、費用の変更なし。
 - `pageLockState === "acquired"`以外は編集UI全体を`inert`化し、windowのUndo／Redo／削除shortcutも遮断する。確認中、別画面編集中、確認不能を固定overlayで案内し、確認不能時は再読込できる。
 - API、DB、migration、RPC、Storage、Feature Flag、lease token／時間、Canvas schema、Provider、model、pricing、retry、timeout、Scheduler、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。

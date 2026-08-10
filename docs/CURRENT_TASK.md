@@ -5,7 +5,7 @@
 - 状態: `CI_RUNNING`（R4-1全体はpending）
 - Branch: `codex/fix-page-edit-lock-checking-gate`
 - Base: `origin/feature/manga-canvas-mvp`（`0f704d8`、PR #224 merge commit）
-- Draft PR: 作成後に追記
+- Draft PR: [#225](https://github.com/team478a/manga/pull/225)
 - 証跡: [`RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md)
 - Production再現: ページ遷移後、leaseが`checking`の間も編集UIが操作でき、確認完了時に通知領域が消えてレイアウトが移動する問題を確認。検証用の一時コマ名は元の`コマ1`へ戻して保存済み。Provider／credit／費用変更なし。
 - 修正: `acquired`以外は編集UI全体とグローバルショートカットを遮断。確認中、別画面編集中、確認不能を固定overlayで案内し、確認不能時は再読込導線を表示する。

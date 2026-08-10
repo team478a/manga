@@ -4,7 +4,7 @@
 
 - Base: `feature/manga-canvas-mvp` / `0f704d80095edcac41d7279e2f5236489f52e1f0`（PR #224 merge commit）
 - Branch: `codex/fix-page-edit-lock-checking-gate`
-- Draft PR: 作成後に追記
+- Draft PR: [#225](https://github.com/team478a/manga/pull/225)
 - 状態: `CI_RUNNING`（R4-1全体はpending）
 - Production: ページ遷移直後のlease `checking`中も編集UIが操作できるfail-openと、確認通知消失時のレイアウト移動を再現した。一時変更したコマ名は元へ戻して保存済み。
 - 修正: `acquired`以外は編集UIを`inert`化し、Undo／Redo／削除のwindow shortcutも遮断する。`checking`／`locked`／`unavailable`を固定overlayで案内する。
