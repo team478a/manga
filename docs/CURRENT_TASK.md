@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R4-1d Production外部構成照合
+
+- 状態: `EXTERNAL_CONFIGURATION_REQUIRED`
+- Branch: `codex/release-r4-1d-checkpoint-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`84773f7`、PR #221 merge commit）
+- Draft PR: 未作成
+- 証跡: [`RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md)
+- checkpoint: Supabase Dashboardはログイン済みだが対象project `vmdsyxykcrgxcdbrwlkv`へアクセスできず、別project `mailsend`だけを表示できる。誤適用を避け、SQL実行・本番DB変更は行っていない。
+- Cloud text: Vercel Projectには`MANGAI_CLOUD_TEXT_ENABLED`だけがあり、model、pricing version、Gateway endpoint/keyはProject／Sharedともにない。Production価格台帳13行はすべてBFL画像で、`mangai-cloud-text`は0行。
+- OpenAI: 市場分析用Vault設定は設定済み・有効だが、Cloud text Gatewayとは別経路。文章Job、Provider呼出し、credit予約・課金は行っていない。
+- 変更範囲: 証跡、CURRENT_TASK、handoff、RC台帳だけ。application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop code、外部設定、本番dataを変更しない。
+- 検証: RC台帳2 passed／11 pending／2 blocked、full `rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- 残件: 対象projectのmigration適用とcheckpoint再受入れ、Cloud text外部構成と1件再受入れ、対象モニター本人の市場分析、AIネーム由来8ページE2E、Scheduler、2利用者owner isolation、Stripe test E2E。
+- 停止条件: 文書限定Draft PRの最終HEADで全CI／Vercel Previewを確認し、R4-1と`hub-production-acceptance`をpendingのまま責任者確認待ちとする。R4-2へ進まない。
+
 ## 2026-08-10 PR-R4-1c Production編集ロック再受入れ
 
 - 状態: `READY_FOR_OWNER_REVIEW`

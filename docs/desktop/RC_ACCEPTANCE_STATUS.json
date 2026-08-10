@@ -91,11 +91,12 @@
       "id": "hub-production-acceptance",
       "label": "Hub公開環境受入れ",
       "status": "pending",
-      "reason": "checkpoint migration、Cloud text、市場分析、8ページE2E、Scheduler、2利用者owner isolation、Stripe test E2E待ち",
+      "reason": "対象Supabase project権限とcheckpoint migration、Cloud text model・pricing・Gateway、市場分析、8ページE2E、Scheduler、2利用者owner isolation、Stripe test E2E待ち",
       "evidence": [
         "docs/RELEASE_CANDIDATE_R4_1_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md",
-        "docs/RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md"
+        "docs/RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md",
+        "docs/RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md"
       ]
     }
   ]

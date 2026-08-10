@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-1d Production外部構成照合
+
+- Branch `codex/release-r4-1d-checkpoint-acceptance`をPR #221 merge commit `84773f75c9f42715a33b540dd96dcde4fe6e74cd`から作成した。
+- Supabase Dashboardはログイン済みだが、対象project `vmdsyxykcrgxcdbrwlkv`のSQL Editor URLはOrganization一覧へ戻り、参照できるのは別project `mailsend`だけだった。別projectへの誤適用を避け、SQL実行・migration適用・checkpoint作成は行っていない。
+- Vercel Production／Previewには`MANGAI_CLOUD_TEXT_ENABLED`だけがあり、text model、pricing version、Gateway endpoint/keyはProject／Sharedともに存在しない。値は表示していない。
+- Production `/admin/cloud-ai`のProvider価格台帳13行はすべてBFL画像で、`mangai-cloud-text`は0行。`/admin/provider-settings`のOpenAI市場分析設定は設定済み・有効だが別経路として維持した。
+- Provider呼出し、文章Job、credit予約・課金、application code、DB、migration、RPC、Storage、外部設定、本番dataを変更していない。
+- RC台帳2 passed／11 pending／2 blocked、full `rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- 詳細は[`RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md)。文書限定Draft PRの全CI／Vercel Preview確認後に停止し、責任者が外部構成を確定する前に値を推測設定しない。R4-2へ進まない。
+
+---
+
 ## 2026-08-10 Codex: PR-R4-1c Production編集ロック再受入れ
 
 - PR #220は`d40d8d4f4e30ff57fcb160f7842afb7b780069d5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1c-page-lock-acceptance`をこの基準から作成した。
