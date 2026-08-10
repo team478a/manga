@@ -4,6 +4,7 @@
 
 - Base: `feature/manga-canvas-mvp` / `f9544035a82256ce2128f4ec1c6b4473cd4b9404`（PR #226 merge commit）
 - Branch: `codex/release-r4-1i-checkpoint-acceptance`
+- Draft PR: [#227](https://github.com/team478a/manga/pull/227)
 - 状態: `READY_FOR_OWNER_REVIEW`（checkpoint受入れ合格、R4-1全体はpending）
 - Production migration: `202608100001_cloud_project_checkpoint_digest_schema.sql`を対象Supabaseへ適用し、`extensions.digest`、RPC契約、権限を確認した。
 - Production実機: checkpoint作成、作品基本設定の差分、復元前自動checkpoint、復元、再読込後の元説明復帰に成功した。

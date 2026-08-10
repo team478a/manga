@@ -8,6 +8,7 @@
 
 - Branch: `codex/release-r4-1i-checkpoint-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`@`f954403`（PR #226 merge commit）
+- Draft PR: [#227](https://github.com/team478a/manga/pull/227)
 - 対象Supabaseへ`202608100001_cloud_project_checkpoint_digest_schema.sql`を適用し、`extensions.digest`と既存RPC契約・権限を確認した。
 - Productionの8ページ検証作品でcheckpoint作成、基本設定差分、復元前自動checkpoint、復元、再読込に成功した。一時変更した説明は元へ戻った。
 - DBはcheckpoint 2件、restore 1件、checkpoint page 16行。生成Job／cost ledgerは受入れ中に変更なし。Assetは復元仕様で更新時刻のみ変わり、SHA-256、容量、寸法、有効状態はmanifestと一致した。
