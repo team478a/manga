@@ -5,11 +5,13 @@
 - Base: `feature/manga-canvas-mvp` / `0f704d80095edcac41d7279e2f5236489f52e1f0`（PR #224 merge commit）
 - Branch: `codex/fix-page-edit-lock-checking-gate`
 - Draft PR: [#225](https://github.com/team478a/manga/pull/225)
-- 状態: `CI_RUNNING`（R4-1全体はpending）
+- Preview: `https://mangai-hub-staging-git-codex-fix-page-aa7b79-team478as-projects.vercel.app`
+- 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
 - Production: ページ遷移直後のlease `checking`中も編集UIが操作できるfail-openと、確認通知消失時のレイアウト移動を再現した。一時変更したコマ名は元へ戻して保存済み。
 - 修正: `acquired`以外は編集UIを`inert`化し、Undo／Redo／削除のwindow shortcutも遮断する。`checking`／`locked`／`unavailable`を固定overlayで案内する。
 - 外部契約: API、DB、migration、RPC、Storage、Feature Flag、lease token／時間、Canvas schema、Provider、model、pricing、retry、timeout、Scheduler、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
 - 検証: 集中15/15、lint、Hub／Desktop typecheck、deps、research eval、full `rc:validate`成功（Hub 626/626、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md)
 - 停止: Draft PRの最終HEADで全CI／Vercel Previewを確認し、R4-1はpending、R4-2は未着手を維持する。
 

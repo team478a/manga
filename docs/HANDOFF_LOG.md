@@ -7,11 +7,12 @@
 ## 2026-08-10 Codex: PR-R4-1g Cloud Canvas編集lease確認ゲート
 
 - PR #224は`0f704d80095edcac41d7279e2f5236489f52e1f0`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-page-edit-lock-checking-gate`をこの基準から作成した。
-- Draft PR: [#225](https://github.com/team478a/manga/pull/225)。
+- Draft PR: [#225](https://github.com/team478a/manga/pull/225)。Preview `https://mangai-hub-staging-git-codex-fix-page-aa7b79-team478as-projects.vercel.app`。
 - Productionでページ遷移直後のlease `checking`中もキャンバスとツールが操作可能で、確認通知消失時にレイアウトが移動する問題を再現した。検証用の一時コマ名は`コマ1`へ戻して保存済み。Provider、Asset、credit、費用の変更なし。
 - `pageLockState === "acquired"`以外は編集UI全体を`inert`化し、windowのUndo／Redo／削除shortcutも遮断する。確認中、別画面編集中、確認不能を固定overlayで案内し、確認不能時は再読込できる。
 - API、DB、migration、RPC、Storage、Feature Flag、lease token／時間、Canvas schema、Provider、model、pricing、retry、timeout、Scheduler、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
 - 集中15/15、lint、Hub／Desktop typecheck、deps、research eval、RC台帳、full `rc:validate`成功。full RC初回のDesktop並列競合1件はAI単独30/30後、全体再実行でDesktop 182/182を確認した。Hub 626/626、Canvas 26/26、AI 48/48、migration 50/50、両production build成功。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 詳細は[`RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md)。Draft PRの全CI／Vercel Preview後に停止し、R4-1はpending、R4-2は未着手を維持する。
 
 ---

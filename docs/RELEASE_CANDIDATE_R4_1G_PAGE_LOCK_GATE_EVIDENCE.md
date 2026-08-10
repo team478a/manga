@@ -2,11 +2,12 @@
 
 ## 判定
 
-- 状態: `CI_RUNNING`（R4-1全体はpending）
+- 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
 - 日付: 2026-08-10
 - Base: `feature/manga-canvas-mvp` / `0f704d80095edcac41d7279e2f5236489f52e1f0`（PR #224 merge commit）
 - Branch: `codex/fix-page-edit-lock-checking-gate`
 - Draft PR: [#225](https://github.com/team478a/manga/pull/225)
+- Preview: `https://mangai-hub-staging-git-codex-fix-page-aa7b79-team478as-projects.vercel.app`
 
 ## Production再現
 
@@ -42,7 +43,9 @@ API、DB、migration、RPC、Storage、Feature Flag、lease token形式、120秒
   - Canvas: 26/26
   - ai-core: 48/48
   - Supabase migration: 50/50
-  - Hub／Desktop production build: 成功
+- Hub／Desktop production build: 成功
+
+Draft PR #225のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは成功した。Vercel deploymentはReadyで、保護付きPreview URLがHTTP 200のVercel Loginを返すことを確認した。
 
 full RC初回はDesktopのComfyUIキャンセルテスト1件が、並列テスト中にSQLite接続を閉じられて失敗した。該当AIテスト単独30/30成功後、同一のfull RCを再実行してDesktop 182/182を含め完走した。今回変更したHub編集コードとの再現関係はない。
 
