@@ -3,6 +3,8 @@ import fs from "node:fs";
 import test from "node:test";
 
 const migration = fs.readFileSync("supabase/migrations/202608010011_cloud_project_checkpoints.sql", "utf8");
+const digestSchemaMigration = fs.readFileSync("supabase/migrations/202608100001_cloud_project_checkpoint_digest_schema.sql", "utf8");
+const digestSchemaRollback = fs.readFileSync("supabase/rollbacks/202608100001_cloud_project_checkpoint_digest_schema.sql", "utf8");
 const service = fs.readFileSync("src/modules/cloud-creator/projects/project-checkpoint-service.ts", "utf8");
 const application = fs.readFileSync("src/modules/manga/application/manage-project-checkpoint.ts", "utf8");
 const panel = fs.readFileSync("src/app/creator/[projectId]/ProjectCheckpointPanel.tsx", "utf8");
@@ -11,6 +13,13 @@ test("変更のないCanvasはハッシュ単位で再利用する", () => {
   assert.match(migration, /digest\(convert_to\(v_canvas::text,'UTF8'\),'sha256'\)/);
   assert.match(migration, /primary key\(project_id,content_sha256\)/);
   assert.match(migration, /on conflict\(project_id,content_sha256\) do nothing/);
+});
+
+test("checkpoint hashは固定search_pathからpgcrypto schemaを明示解決する", () => {
+  assert.equal((digestSchemaMigration.match(/extensions\.digest\(/g) ?? []).length, 2);
+  assert.doesNotMatch(digestSchemaMigration, /(?<!extensions\.)digest\(convert_to/);
+  assert.equal((digestSchemaRollback.match(/(?<!extensions\.)digest\(convert_to/g) ?? []).length, 2);
+  assert.match(digestSchemaMigration, /security definer set search_path=public,pg_temp/);
 });
 
 test("実行中生成と未確定ページがある完成版固定をDBで拒否する", () => {

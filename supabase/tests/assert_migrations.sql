@@ -1132,7 +1132,10 @@ do $$ begin
   if to_regclass('public.cloud_project_backup_blobs') is null
      or to_regclass('public.cloud_project_checkpoints') is null
      or to_regclass('public.cloud_project_checkpoint_pages') is null
-     or to_regprocedure('public.create_cloud_project_checkpoint(uuid,text,text)') is null then
+     or to_regprocedure('public.create_cloud_project_checkpoint(uuid,text,text)') is null
+     or position(
+       'extensions.digest' in pg_get_functiondef('public.create_cloud_project_checkpoint(uuid,text,text)'::regprocedure)
+     )=0 then
     raise exception 'Cloud project checkpoint objects missing';
   end if;
 end $$;

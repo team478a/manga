@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R4-1h Production checkpoint digest修正
+
+- 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
+- Branch: `codex/fix-r4-checkpoint-digest-schema`
+- Base: `origin/feature/manga-canvas-mvp`（`c1660e2`、PR #225 merge commit）
+- Draft PR: [#226](https://github.com/team478a/manga/pull/226)
+- Preview: `https://mangai-hub-staging-git-codex-fix-r4-c-7d4b6b-team478as-projects.vercel.app`
+- Production再現: checkpoint作成が42883となり、UIはmigration不足として表示。checkpoint、Provider Job、Asset、credit、費用の増加なし。
+- DB診断: 対象Supabaseにtable／RPC／権限／RLSが存在し、Production作品IDも同じprojectに存在。ROLLBACK付きRPC診断で未修飾`digest()`が`extensions` schemaを解決できないことを確定した。
+- 修正: 追加migrationで`digest()`の2呼出しだけを`extensions.digest()`へ明示修飾する。RPC signature、権限、Security Definer、固定search path、manifest、hash方式は維持する。
+- 証跡: [`RELEASE_CANDIDATE_R4_1H_CHECKPOINT_DIGEST_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1H_CHECKPOINT_DIGEST_EVIDENCE.md)
+- 検証: Production DBのROLLBACK付き修正後RPC成功、永続変更0、集中21/21、migration manifest 51件、full `rc:validate`成功（Hub 627/627、Hub／Desktop production build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 外部契約: table、RLS、RPC契約、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 残件: merge後のProduction migration適用とcheckpoint作成・差分・復元、Cloud text、対象モニター本人の市場分析、AIネーム由来8ページE2E、2利用者実owner isolation、Stripe test E2E。
+- 停止条件: Draft PRの全CI／Vercel Previewを確認して停止し、Production再受入れ前にR4-2へ進まない。
+
 ## 2026-08-10 PR-R4-1g Cloud Canvas編集lease確認ゲート
 
 - 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）

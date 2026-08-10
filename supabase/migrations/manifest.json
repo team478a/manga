@@ -300,7 +300,13 @@
       "description": "Panel Specificationと初期品質Judgeの内部評価保存を追加",
       "forwardSha256": "e4fb86163a726b9087c7bac619f386d86c6eb211eecc9cb9c07ef2f10d0aeb0c",
       "rollbackSha256": "dc52eb186731f9d2a1dc13bfb4f17ef4bcbbb18aa590e5a60a917b630527daea"
+    },
+    {
+      "id": "202608100001_cloud_project_checkpoint_digest_schema",
+      "description": "checkpoint hash生成でpgcryptoのextensions schemaを明示してProduction実行を修正",
+      "forwardSha256": "1249bd62c8f2163dcd043dcd23f1f592f8fa720ac79ccaac96d9461aac119513",
+      "rollbackSha256": "26425952579109630f30f4bc6acc94ffbb4dc1a19e0e7923f313aac3b458966d"
     }
   ],
-  "schemaSha256": "7cf7b699d7be5a13e771a803d51adf002d01e79741ac379b526a2d25eb604ff6"
+  "schemaSha256": "cdcf7671553c2bf5e9c2a2d927f254065c55793a00519760155b08f2d20c3797"
 }
