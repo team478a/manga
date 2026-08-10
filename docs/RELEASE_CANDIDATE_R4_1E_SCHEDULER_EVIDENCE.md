@@ -8,9 +8,9 @@
 
 基準commit: `2e3a1d5350ae2db3d1c0f158020e573e6f6267d5`（PR #222 merge commit）
 
-Draft PR: 作成後に追記
+Draft PR: [#223](https://github.com/team478a/manga/pull/223)
 
-Preview: 作成後に追記
+Preview: `https://mangai-hub-staging-git-codex-release-47537d-team478as-projects.vercel.app`
 
 ## 1. 判定
 

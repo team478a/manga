@@ -7,6 +7,7 @@
 ## 2026-08-10 Codex: PR-R4-1e Production Scheduler受入れ
 
 - PR #222は`2e3a1d5350ae2db3d1c0f158020e573e6f6267d5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1e-scheduler-acceptance`をこの基準から作成した。
+- Draft PR: [#223](https://github.com/team478a/manga/pull/223)。Preview `https://mangai-hub-staging-git-codex-release-47537d-team478as-projects.vercel.app`。
 - VercelのSensitive Worker secretは取得不可のため、責任者承認に基づいてProduction／PreviewとGitHub Actionsへ同値ローテーションした。秘密値は文書、ログ、commitへ記録せず、一時ファイルも登録直後に削除した。
 - Productionは`2e3a1d5`を再deployしReady。通信なしcheck [31359117746](https://github.com/team478a/manga/actions/runs/31359117746)が成功した。
 - `/admin/cloud-ai`で処理待ち0、実行中0、稼働状態正常、24時間以内の失敗0を確認してSchedulerを有効化した。限定run [31359171708](https://github.com/team478a/manga/actions/runs/31359171708)は`idle`、requests 1、processed 0で、Provider生成・credit消費なし。

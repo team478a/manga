@@ -5,8 +5,8 @@
 - 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
 - Branch: `codex/release-r4-1e-scheduler-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`2e3a1d5`、PR #222 merge commit）
-- Draft PR: 作成後に追記
-- Preview: 作成後に追記
+- Draft PR: [#223](https://github.com/team478a/manga/pull/223)
+- Preview: `https://mangai-hub-staging-git-codex-release-47537d-team478as-projects.vercel.app`
 - 証跡: [`RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1E_SCHEDULER_EVIDENCE.md)
 - Production: Worker secretをVercel Production／PreviewとGitHub Actionsへ同値ローテーションし、`2e3a1d5`を再deployしてReadyを確認。値は文書、ログ、commitへ記録しない。
 - Scheduler: 通信なしcheck [31359117746](https://github.com/team478a/manga/actions/runs/31359117746)成功。Queue 0件／Worker正常を確認して有効化し、限定run [31359171708](https://github.com/team478a/manga/actions/runs/31359171708)は`idle`、requests 1、processed 0で成功。Provider生成・credit消費なし。

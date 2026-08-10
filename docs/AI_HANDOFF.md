@@ -4,7 +4,8 @@
 
 - Base: `feature/manga-canvas-mvp` / `2e3a1d5350ae2db3d1c0f158020e573e6f6267d5`（PR #222 merge commit）
 - Branch: `codex/release-r4-1e-scheduler-acceptance`
-- Draft PR／Preview: 作成後に追記
+- Draft PR: [#223](https://github.com/team478a/manga/pull/223)
+- Preview: `https://mangai-hub-staging-git-codex-release-47537d-team478as-projects.vercel.app`
 - 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
 - 外部設定: Vercel Production／PreviewとGitHub ActionsのWorker secretを同値ローテーションし、Worker URL secretとScheduler enabled variableを設定。値は記録しない。
 - Production: `2e3a1d5`を再deployしReady。通信なしcheck成功後、Queue 0件／Worker正常を確認してSchedulerを有効化した。
