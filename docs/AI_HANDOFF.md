@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1d Production外部構成照合、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `84773f75c9f42715a33b540dd96dcde4fe6e74cd`（PR #221 merge commit）
+- Branch: `codex/release-r4-1d-checkpoint-acceptance`
+- Draft PR: [#222](https://github.com/team478a/manga/pull/222)
+- Preview: `https://mangai-hub-staging-git-codex-release-68a981-team478as-projects.vercel.app`
+- 状態: `EXTERNAL_CONFIGURATION_REQUIRED`
+- checkpoint: 対象Supabase project `vmdsyxykcrgxcdbrwlkv`は現在のDashboard accountから参照できず、別projectだけが表示される。SQLや本番DBは変更していない。
+- Cloud text: Vercelにはenabledだけがあり、model、pricing version、Gateway endpoint/keyがProject／Sharedともにない。Production価格台帳はBFL画像13行だけでtext価格0行。
+- 境界: OpenAI市場分析設定は設定済み・有効だがCloud text Gatewayとは別経路。Provider呼出し、Job、credit、課金、外部設定変更なし。
+- 証跡: [`RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md)
+- 停止: 文書限定Draft PRの最終HEADで全CI／Vercel Previewを確認し、外部構成の責任者確認前に値を推測設定しない。R4-1はpendingを維持し、R4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1c Production編集ロック再受入れ、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `d40d8d4f4e30ff57fcb160f7842afb7b780069d5`（PR #220 merge commit）
