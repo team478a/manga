@@ -10,6 +10,8 @@
 
 Draft PR: [#218](https://github.com/team478a/manga/pull/218)
 
+追補: PR #218 merge後にproduction API受入れを追加実施した。BFL画像生成・Canvas保存・1ページPNGは成功し、作品バックアップmigration不足、同一タブ再読込時の編集ロック待機、Cloud Editor文章Jobの登録前拒否を確認した。詳細は[`RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md)を参照する。
+
 ## 1. 判定
 
 資格情報や費用を必要としない確認は完了した。Vercel production、Hub productionの認証済み読み取り、Cloud漫画制作の既存生成結果、repository受入れ、owner isolation、100ページ長編、研究評価、migration manifestは正常だった。

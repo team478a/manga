@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R4-1b Production API追加受入れ
+
+- 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
+- Branch: `codex/release-r4-1b-production-api-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`7a30483`、PR #218 merge後）
+- Draft PR: [#219](https://github.com/team478a/manga/pull/219)
+- 証跡: [`RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md)
+- Production成功: BFL `flux-2-pro`背景画像1件、Queue、2 credit予約／確定、手動Worker、private Asset、Canvas配置、自動保存、再読込、1ページPNG。実コスト`$0.0300`、予約解放、直近24時間の失敗0件。
+- Production未解決: `202608010011_cloud_project_checkpoints.sql`未適用相当でバックアップ不可。同一タブ再読込／再入場後に編集lockが最大約2分残る。Cloud Editor文章Jobは登録前拒否でOpenAI未呼出し・課金なし。
+- 市場分析: 現在の管理者は一般モニターenrollment対象外。対象利用者は管理画面でactive・利用7/50だが本人sessionへログインできず、保存・再読込は未確認。
+- 変更範囲: production test dataとして検証ページ1件、BFL Asset1件、Canvas layer1件を追加。application code、DB、migration、RPC、Storage設定、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG仕様、成人向け境界、Stripe、Desktop codeは変更しない。
+- 残件: production migration照合、Cloud text readiness、編集lock別修正PR、対象利用者の市場分析、AIネーム由来8ページE2E、Scheduler、2利用者owner isolation、Stripe test E2E。
+- 検証: RC台帳2 passed／11 pending／2 blocked、Cloud漫画repository、migration 50/50、全`rc:validate`成功（Desktop 182/182、Hub 620/620、Hub production build）。初回Desktop 181/182は単独再実行と全体再実行で182/182成功。
+- 停止条件: 文書限定Draft PRの最終HEADで全CI／Vercel Previewを確認し、R4-1をpartialのまま責任者確認待ちとする。R4-2へ進まない。
+
 ## 2026-08-10 PR-R4-1 Cloud／Supabase／Vercel／Stripe統合受入れ
 
 - 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
