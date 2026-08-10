@@ -37,6 +37,23 @@ test("batch service reuses the billed queue and bounds panel work", () => {
   assert.match(service, /Number\(replaced\.data\) < 1/);
 });
 
+test("batch service cancels an empty batch when the first queue request is rejected", () => {
+  const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
+  const firstFailure = service.slice(
+    service.indexOf("for (const target of targets)"),
+    service.indexOf("return { batchId:"),
+  );
+  assert.match(firstFailure, /if \(!queued\) \{/);
+  assert.match(firstFailure, /set_cloud_generation_batch_state/);
+  assert.match(firstFailure, /p_status: "canceled"/);
+  assert.match(firstFailure, /unattachedJobIds\.map/);
+  assert.match(firstFailure, /cancelCloudGenerationJob\(jobId\)/);
+  assert.ok(
+    firstFailure.indexOf("set_cloud_generation_batch_state") <
+      firstFailure.indexOf("throw error"),
+  );
+});
+
 test("batch UI exposes progress, pause, cancel and safe retry", () => {
   const component = read("src/app/creator/[projectId]/LongformPageManager.tsx");
   assert.match(component, /4〜8ページをまとめて生成/);

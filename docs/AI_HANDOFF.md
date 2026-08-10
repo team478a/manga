@@ -1,5 +1,23 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1f 一括生成開始拒否の本番再現・修正、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `0754e0b09b7b530fb6de64974d5d1e1099c6887a`（PR #223 merge commit）
+- Branch: `codex/fix-empty-generation-batch-on-rejection`
+- Draft PR: [#224](https://github.com/team478a/manga/pull/224)
+- Preview: `https://mangai-hub-staging-juvn34ftl-team478as-projects.vercel.app`
+- 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
+- Production: 既存一般向け検証作品を8ページ／9コマへ拡張。手動作品からの7コマ一括生成はAIネーム関連境界でJob登録前に拒否され、Provider、Asset、credit、外部費用の増加なし。
+- 検出: 拒否前にBatchだけが作成され、「処理中0/0」が残る。検証Batchは製品UIで中止済み。
+- 修正: 最初のQueue拒否時にBatchを`canceled`へ補償し、未紐付けJobをキャンセルする。Job 0件のcanceled Batchは利用者履歴から除外し、DB記録は保持する。
+- 市場分析: 現sessionは一般モニター資格境界で拒否され、保存・Provider呼出し・費用なし。対象モニター本人session待ち。
+- 検証: 集中15/15、lint、Hub／Desktop typecheck、full `rc:validate`成功（Hub 625/625、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 証跡: [`RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md)
+- 停止: Draft PRの全CI／Vercel Previewを確認し、checkpoint、Cloud text、市場分析、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2Eを未完了としてR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1e Production Scheduler受入れ、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `2e3a1d5350ae2db3d1c0f158020e573e6f6267d5`（PR #222 merge commit）

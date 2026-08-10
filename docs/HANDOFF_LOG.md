@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-1f 一括生成開始拒否の本番再現・修正
+
+- PR #223は`0754e0b09b7b530fb6de64974d5d1e1099c6887a`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-empty-generation-batch-on-rejection`をこの基準から作成した。
+- Draft PR: [#224](https://github.com/team478a/manga/pull/224)。Preview `https://mangai-hub-staging-juvn34ftl-team478as-projects.vercel.app`。
+- Productionの既存一般向け検証作品を8ページ／9コマへ拡張した。2〜8ページの7コマ一括生成は、手動作品にAIネーム関連がないため最初のJob登録前に安全拒否された。Provider、Asset、画像、credit、費用は増えていない。
+- 拒否時に「処理中0/0」Batchが残る問題を再現した。検証BatchはUIで中止済み。初回Queue拒否時のBatch cancel補償、未紐付けJob cancel、Job 0件canceled履歴の非表示を実装した。
+- 同じsessionの市場分析は一般モニター資格境界で拒否され、保存・Provider呼出し・費用なし。対象モニター本人sessionが必要。
+- DB、migration、RPC定義、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 集中15/15、lint、Hub／Desktop typecheck、full `rc:validate`成功（Hub 625/625、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 詳細は[`RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md)。Draft PRと全CI／Vercel Preview確認後に停止し、R4-1はpending、R4-2は未着手を維持する。
+
+---
+
 ## 2026-08-10 Codex: PR-R4-1e Production Scheduler受入れ
 
 - PR #222は`2e3a1d5350ae2db3d1c0f158020e573e6f6267d5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1e-scheduler-acceptance`をこの基準から作成した。

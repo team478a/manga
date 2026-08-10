@@ -49,6 +49,12 @@ test("一括生成履歴は全Job完了時だけ表示状態をcompletedへ変�
   });
   assert.equal(failed.status, "active");
   assert.deepEqual(failed.failedJobIds, ["c"]);
+
+  const canceledWithoutJobs = summarizeGenerationBatches({
+    batches: [{ ...base, status: "canceled" }],
+    links: [],
+  });
+  assert.deepEqual(canceledWithoutJobs, []);
 });
 
 test("制作状態は確定revisionの古さを判定しgenerating手動指定を拒否する", () => {
