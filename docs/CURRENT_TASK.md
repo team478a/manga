@@ -1,11 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R4-1 Cloud／Supabase／Vercel／Stripe統合受入れ
+
+- 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
+- Branch: `codex/release-r4-1-cloud-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`ba93db0`、PR #217 merge後）
+- 証跡: [`RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1_EVIDENCE.md)
+- 完了確認: production Vercel deployment／domain、認証済みHubのアカウント名・Dashboard・Creator、Provider readiness、既存Cloud作品と生成履歴を読み取り確認。Cloud漫画repository、owner isolation、100ページ4/4、research eval、migration 50/50が成功。
+- 外部設定: VercelのSupabase変数3件は存在するがStripe変数はProject／Sharedともに0件。GitHub Actions Schedulerはrepository variable／secretがなく、通信なしcheck run [31343333031](https://github.com/team478a/manga/actions/runs/31343333031)でWorker URL／secret不足を確認。対象Supabase projectは現在のDashboard accountから参照できない。
+- 未実施: Stripe test E2E、市場分析の本番保存・再読込、実DB migration／RLS／RPC／Storage照合、Scheduler実行、8ページCloud制作・PDF／PNG、2利用者実owner isolation。未実施を成功扱いしない。
+- 変更範囲: 証跡・CURRENT_TASK・handoff・RC受入れ文書だけ。application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop code、外部設定、本番dataを変更しない。
+- 停止条件: 文書限定Draft PRの最終HEADで全CI／Vercel Previewを確認し、外部条件の再開待ちで停止する。R4-1を完了扱いせず、責任者確認前にR4-2へ進まない。
+
 ## 2026-08-10 PR-R4-0 Release Candidate統合監査・計画
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/release-r4-0-acceptance-plan`
 - Base: `origin/feature/manga-canvas-mvp`（`78f4503`、PR #216 merge後）
 - Draft PR: [#217](https://github.com/team478a/manga/pull/217)
+- Merge: `ba93db0429ce1abc66a89b35deb8d1648ebc60ec`
 - Preview: `https://mangai-hub-staging-git-codex-release-e49113-team478as-projects.vercel.app`
 - 現在: R0〜R3完了後の残件を、R4-0（文書・台帳）、R4-1（Hub／Supabase／Vercel／Stripe実受入れ）、R4-2（Desktop実AI／アクセシビリティ／Windows配布／最終RC）の3工程へ統合する。
 - 今回: `docs/RELEASE_CANDIDATE_R4_PLAN.md`を新設し、CURRENT_TASK、HANDOFF、roadmap、RC台帳を現行基準へ同期する。コードや外部環境は変更しない。
@@ -16,7 +29,7 @@
 - 検証: RC台帳2 passed／11 pending／2 blocked、release構造READY、deps 0 errors／承認済み2 warnings、lint、Hub／Desktop typecheck、research eval、Hub 620/620、Canvas 26/26、AI 48/48、Desktop 182/182／a11y、migration 50/50、Hub／Desktop build、Cloud漫画repository／owner isolation／100ページ4/4が成功。
 - CI: 初回HEAD `00f645f`でCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 残件: 本PR後は統合したR4-1とR4-2の2工程。資格情報、費用承認、実Windows環境、信頼された証明書が必要な項目は外部条件が揃うまでpending／blockedを維持する。
-- 停止条件: 最終文書同期後のHEADでも全CI／Vercel Previewを再確認して停止する。責任者確認前にR4-1へ進まない。
+- 停止条件: 責任者確認とmergeを完了し、PR-R4-1へ移行済み。
 
 ## 2026-08-10 PR-R3-5b shared infrastructure closeout
 

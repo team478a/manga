@@ -2,6 +2,8 @@
 
 2026-08-10監査時点の正式状態は2 passed、11 pending、2 blocked。R4の統合順序と停止条件は[`../RELEASE_CANDIDATE_R4_PLAN.md`](../RELEASE_CANDIDATE_R4_PLAN.md)を参照し、本書の手順と[`RC_ACCEPTANCE_STATUS.json`](RC_ACCEPTANCE_STATUS.json)の証拠要件を維持する。
 
+同日のR4-1 partial監査では、production Vercel／Hub、既存Cloud漫画生成結果とrepository受入れは確認済み。一方、Stripe変数／login、Scheduler Worker認証、対象Supabase project access、本番市場分析保存、8ページexport、2利用者実owner isolationが未完了のため、`hub-production-acceptance`と`stripe-test-e2e`はpendingを維持する。詳細証跡と安全な再開手順は[`../RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。

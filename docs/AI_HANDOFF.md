@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1 Cloud統合受入れ、2026-08-10）
+
+- Base: `feature/manga-canvas-mvp` / `ba93db0429ce1abc66a89b35deb8d1648ebc60ec`（PR #217 merge commit）
+- Branch: `codex/release-r4-1-cloud-acceptance`
+- 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`
+- 完了: production Vercel／Hubの読み取り実機確認、既存Cloud生成結果、repository受入れ、owner isolation、100ページ、研究評価、migration manifest。
+- 外部不足: Stripe変数0件・Dashboard未ログイン、Scheduler Worker URL／secretなし、対象Supabase projectへDashboard accessなし。本番市場分析保存、8ページexport、2利用者実owner isolationは未実施。
+- 証跡: [`RELEASE_CANDIDATE_R4_1_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1_EVIDENCE.md)
+- 制限: secret、外部設定、本番data、Provider、決済を変更／実行せず、未実施をpassedにしない。
+- 停止: 文書限定Draft PRと最終HEADの全CI／Vercel Preview確認後に停止し、責任者確認前にR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-0 Release Candidate統合監査・計画、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `78f4503f6ca235c1c949cddc33c91e7efcc34fa3`（PR #216 merge commit）
