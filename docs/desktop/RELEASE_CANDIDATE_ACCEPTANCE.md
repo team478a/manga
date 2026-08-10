@@ -6,6 +6,8 @@
 
 追補のR4-1bではproduction BFL画像生成、Canvas配置・保存・再読込、1ページPNGが成功した。一方、checkpoint migration不足、同一タブ再読込時の編集lock待機、Cloud Editor文章Job登録前拒否、対象モニター本人の市場分析未確認を検出したため、`hub-production-acceptance`はpendingのままとする。詳細は[`../RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md)を参照する。
 
+R4-1cではPR #220反映後のProductionで、同一タブ再読込／再入場が即時復帰し、別タブの編集遮断と元タブの継続編集も維持されることを確認した。編集lock待機は解決したが、他のR4-1残件があるため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。

@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-10 Codex: PR-R4-1c Production編集ロック再受入れ
+
+- PR #220は`d40d8d4f4e30ff57fcb160f7842afb7b780069d5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1c-page-lock-acceptance`をこの基準から作成した。
+- Productionの既存一般向け検証作品で、同一タブ即時再読込と作品画面からの再入場が自己lock待機なしで復帰することを確認した。
+- 別タブで同じページを開くと既存の編集警告が表示され、元タブは引き続き`保存済み`かつ既存生成画像を表示した。二重編集防止と既存dataを維持している。
+- Productionで発生した変更は編集lease取得だけ。ページ内容、Canvas、Asset、作品状態、Provider、credit、課金、外部設定は変更していない。
+- 詳細は[`RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md)。本PRは文書とRC台帳だけを変更する。
+- RC台帳2 passed／11 pending／2 blocked、全`rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- checkpoint migration、Cloud text readiness、対象モニター本人の市場分析、8ページE2E、Scheduler、2利用者owner isolation、Stripe test E2Eが残るため、R4-1と`hub-production-acceptance`はpendingを維持する。
+- Draft PRと最終HEADの全CI／Vercel Preview確認後に停止し、責任者確認前にR4-2へ進まない。
+
+---
+
 ## 2026-08-10 Codex: Cloud Canvas同一タブ編集ロック修正
 
 - PR #219は`39cb9e670ff8b100b2f37a91fe5aed807aa94549`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-page-edit-lock-reload`をこの基準から作成した。

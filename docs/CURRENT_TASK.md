@@ -1,11 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R4-1c Production編集ロック再受入れ
+
+- 状態: `READY_FOR_DRAFT_PR`
+- Branch: `codex/release-r4-1c-page-lock-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`d40d8d4`、PR #220 merge commit）
+- 証跡: [`RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md)
+- Production合格: 同一タブ即時再読込、作品画面からの同一タブ再入場、別タブ排他、元タブ継続編集、保存済み表示、既存生成画像表示。
+- 変更範囲: Productionでは編集leaseだけを取得。ページ内容、Canvas、Asset、作品状態、Provider、credit、課金、外部設定は変更しない。本PRは証跡、CURRENT_TASK、handoff、RC台帳だけを変更する。
+- 検証: RC台帳2 passed／11 pending／2 blocked、全`rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。
+- R4-1残件: checkpoint migration、Cloud text readiness、対象モニター本人の市場分析、AIネーム由来8ページE2E、Scheduler、2利用者owner isolation、Stripe test E2E。
+- 停止条件: 文書限定Draft PRの最終HEADで全CI／Vercel Previewを確認し、R4-1と`hub-production-acceptance`をpendingのまま責任者確認待ちとする。R4-2へ進まない。
+
 ## 2026-08-10 Cloud Canvas同一タブ編集ロック修正
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED`
 - Branch: `codex/fix-page-edit-lock-reload`
 - Base: `origin/feature/manga-canvas-mvp`（`39cb9e6`、PR #219 merge後）
 - Draft PR: [#220](https://github.com/team478a/manga/pull/220)
+- Merge: `d40d8d4f4e30ff57fcb160f7842afb7b780069d5`
 - Preview: `https://mangai-hub-staging-git-codex-fix-page-67c3b3-team478as-projects.vercel.app`
 - 目的: Productionで再現した、同一タブの再読込／作品画面からの再入場直後に自分の編集leaseへ衝突し、最大約2分編集できない問題だけを修正する。
 - 実装: ページ単位のUUID lock tokenをタブ専用`sessionStorage`へ保持し、同一タブでは再利用する。別タブ／別ページは別tokenのまま維持する。画面破棄時の遅延DELETEが再取得済みleaseを消す競合を避け、タブ終了後は既存の120秒server leaseで失効する。
