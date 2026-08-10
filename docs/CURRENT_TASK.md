@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-10 PR-R4-1i Production checkpoint受入れ
+
+- 状態: `READY_FOR_OWNER_REVIEW`（checkpoint受入れ合格、R4-1全体はpending）
+- Branch: `codex/release-r4-1i-checkpoint-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`f954403`、PR #226 merge commit）
+- Draft PR: [#227](https://github.com/team478a/manga/pull/227)
+- Production migration: `202608100001_cloud_project_checkpoint_digest_schema.sql`を対象Supabaseへ適用済み。`extensions.digest`、RPC引数、Security Definer、固定search path、authenticated EXECUTEを確認。
+- Production実機: 8ページ作品でcheckpointを作成し、作品基本設定だけの差分表示、復元前自動checkpoint、復元、再読込後の元説明復帰を確認。
+- DB: checkpoint 2件、restore 1件、checkpoint page 16行、各8ページ。Job更新・ledger追加なし。Assetは復元仕様で`updated_at`だけ更新され、SHA-256／容量／寸法／有効状態はmanifestと一致。
+- 証跡: [`RELEASE_CANDIDATE_R4_1I_CHECKPOINT_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1I_CHECKPOINT_ACCEPTANCE_EVIDENCE.md)
+- 検証: AI単独30/30、full `rc:validate`再実行成功（Desktop 182/182、Hub 627/627、migration 51/51、Hub／Desktop production build）。初回Desktop 181/182はComfyUI timeout mockの並列タイミング競合で、単独／全体再実行により成功を確認。
+- 変更範囲: 証跡、CURRENT_TASK、handoff、RC台帳だけ。application code、追加DB schema、RPC契約、Storage object、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop codeは変更しない。
+- 残件: Cloud text、対象モニター本人の市場分析、AIネーム由来8ページE2E、2利用者実owner isolation、Stripe test E2E。
+- 停止条件: Draft PRの全CI／Vercel Previewを確認して停止し、R4-2へ進まない。
+
 ## 2026-08-10 PR-R4-1h Production checkpoint digest修正
 
 - 状態: `READY_FOR_OWNER_REVIEW`（R4-1全体はpending）
