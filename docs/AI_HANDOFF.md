@@ -4,7 +4,7 @@
 
 - Base: `feature/manga-canvas-mvp` / `84773f75c9f42715a33b540dd96dcde4fe6e74cd`（PR #221 merge commit）
 - Branch: `codex/release-r4-1d-checkpoint-acceptance`
-- Draft PR: 未作成
+- Draft PR: [#222](https://github.com/team478a/manga/pull/222)
 - 状態: `EXTERNAL_CONFIGURATION_REQUIRED`
 - checkpoint: 対象Supabase project `vmdsyxykcrgxcdbrwlkv`は現在のDashboard accountから参照できず、別projectだけが表示される。SQLや本番DBは変更していない。
 - Cloud text: Vercelにはenabledだけがあり、model、pricing version、Gateway endpoint/keyがProject／Sharedともにない。Production価格台帳はBFL画像13行だけでtext価格0行。

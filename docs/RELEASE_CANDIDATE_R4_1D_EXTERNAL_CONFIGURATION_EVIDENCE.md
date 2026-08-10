@@ -8,7 +8,7 @@
 
 基準commit: `84773f75c9f42715a33b540dd96dcde4fe6e74cd`（PR #221 merge commit）
 
-Draft PR: 未作成
+Draft PR: [#222](https://github.com/team478a/manga/pull/222)
 
 Preview: 未作成
 

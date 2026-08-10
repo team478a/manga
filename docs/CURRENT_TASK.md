@@ -5,7 +5,7 @@
 - 状態: `EXTERNAL_CONFIGURATION_REQUIRED`
 - Branch: `codex/release-r4-1d-checkpoint-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`84773f7`、PR #221 merge commit）
-- Draft PR: 未作成
+- Draft PR: [#222](https://github.com/team478a/manga/pull/222)
 - 証跡: [`RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1D_EXTERNAL_CONFIGURATION_EVIDENCE.md)
 - checkpoint: Supabase Dashboardはログイン済みだが対象project `vmdsyxykcrgxcdbrwlkv`へアクセスできず、別project `mailsend`だけを表示できる。誤適用を避け、SQL実行・本番DB変更は行っていない。
 - Cloud text: Vercel Projectには`MANGAI_CLOUD_TEXT_ENABLED`だけがあり、model、pricing version、Gateway endpoint/keyはProject／Sharedともにない。Production価格台帳13行はすべてBFL画像で、`mangai-cloud-text`は0行。
