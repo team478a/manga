@@ -2,11 +2,13 @@
 
 最終更新: 2026-08-10
 
-状態: `READY_FOR_DRAFT_PR`
+状態: `DRAFT_PR_CI_PENDING`
 
 対象branch: `codex/release-r4-1c-page-lock-acceptance`
 
 基準commit: `d40d8d4f4e30ff57fcb160f7842afb7b780069d5`（PR #220 merge commit）
+
+Draft PR: [#221](https://github.com/team478a/manga/pull/221)
 
 ## 1. 判定
 

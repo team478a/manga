@@ -2,9 +2,10 @@
 
 ## 2026-08-10 PR-R4-1c Production編集ロック再受入れ
 
-- 状態: `READY_FOR_DRAFT_PR`
+- 状態: `DRAFT_PR_CI_PENDING`
 - Branch: `codex/release-r4-1c-page-lock-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`d40d8d4`、PR #220 merge commit）
+- Draft PR: [#221](https://github.com/team478a/manga/pull/221)
 - 証跡: [`RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md)
 - Production合格: 同一タブ即時再読込、作品画面からの同一タブ再入場、別タブ排他、元タブ継続編集、保存済み表示、既存生成画像表示。
 - 変更範囲: Productionでは編集leaseだけを取得。ページ内容、Canvas、Asset、作品状態、Provider、credit、課金、外部設定は変更しない。本PRは証跡、CURRENT_TASK、handoff、RC台帳だけを変更する。

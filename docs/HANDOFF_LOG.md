@@ -7,6 +7,7 @@
 ## 2026-08-10 Codex: PR-R4-1c Production編集ロック再受入れ
 
 - PR #220は`d40d8d4f4e30ff57fcb160f7842afb7b780069d5`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1c-page-lock-acceptance`をこの基準から作成した。
+- Draft PR: [#221](https://github.com/team478a/manga/pull/221)。Draft／MERGEABLE。最終文書同期後のHEADで全CI／Vercel Previewを確認する。
 - Productionの既存一般向け検証作品で、同一タブ即時再読込と作品画面からの再入場が自己lock待機なしで復帰することを確認した。
 - 別タブで同じページを開くと既存の編集警告が表示され、元タブは引き続き`保存済み`かつ既存生成画像を表示した。二重編集防止と既存dataを維持している。
 - Productionで発生した変更は編集lease取得だけ。ページ内容、Canvas、Asset、作品状態、Provider、credit、課金、外部設定は変更していない。

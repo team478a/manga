@@ -4,7 +4,8 @@
 
 - Base: `feature/manga-canvas-mvp` / `d40d8d4f4e30ff57fcb160f7842afb7b780069d5`（PR #220 merge commit）
 - Branch: `codex/release-r4-1c-page-lock-acceptance`
-- 状態: `READY_FOR_DRAFT_PR`
+- Draft PR: [#221](https://github.com/team478a/manga/pull/221)
+- 状態: `DRAFT_PR_CI_PENDING`
 - Production合格: 同一タブ即時再読込、作品画面からの再入場、別タブ排他、元タブ継続、保存済み表示、既存生成Asset表示。
 - Production変更: 編集lease取得のみ。ページ内容、Canvas、Asset、作品状態、Provider、credit、課金、外部設定は変更していない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1C_PAGE_LOCK_EVIDENCE.md)
