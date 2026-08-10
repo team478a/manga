@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-10 Cloud Canvas同一タブ編集ロック修正
+
+- 状態: `IMPLEMENTED_AWAITING_DRAFT_PR`
+- Branch: `codex/fix-page-edit-lock-reload`
+- Base: `origin/feature/manga-canvas-mvp`（`39cb9e6`、PR #219 merge後）
+- 目的: Productionで再現した、同一タブの再読込／作品画面からの再入場直後に自分の編集leaseへ衝突し、最大約2分編集できない問題だけを修正する。
+- 実装: ページ単位のUUID lock tokenをタブ専用`sessionStorage`へ保持し、同一タブでは再利用する。別タブ／別ページは別tokenのまま維持する。画面破棄時の遅延DELETEが再取得済みleaseを消す競合を避け、タブ終了後は既存の120秒server leaseで失効する。
+- 外部契約: URL、API request／response、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopを変更しない。
+- 検証: 専用9/9、全`rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。初回`rc:validate`は120秒の実行上限で切断されたため、十分な時間枠で同一commandを再実行して完走した。
+- 停止条件: Draft PRとCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功を確認して停止する。merge／Production反映前に本番修正済みと扱わず、責任者確認前にR4-2へ進まない。
+
 ## 2026-08-10 PR-R4-1b Production API追加受入れ
 
 - 状態: `PARTIAL_EXTERNAL_CONFIGURATION_REQUIRED`

@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-10 Codex: Cloud Canvas同一タブ編集ロック修正
+
+- PR #219は`39cb9e670ff8b100b2f37a91fe5aed807aa94549`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-page-edit-lock-reload`をこの基準から作成した。
+- Productionで確認した同一タブ再読込／再入場後の自己lockは、component instanceごとに新しいUUIDを作り、直前の未失効120秒leaseと異なるtokenで取得していたことが原因。
+- ページごとのlock tokenをタブ専用`sessionStorage`へ保持する。同一タブは再読込／再入場後も同じtokenでrenewでき、別タブ／別ページは別tokenを使うため既存の上書き防止を維持する。
+- unmount時の非同期DELETEは、再読込後の取得より遅れて新しいleaseを削除できるため自動実行しない。タブを閉じた場合は既存server contractの120秒lease expiryで解放する。DELETE API自体は変更しない。
+- URL、API request／response、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- 専用回帰9/9と全`rc:validate`成功（Hub 624/624、Desktop 182/182、Canvas 26/26、AI 48/48、migration 50/50、Hub／Desktop build）。初回一括検査は120秒の実行上限でEPIPE終了したが、十分な時間枠で同じcommandを再実行して完走した。Draft PR、全CI／Vercel Previewの確認を続け、責任者確認前にR4-2へ進まない。
+
+---
+
 ## 2026-08-10 Codex: PR-R4-1 Cloud統合受入れ（partial）
 
 - PR #217は`ba93db0429ce1abc66a89b35deb8d1648ebc60ec`で`feature/manga-canvas-mvp`へマージ済み。
