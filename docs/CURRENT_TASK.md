@@ -2,15 +2,17 @@
 
 ## 2026-08-12 PR-R4-1m Production反映後確認・本人E2E保留
 
-- 状態: `LOCAL_VALIDATION_COMPLETE_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/release-r4-1m-production-closeout`
 - Base: `origin/feature/manga-canvas-mvp`（`8fe3888`、PR #230 merge commit）
+- Draft PR: [#231](https://github.com/team478a/manga/pull/231)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-a6dc7b-team478as-projects.vercel.app
 - Production: 管理画面TOP 11人、ユーザー一覧11人で一致。対象モニターはactive、AI利用13/50、期限内、主要画面に汎用エラーなし。
 - 責任者判断: 2026-08-12、対象本人の市場分析E2Eはクライアント確認に時間を要するため後日確認へ非blocking保留する。成功扱いにはしない。
 - データ不変: 読み取りと画面遷移だけを行い、Provider、credit、AI利用、Report、作品、Asset、設定、注文を変更していない。
 - 残件: Cloud text実Job、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2E。本人確認待ちだけでは後続を停止しない。
 - 外部契約: application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
-- 検証: full `rc:validate`成功（Hub 632/632、Desktop 182/182、migration 52/52、Hub／Desktop production build）。RC JSON、diff check成功。
+- 検証: full `rc:validate`成功（Hub 632/632、Desktop 182/182、migration 52/52、Hub／Desktop production build）。RC JSON、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
 - 証跡: [`RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md)
 - 停止条件: 文書限定Draft PRの全CI／Vercel Previewを確認して停止する。merge後は本人E2Eを待たず、実行可能なR4残件へ進める。
 

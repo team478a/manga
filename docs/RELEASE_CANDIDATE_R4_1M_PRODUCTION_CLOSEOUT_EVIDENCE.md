@@ -10,6 +10,8 @@ PR #230のmerge commit `8fe3888e8763e1766bcff0c834b1971d2ea50a5d`が`feature/man
 
 - Base: `origin/feature/manga-canvas-mvp` / `8fe3888`（PR #230 merge commit）
 - Branch: `codex/release-r4-1m-production-closeout`
+- Draft PR: [#231](https://github.com/team478a/manga/pull/231)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-a6dc7b-team478as-projects.vercel.app
 - 確認日: 2026-08-12（Asia/Tokyo）
 - 環境: Production `https://app.mang-ai.com`
 - 操作: 読み取り、画面遷移、再表示だけ
@@ -62,6 +64,8 @@ PR #230のmerge commit `8fe3888e8763e1766bcff0c834b1971d2ea50a5d`が`feature/man
 - migration: 52/52 validation成功
 - RC preflight: local readiness成功。外部構成と手動E2Eの未完了状態は維持
 - `git diff --check`: 成功
+- GitHub: Core quality、Migration roundtrip、Windows build成功
+- Vercel／Vercel Preview Comments: 成功
 
 クリーンworktreeの初回検査では共有package生成物が未作成だったためDesktop型検査が開始前に失敗した。既定の`npm run build:packages`後、同じ`rc:validate`を再実行して終了コード0を確認した。製品コードの修正は行っていない。
 
