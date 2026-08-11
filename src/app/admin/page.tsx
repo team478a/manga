@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { BadgeJapaneseYen, Boxes, Bot, BrainCircuit, Bug, Image, KeyRound, Megaphone, PackageCheck, ReceiptText, ShieldCheck, Users, UserRoundCheck } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
+import { safelyLoadAdminData } from "@/lib/admin-resilience";
+import { hasSupabaseAdminEnv } from "@/lib/env";
 import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
+import { loadAdminVisibleUserCount } from "@/modules/account/infrastructure/admin-user-repository";
 
 type OrderSummary = {
   amount: number;
@@ -13,7 +16,9 @@ export default async function AdminPage() {
   await requireAdmin();
   const supabase = await createClient();
   const [users, publicWorks, products, goodsRequests, ordersCount, orders] = await Promise.all([
-    supabase.from("profiles").select("id", { count: "exact", head: true }),
+    safelyLoadAdminData("dashboard/users", () =>
+      loadAdminVisibleUserCount(hasSupabaseAdminEnv()),
+    ),
     supabase.from("works").select("id", { count: "exact", head: true }).eq("is_public", true),
     supabase.from("digital_products").select("id", { count: "exact", head: true }),
     supabase.from("goods_requests").select("id", { count: "exact", head: true }),
@@ -23,7 +28,7 @@ export default async function AdminPage() {
 
   const salesTotal = orders.data?.filter((order) => order.status === "paid").reduce((sum, order) => sum + order.amount, 0) ?? 0;
   const cards = [
-    { title: "登録ユーザー数", count: users.count ?? 0, href: "/admin/users", icon: Users },
+    { title: "登録ユーザー数", count: users.ok ? users.value : "確認", href: "/admin/users", icon: Users },
     { title: "公開作品数", count: publicWorks.count ?? 0, href: "/admin/works", icon: Image },
     { title: "デジタル商品数", count: products.count ?? 0, href: "/admin/products", icon: Boxes },
     { title: "グッズ販売申請数", count: goodsRequests.count ?? 0, href: "/admin/goods-requests", icon: PackageCheck },

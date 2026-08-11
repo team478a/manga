@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1l 管理画面ユーザー件数整合性、2026-08-11）
+
+- Base: `feature/manga-canvas-mvp` / `3fd2d54`（PR #229 merge commit）
+- Branch: `codex/fix-admin-user-count-consistency`
+- 状態: `LOCAL_VALIDATION_COMPLETE_DRAFT_PR_PENDING`
+- Production診断: 管理画面TOPはProfile 12件、ユーザー一覧は削除済みAuthアカウントを除く11人を表示した。
+- 修正: ProfileとAuth directoryの共通可視判定をapplicationへ追加し、TOPと一覧を同じ集計条件へ統一する。取得障害時は不正確な件数を表示しない。
+- 変更しない範囲: DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、Scheduler、Canvas、出力、成人向け境界、Stripe、Desktop。
+- 検証: 集中13/13、full `rc:validate`成功（Hub 632/632、Desktop 182/182、migration 52/52、Hub／Desktop production build）。Draft PR、CI、Vercel Previewを継続する。
+- 証跡: [`RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md)
+- 停止: Draft PRの全CI／Preview後に停止し、市場分析の本人確認前にR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1k Production市場分析RLS受入れ、2026-08-11）
 
 - Base: `feature/manga-canvas-mvp` / `acac27a`（PR #228 merge commit）

@@ -37,7 +37,7 @@ test("ユーザー一覧は確認付き操作と処理中表示を提供する",
     ),
   ]);
   assert.match(page, /停止中/);
-  assert.match(page, /state !== "deleted"/);
+  assert.match(page, /filterVisibleAdminUserProfiles/);
   assert.match(page, /招待メール/);
   assert.match(page, /invite_email_sent_at/);
   assert.match(page, /lastSignInAt/);

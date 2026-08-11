@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-11 PR-R4-1l 管理画面ユーザー件数整合性
+
+- 状態: `LOCAL_VALIDATION_COMPLETE_DRAFT_PR_PENDING`
+- Branch: `codex/fix-admin-user-count-consistency`
+- Base: `origin/feature/manga-canvas-mvp`（`3fd2d54`、PR #229 merge commit）
+- Production診断: 管理画面TOPはProfile全12件、ユーザー一覧は削除済みAuthアカウントを除く11人を表示した。
+- 原因: TOPと一覧で「登録ユーザー」の集計条件が異なり、TOPだけが削除済みAuthアカウントに残るProfileも数えていた。
+- 修正: ProfileとAuth directoryの共通可視判定をapplicationへ追加し、TOPと一覧の両方で使用する。Auth directory障害時は不正確な件数を表示しない。
+- 外部契約: DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- 検証: 集中13/13、full `rc:validate`成功（Hub 632/632、Desktop 182/182、migration 52/52、Hub／Desktop production build）。
+- 証跡: [`RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md)
+- 停止条件: Draft PRの全CI／Vercel Previewを確認して停止し、対象モニター本人の市場分析確認前にR4-2へ進まない。
+
+---
+
 ## 2026-08-11 PR-R4-1k Production市場分析RLS受入れ
 
 - 状態: `READY_FOR_OWNER_REVIEW`（Production migration・RLS受入れ・全品質ゲート・Draft PR完了）
