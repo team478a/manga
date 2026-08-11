@@ -10,7 +10,8 @@ Productionの実データを変更しない読み取り専用transactionで、2�
 
 - Base: `origin/feature/manga-canvas-mvp` / `ff9e0d5`（PR #231 merge commit）
 - Branch: `codex/release-r4-1n-owner-isolation`
-- Draft PR: 作成後に追記
+- Draft PR: [#232](https://github.com/team478a/manga/pull/232)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-0fef78-team478as-projects.vercel.app
 - 確認日: 2026-08-12（Asia/Tokyo）
 - 環境: Production Supabase `main`
 - 操作: aggregate inventory、authenticated role、JWT claim切替、RLS select
@@ -91,7 +92,7 @@ Productionに一般ユーザー所有の生成成果物がないため、既存�
   - Canvas 26/26、AI 48/48、Hub production build
   - Supabase migration 52/52
 - `git diff --check`: PASS
-- Draft PRのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは作成後に確認する
+- Draft PRのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: PASS
 
 クリーンworktreeの初回検査はroot依存関係がなく`build:packages`開始前に停止し、root導入後の`rc:validate`初回はDesktop専用依存関係がなく型検査開始時に停止した。rootとDesktopへそれぞれlockfileどおり`npm ci`を実行し、共有package生成後に同じfull `rc:validate`を再実行して終了コード0を確認した。製品コードの修正は行っていない。
 
