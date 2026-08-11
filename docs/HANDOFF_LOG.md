@@ -7,12 +7,13 @@
 ## 2026-08-11 Codex: PR-R4-1j 市場分析RLS再帰修正
 
 - PR #227は`0255968e7783c0fa6b055dd970746a72c77a42c0`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-profile-rls-admin-recursion`をこの基準から作成した。
-- Draft PR: [#228](https://github.com/team478a/manga/pull/228)。Draft／MERGEABLE、全CIとVercel Preview確認中。
+- Draft PR: [#228](https://github.com/team478a/manga/pull/228)。Preview `https://mangai-hub-staging-git-codex-fix-prof-a5b7c1-team478as-projects.vercel.app`。
 - Productionで対象モニターのactive／招待完了／期限内を確認。AI利用9件、市場分析Report 4件で、直近2回も保存済み。Report表示フィールドのJSON型は正常だった。
 - 対象利用者JWT claimをtransaction内で再現すると、Report readが`stack depth limit exceeded`となった。`current_profile_id()`→`profiles` RLS→`is_admin()`→`profiles`の再帰が原因。
 - `public.is_admin()`を固定`search_path=public,pg_temp`の`SECURITY DEFINER`へ変更する追加migration、rollback、canonical schema、manifest、migration assertionを追加した。
 - 同一transaction内の修正後probeで対象利用者が所有Report 4件・直近Report 1件を参照できた。ROLLBACK後にProduction関数が旧定義のままであることを確認し、永続変更は行っていない。
 - 集中14/14、full `rc:validate`成功（Desktop 182/182、Hub 629/629、migration 52/52、Hub／Desktop production build）。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 詳細は[`RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md)。全品質ゲートとDraft PR／CI／Preview確認後に停止し、merge後のProduction適用と対象本人E2Eまで市場分析受入れをpendingとする。
 
 ---

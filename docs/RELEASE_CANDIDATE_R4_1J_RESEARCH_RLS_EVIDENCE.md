@@ -45,6 +45,9 @@ Productionで報告された「市場分析を表示できませんでした」�
   - Hub／Desktop production build: 成功
   - migration validation: 52/52
 - `git diff --check`: 成功
+- GitHub: Draft PR [#228](https://github.com/team478a/manga/pull/228)、MERGEABLE
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功
+- Preview: `https://mangai-hub-staging-git-codex-fix-prof-a5b7c1-team478as-projects.vercel.app`
 
 ## 適用・停止条件
 
