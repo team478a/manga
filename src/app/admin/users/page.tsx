@@ -7,6 +7,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { AdminUserAccountActions } from "./AdminUserAccountActions";
 import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
+import { filterVisibleAdminUserProfiles } from "@/modules/account/application/admin-user-visibility";
 import {
   loadAdminUserDirectoryData,
   loadAdminUserProfiles,
@@ -68,6 +69,7 @@ export default async function AdminUsersPage({
   const { data: users } = profilesLoaded.value;
 
   const authByUserId = new Map<string, AuthAccount>();
+  let authDirectoryUsers: Array<{ id: string; deleted_at?: string | null }> | null = null;
   const inviteByProfileId = new Map<string, AdminUserInviteDelivery>();
   let inviteTrackingConfigured = true;
   if (hasSupabaseAdminEnv()) {
@@ -77,6 +79,7 @@ export default async function AdminUsersPage({
     );
     if (authLoaded.ok) {
       const [{ data }, inviteResult] = authLoaded.value;
+      authDirectoryUsers = data.users;
       data.users.forEach((user) => {
         const isSuspended = Boolean(user.banned_until);
         authByUserId.set(user.id, {
@@ -95,14 +98,10 @@ export default async function AdminUsersPage({
     }
   }
 
-  const visibleUsers = hasSupabaseAdminEnv()
-    ? (users ?? []).filter(
-        (user) => {
-          const account = authByUserId.get(user.user_id);
-          return Boolean(account && account.state !== "deleted");
-        },
-      )
-    : (users ?? []);
+  const visibleUsers = filterVisibleAdminUserProfiles(
+    users ?? [],
+    authDirectoryUsers,
+  );
 
   const filteredUsers = visibleUsers.filter((user) => {
     const auth = authByUserId.get(user.user_id);

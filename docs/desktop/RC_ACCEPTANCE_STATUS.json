@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseVersion": "0.1.0",
-  "updatedAt": "2026-08-10",
+  "updatedAt": "2026-08-11",
   "requirements": [
     {
       "id": "local-quality-gate",
@@ -101,7 +101,10 @@
         "docs/RELEASE_CANDIDATE_R4_1F_BATCH_REJECTION_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1H_CHECKPOINT_DIGEST_EVIDENCE.md",
-        "docs/RELEASE_CANDIDATE_R4_1I_CHECKPOINT_ACCEPTANCE_EVIDENCE.md"
+        "docs/RELEASE_CANDIDATE_R4_1I_CHECKPOINT_ACCEPTANCE_EVIDENCE.md",
+        "docs/RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md",
+        "docs/RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md",
+        "docs/RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md"
       ]
     }
   ]

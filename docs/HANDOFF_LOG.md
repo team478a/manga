@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-11 Codex: PR-R4-1l 管理画面ユーザー件数整合性
+
+- Branch: `codex/fix-admin-user-count-consistency`
+- Base: `origin/feature/manga-canvas-mvp`@`3fd2d54`（PR #229 merge後）
+- Draft PR [#230](https://github.com/team478a/manga/pull/230)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-admi-61f545-team478as-projects.vercel.app
+- Production横断監査で管理画面TOPの登録ユーザー数12とユーザー一覧11の差を確認した。TOPは全Profileをcountし、一覧は削除済みAuthアカウントとAuth参照のないProfileを除外していた。
+- ProfileとAuth directoryを照合する純粋な共通可視判定を追加し、管理画面TOPと一覧へ適用した。Admin資格情報がない環境では従来件数を維持し、directory障害時は不正確な数を出さない。
+- DB、migration、RPC、Storage、API、URL、Provider、model、pricing、credit、Scheduler、Canvas、PDF／PNG、成人向け境界、Stripe、Desktopは変更していない。
+- 集中13/13、full `rc:validate`成功（Hub 632/632、Desktop 182/182、migration 52/52、Hub／Desktop production build）。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。責任者確認まで停止する。
+
+---
+
 ## 2026-08-11 Codex: PR-R4-1k Production市場分析RLS受入れ
 
 - PR #228はmerge commit `acac27a`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1k-research-acceptance`をこの基準から作成した。

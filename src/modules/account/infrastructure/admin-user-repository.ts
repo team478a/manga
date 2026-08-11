@@ -1,6 +1,7 @@
 import type { CloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { countVisibleAdminUserProfiles } from "@/modules/account/application/admin-user-visibility";
 
 export type AdminUserRecord = {
   id: string;
@@ -40,6 +41,26 @@ export async function loadAdminUserProfiles() {
     .select("id,user_id,display_name,role,created_at")
     .order("created_at", { ascending: false })
     .returns<AdminUserListRecord[]>();
+}
+
+export function loadAdminAuthUsers() {
+  return createAdminClient().auth.admin.listUsers({ page: 1, perPage: 1000 });
+}
+
+export async function loadAdminVisibleUserCount(includeAuthDirectory: boolean) {
+  const profilesResult = await loadAdminUserProfiles();
+  if (profilesResult.error) throw profilesResult.error;
+
+  const profiles = profilesResult.data ?? [];
+  if (!includeAuthDirectory) return profiles.length;
+
+  const authResult = await loadAdminAuthUsers();
+  if (authResult.error) throw authResult.error;
+
+  return countVisibleAdminUserProfiles(
+    profiles,
+    authResult.data?.users ?? [],
+  );
 }
 
 export function loadAdminUserDirectoryData() {
