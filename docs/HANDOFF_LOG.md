@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-11 Codex: PR-R4-1k Production市場分析RLS受入れ
+
+- PR #228はmerge commit `acac27a`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1k-research-acceptance`をこの基準から作成した。
+- Productionで`is_admin()`が旧invoker定義のままであることを確認後、merge済み`202608110001_profile_admin_rls_recursion.sql`を適用した。definer、`search_path=public, pg_temp`、authenticated EXECUTEを確認。
+- 対象モニターclaimのauthenticated roleで、自profile 1件、所有市場分析Report 4件、他owner 0件、直近Reportのcompleted／input object／findings 12件を確認した。RLS再帰は再現しない。
+- 対象のactive、AI利用9、usage 9件、Report 4件は不変。Provider呼出し、credit消費、新規Report作成なし。
+- Productionのユーザー管理、モニター管理、マイページ、Cloud制作画面を再読込し正常表示を確認した。
+- 集中14/14、full `rc:validate`成功（Desktop 182/182、Hub 629/629、migration 52/52、Hub／Desktop production build）。
+- 対象本人の認証情報は保有していないため、本人ブラウザでの既存Report表示と新規AI実行は未実施。詳細は[`RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md)。
+
+---
+
 ## 2026-08-11 Codex: PR-R4-1j 市場分析RLS再帰修正
 
 - PR #227は`0255968e7783c0fa6b055dd970746a72c77a42c0`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/fix-profile-rls-admin-recursion`をこの基準から作成した。
