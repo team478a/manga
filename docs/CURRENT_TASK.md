@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-08-12 PR-R4-1n Production所有者分離受入れ
+
+- 状態: `IN_PROGRESS`
+- Branch: `codex/release-r4-1n-owner-isolation`
+- Base: `origin/feature/manga-canvas-mvp`（`ff9e0d5`、PR #231 merge commit）
+- Draft PR: 作成後に追記
+- Production: read only transactionで2人の一般ユーザーclaimを再現し、市場分析Reportの双方向分離と非公開Cloud作品の所有者1件／相手0件を確認した。
+- 生成成果物: 非公開作品に紐づく既存生成Job、Asset、`cloud-assets` objectは所有側1件／一般ユーザー側0件。ただし既存所有者はadminで、一般ユーザー所有側の実成果物は存在しない。
+- 未実施: 非公開`works` row、一般ユーザー所有生成成果物、Cloud書き出しJob、`cloud-exports` objectが0件のため、marketplace作品と署名付き書き出しURLの実データ比較は未実施。
+- データ不変: `BEGIN TRANSACTION READ ONLY`、authenticated role／JWT claim切替、selectだけを実行し、最後に`ROLLBACK`。個人識別子と秘密値は記録しない。
+- 残件: Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・書き出しURLのowner isolation、Stripe test E2E。対象本人の市場分析E2Eは非blocking保留のままpassedにしない。
+- 外部契約: application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- 検証: owner isolation契約7/7、RC JSON、full `rc:validate`成功（Desktop 182/182、Hub 632/632、migration 52/52、Hub／Desktop production build）、diff check成功。
+- 証跡: [`RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md)
+- 停止条件: 文書限定Draft PRの全CI／Vercel Previewを確認して停止する。未実施項目を成功扱いせず、責任者確認前にR4-2へ進まない。
+
+---
+
 ## 2026-08-12 PR-R4-1m Production反映後確認・本人E2E保留
 
 - 状態: `READY_FOR_OWNER_REVIEW`

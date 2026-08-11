@@ -91,7 +91,7 @@
       "id": "hub-production-acceptance",
       "label": "Hub公開環境受入れ",
       "status": "pending",
-      "reason": "Cloud text model・pricing・Gatewayと実Job、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2E待ち。対象本人の市場分析E2Eは2026-08-12責任者判断で非blocking保留（未確認・passedではない）",
+      "reason": "Cloud text model・pricing・Gatewayと実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2E待ち。市場分析と非公開Cloud作品の2一般ユーザーRLSは2026-08-12に成功。対象本人の市場分析E2Eは責任者判断で非blocking保留（未確認・passedではない）",
       "evidence": [
         "docs/RELEASE_CANDIDATE_R4_1_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md",
@@ -105,7 +105,8 @@
         "docs/RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md",
-        "docs/RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md"
+        "docs/RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md",
+        "docs/RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md"
       ]
     }
   ]

@@ -20,6 +20,8 @@ R4-1kではPR #228 merge後のRLS再帰修正migrationをProductionへ適用し�
 
 R4-1mではPR #230反映後のProductionで管理画面TOPとユーザー一覧が11人で一致し、対象モニターのactive・期限内と主要画面の正常表示を確認した。対象本人の市場分析E2Eは未確認のままpassedにはしないが、2026-08-12の責任者判断で後日確認へ非blocking保留する。Cloud text実Job、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2Eが残るため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md)を参照する。
 
+R4-1nではProductionのread only transactionで2人の一般ユーザーclaimを再現し、市場分析Reportの双方向分離と一般向け非公開Cloud作品の所有者1件／相手0件を確認した。既存の非公開生成Job、Asset、`cloud-assets` objectも第三者から0件だった。一方、一般ユーザー所有の生成成果物、非公開`works`、Cloud書き出しJob／`cloud-exports` objectは存在せず、署名付き書き出しURLを含む残りの実データ比較は未実施である。Cloud text実Job、AIネーム由来8ページE2E、残るowner isolation、Stripe test E2Eがあるため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。
