@@ -1,5 +1,23 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1k Production市場分析RLS受入れ、2026-08-11）
+
+- Base: `feature/manga-canvas-mvp` / `acac27a`（PR #228 merge commit）
+- Branch: `codex/release-r4-1k-research-acceptance`
+- Draft PR: [#229](https://github.com/team478a/manga/pull/229)
+- Preview: `https://mangai-hub-staging-git-codex-release-9642ee-team478as-projects.vercel.app`
+- 状態: `READY_FOR_OWNER_REVIEW`（Production受入れ・全品質ゲート・Draft PR完了）
+- Production: RLS再帰修正migration適用済み。definer、固定search path、authenticated EXECUTEを確認。
+- 対象モニターclaim: 自profile 1件、所有Report 4件、他owner 0件、直近Report構造をRLS経由で参照できた。
+- 不変確認: active、AI利用9、usage 9件、Report 4件。Provider／credit／新規Report変更なし。
+- UI回帰: ユーザー管理、モニター管理、マイページ、Cloud制作画面成功。
+- 検証: 集中14/14、full `rc:validate`成功（Desktop 182/182、Hub 629/629、migration 52/52、Hub／Desktop production build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 証跡: [`RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md)
+- 停止: Draft PRの全CI／Preview後に停止し、対象本人の既存Report再表示まで市場分析受入れをpendingとする。R4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1j 市場分析RLS再帰修正、2026-08-11）
 
 - Base: `feature/manga-canvas-mvp` / `0255968e7783c0fa6b055dd970746a72c77a42c0`（PR #227 merge commit）
