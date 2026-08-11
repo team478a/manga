@@ -2,15 +2,17 @@
 
 ## 2026-08-11 PR-R4-1k Production市場分析RLS受入れ
 
-- 状態: `READY_FOR_DRAFT_PR`（Production migration・RLS受入れ・UI回帰・全品質ゲート完了）
+- 状態: `READY_FOR_OWNER_REVIEW`（Production migration・RLS受入れ・全品質ゲート・Draft PR完了）
 - Branch: `codex/release-r4-1k-research-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`acac27a`、PR #228 merge commit）
 - Draft PR: [#229](https://github.com/team478a/manga/pull/229)
+- Preview: `https://mangai-hub-staging-git-codex-release-9642ee-team478as-projects.vercel.app`
 - Production migration: `202608110001_profile_admin_rls_recursion.sql`適用済み。`SECURITY DEFINER`、固定search path、authenticated EXECUTEを確認。
 - 対象モニターRLS: 自profile 1件、所有Report 4件、他owner 0件、直近Reportの表示必須構造を確認。`stack depth limit exceeded`は再現しない。
 - データ不変: active、AI利用9、usage 9件、Report 4件。Provider呼出し、credit消費、新規Report作成なし。
 - Production UI: `/admin/users`、`/admin/general-monitors`、`/dashboard`、`/creator`正常。
 - 検証: 集中14/14、full `rc:validate`成功（Desktop 182/182、Hub 629/629、migration 52/52、Hub／Desktop production build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md)
 - 残件: 対象本人による既存Report表示と、必要時のみ新規市場分析の保存・再読込確認。
 - 停止条件: Draft PRの全CI／Vercel Previewを確認して停止し、本人確認前に追加AI利用やR4-2へ進まない。

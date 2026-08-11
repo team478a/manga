@@ -64,6 +64,9 @@ migration適用と受入れ試験の前後で対象モニターの業務デー�
   - Hub: 629/629
   - migration validation: 52/52
   - Hub／Desktop production build: 成功
+- GitHub: Draft PR [#229](https://github.com/team478a/manga/pull/229)、MERGEABLE
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功
+- Preview: `https://mangai-hub-staging-git-codex-release-9642ee-team478as-projects.vercel.app`
 
 ## 残る本人確認
 
