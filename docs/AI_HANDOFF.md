@@ -1,5 +1,23 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1j 市場分析RLS再帰修正、2026-08-11）
+
+- Base: `feature/manga-canvas-mvp` / `0255968e7783c0fa6b055dd970746a72c77a42c0`（PR #227 merge commit）
+- Branch: `codex/fix-profile-rls-admin-recursion`
+- Draft PR: [#228](https://github.com/team478a/manga/pull/228)
+- Preview: `https://mangai-hub-staging-git-codex-fix-prof-a5b7c1-team478as-projects.vercel.app`
+- 状態: `READY_FOR_OWNER_REVIEW`（修正・非永続Production検証・全品質ゲート・Draft PR完了）
+- Production: 対象モニターはactive／招待完了／期限内で、市場分析Report 4件が保存済み。Report JSON型も正常。
+- 原因: `profiles` RLSが呼ぶinvoker版`is_admin()`が`profiles`を再参照し、認証利用者のReport readで`stack depth limit exceeded`となる。
+- 修正: `is_admin()`を固定search pathの`SECURITY DEFINER`へ変更する追加migration。admin判定条件と既存RLS／外部契約は変更しない。
+- 非永続検証: 対象利用者claimで所有Report 4件・直近1件を取得後にROLLBACKし、Production定義が未変更であることを確認。
+- 検証: 集中14/14、full `rc:validate`成功（Desktop 182/182、Hub 629/629、migration 52/52、Hub／Desktop production build）。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 証跡: [`RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md)
+- 停止: Draft PRの全CI／Vercel Preview後に停止する。merge後のmigration適用と対象本人E2Eまで市場分析受入れはpending、R4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1i Production checkpoint受入れ、2026-08-10）
 
 - Base: `feature/manga-canvas-mvp` / `f9544035a82256ce2128f4ec1c6b4473cd4b9404`（PR #226 merge commit）

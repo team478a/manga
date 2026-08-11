@@ -14,6 +14,8 @@ R4-1fではProductionの既存検証作品を8ページへ拡張し、AIネー�
 
 R4-1gではProductionで、ページ遷移直後の編集lease確認中にも編集UIが操作可能なfail-openを再現した。lease取得前・別画面編集中・確認不能時は編集UIとグローバルショートカットを遮断し、固定overlayで状態を案内する。API／DB／lease外部契約は変更していない。他のR4-1残件があるため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1G_PAGE_LOCK_GATE_EVIDENCE.md)を参照する。
 
+R4-1jでは対象モニターの市場分析Reportが4件保存済みである一方、認証利用者のReport readが`profiles` RLSとinvoker版`is_admin()`の再帰により`stack depth limit exceeded`となることを確定した。固定search pathの`SECURITY DEFINER`へ変更する追加migrationを非永続Production probeで検証し、所有Report 4件を参照できた。merge後のmigration適用と対象本人による既存・新規Report E2Eまでは`hub-production-acceptance`をpendingとする。詳細は[`../RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1J_RESEARCH_RLS_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。
