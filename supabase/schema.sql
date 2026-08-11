@@ -280,7 +280,12 @@ after insert on auth.users
 for each row execute function public.create_profile_for_new_user();
 
 create or replace function public.is_admin()
-returns boolean language sql stable as $$
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, pg_temp
+as $$
   select exists (
     select 1 from public.profiles
     where user_id = auth.uid() and role = 'admin'

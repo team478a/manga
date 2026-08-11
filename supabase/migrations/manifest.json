@@ -306,7 +306,13 @@
       "description": "checkpoint hash生成でpgcryptoのextensions schemaを明示してProduction実行を修正",
       "forwardSha256": "1249bd62c8f2163dcd043dcd23f1f592f8fa720ac79ccaac96d9461aac119513",
       "rollbackSha256": "26425952579109630f30f4bc6acc94ffbb4dc1a19e0e7923f313aac3b458966d"
+    },
+    {
+      "id": "202608110001_profile_admin_rls_recursion",
+      "description": "profiles RLSのadmin判定を固定search pathのdefiner関数へ変更して再帰を解消",
+      "forwardSha256": "546a43ede4f5b177c97b00f3307c94d46206d4824595ba36392d9c7721f95624",
+      "rollbackSha256": "3cbccafba22932f4ff2a1dafe2c59387853b15e4ccc496a72fad45e2620ac155"
     }
   ],
-  "schemaSha256": "cdcf7671553c2bf5e9c2a2d927f254065c55793a00519760155b08f2d20c3797"
+  "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"
 }
