@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-12 Codex: PR-R4-1n Production所有者分離受入れ
+
+- Branch `codex/release-r4-1n-owner-isolation`をPR #231 merge commit `ff9e0d5`から作成した。
+- Draft PR [#232](https://github.com/team478a/manga/pull/232)を作成した。Preview: https://mangai-hub-staging-git-codex-release-0fef78-team478as-projects.vercel.app
+- Production Supabaseで個人を識別しない件数を確認し、一般向け市場分析Reportは4所有者、一般向け非公開Cloud作品は2所有者に分散していた。
+- read only transactionで2人の非admin user claimをauthenticated roleとして再現し、Aの市場分析／非公開作品はAから1件・Bから0件、Bの市場分析はAから0件・Bから1件となった。
+- 既存の非公開生成Job、Asset、`cloud-assets` objectは所有側1件・一般ユーザー側0件。ただし所有側はadminで、一般ユーザー所有成果物の所有側確認は未実施。
+- 非公開`works`、Cloud書き出しJob、`cloud-exports` objectは0件。Productionデータを作成せず、marketplace作品と署名付き書き出しURLは未実施のまま維持する。
+- transactionは`ROLLBACK`済み。Provider、Job、Asset、Storage、credit、費用、Report、作品、注文、製品コード、外部契約を変更していない。
+- owner isolation契約7/7、RC JSON、full `rc:validate`成功（Desktop 182/182、Hub 632/632、migration 52/52、Hub／Desktop production build）、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。初回はクリーンworktreeのroot／Desktop依存不足で開始前に停止し、lockfileどおり導入後の再実行で完走した。
+- 詳細は[`RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md)。文書限定Draft PRの全CI／Vercel Preview確認後に停止する。
+
+---
+
 ## 2026-08-12 Codex: PR-R4-1m Production反映後確認・本人E2E保留
 
 - Branch `codex/release-r4-1m-production-closeout`をPR #230 merge commit `8fe3888`から作成した。

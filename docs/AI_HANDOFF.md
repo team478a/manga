@@ -1,5 +1,23 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1n Production所有者分離受入れ、2026-08-12）
+
+- Base: `feature/manga-canvas-mvp` / `ff9e0d5`（PR #231 merge commit）
+- Branch: `codex/release-r4-1n-owner-isolation`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#232](https://github.com/team478a/manga/pull/232)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-0fef78-team478as-projects.vercel.app
+- Production: read only transactionで2人の一般ユーザーclaimを再現し、市場分析Reportの双方向分離と一般向け非公開Cloud作品の所有者1件／相手0件を確認した。
+- 成果物分離: 既存の非公開生成Job、Asset、`cloud-assets` objectは所有側1件／一般ユーザー側0件。ただし既存所有者はadminで、一般ユーザー所有の成果物は0件だった。
+- 不変: transactionは`ROLLBACK`済み。DB／Storage／Provider／credit／利用者data／製品コード／外部契約を変更していない。
+- 未実施: 非公開`works`、一般ユーザー所有生成成果物、Cloud書き出しJob／`cloud-exports`が0件のため、marketplace作品と署名付き書き出しURLの実データ比較は未実施。
+- 残件: Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・書き出しURLのowner isolation、Stripe test E2E。対象本人の市場分析E2Eは非blocking保留でpassedではない。
+- 検証: owner isolation契約7/7、RC JSON、full `rc:validate`成功（Desktop 182/182、Hub 632/632、migration 52/52、Hub／Desktop production build）、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- 証跡: [`RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md)
+- 停止: 文書限定Draft PRの全CI／Preview後に停止し、責任者確認前にR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1m Production反映後確認・本人E2E保留、2026-08-12）
 
 - Base: `feature/manga-canvas-mvp` / `8fe3888`（PR #230 merge commit）
