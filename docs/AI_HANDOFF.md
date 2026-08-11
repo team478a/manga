@@ -4,6 +4,7 @@
 
 - Base: `feature/manga-canvas-mvp` / `0255968e7783c0fa6b055dd970746a72c77a42c0`（PR #227 merge commit）
 - Branch: `codex/fix-profile-rls-admin-recursion`
+- Draft PR: [#228](https://github.com/team478a/manga/pull/228)
 - 状態: `READY_FOR_DRAFT_PR`（修正・非永続Production検証・ローカル全品質ゲート完了）
 - Production: 対象モニターはactive／招待完了／期限内で、市場分析Report 4件が保存済み。Report JSON型も正常。
 - 原因: `profiles` RLSが呼ぶinvoker版`is_admin()`が`profiles`を再参照し、認証利用者のReport readで`stack depth limit exceeded`となる。
