@@ -5,6 +5,7 @@
 - 状態: `READY_FOR_DRAFT_PR`（Production migration・RLS受入れ・UI回帰・全品質ゲート完了）
 - Branch: `codex/release-r4-1k-research-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`acac27a`、PR #228 merge commit）
+- Draft PR: [#229](https://github.com/team478a/manga/pull/229)
 - Production migration: `202608110001_profile_admin_rls_recursion.sql`適用済み。`SECURITY DEFINER`、固定search path、authenticated EXECUTEを確認。
 - 対象モニターRLS: 自profile 1件、所有Report 4件、他owner 0件、直近Reportの表示必須構造を確認。`stack depth limit exceeded`は再現しない。
 - データ不変: active、AI利用9、usage 9件、Report 4件。Provider呼出し、credit消費、新規Report作成なし。

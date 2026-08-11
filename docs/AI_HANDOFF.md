@@ -4,6 +4,7 @@
 
 - Base: `feature/manga-canvas-mvp` / `acac27a`（PR #228 merge commit）
 - Branch: `codex/release-r4-1k-research-acceptance`
+- Draft PR: [#229](https://github.com/team478a/manga/pull/229)
 - 状態: `READY_FOR_DRAFT_PR`（Production受入れ・全品質ゲート完了）
 - Production: RLS再帰修正migration適用済み。definer、固定search path、authenticated EXECUTEを確認。
 - 対象モニターclaim: 自profile 1件、所有Report 4件、他owner 0件、直近Report構造をRLS経由で参照できた。
