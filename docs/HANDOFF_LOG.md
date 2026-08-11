@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-12 Codex: PR-R4-1m Production反映後確認・本人E2E保留
+
+- Branch `codex/release-r4-1m-production-closeout`をPR #230 merge commit `8fe3888`から作成した。
+- Draft PR [#231](https://github.com/team478a/manga/pull/231)を作成した。Preview: https://mangai-hub-staging-git-codex-release-a6dc7b-team478as-projects.vercel.app
+- Productionの管理画面TOPとユーザー一覧がともに11人で一致し、PR-R4-1lの修正反映を確認した。
+- 対象モニターはactive、AI利用13/50、期限内。Dashboard、Creator、市場分析履歴を読み取り確認し、汎用エラーはなかった。
+- 2026-08-12の責任者判断により、対象本人の市場分析E2Eは成功扱いにせず後日確認へ非blocking保留し、本人確認だけでは後続作業を停止しない。
+- 読み取りと画面遷移だけを行い、Provider、credit、AI利用、Report、作品、Asset、設定、注文を変更していない。
+- full `rc:validate`成功（Hub 632/632、Desktop 182/182、migration 52/52、Hub／Desktop production build）。クリーンworktree初回は共有package未buildで型検査開始前に失敗し、`build:packages`後の再実行で完走した。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- 詳細は[`RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md)。文書限定Draft PRの全CI／Vercel Preview確認後に停止する。
+
+---
+
 ## 2026-08-11 Codex: PR-R4-1l 管理画面ユーザー件数整合性
 
 - Branch: `codex/fix-admin-user-count-consistency`

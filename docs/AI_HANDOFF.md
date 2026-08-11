@@ -1,5 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1m Production反映後確認・本人E2E保留、2026-08-12）
+
+- Base: `feature/manga-canvas-mvp` / `8fe3888`（PR #230 merge commit）
+- Branch: `codex/release-r4-1m-production-closeout`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#231](https://github.com/team478a/manga/pull/231)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-a6dc7b-team478as-projects.vercel.app
+- Production: 管理画面TOPとユーザー一覧は11人で一致。対象モニターはactive、13/50、期限内。Dashboard、Creator、市場分析履歴に汎用エラーなし。
+- 責任者判断: 対象本人の市場分析E2Eは2026-08-12付で非blocking保留。未確認のためpassedにはしないが、本人確認だけを理由に後続を止めない。
+- 不変: 読み取り専用。Provider、credit、AI利用、Report、作品、Asset、設定、注文を変更していない。製品コードと外部契約も変更しない。
+- 検証: full `rc:validate`成功（Hub 632/632、Desktop 182/182、migration 52/52、Hub／Desktop production build）。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- 残件: Cloud text実Job、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2E。
+- 証跡: [`RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md)
+- 停止: 文書限定Draft PRの全CI／Preview後に停止し、merge後は実行可能なR4残件へ進む。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1l 管理画面ユーザー件数整合性、2026-08-11）
 
 - Base: `feature/manga-canvas-mvp` / `3fd2d54`（PR #229 merge commit）

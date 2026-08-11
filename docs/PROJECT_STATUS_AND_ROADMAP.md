@@ -1,5 +1,12 @@
 # MANGAI 現在の実装状況と今後のロードマップ
 
+## 2026-08-12 現在地（R4-1 Production反映後確認）
+
+- 現行基準は`feature/manga-canvas-mvp`の`8fe3888e8763e1766bcff0c834b1971d2ea50a5d`（PR #230 merge commit）。
+- Productionで管理画面TOPとユーザー一覧が11人で一致し、対象モニターのactive・期限内と主要画面の正常表示を確認した。
+- 対象本人の市場分析E2Eは未確認のまま成功扱いにせず、2026-08-12の責任者判断で後日確認へ非blocking保留する。
+- R4-1はCloud text実Job、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2Eがpending。本人確認だけを理由に後続を停止しない。
+
 ## 2026-08-10 現在地（R3完了・R4 Release Candidate受入れ）
 
 - 現行基準は`feature/manga-canvas-mvp`の`78f4503f6ca235c1c949cddc33c91e7efcc34fa3`（PR #216 merge commit）。
