@@ -10,6 +10,7 @@ Productionの管理画面TOPがProfile 12件を数える一方、ユーザー一
 
 - Base: `origin/feature/manga-canvas-mvp` / `3fd2d54`（PR #229 merge commit）
 - Branch: `codex/fix-admin-user-count-consistency`
+- Draft PR: [#230](https://github.com/team478a/manga/pull/230)
 - 対象: 管理画面TOPの登録ユーザー数、ユーザー一覧の可視判定、account application／repository
 - 対象外: DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Stripe、Desktop
 
@@ -32,7 +33,9 @@ Productionの管理画面TOPがProfile 12件を数える一方、ユーザー一
 - Hub: lint、typecheck、632/632 tests、production build成功
 - Desktop: lint、typecheck、182/182 tests、renderer build成功
 - migration: 52/52 validation成功
-- Draft PR、CI、Vercel Preview: 確認中
+- GitHub: Core quality、Migration roundtrip、Windows build成功
+- Vercel／Vercel Preview Comments: 成功
+- Preview: https://mangai-hub-staging-git-codex-fix-admi-61f545-team478as-projects.vercel.app
 
 ## Productionへの影響と確認
 
