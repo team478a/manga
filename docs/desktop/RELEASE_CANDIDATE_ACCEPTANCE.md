@@ -18,6 +18,8 @@ R4-1jでは対象モニターの市場分析Reportが4件保存済みである�
 
 R4-1kではPR #228 merge後のRLS再帰修正migrationをProductionへ適用した。対象モニターclaimで自profile 1件、所有市場分析Report 4件、他owner 0件、直近Report構造を参照でき、管理画面とCloud主要画面にも回帰がない。本人ブラウザでの既存Report再表示が残るため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1K_RESEARCH_ACCEPTANCE_EVIDENCE.md)を参照する。
 
+R4-1mではPR #230反映後のProductionで管理画面TOPとユーザー一覧が11人で一致し、対象モニターのactive・期限内と主要画面の正常表示を確認した。対象本人の市場分析E2Eは未確認のままpassedにはしないが、2026-08-12の責任者判断で後日確認へ非blocking保留する。Cloud text実Job、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2Eが残るため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。
