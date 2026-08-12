@@ -1,11 +1,14 @@
 # MANGAI 現在の実装状況と今後のロードマップ
 
-## 2026-08-12 現在地（R4-1 Production反映後確認）
+## 2026-08-12 現在地（R4-1p モニター公開範囲・Production一連動作）
 
-- 現行基準は`feature/manga-canvas-mvp`の`8fe3888e8763e1766bcff0c834b1971d2ea50a5d`（PR #230 merge commit）。
-- Productionで管理画面TOPとユーザー一覧が11人で一致し、対象モニターのactive・期限内と主要画面の正常表示を確認した。
-- 対象本人の市場分析E2Eは未確認のまま成功扱いにせず、2026-08-12の責任者判断で後日確認へ非blocking保留する。
-- R4-1はCloud text実Job、AIネーム由来8ページE2E、2利用者owner isolation、Stripe test E2Eがpending。本人確認だけを理由に後続を停止しない。
+- 現行基準は`feature/manga-canvas-mvp`の`924b833ab5a95f248424ec33029bbb5e3870f9f1`（PR #233 merge commit）。
+- 一般向けモニターへ市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理の6工程を公開済み。販売準備と収益管理は準備中・モニター対象外。
+- Production readinessは全項目準備完了で、登録9名、利用中9名、初回確認済み4名。対象本人の市場分析保存・詳細・再読込は完了報告を受入れ済み。
+- testモニター本人sessionでは、市場分析再表示、企画3案生成・採用、32ページシナリオ生成・採用までProduction実Providerで成功した。手動作品のCanvas自動保存・再読込と1ページPNGも成功した。
+- 32ページネームは通常実行・再実行とも約3分でtimeoutし、失敗試行も利用数へ加算された。AIネーム由来作品を作れないため、画像候補と完成PDFへ進めない。
+- Canvas品質評価とモニター不具合報告はともにProduction保存失敗し、送信履歴も確認不能。安定して利用可能と実測できた縦型範囲はシナリオ採用まで。
+- R4-1はネームtimeout、feedback保存、AIネーム由来画像、画像付き4〜8ページPDF、一般ユーザー所有成果物・署名URLのowner isolation、Stripe test E2Eがpending。
 
 ## 2026-08-10 現在地（R3完了・R4 Release Candidate受入れ）
 

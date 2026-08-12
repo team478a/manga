@@ -91,7 +91,7 @@
       "id": "hub-production-acceptance",
       "label": "Hub公開環境受入れ",
       "status": "pending",
-      "reason": "Cloud text model・pricing・Gatewayと実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2E待ち。市場分析と非公開Cloud作品の2一般ユーザーRLS、および対象本人の市場分析E2Eは2026-08-12に成功",
+      "reason": "testモニター本人の市場分析→企画→シナリオ採用はProduction実Providerで成功。一方、32ページネームが通常実行・再実行ともtimeoutし、Canvas品質評価とモニター報告も保存失敗。AIネーム由来画像、画像付き4〜8ページPDF、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2E待ち",
       "evidence": [
         "docs/RELEASE_CANDIDATE_R4_1_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md",
@@ -107,7 +107,8 @@
         "docs/RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md",
-        "docs/RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md"
+        "docs/RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md",
+        "docs/RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md"
       ]
     }
   ]
