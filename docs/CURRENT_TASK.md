@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-13 PR-R4-1w FLUX単一コマProduction受入れ
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#241](https://github.com/team478a/manga/pull/241)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-f980ec-team478as-projects.vercel.app
+- Branch: `codex/release-r4-1w-flux-production-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`d0091a0`、PR #240 merge commit）
+- Production実機: 一般向けモニター`test`、既存32ページ作品の2ページ3コマ目へ2候補を生成した。
+- Provider結果: Scheduler [run 31647042128](https://github.com/team478a/manga/actions/runs/31647042128)は`idle requests=3 processed=2`で成功し、2候補ともcompleted 100%。
+- 品質結果: 2候補とも単一の全面モノクロ場面で、複数コマ、枠、吹き出し、文字、疑似文字なし。PR-R4-1vの限定実Provider受入れは合格。
+- credit／保存: 残12／使用8／予約0から、登録時残8／使用8／予約4、完了時残8／使用12／予約0へ正しく遷移。候補1を採用し、`保存済み`、再読込後の`AI背景レイヤー`復元を確認した。
+- 範囲境界: 単一コマ縦切りは利用可能。人物連続性、4〜8ページ一括生成、完成原稿、PDF／PNG、販売品質は未合格のまま。
+- 変更範囲: 証跡、CURRENT_TASK、AI_HANDOFF、HANDOFF_LOGだけ。application codeと外部契約は変更しない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 証跡: [`RELEASE_CANDIDATE_R4_1W_FLUX_PRODUCTION_ACCEPTANCE.md`](RELEASE_CANDIDATE_R4_1W_FLUX_PRODUCTION_ACCEPTANCE.md)
+- 次: 責任者のreview／merge判断まで停止。次工程は長編credit／段階生成条件の監査で、責任者確認前に有料4〜8ページ一括生成や実装を行わない。
+
+---
+
 ## 2026-08-13 PR-R4-1v FLUX単一コマ正方向Prompt
 
 - 状態: `READY_FOR_OWNER_REVIEW`

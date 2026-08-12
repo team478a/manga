@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1w FLUX単一コマProduction受入れ
+
+- PR #240がmerge commit `d0091a047e15877bb3049f066a1d8b6f261dc1c6`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Draft PR [#241](https://github.com/team478a/manga/pull/241)を作成した。Preview: https://mangai-hub-staging-git-codex-release-f980ec-team478as-projects.vercel.app
+- Productionの一般向けモニター`test`で、既存作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`の2ページ3コマ目へ完成コマ2候補を登録した。
+- Scheduler [run 31647042128](https://github.com/team478a/manga/actions/runs/31647042128)はProduction基準commitで成功し、`status=idle requests=3 processed=2`となった。両候補はcompleted 100%。
+- creditは登録前残12／使用8／予約0、登録後残8／使用8／予約4、完了後残8／使用12／予約0となった。
+- 候補1と候補2はどちらも腕時計と証拠袋を描いた単一の全面モノクロ場面で、複数コマ、枠、吹き出し、文字、疑似文字を含まなかった。
+- 候補1を採用し、`保存済み`を確認した。再読込後も3コマ目に`AI背景レイヤー`が復元し、使用12／予約0を維持した。
+- FLUX正方向Promptの単一コマ縦切りは合格。2候補だけのため人物連続性、4〜8ページ一括生成、完成原稿、PDF／PNG、販売品質は未合格のまま維持する。
+- 本PRは証跡と台帳だけを変更し、application codeと外部契約は変更しない。Productionで作成・採用した正規利用者データは削除しない。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。次は責任者確認後に長編credit／候補数／段階生成条件を監査する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1W_FLUX_PRODUCTION_ACCEPTANCE.md`
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1v FLUX単一コマ正方向Prompt
 
 - PR #239 merge commit `92f379e`を含む最新`feature/manga-canvas-mvp`から`codex/fix-r4-1v-flux-positive-panel-prompt`を作成した。
