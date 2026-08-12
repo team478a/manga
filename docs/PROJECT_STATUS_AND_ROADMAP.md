@@ -5,9 +5,10 @@
 - 現行基準は`feature/manga-canvas-mvp`の`924b833ab5a95f248424ec33029bbb5e3870f9f1`（PR #233 merge commit）。
 - 一般向けモニターへ市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理の6工程を公開済み。販売準備と収益管理は準備中・モニター対象外。
 - Production readinessは全項目準備完了で、登録9名、利用中9名、初回確認済み4名。対象本人の市場分析保存・詳細・再読込は完了報告を受入れ済み。
-- 主要route、32ページ表示、Canvas保存済み復帰、別タブlock、responsive 12条件は成功した。
-- Cloud文章Job登録と、既存32ページ作品のstoryboard materialization／owner境界を満たす画像候補生成が完走しない。画像0/64、完成PDF disabledのため、市場分析から画像付き完成原稿までを公開完走可能とは判定しない。
-- R4-1は同一monitor ownerの縦型E2E、Cloud text実Job、画像付き4〜8ページPDF／PNG、一般ユーザー所有成果物・署名URLのowner isolation、Stripe test E2Eがpending。
+- testモニター本人sessionでは、市場分析再表示、企画3案生成・採用、32ページシナリオ生成・採用までProduction実Providerで成功した。手動作品のCanvas自動保存・再読込と1ページPNGも成功した。
+- 32ページネームは通常実行・再実行とも約3分でtimeoutし、失敗試行も利用数へ加算された。AIネーム由来作品を作れないため、画像候補と完成PDFへ進めない。
+- Canvas品質評価とモニター不具合報告はともにProduction保存失敗し、送信履歴も確認不能。安定して利用可能と実測できた縦型範囲はシナリオ採用まで。
+- R4-1はネームtimeout、feedback保存、AIネーム由来画像、画像付き4〜8ページPDF、一般ユーザー所有成果物・署名URLのowner isolation、Stripe test E2Eがpending。
 
 ## 2026-08-10 現在地（R3完了・R4 Release Candidate受入れ）
 

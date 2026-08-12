@@ -9,13 +9,13 @@
 - Vercel Preview: https://mangai-hub-staging-git-codex-release-3bd30f-team478as-projects.vercel.app
 - 公開範囲: 一般向けモニターへ市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理の6工程を公開。販売準備と収益管理は準備中・モニター対象外。
 - Readiness: Production管理画面は全項目準備完了。登録9名、利用中9名、初回確認済み4名、未完了feedback 0件、Queue待ち0／実行中0／24時間以内失敗0。
-- 実ブラウザ: Header／マイページ／6工程route、32ページ作品、Canvas保存済み復帰、別タブ編集lock、390／768／1280pxの主要4画面12条件を確認。
-- 阻害1: 既存32ページ作品の2候補生成はstoryboard materialization／owner境界でJob前拒否。使用4／予約0／残り16のまま。
-- 阻害2: 短いCloud文章生成は「登録に失敗しました。」でJob前停止。Provider／credit／費用なし。
-- 未完了: 画像配置0/64、完成0/32、要修正135、完成PDF disabled。PNGはdownload成功を捕捉できず今回PASSにしない。
+- testモニター実機: active、期限内、保存済みReport 2件、AI利用2/100から開始。市場分析再表示、企画3案生成・採用、32ページシナリオ生成・採用までProduction実Providerで成功。
+- 阻害1: 32ページAIネーム初稿は通常実行と1回の再実行がともに約3分でタイムアウトし、利用数は各試行を含め6/100へ加算。ネーム版と本人ownerのCanvas下書きは未作成。
+- 原稿編集: 一般向け手動作品、1ページ、コマ追加、自動保存、再読込復元、1ページPNGは成功。2候補画像生成はAIネーム由来条件でJob前安全拒否され、画像creditは使用0／予約0／残り20。
+- 阻害2: Canvas品質評価は「品質フィードバックを保存できませんでした」、モニター不具合報告も「フィードバックを保存できませんでした」。送信履歴も一時確認不能で、共通feedback保存経路をProduction障害と判定。
 - 品質: full `rc:validate`、Hub 632/632、migration 52/52、Canvas 26/26、AI 48/48、longform 4/4、owner isolation 7/7、research eval、Production route 9/9、responsive 12/12成功。
 - CI: Draft PR初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
-- RC: 2 passed／11 pending／2 blocked。Cloud text実Job、同一monitor ownerの縦型E2E、画像付き4〜8ページPDF／PNG、生成成果物・署名URLのowner isolation、Stripe test E2Eを成功扱いにしない。
+- RC: 2 passed／11 pending／2 blocked。縦型E2Eはシナリオ採用まで成功したが、ネームtimeout、feedback保存、AIネーム由来画像、画像付き4〜8ページPDF、生成成果物・署名URLのowner isolation、Stripe test E2Eを成功扱いにしない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md)
 - 停止条件: 文書限定Draft PRの全CI／Vercel Previewを確認して停止し、責任者確認前にR4-2へ進まない。
 

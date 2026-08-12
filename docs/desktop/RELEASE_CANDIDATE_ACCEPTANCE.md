@@ -24,7 +24,7 @@ R4-1nではProductionのread only transactionで2人の一般ユーザーclaim�
 
 R4-1oでは2026-08-12のMANGAI責任者報告により、対象ユーザー本人の市場分析ユーザー検証完了を受入れた。PR-R4-1mで保留した既存Report表示、新規市場分析保存、詳細表示、再読込後の本人履歴再表示を完了とし、非blocking保留を解除する。本人E2Eは完了したが、Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2Eが残るため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md)を参照する。
 
-R4-1pでは一般向けモニターへ6工程が公開され、Production readiness全項目、主要route、32ページ表示、Canvas再読込・別タブlock、responsive 12条件を確認した。一方、2候補画像生成はstoryboard materialization／owner境界、Cloud文章生成はJob登録で停止し、画像0/64、完成PDF disabledだった。市場分析から画像付き完成原稿までを完走できないため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md)を参照する。
+R4-1pのtestモニター本人sessionでは、保存済み市場分析の再表示、企画3案生成・採用、32ページシナリオ生成・採用までProduction実Providerで成功した。手動作品のCanvas自動保存・再読込と1ページPNGも成功した。一方、32ページネームは通常実行・再実行とも約3分でtimeoutし、失敗試行も利用数へ加算された。Canvas品質評価とモニター報告も保存に失敗した。AIネーム由来画像と完成PDFへ進めないため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md)を参照する。
 
 ## 1. 目的
 

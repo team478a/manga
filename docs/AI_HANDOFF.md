@@ -9,8 +9,9 @@
 - Vercel Preview: https://mangai-hub-staging-git-codex-release-3bd30f-team478as-projects.vercel.app
 - 公開: 一般向けモニターは市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理の6工程。販売準備と収益管理は準備中。
 - Production: readiness全項目準備完了、登録9／利用中9／初回確認済み4、Queue待ち0／実行中0／24時間以内失敗0。
-- 実機成功: 主要route、32ページ表示、Canvas保存済み復帰、別タブlock、responsive 12/12、Production route 9/9。
-- 実機阻害: 2候補画像生成はstoryboard materialization／owner境界、Cloud文章生成はJob登録で停止。credit・Provider費用なし。画像0/64、PDF disabled。
+- testモニター実機成功: 保存済み市場分析2件の再表示、企画3案生成・採用、32ページシナリオ生成・採用。手動作品の作成、コマ追加、自動保存、再読込、1ページPNGも成功。
+- 実機阻害: 32ページネームは通常実行と再実行がともに約3分でtimeoutし、失敗試行も利用数へ加算（2/100→6/100）。手動作品の2候補生成はAIネーム由来条件でJob前安全拒否、画像creditは0/20。
+- feedback障害: Canvas品質評価とモニター不具合報告がともにProduction保存失敗。送信履歴も一時確認不能で、共通feedback保存経路の修正が必要。
 - 品質: full `rc:validate`、Hub 632/632、migration 52/52、Canvas 26/26、AI 48/48、longform 4/4、owner isolation 7/7、research eval成功。
 - CI: Draft PR初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md)

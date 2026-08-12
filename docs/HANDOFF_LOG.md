@@ -10,9 +10,10 @@
 - Draft PR [#234](https://github.com/team478a/manga/pull/234)を作成した。Preview: https://mangai-hub-staging-git-codex-release-3bd30f-team478as-projects.vercel.app
 - Productionの公式モニター公開は市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理の6工程。販売準備と収益管理は準備中。
 - 管理readinessは全項目準備完了。登録9名、利用中9名、初回確認済み4名、未完了feedback 0、Queue待ち0／実行中0／24時間以内失敗0。
-- Header、マイページ、6工程route、32ページ作品、Canvas保存済み復帰、別タブlock、390／768／1280pxの主要4画面12条件を確認した。
-- 既存32ページ作品の2候補画像生成はstoryboard materialization／owner境界でJob前拒否。短いCloud文章生成もJob登録前に失敗。使用4／予約0／残り16のままで、Provider、Asset、費用なし。
-- 作品は画像0/64、完成0/32、要修正135、完成PDF disabled。PNGはsynthetic downloadの成功を捕捉できず今回PASSにしない。
+- 表示名`test`のactiveモニター本人sessionで、保存済み市場分析2件の再表示、企画3案生成・採用、32ページシナリオ生成・採用までProduction実Providerで成功した。
+- 32ページネームは通常実行と1回の再実行がともに約3分でtimeout。失敗試行も利用数へ加算され、2/100から6/100となった。ネーム版と本人ownerのCanvas materializationは未作成。
+- 一般向け手動作品を作成し、1ページ、コマ追加、自動保存、再読込復元、1ページPNGに成功。2候補画像生成はAIネーム由来条件でJob前安全拒否され、画像creditは使用0／予約0／残り20。
+- Canvas品質評価とモニター状況画面の不具合報告がともに保存失敗し、送信履歴も一時確認不能だった。共通feedback保存経路のProduction障害として記録する。
 - full `rc:validate`、Hub 632/632、migration 52/52、Canvas 26/26、AI 48/48、longform 4/4、owner isolation 7/7、research eval、Production route 9/9、responsive 12/12が成功した。
 - `npm audit`はroot 5件、Desktop 9件。依存更新は今回行わず記録だけとする。
 - Draft PR初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
