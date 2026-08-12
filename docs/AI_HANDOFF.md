@@ -9,6 +9,7 @@
 - 品質問題: 2候補中1候補に複数コマ風構成と読めない疑似文字が混入した。別候補は採用可能だった。
 - 修正: 共通画像Promptとnegative promptへ、単一コマ全面描画、漫画ページ／複数コマ／枠／余白禁止、文字／疑似文字／吹き出し禁止を日英で追加する。
 - 不変: Provider、model、pricing、credit、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop。
+- 検証: 専用21/21、Hub 640/640、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 52/52、deps、lint、全typecheck、research eval、Hub／Desktop build、RC preflight、diff check成功。
 - 証跡: [`RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md`](RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md)
 - 停止: Draft PRの全CI／Vercel Preview成功後に停止し、merge前に追加の実Provider生成や次工程へ進まない。
 

@@ -11,6 +11,7 @@
 - BFL画像候補を2件だけ生成した。4 creditを予約後に使用4／予約0へ確定し、比較、1候補の採用、自動保存、再読込後の`AI背景レイヤー`復元まで成功した。公式Scheduler Workflowは上限3件で1回だけ手動実行して成功した。
 - 2候補中1候補が複数コマ風となり、読めない疑似文字を描いた。共通画像Promptとnegative promptへ、単一コマ全面描画、漫画ページ／複数コマ／枠／余白禁止、文字／疑似文字／吹き出し禁止を日英で追加した。
 - Provider、model、pricing、credit単価、retry、timeout、Scheduler、API key、API、URL、DB、migration、RPC、Storage、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更していない。
+- 専用21/21、Hub 640/640、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 52/52、deps、lint、全typecheck、research eval、Hub／Desktop production build、RC preflight、diff checkに成功した。長いclone pathのTurbopack path-length失敗は短い物理worktreeで成功し、コード起因でないことを確認した。
 - merge前の追加実Provider生成は行わない。Draft PRと全CI／Vercel Preview成功後に停止し、merge後に未生成コマ1つ・2候補だけで再受入れする。
 
 ---

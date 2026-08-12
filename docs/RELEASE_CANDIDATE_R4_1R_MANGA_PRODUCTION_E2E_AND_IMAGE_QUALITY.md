@@ -59,3 +59,17 @@ negative promptにも同じ禁止対象を日英で追加する。完成コマ�
 
 Production反映後、同じモニター作品で第1ページの未生成コマを1つ選び、2候補だけ生成する。両候補が単一コマで、コマ枠・吹き出し・文字・疑似文字を含まないことを目視確認する。失敗時は追加生成せず、Provider結果と費用を秘密値なしで記録する。
 
+## 8. ローカル検証
+
+- 専用画像生成: 21/21
+- Hub: 640/640
+- Canvas: 26/26
+- AI: 48/48
+- Desktop: 182/182
+- Desktop a11y: violation 0
+- Supabase migration: 52/52
+- dependency boundary、module boundary、codebase size: 成功
+- lint、Hub／Desktop typecheck、research eval: 成功
+- Hub／Desktop production build、RC preflight、`git diff --check`: 成功
+
+長いclone pathではWindowsのTurbopack path-length上限に当たったため、同じcommitを短い物理worktreeへ展開して再実行し、Production build成功を確認した。
