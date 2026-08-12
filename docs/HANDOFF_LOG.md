@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-12 Codex: PR-R4-1o 対象ユーザー市場分析受入れ完了
+
+- PR #232はmerge commit `44b99dd`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1o-research-user-acceptance`をこの基準から作成した。
+- MANGAI責任者から、対象ユーザー本人による市場分析のユーザー検証完了報告を受領した。
+- PR-R4-1mで保留していた既存Report表示、新規市場分析保存、詳細表示、再読込後の本人履歴再表示を完了として扱い、非blocking保留を解除する。
+- Codexは本人session、Report本文、Prompt、件数、費用を取得していない。本人E2Eで正規に保存された利用者データは削除しない。
+- 本PRは証跡と台帳だけを変更する。Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2Eはpendingを維持する。
+- `rc:acceptance`成功（2 passed／11 pending／2 blocked）、full `rc:validate`成功（Desktop 182/182、Hub 632/632、migration 52/52、Hub／Desktop production build）、diff check成功。
+- 詳細は[`RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md)。文書限定Draft PRの全CI／Vercel Preview確認後に停止する。
+
+---
+
 ## 2026-08-12 Codex: PR-R4-1n Production所有者分離受入れ
 
 - Branch `codex/release-r4-1n-owner-isolation`をPR #231 merge commit `ff9e0d5`から作成した。
