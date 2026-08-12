@@ -8,6 +8,9 @@
 
 検証中に作成した販売下書きは作品を非公開、商品を販売停止のまま維持した。一般公開、商品有効化、Stripe決済、購入、利用者データの削除は行っていない。
 
+- Draft PR: [#237](https://github.com/team478a/manga/pull/237)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-faa8ee-team478as-projects.vercel.app
+
 ## 検証環境と安全境界
 
 - 対象: `https://app.mang-ai.com`
@@ -106,3 +109,10 @@ UI無効化だけではServer Action直呼びを防げない。Creator表示、S
 - PR-R4-1sは監査文書と進行文書だけを変更する。
 - 全CIとVercel Preview成功後に停止し、P0修正は別Draft PRで行う。
 - P0販売preflight、実画像生成、長編credit成立条件が解消するまで「市場分析から本当に販売できる漫画生成」を完了扱いにしない。
+
+## 文書PRの検証
+
+- `node --experimental-strip-types --test tests/cloud-ai-worker-scheduler.test.mjs tests/cloud-marketplace-policy.test.mjs tests/cloud-durable-export.test.mjs`: 14/14成功
+- `npm run deps:check`: 成功（既知のApp Router admin client移行警告2件、今回の差分起因0件）
+- `npm run rc:preflight`: repository structure ready。外部設定はローカルへ読み込まずpending、manual acceptanceは本証跡で個別判定した
+- `git diff --check`: 成功

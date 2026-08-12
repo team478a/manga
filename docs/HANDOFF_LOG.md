@@ -8,11 +8,14 @@
 
 - Branch: `codex/release-r4-1s-market-to-sale-e2e`
 - Base: `origin/feature/manga-canvas-mvp` @ `2afae10`（PR #236 merge commit）
+- Draft PR: [#237](https://github.com/team478a/manga/pull/237)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-faa8ee-team478as-projects.vercel.app
 - Production一般モニターで、市場分析→企画選択→採用シナリオ→採用32ページネーム→Creator 32ページ／157コマを連続確認した。
 - merge後の画像2候補は両方failed、予約4 creditは全解放。原稿は画像1/157、完成0/32、確定0/32、必須修正267で販売品質未達。
 - 未完成でも販売下書きを作成できる事前検査不足を検出。artifactは非公開作品／販売停止商品で維持し、一般一覧非表示、checkout入力・購入button無効を確認。公開・実決済は実施していない。
 - SchedulerがWorkerの終端`failed`を未知状態としてworkflow failureにする。未生成156コマの最低候補生成だけで追加624 creditが必要で、残16では長編完成不可。
 - application codeと外部契約は変更せず、証跡、CURRENT_TASK、AI_HANDOFF、HANDOFF_LOGだけを同期する。
+- Scheduler／marketplace policy／durable export 14/14、deps、RC preflight、diff check成功。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1S_MARKET_TO_SALE_E2E_EVIDENCE.md`
 
 ---
