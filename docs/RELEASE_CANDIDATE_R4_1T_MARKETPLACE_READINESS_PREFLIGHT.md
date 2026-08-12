@@ -56,6 +56,7 @@ PR-R4-1sのProduction E2Eで、画像1/157、完成0/32、確定0/32、必須修
 - Desktop production build、RC preflight、diff check: 成功
 - 長いclone pathのHub buildはTurbopackのWindows path length上限で停止。同一commitの短い物理worktreeで成功したためコード起因ではない。
 - Desktop統合テストは同一Windows環境のElectron終了待ちで2回とも結果出力前に停止した。Desktop codeは変更しておらず、GitHub ActionsのWindows buildで最終判定する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLEを確認した。
 
 ## ロールバック
 

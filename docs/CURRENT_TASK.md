@@ -2,7 +2,7 @@
 
 ## 2026-08-12 PR-R4-1t 販売下書き完成原稿preflight
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#238](https://github.com/team478a/manga/pull/238)
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-6729b3-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`
@@ -13,8 +13,9 @@
 - 不変: DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF形式、成人向け境界、Stripe、Desktop code。
 - 検証: 集中13/13、Hub 643/643、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop production build、RC preflight、diff check成功。Hub buildは長いpathでWindows上限となり、同一commitの短い物理worktreeで成功した。
 - ローカルDesktop統合: Electron終了待ちで2回とも結果出力前に停止。Desktop codeは変更しておらず、Windows CIで最終判定する。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md`](RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md)
-- 次: Draft PRの全CI／Vercel Preview確認後に停止する。責任者確認前に実Provider／Scheduler修正へ進まない。
+- 次: 責任者のreview／merge判断まで停止する。merge後にProduction未完成作品で拒否を再確認し、画像Provider失敗は別PRで扱う。
 
 ---
 

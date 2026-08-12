@@ -15,6 +15,8 @@
 - DB、migration、RPC、Storage契約、Provider、pricing、Scheduler、Canvas schema、PDF形式、成人向け境界、Stripe、Desktop codeは変更していない。
 - 集中13/13、Hub 643/643、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop build、RC preflight、diff check成功。長いpathのHub buildはWindows上限、短い物理worktreeで成功した。
 - Desktop統合テストはElectron終了待ちで結果出力前に停止。Desktop差分なし、Windows CIで最終判定する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止し、merge前にProduction再受入れ、画像Provider失敗、Scheduler修正を追加しない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md`
 
 ---
