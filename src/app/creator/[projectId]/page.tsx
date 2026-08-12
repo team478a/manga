@@ -88,6 +88,7 @@ export default async function CloudProjectPage({
       new Date(marketplaceDraft.product.updated_at).getTime() >=
         new Date(project.updated_at).getTime(),
   );
+  const marketplaceReady = Boolean(exportReadiness?.ready);
   const longformReadiness = buildCloudLongformReadiness({
     manuscriptAvailable: Boolean(exportReadiness),
     manuscriptReady: Boolean(exportReadiness?.ready),
@@ -683,6 +684,24 @@ export default async function CloudProjectPage({
             <p className="mt-3 text-sm leading-relaxed text-stone-600">
               全ページをPDFへ再生成し、非公開作品と停止中商品を作成・更新します。公開中・販売中のデータは上書きしません。
             </p>
+            {!exportReadiness ? (
+              <p
+                className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
+                id="marketplace-readiness"
+              >
+                原稿の完成状況を確認できないため、販売下書きは作成できません。
+              </p>
+            ) : !marketplaceReady ? (
+              <p
+                className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
+                id="marketplace-readiness"
+              >
+                原稿チェックの要修正{exportReadiness.errorCount}件を解消し、すべてのページを確定すると作成できます。
+                <a className="ml-1 font-semibold underline" href="#manuscript-status">
+                  原稿チェックを確認
+                </a>
+              </p>
+            ) : null}
             {marketplaceDraft?.product ? (
               <div className="mt-4 rounded-md bg-stone-50 p-3 text-sm">
                 <p className="font-semibold">
@@ -714,7 +733,11 @@ export default async function CloudProjectPage({
                 required
               />
               <PendingSubmitButton
+                aria-describedby={
+                  marketplaceReady ? undefined : "marketplace-readiness"
+                }
                 className="button mt-4 w-full"
+                disabled={!marketplaceReady}
                 pendingLabel="作成中…"
               >
                 {marketplaceDraft?.product
