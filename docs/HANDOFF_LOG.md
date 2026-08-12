@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1x 長編漫画credit・段階生成成立条件監査
+
+- PR #241がmerge commit `96f27b69839bc2bc6179ba829842e361f05153d9`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- 現行一括生成は4〜8ページ／最大64コマを選べる一方、対象を同期的に1件ずつ既存Queueへ登録し、各Jobが作品rate limitを消費する。Free 3、Trial 6、Creator 20件/分を超えるbatchは途中終了し得る。
+- 1件以上登録後のerrorは部分登録でloopを終了するが、Server Actionは登録件数だけを成功表示する。要求件数、未登録件数、必要credit、最大予約費用、残容量の合算preflightはない。
+- Productionの32ページ／157コマはProで初回1候補314 credit、2候補628、3候補942。全コマ3候補ではなく、`2P + 4C + 6F`の段階生成を提案する。
+- R4-1y合算preflight／表示、R4-1z durable登録、R4-1aa 4ページ限定Production受入れ、R4-1ab 8ページ完成原稿／販売品質受入れへ分割する。
+- 本PRでは追加の有料Job、application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
+- 集中テスト20/20、deps、RC repository structure、diff check成功。RC外部設定とmanual E2Eは秘密情報をローカルへ置かないためPENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1X_LONGFORM_CREDIT_AND_STAGING_AUDIT.md`
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1w FLUX単一コマProduction受入れ
 
 - PR #240がmerge commit `d0091a047e15877bb3049f066a1d8b6f261dc1c6`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
