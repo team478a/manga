@@ -14,6 +14,8 @@ import {
 import { CONTENT_POLICY_VERSION } from "@mangai/shared";
 import { stageCloudProjectExportBundle } from "@/lib/cloud-creator-server";
 import { renderCloudCanvasPng } from "@/lib/cloud-canvas-render";
+import { assertCloudMarketplaceManuscriptReady } from "@/lib/cloud-marketplace-policy";
+import { getCloudManuscriptPreflight } from "../projects/manuscript-preflight-service";
 
 type StagedPage = {
   fileName: string;
@@ -156,6 +158,10 @@ async function loadPageImages(pages: StagedPage[]): Promise<ExportImage[]> {
 }
 
 export async function createCloudMarketplaceArtifacts(projectId: string) {
+  const readiness = await getCloudManuscriptPreflight(projectId, {
+    requireFinalizedPages: true,
+  });
+  assertCloudMarketplaceManuscriptReady(readiness);
   const staged = await stageExport(projectId);
   try {
     if (!staged.pages.length)
