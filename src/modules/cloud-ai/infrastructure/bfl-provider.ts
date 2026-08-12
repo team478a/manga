@@ -43,9 +43,15 @@ type FluxProviderConfig = {
 
 export type BflProviderDiagnostic = {
   stage: "submit" | "poll" | "download";
-  outcome: "http_rejected" | "provider_failed" | "response_invalid";
+  outcome:
+    | "http_rejected"
+    | "provider_failed"
+    | "response_invalid"
+    | "timeout";
   httpStatus?: number;
 };
+
+const DEFAULT_BFL_TIMEOUT_MS = 210_000;
 
 function safeBflUrl(value: string) {
   const url = new URL(value);
@@ -236,7 +242,7 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
     const controller = new AbortController();
     const timeout = setTimeout(
       () => controller.abort(),
-      this.config.timeoutMs ?? 120_000,
+      this.config.timeoutMs ?? DEFAULT_BFL_TIMEOUT_MS,
     );
     const abort = () => controller.abort();
     signal?.addEventListener("abort", abort, { once: true });
@@ -331,7 +337,7 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
       const job = submitResponseSchema.parse(await submitted.json());
       const pollingUrl = safeBflUrl(job.polling_url);
       const startedAt = Date.now();
-      while (Date.now() - startedAt < (this.config.timeoutMs ?? 120_000)) {
+      while (Date.now() - startedAt < (this.config.timeoutMs ?? DEFAULT_BFL_TIMEOUT_MS)) {
         diagnosticStage = "poll";
         await new Promise<void>((resolve, reject) => {
           const timer = setTimeout(
@@ -422,6 +428,10 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
           },
         };
       }
+      this.config.onDiagnostic?.({
+        stage: diagnosticStage,
+        outcome: "timeout",
+      });
       throw new AIProviderError(
         "timeout",
         "画像生成がタイムアウトしました。",
@@ -429,12 +439,17 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
       );
     } catch (error) {
       if (error instanceof AIProviderError) throw error;
-      if (controller.signal.aborted)
+      if (controller.signal.aborted) {
+        this.config.onDiagnostic?.({
+          stage: diagnosticStage,
+          outcome: "timeout",
+        });
         throw new AIProviderError(
           "timeout",
           "画像生成がタイムアウトしました。",
           true,
         );
+      }
       if (error instanceof z.ZodError) {
         this.config.onDiagnostic?.({
           stage: diagnosticStage,

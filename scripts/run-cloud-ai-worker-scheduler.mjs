@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-const CONTINUE_STATUSES = new Set(["completed", "canceled", "resolved"]);
+const CONTINUE_STATUSES = new Set(["completed", "failed", "canceled", "resolved"]);
 const STOP_STATUSES = new Set(["idle", "retrying", "lease_lost"]);
 
 function integerInRange(value, fallback, minimum, maximum) {
@@ -44,9 +44,9 @@ export function readCloudAiSchedulerConfig(env = process.env) {
     ),
     timeoutMs: integerInRange(
       env.MANGAI_CLOUD_AI_SCHEDULER_TIMEOUT_SECONDS,
-      170,
+      230,
       30,
-      175,
+      235,
     ) * 1000,
   };
 }

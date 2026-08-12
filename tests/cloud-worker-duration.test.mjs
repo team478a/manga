@@ -7,7 +7,7 @@ const read = (path) =>
 
 test("長時間Workerと同期Export fallbackは実行時間を明示する", () => {
   const routes = new Map([
-    ["src/app/api/internal/cloud-ai/worker/route.ts", 180],
+    ["src/app/api/internal/cloud-ai/worker/route.ts", 240],
     ["src/app/api/internal/cloud-export/worker/route.ts", 300],
     ["src/app/api/internal/cloud-storage/worker/route.ts", 180],
     ["src/app/api/creator/projects/[projectId]/export/route.ts", 300],
@@ -40,7 +40,8 @@ test("Worker処理は実行上限内で失敗を記録し再試行可能にす�
   );
   const storageWorker = read("src/lib/cloud-storage-lifecycle-worker.ts");
 
-  assert.match(imageProvider, /timeoutMs \?\? 120_000/);
+  assert.match(imageProvider, /timeoutMs \?\? DEFAULT_BFL_TIMEOUT_MS/);
+  assert.match(imageProvider, /DEFAULT_BFL_TIMEOUT_MS = 210_000/);
   assert.match(gatewayProvider, /timeoutMs \?\? 120_000/);
   assert.match(retryPolicy, /shouldRetryCloudGeneration/);
   assert.match(aiWorker, /shouldRetryGeneration/);

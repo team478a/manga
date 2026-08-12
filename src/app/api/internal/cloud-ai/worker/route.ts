@@ -23,9 +23,9 @@ import { featureFlagEnabled } from "@/lib/feature-flags";
 import { hasValidInternalWorkerAuthorization } from "@/lib/internal-worker-auth";
 
 export const runtime = "nodejs";
-// Provider polling is bounded at 120 seconds. Keep enough time for lease checks,
+// Provider polling is bounded at 210 seconds. Keep enough time for lease checks,
 // persistence, compensation, and notification refreshes to complete safely.
-export const maxDuration = 180;
+export const maxDuration = 240;
 
 function authorized(request: Request) {
   return hasValidInternalWorkerAuthorization(

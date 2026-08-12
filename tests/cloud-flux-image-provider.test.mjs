@@ -142,6 +142,41 @@ test("BFL adapter reports only sanitized rejection stage and HTTP status", async
   assert.doesNotMatch(JSON.stringify(diagnostics), /must not be logged/);
 });
 
+test("BFL adapter reports a sanitized poll timeout without provider content", async () => {
+  const diagnostics = [];
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-2-pro",
+    capability,
+    timeoutMs: 10,
+    pollIntervalMs: 100,
+    onDiagnostic: (diagnostic) => diagnostics.push(diagnostic),
+    fetcher: async () =>
+      new Response(
+        JSON.stringify({
+          id: "bfl-job-timeout",
+          polling_url: "https://api.bfl.ai/v1/get_result?id=bfl-job-timeout",
+        }),
+        { status: 200 },
+      ),
+  });
+
+  await assert.rejects(
+    () =>
+      provider.generate(
+        {
+          kind: "image",
+          jobType: "background",
+          prompt: "safe timeout request",
+          negativePrompt: "",
+        },
+        context,
+      ),
+    (error) => error.code === "timeout" && error.retryable,
+  );
+  assert.deepEqual(diagnostics, [{ stage: "poll", outcome: "timeout" }]);
+});
+
 test("BFL adapter accepts a pending poll with null result before Ready", async () => {
   let calls = 0;
   const provider = new BlackForestLabsFluxImageProvider({
