@@ -17,7 +17,8 @@ Codexは対象ユーザーのsession、メールアドレス、Report本文、Pr
 
 - Base: `origin/feature/manga-canvas-mvp` / `44b99dd`（PR #232 merge commit）
 - Branch: `codex/release-r4-1o-research-user-acceptance`
-- Draft PR: 作成後に追記
+- Draft PR: [#233](https://github.com/team478a/manga/pull/233)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-e6ee4a-team478as-projects.vercel.app
 - 確認日: 2026-08-12（Asia/Tokyo）
 - 確認者: 対象ユーザー本人
 - 報告者／承認者: MANGAI責任者
@@ -59,7 +60,7 @@ Codexは対象ユーザーのsession、メールアドレス、Report本文、Pr
 - `npm run rc:acceptance`: 成功（2 passed／11 pending／2 blocked。残件判定は意図どおり維持）
 - full `npm run rc:validate`: 成功（Desktop 182/182、Hub 632/632、migration 52/52、Hub／Desktop production build）
 - `git diff --check`: 成功
-- Draft PRのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments
+- Draft PR初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功
 
 ## ロールバック
 

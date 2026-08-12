@@ -2,10 +2,11 @@
 
 ## 2026-08-12 PR-R4-1o 対象ユーザー市場分析受入れ完了
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/release-r4-1o-research-user-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`44b99dd`、PR #232 merge commit）
-- Draft PR: 作成後に追記
+- Draft PR: [#233](https://github.com/team478a/manga/pull/233)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-e6ee4a-team478as-projects.vercel.app
 - 本人E2E: 2026-08-12、MANGAI責任者から対象ユーザー本人による市場分析のユーザー検証完了報告を受領した。
 - 完了範囲: 既存Report表示、新規市場分析保存、詳細表示、再読込後の本人履歴再表示。PR-R4-1mの非blocking保留を解除する。
 - 証拠境界: 対象本人の操作完了を責任者報告で受入れる。Codexは本人session、Report本文、Prompt、件数、費用を取得・推測しない。
@@ -13,6 +14,7 @@
 - 残件: Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2E。
 - 外部契約: application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
 - ローカル検証: `rc:acceptance`成功（2 passed／11 pending／2 blocked）、full `rc:validate`成功（Desktop 182/182、Hub 632/632、migration 52/52、Hub／Desktop production build）、diff check成功。
+- CI: Draft PR初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md)
 - 停止条件: 文書限定Draft PRの全CI／Vercel Previewを確認して停止する。残るR4-1項目を成功扱いせず、責任者確認前にR4-2へ進まない。
 
