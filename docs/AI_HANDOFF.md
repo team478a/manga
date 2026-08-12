@@ -5,12 +5,14 @@
 - Base: `feature/manga-canvas-mvp` / `924b833`
 - Branch: `codex/fix-r4-1q-monitor-blockers`
 - Draft PR: [#235](https://github.com/team478a/manga/pull/235)
-- 状態: `LOCAL_VALIDATED_PENDING_CI`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-da7543-team478as-projects.vercel.app
 - Productionで32ページAIネームtimeoutと失敗時利用回数増加、品質評価保存失敗、一般報告保存・履歴読込失敗を確認した。
 - ネームは同じGPT-5.6 Terra、Responses API、`store:false`を維持する。9〜48ページは全体連続性設計後に8ページ単位を並列生成し、結合後の全体schema成功時だけ保存・利用回数消費する。8ページ以下の既存1応答契約も維持する。
 - モニター保存は列不足だけ基本列へ退避し、本人履歴と管理者一覧も読める。RLS、制約、接続障害は成功扱いにしない。
 - DB／migrationは変更していない。完全な構造化運用には既存`202608020002`、`202608030001`、`202608030002`のProduction適用確認が必要。
 - 長編分割の集中25/25、Hub 639/639、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、deps、lint、全typecheck、research eval、migration 52/52、RC preflight、Hub／Desktop build成功。詳細は[`RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md`](RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md)。
+- 長編分割実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 停止: Draft PRの全CI／Vercel Preview成功後に停止し、merge前にProduction再実行やR4-2を行わない。
 
 ---

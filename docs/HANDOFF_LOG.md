@@ -7,7 +7,8 @@
 ## 2026-08-12 Codex: PR-R4-1q モニター制作阻害要因修正
 
 - `origin/feature/manga-canvas-mvp`@`924b833`から`codex/fix-r4-1q-monitor-blockers`を作成し、PR #234のbranchと履歴は変更していない。
-- Draft PR [#235](https://github.com/team478a/manga/pull/235)を作成した。全CIとVercel Previewを確認中。
+- Draft PR [#235](https://github.com/team478a/manga/pull/235)を作成した。
+- 長編分割実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-da7543-team478as-projects.vercel.app。Draft／MERGEABLE。
 - Productionで32ページネームtimeout、timeout時の利用回数消費、Canvas品質評価保存失敗、一般報告保存と本人履歴読込失敗を確認した。
 - 同じGPT-5.6 Terra、Responses API、`store:false`を維持し、推論強度を`low`、Provider timeoutを210秒、該当Server Actionを240秒へ変更した。利用回数は上限事前確認後、Provider成功後だけ消費する。
 - 追加の根本対策として、9〜48ページを全体連続性設計1応答と8ページ単位の並列応答へ分割した。32ページは1＋4応答、48ページは1＋6応答となる。全ブロック結合後に既存schemaで再検証し、一部失敗時は完成版保存と利用回数消費を行わない。8ページ以下は既存1応答を維持する。

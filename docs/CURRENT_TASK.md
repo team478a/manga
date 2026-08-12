@@ -2,7 +2,8 @@
 
 ## 2026-08-12 PR-R4-1q モニター制作阻害要因修正
 
-- 状態: `LOCAL_VALIDATED_PENDING_CI`（Draft PR [#235](https://github.com/team478a/manga/pull/235)へ長編分割生成を追加）
+- 状態: `READY_FOR_OWNER_REVIEW`（Draft PR [#235](https://github.com/team478a/manga/pull/235)）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-da7543-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1q-monitor-blockers`
 - Base: `origin/feature/manga-canvas-mvp`（`924b833`）
 - Production症状: 32ページAIネームtimeout、失敗時AI利用回数増加、品質評価保存失敗、一般報告保存・履歴読込失敗。
@@ -12,8 +13,9 @@
 - migration: 新規・変更なし。完全な構造化運用には既存`202608020002`、`202608030001`、`202608030002`のProduction適用が必要。
 - 不変: Provider、model選択、API key、pricing、retry、Feature Flag、DB、migration、RPC、Storage、URL、公開API、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop code。
 - 追加検証: 長編分割を含む集中25/25、Hub 639/639、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、deps、lint、Hub／Desktop typecheck、research eval、migration 52/52、RC preflight、Hub／Desktop production build、diff check成功。a11y初回はElectron終了`ETIMEDOUT`、単独再実行で成功。
+- CI: 長編分割実装HEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md`](RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md)
-- 次: 全ローカル品質ゲート後にDraft PR #235へpushし、最終HEADの全CIとVercel Preview成功で停止。merge後にtestモニターで32ページ分割ネーム、品質評価、一般報告、本人・管理者履歴を再検証する。
+- 次: 本文書同期後の最終HEADでも全CIとVercel Preview成功を確認して停止。merge後にtestモニターで32ページ分割ネーム、品質評価、一般報告、本人・管理者履歴を再検証する。
 
 ---
 

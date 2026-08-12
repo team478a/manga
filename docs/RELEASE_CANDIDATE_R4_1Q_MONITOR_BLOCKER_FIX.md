@@ -13,6 +13,7 @@
 - Base: `origin/feature/manga-canvas-mvp` @ `924b833`
 - Branch: `codex/fix-r4-1q-monitor-blockers`
 - Draft PR: [#235](https://github.com/team478a/manga/pull/235)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-da7543-team478as-projects.vercel.app
 - PR #234のbranchと履歴は変更しない。
 
 ## 原因
@@ -82,6 +83,7 @@
 - Cloud漫画repository acceptance: PASS
 - Hub／Desktop production build: PASS
 - RC preflight: STRUCTURE READY（外部設定とmanual項目は従来どおりpending）
+- GitHub: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments PASS。Draft／MERGEABLE。
 
 ## merge後のProduction再検証
 
