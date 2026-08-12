@@ -1,5 +1,8 @@
 # PR-R4-1w FLUX単一コマProduction受入れ
 
+- Draft PR: [#241](https://github.com/team478a/manga/pull/241)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-f980ec-team478as-projects.vercel.app
+
 ## 結論
 
 PR #240のmerge commit `d0091a047e15877bb3049f066a1d8b6f261dc1c6`を含むProductionで、一般向けモニター`test`の未生成コマ1つへFLUX画像を2候補生成した。両候補が単一の全面場面となり、漫画ページ風の複数コマ、コマ枠、吹き出し、文字、疑似文字を含まなかった。PR-R4-1vの正方向Prompt修正は、限定した実Provider受入れに合格した。

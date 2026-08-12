@@ -7,6 +7,7 @@
 ## 2026-08-13 Codex: PR-R4-1w FLUX単一コマProduction受入れ
 
 - PR #240がmerge commit `d0091a047e15877bb3049f066a1d8b6f261dc1c6`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Draft PR [#241](https://github.com/team478a/manga/pull/241)を作成した。Preview: https://mangai-hub-staging-git-codex-release-f980ec-team478as-projects.vercel.app
 - Productionの一般向けモニター`test`で、既存作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`の2ページ3コマ目へ完成コマ2候補を登録した。
 - Scheduler [run 31647042128](https://github.com/team478a/manga/actions/runs/31647042128)はProduction基準commitで成功し、`status=idle requests=3 processed=2`となった。両候補はcompleted 100%。
 - creditは登録前残12／使用8／予約0、登録後残8／使用8／予約4、完了後残8／使用12／予約0となった。

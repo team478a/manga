@@ -5,6 +5,8 @@
 - Branch: `codex/release-r4-1w-flux-production-acceptance`
 - Base: `origin/feature/manga-canvas-mvp` @ `d0091a0`（PR #240 merge commit）
 - 状態: `IN_PROGRESS`
+- Draft PR: [#241](https://github.com/team478a/manga/pull/241)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-f980ec-team478as-projects.vercel.app
 - Productionの`test`モニターで未生成コマ1つへ2候補を登録し、Scheduler run 31647042128は`idle requests=3 processed=2`で成功した。
 - 2候補とも単一の全面モノクロ場面で、複数コマ、枠、吹き出し、文字、疑似文字なし。FLUX正方向Promptの限定実Provider受入れは合格した。
 - creditは残12／使用8／予約0から、登録時残8／使用8／予約4、完了時残8／使用12／予約0へ遷移した。
