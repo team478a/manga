@@ -7,6 +7,7 @@
 ## 2026-08-13 Codex: PR-R4-1v FLUX単一コマ正方向Prompt
 
 - PR #239 merge commit `92f379e`を含む最新`feature/manga-canvas-mvp`から`codex/fix-r4-1v-flux-positive-panel-prompt`を作成した。
+- Draft PR [#240](https://github.com/team478a/manga/pull/240)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-b536a9-team478as-projects.vercel.app
 - Productionの一般向けモニター`test`で未生成コマ1つへ2候補を生成した。1回目Schedulerは`retrying requests=1 processed=1`、2回目は`idle requests=3 processed=2`で成功し、両候補100%、残12／使用8／予約0となった。
 - 候補1を採用し、`保存済み`、再読込後の`AI背景レイヤー`、SVG内Storage pathと候補pathの一致を確認した。画像生成timeout、Scheduler継続、credit確定、候補採用、保存復元は合格した。
 - 候補1は単一コマ・文字なしで合格、候補2は複数コマ・吹き出し・疑似文字を含み不合格だった。

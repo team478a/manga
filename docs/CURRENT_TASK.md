@@ -3,6 +3,8 @@
 ## 2026-08-13 PR-R4-1v FLUX単一コマ正方向Prompt
 
 - 状態: `IN_PROGRESS`
+- Draft PR: [#240](https://github.com/team478a/manga/pull/240)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-b536a9-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1v-flux-positive-panel-prompt`
 - Base: `origin/feature/manga-canvas-mvp`（`92f379e`、PR #239 merge commit）
 - Production再受入れ: 漫画画像2候補はともにcompletedし、4 credit確定、比較、採用、自動保存、再読込後のlayer／Storage path復元まで成功した。PR-R4-1uのtimeout／Scheduler阻害は解消した。

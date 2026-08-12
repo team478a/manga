@@ -5,6 +5,8 @@
 - Branch: `codex/fix-r4-1v-flux-positive-panel-prompt`
 - Base: `origin/feature/manga-canvas-mvp` @ `92f379e`（PR #239 merge commit）
 - 状態: `IN_PROGRESS`
+- Draft PR: [#240](https://github.com/team478a/manga/pull/240)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-b536a9-team478as-projects.vercel.app
 - Productionでは2候補のcompleted、credit確定、比較、採用、保存、再読込を確認し、timeout／Scheduler復旧は合格した。
 - 候補1は単一コマ・文字なし、候補2は複数コマ・吹き出し・疑似文字を含んだため、品質は2件中1件だけ合格した。
 - FLUX.2はnegative prompt非対応だが、BFL adapterが共通禁止語を`Avoid:`として送信していた。BFLへは正方向Promptだけを送り、単一場面、1 camera view／1 moment、文字のない絵を指定する。

@@ -1,5 +1,8 @@
 # PR-R4-1v FLUX単一コマ正方向Prompt
 
+- Draft PR: [#240](https://github.com/team478a/manga/pull/240)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-b536a9-team478as-projects.vercel.app
+
 ## 結論
 
 PR #239のmerge後、Productionの一般向けモニター`test`で未生成コマ1つへ2候補を生成した。両候補の完了、credit確定、比較、採用、自動保存、再読込後の復元まで成功し、PR-R4-1uのtimeout／Scheduler阻害は解消した。
