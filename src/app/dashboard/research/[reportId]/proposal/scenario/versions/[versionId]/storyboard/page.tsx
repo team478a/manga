@@ -14,8 +14,8 @@ import { CloudDataNotice } from "@/components/CloudDataNotice";
 import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
-// Storyboard generation may use the provider for up to 120 seconds.
-export const maxDuration = 180;
+// A 32-48 page storyboard can take longer than the shorter AI workflow steps.
+export const maxDuration = 240;
 
 export default async function StoryboardPage({ params, searchParams }: {
   params: Promise<{ reportId: string; versionId: string }>;

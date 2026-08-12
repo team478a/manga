@@ -9,6 +9,10 @@ import {
 import { requireCloudGeneralMonitor } from "@/lib/cloud-general-monitor";
 import { ValidationError } from "@/lib/domain-errors";
 import { createClient } from "@/lib/supabase/server";
+import {
+  isMissingMonitorFeedbackSchema,
+  legacyQualityFeedbackComment,
+} from "@/modules/general-monitor/infrastructure/monitor-feedback-schema-compatibility";
 
 const schema = z.object({
   projectId: z.string().uuid(),
@@ -62,7 +66,8 @@ export async function POST(request: Request) {
       return sum + (Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) : 0);
     }, 0);
     const defaults = verdictDefaults[input.verdict];
-    const { error } = await (await createClient())
+    const supabase = await createClient();
+    const { error: structuredError } = await supabase
       .from("cloud_general_monitor_feedback")
       .insert({
         owner_profile_id: profile.id,
@@ -86,7 +91,27 @@ export async function POST(request: Request) {
         generation_cost_micros: generationCostMicros,
         generation_elapsed_ms: generationElapsedMs,
       });
-    if (error) throw error;
+    if (structuredError && !isMissingMonitorFeedbackSchema(structuredError))
+      throw structuredError;
+    if (structuredError) {
+      const { error } = await supabase
+        .from("cloud_general_monitor_feedback")
+        .insert({
+          owner_profile_id: profile.id,
+          workflow_step: input.panelId ? "panel_image" : "canvas",
+          rating: defaults.rating,
+          outcome: defaults.outcome,
+          comment: legacyQualityFeedbackComment({
+            verdict: input.verdict,
+            issueType: input.issueType,
+            severity: input.severity,
+            pageNumber: snapshot.page_number,
+            panelName: panel?.name ?? null,
+            comment: input.comment || defaults.comment,
+          }),
+        });
+      if (error) throw error;
+    }
     return NextResponse.json({ ok: true });
   } catch (error) {
     const response = toApiError(error, "品質フィードバックを保存できませんでした。");

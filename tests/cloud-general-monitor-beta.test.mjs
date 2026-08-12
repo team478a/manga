@@ -54,7 +54,7 @@ test("migrationは本人限定・期限・AI上限・管理者停止を強制す
   assert.doesNotMatch(sql, /stripe|adult/i);
 });
 
-test("一般向け各AI実行前にモニター上限を消費する", async () => {
+test("一般向け各AIはモニター利用枠管理を経由する", async () => {
   const files = [
     "../src/app/dashboard/research/actions.ts",
     "../src/app/dashboard/research/[reportId]/proposal/actions.ts",
@@ -66,6 +66,21 @@ test("一般向け各AI実行前にモニター上限を消費する", async () 
     const source = await readFile(new URL(file, import.meta.url), "utf8");
     assert.match(source, /consumeCloudGeneralMonitorAiRequest/);
   }
+});
+
+test("ネーム生成は上限を事前確認しProvider成功後だけ利用回数を消費する", async () => {
+  const source = await readFile(
+    new URL("../src/app/dashboard/research/[reportId]/proposal/scenario/versions/[versionId]/storyboard/actions.ts", import.meta.url),
+    "utf8",
+  );
+  const createAction = source.slice(
+    source.indexOf("export async function createCloudStoryboardAction"),
+    source.indexOf("export async function reviseCloudStoryboardAction"),
+  );
+  const allowanceAt = createAction.indexOf("assertMonitorAllowance(profile.id)");
+  const providerAt = createAction.indexOf("runCloudStoryboardAi");
+  const consumeAt = createAction.indexOf("consumeCloudGeneralMonitorAiRequest");
+  assert.ok(allowanceAt > -1 && providerAt > allowanceAt && consumeAt > providerAt);
 });
 
 test("preflightは値を表示せず一般Flagと成人向け停止を確認する", () => {

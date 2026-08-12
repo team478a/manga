@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-12 Codex: PR-R4-1q モニター制作阻害要因修正
+
+- `origin/feature/manga-canvas-mvp`@`924b833`から`codex/fix-r4-1q-monitor-blockers`を作成し、PR #234のbranchと履歴は変更していない。
+- Draft PR [#235](https://github.com/team478a/manga/pull/235)を作成した。
+- 長編分割実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-da7543-team478as-projects.vercel.app。Draft／MERGEABLE。
+- Productionで32ページネームtimeout、timeout時の利用回数消費、Canvas品質評価保存失敗、一般報告保存と本人履歴読込失敗を確認した。
+- 同じGPT-5.6 Terra、Responses API、`store:false`を維持し、推論強度を`low`、Provider timeoutを210秒、該当Server Actionを240秒へ変更した。利用回数は上限事前確認後、Provider成功後だけ消費する。
+- 追加の根本対策として、9〜48ページを全体連続性設計1応答と8ページ単位の並列応答へ分割した。32ページは1＋4応答、48ページは1＋6応答となる。全ブロック結合後に既存schemaで再検証し、一部失敗時は完成版保存と利用回数消費を行わない。8ページ以下は既存1応答を維持する。
+- モニターの構造化列が不足する場合だけ基本列へ報告内容を退避する。本人履歴と管理者一覧も同じ条件でfallbackし、RLS、制約、接続障害は従来どおり失敗させる。
+- DB、既存migration、RPC、Storage、Provider、model選択、API key、pricing、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop codeは変更していない。
+- 長編分割追加後の集中25/25、Hub 639/639、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、deps、lint、Hub／Desktop typecheck、research eval、migration 52/52、RC preflight、Hub／Desktop production build、diff check成功。a11y初回はElectron終了`ETIMEDOUT`、単独再実行で成功した。
+- merge後にtestモニターで32ページネーム、品質評価、一般報告、本人・管理者履歴を再検証する。完全な構造化運用には既存`202608020002`、`202608030001`、`202608030002`のProduction適用を確認する。
+
+---
+
 ## 2026-08-12 Codex: PR-R4-1o 対象ユーザー市場分析受入れ完了
 
 - PR #232はmerge commit `44b99dd`で`feature/manga-canvas-mvp`へマージ済み。Branch `codex/release-r4-1o-research-user-acceptance`をこの基準から作成した。

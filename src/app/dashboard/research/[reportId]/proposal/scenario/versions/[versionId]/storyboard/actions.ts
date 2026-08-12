@@ -13,8 +13,15 @@ import { adoptCloudStoryboard, createCloudStoryboardVersion, getCloudStoryboardV
 import { cloudStoryboardCanvasFeatureEnabled } from "@/lib/cloud-storyboard-materialization";
 import { materializeCloudStoryboard } from "@/lib/cloud-storyboard-materialization-server";
 import { enforceCloudStoryboardAiRateLimit } from "@/lib/cloud-research-search-rate-limit";
-import { PermissionDeniedError, ResourceNotFoundError } from "@/lib/domain-errors";
-import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor";
+import {
+  consumeCloudGeneralMonitorAiRequest,
+  requireCloudGeneralMonitor,
+} from "@/lib/cloud-general-monitor";
+import {
+  PermissionDeniedError,
+  QuotaExceededError,
+  ResourceNotFoundError,
+} from "@/lib/domain-errors";
 
 function enabled() {
   if (!cloudResearchFeatureEnabled() || !cloudProposalFeatureEnabled() || !cloudScenarioFeatureEnabled() || !cloudStoryboardFeatureEnabled())
@@ -27,11 +34,19 @@ async function adoptedScenario(profileId: string, reportId: string, scenarioVers
   if (adoption?.scenario_version_id !== scenario.id) throw new PermissionDeniedError("現在の採用シナリオを選んでください。");
   return scenario;
 }
+async function assertMonitorAllowance(profileId: string) {
+  const enrollment = await requireCloudGeneralMonitor(profileId);
+  if (enrollment.ai_requests_used >= enrollment.ai_request_limit)
+    throw new QuotaExceededError(
+      "モニター期間中のAI利用上限に達しました。管理者へご連絡ください。",
+    );
+}
 export async function createCloudStoryboardAction(reportId: string, scenarioVersionId: string) {
   let storyboardId = "";
   try {
     enabled();
     const { profile } = await requireProfile();
+    await assertMonitorAllowance(profile.id);
     await enforceCloudStoryboardAiRateLimit(profile.id);
     const [report, scenario] = await Promise.all([
       getCloudResearchReport(profile.id, reportId),
@@ -39,8 +54,8 @@ export async function createCloudStoryboardAction(reportId: string, scenarioVers
     ]);
     if (report.input.contentClass !== "general")
       throw new PermissionDeniedError("一般向けシナリオを選んでください。");
-    await consumeCloudGeneralMonitorAiRequest(profile.id, "storyboard");
     const result = await runCloudStoryboardAi({ profileId: profile.id, report, scenario });
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "storyboard");
     storyboardId = await createCloudStoryboardVersion({ profileId: profile.id, scenarioVersionId, result });
   } catch (error) {
     redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(scenarioVersionId)}/storyboard?error=${encodeURIComponent(safeDomainErrorMessage(error, "ネームを生成できませんでした。"))}`);
@@ -52,6 +67,7 @@ export async function reviseCloudStoryboardAction(reportId: string, scenarioVers
   try {
     enabled();
     const { profile } = await requireProfile();
+    await assertMonitorAllowance(profile.id);
     await enforceCloudStoryboardAiRateLimit(profile.id);
     const [report, scenario, parent] = await Promise.all([
       getCloudResearchReport(profile.id, reportId),
@@ -62,8 +78,8 @@ export async function reviseCloudStoryboardAction(reportId: string, scenarioVers
     if (report.input.contentClass !== "general")
       throw new PermissionDeniedError("一般向けシナリオを選んでください。");
     const revisionInstruction = String(formData.get("revisionInstruction") ?? "").trim();
-    await consumeCloudGeneralMonitorAiRequest(profile.id, "storyboard");
     const result = await runCloudStoryboardAi({ profileId: profile.id, report, scenario, parentVersion: parent, revisionInstruction });
+    await consumeCloudGeneralMonitorAiRequest(profile.id, "storyboard");
     nextId = await createCloudStoryboardVersion({ profileId: profile.id, scenarioVersionId, parentVersionId: parent.id, revisionInstruction, result });
   } catch (error) {
     redirect(`/dashboard/research/${encodeURIComponent(reportId)}/proposal/scenario/versions/${encodeURIComponent(scenarioVersionId)}/storyboard/versions/${encodeURIComponent(storyboardId)}?error=${encodeURIComponent(safeDomainErrorMessage(error, "ネームを修正できませんでした。"))}`);

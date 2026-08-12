@@ -1,5 +1,6 @@
 import type { CloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isMissingMonitorFeedbackSchema } from "./monitor-feedback-schema-compatibility";
 
 export type GeneralMonitorAdminProfile = {
   id: string;
@@ -47,6 +48,70 @@ export type GeneralMonitorEmailAudit = {
   created_at: string;
 };
 
+type LegacyGeneralMonitorAdminFeedback = Pick<
+  GeneralMonitorAdminFeedback,
+  | "id"
+  | "owner_profile_id"
+  | "workflow_step"
+  | "rating"
+  | "outcome"
+  | "comment"
+  | "created_at"
+>;
+
+async function loadAdminFeedback(
+  admin: ReturnType<typeof createAdminClient>,
+) {
+  const structured = await admin
+    .from("cloud_general_monitor_feedback")
+    .select(
+      "id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment,client_context,attachment_path,public_status,status_updated_at",
+    )
+    .order("created_at", { ascending: false })
+    .limit(100)
+    .returns<GeneralMonitorAdminFeedback[]>();
+  if (!isMissingMonitorFeedbackSchema(structured.error)) return structured;
+
+  const legacy = await admin
+    .from("cloud_general_monitor_feedback")
+    .select("id,owner_profile_id,workflow_step,rating,outcome,comment,created_at")
+    .order("created_at", { ascending: false })
+    .limit(100)
+    .returns<LegacyGeneralMonitorAdminFeedback[]>();
+  if (legacy.error) return { ...structured, data: null, error: legacy.error };
+  return {
+    ...structured,
+    error: null,
+    data: (legacy.data ?? []).map((item): GeneralMonitorAdminFeedback => ({
+      ...item,
+      review_status: "new",
+      admin_note: null,
+      target_scope: "general",
+      project_id: null,
+      page_id: null,
+      panel_id: null,
+      page_number_snapshot: null,
+      panel_name_snapshot: null,
+      verdict: null,
+      issue_type: null,
+      severity: null,
+      provider_id: null,
+      model_id: null,
+      generation_count: 0,
+      generation_cost_micros: 0,
+      generation_elapsed_ms: 0,
+      request_type: "feedback",
+      title: null,
+      page_url: null,
+      environment: null,
+      client_context: null,
+      attachment_path: null,
+      public_status: "submitted",
+      status_updated_at: item.created_at,
+    })),
+  };
+}
+
 export async function loadGeneralMonitorAdminWorkspace() {
   const admin = createAdminClient();
   const [enrollmentsResult, feedbackResult, profilesResult] = await Promise.all([
@@ -57,14 +122,7 @@ export async function loadGeneralMonitorAdminWorkspace() {
       )
       .order("updated_at", { ascending: false })
       .returns<CloudGeneralMonitorEnrollment[]>(),
-    admin
-      .from("cloud_general_monitor_feedback")
-      .select(
-        "id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment,client_context,attachment_path,public_status,status_updated_at",
-      )
-      .order("created_at", { ascending: false })
-      .limit(100)
-      .returns<GeneralMonitorAdminFeedback[]>(),
+    loadAdminFeedback(admin),
     admin
       .from("profiles")
       .select("id,display_name")

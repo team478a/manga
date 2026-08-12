@@ -1,6 +1,10 @@
 import type { MonitorDiagnostic } from "@/lib/monitor-feedback";
 import { ValidationError } from "@/lib/domain-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  isMissingMonitorFeedbackSchema,
+  legacyMonitorFeedbackComment,
+} from "./monitor-feedback-schema-compatibility";
 
 type MonitorScreenshot = {
   file: File;
@@ -44,7 +48,7 @@ export async function saveGeneralMonitorFeedback(input: {
         "スクリーンショットを保存できませんでした。画像を確認してください。",
       );
   }
-  const { error } = await admin.from("cloud_general_monitor_feedback").insert({
+  const { error: structuredError } = await admin.from("cloud_general_monitor_feedback").insert({
     id: input.feedbackId,
     owner_profile_id: input.ownerProfileId,
     request_type: input.requestType,
@@ -59,6 +63,25 @@ export async function saveGeneralMonitorFeedback(input: {
     client_context: input.clientContext,
     attachment_path: attachmentPath,
   });
-  if (error && attachmentPath) await storage.remove([attachmentPath]);
+  if (!isMissingMonitorFeedbackSchema(structuredError)) {
+    if (structuredError && attachmentPath) await storage.remove([attachmentPath]);
+    return { error: structuredError };
+  }
+
+  if (attachmentPath) await storage.remove([attachmentPath]);
+  const { error } = await admin.from("cloud_general_monitor_feedback").insert({
+    id: input.feedbackId,
+    owner_profile_id: input.ownerProfileId,
+    workflow_step: input.workflowStep,
+    rating: input.rating,
+    outcome: input.outcome,
+    comment: legacyMonitorFeedbackComment({
+      requestType: input.requestType,
+      title: input.title,
+      severity: input.severity,
+      comment: input.comment,
+      attachmentOmitted: Boolean(attachmentPath),
+    }),
+  });
   return { error };
 }
