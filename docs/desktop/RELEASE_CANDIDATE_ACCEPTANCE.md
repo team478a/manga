@@ -24,6 +24,8 @@ R4-1nではProductionのread only transactionで2人の一般ユーザーclaim�
 
 R4-1oでは2026-08-12のMANGAI責任者報告により、対象ユーザー本人の市場分析ユーザー検証完了を受入れた。PR-R4-1mで保留した既存Report表示、新規市場分析保存、詳細表示、再読込後の本人履歴再表示を完了とし、非blocking保留を解除する。本人E2Eは完了したが、Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2Eが残るため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md)を参照する。
 
+R4-1pでは一般向けモニターへ6工程が公開され、Production readiness全項目、主要route、32ページ表示、Canvas再読込・別タブlock、responsive 12条件を確認した。一方、2候補画像生成はstoryboard materialization／owner境界、Cloud文章生成はJob登録で停止し、画像0/64、完成PDF disabledだった。市場分析から画像付き完成原稿までを完走できないため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md)を参照する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。

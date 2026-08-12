@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1p モニター公開範囲・Production一連動作検証、2026-08-12）
+
+- Base: `feature/manga-canvas-mvp` / `924b833`（PR #233 merge commit）
+- Branch: `codex/release-r4-1p-monitor-scope-acceptance`
+- 状態: `IN_PROGRESS`
+- Draft PR: 作成後に追記
+- 公開: 一般向けモニターは市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理の6工程。販売準備と収益管理は準備中。
+- Production: readiness全項目準備完了、登録9／利用中9／初回確認済み4、Queue待ち0／実行中0／24時間以内失敗0。
+- 実機成功: 主要route、32ページ表示、Canvas保存済み復帰、別タブlock、responsive 12/12、Production route 9/9。
+- 実機阻害: 2候補画像生成はstoryboard materialization／owner境界、Cloud文章生成はJob登録で停止。credit・Provider費用なし。画像0/64、PDF disabled。
+- 品質: full `rc:validate`、Hub 632/632、migration 52/52、Canvas 26/26、AI 48/48、longform 4/4、owner isolation 7/7、research eval成功。
+- 証跡: [`RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md)
+- 停止: 文書限定Draft PRの全CI／Preview後に停止し、残件を成功扱いせずR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1o 対象ユーザー市場分析受入れ完了、2026-08-12）
 
 - Base: `feature/manga-canvas-mvp` / `44b99dd`（PR #232 merge commit）
