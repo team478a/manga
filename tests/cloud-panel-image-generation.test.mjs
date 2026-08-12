@@ -106,7 +106,8 @@ test("選択コマのネームから利用者入力なしで画像生成条件�
   assert.equal(result.generation.jobType, "background");
   assert.match(result.generation.prompt, /朝の駅前/);
   assert.match(result.generation.prompt, /主人公が一歩を踏み出す/);
-  assert.match(result.generation.prompt, /吹き出し、セリフ/);
+  assert.match(result.generation.prompt, /純粋な絵だけで構成/);
+  assert.match(result.generation.prompt, /無記名/);
   assert.doesNotMatch(result.generation.prompt, /行こう/);
   assert.ok(result.generation.width >= 256);
   assert.ok(result.generation.height >= 256);
@@ -185,16 +186,15 @@ test("背景・人物・効果を別Job種別と専用Promptで生成する", ()
 
   assert.equal(background.generation.jobType, "background");
   assert.equal(background.generation.outputAlphaMode, "preserve");
-  assert.match(background.generation.prompt, /背景だけを描く/);
+  assert.match(background.generation.prompt, /無人の背景空間/);
   assert.doesNotMatch(background.generation.prompt, /登場人物:/);
   assert.equal(character.generation.jobType, "character_base");
   assert.equal(character.generation.outputAlphaMode, "remove_white");
-  assert.match(character.generation.prompt, /人物だけを描く/);
-  assert.match(character.generation.prompt, /背景は純白/);
+  assert.match(character.generation.prompt, /純白の無地背景に人物/);
   assert.doesNotMatch(character.generation.prompt, /背景: 朝の駅前/);
   assert.equal(effect.generation.jobType, "effect");
   assert.equal(effect.generation.outputAlphaMode, "remove_white");
-  assert.match(effect.generation.prompt, /漫画の効果だけを描く/);
+  assert.match(effect.generation.prompt, /純白の無地背景に漫画の効果素材/);
   assert.match(effect.generation.prompt, /朝日を逆光/);
   assert.doesNotMatch(effect.generation.prompt, /登場人物:/);
 });
@@ -348,7 +348,7 @@ test("シナリオの人物設定を画像生成条件へ引き継ぐ", () => {
   assert.match(result.generation.prompt, /服装の一貫性/);
 });
 
-test("完成コマ生成は単一コマと文字禁止を日英で固定する", () => {
+test("完成コマ生成はBFL向けの正の単一場面指示を日英で固定する", () => {
   const result = buildStoryboardPanelGeneration({
     storyboard,
     pageNumber: 1,
@@ -356,9 +356,10 @@ test("完成コマ生成は単一コマと文字禁止を日英で固定する",
     panelId,
     generationTarget: "composite",
   });
-  assert.match(result.generation.prompt, /画像全体を1つのコマの絵だけで満たす/);
-  assert.match(result.generation.prompt, /Generate exactly one isolated manga panel/);
-  assert.match(result.generation.prompt, /疑似文字も描かない/);
+  assert.match(result.generation.prompt, /一つの視点、一つの瞬間、連続した一つの場面/);
+  assert.match(result.generation.prompt, /single continuous edge-to-edge monochrome scene/);
+  assert.match(result.generation.prompt, /pure unlettered artwork/);
+  assert.doesNotMatch(result.generation.prompt, /漫画ページ|複数コマ|疑似文字|Never render/);
   assert.match(result.generation.negativePrompt, /pseudo-text/);
   assert.match(result.generation.negativePrompt, /multiple panels/);
   assert.match(result.generation.negativePrompt, /speech balloons/);

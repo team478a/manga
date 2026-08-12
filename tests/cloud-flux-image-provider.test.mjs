@@ -67,7 +67,8 @@ test("BFL adapter submits a strict general request, polls, and downloads immedia
   assert.equal(calls[0].init.headers["x-key"].startsWith("bfl-"), true);
   assert.equal(request.safety_tolerance, 1);
   assert.equal(request.width % 16, 0);
-  assert.match(request.prompt, /Avoid: letters/);
+  assert.equal(request.prompt, "quiet manga street");
+  assert.doesNotMatch(request.prompt, /Avoid:|letters/);
   assert.equal(result.providerJobId, "bfl-job-1");
   assert.equal(result.usage.actualCostMicros, 30_000);
   assert.equal(result.providerModeration.decision, "allow");

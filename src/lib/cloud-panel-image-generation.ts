@@ -397,16 +397,16 @@ export function buildStoryboardPanelGeneration(input: {
     composite:
       "背景・人物・演出を含む完成コマとして描く。各要素を一枚の画像として自然に統合する。",
     background:
-      "背景だけを描く。人物、人物の影、前景の人物、吹き出し、文字、集中線は描かず、後から人物を重ねられる空間を確保する。",
+      "無人の背景空間として描く。建築、風景、小物、自然な環境光で構成し、後から人物を重ねられる連続した空間を確保する。",
     character:
-      "人物だけを描く。背景、建物、家具、風景、効果線は描かない。背景は純白にし、黒い漫画線と必要最小限の網点で全身とポーズを明瞭にする。",
+      "純白の無地背景に人物を描く。黒い漫画線と必要最小限の網点で全身とポーズを明瞭にする。",
     effect:
-      "漫画の効果だけを描く。人物、背景、物体、文字は描かない。背景は純白にし、効果線、集中線、スピード線、衝撃、光、影の演出だけを黒い線と網点で描く。",
+      "純白の無地背景に漫画の効果素材を描く。効果線、集中線、スピード線、衝撃、光、影の演出を黒い線と網点で明瞭に構成する。",
   } as const;
   const prompt = [
-    "一般向け日本漫画の完成原稿用モノクロ1コマ。",
-    "画像全体を1つのコマの絵だけで満たす。漫画ページ、複数コマ、コマ枠、余白、吹き出し、セリフ、字幕、看板、UIは描かない。文字に見える記号や読めない疑似文字も描かない。",
-    "Generate exactly one isolated manga panel as edge-to-edge artwork. Never render a manga page, multiple panels, panel borders, gutters, speech balloons, captions, signs, UI, readable text, or pseudo-text.",
+    "端から端まで一続きの、一般向け日本漫画用モノクロ場面イラスト。",
+    "画像全体を一つの視点、一つの瞬間、連続した一つの場面で満たす。画面は純粋な絵だけで構成し、表面は無記名で清潔に保つ。",
+    "A single continuous edge-to-edge monochrome scene, one camera view and one moment in time, composed as pure unlettered pictorial artwork.",
     `生成対象: ${targetDirections[generationTarget]}`,
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
@@ -459,7 +459,8 @@ export function buildStoryboardPanelGeneration(input: {
     input.revision?.outpaintingDirection
       ? `画角拡張: ${outpaintingDirectionLabels[input.revision.outpaintingDirection]}へ自然に背景と構図を延長する。元画像内の人物、衣装、表情、線、色を変更しない。`
       : "",
-    "吹き出し、セリフ、字幕、ロゴ、透かし、文字、疑似文字は描かない。",
+    "最終出力は、端から端まで一続きの単一場面だけを描いた、無記名の完成イラストにする。",
+    "Final output: one continuous edge-to-edge scene, a single camera view, pure unlettered artwork.",
   ].filter(Boolean).join("\n");
   if (prompt.length > 20_000)
     throw new ValidationError("生成条件が長すぎます。");

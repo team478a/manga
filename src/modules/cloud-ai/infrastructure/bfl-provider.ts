@@ -248,9 +248,10 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
     signal?.addEventListener("abort", abort, { once: true });
     let diagnosticStage: BflProviderDiagnostic["stage"] = "submit";
     try {
-      const prompt = input.negativePrompt.trim()
-        ? `${input.prompt}\nAvoid: ${input.negativePrompt}`
-        : input.prompt;
+      // FLUX.2 does not support negative prompts. Appending forbidden terms to
+      // the positive prompt can prime those exact elements, so BFL receives
+      // only the positively framed generation prompt.
+      const prompt = input.prompt;
       const usesFill =
         input.operation === "inpainting" || input.operation === "outpainting";
       const isFillModel = this.config.model === "flux-pro-1.0-fill";
