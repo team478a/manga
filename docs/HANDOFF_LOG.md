@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-12 Codex: PR-R4-1t 販売下書き完成原稿preflight
+
+- Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`
+- Base: `origin/feature/manga-canvas-mvp` @ `209d7a6`（PR #237 merge commit）
+- PR-R4-1sで検出した未完成原稿からの販売下書き作成を修正した。Creator UIと販売artifact生成入口がdurable PDFと同じ完成原稿preflightを使用する。
+- 未完成、未確定、stale、生成中、空コマ、欠損Asset、文字overflowはStorage upload前に`ValidationError`で停止する。完成原稿の非公開作品／販売停止商品同期、公開中／販売中上書き禁止は維持する。
+- DB、migration、RPC、Storage契約、Provider、pricing、Scheduler、Canvas schema、PDF形式、成人向け境界、Stripe、Desktop codeは変更していない。
+- 集中13/13、Hub 643/643、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop build、RC preflight、diff check成功。長いpathのHub buildはWindows上限、短い物理worktreeで成功した。
+- Desktop統合テストはElectron終了待ちで結果出力前に停止。Desktop差分なし、Windows CIで最終判定する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md`
+
+---
+
 ## 2026-08-12 Codex: PR-R4-1s 市場分析から販売までのProduction E2E監査
 
 - Branch: `codex/release-r4-1s-market-to-sale-e2e`

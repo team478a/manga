@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-12 PR-R4-1t 販売下書き完成原稿preflight
+
+- 状態: `IN_PROGRESS`
+- Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`
+- Base: `origin/feature/manga-canvas-mvp`（`209d7a6`、PR #237 merge commit）
+- 原因: 販売artifact生成がページ1件以上だけを要求し、durable PDF用の完成原稿preflightを使っていなかった。Creator画面の販売buttonも未完成状態で有効だった。
+- 修正: 既存の完成原稿preflightを販売artifact生成前に必須化する。全ページ確定、revision一致、再確認済み、生成中なし、必須修正0を満たさない場合はStorage upload前に`ValidationError`で拒否する。画面も同じ条件でbuttonを無効化し、要修正件数を案内する。
+- 正常系: 完成原稿だけが従来どおり非公開作品／販売停止商品を作成・更新できる。公開中／販売中の上書き禁止も維持する。
+- 不変: DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PDF形式、成人向け境界、Stripe、Desktop code。
+- 検証: 集中13/13、Hub 643/643、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop production build、RC preflight、diff check成功。Hub buildは長いpathでWindows上限となり、同一commitの短い物理worktreeで成功した。
+- ローカルDesktop統合: Electron終了待ちで2回とも結果出力前に停止。Desktop codeは変更しておらず、Windows CIで最終判定する。
+- 証跡: [`RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md`](RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md)
+- 次: 文書限定commit、Draft PR、全CI／Vercel Preview確認後に停止する。責任者確認前に実Provider／Scheduler修正へ進まない。
+
+---
+
 ## 2026-08-12 PR-R4-1s 市場分析から販売までのProduction E2E監査
 
 - 状態: `READY_FOR_OWNER_REVIEW`
