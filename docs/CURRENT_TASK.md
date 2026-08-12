@@ -2,7 +2,8 @@
 
 ## 2026-08-12 PR-R4-1r 漫画生成Production E2E・単一コマ品質修正
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`（Draft PR [#236](https://github.com/team478a/manga/pull/236)）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-c6c81b-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1r-single-panel-image-quality`
 - Base: `origin/feature/manga-canvas-mvp`（`d3441a4`、PR #235 merge commit）
 - Production E2E: `test`一般向けモニターで32ページAIネームを約2分で生成し、1〜32ページ欠落なし、採用、Canvas下書き32ページ／157コマ、BFL画像2候補、4 credit確定、候補比較・採用、自動保存、再読込復元まで成功した。
@@ -10,8 +11,9 @@
 - 修正: 共通画像Promptへ「単一コマを全面描画」「漫画ページ／複数コマ／枠／余白禁止」「文字／疑似文字／吹き出し禁止」を日英で追加し、negative promptにも固定する。
 - 不変: Provider、model、pricing、credit単価、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop。
 - 検証: 専用21/21、Hub 640/640、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 52/52、deps、lint、全typecheck、research eval、Hub／Desktop production build、RC preflight、diff check成功。長いclone pathでのTurbopack path-length失敗は短い物理worktreeで再実行して成功した。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md`](RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md)
-- 次: 全ローカル品質ゲート、Draft PR、全CI／Vercel Previewを確認して停止する。merge前に追加の実Provider生成を行わず、merge後に未生成コマ1つ・2候補だけで単一コマ品質を再受入れする。
+- 次: 責任者のreview／merge判断まで停止する。merge前に追加の実Provider生成を行わず、merge後に未生成コマ1つ・2候補だけで単一コマ品質を再受入れする。
 
 ---
 

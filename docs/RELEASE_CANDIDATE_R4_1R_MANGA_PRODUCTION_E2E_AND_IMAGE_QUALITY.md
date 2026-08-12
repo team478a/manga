@@ -73,3 +73,16 @@ Production反映後、同じモニター作品で第1ページの未生成コマ
 - Hub／Desktop production build、RC preflight、`git diff --check`: 成功
 
 長いclone pathではWindowsのTurbopack path-length上限に当たったため、同じcommitを短い物理worktreeへ展開して再実行し、Production build成功を確認した。
+
+## 9. Draft PR・CI
+
+- Draft PR: [#236](https://github.com/team478a/manga/pull/236)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-c6c81b-team478as-projects.vercel.app
+- Core quality: PASS
+- Migration roundtrip: PASS
+- Windows build: PASS
+- Vercel: PASS
+- Vercel Preview Comments: PASS
+- PR状態: Draft／MERGEABLE
+
+責任者のreview／merge判断まで停止し、merge前に追加の実Provider生成は行わない。
