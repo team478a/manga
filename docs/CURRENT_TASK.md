@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-12 PR-R4-1s 市場分析から販売までのProduction E2E監査
+
+- 状態: `IN_PROGRESS`
+- Branch: `codex/release-r4-1s-market-to-sale-e2e`
+- Base: `origin/feature/manga-canvas-mvp`（`2afae10`、PR #236 merge commit）
+- Production E2E: 保存済み市場分析→選択済み企画→採用シナリオ→採用32ページネーム→Creator 32ページ／157コマの連続引継ぎを確認した。
+- 画像再受入れ: 未生成コマ1つで2候補を実行したが両方failed。4 credit予約は全解放され、残16／使用4／予約0へ戻った。単一コマ／文字なし品質のmerge後受入れは未合格。
+- 完成状態: 画像1/157、完成0/32、確定0/32、必須修正267、完了ガイド0/4。durable PDFと完成版checkpointは正しく無効だった。
+- 重大検出: 上記未完成状態でも販売下書きが作成できた。検証artifactは非公開作品／販売停止商品で維持し、一般一覧へ非表示、直接checkoutも入力・購入button無効を確認した。公開・実決済・購入は未実施。
+- Scheduler: Workerの正規終端`failed`を未知状態として扱い、workflowを`Worker応答の状態を確認できませんでした。`で失敗させるため、後続Jobを妨げる。
+- credit成立性: 現価格は2候補で4 credit。未生成156コマの最低2候補には追加624 creditが必要で、残16では32ページを完成できない。
+- 変更範囲: 監査証跡と進行文書だけ。application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更しない。
+- 証跡: [`RELEASE_CANDIDATE_R4_1S_MARKET_TO_SALE_E2E_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1S_MARKET_TO_SALE_E2E_EVIDENCE.md)
+- 次: 文書限定Draft PRの全CI／Vercel Preview成功後に停止する。次PRはP0販売準備preflight、実画像生成失敗、Scheduler終端状態、長編credit成立条件を分離して扱う。
+
+---
+
 ## 2026-08-12 PR-R4-1r 漫画生成Production E2E・単一コマ品質修正
 
 - 状態: `READY_FOR_OWNER_REVIEW`（Draft PR [#236](https://github.com/team478a/manga/pull/236)）

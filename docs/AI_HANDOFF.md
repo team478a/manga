@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1s Production市場分析→販売E2E監査、2026-08-12）
+
+- Branch: `codex/release-r4-1s-market-to-sale-e2e`
+- Base: `origin/feature/manga-canvas-mvp` @ `2afae10`（PR #236 merge commit）
+- 状態: `IN_PROGRESS`
+- Productionの一般モニター`test`で、市場分析、選択企画、採用シナリオ、採用32ページネーム、Creator 32ページ／157コマまでの連続性を確認した。
+- merge後の画像2候補は両方failed。予約4 creditは全解放。単一コマ品質の実Provider再受入れは未合格。
+- 原稿は画像1/157、完成0/32、確定0/32、必須修正267。完成PDFは正しく無効だが、販売下書きは作成できてしまう。作成物は非公開／販売停止で、公開一覧とcheckoutは安全側に閉じている。
+- Workerの正規終端`failed`をSchedulerが未知状態としてworkflow failureにする。後続Job処理を妨げるため別修正が必要。
+- 未生成156コマへ最低2候補を作るだけで追加624 creditが必要。残16では32ページ完成不可。
+- 次: 文書限定Draft PRと全CI／Preview後に停止。販売準備preflight、実画像生成、Scheduler、credit成立条件を責任者確認後の別PRで修正する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1S_MARKET_TO_SALE_E2E_EVIDENCE.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1r 漫画生成Production E2E・単一コマ品質修正、2026-08-12）
 
 - Base: `feature/manga-canvas-mvp` / `d3441a4`（PR #235 merge commit）
