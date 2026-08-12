@@ -405,6 +405,8 @@ export function buildStoryboardPanelGeneration(input: {
   } as const;
   const prompt = [
     "一般向け日本漫画の完成原稿用モノクロ1コマ。",
+    "画像全体を1つのコマの絵だけで満たす。漫画ページ、複数コマ、コマ枠、余白、吹き出し、セリフ、字幕、看板、UIは描かない。文字に見える記号や読めない疑似文字も描かない。",
+    "Generate exactly one isolated manga panel as edge-to-edge artwork. Never render a manga page, multiple panels, panel borders, gutters, speech balloons, captions, signs, UI, readable text, or pseudo-text.",
     `生成対象: ${targetDirections[generationTarget]}`,
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
@@ -457,7 +459,7 @@ export function buildStoryboardPanelGeneration(input: {
     input.revision?.outpaintingDirection
       ? `画角拡張: ${outpaintingDirectionLabels[input.revision.outpaintingDirection]}へ自然に背景と構図を延長する。元画像内の人物、衣装、表情、線、色を変更しない。`
       : "",
-    "吹き出し、セリフ、字幕、ロゴ、透かしは描かない。",
+    "吹き出し、セリフ、字幕、ロゴ、透かし、文字、疑似文字は描かない。",
   ].filter(Boolean).join("\n");
   if (prompt.length > 20_000)
     throw new ValidationError("生成条件が長すぎます。");
@@ -472,7 +474,7 @@ export function buildStoryboardPanelGeneration(input: {
             : ("background" as const),
       prompt,
       negativePrompt: [
-        "文字、字幕、ロゴ、透かし、低品質、崩れた構図、別人、髪型の変化、衣装の無断変更",
+        "文字、疑似文字、読めない文字、字幕、セリフ、吹き出し、看板、ロゴ、透かし、漫画ページ、複数コマ、コマ枠、余白、text, letters, pseudo-text, gibberish, typography, captions, speech balloons, signs, logos, watermarks, manga page, multiple panels, panel borders, gutters, 低品質、崩れた構図、別人、髪型の変化、衣装の無断変更",
         ...selectedVisualProfiles
           .map((profile) => profile.negative_prompt)
           .filter(Boolean),

@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1r 漫画生成Production E2E・単一コマ品質修正、2026-08-12）
+
+- Base: `feature/manga-canvas-mvp` / `d3441a4`（PR #235 merge commit）
+- Branch: `codex/fix-r4-1r-single-panel-image-quality`
+- 状態: `IN_PROGRESS`
+- Production: `test`モニターで32ページネームを約2分で生成し、全32ページ、採用、Canvas下書き32ページ／157コマ、BFL画像2候補、4 credit確定、候補比較・採用、自動保存、再読込復元まで成功した。
+- 品質問題: 2候補中1候補に複数コマ風構成と読めない疑似文字が混入した。別候補は採用可能だった。
+- 修正: 共通画像Promptとnegative promptへ、単一コマ全面描画、漫画ページ／複数コマ／枠／余白禁止、文字／疑似文字／吹き出し禁止を日英で追加する。
+- 不変: Provider、model、pricing、credit、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop。
+- 証跡: [`RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md`](RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md)
+- 停止: Draft PRの全CI／Vercel Preview成功後に停止し、merge前に追加の実Provider生成や次工程へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1q モニター制作阻害要因修正、2026-08-12）
 
 - Base: `feature/manga-canvas-mvp` / `924b833`

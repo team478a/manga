@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-12 PR-R4-1r 漫画生成Production E2E・単一コマ品質修正
+
+- 状態: `IN_PROGRESS`
+- Branch: `codex/fix-r4-1r-single-panel-image-quality`
+- Base: `origin/feature/manga-canvas-mvp`（`d3441a4`、PR #235 merge commit）
+- Production E2E: `test`一般向けモニターで32ページAIネームを約2分で生成し、1〜32ページ欠落なし、採用、Canvas下書き32ページ／157コマ、BFL画像2候補、4 credit確定、候補比較・採用、自動保存、再読込復元まで成功した。
+- 検出事項: 2候補のうち1候補が複数コマ風となり、画像内に読めない疑似文字を生成した。別候補は採用可能だった。
+- 修正: 共通画像Promptへ「単一コマを全面描画」「漫画ページ／複数コマ／枠／余白禁止」「文字／疑似文字／吹き出し禁止」を日英で追加し、negative promptにも固定する。
+- 不変: Provider、model、pricing、credit単価、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop。
+- 証跡: [`RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md`](RELEASE_CANDIDATE_R4_1R_MANGA_PRODUCTION_E2E_AND_IMAGE_QUALITY.md)
+- 次: 全ローカル品質ゲート、Draft PR、全CI／Vercel Previewを確認して停止する。merge前に追加の実Provider生成を行わず、merge後に未生成コマ1つ・2候補だけで単一コマ品質を再受入れする。
+
+---
+
 ## 2026-08-12 PR-R4-1q モニター制作阻害要因修正
 
 - 状態: `READY_FOR_OWNER_REVIEW`（Draft PR [#235](https://github.com/team478a/manga/pull/235)）
