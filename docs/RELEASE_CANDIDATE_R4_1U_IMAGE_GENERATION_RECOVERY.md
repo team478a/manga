@@ -37,6 +37,7 @@ PR-R4-1sのProduction再受入れでは、未生成コマ1つへ登録した2候
 - Hub production build: 同一実装commitを短い物理worktreeで成功
 - RC preflight: repository structure ready。ローカル外部設定は未投入のため従来どおりpending
 - git diff check: 成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE
 
 長いworkspaceでのHub buildはNext.js TurbopackのWindows path length上限で停止した。同一commitの`C:\CodexTemp\mangai-r4-1u`では成功したため、コード起因ではない。
 

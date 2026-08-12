@@ -14,7 +14,9 @@
 - timeout診断は固定stage／outcomeだけを記録し、Prompt、画像、API key、URL、Job ID、Provider response本文、利用者情報を記録しない。
 - Provider、model、request、pricing、credit、retry回数、Scheduler頻度、DB、migration、RPC、Storage、API、Canvas schema、成人向け境界、Desktop codeは変更していない。
 - 集中27/27、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Desktop build、短い物理worktreeでHub build、RC preflight、diff check成功。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - merge前のProduction有料Jobは追加しない。merge後に未生成コマ1つ・2候補だけで、生成、比較、採用、保存、再読込、credit確定を再受入れする。
+- 責任者のreview／merge判断まで停止する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1U_IMAGE_GENERATION_RECOVERY.md`
 
 ---

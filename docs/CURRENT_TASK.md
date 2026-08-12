@@ -2,7 +2,7 @@
 
 ## 2026-08-12 PR-R4-1u 漫画画像生成timeout／Scheduler復旧
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#239](https://github.com/team478a/manga/pull/239)
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-2e4013-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1u-image-generation-recovery`
@@ -11,8 +11,9 @@
 - 修正: BFL poll 210秒、Worker 240秒、Scheduler request 230秒へ整合させる。`failed`を既知の終端状態として後続Jobへ進み、timeoutは秘密値なしの固定診断分類を残す。
 - 不変: Provider、model、request、pricing、credit、retry回数、Scheduler頻度、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Desktop code。
 - 検証: 集中27/27、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Desktop build、短い物理worktreeでHub build、RC preflight、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1U_IMAGE_GENERATION_RECOVERY.md`](RELEASE_CANDIDATE_R4_1U_IMAGE_GENERATION_RECOVERY.md)
-- 次: Draft PRと全CI／Vercel Preview後に停止。merge後、Productionで未生成コマ1つ・2候補、比較、採用、保存、再読込を実施する。合格前に8ページ一括生成へ進まない。
+- 次: 責任者のreview／merge判断まで停止。merge後、Productionで未生成コマ1つ・2候補、比較、採用、保存、再読込を実施する。合格前に8ページ一括生成へ進まない。
 
 ---
 

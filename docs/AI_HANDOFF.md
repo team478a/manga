@@ -4,15 +4,16 @@
 
 - Branch: `codex/fix-r4-1u-image-generation-recovery`
 - Base: `origin/feature/manga-canvas-mvp` @ `c98e5b1`（PR #238 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#239](https://github.com/team478a/manga/pull/239)
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-2e4013-team478as-projects.vercel.app
 - Productionの画像2候補は約126〜128秒でfailedとなり、BFLの120秒poll上限と一致した。BFL submit拒否ではなく生成待機timeoutを根因候補として扱う。
 - BFL 210秒、Scheduler request 230秒、Worker 240秒へ整合させ、`failed`を既知終端として後続Jobへ進む。PromptやProvider本文を含まないtimeout診断を追加する。
 - Provider、model、request、pricing、credit、retry、Scheduler頻度、DB、migration、RPC、Storage、Canvas、成人向け境界、Desktopは変更しない。
 - 検証: 集中27/27、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop build、RC preflight、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_1U_IMAGE_GENERATION_RECOVERY.md`
-- 次: Draft PRと全CI／Preview後に停止。merge後にProductionの未生成コマ1つ、2候補、比較、採用、保存、再読込を必ず再受入れする。
+- 次: 責任者のreview／merge判断まで停止。merge後にProductionの未生成コマ1つ、2候補、比較、採用、保存、再読込を必ず再受入れする。
 
 ---
 
