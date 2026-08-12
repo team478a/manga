@@ -19,7 +19,7 @@
 
 ### AIネーム生成
 
-- 8〜48ページを1回の構造化Responses API応答で生成する。
+- 変更前は8〜48ページを1回の構造化Responses API応答で生成していた。
 - 32ページでは`reasoning.effort=medium`と120秒のProvider timeoutが実データ量に対して不足した。
 - モニター利用回数をProvider呼出前に消費していたため、timeoutでも利用回数だけが増えた。
 
@@ -36,9 +36,15 @@
 - GPT-5.6 TerraのmodelとResponses APIは維持する。
 - `reasoning.effort`を`medium`から低遅延向けの`low`へ変更する。
 - 各説明を1文に抑える指示を追加し、32〜48ページ時の不要な出力量を減らす。
-- Provider timeoutを120秒から210秒、該当Server Action枠を180秒から240秒へ延長する。
+- 8ページ以下は既存どおり1回の構造化応答とし、Provider上限210秒を維持する。
+- 9〜48ページは、まず全体の人物・衣装・小道具・場所・感情・伏線と各ブロックの入出状態を45秒以内で設計する。
+- 設計後は1〜8、9〜16ページのように8ページ単位へ分割し、全ブロックを並列生成する。各ブロック上限は150秒とし、全体設計45秒＋最遅ブロック150秒をServer Action 240秒内へ収める。
+- 32ページは全体設計1回＋4ブロック、48ページは全体設計1回＋6ブロックとなる。ブロック数分の待ち時間を直列加算しない。
+- 各ブロックのページ範囲・ページ番号を検証し、結合後に既存の完成版schemaでも総ページ数、全ページ番号、全コマ番号を再検証する。1ブロックでも失敗・欠落・不正なら完成版を返さない。
 - `store:false`、構造化output schema、`safety_identifier`を維持する。Background modeは一時保存を伴うため採用しない。
-- 上限到達をProvider呼出前に確認し、利用回数の原子的消費はProvider成功後・保存前に行う。Provider timeoutでは利用回数を増やさない。
+- 上限到達をProvider呼出前に確認し、利用回数の原子的消費は全ブロック成功後・保存前に1回だけ行う。Provider timeoutや一部ブロック失敗では利用回数を増やさない。
+- Providerのmodel、単価設定、credit価格は変更しないが、長編1回あたりのProvider request数は増える。出力本体は8ページ単位へ分散し、追加分は小さい全体連続性設計である。
+- 本PRは同期処理を安全時間内へ収める分割であり、部分ブロックのDB永続化や非同期再開Jobは追加しない。一部失敗後の再実行は完成版全体の再生成となる。
 
 ### 2. フィードバック互換保存
 
@@ -64,12 +70,13 @@
 
 ## 回帰テスト
 
-- 集中テスト: 40/40、追加後21/21 PASS
-- Hub: 635/635 PASS
+- 長編分割集中テスト: 25/25 PASS
+- Hub: 639/639 PASS
 - Canvas: 26/26 PASS
 - AI: 48/48 PASS
 - Desktop: 182/182 PASS
 - Desktop accessibility: violation 0（既存color contrastはmanual incomplete）
+- Desktop accessibility初回は検査結果出力後のElectron終了が`ETIMEDOUT`、単独再実行でexit 0
 - deps、lint、Hub／Desktop typecheck、research eval: PASS
 - migration validation: 52/52 PASS
 - Cloud漫画repository acceptance: PASS

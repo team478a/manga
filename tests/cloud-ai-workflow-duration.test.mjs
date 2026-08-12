@@ -52,8 +52,15 @@ test("workflow provider timeouts stay below the page execution limit", async () 
     new URL("../src/lib/cloud-storyboard-ai.ts", import.meta.url),
     "utf8",
   );
-  const storyboardTimeout = storyboard.match(/AbortSignal\.timeout\(([\d_]+)\)/);
-  assert.ok(storyboardTimeout);
-  assert.ok(Number(storyboardTimeout[1].replaceAll("_", "")) < 240_000);
+  const timeout = (name) => {
+    const match = storyboard.match(new RegExp(`const ${name} = ([\\d_]+);`));
+    assert.ok(match, `${name} must remain explicit`);
+    return Number(match[1].replaceAll("_", ""));
+  };
+  assert.ok(timeout("SINGLE_STORYBOARD_TIMEOUT_MS") < 240_000);
+  assert.ok(
+    timeout("BLUEPRINT_TIMEOUT_MS") + timeout("CHUNK_TIMEOUT_MS") < 240_000,
+    "chunked generation must leave time for validation, persistence, and redirect",
+  );
   assert.match(storyboard, /reasoning: \{ effort: "low" \}/);
 });

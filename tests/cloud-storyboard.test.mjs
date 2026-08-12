@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { cloudStoryboardFeatureEnabled, cloudStoryboardResultSchema } from "../src/lib/cloud-storyboard.ts";
-import { runCloudStoryboardAi } from "../src/lib/cloud-storyboard-ai.ts";
+import { runCloudStoryboardAi, splitStoryboardPageRanges } from "../src/lib/cloud-storyboard-ai.ts";
 import { createCloudStoryboardVersionWithPersistence, getCloudStoryboardVersionWithPersistence, adoptCloudStoryboardWithPersistence } from "../src/lib/cloud-storyboard-persistence.ts";
 
 const profileId = "10000000-0000-4000-8000-000000000001";
@@ -53,6 +53,82 @@ test("採用シナリオから構造化ネームを生成しProvider保存を無
   assert.equal(request.max_output_tokens, 32_000);
   assert.equal(request.reasoning.effort, "low");
   assert.ok(!JSON.stringify(request).includes("sk-test"));
+});
+test("長編ネームは全体設計後に8ページ単位で並列生成する", async () => {
+  const longScenario = { ...scenario, result: { ...scenario.result, pageCount: 32 } };
+  const ranges = splitStoryboardPageRanges(32);
+  const blueprint = {
+    title: "再出発の約束・32ページネーム",
+    productionNotes: body.productionNotes,
+    chunks: ranges.map((range) => ({
+      ...range,
+      objective: `${range.pageStart}〜${range.pageEnd}ページの展開`,
+      entryState: `${range.pageStart}ページ開始時の状態`,
+      exitState: `${range.pageEnd}ページ終了時の状態`,
+      continuityRequirements: ["衣装と小道具を維持する"],
+    })),
+  };
+  const requests = [];
+  const generated = await runCloudStoryboardAi({
+    profileId, report, scenario: longScenario, now: result.generatedAt,
+    runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
+    fetchImplementation: async (_url, init) => {
+      const request = JSON.parse(init.body);
+      requests.push(request);
+      const schemaName = request.text.format.name;
+      if (schemaName === "mangai_storyboard_blueprint")
+        return new Response(JSON.stringify({ output_text: JSON.stringify(blueprint) }));
+      const [, start, end] = schemaName.match(/mangai_storyboard_pages_(\d+)_(\d+)/);
+      const pages = Array.from({ length: Number(end) - Number(start) + 1 }, (_, index) => page(Number(start) + index));
+      return new Response(JSON.stringify({ output_text: JSON.stringify({ pages }) }));
+    },
+  });
+  assert.equal(generated.pages.length, 32);
+  assert.deepEqual(generated.pages.map((item) => item.pageNumber), Array.from({ length: 32 }, (_, index) => index + 1));
+  assert.equal(requests.length, 5);
+  assert.equal(requests[0].text.format.name, "mangai_storyboard_blueprint");
+  assert.deepEqual(
+    requests.slice(1).map((request) => request.text.format.name),
+    ["mangai_storyboard_pages_1_8", "mangai_storyboard_pages_9_16", "mangai_storyboard_pages_17_24", "mangai_storyboard_pages_25_32"],
+  );
+  assert.ok(requests.every((request) => request.store === false));
+  assert.ok(requests.every((request) => request.reasoning.effort === "low"));
+  assert.ok(requests.slice(1).every((request) => request.max_output_tokens === 12_000));
+});
+test("長編ネームの一部ブロックが不正なら完成版を返さない", async () => {
+  const longScenario = { ...scenario, result: { ...scenario.result, pageCount: 16 } };
+  const ranges = splitStoryboardPageRanges(16);
+  const blueprint = {
+    title: "再出発の約束・16ページネーム",
+    productionNotes: body.productionNotes,
+    chunks: ranges.map((range) => ({
+      ...range,
+      objective: "物語を進める",
+      entryState: "開始状態",
+      exitState: "終了状態",
+      continuityRequirements: ["人物を維持する"],
+    })),
+  };
+  await assert.rejects(runCloudStoryboardAi({
+    profileId, report, scenario: longScenario, now: result.generatedAt,
+    runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
+    fetchImplementation: async (_url, init) => {
+      const request = JSON.parse(init.body);
+      if (request.text.format.name === "mangai_storyboard_blueprint")
+        return new Response(JSON.stringify({ output_text: JSON.stringify(blueprint) }));
+      const [, start, end] = request.text.format.name.match(/mangai_storyboard_pages_(\d+)_(\d+)/);
+      const pages = Array.from({ length: Number(end) - Number(start) + 1 }, (_, index) => page(Number(start) + index));
+      if (Number(start) === 9) pages[0] = page(99);
+      return new Response(JSON.stringify({ output_text: JSON.stringify({ pages }) }));
+    },
+  }), /ページ番号を確認できません/);
+});
+test("長編ネームの分割範囲は末尾ページを欠落させない", () => {
+  assert.deepEqual(splitStoryboardPageRanges(18), [
+    { chunkIndex: 1, pageStart: 1, pageEnd: 8 },
+    { chunkIndex: 2, pageStart: 9, pageEnd: 16 },
+    { chunkIndex: 3, pageStart: 17, pageEnd: 18 },
+  ]);
 });
 test("成人向けはProvider呼出前に拒否する", async () => {
   let called = false;
