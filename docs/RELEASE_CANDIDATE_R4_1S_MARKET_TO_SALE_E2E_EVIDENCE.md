@@ -116,3 +116,5 @@ UI無効化だけではServer Action直呼びを防げない。Creator表示、S
 - `npm run deps:check`: 成功（既知のApp Router admin client移行警告2件、今回の差分起因0件）
 - `npm run rc:preflight`: repository structure ready。外部設定はローカルへ読み込まずpending、manual acceptanceは本証跡で個別判定した
 - `git diff --check`: 成功
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: 成功
+- PR状態: Draft／MERGEABLE、責任者確認待ち

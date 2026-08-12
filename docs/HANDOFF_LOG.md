@@ -16,6 +16,7 @@
 - SchedulerがWorkerの終端`failed`を未知状態としてworkflow failureにする。未生成156コマの最低候補生成だけで追加624 creditが必要で、残16では長編完成不可。
 - application codeと外部契約は変更せず、証跡、CURRENT_TASK、AI_HANDOFF、HANDOFF_LOGだけを同期する。
 - Scheduler／marketplace policy／durable export 14/14、deps、RC preflight、diff check成功。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1S_MARKET_TO_SALE_E2E_EVIDENCE.md`
 
 ---

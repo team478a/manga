@@ -4,7 +4,7 @@
 
 - Branch: `codex/release-r4-1s-market-to-sale-e2e`
 - Base: `origin/feature/manga-canvas-mvp` @ `2afae10`（PR #236 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#237](https://github.com/team478a/manga/pull/237)
 - Vercel Preview: https://mangai-hub-staging-git-codex-release-faa8ee-team478as-projects.vercel.app
 - Productionの一般モニター`test`で、市場分析、選択企画、採用シナリオ、採用32ページネーム、Creator 32ページ／157コマまでの連続性を確認した。
@@ -13,6 +13,7 @@
 - Workerの正規終端`failed`をSchedulerが未知状態としてworkflow failureにする。後続Job処理を妨げるため別修正が必要。
 - 未生成156コマへ最低2候補を作るだけで追加624 creditが必要。残16では32ページ完成不可。
 - ローカル検証: Scheduler／marketplace policy／durable export 14/14、deps、RC preflight、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 次: 文書限定Draft PRと全CI／Preview後に停止。販売準備preflight、実画像生成、Scheduler、credit成立条件を責任者確認後の別PRで修正する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1S_MARKET_TO_SALE_E2E_EVIDENCE.md`
 
