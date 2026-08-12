@@ -21,6 +21,8 @@
 
 - Base: `origin/feature/manga-canvas-mvp` / `924b833`（PR #233 merge commit）
 - Branch: `codex/release-r4-1p-monitor-scope-acceptance`
+- Draft PR: [#234](https://github.com/team478a/manga/pull/234)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-3bd30f-team478as-projects.vercel.app
 - 確認日: 2026-08-12（Asia/Tokyo）
 - Production: `https://app.mang-ai.com`
 - ログイン中表示名: `tanaka`
@@ -94,6 +96,7 @@
 - `npm run ai:test`: PASS（48/48）
 - `npm run cloud:production:routes`: PASS（read only 9/9）
 - `npm run rc:acceptance`: 2 passed／11 pending／2 blocked
+- Draft PR初回HEAD: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsすべて成功
 - `npm audit`: root 5件（moderate 1／high 4）、Desktop 9件（moderate 2／high 7）。lockfile由来の既知依存警告として記録し、自動更新は行わない。
 
 ## 現在の判定

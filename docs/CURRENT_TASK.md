@@ -2,10 +2,11 @@
 
 ## 2026-08-12 PR-R4-1p モニター公開範囲・Production一連動作検証
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/release-r4-1p-monitor-scope-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`924b833`、PR #233 merge commit）
-- Draft PR: 作成後に追記
+- Draft PR: [#234](https://github.com/team478a/manga/pull/234)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-3bd30f-team478as-projects.vercel.app
 - 公開範囲: 一般向けモニターへ市場分析、AI企画、シナリオ、ネーム、原稿編集、作品管理の6工程を公開。販売準備と収益管理は準備中・モニター対象外。
 - Readiness: Production管理画面は全項目準備完了。登録9名、利用中9名、初回確認済み4名、未完了feedback 0件、Queue待ち0／実行中0／24時間以内失敗0。
 - 実ブラウザ: Header／マイページ／6工程route、32ページ作品、Canvas保存済み復帰、別タブ編集lock、390／768／1280pxの主要4画面12条件を確認。
@@ -13,6 +14,7 @@
 - 阻害2: 短いCloud文章生成は「登録に失敗しました。」でJob前停止。Provider／credit／費用なし。
 - 未完了: 画像配置0/64、完成0/32、要修正135、完成PDF disabled。PNGはdownload成功を捕捉できず今回PASSにしない。
 - 品質: full `rc:validate`、Hub 632/632、migration 52/52、Canvas 26/26、AI 48/48、longform 4/4、owner isolation 7/7、research eval、Production route 9/9、responsive 12/12成功。
+- CI: Draft PR初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - RC: 2 passed／11 pending／2 blocked。Cloud text実Job、同一monitor ownerの縦型E2E、画像付き4〜8ページPDF／PNG、生成成果物・署名URLのowner isolation、Stripe test E2Eを成功扱いにしない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1P_MONITOR_SCOPE_ACCEPTANCE_EVIDENCE.md)
 - 停止条件: 文書限定Draft PRの全CI／Vercel Previewを確認して停止し、責任者確認前にR4-2へ進まない。
