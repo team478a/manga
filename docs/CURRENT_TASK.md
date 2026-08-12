@@ -3,6 +3,8 @@
 ## 2026-08-12 PR-R4-1u 漫画画像生成timeout／Scheduler復旧
 
 - 状態: `IN_PROGRESS`
+- Draft PR: [#239](https://github.com/team478a/manga/pull/239)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-2e4013-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1u-image-generation-recovery`
 - Base: `origin/feature/manga-canvas-mvp`（`c98e5b1`、PR #238 merge commit）
 - Production症状: 未生成コマ1つの2候補がともに1%からfailed。各Worker実行が約126〜128秒で終了し、BFL adapterの120秒poll上限と一致した。

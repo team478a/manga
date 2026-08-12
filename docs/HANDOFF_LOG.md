@@ -7,6 +7,7 @@
 ## 2026-08-12 Codex: PR-R4-1u 漫画画像生成timeout／Scheduler復旧
 
 - PR #238 merge commit `c98e5b1`を含む最新`feature/manga-canvas-mvp`から`codex/fix-r4-1u-image-generation-recovery`を作成した。
+- Draft PR [#239](https://github.com/team478a/manga/pull/239)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-2e4013-team478as-projects.vercel.app
 - Productionで2候補がともに1%からfailedとなった各Worker実行は約126〜128秒で、BFL adapterの既定120秒poll上限と一致した。
 - BFL pollを210秒、Worker routeを240秒、Scheduler requestを230秒へ整合させる。Workflowは最大3件逐次処理のため20分上限とする。
 - Worker終端`failed`をSchedulerの既知状態として後続Jobへ進める。`retrying`と`lease_lost`は停止し、同一Jobのtight loopを作らない。

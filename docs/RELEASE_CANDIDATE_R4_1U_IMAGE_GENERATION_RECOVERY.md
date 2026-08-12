@@ -1,5 +1,8 @@
 # PR-R4-1u 漫画画像生成timeout／Scheduler復旧
 
+- Draft PR: [#239](https://github.com/team478a/manga/pull/239)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-2e4013-team478as-projects.vercel.app
+
 ## 結論
 
 PR-R4-1sのProduction再受入れでは、未生成コマ1つへ登録した2候補がともに1%から進まず、最終的にfailedとなった。各Worker実行は約126〜128秒で終了しており、BFL adapterの既定120秒poll上限と一致する。BFLへのsubmit直後の拒否ではなく、非同期生成の完了待機をアプリ側が先に打ち切った可能性が高い。
