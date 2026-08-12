@@ -8,6 +8,8 @@
 
 - Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`
 - Base: `origin/feature/manga-canvas-mvp` @ `209d7a6`（PR #237 merge commit）
+- Draft PR: [#238](https://github.com/team478a/manga/pull/238)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-6729b3-team478as-projects.vercel.app
 - PR-R4-1sで検出した未完成原稿からの販売下書き作成を修正した。Creator UIと販売artifact生成入口がdurable PDFと同じ完成原稿preflightを使用する。
 - 未完成、未確定、stale、生成中、空コマ、欠損Asset、文字overflowはStorage upload前に`ValidationError`で停止する。完成原稿の非公開作品／販売停止商品同期、公開中／販売中上書き禁止は維持する。
 - DB、migration、RPC、Storage契約、Provider、pricing、Scheduler、Canvas schema、PDF形式、成人向け境界、Stripe、Desktop codeは変更していない。

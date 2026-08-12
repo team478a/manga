@@ -3,6 +3,8 @@
 ## 2026-08-12 PR-R4-1t 販売下書き完成原稿preflight
 
 - 状態: `IN_PROGRESS`
+- Draft PR: [#238](https://github.com/team478a/manga/pull/238)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-6729b3-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`
 - Base: `origin/feature/manga-canvas-mvp`（`209d7a6`、PR #237 merge commit）
 - 原因: 販売artifact生成がページ1件以上だけを要求し、durable PDF用の完成原稿preflightを使っていなかった。Creator画面の販売buttonも未完成状態で有効だった。
@@ -12,7 +14,7 @@
 - 検証: 集中13/13、Hub 643/643、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop production build、RC preflight、diff check成功。Hub buildは長いpathでWindows上限となり、同一commitの短い物理worktreeで成功した。
 - ローカルDesktop統合: Electron終了待ちで2回とも結果出力前に停止。Desktop codeは変更しておらず、Windows CIで最終判定する。
 - 証跡: [`RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md`](RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md)
-- 次: 文書限定commit、Draft PR、全CI／Vercel Preview確認後に停止する。責任者確認前に実Provider／Scheduler修正へ進まない。
+- 次: Draft PRの全CI／Vercel Preview確認後に停止する。責任者確認前に実Provider／Scheduler修正へ進まない。
 
 ---
 

@@ -1,5 +1,8 @@
 # PR-R4-1t 販売下書き完成原稿preflight
 
+- Draft PR: [#238](https://github.com/team478a/manga/pull/238)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-6729b3-team478as-projects.vercel.app
+
 ## 目的
 
 PR-R4-1sのProduction E2Eで、画像1/157、完成0/32、確定0/32、必須修正267の未完成原稿から販売下書きと商品PDFを作成できることを確認した。本PRは、販売準備を既存の完成原稿判定と同じ条件でfail-closedにする。

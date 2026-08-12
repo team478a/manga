@@ -5,12 +5,14 @@
 - Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`
 - Base: `origin/feature/manga-canvas-mvp` @ `209d7a6`（PR #237 merge commit）
 - 状態: `IN_PROGRESS`
+- Draft PR: [#238](https://github.com/team478a/manga/pull/238)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-6729b3-team478as-projects.vercel.app
 - 未完成原稿でも販売下書きを作成できた原因は、Marketplace artifact生成がdurable PDFの完成原稿preflightを使っていなかったこと。
 - 販売artifact生成前に既存preflightを必須化し、全ページ確定、revision一致、再確認、生成中なし、必須修正0を満たさない場合はStorage upload前に`ValidationError`で拒否する。Creator画面も同じ条件で無効化する。
 - DB、migration、RPC、Storage契約、Provider、pricing、Scheduler、Canvas、PDF形式、Stripe、Desktop codeは変更しない。
 - 検証: 集中13/13、Hub 643/643、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop build、RC preflight、diff check成功。Desktop統合はElectron終了待ちのためWindows CIで最終判定する。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_1T_MARKETPLACE_READINESS_PREFLIGHT.md`
-- 次: Draft PRと全CI／Preview後に停止。merge後はProduction未完成作品で拒否を再確認し、その後に画像Provider失敗を別PRで扱う。
+- 次: Draft PRの全CI／Preview後に停止。merge後はProduction未完成作品で拒否を再確認し、その後に画像Provider失敗を別PRで扱う。
 
 ---
 
