@@ -1,5 +1,23 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1v FLUX単一コマ正方向Prompt、2026-08-13）
+
+- Branch: `codex/fix-r4-1v-flux-positive-panel-prompt`
+- Base: `origin/feature/manga-canvas-mvp` @ `92f379e`（PR #239 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#240](https://github.com/team478a/manga/pull/240)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-b536a9-team478as-projects.vercel.app
+- Productionでは2候補のcompleted、credit確定、比較、採用、保存、再読込を確認し、timeout／Scheduler復旧は合格した。
+- 候補1は単一コマ・文字なし、候補2は複数コマ・吹き出し・疑似文字を含んだため、品質は2件中1件だけ合格した。
+- FLUX.2はnegative prompt非対応だが、BFL adapterが共通禁止語を`Avoid:`として送信していた。BFLへは正方向Promptだけを送り、単一場面、1 camera view／1 moment、文字のない絵を指定する。
+- Provider、model、pricing、credit、retry、timeout、Scheduler、DB、migration、RPC、Storage、Canvas、成人向け境界、Desktopは変更しない。
+- 集中29/29、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop build、RC preflight、diff check成功。Desktop統合／a11yのローカルElectron終了待ちはWindows CIで最終判定する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Core初回のElectron取得HTTP 503は同一commit再実行で成功。Draft／MERGEABLE。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1V_FLUX_POSITIVE_PANEL_PROMPT.md`
+- 次: 責任者のreview／merge判断まで停止。merge前に有料Jobを追加せず、merge後に未生成コマ1つ・2候補を再受入れする。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1u 漫画画像生成timeout／Scheduler復旧、2026-08-12）
 
 - Branch: `codex/fix-r4-1u-image-generation-recovery`

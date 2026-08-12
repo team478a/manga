@@ -4,6 +4,23 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1v FLUX単一コマ正方向Prompt
+
+- PR #239 merge commit `92f379e`を含む最新`feature/manga-canvas-mvp`から`codex/fix-r4-1v-flux-positive-panel-prompt`を作成した。
+- Draft PR [#240](https://github.com/team478a/manga/pull/240)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-b536a9-team478as-projects.vercel.app
+- Productionの一般向けモニター`test`で未生成コマ1つへ2候補を生成した。1回目Schedulerは`retrying requests=1 processed=1`、2回目は`idle requests=3 processed=2`で成功し、両候補100%、残12／使用8／予約0となった。
+- 候補1を採用し、`保存済み`、再読込後の`AI背景レイヤー`、SVG内Storage pathと候補pathの一致を確認した。画像生成timeout、Scheduler継続、credit確定、候補採用、保存復元は合格した。
+- 候補1は単一コマ・文字なしで合格、候補2は複数コマ・吹き出し・疑似文字を含み不合格だった。
+- BFL公式仕様ではFLUX.2はnegative prompt非対応。既存adapterは共通禁止語を`Avoid:`としてPromptへ連結しており、避けたい漫画ページ、複数コマ、吹き出し、文字を誘発した。
+- BFL adapterは正方向Promptだけを送る。漫画コマPromptも単一の全面場面、1 camera view／1 moment、文字のない絵として正方向に統一する。共通`negativePrompt`のschemaは維持する。
+- Provider、model、pricing、credit、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Desktop codeは変更していない。
+- 集中29/29、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Desktop build、短い物理worktreeでHub build、RC preflight、diff check成功。ローカルDesktop統合／a11yはElectron終了待ち、Desktop差分なしのためWindows CIで最終判定する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Core quality初回はElectron配布元HTTP 503で停止したが、同一commitの失敗Job再実行で全工程が成功した。Draft／MERGEABLE。
+- merge前の追加実Provider生成は行わない。Draft PRの全CI／Vercel Preview成功後に停止し、merge後に未生成コマ1つ・2候補だけで品質を再受入れする。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1V_FLUX_POSITIVE_PANEL_PROMPT.md`
+
+---
+
 ## 2026-08-12 Codex: PR-R4-1u 漫画画像生成timeout／Scheduler復旧
 
 - PR #238 merge commit `c98e5b1`を含む最新`feature/manga-canvas-mvp`から`codex/fix-r4-1u-image-generation-recovery`を作成した。
