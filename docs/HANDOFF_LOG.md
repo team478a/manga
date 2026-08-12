@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-12 Codex: PR-R4-1r 漫画生成Production E2E・単一コマ品質修正
+
+- PR #235 merge commit `d3441a4`を含む最新`feature/manga-canvas-mvp`から`codex/fix-r4-1r-single-panel-image-quality`を作成した。
+- Draft PR [#236](https://github.com/team478a/manga/pull/236)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-c6c81b-team478as-projects.vercel.app
+- Productionの`test`一般向けモニターで32ページAIネームを約2分で生成し、1〜32ページ欠落なし、ネーム採用、Canvas下書き32ページ／157コマを確認した。
+- BFL画像候補を2件だけ生成した。4 creditを予約後に使用4／予約0へ確定し、比較、1候補の採用、自動保存、再読込後の`AI背景レイヤー`復元まで成功した。公式Scheduler Workflowは上限3件で1回だけ手動実行して成功した。
+- 2候補中1候補が複数コマ風となり、読めない疑似文字を描いた。共通画像Promptとnegative promptへ、単一コマ全面描画、漫画ページ／複数コマ／枠／余白禁止、文字／疑似文字／吹き出し禁止を日英で追加した。
+- Provider、model、pricing、credit単価、retry、timeout、Scheduler、API key、API、URL、DB、migration、RPC、Storage、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktopは変更していない。
+- 専用21/21、Hub 640/640、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 52/52、deps、lint、全typecheck、research eval、Hub／Desktop production build、RC preflight、diff checkに成功した。長いclone pathのTurbopack path-length失敗は短い物理worktreeで成功し、コード起因でないことを確認した。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- merge前の追加実Provider生成は行わない。責任者のreview／merge判断まで停止し、merge後に未生成コマ1つ・2候補だけで再受入れする。
+
+---
+
 ## 2026-08-12 Codex: PR-R4-1q モニター制作阻害要因修正
 
 - `origin/feature/manga-canvas-mvp`@`924b833`から`codex/fix-r4-1q-monitor-blockers`を作成し、PR #234のbranchと履歴は変更していない。

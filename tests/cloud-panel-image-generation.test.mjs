@@ -348,6 +348,22 @@ test("シナリオの人物設定を画像生成条件へ引き継ぐ", () => {
   assert.match(result.generation.prompt, /服装の一貫性/);
 });
 
+test("完成コマ生成は単一コマと文字禁止を日英で固定する", () => {
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    generationTarget: "composite",
+  });
+  assert.match(result.generation.prompt, /画像全体を1つのコマの絵だけで満たす/);
+  assert.match(result.generation.prompt, /Generate exactly one isolated manga panel/);
+  assert.match(result.generation.prompt, /疑似文字も描かない/);
+  assert.match(result.generation.negativePrompt, /pseudo-text/);
+  assert.match(result.generation.negativePrompt, /multiple panels/);
+  assert.match(result.generation.negativePrompt, /speech balloons/);
+});
+
 test("版管理された外見設定を生成条件と監査用入力へ固定する", () => {
   const profileId = "70000000-0000-4000-8000-000000000001";
   const result = buildStoryboardPanelGeneration({
