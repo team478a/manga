@@ -2,7 +2,7 @@
 
 ## 2026-08-13 PR-R4-1v FLUX単一コマ正方向Prompt
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#240](https://github.com/team478a/manga/pull/240)
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-b536a9-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1v-flux-positive-panel-prompt`
@@ -14,8 +14,9 @@
 - 不変: Provider、model、pricing、credit、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Desktop code。
 - 検証: 集中29/29、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Desktop build、短い物理worktreeでHub build、RC preflight、diff check成功。
 - ローカルDesktop統合: Electron終了待ちで結果出力前に停止。Desktop差分なし、Windows CIを最終判定にする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Core初回のElectron取得HTTP 503は同一commit再実行で成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1V_FLUX_POSITIVE_PANEL_PROMPT.md`](RELEASE_CANDIDATE_R4_1V_FLUX_POSITIVE_PANEL_PROMPT.md)
-- 次: Draft PRを作成し全CI／Vercel Previewを確認する。merge前に追加の有料Jobは実行せず、merge後に未生成コマ1つ・2候補で単一コマ品質を再受入れする。
+- 次: 責任者のreview／merge判断まで停止。merge前に追加の有料Jobは実行せず、merge後に未生成コマ1つ・2候補で単一コマ品質を再受入れする。
 
 ---
 

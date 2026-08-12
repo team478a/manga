@@ -15,6 +15,7 @@
 - BFL adapterは正方向Promptだけを送る。漫画コマPromptも単一の全面場面、1 camera view／1 moment、文字のない絵として正方向に統一する。共通`negativePrompt`のschemaは維持する。
 - Provider、model、pricing、credit、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Desktop codeは変更していない。
 - 集中29/29、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Desktop build、短い物理worktreeでHub build、RC preflight、diff check成功。ローカルDesktop統合／a11yはElectron終了待ち、Desktop差分なしのためWindows CIで最終判定する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Core quality初回はElectron配布元HTTP 503で停止したが、同一commitの失敗Job再実行で全工程が成功した。Draft／MERGEABLE。
 - merge前の追加実Provider生成は行わない。Draft PRの全CI／Vercel Preview成功後に停止し、merge後に未生成コマ1つ・2候補だけで品質を再受入れする。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1V_FLUX_POSITIVE_PANEL_PROMPT.md`
 

@@ -62,8 +62,11 @@ PR #239のmerge後、Productionの一般向けモニター`test`で未生成コ�
 - Hub production build: 同一commitを短い物理worktreeで成功
 - RC preflight: repository structure ready。ローカル外部設定は従来どおりpending
 - git diff check: 成功
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE
 
 Desktop統合／a11yはローカルでElectron終了待ちとなり、結果出力前に外側timeoutで停止した。Desktop codeに差分はないため、Windows CIを最終判定にする。
+
+Core quality初回はDesktop dependency取得時にElectron配布元がHTTP 503を返した。同一commitの失敗Job再実行で全工程が成功したため、コード起因ではない。
 
 ## マージ後のProduction受入れ
 
