@@ -1,5 +1,24 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1o 対象ユーザー市場分析受入れ完了、2026-08-12）
+
+- Base: `feature/manga-canvas-mvp` / `44b99dd`（PR #232 merge commit）
+- Branch: `codex/release-r4-1o-research-user-acceptance`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#233](https://github.com/team478a/manga/pull/233)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-e6ee4a-team478as-projects.vercel.app
+- 本人E2E: MANGAI責任者から、対象ユーザー本人による市場分析のユーザー検証完了報告を受領した。
+- 完了範囲: 既存Report表示、新規市場分析保存、詳細表示、再読込後の本人履歴再表示。PR-R4-1mの非blocking保留を解除する。
+- 証拠境界: 本人操作を責任者報告で受入れる。Codexは本人session、Report本文、Prompt、件数、費用を取得しない。
+- 不変: Codexによる追加の本番操作なし。製品コード、DB、Storage、Provider、credit、外部契約を変更しない。
+- 残件: Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2E。
+- ローカル検証: `rc:acceptance`成功（2 passed／11 pending／2 blocked）、full `rc:validate`成功（Desktop 182/182、Hub 632/632、migration 52/52、Hub／Desktop production build）、diff check成功。
+- CI: Draft PR初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 証跡: [`RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md`](RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md)
+- 停止: 文書限定Draft PRの全CI／Preview後に停止し、責任者確認前にR4-2へ進まない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1n Production所有者分離受入れ、2026-08-12）
 
 - Base: `feature/manga-canvas-mvp` / `ff9e0d5`（PR #231 merge commit）
