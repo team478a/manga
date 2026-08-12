@@ -12,6 +12,7 @@
 
 - Base: `origin/feature/manga-canvas-mvp` @ `924b833`
 - Branch: `codex/fix-r4-1q-monitor-blockers`
+- Draft PR: [#235](https://github.com/team478a/manga/pull/235)
 - PR #234のbranchと履歴は変更しない。
 
 ## 原因

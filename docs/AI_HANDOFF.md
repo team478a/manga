@@ -4,7 +4,8 @@
 
 - Base: `feature/manga-canvas-mvp` / `924b833`
 - Branch: `codex/fix-r4-1q-monitor-blockers`
-- 状態: `LOCAL_VALIDATED_PENDING_DRAFT_PR`
+- Draft PR: [#235](https://github.com/team478a/manga/pull/235)
+- 状態: `CI_PENDING`
 - Productionで32ページAIネームtimeoutと失敗時利用回数増加、品質評価保存失敗、一般報告保存・履歴読込失敗を確認した。
 - ネームは同じGPT-5.6 Terraと`store:false`を維持し、`reasoning.effort=low`、Provider 210秒、Server Action 240秒へ調整した。利用回数は上限事前確認後、Provider成功時だけ消費する。
 - モニター保存は列不足だけ基本列へ退避し、本人履歴と管理者一覧も読める。RLS、制約、接続障害は成功扱いにしない。

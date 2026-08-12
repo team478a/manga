@@ -2,7 +2,7 @@
 
 ## 2026-08-12 PR-R4-1q モニター制作阻害要因修正
 
-- 状態: `LOCAL_VALIDATED_PENDING_DRAFT_PR`
+- 状態: `CI_PENDING`（Draft PR [#235](https://github.com/team478a/manga/pull/235)）
 - Branch: `codex/fix-r4-1q-monitor-blockers`
 - Base: `origin/feature/manga-canvas-mvp`（`924b833`）
 - Production症状: 32ページAIネームtimeout、失敗時AI利用回数増加、品質評価保存失敗、一般報告保存・履歴読込失敗。
@@ -10,9 +10,9 @@
 - 保存互換: 構造化列へ通常保存し、列不足だけ基本列へ退避保存する。本人履歴と管理者一覧も同じ条件でfallbackする。RLS、制約、接続障害はfallbackしない。
 - migration: 新規・変更なし。完全な構造化運用には既存`202608020002`、`202608030001`、`202608030002`のProduction適用が必要。
 - 不変: Provider、model選択、API key、pricing、retry、Feature Flag、DB、migration、RPC、Storage、URL、公開API、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop code。
-- 検証: 集中40/40＋追加21/21、Hub 635/635、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、deps、lint、全typecheck、research eval、migration 52/52、Cloud漫画repository、Hub／Desktop build成功。
+- 検証: 集中40/40＋追加21/21、Hub 636/636、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、deps、lint、全typecheck、research eval、migration 52/52、Cloud漫画repository、Hub／Desktop build成功。
 - 証跡: [`RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md`](RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md)
-- 次: Draft PRを作成し、全CIとVercel Preview成功で停止。merge後にtestモニターでネーム、品質評価、一般報告、本人・管理者履歴を再検証する。
+- 次: Draft PR #235の全CIとVercel Preview成功で停止。merge後にtestモニターでネーム、品質評価、一般報告、本人・管理者履歴を再検証する。
 
 ---
 

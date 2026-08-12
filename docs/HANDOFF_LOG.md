@@ -7,11 +7,12 @@
 ## 2026-08-12 Codex: PR-R4-1q モニター制作阻害要因修正
 
 - `origin/feature/manga-canvas-mvp`@`924b833`から`codex/fix-r4-1q-monitor-blockers`を作成し、PR #234のbranchと履歴は変更していない。
+- Draft PR [#235](https://github.com/team478a/manga/pull/235)を作成した。全CIとVercel Previewを確認中。
 - Productionで32ページネームtimeout、timeout時の利用回数消費、Canvas品質評価保存失敗、一般報告保存と本人履歴読込失敗を確認した。
 - 同じGPT-5.6 Terra、Responses API、`store:false`を維持し、推論強度を`low`、Provider timeoutを210秒、該当Server Actionを240秒へ変更した。利用回数は上限事前確認後、Provider成功後だけ消費する。
 - モニターの構造化列が不足する場合だけ基本列へ報告内容を退避する。本人履歴と管理者一覧も同じ条件でfallbackし、RLS、制約、接続障害は従来どおり失敗させる。
 - DB、既存migration、RPC、Storage、Provider、model選択、API key、pricing、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Stripe、Desktop codeは変更していない。
-- 集中40/40＋追加21/21、Hub 635/635、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、deps、lint、全typecheck、research eval、migration 52/52、Cloud漫画repository、Hub／Desktop production build成功。
+- 集中40/40＋追加21/21、Hub 636/636、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、deps、lint、全typecheck、research eval、migration 52/52、Cloud漫画repository、Hub／Desktop production build成功。
 - merge後にtestモニターで32ページネーム、品質評価、一般報告、本人・管理者履歴を再検証する。完全な構造化運用には既存`202608020002`、`202608030001`、`202608030002`のProduction適用を確認する。
 
 ---
