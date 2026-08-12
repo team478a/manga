@@ -64,6 +64,7 @@ PR #240のmerge commit `d0091a047e15877bb3049f066a1d8b6f261dc1c6`を含むProduc
 - credit: 残8／使用12／予約0
 - 採用、自動保存、再読込後の`AI背景レイヤー`: success
 - repository: 文書差分だけ、`git diff --check`を実行する
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE
 
 ## ロールバック
 

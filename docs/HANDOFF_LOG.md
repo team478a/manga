@@ -15,7 +15,8 @@
 - 候補1を採用し、`保存済み`を確認した。再読込後も3コマ目に`AI背景レイヤー`が復元し、使用12／予約0を維持した。
 - FLUX正方向Promptの単一コマ縦切りは合格。2候補だけのため人物連続性、4〜8ページ一括生成、完成原稿、PDF／PNG、販売品質は未合格のまま維持する。
 - 本PRは証跡と台帳だけを変更し、application codeと外部契約は変更しない。Productionで作成・採用した正規利用者データは削除しない。
-- Draft PRと全CI／Vercel Preview成功後に停止する。次は責任者確認後に長編credit／候補数／段階生成条件を監査する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。次は責任者確認後に長編credit／候補数／段階生成条件を監査する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1W_FLUX_PRODUCTION_ACCEPTANCE.md`
 
 ---

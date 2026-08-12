@@ -4,7 +4,7 @@
 
 - Branch: `codex/release-r4-1w-flux-production-acceptance`
 - Base: `origin/feature/manga-canvas-mvp` @ `d0091a0`（PR #240 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#241](https://github.com/team478a/manga/pull/241)
 - Vercel Preview: https://mangai-hub-staging-git-codex-release-f980ec-team478as-projects.vercel.app
 - Productionの`test`モニターで未生成コマ1つへ2候補を登録し、Scheduler run 31647042128は`idle requests=3 processed=2`で成功した。
@@ -12,8 +12,9 @@
 - creditは残12／使用8／予約0から、登録時残8／使用8／予約4、完了時残8／使用12／予約0へ遷移した。
 - 候補1を採用し、`保存済み`、再読込後の3コマ目`AI背景レイヤー`復元を確認した。
 - 本PRは文書限定。人物連続性、4〜8ページ一括生成、完成原稿、PDF／PNG、販売品質を成功扱いにしない。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1W_FLUX_PRODUCTION_ACCEPTANCE.md`
-- 次: Draft PRの全CI／Preview成功後に停止。責任者確認後、長編credit／候補数／段階生成の成立条件を監査する。
+- 次: 責任者のreview／merge判断まで停止。責任者確認後、長編credit／候補数／段階生成の成立条件を監査する。
 
 ---
 

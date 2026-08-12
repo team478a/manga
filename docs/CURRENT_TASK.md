@@ -2,7 +2,7 @@
 
 ## 2026-08-13 PR-R4-1w FLUX単一コマProduction受入れ
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#241](https://github.com/team478a/manga/pull/241)
 - Vercel Preview: https://mangai-hub-staging-git-codex-release-f980ec-team478as-projects.vercel.app
 - Branch: `codex/release-r4-1w-flux-production-acceptance`
@@ -13,8 +13,9 @@
 - credit／保存: 残12／使用8／予約0から、登録時残8／使用8／予約4、完了時残8／使用12／予約0へ正しく遷移。候補1を採用し、`保存済み`、再読込後の`AI背景レイヤー`復元を確認した。
 - 範囲境界: 単一コマ縦切りは利用可能。人物連続性、4〜8ページ一括生成、完成原稿、PDF／PNG、販売品質は未合格のまま。
 - 変更範囲: 証跡、CURRENT_TASK、AI_HANDOFF、HANDOFF_LOGだけ。application codeと外部契約は変更しない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1W_FLUX_PRODUCTION_ACCEPTANCE.md`](RELEASE_CANDIDATE_R4_1W_FLUX_PRODUCTION_ACCEPTANCE.md)
-- 次: 文書限定Draft PRと全CI／Vercel Preview成功後に停止。次工程は長編credit／段階生成条件の監査で、責任者確認前に有料4〜8ページ一括生成や実装を行わない。
+- 次: 責任者のreview／merge判断まで停止。次工程は長編credit／段階生成条件の監査で、責任者確認前に有料4〜8ページ一括生成や実装を行わない。
 
 ---
 
