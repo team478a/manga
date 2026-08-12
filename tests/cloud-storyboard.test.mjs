@@ -51,6 +51,7 @@ test("採用シナリオから構造化ネームを生成しProvider保存を無
   assert.equal(generated.pages.length, 8);
   assert.equal(request.store, false);
   assert.equal(request.max_output_tokens, 32_000);
+  assert.equal(request.reasoning.effort, "low");
   assert.ok(!JSON.stringify(request).includes("sk-test"));
 });
 test("成人向けはProvider呼出前に拒否する", async () => {

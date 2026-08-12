@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { MonitorFeedbackForm } from "./MonitorFeedbackForm";
 import { CloudDataNotice } from "@/components/CloudDataNotice";
 import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
+import { isMissingMonitorFeedbackSchema } from "@/modules/general-monitor/infrastructure/monitor-feedback-schema-compatibility";
 
 type Feedback = {
   id: string;
@@ -25,6 +26,11 @@ type Feedback = {
   status_updated_at: string;
   attachment_path: string | null;
 };
+
+type LegacyFeedback = Pick<
+  Feedback,
+  "id" | "workflow_step" | "rating" | "outcome" | "comment" | "created_at"
+>;
 
 const requestTypeLabels = {
   feedback: "感想",
@@ -59,14 +65,35 @@ export default async function GeneralMonitorPage({
   const feedbackLoad = await safelyLoadCloudData(
     "monitor/feedback-history",
     async () => {
-      const { data, error } = await (await createClient())
+      const supabase = await createClient();
+      const { data, error } = await supabase
         .from("cloud_general_monitor_feedback")
         .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict,request_type,title,severity,public_status,status_updated_at,attachment_path")
         .eq("owner_profile_id", profile.id)
         .order("created_at", { ascending: false })
         .returns<Feedback[]>();
-      if (error) throw error;
-      return data ?? [];
+      if (!error) return data ?? [];
+      if (!isMissingMonitorFeedbackSchema(error)) throw error;
+      const { data: legacyData, error: legacyError } = await supabase
+        .from("cloud_general_monitor_feedback")
+        .select("id,workflow_step,rating,outcome,comment,created_at")
+        .eq("owner_profile_id", profile.id)
+        .order("created_at", { ascending: false })
+        .returns<LegacyFeedback[]>();
+      if (legacyError) throw legacyError;
+      return (legacyData ?? []).map((item): Feedback => ({
+        ...item,
+        target_scope: "general",
+        page_number_snapshot: null,
+        panel_name_snapshot: null,
+        verdict: null,
+        request_type: "feedback",
+        title: null,
+        severity: null,
+        public_status: "submitted",
+        status_updated_at: item.created_at,
+        attachment_path: null,
+      }));
     },
     [],
   );

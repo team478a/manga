@@ -102,7 +102,7 @@ export async function runCloudStoryboardAi(input: {
     body: JSON.stringify({
       model: runtime.model, store: false, max_output_tokens: MAX_OUTPUT_TOKENS,
       safety_identifier: createHash("sha256").update(`mangai-storyboard:${input.profileId}`).digest("hex"),
-      reasoning: { effort: "medium" },
+      reasoning: { effort: "low" },
       input: [
         { role: "system", content: [
           "あなたは日本の右綴じ漫画のネーム構成責任者です。",
@@ -111,6 +111,7 @@ export async function runCloudStoryboardAi(input: {
           `総ページ数は必ず${pageCount}ページ、ページ番号は1から連番、各ページは1〜6コマです。`,
           "右から左、上から下へ自然に読める視線誘導と、適切なページ送りフックを設計してください。",
           "セリフを詰め込みすぎず、表情と行動で伝えるコマを含めてください。",
+          "purpose、pageTurnHook、composition、background、action、emotion、visualDirectionは各1文で簡潔にしてください。",
           "visualDirectionは一般向けの構図説明とし、参考作品の固有表現を模倣しないでください。",
           "市場にない販売数、成長率、順位を作らず、売上を保証しないでください。",
         ].join("\n") },
@@ -123,7 +124,7 @@ export async function runCloudStoryboardAi(input: {
       ],
       text: { format: { type: "json_schema", name: "mangai_storyboard", strict: true, schema: outputSchema } },
     }),
-    signal: AbortSignal.timeout(120_000),
+    signal: AbortSignal.timeout(210_000),
   }).catch((error: unknown) => {
     if (error instanceof Error && error.name === "TimeoutError")
       throw new ProviderTimeoutError("ネーム生成に時間がかかっています。しばらくしてから再実行してください。");

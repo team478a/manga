@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1q モニター制作阻害要因修正、2026-08-12）
+
+- Base: `feature/manga-canvas-mvp` / `924b833`
+- Branch: `codex/fix-r4-1q-monitor-blockers`
+- 状態: `LOCAL_VALIDATED_PENDING_DRAFT_PR`
+- Productionで32ページAIネームtimeoutと失敗時利用回数増加、品質評価保存失敗、一般報告保存・履歴読込失敗を確認した。
+- ネームは同じGPT-5.6 Terraと`store:false`を維持し、`reasoning.effort=low`、Provider 210秒、Server Action 240秒へ調整した。利用回数は上限事前確認後、Provider成功時だけ消費する。
+- モニター保存は列不足だけ基本列へ退避し、本人履歴と管理者一覧も読める。RLS、制約、接続障害は成功扱いにしない。
+- DB／migrationは変更していない。完全な構造化運用には既存`202608020002`、`202608030001`、`202608030002`のProduction適用確認が必要。
+- ローカル全品質ゲート成功。詳細は[`RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md`](RELEASE_CANDIDATE_R4_1Q_MONITOR_BLOCKER_FIX.md)。
+- 停止: Draft PRの全CI／Vercel Preview成功後に停止し、merge前にProduction再実行やR4-2を行わない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1o 対象ユーザー市場分析受入れ完了、2026-08-12）
 
 - Base: `feature/manga-canvas-mvp` / `44b99dd`（PR #232 merge commit）
