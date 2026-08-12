@@ -1,6 +1,6 @@
 # PR-R4-1x 長編漫画credit・段階生成成立条件監査
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#242](https://github.com/team478a/manga/pull/242)
 - Vercel Preview: https://mangai-hub-staging-git-codex-audit-r4-5dcaff-team478as-projects.vercel.app
 - Branch: `codex/audit-r4-1x-longform-credit-plan`
@@ -169,3 +169,4 @@ R4-1y／1zの方式、外部契約、migration要否を責任者が承認し、�
 - `npm run deps:check`: 成功（既存warning 2件、新規error／warning 0件）。
 - `npm run rc:preflight`: repository structure READY。外部秘密情報をローカルへ置かないため外部設定はPENDING、manual E2Eは別管理。
 - `git diff --check`: 成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。

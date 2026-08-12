@@ -14,6 +14,8 @@
 - R4-1y合算preflight／表示、R4-1z durable登録、R4-1aa 4ページ限定Production受入れ、R4-1ab 8ページ完成原稿／販売品質受入れへ分割する。
 - 本PRでは追加の有料Job、application code、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更しない。
 - 集中テスト20/20、deps、RC repository structure、diff check成功。RC外部設定とmanual E2Eは秘密情報をローカルへ置かないためPENDING。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止し、責任者確認前にR4-1yの実装や追加の有料生成へ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1X_LONGFORM_CREDIT_AND_STAGING_AUDIT.md`
 
 ---

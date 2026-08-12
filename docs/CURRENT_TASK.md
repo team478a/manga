@@ -2,7 +2,7 @@
 
 ## 2026-08-13 PR-R4-1x 長編漫画credit・段階生成成立条件監査
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#242](https://github.com/team478a/manga/pull/242)
 - Vercel Preview: https://mangai-hub-staging-git-codex-audit-r4-5dcaff-team478as-projects.vercel.app
 - Branch: `codex/audit-r4-1x-longform-credit-plan`
@@ -12,8 +12,9 @@
 - 次PR案: R4-1yで合算preflight／表示、R4-1zでrate limitを越えるdurable登録、R4-1aaで4ページ限定Production受入れ、合格後にR4-1abで8ページ完成原稿／販売品質受入れ。
 - 変更範囲: 監査証跡、CURRENT_TASK、AI_HANDOFF、HANDOFF_LOGだけ。application codeと外部契約は変更しない。追加の有料Provider Jobも実行しない。
 - ローカル検証: 集中20/20、deps、RC repository structure、diff check成功。RC外部設定とmanual E2Eはローカル秘密情報なしのためPENDING。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1X_LONGFORM_CREDIT_AND_STAGING_AUDIT.md`](RELEASE_CANDIDATE_R4_1X_LONGFORM_CREDIT_AND_STAGING_AUDIT.md)
-- 次: 文書Draft PRの全CI／Vercel Preview成功後に停止し、責任者確認前にR4-1yを実装しない。
+- 次: 責任者のreview／merge判断まで停止し、責任者確認前にR4-1yを実装しない。
 
 ---
 
