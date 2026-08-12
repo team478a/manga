@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-13 PR-R4-1v FLUX単一コマ正方向Prompt
+
+- 状態: `IN_PROGRESS`
+- Branch: `codex/fix-r4-1v-flux-positive-panel-prompt`
+- Base: `origin/feature/manga-canvas-mvp`（`92f379e`、PR #239 merge commit）
+- Production再受入れ: 漫画画像2候補はともにcompletedし、4 credit確定、比較、採用、自動保存、再読込後のlayer／Storage path復元まで成功した。PR-R4-1uのtimeout／Scheduler阻害は解消した。
+- 品質結果: 候補1は単一コマ・文字なしで合格。候補2は漫画ページ風の複数コマ、吹き出し、疑似文字を含み不合格。画像品質は2件中1件だけの合格。
+- 原因: FLUX.2はnegative prompt非対応だが、BFL adapterが禁止語を`Avoid:`としてPromptへ連結していた。避けたい漫画ページ、複数コマ、吹き出し、文字を逆に誘発した。
+- 修正: BFLへ共通`negativePrompt`を送らず、単一の全面場面、1 camera view／1 moment、文字のない絵を正方向Promptだけで指定する。共通schemaは他Provider互換のため維持する。
+- 不変: Provider、model、pricing、credit、retry、timeout、Scheduler、API key、DB、migration、RPC、Storage、API、URL、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Desktop code。
+- 検証: 集中29/29、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Desktop build、短い物理worktreeでHub build、RC preflight、diff check成功。
+- ローカルDesktop統合: Electron終了待ちで結果出力前に停止。Desktop差分なし、Windows CIを最終判定にする。
+- 証跡: [`RELEASE_CANDIDATE_R4_1V_FLUX_POSITIVE_PANEL_PROMPT.md`](RELEASE_CANDIDATE_R4_1V_FLUX_POSITIVE_PANEL_PROMPT.md)
+- 次: Draft PRを作成し全CI／Vercel Previewを確認する。merge前に追加の有料Jobは実行せず、merge後に未生成コマ1つ・2候補で単一コマ品質を再受入れする。
+
+---
+
 ## 2026-08-12 PR-R4-1u 漫画画像生成timeout／Scheduler復旧
 
 - 状態: `READY_FOR_OWNER_REVIEW`
