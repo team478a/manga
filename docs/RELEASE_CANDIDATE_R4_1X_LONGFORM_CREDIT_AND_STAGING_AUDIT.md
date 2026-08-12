@@ -1,6 +1,8 @@
 # PR-R4-1x 長編漫画credit・段階生成成立条件監査
 
 - 状態: `IN_PROGRESS`
+- Draft PR: [#242](https://github.com/team478a/manga/pull/242)
+- Vercel Preview: https://mangai-hub-staging-git-codex-audit-r4-5dcaff-team478as-projects.vercel.app
 - Branch: `codex/audit-r4-1x-longform-credit-plan`
 - Base: `origin/feature/manga-canvas-mvp` @ `96f27b6`（PR #241 merge commit）
 - 監査日: 2026-08-13

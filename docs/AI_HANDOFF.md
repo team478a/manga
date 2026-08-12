@@ -5,6 +5,8 @@
 - Branch: `codex/audit-r4-1x-longform-credit-plan`
 - Base: `origin/feature/manga-canvas-mvp` @ `96f27b6`（PR #241 merge commit）
 - 状態: `IN_PROGRESS`
+- Draft PR: [#242](https://github.com/team478a/manga/pull/242)
+- Vercel Preview: https://mangai-hub-staging-git-codex-audit-r4-5dcaff-team478as-projects.vercel.app
 - 現行一括生成は4〜8ページ／最大64コマを受け付けるが、全対象を同期loopで1 Jobずつ登録する。作品rate limitはFree 3、Trial 6、Creator 20件/分で、途中拒否後は部分batchを成功値として返し得る。
 - 画面は要求件数と登録件数の差、必要credit、最大予約費用、残容量、Scheduler回数を開始前後に表示しない。長編Production受入れの前に修正が必要。
 - 157コマをProで初回1候補なら314 credit。推奨式は全コマ初回、選択比較、選択Fillの`2P + 4C + 6F` credit。

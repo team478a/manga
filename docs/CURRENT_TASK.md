@@ -3,6 +3,8 @@
 ## 2026-08-13 PR-R4-1x 長編漫画credit・段階生成成立条件監査
 
 - 状態: `IN_PROGRESS`
+- Draft PR: [#242](https://github.com/team478a/manga/pull/242)
+- Vercel Preview: https://mangai-hub-staging-git-codex-audit-r4-5dcaff-team478as-projects.vercel.app
 - Branch: `codex/audit-r4-1x-longform-credit-plan`
 - Base: `origin/feature/manga-canvas-mvp`（`96f27b6`、PR #241 merge commit）
 - 結論: 単一コマ生成は合格したが、現行4〜8ページ一括生成は、Jobごとの作品rate limit（Free 3／Trial 6／Creator 20件/分）で途中終了し得る。必要credit／最大予約費用の合算preflightと、要求数／登録数の差の警告もないため、長編Production受入れは未成立。

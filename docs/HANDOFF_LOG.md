@@ -7,6 +7,7 @@
 ## 2026-08-13 Codex: PR-R4-1x 長編漫画credit・段階生成成立条件監査
 
 - PR #241がmerge commit `96f27b69839bc2bc6179ba829842e361f05153d9`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Draft PR [#242](https://github.com/team478a/manga/pull/242)を作成した。Preview: https://mangai-hub-staging-git-codex-audit-r4-5dcaff-team478as-projects.vercel.app
 - 現行一括生成は4〜8ページ／最大64コマを選べる一方、対象を同期的に1件ずつ既存Queueへ登録し、各Jobが作品rate limitを消費する。Free 3、Trial 6、Creator 20件/分を超えるbatchは途中終了し得る。
 - 1件以上登録後のerrorは部分登録でloopを終了するが、Server Actionは登録件数だけを成功表示する。要求件数、未登録件数、必要credit、最大予約費用、残容量の合算preflightはない。
 - Productionの32ページ／157コマはProで初回1候補314 credit、2候補628、3候補942。全コマ3候補ではなく、`2P + 4C + 6F`の段階生成を提案する。
