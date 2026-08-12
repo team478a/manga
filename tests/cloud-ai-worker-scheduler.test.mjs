@@ -78,6 +78,18 @@ test("completed jobs continue only to the configured upper bound", async () => {
   assert.equal("jobId" in result, false);
 });
 
+test("failed is a known terminal job state and the scheduler continues", async () => {
+  const statuses = ["failed", "completed", "idle"];
+  let calls = 0;
+  const result = await runCloudAiWorkerScheduler({
+    env: enabledEnv,
+    fetchImpl: async () => jsonResponse(statuses[calls++]),
+  });
+  assert.equal(calls, 3);
+  assert.equal(result.processed, 2);
+  assert.equal(result.finalStatus, "idle");
+});
+
 test("retrying and lease_lost stop without a tight retry loop", async () => {
   for (const status of ["retrying", "lease_lost"]) {
     let calls = 0;
@@ -114,6 +126,8 @@ test("workflow is bounded, serialized, and disabled by default", async () => {
   assert.match(workflow, /cron: "\*\/5 \* \* \* \*"/);
   assert.match(workflow, /MANGAI_CLOUD_AI_SCHEDULER_ENABLED == 'true'/);
   assert.match(workflow, /cancel-in-progress: false/);
+  assert.match(workflow, /timeout-minutes: 20/);
+  assert.match(workflow, /MANGAI_CLOUD_AI_SCHEDULER_TIMEOUT_SECONDS: "230"/);
   assert.match(workflow, /MANGAI_CLOUD_AI_WORKER_SECRET: \$\{\{ secrets\./);
   assert.doesNotMatch(workflow, /Bearer\s+[A-Za-z0-9_-]{20}/);
 });

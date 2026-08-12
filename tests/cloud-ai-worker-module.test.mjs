@@ -65,7 +65,7 @@ test("Worker route, Storage, Gateway, and admin compatibility seams are complete
   const legacyAdmin = read("src/lib/cloud-ai-worker-admin.ts");
 
   assert.match(appRoute, /application\/process-generation/);
-  assert.match(appRoute, /maxDuration = 180/);
+  assert.match(appRoute, /maxDuration = 240/);
   assert.match(storage, /sanitizeCloudGeneratedImage/);
   assert.match(storage, /record_cloud_generation_storage_cleanup/);
   assert.match(gateway, /cloudModerationResultSchema/);
