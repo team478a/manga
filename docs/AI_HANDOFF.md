@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1u 漫画画像生成timeout／Scheduler復旧、2026-08-12）
+
+- Branch: `codex/fix-r4-1u-image-generation-recovery`
+- Base: `origin/feature/manga-canvas-mvp` @ `c98e5b1`（PR #238 merge commit）
+- 状態: `IN_PROGRESS`
+- Productionの画像2候補は約126〜128秒でfailedとなり、BFLの120秒poll上限と一致した。BFL submit拒否ではなく生成待機timeoutを根因候補として扱う。
+- BFL 210秒、Scheduler request 230秒、Worker 240秒へ整合させ、`failed`を既知終端として後続Jobへ進む。PromptやProvider本文を含まないtimeout診断を追加する。
+- Provider、model、request、pricing、credit、retry、Scheduler頻度、DB、migration、RPC、Storage、Canvas、成人向け境界、Desktopは変更しない。
+- 検証: 集中27/27、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Hub／Desktop build、RC preflight、diff check成功。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_1U_IMAGE_GENERATION_RECOVERY.md`
+- 次: Draft PRと全CI／Preview後に停止。merge後にProductionの未生成コマ1つ、2候補、比較、採用、保存、再読込を必ず再受入れする。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1t 販売下書き完成原稿preflight、2026-08-12）
 
 - Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`

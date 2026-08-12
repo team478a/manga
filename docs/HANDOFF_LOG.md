@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-12 Codex: PR-R4-1u 漫画画像生成timeout／Scheduler復旧
+
+- PR #238 merge commit `c98e5b1`を含む最新`feature/manga-canvas-mvp`から`codex/fix-r4-1u-image-generation-recovery`を作成した。
+- Productionで2候補がともに1%からfailedとなった各Worker実行は約126〜128秒で、BFL adapterの既定120秒poll上限と一致した。
+- BFL pollを210秒、Worker routeを240秒、Scheduler requestを230秒へ整合させる。Workflowは最大3件逐次処理のため20分上限とする。
+- Worker終端`failed`をSchedulerの既知状態として後続Jobへ進める。`retrying`と`lease_lost`は停止し、同一Jobのtight loopを作らない。
+- timeout診断は固定stage／outcomeだけを記録し、Prompt、画像、API key、URL、Job ID、Provider response本文、利用者情報を記録しない。
+- Provider、model、request、pricing、credit、retry回数、Scheduler頻度、DB、migration、RPC、Storage、API、Canvas schema、成人向け境界、Desktop codeは変更していない。
+- 集中27/27、Hub 645/645、Canvas 26/26、AI 48/48、migration 52/52、deps、lint、全typecheck、Desktop build、短い物理worktreeでHub build、RC preflight、diff check成功。
+- merge前のProduction有料Jobは追加しない。merge後に未生成コマ1つ・2候補だけで、生成、比較、採用、保存、再読込、credit確定を再受入れする。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1U_IMAGE_GENERATION_RECOVERY.md`
+
+---
+
 ## 2026-08-12 Codex: PR-R4-1t 販売下書き完成原稿preflight
 
 - Branch: `codex/fix-r4-1t-marketplace-readiness-preflight`
