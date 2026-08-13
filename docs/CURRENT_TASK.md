@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-13 PR-R4-1aa-2 Productionビジュアル設定受入れ
+
+- 状態: `PRODUCTION_VISUAL_SETUP_COMPLETE`
+- Draft PR: 作成予定
+- Branch: `codex/release-r4-1aa-visual-setup`
+- Base: `origin/feature/manga-canvas-mvp`（`bf6e86e`、PR #247 merge commit）
+- PR #247はmerge commit `bf6e86eb06dc1f285b9d190f8f6d6942ae89415b`でマージ済み。
+- Production実機: 一般向けモニター`test`の作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`へ、現代犯罪サスペンス向けモノクロ画風v1と、`城戸真琴`／`榊圭吾`／`城戸湊`の外見・衣装・固定特徴v1を保存した。
+- 再確認: 19〜22ページ、4ページ／16コマを選択すると、作品画風は設定済み、人物は3/3名設定済み。ビジュアルblockerは0になった。
+- 残る阻害要因: 必要32 creditに対して残り8 creditで、24不足。生成ボタンはfail-closedで無効。
+- 安全性: 実Provider Job、batch target、credit消費は追加していない。Provider、model、pricing、rate limit、Scheduler、DB、Storage、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
+- 次: 文書限定Draft PRの全CI／Vercel Preview成功後に停止する。merge後、管理者が`test`へ既存Trialを30日付与してcredit blocker 0を確認し、4ページ生成を1回だけ行う。
+- 停止条件: 残りcreditが32以上になるまで生成を開始しない。4ページ受入れ合格前に8ページ完成原稿／販売品質受入れへ進まない。
+- 証跡: [`RELEASE_CANDIDATE_R4_1AA_VISUAL_SETUP.md`](RELEASE_CANDIDATE_R4_1AA_VISUAL_SETUP.md)
+
+---
+
 ## 2026-08-13 PR-R4-1aa-1 長編一括生成ビジュアル準備
 
 - 状態: `READY_FOR_OWNER_REVIEW`
