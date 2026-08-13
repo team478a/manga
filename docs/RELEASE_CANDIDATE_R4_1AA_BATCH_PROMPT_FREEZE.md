@@ -39,3 +39,10 @@
 一般向けモニター`test`の対象作品は画風v1と主要人物3名v1を設定済み。19〜22ページは4ページ／16コマで必要32 credit、残り8 credit、24不足のため生成は開始していない。実Provider Job、batch target、credit消費も追加していない。
 
 本PRの全CIとVercel Preview成功後に停止する。merge後、管理者が`test`へ既存Trialを30日付与し、残りcredit 32以上、blocker 0を確認して4ページ生成を1回だけ実施する。4ページ受入れ合格前に8ページ完成原稿／販売品質受入れへ進まない。
+
+## Draft PR
+
+- PR: [#249](https://github.com/team478a/manga/pull/249)
+- Preview: https://mangai-hub-staging-git-codex-fix-r4-1-cd467b-team478as-projects.vercel.app
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: 成功
+- 状態: Draft／MERGEABLE。責任者のreview／merge判断まで停止する。
