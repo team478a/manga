@@ -3,6 +3,8 @@
 ## 2026-08-13 PR-R4-1aa 4ページ限定Production受入れ
 
 - 状態: `CREDIT_ENTITLEMENT_UI_IMPLEMENTED_LOCAL_VALIDATION`
+- Draft PR: [#246](https://github.com/team478a/manga/pull/246)
+- Vercel Preview: https://mangai-hub-staging-be38wgjhu-team478as-projects.vercel.app
 - Branch: `codex/release-r4-1aa-four-page-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`a5e903d`、PR #245 merge commit）
 - PR #245はmerge commit `a5e903d5f062fab9c05068a67a8c102854ff5dd5`でマージ済み。Productionのdurable target ACLは16/16で安全境界を確認済み。
@@ -13,7 +15,7 @@
 - 実装: 管理者ユーザー詳細へCloud AI個別利用枠を追加。既存Free／Trial／Creatorと1〜90日の新期間だけを付与し、Stripe管理中、予約creditあり、queued／running Jobあり、停止中Planはfail-closedで拒否する。変更は管理監査へ記録する。
 - 不変: DB／migration／RPC、全体Plan値、Provider、model、pricing、credit単価、rate limit、retry、timeout、Scheduler、Storage、Canvas、PDF／PNG、成人向け境界、Desktop。
 - 検証: 集中10/10、Hub 654/654、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildはWindows長pathを避けた短い物理worktreeで同一commitを検証した。
-- CI: Draft PR作成後にCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認する。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。最終文書commit後の再確認を継続する。
 - 次: 本解除PRの全CI／merge後、管理者画面から`test`へ既存Trialを30日付与し、残りcredit、blocker 0、要求16コマを再確認してから4ページ生成を1回だけ開始する。
 - 停止条件: migrationとcreditの両方が成立するまで生成ボタンを押さない。Provider、model、pricing、rate limit、Scheduler頻度を変更しない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`](RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md)

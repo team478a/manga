@@ -14,7 +14,7 @@
 - DB、migration、RPC、全体Plan値、Provider、model、pricing、credit単価、rate limit、retry、timeout、Scheduler、Storage、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
 - 集中10/10、Hub 654/654、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeで同一commitを検証した。
 - Desktop初回実行は、残存Electron子プロセスによる待機timeoutと`better-sqlite3`のNode／Electron ABI不一致を検出した。今回起動した子プロセスだけを終了し、`electron-builder install-app-deps`でElectron 39向けに再構築後、強制終了付き同一182件が全成功した。source／lockfile変更はない。
-- Draft PR作成後に全CI／Vercel Previewを確認して停止する。
+- Draft PR: [#246](https://github.com/team478a/manga/pull/246)。Preview: https://mangai-hub-staging-be38wgjhu-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。最終文書commit後の全CI再確認で停止する。
 - merge後は管理者画面から`test`へTrial 30日を付与し、残りcredit／blocker／16 targetを再確認してから1回だけ生成する。
 
 ---

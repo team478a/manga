@@ -51,6 +51,9 @@ R4-1zとACL修正PR #245はマージ済みで、Production UIにもdurable登録
 
 ## 運用解除PRの検証
 
+- Draft PR: [#246](https://github.com/team478a/manga/pull/246)
+- Preview: https://mangai-hub-staging-be38wgjhu-team478as-projects.vercel.app
+
 - 集中: 10/10
 - Hub: 654/654
 - Canvas: 26/26
@@ -62,6 +65,7 @@ R4-1zとACL修正PR #245はマージ済みで、Production UIにもdurable登録
 - Hub production build: 短い物理worktreeで成功
 - Desktop build、RC repository structure、diff check: 成功
 - Provider Job追加: 0件
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 
 ## 再開条件
 
