@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1aa-2 Productionビジュアル設定受入れ、2026-08-13）
+
+- Branch: `codex/release-r4-1aa-visual-setup`
+- Base: `origin/feature/manga-canvas-mvp` @ `bf6e86e`（PR #247 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#248](https://github.com/team478a/manga/pull/248)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-dfd32f-team478as-projects.vercel.app
+- Productionの`test`作品へモノクロ犯罪サスペンス画風v1と`城戸真琴`／`榊圭吾`／`城戸湊`の外見設定v1を保存した。
+- 19〜22ページのpreflightは作品画風設定済み、人物3/3名設定済み。ビジュアルblockerは解消した。
+- 必要32 creditに対して残り8で24不足。生成ボタンは無効で、実Provider Job、batch target、credit消費は追加していない。
+- deps、RC structure、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_VISUAL_SETUP.md`
+- 次: 責任者のreview／merge判断まで停止。merge後、管理者が`test`へTrial 30日を付与し、credit blocker 0を確認して4ページ生成を1回だけ行う。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1aa-1 長編一括生成ビジュアル準備、2026-08-13）
 
 - Branch: `codex/fix-r4-1aa-visual-readiness`
