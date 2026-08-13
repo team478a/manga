@@ -2591,7 +2591,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 
 # 2026-08-14 Codex: 長編一括生成target UUID契約修正
 
-- 状態: `IMPLEMENTED_VALIDATING`
+- 状態: `READY_FOR_REVIEW`
 - Branch: `codex/fix-r4-1ac-batch-target-idempotency`
 - Base: `origin/feature/manga-canvas-mvp`@`ad8905d`（PR #250 merge後）
 - Draft PR: [#251](https://github.com/team478a/manga/pull/251)
@@ -2601,3 +2601,4 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 回帰テストでUUID生成の使用と旧複合形式の不在を固定した。Provider、model、pricing、retry、timeout、Scheduler、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更していない。
 - ローカル検証: focused 31/31、deps:check、lint、typecheck、Hub／Canvas／AI／Desktop／a11y、migration 55本、Desktop build、RC structure preflight、`git diff --check`成功。Hub buildは通常TurbopackがWindowsの作業パス長上限で停止したため、同一ソースの`next build --webpack`で成功を確認した。TurbopackはVercel Previewで確認する。
 - 次: Draft PRの全CIとVercel Preview成功後に停止する。merge・Production反映前は追加生成しない。反映後に同じ4ページを1回だけ再試行し、16 target登録、Worker処理、完成画像、課金を確認する。
+- Draft PR #251のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLEを確認し、Production再試行を行わず停止した。

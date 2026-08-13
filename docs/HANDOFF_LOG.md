@@ -4303,3 +4303,4 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 根因は`batch-production-service.ts`が作る`UUID:target:番号`と、`cloudPanelImageGenerationRequestSchema`のUUID契約の不一致。targetごとの純粋なUUIDへ修正し、旧形式を禁止する回帰テストを追加した。
 - focused 31/31、deps、lint、typecheck、Hub／Canvas／AI／Desktop／a11y、migration 55本、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常のローカルTurbopack buildだけはWindowsパス長で外部環境依存停止し、Vercel Previewを正規確認先とする。
 - 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認する。merge前にProductionで再生成しない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。責任者のmergeとProduction反映前に再生成しない。
