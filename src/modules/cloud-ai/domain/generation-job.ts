@@ -11,6 +11,7 @@ export type ClaimedCloudGenerationJob = {
   attempt_count: number;
   max_attempts: number;
   provider_job_id: string | null;
+  started_at: string | null;
   lease_token: string;
 };
 

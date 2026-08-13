@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import sharp from "sharp";
+import { AIProviderError } from "@mangai/ai-core";
 import {
   MockCloudImageProvider,
   MockCloudTextProvider,
@@ -91,6 +92,7 @@ function workerClient({
   removeFails = false,
   extendFails = false,
   outputAlphaMode = "preserve",
+  startedAt = new Date().toISOString(),
 } = {}) {
   const calls = {
     removed: [],
@@ -99,6 +101,7 @@ function workerClient({
     extended: [],
     finished: [],
     checkpoints: [],
+    jobUpdates: [],
     uploaded: 0,
     uploadedBytes: null,
   };
@@ -123,6 +126,7 @@ function workerClient({
     attempt_count: 1,
     max_attempts: 1,
     provider_job_id: null,
+    started_at: startedAt,
     lease_token: "40000000-0000-4000-8000-000000000001",
   };
   const client = {
@@ -156,6 +160,7 @@ function workerClient({
       return {
         update(value) {
           updateValue = value;
+          calls.jobUpdates.push(value);
           calls.checkpoints.push(value.provider_job_id);
           return this;
         },
@@ -341,6 +346,62 @@ test("WorkerはProvider Job IDをlease付きで保存して失敗時にも保持
   assert.equal(result.status, "failed");
   assert.deepEqual(calls.checkpoints, ["provider-job-checkpointed"]);
   assert.equal(calls.finished[0].p_provider_job_id, "provider-job-checkpointed");
+});
+
+test("Provider Jobの完了待ちは通常retry回数を消費せずQueueへ戻す", async () => {
+  const { client, calls } = workerClient();
+  const base = new MockCloudImageProvider();
+  const provider = {
+    capability: base.capability,
+    async generate(_input, context) {
+      await context.checkpointProviderJobId("provider-job-pending");
+      throw new AIProviderError(
+        "timeout",
+        "Provider処理の完了を待っています。",
+        true,
+      );
+    },
+  };
+  const result = await processNextCloudGenerationJob({
+    workerId: "provider-pending-worker",
+    providers: [provider],
+    client,
+  });
+  const deferred = calls.jobUpdates.find((update) => update.status === "queued");
+  assert.equal(result.status, "retrying");
+  assert.equal(calls.finished.length, 0);
+  assert.equal(deferred.provider_job_id, "provider-job-pending");
+  assert.equal(deferred.attempt_count, 0);
+  assert.equal(deferred.error_code, "provider_pending");
+  assert.equal(deferred.lease_token, null);
+  assert.match(deferred.retry_at, /^\d{4}-\d{2}-\d{2}T/);
+});
+
+test("Provider Job待機が30分を超えた場合は有限に失敗させる", async () => {
+  const { client, calls } = workerClient({
+    startedAt: new Date(Date.now() - 31 * 60 * 1_000).toISOString(),
+  });
+  const base = new MockCloudImageProvider();
+  const provider = {
+    capability: base.capability,
+    async generate(_input, context) {
+      await context.checkpointProviderJobId("provider-job-expired");
+      throw new AIProviderError(
+        "timeout",
+        "Providerがタイムアウトしました。",
+        true,
+      );
+    },
+  };
+  const result = await processNextCloudGenerationJob({
+    workerId: "provider-expired-worker",
+    providers: [provider],
+    client,
+  });
+  assert.equal(result.status, "failed");
+  assert.equal(calls.jobUpdates.some((update) => update.status === "queued"), false);
+  assert.equal(calls.finished[0].p_provider_job_id, "provider-job-expired");
+  assert.equal(calls.finished[0].p_retryable, false);
 });
 
 test("lease喪失時はProviderを中断しAsset確定とJob完了を行わない", async () => {
