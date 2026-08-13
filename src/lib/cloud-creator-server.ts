@@ -29,7 +29,7 @@ export {
 export type { CloudGenerationBatch } from "@/modules/cloud-creator/generation/batch-production-service";
 export {
   listCloudGenerationBatches,
-  retryFailedCloudGenerationJob,
+  retryFailedCloudGenerationBatchTargets, retryFailedCloudGenerationJob,
   setCloudGenerationBatchState,
   startCloudPageGenerationBatch,
 } from "@/modules/cloud-creator/generation/batch-production-service";

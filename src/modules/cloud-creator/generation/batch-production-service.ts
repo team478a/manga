@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import { cloudGenerationInputSchema } from "@mangai/ai-core";
 import { cloudCreatorContext } from "../auth-context";
 import { DomainError, ValidationError } from "@/lib/domain-errors";
-import { enqueueStoryboardPanelImage } from "@/lib/cloud-panel-image-generation-server";
+import { prepareStoryboardPanelImage } from "@/lib/cloud-panel-image-generation-server";
 import {
   normalizeGenerationBatchPageIds,
   planGenerationBatchTargets,
@@ -40,60 +40,53 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     pages: snapshots.data ?? [],
   });
   const batchKey = crypto.randomUUID();
-  const created = await supabase.rpc("create_cloud_generation_batch", {
+  const preparedTargets: Array<Record<string, unknown>> = [];
+  for (let index = 0; index < targets.length; index += 4) {
+    const preparedChunk = await Promise.all(
+      targets.slice(index, index + 4).map(async (target, offset) => {
+        const idempotencyKey = `${batchKey}:target:${index + offset + 1}`;
+        const prepared = await prepareStoryboardPanelImage({
+          projectId,
+          pageId: target.pageId,
+          panelId: target.panelId,
+          idempotencyKey,
+          candidateCount: 1,
+          generationTarget: "composite",
+        });
+        return {
+          page_id: target.pageId,
+          panel_id: target.panelId,
+          source_page_revision: target.sourcePageRevision,
+          position: index + offset + 1,
+          idempotency_key: idempotencyKey,
+          kind: prepared.generation.generation.kind,
+          job_type: prepared.generation.generation.jobType,
+          provider_id: prepared.generation.capability.providerId,
+          model_id: prepared.generation.capability.modelId,
+          pricing_version: prepared.generation.capability.pricingVersion,
+          prompt_sha256: prepared.generation.promptSha256,
+          input: prepared.generation.generation,
+          moderation: prepared.generation.moderation,
+          panel_specification: prepared.panelSpecification,
+        };
+      }),
+    );
+    preparedTargets.push(...preparedChunk);
+  }
+  const created = await supabase.rpc("create_cloud_generation_batch_targets", {
     p_project_id: projectId,
     p_page_ids: uniquePageIds,
     p_idempotency_key: batchKey,
+    p_targets: preparedTargets,
   });
   if (created.error || !created.data)
     throw new DomainError("INTERNAL_ERROR", "一括生成を開始できませんでした。", { cause: created.error });
-  let queued = 0;
-  for (const target of targets) {
-    let unattachedJobIds: string[] = [];
-    try {
-      const result = await enqueueStoryboardPanelImage({
-        projectId,
-        pageId: target.pageId,
-        panelId: target.panelId,
-        idempotencyKey: crypto.randomUUID(),
-        candidateCount: 1,
-        generationTarget: "composite",
-      });
-      unattachedJobIds = result.jobs.map((job) => job.id);
-      for (const job of result.jobs) {
-        const attached = await supabase.rpc("attach_cloud_generation_batch_job", {
-          p_batch_id: created.data,
-          p_job_id: job.id,
-        });
-        if (attached.error) throw attached.error;
-        unattachedJobIds = unattachedJobIds.filter((jobId) => jobId !== job.id);
-        queued += 1;
-      }
-    } catch (error) {
-      await Promise.all(
-        unattachedJobIds.map((jobId) =>
-          cancelCloudGenerationJob(jobId).catch(() => undefined),
-        ),
-      );
-      if (!queued) {
-        const canceled = await supabase.rpc("set_cloud_generation_batch_state", {
-          p_batch_id: created.data,
-          p_status: "canceled",
-        });
-        if (canceled.error)
-          throw new DomainError("INTERNAL_ERROR", "一括生成を開始できませんでした。", {
-            cause: canceled.error,
-          });
-        throw error;
-      }
-      break;
-    }
-  }
   return {
     batchId: created.data as string,
-    queued,
+    registered: targets.length,
+    queued: 0,
     requested: targets.length,
-    partial: queued !== targets.length,
+    partial: false,
   };
 }
 
@@ -109,6 +102,11 @@ export async function listCloudGenerationBatches(projectId: string): Promise<Clo
   const links = await supabase.from("cloud_generation_batch_jobs")
     .select("batch_id,job_id,cloud_generation_jobs!inner(status)").in("batch_id", ids);
   if (links.error) throw new DomainError("INTERNAL_ERROR", "一括生成状況を読み込めませんでした。", { cause: links.error });
+  const progress = await supabase.rpc("get_cloud_generation_batch_target_progress", {
+    p_project_id: projectId,
+  });
+  if (progress.error && progress.error.code !== "42883")
+    throw new DomainError("INTERNAL_ERROR", "一括生成の登録状況を読み込めませんでした。", { cause: progress.error });
   return summarizeGenerationBatches({
     batches: (batches.data ?? []) as Array<{
       id: string; status: CloudGenerationBatch["status"]; requested_page_ids: string[]; created_at: string;
@@ -117,6 +115,11 @@ export async function listCloudGenerationBatches(projectId: string): Promise<Clo
       const joined = Array.isArray(link.cloud_generation_jobs) ? link.cloud_generation_jobs[0] : link.cloud_generation_jobs;
       return { batch_id: link.batch_id, job_id: link.job_id, status: joined?.status as string };
     }),
+    targetProgress: ((progress.data ?? []) as Array<{
+      batch_id: string;
+      pending_targets: number;
+      failed_targets: number;
+    }>),
   });
 }
 
@@ -124,6 +127,16 @@ export async function setCloudGenerationBatchState(batchId: string, status: "act
   const { supabase } = await cloudCreatorContext();
   const result = await supabase.rpc("set_cloud_generation_batch_state", { p_batch_id: batchId, p_status: status });
   if (result.error || !result.data) throw new ValidationError("一括生成の状態を変更できませんでした。");
+}
+
+export async function retryFailedCloudGenerationBatchTargets(batchId: string) {
+  const { supabase } = await cloudCreatorContext();
+  const result = await supabase.rpc("retry_cloud_generation_batch_targets", {
+    p_batch_id: batchId,
+  });
+  if (result.error)
+    throw new ValidationError("Job化できなかったコマを再登録できませんでした。");
+  return Number(result.data ?? 0);
 }
 
 export async function retryFailedCloudGenerationJob(jobId: string) {

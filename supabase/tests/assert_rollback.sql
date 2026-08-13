@@ -250,3 +250,11 @@ do $$ begin
     raise exception 'Cloud monitor operations Phase 2 objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_generation_batch_targets') is not null
+     or to_regprocedure('public.create_cloud_generation_batch_targets(uuid,uuid[],text,jsonb)') is not null
+     or to_regprocedure('public.dispatch_next_cloud_generation_batch_target()') is not null then
+    raise exception 'Cloud generation durable batch target objects remain after rollback';
+  end if;
+end $$;

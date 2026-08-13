@@ -43,6 +43,16 @@ test("一括生成履歴は全Job完了時だけ表示状態をcompletedへ変�
   });
   assert.equal(completed.status, "completed");
   assert.equal(completed.completedJobs, 2);
+  const [pending] = summarizeGenerationBatches({
+    batches: [base],
+    links: [
+      { batch_id: "batch", job_id: "a", status: "completed" },
+      { batch_id: "batch", job_id: "b", status: "completed" },
+    ],
+    targetProgress: [{ batch_id: "batch", pending_targets: 1, failed_targets: 0 }],
+  });
+  assert.equal(pending.status, "active");
+  assert.equal(pending.pendingTargets, 1);
   const [failed] = summarizeGenerationBatches({
     batches: [base],
     links: [{ batch_id: "batch", job_id: "c", status: "failed" }],

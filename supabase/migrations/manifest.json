@@ -312,6 +312,12 @@
       "description": "profiles RLSのadmin判定を固定search pathのdefiner関数へ変更して再帰を解消",
       "forwardSha256": "546a43ede4f5b177c97b00f3307c94d46206d4824595ba36392d9c7721f95624",
       "rollbackSha256": "3cbccafba22932f4ff2a1dafe2c59387853b15e4ccc496a72fad45e2620ac155"
+    },
+    {
+      "id": "202608130001_cloud_generation_batch_targets",
+      "description": "長編一括生成の全コマを永続登録しWorkerが既存利用上限内で段階的にJob化",
+      "forwardSha256": "ee1c16d9e89472fd246a7b66bcd8469082c913d43d97938b5e109cab701bdd72",
+      "rollbackSha256": "a76da8529cf4ab7df657052595a24f416977a06ddd682d467e4b52c94f440d17"
     }
   ],
   "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"

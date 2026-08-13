@@ -21,6 +21,7 @@ import {
 } from "@/lib/hub-logger";
 import { featureFlagEnabled } from "@/lib/feature-flags";
 import { hasValidInternalWorkerAuthorization } from "@/lib/internal-worker-auth";
+import { dispatchNextCloudGenerationBatchTarget } from "@/modules/cloud-ai/application/dispatch-generation-batch";
 
 export const runtime = "nodejs";
 // Provider polling is bounded at 210 seconds. Keep enough time for lease checks,
@@ -166,6 +167,7 @@ export async function POST(request: Request) {
         logContext,
       );
     await processPendingCloudStorageCleanup({ client });
+    const dispatch = await dispatchNextCloudGenerationBatchTarget({ client });
     const result = await processNextCloudGenerationJob({
         workerId: process.env.MANGAI_CLOUD_AI_WORKER_ID ?? "next-worker",
         providers,
@@ -178,8 +180,14 @@ export async function POST(request: Request) {
       ...logContext,
       status: result.status,
       jobId: "jobId" in result ? result.jobId : undefined,
+      batchDispatchStatus: dispatch.status,
     });
-    return attachHubRequestId(NextResponse.json(result), logContext);
+    const response = result.status === "idle" && dispatch.status === "deferred"
+      ? { status: "retrying" as const }
+      : result.status === "idle" && dispatch.status === "failed"
+        ? { status: "failed" as const }
+        : result;
+    return attachHubRequestId(NextResponse.json(response), logContext);
   } catch (error) {
     logHubError("cloud_ai_worker_run_failed", error, logContext);
     const response = toApiError(error, "Worker処理に失敗しました。");

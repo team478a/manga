@@ -23,35 +23,34 @@ test("page locks expire and require an opaque token", () => {
   assert.match(sql, /cloud_page_locked/);
 });
 
-test("batch service reuses the billed queue and bounds panel work", () => {
+test("batch service durably registers bounded panel work before the worker runs", () => {
   const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
   const policy = read("src/modules/manga/domain/generation-batch.ts");
   assert.match(policy, /uniquePageIds\.length < 4 \|\| uniquePageIds\.length > 8/);
   assert.match(policy, /targets\.length > 64/);
   assert.match(service, /normalizeGenerationBatchPageIds/);
   assert.match(service, /planGenerationBatchTargets/);
-  assert.match(service, /enqueueStoryboardPanelImage/);
+  assert.match(service, /prepareStoryboardPanelImage/);
+  assert.match(service, /targets\.slice\(index, index \+ 4\)/);
+  assert.match(service, /create_cloud_generation_batch_targets/);
+  assert.match(service, /registered: targets\.length/);
   assert.match(service, /cloudGenerationInputSchema\.safeParse/);
   assert.match(service, /enqueueCloudGenerationJob/);
   assert.match(service, /replace_cloud_generation_batch_job/);
   assert.match(service, /Number\(replaced\.data\) < 1/);
 });
 
-test("batch service cancels an empty batch when the first queue request is rejected", () => {
-  const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
-  const firstFailure = service.slice(
-    service.indexOf("for (const target of targets)"),
-    service.indexOf("return { batchId:"),
-  );
-  assert.match(firstFailure, /if \(!queued\) \{/);
-  assert.match(firstFailure, /set_cloud_generation_batch_state/);
-  assert.match(firstFailure, /p_status: "canceled"/);
-  assert.match(firstFailure, /unattachedJobIds\.map/);
-  assert.match(firstFailure, /cancelCloudGenerationJob\(jobId\)/);
-  assert.ok(
-    firstFailure.indexOf("set_cloud_generation_batch_state") <
-      firstFailure.indexOf("throw error"),
-  );
+test("durable dispatcher keeps limits atomic and never exposes prepared prompts", () => {
+  const sql = read("supabase/migrations/202608130001_cloud_generation_batch_targets.sql");
+  assert.match(sql, /enable row level security/);
+  assert.doesNotMatch(sql, /grant select[^;]+authenticated/);
+  assert.match(sql, /for update of target skip locked/);
+  assert.match(sql, /consume_cloud_general_monitor_ai_request/);
+  assert.match(sql, /enqueue_cloud_generation_job_with_quota/);
+  assert.match(sql, /cloud_generation_rate_limited/);
+  assert.match(sql, /'deferred'::text/);
+  assert.match(sql, /source_revision_changed/);
+  assert.match(sql, /panel_specification/);
 });
 
 test("batch UI exposes progress, pause, cancel and safe retry", () => {
@@ -61,6 +60,8 @@ test("batch UI exposes progress, pause, cancel and safe retry", () => {
   assert.match(component, /再開/);
   assert.match(component, /中止/);
   assert.match(component, /失敗\{index \+ 1\}を再実行/);
+  assert.match(component, /Job化失敗\{batch\.failedTargets\}コマを再実行/);
+  assert.match(component, /画面を閉じても未Job化コマは保持されます/);
   assert.match(component, /batch\.status === "active" \|\| batch\.status === "paused"/);
 });
 

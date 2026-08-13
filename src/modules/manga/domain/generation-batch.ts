@@ -11,6 +11,8 @@ export type MangaGenerationBatch = {
   runningJobs: number;
   completedJobs: number;
   failedJobs: number;
+  pendingTargets: number;
+  failedTargets: number;
   failedJobIds: string[];
 };
 
@@ -45,7 +47,11 @@ export function planGenerationBatchTargets(input: {
     );
     if (!current) return [];
     const canvas = pageCanvasSchema.parse(current.canvas);
-    return canvas.panels.map((panel) => ({ pageId: page.id, panelId: panel.id }));
+    return canvas.panels.map((panel) => ({
+      pageId: page.id,
+      panelId: panel.id,
+      sourcePageRevision: page.revision,
+    }));
   });
   if (!targets.length)
     throw new ValidationError("選択したページに生成可能なコマがありません。");
@@ -62,14 +68,25 @@ export function summarizeGenerationBatches(input: {
     created_at: string;
   }>;
   links: Array<{ batch_id: string; job_id: string; status: string }>;
+  targetProgress?: Array<{
+    batch_id: string;
+    pending_targets: number;
+    failed_targets: number;
+  }>;
 }): MangaGenerationBatch[] {
   return input.batches.flatMap((batch) => {
     const jobs = input.links.filter((link) => link.batch_id === batch.id);
     if (batch.status === "canceled" && jobs.length === 0) return [];
     const count = (status: string) =>
       jobs.filter((job) => job.status === status).length;
+    const targetProgress = input.targetProgress?.find(
+      (item) => item.batch_id === batch.id,
+    );
+    const pendingTargets = targetProgress?.pending_targets ?? 0;
+    const failedTargets = targetProgress?.failed_targets ?? 0;
     const status =
-      batch.status === "active" && jobs.length > 0 && count("completed") === jobs.length
+      batch.status === "active" && jobs.length > 0 && pendingTargets === 0 &&
+        failedTargets === 0 && count("completed") === jobs.length
         ? "completed"
         : batch.status;
     return [{
@@ -80,6 +97,8 @@ export function summarizeGenerationBatches(input: {
       runningJobs: count("running"),
       completedJobs: count("completed"),
       failedJobs: count("failed"),
+      pendingTargets,
+      failedTargets,
       failedJobIds: jobs.filter((job) => job.status === "failed").map((job) => job.job_id),
     }];
   });

@@ -1,1 +1,4 @@
-export { enqueueStoryboardPanelImage } from "@/modules/manga/application/enqueue-panel-candidates";
+export {
+  enqueueStoryboardPanelImage,
+  prepareStoryboardPanelImage,
+} from "@/modules/manga/application/enqueue-panel-candidates";

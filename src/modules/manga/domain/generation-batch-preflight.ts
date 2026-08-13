@@ -111,9 +111,6 @@ export function estimateGenerationBatch(
     blockers.push("作品の費用上限を超えるため開始できません。");
   if (maxReservedCostMicros !== null && context.globalCostMicrosRemaining !== null && maxReservedCostMicros > context.globalCostMicrosRemaining)
     blockers.push("全体の日次費用上限を超えるため開始できません。");
-  if (registrationLimit !== null && targetPanelCount > registrationLimit)
-    blockers.push(`現在の1分登録上限は${registrationLimit}コマです。安全な分割登録の実装後に実行してください。`);
-
   return {
     selectedPageCount: uniquePageIds.length,
     targetPanelCount,

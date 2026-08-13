@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-13 PR-R4-1z 長編一括生成 durable登録
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#244](https://github.com/team478a/manga/pull/244)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-4ba5a7-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-1z-durable-batch-registration`
+- Base: `origin/feature/manga-canvas-mvp`（`394707b`、PR #243 merge commit）
+- 実装: 4〜8ページ／最大64コマを非公開targetへ全件原子的に永続登録し、Workerが既存Schedulerから1件ずつ既存monitor／rate limit／credit／費用上限を消費してJob化する。
+- 安全性: Promptを画面・通常query・ログへ返さない。元page revision／pricing変更はfail-closed。rate limit時はpendingを保持してtight loopを停止し、恒久失敗は固定codeだけを保存して利用者が再試行できる。
+- 操作: pauseは新規Job化を停止し、cancelは既存Jobと未Job化targetを中止する。履歴はJob化待ち／Job化済み／完了／失敗を区別する。
+- 不変: 公開URL／API、Storage、Provider、model、pricing値、credit単価、retry、timeout、Scheduler頻度／上限、Canvas schema、PDF／PNG、成人向け境界、Desktop code。
+- migration: `202608130001_cloud_generation_batch_targets`。全53 migrationのforward／rollback／reapplyと、既存quota経由の原子的dispatchをPostgreSQL 16で確認済み。
+- 検証: 集中26/26、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 53/53、Hub／Desktop build、diff check成功。Hub buildは短い物理worktreeで完走した。Desktop統合／a11yはElectron終了待ち、Windows CIで最終判定する。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 証跡: [`RELEASE_CANDIDATE_R4_1Z_DURABLE_BATCH_REGISTRATION.md`](RELEASE_CANDIDATE_R4_1Z_DURABLE_BATCH_REGISTRATION.md)
+- 次: 責任者のreview／merge判断まで停止する。Production migration適用前にR4-1aaの有料4ページ受入れへ進まない。
+
+---
+
 ## 2026-08-13 PR-R4-1y 長編一括生成 合算preflight
 
 - 状態: `READY_FOR_OWNER_REVIEW`
