@@ -38,6 +38,7 @@ import {
   listCloudGenerationBatches,
   listCloudProjectCheckpoints,
 } from "@/lib/cloud-creator-server";
+import { getCloudGenerationBatchPreflight } from "@/modules/cloud-creator/generation/batch-preflight-service";
 import { listCloudExportJobs } from "@/modules/cloud-creator/export/durable-export-service";
 import { LongformPageManager } from "./LongformPageManager";
 import { DurableExportPanel } from "./DurableExportPanel";
@@ -82,6 +83,9 @@ export default async function CloudProjectPage({
   const pageProductionStates = longform.available
     ? await listCloudPageProductionStates(projectId, pages).catch(() => [])
     : [];
+  const generationBatchPreflight = longform.available
+    ? await getCloudGenerationBatchPreflight(projectId).catch(() => null)
+    : null;
   const manuscript = exportReadiness ?? productionProgress?.manuscript ?? null;
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product &&
@@ -416,6 +420,7 @@ export default async function CloudProjectPage({
           {longform.available ? (
             <LongformPageManager
               batches={generationBatches}
+              batchPreflight={generationBatchPreflight}
               coverPageId={project.cover_page_id}
               episodes={episodes}
               pages={pages}

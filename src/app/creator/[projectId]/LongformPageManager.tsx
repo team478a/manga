@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useMemo, useState, useTransition } from "react";
 import { AlertTriangle, BookOpen, CheckCircle2, FilePlus2, GripVertical, LayoutGrid, PanelsTopLeft, Pause, Play, Plus, RotateCcw, Sparkles, Trash2, XCircle } from "lucide-react";
 import type { CloudEpisode, CloudGenerationBatch, CloudLongformStructure, CloudPage, CloudPageProductionState, CloudPageProductionStatus } from "@/lib/cloud-creator-server";
+import type { GenerationBatchPreflightContext } from "@/modules/manga/domain/generation-batch-preflight";
+import { estimateGenerationBatch } from "@/modules/manga/domain/generation-batch-preflight";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import {
   addCloudEpisodeToChapterAction,
@@ -29,6 +31,7 @@ export function LongformPageManager({
   structure,
   batches,
   productionStates,
+  batchPreflight,
 }: {
   projectId: string;
   readingDirection: "rtl" | "ltr";
@@ -38,6 +41,7 @@ export function LongformPageManager({
   structure: CloudLongformStructure;
   batches: CloudGenerationBatch[];
   productionStates: CloudPageProductionState[];
+  batchPreflight: GenerationBatchPreflightContext | null;
 }) {
   const [view, setView] = useState<"single" | "spread">("single");
   const [visibleCount, setVisibleCount] = useState(PAGE_BATCH);
@@ -45,6 +49,7 @@ export function LongformPageManager({
   const [moveMessage, setMoveMessage] = useState("");
   const [isMoving, startMove] = useTransition();
   const [filter, setFilter] = useState<"all" | "attention" | "generating" | "finalized">("all");
+  const [selectedPageIds, setSelectedPageIds] = useState<string[]>([]);
   const orderedPages = useMemo(() => [...pages].sort((a, b) => a.page_number - b.page_number), [pages]);
   const stateByPage = useMemo(() => new Map(productionStates.map((state) => [state.pageId, state])), [productionStates]);
   const statusOf = (pageId: string): CloudPageProductionStatus => stateByPage.get(pageId)?.status ?? "not_started";
@@ -59,6 +64,14 @@ export function LongformPageManager({
   const attentionCount = productionStates.filter((state) => state.isStale || state.status === "review_required" || state.status === "revision_required").length;
   const generatingCount = productionStates.filter((state) => state.status === "generating").length;
   const progress = pages.length ? Math.round((finalizedCount / pages.length) * 100) : 0;
+  const batchEstimate = useMemo(
+    () => batchPreflight ? estimateGenerationBatch(batchPreflight, selectedPageIds) : null,
+    [batchPreflight, selectedPageIds],
+  );
+  const cost = batchEstimate?.maxReservedCostMicros === null || batchEstimate?.maxReservedCostMicros === undefined
+    ? "確認できません"
+    : new Intl.NumberFormat("ja-JP", { style: "currency", currency: batchPreflight?.currency ?? "USD" })
+      .format(batchEstimate.maxReservedCostMicros / 1_000_000);
 
   const moveBefore = (targetPageId: string) => {
     if (!draggedPageId || draggedPageId === targetPageId) return;
@@ -98,7 +111,7 @@ export function LongformPageManager({
           <div className="rounded-lg border border-blue-200 bg-blue-50 p-3"><p className="text-xs text-blue-800">生成中</p><strong>{generatingCount}ページ</strong></div>
         </div>
         <div className="mt-4 flex flex-wrap gap-2" aria-label="制作状態で絞り込み">
-          {([['all','すべて'],['attention','確認が必要'],['generating','生成中'],['finalized','確定済み']] as const).map(([key,label]) => <button className={filter === key ? "button" : "button-secondary"} key={key} onClick={() => { setFilter(key); setVisibleCount(PAGE_BATCH); }} type="button">{label}</button>)}
+          {([['all','すべて'],['attention','確認が必要'],['generating','生成中'],['finalized','確定済み']] as const).map(([key,label]) => <button className={filter === key ? "button" : "button-secondary"} key={key} onClick={() => { setFilter(key); setVisibleCount(PAGE_BATCH); setSelectedPageIds([]); }} type="button">{label}</button>)}
         </div>
         <p className="mt-3 text-sm" aria-live="polite">{isMoving ? "ページを移動しています…" : moveMessage || `${Math.min(visibleCount, filteredPages.length)}/${filteredPages.length}ページを表示`}</p>
       </div>
@@ -106,16 +119,33 @@ export function LongformPageManager({
       <form action={startCloudPageGenerationBatchAction.bind(null, projectId)} className="panel">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div><h3 className="text-lg font-bold">4〜8ページをまとめて生成</h3><p className="mt-1 text-sm text-stone-600">下のページにチェックを付けて開始します。各ページの全コマを既存の安全な生成Queueへ登録します。</p></div>
-          <PendingSubmitButton className="button shrink-0" pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />選択ページを生成</PendingSubmitButton>
+          <PendingSubmitButton className="button shrink-0" disabled={!batchEstimate?.canStart} pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />選択ページを生成</PendingSubmitButton>
         </div>
+        {batchPreflight && batchEstimate ? <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm" aria-live="polite">
+          <p className="font-bold">開始前の生成見積り</p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <p>対象: <strong>{batchEstimate.selectedPageCount}ページ／{batchEstimate.targetPanelCount}コマ</strong></p>
+            <p>候補: <strong>1案／コマ</strong></p>
+            <p>必要credit: <strong>{batchEstimate.requiredCredits ?? "確認不可"}</strong>（残り{batchPreflight.planCreditsRemaining ?? "確認不可"}）</p>
+            <p>作品credit: <strong>{batchPreflight.projectCreditsRemaining ?? "上限設定なし"}</strong></p>
+            <p>モニターAI残り: <strong>{batchPreflight.monitorRequestsRemaining ?? "確認不可"}回</strong></p>
+            <p>最大予約費用: <strong>{cost}</strong></p>
+            <p>Model: <strong>{batchPreflight.modelId ?? "確認不可"}</strong></p>
+            <p>料金版: <strong>{batchPreflight.pricingVersion ?? "確認不可"}</strong></p>
+            <p>Worker: <strong>最短{batchEstimate.schedulerRuns}回／約{batchEstimate.schedulerMinimumMinutes}分</strong></p>
+            <p>1分登録上限: <strong>{batchEstimate.registrationLimit ?? "確認不可"}コマ</strong></p>
+          </div>
+          <p className="mt-2 text-xs text-stone-600">最大予約費用は実際の請求額ではありません。時間は5分間隔・1回3Jobから算出した下限目安です。</p>
+          {batchEstimate.blockers.length ? <ul className="mt-2 list-disc pl-5 text-amber-900">{batchEstimate.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : <p className="mt-2 font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />現在の利用枠では開始できます。</p>}
+        </div> : <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><AlertTriangle className="mr-1 inline h-4 w-4" />生成料金と利用枠を確認できないため、一括生成を開始できません。</div>}
         <p className="mt-2 text-xs text-stone-500">最大64コマ。画面を閉じてもWorker処理は継続します。</p>
         <div className="mt-3 flex flex-wrap gap-2">
-          {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className={`flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm ${statusOf(page.id) === "finalized" ? "opacity-50" : ""}`} key={page.id}><input disabled={statusOf(page.id) === "finalized"} name="pageId" type="checkbox" value={page.id} />{page.page_number}ページ</label>)}
+          {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className={`flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm ${statusOf(page.id) === "finalized" ? "opacity-50" : ""}`} key={page.id}><input checked={selectedPageIds.includes(page.id)} disabled={statusOf(page.id) === "finalized"} name="pageId" onChange={(event) => setSelectedPageIds((current) => event.target.checked ? [...current, page.id] : current.filter((id) => id !== page.id))} type="checkbox" value={page.id} />{page.page_number}ページ（{batchPreflight?.pagePanelCounts[page.id] ?? "?"}コマ）</label>)}
         </div>
       </form>
 
       {batches.length ? <section className="panel" aria-label="一括生成履歴"><h3 className="text-lg font-bold">一括生成の進行状況</h3><div className="mt-3 space-y-3">{batches.map((batch) => <article className="rounded-lg border border-stone-200 p-3" key={batch.id}>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><strong>{batch.status === "paused" ? "一時停止中" : batch.status === "canceled" ? "中止" : batch.status === "completed" ? "完了" : "処理中"}</strong><p className="text-sm text-stone-600">完了 {batch.completedJobs}/{batch.totalJobs}・待機 {batch.queuedJobs}・処理中 {batch.runningJobs}・失敗 {batch.failedJobs}</p></div><div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><strong>{batch.status === "paused" ? "一時停止中" : batch.status === "canceled" ? "中止" : batch.status === "completed" ? "完了" : "処理中"}</strong><p className="text-sm text-stone-600">登録済み {batch.totalJobs}コマ・完了 {batch.completedJobs}・待機 {batch.queuedJobs}・処理中 {batch.runningJobs}・失敗 {batch.failedJobs}</p><p className="text-xs text-stone-500">選択{batch.requested_page_ids.length}ページ。登録済みJobだけを集計しています。</p></div><div className="flex flex-wrap gap-2">
           {batch.status === "active" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "paused")}><PendingSubmitButton className="button-secondary" pendingLabel="停止中…"><Pause className="mr-1 h-4 w-4" />一時停止</PendingSubmitButton></form> : batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "active")}><PendingSubmitButton className="button-secondary" pendingLabel="再開中…"><Play className="mr-1 h-4 w-4" />再開</PendingSubmitButton></form> : null}
           {batch.status === "active" || batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "canceled")}><PendingSubmitButton className="button-secondary text-red-700" pendingLabel="中止中…"><XCircle className="mr-1 h-4 w-4" />中止</PendingSubmitButton></form> : null}
         </div></div>
