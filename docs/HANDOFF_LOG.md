@@ -13,7 +13,8 @@
 - 単一コマ生成、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
 - 集中・関連29/29、Hub 657/657、Canvas 26/26、AI 48/48、Desktop、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeで同一commitを検証した。
 - Productionでは生成前バックアップを作成済み。実Provider Job、batch target、credit消費は追加していない。
-- 次はDraft PRの全CI／Vercel Preview成功後に責任者確認で停止する。merge後、Trial付与と作品画風・3人物の外見設定を完了してから4ページ生成を1回だけ行う。
+- Draft PR: [#247](https://github.com/team478a/manga/pull/247)。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-ff0747-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。merge後、Trial付与と作品画風・3人物の外見設定を完了してから4ページ生成を1回だけ行う。
 
 ---
 

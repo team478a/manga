@@ -2,8 +2,9 @@
 
 ## 2026-08-13 PR-R4-1aa-1 長編一括生成ビジュアル準備
 
-- 状態: `LOCAL_VALIDATION_COMPLETE`
-- Draft PR: 作成予定
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#247](https://github.com/team478a/manga/pull/247)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-ff0747-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1aa-visual-readiness`
 - Base: `origin/feature/manga-canvas-mvp`（`914f127`、PR #246 merge commit）
 - PR #246はmerge commit `914f1278d08d9e5f2a72ad9a34ec89fe417b7602`でマージ済み。
@@ -12,7 +13,8 @@
 - 対象外: 単一コマ生成の挙動は維持する。DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更しない。
 - Production安全性: 生成前バックアップ`作業バックアップ・32ページ・2026/8/13 4:22:55`を作成済み。実Provider Job、batch target、credit消費は追加していない。
 - 検証: 集中・関連29/29、Hub 657/657、Canvas 26/26、AI 48/48、Desktop、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeへ依存関係を実体インストールして同一commitを検証した。
-- 次: Draft PRを作成し、全CIとVercel Preview成功後に責任者確認で停止する。merge後、`test`へTrial 30日付与、作品画風、`城戸真琴`／`榊圭吾`／`城戸湊`の外見設定を完了してから4ページ生成を1回だけ行う。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後、`test`へTrial 30日付与、作品画風、`城戸真琴`／`榊圭吾`／`城戸湊`の外見設定を完了してから4ページ生成を1回だけ行う。
 - 停止条件: visual blockerとcredit blockerが0になるまで生成を開始しない。4ページ受入れ合格前に8ページ完成原稿／販売品質受入れへ進まない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AA_VISUAL_READINESS.md`](RELEASE_CANDIDATE_R4_1AA_VISUAL_READINESS.md)
 

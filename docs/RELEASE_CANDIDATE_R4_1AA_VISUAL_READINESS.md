@@ -1,5 +1,8 @@
 # PR-R4-1aa-1 長編一括生成ビジュアル準備ゲート
 
+- Draft PR: [#247](https://github.com/team478a/manga/pull/247)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-ff0747-team478as-projects.vercel.app
+
 ## 結論
 
 Productionの一般向けモニター`test`で4ページ一括生成を開始する前に、採用ネームで必要な主要人物の外見設定と作品画風が未設定であることを確認した。現行Promptは未設定項目を自然補完するため、この状態で16コマを生成すると人物、衣装、線、陰影、背景密度がページ間で不安定になる可能性が高い。
@@ -66,6 +69,8 @@ DB、migration、RPC、Storage、公開API、URL、Feature Flag、Provider、mod
 - migration validation: 54/54成功
 - Hub production build: 短い物理worktreeで成功
 - Desktop build、RC repository structure、`git diff --check`: 成功
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: 成功
+- PR状態: Draft、MERGEABLE
 
 元worktreeのHub buildだけはWindows長path上限で失敗した。短縮worktreeで依存関係を実体インストールし、同一commitのNext.js production build、TypeScript、21 static pagesを完走した。ジャンクションを使った初回短縮試行はTurbopackがworkspace外symlinkを拒否したため、検証結果には採用していない。
 
