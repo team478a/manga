@@ -137,6 +137,19 @@ export function LongformPageManager({
             <p>1分Job化上限: <strong>{batchEstimate.registrationLimit ?? "確認不可"}コマ</strong></p>
           </div>
           <p className="mt-2 text-xs text-stone-600">最大予約費用は実際の請求額ではありません。全コマを先に永続登録し、Workerが1分上限と5分間隔・1回3Jobを守って段階的にJob化します。</p>
+          <div className="mt-3 rounded-lg border border-stone-200 bg-white p-3">
+            <p className="font-bold">生成前のビジュアル準備</p>
+            <p className="mt-1 text-xs text-stone-600">画風・線・陰影・背景密度・構図と、主要人物の年齢感・体格・髪・衣装・固定特徴を確認します。</p>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <p>作品画風: <strong>{batchPreflight.styleBibleConfigured ? "設定済み" : "未設定"}</strong></p>
+              <p>登場人物の外見・衣装: <strong>{batchEstimate.requiredCharacterNames.length - batchEstimate.missingCharacterNames.length}/{batchEstimate.requiredCharacterNames.length}名設定済み</strong></p>
+            </div>
+            {batchEstimate.missingCharacterNames.length ? <p className="mt-2 text-amber-900">未設定: {batchEstimate.missingCharacterNames.join("、")}</p> : null}
+            {(!batchPreflight.styleBibleConfigured || batchEstimate.missingCharacterNames.length) ? <div className="mt-3 flex flex-wrap gap-2">
+              {!batchPreflight.styleBibleConfigured ? <Link className="button-secondary" href={`/creator/${projectId}/bible`}>画風・世界観を設定</Link> : null}
+              {batchEstimate.missingCharacterNames.length ? <Link className="button-secondary" href={`/creator/${projectId}/characters`}>キャラクター設定を追加</Link> : null}
+            </div> : null}
+          </div>
           {batchEstimate.blockers.length ? <ul className="mt-2 list-disc pl-5 text-amber-900">{batchEstimate.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : <p className="mt-2 font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />現在の利用枠では開始できます。</p>}
         </div> : <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><AlertTriangle className="mr-1 inline h-4 w-4" />生成料金と利用枠を確認できないため、一括生成を開始できません。</div>}
         <p className="mt-2 text-xs text-stone-500">最大64コマ。画面を閉じてもWorker処理は継続します。</p>

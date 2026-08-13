@@ -1,5 +1,23 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1aa-1 長編一括生成ビジュアル準備、2026-08-13）
+
+- Branch: `codex/fix-r4-1aa-visual-readiness`
+- Base: `origin/feature/manga-canvas-mvp` @ `914f127`（PR #246 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#247](https://github.com/team478a/manga/pull/247)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-ff0747-team478as-projects.vercel.app
+- Productionの`test`作品を監査し、画風、人物設定、参考画像、連続性台帳が未設定であることを確認した。19〜22ページで必要な主要人物は`城戸真琴`、`榊圭吾`、`城戸湊`。
+- 有料長編一括生成preflightが、採用storyboard／scenarioと人物・画風の現行versionを確認する。必要設定が不足する場合は不足人物名と設定導線を表示し、Server側でもbatch登録前に拒否する。
+- 単一コマ生成、DB、migration、RPC、Storage、公開API、Provider、model、pricing、credit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更しない。
+- 集中・関連29/29、Hub 657/657、Canvas 26/26、AI 48/48、Desktop、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 実Provider Job、batch target、credit消費は追加していない。生成前バックアップ作成済み。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_VISUAL_READINESS.md`
+- 次: 責任者のreview／merge判断まで停止。merge後にTrial付与と画風・3人物設定を完了し、blocker 0を確認して4ページ生成を1回だけ実施する。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1aa 4ページ限定Production受入れ、2026-08-13）
 
 - Branch: `codex/release-r4-1aa-four-page-acceptance`
