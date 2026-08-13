@@ -2588,3 +2588,17 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - API、DB、migration、RPC、Storage、Provider、model、pricing、retry、timeout、Scheduler、Feature Flag、成人向け境界、Desktopは変更していない。
 - focused 8/8、deps:check、lint、typecheck、Hub／Canvas／AI／Desktop test、migration 48本、Hub／Desktop build、release structure preflight、diff checkに成功。
 - 実Provider Jobは1件待機中。修正PRの全CIとVercel Preview成功、責任者のmerge、本番再デプロイ後に手動Workerを1回だけ再実行する。それまでは追加Jobを登録しない。
+
+# 2026-08-14 Codex: 長編一括生成target UUID契約修正
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/fix-r4-1ac-batch-target-idempotency`
+- Base: `origin/feature/manga-canvas-mvp`@`ad8905d`（PR #250 merge後）
+- Draft PR: [#251](https://github.com/team478a/manga/pull/251)
+- Productionへ既存migration `202608130003_cloud_generation_batch_registration_diagnostics.sql` を適用し、関数定義への診断識別子反映を確認した。
+- `test`モニターの既存作品でページ19〜22（4ページ、16コマ）を1回だけ再試行した。事前検査はProvider、model、pricing、32 credit、モニター利用枠とも通過したが、RPC登録前の「一括生成条件を準備できませんでした。」で停止し、Job・credit消費・Provider呼出しは発生していない。
+- 原因は、バッチ内部が各コマのidempotency keyを`UUID:target:番号`で作る一方、共通のコマ生成入力契約がUUIDを必須としていたこと。各targetに`crypto.randomUUID()`を割り当て、API、DB、RPCの既存契約を変えずに整合させた。
+- 回帰テストでUUID生成の使用と旧複合形式の不在を固定した。Provider、model、pricing、retry、timeout、Scheduler、Feature Flag、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更していない。
+- ローカル検証: focused 31/31、deps:check、lint、typecheck、Hub／Canvas／AI／Desktop／a11y、migration 55本、Desktop build、RC structure preflight、`git diff --check`成功。Hub buildは通常TurbopackがWindowsの作業パス長上限で停止したため、同一ソースの`next build --webpack`で成功を確認した。TurbopackはVercel Previewで確認する。
+- 次: Draft PRの全CIとVercel Preview成功後に停止する。merge・Production反映前は追加生成しない。反映後に同じ4ページを1回だけ再試行し、16 target登録、Worker処理、完成画像、課金を確認する。
+- Draft PR #251のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLEを確認し、Production再試行を行わず停止した。

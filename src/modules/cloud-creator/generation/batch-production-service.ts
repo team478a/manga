@@ -48,7 +48,7 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     try {
       preparedChunk = await Promise.all(
         targets.slice(index, index + 4).map(async (target, offset) => {
-          const idempotencyKey = `${batchKey}:target:${index + offset + 1}`;
+          const idempotencyKey = crypto.randomUUID();
           const prepared = await prepareStoryboardPanelImage({
             projectId,
             pageId: target.pageId,

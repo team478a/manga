@@ -4292,3 +4292,15 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - application code、DB、migration、RPC、Storage設定、Provider、pricing、Scheduler、Canvas schema、PDF／PNG仕様、成人向け境界、Stripe、Desktop codeは変更していない。
 - RC台帳、Cloud漫画repository、migration 50/50、全`rc:validate`成功。Desktop初回181/182は単独／全体再実行で182/182成功し、Hub 620/620とproduction buildも成功した。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md`。文書限定Draft PRと最終HEADの全CI／Vercel Preview後に停止し、R4-2へ進まない。
+
+# 2026-08-14 Codex: 長編一括生成target UUID契約修正
+
+- Branch: `codex/fix-r4-1ac-batch-target-idempotency`
+- Base: `origin/feature/manga-canvas-mvp`@`ad8905d`
+- Draft PR: [#251](https://github.com/team478a/manga/pull/251)
+- Production migration 003適用後、`test`モニターのページ19〜22を1回だけ実行し、登録処理より前の準備段階で停止することを確認した。Vercel requestは303、16秒、外部API呼出しなしで、Job・credit消費はない。
+- ProductionのBFL設定は有効、model `flux-2-pro`、API key形式有効。4ページの最新Canvasは各4コマで構造正常、現在版の人物設定3件にもnull配列はなかった。
+- 根因は`batch-production-service.ts`が作る`UUID:target:番号`と、`cloudPanelImageGenerationRequestSchema`のUUID契約の不一致。targetごとの純粋なUUIDへ修正し、旧形式を禁止する回帰テストを追加した。
+- focused 31/31、deps、lint、typecheck、Hub／Canvas／AI／Desktop／a11y、migration 55本、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常のローカルTurbopack buildだけはWindowsパス長で外部環境依存停止し、Vercel Previewを正規確認先とする。
+- 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認する。merge前にProductionで再生成しない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。責任者のmergeとProduction反映前に再生成しない。
