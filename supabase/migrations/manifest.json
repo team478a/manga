@@ -324,6 +324,12 @@
       "description": "Production既定ACLを明示的に打ち消して長編生成targetをservice role専用に固定",
       "forwardSha256": "a5394f02d9d077492b3f2846858d8fba2e8bb6d7d00c669f8d4ed27577bd0998",
       "rollbackSha256": "a32021805084aebab4d1ed1e5ed0559c5dee2b5b016b4caedc113ba64aba0b77"
+    },
+    {
+      "id": "202608130003_cloud_generation_batch_registration_diagnostics",
+      "description": "長編一括生成の永続登録失敗を安全な固定codeへ分類しPostgREST schema cacheを更新",
+      "forwardSha256": "61d2f6be241e0102ce547827eb3f6535e4faeef3851c6b430fad01a069c48a13",
+      "rollbackSha256": "00508e5fbbc332ddd3ff2dd6df0ea49291a3d6959fdbc9d415329cd2f9275c20"
     }
   ],
   "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"

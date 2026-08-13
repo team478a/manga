@@ -54,6 +54,37 @@ test("durable dispatcher keeps limits atomic and never exposes prepared prompts"
   assert.match(sql, /panel_specification/);
 });
 
+test("batch registration migration classifies failures without exposing payloads", () => {
+  const sql = read("supabase/migrations/202608130003_cloud_generation_batch_registration_diagnostics.sql");
+  const rollback = read("supabase/rollbacks/202608130003_cloud_generation_batch_registration_diagnostics.sql");
+  for (const signal of [
+    "cloud_batch_targets_access_denied",
+    "cloud_batch_targets_payload_invalid",
+    "cloud_batch_targets_count_invalid",
+    "cloud_batch_targets_page_revision_invalid",
+    "cloud_batch_targets_pricing_invalid",
+    "cloud_batch_targets_panel_invalid",
+    "cloud_batch_targets_uniqueness_invalid",
+    "cloud_batch_targets_insert_invalid",
+  ]) {
+    assert.match(sql, new RegExp(signal));
+  }
+  assert.match(sql, /notify pgrst, 'reload schema'/);
+  assert.match(rollback, /cloud_batch_targets_invalid/);
+  assert.match(rollback, /notify pgrst, 'reload schema'/);
+  assert.match(sql, /revoke all on function public\.create_cloud_generation_batch_targets/);
+  assert.match(sql, /grant execute on function public\.create_cloud_generation_batch_targets/);
+});
+
+test("batch service maps preparation, schema and RPC failures to safe stages", () => {
+  const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
+  assert.match(service, /一括生成条件を準備できませんでした/);
+  assert.match(service, /cloudGenerationInputSchema\.safeParse/);
+  assert.match(service, /一括生成条件を検証できませんでした/);
+  assert.match(service, /mapCloudGenerationBatchRegistrationError/);
+  assert.doesNotMatch(service, /cloudGenerationInputSchema\.parse\(target\.input\)/);
+});
+
 test("batch UI exposes progress, pause, cancel and safe retry", () => {
   const component = read("src/app/creator/[projectId]/LongformPageManager.tsx");
   assert.match(component, /4〜8ページをまとめて生成/);

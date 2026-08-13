@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1ab 長編一括生成登録阻害の解消
+
+- PR #249がmerge commit `09da19696a6bfa8dcb5bc45a03262b5ce0856acc`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Productionの一般向けモニター`test`へTrial 30日を付与し、作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`の19〜22ページ（4ページ／16コマ）を1回だけ開始した。作品画風、主要人物3/3名、必要32 credit／残り100、`flux-2-pro`／`bfl-flux2-2026-03`は合格していた。
+- 開始は永続登録前にfail-closedとなった。一括生成履歴0、利用／予約credit 0、Provider Job 0を確認し、再試行はしていない。
+- genericだった準備／入力schema／RPC登録失敗を安全な段階へ分離した。RPC signature、原子性、ACLを維持し、権限、件数、payload、page revision、pricing、panel、重複、insertの失敗を固定codeで分類するforward／rollback migrationを追加した。手動適用後のPostgREST schema cacheもreloadする。
+- 未知のDB情報、Prompt、画像、内部payloadは画面へ表示しない。Provider、model、pricing、credit、retry、timeout、rate limit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
+- 集中16/16、Hub 662/662、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 55/55、Desktop build、RC structure、diff check成功。Hub buildは長いWindows作業パスでTurbopack上限に達したため、同一commitを短い物理worktreeで再確認する。
+- Draft PRと全CI／Vercelを確認して停止する。merge後にProduction migrationを適用し、同じ4ページを1回だけ再受入れする。
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1aa-3 長編一括生成条件固定
 
 - PR #248がmerge commit `3b5b7da3b4d63b0db897cbe8bc07cec2f53ea7c3`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
