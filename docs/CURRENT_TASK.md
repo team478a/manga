@@ -2623,6 +2623,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 状態: `LOCAL_VALIDATION_COMPLETE`
 - Branch: `codex/fix-r4-1ae-provider-pending-budget`
 - Base: `origin/feature/manga-canvas-mvp`@`7fc04fc`（PR #252 merge後）
+- Draft PR: [#253](https://github.com/team478a/manga/pull/253)
 - PR #252のProduction反映後、失敗2コマだけを再登録し、公式Workerを限定実行した。12/16から14/16へ進んだが、残る2件はBFLの210秒超過pollingが通常retryとして数えられ、`max_attempts=2`を使い切って失敗した。追加再実行は停止した。
 - BFLへの再POSTは発生せず、PR #252のProvider Job ID checkpointと同一Job pollingは機能した。追加阻害はProvider処理中という正常な待機状態と、通信・Provider失敗のretry予算が同じだったこと。
 - Provider Job ID保存後のtimeoutだけを15秒後のQueueへ戻し、claim時に増えた`attempt_count`をlease一致条件で戻す。Provider Jobの初回開始から30分を上限とし、無期限pollingは許可しない。通常のtimeout、rate limit、5xx、network errorの既存retry回数は変更しない。
