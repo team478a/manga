@@ -74,6 +74,69 @@ test("BFL adapter submits a strict general request, polls, and downloads immedia
   assert.equal(result.providerModeration.decision, "allow");
 });
 
+test("BFL adapter checkpoints a submitted Provider Job before polling", async () => {
+  const checkpoints = [];
+  let calls = 0;
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-2-pro",
+    capability,
+    pollIntervalMs: 1,
+    fetcher: async () => {
+      calls += 1;
+      if (calls === 1) return new Response(JSON.stringify({
+        id: "bfl-job-checkpoint",
+        polling_url: "https://api.bfl.ai/v1/get_result?id=bfl-job-checkpoint",
+      }), { status: 200 });
+      if (calls === 2) return new Response(JSON.stringify({
+        status: "Ready",
+        result: { sample: "https://delivery.bfl.ai/result/checkpoint.png" },
+      }), { status: 200 });
+      return new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
+    },
+  });
+  await provider.generate({
+    kind: "image",
+    jobType: "background",
+    prompt: "checkpoint manga panel",
+    negativePrompt: "",
+  }, {
+    ...context,
+    checkpointProviderJobId: async (providerJobId) => checkpoints.push(providerJobId),
+  });
+  assert.deepEqual(checkpoints, ["bfl-job-checkpoint"]);
+});
+
+test("BFL adapter resumes polling a checkpointed Provider Job without resubmitting", async () => {
+  const calls = [];
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-2-pro",
+    capability,
+    pollIntervalMs: 1,
+    fetcher: async (url, init) => {
+      calls.push({ url: String(url), method: init?.method });
+      if (calls.length === 1) return new Response(JSON.stringify({
+        status: "Ready",
+        result: { sample: "https://delivery.bfl.ai/result/resumed.png" },
+      }), { status: 200 });
+      return new Response(new Uint8Array([137, 80, 78, 71]), { status: 200 });
+    },
+  });
+  const result = await provider.generate({
+    kind: "image",
+    jobType: "background",
+    prompt: "resumed manga panel",
+    negativePrompt: "",
+  }, {
+    ...context,
+    providerJobId: "bfl-job-resumed",
+  });
+  assert.equal(calls[0].method, "GET");
+  assert.equal(calls[0].url, "https://api.bfl.ai/v1/get_result?id=bfl-job-resumed");
+  assert.equal(result.providerJobId, "bfl-job-resumed");
+});
+
 test("BFL adapter rejects untrusted polling URLs before making a second request", async () => {
   let calls = 0;
   const provider = new BlackForestLabsFluxImageProvider({

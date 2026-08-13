@@ -2602,3 +2602,18 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - ローカル検証: focused 31/31、deps:check、lint、typecheck、Hub／Canvas／AI／Desktop／a11y、migration 55本、Desktop build、RC structure preflight、`git diff --check`成功。Hub buildは通常TurbopackがWindowsの作業パス長上限で停止したため、同一ソースの`next build --webpack`で成功を確認した。TurbopackはVercel Previewで確認する。
 - 次: Draft PRの全CIとVercel Preview成功後に停止する。merge・Production反映前は追加生成しない。反映後に同じ4ページを1回だけ再試行し、16 target登録、Worker処理、完成画像、課金を確認する。
 - Draft PR #251のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLEを確認し、Production再試行を行わず停止した。
+
+# 2026-08-14 Codex: BFL長時間生成の継続polling修正
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/fix-r4-1ad-bfl-poll-resume`
+- Base: `origin/feature/manga-canvas-mvp`@`82e6228`（PR #251 merge後）
+- Draft PR: [#252](https://github.com/team478a/manga/pull/252)
+- PR #251反映後、`test`モニターの既存作品でページ19〜22（4ページ、16コマ）を1回登録し、target登録16/16に成功した。
+- Production DBで既存migration `202608080001_cloud_manga_quality_logs.sql` と `202608080002_cloud_manga_quality_judge.sql` の適用漏れを特定し、順番通り適用した。3テーブル、3 RPC、RLS有効を確認し、Job化失敗3件だけを再登録した。
+- 公式`Cloud AI Worker scheduler`の限定runで10/16画像を実Provider生成し、完成Asset、panel specification、品質評価の保存を確認した。Provider応答が210秒を超えるコマが複数あり、旧実装はretry時にBFLへ新規Jobを再投入していたため、未完了6コマで追加runを停止した。
+- BFL投入直後にProvider Job IDを実行中lease付きで保存し、timeout後の次回Workerでは新規投入せず同じ`get_result`をpollする。Provider、model、pricing、retry回数、210秒timeout、Scheduler頻度、API、Canvas、PDF／PNG、成人向け境界、Desktopは変更しない。
+- 回帰テストはProvider Job IDのcheckpoint、POSTなしのpoll再開、timeout失敗記録へのID保持を固定する。
+- ローカル検証: focused 22/22、deps、lint、typecheck、Hub、AI 48/48、Canvas 26/26、Desktop 182/182、migration 55本、Cloud漫画repository受入れ、Webpack Hub build、Desktop build、RC structure preflight、`git diff --check`成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止し、Vercel Previewを正規確認先とする。
+- 次: 責任者merge待ち。merge／Production反映前は残り6コマを実行しない。反映後は既存失敗1件だけを再登録し、残りQueueを16/16完了まで処理する。
+- Draft PR #252のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。責任者のmergeとProduction反映前に残り6コマを実行しない。

@@ -24,6 +24,7 @@ import {
   uploadGeneratedAsset,
 } from "../infrastructure/generated-asset-storage.ts";
 import {
+  checkpointCloudGenerationProviderJob,
   completeCloudGenerationJob,
   failCloudGenerationJob,
 } from "../infrastructure/cloud-ai-repository.ts";
@@ -61,6 +62,7 @@ export async function processNextCloudGenerationJob(input: {
     toleratedFailures: input.heartbeatToleratedFailures,
   });
   let uploadedAsset: UploadedCloudGeneratedAsset | null = null;
+  let checkpointedProviderJobId = job.provider_job_id;
   try {
     const generation = cloudGenerationInputSchema.parse(job.input);
     const provider = input.providers.find(
@@ -81,6 +83,15 @@ export async function processNextCloudGenerationJob(input: {
       projectId: job.project_id,
       pageId: job.page_id ?? undefined,
       idempotencyKey: job.idempotency_key,
+      providerJobId: job.provider_job_id ?? undefined,
+      checkpointProviderJobId: async (providerJobId: string) => {
+        checkpointedProviderJobId = providerJobId;
+        await checkpointCloudGenerationProviderJob({
+          client,
+          job,
+          providerJobId,
+        });
+      },
       referenceImageUrls: [] as string[],
       maskImageUrl: undefined as string | undefined,
     };
@@ -253,6 +264,7 @@ export async function processNextCloudGenerationJob(input: {
       errorCode: failure.code,
       errorMessage: failure.message,
       retryable,
+      providerJobId: checkpointedProviderJobId,
     });
     return {
       status: retryable ? ("retrying" as const) : ("failed" as const),

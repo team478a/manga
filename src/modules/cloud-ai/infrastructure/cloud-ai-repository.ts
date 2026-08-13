@@ -65,12 +65,30 @@ export async function completeCloudGenerationJob(input: {
     throw new Error("Cloud AI Jobの完了を記録できませんでした。");
 }
 
+export async function checkpointCloudGenerationProviderJob(input: {
+  client: CloudAiAdminClient;
+  job: ClaimedCloudGenerationJob;
+  providerJobId: string;
+}) {
+  const { data, error } = await input.client
+    .from("cloud_generation_jobs")
+    .update({ provider_job_id: input.providerJobId, updated_at: new Date().toISOString() })
+    .eq("id", input.job.id)
+    .eq("status", "running")
+    .eq("lease_token", input.job.lease_token)
+    .select("id")
+    .maybeSingle();
+  if (error || !data)
+    throw new Error("Cloud AI Provider Jobを保存できませんでした。");
+}
+
 export async function failCloudGenerationJob(input: {
   client: CloudAiAdminClient;
   job: ClaimedCloudGenerationJob;
   errorCode: string;
   errorMessage: string;
   retryable: boolean;
+  providerJobId?: string | null;
 }) {
   await input.client.rpc("finish_cloud_generation_job", {
     p_job_id: input.job.id,
@@ -78,7 +96,7 @@ export async function failCloudGenerationJob(input: {
     p_succeeded: false,
     p_output: null,
     p_output_asset_id: null,
-    p_provider_job_id: null,
+    p_provider_job_id: input.providerJobId ?? null,
     p_actual_cost_micros: null,
     p_error_code: input.errorCode,
     p_error_message: input.errorMessage,
