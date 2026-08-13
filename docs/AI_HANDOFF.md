@@ -1,5 +1,24 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1x 長編漫画credit・段階生成成立条件監査、2026-08-13）
+
+- Branch: `codex/audit-r4-1x-longform-credit-plan`
+- Base: `origin/feature/manga-canvas-mvp` @ `96f27b6`（PR #241 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#242](https://github.com/team478a/manga/pull/242)
+- Vercel Preview: https://mangai-hub-staging-git-codex-audit-r4-5dcaff-team478as-projects.vercel.app
+- 現行一括生成は4〜8ページ／最大64コマを受け付けるが、全対象を同期loopで1 Jobずつ登録する。作品rate limitはFree 3、Trial 6、Creator 20件/分で、途中拒否後は部分batchを成功値として返し得る。
+- 画面は要求件数と登録件数の差、必要credit、最大予約費用、残容量、Scheduler回数を開始前後に表示しない。長編Production受入れの前に修正が必要。
+- 157コマをProで初回1候補なら314 credit。推奨式は全コマ初回、選択比較、選択Fillの`2P + 4C + 6F` credit。
+- 次工程案はR4-1y合算preflight／表示、R4-1z durable登録、R4-1aa 4ページ限定実Provider受入れ、R4-1ab 8ページ完成原稿／販売品質受入れ。
+- 本PRは文書限定で、有料Jobとapplication／外部契約変更を行わない。
+- 集中20/20、deps、RC repository structure、diff check成功。RC外部設定とmanual E2Eはローカル秘密情報なしのためPENDING。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1X_LONGFORM_CREDIT_AND_STAGING_AUDIT.md`
+- 次: 責任者のreview／merge判断まで停止し、責任者承認前にR4-1yを実装しない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1w FLUX単一コマProduction受入れ、2026-08-13）
 
 - Branch: `codex/release-r4-1w-flux-production-acceptance`
