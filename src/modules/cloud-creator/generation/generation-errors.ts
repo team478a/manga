@@ -5,10 +5,12 @@ import {
   ProviderUnavailableError,
   QuotaExceededError,
   RateLimitedError,
+  RevisionConflictError,
   ValidationError,
 } from "../../../lib/domain-errors.ts";
 
 type GenerationDatabaseError = {
+  code?: string;
   message?: string;
 };
 
@@ -61,6 +63,64 @@ export function mapCloudGenerationEnqueueError(
       return new DomainError(
         "INTERNAL_ERROR",
         "Cloud AI Jobを登録できませんでした。",
+        { cause: error },
+      );
+  }
+}
+
+export function mapCloudGenerationBatchRegistrationError(
+  error: GenerationDatabaseError | null | undefined,
+) {
+  const signal = error?.message?.split(":", 1)[0];
+  switch (signal) {
+    case "cloud_batch_targets_access_denied":
+      return new PermissionDeniedError(
+        "この作品では一括生成を開始できません。",
+      );
+    case "cloud_batch_targets_count_invalid":
+      return new ValidationError("一括生成するコマ数を確認してください。");
+    case "cloud_batch_targets_page_revision_invalid":
+      return new RevisionConflictError(
+        "ページ内容が準備中に更新されました。再読込してから開始してください。",
+      );
+    case "cloud_batch_targets_pricing_invalid":
+      return new ProviderUnavailableError(
+        "一括生成のProvider・model・料金設定が更新されました。再確認してください。",
+      );
+    case "cloud_batch_targets_panel_invalid":
+      return new RevisionConflictError(
+        "コマ構成が準備中に更新されました。再読込してから開始してください。",
+      );
+    case "cloud_batch_targets_payload_invalid":
+      return new ValidationError("一括生成条件を安全に固定できませんでした。");
+    case "cloud_batch_targets_uniqueness_invalid":
+      return new ValidationError(
+        "一括生成対象に重複があります。ページを再選択してください。",
+      );
+    case "cloud_batch_targets_insert_invalid":
+      return new DomainError(
+        "INTERNAL_ERROR",
+        "一括生成targetをすべて永続登録できませんでした。",
+        { cause: error },
+      );
+    case "cloud_batch_targets_invalid":
+      return new DomainError(
+        "INTERNAL_ERROR",
+        "一括生成targetを永続登録できませんでした。",
+        { cause: error },
+      );
+    default:
+      if (
+        error?.code === "PGRST202" ||
+        error?.message?.startsWith("Could not find the function")
+      ) {
+        return new ProviderUnavailableError(
+          "一括生成の登録機能を読み込めませんでした。時間をおいて再度お試しください。",
+        );
+      }
+      return new DomainError(
+        "INTERNAL_ERROR",
+        "一括生成targetを永続登録できませんでした。",
         { cause: error },
       );
   }

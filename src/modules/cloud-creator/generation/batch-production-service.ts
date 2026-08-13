@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { cloudGenerationInputSchema } from "@mangai/ai-core";
 import { cloudCreatorContext } from "../auth-context";
-import { DomainError, ValidationError } from "@/lib/domain-errors";
+import { DomainError, isDomainError, ValidationError } from "@/lib/domain-errors";
 import { prepareStoryboardPanelImage } from "@/lib/cloud-panel-image-generation-server";
 import {
   assertPreparedGenerationBatchConsistency,
@@ -15,6 +15,7 @@ import {
   enqueueCloudGenerationJob,
 } from "./generation-service";
 import { assertCloudGenerationBatchPreflight } from "./batch-preflight-service";
+import { mapCloudGenerationBatchRegistrationError } from "./generation-errors";
 
 export type CloudGenerationBatch = MangaGenerationBatch;
 
@@ -43,46 +44,64 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
   const batchKey = crypto.randomUUID();
   const preparedTargets: Array<Record<string, unknown>> = [];
   for (let index = 0; index < targets.length; index += 4) {
-    const preparedChunk = await Promise.all(
-      targets.slice(index, index + 4).map(async (target, offset) => {
-        const idempotencyKey = `${batchKey}:target:${index + offset + 1}`;
-        const prepared = await prepareStoryboardPanelImage({
-          projectId,
-          pageId: target.pageId,
-          panelId: target.panelId,
-          idempotencyKey,
-          candidateCount: 1,
-          generationTarget: "composite",
-        });
-        return {
-          page_id: target.pageId,
-          panel_id: target.panelId,
-          source_page_revision: target.sourcePageRevision,
-          position: index + offset + 1,
-          idempotency_key: idempotencyKey,
-          kind: prepared.generation.generation.kind,
-          job_type: prepared.generation.generation.jobType,
-          provider_id: prepared.generation.capability.providerId,
-          model_id: prepared.generation.capability.modelId,
-          pricing_version: prepared.generation.capability.pricingVersion,
-          prompt_sha256: prepared.generation.promptSha256,
-          input: prepared.generation.generation,
-          moderation: prepared.generation.moderation,
-          panel_specification: prepared.panelSpecification,
-        };
-      }),
-    );
+    let preparedChunk: Array<Record<string, unknown>>;
+    try {
+      preparedChunk = await Promise.all(
+        targets.slice(index, index + 4).map(async (target, offset) => {
+          const idempotencyKey = `${batchKey}:target:${index + offset + 1}`;
+          const prepared = await prepareStoryboardPanelImage({
+            projectId,
+            pageId: target.pageId,
+            panelId: target.panelId,
+            idempotencyKey,
+            candidateCount: 1,
+            generationTarget: "composite",
+          });
+          return {
+            page_id: target.pageId,
+            panel_id: target.panelId,
+            source_page_revision: target.sourcePageRevision,
+            position: index + offset + 1,
+            idempotency_key: idempotencyKey,
+            kind: prepared.generation.generation.kind,
+            job_type: prepared.generation.generation.jobType,
+            provider_id: prepared.generation.capability.providerId,
+            model_id: prepared.generation.capability.modelId,
+            pricing_version: prepared.generation.capability.pricingVersion,
+            prompt_sha256: prepared.generation.promptSha256,
+            input: prepared.generation.generation,
+            moderation: prepared.generation.moderation,
+            panel_specification: prepared.panelSpecification,
+          };
+        }),
+      );
+    } catch (error) {
+      if (isDomainError(error)) throw error;
+      throw new DomainError(
+        "INTERNAL_ERROR",
+        "一括生成条件を準備できませんでした。",
+        { cause: error },
+      );
+    }
     preparedTargets.push(...preparedChunk);
   }
   if (!preflight.modelId || !preflight.pricingVersion)
     throw new ValidationError("一括生成のProvider・model・料金設定を確認できませんでした。");
-  assertPreparedGenerationBatchConsistency({
-    targets: preparedTargets.map((target) => ({
+  const parsedTargets = preparedTargets.map((target) => {
+    const parsedGeneration = cloudGenerationInputSchema.safeParse(target.input);
+    if (!parsedGeneration.success)
+      throw new ValidationError(
+        "一括生成条件を検証できませんでした。ページ内容を再確認してください。",
+      );
+    return {
       providerId: String(target.provider_id),
       modelId: String(target.model_id),
       pricingVersion: String(target.pricing_version),
-      generation: cloudGenerationInputSchema.parse(target.input),
-    })),
+      generation: parsedGeneration.data,
+    };
+  });
+  assertPreparedGenerationBatchConsistency({
+    targets: parsedTargets,
     expectedProviderId: "black-forest-labs",
     expectedModelId: preflight.modelId,
     expectedPricingVersion: preflight.pricingVersion,
@@ -95,7 +114,7 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     p_targets: preparedTargets,
   });
   if (created.error || !created.data)
-    throw new DomainError("INTERNAL_ERROR", "一括生成を開始できませんでした。", { cause: created.error });
+    throw mapCloudGenerationBatchRegistrationError(created.error);
   return {
     batchId: created.data as string,
     registered: targets.length,
