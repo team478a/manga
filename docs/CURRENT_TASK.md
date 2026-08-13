@@ -8,8 +8,10 @@
 - Production: `https://app.mang-ai.com`。一般向けモニター`test`、作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`で確認する。
 - 最小対象: 19〜22ページの4ページ／16コマ、1案／コマ、`flux-2-pro`、`bfl-flux2-2026-03`。必要32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマ。
 - 現在値: Cloud AI残り8 credit、モニターAI残り85回、作品credit上限なし。24 credit不足のため開始ボタンはfail-closedで無効。実Provider Jobは追加していない。
-- Production migration確認: read-only `to_regclass`／`to_regprocedure`で`cloud_generation_batch_targets`と作成／進捗／再試行／dispatch RPCがすべて未適用と確認。DB変更は行っていない。
-- 次: merge済みmigration `202608130001_cloud_generation_batch_targets.sql`をProductionへ適用・存在検証し、`test`へ最低32 creditの利用可能枠を用意する。その後だけ4ページ受入れを開始する。
+- Production migration: `202608130001_cloud_generation_batch_targets.sql`を適用済み。検証時にProduction既定ACL由来のauthenticated SELECT権限を検出し、Productionで明示revokeした。table／4 RPC／RLS／権限／固定search pathの16項目は全成功。
+- 修正: 再発防止の追加migration `202608130002_cloud_generation_batch_target_acl.sql`を別PRで先行する。全利用者共通planとProvider設定は変更していない。
+- 検証: Production境界16/16、PostgreSQL 16で全54 migrationのforward／rollback／reapply／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff check成功。
+- 次: ACL修正PRの全CI／merge後、`test`へ最低32 creditの利用可能枠を用意し、その後だけ4ページ受入れを開始する。
 - 停止条件: migrationとcreditの両方が成立するまで生成ボタンを押さない。Provider、model、pricing、rate limit、Scheduler頻度を変更しない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`](RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md)
 

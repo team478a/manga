@@ -1209,8 +1209,10 @@ declare
   v_target uuid:='40000000-0000-4000-8000-000000000032';
   v_result record;
 begin
-  if has_table_privilege('authenticated','public.cloud_generation_batch_targets','select') then
-    raise exception 'Durable batch prompt table is readable by authenticated users';
+  if has_table_privilege('authenticated','public.cloud_generation_batch_targets','select,insert,update,delete')
+     or has_table_privilege('anon','public.cloud_generation_batch_targets','select,insert,update,delete')
+     or not has_table_privilege('service_role','public.cloud_generation_batch_targets','select,insert,update,delete') then
+    raise exception 'Durable batch target ACL is unsafe';
   end if;
   insert into auth.users(id,email) values(v_user,'durable-batch@example.invalid') on conflict(id) do nothing;
   insert into public.profiles(id,user_id,role)

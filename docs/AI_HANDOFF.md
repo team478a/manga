@@ -7,8 +7,9 @@
 - 状態: `BLOCKED_PRECONDITIONS`
 - Productionの一般向けモニター`test`で、19〜22ページの4ページ／16コマを1案ずつ生成する計画。
 - preflightは32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマ。現状は残り8 creditで24不足し、開始はfail-closed。
-- Production DBをread-only確認し、`202608130001_cloud_generation_batch_targets.sql`のtableと4 RPCが未適用と判定した。DB変更と実Provider Job追加は0件。
-- 次: Production migration適用・存在検証と、`test`へ最低32 creditの利用可能枠を準備する。両方が揃う前に生成を開始しない。
+- Productionへ`202608130001_cloud_generation_batch_targets.sql`を適用。既定ACL由来のauthenticated SELECT権限を検出してProductionで明示revokeし、table／4 RPC／RLS／権限／固定search pathの16項目全成功を確認した。実Provider Job追加は0件。
+- 追加migration `202608130002_cloud_generation_batch_target_acl.sql`を修正PRで先行する。merge後に`test`へ最低32 creditの利用可能枠を準備し、生成を開始する。
+- Production境界16/16、PostgreSQL 16で全54 migration往復／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff check成功。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`
 
 ---
