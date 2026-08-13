@@ -11,7 +11,8 @@
 - 19〜22ページの4ページ／16コマを再選択し、作品画風が設定済み、人物が3/3名設定済みになることを確認した。PR #247で追加したビジュアル準備ゲートはProductionで合格した。
 - 必要32 creditに対して残り8で24不足しているため、生成ボタンは引き続き無効。実Provider Job、batch target、credit消費は追加していない。
 - 本PRはProduction実機証跡と正本文書だけを同期する。application code、DB、migration、RPC、Storage、Provider、model、pricing、rate limit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更しない。
-- 次は管理者が`test`へ既存Trialを30日付与し、残りcredit 32以上、blocker 0を確認してから4ページ生成を1回だけ行う。
+- Draft PR: [#248](https://github.com/team478a/manga/pull/248)。Preview: https://mangai-hub-staging-git-codex-release-dfd32f-team478as-projects.vercel.app。deps、RC structure、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。merge後、管理者が`test`へ既存Trialを30日付与し、残りcredit 32以上、blocker 0を確認してから4ページ生成を1回だけ行う。
 
 ---
 

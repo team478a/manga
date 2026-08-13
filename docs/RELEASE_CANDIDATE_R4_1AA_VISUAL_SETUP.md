@@ -1,5 +1,8 @@
 # PR-R4-1aa-2 Productionビジュアル設定受入れ
 
+- Draft PR: [#248](https://github.com/team478a/manga/pull/248)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-dfd32f-team478as-projects.vercel.app
+
 ## 結論
 
 PR #247のmerge後、Productionの一般向けモニター`test`で、作品画風と19〜22ページに必要な主要3人物の外見設定を保存した。一括生成preflightは作品画風を設定済み、人物を3/3名設定済みと判定し、ビジュアル準備blockerは解消した。
@@ -61,6 +64,14 @@ PR #247のmerge後、Productionの一般向けモニター`test`で、作品画�
 - Worker: 最短6回／約30分
 - 生成ボタン: credit不足により無効
 - 実Provider Job、batch target、credit消費: 追加なし
+
+## 検証
+
+- dependency check: 成功
+- RC repository structure: READY
+- `git diff --check`: 成功
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: 成功
+- PR状態: Draft、MERGEABLE
 
 ## 次の停止条件
 

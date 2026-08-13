@@ -2,8 +2,9 @@
 
 ## 2026-08-13 PR-R4-1aa-2 Productionビジュアル設定受入れ
 
-- 状態: `PRODUCTION_VISUAL_SETUP_COMPLETE`
-- Draft PR: 作成予定
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#248](https://github.com/team478a/manga/pull/248)
+- Vercel Preview: https://mangai-hub-staging-git-codex-release-dfd32f-team478as-projects.vercel.app
 - Branch: `codex/release-r4-1aa-visual-setup`
 - Base: `origin/feature/manga-canvas-mvp`（`bf6e86e`、PR #247 merge commit）
 - PR #247はmerge commit `bf6e86eb06dc1f285b9d190f8f6d6942ae89415b`でマージ済み。
@@ -11,7 +12,8 @@
 - 再確認: 19〜22ページ、4ページ／16コマを選択すると、作品画風は設定済み、人物は3/3名設定済み。ビジュアルblockerは0になった。
 - 残る阻害要因: 必要32 creditに対して残り8 creditで、24不足。生成ボタンはfail-closedで無効。
 - 安全性: 実Provider Job、batch target、credit消費は追加していない。Provider、model、pricing、rate limit、Scheduler、DB、Storage、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
-- 次: 文書限定Draft PRの全CI／Vercel Preview成功後に停止する。merge後、管理者が`test`へ既存Trialを30日付与してcredit blocker 0を確認し、4ページ生成を1回だけ行う。
+- 検証: deps、RC structure、diff check成功。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後、管理者が`test`へ既存Trialを30日付与してcredit blocker 0を確認し、4ページ生成を1回だけ行う。
 - 停止条件: 残りcreditが32以上になるまで生成を開始しない。4ページ受入れ合格前に8ページ完成原稿／販売品質受入れへ進まない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AA_VISUAL_SETUP.md`](RELEASE_CANDIDATE_R4_1AA_VISUAL_SETUP.md)
 
