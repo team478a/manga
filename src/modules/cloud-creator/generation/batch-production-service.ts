@@ -13,6 +13,7 @@ import {
   cancelCloudGenerationJob,
   enqueueCloudGenerationJob,
 } from "./generation-service";
+import { assertCloudGenerationBatchPreflight } from "./batch-preflight-service";
 
 export type CloudGenerationBatch = MangaGenerationBatch;
 
@@ -25,6 +26,7 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     throw new DomainError("INTERNAL_ERROR", "ページの制作状態を確認できませんでした。", { cause: productionStates.error });
   if ((productionStates.data ?? []).some((page) => page.production_status === "finalized"))
     throw new ValidationError("確定済みページは一括生成できません。編集を再開してから実行してください。");
+  await assertCloudGenerationBatchPreflight(projectId, uniquePageIds);
   const snapshots = await supabase
     .from("cloud_pages")
     .select("id,revision,cloud_canvas_snapshots!inner(canvas,revision)")
@@ -87,7 +89,12 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
       break;
     }
   }
-  return { batchId: created.data as string, queued, requested: targets.length };
+  return {
+    batchId: created.data as string,
+    queued,
+    requested: targets.length,
+    partial: queued !== targets.length,
+  };
 }
 
 export async function listCloudGenerationBatches(projectId: string): Promise<CloudGenerationBatch[]> {

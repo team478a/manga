@@ -337,13 +337,19 @@ export async function startCloudPageGenerationBatchAction(projectId: string, for
   if (!parsedProjectId.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));
   const parsed = z.array(z.string().uuid()).min(4).max(8).safeParse(formData.getAll("pageId"));
   if (!parsed.success) redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent("一括生成するページを4〜8ページ選んでください。")}`);
+  let result: Awaited<ReturnType<typeof startCloudPageGenerationBatch>>;
   try {
-    const result = await startCloudPageGenerationBatch(parsedProjectId.data, parsed.data);
+    result = await startCloudPageGenerationBatch(parsedProjectId.data, parsed.data);
     revalidatePath(`/creator/${parsedProjectId.data}`);
-    redirect(`/creator/${parsedProjectId.data}?message=${encodeURIComponent(`${result.queued}コマの一括生成を開始しました`)}`);
   } catch (error) {
     redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent(domainMessage(error, "一括生成を開始できませんでした。"))}`);
   }
+  const unqueued = result.requested - result.queued;
+  const parameter = result.partial ? "error" : "message";
+  const message = result.partial
+    ? `${result.requested}コマ中${result.queued}コマだけ登録され、${unqueued}コマは未登録です。一括生成履歴を確認し、追加実行しないでください。`
+    : `${result.requested}コマすべての一括生成を開始しました`;
+  redirect(`/creator/${parsedProjectId.data}?${parameter}=${encodeURIComponent(message)}`);
 }
 
 export async function setCloudGenerationBatchStateAction(projectId: string, batchId: string, status: "active" | "paused" | "canceled") {

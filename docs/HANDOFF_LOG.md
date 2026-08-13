@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1y 長編一括生成 合算preflight
+
+- PR #242がmerge commit `cbb0d7478384c4575f08ae90f5c688873ca99ede`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Draft PR [#243](https://github.com/team478a/manga/pull/243)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
+- 現在snapshotからページ別コマ数を読み、選択ページ／コマ、1候補、model／pricing、必要credit、最大予約費用、plan／作品／global／monitor容量、Scheduler下限、1分登録上限を合算するpure domainを追加した。
+- 一括生成画面は開始前の見積りとblockerを表示し、Server側も同じ判定でbatch作成前にfail-closedにする。
+- 全件登録時だけ成功表示する。途中登録時は要求／登録／未登録コマ数を赤い警告にし、履歴のJob数は「登録済み」と表現する。
+- DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler頻度、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更していない。
+- R4-1zでrate windowを越えるdurable登録を実装するまで、現行1分上限を超えるbatchは開始できない。rate limitを迂回・緩和していない。
+- 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 52/52、Hub／Desktop build、RC structure、diff check成功。Hub buildは元worktreeのWindows長path上限を短いworktreeで回避した。Desktop統合はElectron終了待ち、Windows CIで最終判定する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止し、責任者確認前にR4-1zや有料4ページ受入れへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1Y_LONGFORM_BATCH_PREFLIGHT.md`
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1x 長編漫画credit・段階生成成立条件監査
 
 - PR #241がmerge commit `96f27b69839bc2bc6179ba829842e361f05153d9`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
