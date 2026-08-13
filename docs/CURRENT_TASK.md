@@ -2,8 +2,9 @@
 
 ## 2026-08-14 PR-R4-1af BFL一般向け生成の安全な復旧
 
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#254](https://github.com/team478a/manga/pull/254)
+- Vercel Preview: [deployment](https://vercel.com/team478as-projects/mangai-hub-staging/6o7dMQoWD7j4TfJ1GExyXDjp2Vi9)
 - Branch: `codex/fix-r4-1af-bfl-safe-recovery`
 - Base: `origin/feature/manga-canvas-mvp`（`d7a7062`、PR #253 merge commit）
 - PR #253はmerge・Production反映済み。Provider待機中のretry予算消費と重複POSTは解消した。
@@ -12,6 +13,7 @@
 - 不変: Provider、model、pricing、credit、retry回数、210秒timeout、30分上限、Scheduler、DB、migration、RPC、Storage、URL、公開API、Feature Flag、Canvas、PDF／PNG、成人向け境界、Desktop。
 - 安全性: Prompt、Provider応答、画像、Provider Job ID、API key、利用者情報をログ・文書へ追加しない。
 - 検証: focused 38/38、Hub 672/672、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、research eval、migration 55/55、Cloud漫画repository、owner isolation、100ページ長編4/4、Webpack Hub build、Desktop build、RC structure、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 次: Draft PRと全CI／Vercel Preview成功後に責任者merge待ち。merge前にProductionの失敗2件を再実行しない。
 - merge後: 既存batchの失敗2件だけを一度再登録し、16/16、予約0、21ページの候補画像と品質を確認する。合格前に8ページ生成・販売品質判定へ進まない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AF_BFL_SAFE_RECOVERY.md`](RELEASE_CANDIDATE_R4_1AF_BFL_SAFE_RECOVERY.md)

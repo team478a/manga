@@ -42,6 +42,8 @@ BFL公式契約: https://docs.bfl.ai/api-reference/utility/get-result
 
 ローカル結果: focused 38/38、Hub 672/672、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、research eval、migration 55/55、Cloud漫画repository、owner isolation、100ページ長編4/4、Webpack Hub build、Desktop build、RC structure、diff check成功。
 
+CI結果: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft PR #254はMERGEABLE。
+
 ## ロールバック
 
 このPRのcommitをrevertする。DB rollback、Storage操作、Provider設定変更は不要。未処理Jobと既存失敗Jobの状態は変更されない。
