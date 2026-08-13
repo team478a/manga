@@ -3,7 +3,7 @@
 ## 2026-08-14 PR-R4-1af BFL一般向け生成の安全な復旧
 
 - 状態: `IMPLEMENTED_LOCAL_VALIDATION`
-- Draft PR: 作成前
+- Draft PR: [#254](https://github.com/team478a/manga/pull/254)
 - Branch: `codex/fix-r4-1af-bfl-safe-recovery`
 - Base: `origin/feature/manga-canvas-mvp`（`d7a7062`、PR #253 merge commit）
 - PR #253はmerge・Production反映済み。Provider待機中のretry予算消費と重複POSTは解消した。

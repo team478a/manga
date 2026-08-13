@@ -4334,6 +4334,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 - Branch: `codex/fix-r4-1af-bfl-safe-recovery`
 - Base: `origin/feature/manga-canvas-mvp`@`d7a7062`（PR #253 merge後）
+- Draft PR: [#254](https://github.com/team478a/manga/pull/254)
 - ProductionでProvider待機中のretry予算保持と同一Job pollを確認したが、16コマ中、21ページのコマ1・コマ2がBFL投入後に繰り返し`provider_rejected`となり14/16で停止した。待機0、予約0、使用28／残り72 credit。追加再実行はしていない。
 - BFL公式`get_result`の`Request Moderated`／`Content Moderated`を即時の非retry moderation拒否として扱う。Provider Job IDが保存済みの拒否だけ、一般向けの穏やかな間接表現へ変換してbatchへ再登録する。心理背景と強い直接描写を外し、人物外見・画風・背景・構図・参照versionを維持する。
 - Provider、model、pricing、retry、timeout、Scheduler、DB、migration、RPC、Storage、API、Canvas、PDF／PNG、成人向け境界、Desktopは変更しない。Prompt、Provider応答、画像、Job ID、秘密値をログへ追加しない。
