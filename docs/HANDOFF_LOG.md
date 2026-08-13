@@ -4309,9 +4309,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 - Branch: `codex/fix-r4-1ad-bfl-poll-resume`
 - Base: `origin/feature/manga-canvas-mvp`@`82e6228`
+- Draft PR: [#252](https://github.com/team478a/manga/pull/252)
 - PR #251のProduction受入れで16 target登録に成功したが、未適用だった漫画品質migration 2本により最初の3 targetが`dispatch_failed`となった。既存SQLを順番通り適用し、object／RPC／RLSを確認後、3 targetだけをpendingへ戻した。
 - 公式Schedulerの限定runで10画像、10 private Asset、panel specification、品質評価を生成した。実Providerの複数Jobが210秒を超え、retry時の再POSTによって同じコマが再度timeoutすることを確認した。旧方式での追加runは未完了6コマを残して停止した。
 - `CloudGenerationContext`へ既存Provider Jobの再開情報とcheckpoint callbackを追加し、BFL adapterは保存済みIDがあれば`POST /flux-2-pro`を行わず`GET /get_result`を継続する。Job ID保存はservice-roleかつ実行中status・lease token一致時だけ成功し、失敗／retry記録にも同じIDを保持する。
 - 新規DB migrationなし。Provider IDは既存`cloud_generation_jobs.provider_job_id`だけに保存し、Prompt、画像、API key、polling URLをログへ追加しない。
 - focused 22/22、deps、lint、typecheck、Hub、AI 48/48、Canvas 26/26、Desktop 182/182、migration 55本、Cloud漫画repository受入れ、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildは既知のWindowsパス長上限で停止した。
 - 次: Draft PRの全CI／Vercel Preview成功後に責任者merge待ち。Production反映後、失敗1件だけを作品画面から再登録し、残りQueueを再開する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。Production再開は責任者merge後まで停止する。
