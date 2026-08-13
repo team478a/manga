@@ -9,7 +9,7 @@
 - 容量不足、現在snapshot欠損、空ページ、64コマ超、現行同期処理で登録可能な1分上限超過はbatch作成前にfail-closedで拒否する。
 - 全件登録だけを成功表示し、部分登録は要求／登録／未登録件数を赤い警告にする。履歴のJob数は「登録済み」と明記する。
 - DB、migration、RPC、Storage、Provider、model、pricing、rate limit、Scheduler頻度等の外部契約は変更しない。
-- 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 52/52、Desktop build、RC structure、diff check成功。Hub buildはWindows長path上限のため短いworktreeで再実行する。Desktop統合はElectron終了待ち、Windows CIで最終判定する。
+- 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 52/52、Hub／Desktop build、RC structure、diff check成功。Hub buildは元worktreeのWindows長path上限を短いworktreeで回避した。Desktop統合はElectron終了待ち、Windows CIで最終判定する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1Y_LONGFORM_BATCH_PREFLIGHT.md`
 - 次: Draft PRの全CI／Preview成功後に停止し、責任者確認前にR4-1zや有料4ページ受入れへ進まない。
 

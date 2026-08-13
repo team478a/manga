@@ -50,7 +50,7 @@ Freeは3、Trialは6、Creatorは20 jobs/分が作品単位上限である。R4-
 
 - 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48成功。
 - deps、lint、Hub／Desktop typecheck、migration 52/52、Desktop build、RC repository structure、diff check成功。
-- Hub production buildはコードではなくWindows長path上限で停止した。同一commitを短い物理worktreeで再検証する。
+- Hub production buildは元worktreeではWindows長path上限で停止し、同一commitの短い物理worktreeで成功した。
 - Desktop統合testはElectron終了待ちで結果出力前にローカルtimeout。Desktop差分はなく、Windows CIを最終判定にする。
 
 ## 次工程

@@ -12,7 +12,7 @@
 - 全件登録時だけ成功表示する。途中登録時は要求／登録／未登録コマ数を赤い警告にし、履歴のJob数は「登録済み」と表現する。
 - DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler頻度、Canvas schema、PDF／PNG、成人向け境界、Desktopを変更していない。
 - R4-1zでrate windowを越えるdurable登録を実装するまで、現行1分上限を超えるbatchは開始できない。rate limitを迂回・緩和していない。
-- 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 52/52、Desktop build、RC structure、diff check成功。Hub buildはWindows長path上限、短いworktreeで再実行する。Desktop統合はElectron終了待ち、Windows CIで最終判定する。
+- 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 52/52、Hub／Desktop build、RC structure、diff check成功。Hub buildは元worktreeのWindows長path上限を短いworktreeで回避した。Desktop統合はElectron終了待ち、Windows CIで最終判定する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1Y_LONGFORM_BATCH_PREFLIGHT.md`
 
 ---
