@@ -2620,7 +2620,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 
 # 2026-08-14 Codex: Provider待機のretry予算分離
 
-- 状態: `LOCAL_VALIDATION_COMPLETE`
+- 状態: `READY_FOR_REVIEW`
 - Branch: `codex/fix-r4-1ae-provider-pending-budget`
 - Base: `origin/feature/manga-canvas-mvp`@`7fc04fc`（PR #252 merge後）
 - Draft PR: [#253](https://github.com/team478a/manga/pull/253)
@@ -2629,4 +2629,5 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - Provider Job ID保存後のtimeoutだけを15秒後のQueueへ戻し、claim時に増えた`attempt_count`をlease一致条件で戻す。Provider Jobの初回開始から30分を上限とし、無期限pollingは許可しない。通常のtimeout、rate limit、5xx、network errorの既存retry回数は変更しない。
 - 新規DB migration、RPC、公開API、Storage、Provider、model、pricing、210秒timeout、Scheduler頻度、Canvas schema、PDF／PNG、成人向け境界、Desktopの変更なし。
 - ローカル検証: focused 24/24、deps、lint、typecheck、Hub、AI 48/48、Canvas 26/26、Desktop 182/182、Desktop a11y、migration 55本、Cloud漫画repository受入れ、owner isolation、100ページ長編4/4、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
-- 次: Draft PR、全CI、Vercel Preview成功を確認して停止する。merge／Production反映前に失敗2コマを再実行しない。反映後、2件だけ再登録し、16/16完了・Asset・品質評価・画像目視を確認する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
+- 次: 責任者merge待ち。merge／Production反映前に失敗2コマを再実行しない。反映後、2件だけ再登録し、16/16完了・Asset・品質評価・画像目視を確認する。

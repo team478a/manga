@@ -4327,4 +4327,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 残る2件は同一Provider Jobをpollしたが、210秒区切りごとに通常retryを消費し、`max_attempts=2`で失敗した。利用creditは完成14件分の28、予約0、残り72。失敗2件は追加再実行していない。
 - Provider Job IDが保存済みのtimeoutを`provider_pending`として15秒後へ戻し、lease token一致時だけclaimで増えた試行数を戻す。初回開始から30分を超えた場合は従来の有限retry／失敗へ戻る。
 - focused 24/24、deps、lint、typecheck、Hub、AI、Canvas、Desktop、a11y、migration 55本、Cloud漫画repository、owner isolation、100ページ長編、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildは既知のWindowsパス長上限で停止した。
-- 次: Draft PRの全CI／Vercel Preview成功後に責任者merge待ち。Production反映後、失敗2件だけを再登録して16/16と生成画像品質を確認する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
+- 次: 責任者merge待ち。Production反映後、失敗2件だけを再登録して16/16と生成画像品質を確認する。
