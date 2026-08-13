@@ -4,14 +4,16 @@
 
 - Branch: `codex/fix-r4-1ab-batch-registration-diagnostics`
 - Base: `origin/feature/manga-canvas-mvp` @ `09da196`（PR #249 merge commit）
-- 状態: `READY_FOR_CI`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#250](https://github.com/team478a/manga/pull/250)
+- Vercel Preview: [deployment](https://vercel.com/team478as-projects/mangai-hub-staging/9xJFUBsRdwSi41RhpvSBD6rFNNd5)
 - Productionの`test`で、阻害要因0の19〜22ページ（4ページ／16コマ）を1回だけ開始したが、永続登録前にfail-closedになった。一括生成履歴、利用／予約credit、Provider Jobはいずれも0で、再試行していない。
 - 準備、入力schema、RPC永続登録を別の安全な段階へ分類した。RPC signatureと原子性を維持して検証失敗を固定code化し、PostgREST schema cache reloadを追加した。
 - 未知のDB情報、Prompt、画像、payloadは表示しない。Provider、model、pricing、credit、rate limit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopの契約は変更していない。
 - 集中16/16、Hub 662/662、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、deps、lint、全typecheck、migration 55/55、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeの同一commitで確認した。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1AB_BATCH_REGISTRATION_DIAGNOSTICS.md`
-- 次: 短path Hub build、Draft PRと全CI／Vercelを確認して停止。merge後にProduction migrationを適用して同じ4ページを1回だけ再受入れする。
+- 次: 責任者のreview／merge判断まで停止。merge後にProduction migrationを適用して同じ4ページを1回だけ再受入れする。
 
 ---
 

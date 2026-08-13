@@ -2,6 +2,8 @@
 
 Draft PR: [#250](https://github.com/team478a/manga/pull/250)
 
+Vercel Preview: [deployment](https://vercel.com/team478as-projects/mangai-hub-staging/9xJFUBsRdwSi41RhpvSBD6rFNNd5)
+
 ## 結果
 
 - Production `https://app.mang-ai.com` の一般向けモニター `test` で、作品 `b008b746-94c6-4e83-85dd-3bb0e379c96a` の19〜22ページ（4ページ／16コマ）を1回だけ開始した。

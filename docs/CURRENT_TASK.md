@@ -2,8 +2,9 @@
 
 ## 2026-08-13 PR-R4-1ab 長編一括生成登録阻害の解消
 
-- 状態: `READY_FOR_CI`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#250](https://github.com/team478a/manga/pull/250)
+- Vercel Preview: [deployment](https://vercel.com/team478as-projects/mangai-hub-staging/9xJFUBsRdwSi41RhpvSBD6rFNNd5)
 - Branch: `codex/fix-r4-1ab-batch-registration-diagnostics`
 - Base: `origin/feature/manga-canvas-mvp`（`09da196`、PR #249 merge commit）
 - PR #249はmerge commit `09da19696a6bfa8dcb5bc45a03262b5ce0856acc`でマージ済み。
@@ -12,7 +13,8 @@
 - 実装: 準備／入力schema／RPC登録を安全な失敗段階へ分類する。既存RPC signatureと原子性を保ったまま、登録検証を固定code化し、PostgREST schema cache reloadを通知する。未知のDB情報、Prompt、画像、payloadは表示しない。
 - 不変: URL、公開API、RPC signature、Storage、Feature Flag、Provider、model、pricing値、credit、retry、timeout、rate limit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktop。
 - 検証: 集中16/16、Hub 662/662、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 55/55、Hub／Desktop build、RC structure、diff check成功。Hub buildはWindows長pathを避けた短い物理worktreeで同一commitを確認した。
-- 次: Draft PR、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge後にProduction migrationを適用し、同じ4ページ生成を1回だけ再受入れする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後にProduction migrationを適用し、同じ4ページ生成を1回だけ再受入れする。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AB_BATCH_REGISTRATION_DIAGNOSTICS.md`](RELEASE_CANDIDATE_R4_1AB_BATCH_REGISTRATION_DIAGNOSTICS.md)
 
 ---

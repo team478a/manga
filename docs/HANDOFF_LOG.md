@@ -13,7 +13,8 @@
 - 未知のDB情報、Prompt、画像、内部payloadは画面へ表示しない。Provider、model、pricing、credit、retry、timeout、rate limit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
 - 集中16/16、Hub 662/662、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 55/55、Hub／Desktop build、RC structure、diff check成功。Hub buildは長いWindows作業パスでTurbopack上限に達したが、短い物理worktreeの同一commitで成功した。
 - Draft PR: [#250](https://github.com/team478a/manga/pull/250)。
-- Draft PRと全CI／Vercelを確認して停止する。merge後にProduction migrationを適用し、同じ4ページを1回だけ再受入れする。
+- Vercel Preview: [deployment](https://vercel.com/team478as-projects/mangai-hub-staging/9xJFUBsRdwSi41RhpvSBD6rFNNd5)。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。merge後にProduction migrationを適用し、同じ4ページを1回だけ再受入れする。
 
 ---
 
