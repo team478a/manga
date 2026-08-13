@@ -49,6 +49,20 @@ R4-1zとACL修正PR #245はマージ済みで、Production UIにもdurable登録
 - Stripe管理中、現在期間の予約credit、queued／running Job、停止中Plan、同時更新はfail-closedで拒否する。変更前後は既存Cloud AI管理監査へ記録する。
 - DB／migration／RPCと全体Plan値は変更しない。解除PRのmerge後、管理者画面から`test`へTrial 30日を付与する。
 
+## 運用解除PRの検証
+
+- 集中: 10/10
+- Hub: 654/654
+- Canvas: 26/26
+- AI: 48/48
+- Desktop: 182/182
+- Desktop a11y: violations 0
+- deps、lint、全typecheck: 成功
+- migration manifest: 54/54
+- Hub production build: 短い物理worktreeで成功
+- Desktop build、RC repository structure、diff check: 成功
+- Provider Job追加: 0件
+
 ## 再開条件
 
 1. ACL追加migrationの修正PR #245をmergeする（完了）。

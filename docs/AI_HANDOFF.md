@@ -10,7 +10,8 @@
 - preflightは32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマ。現状は残り8 creditで24不足し、開始はfail-closed。
 - 現行管理画面に個別Cloud AI Plan付与がなく、接続中のブラウザー／CLIにもProduction Supabase管理者認証がないため、正本のcredit準備を安全に実行できなかった。Provider Jobは追加していない。
 - 管理者ユーザー詳細へ既存Free／Trial／Creatorの個別期間付与を追加した。Stripe管理中、予約credit、queued／running Job、停止中Planは拒否し、管理監査へ記録する。DB、全体Plan値、Provider契約は変更しない。
-- 集中10/10、Hub typecheck、deps、lint、diff check成功。全品質ゲートとDraft PR作成を継続中。
+- 集中10/10、Hub 654/654、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeで同一commitを検証した。
+- Draft PR作成後に全CI／Vercel Previewを確認して停止する。
 - merge後、`test`へTrial 30日を付与して32 credit以上を確認し、初めて4ページ生成を開始する。R4-1aa合格前にR4-1abへ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`
 

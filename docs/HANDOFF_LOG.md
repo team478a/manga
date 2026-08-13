@@ -12,7 +12,9 @@
 - 管理者ユーザー詳細へCloud AI個別利用枠を追加した。Free／Trial／Creatorと1〜90日の新期間を付与できるが、Stripe管理中、予約creditあり、queued／running Jobあり、停止中Planはfail-closedで拒否する。
 - actionは`requireAdmin`後だけinfrastructure repositoryを呼び、変更前後を`cloud_ai_admin_audit_logs`へ記録する。メール、秘密値、Prompt、画像は監査へ保存しない。
 - DB、migration、RPC、全体Plan値、Provider、model、pricing、credit単価、rate limit、retry、timeout、Scheduler、Storage、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
-- 集中10/10、Hub typecheck、deps、lint、diff check成功。全品質ゲートとDraft PR作成を継続する。
+- 集中10/10、Hub 654/654、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeで同一commitを検証した。
+- Desktop初回実行は、残存Electron子プロセスによる待機timeoutと`better-sqlite3`のNode／Electron ABI不一致を検出した。今回起動した子プロセスだけを終了し、`electron-builder install-app-deps`でElectron 39向けに再構築後、強制終了付き同一182件が全成功した。source／lockfile変更はない。
+- Draft PR作成後に全CI／Vercel Previewを確認して停止する。
 - merge後は管理者画面から`test`へTrial 30日を付与し、残りcredit／blocker／16 targetを再確認してから1回だけ生成する。
 
 ---
