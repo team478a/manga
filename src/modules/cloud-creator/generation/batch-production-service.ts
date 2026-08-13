@@ -4,6 +4,7 @@ import { cloudCreatorContext } from "../auth-context";
 import { DomainError, ValidationError } from "@/lib/domain-errors";
 import { prepareStoryboardPanelImage } from "@/lib/cloud-panel-image-generation-server";
 import {
+  assertPreparedGenerationBatchConsistency,
   normalizeGenerationBatchPageIds,
   planGenerationBatchTargets,
   summarizeGenerationBatches,
@@ -26,7 +27,7 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     throw new DomainError("INTERNAL_ERROR", "ページの制作状態を確認できませんでした。", { cause: productionStates.error });
   if ((productionStates.data ?? []).some((page) => page.production_status === "finalized"))
     throw new ValidationError("確定済みページは一括生成できません。編集を再開してから実行してください。");
-  await assertCloudGenerationBatchPreflight(projectId, uniquePageIds);
+  const preflight = await assertCloudGenerationBatchPreflight(projectId, uniquePageIds);
   const snapshots = await supabase
     .from("cloud_pages")
     .select("id,revision,cloud_canvas_snapshots!inner(canvas,revision)")
@@ -73,6 +74,20 @@ export async function startCloudPageGenerationBatch(projectId: string, pageIds: 
     );
     preparedTargets.push(...preparedChunk);
   }
+  if (!preflight.modelId || !preflight.pricingVersion)
+    throw new ValidationError("一括生成のProvider・model・料金設定を確認できませんでした。");
+  assertPreparedGenerationBatchConsistency({
+    targets: preparedTargets.map((target) => ({
+      providerId: String(target.provider_id),
+      modelId: String(target.model_id),
+      pricingVersion: String(target.pricing_version),
+      generation: cloudGenerationInputSchema.parse(target.input),
+    })),
+    expectedProviderId: "black-forest-labs",
+    expectedModelId: preflight.modelId,
+    expectedPricingVersion: preflight.pricingVersion,
+    requireStyleBible: true,
+  });
   const created = await supabase.rpc("create_cloud_generation_batch_targets", {
     p_project_id: projectId,
     p_page_ids: uniquePageIds,

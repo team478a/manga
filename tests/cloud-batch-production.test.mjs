@@ -31,6 +31,7 @@ test("batch service durably registers bounded panel work before the worker runs"
   assert.match(service, /normalizeGenerationBatchPageIds/);
   assert.match(service, /planGenerationBatchTargets/);
   assert.match(service, /prepareStoryboardPanelImage/);
+  assert.match(service, /assertPreparedGenerationBatchConsistency/);
   assert.match(service, /targets\.slice\(index, index \+ 4\)/);
   assert.match(service, /create_cloud_generation_batch_targets/);
   assert.match(service, /registered: targets\.length/);

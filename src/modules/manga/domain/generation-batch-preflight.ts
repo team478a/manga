@@ -30,6 +30,8 @@ export type GenerationBatchPreflightContext = {
 };
 
 export type GenerationBatchPreflightEstimate = {
+  modelId: string | null;
+  pricingVersion: string | null;
   selectedPageCount: number;
   targetPanelCount: number;
   candidateCount: 1;
@@ -141,6 +143,8 @@ export function estimateGenerationBatch(
   if (maxReservedCostMicros !== null && context.globalCostMicrosRemaining !== null && maxReservedCostMicros > context.globalCostMicrosRemaining)
     blockers.push("全体の日次費用上限を超えるため開始できません。");
   return {
+    modelId: context.modelId,
+    pricingVersion: context.pricingVersion,
     selectedPageCount: uniquePageIds.length,
     targetPanelCount,
     candidateCount: 1,

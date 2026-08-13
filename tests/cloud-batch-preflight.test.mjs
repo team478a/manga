@@ -64,6 +64,8 @@ test("人物・画風を確認できない状態はfail-closedにする", () => 
 
 test("一括生成preflightは対象コマ、credit、最大予約費用、Worker下限を合算する", () => {
   const estimate = estimateGenerationBatch(context(), ["a", "b", "c", "d"]);
+  assert.equal(estimate.modelId, "flux-2-pro");
+  assert.equal(estimate.pricingVersion, "bfl-flux2-2026-03");
   assert.equal(estimate.selectedPageCount, 4);
   assert.equal(estimate.targetPanelCount, 10);
   assert.equal(estimate.requiredCredits, 20);

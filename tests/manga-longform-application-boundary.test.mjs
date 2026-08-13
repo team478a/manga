@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  assertPreparedGenerationBatchConsistency,
   normalizeGenerationBatchPageIds,
   summarizeGenerationBatches,
 } from "../src/modules/manga/domain/generation-batch.ts";
@@ -24,6 +25,72 @@ test("一括生成は4〜8ページ、重複除去、64コマ上限のdomain境�
   assert.throws(() => normalizeGenerationBatchPageIds(["a", "b", "c"]));
   assert.throws(() =>
     normalizeGenerationBatchPageIds(["1", "2", "3", "4", "5", "6", "7", "8", "9"]),
+  );
+});
+
+test("一括生成は準備中のProvider・料金・人物・画風version混在を登録前に拒否する", () => {
+  const base = {
+    providerId: "black-forest-labs",
+    modelId: "flux-2-pro",
+    pricingVersion: "bfl-flux2-2026-03",
+    generation: {
+      characterProfileVersions: [{ profileId: "character", version: 1 }],
+      styleBibleVersion: { bibleId: "style", version: 1 },
+    },
+  };
+  const consistent = {
+    targets: [base, structuredClone(base)],
+    expectedProviderId: "black-forest-labs",
+    expectedModelId: "flux-2-pro",
+    expectedPricingVersion: "bfl-flux2-2026-03",
+    requireStyleBible: true,
+  };
+  assert.doesNotThrow(() => assertPreparedGenerationBatchConsistency(consistent));
+  assert.throws(
+    () => assertPreparedGenerationBatchConsistency({
+      ...consistent,
+      targets: [base, { ...base, modelId: "flux-2-max" }],
+    }),
+    /Provider・model・料金設定が準備中に変更/,
+  );
+  assert.throws(
+    () => assertPreparedGenerationBatchConsistency({
+      ...consistent,
+      targets: [
+        base,
+        {
+          ...base,
+          generation: {
+            ...base.generation,
+            characterProfileVersions: [{ profileId: "character", version: 2 }],
+          },
+        },
+      ],
+    }),
+    /人物設定が準備中に更新/,
+  );
+  assert.throws(
+    () => assertPreparedGenerationBatchConsistency({
+      ...consistent,
+      targets: [
+        base,
+        {
+          ...base,
+          generation: {
+            ...base.generation,
+            styleBibleVersion: { bibleId: "style", version: 2 },
+          },
+        },
+      ],
+    }),
+    /画風設定が準備中に更新/,
+  );
+  assert.throws(
+    () => assertPreparedGenerationBatchConsistency({
+      ...consistent,
+      targets: [{ ...base, generation: {} }],
+    }),
+    /画風設定を固定できません/,
   );
 });
 
