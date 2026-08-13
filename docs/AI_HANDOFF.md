@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1aa 4ページ限定Production受入れ、2026-08-13）
+
+- Branch: `codex/release-r4-1aa-four-page-production-acceptance`
+- Base: `origin/feature/manga-canvas-mvp` @ `243e60b`（PR #244 merge commit）
+- 状態: `BLOCKED_PRECONDITIONS`
+- Productionの一般向けモニター`test`で、19〜22ページの4ページ／16コマを1案ずつ生成する計画。
+- preflightは32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマ。現状は残り8 creditで24不足し、開始はfail-closed。
+- Production DBをread-only確認し、`202608130001_cloud_generation_batch_targets.sql`のtableと4 RPCが未適用と判定した。DB変更と実Provider Job追加は0件。
+- 次: Production migration適用・存在検証と、`test`へ最低32 creditの利用可能枠を準備する。両方が揃う前に生成を開始しない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1z 長編一括生成 durable登録、2026-08-13）
 
 - Branch: `codex/fix-r4-1z-durable-batch-registration`

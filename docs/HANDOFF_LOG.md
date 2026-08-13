@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1aa 4ページProduction受入れpreflight
+
+- PR #244がmerge commit `243e60b83d974a41e5273b292c4a6e3604e2986d`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Productionの一般向けモニター`test`で、最小の19〜22ページを選択。4ページ／16コマ、必要32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマと表示された。
+- 現在は残り8 creditで24不足し、開始ボタンは無効。モニターAI残り85回、作品credit上限なし。Provider Jobは追加していない。
+- Supabase Productionでread-only SELECTを実行し、`cloud_generation_batch_targets`と作成／進捗／再試行／dispatch RPCがすべて未適用と確認した。最初の旧入力混在queryは構文エラーで終了し、DB変更はない。
+- Production migration適用とcredit準備の両方が完了するまで有料生成を開始しない。Provider、model、pricing、rate limit、Scheduler頻度は変更しない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1z 長編一括生成 durable登録
 
 - PR #243がmerge commit `394707bb7b82197b17cd0f723efe060024bf8977`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。

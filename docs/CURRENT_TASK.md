@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-13 PR-R4-1aa 4ページ限定Production受入れ
+
+- 状態: `BLOCKED_PRECONDITIONS`
+- Branch: `codex/release-r4-1aa-four-page-production-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`243e60b`、PR #244 merge commit）
+- Production: `https://app.mang-ai.com`。一般向けモニター`test`、作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`で確認する。
+- 最小対象: 19〜22ページの4ページ／16コマ、1案／コマ、`flux-2-pro`、`bfl-flux2-2026-03`。必要32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマ。
+- 現在値: Cloud AI残り8 credit、モニターAI残り85回、作品credit上限なし。24 credit不足のため開始ボタンはfail-closedで無効。実Provider Jobは追加していない。
+- Production migration確認: read-only `to_regclass`／`to_regprocedure`で`cloud_generation_batch_targets`と作成／進捗／再試行／dispatch RPCがすべて未適用と確認。DB変更は行っていない。
+- 次: merge済みmigration `202608130001_cloud_generation_batch_targets.sql`をProductionへ適用・存在検証し、`test`へ最低32 creditの利用可能枠を用意する。その後だけ4ページ受入れを開始する。
+- 停止条件: migrationとcreditの両方が成立するまで生成ボタンを押さない。Provider、model、pricing、rate limit、Scheduler頻度を変更しない。
+- 証跡: [`RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`](RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md)
+
+---
+
 ## 2026-08-13 PR-R4-1z 長編一括生成 durable登録
 
 - 状態: `READY_FOR_OWNER_REVIEW`
