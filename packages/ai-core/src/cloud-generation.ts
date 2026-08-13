@@ -242,6 +242,8 @@ export type CloudGenerationContext = {
   projectId: string;
   pageId?: string;
   idempotencyKey: string;
+  providerJobId?: string;
+  checkpointProviderJobId?: (providerJobId: string) => Promise<void>;
   referenceImageUrls?: string[];
   maskImageUrl?: string;
 };

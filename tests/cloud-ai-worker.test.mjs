@@ -98,6 +98,7 @@ function workerClient({
     completedAssetId: null,
     extended: [],
     finished: [],
+    checkpoints: [],
     uploaded: 0,
     uploadedBytes: null,
   };
@@ -121,6 +122,7 @@ function workerClient({
     },
     attempt_count: 1,
     max_attempts: 1,
+    provider_job_id: null,
     lease_token: "40000000-0000-4000-8000-000000000001",
   };
   const client = {
@@ -150,7 +152,13 @@ function workerClient({
     },
     from: (table) => {
       assert.equal(table, "cloud_generation_jobs");
+      let updateValue = null;
       return {
+        update(value) {
+          updateValue = value;
+          calls.checkpoints.push(value.provider_job_id);
+          return this;
+        },
         select() {
           return this;
         },
@@ -164,6 +172,7 @@ function workerClient({
           };
         },
         async maybeSingle() {
+          if (updateValue) return { data: { id: job.id }, error: null };
           return {
             data: {
               status: completionState,
@@ -312,6 +321,26 @@ test("生成中にlease heartbeatしProviderへ同じidempotency keyを渡す", 
     "worker-compensation-test",
   );
   assert.ok(calls.extended.length >= 3);
+});
+
+test("WorkerはProvider Job IDをlease付きで保存して失敗時にも保持する", async () => {
+  const { client, calls } = workerClient();
+  const base = new MockCloudImageProvider();
+  const provider = {
+    capability: base.capability,
+    async generate(_input, context) {
+      await context.checkpointProviderJobId("provider-job-checkpointed");
+      throw new Error("provider stopped after checkpoint");
+    },
+  };
+  const result = await processNextCloudGenerationJob({
+    workerId: "checkpoint-worker",
+    providers: [provider],
+    client,
+  });
+  assert.equal(result.status, "failed");
+  assert.deepEqual(calls.checkpoints, ["provider-job-checkpointed"]);
+  assert.equal(calls.finished[0].p_provider_job_id, "provider-job-checkpointed");
 });
 
 test("lease喪失時はProviderを中断しAsset確定とJob完了を行わない", async () => {

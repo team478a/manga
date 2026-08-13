@@ -315,28 +315,39 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
             output_format: "png",
             safety_tolerance: 1,
           };
-      const submitted = await fetcher(
-        `https://api.bfl.ai/v1/${this.config.model}`,
-        {
-          method: "POST",
-          redirect: "error",
-          headers: {
-            accept: "application/json",
-            "content-type": "application/json",
-            "x-key": this.config.apiKey,
-          },
-          body: JSON.stringify(requestBody),
-          signal: controller.signal,
-        },
-      );
-      if (!submitted.ok)
-        throw providerError(
-          submitted.status,
-          "submit",
-          this.config.onDiagnostic,
+      let providerJobId = context.providerJobId;
+      let pollingUrl: string;
+      if (providerJobId) {
+        providerJobId = z.string().min(1).max(300).parse(providerJobId);
+        pollingUrl = safeBflUrl(
+          `https://api.bfl.ai/v1/get_result?id=${encodeURIComponent(providerJobId)}`,
         );
-      const job = submitResponseSchema.parse(await submitted.json());
-      const pollingUrl = safeBflUrl(job.polling_url);
+      } else {
+        const submitted = await fetcher(
+          `https://api.bfl.ai/v1/${this.config.model}`,
+          {
+            method: "POST",
+            redirect: "error",
+            headers: {
+              accept: "application/json",
+              "content-type": "application/json",
+              "x-key": this.config.apiKey,
+            },
+            body: JSON.stringify(requestBody),
+            signal: controller.signal,
+          },
+        );
+        if (!submitted.ok)
+          throw providerError(
+            submitted.status,
+            "submit",
+            this.config.onDiagnostic,
+          );
+        const job = submitResponseSchema.parse(await submitted.json());
+        providerJobId = job.id;
+        pollingUrl = safeBflUrl(job.polling_url);
+        await context.checkpointProviderJobId?.(providerJobId);
+      }
       const startedAt = Date.now();
       while (Date.now() - startedAt < (this.config.timeoutMs ?? DEFAULT_BFL_TIMEOUT_MS)) {
         diagnosticStage = "poll";
@@ -413,7 +424,7 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
             false,
           );
         return {
-          providerJobId: job.id,
+          providerJobId,
           images: [
             {
               bytes,
