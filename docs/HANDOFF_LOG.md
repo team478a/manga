@@ -13,6 +13,7 @@
 - merge済み`202608130001_cloud_generation_batch_targets.sql`をProductionへ適用した。適用後、Production既定ACLによりauthenticated SELECT権限が残る差異を検出したため、`public`／`anon`／`authenticated`のtable権限を明示revokeした。
 - table／4 RPC／RLS有効／policyなし／authenticated・anon table拒否／service role table許可／authenticated RPC境界／service dispatch／固定search pathの16項目は全成功。再発防止の`202608130002_cloud_generation_batch_target_acl.sql`を別修正PRで先行する。
 - PostgreSQL 16で全54 migrationのforward／rollback／reapply／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff check成功。
+- ACL修正Draft PR: [#245](https://github.com/team478a/manga/pull/245)。全CI／Vercel Previewを確認中。
 - Production migration適用とcredit準備の両方が完了するまで有料生成を開始しない。Provider、model、pricing、rate limit、Scheduler頻度は変更しない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`
 
