@@ -60,6 +60,63 @@ export function planGenerationBatchTargets(input: {
   return targets;
 }
 
+type PreparedGenerationBatchTarget = {
+  providerId: string;
+  modelId: string;
+  pricingVersion: string;
+  generation: {
+    characterProfileVersions?: Array<{ profileId: string; version: number }>;
+    styleBibleVersion?: { bibleId: string; version: number };
+  };
+};
+
+export function assertPreparedGenerationBatchConsistency(input: {
+  targets: PreparedGenerationBatchTarget[];
+  expectedProviderId: string;
+  expectedModelId: string;
+  expectedPricingVersion: string;
+  requireStyleBible: boolean;
+}) {
+  if (!input.targets.length)
+    throw new ValidationError("一括生成条件を準備できませんでした。");
+  const characterVersions = new Map<string, number>();
+  let styleBible: { bibleId: string; version: number } | null = null;
+  for (const target of input.targets) {
+    if (
+      target.providerId !== input.expectedProviderId ||
+      target.modelId !== input.expectedModelId ||
+      target.pricingVersion !== input.expectedPricingVersion
+    )
+      throw new ValidationError(
+        "一括生成のProvider・model・料金設定が準備中に変更されました。内容を再確認してから開始してください。",
+      );
+    const targetStyle = target.generation.styleBibleVersion;
+    if (input.requireStyleBible && !targetStyle)
+      throw new ValidationError(
+        "一括生成の画風設定を固定できませんでした。内容を再確認してから開始してください。",
+      );
+    if (targetStyle) {
+      if (
+        styleBible &&
+        (styleBible.bibleId !== targetStyle.bibleId ||
+          styleBible.version !== targetStyle.version)
+      )
+        throw new ValidationError(
+          "一括生成の画風設定が準備中に更新されました。内容を再確認してから開始してください。",
+        );
+      styleBible = targetStyle;
+    }
+    for (const character of target.generation.characterProfileVersions ?? []) {
+      const current = characterVersions.get(character.profileId);
+      if (current !== undefined && current !== character.version)
+        throw new ValidationError(
+          "一括生成の人物設定が準備中に更新されました。内容を再確認してから開始してください。",
+        );
+      characterVersions.set(character.profileId, character.version);
+    }
+  }
+}
+
 export function summarizeGenerationBatches(input: {
   batches: Array<{
     id: string;

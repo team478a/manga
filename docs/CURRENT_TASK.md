@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-13 PR-R4-1aa-3 長編一括生成条件固定
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#249](https://github.com/team478a/manga/pull/249)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-cd467b-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-1aa-batch-prompt-freeze`
+- Base: `origin/feature/manga-canvas-mvp`（`3b5b7da`、PR #248 merge commit）
+- PR #248はmerge commit `3b5b7da3b4d63b0db897cbe8bc07cec2f53ea7c3`でマージ済み。
+- 監査: 一括生成は採用scenario、人物visual profile、作品style bible、negative promptを各targetへ含め、人物／画風versionも固定していた。ただし複数chunkの準備中に管理model／pricingまたは人物／画風が更新されると、同一batch内へ異なる条件が混在する時間差があった。
+- 実装: 全target準備後、durable登録RPCより前に、preflight時点のProvider／model／pricingと、画風ID／version、同一人物profileのversionが一貫することを確認する。不一致はfail-closedで中止する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing値、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktop。
+- Production: `test`の画風v1、主要人物3名v1は設定済み。19〜22ページは必要32 creditに対して残り8で24不足。実Provider Job、batch target、credit消費は追加していない。
+- 検証: 集中・関連21/21、Hub 658/658、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、diff check成功。RC外部設定／manual E2Eはローカルに本番SecretがないためPENDING。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後、管理者が`test`へTrial 30日を付与して4ページ生成を1回だけ行う。
+- 証跡: [`RELEASE_CANDIDATE_R4_1AA_BATCH_PROMPT_FREEZE.md`](RELEASE_CANDIDATE_R4_1AA_BATCH_PROMPT_FREEZE.md)
+
+---
+
 ## 2026-08-13 PR-R4-1aa-2 Productionビジュアル設定受入れ
 
 - 状態: `READY_FOR_OWNER_REVIEW`
