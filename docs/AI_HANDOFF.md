@@ -4,7 +4,8 @@
 
 - Branch: `codex/fix-r4-1ab-batch-registration-diagnostics`
 - Base: `origin/feature/manga-canvas-mvp` @ `09da196`（PR #249 merge commit）
-- 状態: `LOCAL_VALIDATION_COMPLETE`
+- 状態: `READY_FOR_CI`
+- Draft PR: [#250](https://github.com/team478a/manga/pull/250)
 - Productionの`test`で、阻害要因0の19〜22ページ（4ページ／16コマ）を1回だけ開始したが、永続登録前にfail-closedになった。一括生成履歴、利用／予約credit、Provider Jobはいずれも0で、再試行していない。
 - 準備、入力schema、RPC永続登録を別の安全な段階へ分類した。RPC signatureと原子性を維持して検証失敗を固定code化し、PostgREST schema cache reloadを追加した。
 - 未知のDB情報、Prompt、画像、payloadは表示しない。Provider、model、pricing、credit、rate limit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopの契約は変更していない。

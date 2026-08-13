@@ -2,8 +2,8 @@
 
 ## 2026-08-13 PR-R4-1ab 長編一括生成登録阻害の解消
 
-- 状態: `LOCAL_VALIDATION_COMPLETE`
-- Draft PR: 作成前
+- 状態: `READY_FOR_CI`
+- Draft PR: [#250](https://github.com/team478a/manga/pull/250)
 - Branch: `codex/fix-r4-1ab-batch-registration-diagnostics`
 - Base: `origin/feature/manga-canvas-mvp`（`09da196`、PR #249 merge commit）
 - PR #249はmerge commit `09da19696a6bfa8dcb5bc45a03262b5ce0856acc`でマージ済み。
