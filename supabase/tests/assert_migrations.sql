@@ -1180,3 +1180,77 @@ do $$ begin
     raise exception 'Cloud monitor operations Phase 2 objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_generation_batch_targets') is null
+     or to_regprocedure('public.create_cloud_generation_batch_targets(uuid,uuid[],text,jsonb)') is null
+     or to_regprocedure('public.get_cloud_generation_batch_target_progress(uuid)') is null
+     or to_regprocedure('public.retry_cloud_generation_batch_targets(uuid)') is null
+     or to_regprocedure('public.dispatch_next_cloud_generation_batch_target()') is null then
+    raise exception 'Cloud generation durable batch target objects missing';
+  end if;
+end $$;
+
+begin;
+do $$
+declare
+  v_user uuid:='40000000-0000-4000-8000-000000000001';
+  v_profile uuid:='40000000-0000-4000-8000-000000000002';
+  v_project uuid:='40000000-0000-4000-8000-000000000003';
+  v_episode uuid:='40000000-0000-4000-8000-000000000004';
+  v_pages uuid[]:=array[
+    '40000000-0000-4000-8000-000000000011'::uuid,
+    '40000000-0000-4000-8000-000000000012'::uuid,
+    '40000000-0000-4000-8000-000000000013'::uuid,
+    '40000000-0000-4000-8000-000000000014'::uuid
+  ];
+  v_panel uuid:='40000000-0000-4000-8000-000000000021';
+  v_batch uuid:='40000000-0000-4000-8000-000000000031';
+  v_target uuid:='40000000-0000-4000-8000-000000000032';
+  v_result record;
+begin
+  if has_table_privilege('authenticated','public.cloud_generation_batch_targets','select') then
+    raise exception 'Durable batch prompt table is readable by authenticated users';
+  end if;
+  insert into auth.users(id,email) values(v_user,'durable-batch@example.invalid') on conflict(id) do nothing;
+  insert into public.profiles(id,user_id,role)
+    values(v_profile,v_user,'creator') on conflict(id) do nothing;
+  insert into public.cloud_projects(id,owner_profile_id,title)
+    values(v_project,v_profile,'Durable batch test') on conflict(id) do nothing;
+  insert into public.cloud_episodes(id,project_id,title,order_index)
+    values(v_episode,v_project,'Episode',0) on conflict(id) do nothing;
+  for v_index in 1..4 loop
+    insert into public.cloud_pages(id,project_id,episode_id,page_number,order_index,width,height)
+      values(v_pages[v_index],v_project,v_episode,v_index,v_index-1,1600,2400) on conflict(id) do nothing;
+  end loop;
+  insert into public.cloud_canvas_snapshots(project_id,page_id,revision,canvas,created_by_profile_id)
+    values(v_project,v_pages[1],0,jsonb_build_object('panels',jsonb_build_array(jsonb_build_object('id',v_panel))),v_profile)
+    on conflict(page_id,revision) do nothing;
+  insert into public.cloud_general_monitor_enrollments(
+    profile_id,status,ai_request_limit,ai_requests_used,starts_at,expires_at,invited_by_profile_id
+  ) values(v_profile,'active',30,0,now()-interval '1 minute',now()+interval '1 day',v_profile)
+    on conflict(profile_id) do update set status='active',ai_requests_used=0,starts_at=excluded.starts_at,expires_at=excluded.expires_at;
+  update public.cloud_ai_settings set generation_enabled=true where singleton;
+  insert into public.cloud_generation_batches(id,project_id,created_by_profile_id,idempotency_key,requested_page_ids)
+    values(v_batch,v_project,v_profile,'durable-batch-test',v_pages) on conflict(id) do nothing;
+  insert into public.cloud_generation_batch_targets(
+    id,batch_id,project_id,page_id,panel_id,created_by_profile_id,source_page_revision,position,
+    idempotency_key,kind,job_type,provider_id,model_id,pricing_version,prompt_sha256,input,moderation,panel_specification
+  ) values(
+    v_target,v_batch,v_project,v_pages[1],v_panel,v_profile,0,1,'durable-batch-target-test',
+    'image','background','black-forest-labs','flux-2-pro','bfl-flux2-2026-03',repeat('a',64),
+    jsonb_build_object('kind','image','jobType','background','prompt','test prompt'),
+    jsonb_build_object('decision','allow','policyVersion','1'),
+    jsonb_build_object('version',1,'panelId',v_panel)
+  ) on conflict(id) do nothing;
+  perform set_config('request.jwt.claim.role','service_role',true);
+  select * into v_result from public.dispatch_next_cloud_generation_batch_target();
+  if v_result.dispatch_status<>'dispatched' or v_result.target_id<>v_target or v_result.job_id is null
+     or not exists(select 1 from public.cloud_generation_batch_targets where id=v_target and status='queued' and generation_job_id=v_result.job_id)
+     or not exists(select 1 from public.cloud_generation_batch_jobs where batch_id=v_batch and job_id=v_result.job_id)
+     or not exists(select 1 from public.cloud_ai_cost_ledger where job_id=v_result.job_id and event_type='reserve')
+     or (select ai_requests_used from public.cloud_general_monitor_enrollments where profile_id=v_profile)<>1 then
+    raise exception 'Durable batch dispatcher failed atomic registration';
+  end if;
+end $$;
+rollback;

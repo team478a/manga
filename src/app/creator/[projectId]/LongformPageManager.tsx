@@ -15,6 +15,7 @@ import {
   moveCloudPageBeforeAction,
   setCloudProjectCoverAction,
   retryFailedCloudGenerationJobAction,
+  retryFailedCloudGenerationBatchTargetsAction,
   setCloudPageProductionStatusAction,
   setCloudGenerationBatchStateAction,
   startCloudPageGenerationBatchAction,
@@ -133,9 +134,9 @@ export function LongformPageManager({
             <p>Model: <strong>{batchPreflight.modelId ?? "確認不可"}</strong></p>
             <p>料金版: <strong>{batchPreflight.pricingVersion ?? "確認不可"}</strong></p>
             <p>Worker: <strong>最短{batchEstimate.schedulerRuns}回／約{batchEstimate.schedulerMinimumMinutes}分</strong></p>
-            <p>1分登録上限: <strong>{batchEstimate.registrationLimit ?? "確認不可"}コマ</strong></p>
+            <p>1分Job化上限: <strong>{batchEstimate.registrationLimit ?? "確認不可"}コマ</strong></p>
           </div>
-          <p className="mt-2 text-xs text-stone-600">最大予約費用は実際の請求額ではありません。時間は5分間隔・1回3Jobから算出した下限目安です。</p>
+          <p className="mt-2 text-xs text-stone-600">最大予約費用は実際の請求額ではありません。全コマを先に永続登録し、Workerが1分上限と5分間隔・1回3Jobを守って段階的にJob化します。</p>
           {batchEstimate.blockers.length ? <ul className="mt-2 list-disc pl-5 text-amber-900">{batchEstimate.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : <p className="mt-2 font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />現在の利用枠では開始できます。</p>}
         </div> : <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><AlertTriangle className="mr-1 inline h-4 w-4" />生成料金と利用枠を確認できないため、一括生成を開始できません。</div>}
         <p className="mt-2 text-xs text-stone-500">最大64コマ。画面を閉じてもWorker処理は継続します。</p>
@@ -145,11 +146,12 @@ export function LongformPageManager({
       </form>
 
       {batches.length ? <section className="panel" aria-label="一括生成履歴"><h3 className="text-lg font-bold">一括生成の進行状況</h3><div className="mt-3 space-y-3">{batches.map((batch) => <article className="rounded-lg border border-stone-200 p-3" key={batch.id}>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><strong>{batch.status === "paused" ? "一時停止中" : batch.status === "canceled" ? "中止" : batch.status === "completed" ? "完了" : "処理中"}</strong><p className="text-sm text-stone-600">登録済み {batch.totalJobs}コマ・完了 {batch.completedJobs}・待機 {batch.queuedJobs}・処理中 {batch.runningJobs}・失敗 {batch.failedJobs}</p><p className="text-xs text-stone-500">選択{batch.requested_page_ids.length}ページ。登録済みJobだけを集計しています。</p></div><div className="flex flex-wrap gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><strong>{batch.status === "paused" ? "一時停止中" : batch.status === "canceled" ? "中止" : batch.status === "completed" ? "完了" : "処理中"}</strong><p className="text-sm text-stone-600">Job化待ち {batch.pendingTargets}・Job化済み {batch.totalJobs}・完了 {batch.completedJobs}・待機 {batch.queuedJobs}・処理中 {batch.runningJobs}・失敗 {batch.failedJobs + batch.failedTargets}</p><p className="text-xs text-stone-500">選択{batch.requested_page_ids.length}ページ。画面を閉じても未Job化コマは保持されます。</p></div><div className="flex flex-wrap gap-2">
           {batch.status === "active" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "paused")}><PendingSubmitButton className="button-secondary" pendingLabel="停止中…"><Pause className="mr-1 h-4 w-4" />一時停止</PendingSubmitButton></form> : batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "active")}><PendingSubmitButton className="button-secondary" pendingLabel="再開中…"><Play className="mr-1 h-4 w-4" />再開</PendingSubmitButton></form> : null}
           {batch.status === "active" || batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "canceled")}><PendingSubmitButton className="button-secondary text-red-700" pendingLabel="中止中…"><XCircle className="mr-1 h-4 w-4" />中止</PendingSubmitButton></form> : null}
         </div></div>
         {(batch.status === "active" || batch.status === "paused") && batch.failedJobIds.length ? <div className="mt-3 flex flex-wrap gap-2">{batch.failedJobIds.map((jobId, index) => <form action={retryFailedCloudGenerationJobAction.bind(null, projectId, jobId)} key={jobId}><PendingSubmitButton className="button-secondary" pendingLabel="再登録中…"><RotateCcw className="mr-1 h-4 w-4" />失敗{index + 1}を再実行</PendingSubmitButton></form>)}</div> : null}
+        {(batch.status === "active" || batch.status === "paused") && batch.failedTargets > 0 ? <form action={retryFailedCloudGenerationBatchTargetsAction.bind(null, projectId, batch.id)} className="mt-3"><PendingSubmitButton className="button-secondary" pendingLabel="再登録中…"><RotateCcw className="mr-1 h-4 w-4" />Job化失敗{batch.failedTargets}コマを再実行</PendingSubmitButton></form> : null}
       </article>)}</div></section> : null}
 
       {structure.chapters.map((chapter) => {

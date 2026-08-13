@@ -37,20 +37,9 @@ export async function enqueueCloudGenerationJob(input: {
   idempotencyKey: string;
   generation: unknown;
 }) {
-  const generation = cloudGenerationInputSchema.parse(input.generation);
-  const moderation = moderateGeneralCloudPrompt(
-    `${generation.prompt}\n${generation.negativePrompt}`,
-  );
-  if (moderation.decision !== "allow") {
-    throw cloudModerationRejectedError(moderation.reasons);
-  }
-
-  const capability = await selectCloudProvider(generation);
+  const prepared = await prepareCloudGenerationJob(input.generation);
+  const { generation, moderation, capability, promptSha256 } = prepared;
   const { supabase } = await cloudCreatorContext();
-  const promptSha256 = crypto
-    .createHash("sha256")
-    .update(generation.prompt, "utf8")
-    .digest("hex");
   const { data, error } = await supabase.rpc(
     "enqueue_cloud_generation_job_with_quota",
     {
@@ -68,6 +57,23 @@ export async function enqueueCloudGenerationJob(input: {
   );
   if (error || !data) throw mapCloudGenerationEnqueueError(error);
   return data as string;
+}
+
+export async function prepareCloudGenerationJob(input: unknown) {
+  const generation = cloudGenerationInputSchema.parse(input);
+  const moderation = moderateGeneralCloudPrompt(
+    `${generation.prompt}\n${generation.negativePrompt}`,
+  );
+  if (moderation.decision !== "allow") {
+    throw cloudModerationRejectedError(moderation.reasons);
+  }
+
+  const capability = await selectCloudProvider(generation);
+  const promptSha256 = crypto
+    .createHash("sha256")
+    .update(generation.prompt, "utf8")
+    .digest("hex");
+  return { generation, moderation, capability, promptSha256 };
 }
 
 export async function listCloudGenerationJobs(projectId: string) {

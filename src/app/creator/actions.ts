@@ -22,6 +22,7 @@ import {
   setCloudProjectCover,
   setCloudPageProductionStatus,
   retryFailedCloudGenerationJob,
+  retryFailedCloudGenerationBatchTargets,
   setCloudGenerationBatchState,
   startCloudPageGenerationBatch,
 } from "@/lib/cloud-creator-server";
@@ -344,12 +345,7 @@ export async function startCloudPageGenerationBatchAction(projectId: string, for
   } catch (error) {
     redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent(domainMessage(error, "一括生成を開始できませんでした。"))}`);
   }
-  const unqueued = result.requested - result.queued;
-  const parameter = result.partial ? "error" : "message";
-  const message = result.partial
-    ? `${result.requested}コマ中${result.queued}コマだけ登録され、${unqueued}コマは未登録です。一括生成履歴を確認し、追加実行しないでください。`
-    : `${result.requested}コマすべての一括生成を開始しました`;
-  redirect(`/creator/${parsedProjectId.data}?${parameter}=${encodeURIComponent(message)}`);
+  redirect(`/creator/${parsedProjectId.data}?message=${encodeURIComponent(`${result.registered}コマすべてを登録しました。Workerが利用上限を守って順番に生成します。`)}`);
 }
 
 export async function setCloudGenerationBatchStateAction(projectId: string, batchId: string, status: "active" | "paused" | "canceled") {
@@ -368,6 +364,16 @@ export async function retryFailedCloudGenerationJobAction(projectId: string, job
   catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "失敗Jobを再実行できませんでした。"))}`); }
   revalidatePath(`/creator/${ids.data.projectId}`);
   redirect(`/creator/${ids.data.projectId}?message=${encodeURIComponent("失敗Jobを再実行しました")}`);
+}
+
+export async function retryFailedCloudGenerationBatchTargetsAction(projectId: string, batchId: string) {
+  const ids = z.object({ projectId: z.string().uuid(), batchId: z.string().uuid() }).safeParse({ projectId, batchId });
+  if (!ids.success) redirect(encodeURI("/creator?error=一括生成のIDを確認してください"));
+  let retried = 0;
+  try { retried = await retryFailedCloudGenerationBatchTargets(ids.data.batchId); }
+  catch (error) { redirect(`/creator/${ids.data.projectId}?error=${encodeURIComponent(domainMessage(error, "コマを再登録できませんでした。"))}`); }
+  revalidatePath(`/creator/${ids.data.projectId}`);
+  redirect(`/creator/${ids.data.projectId}?message=${encodeURIComponent(`${retried}コマをJob化待ちへ戻しました`)}`);
 }
 
 export async function setCloudPageProductionStatusAction(

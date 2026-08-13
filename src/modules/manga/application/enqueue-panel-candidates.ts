@@ -1,6 +1,9 @@
 import { pageCanvasSchema } from "@mangai/canvas-core";
 import { cloudCreatorContext } from "@/modules/cloud-creator/auth-context";
-import { enqueueCloudGenerationJob } from "@/modules/cloud-creator/generation/generation-service";
+import {
+  enqueueCloudGenerationJob,
+  prepareCloudGenerationJob,
+} from "@/modules/cloud-creator/generation/generation-service";
 import {
   assertGeneralStoryboardProject,
   buildStoryboardPanelGeneration,
@@ -22,7 +25,10 @@ import type { CloudCharacterProfile } from "@/lib/cloud-character-profile.ts";
 import type { CloudStyleBible, CloudWorldProfile } from "@/lib/cloud-world-bible.ts";
 import { savePanelSpecification } from "@/modules/manga-quality/infrastructure/panel-quality-repository";
 
-export async function enqueueStoryboardPanelImage(input: unknown) {
+async function runStoryboardPanelImage(
+  input: unknown,
+  mode: "enqueue" | "prepare",
+) {
   if (!cloudPanelImageGenerationFeatureEnabled())
     throw new PermissionDeniedError("ネーム画像生成は現在停止中です。");
   const request = cloudPanelImageGenerationRequestSchema.parse(input);
@@ -326,6 +332,11 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
     }
   }
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
+  const prepared: Array<{
+    generation: Awaited<ReturnType<typeof prepareCloudGenerationJob>>;
+    panelSpecification: ReturnType<typeof buildStoryboardPanelGeneration>["panelSpecification"];
+    candidateNumber: number;
+  }> = [];
   let resolved: ReturnType<typeof buildStoryboardPanelGeneration> | null = null;
   let partial = false;
   for (let candidateIndex = 0; candidateIndex < request.candidateCount; candidateIndex += 1) {
@@ -350,41 +361,66 @@ export async function enqueueStoryboardPanelImage(input: unknown) {
         compositionControl,
         generationTarget: request.generationTarget,
       });
-      await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
-      const id = await enqueueCloudGenerationJob({
-        projectId: request.projectId,
-        pageId: request.pageId,
-        idempotencyKey:
-          candidateIndex === 0
-            ? request.idempotencyKey
-            : `${request.idempotencyKey}:candidate:${candidateIndex + 1}`,
-        generation: resolved.generation,
-      });
-      try {
-        await savePanelSpecification({
-          client: supabase,
-          generationJobId: id,
-          specification: resolved.panelSpecification,
+      if (mode === "prepare") {
+        prepared.push({
+          generation: await prepareCloudGenerationJob(resolved.generation),
+          panelSpecification: resolved.panelSpecification,
+          candidateNumber: resolved.candidateNumber,
         });
-      } catch {
-        // Quality telemetry must never prevent an already queued generation.
+      } else {
+        await consumeCloudGeneralMonitorAiRequest(profile.id, "panel_image");
+        const id = await enqueueCloudGenerationJob({
+          projectId: request.projectId,
+          pageId: request.pageId,
+          idempotencyKey:
+            candidateIndex === 0
+              ? request.idempotencyKey
+              : `${request.idempotencyKey}:candidate:${candidateIndex + 1}`,
+          generation: resolved.generation,
+        });
+        try {
+          await savePanelSpecification({
+            client: supabase,
+            generationJobId: id,
+            specification: resolved.panelSpecification,
+          });
+        } catch {
+          // Quality telemetry must never prevent an already queued generation.
+        }
+        jobs.push({ id, candidateNumber: resolved.candidateNumber });
       }
-      jobs.push({ id, candidateNumber: resolved.candidateNumber });
     } catch (error) {
       if (!jobs.length) throw error;
       partial = true;
       break;
     }
   }
-  if (!resolved || !jobs.length)
+  if (!resolved || (mode === "enqueue" && !jobs.length) || (mode === "prepare" && !prepared.length))
     throw new DomainError("INTERNAL_ERROR", "画像生成を開始できませんでした。");
   return {
-    id: jobs[0].id,
+    id: jobs[0]?.id,
     jobs,
     panelId: resolved.panelId,
     pageNumber: resolved.pageNumber,
     panelNumber: resolved.panelNumber,
     requestedCandidateCount: request.candidateCount,
     partial,
+    prepared,
+  };
+}
+
+export async function enqueueStoryboardPanelImage(input: unknown) {
+  return runStoryboardPanelImage(input, "enqueue");
+}
+
+export async function prepareStoryboardPanelImage(input: unknown) {
+  const result = await runStoryboardPanelImage(input, "prepare");
+  if (result.prepared.length !== 1)
+    throw new ValidationError("一括生成では1コマにつき1候補だけ準備できます。");
+  return {
+    ...result.prepared[0],
+    panelId: result.panelId,
+    pageNumber: result.pageNumber,
+    panelNumber: result.panelNumber,
   };
 }

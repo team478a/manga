@@ -57,7 +57,7 @@ test("plan、作品、global、monitorの不足はbatch作成前のblockerにな
   assert.match(estimate.blockers.join("\n"), /モニターAI利用枠が1回不足/);
 });
 
-test("現在snapshot欠損と1分登録上限超過をfail-closedで拒否する", () => {
+test("現在snapshot欠損は拒否し、1分上限超過はdurable Job化へ委ねる", () => {
   const estimate = estimateGenerationBatch(context({
     projectRequestsPerMinute: 6,
     pagePanelCounts: { a: 2, b: 3, c: null, d: 4 },
@@ -65,7 +65,14 @@ test("現在snapshot欠損と1分登録上限超過をfail-closedで拒否する
   assert.equal(estimate.targetPanelCount, 9);
   assert.equal(estimate.canStart, false);
   assert.match(estimate.blockers.join("\n"), /Canvasを確認できない/);
-  assert.match(estimate.blockers.join("\n"), /1分登録上限は6コマ/);
+  assert.doesNotMatch(estimate.blockers.join("\n"), /1分登録上限/);
+  const complete = estimateGenerationBatch(context({
+    projectRequestsPerMinute: 6,
+    pagePanelCounts: { a: 2, b: 3, c: 1, d: 4 },
+  }), ["a", "b", "c", "d"]);
+  assert.equal(complete.targetPanelCount, 10);
+  assert.equal(complete.registrationLimit, 6);
+  assert.equal(complete.canStart, true);
 });
 
 test("選択ページの一部だけにコマがある状態を全ページ成功として扱わない", () => {
@@ -77,14 +84,14 @@ test("選択ページの一部だけにコマがある状態を全ページ成�
   assert.match(estimate.blockers.join("\n"), /生成可能なコマがないページ/);
 });
 
-test("画面とServer Actionは見積り、全件登録、部分登録警告を明示する", () => {
+test("画面とServer Actionは見積り、全件永続登録、段階Job化を明示する", () => {
   const component = fs.readFileSync(new URL("../src/app/creator/[projectId]/LongformPageManager.tsx", import.meta.url), "utf8");
   const actions = fs.readFileSync(new URL("../src/app/creator/actions.ts", import.meta.url), "utf8");
   const service = fs.readFileSync(new URL("../src/modules/cloud-creator/generation/batch-production-service.ts", import.meta.url), "utf8");
-  for (const expected of ["開始前の生成見積り", "必要credit", "最大予約費用", "料金版", "1分登録上限", "登録済み"])
+  for (const expected of ["開始前の生成見積り", "必要credit", "最大予約費用", "料金版", "1分Job化上限", "Job化済み"])
     assert.match(component, new RegExp(expected));
-  assert.match(actions, /result\.requested - result\.queued/);
-  assert.match(actions, /だけ登録され/);
+  assert.match(actions, /result\.registered/);
+  assert.match(actions, /Workerが利用上限を守って順番に生成/);
   assert.match(service, /assertCloudGenerationBatchPreflight/);
-  assert.match(service, /partial: queued !== targets\.length/);
+  assert.match(service, /create_cloud_generation_batch_targets/);
 });

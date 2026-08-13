@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1z 長編一括生成 durable登録
+
+- PR #243がmerge commit `394707bb7b82197b17cd0f723efe060024bf8977`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- 4〜8ページ／最大64コマの全対象を、Provider Jobより先に非公開`cloud_generation_batch_targets`へ原子的に永続登録する。
+- Workerはactive batchから`FOR UPDATE SKIP LOCKED`で1件取得し、既存monitor枠と`enqueue_cloud_generation_job_with_quota`を同一transactionで呼ぶ。rate limitを迂回・緩和せず、到達時はpendingのまま次回Schedulerへ送る。
+- 元page revision／固定pricingの変更はfail-closed。恒久失敗は固定codeだけを保存し、Creator画面から再試行できる。pause／cancelとJob化待ち進捗も反映した。
+- Promptを含むtarget tableはauthenticatedへ直接SELECTを付与せず、画面・通常query・ログへ返さない。
+- migration `202608130001_cloud_generation_batch_targets`を追加。PostgreSQL 16で全53 migrationのforward／rollback／reapplyと、Job／batch link／reserve ledger／monitor利用／Panel Specificationの原子的dispatchを確認した。
+- 公開URL／API、Storage、Provider、model、pricing値、credit単価、retry、timeout、Scheduler頻度／上限、Canvas schema、PDF／PNG、成人向け境界、Desktop codeは変更していない。
+- 集中26/26、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 53/53、diff check成功。Hub buildは短い物理worktreeで再実行する。Desktop統合／a11yはElectron終了待ち、Windows CIで最終判定する。
+- Draft PRと全CI／Vercel Preview成功後に停止し、責任者確認とProduction migration適用前にR4-1aaへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1Z_DURABLE_BATCH_REGISTRATION.md`
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1y 長編一括生成 合算preflight
 
 - PR #242がmerge commit `cbb0d7478384c4575f08ae90f5c688873ca99ede`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
