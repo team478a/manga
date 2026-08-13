@@ -12,7 +12,7 @@
 - 操作: pauseは新規Job化を停止し、cancelは既存Jobと未Job化targetを中止する。履歴はJob化待ち／Job化済み／完了／失敗を区別する。
 - 不変: 公開URL／API、Storage、Provider、model、pricing値、credit単価、retry、timeout、Scheduler頻度／上限、Canvas schema、PDF／PNG、成人向け境界、Desktop code。
 - migration: `202608130001_cloud_generation_batch_targets`。全53 migrationのforward／rollback／reapplyと、既存quota経由の原子的dispatchをPostgreSQL 16で確認済み。
-- 検証: 集中26/26、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 53/53、diff check成功。Hub buildはWindows path長上限のため短い物理worktreeで再実行する。Desktop統合／a11yはElectron終了待ち、Windows CIで最終判定する。
+- 検証: 集中26/26、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 53/53、Hub／Desktop build、diff check成功。Hub buildは短い物理worktreeで完走した。Desktop統合／a11yはElectron終了待ち、Windows CIで最終判定する。
 - 証跡: [`RELEASE_CANDIDATE_R4_1Z_DURABLE_BATCH_REGISTRATION.md`](RELEASE_CANDIDATE_R4_1Z_DURABLE_BATCH_REGISTRATION.md)
 - 次: Draft PRと全CI／Vercel Preview成功後に停止する。責任者のreview／mergeとProduction migration適用前にR4-1aaの有料4ページ受入れへ進まない。
 

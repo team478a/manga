@@ -11,7 +11,7 @@
 - targetのPromptはauthenticatedへ直接読取権限を与えず、画面、通常query、ログへ返さない。元revision／pricing変更はfail-closedとする。
 - pause／cancel／恒久失敗の再試行、Job化待ち／済み進捗をCreator画面へ反映する。
 - 公開URL／API、Storage、Provider、model、pricing値、credit、retry、timeout、Scheduler頻度、Canvas、PDF／PNG、成人向け境界、Desktop codeは変更しない。
-- PostgreSQL 16で53 migrationのforward／rollback／reapplyと既存quota経由の原子的dispatchを確認。集中26/26、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration manifest、diff check成功。
+- PostgreSQL 16で53 migrationのforward／rollback／reapplyと既存quota経由の原子的dispatchを確認。集中26/26、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration manifest、Hub／Desktop build、diff check成功。Hub buildは短い物理worktreeで完走した。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1Z_DURABLE_BATCH_REGISTRATION.md`
 - 次: Draft PRと全CI／Vercel Preview成功後に停止し、責任者確認とProduction migration適用前にR4-1aaへ進まない。
 

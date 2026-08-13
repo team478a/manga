@@ -39,7 +39,7 @@
 - 集中テスト: batch／preflight／Scheduler／longform 26/26成功。
 - Hub 650/650、Canvas 26/26、AI 48/48成功。
 - dependency boundary、module boundary、codebase size、lint、全typecheck、migration manifest、diff check成功。
-- Hub build: Windows path長上限のため短い物理worktreeで再実行する。
+- Hub／Desktop build成功。Hub buildは短い物理worktreeで完走した。
 - Desktop統合／a11y: Electron終了待ちでローカル上限。Desktop差分はなく、Windows CIで最終判定する。
 - Draft PR、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: PENDING。
 
