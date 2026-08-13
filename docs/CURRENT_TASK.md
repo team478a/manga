@@ -2594,6 +2594,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 状態: `IMPLEMENTED_VALIDATING`
 - Branch: `codex/fix-r4-1ac-batch-target-idempotency`
 - Base: `origin/feature/manga-canvas-mvp`@`ad8905d`（PR #250 merge後）
+- Draft PR: [#251](https://github.com/team478a/manga/pull/251)
 - Productionへ既存migration `202608130003_cloud_generation_batch_registration_diagnostics.sql` を適用し、関数定義への診断識別子反映を確認した。
 - `test`モニターの既存作品でページ19〜22（4ページ、16コマ）を1回だけ再試行した。事前検査はProvider、model、pricing、32 credit、モニター利用枠とも通過したが、RPC登録前の「一括生成条件を準備できませんでした。」で停止し、Job・credit消費・Provider呼出しは発生していない。
 - 原因は、バッチ内部が各コマのidempotency keyを`UUID:target:番号`で作る一方、共通のコマ生成入力契約がUUIDを必須としていたこと。各targetに`crypto.randomUUID()`を割り当て、API、DB、RPCの既存契約を変えずに整合させた。
