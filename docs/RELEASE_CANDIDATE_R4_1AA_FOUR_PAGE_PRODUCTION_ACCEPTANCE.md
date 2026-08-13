@@ -33,7 +33,7 @@ R4-1zはPR #244としてマージ済みで、Production UIにもdurable登録と
 4. Productionで`public`／`anon`／`authenticated`のtable権限を明示revokeし、service roleだけへCRUDを再付与した。
 5. table、4 RPC、RLS、policyなし、table ACL、RPC ACL、security definer、固定search pathの16項目を再検証し、16/16成功した。
 6. 再発防止として`202608130002_cloud_generation_batch_target_acl.sql`を追加し、既定ACLを明示的に打ち消す。
-7. ACL修正Draft PR [#245](https://github.com/team478a/manga/pull/245)を作成し、CI／Vercel Previewを確認する。
+7. ACL修正Draft PR [#245](https://github.com/team478a/manga/pull/245)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-9c47e2-team478as-projects.vercel.app。全CI／Vercel Preview成功、Draft／MERGEABLE。
 
 ローカルではPostgreSQL 16で全54 migrationのforward／rollback／reapply／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff checkに成功した。
 

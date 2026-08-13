@@ -2,8 +2,9 @@
 
 ## 2026-08-13 PR-R4-1aa 4ページ限定Production受入れ
 
-- 状態: `ACL_FIX_DRAFT_VALIDATING`
+- 状態: `ACL_FIX_READY_FOR_OWNER_REVIEW`
 - ACL修正Draft PR: [#245](https://github.com/team478a/manga/pull/245)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-9c47e2-team478as-projects.vercel.app
 - Branch: `codex/release-r4-1aa-four-page-production-acceptance`
 - Base: `origin/feature/manga-canvas-mvp`（`243e60b`、PR #244 merge commit）
 - Production: `https://app.mang-ai.com`。一般向けモニター`test`、作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`で確認する。
@@ -12,6 +13,7 @@
 - Production migration: `202608130001_cloud_generation_batch_targets.sql`を適用済み。検証時にProduction既定ACL由来のauthenticated SELECT権限を検出し、Productionで明示revokeした。table／4 RPC／RLS／権限／固定search pathの16項目は全成功。
 - 修正: 再発防止の追加migration `202608130002_cloud_generation_batch_target_acl.sql`をDraft PR #245で先行する。全利用者共通planとProvider設定は変更していない。
 - 検証: Production境界16/16、PostgreSQL 16で全54 migrationのforward／rollback／reapply／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff check成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 次: ACL修正PRの全CI／merge後、`test`へ最低32 creditの利用可能枠を用意し、その後だけ4ページ受入れを開始する。
 - 停止条件: migrationとcreditの両方が成立するまで生成ボタンを押さない。Provider、model、pricing、rate limit、Scheduler頻度を変更しない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`](RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md)
