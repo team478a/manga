@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1aa 4ページProduction受入れpreflight
+
+- PR #244がmerge commit `243e60b83d974a41e5273b292c4a6e3604e2986d`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Productionの一般向けモニター`test`で、最小の19〜22ページを選択。4ページ／16コマ、必要32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマと表示された。
+- 現在は残り8 creditで24不足し、開始ボタンは無効。モニターAI残り85回、作品credit上限なし。Provider Jobは追加していない。
+- Supabase Productionでread-only SELECTを実行し、`cloud_generation_batch_targets`と作成／進捗／再試行／dispatch RPCがすべて未適用と確認した。最初の旧入力混在queryは構文エラーで終了し、DB変更はない。
+- merge済み`202608130001_cloud_generation_batch_targets.sql`をProductionへ適用した。適用後、Production既定ACLによりauthenticated SELECT権限が残る差異を検出したため、`public`／`anon`／`authenticated`のtable権限を明示revokeした。
+- table／4 RPC／RLS有効／policyなし／authenticated・anon table拒否／service role table許可／authenticated RPC境界／service dispatch／固定search pathの16項目は全成功。再発防止の`202608130002_cloud_generation_batch_target_acl.sql`を別修正PRで先行する。
+- PostgreSQL 16で全54 migrationのforward／rollback／reapply／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff check成功。
+- ACL修正Draft PR: [#245](https://github.com/team478a/manga/pull/245)。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-9c47e2-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- Production migration適用とcredit準備の両方が完了するまで有料生成を開始しない。Provider、model、pricing、rate limit、Scheduler頻度は変更しない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1z 長編一括生成 durable登録
 
 - PR #243がmerge commit `394707bb7b82197b17cd0f723efe060024bf8977`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。

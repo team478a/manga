@@ -318,6 +318,12 @@
       "description": "長編一括生成の全コマを永続登録しWorkerが既存利用上限内で段階的にJob化",
       "forwardSha256": "ee1c16d9e89472fd246a7b66bcd8469082c913d43d97938b5e109cab701bdd72",
       "rollbackSha256": "a76da8529cf4ab7df657052595a24f416977a06ddd682d467e4b52c94f440d17"
+    },
+    {
+      "id": "202608130002_cloud_generation_batch_target_acl",
+      "description": "Production既定ACLを明示的に打ち消して長編生成targetをservice role専用に固定",
+      "forwardSha256": "a5394f02d9d077492b3f2846858d8fba2e8bb6d7d00c669f8d4ed27577bd0998",
+      "rollbackSha256": "a32021805084aebab4d1ed1e5ed0559c5dee2b5b016b4caedc113ba64aba0b77"
     }
   ],
   "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"

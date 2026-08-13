@@ -1,5 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1aa 4ページ限定Production受入れ、2026-08-13）
+
+- Branch: `codex/release-r4-1aa-four-page-production-acceptance`
+- Base: `origin/feature/manga-canvas-mvp` @ `243e60b`（PR #244 merge commit）
+- 状態: `ACL_FIX_READY_FOR_OWNER_REVIEW`
+- ACL修正Draft PR: [#245](https://github.com/team478a/manga/pull/245)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-9c47e2-team478as-projects.vercel.app
+- Productionの一般向けモニター`test`で、19〜22ページの4ページ／16コマを1案ずつ生成する計画。
+- preflightは32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマ。現状は残り8 creditで24不足し、開始はfail-closed。
+- Productionへ`202608130001_cloud_generation_batch_targets.sql`を適用。既定ACL由来のauthenticated SELECT権限を検出してProductionで明示revokeし、table／4 RPC／RLS／権限／固定search pathの16項目全成功を確認した。実Provider Job追加は0件。
+- 追加migration `202608130002_cloud_generation_batch_target_acl.sql`をDraft PR #245で先行する。merge後に`test`へ最低32 creditの利用可能枠を準備し、生成を開始する。
+- Production境界16/16、PostgreSQL 16で全54 migration往復／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff check成功。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1z 長編一括生成 durable登録、2026-08-13）
 
 - Branch: `codex/fix-r4-1z-durable-batch-registration`
