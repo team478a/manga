@@ -7,6 +7,7 @@
 ## 2026-08-13 Codex: PR-R4-1y 長編一括生成 合算preflight
 
 - PR #242がmerge commit `cbb0d7478384c4575f08ae90f5c688873ca99ede`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Draft PR [#243](https://github.com/team478a/manga/pull/243)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
 - 現在snapshotからページ別コマ数を読み、選択ページ／コマ、1候補、model／pricing、必要credit、最大予約費用、plan／作品／global／monitor容量、Scheduler下限、1分登録上限を合算するpure domainを追加した。
 - 一括生成画面は開始前の見積りとblockerを表示し、Server側も同じ判定でbatch作成前にfail-closedにする。
 - 全件登録時だけ成功表示する。途中登録時は要求／登録／未登録コマ数を赤い警告にし、履歴のJob数は「登録済み」と表現する。

@@ -3,6 +3,8 @@
 ## 2026-08-13 PR-R4-1y 長編一括生成 合算preflight
 
 - 状態: `IN_PROGRESS`
+- Draft PR: [#243](https://github.com/team478a/manga/pull/243)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1y-longform-batch-preflight`
 - Base: `origin/feature/manga-canvas-mvp`（`cbb0d74`、PR #242 merge commit）
 - 実装: 選択ページ／対象コマ、現行model／pricing、1候補固定、必要credit、最大予約費用、plan／作品／global／monitor残量、Scheduler下限、1分登録上限を開始前に合算表示する。

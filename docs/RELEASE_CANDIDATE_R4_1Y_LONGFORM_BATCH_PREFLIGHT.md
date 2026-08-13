@@ -1,6 +1,8 @@
 # PR-R4-1y 長編一括生成 合算preflight
 
 - 状態: `IN_PROGRESS`
+- Draft PR: [#243](https://github.com/team478a/manga/pull/243)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1y-longform-batch-preflight`
 - Base: `origin/feature/manga-canvas-mvp` @ `cbb0d74`（PR #242 merge commit）
 - 実施日: 2026-08-13

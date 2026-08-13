@@ -5,6 +5,8 @@
 - Branch: `codex/fix-r4-1y-longform-batch-preflight`
 - Base: `origin/feature/manga-canvas-mvp` @ `cbb0d74`（PR #242 merge commit）
 - 状態: `IN_PROGRESS`
+- Draft PR: [#243](https://github.com/team478a/manga/pull/243)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
 - 4〜8ページ一括生成の開始前に、対象コマ、1候補、model／pricing、必要credit、最大予約費用、plan／作品／global／monitor容量、Scheduler下限、1分登録上限を表示する。
 - 容量不足、現在snapshot欠損、空ページ、64コマ超、現行同期処理で登録可能な1分上限超過はbatch作成前にfail-closedで拒否する。
 - 全件登録だけを成功表示し、部分登録は要求／登録／未登録件数を赤い警告にする。履歴のJob数は「登録済み」と明記する。
