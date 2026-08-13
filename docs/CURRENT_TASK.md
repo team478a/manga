@@ -2,8 +2,8 @@
 
 ## 2026-08-13 PR-R4-1z 長編一括生成 durable登録
 
-- 状態: `IMPLEMENTED_VALIDATING`
-- Draft PR: PENDING
+- 状態: `DRAFT_PR_VALIDATING`
+- Draft PR: [#244](https://github.com/team478a/manga/pull/244)
 - Vercel Preview: PENDING
 - Branch: `codex/fix-r4-1z-durable-batch-registration`
 - Base: `origin/feature/manga-canvas-mvp`（`394707b`、PR #243 merge commit）

@@ -4,8 +4,9 @@
 
 - Branch: `codex/fix-r4-1z-durable-batch-registration`
 - Base: `origin/feature/manga-canvas-mvp` @ `394707b`（PR #243 merge commit）
-- 状態: `IMPLEMENTED_VALIDATING`
-- Draft PR／Vercel Preview: PENDING
+- 状態: `DRAFT_PR_VALIDATING`
+- Draft PR: [#244](https://github.com/team478a/manga/pull/244)
+- Vercel Preview: PENDING
 - 4〜8ページ／最大64コマの全対象を先に非公開DB targetへ原子的に保存し、Workerが既存Schedulerから1件ずつJob化する。
 - 既存monitor枠、user／project rate limit、plan／作品／global予算を同一transactionで利用する。rate limit時はpendingを保持して次回Schedulerへ委ねる。
 - targetのPromptはauthenticatedへ直接読取権限を与えず、画面、通常query、ログへ返さない。元revision／pricing変更はfail-closedとする。
