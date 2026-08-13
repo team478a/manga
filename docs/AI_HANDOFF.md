@@ -4,7 +4,7 @@
 
 - Branch: `codex/fix-r4-1y-longform-batch-preflight`
 - Base: `origin/feature/manga-canvas-mvp` @ `cbb0d74`（PR #242 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#243](https://github.com/team478a/manga/pull/243)
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
 - 4〜8ページ一括生成の開始前に、対象コマ、1候補、model／pricing、必要credit、最大予約費用、plan／作品／global／monitor容量、Scheduler下限、1分登録上限を表示する。
@@ -12,8 +12,9 @@
 - 全件登録だけを成功表示し、部分登録は要求／登録／未登録件数を赤い警告にする。履歴のJob数は「登録済み」と明記する。
 - DB、migration、RPC、Storage、Provider、model、pricing、rate limit、Scheduler頻度等の外部契約は変更しない。
 - 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 52/52、Hub／Desktop build、RC structure、diff check成功。Hub buildは元worktreeのWindows長path上限を短いworktreeで回避した。Desktop統合はElectron終了待ち、Windows CIで最終判定する。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1Y_LONGFORM_BATCH_PREFLIGHT.md`
-- 次: Draft PRの全CI／Preview成功後に停止し、責任者確認前にR4-1zや有料4ページ受入れへ進まない。
+- 次: 責任者のreview／merge判断まで停止し、責任者確認前にR4-1zや有料4ページ受入れへ進まない。
 
 ---
 

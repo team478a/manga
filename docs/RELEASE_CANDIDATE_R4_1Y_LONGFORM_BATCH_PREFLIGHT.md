@@ -1,6 +1,6 @@
 # PR-R4-1y 長編一括生成 合算preflight
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#243](https://github.com/team478a/manga/pull/243)
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1y-longform-batch-preflight`
@@ -54,7 +54,8 @@ Freeは3、Trialは6、Creatorは20 jobs/分が作品単位上限である。R4-
 - deps、lint、Hub／Desktop typecheck、migration 52/52、Desktop build、RC repository structure、diff check成功。
 - Hub production buildは元worktreeではWindows長path上限で停止し、同一commitの短い物理worktreeで成功した。
 - Desktop統合testはElectron終了待ちで結果出力前にローカルtimeout。Desktop差分はなく、Windows CIを最終判定にする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 
 ## 次工程
 
-Draft PRの全CIとVercel Preview成功後に停止する。責任者確認前にR4-1zのDB／migration／RPC設計や、4ページ有料Production受入れへ進まない。
+責任者のreview／merge判断まで停止する。責任者確認前にR4-1zのDB／migration／RPC設計や、4ページ有料Production受入れへ進まない。

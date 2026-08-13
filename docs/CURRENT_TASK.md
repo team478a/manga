@@ -2,7 +2,7 @@
 
 ## 2026-08-13 PR-R4-1y 長編一括生成 合算preflight
 
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#243](https://github.com/team478a/manga/pull/243)
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-00d2ff-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-1y-longform-batch-preflight`
@@ -12,8 +12,9 @@
 - 部分登録: 全件登録時だけ成功表示し、途中登録時は要求／登録／未登録コマ数を赤い警告で明示する。履歴は紐付いたJobを「登録済み」と表示する。
 - 不変: DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler頻度、Canvas schema、PDF／PNG、成人向け境界、Desktop。
 - 検証: 集中17/17、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 52/52、Hub／Desktop build、RC structure、diff check成功。Hub buildは元worktreeのWindows長path上限を短い物理worktreeで回避した。Desktop統合はElectron終了待ち、Windows CIで最終判定する。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - 証跡: [`RELEASE_CANDIDATE_R4_1Y_LONGFORM_BATCH_PREFLIGHT.md`](RELEASE_CANDIDATE_R4_1Y_LONGFORM_BATCH_PREFLIGHT.md)
-- 次: Draft PRの全CI／Vercel Preview成功後に停止し、責任者確認前にR4-1zや有料4ページ受入れへ進まない。
+- 次: 責任者のreview／merge判断まで停止し、責任者確認前にR4-1zや有料4ページ受入れへ進まない。
 
 ---
 
