@@ -41,7 +41,7 @@
 - dependency boundary、module boundary、codebase size、lint、全typecheck、migration manifest、diff check成功。
 - Hub／Desktop build成功。Hub buildは短い物理worktreeで完走した。
 - Desktop統合／a11y: Electron終了待ちでローカル上限。Desktop差分はなく、Windows CIで最終判定する。
-- Draft PR [#244](https://github.com/team478a/manga/pull/244)。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認中。
+- Draft PR [#244](https://github.com/team478a/manga/pull/244)。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-4ba5a7-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 
 ## Rollback
 

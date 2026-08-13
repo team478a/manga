@@ -14,8 +14,8 @@
 - migration `202608130001_cloud_generation_batch_targets`を追加。PostgreSQL 16で全53 migrationのforward／rollback／reapplyと、Job／batch link／reserve ledger／monitor利用／Panel Specificationの原子的dispatchを確認した。
 - 公開URL／API、Storage、Provider、model、pricing値、credit単価、retry、timeout、Scheduler頻度／上限、Canvas schema、PDF／PNG、成人向け境界、Desktop codeは変更していない。
 - 集中26/26、Hub 650/650、Canvas 26/26、AI 48/48、deps、lint、全typecheck、migration 53/53、Hub／Desktop build、diff check成功。Hub buildは短い物理worktreeで完走した。Desktop統合／a11yはElectron終了待ち、Windows CIで最終判定する。
-- Draft PR: [#244](https://github.com/team478a/manga/pull/244)。CI／Vercel Previewを確認中。
-- Draft PRと全CI／Vercel Preview成功後に停止し、責任者確認とProduction migration適用前にR4-1aaへ進まない。
+- Draft PR: [#244](https://github.com/team478a/manga/pull/244)。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-4ba5a7-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止し、Production migration適用前にR4-1aaへ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_1Z_DURABLE_BATCH_REGISTRATION.md`
 
 ---
