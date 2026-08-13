@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1aa-1 長編一括生成ビジュアル準備ゲート
+
+- PR #246がmerge commit `914f1278d08d9e5f2a72ad9a34ec89fe417b7602`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Productionの一般向けモニター`test`で、作品画風、人物設定、参考画像、連続性台帳が未設定であることを監査した。19〜22ページの採用ネームで必要な主要人物は`城戸真琴`、`榊圭吾`、`城戸湊`。
+- 有料長編一括生成preflightへ人物・画風の準備判定を追加した。採用scenarioに定義され、選択ページの採用storyboardに登場する人物だけを対象とし、年齢感、体格、髪、衣装、固定特徴を必須にする。画風は画風、線、陰影、背景密度、構図ルールを必須にする。
+- 読取不能、画風未設定、対象人物未設定はfail-closed。画面は不足人物名と人物／画風設定への導線を表示し、Server Actionもbatch target登録前に同じ判定を行う。
+- 単一コマ生成、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
+- 集中・関連29/29、Hub 657/657、Canvas 26/26、AI 48/48、Desktop、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeで同一commitを検証した。
+- Productionでは生成前バックアップを作成済み。実Provider Job、batch target、credit消費は追加していない。
+- 次はDraft PRの全CI／Vercel Preview成功後に責任者確認で停止する。merge後、Trial付与と作品画風・3人物の外見設定を完了してから4ページ生成を1回だけ行う。
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1aa 個別Cloud AI利用枠の運用解除
 
 - PR #245がmerge commit `a5e903d5f062fab9c05068a67a8c102854ff5dd5`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。

@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-08-13 PR-R4-1aa-1 長編一括生成ビジュアル準備
+
+- 状態: `LOCAL_VALIDATION_COMPLETE`
+- Draft PR: 作成予定
+- Branch: `codex/fix-r4-1aa-visual-readiness`
+- Base: `origin/feature/manga-canvas-mvp`（`914f127`、PR #246 merge commit）
+- PR #246はmerge commit `914f1278d08d9e5f2a72ad9a34ec89fe417b7602`でマージ済み。
+- Production監査: 一般向けモニター`test`の作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`は、作品画風、人物設定、参考画像、連続性台帳が未設定。19〜22ページの採用ネームには`城戸真琴`、`榊圭吾`、`城戸湊`が必要で、未設定のまま16コマを生成すると人物・衣装・画風の連続性を担保できない。
+- 実装: 有料長編一括生成のpreflightが採用storyboard／scenarioと人物・画風の現行versionを確認する。画風または選択ページの主要人物設定が不足すればbatch登録前にfail-closedで拒否し、不足人物名と設定画面への導線を表示する。
+- 対象外: 単一コマ生成の挙動は維持する。DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更しない。
+- Production安全性: 生成前バックアップ`作業バックアップ・32ページ・2026/8/13 4:22:55`を作成済み。実Provider Job、batch target、credit消費は追加していない。
+- 検証: 集中・関連29/29、Hub 657/657、Canvas 26/26、AI 48/48、Desktop、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildは短い物理worktreeへ依存関係を実体インストールして同一commitを検証した。
+- 次: Draft PRを作成し、全CIとVercel Preview成功後に責任者確認で停止する。merge後、`test`へTrial 30日付与、作品画風、`城戸真琴`／`榊圭吾`／`城戸湊`の外見設定を完了してから4ページ生成を1回だけ行う。
+- 停止条件: visual blockerとcredit blockerが0になるまで生成を開始しない。4ページ受入れ合格前に8ページ完成原稿／販売品質受入れへ進まない。
+- 証跡: [`RELEASE_CANDIDATE_R4_1AA_VISUAL_READINESS.md`](RELEASE_CANDIDATE_R4_1AA_VISUAL_READINESS.md)
+
+---
+
 ## 2026-08-13 PR-R4-1aa 4ページ限定Production受入れ
 
 - 状態: `CREDIT_ENTITLEMENT_UI_IMPLEMENTED_LOCAL_VALIDATION`
