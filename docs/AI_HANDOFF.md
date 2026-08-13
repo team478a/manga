@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-1aa-3 長編一括生成条件固定、2026-08-13）
+
+- Branch: `codex/fix-r4-1aa-batch-prompt-freeze`
+- Base: `origin/feature/manga-canvas-mvp` @ `3b5b7da`（PR #248 merge commit）
+- 状態: `LOCAL_VALIDATION_COMPLETE`
+- 一括生成の全target準備後、durable登録RPCより前に、preflight時点のProvider／model／pricing、画風ID／version、同一人物profileのversionが混在していないことを検証する。
+- 準備中に設定が更新された場合はfail-closedで再確認を求め、target、Provider Job、credit予約を作らない。
+- 公開契約、DB、migration、Provider値、credit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
+- 集中・関連21/21、Hub 658/658、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、diff check成功。
+- Productionの`test`は画風／主要人物設定済みだが、必要32 creditに対し残り8で24不足。実Provider Job、batch target、credit消費は追加していない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_1AA_BATCH_PROMPT_FREEZE.md`
+- 次: Draft PRの全CI／Vercel成功で停止。merge後、管理者がTrial 30日を付与し、blocker 0を確認して4ページ生成を1回だけ行う。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1aa-2 Productionビジュアル設定受入れ、2026-08-13）
 
 - Branch: `codex/release-r4-1aa-visual-setup`

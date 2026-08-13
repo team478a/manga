@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1aa-3 長編一括生成条件固定
+
+- PR #248がmerge commit `3b5b7da3b4d63b0db897cbe8bc07cec2f53ea7c3`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- 長編一括生成のPrompt経路を監査した。採用scenario、人物visual profile、作品style bible、negative promptと人物／画風versionはtargetへ固定され、Workerも同じ入力を使う。
+- 複数chunkの準備中に管理model／pricingまたは人物／画風が更新されると、同じbatchで条件が混在し得る時間差を検出した。
+- 全target準備後、durable登録RPCより前に、preflight時点のProvider／model／pricing、画風ID／version、同一人物profileのversionを検証し、不一致はfail-closedで中止するよう修正した。中止時はtarget、Provider Job、credit予約を作らない。
+- URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing値、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
+- 集中・関連21/21、Hub 658/658、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、diff check成功。Hub buildは短い物理worktreeの同一commitで確認した。
+- Productionの`test`は画風v1と主要人物3名v1を設定済みだが、必要32 creditに対して残り8で24不足。実Provider Job、batch target、credit消費は追加していない。
+- Draft PRの全CI／Vercel Preview成功時点で停止する。merge後、管理者が`test`へTrial 30日を付与し、4ページ生成を1回だけ実施する。
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1aa-2 Productionビジュアル設定受入れ
 
 - PR #247がmerge commit `bf6e86eb06dc1f285b9d190f8f6d6942ae89415b`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
