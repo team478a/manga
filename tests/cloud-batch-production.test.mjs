@@ -85,6 +85,12 @@ test("batch service maps preparation, schema and RPC failures to safe stages", (
   assert.doesNotMatch(service, /cloudGenerationInputSchema\.parse\(target\.input\)/);
 });
 
+test("batch target idempotency keys keep the panel request UUID contract", () => {
+  const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
+  assert.match(service, /const idempotencyKey = crypto\.randomUUID\(\)/);
+  assert.doesNotMatch(service, /`\$\{batchKey\}:target:/);
+});
+
 test("batch UI exposes progress, pause, cancel and safe retry", () => {
   const component = read("src/app/creator/[projectId]/LongformPageManager.tsx");
   assert.match(component, /4〜8ページをまとめて生成/);
