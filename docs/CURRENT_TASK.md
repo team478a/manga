@@ -2,19 +2,21 @@
 
 ## 2026-08-13 PR-R4-1aa 4ページ限定Production受入れ
 
-- 状態: `ACL_FIX_READY_FOR_OWNER_REVIEW`
-- ACL修正Draft PR: [#245](https://github.com/team478a/manga/pull/245)
-- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-1-9c47e2-team478as-projects.vercel.app
-- Branch: `codex/release-r4-1aa-four-page-production-acceptance`
-- Base: `origin/feature/manga-canvas-mvp`（`243e60b`、PR #244 merge commit）
+- 状態: `CREDIT_ENTITLEMENT_UI_IMPLEMENTED_LOCAL_VALIDATION`
+- Draft PR: [#246](https://github.com/team478a/manga/pull/246)
+- Vercel Preview: https://mangai-hub-staging-be38wgjhu-team478as-projects.vercel.app
+- Branch: `codex/release-r4-1aa-four-page-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`（`a5e903d`、PR #245 merge commit）
+- PR #245はmerge commit `a5e903d5f062fab9c05068a67a8c102854ff5dd5`でマージ済み。Productionのdurable target ACLは16/16で安全境界を確認済み。
 - Production: `https://app.mang-ai.com`。一般向けモニター`test`、作品`b008b746-94c6-4e83-85dd-3bb0e379c96a`で確認する。
 - 最小対象: 19〜22ページの4ページ／16コマ、1案／コマ、`flux-2-pro`、`bfl-flux2-2026-03`。必要32 credit、最大予約費用$0.48、Worker最短6回／約30分、1分Job化上限3コマ。
 - 現在値: Cloud AI残り8 credit、モニターAI残り85回、作品credit上限なし。24 credit不足のため開始ボタンはfail-closedで無効。実Provider Jobは追加していない。
-- Production migration: `202608130001_cloud_generation_batch_targets.sql`を適用済み。検証時にProduction既定ACL由来のauthenticated SELECT権限を検出し、Productionで明示revokeした。table／4 RPC／RLS／権限／固定search pathの16項目は全成功。
-- 修正: 再発防止の追加migration `202608130002_cloud_generation_batch_target_acl.sql`をDraft PR #245で先行する。全利用者共通planとProvider設定は変更していない。
-- 検証: Production境界16/16、PostgreSQL 16で全54 migrationのforward／rollback／reapply／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff check成功。
-- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
-- 次: ACL修正PRの全CI／merge後、`test`へ最低32 creditの利用可能枠を用意し、その後だけ4ページ受入れを開始する。
+- 新たな阻害要因: 現行管理画面は全体Planの値だけを編集でき、対象ユーザーへ既存Planを付与する操作がない。接続中ブラウザーとCLIにもProduction Supabase管理者認証がなく、安全な個別付与を実行できない。
+- 実装: 管理者ユーザー詳細へCloud AI個別利用枠を追加。既存Free／Trial／Creatorと1〜90日の新期間だけを付与し、Stripe管理中、予約creditあり、queued／running Jobあり、停止中Planはfail-closedで拒否する。変更は管理監査へ記録する。
+- 不変: DB／migration／RPC、全体Plan値、Provider、model、pricing、credit単価、rate limit、retry、timeout、Scheduler、Storage、Canvas、PDF／PNG、成人向け境界、Desktop。
+- 検証: 集中10/10、Hub 654/654、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 54/54、Hub／Desktop build、RC structure、diff check成功。Hub buildはWindows長pathを避けた短い物理worktreeで同一commitを検証した。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。最終文書commit後の再確認を継続する。
+- 次: 本解除PRの全CI／merge後、管理者画面から`test`へ既存Trialを30日付与し、残りcredit、blocker 0、要求16コマを再確認してから4ページ生成を1回だけ開始する。
 - 停止条件: migrationとcreditの両方が成立するまで生成ボタンを押さない。Provider、model、pricing、rate limit、Scheduler頻度を変更しない。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md`](RELEASE_CANDIDATE_R4_1AA_FOUR_PAGE_PRODUCTION_ACCEPTANCE.md)
 

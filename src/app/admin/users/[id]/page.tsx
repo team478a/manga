@@ -10,6 +10,7 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { dateJa, statusLabel } from "@/lib/format";
 import { setCloudAdultPlanningGrantAction } from "./adult-feature-actions";
 import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions";
+import { updateCloudAiUserEntitlementAction } from "./cloud-ai-actions";
 import {
   activateCloudGeneralMonitorAction,
   resendCloudGeneralMonitorInviteAction,
@@ -25,6 +26,11 @@ import {
   type AdultPlanningGrant,
   type AdultResearchEntitlement,
 } from "@/modules/account/infrastructure/admin-user-repository";
+import {
+  loadCloudAiAdminUserEntitlement,
+  type CloudAiAdminUserEntitlement,
+  type CloudAiAdminUserUsage,
+} from "@/modules/cloud-ai/infrastructure/admin-cloud-ai-repository";
 
 export default async function AdminUserDetailPage({
   params,
@@ -51,6 +57,10 @@ export default async function AdminUserDetailPage({
   let adultPlanningConfigured = true;
   let generalMonitor: CloudGeneralMonitorEnrollment | null = null;
   let generalMonitorConfigured = true;
+  let cloudAiEntitlement: CloudAiAdminUserEntitlement | null = null;
+  let cloudAiUsage: CloudAiAdminUserUsage | null = null;
+  let cloudAiActiveJobs = 0;
+  let cloudAiConfigured = true;
   const generalMonitorEnabled = cloudGeneralMonitorBetaEnabled();
   if (hasSupabaseAdminEnv()) {
     const detailLoaded = await safelyLoadAdminData("users/detail/admin", () =>
@@ -72,6 +82,19 @@ export default async function AdminUserDetailPage({
       generalMonitor = generalMonitorResult.data;
       generalMonitorConfigured = !generalMonitorResult.error;
     }
+    const cloudAiLoaded = await safelyLoadAdminData("users/detail/cloud-ai", () =>
+      loadCloudAiAdminUserEntitlement(user.id),
+    );
+    if (!cloudAiLoaded.ok)
+      return <AdminDataUnavailable title="ユーザー詳細" />;
+    const cloudAi = cloudAiLoaded.value;
+    cloudAiEntitlement = cloudAi.entitlementResult.data;
+    cloudAiUsage = cloudAi.usageResult?.data ?? null;
+    cloudAiActiveJobs = cloudAi.activeJobsResult?.count ?? 0;
+    cloudAiConfigured =
+      !cloudAi.entitlementResult.error &&
+      !cloudAi.usageResult?.error &&
+      !cloudAi.activeJobsResult?.error;
   }
 
   return (
@@ -79,7 +102,7 @@ export default async function AdminUserDetailPage({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold">ユーザー詳細</h1>
-          <p className="mt-3 text-lg text-stone-600">登録情報を確認できます。編集・削除機能はまだ実装していません。</p>
+          <p className="mt-3 text-lg text-stone-600">登録情報と利用権限を確認できます。</p>
         </div>
         <Link className="button-secondary" href="/admin/users">一覧へ戻る</Link>
       </div>
@@ -117,6 +140,62 @@ export default async function AdminUserDetailPage({
           <p className="text-sm text-stone-500">自己紹介</p>
           <p className="whitespace-pre-wrap text-lg">{user.bio || "未設定"}</p>
         </div>
+      </section>
+      <section className="panel mt-6 border-blue-200">
+        <p className="text-sm font-bold text-blue-700">一般向け・Cloud AI</p>
+        <h2 className="mt-1 text-xl font-bold">個別利用枠</h2>
+        <p className="mt-2 text-sm text-stone-600">
+          全体Planの価格や単価は変更せず、このユーザーへ既存Planの利用期間を付与します。
+        </p>
+        {!hasSupabaseAdminEnv() ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+            権限操作にはSupabase管理用設定が必要です。
+          </p>
+        ) : !cloudAiConfigured || !cloudAiEntitlement ? (
+          <p className="mt-3 rounded-lg bg-amber-50 p-4 text-amber-950">
+            Cloud AI利用枠を安全に確認できません。
+          </p>
+        ) : (
+          <>
+            <dl className="mt-5 grid gap-3 rounded-xl bg-blue-50 p-4 sm:grid-cols-4">
+              <div><dt className="text-sm text-stone-500">Plan</dt><dd className="font-bold uppercase">{cloudAiEntitlement.plan_key}</dd></div>
+              <div><dt className="text-sm text-stone-500">状態／管理元</dt><dd className="font-bold">{cloudAiEntitlement.status} / {cloudAiEntitlement.source}</dd></div>
+              <div><dt className="text-sm text-stone-500">使用／予約credit</dt><dd className="font-bold">{cloudAiUsage?.credits_used ?? 0} / {cloudAiUsage?.credits_reserved ?? 0}</dd></div>
+              <div><dt className="text-sm text-stone-500">処理中Job</dt><dd className="font-bold">{cloudAiActiveJobs}</dd></div>
+            </dl>
+            <p className="mt-3 text-sm text-stone-600">
+              現在の期限: {new Date(cloudAiEntitlement.period_ends_at).toLocaleString("ja-JP")}
+            </p>
+            {cloudAiEntitlement.source === "stripe" ? (
+              <p className="mt-4 rounded-lg bg-stone-100 p-4 text-stone-700">
+                Stripe契約中です。Plan変更は請求管理とWebhook同期から行ってください。
+              </p>
+            ) : (
+              <form action={updateCloudAiUserEntitlementAction.bind(null, user.id)} className="mt-5 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="label" htmlFor="cloudAiPlanKey">付与するPlan</label>
+                    <select className="field" defaultValue={cloudAiEntitlement.plan_key} id="cloudAiPlanKey" name="planKey">
+                      <option value="free">Free</option>
+                      <option value="trial">Trial</option>
+                      <option value="creator">Creator</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label" htmlFor="cloudAiDurationDays">利用日数</label>
+                    <input className="field" defaultValue={30} id="cloudAiDurationDays" max={90} min={1} name="durationDays" type="number" required />
+                  </div>
+                </div>
+                <p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+                  新しい利用期間として開始します。予約中creditまたは処理中Jobがある場合は変更を拒否します。
+                </p>
+                <PendingSubmitButton className="button bg-blue-700 hover:bg-blue-800" pendingLabel="利用枠を更新中…">
+                  Cloud AI利用枠を更新
+                </PendingSubmitButton>
+              </form>
+            )}
+          </>
+        )}
       </section>
       <section className="panel mt-6 border-violet-200">
         <p className="text-sm font-bold text-violet-700">一般向け・無料限定公開</p>
