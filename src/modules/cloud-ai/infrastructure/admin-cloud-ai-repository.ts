@@ -2,6 +2,26 @@ import { DomainError } from "@/lib/domain-errors";
 import { getCloudGeneralImageSettings } from "@/lib/cloud-general-image-settings";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  buildCloudAiAdminEntitlementPeriod,
+  type CloudAiAdminPlanKey,
+} from "@/modules/cloud-ai/domain/admin-user-entitlement";
+
+export type CloudAiAdminUserEntitlement = {
+  profile_id: string;
+  plan_key: CloudAiAdminPlanKey;
+  status: "active" | "trialing" | "past_due" | "canceled" | "expired";
+  source: "default" | "admin" | "stripe";
+  period_starts_at: string;
+  period_ends_at: string;
+};
+
+export type CloudAiAdminUserUsage = {
+  credits_reserved: number;
+  credits_used: number;
+  cost_reserved_micros: number;
+  cost_actual_micros: number;
+};
 
 export async function recordCloudAiAdminAudit(input: {
   actorId: string;
@@ -27,6 +47,83 @@ export async function recordCloudAiAdminAudit(input: {
       "管理操作の監査ログを保存できませんでした。",
       { cause: error },
     );
+}
+
+export async function loadCloudAiAdminUserEntitlement(profileId: string) {
+  const admin = createAdminClient();
+  const entitlementResult = await admin
+    .from("cloud_ai_entitlements")
+    .select(
+      "profile_id,plan_key,status,source,period_starts_at,period_ends_at",
+    )
+    .eq("profile_id", profileId)
+    .maybeSingle<CloudAiAdminUserEntitlement>();
+  if (entitlementResult.error || !entitlementResult.data)
+    return {
+      entitlementResult,
+      usageResult: null,
+      activeJobsResult: null,
+    };
+
+  const [usageResult, activeJobsResult] = await Promise.all([
+    admin
+      .from("cloud_ai_usage_periods")
+      .select(
+        "credits_reserved,credits_used,cost_reserved_micros,cost_actual_micros",
+      )
+      .eq("profile_id", profileId)
+      .eq("period_starts_at", entitlementResult.data.period_starts_at)
+      .maybeSingle<CloudAiAdminUserUsage>(),
+    admin
+      .from("cloud_generation_jobs")
+      .select("id", { count: "exact", head: true })
+      .eq("created_by_profile_id", profileId)
+      .in("status", ["queued", "running"]),
+  ]);
+  return { entitlementResult, usageResult, activeJobsResult };
+}
+
+export async function updateCloudAiAdminUserEntitlement(input: {
+  profileId: string;
+  planKey: CloudAiAdminPlanKey;
+  durationDays: number;
+  now: Date;
+}) {
+  const admin = createAdminClient();
+  const current = await loadCloudAiAdminUserEntitlement(input.profileId);
+  const before = current.entitlementResult.data;
+  if (current.entitlementResult.error || !before)
+    return { status: "not_found" as const, before: null, after: null };
+  if (before.source === "stripe")
+    return { status: "stripe_managed" as const, before, after: null };
+  if (current.usageResult?.error || current.activeJobsResult?.error)
+    return { status: "load_failed" as const, before, after: null };
+  if ((current.usageResult?.data?.credits_reserved ?? 0) > 0)
+    return { status: "credits_reserved" as const, before, after: null };
+  if ((current.activeJobsResult?.count ?? 0) > 0)
+    return { status: "active_jobs" as const, before, after: null };
+
+  const { data: plan, error: planError } = await admin
+    .from("cloud_ai_plans")
+    .select("plan_key")
+    .eq("plan_key", input.planKey)
+    .eq("active", true)
+    .maybeSingle<{ plan_key: CloudAiAdminPlanKey }>();
+  if (planError || !plan)
+    return { status: "plan_unavailable" as const, before, after: null };
+
+  const after = buildCloudAiAdminEntitlementPeriod(input);
+  const { data: updated, error } = await admin
+    .from("cloud_ai_entitlements")
+    .update(after)
+    .eq("profile_id", input.profileId)
+    .eq("period_starts_at", before.period_starts_at)
+    .in("source", ["default", "admin"])
+    .select("profile_id")
+    .maybeSingle<{ profile_id: string }>();
+  if (error || !updated)
+    return { status: "update_failed" as const, before, after: null };
+  return { status: "updated" as const, before, after };
 }
 
 export function loadCloudAiAdminWorkspace(input: {

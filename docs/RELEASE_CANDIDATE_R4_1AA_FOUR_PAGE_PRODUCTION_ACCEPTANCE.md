@@ -2,7 +2,7 @@
 
 ## 現在の結論
 
-R4-1zはPR #244としてマージ済みで、Production UIにもdurable登録と合算preflightが反映されている。Production migrationは適用したが、既定ACL差異を検出して即時修正し、追加migrationへ固定した。Cloud AI credit不足のため、4ページの有料生成はfail-closedで開始していない。
+R4-1zとACL修正PR #245はマージ済みで、Production UIにもdurable登録と合算preflightが反映されている。Production migrationとACL境界は成立した。Cloud AI credit不足と個別Plan付与画面の欠落により、4ページの有料生成はfail-closedで開始していない。先に個別利用枠の運用解除PRを完了する。
 
 ## 対象
 
@@ -34,17 +34,28 @@ R4-1zはPR #244としてマージ済みで、Production UIにもdurable登録と
 5. table、4 RPC、RLS、policyなし、table ACL、RPC ACL、security definer、固定search pathの16項目を再検証し、16/16成功した。
 6. 再発防止として`202608130002_cloud_generation_batch_target_acl.sql`を追加し、既定ACLを明示的に打ち消す。
 7. ACL修正Draft PR [#245](https://github.com/team478a/manga/pull/245)を作成した。Preview: https://mangai-hub-staging-git-codex-fix-r4-1-9c47e2-team478as-projects.vercel.app。全CI／Vercel Preview成功、Draft／MERGEABLE。
+8. PR #245はmerge commit `a5e903d5f062fab9c05068a67a8c102854ff5dd5`でマージ済み。
 
 ローカルではPostgreSQL 16で全54 migrationのforward／rollback／reapply／canonical、集中17/17、deps、lint、全typecheck、RC structure、diff checkに成功した。
 
 最初の存在確認はEditorに残っていた旧入力が混在して構文エラーとなった。続く確認SELECTは正常に完了し、構文エラー時のDB変更はない。
 
+## 個別credit準備の阻害要因と解除
+
+- Productionの`test`はFree上限20、使用12、予約0、残り8 credit。
+- 現行管理画面は全体Planの月間creditやrate limitを編集できるが、個別ユーザーのentitlementを付与できない。全体Plan値の変更はR4-1aaの不変条件に反する。
+- 接続中Chromeは`test`のProduction sessionだけで、Production Supabase管理者sessionはない。Supabase CLIはaccess tokenなし、Vercel CLIは別teamだけに接続されているため、管理者資格情報の抽出や迂回は行わない。
+- 管理者ユーザー詳細へ、既存Free／Trial／Creatorを1〜90日の新期間として付与する最小操作を追加する。
+- Stripe管理中、現在期間の予約credit、queued／running Job、停止中Plan、同時更新はfail-closedで拒否する。変更前後は既存Cloud AI管理監査へ記録する。
+- DB／migration／RPCと全体Plan値は変更しない。解除PRのmerge後、管理者画面から`test`へTrial 30日を付与する。
+
 ## 再開条件
 
-1. ACL追加migrationの修正PRを全CI成功後にmergeする。
-2. `test`の利用可能Cloud AI creditを最低32にする。全利用者のplan価格・単価を変更せず、対象利用者のentitlementで準備する。
-3. 同じ19〜22ページを選択し、blocker 0、要求16コマ、必要32 creditを再確認する。
-4. その時点で初めて一括生成を開始する。
+1. ACL追加migrationの修正PR #245をmergeする（完了）。
+2. 個別Cloud AI利用枠の運用解除PRを全CI成功後にmergeする。
+3. 管理者画面から`test`へTrial 30日を付与し、利用可能Cloud AI creditを最低32にする。全利用者のplan価格・単価は変更しない。
+4. 同じ19〜22ページを選択し、blocker 0、要求16コマ、必要32 creditを再確認する。
+5. その時点で初めて一括生成を開始する。
 
 ## 合格条件
 

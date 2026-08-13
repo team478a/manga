@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-13 Codex: PR-R4-1aa 個別Cloud AI利用枠の運用解除
+
+- PR #245がmerge commit `a5e903d5f062fab9c05068a67a8c102854ff5dd5`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- Productionの`test`セッションを再確認し、作品19〜22ページが各4コマ・未生成であることを確認した。残り8 creditのため、4ページ／16コマの生成は引き続き開始していない。
+- 現行管理画面には全体Plan値の編集しかなく、個別ユーザーへ既存Planを付与できない。接続中Chromeは`test`だけで、Supabase CLIとVercel CLIにも対象Productionの管理権限がないことを秘密値なしで確認した。
+- 管理者ユーザー詳細へCloud AI個別利用枠を追加した。Free／Trial／Creatorと1〜90日の新期間を付与できるが、Stripe管理中、予約creditあり、queued／running Jobあり、停止中Planはfail-closedで拒否する。
+- actionは`requireAdmin`後だけinfrastructure repositoryを呼び、変更前後を`cloud_ai_admin_audit_logs`へ記録する。メール、秘密値、Prompt、画像は監査へ保存しない。
+- DB、migration、RPC、全体Plan値、Provider、model、pricing、credit単価、rate limit、retry、timeout、Scheduler、Storage、Canvas、PDF／PNG、成人向け境界、Desktopは変更していない。
+- 集中10/10、Hub typecheck、deps、lint、diff check成功。全品質ゲートとDraft PR作成を継続する。
+- merge後は管理者画面から`test`へTrial 30日を付与し、残りcredit／blocker／16 targetを再確認してから1回だけ生成する。
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1aa 4ページProduction受入れpreflight
 
 - PR #244がmerge commit `243e60b83d974a41e5273b292c4a6e3604e2986d`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
