@@ -29,7 +29,7 @@
 - dependency boundary 0 errors（既存warning 2件）、lint、Hub／Desktop typecheck成功
 - Desktop accessibility violations 0、Desktop production build成功
 - migration checksum／forward・rollback validation 55/55、diff check成功
-- Hub production buildは長いWindows作業パスでTurbopackのfilesystem上限に達したため、同一commitを短い物理worktreeで再確認する。
+- Hub production buildは長いWindows作業パスでTurbopackのfilesystem上限に達したが、同一commitを短い物理worktreeで再実行して成功した。
 - `rc:preflight`のrepository structureはREADY。外部Secretと手動E2Eはローカル環境にないためPENDING。
 
 ## Production再受入れ

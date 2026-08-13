@@ -11,8 +11,8 @@
 - 安全性: 一括生成履歴0、利用／予約credit 0、Provider Job 0を確認し、再試行していない。
 - 実装: 準備／入力schema／RPC登録を安全な失敗段階へ分類する。既存RPC signatureと原子性を保ったまま、登録検証を固定code化し、PostgREST schema cache reloadを通知する。未知のDB情報、Prompt、画像、payloadは表示しない。
 - 不変: URL、公開API、RPC signature、Storage、Feature Flag、Provider、model、pricing値、credit、retry、timeout、rate limit、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktop。
-- 検証: 集中16/16、Hub 662/662、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 55/55、Desktop build、RC structure、diff check成功。Hub buildはWindows長pathを避けた短い物理worktreeで再確認する。
-- 次: 同一commitの短path build、Draft PR、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge後にProduction migrationを適用し、同じ4ページ生成を1回だけ再受入れする。
+- 検証: 集中16/16、Hub 662/662、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 55/55、Hub／Desktop build、RC structure、diff check成功。Hub buildはWindows長pathを避けた短い物理worktreeで同一commitを確認した。
+- 次: Draft PR、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge後にProduction migrationを適用し、同じ4ページ生成を1回だけ再受入れする。
 - 証跡: [`RELEASE_CANDIDATE_R4_1AB_BATCH_REGISTRATION_DIAGNOSTICS.md`](RELEASE_CANDIDATE_R4_1AB_BATCH_REGISTRATION_DIAGNOSTICS.md)
 
 ---
