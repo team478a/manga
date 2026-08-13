@@ -21,6 +21,10 @@ export type GenerationBatchPreflightContext = {
   userRequestsPerMinute: number | null;
   projectRequestsPerMinute: number | null;
   pagePanelCounts: Record<string, number | null>;
+  visualReadinessAvailable: boolean;
+  styleBibleConfigured: boolean;
+  configuredCharacterNames: string[];
+  pageCharacterNames: Record<string, string[]>;
   schedulerJobsPerRun: number;
   schedulerIntervalMinutes: number;
 };
@@ -34,6 +38,8 @@ export type GenerationBatchPreflightEstimate = {
   schedulerRuns: number;
   schedulerMinimumMinutes: number;
   registrationLimit: number | null;
+  requiredCharacterNames: string[];
+  missingCharacterNames: string[];
   canStart: boolean;
   blockers: string[];
 };
@@ -79,6 +85,21 @@ export function estimateGenerationBatch(
     context.projectRequestsPerMinute,
   ].filter((value): value is number => value !== null);
   const registrationLimit = rateLimits.length ? Math.min(...rateLimits) : null;
+  const normalizeName = (value: string) =>
+    value.normalize("NFKC").toLocaleLowerCase();
+  const requiredCharacterNames = Array.from(
+    new Map(
+      uniquePageIds
+        .flatMap((pageId) => context.pageCharacterNames[pageId] ?? [])
+        .map((name) => [normalizeName(name), name] as const),
+    ).values(),
+  );
+  const configuredCharacterNames = new Set(
+    context.configuredCharacterNames.map(normalizeName),
+  );
+  const missingCharacterNames = requiredCharacterNames.filter(
+    (name) => !configuredCharacterNames.has(normalizeName(name)),
+  );
   const blockers: string[] = [];
 
   if (uniquePageIds.length < 4 || uniquePageIds.length > 8)
@@ -91,6 +112,14 @@ export function estimateGenerationBatch(
     blockers.push("選択したページに生成可能なコマがありません。");
   if (targetPanelCount > 64)
     blockers.push("一度に生成できるコマは64個までです。ページを分けてください。");
+  if (!context.visualReadinessAvailable)
+    blockers.push("人物・画風の生成準備を確認できませんでした。時間をおいて再度お試しください。");
+  if (context.visualReadinessAvailable && !context.styleBibleConfigured)
+    blockers.push("作品全体の画風が未設定です。画風・世界観設定を保存してから開始してください。");
+  if (context.visualReadinessAvailable && missingCharacterNames.length)
+    blockers.push(
+      `登場人物「${missingCharacterNames.join("、")}」の外見・衣装設定が未設定です。キャラクター設定を保存してから開始してください。`,
+    );
   if (!context.available || !context.providerEnabled || requiredCredits === null || maxReservedCostMicros === null)
     blockers.push("画像生成の料金と利用枠を確認できませんでした。");
   if (!context.monitorActive)
@@ -120,6 +149,8 @@ export function estimateGenerationBatch(
     schedulerRuns,
     schedulerMinimumMinutes: schedulerRuns * context.schedulerIntervalMinutes,
     registrationLimit,
+    requiredCharacterNames,
+    missingCharacterNames,
     canStart: blockers.length === 0,
     blockers: [...new Set(blockers)],
   };
