@@ -82,6 +82,35 @@ export async function checkpointCloudGenerationProviderJob(input: {
     throw new Error("Cloud AI Provider Jobを保存できませんでした。");
 }
 
+export async function deferCloudGenerationProviderJob(input: {
+  client: CloudAiAdminClient;
+  job: ClaimedCloudGenerationJob;
+  providerJobId: string;
+}) {
+  const now = Date.now();
+  const { data, error } = await input.client
+    .from("cloud_generation_jobs")
+    .update({
+      status: "queued",
+      progress: 1,
+      provider_job_id: input.providerJobId,
+      attempt_count: Math.max(0, input.job.attempt_count - 1),
+      error_code: "provider_pending",
+      error_message: "Provider処理の完了を待っています。",
+      lease_token: null,
+      lease_expires_at: null,
+      retry_at: new Date(now + 15_000).toISOString(),
+      updated_at: new Date(now).toISOString(),
+    })
+    .eq("id", input.job.id)
+    .eq("status", "running")
+    .eq("lease_token", input.job.lease_token)
+    .select("id")
+    .maybeSingle();
+  if (error || !data)
+    throw new Error("Cloud AI Provider Jobの待機状態を保存できませんでした。");
+}
+
 export async function failCloudGenerationJob(input: {
   client: CloudAiAdminClient;
   job: ClaimedCloudGenerationJob;

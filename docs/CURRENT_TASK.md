@@ -2617,3 +2617,17 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - ローカル検証: focused 22/22、deps、lint、typecheck、Hub、AI 48/48、Canvas 26/26、Desktop 182/182、migration 55本、Cloud漫画repository受入れ、Webpack Hub build、Desktop build、RC structure preflight、`git diff --check`成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止し、Vercel Previewを正規確認先とする。
 - 次: 責任者merge待ち。merge／Production反映前は残り6コマを実行しない。反映後は既存失敗1件だけを再登録し、残りQueueを16/16完了まで処理する。
 - Draft PR #252のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。責任者のmergeとProduction反映前に残り6コマを実行しない。
+
+# 2026-08-14 Codex: Provider待機のretry予算分離
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/fix-r4-1ae-provider-pending-budget`
+- Base: `origin/feature/manga-canvas-mvp`@`7fc04fc`（PR #252 merge後）
+- Draft PR: [#253](https://github.com/team478a/manga/pull/253)
+- PR #252のProduction反映後、失敗2コマだけを再登録し、公式Workerを限定実行した。12/16から14/16へ進んだが、残る2件はBFLの210秒超過pollingが通常retryとして数えられ、`max_attempts=2`を使い切って失敗した。追加再実行は停止した。
+- BFLへの再POSTは発生せず、PR #252のProvider Job ID checkpointと同一Job pollingは機能した。追加阻害はProvider処理中という正常な待機状態と、通信・Provider失敗のretry予算が同じだったこと。
+- Provider Job ID保存後のtimeoutだけを15秒後のQueueへ戻し、claim時に増えた`attempt_count`をlease一致条件で戻す。Provider Jobの初回開始から30分を上限とし、無期限pollingは許可しない。通常のtimeout、rate limit、5xx、network errorの既存retry回数は変更しない。
+- 新規DB migration、RPC、公開API、Storage、Provider、model、pricing、210秒timeout、Scheduler頻度、Canvas schema、PDF／PNG、成人向け境界、Desktopの変更なし。
+- ローカル検証: focused 24/24、deps、lint、typecheck、Hub、AI 48/48、Canvas 26/26、Desktop 182/182、Desktop a11y、migration 55本、Cloud漫画repository受入れ、owner isolation、100ページ長編4/4、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
+- 次: 責任者merge待ち。merge／Production反映前に失敗2コマを再実行しない。反映後、2件だけ再登録し、16/16完了・Asset・品質評価・画像目視を確認する。

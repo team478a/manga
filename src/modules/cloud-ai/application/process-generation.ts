@@ -26,6 +26,7 @@ import {
 import {
   checkpointCloudGenerationProviderJob,
   completeCloudGenerationJob,
+  deferCloudGenerationProviderJob,
   failCloudGenerationJob,
 } from "../infrastructure/cloud-ai-repository.ts";
 import { evaluateCompletedPanelCandidate } from "../../manga-quality/application/evaluate-completed-panel.ts";
@@ -35,6 +36,15 @@ export { CloudGenerationLeaseLostError } from "../domain/cloud-ai-errors.ts";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 type CloudProvider = CloudImageGenerationProvider | CloudTextGenerationProvider;
+
+const MAX_PROVIDER_POLLING_AGE_MS = 30 * 60 * 1_000;
+
+function canContinueProviderPolling(job: ClaimedCloudGenerationJob) {
+  const startedAt = Date.parse(job.started_at ?? "");
+  if (!Number.isFinite(startedAt)) return false;
+  const elapsed = Date.now() - startedAt;
+  return elapsed >= 0 && elapsed < MAX_PROVIDER_POLLING_AGE_MS;
+}
 
 export { processPendingCloudStorageCleanup };
 
@@ -251,6 +261,18 @@ export async function processNextCloudGenerationJob(input: {
       return { status: "lease_lost" as const, jobId: job.id };
     }
     const failure = classifyCloudAiWorkerError(error);
+    if (
+      failure.code === "timeout" &&
+      checkpointedProviderJobId &&
+      canContinueProviderPolling(job)
+    ) {
+      await deferCloudGenerationProviderJob({
+        client,
+        job,
+        providerJobId: checkpointedProviderJobId,
+      });
+      return { status: "retrying" as const, jobId: job.id };
+    }
     const retryable =
       failure.retryable &&
       shouldRetryGeneration({
