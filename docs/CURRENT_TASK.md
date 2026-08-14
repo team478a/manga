@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-14 PR-R4-2F Provider生成コマの再制作品質
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- Branch: `codex/fix-r4-2f-provider-panel-quality`
+- Base: `origin/feature/manga-canvas-mvp`@`9fbf228`（PR #262 merge commit）。
+- Production限定受入れ: ページ22の不良2画像を各1回だけ作り直し、Worker run `31802403441`で2件ともProvider生成完了。creditは使用28→32、予約4→0、残り68。新画像にも人体／小物融合と疑似文字が残ったため配置・承認せず、追加有料再実行を停止した。
+- 原因: BFLへnegative promptを送らない既存契約上、正方向Promptの小物接触・無地表面・非正立例外が不足していた。再制作も同じ条件を再送し、承認取消し、未配置候補却下、後続Job中の重複防止がなかった。
+- 実装: 正立／明示された非正立動作を分離し、紙面の正立、人体、小物接触、衣服との境界、非記号的な無地表面を日英Promptへ追加する。再制作へ既存`compositionInstruction`で品質修正を付ける。未配置候補と承認済み画像の却下・1案再制作、同じコマの生成中／候補確認待ちで古い再実行を停止する。
+- 不変: URL、公開API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry、timeout、Scheduler、Canvas schema、PNG／PDF、checkpoint、成人向け境界、Desktop。
+- 検証: 集中41/41、Hub 714/714、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack production build、RC structure、diff check成功。標準Turbopackは既知のWindows path長、Desktopは既存`@napi-rs/keyring`型宣言不足で停止し、CIを正式結果とする。
+- Production: 手動確認待ち2画像は未配置。公開・販売状態、DB、migrationは変更していない。追加Provider実行は行わない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2F_PROVIDER_PANEL_QUALITY.md`
+- 次: Draft PR、全CI、Vercel Previewを確認して停止する。責任者merge前にProduction再生成を行わない。
+
+---
+
 ## 2026-08-14 PR-R4-2E 生成原稿の最終品質ゲート
 
 - 状態: `READY_FOR_OWNER_REVIEW`

@@ -403,14 +403,32 @@ export function buildStoryboardPanelGeneration(input: {
     effect:
       "純白の無地背景に漫画の効果素材を描く。効果線、集中線、スピード線、衝撃、光、影の演出を黒い線と網点で明瞭に構成する。",
   } as const;
+  const explicitlyNonUprightAction =
+    /(?:逆さ|上下反転|落下|転落|落ち(?:る|た|て|そう)|吊|ぶら下|横たわ|倒れ|\bfall(?:ing)?\b|\bhang(?:ing)?\b|\bsuspended\b|upside[ -]?down|\blying\b)/i.test(
+      [
+        storyboardPanel.action,
+        storyboardPanel.composition,
+        storyboardPanel.visualDirection,
+      ].join(" "),
+    );
+  const uprightDirection = explicitlyNonUprightAction
+    ? [
+        "紙面の上辺と地平線を正立させる。ネームで明示された非正立の動作だけを、重力と関節が読み取れる意図的な姿勢として描き、ほかの人物は自然に正立させる。",
+        "Keep the page frame and horizon upright. Render only the explicitly described off-balance subject as a deliberate, anatomically coherent action under gravity; all other people remain conventionally upright.",
+      ]
+    : [
+        "紙面の上辺を上、下辺を地面側とする自然な正立方向で描く。人物は頭部が画面上側、足元が画面下側となり、重力に沿った姿勢にする。",
+        "Upright orientation with the top edge skyward and the bottom edge groundward. Human heads stay toward the top edge, feet toward the bottom edge, with natural anatomy and gravity.",
+      ];
   const prompt = [
     "端から端まで一続きの、一般向け日本漫画用モノクロ場面イラスト。",
     "画像全体を一つの視点、一つの瞬間、連続した一つの場面で満たす。画面は純粋な絵だけで構成し、表面は無記名で清潔に保つ。",
     "A single continuous edge-to-edge monochrome scene, one camera view and one moment in time, composed as pure unlettered pictorial artwork.",
-    "紙面の上辺を上、下辺を地面側とする自然な正立方向で描く。人物は頭部が画面上側、足元が画面下側となり、重力に沿った姿勢にする。",
+    ...uprightDirection,
     "画面内の線と形は、人物・背景・小物・光・影として意味のある絵柄だけで構成し、顔、手指、関節を自然な人体構造で仕上げる。",
-    "Upright orientation with the top edge skyward and the bottom edge groundward. Human heads stay toward the top edge, feet toward the bottom edge, with natural anatomy and gravity.",
     "Every mark and shape belongs to the depicted people, environment, objects, light, or shadow as coherent pictorial artwork.",
+    "小物はネームで指定した持ち方と位置だけに置き、手指との接触、衣服との境界、実物らしい大きさを明瞭にする。平面や衣服・小物の表面は、記号に見えない無地の面と素材の陰影で描く。",
+    "Props have clear physical contact, believable scale, and clean separation from anatomy and clothing. Flat surfaces use plain, featureless material shading made only from non-symbolic pictorial marks.",
     `生成対象: ${targetDirections[generationTarget]}`,
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,

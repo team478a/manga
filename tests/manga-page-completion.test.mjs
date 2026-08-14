@@ -181,6 +181,9 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(generation, /event_type/);
   assert.match(editor, /この画像を品質確認済みにする/);
   assert.match(editor, /このコマだけ作り直す（1案）/);
+  assert.match(editor, /この候補を使わず作り直す（1案）/);
+  assert.match(editor, /品質確認を取り消して作り直す（1案）/);
+  assert.match(editor, /前の候補とは異なる明瞭な構図で再制作する/);
   assert.match(editor, /event: "rejected"/);
   assert.match(production, /getCloudPageCompletion/);
   assert.match(checkpoint, /assertCloudProjectComplete/);

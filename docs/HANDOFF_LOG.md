@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2F Provider生成コマの再制作品質
+
+- PR #262 merge commit `9fbf2281636f2582e9aca528fa0dcafb9a47f464`を含む最新基準から`codex/fix-r4-2f-provider-panel-quality`を開始した。
+- Productionページ22で、正常な未確認画像1件だけを品質確認済みにし、不良2画像を却下して各1回再制作した。最初の再制作はProvider失敗、既存retryを各1回だけ行い、Worker run `31802403441`で2件生成完了。使用28→32、予約4→0、残り68。重複Jobなし。
+- 新画像は人物の不自然な吊り下がり／バッグ上の疑似記号、胸部への端末融合／画面内疑似文字が残った。2件とも手動確認待ちで配置・承認せず、追加有料再実行を停止した。
+- BFL正方向Promptへ、紙面を正立させた非正立動作の限定、小物と手指の接触、衣服との境界、無地・非記号表面を追加した。通常の「落ち着く」を落下と誤判定しない。
+- 品質却下後は前候補と異なる構図・品質条件で1案だけ再制作する。未配置候補の却下、承認済み画像の品質確認取消し、生成中／候補確認待ちの同一コマに古いJobから重複登録しないUIを追加した。
+- 集中41/41、Hub 714/714、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack Hub build、RC structure、diff check成功。標準Turbopackは既知のWindows path長、Desktopは既存`@napi-rs/keyring`型宣言不足で停止した。
+- URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 次: Draft PR、全CI、Vercel Preview成功後に停止する。merge前にProduction再生成を行わない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2E 生成原稿の最終品質ゲート
 
 - Branch: `codex/quality-r4-2e-final-manuscript-gate`

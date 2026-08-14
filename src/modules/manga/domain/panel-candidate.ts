@@ -22,6 +22,12 @@ type CandidateJob = {
   job_type: string;
 };
 
+type CandidateJobStatus = Pick<CandidateJob, "id" | "target_panel_id"> & {
+  status: string;
+  panel_adoption_status?: string | null;
+  quality_review_status?: string | null;
+};
+
 export function filterGenerationJobsForPage<T extends { page_id: string | null }>(
   jobs: readonly T[],
   pageId: string,
@@ -34,6 +40,23 @@ export function candidateBelongsToPage(
   pageId: string,
 ) {
   return job.page_id === pageId;
+}
+
+export function hasUnresolvedPanelGeneration(
+  jobs: readonly CandidateJobStatus[],
+  panelId: string,
+  excludedJobId?: string,
+) {
+  return jobs.some(
+    (job) =>
+      job.id !== excludedJobId &&
+      job.target_panel_id === panelId &&
+      (job.status === "queued" ||
+        job.status === "running" ||
+        (job.status === "completed" &&
+          job.panel_adoption_status !== "auto_placed" &&
+          job.quality_review_status !== "rejected")),
+  );
 }
 
 const percent = (value: number) =>
