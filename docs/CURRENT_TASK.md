@@ -2,7 +2,9 @@
 
 ## 2026-08-14 PR-R4-2A 生成画像の自動採用・Canvas自動配置
 
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#255](https://github.com/team478a/manga/pull/255)
+- Vercel Preview: https://mangai-hub-staging-2pohngbee-team478as-projects.vercel.app
 - Branch: `codex/feat-r4-2a-auto-panel-adoption`
 - Base: `origin/feature/manga-canvas-mvp`@`d7a7062`（PR #253 merge commit）。PR #254はDraft／OPEN／MERGEABLEで未マージのため、そのbranchへ変更を追加せず独立branchで進める。
 - Job／Asset: Workerは`complete_cloud_generation_image_job`でStorage Assetと`cloud_generation_jobs.status=completed`を原子的に確定するが、完了後は品質評価だけでCanvas配置・保存を行っていない。
@@ -19,7 +21,8 @@
 - UI: 生成中、画像生成完了、自動配置済み、手動確認待ち、配置失敗、再実行可能を表示する。自動配置済みの通常採用buttonは隠し、安全に再読込できる場合は保存済みCanvasへ自動更新する。手動確認時の既存採用導線は維持する。
 - 保護: 生成開始後revision変更、別画像、locked panel／layer、finalized、明示拒否では既存画像を削除・上書きしない。owner／project／page／panel／Job由来Assetの一致をDB側でも再確認する。Prompt、画像、秘密値、Provider応答はログ・公開responseへ追加しない。
 - ローカル検証: 集中29/29、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 56本、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildのみ既知のWindows path長上限で停止し、同一sourceのWebpack buildで成功した。
-- 次: 最新`feature/manga-canvas-mvp`へ追従後、commit／pushしてDraft PRを作成する。全CIとVercel Preview成功時点で停止し、責任者確認前にPR-R4-2Bへ進まない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後はProduction migrationを先に適用し、Workerで1候補生成画像がCanvasへ自動配置されることを実機確認する。責任者確認前にPR-R4-2Bへ進まない。
 - 対象外: PR-R4-2B〜2D、Provider、model、pricing、retry、timeout、Scheduler頻度、成人向け境界、Desktop。
 
 ---
