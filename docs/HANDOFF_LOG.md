@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2A-1 同一ページ複数コマrevision連鎖監査
+
+- PR #255がmerge commit `f11b8934876e9b730f63e85034a6aeb8963cfe4b`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
+- PR-R4-2Bの実装前監査で、一括生成の同一ページ全targetが同じ`source_page_revision`を持つ一方、最初の自動配置保存後はページrevisionが進み、後続コマが`source_revision_changed`になることを確認した。現状では1ページの複数コマを連続自動配置できない。
+- 手動編集保護を維持するため、開始revisionから現在revisionまでの各revisionが同じページ・同じ開始revisionの`auto_placed`台帳で欠番なく証明できる場合だけ、後続コマを許可する。applicationとservice-role transactionの両方で検証する。
+- revisionに欠番、別source revision、通常Canvas保存、セリフ配置、復元などが混在した場合は許可しない。Provider、model、pricing、retry、timeout、Scheduler、Storage、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更しない。
+- applicationへDB検証済みの連鎖判定を追加し、repositoryはservice-role限定の確認RPCとv2保存RPCを使用する。migration `202608140002_cloud_generation_panel_adoption_revision_chain`はpage lock後の実revisionで同じ欠番検証を再実行し、TOCTOUを防ぐ。rollbackとmanifestを追加した。
+- 集中14/14、Hub 682/682、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 57/57、research eval、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildのみ既知のWindows path長上限で停止した。
+- Draft PR: [#256](https://github.com/team478a/manga/pull/256)。Preview: https://mangai-hub-staging-2c6ir91um-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。merge後にmigration `202608140001`と`202608140002`を順番に適用して複数コマ自動配置を実機確認し、責任者確認前にPR-R4-2Bへ進まない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2A 生成画像の自動採用・Canvas自動配置
 
 - PR #253のmerge commit `d7a70627aff1608a2801593d860a3e2f9b29d160`を基点に、Cloud漫画生成のJob完了後にCanvasへ画像が反映されず、手動採用に依存して空コマが残る経路を監査した。PR #254はDraft／OPENのまま変更していない。

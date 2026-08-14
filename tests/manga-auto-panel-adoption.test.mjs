@@ -62,6 +62,7 @@ function context(overrides = {}) {
     assetFileName: "generated.png",
     sourcePageRevision: 2,
     currentPageRevision: 2,
+    automaticRevisionChain: true,
     productionStatus: "review_required",
     jobType: "background",
     generationOperation: "text_to_image",
@@ -133,7 +134,10 @@ test("手動画像、生成後revision変更、finalizedを上書きしない", 
     },
     {
       name: "revision changed",
-      value: context({ currentPageRevision: 3 }),
+      value: context({
+        currentPageRevision: 3,
+        automaticRevisionChain: false,
+      }),
       reason: "source_revision_changed",
     },
     {
@@ -170,6 +174,36 @@ test("手動画像、生成後revision変更、finalizedを上書きしない", 
       assert.equal(repo.calls.saved.length, 0);
       assert.equal(repo.calls.recorded[0].reasonCode, item.reason);
     });
+});
+
+test("同じ開始revisionから自動配置だけが連続した後続コマを保存する", async () => {
+  const repo = repository([
+    context({ currentPageRevision: 4, automaticRevisionChain: true }),
+  ], async () => ({ revision: 5 }));
+  const result = await adoptCompletedPanelCandidate({
+    jobId: context().jobId,
+    repository: repo.adapter,
+    createId: () => "50000000-0000-4000-8000-000000000002",
+    now: () => "2026-08-14T01:05:00.000Z",
+  });
+  assert.deepEqual(result, { status: "auto_placed", revision: 5 });
+  assert.equal(repo.calls.saved[0].expectedRevision, 4);
+  assert.equal(repo.calls.saved[0].canvas.panelLayers.length, 1);
+});
+
+test("revision差分に自動配置以外が混在する場合は後続コマを停止する", async () => {
+  const repo = repository([
+    context({ currentPageRevision: 4, automaticRevisionChain: false }),
+  ]);
+  const result = await adoptCompletedPanelCandidate({
+    jobId: context().jobId,
+    repository: repo.adapter,
+  });
+  assert.deepEqual(result, {
+    status: "review_required",
+    reasonCode: "source_revision_changed",
+  });
+  assert.equal(repo.calls.saved.length, 0);
 });
 
 test("revision競合は1回だけ再読込し、既存採用を重複させない", async () => {
@@ -247,6 +281,26 @@ test("migration keeps adoption owner-only and persistence service-role-only", ()
     sql,
     /grant execute on function public\.save_cloud_generation_panel_adoption[^;]+authenticated/,
   );
+});
+
+test("follow-up migration only accepts a gapless auto-placement revision chain", () => {
+  const sql = read(
+    "supabase/migrations/202608140002_cloud_generation_panel_adoption_revision_chain.sql",
+  );
+  assert.match(sql, /generate_series\(p_source_revision\+1,p_current_revision\)/);
+  assert.match(sql, /adoption\.status='auto_placed'/);
+  assert.match(sql, /adoption\.source_page_revision=p_source_revision/);
+  assert.match(sql, /save_cloud_generation_panel_adoption_v2/);
+  assert.match(sql, /auth\.role\(\)<>'service_role'/g);
+  assert.doesNotMatch(
+    sql,
+    /grant execute on function public\.save_cloud_generation_panel_adoption_v2[^;]+authenticated/,
+  );
+  const repository = read(
+    "src/modules/manga/infrastructure/auto-panel-adoption-repository.ts",
+  );
+  assert.match(repository, /is_cloud_generation_panel_adoption_revision_chain/);
+  assert.match(repository, /save_cloud_generation_panel_adoption_v2/);
 });
 
 test("worker completes the Job before best-effort placement and reconciles interruptions", () => {

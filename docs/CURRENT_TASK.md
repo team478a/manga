@@ -1,5 +1,25 @@
 # MANGAI Current Task
 
+## 2026-08-14 PR-R4-2A-1 同一ページ複数コマの自動配置revision連鎖
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#256](https://github.com/team478a/manga/pull/256)
+- Vercel Preview: https://mangai-hub-staging-2c6ir91um-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-2a-batch-revision-chain`
+- Base: `origin/feature/manga-canvas-mvp`@`f11b893`（PR #255 merge commit）
+- 発見: 一括生成targetは同一ページの全コマで同じ`source_page_revision`を固定する。最初のコマの自動配置がページrevisionを1進めるため、現行R4-2Aは2コマ目以降を`source_revision_changed`として停止する。1ページにつき最初の1画像だけが自動配置され得るため、PR-R4-2A受入条件を満たさない。
+- 原因: applicationとservice-role保存RPCが`current revision === source revision`だけを安全条件にしており、revision差分がR4-2A自身の自動配置だけで構成される正当な連続処理を区別できない。
+- 修正方針: `source_page_revision + 1`から現在revisionまでの全revisionが、同じページ・同じsource revisionの`auto_placed`台帳で欠番なく証明できる場合だけ後続コマを許可する。applicationの事前判定とDB transaction内の最終判定を一致させる。
+- 手動編集保護: 途中に通常Canvas保存、セリフ配置、復元、その他のrevision更新が1件でも入れば台帳revisionに欠番が生じるため、従来どおり`source_revision_changed`で確認待ちにする。既存画像、locked、finalized、owner境界は変更しない。
+- 回帰対象: 同一source revisionの2コマ連続採用、3コマ以上の連鎖、revision欠番、別source revision、手動画像、冪等再処理、DB service-role限定。
+- 実装: application contextへDB検証済みの自動revision連鎖判定を追加し、通常のrevision差分は引き続き確認待ちにする。repositoryはservice-role限定の連鎖確認RPCとv2保存RPCを使用する。
+- DB: migration `202608140002_cloud_generation_panel_adoption_revision_chain`で、`source + 1`から現在revisionまでの全番号が同じページ・同じsource revisionの`auto_placed.applied_page_revision`に存在することを検証する。保存時はpage row lock後の実revisionで再検証し、欠番をfail-closedにする。rollbackとmanifestを追加した。
+- 検証: 集中14/14、Hub 682/682、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 57本、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildのみ既知のWindows path長上限で停止した。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後にmigration `202608140001`と`202608140002`を順番に適用して複数コマ自動配置を実機確認し、責任者確認前にPR-R4-2Bへ進まない。
+
+---
+
 ## 2026-08-14 PR-R4-2A 生成画像の自動採用・Canvas自動配置
 
 - 状態: `READY_FOR_OWNER_REVIEW`
