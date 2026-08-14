@@ -414,7 +414,7 @@ export function buildStoryboardPanelGeneration(input: {
   const uprightDirection = explicitlyNonUprightAction
     ? [
         "紙面の上辺と地平線を正立させる。ネームで明示された非正立の動作だけを、重力と関節が読み取れる意図的な姿勢として描き、ほかの人物は自然に正立させる。",
-        "Keep the page frame and horizon upright. Render only the explicitly described off-balance subject as a deliberate, anatomically coherent action under gravity; all other people remain conventionally upright.",
+        "Keep the page frame and horizon upright. Render only the clearly described off-balance subject as a deliberate, anatomically coherent action under gravity; all other people remain conventionally upright.",
       ]
     : [
         "紙面の上辺を上、下辺を地面側とする自然な正立方向で描く。人物は頭部が画面上側、足元が画面下側となり、重力に沿った姿勢にする。",

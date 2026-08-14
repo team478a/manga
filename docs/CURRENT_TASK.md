@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-14 PR-R4-2G 一般漫画Promptと成人向け検知の語彙衝突修正
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#264](https://github.com/team478a/manga/pull/264)（Draft／MERGEABLE）
+- Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/84qDxxD1emsNu6s18yQ6ZNsbPiL5
+- Branch: `codex/fix-r4-2g-prompt-moderation-collision`
+- Base: `origin/feature/manga-canvas-mvp`@`6fb9bf0`（PR #263 merge commit）。
+- Production限定受入れ: ページ22の不良候補1件を再制作しようとしたが、Provider登録前に`adult_content`でfail-closed拒否された。使用32、予約0、残り68で、新規Job・Provider課金・Assetは0。残り2件は未操作。
+- 原因: R4-2Fの非正立動作向け英語Promptに`explicitly described`を追加した一方、既存一般Cloud moderationは`explicit`を成人向け語として遮断するため、一般漫画Promptが自己拒否した。
+- 修正: 意味を維持して`clearly described`へ置換し、落下構図の完成Promptが既存moderationで`allow`になる回帰テストを追加する。成人向けpatternとfail-closed境界は変更しない。
+- Production復元: 切り分け中の誤配置1件はUndo後に保存済みを確認した。公開・販売状態は変更していない。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、checkpoint、成人向け境界、Desktop。
+- 検証: 集中23/23、Hub 714/714、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack production build、RC structure成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2G_PROMPT_MODERATION_COLLISION.md`
+- 次: 責任者のreview／merge判断まで停止する。merge前にProduction再生成を行わない。
+
+---
+
 ## 2026-08-14 PR-R4-2F Provider生成コマの再制作品質
 
 - 状態: `READY_FOR_OWNER_REVIEW`
