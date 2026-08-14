@@ -2,6 +2,8 @@
 
 ## 0. 現在の優先タスク（PR-R4-2E 生成原稿の最終品質ゲート、2026-08-14）
 
+- Draft PR [#262](https://github.com/team478a/manga/pull/262) はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。責任者review前にProduction反映・有料再生成を行わない。
+
 - Branch: `codex/quality-r4-2e-final-manuscript-gate`
 - Base: `origin/feature/manga-canvas-mvp` @ `51a9864`（PR #261 merge commit）
 - 状態: `IMPLEMENTED_LOCAL_VALIDATION`

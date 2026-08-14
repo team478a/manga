@@ -63,6 +63,19 @@ PR-R4-2A〜2Dで生成画像の自動配置、セリフ配置、完成判定、�
 - 標準Turbopack build: 既知のWindows長いパス上限で停止。同一sourceのWebpack buildとVercel Previewを正式確認に使う。
 - Desktop依存の通常再構築: Visual Studio C++環境不足で停止。`--ignore-scripts`で依存解決後も既存`@napi-rs/keyring`型宣言不足でDesktop型検査／test開始前に停止したため、GitHub Windows CIを正式結果とする。
 
+## Pull Request／CI
+
+- Draft PR: [#262](https://github.com/team478a/manga/pull/262)
+- 状態: Draft、MERGEABLE
+- Commit: `4bcdd8947d712f177cb61c230eec4dfb7312ce7b`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Vercel deployment: [成功したPreview deployment](https://vercel.com/team478as-projects/mangai-hub-staging/9DPtY51tHu77KUhqhmEZBcWy4smy)
+- 現在のChrome／Vercel CLIは別Vercelアカウントに接続されているため、deployment Dashboardは404となり直接Preview aliasを取得できなかった。GitHubのVercel deployment checkは成功済みであり、Productionへは接続していない。
+
 ## Productionとロールバック
 
 - 本PR中はProduction DB、既存32ページ作品、Provider Job、credit、公開作品を変更しない。
