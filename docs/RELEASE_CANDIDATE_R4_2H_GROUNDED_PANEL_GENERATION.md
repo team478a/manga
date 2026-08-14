@@ -52,4 +52,6 @@
 ## Draft PR
 
 - [PR #265](https://github.com/team478a/manga/pull/265)
-- CI／Vercel Preview確認中。
+- Draft／MERGEABLE。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- Vercel Preview: https://mangai-hub-staging-jk5shubps-team478as-projects.vercel.app

@@ -2,8 +2,9 @@
 
 ## 2026-08-15 PR-R4-2H 参照付き単一コマ生成
 
-- 状態: `CI_RUNNING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#265](https://github.com/team478a/manga/pull/265)
+- Vercel Preview: https://mangai-hub-staging-jk5shubps-team478as-projects.vercel.app
 - Branch: `codex/quality-r4-2h-grounded-panel-generation`
 - Base: `origin/feature/manga-canvas-mvp`@`78eccff`（PR #264 merge commit）。
 - Production受入れ: ページ22の問題3コマを各1案だけ再制作し、Worker run `31809744470`で3/3完了。使用32→38、予約6→0、残り62、重複Jobなし。成人向け誤判定は解消した。
@@ -13,6 +14,7 @@
 - 不変: URL、公開API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、checkpoint、成人向け境界、Desktop。
 - 検証: 集中24/24、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、workspace package build、Webpack production build、RC structure、diff check成功。
 - Desktop: 既存`@napi-rs/keyring`型宣言不足でtypecheck／test／a11y／buildがbuild前停止。Desktop差分はなくGitHub Windows CIを正式結果とする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Windows CIでDesktop TypeScript、tests、Accessibility、unpacked buildも成功した。
 - Production変更: 限定受入れの3 Job／6 credit以外に変更なし。本PR実装後のProvider E2Eはmerge前に行わない。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2H_GROUNDED_PANEL_GENERATION.md`
 - 次: Draft PR、全CI、Vercel Preview成功で停止する。merge後は参照設定を先に確認し、1コマ1案だけで限定受入れする。

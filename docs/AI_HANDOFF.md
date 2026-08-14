@@ -4,13 +4,15 @@
 
 - Branch: `codex/quality-r4-2h-grounded-panel-generation`
 - Base: `origin/feature/manga-canvas-mvp` @ `78eccff`（PR #264 merge commit）
-- 状態: `CI_RUNNING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#265](https://github.com/team478a/manga/pull/265)
+- Vercel Preview: https://mangai-hub-staging-jk5shubps-team478as-projects.vercel.app
 - Productionページ22の問題3コマを各1案だけ生成し、Worker `31809744470`で3/3完了。使用38、予約0、残り62、重複Jobなし。3枚は複数場面＋生成文字、顔切れ、人体・接触破綻で販売品質未達のため未配置・未承認。追加課金を停止した。
 - Panel SpecificationをProviderの一枚場面契約へ昇格し、登場人数、人物、動作、表情、場所、小物、構図、画角をPrompt先頭と末尾へ同じ正本から固定する。
 - 参照画像を人物優先のDomain policyで選び、参照の役割と生成契約優先をProviderへ明示する。Provider、model、pricing、DB、migrationは変更しない。
 - 集中24/24、Hub、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、packages／Webpack build、RC structure成功。
 - Desktopは既存keyring型宣言不足。差分なしのためWindows CIを正式結果とする。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Windows CIのDesktop TypeScript、tests、Accessibility、unpacked buildも成功した。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2H_GROUNDED_PANEL_GENERATION.md`
 - 次: Draft PRと全CI／Vercel Preview成功で停止。merge前にProduction追加生成を行わない。
 
