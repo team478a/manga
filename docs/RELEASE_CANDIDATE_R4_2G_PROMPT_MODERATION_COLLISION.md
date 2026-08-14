@@ -28,6 +28,12 @@ R4-2Fで落下・吊り下がり等の非正立動作へ追加した英語の正
 - dependency／module／codebase size、Lint、Hub typecheck、migration 59/59、research eval。
 - Cloud漫画repository受入れ、workspace package build、Next.js Webpack production build、RC structure。
 
+## Draft PR／CI
+
+- Draft PR: [#264](https://github.com/team478a/manga/pull/264)（Draft／MERGEABLE）
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。
+- Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/84qDxxD1emsNu6s18yQ6ZNsbPiL5
+
 ## merge後の限定受入れ
 
 1. Production反映後、ページ22の問題3コマだけを各1案再制作する。

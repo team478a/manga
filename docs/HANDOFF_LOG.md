@@ -12,7 +12,8 @@
 - 落下構図の完成Promptに遮断語がなく、既存moderationが`allow`を返す回帰テストを追加する。
 - 切り分け中の誤配置1件はUndoし、Canvasの保存済みを確認した。公開・販売状態は変更していない。
 - 集中23/23、Hub 714/714、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack production build、RC structureに成功した。
-- 次: ローカル品質ゲート、Draft PR、全CI、Vercel Preview成功で停止する。merge前にProduction再生成しない。
+- Draft PR: [#264](https://github.com/team478a/manga/pull/264)。Draft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/84qDxxD1emsNu6s18yQ6ZNsbPiL5
+- 次: 責任者review／merge待ち。merge前にProduction再生成しない。
 
 ---
 
