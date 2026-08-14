@@ -92,7 +92,7 @@ export async function listCloudGenerationJobs(projectId: string) {
       "Cloud AI生成履歴を読み込めませんでした。",
       { cause: error },
     );
-  const publicRows = (data ?? []).map((row) => {
+  let publicRows = (data ?? []).map((row) => {
     const input =
       row.input && typeof row.input === "object"
         ? (row.input as Record<string, unknown>)
@@ -125,6 +125,9 @@ export async function listCloudGenerationJobs(projectId: string) {
     const { input: _privateInput, ...publicRow } = row;
     return {
       ...publicRow,
+      panel_adoption_eligible: input?.autoAdopt === true,
+      panel_adoption_status: null,
+      panel_adoption_retryable: false,
       target_panel_id: targetPanelId,
       source_asset_id: sourceAssetId,
       outpainting_direction: outpaintingDirection,
@@ -136,10 +139,31 @@ export async function listCloudGenerationJobs(projectId: string) {
     .filter((row) => row.status === "completed" && row.target_panel_id)
     .map((row) => row.id);
   if (!completedIds.length) return publicRows;
-  const evaluations = await supabase
-    .from("cloud_manga_quality_evaluations")
-    .select("generation_job_id,overall_score")
-    .in("generation_job_id", completedIds);
+  const [evaluations, adoptions] = await Promise.all([
+    supabase
+      .from("cloud_manga_quality_evaluations")
+      .select("generation_job_id,overall_score")
+      .in("generation_job_id", completedIds),
+    supabase
+      .from("cloud_generation_panel_adoptions")
+      .select("generation_job_id,status,retryable")
+      .in("generation_job_id", completedIds),
+  ]);
+  if (!adoptions.error) {
+    const adoptionByJobId = new Map(
+      (adoptions.data ?? []).map((item) => [item.generation_job_id, item]),
+    );
+    publicRows = publicRows.map((row) => {
+      const adoption = adoptionByJobId.get(row.id);
+      return adoption
+        ? {
+            ...row,
+            panel_adoption_status: adoption.status as CloudGenerationJob["panel_adoption_status"],
+            panel_adoption_retryable: Boolean(adoption.retryable),
+          }
+        : row;
+    });
+  }
   if (evaluations.error) return publicRows;
   const scoreByJobId = new Map(
     (evaluations.data ?? []).map((item) => [

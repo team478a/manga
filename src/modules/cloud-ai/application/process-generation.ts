@@ -30,6 +30,8 @@ import {
   failCloudGenerationJob,
 } from "../infrastructure/cloud-ai-repository.ts";
 import { evaluateCompletedPanelCandidate } from "../../manga-quality/application/evaluate-completed-panel.ts";
+import { adoptCompletedPanelCandidate } from "../../manga/application/auto-adopt-completed-panel.ts";
+import { createAutomaticPanelAdoptionRepository } from "../../manga/infrastructure/auto-panel-adoption-repository.ts";
 
 export { createCloudJobLeaseHeartbeat } from "./lease-heartbeat.ts";
 export { CloudGenerationLeaseLostError } from "../domain/cloud-ai-errors.ts";
@@ -47,6 +49,21 @@ function canContinueProviderPolling(job: ClaimedCloudGenerationJob) {
 }
 
 export { processPendingCloudStorageCleanup };
+
+export async function processPendingCloudPanelAdoption(input: {
+  client?: AdminClient;
+} = {}) {
+  const client = input.client ?? createAdminClient();
+  const repository = createAutomaticPanelAdoptionRepository(client);
+  try {
+    const jobId = await repository.findPendingJobId();
+    if (!jobId) return { status: "idle" as const };
+    const result = await adoptCompletedPanelCandidate({ jobId, repository });
+    return { ...result, jobId };
+  } catch {
+    return { status: "placement_failed" as const };
+  }
+}
 
 export async function processNextCloudGenerationJob(input: {
   workerId: string;
@@ -231,6 +248,14 @@ export async function processNextCloudGenerationJob(input: {
         });
       } catch {
         // Evaluation is best-effort and must not turn a completed job into a retry.
+      }
+      try {
+        await adoptCompletedPanelCandidate({
+          jobId: job.id,
+          repository: createAutomaticPanelAdoptionRepository(client),
+        });
+      } catch {
+        // A later worker run reconciles completed jobs whose placement was interrupted.
       }
     }
     return { status: "completed" as const, jobId: job.id, outputAssetId };

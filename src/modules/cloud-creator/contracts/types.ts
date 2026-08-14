@@ -99,6 +99,14 @@ export type CloudGenerationJob = {
   actual_cost_micros: number | null;
   output: Record<string, unknown> | null;
   output_asset_id: string | null;
+  panel_adoption_eligible: boolean;
+  panel_adoption_status:
+    | "auto_placed"
+    | "review_required"
+    | "placement_failed"
+    | "rejected"
+    | null;
+  panel_adoption_retryable: boolean;
   target_panel_id: string | null;
   source_asset_id: string | null;
   outpainting_direction: "left" | "right" | "top" | "bottom" | "all" | null;

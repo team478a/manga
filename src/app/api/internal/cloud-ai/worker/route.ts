@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   processNextCloudGenerationJob,
+  processPendingCloudPanelAdoption,
   processPendingCloudStorageCleanup,
 } from "@/modules/cloud-ai/application/process-generation";
 import {
@@ -167,6 +168,7 @@ export async function POST(request: Request) {
         logContext,
       );
     await processPendingCloudStorageCleanup({ client });
+    const panelAdoption = await processPendingCloudPanelAdoption({ client });
     const dispatch = await dispatchNextCloudGenerationBatchTarget({ client });
     const result = await processNextCloudGenerationJob({
         workerId: process.env.MANGAI_CLOUD_AI_WORKER_ID ?? "next-worker",
@@ -181,6 +183,7 @@ export async function POST(request: Request) {
       status: result.status,
       jobId: "jobId" in result ? result.jobId : undefined,
       batchDispatchStatus: dispatch.status,
+      panelAdoptionStatus: panelAdoption.status,
     });
     const response = result.status === "idle" && dispatch.status === "deferred"
       ? { status: "retrying" as const }
