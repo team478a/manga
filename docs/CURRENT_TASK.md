@@ -1,5 +1,28 @@
 # MANGAI Current Task
 
+## 2026-08-14 PR-R4-2B セリフ・ナレーションの自動配置
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#257](https://github.com/team478a/manga/pull/257)
+- Vercel Preview: https://mangai-hub-staging-git-codex-feat-r4-18faf7-team478as-projects.vercel.app
+- Branch: `codex/feat-r4-2b-dialogue-placement`
+- Base: `origin/feature/manga-canvas-mvp`@`306a2fb`（PR #256 merge commit）
+- 正本: `MANGAI 実装指示書 PR-R4-2 漫画完成パイプラインの構築`のPR-R4-2Bだけを実施する。PR-R4-2C／2Dへは進まない。
+- 監査: 採用Storyboardの各panelに`dialogue[{type,speaker,text}]`があり、初期materializationも吹き出しと`parentBalloonId`付きテキストを作る。一方、画像自動配置後の最新版Canvasに構造化セリフを再保証するWorker／application／永続化境界がなく、既存Production原稿の空吹き出しを修復できなかった。panel specificationは画像生成仕様、scenarioは`dialogueGoal`であり、実行時の本文推測には使わない。
+- domain: Storyboardのpage番号とCanvasのpanel順を対応させ、対象コマ内の吹き出しを上→右から左の読書順で使用する。空吹き出しを優先し、不足時だけコマ内へspeech／thought／narration型の吹き出しを作る。本文は縦書き、改行保持、42pxから18pxまで自動縮小し、最小でも収まらない場合は完成blockerにする。
+- 手動編集保護: 空でない別本文、親なし既存本文、locked panel／balloon／text、finalized pageを上書きしない。同じ本文と`parentBalloonId`が存在する場合は成功no-opにし、同じセリフを重複させない。既存の空かつ未固定textObjectは再利用する。効果音の高度配置は今回の優先対象外で、対応不能としてblockerへ固定する。
+- application／Worker: 画像Job完了後にR4-2A採用を先に行い、同一batch・同一pageの全targetが`auto_placed`になった時だけページ単位でセリフを配置する。画像途中ではpage revisionを進めない。中断分は次回Worker runで1ページずつ回収し、永続化失敗の再試行は最大2回で止める。文章生成Jobの完了は配置完了に使用しない。
+- DB: migration `202608140003_cloud_page_dialogue_placements`でowner限定のページ配置台帳とservice-role限定RPCを追加する。page row lock、expected revision、finalized、全画像配置、採用Storyboard、2 MiB上限を再検証し、Canvas snapshot、page／project revision、version event、配置結果を同一transactionで保存する。画像・panelLayers等は既存Canvasと完全一致させ、変更をballoons／textObjectsに限定する。本文は台帳・manifest・logへ保存しない。
+- UI: 原稿編集画面に自動配置済み件数、確認待ち、配置失敗を表示する。内部理由や本文は台帳表示に含めない。
+- 現在の検証: 集中9/9、Hub 691/691、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、Hub／Desktop typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。PostgreSQL 16でforward全適用→rollback全適用→forward再適用とassertionに成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止し、同一sourceのWebpack buildを成功させた。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- Production: migration `202608140001`〜`202608140003`の適用と実Provider受入れは未確認。既存Chrome Productionタブへの読み取り接続がtimeoutしたため、成功扱いにしない。DB・画面・Provider Jobは変更していない。
+- 不変: URL、公開API、既存RPC、Storage、Feature Flag、Provider、model、pricing、credit、生成retry／timeout、Scheduler頻度、Canvas schema、PDF／PNG、成人向け境界、Desktop。
+- 次: 責任者のreview／merge判断まで停止する。Production migrationと実Provider受入れは未確認のまま維持し、責任者確認前にPR-R4-2Cへ進まない。
+- 詳細: [`RELEASE_CANDIDATE_R4_2B_DIALOGUE_PLACEMENT.md`](RELEASE_CANDIDATE_R4_2B_DIALOGUE_PLACEMENT.md)
+
+---
+
 ## 2026-08-14 PR-R4-2A-1 同一ページ複数コマの自動配置revision連鎖
 
 - 状態: `READY_FOR_OWNER_REVIEW`

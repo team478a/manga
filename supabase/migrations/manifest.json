@@ -342,6 +342,12 @@
       "description": "同一開始revisionから自動配置だけが連続する場合に同一ページの後続コマを安全に採用",
       "forwardSha256": "b3cea194392ae7b0eab2bcd990af7b3f088943e9d0ec6c596bb1e283fea130f9",
       "rollbackSha256": "16b3a313d0fab8d3299843193b3c7fd660e7550d1e6a856db5f47d00c339d777"
+    },
+    {
+      "id": "202608140003_cloud_page_dialogue_placements",
+      "description": "採用Storyboardの構造化セリフを全コマ画像配置後にowner・revision保護付きで吹き出しへ自動配置",
+      "forwardSha256": "47609cef7be85d4b813a3e6533090f38c7819c876819956ffe670e8d176969d3",
+      "rollbackSha256": "b2b7449aeb48b8208410d381625c0c615fb3e7b47abadbe6a86388ff83944226"
     }
   ],
   "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"

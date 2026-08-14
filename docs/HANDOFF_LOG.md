@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2B 構造化セリフ自動配置
+
+- PR #256がmerge commit `306a2fbc069aacf43959ae91b45132d065d97b7e`で`feature/manga-canvas-mvp`へマージ済みであることを確認し、その最新基点から`codex/feat-r4-2b-dialogue-placement`を開始した。
+- 採用Storyboardのpanel別`dialogue`を唯一の本文正本として、Canvasのpanel順へ決定的に対応させる。自由文章からのLLM推測や文章生成Job出力は使用しない。
+- 対象コマ内の既存空吹き出しを読書順で再利用し、不足分だけコマ内へ作成する。テキストは`parentBalloonId`、縦書き、改行保持、42〜18pxの自動fitを使用する。ナレーションは矩形、speech／thoughtは既存型を使う。
+- 手動本文、親なし本文、locked、finalizedは上書きせず固定blockerにする。同一本文はno-op、既存の空かつ未固定textObjectは再利用し、最小fontでも収まらない本文は空テキストを追加せずblockerにする。
+- R4-2Aの全画像配置が同一ページで完了してからページ単位で保存するため、画像配置途中にdialogue処理がrevisionを進めない。Worker完了直後と次回runの中断回収を用意した。
+- migration `202608140003_cloud_page_dialogue_placements`はowner限定台帳とservice-role限定のready判定／回収／結果／保存RPCを追加する。保存transactionは画像・panelLayersを変更不能にし、balloons／textObjectsだけを更新する。本文は台帳、version manifest、logへ保存しない。
+- 集中9/9、Hub 691/691、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。PostgreSQL 16で全forward→全rollback→全forwardの往復とassertionに成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
+- Draft PR: [#257](https://github.com/team478a/manga/pull/257)。Preview: https://mangai-hub-staging-git-codex-feat-r4-18faf7-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- Production migration `202608140001`〜`202608140003`と実機受入れは未確認。既存Production Chromeタブの読み取り接続timeout後、DB・画面・Provider Jobを変更していない。
+- 責任者のreview／merge判断まで停止する。Production migrationと実Provider受入れは未確認のまま維持し、PR-R4-2Cへ進まない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2A-1 同一ページ複数コマrevision連鎖監査
 
 - PR #255がmerge commit `f11b8934876e9b730f63e85034a6aeb8963cfe4b`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
