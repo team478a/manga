@@ -12,7 +12,8 @@
 - revisionに欠番、別source revision、通常Canvas保存、セリフ配置、復元などが混在した場合は許可しない。Provider、model、pricing、retry、timeout、Scheduler、Storage、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更しない。
 - applicationへDB検証済みの連鎖判定を追加し、repositoryはservice-role限定の確認RPCとv2保存RPCを使用する。migration `202608140002_cloud_generation_panel_adoption_revision_chain`はpage lock後の実revisionで同じ欠番検証を再実行し、TOCTOUを防ぐ。rollbackとmanifestを追加した。
 - 集中14/14、Hub 682/682、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 57/57、research eval、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildのみ既知のWindows path長上限で停止した。
-- この安全修正のDraft PRと全CI／Vercel Preview確認で停止し、責任者確認前にPR-R4-2Bへ進まない。
+- Draft PR: [#256](https://github.com/team478a/manga/pull/256)。Preview: https://mangai-hub-staging-2c6ir91um-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。merge後にmigration `202608140001`と`202608140002`を順番に適用して複数コマ自動配置を実機確認し、責任者確認前にPR-R4-2Bへ進まない。
 
 ---
 

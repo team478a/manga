@@ -2,7 +2,9 @@
 
 ## 2026-08-14 PR-R4-2A-1 同一ページ複数コマの自動配置revision連鎖
 
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#256](https://github.com/team478a/manga/pull/256)
+- Vercel Preview: https://mangai-hub-staging-2c6ir91um-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2a-batch-revision-chain`
 - Base: `origin/feature/manga-canvas-mvp`@`f11b893`（PR #255 merge commit）
 - 発見: 一括生成targetは同一ページの全コマで同じ`source_page_revision`を固定する。最初のコマの自動配置がページrevisionを1進めるため、現行R4-2Aは2コマ目以降を`source_revision_changed`として停止する。1ページにつき最初の1画像だけが自動配置され得るため、PR-R4-2A受入条件を満たさない。
@@ -13,7 +15,8 @@
 - 実装: application contextへDB検証済みの自動revision連鎖判定を追加し、通常のrevision差分は引き続き確認待ちにする。repositoryはservice-role限定の連鎖確認RPCとv2保存RPCを使用する。
 - DB: migration `202608140002_cloud_generation_panel_adoption_revision_chain`で、`source + 1`から現在revisionまでの全番号が同じページ・同じsource revisionの`auto_placed.applied_page_revision`に存在することを検証する。保存時はpage row lock後の実revisionで再検証し、欠番をfail-closedにする。rollbackとmanifestを追加した。
 - 検証: 集中14/14、Hub 682/682、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 57本、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildのみ既知のWindows path長上限で停止した。
-- 次: この修正だけをDraft PRにし、全CIとVercel Preview成功時点で停止する。責任者確認前にPR-R4-2Bへ進まない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後にmigration `202608140001`と`202608140002`を順番に適用して複数コマ自動配置を実機確認し、責任者確認前にPR-R4-2Bへ進まない。
 
 ---
 
