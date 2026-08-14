@@ -1,0 +1,12 @@
+begin;
+drop trigger if exists digital_products_cloud_publication_gate on public.digital_products;
+drop function if exists public.enforce_cloud_product_publication_gate();
+drop trigger if exists works_cloud_publication_gate on public.works;
+drop function if exists public.enforce_cloud_work_publication_gate();
+drop function if exists public.select_cloud_work_publication(uuid,uuid);
+drop function if exists public.sync_cloud_marketplace_release_draft(uuid,uuid,text,text,text,jsonb,integer,text);
+drop policy if exists "cloud_work_publications_read" on public.cloud_work_publications;
+drop table if exists public.cloud_work_publication_pages;
+alter table public.works drop column if exists published_at,drop column if exists published_version,drop column if exists current_publication_id;
+drop table if exists public.cloud_work_publications;
+commit;

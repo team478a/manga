@@ -12,7 +12,7 @@ import {
   type SalesPackageManifest,
 } from "@mangai/export-core";
 import { CONTENT_POLICY_VERSION } from "@mangai/shared";
-import { stageCloudProjectExportBundle } from "@/lib/cloud-creator-server";
+import { stageCloudProjectCheckpointExportBundle, stageCloudProjectExportBundle } from "@/lib/cloud-creator-server";
 import { renderCloudCanvasPng } from "@/lib/cloud-canvas-render";
 import { assertCloudMarketplaceManuscriptReady } from "@/lib/cloud-marketplace-policy";
 import { getCloudManuscriptPreflight } from "../projects/manuscript-preflight-service";
@@ -93,17 +93,15 @@ function pageAssetIds(canvas: {
   return ids;
 }
 
-async function stageExport(projectId: string) {
+async function stageExport(projectId: string, checkpointId?: string) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-cloud-"));
   const assetDirectory = path.join(directory, "assets");
   const pageDirectory = path.join(directory, "pages");
   fs.mkdirSync(pageDirectory);
   try {
-    const bundle = await stageCloudProjectExportBundle(
-      projectId,
-      assetDirectory,
-      { concurrency: 3 },
-    );
+    const bundle = checkpointId
+      ? await stageCloudProjectCheckpointExportBundle(projectId, checkpointId, assetDirectory, { concurrency: 3 })
+      : await stageCloudProjectExportBundle(projectId, assetDirectory, { concurrency: 3 });
     const assetMetadata = new Map(
       bundle.assets.map((asset) => [asset.id, asset]),
     );
@@ -157,12 +155,10 @@ async function loadPageImages(pages: StagedPage[]): Promise<ExportImage[]> {
   return images;
 }
 
-export async function createCloudMarketplaceArtifacts(projectId: string) {
-  const readiness = await getCloudManuscriptPreflight(projectId, {
-    requireFinalizedPages: true,
-  });
+export async function createCloudMarketplaceArtifacts(projectId: string, checkpointId: string) {
+  const readiness = await getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true });
   assertCloudMarketplaceManuscriptReady(readiness);
-  const staged = await stageExport(projectId);
+  const staged = await stageExport(projectId, checkpointId);
   try {
     if (!staged.pages.length)
       throw new Error("販売用に書き出せるPageがありません。");
@@ -181,8 +177,15 @@ export async function createCloudMarketplaceArtifacts(projectId: string) {
     });
     return {
       project: staged.bundle.project,
+      checkpoint: "checkpoint" in staged.bundle ? staged.bundle.checkpoint : null,
       pdf: await createPagesPdf(images, { dpi: staged.bundle.project.dpi }),
       cover,
+      pages: images.map((image, index) => ({
+        pageNumber: Number.parseInt(staged.pages[index].fileName.slice(0, 3), 10),
+        width: image.width,
+        height: image.height,
+        bytes: image.bytes,
+      })),
       description: salesText.description,
     };
   } finally {

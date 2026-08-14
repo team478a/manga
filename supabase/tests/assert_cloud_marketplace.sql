@@ -42,18 +42,25 @@ begin
   end if;
 end $$;
 
-update public.digital_products set status='active'
-where creator_id='82000000-0000-4000-8000-000000000001';
-set local role authenticated;
 do $$
 begin
-  perform public.sync_cloud_marketplace_draft(
-    '83000000-0000-4000-8000-000000000001',3,
-    'https://example.test/cover3.png','general/market/main3.pdf',1300,'Sales 3'
-  );
-  raise exception 'Cloud Marketplace overwrote an active product';
-exception when others then
-  if sqlerrm<>'cloud_marketplace_product_active' then raise; end if;
+  begin
+    update public.digital_products set status='active'
+    where creator_id='82000000-0000-4000-8000-000000000001';
+    raise exception 'Cloud product became active without a fixed publication';
+  exception when others then
+    if sqlerrm<>'cloud_product_publication_required' then raise; end if;
+  end;
+
+  update public.works set source_project_id=null
+  where creator_id='82000000-0000-4000-8000-000000000001';
+  update public.digital_products set status='active'
+  where creator_id='82000000-0000-4000-8000-000000000001';
+  if not exists(
+    select 1 from public.digital_products
+    where creator_id='82000000-0000-4000-8000-000000000001' and status='active'
+  ) then
+    raise exception 'Legacy image work activation regressed';
+  end if;
 end $$;
-reset role;
 rollback;

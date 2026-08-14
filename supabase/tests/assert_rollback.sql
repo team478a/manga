@@ -258,3 +258,12 @@ do $$ begin
     raise exception 'Cloud generation durable batch target objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_work_publications') is not null
+     or to_regclass('public.cloud_work_publication_pages') is not null
+     or to_regprocedure('public.sync_cloud_marketplace_release_draft(uuid,uuid,text,text,text,jsonb,integer,text)') is not null
+     or exists(select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='current_publication_id') then
+    raise exception 'Cloud work publication objects remain after rollback';
+  end if;
+end $$;

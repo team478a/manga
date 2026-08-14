@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-08-14 PR-R4-2D 作品管理・販売準備と完成原稿の連携
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#261](https://github.com/team478a/manga/pull/261)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-rjp97t5rz-team478as-projects.vercel.app
+- Branch: `codex/feat-r4-2d-work-publication-link`
+- Base: `origin/feature/manga-canvas-mvp`@`a8f8d05`（PR #260 merge後）
+- 正本: `MANGAI_PR-R4-2C以降_完全版_2026-08-14.md`のPR-R4-2D。
+- 契約: `works.source_project_id`をProject関連、`cloud_project_checkpoints.kind='release'`を完成原稿の固定点、`orders.status='paid'`を購入後閲覧権限とする。旧1枚画像作品はpublication列nullで維持する。
+- 実装: version付きpublication／本文ページ、checkpoint固定PNG・PDF、公開・販売Server gate、停止後のversion切替、sample／購入後／ownerを分離した縦長reader、作品編集表示を追加した。
+- 検証: 集中7/7、Hub 708/708、Canvas 26/26、AI 48/48、Desktop 182/182、deps、lint、全typecheck、migration 59/59、PostgreSQL 16で全forward→rollback→forward、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildは既知のWindows path長上限、Desktop a11yはローカルElectron起動timeoutのため、GitHub Windows CIを正式結果とする。
+- Production: PR #260のmergeは確認済み。Chrome接続が再読込時に連続timeoutしたためページ20・22のmerge後目視は未完了。Production DB、作品、Provider Job、creditは変更していない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2D_WORK_PUBLICATION_LINK.md`
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。PreviewはVercel SSOへの正常な302応答まで読み取り確認した。
+- 次: 責任者のreview／merge判断まで停止する。Production migration、既存作品のpublication変換、公開・販売、本番決済は行わない。
+
+---
+
 ## 2026-08-14 PR-R4-2C-1 ページ別生成候補境界・配置復旧
 
 - 状態: `READY_FOR_OWNER_REVIEW`

@@ -95,4 +95,4 @@ export {
 } from "@/modules/cloud-creator/assets/asset-service";
 
 export { importDesktopCloudProject } from "@/modules/cloud-creator/import/import-service";
-export { stageCloudProjectExportBundle } from "@/modules/cloud-creator/export/export-service";
+export { stageCloudProjectCheckpointExportBundle, stageCloudProjectExportBundle } from "@/modules/cloud-creator/export/export-service";

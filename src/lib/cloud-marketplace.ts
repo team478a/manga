@@ -1,10 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { createCloudMarketplaceArtifacts } from "@/lib/cloud-canvas-export";
 import { assertCloudMarketplaceDraftMutable } from "@/lib/cloud-marketplace-policy";
-import {
-  generalCloudStoragePath,
-  ownedMarketplaceStoragePath,
-} from "@/lib/content-boundary";
+import { ownedMarketplaceStoragePath } from "@/lib/content-boundary";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,6 +15,8 @@ type DraftWork = {
   status: string;
   is_public: boolean;
   updated_at: string;
+  current_publication_id: string | null;
+  published_version: number | null;
 };
 
 type DraftProduct = {
@@ -31,6 +30,7 @@ type DraftProduct = {
 export type CloudMarketplaceDraft = {
   work: DraftWork | null;
   product: DraftProduct | null;
+  publications: Array<{ id: string; version: number; checkpointId: string; pageCount: number; createdAt: string }>;
 };
 
 async function findDraft(
@@ -40,7 +40,7 @@ async function findDraft(
   const supabase = await createClient();
   const { data: works, error: workError } = await supabase
     .from("works")
-    .select("id,status,is_public,updated_at")
+    .select("id,status,is_public,updated_at,current_publication_id,published_version")
     .eq("creator_id", profileId)
     .eq("source_project_id", projectId)
     .order("id", { ascending: true })
@@ -52,7 +52,7 @@ async function findDraft(
       "同じProjectに紐づく作品が複数あります。作品管理で整理してください。",
     );
   const work = works?.[0] ?? null;
-  if (!work) return { work: null, product: null };
+  if (!work) return { work: null, product: null, publications: [] };
   const { data: products, error: productError } = await supabase
     .from("digital_products")
     .select("id,status,price,file_url,updated_at")
@@ -67,7 +67,21 @@ async function findDraft(
     throw new Error(
       "作品に紐づく商品が複数あります。商品管理で整理してください。",
     );
-  return { work, product: products?.[0] ?? null };
+  const { data: publications, error: publicationError } = await supabase
+    .from("cloud_work_publications")
+    .select("id,version,checkpoint_id,page_count,created_at")
+    .eq("work_id", work.id)
+    .order("version", { ascending: false });
+  if (publicationError?.code !== "42P01" && publicationError)
+    throw new Error("公開版の履歴を確認できませんでした。");
+  return {
+    work,
+    product: products?.[0] ?? null,
+    publications: (publications ?? []).map((row) => ({
+      id: row.id, version: Number(row.version), checkpointId: row.checkpoint_id,
+      pageCount: Number(row.page_count), createdAt: row.created_at,
+    })),
+  };
 }
 
 export async function getCloudMarketplaceDraft(projectId: string) {
@@ -77,6 +91,7 @@ export async function getCloudMarketplaceDraft(projectId: string) {
 
 export async function syncCloudMarketplaceDraft(input: {
   projectId: string;
+  checkpointId: string;
   price: number;
 }) {
   const { user, profile } = await requireProfile();
@@ -87,14 +102,15 @@ export async function syncCloudMarketplaceDraft(input: {
     productStatus: current.product?.status,
   });
 
-  const artifacts = await createCloudMarketplaceArtifacts(input.projectId);
+  const artifacts = await createCloudMarketplaceArtifacts(input.projectId, input.checkpointId);
+  if (!artifacts.checkpoint) throw new Error("完成版を販売原稿へ固定できませんでした。");
   if (artifacts.cover.byteLength > MAX_COVER_BYTES)
     throw new Error("表紙画像が10MBを超えています。");
   if (artifacts.pdf.byteLength > MAX_PRODUCT_BYTES)
     throw new Error("商品PDFが50MBを超えています。");
 
   const supabase = await createClient();
-  const version = `r${artifacts.project.revision}-${randomUUID()}`;
+  const version = `release-${artifacts.checkpoint.id}-${randomUUID()}`;
   const coverPath = ownedMarketplaceStoragePath(
     user.id,
     input.projectId,
@@ -105,6 +121,9 @@ export async function syncCloudMarketplaceDraft(input: {
     input.projectId,
     `${version}-main.pdf`,
   );
+  const pagePaths = artifacts.pages.map((_page, index) => ownedMarketplaceStoragePath(
+    user.id, input.projectId, `${version}-page-${String(index + 1).padStart(3, "0")}.png`,
+  ));
   const uploaded: Array<{ bucket: string; path: string }> = [];
   const cleanup = async () =>
     Promise.all(
@@ -135,42 +154,53 @@ export async function syncCloudMarketplaceDraft(input: {
     if (productUploadError) throw new Error(productUploadError.message);
     uploaded.push({ bucket: PRODUCTS_BUCKET, path: productPath });
 
+    for (let index = 0; index < artifacts.pages.length; index += 1) {
+      const { error } = await supabase.storage.from(PRODUCTS_BUCKET).upload(
+        pagePaths[index], artifacts.pages[index].bytes, { contentType: "image/png", upsert: false },
+      );
+      if (error) throw new Error(error.message);
+      uploaded.push({ bucket: PRODUCTS_BUCKET, path: pagePaths[index] });
+    }
+
     const { data: synced, error: syncError } = await supabase.rpc(
-      "sync_cloud_marketplace_draft",
+      "sync_cloud_marketplace_release_draft",
       {
         p_project_id: input.projectId,
-        p_expected_revision: artifacts.project.revision,
+        p_checkpoint_id: artifacts.checkpoint.id,
+        p_manifest_sha256: artifacts.checkpoint.manifestSha256,
         p_cover_url: coverPublic.publicUrl,
         p_product_path: productPath,
+        p_pages: artifacts.pages.map((page, index) => ({
+          pageNumber: Number(page.pageNumber), width: page.width, height: page.height,
+          storagePath: pagePaths[index], isSample: index === 0,
+        })),
         p_price: input.price,
         p_sales_description: artifacts.description,
       },
     );
     const result = (synced ?? [])[0] as
-      | { work_id: string; product_id: string }
+      | { work_id: string; product_id: string; publication_id: string; publication_version: number }
       | undefined;
     if (syncError || !result)
       throw new Error(
         syncError?.message || "Marketplace下書きを保存できませんでした。",
       );
-    const oldProductPath = current.product?.file_url;
-    if (
-      oldProductPath &&
-      oldProductPath !== productPath &&
-      (oldProductPath.startsWith(
-        `${user.id.toLowerCase()}/${input.projectId.toLowerCase()}/`,
-      ) ||
-        oldProductPath.startsWith(
-          generalCloudStoragePath(profile.id, "cloud", input.projectId),
-        ))
-    )
-      await supabase.storage
-        .from(PRODUCTS_BUCKET)
-        .remove([oldProductPath])
-        .catch(() => undefined);
-    return { workId: result.work_id, productId: result.product_id };
+    return { workId: result.work_id, productId: result.product_id,
+      publicationId: result.publication_id, publicationVersion: Number(result.publication_version) };
   } catch (error) {
     await cleanup().catch(() => undefined);
     throw error;
   }
+}
+
+export async function selectCloudWorkPublication(input: { workId: string; publicationId: string }) {
+  await requireProfile();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("select_cloud_work_publication", {
+    p_work_id: input.workId,
+    p_publication_id: input.publicationId,
+  });
+  if (error?.message?.includes("in_use"))
+    throw new Error("公開・販売を停止してから完成版を切り替えてください。");
+  if (error || !data) throw new Error("完成版を切り替えできませんでした。");
 }

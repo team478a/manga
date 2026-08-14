@@ -1,19 +1,21 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
-import { updateWork } from "@/app/actions";
+import Link from "next/link";
+import { selectWorkPublication, updateWork } from "@/app/actions";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 import { CREATOR_INPUT_LIMITS } from "@/lib/creator-input";
+import { listOwnedWorkPublications } from "@/modules/publication/application/work-publication-service";
 
 export default async function EditWorkPage({
   params,
   searchParams
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const { profile } = await requireProfile();
   const { id } = await params;
@@ -27,16 +29,42 @@ export default async function EditWorkPage({
     .maybeSingle<Work>();
 
   if (!work) notFound();
+  const publications = work.source_project_id ? await listOwnedWorkPublications(work.id).catch(() => []) : [];
 
   return (
     <main className="page max-w-3xl">
       <h1 className="text-3xl font-bold">作品編集</h1>
       {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
+      {messages.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{messages.message}</p> : null}
+      {work.source_project_id ? (
+        <section className="panel mt-6" aria-labelledby="publication-heading">
+          <h2 className="text-xl font-bold" id="publication-heading">完成原稿との連携</h2>
+          <dl className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div><dt className="text-sm text-stone-500">制作Project</dt><dd className="font-semibold">連携済み</dd></div>
+            <div><dt className="text-sm text-stone-500">公開version</dt><dd className="font-semibold">{work.published_version ? `v${work.published_version}` : "未固定"}</dd></div>
+            <div><dt className="text-sm text-stone-500">本文ページ数</dt><dd className="font-semibold">{publications.find((item) => item.current)?.pageCount ?? 0}ページ</dd></div>
+          </dl>
+          {work.current_publication_id ? <Link className="button-secondary mt-4 inline-flex" href={`/works/${work.id}/read`}>本文を確認</Link> : null}
+          {publications.length > 1 ? (
+            <form action={selectWorkPublication} className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+              <input name="workId" type="hidden" value={work.id} />
+              <div className="flex-1">
+                <label className="label" htmlFor="publicationId">使用する完成版</label>
+                <select className="field" defaultValue={work.current_publication_id ?? ""} id="publicationId" name="publicationId">
+                  {publications.map((item) => <option key={item.id} value={item.id}>v{item.version}・{item.pageCount}ページ・{new Date(item.createdAt).toLocaleString("ja-JP")}</option>)}
+                </select>
+              </div>
+              <PendingSubmitButton className="button-secondary" pendingLabel="切り替え中…">完成版を切り替える</PendingSubmitButton>
+            </form>
+          ) : null}
+          {(work.is_public || work.status === "published") && publications.length > 1 ? <p className="mt-3 text-sm text-amber-800">公開中は完成版を切り替えません。先に作品と商品の公開を停止してください。</p> : null}
+        </section>
+      ) : null}
       <form action={updateWork} className="panel mt-6 space-y-5">
         <input name="id" type="hidden" value={work.id} />
         {work.image_url ? (
           <div>
-            <p className="label">現在の画像</p>
+            <p className="label">表紙画像・販売用サムネイル</p>
             <div className="relative mt-3 aspect-[4/3] overflow-hidden rounded-lg bg-linen">
               <Image src={work.image_url} alt={work.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, 768px" />
             </div>

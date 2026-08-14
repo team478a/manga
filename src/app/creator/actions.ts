@@ -304,19 +304,18 @@ export async function syncCloudMarketplaceDraftAction(
   projectId: string,
   formData: FormData,
 ) {
-  const parsed = z.coerce
-    .number()
-    .int()
-    .min(0)
-    .max(1_000_000)
-    .safeParse(formString(formData, "price"));
+  const parsed = z.object({
+    price: z.coerce.number().int().min(0).max(1_000_000),
+    checkpointId: z.string().uuid(),
+  }).safeParse({ price: formString(formData, "price"), checkpointId: formString(formData, "checkpointId") });
   if (!parsed.success)
     redirect(encodeURI(`/creator/${projectId}?error=販売価格を確認してください`));
   let result: Awaited<ReturnType<typeof syncCloudMarketplaceDraft>>;
   try {
     result = await syncCloudMarketplaceDraft({
       projectId,
-      price: parsed.data,
+      checkpointId: parsed.data.checkpointId,
+      price: parsed.data.price,
     });
   } catch (error) {
     const message = domainMessage(
