@@ -1,6 +1,7 @@
 import { DomainError, ValidationError } from "@/lib/domain-errors";
 import { cloudCreatorContext } from "../auth-context";
 import { getCloudManuscriptPreflight } from "./manuscript-preflight-service";
+import { assertCloudProjectComplete } from "./page-completion-service";
 import { summarizeCloudCheckpointDiff, type CloudCheckpointDiff } from "./project-checkpoint-diff";
 import {
   createProjectCheckpoint,
@@ -126,6 +127,12 @@ export async function createCloudProjectCheckpoint(input: { projectId: string; l
   return createProjectCheckpoint({
     ...input,
     repository: checkpointCommands,
-    inspectRelease: (projectId) => getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }),
+    inspectRelease: async (projectId) => {
+      const [completion, manuscript] = await Promise.all([
+        assertCloudProjectComplete(projectId),
+        getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }),
+      ]);
+      return { ready: completion.complete && manuscript.ready };
+    },
   });
 }
