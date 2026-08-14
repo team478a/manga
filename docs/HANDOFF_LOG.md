@@ -13,7 +13,8 @@
 - 品質却下後は前候補と異なる構図・品質条件で1案だけ再制作する。未配置候補の却下、承認済み画像の品質確認取消し、生成中／候補確認待ちの同一コマに古いJobから重複登録しないUIを追加した。
 - 集中41/41、Hub 714/714、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack Hub build、RC structure、diff check成功。標準Turbopackは既知のWindows path長、Desktopは既存`@napi-rs/keyring`型宣言不足で停止した。
 - URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktopは変更していない。
-- 次: Draft PR、全CI、Vercel Preview成功後に停止する。merge前にProduction再生成を行わない。
+- Draft PR: [#263](https://github.com/team478a/manga/pull/263)。Draft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/3WsM1i1ZiJBujvajZh46Gv4zQLwB 。Windows CIでDesktop tests、Accessibility tests、unpacked buildも成功した。
+- 次: 責任者のreview／merge判断まで停止する。merge前にProduction再生成を行わない。
 
 ---
 

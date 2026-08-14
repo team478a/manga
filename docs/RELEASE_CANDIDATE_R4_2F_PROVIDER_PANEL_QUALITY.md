@@ -57,3 +57,11 @@ PR #262反映後のProduction限定受入れで再現した、人体と小物の
 6. ページ完成判定、原稿preview、PNG、PDF、公開・販売guardを確認する。
 
 実Providerの画質は確率的であり、本PRだけで一度の生成成功を保証しない。限定受入れで再び同系統の失敗が出た場合は追加課金を止め、参照画像・Panel Specification・Provider選定を含む次の設計判断へ切り替える。
+
+## Draft PR
+
+- [PR #263](https://github.com/team478a/manga/pull/263)
+- Draft／MERGEABLE。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: 成功。
+- Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/3WsM1i1ZiJBujvajZh46Gv4zQLwB
+- Windows CIでTypeScript、lint、Desktop tests、Accessibility tests、unpacked Windows buildを確認した。

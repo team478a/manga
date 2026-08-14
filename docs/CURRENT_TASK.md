@@ -2,7 +2,9 @@
 
 ## 2026-08-14 PR-R4-2F Provider生成コマの再制作品質
 
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#263](https://github.com/team478a/manga/pull/263)（Draft／MERGEABLE）
+- Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/3WsM1i1ZiJBujvajZh46Gv4zQLwB
 - Branch: `codex/fix-r4-2f-provider-panel-quality`
 - Base: `origin/feature/manga-canvas-mvp`@`9fbf228`（PR #262 merge commit）。
 - Production限定受入れ: ページ22の不良2画像を各1回だけ作り直し、Worker run `31802403441`で2件ともProvider生成完了。creditは使用28→32、予約4→0、残り68。新画像にも人体／小物融合と疑似文字が残ったため配置・承認せず、追加有料再実行を停止した。
@@ -12,7 +14,8 @@
 - 検証: 集中41/41、Hub 714/714、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack production build、RC structure、diff check成功。標準Turbopackは既知のWindows path長、Desktopは既存`@napi-rs/keyring`型宣言不足で停止し、CIを正式結果とする。
 - Production: 手動確認待ち2画像は未配置。公開・販売状態、DB、migrationは変更していない。追加Provider実行は行わない。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2F_PROVIDER_PANEL_QUALITY.md`
-- 次: Draft PR、全CI、Vercel Previewを確認して停止する。責任者merge前にProduction再生成を行わない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Windows CIでDesktop tests、Accessibility tests、unpacked buildも成功した。
+- 次: 責任者のreview／merge判断まで停止する。merge前にProduction再生成を行わない。
 
 ---
 
