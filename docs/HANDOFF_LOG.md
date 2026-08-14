@@ -4,6 +4,22 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2E 生成原稿の最終品質ゲート
+
+- Branch: `codex/quality-r4-2e-final-manuscript-gate`
+- Base: `origin/feature/manga-canvas-mvp`@`51a9864`
+- Productionページ22の画像表示復旧後、上下反転、画像内疑似文字、過大な文字、人物連続性の弱さを確認した。
+- BFL向け正方向Promptへ正立方向、自然な重力・人体、意味のある絵柄だけという条件を日英で追加した。negative prompt非送信を維持する。
+- 自動配置した生成画像を既存品質ログのowner選択eventまで`review_required`とし、Editorへ品質確認と対象コマ1案だけの作り直しを追加した。
+- 自動吹き出しを縮小・左右分散し、最大文字サイズを32pxへ下げた。既存手動／locked要素は変更しない。
+- OpenAI Visionは現行価格・credit台帳の外で自動費用を発生させるためruntimeへ追加していない。新規DB／migration／Provider／価格変更なし。
+- 集中54/54、Hub 711/711、Canvas 26/26、AI 48/48、長編4/4、research eval、deps、lint、Hub typecheck、migration 59/59、Webpack production build、repository preflight、RC structure、diff check成功。Desktop依存のローカル再構築はVisual Studio C++環境不足、Desktop型検査は既存`@napi-rs/keyring`型宣言不足で停止したため、GitHub Windows CIを正式結果とする。
+- Production DB、既存作品、Provider Job、credit、公開作品を変更せず、有料再生成も行っていない。
+- Draft PR: [#262](https://github.com/team478a/manga/pull/262)。Draft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/9DPtY51tHu77KUhqhmEZBcWy4smy 。現在のChrome／Vercel CLIは別Vercelアカウントのため直接Preview aliasは取得できず、GitHub deployment checkを正式証跡とした。
+- 次: 責任者review／merge判断まで停止する。merge前のProduction反映、既存作品変更、有料Provider再生成は行わない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2D 作品管理・販売準備と完成原稿の連携
 
 - PR #260がmerge commit `a8f8d05bb5cd0688c373a7b8cfecd20668ffeed5`でマージ済みであることを確認し、最新基準から`codex/feat-r4-2d-work-publication-link`を開始した。

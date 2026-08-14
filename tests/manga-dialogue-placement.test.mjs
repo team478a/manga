@@ -105,6 +105,7 @@ test("対象コマの空吹き出しへ縦書きテキストを関連付ける",
   assert.equal(result.canvas.textObjects[0].writingMode, "vertical");
   assert.equal(result.canvas.textObjects[0].text, "ここから始めよう。");
   assert.ok(result.canvas.textObjects[0].fontSize >= 18);
+  assert.ok(result.canvas.textObjects[0].fontSize <= 32);
 });
 
 test("吹き出し不足時はコマ内へ型別に作成し、再処理しても重複しない", () => {
@@ -132,6 +133,25 @@ test("吹き出し不足時はコマ内へ型別に作成し、再処理して�
   assert.equal(second.changed, false);
   assert.equal(second.canvas.balloons.length, 1);
   assert.equal(second.canvas.textObjects.length, 1);
+});
+
+test("自動作成する会話吹き出しをコマ幅の半分未満に抑え左右へ分散する", () => {
+  const result = place(canvas(), [
+    {
+      panelIndex: 0,
+      dialogues: [
+        { type: "speech", speaker: "真琴", text: "証拠を見つけた。" },
+        { type: "speech", speaker: "圭吾", text: "すぐに確認しよう。" },
+      ],
+    },
+  ]);
+  assert.equal(result.blockers.length, 0);
+  assert.equal(result.canvas.balloons.length, 2);
+  assert.ok(result.canvas.balloons.every((item) => item.width < 800 * 0.5));
+  assert.ok(result.canvas.balloons[0].x > result.canvas.balloons[1].x);
+  assert.equal(result.canvas.balloons[0].tailDirection, "bottom_right");
+  assert.equal(result.canvas.balloons[1].tailDirection, "bottom_left");
+  assert.ok(result.canvas.textObjects.every((item) => item.fontSize <= 32));
 });
 
 test("既存の手動テキストとlocked吹き出しを上書きしない", () => {

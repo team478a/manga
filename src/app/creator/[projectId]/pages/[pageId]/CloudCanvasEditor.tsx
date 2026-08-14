@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowDown,
   ArrowUp,
@@ -219,6 +220,7 @@ export function CloudCanvasEditor({
   panelOutpaintingEnabled: boolean;
   monitorQualityFeedbackEnabled: boolean;
 }) {
+  const router = useRouter();
   const [pageLockState, setPageLockState] = useState<"checking" | "acquired" | "locked" | "unavailable">("checking");
   const pageLockToken = useMemo(
     () => getOrCreatePageEditLockToken(page.id),
@@ -905,12 +907,76 @@ export function CloudCanvasEditor({
     setAssets(nextAssets);
     const layerType = classifyCandidateLayer(job);
     if (applyAsset(job.output_asset_id, job.id, layerType, targetPanelId)) {
-      void recordMangaQualityEvent({
+      try {
+        await recordMangaQualityEvent({
+          event: "selected",
+          generationJobId: job.id,
+        });
+        setGenerationJobs((current) =>
+          current.map((item) =>
+            item.id === job.id
+              ? { ...item, quality_review_status: "approved" }
+              : item,
+          ),
+        );
+        setMessage("生成Assetを対象のコマへ配置し、品質確認を記録しました。");
+        router.refresh();
+      } catch {
+        setMessage("画像は配置しました。販売準備の前に画像の品質確認を完了してください。");
+      }
+    } else setMessage("生成Assetをコマへ配置できませんでした。");
+  }
+
+  async function approveGeneratedAsset(job: CloudGenerationJob) {
+    try {
+      await recordMangaQualityEvent({
         event: "selected",
         generationJobId: job.id,
-      }).catch(() => undefined);
-      setMessage("生成Assetを対象のコマへ配置しました。");
-    } else setMessage("生成Assetをコマへ配置できませんでした。");
+      });
+      setGenerationJobs((current) =>
+        current.map((item) =>
+          item.id === job.id
+            ? { ...item, quality_review_status: "approved" }
+            : item,
+        ),
+      );
+      setMessage("このコマの原稿画像を品質確認済みにしました。");
+      router.refresh();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "画像の品質確認を保存できませんでした。",
+      );
+    }
+  }
+
+  async function rejectAndRegeneratePanel(job: CloudGenerationJob) {
+    if (!job.target_panel_id || requestingPanelGeneration) return;
+    try {
+      await recordMangaQualityEvent({
+        event: "rejected",
+        generationJobId: job.id,
+        rejectedReason: "原稿品質の目視確認で作り直し",
+      });
+      setGenerationJobs((current) =>
+        current.map((item) =>
+          item.id === job.id
+            ? { ...item, quality_review_status: "rejected" }
+            : item,
+        ),
+      );
+      await requestStoryboardPanelGeneration({
+        panelId: job.target_panel_id,
+        candidateCount: 1,
+      });
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "このコマの作り直しを開始できませんでした。",
+      );
+    }
   }
 
   function movePanelLayer(layerId: string, delta: -1 | 1) {
@@ -1762,6 +1828,44 @@ export function CloudCanvasEditor({
                           : "この候補を採用してコマへ配置"
                         : "選択中のコマへ配置"}
                     </button>
+                  ) : null}
+                  {job.status === "completed" &&
+                  job.kind === "image" &&
+                  canvas.panelLayers.some((layer) => layer.sourceJobId === job.id) ? (
+                    job.quality_review_status === "approved" ? (
+                      <p className="mt-2 rounded bg-green-50 p-2 font-bold text-green-800">
+                        原稿画像を品質確認済み
+                      </p>
+                    ) : (
+                      <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-amber-950">
+                        <p className="font-bold">
+                          {job.quality_review_status === "rejected"
+                            ? "この画像は作り直しが必要です"
+                            : "販売原稿に使える画像か目視確認してください"}
+                        </p>
+                        <div className="mt-2 grid gap-2">
+                          {job.quality_review_status !== "rejected" ? (
+                            <button
+                              className="button-secondary w-full"
+                              onClick={() => void approveGeneratedAsset(job)}
+                              type="button"
+                            >
+                              この画像を品質確認済みにする
+                            </button>
+                          ) : null}
+                          {job.target_panel_id ? (
+                            <button
+                              className="button-secondary w-full"
+                              disabled={requestingPanelGeneration}
+                              onClick={() => void rejectAndRegeneratePanel(job)}
+                              type="button"
+                            >
+                              このコマだけ作り直す（1案）
+                            </button>
+                          ) : null}
+                        </div>
+                      </div>
+                    )
                   ) : null}
                   {job.status === "completed" &&
                   job.kind === "text" &&

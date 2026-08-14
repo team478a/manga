@@ -104,6 +104,42 @@ test("手動確認だけが残る場合はreview_requiredになる", () => {
   assert.ok(codes(result).has("MANUAL_REVIEW_REQUIRED"));
 });
 
+test("自動配置した生成画像は目視確認までreview_requiredにする", () => {
+  const canvas = clone(source.canvas);
+  const generationJobId = source.imageJobs[0].id;
+  canvas.panelLayers = [{
+    id: "10000000-0000-4000-8000-000000000099",
+    panelId: canvas.panels[0].id,
+    name: "AI背景",
+    type: "background",
+    orderIndex: 0,
+    visible: true,
+    locked: false,
+    opacity: 1,
+    blendMode: "normal",
+    assetId: source.assetIds[0],
+    sourceJobId: generationJobId,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    createdAt: "",
+    updatedAt: "",
+  }];
+  const pending = evaluateMangaPageCompletion(input({
+    canvas,
+    reviewedGenerationJobIds: new Set(),
+  }));
+  assert.equal(pending.status, "review_required");
+  assert.ok(codes(pending).has("IMAGE_QUALITY_REVIEW_REQUIRED"));
+  const approved = evaluateMangaPageCompletion(input({
+    canvas,
+    reviewedGenerationJobIds: new Set([generationJobId]),
+  }));
+  assert.equal(codes(approved).has("IMAGE_QUALITY_REVIEW_REQUIRED"), false);
+});
+
 test("4ページfixtureをPNGとPDFへ同じ順序・寸法で描画できる", async () => {
   const images = [];
   for (const page of pages) {
@@ -127,6 +163,8 @@ test("4ページfixtureをPNGとPDFへ同じ順序・寸法で描画できる", 
 test("previewとserver guardは保存済みCanvas、object-contain、owner RLSを使用する", () => {
   const preview = fs.readFileSync("src/app/creator/[projectId]/preview/ManuscriptPreview.tsx", "utf8");
   const service = fs.readFileSync("src/modules/cloud-creator/projects/page-completion-service.ts", "utf8");
+  const generation = fs.readFileSync("src/modules/cloud-creator/generation/generation-service.ts", "utf8");
+  const editor = fs.readFileSync("src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx", "utf8");
   const production = fs.readFileSync("src/modules/cloud-creator/production/production-status-service.ts", "utf8");
   const checkpoint = fs.readFileSync("src/modules/cloud-creator/projects/project-checkpoint-service.ts", "utf8");
   const durable = fs.readFileSync("src/modules/cloud-creator/export/durable-export-service.ts", "utf8");
@@ -137,6 +175,13 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(service, /採用済みStoryboardの必須セリフを確認できませんでした/);
   assert.match(service, /\.eq\("project_id", projectId\)/);
   assert.match(service, /storage\.from\("cloud-assets"\)\.download/);
+  assert.match(service, /cloud_manga_quality_logs/);
+  assert.match(service, /reviewedGenerationJobIds/);
+  assert.match(generation, /quality_review_status/);
+  assert.match(generation, /event_type/);
+  assert.match(editor, /この画像を品質確認済みにする/);
+  assert.match(editor, /このコマだけ作り直す（1案）/);
+  assert.match(editor, /event: "rejected"/);
   assert.match(production, /getCloudPageCompletion/);
   assert.match(checkpoint, /assertCloudProjectComplete/);
   assert.match(durable, /assertCloudProjectComplete/);

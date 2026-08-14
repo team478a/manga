@@ -107,6 +107,7 @@ export type CloudGenerationJob = {
     | "rejected"
     | null;
   panel_adoption_retryable: boolean;
+  quality_review_status: "pending" | "approved" | "rejected" | null;
   target_panel_id: string | null;
   source_asset_id: string | null;
   outpainting_direction: "left" | "right" | "top" | "bottom" | "all" | null;

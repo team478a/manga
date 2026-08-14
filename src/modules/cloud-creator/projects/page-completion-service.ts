@@ -166,12 +166,36 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
   const assetBytes = await loadAssetBytes(supabase, (assets.data ?? []) as AssetRow[], requiredAssetIds);
   const currentJobs = latestImageJobs((jobs.data ?? []) as Array<Record<string, unknown>>);
   const currentJobIds = currentJobs.flatMap((job) => job.candidateJobIds ?? [job.id]);
-  const adoptions = currentJobIds.length
-    ? await supabase.from("cloud_generation_panel_adoptions").select("generation_job_id,status").in("generation_job_id", currentJobIds)
-    : { data: [], error: null };
-  if (adoptions.error)
-    throw new DomainError("INTERNAL_ERROR", "画像配置の確認状態を取得できませんでした。", { cause: adoptions.error });
+  const visibleGenerationJobIds = [...new Set(
+    [...canvases.values()].flatMap((canvas) =>
+      canvas.panelLayers.flatMap((layer) =>
+        layer.visible && layer.sourceJobId ? [layer.sourceJobId] : [],
+      ),
+    ),
+  )];
+  const qualityJobIds = [...new Set([...currentJobIds, ...visibleGenerationJobIds])];
+  const [adoptions, qualityEvents] = await Promise.all([
+    currentJobIds.length
+      ? supabase.from("cloud_generation_panel_adoptions").select("generation_job_id,status").in("generation_job_id", currentJobIds)
+      : Promise.resolve({ data: [], error: null }),
+    qualityJobIds.length
+      ? supabase.from("cloud_manga_quality_logs").select("generation_job_id,event_type,created_at").in("generation_job_id", qualityJobIds).in("event_type", ["selected", "rejected"]).order("created_at", { ascending: false })
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  if (adoptions.error || qualityEvents.error)
+    throw new DomainError("INTERNAL_ERROR", "画像の品質確認状態を取得できませんでした。", {
+      cause: adoptions.error ?? qualityEvents.error,
+    });
   const adoptionStatus = new Map((adoptions.data ?? []).map((row) => [row.generation_job_id, row.status]));
+  const latestQualityEvent = new Map<string, string>();
+  for (const row of qualityEvents.data ?? [])
+    if (!latestQualityEvent.has(row.generation_job_id))
+      latestQualityEvent.set(row.generation_job_id, row.event_type);
+  const reviewedGenerationJobIds = new Set(
+    [...latestQualityEvent.entries()]
+      .filter(([, event]) => event === "selected")
+      .map(([jobId]) => jobId),
+  );
   const placementByPage = new Map((placements.data ?? []).map((row) => [row.page_id, row.status]));
   const productionByPage = new Map((productionRows.data ?? []).map((row) => [row.id, row.production_status]));
   const results: Array<CloudPageCompletion & { png: Uint8Array | null }> = [];
@@ -199,6 +223,7 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
       requiredDialogues: requiredByPage.get(page.page_number) ?? [],
       imageJobs: currentJobs,
       availableAssetIds: new Set(assetBytes.keys()),
+      reviewedGenerationJobIds,
       pngRenderSucceeded,
       manualReviewRequired:
         placementByPage.get(page.id) === "review_required" ||

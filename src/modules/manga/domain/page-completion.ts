@@ -17,6 +17,7 @@ export type MangaPageCompletionBlockerCode =
   | "ASSET_UNAVAILABLE"
   | "PNG_RENDER_FAILED"
   | "PAGE_DIMENSION_INVALID"
+  | "IMAGE_QUALITY_REVIEW_REQUIRED"
   | "MANUAL_REVIEW_REQUIRED";
 
 export type MangaPageCompletionBlocker = {
@@ -92,6 +93,7 @@ export function evaluateMangaPageCompletion(input: {
   requiredDialogues: RequiredPageDialogue[];
   imageJobs: PageImageGenerationState[];
   availableAssetIds: ReadonlySet<string>;
+  reviewedGenerationJobIds?: ReadonlySet<string>;
   pngRenderSucceeded: boolean;
   manualReviewRequired: boolean;
 }): MangaPageCompletionResult {
@@ -147,6 +149,18 @@ export function evaluateMangaPageCompletion(input: {
         continue;
       }
       panelImageCount += 1;
+      for (const layer of canvas.panelLayers.filter(
+        (item) => item.panelId === panel.id && item.visible && item.sourceJobId,
+      )) {
+        if (!input.reviewedGenerationJobIds?.has(layer.sourceJobId!))
+          add({
+            code: "IMAGE_QUALITY_REVIEW_REQUIRED",
+            message: `${panel.name}の生成画像を目視確認してください。`,
+            pageId: input.pageId,
+            panelId: panel.id,
+            generationJobId: layer.sourceJobId!,
+          });
+      }
       for (const assetId of assetIds) {
         const existingPanelId = firstPanelByAsset.get(assetId);
         if (existingPanelId && existingPanelId !== panel.id)
@@ -194,7 +208,11 @@ export function evaluateMangaPageCompletion(input: {
 
   const status: MangaPageCompletionStatus = pendingJobs.length
     ? "generating"
-    : blockers.some((blocker) => blocker.code !== "MANUAL_REVIEW_REQUIRED")
+    : blockers.some(
+        (blocker) =>
+          blocker.code !== "MANUAL_REVIEW_REQUIRED" &&
+          blocker.code !== "IMAGE_QUALITY_REVIEW_REQUIRED",
+      )
       ? "incomplete"
       : blockers.length
         ? "review_required"
