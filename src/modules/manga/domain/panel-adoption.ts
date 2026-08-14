@@ -10,14 +10,27 @@ export type PanelCandidateAdoption = {
   timestamp: string;
 };
 
-export function applyPanelCandidateAdoption(
+export type PanelCandidateAdoptionResult =
+  | "applied"
+  | "already_applied"
+  | "panel_not_found";
+
+export function applyPanelCandidateAdoptionResult(
   canvas: PageCanvas,
   adoption: PanelCandidateAdoption,
-) {
+): PanelCandidateAdoptionResult {
   const panel = canvas.panels.find(
     (item) => item.id === adoption.targetPanelId,
   );
-  if (!panel) return false;
+  if (!panel) return "panel_not_found";
+  if (
+    canvas.panelLayers.some(
+      (layer) =>
+        (adoption.sourceJobId && layer.sourceJobId === adoption.sourceJobId) ||
+        (layer.panelId === panel.id && layer.assetId === adoption.assetId),
+    )
+  )
+    return "already_applied";
   if (
     adoption.layerType === "background" ||
     adoption.layerType === "correction"
@@ -68,5 +81,12 @@ export function applyPanelCandidateAdoption(
     createdAt: adoption.timestamp,
     updatedAt: adoption.timestamp,
   });
-  return true;
+  return "applied";
+}
+
+export function applyPanelCandidateAdoption(
+  canvas: PageCanvas,
+  adoption: PanelCandidateAdoption,
+) {
+  return applyPanelCandidateAdoptionResult(canvas, adoption) !== "panel_not_found";
 }

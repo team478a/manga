@@ -59,6 +59,9 @@ export const cloudGenerationInputSchema = z
       .max(Number.MAX_SAFE_INTEGER)
       .optional(),
     targetPanelId: z.string().uuid().optional(),
+    sourcePageRevision: z.number().int().nonnegative().optional(),
+    candidateCount: z.number().int().min(1).max(4).optional(),
+    autoAdopt: z.boolean().optional(),
     characterProfileVersions: z
       .array(
         z.object({
@@ -117,6 +120,18 @@ export const cloudGenerationInputSchema = z
         code: "custom",
         path: ["jobType"],
         message: "文章生成で利用できないJob種別です。",
+      });
+    if (
+      value.autoAdopt &&
+      (value.kind !== "image" ||
+        !value.targetPanelId ||
+        value.sourcePageRevision == null ||
+        value.candidateCount !== 1)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["autoAdopt"],
+        message: "自動採用には対象コマ、生成開始revision、1候補指定が必要です。",
       });
     if (
       (value.operation === "image_to_image" ||

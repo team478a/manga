@@ -158,6 +158,25 @@ const panelGenerationTargetLabels: Record<PanelGenerationTarget, string> = {
   effect: "効果だけ",
 };
 
+function generationStatusLabel(job: CloudGenerationJob) {
+  if (job.status === "queued" || job.status === "running") return "生成中";
+  if (job.status === "failed") return "生成失敗・再実行可能";
+  if (job.status === "canceled") return "中止";
+  if (job.kind === "text") return "文章生成完了";
+  if (job.panel_adoption_status === "auto_placed")
+    return "Canvasへ自動配置済み";
+  if (
+    job.panel_adoption_status === "review_required" ||
+    job.panel_adoption_status === "rejected"
+  )
+    return "手動確認待ち";
+  if (job.panel_adoption_status === "placement_failed")
+    return job.panel_adoption_retryable
+      ? "配置失敗・再実行可能"
+      : "配置失敗";
+  return "画像生成完了";
+}
+
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
   return structuredClone(canvas);
 }
@@ -220,6 +239,7 @@ export function CloudCanvasEditor({
   const [assets, setAssets] = useState(initialAssets);
   const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
   const recordedDisplayedJobIds = useRef(new Set<string>());
+  const reloadingAutoPlacement = useRef(false);
   const [generationTargets, setGenerationTargets] = useState<
     Record<string, string>
   >(() =>
@@ -362,7 +382,13 @@ export function CloudCanvasEditor({
   useEffect(() => {
     if (
       !generationJobs.some(
-        (job) => job.status === "queued" || job.status === "running",
+        (job) =>
+          job.status === "queued" ||
+          job.status === "running" ||
+          (job.status === "completed" &&
+            job.kind === "image" &&
+            job.panel_adoption_eligible &&
+            !job.panel_adoption_status),
       )
     )
       return;
@@ -372,6 +398,24 @@ export function CloudCanvasEditor({
     }, 3000);
     return () => window.clearInterval(timer);
   }, [generationJobs, refreshGenerationJobs, refreshQuota]);
+
+  useEffect(() => {
+    const placedJob = generationJobs.find(
+      (job) =>
+        job.panel_adoption_status === "auto_placed" &&
+        !canvas.panelLayers.some((layer) => layer.sourceJobId === job.id),
+    );
+    if (!placedJob || reloadingAutoPlacement.current) return;
+    if (saveState !== "saved" || hasUnsavedChanges()) {
+      setMessage(
+        "生成画像はCanvasへ保存済みです。編集中の内容を確認してから最新状態を読み込んでください。",
+      );
+      return;
+    }
+    reloadingAutoPlacement.current = true;
+    setMessage("生成画像を反映するため最新のCanvasを読み込んでいます…");
+    window.location.reload();
+  }, [canvas.panelLayers, generationJobs, hasUnsavedChanges, saveState]);
 
   useEffect(() => {
     for (const job of generationJobs) {
@@ -1592,7 +1636,7 @@ export function CloudCanvasEditor({
                     <span>
                       {job.revision_preset
                         ? `${job.generation_operation === "inpainting" ? "部分修正" : job.generation_operation === "outpainting" ? "画角拡張" : "修正候補"}・${revisionPresetLabels[job.revision_preset]}`
-                        : job.job_type} / {job.status} / {job.progress}%
+                        : job.job_type} / {generationStatusLabel(job)} / {job.progress}%
                     </span>
                     {job.status === "queued" || job.status === "running" ? (
                       <button
@@ -1646,7 +1690,9 @@ export function CloudCanvasEditor({
                       ) : null}
                     </div>
                   ) : null}
-                  {job.status === "completed" && job.output_asset_id ? (
+                  {job.status === "completed" &&
+                  job.output_asset_id &&
+                  job.panel_adoption_status !== "auto_placed" ? (
                     <button
                       className="button-secondary mt-2 w-full"
                       disabled={
@@ -1658,7 +1704,10 @@ export function CloudCanvasEditor({
                       type="button"
                     >
                       {generationTargets[job.id] || job.target_panel_id
-                        ? "この候補を採用してコマへ配置"
+                        ? job.panel_adoption_status === "review_required" ||
+                          job.panel_adoption_status === "placement_failed"
+                          ? "確認してコマへ配置"
+                          : "この候補を採用してコマへ配置"
                         : "選択中のコマへ配置"}
                     </button>
                   ) : null}

@@ -1,5 +1,32 @@
 # MANGAI Current Task
 
+## 2026-08-14 PR-R4-2A 生成画像の自動採用・Canvas自動配置
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#255](https://github.com/team478a/manga/pull/255)
+- Vercel Preview: https://mangai-hub-staging-2pohngbee-team478as-projects.vercel.app
+- Branch: `codex/feat-r4-2a-auto-panel-adoption`
+- Base: `origin/feature/manga-canvas-mvp`@`d7a7062`（PR #253 merge commit）。PR #254はDraft／OPEN／MERGEABLEで未マージのため、そのbranchへ変更を追加せず独立branchで進める。
+- Job／Asset: Workerは`complete_cloud_generation_image_job`でStorage Assetと`cloud_generation_jobs.status=completed`を原子的に確定するが、完了後は品質評価だけでCanvas配置・保存を行っていない。
+- Batch linkage: `cloud_generation_batch_targets.generation_job_id`からJob、`page_id`、`panel_id`、`source_page_revision`を一意に追跡でき、`cloud_generation_batch_jobs`もbatch／page／jobを保持する。一括生成は1コマ1候補である。
+- Canvas保存: `save_cloud_page_snapshot`はpage row lock、expected revision、2 MiB上限、finalized拒否、snapshot追加、project revision追加を同一transactionで行う。現行は認証利用者専用で、service-role Workerからの自動採用用契約はない。
+- Canvas構造: `PageCanvas`は`panels`、`panelLayers`、`balloons`、`textObjects`を持つ。画像候補の手動採用はClientが`applyPanelCandidateAdoption`を呼び、background／correctionでは`panel.imageAssetId`も更新してautosaveする。現行domain処理には同一Job／Assetの重複防止がない。
+- セリフ情報: 採用storyboardの各panelに`dialogue[{type,speaker,text}]`、scenarioに`dialogueGoal`、panel specificationに対象panelの生成仕様がある。Canvas側の吹き出しとテキストは別配列で、現時点では自動関連付けされない（PR-R4-2B対象）。
+- 制作状態: `not_started`、`generating`、`review_required`、`revision_required`、`finalized`を使用する。Job完了triggerは`review_required`にするが、画像配置・セリフ・保存を確認せずページ完成とは判定していない。
+- 完成物: release checkpointは全ページfinalized・context一致を要求し、PNGは単一Canvas、durable PDFは分割Workerと非公開Storageを使用する。作品全体の完成判定・4ページ連続プレビューはPR-R4-2C対象。
+- Works linkage: `works.source_project_id`でCloud制作Projectと一意に関連し、Marketplace draft作成経路が存在する。完成原稿との公開・販売連携はPR-R4-2D対象。
+- PR-R4-2A方針: Worker完了通知後にManga application serviceが自動採用可否を判定し、Canvas domainの冪等処理を通し、service-role限定RPCでowner／Job／Asset／page／panel／source revision／finalizedを再検証して永続保存する。手動編集・locked・revision変更時は上書きせず確認待ちとして記録する。
+- 実装: 1候補のネーム生成とdurable batch targetを自動採用対象として記録し、Job完了直後に対象Canvasへ配置する。Worker中断で取り残された完了Jobは次回runで1件ずつ回収し、自動retryは最大2回で止める。background／correctionは`panel.imageAssetId`も更新し、同一`sourceJobId`または同一panel＋assetは成功no-opにする。
+- 永続化: migration `202608140001_cloud_generation_panel_adoptions`でowner限定の採用結果台帳とservice-role限定の検索／結果記録／snapshot保存RPCを追加する。snapshot、page revision、project revision、制作状態、採用結果を同一transactionで更新し、rollbackを用意した。
+- UI: 生成中、画像生成完了、自動配置済み、手動確認待ち、配置失敗、再実行可能を表示する。自動配置済みの通常採用buttonは隠し、安全に再読込できる場合は保存済みCanvasへ自動更新する。手動確認時の既存採用導線は維持する。
+- 保護: 生成開始後revision変更、別画像、locked panel／layer、finalized、明示拒否では既存画像を削除・上書きしない。owner／project／page／panel／Job由来Assetの一致をDB側でも再確認する。Prompt、画像、秘密値、Provider応答はログ・公開responseへ追加しない。
+- ローカル検証: 集中29/29、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 56本、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildのみ既知のWindows path長上限で停止し、同一sourceのWebpack buildで成功した。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 次: 責任者のreview／merge判断まで停止する。merge後はProduction migrationを先に適用し、Workerで1候補生成画像がCanvasへ自動配置されることを実機確認する。責任者確認前にPR-R4-2Bへ進まない。
+- 対象外: PR-R4-2B〜2D、Provider、model、pricing、retry、timeout、Scheduler頻度、成人向け境界、Desktop。
+
+---
+
 ## 2026-08-13 PR-R4-1ab 長編一括生成登録阻害の解消
 
 - 状態: `READY_FOR_OWNER_REVIEW`

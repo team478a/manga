@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2A 生成画像の自動採用・Canvas自動配置
+
+- PR #253のmerge commit `d7a70627aff1608a2801593d860a3e2f9b29d160`を基点に、Cloud漫画生成のJob完了後にCanvasへ画像が反映されず、手動採用に依存して空コマが残る経路を監査した。PR #254はDraft／OPENのまま変更していない。
+- 1候補の単一コマ生成とdurable batchへ自動採用metadataを固定し、Job完了後のapplication service、冪等domain、service-role repositoryを追加した。Worker中断時は次回runで完了Jobを回収し、配置再試行は最大2回に制限する。
+- migration `202608140001_cloud_generation_panel_adoptions`でowner読取限定の結果台帳とservice-role限定RPCを追加した。owner／project／page／panel／Job由来Asset／source revision／finalizedを再検証し、Canvas snapshot、page revision、project revision、version event、制作状態、配置結果を単一transactionで保存する。rollbackとmanifestも同期した。
+- 手動画像、locked panel／layer、生成後revision変更、finalized、明示拒否は上書きしない。同一Job／Assetは成功no-op。配置失敗でも完成済み生成Jobを失敗へ戻さず、手動確認導線を維持する。
+- UIへ生成中、画像生成完了、自動配置済み、手動確認待ち、配置失敗／再実行可能を追加した。Provider、model、pricing、生成retry／timeout、Scheduler頻度、URL、公開API、Canvas schema、PDF／PNG、成人向け境界、Desktopは変更していない。
+- 集中29/29、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 56/56、research eval、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildは既知のWindows path長上限のみで停止し、同一sourceのWebpack buildとVercel buildは成功した。
+- Draft PR: [#255](https://github.com/team478a/manga/pull/255)。Preview: https://mangai-hub-staging-2pohngbee-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- 責任者のreview／merge判断まで停止する。merge後はProduction migrationを先に適用して実機受入れを行い、責任者確認前にPR-R4-2Bへ進まない。
+
+---
+
 ## 2026-08-13 Codex: PR-R4-1ab 長編一括生成登録阻害の解消
 
 - PR #249がmerge commit `09da19696a6bfa8dcb5bc45a03262b5ce0856acc`で`feature/manga-canvas-mvp`へマージ済みであることを確認した。
@@ -4329,3 +4342,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - focused 24/24、deps、lint、typecheck、Hub、AI、Canvas、Desktop、a11y、migration 55本、Cloud漫画repository、owner isolation、100ページ長編、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildは既知のWindowsパス長上限で停止した。
 - Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
 - 次: 責任者merge待ち。Production反映後、失敗2件だけを再登録して16/16と生成画像品質を確認する。
+# 2026-08-14 Codex: PR-R4-2A実装前監査
+
+- Branch: `codex/feat-r4-2a-auto-panel-adoption`
+- Base: `origin/feature/manga-canvas-mvp`@`d7a7062`。PR #254は未マージのため独立branchを維持する。
+- 監査結論: 画像生成JobとAsset保存は正常に完了する一方、Canvas反映は原稿編集画面の手動操作に依存しており、Worker完了からpage snapshot保存への接続がない。これが生成済みAssetに対して空白コマが残る直接原因である。
+- 安全な根拠: durable batch targetがJobごとのowner、page、panel、生成開始時page revisionを保持する。既存Canvas domain／revision保存を再利用し、service-role限定の再検証付き永続化境界を追加する。
+- 保護条件: 同一Job／Assetを冪等化し、生成開始後のrevision変更、手動画像、locked、finalized、owner不一致ではCanvasを変更せず確認待ちにする。
+- 次: PR-R4-2Aだけを実装・検証し、Draft PRの全CIとVercel Preview確認で停止する。PR-R4-2Bへは進まない。
+- 実装完了: 自動採用application／domain、admin repository、完了Job回収、採用状態UI、owner限定台帳、service-role限定transaction RPC、rollback、回帰テストを追加した。1候補以外は従来どおり手動比較・採用を維持する。
+- 検証: 集中29/29、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 56本、research eval、Webpack Hub build、Desktop build、RC structure、diff check成功。Turbopackだけは既知のWindows path長上限で停止した。
+- 停止条件: Draft PRの全CI／Vercel Previewを確認後、責任者review待ちで停止する。migration適用・Production Worker実行・PR-R4-2Bは行わない。

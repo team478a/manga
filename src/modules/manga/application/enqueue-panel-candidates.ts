@@ -363,7 +363,12 @@ async function runStoryboardPanelImage(
       });
       if (mode === "prepare") {
         prepared.push({
-          generation: await prepareCloudGenerationJob(resolved.generation),
+          generation: await prepareCloudGenerationJob({
+            ...resolved.generation,
+            sourcePageRevision: page.revision,
+            candidateCount: 1,
+            autoAdopt: true,
+          }),
           panelSpecification: resolved.panelSpecification,
           candidateNumber: resolved.candidateNumber,
         });
@@ -376,7 +381,12 @@ async function runStoryboardPanelImage(
             candidateIndex === 0
               ? request.idempotencyKey
               : `${request.idempotencyKey}:candidate:${candidateIndex + 1}`,
-          generation: resolved.generation,
+          generation: {
+            ...resolved.generation,
+            sourcePageRevision: page.revision,
+            candidateCount: request.candidateCount,
+            autoAdopt: request.candidateCount === 1,
+          },
         });
         try {
           await savePanelSpecification({

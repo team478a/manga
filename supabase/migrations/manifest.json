@@ -330,6 +330,12 @@
       "description": "長編一括生成の永続登録失敗を安全な固定codeへ分類しPostgREST schema cacheを更新",
       "forwardSha256": "61d2f6be241e0102ce547827eb3f6535e4faeef3851c6b430fad01a069c48a13",
       "rollbackSha256": "00508e5fbbc332ddd3ff2dd6df0ea49291a3d6959fdbc9d415329cd2f9275c20"
+    },
+    {
+      "id": "202608140001_cloud_generation_panel_adoptions",
+      "description": "完了した1候補画像をowner・revision保護付きで対象Canvasへ自動採用し結果を記録",
+      "forwardSha256": "b840e48ab0f3181553b63dd86f7d12e3e225fbffa346ef7a8639dac0f48e1821",
+      "rollbackSha256": "5ab5a1e435b5288f35cd8208c8ad432a7d0d351f546b8ea06579ad354cdc5bbb"
     }
   ],
   "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"
