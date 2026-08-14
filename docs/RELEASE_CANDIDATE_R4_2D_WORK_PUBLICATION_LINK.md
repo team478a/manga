@@ -1,5 +1,7 @@
 # PR-R4-2D 作品管理・販売準備と完成原稿の連携
 
+- Draft PR: [#261](https://github.com/team478a/manga/pull/261)
+
 ## 結論
 
 Cloud漫画の販売原稿を制作中Canvasから切り離し、`kind='release'`の完成版checkpointへ固定する。`works.image_url`は表紙・サムネイルとして維持し、本文はversion付きpublicationとprivate Storage上のページPNG／PDFを正本とする。

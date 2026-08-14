@@ -10,6 +10,7 @@
 - `works.source_project_id`、release checkpoint、購入済みorder、既存Marketplace同期を監査した。旧同期は最新Canvasを直接PDF化し、公開version、本文ページ、rollback可能な原稿固定がなかった。
 - release checkpointへ固定するpublication／page台帳、private PNG／PDF、Cloud作品だけの公開・販売gate、停止後のversion切替、owner／paid order／sampleを分離した本文readerを実装した。旧1枚画像作品と既存checkout／PDF downloadは維持する。
 - 集中7/7、Hub 708/708、Canvas 26/26、AI 48/48、Desktop 182/182、deps、lint、全typecheck、migration 59/59、Webpack Hub build、Desktop build、RC structure preflight、diff checkに成功した。通常Turbopackは既知のWindows path長制限、Desktop a11yはローカルElectron timeoutのためCIで確認する。
+- Draft PR: [#261](https://github.com/team478a/manga/pull/261)。作成時点でDraft／MERGEABLE。全CIとVercel Preview確認後に停止する。
 - Production migration、既存作品、実Provider、creditは変更していない。PR #260 merge後のProductionページ20・22目視はChrome接続timeoutのため未完了として残す。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2D_WORK_PUBLICATION_LINK.md`。Draft PRと全CI／Vercel Preview確認後に停止する。
 

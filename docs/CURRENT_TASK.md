@@ -2,7 +2,8 @@
 
 ## 2026-08-14 PR-R4-2D 作品管理・販売準備と完成原稿の連携
 
-- 状態: `LOCAL_VALIDATED_DRAFT_PR_PENDING`
+- 状態: `CI_AND_PREVIEW_RUNNING`
+- Draft PR: [#261](https://github.com/team478a/manga/pull/261)（Draft／MERGEABLE）
 - Branch: `codex/feat-r4-2d-work-publication-link`
 - Base: `origin/feature/manga-canvas-mvp`@`a8f8d05`（PR #260 merge後）
 - 正本: `MANGAI_PR-R4-2C以降_完全版_2026-08-14.md`のPR-R4-2D。
