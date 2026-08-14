@@ -13,8 +13,9 @@
 - R4-2Aの全画像配置が同一ページで完了してからページ単位で保存するため、画像配置途中にdialogue処理がrevisionを進めない。Worker完了直後と次回runの中断回収を用意した。
 - migration `202608140003_cloud_page_dialogue_placements`はowner限定台帳とservice-role限定のready判定／回収／結果／保存RPCを追加する。保存transactionは画像・panelLayersを変更不能にし、balloons／textObjectsだけを更新する。本文は台帳、version manifest、logへ保存しない。
 - 集中9/9、Hub 691/691、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。PostgreSQL 16で全forward→全rollback→全forwardの往復とassertionに成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
+- Draft PR: [#257](https://github.com/team478a/manga/pull/257)。Preview: https://mangai-hub-staging-git-codex-feat-r4-18faf7-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
 - Production migration `202608140001`〜`202608140003`と実機受入れは未確認。既存Production Chromeタブの読み取り接続timeout後、DB・画面・Provider Jobを変更していない。
-- 次: Draft PR、全CI／Vercel Previewを確認して責任者review待ちで停止する。PR-R4-2Cへ進まない。
+- 責任者のreview／merge判断まで停止する。Production migrationと実Provider受入れは未確認のまま維持し、PR-R4-2Cへ進まない。
 
 ---
 
