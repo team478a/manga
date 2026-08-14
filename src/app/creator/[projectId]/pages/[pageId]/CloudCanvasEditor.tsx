@@ -35,6 +35,7 @@ import type {
   CloudPage,
   CloudProjectSummary,
 } from "@/lib/cloud-creator-server";
+import type { CloudPageDialoguePlacement } from "@/modules/cloud-creator/canvas/dialogue-placement-service";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
 import { applyPanelCandidateAdoption } from "@/modules/manga/domain/panel-adoption";
 import {
@@ -197,6 +198,7 @@ export function CloudCanvasEditor({
   initialAssets,
   initialGenerationJobs,
   initialQuota,
+  initialDialoguePlacement,
   storyboardPanelGenerationEnabled,
   panelInpaintingEnabled,
   panelOutpaintingEnabled,
@@ -209,6 +211,7 @@ export function CloudCanvasEditor({
   initialAssets: CloudAsset[];
   initialGenerationJobs: CloudGenerationJob[];
   initialQuota: CloudAiQuota | null;
+  initialDialoguePlacement: CloudPageDialoguePlacement | null;
   storyboardPanelGenerationEnabled: boolean;
   panelInpaintingEnabled: boolean;
   panelOutpaintingEnabled: boolean;
@@ -1156,6 +1159,28 @@ export function CloudCanvasEditor({
         <p className="mx-auto max-w-[1600px] bg-blue-50 p-3 text-blue-900">
           {message}
         </p>
+      ) : null}
+      {initialDialoguePlacement ? (
+        <div
+          className={`mx-auto max-w-[1600px] p-3 text-sm ${
+            initialDialoguePlacement.status === "auto_placed"
+              ? "bg-green-50 text-green-900"
+              : initialDialoguePlacement.status === "review_required"
+                ? "bg-amber-50 text-amber-900"
+                : "bg-red-50 text-red-900"
+          }`}
+          role={
+            initialDialoguePlacement.status === "auto_placed"
+              ? "status"
+              : "alert"
+          }
+        >
+          {initialDialoguePlacement.status === "auto_placed"
+            ? `構造化セリフを自動配置済みです（${initialDialoguePlacement.placed_dialogue_count}/${initialDialoguePlacement.dialogue_count}件）。`
+            : initialDialoguePlacement.status === "review_required"
+              ? `セリフ配置に確認が必要です（${initialDialoguePlacement.placed_dialogue_count}/${initialDialoguePlacement.dialogue_count}件）。手動テキストを保護した箇所、または吹き出し内に収まらない箇所があります。`
+              : "セリフの自動配置を完了できませんでした。再処理後も解消しない場合は運営へ連絡してください。"}
+        </div>
       ) : null}
       <div className="mx-auto grid max-w-[1600px] gap-4 p-4 min-[1360px]:grid-cols-[220px_minmax(480px,1fr)_320px]">
         <aside className="space-y-4">

@@ -7,6 +7,7 @@ import {
   listCloudGenerationJobs,
   getMyCloudAiQuota,
 } from "@/lib/cloud-creator-server";
+import { getCloudPageDialoguePlacement } from "@/modules/cloud-creator/canvas/dialogue-placement-service";
 import { CloudCanvasEditor } from "./CloudCanvasEditor";
 import { getCloudGeneralMonitorEnrollment, isCloudGeneralMonitorActive } from "@/lib/cloud-general-monitor";
 import {
@@ -28,6 +29,9 @@ export default async function CloudCanvasPage({
   let assets: Awaited<ReturnType<typeof listCloudAssets>>;
   let generationJobs: Awaited<ReturnType<typeof listCloudGenerationJobs>>;
   const quotaPromise = getMyCloudAiQuota().catch(() => null);
+  const dialoguePlacementPromise = getCloudPageDialoguePlacement(pageId).catch(
+    () => null,
+  );
   try {
     [workspace, snapshot, assets, generationJobs] = await Promise.all([
       getCloudProjectWorkspace(projectId),
@@ -42,6 +46,7 @@ export default async function CloudCanvasPage({
   const page = workspace.pages.find((candidate) => candidate.id === pageId);
   if (!page || snapshot.project_id !== projectId) notFound();
   const quota = await quotaPromise;
+  const dialoguePlacement = await dialoguePlacementPromise;
   const monitorQualityFeedbackEnabled = isCloudGeneralMonitorActive(
     await getCloudGeneralMonitorEnrollment(profile.id),
   );
@@ -54,6 +59,7 @@ export default async function CloudCanvasPage({
       initialAssets={assets}
       initialGenerationJobs={generationJobs}
       initialQuota={quota}
+      initialDialoguePlacement={dialoguePlacement}
       storyboardPanelGenerationEnabled={cloudPanelImageGenerationFeatureEnabled()}
       panelInpaintingEnabled={cloudPanelInpaintingFeatureEnabled()}
       panelOutpaintingEnabled={cloudPanelOutpaintingFeatureEnabled()}

@@ -32,6 +32,8 @@ import {
 import { evaluateCompletedPanelCandidate } from "../../manga-quality/application/evaluate-completed-panel.ts";
 import { adoptCompletedPanelCandidate } from "../../manga/application/auto-adopt-completed-panel.ts";
 import { createAutomaticPanelAdoptionRepository } from "../../manga/infrastructure/auto-panel-adoption-repository.ts";
+import { placeCompletedPageDialogue } from "../../manga/application/auto-place-page-dialogue.ts";
+import { createPageDialoguePlacementRepository } from "../../manga/infrastructure/dialogue-placement-repository.ts";
 
 export { createCloudJobLeaseHeartbeat } from "./lease-heartbeat.ts";
 export { CloudGenerationLeaseLostError } from "../domain/cloud-ai-errors.ts";
@@ -59,6 +61,21 @@ export async function processPendingCloudPanelAdoption(input: {
     const jobId = await repository.findPendingJobId();
     if (!jobId) return { status: "idle" as const };
     const result = await adoptCompletedPanelCandidate({ jobId, repository });
+    return { ...result, jobId };
+  } catch {
+    return { status: "placement_failed" as const };
+  }
+}
+
+export async function processPendingCloudDialoguePlacement(input: {
+  client?: AdminClient;
+} = {}) {
+  const client = input.client ?? createAdminClient();
+  const repository = createPageDialoguePlacementRepository(client);
+  try {
+    const jobId = await repository.findPendingJobId();
+    if (!jobId) return { status: "idle" as const };
+    const result = await placeCompletedPageDialogue({ jobId, repository });
     return { ...result, jobId };
   } catch {
     return { status: "placement_failed" as const };
@@ -256,6 +273,14 @@ export async function processNextCloudGenerationJob(input: {
         });
       } catch {
         // A later worker run reconciles completed jobs whose placement was interrupted.
+      }
+      try {
+        await placeCompletedPageDialogue({
+          jobId: job.id,
+          repository: createPageDialoguePlacementRepository(client),
+        });
+      } catch {
+        // Dialogue is reconciled after every page image has been placed.
       }
     }
     return { status: "completed" as const, jobId: job.id, outputAssetId };
