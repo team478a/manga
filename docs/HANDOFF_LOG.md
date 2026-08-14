@@ -4409,3 +4409,15 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 実装完了: 自動採用application／domain、admin repository、完了Job回収、採用状態UI、owner限定台帳、service-role限定transaction RPC、rollback、回帰テストを追加した。1候補以外は従来どおり手動比較・採用を維持する。
 - 検証: 集中29/29、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 56本、research eval、Webpack Hub build、Desktop build、RC structure、diff check成功。Turbopackだけは既知のWindows path長上限で停止した。
 - 停止条件: Draft PRの全CI／Vercel Previewを確認後、責任者review待ちで停止する。migration適用・Production Worker実行・PR-R4-2Bは行わない。
+
+# 2026-08-14 Codex: Production完成画像のCanvas表示監査
+
+- Branch: `codex/fix-r4-2c2-canvas-image-render`
+- Base: `origin/feature/manga-canvas-mvp`@`43a701f`
+- Draft PR: [#260](https://github.com/team478a/manga/pull/260)
+- ProductionのR4-2A〜2C migration 3本を適用し、既存完成Job 14件を再課金なしで回収した。結果は自動配置10、revision不一致による確認待ち4、配置失敗0。構造化台詞は2ページへ自動配置された。
+- ページ20、22は完成判定、ページ21は既存失敗2件で未完成、ページ19は4件とも安全な手動確認待ち。Queue 0、credits used 28、reserved 0で、復旧中のProvider呼出しはない。
+- BFL／Storage上の完成画像は実画像として正常だった。Canvas UIが外部署名URLを含むSVGを`data:` URLへ変換して表示していたため、元画像と異なるぼやけた表示になった。
+- 編集Canvasとプレビューモーダルをraw inline SVGへ変更し、PNG／PDFのdata URL埋め込み処理は変更していない。deps、lint、typecheck、Hub 704/704、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violations 0、migration 58本、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。
+- PR #260のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewの未ログイン画面は起動確認済み。
+- 次: 責任者merge後、Productionの既存`test`セッションでページ20・22を再読込し、生成資産とCanvas表示が一致することを確認する。merge前のProduction反映や失敗Jobの有料再実行はしない。

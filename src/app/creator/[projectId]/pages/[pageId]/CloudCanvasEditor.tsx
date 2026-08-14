@@ -190,10 +190,6 @@ function now() {
   return new Date().toISOString();
 }
 
-function svgDataUrl(svg: string) {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
 export function CloudCanvasEditor({
   project,
   pages,
@@ -333,11 +329,11 @@ export function CloudCanvasEditor({
       ),
     [assets],
   );
-  const previewUrl = useMemo(
-    () => svgDataUrl(createCanvasSvg(canvas, canvasSvgAssets)),
+  const previewSvg = useMemo(
+    () => createCanvasSvg(canvas, canvasSvgAssets),
     [canvas, canvasSvgAssets],
   );
-  const panelPreviewUrls = useMemo(
+  const panelPreviewSvgs = useMemo(
     () =>
       new Map(
         canvas.panels.map((panel) => {
@@ -356,7 +352,7 @@ export function CloudCanvasEditor({
           };
           return [
             panel.id,
-            svgDataUrl(createCanvasSvg(panelCanvas, canvasSvgAssets)),
+            createCanvasSvg(panelCanvas, canvasSvgAssets),
           ];
         }),
       ),
@@ -1860,11 +1856,12 @@ export function CloudCanvasEditor({
                       touchAction: "none",
                     }}
                   >
-                    <img
-                      alt=""
-                      draggable={false}
-                      className="h-full w-full"
-                      src={panelPreviewUrls.get(panel.id)}
+                    <div
+                      aria-hidden="true"
+                      className="h-full w-full [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
+                      dangerouslySetInnerHTML={{
+                        __html: panelPreviewSvgs.get(panel.id) ?? "",
+                      }}
                     />
                   </div>
                 );
@@ -2224,10 +2221,11 @@ export function CloudCanvasEditor({
             >
               プレビューを閉じる
             </button>
-            <img
-              alt={`${project.title} ${page.page_number}ページのプレビュー`}
-              className="mx-auto max-h-[80vh] max-w-[80vw] bg-white object-contain"
-              src={previewUrl}
+            <div
+              aria-label={`${project.title} ${page.page_number}ページのプレビュー`}
+              className="mx-auto h-[80vh] max-h-[80vh] w-[80vw] max-w-4xl bg-white [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
+              dangerouslySetInnerHTML={{ __html: previewSvg }}
+              role="img"
             />
           </div>
         </div>

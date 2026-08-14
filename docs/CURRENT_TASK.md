@@ -2739,3 +2739,16 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - ローカル検証: focused 24/24、deps、lint、typecheck、Hub、AI 48/48、Canvas 26/26、Desktop 182/182、Desktop a11y、migration 55本、Cloud漫画repository受入れ、owner isolation、100ページ長編4/4、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
 - Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
 - 次: 責任者merge待ち。merge／Production反映前に失敗2コマを再実行しない。反映後、2件だけ再登録し、16/16完了・Asset・品質評価・画像目視を確認する。
+
+# 2026-08-14 Codex: PR-R4-2C2 Canvas実画像表示修正
+
+- 状態: `READY_FOR_REVIEW`
+- Branch: `codex/fix-r4-2c2-canvas-image-render`
+- Base: `origin/feature/manga-canvas-mvp`@`43a701f`（PR #259 merge後）
+- Draft PR: [#260](https://github.com/team478a/manga/pull/260)
+- Productionへ既存migration `202608140001`〜`202608140003`を順番通り適用し、table、RPC、RLSを確認した。既存完成Job 14件は10件を自動配置、生成開始後にrevisionが変わった4件を安全に手動確認待ちへ移した。Queue 0、配置失敗0、追加Provider呼出しなし、creditは使用28・予約0のまま。
+- `test`モニター作品のページ20と22は画像4/4、台詞、revision、PNGの完成判定に成功した。ページ21は画像2/4、既存失敗2件のため未完成。ページ19はrevision不一致4件を手動確認待ちとして維持した。
+- ProductionのBFL完成資産を単体表示すると704×1024の漫画画像が正常だった一方、Canvas編集画面ではぼやけた別表示になった。原因は署名付き外部画像を参照するSVGを`data:` URL化して`img`へ渡す表示境界で、Storage、Provider、DB、採用Canvas自体の破損ではない。
+- 編集Canvasと原稿プレビューだけをinline SVG表示へ変更し、署名付き画像をページDOMから直接読み込ませる。PNG／PDF生成、Canvas schema、保存revision、Provider、model、pricing、retry、timeout、Scheduler、成人向け境界、Desktopは変更しない。
+- ローカル検証: deps、lint、typecheck、Hub 704/704、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、migration 58本、Webpack Hub build、Desktop build、RC structure preflight、`git diff --check`成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。次はDraft PR、CI、Vercel Previewで実画像表示を確認し、Productionは変更せず停止する。
+- PR #260のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは公開URLで未ログイン画面まで起動確認済み。Productionと認証cookieを共有しないため、責任者merge後に既存`test`セッションでページ20・22の実画像表示を再確認し、それまではProduction変更と有料再生成を行わない。

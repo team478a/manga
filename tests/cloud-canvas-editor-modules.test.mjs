@@ -90,3 +90,19 @@ test("Editor UIはAPI URLを組み立てず分離サービスを利用する", a
   assert.match(source, /useCanvasHistory/);
   assert.match(source, /useCanvasPointer/);
 });
+
+test("Editorは署名付き画像をdata URL内へ閉じ込めずinline SVGで表示する", async () => {
+  const source = await readFile(
+    new URL(
+      "../src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx",
+      import.meta.url,
+    ),
+    "utf8",
+  );
+
+  assert.match(source, /const previewSvg = useMemo/);
+  assert.match(source, /const panelPreviewSvgs = useMemo/);
+  assert.match(source, /dangerouslySetInnerHTML=\{\{ __html: previewSvg \}\}/);
+  assert.doesNotMatch(source, /data:image\/svg\+xml/);
+  assert.doesNotMatch(source, /panelPreviewUrls/);
+});
