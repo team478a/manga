@@ -43,7 +43,7 @@ Cloud漫画の販売原稿を制作中Canvasから切り離し、`kind='release'
 ## 検証結果
 
 - 集中回帰 7/7、Hub 708/708、Canvas 26/26、AI 48/48、Desktop 182/182成功。
-- dependency check、lint、Hub／Desktop typecheck、migration manifest 59/59、Webpack Hub build、Desktop build、RC structure preflight、`git diff --check`成功。
+- dependency check、lint、Hub／Desktop typecheck、migration manifest 59/59、PostgreSQL 16で全forward→rollback→forward、Webpack Hub build、Desktop build、RC structure preflight、`git diff --check`成功。
 - 通常Turbopack buildはWindowsの長い作業パス上限で停止し、同じsourceをWebpackでproduction buildした。
 - Desktop a11yはローカルElectron起動がtimeoutしたため、GitHub Windows CIの結果を正式な受入れ結果とする。
 
