@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2H 参照付き単一コマ生成
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- Branch: `codex/quality-r4-2h-grounded-panel-generation`
+- Base: `origin/feature/manga-canvas-mvp`@`78eccff`（PR #264 merge commit）。
+- Production受入れ: ページ22の問題3コマを各1案だけ再制作し、Worker run `31809744470`で3/3完了。使用32→38、予約6→0、残り62、重複Jobなし。成人向け誤判定は解消した。
+- 品質結果: 無関係な複数場面＋生成文字、顔切れ、救助動作の人体・接触破綻が残った。3候補は配置・承認せず、正常画像、Canvas、公開・販売状態は変更していない。追加有料生成は停止した。
+- 実装: Panel Specificationから「一枚の場面画像」契約を作り、Provider Promptの先頭と末尾へ固定する。枠のない一枚画像、登場人数、人物、動作、場所、構図、画角を同じ正本から指示する。
+- 参照画像: DB作成順の先着8件を廃止し、最大32件のbounded読込後に人物各2件→画風1件→場所／小物各1件の順で最大8件へ固定する。参照の役割と生成契約優先をProviderへ明示する。
+- 不変: URL、公開API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、checkpoint、成人向け境界、Desktop。
+- 検証: 集中24/24、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、workspace package build、Webpack production build、RC structure、diff check成功。
+- Desktop: 既存`@napi-rs/keyring`型宣言不足でtypecheck／test／a11y／buildがbuild前停止。Desktop差分はなくGitHub Windows CIを正式結果とする。
+- Production変更: 限定受入れの3 Job／6 credit以外に変更なし。本PR実装後のProvider E2Eはmerge前に行わない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2H_GROUNDED_PANEL_GENERATION.md`
+- 次: Draft PR、全CI、Vercel Preview成功で停止する。merge後は参照設定を先に確認し、1コマ1案だけで限定受入れする。
+
+---
+
 ## 2026-08-14 PR-R4-2G 一般漫画Promptと成人向け検知の語彙衝突修正
 
 - 状態: `READY_FOR_OWNER_REVIEW`

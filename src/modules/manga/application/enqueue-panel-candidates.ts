@@ -319,7 +319,9 @@ async function runStoryboardPanelImage(
         .eq("owner_profile_id", profile.id)
         .in("subject_id", relevantSubjectIds)
         .order("created_at", { ascending: true })
-        .limit(8);
+        // Load a bounded superset so deterministic subject priority can keep
+        // character identity references ahead of older style/world assets.
+        .limit(32);
       if (references.error && references.error.code !== "42P01")
         throw new DomainError("INTERNAL_ERROR", "参照画像を読み込めませんでした。", {
           cause: references.error,

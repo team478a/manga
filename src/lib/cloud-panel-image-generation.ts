@@ -20,6 +20,10 @@ import {
 import { panelSpecificationSchema } from "../modules/manga-quality/domain/panel-specification.ts";
 import { registerCharacterIdentity } from "../modules/manga-quality/application/manage-character-identity.ts";
 import { attachCharacterIdentities } from "../modules/manga-quality/application/attach-character-identities.ts";
+import {
+  selectPanelReferenceAssets,
+  type PanelReferenceAsset,
+} from "../modules/manga/domain/panel-reference-policy.ts";
 
 export const cloudPanelImageGenerationFeatureEnabled = () =>
   featureFlagEnabled("CLOUD_PANEL_IMAGE_GENERATION_ENABLED");
@@ -189,11 +193,7 @@ export function buildStoryboardPanelGeneration(input: {
   worldProfiles?: CloudWorldProfile[];
   explicitCharacterProfileIds?: string[];
   explicitWorldProfileIds?: string[];
-  referenceAssets?: Array<{
-    subjectKind: "character" | "style" | "location" | "prop";
-    subjectId: string;
-    assetId: string;
-  }>;
+  referenceAssets?: PanelReferenceAsset[];
   revision?: {
     sourceAssetId: string;
     maskAssetId?: string;
@@ -322,20 +322,25 @@ export function buildStoryboardPanelGeneration(input: {
     generationTarget === "composite" || generationTarget === "background";
   const selectedVisualProfiles = usesCharacters ? visualProfiles : [];
   const selectedWorldProfiles = usesWorld ? worldProfiles : [];
-  const referenceSubjectIds = new Set([
-    ...selectedVisualProfiles.map((profile) => `character:${profile.id}`),
-    ...selectedWorldProfiles.map((profile) => `${profile.kind}:${profile.id}`),
-    ...(input.styleBible ? [`style:${input.styleBible.id}`] : []),
-  ]);
-  const referenceAssetIds = Array.from(
-    new Set(
-      (input.referenceAssets ?? [])
-        .filter((reference) =>
-          referenceSubjectIds.has(`${reference.subjectKind}:${reference.subjectId}`),
-        )
-        .map((reference) => reference.assetId),
-    ),
-  ).slice(0, 8);
+  const selectedReferenceAssets = selectPanelReferenceAssets({
+    references: input.referenceAssets ?? [],
+    orderedSubjects: [
+      ...selectedVisualProfiles.map((profile) => ({
+        kind: "character" as const,
+        id: profile.id,
+      })),
+      ...(input.styleBible
+        ? [{ kind: "style" as const, id: input.styleBible.id }]
+        : []),
+      ...selectedWorldProfiles.map((profile) => ({
+        kind: profile.kind,
+        id: profile.id,
+      })),
+    ],
+  });
+  const referenceAssetIds = selectedReferenceAssets.map(
+    (reference) => reference.assetId,
+  );
   const characterIdentities = selectedVisualProfiles.map((profile) =>
     registerCharacterIdentity({
       id: profile.id,
@@ -354,6 +359,75 @@ export function buildStoryboardPanelGeneration(input: {
         .map((reference) => reference.assetId),
     }),
   );
+  const panelSpecification = attachCharacterIdentities(
+    panelSpecificationSchema.parse({
+      version: 1,
+      panelId: canvasPanel.id,
+      characterNames: usesCharacters ? storyboardPanel.characters : [],
+      expectedCharacterCount: usesCharacters
+        ? storyboardPanel.characters.length
+        : 0,
+      expression: usesCharacters ? storyboardPanel.emotion : "",
+      composition: [
+        storyboardPanel.composition,
+        input.compositionControl?.instruction,
+      ]
+        .filter(Boolean)
+        .join(" / "),
+      background: usesWorld ? storyboardPanel.background : "",
+      props: selectedWorldProfiles
+        .filter((profile) => profile.kind === "prop")
+        .map((profile) => profile.name),
+      action: usesCharacters ? storyboardPanel.action : "",
+      shot: input.compositionControl?.shot ?? storyboardPanel.shot,
+      cameraAngle:
+        input.compositionControl?.cameraAngle ?? storyboardPanel.cameraAngle,
+      generationTarget,
+    }),
+    characterIdentities,
+  );
+  const referenceCounts = selectedReferenceAssets.reduce(
+    (counts, reference) => ({
+      ...counts,
+      [reference.subjectKind]: counts[reference.subjectKind] + 1,
+    }),
+    { character: 0, style: 0, location: 0, prop: 0 },
+  );
+  const referenceGuidance = selectedReferenceAssets.length
+    ? [
+        `参照素材: 人物${referenceCounts.character}点・画風${referenceCounts.style}点・場所${referenceCounts.location}点・小物${referenceCounts.prop}点。参照素材は人物同一性、衣装、画風、場所、小物の形だけに用い、場面と構図は次の生成契約を優先する。`,
+        "Use supplied images only for the referenced identity and visual traits. The scene contract below overrides their camera view and composition.",
+      ]
+    : [];
+  const contractedShot =
+    !input.compositionControl || input.compositionControl.shot === "storyboard"
+      ? shotLabels[storyboardPanel.shot]
+      : shotOverrideDirections[input.compositionControl.shot];
+  const contractedCamera =
+    !input.compositionControl ||
+    input.compositionControl.cameraAngle === "storyboard"
+      ? angleLabels[storyboardPanel.cameraAngle]
+      : cameraAngleOverrideDirections[input.compositionControl.cameraAngle];
+  const sceneContract = [
+    "【生成契約：一枚の場面画像】",
+    `登場人数: ${panelSpecification.expectedCharacterCount}人。`,
+    panelSpecification.characterNames.length
+      ? `登場人物: ${panelSpecification.characterNames.join("、")}。`
+      : "人物を配置しない。",
+    panelSpecification.action ? `この瞬間の動作: ${panelSpecification.action}。` : "",
+    panelSpecification.expression
+      ? `表情・感情: ${panelSpecification.expression}。`
+      : "",
+    panelSpecification.background ? `場所: ${panelSpecification.background}。` : "",
+    panelSpecification.props.length
+      ? `必要な小物: ${panelSpecification.props.join("、")}。`
+      : "",
+    panelSpecification.composition
+      ? `人物と背景の配置: ${panelSpecification.composition}。`
+      : "",
+    `画角: ${contractedShot}。カメラ: ${contractedCamera}。`,
+    "画像全体をこの一つの瞬間と一つの視点だけで満たす。編集用の文字要素は後工程で追加するため、描画面は意味のある絵だけで完成させる。",
+  ].filter(Boolean);
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
   const candidateIndex = Math.max(
     0,
@@ -421,7 +495,10 @@ export function buildStoryboardPanelGeneration(input: {
         "Upright orientation with the top edge skyward and the bottom edge groundward. Human heads stay toward the top edge, feet toward the bottom edge, with natural anatomy and gravity.",
       ];
   const prompt = [
-    "端から端まで一続きの、一般向け日本漫画用モノクロ場面イラスト。",
+    "端から端まで一続きの、一般向けモノクロインク場面イラスト。枠のない一枚の長方形画像として描く。",
+    "A single frameless rectangular monochrome ink illustration for a general audience.",
+    ...referenceGuidance,
+    ...sceneContract,
     "画像全体を一つの視点、一つの瞬間、連続した一つの場面で満たす。画面は純粋な絵だけで構成し、表面は無記名で清潔に保つ。",
     "A single continuous edge-to-edge monochrome scene, one camera view and one moment in time, composed as pure unlettered pictorial artwork.",
     ...uprightDirection,
@@ -481,7 +558,8 @@ export function buildStoryboardPanelGeneration(input: {
     input.revision?.outpaintingDirection
       ? `画角拡張: ${outpaintingDirectionLabels[input.revision.outpaintingDirection]}へ自然に背景と構図を延長する。元画像内の人物、衣装、表情、線、色を変更しない。`
       : "",
-    "最終出力は、端から端まで一続きの単一場面だけを描いた、無記名の完成イラストにする。",
+    ...sceneContract,
+    "最終出力は、生成契約どおりの一つの瞬間だけを端から端まで描いた、枠のない無記名の完成イラストにする。",
     "最終確認として、正立方向、自然な人体、意味のある絵柄だけで構成された一枚絵に整える。",
     "Final output: one upright continuous edge-to-edge scene, a single camera view, natural anatomy, and pure unlettered artwork.",
   ].filter(Boolean).join("\n");
@@ -552,29 +630,7 @@ export function buildStoryboardPanelGeneration(input: {
     panelNumber: storyboardPanel.index,
     candidateNumber: candidateIndex + 1,
     candidateCount,
-    panelSpecification: attachCharacterIdentities(
-      panelSpecificationSchema.parse({
-        version: 1,
-        panelId: canvasPanel.id,
-        characterNames: usesCharacters ? storyboardPanel.characters : [],
-        expectedCharacterCount: usesCharacters ? storyboardPanel.characters.length : 0,
-        expression: usesCharacters ? storyboardPanel.emotion : "",
-        composition: [
-          storyboardPanel.composition,
-          input.compositionControl?.instruction,
-        ].filter(Boolean).join(" / "),
-        background: usesWorld ? storyboardPanel.background : "",
-        props: selectedWorldProfiles
-          .filter((profile) => profile.kind === "prop")
-          .map((profile) => profile.name),
-        action: usesCharacters ? storyboardPanel.action : "",
-        shot: input.compositionControl?.shot ?? storyboardPanel.shot,
-        cameraAngle:
-          input.compositionControl?.cameraAngle ?? storyboardPanel.cameraAngle,
-        generationTarget,
-      }),
-      characterIdentities,
-    ),
+    panelSpecification,
   };
 }
 

@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2H 参照付き単一コマ生成
+
+- PR #264 merge commit `78eccfffae8f95907d2ce143278d8e583c83ab27`を含む最新基準から`codex/quality-r4-2h-grounded-panel-generation`を開始した。
+- Productionページ22の問題3コマを各1案だけ再制作し、Worker run `31809744470`は`completed requests=3 processed=3`。使用32→38、予約6→0、残り62、重複Jobなし。成人向け誤判定は解消した。
+- 原寸では無関係な複数場面と生成文字、顔切れ、救助動作の人体・接触破綻が残った。3候補は配置・承認せず、既存正常画像、Canvas、公開・販売状態を維持し、追加Provider実行を停止した。
+- Panel Specificationを生成Promptの一枚場面契約として再利用し、Promptの先頭と末尾へ同じ登場人数、人物、動作、表情、場所、小物、構図、画角を固定した。
+- 参照画像を最大32件から人物各2件、画風1件、場所／小物各1件の順に最大8件へ選ぶDomain policyを追加し、参照画像の役割と生成契約優先をProviderへ明示した。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 集中24/24、Hub、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、packages／Webpack build、RC structure、diff check成功。Desktopは既存keyring型宣言不足で停止しWindows CIを正式結果とする。
+- 次: Draft PRと全CI／Vercel Preview成功で停止。merge前にProduction再生成を行わない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2G Prompt moderation語彙衝突
 
 - PR #263 merge commit `6fb9bf0f0a78ee79e2756cdbe94f69c0c17db591`を含む最新基準から`codex/fix-r4-2g-prompt-moderation-collision`を開始した。

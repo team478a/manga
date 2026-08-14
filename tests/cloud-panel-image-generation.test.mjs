@@ -10,6 +10,7 @@ import {
 } from "../src/lib/cloud-panel-image-generation.ts";
 import { MockCloudImageProvider } from "../src/lib/cloud-ai-mock-provider.ts";
 import { moderateGeneralCloudPrompt } from "@mangai/ai-core";
+import { selectPanelReferenceAssets } from "../src/modules/manga/domain/panel-reference-policy.ts";
 
 const pageId = "10000000-0000-4000-8000-000000000001";
 const panelId = "20000000-0000-4000-8000-000000000001";
@@ -360,6 +361,14 @@ test("完成コマ生成はBFL向けの正の単一場面指示を日英で固�
   assert.match(result.generation.prompt, /一つの視点、一つの瞬間、連続した一つの場面/);
   assert.match(result.generation.prompt, /single continuous edge-to-edge monochrome scene/);
   assert.match(result.generation.prompt, /pure unlettered artwork/);
+  assert.match(result.generation.prompt, /生成契約：一枚の場面画像/);
+  assert.match(result.generation.prompt, /登場人数: 1人/);
+  assert.match(result.generation.prompt, /一枚の長方形画像/);
+  assert.match(result.generation.prompt, /single frameless rectangular/);
+  assert.equal(
+    result.generation.prompt.match(/生成契約：一枚の場面画像/g)?.length,
+    2,
+  );
   assert.match(result.generation.prompt, /頭部が画面上側、足元が画面下側/);
   assert.match(result.generation.prompt, /Upright orientation/);
   assert.match(result.generation.prompt, /natural anatomy and gravity/);
@@ -541,6 +550,8 @@ test("明示割当と参照画像IDを生成Jobへ固定する", () => {
     { profileId: characterId, version: 1 },
   ]);
   assert.deepEqual(result.generation.referenceAssetIds, [assetId]);
+  assert.match(result.generation.prompt, /参照素材: 人物1点/);
+  assert.match(result.generation.prompt, /scene contract below overrides/);
   assert.deepEqual(result.panelSpecification.characterIdentities, [
     {
       version: 1,
@@ -596,6 +607,39 @@ test("明示割当と参照画像IDを生成Jobへ固定する", () => {
   assert.deepEqual(backgroundOnly.generation.characterProfileVersions, []);
   assert.deepEqual(backgroundOnly.generation.referenceAssetIds, []);
   assert.deepEqual(backgroundOnly.panelSpecification.characterIdentities, []);
+});
+
+test("人物参照を画風・世界観より先に固定し各対象の枚数を制限する", () => {
+  const characterId = "70000000-0000-4000-8000-000000000091";
+  const styleId = "71000000-0000-4000-8000-000000000091";
+  const references = [
+    ...Array.from({ length: 5 }, (_, index) => ({
+      subjectKind: "style",
+      subjectId: styleId,
+      assetId: `71000000-0000-4000-8000-00000000010${index}`,
+    })),
+    ...Array.from({ length: 4 }, (_, index) => ({
+      subjectKind: "character",
+      subjectId: characterId,
+      assetId: `70000000-0000-4000-8000-00000000010${index}`,
+    })),
+  ];
+  const selected = selectPanelReferenceAssets({
+    references,
+    orderedSubjects: [
+      { kind: "character", id: characterId },
+      { kind: "style", id: styleId },
+    ],
+  });
+
+  assert.deepEqual(
+    selected.map((reference) => reference.subjectKind),
+    ["character", "character", "style"],
+  );
+  assert.deepEqual(
+    selected.map((reference) => reference.assetId),
+    [references[5].assetId, references[6].assetId, references[0].assetId],
+  );
 });
 
 test("1回の要求で最大4候補まで安全に指定できる", () => {
