@@ -9,6 +9,7 @@ import {
   cloudPanelImageGenerationRequestSchema,
 } from "../src/lib/cloud-panel-image-generation.ts";
 import { MockCloudImageProvider } from "../src/lib/cloud-ai-mock-provider.ts";
+import { moderateGeneralCloudPrompt } from "@mangai/ai-core";
 
 const pageId = "10000000-0000-4000-8000-000000000001";
 const panelId = "20000000-0000-4000-8000-000000000001";
@@ -384,6 +385,13 @@ test("非正立動作は紙面を回転させず意図した人物だけへ限�
   assert.match(result.generation.prompt, /紙面の上辺と地平線を正立/);
   assert.match(result.generation.prompt, /明示された非正立の動作だけ/);
   assert.match(result.generation.prompt, /page frame and horizon upright/);
+  assert.doesNotMatch(result.generation.prompt, /\bexplicit(?:ly)?\b/i);
+  assert.equal(
+    moderateGeneralCloudPrompt(
+      `${result.generation.prompt}\n${result.generation.negativePrompt}`,
+    ).decision,
+    "allow",
+  );
   assert.doesNotMatch(result.generation.prompt, /頭部が画面上側、足元が画面下側/);
 });
 

@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2G Prompt moderation語彙衝突
+
+- PR #263 merge commit `6fb9bf0f0a78ee79e2756cdbe94f69c0c17db591`を含む最新基準から`codex/fix-r4-2g-prompt-moderation-collision`を開始した。
+- Productionページ22の再制作入口で、品質却下後のJob登録が`adult_content`によりProvider前で停止した。使用32、予約0、残り68、新規Job・課金・Assetは0。残り2件は操作していない。
+- 原因は非正立動作向け正方向Promptの`explicitly described`と、既存一般Cloud moderationの成人向け遮断語`explicit`の自己衝突。成人向け検知は変更せず、同義の`clearly described`へ置換する。
+- 落下構図の完成Promptに遮断語がなく、既存moderationが`allow`を返す回帰テストを追加する。
+- 切り分け中の誤配置1件はUndoし、Canvasの保存済みを確認した。公開・販売状態は変更していない。
+- 集中23/23、Hub 714/714、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack production build、RC structureに成功した。
+- 次: ローカル品質ゲート、Draft PR、全CI、Vercel Preview成功で停止する。merge前にProduction再生成しない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2F Provider生成コマの再制作品質
 
 - PR #262 merge commit `9fbf2281636f2582e9aca528fa0dcafb9a47f464`を含む最新基準から`codex/fix-r4-2f-provider-panel-quality`を開始した。

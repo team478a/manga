@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2G Prompt moderation語彙衝突、2026-08-14）
+
+- Branch: `codex/fix-r4-2g-prompt-moderation-collision`
+- Base: `origin/feature/manga-canvas-mvp` @ `6fb9bf0`（PR #263 merge commit）
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- Productionページ22の再制作入口で、R4-2F追加Promptの`explicitly described`が既存成人向け検知の`explicit`へ一致し、Provider登録前に`adult_content`で拒否された。
+- 使用32／予約0／残り68で、新規Job、Provider課金、Assetは0。残り2件は未操作。誤配置1件はUndo・保存済みまで復元した。
+- 成人向け検知とfail-closed境界を変更せず、非正立動作の英語表現だけを`clearly described`へ変更し、完成Prompt全体のmoderation回帰を追加する。
+- 集中23/23、Hub 714/714、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、Webpack build、RC structure成功。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2G_PROMPT_MODERATION_COLLISION.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2F Provider生成コマの再制作品質、2026-08-14）
 
 - Branch: `codex/fix-r4-2f-provider-panel-quality`
