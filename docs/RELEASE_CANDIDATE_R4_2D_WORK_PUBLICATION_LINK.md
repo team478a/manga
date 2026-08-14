@@ -1,6 +1,7 @@
 # PR-R4-2D 作品管理・販売準備と完成原稿の連携
 
 - Draft PR: [#261](https://github.com/team478a/manga/pull/261)
+- Vercel Preview: https://mangai-hub-staging-rjp97t5rz-team478as-projects.vercel.app
 
 ## 結論
 
@@ -46,6 +47,8 @@ Cloud漫画の販売原稿を制作中Canvasから切り離し、`kind='release'
 - dependency check、lint、Hub／Desktop typecheck、migration manifest 59/59、PostgreSQL 16で全forward→rollback→forward、Webpack Hub build、Desktop build、RC structure preflight、`git diff --check`成功。
 - 通常Turbopack buildはWindowsの長い作業パス上限で停止し、同じsourceをWebpackでproduction buildした。
 - Desktop a11yはローカルElectron起動がtimeoutしたため、GitHub Windows CIの結果を正式な受入れ結果とする。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Windows CI内のAccessibilityも成功した。
+- PreviewはVercel SSOへの正常な302応答まで読み取り確認した。Preview／Production DBへの書込みは行っていない。
 
 ## Rollback
 
