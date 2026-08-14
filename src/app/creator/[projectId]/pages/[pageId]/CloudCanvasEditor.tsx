@@ -41,7 +41,9 @@ import { PageCompletionBanner } from "./PageCompletionBanner";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
 import { applyPanelCandidateAdoption } from "@/modules/manga/domain/panel-adoption";
 import {
+  candidateBelongsToPage,
   classifyCandidateLayer,
+  filterGenerationJobsForPage,
   resolveCandidateTargetPanelId,
   type PanelGenerationTarget,
 } from "@/modules/manga/domain/panel-candidate";
@@ -244,14 +246,16 @@ export function CloudCanvasEditor({
   }, [page.id, pageLockToken]);
   const [canvas, setCanvas] = useState(() => cloneCanvas(initialCanvas));
   const [assets, setAssets] = useState(initialAssets);
-  const [generationJobs, setGenerationJobs] = useState(initialGenerationJobs);
+  const [generationJobs, setGenerationJobs] = useState(() =>
+    filterGenerationJobsForPage(initialGenerationJobs, page.id),
+  );
   const recordedDisplayedJobIds = useRef(new Set<string>());
   const reloadingAutoPlacement = useRef(false);
   const [generationTargets, setGenerationTargets] = useState<
     Record<string, string>
   >(() =>
     Object.fromEntries(
-      initialGenerationJobs
+      filterGenerationJobsForPage(initialGenerationJobs, page.id)
         .filter((job) => job.target_panel_id)
         .map((job) => [job.id, job.target_panel_id!]),
     ),
@@ -379,8 +383,13 @@ export function CloudCanvasEditor({
   );
 
   const refreshGenerationJobs = useCallback(async () => {
-    setGenerationJobs(await listGenerationJobs(project.id));
-  }, [project.id]);
+    setGenerationJobs(
+      filterGenerationJobsForPage(
+        await listGenerationJobs(project.id, page.id),
+        page.id,
+      ),
+    );
+  }, [page.id, project.id]);
 
   const refreshQuota = useCallback(async () => {
     setQuota(await getAiQuota());
@@ -654,7 +663,17 @@ export function CloudCanvasEditor({
   ) {
     const panelId =
       targetPanelId ?? (selection?.type === "panel" ? selection.id : null);
-    if (!panelId) return;
+    if (!panelId || !canvas.panels.some((panel) => panel.id === panelId))
+      return false;
+    if (
+      canvas.panelLayers.some(
+        (layer) =>
+          layer.panelId === panelId &&
+          ((sourceJobId && layer.sourceJobId === sourceJobId) ||
+            layer.assetId === assetId),
+      )
+    )
+      return true;
     const layerId = crypto.randomUUID();
     const timestamp = now();
     return commit((draft) => {
@@ -866,6 +885,10 @@ export function CloudCanvasEditor({
   }
 
   async function placeGeneratedAsset(job: CloudGenerationJob) {
+    if (!candidateBelongsToPage(job, page.id)) {
+      setMessage("この画像候補は別のページ用のため配置できません。");
+      return;
+    }
     const targetPanelId = resolveCandidateTargetPanelId({
       job,
       generationTargets,
@@ -1722,7 +1745,10 @@ export function CloudCanvasEditor({
                   ) : null}
                   {job.status === "completed" &&
                   job.output_asset_id &&
-                  job.panel_adoption_status !== "auto_placed" ? (
+                  job.panel_adoption_status !== "auto_placed" &&
+                  !canvas.panelLayers.some(
+                    (layer) => layer.sourceJobId === job.id,
+                  ) ? (
                     <button
                       className="button-secondary mt-2 w-full"
                       disabled={

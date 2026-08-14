@@ -19,11 +19,18 @@ const createSchema = z.object({
 
 export async function listGenerationJobs(request: Request) {
   try {
+    const searchParams = new URL(request.url).searchParams;
     const projectId = z
       .string()
       .uuid()
-      .parse(new URL(request.url).searchParams.get("projectId"));
-    return NextResponse.json(await listCloudGenerationJobs(projectId));
+      .parse(searchParams.get("projectId"));
+    const pageIdValue = searchParams.get("pageId");
+    const pageId = pageIdValue
+      ? z.string().uuid().parse(pageIdValue)
+      : undefined;
+    return NextResponse.json(
+      await listCloudGenerationJobs(projectId, pageId),
+    );
   } catch (error) {
     const response = toApiError(error, "読込に失敗しました。");
     return NextResponse.json(response.body, { status: response.status });

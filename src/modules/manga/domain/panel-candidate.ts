@@ -15,11 +15,26 @@ export type ComparisonFrame = {
 
 type CandidateJob = {
   id: string;
+  page_id?: string | null;
   target_panel_id: string | null;
   output_asset_id: string | null;
   generation_operation: string | null;
   job_type: string;
 };
+
+export function filterGenerationJobsForPage<T extends { page_id: string | null }>(
+  jobs: readonly T[],
+  pageId: string,
+) {
+  return jobs.filter((job) => job.page_id === pageId);
+}
+
+export function candidateBelongsToPage(
+  job: Pick<CandidateJob, "page_id">,
+  pageId: string,
+) {
+  return job.page_id === pageId;
+}
 
 const percent = (value: number) =>
   Math.max(0, Math.min(100, Number.isFinite(value) ? value : 100));

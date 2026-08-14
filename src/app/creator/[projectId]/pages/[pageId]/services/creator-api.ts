@@ -29,8 +29,8 @@ export function saveCanvasSnapshot(
   });
 }
 
-export async function listGenerationJobs(projectId: string) {
-  const query = new URLSearchParams({ projectId });
+export async function listGenerationJobs(projectId: string, pageId: string) {
+  const query = new URLSearchParams({ projectId, pageId });
   return responseJson<CloudGenerationJob[]>(
     await fetch(`/api/creator/generation-jobs?${query}`, {
       cache: "no-store",

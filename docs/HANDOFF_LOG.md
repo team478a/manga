@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2C-1 ページ別生成候補境界・配置復旧
+
+- PR #258のmerge commit `6f3c82a2a764bbd39700323d0859d4f3b5eaec85`を基点に`codex/quality-r4-2c1-provider-manga`を開始した。
+- Productionの一般モニター`test`で既存作品を読み取り確認し、19〜22ページは全コマ白紙、作品全体は画像配置3/157・要修正265、対象batchは16 Job化済み・14完了・2失敗・待機／処理中0だった。追加Provider呼出しとcredit消費は行っていない。
+- Production migration `202608140001`〜`202608140003`は未適用／未確認で、自動採用／revision連鎖／dialogue回収を使用できない。対象Supabase projectは現在のDashboard accountから参照できず、SQLは実行していない。
+- 手動回収経路の実機確認で、原稿Editorがproject全体の生成履歴を各ページに表示し、別ページ候補を押しても対象panel不在を見逃して成功表示する不具合を再現した。画像・本文は変わらず、追加課金／Job／Assetは0。切り分け時の1操作で内容不変revisionが進んだ可能性を明記する。
+- 生成履歴のDB取得、SSR、client refresh／stateを現在pageへ限定し、別ページJobと存在しないpanelを配置前に拒否する。project全体取得APIは`pageId`省略時の従来動作を維持する。
+- 集中9/9、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。
+- Draft PR: [#259](https://github.com/team478a/manga/pull/259)。Preview: https://mangai-hub-staging-git-codex-quality-a4aee1-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。PreviewのMANGAIトップ表示を確認した。
+- 責任者のreview／merge判断まで停止する。merge後はProduction migration適用を先行し、既存14画像の自動回収後に失敗2 Jobだけを再実行する。PR-R4-2Dへ進まない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2C ページ完成判定・4ページ原稿プレビュー
 
 - PR #257がmerge commit `ef5333071359a59a32678185f515194234ce1b51`で`feature/manga-canvas-mvp`へマージ済みであることを確認し、その基点から`codex/feat-r4-2c-page-completion`を開始した。
