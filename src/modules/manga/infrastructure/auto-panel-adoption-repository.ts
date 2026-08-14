@@ -116,6 +116,19 @@ export function createAutomaticPanelAdoptionRepository(
         .maybeSingle();
       if (snapshotResult.error) throw snapshotResult.error;
       if (!snapshotResult.data) return null;
+      let automaticRevisionChain = sourcePageRevision === pageResult.data.revision;
+      if (!automaticRevisionChain) {
+        const chainResult = await client.rpc(
+          "is_cloud_generation_panel_adoption_revision_chain",
+          {
+            p_page_id: pageId,
+            p_source_revision: sourcePageRevision,
+            p_current_revision: pageResult.data.revision,
+          },
+        );
+        if (chainResult.error) throw chainResult.error;
+        automaticRevisionChain = chainResult.data === true;
+      }
       const canvas = pageCanvasSchema.parse(snapshotResult.data.canvas);
       return {
         jobId: job.id,
@@ -125,6 +138,7 @@ export function createAutomaticPanelAdoptionRepository(
         assetFileName: assetResult.data.file_name ?? undefined,
         sourcePageRevision,
         currentPageRevision: Number(pageResult.data.revision),
+        automaticRevisionChain,
         productionStatus: pageResult.data.production_status,
         jobType: job.job_type,
         generationOperation: stringValue(metadata.operation),
@@ -137,7 +151,7 @@ export function createAutomaticPanelAdoptionRepository(
     },
 
     async save(input) {
-      const result = await client.rpc("save_cloud_generation_panel_adoption", {
+      const result = await client.rpc("save_cloud_generation_panel_adoption_v2", {
         p_job_id: input.jobId,
         p_expected_revision: input.expectedRevision,
         p_canvas: input.canvas,

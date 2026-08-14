@@ -19,6 +19,7 @@ export type AutomaticPanelAdoptionContext = {
   assetFileName?: string;
   sourcePageRevision: number;
   currentPageRevision: number;
+  automaticRevisionChain: boolean;
   productionStatus: string;
   jobType: string;
   generationOperation: string | null;
@@ -112,7 +113,10 @@ export async function adoptCompletedPanelCandidate(input: {
     }
     if (context.productionStatus === "finalized")
       return recordReview(input.repository, input.jobId, "page_finalized");
-    if (context.currentPageRevision !== context.sourcePageRevision)
+    if (
+      context.currentPageRevision !== context.sourcePageRevision &&
+      !context.automaticRevisionChain
+    )
       return recordReview(input.repository, input.jobId, "source_revision_changed");
     if (inspection.decision === "review_required")
       return recordReview(

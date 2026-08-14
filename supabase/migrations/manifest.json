@@ -336,6 +336,12 @@
       "description": "完了した1候補画像をowner・revision保護付きで対象Canvasへ自動採用し結果を記録",
       "forwardSha256": "b840e48ab0f3181553b63dd86f7d12e3e225fbffa346ef7a8639dac0f48e1821",
       "rollbackSha256": "5ab5a1e435b5288f35cd8208c8ad432a7d0d351f546b8ea06579ad354cdc5bbb"
+    },
+    {
+      "id": "202608140002_cloud_generation_panel_adoption_revision_chain",
+      "description": "同一開始revisionから自動配置だけが連続する場合に同一ページの後続コマを安全に採用",
+      "forwardSha256": "b3cea194392ae7b0eab2bcd990af7b3f088943e9d0ec6c596bb1e283fea130f9",
+      "rollbackSha256": "16b3a313d0fab8d3299843193b3c7fd660e7550d1e6a856db5f47d00c339d777"
     }
   ],
   "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"
