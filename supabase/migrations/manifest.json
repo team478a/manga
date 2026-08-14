@@ -348,7 +348,13 @@
       "description": "採用Storyboardの構造化セリフを全コマ画像配置後にowner・revision保護付きで吹き出しへ自動配置",
       "forwardSha256": "47609cef7be85d4b813a3e6533090f38c7819c876819956ffe670e8d176969d3",
       "rollbackSha256": "b2b7449aeb48b8208410d381625c0c615fb3e7b47abadbe6a86388ff83944226"
+    },
+    {
+      "id": "202608140004_cloud_work_publications",
+      "description": "完成版checkpointへ固定した漫画公開version、本文ページ、販売ゲートを追加",
+      "forwardSha256": "d7e0abeb994b8cfeb5c348620e3f2319bf3baff203258f40416e962e254cf7ff",
+      "rollbackSha256": "e72eb7b23604f289b0cca5e656a0a8f28145ab998de97a18c7b624f2e8de80b9"
     }
   ],
-  "schemaSha256": "f357874a92880cb37f032b3cef1acd28e8c3ffe13ef3d35faf1da2530a6ba0a6"
+  "schemaSha256": "168856eb09c91e4ff38e9a6f558d2d1f321cef37943c4f7a96ac528161b055f7"
 }

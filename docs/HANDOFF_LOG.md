@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2D 作品管理・販売準備と完成原稿の連携
+
+- PR #260がmerge commit `a8f8d05bb5cd0688c373a7b8cfecd20668ffeed5`でマージ済みであることを確認し、最新基準から`codex/feat-r4-2d-work-publication-link`を開始した。
+- `works.source_project_id`、release checkpoint、購入済みorder、既存Marketplace同期を監査した。旧同期は最新Canvasを直接PDF化し、公開version、本文ページ、rollback可能な原稿固定がなかった。
+- release checkpointへ固定するpublication／page台帳、private PNG／PDF、Cloud作品だけの公開・販売gate、停止後のversion切替、owner／paid order／sampleを分離した本文readerを実装した。旧1枚画像作品と既存checkout／PDF downloadは維持する。
+- 集中7/7、Hub 708/708、Canvas 26/26、AI 48/48、Desktop 182/182、deps、lint、全typecheck、migration 59/59、Webpack Hub build、Desktop build、RC structure preflight、diff checkに成功した。通常Turbopackは既知のWindows path長制限、Desktop a11yはローカルElectron timeoutのためCIで確認する。
+- Production migration、既存作品、実Provider、creditは変更していない。PR #260 merge後のProductionページ20・22目視はChrome接続timeoutのため未完了として残す。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2D_WORK_PUBLICATION_LINK.md`。Draft PRと全CI／Vercel Preview確認後に停止する。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2C-1 ページ別生成候補境界・配置復旧
 
 - PR #258のmerge commit `6f3c82a2a764bbd39700323d0859d4f3b5eaec85`を基点に`codex/quality-r4-2c1-provider-manga`を開始した。

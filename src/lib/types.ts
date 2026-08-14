@@ -15,6 +15,9 @@ export type Work = {
   image_url: string | null;
   sample_image_urls: string[];
   source_project_id: string | null;
+  current_publication_id: string | null;
+  published_version: number | null;
+  published_at: string | null;
   content_class: "general" | "adult";
   tags: string[];
   status: "draft" | "published" | "archived";

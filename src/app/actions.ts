@@ -23,6 +23,7 @@ import {
 import { updateProfile as updateProfileAction } from "./actions/profile-actions";
 import {
   createWork as createWorkAction,
+  selectWorkPublication as selectWorkPublicationAction,
   updateWork as updateWorkAction,
 } from "./actions/work-actions";
 
@@ -56,6 +57,10 @@ export async function createWork(formData: FormData) {
 
 export async function updateWork(formData: FormData) {
   return updateWorkAction(formData);
+}
+
+export async function selectWorkPublication(formData: FormData) {
+  return selectWorkPublicationAction(formData);
 }
 
 export async function createDigitalProduct(formData: FormData) {

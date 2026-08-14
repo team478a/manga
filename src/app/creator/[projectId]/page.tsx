@@ -89,11 +89,10 @@ export default async function CloudProjectPage({
     : null;
   const manuscript = exportReadiness ?? productionProgress?.manuscript ?? null;
   const marketplaceIsCurrent = Boolean(
-    marketplaceDraft?.product &&
-      new Date(marketplaceDraft.product.updated_at).getTime() >=
-        new Date(project.updated_at).getTime(),
+    marketplaceDraft?.product && marketplaceDraft.work?.current_publication_id,
   );
   const marketplaceReady = Boolean(exportReadiness?.ready);
+  const releaseCheckpoints = checkpointHistory.checkpoints.filter((item) => item.kind === "release");
   const longformReadiness = buildCloudLongformReadiness({
     manuscriptAvailable: Boolean(exportReadiness),
     manuscriptReady: Boolean(exportReadiness?.ready),
@@ -712,7 +711,7 @@ export default async function CloudProjectPage({
             {marketplaceDraft?.product ? (
               <div className="mt-4 rounded-md bg-stone-50 p-3 text-sm">
                 <p className="font-semibold">
-                  {marketplaceIsCurrent ? "同期済み" : "作品に未反映の変更あり"}
+                  {marketplaceIsCurrent ? `完成版 v${marketplaceDraft?.work?.published_version ?? 1} に固定済み` : "完成版は未固定"}
                 </p>
                 <Link
                   className="mt-1 inline-block text-leaf underline"
@@ -726,7 +725,18 @@ export default async function CloudProjectPage({
               action={syncCloudMarketplaceDraftAction.bind(null, projectId)}
               className="mt-4"
             >
-              <label className="label" htmlFor="marketplace-price">
+              <fieldset disabled={releaseCheckpoints.length === 0}>
+              <label className="label mt-4" htmlFor="marketplace-checkpoint">
+                販売に固定する完成版
+              </label>
+              <select className="field" id="marketplace-checkpoint" name="checkpointId" required>
+                {releaseCheckpoints.map((checkpoint) => (
+                  <option key={checkpoint.id} value={checkpoint.id}>
+                    {checkpoint.label}・{checkpoint.pageCount}ページ・{new Date(checkpoint.createdAt).toLocaleString("ja-JP")}
+                  </option>
+                ))}
+              </select>
+              <label className="label mt-4" htmlFor="marketplace-price">
                 販売価格（税込円）
               </label>
               <input
@@ -751,6 +761,7 @@ export default async function CloudProjectPage({
                   ? "下書きを再生成"
                   : "販売下書きを作成"}
               </PendingSubmitButton>
+              </fieldset>
             </form>
           </section>
         </aside>

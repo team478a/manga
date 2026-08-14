@@ -182,6 +182,10 @@ for (const required of [
   "create_cloud_project_checkpoint",
   "cloud_project_checkpoint_restores",
   "restore_cloud_project_checkpoint",
+  "cloud_work_publications",
+  "cloud_work_publication_pages",
+  "sync_cloud_marketplace_release_draft",
+  "select_cloud_work_publication",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

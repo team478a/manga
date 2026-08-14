@@ -30,7 +30,7 @@ export async function createDigitalProduct(formData: FormData) {
   const supabase = await createClient();
   const { data: work } = await supabase
     .from("works")
-    .select("id")
+    .select("id,source_project_id,current_publication_id,is_public,status")
     .eq("id", workId)
     .eq("creator_id", profile.id)
     .eq("content_class", "general")
@@ -39,6 +39,9 @@ export async function createDigitalProduct(formData: FormData) {
     redirect(
       encodeURI("/dashboard/products/new?error=自分の作品だけを商品に紐づけできます"),
     );
+  }
+  if (status === "active" && work.source_project_id && (!work.current_publication_id || !work.is_public || work.status !== "published")) {
+    redirect(encodeURI("/dashboard/products/new?error=完成版を固定して作品を公開してから販売を開始してください"));
   }
 
   const productId = crypto.randomUUID();
@@ -105,7 +108,7 @@ export async function updateDigitalProduct(formData: FormData) {
       .maybeSingle(),
     supabase
       .from("works")
-      .select("id")
+      .select("id,source_project_id,current_publication_id,is_public,status")
       .eq("id", workId)
       .eq("creator_id", profile.id)
       .eq("content_class", "general")
@@ -120,6 +123,9 @@ export async function updateDigitalProduct(formData: FormData) {
     redirect(
       encodeURI(`/dashboard/products/${id}/edit?error=自分の作品だけを商品に紐づけできます`),
     );
+  }
+  if (status === "active" && work.source_project_id && (!work.current_publication_id || !work.is_public || work.status !== "published")) {
+    redirect(`/dashboard/products/${id}/edit?error=${encodeURIComponent("完成版を固定して作品を公開してから販売を開始してください")}`);
   }
 
   const update: Record<string, unknown> = {

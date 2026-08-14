@@ -10,6 +10,7 @@ import {
   workInputSchema,
 } from "@/lib/creator-input";
 import { createClient } from "@/lib/supabase/server";
+import { selectCloudWorkPublication } from "@/lib/cloud-marketplace";
 import { validateWorkImage } from "./shared/file-validation";
 import { formText } from "./shared/form-data";
 import {
@@ -104,7 +105,7 @@ export async function updateWork(formData: FormData) {
   const supabase = await createClient();
   const { data: ownedWork } = await supabase
     .from("works")
-    .select("id,image_url")
+    .select("id,image_url,source_project_id,current_publication_id")
     .eq("id", id)
     .eq("creator_id", profile.id)
     .eq("content_class", "general")
@@ -116,6 +117,9 @@ export async function updateWork(formData: FormData) {
   }
 
   const isPublic = input.data.visibility === "public";
+  if (isPublic && ownedWork.source_project_id && !ownedWork.current_publication_id) {
+    redirect(`/dashboard/works/${id}/edit?error=${encodeURIComponent("完成版を固定してから公開してください。")}`);
+  }
   const update: Record<string, unknown> = {
     title: input.data.title,
     description: input.data.description,
@@ -175,4 +179,19 @@ export async function updateWork(formData: FormData) {
   revalidatePath("/dashboard/works");
   revalidatePath(`/works/${id}`);
   redirect(encodeURI("/dashboard/works?message=作品を更新しました"));
+}
+
+export async function selectWorkPublication(formData: FormData) {
+  const workId = formText(formData, "workId");
+  const publicationId = formText(formData, "publicationId");
+  if (!workId || !publicationId)
+    redirect(encodeURI("/dashboard/works?error=完成版を確認してください"));
+  try {
+    await selectCloudWorkPublication({ workId, publicationId });
+  } catch (error) {
+    redirect(`/dashboard/works/${workId}/edit?error=${encodeURIComponent(safeDomainErrorMessage(error, "完成版を切り替えできませんでした。"))}`);
+  }
+  revalidatePath(`/dashboard/works/${workId}/edit`);
+  revalidatePath(`/works/${workId}`);
+  redirect(`/dashboard/works/${workId}/edit?message=${encodeURIComponent("公開に使用する完成版を切り替えました")}`);
 }

@@ -65,6 +65,13 @@ export default async function WorkDetailPage({
           </div>
         </section>
       </div>
+      {work.current_publication_id ? (
+        <section className="mt-8 rounded-lg border border-violet-200 bg-violet-50 p-5">
+          <h2 className="text-xl font-bold">漫画本文</h2>
+          <p className="mt-2 text-stone-700">公開版 v{work.published_version ?? 1}に固定された原稿を表示します。</p>
+          <Link className="button mt-4 inline-flex" href={`/works/${work.id}/read`}>本文を読む</Link>
+        </section>
+      ) : null}
       {work.sample_image_urls?.length ? (
         <section className="mt-10">
           <h2 className="text-2xl font-bold">サンプル</h2>
