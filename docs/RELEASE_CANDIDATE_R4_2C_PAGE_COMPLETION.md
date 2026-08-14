@@ -2,11 +2,12 @@
 
 ## 状態
 
-- 状態: `LOCAL_VALIDATION_COMPLETE`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Branch: `codex/feat-r4-2c-page-completion`
 - Base: `ef5333071359a59a32678185f515194234ce1b51`（PR #257 merge commit）
-- Draft PR: 作成前
-- Vercel Preview: 作成前
+- Implementation commit: `69634f0afb50a1eba5b8b93482d56c9e1e4c7d03`
+- Draft PR: [#258](https://github.com/team478a/manga/pull/258)
+- Vercel Preview: https://mangai-hub-staging-git-codex-feat-r4-859121-team478as-projects.vercel.app
 - 対象: PR-R4-2Cのみ。PR-R4-2Dは未着手。
 
 ## 実装前に確認した契約
@@ -85,6 +86,8 @@ SHA-256:
 - Preview／guard regression: owner RLS、保存snapshot、private Storage、`object-contain`、モバイル一覧、keyboard／aria、確定／checkpoint／PDFのserver guardを確認。
 - 全品質ゲート: 集中10/10、Hub 702/702（並列高負荷時の一過性1件を単独再実行して成功）、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、Hub／Desktop typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。
 - 通常のTurbopack Hub buildだけは、既知のWindows長パス上限で既存Storyboard routeの生成先が260文字を超えて停止した。同一sourceのWebpack buildはroute追加を含め成功し、VercelのLinux buildを正式なPreview gateとして確認する。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの5/5成功。Draft／MERGEABLE。
+- Preview確認: ChromeでVercel Deployment Protectionを通過し、Preview上のMANGAIログイン画面への到達と未認証redirectを確認した。Preview domainにアプリ認証cookieはなく、既存作品／DBを操作していない。原稿4ページの実描画、ページ順、PNG、PDFは専用fixture証跡で確認した。
 
 ## Rollback
 
@@ -102,5 +105,5 @@ SHA-256:
 
 ## 未解決事項と停止位置
 
-- Draft PR、CI、Vercel PreviewのURLと最終結果は作成後に追記する。RC preflightの外部Secret／manual acceptanceはローカルに本番Secretを置かない既存方針どおりpendingであり、本PRのfixture受入れとは分離する。
+- RC preflightの外部Secret／manual acceptanceはローカルに本番Secretを置かない既存方針どおりpendingであり、本PRのfixture受入れとは分離する。
 - PR-R4-2Dは未着手。PR-R4-2Cの責任者確認前には進めない。

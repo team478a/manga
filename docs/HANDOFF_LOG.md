@@ -13,7 +13,9 @@
 - 4ページfixture（各800×1200 px、各2コマ・2画像・2dialogue）は4/4 complete。共通rendererでPNG 4枚、既存export-coreで4ページPDFを生成し、Poppler再描画で順序、寸法、欠落0、重複0、縦長切れ0を確認した。
 - 集中10/10、Hub 702/702、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
 - DB、migration、RPC、Storage、Canvas schema、Provider、model、pricing、credit、retry、timeout、Scheduler、Feature Flag、成人向け境界、Desktop、Production既存32ページ作品は変更していない。外部Providerも呼び出していない。
-- 全品質ゲート、Draft PR、CI、Vercel Previewを確認して停止する。責任者確認前にPR-R4-2Dへ進まない。
+- Draft PR: [#258](https://github.com/team478a/manga/pull/258)。Preview: https://mangai-hub-staging-git-codex-feat-r4-859121-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- ChromeでVercel保護を通過し、Preview上のMANGAIログイン画面と未認証redirectを確認した。Preview domainにアプリ認証cookieはなく、Production作品／DBを操作していない。
+- 責任者のreview／merge判断まで停止する。責任者確認前にPR-R4-2Dへ進まない。
 
 ---
 

@@ -2,7 +2,9 @@
 
 ## 2026-08-14 PR-R4-2C ページ完成判定・4ページ原稿プレビュー
 
-- 状態: `LOCAL_VALIDATION_COMPLETE`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#258](https://github.com/team478a/manga/pull/258)
+- Vercel Preview: https://mangai-hub-staging-git-codex-feat-r4-859121-team478as-projects.vercel.app
 - Branch: `codex/feat-r4-2c-page-completion`
 - Base: `origin/feature/manga-canvas-mvp`@`ef533307`（PR #257 merge commit）
 - 正本: `MANGAI_PR-R4-2C以降_完全版_2026-08-14.md`のPR-R4-2Cだけを実施する。PR-R4-2A／2Bは再実装せず、PR-R4-2Dへは進まない。
@@ -12,7 +14,8 @@
 - fixture: 4ページ×2コマ、各800×1200 pxで4/4 complete、PNG 4枚、4ページPDFを生成。Poppler再描画でページ順、欠落、重複、縦長切れがないことを確認した。
 - Production: DB、migration、Storage、既存32ページ作品、Provider Job、creditを変更しない。本番課金Provider E2Eは実行しない。
 - 検証: 集中10/10、Hub 702/702、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
-- 次: 全品質ゲート、Draft PR、CI、Vercel Previewを確認して停止する。責任者確認前にPR-R4-2Dへ進まない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。Preview上のMANGAIログイン画面と未認証redirectを確認し、作品／DBは操作していない。
+- 次: 責任者のreview／merge判断まで停止する。責任者確認前にPR-R4-2Dへ進まない。
 - 詳細: [`RELEASE_CANDIDATE_R4_2C_PAGE_COMPLETION.md`](RELEASE_CANDIDATE_R4_2C_PAGE_COMPLETION.md)
 
 ---
