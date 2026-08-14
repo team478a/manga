@@ -13,6 +13,7 @@
 - 参照画像を最大32件から人物各2件、画風1件、場所／小物各1件の順に最大8件へ選ぶDomain policyを追加し、参照画像の役割と生成契約優先をProviderへ明示した。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中24/24、Hub、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、packages／Webpack build、RC structure、diff check成功。Desktopは既存keyring型宣言不足で停止しWindows CIを正式結果とする。
+- Draft PR: [#265](https://github.com/team478a/manga/pull/265)。CI／Vercel Preview確認中。
 - 次: Draft PRと全CI／Vercel Preview成功で停止。merge前にProduction再生成を行わない。
 
 ---

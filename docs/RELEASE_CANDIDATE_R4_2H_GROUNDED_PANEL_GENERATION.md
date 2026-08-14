@@ -48,3 +48,8 @@
 5. 合格時だけ配置・承認し、残り2コマへ進む。不合格なら追加課金せず、Provider／model／pricingを含む責任者判断へ切り替える。
 
 責任者reviewとmerge前にProductionの追加生成を行わない。
+
+## Draft PR
+
+- [PR #265](https://github.com/team478a/manga/pull/265)
+- CI／Vercel Preview確認中。

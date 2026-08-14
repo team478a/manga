@@ -2,7 +2,8 @@
 
 ## 2026-08-15 PR-R4-2H 参照付き単一コマ生成
 
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- 状態: `CI_RUNNING`
+- Draft PR: [#265](https://github.com/team478a/manga/pull/265)
 - Branch: `codex/quality-r4-2h-grounded-panel-generation`
 - Base: `origin/feature/manga-canvas-mvp`@`78eccff`（PR #264 merge commit）。
 - Production受入れ: ページ22の問題3コマを各1案だけ再制作し、Worker run `31809744470`で3/3完了。使用32→38、予約6→0、残り62、重複Jobなし。成人向け誤判定は解消した。

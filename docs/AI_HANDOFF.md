@@ -4,7 +4,8 @@
 
 - Branch: `codex/quality-r4-2h-grounded-panel-generation`
 - Base: `origin/feature/manga-canvas-mvp` @ `78eccff`（PR #264 merge commit）
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- 状態: `CI_RUNNING`
+- Draft PR: [#265](https://github.com/team478a/manga/pull/265)
 - Productionページ22の問題3コマを各1案だけ生成し、Worker `31809744470`で3/3完了。使用38、予約0、残り62、重複Jobなし。3枚は複数場面＋生成文字、顔切れ、人体・接触破綻で販売品質未達のため未配置・未承認。追加課金を停止した。
 - Panel SpecificationをProviderの一枚場面契約へ昇格し、登場人数、人物、動作、表情、場所、小物、構図、画角をPrompt先頭と末尾へ同じ正本から固定する。
 - 参照画像を人物優先のDomain policyで選び、参照の役割と生成契約優先をProviderへ明示する。Provider、model、pricing、DB、migrationは変更しない。
