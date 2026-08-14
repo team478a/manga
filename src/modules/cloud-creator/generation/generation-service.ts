@@ -133,6 +133,8 @@ export async function listCloudGenerationJobs(
       panel_adoption_eligible: input?.autoAdopt === true,
       panel_adoption_status: null,
       panel_adoption_retryable: false,
+      quality_review_status:
+        row.kind === "image" && targetPanelId ? "pending" : null,
       target_panel_id: targetPanelId,
       source_asset_id: sourceAssetId,
       outpainting_direction: outpaintingDirection,
@@ -144,7 +146,7 @@ export async function listCloudGenerationJobs(
     .filter((row) => row.status === "completed" && row.target_panel_id)
     .map((row) => row.id);
   if (!completedIds.length) return publicRows;
-  const [evaluations, adoptions] = await Promise.all([
+  const [evaluations, adoptions, qualityEvents] = await Promise.all([
     supabase
       .from("cloud_manga_quality_evaluations")
       .select("generation_job_id,overall_score")
@@ -153,6 +155,12 @@ export async function listCloudGenerationJobs(
       .from("cloud_generation_panel_adoptions")
       .select("generation_job_id,status,retryable")
       .in("generation_job_id", completedIds),
+    supabase
+      .from("cloud_manga_quality_logs")
+      .select("generation_job_id,event_type,created_at")
+      .in("generation_job_id", completedIds)
+      .in("event_type", ["selected", "rejected"])
+      .order("created_at", { ascending: false }),
   ]);
   if (!adoptions.error) {
     const adoptionByJobId = new Map(
@@ -167,6 +175,20 @@ export async function listCloudGenerationJobs(
             panel_adoption_retryable: Boolean(adoption.retryable),
           }
         : row;
+    });
+  }
+  if (!qualityEvents.error) {
+    const latestEventByJobId = new Map<string, string>();
+    for (const event of qualityEvents.data ?? [])
+      if (!latestEventByJobId.has(event.generation_job_id))
+        latestEventByJobId.set(event.generation_job_id, event.event_type);
+    publicRows = publicRows.map((row) => {
+      const event = latestEventByJobId.get(row.id);
+      if (event === "selected")
+        return { ...row, quality_review_status: "approved" as const };
+      if (event === "rejected")
+        return { ...row, quality_review_status: "rejected" as const };
+      return row;
     });
   }
   if (evaluations.error) return publicRows;

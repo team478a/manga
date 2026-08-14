@@ -35,7 +35,7 @@ export type DialoguePlacementResult = {
   blockers: DialoguePlacementBlocker[];
 };
 
-const MAX_FONT_SIZE = 42;
+const MAX_FONT_SIZE = 32;
 const MIN_FONT_SIZE = 18;
 const TEXT_PADDING = 10;
 
@@ -89,19 +89,23 @@ function createDefaultBalloon(input: {
   now: string;
 }): Balloon | null {
   const margin = Math.max(12, Math.min(36, input.panel.width * 0.05));
+  const narration = input.dialogue.type === "narration";
   const width = Math.min(
-    Math.max(132, input.panel.width * 0.58),
+    Math.max(120, input.panel.width * (narration ? 0.62 : 0.44)),
     input.panel.width - margin * 2,
   );
   const availableHeight = input.panel.height - margin * 2;
   const height = Math.min(
-    Math.max(88, availableHeight / Math.max(1, input.dialogueCount) - 10),
-    220,
+    Math.max(84, availableHeight / Math.max(1, input.dialogueCount) - 12),
+    narration ? 150 : 190,
     availableHeight,
   );
   if (width < 72 || height < 56) return null;
   const slotHeight = availableHeight / Math.max(1, input.dialogueCount);
-  const x = input.panel.x + input.panel.width - margin - width;
+  const placeOnRight = input.dialogueIndex % 2 === 0;
+  const x = placeOnRight
+    ? input.panel.x + input.panel.width - margin - width
+    : input.panel.x + margin;
   const y = Math.min(
     input.panel.y + input.panel.height - margin - height,
     input.panel.y + margin + input.dialogueIndex * slotHeight,
@@ -127,8 +131,13 @@ function createDefaultBalloon(input: {
     fillColor: "#ffffff",
     strokeColor: "#111111",
     strokeWidth: 3,
-    opacity: 0.94,
-    tailDirection: input.dialogue.type === "narration" ? "none" : "bottom_right",
+    opacity: 1,
+    tailDirection:
+      input.dialogue.type === "narration"
+        ? "none"
+        : placeOnRight
+          ? "bottom_right"
+          : "bottom_left",
     tailOffset: 0.5,
     createdAt: input.now,
     updatedAt: input.now,

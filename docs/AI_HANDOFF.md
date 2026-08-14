@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2E 生成原稿の最終品質ゲート、2026-08-14）
+
+- Branch: `codex/quality-r4-2e-final-manuscript-gate`
+- Base: `origin/feature/manga-canvas-mvp` @ `51a9864`（PR #261 merge commit）
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- Productionページ22の目視で、上下反転、画像内疑似文字、過大な文字、人物連続性の弱さを確認した。
+- 正立方向と自然な人体をBFL向け正方向Promptへ追加し、自動吹き出しを縮小・左右分散する。
+- 自動配置した生成画像は既存owner限定品質ログの`selected`まで完成扱いにせず、対象コマだけ1案を作り直せる。
+- 未確認画像は既存完成guardを通じてcheckpoint、PNG／PDF、公開・販売を停止する。
+- OpenAI Visionは未計上のコマ単位費用を生むためruntimeへ追加しない。DB、migration、Provider、model、pricing、credit、Scheduler等は変更しない。
+- 集中54/54、Hub 711/711、deps、lint、Hub typecheck、workspace package build、4ページPNG／PDF fixture、diff check成功。
+- ProductionのDB、作品、Job、creditは変更していない。Draft PRと全CI／Vercel Preview後に停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2E_FINAL_MANUSCRIPT_QUALITY_GATE.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-1ab 長編一括生成登録阻害の解消、2026-08-13）
 
 - Branch: `codex/fix-r4-1ab-batch-registration-diagnostics`

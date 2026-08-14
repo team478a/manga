@@ -407,6 +407,10 @@ export function buildStoryboardPanelGeneration(input: {
     "端から端まで一続きの、一般向け日本漫画用モノクロ場面イラスト。",
     "画像全体を一つの視点、一つの瞬間、連続した一つの場面で満たす。画面は純粋な絵だけで構成し、表面は無記名で清潔に保つ。",
     "A single continuous edge-to-edge monochrome scene, one camera view and one moment in time, composed as pure unlettered pictorial artwork.",
+    "紙面の上辺を上、下辺を地面側とする自然な正立方向で描く。人物は頭部が画面上側、足元が画面下側となり、重力に沿った姿勢にする。",
+    "画面内の線と形は、人物・背景・小物・光・影として意味のある絵柄だけで構成し、顔、手指、関節を自然な人体構造で仕上げる。",
+    "Upright orientation with the top edge skyward and the bottom edge groundward. Human heads stay toward the top edge, feet toward the bottom edge, with natural anatomy and gravity.",
+    "Every mark and shape belongs to the depicted people, environment, objects, light, or shadow as coherent pictorial artwork.",
     `生成対象: ${targetDirections[generationTarget]}`,
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
@@ -460,7 +464,8 @@ export function buildStoryboardPanelGeneration(input: {
       ? `画角拡張: ${outpaintingDirectionLabels[input.revision.outpaintingDirection]}へ自然に背景と構図を延長する。元画像内の人物、衣装、表情、線、色を変更しない。`
       : "",
     "最終出力は、端から端まで一続きの単一場面だけを描いた、無記名の完成イラストにする。",
-    "Final output: one continuous edge-to-edge scene, a single camera view, pure unlettered artwork.",
+    "最終確認として、正立方向、自然な人体、意味のある絵柄だけで構成された一枚絵に整える。",
+    "Final output: one upright continuous edge-to-edge scene, a single camera view, natural anatomy, and pure unlettered artwork.",
   ].filter(Boolean).join("\n");
   if (prompt.length > 20_000)
     throw new ValidationError("生成条件が長すぎます。");

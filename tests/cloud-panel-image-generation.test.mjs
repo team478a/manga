@@ -359,6 +359,10 @@ test("完成コマ生成はBFL向けの正の単一場面指示を日英で固�
   assert.match(result.generation.prompt, /一つの視点、一つの瞬間、連続した一つの場面/);
   assert.match(result.generation.prompt, /single continuous edge-to-edge monochrome scene/);
   assert.match(result.generation.prompt, /pure unlettered artwork/);
+  assert.match(result.generation.prompt, /頭部が画面上側、足元が画面下側/);
+  assert.match(result.generation.prompt, /Upright orientation/);
+  assert.match(result.generation.prompt, /natural anatomy and gravity/);
+  assert.match(result.generation.prompt, /意味のある絵柄だけ/);
   assert.doesNotMatch(result.generation.prompt, /漫画ページ|複数コマ|疑似文字|Never render/);
   assert.match(result.generation.negativePrompt, /pseudo-text/);
   assert.match(result.generation.negativePrompt, /multiple panels/);
