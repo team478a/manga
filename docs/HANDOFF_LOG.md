@@ -12,7 +12,8 @@
 - 手動回収経路の実機確認で、原稿Editorがproject全体の生成履歴を各ページに表示し、別ページ候補を押しても対象panel不在を見逃して成功表示する不具合を再現した。画像・本文は変わらず、追加課金／Job／Assetは0。切り分け時の1操作で内容不変revisionが進んだ可能性を明記する。
 - 生成履歴のDB取得、SSR、client refresh／stateを現在pageへ限定し、別ページJobと存在しないpanelを配置前に拒否する。project全体取得APIは`pageId`省略時の従来動作を維持する。
 - 集中9/9、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。
-- Draft PRの全CI／Vercel Preview確認後に停止する。merge後はProduction migration適用を先行し、既存14画像の自動回収後に失敗2 Jobだけを再実行する。PR-R4-2Dへ進まない。
+- Draft PR: [#259](https://github.com/team478a/manga/pull/259)。Preview: https://mangai-hub-staging-git-codex-quality-a4aee1-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。PreviewのMANGAIトップ表示を確認した。
+- 責任者のreview／merge判断まで停止する。merge後はProduction migration適用を先行し、既存14画像の自動回収後に失敗2 Jobだけを再実行する。PR-R4-2Dへ進まない。
 
 ---
 

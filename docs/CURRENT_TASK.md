@@ -2,7 +2,9 @@
 
 ## 2026-08-14 PR-R4-2C-1 ページ別生成候補境界・配置復旧
 
-- 状態: `LOCAL_VALIDATED`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#259](https://github.com/team478a/manga/pull/259)
+- Vercel Preview: https://mangai-hub-staging-git-codex-quality-a4aee1-team478as-projects.vercel.app
 - Branch: `codex/quality-r4-2c1-provider-manga`
 - Base: `origin/feature/manga-canvas-mvp`@`6f3c82a`（PR #258 merge commit）
 - Production監査: 一般モニター`test`の既存32ページ作品で、19〜22ページは全コマ白紙。作品全体は画像配置3/157、要修正265、対象batchは16 Job化済み・14完了・2失敗・待機／処理中0。creditは使用28・予約0・残り72で、追加Provider呼出しは行っていない。
@@ -11,8 +13,8 @@
 - 修正: 生成履歴APIへ後方互換の任意`pageId`を追加し、DB queryの`limit(100)`前にproject＋pageで限定する。SSR、再読込、client stateでも現在ページだけへ絞り、別ページJobと存在しないpanelを配置前に拒否する。
 - Production変更: 切り分け中に別ページ用候補を19ページへ1回だけ手動配置操作した。追加課金、Provider Job、Asset、Canvas画像追加は0で、再読込後も画像・本文は不変。既存保存RPCにより内容不変revisionが1回進んだ可能性は残る。以後の手動配置と失敗Job再実行は停止した。
 - 不変: DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop。
-- 現在の検証: 集中9/9、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。
-- 次: Draft PRを作成し、CI／Vercel Preview成功で停止する。merge後はProduction migration適用を先に行い、14完了画像の回収後、2失敗Jobだけを再実行する。PR-R4-2Dへは進まない。
+- 現在の検証: 集中9/9、Hub全体、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsも成功し、PreviewのMANGAIトップ表示を確認した。
+- 次: 責任者のreview／merge判断まで停止する。merge後はProduction migration適用を先に行い、14完了画像の回収後、2失敗Jobだけを再実行する。PR-R4-2Dへは進まない。
 
 ---
 
