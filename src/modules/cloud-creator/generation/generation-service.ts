@@ -76,14 +76,19 @@ export async function prepareCloudGenerationJob(input: unknown) {
   return { generation, moderation, capability, promptSha256 };
 }
 
-export async function listCloudGenerationJobs(projectId: string) {
+export async function listCloudGenerationJobs(
+  projectId: string,
+  pageId?: string,
+) {
   const { supabase } = await cloudCreatorContext();
-  const { data, error } = await supabase
+  let query = supabase
     .from("cloud_generation_jobs")
     .select(
       "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input",
     )
-    .eq("project_id", projectId)
+    .eq("project_id", projectId);
+  if (pageId) query = query.eq("page_id", pageId);
+  const { data, error } = await query
     .order("created_at", { ascending: false })
     .limit(100);
   if (error)

@@ -1,19 +1,61 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
+  candidateBelongsToPage,
   classifyCandidateLayer,
+  filterGenerationJobsForPage,
   resolveCandidateTargetPanelId,
 } from "../src/modules/manga/domain/panel-candidate.ts";
 import { applyPanelCandidateAdoption } from "../src/modules/manga/domain/panel-adoption.ts";
 
 const job = (overrides = {}) => ({
   id: "job-1",
+  page_id: "page-1",
   target_panel_id: "panel-db",
   output_asset_id: "asset-1",
   generation_operation: null,
   job_type: "panel_image",
   ...overrides,
+});
+
+const read = (relative) =>
+  readFile(new URL(`../${relative}`, import.meta.url), "utf8");
+
+test("生成履歴は現在ページのJobだけを表示する", () => {
+  const jobs = [
+    job({ id: "job-page-1", page_id: "page-1" }),
+    job({ id: "job-page-2", page_id: "page-2" }),
+    job({ id: "job-project", page_id: null }),
+  ];
+
+  assert.deepEqual(
+    filterGenerationJobsForPage(jobs, "page-1").map((item) => item.id),
+    ["job-page-1"],
+  );
+  assert.equal(candidateBelongsToPage(jobs[0], "page-1"), true);
+  assert.equal(candidateBelongsToPage(jobs[1], "page-1"), false);
+  assert.equal(candidateBelongsToPage(jobs[2], "page-1"), false);
+});
+
+test("原稿Editorはpage IDをAPIへ渡し別ページ候補を配置前にも拒否する", async () => {
+  const [page, api, editor] = await Promise.all([
+    read("src/app/creator/[projectId]/pages/[pageId]/page.tsx"),
+    read(
+      "src/app/creator/[projectId]/pages/[pageId]/services/creator-api.ts",
+    ),
+    read("src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx"),
+  ]);
+
+  assert.match(page, /listCloudGenerationJobs\(projectId, pageId\)/);
+  assert.match(api, /new URLSearchParams\(\{ projectId, pageId \}\)/);
+  assert.match(editor, /candidateBelongsToPage\(job, page\.id\)/);
+  assert.match(editor, /別のページ用のため配置できません/);
+  assert.match(
+    editor,
+    /canvas\.panelLayers\.some\([\s\S]*layer\.sourceJobId === job\.id/,
+  );
 });
 
 test("候補の対象コマは受付時、DB、現在選択の順で解決する", () => {

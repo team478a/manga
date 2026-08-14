@@ -23,6 +23,8 @@ test("Queue presentationは入力・rate limit・安全なError変換を維持�
   assert.match(source, /generation-request\.ts/);
   assert.match(source, /enforceCloudAiRateLimit/);
   assert.match(source, /idempotencyKey: z\.string\(\)\.uuid\(\)/);
+  assert.match(source, /searchParams\.get\("pageId"\)/);
+  assert.match(source, /listCloudGenerationJobs\(projectId, pageId\)/);
   assert.match(source, /status: 202/);
   assert.match(source, /toApiError/);
   assert.doesNotMatch(

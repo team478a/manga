@@ -41,7 +41,7 @@ export default async function CloudCanvasPage({
       getCloudProjectWorkspace(projectId),
       getCloudPageSnapshot(pageId),
       listCloudAssets(projectId),
-      listCloudGenerationJobs(projectId),
+      listCloudGenerationJobs(projectId, pageId),
     ]);
   } catch (error) {
     if (error instanceof ResourceNotFoundError) notFound();
