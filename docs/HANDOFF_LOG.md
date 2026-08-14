@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-14 Codex: PR-R4-2C ページ完成判定・4ページ原稿プレビュー
+
+- PR #257がmerge commit `ef5333071359a59a32678185f515194234ce1b51`で`feature/manga-canvas-mvp`へマージ済みであることを確認し、その基点から`codex/feat-r4-2c-page-completion`を開始した。
+- Canvas schema、page／snapshot revision、採用Storyboard dialogue、PNG／PDF、release checkpoint、既存`production_status`を監査し、DB状態を増やさずapplication派生状態で完成を判定する方針に固定した。
+- 全表示コマ画像、最新画像生成操作、必須dialogueと正しいballoon関連、保存／revision、project内Assetのprivate Storage実体、ページ寸法、実PNG、手動確認を純粋domainで評価する。正本や台帳の読み取り失敗はfail-closedにする。
+- 原稿編集画面のページ完成状況、owner専用`/creator/[projectId]/preview`、private PNG routeを追加し、page finalized、release checkpoint、durable PDFへserver completion guardを追加した。
+- 4ページfixture（各800×1200 px、各2コマ・2画像・2dialogue）は4/4 complete。共通rendererでPNG 4枚、既存export-coreで4ページPDFを生成し、Poppler再描画で順序、寸法、欠落0、重複0、縦長切れ0を確認した。
+- 集中10/10、Hub 702/702、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、deps、lint、全typecheck、migration 58/58、research eval、Webpack Hub build、Desktop build、RC structure preflight、diff check成功。通常Turbopack buildだけは既知のWindowsパス長上限で停止した。
+- DB、migration、RPC、Storage、Canvas schema、Provider、model、pricing、credit、retry、timeout、Scheduler、Feature Flag、成人向け境界、Desktop、Production既存32ページ作品は変更していない。外部Providerも呼び出していない。
+- Draft PR: [#258](https://github.com/team478a/manga/pull/258)。Preview: https://mangai-hub-staging-git-codex-feat-r4-859121-team478as-projects.vercel.app。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Draft／MERGEABLE。
+- ChromeでVercel保護を通過し、Preview上のMANGAIログイン画面と未認証redirectを確認した。Preview domainにアプリ認証cookieはなく、Production作品／DBを操作していない。
+- 責任者のreview／merge判断まで停止する。責任者確認前にPR-R4-2Dへ進まない。
+
+---
+
 ## 2026-08-14 Codex: PR-R4-2B 構造化セリフ自動配置
 
 - PR #256がmerge commit `306a2fbc069aacf43959ae91b45132d065d97b7e`で`feature/manga-canvas-mvp`へマージ済みであることを確認し、その最新基点から`codex/feat-r4-2b-dialogue-placement`を開始した。

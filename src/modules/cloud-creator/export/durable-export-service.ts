@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DomainError, ValidationError } from "@/lib/domain-errors";
 import { cloudCreatorContext } from "../auth-context";
 import { getCloudManuscriptPreflight } from "../projects/manuscript-preflight-service";
+import { assertCloudProjectComplete } from "../projects/page-completion-service";
 
 export type CloudExportJob = {
   id: string;
@@ -48,8 +49,15 @@ export async function listCloudExportJobs(projectId: string) {
 }
 
 export async function createCloudExportJob(projectId: string) {
-  const report = await getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true });
-  if (!report.ready) throw new ValidationError("原稿チェックの要修正項目を解消し、すべてのページを確定してください。");
+  const [report] = await Promise.all([
+    assertCloudProjectComplete(projectId),
+    getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }).then((legacy) => {
+      if (!legacy.ready)
+        throw new ValidationError("原稿チェックの要修正項目を解消し、すべてのページを確定してください。");
+      return legacy;
+    }),
+  ]);
+  if (!report.complete) throw new ValidationError("原稿チェックの要修正項目を解消し、すべてのページを確定してください。");
   const { supabase } = await cloudCreatorContext();
   const { data, error } = await supabase.rpc("create_cloud_export_job", { p_project_id: projectId, p_format: "pdf" });
   if (error?.code === "42883") throw new ValidationError("長編書き出し用migrationを適用してください。");

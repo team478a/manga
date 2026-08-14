@@ -5,6 +5,7 @@ import {
   assertUserSelectableProductionStatus,
   buildPageProductionStates,
 } from "../../manga/domain/production-state";
+import { getCloudPageCompletion } from "../projects/page-completion-service";
 
 export async function listCloudPageProductionStates(projectId: string, pages: CloudPage[]) {
   const { supabase } = await cloudCreatorContext();
@@ -28,6 +29,22 @@ export async function listCloudPageProductionStates(projectId: string, pages: Cl
 export async function setCloudPageProductionStatus(pageId: string, status: CloudPageProductionStatus) {
   assertUserSelectableProductionStatus(status);
   const { supabase } = await cloudCreatorContext();
+  if (status === "finalized") {
+    const page = await supabase
+      .from("cloud_pages")
+      .select("project_id")
+      .eq("id", pageId)
+      .is("deleted_at", null)
+      .maybeSingle();
+    if (page.error || !page.data)
+      throw new ValidationError("対象ページが見つかりません。");
+    const completion = await getCloudPageCompletion(page.data.project_id, pageId);
+    if (!completion.complete)
+      throw new ValidationError(
+        completion.blockers.slice(0, 3).map((item) => item.message).join(" ") ||
+          "ページの未完成項目を解消してください。",
+      );
+  }
   const result = await supabase.rpc("set_cloud_page_production_status", { p_page_id: pageId, p_status: status });
   if (result.error?.code === "42883") throw new ValidationError("制作状態用migrationを適用してください。");
   if (result.error?.message?.includes("cloud_page_finalize_active_jobs"))

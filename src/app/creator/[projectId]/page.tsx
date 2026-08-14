@@ -4,6 +4,7 @@ import {
   ArrowDown,
   ArrowUp,
   AlertTriangle,
+  BookOpen,
   CheckCircle2,
   FilePlus2,
   PencilLine,
@@ -118,9 +119,10 @@ export default async function CloudProjectPage({
             {project.reading_direction === "rtl" ? "右綴じ" : "左綴じ"}
           </p>
         </div>
-        <span className="rounded-full bg-green-50 px-4 py-2 font-semibold text-green-800">
-          一般向け・クラウド制作
-        </span>
+        <div className="flex flex-wrap gap-2">
+          <Link className="button-secondary" href={`/creator/${projectId}/preview`}><BookOpen className="h-4 w-4" />原稿プレビュー</Link>
+          <span className="rounded-full bg-green-50 px-4 py-2 font-semibold text-green-800">一般向け・クラウド制作</span>
+        </div>
       </div>
       {query.message ? (
         <div className="mt-5 rounded-md bg-green-50 p-4 text-green-800">
