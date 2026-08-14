@@ -363,10 +363,41 @@ test("完成コマ生成はBFL向けの正の単一場面指示を日英で固�
   assert.match(result.generation.prompt, /Upright orientation/);
   assert.match(result.generation.prompt, /natural anatomy and gravity/);
   assert.match(result.generation.prompt, /意味のある絵柄だけ/);
+  assert.match(result.generation.prompt, /手指との接触、衣服との境界/);
+  assert.match(result.generation.prompt, /plain, featureless material shading/);
   assert.doesNotMatch(result.generation.prompt, /漫画ページ|複数コマ|疑似文字|Never render/);
   assert.match(result.generation.negativePrompt, /pseudo-text/);
   assert.match(result.generation.negativePrompt, /multiple panels/);
   assert.match(result.generation.negativePrompt, /speech balloons/);
+});
+
+test("非正立動作は紙面を回転させず意図した人物だけへ限定する", () => {
+  const fallingStoryboard = structuredClone(storyboard);
+  fallingStoryboard.pages[0].panels[0].action =
+    "主人公が足場から落下し、相棒が手を伸ばす";
+  const result = buildStoryboardPanelGeneration({
+    storyboard: fallingStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+  });
+  assert.match(result.generation.prompt, /紙面の上辺と地平線を正立/);
+  assert.match(result.generation.prompt, /明示された非正立の動作だけ/);
+  assert.match(result.generation.prompt, /page frame and horizon upright/);
+  assert.doesNotMatch(result.generation.prompt, /頭部が画面上側、足元が画面下側/);
+});
+
+test("落ち着いた通常動作を非正立姿勢と誤判定しない", () => {
+  const calmStoryboard = structuredClone(storyboard);
+  calmStoryboard.pages[0].panels[0].action = "主人公が落ち着いて立ち止まる";
+  const result = buildStoryboardPanelGeneration({
+    storyboard: calmStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+  });
+  assert.match(result.generation.prompt, /頭部が画面上側、足元が画面下側/);
+  assert.doesNotMatch(result.generation.prompt, /明示された非正立の動作だけ/);
 });
 
 test("版管理された外見設定を生成条件と監査用入力へ固定する", () => {

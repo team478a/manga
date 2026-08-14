@@ -6,6 +6,7 @@ import {
   candidateBelongsToPage,
   classifyCandidateLayer,
   filterGenerationJobsForPage,
+  hasUnresolvedPanelGeneration,
   resolveCandidateTargetPanelId,
 } from "../src/modules/manga/domain/panel-candidate.ts";
 import { applyPanelCandidateAdoption } from "../src/modules/manga/domain/panel-adoption.ts";
@@ -18,6 +19,47 @@ const job = (overrides = {}) => ({
   generation_operation: null,
   job_type: "panel_image",
   ...overrides,
+});
+
+test("同じコマの生成中または候補確認待ちは古い失敗Jobから重複登録しない", () => {
+  const jobs = [
+    job({ id: "failed", status: "failed", target_panel_id: "panel-1" }),
+    job({ id: "running", status: "running", target_panel_id: "panel-1" }),
+    job({ id: "other", status: "queued", target_panel_id: "panel-2" }),
+  ];
+  assert.equal(hasUnresolvedPanelGeneration(jobs, "panel-1", "failed"), true);
+  assert.equal(hasUnresolvedPanelGeneration(jobs, "panel-2", "other"), false);
+  assert.equal(
+    hasUnresolvedPanelGeneration(
+      [
+        job({
+          id: "pending-review",
+          status: "completed",
+          target_panel_id: "panel-1",
+          panel_adoption_status: "review_required",
+        }),
+      ],
+      "panel-1",
+      "failed",
+    ),
+    true,
+  );
+  assert.equal(
+    hasUnresolvedPanelGeneration(
+      [
+        job({
+          id: "approved",
+          status: "completed",
+          target_panel_id: "panel-1",
+          panel_adoption_status: "auto_placed",
+          quality_review_status: "approved",
+        }),
+      ],
+      "panel-1",
+      "failed",
+    ),
+    false,
+  );
 });
 
 const read = (relative) =>

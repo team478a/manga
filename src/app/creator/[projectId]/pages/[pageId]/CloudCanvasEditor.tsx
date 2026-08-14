@@ -45,6 +45,7 @@ import {
   candidateBelongsToPage,
   classifyCandidateLayer,
   filterGenerationJobsForPage,
+  hasUnresolvedPanelGeneration,
   resolveCandidateTargetPanelId,
   type PanelGenerationTarget,
 } from "@/modules/manga/domain/panel-candidate";
@@ -969,6 +970,8 @@ export function CloudCanvasEditor({
       await requestStoryboardPanelGeneration({
         panelId: job.target_panel_id,
         candidateCount: 1,
+        compositionInstruction:
+          "前の候補とは異なる明瞭な構図で再制作する。人物の姿勢と重力、手指と小物の接触、衣服と小物の境界、無地の物体表面を優先して仕上げる。",
       });
     } catch (error) {
       setMessage(
@@ -1787,11 +1790,27 @@ export function CloudCanvasEditor({
                   ) : null}
                   {job.status === "failed" ? (
                     <div className="mt-2 rounded bg-red-50 p-2 text-red-800">
-                      <p>生成に失敗しました。この候補だけ再実行できます。</p>
+                      <p>
+                        {job.target_panel_id &&
+                        hasUnresolvedPanelGeneration(
+                          generationJobs,
+                          job.target_panel_id,
+                          job.id,
+                        )
+                          ? "同じコマの生成または候補確認が進行中です。"
+                          : "生成に失敗しました。この候補だけ再実行できます。"}
+                      </p>
                       {job.target_panel_id ? (
                         <button
                           className="mt-1 font-bold underline"
-                          disabled={requestingPanelGeneration}
+                          disabled={
+                            requestingPanelGeneration ||
+                            hasUnresolvedPanelGeneration(
+                              generationJobs,
+                              job.target_panel_id,
+                              job.id,
+                            )
+                          }
                           onClick={() =>
                             void requestStoryboardPanelGeneration({
                               panelId: job.target_panel_id!,
@@ -1811,31 +1830,67 @@ export function CloudCanvasEditor({
                   !canvas.panelLayers.some(
                     (layer) => layer.sourceJobId === job.id,
                   ) ? (
-                    <button
-                      className="button-secondary mt-2 w-full"
-                      disabled={
-                        !generationTargets[job.id] &&
-                        !job.target_panel_id &&
-                        selection?.type !== "panel"
-                      }
-                      onClick={() => void placeGeneratedAsset(job)}
-                      type="button"
-                    >
-                      {generationTargets[job.id] || job.target_panel_id
-                        ? job.panel_adoption_status === "review_required" ||
-                          job.panel_adoption_status === "placement_failed"
-                          ? "確認してコマへ配置"
-                          : "この候補を採用してコマへ配置"
-                        : "選択中のコマへ配置"}
-                    </button>
+                    <div className="mt-2 grid gap-2">
+                      <button
+                        className="button-secondary w-full"
+                        disabled={
+                          !generationTargets[job.id] &&
+                          !job.target_panel_id &&
+                          selection?.type !== "panel"
+                        }
+                        onClick={() => void placeGeneratedAsset(job)}
+                        type="button"
+                      >
+                        {generationTargets[job.id] || job.target_panel_id
+                          ? job.panel_adoption_status === "review_required" ||
+                            job.panel_adoption_status === "placement_failed"
+                            ? "確認してコマへ配置"
+                            : "この候補を採用してコマへ配置"
+                          : "選択中のコマへ配置"}
+                      </button>
+                      {job.kind === "image" && job.target_panel_id ? (
+                        <button
+                          className="button-secondary w-full"
+                          disabled={
+                            requestingPanelGeneration ||
+                            hasUnresolvedPanelGeneration(
+                              generationJobs,
+                              job.target_panel_id,
+                              job.id,
+                            )
+                          }
+                          onClick={() => void rejectAndRegeneratePanel(job)}
+                          type="button"
+                        >
+                          この候補を使わず作り直す（1案）
+                        </button>
+                      ) : null}
+                    </div>
                   ) : null}
                   {job.status === "completed" &&
                   job.kind === "image" &&
                   canvas.panelLayers.some((layer) => layer.sourceJobId === job.id) ? (
                     job.quality_review_status === "approved" ? (
-                      <p className="mt-2 rounded bg-green-50 p-2 font-bold text-green-800">
-                        原稿画像を品質確認済み
-                      </p>
+                      <div className="mt-2 grid gap-2 rounded bg-green-50 p-2 text-green-800">
+                        <p className="font-bold">原稿画像を品質確認済み</p>
+                        {job.target_panel_id ? (
+                          <button
+                            className="button-secondary w-full"
+                            disabled={
+                              requestingPanelGeneration ||
+                              hasUnresolvedPanelGeneration(
+                                generationJobs,
+                                job.target_panel_id,
+                                job.id,
+                              )
+                            }
+                            onClick={() => void rejectAndRegeneratePanel(job)}
+                            type="button"
+                          >
+                            品質確認を取り消して作り直す（1案）
+                          </button>
+                        ) : null}
+                      </div>
                     ) : (
                       <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-amber-950">
                         <p className="font-bold">

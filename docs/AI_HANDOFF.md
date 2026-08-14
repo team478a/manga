@@ -1,5 +1,23 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2F Provider生成コマの再制作品質、2026-08-14）
+
+- Branch: `codex/fix-r4-2f-provider-panel-quality`
+- Base: `origin/feature/manga-canvas-mvp` @ `9fbf228`（PR #262 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#263](https://github.com/team478a/manga/pull/263)（Draft／MERGEABLE）
+- Vercel deployment: https://vercel.com/team478as-projects/mangai-hub-staging/3WsM1i1ZiJBujvajZh46Gv4zQLwB
+- Productionページ22で不良2画像を各1回だけ再制作した。Worker run `31802403441`は成功し、使用32／予約0／残り68。生成物は人体・小物融合と疑似文字が残ったため配置・承認せず、追加課金を停止した。
+- 正方向Promptへ非正立動作の安全な例外、小物接触、衣服との境界、無地・非記号表面を追加する。品質再制作には前候補と異なる修正条件を付ける。
+- 未配置候補の却下、承認済み品質確認の取消し、同じコマの生成中／候補確認待ちに古いJobから重複登録しない導線を追加する。
+- DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PDF／PNG、成人向け境界、Desktopは変更しない。
+- 集中41/41、Hub 714/714、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、Webpack build、repository preflight、diff check成功。Desktopは既存keyring型宣言不足のためWindows CIで判定する。
+- Productionの2候補は手動確認待ちのまま保全。merge前に追加の有料再生成を行わない。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Windows CIのDesktop tests、Accessibility tests、unpacked buildも成功した。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2F_PROVIDER_PANEL_QUALITY.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2E 生成原稿の最終品質ゲート、2026-08-14）
 
 - Draft PR [#262](https://github.com/team478a/manga/pull/262) はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。責任者review前にProduction反映・有料再生成を行わない。
