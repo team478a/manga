@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2L クローズアップ余白・無記名描画面の固定
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
+- Draft PR: 作成前
+- Branch: `codex/fix-r4-2l-closeup-clean-output`
+- Base: `origin/feature/manga-canvas-mvp`@`7f3dc73`（PR #268 merge commit）。
+- Production受入れ: PR #268反映後、`test`モニターのページ22で有効な再制作を1回だけ登録した。Jobは1件だけ、Worker run `31860725448`は`status=idle requests=2 processed=1`で成功。使用creditは40→42、予約0→2→0、残り58、重複登録と継続Workerはなかった。先行run `31860684723`は`mode=check`の設定確認だけでWorker／Provider requestを送っていない。
+- 品質結果: 新しい704×1024 Assetは両目・鼻・口・顎を含み、前回の口元だけの極端なcropを改善した。一方で頭頂と髪が切れ、口元に生成文字`証拠をさ`が混入したため販売品質未達。配置・品質承認・追加生成は行っていない。
+- 実装: 人物あり`close_up`を顔だけの極端な寄りではなく頭と肩の構図とし、髪全体、顎、首、両肩の付け根と画像短辺約10%の頭部周囲余白を日英Promptで固定する。参照素材は同一性、輪郭、髪型、衣装、線画だけに用い、肌、口元、衣服、背景を解剖学的輪郭と自然な陰影だけの清潔な無記名面として再構成する。
+- 適用境界: 既存の参照選択、Panel Specification、実効画角、moderation、候補数を維持する。人物なしJobや`wide`等の画角へ頭肩契約を混入させない。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、成人向け境界、Desktop。
+- 検証: 集中27/27、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure成功。
+- ローカル既知制約: Desktop差分はない。既存`@napi-rs/keyring`型宣言不足はWindows CIを正式結果とする。
+- Production変更: 上記PR #268受入れの1 Job／2 creditだけ。R4-2Lコード実装後のProvider E2E、画像配置・承認、DB／Storage／作品内容の変更は行っていない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2L_CLOSEUP_CLEAN_OUTPUT.md`
+- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を確認して停止する。責任者merge前にProductionで追加生成しない。
+
+---
+
 ## 2026-08-15 PR-R4-2K クローズアップの顔フレーミング固定
 
 - 状態: `READY_FOR_OWNER_REVIEW`

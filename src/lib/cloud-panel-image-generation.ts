@@ -180,6 +180,8 @@ function resolveFaceFramingContract(input: {
   return [
     "クローズアップでも、頭頂から顎までの顔全体を画面内に収め、両目・鼻・口・顎を欠かさず見せる。顔の主要部分をフレーム端で切らず、頭上と顎下にわずかな余白を残す。",
     "For a close-up, keep the complete face in frame from the top of the head to the chin, with both eyes, nose, mouth, and chin visible. Do not crop through facial features; leave slight headroom and space below the chin.",
+    "極端な顔だけの寄りではなく、頭と肩が分かるクローズアップにする。頭頂の外側、髪の左右、顎下、首、両肩の付け根までを画面内に収め、頭部の周囲に画像短辺のおよそ10%の明確な余白を残す。",
+    "Use a head-and-shoulders close-up rather than an extreme facial crop. Keep the complete hair silhouette, chin, neck, and the tops of both shoulders inside the frame, with a clear margin around the entire head of about 10% of the shorter image dimension.",
   ];
 }
 
@@ -412,6 +414,8 @@ export function buildStoryboardPanelGeneration(input: {
     ? [
         `参照素材: 人物${referenceCounts.character}点・画風${referenceCounts.style}点・場所${referenceCounts.location}点・小物${referenceCounts.prop}点。参照素材は人物同一性、衣装、画風、場所、小物の形だけに用い、場面と構図は次の生成契約を優先する。`,
         "Use supplied images only for the referenced identity and visual traits. The scene contract below overrides their camera view and composition.",
+        "参照素材からは人物同一性、輪郭、髪型、衣装、線画の筆致だけを再構成する。人物の肌、口元、衣服、背景は、解剖学的な輪郭と素材の自然な陰影だけで構成した無記名の面として完成させる。",
+        "Reconstruct only identity, silhouette, hairstyle, clothing, and linework from references. Finish skin, mouth areas, clothing, and backgrounds as clean unlettered pictorial surfaces made only from anatomy, contours, and natural material shading.",
       ]
     : [];
   const contractedShot =
@@ -450,6 +454,12 @@ export function buildStoryboardPanelGeneration(input: {
       : "",
     `画角: ${contractedShot}。カメラ: ${contractedCamera}。`,
     ...faceFramingContract,
+    usesCharacters
+      ? "人物の肌と口元は、顔の解剖学的な輪郭と自然な陰影だけで構成した、清潔で無記名の面にする。"
+      : "",
+    usesCharacters
+      ? "Keep every face and mouth area as clean unlettered anatomy composed only of facial contours and natural shading."
+      : "",
     "画像全体をこの一つの瞬間と一つの視点だけで満たす。編集用の文字要素は後工程で追加するため、描画面は意味のある絵だけで完成させる。",
   ].filter(Boolean);
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
