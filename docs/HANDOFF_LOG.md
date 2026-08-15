@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-16 Codex: 端末無記名・小物単一化契約
+
+- PR #280 merge commit `e844143b5a0f8cacd7ecf389d75289647c499c52`を含む最新基準から`codex/accept-r4-2x-page22-quality-gate`を開始した。
+- Productionの`test`モニターでページ22のコマ1を計4案、コマ3を2案だけ生成した。Worker `31914291083`、`31914514888`、`31914739580`は成功。Creditは使用56／予約0／残44から使用64／予約0／残36となった。
+- コマ3の1案は正立、無記名面、人体、小物、物語構図を満たし、品質確認・配置してCanvas revision 7→8、保存、PNG成功を確認した。他候補は追加生成なしで不採用とした。
+- コマ1は疑似文字、口元の生成文字、端末表示の生成文字、端末重複が残った。完成3案を不採用、1 Jobは生成失敗。保留Jobと予約残はなく、追加Provider実行を停止した。
+- 短縮Provider JSONの品質条件と長文Promptへ、端末displayを反射と光だけの無記名ガラス面にすること、必要な各小物を指定位置へ一つだけ描くことを追加した。
+- 集中31/31、Hub 735/735、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。Draft PR、CI、Vercel Previewは未実施。merge前にコマ1の追加Production生成を行わない。
+- Prompt本文、Provider応答、署名URL、利用者画像、API keyは記録していない。公開・販売状態は変更していない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2X_BLANK_DEVICE_SINGLE_PROP.md`
+
+---
+
 ## 2026-08-16 Codex: 生成画像の採用品質ゲート
 
 - Branch: `codex/fix-r4-2w-generation-quality-gate`
