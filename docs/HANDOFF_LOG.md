@@ -4511,4 +4511,5 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 安全化済み入力の再拒否は再登録せず停止する。BFL公式moderation statusを即時の非retry拒否へ分類し、長編batchにも同じDomain policyを適用する。
 - DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。Prompt、画像、Provider応答、Provider Job ID、秘密値をログ・文書へ追加していない。
 - 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。Turbopackは既知のWindows path長、Desktopは既存keyring型宣言不足のためCIで判定する。
-- 次: commit、push、Draft PRと全CI／Vercel Preview確認。merge前にProduction再実行を行わない。
+- Draft PR [#267](https://github.com/team478a/manga/pull/267)を作成。全CI／Vercel Preview確認中。
+- 次: Draft PR #267の全CI／Vercel Preview成功で停止。merge前にProduction再実行を行わない。

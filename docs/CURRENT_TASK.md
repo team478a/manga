@@ -3,7 +3,7 @@
 ## 2026-08-15 PR-R4-2J Provider拒否後の対話型コマ安全再実行
 
 - 状態: `IMPLEMENTED_LOCAL_VALIDATION`
-- Draft PR: 作成前
+- Draft PR: [#267](https://github.com/team478a/manga/pull/267)（Draft、CI確認中）
 - Branch: `codex/fix-r4-2j-interactive-safe-retry`
 - Base: `origin/feature/manga-canvas-mvp`@`193f0ae`（PR #266 merge commit）。
 - Production切り分け: 品質参照Assetを作品全体の画風へ1件登録し、ページ22の不良候補を1案だけ作り直した。公式Workerで同一Provider Jobのpoll継続を確認したが、初回と画面からの1回の再実行はいずれもProvider完了時に失敗した。各回の予約2 creditは全額解放され、使用38、予約0、残り62へ復元した。追加実行は停止した。
