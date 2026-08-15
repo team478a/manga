@@ -1,5 +1,27 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2O クローズアップProvider Prompt短縮・安定化
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#272](https://github.com/team478a/manga/pull/272)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-l6vr8i9ca-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-2o-compact-closeup-provider-prompt`
+- Base: `origin/feature/manga-canvas-mvp`@`9047f40`（PR #271 merge commit）。
+- Production受入れ: PR #271反映後、ログイン済み`test`モニターでページ22・4コマ目の再制作を1案だけ登録した。Job `230eac0d-e1d3-4813-bd43-bb6830c492ba`を公式Worker run `31867709945`が`status=idle requests=2 processed=1`で完了した。使用creditは44→46、予約0→2→0、残り56→54。重複Jobと継続Workerはない。
+- 品質結果: Asset `f7a22c48-fe92-48ca-8697-b2ee3ac6d70d`（704×1024 PNG）はProvider moderationを通過したが、鼻・口・顎だけの極端なcropとなり、両目と頭頂が画面外、口元へ生成文字`証拠を`が混入した。販売品質未達のため配置・品質承認・追加生成を行っていない。
+- 切り分け: Jobは`text_to_image`かつ`source_asset_id=null`で、失敗候補画像をsourceとして固定していない。保存済み画風参照も完全な頭部を含む清潔な無記名画像。BFL公式推奨より長く、同じ場面契約、構図、動作、感情、背景、演出が重複するPromptによって、最優先の撮影距離と無記名面が希釈された可能性が高い（推論）。
+- 実装: 人物あり・新規`close_up`だけを短いJSON Provider契約へ切り替える。被写体を中央の中距離portrait、画像高約65%、完全なsilhouetteと周囲背景、70mm相当へ固定する。台詞本文と引用符付き発話を動作・表情・背景から除外し、描画面を清潔な無記名モノクロ面へ固定する。2〜4候補の候補別制作差分と参照画像ごとの役割は維持する。
+- 適用外: revision／Image-to-Image／Inpainting／Outpainting、人物なし、close-up以外は従来Promptを維持する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、成人向け境界、Desktop。
+- 検証: 集中31/31、Hub 726/726、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure、diff check成功。
+- ローカル既知制約: 全体typecheckは既存Desktop依存`@napi-rs/keyring`型宣言不足だけで停止。今回Desktop差分はなく、Windows CIを正式判定とする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Production変更: 上記1 Job／2 creditのみ。画像配置、品質承認、Canvas revision、作品、公開・販売状態は変更していない。R4-2O merge前に追加の実Provider E2Eを行わない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2O_COMPACT_CLOSEUP_PROVIDER_PROMPT.md`
+- 次: 最終文書同期HEADの5チェックを再確認して停止する。merge後に1案だけ受入れし、責任者判断前に次工程へ進まない。
+
+---
+
 ## 2026-08-15 PR-R4-2N Provider moderation安全な構図契約
 
 - 状態: `READY_FOR_OWNER_REVIEW`
