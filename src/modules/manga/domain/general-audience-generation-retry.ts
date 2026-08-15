@@ -10,18 +10,18 @@ const SAFE_EXPRESSION =
 const SAFE_DIRECTION =
   "光と影、人物間の距離、視線誘導で物語上の緊張感を間接的に伝える。";
 const SAFE_PROVIDER_CLOSE_UP_SCENE =
-  "one general-audience manga character in a medium portrait from one upright camera view, with the complete hairstyle and clothing silhouette visible";
+  "one general-audience manga character in a roomy environmental portrait from one upright camera view, with the complete silhouette comfortably inside the canvas";
 const SAFE_PROVIDER_CLOSE_UP_COMPOSITION =
-  "medium portrait; subject occupies about 72% of canvas height; complete hairstyle and clothing silhouette remain inside the canvas; clear headroom and environmental space on both sides";
+  "roomy environmental portrait; subject occupies about 58% of canvas height; complete silhouette remains comfortably inside the canvas with generous headroom and environmental space on both sides";
 const SAFE_PROVIDER_CLOSE_UP_POSITION =
-  "centered in the portrait canvas; top of hair near 15% from the top edge, lower edge of the visible jacket near 92% from the top edge, and clear environment along both side margins";
+  "centered with visible pictorial environment around the silhouette; top of hairstyle near 18% from the top edge, lower edge of visible clothing near 82% from the top edge, and broad environment along both side margins";
 const SAFE_PROVIDER_CLOSE_UP_OUTPUT =
   "one continuous edge-to-edge monochrome manga illustration across the entire portrait canvas";
 const SAFE_PROVIDER_CLOSE_UP_FRAMING = {
-  subject_height_percent: 72,
-  top_hair_y_percent: 15,
-  lower_jacket_y_percent: 92,
-  side_environment_percent: 12,
+  subject_height_percent: 58,
+  top_hair_y_percent: 18,
+  lower_clothing_y_percent: 82,
+  side_environment_percent: 18,
 } as const;
 const SAFE_PROVIDER_ACTION =
   "a calm natural pose that communicates the story moment through posture and gaze";
@@ -58,9 +58,13 @@ function sanitizeProviderControlContract(line: string) {
       typeof contract.composition === "string" &&
       contract.composition.includes("both eyes, nose, mouth, chin");
     if (!compactCloseUp && !unsafeLegacyComposition) return line;
+    const contractWithoutCloseUpFraming = { ...contract };
+    delete contractWithoutCloseUpFraming.composition;
+    delete contractWithoutCloseUpFraming.framing;
     return JSON.stringify({
-      ...contract,
       composition: SAFE_PROVIDER_CLOSE_UP_COMPOSITION,
+      ...(compactCloseUp ? { framing: SAFE_PROVIDER_CLOSE_UP_FRAMING } : {}),
+      ...contractWithoutCloseUpFraming,
       ...(compactCloseUp
         ? {
             scene: SAFE_PROVIDER_CLOSE_UP_SCENE,
@@ -68,15 +72,21 @@ function sanitizeProviderControlContract(line: string) {
             subjects: compactSubjects,
             background: SAFE_PROVIDER_BACKGROUND,
             variation: SAFE_PROVIDER_VARIATION,
-            framing: SAFE_PROVIDER_CLOSE_UP_FRAMING,
             canvas:
               "one uninterrupted pictorial scene fills every edge of the portrait canvas",
+            surface_content:
+              "pure pictorial artwork made exclusively from character, clothing, environment, light, and shadow",
+            face_finish:
+              "natural facial anatomy and expression formed exclusively by clean linework and shading",
+            surface_finish:
+              "clean monochrome pictorial line art and natural material shading across every surface",
             camera: {
               ...cameraWithoutLegacyLens,
-              distance: "medium portrait distance with the camera pulled back",
+              distance:
+                "roomy environmental portrait distance with the camera clearly pulled back",
               "lens-mm": 50,
               focus:
-                "sharp focus on identity, expression, and the complete clothing silhouette while retaining visible surrounding environment",
+                "sharp identity and expression within the complete silhouette while preserving broad surrounding environment",
             },
           }
         : {}),

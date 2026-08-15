@@ -196,18 +196,18 @@ const providerReferenceRoleDirections: Record<
 };
 
 const providerCloseUpScene =
-  "one general-audience manga character in a medium portrait from one upright camera view, with the complete hairstyle and clothing silhouette visible";
+  "one general-audience manga character in a roomy environmental portrait from one upright camera view, with the complete silhouette comfortably inside the canvas";
 const providerCloseUpPosition =
-  "centered in the portrait canvas; top of hair near 15% from the top edge, lower edge of the visible jacket near 92% from the top edge, and clear environment along both side margins";
+  "centered with visible pictorial environment around the silhouette; top of hairstyle near 18% from the top edge, lower edge of visible clothing near 82% from the top edge, and broad environment along both side margins";
 const providerCloseUpComposition =
-  "medium portrait; subject occupies about 72% of canvas height; complete hairstyle and clothing silhouette remain inside the canvas; clear headroom and environmental space on both sides";
+  "roomy environmental portrait; subject occupies about 58% of canvas height; complete silhouette remains comfortably inside the canvas with generous headroom and environmental space on both sides";
 const providerCloseUpOutput =
   "one continuous edge-to-edge monochrome manga illustration across the entire portrait canvas";
 const providerCloseUpFraming = {
-  subject_height_percent: 72,
-  top_hair_y_percent: 15,
-  lower_jacket_y_percent: 92,
-  side_environment_percent: 12,
+  subject_height_percent: 58,
+  top_hair_y_percent: 18,
+  lower_clothing_y_percent: 82,
+  side_environment_percent: 18,
 } as const;
 
 function buildProviderReferenceRoleContract(
@@ -542,6 +542,8 @@ export function buildStoryboardPanelGeneration(input: {
     lettering_stage: "blank artwork ready for dialogue and balloons to be overlaid later",
   });
   const compactCloseUpContract = JSON.stringify({
+    composition: providerCloseUpComposition,
+    framing: providerCloseUpFraming,
     scene: providerCloseUpScene,
     output_type: providerCloseUpOutput,
     subjects: [
@@ -565,7 +567,8 @@ export function buildStoryboardPanelGeneration(input: {
         action: compactProviderSceneField({
           value: storyboardPanel.action,
           dialogue: storyboardPanel.dialogue,
-          fallback: "a natural speaking pose for this story moment",
+          fallback:
+            "a natural attentive pose that communicates the story through posture and gaze",
         }),
         expression: compactProviderSceneField({
           value: storyboardPanel.emotion,
@@ -593,19 +596,22 @@ export function buildStoryboardPanelGeneration(input: {
       dialogue: storyboardPanel.dialogue,
       fallback: "a simple story-appropriate environment",
     }),
-    composition: providerCloseUpComposition,
-    framing: providerCloseUpFraming,
     camera: {
       angle: contractedCamera,
-      distance: "medium portrait distance with the camera pulled back",
+      distance:
+        "roomy environmental portrait distance with the camera clearly pulled back",
       "lens-mm": 50,
       focus:
-        "sharp focus on identity, expression, and the complete clothing silhouette while retaining visible surrounding environment",
+        "sharp identity and expression within the complete silhouette while preserving broad surrounding environment",
     },
     canvas:
       "one uninterrupted pictorial scene fills every edge of the portrait canvas",
+    surface_content:
+      "pure pictorial artwork made exclusively from character, clothing, environment, light, and shadow",
+    face_finish:
+      "natural facial anatomy and expression formed exclusively by clean linework and shading",
     surface_finish:
-      "clean unmarked monochrome pictorial line art and natural material shading across every surface",
+      "clean monochrome pictorial line art and natural material shading across every surface",
     variation:
       candidateCount > 1
         ? `candidate ${candidateIndex + 1} of ${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`

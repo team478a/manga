@@ -102,7 +102,7 @@ test("Provider拒否後は構造化構図の身体部位列挙を安全な非cro
   const contract = JSON.parse(retry.prompt.split("\n")[2]);
   assert.equal(
     contract.composition,
-    "medium portrait; subject occupies about 72% of canvas height; complete hairstyle and clothing silhouette remain inside the canvas; clear headroom and environmental space on both sides",
+    "roomy environmental portrait; subject occupies about 58% of canvas height; complete silhouette remains comfortably inside the canvas with generous headroom and environmental space on both sides",
   );
   assert.equal(contract.camera_angle, "目線の高さ");
   assert.match(retry.prompt, /人物設定: 黒髪、細身、灰色のパーカー/);
@@ -123,24 +123,27 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.match(contract.subjects[0].expression, /general audience/);
   assert.match(contract.background, /non-graphic/);
   assert.match(contract.variation, /convey tension indirectly/);
-  assert.match(contract.scene, /medium portrait/);
+  assert.match(contract.scene, /roomy environmental portrait/);
   assert.match(contract.output_type, /continuous edge-to-edge/);
   assert.match(contract.canvas, /one uninterrupted pictorial scene/);
-  assert.match(contract.subjects[0].position, /top of hair near 15%/);
+  assert.match(contract.subjects[0].position, /top of hairstyle near 18%/);
   assert.equal(contract.camera.angle, "eye level");
   assert.deepEqual(contract.framing, {
-    subject_height_percent: 72,
-    top_hair_y_percent: 15,
-    lower_jacket_y_percent: 92,
-    side_environment_percent: 12,
+    subject_height_percent: 58,
+    top_hair_y_percent: 18,
+    lower_clothing_y_percent: 82,
+    side_environment_percent: 18,
   });
   assert.equal(
     contract.camera.distance,
-    "medium portrait distance with the camera pulled back",
+    "roomy environmental portrait distance with the camera clearly pulled back",
   );
   assert.equal(contract.camera["lens-mm"], 50);
   assert.equal("lens" in contract.camera, false);
-  assert.match(contract.camera.focus, /identity, expression/);
+  assert.match(contract.camera.focus, /identity and expression/);
+  assert.match(contract.surface_content, /pure pictorial artwork/);
+  assert.match(contract.face_finish, /clean linework and shading/);
+  assert.doesNotMatch(retry.prompt, /speaking|lettering|unmarked/);
   assert.doesNotMatch(JSON.stringify(contract), /\b(?:chest|waist)\b/i);
   assert.deepEqual(contract.input_image_roles, [
     "input_image_1: preserve character identity only",
