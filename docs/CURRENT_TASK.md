@@ -2,7 +2,8 @@
 
 ## 2026-08-16 PR-R4-2W 生成画像の採用品質ゲート
 
-- 状態: `LOCAL_VALIDATED`
+- 状態: `CI_IN_PROGRESS`
+- Draft PR: [#280](https://github.com/team478a/manga/pull/280)
 - Branch: `codex/fix-r4-2w-generation-quality-gate`
 - Base: `origin/feature/manga-canvas-mvp`@`3bd3488`（PR #279 merge commit）。
 - 背景: PR #279はマージ済み。ページ22はコマ4が合格・配置済みだが、コマ1の不自然な上下方向、コマ3の画像内疑似文字、未配置候補2件、自動配置確認が残る。

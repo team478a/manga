@@ -8,6 +8,7 @@
 
 - Branch: `codex/fix-r4-2w-generation-quality-gate`
 - Base: `origin/feature/manga-canvas-mvp`@`3bd3488`（PR #279 merge後）
+- Draft PR: [#280](https://github.com/team478a/manga/pull/280)
 - PR #279はマージ済み。ページ22の既存合格画像、Canvas revision 7、使用56／予約0／残44を維持して開始した。
 - 現行quality judgeが画像ピクセルを意味解析しない契約を確認し、自動OCR済みとは表示しない。短縮Promptへ正立品質条件を追加し、採用前に正立、画像内文字なし、人体・小物、物語構図の4項目を必須確認する。
 - 未配置候補を追加生成なしで明示却下できる。全候補が`rejected`の生成群だけ未配置・自動配置blockerを解除し、一部候補だけの却下では解除しない。
