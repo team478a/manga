@@ -2,7 +2,8 @@
 
 ## 2026-08-15 PR-R4-2N Provider moderation安全な構図契約
 
-- 状態: `IN_PROGRESS`
+- 状態: `VERIFYING_CI`
+- Draft PR: [#271](https://github.com/team478a/manga/pull/271)（Draft／MERGEABLE）
 - Branch: `codex/fix-r4-2n-provider-moderation-safe-framing`
 - Base: `origin/feature/manga-canvas-mvp`@`ff5ea38`（PR #270 merge commit）。
 - Production受入れ: PR #270反映後、`test`モニターのページ22・4コマ目を1案だけ再制作した。初回Job `8bf051c1-3f08-4ec9-8a63-f3a553d30f14`はWorker `31866069529`、既存の一般向け安全再実行Job `d5eaed83-1c10-45a0-94ec-bcda1b7ac219`はWorker `31866237664`で処理した。両runとも`status=idle requests=2 processed=1`で、Jobは`provider_moderation_blocked`、Assetなし、actual cost 0だった。
@@ -13,7 +14,7 @@
 - 検証: 集中30/30、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure成功。
 - Production変更: 上記2 Jobだけ。両方ともAsset・課金なし。画像配置、品質承認、Canvas、作品、公開・販売状態は変更していない。R4-2N実装後のProvider E2Eは行わない。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2N_PROVIDER_MODERATION_SAFE_FRAMING.md`
-- 次: Draft PR作成後、全CIとVercel Previewを確認して停止する。merge前にProductionで追加生成しない。
+- 次: 最終HEADの全CIとVercel Previewを確認して停止する。merge前にProductionで追加生成しない。
 
 ---
 

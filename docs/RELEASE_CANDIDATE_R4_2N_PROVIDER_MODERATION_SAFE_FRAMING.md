@@ -4,7 +4,8 @@
 
 - Branch: `codex/fix-r4-2n-provider-moderation-safe-framing`
 - Base: `ff5ea38e80d44acf7a379f1b01b75de5d748a1ba`（PR #270 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `VERIFYING_CI`
+- Draft PR: [#271](https://github.com/team478a/manga/pull/271)（Draft／MERGEABLE）
 - 対象: R4-2MのProvider JSON構図とProvider拒否後の安全再実行
 - Production変更: 限定受入れの失敗2 Jobのみ。Asset・実費・作品変更なし
 

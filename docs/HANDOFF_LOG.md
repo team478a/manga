@@ -13,7 +13,7 @@
 - Provider JSONのclose-up構図を身体部位列挙なしのuncropped medium close-up、frame内収容、10% marginへ変更した。Provider拒否後の安全再実行は保存済み旧JSON契約だけを同じ表現へ変換し、他の契約を保存する。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中30/30、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
-- R4-2N実装後のProduction変更と実Provider E2Eはない。Draft PRと全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
+- R4-2N実装後のProduction変更と実Provider E2Eはない。Draft PR [#271](https://github.com/team478a/manga/pull/271)はDraft／MERGEABLE。最終HEADの全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
 
 ---
 
