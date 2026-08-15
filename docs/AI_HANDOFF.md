@@ -1,5 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2M Provider構図契約・参照役割の構造化、2026-08-15）
+
+- Branch: `codex/fix-r4-2m-provider-framing-contract`
+- Base: `origin/feature/manga-canvas-mvp` @ `c7615a6`（PR #269 merge commit）
+- 状態: `IN_PROGRESS`
+- PR #269反映後のProductionで失敗候補を1回だけ再制作した。Worker `31864612499`で1 Jobが完了し、使用42→44、予約0→2→0、残り56、重複登録なし。
+- 704×1024画像は頭頂、髪、両目が切れ、鼻下から肩だけになり、生成文字`証拠を`が混入した。配置・承認・追加生成は行っていない。保存済み画風参照は頭部全体を含む清潔な無記名画像であり、参照自体の汚染ではない。
+- 原因は、Prompt後半の単純な`クローズアップ`再指定が頭肩・余白契約と競合し、送信順の`input_image_N`別役割が未指定で、長い自然言語Prompt内の優先度が不足していたこと。
+- Prompt先頭へJSON Provider契約を置き、`close_up`を頭部全体・首・両肩・約10%余白を含むミディアムクローズアップへ統一する。各参照へ`Input image N`と人物／画風／場所／小物の限定役割を付け、構図・crop・配置はProvider契約を優先する。
+- BFL公式の構造化Promptと複数入力画像の役割明示に従う。FLUX.2はnegative prompt非対応のため既存の非送信を維持する。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中27/27、Hub、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- R4-2M実装後のProduction変更とProvider E2Eはない。Draft PRと全CI／Vercel Preview成功で停止し、merge前に追加生成しない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2M_PROVIDER_FRAMING_CONTRACT.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2L クローズアップ余白・無記名描画面、2026-08-15）
 
 - Branch: `codex/fix-r4-2l-closeup-clean-output`

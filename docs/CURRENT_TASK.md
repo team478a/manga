@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2M Provider構図契約・参照役割の構造化
+
+- 状態: `IN_PROGRESS`
+- Branch: `codex/fix-r4-2m-provider-framing-contract`
+- Base: `origin/feature/manga-canvas-mvp`@`c7615a6`（PR #269 merge commit）。
+- Production受入れ: PR #269反映後、`test`モニターのページ22で有効な再制作を1回だけ登録した。Jobは1件、公式Worker run `31864612499`は`status=idle requests=2 processed=1`で成功。使用creditは42→44、予約0→2→0、残り56、重複登録と継続Workerはなかった。
+- 品質結果: 新しいAsset `1e1fd972-ce78-4bb0-b700-126cd693c35d.png`（704×1024）は頭頂、髪、両目が切れ、鼻下・口・顎・首・肩だけの構図となり、下部に生成文字`証拠を`が混入した。販売品質未達のため配置、品質承認、追加生成は行っていない。
+- 参照確認: 保存済み画風参照Asset `84dce883-e71a-4e6b-8efa-465e36e4f366`は、頭部全体と人物全身を含む清潔な無記名画像だった。参照画像自体のcrop／文字汚染は原因ではない。
+- 根因: Domainの`close_up`がProvider Prompt内で後から単純な「クローズアップ」と再指定され、頭肩・10%余白契約と競合していた。複数参照も件数と一般的役割だけで、BFLへ送る`input_image_N`ごとの役割を明示していなかった。長い自然言語Prompt内で構図・無記名面の優先度が不足していた。
+- 実装: Provider Promptの先頭へJSON構図契約を置き、`close_up`を頭部全体・首・両肩・周囲10%余白を含むミディアムクローズアップへ一貫変換する。選択済み参照を送信順どおり`Input image 1`以降へ割り当て、人物同一性、画風、場所、小物の役割と、構図・cropはProvider契約を優先する境界を明示する。
+- Provider契約: BFL公式の構造化Prompt／複数入力画像の役割明示を採用する。FLUX.2はnegative prompt非対応のため、既存どおり送信せず正方向契約だけを強化する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、成人向け境界、Desktop。
+- 検証: 集中27/27、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure成功。
+- Production変更: 上記PR #269受入れの1 Job／2 creditだけ。R4-2Mコード実装後のProvider E2E、画像配置・承認、DB／Storage／作品内容の変更は行っていない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2M_PROVIDER_FRAMING_CONTRACT.md`
+- 次: Draft PR作成後、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProductionで追加生成しない。
+
+---
+
 ## 2026-08-15 PR-R4-2L クローズアップ余白・無記名描画面の固定
 
 - 状態: `READY_FOR_OWNER_REVIEW`

@@ -106,7 +106,7 @@ const shotLabels: Record<
   string
 > = {
   extreme_close_up: "極端なクローズアップ",
-  close_up: "クローズアップ",
+  close_up: "頭部全体・首・肩まで入るミディアムクローズアップ",
   medium: "中景",
   wide: "広い画角",
   establishing: "状況を示す遠景",
@@ -135,7 +135,7 @@ const outpaintingDirectionLabels = {
 
 const shotOverrideDirections = {
   storyboard: "ネームで指定した画角を維持する",
-  close_up: "顔と表情が主役になるクローズアップにする",
+  close_up: "頭部全体・首・両肩まで入るミディアムクローズアップにする",
   medium: "人物の上半身と動作が分かる中景にする",
   wide: "人物と背景の関係が分かる広い画角にする",
   full_body: "頭から足先まで入り、全身のポーズが分かる画角にする",
@@ -180,9 +180,28 @@ function resolveFaceFramingContract(input: {
   return [
     "クローズアップでも、頭頂から顎までの顔全体を画面内に収め、両目・鼻・口・顎を欠かさず見せる。顔の主要部分をフレーム端で切らず、頭上と顎下にわずかな余白を残す。",
     "For a close-up, keep the complete face in frame from the top of the head to the chin, with both eyes, nose, mouth, and chin visible. Do not crop through facial features; leave slight headroom and space below the chin.",
-    "極端な顔だけの寄りではなく、頭と肩が分かるクローズアップにする。頭頂の外側、髪の左右、顎下、首、両肩の付け根までを画面内に収め、頭部の周囲に画像短辺のおよそ10%の明確な余白を残す。",
-    "Use a head-and-shoulders close-up rather than an extreme facial crop. Keep the complete hair silhouette, chin, neck, and the tops of both shoulders inside the frame, with a clear margin around the entire head of about 10% of the shorter image dimension.",
+    "頭と肩が分かるミディアムクローズアップにする。頭頂の外側、髪の左右、顎下、首、両肩の付け根までを画面内に収め、頭部の周囲に画像短辺のおよそ10%の明確な余白を残す。",
+    "Use a medium close-up head-and-shoulders portrait. Keep the complete hair silhouette, chin, neck, and the tops of both shoulders inside the frame, with a clear margin around the entire head of about 10% of the shorter image dimension.",
   ];
+}
+
+const providerReferenceRoleDirections: Record<
+  PanelReferenceAsset["subjectKind"],
+  string
+> = {
+  character: "character identity, face, hairstyle, body build, and clothing only",
+  style: "linework, ink texture, shading, and tonal style only",
+  location: "location architecture, materials, and environmental identity only",
+  prop: "prop shape, materials, scale, and identifying details only",
+};
+
+function buildProviderReferenceRoleContract(
+  references: readonly PanelReferenceAsset[],
+) {
+  return references.map(
+    (reference, index) =>
+      `Input image ${index + 1} role: ${providerReferenceRoleDirections[reference.subjectKind]}. Camera framing, crop, subject placement, and canvas layout follow the provider control contract; every output surface is rebuilt as clean pictorial line art and natural shading.`,
+  );
 }
 
 function imageSize(width: number, height: number) {
@@ -418,6 +437,9 @@ export function buildStoryboardPanelGeneration(input: {
         "Reconstruct only identity, silhouette, hairstyle, clothing, and linework from references. Finish skin, mouth areas, clothing, and backgrounds as clean unlettered pictorial surfaces made only from anatomy, contours, and natural material shading.",
       ]
     : [];
+  const providerReferenceRoles = buildProviderReferenceRoleContract(
+    selectedReferenceAssets,
+  );
   const contractedShot =
     !input.compositionControl || input.compositionControl.shot === "storyboard"
       ? shotLabels[storyboardPanel.shot]
@@ -435,6 +457,18 @@ export function buildStoryboardPanelGeneration(input: {
     input.compositionControl.cameraAngle === "storyboard"
       ? angleLabels[storyboardPanel.cameraAngle]
       : cameraAngleOverrideDirections[input.compositionControl.cameraAngle];
+  const providerControlContract = JSON.stringify({
+    output_type: "single frameless monochrome manga panel illustration",
+    scene: "one moment from one camera view",
+    subject_count: panelSpecification.expectedCharacterCount,
+    composition:
+      resolvedShot === "close_up"
+        ? "medium close-up head-and-shoulders portrait; complete hair silhouette, both eyes, nose, mouth, chin, neck, and shoulder tops inside the image; clear 10% margin around the head"
+        : contractedShot,
+    camera_angle: contractedCamera,
+    image_surface: "clean monochrome pictorial line art and natural material shading",
+    lettering_stage: "blank artwork ready for dialogue and balloons to be overlaid later",
+  });
   const sceneContract = [
     "【生成契約：一枚の場面画像】",
     `登場人数: ${panelSpecification.expectedCharacterCount}人。`,
@@ -529,9 +563,12 @@ export function buildStoryboardPanelGeneration(input: {
         "Upright orientation with the top edge skyward and the bottom edge groundward. Human heads stay toward the top edge, feet toward the bottom edge, with natural anatomy and gravity.",
       ];
   const prompt = [
+    "PROVIDER CONTROL CONTRACT:",
+    providerControlContract,
     "端から端まで一続きの、一般向けモノクロインク場面イラスト。枠のない一枚の長方形画像として描く。",
     "A single frameless rectangular monochrome ink illustration for a general audience.",
     ...referenceGuidance,
+    ...providerReferenceRoles,
     ...sceneContract,
     "画像全体を一つの視点、一つの瞬間、連続した一つの場面で満たす。画面は純粋な絵だけで構成し、表面は無記名で清潔に保つ。",
     "A single continuous edge-to-edge monochrome scene, one camera view and one moment in time, composed as pure unlettered pictorial artwork.",
