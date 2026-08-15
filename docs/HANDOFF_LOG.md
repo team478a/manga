@@ -11,6 +11,7 @@
 - 生成画像は頭頂、髪、両目が画面外で、口元から胸元だけの過度な接写だった。顔中央に不要な矩形線も残り、候補採用、配置、品質承認、Canvas、公開・販売状態は変更していない。
 - FLUX.2ではnegative promptが送信されない。短縮JSONへ一続きの一枚絵出力を追加し、抽象的な55%指定を髪上端、肩、腰の画面内ランドマークへ置換した。安全再実行も保存済み旧JSONへ同じ契約を補う。
 - Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。通常TurbopackとDesktopローカル依存は既知制約のためCIを正式判定にする。Draft PRを継続する。
+- Draft PR [#275](https://github.com/team478a/manga/pull/275)を作成。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-7249f5-team478as-projects.vercel.app`。
 
 ---
 

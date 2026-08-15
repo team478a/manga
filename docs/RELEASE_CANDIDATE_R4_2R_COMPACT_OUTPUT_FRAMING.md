@@ -1,5 +1,8 @@
 # PR-R4-2R 短縮クローズアップの一枚絵・画面内ランドマーク契約
 
+- Draft PR: [#275](https://github.com/team478a/manga/pull/275)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-7249f5-team478as-projects.vercel.app
+
 ## 結論
 
 PR #274反映後のProduction受入れでは、安全再実行がProvider moderationを通過して704×1024 PNGを生成した。しかし、頭頂と両目が画面外になり、口元から胸元だけが大きく写った。顔中央には不要な矩形線も生成され、販売品質には達していない。
@@ -68,7 +71,7 @@ R4-2Qの`mid-torso upward`と被写体高55%も、実画像では頭部の画面
 - RC preflight: repository structure READY。ローカル外部secretと手動E2EだけPENDING
 - 通常Turbopack build: 既知のWindowsパス長上限で停止。Vercel Previewを正式判定にする
 - Desktop test／typecheck／build／a11y: 既存の`@napi-rs/keyring`型宣言不足でbuild前に停止。今回Desktop差分はなく、Windows CIを正式判定にする
-- Draft PRのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは作成後に確認する
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功
 
 ## 停止条件と次の確認
 

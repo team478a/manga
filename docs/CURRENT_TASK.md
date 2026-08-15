@@ -2,7 +2,9 @@
 
 ## 2026-08-15 PR-R4-2R 短縮クローズアップの一枚絵・画面内ランドマーク契約
 
-- 状態: `LOCAL_VALIDATED_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#275](https://github.com/team478a/manga/pull/275)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-7249f5-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2r-compact-output-framing`
 - Base: `origin/feature/manga-canvas-mvp`@`ebc9107`（PR #274 merge commit）。
 - Production受入れ: ページ22・4コマ目を1案だけ再制作した。初回Job `487df1f8-1096-4513-a329-a60117e0e712`はWorker `31873260143`で`provider_moderation_blocked`、安全再実行はWorker `31873352419`でPNG Asset `2d3a5c3e-f943-4c83-a387-0e4b27a45a30.png`を生成した。
@@ -12,8 +14,9 @@
 - 実装: `scene`を腰上中景へ変更し、`output_type`／`canvas`へ端から端まで一続きの絵を追加する。髪上端約15%、両肩を左右余白内、腰を画面下部に置くランドマークを初回生成と安全再実行へ共通適用する。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。通常Turbopackは既知のWindows path長、Desktopは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- CI: 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2R_COMPACT_OUTPUT_FRAMING.md`
-- 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Previewを確認して停止する。merge前にProduction再生成を行わない。
+- 次: 最終文書同期HEADの全CI／Vercel Preview成功を再確認して停止する。merge前にProduction再生成を行わない。
 
 ---
 
