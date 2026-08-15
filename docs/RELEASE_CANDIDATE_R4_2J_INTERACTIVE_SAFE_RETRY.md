@@ -50,6 +50,7 @@
 - Cloud漫画repository受入れ、owner isolation。
 - workspace packages build、Webpack production build、RC structure、`git diff --check`。
 - 通常Turbopack buildは既知のWindows path長上限で停止した。Desktop test／a11yは既存`@napi-rs/keyring`型宣言不足で停止したため、GitHub Windows CIを正式結果とする。
+- Draft PR #267の初回HEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。Previewは`https://mangai-hub-staging-p3ch4z2xg-team478as-projects.vercel.app`。
 
 ## ロールバック
 
