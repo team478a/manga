@@ -63,6 +63,7 @@ import {
 } from "./services/page-edit-lock-client";
 import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
 import { PanelImageComparisonDialog } from "./PanelImageComparisonDialog";
+import { PanelImageQualityReviewDialog } from "./PanelImageQualityReviewDialog";
 import { MonitorQualityFeedback } from "./MonitorQualityFeedback";
 import {
   cancelGeneration,
@@ -113,6 +114,10 @@ type GazeDirection =
   | "right"
   | "partner"
   | "off_frame";
+type ImageQualityReviewRequest = {
+  jobId: string;
+  action: "place" | "approve";
+};
 const revisionPresetLabels: Record<RevisionPreset, string> = {
   face: "顔の崩れを直す",
   hands: "手・指の崩れを直す",
@@ -292,6 +297,8 @@ export function CloudCanvasEditor({
   const [outpaintingDirection, setOutpaintingDirection] =
     useState<OutpaintingDirection>("all");
   const [comparisonJobId, setComparisonJobId] = useState<string | null>(null);
+  const [imageQualityReview, setImageQualityReview] =
+    useState<ImageQualityReviewRequest | null>(null);
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
@@ -884,7 +891,7 @@ export function CloudCanvasEditor({
     }
   }
 
-  async function placeGeneratedAsset(job: CloudGenerationJob) {
+  async function placeGeneratedAssetAfterReview(job: CloudGenerationJob) {
     if (!candidateBelongsToPage(job, page.id)) {
       setMessage("この画像候補は別のページ用のため配置できません。");
       return;
@@ -929,7 +936,7 @@ export function CloudCanvasEditor({
     } else setMessage("生成Assetをコマへ配置できませんでした。");
   }
 
-  async function approveGeneratedAsset(job: CloudGenerationJob) {
+  async function approveGeneratedAssetAfterReview(job: CloudGenerationJob) {
     try {
       await recordMangaQualityEvent({
         event: "selected",
@@ -951,6 +958,44 @@ export function CloudCanvasEditor({
           : "画像の品質確認を保存できませんでした。",
       );
     }
+  }
+
+  async function rejectGeneratedAsset(job: CloudGenerationJob) {
+    try {
+      await recordMangaQualityEvent({
+        event: "rejected",
+        generationJobId: job.id,
+        rejectedReason: "原稿品質の必須確認で不採用",
+      });
+      setGenerationJobs((current) =>
+        current.map((item) =>
+          item.id === job.id
+            ? { ...item, quality_review_status: "rejected" }
+            : item,
+        ),
+      );
+      setMessage(
+        "この候補を不採用にしました。作り直さない限り追加クレジットは消費しません。",
+      );
+      router.refresh();
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "候補の不採用を保存できませんでした。",
+      );
+    }
+  }
+
+  function requestImageQualityReview(
+    job: CloudGenerationJob,
+    action: ImageQualityReviewRequest["action"],
+  ) {
+    if (!job.output_asset_id || !assetMap.has(job.output_asset_id)) {
+      setMessage("品質確認する生成画像を表示できませんでした。");
+      return;
+    }
+    setImageQualityReview({ jobId: job.id, action });
   }
 
   async function rejectAndRegeneratePanel(job: CloudGenerationJob) {
@@ -1079,6 +1124,12 @@ export function CloudCanvasEditor({
     : undefined;
   const comparisonAfterAsset = comparisonJob?.output_asset_id
     ? assetMap.get(comparisonJob.output_asset_id)
+    : undefined;
+  const imageQualityReviewJob = imageQualityReview
+    ? generationJobs.find((job) => job.id === imageQualityReview.jobId)
+    : undefined;
+  const imageQualityReviewAsset = imageQualityReviewJob?.output_asset_id
+    ? assetMap.get(imageQualityReviewJob.output_asset_id)
     : undefined;
   const editingBlocked = pageLockState !== "acquired";
 
@@ -1846,6 +1897,7 @@ export function CloudCanvasEditor({
                   ) : null}
                   {job.status === "completed" &&
                   job.output_asset_id &&
+                  job.quality_review_status !== "rejected" &&
                   job.panel_adoption_status !== "auto_placed" &&
                   !canvas.panelLayers.some(
                     (layer) => layer.sourceJobId === job.id,
@@ -1858,7 +1910,7 @@ export function CloudCanvasEditor({
                           !job.target_panel_id &&
                           selection?.type !== "panel"
                         }
-                        onClick={() => void placeGeneratedAsset(job)}
+                        onClick={() => requestImageQualityReview(job, "place")}
                         type="button"
                       >
                         {generationTargets[job.id] || job.target_panel_id
@@ -1885,7 +1937,27 @@ export function CloudCanvasEditor({
                           この候補を使わず作り直す（1案）
                         </button>
                       ) : null}
+                      {job.kind === "image" ? (
+                        <button
+                          className="button-secondary w-full"
+                          onClick={() => void rejectGeneratedAsset(job)}
+                          type="button"
+                        >
+                          この候補を不採用にする（追加生成なし）
+                        </button>
+                      ) : null}
                     </div>
+                  ) : null}
+                  {job.status === "completed" &&
+                  job.kind === "image" &&
+                  job.output_asset_id &&
+                  job.quality_review_status === "rejected" &&
+                  !canvas.panelLayers.some(
+                    (layer) => layer.sourceJobId === job.id,
+                  ) ? (
+                    <p className="mt-2 rounded bg-stone-100 p-2 text-stone-600">
+                      この候補は不採用済みです。
+                    </p>
                   ) : null}
                   {job.status === "completed" &&
                   job.kind === "image" &&
@@ -1922,7 +1994,7 @@ export function CloudCanvasEditor({
                           {job.quality_review_status !== "rejected" ? (
                             <button
                               className="button-secondary w-full"
-                              onClick={() => void approveGeneratedAsset(job)}
+                              onClick={() => requestImageQualityReview(job, "approve")}
                               type="button"
                             >
                               この画像を品質確認済みにする
@@ -2377,9 +2449,25 @@ export function CloudCanvasEditor({
           direction={comparisonJob.outpainting_direction}
           onAdopt={() => {
             setComparisonJobId(null);
-            void placeGeneratedAsset(comparisonJob);
+            requestImageQualityReview(comparisonJob, "place");
           }}
           onClose={() => setComparisonJobId(null)}
+        />
+      ) : null}
+      {imageQualityReview &&
+      imageQualityReviewJob &&
+      imageQualityReviewAsset ? (
+        <PanelImageQualityReviewDialog
+          imageUrl={imageQualityReviewAsset.url}
+          onCancel={() => setImageQualityReview(null)}
+          onConfirm={() => {
+            const request = imageQualityReview;
+            const job = imageQualityReviewJob;
+            setImageQualityReview(null);
+            if (request.action === "place")
+              void placeGeneratedAssetAfterReview(job);
+            else void approveGeneratedAssetAfterReview(job);
+          }}
         />
       ) : null}
       {preview ? (

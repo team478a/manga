@@ -428,6 +428,9 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   assert.match(providerContract.surface_content, /pure pictorial artwork/);
   assert.match(providerContract.face_finish, /clean linework and shading/);
   assert.match(providerContract.surface_finish, /clean monochrome/);
+  assert.match(providerContract.quality_gate, /upright page/);
+  assert.match(providerContract.quality_gate, /face\/hands\/joints/);
+  assert.match(providerContract.quality_gate, /pictorial surfaces only/);
   assert.equal(
     providerContract.subjects[0].action,
     "a natural attentive pose that communicates the story through posture and gaze",
@@ -436,7 +439,10 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
     result.generation.prompt,
     /証拠を|dialogue|balloons|speaking|lettering|unmarked|both eyes, nose, mouth, chin/,
   );
-  assert.ok(result.generation.prompt.length < 2_000);
+  assert.ok(
+    result.generation.prompt.length < 2_000,
+    `prompt length: ${result.generation.prompt.length}`,
+  );
   assert.equal(
     moderateGeneralCloudPrompt(
       `${result.generation.prompt}\n${result.generation.negativePrompt}`,
@@ -537,7 +543,10 @@ test("短縮クローズアップPromptでも複数候補の制作差分を維�
   assert.match(contracts[0].variation, /candidate 1 of 2/);
   assert.match(contracts[1].variation, /candidate 2 of 2/);
   assert.notEqual(contracts[0].variation, contracts[1].variation);
-  assert.ok(prompts.every((prompt) => prompt.length < 2_000));
+  assert.ok(
+    prompts.every((prompt) => prompt.length < 2_000),
+    `prompt lengths: ${prompts.map((prompt) => prompt.length).join(", ")}`,
+  );
 });
 
 test("画角上書き後の実効画角だけで顔フレーミングを決定する", () => {

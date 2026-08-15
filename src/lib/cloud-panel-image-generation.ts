@@ -675,6 +675,8 @@ export function buildStoryboardPanelGeneration(input: {
       "natural facial anatomy and expression formed exclusively by clean linework and shading",
     surface_finish:
       "clean monochrome pictorial line art and natural material shading across every surface",
+    quality_gate:
+      "upright page, natural gravity, coherent face/hands/joints, clean pictorial surfaces only",
     variation:
       candidateCount > 1
         ? `candidate ${candidateIndex + 1} of ${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`

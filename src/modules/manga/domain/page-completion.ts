@@ -95,6 +95,7 @@ export function evaluateMangaPageCompletion(input: {
   availableAssetIds: ReadonlySet<string>;
   reviewedGenerationJobIds?: ReadonlySet<string>;
   reviewedGenerationAssetIds?: ReadonlySet<string>;
+  rejectedGenerationJobIds?: ReadonlySet<string>;
   pngRenderSucceeded: boolean;
   manualReviewRequired: boolean;
 }): MangaPageCompletionResult {
@@ -180,7 +181,17 @@ export function evaluateMangaPageCompletion(input: {
       const candidateIds = job.candidateOutputAssetIds?.length
         ? job.candidateOutputAssetIds
         : job.outputAssetId ? [job.outputAssetId] : [];
-      if (candidateIds.length && !candidateIds.some((id) => assetIdsByPanel.get(job.panelId!)?.includes(id)))
+      const candidateJobIds = job.candidateJobIds?.length
+        ? job.candidateJobIds
+        : [job.id];
+      const allCandidatesRejected = candidateJobIds.every((id) =>
+        input.rejectedGenerationJobIds?.has(id),
+      );
+      if (
+        candidateIds.length &&
+        !allCandidatesRejected &&
+        !candidateIds.some((id) => assetIdsByPanel.get(job.panelId!)?.includes(id))
+      )
         add({ code: "PANEL_IMAGE_MISSING", message: "生成済み画像が対象コマへ配置されていません。", pageId: input.pageId, panelId: job.panelId!, generationJobId: job.id });
     }
 
