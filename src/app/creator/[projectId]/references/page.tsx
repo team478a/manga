@@ -10,6 +10,7 @@ import {
   getCloudProjectWorkspace,
   getCloudVisualReferenceWorkspace,
   getCloudWorldBible,
+  listCloudAssets,
   listCloudCharacterProfiles,
 } from "@/lib/cloud-creator-server";
 import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
@@ -18,6 +19,7 @@ import {
   assignPanelSubjectAction,
   deletePanelAssignmentAction,
   deleteVisualReferenceAction,
+  linkExistingVisualReferenceAction,
   uploadVisualReferenceAction,
 } from "./actions";
 
@@ -43,7 +45,7 @@ export default async function VisualReferencesPage({ params, searchParams }: {
   ).catch(() => notFound());
   if (!workspaceLoad.ok || !workspaceLoad.value) return <main className="page"><h1 className="text-3xl font-bold">参照画像とコマ割当</h1><CloudDataNotice className="mt-6">作品情報を一時的に読み込めません。時間をおいて再読み込みしてください。</CloudDataNotice><Link className="button-secondary mt-5" href="/creator">作品一覧へ戻る</Link></main>;
   const workspace = workspaceLoad.value;
-  const [charactersLoad, worldLoad, referenceLoad] = await Promise.all([
+  const [charactersLoad, worldLoad, referenceLoad, assetsLoad] = await Promise.all([
     safelyLoadCloudData(
       "creator/references/characters",
       () => listCloudCharacterProfiles(projectId),
@@ -59,10 +61,16 @@ export default async function VisualReferencesPage({ params, searchParams }: {
       () => getCloudVisualReferenceWorkspace(projectId),
       { available: false, references: [], assignments: [] },
     ),
+    safelyLoadCloudData(
+      "creator/references/project-assets",
+      () => listCloudAssets(projectId),
+      [],
+    ),
   ]);
   const characters = charactersLoad.value;
   const world = worldLoad.value;
   const referenceWorkspace = referenceLoad.value;
+  const reusableAssets = assetsLoad.value.slice(0, 60);
   const subjects = [
     ...characters.profiles.map((item) => ({ kind: "character" as const, id: item.id, name: item.name })),
     ...(world.styleBible ? [{ kind: "style" as const, id: world.styleBible.id, name: "作品全体の画風" }] : []),
@@ -100,6 +108,25 @@ export default async function VisualReferencesPage({ params, searchParams }: {
           <label className="md:col-span-2"><span className="label">用途メモ</span><input className="field" name="label" maxLength={120} placeholder="正面の顔、基本衣装、背景の外観など" /></label>
           <div className="md:col-span-2"><PendingSubmitButton className="button" pendingLabel="保存中…">参照画像を保存</PendingSubmitButton></div>
         </form>}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">既存の画像素材から追加</h2>
+        <p className="mt-2 text-sm text-stone-600">この作品に保存済みの画像を再アップロードせず、そのまま参照画像として利用します。</p>
+        {!assetsLoad.ok ? <CloudDataNotice className="mt-4">画像素材を一時的に読み込めません。時間をおいて再読み込みしてください。</CloudDataNotice> : subjectSettingsUnavailable ? <p className="mt-4 text-sm text-stone-600">設定対象を再確認できるまで追加を停止しています。</p> : reusableAssets.length ? <form action={linkExistingVisualReferenceAction.bind(null, projectId)} className="mt-4 space-y-4">
+          <label><span className="label">設定対象</span><select className="field" name="subject" required><option value="">選択してください</option>{subjects.map((item) => <option key={`${item.kind}:${item.id}`} value={`${item.kind}:${item.id}`}>{kindLabel[item.kind]}：{item.name}</option>)}</select></label>
+          <fieldset>
+            <legend className="label">画像素材</legend>
+            <div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {reusableAssets.map((asset) => <label className="cursor-pointer rounded-lg border p-2 transition has-[:checked]:border-violet-600 has-[:checked]:bg-violet-50" key={asset.id}>
+                <input className="sr-only" name="asset" required type="radio" value={asset.id} />
+                <img alt={asset.file_name} className="h-40 w-full rounded bg-stone-100 object-contain" src={asset.url} />
+                <span className="mt-2 block truncate text-xs text-stone-600">{asset.file_name}</span>
+              </label>)}
+            </div>
+          </fieldset>
+          <label><span className="label">用途メモ</span><input className="field" name="label" maxLength={120} placeholder="作品全体の線・陰影の基準など" /></label>
+          <PendingSubmitButton className="button" pendingLabel="設定中…">選択した画像を参照に追加</PendingSubmitButton>
+        </form> : <p className="mt-4 text-sm text-stone-600">利用できる画像素材はまだありません。</p>}
       </section>
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">設定をコマへ割り当て</h2>

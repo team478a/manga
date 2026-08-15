@@ -40,8 +40,16 @@ test("M2-3 migrationは所有者RLS・対象検証・rollbackを持つ", async (
 
 test("参照画像画面はアップロード・明示割当・処理中表示を持つ", async () => {
   const page = await readFile("src/app/creator/[projectId]/references/page.tsx", "utf8");
+  const actions = await readFile("src/app/creator/[projectId]/references/actions.ts", "utf8");
   assert.match(page, /参照画像とコマ割当/);
   assert.match(page, /参照画像を保存/);
+  assert.match(page, /既存の画像素材から追加/);
+  assert.match(page, /listCloudAssets/);
+  assert.match(page, /name="asset"/);
+  assert.match(page, /linkExistingVisualReferenceAction/);
+  assert.match(actions, /linkExistingVisualReferenceAction/);
+  assert.match(actions, /assetId: assetId\.data/);
+  assert.match(actions, /saveCloudVisualReference\(parsed\.data\)/);
   assert.match(page, /コマへ割り当て/);
   assert.match(page, /保存中…/);
   assert.match(page, /割当中…/);

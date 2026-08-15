@@ -2849,3 +2849,14 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 編集Canvasと原稿プレビューだけをinline SVG表示へ変更し、署名付き画像をページDOMから直接読み込ませる。PNG／PDF生成、Canvas schema、保存revision、Provider、model、pricing、retry、timeout、Scheduler、成人向け境界、Desktopは変更しない。
 - ローカル検証: deps、lint、typecheck、Hub 704/704、Canvas 26/26、AI 48/48、Desktop 182/182、Desktop a11y violations 0、migration 58本、Webpack Hub build、Desktop build、RC structure preflight、`git diff --check`成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。次はDraft PR、CI、Vercel Previewで実画像表示を確認し、Productionは変更せず停止する。
 - PR #260のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは公開URLで未ログイン画面まで起動確認済み。Productionと認証cookieを共有しないため、責任者merge後に既存`test`セッションでページ20・22の実画像表示を再確認し、それまではProduction変更と有料再生成を行わない。
+
+# 2026-08-15 Codex: PR-R4-2I 既存画像素材の参照登録
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
+- Branch: `codex/fix-r4-2i-existing-reference-assets`
+- Base: `origin/feature/manga-canvas-mvp`@`923055c`（PR #265 merge後）
+- Productionの`test`モニター作品で参照画像の手動アップロードが「画像形式と容量を確認してください。」として失敗した。対象PNGは1,271,581 bytes、704×1024、sRGBで、20MB／20,000pxの既存制限内。参照画像0件、credit使用38・予約0のままで、画像自体やcredit不足が原因ではない。
+- 同じ作品のCloud Assetとして既に保存済みの画像を再アップロードせず、参照対象・画像素材・用途メモを選んで既存`save_cloud_visual_reference`契約へ直接登録できる経路を追加した。新規ファイルのアップロード経路は後方互換のため維持する。
+- DB、migration、RPC、Storage schema、公開API、Provider、model、pricing、retry、timeout、Scheduler、Feature Flag、Canvas schema、PNG／PDF、成人向け境界、Desktopは変更していない。Productionのデータ変更と外部Provider実行も行っていない。
+- ローカル検証: focused 3/3、deps、lint、Hub typecheck、Hub 715 tests、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight、`git diff --check`成功。全typecheckのDesktopだけはローカル依存の`@napi-rs/keyring`型宣言不足、通常Turbopack buildは既知のWindows path長上限で停止したため、正規確認先をGitHub Actions／Vercel Previewとする。
+- 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功で停止する。責任者merge前にProductionで参照登録や有料再生成を行わない。

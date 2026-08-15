@@ -4490,3 +4490,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 編集Canvasとプレビューモーダルをraw inline SVGへ変更し、PNG／PDFのdata URL埋め込み処理は変更していない。deps、lint、typecheck、Hub 704/704、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violations 0、migration 58本、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildだけは既知のWindows path長上限で停止した。
 - PR #260のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewの未ログイン画面は起動確認済み。
 - 次: 責任者merge後、Productionの既存`test`セッションでページ20・22を再読込し、生成資産とCanvas表示が一致することを確認する。merge前のProduction反映や失敗Jobの有料再実行はしない。
+
+# 2026-08-15 Codex: 既存Cloud Assetを参照画像へ直接登録
+
+- Branch: `codex/fix-r4-2i-existing-reference-assets`
+- Base: `origin/feature/manga-canvas-mvp`@`923055c`
+- Productionの手動アップロードで表示された形式・容量エラーに対し、対象PNGが1.27MB・704×1024の有効画像であることを確認した。失敗後も参照画像0件、credit使用38・予約0で、外部Provider呼出しはない。
+- 作品内に既に存在するCloud Assetを一覧表示し、再アップロードなしで既存の参照画像保存RPCへ渡すServer Actionを追加した。既存アップロード、所有者検証、非公開署名URL、参照保存契約は維持する。
+- focused 3/3、deps、lint、Hub typecheck、Hub、Canvas、AI、migration、Webpack Hub build、RC structure preflight、diff check成功。Desktop全typecheckのローカル依存不足とTurbopackのWindows path長はCI／Vercelで確認する。
+- 次: Draft PRの全CI／Vercel Preview成功後に停止する。merge後、既存の品質確認済みAssetを作品全体の画風へ1件だけ登録し、参照付きの不良コマ再生成は別途明示確認のうえ1候補だけ実施する。
