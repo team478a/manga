@@ -11,19 +11,49 @@ const SAFE_DIRECTION =
   "光と影、人物間の距離、視線誘導で物語上の緊張感を間接的に伝える。";
 const SAFE_PROVIDER_CLOSE_UP_COMPOSITION =
   "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height";
+const SAFE_PROVIDER_ACTION =
+  "a calm natural pose that communicates the story moment through posture and gaze";
+const SAFE_PROVIDER_EXPRESSION =
+  "a restrained natural expression suitable for a general audience";
+const SAFE_PROVIDER_BACKGROUND =
+  "a simple non-graphic story-appropriate environment";
+const SAFE_PROVIDER_VARIATION =
+  "preserve identity and framing; convey tension indirectly through pose, gaze, spacing, light, and shadow";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
 
 function sanitizeProviderControlContract(line: string) {
   try {
     const contract = JSON.parse(line) as Record<string, unknown>;
-    if (
+    const compactSubjects = Array.isArray(contract.subjects)
+      ? contract.subjects.map((subject) =>
+          isRecord(subject)
+            ? {
+                ...subject,
+                action: SAFE_PROVIDER_ACTION,
+                expression: SAFE_PROVIDER_EXPRESSION,
+              }
+            : subject,
+        )
+      : contract.subjects;
+    const compactCloseUp = Array.isArray(contract.subjects);
+    const unsafeLegacyComposition =
       typeof contract.composition === "string" &&
-      contract.composition.includes("both eyes, nose, mouth, chin")
-    ) {
-      return JSON.stringify({
-        ...contract,
-        composition: SAFE_PROVIDER_CLOSE_UP_COMPOSITION,
-      });
-    }
+      contract.composition.includes("both eyes, nose, mouth, chin");
+    if (!compactCloseUp && !unsafeLegacyComposition) return line;
+    return JSON.stringify({
+      ...contract,
+      composition: SAFE_PROVIDER_CLOSE_UP_COMPOSITION,
+      ...(compactCloseUp
+        ? {
+            subjects: compactSubjects,
+            background: SAFE_PROVIDER_BACKGROUND,
+            variation: SAFE_PROVIDER_VARIATION,
+          }
+        : {}),
+    });
   } catch {
     // Older prompts without a JSON provider contract keep their existing line.
   }
