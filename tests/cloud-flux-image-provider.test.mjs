@@ -137,6 +137,39 @@ test("BFL adapter resumes polling a checkpointed Provider Job without resubmitti
   assert.equal(result.providerJobId, "bfl-job-resumed");
 });
 
+for (const [status, outcome] of [
+  ["Request Moderated", "request_moderated"],
+  ["Content Moderated", "content_moderated"],
+]) {
+  test(`BFL adapter stops immediately when the Provider returns ${status}`, async () => {
+    const diagnostics = [];
+    const provider = new BlackForestLabsFluxImageProvider({
+      apiKey: "bfl-test-key-with-at-least-twenty-characters",
+      model: "flux-2-pro",
+      capability,
+      pollIntervalMs: 1,
+      onDiagnostic: (diagnostic) => diagnostics.push(diagnostic),
+      fetcher: async () =>
+        new Response(JSON.stringify({ status, result: null }), { status: 200 }),
+    });
+    await assert.rejects(
+      () =>
+        provider.generate(
+          {
+            kind: "image",
+            jobType: "background",
+            prompt: "general audience suspense scene",
+            negativePrompt: "",
+          },
+          { ...context, providerJobId: "bfl-job-moderated" },
+        ),
+      (error) =>
+        error.code === "provider_moderation_blocked" && !error.retryable,
+    );
+    assert.deepEqual(diagnostics, [{ stage: "poll", outcome }]);
+  });
+}
+
 test("BFL adapter rejects untrusted polling URLs before making a second request", async () => {
   let calls = 0;
   const provider = new BlackForestLabsFluxImageProvider({

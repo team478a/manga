@@ -73,6 +73,7 @@ import {
   listGenerationJobs,
   listProjectAssets,
   recordMangaQualityEvent,
+  retryGeneration,
   uploadProjectAsset,
 } from "./services/creator-api";
 
@@ -982,6 +983,30 @@ export function CloudCanvasEditor({
     }
   }
 
+  async function retryFailedPanelGeneration(job: CloudGenerationJob) {
+    if (!job.target_panel_id || requestingPanelGeneration) return;
+    setRequestingPanelGeneration(true);
+    setMessage("失敗したコマの生成条件を安全に確認しています…");
+    try {
+      await retryGeneration(job.id);
+      setMessage(
+        job.error_code === "provider_rejected" ||
+          job.error_code === "provider_moderation_blocked"
+          ? "Providerに拒否された表現を一般向けの間接表現へ再構成し、このコマだけ再実行しました。"
+          : "失敗した生成条件を引き継ぎ、このコマだけ再実行しました。",
+      );
+      await Promise.all([refreshGenerationJobs(), refreshQuota()]);
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "このコマの再実行を開始できませんでした。",
+      );
+    } finally {
+      setRequestingPanelGeneration(false);
+    }
+  }
+
   function movePanelLayer(layerId: string, delta: -1 | 1) {
     commit((draft) => {
       const target = draft.panelLayers.find((layer) => layer.id === layerId);
@@ -1811,12 +1836,7 @@ export function CloudCanvasEditor({
                               job.id,
                             )
                           }
-                          onClick={() =>
-                            void requestStoryboardPanelGeneration({
-                              panelId: job.target_panel_id!,
-                              candidateCount: 1,
-                            })
-                          }
+                          onClick={() => void retryFailedPanelGeneration(job)}
                           type="button"
                         >
                           このコマだけ再実行

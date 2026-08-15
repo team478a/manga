@@ -1,5 +1,24 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2J Provider拒否後の対話型安全再実行、2026-08-15）
+
+- Branch: `codex/fix-r4-2j-interactive-safe-retry`
+- Base: `origin/feature/manga-canvas-mvp` @ `193f0ae`（PR #266 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#267](https://github.com/team478a/manga/pull/267)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-p3ch4z2xg-team478as-projects.vercel.app
+- Productionの参照付き不良コマ再制作は初回と画面再実行の2回ともProvider終端失敗。両回とも同一Provider Job poll、重複POSTなし、予約credit全額解放。最終は使用38、予約0、残り62で追加生成を停止した。
+- 根因はページ編集画面が失敗Jobの保存済み入力を使わず、同じパネルから元Promptを再構築していたこと。
+- 失敗Job専用POST routeを追加し、本人所有、画像、対象コマ、保存済みinputを検証する。Provider投入後拒否だけ、人物／画風／参照Asset／revisionを維持して動作・感情・演出を一般向け間接表現へ一度だけ安全化する。
+- BFL公式moderation statusを非retry拒否へ分類し、長編batchにも同じDomain policyを適用する。安全化済み入力の再拒否は同一条件を再登録しない。
+- DB、migration、RPC、Storage、Provider、model、pricing、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。旧PR #254はOPENのまま変更しない。
+- 集中27/27、Hub、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2J_INTERACTIVE_SAFE_RETRY.md`
+- 次: 文書同期後の最終HEADでも全CI、Vercel Preview成功を確認して停止。merge前にProduction再実行を行わない。
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2H 参照付き単一コマ生成、2026-08-15）
 
 - Branch: `codex/quality-r4-2h-grounded-panel-generation`

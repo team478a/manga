@@ -129,6 +129,16 @@ export async function cancelGeneration(jobId: string) {
   );
 }
 
+export async function retryGeneration(jobId: string) {
+  return responseJson<{ id: string }>(
+    await fetch(
+      `/api/creator/generation-jobs/${encodeURIComponent(jobId)}/retry`,
+      { method: "POST" },
+    ),
+    "このコマの再実行を開始できませんでした。",
+  );
+}
+
 export async function recordMangaQualityEvent(body: {
   event: "displayed" | "selected" | "rejected";
   generationJobId: string;

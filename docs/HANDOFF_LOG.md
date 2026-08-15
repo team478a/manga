@@ -4500,3 +4500,16 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - focused 3/3、deps、lint、Hub typecheck、Hub、Canvas、AI、migration、Webpack Hub build、RC structure preflight、diff check成功。Desktop全typecheckのローカル依存不足とTurbopackのWindows path長はCI／Vercelで確認する。
 - 次: Draft PRの全CI／Vercel Preview成功後に停止する。merge後、既存の品質確認済みAssetを作品全体の画風へ1件だけ登録し、参照付きの不良コマ再生成は別途明示確認のうえ1候補だけ実施する。
 - Draft PR [#266](https://github.com/team478a/manga/pull/266)を作成。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Draft／MERGEABLE。Productionを変更せず責任者review待ちで停止する。
+
+# 2026-08-15 Codex: Provider拒否後の対話型コマ安全再実行
+
+- Branch: `codex/fix-r4-2j-interactive-safe-retry`
+- Base: `origin/feature/manga-canvas-mvp`@`193f0ae`（PR #266 merge後）。
+- Productionで品質参照Assetを1件登録し、ページ22の不良候補を1案だけ再制作した。初回と画面からの1回の再実行はいずれも同一Provider Jobのpoll継続後に終端失敗し、予約creditは各回とも全額解放された。最終は使用38、予約0、残り62。追加Provider実行を停止した。
+- ページ編集画面の再実行が失敗Jobを参照せず、同じパネルから元Promptを再構築していたことを根因と特定した。未マージPR #254のbatch専用安全化は現行基準に存在しない。PR #254は変更・comment・close・mergeしていない。
+- 失敗Job ID専用のPOST routeとapplication入口を追加し、保存済み入力、対象コマ、参照Asset、人物／画風version、source revision、Panel Specificationを維持する。Provider投入後拒否だけ動作・感情・演出を一般向け間接表現へ変換する。
+- 安全化済み入力の再拒否は再登録せず停止する。BFL公式moderation statusを即時の非retry拒否へ分類し、長編batchにも同じDomain policyを適用する。
+- DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。Prompt、画像、Provider応答、Provider Job ID、秘密値をログ・文書へ追加していない。
+- 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。Turbopackは既知のWindows path長、Desktopは既存keyring型宣言不足のためCIで判定する。
+- Draft PR [#267](https://github.com/team478a/manga/pull/267)を作成。Draft／MERGEABLE。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-p3ch4z2xg-team478as-projects.vercel.app`。
+- 次: 文書同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止。merge前にProduction再実行を行わない。
