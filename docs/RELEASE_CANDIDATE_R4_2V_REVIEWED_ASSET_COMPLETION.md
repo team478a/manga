@@ -1,6 +1,7 @@
 # PR-R4-2V 確認済み生成Assetの完成判定同期
 
 - Draft PR: [#279](https://github.com/team478a/manga/pull/279)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-cf4c4b-team478as-projects.vercel.app
 
 ## 目的
 
@@ -40,6 +41,7 @@ PR-R4-2Vでは、生成画像そのものが同一である場合に品質確認
 - 4ページfixture、PNG、PDF、必須セリフ、revision、Asset可用性の既存契約を維持する。
 - 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff checkに成功した。
 - Desktopローカル検査は既存`@napi-rs/keyring`型宣言不足で開始前に停止した。今回Desktop差分はなく、Windows CIを正式判定にする。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 
 ## ロールバック
 
