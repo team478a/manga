@@ -2,8 +2,9 @@
 
 ## 2026-08-16 PR-R4-2W 生成画像の採用品質ゲート
 
-- 状態: `CI_IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#280](https://github.com/team478a/manga/pull/280)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-fd5441-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2w-generation-quality-gate`
 - Base: `origin/feature/manga-canvas-mvp`@`3bd3488`（PR #279 merge commit）。
 - 背景: PR #279はマージ済み。ページ22はコマ4が合格・配置済みだが、コマ1の不自然な上下方向、コマ3の画像内疑似文字、未配置候補2件、自動配置確認が残る。
@@ -11,8 +12,10 @@
 - 実装: 短縮Promptにも正立・自然な重力・人体・清潔な絵画面の品質条件を追加する。生成画像の配置・承認前に正立、画像内文字なし、人体、小物、物語構図の4項目を必須確認する。未配置候補は追加生成なしで明示却下でき、全候補却下済みの場合だけ不要なblockerを解除する。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: Hub 735/735、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足のためWindows CIを正式判定にする。
+- CI: 実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
+- Preview確認: deploymentは成功。ブラウザ直アクセスはVercel Deployment Protectionの「チーム所有者の承認が必要」で停止したため、認証後画面の手動確認は未実施。アクセス要求は送信せず、4項目dialog、採用ボタン無効／有効、不採用、完成判定はHub自動テストで確認した。
 - Production変更: なし。Provider生成、DB、credit、Canvas、PNG／PDF、公開・販売状態を変更していない。
-- 次: Draft PRを作成し、最終HEADの全CI・Vercel Preview成功を確認して停止する。merge前にProduction再生成と次工程へ進まない。
+- 次: 最終文書同期HEADの同じ5チェックを再確認して停止する。責任者のmerge前にProduction再生成と次工程へ進まず、merge後にページ22のコマ1・コマ3を必要最小限で再制作して本ゲートで確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2W_GENERATION_QUALITY_GATE.md`
 
 ---

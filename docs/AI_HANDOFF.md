@@ -4,14 +4,17 @@
 
 - Branch: `codex/fix-r4-2w-generation-quality-gate`
 - Base: `origin/feature/manga-canvas-mvp` @ `3bd3488`（PR #279 merge commit）
-- 状態: `CI_IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#280](https://github.com/team478a/manga/pull/280)
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-fd5441-team478as-projects.vercel.app
 - PR #279はマージ済み。ページ22は合格した4コマ目とCanvas revision 7を維持し、コマ1の不自然な上下方向、コマ3の画像内疑似文字、未配置候補2件への再発防止を行う。
 - 現行rule-based quality judgeは画像ピクセルのOCR・天地・人体意味解析を行わない。自動検査を装わず、短縮Promptの正立品質条件と採用前4項目必須確認を追加する。
 - 未配置候補は追加生成なしで明示却下できる。全候補が明示却下された生成群だけ未配置blockerを解除し、一部未確認候補と画像なしコマは未完成のまま維持する。
 - URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
 - Hub 735/735、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build成功。Desktopローカル型宣言不足は既存制約で、Windows CIを正式判定にする。
-- Production変更なし。Draft PRと最終HEADの全CI／Vercel Preview成功後に停止し、merge前にProduction再生成を行わない。
+- 実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
+- Preview deploymentは成功。ブラウザ直アクセスはVercel Deployment Protectionのチーム所有者承認で停止したため、認証後画面の手動確認は未実施。アクセス要求は送信せず、4項目dialog、採用ボタン無効／有効、不採用、完成判定をHub自動テストで確認した。
+- Production変更なし。最終文書同期HEADの全CIを再確認して停止し、merge前にProduction再生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2W_GENERATION_QUALITY_GATE.md`
 
 ---

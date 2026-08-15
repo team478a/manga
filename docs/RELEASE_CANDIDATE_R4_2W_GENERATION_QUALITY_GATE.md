@@ -43,9 +43,12 @@ Draft PR: [#280](https://github.com/team478a/manga/pull/280)
 - research eval、Cloud漫画repository、owner isolation
 - workspace packages、Webpack production build
 - Desktopローカルtypecheckは既存`@napi-rs/keyring`配布物の型宣言不足を再確認した。変更範囲外のためWindows CIを正式判定とする。
+- Draft PR [#280](https://github.com/team478a/manga/pull/280)はDraft／MERGEABLE。実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- Vercel Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-fd5441-team478as-projects.vercel.app`へdeployment成功。ブラウザ直アクセスはVercel Deployment Protectionのチーム所有者承認で停止したため、アクセス要求は送信していない。認証後画面の手動確認は未実施で、4項目dialog、採用ボタン無効／有効、不採用、完成判定はHub自動テストで確認した。
+- Production変更なし。Provider生成、DB、credit、Canvas、PNG／PDF、公開・販売状態を変更していない。
 
 ## 停止条件
 
-- Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの最終HEAD成功を確認する。
-- Vercel Previewで必須確認dialogの4項目、採用ボタンの無効／有効、不採用操作をモックまたは既存候補で確認する。実Provider生成は行わない。
+- 最終文書同期HEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を再確認する。
+- Deployment Protection下の認証後画面確認は責任者が必要な場合だけ行い、本PRではアクセス要求を送信しない。
 - Production変更なしを確認して停止する。責任者のmerge前にProduction再生成と次工程へ進まない。
