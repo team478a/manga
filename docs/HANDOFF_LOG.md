@@ -13,7 +13,7 @@
 - FLUX.2公式の構造化JSONに従い、身体部位列挙を被写体高72%、髪上端15%、上着下端92%、左右環境余白12%の座標契約へ置換した。初回生成と保存済み旧短縮JSONの安全再実行は同じ`framing`／`position`／`composition`／`camera`へ正規化する。
 - Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
 - 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
-- Draft PR [#276](https://github.com/team478a/manga/pull/276)を作成。Draft／MERGEABLE。Vercel、Vercel Preview Commentsは成功し、Core quality、Migration roundtrip、Windows buildを確認中。最終文書同期HEADの全CI／Vercel Preview成功後に停止する。
+- Draft PR [#276](https://github.com/team478a/manga/pull/276)を作成。Draft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-b52cd0-team478as-projects.vercel.app`。最終文書同期HEADの5チェックを再確認して停止する。
 
 ---
 

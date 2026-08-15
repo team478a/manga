@@ -1,7 +1,8 @@
 # PR-R4-2S Provider安全な座標フレーミング
 
 - Draft PR: [#276](https://github.com/team478a/manga/pull/276)（Draft／MERGEABLE）
-- 状態: `CI_RUNNING`
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-b52cd0-team478as-projects.vercel.app
+- 状態: `READY_FOR_OWNER_REVIEW`
 
 ## 結論
 
@@ -78,6 +79,7 @@ Black Forest Labs公式ガイドは、複雑な制作ではJSON構造化Prompt�
 - research eval、Cloud漫画repository受入れ、owner isolation: 成功
 - workspace package build、Next Webpack production build: 成功
 - RC preflight: repository structure READY。外部secretと手動E2Eは既存どおりPENDING
+- GitHub: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功
 
 ## ロールバック
 

@@ -2,8 +2,9 @@
 
 ## 2026-08-15 PR-R4-2S Provider安全な座標フレーミング
 
-- 状態: `CI_RUNNING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#276](https://github.com/team478a/manga/pull/276)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-b52cd0-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2s-provider-safe-frame-coordinates`
 - Base: `origin/feature/manga-canvas-mvp`@`4728941`（PR #275 merge commit）。
 - Production受入れ: `test`モニターのページ22・4コマ目を1案だけ再制作した。公式Worker [31883817067](https://github.com/team478a/manga/actions/runs/31883817067)は`status=idle requests=2 processed=1`で処理したが、Provider moderation拒否となった。一般向け安全再実行を1回だけ行い、Worker [31883888494](https://github.com/team478a/manga/actions/runs/31883888494)も同じく拒否された。
@@ -12,8 +13,8 @@
 - 実装: 短縮JSONを中距離portraitへ戻し、`framing`に被写体高72%、髪上端15%、上着下端92%、左右余白12%を構造化する。`position`／`composition`／`camera.distance`も同じ座標契約へ統一し、初回生成と安全再実行の保存済み旧JSONへ共通適用する。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure成功。
-- CI: Vercel、Vercel Preview Commentsは成功。Core quality、Migration roundtrip、Windows buildは実行中。
-- 次: 最終文書同期HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功後に停止する。merge前に追加Production生成を行わない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: 最終文書同期HEADの5チェックを再確認して停止する。merge前に追加Production生成を行わない。merge後は同じ対象コマを1案だけ再制作し、Provider moderation拒否時だけ一般向け安全再実行を1回許可する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2S_PROVIDER_SAFE_FRAME_COORDINATES.md`
 
 ---
