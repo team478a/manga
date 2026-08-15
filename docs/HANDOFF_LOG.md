@@ -12,7 +12,8 @@
 - PR #274の安全再実行成功との差分と過去の再現履歴から、PR #275で追加した身体部位の英語列挙を原因候補として限定した。API応答、Prompt、画像、署名URLはログ・文書へ保存していない。
 - FLUX.2公式の構造化JSONに従い、身体部位列挙を被写体高72%、髪上端15%、上着下端92%、左右環境余白12%の座標契約へ置換した。初回生成と保存済み旧短縮JSONの安全再実行は同じ`framing`／`position`／`composition`／`camera`へ正規化する。
 - Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
-- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。commit・push・Draft PR、全CI／Vercel Preview確認へ進む。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- Draft PR [#276](https://github.com/team478a/manga/pull/276)を作成。Draft／MERGEABLE。Vercel、Vercel Preview Commentsは成功し、Core quality、Migration roundtrip、Windows buildを確認中。最終文書同期HEADの全CI／Vercel Preview成功後に停止する。
 
 ---
 

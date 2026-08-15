@@ -1,5 +1,8 @@
 # PR-R4-2S Provider安全な座標フレーミング
 
+- Draft PR: [#276](https://github.com/team478a/manga/pull/276)（Draft／MERGEABLE）
+- 状態: `CI_RUNNING`
+
 ## 結論
 
 PR #275反映後のProduction限定受入れでは、初回生成と一般向け安全再実行がともにProvider moderationで拒否され、新規画像は生成されなかった。各回の予約creditは全額解放され、追加課金はない。
