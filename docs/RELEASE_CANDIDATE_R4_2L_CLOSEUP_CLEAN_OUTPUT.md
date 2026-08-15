@@ -6,7 +6,7 @@ Branch: `codex/fix-r4-2l-closeup-clean-output`
 
 Base: `origin/feature/manga-canvas-mvp` @ `7f3dc73`（PR #268 merge commit）
 
-Draft PR: 作成前
+Draft PR: [#269](https://github.com/team478a/manga/pull/269)（Draft／MERGEABLE）
 
 Vercel Preview: 確認前
 

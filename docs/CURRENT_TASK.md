@@ -2,8 +2,8 @@
 
 ## 2026-08-15 PR-R4-2L クローズアップ余白・無記名描画面の固定
 
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
-- Draft PR: 作成前
+- 状態: `DRAFT_CI_RUNNING`
+- Draft PR: [#269](https://github.com/team478a/manga/pull/269)（Draft／MERGEABLE）
 - Branch: `codex/fix-r4-2l-closeup-clean-output`
 - Base: `origin/feature/manga-canvas-mvp`@`7f3dc73`（PR #268 merge commit）。
 - Production受入れ: PR #268反映後、`test`モニターのページ22で有効な再制作を1回だけ登録した。Jobは1件だけ、Worker run `31860725448`は`status=idle requests=2 processed=1`で成功。使用creditは40→42、予約0→2→0、残り58、重複登録と継続Workerはなかった。先行run `31860684723`は`mode=check`の設定確認だけでWorker／Provider requestを送っていない。

@@ -4,8 +4,8 @@
 
 - Branch: `codex/fix-r4-2l-closeup-clean-output`
 - Base: `origin/feature/manga-canvas-mvp` @ `7f3dc73`（PR #268 merge commit）
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
-- Draft PR: 作成前
+- 状態: `DRAFT_CI_RUNNING`
+- Draft PR: [#269](https://github.com/team478a/manga/pull/269)（Draft／MERGEABLE）
 - PR #268反映後のProductionで失敗候補を1回だけ再制作した。Worker `31860725448`で1 Jobが完了し、使用40→42、予約2→0、残り58、重複登録なし。先行run `31860684723`はcheck-onlyでProvider requestを送っていない。
 - 704×1024画像は両目・鼻・口・顎を含むまで改善したが、頭頂と髪が切れ、口元へ`証拠をさ`という生成文字が混入した。販売品質未達のため配置・承認・追加生成は行っていない。
 - 人物あり`close_up`を頭と肩の構図へ固定し、髪全体、首、肩、頭部周囲約10%余白を日英Promptへ追加する。参照素材からは同一性等だけを再構成し、肌・口元・衣服・背景を自然な輪郭と陰影だけの清潔な無記名描画面へ固定する。

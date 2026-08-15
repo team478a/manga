@@ -12,7 +12,7 @@
 - 人物あり`close_up`へ頭と肩、髪全体、顎、首、両肩の付け根、頭部周囲約10%余白の日英契約を追加した。参照素材は同一性、輪郭、髪型、衣装、線画へ限定し、肌、口元、衣服、背景を自然な輪郭と陰影だけの清潔な無記名描画面へ固定した。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
-- R4-2Lコード実装後のProduction変更と実Provider E2Eはない。Draft PRと全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
+- R4-2Lコード実装後のProduction変更と実Provider E2Eはない。Draft PR [#269](https://github.com/team478a/manga/pull/269)はDraft／MERGEABLE。全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
 
 ---
 
