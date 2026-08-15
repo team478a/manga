@@ -2860,3 +2860,4 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - DB、migration、RPC、Storage schema、公開API、Provider、model、pricing、retry、timeout、Scheduler、Feature Flag、Canvas schema、PNG／PDF、成人向け境界、Desktopは変更していない。Productionのデータ変更と外部Provider実行も行っていない。
 - ローカル検証: focused 3/3、deps、lint、Hub typecheck、Hub 715 tests、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight、`git diff --check`成功。全typecheckのDesktopだけはローカル依存の`@napi-rs/keyring`型宣言不足、通常Turbopack buildは既知のWindows path長上限で停止したため、正規確認先をGitHub Actions／Vercel Previewとする。
 - 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功で停止する。責任者merge前にProductionで参照登録や有料再生成を行わない。
+- Draft PR: [#266](https://github.com/team478a/manga/pull/266)。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-niam5c0ge-team478as-projects.vercel.app`。Draft／MERGEABLEを確認し、Productionを変更せず責任者review待ちで停止する。

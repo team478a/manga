@@ -4499,3 +4499,4 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 作品内に既に存在するCloud Assetを一覧表示し、再アップロードなしで既存の参照画像保存RPCへ渡すServer Actionを追加した。既存アップロード、所有者検証、非公開署名URL、参照保存契約は維持する。
 - focused 3/3、deps、lint、Hub typecheck、Hub、Canvas、AI、migration、Webpack Hub build、RC structure preflight、diff check成功。Desktop全typecheckのローカル依存不足とTurbopackのWindows path長はCI／Vercelで確認する。
 - 次: Draft PRの全CI／Vercel Preview成功後に停止する。merge後、既存の品質確認済みAssetを作品全体の画風へ1件だけ登録し、参照付きの不良コマ再生成は別途明示確認のうえ1候補だけ実施する。
+- Draft PR [#266](https://github.com/team478a/manga/pull/266)を作成。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Draft／MERGEABLE。Productionを変更せず責任者review待ちで停止する。
