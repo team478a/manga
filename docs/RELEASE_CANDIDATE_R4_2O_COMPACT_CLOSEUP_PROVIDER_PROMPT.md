@@ -4,6 +4,8 @@
 対象: `team478a/manga`
 Branch: `codex/fix-r4-2o-compact-closeup-provider-prompt`
 Base: `feature/manga-canvas-mvp` @ `9047f40e7623200f28c3afb1b5dd41ac87fa4557`（PR #271 merge commit）
+Draft PR: [#272](https://github.com/team478a/manga/pull/272)（Draft／MERGEABLE）
+Vercel Preview: https://mangai-hub-staging-l6vr8i9ca-team478as-projects.vercel.app
 
 ## 結論
 
@@ -108,6 +110,11 @@ URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、p
 - Next.js Webpack production build: 成功（exit 0）
 - `npm run rc:preflight`: structure READY。既存のローカル外部Secret不足と手動E2E待ちのみ
 - `git diff --check`: 成功
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
 
 今回Desktop差分はないため、Desktopの正式判定はGitHub Windows buildを使用する。
 

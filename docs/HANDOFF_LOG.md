@@ -13,7 +13,7 @@
 - 人物あり・新規`close_up`だけを短いJSON Provider契約へ切り替えた。中距離portrait、被写体高約65%、完全なsilhouetteと周囲背景、70mm相当、清潔な無記名モノクロ面を固定し、Storyboardの台詞本文と引用発話を動作・表情・背景から除外した。参照画像の役割と2〜4候補の制作差分は維持した。
 - revision／Image-to-Image／Inpainting／Outpainting、人物なし、他画角と、URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中31/31、Hub 726/726、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。全体typecheckは既存Desktopの`@napi-rs/keyring`型宣言不足だけで停止した。
-- Production変更は上記1 Job／2 creditだけ。R4-2O merge前に追加Provider生成を行わない。Draft PRとCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功後に停止する。
+- Production変更は上記1 Job／2 creditだけ。R4-2O merge前に追加Provider生成を行わない。Draft PR [#272](https://github.com/team478a/manga/pull/272)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Previewは`https://mangai-hub-staging-l6vr8i9ca-team478as-projects.vercel.app`。最終文書同期HEADを再確認して停止する。
 
 ---
 

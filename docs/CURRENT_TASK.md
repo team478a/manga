@@ -2,7 +2,9 @@
 
 ## 2026-08-15 PR-R4-2O クローズアップProvider Prompt短縮・安定化
 
-- 状態: `IMPLEMENTED_VALIDATION_COMPLETE_DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#272](https://github.com/team478a/manga/pull/272)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-l6vr8i9ca-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2o-compact-closeup-provider-prompt`
 - Base: `origin/feature/manga-canvas-mvp`@`9047f40`（PR #271 merge commit）。
 - Production受入れ: PR #271反映後、ログイン済み`test`モニターでページ22・4コマ目の再制作を1案だけ登録した。Job `230eac0d-e1d3-4813-bd43-bb6830c492ba`を公式Worker run `31867709945`が`status=idle requests=2 processed=1`で完了した。使用creditは44→46、予約0→2→0、残り56→54。重複Jobと継続Workerはない。
@@ -13,9 +15,10 @@
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、成人向け境界、Desktop。
 - 検証: 集中31/31、Hub 726/726、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure、diff check成功。
 - ローカル既知制約: 全体typecheckは既存Desktop依存`@napi-rs/keyring`型宣言不足だけで停止。今回Desktop差分はなく、Windows CIを正式判定とする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
 - Production変更: 上記1 Job／2 creditのみ。画像配置、品質承認、Canvas revision、作品、公開・販売状態は変更していない。R4-2O merge前に追加の実Provider E2Eを行わない。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2O_COMPACT_CLOSEUP_PROVIDER_PROMPT.md`
-- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge後に1案だけ受入れし、責任者判断前に次工程へ進まない。
+- 次: 最終文書同期HEADの5チェックを再確認して停止する。merge後に1案だけ受入れし、責任者判断前に次工程へ進まない。
 
 ---
 
