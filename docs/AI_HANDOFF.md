@@ -1,11 +1,25 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2T 顔面無記名・引き構図の正方向契約、2026-08-15）
+
+- Branch: `codex/fix-r4-2t-clean-face-safe-framing`
+- Base: `origin/feature/manga-canvas-mvp` @ `faeef67`（PR #276 merge commit）
+- 状態: `IMPLEMENTED_LOCAL`
+- Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Worker [31886026453](https://github.com/team478a/manga/actions/runs/31886026453)は`requests=2 processed=1`で成功し、704×1024 PNGを生成した。使用50／予約0／残50から使用52／予約0／残48となった。
+- moderation、両目、顔、首、肩は改善したが、頭頂が上端に接し、人物が画面高の約9割を占め、左右背景余白不足と口元の疑似文字が残った。配置、採用、品質承認、Canvas、公開・販売状態は変更せず、追加Provider実行を停止した。
+- 構図座標をJSON先頭へ移し、被写体高58%、髪上端18%、衣服下端82%、左右環境余白18%の引いた環境ポートレートへ変更する。台詞fallbackの`speaking`を除去し、顔面と描画面を線画・陰影だけで完成させる正方向契約を追加する。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。次: commit・push・Draft PR、全CI／Vercel Preview確認後に停止する。merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2T_CLEAN_FACE_SAFE_FRAMING.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2S Provider安全な座標フレーミング、2026-08-15）
 
 - Branch: `codex/fix-r4-2s-provider-safe-frame-coordinates`
 - Base: `origin/feature/manga-canvas-mvp` @ `4728941`（PR #275 merge commit）
-- 状態: `READY_FOR_OWNER_REVIEW`
-- Draft PR: [#276](https://github.com/team478a/manga/pull/276)（Draft／MERGEABLE）
+- 状態: `MERGED`
+- PR: [#276](https://github.com/team478a/manga/pull/276)（merge commit `faeef67`）
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-b52cd0-team478as-projects.vercel.app
 - Production限定受入れで、ページ22・4コマ目の再制作を1案だけ登録した。Worker [31883817067](https://github.com/team478a/manga/actions/runs/31883817067)は`requests=2 processed=1`で処理したがProvider moderation拒否となり、予約2 creditを全額解放した。
 - 画面から一般向け安全再実行を1回だけ行い、Worker [31883888494](https://github.com/team478a/manga/actions/runs/31883888494)も`requests=2 processed=1`で処理したが同じく拒否された。最終creditは使用50／予約0／残50、新規Assetなし。追加Provider実行を停止した。

@@ -400,34 +400,41 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
   assert.equal(
     providerContract.composition,
-    "medium portrait; subject occupies about 72% of canvas height; complete hairstyle and clothing silhouette remain inside the canvas; clear headroom and environmental space on both sides",
+    "roomy environmental portrait; subject occupies about 58% of canvas height; complete silhouette remains comfortably inside the canvas with generous headroom and environmental space on both sides",
   );
-  assert.match(providerContract.scene, /medium portrait/);
+  assert.deepEqual(Object.keys(providerContract).slice(0, 3), [
+    "composition",
+    "framing",
+    "scene",
+  ]);
+  assert.match(providerContract.scene, /roomy environmental portrait/);
   assert.match(providerContract.output_type, /continuous edge-to-edge/);
   assert.match(providerContract.canvas, /one uninterrupted pictorial scene/);
-  assert.match(providerContract.subjects[0].position, /top of hair near 15%/);
+  assert.match(providerContract.subjects[0].position, /top of hairstyle near 18%/);
   assert.deepEqual(providerContract.framing, {
-    subject_height_percent: 72,
-    top_hair_y_percent: 15,
-    lower_jacket_y_percent: 92,
-    side_environment_percent: 12,
+    subject_height_percent: 58,
+    top_hair_y_percent: 18,
+    lower_clothing_y_percent: 82,
+    side_environment_percent: 18,
   });
   assert.equal(
     providerContract.camera.distance,
-    "medium portrait distance with the camera pulled back",
+    "roomy environmental portrait distance with the camera clearly pulled back",
   );
   assert.equal(providerContract.camera["lens-mm"], 50);
   assert.equal("lens" in providerContract.camera, false);
-  assert.match(providerContract.camera.focus, /identity, expression/);
+  assert.match(providerContract.camera.focus, /identity and expression/);
   assert.doesNotMatch(JSON.stringify(providerContract), /\b(?:chest|waist)\b/i);
-  assert.match(providerContract.surface_finish, /clean unmarked monochrome/);
+  assert.match(providerContract.surface_content, /pure pictorial artwork/);
+  assert.match(providerContract.face_finish, /clean linework and shading/);
+  assert.match(providerContract.surface_finish, /clean monochrome/);
   assert.equal(
     providerContract.subjects[0].action,
-    "a natural speaking pose for this story moment",
+    "a natural attentive pose that communicates the story through posture and gaze",
   );
   assert.doesNotMatch(
     result.generation.prompt,
-    /証拠を|dialogue|balloons|both eyes, nose, mouth, chin/,
+    /証拠を|dialogue|balloons|speaking|lettering|unmarked|both eyes, nose, mouth, chin/,
   );
   assert.ok(result.generation.prompt.length < 2_000);
   assert.equal(
@@ -476,7 +483,7 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
   const closeUpContract = JSON.parse(
     closeUpOverride.generation.prompt.split("\n")[1],
   );
-  assert.match(closeUpContract.composition, /subject occupies about 72%/);
+  assert.match(closeUpContract.composition, /subject occupies about 58%/);
 
   const wideOverrideStoryboard = structuredClone(storyboard);
   wideOverrideStoryboard.pages[0].panels[0].shot = "close_up";
@@ -492,7 +499,7 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
       gazeDirection: "storyboard",
     },
   });
-  assert.doesNotMatch(wideOverride.generation.prompt, /subject occupies about 72%/);
+  assert.doesNotMatch(wideOverride.generation.prompt, /subject occupies about 58%/);
 });
 
 test("人物と参照素材は肌・口元を無記名の自然な面へ固定する", () => {

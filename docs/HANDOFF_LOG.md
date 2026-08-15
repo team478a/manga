@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2T 顔面無記名・引き構図の正方向契約
+
+- PR #276 merge commit `faeef6719b44e4754752da799726380075657461`を含む最新基準から`codex/fix-r4-2t-clean-face-safe-framing`を開始した。
+- Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Worker `31886026453`は`requests=2 processed=1`で成功し、Asset `2fe8d763-cedd-4a13-99ea-afc85adbc758.png`を生成。creditは使用50／予約0／残50 → 使用50／予約2／残48 → 使用52／予約0／残48。
+- 704×1024 PNGはmoderation、両目、顔、首、肩を満たしたが、頭頂が上端に接し、人物が画面高の約9割を占め、左右背景余白不足、口元の疑似文字により販売品質未達。候補採用、配置、品質承認、Canvas、公開・販売状態は変更していない。
+- 短縮JSONの`medium portrait`と後段座標の優先度競合、台詞除去fallbackの`speaking pose`を根因候補とした。構図座標をJSON先頭へ移し、58%／18%／82%／18%の環境ポートレートへ引き、発話語を除去して顔面と描画面を正方向の線画・陰影だけへ固定する。
+- Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。commit・push・Draft PR、全CI／Vercel Preview確認へ進む。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2S Provider安全な座標フレーミング
 
 - PR #275 merge commit `472894141718b355bd946761f564922abb46f577`を含む最新基準から`codex/fix-r4-2s-provider-safe-frame-coordinates`を開始した。
