@@ -1,8 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2W 生成画像の採用品質ゲート
+
+- 状態: `LOCAL_VALIDATED`
+- Branch: `codex/fix-r4-2w-generation-quality-gate`
+- Base: `origin/feature/manga-canvas-mvp`@`3bd3488`（PR #279 merge commit）。
+- 背景: PR #279はマージ済み。ページ22はコマ4が合格・配置済みだが、コマ1の不自然な上下方向、コマ3の画像内疑似文字、未配置候補2件、自動配置確認が残る。
+- 監査: 現行rule-based quality judgeは画像ピクセルのOCR・天地・人体意味解析を行わないため、自動検査済みとは扱わない。
+- 実装: 短縮Promptにも正立・自然な重力・人体・清潔な絵画面の品質条件を追加する。生成画像の配置・承認前に正立、画像内文字なし、人体、小物、物語構図の4項目を必須確認する。未配置候補は追加生成なしで明示却下でき、全候補却下済みの場合だけ不要なblockerを解除する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: Hub 735/735、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足のためWindows CIを正式判定にする。
+- Production変更: なし。Provider生成、DB、credit、Canvas、PNG／PDF、公開・販売状態を変更していない。
+- 次: Draft PRを作成し、最終HEADの全CI・Vercel Preview成功を確認して停止する。merge前にProduction再生成と次工程へ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2W_GENERATION_QUALITY_GATE.md`
+
+---
+
 ## 2026-08-16 PR-R4-2V 確認済み生成Assetの完成判定同期
 
-- 状態: `READY_FOR_OWNER_REVIEW`
+- 状態: `MERGED_PRODUCTION_ACCEPTED`
 - Draft PR: [#279](https://github.com/team478a/manga/pull/279)（Draft／MERGEABLE）
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-cf4c4b-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2v-reviewed-asset-completion`
@@ -17,7 +33,7 @@
 - 検証: 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で開始前に停止し、Windows CIを正式判定にする。
 - CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
 - Production変更: 合格した4コマ目候補の品質確認・配置とCanvas revision 6→7のみ。追加生成、公開・販売変更なし。
-- 次: 責任者のmerge判断待ち。merge前にProductionで追加生成せず、PR-R4-2Wへ進まない。
+- Merge: PR #279 merge commit `3bd3488`。追加Production生成なしでPR-R4-2Wへ引き継いだ。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2V_REVIEWED_ASSET_COMPLETION.md`
 
 ---

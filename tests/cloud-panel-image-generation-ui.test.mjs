@@ -26,6 +26,10 @@ const comparisonDialog = fs.readFileSync(
   "src/app/creator/[projectId]/pages/[pageId]/PanelImageComparisonDialog.tsx",
   "utf8",
 );
+const qualityReviewDialog = fs.readFileSync(
+  "src/app/creator/[projectId]/pages/[pageId]/PanelImageQualityReviewDialog.tsx",
+  "utf8",
+);
 const candidateDomain = fs.readFileSync(
   "src/modules/manga/domain/panel-candidate.ts",
   "utf8",
@@ -110,6 +114,23 @@ test("修正候補は修正前との比較スライダーから採用できる",
   assert.match(comparisonDialog, /比較位置/);
   assert.match(comparisonDialog, /この候補を採用/);
   assert.match(comparisonDialog, /resolveComparisonSourceFrame/);
+});
+
+test("生成画像は正立・画像内文字・人体・物語の必須確認後だけ採用できる", () => {
+  assert.match(editor, /PanelImageQualityReviewDialog/);
+  assert.match(editor, /requestImageQualityReview\(job, "place"\)/);
+  assert.match(editor, /requestImageQualityReview\(job, "approve"\)/);
+  assert.match(qualityReviewDialog, /天地と重力が自然/);
+  assert.match(qualityReviewDialog, /疑似文字・読めない文字・吹き出し・ロゴ/);
+  assert.match(qualityReviewDialog, /顔・口元・手指・関節/);
+  assert.match(qualityReviewDialog, /4項目を確認して採用/);
+  assert.match(qualityReviewDialog, /disabled=\{!allConfirmed\}/);
+});
+
+test("未採用候補は追加生成なしで明示的に不採用へできる", () => {
+  assert.match(editor, /この候補を不採用にする（追加生成なし）/);
+  assert.match(editor, /rejectGeneratedAsset/);
+  assert.match(editor, /原稿品質の必須確認で不採用/);
 });
 
 test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {

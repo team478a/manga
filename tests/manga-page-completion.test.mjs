@@ -61,6 +61,26 @@ test("生成済み未配置と同じ画像の複数コマ流用を完成扱い�
   assert.ok(codes(result).has("MANUAL_REVIEW_REQUIRED"));
 });
 
+test("明示的に全候補を不採用にした生成群は未配置blockerを残さない", () => {
+  const jobs = clone(source.imageJobs);
+  jobs[0].candidateOutputAssetIds = [pages[1].assetIds[0], pages[1].assetIds[1]];
+  jobs[0].candidateJobIds = [
+    "10000000-0000-4000-8000-000000000091",
+    "10000000-0000-4000-8000-000000000092",
+  ];
+  const onlyOneRejected = evaluateMangaPageCompletion(input({
+    imageJobs: jobs,
+    rejectedGenerationJobIds: new Set([jobs[0].candidateJobIds[0]]),
+  }));
+  assert.ok(codes(onlyOneRejected).has("PANEL_IMAGE_MISSING"));
+
+  const allRejected = evaluateMangaPageCompletion(input({
+    imageJobs: jobs,
+    rejectedGenerationJobIds: new Set(jobs[0].candidateJobIds),
+  }));
+  assert.equal(codes(allRejected).has("PANEL_IMAGE_MISSING"), false);
+});
+
 test("pending Jobはgenerating、failed Jobはincompleteになる", () => {
   const pending = clone(source.imageJobs); pending[0].status = "running";
   const pendingResult = evaluateMangaPageCompletion(input({ imageJobs: pending }));
@@ -210,6 +230,7 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(service, /cloud_manga_quality_logs/);
   assert.match(service, /reviewedGenerationJobIds/);
   assert.match(service, /reviewedGenerationAssetIds/);
+  assert.match(service, /rejectedGenerationJobIds/);
   assert.match(generation, /quality_review_status/);
   assert.match(generation, /event_type/);
   assert.match(editor, /この画像を品質確認済みにする/);
@@ -218,6 +239,8 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(editor, /品質確認を取り消して作り直す（1案）/);
   assert.match(editor, /前の候補とは異なる明瞭な構図で再制作する/);
   assert.match(editor, /event: "rejected"/);
+  assert.match(editor, /この候補を不採用にする（追加生成なし）/);
+  assert.match(editor, /PanelImageQualityReviewDialog/);
   assert.match(production, /getCloudPageCompletion/);
   assert.match(checkpoint, /assertCloudProjectComplete/);
   assert.match(durable, /assertCloudProjectComplete/);

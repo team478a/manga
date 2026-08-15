@@ -205,6 +205,11 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
         : [],
     ),
   );
+  const rejectedGenerationJobIds = new Set(
+    [...latestQualityEvent.entries()]
+      .filter(([, event]) => event === "rejected")
+      .map(([jobId]) => jobId),
+  );
   const placementByPage = new Map((placements.data ?? []).map((row) => [row.page_id, row.status]));
   const productionByPage = new Map((productionRows.data ?? []).map((row) => [row.id, row.production_status]));
   const results: Array<CloudPageCompletion & { png: Uint8Array | null }> = [];
@@ -234,12 +239,14 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
       availableAssetIds: new Set(assetBytes.keys()),
       reviewedGenerationJobIds,
       reviewedGenerationAssetIds,
+      rejectedGenerationJobIds,
       pngRenderSucceeded,
       manualReviewRequired:
         placementByPage.get(page.id) === "review_required" ||
         placementByPage.get(page.id) === "placement_failed" ||
         productionByPage.get(page.id) === "revision_required" ||
         currentJobs.some((job) => job.pageId === page.id && (job.candidateJobIds ?? [job.id]).some((id) => {
+          if (rejectedGenerationJobIds.has(id)) return false;
           const status = adoptionStatus.get(id);
           return status === "review_required" || status === "placement_failed";
         })),

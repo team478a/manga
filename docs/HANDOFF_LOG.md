@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-16 Codex: 生成画像の採用品質ゲート
+
+- Branch: `codex/fix-r4-2w-generation-quality-gate`
+- Base: `origin/feature/manga-canvas-mvp`@`3bd3488`（PR #279 merge後）
+- PR #279はマージ済み。ページ22の既存合格画像、Canvas revision 7、使用56／予約0／残44を維持して開始した。
+- 現行quality judgeが画像ピクセルを意味解析しない契約を確認し、自動OCR済みとは表示しない。短縮Promptへ正立品質条件を追加し、採用前に正立、画像内文字なし、人体・小物、物語構図の4項目を必須確認する。
+- 未配置候補を追加生成なしで明示却下できる。全候補が`rejected`の生成群だけ未配置・自動配置blockerを解除し、一部候補だけの却下では解除しない。
+- Hub 735/735、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足、Windows CIを正式判定にする。
+- Production変更なし。Draft PRと全CI／Vercel Preview確認後に停止し、merge前にProduction再生成と次工程へ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2W_GENERATION_QUALITY_GATE.md`
+
+---
+
 ## 2026-08-16 Codex: 確認済み生成Assetの完成判定同期
 
 - Branch: `codex/fix-r4-2v-reviewed-asset-completion`
