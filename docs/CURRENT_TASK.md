@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2S Provider安全な座標フレーミング
+
+- 状態: `IMPLEMENTED_LOCAL`
+- Branch: `codex/fix-r4-2s-provider-safe-frame-coordinates`
+- Base: `origin/feature/manga-canvas-mvp`@`4728941`（PR #275 merge commit）。
+- Production受入れ: `test`モニターのページ22・4コマ目を1案だけ再制作した。公式Worker [31883817067](https://github.com/team478a/manga/actions/runs/31883817067)は`status=idle requests=2 processed=1`で処理したが、Provider moderation拒否となった。一般向け安全再実行を1回だけ行い、Worker [31883888494](https://github.com/team478a/manga/actions/runs/31883888494)も同じく拒否された。
+- Credit／Asset: 各回で予約2を全額解放し、最終は使用50／予約0／残50。新規Asset、候補画像、Provider課金はない。候補採用、配置、品質承認、Canvas revision、公開・販売状態は変更していない。
+- 原因判断: PR #274の安全再実行は成功しており、PR #275で追加した`chest`／`waist`を含む身体部位列挙が主な差分。過去の同種Provider moderationとも一致するため、構図の身体部位列挙をやめる。
+- 実装: 短縮JSONを中距離portraitへ戻し、`framing`に被写体高72%、髪上端15%、上着下端92%、左右余白12%を構造化する。`position`／`composition`／`camera.distance`も同じ座標契約へ統一し、初回生成と安全再実行の保存済み旧JSONへ共通適用する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure成功。
+- 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功後に停止する。merge前に追加Production生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2S_PROVIDER_SAFE_FRAME_COORDINATES.md`
+
+---
+
 ## 2026-08-15 PR-R4-2R 短縮クローズアップの一枚絵・画面内ランドマーク契約
 
 - 状態: `READY_FOR_OWNER_REVIEW`
