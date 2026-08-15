@@ -4,12 +4,14 @@
 
 - Branch: `codex/fix-r4-2u-dialogue-safe-rework-framing`
 - Base: `origin/feature/manga-canvas-mvp` @ `72f1d0d`（PR #277 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#278](https://github.com/team478a/manga/pull/278)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-f5a9b7-team478as-projects.vercel.app
 - Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Worker [31906333027](https://github.com/team478a/manga/actions/runs/31906333027)は`requests=2 processed=1`で成功し、使用52／予約0／残48から使用54／予約0／残46となった。
 - 新規704×1024 PNGは顔・首付近だけの極端なcropとなり、口内と胸元付近に原台詞と一致する「証拠を」が描画されたため不採用。候補採用、配置、品質承認、Canvas、公開・販売状態は変更していない。
 - Provider向け場面記述だけから引用発話と既知台詞を除外し、台詞混入を検知した`extreme_close_up`／`detail`を58%短縮安全フレームへ切り替える。台詞のない意図的な寄りとPanel Specification原文は維持する。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
-- 集中35/35、Hub 731/731、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。通常Turbopackは既知のWindows path長、Desktop typecheckは既存型宣言不足のためWindows CIを正式判定にする。Draft PRとVercel Previewを確認後に停止し、merge前に追加Production生成を行わない。
+- 集中35/35、Hub 731/731、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。通常Turbopackは既知のWindows path長、Desktop typecheckは既存型宣言不足のためWindows CIを正式判定にする。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADを再確認後に停止し、merge前に追加Production生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2U_DIALOGUE_SAFE_TIGHT_FRAMING.md`
 
 ---

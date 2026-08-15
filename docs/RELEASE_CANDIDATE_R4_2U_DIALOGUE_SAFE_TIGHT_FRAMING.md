@@ -1,6 +1,8 @@
 # PR-R4-2U 台詞安全な再制作フレーミング
 
-- 状態: `IN_PROGRESS`
+- Draft PR: [#278](https://github.com/team478a/manga/pull/278)（Draft／MERGEABLE）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-f5a9b7-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2u-dialogue-safe-rework-framing`
 - Base: `origin/feature/manga-canvas-mvp` @ `72f1d0d`（PR #277 merge commit）
 
@@ -72,7 +74,7 @@ Panel Specificationの画角が`extreme_close_up`または`detail`の場合、�
 - RC preflight: repository structure READY。外部secretと手動E2Eは既存どおりPENDING
 - 通常Turbopack: 既知のWindows path長上限で停止。Webpack buildを正式なローカル判定とする
 - Desktop typecheck: 既存`@napi-rs/keyring`型宣言不足で停止。Desktop差分はなく、Windows CIを正式判定とする
-- CI／Vercel Preview: Draft PR作成後に確認する
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功
 
 ## ロールバック
 

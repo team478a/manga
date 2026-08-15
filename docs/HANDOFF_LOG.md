@@ -12,6 +12,7 @@
 - `extreme_close_up`／`detail`で場面欄に台詞が混入した場合、`close_up`専用の短縮安全フレームを通らず長文Promptへ台詞を含む場面記述が残る経路を原因候補とした（推論）。Prompt本体、Provider応答、署名URL、API keyは記録していない。
 - Provider向けの動作、感情、背景、構図、演出から引用発話と既知台詞を除外し、台詞混入がある極端な寄りだけ58%短縮安全フレームへ切り替える。品質正本のPanel Specificationと台詞のない意図的な寄りは維持する。
 - Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。集中35/35、Hub 731/731、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。通常Turbopackは既知のWindows path長、Desktop typecheckは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- Draft PR [#278](https://github.com/team478a/manga/pull/278)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-f5a9b7-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADの同じ5チェックを再確認して停止する。
 
 ---
 
