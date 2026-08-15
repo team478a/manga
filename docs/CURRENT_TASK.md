@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2K クローズアップの顔フレーミング固定
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- Branch: `codex/fix-r4-2k-closeup-framing`
+- Base: `origin/feature/manga-canvas-mvp`@`0d987a0`（PR #267 merge commit）。
+- Production受入れ: PR #267反映後、`test`モニターのページ22で失敗候補の安全な再実行を1回だけ行った。Jobは1件だけ登録され、Worker run `31859031742`が`requests=2 processed=1`で成功した。使用creditは38→40、予約2→0、残り60で、重複POSTと継続Workerはなかった。
+- 品質結果: 新しい704×1024 Assetは疑似文字を含まず技術的には正常完了したが、鼻・口・顎だけの極端な寄りとなり、両目と顔全体が画面外へ切れた。販売品質未達のため配置・品質承認・追加生成は行っていない。
+- 原因: `close_up`は「顔と表情が主役」とだけ指定され、顔全体をフレーム内へ保つ境界がなかった。参照画像と縦長出力の組み合わせでProviderが下顔面へ過度に寄る余地が残っていた。
+- 実装: ネーム画角と画面上書き画角から実効画角を一度解決し、人物を含む`close_up`だけへ、頭頂から顎まで、両目・鼻・口・顎、頭上・顎下の余白を日英の正方向Promptで固定する。同一生成契約の先頭と末尾へ再利用する。
+- 非対象: `wide`等へ上書きした場合、人物を生成しない背景・効果Job、意図的な`extreme_close_up`／`detail`には顔全体契約を混入させない。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、checkpoint、成人向け境界、Desktop。
+- 検証: 集中26/26、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure、diff check成功。
+- ローカル既知制約: 標準Turbopack buildはWindowsパス長上限で停止。Desktop typecheck／test／a11yは既存`@napi-rs/keyring`型宣言不足でbuild前停止した。今回Desktop差分はなく、GitHub Windows CIとVercelを正式結果とする。
+- Production変更: 上記PR #267受入れの1 Job／2 creditだけ。R4-2Kコード実装後のProvider E2E、既存画像の配置・承認、DB／Storage／作品内容の変更は行っていない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2K_CLOSEUP_FRAMING.md`
+- 次: Draft PRを作成し、全CIとVercel Preview成功を確認して停止する。merge前にProductionで追加生成しない。
+
+---
+
 ## 2026-08-15 PR-R4-2J Provider拒否後の対話型コマ安全再実行
 
 - 状態: `READY_FOR_OWNER_REVIEW`
