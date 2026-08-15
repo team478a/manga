@@ -63,6 +63,31 @@ export async function uploadVisualReferenceAction(projectId: string, form: FormD
   back(projectId, "message", "参照画像を保存しました。");
 }
 
+export async function linkExistingVisualReferenceAction(projectId: string, form: FormData) {
+  if (!uuid.safeParse(projectId).success)
+    back(projectId, "error", "作品を確認できませんでした。");
+  const target = subject(value(form, "subject"));
+  const assetId = uuid.safeParse(value(form, "asset"));
+  if (!target) return back(projectId, "error", "設定対象を選択してください。");
+  if (!assetId.success)
+    return back(projectId, "error", "参照に使う画像素材を選択してください。");
+  const parsed = cloudVisualReferenceInputSchema.safeParse({
+    projectId,
+    subjectKind: target.kind,
+    subjectId: target.id,
+    assetId: assetId.data,
+    label: value(form, "label"),
+  });
+  if (!parsed.success)
+    return back(projectId, "error", "参照画像の設定を確認してください。");
+  await saveCloudVisualReference(parsed.data).catch(() =>
+    back(projectId, "error", "既存の画像素材を参照画像に設定できませんでした。"),
+  );
+  revalidatePath(`/creator/${projectId}`);
+  revalidatePath(`/creator/${projectId}/references`);
+  back(projectId, "message", "既存の画像素材を参照画像に設定しました。");
+}
+
 export async function assignPanelSubjectAction(projectId: string, form: FormData) {
   const target = subject(value(form, "subject"));
   const [pageId, panelId] = value(form, "panel").split(":");
