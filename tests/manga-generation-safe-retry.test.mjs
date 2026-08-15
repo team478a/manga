@@ -72,7 +72,7 @@ test("Provider拒否後は構造化構図の身体部位列挙を安全な非cro
   const contract = JSON.parse(retry.prompt.split("\n")[2]);
   assert.equal(
     contract.composition,
-    "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin",
+    "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height",
   );
   assert.equal(contract.camera_angle, "目線の高さ");
   assert.match(retry.prompt, /人物設定: 黒髪、細身、灰色のパーカー/);

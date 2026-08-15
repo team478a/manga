@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2O クローズアップProvider Prompt短縮・安定化、2026-08-15）
+
+- Branch: `codex/fix-r4-2o-compact-closeup-provider-prompt`
+- Base: `origin/feature/manga-canvas-mvp` @ `9047f40`（PR #271 merge commit）
+- 状態: `IMPLEMENTED_VALIDATION_COMPLETE_DRAFT_PR_PENDING`
+- PR #271反映後、Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Job `230eac0d-e1d3-4813-bd43-bb6830c492ba`、Worker `31867709945`は`status=idle requests=2 processed=1`。使用44→46、予約0→2→0、残り56→54、重複なし。
+- Provider moderationは解消したが、704×1024画像は鼻・口・顎だけの極端なcropで両目と頭頂がなく、口元に`証拠を`が生成された。配置、承認、Canvas、公開・販売状態は変更していない。
+- Jobは`text_to_image`／`source_asset_id=null`、画風参照は清潔な無記名画像。長く重複したPromptが構図と無記名面を希釈した可能性が高い（推論）。
+- 人物あり新規`close_up`だけを短いJSON契約にし、中距離portrait、被写体高約65%、完全なsilhouette、70mm相当、清潔な無記名面を固定する。Storyboardの台詞本文と引用発話を送信対象から除外する。参照役割と2〜4候補の制作差分を維持する。
+- revision／Image-to-Image／Inpainting／Outpainting、人物なし、他画角は変更しない。URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopも変更しない。
+- 集中31/31、Hub 726/726、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。全体typecheckは既存Desktopの`@napi-rs/keyring`型宣言不足だけで停止し、Windows CIを正式判定とする。
+- Production変更は上記1 Job／2 creditだけ。merge前に追加の実Provider E2Eを行わない。Draft PRと5チェック成功後に停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2O_COMPACT_CLOSEUP_PROVIDER_PROMPT.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2N Provider moderation安全な構図契約、2026-08-15）
 
 - Branch: `codex/fix-r4-2n-provider-moderation-safe-framing`

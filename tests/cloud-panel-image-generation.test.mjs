@@ -381,9 +381,14 @@ test("完成コマ生成はBFL向けの正の単一場面指示を日英で固�
   assert.match(result.generation.negativePrompt, /speech balloons/);
 });
 
-test("クローズアップは顔全体と主要特徴をフレーム内へ固定する", () => {
+test("クローズアップは短い構造化Promptで安定した中距離撮影へ固定する", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "close_up";
+  closeUpStoryboard.pages[0].panels[0].action =
+    "主人公が「証拠を」と口にする";
+  closeUpStoryboard.pages[0].panels[0].dialogue = [
+    { type: "speech", speaker: "明日香", text: "（証拠を）" },
+  ];
   const result = buildStoryboardPanelGeneration({
     storyboard: closeUpStoryboard,
     pageNumber: 1,
@@ -391,32 +396,52 @@ test("クローズアップは顔全体と主要特徴をフレーム内へ固�
     panelId,
   });
 
-  assert.match(result.generation.prompt, /頭頂から顎までの顔全体/);
-  assert.match(result.generation.prompt, /両目・鼻・口・顎/);
-  assert.match(result.generation.prompt, /complete face in frame/);
-  assert.match(result.generation.prompt, /Do not crop through facial features/);
-  assert.match(result.generation.prompt, /頭と肩が分かるミディアムクローズアップ/);
-  assert.match(result.generation.prompt, /画像短辺のおよそ10%/);
-  assert.match(result.generation.prompt, /medium close-up head-and-shoulders portrait/);
-  assert.match(result.generation.prompt, /complete hair silhouette/);
   assert.equal(result.generation.prompt.startsWith("PROVIDER CONTROL CONTRACT:\n{"), true);
-  assert.match(result.generation.prompt, /"lettering_stage":"blank artwork ready/);
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
   assert.equal(
     providerContract.composition,
-    "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin",
+    "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height",
   );
-  assert.doesNotMatch(providerContract.composition, /both eyes, nose, mouth, chin/);
+  assert.equal(providerContract.camera.distance, "stable medium portrait distance");
+  assert.equal(providerContract.camera.lens, "70mm-equivalent portrait lens");
+  assert.match(providerContract.surface_finish, /clean unmarked monochrome/);
   assert.equal(
-    result.generation.prompt.match(/頭頂から顎までの顔全体/g)?.length,
-    2,
+    providerContract.subjects[0].action,
+    "a natural speaking pose for this story moment",
   );
+  assert.doesNotMatch(
+    result.generation.prompt,
+    /証拠を|dialogue|balloons|both eyes, nose, mouth, chin/,
+  );
+  assert.ok(result.generation.prompt.length < 2_000);
   assert.equal(
     moderateGeneralCloudPrompt(
       `${result.generation.prompt}\n${result.generation.negativePrompt}`,
     ).decision,
     "allow",
   );
+});
+
+test("短縮クローズアップPromptでも複数候補の制作差分を維持する", () => {
+  const closeUpStoryboard = structuredClone(storyboard);
+  closeUpStoryboard.pages[0].panels[0].shot = "close_up";
+  const prompts = [0, 1].map(
+    (candidateIndex) =>
+      buildStoryboardPanelGeneration({
+        storyboard: closeUpStoryboard,
+        pageNumber: 1,
+        canvas,
+        panelId,
+        candidateCount: 2,
+        candidateIndex,
+      }).generation.prompt,
+  );
+  const contracts = prompts.map((prompt) => JSON.parse(prompt.split("\n")[1]));
+
+  assert.match(contracts[0].variation, /candidate 1 of 2/);
+  assert.match(contracts[1].variation, /candidate 2 of 2/);
+  assert.notEqual(contracts[0].variation, contracts[1].variation);
+  assert.ok(prompts.every((prompt) => prompt.length < 2_000));
 });
 
 test("画角上書き後の実効画角だけで顔フレーミングを決定する", () => {
@@ -432,7 +457,10 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
       gazeDirection: "storyboard",
     },
   });
-  assert.match(closeUpOverride.generation.prompt, /頭頂から顎までの顔全体/);
+  const closeUpContract = JSON.parse(
+    closeUpOverride.generation.prompt.split("\n")[1],
+  );
+  assert.match(closeUpContract.composition, /medium portrait|65%/);
 
   const wideOverrideStoryboard = structuredClone(storyboard);
   wideOverrideStoryboard.pages[0].panels[0].shot = "close_up";
@@ -448,7 +476,7 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
       gazeDirection: "storyboard",
     },
   });
-  assert.doesNotMatch(wideOverride.generation.prompt, /頭頂から顎までの顔全体/);
+  assert.doesNotMatch(wideOverride.generation.prompt, /subject height about 65%/);
 });
 
 test("人物と参照素材は肌・口元を無記名の自然な面へ固定する", () => {

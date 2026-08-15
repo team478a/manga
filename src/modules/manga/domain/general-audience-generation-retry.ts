@@ -10,7 +10,7 @@ const SAFE_EXPRESSION =
 const SAFE_DIRECTION =
   "光と影、人物間の距離、視線誘導で物語上の緊張感を間接的に伝える。";
 const SAFE_PROVIDER_CLOSE_UP_COMPOSITION =
-  "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin";
+  "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height";
 
 function sanitizeProviderControlContract(line: string) {
   try {

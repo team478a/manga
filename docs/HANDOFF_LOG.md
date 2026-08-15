@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2O クローズアップProvider Prompt短縮・安定化
+
+- PR #271 merge commit `9047f40e7623200f28c3afb1b5dd41ac87fa4557`を含む最新基準から`codex/fix-r4-2o-compact-closeup-provider-prompt`を開始した。
+- Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Job `230eac0d-e1d3-4813-bd43-bb6830c492ba`、公式Worker run `31867709945`は`status=idle requests=2 processed=1`。使用44→46、予約0→2→0、残り56→54で、重複Jobと継続Workerはない。
+- Asset `f7a22c48-fe92-48ca-8697-b2ee3ac6d70d`（704×1024 PNG）はProvider moderationを通過したが、鼻・口・顎だけの極端なcrop、両目・頭頂欠落、口元の生成文字`証拠を`により販売品質未達。配置、品質承認、Canvas revision、公開・販売状態は変更していない。
+- Jobは`text_to_image`／`source_asset_id=null`で失敗候補をsourceにしていない。画風参照も完全な頭部を含む清潔な無記名画像だった。BFL公式推奨より長く、場面契約や構図、動作、感情、背景、演出を重複させたPromptが撮影距離と無記名面の優先度を希釈した可能性が高い（推論）。
+- 人物あり・新規`close_up`だけを短いJSON Provider契約へ切り替えた。中距離portrait、被写体高約65%、完全なsilhouetteと周囲背景、70mm相当、清潔な無記名モノクロ面を固定し、Storyboardの台詞本文と引用発話を動作・表情・背景から除外した。参照画像の役割と2〜4候補の制作差分は維持した。
+- revision／Image-to-Image／Inpainting／Outpainting、人物なし、他画角と、URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 集中31/31、Hub 726/726、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。全体typecheckは既存Desktopの`@napi-rs/keyring`型宣言不足だけで停止した。
+- Production変更は上記1 Job／2 creditだけ。R4-2O merge前に追加Provider生成を行わない。Draft PRとCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功後に停止する。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2N Provider moderation安全な構図契約
 
 - PR #270 merge commit `ff5ea38e80d44acf7a379f1b01b75de5d748a1ba`を含む最新基準から`codex/fix-r4-2n-provider-moderation-safe-framing`を開始した。

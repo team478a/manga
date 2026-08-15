@@ -204,6 +204,32 @@ function buildProviderReferenceRoleContract(
   );
 }
 
+function compactProviderSceneField(input: {
+  value: string;
+  dialogue: readonly { text: string }[];
+  fallback: string;
+  maxLength?: number;
+}) {
+  const dialogueTokens = input.dialogue.flatMap((line) => {
+    const value = line.text.trim();
+    const unquoted = value.replace(
+      /^[\s\u3000「」『』（）“”"']+|[\s\u3000「」『』（）“”"']+$/g,
+      "",
+    );
+    return [value, unquoted].filter((item) => item.length >= 2);
+  });
+  const withoutQuotedSpeech = input.value
+    .replace(/「[^」]*」|『[^』]*』|“[^”]*”|"[^"]*"|'[^']*'/g, "")
+    .trim();
+  if (
+    !withoutQuotedSpeech ||
+    withoutQuotedSpeech !== input.value.trim() ||
+    dialogueTokens.some((token) => withoutQuotedSpeech.includes(token))
+  )
+    return input.fallback;
+  return withoutQuotedSpeech.slice(0, input.maxLength ?? 300);
+}
+
 function imageSize(width: number, height: number) {
   const safeWidth = Math.max(1, width);
   const safeHeight = Math.max(1, height);
@@ -457,45 +483,6 @@ export function buildStoryboardPanelGeneration(input: {
     input.compositionControl.cameraAngle === "storyboard"
       ? angleLabels[storyboardPanel.cameraAngle]
       : cameraAngleOverrideDirections[input.compositionControl.cameraAngle];
-  const providerControlContract = JSON.stringify({
-    output_type: "single frameless monochrome manga panel illustration",
-    scene: "one moment from one camera view",
-    subject_count: panelSpecification.expectedCharacterCount,
-    composition:
-      resolvedShot === "close_up"
-        ? "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin"
-        : contractedShot,
-    camera_angle: contractedCamera,
-    image_surface: "clean monochrome pictorial line art and natural material shading",
-    lettering_stage: "blank artwork ready for dialogue and balloons to be overlaid later",
-  });
-  const sceneContract = [
-    "【生成契約：一枚の場面画像】",
-    `登場人数: ${panelSpecification.expectedCharacterCount}人。`,
-    panelSpecification.characterNames.length
-      ? `登場人物: ${panelSpecification.characterNames.join("、")}。`
-      : "人物を配置しない。",
-    panelSpecification.action ? `この瞬間の動作: ${panelSpecification.action}。` : "",
-    panelSpecification.expression
-      ? `表情・感情: ${panelSpecification.expression}。`
-      : "",
-    panelSpecification.background ? `場所: ${panelSpecification.background}。` : "",
-    panelSpecification.props.length
-      ? `必要な小物: ${panelSpecification.props.join("、")}。`
-      : "",
-    panelSpecification.composition
-      ? `人物と背景の配置: ${panelSpecification.composition}。`
-      : "",
-    `画角: ${contractedShot}。カメラ: ${contractedCamera}。`,
-    ...faceFramingContract,
-    usesCharacters
-      ? "人物の肌と口元は、顔の解剖学的な輪郭と自然な陰影だけで構成した、清潔で無記名の面にする。"
-      : "",
-    usesCharacters
-      ? "Keep every face and mouth area as clean unlettered anatomy composed only of facial contours and natural shading."
-      : "",
-    "画像全体をこの一つの瞬間と一つの視点だけで満たす。編集用の文字要素は後工程で追加するため、描画面は意味のある絵だけで完成させる。",
-  ].filter(Boolean);
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
   const candidateIndex = Math.max(
     0,
@@ -527,6 +514,114 @@ export function buildStoryboardPanelGeneration(input: {
       "線の密度とリズムを変えた効果の別案にする。",
     ],
   } as const;
+  const providerControlContract = JSON.stringify({
+    output_type: "single frameless monochrome manga panel illustration",
+    scene: "one moment from one camera view",
+    subject_count: panelSpecification.expectedCharacterCount,
+    composition:
+      resolvedShot === "close_up"
+        ? "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height"
+        : contractedShot,
+    camera_angle: contractedCamera,
+    image_surface: "clean monochrome pictorial line art and natural material shading",
+    lettering_stage: "blank artwork ready for dialogue and balloons to be overlaid later",
+  });
+  const compactCloseUpContract = JSON.stringify({
+    scene: "one general-audience monochrome manga portrait from one camera view",
+    subjects: [
+      {
+        description: [
+          characters,
+          ...selectedVisualProfiles.map((profile) =>
+            [
+              profile.appearance_age,
+              profile.body_build,
+              profile.hair,
+              profile.costume,
+            ]
+              .filter(Boolean)
+              .join(", "),
+          ),
+        ]
+          .filter(Boolean)
+          .join("; ")
+          .slice(0, 600),
+        action: compactProviderSceneField({
+          value: storyboardPanel.action,
+          dialogue: storyboardPanel.dialogue,
+          fallback: "a natural speaking pose for this story moment",
+        }),
+        expression: compactProviderSceneField({
+          value: storyboardPanel.emotion,
+          dialogue: storyboardPanel.dialogue,
+          fallback: "a natural restrained expression",
+        }),
+        position: "centered with the complete portrait silhouette visible",
+      },
+    ],
+    style: compactProviderSceneField({
+      value:
+        [
+          input.styleBible?.art_style,
+          input.styleBible?.linework,
+          input.styleBible?.shading,
+        ]
+          .filter(Boolean)
+          .join(", ") || "clean monochrome manga ink linework and natural shading",
+      dialogue: storyboardPanel.dialogue,
+      fallback: "clean monochrome manga ink linework and natural shading",
+      maxLength: 400,
+    }),
+    background: compactProviderSceneField({
+      value: storyboardPanel.background,
+      dialogue: storyboardPanel.dialogue,
+      fallback: "a simple story-appropriate environment",
+    }),
+    composition:
+      "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height",
+    camera: {
+      angle: contractedCamera,
+      distance: "stable medium portrait distance",
+      lens: "70mm-equivalent portrait lens",
+    },
+    surface_finish:
+      "clean unmarked monochrome pictorial line art and natural material shading across every surface",
+    variation:
+      candidateCount > 1
+        ? `candidate ${candidateIndex + 1} of ${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`
+        : variationDirections[generationTarget][0],
+    input_image_roles: selectedReferenceAssets.map(
+      (reference, index) =>
+        `input_image_${index + 1}: ${providerReferenceRoleDirections[reference.subjectKind]}`,
+    ),
+  });
+  const sceneContract = [
+    "【生成契約：一枚の場面画像】",
+    `登場人数: ${panelSpecification.expectedCharacterCount}人。`,
+    panelSpecification.characterNames.length
+      ? `登場人物: ${panelSpecification.characterNames.join("、")}。`
+      : "人物を配置しない。",
+    panelSpecification.action ? `この瞬間の動作: ${panelSpecification.action}。` : "",
+    panelSpecification.expression
+      ? `表情・感情: ${panelSpecification.expression}。`
+      : "",
+    panelSpecification.background ? `場所: ${panelSpecification.background}。` : "",
+    panelSpecification.props.length
+      ? `必要な小物: ${panelSpecification.props.join("、")}。`
+      : "",
+    panelSpecification.composition
+      ? `人物と背景の配置: ${panelSpecification.composition}。`
+      : "",
+    `画角: ${contractedShot}。カメラ: ${contractedCamera}。`,
+    ...faceFramingContract,
+    usesCharacters
+      ? "人物の肌と口元は、顔の解剖学的な輪郭と自然な陰影だけで構成した、清潔で無記名の面にする。"
+      : "",
+    usesCharacters
+      ? "Keep every face and mouth area as clean unlettered anatomy composed only of facial contours and natural shading."
+      : "",
+    "画像全体をこの一つの瞬間と一つの視点だけで満たす。編集用の文字要素は後工程で追加するため、描画面は意味のある絵だけで完成させる。",
+  ].filter(Boolean);
   const revisionDirections = {
     face: "元画像の構図・人物・衣装・背景を維持し、顔立ちと目鼻の崩れだけを自然に修正する。",
     hands: "元画像の構図・人物・衣装・背景を維持し、手指の本数・関節・持ち方の崩れだけを自然に修正する。",
@@ -562,7 +657,7 @@ export function buildStoryboardPanelGeneration(input: {
         "紙面の上辺を上、下辺を地面側とする自然な正立方向で描く。人物は頭部が画面上側、足元が画面下側となり、重力に沿った姿勢にする。",
         "Upright orientation with the top edge skyward and the bottom edge groundward. Human heads stay toward the top edge, feet toward the bottom edge, with natural anatomy and gravity.",
       ];
-  const prompt = [
+  const detailedPrompt = [
     "PROVIDER CONTROL CONTRACT:",
     providerControlContract,
     "端から端まで一続きの、一般向けモノクロインク場面イラスト。枠のない一枚の長方形画像として描く。",
@@ -634,6 +729,10 @@ export function buildStoryboardPanelGeneration(input: {
     "最終確認として、正立方向、自然な人体、意味のある絵柄だけで構成された一枚絵に整える。",
     "Final output: one upright continuous edge-to-edge scene, a single camera view, natural anatomy, and pure unlettered artwork.",
   ].filter(Boolean).join("\n");
+  const prompt =
+    resolvedShot === "close_up" && usesCharacters && !input.revision
+      ? `PROVIDER CONTROL CONTRACT:\n${compactCloseUpContract}`
+      : detailedPrompt;
   if (prompt.length > 20_000)
     throw new ValidationError("生成条件が長すぎます。");
   return {
