@@ -1,7 +1,7 @@
 # PR-R4-2W 生成画像の採用品質ゲート
 
-作成日: 2026-08-16  
-Branch: `codex/fix-r4-2w-generation-quality-gate`  
+作成日: 2026-08-16
+Branch: `codex/fix-r4-2w-generation-quality-gate`
 Base: `origin/feature/manga-canvas-mvp` @ `3bd3488`（PR #279 merge commit）
 
 ## 目的
