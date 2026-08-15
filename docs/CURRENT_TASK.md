@@ -2,8 +2,9 @@
 
 ## 2026-08-15 PR-R4-2T 顔面無記名・引き構図の正方向契約
 
-- 状態: `CI_RUNNING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#277](https://github.com/team478a/manga/pull/277)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-cb03d2-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2t-clean-face-safe-framing`
 - Base: `origin/feature/manga-canvas-mvp`@`faeef67`（PR #276 merge commit）。
 - Production受入れ: `test`モニターのページ22・4コマ目を1案だけ再制作した。公式Worker [31886026453](https://github.com/team478a/manga/actions/runs/31886026453)は`status=idle requests=2 processed=1`で成功し、Asset `2fe8d763-cedd-4a13-99ea-afc85adbc758.png`を生成した。
@@ -12,8 +13,8 @@
 - 実装: JSON先頭を`composition`／`framing`へ変更し、余白の広い環境ポートレート、被写体高58%、髪上端18%、衣服下端82%、左右環境余白18%へ引く。台詞fallbackの`speaking`を除去し、顔面と全描画面を自然な線画・陰影だけで完成させる正方向契約を追加する。初回生成と一般向け安全再実行へ共通適用する。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure成功。
-- CI: Vercel Preview Commentsは成功。Core quality、Migration roundtrip、Windows build、Vercelは実行中。
-- 次: 最終文書同期HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功後に停止する。merge前に追加Production生成を行わない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: 最終文書同期HEADの同じ5チェックを再確認して停止する。責任者merge前に追加Production生成を行わず、merge後に同じ対象コマを1案だけ限定受入れする。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2T_CLEAN_FACE_SAFE_FRAMING.md`
 
 ---

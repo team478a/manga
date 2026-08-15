@@ -1,7 +1,8 @@
 # PR-R4-2T 顔面無記名・引き構図の正方向契約
 
 - Draft PR: [#277](https://github.com/team478a/manga/pull/277)（Draft／MERGEABLE）
-- 状態: `CI_RUNNING`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-cb03d2-team478as-projects.vercel.app
 
 ## 結論
 
@@ -71,6 +72,7 @@ PR-R4-2Sの短縮JSONは身体部位列挙を除去してmoderationを通過し�
 - research eval、Cloud漫画repository受入れ、owner isolation: 成功
 - workspace package build、Next Webpack production build: 成功
 - RC preflight: repository structure READY。外部secretと手動E2Eは既存どおりPENDING
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功
 
 ## ロールバック
 

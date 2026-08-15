@@ -12,7 +12,7 @@
 - 短縮JSONの`medium portrait`と後段座標の優先度競合、台詞除去fallbackの`speaking pose`を根因候補とした。構図座標をJSON先頭へ移し、58%／18%／82%／18%の環境ポートレートへ引き、発話語を除去して顔面と描画面を正方向の線画・陰影だけへ固定する。
 - Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
 - 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
-- Draft PR [#277](https://github.com/team478a/manga/pull/277)を作成。Draft／MERGEABLE。Vercel Preview Commentsは成功し、Core quality、Migration roundtrip、Windows build、Vercelを確認中。最終文書同期HEADの全CI／Vercel Preview成功後に停止する。
+- Draft PR [#277](https://github.com/team478a/manga/pull/277)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-cb03d2-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADの同じ5チェックを再確認して停止し、merge前にProduction再生成を行わない。
 
 ---
 
