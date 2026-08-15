@@ -9,8 +9,12 @@ const SAFE_EXPRESSION =
   "抑制された自然な表情と視線で物語上の緊張感を伝える。";
 const SAFE_DIRECTION =
   "光と影、人物間の距離、視線誘導で物語上の緊張感を間接的に伝える。";
+const SAFE_PROVIDER_CLOSE_UP_SCENE =
+  "medium shot from mid-torso upward of one general-audience manga character; the full head, complete hair silhouette, neck, and both shoulders are visible before any story detail";
 const SAFE_PROVIDER_CLOSE_UP_COMPOSITION =
-  "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height";
+  "medium shot from mid-torso upward; full head, complete hair silhouette, neck, and both shoulders visible; clear headroom above the hair and background on both sides; subject occupies about 55% of image height";
+const SAFE_PROVIDER_CLOSE_UP_POSITION =
+  "center frame from mid-torso upward; full hair silhouette below the top edge; both shoulders inside the left and right edges; clear background around the head";
 const SAFE_PROVIDER_ACTION =
   "a calm natural pose that communicates the story moment through posture and gaze";
 const SAFE_PROVIDER_EXPRESSION =
@@ -27,6 +31,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function sanitizeProviderControlContract(line: string) {
   try {
     const contract = JSON.parse(line) as Record<string, unknown>;
+    const camera = isRecord(contract.camera) ? contract.camera : {};
+    const { lens: _legacyLens, ...cameraWithoutLegacyLens } = camera;
     const compactSubjects = Array.isArray(contract.subjects)
       ? contract.subjects.map((subject) =>
           isRecord(subject)
@@ -34,6 +40,7 @@ function sanitizeProviderControlContract(line: string) {
                 ...subject,
                 action: SAFE_PROVIDER_ACTION,
                 expression: SAFE_PROVIDER_EXPRESSION,
+                position: SAFE_PROVIDER_CLOSE_UP_POSITION,
               }
             : subject,
         )
@@ -48,9 +55,17 @@ function sanitizeProviderControlContract(line: string) {
       composition: SAFE_PROVIDER_CLOSE_UP_COMPOSITION,
       ...(compactCloseUp
         ? {
+            scene: SAFE_PROVIDER_CLOSE_UP_SCENE,
             subjects: compactSubjects,
             background: SAFE_PROVIDER_BACKGROUND,
             variation: SAFE_PROVIDER_VARIATION,
+            camera: {
+              ...cameraWithoutLegacyLens,
+              distance: "medium shot from mid-torso upward",
+              "lens-mm": 50,
+              focus:
+                "sharp focus on the complete head and upper body while retaining visible surrounding background",
+            },
           }
         : {}),
     });

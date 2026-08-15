@@ -195,6 +195,13 @@ const providerReferenceRoleDirections: Record<
   prop: "prop shape, materials, scale, and identifying details only",
 };
 
+const providerCloseUpScene =
+  "medium shot from mid-torso upward of one general-audience manga character; the full head, complete hair silhouette, neck, and both shoulders are visible before any story detail";
+const providerCloseUpPosition =
+  "center frame from mid-torso upward; full hair silhouette below the top edge; both shoulders inside the left and right edges; clear background around the head";
+const providerCloseUpComposition =
+  "medium shot from mid-torso upward; full head, complete hair silhouette, neck, and both shoulders visible; clear headroom above the hair and background on both sides; subject occupies about 55% of image height";
+
 function buildProviderReferenceRoleContract(
   references: readonly PanelReferenceAsset[],
 ) {
@@ -520,14 +527,14 @@ export function buildStoryboardPanelGeneration(input: {
     subject_count: panelSpecification.expectedCharacterCount,
     composition:
       resolvedShot === "close_up"
-        ? "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height"
+        ? providerCloseUpComposition
         : contractedShot,
     camera_angle: contractedCamera,
     image_surface: "clean monochrome pictorial line art and natural material shading",
     lettering_stage: "blank artwork ready for dialogue and balloons to be overlaid later",
   });
   const compactCloseUpContract = JSON.stringify({
-    scene: "one general-audience monochrome manga portrait from one camera view",
+    scene: providerCloseUpScene,
     subjects: [
       {
         description: [
@@ -556,7 +563,7 @@ export function buildStoryboardPanelGeneration(input: {
           dialogue: storyboardPanel.dialogue,
           fallback: "a natural restrained expression",
         }),
-        position: "centered with the complete portrait silhouette visible",
+        position: providerCloseUpPosition,
       },
     ],
     style: compactProviderSceneField({
@@ -577,12 +584,13 @@ export function buildStoryboardPanelGeneration(input: {
       dialogue: storyboardPanel.dialogue,
       fallback: "a simple story-appropriate environment",
     }),
-    composition:
-      "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height",
+    composition: providerCloseUpComposition,
     camera: {
       angle: contractedCamera,
-      distance: "stable medium portrait distance",
-      lens: "70mm-equivalent portrait lens",
+      distance: "medium shot from mid-torso upward",
+      "lens-mm": 50,
+      focus:
+        "sharp focus on the complete head and upper body while retaining visible surrounding background",
     },
     surface_finish:
       "clean unmarked monochrome pictorial line art and natural material shading across every surface",

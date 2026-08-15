@@ -1,5 +1,26 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2Q クローズアップ構図優先度・公式JSON契約
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#274](https://github.com/team478a/manga/pull/274)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-tnt1bshvg-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-2q-closeup-framing-priority`
+- Base: `origin/feature/manga-canvas-mvp`@`9519bfc`（PR #273 merge commit）。
+- Production受入れ: PR #273反映後、`test`モニターのページ22・4コマ目で失敗Jobの安全再実行を1回だけ実施した。Worker run `31870804091`は`status=idle requests=2 processed=1`、新規候補は手動確認待ち100%で完了した。
+- Credit: 使用46／予約0／残54 → 使用46／予約2／残52 → 使用48／予約0／残52。重複Job、追加Worker、再試行なし。
+- 品質結果: 704×1024 PNGはProvider moderationを通過し、両目・顔・無記名面を満たした。一方、頭頂、髪の上部、首、両肩、周囲背景が不足する顔全面の寄りで販売品質未達。候補採用、コマ配置、品質承認、Canvas revision、公開・販売状態は変更していない。
+- 根因: FLUX.2は先頭要素を重視するが、短縮JSONが`portrait`で始まり、後段の65%構図より顔寄り解釈を先に与えていた。cameraも公式例の数値`lens-mm`ではなく独自`lens`だった。
+- 実装: JSON先頭を胸元から上の`medium shot`へ変更し、完全な頭部、髪、首、両肩、頭上・左右背景、被写体高約55%を先頭から固定する。`lens-mm: 50`と全体focusへ公式JSON構造を合わせる。一般向け安全再実行も保存済み旧JSONを同じ契約へ正規化する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。通常Turbopackは既知のWindows path長上限で停止。
+- CI: 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Production変更: 上記1 Job／2 creditのみ。本PR実装後のProvider E2Eはmerge前に行わない。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2Q_CLOSEUP_FRAMING_PRIORITY.md`
+- 次: 最終文書同期HEADの全CI／Vercel Preview成功を再確認して停止する。責任者確認前に追加のProduction生成を行わない。
+
+---
+
 ## 2026-08-15 PR-R4-2P 短縮クローズアップの一般向け安全再実行
 
 - 状態: `READY_FOR_OWNER_REVIEW`
