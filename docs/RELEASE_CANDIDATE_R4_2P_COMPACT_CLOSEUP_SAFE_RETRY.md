@@ -4,6 +4,8 @@
 対象: `team478a/manga`
 Branch: `codex/fix-r4-2p-compact-closeup-safe-retry`
 Base: `feature/manga-canvas-mvp` @ `e16e00111affb143e854b3bff6637821dbf084f0`（PR #272 merge commit）
+Draft PR: [#273](https://github.com/team478a/manga/pull/273)（Draft／MERGEABLE）
+Vercel Preview: https://mangai-hub-staging-5cgcg63dm-team478as-projects.vercel.app
 
 ## 結論
 
@@ -85,6 +87,11 @@ URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、p
 - Workspace package build: 成功
 - Next.js Webpack production build: 成功
 - `git diff --check`: 成功
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
 
 ## ロールバック
 

@@ -13,7 +13,7 @@
 - Provider拒否後だけ短縮JSONの動作、表情、背景、候補演出を一般向けの間接表現へ置換する。人物description、position、style、camera、70mm相当、65%構図、無記名面、参照役割、target panel、reference Asset IDは保存する。
 - 初回生成Promptと、URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中32/32、Hub 726/726、Canvas 26/26、AI 48/48、deps、lint、Hub typecheck、migration 59/59、packages／Webpack production build、diff check成功。
-- R4-2P merge前に追加Provider生成を行わない。Draft PRとCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功後に停止する。
+- R4-2P merge前に追加Provider生成を行わない。Draft PR [#273](https://github.com/team478a/manga/pull/273)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Previewは`https://mangai-hub-staging-5cgcg63dm-team478as-projects.vercel.app`。最終文書同期HEADを再確認して停止する。
 
 ---
 
