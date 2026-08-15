@@ -9,6 +9,7 @@ import {
   listCloudGenerationJobs,
 } from "../application/enqueue-generation.ts";
 import { cancelCloudGenerationJob } from "../application/cancel-generation.ts";
+import { retryFailedInteractiveCloudGenerationJob } from "../application/retry-generation.ts";
 
 const createSchema = z.object({
   projectId: z.string().uuid(),
@@ -72,6 +73,35 @@ export async function cancelGenerationJob(
     return NextResponse.json({ id: await cancelCloudGenerationJob(jobId) });
   } catch (error) {
     const response = toApiError(error, "キャンセルに失敗しました。");
+    return NextResponse.json(response.body, { status: response.status });
+  }
+}
+
+export async function retryGenerationJob(
+  request: Request,
+  context: { params: Promise<{ jobId: string }> },
+) {
+  try {
+    const rateLimit = await enforceCloudAiRateLimit(request);
+    if (!rateLimit.allowed) {
+      const response = toApiError(
+        new RateLimitedError(
+          "Cloud AI要求が集中しています。1分後に再試行してください。",
+        ),
+        "再実行に失敗しました。",
+      );
+      return NextResponse.json(response.body, {
+        status: response.status,
+        headers: { "retry-after": String(rateLimit.retryAfterSeconds) },
+      });
+    }
+    const jobId = z.string().uuid().parse((await context.params).jobId);
+    return NextResponse.json(
+      { id: await retryFailedInteractiveCloudGenerationJob(jobId) },
+      { status: 202 },
+    );
+  } catch (error) {
+    const response = toApiError(error, "再実行に失敗しました。");
     return NextResponse.json(response.body, { status: response.status });
   }
 }

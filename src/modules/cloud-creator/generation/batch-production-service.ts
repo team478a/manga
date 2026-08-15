@@ -16,6 +16,10 @@ import {
 } from "./generation-service";
 import { assertCloudGenerationBatchPreflight } from "./batch-preflight-service";
 import { mapCloudGenerationBatchRegistrationError } from "./generation-errors";
+import {
+  buildGeneralAudienceGenerationRetry,
+  isGeneralAudienceGenerationRetry,
+} from "../../manga/domain/general-audience-generation-retry";
 
 export type CloudGenerationBatch = MangaGenerationBatch;
 
@@ -176,13 +180,25 @@ export async function retryFailedCloudGenerationBatchTargets(batchId: string) {
 export async function retryFailedCloudGenerationJob(jobId: string) {
   const { supabase } = await cloudCreatorContext();
   const source = await supabase.from("cloud_generation_jobs")
-    .select("id,project_id,page_id,status,input").eq("id", jobId).maybeSingle();
+    .select("id,project_id,page_id,status,input,error_code,provider_job_id")
+    .eq("id", jobId)
+    .maybeSingle();
   if (source.error || !source.data || source.data.status !== "failed")
     throw new ValidationError("再実行できる失敗Jobが見つかりません。");
   const parsedGeneration = cloudGenerationInputSchema.safeParse(source.data.input);
   if (!parsedGeneration.success)
     throw new ValidationError("元の生成条件を安全に復元できないため、再実行できませんでした。");
-  const generation = parsedGeneration.data;
+  const providerRejected =
+    Boolean(source.data.provider_job_id) &&
+    (source.data.error_code === "provider_rejected" ||
+      source.data.error_code === "provider_moderation_blocked");
+  if (providerRejected && isGeneralAudienceGenerationRetry(parsedGeneration.data))
+    throw new ValidationError(
+      "一般向けの安全な再構成でも生成できませんでした。構図や内容を変更してください。",
+    );
+  const generation = providerRejected
+    ? buildGeneralAudienceGenerationRetry(parsedGeneration.data)
+    : parsedGeneration.data;
   const newJobId = await enqueueCloudGenerationJob({
     projectId: source.data.project_id,
     pageId: source.data.page_id ?? undefined,

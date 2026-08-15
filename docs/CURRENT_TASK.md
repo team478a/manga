@@ -1,5 +1,25 @@
 # MANGAI Current Task
 
+## 2026-08-15 PR-R4-2J Provider拒否後の対話型コマ安全再実行
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- Draft PR: 作成前
+- Branch: `codex/fix-r4-2j-interactive-safe-retry`
+- Base: `origin/feature/manga-canvas-mvp`@`193f0ae`（PR #266 merge commit）。
+- Production切り分け: 品質参照Assetを作品全体の画風へ1件登録し、ページ22の不良候補を1案だけ作り直した。公式Workerで同一Provider Jobのpoll継続を確認したが、初回と画面からの1回の再実行はいずれもProvider完了時に失敗した。各回の予約2 creditは全額解放され、使用38、予約0、残り62へ復元した。追加実行は停止した。
+- 根因: ページ編集画面の失敗Job再実行は失敗Job IDを使わず、同じパネルから元の生成Promptを再構築していた。未マージの旧PR #254に長編batch専用の安全化はあったが、現行基準にも対話型経路にも含まれていなかった。
+- 実装: `POST /api/creator/generation-jobs/[jobId]/retry`を追加し、RLS下で失敗Jobの保存済み入力を復元する。Provider投入後の`provider_rejected`／`provider_moderation_blocked`だけ、人物外見、画風、参照Asset、対象コマ、source revisionを保持したまま動作・感情・演出を一般向けの間接表現へ安全化する。Panel Specificationも新Jobへ引き継ぐ。
+- 再送防止: 安全化済み入力が再度Provider拒否された場合は同一入力を再登録せず、構図・内容変更を案内する。BFLの`Request Moderated`／`Content Moderated`は即時の非retry moderation拒否へ分類する。長編batchの失敗Jobにも同じDomain policyを適用する。
+- 不変: DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry回数、210秒timeout、30分上限、Scheduler、Canvas schema、PNG／PDF、checkpoint、成人向け境界、Desktop。
+- 検証: 集中27/27、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure、diff check成功。
+- ローカル既知制約: 通常Turbopack buildはWindows path長上限、Desktop test／a11yは既存`@napi-rs/keyring`型宣言不足で停止。今回Desktop差分はなく、GitHub Windows CIとVercelを正式結果とする。
+- Production変更: 参照登録1件と上記2回の限定生成以外は変更なし。コード実装後のProvider E2E、DB／Storage／作品内容の追加変更は行っていない。
+- 旧PR: PR #254はOPENのまま変更・comment・close・mergeしていない。本PRは最新基準から独立実装する。
+- 証跡: `docs/RELEASE_CANDIDATE_R4_2J_INTERACTIVE_SAFE_RETRY.md`
+- 次: commit、push、Draft PR、全CI、Vercel Preview成功で停止する。merge前にProductionで再実行しない。
+
+---
+
 ## 2026-08-15 PR-R4-2H 参照付き単一コマ生成
 
 - 状態: `READY_FOR_OWNER_REVIEW`

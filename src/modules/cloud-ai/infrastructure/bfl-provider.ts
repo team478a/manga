@@ -46,6 +46,8 @@ export type BflProviderDiagnostic = {
   outcome:
     | "http_rejected"
     | "provider_failed"
+    | "request_moderated"
+    | "content_moderated"
     | "response_invalid"
     | "timeout";
   httpStatus?: number;
@@ -378,6 +380,23 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
             this.config.onDiagnostic,
           );
         const result = pollResponseSchema.parse(await response.json());
+        if (
+          result.status === "Request Moderated" ||
+          result.status === "Content Moderated"
+        ) {
+          this.config.onDiagnostic?.({
+            stage: "poll",
+            outcome:
+              result.status === "Request Moderated"
+                ? "request_moderated"
+                : "content_moderated",
+          });
+          throw new AIProviderError(
+            "provider_moderation_blocked",
+            "一般向け画像として直接生成できない表現が含まれていました。内容を穏やかにして再実行してください。",
+            false,
+          );
+        }
         if (result.status === "Error" || result.status === "Failed") {
           this.config.onDiagnostic?.({
             stage: "poll",
