@@ -12,7 +12,7 @@
 - コマ1は疑似文字、口元の生成文字、端末表示の生成文字、端末重複が残った。完成3案を不採用、1 Jobは生成失敗。保留Jobと予約残はなく、追加Provider実行を停止した。
 - 短縮Provider JSONの品質条件と長文Promptへ、端末displayを反射と光だけの無記名ガラス面にすること、必要な各小物を指定位置へ一つだけ描くことを追加した。
 - 集中31/31、Hub 735/735、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
-- Draft PR [#281](https://github.com/team478a/manga/pull/281)を作成。Draft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercelは実行中、Vercel Preview Commentsは成功。merge前にコマ1の追加Production生成を行わない。
+- Draft PR [#281](https://github.com/team478a/manga/pull/281)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-accept-r-1189f2-team478as-projects.vercel.app`。実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADの同じ5チェックを再確認し、merge前にコマ1の追加Production生成を行わない。
 - Prompt本文、Provider応答、署名URL、利用者画像、API keyは記録していない。公開・販売状態は変更していない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2X_BLANK_DEVICE_SINGLE_PROP.md`
 

@@ -4,14 +4,15 @@
 
 - Branch: `codex/accept-r4-2x-page22-quality-gate`
 - Base: `origin/feature/manga-canvas-mvp` @ `e844143`（PR #280 merge commit）
-- 状態: `CI_RUNNING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#281](https://github.com/team478a/manga/pull/281)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-accept-r-1189f2-team478as-projects.vercel.app
 - PR #280反映後のProductionページ22で、コマ3の合格1案を4項目品質確認して配置した。Canvas revision 7→8、保存、PNG成功を確認した。コマ1は計4案中3案完成・1 Job失敗で、完成案はいずれも不採用とした。
 - コマ1では端末画面の疑似文字と端末重複が構図調整後も再現した。追加課金生成を止め、短縮・長文Promptへ端末の無記名ガラス面と小物単一化の正方向契約を追加する。
 - Worker 3回は成功。Creditは使用56／予約0／残44から使用64／予約0／残36。保留Job、予約残、公開・販売変更なし。
 - 集中31/31、Hub 735/735、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存型宣言不足で停止し、Windows CIを正式判定にする。
 - URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
-- Core quality、Migration roundtrip、Windows build、Vercelは実行中。Vercel Preview Commentsは成功。最終HEADの全チェック完了後に停止する。
+- 実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADの同じ5チェックを再確認して停止する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2X_BLANK_DEVICE_SINGLE_PROP.md`
 
 ---

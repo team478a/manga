@@ -4,6 +4,7 @@
 Branch: `codex/accept-r4-2x-page22-quality-gate`
 Base: `origin/feature/manga-canvas-mvp` @ `e844143`（PR #280 merge commit）
 Draft PR: [#281](https://github.com/team478a/manga/pull/281)
+Vercel Preview: https://mangai-hub-staging-git-codex-accept-r-1189f2-team478as-projects.vercel.app
 
 ## 目的
 
@@ -44,10 +45,11 @@ PR #280の採用品質ゲートをProductionのページ22へ適用し、再制�
 - 集中31/31、Hub 735/735、Canvas 26/26、AI 48/48、100ページ長編4/4が成功した。
 - dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff checkが成功した。
 - Desktopローカルtypecheckは既存の`@napi-rs/keyring`型宣言不足で停止した。変更範囲外のためWindows CIを正式判定にする。
-- Draft PR [#281](https://github.com/team478a/manga/pull/281)を作成した。Draft／MERGEABLE。CIとVercel Previewは実行中。
+- Draft PR [#281](https://github.com/team478a/manga/pull/281)を作成した。Draft／MERGEABLE。実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- Vercel Previewは`https://mangai-hub-staging-git-codex-accept-r-1189f2-team478as-projects.vercel.app`へdeployment成功。
 
 ## 停止条件
 
-- Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認する。
+- 最終文書同期HEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を再確認する。
 - Production変更が上記受入れ結果以外にないこと、予約Creditが0であることを確認する。
 - 責任者のmerge前にコマ1の追加Production生成と次工程へ進まない。
