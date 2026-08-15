@@ -4,8 +4,9 @@
 
 - Branch: `codex/fix-r4-2n-provider-moderation-safe-framing`
 - Base: `ff5ea38e80d44acf7a379f1b01b75de5d748a1ba`（PR #270 merge commit）
-- 状態: `VERIFYING_CI`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#271](https://github.com/team478a/manga/pull/271)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-kg3ib7at3-team478as-projects.vercel.app
 - 対象: R4-2MのProvider JSON構図とProvider拒否後の安全再実行
 - Production変更: 限定受入れの失敗2 Jobのみ。Asset・実費・作品変更なし
 
@@ -75,6 +76,11 @@ Provider拒否後の一般向け安全再実行は、`PROVIDER CONTROL CONTRACT:
 | Workspace package build | 成功 |
 | Next.js Webpack production build | 成功 |
 | RC structure preflight | 成功（外部設定・手動E2Eは既存どおりpending） |
+| Core quality | 成功 |
+| Migration roundtrip | 成功 |
+| Windows build | 成功 |
+| Vercel | 成功 |
+| Vercel Preview Comments | 成功 |
 
 ## 外部契約と停止条件
 

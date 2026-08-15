@@ -14,6 +14,7 @@
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中30/30、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
 - R4-2N実装後のProduction変更と実Provider E2Eはない。Draft PR [#271](https://github.com/team478a/manga/pull/271)はDraft／MERGEABLE。最終HEADの全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-kg3ib7at3-team478as-projects.vercel.app`。最終文書同期HEADを再確認して停止する。
 
 ---
 
