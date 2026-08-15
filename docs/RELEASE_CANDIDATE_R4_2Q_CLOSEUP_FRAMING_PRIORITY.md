@@ -1,5 +1,8 @@
 # PR-R4-2Q クローズアップ構図優先度・公式JSON契約
 
+- Draft PR: [#274](https://github.com/team478a/manga/pull/274)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-tnt1bshvg-team478as-projects.vercel.app
+
 ## 結論
 
 PR-R4-2PのProduction受入れで、Provider moderationと安全再実行は正常化した。一方、生成された704×1024 PNGは両目・顔・無記名面を満たしたものの、頭頂と上半身が画面外となる顔全面の極端な寄りで、販売品質には達していない。
@@ -74,6 +77,7 @@ R4-2Qでは、FLUX.2へ渡す短縮JSONの最初に中景構図を置き、`port
 - Next Webpack production build: 成功
 - RC preflight: repository structure READY。ローカル外部secretと手動E2EだけPENDING
 - 通常Turbopack build: 既知のWindowsパス長上限で停止。Vercelを正式判定にする
+- GitHub／Vercel: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは初回HEADですべて成功
 
 ## 停止条件と次の確認
 

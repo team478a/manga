@@ -4,14 +4,17 @@
 
 - Branch: `codex/fix-r4-2q-closeup-framing-priority`
 - Base: `origin/feature/manga-canvas-mvp` @ `9519bfc`（PR #273 merge commit）
-- 状態: `LOCAL_VALIDATED`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#274](https://github.com/team478a/manga/pull/274)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-tnt1bshvg-team478as-projects.vercel.app
 - PR #273反映後、Productionの`test`モニターでページ22・4コマ目の失敗Jobを1回だけ安全再実行した。Worker `31870804091`は`status=idle requests=2 processed=1`で成功した。
 - 使用46／予約0／残54 → 使用46／予約2／残52 → 使用48／予約0／残52。新規候補1件、重複なし。候補採用、配置、Canvas、公開・販売状態は変更していない。
 - 704×1024 PNGはmoderation通過、両目・顔・無記名面を満たしたが、顔が画面全体を占め、頭頂、首、両肩、背景余白が不足したため不採用。
 - 短縮JSON先頭の`portrait`が後段の65%構図より優先された可能性が高い。先頭を胸元から上の`medium shot`へ変更し、頭部、髪、首、両肩、背景、55%を固定する。cameraは公式例の`lens-mm: 50`へ合わせる。
 - 保存済み旧短縮JSONの一般向け安全再実行も同じ契約へ正規化する。Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
 - 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。
-- 次: Draft PRと全CI／Vercel Preview成功後に停止する。merge前にProduction再生成を行わない。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: 最終文書同期HEADの全CI／Vercel Preview成功後に停止する。merge前にProduction再生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2Q_CLOSEUP_FRAMING_PRIORITY.md`
 
 ---

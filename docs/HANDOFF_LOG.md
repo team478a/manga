@@ -13,7 +13,8 @@
 - FLUX.2が先頭語を重視する一方、短縮JSONは`portrait`から始まっていた。胸元から上の`medium shot`、完全な頭部、髪、首、両肩、背景、55%占有を最初に固定し、cameraを公式例の数値`lens-mm: 50`へ合わせた。保存済み旧JSONの安全再実行も同じ契約へ正規化する。
 - Provider、model、pricing、credit、DB、migration、RPC、Storage、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。通常Turbopackだけ既知のWindows path長で停止した。
-- 次: commit・push・Draft PR作成後、全CI／Vercel Preview成功で停止する。merge前に追加のProduction生成を行わない。
+- Draft PR [#274](https://github.com/team478a/manga/pull/274)を作成。Draft／MERGEABLE、Previewは`https://mangai-hub-staging-tnt1bshvg-team478as-projects.vercel.app`。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: 最終文書同期HEADの全CI／Vercel Preview成功後に停止する。merge前に追加のProduction生成を行わない。
 
 ---
 
