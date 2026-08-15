@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2P 短縮クローズアップの一般向け安全再実行
+
+- PR #272 merge commit `e16e00111affb143e854b3bff6637821dbf084f0`を含む最新基準から`codex/fix-r4-2p-compact-closeup-safe-retry`を開始した。
+- Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Job `d0eb56b3-50b9-4bf3-b618-2a7251c6ab56`、公式Worker run `31869411513`は`status=idle requests=2 processed=1`。
+- Jobは`provider_moderation_blocked`、試行1/2、進捗1%、actual cost 0、Assetなし。使用46、予約0→2→0、残り54→52→54へ全額復元し、重複Job、継続Worker、候補採用、画像配置、Canvas、公開・販売状態の変更はない。
+- R4-2Oで場面情報を短縮JSONの`subjects.action`／`subjects.expression`／`background`／`variation`へ移したが、既存の安全再実行は旧来の行単位Promptだけを変換していた。短縮JSONの直接描写を変えず再送する回帰を根因と判定した。
+- Provider拒否後だけ短縮JSONの動作、表情、背景、候補演出を一般向けの間接表現へ置換する。人物description、position、style、camera、70mm相当、65%構図、無記名面、参照役割、target panel、reference Asset IDは保存する。
+- 初回生成Promptと、URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 集中32/32、Hub 726/726、Canvas 26/26、AI 48/48、deps、lint、Hub typecheck、migration 59/59、packages／Webpack production build、diff check成功。
+- R4-2P merge前に追加Provider生成を行わない。Draft PRとCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功後に停止する。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2O クローズアップProvider Prompt短縮・安定化
 
 - PR #271 merge commit `9047f40e7623200f28c3afb1b5dd41ac87fa4557`を含む最新基準から`codex/fix-r4-2o-compact-closeup-provider-prompt`を開始した。

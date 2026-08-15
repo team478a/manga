@@ -40,6 +40,36 @@ const providerContractGeneration = {
   ].join("\n"),
 };
 
+const compactProviderContractGeneration = {
+  ...imageGeneration,
+  prompt: [
+    "PROVIDER CONTROL CONTRACT:",
+    JSON.stringify({
+      scene: "one general-audience monochrome manga portrait from one camera view",
+      subjects: [
+        {
+          description: "same black-haired protagonist in a gray hoodie",
+          action: "directly depicts a disturbing incident",
+          expression: "intense fear caused by the incident",
+          position: "centered with the complete portrait silhouette visible",
+        },
+      ],
+      style: "clean monochrome manga ink linework",
+      background: "the disturbing incident is shown directly in the background",
+      composition:
+        "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height",
+      camera: {
+        angle: "eye level",
+        distance: "stable medium portrait distance",
+        lens: "70mm-equivalent portrait lens",
+      },
+      surface_finish: "clean unmarked monochrome pictorial line art",
+      variation: "emphasize the disturbing incident",
+      input_image_roles: ["input_image_1: preserve character identity only"],
+    }),
+  ].join("\n"),
+};
+
 test("Provider拒否後は人物同一性と参照画像を維持して直接描写だけを安全化する", () => {
   const retry = buildGeneralAudienceGenerationRetry(imageGeneration);
   assert.match(retry.prompt, /一般向け作品として刺激の強い直接描写を避け/);
@@ -77,4 +107,28 @@ test("Provider拒否後は構造化構図の身体部位列挙を安全な非cro
   assert.equal(contract.camera_angle, "目線の高さ");
   assert.match(retry.prompt, /人物設定: 黒髪、細身、灰色のパーカー/);
   assert.doesNotMatch(retry.prompt, /both eyes, nose, mouth, chin/);
+});
+
+test("短縮クローズアップ契約は同一性と撮影条件を保って直接描写だけを安全化する", () => {
+  const retry = buildGeneralAudienceGenerationRetry(
+    compactProviderContractGeneration,
+  );
+  const contract = JSON.parse(retry.prompt.split("\n")[2]);
+
+  assert.equal(
+    contract.subjects[0].description,
+    "same black-haired protagonist in a gray hoodie",
+  );
+  assert.match(contract.subjects[0].action, /posture and gaze/);
+  assert.match(contract.subjects[0].expression, /general audience/);
+  assert.match(contract.background, /non-graphic/);
+  assert.match(contract.variation, /convey tension indirectly/);
+  assert.equal(contract.camera.angle, "eye level");
+  assert.equal(contract.camera.lens, "70mm-equivalent portrait lens");
+  assert.deepEqual(contract.input_image_roles, [
+    "input_image_1: preserve character identity only",
+  ]);
+  assert.doesNotMatch(retry.prompt, /disturbing incident|intense fear/);
+  assert.equal(retry.targetPanelId, imageGeneration.targetPanelId);
+  assert.equal(retry.referenceAssetIds, imageGeneration.referenceAssetIds);
 });

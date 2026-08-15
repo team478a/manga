@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2P 短縮クローズアップの一般向け安全再実行、2026-08-15）
+
+- Branch: `codex/fix-r4-2p-compact-closeup-safe-retry`
+- Base: `origin/feature/manga-canvas-mvp` @ `e16e001`（PR #272 merge commit）
+- 状態: `IMPLEMENTED_VALIDATION_COMPLETE_DRAFT_PR_PENDING`
+- PR #272反映後、Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Job `d0eb56b3-50b9-4bf3-b618-2a7251c6ab56`、Worker `31869411513`は`status=idle requests=2 processed=1`。
+- Jobは`provider_moderation_blocked`、試行1/2、進捗1%、actual cost 0、Assetなし。使用46、予約0→2→0、残り54→52→54で全額復元し、重複Jobはない。
+- R4-2Oで場面情報を短縮JSON内へ移した一方、既存安全再実行は旧来の行単位Promptだけを変換していた。短縮JSONの動作、表情、背景、候補演出が未変換のまま再送される回帰を確認した。
+- Provider拒否後だけ短縮JSONの直接描写を一般向けの間接表現へ変換する。人物同一性、衣装、style、position、camera、70mm相当、65%構図、無記名面、参照役割、target panel、reference Asset IDを維持する。
+- 初回生成Prompt、URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中32/32、Hub 726/726、Canvas 26/26、AI 48/48、deps、lint、Hub typecheck、migration 59/59、packages／Webpack build、diff check成功。
+- Production変更は上記1 Jobだけで課金なし。merge前に追加の実Provider E2Eを行わない。Draft PRと5チェック成功後に停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2P_COMPACT_CLOSEUP_SAFE_RETRY.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2O クローズアップProvider Prompt短縮・安定化、2026-08-15）
 
 - Branch: `codex/fix-r4-2o-compact-closeup-provider-prompt`
