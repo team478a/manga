@@ -102,7 +102,7 @@ test("Provider拒否後は構造化構図の身体部位列挙を安全な非cro
   const contract = JSON.parse(retry.prompt.split("\n")[2]);
   assert.equal(
     contract.composition,
-    "medium shot from mid-torso upward; full head, complete hair silhouette, neck, and both shoulders visible; clear headroom above the hair and background on both sides; subject occupies about 55% of image height",
+    "complete waist-up medium shot; entire hair silhouette, face, neck, shoulders, chest, and waist inside the canvas; clear headroom and environmental space on both sides",
   );
   assert.equal(contract.camera_angle, "目線の高さ");
   assert.match(retry.prompt, /人物設定: 黒髪、細身、灰色のパーカー/);
@@ -123,13 +123,15 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.match(contract.subjects[0].expression, /general audience/);
   assert.match(contract.background, /non-graphic/);
   assert.match(contract.variation, /convey tension indirectly/);
-  assert.match(contract.scene, /^medium shot from mid-torso upward/);
-  assert.match(contract.subjects[0].position, /full hair silhouette below the top edge/);
+  assert.match(contract.scene, /complete waist-up medium shot/);
+  assert.match(contract.output_type, /continuous edge-to-edge/);
+  assert.match(contract.canvas, /one uninterrupted pictorial scene/);
+  assert.match(contract.subjects[0].position, /top of hair near 15%/);
   assert.equal(contract.camera.angle, "eye level");
-  assert.equal(contract.camera.distance, "medium shot from mid-torso upward");
+  assert.equal(contract.camera.distance, "complete waist-up medium shot");
   assert.equal(contract.camera["lens-mm"], 50);
   assert.equal("lens" in contract.camera, false);
-  assert.match(contract.camera.focus, /complete head and upper body/);
+  assert.match(contract.camera.focus, /entire head and waist-up figure/);
   assert.deepEqual(contract.input_image_roles, [
     "input_image_1: preserve character identity only",
   ]);

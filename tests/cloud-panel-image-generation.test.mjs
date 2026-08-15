@@ -400,14 +400,16 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
   assert.equal(
     providerContract.composition,
-    "medium shot from mid-torso upward; full head, complete hair silhouette, neck, and both shoulders visible; clear headroom above the hair and background on both sides; subject occupies about 55% of image height",
+    "complete waist-up medium shot; entire hair silhouette, face, neck, shoulders, chest, and waist inside the canvas; clear headroom and environmental space on both sides",
   );
-  assert.match(providerContract.scene, /^medium shot from mid-torso upward/);
-  assert.match(providerContract.subjects[0].position, /full hair silhouette below the top edge/);
-  assert.equal(providerContract.camera.distance, "medium shot from mid-torso upward");
+  assert.match(providerContract.scene, /complete waist-up medium shot/);
+  assert.match(providerContract.output_type, /continuous edge-to-edge/);
+  assert.match(providerContract.canvas, /one uninterrupted pictorial scene/);
+  assert.match(providerContract.subjects[0].position, /top of hair near 15%/);
+  assert.equal(providerContract.camera.distance, "complete waist-up medium shot");
   assert.equal(providerContract.camera["lens-mm"], 50);
   assert.equal("lens" in providerContract.camera, false);
-  assert.match(providerContract.camera.focus, /complete head and upper body/);
+  assert.match(providerContract.camera.focus, /entire head and waist-up figure/);
   assert.match(providerContract.surface_finish, /clean unmarked monochrome/);
   assert.equal(
     providerContract.subjects[0].action,
@@ -464,7 +466,7 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
   const closeUpContract = JSON.parse(
     closeUpOverride.generation.prompt.split("\n")[1],
   );
-  assert.match(closeUpContract.composition, /mid-torso upward|55%/);
+  assert.match(closeUpContract.composition, /complete waist-up medium shot/);
 
   const wideOverrideStoryboard = structuredClone(storyboard);
   wideOverrideStoryboard.pages[0].panels[0].shot = "close_up";
@@ -480,7 +482,7 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
       gazeDirection: "storyboard",
     },
   });
-  assert.doesNotMatch(wideOverride.generation.prompt, /subject occupies about 55%/);
+  assert.doesNotMatch(wideOverride.generation.prompt, /complete waist-up medium shot/);
 });
 
 test("人物と参照素材は肌・口元を無記名の自然な面へ固定する", () => {

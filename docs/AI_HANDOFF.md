@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2R 短縮クローズアップの一枚絵・画面内ランドマーク契約、2026-08-15）
+
+- Branch: `codex/fix-r4-2r-compact-output-framing`
+- Base: `origin/feature/manga-canvas-mvp` @ `ebc9107`（PR #274 merge commit）
+- 状態: `LOCAL_VALIDATED_DRAFT_PR_PENDING`
+- PR #274反映後、Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。初回は`provider_moderation_blocked`で課金なし、安全再実行はWorker `31873352419`で704×1024 PNGを生成し2 creditを確定した。
+- 画像は口元から胸元だけの過度な接写で頭頂・髪・両目が画面外、顔中央に不要な矩形線があり不採用。配置、承認、Canvas、公開・販売状態は変更していない。
+- BFLはnegative promptをサポートしない。短縮JSONへ一続きの一枚絵を示す`output_type`／`canvas`を追加し、腰上中景、髪上端約15%、両肩を左右余白内、腰を画面下部へ置くランドマークを固定する。
+- 保存済み旧短縮JSONの一般向け安全再実行も同じ契約へ正規化する。Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。通常TurbopackとDesktopローカル依存は既知制約のためCIを正式判定にする。次: Draft PR、全CI／Vercel Preview成功後に停止する。merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2R_COMPACT_OUTPUT_FRAMING.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2Q クローズアップ構図優先度・公式JSON契約、2026-08-15）
 
 - Branch: `codex/fix-r4-2q-closeup-framing-priority`

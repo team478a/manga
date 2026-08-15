@@ -10,11 +10,13 @@ const SAFE_EXPRESSION =
 const SAFE_DIRECTION =
   "光と影、人物間の距離、視線誘導で物語上の緊張感を間接的に伝える。";
 const SAFE_PROVIDER_CLOSE_UP_SCENE =
-  "medium shot from mid-torso upward of one general-audience manga character; the full head, complete hair silhouette, neck, and both shoulders are visible before any story detail";
+  "one general-audience manga character in a complete waist-up medium shot from one upright camera view, with the entire head and upper torso visible";
 const SAFE_PROVIDER_CLOSE_UP_COMPOSITION =
-  "medium shot from mid-torso upward; full head, complete hair silhouette, neck, and both shoulders visible; clear headroom above the hair and background on both sides; subject occupies about 55% of image height";
+  "complete waist-up medium shot; entire hair silhouette, face, neck, shoulders, chest, and waist inside the canvas; clear headroom and environmental space on both sides";
 const SAFE_PROVIDER_CLOSE_UP_POSITION =
-  "center frame from mid-torso upward; full hair silhouette below the top edge; both shoulders inside the left and right edges; clear background around the head";
+  "centered in the portrait canvas; top of hair near 15% from the top edge, shoulders inside both side margins, and waist near the bottom edge; surrounding environment remains visible";
+const SAFE_PROVIDER_CLOSE_UP_OUTPUT =
+  "one continuous edge-to-edge monochrome manga illustration across the entire portrait canvas";
 const SAFE_PROVIDER_ACTION =
   "a calm natural pose that communicates the story moment through posture and gaze";
 const SAFE_PROVIDER_EXPRESSION =
@@ -56,15 +58,18 @@ function sanitizeProviderControlContract(line: string) {
       ...(compactCloseUp
         ? {
             scene: SAFE_PROVIDER_CLOSE_UP_SCENE,
+            output_type: SAFE_PROVIDER_CLOSE_UP_OUTPUT,
             subjects: compactSubjects,
             background: SAFE_PROVIDER_BACKGROUND,
             variation: SAFE_PROVIDER_VARIATION,
+            canvas:
+              "one uninterrupted pictorial scene fills every edge of the portrait canvas",
             camera: {
               ...cameraWithoutLegacyLens,
-              distance: "medium shot from mid-torso upward",
+              distance: "complete waist-up medium shot",
               "lens-mm": 50,
               focus:
-                "sharp focus on the complete head and upper body while retaining visible surrounding background",
+                "sharp focus on the entire head and waist-up figure while retaining visible surrounding environment",
             },
           }
         : {}),
