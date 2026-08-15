@@ -13,6 +13,7 @@
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中26/26、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。
 - 標準Turbopackは既知のWindowsパス長、Desktop typecheck／test／a11yは既存`@napi-rs/keyring`型宣言不足で停止した。Draft PRのWindows CI／Vercelを正式判定し、merge前にProduction生成を行わない。
+- Draft PR [#268](https://github.com/team478a/manga/pull/268)をbase=`feature/manga-canvas-mvp`で作成した。全CIとVercel Preview確認後に停止する。
 
 ---
 

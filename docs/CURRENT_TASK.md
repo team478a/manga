@@ -2,7 +2,8 @@
 
 ## 2026-08-15 PR-R4-2K クローズアップの顔フレーミング固定
 
-- 状態: `IMPLEMENTED_LOCAL_VALIDATION`
+- 状態: `DRAFT_PR_CI_PENDING`
+- Draft PR: [#268](https://github.com/team478a/manga/pull/268)
 - Branch: `codex/fix-r4-2k-closeup-framing`
 - Base: `origin/feature/manga-canvas-mvp`@`0d987a0`（PR #267 merge commit）。
 - Production受入れ: PR #267反映後、`test`モニターのページ22で失敗候補の安全な再実行を1回だけ行った。Jobは1件だけ登録され、Worker run `31859031742`が`requests=2 processed=1`で成功した。使用creditは38→40、予約2→0、残り60で、重複POSTと継続Workerはなかった。
@@ -15,7 +16,7 @@
 - ローカル既知制約: 標準Turbopack buildはWindowsパス長上限で停止。Desktop typecheck／test／a11yは既存`@napi-rs/keyring`型宣言不足でbuild前停止した。今回Desktop差分はなく、GitHub Windows CIとVercelを正式結果とする。
 - Production変更: 上記PR #267受入れの1 Job／2 creditだけ。R4-2Kコード実装後のProvider E2E、既存画像の配置・承認、DB／Storage／作品内容の変更は行っていない。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2K_CLOSEUP_FRAMING.md`
-- 次: Draft PRを作成し、全CIとVercel Preview成功を確認して停止する。merge前にProductionで追加生成しない。
+- 次: PR #268の全CIとVercel Preview成功を確認して停止する。merge前にProductionで追加生成しない。
 
 ---
 

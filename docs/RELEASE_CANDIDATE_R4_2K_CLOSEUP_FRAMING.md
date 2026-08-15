@@ -6,6 +6,8 @@ Branch: `codex/fix-r4-2k-closeup-framing`
 
 Base: `origin/feature/manga-canvas-mvp` @ `0d987a0`（PR #267 merge commit）
 
+Draft PR: [#268](https://github.com/team478a/manga/pull/268)
+
 ## 目的
 
 PR-R4-2JのProduction受入れで技術的に生成成功したクローズアップ画像が、鼻・口・顎だけへ過度に寄り、両目と顔全体を欠いた。外部契約と課金条件を変えず、クローズアップの構図契約だけを明確にする。
