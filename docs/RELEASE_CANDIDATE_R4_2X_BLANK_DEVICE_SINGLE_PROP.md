@@ -3,7 +3,7 @@
 作成日: 2026-08-16
 Branch: `codex/accept-r4-2x-page22-quality-gate`
 Base: `origin/feature/manga-canvas-mvp` @ `e844143`（PR #280 merge commit）
-Draft PR: 作成前
+Draft PR: [#281](https://github.com/team478a/manga/pull/281)
 
 ## 目的
 
@@ -44,7 +44,7 @@ PR #280の採用品質ゲートをProductionのページ22へ適用し、再制�
 - 集中31/31、Hub 735/735、Canvas 26/26、AI 48/48、100ページ長編4/4が成功した。
 - dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff checkが成功した。
 - Desktopローカルtypecheckは既存の`@napi-rs/keyring`型宣言不足で停止した。変更範囲外のためWindows CIを正式判定にする。
-- Draft PR、CI、Vercel Previewは作成後に追記する。
+- Draft PR [#281](https://github.com/team478a/manga/pull/281)を作成した。Draft／MERGEABLE。CIとVercel Previewは実行中。
 
 ## 停止条件
 

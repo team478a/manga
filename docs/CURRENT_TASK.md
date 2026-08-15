@@ -2,8 +2,8 @@
 
 ## 2026-08-16 PR-R4-2X 端末無記名・小物単一化契約
 
-- 状態: `IN_PROGRESS`
-- Draft PR: 作成前
+- 状態: `CI_RUNNING`
+- Draft PR: [#281](https://github.com/team478a/manga/pull/281)（Draft／MERGEABLE）
 - Branch: `codex/accept-r4-2x-page22-quality-gate`
 - Base: `origin/feature/manga-canvas-mvp`@`e844143`（PR #280 merge commit）。
 - Production受入れ: ページ22でコマ1を計4案、コマ3を2案だけ生成した。コマ3の合格1案を4項目品質確認して配置し、Canvas revision 7→8、保存、PNG成功を確認した。コマ1は端末画面の疑似文字と端末重複が残り、完成候補3案をすべて不採用、1 Jobは生成失敗とした。
@@ -12,7 +12,8 @@
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中31/31、Hub 735/735、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
 - Production状態: コマ3とCanvas revision 8だけを保存。コマ1、コマ2、コマ4の目視確認、未配置候補2件、自動配置確認が残り、ページ全体は未完成。公開・販売変更なし。
-- 次: 全品質ゲート後にDraft PRを作成し、全CIとVercel Preview成功を確認して停止する。merge前に追加Production生成を行わない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercelは実行中。Vercel Preview Commentsは成功。
+- 次: 最終HEADの全CIとVercel Preview成功を確認して停止する。merge前に追加Production生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2X_BLANK_DEVICE_SINGLE_PROP.md`
 
 ---
