@@ -2,7 +2,8 @@
 
 ## 2026-08-15 PR-R4-2M Provider構図契約・参照役割の構造化
 
-- 状態: `IN_PROGRESS`
+- 状態: `VERIFYING_CI`
+- Draft PR: [#270](https://github.com/team478a/manga/pull/270)（Draft／MERGEABLE）
 - Branch: `codex/fix-r4-2m-provider-framing-contract`
 - Base: `origin/feature/manga-canvas-mvp`@`c7615a6`（PR #269 merge commit）。
 - Production受入れ: PR #269反映後、`test`モニターのページ22で有効な再制作を1回だけ登録した。Jobは1件、公式Worker run `31864612499`は`status=idle requests=2 processed=1`で成功。使用creditは42→44、予約0→2→0、残り56、重複登録と継続Workerはなかった。
@@ -15,7 +16,7 @@
 - 検証: 集中27/27、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure成功。
 - Production変更: 上記PR #269受入れの1 Job／2 creditだけ。R4-2Mコード実装後のProvider E2E、画像配置・承認、DB／Storage／作品内容の変更は行っていない。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2M_PROVIDER_FRAMING_CONTRACT.md`
-- 次: Draft PR作成後、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProductionで追加生成しない。
+- 次: 最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProductionで追加生成しない。
 
 ---
 

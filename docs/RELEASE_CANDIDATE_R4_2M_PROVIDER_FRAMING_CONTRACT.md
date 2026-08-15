@@ -4,7 +4,8 @@
 
 - Branch: `codex/fix-r4-2m-provider-framing-contract`
 - Base: `c7615a6bf9022cfd22376ff0d00199b22d6161b9`（PR #269 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `VERIFYING_CI`
+- Draft PR: [#270](https://github.com/team478a/manga/pull/270)（Draft／MERGEABLE）
 - 対象: Providerへ送る単一コマ生成Promptの構図契約と参照画像の役割
 - Production変更: R4-2M実装後はなし
 

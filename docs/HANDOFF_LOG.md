@@ -14,7 +14,7 @@
 - BFL公式ガイドに沿って構造化Promptと入力画像ごとの役割を使用する。FLUX.2はnegative prompt非対応のため、既存の正方向Promptだけを送る契約を維持した。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
-- R4-2Mコード実装後のProduction変更と実Provider E2Eはない。Draft PRと全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
+- R4-2Mコード実装後のProduction変更と実Provider E2Eはない。Draft PR [#270](https://github.com/team478a/manga/pull/270)はDraft／MERGEABLE。最終HEADの全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
 
 ---
 
