@@ -1,5 +1,7 @@
 # PR-R4-2V 確認済み生成Assetの完成判定同期
 
+- Draft PR: [#279](https://github.com/team478a/manga/pull/279)（Draft／MERGEABLE）
+
 ## 目的
 
 PR #278 merge後のProduction限定受入れで、販売品質を満たしたページ22・4コマ目の候補を品質確認して配置した。しかし候補Jobと保存Canvas layerの`sourceJobId`が一致しない場合、同じ生成画像Assetが確認済みでも完成判定だけが目視確認を要求し続ける境界が残った。

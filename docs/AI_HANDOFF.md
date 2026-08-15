@@ -4,13 +4,14 @@
 
 - Branch: `codex/fix-r4-2v-reviewed-asset-completion`
 - Base: `origin/feature/manga-canvas-mvp` @ `fcaca93`（PR #278 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `VALIDATING`
+- Draft PR: [#279](https://github.com/team478a/manga/pull/279)（Draft／MERGEABLE）
 - PR #278反映後、Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Worker [31909535792](https://github.com/team478a/manga/actions/runs/31909535792)は`requests=2 processed=1`で成功し、使用54／予約0／残46から使用56／予約0／残44となった。
 - 新規704×1024 PNGは頭髪全体、両目、首、肩、胴体、手、左右背景を含み、吹き出し、疑似文字、口内文字がなく合格。品質確認と配置を行い、Canvas revision 6→7、保存済み、PNG成功を確認した。
 - 原稿プレビューではコマ4の改善を確認したが、コマ1の不自然な上下方向、コマ3の画像内疑似文字、未配置候補2件、自動配置確認が残り、ページ全体は未完成。
 - 同じ生成画像Assetでも候補Job IDとCanvas layerの`sourceJobId`が異なる場合、品質確認済み表示と完成判定が不一致になる。最新`selected`品質イベントから確認済みAsset IDも解決し、同一Assetにだけ確認結果を引き継ぐ。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
-- 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。Draft PR、全CI、Vercel Preview確認を継続し、追加Production生成は行わない。
+- 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。Draft PR #279の全CI／Vercel Previewを確認中。追加Production生成は行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2V_REVIEWED_ASSET_COMPLETION.md`
 
 ---

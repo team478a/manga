@@ -2,7 +2,8 @@
 
 ## 2026-08-16 PR-R4-2V 確認済み生成Assetの完成判定同期
 
-- 状態: `IN_PROGRESS`
+- 状態: `VALIDATING`
+- Draft PR: [#279](https://github.com/team478a/manga/pull/279)（Draft／MERGEABLE）
 - Branch: `codex/fix-r4-2v-reviewed-asset-completion`
 - Base: `origin/feature/manga-canvas-mvp`@`fcaca93`（PR #278 merge commit）。
 - Production受入れ: `test`モニターのページ22・4コマ目を1案だけ再制作した。公式Worker [31909535792](https://github.com/team478a/manga/actions/runs/31909535792)は`status=idle requests=2 processed=1`で成功した。
@@ -12,7 +13,7 @@
 - 判明した境界: 同一の生成画像Assetを候補Job経由で品質確認しても、保存Canvas layerの`sourceJobId`が別の候補Jobを指す場合は、完成判定だけが目視確認を要求し続ける。
 - 実装: 最新品質イベントが`selected`の生成Jobから確認済み`output_asset_id`を解決し、可視layerは確認済みJob IDまたは同一Asset IDのどちらかで目視確認済みとする。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
-- 検証: 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で開始前に停止し、Windows CIを正式判定にする。
+- 検証: 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で開始前に停止し、Windows CIを正式判定にする。Draft PR #279の全CI／Vercel Previewを確認中。
 - Production変更: 合格した4コマ目候補の品質確認・配置とCanvas revision 6→7のみ。追加生成、公開・販売変更なし。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2V_REVIEWED_ASSET_COMPLETION.md`
 
