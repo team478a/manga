@@ -140,6 +140,38 @@ test("自動配置した生成画像は目視確認までreview_requiredにす�
   assert.equal(codes(approved).has("IMAGE_QUALITY_REVIEW_REQUIRED"), false);
 });
 
+test("同一生成Assetの確認結果は候補Job IDが異なっても完成判定へ反映する", () => {
+  const canvas = clone(source.canvas);
+  canvas.panelLayers = [{
+    id: "10000000-0000-4000-8000-000000000098",
+    panelId: canvas.panels[0].id,
+    name: "AI背景",
+    type: "background",
+    orderIndex: 0,
+    visible: true,
+    locked: false,
+    opacity: 1,
+    blendMode: "normal",
+    assetId: source.assetIds[0],
+    sourceJobId: "10000000-0000-4000-8000-000000000097",
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    createdAt: "",
+    updatedAt: "",
+  }];
+  const result = evaluateMangaPageCompletion(input({
+    canvas,
+    reviewedGenerationJobIds: new Set([
+      "10000000-0000-4000-8000-000000000096",
+    ]),
+    reviewedGenerationAssetIds: new Set([source.assetIds[0]]),
+  }));
+  assert.equal(codes(result).has("IMAGE_QUALITY_REVIEW_REQUIRED"), false);
+});
+
 test("4ページfixtureをPNGとPDFへ同じ順序・寸法で描画できる", async () => {
   const images = [];
   for (const page of pages) {
@@ -177,6 +209,7 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(service, /storage\.from\("cloud-assets"\)\.download/);
   assert.match(service, /cloud_manga_quality_logs/);
   assert.match(service, /reviewedGenerationJobIds/);
+  assert.match(service, /reviewedGenerationAssetIds/);
   assert.match(generation, /quality_review_status/);
   assert.match(generation, /event_type/);
   assert.match(editor, /この画像を品質確認済みにする/);

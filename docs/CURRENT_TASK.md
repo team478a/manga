@@ -1,8 +1,30 @@
 # MANGAI Current Task
 
-## 2026-08-16 PR-R4-2U 台詞安全な再制作フレーミング
+## 2026-08-16 PR-R4-2V 確認済み生成Assetの完成判定同期
 
 - 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#279](https://github.com/team478a/manga/pull/279)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-cf4c4b-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-2v-reviewed-asset-completion`
+- Base: `origin/feature/manga-canvas-mvp`@`fcaca93`（PR #278 merge commit）。
+- Production受入れ: `test`モニターのページ22・4コマ目を1案だけ再制作した。公式Worker [31909535792](https://github.com/team478a/manga/actions/runs/31909535792)は`status=idle requests=2 processed=1`で成功した。
+- Credit: 使用54／予約0／残46 → 予約2／残44 → 使用56／予約0／残44。重複Job、追加Worker、安全再実行なし。
+- 品質結果: 704×1024 PNGは頭髪全体、両目、首、肩、胴体、手、左右背景を含み、吹き出し、疑似文字、口内文字がない。販売品質を満たす4コマ目候補として品質確認・配置し、Canvas revision 6→7、保存済み、PNG成功を確認した。
+- 原稿全体: コマ4の改善はプレビューへ反映済み。コマ1の不自然な上下方向、コマ3の画像内疑似文字、未配置候補2件、自動配置確認が残るためページ全体は未完成。
+- 判明した境界: 同一の生成画像Assetを候補Job経由で品質確認しても、保存Canvas layerの`sourceJobId`が別の候補Jobを指す場合は、完成判定だけが目視確認を要求し続ける。
+- 実装: 最新品質イベントが`selected`の生成Jobから確認済み`output_asset_id`を解決し、可視layerは確認済みJob IDまたは同一Asset IDのどちらかで目視確認済みとする。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で開始前に停止し、Windows CIを正式判定にする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Production変更: 合格した4コマ目候補の品質確認・配置とCanvas revision 6→7のみ。追加生成、公開・販売変更なし。
+- 次: 責任者のmerge判断待ち。merge前にProductionで追加生成せず、PR-R4-2Wへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2V_REVIEWED_ASSET_COMPLETION.md`
+
+---
+
+## 2026-08-16 PR-R4-2U 台詞安全な再制作フレーミング
+
+- 状態: `MERGED_PRODUCTION_ACCEPTED`
 - Draft PR: [#278](https://github.com/team478a/manga/pull/278)（Draft／MERGEABLE）
 - Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-f5a9b7-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2u-dialogue-safe-rework-framing`
@@ -15,7 +37,7 @@
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中35/35、Hub 731/731、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure成功。通常Turbopackは既知のWindows path長、Desktop typecheckは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
 - CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
-- 次: 最終文書同期HEADの同じ5チェックを再確認して停止する。merge前に追加Production生成を行わない。
+- Merge: PR #278 merge commit `fcaca93`。merge後のProduction限定受入れはPR-R4-2Vへ記録する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2U_DIALOGUE_SAFE_TIGHT_FRAMING.md`
 
 ---

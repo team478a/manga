@@ -94,6 +94,7 @@ export function evaluateMangaPageCompletion(input: {
   imageJobs: PageImageGenerationState[];
   availableAssetIds: ReadonlySet<string>;
   reviewedGenerationJobIds?: ReadonlySet<string>;
+  reviewedGenerationAssetIds?: ReadonlySet<string>;
   pngRenderSucceeded: boolean;
   manualReviewRequired: boolean;
 }): MangaPageCompletionResult {
@@ -152,7 +153,14 @@ export function evaluateMangaPageCompletion(input: {
       for (const layer of canvas.panelLayers.filter(
         (item) => item.panelId === panel.id && item.visible && item.sourceJobId,
       )) {
-        if (!input.reviewedGenerationJobIds?.has(layer.sourceJobId!))
+        const reviewedByJob = input.reviewedGenerationJobIds?.has(
+          layer.sourceJobId!,
+        );
+        const reviewedByAsset = Boolean(
+          layer.assetId &&
+            input.reviewedGenerationAssetIds?.has(layer.assetId),
+        );
+        if (!reviewedByJob && !reviewedByAsset)
           add({
             code: "IMAGE_QUALITY_REVIEW_REQUIRED",
             message: `${panel.name}の生成画像を目視確認してください。`,
