@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2N Provider moderation安全な構図契約
+
+- PR #270 merge commit `ff5ea38e80d44acf7a379f1b01b75de5d748a1ba`を含む最新基準から`codex/fix-r4-2n-provider-moderation-safe-framing`を開始した。
+- Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。初回Job `8bf051c1-3f08-4ec9-8a63-f3a553d30f14`／Worker `31866069529`と、既存の一般向け安全再実行Job `d5eaed83-1c10-45a0-94ec-bcda1b7ac219`／Worker `31866237664`はいずれも`provider_moderation_blocked`。各runは`status=idle requests=2 processed=1`。
+- 2 JobともAssetなし、actual cost 0。creditは各回使用44、予約0→2→0、残り56→54→56で全額復元。重複Job、継続Worker、画像配置、品質承認、Canvas、公開・販売状態の変更はない。
+- 同じコマ・参照で直前のR4-2L Promptは生成完了した。R4-2MでProvider JSONの最優先構図へ追加した身体部位列挙が、初回Promptと既存安全再実行の両方へ残ったことを差分原因と判定した。
+- Provider JSONのclose-up構図を身体部位列挙なしのuncropped medium close-up、frame内収容、10% marginへ変更した。Provider拒否後の安全再実行は保存済み旧JSON契約だけを同じ表現へ変換し、他の契約を保存する。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 集中30/30、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- R4-2N実装後のProduction変更と実Provider E2Eはない。Draft PR [#271](https://github.com/team478a/manga/pull/271)はDraft／MERGEABLE。最終HEADの全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-kg3ib7at3-team478as-projects.vercel.app`。最終文書同期HEADを再確認して停止する。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2M Provider構図契約・参照役割の構造化
 
 - PR #269 merge commit `c7615a6bf9022cfd22376ff0d00199b22d6161b9`を含む最新基準から`codex/fix-r4-2m-provider-framing-contract`を開始した。

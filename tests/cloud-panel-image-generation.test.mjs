@@ -401,7 +401,12 @@ test("クローズアップは顔全体と主要特徴をフレーム内へ固�
   assert.match(result.generation.prompt, /complete hair silhouette/);
   assert.equal(result.generation.prompt.startsWith("PROVIDER CONTROL CONTRACT:\n{"), true);
   assert.match(result.generation.prompt, /"lettering_stage":"blank artwork ready/);
-  assert.match(result.generation.prompt, /clear 10% margin around the head/);
+  const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
+  assert.equal(
+    providerContract.composition,
+    "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin",
+  );
+  assert.doesNotMatch(providerContract.composition, /both eyes, nose, mouth, chin/);
   assert.equal(
     result.generation.prompt.match(/頭頂から顎までの顔全体/g)?.length,
     2,

@@ -1,5 +1,24 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2N Provider moderation安全な構図契約、2026-08-15）
+
+- Branch: `codex/fix-r4-2n-provider-moderation-safe-framing`
+- Base: `origin/feature/manga-canvas-mvp` @ `ff5ea38`（PR #270 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#271](https://github.com/team478a/manga/pull/271)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-kg3ib7at3-team478as-projects.vercel.app
+- PR #270反映後、Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。初回Job `8bf051c1-3f08-4ec9-8a63-f3a553d30f14`と一般向け安全再実行Job `d5eaed83-1c10-45a0-94ec-bcda1b7ac219`はいずれも`provider_moderation_blocked`。Workerは`31866069529`／`31866237664`、各`requests=2 processed=1`。
+- 両JobはAssetなし、actual cost 0。creditは各回44／予約0→2→0／残り56→54→56へ全額復元し、最終44／0／56。配置、承認、Canvas、公開・販売状態は変更していない。
+- 同じコマ・参照のR4-2L生成は完了しており、R4-2MでProvider JSON先頭へ追加した身体部位の英語列挙が初回と安全再実行へ共通して残った。構造化Promptを維持し、この重複語彙だけを非cropの頭肩構図へ置換する。
+- 新規PromptとProvider拒否後の保存済み旧Promptの両方で、JSON構図を身体部位列挙なしのuncropped medium close-up、frame内収容、10% marginへ変換する。後段の日英構図契約、参照役割、Panel Specificationは維持する。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中30/30、Hub、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- R4-2N実装後のProduction Provider E2Eは行わない。最終文書同期HEADの5チェックを再確認して停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2N_PROVIDER_MODERATION_SAFE_FRAMING.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2M Provider構図契約・参照役割の構造化、2026-08-15）
 
 - Branch: `codex/fix-r4-2m-provider-framing-contract`
