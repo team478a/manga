@@ -164,7 +164,8 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
     for (const id of visibleCanvasAssetIds(parsed.data)) requiredAssetIds.add(id);
   }
   const assetBytes = await loadAssetBytes(supabase, (assets.data ?? []) as AssetRow[], requiredAssetIds);
-  const currentJobs = latestImageJobs((jobs.data ?? []) as Array<Record<string, unknown>>);
+  const imageJobRows = (jobs.data ?? []) as Array<Record<string, unknown>>;
+  const currentJobs = latestImageJobs(imageJobRows);
   const currentJobIds = currentJobs.flatMap((job) => job.candidateJobIds ?? [job.id]);
   const visibleGenerationJobIds = [...new Set(
     [...canvases.values()].flatMap((canvas) =>
@@ -196,6 +197,14 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
       .filter(([, event]) => event === "selected")
       .map(([jobId]) => jobId),
   );
+  const reviewedGenerationAssetIds = new Set(
+    imageJobRows.flatMap((row) =>
+      latestQualityEvent.get(String(row.id)) === "selected" &&
+      row.output_asset_id
+        ? [String(row.output_asset_id)]
+        : [],
+    ),
+  );
   const placementByPage = new Map((placements.data ?? []).map((row) => [row.page_id, row.status]));
   const productionByPage = new Map((productionRows.data ?? []).map((row) => [row.id, row.production_status]));
   const results: Array<CloudPageCompletion & { png: Uint8Array | null }> = [];
@@ -224,6 +233,7 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
       imageJobs: currentJobs,
       availableAssetIds: new Set(assetBytes.keys()),
       reviewedGenerationJobIds,
+      reviewedGenerationAssetIds,
       pngRenderSucceeded,
       manualReviewRequired:
         placementByPage.get(page.id) === "review_required" ||

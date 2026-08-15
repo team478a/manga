@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-16 Codex: 確認済み生成Assetの完成判定同期
+
+- Branch: `codex/fix-r4-2v-reviewed-asset-completion`
+- Base: `origin/feature/manga-canvas-mvp`@`fcaca93`（PR #278 merge後）
+- Productionの`test`モニターでページ22・4コマ目を候補1案、Worker 1回だけ受入れした。704×1024 PNGは構図、頭髪、両目、身体、背景、無記名面を満たし、品質確認・配置後にCanvas revision 6→7、保存、PNG成功を確認した。Creditは使用54→56、予約0、残44。追加生成、公開・販売変更なし。
+- 完成プレビューではコマ4の改善を確認したが、コマ1の不自然な上下方向、コマ3の画像内疑似文字、未配置候補2件、自動配置確認が残り、ページ全体は未完成。
+- 同一生成Assetを品質確認しても候補Job IDと保存layerの`sourceJobId`が一致しないと、完成判定だけが目視確認を要求する境界を確認した。最新`selected`品質イベントから確認済みAsset IDを解決し、Job IDまたは同一Asset IDで品質確認済みと判定する。
+- 集中12/12、Hub 732/732、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。Draft PR、CI、Vercel Previewを確認して停止し、Productionで追加生成しない。
+
+---
+
 ## 2026-08-16 Codex: PR-R4-2U 台詞安全な再制作フレーミング
 
 - PR #277 merge commit `72f1d0d07a678679191541b768a184a10e1c609b`を含む最新基準から`codex/fix-r4-2u-dialogue-safe-rework-framing`を開始した。
