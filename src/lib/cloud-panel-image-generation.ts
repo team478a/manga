@@ -219,13 +219,8 @@ function buildProviderReferenceRoleContract(
   );
 }
 
-function compactProviderSceneField(input: {
-  value: string;
-  dialogue: readonly { text: string }[];
-  fallback: string;
-  maxLength?: number;
-}) {
-  const dialogueTokens = input.dialogue.flatMap((line) => {
+function providerDialogueTokens(dialogue: readonly { text: string }[]) {
+  return dialogue.flatMap((line) => {
     const value = line.text.trim();
     const unquoted = value.replace(
       /^[\s\u3000「」『』（）“”"']+|[\s\u3000「」『』（）“”"']+$/g,
@@ -233,13 +228,40 @@ function compactProviderSceneField(input: {
     );
     return [value, unquoted].filter((item) => item.length >= 2);
   });
+}
+
+function providerSceneFieldContainsDialogue(input: {
+  value: string;
+  dialogue: readonly { text: string }[];
+}) {
+  const value = input.value.trim();
+  if (!value) return false;
+  const withoutQuotedSpeech = value
+    .replace(/「[^」]*」|『[^』]*』|“[^”]*”|"[^"]*"|'[^']*'/g, "")
+    .trim();
+  return (
+    withoutQuotedSpeech !== value ||
+    providerDialogueTokens(input.dialogue).some((token) =>
+      withoutQuotedSpeech.includes(token),
+    )
+  );
+}
+
+function compactProviderSceneField(input: {
+  value: string;
+  dialogue: readonly { text: string }[];
+  fallback: string;
+  maxLength?: number;
+}) {
   const withoutQuotedSpeech = input.value
     .replace(/「[^」]*」|『[^』]*』|“[^”]*”|"[^"]*"|'[^']*'/g, "")
     .trim();
   if (
     !withoutQuotedSpeech ||
     withoutQuotedSpeech !== input.value.trim() ||
-    dialogueTokens.some((token) => withoutQuotedSpeech.includes(token))
+    providerDialogueTokens(input.dialogue).some((token) =>
+      withoutQuotedSpeech.includes(token),
+    )
   )
     return input.fallback;
   return withoutQuotedSpeech.slice(0, input.maxLength ?? 300);
@@ -503,6 +525,47 @@ export function buildStoryboardPanelGeneration(input: {
     0,
     Math.min(candidateCount - 1, input.candidateIndex ?? 0),
   );
+  const providerSceneFields = {
+    action: compactProviderSceneField({
+      value: storyboardPanel.action,
+      dialogue: storyboardPanel.dialogue,
+      fallback: "人物の姿勢と視線で物語上の意図を伝える自然な動作",
+    }),
+    emotion: compactProviderSceneField({
+      value: storyboardPanel.emotion,
+      dialogue: storyboardPanel.dialogue,
+      fallback: "抑制された自然な表情",
+    }),
+    background: compactProviderSceneField({
+      value: storyboardPanel.background,
+      dialogue: storyboardPanel.dialogue,
+      fallback: "物語に沿う簡潔な環境",
+    }),
+    composition: compactProviderSceneField({
+      value: storyboardPanel.composition,
+      dialogue: storyboardPanel.dialogue,
+      fallback: "人物と背景の関係が読み取れる明瞭な配置",
+    }),
+    visualDirection: compactProviderSceneField({
+      value: storyboardPanel.visualDirection,
+      dialogue: storyboardPanel.dialogue,
+      fallback: "光と影で物語上の意図を伝える",
+    }),
+  };
+  const dialogueRiskInTightFraming =
+    (resolvedShot === "extreme_close_up" || resolvedShot === "detail") &&
+    [
+      storyboardPanel.action,
+      storyboardPanel.emotion,
+      storyboardPanel.background,
+      storyboardPanel.composition,
+      storyboardPanel.visualDirection,
+    ].some((value) =>
+      providerSceneFieldContainsDialogue({
+        value,
+        dialogue: storyboardPanel.dialogue,
+      }),
+    );
   const variationDirections = {
     composite: [
       "ネームの構図と人物配置を最優先し、読みやすい基準案にする。",
@@ -627,16 +690,16 @@ export function buildStoryboardPanelGeneration(input: {
     panelSpecification.characterNames.length
       ? `登場人物: ${panelSpecification.characterNames.join("、")}。`
       : "人物を配置しない。",
-    panelSpecification.action ? `この瞬間の動作: ${panelSpecification.action}。` : "",
+    panelSpecification.action ? `この瞬間の動作: ${providerSceneFields.action}。` : "",
     panelSpecification.expression
-      ? `表情・感情: ${panelSpecification.expression}。`
+      ? `表情・感情: ${providerSceneFields.emotion}。`
       : "",
-    panelSpecification.background ? `場所: ${panelSpecification.background}。` : "",
+    panelSpecification.background ? `場所: ${providerSceneFields.background}。` : "",
     panelSpecification.props.length
       ? `必要な小物: ${panelSpecification.props.join("、")}。`
       : "",
     panelSpecification.composition
-      ? `人物と背景の配置: ${panelSpecification.composition}。`
+      ? `人物と背景の配置: ${providerSceneFields.composition}。`
       : "",
     `画角: ${contractedShot}。カメラ: ${contractedCamera}。`,
     ...faceFramingContract,
@@ -701,7 +764,7 @@ export function buildStoryboardPanelGeneration(input: {
     `生成対象: ${targetDirections[generationTarget]}`,
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
-    `構図: ${storyboardPanel.composition}。`,
+    `構図: ${providerSceneFields.composition}。`,
     input.compositionControl
       ? [
           "構図調整:",
@@ -735,11 +798,11 @@ export function buildStoryboardPanelGeneration(input: {
       : usesWorld
         ? "登録済みの場所・小物名に一致しない場合は、ネームの背景指定を優先する。"
         : "",
-    usesWorld ? `背景: ${storyboardPanel.background}。` : "",
-    usesCharacters ? `動作: ${storyboardPanel.action}。` : "",
-    usesCharacters ? `感情: ${storyboardPanel.emotion}。` : "",
+    usesWorld ? `背景: ${providerSceneFields.background}。` : "",
+    usesCharacters ? `動作: ${providerSceneFields.action}。` : "",
+    usesCharacters ? `感情: ${providerSceneFields.emotion}。` : "",
     generationTarget === "composite" || generationTarget === "effect"
-      ? `演出: ${storyboardPanel.visualDirection}。`
+      ? `演出: ${providerSceneFields.visualDirection}。`
       : "",
     candidateCount > 1
       ? `候補${candidateIndex + 1}/${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`
@@ -756,7 +819,9 @@ export function buildStoryboardPanelGeneration(input: {
     "Final output: one upright continuous edge-to-edge scene, a single camera view, natural anatomy, and pure unlettered artwork.",
   ].filter(Boolean).join("\n");
   const prompt =
-    resolvedShot === "close_up" && usesCharacters && !input.revision
+    (resolvedShot === "close_up" || dialogueRiskInTightFraming) &&
+    usesCharacters &&
+    !input.revision
       ? `PROVIDER CONTROL CONTRACT:\n${compactCloseUpContract}`
       : detailedPrompt;
   if (prompt.length > 20_000)

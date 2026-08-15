@@ -1,5 +1,25 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2U 台詞安全な再制作フレーミング
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#278](https://github.com/team478a/manga/pull/278)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-f5a9b7-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-2u-dialogue-safe-rework-framing`
+- Base: `origin/feature/manga-canvas-mvp`@`72f1d0d`（PR #277 merge commit）。
+- Production受入れ: `test`モニターのページ22・4コマ目を1案だけ再制作した。公式Worker [31906333027](https://github.com/team478a/manga/actions/runs/31906333027)は`status=idle requests=2 processed=1`で成功した。
+- Credit: 使用52／予約0／残48 → 予約2／残46 → 使用54／予約0／残46。重複Job、追加Worker、安全再実行なし。
+- 品質結果: 新規704×1024 PNGは人物の顔・首付近だけの極端なcropとなり、口内と胸元付近の吹き出し状領域へ原台詞と一致する「証拠を」が描画されたため不採用。候補採用、配置、品質承認、Canvas、公開・販売状態は変更していない。
+- 原因判断: Panel Specificationの画角が`extreme_close_up`または`detail`の場合、場面欄へ混入した台詞を除外して58%短縮構図へ切り替える既存契約を通らず、長文Promptへ場面記述を直接含めていた可能性が高い（推論）。Prompt本体はログ・文書へ記録していない。
+- 実装: Provider向けの動作、感情、背景、構図、演出から引用発話と既知台詞を除外する。台詞混入を検知した`extreme_close_up`／`detail`だけ58%の短縮安全フレームへ切り替え、台詞のない意図的な寄りは維持する。Panel Specificationの原文と画角は変更しない。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中35/35、Hub 731/731、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure成功。通常Turbopackは既知のWindows path長、Desktop typecheckは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: 最終文書同期HEADの同じ5チェックを再確認して停止する。merge前に追加Production生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2U_DIALOGUE_SAFE_TIGHT_FRAMING.md`
+
+---
+
 ## 2026-08-15 PR-R4-2T 顔面無記名・引き構図の正方向契約
 
 - 状態: `READY_FOR_OWNER_REVIEW`
