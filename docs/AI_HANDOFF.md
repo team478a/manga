@@ -4,12 +4,13 @@
 
 - Branch: `codex/fix-r4-2t-clean-face-safe-framing`
 - Base: `origin/feature/manga-canvas-mvp` @ `faeef67`（PR #276 merge commit）
-- 状態: `IMPLEMENTED_LOCAL`
+- 状態: `CI_RUNNING`
+- Draft PR: [#277](https://github.com/team478a/manga/pull/277)（Draft／MERGEABLE）
 - Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Worker [31886026453](https://github.com/team478a/manga/actions/runs/31886026453)は`requests=2 processed=1`で成功し、704×1024 PNGを生成した。使用50／予約0／残50から使用52／予約0／残48となった。
 - moderation、両目、顔、首、肩は改善したが、頭頂が上端に接し、人物が画面高の約9割を占め、左右背景余白不足と口元の疑似文字が残った。配置、採用、品質承認、Canvas、公開・販売状態は変更せず、追加Provider実行を停止した。
 - 構図座標をJSON先頭へ移し、被写体高58%、髪上端18%、衣服下端82%、左右環境余白18%の引いた環境ポートレートへ変更する。台詞fallbackの`speaking`を除去し、顔面と描画面を線画・陰影だけで完成させる正方向契約を追加する。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
-- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。次: commit・push・Draft PR、全CI／Vercel Preview確認後に停止する。merge前にProduction再生成を行わない。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。Vercel Preview Commentsは成功し、Core quality、Migration roundtrip、Windows build、Vercelを確認中。最終文書同期HEADの全CI／Vercel Preview確認後に停止し、merge前にProduction再生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2T_CLEAN_FACE_SAFE_FRAMING.md`
 
 ---

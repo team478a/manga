@@ -1,5 +1,8 @@
 # PR-R4-2T 顔面無記名・引き構図の正方向契約
 
+- Draft PR: [#277](https://github.com/team478a/manga/pull/277)（Draft／MERGEABLE）
+- 状態: `CI_RUNNING`
+
 ## 結論
 
 PR #276反映後のProduction限定受入れでは、ページ22・4コマ目の1案生成がProvider moderationを通過し、704×1024 PNGを生成した。予約2 creditは正常に確定し、使用52／予約0／残48となった。

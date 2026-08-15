@@ -11,7 +11,8 @@
 - 704×1024 PNGはmoderation、両目、顔、首、肩を満たしたが、頭頂が上端に接し、人物が画面高の約9割を占め、左右背景余白不足、口元の疑似文字により販売品質未達。候補採用、配置、品質承認、Canvas、公開・販売状態は変更していない。
 - 短縮JSONの`medium portrait`と後段座標の優先度競合、台詞除去fallbackの`speaking pose`を根因候補とした。構図座標をJSON先頭へ移し、58%／18%／82%／18%の環境ポートレートへ引き、発話語を除去して顔面と描画面を正方向の線画・陰影だけへ固定する。
 - Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
-- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。commit・push・Draft PR、全CI／Vercel Preview確認へ進む。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- Draft PR [#277](https://github.com/team478a/manga/pull/277)を作成。Draft／MERGEABLE。Vercel Preview Commentsは成功し、Core quality、Migration roundtrip、Windows build、Vercelを確認中。最終文書同期HEADの全CI／Vercel Preview成功後に停止する。
 
 ---
 
