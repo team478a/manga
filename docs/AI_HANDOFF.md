@@ -4,14 +4,16 @@
 
 - Branch: `codex/fix-r4-2l-closeup-clean-output`
 - Base: `origin/feature/manga-canvas-mvp` @ `7f3dc73`（PR #268 merge commit）
-- 状態: `DRAFT_CI_RUNNING`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#269](https://github.com/team478a/manga/pull/269)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-ju48odwjq-team478as-projects.vercel.app
 - PR #268反映後のProductionで失敗候補を1回だけ再制作した。Worker `31860725448`で1 Jobが完了し、使用40→42、予約2→0、残り58、重複登録なし。先行run `31860684723`はcheck-onlyでProvider requestを送っていない。
 - 704×1024画像は両目・鼻・口・顎を含むまで改善したが、頭頂と髪が切れ、口元へ`証拠をさ`という生成文字が混入した。販売品質未達のため配置・承認・追加生成は行っていない。
 - 人物あり`close_up`を頭と肩の構図へ固定し、髪全体、首、肩、頭部周囲約10%余白を日英Promptへ追加する。参照素材からは同一性等だけを再構成し、肌・口元・衣服・背景を自然な輪郭と陰影だけの清潔な無記名描画面へ固定する。
 - URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
 - 集中27/27、Hub、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
-- R4-2L実装後のProduction Provider E2Eは行わない。Draft PRと全CI／Vercel Preview成功で停止する。
+- 実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- R4-2L実装後のProduction Provider E2Eは行わない。最終文書同期HEADの全CI／Vercel Preview成功で停止する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2L_CLOSEUP_CLEAN_OUTPUT.md`
 
 ---
