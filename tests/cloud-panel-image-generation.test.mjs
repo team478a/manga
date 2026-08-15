@@ -445,6 +445,79 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   );
 });
 
+test("台詞が場面欄へ混入した極端な寄りは無記名の安全フレームへ昇格する", () => {
+  const closeUpStoryboard = structuredClone(storyboard);
+  closeUpStoryboard.pages[0].panels[0].shot = "extreme_close_up";
+  closeUpStoryboard.pages[0].panels[0].action =
+    "主人公が「証拠を」と口にする";
+  closeUpStoryboard.pages[0].panels[0].dialogue = [
+    { type: "speech", speaker: "明日香", text: "（証拠を）" },
+  ];
+  const result = buildStoryboardPanelGeneration({
+    storyboard: closeUpStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+  });
+
+  assert.equal(result.generation.prompt.startsWith("PROVIDER CONTROL CONTRACT:\n{"), true);
+  const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
+  assert.equal(providerContract.framing.subject_height_percent, 58);
+  assert.equal(
+    providerContract.subjects[0].action,
+    "a natural attentive pose that communicates the story through posture and gaze",
+  );
+  assert.doesNotMatch(result.generation.prompt, /証拠を|speaking|dialogue|balloons/);
+  assert.equal(result.panelSpecification.shot, "extreme_close_up");
+  assert.equal(
+    result.panelSpecification.action,
+    "主人公が「証拠を」と口にする",
+  );
+});
+
+test("台詞を含まない意図的な極端な寄りは元の画角を維持する", () => {
+  const closeUpStoryboard = structuredClone(storyboard);
+  closeUpStoryboard.pages[0].panels[0].shot = "extreme_close_up";
+  closeUpStoryboard.pages[0].panels[0].action = "主人公が静かに目を見開く";
+  closeUpStoryboard.pages[0].panels[0].dialogue = [];
+  const result = buildStoryboardPanelGeneration({
+    storyboard: closeUpStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+  });
+
+  assert.match(result.generation.prompt, /【生成契約：一枚の場面画像】/);
+  assert.match(result.generation.prompt, /極端なクローズアップ/);
+  assert.match(result.generation.prompt, /主人公が静かに目を見開く/);
+});
+
+test("Provider向け長文Promptだけ台詞混入場面を浄化し品質仕様は保持する", () => {
+  const mediumStoryboard = structuredClone(storyboard);
+  mediumStoryboard.pages[0].panels[0].shot = "medium";
+  mediumStoryboard.pages[0].panels[0].action =
+    "主人公が『証拠を』と口にして前へ出る";
+  mediumStoryboard.pages[0].panels[0].dialogue = [
+    { type: "speech", speaker: "明日香", text: "証拠を" },
+  ];
+  const result = buildStoryboardPanelGeneration({
+    storyboard: mediumStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+  });
+
+  assert.doesNotMatch(result.generation.prompt, /証拠を/);
+  assert.match(
+    result.generation.prompt,
+    /人物の姿勢と視線で物語上の意図を伝える自然な動作/,
+  );
+  assert.equal(
+    result.panelSpecification.action,
+    "主人公が『証拠を』と口にして前へ出る",
+  );
+});
+
 test("短縮クローズアップPromptでも複数候補の制作差分を維持する", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "close_up";

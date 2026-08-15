@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-16 Codex: PR-R4-2U 台詞安全な再制作フレーミング
+
+- PR #277 merge commit `72f1d0d07a678679191541b768a184a10e1c609b`を含む最新基準から`codex/fix-r4-2u-dialogue-safe-rework-framing`を開始した。
+- Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Worker `31906333027`は`requests=2 processed=1`で成功し、creditは使用52／予約0／残48 → 使用52／予約2／残46 → 使用54／予約0／残46。
+- 新規704×1024 PNGは顔・首付近だけの極端なcropとなり、口内と胸元付近に原台詞と一致する「証拠を」が描画された。販売品質未達のため、候補採用、配置、品質承認、Canvas revision、公開・販売状態は変更していない。追加Provider実行を停止した。
+- `extreme_close_up`／`detail`で場面欄に台詞が混入した場合、`close_up`専用の短縮安全フレームを通らず長文Promptへ台詞を含む場面記述が残る経路を原因候補とした（推論）。Prompt本体、Provider応答、署名URL、API keyは記録していない。
+- Provider向けの動作、感情、背景、構図、演出から引用発話と既知台詞を除外し、台詞混入がある極端な寄りだけ58%短縮安全フレームへ切り替える。品質正本のPanel Specificationと台詞のない意図的な寄りは維持する。
+- Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。集中35/35、Hub 731/731、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。通常Turbopackは既知のWindows path長、Desktop typecheckは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2T 顔面無記名・引き構図の正方向契約
 
 - PR #276 merge commit `faeef6719b44e4754752da799726380075657461`を含む最新基準から`codex/fix-r4-2t-clean-face-safe-framing`を開始した。
