@@ -1,7 +1,9 @@
 # RELEASE CANDIDATE R4-2K: クローズアップの顔フレーミング固定
 
-作成日: 2026-08-15  
-Branch: `codex/fix-r4-2k-closeup-framing`  
+作成日: 2026-08-15
+
+Branch: `codex/fix-r4-2k-closeup-framing`
+
 Base: `origin/feature/manga-canvas-mvp` @ `0d987a0`（PR #267 merge commit）
 
 ## 目的
