@@ -395,6 +395,10 @@ test("クローズアップは顔全体と主要特徴をフレーム内へ固�
   assert.match(result.generation.prompt, /両目・鼻・口・顎/);
   assert.match(result.generation.prompt, /complete face in frame/);
   assert.match(result.generation.prompt, /Do not crop through facial features/);
+  assert.match(result.generation.prompt, /頭と肩が分かるクローズアップ/);
+  assert.match(result.generation.prompt, /画像短辺のおよそ10%/);
+  assert.match(result.generation.prompt, /head-and-shoulders close-up/);
+  assert.match(result.generation.prompt, /complete hair silhouette/);
   assert.equal(
     result.generation.prompt.match(/頭頂から顎までの顔全体/g)?.length,
     2,
@@ -437,6 +441,48 @@ test("画角上書き後の実効画角だけで顔フレーミングを決定�
     },
   });
   assert.doesNotMatch(wideOverride.generation.prompt, /頭頂から顎までの顔全体/);
+});
+
+test("人物と参照素材は肌・口元を無記名の自然な面へ固定する", () => {
+  const styleId = "71000000-0000-4000-8000-000000000081";
+  const result = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    styleBible: {
+      id: styleId,
+      project_id: "50000000-0000-4000-8000-000000000001",
+      current_version: 1,
+      art_style: "モノクロ青年漫画",
+      linework: "均一なインク線",
+      shading: "網点中心",
+      background_detail: "主要背景を明瞭にする",
+      composition_rules: "右から左へ視線誘導する",
+      negative_prompt: "",
+      updated_at: "2026-08-15T00:00:00.000Z",
+    },
+    referenceAssets: [{
+      subjectKind: "style",
+      subjectId: styleId,
+      assetId: "74000000-0000-4000-8000-000000000081",
+    }],
+  });
+
+  assert.match(result.generation.prompt, /人物の肌、口元、衣服、背景/);
+  assert.match(result.generation.prompt, /線画の筆致だけを再構成/);
+  assert.match(result.generation.prompt, /clean unlettered pictorial surfaces/);
+  assert.match(result.generation.prompt, /顔の解剖学的な輪郭と自然な陰影だけ/);
+  assert.equal(
+    result.generation.prompt.match(/顔の解剖学的な輪郭と自然な陰影だけ/g)?.length,
+    2,
+  );
+  assert.equal(
+    moderateGeneralCloudPrompt(
+      `${result.generation.prompt}\n${result.generation.negativePrompt}`,
+    ).decision,
+    "allow",
+  );
 });
 
 test("非正立動作は紙面を回転させず意図した人物だけへ限定する", () => {

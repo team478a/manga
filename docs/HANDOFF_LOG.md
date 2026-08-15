@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2L クローズアップ余白・無記名描画面の固定
+
+- PR #268 merge commit `7f3dc733c5a608a89e878c05431e69958d099e15`を含む最新基準から`codex/fix-r4-2l-closeup-clean-output`を開始した。
+- Productionの`test`モニターで失敗候補を1回だけ再制作した。Job登録は1件、Worker run `31860725448`は`status=idle requests=2 processed=1`、使用creditは40→42、予約0→2→0、残り58、重複登録と継続Workerなし。先行run `31860684723`は`mode=check`で設定確認のみ、Worker／Provider requestは0。
+- 704×1024 Assetは両目、鼻、口、顎まで改善したが、頭頂と髪が切れ、口元に生成文字`証拠をさ`が混入した。販売品質未達のため配置、品質承認、追加Provider生成は行っていない。
+- 人物あり`close_up`へ頭と肩、髪全体、顎、首、両肩の付け根、頭部周囲約10%余白の日英契約を追加した。参照素材は同一性、輪郭、髪型、衣装、線画へ限定し、肌、口元、衣服、背景を自然な輪郭と陰影だけの清潔な無記名描画面へ固定した。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- R4-2Lコード実装後のProduction変更と実Provider E2Eはない。Draft PR [#269](https://github.com/team478a/manga/pull/269)はDraft／MERGEABLE。全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
+- 実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-ju48odwjq-team478as-projects.vercel.app`。最終文書同期HEADを再確認して停止する。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2K クローズアップの顔フレーミング固定
 
 - PR #267 merge commit `0d987a0d5bb610762635445ae94c8d1a42f47312`を含む最新基準から`codex/fix-r4-2k-closeup-framing`を開始した。
