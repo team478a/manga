@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2K クローズアップの顔フレーミング固定
+
+- PR #267 merge commit `0d987a0d5bb610762635445ae94c8d1a42f47312`を含む最新基準から`codex/fix-r4-2k-closeup-framing`を開始した。
+- Productionの`test`モニターで、Provider拒否後の安全な再実行を1回だけ確認した。Job登録は1件、Worker run `31859031742`は`requests=2 processed=1`、使用creditは38→40、予約2→0、残り60、重複POSTなし。
+- 704×1024の生成Assetは疑似文字を含まなかったが、鼻・口・顎だけの極端な寄りで両目と顔全体が切れた。配置・品質承認・追加生成は行っていない。
+- 実効画角をネームまたは画面上書きから解決し、人物を含む`close_up`だけへ頭頂から顎、両目・鼻・口・顎、頭上・顎下余白の日英正方向契約を追加した。wide上書きでは適用されない回帰テストも追加した。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 集中26/26、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。
+- 標準Turbopackは既知のWindowsパス長、Desktop typecheck／test／a11yは既存`@napi-rs/keyring`型宣言不足で停止した。Draft PRのWindows CI／Vercelを正式判定し、merge前にProduction生成を行わない。
+- Draft PR [#268](https://github.com/team478a/manga/pull/268)をbase=`feature/manga-canvas-mvp`で作成した。全CIとVercel Preview確認後に停止する。
+- 実装・Draft PR記録HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-gmukjl68x-team478as-projects.vercel.app`。最終文書同期HEADを再確認して停止する。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2H 参照付き単一コマ生成
 
 - PR #264 merge commit `78eccfffae8f95907d2ce143278d8e583c83ab27`を含む最新基準から`codex/quality-r4-2h-grounded-panel-generation`を開始した。

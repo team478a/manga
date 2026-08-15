@@ -381,6 +381,64 @@ test("完成コマ生成はBFL向けの正の単一場面指示を日英で固�
   assert.match(result.generation.negativePrompt, /speech balloons/);
 });
 
+test("クローズアップは顔全体と主要特徴をフレーム内へ固定する", () => {
+  const closeUpStoryboard = structuredClone(storyboard);
+  closeUpStoryboard.pages[0].panels[0].shot = "close_up";
+  const result = buildStoryboardPanelGeneration({
+    storyboard: closeUpStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+  });
+
+  assert.match(result.generation.prompt, /頭頂から顎までの顔全体/);
+  assert.match(result.generation.prompt, /両目・鼻・口・顎/);
+  assert.match(result.generation.prompt, /complete face in frame/);
+  assert.match(result.generation.prompt, /Do not crop through facial features/);
+  assert.equal(
+    result.generation.prompt.match(/頭頂から顎までの顔全体/g)?.length,
+    2,
+  );
+  assert.equal(
+    moderateGeneralCloudPrompt(
+      `${result.generation.prompt}\n${result.generation.negativePrompt}`,
+    ).decision,
+    "allow",
+  );
+});
+
+test("画角上書き後の実効画角だけで顔フレーミングを決定する", () => {
+  const closeUpOverride = buildStoryboardPanelGeneration({
+    storyboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    compositionControl: {
+      shot: "close_up",
+      cameraAngle: "storyboard",
+      subjectPlacement: "storyboard",
+      gazeDirection: "storyboard",
+    },
+  });
+  assert.match(closeUpOverride.generation.prompt, /頭頂から顎までの顔全体/);
+
+  const wideOverrideStoryboard = structuredClone(storyboard);
+  wideOverrideStoryboard.pages[0].panels[0].shot = "close_up";
+  const wideOverride = buildStoryboardPanelGeneration({
+    storyboard: wideOverrideStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+    compositionControl: {
+      shot: "wide",
+      cameraAngle: "storyboard",
+      subjectPlacement: "storyboard",
+      gazeDirection: "storyboard",
+    },
+  });
+  assert.doesNotMatch(wideOverride.generation.prompt, /頭頂から顎までの顔全体/);
+});
+
 test("非正立動作は紙面を回転させず意図した人物だけへ限定する", () => {
   const fallingStoryboard = structuredClone(storyboard);
   fallingStoryboard.pages[0].panels[0].action =

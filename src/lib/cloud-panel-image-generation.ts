@@ -168,6 +168,21 @@ const gazeDirectionDirections = {
   off_frame: "主役の視線を画面外の対象へ向け、続きを意識させる",
 } as const;
 
+type ResolvedShot =
+  | keyof typeof shotLabels
+  | Exclude<keyof typeof shotOverrideDirections, "storyboard">;
+
+function resolveFaceFramingContract(input: {
+  shot: ResolvedShot;
+  usesCharacters: boolean;
+}) {
+  if (!input.usesCharacters || input.shot !== "close_up") return [];
+  return [
+    "クローズアップでも、頭頂から顎までの顔全体を画面内に収め、両目・鼻・口・顎を欠かさず見せる。顔の主要部分をフレーム端で切らず、頭上と顎下にわずかな余白を残す。",
+    "For a close-up, keep the complete face in frame from the top of the head to the chin, with both eyes, nose, mouth, and chin visible. Do not crop through facial features; leave slight headroom and space below the chin.",
+  ];
+}
+
 function imageSize(width: number, height: number) {
   const safeWidth = Math.max(1, width);
   const safeHeight = Math.max(1, height);
@@ -403,6 +418,14 @@ export function buildStoryboardPanelGeneration(input: {
     !input.compositionControl || input.compositionControl.shot === "storyboard"
       ? shotLabels[storyboardPanel.shot]
       : shotOverrideDirections[input.compositionControl.shot];
+  const resolvedShot: ResolvedShot =
+    !input.compositionControl || input.compositionControl.shot === "storyboard"
+      ? storyboardPanel.shot
+      : input.compositionControl.shot;
+  const faceFramingContract = resolveFaceFramingContract({
+    shot: resolvedShot,
+    usesCharacters,
+  });
   const contractedCamera =
     !input.compositionControl ||
     input.compositionControl.cameraAngle === "storyboard"
@@ -426,6 +449,7 @@ export function buildStoryboardPanelGeneration(input: {
       ? `人物と背景の配置: ${panelSpecification.composition}。`
       : "",
     `画角: ${contractedShot}。カメラ: ${contractedCamera}。`,
+    ...faceFramingContract,
     "画像全体をこの一つの瞬間と一つの視点だけで満たす。編集用の文字要素は後工程で追加するため、描画面は意味のある絵だけで完成させる。",
   ].filter(Boolean);
   const candidateCount = Math.max(1, Math.min(4, input.candidateCount ?? 1));
