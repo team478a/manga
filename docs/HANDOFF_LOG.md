@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2M Provider構図契約・参照役割の構造化
+
+- PR #269 merge commit `c7615a6bf9022cfd22376ff0d00199b22d6161b9`を含む最新基準から`codex/fix-r4-2m-provider-framing-contract`を開始した。
+- Productionの`test`モニターで失敗候補を1回だけ再制作した。Job登録は1件、公式Worker run `31864612499`は`status=idle requests=2 processed=1`、使用creditは42→44、予約0→2→0、残り56、重複登録と継続Workerなし。
+- 新Asset `1e1fd972-ce78-4bb0-b700-126cd693c35d.png`（704×1024）は頭頂、髪、両目が切れ、鼻下、口、顎、首、肩だけとなり、下部に生成文字`証拠を`が混入した。販売品質未達のため配置、品質承認、追加Provider生成は行っていない。
+- 保存済み画風参照Asset `84dce883-e71a-4e6b-8efa-465e36e4f366`は完全な頭部と全身を含む清潔な無記名画像だった。参照画像のcrop／文字汚染ではなく、単純な`クローズアップ`の再指定、未索引の参照役割、長い自然言語Prompt内の優先度が原因と判定した。
+- Provider Prompt先頭へJSON構図契約を追加し、`close_up`の日本語指定も頭部全体、首、両肩、10%余白を含むミディアムクローズアップへ統一した。送信順の各参照へ`Input image N`と人物同一性／画風／場所／小物の限定役割を付け、構図、crop、配置はProvider契約を優先する。
+- BFL公式ガイドに沿って構造化Promptと入力画像ごとの役割を使用する。FLUX.2はnegative prompt非対応のため、既存の正方向Promptだけを送る契約を維持した。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- R4-2Mコード実装後のProduction変更と実Provider E2Eはない。Draft PR [#270](https://github.com/team478a/manga/pull/270)はDraft／MERGEABLE。最終HEADの全CI／Vercel Preview成功後に停止し、merge前に追加生成しない。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-9d6nqnlbl-team478as-projects.vercel.app`。最終文書同期HEADを再確認して停止する。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2L クローズアップ余白・無記名描画面の固定
 
 - PR #268 merge commit `7f3dc733c5a608a89e878c05431e69958d099e15`を含む最新基準から`codex/fix-r4-2l-closeup-clean-output`を開始した。

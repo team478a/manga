@@ -395,10 +395,13 @@ test("クローズアップは顔全体と主要特徴をフレーム内へ固�
   assert.match(result.generation.prompt, /両目・鼻・口・顎/);
   assert.match(result.generation.prompt, /complete face in frame/);
   assert.match(result.generation.prompt, /Do not crop through facial features/);
-  assert.match(result.generation.prompt, /頭と肩が分かるクローズアップ/);
+  assert.match(result.generation.prompt, /頭と肩が分かるミディアムクローズアップ/);
   assert.match(result.generation.prompt, /画像短辺のおよそ10%/);
-  assert.match(result.generation.prompt, /head-and-shoulders close-up/);
+  assert.match(result.generation.prompt, /medium close-up head-and-shoulders portrait/);
   assert.match(result.generation.prompt, /complete hair silhouette/);
+  assert.equal(result.generation.prompt.startsWith("PROVIDER CONTROL CONTRACT:\n{"), true);
+  assert.match(result.generation.prompt, /"lettering_stage":"blank artwork ready/);
+  assert.match(result.generation.prompt, /clear 10% margin around the head/);
   assert.equal(
     result.generation.prompt.match(/頭頂から顎までの顔全体/g)?.length,
     2,
@@ -472,6 +475,11 @@ test("人物と参照素材は肌・口元を無記名の自然な面へ固定�
   assert.match(result.generation.prompt, /人物の肌、口元、衣服、背景/);
   assert.match(result.generation.prompt, /線画の筆致だけを再構成/);
   assert.match(result.generation.prompt, /clean unlettered pictorial surfaces/);
+  assert.match(
+    result.generation.prompt,
+    /Input image 1 role: linework, ink texture, shading, and tonal style only/,
+  );
+  assert.match(result.generation.prompt, /Camera framing, crop, subject placement/);
   assert.match(result.generation.prompt, /顔の解剖学的な輪郭と自然な陰影だけ/);
   assert.equal(
     result.generation.prompt.match(/顔の解剖学的な輪郭と自然な陰影だけ/g)?.length,
@@ -656,6 +664,10 @@ test("明示割当と参照画像IDを生成Jobへ固定する", () => {
   assert.deepEqual(result.generation.referenceAssetIds, [assetId]);
   assert.match(result.generation.prompt, /参照素材: 人物1点/);
   assert.match(result.generation.prompt, /scene contract below overrides/);
+  assert.match(
+    result.generation.prompt,
+    /Input image 1 role: character identity, face, hairstyle, body build, and clothing only/,
+  );
   assert.deepEqual(result.panelSpecification.characterIdentities, [
     {
       version: 1,
