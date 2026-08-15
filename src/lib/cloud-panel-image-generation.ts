@@ -463,7 +463,7 @@ export function buildStoryboardPanelGeneration(input: {
     subject_count: panelSpecification.expectedCharacterCount,
     composition:
       resolvedShot === "close_up"
-        ? "medium close-up head-and-shoulders portrait; complete hair silhouette, both eyes, nose, mouth, chin, neck, and shoulder tops inside the image; clear 10% margin around the head"
+        ? "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin"
         : contractedShot,
     camera_angle: contractedCamera,
     image_surface: "clean monochrome pictorial line art and natural material shading",

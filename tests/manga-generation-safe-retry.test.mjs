@@ -25,6 +25,21 @@ const imageGeneration = {
   outputAlphaMode: "preserve",
 };
 
+const providerContractGeneration = {
+  ...imageGeneration,
+  prompt: [
+    "PROVIDER CONTROL CONTRACT:",
+    JSON.stringify({
+      output_type: "single frameless monochrome manga panel illustration",
+      composition:
+        "medium close-up head-and-shoulders portrait; complete hair silhouette, both eyes, nose, mouth, chin, neck, and shoulder tops inside the image; clear 10% margin around the head",
+      camera_angle: "目線の高さ",
+      lettering_stage: "blank artwork ready for dialogue overlay",
+    }),
+    imageGeneration.prompt,
+  ].join("\n"),
+};
+
 test("Provider拒否後は人物同一性と参照画像を維持して直接描写だけを安全化する", () => {
   const retry = buildGeneralAudienceGenerationRetry(imageGeneration);
   assert.match(retry.prompt, /一般向け作品として刺激の強い直接描写を避け/);
@@ -50,4 +65,16 @@ test("一般向け安全化は二重変換せず文章Jobを変更しない", ()
     outputAlphaMode: "preserve",
   };
   assert.equal(buildGeneralAudienceGenerationRetry(textGeneration), textGeneration);
+});
+
+test("Provider拒否後は構造化構図の身体部位列挙を安全な非crop契約へ置換する", () => {
+  const retry = buildGeneralAudienceGenerationRetry(providerContractGeneration);
+  const contract = JSON.parse(retry.prompt.split("\n")[2]);
+  assert.equal(
+    contract.composition,
+    "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin",
+  );
+  assert.equal(contract.camera_angle, "目線の高さ");
+  assert.match(retry.prompt, /人物設定: 黒髪、細身、灰色のパーカー/);
+  assert.doesNotMatch(retry.prompt, /both eyes, nose, mouth, chin/);
 });

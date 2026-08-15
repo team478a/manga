@@ -9,6 +9,26 @@ const SAFE_EXPRESSION =
   "抑制された自然な表情と視線で物語上の緊張感を伝える。";
 const SAFE_DIRECTION =
   "光と影、人物間の距離、視線誘導で物語上の緊張感を間接的に伝える。";
+const SAFE_PROVIDER_CLOSE_UP_COMPOSITION =
+  "uncropped medium close-up head-and-shoulders portrait; subject fully contained within the frame with a clear 10% composition margin";
+
+function sanitizeProviderControlContract(line: string) {
+  try {
+    const contract = JSON.parse(line) as Record<string, unknown>;
+    if (
+      typeof contract.composition === "string" &&
+      contract.composition.includes("both eyes, nose, mouth, chin")
+    ) {
+      return JSON.stringify({
+        ...contract,
+        composition: SAFE_PROVIDER_CLOSE_UP_COMPOSITION,
+      });
+    }
+  } catch {
+    // Older prompts without a JSON provider contract keep their existing line.
+  }
+  return line;
+}
 
 export function isGeneralAudienceGenerationRetry(
   generation: CloudGenerationInput,
@@ -25,7 +45,9 @@ export function buildGeneralAudienceGenerationRetry(
   if (generation.kind !== "image" || isGeneralAudienceGenerationRetry(generation))
     return generation;
 
-  const promptLines = generation.prompt.split(/\r?\n/).map((line) => {
+  const promptLines = generation.prompt.split(/\r?\n/).map((line, index, lines) => {
+    if (lines[index - 1] === "PROVIDER CONTROL CONTRACT:")
+      return sanitizeProviderControlContract(line);
     if (line.startsWith("この瞬間の動作:"))
       return `この瞬間の動作: ${SAFE_ACTION}`;
     if (line.startsWith("動作:")) return `動作: ${SAFE_ACTION}`;
