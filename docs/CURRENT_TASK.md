@@ -2,8 +2,9 @@
 
 ## 2026-08-15 PR-R4-2M Provider構図契約・参照役割の構造化
 
-- 状態: `VERIFYING_CI`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#270](https://github.com/team478a/manga/pull/270)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-9d6nqnlbl-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2m-provider-framing-contract`
 - Base: `origin/feature/manga-canvas-mvp`@`c7615a6`（PR #269 merge commit）。
 - Production受入れ: PR #269反映後、`test`モニターのページ22で有効な再制作を1回だけ登録した。Jobは1件、公式Worker run `31864612499`は`status=idle requests=2 processed=1`で成功。使用creditは42→44、予約0→2→0、残り56、重複登録と継続Workerはなかった。
@@ -14,9 +15,10 @@
 - Provider契約: BFL公式の構造化Prompt／複数入力画像の役割明示を採用する。FLUX.2はnegative prompt非対応のため、既存どおり送信せず正方向契約だけを強化する。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、成人向け境界、Desktop。
 - 検証: 集中27/27、Hub全体、Canvas 26/26、AI 48/48、100ページ長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository受入れ、owner isolation、workspace package build、Webpack production build、RC structure成功。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
 - Production変更: 上記PR #269受入れの1 Job／2 creditだけ。R4-2Mコード実装後のProvider E2E、画像配置・承認、DB／Storage／作品内容の変更は行っていない。
 - 証跡: `docs/RELEASE_CANDIDATE_R4_2M_PROVIDER_FRAMING_CONTRACT.md`
-- 次: 最終HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProductionで追加生成しない。
+- 次: 最終文書同期HEADの5チェックを再確認して停止する。責任者merge前にProductionで追加生成しない。
 
 ---
 

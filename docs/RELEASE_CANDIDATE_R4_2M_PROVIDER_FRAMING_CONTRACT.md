@@ -4,8 +4,9 @@
 
 - Branch: `codex/fix-r4-2m-provider-framing-contract`
 - Base: `c7615a6bf9022cfd22376ff0d00199b22d6161b9`（PR #269 merge commit）
-- 状態: `VERIFYING_CI`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#270](https://github.com/team478a/manga/pull/270)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-9d6nqnlbl-team478as-projects.vercel.app
 - 対象: Providerへ送る単一コマ生成Promptの構図契約と参照画像の役割
 - Production変更: R4-2M実装後はなし
 
@@ -97,6 +98,11 @@ Promptの先頭へJSONを置き、次を一つの最優先契約として伝え�
 | Workspace package build | 成功 |
 | Next.js Webpack production build | 成功 |
 | RC structure preflight | 成功（外部設定・手動E2Eは既存どおりpending） |
+| Core quality | 成功 |
+| Migration roundtrip | 成功 |
+| Windows build | 成功 |
+| Vercel | 成功 |
+| Vercel Preview Comments | 成功 |
 
 ## 外部契約と停止条件
 
