@@ -1,5 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2S Provider安全な座標フレーミング、2026-08-15）
+
+- Branch: `codex/fix-r4-2s-provider-safe-frame-coordinates`
+- Base: `origin/feature/manga-canvas-mvp` @ `4728941`（PR #275 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#276](https://github.com/team478a/manga/pull/276)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-b52cd0-team478as-projects.vercel.app
+- Production限定受入れで、ページ22・4コマ目の再制作を1案だけ登録した。Worker [31883817067](https://github.com/team478a/manga/actions/runs/31883817067)は`requests=2 processed=1`で処理したがProvider moderation拒否となり、予約2 creditを全額解放した。
+- 画面から一般向け安全再実行を1回だけ行い、Worker [31883888494](https://github.com/team478a/manga/actions/runs/31883888494)も`requests=2 processed=1`で処理したが同じく拒否された。最終creditは使用50／予約0／残50、新規Assetなし。追加Provider実行を停止した。
+- PR #274の安全再実行は成功し、PR #275で追加した身体部位の英語列挙だけが主な差分だった。過去にも同種の列挙でProvider moderationが再現しているため、列挙を避け、被写体高72%、髪上端15%、上着下端92%、左右環境余白12%の座標契約へ置換する。
+- FLUX.2公式のJSON `position`／`composition`／`camera.distance`構造を維持し、初回生成と保存済み旧短縮JSONの安全再実行を同じ契約へ正規化する。
+- URL、API、DB、migration、RPC、Storage、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsもすべて成功。最終文書同期HEADの5チェックを再確認して停止し、merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2S_PROVIDER_SAFE_FRAME_COORDINATES.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2R 短縮クローズアップの一枚絵・画面内ランドマーク契約、2026-08-15）
 
 - Branch: `codex/fix-r4-2r-compact-output-framing`

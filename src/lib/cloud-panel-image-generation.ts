@@ -196,13 +196,19 @@ const providerReferenceRoleDirections: Record<
 };
 
 const providerCloseUpScene =
-  "one general-audience manga character in a complete waist-up medium shot from one upright camera view, with the entire head and upper torso visible";
+  "one general-audience manga character in a medium portrait from one upright camera view, with the complete hairstyle and clothing silhouette visible";
 const providerCloseUpPosition =
-  "centered in the portrait canvas; top of hair near 15% from the top edge, shoulders inside both side margins, and waist near the bottom edge; surrounding environment remains visible";
+  "centered in the portrait canvas; top of hair near 15% from the top edge, lower edge of the visible jacket near 92% from the top edge, and clear environment along both side margins";
 const providerCloseUpComposition =
-  "complete waist-up medium shot; entire hair silhouette, face, neck, shoulders, chest, and waist inside the canvas; clear headroom and environmental space on both sides";
+  "medium portrait; subject occupies about 72% of canvas height; complete hairstyle and clothing silhouette remain inside the canvas; clear headroom and environmental space on both sides";
 const providerCloseUpOutput =
   "one continuous edge-to-edge monochrome manga illustration across the entire portrait canvas";
+const providerCloseUpFraming = {
+  subject_height_percent: 72,
+  top_hair_y_percent: 15,
+  lower_jacket_y_percent: 92,
+  side_environment_percent: 12,
+} as const;
 
 function buildProviderReferenceRoleContract(
   references: readonly PanelReferenceAsset[],
@@ -588,12 +594,13 @@ export function buildStoryboardPanelGeneration(input: {
       fallback: "a simple story-appropriate environment",
     }),
     composition: providerCloseUpComposition,
+    framing: providerCloseUpFraming,
     camera: {
       angle: contractedCamera,
-      distance: "complete waist-up medium shot",
+      distance: "medium portrait distance with the camera pulled back",
       "lens-mm": 50,
       focus:
-        "sharp focus on the entire head and waist-up figure while retaining visible surrounding environment",
+        "sharp focus on identity, expression, and the complete clothing silhouette while retaining visible surrounding environment",
     },
     canvas:
       "one uninterrupted pictorial scene fills every edge of the portrait canvas",

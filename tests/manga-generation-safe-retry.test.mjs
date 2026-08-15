@@ -102,7 +102,7 @@ test("Provider拒否後は構造化構図の身体部位列挙を安全な非cro
   const contract = JSON.parse(retry.prompt.split("\n")[2]);
   assert.equal(
     contract.composition,
-    "complete waist-up medium shot; entire hair silhouette, face, neck, shoulders, chest, and waist inside the canvas; clear headroom and environmental space on both sides",
+    "medium portrait; subject occupies about 72% of canvas height; complete hairstyle and clothing silhouette remain inside the canvas; clear headroom and environmental space on both sides",
   );
   assert.equal(contract.camera_angle, "目線の高さ");
   assert.match(retry.prompt, /人物設定: 黒髪、細身、灰色のパーカー/);
@@ -123,15 +123,25 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.match(contract.subjects[0].expression, /general audience/);
   assert.match(contract.background, /non-graphic/);
   assert.match(contract.variation, /convey tension indirectly/);
-  assert.match(contract.scene, /complete waist-up medium shot/);
+  assert.match(contract.scene, /medium portrait/);
   assert.match(contract.output_type, /continuous edge-to-edge/);
   assert.match(contract.canvas, /one uninterrupted pictorial scene/);
   assert.match(contract.subjects[0].position, /top of hair near 15%/);
   assert.equal(contract.camera.angle, "eye level");
-  assert.equal(contract.camera.distance, "complete waist-up medium shot");
+  assert.deepEqual(contract.framing, {
+    subject_height_percent: 72,
+    top_hair_y_percent: 15,
+    lower_jacket_y_percent: 92,
+    side_environment_percent: 12,
+  });
+  assert.equal(
+    contract.camera.distance,
+    "medium portrait distance with the camera pulled back",
+  );
   assert.equal(contract.camera["lens-mm"], 50);
   assert.equal("lens" in contract.camera, false);
-  assert.match(contract.camera.focus, /entire head and waist-up figure/);
+  assert.match(contract.camera.focus, /identity, expression/);
+  assert.doesNotMatch(JSON.stringify(contract), /\b(?:chest|waist)\b/i);
   assert.deepEqual(contract.input_image_roles, [
     "input_image_1: preserve character identity only",
   ]);

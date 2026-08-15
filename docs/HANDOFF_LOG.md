@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-15 Codex: PR-R4-2S Provider安全な座標フレーミング
+
+- PR #275 merge commit `472894141718b355bd946761f564922abb46f577`を含む最新基準から`codex/fix-r4-2s-provider-safe-frame-coordinates`を開始した。
+- Productionの`test`モニターでページ22・4コマ目を1案だけ再制作した。Worker `31883817067`は`requests=2 processed=1`でProvider moderation拒否。一般向け安全再実行を1回だけ実施し、Worker `31883888494`も拒否された。各回の予約2 creditは全額解放され、最終は使用50／予約0／残50、新規Assetなし。
+- 候補採用、コマ配置、品質承認、Canvas revision、公開・販売状態は変更していない。追加のProvider実行を停止した。
+- PR #274の安全再実行成功との差分と過去の再現履歴から、PR #275で追加した身体部位の英語列挙を原因候補として限定した。API応答、Prompt、画像、署名URLはログ・文書へ保存していない。
+- FLUX.2公式の構造化JSONに従い、身体部位列挙を被写体高72%、髪上端15%、上着下端92%、左右環境余白12%の座標契約へ置換した。初回生成と保存済み旧短縮JSONの安全再実行は同じ`framing`／`position`／`composition`／`camera`へ正規化する。
+- Provider、model、pricing、DB、migration、RPC、Storage、credit、retry、timeout、Scheduler、Canvas、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 集中32/32、Hub 728/728、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure成功。
+- Draft PR [#276](https://github.com/team478a/manga/pull/276)を作成。Draft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-b52cd0-team478as-projects.vercel.app`。最終文書同期HEADの5チェックを再確認して停止する。
+
+---
+
 ## 2026-08-15 Codex: PR-R4-2R 短縮クローズアップの一枚絵・画面内ランドマーク契約
 
 - PR #274 merge commit `ebc9107ae02c577dba03efad384f1213e8442e8a`を含む最新基準から`codex/fix-r4-2r-compact-output-framing`を開始した。
