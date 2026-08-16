@@ -79,7 +79,7 @@ test("Provider拒否後は人物同一性と参照画像を維持して直接描
   assert.match(retry.prompt, /表情と視線で状況を伝える/);
   assert.match(retry.prompt, /構図、照明で.*間接的に伝える/);
   assert.doesNotMatch(retry.prompt, /刺激の強い出来事を直接描く/);
-  assert.match(retry.prompt, /端末画面は反射と光だけの空のガラス面/);
+  assert.match(retry.prompt, /手持ち端末は無地の背面または細い側面だけ/);
   assert.match(retry.prompt, /必要な小物はそれぞれ一つだけ/);
   assert.match(retry.negativePrompt, /pseudo-text/);
   assert.match(retry.negativePrompt, /device screen UI/);
@@ -156,7 +156,7 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.match(contract.surface_content, /pure pictorial artwork/);
   assert.match(contract.face_finish, /clean linework and shading/);
   assert.match(contract.quality_gate, /each required prop exactly once/);
-  assert.match(contract.quality_gate, /blank device screens/);
+  assert.match(contract.quality_gate, /plain back or side edge/);
   assert.match(contract.quality_gate, /pure pictorial marks/);
   assert.doesNotMatch(retry.prompt, /speaking|lettering|unmarked/);
   assert.doesNotMatch(JSON.stringify(contract), /\b(?:chest|waist)\b/i);
