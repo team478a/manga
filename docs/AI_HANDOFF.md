@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2AD ネーム構図から端末表示面を除外、2026-08-16）
+
+- Branch: `codex/fix-r4-2ad-device-safe-layout`
+- Base: `origin/feature/manga-canvas-mvp` @ `a3d957a`（PR #286 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#287](https://github.com/team478a/manga/pull/287)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-f5e0c4-team478as-projects.vercel.app
+- PR #286反映後、Productionページ22・コマ1で2候補を1回だけ生成した。1候補では目視前にautoAdoptされる既存契約のため、手動比較を保つUI最小値を使った。Worker [31926041721](https://github.com/team478a/manga/actions/runs/31926041721)は`requests=3 processed=2`で成功し、1候補完成、1候補失敗・返金。Creditは使用70／予約0／残30から使用72／予約0／残28。
+- 完成候補は胸ポケットと端末のクローズアップを復元したが、端末表示面に日本語・疑似文字・通話UIが生成されたため追加生成なしで不採用。Canvas revision 8、PNG、公開・販売状態は不変。失敗候補は再実行していない。
+- raw `layout`が位置anchorと「表示面をカメラへ向ける」意味を同時に渡し、端末背面品質契約と競合していた。端末・画面語があるクローズアップだけ、語より前の位置anchorを保持し、端末の背面／側面をカメラへ、表示面を人物側／画面外へ向ける短い契約へ変換する。
+- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既知型宣言不足で停止し、Windows CIを正式判定にする。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。merge前にProduction追加生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AD_DEVICE_SAFE_LAYOUT.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2AC 安全再構成でネーム構図を維持、2026-08-16）
 
 - Branch: `codex/accept-r4-2ac-conservative-retry`

@@ -267,6 +267,25 @@ function compactProviderSceneField(input: {
   return withoutQuotedSpeech.slice(0, input.maxLength ?? 300);
 }
 
+const providerDeviceLayoutSignal =
+  /(?:スマートフォン|スマホ|携帯(?:電話)?|端末|デバイス|表示面|ディスプレイ|handheld device|smartphone|mobile phone|phone|device|screen|display|\bUI\b)/i;
+
+function compactProviderSpatialLayout(input: {
+  value: string;
+  dialogue: readonly { text: string }[];
+  fallback: string;
+}) {
+  const layout = compactProviderSceneField(input);
+  const deviceSignal = providerDeviceLayoutSignal.exec(layout);
+  if (!deviceSignal) return layout;
+  const anchor = layout
+    .slice(0, deviceSignal.index)
+    .replace(/(?:から|より|の|を|が|は|へ|に|で|と)\s*$/u, "")
+    .trim()
+    .slice(0, 120);
+  return `${anchor ? `${anchor}; ` : ""}one device: back/side to camera; display to wearer/off-frame`;
+}
+
 function imageSize(width: number, height: number) {
   const safeWidth = Math.max(1, width);
   const safeHeight = Math.max(1, height);
@@ -608,7 +627,11 @@ export function buildStoryboardPanelGeneration(input: {
     composition: providerCloseUpComposition,
     framing: providerCloseUpFraming,
     scene: providerCloseUpScene,
-    layout: providerSceneFields.composition,
+    layout: compactProviderSpatialLayout({
+      value: storyboardPanel.composition,
+      dialogue: storyboardPanel.dialogue,
+      fallback: "人物と背景の関係が読み取れる明瞭な配置",
+    }),
     output_type: providerCloseUpOutput,
     subjects: [
       {

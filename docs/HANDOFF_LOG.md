@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-16 Codex: ネーム構図から端末表示面を除外
+
+- PR #286 merge commit `a3d957a713469e0b5018ab3259ad0dc9afce2b4d`を含む最新基準から`codex/fix-r4-2ad-device-safe-layout`を開始した。
+- Productionの`test`モニターでページ22・コマ1を2候補だけ登録し、公式Worker [31926041721](https://github.com/team478a/manga/actions/runs/31926041721)を`run` modeで1回だけ実行した。1候補は既存契約でautoAdoptとなるため、目視前のCanvas変更を避ける手動比較最小値を使った。
+- Workerは`status=idle requests=3 processed=2`で成功。1候補完成、1候補失敗・予約返却。Creditは使用70／予約0／残30 → 使用70／予約4／残26 → 使用72／予約0／残28。
+- 完成した704×1024 PNGは胸ポケットと端末の寄りという元ネーム構図を復元した。一方、端末表示面に日本語・疑似文字・通話UIが生成されたため追加生成なしで不採用。失敗候補は再実行していない。Canvas revision 8、PNG、公開・販売状態は不変。
+- raw `layout`内の端末・画面指示が後段の端末背面契約と競合していた。端末語より前の位置anchorだけを保持し、端末1個の背面／側面をカメラへ、表示面を人物側／画面外へ向ける短い正方向契約へ変換した。非端末構図は維持する。
+- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktop test／a11y／buildは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- Draft PR [#287](https://github.com/team478a/manga/pull/287)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-f5e0c4-team478as-projects.vercel.app`。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。merge前にProduction追加生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AD_DEVICE_SAFE_LAYOUT.md`
+
+---
+
 ## 2026-08-16 Codex: 安全再構成でネーム構図を維持
 
 - PR #285 merge commit `035c2a6d70dfad740b8fe8f4aebaa3aab36497f7`を含む最新基準から`codex/accept-r4-2ac-conservative-retry`を開始した。
