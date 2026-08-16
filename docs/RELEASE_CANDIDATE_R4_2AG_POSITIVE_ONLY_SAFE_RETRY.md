@@ -2,9 +2,9 @@
 
 ## 判定
 
-- 状態: `LOCAL_GATES_COMPLETE`
-- Draft PR: 作成前
-- Vercel Preview: 確認前
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#290](https://github.com/team478a/manga/pull/290)（Draft／MERGEABLE）
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-fix-r4-2-b9d25a-team478as-projects.vercel.app)
 - Branch: `codex/fix-r4-2ag-positive-only-safe-retry`
 - Base: `origin/feature/manga-canvas-mvp` @ `7cb9f02`（PR #289 merge commit）
 - 対象: 端末を含むクローズアップの通常生成と、Provider拒否後の第1・第2段階安全再構成に渡す正方向Promptだけを安全化する。
@@ -48,7 +48,9 @@ PR #289で端末・画面・UI・隠蔽語は除外したが、第1段階安全�
 - `deps:check`、lint、Hub型検査、59 migration／rollback、research eval、100ページfixture、Cloud漫画repository acceptance、owner isolation、package build、Next.js Webpack build、diff check: 成功
 - RC preflight: repository structure ready。外部設定と手動E2Eはローカル環境外のため保留
 - Desktop test／a11y／build: 差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止。GitHub Windows buildを正式判定とする
-- GitHub Actions、Vercel Preview: Draft PR作成後に確認する
+- GitHub Actions: 初回HEADのCore quality、Migration roundtrip、Windows buildが成功。Windows CIではDesktop test、Accessibility、Windows application buildも成功
+- Vercel／Vercel Preview Comments: 初回HEADで成功
+- 最終文書同期HEADでも同じ5チェックを再確認して停止する
 
 ## 不変契約
 
