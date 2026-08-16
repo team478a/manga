@@ -12,7 +12,8 @@
 - 新候補は正立、自然な人体、小物単一性を概ね満たした。一方、端末画面、衣装、画面端に文字状模様があり、4項目品質ゲートで不合格として追加生成なしで不採用にした。
 - 古い失敗Jobの安全再実行は保存済みnegative promptをそのまま維持し、PR #281の最新端末・小物・画像内文字品質契約を補強していなかった。安全再実行domain関数だけへ、正方向品質条件、短縮JSONの`quality_gate`、現行negative promptを追加した。
 - 対象コマ、参照Asset、人物・画風・世界観version、画像操作、Panel Specification、Provider、model、pricing、retry、timeout、Scheduler、Canvas、PNG／PDFは維持する。
-- 集中39/39、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Draft PRの全CIとVercel Preview確認後に停止し、merge前にProduction再生成を行わない。
+- 集中39/39、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
+- Draft PR [#283](https://github.com/team478a/manga/pull/283)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-031855-team478as-projects.vercel.app`。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADを再確認して停止し、merge前にProduction再生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2Z_RETRY_QUALITY_CONTRACT.md`
 
 ---

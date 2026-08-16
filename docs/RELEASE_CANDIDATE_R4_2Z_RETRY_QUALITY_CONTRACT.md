@@ -3,8 +3,8 @@
 作成日: 2026-08-16
 Branch: `codex/fix-r4-2z-retry-quality-contract`
 Base: `origin/feature/manga-canvas-mvp` @ `e52540c`（PR #282 merge commit）
-Draft PR: 作成前
-Vercel Preview: 確認前
+Draft PR: [#283](https://github.com/team478a/manga/pull/283)（Draft／MERGEABLE）
+Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-031855-team478as-projects.vercel.app
 
 ## 目的
 
@@ -49,10 +49,10 @@ PR #282反映後のProduction限定受入れで、失敗Jobの再実行、Credit
 - 安全化後のpromptとnegative promptを既存moderationへ渡し、`allow`を確認した。
 - Hub 737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、migration 59/59成功。
 - dependency／module boundary、lint、Hub typecheck、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。
-- Draft PR、CI、Vercel Previewは作成後に追記する。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 
 ## 停止条件
 
-- Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を確認する。
+- Draft PR #283の最終文書同期HEADでも、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を確認する。
 - Preview deploymentを確認し、Production未変更、予約Credit 0、Canvas revision 8、公開・販売未変更を維持する。
 - 責任者のmerge前にProduction再生成と次工程へ進まない。
