@@ -18,6 +18,10 @@ export const QUALITY_BENCHMARK_ROOT_ENV = "MANGAI_QUALITY_BENCHMARK_ROOT" as con
 
 const reviewerIdSchema = z.string().regex(/^[a-z0-9][a-z0-9_-]{2,79}$/);
 const familyIdSchema = z.string().regex(/^family_[0-9]{4}$/);
+const sourceGroupIdSchema = z.string().regex(/^srcgrp_[a-z0-9][a-z0-9_-]{0,63}$/);
+const sourceFamilySchema = z.string().regex(/^[a-z0-9][a-z0-9_-]{2,79}$/);
+const characterGroupIdSchema = z.string().regex(/^chargrp_[a-z0-9][a-z0-9_-]{0,63}$/).nullable();
+const referenceGroupIdSchema = z.string().regex(/^refgrp_[a-z0-9][a-z0-9_-]{0,63}$/).nullable();
 const rightsIdSchema = z.string().regex(/^rights_[0-9]{4}$/);
 const sourceImagePathSchema = z.string().regex(/^assembly\/images\/img_[0-9]{4}\.png$/);
 const sourceIntendedPathSchema = z.string().regex(/^assembly\/intended\/img_[0-9]{4}\.json$/);
@@ -50,6 +54,10 @@ export const qualityBenchmarkAssemblyManifestSchema = z
     items: z.array(z.object({
       id: qualityBenchmarkCaseIdSchema,
       family_id: familyIdSchema,
+      source_group_id: sourceGroupIdSchema,
+      source_family: sourceFamilySchema,
+      character_group_id: characterGroupIdSchema,
+      reference_group_id: referenceGroupIdSchema,
       split: z.enum(["dev", "holdout_private"]),
       source_file: sourceImagePathSchema,
       sha256: qualityBenchmarkSha256Schema,
@@ -239,12 +247,17 @@ export function inspectQualityBenchmarkAssembly(input: {
     if (!itemIds.has(caseId)) reasons.push(`review_orphan:${caseId}`);
 
   const splitByFamily = new Map<string, Set<string>>();
+  const splitBySourceFamily = new Map<string, Set<string>>();
   for (const item of input.manifest.items) {
     const splits = splitByFamily.get(item.family_id) ?? new Set<string>();
     splits.add(item.split);
     splitByFamily.set(item.family_id, splits);
+    const sourceSplits = splitBySourceFamily.get(item.source_family) ?? new Set<string>();
+    sourceSplits.add(item.split);
+    splitBySourceFamily.set(item.source_family, sourceSplits);
   }
   if ([...splitByFamily.values()].some((splits) => splits.size > 1)) reasons.push("family_crosses_dev_holdout");
+  if ([...splitBySourceFamily.values()].some((splits) => splits.size > 1)) reasons.push("source_family_crosses_dev_holdout");
   if (new Set(input.manifest.items.map((item) => item.sha256)).size !== input.manifest.items.length)
     reasons.push("exact_source_duplicate_detected");
 
@@ -277,6 +290,7 @@ export function inspectQualityBenchmarkAssembly(input: {
     reviewCount: input.reviews.records.length,
     reviewMetrics,
     familyCount: splitByFamily.size,
+    sourceFamilyCount: splitBySourceFamily.size,
     packages,
     readiness,
   };

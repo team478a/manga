@@ -18,6 +18,8 @@ v2.1/holdout-private/       # evaluator only; threshold調整担当へ渡さな�
 
 収集・権利・review・split指定は`assembly/`に置くローカル専用情報です。正式packageへ変換する前に`docs/quality-benchmark-assembly.md`の手順を使います。`assembly/`自体もgitignore対象です。
 
+人間レビュー用ZIPは`docs/quality-benchmark-human-review.md`の手順で作成し、source metadata sidecar、画像、回答、private labelはローカル専用rootに保持します。Gitにはschema確認用のexample JSONだけを置きます。
+
 `cases.json` はVisual Judgeへ渡せる公開入力だけを持ち、verdict、defects、severity、review情報を含めません。`labels.private.json` は必ず別ファイル・別配布経路で管理します。ファイル名は `images/img_0001.png` のようにlabel-neutralにします。
 
 ## Exact composition

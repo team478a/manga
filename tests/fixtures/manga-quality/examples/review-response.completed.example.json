@@ -1,0 +1,24 @@
+{
+  "template_version": "mangai-human-review-v2",
+  "slot": "reviewer_b",
+  "reviewer_id": "human-reviewer-b",
+  "reviewer_kind": "human",
+  "independent": true,
+  "reviewed_at": "2026-08-17T09:00:00+09:00",
+  "records": [
+    {
+      "case_id": "case_000001",
+      "verdict": "bad",
+      "confidence": 4,
+      "defects": [
+        {
+          "category": "anatomy_hand_error",
+          "severity": "major",
+          "bbox": [0.31, 0.42, 0.18, 0.21],
+          "comment": "右手の指構造が不自然"
+        }
+      ],
+      "overall_comment": ""
+    }
+  ]
+}

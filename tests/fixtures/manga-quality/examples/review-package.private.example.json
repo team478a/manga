@@ -1,0 +1,22 @@
+{
+  "source_version": 1,
+  "benchmark_version": "2.1",
+  "package_id": "r4_3a4_pilot_example",
+  "review_scope": "PILOT_INTRINSIC_ONLY",
+  "formal_benchmark_eligible": false,
+  "cases": [
+    {
+      "source_case_id": "img_0001",
+      "review_case_id": "case_000001",
+      "candidate_file": "assembly/images/img_0001.png",
+      "review_mode": "intrinsic_only",
+      "intended_file": null,
+      "references": [],
+      "source_group_id": "srcgrp_pilot_0001",
+      "source_family": "synthetic_batch_pilot",
+      "character_group_id": null,
+      "reference_group_id": null,
+      "target_split": "pilot_unassigned"
+    }
+  ]
+}
