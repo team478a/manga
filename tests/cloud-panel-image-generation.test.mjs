@@ -375,6 +375,10 @@ test("完成コマ生成はBFL向けの正の単一場面指示を日英で固�
   assert.match(result.generation.prompt, /意味のある絵柄だけ/);
   assert.match(result.generation.prompt, /手指との接触、衣服との境界/);
   assert.match(result.generation.prompt, /plain, featureless material shading/);
+  assert.match(result.generation.prompt, /端末の画面は反射と光だけ/);
+  assert.match(result.generation.prompt, /指定した位置にそれぞれ一つだけ/);
+  assert.match(result.generation.prompt, /Device displays are plain blank glass surfaces/);
+  assert.match(result.generation.prompt, /Each required prop appears exactly once/);
   assert.doesNotMatch(result.generation.prompt, /漫画ページ|複数コマ|疑似文字|Never render/);
   assert.match(result.generation.negativePrompt, /pseudo-text/);
   assert.match(result.generation.negativePrompt, /multiple panels/);
@@ -430,7 +434,8 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   assert.match(providerContract.surface_finish, /clean monochrome/);
   assert.match(providerContract.quality_gate, /upright page/);
   assert.match(providerContract.quality_gate, /face\/hands\/joints/);
-  assert.match(providerContract.quality_gate, /pictorial surfaces only/);
+  assert.match(providerContract.quality_gate, /single props/);
+  assert.match(providerContract.quality_gate, /blank device screens/);
   assert.equal(
     providerContract.subjects[0].action,
     "a natural attentive pose that communicates the story through posture and gaze",

@@ -676,7 +676,7 @@ export function buildStoryboardPanelGeneration(input: {
     surface_finish:
       "clean monochrome pictorial line art and natural material shading across every surface",
     quality_gate:
-      "upright page, natural gravity, coherent face/hands/joints, clean pictorial surfaces only",
+      "upright page, natural gravity, coherent face/hands/joints, single props, blank device screens",
     variation:
       candidateCount > 1
         ? `candidate ${candidateIndex + 1} of ${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`
@@ -763,6 +763,8 @@ export function buildStoryboardPanelGeneration(input: {
     "Every mark and shape belongs to the depicted people, environment, objects, light, or shadow as coherent pictorial artwork.",
     "小物はネームで指定した持ち方と位置だけに置き、手指との接触、衣服との境界、実物らしい大きさを明瞭にする。平面や衣服・小物の表面は、記号に見えない無地の面と素材の陰影で描く。",
     "Props have clear physical contact, believable scale, and clean separation from anatomy and clothing. Flat surfaces use plain, featureless material shading made only from non-symbolic pictorial marks.",
+    "端末の画面は反射と光だけで構成した無記名のガラス面として描く。ネームで必要な小物は、指定した位置にそれぞれ一つだけ置く。",
+    "Device displays are plain blank glass surfaces rendered only with reflection and light. Each required prop appears exactly once at its storyboard position.",
     `生成対象: ${targetDirections[generationTarget]}`,
     `画角: ${shotLabels[storyboardPanel.shot]}。`,
     `カメラ: ${angleLabels[storyboardPanel.cameraAngle]}。`,
