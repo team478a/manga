@@ -45,6 +45,8 @@ ROOT/
 収集台帳では次を必須にする。
 
 - `family_id`: 同一作品、同一生成系列、同一原画系列を一つにまとめる。同じfamilyをdevとholdoutへ分けない。
+- `source_group_id` / `source_family`: 生成元と生成batchを保持する。同じsource familyをdevとholdoutへ分けない。
+- `character_group_id` / `reference_group_id`: 同一人物・同一参照系列をprivate metadataで追跡する。該当しない場合だけ`null`とする。
 - `derivation: independent_original_case`: 色変更、反転、cropだけの派生ではないことを人が確認する。
 - SHA-256: 同一画像は一件でも正式assemblyを停止する。
 - Production-native profile: 実幅・実高さとprofileを一致させる。upscaleで揃えない。
@@ -106,3 +108,5 @@ assemblyの原本は変更しない。`dev`と`holdout-private`は派生出力�
 - Visual Judge比較: 未開始
 
 責任者が収集元、review担当、holdout管理者、外部送信範囲、検証予算を確認し、140件のstrict／leak gateが成功するまでPR-R4-3Bへ進まない。
+
+Human Reviewerへ渡すZIP、Intrinsic／Referential分離、回答schema、validatorは`docs/quality-benchmark-human-review.md`を正本とする。

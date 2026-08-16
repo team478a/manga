@@ -1,5 +1,29 @@
 # MANGAI Current Task
 
+## 2026-08-17 PR-R4-3A-4 Reviewer Package Context / Schema Hardening
+
+- 状態: `IMPLEMENTED_LOCAL / PILOT_PACKAGE_STRUCTURE_READY / PILOT_INTRINSIC_ONLY / NOT_COUNTED_IN_FORMAL_BENCHMARK`
+- Branch: `codex/fix-r4-3a4-review-package-context-schema`
+- Base: `origin/feature/manga-canvas-mvp`@`61fcaf3`（PR #293 merge commit。PR #291／#292を含む）。
+- 範囲: Candidate Visual BenchmarkのHuman Reviewを`intrinsic_only`／`referential`へ分離し、同一schemaで独立したHuman A/B reviewを行えるpackage generator、package／response validator、A/B比較を追加する。R4-3B、runtime Judge、自動修復は進めない。
+- 監査結果:
+  1. 正式v2.1のケースIDは`img_0001`、Reviewer ZIP内は中立な`case_000001`とし、対応表をprivate sidecarへ保持する。
+  2. Referentialの`intended.json`は既存`panelSpecificationSchema`を直接再利用し、Production UUIDだけを中立UUIDへ変換する。
+  3. 人物同一性はCharacter Identityへbindingされた人物参照画像がある場合だけ選択可能にする。
+  4. 詳細Human defect categoryはruntime enumと分離し、正式Benchmark 7値への明示mappingだけを持つ。直接対応しない項目は`null`で自動昇格しない。
+  5. AI監査は`reviewer_kind: ai_audit`の別schemaで、Human A/Bを代替しない。
+  6. source group／family／character／reference group／splitはZIPへ入れずprivate sidecarへ保持し、同一source familyのdev／holdout分割を拒否する。
+- 実装: Human response v2、verdict／confidence／severity／bbox、mode別category、Panel Specification／reference binding、blind ZIP、source sidecar、checksum、no-overwrite generator、package／response validator、A/B agreement／adjudication reportを追加した。
+- Pilot: 既存12画像を上書きせず、`reviewer-a-r4-3a4.zip`と`reviewer-b-r4-3a4.zip`へ再生成した。両方12件、`PILOT_INTRINSIC_ONLY`、formal eligible=false、labelなし、private sidecar検証成功。Human回答は入力していない。
+- Pilot SHA-256: Reviewer A `37A49366223C7582F73BD559C25D9466329E591EA55EC5DCBA4977482C622A64`、Reviewer B `1D908A5FC4EA92AB6ABE01452B800B1602A04971A688A8A2C75FAB4E2F2821BC`。
+- 検証: 集中20/20、Hub 776/776、Canvas 26/26、AI 48/48、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack Hub build、RC structure preflight、diff check成功。実Pilot A/B validator成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
+- 現在の正式Benchmark不足: 0/140、独立Human review 0/280、adjudication未実施。今回の12件を正式140件へ加算しない。
+- 不変: Production、DB、migration、RPC、RLS、Storage、Provider、model、pricing、credit、Scheduler、runtime Visual／Panel Judge、repair engine、Canvas、checkpoint、PNG／PDF、公開販売、成人向け境界、Desktop。
+- 次: 全品質ゲート、Draft PR、CI、Vercel Previewを確認して停止する。責任者確認前に正式Human ReviewやR4-3Bへ進まない。
+- 詳細: `docs/quality-benchmark-human-review.md`、`docs/RELEASE_CANDIDATE_R4_3A4_REVIEW_PACKAGE_HARDENING.md`
+
+---
+
 ## 2026-08-16 PR-R4-3A-3 Benchmark v2.1 Fixture Assembly
 
 - 状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_HUMAN_REVIEW`

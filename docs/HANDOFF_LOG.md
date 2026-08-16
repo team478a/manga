@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-17 Codex: PR-R4-3A-4 Reviewer Package Context / Schema Hardening（作業中）
+
+- PR #293 merge commit `61fcaf3`を含む最新基準から`codex/fix-r4-3a4-review-package-context-schema`を開始した。
+- PR #292／#293のBenchmark schema、Panel Specification、Character Identity、reference binding、private labels、dev／holdout、既存Pilot package生成元を監査した。
+- Human Reviewを`intrinsic_only`／`referential`へ分離し、Human response v2、19 defect categories、verdict／confidence／severity／bbox、AI監査分離、A/B比較とadjudication要否をschema化した。
+- Reviewer ZIPでは中立`case_000001`を使い、正式`img_0001`との対応、source group／family、splitをprivate sidecarへ分離した。Referentialは既存Panel Specificationを直接使い、内部UUIDを中立UUIDへ変換し、人物参照bindingを検証する。
+- generator、package validator、response validator、A/B comparisonを追加した。zip traversal、symlink、画像decode、EXIF／PNG text、checksum、duplicate、mode/category、URL／credential、private label／Reviewer A漏洩、source family splitをfail closedで検査する。
+- 既存12画像は上書きせずReviewer A/BのR4-3A-4版Pilot ZIPへ再生成し、両方validator成功。正式eligible=false、labelなし、Human回答なし、Production変更なし。
+- 集中20/20、Hub 776/776、Canvas 26/26、AI 48/48、deps、lint、Hub型検査、migration 59本、research eval、repository、owner isolation、packages／Webpack Hub build、RC structure、実Pilot A/B validator成功。Turbopackは既知Windows path length、Desktop 4ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止。Draft PRとCI／Preview確認後に停止し、正式Human ReviewとR4-3Bへ進まない。
+
+---
+
 ## 2026-08-16 Codex: PR-R4-3A-3 Benchmark v2.1 Fixture Assembly（作業中）
 
 - PR #292 merge commit `3f121f5da1e998bce3d595ad1ba77261d2b08253`を含む最新基準から`codex/feat-r4-3a3-benchmark-assembly`を開始した。

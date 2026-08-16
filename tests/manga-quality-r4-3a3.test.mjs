@@ -37,6 +37,10 @@ function makeAssembly() {
     return {
       id: `img_${number}`,
       family_id: `family_${number}`,
+      source_group_id: `srcgrp_${number}`,
+      source_family: `synthetic_case_${number}`,
+      character_group_id: null,
+      reference_group_id: null,
       split: index < 112 ? "dev" : "holdout_private",
       source_file: `assembly/images/img_${number}.png`,
       sha256: String(index + 1).padStart(64, "0"),
@@ -131,6 +135,14 @@ test("one source family cannot cross dev and private holdout", () => {
   const inspection = inspectQualityBenchmarkAssembly(input);
   assert.equal(inspection.ready, false);
   assert.ok(inspection.reasons.includes("family_crosses_dev_holdout"));
+});
+
+test("one generation source family cannot cross dev and private holdout", () => {
+  const input = makeAssembly();
+  input.manifest.items[112].source_family = input.manifest.items[0].source_family;
+  const inspection = inspectQualityBenchmarkAssembly(input);
+  assert.equal(inspection.ready, false);
+  assert.ok(inspection.reasons.includes("source_family_crosses_dev_holdout"));
 });
 
 test("review disagreement requires an independent adjudicator", () => {

@@ -11,6 +11,10 @@
     {
       "id": "img_0001",
       "family_id": "family_0001",
+      "source_group_id": "srcgrp_0001",
+      "source_family": "synthetic_batch_example",
+      "character_group_id": null,
+      "reference_group_id": null,
       "split": "dev",
       "source_file": "assembly/images/img_0001.png",
       "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",

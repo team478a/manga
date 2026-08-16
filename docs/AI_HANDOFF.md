@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-4 Human Review Package、2026-08-17）
+
+- 最新基準はPR #293 merge commit `61fcaf3`。Branchは`codex/fix-r4-3a4-review-package-context-schema`。
+- Human Reviewを`intrinsic_only`／`referential`へ分離し、Human response v2、mode別category、Panel Specification／identity reference binding、中立UUID、blind ZIP、private source sidecar、package／response validator、A/B比較を実装した。
+- 正式v2.1の`img_0001`を変更せず、Reviewer ZIPだけ`case_000001`へ変換する。対応とsource groupはZIP外private sidecarへ保持する。同一source familyはdev／holdoutへ分けない。
+- 既存12画像からReviewer A/BのR4-3A-4版Pilot ZIPを新規生成し、両方validator成功。`PILOT_INTRINSIC_ONLY / NOT_COUNTED_IN_FORMAL_BENCHMARK`、正解labelなし、Human回答なし。正式fixtureは0/140のまま。
+- AI監査は`reviewer_kind: ai_audit`としてHumanと分離し、Human A/Bの代替にしない。不一致は自動多数決せずadjudicationを要求する。
+- 集中20/20、Hub 776/776、Canvas 26/26、AI 48/48、deps、lint、Hub型検査、migration 59本、research eval、repository、owner isolation、packages／Webpack Hub build、RC structure、実Pilot A/B validator成功。Turbopackは既知Windows path length、Desktop 4ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで判定する。Production、DB、Storage、Provider、runtime Judge、repair、Canvas、出力は変更していない。
+- 全品質ゲート、Draft PR、CI／Preview確認後に停止し、責任者確認前に正式reviewやR4-3Bへ進まない。詳細は`docs/CURRENT_TASK.md`と`docs/quality-benchmark-human-review.md`。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-3 Fixture Assembly、2026-08-16）
 
 - 最新基準はPR #292 merge commit `3f121f5da1e998bce3d595ad1ba77261d2b08253`（PR #291 `355ebfd`を含む）。Branchは`codex/feat-r4-3a3-benchmark-assembly`。
