@@ -56,6 +56,7 @@ const packageIdSchema = z.string().regex(/^[a-z0-9][a-z0-9_-]{2,79}$/);
 const sourceGroupIdSchema = z.string().regex(/^srcgrp_[a-z0-9][a-z0-9_-]{0,63}$/);
 const sourceFamilySchema = z.string().regex(/^[a-z0-9][a-z0-9_-]{2,79}$/);
 const nullableGroupIdSchema = z.string().regex(/^(?:chargrp|refgrp)_[a-z0-9][a-z0-9_-]{0,63}$/).nullable();
+const requiredProvenanceChunksSchema = z.array(z.literal("caBX")).max(1).default([]);
 const targetSplitSchema = z.enum(["dev", "holdout_private", "pilot_unassigned"]);
 const safeRelativeFileSchema = z
   .string()
@@ -298,6 +299,7 @@ export const humanReviewPackageSourceSchema = z.object({
     source_case_id: qualityBenchmarkCaseIdSchema,
     review_case_id: humanReviewCaseIdSchema,
     candidate_file: safeRelativeFileSchema,
+    required_provenance_chunks: requiredProvenanceChunksSchema,
     review_mode: humanReviewModeSchema,
     intended_file: safeRelativeFileSchema.nullable(),
     references: z.array(privateReferenceSchema).max(12),
@@ -344,6 +346,7 @@ export const humanReviewPackageSourceSidecarSchema = z.object({
   cases: z.array(z.object({
     case_id: humanReviewCaseIdSchema,
     source_case_id: qualityBenchmarkCaseIdSchema,
+    required_provenance_chunks: requiredProvenanceChunksSchema,
     source_group_id: sourceGroupIdSchema,
     source_family: sourceFamilySchema,
     character_group_id: nullableGroupIdSchema,

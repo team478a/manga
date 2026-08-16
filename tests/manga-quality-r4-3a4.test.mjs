@@ -23,6 +23,38 @@ const execFileAsync = promisify(execFile);
 const repositoryRoot = path.resolve(import.meta.dirname, "..");
 const nodeArgs = ["--experimental-strip-types"];
 
+function crc32(bytes) {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1)
+      crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function insertPngChunk(bytes, type, data = Buffer.from("mangai-provenance-test")) {
+  let offset = 8;
+  let iendOffset = -1;
+  while (offset + 12 <= bytes.length) {
+    const length = bytes.readUInt32BE(offset);
+    const chunkType = bytes.subarray(offset + 4, offset + 8).toString("ascii");
+    if (chunkType === "IEND") {
+      iendOffset = offset;
+      break;
+    }
+    offset += 12 + length;
+  }
+  if (iendOffset < 0) throw new Error("IEND missing");
+  const typeBytes = Buffer.from(type, "ascii");
+  const lengthBytes = Buffer.alloc(4);
+  lengthBytes.writeUInt32BE(data.length);
+  const crcBytes = Buffer.alloc(4);
+  crcBytes.writeUInt32BE(crc32(Buffer.concat([typeBytes, data])));
+  const chunk = Buffer.concat([lengthBytes, typeBytes, data, crcBytes]);
+  return Buffer.concat([bytes.subarray(0, iendOffset), chunk, bytes.subarray(iendOffset)]);
+}
+
 function packageManifest(slot = "reviewer_b") {
   return {
     package_version: "mangai-review-package-v2",
@@ -164,6 +196,55 @@ test("source metadata keeps one source family out of both dev and holdout", () =
     cases: [baseCase, { ...baseCase, source_case_id: "img_0002", review_case_id: "case_000002", candidate_file: "assembly/images/img_0002.png", target_split: "holdout_private" }],
   };
   assert.equal(humanReviewPackageSourceSchema.safeParse(invalid).success, false);
+});
+
+test("required Content Credentials survive blind package generation and validation", async (context) => {
+  const root = await mkdtemp(path.join(tmpdir(), "mangai-r4-3a4-provenance-"));
+  context.after(() => rm(root, { recursive: true, force: true }));
+  const imageDir = path.join(root, "assembly", "images");
+  await mkdir(imageDir, { recursive: true });
+  const plain = await sharp({ create: { width: 32, height: 48, channels: 3, background: "#557799" } }).png().toBuffer();
+  const withCredentials = insertPngChunk(plain, "caBX");
+  const imagePath = path.join(imageDir, "img_0001.png");
+  await writeFile(imagePath, withCredentials);
+  const source = {
+    source_version: 1,
+    benchmark_version: "2.1",
+    package_id: "r4_3a4_provenance_test",
+    review_scope: "FORMAL_CANDIDATE",
+    formal_benchmark_eligible: true,
+    cases: [{
+      source_case_id: "img_0001",
+      review_case_id: "case_000001",
+      candidate_file: "assembly/images/img_0001.png",
+      required_provenance_chunks: ["caBX"],
+      review_mode: "intrinsic_only",
+      intended_file: null,
+      references: [],
+      source_group_id: "srcgrp_0001",
+      source_family: "synthetic_batch_provenance",
+      character_group_id: null,
+      reference_group_id: null,
+      target_split: "dev",
+    }],
+  };
+  const sourcePath = path.join(root, "assembly", "review-package.private.json");
+  await writeFile(sourcePath, JSON.stringify(source));
+  const output = path.join(root, "human-review-packages", "reviewer-b.zip");
+  await execFileAsync(process.execPath, [...nodeArgs, path.join(repositoryRoot, "scripts", "build-manga-quality-review-package.mjs"), "--root", root, "--source", sourcePath, "--slot", "reviewer_b", "--output", output], { cwd: repositoryRoot });
+  const validated = await execFileAsync(process.execPath, [...nodeArgs, path.join(repositoryRoot, "scripts", "validate-manga-quality-review-package.mjs"), "--package", output], { cwd: repositoryRoot });
+  assert.match(validated.stdout, /REVIEW_PACKAGE_VALID/);
+  const zip = await JSZip.loadAsync(await readFile(output));
+  const packaged = await zip.file("cases/case_000001/candidate.png").async("nodebuffer");
+  assert.equal(packaged.includes(Buffer.from("caBX")), true);
+  const sidecar = JSON.parse(await readFile(output.replace(/\.zip$/, ".source-metadata.private.json"), "utf8"));
+  assert.deepEqual(sidecar.cases[0].required_provenance_chunks, ["caBX"]);
+
+  await writeFile(imagePath, plain);
+  await assert.rejects(
+    execFileAsync(process.execPath, [...nodeArgs, path.join(repositoryRoot, "scripts", "build-manga-quality-review-package.mjs"), "--root", root, "--source", sourcePath, "--slot", "reviewer_a", "--output", path.join(root, "human-review-packages", "missing.zip")], { cwd: repositoryRoot }),
+    /required_provenance_missing/,
+  );
 });
 
 test("generator creates blind A/B packages and both package validators pass", async (context) => {

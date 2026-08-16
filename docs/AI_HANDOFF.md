@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-4 follow-up: Content Credentials保全、2026-08-17）
+
+- 最新基準はPR #294 merge commit `c6bce94`。Branchは`codex/fix-r4-3a4-benchmark-provenance`。
+- Batch 01のProvider原PNG 28/28にC2PA `caBX`が存在したが、最初の再エンコード正規化で除去されていた。原PNGから追加課金なしで復旧し、Content Credentialsなしの派生画像・report・ZIPはprivate quarantineへ隔離した。
+- private source／assemblyへ`required_provenance_chunks`を追加し、review package生成、package検証、正式assemblyで`caBX`保持を強制した。未指定fixtureは`[]`で後方互換を維持する。
+- 修正版Reviewer A/B ZIPは各28件、validator成功、`caBX` 28/28。権利確認packageも28件作成済み。画像、Prompt、Provider Job ID、秘密値、権利資料はGitへ入れていない。
+- 集中22/22、実A/B validator、依存境界、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure成功。Turbopackは既知Windows path length、Desktop 4ゲートは既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで判定する。
+- 正式Benchmarkは0/140。人間の権利確認0/28、独立Human Review 0/56。機械検査だけでは正式採用せず、R4-3Bへ進まない。
+- Production、DB、Storage、Provider設定、credit、runtime Judge、Canvas、PNG／PDF、Desktopは変更していない。Draft PRと全CI／Vercel Preview確認後、責任者review待ちで停止する。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-4 Human Review Package、2026-08-17）
 
 - 最新基準はPR #293 merge commit `61fcaf3`。Branchは`codex/fix-r4-3a4-review-package-context-schema`。

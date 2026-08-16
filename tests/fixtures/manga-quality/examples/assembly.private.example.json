@@ -17,6 +17,7 @@
       "reference_group_id": null,
       "split": "dev",
       "source_file": "assembly/images/img_0001.png",
+      "required_provenance_chunks": [],
       "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "image_profile_id": "portrait_704x1024",
       "judge_mode": "intrinsic",

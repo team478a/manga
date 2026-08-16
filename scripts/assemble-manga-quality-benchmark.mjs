@@ -46,10 +46,12 @@ async function readPrivateJson(relativePath) {
 function inspectPngTextChunks(bytes) {
   if (bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a")
     throw new Error("benchmark_image_must_be_png");
+  const chunkTypes = new Set();
   let offset = 8;
   while (offset + 12 <= bytes.length) {
     const length = bytes.readUInt32BE(offset);
     const type = bytes.subarray(offset + 4, offset + 8).toString("ascii");
+    chunkTypes.add(type);
     const end = offset + 12 + length;
     if (end > bytes.length) throw new Error("benchmark_png_chunk_invalid");
     if (["tEXt", "zTXt", "iTXt"].includes(type)) {
@@ -59,6 +61,7 @@ function inspectPngTextChunks(bytes) {
     offset = end;
     if (type === "IEND") break;
   }
+  return chunkTypes;
 }
 
 async function perceptualHashes(bytes) {
@@ -95,7 +98,10 @@ async function verifyPrivateFiles(manifest, rights) {
     const bytes = await readFile(resolveInside(fixtureRoot, item.source_file));
     const digest = createHash("sha256").update(bytes).digest("hex");
     if (digest !== item.sha256) throw new Error(`benchmark_image_hash_mismatch:${item.id}`);
-    inspectPngTextChunks(bytes);
+    const chunkTypes = inspectPngTextChunks(bytes);
+    for (const required of item.required_provenance_chunks)
+      if (!chunkTypes.has(required))
+        throw new Error(`benchmark_required_provenance_missing:${item.id}:${required}`);
     const metadata = await sharp(bytes).metadata();
     const profile = profiles.get(item.image_profile_id);
     if (!profile || metadata.width !== profile.width || metadata.height !== profile.height)
