@@ -83,8 +83,9 @@ test("Provider拒否後は人物同一性と参照画像を維持して直接描
   assert.match(retry.prompt, /表情と視線で状況を伝える/);
   assert.match(retry.prompt, /構図、照明で.*間接的に伝える/);
   assert.doesNotMatch(retry.prompt, /刺激の強い出来事を直接描く/);
-  assert.match(retry.prompt, /手持ち端末は無地の背面または細い側面だけ/);
+  assert.match(retry.prompt, /衣服の縫い目、自然な布のふくらみ、手の位置/);
   assert.match(retry.prompt, /必要な小物はそれぞれ一つだけ/);
+  assert.doesNotMatch(retry.prompt, /端末|表示面|handheld device|device screen/i);
   assert.match(retry.negativePrompt, /pseudo-text/);
   assert.match(retry.negativePrompt, /device screen UI/);
   assert.match(retry.negativePrompt, /duplicate props/);
@@ -159,8 +160,7 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.match(contract.camera.focus, /identity and expression/);
   assert.match(contract.surface_content, /pure pictorial artwork/);
   assert.match(contract.face_finish, /clean linework and shading/);
-  assert.match(contract.quality_gate, /each required prop exactly once/);
-  assert.match(contract.quality_gate, /plain back or side edge/);
+  assert.match(contract.quality_gate, /clean fabric and pocket details/);
   assert.match(contract.quality_gate, /pure pictorial marks/);
   assert.doesNotMatch(retry.prompt, /speaking|lettering|unmarked/);
   assert.doesNotMatch(JSON.stringify(contract), /\b(?:chest|waist)\b/i);
@@ -192,7 +192,7 @@ test("安全再構成もProviderに拒否された場合は穏やかな日常場
   assert.match(contract.composition, /protagonist at the left edge/);
   assert.match(contract.layout, /protagonist at the left edge/);
   assert.match(contract.variation, /storyboard shot/);
-  assert.match(contract.quality_gate, /plain back or side edge/);
+  assert.match(contract.quality_gate, /clean fabric and pocket details/);
   assert.match(contract.subjects[0].description, /same black-haired protagonist/);
   assert.deepEqual(
     conservativeRetry.referenceAssetIds,

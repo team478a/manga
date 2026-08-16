@@ -439,7 +439,7 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   assert.match(providerContract.quality_gate, /upright/);
   assert.match(providerContract.quality_gate, /face\/hands\/joints/);
   assert.match(providerContract.quality_gate, /single props/);
-  assert.match(providerContract.quality_gate, /prop concealed/);
+  assert.match(providerContract.quality_gate, /clean fabric/);
   assert.match(providerContract.overlay_stage, /overlays added later/);
   assert.equal(
     providerContract.subjects[0].action,
@@ -477,14 +477,14 @@ test("クローズアップの端末構図は位置だけを残して端末自�
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
 
   assert.match(providerContract.layout, /胸ポケット/);
-  assert.match(providerContract.layout, /prop concealed/);
-  assert.match(providerContract.layout, /pocket\/hand outline only/);
-  assert.match(providerContract.subjects[0].action, /concealed prop/);
+  assert.match(providerContract.layout, /pocket seam and soft fabric fold/);
+  assert.match(providerContract.layout, /relaxed hand/);
+  assert.match(providerContract.subjects[0].action, /look toward pocket/);
   assert.match(providerContract.overlay_stage, /overlays added later/);
-  assert.match(providerContract.quality_gate, /pictorial marks only/);
+  assert.match(providerContract.quality_gate, /pictorial only/);
   assert.doesNotMatch(
     JSON.stringify(providerContract),
-    /スマートフォン|スマホ|携帯|端末|デバイス|表示面|ディスプレイ|smartphone|mobile phone|phone|device|screen|display|\bUI\b/i,
+    /スマートフォン|スマホ|携帯|端末|デバイス|表示面|ディスプレイ|smartphone|mobile phone|phone|device|screen|display|conceal|hidden prop|\bUI\b/i,
   );
   assert.ok(
     result.generation.prompt.length < 2_000,
