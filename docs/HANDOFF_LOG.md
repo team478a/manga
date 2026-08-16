@@ -11,7 +11,8 @@
 - 2 Jobとも`provider_moderation_blocked`、Assetなし、Provider課金0。失敗Job再実行、追加生成、候補採用、Canvas配置なし。Canvas revision 8、PNG、公開・販売・設定は不変。
 - PR #288の限定差分で追加した`concealed prop`が曖昧な危険物表現として解釈された可能性を最有力原因とした。端末・画面・UI・`concealed`を使わず、胸ポケットの縫い目、自然な布のふくらみ、手の位置と視線だけで表現する。
 - 一般向け第1・第2段階安全再実行も同じ衣服表現へ統一し、再実行時に端末・表示面語を再導入しない。
-- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、依存境界、lint、型検査、59 migration／rollback、Cloud受入れfixture、package／Next.js build、diff check成功。RC preflightはstructure ready。Desktop 3ゲートは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで判定する。Draft PR、全CI、Vercel Previewを確認して停止する。merge前にProduction追加生成・再実行を行わない。
+- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、依存境界、lint、型検査、59 migration／rollback、Cloud受入れfixture、package／Next.js build、diff check成功。RC preflightはstructure ready。Desktop 3ゲートは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止したが、GitHub Windows buildは成功。
+- Draft PR [#289](https://github.com/team478a/manga/pull/289)を作成。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。Vercel Previewは[確認済み](https://mangai-hub-staging-git-codex-fix-r4-2-b509b2-team478as-projects.vercel.app)。責任者レビューまで停止し、merge前にProduction追加生成・再実行を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AF_MODERATION_SAFE_GARMENT_CUE.md`
 
 ---

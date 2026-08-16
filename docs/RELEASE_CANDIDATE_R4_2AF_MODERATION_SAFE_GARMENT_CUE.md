@@ -2,9 +2,9 @@
 
 ## 判定
 
-- 状態: `LOCAL_GATES_COMPLETE`
-- Draft PR: 作成前
-- Vercel Preview: 確認前
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#289](https://github.com/team478a/manga/pull/289)
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-fix-r4-2-b509b2-team478as-projects.vercel.app)
 - Branch: `codex/fix-r4-2af-moderation-safe-garment-cue`
 - Base: `origin/feature/manga-canvas-mvp` @ `713bb47`（PR #288 merge commit）
 - 対象: 端末を含むクローズアップの通常生成と一般向け安全再実行で使う小物表現だけを安全化する。
@@ -56,7 +56,8 @@ PR #288で端末・画面・UI語は除外できたが、代替表現の`conceal
 - `npm run rc:preflight`: repository structure ready。外部設定と手動E2Eはローカル環境未設定のためpending。
 - Desktop test／a11y／build: 今回の差分外にある既知の`@napi-rs/keyring`型宣言不足でローカル停止。GitHub Windows buildで判定する。
 - `git diff --check`: 成功
-- GitHub Actions、Vercel Preview: Draft PR作成後に確認する。
+- GitHub Actions: Core quality、Migration roundtrip、Windows buildが成功。
+- Vercel、Vercel Preview Comments: 成功。Previewを確認済み。
 
 ## 不変契約
 

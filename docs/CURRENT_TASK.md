@@ -2,8 +2,9 @@
 
 ## 2026-08-16 PR-R4-2AF moderation安全な衣服表現
 
-- 状態: `LOCAL_GATES_COMPLETE`
-- Draft PR／Vercel Preview: 作成・確認前
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#289](https://github.com/team478a/manga/pull/289)
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-fix-r4-2-b509b2-team478as-projects.vercel.app)
 - Branch: `codex/fix-r4-2af-moderation-safe-garment-cue`
 - Base: `origin/feature/manga-canvas-mvp`@`713bb47`（PR #288 merge commit）。
 - Production受入れ: ページ22・コマ1で2候補を1回だけ生成した。Worker [31930333853](https://github.com/team478a/manga/actions/runs/31930333853)は`requests=3 processed=2`で成功。Creditは使用76／予約0／残24 → 予約4／残20 → 使用76／予約0／残24へ全額復元。
@@ -12,7 +13,8 @@
 - 実装: 端末・画面・UI・`concealed`を使わず、胸ポケットの縫い目、自然な布のふくらみ、手の位置と視線だけで表現する。通常生成と第1・第2段階安全再実行へ共通適用する。Promptは2,000文字未満。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、依存境界、lint、Hub型検査、59 migration／rollback、research eval、100ページfixture、Cloud漫画repository acceptance、owner isolation、package／Next.js build、diff check成功。RC preflightはstructure ready。Desktop 3ゲートは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで判定する。
-- 次: Draft PRを作成し、全CIとVercel Preview成功を確認して停止する。merge前にProduction追加生成・再実行を行わない。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsが成功。
+- 次: 責任者レビューとmergeを待って停止する。merge前にProduction追加生成・再実行を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AF_MODERATION_SAFE_GARMENT_CUE.md`
 
 ---
