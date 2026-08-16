@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2AC 安全再構成でネーム構図を維持、2026-08-16）
+
+- Branch: `codex/accept-r4-2ac-conservative-retry`
+- Base: `origin/feature/manga-canvas-mvp` @ `035c2a6`（PR #285 merge commit）
+- 状態: `IMPLEMENTED_LOCAL_GATES_PASSED`
+- PR #285反映後、Productionページ22・コマ1の失敗Jobを1件だけ再実行した。Worker [31923479315](https://github.com/team478a/manga/actions/runs/31923479315)は`requests=2 processed=1`で成功し、Creditは使用68／予約0／残32から使用70／予約0／残30へ確定した。
+- 704×1024 PNGは正立、顔、手、人体、描画面を満たしたが、汎用的な室内人物画となり元ネームの場面と構図を失ったため不採用。Canvas revision 8、PNG、公開・販売状態は不変。品質承認、配置、追加生成なし。
+- 第2段階再構成の安全性は機能したが、短縮Provider契約に元ネームの構図がなく、背景と構図を一律に日常場面へ置換したことが品質低下の原因だった。
+- 短縮契約へ安全な`layout`を追加し、危険描写を除きながら画角、人物数、人物・背景の相対配置を維持する。危険な`layout`は長さ制限、危険語検査、ローカルmoderationによりfallbackへ置換する。
+- 集中52/52、Hub 740/740、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既知型宣言不足で停止し、Windows CIを正式判定にする。
+- Draft PRと全CI、Vercel Previewを確認して停止する。merge前にProduction追加生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AC_STORYBOARD_LAYOUT_SAFE_RETRY.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2AB Provider moderation後の第2段階安全再構成、2026-08-16）
 
 - Branch: `codex/fix-r4-2ab-conservative-moderation-retry`

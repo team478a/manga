@@ -412,6 +412,10 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
     "scene",
   ]);
   assert.match(providerContract.scene, /roomy environmental portrait/);
+  assert.equal(
+    providerContract.layout,
+    "主人公を右手前、駅を左奥に置く",
+  );
   assert.match(providerContract.output_type, /continuous edge-to-edge/);
   assert.match(providerContract.canvas, /one uninterrupted pictorial scene/);
   assert.match(providerContract.subjects[0].position, /top of hairstyle near 18%/);
