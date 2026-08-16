@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2Z 安全再実行への最新画像品質契約継承、2026-08-16）
+
+- Branch: `codex/fix-r4-2z-retry-quality-contract`
+- Base: `origin/feature/manga-canvas-mvp` @ `e52540c`（PR #282 merge commit）
+- 状態: `IMPLEMENTED_LOCAL_VALIDATED`
+- Draft PR／Vercel Preview: 作成前／確認前
+- PR #282反映後、Productionページ22・コマ1の失敗Jobを1件だけ再実行した。Worker `31918003768`は`requests=2 processed=1`で成功し、Creditは使用64／予約0／残36から使用66／予約0／残34へ確定した。
+- 新候補は正立、人体、小物単一性は改善したが、端末画面、衣装、画面端に文字状模様があり不採用とした。Canvas revision 8、PNG成功、生成中0、失敗0、予約0、公開・販売状態は不変。
+- 古い失敗Jobの安全再実行が、新規生成の最新端末・小物・画像内文字品質契約へ追従していないことを原因と特定した。安全再実行だけへ正方向品質条件と現行negative promptを補強し、元Job固有の条件と参照Assetを維持する。
+- 集中39/39、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Draft PRの全CIとVercel Preview確認後に停止し、merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2Z_RETRY_QUALITY_CONTRACT.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2Y 失敗候補の再実行デッドロック解消、2026-08-16）
 
 - Branch: `codex/accept-r4-2y-page22-device-quality`

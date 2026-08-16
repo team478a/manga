@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-16 Codex: 安全再実行への最新画像品質契約継承
+
+- PR #282 merge commit `e52540c83964e9d7fe19abffcaee50b32e26fcea`を含む最新基準から`codex/fix-r4-2z-retry-quality-contract`を開始した。
+- Productionの`test`モニターでページ22・コマ1の失敗Jobを1件だけ再実行した。公式Worker [31918003768](https://github.com/team478a/manga/actions/runs/31918003768)は`status=idle requests=2 processed=1`で成功した。
+- Creditは使用64／予約0／残36 → 使用64／予約2／残34 → 使用66／予約0／残34。新しいprivate Assetを1件生成したが、Canvas配置、Canvas revision 8、PNG、公開・販売状態は変更していない。
+- 新候補は正立、自然な人体、小物単一性を概ね満たした。一方、端末画面、衣装、画面端に文字状模様があり、4項目品質ゲートで不合格として追加生成なしで不採用にした。
+- 古い失敗Jobの安全再実行は保存済みnegative promptをそのまま維持し、PR #281の最新端末・小物・画像内文字品質契約を補強していなかった。安全再実行domain関数だけへ、正方向品質条件、短縮JSONの`quality_gate`、現行negative promptを追加した。
+- 対象コマ、参照Asset、人物・画風・世界観version、画像操作、Panel Specification、Provider、model、pricing、retry、timeout、Scheduler、Canvas、PNG／PDFは維持する。
+- 集中39/39、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Draft PRの全CIとVercel Preview確認後に停止し、merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2Z_RETRY_QUALITY_CONTRACT.md`
+
+---
+
 ## 2026-08-16 Codex: 失敗候補の再実行デッドロック解消
 
 - PR #281 merge commit `be7ae34d118c2dd2c0bbdbdfbd419d635045df85`を含む最新基準から`codex/accept-r4-2y-page22-device-quality`を開始した。

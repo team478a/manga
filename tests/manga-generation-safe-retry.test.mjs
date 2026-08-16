@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { moderateGeneralCloudPrompt } from "@mangai/ai-core";
 import {
   buildGeneralAudienceGenerationRetry,
   isGeneralAudienceGenerationRetry,
@@ -78,9 +79,20 @@ test("Provider拒否後は人物同一性と参照画像を維持して直接描
   assert.match(retry.prompt, /表情と視線で状況を伝える/);
   assert.match(retry.prompt, /構図、照明で.*間接的に伝える/);
   assert.doesNotMatch(retry.prompt, /刺激の強い出来事を直接描く/);
+  assert.match(retry.prompt, /端末画面は反射と光だけの空のガラス面/);
+  assert.match(retry.prompt, /必要な小物はそれぞれ一つだけ/);
+  assert.match(retry.negativePrompt, /pseudo-text/);
+  assert.match(retry.negativePrompt, /device screen UI/);
+  assert.match(retry.negativePrompt, /duplicate props/);
+  assert.match(retry.negativePrompt, /文字$/);
   assert.equal(retry.targetPanelId, imageGeneration.targetPanelId);
   assert.equal(retry.referenceAssetIds, imageGeneration.referenceAssetIds);
-  assert.equal(retry.negativePrompt, imageGeneration.negativePrompt);
+  assert.equal(
+    moderateGeneralCloudPrompt(
+      `${retry.prompt}\n${retry.negativePrompt}`,
+    ).decision,
+    "allow",
+  );
   assert.equal(isGeneralAudienceGenerationRetry(retry), true);
 });
 
@@ -143,6 +155,9 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.match(contract.camera.focus, /identity and expression/);
   assert.match(contract.surface_content, /pure pictorial artwork/);
   assert.match(contract.face_finish, /clean linework and shading/);
+  assert.match(contract.quality_gate, /each required prop exactly once/);
+  assert.match(contract.quality_gate, /blank device screens/);
+  assert.match(contract.quality_gate, /pure pictorial marks/);
   assert.doesNotMatch(retry.prompt, /speaking|lettering|unmarked/);
   assert.doesNotMatch(JSON.stringify(contract), /\b(?:chest|waist)\b/i);
   assert.deepEqual(contract.input_image_roles, [
