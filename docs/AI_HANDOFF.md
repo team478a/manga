@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2AE 端末を直接描かず編集要素を分離、2026-08-16）
+
+- Branch: `codex/fix-r4-2ae-concealed-prop-overlay`
+- Base: `origin/feature/manga-canvas-mvp` @ `b9ac507`（PR #287 merge commit）
+- 状態: `IMPLEMENTED_LOCAL`
+- Draft PR／Vercel Preview: 作成・確認前
+- PR #287反映後、Productionページ22・コマ1で手動比較最小値の2候補を1回だけ生成した。Worker [31928823358](https://github.com/team478a/manga/actions/runs/31928823358)は`requests=3 processed=2`で成功し、Creditは使用72／予約0／残28から使用76／予約0／残24。
+- 候補1は端末背面と胸ポケットを維持したが日本語風・疑似文字を生成。候補2は端末表示面、英字氏名、通話UIを生成。2件とも追加生成なしで不採用。Canvas revision 8、PNG、公開・販売状態は不変。
+- 端末を含む短縮クローズアップの`layout`と人物`action`から端末・画面・UI語を除き、位置anchorと衣服・手の輪郭だけで隠れた小物を示す。文字・効果音は`overlay_stage`で後段追加と明示する。
+- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、diff check成功。Desktopローカルは既知型宣言不足で停止し、Windows CIを正式判定にする。
+- Draft PR作成後、全CIとVercel Previewを確認して停止する。merge前にProduction追加生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AE_CONCEALED_PROP_OVERLAY_STAGE.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2AD ネーム構図から端末表示面を除外、2026-08-16）
 
 - Branch: `codex/fix-r4-2ad-device-safe-layout`

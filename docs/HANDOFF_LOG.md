@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-16 Codex: 端末を直接描かず編集要素を分離
+
+- PR #287 merge commit `b9ac507f6c64a7de6eedc21b6c2efcd5a3881f55`を含む最新基準から`codex/fix-r4-2ae-concealed-prop-overlay`を開始した。
+- Productionの`test`モニターでページ22・コマ1を2候補だけ登録し、公式Worker [31928823358](https://github.com/team478a/manga/actions/runs/31928823358)を`run` modeで1回だけ実行した。Workerは`status=idle requests=3 processed=2`で成功し、Creditは使用72／予約0／残28 → 使用72／予約4／残24 → 使用76／予約0／残24。
+- 候補1は胸ポケットと端末背面を維持したが日本語風・疑似文字の効果音を生成した。候補2は胸ポケットを維持したが端末表示面、英字氏名、通話UIとアイコンを生成した。2候補とも追加生成なしで不採用にした。
+- 端末向きの指定でもProviderへ端末・画面概念を与えること、編集要素を後段へ分離する契約がないことを原因とした。短縮クローズアップの`layout`と人物`action`から端末・画面・UI語を除き、位置anchorと衣服・手の輪郭だけで隠れた小物を示す。`overlay_stage`で文字等は後段追加と明示する。
+- 候補採用、Canvas配置、失敗Job再実行、追加生成なし。Canvas revision 8、PNG、公開・販売・設定は不変。Production DB、既存32ページ作品の確定データ、Provider設定は変更していない。
+- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、diff check成功。Desktop test／a11y／buildは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- Draft PR作成後、全CIとVercel Previewを確認して停止する。merge前にProduction追加生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AE_CONCEALED_PROP_OVERLAY_STAGE.md`
+
+---
+
 ## 2026-08-16 Codex: ネーム構図から端末表示面を除外
 
 - PR #286 merge commit `a3d957a713469e0b5018ab3259ad0dc9afce2b4d`を含む最新基準から`codex/fix-r4-2ad-device-safe-layout`を開始した。

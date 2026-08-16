@@ -283,7 +283,18 @@ function compactProviderSpatialLayout(input: {
     .replace(/(?:から|より|の|を|が|は|へ|に|で|と)\s*$/u, "")
     .trim()
     .slice(0, 120);
-  return `${anchor ? `${anchor}; ` : ""}one device: back/side to camera; display to wearer/off-frame`;
+  return `${anchor ? `${anchor}; ` : ""}prop concealed; pocket/hand outline only`;
+}
+
+function compactProviderDeviceSafeAction(input: {
+  value: string;
+  dialogue: readonly { text: string }[];
+  fallback: string;
+}) {
+  const action = compactProviderSceneField(input);
+  return providerDeviceLayoutSignal.test(action)
+    ? "react to concealed prop through pose/gaze"
+    : action;
 }
 
 function imageSize(width: number, height: number) {
@@ -651,7 +662,7 @@ export function buildStoryboardPanelGeneration(input: {
           .filter(Boolean)
           .join("; ")
           .slice(0, 600),
-        action: compactProviderSceneField({
+        action: compactProviderDeviceSafeAction({
           value: storyboardPanel.action,
           dialogue: storyboardPanel.dialogue,
           fallback:
@@ -699,8 +710,9 @@ export function buildStoryboardPanelGeneration(input: {
       "natural facial anatomy and expression formed exclusively by clean linework and shading",
     surface_finish:
       "clean monochrome pictorial line art and natural material shading across every surface",
+    overlay_stage: "overlays added later",
     quality_gate:
-      "upright page, natural gravity, coherent face/hands/joints, single props, handheld devices show only a plain back or side edge",
+      "upright; natural face/hands/joints; single props; prop concealed; pictorial marks only",
     variation:
       candidateCount > 1
         ? `candidate ${candidateIndex + 1} of ${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`

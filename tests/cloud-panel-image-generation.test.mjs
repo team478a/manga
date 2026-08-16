@@ -436,10 +436,11 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   assert.match(providerContract.surface_content, /pure pictorial artwork/);
   assert.match(providerContract.face_finish, /clean linework and shading/);
   assert.match(providerContract.surface_finish, /clean monochrome/);
-  assert.match(providerContract.quality_gate, /upright page/);
+  assert.match(providerContract.quality_gate, /upright/);
   assert.match(providerContract.quality_gate, /face\/hands\/joints/);
   assert.match(providerContract.quality_gate, /single props/);
-  assert.match(providerContract.quality_gate, /plain back or side edge/);
+  assert.match(providerContract.quality_gate, /prop concealed/);
+  assert.match(providerContract.overlay_stage, /overlays added later/);
   assert.equal(
     providerContract.subjects[0].action,
     "a natural attentive pose that communicates the story through posture and gaze",
@@ -460,11 +461,13 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   );
 });
 
-test("クローズアップの端末構図は位置だけを残して表示面をカメラへ向けない", () => {
+test("クローズアップの端末構図は位置だけを残して端末自体を直接描かない", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "close_up";
   closeUpStoryboard.pages[0].panels[0].composition =
     "上着の胸ポケットからスマートフォンの表示面をカメラへ向ける";
+  closeUpStoryboard.pages[0].panels[0].action =
+    "スマートフォンの着信表示を確認する";
   const result = buildStoryboardPanelGeneration({
     storyboard: closeUpStoryboard,
     pageNumber: 1,
@@ -474,11 +477,14 @@ test("クローズアップの端末構図は位置だけを残して表示面�
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
 
   assert.match(providerContract.layout, /胸ポケット/);
-  assert.match(providerContract.layout, /back\/side to camera/);
-  assert.match(providerContract.layout, /display to wearer\/off-frame/);
+  assert.match(providerContract.layout, /prop concealed/);
+  assert.match(providerContract.layout, /pocket\/hand outline only/);
+  assert.match(providerContract.subjects[0].action, /concealed prop/);
+  assert.match(providerContract.overlay_stage, /overlays added later/);
+  assert.match(providerContract.quality_gate, /pictorial marks only/);
   assert.doesNotMatch(
-    providerContract.layout,
-    /スマートフォン|表示面をカメラへ向ける/,
+    JSON.stringify(providerContract),
+    /スマートフォン|スマホ|携帯|端末|デバイス|表示面|ディスプレイ|smartphone|mobile phone|phone|device|screen|display|\bUI\b/i,
   );
   assert.ok(
     result.generation.prompt.length < 2_000,
