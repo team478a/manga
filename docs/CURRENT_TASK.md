@@ -3,6 +3,7 @@
 ## 2026-08-17 PR-R4-3A-4 Reviewer Package Context / Schema Hardening
 
 - 状態: `IMPLEMENTED_LOCAL / PILOT_PACKAGE_STRUCTURE_READY / PILOT_INTRINSIC_ONLY / NOT_COUNTED_IN_FORMAL_BENCHMARK`
+- Draft PR: [#294](https://github.com/team478a/manga/pull/294)
 - Branch: `codex/fix-r4-3a4-review-package-context-schema`
 - Base: `origin/feature/manga-canvas-mvp`@`61fcaf3`（PR #293 merge commit。PR #291／#292を含む）。
 - 範囲: Candidate Visual BenchmarkのHuman Reviewを`intrinsic_only`／`referential`へ分離し、同一schemaで独立したHuman A/B reviewを行えるpackage generator、package／response validator、A/B比較を追加する。R4-3B、runtime Judge、自動修復は進めない。
@@ -19,7 +20,7 @@
 - 検証: 集中20/20、Hub 776/776、Canvas 26/26、AI 48/48、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack Hub build、RC structure preflight、diff check成功。実Pilot A/B validator成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
 - 現在の正式Benchmark不足: 0/140、独立Human review 0/280、adjudication未実施。今回の12件を正式140件へ加算しない。
 - 不変: Production、DB、migration、RPC、RLS、Storage、Provider、model、pricing、credit、Scheduler、runtime Visual／Panel Judge、repair engine、Canvas、checkpoint、PNG／PDF、公開販売、成人向け境界、Desktop。
-- 次: 全品質ゲート、Draft PR、CI、Vercel Previewを確認して停止する。責任者確認前に正式Human ReviewやR4-3Bへ進まない。
+- 次: 最終文書同期HEADのCIとVercel Previewを確認して停止する。責任者確認前に正式Human ReviewやR4-3Bへ進まない。
 - 詳細: `docs/quality-benchmark-human-review.md`、`docs/RELEASE_CANDIDATE_R4_3A4_REVIEW_PACKAGE_HARDENING.md`
 
 ---

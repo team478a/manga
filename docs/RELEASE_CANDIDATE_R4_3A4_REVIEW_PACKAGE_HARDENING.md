@@ -6,6 +6,8 @@ Branch: `codex/fix-r4-3a4-review-package-context-schema`
 
 Base: `origin/feature/manga-canvas-mvp` @ `61fcaf3`
 
+Draft PR: [#294](https://github.com/team478a/manga/pull/294)
+
 ## 判定
 
 `IMPLEMENTED_LOCAL / PILOT_PACKAGE_STRUCTURE_READY / PILOT_INTRINSIC_ONLY / NOT_COUNTED_IN_FORMAL_BENCHMARK`
