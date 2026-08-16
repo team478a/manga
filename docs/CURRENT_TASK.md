@@ -2,7 +2,9 @@
 
 ## 2026-08-16 PR-R4-3A 漫画品質ベンチマーク基盤
 
-- 状態: `IMPLEMENTED_LOCAL / BLOCKED_FIXTURE_SHORTAGE`
+- 状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE`
+- Draft PR: [#291](https://github.com/team478a/manga/pull/291)（Draft／MERGEABLE）
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-feat-r4-c36bff-team478as-projects.vercel.app)
 - Branch: `codex/feat-r4-3a-quality-benchmark`
 - Base: `origin/feature/manga-canvas-mvp`@`75eb858`（PR #290 merge commit）。
 - 実装: 未評価を75／100へ補完しないEvidence契約、provider-neutral Visual Judge境界、30〜50画像fixture schema、readiness／hash／寸法preflight、精度・coverage・Judge費用・遅延の集計を追加した。既存runtime Judgeは変更していない。
@@ -10,7 +12,8 @@
 - Blocker: 権利確認済み正解付き実画像0/30、採用可能0/15、主要6不良群はいずれも0/5。Production作品を転用せず、推測値や架空画像で精度を報告しない。
 - 不変: Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
 - 検証: 集中8/8、Hub 750/750、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository acceptance、owner isolation、workspace packages／Webpack build、diff check成功。fixture preflightは正常に不足を報告。TurbopackはWindowsパス長、Desktop 3ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
-- 次: Draft PRと全CI／Vercel Preview確認後に停止する。責任者がfixture、外部送信、検証予算、Judge採用条件を承認するまでPR-R4-3Bへ進まない。
+- CI: 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsがすべて成功。最終文書同期HEADでも同じ5チェックを再確認する。
+- 次: 責任者確認まで停止する。責任者がfixture、外部送信、検証予算、Judge採用条件を承認するまでPR-R4-3Bへ進まない。
 - 詳細: `docs/quality-engine-benchmarks.md`、`docs/RELEASE_CANDIDATE_R4_3A_QUALITY_BENCHMARK.md`
 
 ---

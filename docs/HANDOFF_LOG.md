@@ -12,7 +12,8 @@
 - 権利確認済み実画像0/30、採用可能0/15、主要6群0/5のため`BLOCKED_FIXTURE_SHORTAGE`。Production作品や架空画像で補完せず、実測精度・費用・遅延を未確定とした。
 - Production API／DB／Storage／既存作品、外部VLM、画像生成Providerは操作していない。課金・credit・生成・採用・Canvas配置はすべて0。
 - 集中8/8、Hub 750/750、Canvas 26/26、AI 48/48、長編4/4、依存境界、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、workspace packages／Webpack build、diff check成功。fixture preflightは正常に不足を報告。TurbopackはWindowsパス長、Desktop 3ゲートは既知型宣言不足でローカル停止し、GitHub CIで正式判定する。
-- 次はDraft PR、5 CI、Vercel Previewを確認して停止する。責任者承認前にR4-3Bへ進まない。
+- Draft PR [#291](https://github.com/team478a/manga/pull/291)を作成。Draft／MERGEABLE。Vercel Previewは[確認済み](https://mangai-hub-staging-git-codex-feat-r4-c36bff-team478as-projects.vercel.app)。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。最終文書同期HEADでも同じ5チェックを確認して停止する。責任者承認前にR4-3Bへ進まない。
 - 詳細: `docs/quality-engine-benchmarks.md`、`docs/RELEASE_CANDIDATE_R4_3A_QUALITY_BENCHMARK.md`
 
 ---

@@ -8,7 +8,10 @@ Base: `origin/feature/manga-canvas-mvp` @ `75eb8582ceedf1b2c5cd78a515b79b02201a2
 
 ## 判定
 
-`IMPLEMENTED_LOCAL / BLOCKED_FIXTURE_SHORTAGE`
+`READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE`
+
+- Draft PR: [#291](https://github.com/team478a/manga/pull/291)（Draft／MERGEABLE）
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-feat-r4-c36bff-team478as-projects.vercel.app)
 
 R4-3Aのschema、provider-neutral Judge境界、集計、preflight、監査文書は実装した。一方、権利確認済みの正解付き実画像は0/30、採用可能画像0/15、主要6群0/5である。実測精度、実費、遅延、採用Providerは確定していない。
 
@@ -47,7 +50,8 @@ R4-3Aのschema、provider-neutral Judge境界、集計、preflight、監査文�
 - Turbopack build: Windowsの作業パス長上限で停止。Webpack buildでコード・route生成を確認
 - Desktop test／a11y／build: 差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止。GitHub Windows buildで正式判定する
 - RC preflight: repository structure ready。外部設定と手動E2Eは従来どおり対象外／未実施
-- Draft PR / CI / Vercel Preview: 作成・確認予定
+- 初回HEAD CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功
+- 最終文書同期HEAD: 同じ5チェックを再確認して停止する
 
 ## Production変更確認
 

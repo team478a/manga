@@ -4,13 +4,15 @@
 
 - Branch: `codex/feat-r4-3a-quality-benchmark`
 - Base: `origin/feature/manga-canvas-mvp` @ `75eb8582ceedf1b2c5cd78a515b79b02201a20e0`（PR #290 merge commit）
-- 状態: `IMPLEMENTED_LOCAL / BLOCKED_FIXTURE_SHORTAGE`
+- 状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE`
+- Draft PR: [#291](https://github.com/team478a/manga/pull/291)（Draft／MERGEABLE）
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-feat-r4-c36bff-team478as-projects.vercel.app)
 - 未評価を点数にせず`unknown / not_evaluated`として保持するEvidence契約、provider-neutral Judge、非公開fixture schema、readiness／実ファイル検証、精度・coverage・費用・遅延集計を追加した。既存runtime判定は不変。
 - 現行Judgeは画像内容を解析せず、欠損scoreを75、failure判定の欠損を100としている。完了Jobから渡る実観測はAsset有無と寸法だけであり、保存scoreをVisual Judge実測値として扱えない。
 - 権利確認済み実画像は0/30、採用可能0/15、主要6群0/5。fixture不足を`BLOCKED_FIXTURE_SHORTAGE`として可視化し、推測精度を記録しない。
 - Production、DB／Storage、既存作品、Provider／pricing／credit、Canvas、出力は変更せず、外部VLMと画像生成Providerを呼び出していない。
 - 集中8/8、Hub 750/750、Canvas 26/26、AI 48/48、長編4/4、依存境界、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、workspace packages／Webpack build成功。TurbopackはWindowsパス長、Desktop 3ゲートは既知型宣言不足でローカル停止し、GitHub CIで正式判定する。
-- 次: Draft PR、5 CI、Vercel Previewを確認して停止する。責任者承認前にR4-3Bへ進まない。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。最終文書同期HEADでも同じ5チェックを確認して停止する。責任者承認前にR4-3Bへ進まない。
 - 詳細: `docs/quality-engine-benchmarks.md`、`docs/RELEASE_CANDIDATE_R4_3A_QUALITY_BENCHMARK.md`
 
 ---
