@@ -4,6 +4,7 @@
 Branch: `codex/accept-r4-2y-page22-device-quality`
 Base: `origin/feature/manga-canvas-mvp` @ `be7ae34`（PR #281 merge commit）
 Draft PR: [#282](https://github.com/team478a/manga/pull/282)（Draft／MERGEABLE）
+Vercel Preview: https://mangai-hub-staging-git-codex-accept-r-5e2140-team478as-projects.vercel.app
 
 ## 目的
 
@@ -46,10 +47,10 @@ PR #281反映後のProduction受入れで再現した、同一コマの失敗候
 - Hub全体737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、migration 59/59が成功。
 - dependency／module boundary、lint、Hub typecheck、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff checkが成功。
 - Desktop test／a11y／buildは、この変更範囲より前に既知の`@napi-rs/keyring`型宣言不足で停止した。Windows CIを正式判定にする。
-- Draft PR #282を作成した。CIとVercel Previewは実行中。
+- Draft PR #282のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 
 ## 停止条件
 
-- Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認する。
+- Draft PR #282はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
 - Productionの予約Creditが0、Canvas revision 8、公開・販売変更なしを確認する。
 - 責任者のmerge前に失敗Jobの再実行と次工程へ進まない。

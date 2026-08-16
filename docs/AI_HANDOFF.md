@@ -4,12 +4,13 @@
 
 - Branch: `codex/accept-r4-2y-page22-device-quality`
 - Base: `origin/feature/manga-canvas-mvp` @ `be7ae34`（PR #281 merge commit）
-- 状態: `IN_PROGRESS`
+- 状態: `READY_FOR_OWNER_REVIEW`
 - Draft PR: [#282](https://github.com/team478a/manga/pull/282)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-accept-r-5e2140-team478as-projects.vercel.app
 - Productionページ22・コマ1を2案だけ生成した。Worker `31916441291`は成功したが2 JobともAssetなしで失敗し、Creditは使用64／予約0／残36へ全額復元した。Canvas revision 8、PNG、公開・販売状態は不変。
 - queued／running Jobが0でも、completed確認候補を同じ未解決判定へ含めるため、すべての失敗Job再実行ボタンが無効になる境界を確認した。
 - 失敗Jobの再実行だけをqueued／running排他へ分離する。候補の作り直し等で使う従来のcompleted候補排他は維持する。
-- 集中12/12、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。Vercel Preview Comments成功、他4チェックは実行中。merge前にProduction再実行を行わない。
+- 集中12/12、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。merge前にProduction再実行を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2Y_FAILED_CANDIDATE_RETRY.md`
 
 ---
