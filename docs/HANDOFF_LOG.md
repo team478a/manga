@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-16 Codex: PR-R4-3A-3 Benchmark v2.1 Fixture Assembly（作業中）
+
+- PR #292 merge commit `3f121f5da1e998bce3d595ad1ba77261d2b08253`を含む最新基準から`codex/feat-r4-3a3-benchmark-assembly`を開始した。
+- PR #291／#292契約、strict入口、checker、manifest／cases／private labels、Production-native profile、Panel Specification、6不良群、dev／holdout件数、v1 negative control、gitignoreを監査した。
+- checker SHA-256は`3FB2030AAC0884D8051BE45B98F48A5725D7850CDD47A62805E7F865B97213E0`。ローカルfixture root環境変数は未実装で今回追加対象。4桁IDは既存v2.1契約として維持する。
+- 権利確認済み画像0/140、独立review 0/280。Production、既存作品、顧客・モニター画像、外部Providerを使わず、収集・権利確認・family分離・二重review・adjudication・assemblyのローカル専用基盤を実装する。
+- ローカルroot、収集／権利／review台帳、AI review拒否、第三者adjudication、family split、exact／near duplicate、合意率／kappa、no-overwrite assemblyを実装した。
+- 集中7/7、Hub 763/763、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、Webpack build、diff check成功。strictは画像不足を理由に期待どおり停止。Desktop 3ゲートは差分外の既知型宣言不足、TurbopackはWindows path lengthでローカル停止した。
+- Production、DB、Storage、既存作品、Provider、creditは操作していない。Draft PRとCI／Preview確認後に停止し、R4-3Bへ進まない。
+
+---
+
 ## 2026-08-16 Codex: PR-R4-3A2 Benchmark v2.1契約修正（作業中）
 
 - PR #291 merge commit `355ebfd095297acee34cf32ef4469eeae2958501`から`codex/fix-r4-3a2-benchmark-v2-1-contract`を開始した。

@@ -2,7 +2,7 @@
 
 作成日: 2026-08-16
 
-対象: PR-R4-3A2（PR-R4-3A契約修正）
+対象: PR-R4-3A2（契約修正）／PR-R4-3A-3（Fixture Assembly）
 
 状態: `IMPLEMENTED_LOCAL / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_SKLEARN`
 
@@ -11,6 +11,8 @@
 PR #291の評価基盤は再利用するが、旧30〜50画像manifestは正式Benchmarkに使わない。v2.1ではCandidate画像単体のVisual BenchmarkをPage/Canvas Benchmarkから分離し、dev 112件とprivate holdout 28件、合計140件を正本とする。
 
 現在のリポジトリにはv2.1実画像がない。添付された旧v1の実測結果はlabel leakageを検出したnegative controlであり、精度測定用データへ昇格させない。Production作品、既存32ページ作品、顧客画像、架空画像で不足を埋めない。
+
+PR-R4-3A-3では`MANGAI_QUALITY_BENCHMARK_ROOT`配下のローカル専用assemblyを追加した。権利確認、禁止ソース確認、family分離、独立した人間2名review、不一致時の第三者adjudicationが揃った場合だけv2.1 packageを作る。運用詳細は`docs/quality-benchmark-assembly.md`を正本とする。
 
 ## 2. PR #291から維持する契約
 

@@ -1,0 +1,25 @@
+{
+  "assembly_version": "1",
+  "benchmark_version": "2.1",
+  "dataset_id": "r4-3a-candidate",
+  "suite": "candidate",
+  "review_version": "human-v2.1",
+  "image_profiles": [
+    { "id": "portrait_704x1024", "width": 704, "height": 1024, "source": "production_pipeline" }
+  ],
+  "items": [
+    {
+      "id": "img_0001",
+      "family_id": "family_0001",
+      "split": "dev",
+      "source_file": "assembly/images/img_0001.png",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "image_profile_id": "portrait_704x1024",
+      "judge_mode": "intrinsic",
+      "refs": [],
+      "intended": "assembly/intended/img_0001.json",
+      "rights_record_id": "rights_0001",
+      "derivation": "independent_original_case"
+    }
+  ]
+}
