@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-16 Codex: PR-R4-3A 漫画品質ベンチマーク基盤
+
+- PR #290 merge commit `75eb8582ceedf1b2c5cd78a515b79b02201a20e0`を含む最新基準から`codex/feat-r4-3a-quality-benchmark`を開始した。
+- 現行ルールJudge、Panel Specification、Candidate順位、品質評価DB／RPC／RLS、操作ログ、BFL Fill、VLM／embedding／OCR候補を監査した。
+- 未評価を75／100へ補完しないEvidence、provider-neutral Judge、30〜50画像fixture schema、readinessと実ファイル検証、精度・coverage・Judge費用・遅延集計を追加した。既存runtime Judge、DB、API、Canvas、出力は変更していない。
+- 権利確認済み実画像0/30、採用可能0/15、主要6群0/5のため`BLOCKED_FIXTURE_SHORTAGE`。Production作品や架空画像で補完せず、実測精度・費用・遅延を未確定とした。
+- Production API／DB／Storage／既存作品、外部VLM、画像生成Providerは操作していない。課金・credit・生成・採用・Canvas配置はすべて0。
+- 集中8/8、Hub 750/750、Canvas 26/26、AI 48/48、長編4/4、依存境界、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、workspace packages／Webpack build、diff check成功。fixture preflightは正常に不足を報告。TurbopackはWindowsパス長、Desktop 3ゲートは既知型宣言不足でローカル停止し、GitHub CIで正式判定する。
+- Draft PR [#291](https://github.com/team478a/manga/pull/291)を作成。Draft／MERGEABLE。Vercel Previewは[確認済み](https://mangai-hub-staging-git-codex-feat-r4-c36bff-team478as-projects.vercel.app)。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功。最終文書同期HEADでも同じ5チェックを確認して停止する。責任者承認前にR4-3Bへ進まない。
+- 詳細: `docs/quality-engine-benchmarks.md`、`docs/RELEASE_CANDIDATE_R4_3A_QUALITY_BENCHMARK.md`
+
+---
+
 ## 2026-08-16 Codex: 正方向だけのProvider安全再構成
 
 - PR #289 merge commit `7cb9f02653a08245ed403576283baf0f490adc6c`を含む最新基準から`codex/fix-r4-2ag-positive-only-safe-retry`を開始した。
