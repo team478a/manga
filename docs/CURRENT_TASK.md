@@ -2,7 +2,9 @@
 
 ## 2026-08-16 PR-R4-3A-3 Benchmark v2.1 Fixture Assembly
 
-- 状態: `IMPLEMENTED_LOCAL / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_HUMAN_REVIEW`
+- 状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_HUMAN_REVIEW`
+- Draft PR: [#293](https://github.com/team478a/manga/pull/293)（Draft／MERGEABLE）
+- Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-git-codex-feat-r4-87ad37-team478as-projects.vercel.app)
 - Branch: `codex/feat-r4-3a3-benchmark-assembly`
 - Base: `origin/feature/manga-canvas-mvp`@`3f121f5`（PR #292 merge commit。PR #291 merge commit `355ebfd`を含む）。
 - 範囲: Candidate Visual Benchmark 140件を、権利確認、禁止コンテンツ確認、二重review、family単位のdev／private holdout分離、漏洩検査を通して組み立てるローカル専用基盤。Visual Judge、runtime判定、自動修復、Providerは変更しない。
@@ -25,7 +27,8 @@
 - 不変: Production、DB、migration、RPC、RLS、Storage、既存作品、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
 - 実装: ローカルroot、収集／権利／review台帳、AI review拒否、第三者adjudication、family split、exact／near duplicate、合意率／kappa、no-overwrite assembly、共通preflight／leak rootを追加した。
 - 検証: 集中7/7、Hub 763/763、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、workspace packages／Webpack build、diff check成功。assemblyとv2.1 non-strictは正常に不足を報告し、strictは期待どおり終了コード1。TurbopackはWindows path length、Desktop 3ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止。
-- 次: Draft PRを作成し、GitHub CIとVercel Previewを確認して停止する。画像収集、Production、Provider、R4-3Bへ進まない。
+- CI: 実装HEAD `e10b1c0`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認する。
+- 次: 最終HEADのCI／Preview成功後、責任者レビューまで停止する。画像収集、Production、Provider、R4-3Bへ進まない。
 - 詳細: `docs/quality-benchmark-assembly.md`、`docs/RELEASE_CANDIDATE_R4_3A3_BENCHMARK_ASSEMBLY.md`
 
 ---

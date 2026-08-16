@@ -9,6 +9,7 @@
 - 実画像0/140、独立review 0/280。顧客、Production、モニター、権利不明、成人向け、PII、v1、placeholderを使わない。ローカルfixture root環境変数と、権利・family・二重review・adjudication・分割assembly基盤だけを今回の範囲とした。
 - ローカルroot、3台帳、AI review拒否、第三者adjudication、family split、exact／near duplicate、合意率／kappa、no-overwrite assemblyを実装した。集中7/7、Hub 763/763、Canvas 26/26、AI 48/48、長編4/4、主要Core gate、Webpack build成功。strictは不足を理由に期待どおり停止。
 - Production、DB、Storage、Provider、credit、既存作品、runtime Judge、自動修復は変更していない。Draft PRとCI／Preview確認後に停止し、R4-3Bへ進まない。
+- Draft PR [#293](https://github.com/team478a/manga/pull/293)はDraft／MERGEABLE。Previewは[Ready／SSO保護](https://mangai-hub-staging-git-codex-feat-r4-87ad37-team478as-projects.vercel.app)。実装HEAD `e10b1c0`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは成功。最終文書同期HEADでも再確認する。
 
 ---
 

@@ -6,6 +6,10 @@ Branch: `codex/feat-r4-3a3-benchmark-assembly`
 
 Base: `feature/manga-canvas-mvp`@`3f121f5da1e998bce3d595ad1ba77261d2b08253`
 
+Draft PR: [#293](https://github.com/team478a/manga/pull/293)（Draft／MERGEABLE）
+
+Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-git-codex-feat-r4-87ad37-team478as-projects.vercel.app)
+
 状態: `IMPLEMENTED_LOCAL / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_HUMAN_REVIEW`
 
 ## 結論
@@ -64,6 +68,10 @@ Visual Judge、runtime品質判定、自動修復、Provider、Production、既�
 | assembly strict | 不足を理由に期待どおり終了コード1 |
 | v2.1 preflight non-strict | `BLOCKED_FIXTURE_SHORTAGE`を表示して正常終了 |
 | diff check | 成功 |
+| GitHub Core quality | 成功 |
+| GitHub Migration roundtrip | 成功 |
+| GitHub Windows build | 成功 |
+| Vercel／Preview Comments | 成功 |
 
 ## 未実施と理由
 

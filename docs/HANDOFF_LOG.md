@@ -13,6 +13,7 @@
 - ローカルroot、収集／権利／review台帳、AI review拒否、第三者adjudication、family split、exact／near duplicate、合意率／kappa、no-overwrite assemblyを実装した。
 - 集中7/7、Hub 763/763、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、Webpack build、diff check成功。strictは画像不足を理由に期待どおり停止。Desktop 3ゲートは差分外の既知型宣言不足、TurbopackはWindows path lengthでローカル停止した。
 - Production、DB、Storage、既存作品、Provider、creditは操作していない。Draft PRとCI／Preview確認後に停止し、R4-3Bへ進まない。
+- Draft PR [#293](https://github.com/team478a/manga/pull/293)を作成。Draft／MERGEABLE。Previewは[Ready／SSO保護](https://mangai-hub-staging-git-codex-feat-r4-87ad37-team478as-projects.vercel.app)。実装HEAD `e10b1c0`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを確認して停止する。
 
 ---
 
