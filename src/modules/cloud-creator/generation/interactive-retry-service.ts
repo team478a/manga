@@ -3,7 +3,9 @@ import { cloudGenerationInputSchema } from "@mangai/ai-core";
 import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor";
 import { DomainError, ValidationError } from "@/lib/domain-errors";
 import {
+  buildConservativeGeneralAudienceGenerationRetry,
   buildGeneralAudienceGenerationRetry,
+  isConservativeGeneralAudienceGenerationRetry,
   isGeneralAudienceGenerationRetry,
 } from "../../manga/domain/general-audience-generation-retry";
 import { savePanelSpecification } from "../../manga-quality/infrastructure/panel-quality-repository";
@@ -45,14 +47,16 @@ export async function retryFailedInteractiveCloudGenerationJob(jobId: string) {
       source.data.error_code === "provider_moderation_blocked");
   if (
     providerRejected &&
-    isGeneralAudienceGenerationRetry(parsedGeneration.data)
+    isConservativeGeneralAudienceGenerationRetry(parsedGeneration.data)
   )
     throw new ValidationError(
-      "一般向けの安全な再構成でも生成できませんでした。構図や内容を変更して作り直してください。",
+      "より穏やかな一般向け再構成でも生成できませんでした。構図や内容を変更して作り直してください。",
     );
 
   const generation = providerRejected
-    ? buildGeneralAudienceGenerationRetry(parsedGeneration.data)
+    ? isGeneralAudienceGenerationRetry(parsedGeneration.data)
+      ? buildConservativeGeneralAudienceGenerationRetry(parsedGeneration.data)
+      : buildGeneralAudienceGenerationRetry(parsedGeneration.data)
     : parsedGeneration.data;
   const specification = await supabase
     .from("cloud_manga_panel_specifications")

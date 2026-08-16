@@ -17,7 +17,9 @@ import {
 import { assertCloudGenerationBatchPreflight } from "./batch-preflight-service";
 import { mapCloudGenerationBatchRegistrationError } from "./generation-errors";
 import {
+  buildConservativeGeneralAudienceGenerationRetry,
   buildGeneralAudienceGenerationRetry,
+  isConservativeGeneralAudienceGenerationRetry,
   isGeneralAudienceGenerationRetry,
 } from "../../manga/domain/general-audience-generation-retry";
 
@@ -192,12 +194,17 @@ export async function retryFailedCloudGenerationJob(jobId: string) {
     Boolean(source.data.provider_job_id) &&
     (source.data.error_code === "provider_rejected" ||
       source.data.error_code === "provider_moderation_blocked");
-  if (providerRejected && isGeneralAudienceGenerationRetry(parsedGeneration.data))
+  if (
+    providerRejected &&
+    isConservativeGeneralAudienceGenerationRetry(parsedGeneration.data)
+  )
     throw new ValidationError(
-      "一般向けの安全な再構成でも生成できませんでした。構図や内容を変更してください。",
+      "より穏やかな一般向け再構成でも生成できませんでした。構図や内容を変更してください。",
     );
   const generation = providerRejected
-    ? buildGeneralAudienceGenerationRetry(parsedGeneration.data)
+    ? isGeneralAudienceGenerationRetry(parsedGeneration.data)
+      ? buildConservativeGeneralAudienceGenerationRetry(parsedGeneration.data)
+      : buildGeneralAudienceGenerationRetry(parsedGeneration.data)
     : parsedGeneration.data;
   const newJobId = await enqueueCloudGenerationJob({
     projectId: source.data.project_id,
