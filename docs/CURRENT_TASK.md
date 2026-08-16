@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2Z 安全再実行への最新画像品質契約継承
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#283](https://github.com/team478a/manga/pull/283)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-031855-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-2z-retry-quality-contract`
+- Base: `origin/feature/manga-canvas-mvp`@`e52540c`（PR #282 merge commit）。
+- Production受入れ: ページ22・コマ1の失敗Jobを1件だけ再実行した。Worker [31918003768](https://github.com/team478a/manga/actions/runs/31918003768)は`requests=2 processed=1`で成功し、Creditは使用64／予約0／残36から使用66／予約0／残34へ確定した。
+- 品質結果: 新候補は正立、人体、小物単一性は改善したが、端末画面、衣装、画面端に文字状模様が残り不採用とした。Canvas revision 8、PNG成功、公開・販売状態は不変。最終は生成中0、失敗0、未配置候補1件。
+- 原因: 古い失敗Jobの安全再実行が保存済みnegative promptをそのまま維持し、PR #281で追加した端末・小物・画像内文字の最新品質契約を補強していなかった。
+- 実装: 安全再実行だけへ正立、自然な人体、小物単一性、空の端末画面、純粋な描画面の正方向契約と、疑似文字、端末UI、ロゴ、重複小物等のnegative promptを追加する。元Job固有の条件、参照Asset、対象コマ、versionを維持する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中39/39、Hub 737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。
+- CI: 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADの同じ5チェックを再確認して停止する。
+- 次: 責任者確認のため停止する。merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2Z_RETRY_QUALITY_CONTRACT.md`
+
+---
+
 ## 2026-08-16 PR-R4-2Y 失敗候補の再実行デッドロック解消
 
 - 状態: `READY_FOR_OWNER_REVIEW`

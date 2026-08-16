@@ -2,6 +2,10 @@ import type { CloudGenerationInput } from "@mangai/ai-core";
 
 const GENERAL_AUDIENCE_RETRY_GUIDANCE =
   "一般向け作品として刺激の強い直接描写を避け、緊迫感は人物の表情、距離、構図、照明で間接的に伝える。";
+const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_GUIDANCE =
+  "最終出力は正立した一つの場面として、顔・手指・関節を自然にし、必要な小物はそれぞれ一つだけ描く。端末画面は反射と光だけの空のガラス面にする。描画面は人物、背景、小物、光、影だけで構成した清潔な一枚絵として完成させる。";
+const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_NEGATIVE_PROMPT =
+  "文字、疑似文字、読めない文字、記号、字幕、セリフ、吹き出し、看板、ロゴ、透かし、端末画面のUI、text, letters, pseudo-text, gibberish, symbols, typography, captions, speech balloons, signs, logos, watermarks, device screen UI, 複数の同一小物、duplicate props";
 
 const SAFE_ACTION =
   "登場人物は場面に合う自然な姿勢を取り、表情と視線で状況を伝える。";
@@ -80,6 +84,8 @@ function sanitizeProviderControlContract(line: string) {
               "natural facial anatomy and expression formed exclusively by clean linework and shading",
             surface_finish:
               "clean monochrome pictorial line art and natural material shading across every surface",
+            quality_gate:
+              "upright page, natural gravity, coherent face/hands/joints, each required prop exactly once, blank device screens, and pure pictorial marks throughout",
             camera: {
               ...cameraWithoutLegacyLens,
               distance:
@@ -126,10 +132,20 @@ export function buildGeneralAudienceGenerationRetry(
       return "追加指定: 一般向けの間接表現として安全に再構成する。";
     return line;
   });
-  const prompt = [GENERAL_AUDIENCE_RETRY_GUIDANCE, ...promptLines]
+  const prompt = [
+    `${GENERAL_AUDIENCE_RETRY_GUIDANCE} ${GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_GUIDANCE}`,
+    ...promptLines,
+  ]
     .join("\n")
     .slice(0, 20_000)
     .trim();
+  const negativePrompt = [
+    GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_NEGATIVE_PROMPT,
+    generation.negativePrompt.trim(),
+  ]
+    .filter(Boolean)
+    .join("、")
+    .slice(0, 10_000);
 
-  return { ...generation, prompt };
+  return { ...generation, prompt, negativePrompt };
 }
