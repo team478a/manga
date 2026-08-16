@@ -12,7 +12,9 @@
 - 第1段階安全再構成と端末背面契約は適用済みだった。Production DBでは失敗分類と契約適用有無だけを読み取り、Prompt本文、画像、署名URL、API keyは取得・記録せず、書込も行っていない。
 - 背景、場所、構図、演出、動作、表情を穏やかな日常場面へ置換する第2段階を一度だけ許可した。第2段階済みJobが再拒否された場合は必ず停止する。対話型と一括生成へ同じdomain関数を適用する。
 - 集中20/20、Hub 739/739、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
-- merge前にProduction再実行を行わず、Draft PRと全CI・Vercel Preview成功を確認して停止する。
+- Draft PR [#285](https://github.com/team478a/manga/pull/285)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-cb5583-team478as-projects.vercel.app`。
+- 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。
+- merge前にProduction再実行を行わない。merge後、同じ失敗コマを1回だけ再実行し、第2段階再構成の完成画像と漫画品質を確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AB_CONSERVATIVE_MODERATION_RETRY.md`
 
 ---

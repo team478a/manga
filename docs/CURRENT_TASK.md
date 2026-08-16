@@ -2,7 +2,9 @@
 
 ## 2026-08-16 PR-R4-2AB Provider moderation後の第2段階安全再構成
 
-- 状態: `IMPLEMENTED_LOCAL_GATES_PASSED`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#285](https://github.com/team478a/manga/pull/285)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-cb5583-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2ab-conservative-moderation-retry`
 - Base: `origin/feature/manga-canvas-mvp`@`d44fc8d`（PR #284 merge commit）。
 - Production受入れ: ページ22・コマ1を1件だけ再実行した。Worker [31921455570](https://github.com/team478a/manga/actions/runs/31921455570)は`requests=2 processed=1`で成功したが、Jobは`provider_moderation_blocked`でAssetなし。Creditは使用68／予約0／残32 → 予約2／残30 → 使用68／予約0／残32へ全額復元された。
@@ -11,7 +13,8 @@
 - 実装: 背景・場所・構図・演出・動作・表情を穏やかな日常場面へ置換する第2段階を1回だけ許可する。第2段階済みJobが再拒否された場合は必ず停止する。人物設定、衣装、参照Asset、端末背面契約を維持する。
 - 不変: URL、API response、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、Worker自動retry回数、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中20/20、Hub 739/739、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
-- 次: commit・push・Draft PR作成後、全CIとVercel Previewを確認して停止する。merge前にProduction再実行を行わない。
+- CI: 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。
+- 次: 責任者merge待ち。merge前にProduction再実行を行わない。merge後、同じ失敗コマを1回だけ再実行し、第2段階再構成の完成画像と漫画品質を確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AB_CONSERVATIVE_MODERATION_RETRY.md`
 
 ---

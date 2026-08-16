@@ -8,6 +8,8 @@ PR #284反映後もBFL moderationで画像が返らない場合に、利用者�
 
 - Base: `origin/feature/manga-canvas-mvp` @ `d44fc8d`（PR #284 merge commit）
 - Branch: `codex/fix-r4-2ab-conservative-moderation-retry`
+- Draft PR: [#285](https://github.com/team478a/manga/pull/285)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-cb5583-team478as-projects.vercel.app
 - 対象: 対話型の失敗コマ再実行と一括生成の失敗Job再実行
 
 ## Production確認
@@ -62,6 +64,8 @@ PR #284反映後もBFL moderationで画像が返らない場合に、利用者�
 - Next.js Webpack production build: 成功
 - RC preflight: repository structure ready。外部設定と手動項目は従来どおり環境依存
 - `git diff --check`: 成功
+- GitHub初回実装HEAD: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功
+- 最終文書同期HEAD: 同じ5チェックを再確認して停止する
 
 ## Merge後の受入れ
 
