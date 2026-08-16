@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2AF moderation安全な衣服表現、2026-08-16）
+
+- Branch: `codex/fix-r4-2af-moderation-safe-garment-cue`
+- Base: `origin/feature/manga-canvas-mvp` @ `713bb47`（PR #288 merge commit）
+- 状態: `LOCAL_GATES_COMPLETE`
+- Draft PR／Vercel Preview: 作成・確認前
+- PR #288反映後、Productionページ22・コマ1で2候補を1回だけ生成した。Worker [31930333853](https://github.com/team478a/manga/actions/runs/31930333853)は`requests=3 processed=2`で成功したが、2 Jobとも`provider_moderation_blocked`、Assetなし、Provider課金0。Creditは使用76／予約0／残24へ全額復元。
+- PR #288の限定差分で追加した`concealed prop`を最有力原因と判断した。端末・画面・UI・`concealed`を使わず、胸ポケットの縫い目、自然な布のふくらみ、手の位置と視線だけで表現する。
+- 同じ無害な衣服表現を通常生成と第1・第2段階安全再実行へ適用し、再実行で端末・表示面語を戻さない。
+- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、依存境界、lint、型検査、migration検証、Cloud受入れfixture、package／Next.js build成功。Desktop 3ゲートは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで判定する。Draft PR、全CI、Vercel Previewを確認して停止する。merge前にProduction追加生成・再実行を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AF_MODERATION_SAFE_GARMENT_CUE.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2AE 端末を直接描かず編集要素を分離、2026-08-16）
 
 - Branch: `codex/fix-r4-2ae-concealed-prop-overlay`

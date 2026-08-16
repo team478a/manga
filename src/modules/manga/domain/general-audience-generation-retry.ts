@@ -8,7 +8,7 @@ const GENERAL_AUDIENCE_RETRY_GUIDANCE =
 const CONSERVATIVE_GENERAL_AUDIENCE_RETRY_GUIDANCE =
   "一般向けの穏やかな日常場面として、人物が整った環境で自然に立ち、表情と視線だけで物語の余韻を伝える。";
 const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_GUIDANCE =
-  "最終出力は正立した一つの場面として、顔・手指・関節を自然にし、必要な小物はそれぞれ一つだけ描く。手持ち端末は無地の背面または細い側面だけをカメラへ向け、表示面は人物の体側または画面外へ向ける。描画面は人物、背景、小物、光、影だけで構成した清潔な一枚絵として完成させる。";
+  "最終出力は正立した一つの場面として、顔・手指・関節を自然にし、必要な小物はそれぞれ一つだけ描く。物語上の携帯品は衣服の縫い目、自然な布のふくらみ、手の位置だけで間接的に示す。描画面は人物、背景、小物、光、影だけで構成した清潔な一枚絵として完成させる。";
 const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_NEGATIVE_PROMPT =
   "文字、疑似文字、読めない文字、記号、字幕、セリフ、吹き出し、看板、ロゴ、透かし、端末画面のUI、text, letters, pseudo-text, gibberish, symbols, typography, captions, speech balloons, signs, logos, watermarks, device screen UI, 複数の同一小物、duplicate props";
 
@@ -96,7 +96,7 @@ function sanitizeProviderControlContract(line: string) {
             surface_finish:
               "clean monochrome pictorial line art and natural material shading across every surface",
             quality_gate:
-              "upright page, natural gravity, coherent face/hands/joints, each required prop exactly once, handheld devices show only a plain back or side edge, and pure pictorial marks throughout",
+              "upright page, natural gravity, coherent face/hands/joints, clean fabric and pocket details, and pure pictorial marks throughout",
             camera: {
               ...cameraWithoutLegacyLens,
               distance:
@@ -173,7 +173,7 @@ function conservativelySanitizeProviderControlContract(line: string) {
       surface_finish:
         "clean monochrome pictorial line art and natural material shading across every surface",
       quality_gate:
-        "upright page, natural gravity, coherent face/hands/joints, each required everyday prop exactly once, handheld devices show only a plain back or side edge, and pure pictorial marks throughout",
+        "upright page, natural gravity, coherent face/hands/joints, clean fabric and pocket details, and pure pictorial marks throughout",
       camera: {
         ...cameraWithoutLegacyLens,
         distance:

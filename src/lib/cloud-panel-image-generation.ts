@@ -283,7 +283,7 @@ function compactProviderSpatialLayout(input: {
     .replace(/(?:から|より|の|を|が|は|へ|に|で|と)\s*$/u, "")
     .trim()
     .slice(0, 120);
-  return `${anchor ? `${anchor}; ` : ""}prop concealed; pocket/hand outline only`;
+  return `${anchor ? `${anchor}; ` : ""}pocket seam and soft fabric fold; relaxed hand`;
 }
 
 function compactProviderDeviceSafeAction(input: {
@@ -293,7 +293,7 @@ function compactProviderDeviceSafeAction(input: {
 }) {
   const action = compactProviderSceneField(input);
   return providerDeviceLayoutSignal.test(action)
-    ? "react to concealed prop through pose/gaze"
+    ? "look toward pocket through pose/gaze"
     : action;
 }
 
@@ -712,7 +712,7 @@ export function buildStoryboardPanelGeneration(input: {
       "clean monochrome pictorial line art and natural material shading across every surface",
     overlay_stage: "overlays added later",
     quality_gate:
-      "upright; natural face/hands/joints; single props; prop concealed; pictorial marks only",
+      "upright; natural face/hands/joints; single props; clean fabric; pictorial only",
     variation:
       candidateCount > 1
         ? `candidate ${candidateIndex + 1} of ${candidateCount}: ${variationDirections[generationTarget][candidateIndex]}`

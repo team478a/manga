@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-16 Codex: moderation安全な衣服表現
+
+- PR #288 merge commit `713bb4767eeaef22449e760274b3a6449a081994`を含む最新基準から`codex/fix-r4-2af-moderation-safe-garment-cue`を開始した。
+- Productionの`test`モニターでページ22・コマ1を2候補だけ登録し、公式Worker [31930333853](https://github.com/team478a/manga/actions/runs/31930333853)を`run` modeで1回だけ実行した。Workerは`status=idle requests=3 processed=2`で成功。Creditは使用76／予約0／残24 → 使用76／予約4／残20 → 使用76／予約0／残24へ全額復元。
+- 2 Jobとも`provider_moderation_blocked`、Assetなし、Provider課金0。失敗Job再実行、追加生成、候補採用、Canvas配置なし。Canvas revision 8、PNG、公開・販売・設定は不変。
+- PR #288の限定差分で追加した`concealed prop`が曖昧な危険物表現として解釈された可能性を最有力原因とした。端末・画面・UI・`concealed`を使わず、胸ポケットの縫い目、自然な布のふくらみ、手の位置と視線だけで表現する。
+- 一般向け第1・第2段階安全再実行も同じ衣服表現へ統一し、再実行時に端末・表示面語を再導入しない。
+- 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、依存境界、lint、型検査、59 migration／rollback、Cloud受入れfixture、package／Next.js build、diff check成功。RC preflightはstructure ready。Desktop 3ゲートは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで判定する。Draft PR、全CI、Vercel Previewを確認して停止する。merge前にProduction追加生成・再実行を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AF_MODERATION_SAFE_GARMENT_CUE.md`
+
+---
+
 ## 2026-08-16 Codex: 端末を直接描かず編集要素を分離
 
 - PR #287 merge commit `b9ac507f6c64a7de6eedc21b6c2efcd5a3881f55`を含む最新基準から`codex/fix-r4-2ae-concealed-prop-overlay`を開始した。
