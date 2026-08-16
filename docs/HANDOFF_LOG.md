@@ -11,7 +11,8 @@
 - dev 112件／private holdout 28件、public cases／private labels、Production-native profile、Panel Specification、2名review、6分類、SHA／PNG metadata／重複／shortcut gateへ修正した。
 - 旧v1の`overall=false`結果をnegative controlとして保存。旧v1画像とv2.1の140画像は添付されておらず、ローカルscikit-learnもないため最終Acceptanceは未実施。
 - 集中14/14、Hub 755/755、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub型検査、migration 59/59、research eval、repository、owner isolation、Python syntax、packages／Webpack build、diff check成功。同梱checkerのSHA-256一致。非strict preflightは正常に不足を報告し、strict／leakは実画像不足で期待どおり停止。Production、既存作品、外部Providerは操作していない。
-- 全ゲート、Draft PR、CI、Preview確認後に停止する。R4-3Bへ進まない。
+- Draft PR [#292](https://github.com/team478a/manga/pull/292)を作成。Draft／MERGEABLE。Previewは[確認済み](https://mangai-hub-staging-git-codex-fix-r4-3-7f4fb4-team478as-projects.vercel.app)。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 最終文書同期HEADでも同じ5チェックを再確認して停止する。R4-3Bへ進まない。
 
 ---
 

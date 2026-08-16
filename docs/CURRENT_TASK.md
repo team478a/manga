@@ -2,14 +2,16 @@
 
 ## 2026-08-16 PR-R4-3A2 Benchmark v2.1契約修正
 
-- 状態: `READY_FOR_DRAFT / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_SKLEARN`
+- 状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_SKLEARN`
+- Draft PR: [#292](https://github.com/team478a/manga/pull/292)（Draft／MERGEABLE）
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-fix-r4-3-7f4fb4-team478as-projects.vercel.app)
 - Branch: `codex/fix-r4-3a2-benchmark-v2-1-contract`
 - Base: `origin/feature/manga-canvas-mvp`@`355ebfd`（PR #291 merge commit）。
 - 実装: public casesとprivate labels、devとprivate holdoutを分離し、140件の厳密構成、Production-native profile、SHA／PNG metadata／Panel Specification／review／重複／shortcutの検査契約へ更新した。意味の異なるfailure強制mappingを廃止した。
 - Evidence: 旧v1検査は`overall=false`のnegative control。旧v1実画像は添付なしで再現不能。v2.1画像は0/140で、strict受入れは未完了。
 - 不変: Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
-- 検証: 集中14/14、Hub 755/755、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、Python syntax、workspace packages／Webpack build、diff check成功。添付checkerのSHA-256一致。非strict preflightは正常に不足を報告し、strictとleak acceptanceは実画像不足で期待どおり停止。TurbopackはWindowsパス長、Desktop 3ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止。Draft PR、CI、Vercel Previewは作業中。
-- 次: 全ゲートとDraft PR／CI／Previewを確認して停止する。140画像・二重review・private holdout・scikit-learn acceptanceが揃うまでR4-3Bへ進まない。
+- 検証: 集中14/14、Hub 755/755、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、Python syntax、workspace packages／Webpack build、diff check成功。添付checkerのSHA-256一致。非strict preflightは正常に不足を報告し、strictとleak acceptanceは実画像不足で期待どおり停止。TurbopackはWindowsパス長、Desktop 3ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認する。
+- 次: 最終文書同期HEADのCI／Preview成功を確認して責任者レビューまで停止する。140画像・二重review・private holdout・scikit-learn acceptanceが揃うまでR4-3Bへ進まない。
 - 詳細: `docs/quality-engine-benchmarks.md`、`docs/RELEASE_CANDIDATE_R4_3A2_BENCHMARK_V2_1.md`
 
 ---

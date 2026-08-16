@@ -8,7 +8,10 @@ Base: `origin/feature/manga-canvas-mvp` @ `355ebfd095297acee34cf32ef4469eeae2958
 
 ## 現在判定
 
-`READY_FOR_DRAFT / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_SKLEARN`
+`READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_SKLEARN`
+
+- Draft PR: [#292](https://github.com/team478a/manga/pull/292)（Draft／MERGEABLE）
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-fix-r4-3-7f4fb4-team478as-projects.vercel.app)
 
 PR #291のEvidence、Judge境界、metricsを維持し、誤って公開ラベルを同梱する旧fixture契約をv2.1へ修正した。実画像140件は未提供であり、精度合格を主張しない。
 
@@ -46,7 +49,8 @@ Production、顧客作品、DB、migration、RPC、RLS、Storage、API、URL、F
 - Turbopack build: Windows作業パス長上限で停止。Webpack build成功
 - Desktop test／a11y／build: 差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで正式判定する
 - RC preflight: repository structure ready。外部設定と手動E2Eは従来どおり対象外
-- Draft PR、CI、Vercel Preview: 作業中
+- 初回HEAD CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功
+- 最終文書同期HEAD: 同じ5チェックを再確認して停止する
 
 ## 責任者確認事項
 

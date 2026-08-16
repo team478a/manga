@@ -5,7 +5,7 @@
 - 最新基準はPR #291 merge commit `355ebfd095297acee34cf32ef4469eeae2958501`。Branchは`codex/fix-r4-3a2-benchmark-v2-1-contract`。
 - 旧30〜50件の公開ラベル入りmanifestを廃止し、public cases/private labels、dev/private holdout、合計140件のv2.1契約へ修正した。
 - 旧v1結果はleakを検出したnegative control。v2.1実画像0/140、ローカルscikit-learnなしのため最終精度Acceptanceは未実施。
-- Production、既存作品、DB、Storage、Provider、Canvas、PNG／PDFは変更していない。全CI／Preview確認後に停止し、R4-3Bへ進まない。
+- Production、既存作品、DB、Storage、Provider、Canvas、PNG／PDFは変更していない。Draft PR [#292](https://github.com/team478a/manga/pull/292)の初回5チェックは成功。最終文書同期HEADのCI／Preview確認後に停止し、R4-3Bへ進まない。
 - 詳細は`docs/CURRENT_TASK.md`と`docs/quality-engine-benchmarks.md`。
 
 ---
