@@ -3,7 +3,7 @@
 作成日: 2026-08-16
 Branch: `codex/accept-r4-2y-page22-device-quality`
 Base: `origin/feature/manga-canvas-mvp` @ `be7ae34`（PR #281 merge commit）
-Draft PR: 作成前
+Draft PR: [#282](https://github.com/team478a/manga/pull/282)（Draft／MERGEABLE）
 
 ## 目的
 
@@ -46,7 +46,7 @@ PR #281反映後のProduction受入れで再現した、同一コマの失敗候
 - Hub全体737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、migration 59/59が成功。
 - dependency／module boundary、lint、Hub typecheck、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff checkが成功。
 - Desktop test／a11y／buildは、この変更範囲より前に既知の`@napi-rs/keyring`型宣言不足で停止した。Windows CIを正式判定にする。
-- Draft PR、CI、Vercel Previewは作成・確認前。
+- Draft PR #282を作成した。CIとVercel Previewは実行中。
 
 ## 停止条件
 

@@ -3,7 +3,7 @@
 ## 2026-08-16 PR-R4-2Y 失敗候補の再実行デッドロック解消
 
 - 状態: `IN_PROGRESS`
-- Draft PR: 作成前
+- Draft PR: [#282](https://github.com/team478a/manga/pull/282)（Draft／MERGEABLE）
 - Branch: `codex/accept-r4-2y-page22-device-quality`
 - Base: `origin/feature/manga-canvas-mvp`@`be7ae34`（PR #281 merge commit）。
 - Production受入れ: ページ22・コマ1を2案だけ生成した。Worker [31916441291](https://github.com/team478a/manga/actions/runs/31916441291)は`requests=3 processed=2`で成功したが、2 JobともAssetなしで失敗した。Creditは使用64／予約0／残36 → 予約4／残32 → 使用64／予約0／残36へ全額復元した。
@@ -12,7 +12,8 @@
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - Production状態: Canvas revision 8、PNG成功、使用64／予約0／残36。新規Asset、Provider課金、Canvas、公開・販売変更なし。
 - 検証: 集中12/12、Hub 737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
-- 次: Draft PRを作成し、全CIとVercel Preview成功を確認して停止する。merge前に失敗Jobを再実行しない。
+- CI: Vercel Preview Comments成功。Core quality、Migration roundtrip、Windows build、Vercelは実行中。
+- 次: 最終HEADの全CIとVercel Preview成功を確認して停止する。merge前に失敗Jobを再実行しない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2Y_FAILED_CANDIDATE_RETRY.md`
 
 ---
