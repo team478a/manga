@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2AD ネーム構図から端末表示面を除外
+
+- 状態: `IMPLEMENTED_LOCAL_GATES_PASSED`
+- Draft PR: 作成前
+- Branch: `codex/fix-r4-2ad-device-safe-layout`
+- Base: `origin/feature/manga-canvas-mvp`@`a3d957a`（PR #286 merge commit）。
+- Production受入れ: ページ22・コマ1で手動比較を維持する最小2候補を1回だけ生成した。Worker [31926041721](https://github.com/team478a/manga/actions/runs/31926041721)は`requests=3 processed=2`で成功。Creditは使用70／予約0／残30 → 予約4／残26 → 使用72／予約0／残28。1候補完成、1候補失敗・予約返却。
+- 品質結果: 完成した704×1024 PNGは胸ポケットと端末のクローズアップという元ネーム構図へ戻ったが、端末表示面に日本語・疑似文字・通話UIが生成されたため不採用。候補採用、Canvas配置、失敗候補再実行、追加生成なし。Canvas revision 8、PNG成功、公開・販売状態は不変。
+- 原因: PR #286で追加したraw `layout`が位置anchorだけでなく「端末表示面をカメラへ向ける」指示も保持し、後段の端末背面契約と競合した。
+- 実装: クローズアップ構図に端末・画面語がある場合だけ、端末語より前の位置anchorを保持し、端末1個の背面／側面をカメラへ、表示面を人物側／画面外へ向ける短い契約へ変換する。非端末構図は不変。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProduction追加生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AD_DEVICE_SAFE_LAYOUT.md`
+
+---
+
 ## 2026-08-16 PR-R4-2AC 安全再構成でネーム構図を維持
 
 - 状態: `READY_FOR_OWNER_REVIEW`

@@ -460,6 +460,32 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   );
 });
 
+test("クローズアップの端末構図は位置だけを残して表示面をカメラへ向けない", () => {
+  const closeUpStoryboard = structuredClone(storyboard);
+  closeUpStoryboard.pages[0].panels[0].shot = "close_up";
+  closeUpStoryboard.pages[0].panels[0].composition =
+    "上着の胸ポケットからスマートフォンの表示面をカメラへ向ける";
+  const result = buildStoryboardPanelGeneration({
+    storyboard: closeUpStoryboard,
+    pageNumber: 1,
+    canvas,
+    panelId,
+  });
+  const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
+
+  assert.match(providerContract.layout, /胸ポケット/);
+  assert.match(providerContract.layout, /back\/side to camera/);
+  assert.match(providerContract.layout, /display to wearer\/off-frame/);
+  assert.doesNotMatch(
+    providerContract.layout,
+    /スマートフォン|表示面をカメラへ向ける/,
+  );
+  assert.ok(
+    result.generation.prompt.length < 2_000,
+    `prompt length: ${result.generation.prompt.length}`,
+  );
+});
+
 test("台詞が場面欄へ混入した極端な寄りは無記名の安全フレームへ昇格する", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "extreme_close_up";
