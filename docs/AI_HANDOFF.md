@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2AB Provider moderation後の第2段階安全再構成、2026-08-16）
+
+- Branch: `codex/fix-r4-2ab-conservative-moderation-retry`
+- Base: `origin/feature/manga-canvas-mvp` @ `d44fc8d`（PR #284 merge commit）
+- 状態: `IMPLEMENTED_LOCAL_GATES_PASSED`
+- PR #284反映後、Productionページ22・コマ1を1件だけ再実行した。Worker [31921455570](https://github.com/team478a/manga/actions/runs/31921455570)は`requests=2 processed=1`で成功したが、Jobは`provider_moderation_blocked`でAssetなし。Creditは使用68／予約0／残32へ全額復元された。
+- 第1段階安全再構成と端末背面契約は適用済みだった。Production DBは分類、Prompt長、契約適用有無、置換対象項目の有無だけを読み取り、本文・画像・秘密情報は取得せず、書込も行っていない。
+- 背景、場所、構図、演出、動作、表情を穏やかな日常場面へ置換する第2段階を1回だけ許可する。第2段階済みJobが再拒否された場合は停止する。対話型と一括生成へ共通適用する。
+- 人物設定、衣装、参照Asset、対象コマ、Panel Specification、端末背面契約、Provider、model、pricing、credit単価、Worker自動retry、timeout、Scheduler、DB、Canvas、PNG／PDFを維持する。
+- 集中20/20、Hub 739/739、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AB_CONSERVATIVE_MODERATION_RETRY.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2AA 端末表示面を描かせない正方向契約、2026-08-16）
 
 - Branch: `codex/fix-r4-2aa-concealed-device-surface`

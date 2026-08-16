@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-16 Codex: Provider moderation後の第2段階安全再構成
+
+- PR #284 merge commit `d44fc8d5cedb16896734c444629870d3546f8462`を含む最新基準から`codex/fix-r4-2ab-conservative-moderation-retry`を開始した。
+- Productionの`test`モニターでページ22・コマ1を1件だけ再実行した。公式Worker [31921455570](https://github.com/team478a/manga/actions/runs/31921455570)は`status=idle requests=2 processed=1`で成功した。
+- Jobは`provider_moderation_blocked`でAssetなし。Creditは使用68／予約0／残32 → 使用68／予約2／残30 → 使用68／予約0／残32へ全額復元された。Canvas revision 8、PNG成功、公開・販売状態は不変。
+- 第1段階安全再構成と端末背面契約は適用済みだった。Production DBでは失敗分類と契約適用有無だけを読み取り、Prompt本文、画像、署名URL、API keyは取得・記録せず、書込も行っていない。
+- 背景、場所、構図、演出、動作、表情を穏やかな日常場面へ置換する第2段階を一度だけ許可した。第2段階済みJobが再拒否された場合は必ず停止する。対話型と一括生成へ同じdomain関数を適用する。
+- 集中20/20、Hub 739/739、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
+- merge前にProduction再実行を行わず、Draft PRと全CI・Vercel Preview成功を確認して停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AB_CONSERVATIVE_MODERATION_RETRY.md`
+
+---
+
 ## 2026-08-16 Codex: 端末表示面を描かせない正方向契約
 
 - PR #283 merge commit `59b837722813967cb1acabca3072de4259a8275b`を含む最新基準から`codex/fix-r4-2aa-concealed-device-surface`を開始した。

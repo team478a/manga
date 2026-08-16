@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { moderateGeneralCloudPrompt } from "@mangai/ai-core";
 import {
+  buildConservativeGeneralAudienceGenerationRetry,
   buildGeneralAudienceGenerationRetry,
+  isConservativeGeneralAudienceGenerationRetry,
   isGeneralAudienceGenerationRetry,
 } from "../src/modules/manga/domain/general-audience-generation-retry.ts";
 
@@ -166,4 +168,60 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.doesNotMatch(retry.prompt, /disturbing incident|intense fear/);
   assert.equal(retry.targetPanelId, imageGeneration.targetPanelId);
   assert.equal(retry.referenceAssetIds, imageGeneration.referenceAssetIds);
+});
+
+test("安全再構成もProviderに拒否された場合は穏やかな日常場面へ一度だけ再構成する", () => {
+  const firstRetry = buildGeneralAudienceGenerationRetry(
+    compactProviderContractGeneration,
+  );
+  const conservativeRetry = buildConservativeGeneralAudienceGenerationRetry(
+    firstRetry,
+  );
+  const contract = JSON.parse(conservativeRetry.prompt.split("\n")[4]);
+
+  assert.equal(isGeneralAudienceGenerationRetry(conservativeRetry), true);
+  assert.equal(
+    isConservativeGeneralAudienceGenerationRetry(conservativeRetry),
+    true,
+  );
+  assert.match(conservativeRetry.prompt, /一般向けの穏やかな日常場面/);
+  assert.match(contract.scene, /calm general-audience manga moment/);
+  assert.match(contract.background, /tidy well-lit everyday environment/);
+  assert.match(contract.variation, /calm natural pose/);
+  assert.match(contract.quality_gate, /plain back or side edge/);
+  assert.match(contract.subjects[0].description, /same black-haired protagonist/);
+  assert.deepEqual(
+    conservativeRetry.referenceAssetIds,
+    imageGeneration.referenceAssetIds,
+  );
+  assert.equal(
+    moderateGeneralCloudPrompt(
+      `${conservativeRetry.prompt}\n${conservativeRetry.negativePrompt}`,
+    ).decision,
+    "allow",
+  );
+  assert.equal(
+    buildConservativeGeneralAudienceGenerationRetry(conservativeRetry),
+    conservativeRetry,
+  );
+});
+
+test("詳細Promptの第2段階再構成は背景・構図・動作を穏やかな内容へ置換する", () => {
+  const firstRetry = buildGeneralAudienceGenerationRetry({
+    ...imageGeneration,
+    prompt: [
+      imageGeneration.prompt,
+      "場所: 刺激の強い出来事が起きている場所。",
+      "背景: 出来事を直接描く。",
+      "人物と背景の配置: 出来事を大きく見せる。",
+      "構図: 出来事を中央に置く。",
+    ].join("\n"),
+  });
+  const conservativeRetry = buildConservativeGeneralAudienceGenerationRetry(
+    firstRetry,
+  );
+
+  assert.match(conservativeRetry.prompt, /明るく整った一般向けの日常環境/);
+  assert.match(conservativeRetry.prompt, /余白のある安定した構図/);
+  assert.doesNotMatch(conservativeRetry.prompt, /出来事を直接描く/);
 });

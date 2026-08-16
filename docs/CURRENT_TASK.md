@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2AB Provider moderation後の第2段階安全再構成
+
+- 状態: `IMPLEMENTED_LOCAL_GATES_PASSED`
+- Branch: `codex/fix-r4-2ab-conservative-moderation-retry`
+- Base: `origin/feature/manga-canvas-mvp`@`d44fc8d`（PR #284 merge commit）。
+- Production受入れ: ページ22・コマ1を1件だけ再実行した。Worker [31921455570](https://github.com/team478a/manga/actions/runs/31921455570)は`requests=2 processed=1`で成功したが、Jobは`provider_moderation_blocked`でAssetなし。Creditは使用68／予約0／残32 → 予約2／残30 → 使用68／予約0／残32へ全額復元された。
+- Production状態: Canvas revision 8、PNG成功、画像4/4、セリフ1/1、生成中0、失敗1。Canvas、公開・販売状態、設定は変更していない。Production DBは分類と契約適用有無の読み取りだけで、書込なし。
+- 原因: 第1段階安全再構成と端末背面契約は適用済みだったが、BFL moderationで再度停止した。現行Serviceは安全再構成済みJobの次の再構成を許可せず、利用者が行き止まりになる。
+- 実装: 背景・場所・構図・演出・動作・表情を穏やかな日常場面へ置換する第2段階を1回だけ許可する。第2段階済みJobが再拒否された場合は必ず停止する。人物設定、衣装、参照Asset、端末背面契約を維持する。
+- 不変: URL、API response、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、Worker自動retry回数、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中20/20、Hub 739/739、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
+- 次: commit・push・Draft PR作成後、全CIとVercel Previewを確認して停止する。merge前にProduction再実行を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AB_CONSERVATIVE_MODERATION_RETRY.md`
+
+---
+
 ## 2026-08-16 PR-R4-2AA 端末表示面を描かせない正方向契約
 
 - 状態: `READY_FOR_OWNER_REVIEW`

@@ -11,7 +11,9 @@ test("対話型の失敗コマ再実行は失敗Jobの保存済み入力を所�
   assert.match(service, /cloudGenerationInputSchema\.safeParse/);
   assert.match(service, /parsedGeneration\.data\.targetPanelId/);
   assert.match(service, /buildGeneralAudienceGenerationRetry/);
+  assert.match(service, /buildConservativeGeneralAudienceGenerationRetry/);
   assert.match(service, /isGeneralAudienceGenerationRetry/);
+  assert.match(service, /isConservativeGeneralAudienceGenerationRetry/);
   assert.match(service, /consumeCloudGeneralMonitorAiRequest/);
   assert.match(service, /savePanelSpecification/);
   assert.doesNotMatch(service, /replace_cloud_generation_batch_job/);

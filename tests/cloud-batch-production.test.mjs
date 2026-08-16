@@ -42,7 +42,9 @@ test("batch service durably registers bounded panel work before the worker runs"
   assert.match(service, /provider_job_id/);
   assert.match(service, /provider_moderation_blocked/);
   assert.match(service, /buildGeneralAudienceGenerationRetry/);
+  assert.match(service, /buildConservativeGeneralAudienceGenerationRetry/);
   assert.match(service, /isGeneralAudienceGenerationRetry/);
+  assert.match(service, /isConservativeGeneralAudienceGenerationRetry/);
 });
 
 test("durable dispatcher keeps limits atomic and never exposes prepared prompts", () => {
