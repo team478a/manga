@@ -12,7 +12,8 @@
 - 完成した704×1024 PNGは胸ポケットと端末の寄りという元ネーム構図を復元した。一方、端末表示面に日本語・疑似文字・通話UIが生成されたため追加生成なしで不採用。失敗候補は再実行していない。Canvas revision 8、PNG、公開・販売状態は不変。
 - raw `layout`内の端末・画面指示が後段の端末背面契約と競合していた。端末語より前の位置anchorだけを保持し、端末1個の背面／側面をカメラへ、表示面を人物側／画面外へ向ける短い正方向契約へ変換した。非端末構図は維持する。
 - 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktop test／a11y／buildは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
-- Draft PRを作成後、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProduction追加生成を行わない。
+- Draft PR [#287](https://github.com/team478a/manga/pull/287)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-f5e0c4-team478as-projects.vercel.app`。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。merge前にProduction追加生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AD_DEVICE_SAFE_LAYOUT.md`
 
 ---

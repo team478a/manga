@@ -2,7 +2,9 @@
 
 ## 判定
 
-- 状態: `IMPLEMENTED_LOCAL_GATES_PASSED`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#287](https://github.com/team478a/manga/pull/287)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-f5e0c4-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2ad-device-safe-layout`
 - Base: `origin/feature/manga-canvas-mvp` @ `a3d957a`（PR #286 merge commit）
 - 対象: クローズアップ用の短縮Provider契約に含める`layout`だけを安全化する。
@@ -47,6 +49,7 @@ PR #286で追加した`layout`は、相対配置だけでなく「スマート�
 - 100ページ長編: 4/4成功
 - dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check: 成功
 - Desktop test／a11y／build: ローカル既知制約`@napi-rs/keyring`型宣言不足で停止。変更はDesktop非依存であり、GitHub ActionsのWindows buildを正式判定にする。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。
 
 ## 不変契約
 
