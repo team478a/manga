@@ -179,12 +179,21 @@ test("AI reviews and non-neutral six-digit IDs do not enter the v2.1 contract", 
   assert.equal(qualityBenchmarkAssemblyManifestSchema.safeParse({ ...input.manifest, items: [invalidItem] }).success, false);
 });
 
+test("assembly provenance contract only permits an explicitly required C2PA caBX chunk", () => {
+  const input = makeAssembly();
+  input.manifest.items[0].required_provenance_chunks = ["caBX"];
+  assert.equal(qualityBenchmarkAssemblyManifestSchema.safeParse(input.manifest).success, true);
+  input.manifest.items[0].required_provenance_chunks = ["iTXt"];
+  assert.equal(qualityBenchmarkAssemblyManifestSchema.safeParse(input.manifest).success, false);
+});
+
 test("assembly tools use a private root and do not call application providers", async () => {
   const assemblyScript = await readFile(new URL("../scripts/assemble-manga-quality-benchmark.mjs", import.meta.url), "utf8");
   const preflightScript = await readFile(new URL("../scripts/check-manga-quality-benchmark.mjs", import.meta.url), "utf8");
   assert.match(assemblyScript, /MANGAI_QUALITY_BENCHMARK_ROOT|QUALITY_BENCHMARK_ROOT_ENV/);
   assert.match(assemblyScript, /benchmark_output_exists_no_overwrite/);
   assert.match(assemblyScript, /benchmark_near_duplicate_detected/);
+  assert.match(assemblyScript, /benchmark_required_provenance_missing/);
   assert.match(assemblyScript, /productionChanged: false/);
   assert.doesNotMatch(assemblyScript, /supabase|openai|black-forest|provider.*generate/i);
   assert.match(preflightScript, /MANGAI_QUALITY_BENCHMARK_ROOT/);

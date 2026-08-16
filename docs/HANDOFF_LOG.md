@@ -4876,3 +4876,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。Turbopackは既知のWindows path長、Desktopは既存keyring型宣言不足のためCIで判定する。
 - Draft PR [#267](https://github.com/team478a/manga/pull/267)を作成。Draft／MERGEABLE。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-p3ch4z2xg-team478as-projects.vercel.app`。
 - 次: 文書同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止。merge前にProduction再実行を行わない。
+# 2026-08-17 Codex: Benchmark Content Credentials保全
+
+- Branch: `codex/fix-r4-3a4-benchmark-provenance`
+- Base: `origin/feature/manga-canvas-mvp`@`c6bce94`（PR #294 merge commit）
+- 正式候補Batch 01のProvider原PNG 28/28にC2PA `caBX`があった一方、再エンコード正規化後の候補で除去されていた。原画像がprivate rootに残っていたため、追加Provider実行・追加課金なしで復旧した。
+- Content Credentialsなしの派生画像、旧validation report、旧Reviewer A/B ZIPをprivate quarantineへ隔離した。新しいA/B ZIPは各28件でvalidator成功、`caBX` 28/28、権利確認packageも28件作成済み。
+- private source case／assembly itemへ`required_provenance_chunks`を追加し、review package generator、validator、正式assemblyで必須`caBX`欠落を拒否する。禁止PNG text metadataとの区別を文書化した。
+- 集中22/22、実A/B validator、依存境界、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure成功。Turbopackは既知Windows path length、Desktop 4ゲートは既知`@napi-rs/keyring`型宣言不足でローカル停止する。
+- 正式Benchmarkは0/140、人間の権利確認0/28、独立Human Review 0/56。Production、DB、Storage、Provider設定、credit、runtime Judge、Canvas、出力、Desktopは変更していない。
+- Draft PR [#295](https://github.com/team478a/manga/pull/295)を作成。実装HEAD `7389b67`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-3-336c71-team478as-projects.vercel.app`。
+- 次: 最終証跡同期HEADの全CI／Vercel Preview成功で停止する。責任者確認前に正式採用やR4-3Bへ進まない。

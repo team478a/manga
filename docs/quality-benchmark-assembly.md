@@ -55,7 +55,9 @@ ROOT/
 
 権利台帳は`verified`、許諾根拠、benchmark利用許諾、確認者、ローカル権利証跡を必須とする。さらに、顧客、Production、モニター、成人向け、個人情報、v1、placeholder、単純変形の各項目がすべて`false`でなければschemaが拒否する。
 
-API key、署名付きURL、内部Storage URLを台帳へ記載しない。CLIもURL、key、token、signatureに見える値を拒否する。画像PNGにPrompt、workflow、generation parameter等のtext metadataを残さない。
+API key、署名付きURL、内部Storage URLを台帳へ記載しない。CLIもURL、key、token、signatureに見える値を拒否する。画像PNGにPrompt、workflow、generation parameter等のtext metadata（`tEXt`、`zTXt`、`iTXt`）を残さない。
+
+ただし、Providerが付与したC2PA Content Credentialsは生成元証跡であり、禁止text metadataとは区別する。原画像に`caBX` chunkがあるケースはprivate manifestの`required_provenance_chunks: ["caBX"]`で明示し、正規化、レビューZIP生成、正式assemblyの全工程でbyte-for-byteの画像コピーとchunk保持を検査する。Content Credentialsを除去・改変した派生物は正式候補へ使用せず隔離する。
 
 ## 4. 人手review
 
@@ -93,7 +95,7 @@ npm run manga:quality:benchmark:leak
 
 `assembly:audit`は不足時に`BLOCKED_FIXTURE_SHORTAGE`を表示して終了コード0とする。`assembly:strict`と`assembly:write`は不足・契約違反時に非0で停止する。`assembly:write`は既存の`dev`または`holdout-private`を上書きしない。
 
-出力後はv2.1 strict preflightでSHA、PNG metadata、寸法、Panel Specification、件数、重複を検査し、Python checkerでbalanced accuracy、univariate AUC、dev／holdout shortcutを検査する。
+出力後はv2.1 strict preflightでSHA、禁止PNG text metadata、必須Content Credentials、寸法、Panel Specification、件数、重複を検査し、Python checkerでbalanced accuracy、univariate AUC、dev／holdout shortcutを検査する。
 
 ## 7. rollback
 

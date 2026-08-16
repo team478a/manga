@@ -69,7 +69,9 @@ npm run manga:benchmark:review-package:validate -- `
   --package "$env:MANGAI_QUALITY_BENCHMARK_ROOT\human-review-packages\reviewer-b-r4-3a4.zip"
 ```
 
-generatorとvalidatorは既存出力を上書きしない。validatorはzip traversal、symlink、expected file、case/order/template集合、checksum、PNG/JPEG/WebP decode、EXIF／PNG text、exact duplicate、mode/category、intended、reference binding、private label、Reviewer A／AI結果、URL／credential、source sidecar、source family splitを検査する。
+generatorとvalidatorは既存出力を上書きしない。validatorはzip traversal、symlink、expected file、case/order/template集合、checksum、PNG/JPEG/WebP decode、EXIF／禁止PNG text、必須Content Credentials、exact duplicate、mode/category、intended、reference binding、private label、Reviewer A／AI結果、URL／credential、source sidecar、source family splitを検査する。
+
+Provider原画像にC2PA `caBX` chunkがある場合、private sourceの各caseへ`required_provenance_chunks: ["caBX"]`を設定する。generatorはchunkがない入力を拒否し、画像を再エンコードせずZIPへ格納する。validatorはprivate sidecarの要求とZIP内candidateを照合し、欠落時に失敗する。`caBX`は生成元証跡であり、Prompt等を含む禁止PNG text metadataとは扱わない。
 
 ## 5. Reviewer Response
 

@@ -41,7 +41,7 @@ HOLDOUT_ROOT/                # threshold調整担当から隔離
 
 `manifest.json`はversion、dataset、split、Production-native image profile、画像ID、label-neutral path、SHA-256だけを持つ。`cases.json`はcandidate画像、`intrinsic / referential`、profile、reference、intendedへの参照だけを持つ。verdict、defect、severity、review情報は置かない。
 
-画像は`images/img_0001.png`形式のPNGとし、Prompt、workflow、comment、generation parametersをPNG text metadataへ残さない。manifestのSHA-256と実ファイル、profileの幅・高さは完全一致させる。dev/holdout間のexact duplicateは禁止する。
+画像は`images/img_0001.png`形式のPNGとし、Prompt、workflow、comment、generation parametersをPNG text metadata（`tEXt`、`zTXt`、`iTXt`）へ残さない。一方、Providerが付与したC2PA Content Credentials（PNG `caBX` chunk）は生成元証跡として保持する。private assembly manifestで保持を要求したケースは、review packageと正式assemblyの両方で欠落を拒否する。manifestのSHA-256と実ファイル、profileの幅・高さは完全一致させる。dev/holdout間のexact duplicateは禁止する。
 
 ### 3.2 intended
 
@@ -85,7 +85,7 @@ DB enum、UI、runtime保存値は変更せず、対応のない項目は`null`�
 構造preflightは次を検査する。
 
 - public/privateの物理分離、strict schema、ID集合一致
-- label-neutral path、path traversal、PNG metadata
+- label-neutral path、path traversal、禁止PNG text metadata、必須Content Credentials
 - SHA-256、実寸、Production profile
 - intendedのPanel Specification、refsの存在
 - splitの厳密件数、profile別class balance、6分類coverage

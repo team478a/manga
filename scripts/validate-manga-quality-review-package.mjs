@@ -60,17 +60,20 @@ function inspectJsonKeys(value, location) {
 }
 
 function inspectPngChunks(bytes, label) {
-  if (bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a") return;
+  if (bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a") return new Set();
+  const chunkTypes = new Set();
   let offset = 8;
   while (offset + 12 <= bytes.length) {
     const length = bytes.readUInt32BE(offset);
     const type = bytes.subarray(offset + 4, offset + 8).toString("ascii");
+    chunkTypes.add(type);
     const end = offset + 12 + length;
     if (end > bytes.length) throw new Error(`review_package_png_chunk_invalid:${label}`);
     if (["tEXt", "zTXt", "iTXt", "eXIf"].includes(type)) throw new Error(`review_package_image_metadata_forbidden:${label}`);
     offset = end;
     if (type === "IEND") break;
   }
+  return chunkTypes;
 }
 
 async function inspectImage(bytes, label) {
@@ -163,6 +166,18 @@ async function main() {
   const sidecarIds = new Set(sidecar.cases.map((item) => item.case_id));
   if (sidecarIds.size !== expectedIds.size || [...expectedIds].some((id) => !sidecarIds.has(id)))
     throw new Error("review_package_source_metadata_case_set_mismatch");
+  const manifestCases = new Map(manifest.cases.map((item) => [item.case_id, item]));
+  for (const item of sidecar.cases) {
+    const packageCase = manifestCases.get(item.case_id);
+    if (!packageCase) throw new Error("review_package_source_metadata_case_missing");
+    const candidateEntry = zip.file(packageCase.candidate_file);
+    if (!candidateEntry) throw new Error(`review_package_candidate_missing:${packageCase.candidate_file}`);
+    const candidateBytes = await candidateEntry.async("nodebuffer");
+    const chunkTypes = inspectPngChunks(candidateBytes, packageCase.candidate_file);
+    for (const required of item.required_provenance_chunks)
+      if (!chunkTypes.has(required))
+        throw new Error(`review_package_required_provenance_missing:${item.case_id}:${required}`);
+  }
   const splitsByFamily = new Map();
   for (const item of sidecar.cases) {
     const splits = splitsByFamily.get(item.source_family) ?? new Set();

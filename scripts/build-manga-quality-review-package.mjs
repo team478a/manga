@@ -51,12 +51,14 @@ function sha256(bytes) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 
-function inspectPngTextChunks(bytes) {
-  if (bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a") return;
+function inspectPngChunks(bytes) {
+  if (bytes.subarray(0, 8).toString("hex") !== "89504e470d0a1a0a") return new Set();
+  const chunkTypes = new Set();
   let offset = 8;
   while (offset + 12 <= bytes.length) {
     const length = bytes.readUInt32BE(offset);
     const type = bytes.subarray(offset + 4, offset + 8).toString("ascii");
+    chunkTypes.add(type);
     const end = offset + 12 + length;
     if (end > bytes.length) throw new Error("review_package_png_chunk_invalid");
     if (["tEXt", "zTXt", "iTXt", "eXIf"].includes(type))
@@ -64,10 +66,14 @@ function inspectPngTextChunks(bytes) {
     offset = end;
     if (type === "IEND") break;
   }
+  return chunkTypes;
 }
 
-async function inspectImage(bytes, label) {
-  inspectPngTextChunks(bytes);
+async function inspectImage(bytes, label, requiredProvenanceChunks = []) {
+  const chunkTypes = inspectPngChunks(bytes);
+  for (const required of requiredProvenanceChunks)
+    if (!chunkTypes.has(required))
+      throw new Error(`review_package_required_provenance_missing:${label}:${required}`);
   const image = sharp(bytes, { failOn: "error" });
   const metadata = await image.metadata();
   if (!["png", "jpeg", "webp"].includes(metadata.format ?? "")) throw new Error(`review_package_image_format_forbidden:${label}`);
@@ -146,7 +152,7 @@ async function main() {
   const cases = [];
   for (const item of source.cases) {
     const candidateBytes = await readFile(resolveInside(fixtureRoot, item.candidate_file));
-    const candidateExtension = await inspectImage(candidateBytes, item.review_case_id);
+    const candidateExtension = await inspectImage(candidateBytes, item.review_case_id, item.required_provenance_chunks);
     const candidateFile = `cases/${item.review_case_id}/candidate.${candidateExtension}`;
     zip.file(candidateFile, candidateBytes);
     let intendedFile = null;
@@ -227,6 +233,7 @@ async function main() {
     cases: source.cases.map((item) => ({
       case_id: item.review_case_id,
       source_case_id: item.source_case_id,
+      required_provenance_chunks: item.required_provenance_chunks,
       source_group_id: item.source_group_id,
       source_family: item.source_family,
       character_group_id: item.character_group_id,

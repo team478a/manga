@@ -29,6 +29,7 @@ const sourceReferencePathSchema = z
   .string()
   .regex(/^assembly\/refs\/ref_[0-9]{4}(?:_[0-9]{2})?\.png$/);
 const rightsEvidencePathSchema = z.string().regex(/^assembly\/rights\/rights_[0-9]{4}\.json$/);
+const requiredProvenanceChunksSchema = z.array(z.literal("caBX")).max(1).default([]);
 
 const reviewedVerdictSchema = z
   .object({
@@ -60,6 +61,7 @@ export const qualityBenchmarkAssemblyManifestSchema = z
       reference_group_id: referenceGroupIdSchema,
       split: z.enum(["dev", "holdout_private"]),
       source_file: sourceImagePathSchema,
+      required_provenance_chunks: requiredProvenanceChunksSchema,
       sha256: qualityBenchmarkSha256Schema,
       image_profile_id: z.string().min(1).max(80),
       judge_mode: z.enum(["intrinsic", "referential"]),

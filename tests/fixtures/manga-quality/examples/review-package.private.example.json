@@ -9,6 +9,7 @@
       "source_case_id": "img_0001",
       "review_case_id": "case_000001",
       "candidate_file": "assembly/images/img_0001.png",
+      "required_provenance_chunks": [],
       "review_mode": "intrinsic_only",
       "intended_file": null,
       "references": [],
