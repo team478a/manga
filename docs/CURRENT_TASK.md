@@ -2,8 +2,9 @@
 
 ## 2026-08-17 PR-R4-3A-4 follow-up: Benchmark Content Credentials保全
 
-- 状態: `IMPLEMENTED_LOCAL / PRIVATE_FIXTURE_REPAIRED / HUMAN_RIGHTS_AND_DUAL_REVIEW_REQUIRED / FORMAL_COUNT_0`
-- Draft PR: 作成・CI確認前
+- 状態: `READY_FOR_OWNER_REVIEW / PRIVATE_FIXTURE_REPAIRED / HUMAN_RIGHTS_AND_DUAL_REVIEW_REQUIRED / FORMAL_COUNT_0`
+- Draft PR: [#295](https://github.com/team478a/manga/pull/295)（Draft／MERGEABLE）
+- Vercel Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-336c71-team478as-projects.vercel.app)
 - Branch: `codex/fix-r4-3a4-benchmark-provenance`
 - Base: `origin/feature/manga-canvas-mvp`@`c6bce94`（PR #294 merge commit）。
 - 発見: 正式候補Batch 01のProvider原PNG 28/28にC2PA `caBX`があったが、最初の再エンコード正規化で除去されていた。原画像を保持していたため追加Provider実行・追加課金なしで復旧した。
@@ -11,9 +12,10 @@
 - 実装: private source case／assembly itemへ`required_provenance_chunks`を追加し、現版では`caBX`だけを許可する。review package生成、package検証、正式assemblyの全入口で必須chunk欠落を拒否する。未指定fixtureは`[]`で後方互換を維持する。
 - 費用: Batch 01は承認済み28枚、840,000 micros（0.84米ドル）のまま。今回の復旧ではProviderを呼び出していない。
 - 検証: 集中22/22、実A/B package validator、`caBX` 28/28、dependency／module boundary、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
+- CI: 実装HEAD `7389b67`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Windows CIではDesktop TypeScript、tests、Accessibility、unpacked application buildも成功。最終証跡同期HEADでも同じ5チェックを再確認する。
 - 正式件数: 0/140。人間の権利確認0/28、独立Human Review 0/56、不一致裁定未実施。機械検査だけで正式採用しない。
 - 不変: Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、Feature Flag、Provider設定、model、pricing、credit、retry、timeout、Scheduler、runtime Judge、自動修復、Canvas、checkpoint、PNG／PDF出力、成人向け境界、Desktop。
-- 次: 全品質ゲート、Draft PR、全CI／Vercel Preview成功を確認して停止する。責任者確認、人間の権利確認、Human A/B完了前に正式140件へ加算せず、R4-3Bへ進まない。
+- 次: 最終証跡同期HEADの全CI／Vercel Preview成功を確認して停止する。責任者確認、人間の権利確認、Human A/B完了前に正式140件へ加算せず、R4-3Bへ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_3A4_CONTENT_CREDENTIALS.md`
 
 ---
