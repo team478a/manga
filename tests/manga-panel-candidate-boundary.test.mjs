@@ -6,6 +6,7 @@ import {
   candidateBelongsToPage,
   classifyCandidateLayer,
   filterGenerationJobsForPage,
+  hasActivePanelGeneration,
   hasUnresolvedPanelGeneration,
   resolveCandidateTargetPanelId,
 } from "../src/modules/manga/domain/panel-candidate.ts";
@@ -59,6 +60,29 @@ test("同じコマの生成中または候補確認待ちは古い失敗Jobか�
       "failed",
     ),
     false,
+  );
+});
+
+test("失敗候補の再実行は進行中Jobだけを排他して確認待ち候補とは比較を継続できる", () => {
+  const jobs = [
+    job({ id: "failed-1", status: "failed", target_panel_id: "panel-1" }),
+    job({ id: "failed-2", status: "failed", target_panel_id: "panel-1" }),
+    job({
+      id: "pending-review",
+      status: "completed",
+      target_panel_id: "panel-1",
+      panel_adoption_status: "review_required",
+    }),
+  ];
+
+  assert.equal(hasActivePanelGeneration(jobs, "panel-1", "failed-1"), false);
+  assert.equal(
+    hasActivePanelGeneration(
+      [...jobs, job({ id: "queued", status: "queued", target_panel_id: "panel-1" })],
+      "panel-1",
+      "failed-1",
+    ),
+    true,
   );
 });
 

@@ -59,6 +59,19 @@ export function hasUnresolvedPanelGeneration(
   );
 }
 
+export function hasActivePanelGeneration(
+  jobs: readonly CandidateJobStatus[],
+  panelId: string,
+  excludedJobId?: string,
+) {
+  return jobs.some(
+    (job) =>
+      job.id !== excludedJobId &&
+      job.target_panel_id === panelId &&
+      (job.status === "queued" || job.status === "running"),
+  );
+}
+
 const percent = (value: number) =>
   Math.max(0, Math.min(100, Number.isFinite(value) ? value : 100));
 
