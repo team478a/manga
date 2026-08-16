@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2AG 正方向だけのProvider安全再構成
+
+- 状態: `LOCAL_GATES_COMPLETE`
+- Draft PR／Vercel Preview: 作成・確認前
+- Branch: `codex/fix-r4-2ag-positive-only-safe-retry`
+- Base: `origin/feature/manga-canvas-mvp`@`7cb9f02`（PR #289 merge commit）。
+- Production受入れ: ページ22・コマ1の最新失敗Jobを1件だけ再実行した。Worker [31932216482](https://github.com/team478a/manga/actions/runs/31932216482)は`requests=2 processed=1`で成功。Creditは使用76／予約0／残24 → 予約2／残22 → 使用76／予約0／残24へ全額復元。
+- 結果: 再実行Jobも`provider_moderation_blocked`、Assetなし、Provider課金0。追加再実行、追加生成、候補採用、Canvas配置なし。Canvas revision 8、PNG、公開・販売状態は不変。
+- 原因: 第1段階安全再構成の正方向Promptに、禁止対象を「避ける」という説明と携帯品・ポケット表現が残り、positive promptだけを送るBFLへ直接渡っていた。
+- 実装: 通常生成から端末位置anchorも除外し、人物・背景の相対配置、自然な衣服、手、画面外への視線だけへ変換する。第1・第2段階安全再構成も穏やかな描写だけで構成し、旧版第1段階Jobを後方互換で第2段階へ変換する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中54/54、Hub 742/742、Canvas 26/26、AI 48/48、依存境界、lint、Hub型検査、59 migration／rollback、research eval、100ページfixture、Cloud漫画repository acceptance、owner isolation、package／Next.js build、diff check成功。RC preflightはstructure ready。Desktop 3ゲートは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで正式判定する。
+- 次: Draft PRを作成し、全CIとVercel Preview成功を確認して停止する。merge前にProduction追加生成・再実行を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AG_POSITIVE_ONLY_SAFE_RETRY.md`
+
+---
+
 ## 2026-08-16 PR-R4-2AF moderation安全な衣服表現
 
 - 状態: `READY_FOR_OWNER_REVIEW`

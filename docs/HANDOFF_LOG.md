@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-16 Codex: 正方向だけのProvider安全再構成
+
+- PR #289 merge commit `7cb9f02653a08245ed403576283baf0f490adc6c`を含む最新基準から`codex/fix-r4-2ag-positive-only-safe-retry`を開始した。
+- Productionの`test`モニターでページ22・コマ1の最新失敗Jobを1件だけ再実行し、公式Worker [31932216482](https://github.com/team478a/manga/actions/runs/31932216482)を`run` modeで1回だけ実行した。Workerは`status=idle requests=2 processed=1`で成功。Creditは使用76／予約0／残24 → 使用76／予約2／残22 → 使用76／予約0／残24へ全額復元。
+- 再実行Jobも`provider_moderation_blocked`、Assetなし、Provider課金0。追加再実行、追加生成、候補採用、Canvas配置なし。Canvas revision 8、PNG、公開・販売・設定は不変。
+- 第1段階安全再構成の正方向Promptに、禁止対象を「避ける」という説明と携帯品・ポケット表現が残り、positive promptだけを送るBFLへ直接渡っていた。
+- 通常生成の端末位置anchorを除外し、第1・第2段階安全再構成を穏やかな人物・背景・衣服・手・自然光だけの正方向Promptへ統一した。旧版第1段階Jobも後方互換で認識し、禁止説明を除去して第2段階へ進める。
+- 集中54/54、Hub 742/742、Canvas 26/26、AI 48/48、依存境界、lint、Hub型検査、59 migration／rollback、research eval、100ページfixture、Cloud漫画repository acceptance、owner isolation、package／Next.js build、diff check成功。RC preflightはstructure ready。Desktop test／a11y／buildは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで正式判定する。
+- Draft PR、全CI、Vercel Previewを確認して停止する。merge前にProduction追加生成・再実行を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AG_POSITIVE_ONLY_SAFE_RETRY.md`
+
+---
+
 ## 2026-08-16 Codex: moderation安全な衣服表現
 
 - PR #288 merge commit `713bb4767eeaef22449e760274b3a6449a081994`を含む最新基準から`codex/fix-r4-2af-moderation-safe-garment-cue`を開始した。
