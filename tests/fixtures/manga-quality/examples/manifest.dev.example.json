@@ -1,0 +1,13 @@
+{
+  "benchmark_version": "2.1",
+  "dataset_id": "r4-3a-candidate-dev",
+  "suite": "candidate",
+  "split": "dev",
+  "review_version": "human-v2.1",
+  "image_profiles": [
+    { "id": "portrait_704x1024", "width": 704, "height": 1024, "source": "production_pipeline" }
+  ],
+  "images": [
+    { "id": "img_0001", "file": "images/img_0001.png", "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "image_profile_id": "portrait_704x1024" }
+  ]
+}

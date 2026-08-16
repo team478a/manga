@@ -1,0 +1,3 @@
+[
+  { "id": "img_0001", "file": "images/img_0001.png", "suite": "candidate", "judge_mode": "intrinsic", "image_profile_id": "portrait_704x1024", "refs": [], "intended": "intended/img_0001.json" }
+]

@@ -5,8 +5,12 @@ node_modules
 .vercel
 work/npm-cache
 npm-debug.log*
+__pycache__/
+*.pyc
 dist-main
 dist-renderer
 apps/desktop/release
 packages/*/dist
 /tests/fixtures/manga-quality/assets/
+/tests/fixtures/manga-quality/v2.1/dev/
+/tests/fixtures/manga-quality/v2.1/holdout-private/

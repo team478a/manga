@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "panelSpecification": {
+    "version": 1,
+    "panelId": "00000000-0000-4000-8000-000000000043",
+    "characterNames": ["主人公"],
+    "characterIdentities": [],
+    "expectedCharacterCount": 1,
+    "expression": "驚き",
+    "composition": "人物を中景で捉える",
+    "background": "駅のホーム",
+    "props": [],
+    "action": "振り返る",
+    "shot": "medium",
+    "cameraAngle": "eye_level",
+    "generationTarget": "composite"
+  },
+  "referenceBindings": []
+}

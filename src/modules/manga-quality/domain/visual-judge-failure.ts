@@ -26,30 +26,29 @@ export type VisualJudgeFailureCategory =
   (typeof VISUAL_JUDGE_FAILURE_CATEGORIES)[number];
 
 /**
- * R4-3A compatibility only. Runtime failure classification remains unchanged
- * until R4-3C replaces the rule-based ranking contract.
+ * R4-3A benchmark vocabulary is additive. Only semantically identical runtime
+ * categories are exposed here; callers must preserve `null` when no equivalent
+ * exists instead of coercing a benchmark finding into another meaning.
  */
-export const visualJudgeFailureCompatibilityMap: Record<
-  VisualJudgeFailureCategory,
-  MangaQualityFailureCategory
+const exactRuntimeEquivalents: Partial<
+  Record<VisualJudgeFailureCategory, MangaQualityFailureCategory>
 > = {
   character_mismatch: "face_mismatch",
   face_mismatch: "face_mismatch",
   body_distortion: "body_distortion",
   hand_error: "hand_error",
-  body_prop_fusion: "body_distortion",
   wrong_character_count: "wrong_character_count",
   wrong_expression: "wrong_expression",
   wrong_camera: "wrong_camera",
-  crop_mismatch: "wrong_camera",
   wrong_background: "wrong_background",
   missing_prop: "missing_prop",
-  prop_fusion: "missing_prop",
   continuity_break: "continuity_break",
-  text_artifact: "text_area_collision",
-  ui_artifact: "text_area_collision",
-  orientation_error: "other",
-  gravity_error: "other",
   low_readability: "low_readability",
   other: "other",
 };
+
+export function toExactRuntimeFailureCategory(
+  category: VisualJudgeFailureCategory,
+): MangaQualityFailureCategory | null {
+  return exactRuntimeEquivalents[category] ?? null;
+}
