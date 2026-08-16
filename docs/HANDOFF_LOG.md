@@ -12,7 +12,8 @@
 - 新候補は正立、人体、小物1個を満たした。一方、端末に時刻、UI風文字・アイコンが明確に描かれ、顔の上端も大きく切れていたため、追加生成なしで不採用にした。
 - BFLへnegative promptを送れない既存契約上、空の表示面を描かせる指示ではUI補完を止められない。手持ち端末は無地の背面または側面だけをカメラへ向け、表示面を人物側または画面外へ向ける正方向契約へ変更した。
 - 通常生成、短縮Provider JSON、安全再実行へ同じ契約を適用する。Provider、model、pricing、retry、timeout、Scheduler、DB、Canvas、PNG／PDFは変更しない。
-- 集中47/47、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Draft PRの全CIとVercel Preview確認後に停止し、merge前にProduction再生成を行わない。
+- 集中47/47、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
+- Draft PR [#284](https://github.com/team478a/manga/pull/284)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-1bdb66-team478as-projects.vercel.app`。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADを再確認して停止し、merge前にProduction再生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AA_CONCEALED_DEVICE_SURFACE.md`
 
 ---

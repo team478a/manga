@@ -3,8 +3,8 @@
 作成日: 2026-08-16
 Branch: `codex/fix-r4-2aa-concealed-device-surface`
 Base: `origin/feature/manga-canvas-mvp` @ `59b8377`（PR #283 merge commit）
-Draft PR: 作成前
-Vercel Preview: 確認前
+Draft PR: [#284](https://github.com/team478a/manga/pull/284)（Draft／MERGEABLE）
+Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-1bdb66-team478as-projects.vercel.app
 
 ## 目的
 
@@ -48,10 +48,10 @@ PR #283反映後のProduction限定受入れで、安全再実行、Credit確定
 - 通常生成と安全再実行の両方へ、端末背面・側面契約が含まれることを確認した。
 - Hub 737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、migration 59/59成功。
 - dependency／module boundary、lint、Hub typecheck、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。
-- Draft PR、CI、Vercel Previewは作成後に追記する。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
 
 ## 停止条件
 
-- Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を確認する。
+- Draft PR #284の最終文書同期HEADでも、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を確認する。
 - Production未変更、予約Credit 0、Canvas revision 8、公開・販売未変更を維持する。
 - 責任者のmerge前にProduction再生成と次工程へ進まない。
