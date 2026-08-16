@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-16 Codex: 安全再構成でネーム構図を維持
+
+- PR #285 merge commit `035c2a6d70dfad740b8fe8f4aebaa3aab36497f7`を含む最新基準から`codex/accept-r4-2ac-conservative-retry`を開始した。
+- Productionの`test`モニターでページ22・コマ1を1件だけ再実行した。`check` modeのWorkflow [31923450510](https://github.com/team478a/manga/actions/runs/31923450510)は設定確認のみで、Provider処理なし。公式Worker [31923479315](https://github.com/team478a/manga/actions/runs/31923479315)を`run` modeで1回だけ実行し、`status=idle requests=2 processed=1`で成功した。
+- Creditは使用68／予約0／残32 → 使用68／予約2／残30 → 使用70／予約0／残30。画像4/4、セリフ1/1、生成中0、失敗0、Canvas revision 8、PNG成功。公開・販売状態は不変。
+- 新候補は704×1024 PNGとして完成し、正立、顔、手、人体、描画面を満たしたが、汎用的な室内人物画となり元ネームの場面と構図を失ったため不採用。品質承認、採用、Canvas配置、追加生成は行っていない。
+- 短縮Provider契約へ安全な`layout`を追加し、第2段階再構成では危険描写だけを除きながら画角、人数、人物・背景の相対配置を維持する。危険な`layout`はローカル検査によりfallbackへ置換する。
+- 集中52/52、Hub 740/740、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- Draft PR [#286](https://github.com/team478a/manga/pull/286)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-accept-r-b227a0-team478as-projects.vercel.app`。
+- 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。merge前にProduction追加生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AC_STORYBOARD_LAYOUT_SAFE_RETRY.md`
+
+---
+
 ## 2026-08-16 Codex: Provider moderation後の第2段階安全再構成
 
 - PR #284 merge commit `d44fc8d5cedb16896734c444629870d3546f8462`を含む最新基準から`codex/fix-r4-2ab-conservative-moderation-retry`を開始した。

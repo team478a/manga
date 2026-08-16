@@ -608,6 +608,7 @@ export function buildStoryboardPanelGeneration(input: {
     composition: providerCloseUpComposition,
     framing: providerCloseUpFraming,
     scene: providerCloseUpScene,
+    layout: providerSceneFields.composition,
     output_type: providerCloseUpOutput,
     subjects: [
       {

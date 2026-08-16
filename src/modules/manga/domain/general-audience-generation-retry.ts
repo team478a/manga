@@ -1,4 +1,7 @@
-import type { CloudGenerationInput } from "@mangai/ai-core";
+import {
+  moderateGeneralCloudPrompt,
+  type CloudGenerationInput,
+} from "@mangai/ai-core";
 
 const GENERAL_AUDIENCE_RETRY_GUIDANCE =
   "一般向け作品として刺激の強い直接描写を避け、緊迫感は人物の表情、距離、構図、照明で間接的に伝える。";
@@ -18,7 +21,9 @@ const SAFE_DIRECTION =
 const CONSERVATIVE_SAFE_LOCATION =
   "明るく整った一般向けの日常環境を、簡潔な建物と自然な光で描く。";
 const CONSERVATIVE_SAFE_COMPOSITION =
-  "人物の自然な立ち姿と周囲の環境が読み取れる、余白のある安定した構図にする。";
+  "元のネームの画角、人数、人物と背景の相対配置を維持し、刺激の強い出来事そのものは描かず、直前または直後の安全な瞬間として構成する。";
+const SAFE_STORYBOARD_COMPOSITION_FALLBACK =
+  "人物と背景の相対配置、視線方向、前後関係を元のネームどおりに維持する";
 const SAFE_PROVIDER_CLOSE_UP_SCENE =
   "one general-audience manga character in a roomy environmental portrait from one upright camera view, with the complete silhouette comfortably inside the canvas";
 const SAFE_PROVIDER_CLOSE_UP_COMPOSITION =
@@ -109,11 +114,29 @@ function sanitizeProviderControlContract(line: string) {
   return line;
 }
 
+function safeStoryboardComposition(value: unknown) {
+  if (typeof value !== "string") return SAFE_STORYBOARD_COMPOSITION_FALLBACK;
+  const normalized = value.trim().slice(0, 500);
+  if (!normalized) return SAFE_STORYBOARD_COMPOSITION_FALLBACK;
+  if (
+    /(?:刺激の強い|直接描|燃え|炎|爆発|流血|遺体|殺|暴力|事件|事故|disturbing|incident|violence|blood|gore|weapon|fire|burn|explosion|assault|kill|dead)/i.test(
+      normalized,
+    )
+  )
+    return SAFE_STORYBOARD_COMPOSITION_FALLBACK;
+  return moderateGeneralCloudPrompt(normalized).decision === "allow"
+    ? normalized
+    : SAFE_STORYBOARD_COMPOSITION_FALLBACK;
+}
+
 function conservativelySanitizeProviderControlContract(line: string) {
   try {
     const contract = JSON.parse(line) as Record<string, unknown>;
     const camera = isRecord(contract.camera) ? contract.camera : {};
     const { lens: _legacyLens, ...cameraWithoutLegacyLens } = camera;
+    const storyboardComposition = safeStoryboardComposition(
+      contract.layout,
+    );
     const subjects = Array.isArray(contract.subjects)
       ? contract.subjects.map((subject) =>
           isRecord(subject)
@@ -128,10 +151,11 @@ function conservativelySanitizeProviderControlContract(line: string) {
       : contract.subjects;
     return JSON.stringify({
       ...contract,
-      composition: SAFE_PROVIDER_CLOSE_UP_COMPOSITION,
+      composition: `${storyboardComposition}; keep all relevant subjects comfortably inside the canvas with clear headroom and story-appropriate environmental space`,
       ...(Array.isArray(contract.subjects)
         ? { framing: SAFE_PROVIDER_CLOSE_UP_FRAMING }
         : {}),
+      layout: storyboardComposition,
       scene:
         "one calm general-audience manga moment in a tidy everyday environment from one upright camera view",
       output_type: SAFE_PROVIDER_CLOSE_UP_OUTPUT,
@@ -139,7 +163,7 @@ function conservativelySanitizeProviderControlContract(line: string) {
       background:
         "a tidy well-lit everyday environment with simple architecture and no depicted incident",
       variation:
-        "preserve character identity and clothing; use a calm natural pose, stable framing, soft light, and clear environmental space",
+        "preserve character identity, clothing, storyboard shot, subject count, and safe relative placement; communicate the original narrative beat through pose, gaze, spacing, light, and shadow",
       canvas:
         "one uninterrupted pictorial scene fills every edge of the portrait canvas",
       surface_content:

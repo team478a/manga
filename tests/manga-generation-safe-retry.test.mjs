@@ -61,6 +61,8 @@ const compactProviderContractGeneration = {
       background: "the disturbing incident is shown directly in the background",
       composition:
         "uncropped medium portrait; subject centered and fully contained; complete silhouette surrounded by clear background; subject height about 65% of image height",
+      layout:
+        "protagonist at the left edge looking toward an off-frame clue",
       camera: {
         angle: "eye level",
         distance: "stable medium portrait distance",
@@ -187,7 +189,9 @@ test("安全再構成もProviderに拒否された場合は穏やかな日常場
   assert.match(conservativeRetry.prompt, /一般向けの穏やかな日常場面/);
   assert.match(contract.scene, /calm general-audience manga moment/);
   assert.match(contract.background, /tidy well-lit everyday environment/);
-  assert.match(contract.variation, /calm natural pose/);
+  assert.match(contract.composition, /protagonist at the left edge/);
+  assert.match(contract.layout, /protagonist at the left edge/);
+  assert.match(contract.variation, /storyboard shot/);
   assert.match(contract.quality_gate, /plain back or side edge/);
   assert.match(contract.subjects[0].description, /same black-haired protagonist/);
   assert.deepEqual(
@@ -206,7 +210,7 @@ test("安全再構成もProviderに拒否された場合は穏やかな日常場
   );
 });
 
-test("詳細Promptの第2段階再構成は背景・構図・動作を穏やかな内容へ置換する", () => {
+test("詳細Promptの第2段階再構成は危険表現を除きネームの相対配置を維持する", () => {
   const firstRetry = buildGeneralAudienceGenerationRetry({
     ...imageGeneration,
     prompt: [
@@ -222,6 +226,29 @@ test("詳細Promptの第2段階再構成は背景・構図・動作を穏やか�
   );
 
   assert.match(conservativeRetry.prompt, /明るく整った一般向けの日常環境/);
-  assert.match(conservativeRetry.prompt, /余白のある安定した構図/);
+  assert.match(conservativeRetry.prompt, /相対配置を維持/);
   assert.doesNotMatch(conservativeRetry.prompt, /出来事を直接描く/);
+});
+
+test("第2段階再構成は危険な構図anchorをProviderへ戻さない", () => {
+  const firstRetry = buildGeneralAudienceGenerationRetry({
+    ...compactProviderContractGeneration,
+    prompt: compactProviderContractGeneration.prompt.replace(
+      "protagonist at the left edge looking toward an off-frame clue",
+      "刺激の強い出来事を直接描く",
+    ),
+  });
+  const conservativeRetry = buildConservativeGeneralAudienceGenerationRetry(
+    firstRetry,
+  );
+  const contract = JSON.parse(conservativeRetry.prompt.split("\n")[4]);
+
+  assert.match(contract.composition, /相対配置/);
+  assert.doesNotMatch(contract.composition, /刺激の強い出来事/);
+  assert.equal(
+    moderateGeneralCloudPrompt(
+      `${conservativeRetry.prompt}\n${conservativeRetry.negativePrompt}`,
+    ).decision,
+    "allow",
+  );
 });
