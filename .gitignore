@@ -9,3 +9,4 @@ dist-main
 dist-renderer
 apps/desktop/release
 packages/*/dist
+/tests/fixtures/manga-quality/assets/
