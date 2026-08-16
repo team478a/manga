@@ -41,3 +41,14 @@ test("Canvasの再実行ボタンは同じPromptを再構築せず失敗Job ID�
   assert.match(client, /generation-jobs\/\$\{encodeURIComponent\(jobId\)\}\/retry/);
   assert.match(client, /method: "POST"/);
 });
+
+test("失敗Jobの再実行は同じコマの進行中Jobだけを待ち確認済み・確認待ち候補で停止しない", () => {
+  const editor = read("src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx");
+  const failedStart = editor.indexOf('{job.status === "failed"');
+  const completedStart = editor.indexOf('{job.status === "completed"', failedStart);
+  const failedCard = editor.slice(failedStart, completedStart);
+
+  assert.ok(failedStart >= 0 && completedStart > failedStart);
+  assert.match(failedCard, /hasActivePanelGeneration/);
+  assert.doesNotMatch(failedCard, /hasUnresolvedPanelGeneration/);
+});

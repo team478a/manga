@@ -45,6 +45,7 @@ import {
   candidateBelongsToPage,
   classifyCandidateLayer,
   filterGenerationJobsForPage,
+  hasActivePanelGeneration,
   hasUnresolvedPanelGeneration,
   resolveCandidateTargetPanelId,
   type PanelGenerationTarget,
@@ -1868,7 +1869,7 @@ export function CloudCanvasEditor({
                     <div className="mt-2 rounded bg-red-50 p-2 text-red-800">
                       <p>
                         {job.target_panel_id &&
-                        hasUnresolvedPanelGeneration(
+                        hasActivePanelGeneration(
                           generationJobs,
                           job.target_panel_id,
                           job.id,
@@ -1881,7 +1882,7 @@ export function CloudCanvasEditor({
                           className="mt-1 font-bold underline"
                           disabled={
                             requestingPanelGeneration ||
-                            hasUnresolvedPanelGeneration(
+                            hasActivePanelGeneration(
                               generationJobs,
                               job.target_panel_id,
                               job.id,

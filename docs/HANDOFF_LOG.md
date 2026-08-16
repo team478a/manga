@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-16 Codex: 失敗候補の再実行デッドロック解消
+
+- PR #281 merge commit `be7ae34d118c2dd2c0bbdbdfbd419d635045df85`を含む最新基準から`codex/accept-r4-2y-page22-device-quality`を開始した。
+- Productionの`test`モニターでページ22・コマ1を候補2案だけ登録し、Worker `31916441291`を1回実行した。`status=idle requests=3 processed=2`で成功したが、2 JobともAssetなしで失敗した。
+- Creditは使用64／予約0／残36 → 予約4／残32 → 使用64／予約0／残36。Provider課金、新規Asset、Canvas revision 8、PNG、公開・販売状態に変更なし。
+- queued／running Jobが0でも、completed確認候補を含む`hasUnresolvedPanelGeneration`により失敗Jobの再実行ボタンがすべて無効になる画面デッドロックを確認した。
+- 失敗Jobの案内と再実行ボタンだけを、新しいqueued／running専用判定へ切り替えた。他の候補作り直し操作では従来の未採用候補排他を維持する。
+- 集中12/12、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- Draft PR [#282](https://github.com/team478a/manga/pull/282)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-accept-r-5e2140-team478as-projects.vercel.app`。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。merge前にProductionで失敗Jobを再実行しない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2Y_FAILED_CANDIDATE_RETRY.md`
+
+---
+
 ## 2026-08-16 Codex: 端末無記名・小物単一化契約
 
 - PR #280 merge commit `e844143b5a0f8cacd7ecf389d75289647c499c52`を含む最新基準から`codex/accept-r4-2x-page22-quality-gate`を開始した。

@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2Y 失敗候補の再実行デッドロック解消
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#282](https://github.com/team478a/manga/pull/282)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-accept-r-5e2140-team478as-projects.vercel.app
+- Branch: `codex/accept-r4-2y-page22-device-quality`
+- Base: `origin/feature/manga-canvas-mvp`@`be7ae34`（PR #281 merge commit）。
+- Production受入れ: ページ22・コマ1を2案だけ生成した。Worker [31916441291](https://github.com/team478a/manga/actions/runs/31916441291)は`requests=3 processed=2`で成功したが、2 JobともAssetなしで失敗した。Creditは使用64／予約0／残36 → 予約4／残32 → 使用64／予約0／残36へ全額復元した。
+- 再現: queued／running Jobが0でも、同一コマのcompleted確認候補があるため、失敗Jobの再実行ボタンがすべて「進行中」と判定され無効になった。
+- 実装: 失敗Jobの再実行だけは同一コマのqueued／running Jobを排他し、completed確認候補とsibling failed Jobでは停止しない。従来の未採用候補排他は他操作へ維持する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- Production状態: Canvas revision 8、PNG成功、使用64／予約0／残36。新規Asset、Provider課金、Canvas、公開・販売変更なし。
+- 検証: 集中12/12、Hub 737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
+- CI: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- 次: 責任者確認のため停止する。merge前に失敗Jobを再実行しない。merge後はページ22・コマ1の失敗候補を1件だけ再実行し、候補品質とCredit確定を確認する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2Y_FAILED_CANDIDATE_RETRY.md`
+
+---
+
 ## 2026-08-16 PR-R4-2X 端末無記名・小物単一化契約
 
 - 状態: `READY_FOR_OWNER_REVIEW`
