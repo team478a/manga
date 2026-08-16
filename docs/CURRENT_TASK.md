@@ -2,8 +2,9 @@
 
 ## 2026-08-16 PR-R4-2AE 端末を直接描かず編集要素を分離
 
-- 状態: `IMPLEMENTED_LOCAL`
-- Draft PR／Vercel Preview: 作成・確認前
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#288](https://github.com/team478a/manga/pull/288)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-aq6n206s3-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2ae-concealed-prop-overlay`
 - Base: `origin/feature/manga-canvas-mvp`@`b9ac507`（PR #287 merge commit）。
 - Production受入れ: ページ22・コマ1で2候補を1回だけ生成した。Worker [31928823358](https://github.com/team478a/manga/actions/runs/31928823358)は`requests=3 processed=2`で成功。Creditは使用72／予約0／残28 → 予約4／残24 → 使用76／予約0／残24。2候補とも完成し追加生成なしで不採用。
@@ -12,7 +13,8 @@
 - 実装: 端末を含む短縮クローズアップの`layout`と人物`action`から端末・画面・UI語を除き、位置anchorと衣服・手の輪郭だけで隠れた小物を示す。`overlay_stage`で文字等は後段追加と明示する。Promptは2,000文字未満。
 - 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
-- 次: RC preflight後にDraft PRを作成し、全CIとVercel Preview成功を確認して停止する。merge前にProduction追加生成を行わない。
+- CI: 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認する。
+- 次: 責任者のmerge判断待ち。merge前にProduction追加生成を行わない。merge後はページ22・コマ1を2候補で1回だけ受入れし、合格前は配置しない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AE_CONCEALED_PROP_OVERLAY_STAGE.md`
 
 ---

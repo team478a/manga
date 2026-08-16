@@ -12,7 +12,8 @@
 - 端末向きの指定でもProviderへ端末・画面概念を与えること、編集要素を後段へ分離する契約がないことを原因とした。短縮クローズアップの`layout`と人物`action`から端末・画面・UI語を除き、位置anchorと衣服・手の輪郭だけで隠れた小物を示す。`overlay_stage`で文字等は後段追加と明示する。
 - 候補採用、Canvas配置、失敗Job再実行、追加生成なし。Canvas revision 8、PNG、公開・販売・設定は不変。Production DB、既存32ページ作品の確定データ、Provider設定は変更していない。
 - 集中53/53、Hub 741/741、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、diff check成功。Desktop test／a11y／buildは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
-- Draft PR作成後、全CIとVercel Previewを確認して停止する。merge前にProduction追加生成を行わない。
+- Draft PR [#288](https://github.com/team478a/manga/pull/288)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-aq6n206s3-team478as-projects.vercel.app`。
+- 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。merge前にProduction追加生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AE_CONCEALED_PROP_OVERLAY_STAGE.md`
 
 ---

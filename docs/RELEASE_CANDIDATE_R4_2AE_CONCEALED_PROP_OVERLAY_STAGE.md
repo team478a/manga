@@ -2,9 +2,9 @@
 
 ## 判定
 
-- 状態: `IMPLEMENTED_LOCAL`
-- Draft PR: 作成前
-- Vercel Preview: 確認前
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#288](https://github.com/team478a/manga/pull/288)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-aq6n206s3-team478as-projects.vercel.app
 - Branch: `codex/fix-r4-2ae-concealed-prop-overlay`
 - Base: `origin/feature/manga-canvas-mvp` @ `b9ac507`（PR #287 merge commit）
 - 対象: 端末・表示面を含むクローズアップ用短縮Provider契約だけを安全化する。
@@ -51,7 +51,8 @@ PR #287は端末の向きを正方向で指定しており、候補1では背面
 - 100ページ長編: 4/4成功
 - dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、diff check: 成功
 - Desktop test／a11y／build: ローカル既知制約`@napi-rs/keyring`型宣言不足で停止。変更はDesktop非依存であり、GitHub ActionsのWindows buildを正式判定にする。
-- RC structure、GitHub Actions、Vercel Preview: Draft PR作成後に確認する。
+- RC structure: 成功
+- 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。
 
 ## 不変契約
 
