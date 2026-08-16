@@ -2,7 +2,9 @@
 
 ## 2026-08-16 PR-R4-2AC 安全再構成でネーム構図を維持
 
-- 状態: `IMPLEMENTED_LOCAL_GATES_PASSED`
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#286](https://github.com/team478a/manga/pull/286)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-accept-r-b227a0-team478as-projects.vercel.app
 - Branch: `codex/accept-r4-2ac-conservative-retry`
 - Base: `origin/feature/manga-canvas-mvp`@`035c2a6`（PR #285 merge commit）。
 - Production受入れ: ページ22・コマ1を1件だけ再実行し、Worker [31923479315](https://github.com/team478a/manga/actions/runs/31923479315)は`requests=2 processed=1`で成功した。Creditは使用68／予約0／残32 → 予約2／残30 → 使用70／予約0／残30。画像4/4、セリフ1/1、生成中0、失敗0、Canvas revision 8、PNG成功。
@@ -11,7 +13,8 @@
 - 実装: 短縮契約へ安全な`layout`を追加し、第2段階では危険描写だけを除いて画角、人数、人物・背景の相対配置を維持する。`layout`は長さ制限、危険語拒否、ローカルmoderationを通す。
 - 不変: URL、API response、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、Worker自動retry、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
 - 検証: 集中52/52、Hub 740/740、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
-- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProduction追加生成を行わない。
+- CI: 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。
+- 次: 責任者merge待ち。merge前にProduction追加生成を行わない。merge後は現在の不採用候補を再試行せず、安全なネーム構図を含む新規Jobを1案だけ受入れ確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AC_STORYBOARD_LAYOUT_SAFE_RETRY.md`
 
 ---

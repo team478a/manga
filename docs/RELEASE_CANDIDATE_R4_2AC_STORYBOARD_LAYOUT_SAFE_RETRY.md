@@ -8,6 +8,8 @@ PR #285の第2段階安全再構成でProvider moderationの行き止まりは�
 
 - Base: `origin/feature/manga-canvas-mvp` @ `035c2a6`（PR #285 merge commit）
 - Branch: `codex/accept-r4-2ac-conservative-retry`
+- Draft PR: [#286](https://github.com/team478a/manga/pull/286)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-accept-r-b227a0-team478as-projects.vercel.app
 - 対象: 短縮Provider契約と第2段階の保守的な一般向け再構成
 
 ## PR #285のProduction受入れ
@@ -63,6 +65,8 @@ PR #285の第2段階安全再構成でProvider moderationの行き止まりは�
 - RC preflight: repository structure ready。外部設定と手動項目は従来どおり環境依存
 - `git diff --check`: 成功
 - Desktopローカルのtypecheck、test、a11y、buildは既存の`@napi-rs/keyring`配布物に`index.d.ts`が含まれないため開始前に停止する。今回の変更はDesktopを含まず、Windows CIを正式判定にする。
+- 実装HEAD: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功
+- 最終文書同期HEAD: 同じ5チェックを再確認して停止する
 
 ## Merge後の受入れ
 

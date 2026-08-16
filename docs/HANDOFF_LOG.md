@@ -12,7 +12,8 @@
 - 新候補は704×1024 PNGとして完成し、正立、顔、手、人体、描画面を満たしたが、汎用的な室内人物画となり元ネームの場面と構図を失ったため不採用。品質承認、採用、Canvas配置、追加生成は行っていない。
 - 短縮Provider契約へ安全な`layout`を追加し、第2段階再構成では危険描写だけを除きながら画角、人数、人物・背景の相対配置を維持する。危険な`layout`はローカル検査によりfallbackへ置換する。
 - 集中52/52、Hub 740/740、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。Desktopローカルは既存`@napi-rs/keyring`型宣言不足で停止し、Windows CIを正式判定にする。
-- Draft PRと全CI、Vercel Previewを確認して停止する。merge前にProduction追加生成を行わない。
+- Draft PR [#286](https://github.com/team478a/manga/pull/286)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-accept-r-b227a0-team478as-projects.vercel.app`。
+- 実装HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認して停止する。merge前にProduction追加生成を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_2AC_STORYBOARD_LAYOUT_SAFE_RETRY.md`
 
 ---
