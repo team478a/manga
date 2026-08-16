@@ -3,7 +3,7 @@ import type { CloudGenerationInput } from "@mangai/ai-core";
 const GENERAL_AUDIENCE_RETRY_GUIDANCE =
   "一般向け作品として刺激の強い直接描写を避け、緊迫感は人物の表情、距離、構図、照明で間接的に伝える。";
 const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_GUIDANCE =
-  "最終出力は正立した一つの場面として、顔・手指・関節を自然にし、必要な小物はそれぞれ一つだけ描く。端末画面は反射と光だけの空のガラス面にする。描画面は人物、背景、小物、光、影だけで構成した清潔な一枚絵として完成させる。";
+  "最終出力は正立した一つの場面として、顔・手指・関節を自然にし、必要な小物はそれぞれ一つだけ描く。手持ち端末は無地の背面または細い側面だけをカメラへ向け、表示面は人物の体側または画面外へ向ける。描画面は人物、背景、小物、光、影だけで構成した清潔な一枚絵として完成させる。";
 const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_NEGATIVE_PROMPT =
   "文字、疑似文字、読めない文字、記号、字幕、セリフ、吹き出し、看板、ロゴ、透かし、端末画面のUI、text, letters, pseudo-text, gibberish, symbols, typography, captions, speech balloons, signs, logos, watermarks, device screen UI, 複数の同一小物、duplicate props";
 
@@ -85,7 +85,7 @@ function sanitizeProviderControlContract(line: string) {
             surface_finish:
               "clean monochrome pictorial line art and natural material shading across every surface",
             quality_gate:
-              "upright page, natural gravity, coherent face/hands/joints, each required prop exactly once, blank device screens, and pure pictorial marks throughout",
+              "upright page, natural gravity, coherent face/hands/joints, each required prop exactly once, handheld devices show only a plain back or side edge, and pure pictorial marks throughout",
             camera: {
               ...cameraWithoutLegacyLens,
               distance:

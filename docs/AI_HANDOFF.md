@@ -1,5 +1,20 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2AA 端末表示面を描かせない正方向契約、2026-08-16）
+
+- Branch: `codex/fix-r4-2aa-concealed-device-surface`
+- Base: `origin/feature/manga-canvas-mvp` @ `59b8377`（PR #283 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#284](https://github.com/team478a/manga/pull/284)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-1bdb66-team478as-projects.vercel.app
+- PR #283反映後、Productionページ22・コマ1を1件だけ安全再実行した。Worker `31920132648`は`requests=2 processed=1`で成功し、Creditは使用66／予約0／残34から使用68／予約0／残32へ確定した。
+- 新候補は正立、人体、小物1個を満たしたが、端末に時刻、UI風文字・アイコンが生成され、顔上端も大きく切れたため不採用にした。Canvas revision 8、PNG成功、生成中0、失敗0、公開・販売状態は不変。
+- BFLはnegative promptを受け取らないため、空画面を描かせる指定から、端末の無地の背面または側面だけをカメラへ向けて表示面を描かせない正方向契約へ変更する。通常生成と安全再実行へ共通適用する。
+- 集中47/47、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsもすべて成功。最終文書同期HEADを再確認して停止し、merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AA_CONCEALED_DEVICE_SURFACE.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2Z 安全再実行への最新画像品質契約継承、2026-08-16）
 
 - Branch: `codex/fix-r4-2z-retry-quality-contract`

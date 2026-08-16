@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-16 Codex: 端末表示面を描かせない正方向契約
+
+- PR #283 merge commit `59b837722813967cb1acabca3072de4259a8275b`を含む最新基準から`codex/fix-r4-2aa-concealed-device-surface`を開始した。
+- Productionの`test`モニターでページ22・コマ1を1件だけ安全再実行した。公式Worker [31920132648](https://github.com/team478a/manga/actions/runs/31920132648)は`status=idle requests=2 processed=1`で成功した。
+- Creditは使用66／予約0／残34 → 使用66／予約2／残32 → 使用68／予約0／残32。private Assetを1件生成したが、Canvas配置、Canvas revision 8、PNG、公開・販売状態は変更していない。
+- 新候補は正立、人体、小物1個を満たした。一方、端末に時刻、UI風文字・アイコンが明確に描かれ、顔の上端も大きく切れていたため、追加生成なしで不採用にした。
+- BFLへnegative promptを送れない既存契約上、空の表示面を描かせる指示ではUI補完を止められない。手持ち端末は無地の背面または側面だけをカメラへ向け、表示面を人物側または画面外へ向ける正方向契約へ変更した。
+- 通常生成、短縮Provider JSON、安全再実行へ同じ契約を適用する。Provider、model、pricing、retry、timeout、Scheduler、DB、Canvas、PNG／PDFは変更しない。
+- 集中47/47、Hub 737/737、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository、owner isolation、packages／Webpack build、RC structure、diff check成功。
+- Draft PR [#284](https://github.com/team478a/manga/pull/284)を作成。Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-2-1bdb66-team478as-projects.vercel.app`。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADを再確認して停止し、merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AA_CONCEALED_DEVICE_SURFACE.md`
+
+---
+
 ## 2026-08-16 Codex: 安全再実行への最新画像品質契約継承
 
 - PR #282 merge commit `e52540c83964e9d7fe19abffcaee50b32e26fcea`を含む最新基準から`codex/fix-r4-2z-retry-quality-contract`を開始した。

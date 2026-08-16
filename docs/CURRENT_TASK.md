@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-2AA 端末表示面を描かせない正方向契約
+
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#284](https://github.com/team478a/manga/pull/284)（Draft／MERGEABLE）
+- Vercel Preview: https://mangai-hub-staging-git-codex-fix-r4-2-1bdb66-team478as-projects.vercel.app
+- Branch: `codex/fix-r4-2aa-concealed-device-surface`
+- Base: `origin/feature/manga-canvas-mvp`@`59b8377`（PR #283 merge commit）。
+- Production受入れ: ページ22・コマ1を1件だけ安全再実行した。Worker [31920132648](https://github.com/team478a/manga/actions/runs/31920132648)は`requests=2 processed=1`で成功し、Creditは使用66／予約0／残34から使用68／予約0／残32へ確定した。
+- 品質結果: 正立、人体、小物1個は満たしたが、端末へ時刻、UI風文字・アイコンが生成され、顔上端も大きく切れたため不採用。Canvas revision 8、PNG成功、生成中0、失敗0、公開・販売状態は不変。
+- 原因: BFLはnegative promptを受け取らず、「空の端末画面」という正方向指定でも表示面を描く際にUIを補完した。
+- 実装: 手持ち端末は無地の背面または細い側面だけをカメラへ向け、表示面を人物側または画面外へ向ける契約へ変更する。通常生成、短縮Provider JSON、安全再実行へ共通適用する。
+- 不変: URL、API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit単価、retry回数、timeout、Scheduler、Canvas schema、checkpoint、PNG／PDF、公開・販売、成人向け境界、Desktop。
+- 検証: 集中47/47、Hub 737/737、Canvas 26/26、AI 48/48、100ページ長編4/4、dependency／module boundary、lint、Hub typecheck、migration 59/59、research eval、Cloud漫画repository、owner isolation、workspace packages、Webpack production build、RC structure、diff check成功。
+- CI: 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADの同じ5チェックを再確認して停止する。
+- 次: 責任者確認のため停止する。merge前にProduction再生成を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AA_CONCEALED_DEVICE_SURFACE.md`
+
+---
+
 ## 2026-08-16 PR-R4-2Z 安全再実行への最新画像品質契約継承
 
 - 状態: `READY_FOR_OWNER_REVIEW`
