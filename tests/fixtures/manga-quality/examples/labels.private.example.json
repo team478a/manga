@@ -1,0 +1,11 @@
+[
+  {
+    "id": "img_0001",
+    "verdict": "bad",
+    "defects": [
+      { "category": "anatomy_object_fusion", "severity": "major", "bbox": [0.12, 0.08, 0.54, 0.66], "note": "evaluator-only note" }
+    ],
+    "reviewed_by": ["reviewer-a", "reviewer-b"],
+    "reviewed_at": "2026-08-16"
+  }
+]

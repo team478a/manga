@@ -1,186 +1,122 @@
-# MANGAI 漫画品質エンジン・ベンチマーク設計
+# MANGAI 漫画品質エンジン・ベンチマーク設計 v2.1
 
 作成日: 2026-08-16
 
-対象: PR-R4-3A
+対象: PR-R4-3A2（PR-R4-3A契約修正）
 
-状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE`
+状態: `IMPLEMENTED_LOCAL / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_SKLEARN`
 
 ## 1. 結論
 
-現行の品質判定は、画像内容を直接認識するVisual Judgeではない。生成Assetの有無、寸法と、呼出元が任意で渡した観測値をルールで集計する。未観測値を75点、失敗判定時は100点相当として扱うため、「評価できていない」と「品質が良い」を区別できない。
+PR #291の評価基盤は再利用するが、旧30〜50画像manifestは正式Benchmarkに使わない。v2.1ではCandidate画像単体のVisual BenchmarkをPage/Canvas Benchmarkから分離し、dev 112件とprivate holdout 28件、合計140件を正本とする。
 
-PR-R4-3Aでは外部挙動を変えず、次の評価基盤だけを追加した。
+現在のリポジトリにはv2.1実画像がない。添付された旧v1の実測結果はlabel leakageを検出したnegative controlであり、精度測定用データへ昇格させない。Production作品、既存32ページ作品、顧客画像、架空画像で不足を埋めない。
+
+## 2. PR #291から維持する契約
 
 - `ok / unknown / not_evaluated`を区別し、未評価を点数へ変換しないEvidence契約
-- VLM、embedding、detector、hybridを同じ方法で比較するprovider-neutral Judge境界
-- 非公開・ローカルfixtureのmanifestと、実ファイル・hash・寸法を検証するpreflight
-- 検出率、誤検出率、failure一致、Evidence coverage、Judge費用、遅延を分離する集計
+- VLM、embedding、detector、hybridを同じ方法で比較するprovider-neutral `MangaVisualJudge`
+- critical recall、false positive、failure一致、Evidence coverage、Judge費用、遅延の独立集計
+- 現在の`panelSpecificationSchema`を期待内容のsource of truthにする
+- 既存runtime Judge、DB、RPC、RLS、ranking、auto adopt、repair、Providerを変更しない
 
-リポジトリ内に再利用可能な正解付き漫画画像が30件なく、Production作品の転用も禁止されているため、実測ベンチマークは`BLOCKED_FIXTURE_SHORTAGE`である。推測値や架空画像で精度を報告しない。
-
-## 2. 現行実装の監査
-
-| 責務 | 現在のファイル | 判明した契約／課題 |
-| --- | --- | --- |
-| Panel Specification | `src/modules/manga-quality/domain/panel-specification.ts` | 人物名・Identity、人数、表情、構図、背景、小物、動作、shot、camera angle、generation targetを保持するversion 1。Visual Judgeの期待値として再利用可能。 |
-| 既存Failure分類 | `src/modules/manga-quality/domain/failure-category.ts` | runtimeとDBに保存する既存語彙。R4-3Aでは変更しない。 |
-| 現行Judge | `src/modules/manga-quality/application/rule-based-panel-judge.ts` | 画像を解析せず、欠損scoreを75で補完する。failure判定の欠損は`?? 100`で合格側へ倒れる。 |
-| 完了Job評価 | `src/modules/manga-quality/application/evaluate-completed-panel.ts` | 現在渡す実観測はAsset有無と縦横寸法だけ。人物、表情、背景、人体等は観測していない。 |
-| Candidate順位 | `rule-based-panel-judge.ts`の`rankPanelCandidates` | 保存済みoverall score、作成日時、IDで決定。Evidence coverageを順位条件にしていない。 |
-| Score保存 | `src/modules/manga-quality/infrastructure/panel-quality-repository.ts` | 既存RPCを通じてversion 1評価を保存する。 |
-| DB/RPC/RLS | `supabase/migrations/202608080002_cloud_manga_quality_judge.sql` | Panel Specificationと0〜100 score、failure、`evaluation_details`、latencyを保存。service roleのみ書込、所有者のみ参照。R4-3Aで変更なし。 |
-| 操作ログ | `supabase/migrations/202608080001_cloud_manga_quality_logs.sql`、`src/modules/manga-quality/domain/quality-evaluation-log.ts` | 表示・採用・不採用、repair、retry、credit、実費、generation latencyを記録。Judge費用専用列ではない。 |
-| Inpainting / Outpainting | `src/modules/cloud-ai/infrastructure/provider-registry.ts`、`bfl-provider.ts` | BFL `flux-pro-1.0-fill`を既存Providerとして登録。mask付きinpaintingと方向付きoutpaintingを実装済み。 |
-| 生成・修正入口 | `src/modules/manga/application/build-panel-revision.ts`、`enqueue-panel-candidates.ts` | source Asset、mask、outpainting directionをrevisionからJobへ渡す。 |
-
-### 2.1 現行値をそのまま精度と呼べない理由
-
-- `characterMatch`等が未指定でも各75点になる。
-- failure判定は未指定を100として扱うため、未検査の人体、背景、小物等を不良と判定しない。
-- `semanticEvidenceAvailable`は人物数またはIdentity観測の有無であり、すべての品質項目を見た意味ではない。
-- `evaluationLatencyMs`は現行ルール処理の時間で、VLM、OCR、embeddingの実遅延ではない。
-- 保存済みgeneration costとJudge costは別物だが、現行ログにはJudge costの独立した実測契約がない。
-
-これらは既存ユーザー向け挙動なのでR4-3Aでは変更せず、R4-3B以降の置換判断材料として明示する。
-
-## 3. Evidence契約
-
-すべてのscoreは内部で0〜1を使い、表示・既存保存境界でのみ0〜100へ変換する。
+## 3. v2.1 package契約
 
 ```text
-EvidenceValue = {
-  status: "ok" | "unknown" | "not_evaluated",
-  score: number(0..1) | null,
-  confidence: number(0..1),
-  source: "vlm" | "embedding" | "detector" | "rule",
-  reason?: string
-}
+DEV_ROOT/
+  manifest.json
+  cases.json                 # Visual Judgeへ渡せる公開入力だけ
+  labels.private.json        # evaluator-only
+  images/img_0001.png
+  refs/
+  intended/img_0001.json
+
+HOLDOUT_ROOT/                # threshold調整担当から隔離
+  ...same layout...
 ```
 
-- `ok`: scoreが必須。
-- `unknown`: Judgeは評価を試みたが根拠不足。scoreは必ず`null`。
-- `not_evaluated`: そのJudgeの能力・設定・入力不足により評価していない。scoreは必ず`null`。
-- 未評価を0、75、100へ補完しない。
-- `detectedCharacterCount`はscoreとは別に観測人数をnullableで保持する。
-- 基本必須Evidenceはcharacter、composition、anatomy、orientation、text artifact、detected character count。
-- 前後コマがある場合だけcontinuityも必須にする。
+### 3.1 公開領域
 
-Evidence coverageは、対象Evidenceのうち`ok`になった件数の割合である。総合点とcoverageを別に表示・判定し、coverage不足を高得点で隠さない。
+`manifest.json`はversion、dataset、split、Production-native image profile、画像ID、label-neutral path、SHA-256だけを持つ。`cases.json`はcandidate画像、`intrinsic / referential`、profile、reference、intendedへの参照だけを持つ。verdict、defect、severity、review情報は置かない。
 
-## 4. Failure分類
+画像は`images/img_0001.png`形式のPNGとし、Prompt、workflow、comment、generation parametersをPNG text metadataへ残さない。manifestのSHA-256と実ファイル、profileの幅・高さは完全一致させる。dev/holdout間のexact duplicateは禁止する。
 
-Visual Judge用語彙は、現行runtime語彙を壊さず、より直接的な検査対象を表す。
+### 3.2 intended
 
-- 人物: `character_mismatch`、`face_mismatch`、`wrong_character_count`、`wrong_expression`
-- 人体: `body_distortion`、`hand_error`、`body_prop_fusion`
-- 構図: `wrong_camera`、`crop_mismatch`
-- 背景・小物: `wrong_background`、`missing_prop`、`prop_fusion`
-- 継続性: `continuity_break`
-- artifact: `text_artifact`、`ui_artifact`
-- 物理: `orientation_error`、`gravity_error`
-- その他: `low_readability`、`other`
+`intended/*.json`は既存の`panelSpecificationSchema`をそのまま内包する。独自の類似schemaを作らない。referential caseは`referenceBindings`と`refs/`の実ファイルを一致させる。
 
-R4-3Aは互換mapだけを定義し、DB enum、既存failure配列、UI表示帯は変更しない。
+### 3.3 非公開ラベル
 
-## 5. Fixture契約と現在の不足
+各ケースは`good / bad / borderline`のverdictを持つ。badには次の6大分類から1件以上のdefectを付ける。
 
-保存場所は`tests/fixtures/manga-quality/`、画像本体はGit対象外の`assets/`とする。manifestは各画像について次を要求する。
+1. character identity mismatch
+2. anatomy / object fusion
+3. unwanted text / UI / logo
+4. composition / crop error
+5. orientation / gravity error
+6. background / prop mismatch
 
-- opaqueなfixture ID
-- `assets/`配下の相対パス
-- SHA-256、MIME type、width、height
-- 完全なPanel Specification
-- 採用可否、failure分類、severity
-- 任意の責任者レビュー注記
+2名以上が独立してreviewし、不一致はadjudicationする。合意率90%以上、Cohen's kappa 0.75以上を推奨する。note、bbox、reviewer情報はprivate labelsから外へ出さない。
 
-画像はProduction DB／Storage／既存32ページ作品から取得しない。署名付きURL、利用者名、Prompt、個人情報、秘密情報も保存しない。
+## 4. 正式件数
 
-現在のreadinessは次の通り。
+| split | good | bad | borderline | total |
+| --- | ---: | ---: | ---: | ---: |
+| dev | 48 | 48 | 16 | 112 |
+| private holdout | 12 | 12 | 4 | 28 |
+| combined | 60 | 60 | 20 | 140 |
 
-| 条件 | 必要 | 現在 | 不足 |
-| --- | ---: | ---: | ---: |
-| 総fixture | 30〜50 | 0 | 30 |
-| 採用可能 | 15以上 | 0 | 15 |
-| 人物／顔 | 5以上 | 0 | 5 |
-| 人体／融合 | 5以上 | 0 | 5 |
-| 文字／UI | 5以上 | 0 | 5 |
-| 構図／crop | 5以上 | 0 | 5 |
-| 向き／重力 | 5以上 | 0 | 5 |
-| 背景／小物 | 5以上 | 0 | 5 |
+6大分類はcombined bad内で各10件以上にする。各image profile内のgood/bad件数差は1以内とする。固定短辺1024へのupscaleは行わず、Productionが実際に出力するprofileをmanifestに固定する。
 
-`npm run manga:quality:benchmark:preflight`は不足数を報告するが、基盤検証を継続できるよう終了コード0とする。fixtureが揃った後のCI受入れは`npm run manga:quality:benchmark:strict`を使い、不足を終了コード1にする。
+## 5. taxonomy互換性
 
-## 6. 比較対象
+Visual Benchmark語彙と既存runtime failure語彙は同一ではない。R4-3A2は意味が一致する項目だけをnullable mappingで返す。
 
-下表は2026-08-16時点の公式仕様に基づく調査であり、MANGAI fixture上の精度・実費・遅延は未測定である。モデル採用の決定ではない。
+- `text_artifact`を`text_area_collision`へ強制変換しない
+- `orientation_error / gravity_error`を`other`へ強制変換しない
+- fusion、cropも意味が一致しない既存分類へ丸めない
 
-| 候補 | 期待する役割 | 構造化出力 | データ取扱い上の確認 | 現在の判定 |
-| --- | --- | --- | --- | --- |
-| OpenAI vision | Panel Specificationと画像を一括比較し、多項目Evidenceを返す | [Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)あり | APIは既定で学習不使用。標準のabuse monitoring、Responses保存、ZDR/MAM条件は[公式データ制御](https://platform.openai.com/docs/models/default-usage-policies-by-endpoint)を個別確認する | benchmark待ち |
-| Google Gemini vision | 画像理解とJSON Schema評価 | [Structured output](https://ai.google.dev/gemini-api/docs/structured-output)あり | 無償／有償でデータ利用条件が異なるため[利用規約](https://ai.google.dev/gemini-api/terms)と契約tierを確認する | benchmark待ち |
-| Anthropic Claude vision | 画像とPanel Specificationの比較 | Adapter側でschema validationが必要 | 商用APIは既定で学習不使用。標準保持とZDR条件は[公式privacy](https://privacy.anthropic.com/en/articles/7996866-how-long-do-you-store-my-organization-s-data)を確認する | benchmark待ち |
-| DINOv2 / OpenCLIP | 顔・衣装・styleの参照画像との近さをローカルで補助判定 | 独自の数値schema | ローカル処理可能。漫画絵での閾値校正が必須 | 単独採用しない |
-| PaddleOCR | 文字／UI artifactの位置・confidence検出 | box、text、confidenceを正規化可能 | ローカル処理可能。正規セリフと画像内artifactの区別が必要 | VLM補助候補 |
+DB enum、UI、runtime保存値は変更せず、対応のない項目は`null`として後工程の仕様判断へ残す。
 
-公式機能・価格の参照先:
+## 6. leak / shortcut gate
 
-- OpenAI: [Vision](https://developers.openai.com/api/docs/guides/images-vision)、[Pricing](https://developers.openai.com/api/docs/pricing)
-- Google: [Image understanding](https://ai.google.dev/gemini-api/docs/image-understanding)、[Pricing](https://ai.google.dev/gemini-api/docs/pricing)
-- Anthropic: [Vision](https://platform.claude.com/docs/en/build-with-claude/vision)、[Pricing](https://docs.anthropic.com/en/docs/about-claude/pricing)
-- Local: [OpenCLIP](https://github.com/mlfoundations/open_clip)、[DINOv2 model card](https://github.com/facebookresearch/dinov2/blob/main/MODEL_CARD.md)、[PaddleOCR](https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version2.x/ppocr/quick_start.en.md)
+構造preflightは次を検査する。
 
-## 7. ベンチマーク指標
+- public/privateの物理分離、strict schema、ID集合一致
+- label-neutral path、path traversal、PNG metadata
+- SHA-256、実寸、Production profile
+- intendedのPanel Specification、refsの存在
+- splitの厳密件数、profile別class balance、6分類coverage
+- dev/holdout exact duplicate
 
-| 指標 | 定義 | 採用判断での意味 |
-| --- | --- | --- |
-| Critical failure recall | critical正解fixtureのうちcritical判定できた割合 | 見逃し耐性。最優先。 |
-| False positive rate | 採用可能fixtureのうちcriticalと誤判定した割合 | 無駄な再生成・費用の抑制。 |
-| Failure category agreement | 正解分類と提案分類のJaccard一致度 | repair routingの妥当性。 |
-| Required Evidence unknown rate | 必須Evidenceの`unknown / not_evaluated`割合 | 高得点でも評価不足を検出する。 |
-| Evidence coverage | 対象Evidenceの`ok`割合 | Judge能力と入力不足を分離する。 |
-| Judge cost | 1候補の評価費用micros | 生成費用と混ぜない。 |
-| Latency | 1候補のJudge所要ms | UI同期処理へ置くか非同期にするか判断する。 |
+Python acceptanceは`scikit-learn`を必須とし、次を判定する。
 
-R4-3B開始前に、fixture全件を同一条件で各候補へ渡し、少なくとも3回の遅延分布と実請求に対応するcostを記録する。価格表からの推定だけで実費欄を埋めない。
+- 各low-level特徴のunivariate AUC `< 0.65`
+- dev 5-fold CV balanced accuracy `<= 0.60`
+- private holdout balanced accuracy `<= 0.60`
+- sharpness/filesizeのgood/bad差20%超はwarningとして人手確認
 
-## 8. Judge費用と生成費用の分離
+`npm run manga:quality:benchmark:preflight`は不足を表示し終了コード0、`npm run manga:quality:benchmark:strict`は不足時に終了コード1とする。最終Acceptanceは`npm run manga:quality:benchmark:leak`も成功させる。
 
-費用は次の3項目を別々に集計する。
+## 7. v1 negative control
 
-```text
-generation_cost = 画像生成Providerの確定費用
-judge_cost = VLM / detector / embeddingによる評価費用
-repair_cost = 不採用後の再生成・inpainting・outpainting費用
-total_quality_cost = judge_cost + repair_cost
-```
+添付結果`tests/fixtures/manga-quality/evidence/v1_leak_result_v2_1.json`は`overall=false`である。主な値はaspect ratio AUC 1.0、sharpness AUC 0.981、filesize AUC 0.944、dev CV balanced accuracy 1.0、path leakage 33件である。
 
-利用者credit、既存pricing、予約・確定・返却ロジックはR4-3Aで変更しない。Judge費用を利用者へ転嫁するかは、実測後の責任者判断とする。
+旧v1実画像は添付されていないためローカル再実行はできない。このJSONを合格証跡やv2.1精度の代用にしない。
 
-## 9. Inpainting / repair能力
+## 8. VLM等の比較方針
 
-既存BFL Fillはinpaintingとoutpaintingに対応し、source Assetとmask／方向を受け取れる。ただしVisual Judgeのfailureからrepair operationへ自動接続する契約はまだない。
+同じdev fixtureに対してprovider-neutral VLM、ローカルOCR、必要に応じembeddingを比較する。private holdoutはthreshold調整後にevaluatorだけが実行する。価格表の推定ではなく、実請求と対応するJudge cost、latency分布、Evidence coverage、critical recall、false positiveを記録する。
 
-推奨routing候補は次の通りだが、R4-3Aでは実装しない。
+R4-3A2では外部Providerを呼び出さず、model、pricing、credit、retry、timeoutを変更しない。
 
-- 顔、手、局所artifact、小物不足: maskが信頼できる場合だけinpainting候補
-- crop、余白不足: outpainting候補
-- orientation、gravity、人物数、全体構図、広範囲融合: 原則として再生成候補
-- identity／continuity: referenceを維持した再生成または限定repair候補
+## 9. R4-3B前の停止条件
 
-mask精度、修正成功率、費用はfixture不足のため未測定である。
+1. 権利確認済み140画像とProduction-native profileが揃う。
+2. 全ケースを2名以上がreviewし、不一致をadjudicationする。
+3. devとprivate holdoutを別担当・別配布経路で隔離する。
+4. strict構造preflightとPython shortcut gateが成功する。
+5. devでVLM／OCR／embeddingの精度・費用・遅延を比較する。
+6. 外部送信範囲、Provider、検証予算、採用閾値、unknown時のfail-closedを責任者が承認する。
 
-## 10. 推奨構成とR4-3Bへの停止条件
-
-現時点の推奨は「provider-neutral VLM + ローカルOCR」の段階導入である。embeddingは人物・style一致の補助としてのみ比較し、漫画fixtureで閾値を校正するまでcritical判定へ使わない。
-
-R4-3Bへ進むには、次をすべて満たす必要がある。
-
-1. 権利確認済みの30〜50画像、採用可能15画像、主要6群各5画像が揃う。
-2. `manga:quality:benchmark:strict`が成功する。
-3. 同じfixtureでVLM候補、OCR、embeddingの精度・費用・遅延が実測される。
-4. 外部送信するfixtureとProviderのデータ保持条件を責任者が承認する。
-5. 採用Judge、閾値、unknown時のfail-closed挙動、Judge費用負担を責任者が決定する。
-6. Production DB／Storage／既存作品を使わないPreviewまたは専用検証環境を用意する。
-
-現在は1〜5が未完了のため、PR-R4-3AのDraft PRとCI確認後に停止する。
+現在は1〜6が未完了である。Draft PRとCI／Preview確認後に停止し、責任者確認前にPR-R4-3Bへ進まない。

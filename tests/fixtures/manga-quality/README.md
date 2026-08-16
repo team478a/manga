@@ -1,28 +1,44 @@
-# Manga quality benchmark fixtures
+# Manga quality benchmark fixtures v2.1
 
-R4-3A の品質判定を再現可能に評価するための、非公開・ローカル専用 fixture です。
-画像本体は `assets/` に置き、Git にはコミットしません。`manifest.json` には画像の相対パス、SHA-256、MIME type、寸法、Panel Specification、正解ラベルだけを登録します。
+R4-3A の Candidate Visual Benchmark 契約です。Page/Canvas完成度の評価とは分離します。画像、非公開ラベル、holdoutはGitへコミットしません。Production DB、Storage、既存作品からも取得しません。
 
-## 受入れ条件
+## Package layout
 
-- 総数 30〜50 件
-- 採用可能画像 15 件以上
-- 次の不良群を各 5 件以上
-  - キャラクター／顔の不一致
-  - 人体破綻／手／人物と小物の融合
-  - 文字／UI artifact
-  - 構図／crop
-  - 向き／重力
-  - 背景／小物
+```text
+v2.1/dev/
+  manifest.json
+  cases.json
+  labels.private.json       # evaluator only
+  images/img_0001.png
+  refs/
+  intended/img_0001.json
+v2.1/holdout-private/       # evaluator only; threshold調整担当へ渡さない
+  ...same layout...
+```
 
-不足は `unknown` や中立点で補完せず、`BLOCKED_FIXTURE_SHORTAGE` として扱います。
+`cases.json` はVisual Judgeへ渡せる公開入力だけを持ち、verdict、defects、severity、review情報を含めません。`labels.private.json` は必ず別ファイル・別配布経路で管理します。ファイル名は `images/img_0001.png` のようにlabel-neutralにします。
 
-## 追加時の注意
+## Exact composition
 
-1. 利用権を確認し、第三者の個人情報、API key、署名付きURL、Productionの非公開作品を含めない。
-2. 成人向け画像を混在させない。必要になった場合は既存の成人向け境界とは別の承認を得る。
-3. `assets/` の画像名から利用者名や作品名を推測できないようにする。
-4. `npm run manga:quality:benchmark:preflight` で形式・hash・寸法・不足数を確認する。
-5. fixtureが揃った後だけ `npm run manga:quality:benchmark:strict` を合格条件として使う。
+| split | good | bad | borderline | total |
+| --- | ---: | ---: | ---: | ---: |
+| dev | 48 | 48 | 16 | 112 |
+| private holdout | 12 | 12 | 4 | 28 |
+| combined | 60 | 60 | 20 | 140 |
 
-このfixtureはProduction DB、Storage、既存作品とは接続しません。
+bad 60件では、6つの大分類を各10件以上含めます。同じProduction-native image profile内のgood/bad差は1件以内です。各ラベルは独立した2名以上が確認し、不一致はadjudicationします。
+
+## Acceptance
+
+1. `npm run manga:quality:benchmark:preflight` — ファイル分離、ID、SHA-256、PNG metadata、Production profile寸法、Panel Specification、参照ファイル、件数・重複を検査。
+2. `python -m pip install -r tests/fixtures/manga-quality/tools/requirements.txt`
+3. `npm run manga:quality:benchmark:leak` — univariate AUC、dev CV、private holdoutのshortcutを検査。
+4. evaluatorが人手レビューの合意率90%以上（推奨 Cohen's kappa 0.75以上）を確認。
+
+最終Acceptanceはunivariate AUCが各0.65未満、dev CVとholdoutのbalanced accuracyが各60%以下です。sharpness/filesizeの群間差20%超は警告として人手確認します。不足をダミー画像や`unknown`で埋めません。
+
+## Current evidence
+
+- `evidence/v1_leak_result_v2_1.json` は旧33画像をnegative controlとして検査した結果で、期待どおりFAILです。
+- 旧v1実画像は添付物に含まれないため、このリポジトリでは再現不能です。
+- v2.1の140画像とprivate labelsは未提供のため、strict preflightは `BLOCKED_FIXTURE_SHORTAGE` が正しい状態です。

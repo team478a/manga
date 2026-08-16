@@ -1,0 +1,37 @@
+{
+  "suite": "candidate",
+  "dev_root": "/mnt/data/MANGAI_R4-3_quality_benchmark_v1",
+  "holdout_root": null,
+  "results": {
+    "dev_public_contract": true,
+    "dev_paths": false,
+    "dev_metadata": true,
+    "dev_duplicates": true,
+    "dev_profiles": true,
+    "dev_class_balance": false,
+    "dev_univariate": false,
+    "dev_distribution_warning": true,
+    "holdout_required": false,
+    "baseline": false
+  },
+  "metrics": {
+    "dev_auc": {
+      "aspect_ratio": 1.0,
+      "corner_tl_greenness": 1.0,
+      "corner_tl_redness": 1.0,
+      "height": 1.0,
+      "pixel_count": 1.0,
+      "short_side": 1.0,
+      "corner_tl_saturation": 0.9962962962962963,
+      "sharpness": 0.9814814814814815,
+      "gradient_edge_density": 0.9555555555555556,
+      "filesize_bytes": 0.9444444444444444,
+      "mean_luma": 0.7259259259259259,
+      "width": 0.5
+    },
+    "dev_cv_balanced_accuracy": 1.0,
+    "holdout_balanced_accuracy": null
+  },
+  "overall": false,
+  "note": "Human dual review and benchmark semantic-label audit remain mandatory."
+}
