@@ -3,7 +3,7 @@
 ## 0.0 現在の優先タスク（PR-R4-3A-4 Human Review Package、2026-08-17）
 
 - 最新基準はPR #293 merge commit `61fcaf3`。Branchは`codex/fix-r4-3a4-review-package-context-schema`。
-- Draft PRは[#294](https://github.com/team478a/manga/pull/294)。最終文書同期HEADのCI／Preview確認後に停止する。
+- Draft PRは[#294](https://github.com/team478a/manga/pull/294)（Draft／MERGEABLE）。Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-0772e8-team478as-projects.vercel.app)。実装／PR同期HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsは成功。最終証跡同期HEADでも再確認して停止する。
 - Human Reviewを`intrinsic_only`／`referential`へ分離し、Human response v2、mode別category、Panel Specification／identity reference binding、中立UUID、blind ZIP、private source sidecar、package／response validator、A/B比較を実装した。
 - 正式v2.1の`img_0001`を変更せず、Reviewer ZIPだけ`case_000001`へ変換する。対応とsource groupはZIP外private sidecarへ保持する。同一source familyはdev／holdoutへ分けない。
 - 既存12画像からReviewer A/BのR4-3A-4版Pilot ZIPを新規生成し、両方validator成功。`PILOT_INTRINSIC_ONLY / NOT_COUNTED_IN_FORMAL_BENCHMARK`、正解labelなし、Human回答なし。正式fixtureは0/140のまま。

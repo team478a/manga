@@ -8,6 +8,8 @@ Base: `origin/feature/manga-canvas-mvp` @ `61fcaf3`
 
 Draft PR: [#294](https://github.com/team478a/manga/pull/294)
 
+Vercel Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-0772e8-team478as-projects.vercel.app)
+
 ## 判定
 
 `IMPLEMENTED_LOCAL / PILOT_PACKAGE_STRUCTURE_READY / PILOT_INTRINSIC_ONLY / NOT_COUNTED_IN_FORMAL_BENCHMARK`
@@ -70,8 +72,13 @@ R4-3A-4のコードと12件Pilot packageは実装・検証済み。正式Benchma
 - 通常Turbopack: `LOCAL_BLOCKED_KNOWN_WINDOWS_PATH_LENGTH`
 - Desktop typecheck／test／a11y／build: `LOCAL_BLOCKED_EXISTING_KEYRING_TYPE_DECLARATION`。今回差分外で、GitHub Windows buildを正式判定先とする。
 - Production変更: なし
+- Core quality: PASS
+- Migration roundtrip: PASS
+- Windows build: PASS
+- Vercel: PASS
+- Vercel Preview Comments: PASS
 
-CI／Vercel PreviewはDraft PR作成後に追記する。
+Draft／MERGEABLE。最終証跡同期HEADでも同じ5チェックを再確認して停止する。
 
 ## 正式Benchmark採用条件
 
