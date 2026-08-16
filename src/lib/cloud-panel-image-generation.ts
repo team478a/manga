@@ -276,14 +276,8 @@ function compactProviderSpatialLayout(input: {
   fallback: string;
 }) {
   const layout = compactProviderSceneField(input);
-  const deviceSignal = providerDeviceLayoutSignal.exec(layout);
-  if (!deviceSignal) return layout;
-  const anchor = layout
-    .slice(0, deviceSignal.index)
-    .replace(/(?:から|より|の|を|が|は|へ|に|で|と)\s*$/u, "")
-    .trim()
-    .slice(0, 120);
-  return `${anchor ? `${anchor}; ` : ""}pocket seam and soft fabric fold; relaxed hand`;
+  if (!providerDeviceLayoutSignal.test(layout)) return layout;
+  return "storyboard-relative placement; relaxed clothing; natural hands";
 }
 
 function compactProviderDeviceSafeAction(input: {
@@ -293,7 +287,7 @@ function compactProviderDeviceSafeAction(input: {
 }) {
   const action = compactProviderSceneField(input);
   return providerDeviceLayoutSignal.test(action)
-    ? "look toward pocket through pose/gaze"
+    ? "natural attentive pose; off-frame gaze"
     : action;
 }
 

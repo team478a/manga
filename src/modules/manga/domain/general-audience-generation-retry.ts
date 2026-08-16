@@ -3,12 +3,14 @@ import {
   type CloudGenerationInput,
 } from "@mangai/ai-core";
 
-const GENERAL_AUDIENCE_RETRY_GUIDANCE =
+const LEGACY_GENERAL_AUDIENCE_RETRY_GUIDANCE =
   "一般向け作品として刺激の強い直接描写を避け、緊迫感は人物の表情、距離、構図、照明で間接的に伝える。";
+const GENERAL_AUDIENCE_RETRY_GUIDANCE =
+  "一般向けの穏やかな場面として、人物の表情、距離、構図、自然な照明で物語を伝える。";
 const CONSERVATIVE_GENERAL_AUDIENCE_RETRY_GUIDANCE =
   "一般向けの穏やかな日常場面として、人物が整った環境で自然に立ち、表情と視線だけで物語の余韻を伝える。";
 const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_GUIDANCE =
-  "最終出力は正立した一つの場面として、顔・手指・関節を自然にし、必要な小物はそれぞれ一つだけ描く。物語上の携帯品は衣服の縫い目、自然な布のふくらみ、手の位置だけで間接的に示す。描画面は人物、背景、小物、光、影だけで構成した清潔な一枚絵として完成させる。";
+  "最終出力は正立した一つの場面として、顔・手指・関節を自然にし、衣服は自然な縫い目と柔らかな布の陰影、手は力の抜けた自然な位置として描く。描画面は人物、背景、光、影だけで構成した清潔な一枚絵として完成させる。";
 const GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_NEGATIVE_PROMPT =
   "文字、疑似文字、読めない文字、記号、字幕、セリフ、吹き出し、看板、ロゴ、透かし、端末画面のUI、text, letters, pseudo-text, gibberish, symbols, typography, captions, speech balloons, signs, logos, watermarks, device screen UI, 複数の同一小物、duplicate props";
 
@@ -21,7 +23,7 @@ const SAFE_DIRECTION =
 const CONSERVATIVE_SAFE_LOCATION =
   "明るく整った一般向けの日常環境を、簡潔な建物と自然な光で描く。";
 const CONSERVATIVE_SAFE_COMPOSITION =
-  "元のネームの画角、人数、人物と背景の相対配置を維持し、刺激の強い出来事そのものは描かず、直前または直後の安全な瞬間として構成する。";
+  "元のネームの画角、人数、人物と背景の相対配置を維持し、穏やかな余韻が伝わる静かな瞬間として構成する。";
 const SAFE_STORYBOARD_COMPOSITION_FALLBACK =
   "人物と背景の相対配置、視線方向、前後関係を元のネームどおりに維持する";
 const SAFE_PROVIDER_CLOSE_UP_SCENE =
@@ -43,7 +45,7 @@ const SAFE_PROVIDER_ACTION =
 const SAFE_PROVIDER_EXPRESSION =
   "a restrained natural expression suitable for a general audience";
 const SAFE_PROVIDER_BACKGROUND =
-  "a simple non-graphic story-appropriate environment";
+  "a simple calm story-appropriate environment";
 const SAFE_PROVIDER_VARIATION =
   "preserve identity and framing; convey tension indirectly through pose, gaze, spacing, light, and shadow";
 
@@ -96,7 +98,7 @@ function sanitizeProviderControlContract(line: string) {
             surface_finish:
               "clean monochrome pictorial line art and natural material shading across every surface",
             quality_gate:
-              "upright page, natural gravity, coherent face/hands/joints, clean fabric and pocket details, and pure pictorial marks throughout",
+              "upright page, natural gravity, coherent face/hands/joints, clean fabric details, and pure pictorial marks throughout",
             camera: {
               ...cameraWithoutLegacyLens,
               distance:
@@ -161,7 +163,7 @@ function conservativelySanitizeProviderControlContract(line: string) {
       output_type: SAFE_PROVIDER_CLOSE_UP_OUTPUT,
       ...(subjects ? { subjects } : {}),
       background:
-        "a tidy well-lit everyday environment with simple architecture and no depicted incident",
+        "a tidy well-lit everyday environment with simple calm architecture",
       variation:
         "preserve character identity, clothing, storyboard shot, subject count, and safe relative placement; communicate the original narrative beat through pose, gaze, spacing, light, and shadow",
       canvas:
@@ -173,7 +175,7 @@ function conservativelySanitizeProviderControlContract(line: string) {
       surface_finish:
         "clean monochrome pictorial line art and natural material shading across every surface",
       quality_gate:
-        "upright page, natural gravity, coherent face/hands/joints, clean fabric and pocket details, and pure pictorial marks throughout",
+        "upright page, natural gravity, coherent face/hands/joints, clean fabric details, and pure pictorial marks throughout",
       camera: {
         ...cameraWithoutLegacyLens,
         distance:
@@ -194,7 +196,9 @@ export function isGeneralAudienceGenerationRetry(
 ) {
   return (
     generation.kind === "image" &&
-    generation.prompt.includes(GENERAL_AUDIENCE_RETRY_GUIDANCE)
+    (generation.prompt.includes(GENERAL_AUDIENCE_RETRY_GUIDANCE) ||
+      generation.prompt.includes(LEGACY_GENERAL_AUDIENCE_RETRY_GUIDANCE) ||
+      generation.prompt.includes(CONSERVATIVE_GENERAL_AUDIENCE_RETRY_GUIDANCE))
   );
 }
 
@@ -256,6 +260,11 @@ export function buildConservativeGeneralAudienceGenerationRetry(
     return generation;
 
   const promptLines = generation.prompt.split(/\r?\n/).map((line, index, lines) => {
+    if (
+      line.includes(GENERAL_AUDIENCE_RETRY_GUIDANCE) ||
+      line.includes(LEGACY_GENERAL_AUDIENCE_RETRY_GUIDANCE)
+    )
+      return "";
     if (lines[index - 1] === "PROVIDER CONTROL CONTRACT:")
       return conservativelySanitizeProviderControlContract(line);
     if (line.startsWith("この瞬間の動作:"))
@@ -276,7 +285,7 @@ export function buildConservativeGeneralAudienceGenerationRetry(
     if (line.startsWith("追加指定:") || line.startsWith("修正指示:"))
       return "追加指定: 穏やかな一般向け場面として自然に整える。";
     return line;
-  });
+  }).filter(Boolean);
   const prompt = [
     CONSERVATIVE_GENERAL_AUDIENCE_RETRY_GUIDANCE,
     GENERAL_AUDIENCE_RETRY_OUTPUT_QUALITY_GUIDANCE,

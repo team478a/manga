@@ -461,7 +461,7 @@ test("クローズアップは短い構造化Promptで安定した中距離撮�
   );
 });
 
-test("クローズアップの端末構図は位置だけを残して端末自体を直接描かない", () => {
+test("クローズアップの端末構図は端末位置も含めて穏やかな人物配置へ置換する", () => {
   const closeUpStoryboard = structuredClone(storyboard);
   closeUpStoryboard.pages[0].panels[0].shot = "close_up";
   closeUpStoryboard.pages[0].panels[0].composition =
@@ -476,15 +476,15 @@ test("クローズアップの端末構図は位置だけを残して端末自�
   });
   const providerContract = JSON.parse(result.generation.prompt.split("\n")[1]);
 
-  assert.match(providerContract.layout, /胸ポケット/);
-  assert.match(providerContract.layout, /pocket seam and soft fabric fold/);
-  assert.match(providerContract.layout, /relaxed hand/);
-  assert.match(providerContract.subjects[0].action, /look toward pocket/);
+  assert.match(providerContract.layout, /storyboard-relative placement/);
+  assert.match(providerContract.layout, /relaxed clothing/);
+  assert.match(providerContract.layout, /natural hands/);
+  assert.match(providerContract.subjects[0].action, /off-frame gaze/);
   assert.match(providerContract.overlay_stage, /overlays added later/);
   assert.match(providerContract.quality_gate, /pictorial only/);
   assert.doesNotMatch(
     JSON.stringify(providerContract),
-    /スマートフォン|スマホ|携帯|端末|デバイス|表示面|ディスプレイ|smartphone|mobile phone|phone|device|screen|display|conceal|hidden prop|\bUI\b/i,
+    /スマートフォン|スマホ|携帯|端末|デバイス|表示面|ディスプレイ|胸ポケット|smartphone|mobile phone|phone|device|screen|display|pocket|conceal|hidden prop|\bUI\b/i,
   );
   assert.ok(
     result.generation.prompt.length < 2_000,

@@ -77,15 +77,15 @@ const compactProviderContractGeneration = {
 
 test("Provider拒否後は人物同一性と参照画像を維持して直接描写だけを安全化する", () => {
   const retry = buildGeneralAudienceGenerationRetry(imageGeneration);
-  assert.match(retry.prompt, /一般向け作品として刺激の強い直接描写を避け/);
+  assert.match(retry.prompt, /一般向けの穏やかな場面として/);
   assert.match(retry.prompt, /人物設定: 黒髪、細身、灰色のパーカー/);
   assert.match(retry.prompt, /固定ビジュアル設定/);
   assert.match(retry.prompt, /表情と視線で状況を伝える/);
-  assert.match(retry.prompt, /構図、照明で.*間接的に伝える/);
+  assert.match(retry.prompt, /光と影、人物間の距離、視線誘導/);
   assert.doesNotMatch(retry.prompt, /刺激の強い出来事を直接描く/);
-  assert.match(retry.prompt, /衣服の縫い目、自然な布のふくらみ、手の位置/);
-  assert.match(retry.prompt, /必要な小物はそれぞれ一つだけ/);
-  assert.doesNotMatch(retry.prompt, /端末|表示面|handheld device|device screen/i);
+  assert.match(retry.prompt, /衣服は自然な縫い目と柔らかな布の陰影/);
+  assert.match(retry.prompt, /手は力の抜けた自然な位置/);
+  assert.doesNotMatch(retry.prompt, /刺激の強い|直接描写を避け|携帯品|端末|表示面|胸ポケット|handheld device|device screen|pocket|incident|non-graphic/i);
   assert.match(retry.negativePrompt, /pseudo-text/);
   assert.match(retry.negativePrompt, /device screen UI/);
   assert.match(retry.negativePrompt, /duplicate props/);
@@ -138,7 +138,7 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   );
   assert.match(contract.subjects[0].action, /posture and gaze/);
   assert.match(contract.subjects[0].expression, /general audience/);
-  assert.match(contract.background, /non-graphic/);
+  assert.match(contract.background, /calm story-appropriate/);
   assert.match(contract.variation, /convey tension indirectly/);
   assert.match(contract.scene, /roomy environmental portrait/);
   assert.match(contract.output_type, /continuous edge-to-edge/);
@@ -160,7 +160,7 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.match(contract.camera.focus, /identity and expression/);
   assert.match(contract.surface_content, /pure pictorial artwork/);
   assert.match(contract.face_finish, /clean linework and shading/);
-  assert.match(contract.quality_gate, /clean fabric and pocket details/);
+  assert.match(contract.quality_gate, /clean fabric details/);
   assert.match(contract.quality_gate, /pure pictorial marks/);
   assert.doesNotMatch(retry.prompt, /speaking|lettering|unmarked/);
   assert.doesNotMatch(JSON.stringify(contract), /\b(?:chest|waist)\b/i);
@@ -179,7 +179,12 @@ test("安全再構成もProviderに拒否された場合は穏やかな日常場
   const conservativeRetry = buildConservativeGeneralAudienceGenerationRetry(
     firstRetry,
   );
-  const contract = JSON.parse(conservativeRetry.prompt.split("\n")[4]);
+  const conservativeLines = conservativeRetry.prompt.split("\n");
+  const contract = JSON.parse(
+    conservativeLines[
+      conservativeLines.indexOf("PROVIDER CONTROL CONTRACT:") + 1
+    ],
+  );
 
   assert.equal(isGeneralAudienceGenerationRetry(conservativeRetry), true);
   assert.equal(
@@ -192,11 +197,15 @@ test("安全再構成もProviderに拒否された場合は穏やかな日常場
   assert.match(contract.composition, /protagonist at the left edge/);
   assert.match(contract.layout, /protagonist at the left edge/);
   assert.match(contract.variation, /storyboard shot/);
-  assert.match(contract.quality_gate, /clean fabric and pocket details/);
+  assert.match(contract.quality_gate, /clean fabric details/);
   assert.match(contract.subjects[0].description, /same black-haired protagonist/);
   assert.deepEqual(
     conservativeRetry.referenceAssetIds,
     imageGeneration.referenceAssetIds,
+  );
+  assert.doesNotMatch(
+    conservativeRetry.prompt,
+    /刺激の強い|直接描写を避け|携帯品|端末|表示面|胸ポケット|handheld device|device screen|pocket|incident|non-graphic/i,
   );
   assert.equal(
     moderateGeneralCloudPrompt(
@@ -208,6 +217,26 @@ test("安全再構成もProviderに拒否された場合は穏やかな日常場
     buildConservativeGeneralAudienceGenerationRetry(conservativeRetry),
     conservativeRetry,
   );
+});
+
+test("旧版の第1段階安全再構成も第2段階として認識して禁止説明を除去する", () => {
+  const firstRetry = buildGeneralAudienceGenerationRetry(
+    compactProviderContractGeneration,
+  );
+  const legacyRetry = {
+    ...firstRetry,
+    prompt: firstRetry.prompt.replace(
+      "一般向けの穏やかな場面として、人物の表情、距離、構図、自然な照明で物語を伝える。",
+      "一般向け作品として刺激の強い直接描写を避け、緊迫感は人物の表情、距離、構図、照明で間接的に伝える。",
+    ),
+  };
+
+  assert.equal(isGeneralAudienceGenerationRetry(legacyRetry), true);
+  const conservativeRetry =
+    buildConservativeGeneralAudienceGenerationRetry(legacyRetry);
+  assert.equal(isConservativeGeneralAudienceGenerationRetry(conservativeRetry), true);
+  assert.doesNotMatch(conservativeRetry.prompt, /刺激の強い|直接描写を避け/);
+  assert.match(conservativeRetry.prompt, /一般向けの穏やかな日常場面/);
 });
 
 test("詳細Promptの第2段階再構成は危険表現を除きネームの相対配置を維持する", () => {
@@ -241,7 +270,12 @@ test("第2段階再構成は危険な構図anchorをProviderへ戻さない", ()
   const conservativeRetry = buildConservativeGeneralAudienceGenerationRetry(
     firstRetry,
   );
-  const contract = JSON.parse(conservativeRetry.prompt.split("\n")[4]);
+  const conservativeLines = conservativeRetry.prompt.split("\n");
+  const contract = JSON.parse(
+    conservativeLines[
+      conservativeLines.indexOf("PROVIDER CONTROL CONTRACT:") + 1
+    ],
+  );
 
   assert.match(contract.composition, /相対配置/);
   assert.doesNotMatch(contract.composition, /刺激の強い出来事/);

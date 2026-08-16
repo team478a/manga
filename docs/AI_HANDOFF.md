@@ -1,5 +1,21 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0. 現在の優先タスク（PR-R4-2AG 正方向だけのProvider安全再構成、2026-08-16）
+
+- Branch: `codex/fix-r4-2ag-positive-only-safe-retry`
+- Base: `origin/feature/manga-canvas-mvp` @ `7cb9f02`（PR #289 merge commit）
+- 状態: `READY_FOR_OWNER_REVIEW`
+- Draft PR: [#290](https://github.com/team478a/manga/pull/290)（Draft／MERGEABLE）
+- Vercel Preview: [確認済み](https://mangai-hub-staging-git-codex-fix-r4-2-b9d25a-team478as-projects.vercel.app)
+- PR #289反映後、Productionページ22・コマ1の最新失敗Jobを1件だけ再実行した。Worker [31932216482](https://github.com/team478a/manga/actions/runs/31932216482)は`requests=2 processed=1`で成功したが、Jobは`provider_moderation_blocked`、Assetなし、Provider課金0。Creditは使用76／予約0／残24へ全額復元。
+- 第1段階安全再構成に禁止対象の回避説明と携帯品・ポケット表現が残っていた。通常生成と第1・第2段階安全再構成を、穏やかな人物・背景・衣服・手・自然光だけの正方向Promptへ統一する。
+- 旧版第1段階Jobも後方互換で認識し、旧い禁止説明を除去して第2段階へ進める。
+- 集中54/54、Hub 742/742、Canvas 26/26、AI 48/48、依存境界、lint、Hub型検査、59 migration／rollback、research eval、100ページfixture、Cloud漫画repository acceptance、owner isolation、package／Next.js build、diff check成功。RC preflightはstructure ready。Desktop 3ゲートは差分外の既知の`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub Windows buildで正式判定する。
+- 初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsが成功。Windows CIではDesktop test、Accessibility、Windows application buildも成功。最終文書同期HEADでも同じ5チェックを確認し、責任者レビューまで停止する。merge前にProduction追加生成・再実行を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_2AG_POSITIVE_ONLY_SAFE_RETRY.md`
+
+---
+
 ## 0. 現在の優先タスク（PR-R4-2AF moderation安全な衣服表現、2026-08-16）
 
 - Branch: `codex/fix-r4-2af-moderation-safe-garment-cue`
