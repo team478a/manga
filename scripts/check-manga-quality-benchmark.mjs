@@ -11,7 +11,9 @@ import {
 } from "../src/modules/manga-quality/domain/quality-benchmark-fixture.ts";
 
 const strict = process.argv.includes("--strict");
-const fixtureRoot = path.resolve("tests/fixtures/manga-quality/v2.1");
+const fixtureRoot = path.resolve(
+  process.env.MANGAI_QUALITY_BENCHMARK_ROOT ?? "tests/fixtures/manga-quality/v2.1",
+);
 const splitRoots = {
   dev: path.join(fixtureRoot, "dev"),
   holdout: path.join(fixtureRoot, "holdout-private"),

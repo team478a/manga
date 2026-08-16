@@ -14,3 +14,5 @@ packages/*/dist
 /tests/fixtures/manga-quality/assets/
 /tests/fixtures/manga-quality/v2.1/dev/
 /tests/fixtures/manga-quality/v2.1/holdout-private/
+# 権利資料、収集台帳、二重review、元画像を含むローカルassembly領域
+/tests/fixtures/manga-quality/v2.1/assembly/

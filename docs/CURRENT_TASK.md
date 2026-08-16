@@ -1,5 +1,38 @@
 # MANGAI Current Task
 
+## 2026-08-16 PR-R4-3A-3 Benchmark v2.1 Fixture Assembly
+
+- 状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_HUMAN_REVIEW`
+- Draft PR: [#293](https://github.com/team478a/manga/pull/293)（Draft／MERGEABLE）
+- Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-git-codex-feat-r4-87ad37-team478as-projects.vercel.app)
+- Branch: `codex/feat-r4-3a3-benchmark-assembly`
+- Base: `origin/feature/manga-canvas-mvp`@`3f121f5`（PR #292 merge commit。PR #291 merge commit `355ebfd`を含む）。
+- 範囲: Candidate Visual Benchmark 140件を、権利確認、禁止コンテンツ確認、二重review、family単位のdev／private holdout分離、漏洩検査を通して組み立てるローカル専用基盤。Visual Judge、runtime判定、自動修復、Providerは変更しない。
+- 監査結果:
+  1. PR #291の`ok / unknown / not_evaluated` Evidenceとprovider-neutral Visual Judgeを維持する。
+  2. PR #292のBenchmark v2.1 schemaを正本とし、4桁の中立ID `img_0001`を維持する。今回指示の6桁表記は中立名の例であり、既存schema変更指示とは扱わない。
+  3. strict入口は`npm run manga:quality:benchmark:strict`、不足時は`BLOCKED_FIXTURE_SHORTAGE`で非0終了する。
+  4. checkerは`tests/fixtures/manga-quality/tools/bench_leak_check_v2_1.py`、現行SHA-256は`3FB2030AAC0884D8051BE45B98F48A5725D7850CDD47A62805E7F865B97213E0`。
+  5. `manifest.json`はversion、dataset、candidate suite、split、review version、Production-native profiles、画像ID／path／SHAだけを持つ。
+  6. `cases.json`はlabelを持たないpublic入力で、candidate、judge mode、profile、refs、intendedだけを持つ。
+  7. `labels.private.json`はevaluator-onlyで、verdict、defects、2名以上のreviewer、review日時を持つ。
+  8. image profileは実Production pipelineの幅・高さをmanifestに固定し、upscaleや背景色でlabelを分けない。
+  9. intendedのsource of truthは既存`panelSpecificationSchema`で、独自互換schemaを作らない。
+  10. Benchmark defectは7値／6群。runtime failure schemaへ意味の違う項目を強制変換しない。
+  11. 件数契約はdev 48／48／16、private holdout 12／12／4、合計good 60／bad 60／borderline 20。
+  12. v1 evidenceは`overall=false`のnegative controlで、v2.1正式画像へ流用しない。
+  13. dev、holdout、旧assets、`.env*`はgitignore対象。private labels、review、権利資料、画像をGitへ入れない。
+  14. ローカルfixture root環境変数は未実装だったため、今回追加対象とする。既定値は後方互換のignored rootに限定する。
+- 現在の不足: 権利確認済み実画像0/140、独立review 0/280、adjudication未実施。ダミー、顧客、Production、モニター、v1画像では補完しない。
+- 不変: Production、DB、migration、RPC、RLS、Storage、既存作品、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
+- 実装: ローカルroot、収集／権利／review台帳、AI review拒否、第三者adjudication、family split、exact／near duplicate、合意率／kappa、no-overwrite assembly、共通preflight／leak rootを追加した。
+- 検証: 集中7/7、Hub 763/763、Canvas 26/26、AI 48/48、長編4/4、dependency／module boundary、lint、Hub型検査、59 migration／rollback、research eval、Cloud漫画repository、owner isolation、workspace packages／Webpack build、diff check成功。assemblyとv2.1 non-strictは正常に不足を報告し、strictは期待どおり終了コード1。TurbopackはWindows path length、Desktop 3ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止。
+- CI: 実装HEAD `e10b1c0`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終文書同期HEADでも同じ5チェックを再確認する。
+- 次: 最終HEADのCI／Preview成功後、責任者レビューまで停止する。画像収集、Production、Provider、R4-3Bへ進まない。
+- 詳細: `docs/quality-benchmark-assembly.md`、`docs/RELEASE_CANDIDATE_R4_3A3_BENCHMARK_ASSEMBLY.md`
+
+---
+
 ## 2026-08-16 PR-R4-3A2 Benchmark v2.1契約修正
 
 - 状態: `READY_FOR_OWNER_REVIEW / BLOCKED_FIXTURE_SHORTAGE / BLOCKED_SKLEARN`

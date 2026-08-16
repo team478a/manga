@@ -16,6 +16,8 @@ v2.1/holdout-private/       # evaluator only; threshold調整担当へ渡さな�
   ...same layout...
 ```
 
+収集・権利・review・split指定は`assembly/`に置くローカル専用情報です。正式packageへ変換する前に`docs/quality-benchmark-assembly.md`の手順を使います。`assembly/`自体もgitignore対象です。
+
 `cases.json` はVisual Judgeへ渡せる公開入力だけを持ち、verdict、defects、severity、review情報を含めません。`labels.private.json` は必ず別ファイル・別配布経路で管理します。ファイル名は `images/img_0001.png` のようにlabel-neutralにします。
 
 ## Exact composition
@@ -30,10 +32,12 @@ bad 60件では、6つの大分類を各10件以上含めます。同じProducti
 
 ## Acceptance
 
-1. `npm run manga:quality:benchmark:preflight` — ファイル分離、ID、SHA-256、PNG metadata、Production profile寸法、Panel Specification、参照ファイル、件数・重複を検査。
-2. `python -m pip install -r tests/fixtures/manga-quality/tools/requirements.txt`
-3. `npm run manga:quality:benchmark:leak` — univariate AUC、dev CV、private holdoutのshortcutを検査。
-4. evaluatorが人手レビューの合意率90%以上（推奨 Cohen's kappa 0.75以上）を確認。
+1. `npm run manga:quality:benchmark:assembly:audit` — 権利、禁止画像、family分離、人間2名review、adjudication、件数を検査。
+2. `npm run manga:quality:benchmark:assembly:write` — 既存出力を上書きせずdev／private holdout packageを作成。
+3. `npm run manga:quality:benchmark:preflight` — ファイル分離、ID、SHA-256、PNG metadata、Production profile寸法、Panel Specification、参照ファイル、件数・重複を検査。
+4. `python -m pip install -r tests/fixtures/manga-quality/tools/requirements.txt`
+5. `npm run manga:quality:benchmark:leak` — univariate AUC、dev CV、private holdoutのshortcutを検査。
+6. evaluatorが人手レビューの合意率90%以上、Cohen's kappa 0.75以上を確認。
 
 最終Acceptanceはunivariate AUCが各0.65未満、dev CVとholdoutのbalanced accuracyが各60%以下です。sharpness/filesizeの群間差20%超は警告として人手確認します。不足をダミー画像や`unknown`で埋めません。
 

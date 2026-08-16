@@ -1,0 +1,25 @@
+{
+  "assembly_version": "1",
+  "records": [
+    {
+      "id": "rights_0001",
+      "case_id": "img_0001",
+      "status": "verified",
+      "basis": "original_owned",
+      "benchmark_use_permitted": true,
+      "verified_by": "rights-reviewer",
+      "verified_at": "2026-08-16",
+      "evidence_file": "assembly/rights/rights_0001.json",
+      "screening": {
+        "customer_content": false,
+        "production_content": false,
+        "monitor_content": false,
+        "adult_content": false,
+        "personal_information": false,
+        "v1_reuse": false,
+        "placeholder_image": false,
+        "trivial_transform_or_crop": false
+      }
+    }
+  ]
+}

@@ -30,8 +30,8 @@ export const QUALITY_BENCHMARK_DEFECT_GROUPS = {
   background_or_prop: ["background_prop_mismatch"],
 } as const;
 
-const sha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
-const caseIdSchema = z.string().regex(/^img_[0-9]{4}$/);
+export const qualityBenchmarkSha256Schema = z.string().regex(/^[a-f0-9]{64}$/);
+export const qualityBenchmarkCaseIdSchema = z.string().regex(/^img_[0-9]{4}$/);
 const imagePathSchema = z
   .string()
   .regex(/^images\/img_[0-9]{4}\.png$/)
@@ -72,9 +72,9 @@ export const qualityBenchmarkManifestSchema = z
       .array(
         z
           .object({
-            id: caseIdSchema,
+            id: qualityBenchmarkCaseIdSchema,
             file: imagePathSchema,
-            sha256: sha256Schema,
+            sha256: qualityBenchmarkSha256Schema,
             image_profile_id: z.string().min(1).max(80),
           })
           .strict(),
@@ -102,7 +102,7 @@ export const qualityBenchmarkManifestSchema = z
 
 export const qualityBenchmarkCaseSchema = z
   .object({
-    id: caseIdSchema,
+    id: qualityBenchmarkCaseIdSchema,
     file: imagePathSchema,
     suite: z.literal("candidate"),
     judge_mode: z.enum(["intrinsic", "referential"]),
@@ -152,35 +152,33 @@ export const qualityBenchmarkIntendedSchema = z
   })
   .strict();
 
-const verdictSchema = z.enum(["good", "bad", "borderline"]);
+export const qualityBenchmarkVerdictSchema = z.enum(["good", "bad", "borderline"]);
+
+export const qualityBenchmarkDefectSchema = z
+  .object({
+    category: z.enum(QUALITY_BENCHMARK_DEFECT_CATEGORIES),
+    severity: z.enum(["minor", "major", "critical"]),
+    bbox: z.tuple([
+      z.number().min(0).max(1),
+      z.number().min(0).max(1),
+      z.number().positive().max(1),
+      z.number().positive().max(1),
+    ]).optional(),
+    note: z.string().trim().min(1).max(1_000).optional(),
+  })
+  .strict()
+  .superRefine((defect, context) => {
+    if (defect.bbox && defect.bbox[0] + defect.bbox[2] > 1)
+      context.addIssue({ code: "custom", path: ["bbox"], message: "bbox exceeds image width" });
+    if (defect.bbox && defect.bbox[1] + defect.bbox[3] > 1)
+      context.addIssue({ code: "custom", path: ["bbox"], message: "bbox exceeds image height" });
+  });
 
 export const qualityBenchmarkPrivateLabelSchema = z
   .object({
-    id: caseIdSchema,
-    verdict: verdictSchema,
-    defects: z
-      .array(
-        z
-          .object({
-            category: z.enum(QUALITY_BENCHMARK_DEFECT_CATEGORIES),
-            severity: z.enum(["minor", "major", "critical"]),
-            bbox: z.tuple([
-              z.number().min(0).max(1),
-              z.number().min(0).max(1),
-              z.number().positive().max(1),
-              z.number().positive().max(1),
-            ]).optional(),
-            note: z.string().trim().min(1).max(1_000).optional(),
-          })
-          .strict()
-          .superRefine((defect, context) => {
-            if (defect.bbox && defect.bbox[0] + defect.bbox[2] > 1)
-              context.addIssue({ code: "custom", path: ["bbox"], message: "bbox exceeds image width" });
-            if (defect.bbox && defect.bbox[1] + defect.bbox[3] > 1)
-              context.addIssue({ code: "custom", path: ["bbox"], message: "bbox exceeds image height" });
-          }),
-      )
-      .max(24),
+    id: qualityBenchmarkCaseIdSchema,
+    verdict: qualityBenchmarkVerdictSchema,
+    defects: z.array(qualityBenchmarkDefectSchema).max(24),
     reviewed_by: z
       .array(z.string().regex(/^[a-z0-9][a-z0-9_-]{2,79}$/))
       .min(2)

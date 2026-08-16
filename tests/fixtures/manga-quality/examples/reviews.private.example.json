@@ -1,0 +1,29 @@
+{
+  "assembly_version": "1",
+  "protocol": "human-dual-v1",
+  "records": [
+    {
+      "case_id": "img_0001",
+      "reviews": [
+        {
+          "slot": "reviewer_a",
+          "reviewer_id": "reviewer-a",
+          "reviewer_kind": "human",
+          "independent": true,
+          "reviewed_at": "2026-08-16",
+          "verdict": "bad",
+          "defects": [{ "category": "anatomy_object_fusion", "severity": "major" }]
+        },
+        {
+          "slot": "reviewer_b",
+          "reviewer_id": "reviewer-b",
+          "reviewer_kind": "human",
+          "independent": true,
+          "reviewed_at": "2026-08-16",
+          "verdict": "bad",
+          "defects": [{ "category": "anatomy_object_fusion", "severity": "major" }]
+        }
+      ]
+    }
+  ]
+}
