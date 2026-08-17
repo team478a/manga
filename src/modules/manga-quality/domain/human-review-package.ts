@@ -7,6 +7,7 @@ import {
 
 export const HUMAN_REVIEW_PACKAGE_VERSION = "mangai-review-package-v2" as const;
 export const HUMAN_REVIEW_TEMPLATE_VERSION = "mangai-human-review-v2" as const;
+export const MOBILE_OFFLINE_REVIEW_UI_VERSION = "mangai-mobile-offline-review-v1" as const;
 
 export const HUMAN_REVIEW_DEFECT_CATEGORIES = [
   "character_identity_mismatch",
@@ -259,6 +260,11 @@ export const humanReviewPackageManifestSchema = z
     package_status: z.enum(["PILOT_PACKAGE_STRUCTURE_READY", "FORMAL_REVIEW_READY"]),
     review_scope: z.enum(["PILOT_INTRINSIC_ONLY", "FORMAL_CANDIDATE"]),
     formal_benchmark_eligible: z.boolean(),
+    review_ui: z.object({
+      version: z.literal(MOBILE_OFFLINE_REVIEW_UI_VERSION),
+      entry_file: z.literal("review.html"),
+      network_access: z.literal(false),
+    }).strict().optional(),
     case_count: z.number().int().min(1).max(140),
     cases: z.array(humanReviewPackageCaseSchema).min(1).max(140),
   })
