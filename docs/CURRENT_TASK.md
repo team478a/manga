@@ -1,9 +1,30 @@
 # MANGAI Current Task
 
+## 2026-08-17 PR-R4-3A-6 Secure Human Review Transfer
+
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / ENCRYPTED_PACKAGES_READY / OUTBOUND_NOT_SHARED / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
+- Draft PR: [#298](https://github.com/team478a/manga/pull/298)（Draft／MERGEABLE）
+- Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-mb4xx3i63-team478as-projects.vercel.app)
+- Branch: `codex/feat-r4-3a6-secure-review-transfer`
+- Base: `origin/feature/manga-canvas-mvp`@`ba9b31a`（PR #296 merge commit）。
+- 目的: 権利確認者とHuman Reviewer A/Bへprivate ZIPを安全に渡すため、パスフレーズを別経路で共有できる自己完結型暗号化HTML封筒を追加する。
+- 暗号契約: PBKDF2-HMAC-SHA-256 310,000回、16-byte random salt、AES-256-GCM、12-byte random IV、128-bit tag、version／元ZIP SHA-256／byte lengthをAADへ束縛する。パスフレーズは24文字以上、ファイル入力限定で、画面・ログ・receipt・Gitへ出さない。
+- Blindness: 外向けHTMLとreceiptは中立名だけを使い、Reviewer slot、package ID、元ファイル名、Prompt、label、source metadataを平文へ含めない。slot対応はGit外のprivate mappingだけへ保存する。
+- Fail closed: 元Human Review ZIP／private sidecarまたは権利確認ZIPを暗号化前に検証し、recipient role不一致、短い／誤ったパスフレーズ、改ざん、SHA不一致、既存出力上書きを拒否する。解除画面はCSP `connect-src 'none'`で外部通信を禁止する。
+- Private実物: 権利確認、Reviewer A、Reviewer Bの各28件を別パスフレーズで暗号化した中立HTML 3件をローカルprivate rootへ生成。全3件を復号し、元ZIP SHA-256、package version、28件構造の一致を確認した。外部upload／共有は0件。
+- 検証: 集中3/3、実権利package validator 28件、実暗号化／復号3/3、dependency／module boundary、lint、Hub型検査、Hub 784/784、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight、diff check成功。通常Turbopackは既知Windows path lengthで停止。ローカル`file://`のブラウザ操作はBrowser安全ポリシーで停止し、迂回せず受領端末確認へ残す。
+- CI: 実装HEAD `1a06e46`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。最終証跡同期HEADでも同じ5チェックを再確認する。
+- 不変: Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、runtime Judge、自動修復、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
+- 現在の不足: 配布先の個人指定、HTMLとパスフレーズの別経路共有、受領スマートフォンでの復号確認、人間の権利確認0/28、独立Human Review 0/56、不一致裁定。正式Benchmarkは0/140。
+- 次: 最終HEADの全CI成功後、責任者確認まで停止する。責任者が受取人と2つの共有経路を指定するまで外部送信せず、R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A6_SECURE_REVIEW_TRANSFER.md`
+
+---
+
 ## 2026-08-17 PR-R4-3A-5 Mobile Offline Human Review
 
-- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / MOBILE_OFFLINE_PACKAGE_READY / SECURE_TRANSFER_PENDING / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
-- Draft PR: [#296](https://github.com/team478a/manga/pull/296)（Draft／MERGEABLE）
+- 状態: `MERGED / ALL_CI_PASSED / MOBILE_OFFLINE_PACKAGE_READY / SECURE_TRANSFER_PENDING / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
+- PR: [#296](https://github.com/team478a/manga/pull/296)（マージ済み、merge commit `ba9b31ad7cbe731870fd1edab2f7eb01206c92fc`）
 - Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-pzf49iulq-team478as-projects.vercel.app)
 - Branch: `codex/feat-r4-3a5-mobile-offline-review`
 - Base: `origin/feature/manga-canvas-mvp`@`f9aff56`（PR #297 merge commit）を通常mergeで取り込み済み。
