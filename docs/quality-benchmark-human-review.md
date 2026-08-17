@@ -117,3 +117,25 @@ generatorはprivate原画像と既存ZIPを変更しない。誤った派生物�
 `review.html`は自己完結型で、CSPの`connect-src 'none'`により外部通信を禁止する。外部script、stylesheet、image、font、analytics、APIを使わない。正解label、相手の回答、AI監査、Prompt、private source metadata、splitは埋め込まない。端末内下書きはpackage IDとReviewer slotで分離し、回答回収後に画面の消去操作で削除する。
 
 package manifestの`review_ui`はoptionalであり、既存v2 ZIPの検証互換を維持する。値がある場合、validatorはversion、入口、network false、CSP、remote resourceなし、manifest／template／order／intended一致を検査する。スマートフォンへの配布は別契約であり、画像を公開URLや公開GitHub artifactへ置かない。
+
+## 10. Secure Transfer
+
+Reviewer ZIPと権利確認ZIPは、公開URL、公開GitHub artifact、Production Storageへ置かない。配布時は`mangai-secure-review-transfer-v1`の中立HTMLへ暗号化し、HTMLとパスフレーズを異なる経路で受取人本人へ渡す。
+
+```powershell
+npm run manga:benchmark:review-transfer:passphrase -- --output C:\private\secrets\passphrase.txt
+
+npm run manga:benchmark:review-transfer:build -- `
+  --package C:\private\reviewer-a.zip `
+  --source-metadata C:\private\reviewer-a.source-metadata.private.json `
+  --recipient-role reviewer_a `
+  --passphrase-file C:\private\secrets\passphrase.txt `
+  --output C:\private\outbound\transfer.html `
+  --private-mapping C:\private\mapping\transfer.private.json
+
+npm run manga:benchmark:review-transfer:validate -- `
+  --envelope C:\private\outbound\transfer.html `
+  --passphrase-file C:\private\secrets\passphrase.txt
+```
+
+権利確認ZIPは`--package-kind rights-review --recipient-role rights_reviewer`を指定する。A/Bは必ず別パスフレーズとし、mapping／passphraseをHTMLと同じ共有先へ置かない。受領者は復号後SHA成功を確認し、ZIPを展開して`review.html`を開く。回答回収後、受領端末のHTML、ZIP、下書きを削除する。送信前に受取人、HTML共有経路、パスフレーズ共有経路をprivate運用台帳へ記録する。

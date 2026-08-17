@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-17 Codex: PR-R4-3A-6 Secure Human Review Transfer（作業中）
+
+- PR #296 merge commit `ba9b31ad7cbe731870fd1edab2f7eb01206c92fc`を含む最新基準から`codex/feat-r4-3a6-secure-review-transfer`を開始した。
+- PBKDF2-HMAC-SHA-256 310,000回、AES-256-GCM、random salt／IV、AADへversion／ZIP SHA／lengthを束縛する自己完結型暗号化HTML封筒を追加した。パスフレーズは24文字以上のファイル入力だけを許可し、ログ・HTML・receipt・Gitへ出さない。
+- Human Review ZIP／private sidecarと権利確認ZIPを暗号化前に検査する。recipient roleとslotの不一致、改ざん、誤パスフレーズ、上書きを拒否し、外向けファイルは中立名、対応関係はGit外private mappingだけへ保存する。
+- 実Batchの権利確認／Reviewer A／Reviewer B各28件を別パスフレーズの3封筒へ生成し、全3件の復号、元SHA、package version、28件構造を確認。外部upload／共有なし、Production／DB／Storage／Provider／credit変更なし。
+- 集中3/3、実権利package validator 28件、実暗号化／復号3/3、dependency／module boundary、lint、Hub型検査、Hub 784/784、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length。ローカル`file://`ブラウザ操作は安全ポリシーで停止し、迂回していない。
+- 正式Benchmark 0/140、人間の権利確認0/28、Human A/B 0/56。Draft PRと全CI／Vercel確認後に停止し、受取人と別経路指定前に送信せず、R4-3Bへ進まない。
+
+---
+
 ## 2026-08-17 Codex: PR-R4-3A-5 Mobile Offline Human Review（作業中）
 
 - PR #295 merge commit `f989d61`を含む最新基準から`codex/feat-r4-3a5-mobile-offline-review`を開始した。
