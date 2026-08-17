@@ -2,7 +2,7 @@
 
 作成日: 2026-08-17
 
-状態: `DRAFT_PR_OPEN / MOBILE_OFFLINE_PACKAGE_READY / CI_RECHECK_PENDING / SECURE_TRANSFER_PENDING`
+状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / MOBILE_OFFLINE_PACKAGE_READY / SECURE_TRANSFER_PENDING`
 
 ## 1. 目的
 
@@ -65,6 +65,6 @@ Draft PR、全CI、Vercel Preview成功後に停止する。安全な配布先�
 
 ## 9. CI復旧
 
-Draft PR [#296](https://github.com/team478a/manga/pull/296)はDraft／MERGEABLE。旧実行ではMigration roundtrip、Vercel、Vercel Preview Commentsが成功し、Previewは[Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)だった。Core quality／Windows buildの失敗原因は、2026-08-17 00:00 UTCに既存`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効し、成功系fixtureが壁時計へ依存していたことだった。
+Draft PR [#296](https://github.com/team478a/manga/pull/296)はDraft／MERGEABLE。Previewは[Ready／SSO保護](https://mangai-hub-staging-pzf49iulq-team478as-projects.vercel.app)。Core quality／Windows buildの旧失敗原因は、2026-08-17 00:00 UTCに既存`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効し、成功系fixtureが壁時計へ依存していたことだった。
 
-PR #297がoptionalな決定的時計を導入し、Productionの実時刻とfail-closedを変えずに該当テストを修正して基準ブランチへマージ済み。merge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`をPR #296へ通常mergeし、最終HEADで全CIとVercel Previewを再確認する。
+PR #297がoptionalな決定的時計を導入し、Productionの実時刻とfail-closedを変えずに該当テストを修正して基準ブランチへマージ済み。merge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`をPR #296へ通常mergeしたHEAD `d3dc0d8`で、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsがすべて成功した。最終証跡同期HEADでも同じ5チェックを再確認する。

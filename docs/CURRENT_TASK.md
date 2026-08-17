@@ -2,9 +2,9 @@
 
 ## 2026-08-17 PR-R4-3A-5 Mobile Offline Human Review
 
-- 状態: `DRAFT_PR_OPEN / MOBILE_OFFLINE_PACKAGE_READY / CI_RECHECK_PENDING / SECURE_TRANSFER_PENDING / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / MOBILE_OFFLINE_PACKAGE_READY / SECURE_TRANSFER_PENDING / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
 - Draft PR: [#296](https://github.com/team478a/manga/pull/296)（Draft／MERGEABLE）
-- Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)
+- Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-pzf49iulq-team478as-projects.vercel.app)
 - Branch: `codex/feat-r4-3a5-mobile-offline-review`
 - Base: `origin/feature/manga-canvas-mvp`@`f9aff56`（PR #297 merge commit）を通常mergeで取り込み済み。
 - 目的: Reviewer A/Bのprivate ZIPを展開し、スマートフォン幅のブラウザで候補画像を確認、判定、確信度、欠陥、コメントを入力し、既存`mangai-human-review-v2`回答JSONを端末へ保存できるオフラインUIを追加する。
@@ -15,8 +15,8 @@
 - 現在の不足: private ZIPをスマートフォンへ渡す安全な経路は未決定。人間の権利確認0/28、独立Human Review 0/56、正式Benchmark 0/140。AIはHuman Reviewerを代替しない。
 - 不変: Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、runtime Judge、自動修復、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
 - 検証: 集中16/16、実A/B各28件package validator、390×844で28ケース全件操作、dependency、lint、Hub型検査、Hub 781/781、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
-- CI復旧: 期限契約を決定的時計で検査するPR #297が基準ブランチへマージ済み。PR #296へ最新基準を通常mergeし、Core quality／Windows buildを含む全CIを再確認する。
-- 次: PR #296の最終HEADで全CIとVercel Preview成功を確認して停止する。安全な配布経路とHuman Reviewer A/Bの割当てが決まるまでR4-3Bへ進まない。
+- CI復旧: 期限契約を決定的時計で検査するPR #297を通常mergeしたHEAD `d3dc0d8`で、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsがすべて成功。期限切れで失敗していたLinux／WindowsのDesktop契約は復旧した。最終証跡同期HEADでも同じ5チェックを再確認する。
+- 次: 責任者のPR #296確認まで停止する。安全な配布経路とHuman Reviewer A/Bの割当てが決まるまでR4-3Bへ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_3A5_MOBILE_OFFLINE_REVIEW.md`
 
 ---
