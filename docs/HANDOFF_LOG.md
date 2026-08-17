@@ -13,7 +13,19 @@
 - 集中16/16、Hub 781/781、Canvas 26/26、AI 48/48、dependency、lint、Hub型検査、migration 59本、Webpack Hub build、RC structure成功。Turbopackは既知Windows path length、Desktop 4ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
 - 正式Benchmark 0/140、人間の権利確認0/28、Human A/B 0/56。安全な配布先は未決定で外部uploadなし。Draft PRと全CI／Vercel Preview確認後に停止し、R4-3Bへ進まない。
 - Draft PR [#296](https://github.com/team478a/manga/pull/296)を作成。Draft／MERGEABLE、Previewは[Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)。Migration roundtrip、Vercel、Preview Comments成功。
-- Core quality／Windows buildは再実行を含め同じ既存Desktop 4テストで失敗。2026-08-17 00:00 UTCに`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効した。今回PRはDesktop／pricing不変のため、責任者承認なしに混在修正しない。
+- 旧Core quality／Windows build blockerはPR #297の決定的時計修正で解消済み。merge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`を通常mergeで取り込み、PR #296最終HEADの全CIとPreviewを再確認する。R4-3Bへ進まない。
+
+---
+
+## 2026-08-17 Codex: Desktop期限契約の決定的時計（作業中）
+
+- PR #295 merge commit `f989d61`を含む最新基準から`codex/fix-desktop-expired-clock-contracts`を開始した。
+- PR #296でCore quality／Windows buildが再実行後も同じ4件に失敗。2026-08-17 00:00 UTCにDezgo価格契約とテスト用成人Provider policyが同時失効した壁時計依存を原因と確定した。
+- `AIService`費用guardと成人Provider policy状態取得／適用へoptionalな基準時計を追加し、4テストだけ契約有効期間内の日時を固定した。既定は実時刻で、本番fail-closedは不変。
+- 価格値、pricing version、有効期限、Provider、model、署名、DB、migration、API、IPC、Production、Storage、creditは変更していない。
+- 費用guard 1/1、署名policy 1/1、dependency／module boundary、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure成功。Desktopローカルnative環境不足はGitHub CIで判定する。
+- PR [#297](https://github.com/team478a/manga/pull/297)はmerge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`で基準ブランチへマージ済み。Previewは[Ready／SSO保護](https://mangai-hub-staging-qpkmz2lp4-team478as-projects.vercel.app)。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功し、Linux／Windows Desktop 182/182を確認した。
+- PR #296へ通常mergeで取り込み、同PRの全CIを再確認する。rebase、force push、R4-3B着手は行わない。
 
 ---
 

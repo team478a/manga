@@ -4965,7 +4965,7 @@ export class MangaiDatabase {
       );
     return adultModelApprovalSchema.parse({ ...model, updatedAt: stamp });
   }
-  getAdultProviderPolicyState() {
+  getAdultProviderPolicyState(referenceTime = now()) {
     const approval = this.getAdultProviderApproval();
     const models = this.listAdultModelApprovals();
     return {
@@ -4974,7 +4974,11 @@ export class MangaiDatabase {
       eligibleModelIds: models
         .filter(
           (model) =>
-            evaluateAdultProviderCapability({ approval, model }).allowed,
+            evaluateAdultProviderCapability({
+              approval,
+              model,
+              referenceTime,
+            }).allowed,
         )
         .map((model) => model.modelId),
       lastImport:
@@ -5064,16 +5068,19 @@ export class MangaiDatabase {
     })();
     return blocked.map((item) => item.id);
   }
-  applyAdultProviderPolicyBundle(input: {
-    keyId: string;
-    payloadSha256: string;
-    payload: {
-      issuedAt: string;
-      expiresAt: string;
-      providerApproval: unknown;
-      models: unknown[];
-    };
-  }) {
+  applyAdultProviderPolicyBundle(
+    input: {
+      keyId: string;
+      payloadSha256: string;
+      payload: {
+        issuedAt: string;
+        expiresAt: string;
+        providerApproval: unknown;
+        models: unknown[];
+      };
+    },
+    referenceTime = now(),
+  ) {
     if (!/^[a-zA-Z0-9._-]{1,100}$/.test(input.keyId))
       throw new Error("成人向け運用policyの署名鍵IDが不正です。");
     if (!/^[0-9a-f]{64}$/.test(input.payloadSha256))
@@ -5109,9 +5116,9 @@ export class MangaiDatabase {
           expiresAt,
           importedAt,
         );
-      this.stopPendingAdultDezgoJobsDisallowedByPolicy(importedAt);
+      this.stopPendingAdultDezgoJobsDisallowedByPolicy(referenceTime);
     })();
-    return this.getAdultProviderPolicyState();
+    return this.getAdultProviderPolicyState(referenceTime);
   }
   setAdultGenerationAdministratorEnabled(
     enabled: boolean,

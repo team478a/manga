@@ -2,11 +2,11 @@
 
 ## 2026-08-17 PR-R4-3A-5 Mobile Offline Human Review
 
-- 状態: `DRAFT_PR_OPEN / MOBILE_OFFLINE_PACKAGE_READY / CI_BLOCKED_EXPIRED_DESKTOP_CONTRACT / SECURE_TRANSFER_PENDING / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
+- 状態: `DRAFT_PR_OPEN / MOBILE_OFFLINE_PACKAGE_READY / CI_RECHECK_PENDING / SECURE_TRANSFER_PENDING / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
 - Draft PR: [#296](https://github.com/team478a/manga/pull/296)（Draft／MERGEABLE）
 - Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)
 - Branch: `codex/feat-r4-3a5-mobile-offline-review`
-- Base: `origin/feature/manga-canvas-mvp`@`f989d61`（PR #295 merge commit）。
+- Base: `origin/feature/manga-canvas-mvp`@`f9aff56`（PR #297 merge commit）を通常mergeで取り込み済み。
 - 目的: Reviewer A/Bのprivate ZIPを展開し、スマートフォン幅のブラウザで候補画像を確認、判定、確信度、欠陥、コメントを入力し、既存`mangai-human-review-v2`回答JSONを端末へ保存できるオフラインUIを追加する。
 - 安全境界: `review.html`はCSPで外部通信を禁止し、外部script／画像／CSSを持たない。正解ラベル、相手の回答、AI監査、Prompt、source group／family、split、URL、秘密値を含めない。回答下書きは端末内だけに保存する。
 - 後方互換: `review_ui`は既存v2 packageでoptional。新規generatorだけが`mangai-mobile-offline-review-v1`を追加し、既存CLI response validator／A/B比較schemaは変更しない。
@@ -15,9 +15,26 @@
 - 現在の不足: private ZIPをスマートフォンへ渡す安全な経路は未決定。人間の権利確認0/28、独立Human Review 0/56、正式Benchmark 0/140。AIはHuman Reviewerを代替しない。
 - 不変: Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、runtime Judge、自動修復、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
 - 検証: 集中16/16、実A/B各28件package validator、390×844で28ケース全件操作、dependency、lint、Hub型検査、Hub 781/781、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
-- CI blocker: Migration roundtrip、Vercel、Vercel Preview Commentsは成功。Core quality／Windows buildは再実行を含め、同じ既存Desktop 4テストで失敗した。原因は2026-08-17 00:00 UTCに`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効したこと。fail-closedは正しく、今回差分にDesktop変更はない。
-- 次: R4-3A-5のDesktop／pricing不変境界を越えるため、責任者承認なしにCI blockerを同PRへ混在させない。別の期限契約修正を先行させるか、明示承認後に最小の時計注入／決定的fixture修正を行う。全CI成功前にR4-3Bへ進まない。
+- CI復旧: 期限契約を決定的時計で検査するPR #297が基準ブランチへマージ済み。PR #296へ最新基準を通常mergeし、Core quality／Windows buildを含む全CIを再確認する。
+- 次: PR #296の最終HEADで全CIとVercel Preview成功を確認して停止する。安全な配布経路とHuman Reviewer A/Bの割当てが決まるまでR4-3Bへ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_3A5_MOBILE_OFFLINE_REVIEW.md`
+
+---
+
+## 2026-08-17 PR-R4-3A-5 prerequisite: Desktop期限契約の決定的時計
+
+- 状態: `MERGED / ALL_CI_PASSED / PRODUCTION_FAIL_CLOSED_UNCHANGED`
+- PR: [#297](https://github.com/team478a/manga/pull/297)（マージ済み、merge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`）
+- Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-qpkmz2lp4-team478as-projects.vercel.app)
+- Branch: `codex/fix-desktop-expired-clock-contracts`
+- Base: `origin/feature/manga-canvas-mvp`@`f989d61`（PR #295 merge commit）。
+- 背景: PR #296のCore quality／Windows buildが再実行を含め同じDesktop 4テストで失敗した。2026-08-17 00:00 UTCに既存`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効し、壁時計へ依存した成功系fixtureがfail-closedへ変わったことが原因。
+- 実装: `AIService`のDezgo費用判定へoptionalな時計を注入し、成人Provider policy状態取得／適用へoptionalな基準時刻を追加する。該当4テストだけが契約有効期間内の固定日時を明示する。本番呼出しは省略するため従来どおり実時刻を使う。
+- 不変: Dezgo価格値、pricing version、有効期限、Provider、model、adult policy payload、署名検証、実行許可、fail-closed、DB schema、migration、API、IPC、Production、Storage、Canvas、PNG／PDF、credit。
+- 検証: 費用guard 1/1、署名policy 1/1、dependency／module boundary、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足とElectron／better-sqlite3 native binary不在で停止し、GitHub Linux／Windows CIを正式判定とする。
+- CI: 実装HEAD `b458395`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Linux／Windows双方でDesktop 182/182を確認した。最終証跡同期HEADでも同じ5チェックを再確認する。
+- 次: PR #296へ通常mergeで取り込み、同PRの全CIを再確認する。R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A5_DESKTOP_CLOCK_CONTRACT.md`
 
 ---
 

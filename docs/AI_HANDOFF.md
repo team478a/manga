@@ -2,14 +2,26 @@
 
 ## 0.0 現在の優先タスク（PR-R4-3A-5 Mobile Offline Human Review、2026-08-17）
 
-- 最新基準はPR #295 merge commit `f989d61`。Branchは`codex/feat-r4-3a5-mobile-offline-review`。
+- 最新基準はPR #297 merge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`。Branchは`codex/feat-r4-3a5-mobile-offline-review`で、通常mergeにより取り込み済み。
 - Reviewer ZIPへCSPで外部通信を禁止した`review.html`を追加する。スマートフォン幅で画像、判定、確信度、欠陥、コメントを操作し、既存`mangai-human-review-v2`回答JSONを端末保存できる。
 - 正解label、相手の回答、AI監査、Prompt、source group／family、split、URL、秘密値をUIへ含めない。package validatorはembedded manifest／template／order／intendedの改ざん、remote resource、network policy欠落を拒否する。
 - 既存v2 packageは`review_ui`なしでも有効。Batch 01 A/B各28件のmobile packageをprivate rootへ生成し、validator、sidecar、leakage、C2PA保持に成功。390×844で28件の操作とJSON生成を確認したが、テスト回答をHuman labelへ使わない。
 - 集中16/16、実A/B validator、dependency、lint、Hub型検査、Hub 781/781、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
 - 正式Benchmarkは0/140、人間の権利確認0/28、Human A/B 0/56。安全なスマートフォン配布経路は未決定で、外部uploadしていない。
 - Draft PR [#296](https://github.com/team478a/manga/pull/296)はDraft／MERGEABLE。Previewは[Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)。Migration roundtrip、Vercel、Preview Commentsは成功した。
-- Core quality／Windows buildは再実行を含め、既存Desktop 4テストで失敗。2026-08-17 00:00 UTCにDezgo pricing有効期限とテストpolicyが同時失効したことが原因で、今回差分外。Production、DB、Storage、Provider、credit、runtime Judge、Canvas、PNG／PDF、Desktopは変更していない。期限契約修正の範囲承認までR4-3Bへ進まない。
+- 旧Core quality／Windows build blockerはPR #297の決定的時計修正で解消済み。PR #296最終HEADの全CIとVercel Previewを再確認して停止し、安全な配布経路とHuman Reviewer A/B割当てが決まるまでR4-3Bへ進まない。
+
+---
+
+## 0.0 現在の優先タスク（PR-R4-3A-5 prerequisite: Desktop期限契約、2026-08-17）
+
+- PR #296のCore quality／Windows buildは再実行を含め同じ既存Desktop 4テストで失敗した。2026-08-17 00:00 UTCにDezgo pricing有効期限とテスト用成人Provider policyが同時失効し、成功系fixtureが実時刻でfail-closedになったことが原因。
+- Branchは`codex/fix-desktop-expired-clock-contracts`、BaseはPR #295 merge commit `f989d61`。PR #296へ混在させない先行修正とする。
+- `AIService`費用guardと成人Provider policy状態／適用へoptionalな基準時計を追加し、該当4テストだけ固定日時を明示する。Productionは引数を渡さず実時刻を使うため、期限切れ価格の`pricing_stale`と成人policy失効を維持する。
+- pricing version／金額／期限、Provider、model、署名、DB、API、IPC、Production、creditは変更しない。
+- 費用guard 1/1、署名policy 1/1、deps、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack build、RC structure成功。Desktopローカルnative環境不足はGitHub Linux／Windows CIで正式判定する。
+- PR [#297](https://github.com/team478a/manga/pull/297)はmerge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`で基準ブランチへマージ済み。Previewは[Ready／SSO保護](https://mangai-hub-staging-qpkmz2lp4-team478as-projects.vercel.app)。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsは成功し、Linux／Windows Desktop 182/182を確認した。
+- PR #296へ通常mergeで取り込み、R4-3Bへ進まず同PRの全CIを再確認する。
 
 ---
 

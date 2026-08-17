@@ -2,7 +2,7 @@
 
 作成日: 2026-08-17
 
-状態: `DRAFT_PR_OPEN / MOBILE_OFFLINE_PACKAGE_READY / CI_BLOCKED_EXPIRED_DESKTOP_CONTRACT / SECURE_TRANSFER_PENDING`
+状態: `DRAFT_PR_OPEN / MOBILE_OFFLINE_PACKAGE_READY / CI_RECHECK_PENDING / SECURE_TRANSFER_PENDING`
 
 ## 1. 目的
 
@@ -63,8 +63,8 @@ Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、F
 
 Draft PR、全CI、Vercel Preview成功後に停止する。安全な配布先とHuman Reviewer A/Bの割当てが決まるまで画像を外部送信せず、正式140件へ加算せず、R4-3Bへ進まない。
 
-## 9. CI blocker
+## 9. CI復旧
 
-Draft PR [#296](https://github.com/team478a/manga/pull/296)はDraft／MERGEABLE。Migration roundtrip、Vercel、Vercel Preview Commentsは成功し、Previewは[Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)。Core quality／Windows buildは再実行を含め、同じ既存Desktop 4テストで失敗した。
+Draft PR [#296](https://github.com/team478a/manga/pull/296)はDraft／MERGEABLE。旧実行ではMigration roundtrip、Vercel、Vercel Preview Commentsが成功し、Previewは[Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)だった。Core quality／Windows buildの失敗原因は、2026-08-17 00:00 UTCに既存`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効し、成功系fixtureが壁時計へ依存していたことだった。
 
-原因は2026-08-17 00:00 UTCに既存`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyの期限が同時失効したこと。fail-closedは正しく、今回差分はDesktopを変更していない。期限契約の修正は本PRのDesktop／pricing不変境界を越えるため、責任者承認なしに混在させない。
+PR #297がoptionalな決定的時計を導入し、Productionの実時刻とfail-closedを変えずに該当テストを修正して基準ブランチへマージ済み。merge commit `f9aff56666731f25a1c678d65a080c15b7da46ae`をPR #296へ通常mergeし、最終HEADで全CIとVercel Previewを再確認する。
