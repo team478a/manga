@@ -2,7 +2,7 @@
 
 作成日: 2026-08-17
 
-状態: `IMPLEMENTED_LOCAL / DRAFT_PR_PENDING / ENCRYPTED_PACKAGES_READY / OUTBOUND_NOT_SHARED / HUMAN_REVIEW_REQUIRED`
+状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / ENCRYPTED_PACKAGES_READY / OUTBOUND_NOT_SHARED / HUMAN_REVIEW_REQUIRED`
 
 ## 1. 目的
 
@@ -60,3 +60,10 @@ Git変更はPRをrevertする。Git外の誤った封筒はprivate mappingで対
 ## 7. 停止条件
 
 Draft PR、全CI、Vercel Preview成功後に停止する。受取人、HTML共有経路、パスフレーズ共有経路の3点を責任者が指定するまで外部送信しない。人間の権利確認、独立A/B review、不一致裁定が完了するまで正式Benchmarkへ加算せず、R4-3Bへ進まない。
+
+## 8. PR／CI
+
+- Draft PR: [#298](https://github.com/team478a/manga/pull/298)（Draft／MERGEABLE）
+- Vercel Preview: [Ready／SSO保護](https://mangai-hub-staging-mb4xx3i63-team478as-projects.vercel.app)
+- 実装HEAD `1a06e46`: Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsすべて成功
+- 最終証跡同期HEADでも同じ5チェックを再確認して停止する

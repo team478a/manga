@@ -8,7 +8,8 @@
 - 外向けHTMLは中立名で、Reviewer slot／package ID／元名を含まない。役割対応はGit外private mappingだけにあり、CSP `connect-src 'none'`で復号画面の外部通信を禁止する。
 - 実Batchの権利確認／Reviewer A／Reviewer B各28件を3つの暗号化HTMLへ変換し、全件復号、SHA、package version、件数を確認。画像、ZIP、mapping、パスフレーズ、receiptはGit外。外部upload／共有0件、Production変更なし。
 - 集中3/3、実権利package 28件、実暗号化／復号3/3、deps、lint、Hub型検査、Hub 784/784、Canvas 26/26、AI 48/48、migration 59本、Webpack build、RC structure、diff check成功。Turbopackは既知Windows path length。`file://`実ブラウザ操作は安全ポリシーで停止し、受領端末確認へ残す。
-- 正式Benchmark 0/140、人間の権利確認0/28、Human A/B 0/56。Draft PRと全CI／Vercel Preview成功で停止し、受取人と別経路が指定されるまで外部送信せずR4-3Bへ進まない。
+- Draft PR [#298](https://github.com/team478a/manga/pull/298)はDraft／MERGEABLE。Previewは[Ready／SSO保護](https://mangai-hub-staging-mb4xx3i63-team478as-projects.vercel.app)。実装HEAD `1a06e46`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。最終証跡同期HEADでも同じ5チェックを再確認する。
+- 正式Benchmark 0/140、人間の権利確認0/28、Human A/B 0/56。責任者確認と受取人／別経路指定まで外部送信せずR4-3Bへ進まない。
 
 ---
 
