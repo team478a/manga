@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-17 Codex: Desktop期限契約の決定的時計（作業中）
+
+- PR #295 merge commit `f989d61`を含む最新基準から`codex/fix-desktop-expired-clock-contracts`を開始した。
+- PR #296でCore quality／Windows buildが再実行後も同じ4件に失敗。2026-08-17 00:00 UTCにDezgo価格契約とテスト用成人Provider policyが同時失効した壁時計依存を原因と確定した。
+- `AIService`費用guardと成人Provider policy状態取得／適用へoptionalな基準時計を追加し、4テストだけ契約有効期間内の日時を固定した。既定は実時刻で、本番fail-closedは不変。
+- 価格値、pricing version、有効期限、Provider、model、署名、DB、migration、API、IPC、Production、Storage、creditは変更していない。
+- 費用guard 1/1、署名policy 1/1、dependency／module boundary、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure成功。Desktopローカルnative環境不足はGitHub CIで判定する。
+- Draft PRと全CI／Vercel Preview成功後に停止する。PR #296への混在、rebase、R4-3B着手は行わない。
+
+---
+
 ## 2026-08-17 Codex: PR-R4-3A-4 Reviewer Package Context / Schema Hardening（作業中）
 
 - PR #293 merge commit `61fcaf3`を含む最新基準から`codex/fix-r4-3a4-review-package-context-schema`を開始した。

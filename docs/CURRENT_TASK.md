@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-17 PR-R4-3A-5 prerequisite: Desktop期限契約の決定的時計
+
+- 状態: `IMPLEMENTED_LOCAL / CI_PENDING / PRODUCTION_FAIL_CLOSED_UNCHANGED`
+- Draft PR: 作成・CI確認前
+- Branch: `codex/fix-desktop-expired-clock-contracts`
+- Base: `origin/feature/manga-canvas-mvp`@`f989d61`（PR #295 merge commit）。
+- 背景: PR #296のCore quality／Windows buildが再実行を含め同じDesktop 4テストで失敗した。2026-08-17 00:00 UTCに既存`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効し、壁時計へ依存した成功系fixtureがfail-closedへ変わったことが原因。
+- 実装: `AIService`のDezgo費用判定へoptionalな時計を注入し、成人Provider policy状態取得／適用へoptionalな基準時刻を追加する。該当4テストだけが契約有効期間内の固定日時を明示する。本番呼出しは省略するため従来どおり実時刻を使う。
+- 不変: Dezgo価格値、pricing version、有効期限、Provider、model、adult policy payload、署名検証、実行許可、fail-closed、DB schema、migration、API、IPC、Production、Storage、Canvas、PNG／PDF、credit。
+- 検証: 費用guard 1/1、署名policy 1/1、dependency／module boundary、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight成功。Desktopローカルは既知`@napi-rs/keyring`型宣言不足とElectron／better-sqlite3 native binary不在で停止し、GitHub Linux／Windows CIを正式判定とする。
+- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功後に停止する。merge前にPR #296へ混在・rebaseせず、R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A5_DESKTOP_CLOCK_CONTRACT.md`
+
+---
+
 ## 2026-08-17 PR-R4-3A-4 follow-up: Benchmark Content Credentials保全
 
 - 状態: `READY_FOR_OWNER_REVIEW / PRIVATE_FIXTURE_REPAIRED / HUMAN_RIGHTS_AND_DUAL_REVIEW_REQUIRED / FORMAL_COUNT_0`

@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-5 prerequisite: Desktop期限契約、2026-08-17）
+
+- PR #296のCore quality／Windows buildは再実行を含め同じ既存Desktop 4テストで失敗した。2026-08-17 00:00 UTCにDezgo pricing有効期限とテスト用成人Provider policyが同時失効し、成功系fixtureが実時刻でfail-closedになったことが原因。
+- Branchは`codex/fix-desktop-expired-clock-contracts`、BaseはPR #295 merge commit `f989d61`。PR #296へ混在させない先行修正とする。
+- `AIService`費用guardと成人Provider policy状態／適用へoptionalな基準時計を追加し、該当4テストだけ固定日時を明示する。Productionは引数を渡さず実時刻を使うため、期限切れ価格の`pricing_stale`と成人policy失効を維持する。
+- pricing version／金額／期限、Provider、model、署名、DB、API、IPC、Production、creditは変更しない。
+- 費用guard 1/1、署名policy 1/1、deps、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack build、RC structure成功。Desktopローカルnative環境不足はGitHub Linux／Windows CIで正式判定する。
+- Draft PRと全CI／Vercel Preview確認後に停止する。先行修正merge前にPR #296を進めず、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-4 follow-up: Content Credentials保全、2026-08-17）
 
 - 最新基準はPR #294 merge commit `c6bce94`。Branchは`codex/fix-r4-3a4-benchmark-provenance`。

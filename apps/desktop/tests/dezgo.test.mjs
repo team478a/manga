@@ -1045,6 +1045,7 @@ test("guarded Dezgo dispatcher handles lifecycle and billing with mocked output"
     const queueService = new AIService(database, {
       getProviderCredential: async () => apiKey,
       getDezgoBalance: async () => 10,
+      now: () => new Date("2026-07-18T00:00:00.000Z"),
       dezgoFeatures: flags(false),
     });
     const enqueue = async (query) => {

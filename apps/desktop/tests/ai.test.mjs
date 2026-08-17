@@ -1639,6 +1639,7 @@ test("safe asset jobs prefer project library and never require external access",
     const dezgoService = new AIService(db, {
       getProviderCredential: async () => "configured-test-key",
       getDezgoBalance: async () => 10,
+      now: () => new Date("2026-07-18T00:00:00.000Z"),
       dezgoFeatures: {
         dezgoProviderEnabled: true,
         dezgoDirectByokEnabled: true,
