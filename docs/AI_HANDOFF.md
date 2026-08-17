@@ -7,7 +7,8 @@
 - `AIService`費用guardと成人Provider policy状態／適用へoptionalな基準時計を追加し、該当4テストだけ固定日時を明示する。Productionは引数を渡さず実時刻を使うため、期限切れ価格の`pricing_stale`と成人policy失効を維持する。
 - pricing version／金額／期限、Provider、model、署名、DB、API、IPC、Production、creditは変更しない。
 - 費用guard 1/1、署名policy 1/1、deps、lint、Hub型検査、Hub 778/778、Canvas 26/26、AI 48/48、migration 59本、Webpack build、RC structure成功。Desktopローカルnative環境不足はGitHub Linux／Windows CIで正式判定する。
-- Draft PRと全CI／Vercel Preview確認後に停止する。先行修正merge前にPR #296を進めず、R4-3Bへ進まない。
+- Draft PR [#297](https://github.com/team478a/manga/pull/297)はDraft／MERGEABLE。Previewは[Ready／SSO保護](https://mangai-hub-staging-qpkmz2lp4-team478as-projects.vercel.app)。実装HEAD `b458395`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsは成功し、Linux／Windows Desktop 182/182を確認した。
+- 最終証跡同期HEADでも全5チェックを確認して停止する。先行修正merge前にPR #296を進めず、R4-3Bへ進まない。
 
 ---
 

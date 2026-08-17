@@ -2,7 +2,7 @@
 
 作成日: 2026-08-17
 
-状態: `IMPLEMENTED_LOCAL / CI_PENDING / PRODUCTION_FAIL_CLOSED_UNCHANGED`
+状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PRODUCTION_FAIL_CLOSED_UNCHANGED`
 
 ## 1. 原因
 
@@ -48,6 +48,11 @@
 - migration: 59本
 - Webpack Hub production build: 成功
 - RC structure preflight: 成功
+- Core quality: 成功（Desktop 182/182）
+- Migration roundtrip: 成功
+- Windows build: 成功（Desktop 182/182、Accessibility、unpacked application build）
+- Vercel／Vercel Preview Comments: 成功
+- Preview: [Ready／SSO保護](https://mangai-hub-staging-qpkmz2lp4-team478as-projects.vercel.app)
 
 Desktopローカルは既知の`@napi-rs/keyring`型宣言不足とElectron／better-sqlite3 native binary不在で実行できないため、GitHub Linux／Windows CIを正式結果とする。
 
@@ -57,4 +62,4 @@ Desktopローカルは既知の`@napi-rs/keyring`型宣言不足とElectron／be
 
 ## 6. 停止条件
 
-Draft PR、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功後に停止する。自動mergeせず、PR #296へrebase／force pushせず、R4-3Bへ進まない。
+Draft PR [#297](https://github.com/team478a/manga/pull/297)の最終証跡同期HEADでCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功後に停止する。自動mergeせず、PR #296へrebase／force pushせず、R4-3Bへ進まない。
