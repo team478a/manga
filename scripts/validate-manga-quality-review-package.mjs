@@ -99,6 +99,14 @@ async function readZipJson(zip, name) {
   return value;
 }
 
+function readMobileReviewData(html) {
+  const match = html.match(/<script id="mangai-review-data" type="application\/json">([\s\S]*?)<\/script>/);
+  if (!match) throw new Error("review_package_mobile_data_missing");
+  const value = JSON.parse(match[1]);
+  inspectJsonKeys(value, "review.html");
+  return value;
+}
+
 async function main() {
   const packageBytes = await readFile(packagePath);
   const zip = await JSZip.loadAsync(packageBytes, { checkCRC32: true, createFolders: true });
@@ -117,6 +125,31 @@ async function main() {
     throw new Error("review_package_template_order_mismatch");
 
   const expectedFiles = new Set(["README_JA.md", "package-manifest.json", "review-order.txt", "review-response.private.json"]);
+  if (manifest.review_ui) {
+    expectedFiles.add(manifest.review_ui.entry_file);
+    const mobileHtml = await readZipText(zip, manifest.review_ui.entry_file);
+    if (!mobileHtml.includes("Content-Security-Policy") || !mobileHtml.includes("connect-src 'none'"))
+      throw new Error("review_package_mobile_network_policy_missing");
+    if (/<(?:script|img|link)\b[^>]+(?:src|href)=["'](?:https?:|\/\/)/i.test(mobileHtml))
+      throw new Error("review_package_mobile_remote_resource_forbidden");
+    const mobileData = readMobileReviewData(mobileHtml);
+    if (JSON.stringify(mobileData.manifest) !== JSON.stringify(manifest))
+      throw new Error("review_package_mobile_manifest_mismatch");
+    if (JSON.stringify(mobileData.template) !== JSON.stringify(template))
+      throw new Error("review_package_mobile_template_mismatch");
+    if (JSON.stringify(mobileData.order) !== JSON.stringify(order))
+      throw new Error("review_package_mobile_order_mismatch");
+    const intended = mobileData.intended;
+    if (!intended || typeof intended !== "object" || Array.isArray(intended))
+      throw new Error("review_package_mobile_intended_invalid");
+    for (const item of manifest.cases) {
+      if (item.intended_file) humanReviewPanelSpecificationSchema.parse(intended[item.case_id]);
+      else if (Object.hasOwn(intended, item.case_id)) throw new Error(`review_package_mobile_unexpected_intended:${item.case_id}`);
+    }
+    const intendedIds = new Set(manifest.cases.filter((item) => item.intended_file).map((item) => item.case_id));
+    if (Object.keys(intended).some((caseId) => !intendedIds.has(caseId)))
+      throw new Error("review_package_mobile_unknown_intended");
+  }
   const candidateHashes = new Map();
   for (const item of manifest.cases) {
     expectedFiles.add(item.candidate_file);

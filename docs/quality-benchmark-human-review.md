@@ -109,3 +109,11 @@ Panel Specificationが物語上必要な環境文字を明示している場合�
 ## 8. rollback
 
 generatorはprivate原画像と既存ZIPを変更しない。誤った派生物はrootと対象名を確認し、該当する新規ZIPと同名private sidecarだけを退避し、source manifest修正後に別名で再生成する。Production側のrollbackは不要である。
+
+## 9. Mobile Offline Review
+
+新規生成するReviewer ZIPには`review.html`を含める。ZIPを端末へ安全に渡し、展開後にブラウザで開くと、候補画像、referential caseのPanel Specification／参照画像、判定、確信度、欠陥、コメントを操作できる。回答は既存`mangai-human-review-v2` JSONとして保存し、最終的に`manga:benchmark:review-response:validate`で検証する。
+
+`review.html`は自己完結型で、CSPの`connect-src 'none'`により外部通信を禁止する。外部script、stylesheet、image、font、analytics、APIを使わない。正解label、相手の回答、AI監査、Prompt、private source metadata、splitは埋め込まない。端末内下書きはpackage IDとReviewer slotで分離し、回答回収後に画面の消去操作で削除する。
+
+package manifestの`review_ui`はoptionalであり、既存v2 ZIPの検証互換を維持する。値がある場合、validatorはversion、入口、network false、CSP、remote resourceなし、manifest／template／order／intended一致を検査する。スマートフォンへの配布は別契約であり、画像を公開URLや公開GitHub artifactへ置かない。

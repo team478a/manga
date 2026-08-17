@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-5 Mobile Offline Human Review、2026-08-17）
+
+- 最新基準はPR #295 merge commit `f989d61`。Branchは`codex/feat-r4-3a5-mobile-offline-review`。
+- Reviewer ZIPへCSPで外部通信を禁止した`review.html`を追加する。スマートフォン幅で画像、判定、確信度、欠陥、コメントを操作し、既存`mangai-human-review-v2`回答JSONを端末保存できる。
+- 正解label、相手の回答、AI監査、Prompt、source group／family、split、URL、秘密値をUIへ含めない。package validatorはembedded manifest／template／order／intendedの改ざん、remote resource、network policy欠落を拒否する。
+- 既存v2 packageは`review_ui`なしでも有効。Batch 01 A/B各28件のmobile packageをprivate rootへ生成し、validator、sidecar、leakage、C2PA保持に成功。390×844で28件の操作とJSON生成を確認したが、テスト回答をHuman labelへ使わない。
+- 集中16/16、実A/B validator、dependency、lint、Hub型検査、Hub 781/781、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
+- 正式Benchmarkは0/140、人間の権利確認0/28、Human A/B 0/56。安全なスマートフォン配布経路は未決定で、外部uploadしていない。
+- Production、DB、Storage、Provider、credit、runtime Judge、Canvas、PNG／PDF、Desktopは変更しない。Draft PRと全CI／Vercel Preview確認後に停止し、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-4 follow-up: Content Credentials保全、2026-08-17）
 
 - 最新基準はPR #294 merge commit `c6bce94`。Branchは`codex/fix-r4-3a4-benchmark-provenance`。

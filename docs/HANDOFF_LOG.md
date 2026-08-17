@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-17 Codex: PR-R4-3A-5 Mobile Offline Human Review（作業中）
+
+- PR #295 merge commit `f989d61`を含む最新基準から`codex/feat-r4-3a5-mobile-offline-review`を開始した。
+- Reviewer A/Bのprivate ZIPへ、外部通信なしで動作する自己完結型`review.html`を追加した。スマートフォン幅で候補／参照／Panel Specification、判定、確信度、欠陥、コメントを操作し、既存`mangai-human-review-v2`回答JSONを端末保存・再読込できる。
+- CSP `connect-src 'none'`、remote resource拒否、embedded manifest／template／order／intended照合をvalidatorへ追加した。label、相手回答、AI監査、Prompt、source group／family、split、URL、秘密値はpackageへ含めない。
+- Batch 01のA/B packageを各28件でGit外private rootへ生成し、validator、sidecar、leakage、C2PA保持に成功した。390×844で全28ケースとJSON出力を操作確認したが、テスト回答はHuman reviewへ採用していない。
+- 集中16/16、Hub 781/781、Canvas 26/26、AI 48/48、dependency、lint、Hub型検査、migration 59本、Webpack Hub build、RC structure成功。Turbopackは既知Windows path length、Desktop 4ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
+- 正式Benchmark 0/140、人間の権利確認0/28、Human A/B 0/56。安全な配布先は未決定で外部uploadなし。Draft PRと全CI／Vercel Preview確認後に停止し、R4-3Bへ進まない。
+
+---
+
 ## 2026-08-17 Codex: PR-R4-3A-4 Reviewer Package Context / Schema Hardening（作業中）
 
 - PR #293 merge commit `61fcaf3`を含む最新基準から`codex/fix-r4-3a4-review-package-context-schema`を開始した。

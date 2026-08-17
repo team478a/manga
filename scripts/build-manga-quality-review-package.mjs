@@ -6,12 +6,14 @@ import sharp from "sharp";
 import {
   HUMAN_REVIEW_PACKAGE_VERSION,
   HUMAN_REVIEW_TEMPLATE_VERSION,
+  MOBILE_OFFLINE_REVIEW_UI_VERSION,
   allowedDefectCategoriesForCase,
   humanReviewPackageManifestSchema,
   humanReviewPackageSourceSchema,
   humanReviewPackageSourceSidecarSchema,
   humanReviewResponseTemplateSchema,
 } from "../src/modules/manga-quality/domain/human-review-package.ts";
+import { buildMangaQualityMobileReviewHtml } from "./lib/build-manga-quality-mobile-review-html.mjs";
 import { panelSpecificationSchema } from "../src/modules/manga-quality/domain/panel-specification.ts";
 import { qualityBenchmarkIntendedSchema } from "../src/modules/manga-quality/domain/quality-benchmark-fixture.ts";
 import { QUALITY_BENCHMARK_ROOT_ENV } from "../src/modules/manga-quality/domain/quality-benchmark-assembly.ts";
@@ -126,6 +128,7 @@ function shuffled(items) {
 function readme(scope) {
   return `# MANGAI Candidate Visual Benchmark 人間レビュー\n\n` +
     `このパッケージは\`${scope}\`です。Reviewer A/Bは互いの回答、正解ラベル、AI監査を見ずに独立評価してください。\n\n` +
+    `スマートフォンまたはブラウザでは、ZIPを展開して\`review.html\`を開きます。外部通信は行わず、回答JSONを端末へ保存できます。手作業でJSONを記入する場合は次の手順に従います。\n\n` +
     `## 判定手順\n\n` +
     `1. \`review-order.txt\`の順に各\`candidate\`を確認します。\n` +
     `2. 各caseの\`review_mode\`と\`allowed_defect_categories\`だけを使用します。\n` +
@@ -150,6 +153,7 @@ async function main() {
   const source = humanReviewPackageSourceSchema.parse(JSON.parse(sourceText));
   const zip = new JSZip();
   const cases = [];
+  const intendedByCase = {};
   for (const item of source.cases) {
     const candidateBytes = await readFile(resolveInside(fixtureRoot, item.candidate_file));
     const candidateExtension = await inspectImage(candidateBytes, item.review_case_id, item.required_provenance_chunks);
@@ -164,6 +168,7 @@ async function main() {
       intendedFile = `cases/${item.review_case_id}/intended.json`;
       intendedSha256 = sha256(intendedBytes);
       zip.file(intendedFile, intendedBytes);
+      intendedByCase[item.review_case_id] = intended;
     }
     const references = [];
     for (const [index, reference] of item.references.entries()) {
@@ -203,6 +208,11 @@ async function main() {
     package_status: source.review_scope === "PILOT_INTRINSIC_ONLY" ? "PILOT_PACKAGE_STRUCTURE_READY" : "FORMAL_REVIEW_READY",
     review_scope: source.review_scope,
     formal_benchmark_eligible: source.formal_benchmark_eligible,
+    review_ui: {
+      version: MOBILE_OFFLINE_REVIEW_UI_VERSION,
+      entry_file: "review.html",
+      network_access: false,
+    },
     case_count: cases.length,
     cases,
   });
@@ -220,6 +230,12 @@ async function main() {
   zip.file("package-manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
   zip.file("review-order.txt", `${order.join("\n")}\n`);
   zip.file("review-response.private.json", `${JSON.stringify(responseTemplate, null, 2)}\n`);
+  zip.file("review.html", buildMangaQualityMobileReviewHtml({
+    manifest,
+    template: responseTemplate,
+    order,
+    intended: intendedByCase,
+  }));
   const packageBytes = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE", compressionOptions: { level: 9 } });
   await mkdir(path.dirname(outputPath), { recursive: true });
   await writeFile(outputPath, packageBytes, { flag: "wx" });

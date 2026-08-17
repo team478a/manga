@@ -1,5 +1,24 @@
 # MANGAI Current Task
 
+## 2026-08-17 PR-R4-3A-5 Mobile Offline Human Review
+
+- 状態: `IMPLEMENTED_LOCAL / MOBILE_OFFLINE_PACKAGE_READY / SECURE_TRANSFER_PENDING / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`
+- Draft PR: 作成・CI確認前
+- Branch: `codex/feat-r4-3a5-mobile-offline-review`
+- Base: `origin/feature/manga-canvas-mvp`@`f989d61`（PR #295 merge commit）。
+- 目的: Reviewer A/Bのprivate ZIPを展開し、スマートフォン幅のブラウザで候補画像を確認、判定、確信度、欠陥、コメントを入力し、既存`mangai-human-review-v2`回答JSONを端末へ保存できるオフラインUIを追加する。
+- 安全境界: `review.html`はCSPで外部通信を禁止し、外部script／画像／CSSを持たない。正解ラベル、相手の回答、AI監査、Prompt、source group／family、split、URL、秘密値を含めない。回答下書きは端末内だけに保存する。
+- 後方互換: `review_ui`は既存v2 packageでoptional。新規generatorだけが`mangai-mobile-offline-review-v1`を追加し、既存CLI response validator／A/B比較schemaは変更しない。
+- Private package: Batch 01のReviewer A/Bを各28件で再生成し、package validator、private sidecar、label leakage 0、Reviewer A leakage 0、C2PA `caBX`保持に成功。外部公開・外部Storage uploadは行っていない。
+- UI検証: 390×844 viewportで28ケース全件を操作し、画像表示、前後移動、独立確認、下書き、全件回答、28-record JSON生成を確認した。テスト入力はHuman Review結果として保存・採用していない。
+- 現在の不足: private ZIPをスマートフォンへ渡す安全な経路は未決定。人間の権利確認0/28、独立Human Review 0/56、正式Benchmark 0/140。AIはHuman Reviewerを代替しない。
+- 不変: Production、既存作品、DB、migration、RPC、RLS、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、runtime Judge、自動修復、Canvas、checkpoint、PNG／PDF、成人向け境界、Desktop。
+- 検証: 集中16/16、実A/B各28件package validator、390×844で28ケース全件操作、dependency、lint、Hub型検査、Hub 781/781、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
+- 次: Draft PR、全CI／Vercel Preview成功を確認して停止する。安全な配布先とReviewer A/Bが決まるまで画像を外部送信せず、R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A5_MOBILE_OFFLINE_REVIEW.md`
+
+---
+
 ## 2026-08-17 PR-R4-3A-4 follow-up: Benchmark Content Credentials保全
 
 - 状態: `READY_FOR_OWNER_REVIEW / PRIVATE_FIXTURE_REPAIRED / HUMAN_RIGHTS_AND_DUAL_REVIEW_REQUIRED / FORMAL_COUNT_0`
