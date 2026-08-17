@@ -12,6 +12,8 @@
 - Batch 01のA/B packageを各28件でGit外private rootへ生成し、validator、sidecar、leakage、C2PA保持に成功した。390×844で全28ケースとJSON出力を操作確認したが、テスト回答はHuman reviewへ採用していない。
 - 集中16/16、Hub 781/781、Canvas 26/26、AI 48/48、dependency、lint、Hub型検査、migration 59本、Webpack Hub build、RC structure成功。Turbopackは既知Windows path length、Desktop 4ゲートは差分外の既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
 - 正式Benchmark 0/140、人間の権利確認0/28、Human A/B 0/56。安全な配布先は未決定で外部uploadなし。Draft PRと全CI／Vercel Preview確認後に停止し、R4-3Bへ進まない。
+- Draft PR [#296](https://github.com/team478a/manga/pull/296)を作成。Draft／MERGEABLE、Previewは[Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)。Migration roundtrip、Vercel、Preview Comments成功。
+- Core quality／Windows buildは再実行を含め同じ既存Desktop 4テストで失敗。2026-08-17 00:00 UTCに`DEZGO_PRICING_VALID_UNTIL`とテスト用成人Provider policyが同時失効した。今回PRはDesktop／pricing不変のため、責任者承認なしに混在修正しない。
 
 ---
 

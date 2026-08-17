@@ -8,7 +8,8 @@
 - 既存v2 packageは`review_ui`なしでも有効。Batch 01 A/B各28件のmobile packageをprivate rootへ生成し、validator、sidecar、leakage、C2PA保持に成功。390×844で28件の操作とJSON生成を確認したが、テスト回答をHuman labelへ使わない。
 - 集中16/16、実A/B validator、dependency、lint、Hub型検査、Hub 781/781、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは既知`@napi-rs/keyring`型宣言不足でローカル停止し、GitHub CIで正式判定する。
 - 正式Benchmarkは0/140、人間の権利確認0/28、Human A/B 0/56。安全なスマートフォン配布経路は未決定で、外部uploadしていない。
-- Production、DB、Storage、Provider、credit、runtime Judge、Canvas、PNG／PDF、Desktopは変更しない。Draft PRと全CI／Vercel Preview確認後に停止し、R4-3Bへ進まない。
+- Draft PR [#296](https://github.com/team478a/manga/pull/296)はDraft／MERGEABLE。Previewは[Ready／SSO保護](https://mangai-hub-staging-o7kn6q1i1-team478as-projects.vercel.app)。Migration roundtrip、Vercel、Preview Commentsは成功した。
+- Core quality／Windows buildは再実行を含め、既存Desktop 4テストで失敗。2026-08-17 00:00 UTCにDezgo pricing有効期限とテストpolicyが同時失効したことが原因で、今回差分外。Production、DB、Storage、Provider、credit、runtime Judge、Canvas、PNG／PDF、Desktopは変更していない。期限契約修正の範囲承認までR4-3Bへ進まない。
 
 ---
 
