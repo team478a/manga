@@ -1615,35 +1615,40 @@ test("adult provider evidence and model allowlist persist fail closed", () => {
     }),
     { allowed: true, reason: null },
   );
-  assert.deepEqual(db.getAdultProviderPolicyState().eligibleModelIds, [
-    "verified-model",
-  ]);
-  const applied = db.applyAdultProviderPolicyBundle({
-    keyId: "test-key-1",
-    payloadSha256: "c".repeat(64),
-    payload: {
-      issuedAt: "2026-07-17T00:00:00.000Z",
-      expiresAt: "2026-08-17T00:00:00.000Z",
-      providerApproval: {
-        providerId: "dezgo",
-        status: "approved",
-        evidenceSha256: "a".repeat(64),
-        confirmedAt: "2026-07-17T00:00:00.000Z",
+  assert.deepEqual(
+    db.getAdultProviderPolicyState("2026-07-18T00:00:00.000Z")
+      .eligibleModelIds,
+    ["verified-model"],
+  );
+  const applied = db.applyAdultProviderPolicyBundle(
+    {
+      keyId: "test-key-1",
+      payloadSha256: "c".repeat(64),
+      payload: {
+        issuedAt: "2026-07-17T00:00:00.000Z",
         expiresAt: "2026-08-17T00:00:00.000Z",
-        revokedAt: null,
-      },
-      models: [
-        {
+        providerApproval: {
           providerId: "dezgo",
-          modelId: "verified-model",
           status: "approved",
-          licenseEvidenceSha256: "b".repeat(64),
-          verifiedAt: "2026-07-17T00:00:00.000Z",
+          evidenceSha256: "a".repeat(64),
+          confirmedAt: "2026-07-17T00:00:00.000Z",
           expiresAt: "2026-08-17T00:00:00.000Z",
+          revokedAt: null,
         },
-      ],
+        models: [
+          {
+            providerId: "dezgo",
+            modelId: "verified-model",
+            status: "approved",
+            licenseEvidenceSha256: "b".repeat(64),
+            verifiedAt: "2026-07-17T00:00:00.000Z",
+            expiresAt: "2026-08-17T00:00:00.000Z",
+          },
+        ],
+      },
     },
-  });
+    "2026-07-18T00:00:00.000Z",
+  );
   assert.equal(applied.lastImport.keyId, "test-key-1");
   assert.equal(applied.lastImport.payloadSha256, "c".repeat(64));
   db.close();
@@ -1776,7 +1781,10 @@ test("adult provider policy stops disallowed pending Dezgo jobs and releases res
       ],
     },
   });
-  db.applyAdultProviderPolicyBundle(policy("approved"));
+  db.applyAdultProviderPolicyBundle(
+    policy("approved"),
+    "2026-07-18T00:00:00.000Z",
+  );
   assert.equal(db.getGenerationJob(keptAdultJob).status, "queued");
   assert.equal(db.getGenerationJob(removedAdultJob).status, "failed");
   assert.equal(
@@ -1791,6 +1799,7 @@ test("adult provider policy stops disallowed pending Dezgo jobs and releases res
   );
   db.applyAdultProviderPolicyBundle(
     policy("revoked", "2026-07-17T01:00:00.000Z"),
+    "2026-07-18T00:00:00.000Z",
   );
   assert.equal(db.getGenerationJob(keptAdultJob).status, "failed");
   assert.equal(

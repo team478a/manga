@@ -192,6 +192,7 @@ export class AIService {
   ) => Promise<string | null>;
   private getDezgoBalance: () => Promise<number | null>;
   private createDezgoProvider: () => Pick<DezgoProvider, "textToImage">;
+  private now: () => Date;
   private dezgoFeatures: DezgoFeatureFlags;
   private externalDispatchApprovals = new ExternalDispatchApprovalStore();
   private generationRouter: GenerationRouter;
@@ -206,6 +207,7 @@ export class AIService {
       getProviderCredential?: (providerId: "dezgo") => Promise<string | null>;
       getDezgoBalance?: () => Promise<number | null>;
       createDezgoProvider?: () => Pick<DezgoProvider, "textToImage">;
+      now?: () => Date;
       dezgoFeatures?: DezgoFeatureFlags;
     } = {},
   ) {
@@ -224,6 +226,7 @@ export class AIService {
     this.createDezgoProvider =
       options.createDezgoProvider ??
       (() => new DezgoProvider(() => this.getProviderCredential("dezgo")));
+    this.now = options.now ?? (() => new Date());
     this.dezgoFeatures = options.dezgoFeatures ?? {
       dezgoProviderEnabled: false,
       dezgoDirectByokEnabled: false,
@@ -734,6 +737,7 @@ export class AIService {
         monthlyActualUsd: summary.actualUsd,
         monthlyReservedUsd: summary.reservedUsd,
         balanceUsd,
+        now: this.now(),
       }),
     };
   }
