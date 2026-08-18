@@ -92,6 +92,7 @@ export default async function GeneralMonitorsAdminPage() {
           <Link className="button bg-violet-700 hover:bg-violet-800" href="/admin/general-monitors/readiness">テスト公開チェック</Link>
           <Link className="button-secondary" href="/admin/general-monitors/guide">スタッフマニュアル</Link>
           <Link className="button-secondary" href="/admin/general-monitors/email">招待メール設定</Link>
+          <Link className="button-secondary" href="/admin/general-monitors/quality-review">画像品質の進捗</Link>
           <Link className="button-secondary" href="/admin/general-monitors/export">CSV出力</Link>
           <Link className="button-secondary" href="/admin/monitor-issues">報告・自動修正キュー</Link>
           <Link className="button-secondary" href="/admin/users">ユーザーを招待</Link>

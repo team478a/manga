@@ -20,6 +20,7 @@ export const featureFlagDefinitions = {
   MANGAI_CLOUD_TEXT_ENABLED: "strict",
   MANGAI_ENABLE_LEGACY_LOCAL_TOOLS: "strict",
   MANGAI_MONITOR_OPS_WORKER_ENABLED: "strict",
+  MANGAI_MONITOR_QUALITY_REVIEW_ENABLED: "strict",
 } as const;
 
 export type FeatureFlagName = keyof typeof featureFlagDefinitions;

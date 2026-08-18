@@ -1,0 +1,10 @@
+begin;
+drop function if exists public.submit_cloud_monitor_quality_review(uuid);
+drop function if exists public.save_cloud_monitor_quality_review_case(uuid,uuid,jsonb,boolean);
+drop function if exists public.consent_cloud_monitor_quality_review(uuid);
+drop table if exists public.cloud_monitor_quality_review_responses;
+drop table if exists public.cloud_monitor_quality_review_assignments;
+drop table if exists public.cloud_monitor_quality_review_cases;
+drop table if exists public.cloud_monitor_quality_review_batches;
+delete from storage.buckets where id='manga-quality-review';
+commit;
