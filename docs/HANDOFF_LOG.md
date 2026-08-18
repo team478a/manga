@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-18 Codex: PR-R4-3A-8 Review Batch Admission（作業中）
+
+- Branch: `codex/feat-r4-3a8-review-batch-admission`、Base: PR #299 merge commit `2ab608b799c1c8092adad589fc0ae2df3d664bd6`。
+- rights packageの従来構造検査を維持しつつ、Human完了検査を追加。確認者、日時、Provider規約、Benchmark利用、顧客／Production作品不使用、個人情報なし、成人向けなし、全件approvedが揃わないpackageを取込不可にした。
+- 既定dry-runのstaging専用取込CLIを追加。28件、package／画像SHA、PNG、寸法、Content Credentials、project refをfail closedで検査し、実取込後も`draft`で停止する。uploadは非上書きで、途中失敗時は対象StorageとDBをcleanupする。
+- Production経路、active化、Reviewer割当は追加していない。Production／staging、既存作品、Provider、creditは未変更。Human権利確認0/28、A/B 0/56、正式Benchmark 0/140。
+- 集中15/15、deps、lint、Hub型検査、Hub 796/796、Canvas 26/26、AI 48/48、migration 60本、研究評価、Cloud漫画repository、owner isolation、100ページ4/4、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub Windows CIを正式判定にする。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-7 Monitor Review Portal（作業中）
 
 - Branch: `codex/feat-r4-3a7-monitor-review-portal`、Base: PR #298 merge commit `d154895cc04e198a60090ae4c74ea90ed1e7299b`。

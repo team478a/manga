@@ -46,6 +46,78 @@
 
 権利確認が未完了のBatchは登録・有効化しない。現在のprivate Batch 01はHuman権利確認が完了するまで対象外である。
 
+## 権利確認完了契約
+
+`mangai-rights-review-v1` packageの構造検査と、人間による完了判定は分離する。配布前の空templateは通常のpackage validatorを通過できるが、モニターBatch取込には`--require-complete`が必須である。
+
+`rights-response.private.json`は、確認者名、offset付き確認日時、Provider利用規約確認を持ち、全画像に次の判定を記録する。AIやスクリプトで人間の承認を補完しない。
+
+```json
+{
+  "template_version": "mangai-rights-review-response-v1",
+  "batch_id": "private-batch-01",
+  "verified_by": "人間の確認者名",
+  "verified_at": "2026-08-18T12:00:00+09:00",
+  "terms_reviewed": true,
+  "records": [
+    {
+      "image_id": "img_0001",
+      "decision": "approved",
+      "provider_terms_confirmed": true,
+      "benchmark_use_approved": true,
+      "no_customer_or_production_content": true,
+      "no_personal_information": true,
+      "no_adult_content": true,
+      "notes": ""
+    }
+  ]
+}
+```
+
+1件でも`approved`でない、または必須確認が`true`でない場合は、Batch全体を取込不可とする。画像ID、SHA-256、PNG、寸法、必須Content Credentialsも再検査する。
+
+```powershell
+npm run manga:benchmark:rights-package:validate -- `
+  --package C:\private\completed-rights-review.zip `
+  --expected-count 28 `
+  --require-complete
+```
+
+## staging取込
+
+取込CLIは既定でdry-runし、DB／Storageを変更しない。Human完了検査、28件集合、画像SHA-256、寸法を通過したときだけ取込予定を返す。
+
+```powershell
+npm run manga:benchmark:monitor-batch:admit -- `
+  --package C:\private\completed-rights-review.zip `
+  --batch-code batch_private_01 `
+  --created-by-profile-id 00000000-0000-4000-8000-000000000000 `
+  --starts-at 2026-08-20T00:00:00+09:00 `
+  --expires-at 2026-09-20T00:00:00+09:00 `
+  --expected-count 28
+```
+
+実取込はstaging専用環境変数だけを使用し、URLから得たproject ref、環境変数のproject ref、コマンド引数のproject refが一致する場合だけ許可する。Production project refも必須とし、stagingと一致した場合は拒否する。
+
+```powershell
+$env:MANGAI_MONITOR_REVIEW_STAGING_SUPABASE_URL = "https://STAGING_PROJECT_REF.supabase.co"
+$env:MANGAI_MONITOR_REVIEW_STAGING_SERVICE_ROLE_KEY = "staging専用key"
+$env:MANGAI_MONITOR_REVIEW_STAGING_PROJECT_REF = "STAGING_PROJECT_REF"
+$env:MANGAI_MONITOR_REVIEW_PRODUCTION_PROJECT_REF = "PRODUCTION_PROJECT_REF"
+
+npm run manga:benchmark:monitor-batch:admit -- `
+  --package C:\private\completed-rights-review.zip `
+  --batch-code batch_private_01 `
+  --created-by-profile-id 00000000-0000-4000-8000-000000000000 `
+  --starts-at 2026-08-20T00:00:00+09:00 `
+  --expires-at 2026-09-20T00:00:00+09:00 `
+  --expected-count 28 `
+  --apply `
+  --confirm-staging-project STAGING_PROJECT_REF
+```
+
+実取込後もBatchは`draft`で停止する。DB件数、private bucket、SHA-256を別途確認してからだけ`active`化し、異なるモニターA/Bを割り当てる。CLIは一般の`NEXT_PUBLIC_SUPABASE_URL`や`SUPABASE_SERVICE_ROLE_KEY`を読まず、Production向けapply経路を持たない。
+
 ## 停止とロールバック
 
 - 即時停止: `MANGAI_MONITOR_QUALITY_REVIEW_ENABLED=false`として再デプロイする。既存の一般モニター制作機能には影響しない。

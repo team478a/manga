@@ -50,6 +50,7 @@
     "manga:benchmark:review-package:build": "node --experimental-strip-types scripts/build-manga-quality-review-package.mjs",
     "manga:benchmark:review-package:validate": "node --experimental-strip-types scripts/validate-manga-quality-review-package.mjs",
     "manga:benchmark:rights-package:validate": "node scripts/validate-manga-quality-rights-review-package.mjs",
+    "manga:benchmark:monitor-batch:admit": "node scripts/import-manga-quality-monitor-review-batch.mjs",
     "manga:benchmark:review-transfer:passphrase": "node scripts/generate-manga-quality-review-transfer-passphrase.mjs",
     "manga:benchmark:review-transfer:build": "node scripts/build-manga-quality-secure-review-transfer.mjs",
     "manga:benchmark:review-transfer:validate": "node scripts/validate-manga-quality-secure-review-transfer.mjs",

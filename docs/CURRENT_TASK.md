@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-18 PR-R4-3A-8 Review Batch Admission
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_IN_PROGRESS / HUMAN_RIGHTS_REVIEW_REQUIRED / STAGING_NOT_CHANGED / FORMAL_COUNT_0`
+- Base: `feature/manga-canvas-mvp` merge commit `2ab608b799c1c8092adad589fc0ae2df3d664bd6`（PR #299マージ済み）。Branch: `codex/feat-r4-3a8-review-batch-admission`。
+- 目的: 権利未確認画像をモニターHuman Reviewへ登録できないようにし、人間が全件承認した28画像だけをstagingへ安全に取込めるようにする。
+- 実装: 既存rights package構造検査を再利用可能なlibraryへ分離し、`--require-complete`で確認者、日時、Provider規約、Benchmark利用、顧客／Production作品不使用、個人情報なし、成人向けなし、全件approvedを必須化した。
+- 取込: 既定dry-run、28件、package／画像SHA-256、PNG、寸法、Content Credentialsを再検査する。`--apply`はstaging専用URL／service role／project refと明示確認の一致、Production project ref不一致を必須にし、private bucketへ非上書きuploadする。失敗時はStorageとDBをcleanupし、成功時もBatchは`draft`で停止する。
+- 不変: Production、既存作品、DB schema、migration、RPC、RLS、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、runtime Judge、自動修復、Canvas、PNG／PDF、成人向け境界、Desktop。
+- 現在: Human権利確認0/28、モニターA/B 0/56、正式Benchmark 0/140。staging／Production取込0件。
+- 検証: 集中15/15、deps、lint、Hub型検査、Hub 796/796、Canvas 26/26、AI 48/48、migration 60本、研究評価、Cloud漫画repository、owner isolation、100ページ4/4、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path lengthで停止。Desktop typecheck／test／a11y／buildは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub Windows CIを正式判定にする。
+- 停止条件: Draft PR、全CI、Vercel Preview後に停止する。完了rights package受領前にstaging applyせず、責任者確認・A/B完了前にProduction登録とR4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A8_REVIEW_BATCH_ADMISSION.md`
+
+---
+
 ## 2026-08-18 PR-R4-3A-7 Monitor Review Portal
 
 - Base: `feature/manga-canvas-mvp` merge commit `d154895cc04e198a60090ae4c74ea90ed1e7299b`（PR #298マージ済み）。Branch: `codex/feat-r4-3a7-monitor-review-portal`。
