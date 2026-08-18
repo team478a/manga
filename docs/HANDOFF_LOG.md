@@ -11,6 +11,7 @@
 - 既定dry-runのstaging専用取込CLIを追加。28件、package／画像SHA、PNG、寸法、Content Credentials、project refをfail closedで検査し、実取込後も`draft`で停止する。uploadは非上書きで、途中失敗時は対象StorageとDBをcleanupする。
 - Production経路、active化、Reviewer割当は追加していない。Production／staging、既存作品、Provider、creditは未変更。Human権利確認0/28、A/B 0/56、正式Benchmark 0/140。
 - 集中15/15、deps、lint、Hub型検査、Hub 796/796、Canvas 26/26、AI 48/48、migration 60本、研究評価、Cloud漫画repository、owner isolation、100ページ4/4、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub Windows CIを正式判定にする。
+- Draft PR [#300](https://github.com/team478a/manga/pull/300)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-e9ad91-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認する。
 
 ---
 

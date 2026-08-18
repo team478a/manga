@@ -8,6 +8,7 @@
 - apply時もBatchは`draft`。private bucketへ上書きせずuploadし、途中失敗は対象Storage pathとBatchだけをcleanupする。active化、Reviewer A/B割当、Production経路は実装しない。
 - Production、DB schema、migration、RPC、既存作品、Provider、credit、runtime Judge、Canvas、PNG／PDF、成人向け境界、Desktopは不変。staging／Productionの外部状態は未変更。
 - 集中15/15、deps、lint、Hub型検査、Hub 796/796、Canvas 26/26、AI 48/48、migration 60本、研究評価、Cloud漫画repository、owner isolation、100ページ4/4、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub Windows CIで正式判定する。
+- Draft PR [#300](https://github.com/team478a/manga/pull/300)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-e9ad91-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認する。
 - 人間の権利確認0/28、A/B 0/56、正式Benchmark 0/140。完了rights package受領前にstaging applyせず、責任者確認前にProduction登録やR4-3Bへ進まない。
 
 ---

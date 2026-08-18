@@ -54,3 +54,14 @@
 - 完了済み権利確認packageを受領するまでstagingへapplyしない。
 - staging取込後も、件数・private bucket・SHA確認前にactive化しない。
 - 責任者確認とA/B Human Review完了前にProduction登録やR4-3Bへ進まない。
+
+## Draft PR
+
+- PR: [#300](https://github.com/team478a/manga/pull/300)（Draft／MERGEABLE）
+- Preview: [Ready](https://mangai-hub-staging-git-codex-feat-r4-e9ad91-team478as-projects.vercel.app)
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Production／staging変更: なし
