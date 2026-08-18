@@ -1,5 +1,9 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  evaluateMonitorQualityReviewBatchTransition,
+  type MonitorQualityReviewBatchTransition,
+} from "@/modules/manga-quality/domain/monitor-quality-review";
 
 export type MonitorQualityReviewCase = {
   id: string;
@@ -155,6 +159,63 @@ export async function loadMonitorQualityReviewAdminWorkspace() {
     batches: batches.data ?? [], assignments: assignments.data ?? [], cases: cases.data ?? [],
     responses: responses.data ?? [], enrollments: enrollments.data ?? [], profiles: profiles.data ?? [],
   };
+}
+
+export async function setMonitorQualityReviewBatchLifecycle(input: {
+  batchId: string;
+  transition: MonitorQualityReviewBatchTransition;
+}): Promise<{ data: { id: string; status: "active" | "paused" } | null; error: { message: string } | null }> {
+  const admin = createAdminClient();
+  const [batchResult, casesResult, assignmentsResult] = await Promise.all([
+    admin.from("cloud_monitor_quality_review_batches")
+      .select("status,review_scope,source_package_sha256,rights_reviewed_at,rights_reviewed_by,starts_at,expires_at")
+      .eq("id", input.batchId)
+      .maybeSingle<{
+        status: string;
+        review_scope: string;
+        source_package_sha256: string;
+        rights_reviewed_at: string;
+        rights_reviewed_by: string;
+        starts_at: string;
+        expires_at: string;
+      }>(),
+    admin.from("cloud_monitor_quality_review_cases")
+      .select("id", { count: "exact", head: true }).eq("batch_id", input.batchId),
+    admin.from("cloud_monitor_quality_review_assignments")
+      .select("id", { count: "exact", head: true }).eq("batch_id", input.batchId),
+  ]);
+  if (batchResult.error || casesResult.error || assignmentsResult.error || !batchResult.data)
+    return { data: null, error: { message: "monitor_quality_review_batch_not_found" } };
+
+  const readiness = evaluateMonitorQualityReviewBatchTransition({
+    transition: input.transition,
+    batch: {
+      status: batchResult.data.status,
+      reviewScope: batchResult.data.review_scope,
+      sourcePackageSha256: batchResult.data.source_package_sha256,
+      rightsReviewedAt: batchResult.data.rights_reviewed_at,
+      rightsReviewedBy: batchResult.data.rights_reviewed_by,
+      startsAt: batchResult.data.starts_at,
+      expiresAt: batchResult.data.expires_at,
+    },
+    caseCount: casesResult.count ?? 0,
+    assignmentCount: assignmentsResult.count ?? 0,
+    now: new Date(),
+  });
+  if (!readiness.ready)
+    return { data: null, error: { message: `monitor_quality_review_${readiness.code}` } };
+
+  const currentStatus = batchResult.data.status;
+  const nextStatus = input.transition === "pause" ? "paused" : "active";
+  const updateResult = await admin.from("cloud_monitor_quality_review_batches")
+    .update({ status: nextStatus, updated_at: new Date().toISOString() })
+    .eq("id", input.batchId)
+    .eq("status", currentStatus)
+    .select("id,status")
+    .maybeSingle<{ id: string; status: "active" | "paused" }>();
+  if (updateResult.error || !updateResult.data)
+    return { data: null, error: { message: "monitor_quality_review_batch_update_conflict" } };
+  return { data: updateResult.data, error: null };
 }
 
 export async function assignMonitorQualityReview(input: {

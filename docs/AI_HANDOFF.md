@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-11 Controlled Batch Activation、2026-08-18）
+
+- 最新基準はPR #303 merge commit `03fe58c9fc22631d15407bf1fd82b77039bbfcb2`。Branchは`codex/feat-r4-3a11-controlled-batch-activation`。
+- 管理者`/admin/general-monitors/quality-review`へ、Benchmark Batchの検査付き有効化／停止／再開を追加した。手動SQLを通常運用にしない。
+- `draft -> active`はscope、元package SHA、人間の権利確認、未失効期間、画像28枚、割当0件をfail closedで検査し、旧状態一致条件付きで更新する。
+- Feature Flag停止中でもBatchの検査と有効化はできるが、担当割当は無効。有効化だけではモニターへ公開されない。
+- Productionの`batch_private_01`は現在も`draft`、assignment 0、response 0、Flag off。Human A/B 0/56、正式Benchmark 0/140。外部状態は変更していない。
+- 集中4/4、deps、lint、全typecheck、Hub 801/801、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 60本、Hub／Desktop build、RC structure、diff check成功。
+- Draft PR [#304](https://github.com/team478a/manga/pull/304)はDraft／MERGEABLE。初回HEAD `07a8b8c`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-c7e6e3-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを再確認して停止する。責任者確認前にProduction有効化、Flag変更、A/B割当、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-10 Production Draft Acceptance、2026-08-18）
 
 - 最新基準はPR #302 merge commit `2da179c1b4c5534cf6eee182caeede773c932c7a`。Branchは`codex/docs-r4-3a10-production-draft-acceptance`。

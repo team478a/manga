@@ -17,6 +17,9 @@
 ## 管理者導線
 
 - 進捗: `/admin/general-monitors/quality-review`
+- `draft` Batchは、権利確認、元package SHA-256、期間、画像28枚、既存割当0件をサーバーで再検査してから`active`へ変更する。
+- Batchの有効化／停止／再開は管理者だけが実行でき、状態更新は取得時の状態が変わっていない場合だけ成功する。
+- Feature Flag停止中でもBatchの検査と有効化はできるが、担当割当とモニター画面公開はできない。
 - 有効なBatchへ、異なるモニターをReviewer A/Bとして割り当てる。
 - 管理画面は確定件数、開始確認、最終送信だけを表示し、回答payloadを読み込まない。
 
@@ -40,9 +43,10 @@
 1. migration `202608180001_cloud_monitor_quality_review`をCIでroundtrip確認し、対象環境へ適用済みであることを確認する。
 2. 人間による権利確認が全件完了した専用画像だけをprivate bucketへ登録する。
 3. 元package SHA-256、画像SHA-256、寸法、case setを照合する。
-4. Batchを`active`にし、異なるモニターをA/Bへ割り当てる。
+4. 管理画面からBatchの事前条件を再検査し、`active`にする。この操作だけではモニターへ公開されない。
 5. `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true`に加え、`MANGAI_MONITOR_QUALITY_REVIEW_ENABLED=true`を対象環境だけへ設定する。
-6. 390×844相当のスマートフォンで、同意、画像表示、下書き再開、画像確定、最終送信を確認する。
+6. Feature Flag有効化後、異なるモニターをA/Bへ割り当てる。Batch開始時刻より前は割当を拒否する。
+7. 390×844相当のスマートフォンで、同意、画像表示、下書き再開、画像確定、最終送信を確認する。
 
 権利確認が未完了のBatchは登録・有効化しない。private Batch 01はHuman権利確認28/28を完了済みである。
 
