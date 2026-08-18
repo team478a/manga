@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-7 Monitor Review Portal、2026-08-18）
+
+- 最新基準はPR #298 merge commit `d154895cc04e198a60090ae4c74ea90ed1e7299b`。Branchは`codex/feat-r4-3a7-monitor-review-portal`。
+- 招待モニター向け`/dashboard/monitor/quality-review`へ、同意、1画像判定、確信度、欠陥分類、下書き自動保存／再開、画像確定、全件送信を追加する。
+- 管理者`/admin/general-monitors/quality-review`は異なるReviewer A/Bの割当、確定数、開始確認、最終送信だけを扱い、回答payload、正解label、AI監査を取得しない。
+- private bucket、120秒署名URL、本人assignment再確認、専用fail-closed Flag、authenticatedへの直接テーブル権限なし、本人限定RPCを追加する。既存`mangai-human-review-v2`の判定規則を再利用する。
+- 顧客／Production／モニター作品、権利未確認画像を使用しない。private Batch 01は人間の権利確認完了まで登録しない。Production変更なし。
+- 集中13/13、deps、lint、Hub型検査、Hub 792/792、Canvas 26/26、AI 48/48、migration 60本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub CIで正式判定する。Draft PR、全CI、Vercel Preview確認後に停止し、責任者確認前にProduction登録とR4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-6 Secure Human Review Transfer、2026-08-17）
 
 - 最新基準はPR #296 merge commit `ba9b31ad7cbe731870fd1edab2f7eb01206c92fc`。Branchは`codex/feat-r4-3a6-secure-review-transfer`。

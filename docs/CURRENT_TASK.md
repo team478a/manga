@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-18 PR-R4-3A-7 Monitor Review Portal
+
+- Base: `feature/manga-canvas-mvp` merge commit `d154895cc04e198a60090ae4c74ea90ed1e7299b`（PR #298マージ済み）。Branch: `codex/feat-r4-3a7-monitor-review-portal`。
+- 目的: 招待済みモニターがBenchmark専用画像をスマートフォンから独立Human Reviewし、管理者がA/Bの割当と進捗を確認できるようにする。
+- 実装: 専用fail-closed Flag、private Storage、本人限定RPC、同意、下書き自動保存／再開、1画像確定、最終送信、管理者のA/B別人割当と進捗表示を追加する。
+- Blind契約: 正解label、AI監査、他Reviewer回答、Prompt、source group／family、splitを利用者画面と管理進捗queryへ含めない。既存`mangai-human-review-v2`の判定規則を再利用する。
+- 安全境界: 顧客作品、Production作品、モニター作品、権利未確認画像を使用しない。private Batch 01は人間の権利確認完了まで登録しない。
+- Production: DB、Storage、作品、Provider、creditを変更していない。migrationとFlagは未適用。
+- 検証: 集中13/13、deps、lint、Hub型検査、Hub 792/792、Canvas 26/26、AI 48/48、migration 60本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub CIで正式判定する。
+- 停止条件: Draft PR、全CI、Vercel Previewを確認して停止する。責任者確認、権利確認、staging受入れ前にProduction登録とR4-3Bへ進まない。
+
+---
+
 ## 2026-08-17 PR-R4-3A-6 Secure Human Review Transfer
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / ENCRYPTED_PACKAGES_READY / OUTBOUND_NOT_SHARED / HUMAN_REVIEW_REQUIRED / FORMAL_COUNT_0`

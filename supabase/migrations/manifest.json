@@ -354,7 +354,13 @@
       "description": "完成版checkpointへ固定した漫画公開version、本文ページ、販売ゲートを追加",
       "forwardSha256": "d7e0abeb994b8cfeb5c348620e3f2319bf3baff203258f40416e962e254cf7ff",
       "rollbackSha256": "c8e6b59a8e7ac4a18c91898434cf4466d9b2be057c6648e55438f728a1e1288c"
+    },
+    {
+      "id": "202608180001_cloud_monitor_quality_review",
+      "description": "権利確認済み漫画画像の独立Human Reviewを招待モニターへ安全に割り当てる基盤を追加",
+      "forwardSha256": "5c03358a8b691887488000d8bc5f768ae613695ed18a5c93cd14cd11ad0e725a",
+      "rollbackSha256": "dc85b04c4da1bc62fc63dade24f2e046641bc88150403bdb8af9404f21221e5c"
     }
   ],
-  "schemaSha256": "168856eb09c91e4ff38e9a6f558d2d1f321cef37943c4f7a96ac528161b055f7"
+  "schemaSha256": "000cd065fdbc76dfb126115f22b54f88554d9f295ff7d2322889c6a0694bd2ff"
 }

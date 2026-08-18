@@ -128,6 +128,17 @@ export default async function GeneralMonitorPage({
           </section>
           {notice ? <p className={`mt-5 rounded-lg p-4 ${notice.level === "error" ? "bg-red-50 text-red-800" : "bg-amber-50 text-amber-950"}`} role="status">{notice.message}</p> : null}
           {isCloudGeneralMonitorActive(enrollment) && !enrollment.onboarding_completed_at ? <Link className="button mt-5 bg-violet-700 hover:bg-violet-800" href="/dashboard/monitor/welcome">初回案内を確認</Link> : null}
+          {isCloudGeneralMonitorActive(enrollment) ? (
+            <section className="panel mt-6 border-violet-200 bg-violet-50">
+              <h2 className="text-xl font-bold">漫画画像の品質確認</h2>
+              <p className="mt-2 text-sm leading-relaxed text-stone-700">
+                割り当てられた画像を1枚ずつ確認します。スマートフォンから途中保存して再開できます。
+              </p>
+              <Link className="button mt-4 w-full bg-violet-700 hover:bg-violet-800 sm:w-auto" href="/dashboard/monitor/quality-review">
+                品質確認を開く
+              </Link>
+            </section>
+          ) : null}
           {error ? <InlineErrorMessage radius="lg" role="alert">{error}</InlineErrorMessage> : null}
           {message ? <p className="mt-5 rounded-lg bg-green-50 p-4 text-green-800" role="status">{message}</p> : null}
           {enrollment.status === "active" ? <MonitorFeedbackForm /> : null}
