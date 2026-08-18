@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（Benchmark Batch 01 匿名権利確認受入れ、2026-08-18）
+
+- 最新基準はPR #300 merge commit `47fe03d3ecbe90f1fd45f7708bc49423cc17fd57`。Branchは`codex/docs-r4-3a-rights-review-acceptance`。
+- 責任者が28画像を確認し、実名を保存せず`anonymous`として全権利確認項目を承認した。モニターA/Bは既存どおりログインプロフィールIDを内部識別にだけ使用し、氏名入力を要求しない。
+- 元の権利確認ZIPを上書きせずGit外へ完了版を作成した。`--require-complete`は28/28、Provider規約、Benchmark評価用途、顧客／Production素材不使用、個人情報なし、成人向けなし、PNG、SHA-256、寸法、Content Credentials、重複なしに成功。package SHA-256は`05cf95e530d6ff699ade2a1237c882eb518281e15b9dcfb74f99a120f8a7ff59`。
+- staging取込dry-runは`STAGING_BATCH_ADMISSION_READY`、28件で成功。DB、Storage、Productionの変更は0件。
+- 関連回帰4/4、dependency／module boundary、lint、diff check成功。既知warning 2件は差分外。
+- staging専用URL、service role、staging project ref、Production project refは現在の実行環境に未設定。一般Supabase環境変数へfallbackせずapplyを停止した。
+- Human権利確認28/28、A/B 0/56、正式Benchmark 0/140。staging専用4設定、実在する管理者profile ID、期間、migration適用先を確認するまでapply、active化、A/B割当、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-8 Review Batch Admission、2026-08-18）
 
 - 最新基準はPR #299 merge commit `2ab608b799c1c8092adad589fc0ae2df3d664bd6`。Branchは`codex/feat-r4-3a8-review-batch-admission`。
