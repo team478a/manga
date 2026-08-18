@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-18 Codex: PR-R4-3A-11 Controlled Batch Activation（作業中）
+
+- PR #303 merge commit `03fe58c9fc22631d15407bf1fd82b77039bbfcb2`から`codex/feat-r4-3a11-controlled-batch-activation`を開始した。
+- Production draft監査で、管理画面にはReviewer割当はあるがBatch active化の入口がなく、手動SQLだけが残っていることを確認した。
+- 管理者専用の有効化／停止／再開を追加。draft有効化時はscope、元package SHA、人間の権利確認、期間、画像28枚、割当0件を再検査し、旧状態一致更新で競合を拒否する。
+- Feature Flag offでもBatch検査はできるが、担当割当は無効にした。Batch activeだけではモニター画面へ公開されない。
+- Productionの`batch_private_01`、Feature Flag、A/B割当、回答は変更していない。Human A/B 0/56、正式Benchmark 0/140。
+- 集中4/4、deps、lint、全typecheck、Hub 801/801、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 60本、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
+- 次: commit、push、Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsを確認する。責任者確認前にProduction有効化、Flag変更、A/B割当、R4-3Bへ進まない。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-10 Production Draft Acceptance（作業中）
 
 - PR #302 merge commit `2da179c1b4c5534cf6eee182caeede773c932c7a`から`codex/docs-r4-3a10-production-draft-acceptance`を開始した。

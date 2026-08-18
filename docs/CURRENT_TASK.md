@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-18 PR-R4-3A-11 Controlled Batch Activation
+
+- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING / FORMAL_COUNT_0`
+- Base: PR #303 merge commit `03fe58c9fc22631d15407bf1fd82b77039bbfcb2`。Branch: `codex/feat-r4-3a11-controlled-batch-activation`。
+- 目的: Productionの`batch_private_01`を手動SQLではなく、管理者画面から事前条件を再検査して安全に有効化／停止／再開できるようにする。
+- Guard: `draft`、`PILOT_INTRINSIC_ONLY`、元package SHA-256、人間の権利確認、未失効期間、画像28枚、既存割当0件をfail closedで検査する。状態更新は取得時の旧状態が一致する場合だけ成功する。
+- Feature Flag: 停止中でもBatch検査は可能だが、Reviewer割当は無効。有効化だけではモニター画面へ公開されない。
+- 不変: Production Batchは`draft`、assignment 0、response 0、Feature Flag off、Human A/B 0/56、正式Benchmark 0/140。DB、migration、RPC、Storage、API、URL、作品、Canvas、Provider、credit、PNG／PDF、成人向け境界、Desktopの外部契約は変更していない。
+- 検証: 集中4/4、deps、lint、Hub／Desktop型検査、Hub 801/801、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 60本、Hub／Desktop build、RC structure、diff check成功。既知module warning 2件とRC外部Pendingは差分外。
+- 次: commit、push、Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsを確認して停止する。責任者確認前にProduction有効化、Flag変更、A/B割当、R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A11_CONTROLLED_BATCH_ACTIVATION.md`
+
+---
+
 ## 2026-08-18 PR-R4-3A-10 Production Draft Acceptance
 
 - 状態: `PRODUCTION_DRAFT_ADMITTED / PRIVATE_IMAGES_28_VERIFIED / ASSIGNMENTS_0 / FEATURE_FLAG_OFF / FORMAL_COUNT_0`
