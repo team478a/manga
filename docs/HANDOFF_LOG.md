@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-18 Codex: PR-R4-3A-14 Production Panel Migration Acceptance（作業中）
+
+- PR #306 merge commit `a390091d590146b7a3f2496763ac2c0118e453ce`から`codex/docs-r4-3a14-production-panel-migration`を開始した。
+- Production事前検査で、Benchmarkテーブルあり、panel migration未適用、`batch_private_01`はactive、画像28、assignment 0、response 0を確認した。
+- リポジトリ内の`202608180002_cloud_monitor_quality_review_panel.sql`を改変せず1回適用し、Supabase SQL Editorの成功結果を確認した。
+- 適用後は目標5名、画像28、assignment 0、response 0。目標外slot拒否関数／triggerあり、`authenticated`直接実行権限なし。
+- Feature Flag、担当割当、回答、作品、Canvas、Storage object、Provider、creditは変更していない。正式Benchmarkは0/140。
+- Production管理画面は新規タブに認証セッションが共有されず表示未確認。次工程でログイン済み画面を確認するまでFlagと割当を変更しない。
+- deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
+- 次: 文書差分の品質ゲート、Draft PR、全CI、Vercel Previewを確認して停止する。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-13 Multi-Reviewer Panel（作業中）
 
 - PR #305 merge commit `8ae9beaa334c0621f80fc30d72527a7a031bfa8e`から`codex/feat-r4-3a13-multi-reviewer-panel`を開始した。

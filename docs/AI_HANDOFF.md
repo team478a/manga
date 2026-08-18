@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-14 Production Panel Migration Acceptance、2026-08-18）
+
+- 最新基準はPR #306 merge commit `a390091d590146b7a3f2496763ac2c0118e453ce`。Branchは`codex/docs-r4-3a14-production-panel-migration`。
+- Productionへ既存migration `202608180002_cloud_monitor_quality_review_panel`を1回適用した。事前はpanel列なし、assignment 0、response 0。
+- 適用後の`batch_private_01`はactive、`PILOT_INTRINSIC_ONLY`、目標5名、画像28、assignment 0、response 0。
+- 目標外slot拒否関数とtriggerは存在し、`authenticated`の関数直接実行権限はない。
+- Feature Flagはoffのまま。モニター割当、回答、作品、Canvas、Storage object、Provider、creditは変更していない。正式Benchmarkは0/140。
+- 新規Production管理画面タブは認証セッションが共有されず、画面表示だけ未確認。DB受入れ条件はSQLで確認済み。
+- deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: Docs-only Draft PRの全CIとVercel Preview成功後に停止する。責任者確認と管理画面表示確認前にFlag有効化、A〜E割当、Human Review、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-13 Multi-Reviewer Panel、2026-08-18）
 
 - 最新基準はPR #305 merge commit `8ae9beaa334c0621f80fc30d72527a7a031bfa8e`。Branchは`codex/feat-r4-3a13-multi-reviewer-panel`。
