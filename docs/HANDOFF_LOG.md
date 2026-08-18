@@ -12,6 +12,7 @@
 - `batch_private_01`のstaging取込dry-runは`STAGING_BATCH_ADMISSION_READY`、28件で成功。DB、Storage、Productionは変更していない。
 - 関連回帰4/4、dependency／module boundary、lint、diff check成功。module boundaryの既知warning 2件は今回差分外。
 - staging専用URL、service role、staging project ref、Production project refは現在の実行環境に未設定。一般Supabase環境変数を使わず、apply前に停止した。
+- Draft PR [#301](https://github.com/team478a/manga/pull/301)はDraft／MERGEABLE。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-661158-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを確認して停止する。
 - 現在はHuman権利確認28/28、A/B 0/56、正式Benchmark 0/140。staging apply後もBatchを`draft`で確認し、private bucket／SHA確認後にだけactive化と異なるモニターA/B割当を行う。R4-3Bへ進まない。
 
 ---

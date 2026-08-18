@@ -68,3 +68,13 @@
 - モニターA/B: 0/56
 - 正式Benchmark: 0/140
 - staging／Production取込: 0件
+
+## Draft PR
+
+- PR: [#301](https://github.com/team478a/manga/pull/301)（Draft／MERGEABLE）
+- Preview: [Ready](https://mangai-hub-staging-git-codex-docs-r4-661158-team478as-projects.vercel.app)
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功

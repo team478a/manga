@@ -10,6 +10,7 @@
 - 検証: 関連回帰4/4、dependency／module boundary、lint、diff check成功。module boundaryの既知warning 2件は今回差分外。
 - 外部状態: staging専用URL、service role、staging project ref、Production project refの4設定は現在の実行環境に未設定。推測や一般Supabase環境変数へのfallbackを行わず、`--apply`は未実施。
 - 現在: Human権利確認28/28、モニターA/B 0/56、正式Benchmark 0/140。staging／Production取込0件。
+- Draft PR: [#301](https://github.com/team478a/manga/pull/301)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-661158-team478as-projects.vercel.app)。
 - 次: staging専用4設定、実在する管理者profile ID、対象期間、migration適用先を確認後に、明示したstaging project refだけへapplyする。取込後もBatchは`draft`で停止し、DB件数、private bucket、SHA-256確認前にactive化・A/B割当を行わない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_3A_RIGHTS_REVIEW_ACCEPTANCE.md`
 
