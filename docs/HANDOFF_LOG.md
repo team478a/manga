@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-18 Codex: PR-R4-3A-12 Production Batch Activation Acceptance（作業中）
+
+- PR #304 merge commit `0c6f8f9e6d380334d6605ad78ed11f64925fada8`から`codex/docs-r4-3a12-production-batch-activation`を開始した。
+- 責任者によるmergeと管理者ログイン確認後、Production管理画面で`batch_private_01`が`draft`、画像28枚、割当0件、Feature Flag offであることを確認した。
+- 「Batchを検査して有効化」を1回だけ実行し、成功表示、`active`、画像28枚、担当者未割当を確認した。Feature Flagはoff、割当ボタンは無効のまま。
+- assignment 0、response 0、Human A/B 0/56、正式Benchmark 0/140。モニター公開、Production作品、Canvas、Provider、credit、DB schema、migration、RPC、Storage、API、URL、PNG／PDF、成人向け境界、Desktopは変更していない。
+- Draft PR [#305](https://github.com/team478a/manga/pull/305)はDraft／MERGEABLE。初回HEAD `a5cab7c`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-836d87-team478as-projects.vercel.app)。
+- 次: Docs-only Draft PRと全CI／Vercel Preview成功で停止する。責任者がReviewer AのProduction表示名と別人のReviewer Bを指定するまでFeature Flag変更、担当割当、Human Review、R4-3Bへ進まない。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-11 Controlled Batch Activation（作業中）
 
 - PR #303 merge commit `03fe58c9fc22631d15407bf1fd82b77039bbfcb2`から`codex/feat-r4-3a11-controlled-batch-activation`を開始した。
