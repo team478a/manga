@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-9 Production Draft Admission、2026-08-18）
+
+- 最新基準はPR #301 merge commit `8650c12ba9009652cebc00e9cb8247807e1c4b2c`。Branchは`codex/feat-r4-3a9-production-draft-admission`。
+- 責任者判断によりStaging専用Supabaseは準備しない。Production内のBenchmark専用4テーブルとprivate bucketへ、権利確認済み28画像を非公開`draft`としてだけ登録できる入口を追加する。
+- 既定dry-runとstaging互換を維持し、Productionは専用URL／service role／project ref、対象project ref、Batch code、固定確認句の三重確認が揃った場合だけapply可能にする。一般Supabase環境変数へfallbackしない。
+- apply後も`draft`、`PILOT_INTRINSIC_ONLY`、割当0件を強制し、DB case setとprivate Storageから再取得した画像SHA-256を検査する。失敗時は当該BatchのStorageとDBだけcleanupする。
+- 今回はProduction apply、active化、A/B割当、Feature Flag変更を行わない。通常作品、Canvas、公開Storage、Provider、credit、DB schema、migration、RPC、API、PNG／PDF、成人向け境界、Desktopは不変。
+- 実package Production dry-runは28件で`PRODUCTION_BATCH_ADMISSION_READY`、外部変更0件。集中5/5、deps、lint、型検査、Hub 797/797、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、Hub／Desktop build、migration 60本、RC structure、diff check成功。Human権利確認28/28、A/B 0/56、正式Benchmark 0/140。
+- Draft PR [#302](https://github.com/team478a/manga/pull/302)はDraft／MERGEABLE。実装HEAD `e6e87d7ebf59cb95b19898a2432ce9a613d8a538`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-pmolc68ia-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認し、責任者確認前にapplyしない。
+
+---
+
 ## 0.0 現在の優先タスク（Benchmark Batch 01 匿名権利確認受入れ、2026-08-18）
 
 - 最新基準はPR #300 merge commit `47fe03d3ecbe90f1fd45f7708bc49423cc17fd57`。Branchは`codex/docs-r4-3a-rights-review-acceptance`。

@@ -127,14 +127,59 @@ test("monitor batch取込は既定dry-runでDBとStorageを変更しない", asy
   );
 });
 
-test("取込CLIはstaging専用環境変数、draft登録、非上書きupload、失敗cleanupを強制する", async () => {
+test("Production取込は明示targetでもdry-runを既定にし専用秘密値なしではapplyしない", async (context) => {
+  const root = await mkdtemp(path.join(tmpdir(), "mangai-r4-3a9-production-draft-"));
+  context.after(() => rm(root, { recursive: true, force: true }));
+  const packagePath = await buildRightsPackage(root);
+  const admissionArguments = [
+    importer,
+    "--package", packagePath,
+    "--batch-code", "batch_private_01",
+    "--created-by-profile-id", "11111111-1111-4111-8111-111111111111",
+    "--starts-at", "2026-08-18T00:00:00Z",
+    "--expires-at", "2099-09-18T00:00:00Z",
+    "--expected-count", "1",
+    "--target-environment", "production",
+  ];
+  const result = await execFileAsync(process.execPath, admissionArguments);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.status, "PRODUCTION_BATCH_ADMISSION_READY");
+  assert.equal(output.targetEnvironment, "production");
+  assert.equal(output.databaseChanged, false);
+  assert.equal(output.storageChanged, false);
+  assert.equal(output.productionChanged, false);
+  await assert.rejects(
+    execFileAsync(process.execPath, [...admissionArguments, "--apply"], {
+      env: {
+        ...process.env,
+        MANGAI_MONITOR_REVIEW_PRODUCTION_SUPABASE_URL: "",
+        MANGAI_MONITOR_REVIEW_PRODUCTION_SERVICE_ROLE_KEY: "",
+        MANGAI_MONITOR_REVIEW_PRODUCTION_PROJECT_REF: "productionref",
+      },
+    }),
+    /monitor_review_production_service_role_required/,
+  );
+});
+
+test("取込CLIは環境別秘密値、draft隔離、多重確認、非上書きupload、失敗cleanupを強制する", async () => {
   const source = await readFile(importer, "utf8");
   assert.match(source, /MANGAI_MONITOR_REVIEW_STAGING_SUPABASE_URL/);
   assert.match(source, /MANGAI_MONITOR_REVIEW_STAGING_SERVICE_ROLE_KEY/);
   assert.match(source, /MANGAI_MONITOR_REVIEW_STAGING_PROJECT_REF/);
   assert.match(source, /MANGAI_MONITOR_REVIEW_PRODUCTION_PROJECT_REF/);
+  assert.match(source, /MANGAI_MONITOR_REVIEW_PRODUCTION_SUPABASE_URL/);
+  assert.match(source, /MANGAI_MONITOR_REVIEW_PRODUCTION_SERVICE_ROLE_KEY/);
+  assert.match(source, /--confirm-production-project/);
+  assert.match(source, /--confirm-production-draft-batch/);
+  assert.match(source, /BENCHMARK_PRIVATE_DRAFT_ONLY/);
+  assert.match(source, /actor\.data\?\.role !== "admin"/);
+  assert.match(source, /monitor_review_admission_admin_profile_required/);
   assert.match(source, /status: "draft"/);
+  assert.match(source, /review_scope: "PILOT_INTRINSIC_ONLY"/);
   assert.match(source, /upsert: false/);
+  assert.match(source, /storedBatch\.data\?\.status !== "draft"/);
+  assert.match(source, /storedAssignments\.data\?\.length/);
+  assert.match(source, /monitor_review_case_checksum_mismatch/);
   assert.match(source, /storage\.from\(REVIEW_BUCKET\)\.remove\(uploadedPaths\)/);
   assert.match(source, /cloud_monitor_quality_review_batches"\)\.delete\(\)\.eq\("id", batchId\)/);
   assert.doesNotMatch(source, /NEXT_PUBLIC_SUPABASE_URL|SUPABASE_SERVICE_ROLE_KEY(?!")/);

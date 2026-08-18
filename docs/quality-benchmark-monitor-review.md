@@ -37,14 +37,14 @@
 
 ## 有効化条件
 
-1. migration `202608180001_cloud_monitor_quality_review`をstagingでroundtrip確認する。
+1. migration `202608180001_cloud_monitor_quality_review`をCIでroundtrip確認し、対象環境へ適用済みであることを確認する。
 2. 人間による権利確認が全件完了した専用画像だけをprivate bucketへ登録する。
 3. 元package SHA-256、画像SHA-256、寸法、case setを照合する。
 4. Batchを`active`にし、異なるモニターをA/Bへ割り当てる。
 5. `CLOUD_GENERAL_MONITOR_BETA_ENABLED=true`に加え、`MANGAI_MONITOR_QUALITY_REVIEW_ENABLED=true`を対象環境だけへ設定する。
 6. 390×844相当のスマートフォンで、同意、画像表示、下書き再開、画像確定、最終送信を確認する。
 
-権利確認が未完了のBatchは登録・有効化しない。現在のprivate Batch 01はHuman権利確認が完了するまで対象外である。
+権利確認が未完了のBatchは登録・有効化しない。private Batch 01はHuman権利確認28/28を完了済みである。
 
 ## 権利確認完了契約
 
@@ -83,7 +83,7 @@ npm run manga:benchmark:rights-package:validate -- `
   --require-complete
 ```
 
-## staging取込
+## 隔離draft取込
 
 取込CLIは既定でdry-runし、DB／Storageを変更しない。Human完了検査、28件集合、画像SHA-256、寸法を通過したときだけ取込予定を返す。
 
@@ -97,13 +97,14 @@ npm run manga:benchmark:monitor-batch:admit -- `
   --expected-count 28
 ```
 
-実取込はstaging専用環境変数だけを使用し、URLから得たproject ref、環境変数のproject ref、コマンド引数のproject refが一致する場合だけ許可する。Production project refも必須とし、stagingと一致した場合は拒否する。
+既定の実取込先はstagingのまま維持する。Stagingを用意しない運用では、`--target-environment production`を明示し、Benchmark専用テーブルとprivate bucketへ非公開`draft`としてだけ登録できる。一般のSupabase環境変数へfallbackせず、URLから得たproject ref、専用環境変数、コマンド引数を一致させる。
+
+Production draft取込には、対象project ref、Batch code、固定確認句の三重確認と、実在する管理者profile IDを必須にする。通常作品、Canvas、公開Storage、Reviewer割当、Feature Flagは変更しない。次の例は操作契約であり、責任者確認前に実行しない。
 
 ```powershell
-$env:MANGAI_MONITOR_REVIEW_STAGING_SUPABASE_URL = "https://STAGING_PROJECT_REF.supabase.co"
-$env:MANGAI_MONITOR_REVIEW_STAGING_SERVICE_ROLE_KEY = "staging専用key"
-$env:MANGAI_MONITOR_REVIEW_STAGING_PROJECT_REF = "STAGING_PROJECT_REF"
 $env:MANGAI_MONITOR_REVIEW_PRODUCTION_PROJECT_REF = "PRODUCTION_PROJECT_REF"
+$env:MANGAI_MONITOR_REVIEW_PRODUCTION_SUPABASE_URL = "https://PRODUCTION_PROJECT_REF.supabase.co"
+$env:MANGAI_MONITOR_REVIEW_PRODUCTION_SERVICE_ROLE_KEY = "ローカルだけに設定するproduction key"
 
 npm run manga:benchmark:monitor-batch:admit -- `
   --package C:\private\completed-rights-review.zip `
@@ -112,11 +113,14 @@ npm run manga:benchmark:monitor-batch:admit -- `
   --starts-at 2026-08-20T00:00:00+09:00 `
   --expires-at 2026-09-20T00:00:00+09:00 `
   --expected-count 28 `
+  --target-environment production `
   --apply `
-  --confirm-staging-project STAGING_PROJECT_REF
+  --confirm-production-project PRODUCTION_PROJECT_REF `
+  --confirm-production-draft-batch batch_private_01 `
+  --acknowledge-production-write BENCHMARK_PRIVATE_DRAFT_ONLY
 ```
 
-実取込後もBatchは`draft`で停止する。DB件数、private bucket、SHA-256を別途確認してからだけ`active`化し、異なるモニターA/Bを割り当てる。CLIは一般の`NEXT_PUBLIC_SUPABASE_URL`や`SUPABASE_SERVICE_ROLE_KEY`を読まず、Production向けapply経路を持たない。
+実取込後もBatchは`draft`で停止する。CLI自身がDBのBatch状態・case件数・割当0件と、private Storageから再取得した28画像のSHA-256を検査する。別途管理画面でも確認してからだけ`active`化し、異なるモニターA/Bを割り当てる。CLIは一般の`NEXT_PUBLIC_SUPABASE_URL`や`SUPABASE_SERVICE_ROLE_KEY`を読まない。
 
 ## 停止とロールバック
 
@@ -128,7 +132,7 @@ npm run manga:benchmark:monitor-batch:admit -- `
 ## 次工程への停止条件
 
 - Draft PRの全CIとVercel Previewが成功する。
-- staging migration roundtripとモバイル実機確認が完了する。
+- migration roundtripとモバイル実機確認が完了する。
 - 人間による権利確認が完了するまではProductionへ画像を登録しない。
 - A/B回答を正式Benchmarkへ採用する前に、既存validatorでHuman response契約と独立性を再検査する。
 - 責任者確認前にR4-3B Visual Judge本体へ進まない。

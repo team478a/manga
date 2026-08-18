@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { createClient } from "@supabase/supabase-js";
@@ -29,10 +29,10 @@ function projectRefFromUrl(value) {
   try {
     url = new URL(value);
   } catch {
-    throw new Error("monitor_review_staging_url_invalid");
+    throw new Error("monitor_review_target_url_invalid");
   }
   const match = url.hostname.match(/^([a-z0-9]+)\.supabase\.co$/i);
-  if (url.protocol !== "https:" || !match) throw new Error("monitor_review_staging_url_invalid");
+  if (url.protocol !== "https:" || !match) throw new Error("monitor_review_target_url_invalid");
   return match[1];
 }
 
@@ -49,8 +49,11 @@ const expiresAt = isoTimestamp(requiredArgument("--expires-at"), "monitor_review
 const startsAt = isoTimestamp(argument("--starts-at") ?? new Date().toISOString(), "monitor_review_admission_start_invalid");
 const expectedCount = Number(argument("--expected-count") ?? "28");
 const apply = process.argv.includes("--apply");
+const targetEnvironment = argument("--target-environment") ?? "staging";
 if (!BATCH_CODE.test(batchCode)) throw new Error("monitor_review_admission_batch_code_invalid");
 if (!UUID.test(createdByProfileId)) throw new Error("monitor_review_admission_actor_invalid");
+if (!["staging", "production"].includes(targetEnvironment))
+  throw new Error("monitor_review_admission_target_environment_invalid");
 if (!Number.isSafeInteger(expectedCount) || expectedCount <= 0 || expectedCount > 140)
   throw new Error("monitor_review_admission_expected_count_invalid");
 if (Date.parse(expiresAt) <= Date.parse(startsAt)) throw new Error("monitor_review_admission_window_invalid");
@@ -75,8 +78,9 @@ const cases = orderedCases.map((item, index) => ({
 
 if (!apply) {
   process.stdout.write(`${JSON.stringify({
-    status: "STAGING_BATCH_ADMISSION_READY",
+    status: `${targetEnvironment.toUpperCase()}_BATCH_ADMISSION_READY`,
     mode: "dry_run",
+    targetEnvironment,
     batchCode,
     cases: cases.length,
     sourcePackageSha256: validated.packageSha256,
@@ -89,23 +93,45 @@ if (!apply) {
   process.exit(0);
 }
 
-const stagingUrl = process.env.MANGAI_MONITOR_REVIEW_STAGING_SUPABASE_URL ?? "";
-const stagingServiceRole = process.env.MANGAI_MONITOR_REVIEW_STAGING_SERVICE_ROLE_KEY ?? "";
-const expectedProjectRef = process.env.MANGAI_MONITOR_REVIEW_STAGING_PROJECT_REF ?? "";
 const productionProjectRef = process.env.MANGAI_MONITOR_REVIEW_PRODUCTION_PROJECT_REF ?? "";
-const confirmedProjectRef = argument("--confirm-staging-project") ?? "";
-if (stagingServiceRole.length < 20) throw new Error("monitor_review_staging_service_role_required");
-const projectRef = projectRefFromUrl(stagingUrl);
-if (!/^[a-z0-9]+$/i.test(expectedProjectRef) || projectRef !== expectedProjectRef || confirmedProjectRef !== expectedProjectRef)
-  throw new Error("monitor_review_staging_project_confirmation_failed");
-if (!/^[a-z0-9]+$/i.test(productionProjectRef))
-  throw new Error("monitor_review_production_project_ref_required");
-if (productionProjectRef === projectRef)
+
+let targetUrl;
+let targetServiceRole;
+let expectedProjectRef;
+if (targetEnvironment === "production") {
+  targetUrl = process.env.MANGAI_MONITOR_REVIEW_PRODUCTION_SUPABASE_URL ?? "";
+  targetServiceRole = process.env.MANGAI_MONITOR_REVIEW_PRODUCTION_SERVICE_ROLE_KEY ?? "";
+  expectedProjectRef = productionProjectRef;
+  if (targetServiceRole.length < 20) throw new Error("monitor_review_production_service_role_required");
+  if (!/^[a-z0-9]+$/i.test(productionProjectRef))
+    throw new Error("monitor_review_production_project_ref_required");
+  if (argument("--confirm-production-project") !== productionProjectRef
+    || argument("--confirm-production-draft-batch") !== batchCode
+    || argument("--acknowledge-production-write") !== "BENCHMARK_PRIVATE_DRAFT_ONLY")
+    throw new Error("monitor_review_production_draft_confirmation_failed");
+} else {
+  targetUrl = process.env.MANGAI_MONITOR_REVIEW_STAGING_SUPABASE_URL ?? "";
+  targetServiceRole = process.env.MANGAI_MONITOR_REVIEW_STAGING_SERVICE_ROLE_KEY ?? "";
+  expectedProjectRef = process.env.MANGAI_MONITOR_REVIEW_STAGING_PROJECT_REF ?? "";
+  if (targetServiceRole.length < 20) throw new Error("monitor_review_staging_service_role_required");
+  if (!/^[a-z0-9]+$/i.test(productionProjectRef))
+    throw new Error("monitor_review_production_project_ref_required");
+  if (argument("--confirm-staging-project") !== expectedProjectRef)
+    throw new Error("monitor_review_staging_project_confirmation_failed");
+}
+const projectRef = projectRefFromUrl(targetUrl);
+if (!/^[a-z0-9]+$/i.test(expectedProjectRef) || projectRef !== expectedProjectRef)
+  throw new Error(`monitor_review_${targetEnvironment}_project_confirmation_failed`);
+if (targetEnvironment === "staging" && productionProjectRef === projectRef)
   throw new Error("monitor_review_production_project_forbidden");
 
-const client = createClient(stagingUrl, stagingServiceRole, {
+const client = createClient(targetUrl, targetServiceRole, {
   auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
 });
+const actor = await client.from("profiles").select("id,role")
+  .eq("id", createdByProfileId).maybeSingle();
+if (actor.error || actor.data?.role !== "admin")
+  throw new Error("monitor_review_admission_admin_profile_required");
 const bucket = await client.storage.getBucket(REVIEW_BUCKET);
 if (bucket.error || !bucket.data || bucket.data.public === true)
   throw new Error("monitor_review_private_bucket_unavailable");
@@ -146,6 +172,32 @@ try {
   const caseRows = cases.map(({ bytes: _bytes, ...row }) => row);
   const insertedCases = await client.from("cloud_monitor_quality_review_cases").insert(caseRows);
   if (insertedCases.error) throw new Error("monitor_review_cases_insert_failed");
+  const [storedBatch, storedCases, storedAssignments] = await Promise.all([
+    client.from("cloud_monitor_quality_review_batches")
+      .select("id,status,review_scope,source_package_sha256").eq("id", batchId).maybeSingle(),
+    client.from("cloud_monitor_quality_review_cases")
+      .select("case_key,candidate_storage_path,candidate_sha256").eq("batch_id", batchId).order("display_order"),
+    client.from("cloud_monitor_quality_review_assignments").select("id").eq("batch_id", batchId).limit(1),
+  ]);
+  if (storedBatch.error || storedCases.error || storedAssignments.error
+    || storedBatch.data?.status !== "draft"
+    || storedBatch.data?.review_scope !== "PILOT_INTRINSIC_ONLY"
+    || storedBatch.data?.source_package_sha256 !== validated.packageSha256
+    || storedCases.data?.length !== cases.length
+    || (storedAssignments.data?.length ?? 0) !== 0)
+    throw new Error("monitor_review_admission_postcondition_failed");
+  for (const reviewCase of cases) {
+    const storedCase = storedCases.data.find((item) => item.case_key === reviewCase.case_key);
+    if (!storedCase || storedCase.candidate_storage_path !== reviewCase.candidate_storage_path
+      || storedCase.candidate_sha256 !== reviewCase.candidate_sha256)
+      throw new Error(`monitor_review_case_postcondition_failed:${reviewCase.case_key}`);
+    const download = await client.storage.from(REVIEW_BUCKET).download(reviewCase.candidate_storage_path);
+    if (download.error || !download.data) throw new Error(`monitor_review_case_download_failed:${reviewCase.case_key}`);
+    const downloadedSha256 = createHash("sha256")
+      .update(Buffer.from(await download.data.arrayBuffer())).digest("hex");
+    if (downloadedSha256 !== reviewCase.candidate_sha256)
+      throw new Error(`monitor_review_case_checksum_mismatch:${reviewCase.case_key}`);
+  }
 } catch (error) {
   const cleanupResults = await Promise.allSettled([
     uploadedPaths.length > 0 ? client.storage.from(REVIEW_BUCKET).remove(uploadedPaths) : Promise.resolve(),
@@ -157,14 +209,17 @@ try {
 }
 
 process.stdout.write(`${JSON.stringify({
-  status: "STAGING_BATCH_ADMITTED_AS_DRAFT",
+  status: `${targetEnvironment.toUpperCase()}_BATCH_ADMITTED_AS_DRAFT`,
+  targetEnvironment,
   batchId,
   batchCode,
   projectRef,
   cases: cases.length,
   sourcePackageSha256: validated.packageSha256,
   rightsCompletionChecked: true,
+  storedImageChecksumsVerified: true,
+  assignmentCountVerified: 0,
   databaseChanged: true,
   storageChanged: true,
-  productionChanged: false,
+  productionChanged: targetEnvironment === "production",
 }, null, 2)}\n`);
