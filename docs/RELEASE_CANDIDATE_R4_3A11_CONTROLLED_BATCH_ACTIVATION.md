@@ -67,5 +67,6 @@ Productionへ非公開`draft`として登録済みの`batch_private_01`を、手
 
 ## 停止条件
 
-- Draft PR、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsの成功を確認して停止する。
+- Draft PR [#304](https://github.com/team478a/manga/pull/304)はDraft／MERGEABLE。初回HEAD `07a8b8cb26366558bb9852d64ecc7780a1c5b851`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。
+- Vercel Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-c7e6e3-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認して停止する。
 - 責任者確認前にProductionのBatch有効化、Feature Flag変更、A/B割当、R4-3B Visual Judgeへ進まない。

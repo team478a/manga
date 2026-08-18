@@ -8,7 +8,8 @@
 - Feature Flag停止中でもBatchの検査と有効化はできるが、担当割当は無効。有効化だけではモニターへ公開されない。
 - Productionの`batch_private_01`は現在も`draft`、assignment 0、response 0、Flag off。Human A/B 0/56、正式Benchmark 0/140。外部状態は変更していない。
 - 集中4/4、deps、lint、全typecheck、Hub 801/801、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 60本、Hub／Desktop build、RC structure、diff check成功。
-- 次: Draft PRの全CI／Vercel Preview確認後に停止する。責任者確認前にProduction有効化、Flag変更、A/B割当、R4-3Bへ進まない。
+- Draft PR [#304](https://github.com/team478a/manga/pull/304)はDraft／MERGEABLE。初回HEAD `07a8b8c`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-c7e6e3-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを再確認して停止する。責任者確認前にProduction有効化、Flag変更、A/B割当、R4-3Bへ進まない。
 
 ---
 
