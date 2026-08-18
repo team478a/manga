@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-19 PR-R4-3A-15 Production Panel Rollout Guard
+
+- 状態: `FEATURE_FLAG_ON / BATCH_ACTIVE_BUT_NOT_STARTED / ASSIGNMENTS_0 / RESPONSES_0 / FORMAL_COUNT_0`
+- Base: PR #307 merge commit `5f37817c681b6a8592aee4d5c485b09c46dd1606`。Branch: `codex/docs-r4-3a15-production-panel-rollout`。
+- Production: `MANGAI_MONITOR_QUALITY_REVIEW_ENABLED=true`をProductionだけへ設定し、deployment `FyCvjRpzXDuxsTKq9yU5S5Ntv91U`がReady、`app.mang-ai.com`割当済みであることを確認した。
+- 原因確認: Reviewer A=`test`の割当操作は、`batch_private_01`の予定開始が2026-08-20 00:00 JSTのため、正本どおりINSERT前に拒否された。DB重複、migration、trigger、権限の不具合ではない。Productionのassignmentは0件のまま。
+- 修正: 開始前・終了後のBatchでは割当フォームを表示せず、日本時間の開始日時を案内する。Server Actionは期間外エラーと一意制約エラーを別メッセージにする。開始前割当拒否契約は維持する。
+- 割当予定: A=`test`、B=`青木隆康`、C=`なっかん`、D=`加藤周星`、E=`松浦周平`。2026-08-20 00:00 JST以降に管理画面から順番に割り当てる。
+- 不変: Batch期間、DB、migration、RPC、Storage、画像、作品、Canvas、Provider、credit、API、URL、PNG／PDF、成人向け境界、Desktopは変更しない。
+- 検証: 集中11/11、deps error 0、lint、全型検査、Hub 808/808、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。Draft PR、CI、Vercel Previewを確認して停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A15_PRODUCTION_PANEL_ROLLOUT.md`
+
+---
+
 ## 2026-08-18 PR-R4-3A-14 Production Panel Migration Acceptance
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / TARGET_REVIEWERS_5 / ASSIGNMENTS_0 / RESPONSES_0 / FEATURE_FLAG_OFF / FORMAL_COUNT_0`

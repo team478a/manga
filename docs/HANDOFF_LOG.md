@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-19 Codex: PR-R4-3A-15 Production Panel Rollout Guard（作業中）
+
+- PR #307 merge後のProductionへ品質確認Flagを有効化し、Vercel deployment `FyCvjRpzXDuxsTKq9yU5S5Ntv91U`のReadyと`app.mang-ai.com`割当を確認した。
+- Production管理画面でBatch active、画像28、目標5名、assignment 0を確認した。
+- Reviewer A=`test`を割り当てようとしたが、画面は誤って重複エラーを表示した。Supabase APIログではBatch／enrollmentのGETは200で、assignment INSERTは送信されていなかった。
+- DB照合ではassignment 0、対象5名のenrollmentは各1件active、service role権限とpanel triggerは正常。rollback付き手動INSERT検査も成功した。
+- 真因はBatch開始が2026-08-20 00:00 JSTで現在は開始前だったこと。正本の開始前割当拒否を維持し、管理画面の事前案内とエラー分類を修正した。
+- Productionのassignment／responseは0件、Batch期間・DB・Storage・作品・Provider・creditは変更していない。
+- 集中11/11、deps error 0、lint、全型検査、Hub 808/808、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。Draft PR／CI／Previewは継続確認する。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-14 Production Panel Migration Acceptance（作業中）
 
 - PR #306 merge commit `a390091d590146b7a3f2496763ac2c0118e453ce`から`codex/docs-r4-3a14-production-panel-migration`を開始した。

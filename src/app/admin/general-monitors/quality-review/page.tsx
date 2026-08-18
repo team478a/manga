@@ -71,6 +71,11 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
           const availableSlots = targetSlots.filter((slot) => !assignedSlots.has(slot));
           const availableMonitors = activeMonitors.filter((item) => !assignedProfiles.has(item.profile_id));
           const canActivate = batch.status === "draft" && total === MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT && assignments.length === 0;
+          const startsAt = Date.parse(batch.starts_at);
+          const expiresAt = Date.parse(batch.expires_at);
+          const now = Date.now();
+          const assignmentPeriodOpen = startsAt <= now && expiresAt > now;
+          const startsAtJapan = new Date(batch.starts_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
           return <article className="panel" key={batch.id}>
             <div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-bold">{batch.batch_code}</h2><p className="mt-1 text-sm text-stone-500">画像 {total}枚</p></div><span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">{batch.status}</span></div>
             <p className="mt-2 text-xs text-stone-500">期間: {batch.starts_at} 〜 {batch.expires_at}</p>
@@ -96,7 +101,8 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
             </form> : null}
             {batch.status === "active" ? <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-3">
               <h3 className="font-bold">このBatchへ確認担当を追加</h3>
-              {availableSlots.length > 0 && availableMonitors.length > 0 ? <form action={assignMonitorQualityReviewAction} className="mt-3 grid gap-3">
+              {!assignmentPeriodOpen ? <p className="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">割り当ては開始日時の{startsAtJapan}（日本時間）以降に行えます。</p> : null}
+              {assignmentPeriodOpen && availableSlots.length > 0 && availableMonitors.length > 0 ? <form action={assignMonitorQualityReviewAction} className="mt-3 grid gap-3">
                 <input name="batchId" type="hidden" value={batch.id} />
                 <select className="field" disabled={!featureFlagEnabled} name="reviewerProfileId" required>
                   <option value="">モニターを選択</option>
@@ -106,7 +112,7 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
                   {availableSlots.map((slot) => <option key={slot} value={slot}>{describeMonitorQualityReviewSlot(slot)}</option>)}
                 </select>
                 <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" disabled={!featureFlagEnabled} pendingLabel="割当中…">割り当て</PendingSubmitButton>
-              </form> : <p className="mt-2 text-sm text-stone-700">目標枠が埋まったか、割当可能な別モニターがいません。</p>}
+              </form> : assignmentPeriodOpen ? <p className="mt-2 text-sm text-stone-700">目標枠が埋まったか、割当可能な別モニターがいません。</p> : null}
             </div> : null}
             <div className="mt-4 space-y-3">
               {assignments.map((assignment) => <div className="rounded-xl border border-stone-200 p-3" key={assignment.id}>

@@ -69,12 +69,14 @@ export async function assignMonitorQualityReviewAction(formData: FormData) {
   if (!parsed.success)
     redirect(encodeURI("/admin/general-monitors/quality-review?error=割当内容を確認してください"));
   const result = await assignMonitorQualityReview({ ...parsed.data, actorProfileId: profile.id });
-  if (result.error)
-    redirect(encodeURI(`/admin/general-monitors/quality-review?error=${
-      result.error.message === "monitor_quality_review_slot_outside_target"
-        ? "この枠はBatchの目標確認者数を超えています"
-        : "同じ枠または同じ利用者がすでに割り当てられています"
-    }`));
+  if (result.error) {
+    const message = result.error.message === "monitor_quality_review_slot_outside_target"
+      ? "この枠はBatchの目標確認者数を超えています"
+      : result.error.message === "monitor_quality_review_assignment_unavailable"
+        ? "Batchまたはモニターが利用期間外です。開始日時・終了日時を確認してください"
+        : "同じ枠または同じ利用者がすでに割り当てられています";
+    redirect(encodeURI(`/admin/general-monitors/quality-review?error=${message}`));
+  }
   revalidatePath("/admin/general-monitors/quality-review");
   redirect(encodeURI("/admin/general-monitors/quality-review?message=確認担当を割り当てました"));
 }
