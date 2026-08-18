@@ -9,7 +9,8 @@
 - Feature Flagはoffのまま。モニター割当、回答、作品、Canvas、Storage object、Provider、creditは変更していない。正式Benchmarkは0/140。
 - 新規Production管理画面タブは認証セッションが共有されず、画面表示だけ未確認。DB受入れ条件はSQLで確認済み。
 - deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: Docs-only Draft PRの全CIとVercel Preview成功後に停止する。責任者確認と管理画面表示確認前にFlag有効化、A〜E割当、Human Review、R4-3Bへ進まない。
+- Draft PR [#307](https://github.com/team478a/manga/pull/307)はDraft／MERGEABLE。初回HEAD `dc51874`の5チェックはすべて成功。Previewは[Ready](https://mangai-hub-staging-if8el55ia-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを確認して停止する。責任者確認と管理画面表示確認前にFlag有効化、A〜E割当、Human Review、R4-3Bへ進まない。
 
 ---
 

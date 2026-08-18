@@ -13,7 +13,8 @@
 - Feature Flag、担当割当、回答、作品、Canvas、Storage object、Provider、creditは変更していない。正式Benchmarkは0/140。
 - Production管理画面は新規タブに認証セッションが共有されず表示未確認。次工程でログイン済み画面を確認するまでFlagと割当を変更しない。
 - deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
-- 次: 文書差分の品質ゲート、Draft PR、全CI、Vercel Previewを確認して停止する。
+- Draft PR [#307](https://github.com/team478a/manga/pull/307)はDraft／MERGEABLE。初回HEAD `dc51874`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-if8el55ia-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを確認して停止する。
 
 ---
 

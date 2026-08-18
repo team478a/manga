@@ -10,7 +10,8 @@
 - 不変: Feature Flag off、担当割当0、回答0、正式Benchmark 0/140。作品、Canvas、Storage object、Provider、credit、API、URL、PNG／PDF、成人向け境界、Desktopは変更していない。
 - 画面確認: Production管理画面の新規タブは認証セッションが共有されずログイン画面へ戻った。DB受入れは完了し、管理画面表示確認だけを次工程へ持ち越す。
 - 検証: deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
-- 次: Docs-only Draft PR、全CI、Vercel Preview確認後に停止する。責任者確認とProduction管理画面表示確認前にFeature Flag、モニター割当、Human Review、R4-3Bへ進まない。
+- Draft PR: [#307](https://github.com/team478a/manga/pull/307)はDraft／MERGEABLE。初回HEAD `dc51874`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-if8el55ia-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを確認して停止する。責任者確認とProduction管理画面表示確認前にFeature Flag、モニター割当、Human Review、R4-3Bへ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_3A14_PRODUCTION_PANEL_MIGRATION.md`
 
 ---

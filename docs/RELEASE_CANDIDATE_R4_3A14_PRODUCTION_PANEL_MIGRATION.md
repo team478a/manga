@@ -56,7 +56,9 @@
 - Hub／Desktop production build: 成功。
 - RC preflight: structure ready。外部環境と既存manual acceptanceはPending。
 - `git diff --check`: 成功。
-- Draft PR、GitHub CI、Vercel Preview: 初回commit後に追記する。
+- Draft PR [#307](https://github.com/team478a/manga/pull/307): Draft／MERGEABLE。
+- 初回HEAD `dc51874`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Comments: すべて成功。
+- Vercel Preview: [Ready](https://mangai-hub-staging-if8el55ia-team478as-projects.vercel.app)。
 
 ## 停止条件
 
