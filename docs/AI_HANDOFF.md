@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-13 Multi-Reviewer Panel、2026-08-18）
+
+- 最新基準はPR #305 merge commit `8ae9beaa334c0621f80fc30d72527a7a031bfa8e`。Branchは`codex/feat-r4-3a13-multi-reviewer-panel`。
+- Human Reviewを既定5名、Batchごとに2〜9名へ拡張する。正式BenchmarkのPrimary A/B契約は変更せず、Panel C〜Iを別schemaへ分離した。
+- Batch目標人数を超えるslotはapplicationとDB triggerの二重検査で拒否。同一人物／同一slotの重複拒否、blind表示、private画像、本人限定RPC、Feature Flagを維持する。
+- 管理画面はBatch単位の目標／割当数と未割当slotだけを扱い、回答payloadを取得しない。
+- Productionはactive Batch 1件、画像28、assignment 0、response 0、Flag offのまま。migration、Flag、割当、作品、Provider、creditは変更していない。
+- 集中17/17、deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。Draft PR、CI、Vercel Previewは未実施。
+- 次: Draft PRと全CI／Vercel Preview成功で停止する。責任者確認前にProduction migration、Flag有効化、A〜E割当、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-12 Production Batch Activation Acceptance、2026-08-18）
 
 - 最新基準はPR #304 merge commit `0c6f8f9e6d380334d6605ad78ed11f64925fada8`。Branchは`codex/docs-r4-3a12-production-batch-activation`。

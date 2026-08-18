@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-18 PR-R4-3A-13 Multi-Reviewer Panel
+
+- 状態: `LOCAL_IMPLEMENTATION_COMPLETE / DRAFT_PR_PENDING / PRODUCTION_UNCHANGED / FORMAL_COUNT_0`
+- Base: PR #305 merge commit `8ae9beaa334c0621f80fc30d72527a7a031bfa8e`。Branch: `codex/feat-r4-3a13-multi-reviewer-panel`。
+- 目的: 1名ずつではなく複数の招待モニターへ同じ28画像を独立割当し、判定の信頼性と進行速度を高める。
+- 契約: 既定5名、Batchごとに2〜9名。Primary Reviewer A/Bは既存`mangai-human-review-v2`を維持し、Panel C〜Iは`mangai-human-review-panel-v1`へ分離する。
+- Guard: 同一人物と同一slotの重複を拒否し、Batch目標人数を超えるslotをapplicationとDB triggerでfail closedにする。管理一覧は回答payloadを取得しない。
+- UI: 管理画面の各active Batchへ、目標人数、割当済み人数、未割当slot、未割当の有効モニターを表示する。
+- Production: `batch_private_01`はactive、画像28枚、assignment 0、response 0、Feature Flag off。migration適用、Flag変更、割当、回答、作品変更は実施していない。
+- 検証: 集中17/17、deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。Draft PR、CI、Vercel Previewは未実施。
+- 次: 全ローカル品質ゲート後にDraft PRを作成し、全CI／Vercel Previewで停止する。責任者確認前にProduction migration、Feature Flag、担当割当、R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A13_MULTI_REVIEWER_PANEL.md`
+
+---
+
 ## 2026-08-18 PR-R4-3A-12 Production Batch Activation Acceptance
 
 - 状態: `PRODUCTION_BATCH_ACTIVE / CASES_28 / ASSIGNMENTS_0 / RESPONSES_0 / FEATURE_FLAG_OFF / FORMAL_COUNT_0`

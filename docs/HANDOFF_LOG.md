@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-18 Codex: PR-R4-3A-13 Multi-Reviewer Panel（作業中）
+
+- PR #305 merge commit `8ae9beaa334c0621f80fc30d72527a7a031bfa8e`から`codex/feat-r4-3a13-multi-reviewer-panel`を開始した。
+- 既存の正式Reviewer A/B契約を維持し、補助Panel C〜Iを別回答schemaとして追加。既定5名、Batchごとに2〜9名を設定できる。
+- DB migrationは目標人数列、A〜I slot制約、目標外slot拒否triggerを追加。rollbackはPanel割当が残る場合に削除せず停止する。
+- 管理画面はBatchごとの目標／割当数、未割当slot、未割当の有効モニターを表示する。回答payloadは進捗一覧へ取得しない。
+- Productionはactive、画像28、assignment 0、response 0、Feature Flag offのまま。migration適用、割当、外部変更は0件。
+- 集中17/17、deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
+- 次: ローカル全品質ゲート、commit、push、Draft PR作成後、全CIとVercel Previewを確認して停止する。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-12 Production Batch Activation Acceptance（作業中）
 
 - PR #304 merge commit `0c6f8f9e6d380334d6605ad78ed11f64925fada8`から`codex/docs-r4-3a12-production-batch-activation`を開始した。

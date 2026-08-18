@@ -5,6 +5,73 @@ import {
   humanReviewRecordSchema,
 } from "./human-review-package.ts";
 
+export const MONITOR_QUALITY_REVIEW_PRIMARY_SLOTS = [
+  "reviewer_a",
+  "reviewer_b",
+] as const;
+
+export const MONITOR_QUALITY_REVIEW_PANEL_SLOTS = [
+  "reviewer_c",
+  "reviewer_d",
+  "reviewer_e",
+  "reviewer_f",
+  "reviewer_g",
+  "reviewer_h",
+  "reviewer_i",
+] as const;
+
+export const MONITOR_QUALITY_REVIEW_SLOTS = [
+  ...MONITOR_QUALITY_REVIEW_PRIMARY_SLOTS,
+  ...MONITOR_QUALITY_REVIEW_PANEL_SLOTS,
+] as const;
+
+export const MONITOR_QUALITY_REVIEW_DEFAULT_REVIEWER_COUNT = 5;
+export const MONITOR_QUALITY_REVIEW_MIN_REVIEWER_COUNT = 2;
+export const MONITOR_QUALITY_REVIEW_MAX_REVIEWER_COUNT = 9;
+export const MONITOR_PANEL_REVIEW_TEMPLATE_VERSION = "mangai-human-review-panel-v1";
+
+export const monitorQualityReviewSlotSchema = z.enum(MONITOR_QUALITY_REVIEW_SLOTS);
+export const monitorQualityReviewPanelSlotSchema = z.enum(MONITOR_QUALITY_REVIEW_PANEL_SLOTS);
+export type MonitorQualityReviewSlot = z.infer<typeof monitorQualityReviewSlotSchema>;
+
+export function monitorQualityReviewSlotsForTarget(count: number) {
+  if (!Number.isInteger(count)
+    || count < MONITOR_QUALITY_REVIEW_MIN_REVIEWER_COUNT
+    || count > MONITOR_QUALITY_REVIEW_MAX_REVIEWER_COUNT)
+    throw new Error("monitor_quality_review_target_reviewer_count_invalid");
+  return MONITOR_QUALITY_REVIEW_SLOTS.slice(0, count);
+}
+
+export function isMonitorQualityReviewPrimarySlot(
+  slot: MonitorQualityReviewSlot,
+): slot is (typeof MONITOR_QUALITY_REVIEW_PRIMARY_SLOTS)[number] {
+  return (MONITOR_QUALITY_REVIEW_PRIMARY_SLOTS as readonly string[]).includes(slot);
+}
+
+export function describeMonitorQualityReviewSlot(slot: MonitorQualityReviewSlot) {
+  const suffix = slot.slice(-1).toUpperCase();
+  return isMonitorQualityReviewPrimarySlot(slot)
+    ? `Primary Reviewer ${suffix}`
+    : `Panel Reviewer ${suffix}`;
+}
+
+export const monitorPanelReviewResponseSchema = z
+  .object({
+    template_version: z.literal(MONITOR_PANEL_REVIEW_TEMPLATE_VERSION),
+    slot: monitorQualityReviewPanelSlotSchema,
+    reviewer_id: z.string().regex(/^[a-z0-9][a-z0-9_-]{2,79}$/),
+    reviewer_kind: z.literal("human"),
+    independent: z.literal(true),
+    reviewed_at: z.iso.datetime({ offset: true }),
+    records: z.array(humanReviewRecordSchema).min(1).max(140),
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const ids = value.records.map((record) => record.case_id);
+    if (new Set(ids).size !== ids.length)
+      context.addIssue({ code: "custom", path: ["records"], message: "case IDs must be unique" });
+  });
+
 export const monitorQualityReviewDefectCategorySchema = z.enum(
   HUMAN_REVIEW_DEFECT_CATEGORIES,
 );

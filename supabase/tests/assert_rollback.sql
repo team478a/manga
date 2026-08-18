@@ -2,6 +2,9 @@
 
 do $$
 begin
+  if to_regprocedure('public.enforce_cloud_monitor_quality_review_panel_slot()') is not null then
+    raise exception 'Cloud monitor review panel function remains after rollback';
+  end if;
   if to_regclass('public.cloud_chapters') is not null
      or to_regclass('public.cloud_scenes') is not null
      or to_regprocedure('public.move_cloud_page_before(uuid,uuid)') is not null then

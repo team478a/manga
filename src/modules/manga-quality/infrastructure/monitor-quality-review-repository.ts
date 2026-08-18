@@ -2,6 +2,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   evaluateMonitorQualityReviewBatchTransition,
+  monitorQualityReviewSlotsForTarget,
+  type MonitorQualityReviewSlot,
   type MonitorQualityReviewBatchTransition,
 } from "@/modules/manga-quality/domain/monitor-quality-review";
 
@@ -28,7 +30,7 @@ export type MonitorQualityReviewWorkspace = {
   configured: boolean;
   assignment: null | {
     id: string;
-    reviewer_slot: "reviewer_a" | "reviewer_b";
+    reviewer_slot: MonitorQualityReviewSlot;
     status: "assigned" | "in_progress" | "submitted" | "revoked";
     consented_at: string | null;
     submitted_at: string | null;
@@ -49,7 +51,7 @@ export async function loadMonitorQualityReviewWorkspace(
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle<{
-      id: string; batch_id: string; reviewer_slot: "reviewer_a" | "reviewer_b";
+      id: string; batch_id: string; reviewer_slot: MonitorQualityReviewSlot;
       status: "assigned" | "in_progress" | "submitted" | "revoked";
       consented_at: string | null; submitted_at: string | null;
     }>();
@@ -146,7 +148,7 @@ export async function loadMonitorQualityReviewAdminWorkspace() {
   const admin = createAdminClient();
   const now = new Date().toISOString();
   const [batches, assignments, cases, responses, enrollments, profiles] = await Promise.all([
-    admin.from("cloud_monitor_quality_review_batches").select("id,batch_code,status,review_scope,starts_at,expires_at,created_at").order("created_at", { ascending: false }),
+    admin.from("cloud_monitor_quality_review_batches").select("id,batch_code,status,review_scope,target_reviewer_count,starts_at,expires_at,created_at").order("created_at", { ascending: false }),
     admin.from("cloud_monitor_quality_review_assignments").select("id,batch_id,reviewer_profile_id,reviewer_slot,status,consented_at,submitted_at,updated_at").order("updated_at", { ascending: false }),
     admin.from("cloud_monitor_quality_review_cases").select("id,batch_id"),
     admin.from("cloud_monitor_quality_review_responses").select("assignment_id,case_id,case_completed_at"),
@@ -221,12 +223,12 @@ export async function setMonitorQualityReviewBatchLifecycle(input: {
 export async function assignMonitorQualityReview(input: {
   batchId: string;
   reviewerProfileId: string;
-  reviewerSlot: "reviewer_a" | "reviewer_b";
+  reviewerSlot: MonitorQualityReviewSlot;
   actorProfileId: string;
 }) {
   const admin = createAdminClient();
   const [batch, enrollment] = await Promise.all([
-    admin.from("cloud_monitor_quality_review_batches").select("status,starts_at,expires_at").eq("id", input.batchId).maybeSingle<{ status: string; starts_at: string; expires_at: string }>(),
+    admin.from("cloud_monitor_quality_review_batches").select("status,target_reviewer_count,starts_at,expires_at").eq("id", input.batchId).maybeSingle<{ status: string; target_reviewer_count: number; starts_at: string; expires_at: string }>(),
     admin.from("cloud_general_monitor_enrollments").select("status,starts_at,expires_at").eq("profile_id", input.reviewerProfileId).maybeSingle<{ status: string; starts_at: string; expires_at: string }>(),
   ]);
   const now = Date.now();
@@ -234,6 +236,8 @@ export async function assignMonitorQualityReview(input: {
     || Date.parse(batch.data.starts_at) > now || Date.parse(batch.data.expires_at) <= now
     || Date.parse(enrollment.data.starts_at) > now || Date.parse(enrollment.data.expires_at) <= now)
     return { data: null, error: { message: "monitor_quality_review_assignment_unavailable" } };
+  if (!monitorQualityReviewSlotsForTarget(batch.data.target_reviewer_count).includes(input.reviewerSlot))
+    return { data: null, error: { message: "monitor_quality_review_slot_outside_target" } };
   return admin.from("cloud_monitor_quality_review_assignments").insert({
     batch_id: input.batchId,
     reviewer_profile_id: input.reviewerProfileId,
@@ -248,7 +252,7 @@ export async function loadMonitorQualityReviewExport(assignmentId: string) {
     .select("id,batch_id,reviewer_profile_id,reviewer_slot,status,submitted_at")
     .eq("id", assignmentId).maybeSingle<{
       id: string; batch_id: string; reviewer_profile_id: string;
-      reviewer_slot: "reviewer_a" | "reviewer_b"; status: string; submitted_at: string | null;
+      reviewer_slot: MonitorQualityReviewSlot; status: string; submitted_at: string | null;
     }>();
   if (assignment.error || !assignment.data || assignment.data.status !== "submitted" || !assignment.data.submitted_at)
     return null;
