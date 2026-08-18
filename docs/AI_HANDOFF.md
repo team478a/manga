@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-12 Production Batch Activation Acceptance、2026-08-18）
+
+- 最新基準はPR #304 merge commit `0c6f8f9e6d380334d6605ad78ed11f64925fada8`。Branchは`codex/docs-r4-3a12-production-batch-activation`。
+- 責任者のmergeと管理者ログイン確認後、Production管理画面から`batch_private_01`を検査付きで1回だけ`draft -> active`へ変更した。
+- 画面上の事前条件は画像28枚、割当0件、Feature Flag off。成功後は`active`、画像28枚、担当者未割当、Flag off、割当ボタン無効を確認した。
+- assignment 0、response 0、Human A/B 0/56、正式Benchmark 0/140。Batch有効化だけではモニターへ公開されていない。
+- Production作品、Canvas、Provider、credit、DB schema、migration、RPC、Storage、API、URL、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 次: Docs-only Draft PRの全CIとVercel Preview成功後に停止する。Reviewer AのProduction表示名と別人のReviewer Bが責任者から指定されるまで、Feature Flag変更、担当割当、Human Review、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-11 Controlled Batch Activation、2026-08-18）
 
 - 最新基準はPR #303 merge commit `03fe58c9fc22631d15407bf1fd82b77039bbfcb2`。Branchは`codex/feat-r4-3a11-controlled-batch-activation`。
