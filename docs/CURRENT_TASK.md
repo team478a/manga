@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-18 PR-R4-3A-9 Production Draft Admission
+
+- 状態: `IMPLEMENTING / PRODUCTION_APPLY_NOT_RUN / FORMAL_COUNT_0`
+- Base: `feature/manga-canvas-mvp` merge commit `8650c12ba9009652cebc00e9cb8247807e1c4b2c`（PR #301マージ済み）。Branch: `codex/feat-r4-3a9-production-draft-admission`。
+- 方針: 責任者判断によりStaging専用Supabaseは準備しない。権利確認済み28画像をProduction内のBenchmark専用テーブル／private bucketへ非公開`draft`としてだけ登録できる入口を作る。
+- 安全境界: 既定dry-run、専用Production秘密値、project ref／Batch code／固定確認句の三重確認、非上書きupload、Batch `draft`、`PILOT_INTRINSIC_ONLY`、割当0件を強制する。登録後はDB件数とStorage再取得画像のSHA-256を検証し、失敗時は当該Batchだけcleanupする。
+- 不変: 通常作品、Canvas、公開Storage、active化、A/B割当、Feature Flag、DB schema、migration、RPC、API、Provider、credit、PNG／PDF、成人向け境界、Desktop。
+- 外部状態: Production DB／Storageへのapplyは未実施。Human権利確認28/28、モニターA/B 0/56、正式Benchmark 0/140。
+- 検証: 実package Production dry-runは28件で`PRODUCTION_BATCH_ADMISSION_READY`、外部変更0件。集中5/5、deps、lint、型検査、Hub 797/797、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、Hub／Desktop build、migration 60本、RC structure、diff check成功。Draft PR、全CI、Vercel Previewを確認して停止する。
+- 次: 責任者確認後にProductionのmigration／private bucket／管理者profile ID／対象期間をread-only確認し、28件dry-runを経て別途明示承認後にだけapplyする。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A9_PRODUCTION_DRAFT_ADMISSION.md`
+
+---
+
 ## 2026-08-18 Benchmark Batch 01 匿名権利確認受入れ
 
 - 状態: `HUMAN_RIGHTS_REVIEW_COMPLETE / DRY_RUN_PASSED / STAGING_CONFIGURATION_REQUIRED / STAGING_NOT_CHANGED / FORMAL_COUNT_0`

@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-18 Codex: PR-R4-3A-9 Production Draft Admission（作業中）
+
+- PR #301 merge commit `8650c12ba9009652cebc00e9cb8247807e1c4b2c`から`codex/feat-r4-3a9-production-draft-admission`を開始した。
+- 責任者判断によりStaging専用Supabaseを準備せず、Production内のBenchmark専用4テーブルとprivate bucketへ非公開`draft`として取込む方針へ変更した。
+- 既定dry-runと既存staging経路は維持。Productionは専用秘密値、対象project ref、Batch code、固定確認句の三重確認を必須にし、一般Supabase環境変数へfallbackしない。
+- apply後も`draft`、`PILOT_INTRINSIC_ONLY`、割当0件を検査し、private Storage再取得画像のSHA-256を照合する。失敗時は当該Batchだけcleanupする。
+- Production apply、active化、A/B割当、Feature Flag変更は未実施。通常作品、Canvas、公開Storage、Provider、creditは不変。Human権利確認28/28、A/B 0/56、正式Benchmark 0/140。
+- 実package Production dry-runは28件で`PRODUCTION_BATCH_ADMISSION_READY`、外部変更0件。集中5/5、deps、lint、型検査、Hub 797/797、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、Hub／Desktop build、migration 60本、RC structure、diff check成功。Draft PR、全CI、Vercel Previewを確認して停止する。
+
+---
+
 ## 2026-08-18 Codex: Benchmark Batch 01 匿名権利確認受入れ
 
 - PR #300 merge commit `47fe03d3ecbe90f1fd45f7708bc49423cc17fd57`から`codex/docs-r4-3a-rights-review-acceptance`を開始した。
