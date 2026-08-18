@@ -12,7 +12,8 @@
 - 管理画面はBatchごとの目標／割当数、未割当slot、未割当の有効モニターを表示する。回答payloadは進捗一覧へ取得しない。
 - Productionはactive、画像28、assignment 0、response 0、Feature Flag offのまま。migration適用、割当、外部変更は0件。
 - 集中17/17、deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
-- 次: ローカル全品質ゲート、commit、push、Draft PR作成後、全CIとVercel Previewを確認して停止する。
+- Draft PR [#306](https://github.com/team478a/manga/pull/306)はDraft／MERGEABLE。初回HEAD `252fe55`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-57ac78-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも全CIとVercel Previewを確認して停止する。Production migration、Flag有効化、A〜E割当は責任者確認後の別工程とする。
 
 ---
 

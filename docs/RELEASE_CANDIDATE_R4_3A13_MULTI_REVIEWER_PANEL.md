@@ -2,7 +2,7 @@
 
 ## 判定
 
-`LOCAL_QUALITY_PASSED / DRAFT_PR_PENDING / PRODUCTION_UNCHANGED`
+`READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
 
 ## 基準と範囲
 
@@ -38,7 +38,9 @@
 - Hub／Desktop production build: 成功。
 - RC preflight: structure ready。外部環境と既存manual acceptanceはPending。
 - `git diff --check`: 成功。
-- Draft PR CI、Vercel Preview: 未実施。
+- Draft PR [#306](https://github.com/team478a/manga/pull/306): Draft／MERGEABLE。
+- 初回HEAD `252fe55`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Comments: すべて成功。
+- Vercel Preview: [Ready](https://mangai-hub-staging-git-codex-feat-r4-57ac78-team478as-projects.vercel.app)。
 
 ## 適用・ロールバック順序
 

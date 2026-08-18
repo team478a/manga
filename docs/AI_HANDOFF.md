@@ -7,8 +7,9 @@
 - Batch目標人数を超えるslotはapplicationとDB triggerの二重検査で拒否。同一人物／同一slotの重複拒否、blind表示、private画像、本人限定RPC、Feature Flagを維持する。
 - 管理画面はBatch単位の目標／割当数と未割当slotだけを扱い、回答payloadを取得しない。
 - Productionはactive Batch 1件、画像28、assignment 0、response 0、Flag offのまま。migration、Flag、割当、作品、Provider、creditは変更していない。
-- 集中17/17、deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。Draft PR、CI、Vercel Previewは未実施。
-- 次: Draft PRと全CI／Vercel Preview成功で停止する。責任者確認前にProduction migration、Flag有効化、A〜E割当、R4-3Bへ進まない。
+- 集中17/17、deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Draft PR [#306](https://github.com/team478a/manga/pull/306)はDraft／MERGEABLE。初回HEAD `252fe55`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-57ac78-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを確認して停止する。責任者確認前にProduction migration、Flag有効化、A〜E割当、R4-3Bへ進まない。
 
 ---
 
