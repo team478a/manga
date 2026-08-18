@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-18 PR-R4-3A-14 Production Panel Migration Acceptance
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / TARGET_REVIEWERS_5 / ASSIGNMENTS_0 / RESPONSES_0 / FEATURE_FLAG_OFF / FORMAL_COUNT_0`
+- Base: PR #306 merge commit `a390091d590146b7a3f2496763ac2c0118e453ce`。Branch: `codex/docs-r4-3a14-production-panel-migration`。
+- 実施: Production project `vmdsyxykcrgxcdbrwlkv`へ既存migration `202608180002_cloud_monitor_quality_review_panel`を改変せず1回適用した。
+- 事前確認: Benchmarkテーブルあり、panel migration未適用、`batch_private_01`はactive、`PILOT_INTRINSIC_ONLY`、画像28、assignment 0、response 0。
+- 事後確認: `target_reviewer_count=5`、画像28、assignment 0、response 0。目標外slot拒否関数とtriggerが存在し、`authenticated`からの関数直接実行権限はない。
+- 不変: Feature Flag off、担当割当0、回答0、正式Benchmark 0/140。作品、Canvas、Storage object、Provider、credit、API、URL、PNG／PDF、成人向け境界、Desktopは変更していない。
+- 画面確認: Production管理画面の新規タブは認証セッションが共有されずログイン画面へ戻った。DB受入れは完了し、管理画面表示確認だけを次工程へ持ち越す。
+- 検証: deps error 0、lint、全型検査、Hub 806/806、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
+- Draft PR: [#307](https://github.com/team478a/manga/pull/307)はDraft／MERGEABLE。初回HEAD `dc51874`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-if8el55ia-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを確認して停止する。責任者確認とProduction管理画面表示確認前にFeature Flag、モニター割当、Human Review、R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A14_PRODUCTION_PANEL_MIGRATION.md`
+
+---
+
 ## 2026-08-18 PR-R4-3A-13 Multi-Reviewer Panel
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PRODUCTION_UNCHANGED / FORMAL_COUNT_0`
