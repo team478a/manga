@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-10 Production Draft Acceptance、2026-08-18）
+
+- 最新基準はPR #302 merge commit `2da179c1b4c5534cf6eee182caeede773c932c7a`。Branchは`codex/docs-r4-3a10-production-draft-acceptance`。
+- 責任者承認により、Productionへ`202608180001_cloud_monitor_quality_review`を適用し、private bucket、4テーブル、RLS、専用RPC、直接権限なしを確認した。
+- 権利確認済み28画像を`batch_private_01`へ非公開`draft`、`PILOT_INTRINSIC_ONLY`として登録した。期間は2026-08-20 00:00 JST〜2026-09-20 00:00 JST。
+- Production直接検査はcase 28、Storage 28、assignment 0、response 0。Storageから28画像を再取得し、DB記録のSHA-256と28/28一致、不一致0件だった。
+- Production secret keyは現在の処理内だけで使用し、画面、stdout、環境ファイル、Gitへ保存せず、使用後にクリップボードを消去した。
+- Batch active化、A/B割当、Feature Flag有効化は未実施。Human A/Bは0/56、正式Benchmarkは0/140。通常作品、Canvas、公開Storage、Provider、creditは不変。
+- Draft PR [#303](https://github.com/team478a/manga/pull/303)はDraft／MERGEABLE。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-5a9ce0-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認する。
+- 責任者が異なる2名の有効モニターと有効化順序を確認する前にactive化、割当、R4-3Bへ進まない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-9 Production Draft Admission、2026-08-18）
 
 - 最新基準はPR #301 merge commit `8650c12ba9009652cebc00e9cb8247807e1c4b2c`。Branchは`codex/feat-r4-3a9-production-draft-admission`。

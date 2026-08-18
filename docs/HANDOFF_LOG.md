@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-18 Codex: PR-R4-3A-10 Production Draft Acceptance（作業中）
+
+- PR #302 merge commit `2da179c1b4c5534cf6eee182caeede773c932c7a`から`codex/docs-r4-3a10-production-draft-acceptance`を開始した。
+- Staging専用Supabaseを追加しない責任者方針に従い、Productionへ既存migrationを適用。private bucket、専用4テーブル、RLS 4/4、RPC 3/3、直接テーブル権限0を確認した。
+- 取込前dry-runは`PRODUCTION_BATCH_ADMISSION_READY`、28件、外部変更0件。明示承認後に三重確認付きProduction applyを実施した。
+- `batch_private_01`は`draft`、`PILOT_INTRINSIC_ONLY`、case 28、Storage 28、assignment 0、response 0。source package SHA-256は期待値と一致した。
+- Storage上の28画像を再取得し、DB記録のSHA-256と全件照合した。download 28/28、不一致0件。
+- Benchmark回帰5/5、migration 60本、dependency／module boundary error 0、lint、RC structure、diff check成功。既知warning 2件は差分外。
+- secret keyは画面、stdout、環境ファイル、Gitへ保存せず現在の処理内だけで使用し、使用後にクリップボードを消去した。
+- active化、A/B割当、Feature Flag変更、正式Benchmark採用、R4-3Bは未実施。Human A/B 0/56、正式Benchmark 0/140。
+- Draft PR [#303](https://github.com/team478a/manga/pull/303)はDraft／MERGEABLE。初回HEAD `4c2f6c6c2c77d8884a433b7d658a9a8c0ee2fba0`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-5a9ce0-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを再確認し、責任者確認待ちで停止する。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-9 Production Draft Admission（作業中）
 
 - PR #301 merge commit `8650c12ba9009652cebc00e9cb8247807e1c4b2c`から`codex/feat-r4-3a9-production-draft-admission`を開始した。

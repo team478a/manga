@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-18 PR-R4-3A-10 Production Draft Acceptance
+
+- 状態: `PRODUCTION_DRAFT_ADMITTED / PRIVATE_IMAGES_28_VERIFIED / ASSIGNMENTS_0 / FEATURE_FLAG_OFF / FORMAL_COUNT_0`
+- Base: PR #302 merge commit `2da179c1b4c5534cf6eee182caeede773c932c7a`。Branch: `codex/docs-r4-3a10-production-draft-acceptance`。
+- 方針: 責任者承認によりStaging専用Supabaseを追加せず、既存ProductionのBenchmark専用境界へ権利確認済み28画像を非公開`draft`として登録した。
+- Migration: `202608180001_cloud_monitor_quality_review`をProductionへ適用。private bucket、4テーブル、RLS 4/4、専用RPC 3/3、`anon`／`authenticated`直接テーブル権限0を確認した。
+- Batch: `batch_private_01`、`draft`、`PILOT_INTRINSIC_ONLY`、期間2026-08-20 00:00 JST〜2026-09-20 00:00 JST、source package SHA-256一致。
+- 検証: case 28、private Storage 28、assignment 0、response 0。Storageから28画像を再取得し、DB記録のSHA-256と28/28一致、不一致0件を確認した。
+- ローカル品質: Benchmark回帰5/5、migration 60本、dependency／module boundary error 0、lint、RC structure、diff check成功。既知warning 2件は差分外。
+- 秘密境界: Production secret keyは現在の処理内だけで使用し、画面、stdout、環境ファイル、Gitへ保存せず、使用後にクリップボードを消去した。
+- 不変: active化、A/B割当、Feature Flag、通常作品、Canvas、公開Storage、Provider、model、pricing、credit、API、URL、PNG／PDF、成人向け境界、Desktopは変更していない。正式Benchmarkは0/140、Human A/Bは0/56。
+- Draft PR: [#303](https://github.com/team478a/manga/pull/303)はDraft／MERGEABLE。初回HEAD `4c2f6c6c2c77d8884a433b7d658a9a8c0ee2fba0`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-5a9ce0-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認して停止する。
+- 停止条件: 責任者確認前にactive化、A/B割当、Feature Flag有効化、R4-3Bへ進まない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A10_PRODUCTION_DRAFT_ACCEPTANCE.md`
+
+---
+
 ## 2026-08-18 PR-R4-3A-9 Production Draft Admission
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PRODUCTION_APPLY_NOT_RUN / FORMAL_COUNT_0`
