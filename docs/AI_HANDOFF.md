@@ -7,6 +7,7 @@
 - 画面上の事前条件は画像28枚、割当0件、Feature Flag off。成功後は`active`、画像28枚、担当者未割当、Flag off、割当ボタン無効を確認した。
 - assignment 0、response 0、Human A/B 0/56、正式Benchmark 0/140。Batch有効化だけではモニターへ公開されていない。
 - Production作品、Canvas、Provider、credit、DB schema、migration、RPC、Storage、API、URL、PNG／PDF、成人向け境界、Desktopは変更していない。
+- Draft PR [#305](https://github.com/team478a/manga/pull/305)はDraft／MERGEABLE。初回HEAD `a5cab7c`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-836d87-team478as-projects.vercel.app)。
 - 次: Docs-only Draft PRの全CIとVercel Preview成功後に停止する。Reviewer AのProduction表示名と別人のReviewer Bが責任者から指定されるまで、Feature Flag変更、担当割当、Human Review、R4-3Bへ進まない。
 
 ---

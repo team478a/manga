@@ -8,6 +8,7 @@
 - 事前確認: `draft`、画像28枚、担当割当0件、Feature Flag停止中を画面で確認した。Server Actionはscope、元package SHA-256、人間の権利確認、未失効期間、画像28枚、割当0件を再検査して成功した。
 - 事後確認: 成功表示「Batchを有効化しました」、状態`active`、画像28枚、担当者未割当を確認した。Feature Flagは停止中で、割当ボタンは無効のまま。
 - 不変: assignment 0、response 0、Human A/B 0/56、正式Benchmark 0/140。Production作品、Canvas、Provider、credit、DB schema、migration、RPC、Storage、API、URL、PNG／PDF、成人向け境界、Desktopは変更していない。
+- Draft PR: [#305](https://github.com/team478a/manga/pull/305)はDraft／MERGEABLE。初回HEAD `a5cab7ca4c6a7264856ef6ad0fe2e6d78fdc2f55`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-836d87-team478as-projects.vercel.app)。
 - 次: 本Docs-only Draft PRの全CIとVercel Preview確認後に停止する。責任者がReviewer AのProduction表示名と、Aとは異なるReviewer Bを指定するまでFeature Flagを有効化せず、担当割当、Human Review、R4-3Bへ進まない。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_3A12_PRODUCTION_BATCH_ACTIVATION.md`
 

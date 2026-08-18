@@ -54,6 +54,7 @@ PR #304で実装した管理者専用の検査付きBatch有効化をProduction�
 
 ## 次工程と停止条件
 
-- 本Docs-only Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認する。
+- Draft PR [#305](https://github.com/team478a/manga/pull/305)はDraft／MERGEABLE。初回HEAD `a5cab7ca4c6a7264856ef6ad0fe2e6d78fdc2f55`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- Vercel Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-836d87-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認して停止する。
 - 責任者がReviewer AのProduction表示名と、Aとは異なるReviewer Bを指定するまで停止する。
 - 指定前にFeature Flagを有効化せず、担当割当、Human Review、R4-3B Visual Judgeへ進まない。
