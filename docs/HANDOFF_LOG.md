@@ -9,7 +9,8 @@
 - Branch: `codex/feat-r4-3a7-monitor-review-portal`、Base: PR #298 merge commit `d154895cc04e198a60090ae4c74ea90ed1e7299b`。
 - 招待モニターのスマートフォンHuman Review画面、下書き再開、画像別確定、最終送信、管理者のA/B別人割当と進捗表示を追加。
 - private Storage、120秒署名URL、本人限定RPC、直接テーブル権限なし、専用Flagを追加。正解、AI監査、他回答、Prompt、内部source情報は表示・保存しない。
-- 集中13/13、deps、lint、Hub型検査、Hub 792/792、Canvas 26/26、AI 48/48、migration 60本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub CIで正式判定する。Draft PR／CI／Previewは未完了。
+- 集中13/13、deps、lint、Hub型検査、Hub 792/792、Canvas 26/26、AI 48/48、migration 60本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub CIで正式判定する。
+- Draft PR [#299](https://github.com/team478a/manga/pull/299)はDraft／MERGEABLE。実装HEAD `f213ff4`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-377b35-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認する。
 - Production、既存作品、Provider、creditは変更していない。人間の権利確認完了までprivate Batch 01を登録しない。
 
 ---

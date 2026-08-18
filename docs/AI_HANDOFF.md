@@ -7,7 +7,8 @@
 - 管理者`/admin/general-monitors/quality-review`は異なるReviewer A/Bの割当、確定数、開始確認、最終送信だけを扱い、回答payload、正解label、AI監査を取得しない。
 - private bucket、120秒署名URL、本人assignment再確認、専用fail-closed Flag、authenticatedへの直接テーブル権限なし、本人限定RPCを追加する。既存`mangai-human-review-v2`の判定規則を再利用する。
 - 顧客／Production／モニター作品、権利未確認画像を使用しない。private Batch 01は人間の権利確認完了まで登録しない。Production変更なし。
-- 集中13/13、deps、lint、Hub型検査、Hub 792/792、Canvas 26/26、AI 48/48、migration 60本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub CIで正式判定する。Draft PR、全CI、Vercel Preview確認後に停止し、責任者確認前にProduction登録とR4-3Bへ進まない。
+- 集中13/13、deps、lint、Hub型検査、Hub 792/792、Canvas 26/26、AI 48/48、migration 60本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop 4ゲートは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub CIで正式判定する。責任者確認前にProduction登録とR4-3Bへ進まない。
+- Draft PR [#299](https://github.com/team478a/manga/pull/299)はDraft／MERGEABLE。実装HEAD `f213ff4`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-377b35-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認して停止する。
 
 ---
 

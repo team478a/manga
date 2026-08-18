@@ -32,7 +32,9 @@
 - deps／lint／Hub 792/792／Canvas 26/26／AI 48/48／Webpack Hub build／RC structure／diff check: 成功
 - 通常Turbopack: 既知Windows path lengthでローカル停止
 - Desktop typecheck／test／a11y／build: 差分外のローカル`@napi-rs/keyring`型宣言不足。GitHub CIで正式判定
-- Vercel Preview: Draft PR作成後に記録
+- Draft PR: [#299](https://github.com/team478a/manga/pull/299)（Draft／MERGEABLE）
+- GitHub CI: 実装HEAD `f213ff4`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功
+- Vercel Preview: [Ready](https://mangai-hub-staging-git-codex-feat-r4-377b35-team478as-projects.vercel.app)
 - Production変更: なし
 
 ## 運用上の残作業

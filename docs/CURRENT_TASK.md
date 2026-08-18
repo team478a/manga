@@ -9,6 +9,7 @@
 - 安全境界: 顧客作品、Production作品、モニター作品、権利未確認画像を使用しない。private Batch 01は人間の権利確認完了まで登録しない。
 - Production: DB、Storage、作品、Provider、creditを変更していない。migrationとFlagは未適用。
 - 検証: 集中13/13、deps、lint、Hub型検査、Hub 792/792、Canvas 26/26、AI 48/48、migration 60本、Webpack Hub build、RC structure、diff check成功。通常Turbopackは既知Windows path length、Desktop typecheck／test／a11y／buildは差分外のローカル`@napi-rs/keyring`型宣言不足で停止し、GitHub CIで正式判定する。
+- Draft PR: [#299](https://github.com/team478a/manga/pull/299)はDraft／MERGEABLE。実装HEAD `f213ff4`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-feat-r4-377b35-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認する。
 - 停止条件: Draft PR、全CI、Vercel Previewを確認して停止する。責任者確認、権利確認、staging受入れ前にProduction登録とR4-3Bへ進まない。
 
 ---
