@@ -9,6 +9,7 @@
 - 予定割当はA=`test`、B=`青木隆康`、C=`なっかん`、D=`加藤周星`、E=`松浦周平`。開始時刻と本PRのmerge後にProduction管理画面から実施する。
 - 正式Benchmarkは0/140。A/B回答を正式採用せず、C〜Eは補助票として分離する。
 - deps error 0、lint、全型検査、Hub 808/808、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- PR #308初回Core qualityのReact purity failureは、repositoryが返す固定`loadedAt`を画面判定へ使う修正で解消し、ローカルlint・型・集中11/11を再確認した。
 
 ---
 

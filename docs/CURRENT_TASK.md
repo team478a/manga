@@ -10,6 +10,7 @@
 - 割当予定: A=`test`、B=`青木隆康`、C=`なっかん`、D=`加藤周星`、E=`松浦周平`。2026-08-20 00:00 JST以降に管理画面から順番に割り当てる。
 - 不変: Batch期間、DB、migration、RPC、Storage、画像、作品、Canvas、Provider、credit、API、URL、PNG／PDF、成人向け境界、Desktopは変更しない。
 - 検証: 集中11/11、deps error 0、lint、全型検査、Hub 808/808、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。Draft PR、CI、Vercel Previewを確認して停止する。
+- CI補正: PR #308初回Core qualityは描画中の`Date.now()`をReact purity ruleが拒否して失敗した。repositoryの同一読込時刻`loadedAt`を返して固定判定へ変更し、lint・全型検査・集中11/11を再確認した。
 - 詳細: `docs/RELEASE_CANDIDATE_R4_3A15_PRODUCTION_PANEL_ROLLOUT.md`
 
 ---

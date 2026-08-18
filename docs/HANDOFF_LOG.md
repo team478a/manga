@@ -13,6 +13,7 @@
 - 真因はBatch開始が2026-08-20 00:00 JSTで現在は開始前だったこと。正本の開始前割当拒否を維持し、管理画面の事前案内とエラー分類を修正した。
 - Productionのassignment／responseは0件、Batch期間・DB・Storage・作品・Provider・creditは変更していない。
 - 集中11/11、deps error 0、lint、全型検査、Hub 808/808、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。Draft PR／CI／Previewは継続確認する。
+- PR #308初回Core qualityは`Date.now()`のReact purity ruleで失敗。repositoryの読込時刻を`loadedAt`として返し、画面はその固定値で期間判定するよう修正した。lint・全型検査・集中11/11成功。
 
 ---
 

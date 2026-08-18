@@ -158,6 +158,7 @@ export async function loadMonitorQualityReviewAdminWorkspace() {
   const error = batches.error ?? assignments.error ?? cases.error ?? responses.error ?? enrollments.error ?? profiles.error;
   if (error) throw error;
   return {
+    loadedAt: now,
     batches: batches.data ?? [], assignments: assignments.data ?? [], cases: cases.data ?? [],
     responses: responses.data ?? [], enrollments: enrollments.data ?? [], profiles: profiles.data ?? [],
   };

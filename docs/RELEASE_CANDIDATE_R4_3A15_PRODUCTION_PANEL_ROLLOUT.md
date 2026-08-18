@@ -76,3 +76,5 @@ DB、migration、RPC、Storage、Benchmark画像、作品、Canvas、Provider、
 - Hub build／Desktop build: 成功
 - RC preflight: Repository structure READY。外部設定と手動E2Eの既存pendingは差分外
 - `git diff --check`: 成功
+
+初回GitHub Core qualityは、管理画面描画中の`Date.now()`をReact purity ruleが拒否して失敗した。repositoryが問い合わせに使用した同一のISO読込時刻を`loadedAt`として返し、画面はその固定値を比較するよう補正した。補正後のlint、全型検査、集中11/11は成功した。

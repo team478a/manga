@@ -73,7 +73,7 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
           const canActivate = batch.status === "draft" && total === MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT && assignments.length === 0;
           const startsAt = Date.parse(batch.starts_at);
           const expiresAt = Date.parse(batch.expires_at);
-          const now = Date.now();
+          const now = Date.parse(data.loadedAt);
           const assignmentPeriodOpen = startsAt <= now && expiresAt > now;
           const startsAtJapan = new Date(batch.starts_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
           return <article className="panel" key={batch.id}>
