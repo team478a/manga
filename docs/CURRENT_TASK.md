@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-18 Benchmark Batch 01 匿名権利確認受入れ
+
+- 状態: `HUMAN_RIGHTS_REVIEW_COMPLETE / DRY_RUN_PASSED / STAGING_CONFIGURATION_REQUIRED / STAGING_NOT_CHANGED / FORMAL_COUNT_0`
+- Base: `feature/manga-canvas-mvp` merge commit `47fe03d3ecbe90f1fd45f7708bc49423cc17fd57`（PR #300マージ済み）。Branch: `codex/docs-r4-3a-rights-review-acceptance`。
+- Human確認: 責任者が28画像を確認し、確認者名を公開・保存しない方針で`anonymous`として全権利確認項目を承認した。品質判定Reviewer A/BのログインプロフィールIDは既存契約どおり内部識別にだけ使用し、氏名入力を要求しない。
+- 完了package: Git外private rootへ元ZIPを保持したまま別名で作成。`--require-complete`で28/28、Provider規約、Benchmark評価用途、顧客／Production素材不使用、個人情報なし、成人向けなし、PNG、SHA-256、寸法、Content Credentials、重複なしを確認した。package SHA-256は`05cf95e530d6ff699ade2a1237c882eb518281e15b9dcfb74f99a120f8a7ff59`。
+- dry-run: `batch_private_01`、28件で`STAGING_BATCH_ADMISSION_READY`。DB、Storage、Productionはいずれも変更なし。
+- 検証: 関連回帰4/4、dependency／module boundary、lint、diff check成功。module boundaryの既知warning 2件は今回差分外。
+- 外部状態: staging専用URL、service role、staging project ref、Production project refの4設定は現在の実行環境に未設定。推測や一般Supabase環境変数へのfallbackを行わず、`--apply`は未実施。
+- 現在: Human権利確認28/28、モニターA/B 0/56、正式Benchmark 0/140。staging／Production取込0件。
+- Draft PR: [#301](https://github.com/team478a/manga/pull/301)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-661158-team478as-projects.vercel.app)。
+- 次: staging専用4設定、実在する管理者profile ID、対象期間、migration適用先を確認後に、明示したstaging project refだけへapplyする。取込後もBatchは`draft`で停止し、DB件数、private bucket、SHA-256確認前にactive化・A/B割当を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_R4_3A_RIGHTS_REVIEW_ACCEPTANCE.md`
+
+---
+
 ## 2026-08-18 PR-R4-3A-8 Review Batch Admission
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / HUMAN_RIGHTS_REVIEW_REQUIRED / STAGING_NOT_CHANGED / FORMAL_COUNT_0`

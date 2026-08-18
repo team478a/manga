@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-18 Codex: Benchmark Batch 01 匿名権利確認受入れ
+
+- PR #300 merge commit `47fe03d3ecbe90f1fd45f7708bc49423cc17fd57`から`codex/docs-r4-3a-rights-review-acceptance`を開始した。
+- 責任者の明示承認に基づき、確認者名を`anonymous`として28画像の全権利確認項目を記録した。実名、メール、プロフィールIDはprivate package、文書、ログへ保存していない。
+- 元ZIPを上書きせずGit外private rootへ完了版を作成。`--require-complete`で28/28、Provider規約、Benchmark評価用途、顧客／Production素材不使用、個人情報なし、成人向けなし、PNG、SHA-256、寸法、Content Credentials、重複なしを確認した。package SHA-256は`05cf95e530d6ff699ade2a1237c882eb518281e15b9dcfb74f99a120f8a7ff59`。
+- `batch_private_01`のstaging取込dry-runは`STAGING_BATCH_ADMISSION_READY`、28件で成功。DB、Storage、Productionは変更していない。
+- 関連回帰4/4、dependency／module boundary、lint、diff check成功。module boundaryの既知warning 2件は今回差分外。
+- staging専用URL、service role、staging project ref、Production project refは現在の実行環境に未設定。一般Supabase環境変数を使わず、apply前に停止した。
+- Draft PR [#301](https://github.com/team478a/manga/pull/301)はDraft／MERGEABLE。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-661158-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを確認して停止する。
+- 現在はHuman権利確認28/28、A/B 0/56、正式Benchmark 0/140。staging apply後もBatchを`draft`で確認し、private bucket／SHA確認後にだけactive化と異なるモニターA/B割当を行う。R4-3Bへ進まない。
+
+---
+
 ## 2026-08-18 Codex: PR-R4-3A-8 Review Batch Admission（作業中）
 
 - Branch: `codex/feat-r4-3a8-review-batch-admission`、Base: PR #299 merge commit `2ab608b799c1c8092adad589fc0ae2df3d664bd6`。
