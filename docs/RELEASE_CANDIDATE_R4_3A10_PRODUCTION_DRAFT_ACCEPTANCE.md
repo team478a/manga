@@ -89,3 +89,16 @@
 - R4-3B Visual Judge本体
 
 次工程は、責任者が異なる2名の有効モニターを確認し、active化、A/B割当、Feature Flag有効化、スマートフォン受入れの順序を別途承認してから開始する。
+
+## Draft PR
+
+- Draft PR: [#303](https://github.com/team478a/manga/pull/303)
+- 初回HEAD: `4c2f6c6c2c77d8884a433b7d658a9a8c0ee2fba0`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-git-codex-docs-r4-5a9ce0-team478as-projects.vercel.app)
+
+最終証跡同期commitでも同じ5チェックを再確認して停止する。

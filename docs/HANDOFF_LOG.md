@@ -14,7 +14,8 @@
 - Benchmark回帰5/5、migration 60本、dependency／module boundary error 0、lint、RC structure、diff check成功。既知warning 2件は差分外。
 - secret keyは画面、stdout、環境ファイル、Gitへ保存せず現在の処理内だけで使用し、使用後にクリップボードを消去した。
 - active化、A/B割当、Feature Flag変更、正式Benchmark採用、R4-3Bは未実施。Human A/B 0/56、正式Benchmark 0/140。
-- 次: 文書限定Draft PRを作成し、全CI／Vercel Preview成功後に責任者確認待ちで停止する。
+- Draft PR [#303](https://github.com/team478a/manga/pull/303)はDraft／MERGEABLE。初回HEAD `4c2f6c6c2c77d8884a433b7d658a9a8c0ee2fba0`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-docs-r4-5a9ce0-team478as-projects.vercel.app)。
+- 次: 最終証跡同期HEADでも同じ5チェックを再確認し、責任者確認待ちで停止する。
 
 ---
 
