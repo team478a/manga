@@ -27,7 +27,6 @@ test("Pilot Batchは28枚・権利確認済み・割当0件のdraftだけを事�
   });
   assert.deepEqual(result, { ready: true, code: "ready" });
 });
-
 test("画像不足、期限切れ、既存割当、package照合不備をfail closedにする", () => {
   const cases = [
     {
@@ -92,4 +91,3 @@ test("管理者操作はFlag停止中でも検査でき、担当割当はFlagで
   assert.match(repository, /\.eq\("status", currentStatus\)/);
   assert.match(repository, /count: "exact", head: true/);
 });
-

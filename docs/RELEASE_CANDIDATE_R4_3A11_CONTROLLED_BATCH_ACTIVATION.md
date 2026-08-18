@@ -1,7 +1,7 @@
 # PR-R4-3A-11 Controlled Batch Activation
 
-作成日: 2026-08-18  
-基準: `feature/manga-canvas-mvp` / PR #303 merge commit `03fe58c9fc22631d15407bf1fd82b77039bbfcb2`  
+作成日: 2026-08-18
+基準: `feature/manga-canvas-mvp` / PR #303 merge commit `03fe58c9fc22631d15407bf1fd82b77039bbfcb2`
 Branch: `codex/feat-r4-3a11-controlled-batch-activation`
 
 ## 目的
@@ -69,4 +69,3 @@ Productionへ非公開`draft`として登録済みの`batch_private_01`を、手
 
 - Draft PR、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsの成功を確認して停止する。
 - 責任者確認前にProductionのBatch有効化、Feature Flag変更、A/B割当、R4-3B Visual Judgeへ進まない。
-
