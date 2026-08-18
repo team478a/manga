@@ -46,14 +46,19 @@
 - Hub production build、Desktop build: 成功
 - migration validator: 60本成功
 - RC preflight: structure ready
-- migration roundtrip: GitHub CIで確認予定
-- Windows build: GitHub CIで確認予定
-- Vercel Preview: 確認予定
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功
+- Vercel Preview: [Ready](https://mangai-hub-staging-pmolc68ia-team478as-projects.vercel.app)
 - `git diff --check`: 成功
+
+## Draft PR
+
+- PR: [#302](https://github.com/team478a/manga/pull/302)（Draft／MERGEABLE）
+- 実装HEAD: `e6e87d7ebf59cb95b19898a2432ce9a613d8a538`
+- Production／Staging DB・Storage変更: なし
 
 ## 次工程
 
-1. Draft PRの全CIとVercel Previewを確認して停止する。
+1. Draft PRの全CIとVercel Previewを確認済み。責任者確認まで停止する。
 2. 責任者確認後、Production migration適用済み、専用private bucket、管理者profile ID、対象期間をread-onlyで確認する。
 3. 28件のProduction dry-runを再実行する。
 4. 明示承認後にだけProductionへapplyし、`draft`、28件、割当0件、SHA-256を再確認する。

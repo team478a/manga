@@ -11,7 +11,8 @@
 - 既定dry-runと既存staging経路は維持。Productionは専用秘密値、対象project ref、Batch code、固定確認句の三重確認を必須にし、一般Supabase環境変数へfallbackしない。
 - apply後も`draft`、`PILOT_INTRINSIC_ONLY`、割当0件を検査し、private Storage再取得画像のSHA-256を照合する。失敗時は当該Batchだけcleanupする。
 - Production apply、active化、A/B割当、Feature Flag変更は未実施。通常作品、Canvas、公開Storage、Provider、creditは不変。Human権利確認28/28、A/B 0/56、正式Benchmark 0/140。
-- 実package Production dry-runは28件で`PRODUCTION_BATCH_ADMISSION_READY`、外部変更0件。集中5/5、deps、lint、型検査、Hub 797/797、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、Hub／Desktop build、migration 60本、RC structure、diff check成功。Draft PR、全CI、Vercel Previewを確認して停止する。
+- 実package Production dry-runは28件で`PRODUCTION_BATCH_ADMISSION_READY`、外部変更0件。集中5/5、deps、lint、型検査、Hub 797/797、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、Hub／Desktop build、migration 60本、RC structure、diff check成功。
+- Draft PR [#302](https://github.com/team478a/manga/pull/302)はDraft／MERGEABLE。実装HEAD `e6e87d7ebf59cb95b19898a2432ce9a613d8a538`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-pmolc68ia-team478as-projects.vercel.app)。最終証跡同期HEADでも同じ5チェックを再確認し、責任者確認前にapplyしない。
 
 ---
 
