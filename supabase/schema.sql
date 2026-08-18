@@ -2224,6 +2224,8 @@ create table if not exists public.cloud_monitor_quality_review_batches (
   batch_code text not null unique check(batch_code ~ '^batch_[a-z0-9][a-z0-9_-]{2,63}$'),
   status text not null default 'draft' check(status in('draft','active','paused','completed')),
   review_scope text not null default 'PILOT_INTRINSIC_ONLY' check(review_scope='PILOT_INTRINSIC_ONLY'),
+  target_reviewer_count smallint not null default 5
+    constraint cloud_monitor_quality_review_batches_target_reviewer_count_check check(target_reviewer_count between 2 and 9),
   source_package_sha256 text not null check(source_package_sha256 ~ '^[0-9a-f]{64}$'),
   rights_reviewed_at timestamptz not null,
   rights_reviewed_by text not null check(char_length(rights_reviewed_by) between 3 and 120),
@@ -2264,7 +2266,10 @@ create table if not exists public.cloud_monitor_quality_review_assignments (
   id uuid primary key default gen_random_uuid(),
   batch_id uuid not null references public.cloud_monitor_quality_review_batches(id) on delete cascade,
   reviewer_profile_id uuid not null references public.profiles(id) on delete restrict,
-  reviewer_slot text not null check(reviewer_slot in('reviewer_a','reviewer_b')),
+  reviewer_slot text not null constraint cloud_monitor_quality_review_assignments_reviewer_slot_check check(reviewer_slot in(
+    'reviewer_a','reviewer_b','reviewer_c','reviewer_d','reviewer_e',
+    'reviewer_f','reviewer_g','reviewer_h','reviewer_i'
+  )),
   status text not null default 'assigned' check(status in('assigned','in_progress','submitted','revoked')),
   consent_version text check(consent_version is null or consent_version='monitor-quality-review-consent-v1'),
   consented_at timestamptz,
@@ -2294,6 +2299,41 @@ create index if not exists cloud_monitor_quality_review_assignments_reviewer_idx
   on public.cloud_monitor_quality_review_assignments(reviewer_profile_id,status,updated_at desc);
 create index if not exists cloud_monitor_quality_review_responses_progress_idx
   on public.cloud_monitor_quality_review_responses(assignment_id,case_completed_at);
+
+create or replace function public.enforce_cloud_monitor_quality_review_panel_slot()
+returns trigger
+language plpgsql
+set search_path=public,pg_temp
+as $$
+declare
+  v_target smallint;
+  v_ordinal integer;
+begin
+  select target_reviewer_count into v_target
+  from public.cloud_monitor_quality_review_batches
+  where id=new.batch_id;
+  v_ordinal:=array_position(
+    array[
+      'reviewer_a','reviewer_b','reviewer_c','reviewer_d','reviewer_e',
+      'reviewer_f','reviewer_g','reviewer_h','reviewer_i'
+    ]::text[],
+    new.reviewer_slot
+  );
+  if v_target is null or v_ordinal is null or v_ordinal>v_target then
+    raise exception 'monitor_quality_review_slot_outside_target';
+  end if;
+  return new;
+end$$;
+
+revoke all on function public.enforce_cloud_monitor_quality_review_panel_slot()
+  from public,anon,authenticated;
+
+drop trigger if exists cloud_monitor_quality_review_assignments_panel_slot
+  on public.cloud_monitor_quality_review_assignments;
+create trigger cloud_monitor_quality_review_assignments_panel_slot
+before insert or update of batch_id,reviewer_slot
+on public.cloud_monitor_quality_review_assignments
+for each row execute function public.enforce_cloud_monitor_quality_review_panel_slot();
 
 alter table public.cloud_monitor_quality_review_batches enable row level security;
 alter table public.cloud_monitor_quality_review_cases enable row level security;

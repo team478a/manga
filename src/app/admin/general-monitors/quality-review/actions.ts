@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { monitorQualityReviewEnabled } from "@/lib/monitor-quality-review";
+import { monitorQualityReviewSlotSchema } from "@/modules/manga-quality/domain/monitor-quality-review";
 import {
   assignMonitorQualityReview,
   setMonitorQualityReviewBatchLifecycle,
@@ -13,7 +14,7 @@ import {
 const schema = z.object({
   batchId: z.string().uuid(),
   reviewerProfileId: z.string().uuid(),
-  reviewerSlot: z.enum(["reviewer_a", "reviewer_b"]),
+  reviewerSlot: monitorQualityReviewSlotSchema,
 });
 
 const lifecycleSchema = z.object({
@@ -69,7 +70,11 @@ export async function assignMonitorQualityReviewAction(formData: FormData) {
     redirect(encodeURI("/admin/general-monitors/quality-review?error=割当内容を確認してください"));
   const result = await assignMonitorQualityReview({ ...parsed.data, actorProfileId: profile.id });
   if (result.error)
-    redirect(encodeURI("/admin/general-monitors/quality-review?error=同じ枠または同じ利用者がすでに割り当てられています"));
+    redirect(encodeURI(`/admin/general-monitors/quality-review?error=${
+      result.error.message === "monitor_quality_review_slot_outside_target"
+        ? "この枠はBatchの目標確認者数を超えています"
+        : "同じ枠または同じ利用者がすでに割り当てられています"
+    }`));
   revalidatePath("/admin/general-monitors/quality-review");
   redirect(encodeURI("/admin/general-monitors/quality-review?message=確認担当を割り当てました"));
 }

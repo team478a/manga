@@ -493,6 +493,32 @@ reset role;
 rollback;
 
 do $$ begin
+  if not exists(
+    select 1 from information_schema.columns
+    where table_schema='public'
+      and table_name='cloud_monitor_quality_review_batches'
+      and column_name='target_reviewer_count'
+      and column_default='5'
+  )
+     or to_regprocedure('public.enforce_cloud_monitor_quality_review_panel_slot()') is null
+     or not exists(
+       select 1 from pg_trigger
+       where tgrelid='public.cloud_monitor_quality_review_assignments'::regclass
+         and tgname='cloud_monitor_quality_review_assignments_panel_slot'
+         and not tgisinternal
+     ) then
+    raise exception 'Cloud monitor multi-reviewer panel objects missing';
+  end if;
+  if has_function_privilege(
+       'authenticated',
+       'public.enforce_cloud_monitor_quality_review_panel_slot()',
+       'execute'
+     ) then
+    raise exception 'Cloud monitor panel trigger function is exposed';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.cloud_work_publications') is null
      or to_regclass('public.cloud_work_publication_pages') is null
      or to_regprocedure('public.sync_cloud_marketplace_release_draft(uuid,uuid,text,text,text,jsonb,integer,text)') is null
