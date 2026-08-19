@@ -31,7 +31,11 @@ test("Production Server Routes include Sharp and libvips Linux binaries", () => 
   );
 
   if (process.platform === "linux" && process.arch === "x64") {
-    assert.doesNotThrow(() => require.resolve("@img/sharp-linux-x64"));
-    assert.doesNotThrow(() => require.resolve("@img/sharp-libvips-linux-x64"));
+    assert.doesNotThrow(() =>
+      require.resolve("@img/sharp-linux-x64/sharp.node"),
+    );
+    assert.doesNotThrow(() =>
+      require.resolve("@img/sharp-libvips-linux-x64/binary"),
+    );
   }
 });
