@@ -2,7 +2,7 @@
 
 ## 2026-08-20 PR #315 Production受入れ
 
-- 状態: `PRODUCTION_ACCEPTANCE_PASSED / PROVIDER_REJECTION_RESOLVED / PAGE_IMAGES_COMPLETE / MANUAL_REVIEW_REMAINS`
+- 状態: `PRODUCTION_ACCEPTANCE_PASSED / PROVIDER_REJECTION_RESOLVED / PAGE_IMAGES_COMPLETE / ALL_CI_PASSED / PREVIEW_READY / MANUAL_REVIEW_REMAINS`
 - Base: PR #315 merge commit `09a3bfddc476d5a37f8821f2ec6cc767f531d9a3`。Branch: `codex/docs-r4-3-provider-layout-production-acceptance`。
 - Production反映: merge commitのVercel Production deploymentがReadyであることを確認し、`test`の既存22ページを再読込した。開始時はCanvas revision 10、画像3/4、セリフ1/1、生成中0、失敗1、PNG成功、credit使用78・予約0・残り22。
 - 限定受入れ: 修正前に作成されたコマ2の元失敗Jobを1件だけ、PR #315の最初の一般向け安全再構成で再実行した。安全再構成済みの旧失敗Jobは選ばず、第2段階retryへ進めていない。
@@ -12,7 +12,9 @@
 - credit: 使用78→80、予約0、残り22→20。追加Jobは登録していない。
 - 残存確認: ページ一覧は22ページを「完成・画像配置4/4」と表示する一方、編集画面の完成バナーは「手動確認待ち／自動配置結果に確認が必要」と表示する。採用画像2件は品質確認済みで、画像・保存・PNG契約は成立している。次はread-onlyで残存statusのsourceを特定し、推測修正しない。
 - 不変: API、DB schema、migration、RPC、Storage設定、Feature Flag、Provider、model、pricing、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更していない。Production変更は再試行Job1件、生成Asset1件、品質記録、コマ2採用、Canvas revision 11、credit 2のみ。
-- 次: 文書限定Draft PRの全CI／Vercel Previewを確認して停止する。責任者確認前に追加Provider実行を行わず、手動確認待ちの原因監査を次工程とする。
+- Draft PR: [#316](https://github.com/team478a/manga/pull/316)はDraft／MERGEABLE。初回HEAD `9f70280`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-2hg5soz33-team478as-projects.vercel.app)。`/login`のタイトル、メール、パスワード、ログイン導線を確認し、ブラウザログ0件。Production DB／Provider操作なし。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。責任者確認前に追加Provider実行を行わず、手動確認待ちの原因監査を次工程とする。
 - 詳細: `docs/RELEASE_CANDIDATE_PROVIDER_MODERATED_LAYOUT_20260820.md`
 
 ---

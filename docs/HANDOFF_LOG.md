@@ -5161,6 +5161,8 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - creditは使用78→80、予約0、残り22→20。追加Jobはない。
 - ページ一覧は22ページを完成扱いにするが、編集画面の完成バナーには手動確認待ちが残る。追加Provider実行を停止し、次工程で残存status sourceをread-only監査する。
 - Production変更は再試行Job1件、生成Asset1件、品質記録、コマ2採用、Canvas revision 11、credit 2のみ。DB schema、migration、RPC、Storage設定、Provider／model／pricing、Canvas schema、出力処理、成人向け境界、Desktop製品コードは変更していない。
-- 次: 文書限定Draft PRの全CI／Vercel Preview確認で停止する。
+- Draft PR [#316](https://github.com/team478a/manga/pull/316)はDraft／MERGEABLE。初回HEAD `9f70280`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-2hg5soz33-team478as-projects.vercel.app)。`/login`正常、ブラウザログ0件。Production操作なし。
+- 次: 最終証跡同期HEADの5チェック成功で停止する。
 
 ---

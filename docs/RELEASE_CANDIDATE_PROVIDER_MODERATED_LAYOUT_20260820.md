@@ -105,3 +105,17 @@ merge後は、対象コマ2の失敗Jobに対する安全再構成を1回だけ�
 先行の[run 32313790385](https://github.com/team478a/manga/actions/runs/32313790385)はworkflow dispatchの既定`mode=check`による設定確認だけで、Provider通信・Job処理・credit変更はない。
 
 Provider拒否の阻害は解消した。ただしページ一覧が22ページを「完成・画像配置4/4」とする一方、編集画面の完成バナーは「手動確認待ち／自動配置結果に確認が必要」を残している。画像品質確認、Canvas保存、PNG出力は成立しているため、追加Provider実行はせず、adoption、dialogue placement、production statusのどれが残存sourceかを次工程でread-only監査する。
+
+## Production証跡同期PR
+
+- Draft PR: [#316](https://github.com/team478a/manga/pull/316)（Draft／MERGEABLE）
+- 初回HEAD: `9f70280bd6ecb8351a5c3c2263ea2f5c4560464c`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-2hg5soz33-team478as-projects.vercel.app)
+- Preview `/login`: タイトル、メール、パスワード、ログイン導線を確認。ブラウザログ0件
+
+最終証跡同期HEADでも同じ5チェックを確認して停止する。責任者確認前に追加Provider実行や残存statusの推測修正を行わない。

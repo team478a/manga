@@ -9,7 +9,9 @@
 - Canvas revision 10→11、画像4/4、セリフ1/1、生成中0、失敗0、PNG成功。4コマPreviewとブラウザログ0件を確認した。
 - ページ一覧は22ページを「完成・画像配置4/4」と表示するが、編集画面の完成バナーだけは「手動確認待ち」を残す。採用画像2件は品質確認済み。次工程でadoption／dialogue placement／production statusのどれがsourceかをread-only監査し、推測修正しない。
 - API、DB schema、migration、RPC、Storage設定、Feature Flag、Provider、model、pricing、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードは変更していない。
-- 次: 文書限定Draft PRの全CI／Vercel Preview確認で停止する。責任者確認前に追加Provider実行を行わない。
+- Draft PR [#316](https://github.com/team478a/manga/pull/316)はDraft／MERGEABLE。初回HEAD `9f70280`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-2hg5soz33-team478as-projects.vercel.app)。`/login`正常、ブラウザログ0件。Production操作なし。
+- 次: 最終証跡同期HEADの5チェック成功で停止する。責任者確認前に追加Provider実行を行わない。
 
 ---
 
