@@ -160,6 +160,38 @@ test("自動配置した生成画像は目視確認までreview_requiredにす�
   assert.equal(codes(approved).has("IMAGE_QUALITY_REVIEW_REQUIRED"), false);
 });
 
+test("不採用Jobの画像がCanvasへ残るページは完成不可にする", () => {
+  const canvas = clone(source.canvas);
+  const generationJobId = source.imageJobs[0].id;
+  canvas.panelLayers = [{
+    id: "10000000-0000-4000-8000-000000000095",
+    panelId: canvas.panels[0].id,
+    name: "不採用AI背景",
+    type: "background",
+    orderIndex: 0,
+    visible: true,
+    locked: false,
+    opacity: 1,
+    blendMode: "normal",
+    assetId: source.assetIds[0],
+    sourceJobId: generationJobId,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    createdAt: "",
+    updatedAt: "",
+  }];
+  const result = evaluateMangaPageCompletion(input({
+    canvas,
+    reviewedGenerationAssetIds: new Set([source.assetIds[0]]),
+    rejectedGenerationJobIds: new Set([generationJobId]),
+  }));
+  assert.equal(result.status, "incomplete");
+  assert.ok(codes(result).has("IMAGE_QUALITY_REJECTED"));
+});
+
 test("同一生成Assetの確認結果は候補Job IDが異なっても完成判定へ反映する", () => {
   const canvas = clone(source.canvas);
   canvas.panelLayers = [{

@@ -131,6 +131,8 @@ test("未採用候補は追加生成なしで明示的に不採用へできる",
   assert.match(editor, /この候補を不採用にする（追加生成なし）/);
   assert.match(editor, /rejectGeneratedAsset/);
   assert.match(editor, /原稿品質の必須確認で不採用/);
+  assert.match(editor, /detachRejectedPanelCandidate/);
+  assert.match(editor, /Canvasから外しました/);
 });
 
 test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {

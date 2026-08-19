@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（Production原稿の不採用画像・短い縦書き品質修正、2026-08-19）
+
+- 最新基準はPR #311 merge commit `29744d3a720ce6c270face0b29768b746b33f239`。Branchは`codex/fix-r4-3-production-text-quality`。
+- Production作品22ページの不要な画像内文字と、Canvas短文「証拠を」の不自然な縦2列を確認した。
+- 不採用の品質状態がCanvas採用状態へ反映されない不整合を解消し、不採用Job由来layerを外して直前の背景へ戻す。不採用画像が残るページは完成不可にした。
+- 6文字以下・改行なしの縦書きは、可読下限内で1列になるfont sizeを優先する。既存原稿の短文複数列は販売前検査で`text_layout` errorにする。
+- DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF処理、Productionデータは変更していない。
+- 集中55/55、deps、lint、Hub型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: Draft PRと5つの必須checkを確認して停止する。merge後にProduction 22ページで不採用操作、保存完了、縦書き再配置、完成判定／PNGを実機確認する。
+
+---
+
 ## 0.0 現在の優先タスク（Production品質フィードバック保存復旧、2026-08-19）
 
 - 最新基準はPR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`。Branchは`codex/fix-production-quality-feedback-schema-fallback`。

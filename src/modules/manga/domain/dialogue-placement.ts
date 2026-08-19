@@ -1,5 +1,7 @@
 import {
   layoutVerticalText,
+  parseRubyText,
+  segmentGraphemes,
   type Balloon,
   type PageCanvas,
   type Panel,
@@ -66,17 +68,21 @@ function fitFontSize(text: string, balloon: Balloon) {
     width: Math.max(1, balloon.width - TEXT_PADDING * 2),
     height: Math.max(1, balloon.height - TEXT_PADDING * 2),
   };
+  const plainText = parseRubyText(text).plainText;
+  const preferSingleColumn =
+    !/[\r\n]/u.test(plainText) && segmentGraphemes(plainText).length <= 6;
+  let largestReadableSize: number | null = null;
   for (let fontSize = MAX_FONT_SIZE; fontSize >= MIN_FONT_SIZE; fontSize -= 2) {
-    if (
-      !layoutVerticalText(text, box, {
-        fontSize,
-        lineHeight: 1.2,
-        letterSpacing: 0,
-      }).overflow
-    )
-      return fontSize;
+    const layout = layoutVerticalText(text, box, {
+      fontSize,
+      lineHeight: 1.2,
+      letterSpacing: 0,
+    });
+    if (layout.overflow) continue;
+    largestReadableSize ??= fontSize;
+    if (!preferSingleColumn || layout.columns === 1) return fontSize;
   }
-  return null;
+  return largestReadableSize;
 }
 
 function createDefaultBalloon(input: {

@@ -18,6 +18,7 @@ export type MangaPageCompletionBlockerCode =
   | "PNG_RENDER_FAILED"
   | "PAGE_DIMENSION_INVALID"
   | "IMAGE_QUALITY_REVIEW_REQUIRED"
+  | "IMAGE_QUALITY_REJECTED"
   | "MANUAL_REVIEW_REQUIRED";
 
 export type MangaPageCompletionBlocker = {
@@ -154,6 +155,16 @@ export function evaluateMangaPageCompletion(input: {
       for (const layer of canvas.panelLayers.filter(
         (item) => item.panelId === panel.id && item.visible && item.sourceJobId,
       )) {
+        if (input.rejectedGenerationJobIds?.has(layer.sourceJobId!)) {
+          add({
+            code: "IMAGE_QUALITY_REJECTED",
+            message: `${panel.name}に不採用の生成画像が残っています。`,
+            pageId: input.pageId,
+            panelId: panel.id,
+            generationJobId: layer.sourceJobId!,
+          });
+          continue;
+        }
         const reviewedByJob = input.reviewedGenerationJobIds?.has(
           layer.sourceJobId!,
         );

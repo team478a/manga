@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import { layoutVerticalText } from "@mangai/canvas-core";
 import { placeCompletedPageDialogue } from "../src/modules/manga/application/auto-place-page-dialogue.ts";
 import { placeStructuredPageDialogue } from "../src/modules/manga/domain/dialogue-placement.ts";
 
@@ -106,6 +107,27 @@ test("対象コマの空吹き出しへ縦書きテキストを関連付ける",
   assert.equal(result.canvas.textObjects[0].text, "ここから始めよう。");
   assert.ok(result.canvas.textObjects[0].fontSize >= 18);
   assert.ok(result.canvas.textObjects[0].fontSize <= 32);
+});
+
+test("6文字以下の短い縦書きは縮小して1列へ収める", () => {
+  const compactBalloon = balloon({ width: 180, height: 100 });
+  const result = place(
+    canvas({ balloons: [compactBalloon] }),
+    dialogue("証拠を"),
+  );
+  assert.deepEqual(result.blockers, []);
+  const text = result.canvas.textObjects[0];
+  const layout = layoutVerticalText(
+    text.text,
+    { x: text.x, y: text.y, width: text.width, height: text.height },
+    {
+      fontSize: text.fontSize,
+      lineHeight: text.lineHeight,
+      letterSpacing: text.letterSpacing,
+    },
+  );
+  assert.equal(layout.columns, 1);
+  assert.ok(text.fontSize < 32);
 });
 
 test("吹き出し不足時はコマ内へ型別に作成し、再処理しても重複しない", () => {

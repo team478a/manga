@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-19 Codex: Production原稿の不採用画像・短い縦書き品質修正（作業中）
+
+- PR #311 merge commit `29744d3a720ce6c270face0b29768b746b33f239`から`codex/fix-r4-3-production-text-quality`を開始した。
+- 利用者スクリーンショットで、Production作品22ページに画像生成時の不要文字が残り、Canvas縦書き「証拠を」が2列へ分割されていることを確認した。
+- 不採用Job由来のCanvas layerを明示的な不採用操作時に外し、背景の参照を直前の表示可能layerへ戻すdomain処理を追加した。
+- 不採用画像が残るページへ`IMAGE_QUALITY_REJECTED`を付けて完成を拒否する。短い縦書きは1列優先で縮小し、既存の不自然な短文複数列は販売前検査で拒否する。
+- 集中55/55、deps error 0、lint、Hub型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。module warning 2件とRC外部Pendingは既存／環境依存。
+- Production、DB、migration、Storage、Provider、credit、Canvas schema、PNG／PDF処理を変更していない。
+- 次: 証跡文書を含めてcommit・pushし、Draft PRのCIとVercel Previewを確認する。
+
+---
+
 ## 2026-08-19 Codex: Production品質フィードバック保存復旧（責任者確認待ち）
 
 - PR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`から`codex/fix-production-quality-feedback-schema-fallback`を開始した。

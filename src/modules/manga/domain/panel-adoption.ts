@@ -90,3 +90,41 @@ export function applyPanelCandidateAdoption(
 ) {
   return applyPanelCandidateAdoptionResult(canvas, adoption) !== "panel_not_found";
 }
+
+export function detachRejectedPanelCandidate(
+  canvas: PageCanvas,
+  sourceJobId: string,
+) {
+  const rejectedLayers = canvas.panelLayers.filter(
+    (layer) => layer.sourceJobId === sourceJobId,
+  );
+  if (!rejectedLayers.length) return false;
+  const affectedPanelIds = new Set(rejectedLayers.map((layer) => layer.panelId));
+  const rejectedAssetIds = new Set(
+    rejectedLayers.flatMap((layer) => (layer.assetId ? [layer.assetId] : [])),
+  );
+  canvas.panelLayers = canvas.panelLayers.filter(
+    (layer) => layer.sourceJobId !== sourceJobId,
+  );
+  for (const panel of canvas.panels) {
+    if (
+      !affectedPanelIds.has(panel.id) ||
+      !panel.imageAssetId ||
+      !rejectedAssetIds.has(panel.imageAssetId)
+    )
+      continue;
+    const replacement = canvas.panelLayers
+      .filter(
+        (layer) =>
+          layer.panelId === panel.id &&
+          layer.visible &&
+          Boolean(layer.assetId) &&
+          (layer.type === "background" ||
+            layer.type === "correction" ||
+            layer.type === "flattened_legacy"),
+      )
+      .sort((left, right) => left.orderIndex - right.orderIndex)[0];
+    panel.imageAssetId = replacement?.assetId ?? null;
+  }
+  return true;
+}

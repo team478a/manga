@@ -41,7 +41,10 @@ import type { CloudPageCompletion } from "@/modules/cloud-creator/projects/page-
 import { PageCompletionBanner } from "./PageCompletionBanner";
 import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
-import { applyPanelCandidateAdoption } from "@/modules/manga/domain/panel-adoption";
+import {
+  applyPanelCandidateAdoption,
+  detachRejectedPanelCandidate,
+} from "@/modules/manga/domain/panel-adoption";
 import {
   candidateBelongsToPage,
   classifyCandidateLayer,
@@ -969,6 +972,13 @@ export function CloudCanvasEditor({
         generationJobId: job.id,
         rejectedReason: "原稿品質の必須確認で不採用",
       });
+      const detached = canvas.panelLayers.some(
+        (layer) => layer.sourceJobId === job.id,
+      )
+        ? commit((draft) => {
+            detachRejectedPanelCandidate(draft, job.id);
+          })
+        : false;
       setGenerationJobs((current) =>
         current.map((item) =>
           item.id === job.id
@@ -977,7 +987,9 @@ export function CloudCanvasEditor({
         ),
       );
       setMessage(
-        "この候補を不採用にしました。作り直さない限り追加クレジットは消費しません。",
+        detached
+          ? "この候補を不採用にし、Canvasから外しました。保存完了まで画面を閉じないでください。"
+          : "この候補を不採用にしました。作り直さない限り追加クレジットは消費しません。",
       );
       router.refresh();
     } catch (error) {
@@ -1008,6 +1020,10 @@ export function CloudCanvasEditor({
         generationJobId: job.id,
         rejectedReason: "原稿品質の目視確認で作り直し",
       });
+      if (canvas.panelLayers.some((layer) => layer.sourceJobId === job.id))
+        commit((draft) => {
+          detachRejectedPanelCandidate(draft, job.id);
+        });
       setGenerationJobs((current) =>
         current.map((item) =>
           item.id === job.id
