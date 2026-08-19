@@ -58,6 +58,7 @@ function sanitizeProviderControlContract(line: string) {
     const contract = JSON.parse(line) as Record<string, unknown>;
     const camera = isRecord(contract.camera) ? contract.camera : {};
     const { lens: _legacyLens, ...cameraWithoutLegacyLens } = camera;
+    const storyboardComposition = safeStoryboardComposition(contract.layout);
     const compactSubjects = Array.isArray(contract.subjects)
       ? contract.subjects.map((subject) =>
           isRecord(subject)
@@ -85,6 +86,7 @@ function sanitizeProviderControlContract(line: string) {
       ...(compactCloseUp
         ? {
             scene: SAFE_PROVIDER_CLOSE_UP_SCENE,
+            layout: storyboardComposition,
             output_type: SAFE_PROVIDER_CLOSE_UP_OUTPUT,
             subjects: compactSubjects,
             background: SAFE_PROVIDER_BACKGROUND,
@@ -226,6 +228,24 @@ export function buildGeneralAudienceGenerationRetry(
     if (line.startsWith("表情・感情:"))
       return `表情・感情: ${SAFE_EXPRESSION}`;
     if (line.startsWith("感情:")) return `感情: ${SAFE_EXPRESSION}`;
+    if (line.startsWith("場所:") || line.startsWith("背景:")) {
+      const value = line.slice(line.indexOf(":") + 1);
+      return safeStoryboardComposition(value) ===
+        SAFE_STORYBOARD_COMPOSITION_FALLBACK
+        ? `場所・背景: ${CONSERVATIVE_SAFE_LOCATION}`
+        : line;
+    }
+    if (
+      line.startsWith("人物と背景の配置:") ||
+      line.startsWith("構図:") ||
+      line.startsWith("構図調整:")
+    ) {
+      const value = line.slice(line.indexOf(":") + 1);
+      return safeStoryboardComposition(value) ===
+        SAFE_STORYBOARD_COMPOSITION_FALLBACK
+        ? `構図・演出: ${CONSERVATIVE_SAFE_COMPOSITION}`
+        : line;
+    }
     if (line.startsWith("演出:")) return `演出: ${SAFE_DIRECTION}`;
     if (line.startsWith("追加指定:"))
       return "追加指定: 一般向けの間接表現として安全に再構成する。";
