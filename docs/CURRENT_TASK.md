@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-19 Production品質フィードバック保存復旧
+
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PRODUCTION_ACCEPTANCE_PASSED / DATABASE_ROW_VERIFIED / PR_311_DOCS_ONLY`
+- Base: PR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`。Branch: `codex/fix-production-quality-feedback-schema-fallback`。
+- Production受入れ: `test`でダッシュボード、作品、22ページ原稿を確認した。原稿画像は48/48 imgが読込成功、broken 0、704x1024で、Canvas上の4コマ画像も目視確認した。Sharp／libvips障害は再発していない。
+- 原因: Production DBだけ既存migration `202608020002_cloud_general_monitor_quality_feedback.sql` が未反映だった。適用前は品質列0/15だが後続の運用列9/9、rate-limit function／triggerは存在しており、アプリの完全形式INSERTとlegacy fallbackがともに400になっていた。
+- 復旧: 正本に存在する未変更migrationをProductionへ適用した。適用後は品質列15/15、target／quality index、target constraint、owner INSERT policyを確認した。migration SQLのSHA-256は`2179278741D34E86FDDC407AA09FA7EE08483B96031DF560937B8DCFDF842132`。
+- 実機保存: Productionの既存コードで品質評価を1回保存し、画面の成功表示とDB行`72665ec0-8093-410b-a5a3-1ca4efae761e`を照合した。`page / needs_revision / image_quality / minor`、page 22、generation_count 28、panel null、コメント一致。
+- PR #311: 原因が部分schema互換ではなくmigration未適用と確定したため、中間fallback実装と専用テストを撤回した。差分は復旧証跡文書のみ。
+- Production変更: 既存migrationの適用と検証用フィードバック1行の追加のみ。作品、画像、Provider、credit、Storage、RPC、API、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。画像生成とcredit消費は行っていない。
+- Draft PR: [#311](https://github.com/team478a/manga/pull/311)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- 次: 責任者確認待ち。追加のProduction送信、PR merge、次工程へは進まない。
+
+---
+
 ## 2026-08-19 Production Sharp Runtime復旧
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_RUNTIME_RECOVERED / PRODUCTION_UNCHANGED`

@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（Production品質フィードバック保存復旧、2026-08-19）
+
+- 最新基準はPR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`。Branchは`codex/fix-production-quality-feedback-schema-fallback`。
+- Productionの`test`で原稿画像48/48読込、broken 0、704x1024、Canvas上4コマの表示を確認した。Sharp復旧はProductionで有効。
+- 原因はProduction DBで既存migration `202608020002_cloud_general_monitor_quality_feedback.sql`だけが未反映だったこと。適用前は品質列0/15、後続運用列9/9だった。
+- 正本のmigrationをProductionへ適用し、品質列15/15、index、constraint、owner INSERT policyを確認した。アプリコード、migrationファイル、API契約は変更していない。
+- Productionの既存コードで品質評価を1回保存し、UI成功表示とDB行`72665ec0-8093-410b-a5a3-1ca4efae761e`を確認した。`page / needs_revision / image_quality / minor`、page 22、generation_count 28、panel null。
+- Production変更は既存migration適用と検証用フィードバック1行のみ。画像生成、credit消費、作品、画像、Storage、Provider、Canvas、PNG／PDF、成人向け境界、Desktop変更はない。
+- PR #311の中間fallback実装は不要と確定したため撤回し、復旧証跡文書だけを残す。
+- Draft PR [#311](https://github.com/team478a/manga/pull/311)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- 次: 責任者確認待ち。追加のProduction送信、PR merge、次工程へは進まない。
+
+---
+
 ## 0.0 現在の優先タスク（Production Sharp Runtime復旧、2026-08-19）
 
 - 最新基準はPR #309 merge commit `27f29fec96104ca60dd736f2c9781ab09dcb8b50`。Branchは`codex/fix-production-sharp-runtime`。

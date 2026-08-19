@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-19 Codex: Production品質フィードバック保存復旧（責任者確認待ち）
+
+- PR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`から`codex/fix-production-quality-feedback-schema-fallback`を開始した。
+- Productionの`test`で原稿画像48/48読込、broken 0、704x1024、Canvas上4コマの目視表示を確認した。画像生成とcredit消費は行っていない。
+- 品質評価を1回送信して既存エラーを再現した。APIは500、Supabase `cloud_general_monitor_feedback`への完全形式／旧形式POSTが各400。調査でProduction DBの品質列が0/15、後続運用列が9/9と判明した。
+- 正本の既存migration `202608020002_cloud_general_monitor_quality_feedback.sql`をProductionへ適用した。適用後は品質列15/15、target／quality index、target constraint、owner INSERT policyを確認した。
+- Productionの`test`で同一ページから品質評価を1回保存し、UI成功表示とDB行`72665ec0-8093-410b-a5a3-1ca4efae761e`を照合した。値は`page / needs_revision / image_quality / minor`、page 22、generation_count 28、panel null。
+- 原因がmigration未適用と確定したため、中間fallback実装と専用テストを撤回した。PR #311は復旧証跡文書のみとする。
+- Production変更は既存migration適用と検証用フィードバック1行のみ。画像生成・credit消費・作品変更はない。
+- Draft PR [#311](https://github.com/team478a/manga/pull/311)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- 次: 責任者確認待ち。追加のProduction送信、PR merge、次工程へは進まない。
+
+---
+
 ## 2026-08-19 Codex: Production Sharp Runtime復旧（責任者確認待ち）
 
 - PR #309 merge commit `27f29fec96104ca60dd736f2c9781ab09dcb8b50`から`codex/fix-production-sharp-runtime`を開始した。
