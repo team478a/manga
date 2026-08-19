@@ -1,16 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
-## 0.0 現在の優先タスク（Provider拒否後の構図情報再混入修正、2026-08-20）
+## 0.0 現在の優先タスク（PR #315 Production受入れ、2026-08-20）
 
-- 最新基準はPR #314 merge commit `dd66520b5d16d4919d8479a290245b7253950351`。Branchは`codex/fix-r4-3-provider-moderated-layout`。
-- ProductionでPR #314の再読込loop停止を確認し、コマ1は完成候補の品質確認・採用・保存まで成功した。Canvas revision 10、画像3/4、PNG成功、credit使用78・予約0・残り22。
-- コマ2の2候補と最初の一般向け安全再構成1件は、BFL pollの`request_moderated`で失敗し全予約creditが解放された。追加Provider実行は停止済み。
-- 根因は、最初の安全再構成に短縮Provider契約の`layout`と詳細Promptの場所・背景・構図が残り得ること。危険な場面情報だけを既存安全判定で置換し、安全な配置、人物同一性、参照画像、画風、対象コマを維持する。
-- API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更しない。
-- 集中10/10、deps、lint、全型検査、Hub 823/823、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、research eval、Cloud漫画repository、Hub／Desktop build、RC structure、diff check成功。
-- Draft PR [#315](https://github.com/team478a/manga/pull/315)はDraft／MERGEABLE。初回HEAD `0eb4221`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
-- Previewは[Ready](https://mangai-hub-staging-i5v3lf5yw-team478as-projects.vercel.app)。`/login`正常、ブラウザログ0件。Production操作は行っていない。
-- 次: 証跡同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止する。merge前にProduction生成を再開しない。merge後はコマ2の安全再構成を1回だけ実行して受入れる。
+- 最新基準はPR #315 merge commit `09a3bfddc476d5a37f8821f2ec6cc767f531d9a3`。Branchは`codex/docs-r4-3-provider-layout-production-acceptance`。
+- `test`の既存22ページで、修正前のコマ2元失敗JobをPR #315の最初の一般向け安全再構成に1回だけ通した。旧安全再構成Jobは選ばず、第2段階retryは未実行。
+- [Worker run 32313830268](https://github.com/team478a/manga/actions/runs/32313830268)が成功し、BFL `flux-2-pro`で1画像が完成した。`request_moderated`は再発せず、使用credit 78→80、予約0、残り22→20。
+- 新画像は正立、疑似文字・ロゴなし、目立つ人体破綻なし、場面成立を目視確認し、販売原稿チェック4項目を承認してコマ2へ採用した。
+- Canvas revision 10→11、画像4/4、セリフ1/1、生成中0、失敗0、PNG成功。4コマPreviewとブラウザログ0件を確認した。
+- ページ一覧は22ページを「完成・画像配置4/4」と表示するが、編集画面の完成バナーだけは「手動確認待ち」を残す。採用画像2件は品質確認済み。次工程でadoption／dialogue placement／production statusのどれがsourceかをread-only監査し、推測修正しない。
+- API、DB schema、migration、RPC、Storage設定、Feature Flag、Provider、model、pricing、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードは変更していない。
+- 次: 文書限定Draft PRの全CI／Vercel Preview確認で停止する。責任者確認前に追加Provider実行を行わない。
 
 ---
 
