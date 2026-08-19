@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-08-20 Codex: 既存原稿の明示修復
+
+- PR #312 merge commit `54d621ddb06c58e5753842e54afd6698ee171917`から`codex/fix-r4-3-existing-manuscript-repair`を開始した。
+- 最新Production deploymentと`test`の対象22ページを読取確認した。完成guardは不採用画像3件を明示したが、過去に保存済みのCanvas layerを自動変更しないため、画像内文字のある不採用画像、短い縦書き2列、旧背景が新背景を覆う状態は残っていた。
+- 追加生成なしの既存原稿修復操作を追加した。不採用Job layerを外し、6文字以下の縦書きを内容・座標・領域不変で1列化し、作成日時が完全かつ一意な逆転背景だけを並べ替える。
+- Draft PR [#313](https://github.com/team478a/manga/pull/313)はDraft／MERGEABLE。実装HEAD `b334502`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。
+- Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-322148-team478as-projects.vercel.app)。対象ページ直URLは未認証時に`/login`へ遷移し、修復操作は実行していない。
+- 次: 本証跡同期HEADの全CI／Vercel Preview成功で停止する。merge後に本人が対象22ページで「既存原稿を修復」を実行し、保存・再読込・完成判定・PNGを確認する。
+- 将来の背景採用順も旧背景→新背景→人物・小物・効果・補正へ修正。不採用除去後は最前面の残存背景へpanel参照を戻す。
+- 集中60/60、deps error 0、lint、全型検査、Hub 820/820、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既存warningと外部設定Pendingだけが残る。
+- Productionは読取確認のみ。作品、Canvas、画像、Storage、Provider、credit、DBへの書込みは行っていない。
+- 次: Draft PRを作成し、全CIとVercel Previewを確認する。責任者確認前にmergeやProduction修復を行わない。
+
+---
+
 ## 2026-08-19 Codex: Production原稿の不採用画像・短い縦書き品質修正（作業中）
 
 - PR #311 merge commit `29744d3a720ce6c270face0b29768b746b33f239`から`codex/fix-r4-3-production-text-quality`を開始した。

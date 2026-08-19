@@ -12,7 +12,9 @@ import {
 } from "../src/modules/manga/domain/panel-candidate.ts";
 import {
   applyPanelCandidateAdoption,
+  countReversedPanelBackgroundStacks,
   detachRejectedPanelCandidate,
+  repairReversedPanelBackgroundStacks,
 } from "../src/modules/manga/domain/panel-adoption.ts";
 
 const job = (overrides = {}) => ({
@@ -168,12 +170,22 @@ test("修正と分離生成の候補を既存Canvas layer typeへ分類する", 
   assert.equal(classifyCandidateLayer(job()), "background");
 });
 
-test("背景候補の採用はpanel imageと最背面layerを同じ値で更新する", () => {
+test("背景候補の採用は旧背景より前面かつ人物より背面へ配置する", () => {
   const canvas = {
     panels: [{ id: "panel-1", imageAssetId: "before" }],
     panelLayers: [
-      { panelId: "panel-1", orderIndex: 0 },
-      { panelId: "panel-1", orderIndex: 2 },
+      {
+        id: "old-background",
+        panelId: "panel-1",
+        type: "background",
+        orderIndex: 0,
+      },
+      {
+        id: "character",
+        panelId: "panel-1",
+        type: "character",
+        orderIndex: 2,
+      },
     ],
   };
   assert.equal(
@@ -193,7 +205,7 @@ test("背景候補の採用はpanel imageと最背面layerを同じ値で更新�
     panelId: "panel-1",
     name: "AI背景レイヤー",
     type: "background",
-    orderIndex: 0,
+    orderIndex: 1,
     visible: true,
     locked: false,
     opacity: 1,
@@ -210,7 +222,96 @@ test("背景候補の採用はpanel imageと最背面layerを同じ値で更新�
   });
   assert.deepEqual(
     canvas.panelLayers.slice(0, 2).map((layer) => layer.orderIndex),
-    [1, 2],
+    [0, 2],
+  );
+});
+
+test("日時で安全に判定できる逆転背景だけを新しい順が前面になるよう修復する", () => {
+  const canvas = {
+    panels: [{ id: "panel-1", imageAssetId: "asset-old" }],
+    panelLayers: [
+      {
+        id: "new-background",
+        panelId: "panel-1",
+        type: "background",
+        orderIndex: 0,
+        visible: true,
+        assetId: "asset-new",
+        createdAt: "2026-08-19T02:00:00.000Z",
+        updatedAt: "2026-08-19T02:00:00.000Z",
+      },
+      {
+        id: "old-background",
+        panelId: "panel-1",
+        type: "background",
+        orderIndex: 1,
+        visible: true,
+        assetId: "asset-old",
+        createdAt: "2026-08-19T01:00:00.000Z",
+        updatedAt: "2026-08-19T01:00:00.000Z",
+      },
+      {
+        id: "effect",
+        panelId: "panel-1",
+        type: "effect",
+        orderIndex: 2,
+        visible: true,
+        assetId: "asset-effect",
+        createdAt: "2026-08-19T03:00:00.000Z",
+        updatedAt: "2026-08-19T03:00:00.000Z",
+      },
+    ],
+  };
+  assert.equal(countReversedPanelBackgroundStacks(canvas), 1);
+  assert.equal(
+    repairReversedPanelBackgroundStacks(
+      canvas,
+      "2026-08-20T00:00:00.000Z",
+    ),
+    1,
+  );
+  assert.deepEqual(
+    canvas.panelLayers
+      .slice()
+      .sort((left, right) => left.orderIndex - right.orderIndex)
+      .map((layer) => layer.id),
+    ["old-background", "new-background", "effect"],
+  );
+  assert.equal(canvas.panels[0].imageAssetId, "asset-new");
+  assert.equal(countReversedPanelBackgroundStacks(canvas), 0);
+});
+
+test("背景日時が欠ける既存Canvasは推測で並べ替えない", () => {
+  const canvas = {
+    panels: [{ id: "panel-1", imageAssetId: "asset-old" }],
+    panelLayers: [
+      {
+        id: "new-background",
+        panelId: "panel-1",
+        type: "background",
+        orderIndex: 0,
+        visible: true,
+        assetId: "asset-new",
+        createdAt: "",
+      },
+      {
+        id: "old-background",
+        panelId: "panel-1",
+        type: "background",
+        orderIndex: 1,
+        visible: true,
+        assetId: "asset-old",
+        createdAt: "",
+      },
+    ],
+  };
+  assert.equal(countReversedPanelBackgroundStacks(canvas), 0);
+  assert.equal(
+    repairReversedPanelBackgroundStacks(
+      canvas,
+      "2026-08-20T00:00:00.000Z",
+    ),
+    0,
   );
 });
 

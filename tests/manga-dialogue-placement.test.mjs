@@ -3,7 +3,11 @@ import fs from "node:fs";
 import test from "node:test";
 import { layoutVerticalText } from "@mangai/canvas-core";
 import { placeCompletedPageDialogue } from "../src/modules/manga/application/auto-place-page-dialogue.ts";
-import { placeStructuredPageDialogue } from "../src/modules/manga/domain/dialogue-placement.ts";
+import {
+  countRepairableShortVerticalDialogue,
+  placeStructuredPageDialogue,
+  repairShortVerticalDialogueLayout,
+} from "../src/modules/manga/domain/dialogue-placement.ts";
 
 const read = (path) =>
   fs.readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -128,6 +132,124 @@ test("6文字以下の短い縦書きは縮小して1列へ収める", () => {
   );
   assert.equal(layout.columns, 1);
   assert.ok(text.fontSize < 32);
+});
+
+test("既存の短い縦書きは内容と領域を保ったまま明示修復で1列化する", () => {
+  const targetBalloon = balloon({ width: 413, height: 164 });
+  const originalText = {
+    id: "60000000-0000-4000-8000-000000000009",
+    pageId,
+    parentBalloonId: targetBalloon.id,
+    name: "城戸湊 テキスト",
+    text: "（証拠を）",
+    x: 520,
+    y: 160,
+    width: 393,
+    height: 144,
+    rotation: 0,
+    zIndex: 101,
+    visible: true,
+    locked: false,
+    fontFamily: "sans-serif",
+    fontSize: 42,
+    fontWeight: 500,
+    color: "#111111",
+    writingMode: "vertical",
+    textAlign: "start",
+    verticalAlign: "top",
+    lineHeight: 1.2,
+    letterSpacing: 0,
+    padding: 0,
+    opacity: 1,
+    createdAt: "2026-08-19T00:00:00.000Z",
+    updatedAt: "2026-08-19T00:00:00.000Z",
+  };
+  const value = canvas({
+    balloons: [targetBalloon],
+    textObjects: [originalText],
+  });
+  const originalFontSize = originalText.fontSize;
+  assert.equal(countRepairableShortVerticalDialogue(value), 1);
+  assert.equal(
+    repairShortVerticalDialogueLayout(
+      value,
+      "2026-08-20T00:00:00.000Z",
+    ),
+    1,
+  );
+  const repaired = value.textObjects[0];
+  assert.equal(repaired.text, originalText.text);
+  assert.deepEqual(
+    [repaired.x, repaired.y, repaired.width, repaired.height],
+    [originalText.x, originalText.y, originalText.width, originalText.height],
+  );
+  assert.ok(repaired.fontSize < originalFontSize);
+  assert.equal(
+    layoutVerticalText(
+      repaired.text,
+      {
+        x: repaired.x,
+        y: repaired.y,
+        width: repaired.width,
+        height: repaired.height,
+      },
+      {
+        fontSize: repaired.fontSize,
+        lineHeight: repaired.lineHeight,
+        letterSpacing: repaired.letterSpacing,
+      },
+    ).columns,
+    1,
+  );
+  assert.equal(countRepairableShortVerticalDialogue(value), 0);
+});
+
+test("locked・横書き・長文の既存テキストは修復対象にしない", () => {
+  const targetBalloon = balloon();
+  const base = {
+    id: "60000000-0000-4000-8000-000000000010",
+    pageId,
+    parentBalloonId: targetBalloon.id,
+    name: "手動テキスト",
+    text: "（証拠を）",
+    x: 520,
+    y: 160,
+    width: 120,
+    height: 80,
+    rotation: 0,
+    zIndex: 101,
+    visible: true,
+    locked: true,
+    fontFamily: "sans-serif",
+    fontSize: 42,
+    fontWeight: 500,
+    color: "#111111",
+    writingMode: "vertical",
+    textAlign: "start",
+    verticalAlign: "top",
+    lineHeight: 1.2,
+    letterSpacing: 0,
+    padding: 0,
+    opacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  };
+  const value = canvas({
+    balloons: [targetBalloon],
+    textObjects: [
+      base,
+      { ...base, id: `${base.id}-horizontal`, locked: false, writingMode: "horizontal" },
+      { ...base, id: `${base.id}-long`, locked: false, text: "これは長い本文です" },
+    ],
+  });
+  assert.equal(countRepairableShortVerticalDialogue(value), 0);
+  assert.equal(
+    repairShortVerticalDialogueLayout(
+      value,
+      "2026-08-20T00:00:00.000Z",
+    ),
+    0,
+  );
 });
 
 test("吹き出し不足時はコマ内へ型別に作成し、再処理しても重複しない", () => {

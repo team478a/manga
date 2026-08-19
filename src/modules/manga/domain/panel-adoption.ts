@@ -15,6 +15,31 @@ export type PanelCandidateAdoptionResult =
   | "already_applied"
   | "panel_not_found";
 
+const backgroundLayerTypes = new Set<PanelLayer["type"]>([
+  "background",
+  "flattened_legacy",
+]);
+
+function byOrderIndex(left: PanelLayer, right: PanelLayer) {
+  return left.orderIndex - right.orderIndex;
+}
+
+function reorderPanelLayers(
+  layers: PanelLayer[],
+  orderedLayers: PanelLayer[],
+) {
+  orderedLayers.forEach((layer, orderIndex) => {
+    layer.orderIndex = orderIndex;
+  });
+  const orderedIds = new Set(orderedLayers.map((layer) => layer.id));
+  layers
+    .filter((layer) => !orderedIds.has(layer.id))
+    .sort(byOrderIndex)
+    .forEach((layer, index) => {
+      layer.orderIndex = orderedLayers.length + index;
+    });
+}
+
 export function applyPanelCandidateAdoptionResult(
   canvas: PageCanvas,
   adoption: PanelCandidateAdoption,
@@ -47,23 +72,15 @@ export function applyPanelCandidateAdoptionResult(
         : adoption.layerType === "background"
           ? "AI背景レイヤー"
           : (adoption.assetFileName ?? "画像レイヤー");
-  if (adoption.layerType === "background") {
-    currentLayers
-      .sort((a, b) => a.orderIndex - b.orderIndex)
-      .forEach((layer, index) => {
-        layer.orderIndex = index + 1;
-      });
-  }
-  const orderIndex =
-    adoption.layerType === "background"
-      ? 0
-      : Math.max(-1, ...currentLayers.map((layer) => layer.orderIndex)) + 1;
-  canvas.panelLayers.push({
+  const adoptedLayer: PanelLayer = {
     id: adoption.layerId,
     panelId: panel.id,
     name: layerName,
     type: adoption.layerType,
-    orderIndex,
+    orderIndex:
+      adoption.layerType === "background"
+        ? 0
+        : Math.max(-1, ...currentLayers.map((layer) => layer.orderIndex)) + 1,
     visible: true,
     locked: false,
     opacity: 1,
@@ -80,7 +97,21 @@ export function applyPanelCandidateAdoptionResult(
     imageRotation: 0,
     createdAt: adoption.timestamp,
     updatedAt: adoption.timestamp,
-  });
+  };
+  canvas.panelLayers.push(adoptedLayer);
+  if (adoption.layerType === "background") {
+    const existingBackgrounds = currentLayers
+      .filter((layer) => backgroundLayerTypes.has(layer.type))
+      .sort(byOrderIndex);
+    const foregroundLayers = currentLayers
+      .filter((layer) => !backgroundLayerTypes.has(layer.type))
+      .sort(byOrderIndex);
+    reorderPanelLayers(currentLayers, [
+      ...existingBackgrounds,
+      adoptedLayer,
+      ...foregroundLayers,
+    ]);
+  }
   return "applied";
 }
 
@@ -123,8 +154,72 @@ export function detachRejectedPanelCandidate(
             layer.type === "correction" ||
             layer.type === "flattened_legacy"),
       )
-      .sort((left, right) => left.orderIndex - right.orderIndex)[0];
+      .sort((left, right) => right.orderIndex - left.orderIndex)[0];
     panel.imageAssetId = replacement?.assetId ?? null;
   }
   return true;
+}
+
+function validUniqueBackgroundTimeline(layers: PanelLayer[]) {
+  const timestamps = layers.map((layer) => Date.parse(layer.createdAt));
+  return (
+    timestamps.every(Number.isFinite) && new Set(timestamps).size === timestamps.length
+  );
+}
+
+function panelHasReversedBackgroundStack(layers: PanelLayer[]) {
+  const backgrounds = layers
+    .filter(
+      (layer) =>
+        layer.type === "background" && Boolean(layer.assetId),
+    )
+    .sort(byOrderIndex);
+  if (
+    backgrounds.filter((layer) => layer.visible).length < 2 ||
+    !validUniqueBackgroundTimeline(backgrounds)
+  )
+    return false;
+  return backgrounds.some(
+    (layer, index) =>
+      index > 0 &&
+      Date.parse(layer.createdAt) < Date.parse(backgrounds[index - 1].createdAt),
+  );
+}
+
+export function countReversedPanelBackgroundStacks(canvas: PageCanvas) {
+  return canvas.panels.filter((panel) =>
+    panelHasReversedBackgroundStack(
+      canvas.panelLayers.filter((layer) => layer.panelId === panel.id),
+    ),
+  ).length;
+}
+
+export function repairReversedPanelBackgroundStacks(
+  canvas: PageCanvas,
+  timestamp: string,
+) {
+  let repairedPanelCount = 0;
+  for (const panel of canvas.panels) {
+    const panelLayers = canvas.panelLayers.filter(
+      (layer) => layer.panelId === panel.id,
+    );
+    if (!panelHasReversedBackgroundStack(panelLayers)) continue;
+    const backgrounds = panelLayers
+      .filter((layer) => layer.type === "background")
+      .sort((left, right) => Date.parse(left.createdAt) - Date.parse(right.createdAt));
+    const foregroundLayers = panelLayers
+      .filter((layer) => layer.type !== "background")
+      .sort(byOrderIndex);
+    reorderPanelLayers(panelLayers, [...backgrounds, ...foregroundLayers]);
+    backgrounds.forEach((layer) => {
+      layer.updatedAt = timestamp;
+    });
+    const newestVisibleBackground = backgrounds
+      .filter((layer) => layer.visible && Boolean(layer.assetId))
+      .at(-1);
+    if (newestVisibleBackground?.assetId)
+      panel.imageAssetId = newestVisibleBackground.assetId;
+    repairedPanelCount += 1;
+  }
+  return repairedPanelCount;
 }

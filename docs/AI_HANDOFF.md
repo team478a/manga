@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（既存原稿の明示修復、2026-08-20）
+
+- 最新基準はPR #312 merge commit `54d621ddb06c58e5753842e54afd6698ee171917`。Branchは`codex/fix-r4-3-existing-manuscript-repair`。
+- Production 22ページの読取受入れで、PR #312の完成guardは有効だが、既存保存済みCanvasは自動移行されず、不採用layer、短い縦書き2列、逆転背景順が残ることを確認した。
+- 編集画面に「既存原稿を修復」を追加。不採用layer除去、短文縦書き1列化、日時で安全に判断できる背景順修復を、追加生成・credit消費なしの明示操作で行う。Undoと既存autosaveを使用する。
+- 新規背景採用も旧背景より前面、人物・効果等より背面になるよう修正した。日時欠損の既存背景は推測変更しない。
+- DB、migration、RPC、Storage、API、URL、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コード、Productionデータは変更していない。
+- 集中60/60、deps、lint、全型検査、Hub 820/820、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Draft PR [#313](https://github.com/team478a/manga/pull/313)はDraft／MERGEABLE。実装HEAD `b334502`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-322148-team478as-projects.vercel.app)。対象ページ直URLは未認証時に`/login`へ遷移した。Production DBを参照する修復ボタンは押していない。
+- 次: 本証跡同期HEADの5チェックを確認して停止する。merge前にProduction Canvasを変更しない。merge後、`test`本人が対象22ページで修復、保存、再読込、完成判定、PNGを確認する。
+
+---
+
 ## 0.0 現在の優先タスク（Production原稿の不採用画像・短い縦書き品質修正、2026-08-19）
 
 - 最新基準はPR #311 merge commit `29744d3a720ce6c270face0b29768b746b33f239`。Branchは`codex/fix-r4-3-production-text-quality`。
