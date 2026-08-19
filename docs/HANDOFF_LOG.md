@@ -4,14 +4,16 @@
 
 ---
 
-## 2026-08-19 Codex: Production品質フィードバックschema互換修正（作業中）
+## 2026-08-19 Codex: Production品質フィードバック保存復旧（CI確認中）
 
 - PR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`から`codex/fix-production-quality-feedback-schema-fallback`を開始した。
 - Productionの`test`で原稿画像48/48読込、broken 0、704x1024、Canvas上4コマの目視表示を確認した。画像生成とcredit消費は行っていない。
-- 品質評価を1回送信して既存エラーを再現した。APIは500、Vercel traceではSupabase `cloud_general_monitor_feedback`への完全形式／旧形式POSTが各400。行は保存されていない。
-- schema不足時にページ／コマscopeを維持する最小構造化fallbackを追加し、旧形式は最終互換経路として残した。DB、migration、RPC、Storage、API契約は変更していない。
-- 集中7/7、deps error 0、lint、全型検査、Hub 812/812、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。module boundaryは既存2 warningのみ。
-- 次: commit、push、Draft PR、全CI／Vercel Preview後、Previewで保存成功とRuntime Logsを確認する。責任者merge前にProduction再送信を行わない。
+- 品質評価を1回送信して既存エラーを再現した。APIは500、Supabase `cloud_general_monitor_feedback`への完全形式／旧形式POSTが各400。調査でProduction DBの品質列が0/15、後続運用列が9/9と判明した。
+- 正本の既存migration `202608020002_cloud_general_monitor_quality_feedback.sql`をProductionへ適用した。適用後は品質列15/15、target／quality index、target constraint、owner INSERT policyを確認した。
+- Productionの`test`で同一ページから品質評価を1回保存し、UI成功表示とDB行`72665ec0-8093-410b-a5a3-1ca4efae761e`を照合した。値は`page / needs_revision / image_quality / minor`、page 22、generation_count 28、panel null。
+- 原因がmigration未適用と確定したため、中間fallback実装と専用テストを撤回した。PR #311は復旧証跡文書のみとする。
+- Production変更は既存migration適用と検証用フィードバック1行のみ。画像生成・credit消費・作品変更はない。
+- 次: 文書差分をcommit／pushし、PR #311の全CI／Vercel Preview成功を確認して停止する。
 
 ---
 

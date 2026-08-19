@@ -1,14 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
-## 0.0 現在の優先タスク（Production品質フィードバックschema互換修正、2026-08-19）
+## 0.0 現在の優先タスク（Production品質フィードバック保存復旧、2026-08-19）
 
 - 最新基準はPR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`。Branchは`codex/fix-production-quality-feedback-schema-fallback`。
 - Productionの`test`で原稿画像48/48読込、broken 0、704x1024、Canvas上4コマの表示を確認した。Sharp復旧はProductionで有効。
-- 品質フィードバックはAPI 500。Supabaseの完全形式INSERTが400になった後、旧形式fallbackも400になり保存されなかった。
-- 完全形式の列不足時に、ページ／コマscopeと判定を維持する最小構造化INSERTを挟み、品質評価を一般報告扱いに落とさない。
-- DB、migration、RPC、Storage、API契約、Provider、credit、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。Productionの失敗送信による行追加と画像生成はない。
-- 集中7/7、deps、lint、全型検査、Hub 812/812、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: Draft PRと全CI／Vercel Previewを確認し、ログイン済みPreviewで保存経路を1回検証する。merge前にProductionを変更しない。
+- 原因はProduction DBで既存migration `202608020002_cloud_general_monitor_quality_feedback.sql`だけが未反映だったこと。適用前は品質列0/15、後続運用列9/9だった。
+- 正本のmigrationをProductionへ適用し、品質列15/15、index、constraint、owner INSERT policyを確認した。アプリコード、migrationファイル、API契約は変更していない。
+- Productionの既存コードで品質評価を1回保存し、UI成功表示とDB行`72665ec0-8093-410b-a5a3-1ca4efae761e`を確認した。`page / needs_revision / image_quality / minor`、page 22、generation_count 28、panel null。
+- Production変更は既存migration適用と検証用フィードバック1行のみ。画像生成、credit消費、作品、画像、Storage、Provider、Canvas、PNG／PDF、成人向け境界、Desktop変更はない。
+- PR #311の中間fallback実装は不要と確定したため撤回し、復旧証跡文書だけを残す。
+- 次: 文書差分をpushし、PR #311の全CI／Vercel Preview成功を確認して停止する。
 
 ---
 

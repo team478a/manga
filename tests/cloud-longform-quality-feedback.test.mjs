@@ -29,18 +29,6 @@ test("quality feedback API derives trusted target and generation metrics", () =>
   assert.doesNotMatch(api, /error\.message/);
 });
 
-test("quality feedback keeps page or panel scope during schema compatibility fallback", () => {
-  const repository = read("src/modules/general-monitor/infrastructure/quality-feedback-repository.ts");
-  const fullInsert = repository.indexOf("generation_elapsed_ms: input.generationElapsedMs");
-  const coreInsert = repository.indexOf("error: coreStructuredError");
-  const legacyInsert = repository.indexOf("legacyQualityFeedbackComment({");
-  assert.ok(fullInsert >= 0 && fullInsert < coreInsert);
-  assert.ok(coreInsert < legacyInsert);
-  assert.match(repository.slice(coreInsert, legacyInsert), /target_scope: input\.targetScope/);
-  assert.match(repository.slice(coreInsert, legacyInsert), /project_id: input\.projectId/);
-  assert.match(repository.slice(coreInsert, legacyInsert), /page_id: input\.pageId/);
-});
-
 test("monitor can submit page or selected-panel verdict from the editor", () => {
   assert.match(form, /ページ全体/);
   assert.match(form, /このまま採用できる/);
