@@ -75,3 +75,16 @@
 2. 有料生成は自動開始されないことを確認する。
 3. 同じ入力で品質フィードバックを1件保存し、成功表示と本人履歴／管理者一覧を確認する。
 4. 画像生成を実行する場合は、必要creditとProvider設定を画面で確認し、4〜8ページ単位の明示操作として別途実施する。
+
+## Draft PR・Preview
+
+- Draft PR: [#309](https://github.com/team478a/manga/pull/309)
+- 初回HEAD: `a0701c52b91b1a88d8c9d51d75f59dd678a39170`
+- PR状態: Draft／MERGEABLE
+- Core quality: PASS
+- Migration roundtrip: PASS
+- Windows build: PASS
+- Vercel: PASS
+- Vercel Preview Comments: PASS
+- Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-babd9e-team478as-projects.vercel.app)
+- Production変更: なし

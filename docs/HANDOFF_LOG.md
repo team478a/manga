@@ -4,7 +4,7 @@
 
 ---
 
-## 2026-08-19 Codex: 原稿未生成表示・品質フィードバック保存阻害修正（作業中）
+## 2026-08-19 Codex: 原稿未生成表示・品質フィードバック保存阻害修正（責任者確認待ち）
 
 - PR #308 merge commit `24da38c8632d3f36cf364bf616f3af668322cd4a`から`codex/fix-r4-3-monitor-manuscript-blockers`を開始した。
 - 利用者写真で、原稿がコマ枠・吹き出し・文字だけの状態と「品質フィードバックを保存できませんでした」を確認した。
@@ -12,7 +12,8 @@
 - 品質評価は利用者sessionでページ・作品・コマ・生成Jobを検証後、`general-monitor/infrastructure`のserver-only repositoryへ保存を委譲する。旧schema fallbackは維持する。
 - 明示操作なしのProvider呼出し・credit消費は追加していない。DB、migration、RPC、Storage、Provider、Canvas、PNG／PDF、成人向け境界、Productionを変更していない。
 - 集中6/6、deps error 0、lint、Hub型検査、Hub 810/810、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub build、diff check成功。module boundaryは既存2 warningのみ。
-- 次: 文書同期後にcommit・push・Draft PRを作成し、全CI／Vercel Previewを確認する。merge前にProduction実操作を行わない。
+- Draft PR [#309](https://github.com/team478a/manga/pull/309)はDraft／MERGEABLE。初回HEAD `a0701c5`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-babd9e-team478as-projects.vercel.app)。
+- 次: 証跡同期後の最終HEADで5チェックを再確認して停止する。merge前にProduction実操作を行わない。
 
 ---
 

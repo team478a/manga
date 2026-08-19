@@ -8,7 +8,8 @@
 - 品質評価はcaller-scoped ownership検証後、一般報告と同じserver-only infrastructure repositoryで保存する。RLS・schema fallback・利用者向け秘密非表示を維持する。
 - DB、migration、RPC、Storage、Provider、model、credit、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コード、Productionは変更していない。
 - 集中6/6、deps、lint、Hub型検査、Hub 810/810、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub build、diff check成功。
-- 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Preview Comments成功で停止する。merge前にProductionでの評価送信や画像生成を行わない。
+- Draft PR [#309](https://github.com/team478a/manga/pull/309)はDraft／MERGEABLE。初回HEAD `a0701c5`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-babd9e-team478as-projects.vercel.app)。
+- 次: 証跡同期後の最終HEADで5チェックを再確認して停止する。merge前にProductionでの評価送信や画像生成を行わない。
 
 ---
 
