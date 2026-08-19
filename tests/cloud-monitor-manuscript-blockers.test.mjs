@@ -22,6 +22,11 @@ test("quality feedback persists only after caller-scoped ownership checks", () =
   );
   assert.match(repository, /createAdminClient\(\)/);
   assert.match(repository, /legacyQualityFeedbackComment/);
+  assert.match(repository, /coreStructuredError/);
+  assert.ok(
+    repository.indexOf("target_scope: input.targetScope") <
+      repository.indexOf("legacyQualityFeedbackComment({"),
+  );
 });
 
 test("blank name pages explain that image generation has not started", () => {

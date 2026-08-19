@@ -58,6 +58,30 @@ export async function saveMonitorQualityFeedback(input: QualityFeedbackInput) {
     throw structuredError;
   if (!structuredError) return;
 
+  // Some deployed databases can expose the page/panel feedback contract before
+  // all snapshot and generation-metric columns are available to PostgREST. Keep
+  // the quality target structured in that state so it is not mistaken for a
+  // rate-limited general monitor report.
+  const { error: coreStructuredError } = await admin
+    .from("cloud_general_monitor_feedback")
+    .insert({
+      owner_profile_id: input.ownerProfileId,
+      workflow_step: input.workflowStep,
+      rating: input.rating,
+      outcome: input.outcome,
+      comment: input.comment,
+      target_scope: input.targetScope,
+      project_id: input.projectId,
+      page_id: input.pageId,
+      panel_id: input.panelId,
+      verdict: input.verdict,
+      issue_type: input.issueType,
+      severity: input.severity,
+    });
+  if (coreStructuredError && !isMissingMonitorFeedbackSchema(coreStructuredError))
+    throw coreStructuredError;
+  if (!coreStructuredError) return;
+
   const { error } = await admin.from("cloud_general_monitor_feedback").insert({
     owner_profile_id: input.ownerProfileId,
     workflow_step: input.workflowStep,

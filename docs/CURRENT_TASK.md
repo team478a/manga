@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-19 Production品質フィードバックschema互換修正
+
+- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / PREVIEW_ACCEPTANCE_PENDING / PRODUCTION_UNCHANGED`
+- Base: PR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`。Branch: `codex/fix-production-quality-feedback-schema-fallback`。
+- Production受入れ: `test`でダッシュボード、作品、22ページ原稿を確認した。原稿画像は48/48 imgが読込成功、broken 0、704x1024で、Canvas上の4コマ画像も目視確認した。Sharp／libvips障害は再発していない。
+- 残存障害: `/api/creator/quality-feedback`は500、同一request内のSupabase `cloud_general_monitor_feedback` POSTは完全形式と旧形式の2回とも400。失敗送信の行は保存されていない。
+- 修正: schema列不足時に完全形式から旧形式へ直接落とさず、ページ／コマscope、作品、ページ、判定、問題種別、影響度を保持する最小構造化形式を中間fallbackとして追加した。品質評価が一般報告のrate limit対象へ誤分類される経路を避ける。
+- 不変: DB、migration、RPC、Storage、API request／response、URL、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。画像生成とcredit消費は行っていない。
+- 検証: 集中7/7、deps error 0、module boundaryは既存2 warningのみ、lint、全型検査、Hub 812/812、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview後、ログイン済みPreviewで品質フィードバックを1件保存し、成功とRuntime Logsを確認する。責任者merge前にProductionへ再送信しない。
+
+---
+
 ## 2026-08-19 Production Sharp Runtime復旧
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_RUNTIME_RECOVERED / PRODUCTION_UNCHANGED`

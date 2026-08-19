@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（Production品質フィードバックschema互換修正、2026-08-19）
+
+- 最新基準はPR #310 merge commit `5752227219cd87f2b77cdbe5fe306fb91972a3cc`。Branchは`codex/fix-production-quality-feedback-schema-fallback`。
+- Productionの`test`で原稿画像48/48読込、broken 0、704x1024、Canvas上4コマの表示を確認した。Sharp復旧はProductionで有効。
+- 品質フィードバックはAPI 500。Supabaseの完全形式INSERTが400になった後、旧形式fallbackも400になり保存されなかった。
+- 完全形式の列不足時に、ページ／コマscopeと判定を維持する最小構造化INSERTを挟み、品質評価を一般報告扱いに落とさない。
+- DB、migration、RPC、Storage、API契約、Provider、credit、Canvas、PNG／PDF、成人向け境界、Desktopは変更していない。Productionの失敗送信による行追加と画像生成はない。
+- 集中7/7、deps、lint、全型検査、Hub 812/812、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: Draft PRと全CI／Vercel Previewを確認し、ログイン済みPreviewで保存経路を1回検証する。merge前にProductionを変更しない。
+
+---
+
 ## 0.0 現在の優先タスク（Production Sharp Runtime復旧、2026-08-19）
 
 - 最新基準はPR #309 merge commit `27f29fec96104ca60dd736f2c9781ab09dcb8b50`。Branchは`codex/fix-production-sharp-runtime`。
