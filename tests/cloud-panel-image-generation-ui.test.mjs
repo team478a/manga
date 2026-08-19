@@ -145,6 +145,17 @@ test("既存原稿は追加生成なしで不採用画像・短い縦書き・�
   assert.match(editor, /画像の追加生成やクレジット消費はありません/);
 });
 
+test("Canvasから外した不採用画像を自動配置済みとして再読込し続けない", () => {
+  const reloadStart = editor.indexOf("const placedJob = generationJobs.find(");
+  const reloadEnd = editor.indexOf(");", reloadStart);
+  const reloadGuard = editor.slice(reloadStart, reloadEnd);
+
+  assert.ok(reloadStart >= 0);
+  assert.match(reloadGuard, /job\.panel_adoption_status === "auto_placed"/);
+  assert.match(reloadGuard, /job\.quality_review_status !== "rejected"/);
+  assert.match(reloadGuard, /!canvas\.panelLayers\.some/);
+});
+
 test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {
   assert.match(inpaintingDialog, /直したい範囲を塗る/);
   assert.match(inpaintingDialog, /黒い範囲は元画像を維持/);

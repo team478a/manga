@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（不採用画像修復後の自動再読込loop修正、2026-08-20）
+
+- 最新基準はPR #313 merge commit `f9f2b544fe0ffc0cc5c23064097ccce089f1073d`。Branchは`codex/fix-r4-3-rejected-reload-loop`。
+- Production対象22ページで既存原稿修復を1回実行し、Canvas revision 8→9、保存済み、PNG成功を確認した。不採用画像3件・逆転背景2コマを修復し、creditは24のまま、Provider呼出し0件。
+- 修復後は画像2/4、生成中0、失敗1、コマ1・2未配置の未完成状態。画像内文字を含む不採用画像を完成扱いにしない目的は達成した。
+- 不採用Jobが`auto_placed`履歴を保持するため、layer不在を未読込と誤認したeffectが約3秒ごとに再読込してedit lock確認へ戻る阻害を実機で特定した。page-lock APIはRuntime Logsで200でありDB障害ではない。
+- 自動反映の再読込候補へ`quality_review_status !== "rejected"`を追加する。不採用履歴、通常auto placement、完成guard、Canvas schemaは変更しない。
+- 集中18/18、deps error 0（既存warning 2件）、lint、Hub／Desktop typecheck、Hub 821/821、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次はDraft PR、全CI、Vercel Previewを確認して停止する。
+- merge前にProduction再生成は行わない。merge後にloop停止を確認し、不足コマだけの生成へ進む。
+
+---
+
 ## 0.0 現在の優先タスク（既存原稿の明示修復、2026-08-20）
 
 - 最新基準はPR #312 merge commit `54d621ddb06c58e5753842e54afd6698ee171917`。Branchは`codex/fix-r4-3-existing-manuscript-repair`。

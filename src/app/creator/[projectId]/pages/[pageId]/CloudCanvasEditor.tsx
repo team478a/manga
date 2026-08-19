@@ -437,6 +437,7 @@ export function CloudCanvasEditor({
     const placedJob = generationJobs.find(
       (job) =>
         job.panel_adoption_status === "auto_placed" &&
+        job.quality_review_status !== "rejected" &&
         !canvas.panelLayers.some((layer) => layer.sourceJobId === job.id),
     );
     if (!placedJob || reloadingAutoPlacement.current) return;
