@@ -2,14 +2,17 @@
 
 ## 2026-08-19 Production Sharp Runtime復旧
 
-- 状態: `LOCAL_VERIFIED / DRAFT_PR_PENDING / PRODUCTION_UNCHANGED`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_RUNTIME_RECOVERED / PRODUCTION_UNCHANGED`
 - Base: PR #309 merge commit `27f29fec96104ca60dd736f2c9781ab09dcb8b50`。Branch: `codex/fix-production-sharp-runtime`。
 - 障害: Production deploymentで`/login`を含む主要Routeが500。Vercel Runtime LogsはLinux x64版Sharpの`libvips-cpp.so.8.18.3`不足による`ERR_DLOPEN_FAILED`を示した。
 - 修正: Next.js output file tracingへ既存の`@img/sharp-linux-x64@0.35.3`と`@img/sharp-libvips-linux-x64@1.3.2`を明示する。Sharp version、画像処理契約、Providerは変更しない。
 - 回帰防止: trace設定、lockfile version、Linux x64 package解決を検査するHub testを追加した。Linux package配置build simulationではApp Router 110/110 traceにnative bindingとlibvipsの両方を確認した。
 - 検証: deps error 0、lint、全型検査、Hub 811/811、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
 - 不変: Production、DB、migration、RPC、Storage、API、URL、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。
-- 次: Draft PRを作成し、全CIとVercel PreviewでServer Routeが500にならずSharp/libvips errorが出ないことを確認して停止する。merge前にProductionを変更しない。
+- Draft PR: [#310](https://github.com/team478a/manga/pull/310)はDraft／MERGEABLE。最終実装HEAD `bf13659`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-mcbdzcerp-team478as-projects.vercel.app)。`/login`、`/works`、`/sales-packages`、`/`は200、500は0件。Runtime LogsにSharp／libvips errorは0件。
+- CI補正: 初回Core qualityはpackage rootを解決する回帰テストの誤検査だけが失敗。公開subpathのnative binding／libvips binaryを解決する形へ修正し、再実行で成功した。
+- 次: 最終証跡同期HEADの5チェックを再確認して停止する。責任者のmerge前にProductionを変更しない。merge後はProductionの主要Route、原稿画像、品質フィードバック保存、Runtime Logsを確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_SHARP_RUNTIME_20260819.md`
 
 ---

@@ -8,7 +8,10 @@
 - 回帰テストを追加し、Linux package配置build simulationではApp Router 110/110 traceにnative bindingとlibvipsの両方を確認した。
 - deps error 0、lint、全型検査、Hub 811/811、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
 - Production、DB、Storage、API、Provider、Canvas、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。
-- 次: Draft PR、全CI、Vercel Preview Runtimeを確認する。merge前にProductionへ反映せず、Previewで同じSharp/libvips errorが消えたところで停止する。
+- Draft PR [#310](https://github.com/team478a/manga/pull/310)はDraft／MERGEABLE。最終実装HEAD `bf13659`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Preview `Aki2dWcfbW1U1ZmF7jyjzhBH9Jgv`はReady。`/login`、`/works`、`/sales-packages`、`/`は200、500とSharp／libvips errorは0件。
+- 初回Core qualityの回帰テスト誤検査は、package rootではなく公開subpathのnative binding／libvips binaryを解決する形へ修正済み。
+- 次: 最終証跡同期HEADの5チェックを再確認して停止する。merge前にProductionへ反映しない。
 
 ---
 

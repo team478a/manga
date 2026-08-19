@@ -5,7 +5,8 @@
 - 日付: 2026-08-19
 - Base: `feature/manga-canvas-mvp` / `27f29fec96104ca60dd736f2c9781ab09dcb8b50`
 - Branch: `codex/fix-production-sharp-runtime`
-- 状態: `LOCAL_VERIFIED / DRAFT_PR_PENDING / PRODUCTION_UNCHANGED`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_RUNTIME_RECOVERED / PRODUCTION_UNCHANGED`
+- Draft PR: [#310](https://github.com/team478a/manga/pull/310)
 
 PR #309のProduction deploymentで、`/login`を含む主要なServer Routeが500になった。Vercel Runtime Logsで次のエラーを確認した。
 
@@ -58,12 +59,15 @@ Sharp本体は`0.35.3`のままとし、Provider、画像生成モデル、画�
 
 ## Preview受入れ条件
 
-Draft PRのVercel Previewで次を確認する。
+最終HEAD `bf13659df4340aad0fec90c5f54af6090986fe05`のVercel Previewで次を確認した。
 
-1. deploymentがReadyになる。
-2. `/login`などServer Routeが500にならない。
-3. Runtime Logsへ`sharp`、`libvips-cpp.so`、`ERR_DLOPEN_FAILED`が出ない。
-4. GitHubのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功する。
+1. deployment `Aki2dWcfbW1U1ZmF7jyjzhBH9Jgv`はReady。
+2. Preview URLは`https://mangai-hub-staging-mcbdzcerp-team478as-projects.vercel.app`。
+3. `/login`、`/works`、`/sales-packages`、`/`は200。500は0件。
+4. Runtime Logsに`sharp`、`libvips`、`ERR_DLOPEN_FAILED`は0件。
+5. Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+
+初回CIではLinux package rootを`require.resolve`した回帰テストだけが失敗した。対象packageはroot exportを持たないためであり、公開subpathの`sharp.node`と`binary`を直接解決する検査へ修正した。修正後のCore qualityは成功した。
 
 ## Rollback
 
