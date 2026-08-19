@@ -86,3 +86,36 @@ Draft PRとCore quality、Migration roundtrip、Windows build、Vercel、Vercel 
 - Preview `/login`: 正常表示、ブラウザログ0件
 
 merge後は、対象コマ2の失敗Jobに対する安全再構成を1回だけ実行する。完成した場合は画像品質、不要文字、向き、人体、採用、Canvas保存、PNGを確認する。再度Providerに拒否された場合は追加課金再試行を止め、Provider別の入力最小化または別モデル選定を次PRとして判断する。
+
+## merge後Production受入れ
+
+- PR #315 merge commit: `09a3bfddc476d5a37f8821f2ec6cc767f531d9a3`
+- Production deployment: Ready
+- 開始状態: revision 10、画像3/4、セリフ1/1、生成中0、失敗1、PNG成功、使用78・予約0・残り22 credit
+- 対象: 修正前に作成されたコマ2の元失敗Job 1件。既に安全再構成済みの失敗Jobは選んでいない
+- Worker: [run 32313830268](https://github.com/team478a/manga/actions/runs/32313830268)、`mode=run`、成功
+- Provider結果: BFL `flux-2-pro`で完成。`request_moderated`再発なし
+- 目視品質: 正立、疑似文字・読めない文字・吹き出し・ロゴなし、顔・手指・関節・小物接触に目立つ破綻なし、登場人物と構図が一場面として成立
+- 採用: 販売原稿チェック4項目を確認し、品質承認後にコマ2へ配置
+- 保存結果: revision 11、画像4/4、セリフ1/1、生成中0、失敗0、PNG成功
+- Preview: 4コマすべての画像表示を確認
+- Browser logs: 0件
+- 最終credit: 使用80、予約0、残り20
+
+先行の[run 32313790385](https://github.com/team478a/manga/actions/runs/32313790385)はworkflow dispatchの既定`mode=check`による設定確認だけで、Provider通信・Job処理・credit変更はない。
+
+Provider拒否の阻害は解消した。ただしページ一覧が22ページを「完成・画像配置4/4」とする一方、編集画面の完成バナーは「手動確認待ち／自動配置結果に確認が必要」を残している。画像品質確認、Canvas保存、PNG出力は成立しているため、追加Provider実行はせず、adoption、dialogue placement、production statusのどれが残存sourceかを次工程でread-only監査する。
+
+## Production証跡同期PR
+
+- Draft PR: [#316](https://github.com/team478a/manga/pull/316)（Draft／MERGEABLE）
+- 初回HEAD: `9f70280bd6ecb8351a5c3c2263ea2f5c4560464c`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-2hg5soz33-team478as-projects.vercel.app)
+- Preview `/login`: タイトル、メール、パスワード、ログイン導線を確認。ブラウザログ0件
+
+最終証跡同期HEADでも同じ5チェックを確認して停止する。責任者確認前に追加Provider実行や残存statusの推測修正を行わない。

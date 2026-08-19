@@ -5150,3 +5150,19 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 証跡同期後の最終HEADでも5チェックを確認し、責任者review待ちで停止する。merge前のProduction再実行は禁止。
 
 ---
+
+# 2026-08-20 Codex: PR #315 Production受入れ
+
+- Branch: `codex/docs-r4-3-provider-layout-production-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`@`09a3bfd`（PR #315 merge commit）
+- Productionの`test`対象22ページで、修正前のコマ2元失敗Jobを1件だけ最初の一般向け安全再構成で再実行した。旧安全再構成Jobと第2段階retryは使用していない。
+- Cloud AI Worker [run 32313830268](https://github.com/team478a/manga/actions/runs/32313830268)が成功し、BFL `flux-2-pro`で1画像が完成した。Provider `request_moderated`は再発しなかった。
+- 新画像を販売原稿チェック4項目で目視確認し、品質承認後にコマ2へ採用した。Canvas revision 10→11、画像4/4、セリフ1/1、生成中0、失敗0、PNG成功。Previewで4コマ表示、ブラウザログ0件。
+- creditは使用78→80、予約0、残り22→20。追加Jobはない。
+- ページ一覧は22ページを完成扱いにするが、編集画面の完成バナーには手動確認待ちが残る。追加Provider実行を停止し、次工程で残存status sourceをread-only監査する。
+- Production変更は再試行Job1件、生成Asset1件、品質記録、コマ2採用、Canvas revision 11、credit 2のみ。DB schema、migration、RPC、Storage設定、Provider／model／pricing、Canvas schema、出力処理、成人向け境界、Desktop製品コードは変更していない。
+- Draft PR [#316](https://github.com/team478a/manga/pull/316)はDraft／MERGEABLE。初回HEAD `9f70280`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-2hg5soz33-team478as-projects.vercel.app)。`/login`正常、ブラウザログ0件。Production操作なし。
+- 次: 最終証跡同期HEADの5チェック成功で停止する。
+
+---

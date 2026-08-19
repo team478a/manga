@@ -1,19 +1,20 @@
 # MANGAI Current Task
 
-## 2026-08-20 Provider拒否後の構図情報再混入修正
+## 2026-08-20 PR #315 Production受入れ
 
-- 状態: `READY_FOR_OWNER_REVIEW / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_RETRY_STOPPED`
-- Base: PR #314 merge commit `dd66520b5d16d4919d8479a290245b7253950351`。Branch: `codex/fix-r4-3-provider-moderated-layout`。
-- Production受入れ: PR #314反映後、`test`の対象22ページで再読込loop停止、revision 9、画像2/4、PNG成功を確認した。コマ1を2候補で生成し、完成1・失敗1、品質確認後に採用・保存してrevision 10、画像3/4となった。使用credit 78、予約0、残り22。
-- 残存阻害: コマ2の2候補と、失敗Jobからの最初の一般向け安全再構成1件が、いずれもBFL `flux-2-pro`のpoll段階で`request_moderated`になった。全予約creditは解放され、追加実行は停止した。API key、Worker、DB、Storage、credit予約、submit通信の障害ではない。
-- 原因: 最初の安全再構成は動作・感情・背景を置換していたが、短縮Provider契約の`layout`と、詳細Promptの場所・背景・構図に元の物語表現が残り得た。安全再構成後もProviderへ同じ拒否要因を再送する経路だった。
-- 修正: 既存の一般向けmoderationと危険表現検査を利用し、危険な`layout`、場所、背景、構図だけを安全な一般向け表現へ置換する。安全なネーム配置、人物同一性、参照画像、画風、対象コマは維持する。
-- 不変: API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードを変更しない。Prompt本文、画像、Provider応答本文、秘密値をログ・文書へ保存しない。
-- 検証: 集中10/10、deps error 0（既存warning 2件）、lint、全型検査、Hub 823/823、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、research eval、Cloud漫画repository受入れ、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存ローカル環境依存。
-- Production変更: Canvas revision 9→10、コマ1画像1件採用、実Provider完成1件、失敗・返金4件。最終creditは使用78、予約0、残り22。コマ2は未配置で、ページは未完成のまま。修正コードのmerge前に追加Provider実行を行わない。
-- Draft PR: [#315](https://github.com/team478a/manga/pull/315)はDraft／MERGEABLE。初回HEAD `0eb4221`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
-- Preview: [Ready](https://mangai-hub-staging-i5v3lf5yw-team478as-projects.vercel.app)。`/login`のタイトル、入力欄、ログイン導線を確認し、ブラウザログは0件。Production DB／Providerへ接続する操作は行っていない。
-- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。merge後、コマ2の失敗Jobに対する安全再構成を1回だけ実行し、完成・品質確認・採用・PNGを確認する。
+- 状態: `PRODUCTION_ACCEPTANCE_PASSED / PROVIDER_REJECTION_RESOLVED / PAGE_IMAGES_COMPLETE / ALL_CI_PASSED / PREVIEW_READY / MANUAL_REVIEW_REMAINS`
+- Base: PR #315 merge commit `09a3bfddc476d5a37f8821f2ec6cc767f531d9a3`。Branch: `codex/docs-r4-3-provider-layout-production-acceptance`。
+- Production反映: merge commitのVercel Production deploymentがReadyであることを確認し、`test`の既存22ページを再読込した。開始時はCanvas revision 10、画像3/4、セリフ1/1、生成中0、失敗1、PNG成功、credit使用78・予約0・残り22。
+- 限定受入れ: 修正前に作成されたコマ2の元失敗Jobを1件だけ、PR #315の最初の一般向け安全再構成で再実行した。安全再構成済みの旧失敗Jobは選ばず、第2段階retryへ進めていない。
+- Worker: [Cloud AI Worker scheduler run 32313830268](https://github.com/team478a/manga/actions/runs/32313830268)を`mode=run`で1回実行し成功した。先行run `32313790385`は既定の設定確認だけで、Provider通信・Job処理なし。
+- 結果: BFL `flux-2-pro`で画像1件が完成し、Provider moderation拒否は再発しなかった。画像は正立、疑似文字・ロゴなし、販売原稿チェック4項目を目視確認して品質承認・コマ2へ採用した。
+- 保存・出力: Canvas revision 10→11、画像4/4、セリフ1/1、生成中0、失敗0、PNG成功。プレビューで4コマすべての画像表示を確認し、ブラウザログは0件。
+- credit: 使用78→80、予約0、残り22→20。追加Jobは登録していない。
+- 残存確認: ページ一覧は22ページを「完成・画像配置4/4」と表示する一方、編集画面の完成バナーは「手動確認待ち／自動配置結果に確認が必要」と表示する。採用画像2件は品質確認済みで、画像・保存・PNG契約は成立している。次はread-onlyで残存statusのsourceを特定し、推測修正しない。
+- 不変: API、DB schema、migration、RPC、Storage設定、Feature Flag、Provider、model、pricing、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更していない。Production変更は再試行Job1件、生成Asset1件、品質記録、コマ2採用、Canvas revision 11、credit 2のみ。
+- Draft PR: [#316](https://github.com/team478a/manga/pull/316)はDraft／MERGEABLE。初回HEAD `9f70280`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-2hg5soz33-team478as-projects.vercel.app)。`/login`のタイトル、メール、パスワード、ログイン導線を確認し、ブラウザログ0件。Production DB／Provider操作なし。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。責任者確認前に追加Provider実行を行わず、手動確認待ちの原因監査を次工程とする。
 - 詳細: `docs/RELEASE_CANDIDATE_PROVIDER_MODERATED_LAYOUT_20260820.md`
 
 ---
