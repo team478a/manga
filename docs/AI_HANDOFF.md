@@ -8,7 +8,9 @@
 - 6文字以下・改行なしの縦書きは、可読下限内で1列になるfont sizeを優先する。既存原稿の短文複数列は販売前検査で`text_layout` errorにする。
 - DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF処理、Productionデータは変更していない。
 - 集中55/55、deps、lint、Hub型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: Draft PRと5つの必須checkを確認して停止する。merge後にProduction 22ページで不採用操作、保存完了、縦書き再配置、完成判定／PNGを実機確認する。
+- Draft PR [#312](https://github.com/team478a/manga/pull/312)はDraft／MERGEABLE。実装HEAD `156ccb2`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-bbdcdb-team478as-projects.vercel.app)。`/login`正常、error boundary／console errorなし。
+- 次: 最終証跡同期HEADの5チェックを確認して停止する。merge後にProduction 22ページで不採用操作、保存完了、縦書き再配置、完成判定／PNGを実機確認する。
 
 ---
 

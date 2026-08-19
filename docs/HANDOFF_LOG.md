@@ -12,7 +12,9 @@
 - 不採用画像が残るページへ`IMAGE_QUALITY_REJECTED`を付けて完成を拒否する。短い縦書きは1列優先で縮小し、既存の不自然な短文複数列は販売前検査で拒否する。
 - 集中55/55、deps error 0、lint、Hub型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。module warning 2件とRC外部Pendingは既存／環境依存。
 - Production、DB、migration、Storage、Provider、credit、Canvas schema、PNG／PDF処理を変更していない。
-- 次: 証跡文書を含めてcommit・pushし、Draft PRのCIとVercel Previewを確認する。
+- Draft PR [#312](https://github.com/team478a/manga/pull/312)はDraft／MERGEABLE。実装HEAD `156ccb2`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- PreviewはReady。branch URLの`/login`を実機確認し、正常描画、error boundary 0、console error 0だった。
+- 次: 最終証跡同期HEADの5チェックを確認して停止する。責任者確認前にmergeやProduction受入れを行わない。
 
 ---
 

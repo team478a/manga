@@ -2,7 +2,7 @@
 
 ## 2026-08-19 Production原稿の不採用画像・短い縦書き品質修正
 
-- 状態: `IMPLEMENTED / LOCAL_QUALITY_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`
 - Base: PR #311 merge commit `29744d3a720ce6c270face0b29768b746b33f239`。Branch: `codex/fix-r4-3-production-text-quality`。
 - 利用者報告: Production作品の22ページで、画像内に混入した不要文字が残り、Canvasの短い縦書き「証拠を」も2列へ不自然に分割されていた。
 - 原因1: 生成候補を不採用にしても品質記録だけが更新され、既にCanvasへ採用済みのlayerは残っていた。
@@ -10,7 +10,9 @@
 - 修正: 不採用操作時に該当Job由来layerをCanvasから外し、直前の表示可能背景へ戻す。不採用Jobのlayerが残るページは完成不可とする。短い縦書きは可読下限内で1列を優先し、既存の不自然な短文2列も販売前検査で停止する。
 - 不変: DB、migration、RPC、Storage、API、URL、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コード、Production作品を変更していない。
 - 検証: 集中55/55、deps error 0（既存warning 2件）、lint、Hub型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsを確認して停止する。merge前にProduction作品を修正しない。
+- Draft PR: [#312](https://github.com/team478a/manga/pull/312)はDraft／MERGEABLE。実装HEAD `156ccb2`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-bbdcdb-team478as-projects.vercel.app)。`/login`は正常表示、error boundaryとconsole errorは0件。
+- 次: 最終証跡同期HEADでも同じ5チェックを確認して停止する。merge前にProduction作品を修正しない。merge後に対象22ページで不採用、保存、短文再配置、完成判定、PNGを実機確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_TEXT_QUALITY_20260819.md`
 
 ---

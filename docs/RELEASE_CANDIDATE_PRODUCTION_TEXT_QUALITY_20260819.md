@@ -59,3 +59,12 @@ DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、p
 5. 完成判定、原稿プレビュー、PNGを確認する。
 
 この受入れはPR merge前には実施しない。
+
+## Draft PR／Preview
+
+- Draft PR: [#312](https://github.com/team478a/manga/pull/312)
+- 実装HEAD: `156ccb27ef7e046de2b7598154a2dcd03506fcbb`
+- PR状態: Draft、MERGEABLE
+- Core quality、Migration roundtrip、Windows build、Vercel、Preview Comments: すべて成功
+- Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-bbdcdb-team478as-projects.vercel.app)
+- Preview `/login`: 正常描画、error boundaryなし、console errorなし
