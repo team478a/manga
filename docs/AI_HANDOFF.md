@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（Provider拒否後の構図情報再混入修正、2026-08-20）
+
+- 最新基準はPR #314 merge commit `dd66520b5d16d4919d8479a290245b7253950351`。Branchは`codex/fix-r4-3-provider-moderated-layout`。
+- ProductionでPR #314の再読込loop停止を確認し、コマ1は完成候補の品質確認・採用・保存まで成功した。Canvas revision 10、画像3/4、PNG成功、credit使用78・予約0・残り22。
+- コマ2の2候補と最初の一般向け安全再構成1件は、BFL pollの`request_moderated`で失敗し全予約creditが解放された。追加Provider実行は停止済み。
+- 根因は、最初の安全再構成に短縮Provider契約の`layout`と詳細Promptの場所・背景・構図が残り得ること。危険な場面情報だけを既存安全判定で置換し、安全な配置、人物同一性、参照画像、画風、対象コマを維持する。
+- API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更しない。
+- 集中10/10、deps、lint、全型検査、Hub 823/823、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、research eval、Cloud漫画repository、Hub／Desktop build、RC structure、diff check成功。
+- 次: Draft PRと全CI／Vercel Preview成功後に停止する。merge前にProduction生成を再開しない。merge後はコマ2の安全再構成を1回だけ実行して受入れる。
+
+---
+
 ## 0.0 現在の優先タスク（不採用画像修復後の自動再読込loop修正、2026-08-20）
 
 - 最新基準はPR #313 merge commit `f9f2b544fe0ffc0cc5c23064097ccce089f1073d`。Branchは`codex/fix-r4-3-rejected-reload-loop`。

@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-20 Provider拒否後の構図情報再混入修正
+
+- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / DRAFT_PR_PENDING / PRODUCTION_RETRY_STOPPED`
+- Base: PR #314 merge commit `dd66520b5d16d4919d8479a290245b7253950351`。Branch: `codex/fix-r4-3-provider-moderated-layout`。
+- Production受入れ: PR #314反映後、`test`の対象22ページで再読込loop停止、revision 9、画像2/4、PNG成功を確認した。コマ1を2候補で生成し、完成1・失敗1、品質確認後に採用・保存してrevision 10、画像3/4となった。使用credit 78、予約0、残り22。
+- 残存阻害: コマ2の2候補と、失敗Jobからの最初の一般向け安全再構成1件が、いずれもBFL `flux-2-pro`のpoll段階で`request_moderated`になった。全予約creditは解放され、追加実行は停止した。API key、Worker、DB、Storage、credit予約、submit通信の障害ではない。
+- 原因: 最初の安全再構成は動作・感情・背景を置換していたが、短縮Provider契約の`layout`と、詳細Promptの場所・背景・構図に元の物語表現が残り得た。安全再構成後もProviderへ同じ拒否要因を再送する経路だった。
+- 修正: 既存の一般向けmoderationと危険表現検査を利用し、危険な`layout`、場所、背景、構図だけを安全な一般向け表現へ置換する。安全なネーム配置、人物同一性、参照画像、画風、対象コマは維持する。
+- 不変: API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードを変更しない。Prompt本文、画像、Provider応答本文、秘密値をログ・文書へ保存しない。
+- 検証: 集中10/10、deps error 0（既存warning 2件）、lint、全型検査、Hub 823/823、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、research eval、Cloud漫画repository受入れ、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存ローカル環境依存。
+- Production変更: Canvas revision 9→10、コマ1画像1件採用、実Provider完成1件、失敗・返金4件。最終creditは使用78、予約0、残り22。コマ2は未配置で、ページは未完成のまま。修正コードのmerge前に追加Provider実行を行わない。
+- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge後、コマ2の失敗Jobに対する安全再構成を1回だけ実行し、完成・品質確認・採用・PNGを確認する。
+- 詳細: `docs/RELEASE_CANDIDATE_PROVIDER_MODERATED_LAYOUT_20260820.md`
+
+---
+
 ## 2026-08-20 不採用画像修復後の自動再読込loop修正
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_READY / PRODUCTION_REPAIR_SAVED`

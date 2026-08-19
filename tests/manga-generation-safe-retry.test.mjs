@@ -172,6 +172,53 @@ test("短縮クローズアップ契約は同一性と撮影条件を保って�
   assert.equal(retry.referenceAssetIds, imageGeneration.referenceAssetIds);
 });
 
+test("最初の安全再構成でProvider契約の危険なlayoutを再送しない", () => {
+  const retry = buildGeneralAudienceGenerationRetry({
+    ...compactProviderContractGeneration,
+    prompt: compactProviderContractGeneration.prompt.replace(
+      "protagonist at the left edge looking toward an off-frame clue",
+      "刺激の強い出来事と炎を中央に直接描く",
+    ),
+  });
+  const lines = retry.prompt.split("\n");
+  const contract = JSON.parse(
+    lines[lines.indexOf("PROVIDER CONTROL CONTRACT:") + 1],
+  );
+
+  assert.match(contract.layout, /相対配置/);
+  assert.doesNotMatch(JSON.stringify(contract), /刺激の強い出来事|炎/);
+  assert.equal(
+    moderateGeneralCloudPrompt(`${retry.prompt}\n${retry.negativePrompt}`)
+      .decision,
+    "allow",
+  );
+});
+
+test("最初の安全再構成で詳細Promptの危険な場所・背景・構図を再送しない", () => {
+  const retry = buildGeneralAudienceGenerationRetry({
+    ...imageGeneration,
+    prompt: [
+      imageGeneration.prompt,
+      "場所: 炎が広がる事故現場。",
+      "背景: 刺激の強い出来事を直接描く。",
+      "人物と背景の配置: 爆発を中央に大きく描く。",
+      "構図: 流血した人物を画面中央に置く。",
+    ].join("\n"),
+  });
+
+  assert.match(retry.prompt, /明るく整った一般向けの日常環境/);
+  assert.match(retry.prompt, /穏やかな余韻が伝わる静かな瞬間/);
+  assert.doesNotMatch(
+    retry.prompt,
+    /炎が広がる|事故現場|刺激の強い出来事|爆発|流血/,
+  );
+  assert.equal(
+    moderateGeneralCloudPrompt(`${retry.prompt}\n${retry.negativePrompt}`)
+      .decision,
+    "allow",
+  );
+});
+
 test("安全再構成もProviderに拒否された場合は穏やかな日常場面へ一度だけ再構成する", () => {
   const firstRetry = buildGeneralAudienceGenerationRetry(
     compactProviderContractGeneration,

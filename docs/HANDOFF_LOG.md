@@ -5135,3 +5135,16 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 正式Benchmarkは0/140、人間の権利確認0/28、独立Human Review 0/56。Production、DB、Storage、Provider設定、credit、runtime Judge、Canvas、出力、Desktopは変更していない。
 - Draft PR [#295](https://github.com/team478a/manga/pull/295)を作成。実装HEAD `7389b67`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功し、Draft／MERGEABLE。Previewは`https://mangai-hub-staging-git-codex-fix-r4-3-336c71-team478as-projects.vercel.app`。
 - 次: 最終証跡同期HEADの全CI／Vercel Preview成功で停止する。責任者確認前に正式採用やR4-3Bへ進まない。
+
+# 2026-08-20 Codex: Provider拒否後の構図情報再混入修正
+
+- Branch: `codex/fix-r4-3-provider-moderated-layout`
+- Base: `origin/feature/manga-canvas-mvp`@`dd66520`（PR #314 merge後）
+- Productionで対象22ページの再読込loop停止を確認した。コマ1は実Provider完成候補を品質確認後に採用し、Canvas revision 10、画像3/4、PNG成功。creditは使用78・予約0・残り22。
+- コマ2の通常2候補と最初の安全再構成1件はBFL pollの`request_moderated`で失敗し、予約creditは全額解放された。追加実行は停止した。
+- 最初の安全再構成から短縮Provider契約の危険な`layout`と、詳細Promptの危険な場所・背景・構図を除く。安全なネーム配置、人物同一性、参照画像、画風、対象コマは維持する。
+- API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードの変更なし。
+- 集中10/10、deps、lint、全型検査、Hub 823/823、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、research eval、Cloud漫画repository、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit・push・Draft PR作成、全CI／Vercel Preview確認後に責任者review待ちで停止する。merge前のProduction再実行は禁止。
+
+---
