@@ -9,7 +9,8 @@
 - Productionの既存コードで品質評価を1回保存し、UI成功表示とDB行`72665ec0-8093-410b-a5a3-1ca4efae761e`を確認した。`page / needs_revision / image_quality / minor`、page 22、generation_count 28、panel null。
 - Production変更は既存migration適用と検証用フィードバック1行のみ。画像生成、credit消費、作品、画像、Storage、Provider、Canvas、PNG／PDF、成人向け境界、Desktop変更はない。
 - PR #311の中間fallback実装は不要と確定したため撤回し、復旧証跡文書だけを残す。
-- 次: 文書差分をpushし、PR #311の全CI／Vercel Preview成功を確認して停止する。
+- Draft PR [#311](https://github.com/team478a/manga/pull/311)はDraft／MERGEABLE。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- 次: 責任者確認待ち。追加のProduction送信、PR merge、次工程へは進まない。
 
 ---
 
