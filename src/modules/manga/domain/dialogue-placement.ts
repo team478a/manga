@@ -85,6 +85,78 @@ function fitFontSize(text: string, balloon: Balloon) {
   return largestReadableSize;
 }
 
+function textLayoutBox(text: TextObject) {
+  const padding = Math.max(0, text.padding);
+  return {
+    x: text.x + padding,
+    y: text.y + padding,
+    width: Math.max(1, text.width - padding * 2),
+    height: Math.max(1, text.height - padding * 2),
+  };
+}
+
+function shortVerticalDialogueRepairFontSize(
+  canvas: PageCanvas,
+  text: TextObject,
+) {
+  const plainText = parseRubyText(text.text).plainText;
+  if (
+    text.writingMode !== "vertical" ||
+    !text.visible ||
+    text.locked ||
+    !text.parentBalloonId ||
+    /[\r\n]/u.test(plainText) ||
+    segmentGraphemes(plainText).length > 6 ||
+    !plainText.trim()
+  )
+    return null;
+  const balloon = canvas.balloons.find(
+    (item) => item.id === text.parentBalloonId,
+  );
+  if (!balloon || !balloon.visible || balloon.locked) return null;
+  const box = textLayoutBox(text);
+  const currentLayout = layoutVerticalText(text.text, box, {
+    fontSize: text.fontSize,
+    lineHeight: text.lineHeight,
+    letterSpacing: text.letterSpacing,
+  });
+  if (!currentLayout.overflow && currentLayout.columns <= 1) return null;
+  for (
+    let fontSize = Math.min(text.fontSize, MAX_FONT_SIZE);
+    fontSize >= MIN_FONT_SIZE;
+    fontSize -= 2
+  ) {
+    const layout = layoutVerticalText(text.text, box, {
+      fontSize,
+      lineHeight: text.lineHeight,
+      letterSpacing: text.letterSpacing,
+    });
+    if (!layout.overflow && layout.columns === 1) return fontSize;
+  }
+  return null;
+}
+
+export function countRepairableShortVerticalDialogue(canvas: PageCanvas) {
+  return canvas.textObjects.filter(
+    (text) => shortVerticalDialogueRepairFontSize(canvas, text) != null,
+  ).length;
+}
+
+export function repairShortVerticalDialogueLayout(
+  canvas: PageCanvas,
+  timestamp: string,
+) {
+  let repairedTextCount = 0;
+  for (const text of canvas.textObjects) {
+    const fontSize = shortVerticalDialogueRepairFontSize(canvas, text);
+    if (fontSize == null) continue;
+    text.fontSize = fontSize;
+    text.updatedAt = timestamp;
+    repairedTextCount += 1;
+  }
+  return repairedTextCount;
+}
+
 function createDefaultBalloon(input: {
   panel: Panel;
   dialogue: StructuredPanelDialogue;

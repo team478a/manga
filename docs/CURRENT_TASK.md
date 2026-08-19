@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-20 既存原稿の明示修復と背景描画順修正
+
+- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / DRAFT_PR_PENDING / PRODUCTION_UNCHANGED`
+- Base: PR #312 merge commit `54d621ddb06c58e5753842e54afd6698ee171917`。Branch: `codex/fix-r4-3-existing-manuscript-repair`。
+- Production受入れ: PR #312の現行deploymentが`app.mang-ai.com`へ割当済みであることを確認し、`test`の対象22ページを再読込した。不採用画像を完成扱いにしないguardは有効だが、merge前から保存済みの不採用layer、短い縦書き2列、逆転した背景layer順は自動変更されず残っていた。
+- 修正: 編集者本人の明示操作で、不採用済みJob由来layerの除去、6文字以下の既存縦書きの1列化、安全に日時を比較できる逆転背景stackの並べ替えを1回のUndo可能なCanvas変更として行う。個別の不採用画像にも追加生成なしの除去ボタンを出す。
+- 将来生成: 新しい背景候補は旧背景より前面、人物・小物・効果・補正より背面へ配置する。不採用layer除去後の`panel.imageAssetId`は残存する最前面の表示可能背景へ戻す。
+- 安全境界: ページ読込時には自動変更しない。日時欠損・同値の背景順は推測修復しない。本文、座標、領域、Canvas schema、DB、migration、RPC、Storage、API、URL、Provider、model、pricing、credit、retry、timeout、Scheduler、PNG／PDF、成人向け境界、Desktop製品コードを変更しない。
+- 検証: 集中60/60、deps error 0（既存warning 2件）、lint、全型検査、Hub 820/820、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存環境依存。
+- Production変更: 読取確認だけ。対象作品、Canvas、画像、Storage、Provider、credit、DBへの書込みは0件。
+- 次: Draft PRを作成し、全CIとVercel Previewを確認して停止する。Previewでは修復候補の表示だけを確認し、Production DBへ接続する修復ボタンは押さない。merge後に対象ページで本人が明示修復し、保存・再読込・完成判定・PNGを確認する。
+- 詳細: `docs/RELEASE_CANDIDATE_EXISTING_MANUSCRIPT_REPAIR_20260820.md`
+
+---
+
 ## 2026-08-19 Production原稿の不採用画像・短い縦書き品質修正
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`

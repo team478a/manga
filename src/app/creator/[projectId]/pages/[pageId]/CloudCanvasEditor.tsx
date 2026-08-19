@@ -43,8 +43,14 @@ import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
 import {
   applyPanelCandidateAdoption,
+  countReversedPanelBackgroundStacks,
   detachRejectedPanelCandidate,
+  repairReversedPanelBackgroundStacks,
 } from "@/modules/manga/domain/panel-adoption";
+import {
+  countRepairableShortVerticalDialogue,
+  repairShortVerticalDialogueLayout,
+} from "@/modules/manga/domain/dialogue-placement";
 import {
   candidateBelongsToPage,
   classifyCandidateLayer,
@@ -480,6 +486,29 @@ export function CloudCanvasEditor({
         quota.credits_limit - quota.credits_used - quota.credits_reserved,
       )
     : 0;
+  const rejectedPlacedJobIds = useMemo(
+    () =>
+      generationJobs
+        .filter(
+          (job) =>
+            job.quality_review_status === "rejected" &&
+            canvas.panelLayers.some((layer) => layer.sourceJobId === job.id),
+        )
+        .map((job) => job.id),
+    [canvas.panelLayers, generationJobs],
+  );
+  const repairableShortDialogueCount = useMemo(
+    () => countRepairableShortVerticalDialogue(canvas),
+    [canvas],
+  );
+  const reversedBackgroundStackCount = useMemo(
+    () => countReversedPanelBackgroundStacks(canvas),
+    [canvas],
+  );
+  const existingManuscriptRepairCount =
+    rejectedPlacedJobIds.length +
+    repairableShortDialogueCount +
+    reversedBackgroundStackCount;
 
   const deleteSelected = useCallback(() => {
     if (!selection) return;
@@ -1001,6 +1030,45 @@ export function CloudCanvasEditor({
     }
   }
 
+  function detachRejectedGeneratedAsset(job: CloudGenerationJob) {
+    if (job.quality_review_status !== "rejected") return;
+    const committed = commit((draft) => {
+      detachRejectedPanelCandidate(draft, job.id);
+    });
+    setMessage(
+      committed
+        ? "不採用画像をCanvasから外しました。追加生成とクレジット消費はありません。保存完了まで画面を閉じないでください。"
+        : "不採用画像をCanvasから外せませんでした。Canvasを再読み込みして確認してください。",
+    );
+  }
+
+  function repairExistingManuscript() {
+    if (!existingManuscriptRepairCount) return;
+    const timestamp = now();
+    let detachedCount = 0;
+    let repairedTextCount = 0;
+    let repairedBackgroundCount = 0;
+    const committed = commit((draft) => {
+      for (const jobId of rejectedPlacedJobIds) {
+        if (detachRejectedPanelCandidate(draft, jobId)) detachedCount += 1;
+      }
+      repairedTextCount = repairShortVerticalDialogueLayout(draft, timestamp);
+      repairedBackgroundCount = repairReversedPanelBackgroundStacks(
+        draft,
+        timestamp,
+      );
+    });
+    if (!committed) {
+      setMessage(
+        "既存原稿を修復できませんでした。Canvasを再読み込みして確認してください。",
+      );
+      return;
+    }
+    setMessage(
+      `既存原稿を修復しました（不採用画像 ${detachedCount}件・短い縦書き ${repairedTextCount}件・背景順 ${repairedBackgroundCount}コマ）。追加生成とクレジット消費はありません。保存済みになった後、ページを再読み込みして完成判定を確認してください。`,
+    );
+  }
+
   function requestImageQualityReview(
     job: CloudGenerationJob,
     action: ImageQualityReviewRequest["action"],
@@ -1369,6 +1437,34 @@ export function CloudCanvasEditor({
         </div>
       ) : null}
       {initialPageCompletion ? <PageCompletionBanner completion={initialPageCompletion} /> : null}
+      {existingManuscriptRepairCount ? (
+        <section
+          aria-labelledby="existing-manuscript-repair"
+          className="mx-auto max-w-[1600px] border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950"
+          role="alert"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <strong id="existing-manuscript-repair">
+                既存原稿に安全に修復できる箇所があります
+              </strong>
+              <p className="mt-1">
+                不採用画像 {rejectedPlacedJobIds.length}件・短い縦書き{" "}
+                {repairableShortDialogueCount}件・背景順{" "}
+                {reversedBackgroundStackCount}コマ。画像の追加生成やクレジット消費はありません。
+              </p>
+            </div>
+            <button
+              className="button-secondary"
+              disabled={pageLockState !== "acquired"}
+              onClick={repairExistingManuscript}
+              type="button"
+            >
+              既存原稿を修復
+            </button>
+          </div>
+        </section>
+      ) : null}
       <CanvasImageGenerationNotice
         canvas={canvas}
         generationJobs={generationJobs}
@@ -2032,6 +2128,15 @@ export function CloudCanvasEditor({
                               type="button"
                             >
                               このコマだけ作り直す（1案）
+                            </button>
+                          ) : null}
+                          {job.quality_review_status === "rejected" ? (
+                            <button
+                              className="button-secondary w-full"
+                              onClick={() => detachRejectedGeneratedAsset(job)}
+                              type="button"
+                            >
+                              不採用画像をCanvasから外す（追加生成なし）
                             </button>
                           ) : null}
                         </div>

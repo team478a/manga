@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（既存原稿の明示修復、2026-08-20）
+
+- 最新基準はPR #312 merge commit `54d621ddb06c58e5753842e54afd6698ee171917`。Branchは`codex/fix-r4-3-existing-manuscript-repair`。
+- Production 22ページの読取受入れで、PR #312の完成guardは有効だが、既存保存済みCanvasは自動移行されず、不採用layer、短い縦書き2列、逆転背景順が残ることを確認した。
+- 編集画面に「既存原稿を修復」を追加。不採用layer除去、短文縦書き1列化、日時で安全に判断できる背景順修復を、追加生成・credit消費なしの明示操作で行う。Undoと既存autosaveを使用する。
+- 新規背景採用も旧背景より前面、人物・効果等より背面になるよう修正した。日時欠損の既存背景は推測変更しない。
+- DB、migration、RPC、Storage、API、URL、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コード、Productionデータは変更していない。
+- 集中60/60、deps、lint、全型検査、Hub 820/820、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: Draft PR、全CI、Vercel Previewを確認して停止する。PreviewがProduction DBを参照するため修復ボタンは押さず、表示とconsoleだけを確認する。merge前にProduction Canvasを変更しない。
+
+---
+
 ## 0.0 現在の優先タスク（Production原稿の不採用画像・短い縦書き品質修正、2026-08-19）
 
 - 最新基準はPR #311 merge commit `29744d3a720ce6c270face0b29768b746b33f239`。Branchは`codex/fix-r4-3-production-text-quality`。

@@ -135,6 +135,16 @@ test("未採用候補は追加生成なしで明示的に不採用へできる",
   assert.match(editor, /Canvasから外しました/);
 });
 
+test("既存原稿は追加生成なしで不採用画像・短い縦書き・背景順を修復できる", () => {
+  assert.match(editor, /既存原稿を修復/);
+  assert.match(editor, /不採用画像をCanvasから外す（追加生成なし）/);
+  assert.match(editor, /countRepairableShortVerticalDialogue/);
+  assert.match(editor, /repairShortVerticalDialogueLayout/);
+  assert.match(editor, /countReversedPanelBackgroundStacks/);
+  assert.match(editor, /repairReversedPanelBackgroundStacks/);
+  assert.match(editor, /画像の追加生成やクレジット消費はありません/);
+});
+
 test("部分修正UIは白く塗った範囲を同寸法PNGマスクとして送る", () => {
   assert.match(inpaintingDialog, /直したい範囲を塗る/);
   assert.match(inpaintingDialog, /黒い範囲は元画像を維持/);
