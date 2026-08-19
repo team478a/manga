@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（原稿未生成表示・品質フィードバック保存阻害修正、2026-08-19）
+
+- 最新基準はPR #308 merge commit `24da38c8632d3f36cf364bf616f3af668322cd4a`。Branchは`codex/fix-r4-3-monitor-manuscript-blockers`。
+- 利用者写真で、原稿がコマ枠・吹き出し・文字だけの状態と、品質フィードバックの保存失敗を確認した。
+- 空白原稿は画像未生成のネーム状態を画面が明示していない問題として扱う。未生成／生成中／失敗／配置確認待ちを上部表示し、明示操作が必要な一括画像生成へ導く。自動課金は開始しない。
+- 品質評価はcaller-scoped ownership検証後、一般報告と同じserver-only infrastructure repositoryで保存する。RLS・schema fallback・利用者向け秘密非表示を維持する。
+- DB、migration、RPC、Storage、Provider、model、credit、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コード、Productionは変更していない。
+- 集中6/6、deps、lint、Hub型検査、Hub 810/810、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub build、diff check成功。
+- 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Preview Comments成功で停止する。merge前にProductionでの評価送信や画像生成を行わない。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-15 Production Panel Rollout Guard、2026-08-19）
 
 - 最新基準はPR #307 merge commit `5f37817c681b6a8592aee4d5c485b09c46dd1606`。Branchは`codex/docs-r4-3a15-production-panel-rollout`。

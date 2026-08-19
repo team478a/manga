@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-19 Codex: 原稿未生成表示・品質フィードバック保存阻害修正（作業中）
+
+- PR #308 merge commit `24da38c8632d3f36cf364bf616f3af668322cd4a`から`codex/fix-r4-3-monitor-manuscript-blockers`を開始した。
+- 利用者写真で、原稿がコマ枠・吹き出し・文字だけの状態と「品質フィードバックを保存できませんでした」を確認した。
+- 原稿Editorへ画像未生成／生成中／失敗／配置確認待ちの上部案内を追加し、作品画面の明示的な4〜8ページ一括画像生成へ直接移動できるようにした。
+- 品質評価は利用者sessionでページ・作品・コマ・生成Jobを検証後、`general-monitor/infrastructure`のserver-only repositoryへ保存を委譲する。旧schema fallbackは維持する。
+- 明示操作なしのProvider呼出し・credit消費は追加していない。DB、migration、RPC、Storage、Provider、Canvas、PNG／PDF、成人向け境界、Productionを変更していない。
+- 集中6/6、deps error 0、lint、Hub型検査、Hub 810/810、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub build、diff check成功。module boundaryは既存2 warningのみ。
+- 次: 文書同期後にcommit・push・Draft PRを作成し、全CI／Vercel Previewを確認する。merge前にProduction実操作を行わない。
+
+---
+
 ## 2026-08-19 Codex: PR-R4-3A-15 Production Panel Rollout Guard（作業中）
 
 - PR #307 merge後のProductionへ品質確認Flagを有効化し、Vercel deployment `FyCvjRpzXDuxsTKq9yU5S5Ntv91U`のReadyと`app.mang-ai.com`割当を確認した。

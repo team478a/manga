@@ -117,7 +117,7 @@ export function LongformPageManager({
         <p className="mt-3 text-sm" aria-live="polite">{isMoving ? "ページを移動しています…" : moveMessage || `${Math.min(visibleCount, filteredPages.length)}/${filteredPages.length}ページを表示`}</p>
       </div>
 
-      <form action={startCloudPageGenerationBatchAction.bind(null, projectId)} className="panel">
+      <form action={startCloudPageGenerationBatchAction.bind(null, projectId)} className="panel" id="page-generation">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div><h3 className="text-lg font-bold">4〜8ページをまとめて生成</h3><p className="mt-1 text-sm text-stone-600">下のページにチェックを付けて開始します。各ページの全コマを既存の安全な生成Queueへ登録します。</p></div>
           <PendingSubmitButton className="button shrink-0" disabled={!batchEstimate?.canStart} pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />選択ページを生成</PendingSubmitButton>

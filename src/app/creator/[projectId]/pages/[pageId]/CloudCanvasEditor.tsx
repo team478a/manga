@@ -39,6 +39,7 @@ import type {
 import type { CloudPageDialoguePlacement } from "@/modules/cloud-creator/canvas/dialogue-placement-service";
 import type { CloudPageCompletion } from "@/modules/cloud-creator/projects/page-completion-service";
 import { PageCompletionBanner } from "./PageCompletionBanner";
+import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
 import { applyPanelCandidateAdoption } from "@/modules/manga/domain/panel-adoption";
 import {
@@ -1352,6 +1353,12 @@ export function CloudCanvasEditor({
         </div>
       ) : null}
       {initialPageCompletion ? <PageCompletionBanner completion={initialPageCompletion} /> : null}
+      <CanvasImageGenerationNotice
+        canvas={canvas}
+        generationJobs={generationJobs}
+        projectId={project.id}
+        storyboardPanelGenerationEnabled={storyboardPanelGenerationEnabled}
+      />
       <div className="mx-auto grid max-w-[1600px] gap-4 p-4 min-[1360px]:grid-cols-[220px_minmax(480px,1fr)_320px]">
         <aside className="space-y-4">
           <section className="panel p-4">
