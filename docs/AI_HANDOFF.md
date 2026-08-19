@@ -8,7 +8,9 @@
 - 不採用Jobが`auto_placed`履歴を保持するため、layer不在を未読込と誤認したeffectが約3秒ごとに再読込してedit lock確認へ戻る阻害を実機で特定した。page-lock APIはRuntime Logsで200でありDB障害ではない。
 - 自動反映の再読込候補へ`quality_review_status !== "rejected"`を追加する。不採用履歴、通常auto placement、完成guard、Canvas schemaは変更しない。
 - 集中18/18、deps error 0（既存warning 2件）、lint、Hub／Desktop typecheck、Hub 821/821、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次はDraft PR、全CI、Vercel Previewを確認して停止する。
+- Draft PR [#314](https://github.com/team478a/manga/pull/314)を作成。初期HEAD `c53baed`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-6d2c28-team478as-projects.vercel.app)。`/login`を読取確認し、ブラウザエラー・警告0件。Productionデータへの操作は行っていない。
+- 次は本証跡同期HEADの5チェックを再確認して停止する。
 - merge前にProduction再生成は行わない。merge後にloop停止を確認し、不足コマだけの生成へ進む。
 
 ---

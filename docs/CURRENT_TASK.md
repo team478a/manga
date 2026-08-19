@@ -2,7 +2,7 @@
 
 ## 2026-08-20 不採用画像修復後の自動再読込loop修正
 
-- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / DRAFT_PR_PENDING / PRODUCTION_REPAIR_SAVED`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_CI_PASSED / PREVIEW_READY / PRODUCTION_REPAIR_SAVED`
 - Base: PR #313 merge commit `f9f2b544fe0ffc0cc5c23064097ccce089f1073d`。Branch: `codex/fix-r4-3-rejected-reload-loop`。
 - Production受入れ: deployment `641F4jYmhK19GWyKbxmDw4zkLo9M`がReady／Productionであることを確認し、`test`の対象22ページで「既存原稿を修復」を1回実行した。不採用画像3件と逆転背景2コマを修復し、Canvasはrevision 8から9へ保存、PNG成功。残りcreditは24のままで追加生成・追加課金0件。
 - 修復結果: 不採用画像の警告は消え、ページは画像2/4、生成中0、失敗1の未完成状態へ安全に戻った。コマ1・2は画像未配置となり、販売可能な完成ページとしては扱われない。
@@ -10,6 +10,8 @@
 - 修正: 自動反映の再読込候補から`quality_review_status=rejected`を除外する。不採用履歴、Canvas修復、完成guard、通常のauto placementは維持する。
 - 不変: DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更しない。
 - 検証: 集中18/18、deps error 0（既存warning 2件）、lint、Hub／Desktop typecheck、Hub 821/821、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存ローカル環境依存。
+- Draft PR: [#314](https://github.com/team478a/manga/pull/314)。初期HEAD `c53baed`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-6d2c28-team478as-projects.vercel.app)。`/login`の表示、タイトル、入力欄を確認し、ブラウザエラー・警告は0件。Productionデータへの操作は行っていない。
 - 次: 本PRのmerge前にProduction再生成を行わない。merge後、対象22ページを再読込してloop停止を確認し、明示承認済みのProduction Provider検査として不足コマだけを生成する。
 - 詳細: `docs/RELEASE_CANDIDATE_REJECTED_RELOAD_LOOP_20260820.md`
 

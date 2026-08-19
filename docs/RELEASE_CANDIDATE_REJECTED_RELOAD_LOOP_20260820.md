@@ -3,6 +3,7 @@
 作成日: 2026-08-20
 Branch: `codex/fix-r4-3-rejected-reload-loop`
 Base: `feature/manga-canvas-mvp` @ `f9f2b544fe0ffc0cc5c23064097ccce089f1073d`
+Draft PR: [#314](https://github.com/team478a/manga/pull/314)
 
 ## 目的
 
@@ -49,6 +50,14 @@ Runtime Logsでは対象page-lock APIが200であり、DB、RPC、認証、lease
 - Desktop build: 成功（既知のbundle size warningのみ）
 - RC preflight: Repository structure READY。外部設定と手動E2EのPendingは既存ローカル環境依存
 - `git diff --check`: 成功
+
+## CI／Preview
+
+- 初期HEAD `c53baed`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: `https://mangai-hub-staging-git-codex-fix-r4-3-6d2c28-team478as-projects.vercel.app`
+- `/login`にMANGAI Creator Platform、メールアドレス、パスワード、ログインボタンが表示された。
+- ブラウザコンソールのerror／warningは0件。
+- PreviewでProductionデータ、Provider、credit、Canvasを操作していない。
 
 ## 不変範囲
 
