@@ -169,6 +169,48 @@ test("大量の修正項目は上限を設け、残件数を保持する", () =>
   assert.equal(report.truncatedIssueCount, 6);
 });
 
+test("短い縦書きが複数列へ割れた原稿は販売準備を停止する", () => {
+  const fixture = makeEightPageManuscript();
+  fixture.pages[0].canvas.balloons.push({
+    id: "balloon-1",
+    pageId: fixture.pages[0].id,
+  });
+  fixture.pages[0].canvas.textObjects.push({
+    id: "short-text",
+    pageId: fixture.pages[0].id,
+    parentBalloonId: "balloon-1",
+    name: "短いセリフ",
+    text: "証拠を",
+    writingMode: "vertical",
+    x: 0,
+    y: 0,
+    width: 120,
+    height: 70,
+    rotation: 0,
+    zIndex: 1,
+    visible: true,
+    locked: false,
+    fontFamily: "sans-serif",
+    fontSize: 32,
+    fontWeight: 400,
+    color: "#111111",
+    textAlign: "start",
+    verticalAlign: "top",
+    lineHeight: 1.2,
+    letterSpacing: 0,
+    padding: 0,
+    opacity: 1,
+    createdAt: "",
+    updatedAt: "",
+  });
+  const report = analyzeCloudManuscript({
+    coverPageId: fixture.pages[0].id,
+    ...fixture,
+  });
+  assert.equal(report.ready, false);
+  assert.ok(report.issues.some((issue) => issue.code === "text_layout"));
+});
+
 test("永続書き出し前に未確定・stale・生成中ページを拒否する", () => {
   const fixture = makeEightPageManuscript();
   const productionStates = fixture.pages.map((page) => ({

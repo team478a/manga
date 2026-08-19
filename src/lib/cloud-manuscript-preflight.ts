@@ -1,6 +1,8 @@
 import {
   layoutHorizontalText,
   layoutVerticalText,
+  parseRubyText,
+  segmentGraphemes,
   type PageCanvas,
 } from "@mangai/canvas-core";
 
@@ -12,6 +14,7 @@ export type CloudManuscriptPreflightIssue = {
     | "missing_asset"
     | "low_resolution"
     | "text_overflow"
+    | "text_layout"
     | "page_not_finalized"
     | "page_stale"
     | "generation_active";
@@ -82,6 +85,37 @@ function textOverflows(canvas: PageCanvas) {
           textAlign: text.textAlign,
           verticalAlign: text.verticalAlign,
         }).overflow;
+  });
+}
+
+function shortVerticalTextWraps(canvas: PageCanvas) {
+  return canvas.textObjects.filter((text) => {
+    if (
+      !text.visible ||
+      !text.parentBalloonId ||
+      text.writingMode !== "vertical" ||
+      !text.text.trim()
+    )
+      return false;
+    const plainText = parseRubyText(text.text).plainText;
+    if (/[\r\n]/u.test(plainText) || segmentGraphemes(plainText).length > 6)
+      return false;
+    const padding = Math.max(0, text.padding);
+    const layout = layoutVerticalText(
+      text.text,
+      {
+        x: text.x + padding,
+        y: text.y + padding,
+        width: Math.max(1, text.width - padding * 2),
+        height: Math.max(1, text.height - padding * 2),
+      },
+      {
+        fontSize: text.fontSize,
+        lineHeight: text.lineHeight,
+        letterSpacing: text.letterSpacing,
+      },
+    );
+    return !layout.overflow && layout.columns > 1;
   });
 }
 
@@ -235,6 +269,16 @@ export function analyzeCloudManuscript(input: {
         code: "text_overflow",
         severity: "error",
         message: `${page.page_number}ページ「${text.name}」の文字が枠からはみ出します。`,
+        pageId: page.id,
+        pageNumber: page.page_number,
+        panelId: null,
+      });
+    }
+    for (const text of shortVerticalTextWraps(page.canvas)) {
+      addIssue({
+        code: "text_layout",
+        severity: "error",
+        message: `${page.page_number}ページ「${text.name}」の短い縦書きが不自然に分割されています。`,
         pageId: page.id,
         pageNumber: page.page_number,
         panelId: null,

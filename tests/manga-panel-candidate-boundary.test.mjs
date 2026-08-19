@@ -10,7 +10,10 @@ import {
   hasUnresolvedPanelGeneration,
   resolveCandidateTargetPanelId,
 } from "../src/modules/manga/domain/panel-candidate.ts";
-import { applyPanelCandidateAdoption } from "../src/modules/manga/domain/panel-adoption.ts";
+import {
+  applyPanelCandidateAdoption,
+  detachRejectedPanelCandidate,
+} from "../src/modules/manga/domain/panel-adoption.ts";
 
 const job = (overrides = {}) => ({
   id: "job-1",
@@ -227,4 +230,34 @@ test("透明人物候補はpanel imageを置換せず最前面multiply layerへ�
   assert.equal(canvas.panels[0].imageAssetId, "background");
   assert.equal(canvas.panelLayers.at(-1).orderIndex, 5);
   assert.equal(canvas.panelLayers.at(-1).blendMode, "multiply");
+});
+
+test("不採用の生成JobはCanvas layerから外して直前の背景へ戻す", () => {
+  const canvas = {
+    panels: [{ id: "panel-1", imageAssetId: "asset-rejected" }],
+    panelLayers: [
+      {
+        id: "layer-rejected",
+        panelId: "panel-1",
+        type: "background",
+        orderIndex: 0,
+        visible: true,
+        assetId: "asset-rejected",
+        sourceJobId: "job-rejected",
+      },
+      {
+        id: "layer-before",
+        panelId: "panel-1",
+        type: "background",
+        orderIndex: 1,
+        visible: true,
+        assetId: "asset-before",
+        sourceJobId: "job-before",
+      },
+    ],
+  };
+  assert.equal(detachRejectedPanelCandidate(canvas, "job-rejected"), true);
+  assert.deepEqual(canvas.panelLayers.map((layer) => layer.id), ["layer-before"]);
+  assert.equal(canvas.panels[0].imageAssetId, "asset-before");
+  assert.equal(detachRejectedPanelCandidate(canvas, "unknown"), false);
 });
