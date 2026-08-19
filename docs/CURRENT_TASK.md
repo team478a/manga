@@ -2,7 +2,7 @@
 
 ## 2026-08-20 Provider拒否後の構図情報再混入修正
 
-- 状態: `IMPLEMENTED / LOCAL_GATES_PASSED / DRAFT_PR_PENDING / PRODUCTION_RETRY_STOPPED`
+- 状態: `READY_FOR_OWNER_REVIEW / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_RETRY_STOPPED`
 - Base: PR #314 merge commit `dd66520b5d16d4919d8479a290245b7253950351`。Branch: `codex/fix-r4-3-provider-moderated-layout`。
 - Production受入れ: PR #314反映後、`test`の対象22ページで再読込loop停止、revision 9、画像2/4、PNG成功を確認した。コマ1を2候補で生成し、完成1・失敗1、品質確認後に採用・保存してrevision 10、画像3/4となった。使用credit 78、予約0、残り22。
 - 残存阻害: コマ2の2候補と、失敗Jobからの最初の一般向け安全再構成1件が、いずれもBFL `flux-2-pro`のpoll段階で`request_moderated`になった。全予約creditは解放され、追加実行は停止した。API key、Worker、DB、Storage、credit予約、submit通信の障害ではない。
@@ -11,7 +11,9 @@
 - 不変: API、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードを変更しない。Prompt本文、画像、Provider応答本文、秘密値をログ・文書へ保存しない。
 - 検証: 集中10/10、deps error 0（既存warning 2件）、lint、全型検査、Hub 823/823、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、research eval、Cloud漫画repository受入れ、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存ローカル環境依存。
 - Production変更: Canvas revision 9→10、コマ1画像1件採用、実Provider完成1件、失敗・返金4件。最終creditは使用78、予約0、残り22。コマ2は未配置で、ページは未完成のまま。修正コードのmerge前に追加Provider実行を行わない。
-- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge後、コマ2の失敗Jobに対する安全再構成を1回だけ実行し、完成・品質確認・採用・PNGを確認する。
+- Draft PR: [#315](https://github.com/team478a/manga/pull/315)はDraft／MERGEABLE。初回HEAD `0eb4221`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-i5v3lf5yw-team478as-projects.vercel.app)。`/login`のタイトル、入力欄、ログイン導線を確認し、ブラウザログは0件。Production DB／Providerへ接続する操作は行っていない。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。merge後、コマ2の失敗Jobに対する安全再構成を1回だけ実行し、完成・品質確認・採用・PNGを確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_PROVIDER_MODERATED_LAYOUT_20260820.md`
 
 ---

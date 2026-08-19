@@ -5145,6 +5145,8 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 最初の安全再構成から短縮Provider契約の危険な`layout`と、詳細Promptの危険な場所・背景・構図を除く。安全なネーム配置、人物同一性、参照画像、画風、対象コマは維持する。
 - API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry回数、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードの変更なし。
 - 集中10/10、deps、lint、全型検査、Hub 823/823、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、research eval、Cloud漫画repository、Hub／Desktop build、RC structure、diff check成功。
-- 次: commit・push・Draft PR作成、全CI／Vercel Preview確認後に責任者review待ちで停止する。merge前のProduction再実行は禁止。
+- Draft PR [#315](https://github.com/team478a/manga/pull/315)はDraft／MERGEABLE。初回HEAD `0eb4221`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-i5v3lf5yw-team478as-projects.vercel.app)。`/login`正常、ブラウザログ0件。Production操作は行っていない。
+- 次: 証跡同期後の最終HEADでも5チェックを確認し、責任者review待ちで停止する。merge前のProduction再実行は禁止。
 
 ---

@@ -75,4 +75,14 @@ API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、p
 
 Draft PRとCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsの成功を確認して停止する。merge前にProductionのProvider再実行を行わない。
 
+- Draft PR: [#315](https://github.com/team478a/manga/pull/315)（Draft／MERGEABLE）
+- 初回HEAD: `0eb4221bc16d9ef8d172cef86ce64a7e8b471876`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-i5v3lf5yw-team478as-projects.vercel.app)
+- Preview `/login`: 正常表示、ブラウザログ0件
+
 merge後は、対象コマ2の失敗Jobに対する安全再構成を1回だけ実行する。完成した場合は画像品質、不要文字、向き、人体、採用、Canvas保存、PNGを確認する。再度Providerに拒否された場合は追加課金再試行を止め、Provider別の入力最小化または別モデル選定を次PRとして判断する。
