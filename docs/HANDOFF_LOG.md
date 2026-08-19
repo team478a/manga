@@ -4,6 +4,20 @@
 
 ---
 
+## 2026-08-20 Codex: 不採用画像修復後の自動再読込loop修正
+
+- PR #313 merge commit `f9f2b544fe0ffc0cc5c23064097ccce089f1073d`から`codex/fix-r4-3-rejected-reload-loop`を開始した。
+- Production deployment `641F4jYmhK19GWyKbxmDw4zkLo9M`を確認し、`test`の対象22ページで既存原稿修復を1回実行した。Canvas revision 8→9、保存済み、PNG成功、credit 24維持、Provider呼出し0件。
+- 不採用画像3件と逆転背景2コマを修復し、不採用警告は消えた。ページは画像2/4、生成中0、失敗1、コマ1・2未配置の未完成状態へ戻った。
+- 修復後、`auto_placed`の不採用Jobを未読込画像と誤認するeffectが約3秒ごとに再読込し、edit lock確認へ戻ることを実機とRuntime Logsで確認した。page-lock POSTは200で、DB／RPC障害ではない。
+- 自動反映の再読込候補から`quality_review_status=rejected`を除外した。DB、Provider、credit、Canvas schema、PNG／PDFは変更していない。
+- 集中18/18、deps error 0（既存warning 2件）、lint、Hub／Desktop typecheck、Hub 821/821、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Draft PR [#314](https://github.com/team478a/manga/pull/314)を作成。初期HEAD `c53baed`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-6d2c28-team478as-projects.vercel.app)。`/login`の正常表示とブラウザエラー・警告0件を確認し、Productionデータは操作していない。
+- 次: 本証跡同期HEADの全CI／Vercel Preview成功で停止し、責任者確認前にProduction再生成を行わない。
+
+---
+
 ## 2026-08-20 Codex: 既存原稿の明示修復
 
 - PR #312 merge commit `54d621ddb06c58e5753842e54afd6698ee171917`から`codex/fix-r4-3-existing-manuscript-repair`を開始した。
