@@ -50,7 +50,13 @@ DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、p
 
 ## Preview受入れ
 
-Draft PR作成後に記録する。PreviewがProduction DBを参照するため、対象ページでは修復候補数、ボタン表示、console errorなしだけを確認し、修復ボタンを押さない。
+- Draft PR: [#313](https://github.com/team478a/manga/pull/313)（Draft／MERGEABLE）
+- 実装HEAD: `b334502b1e0ce9f9e18ad9a7e8826ea2df704310`
+- Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-322148-team478as-projects.vercel.app)
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 対象ページ直URLは未認証時に`/login`へ遷移し、認証境界が正常に動作した。
+- PreviewはProduction DBを参照するため、修復ボタンを押さず、対象作品、Canvas、画像、Storage、DB、Provider、creditを変更していない。
+- 修復候補の件数・ボタン表示を伴う認証後実機確認は、merge後のProduction受入れで本人が明示操作する。UI契約は集中テストとHub全件で確認済み。
 
 ## Rollback
 

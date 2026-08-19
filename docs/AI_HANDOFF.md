@@ -8,7 +8,9 @@
 - 新規背景採用も旧背景より前面、人物・効果等より背面になるよう修正した。日時欠損の既存背景は推測変更しない。
 - DB、migration、RPC、Storage、API、URL、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コード、Productionデータは変更していない。
 - 集中60/60、deps、lint、全型検査、Hub 820/820、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: Draft PR、全CI、Vercel Previewを確認して停止する。PreviewがProduction DBを参照するため修復ボタンは押さず、表示とconsoleだけを確認する。merge前にProduction Canvasを変更しない。
+- Draft PR [#313](https://github.com/team478a/manga/pull/313)はDraft／MERGEABLE。実装HEAD `b334502`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-322148-team478as-projects.vercel.app)。対象ページ直URLは未認証時に`/login`へ遷移した。Production DBを参照する修復ボタンは押していない。
+- 次: 本証跡同期HEADの5チェックを確認して停止する。merge前にProduction Canvasを変更しない。merge後、`test`本人が対象22ページで修復、保存、再読込、完成判定、PNGを確認する。
 
 ---
 
