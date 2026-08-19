@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR-R4-3A-15 Production Panel Rollout Guard、2026-08-19）
+
+- 最新基準はPR #307 merge commit `5f37817c681b6a8592aee4d5c485b09c46dd1606`。Branchは`codex/docs-r4-3a15-production-panel-rollout`。
+- Productionの品質確認Flagはon、deployment `FyCvjRpzXDuxsTKq9yU5S5Ntv91U`はReady。Batchはactive、画像28、assignment 0、response 0。
+- Reviewer A=`test`の割当失敗は重複ではなく、Batch開始日時が2026-08-20 00:00 JSTで現在は開始前だったため。正本は開始前割当を拒否する。
+- 管理画面へ開始前案内と日本時間を表示し、利用期間外と重複を別エラーにする。保存契約、期間、DB、migration、RPCは変更しない。
+- 予定割当はA=`test`、B=`青木隆康`、C=`なっかん`、D=`加藤周星`、E=`松浦周平`。開始時刻と本PRのmerge後にProduction管理画面から実施する。
+- 正式Benchmarkは0/140。A/B回答を正式採用せず、C〜Eは補助票として分離する。
+- deps error 0、lint、全型検査、Hub 808/808、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- PR #308初回Core qualityのReact purity failureは、repositoryが返す固定`loadedAt`を画面判定へ使う修正で解消し、ローカルlint・型・集中11/11を再確認した。
+
+---
+
 ## 0.0 現在の優先タスク（PR-R4-3A-14 Production Panel Migration Acceptance、2026-08-18）
 
 - 最新基準はPR #306 merge commit `a390091d590146b7a3f2496763ac2c0118e453ce`。Branchは`codex/docs-r4-3a14-production-panel-migration`。
