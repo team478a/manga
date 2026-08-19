@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-19 Codex: Production Sharp Runtime復旧（Draft PR準備中）
+
+- PR #309 merge commit `27f29fec96104ca60dd736f2c9781ab09dcb8b50`から`codex/fix-production-sharp-runtime`を開始した。
+- Production deploymentのVercel Runtime Logsで、主要Route 500の原因が`sharp`のLinux x64 native runtime不足、具体的には`libvips-cpp.so.8.18.3`の`ERR_DLOPEN_FAILED`であることを確認した。
+- Next.js output file tracingへ`@img/sharp-linux-x64`と`@img/sharp-libvips-linux-x64`を明示し、設定・lockfile version・Linux package解決の回帰テストを追加した。
+- Linux package配置build simulationではApp Router 110/110 traceにnative bindingとlibvipsの両方が含まれた。
+- deps error 0、lint、全型検査、Hub 811/811、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。既知warning／外部Pendingは差分外。
+- Production、DB、Storage、Provider、作品、Canvas、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。
+- 次: commit、push、Draft PR作成後、全CIとVercel Preview Runtimeを確認して停止する。
+
+---
+
 ## 2026-08-19 Codex: 原稿未生成表示・品質フィードバック保存阻害修正（責任者確認待ち）
 
 - PR #308 merge commit `24da38c8632d3f36cf364bf616f3af668322cd4a`から`codex/fix-r4-3-monitor-manuscript-blockers`を開始した。

@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（Production Sharp Runtime復旧、2026-08-19）
+
+- 最新基準はPR #309 merge commit `27f29fec96104ca60dd736f2c9781ab09dcb8b50`。Branchは`codex/fix-production-sharp-runtime`。
+- Productionの主要Route 500は、Vercel FunctionsにLinux x64版Sharp native binding／libvipsが同梱されず、`libvips-cpp.so.8.18.3`の`ERR_DLOPEN_FAILED`になったことが原因。
+- `next.config.ts`のoutput file tracingへ既存optional dependency 2件を明示した。Sharpは`0.35.3`のままで、Providerや画像処理契約は変えていない。
+- 回帰テストを追加し、Linux package配置build simulationではApp Router 110/110 traceにnative bindingとlibvipsの両方を確認した。
+- deps error 0、lint、全型検査、Hub 811/811、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Production、DB、Storage、API、Provider、Canvas、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。
+- 次: Draft PR、全CI、Vercel Preview Runtimeを確認する。merge前にProductionへ反映せず、Previewで同じSharp/libvips errorが消えたところで停止する。
+
+---
+
 ## 0.0 現在の優先タスク（原稿未生成表示・品質フィードバック保存阻害修正、2026-08-19）
 
 - 最新基準はPR #308 merge commit `24da38c8632d3f36cf364bf616f3af668322cd4a`。Branchは`codex/fix-r4-3-monitor-manuscript-blockers`。
