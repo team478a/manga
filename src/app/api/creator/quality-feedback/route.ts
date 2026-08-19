@@ -8,11 +8,7 @@ import {
 } from "@/lib/cloud-creator-server";
 import { requireCloudGeneralMonitor } from "@/lib/cloud-general-monitor";
 import { ValidationError } from "@/lib/domain-errors";
-import { createClient } from "@/lib/supabase/server";
-import {
-  isMissingMonitorFeedbackSchema,
-  legacyQualityFeedbackComment,
-} from "@/modules/general-monitor/infrastructure/monitor-feedback-schema-compatibility";
+import { saveMonitorQualityFeedback } from "@/modules/general-monitor/infrastructure/quality-feedback-repository";
 
 const schema = z.object({
   projectId: z.string().uuid(),
@@ -66,52 +62,31 @@ export async function POST(request: Request) {
       return sum + (Number.isFinite(start) && Number.isFinite(end) ? Math.max(0, end - start) : 0);
     }, 0);
     const defaults = verdictDefaults[input.verdict];
-    const supabase = await createClient();
-    const { error: structuredError } = await supabase
-      .from("cloud_general_monitor_feedback")
-      .insert({
-        owner_profile_id: profile.id,
-        workflow_step: input.panelId ? "panel_image" : "canvas",
-        rating: defaults.rating,
-        outcome: defaults.outcome,
-        comment: input.comment || defaults.comment,
-        target_scope: input.panelId ? "panel" : "page",
-        project_id: input.projectId,
-        page_id: input.pageId,
-        panel_id: input.panelId,
-        page_number_snapshot: snapshot.page_number,
-        panel_name_snapshot: panel?.name ?? null,
-        verdict: input.verdict,
-        issue_type: input.issueType,
-        severity: input.severity,
-        generation_job_id: latestJob?.id ?? null,
-        provider_id: latestJob?.provider_id ?? null,
-        model_id: latestJob?.model_id ?? null,
-        generation_count: completedJobs.length,
-        generation_cost_micros: generationCostMicros,
-        generation_elapsed_ms: generationElapsedMs,
-      });
-    if (structuredError && !isMissingMonitorFeedbackSchema(structuredError))
-      throw structuredError;
-    if (structuredError) {
-      const { error } = await supabase
-        .from("cloud_general_monitor_feedback")
-        .insert({
-          owner_profile_id: profile.id,
-          workflow_step: input.panelId ? "panel_image" : "canvas",
-          rating: defaults.rating,
-          outcome: defaults.outcome,
-          comment: legacyQualityFeedbackComment({
-            verdict: input.verdict,
-            issueType: input.issueType,
-            severity: input.severity,
-            pageNumber: snapshot.page_number,
-            panelName: panel?.name ?? null,
-            comment: input.comment || defaults.comment,
-          }),
-        });
-      if (error) throw error;
-    }
+    // The caller-scoped reads above prove page ownership and target validity.
+    // The repository then persists through the same trusted server boundary as
+    // general monitor reports, without repeating a divergent RLS evaluation.
+    await saveMonitorQualityFeedback({
+      ownerProfileId: profile.id,
+      workflowStep: input.panelId ? "panel_image" : "canvas",
+      rating: defaults.rating,
+      outcome: defaults.outcome,
+      comment: input.comment || defaults.comment,
+      targetScope: input.panelId ? "panel" : "page",
+      projectId: input.projectId,
+      pageId: input.pageId,
+      panelId: input.panelId,
+      pageNumber: snapshot.page_number,
+      panelName: panel?.name ?? null,
+      verdict: input.verdict,
+      issueType: input.issueType,
+      severity: input.severity,
+      generationJobId: latestJob?.id ?? null,
+      providerId: latestJob?.provider_id ?? null,
+      modelId: latestJob?.model_id ?? null,
+      generationCount: completedJobs.length,
+      generationCostMicros,
+      generationElapsedMs,
+    });
     return NextResponse.json({ ok: true });
   } catch (error) {
     const response = toApiError(error, "品質フィードバックを保存できませんでした。");

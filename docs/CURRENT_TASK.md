@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-19 原稿未生成表示・品質フィードバック保存阻害修正
+
+- 状態: `READY_FOR_OWNER_REVIEW / INITIAL_CI_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #308 merge commit `24da38c8632d3f36cf364bf616f3af668322cd4a`。Branch: `codex/fix-r4-3-monitor-manuscript-blockers`。
+- 利用者報告: 原稿編集画面がコマ枠・吹き出し・文字だけで画像を表示せず、同じ画面の品質フィードバックも繰り返し保存失敗する。
+- 原稿表示: 画像未生成のネームを完成原稿のように見せない。画像なしコマについて、未生成／生成中／失敗／生成済み配置確認待ちを画面上部へ表示し、作品画面の4〜8ページ一括画像生成へ直接移動できるようにした。Provider呼出しやcredit消費は利用者の明示操作なしに開始しない。
+- 評価保存: caller-scopedのページ読込、作品・ページ一致、コマ存在、生成Job読込を先に完了した後、一般モニター報告と同じserver-only infrastructure repositoryで保存する。利用者RLSの二重評価へ依存せず、旧schema列不足時の既存fallbackは維持する。
+- 不変: DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コード、Productionデータは変更していない。
+- 検証: 集中6/6、deps error 0、module boundaryは既存2 warningのみ、lint、Hub型検査、Hub 810/810、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub build、diff check成功。
+- Draft PR: [#309](https://github.com/team478a/manga/pull/309)はDraft／MERGEABLE。初回HEAD `a0701c5`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-babd9e-team478as-projects.vercel.app)。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。merge前にProduction評価保存や有料画像生成を実行しない。
+- 詳細: `docs/RELEASE_CANDIDATE_MONITOR_MANUSCRIPT_BLOCKERS_20260819.md`
+
+---
+
 ## 2026-08-19 PR-R4-3A-15 Production Panel Rollout Guard
 
 - 状態: `FEATURE_FLAG_ON / BATCH_ACTIVE_BUT_NOT_STARTED / ASSIGNMENTS_0 / RESPONSES_0 / FORMAL_COUNT_0`

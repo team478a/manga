@@ -59,7 +59,17 @@ const contracts = [
       /requireProfile\(\)/,
       /getCloudPageSnapshot\(input\.pageId\)/,
       /snapshot\.project_id !== input\.projectId/,
-      /owner_profile_id: profile\.id/,
+      /saveMonitorQualityFeedback\(\{[\s\S]*ownerProfileId: profile\.id/,
+    ],
+  },
+  {
+    name: "quality feedback trusted persistence",
+    file: "src/modules/general-monitor/infrastructure/quality-feedback-repository.ts",
+    patterns: [
+      /createAdminClient\(\)/,
+      /owner_profile_id: input\.ownerProfileId/,
+      /if \(structuredError && !isMissingMonitorFeedbackSchema\(structuredError\)\)/,
+      /if \(error\) throw error/,
     ],
   },
 ];

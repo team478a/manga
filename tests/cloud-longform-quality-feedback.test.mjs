@@ -24,7 +24,8 @@ test("quality feedback API derives trusted target and generation metrics", () =>
   assert.match(api, /snapshot\.project_id !== input\.projectId/);
   assert.match(api, /snapshot\.canvas\.panels\.find/);
   assert.match(api, /listCloudGenerationJobs/);
-  assert.match(api, /generation_cost_micros: generationCostMicros/);
+  assert.match(api, /generationCostMicros/);
+  assert.match(api, /saveMonitorQualityFeedback/);
   assert.doesNotMatch(api, /error\.message/);
 });
 
