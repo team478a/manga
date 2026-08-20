@@ -2,7 +2,7 @@
 
 ## 2026-08-20 品質承認済み候補の完成判定整合
 
-- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`
 - Base: PR #316 merge commit `1cc2151996451d15ea00e7f9c8ab151939c33194`。Branch: `codex/fix-r4-3-selected-adoption-completion`。
 - 監査結果: Productionの対象22ページは、構造化セリフが`auto_placed`、ページ一覧が「完成」、採用画像2件が品質確認済みである一方、編集画面だけ「手動確認待ち」を表示していた。
 - 原因: 品質承認・採用は`cloud_manga_quality_logs`へ記録されるが、同じ候補生成単位の`cloud_generation_panel_adoptions.status`には過去の`review_required`／`placement_failed`が残る。完成判定が後者を無条件に優先し、採用済み候補の兄弟候補まで未確認扱いにしていた。
@@ -10,7 +10,9 @@
 - 不変: API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更していない。
 - Production: 読取監査だけ。作品、Canvas、画像、品質記録、DB、Storage、Provider、creditへの書込みは0件。
 - 検証: 集中15/15、deps error 0（既存warning 2件）、lint、全型検査、Hub 824/824、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存ローカル環境依存。
-- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsを確認して停止する。merge前にProduction再生成・DB更新を行わない。merge後は対象22ページを再読込し、編集画面が「ページ完成」になることを追加課金なしで確認する。
+- Draft PR: [#317](https://github.com/team478a/manga/pull/317)はDraft／MERGEABLE。実装HEAD `e3f80a8`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-qht1tbga3-team478as-projects.vercel.app)。`/login`のタイトル、メール、パスワード、ログイン導線を確認し、ブラウザログ0件。Production DB／Provider操作なし。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。merge前にProduction再生成・DB更新を行わない。merge後は対象22ページを再読込し、編集画面が「ページ完成」になることを追加課金なしで確認する。
 - 詳細: `docs/RELEASE_CANDIDATE_SELECTED_ADOPTION_COMPLETION_20260820.md`
 
 ---

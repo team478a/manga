@@ -8,7 +8,9 @@
 - 同じ候補生成単位に品質承認済みかつ不採用でない候補があれば、古いadoption確認待ちを解決済みと判定する純粋domain helperを追加した。不採用・兄弟候補・全不採用の境界を回帰テストで固定した。
 - API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。Productionへの書込みも0件。
 - 集中15/15、deps、lint、全型検査、Hub 824/824、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: Draft PRの5チェックとVercel Previewを確認して停止する。merge後、追加Provider実行なしで対象ページを再読込し、「ページ完成」表示を確認する。
+- Draft PR [#317](https://github.com/team478a/manga/pull/317)はDraft／MERGEABLE。実装HEAD `e3f80a8`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-qht1tbga3-team478as-projects.vercel.app)。`/login`正常、ブラウザログ0件。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge後、追加Provider実行なしで対象ページを再読込し、「ページ完成」表示を確認する。
 
 ---
 

@@ -51,6 +51,20 @@ API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、p
 
 merge後は対象22ページを再読込し、画像4/4・セリフ1/1を維持したまま編集画面が「ページ完成」と表示することを確認する。Provider再実行、credit消費、DB手動更新は不要である。
 
+## Draft PRとPreview
+
+- Draft PR: [#317](https://github.com/team478a/manga/pull/317)
+- 実装HEAD: `e3f80a80b8646c879fd59c261940ee6137463e5b`
+- Mergeability: `MERGEABLE`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-qht1tbga3-team478as-projects.vercel.app)
+- Preview確認: `/login`のタイトル、メール、パスワード、ログイン導線が正常。ブラウザログ0件。
+- Preview確認中のProduction DB、Provider、credit、作品データ変更は0件。
+
 ## ロールバック
 
 本変更のcommitを通常のrevertで戻す。DB・migration・Storage変更がないため、データrollbackは不要である。戻した場合、対象ページの編集画面は再び古いadoption statusを理由に「手動確認待ち」を表示する。
