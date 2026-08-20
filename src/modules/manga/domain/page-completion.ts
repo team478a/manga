@@ -140,6 +140,7 @@ export function evaluateMangaPageCompletion(input: {
   rejectedGenerationJobIds?: ReadonlySet<string>;
   pngRenderSucceeded: boolean;
   manualReviewRequired: boolean;
+  manualReviewBlockers?: readonly MangaPageCompletionBlocker[];
 }): MangaPageCompletionResult {
   const blockers: MangaPageCompletionBlocker[] = [];
   const add = (blocker: MangaPageCompletionBlocker) => blockers.push(blocker);
@@ -274,7 +275,9 @@ export function evaluateMangaPageCompletion(input: {
 
   if (!input.pngRenderSucceeded)
     add({ code: "PNG_RENDER_FAILED", message: "ページ画像を作成できませんでした。", pageId: input.pageId });
-  if (input.manualReviewRequired)
+  if (input.manualReviewBlockers?.length)
+    input.manualReviewBlockers.forEach(add);
+  else if (input.manualReviewRequired)
     add({ code: "MANUAL_REVIEW_REQUIRED", message: "自動配置結果に確認が必要です。", pageId: input.pageId });
 
   const status: MangaPageCompletionStatus = pendingJobs.length

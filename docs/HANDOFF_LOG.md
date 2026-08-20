@@ -5210,3 +5210,16 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前のProduction変更は禁止。
 
 ---
+
+# 2026-08-20 Codex: 完成判定の手動確認理由可視化
+
+- Branch: `codex/fix-r4-3-completion-review-reasons`
+- Base: `origin/feature/manga-canvas-mvp`@`10f7b5c`（PR #319 merge commit）
+- PR #319 Production反映後も対象22ページは画像4/4、セリフ1/1、生成中0、失敗0、revision 11、PNG成功、credit 80/0/20でgenericな手動確認待ちを継続した。Production書込み・Provider実行なし。
+- 手動確認flagの入力は、セリフ配置、ページ制作状態、候補採用の3系統をORしていた。各保存契約を監査し、セリフ配置がpage単位で一意、制作状態は`revision_required`だけが完成阻害になることを確認した。
+- 完成guard自体は変更せず、セリフ配置確認／失敗、ページ要修正、コマ画像候補採用確認を原因別に表示する。既存generic理由のfallbackを維持する。
+- API、DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF、成人向け、Desktop製品コードは変更していない。
+- 集中18/18、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: 明示承認後にstage／commit／push／Draft PR作成。全CI／Vercel Preview成功で停止し、merge後のread-only表示から実際の残存原因を確定する。
+
+---

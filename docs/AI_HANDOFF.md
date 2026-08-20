@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（完成判定の手動確認理由可視化、2026-08-20）
+
+- 最新基準はPR #319 merge commit `10f7b5c61efd755b405fb5f3a2c52861b2e74b3c`。Branchは`codex/fix-r4-3-completion-review-reasons`。
+- PR #319のProduction反映後も対象22ページは画像4/4、セリフ1/1、生成中0、失敗0、revision 11、PNG成功、credit 80/0/20でgenericな手動確認待ちを継続した。Production書込み・Provider実行なし。
+- 完成判定はセリフ配置台帳、ページ制作状態、候補採用台帳の3原因を1つのbooleanへ集約しており、画面から原因を区別できなかった。セリフ台帳はpage単位で一意、制作状態は`revision_required`だけが当該guard対象。
+- guardを緩めず、セリフ配置確認／失敗、ページ要修正、コマ画像候補採用確認を原因別メッセージとして返す。既存generic入力との互換fallbackも維持する。
+- API、DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF、成人向け、Desktop製品コードは不変。
+- 集中18/18、deps、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。
+- 次: 明示承認後にstage／commit／push／Draft PRを作成し、5チェックとPreviewを確認して停止する。merge後、read-onlyで対象22ページに表示された原因を次の最小修正へ使う。
+
+---
+
 ## 0.0 現在の優先タスク（表示Assetの品質承認と完成判定、2026-08-20）
 
 - 最新基準はPR #318 merge commit `f9316ea2b41c2ec97a20aef6f6fcd32bdbcf3864`。Branchは`codex/fix-r4-3-visible-asset-quality-completion`。
