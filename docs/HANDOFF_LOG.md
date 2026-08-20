@@ -5232,6 +5232,8 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - `revision_required`を自動解除せず、当該理由のときだけ編集画面へ「修正完了として再確認」を追加する。既存の所有権検査済み制作状態更新処理で`review_required`へ遷移し、同じ編集ページへ戻す。
 - セリフ配置・候補採用由来の手動確認にはボタンを表示しない。完成guard、API、URL、DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF、成人向け、Desktop製品コードは変更していない。
 - 集中18/18、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: 明示承認後にstage／commit／push／Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge前にProduction状態を変更しない。
+- Draft PR [#321](https://github.com/team478a/manga/pull/321)はDraft／MERGEABLE。実装HEAD `85c53ad`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-3bm8mokot-team478as-projects.vercel.app)。Vercel Authentication保護下。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前にProduction状態を変更しない。
 
 ---

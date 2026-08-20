@@ -65,3 +65,16 @@ API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、p
 4. Provider呼出し、追加Job、追加credit消費がない。
 
 異常時は新たな書込みやProvider実行を止め、直前状態と表示理由を記録する。
+
+## Draft PRとPreview
+
+- Draft PR: [#321](https://github.com/team478a/manga/pull/321)
+- 状態: Draft、MERGEABLE
+- 実装HEAD: `85c53adc093a2e77a7c0f1149e568a24ca81d4fb`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-3bm8mokot-team478as-projects.vercel.app)
+- Preview保護: Vercel Authentication有効。未認証HTTPはVercelログインへ転送される。
