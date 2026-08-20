@@ -13,7 +13,9 @@
 - 完成判定へ`DIALOGUE_LAYOUT_UNREADABLE`を追加し、存在するだけで読めないセリフを完成扱いにしない。
 - 集中53/53、deps error 0（既存warning 2件）、lint、全型検査、Hub 829/829、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
 - Production、Provider、credit、DB、Storage、Canvas schema、PNG／PDF rendererへの変更・操作なし。
-- 次: stage／commit／push／Draft PR作成は責任者の明示承認後。Previewで追加生成なし修復とPNGを受入れ確認する。
+- Draft PR [#324](https://github.com/team478a/manga/pull/324)はDraft／MERGEABLE。実装HEAD `fc4c77d`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-git-codex-fix-r4-3-7d36ca-team478as-projects.vercel.app)。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。責任者確認前にProductionを変更しない。
 
 ---
 

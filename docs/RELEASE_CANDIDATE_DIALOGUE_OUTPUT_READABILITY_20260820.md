@@ -55,9 +55,14 @@ Base: `ea302207328faee8a647029cf528e55143f2b206`（PR #323 merge commit）
 
 セリフ本文、Canvas schema、PNG／PDF renderer、API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、成人向け境界、Desktop製品コードは変更しない。
 
-## Preview受入れ
+## Draft PRとPreview
 
-Draft PR作成後にPreviewで実施する。
+- Draft PR: [#324](https://github.com/team478a/manga/pull/324)、MERGEABLE。
+- 実装HEAD: `fc4c77d39352ccf0c71e434cfbf98dd8f27e28b2`。
+- Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments: すべて成功。
+- Preview: [Ready](https://mangai-hub-staging-git-codex-fix-r4-3-7d36ca-team478as-projects.vercel.app)。
+
+Previewでの受入れ項目:
 
 1. 既存fixtureまたはPreview用データで修復候補件数を確認する。
 2. 「追加生成なし修復」を実行し、短文が1行横書き中央になることを確認する。

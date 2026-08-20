@@ -8,7 +8,8 @@
 - 完成判定は`DIALOGUE_LAYOUT_UNREADABLE`を追加し、必須文字列が存在してもoverflowまたは短文の複数行・複数列ならfail closedする。
 - セリフ内容、Canvas schema、PNG／PDF renderer、API、DB、Storage、Provider、creditは不変。Production操作なし。
 - 集中53/53、deps、lint、全型検査、Hub 829/829、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
-- 次: 公開操作は明示承認後。Draft PRとPreview作成後、Previewだけで追加生成なし修復・保存・PNGを確認し、責任者確認前にProductionを変更しない。
+- Draft PR [#324](https://github.com/team478a/manga/pull/324)はDraft／MERGEABLE。実装HEAD `fc4c77d`の必須5チェックはすべて成功し、[Preview](https://mangai-hub-staging-git-codex-fix-r4-3-7d36ca-team478as-projects.vercel.app)はReady。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。責任者確認前にProductionを変更せず、次タスクへ進まない。
 
 ---
 
