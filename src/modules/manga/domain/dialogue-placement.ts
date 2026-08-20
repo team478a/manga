@@ -1,4 +1,5 @@
 import {
+  layoutHorizontalText,
   layoutVerticalText,
   parseRubyText,
   segmentGraphemes,
@@ -39,7 +40,13 @@ export type DialoguePlacementResult = {
 
 const MAX_FONT_SIZE = 32;
 const MIN_FONT_SIZE = 18;
+const PREFERRED_MIN_FONT_SIZE = 24;
 const TEXT_PADDING = 10;
+
+type DialogueTextLayout = Pick<
+  TextObject,
+  "fontSize" | "writingMode" | "textAlign" | "verticalAlign"
+>;
 
 function centerInsidePanel(
   value: Pick<Balloon | TextObject, "x" | "y" | "width" | "height">,
@@ -61,7 +68,7 @@ function readingOrder(a: Balloon, b: Balloon) {
   return b.x - a.x;
 }
 
-function fitFontSize(text: string, balloon: Balloon) {
+function fitDialogueTextLayout(text: string, balloon: Balloon): DialogueTextLayout | null {
   const box = {
     x: balloon.x + TEXT_PADDING,
     y: balloon.y + TEXT_PADDING,
@@ -72,6 +79,7 @@ function fitFontSize(text: string, balloon: Balloon) {
   const preferSingleColumn =
     !/[\r\n]/u.test(plainText) && segmentGraphemes(plainText).length <= 6;
   let largestReadableSize: number | null = null;
+  let singleColumnSize: number | null = null;
   for (let fontSize = MAX_FONT_SIZE; fontSize >= MIN_FONT_SIZE; fontSize -= 2) {
     const layout = layoutVerticalText(text, box, {
       fontSize,
@@ -80,9 +88,55 @@ function fitFontSize(text: string, balloon: Balloon) {
     });
     if (layout.overflow) continue;
     largestReadableSize ??= fontSize;
-    if (!preferSingleColumn || layout.columns === 1) return fontSize;
+    if (!preferSingleColumn)
+      return {
+        fontSize,
+        writingMode: "vertical",
+        textAlign: "start",
+        verticalAlign: "top",
+      };
+    if (layout.columns === 1) {
+      singleColumnSize = fontSize;
+      break;
+    }
   }
-  return largestReadableSize;
+  if (preferSingleColumn && box.width >= box.height * 1.5) {
+    for (
+      let fontSize = MAX_FONT_SIZE;
+      fontSize >= PREFERRED_MIN_FONT_SIZE;
+      fontSize -= 2
+    ) {
+      const layout = layoutHorizontalText(text, box, {
+        fontSize,
+        lineHeight: 1.2,
+        letterSpacing: 0,
+        textAlign: "center",
+        verticalAlign: "middle",
+      });
+      if (!layout.overflow && layout.lines.length === 1)
+        return {
+          fontSize,
+          writingMode: "horizontal",
+          textAlign: "center",
+          verticalAlign: "middle",
+        };
+    }
+  }
+  if (singleColumnSize != null)
+    return {
+      fontSize: singleColumnSize,
+      writingMode: "vertical",
+      textAlign: "start",
+      verticalAlign: "top",
+    };
+  return largestReadableSize == null
+    ? null
+    : {
+        fontSize: largestReadableSize,
+        writingMode: "vertical",
+        textAlign: "start",
+        verticalAlign: "top",
+      };
 }
 
 function textLayoutBox(text: TextObject) {
@@ -95,7 +149,7 @@ function textLayoutBox(text: TextObject) {
   };
 }
 
-function shortVerticalDialogueRepairFontSize(
+function shortVerticalDialogueRepairLayout(
   canvas: PageCanvas,
   text: TextObject,
 ) {
@@ -121,24 +175,42 @@ function shortVerticalDialogueRepairFontSize(
     letterSpacing: text.letterSpacing,
   });
   if (!currentLayout.overflow && currentLayout.columns <= 1) return null;
-  for (
-    let fontSize = Math.min(text.fontSize, MAX_FONT_SIZE);
-    fontSize >= MIN_FONT_SIZE;
-    fontSize -= 2
-  ) {
+  return fitDialogueTextLayout(text.text, {
+    ...balloon,
+    x: text.x - TEXT_PADDING,
+    y: text.y - TEXT_PADDING,
+    width: text.width + TEXT_PADDING * 2,
+    height: text.height + TEXT_PADDING * 2,
+  });
+}
+
+export function isDialogueTextLayoutReadable(text: TextObject) {
+  if (!text.visible || !text.text.trim()) return false;
+  const box = textLayoutBox(text);
+  const plainText = parseRubyText(text.text).plainText;
+  const shortText =
+    !/[\r\n]/u.test(plainText) && segmentGraphemes(plainText).length <= 6;
+  if (text.writingMode === "vertical") {
     const layout = layoutVerticalText(text.text, box, {
-      fontSize,
+      fontSize: text.fontSize,
       lineHeight: text.lineHeight,
       letterSpacing: text.letterSpacing,
     });
-    if (!layout.overflow && layout.columns === 1) return fontSize;
+    return !layout.overflow && (!shortText || layout.columns === 1);
   }
-  return null;
+  const layout = layoutHorizontalText(text.text, box, {
+    fontSize: text.fontSize,
+    lineHeight: text.lineHeight,
+    letterSpacing: text.letterSpacing,
+    textAlign: text.textAlign,
+    verticalAlign: text.verticalAlign,
+  });
+  return !layout.overflow && (!shortText || layout.lines.length === 1);
 }
 
 export function countRepairableShortVerticalDialogue(canvas: PageCanvas) {
   return canvas.textObjects.filter(
-    (text) => shortVerticalDialogueRepairFontSize(canvas, text) != null,
+    (text) => shortVerticalDialogueRepairLayout(canvas, text) != null,
   ).length;
 }
 
@@ -148,9 +220,12 @@ export function repairShortVerticalDialogueLayout(
 ) {
   let repairedTextCount = 0;
   for (const text of canvas.textObjects) {
-    const fontSize = shortVerticalDialogueRepairFontSize(canvas, text);
-    if (fontSize == null) continue;
-    text.fontSize = fontSize;
+    const layout = shortVerticalDialogueRepairLayout(canvas, text);
+    if (layout == null) continue;
+    text.fontSize = layout.fontSize;
+    text.writingMode = layout.writingMode;
+    text.textAlign = layout.textAlign;
+    text.verticalAlign = layout.verticalAlign;
     text.updatedAt = timestamp;
     repairedTextCount += 1;
   }
@@ -311,8 +386,8 @@ export function placeStructuredPageDialogue(input: {
         addUniqueBlocker(blockers, "manual_text_present");
         continue;
       }
-      const fontSize = fitFontSize(expectedText, balloon);
-      if (fontSize == null) {
+      const textLayout = fitDialogueTextLayout(expectedText, balloon);
+      if (textLayout == null) {
         if (createdBalloon) {
           canvas.balloons = canvas.balloons.filter(
             (candidate) => candidate.id !== balloon!.id,
@@ -338,12 +413,12 @@ export function placeStructuredPageDialogue(input: {
         visible: true,
         locked: false,
         fontFamily: "sans-serif",
-        fontSize,
+        fontSize: textLayout.fontSize,
         fontWeight: 500,
         color: "#111111",
-        writingMode: "vertical",
-        textAlign: "start",
-        verticalAlign: "top",
+        writingMode: textLayout.writingMode,
+        textAlign: textLayout.textAlign,
+        verticalAlign: textLayout.verticalAlign,
         lineHeight: 1.2,
         letterSpacing: 0,
         padding: 0,

@@ -112,6 +112,28 @@ test("必須セリフ不足、空吹き出し、非表示テキストを検出�
   assert.ok(codes(result).has("DIALOGUE_MISSING"));
 });
 
+test("存在するだけで読めない短文分割を完成扱いにしない", () => {
+  const canvas = clone(source.canvas);
+  const requiredDialogues = clone(source.dialogues);
+  requiredDialogues[0].text = "（証拠を）";
+  const text = canvas.textObjects[0];
+  text.text = requiredDialogues[0].text;
+  text.width = 393;
+  text.height = 144;
+  text.fontSize = 42;
+  text.writingMode = "vertical";
+  let result = evaluateMangaPageCompletion(input({ canvas, requiredDialogues }));
+  assert.equal(result.status, "incomplete");
+  assert.ok(codes(result).has("DIALOGUE_LAYOUT_UNREADABLE"));
+
+  text.fontSize = 32;
+  text.writingMode = "horizontal";
+  text.textAlign = "center";
+  text.verticalAlign = "middle";
+  result = evaluateMangaPageCompletion(input({ canvas, requiredDialogues }));
+  assert.equal(codes(result).has("DIALOGUE_LAYOUT_UNREADABLE"), false);
+});
+
 test("未保存、revision競合、Asset不足、PNG失敗、寸法不正を同時に返す", () => {
   const canvas = clone(source.canvas); canvas.width = 700;
   const result = evaluateMangaPageCompletion(input({ canvas, savedRevision: null, currentRevision: 4, availableAssetIds: new Set(), pngRenderSucceeded: false }));

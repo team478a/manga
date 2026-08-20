@@ -143,6 +143,11 @@ test("既存原稿は追加生成なしで不採用画像・短い縦書き・�
   assert.match(editor, /countReversedPanelBackgroundStacks/);
   assert.match(editor, /repairReversedPanelBackgroundStacks/);
   assert.match(editor, /画像の追加生成やクレジット消費はありません/);
+  assert.match(
+    editor,
+    /role="application"[\s\S]{0,300}containerType: "inline-size"/,
+  );
+  assert.equal((editor.match(/containerType: "inline-size"/g) ?? []).length, 1);
 });
 
 test("Canvasから外した不採用画像を自動配置済みとして再読込し続けない", () => {

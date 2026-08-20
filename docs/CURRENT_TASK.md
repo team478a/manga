@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-20 セリフ出力の可読性と完成判定
+
+- 状態: `IMPLEMENTED / ALL_LOCAL_GATES_PASSED / AWAITING_PUBLISH_AUTHORIZATION / PRODUCTION_READ_ONLY`
+- Base: PR #323 merge commit `ea302207328faee8a647029cf528e55143f2b206`。Branch: `codex/fix-r4-3-dialogue-output-readability`。
+- Production監査: `test`の既存22ページをread-only確認した。必須セリフ`（証拠を）`はCanvas上で42px縦書き・6列に分割され、横長吹き出し内で実用上読みにくかった。画像4/4、セリフ1/1、revision 11/11、PNG成功、credit使用80・予約0・残り20は維持している。
+- 原因: Editorの`cqw`基準がCanvasではなくviewportになり、720px表示Canvasに対して文字が約1.78倍で描画された。また、短文を横長吹き出しでも縦書き優先にし、完成判定は文字列の存在だけを確認していた。
+- 修正: Container Query基準をCanvas rootへ移す。6文字以下の短文は横長吹き出しなら24px以上の1行横書きを優先し、中央配置する。既存の短い複数列縦書きも明示修復時に同じ配置へ直す。完成判定へ`DIALOGUE_LAYOUT_UNREADABLE`を追加し、文字列が存在してもoverflowまたは短文の複数行・複数列なら販売原稿完成にしない。
+- 不変: セリフ内容、既存Canvas schema、API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、PNG／PDF生成処理、成人向け境界、Desktop製品コードは変更しない。Production書込み・Provider実行・クレジット消費は0件。
+- 検証: 集中53/53、deps error 0（既存warning 2件）、lint、全型検査、Hub 829/829、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。PNG fixtureでも32px横書き1行と出力寸法を確認した。RC外部設定Pendingは既存ローカル環境依存。
+- 次: stage／commit／push／Draft PR作成は責任者の明示承認後に実施する。Previewでは既存22ページの「追加生成なし修復」を操作前後で確認し、Productionではmerge前に保存・修復しない。
+- 詳細: `docs/RELEASE_CANDIDATE_DIALOGUE_OUTPUT_READABILITY_20260820.md`
+
+---
+
 ## 2026-08-20 生成進捗と販売原稿完成の表示契約分離
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_READ_ONLY`

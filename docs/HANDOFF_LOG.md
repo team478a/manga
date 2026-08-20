@@ -4,6 +4,19 @@
 
 ---
 
+## 2026-08-20 Codex: セリフ出力の可読性と完成判定
+
+- Branch: `codex/fix-r4-3-dialogue-output-readability`
+- Base: `origin/feature/manga-canvas-mvp`@`ea302207`（PR #323 merge commit）
+- Productionをread-only監査し、既存22ページの`（証拠を）`が42px縦書き・6列に分割されていること、EditorのContainer Queryがviewport基準でCanvas比より約1.78倍になることを確認した。
+- Container Query基準をCanvas rootへ移し、横長吹き出しの6文字以下短文を24px以上の1行横書き中央へ配置する。既存短文は追加生成なし修復で更新できる。
+- 完成判定へ`DIALOGUE_LAYOUT_UNREADABLE`を追加し、存在するだけで読めないセリフを完成扱いにしない。
+- 集中53/53、deps error 0（既存warning 2件）、lint、全型検査、Hub 829/829、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Production、Provider、credit、DB、Storage、Canvas schema、PNG／PDF rendererへの変更・操作なし。
+- 次: stage／commit／push／Draft PR作成は責任者の明示承認後。Previewで追加生成なし修復とPNGを受入れ確認する。
+
+---
+
 ## 2026-08-20 Codex: 不採用画像修復後の自動再読込loop修正
 
 - PR #313 merge commit `f9f2b544fe0ffc0cc5c23064097ccce089f1073d`から`codex/fix-r4-3-rejected-reload-loop`を開始した。

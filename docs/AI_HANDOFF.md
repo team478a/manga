@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（セリフ出力の可読性、2026-08-20）
+
+- 最新基準はPR #323 merge commit `ea302207328faee8a647029cf528e55143f2b206`。Branchは`codex/fix-r4-3-dialogue-output-readability`。
+- Production既存22ページの必須セリフ`（証拠を）`はデータ上1/1配置済みだが、42px縦書きが横長吹き出し内で6列に分かれ、販売原稿として読みにくかった。EditorではContainer Query基準もviewportとなり、Canvas表示比より約1.78倍大きく見えていた。
+- Container Query基準をCanvas rootへ移し、6文字以下の短文は横長吹き出しで24px以上の1行横書き中央を優先する。既存短文は追加生成なしの明示修復で同じ配置へ更新できる。
+- 完成判定は`DIALOGUE_LAYOUT_UNREADABLE`を追加し、必須文字列が存在してもoverflowまたは短文の複数行・複数列ならfail closedする。
+- セリフ内容、Canvas schema、PNG／PDF renderer、API、DB、Storage、Provider、creditは不変。Production操作なし。
+- 集中53/53、deps、lint、全型検査、Hub 829/829、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: 公開操作は明示承認後。Draft PRとPreview作成後、Previewだけで追加生成なし修復・保存・PNGを確認し、責任者確認前にProductionを変更しない。
+
+---
+
 ## 0.0 現在の優先タスク（生成進捗と販売原稿完成の表示契約、2026-08-20）
 
 - 最新基準はPR #322 merge commit `176facb48568809b4bf5461247de498942dfc84a`。Branchは`codex/fix-r4-3-project-progress-completion-contract`。
