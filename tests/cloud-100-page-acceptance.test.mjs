@@ -61,7 +61,7 @@ test("100ページ完成原稿を全件検査し制作進捗を完了にする",
   assert.equal(report.completedPanelCount, 100);
   assert.equal(report.errorCount, 0);
   assert.equal(report.pageProgress.length, 100);
-  assert.equal(progress.completePageCount, 100);
+  assert.equal(progress.imageReadyPageCount, 100);
   assert.equal(progress.generatingPageCount, 0);
   assert.equal(progress.failedPageCount, 0);
 });

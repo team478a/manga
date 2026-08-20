@@ -12,7 +12,7 @@ export type CloudProductionPageProgress = CloudManuscriptPageProgress & {
   queuedPanelCount: number;
   runningPanelCount: number;
   failedPanelCount: number;
-  status: "not_started" | "generating" | "needs_attention" | "complete";
+  status: "not_started" | "generating" | "needs_attention" | "images_ready";
 };
 
 export function buildCloudProductionProgress(input: {
@@ -57,7 +57,7 @@ export function buildCloudProductionProgress(input: {
     const status =
       page.totalPanelCount > 0 &&
       page.completedPanelCount === page.totalPanelCount
-        ? "complete"
+        ? "images_ready"
         : failedPanelCount > 0
           ? "needs_attention"
           : queuedPanelCount + runningPanelCount > 0
@@ -74,7 +74,7 @@ export function buildCloudProductionProgress(input: {
 
   return {
     pages,
-    completePageCount: pages.filter((page) => page.status === "complete").length,
+    imageReadyPageCount: pages.filter((page) => page.status === "images_ready").length,
     generatingPageCount: pages.filter((page) => page.status === "generating").length,
     failedPageCount: pages.filter((page) => page.status === "needs_attention").length,
   };

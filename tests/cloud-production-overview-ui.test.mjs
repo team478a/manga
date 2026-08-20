@@ -19,6 +19,8 @@ const generationServer = fs.readFileSync(
 test("作品画面でキャラクター設定とページ別生成進捗を案内する", () => {
   assert.match(page, /キャラクター設定表/);
   assert.match(page, /作品全体の生成進捗/);
+  assert.match(page, /画像配置完了/);
+  assert.match(page, /販売原稿としての完成判定は原稿プレビューで確認してください/);
   assert.match(page, /画像配置/);
   assert.match(page, /再実行が必要/);
 });

@@ -15,11 +15,11 @@ test("画像配置と最新ジョブからページ単位の進捗を作る", ()
       { page_id: "page-3", target_panel_id: "panel-2", status: "failed", created_at: "2026-07-31T02:00:00Z" },
     ],
   });
-  assert.equal(report.completePageCount, 1);
+  assert.equal(report.imageReadyPageCount, 1);
   assert.equal(report.generatingPageCount, 1);
   assert.equal(report.failedPageCount, 1);
   assert.deepEqual(report.pages.map((page) => page.status), [
-    "complete",
+    "images_ready",
     "generating",
     "needs_attention",
   ]);
