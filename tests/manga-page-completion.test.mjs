@@ -7,6 +7,7 @@ import { createPagesPdf } from "../packages/export-core/src/index.ts";
 import { renderCloudCanvasPng } from "../src/lib/cloud-canvas-render.ts";
 import {
   evaluateMangaPageCompletion,
+  hasUnresolvedPanelAdoptionReview,
   summarizeMangaProjectCompletion,
 } from "../src/modules/manga/domain/page-completion.ts";
 import { createFourPageCompletionFixture } from "./fixtures/manga-page-completion-four-page.mjs";
@@ -122,6 +123,33 @@ test("手動確認だけが残る場合はreview_requiredになる", () => {
   const result = evaluateMangaPageCompletion(input({ manualReviewRequired: true }));
   assert.equal(result.status, "review_required");
   assert.ok(codes(result).has("MANUAL_REVIEW_REQUIRED"));
+});
+
+test("品質承認済み候補がある生成単位は古いadoption確認待ちを残さない", () => {
+  const selectedJobId = "10000000-0000-4000-8000-000000000081";
+  const siblingJobId = "10000000-0000-4000-8000-000000000082";
+  const statuses = new Map([
+    [selectedJobId, "placement_failed"],
+    [siblingJobId, "review_required"],
+  ]);
+  assert.equal(hasUnresolvedPanelAdoptionReview({
+    candidateJobIds: [selectedJobId, siblingJobId],
+    adoptionStatusByJobId: statuses,
+    reviewedGenerationJobIds: new Set([selectedJobId]),
+    rejectedGenerationJobIds: new Set(),
+  }), false);
+  assert.equal(hasUnresolvedPanelAdoptionReview({
+    candidateJobIds: [selectedJobId, siblingJobId],
+    adoptionStatusByJobId: statuses,
+    reviewedGenerationJobIds: new Set(),
+    rejectedGenerationJobIds: new Set([selectedJobId]),
+  }), true);
+  assert.equal(hasUnresolvedPanelAdoptionReview({
+    candidateJobIds: [selectedJobId, siblingJobId],
+    adoptionStatusByJobId: statuses,
+    reviewedGenerationJobIds: new Set(),
+    rejectedGenerationJobIds: new Set([selectedJobId, siblingJobId]),
+  }), false);
 });
 
 test("自動配置した生成画像は目視確認までreview_requiredにする", () => {

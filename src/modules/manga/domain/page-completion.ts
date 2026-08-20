@@ -83,6 +83,25 @@ function visiblePanelAssetIds(canvas: PageCanvas, panel: Panel) {
   return panel.imageAssetId ? [panel.imageAssetId] : [];
 }
 
+export function hasUnresolvedPanelAdoptionReview(input: {
+  candidateJobIds: readonly string[];
+  adoptionStatusByJobId: ReadonlyMap<string, string>;
+  reviewedGenerationJobIds: ReadonlySet<string>;
+  rejectedGenerationJobIds: ReadonlySet<string>;
+}) {
+  const hasAcceptedCandidate = input.candidateJobIds.some(
+    (id) =>
+      input.reviewedGenerationJobIds.has(id) &&
+      !input.rejectedGenerationJobIds.has(id),
+  );
+  if (hasAcceptedCandidate) return false;
+  return input.candidateJobIds.some((id) => {
+    if (input.rejectedGenerationJobIds.has(id)) return false;
+    const status = input.adoptionStatusByJobId.get(id);
+    return status === "review_required" || status === "placement_failed";
+  });
+}
+
 export function evaluateMangaPageCompletion(input: {
   pageId: string;
   pageWidth: number;
