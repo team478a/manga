@@ -152,6 +152,25 @@ test("品質承認済み候補がある生成単位は古いadoption確認待ち
   }), false);
 });
 
+test("現在表示中の品質承認済み画像は別生成単位の古いadoption確認待ちを残さない", () => {
+  const latestJobId = "10000000-0000-4000-8000-000000000091";
+  const statuses = new Map([[latestJobId, "review_required"]]);
+  assert.equal(hasUnresolvedPanelAdoptionReview({
+    candidateJobIds: [latestJobId],
+    adoptionStatusByJobId: statuses,
+    reviewedGenerationJobIds: new Set(),
+    rejectedGenerationJobIds: new Set(),
+    hasReviewedVisibleImage: true,
+  }), false);
+  assert.equal(hasUnresolvedPanelAdoptionReview({
+    candidateJobIds: [latestJobId],
+    adoptionStatusByJobId: statuses,
+    reviewedGenerationJobIds: new Set(),
+    rejectedGenerationJobIds: new Set(),
+    hasReviewedVisibleImage: false,
+  }), true);
+});
+
 test("自動配置した生成画像は目視確認までreview_requiredにする", () => {
   const canvas = clone(source.canvas);
   const generationJobId = source.imageJobs[0].id;

@@ -88,7 +88,9 @@ export function hasUnresolvedPanelAdoptionReview(input: {
   adoptionStatusByJobId: ReadonlyMap<string, string>;
   reviewedGenerationJobIds: ReadonlySet<string>;
   rejectedGenerationJobIds: ReadonlySet<string>;
+  hasReviewedVisibleImage?: boolean;
 }) {
+  if (input.hasReviewedVisibleImage) return false;
   const hasAcceptedCandidate = input.candidateJobIds.some(
     (id) =>
       input.reviewedGenerationJobIds.has(id) &&

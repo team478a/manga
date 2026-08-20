@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-08-20 表示中の品質承認済み画像と完成判定の整合
+
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`
+- Base: PR #317 merge commit `0538c4f4f3b4668f963220af3f45fd7f22e5ce83`。Branch: `codex/fix-r4-3-visible-reviewed-completion`。
+- Production受入れ: merge commitのVercel Production反映を確認後、`test`の既存22ページを追加課金なしで再読込した。画像4/4、セリフ1/1、生成中0、失敗0、Canvas revision 11、PNG成功、credit使用80・予約0・残り20、ブラウザログ0件だが、編集画面だけ「手動確認待ち」を残した。
+- 絞込み: 構造化セリフは`auto_placed`。長編制作状態の「確認が必要」filterにも22ページは含まれず、dialogue placementと`cloud_pages.production_status`は原因ではない。残る原因はpanel adoption完成判定だった。
+- 原因: PR #317は同じ候補生成単位の品質承認だけを解決済みとしたが、現在Canvasに表示中の画像が別Job／Asset経路で品質承認されている場合、同じコマに残る非表示の古い`review_required`／`placement_failed`を解消できなかった。
+- 修正: 現在Canvasで表示中かつ品質承認済みの生成画像をコマ単位で収集し、そのコマでは非表示の古い候補採用確認待ちを完成阻害にしない。表示中画像自体の品質承認・不採用・asset availability、画像／セリフ数、revision、PNG、制作状態の既存guardは維持する。
+- 不変: API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更していない。
+- Production: 読取受入れだけ。作品、Canvas、画像、品質記録、DB、Storage、Provider、creditへの書込みは0件。
+- 検証: 集中16/16、deps error 0（既存warning 2件）、lint、全型検査、Hub 825/825、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。RC外部設定Pendingは既存ローカル環境依存。
+- Draft PR: [#318](https://github.com/team478a/manga/pull/318)はDraft／MERGEABLE。初回HEAD `fbe59c5`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-mez84eq7v-team478as-projects.vercel.app)。`/login`のタイトル、メール、パスワード、ログイン導線を確認し、エラー境界なし。Production DB／Provider操作なし。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。merge前にProduction再生成・DB更新を行わない。merge後は対象22ページを追加課金なしで再読込し「ページ完成」を確認する。
+- 詳細: `docs/RELEASE_CANDIDATE_VISIBLE_REVIEWED_COMPLETION_20260820.md`
+
+---
+
 ## 2026-08-20 品質承認済み候補の完成判定整合
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`
