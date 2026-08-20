@@ -8,6 +8,7 @@ import {
   evaluateMangaPageCompletion,
   hasUnresolvedPanelAdoptionReview,
   summarizeMangaProjectCompletion,
+  visibleReviewedPanelIds,
   type MangaPageCompletionResult,
   type PageImageGenerationState,
   type RequiredPageDialogue,
@@ -175,7 +176,16 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
       ),
     ),
   )];
-  const qualityJobIds = [...new Set([...currentJobIds, ...visibleGenerationJobIds])];
+  const visibleGenerationAssetJobIds = imageJobRows.flatMap((row) =>
+    row.output_asset_id && requiredAssetIds.has(String(row.output_asset_id))
+      ? [String(row.id)]
+      : [],
+  );
+  const qualityJobIds = [...new Set([
+    ...currentJobIds,
+    ...visibleGenerationJobIds,
+    ...visibleGenerationAssetJobIds,
+  ])];
   const [adoptions, qualityEvents] = await Promise.all([
     currentJobIds.length
       ? supabase.from("cloud_generation_panel_adoptions").select("generation_job_id,status").in("generation_job_id", currentJobIds)
@@ -213,17 +223,11 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
   );
   const reviewedVisiblePanelIdsByPage = new Map<string, Set<string>>();
   for (const [pageId, canvas] of canvases) {
-    reviewedVisiblePanelIdsByPage.set(pageId, new Set(
-      canvas.panelLayers.flatMap((layer) =>
-        layer.visible &&
-        layer.panelId &&
-        layer.sourceJobId &&
-        (reviewedGenerationJobIds.has(layer.sourceJobId) ||
-          (layer.assetId && reviewedGenerationAssetIds.has(layer.assetId)))
-          ? [layer.panelId]
-          : [],
-      ),
-    ));
+    reviewedVisiblePanelIdsByPage.set(pageId, visibleReviewedPanelIds({
+      canvas,
+      reviewedGenerationJobIds,
+      reviewedGenerationAssetIds,
+    }));
   }
   const placementByPage = new Map((placements.data ?? []).map((row) => [row.page_id, row.status]));
   const productionByPage = new Map((productionRows.data ?? []).map((row) => [row.id, row.production_status]));

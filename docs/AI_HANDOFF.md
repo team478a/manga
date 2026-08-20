@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（表示Assetの品質承認と完成判定、2026-08-20）
+
+- 最新基準はPR #318 merge commit `f9316ea2b41c2ec97a20aef6f6fcd32bdbcf3864`。Branchは`codex/fix-r4-3-visible-asset-quality-completion`。
+- Production対象22ページは画像4/4、セリフ1/1、生成中0、失敗0、Canvas revision 11、PNG成功でも編集画面だけ手動確認待ちを継続した。credit 80/0/20、書込み・Provider実行なし。
+- 原因はAsset承認経路の2欠落。`sourceJobId`なしの表示layerをAsset承認済みでも除外し、表示Assetの生成元が最新Jobでなければ品質ログ取得対象にも含めていなかった。
+- 表示Assetを生成した過去Jobも品質ログ照合へ含め、JobまたはAssetで承認済みの表示layerとlegacy `panel.imageAssetId`をコマ単位で認識する。非表示・未承認は対象外。
+- 未承認生成画像、不採用、Asset unavailable、画像・セリフ・revision・PNG・制作状態のguardは維持する。API、DB、migration、RPC、Storage、Provider、credit、Canvas schema、出力、成人向け、Desktop製品コードは不変。
+- 集中17/17、deps、lint、全型検査、Hub 826/826、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。
+- Draft PR [#319](https://github.com/team478a/manga/pull/319)はDraft／MERGEABLE。初回HEAD `11fd4b7`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-mng02lj4r-team478as-projects.vercel.app)。`/login`正常、エラー境界なし。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge後、追加Provider実行なしで対象22ページを再読込する。
+
+---
+
 ## 0.0 現在の優先タスク（表示中の品質承認済み画像と完成判定、2026-08-20）
 
 - 最新基準はPR #317 merge commit `0538c4f4f3b4668f963220af3f45fd7f22e5ce83`。Branchは`codex/fix-r4-3-visible-reviewed-completion`。

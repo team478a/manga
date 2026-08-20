@@ -104,6 +104,26 @@ export function hasUnresolvedPanelAdoptionReview(input: {
   });
 }
 
+export function visibleReviewedPanelIds(input: {
+  canvas: PageCanvas;
+  reviewedGenerationJobIds: ReadonlySet<string>;
+  reviewedGenerationAssetIds: ReadonlySet<string>;
+}) {
+  return new Set(input.canvas.panels.flatMap((panel) =>
+    panel.visible &&
+    (visiblePanelAssetIds(input.canvas, panel).some((assetId) =>
+      input.reviewedGenerationAssetIds.has(assetId),
+    ) || input.canvas.panelLayers.some((layer) =>
+      layer.panelId === panel.id &&
+      layer.visible &&
+      layer.sourceJobId &&
+      input.reviewedGenerationJobIds.has(layer.sourceJobId),
+    ))
+      ? [panel.id]
+      : [],
+  ));
+}
+
 export function evaluateMangaPageCompletion(input: {
   pageId: string;
   pageWidth: number;
