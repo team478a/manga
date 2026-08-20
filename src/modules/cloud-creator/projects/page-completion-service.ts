@@ -6,6 +6,7 @@ import { cloudStoryboardResultSchema } from "@/lib/cloud-storyboard";
 import { DomainError, ValidationError } from "@/lib/domain-errors";
 import {
   evaluateMangaPageCompletion,
+  hasUnresolvedPanelAdoptionReview,
   summarizeMangaProjectCompletion,
   type MangaPageCompletionResult,
   type PageImageGenerationState,
@@ -245,11 +246,15 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
         placementByPage.get(page.id) === "review_required" ||
         placementByPage.get(page.id) === "placement_failed" ||
         productionByPage.get(page.id) === "revision_required" ||
-        currentJobs.some((job) => job.pageId === page.id && (job.candidateJobIds ?? [job.id]).some((id) => {
-          if (rejectedGenerationJobIds.has(id)) return false;
-          const status = adoptionStatus.get(id);
-          return status === "review_required" || status === "placement_failed";
-        })),
+        currentJobs.some((job) =>
+          job.pageId === page.id &&
+          hasUnresolvedPanelAdoptionReview({
+            candidateJobIds: job.candidateJobIds ?? [job.id],
+            adoptionStatusByJobId: adoptionStatus,
+            reviewedGenerationJobIds,
+            rejectedGenerationJobIds,
+          }),
+        ),
     });
     results.push({ ...completion, pageId: page.id, pageNumber: page.page_number, width: page.width, height: page.height, png });
   }

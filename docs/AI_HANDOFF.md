@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（品質承認済み候補の完成判定整合、2026-08-20）
+
+- 最新基準はPR #316 merge commit `1cc2151996451d15ea00e7f9c8ab151939c33194`。Branchは`codex/fix-r4-3-selected-adoption-completion`。
+- Productionの対象22ページをread-only監査し、セリフ`auto_placed`、ページ一覧「完成」、採用画像2件の品質確認済みを確認した。編集画面だけ「手動確認待ち」を残していた。
+- 原因は、品質承認済み候補が存在しても、同一候補生成単位の古い`review_required`／`placement_failed` adoption台帳を完成判定が未解決として数えること。
+- 同じ候補生成単位に品質承認済みかつ不採用でない候補があれば、古いadoption確認待ちを解決済みと判定する純粋domain helperを追加した。不採用・兄弟候補・全不採用の境界を回帰テストで固定した。
+- API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。Productionへの書込みも0件。
+- 集中15/15、deps、lint、全型検査、Hub 824/824、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Draft PR [#317](https://github.com/team478a/manga/pull/317)はDraft／MERGEABLE。実装HEAD `e3f80a8`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-qht1tbga3-team478as-projects.vercel.app)。`/login`正常、ブラウザログ0件。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge後、追加Provider実行なしで対象ページを再読込し、「ページ完成」表示を確認する。
+
+---
+
 ## 0.0 現在の優先タスク（PR #315 Production受入れ、2026-08-20）
 
 - 最新基準はPR #315 merge commit `09a3bfddc476d5a37f8821f2ec6cc767f531d9a3`。Branchは`codex/docs-r4-3-provider-layout-production-acceptance`。
