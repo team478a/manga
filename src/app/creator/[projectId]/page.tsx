@@ -246,25 +246,25 @@ export default async function CloudProjectPage({
                 作品全体の生成進捗
               </h2>
               <p className="mt-2 text-sm text-stone-600">
-                ページごとの画像配置と、実行中・失敗した画像生成をまとめて確認できます。
+                ページごとの画像配置と、実行中・失敗した画像生成をまとめて確認できます。販売原稿としての完成判定は原稿プレビューで確認してください。
               </p>
             </div>
             <span className="w-fit rounded-full bg-violet-50 px-3 py-1 text-sm font-bold text-violet-800">
-              完成 {productionProgress.completePageCount}/{productionProgress.pages.length}ページ
+              画像配置完了 {productionProgress.imageReadyPageCount}/{productionProgress.pages.length}ページ
             </span>
           </div>
           <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {productionProgress.pages.map((page) => {
               const label =
-                page.status === "complete"
-                  ? "完成"
+                page.status === "images_ready"
+                  ? "画像配置完了"
                   : page.status === "generating"
                     ? "生成中"
                     : page.status === "needs_attention"
                       ? "要確認"
                       : "未着手";
               const style =
-                page.status === "complete"
+                page.status === "images_ready"
                   ? "border-green-200 bg-green-50 text-green-900"
                   : page.status === "generating"
                     ? "border-violet-200 bg-violet-50 text-violet-900"

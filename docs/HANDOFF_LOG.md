@@ -5249,3 +5249,15 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 証跡のstage／commit／push／Draft PR作成は明示承認後。次工程では完成22ページの目視品質と全32ページの完成率をread-only監査する。
 
 ---
+
+# 2026-08-20 Codex: 生成進捗と販売原稿完成の表示契約分離
+
+- Branch: `codex/fix-r4-3-project-progress-completion-contract`
+- Base: `origin/feature/manga-canvas-mvp`@`176facb`（PR #322 merge commit）
+- Productionをread-only監査し、作品画面「完成2/32」と完成原稿プレビュー「完成1/32」の不整合を確認した。画像配置13/157、要修正276、credit使用80・予約0・残り20。
+- 生成進捗の`complete`は画像配置だけで、正式完成判定の必須セリフ、品質確認、revision、PNG、制作状態を含まなかった。状態を`images_ready`、表示を「画像配置完了」へ改め、正式完成は原稿プレビューへ案内する。
+- 20ページは画像4/4だが全4コマ品質確認待ち。22ページは正式完成だが、目視では吹き出し内セリフが実用サイズで読めず、下段構図重複と連続性にも販売前修正が必要。
+- Production、DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF処理、成人向け、Desktop製品コードは変更していない。
+- 集中6/6、deps error 0（既存warning 2件）、lint、全型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。明示承認後にDraft PRを作成し、merge前にProductionを変更しない。
+
+---

@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（生成進捗と販売原稿完成の表示契約、2026-08-20）
+
+- 最新基準はPR #322 merge commit `176facb48568809b4bf5461247de498942dfc84a`。Branchは`codex/fix-r4-3-project-progress-completion-contract`。
+- Production作品画面は完成2/32と表示したが、完成原稿プレビューの正式完成判定は1/32（3%）、未完成30、確認待ち1だった。画像配置13/157、要修正276、credit 80/0/20。
+- 原因は生成進捗の`complete`が画像Asset配置完了だけを意味し、必須セリフ・画像品質・revision・PNG・制作状態の販売原稿完成契約を含まないこと。
+- 状態を`images_ready`、表示を「画像配置完了」へ改め、正式完成は原稿プレビューで確認する案内を追加した。全ページPNG完成判定の重複実行は追加しない。
+- 22ページは技術的完成だが、出力画像では吹き出し内セリフが実用サイズで読めず、構図重複と連続性にも課題がある。20ページは4画像が品質確認待ち。
+- Production、Provider、credit、DB、Canvas、PNG／PDF処理は不変。集中6/6、deps error 0（既存warning 2件）、lint、全型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 次: 明示承認後にstage／commit／push／Draft PRを作成し、全CIとVercel Preview成功で停止する。責任者確認前にセリフ出力修正や残り144コマ生成を開始しない。
+
+---
+
 ## 0.0 現在の優先タスク（PR #321 Production完成受入れ、2026-08-20）
 
 - 最新基準はPR #321 merge commit `c02fd0be0e9e1e9c7376801aa221c39fc068a1f9`。Branchは`codex/docs-r4-3-page-completion-production-acceptance`。
