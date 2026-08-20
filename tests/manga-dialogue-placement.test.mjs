@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { layoutVerticalText } from "@mangai/canvas-core";
+import { layoutHorizontalText, layoutVerticalText } from "@mangai/canvas-core";
 import { placeCompletedPageDialogue } from "../src/modules/manga/application/auto-place-page-dialogue.ts";
 import {
   countRepairableShortVerticalDialogue,
@@ -113,7 +113,7 @@ test("対象コマの空吹き出しへ縦書きテキストを関連付ける",
   assert.ok(result.canvas.textObjects[0].fontSize <= 32);
 });
 
-test("6文字以下の短い縦書きは縮小して1列へ収める", () => {
+test("横長吹き出しの短いセリフは可読サイズの横書き中央へ配置する", () => {
   const compactBalloon = balloon({ width: 180, height: 100 });
   const result = place(
     canvas({ balloons: [compactBalloon] }),
@@ -121,20 +121,25 @@ test("6文字以下の短い縦書きは縮小して1列へ収める", () => {
   );
   assert.deepEqual(result.blockers, []);
   const text = result.canvas.textObjects[0];
-  const layout = layoutVerticalText(
+  const layout = layoutHorizontalText(
     text.text,
     { x: text.x, y: text.y, width: text.width, height: text.height },
     {
       fontSize: text.fontSize,
       lineHeight: text.lineHeight,
       letterSpacing: text.letterSpacing,
+      textAlign: text.textAlign,
+      verticalAlign: text.verticalAlign,
     },
   );
-  assert.equal(layout.columns, 1);
-  assert.ok(text.fontSize < 32);
+  assert.equal(text.writingMode, "horizontal");
+  assert.equal(text.textAlign, "center");
+  assert.equal(text.verticalAlign, "middle");
+  assert.equal(layout.lines.length, 1);
+  assert.equal(text.fontSize, 32);
 });
 
-test("既存の短い縦書きは内容と領域を保ったまま明示修復で1列化する", () => {
+test("既存の横長短文は内容と領域を保って可読サイズの横書きへ修復する", () => {
   const targetBalloon = balloon({ width: 413, height: 164 });
   const originalText = {
     id: "60000000-0000-4000-8000-000000000009",
@@ -184,8 +189,12 @@ test("既存の短い縦書きは内容と領域を保ったまま明示修復�
     [originalText.x, originalText.y, originalText.width, originalText.height],
   );
   assert.ok(repaired.fontSize < originalFontSize);
+  assert.equal(repaired.fontSize, 32);
+  assert.equal(repaired.writingMode, "horizontal");
+  assert.equal(repaired.textAlign, "center");
+  assert.equal(repaired.verticalAlign, "middle");
   assert.equal(
-    layoutVerticalText(
+    layoutHorizontalText(
       repaired.text,
       {
         x: repaired.x,
@@ -197,8 +206,10 @@ test("既存の短い縦書きは内容と領域を保ったまま明示修復�
         fontSize: repaired.fontSize,
         lineHeight: repaired.lineHeight,
         letterSpacing: repaired.letterSpacing,
+        textAlign: repaired.textAlign,
+        verticalAlign: repaired.verticalAlign,
       },
-    ).columns,
+    ).lines.length,
     1,
   );
   assert.equal(countRepairableShortVerticalDialogue(value), 0);

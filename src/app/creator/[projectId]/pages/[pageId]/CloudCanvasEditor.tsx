@@ -2218,6 +2218,7 @@ export function CloudCanvasEditor({
             style={{
               aspectRatio: `${canvas.width} / ${canvas.height}`,
               backgroundColor: canvas.backgroundColor,
+              containerType: "inline-size",
             }}
           >
             {canvas.panels
@@ -2321,7 +2322,6 @@ export function CloudCanvasEditor({
                     padding: `${(text.padding / canvas.width) * 100}%`,
                     opacity: text.opacity,
                     touchAction: "none",
-                    containerType: "inline-size",
                   }}
                 >
                   {text.text}

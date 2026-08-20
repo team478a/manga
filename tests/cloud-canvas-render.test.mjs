@@ -87,6 +87,57 @@ test("Cloud CanvasをPNGへ描画できる", async () => {
   assert.equal(metadata.height, 480);
 });
 
+test("横長吹き出しの短いセリフをPNGと同じ32px横書き中央で描画する", async () => {
+  const canvas = {
+    schemaVersion: 1,
+    pageId: "page-dialogue",
+    width: 320,
+    height: 480,
+    backgroundColor: "#ffffff",
+    panels: [],
+    panelLayers: [],
+    balloons: [],
+    textObjects: [
+      {
+        id: "text-dialogue",
+        pageId: "page-dialogue",
+        balloonId: null,
+        text: "（証拠を）",
+        x: 20,
+        y: 30,
+        width: 280,
+        height: 100,
+        rotation: 0,
+        zIndex: 1,
+        visible: true,
+        locked: false,
+        writingMode: "horizontal",
+        fontFamily: "sans-serif",
+        fontSize: 32,
+        fontWeight: 500,
+        color: "#111111",
+        textAlign: "center",
+        verticalAlign: "middle",
+        lineHeight: 1.2,
+        letterSpacing: 0,
+        padding: 0,
+        opacity: 1,
+      },
+    ],
+  };
+
+  const svg = createCloudCanvasSvg(canvas, new Map());
+  assert.match(svg, /font-size="32"/);
+  assert.match(svg, />（証拠を）<\/text>/);
+  assert.doesNotMatch(svg, />（<\/text>[\s\S]*>証<\/text>/);
+
+  const png = await renderCloudCanvasPng(canvas, new Map());
+  const metadata = await sharp(png).metadata();
+  assert.equal(metadata.format, "png");
+  assert.equal(metadata.width, 320);
+  assert.equal(metadata.height, 480);
+});
+
 test("Cloud Canvasは分離レイヤー、コマ形状、吹き出し尻尾を保持する", async () => {
   const timestamp = "2026-07-31T00:00:00.000Z";
   const panel = {
