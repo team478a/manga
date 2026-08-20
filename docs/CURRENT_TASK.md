@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-20 PR #321 Production完成受入れ
+
+- 状態: `PRODUCTION_ACCEPTANCE_PASSED / PAGE_COMPLETE / PNG_READY / CREDIT_UNCHANGED / AWAITING_PUBLISH_AUTHORIZATION`
+- Base: PR #321 merge commit `c02fd0be0e9e1e9c7376801aa221c39fc068a1f9`。Branch: `codex/docs-r4-3-page-completion-production-acceptance`。
+- Production反映: deployment `5995191657`がsuccess。URLは`https://mangai-hub-staging-k5fx0dv49-team478as-projects.vercel.app`。
+- 限定操作: 責任者の明示承認後、`test`の既存22ページで「修正完了として再確認」を1回だけ実行した。`cloud_pages.production_status`は`revision_required`から既存契約の`review_required`へ遷移した。
+- 結果: 完成バナーは「ページ完成」。画像4/4、セリフ1/1、生成中0、失敗0、保存revision 11／最新11、PNG成功を維持した。
+- credit: 使用80、予約0、残り20で不変。Provider実行、追加Job、追加Asset、Canvas保存、追加課金は0件。
+- ブラウザ: アプリ由来のerror／warningは0件。Chrome拡張由来の既知warningだけを確認し、製品障害には含めない。
+- 不変: API、URL、DB schema、migration、RPC、Storage、Feature Flag、Provider、model、pricing、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更していない。
+- 次: このProduction受入れ証跡のstage／commit／push／Draft PR作成は明示承認後に実施する。漫画品質の次課題は、完成22ページの販売原稿としての目視品質と作品全体32ページの完成率を分けて監査する。
+- 詳細: `docs/RELEASE_CANDIDATE_PAGE_COMPLETION_PRODUCTION_ACCEPTANCE_20260820.md`
+
+---
+
 ## 2026-08-20 ページ要修正を明示操作で再確認へ戻す
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`

@@ -5237,3 +5237,15 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前にProduction状態を変更しない。
 
 ---
+
+# 2026-08-20 Codex: PR #321 Production完成受入れ
+
+- Branch: `codex/docs-r4-3-page-completion-production-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`@`c02fd0b`（PR #321 merge commit）
+- Production deployment `5995191657`のsuccessを確認し、責任者の明示承認後に`test`の既存22ページで「修正完了として再確認」を1回だけ実行した。
+- 完成バナーは「ページ完成」へ変わり、画像4/4、セリフ1/1、生成中0、失敗0、保存revision 11／最新11、PNG成功を維持した。
+- creditは使用80、予約0、残り20で不変。Provider実行、追加Job、追加Asset、Canvas保存、追加課金は0件。
+- Production変更は`cloud_pages.production_status`の既存契約内遷移だけ。API、DB schema、migration、RPC、Storage、Provider、model、pricing、Canvas schema、出力処理、成人向け境界、Desktop製品コードは変更していない。
+- 次: 証跡のstage／commit／push／Draft PR作成は明示承認後。次工程では完成22ページの目視品質と全32ページの完成率をread-only監査する。
+
+---
