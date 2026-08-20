@@ -2,7 +2,7 @@
 
 ## 2026-08-20 表示Assetの品質承認と完成判定の整合
 
-- 状態: `IMPLEMENTED / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`
 - Base: PR #318 merge commit `f9316ea2b41c2ec97a20aef6f6fcd32bdbcf3864`。Branch: `codex/fix-r4-3-visible-asset-quality-completion`。
 - Production受入れ: merge commitのVercel Production反映を確認後、`test`の既存22ページを再読込した。画像4/4、セリフ1/1、生成中0、失敗0、Canvas revision 11、PNG成功、credit使用80・予約0・残り20を維持したが、編集画面だけ「手動確認待ち」を残した。Production書込み・Provider実行・追加課金は0件。
 - 原因: Asset IDによる品質承認照合は存在するが、`sourceJobId`を持たない表示layerを対象外にしていた。また表示Assetの生成元が最新Jobでない場合、その過去Jobを品質記録の取得対象へ含めていなかった。
@@ -10,7 +10,9 @@
 - 安全境界: 表示中の未承認生成画像、不採用画像、利用不能Asset、画像・セリフ不足、revision不一致、PNG失敗、制作状態要確認の既存guardは維持する。
 - 不変: API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更していない。
 - 検証: 集中17/17、deps error 0（既存warning 2件）、lint、全型検査、Hub 826/826、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。RC外部設定Pendingは既存ローカル環境依存。
-- 次: Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview CommentsとPreview表示を確認して停止する。merge前にProduction再生成・DB更新を行わない。
+- Draft PR: [#319](https://github.com/team478a/manga/pull/319)はDraft／MERGEABLE。初回HEAD `11fd4b7`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-mng02lj4r-team478as-projects.vercel.app)。`/login`のタイトル、メール、パスワード、ログイン導線を確認し、エラー境界なし。Production DB／Provider操作なし。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。merge前にProduction再生成・DB更新を行わない。merge後は対象22ページを追加課金なしで再読込する。
 - 詳細: `docs/RELEASE_CANDIDATE_VISIBLE_ASSET_QUALITY_COMPLETION_20260820.md`
 
 ---

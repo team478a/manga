@@ -8,7 +8,9 @@
 - 表示Assetを生成した過去Jobも品質ログ照合へ含め、JobまたはAssetで承認済みの表示layerとlegacy `panel.imageAssetId`をコマ単位で認識する。非表示・未承認は対象外。
 - 未承認生成画像、不採用、Asset unavailable、画像・セリフ・revision・PNG・制作状態のguardは維持する。API、DB、migration、RPC、Storage、Provider、credit、Canvas schema、出力、成人向け、Desktop製品コードは不変。
 - 集中17/17、deps、lint、全型検査、Hub 826/826、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。
-- 次: Draft PRを作成し、5つの必須checkとVercel Preview成功で停止する。merge後、追加Provider実行なしで対象22ページを再読込する。
+- Draft PR [#319](https://github.com/team478a/manga/pull/319)はDraft／MERGEABLE。初回HEAD `11fd4b7`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-mng02lj4r-team478as-projects.vercel.app)。`/login`正常、エラー境界なし。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge後、追加Provider実行なしで対象22ページを再読込する。
 
 ---
 

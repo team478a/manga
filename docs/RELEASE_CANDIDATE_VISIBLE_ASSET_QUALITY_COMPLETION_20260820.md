@@ -91,3 +91,17 @@ API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、p
 5. credit使用80・予約0・残り20を維持する。
 
 Production DB、作品、Canvas、画像、品質記録を手動更新して判定を合わせてはならない。
+
+## Draft PR／Preview
+
+- Draft PR: [#319](https://github.com/team478a/manga/pull/319)
+- 初回HEAD: `11fd4b78db40ff3e4f3f783a75b20e2c631121aa`
+- PR状態: Draft／MERGEABLE
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-mng02lj4r-team478as-projects.vercel.app)
+- Preview確認: `/login`のタイトル、メール入力、パスワード入力、ログイン導線が正常。エラー境界なし。
+- Preview確認中のProduction DB／Provider操作: 0件

@@ -5205,6 +5205,8 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 現在表示中Assetを生成した過去Jobも品質ログ照合へ含め、Job／Asset承認済みの表示layerとlegacy panel画像をコマ単位で認識する。非表示・未承認と既存完成guardは維持する。
 - API、URL、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。
 - 集中17/17、deps、lint、全型検査、Hub 826/826、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。
-- 次: Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge前のProduction変更は禁止。
+- Draft PR [#319](https://github.com/team478a/manga/pull/319)はDraft／MERGEABLE。初回HEAD `11fd4b7`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-mng02lj4r-team478as-projects.vercel.app)。`/login`正常、エラー境界なし。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前のProduction変更は禁止。
 
 ---
