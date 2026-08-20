@@ -5258,6 +5258,8 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 生成進捗の`complete`は画像配置だけで、正式完成判定の必須セリフ、品質確認、revision、PNG、制作状態を含まなかった。状態を`images_ready`、表示を「画像配置完了」へ改め、正式完成は原稿プレビューへ案内する。
 - 20ページは画像4/4だが全4コマ品質確認待ち。22ページは正式完成だが、目視では吹き出し内セリフが実用サイズで読めず、下段構図重複と連続性にも販売前修正が必要。
 - Production、DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF処理、成人向け、Desktop製品コードは変更していない。
-- 集中9/9、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。初回CIが検出した100ページ受入れテストの旧集計名を`imageReadyPageCount`へ同期した。Draft PR #323の全チェックを再確認し、merge前にProductionを変更しない。
+- 集中9/9、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。初回CIが検出した100ページ受入れテストの旧集計名を`imageReadyPageCount`へ同期した。
+- Draft PR [#323](https://github.com/team478a/manga/pull/323)はDraft／MERGEABLE。実装HEAD `d31b6e1`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。[Preview](https://mangai-hub-staging-6srpehoyl-team478as-projects.vercel.app)はReady。
+- 次: 証跡同期後の最終HEADの5チェックを確認し、merge前にProductionを変更しない。
 
 ---

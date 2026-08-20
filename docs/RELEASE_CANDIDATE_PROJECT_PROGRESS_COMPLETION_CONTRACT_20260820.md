@@ -76,3 +76,15 @@ Production、DB、migration、RPC、Storage、API、URL、Feature Flag、Provide
 - Desktop build: 成功
 - RC preflight: repository structure ready（外部設定は既存ローカル環境依存でPending）
 - `git diff --check`: 成功
+
+## Draft PR / Preview
+
+- Draft PR: [#323](https://github.com/team478a/manga/pull/323)（MERGEABLE）
+- 実装HEAD: `d31b6e1`
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-6srpehoyl-team478as-projects.vercel.app)
+- Production変更: なし

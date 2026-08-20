@@ -2,7 +2,7 @@
 
 ## 2026-08-20 生成進捗と販売原稿完成の表示契約分離
 
-- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / AWAITING_PUBLISH_AUTHORIZATION / PRODUCTION_READ_ONLY`
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_READ_ONLY`
 - Base: PR #322 merge commit `176facb48568809b4bf5461247de498942dfc84a`。Branch: `codex/fix-r4-3-project-progress-completion-contract`。
 - Production監査: 対象作品の「作品全体の生成進捗」は完成2/32ページと表示したが、完成原稿プレビューは完成1/32（3%）、未完成30、確認待ち1と判定した。画像配置は13/157コマ、原稿チェック要修正276件、creditは使用80・予約0・残り20。
 - 原因: 生成進捗の`complete`は「表示対象コマの全てに画像Assetがある」だけを表し、必須セリフ、画像品質確認、revision、PNG、制作状態を含む販売原稿完成契約ではない。20ページは画像4/4でも4コマ全てが目視確認待ちで、完成原稿プレビューでは未完成だった。
@@ -10,7 +10,9 @@
 - 目視品質: 22ページは技術的完成だが、吹き出し内のセリフが実用サイズで描画されず、下段2コマの構図重複と人物・場面連続性にも販売前確認が必要。20ページは4画像とも品質確認前で、短い縦書き1件の安全修復候補が残る。
 - 不変: Production、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF生成処理、成人向け境界、Desktop製品コードは変更しない。
 - 検証: 集中9/9、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。初回CIで100ページ受入れテストの旧集計名参照を検出し、`imageReadyPageCount`へ同期済み。RC外部設定Pendingは既存ローカル環境依存。
-- 次: 明示承認後にstage／commit／push／Draft PRを作成し、全CI／Preview成功後に停止する。次PRは22ページの「セリフデータ上は配置済みだが出力上読めない」契約を最優先で修正し、その後に人物連続性と残り144コマの生成計画を分ける。
+- Draft PR: [#323](https://github.com/team478a/manga/pull/323)はDraft／MERGEABLE。実装HEAD `d31b6e1`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-6srpehoyl-team478as-projects.vercel.app)。Production DB／Provider／creditへの操作なし。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。次PRは22ページの「セリフデータ上は配置済みだが出力上読めない」契約を最優先で修正し、その後に人物連続性と残り144コマの生成計画を分ける。
 - 詳細: `docs/RELEASE_CANDIDATE_PROJECT_PROGRESS_COMPLETION_CONTRACT_20260820.md`
 
 ---
