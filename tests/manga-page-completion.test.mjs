@@ -132,6 +132,7 @@ test("手動確認理由を渡すとgeneric文言へ潰さず表示する", () =
     message: "コマの画像候補採用に確認が必要です。",
     pageId: source.pageId,
     panelId: source.canvas.panels[0].id,
+    manualReviewSource: "panel_adoption",
   };
   const result = evaluateMangaPageCompletion(input({
     manualReviewRequired: true,
@@ -363,6 +364,8 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   const service = fs.readFileSync("src/modules/cloud-creator/projects/page-completion-service.ts", "utf8");
   const generation = fs.readFileSync("src/modules/cloud-creator/generation/generation-service.ts", "utf8");
   const editor = fs.readFileSync("src/app/creator/[projectId]/pages/[pageId]/CloudCanvasEditor.tsx", "utf8");
+  const completionBanner = fs.readFileSync("src/app/creator/[projectId]/pages/[pageId]/PageCompletionBanner.tsx", "utf8");
+  const creatorActions = fs.readFileSync("src/app/creator/actions.ts", "utf8");
   const production = fs.readFileSync("src/modules/cloud-creator/production/production-status-service.ts", "utf8");
   const checkpoint = fs.readFileSync("src/modules/cloud-creator/projects/project-checkpoint-service.ts", "utf8");
   const durable = fs.readFileSync("src/modules/cloud-creator/export/durable-export-service.ts", "utf8");
@@ -380,6 +383,12 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(service, /自動配置したセリフに確認が必要です/);
   assert.match(service, /ページ制作状態が「要修正」です/);
   assert.match(service, /コマの画像候補採用に確認が必要です/);
+  assert.match(service, /manualReviewSource: "page_revision"/);
+  assert.match(completionBanner, /manualReviewSource === "page_revision"/);
+  assert.match(completionBanner, /修正完了として再確認/);
+  assert.match(completionBanner, /markCloudPageRevisionAddressedAction/);
+  assert.match(creatorActions, /setCloudPageProductionStatus\(parsed\.data\.pageId, "review_required"\)/);
+  assert.match(creatorActions, /revalidatePath\(pagePath\)/);
   assert.match(generation, /quality_review_status/);
   assert.match(generation, /event_type/);
   assert.match(editor, /この画像を品質確認済みにする/);

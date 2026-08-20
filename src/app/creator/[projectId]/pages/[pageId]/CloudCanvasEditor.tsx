@@ -1437,7 +1437,13 @@ export function CloudCanvasEditor({
               : "セリフの自動配置を完了できませんでした。再処理後も解消しない場合は運営へ連絡してください。"}
         </div>
       ) : null}
-      {initialPageCompletion ? <PageCompletionBanner completion={initialPageCompletion} /> : null}
+      {initialPageCompletion ? (
+        <PageCompletionBanner
+          completion={initialPageCompletion}
+          projectId={project.id}
+          pageId={page.id}
+        />
+      ) : null}
       {existingManuscriptRepairCount ? (
         <section
           aria-labelledby="existing-manuscript-repair"
