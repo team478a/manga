@@ -5190,6 +5190,8 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 現在Canvasで表示中かつ品質承認済みの生成画像をコマ単位で完成判定へ渡し、そのコマの古い非表示候補確認待ちを解決済みとする。表示画像自身と他の完成guardは緩和しない。
 - API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コード、Productionデータは変更していない。
 - 集中16/16、deps、lint、全型検査、Hub 825/825、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。
-- 次: Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge前のProduction変更は禁止。
+- Draft PR [#318](https://github.com/team478a/manga/pull/318)はDraft／MERGEABLE。初回HEAD `fbe59c5`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-mez84eq7v-team478as-projects.vercel.app)。`/login`正常、エラー境界なし。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前のProduction変更は禁止。
 
 ---

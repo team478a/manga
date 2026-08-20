@@ -92,3 +92,17 @@ PR #317は、同じ候補生成単位の中に品質承認済み候補がある�
 6. ブラウザログ0件
 
 Production DB、作品、Canvas、画像、品質記録を手動更新して判定を合わせてはならない。
+
+## Draft PR／Preview
+
+- Draft PR: [#318](https://github.com/team478a/manga/pull/318)
+- 初回HEAD: `fbe59c5ee2170d9cc82c5d5657cdff6240209b84`
+- PR状態: Draft／MERGEABLE
+- Core quality: 成功
+- Migration roundtrip: 成功
+- Windows build: 成功
+- Vercel: 成功
+- Vercel Preview Comments: 成功
+- Preview: [Ready](https://mangai-hub-staging-mez84eq7v-team478as-projects.vercel.app)
+- Preview確認: `/login`のタイトル、メール入力、パスワード入力、ログイン導線が正常。エラー境界なし。
+- Preview確認中のProduction DB／Provider操作: 0件
