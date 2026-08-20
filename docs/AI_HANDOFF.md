@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（PR #321 Production完成受入れ、2026-08-20）
+
+- 最新基準はPR #321 merge commit `c02fd0be0e9e1e9c7376801aa221c39fc068a1f9`。Branchは`codex/docs-r4-3-page-completion-production-acceptance`。
+- Production deployment `5995191657`の成功後、責任者承認に基づき`test`の既存22ページで「修正完了として再確認」を1回だけ実行した。
+- ページは「ページ完成」へ遷移し、画像4/4、セリフ1/1、生成中0、失敗0、revision 11、PNG成功を維持した。creditは使用80・予約0・残り20で不変。
+- Provider実行、追加Job、追加Asset、Canvas保存、追加課金は0件。制作状態以外のProductionデータを変更していない。
+- API、DB schema、migration、RPC、Storage、Provider、model、pricing、Canvas schema、PNG／PDF、成人向け、Desktop製品コードは不変。
+- 次: 証跡の公開は明示承認後。次の実装判断前に、完成22ページの販売原稿目視品質と全32ページの完成率をread-only監査する。
+
+---
+
 ## 0.0 現在の優先タスク（ページ要修正の再確認操作、2026-08-20）
 
 - 最新基準はPR #320 merge commit `6095eadda7168a544118f080e154cb7b29bc0b84`。Branchは`codex/fix-r4-3-page-revision-review-action`。
