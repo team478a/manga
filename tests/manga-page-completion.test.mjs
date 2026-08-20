@@ -9,6 +9,7 @@ import {
   evaluateMangaPageCompletion,
   hasUnresolvedPanelAdoptionReview,
   summarizeMangaProjectCompletion,
+  visibleReviewedPanelIds,
 } from "../src/modules/manga/domain/page-completion.ts";
 import { createFourPageCompletionFixture } from "./fixtures/manga-page-completion-four-page.mjs";
 
@@ -169,6 +170,54 @@ test("現在表示中の品質承認済み画像は別生成単位の古いadopt
     rejectedGenerationJobIds: new Set(),
     hasReviewedVisibleImage: false,
   }), true);
+});
+
+test("source Jobを持たない表示layerもAssetの品質承認から対象コマを解決する", () => {
+  const canvas = clone(source.canvas);
+  const panelId = canvas.panels[0].id;
+  canvas.panelLayers = [{
+    id: "10000000-0000-4000-8000-000000000092",
+    panelId,
+    name: "品質承認済みAsset",
+    type: "background",
+    orderIndex: 0,
+    visible: true,
+    locked: false,
+    opacity: 1,
+    blendMode: "normal",
+    assetId: source.assetIds[0],
+    sourceJobId: null,
+    imageFit: "cover",
+    imageOffsetX: 0,
+    imageOffsetY: 0,
+    imageScale: 1,
+    imageRotation: 0,
+    createdAt: "",
+    updatedAt: "",
+  }];
+  assert.deepEqual([...visibleReviewedPanelIds({
+    canvas,
+    reviewedGenerationJobIds: new Set(),
+    reviewedGenerationAssetIds: new Set([source.assetIds[0]]),
+  })], [panelId]);
+  assert.equal(visibleReviewedPanelIds({
+    canvas,
+    reviewedGenerationJobIds: new Set(),
+    reviewedGenerationAssetIds: new Set(),
+  }).size, 0);
+  canvas.panelLayers[0].visible = false;
+  assert.equal(visibleReviewedPanelIds({
+    canvas,
+    reviewedGenerationJobIds: new Set(),
+    reviewedGenerationAssetIds: new Set([source.assetIds[0]]),
+  }).size, 0);
+  canvas.panelLayers = [];
+  canvas.panels[0].imageAssetId = source.assetIds[0];
+  assert.deepEqual([...visibleReviewedPanelIds({
+    canvas,
+    reviewedGenerationJobIds: new Set(),
+    reviewedGenerationAssetIds: new Set([source.assetIds[0]]),
+  })], [panelId]);
 });
 
 test("自動配置した生成画像は目視確認までreview_requiredにする", () => {

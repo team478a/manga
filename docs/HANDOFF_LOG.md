@@ -5195,3 +5195,16 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前のProduction変更は禁止。
 
 ---
+
+# 2026-08-20 Codex: 表示Assetの品質承認と完成判定の整合
+
+- Branch: `codex/fix-r4-3-visible-asset-quality-completion`
+- Base: `origin/feature/manga-canvas-mvp`@`f9316ea`（PR #318 merge commit）
+- PR #318 Production反映後も対象22ページはgenericな手動確認待ちを継続した。画像4/4、セリフ1/1、生成中0、失敗0、revision 11、PNG成功、credit 80/0/20。Production書込み・Provider実行なし。
+- `sourceJobId`なしの表示layerをAsset承認経路から除外し、表示Assetの生成元が最新Jobでなければ品質ログ取得対象にも含めない2つの欠落を特定した。
+- 現在表示中Assetを生成した過去Jobも品質ログ照合へ含め、Job／Asset承認済みの表示layerとlegacy panel画像をコマ単位で認識する。非表示・未承認と既存完成guardは維持する。
+- API、URL、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。
+- 集中17/17、deps、lint、全型検査、Hub 826/826、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。
+- 次: Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge前のProduction変更は禁止。
+
+---
