@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（表示中の品質承認済み画像と完成判定、2026-08-20）
+
+- 最新基準はPR #317 merge commit `0538c4f4f3b4668f963220af3f45fd7f22e5ce83`。Branchは`codex/fix-r4-3-visible-reviewed-completion`。
+- Productionの対象22ページを再読込したが、画像4/4、セリフ1/1、生成中0、失敗0、Canvas revision 11、PNG成功でも編集画面だけ「手動確認待ち」を残した。creditは使用80・予約0・残り20で変化なし。
+- セリフは`auto_placed`で、22ページは制作状態の要確認filter対象外だった。原因は、現在Canvasに表示され品質承認済みの画像と、同じコマに残る別生成単位の古いadoption確認待ちを完成判定が結び付けていないこと。
+- 現在表示中で品質承認済みの生成画像があるコマでは、非表示の古い`review_required`／`placement_failed`を未解決として数えない。表示画像の品質・不採用・asset availabilityと他の完成guardは維持する。
+- API、DB、migration、RPC、Storage、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF、成人向け境界、Desktop製品コードは変更していない。Production書込み0件。
+- 集中16/16、deps、lint、全型検査、Hub 825/825、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure成功。
+- 次: Draft PRを作成し、5つの必須checkとVercel Previewを確認して停止する。merge後に追加Provider実行なしで対象22ページを再読込し「ページ完成」を確認する。
+
+---
+
 ## 0.0 現在の優先タスク（品質承認済み候補の完成判定整合、2026-08-20）
 
 - 最新基準はPR #316 merge commit `1cc2151996451d15ea00e7f9c8ab151939c33194`。Branchは`codex/fix-r4-3-selected-adoption-completion`。
