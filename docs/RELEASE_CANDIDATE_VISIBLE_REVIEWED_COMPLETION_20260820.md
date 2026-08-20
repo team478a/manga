@@ -1,7 +1,9 @@
 # RELEASE CANDIDATE: 表示中の品質承認済み画像と完成判定
 
-作成日: 2026-08-20  
-基準: PR #317 merge commit `0538c4f4f3b4668f963220af3f45fd7f22e5ce83`  
+作成日: 2026-08-20
+
+基準: PR #317 merge commit `0538c4f4f3b4668f963220af3f45fd7f22e5ce83`
+
 Branch: `codex/fix-r4-3-visible-reviewed-completion`
 
 ## Production受入れ
