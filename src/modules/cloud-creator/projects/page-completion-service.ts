@@ -246,6 +246,48 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
       const metadata = await sharp(Buffer.from(png)).metadata();
       pngRenderSucceeded = metadata.width === page.width && metadata.height === page.height;
     } catch { png = null; }
+    const manualReviewBlockers: MangaPageCompletionResult["blockers"] = [];
+    const dialoguePlacementStatus = placementByPage.get(page.id);
+    if (dialoguePlacementStatus === "review_required")
+      manualReviewBlockers.push({
+        code: "MANUAL_REVIEW_REQUIRED",
+        message: "自動配置したセリフに確認が必要です。",
+        pageId: page.id,
+      });
+    else if (dialoguePlacementStatus === "placement_failed")
+      manualReviewBlockers.push({
+        code: "MANUAL_REVIEW_REQUIRED",
+        message: "セリフの自動配置に失敗しています。",
+        pageId: page.id,
+      });
+    if (productionByPage.get(page.id) === "revision_required")
+      manualReviewBlockers.push({
+        code: "MANUAL_REVIEW_REQUIRED",
+        message: "ページ制作状態が「要修正」です。",
+        pageId: page.id,
+      });
+    for (const job of currentJobs) {
+      if (
+        job.pageId !== page.id ||
+        !hasUnresolvedPanelAdoptionReview({
+          candidateJobIds: job.candidateJobIds ?? [job.id],
+          adoptionStatusByJobId: adoptionStatus,
+          reviewedGenerationJobIds,
+          rejectedGenerationJobIds,
+          hasReviewedVisibleImage: Boolean(
+            job.panelId &&
+            reviewedVisiblePanelIdsByPage.get(page.id)?.has(job.panelId),
+          ),
+        })
+      ) continue;
+      manualReviewBlockers.push({
+        code: "MANUAL_REVIEW_REQUIRED",
+        message: "コマの画像候補採用に確認が必要です。",
+        pageId: page.id,
+        panelId: job.panelId ?? undefined,
+        generationJobId: job.id,
+      });
+    }
     const completion = evaluateMangaPageCompletion({
       pageId: page.id,
       pageWidth: page.width,
@@ -260,23 +302,8 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
       reviewedGenerationAssetIds,
       rejectedGenerationJobIds,
       pngRenderSucceeded,
-      manualReviewRequired:
-        placementByPage.get(page.id) === "review_required" ||
-        placementByPage.get(page.id) === "placement_failed" ||
-        productionByPage.get(page.id) === "revision_required" ||
-        currentJobs.some((job) =>
-          job.pageId === page.id &&
-          hasUnresolvedPanelAdoptionReview({
-            candidateJobIds: job.candidateJobIds ?? [job.id],
-            adoptionStatusByJobId: adoptionStatus,
-            reviewedGenerationJobIds,
-            rejectedGenerationJobIds,
-            hasReviewedVisibleImage: Boolean(
-              job.panelId &&
-              reviewedVisiblePanelIdsByPage.get(page.id)?.has(job.panelId),
-            ),
-          }),
-        ),
+      manualReviewRequired: manualReviewBlockers.length > 0,
+      manualReviewBlockers,
     });
     results.push({ ...completion, pageId: page.id, pageNumber: page.page_number, width: page.width, height: page.height, png });
   }

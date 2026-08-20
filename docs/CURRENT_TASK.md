@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-08-20 完成判定の手動確認理由を原因別に表示
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / AWAITING_PUBLISH_AUTHORIZATION / PRODUCTION_UNCHANGED`
+- Base: PR #319 merge commit `10f7b5c61efd755b405fb5f3a2c52861b2e74b3c`。Branch: `codex/fix-r4-3-completion-review-reasons`。
+- Production受入れ: PR #319のProduction反映後に`test`の既存22ページを再読込した。画像4/4、セリフ1/1、生成中0、失敗0、保存revision 11／最新11、PNG成功、credit使用80・予約0・残り20を維持したが、編集画面はgenericな「自動配置結果に確認が必要です。」を残した。書込み・Provider実行・追加課金は0件。
+- 監査結果: 完成判定の手動確認flagは、`cloud_page_dialogue_placements.status`、`cloud_pages.production_status`、`cloud_generation_panel_adoptions.status`の3系統をORし、同じ文言へ変換していた。セリフ配置はpage ID主キーで一意。通常のページ`review_required`は完成阻害ではなく、`revision_required`だけが阻害する。
+- 修正: 完成条件を緩めず、セリフ配置確認、セリフ配置失敗、ページ制作状態の要修正、コマ画像候補採用確認を原因別メッセージとして返す。コマ由来の理由にはpanel／generation Jobの内部関連付けを維持する。
+- 不変: API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードは変更しない。
+- 検証: 集中18/18、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存ローカル環境依存。
+- Production: read-only確認だけ。作品、Canvas、DB、Storage、品質記録、Provider、creditへの書込み0件。
+- 次: stage／commit／push／Draft PR作成の明示承認後に公開し、全CIとVercel Preview成功で停止する。merge後に追加課金なしで対象22ページを再読込し、表示された原因だけを次の最小修正対象にする。
+- 詳細: `docs/RELEASE_CANDIDATE_COMPLETION_REVIEW_REASONS_20260820.md`
+
+---
+
 ## 2026-08-20 表示Assetの品質承認と完成判定の整合
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`

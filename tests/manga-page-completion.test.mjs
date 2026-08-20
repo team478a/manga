@@ -126,6 +126,24 @@ test("手動確認だけが残る場合はreview_requiredになる", () => {
   assert.ok(codes(result).has("MANUAL_REVIEW_REQUIRED"));
 });
 
+test("手動確認理由を渡すとgeneric文言へ潰さず表示する", () => {
+  const reason = {
+    code: "MANUAL_REVIEW_REQUIRED",
+    message: "コマの画像候補採用に確認が必要です。",
+    pageId: source.pageId,
+    panelId: source.canvas.panels[0].id,
+  };
+  const result = evaluateMangaPageCompletion(input({
+    manualReviewRequired: true,
+    manualReviewBlockers: [reason],
+  }));
+  assert.equal(result.status, "review_required");
+  assert.deepEqual(
+    result.blockers.filter((blocker) => blocker.code === "MANUAL_REVIEW_REQUIRED"),
+    [reason],
+  );
+});
+
 test("品質承認済み候補がある生成単位は古いadoption確認待ちを残さない", () => {
   const selectedJobId = "10000000-0000-4000-8000-000000000081";
   const siblingJobId = "10000000-0000-4000-8000-000000000082";
@@ -359,6 +377,9 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(service, /reviewedGenerationJobIds/);
   assert.match(service, /reviewedGenerationAssetIds/);
   assert.match(service, /rejectedGenerationJobIds/);
+  assert.match(service, /自動配置したセリフに確認が必要です/);
+  assert.match(service, /ページ制作状態が「要修正」です/);
+  assert.match(service, /コマの画像候補採用に確認が必要です/);
   assert.match(generation, /quality_review_status/);
   assert.match(generation, /event_type/);
   assert.match(editor, /この画像を品質確認済みにする/);
