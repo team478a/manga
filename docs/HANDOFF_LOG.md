@@ -5223,3 +5223,17 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 明示承認後にstage／commit／push／Draft PR作成。全CI／Vercel Preview成功で停止し、merge後のread-only表示から実際の残存原因を確定する。
 
 ---
+
+# 2026-08-20 Codex: ページ要修正を明示操作で再確認へ戻す
+
+- Branch: `codex/fix-r4-3-page-revision-review-action`
+- Base: `origin/feature/manga-canvas-mvp`@`6095ead`（PR #320 merge commit）
+- PR #320のProduction反映後、対象22ページの完成阻害理由が「ページ制作状態が『要修正』です。」であることをread-only確認した。画像4/4、セリフ1/1、生成中0、失敗0、revision 11、PNG成功、credit 80/0/20を維持し、Production書込み・Provider実行は0件。
+- `revision_required`を自動解除せず、当該理由のときだけ編集画面へ「修正完了として再確認」を追加する。既存の所有権検査済み制作状態更新処理で`review_required`へ遷移し、同じ編集ページへ戻す。
+- セリフ配置・候補採用由来の手動確認にはボタンを表示しない。完成guard、API、URL、DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF、成人向け、Desktop製品コードは変更していない。
+- 集中18/18、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Draft PR [#321](https://github.com/team478a/manga/pull/321)はDraft／MERGEABLE。実装HEAD `85c53ad`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-3bm8mokot-team478as-projects.vercel.app)。Vercel Authentication保護下。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前にProduction状態を変更しない。
+
+---

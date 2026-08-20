@@ -1,5 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-20 ページ要修正を明示操作で再確認へ戻す
+
+- 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_UNCHANGED`
+- Base: PR #320 merge commit `6095eadda7168a544118f080e154cb7b29bc0b84`。Branch: `codex/fix-r4-3-page-revision-review-action`。
+- Production受入れ: PR #320のProduction反映後、`test`の既存22ページをread-only確認した。画像4/4、セリフ1/1、生成中0、失敗0、保存revision 11／最新11、PNG成功、credit使用80・予約0・残り20を維持し、完成阻害の唯一の表示理由が「ページ制作状態が『要修正』です。」であることを確認した。
+- 原因: `cloud_pages.production_status=revision_required`が残っている。既存の長編制作管理には`revision_required`から`review_required`へ戻す操作があるが、対象22ページの編集画面からは到達しにくく、完成判定自身はこの状態を正しくfail-closedしていた。
+- 修正: 完成条件を自動解除せず、阻害理由がページ要修正の場合だけ、編集画面の完成判定バナーに「修正完了として再確認」ボタンを表示する。既存の所有権検査済みrepositoryで`review_required`へ遷移し、同じページへ戻す。セリフ配置・候補採用由来の手動確認には表示しない。
+- 不変: API、URL、DB、migration、RPC、Storage、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、Canvas schema、PNG／PDF処理、成人向け境界、Desktop製品コードを変更しない。
+- 検証: 集中18/18、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。RC外部設定Pendingは既存ローカル環境依存。
+- Production: read-only確認だけ。作品、Canvas、DB、Storage、制作状態、Provider、creditへの書込み0件。
+- Draft PR: [#321](https://github.com/team478a/manga/pull/321)はDraft／MERGEABLE。実装HEAD `85c53ad`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Preview: [Ready](https://mangai-hub-staging-3bm8mokot-team478as-projects.vercel.app)。Vercel Authentication保護下であり、未認証HTTPはVercelログインへ正常に転送された。Production DB／Provider操作なし。
+- 次: 証跡同期後の最終HEADでも同じ5チェックを確認して停止する。merge後は明示承認を得て対象ページのボタンを1回だけ操作し、ページ完成・PNG・credit不変を確認する。
+- 詳細: `docs/RELEASE_CANDIDATE_PAGE_REVISION_REVIEW_ACTION_20260820.md`
+
+---
+
 ## 2026-08-20 完成判定の手動確認理由を原因別に表示
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / AWAITING_PUBLISH_AUTHORIZATION / PRODUCTION_UNCHANGED`

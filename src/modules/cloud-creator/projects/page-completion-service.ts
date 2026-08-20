@@ -253,18 +253,21 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
         code: "MANUAL_REVIEW_REQUIRED",
         message: "自動配置したセリフに確認が必要です。",
         pageId: page.id,
+        manualReviewSource: "dialogue_placement",
       });
     else if (dialoguePlacementStatus === "placement_failed")
       manualReviewBlockers.push({
         code: "MANUAL_REVIEW_REQUIRED",
         message: "セリフの自動配置に失敗しています。",
         pageId: page.id,
+        manualReviewSource: "dialogue_placement",
       });
     if (productionByPage.get(page.id) === "revision_required")
       manualReviewBlockers.push({
         code: "MANUAL_REVIEW_REQUIRED",
         message: "ページ制作状態が「要修正」です。",
         pageId: page.id,
+        manualReviewSource: "page_revision",
       });
     for (const job of currentJobs) {
       if (
@@ -286,6 +289,7 @@ async function inspectCloudPages(projectId: string, onlyPageId?: string) {
         pageId: page.id,
         panelId: job.panelId ?? undefined,
         generationJobId: job.id,
+        manualReviewSource: "panel_adoption",
       });
     }
     const completion = evaluateMangaPageCompletion({

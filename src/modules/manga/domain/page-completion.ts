@@ -28,6 +28,10 @@ export type MangaPageCompletionBlocker = {
   panelId?: string;
   balloonId?: string;
   generationJobId?: string;
+  manualReviewSource?:
+    | "dialogue_placement"
+    | "page_revision"
+    | "panel_adoption";
 };
 
 export type RequiredPageDialogue = {

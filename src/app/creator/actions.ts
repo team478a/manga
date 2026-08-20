@@ -392,6 +392,27 @@ export async function setCloudPageProductionStatusAction(
   redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "finalized" ? "ページを確定しました" : "ページの制作状態を更新しました")}`);
 }
 
+export async function markCloudPageRevisionAddressedAction(
+  projectId: string,
+  pageId: string,
+) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    pageId: z.string().uuid(),
+  }).safeParse({ projectId, pageId });
+  if (!parsed.success)
+    redirect(encodeURI("/creator?error=制作状態を確認してください"));
+  const pagePath = `/creator/${parsed.data.projectId}/pages/${parsed.data.pageId}`;
+  try {
+    await setCloudPageProductionStatus(parsed.data.pageId, "review_required");
+  } catch (error) {
+    redirect(`${pagePath}?error=${encodeURIComponent(domainMessage(error, "制作状態を更新できませんでした。"))}`);
+  }
+  revalidatePath(pagePath);
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`${pagePath}?message=${encodeURIComponent("修正完了として再確認します")}`);
+}
+
 export async function startCloudExportAction(projectId: string) {
   const parsed = z.string().uuid().safeParse(projectId);
   if (!parsed.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));

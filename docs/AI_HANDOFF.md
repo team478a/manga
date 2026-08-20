@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 現在の優先タスク（ページ要修正の再確認操作、2026-08-20）
+
+- 最新基準はPR #320 merge commit `6095eadda7168a544118f080e154cb7b29bc0b84`。Branchは`codex/fix-r4-3-page-revision-review-action`。
+- Production対象22ページの完成阻害理由は`cloud_pages.production_status=revision_required`に確定した。画像4/4、セリフ1/1、生成中0、失敗0、revision 11、PNG成功、credit 80/0/20は成立している。Production書込み・Provider実行なし。
+- 完成判定を自動解除せず、阻害sourceがページ要修正の場合だけ編集画面に「修正完了として再確認」を表示し、既存の所有権検査済みrepositoryで`review_required`へ戻す。セリフ配置・候補採用の確認待ちではボタンを出さない。
+- API、URL、DB、migration、RPC、Storage、Provider、credit、Canvas schema、PNG／PDF、成人向け、Desktop製品コードは不変。
+- 集中18/18、deps、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Draft PR [#321](https://github.com/team478a/manga/pull/321)はDraft／MERGEABLE。実装HEAD `85c53ad`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。
+- Previewは[Ready](https://mangai-hub-staging-3bm8mokot-team478as-projects.vercel.app)。Vercel Authentication保護下。Production操作なし。
+- 次: 証跡同期後の最終HEADの5チェック成功で停止する。merge前にProduction状態を変更しない。
+
+---
+
 ## 0.0 現在の優先タスク（完成判定の手動確認理由可視化、2026-08-20）
 
 - 最新基準はPR #319 merge commit `10f7b5c61efd755b405fb5f3a2c52861b2e74b3c`。Branchは`codex/fix-r4-3-completion-review-reasons`。
