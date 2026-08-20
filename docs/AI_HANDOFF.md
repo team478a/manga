@@ -7,7 +7,7 @@
 - 原因は生成進捗の`complete`が画像Asset配置完了だけを意味し、必須セリフ・画像品質・revision・PNG・制作状態の販売原稿完成契約を含まないこと。
 - 状態を`images_ready`、表示を「画像配置完了」へ改め、正式完成は原稿プレビューで確認する案内を追加した。全ページPNG完成判定の重複実行は追加しない。
 - 22ページは技術的完成だが、出力画像では吹き出し内セリフが実用サイズで読めず、構図重複と連続性にも課題がある。20ページは4画像が品質確認待ち。
-- Production、Provider、credit、DB、Canvas、PNG／PDF処理は不変。集中6/6、deps error 0（既存warning 2件）、lint、全型検査、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Production、Provider、credit、DB、Canvas、PNG／PDF処理は不変。集中9/9、deps error 0（既存warning 2件）、lint、全型検査、Hub 827/827、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 61件、Hub／Desktop build、RC structure、diff check成功。100ページ受入れテストも新しい画像配置完了集計名へ同期した。
 - 次: 明示承認後にstage／commit／push／Draft PRを作成し、全CIとVercel Preview成功で停止する。責任者確認前にセリフ出力修正や残り144コマ生成を開始しない。
 
 ---

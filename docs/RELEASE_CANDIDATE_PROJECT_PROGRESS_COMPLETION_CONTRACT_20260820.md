@@ -62,11 +62,11 @@ Production、DB、migration、RPC、Storage、API、URL、Feature Flag、Provide
 
 ## 検証
 
-- 集中テスト: 6/6
+- 集中テスト: 9/9
 - dependency boundary: error 0（既存warning 2件）
 - lint: 成功
 - typecheck: 成功
-- Hub test: 全件成功
+- Hub test: 827/827
 - Canvas test: 26/26
 - AI test: 48/48
 - Desktop test: 182/182
