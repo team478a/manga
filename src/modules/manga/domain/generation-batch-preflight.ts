@@ -1,3 +1,8 @@
+import {
+  isConsecutiveGenerationPilot,
+  isGenerationBatchPageCountAllowed,
+} from "./generation-batch.ts";
+
 export type GenerationBatchPreflightContext = {
   available: boolean;
   providerEnabled: boolean;
@@ -21,6 +26,7 @@ export type GenerationBatchPreflightContext = {
   userRequestsPerMinute: number | null;
   projectRequestsPerMinute: number | null;
   pagePanelCounts: Record<string, number | null>;
+  pageNumbers: Record<string, number>;
   visualReadinessAvailable: boolean;
   styleBibleConfigured: boolean;
   configuredCharacterNames: string[];
@@ -104,8 +110,10 @@ export function estimateGenerationBatch(
   );
   const blockers: string[] = [];
 
-  if (uniquePageIds.length < 4 || uniquePageIds.length > 8)
-    blockers.push("一括生成するページを4〜8ページ選んでください。");
+  if (!isGenerationBatchPageCountAllowed(uniquePageIds.length))
+    blockers.push("Pilotは連続2ページ、通常の一括生成は4〜8ページを選んでください。");
+  if (!isConsecutiveGenerationPilot({ pageIds: uniquePageIds, pageNumbers: context.pageNumbers }))
+    blockers.push("2ページPilotはページ番号が連続する2ページを選んでください。");
   if (missingSnapshot)
     blockers.push("現在のCanvasを確認できないページが含まれています。各ページを保存してから再度お試しください。");
   if (emptyPage)

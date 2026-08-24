@@ -335,8 +335,10 @@ export async function syncCloudMarketplaceDraftAction(
 export async function startCloudPageGenerationBatchAction(projectId: string, formData: FormData) {
   const parsedProjectId = z.string().uuid().safeParse(projectId);
   if (!parsedProjectId.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));
-  const parsed = z.array(z.string().uuid()).min(4).max(8).safeParse(formData.getAll("pageId"));
-  if (!parsed.success) redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent("一括生成するページを4〜8ページ選んでください。")}`);
+  const parsed = z.array(z.string().uuid()).refine(
+    (pageIds) => pageIds.length === 2 || (pageIds.length >= 4 && pageIds.length <= 8),
+  ).safeParse(formData.getAll("pageId"));
+  if (!parsed.success) redirect(`/creator/${parsedProjectId.data}?error=${encodeURIComponent("Pilotは連続2ページ、通常の一括生成は4〜8ページを選んでください。")}`);
   let result: Awaited<ReturnType<typeof startCloudPageGenerationBatch>>;
   try {
     result = await startCloudPageGenerationBatch(parsedProjectId.data, parsed.data);

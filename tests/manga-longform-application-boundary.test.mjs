@@ -22,6 +22,7 @@ test("一括生成は4〜8ページ、重複除去、64コマ上限のdomain境�
     normalizeGenerationBatchPageIds(["a", "a", "b", "c", "d"]),
     ["a", "b", "c", "d"],
   );
+  assert.deepEqual(normalizeGenerationBatchPageIds(["a", "b"]), ["a", "b"]);
   assert.throws(() => normalizeGenerationBatchPageIds(["a", "b", "c"]));
   assert.throws(() =>
     normalizeGenerationBatchPageIds(["1", "2", "3", "4", "5", "6", "7", "8", "9"]),

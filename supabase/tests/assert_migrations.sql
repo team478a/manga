@@ -1227,6 +1227,23 @@ do $$ begin
   end if;
 end $$;
 
+do $$ begin
+  if position(
+       'cardinality(requested_page_ids) = 2' in
+       pg_get_constraintdef(
+         (select oid from pg_constraint
+          where conrelid='public.cloud_generation_batches'::regclass
+            and conname='cloud_generation_batches_requested_page_ids_check')
+       )
+     )=0
+     or position(
+       'cloud_batch_pilot_pages_not_consecutive' in
+       pg_get_functiondef('public.create_cloud_generation_batch(uuid,uuid[],text)'::regprocedure)
+     )=0 then
+    raise exception 'Cloud generation two-page pilot boundary missing';
+  end if;
+end $$;
+
 begin;
 do $$
 declare

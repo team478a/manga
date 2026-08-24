@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 連続2ページ生成Pilot契約
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #330 merge commit `b9f07fd`。Branch: `codex/enable-two-page-generation-pilot`。
+- 実装: 既存4〜8ページ通常batchを維持し、ページ番号が連続する2ページだけをPilotとして追加する。3ページ、非連続2ページはfail-closedで拒否する。
+- 安全境界: 最大64コマ、Canvas snapshot、人物・画風、Provider・model・料金版、quota、費用上限、モニター枠、moderationを変更しない。連番はアプリpreflightとDB RPCで二重検証する。
+- DB: 新規migration／rollback／canonical schemaを追加する。2ページbatchが存在する場合のrollbackは停止する。
+- 検証: 集中15/15、deps error 0（既存warning 2件）、lint、全型検査、Hub 834/834、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration manifest 62件、Hub／Desktop build、RC structure、`git diff --check`成功。PostgreSQL 16 roundtripはCIで確認する。
+- 不変: Production、作品、Canvas、DB、Storage、Provider、creditは未変更。Provider実行・生成Job・credit予約／消費0件。
+- 次: 全ローカル品質ゲート、文書同期、commit・push・Draft PR後、全CIとVercel Preview成功で停止する。Production migration、Pilot実行、credit予約は責任者の明示承認前に行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_TWO_PAGE_GENERATION_PILOT_20260824.md`
+
+---
+
 ## 2026-08-24 Production品質イベント5xx修正受入れ
 
 - 状態: `PRODUCTION_ACCEPTANCE_PASSED / RETRY_STORM_NOT_REPRODUCED / CREDIT_UNCHANGED / PROVIDER_NOT_CALLED`

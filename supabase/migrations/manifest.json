@@ -366,7 +366,13 @@
       "description": "独立Human Reviewを既定5名・最大9名のPrimaryおよび補助Panelへ拡張",
       "forwardSha256": "8dfbedcb9d15f712c016bebfee4123a4c35e01bf945ff15dbece8f3af19fddb0",
       "rollbackSha256": "8cfcf02a52af14dbaddee24d4efb55580a42bf7457ea2dad9e30ba487b914006"
+    },
+    {
+      "id": "202608240001_cloud_generation_two_page_pilot",
+      "description": "連続2ページPilotを既存の4〜8ページ通常batchと同じ安全境界で登録可能にする",
+      "forwardSha256": "b57a3736c0427f5a53e8ec785777dbedfe6d16349678ef054f0c36d089215602",
+      "rollbackSha256": "ca049bba647f13decda75020e10b638ecf717be8db7c6e50b9331ef9fdb32584"
     }
   ],
-  "schemaSha256": "b65136f5a2f3034a03090a4f7db7238e0b92cd5e716ef246c563503affdd6f25"
+  "schemaSha256": "478d242b0669088aaf5ef589e398df636b06094b37550ab691cb9782c4695905"
 }
