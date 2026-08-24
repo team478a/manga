@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P1-D コマ連続状態（2026-08-25）
+
+- PR #346 merge commit `9c80cbc`を基準に、subject別の時間／天候／左右／持ち手／視線／継続元panelを追加した。
+- owner境界と現行canvas内panelをDBで検証し、単一／batch共通の生成入力へ構造化状態を固定する。
+- Production／Provider／Job／Storage／credit操作0件。P1-Eはレビュー後。
+
+---
+
 ## 0.0 P1-C 作品バイブル・人物参照UI（2026-08-25）
 
 - PR #345 merge commit `7e49a87`を基準に、人物version／role／承認、warn/block、衣装・状態範囲UIを追加した。

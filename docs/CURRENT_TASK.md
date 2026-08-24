@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P1-D コマ連続状態
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #346 merge commit `9c80cbc`。Branch: `codex/p1d-panel-continuity-state`。
+- 実装: 人物／場所／小物ごとの時間帯、天候、状態、持ち手、左右、視線、継続元panelを保存し、単一／batch共通生成入力へ固定。
+- Migration: owner RLS／RPC、subject・現行panel・継続元panel検証、情報損失rollback停止。manifest 69件。
+- 互換: migration未適用時は連続状態UI／解決だけ停止。既存生成、Provider、model、料金、人物参照resolverは維持。
+- 検証: 集中6/6、Hub 854項目／858 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration静的検査／PostgreSQL 16 roundtrip、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: commit・push・Draft PR後、全CI／Vercel成功で停止。P1-Eはmerge後。
+- 詳細: `docs/RELEASE_CANDIDATE_P1D_PANEL_CONTINUITY_STATE_20260825.md`
+
+---
+
 ## 2026-08-25 P1-C 作品バイブル・人物参照UI
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

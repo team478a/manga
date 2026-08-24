@@ -275,6 +275,7 @@ async function runStoryboardPanelImage(
     assetId: string;
   }> = [];
   let referenceResolution: ReturnType<typeof resolveVersionedCharacterReferences> | null = null;
+  let panelContinuityStates:Array<{subjectKind:"character"|"location"|"prop";subjectId:string;timeOfDay:string;weather:string;stateNote:string;holdingHand:"unspecified"|"left"|"right"|"both"|"none";screenSide:"unspecified"|"left"|"center"|"right";gazeDirection:string;continuesFromPanelId:string|null}>=[];
   const assignments = await supabase
     .from("cloud_panel_subject_assignments")
     .select("subject_kind,subject_id")
@@ -383,6 +384,10 @@ async function runStoryboardPanelImage(
       ];
     }
   }
+  const continuity=await supabase.from("cloud_panel_continuity_states").select("subject_kind,subject_id,time_of_day,weather,state_note,holding_hand,screen_side,gaze_direction,continues_from_panel_id").eq("project_id",request.projectId).eq("page_id",request.pageId).eq("panel_id",request.panelId).eq("owner_profile_id",profile.id).limit(12);
+  if(continuity.error&&continuity.error.code!=="42P01")throw new DomainError("INTERNAL_ERROR","コマの連続状態を読み込めませんでした。",{cause:continuity.error});
+  panelContinuityStates=(continuity.data??[]).map(item=>({subjectKind:item.subject_kind as "character"|"location"|"prop",subjectId:item.subject_id,timeOfDay:item.time_of_day,weather:item.weather,stateNote:item.state_note,holdingHand:item.holding_hand as "unspecified"|"left"|"right"|"both"|"none",screenSide:item.screen_side as "unspecified"|"left"|"center"|"right",gazeDirection:item.gaze_direction,continuesFromPanelId:item.continues_from_panel_id}));
+  const continuityPrompt=panelContinuityStates.map(item=>[item.timeOfDay&&`時間帯:${item.timeOfDay}`,item.weather&&`天候:${item.weather}`,item.stateNote&&`状態:${item.stateNote}`,item.holdingHand!=="unspecified"&&`持ち手:${item.holdingHand}`,item.screenSide!=="unspecified"&&`画面位置:${item.screenSide}`,item.gazeDirection&&`視線:${item.gazeDirection}`,item.continuesFromPanelId&&"前コマから状態を継続"].filter(Boolean).join("、")).filter(Boolean).join(" / ");
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
   const prepared: Array<{
     generation: Awaited<ReturnType<typeof prepareCloudGenerationJob>>;
@@ -417,6 +422,7 @@ async function runStoryboardPanelImage(
         prepared.push({
           generation: await prepareCloudGenerationJob({
             ...resolved.generation,
+            ...(panelContinuityStates.length?{prompt:`${resolved.generation.prompt}\n連続状態（変更禁止）: ${continuityPrompt}`,panelContinuityStates}:{}),
             ...(referenceResolution ? {
               referenceBundleVersion: referenceResolution.bundleVersion,
               referenceResolverVersion: referenceResolution.resolverVersion,
@@ -444,6 +450,7 @@ async function runStoryboardPanelImage(
               : `${request.idempotencyKey}:candidate:${candidateIndex + 1}`,
           generation: {
             ...resolved.generation,
+            ...(panelContinuityStates.length?{prompt:`${resolved.generation.prompt}\n連続状態（変更禁止）: ${continuityPrompt}`,panelContinuityStates}:{}),
             ...(referenceResolution ? {
               referenceBundleVersion: referenceResolution.bundleVersion,
               referenceResolverVersion: referenceResolution.resolverVersion,

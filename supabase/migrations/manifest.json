@@ -408,7 +408,13 @@
       "description": "人物versionの衣装と状態を重複しないページ範囲へ割り当て",
       "forwardSha256": "8cdbd829546a0a1800cd4ccaa82e02135bc81ba55e09c4cb03bd304619d87b0a",
       "rollbackSha256": "0d8c9d81d9c6ad26fec311a0955eb5280211468a518d084a0b63d83df437b2e1"
+    },
+    {
+      "id": "202608250003_cloud_panel_continuity_states",
+      "description": "コマ単位の時間・天候・左右・持ち手・視線・前コマ継続を構造化",
+      "forwardSha256": "a87cd081b8441e26001357b3b053c0a8e407c415ac81617f0c61ad5dbcdc695e",
+      "rollbackSha256": "c51ed6449edf7d6d13393b7362148f094a444ce5241d5c3b5e5ff2491585b367"
     }
   ],
-  "schemaSha256": "533d92cef29aeae764442b948210efcd47c6e946c31f16e64c974daf5e99dd4e"
+  "schemaSha256": "4507e3d985a1b7751990a81fb11290b488d30bfe707e4fead8256bef71ceef44"
 }

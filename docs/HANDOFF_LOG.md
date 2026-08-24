@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P1-D コマ連続状態）
+
+- Branch `codex/p1d-panel-continuity-state`、base `9c80cbc`。
+- コマ別の時間帯、天候、状態、持ち手、画面内左右、視線、継続元をowner境界内で保存し、生成入力へ固定した。
+- 集中6/6、Hub 858 tests、全ローカル品質ゲート、PostgreSQL 16 migration roundtrip成功。
+- Production、Provider、Worker、Job、Storage、credit変更なし。P1-Eはmerge後。
+
+---
+
 ## 2026-08-25 Codex（P1-C 作品バイブル・人物参照UI）
 
 - Branch `codex/p1c-story-bible-reference-ui`、base `7e49a87`。
