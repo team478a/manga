@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: 23–24ページPilot Visual Settings保存前下書き
+
+- PR #335 merge commit `a042faa`から`codex/docs-pilot-visual-settings-draft`を作成した。
+- owner-only RLSを確認し、管理者セッションの空表示を設定消失と扱わない方針へ修正した。
+- 過去に保存・preflight通過した作品画風v1、城戸真琴v1、榊圭吾v1を保存前下書きへ転記した。
+- 有坂冬馬の外見は正本未確認のため未決。本人sessionで既存profile、scenario、参考画像を確認する。
+- Production入力・保存、DB、Provider、Worker、Job、credit変更0件。
+
+---
+
 ## 2026-08-24 Codex: 追加creditなし8コマPilot候補選定
 
 - PR #334 merge commit `ac30805`から`codex/docs-eight-panel-pilot-candidate`を作成した。

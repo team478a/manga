@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 23–24ページPilot Visual Settings保存前下書き
+
+- 状態: `DRAFTED_FROM_EXISTING_EVIDENCE / OWNER_SESSION_REQUIRED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #335 merge commit `a042faa`。Branch: `codex/docs-pilot-visual-settings-draft`。
+- RLS再評価: 人物・画風・Storyboardはowner-only read。管理者`tanaka`から`test`作品の設定が空に見えても、設定消失とは断定できない。
+- 既存証跡: `test`本人が作品画風v1、城戸真琴v1、榊圭吾v1、城戸湊v1を保存し、過去preflight 3/3を通過済み。重複作成せず既存ID／versionを本人sessionで確認する。
+- 23–24ページ: 必須人物は城戸真琴、有坂冬馬、榊圭吾。有坂冬馬の外見正本は文書に無く、推測入力は禁止。
+- 次: `test`本人sessionで既存Style Bible／人物version、有坂冬馬、場所／小物をread-only確認する。保存やversion追加は別の明示承認後。
+- 不変: Production入力・保存、DB、Storage、Canvas、Provider、Worker、Job、credit変更0件。
+- 詳細: `docs/RELEASE_CANDIDATE_PILOT_VISUAL_SETTINGS_DRAFT_20260824.md`
+
+---
+
 ## 2026-08-24 追加creditなし8コマPilot候補選定
 
 - 状態: `CANDIDATE_SELECTED_READ_ONLY / CREDIT_FITS_WITH_ZERO_BUFFER / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`

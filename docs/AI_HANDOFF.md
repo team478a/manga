@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 23–24ページPilot Visual Settings保存前下書き（2026-08-24）
+
+- PR #335 merge commit `a042faa`を基準に既存正本を再監査した。
+- 人物・画風・Storyboardはowner-only RLS。管理者からの空表示を設定消失と誤認しない。
+- 過去に保存・preflight通過済みの作品画風v1、城戸真琴v1、榊圭吾v1を再利用候補とし、重複作成を禁止した。
+- 有坂冬馬の外見正本は未確認。本人session、scenario、参考画像を確認するまで推測入力しない。
+- Production入力、保存、Provider、Job、credit操作0件。詳細は`docs/RELEASE_CANDIDATE_PILOT_VISUAL_SETTINGS_DRAFT_20260824.md`。
+
+---
+
 ## 0.0 追加creditなし8コマPilot候補選定（2026-08-24）
 
 - PR #334 merge commit `ac30805`を基準に連続2ページ候補をread-only比較した。
