@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 追加creditなし8コマPilot候補選定（2026-08-24）
+
+- PR #334 merge commit `ac30805`を基準に連続2ページ候補をread-only比較した。
+- 推奨は23–24ページ。各4コマ、未着手、画像0、再実行待ち0。
+- 8コマ、必要16 credit／残り16、最大予約$0.24、最短3 Worker回。monitor残り11内だがcredit余裕0。
+- 必要人物は城戸真琴、有坂冬馬、榊圭吾。画風・場所／小物とVisual Readinessの正本化が必要。
+- Production、Provider、Job、credit変更0件。詳細は`docs/RELEASE_CANDIDATE_EIGHT_PANEL_PILOT_CANDIDATE_20260824.md`。
+
+---
+
 ## 0.0 2ページPilot 所有者・モニター枠診断（2026-08-24）
 
 - PR #333 merge commit `9d2455a`を基準に管理画面をread-only確認した。
