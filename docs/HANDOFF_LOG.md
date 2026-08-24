@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-24 Codex: Production再集計・22ページ追加生成なし修復・Pilot判断
+
+- PR #327 merge commit `35c358f`から`codex/docs-r4-3-production-reaggregation-repair`を作成した。
+- Productionをread-only再集計し、32ページ157コマ、配置13、未配置144、画像配置完了2/32、要修正276、生成Job 78、処理中0を確認した。既存候補総数はUIで直接取得できない。
+- credit表示はコックピット月次使用92・予約0、作品batch残り16、22ページFREE枠使用4・予約0・上限20。集計範囲が異なるため統合していない。
+- 22ページの「既存原稿を修復」を1回実行し、短い縦書き1件、不採用画像0件、背景順0件を修復した。自動保存と再読込後の修復ボタン消失を確認した。
+- 原稿プレビューは一時読込失敗、PNGはブラウザtimeoutのため未確認。
+- Pilotは画風未設定、生成準備とモニターAI枠の確認不可、残り16 credit、4〜8ページ必須UIと2ページ計画の不一致により未実行。Provider Job、credit予約・消費0件。
+- 次はdocs-only Draft PRと全CI／Vercel Preview成功で停止する。Preview／PNG再確認、参照版確定、Pilot契約・対象・最大creditは次の責任者判断を待つ。
+
+---
+
 ## 2026-08-24 Codex: 採用画像Visual Judge連続性証跡監査
 
 - PR #326 merge commit `e0e8aae`から`codex/audit-r4-3-visual-judge-evidence`を作成した。
