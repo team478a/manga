@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 2ページPilot 所有者・モニター枠診断（2026-08-24）
+
+- PR #333 merge commit `9d2455a`を基準に管理画面をread-only確認した。
+- 作品ownerは`test`。モニターはactive 89/100、残り11で正常。Cloud AIはTrial、使用80・予約0・残り16。
+- 先のモニター確認不可は管理者`tanaka`が他ユーザー作品を開き、現在profileのenrollmentを参照したsession mismatchによる。
+- 9コマはmonitor内だが18 credit必要で2不足。Visual Readiness、credit、migrationの承認前に生成しない。
+- Production設定、DB、作品、Provider、Job、credit変更0件。詳細は`docs/RELEASE_CANDIDATE_PILOT_OWNER_MONITOR_DIAGNOSIS_20260824.md`。
+
+---
+
 ## 0.0 2ページPilot停止条件の原因監査（2026-08-24）
 
 - PR #332 merge commit `200b11e`を基準にProductionをread-only診断した。

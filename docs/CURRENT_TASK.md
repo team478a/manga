@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 2ページPilot 所有者・モニター枠診断
+
+- 状態: `MONITOR_ENROLLMENT_CONFIRMED / SESSION_MISMATCH_SCOPED / CREDIT_SHORTAGE_REMAINS / PRODUCTION_UNCHANGED`
+- Base: PR #333 merge commit `9d2455a`。Branch: `codex/docs-pilot-owner-monitor-diagnosis`。
+- 管理画面read-only確認: 対象作品ownerは`test`。Cloud AIはTrial、使用80・予約0・残り16、処理中0。モニターはactive、89/100・残り11、期限2026-10-31。
+- 原因: 先の作品確認は管理者`tanaka`セッションで、preflightは現在の操作profileのenrollmentを参照するためモニター枠が確認不可となった。`test`のenrollment自体は正常。
+- Pilot影響: 1–2ページ9コマはモニター残り11内だが、必要18 creditに対し残り16で2不足。本人セッションでも開始条件は未成立。
+- 次: Visual Readiness方針、画風・人物正本、credit不足解消、Production migrationを責任者が承認後、`test`本人セッションで最終read-only preflightを行う。
+- 不変: Plan、enrollment、credit、Production DB、作品、Canvas、Provider、Worker、Jobへの変更0件。console error 0件。
+- 詳細: `docs/RELEASE_CANDIDATE_PILOT_OWNER_MONITOR_DIAGNOSIS_20260824.md`
+
+---
+
 ## 2026-08-24 2ページPilot停止条件の原因監査
 
 - 状態: `ROOT_CAUSE_SCOPED / ADMIN_READ_ONLY_CHECK_REQUIRED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
