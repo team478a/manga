@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: 2ページPilot停止条件の原因監査
+
+- PR #332 merge commit `200b11e`から`codex/docs-pilot-blocker-root-cause`を作成した。
+- Productionの画風、人物、場所・小物、モニター画面をread-only確認し、全て未設定／確認不可、console error 0件を確認した。
+- Visual Readinessはstoryboard materialization欠損時に手入力設定の評価前に停止する。monitor nullはFlag／row／Admin障害を区別しない。
+- 次は管理者read-only確認と既存手動制作作品のVisual Readiness契約判断。設定変更、DB修復、Pilot開始は明示承認待ち。
+- Production、Provider、Worker、Job、credit、作品への変更0件。
+
+---
+
 ## 2026-08-24 Codex: 連続2ページPilot Production準備状況受入れ
 
 - PR #331 merge commit `7e0603a`のProduction UI反映をread-only確認した。

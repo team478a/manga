@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 2ページPilot停止条件の原因監査（2026-08-24）
+
+- PR #332 merge commit `200b11e`を基準にProductionをread-only診断した。
+- 画風5項目、人物、場所・小物が未設定で、対象作品にはシナリオ由来人物設定もない。
+- storyboard materializationなしではpreflightが入力評価前に準備不可となるため、単純な設定入力だけでは解消しない可能性がある。
+- monitor nullはFlag無効、enrollmentなし、Admin／DB障害を区別しない。次は管理者read-only確認とVisual Readiness契約判断が必要。
+- Production書込み、Provider、Job、credit操作0件。詳細は`docs/RELEASE_CANDIDATE_PILOT_BLOCKER_ROOT_CAUSE_20260824.md`。
+
+---
+
 ## 0.0 連続2ページPilot Production準備状況受入れ（2026-08-24）
 
 - PR #331 merge commit `7e0603a`の新UIがProductionへ反映済み。
