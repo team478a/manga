@@ -378,7 +378,13 @@
       "description": "既存生成Jobを維持したまま工程状態・再試行系譜・安全なappend-only event基盤を追加",
       "forwardSha256": "c9c05147c7d0cdaa14d65ec77338e378b96fe39bad656b9958942d8561c542ec",
       "rollbackSha256": "2945ae04065b680d676746df173a08964943ebfa66116025174fc5857f297d8c"
+    },
+    {
+      "id": "202608240003_cloud_generation_retry_lineage",
+      "description": "Feature Flag有効時の手動再試行をowner検査付き親子Job系譜として記録",
+      "forwardSha256": "f615b9ec2c8a70fb28d1ac62636ecc1ced555e0ce503b0a83cce77981d7f742d",
+      "rollbackSha256": "0c74bdf76d018418af2adb69423d3a0e8b4b4b97bd293ca86820010e5ecdd3b8"
     }
   ],
-  "schemaSha256": "333426a65039ec216d80f62a37174eef11126df38c8da731980d68e225da9906"
+  "schemaSha256": "3c1916b1d96af742bba487fa5f8f99c1a6e9c18b60ab0e3f50dce3d5eacee0ea"
 }

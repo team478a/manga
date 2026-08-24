@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 P0-B 生成lifecycle・再試行系譜
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`
+- Base: PR #338 merge commit `e6929d3`。Branch: `codex/p0b-generation-lifecycle-events`。
+- 実装: Flag有効時だけWorker工程／retry／完了eventを記録し、failure stage／HTTP statusを構造化する。記録障害でProviderを二重実行しない。
+- 手動retry: owner検査付きRPCでparent／root系譜を保存し、失敗時は新Jobをcancelして予約を解放する。
+- Migration: forward／rollback／canonical schema／manifest 64件同期。
+- 検証: 集中15/15、deps error 0（既存warning 2）、lint、全型検査、Hub 838項目／842 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 64件、build、RC structure、diff check成功。
+- 不変: Flag既定OFF。Production、Provider、Worker、Job、Storage、Canvas、credit操作0件。
+- 次: commit・push・Draft PR後、全CI／Vercel成功で停止する。P0-Cはレビュー前に開始しない。
+- 詳細: `docs/RELEASE_CANDIDATE_P0B_GENERATION_LIFECYCLE_EVENTS_20260824.md`
+
+---
+
 ## 2026-08-24 P0-A 再開可能な生成基盤schema
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`

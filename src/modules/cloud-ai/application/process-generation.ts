@@ -34,6 +34,15 @@ import { adoptCompletedPanelCandidate } from "../../manga/application/auto-adopt
 import { createAutomaticPanelAdoptionRepository } from "../../manga/infrastructure/auto-panel-adoption-repository.ts";
 import { placeCompletedPageDialogue } from "../../manga/application/auto-place-page-dialogue.ts";
 import { createPageDialoguePlacementRepository } from "../../manga/infrastructure/dialogue-placement-repository.ts";
+import { recordCloudGenerationLifecycle } from "../infrastructure/generation-lifecycle-repository.ts";
+import type {
+  CloudGenerationFailureStage,
+  CloudGenerationLifecycleEventType,
+} from "../domain/generation-lifecycle-event.ts";
+import type {
+  CloudGenerationExecutionPhase,
+  CloudGenerationRetryDisposition,
+} from "../domain/resumable-generation-state.ts";
 
 export { createCloudJobLeaseHeartbeat } from "./lease-heartbeat.ts";
 export { CloudGenerationLeaseLostError } from "../domain/cloud-ai-errors.ts";
@@ -48,6 +57,24 @@ function canContinueProviderPolling(job: ClaimedCloudGenerationJob) {
   if (!Number.isFinite(startedAt)) return false;
   const elapsed = Date.now() - startedAt;
   return elapsed >= 0 && elapsed < MAX_PROVIDER_POLLING_AGE_MS;
+}
+
+async function recordLifecycleBestEffort(input: {
+  client: AdminClient;
+  job: ClaimedCloudGenerationJob;
+  executionPhase: CloudGenerationExecutionPhase;
+  eventType: CloudGenerationLifecycleEventType;
+  expectedStatus: "queued" | "running" | "completed" | "failed" | "canceled";
+  failureStage?: CloudGenerationFailureStage | null;
+  retryDisposition?: CloudGenerationRetryDisposition | null;
+  httpStatus?: number | null;
+  requireLease?: boolean;
+}) {
+  try {
+    await recordCloudGenerationLifecycle(input);
+  } catch {
+    // Observability must never repeat a billable provider operation.
+  }
 }
 
 export { processPendingCloudStorageCleanup };
@@ -108,6 +135,13 @@ export async function processNextCloudGenerationJob(input: {
   let uploadedAsset: UploadedCloudGeneratedAsset | null = null;
   let checkpointedProviderJobId = job.provider_job_id;
   try {
+    await recordLifecycleBestEffort({
+      client,
+      job,
+      executionPhase: "preparing",
+      eventType: "phase_changed",
+      expectedStatus: "running",
+    });
     const generation = cloudGenerationInputSchema.parse(job.input);
     const provider = input.providers.find(
       (candidate) =>
@@ -199,6 +233,13 @@ export async function processNextCloudGenerationJob(input: {
     let outputAssetId: string | null = null;
     let providerJobId: string | null = null;
     let actualCostMicros = 0;
+    await recordLifecycleBestEffort({
+      client,
+      job,
+      executionPhase: "generating",
+      eventType: "phase_changed",
+      expectedStatus: "running",
+    });
     if (generation.kind === "image" && provider.capability.kind === "image") {
       const result = await (provider as CloudImageGenerationProvider).generate(
         generation as typeof generation & { kind: "image" },
@@ -208,6 +249,13 @@ export async function processNextCloudGenerationJob(input: {
       if (!result.images.length)
         throw new Error("Providerから画像が返されませんでした。");
       await heartbeat.assertLease();
+      await recordLifecycleBestEffort({
+        client,
+        job,
+        executionPhase: "validating",
+        eventType: "phase_changed",
+        expectedStatus: "running",
+      });
       uploadedAsset = await uploadGeneratedAsset(
         client,
         job,
@@ -233,6 +281,13 @@ export async function processNextCloudGenerationJob(input: {
         heartbeat.signal,
       );
       await heartbeat.assertLease();
+      await recordLifecycleBestEffort({
+        client,
+        job,
+        executionPhase: "validating",
+        eventType: "phase_changed",
+        expectedStatus: "running",
+      });
       providerJobId = result.providerJobId ?? null;
       actualCostMicros = result.usage.actualCostMicros ?? 0;
       output = {
@@ -251,6 +306,15 @@ export async function processNextCloudGenerationJob(input: {
       outputAssetId,
       providerJobId,
       actualCostMicros,
+    });
+    await recordLifecycleBestEffort({
+      client,
+      job,
+      executionPhase: "succeeded",
+      eventType: "completed",
+      expectedStatus: "completed",
+      retryDisposition: "none",
+      requireLease: false,
     });
     if (generation.kind === "image") {
       try {
@@ -321,6 +385,17 @@ export async function processNextCloudGenerationJob(input: {
         job,
         providerJobId: checkpointedProviderJobId,
       });
+      await recordLifecycleBestEffort({
+        client,
+        job,
+        executionPhase: "failed",
+        eventType: "retry_scheduled",
+        expectedStatus: "queued",
+        failureStage: failure.failureStage,
+        retryDisposition: "automatic",
+        httpStatus: failure.httpStatus,
+        requireLease: false,
+      });
       return { status: "retrying" as const, jobId: job.id };
     }
     const retryable =
@@ -337,6 +412,17 @@ export async function processNextCloudGenerationJob(input: {
       errorMessage: failure.message,
       retryable,
       providerJobId: checkpointedProviderJobId,
+    });
+    await recordLifecycleBestEffort({
+      client,
+      job,
+      executionPhase: "failed",
+      eventType: retryable ? "retry_scheduled" : "failed",
+      expectedStatus: retryable ? "queued" : "failed",
+      failureStage: failure.failureStage,
+      retryDisposition: retryable ? "automatic" : "none",
+      httpStatus: failure.httpStatus,
+      requireLease: false,
     });
     return {
       status: retryable ? ("retrying" as const) : ("failed" as const),

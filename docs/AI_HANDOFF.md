@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0-B 生成lifecycle・再試行系譜（2026-08-24）
+
+- PR #338 merge commit `e6929d3`を基準にP0-Bを実装した。
+- Flag有効時のWorker工程／retry／完了event、構造化failure、手動retry parent／root系譜を追加した。
+- lifecycle記録障害で課金対象Provider処理を繰り返さず、retry系譜失敗時は新Jobをcancelする。
+- migration／rollback／schema／manifest 64件と全ローカル品質ゲート成功。
+- Flag既定OFF。Production、Provider、Job、credit操作0件。詳細は`docs/RELEASE_CANDIDATE_P0B_GENERATION_LIFECYCLE_EVENTS_20260824.md`。
+
+---
+
 ## 0.0 P0-A 再開可能な生成基盤schema（2026-08-24）
 
 - PR #337 merge commit `109bea3`を基準にP0-Aだけを実装した。

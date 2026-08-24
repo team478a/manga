@@ -11,6 +11,7 @@ import {
 import { savePanelSpecification } from "../../manga-quality/infrastructure/panel-quality-repository";
 import { cloudCreatorContext } from "../auth-context";
 import { enqueueCloudGenerationJob } from "./generation-service";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 
 export async function retryFailedInteractiveCloudGenerationJob(jobId: string) {
   const { supabase, profile } = await cloudCreatorContext();
@@ -77,6 +78,20 @@ export async function retryFailedInteractiveCloudGenerationJob(jobId: string) {
     idempotencyKey: crypto.randomUUID(),
     generation,
   });
+  if (featureFlagEnabled("CLOUD_GENERATION_RESUMABLE_V2_ENABLED")) {
+    const { error: lineageError } = await supabase.rpc(
+      "link_cloud_generation_retry",
+      { p_source_job_id: jobId, p_retry_job_id: newJobId },
+    );
+    if (lineageError) {
+      await supabase.rpc("cancel_cloud_generation_job", { p_job_id: newJobId });
+      throw new DomainError(
+        "INTERNAL_ERROR",
+        "再実行履歴を安全に保存できなかったため、生成を開始しませんでした。",
+        { cause: lineageError },
+      );
+    }
+  }
   if (specification.data?.specification) {
     try {
       await savePanelSpecification({
