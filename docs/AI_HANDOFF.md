@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production人物連続性監査・残コマ生成計画（2026-08-24）
+
+- `feature/manga-canvas-mvp`の最新基準はPR #324 merge commit `7f4ccf1fcc8226ce81881d81d1c5862a82ab8e08`。
+- 作業ブランチは`codex/audit-r4-3-production-continuity`。文書監査のみで、Production、Provider、creditを変更していない。
+- 現行`/creator/[projectId]/continuity`は生成履歴、設定版、参照画像、割当の整合を検査する。画像ピクセル上の顔・衣装・構図の一致は検査しない。
+- 2026-08-20証跡では32ページ157コマ中13コマ配置、144コマ未配置。22ページには類似構図と人物・場面連続性の目視事項がある。値は次の実行前にread-only再集計する。
+- 残コマは全件一括投入せず、連続2ページ・最大8〜12コマのPilot、以後4ページ単位を上限とする。各batchでcheckpoint、参照設定、credit予約、品質、PNGを検査する。
+- 次担当は責任者承認なしにProduction修復、Provider実行、credit予約をしない。詳細は`docs/RELEASE_CANDIDATE_PRODUCTION_CONTINUITY_AND_REMAINING_GENERATION_PLAN_20260824.md`。
+
+---
+
 ## 0.0 現在の優先タスク（セリフ出力の可読性、2026-08-20）
 
 - 最新基準はPR #323 merge commit `ea302207328faee8a647029cf528e55143f2b206`。Branchは`codex/fix-r4-3-dialogue-output-readability`。
