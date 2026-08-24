@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: P0-B 生成lifecycle・再試行系譜
+
+- Branch: `codex/p0b-generation-lifecycle-events`。Base: PR #338 merge commit `e6929d3`。
+- Workerのpreparing／generating／validating／succeeded／failedとautomatic retryをFlag有効時だけ記録する。
+- errorはfailure stageと安全なHTTP数値へ構造化し、eventにProvider payloadを保存しない。
+- 手動retryをowner検査付きparent／root系譜へ接続し、系譜失敗時は新Jobをcancelする。
+- 集中15/15、全ローカル品質ゲート、migration 64件成功。Production／Provider／Job／credit操作0件。
+
+---
+
 ## 2026-08-24 Codex: P0-A 再開可能な生成基盤schema
 
 - Branch: `codex/p0a-resumable-generation-schema`。Base: PR #337 merge commit `109bea3`。
