@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 P0-D 生成失敗・再開UI
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`
+- Base: PR #340 merge commit `15c37ae`。Branch: `codex/p0d-generation-recovery-ui`。
+- 実装: 工程、失敗工程、自動再開待ち、コマ単位再試行、最終checkpointを安全な日本語で表示する。
+- 非回帰: Flag OFFでは新DB列を問い合わせず従来一覧契約を維持する。生のProvider error／Prompt／秘密情報は表示しない。
+- 不変: Production、Provider、Worker、Job、Storage、credit操作0件。retry／cancel動作とCanvas契約は変更なし。
+- 検証: 集中4/4、deps error 0（既存warning 2）、lint、全型検査、Hub 844項目／848 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 65件、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ローカル品質ゲート、commit・push・Draft PR後、全CI／Vercel成功で停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_P0D_GENERATION_RECOVERY_UI_20260824.md`
+
+---
+
 ## 2026-08-24 P0-C 生成run checkpoint・20ページ再開fixture
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`

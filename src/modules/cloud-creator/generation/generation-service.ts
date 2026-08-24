@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 import {
   cloudGenerationInputSchema,
   cloudImageRevisionPresetSchema,
@@ -81,12 +82,14 @@ export async function listCloudGenerationJobs(
   pageId?: string,
 ) {
   const { supabase } = await cloudCreatorContext();
-  let query = supabase
-    .from("cloud_generation_jobs")
-    .select(
-      "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input",
-    )
-    .eq("project_id", projectId);
+  const recoveryUiEnabled = featureFlagEnabled("CLOUD_GENERATION_RESUMABLE_V2_ENABLED");
+  let query = recoveryUiEnabled
+    ? supabase.from("cloud_generation_jobs").select(
+        "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input,execution_phase,failure_stage,retry_disposition,last_checkpoint_at",
+      ).eq("project_id", projectId)
+    : supabase.from("cloud_generation_jobs").select(
+        "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input",
+      ).eq("project_id", projectId);
   if (pageId) query = query.eq("page_id", pageId);
   const { data, error } = await query
     .order("created_at", { ascending: false })
@@ -130,6 +133,11 @@ export async function listCloudGenerationJobs(
     const { input: _privateInput, ...publicRow } = row;
     return {
       ...publicRow,
+      recovery_ui_enabled: recoveryUiEnabled,
+      execution_phase: recoveryUiEnabled && "execution_phase" in row ? row.execution_phase : null,
+      failure_stage: recoveryUiEnabled && "failure_stage" in row ? row.failure_stage : null,
+      retry_disposition: recoveryUiEnabled && "retry_disposition" in row ? row.retry_disposition : null,
+      last_checkpoint_at: recoveryUiEnabled && "last_checkpoint_at" in row ? row.last_checkpoint_at : null,
       panel_adoption_eligible: input?.autoAdopt === true,
       panel_adoption_status: null,
       panel_adoption_retryable: false,

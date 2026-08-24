@@ -38,6 +38,7 @@ import type {
 } from "@/lib/cloud-creator-server";
 import type { CloudPageDialoguePlacement } from "@/modules/cloud-creator/canvas/dialogue-placement-service";
 import type { CloudPageCompletion } from "@/modules/cloud-creator/projects/page-completion-service";
+import { buildGenerationRecoveryPresentation } from "@/modules/cloud-ai/domain/generation-recovery-presentation";
 import { PageCompletionBanner } from "./PageCompletionBanner";
 import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
@@ -199,6 +200,29 @@ function generationStatusLabel(job: CloudGenerationJob) {
       ? "配置失敗・再実行可能"
       : "配置失敗";
   return "画像生成完了";
+}
+
+function GenerationRecoveryStatus({ job }: { job: CloudGenerationJob }) {
+  if (!job.recovery_ui_enabled) return null;
+  const recovery = buildGenerationRecoveryPresentation({
+    status: job.status,
+    executionPhase: job.execution_phase,
+    failureStage: job.failure_stage,
+    retryDisposition: job.retry_disposition,
+    lastCheckpointAt: job.last_checkpoint_at,
+  });
+  return (
+    <div className="mb-2 rounded bg-violet-50 p-2 text-violet-950" data-testid="generation-recovery-status">
+      <p className="font-bold">{recovery.phaseLabel}</p>
+      {recovery.failureStageLabel ? <p>失敗工程: {recovery.failureStageLabel}</p> : null}
+      {recovery.recoveryLabel ? <p>{recovery.recoveryLabel}</p> : null}
+      {recovery.lastCheckpointAt ? (
+        <p className="text-[11px] text-violet-800">
+          最終記録: {new Date(recovery.lastCheckpointAt).toLocaleString("ja-JP")}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 function cloneCanvas(canvas: PageCanvas): PageCanvas {
@@ -1953,6 +1977,7 @@ export function CloudCanvasEditor({
                   className="rounded border border-stone-200 bg-white p-2 text-xs"
                   key={job.id}
                 >
+                  <GenerationRecoveryStatus job={job} />
                   <div className="flex items-center justify-between gap-2">
                     <span>
                       {job.revision_preset
