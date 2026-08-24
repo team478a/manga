@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 P1作品バイブル・キャラクター固定gap監査
+
+- 状態: `RESEARCH_DOCUMENTED / ALL_LOCAL_GATES_PASSED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`
+- Base: PR #342 merge commit `53484ad`。Branch: `codex/research-p1-story-bible-gap`。
+- 現行: 人物／画風／場所／小物version、参照Asset、コマ割当、生成入力へのversion／Asset固定、batch preflightは実装済み。
+- 主要gap: 参照Assetが人物version非依存、参照role未構造化、衣装・状態のページ範囲なし、左右／時間状態なし、主要人物の参照不足をblockできない。
+- 設計: version付きreference binding、状態範囲、panel continuity state、作品別warn／block policy、resolver versionを既存schemaへ追加する。
+- 不変: migration、API、UI、Provider、Production、Worker、Job、Storage、credit操作0件。OSS導入0件。
+- 検証: deps error 0（既存warning 2）、lint、全型検査、Hub 846項目／850 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 65件、Hub／Desktop build、RC structure、diff check成功。
+- 次: docs-only commit・push・Draft PR後、全CI／Vercel成功で停止する。P1-Aはレビュー前に開始しない。
+- 詳細: `docs/RESEARCH_P1_STORY_BIBLE_CHARACTER_LOCK_20260824.md`
+
+---
+
 ## 2026-08-24 P0-E optional Provider interface
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PROVIDER_UNCHANGED / PRODUCTION_UNCHANGED`

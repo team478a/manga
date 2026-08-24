@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P1作品バイブル・キャラクター固定gap監査（2026-08-24）
+
+- PR #342 merge commit `53484ad`を基準にP1現行実装を監査した。
+- versioned人物／画風／世界設定、参照Asset、panel割当、Job入力固定は既存。gapはversion付き参照role、衣装範囲、左右／時間状態、参照不足block policy。
+- 実装はP1-A〜Fへ分割した。今回は文書のみでProduction／Provider／credit操作0件。
+
+---
+
 ## 0.0 P0-E optional Provider interface（2026-08-24）
 
 - PR #341 merge commit `6aaa5d9`を基準に、共通画像Providerのoptional拡張と既存adapter互換aliasを追加した。

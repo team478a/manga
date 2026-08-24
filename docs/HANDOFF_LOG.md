@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-08-24 Codex: P1作品バイブル・キャラクター固定gap監査
+
+- Branch: `codex/research-p1-story-bible-gap`。Base: PR #342 merge commit `53484ad`。
+- 既存version／参照／panel割当／生成固定を追跡し、6分類のgapとP1-A〜Fの実装順を正本化した。
+- 文書のみ。migration／API／UI／Production／Provider／Job／Storage／credit変更0件。
+
+---
+
 ## 2026-08-24 Codex: P0-E optional Provider interface
 
 - Branch: `codex/p0e-provider-interface`。Base: PR #341 merge commit `6aaa5d9`。
