@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 Production品質イベント5xx修正受入れ
+
+- 状態: `PRODUCTION_ACCEPTANCE_PASSED / RETRY_STORM_NOT_REPRODUCED / CREDIT_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #329 merge commit `e8d9146`。Branch: `codex/docs-production-quality-event-acceptance`。
+- Production反映: Vercel deploymentはReady、Production、`feature/manga-canvas-mvp`、commit `e8d9146`。
+- 限定受入れ: 対象22ページを1回だけ開き、複数回の3秒Job更新をまたいでVercel Logsを確認した。`POST /api/creator/manga-quality-events`の連続500は再発せず、直近30分のconsole Errorは0。
+- ページ状態: 正常表示、保存済み。FREE枠は使用4・予約0・残り16で不変。
+- 不変: Canvas修復、Provider、生成Job、credit予約／消費、DB、Storage、品質承認・不採用操作を実行していない。
+- 検証: Production deployment／ページ／Vercel Logsのread-only受入れ成功。docs-only差分として`git diff --check`を実行する。
+- 次: docs-only commit・push・Draft PR後、全CIとVercel Preview成功で停止する。Pilot生成は既存の準備・枠・UI契約の停止条件が解消するまで行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_QUALITY_EVENT_5XX_ACCEPTANCE_20260824.md`
+
+---
+
 ## 2026-08-24 Production品質イベント5xx再送loop修正
 
 - 状態: `IMPLEMENTED_LOCAL / HUB_REGRESSION_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`

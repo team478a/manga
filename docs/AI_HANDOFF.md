@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production品質イベント5xx修正受入れ（2026-08-24）
+
+- PR #329 merge commit `e8d9146`のProduction deployment Readyを確認した。
+- 22ページを1回開き、複数回のJob polling後も`manga-quality-events`連続500は再発せず、Vercel Logsの直近30分はError 0。
+- ページは正常表示・保存済み、credit使用4・予約0・残り16。Production書込み、Provider実行、credit予約／消費は0件。
+- 詳細は`docs/RELEASE_CANDIDATE_PRODUCTION_QUALITY_EVENT_5XX_ACCEPTANCE_20260824.md`。
+
+---
+
 ## 0.0 Production品質イベント5xx再送loop修正（2026-08-24）
 
 - 最新基準はPR #327 merge commit `35c358f`。Branchは`codex/fix-production-quality-event-5xx`。
