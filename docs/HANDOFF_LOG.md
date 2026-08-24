@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-24 Codex: P0生成基盤・OSS比較調査
+
+- Branch: `codex/research-p0-generation-foundation`。Base: PR #336 merge commit `4d7b9fa`。
+- 現行のコマ生成API、Visual設定解決、quota enqueue、DB queue、lease Worker、Provider、Storage、品質評価／採用／セリフ配置をシーケンス図とエラー一覧へ整理した。
+- 作品、章／episode／scene、page、Canvas panel、generation job、Asset、Visual version、checkpointの現行schemaと追跡可能範囲を整理した。
+- 指定3 OSSを固定commitで比較した。InkstoneはMIT、StoryDiffusionはApache-2.0、comicgenerationはLICENSE fileなし。コード／workflowのコピーは0件。
+- P0は既存statusを維持し、nullable列、append-only event、run checkpoint、Feature Flagを段階追加する設計とした。
+- Production、DB、Storage、Provider、Worker、Job、credit操作0件。次は文書検証、commit、push、Draft PR、全CI／Vercel成功確認。
+
+---
+
 ## 2026-08-24 Codex: 23–24ページPilot Visual Settings保存前下書き
 
 - PR #335 merge commit `a042faa`から`codex/docs-pilot-visual-settings-draft`を作成した。

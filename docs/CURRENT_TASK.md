@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 P0生成基盤・OSS比較調査
+
+- 状態: `RESEARCH_DOCUMENTED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #336 merge commit `4d7b9fa`。Branch: `codex/research-p0-generation-foundation`。
+- 現行監査: コマ単位Job、DB queue、idempotency、lease、指数backoff、Provider Job ID checkpoint、非公開Storage、手動再試行、batch、作品checkpointは実装済み。
+- 主要gap: 工程別永続状態、retryable／finalの明示、親子Job系譜、HTTP status／失敗工程、生成run checkpointが不足。既存statusを破壊せず追加migration＋Feature Flagで導入する。
+- OSS: InkstoneはMITで設計比較候補。StoryDiffusionはApache-2.0だがSD1.5／SDXL・20GB超VRAM前提の隔離PoC候補。comicgenerationはLICENSE不在のためコード／workflow転用禁止。
+- 成果物: 現行シーケンス図、全エラー経路、DB整理、OSS比較、P0 migration／Flag／テスト／PR分割案を`docs/RESEARCH_P0_GENERATION_FOUNDATION_20260824.md`へ記録した。
+- 不変: P0実装、migration、Production、DB、Storage、Provider、Worker、Job、credit操作0件。OSSコード導入0件。
+- 次: 調査PRをcommit・pushし、全CI／Vercel Preview成功で停止する。責任者レビュー前にP0-Aを実装しない。
+
+---
+
 ## 2026-08-24 23–24ページPilot Visual Settings保存前下書き
 
 - 状態: `DRAFTED_FROM_EXISTING_EVIDENCE / OWNER_SESSION_REQUIRED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
