@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-08-24 Codex: P0-D 生成失敗・再開UI
+
+- Branch: `codex/p0d-generation-recovery-ui`。Base: PR #340 merge commit `15c37ae`。
+- Flag配下で工程、失敗工程、自動再開待ち、コマ単位再試行、最終checkpointを表示する。
+- Flag OFF時は新DB列をSELECTせず、生エラー／Prompt／秘密情報を表示しない。
+- Production／Provider／Worker／Job／Storage／credit操作0件。
+
+---
+
 ## 2026-08-24 Codex: P0-C 生成run checkpoint・20ページ再開fixture
 
 - Branch: `codex/p0c-generation-run-checkpoints`。Base: PR #339 merge commit `a417db4`。

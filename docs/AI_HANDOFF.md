@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0-D 生成失敗・再開UI（2026-08-24）
+
+- PR #340 merge commit `15c37ae`を基準に、工程／失敗工程／自動再開／checkpoint表示を追加した。
+- Flag OFFでは従来DB SELECTを維持し、P0 migration未適用環境を壊さない。
+- 生のProvider error、Prompt、秘密情報を表示しない。Production／Provider／Job／credit操作0件。
+
+---
+
 ## 0.0 P0-C 生成run checkpoint・20ページ再開fixture（2026-08-24）
 
 - PR #339 merge commit `a417db4`を基準に、完了targetのJob／Asset／digest／元revisionを固定するrun checkpointを追加した。
