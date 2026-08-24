@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-08-24 Codex: P1-A 人物version付き参照画像binding
+
+- Branch: `codex/p1a-versioned-reference-bindings`。Base: PR #343 merge commit `7cd2e23`。
+- 人物version、owner Asset、参照role、表情key、優先度、review状態を結ぶ追加schema／RPCを実装した。
+- 既存参照は維持し自動backfillなし。Production／Provider／Job／Storage／credit操作0件。
+
+---
+
 ## 2026-08-24 Codex: P1作品バイブル・キャラクター固定gap監査
 
 - Branch: `codex/research-p1-story-bible-gap`。Base: PR #342 merge commit `53484ad`。

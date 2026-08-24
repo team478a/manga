@@ -1,5 +1,10 @@
 \set ON_ERROR_STOP on
 
+do $$begin
+  if to_regclass('public.cloud_character_reference_bindings') is null or to_regprocedure('public.save_cloud_character_reference_binding(uuid,uuid,uuid,uuid,text,text,integer,text)') is null then raise exception 'Cloud character reference binding objects are missing';end if;
+  if has_table_privilege('anon','public.cloud_character_reference_bindings','select,insert,update,delete') or has_table_privilege('authenticated','public.cloud_character_reference_bindings','insert,update,delete') then raise exception 'Cloud character reference bindings are exposed';end if;
+end$$;
+
 do $$
 begin
   if not exists (
