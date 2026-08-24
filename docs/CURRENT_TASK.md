@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 2ページPilot停止条件の原因監査
+
+- 状態: `ROOT_CAUSE_SCOPED / ADMIN_READ_ONLY_CHECK_REQUIRED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #332 merge commit `200b11e`。Branch: `codex/docs-pilot-blocker-root-cause`。
+- Production画面: 画風5項目未入力、保存済み人物0名、場所・小物0件、シナリオ由来人物設定なし。モニター利用設定も確認不可。console error 0件。
+- Visual Readiness原因: 対象作品に`cloud_story_storyboard_projects`が無い場合、手入力設定の評価前に準備不可となる。画風・人物の単純入力だけでは解除できない可能性がある。
+- Monitor原因境界: Feature Flag無効、enrollment rowなし、Admin credential／DB障害が同じnull表示となるため、利用者画面だけでは一意に確定できない。
+- 次: 管理者権限でFeature Flag／enrollmentと対象作品materializationをread-only確認し、既存作品への正本関連付けか手動制作作品用契約かを責任者が決定する。設定変更・DB修復・Pilot開始は別の明示承認後のみ。
+- 不変: Production設定、DB、Storage、作品、Canvas、Provider、Worker、Job、creditへの変更0件。
+- 詳細: `docs/RELEASE_CANDIDATE_PILOT_BLOCKER_ROOT_CAUSE_20260824.md`
+
+---
+
 ## 2026-08-24 連続2ページPilot Production準備状況受入れ
 
 - 状態: `PRODUCTION_UI_ACCEPTED / PILOT_BLOCKED_FAIL_CLOSED / CREDIT_UNCHANGED / PROVIDER_NOT_CALLED`
