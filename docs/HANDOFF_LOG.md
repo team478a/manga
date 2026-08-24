@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-24 Codex: Production品質イベント5xx再送loop修正
+
+- PR #327 merge commit `35c358f`から`codex/fix-production-quality-event-5xx`を作成した。
+- Vercel Production Logsで22ページをrefererとする`manga-quality-events`の同時多発500を確認した。PR #328 PreviewではなくProduction deployment由来。
+- 完成Jobの表示イベント失敗時に送信済みIDを削除するため、3秒Job更新ごとに全件再送していた。
+- 表示イベントをsession内1回に固定し、所有者として記録不能な旧Jobの`P0001 / cloud_generation_job_not_found`だけを非致命化した。採用・不採用と未知障害はfail-closed。
+- 集中4/4、deps error 0（既存warning 2件）、lint、全型検査、Hub 833/833、diff check成功。外部変更・Provider実行・credit予約／消費0件。
+- 次はDraft PRと全CI／Vercel Preview成功で停止する。Production受入れはmerge後の別工程。
+
+---
+
 ## 2026-08-24 Codex: 採用画像Visual Judge連続性証跡監査
 
 - PR #326 merge commit `e0e8aae`から`codex/audit-r4-3-visual-judge-evidence`を作成した。

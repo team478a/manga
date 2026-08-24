@@ -464,7 +464,7 @@ export function CloudCanvasEditor({
       void recordMangaQualityEvent({
         event: "displayed",
         generationJobId: job.id,
-      }).catch(() => recordedDisplayedJobIds.current.delete(job.id));
+      }).catch(() => undefined);
     }
   }, [generationJobs]);
 
