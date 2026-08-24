@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 連続2ページPilot Production準備状況受入れ
+
+- 状態: `PRODUCTION_UI_ACCEPTED / PILOT_BLOCKED_FAIL_CLOSED / CREDIT_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #331 merge commit `7e0603a`。Branch: `codex/docs-two-page-pilot-production-readiness`。
+- Production反映: 「2ページPilot／4〜8ページ一括生成」と連続2ページの説明を確認した。
+- Read-only再集計: 32ページ157コマ中13コマ配置、画像配置完了2/32、要修正275、生成中0。残りcredit 16。
+- 1–2ページ見積り: 2ページ／9コマ、必要18 credit、最大予約$0.27、Worker最短3回／約15分。credit 2不足、人物・画風準備確認不可、モニターAI枠確認不可により開始ボタンは無効。
+- 不変: 選択は解除済み。Production migration、DB、Storage、作品、Canvas、Provider、Worker、Job、credit予約／消費、保存、修復、品質操作は0件。ブラウザerror 0件。
+- 次: docs-only commit・push・Draft PR後、全CIとVercel Preview成功で停止する。その後もProduction migration、設定変更、credit追加、Pilot対象決定・開始は責任者の明示承認前に行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_TWO_PAGE_PILOT_PRODUCTION_READINESS_20260824.md`
+
+---
+
 ## 2026-08-24 連続2ページ生成Pilot契約
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
