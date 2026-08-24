@@ -150,6 +150,7 @@ export default async function CloudContinuityPage({
             <div className="panel"><h2 className="text-xl font-bold">事実台帳</h2>{narrative.facts.length ? <ul className="mt-4 space-y-3">{narrative.facts.map((fact)=><li className="rounded-lg border border-stone-200 p-4" key={fact.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{fact.subject}・{fact.attribute}</p><p className="mt-1 text-stone-700">{fact.fact_value}</p><p className="mt-2 text-xs text-stone-500">{factKindLabels[fact.fact_kind]}／{fact.start_page}〜{fact.end_page}ページ</p></div><form action={deleteContinuityFactAction.bind(null,projectId,fact.id)}><PendingSubmitButton className="button-secondary" aria-label="事実を削除" pendingLabel="削除中…"><Trash2 className="h-4 w-4" /></PendingSubmitButton></form></div></li>)}</ul> : <p className="mt-3 text-stone-600">まだ事実はありません。</p>}</div>
             <div className="panel"><h2 className="text-xl font-bold">伏線台帳</h2>{narrative.threads.length ? <ul className="mt-4 space-y-3">{narrative.threads.map((thread)=><li className="rounded-lg border border-stone-200 p-4" key={thread.id}><div className="flex justify-between gap-3"><div><p className="font-bold">{thread.title}</p><p className="mt-2 text-xs text-stone-500">{threadStatusLabels[thread.status]}／提示 {thread.setup_page}ページ{thread.target_payoff_page ? `／回収予定 ${thread.target_payoff_page}ページ` : ""}{thread.payoff_page ? `／回収 ${thread.payoff_page}ページ` : ""}</p></div><form action={deletePlotThreadAction.bind(null,projectId,thread.id)}><PendingSubmitButton className="button-secondary" aria-label="伏線を削除" pendingLabel="削除中…"><Trash2 className="h-4 w-4" /></PendingSubmitButton></form></div><form action={savePlotThreadAction.bind(null,projectId)} className="mt-3 flex flex-wrap items-end gap-2"><input name="threadId" type="hidden" value={thread.id} /><input name="title" type="hidden" value={thread.title} /><input name="setupPage" type="hidden" value={thread.setup_page} /><input name="targetPayoffPage" type="hidden" value={thread.target_payoff_page ?? ""} /><input name="notes" type="hidden" value={thread.notes} /><label><span className="label">状態を更新</span><select className="field" name="status" defaultValue={thread.status}>{Object.entries(threadStatusLabels).map(([value,label])=><option value={value} key={value}>{label}</option>)}</select></label><label><span className="label">回収ページ</span><input className="field w-32" name="payoffPage" type="number" min={thread.setup_page} max={1000} defaultValue={thread.payoff_page ?? ""} /></label><PendingSubmitButton className="button-secondary" pendingLabel="更新中…">更新</PendingSubmitButton></form></li>)}</ul> : <p className="mt-3 text-stone-600">まだ伏線はありません。</p>}</div>
           </section>
+
         </>
       )}
 
@@ -245,6 +246,36 @@ export default async function CloudContinuityPage({
               <p className="mt-3 text-stone-600">
                 採用済み生成画像は、現在の固定設定と同じ版を使用しています。
               </p>
+            )}
+          </section>
+
+          <section className="panel mt-6">
+            <div className="flex items-center gap-2">
+              <Info className="h-6 w-6 text-blue-700" />
+              <h2 className="text-xl font-bold">見た目の連続性・目視確認候補</h2>
+            </div>
+            <p className="mt-2 text-sm text-stone-600">
+              同一ページまたは隣接ページで、同じAsset IDか完全一致SHA-256を持つ採用画像だけを候補表示します。
+              類似度の推測、完成阻害、自動不採用、自動再生成は行いません。
+            </p>
+            {result.review.visualCandidates.length ? (
+              <ul className="mt-4 space-y-3">
+                {result.review.visualCandidates.map((candidate, index) => (
+                  <li className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950" key={`${candidate.code}-${candidate.first.panelId}-${candidate.second.panelId}-${index}`}>
+                    <p className="font-semibold">{candidate.message}</p>
+                    <div className="mt-2 flex flex-wrap gap-3">
+                      <Link className="underline" href={`/creator/${projectId}/pages/${candidate.first.pageId}`}>
+                        {candidate.first.pageNumber}ページを開く
+                      </Link>
+                      <Link className="underline" href={`/creator/${projectId}/pages/${candidate.second.pageId}`}>
+                        {candidate.second.pageNumber}ページを開く
+                      </Link>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-stone-600">完全一致する採用画像の目視確認候補はありません。</p>
             )}
           </section>
         </>

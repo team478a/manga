@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 見た目の連続性・完全一致候補監査（2026-08-24）
+
+- 最新基準はPR #325 merge commit `6b3e70d`。Branchは`codex/audit-r4-3-visual-continuity`。
+- 一貫性チェックへ、同一／隣接ページの採用中生成画像で同一Asset IDまたは完全一致SHA-256となる組だけをread-only目視候補として追加した。
+- 候補は履歴警告、完成判定、自動不採用、自動再生成に非接続。類似度推測やVisual Judgeの未確定閾値は使用しない。
+- 集中6/6、deps、lint、全型検査、Hub 831/831、Canvas 26/26、AI 48/48、Desktop 182/182、migration 61件、Hub／Desktop build、diff check成功。
+- Production、Provider、credit、DB、Storage、Canvas、PNG／PDFは不変。次担当は明示承認なしにProduction修復、Provider実行、credit予約を行わない。
+- 詳細は`docs/RELEASE_CANDIDATE_VISUAL_CONTINUITY_EXACT_MATCH_REVIEW_20260824.md`。
+
+---
+
 ## 0.0 Production人物連続性監査・残コマ生成計画（2026-08-24）
 
 - `feature/manga-canvas-mvp`の最新基準はPR #324 merge commit `7f4ccf1fcc8226ce81881d81d1c5862a82ab8e08`。
