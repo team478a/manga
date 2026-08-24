@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0-C 生成run checkpoint・20ページ再開fixture（2026-08-24）
+
+- PR #339 merge commit `a417db4`を基準に、完了targetのJob／Asset／digest／元revisionを固定するrun checkpointを追加した。
+- Worker記録はFlag有効時だけのbest-effortで、失敗してもProvider処理を繰り返さない。
+- 20ページ中断fixtureは完了13件を保持し、未完了7件だけを再開対象にする。
+- Flag既定OFF。Production、Provider、Job、Storage、credit操作0件。詳細は`docs/RELEASE_CANDIDATE_P0C_GENERATION_RUN_CHECKPOINTS_20260824.md`。
+
+---
+
 ## 0.0 P0-B 生成lifecycle・再試行系譜（2026-08-24）
 
 - PR #338 merge commit `e6929d3`を基準にP0-Bを実装した。

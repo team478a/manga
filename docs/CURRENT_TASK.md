@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 P0-C 生成run checkpoint・20ページ再開fixture
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`
+- Base: PR #339 merge commit `a417db4`。Branch: `codex/p0c-generation-run-checkpoints`。
+- 実装: 完了batch targetのJob／Asset／SHA-256／元revisionを固定するrun checkpoint、Flag-gated best-effort記録、純粋resume plannerを追加した。
+- 受入fixture: 20ページ中13ページ完了後の再起動で、完了Asset ID／digestを維持し残り7ページだけを再開対象にする。
+- 不変: Flag既定OFF。Production、Provider、Worker、Job、Storage、credit操作0件。
+- 検証: 集中2/2、deps error 0（既存warning 2）、lint、全型検査、Hub 840項目／844 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 65件、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit・push・Draft PR後、全CI／Vercel成功で停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_P0C_GENERATION_RUN_CHECKPOINTS_20260824.md`
+
+---
+
 ## 2026-08-24 P0-B 生成lifecycle・再試行系譜
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`

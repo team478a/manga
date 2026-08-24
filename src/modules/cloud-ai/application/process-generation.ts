@@ -28,6 +28,7 @@ import {
   completeCloudGenerationJob,
   deferCloudGenerationProviderJob,
   failCloudGenerationJob,
+  recordCloudGenerationRunCheckpoint,
 } from "../infrastructure/cloud-ai-repository.ts";
 import { evaluateCompletedPanelCandidate } from "../../manga-quality/application/evaluate-completed-panel.ts";
 import { adoptCompletedPanelCandidate } from "../../manga/application/auto-adopt-completed-panel.ts";
@@ -316,6 +317,11 @@ export async function processNextCloudGenerationJob(input: {
       retryDisposition: "none",
       requireLease: false,
     });
+    try {
+      await recordCloudGenerationRunCheckpoint({ client, jobId: job.id });
+    } catch {
+      // Completion is authoritative; checkpoint reconciliation must never repeat provider work.
+    }
     if (generation.kind === "image") {
       try {
         await evaluateCompletedPanelCandidate({

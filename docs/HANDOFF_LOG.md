@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: P0-C 生成run checkpoint・20ページ再開fixture
+
+- Branch: `codex/p0c-generation-run-checkpoints`。Base: PR #339 merge commit `a417db4`。
+- 完了targetのJob／Asset／SHA-256／元page revisionをservice-role専用checkpointへ固定する。
+- WorkerはFlag有効時だけbest-effortで記録し、記録障害で完了JobやProvider処理を巻き戻さない。
+- 20ページfixtureで完了13件の不変性と未完了7件だけの再開を確認した。
+- Production／Provider／Job／Storage／credit操作0件。
+
+---
+
 ## 2026-08-24 Codex: P0-B 生成lifecycle・再試行系譜
 
 - Branch: `codex/p0b-generation-lifecycle-events`。Base: PR #338 merge commit `e6929d3`。
