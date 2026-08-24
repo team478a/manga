@@ -8,7 +8,7 @@ export async function getCloudContinuityReview(projectId: string) {
   const { supabase } = await cloudCreatorContext();
   const workspace = await getCloudProjectWorkspace(projectId);
   const pageIds = workspace.pages.map((page) => page.id);
-  const [snapshots, jobs, characters, worlds, style, references, assignments] =
+  const [snapshots, jobs, assets, characters, worlds, style, references, assignments] =
     await Promise.all([
       pageIds.length
         ? supabase
@@ -22,6 +22,10 @@ export async function getCloudContinuityReview(projectId: string) {
         .select("id,input")
         .eq("project_id", projectId)
         .eq("kind", "image"),
+      supabase
+        .from("cloud_assets")
+        .select("id,sha256")
+        .eq("project_id", projectId),
       supabase
         .from("cloud_character_profiles")
         .select("id,name,current_version")
@@ -46,7 +50,7 @@ export async function getCloudContinuityReview(projectId: string) {
         .select("page_id,panel_id,subject_kind,subject_id")
         .eq("project_id", projectId),
     ]);
-  const results = [snapshots, jobs, characters, worlds, style, references, assignments];
+  const results = [snapshots, jobs, assets, characters, worlds, style, references, assignments];
   const unavailable = results.some((result) => result.error?.code === "42P01");
   if (unavailable)
     return {
@@ -70,6 +74,9 @@ export async function getCloudContinuityReview(projectId: string) {
   for (const snapshot of snapshots.data ?? [])
     if (!latest.has(snapshot.page_id)) latest.set(snapshot.page_id, snapshot.canvas);
   const jobMap = new Map((jobs.data ?? []).map((job) => [job.id, job.input]));
+  const assetSha256 = new Map(
+    (assets.data ?? []).map((asset) => [asset.id, asset.sha256]),
+  );
   const placements = workspace.pages.flatMap((page) => {
     const canvas = normalizeCloudCanvas(page, latest.get(page.id));
     return canvas.panelLayers
@@ -79,6 +86,8 @@ export async function getCloudContinuityReview(projectId: string) {
         pageNumber: page.page_number,
         panelId: layer.panelId,
         sourceJobId: layer.sourceJobId!,
+        assetId: layer.assetId,
+        assetSha256: layer.assetId ? (assetSha256.get(layer.assetId) ?? null) : null,
         jobInput: jobMap.get(layer.sourceJobId!) ?? null,
       }));
   });

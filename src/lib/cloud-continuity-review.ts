@@ -11,7 +11,16 @@ export type ContinuityPlacement = {
   pageNumber: number;
   panelId: string;
   sourceJobId: string;
+  assetId: string | null;
+  assetSha256: string | null;
   jobInput: unknown;
+};
+
+export type VisualContinuityCandidate = {
+  code: "duplicate_asset" | "duplicate_digest";
+  first: Pick<ContinuityPlacement, "pageId" | "pageNumber" | "panelId" | "assetId">;
+  second: Pick<ContinuityPlacement, "pageId" | "pageNumber" | "panelId" | "assetId">;
+  message: string;
 };
 
 export type ContinuityAssignment = {
@@ -61,6 +70,8 @@ export type ContinuityReview = {
   warningCount: number;
   infoCount: number;
   issues: ContinuityIssue[];
+  visualCandidateCount: number;
+  visualCandidates: VisualContinuityCandidate[];
 };
 
 type ParsedJobInput = {
@@ -136,6 +147,7 @@ export function evaluateCloudContinuity(input: {
   style: ContinuityStyle;
 }): ContinuityReview {
   const issues: ContinuityIssue[] = [];
+  const visualCandidates: VisualContinuityCandidate[] = [];
   const subjects = new Map(input.subjects.map((subject) => [subject.id, subject]));
   const assignments = new Map<string, ContinuityAssignment[]>();
   const usedVersions = new Map<string, Set<number>>();
@@ -272,6 +284,39 @@ export function evaluateCloudContinuity(input: {
       message: `「${subject?.name ?? "固定対象"}」が複数の設定版（${[...versions].sort((a, b) => a - b).map((version) => `v${version}`).join("・")}）で生成されています。作品内で使用版を統一してください。`,
     });
   }
+  for (let firstIndex = 0; firstIndex < input.placements.length; firstIndex += 1) {
+    const first = input.placements[firstIndex];
+    if (!first.assetId) continue;
+    for (let secondIndex = firstIndex + 1; secondIndex < input.placements.length; secondIndex += 1) {
+      const second = input.placements[secondIndex];
+      if (!second.assetId || Math.abs(first.pageNumber - second.pageNumber) > 1)
+        continue;
+      const sameAsset = first.assetId === second.assetId;
+      const sameDigest = Boolean(
+        !sameAsset &&
+          first.assetSha256 &&
+          second.assetSha256 &&
+          first.assetSha256 === second.assetSha256,
+      );
+      if (!sameAsset && !sameDigest) continue;
+      visualCandidates.push({
+        code: sameAsset ? "duplicate_asset" : "duplicate_digest",
+        first: {
+          pageId: first.pageId,
+          pageNumber: first.pageNumber,
+          panelId: first.panelId,
+          assetId: first.assetId,
+        },
+        second: {
+          pageId: second.pageId,
+          pageNumber: second.pageNumber,
+          panelId: second.panelId,
+          assetId: second.assetId,
+        },
+        message: `${first.pageNumber}ページと${second.pageNumber}ページの採用画像が完全一致しています。意図した再利用か、人物・場面・構図の連続性を目視確認してください。`,
+      });
+    }
+  }
   return {
     generatedPanelCount: input.placements.length,
     reviewedPanelCount: input.placements.filter((placement) =>
@@ -280,5 +325,7 @@ export function evaluateCloudContinuity(input: {
     warningCount: issues.filter((issue) => issue.severity === "warning").length,
     infoCount: issues.filter((issue) => issue.severity === "info").length,
     issues,
+    visualCandidateCount: visualCandidates.length,
+    visualCandidates,
   };
 }
