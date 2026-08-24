@@ -13,6 +13,12 @@ export type ContinuityPlacement = {
   sourceJobId: string;
   assetId: string | null;
   assetSha256: string | null;
+  continuityEvidence: {
+    status: "ok" | "unknown" | "not_evaluated";
+    score: number | null;
+    confidence: number;
+    source: "vlm" | "embedding" | "detector" | "rule";
+  } | null;
   jobInput: unknown;
 };
 
@@ -22,6 +28,63 @@ export type VisualContinuityCandidate = {
   second: Pick<ContinuityPlacement, "pageId" | "pageNumber" | "panelId" | "assetId">;
   message: string;
 };
+
+export type AdoptedVisualContinuityEvidence = {
+  pageId: string;
+  pageNumber: number;
+  panelId: string;
+  assetId: string;
+  status: "ok" | "unknown" | "not_evaluated";
+  score: number | null;
+  confidence: number;
+  source: "vlm" | "embedding" | "detector" | "rule";
+};
+
+const evidenceStatuses = new Set(["ok", "unknown", "not_evaluated"]);
+const evidenceSources = new Set(["vlm", "embedding", "detector", "rule"]);
+
+export function parseAdoptedContinuityEvidence(
+  evaluationDetails: unknown,
+): ContinuityPlacement["continuityEvidence"] {
+  if (
+    !evaluationDetails ||
+    typeof evaluationDetails !== "object" ||
+    Array.isArray(evaluationDetails)
+  )
+    return null;
+  const value = (evaluationDetails as Record<string, unknown>).continuityMatch;
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const evidence = value as Record<string, unknown>;
+  if (
+    typeof evidence.status !== "string" ||
+    !evidenceStatuses.has(evidence.status) ||
+    typeof evidence.source !== "string" ||
+    !evidenceSources.has(evidence.source) ||
+    typeof evidence.confidence !== "number" ||
+    !Number.isFinite(evidence.confidence) ||
+    evidence.confidence < 0 ||
+    evidence.confidence > 1
+  )
+    return null;
+  const scoreValid =
+    evidence.score === null ||
+    (typeof evidence.score === "number" &&
+      Number.isFinite(evidence.score) &&
+      evidence.score >= 0 &&
+      evidence.score <= 1);
+  if (
+    !scoreValid ||
+    (evidence.status === "ok" && evidence.score === null) ||
+    (evidence.status !== "ok" && evidence.score !== null)
+  )
+    return null;
+  return {
+    status: evidence.status as "ok" | "unknown" | "not_evaluated",
+    score: evidence.score as number | null,
+    confidence: evidence.confidence,
+    source: evidence.source as "vlm" | "embedding" | "detector" | "rule",
+  };
+}
 
 export type ContinuityAssignment = {
   pageId: string;
@@ -72,6 +135,8 @@ export type ContinuityReview = {
   issues: ContinuityIssue[];
   visualCandidateCount: number;
   visualCandidates: VisualContinuityCandidate[];
+  adoptedEvidenceCount: number;
+  adoptedEvidence: AdoptedVisualContinuityEvidence[];
 };
 
 type ParsedJobInput = {
@@ -148,6 +213,7 @@ export function evaluateCloudContinuity(input: {
 }): ContinuityReview {
   const issues: ContinuityIssue[] = [];
   const visualCandidates: VisualContinuityCandidate[] = [];
+  const adoptedEvidence: AdoptedVisualContinuityEvidence[] = [];
   const subjects = new Map(input.subjects.map((subject) => [subject.id, subject]));
   const assignments = new Map<string, ContinuityAssignment[]>();
   const usedVersions = new Map<string, Set<number>>();
@@ -284,6 +350,16 @@ export function evaluateCloudContinuity(input: {
       message: `「${subject?.name ?? "固定対象"}」が複数の設定版（${[...versions].sort((a, b) => a - b).map((version) => `v${version}`).join("・")}）で生成されています。作品内で使用版を統一してください。`,
     });
   }
+  for (const placement of input.placements) {
+    if (!placement.assetId || !placement.continuityEvidence) continue;
+    adoptedEvidence.push({
+      pageId: placement.pageId,
+      pageNumber: placement.pageNumber,
+      panelId: placement.panelId,
+      assetId: placement.assetId,
+      ...placement.continuityEvidence,
+    });
+  }
   for (let firstIndex = 0; firstIndex < input.placements.length; firstIndex += 1) {
     const first = input.placements[firstIndex];
     if (!first.assetId) continue;
@@ -327,5 +403,7 @@ export function evaluateCloudContinuity(input: {
     issues,
     visualCandidateCount: visualCandidates.length,
     visualCandidates,
+    adoptedEvidenceCount: adoptedEvidence.length,
+    adoptedEvidence,
   };
 }

@@ -251,6 +251,38 @@ export default async function CloudContinuityPage({
 
           <section className="panel mt-6">
             <div className="flex items-center gap-2">
+              <ScanSearch className="h-6 w-6 text-violet-700" />
+              <h2 className="text-xl font-bold">採用画像のVisual Judge連続性証跡</h2>
+            </div>
+            <p className="mt-2 text-sm text-stone-600">
+              採用中の生成Jobに保存され、現行Evidence schemaを満たすcontinuityMatchだけを参考表示します。
+              旧形式の中立点や不正形式は証跡として扱わず、完成判定や自動再生成には使用しません。
+            </p>
+            {result.review.adoptedEvidence.length ? (
+              <ul className="mt-4 space-y-3">
+                {result.review.adoptedEvidence.map((evidence) => (
+                  <li className="rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-950" key={`${evidence.pageId}-${evidence.panelId}-${evidence.assetId}`}>
+                    <p className="font-semibold">
+                      {evidence.pageNumber}ページ／{evidence.status === "ok" && evidence.score !== null
+                        ? `連続性スコア ${Math.round(evidence.score * 100)}%`
+                        : "連続性は未評価"}
+                    </p>
+                    <p className="mt-1 text-xs text-violet-800">
+                      source: {evidence.source}／confidence: {Math.round(evidence.confidence * 100)}%
+                    </p>
+                    <Link className="mt-2 inline-block underline" href={`/creator/${projectId}/pages/${evidence.pageId}`}>
+                      ページを開く
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-3 text-stone-600">採用画像に結び付く検証済みcontinuityMatch証跡はありません。</p>
+            )}
+          </section>
+
+          <section className="panel mt-6">
+            <div className="flex items-center gap-2">
               <Info className="h-6 w-6 text-blue-700" />
               <h2 className="text-xl font-bold">見た目の連続性・目視確認候補</h2>
             </div>

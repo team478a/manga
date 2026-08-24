@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 採用画像Visual Judge連続性証跡監査
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #326 merge commit `e0e8aae`。Branch: `codex/audit-r4-3-visual-judge-evidence`。
+- 実装: 採用中layerの`sourceJobId`と既存品質評価を結び、`evaluation_details.continuityMatch`が現行Evidence schemaを満たす場合だけ、score・confidence・sourceをread-only参考表示する。
+- 安全境界: legacy rule-based中立75点、旧形式、不正形式はVisual Judge証跡として扱わない。履歴警告、完成判定、自動不採用、自動再生成、Provider、creditへ非接続。
+- 検証: 集中7/7、deps error 0（既存warning 2件）、lint、全型検査、Hub 832/832、Canvas 26/26、AI 48/48、Desktop 182/182、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production、作品、Canvas、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、PNG／PDF、成人向け境界、Desktop製品コードを変更していない。書込み・Provider実行・credit予約／消費0件。
+- 次: commit・push・Draft PRを作成し、全CIとVercel Preview成功で停止する。Production修復、再集計、Pilot生成は個別承認前に実行しない。
+- 詳細: `docs/RELEASE_CANDIDATE_ADOPTED_VISUAL_JUDGE_CONTINUITY_EVIDENCE_20260824.md`
+
+---
+
 ## 2026-08-24 見た目の連続性・完全一致候補監査
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
