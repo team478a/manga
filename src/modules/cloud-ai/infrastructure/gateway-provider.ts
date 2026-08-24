@@ -161,6 +161,13 @@ export class MangaiCloudGatewayImageProvider implements CloudImageGenerationProv
     };
     this.config = config;
   }
+  capabilities() { return this.capability; }
+  generatePanel(input: CloudGenerationInput & { kind: "image" }, context: CloudGenerationContext, signal?: AbortSignal) {
+    return this.generate(input, context, signal);
+  }
+  editRegion(input: CloudGenerationInput & { kind: "image"; operation: "inpainting" | "outpainting" }, context: CloudGenerationContext, signal?: AbortSignal) {
+    return this.generate(input, context, signal);
+  }
   async generate(
     input: CloudGenerationInput & { kind: "image" },
     context: CloudGenerationContext,

@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 P0-E optional Provider interface
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PROVIDER_UNCHANGED / PRODUCTION_UNCHANGED`
+- Base: PR #341 merge commit `6aaa5d9`。Branch: `codex/p0e-provider-interface`。
+- 実装: optional capabilities／generatePanel／editRegion／estimateCost／cancelProviderJob契約と既存3画像adapterの互換alias。
+- 非回帰: 現行generate／cancel、Worker、Provider選択、model、request、費用は不変。新Provider追加なし。
+- 検証: 集中2/2、deps error 0（既存warning 2）、lint、全型検査、Hub 846項目／850 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 65件、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production、Provider実行、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR後、全CI／Vercel成功で停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_P0E_PROVIDER_INTERFACE_20260824.md`
+
+---
+
 ## 2026-08-24 P0-D 生成失敗・再開UI
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`

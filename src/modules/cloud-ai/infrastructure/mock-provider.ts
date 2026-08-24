@@ -19,6 +19,13 @@ export class MockCloudImageProvider implements CloudImageGenerationProvider {
     enabled: true,
   };
 
+  capabilities() { return this.capability; }
+
+  generatePanel(
+    input: CloudGenerationInput & { kind: "image" },
+    context: CloudGenerationContext,
+  ) { return this.generate(input, context); }
+
   async generate(
     input: CloudGenerationInput & { kind: "image" },
     context: CloudGenerationContext,

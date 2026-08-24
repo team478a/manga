@@ -269,18 +269,38 @@ export type CloudGenerationUsage = {
   actualCostMicros?: number;
 };
 
+export type CloudImageGenerationResult = {
+  providerJobId?: string;
+  images: Array<{ bytes: Uint8Array; mimeType: string; fileName: string }>;
+  usage: CloudGenerationUsage;
+  providerModeration?: CloudModerationResult;
+};
+
+export type CloudGenerationCostEstimate = {
+  estimatedCostMicros: number;
+  pricingVersion: string;
+};
+
 export interface CloudImageGenerationProvider {
   readonly capability: CloudProviderCapability & { kind: "image" };
+  capabilities?(): CloudProviderCapability & { kind: "image" };
   generate(
     input: CloudGenerationInput & { kind: "image" },
     context: CloudGenerationContext,
     signal?: AbortSignal,
-  ): Promise<{
-    providerJobId?: string;
-    images: Array<{ bytes: Uint8Array; mimeType: string; fileName: string }>;
-    usage: CloudGenerationUsage;
-    providerModeration?: CloudModerationResult;
-  }>;
+  ): Promise<CloudImageGenerationResult>;
+  generatePanel?(
+    input: CloudGenerationInput & { kind: "image" },
+    context: CloudGenerationContext,
+    signal?: AbortSignal,
+  ): Promise<CloudImageGenerationResult>;
+  editRegion?(
+    input: CloudGenerationInput & { kind: "image"; operation: "inpainting" | "outpainting" },
+    context: CloudGenerationContext,
+    signal?: AbortSignal,
+  ): Promise<CloudImageGenerationResult>;
+  estimateCost?(input: CloudGenerationInput & { kind: "image" }): Promise<CloudGenerationCostEstimate>;
+  cancelProviderJob?(providerJobId: string): Promise<void>;
   cancel?(providerJobId: string): Promise<void>;
 }
 
