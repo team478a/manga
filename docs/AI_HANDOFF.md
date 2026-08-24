@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P1-A 人物version付き参照画像binding（2026-08-24）
+
+- PR #343 merge commit `7cd2e23`を基準に、version付き構造化人物参照table／RPCを追加した。
+- 既存参照は非破壊で維持し、曖昧な自動backfillはしない。利用後の情報損失rollbackを停止する。
+- Production／Provider／Job／Storage／credit操作0件。P1-Bはレビュー後。
+
+---
+
 ## 0.0 P1作品バイブル・キャラクター固定gap監査（2026-08-24）
 
 - PR #342 merge commit `53484ad`を基準にP1現行実装を監査した。

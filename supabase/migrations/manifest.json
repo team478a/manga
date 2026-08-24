@@ -390,7 +390,13 @@
       "description": "完了済みコマAssetとdigestを固定し中断再開時の再生成を防ぐrun checkpointを追加",
       "forwardSha256": "90cdb83f0c5dbd4b1498203035393fdeb73d86e8e159035ca75c3aa7c7d1f5b7",
       "rollbackSha256": "1f310cf9929aedf89116ce2d1f83514d9c4de8a184a248093b056a1e1ddf2efa"
+    },
+    {
+      "id": "202608240005_cloud_character_reference_bindings",
+      "description": "人物versionと構造化された参照画像roleをowner境界内で結合",
+      "forwardSha256": "a6aec91fa5305277ae70758d3282ed77d62e2719d4fa4e8146efc02e120ee2d2",
+      "rollbackSha256": "62850e099ddd0c641d6ec706bbc2a64232932ff09af4771f9b7032773a672faf"
     }
   ],
-  "schemaSha256": "4980cd3383c595ceb6818e326e22d0d3b782f29262a3bc47314fb49e3c3dd188"
+  "schemaSha256": "8bb0aec5d403c4d5a725306429ec3b4e46044881bcd04eceeeb300d02d8e082c"
 }

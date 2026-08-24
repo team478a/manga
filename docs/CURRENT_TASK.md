@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 P1-A 人物version付き参照画像binding
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #343 merge commit `7cd2e23`。Branch: `codex/p1a-versioned-reference-bindings`。
+- 実装: 人物profile version、画像Asset、7種role、表情key、優先度、review状態をowner境界内で結合する追加table／RPC。
+- 互換: 既存参照tableは変更せず、自動backfillはrole／versionを推測できないため行わない。
+- Migration: forward／rollback／canonical schema／manifest 66件同期。binding存在時のrollbackは停止する。
+- 検証: deps error 0（既存warning 2）、lint、全型検査、Hub 846項目／850 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 66件、Hub／Desktop build、RC structure、diff check成功。
+- 不変: resolver、readiness、UI、Prompt、Provider、Production、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR後、全CI／Vercel成功で停止する。P1-Bはレビュー前に開始しない。
+- 詳細: `docs/RELEASE_CANDIDATE_P1A_VERSIONED_CHARACTER_REFERENCES_20260824.md`
+
+---
+
 ## 2026-08-24 P1作品バイブル・キャラクター固定gap監査
 
 - 状態: `RESEARCH_DOCUMENTED / ALL_LOCAL_GATES_PASSED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`
