@@ -234,6 +234,17 @@ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.cloud_generation_run_checkpoints') is null
+     or to_regprocedure('public.record_cloud_generation_run_checkpoint(uuid)') is null then
+    raise exception 'Cloud generation run checkpoint objects are missing';
+  end if;
+  if has_table_privilege('authenticated','public.cloud_generation_run_checkpoints','select,insert,update,delete')
+     or has_table_privilege('anon','public.cloud_generation_run_checkpoints','select,insert,update,delete') then
+    raise exception 'Cloud generation run checkpoints are exposed';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.cloud_visual_reference_assets') is null
     or to_regclass('public.cloud_panel_subject_assignments') is null
     or to_regprocedure('public.save_cloud_visual_reference(uuid,text,uuid,uuid,text)') is null

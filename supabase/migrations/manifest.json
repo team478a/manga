@@ -384,7 +384,13 @@
       "description": "Feature Flag有効時の手動再試行をowner検査付き親子Job系譜として記録",
       "forwardSha256": "f615b9ec2c8a70fb28d1ac62636ecc1ced555e0ce503b0a83cce77981d7f742d",
       "rollbackSha256": "0c74bdf76d018418af2adb69423d3a0e8b4b4b97bd293ca86820010e5ecdd3b8"
+    },
+    {
+      "id": "202608240004_cloud_generation_run_checkpoints",
+      "description": "完了済みコマAssetとdigestを固定し中断再開時の再生成を防ぐrun checkpointを追加",
+      "forwardSha256": "90cdb83f0c5dbd4b1498203035393fdeb73d86e8e159035ca75c3aa7c7d1f5b7",
+      "rollbackSha256": "1f310cf9929aedf89116ce2d1f83514d9c4de8a184a248093b056a1e1ddf2efa"
     }
   ],
-  "schemaSha256": "3c1916b1d96af742bba487fa5f8f99c1a6e9c18b60ab0e3f50dce3d5eacee0ea"
+  "schemaSha256": "7d887b01943ab56440376cc31bb8067ae82960c20bc3a91f4a51b88aca121d6b"
 }

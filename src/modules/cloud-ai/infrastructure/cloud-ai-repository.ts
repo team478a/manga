@@ -1,4 +1,5 @@
 import { DomainError } from "../../../lib/domain-errors.ts";
+import { featureFlagEnabled } from "../../../lib/feature-flags.ts";
 import { createAdminClient } from "../../../lib/supabase/admin.ts";
 import type {
   ClaimedCloudGenerationJob,
@@ -63,6 +64,18 @@ export async function completeCloudGenerationJob(input: {
       });
   if (error)
     throw new Error("Cloud AI Jobの完了を記録できませんでした。");
+}
+
+export async function recordCloudGenerationRunCheckpoint(input: {
+  client: CloudAiAdminClient;
+  jobId: string;
+}) {
+  if (!featureFlagEnabled("CLOUD_GENERATION_RESUMABLE_V2_ENABLED")) return false;
+  const { error } = await input.client.rpc("record_cloud_generation_run_checkpoint", {
+    p_job_id: input.jobId,
+  });
+  if (error) throw new Error("Cloud AI生成checkpointを保存できませんでした。");
+  return true;
 }
 
 export async function checkpointCloudGenerationProviderJob(input: {

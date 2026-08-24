@@ -142,6 +142,13 @@ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.cloud_generation_run_checkpoints') is not null
+     or to_regprocedure('public.record_cloud_generation_run_checkpoint(uuid)') is not null then
+    raise exception 'Cloud generation run checkpoint objects remain after rollback';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.cloud_visual_reference_assets') is not null
     or to_regclass('public.cloud_panel_subject_assignments') is not null
     or to_regprocedure('public.save_cloud_visual_reference(uuid,text,uuid,uuid,text)') is not null
