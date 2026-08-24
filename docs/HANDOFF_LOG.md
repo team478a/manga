@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: 2ページPilot 所有者・モニター枠診断
+
+- PR #333 merge commit `9d2455a`から`codex/docs-pilot-owner-monitor-diagnosis`を作成した。
+- 管理画面で作品owner=`test`、monitor active 89/100、Cloud AI Trial使用80・予約0をread-only確認した。
+- 先のmonitor確認不可は管理者`tanaka`セッションと作品ownerの不一致。monitor残り11は9コマに足りるが、credit残り16は必要18に2不足する。
+- 次はVisual Readiness、画風・人物、credit、Production migrationの責任者判断後、本人セッションで再確認する。
+- Plan、enrollment、DB、作品、Provider、Worker、Job、creditへの変更0件。
+
+---
+
 ## 2026-08-24 Codex: 2ページPilot停止条件の原因監査
 
 - PR #332 merge commit `200b11e`から`codex/docs-pilot-blocker-root-cause`を作成した。
