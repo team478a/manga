@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: 連続2ページPilot Production準備状況受入れ
+
+- PR #331 merge commit `7e0603a`のProduction UI反映をread-only確認した。
+- 作品は32ページ157コマ中13コマ配置、画像配置完了2/32、要修正275、残りcredit 16。
+- 1–2ページ選択時は9コマ、必要18 credit、最大予約$0.27、最短3 Worker回。credit 2不足、人物・画風準備確認不可、モニター枠確認不可で開始不能だった。
+- 選択解除済み、console error 0。Production migration、作品、Provider、Job、creditへの変更0件。
+- 次はdocs-only Draft PRの全CI／Vercel Preview成功で停止する。Pilot実行条件の変更は明示承認待ち。
+
+---
+
 ## 2026-08-24 Codex: 連続2ページ生成Pilot契約
 
 - PR #330 merge commit `b9f07fd`から`codex/enable-two-page-generation-pilot`を作成した。

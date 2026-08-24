@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 連続2ページPilot Production準備状況受入れ（2026-08-24）
+
+- PR #331 merge commit `7e0603a`の新UIがProductionへ反映済み。
+- 1–2ページは9コマ、必要18 credit、残り16、最大予約$0.27、最短3 Worker回と表示された。
+- credit 2不足、人物・画風準備確認不可、モニター枠確認不可により開始ボタンは無効。選択は解除済み。
+- 32ページ157コマ中13コマ配置、画像配置完了2/32、要修正275。書込み、Provider、Job、credit予約／消費0件。
+- 詳細は`docs/RELEASE_CANDIDATE_TWO_PAGE_PILOT_PRODUCTION_READINESS_20260824.md`。
+
+---
+
 ## 0.0 連続2ページ生成Pilot契約（2026-08-24）
 
 - 最新基準はPR #330 merge commit `b9f07fd`。Branchは`codex/enable-two-page-generation-pilot`。
