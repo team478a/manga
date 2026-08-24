@@ -4,6 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import {
+  characterReferenceBindingInputSchema,characterStateAssignmentInputSchema,
+} from "@/lib/cloud-character-reference-settings";
+import {
   cloudPanelSubjectAssignmentInputSchema,
   cloudVisualReferenceInputSchema,
   cloudVisualSubjectKindSchema,
@@ -14,6 +17,8 @@ import {
   saveCloudPanelSubjectAssignment,
   saveCloudVisualReference,
   uploadCloudAsset,
+  deleteCloudCharacterReferenceBinding,deleteCloudCharacterStateAssignment,
+  saveCloudCharacterReferenceBinding,saveCloudCharacterStateAssignment,saveCloudGenerationReadinessPolicy,
 } from "@/lib/cloud-creator-server";
 
 const uuid = z.string().uuid();
@@ -127,3 +132,14 @@ export async function deletePanelAssignmentAction(projectId: string, assignmentI
   revalidatePath(`/creator/${projectId}/references`);
   back(projectId, "message", "コマへの割当を解除しました。");
 }
+
+export async function saveCharacterReferenceBindingAction(projectId:string,form:FormData){
+ const [characterProfileId,characterVersionId]=value(form,"characterVersion").split(":");
+ const parsed=characterReferenceBindingInputSchema.safeParse({projectId,characterProfileId,characterVersionId,assetId:value(form,"assetId"),role:value(form,"role"),expressionKey:value(form,"expressionKey"),priority:Number(value(form,"priority")),reviewStatus:value(form,"reviewStatus")});
+ if(!parsed.success)return back(projectId,"error","人物version・参照roleの設定を確認してください。");
+ await saveCloudCharacterReferenceBinding(parsed.data).catch(()=>back(projectId,"error","人物versionへの参照画像設定を保存できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","人物versionへ参照画像を設定しました。");
+}
+export async function deleteCharacterReferenceBindingAction(projectId:string,bindingId:string){if(!uuid.safeParse(bindingId).success)return back(projectId,"error","人物参照設定を確認できませんでした。");await deleteCloudCharacterReferenceBinding(projectId,bindingId).catch(()=>back(projectId,"error","人物参照設定を解除できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","人物参照設定を解除しました。");}
+export async function saveCharacterStateAssignmentAction(projectId:string,form:FormData){const[characterProfileId,characterVersionId]=value(form,"characterVersion").split(":");const parsed=characterStateAssignmentInputSchema.safeParse({projectId,characterProfileId,characterVersionId,startPage:Number(value(form,"startPage")),endPage:Number(value(form,"endPage")),sceneKey:value(form,"sceneKey"),label:value(form,"assignmentLabel"),costumeOverride:value(form,"costumeOverride"),stateNote:value(form,"stateNote"),priority:Number(value(form,"priority"))});if(!parsed.success)return back(projectId,"error","衣装・状態のページ範囲を確認してください。");await saveCloudCharacterStateAssignment(parsed.data).catch(()=>back(projectId,"error","範囲が重複しているか、衣装・状態を保存できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","衣装・状態の適用範囲を保存しました。");}
+export async function deleteCharacterStateAssignmentAction(projectId:string,assignmentId:string){if(!uuid.safeParse(assignmentId).success)return back(projectId,"error","適用範囲を確認できませんでした。");await deleteCloudCharacterStateAssignment(projectId,assignmentId).catch(()=>back(projectId,"error","適用範囲を解除できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","衣装・状態の適用範囲を解除しました。");}
+export async function saveGenerationReadinessPolicyAction(projectId:string,form:FormData){const policy=z.enum(["warn","block"]).safeParse(value(form,"policy"));if(!policy.success)return back(projectId,"error","参照画像不足時の方針を確認してください。");await saveCloudGenerationReadinessPolicy(projectId,policy.data).catch(()=>back(projectId,"error","参照画像不足時の方針を保存できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","生成準備方針を保存しました。");}

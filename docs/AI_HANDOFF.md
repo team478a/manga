@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P1-C 作品バイブル・人物参照UI（2026-08-25）
+
+- PR #345 merge commit `7e49a87`を基準に、人物version／role／承認、warn/block、衣装・状態範囲UIを追加した。
+- 旧参照と人物自由文は維持。範囲重複をDBで拒否し、migration未適用時は新UIだけ停止する。
+- Production／Provider／Job／Storage／credit操作0件。P1-Dはレビュー後。
+
+---
+
 ## 0.0 P1-B 人物参照resolver・生成準備方針（2026-08-25）
 
 - PR #344 merge commit `552e0dc`を基準に、単一コマ／batch共通のversion付き人物参照resolverを追加した。

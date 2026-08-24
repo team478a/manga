@@ -508,6 +508,8 @@ end $$;
 reset role;
 rollback;
 
+do $$begin if to_regclass('public.cloud_character_state_assignments')is null or to_regprocedure('public.save_cloud_character_state_assignment(uuid,uuid,uuid,integer,integer,text,text,text,text,integer)')is null or has_table_privilege('authenticated','public.cloud_character_state_assignments','insert,update,delete')then raise exception 'Cloud character state assignment contract is incomplete';end if;end$$;
+
 do $$begin
   if to_regclass('public.cloud_project_generation_readiness_policies') is null or to_regprocedure('public.save_cloud_project_generation_readiness_policy(uuid,text)') is null or not(select relrowsecurity from pg_class where oid='public.cloud_project_generation_readiness_policies'::regclass) or has_table_privilege('authenticated','public.cloud_project_generation_readiness_policies','insert,update,delete') then raise exception 'Cloud generation reference readiness contract is incomplete';end if;
 end$$;

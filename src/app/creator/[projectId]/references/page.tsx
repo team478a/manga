@@ -17,10 +17,12 @@ import { safelyLoadCloudData } from "@/lib/cloud-runtime-resilience";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 import {
   assignPanelSubjectAction,
+  deleteCharacterReferenceBindingAction,deleteCharacterStateAssignmentAction,
   deletePanelAssignmentAction,
   deleteVisualReferenceAction,
   linkExistingVisualReferenceAction,
   uploadVisualReferenceAction,
+  saveCharacterReferenceBindingAction,saveCharacterStateAssignmentAction,saveGenerationReadinessPolicyAction,
 } from "./actions";
 
 const kindLabel = {
@@ -29,6 +31,7 @@ const kindLabel = {
   location: "場所",
   prop: "小物",
 } as const;
+const roleLabel={front:"正面",side:"側面",back:"背面",face:"顔アップ",full_body:"全身",expression:"表情",costume_detail:"衣装詳細"}as const;
 
 export default async function VisualReferencesPage({ params, searchParams }: {
   params: Promise<{ projectId: string }>;
@@ -59,7 +62,7 @@ export default async function VisualReferencesPage({ params, searchParams }: {
     safelyLoadCloudData(
       "creator/references/assets",
       () => getCloudVisualReferenceWorkspace(projectId),
-      { available: false, references: [], assignments: [] },
+      { available: false, references: [], assignments: [],p1Available:false,characterVersions:[],bindings:[],stateAssignments:[],readinessPolicy:"block" as const },
     ),
     safelyLoadCloudData(
       "creator/references/project-assets",
@@ -90,6 +93,9 @@ export default async function VisualReferencesPage({ params, searchParams }: {
   const subjectSettingsUnavailable = !charactersLoad.ok || !worldLoad.ok;
   const subjectName = new Map(subjects.map((item) => [`${item.kind}:${item.id}`, item.name]));
   const panelName = new Map(panels.map((item) => [`${item.pageId}:${item.panelId}`, item.label]));
+  const characterName=new Map(characters.profiles.map(item=>[item.id,item.name]));
+  const characterVersionOptions=referenceWorkspace.characterVersions.map(version=>({value:`${version.profile_id}:${version.id}`,label:`${characterName.get(version.profile_id)??"人物"}・v${version.version_number}`,current:characters.profiles.some(profile=>profile.id===version.profile_id&&profile.current_version===version.version_number)}));
+  const referenceName=new Map(referenceWorkspace.references.map(item=>[item.asset_id,item.label||`${kindLabel[item.subject_kind]}参照`]));
 
   return <main className="page">
     <Link className="text-violet-700 underline" href={`/creator/${projectId}`}>← {workspace.project.title}へ戻る</Link>
@@ -127,6 +133,20 @@ export default async function VisualReferencesPage({ params, searchParams }: {
           <label><span className="label">用途メモ</span><input className="field" name="label" maxLength={120} placeholder="作品全体の線・陰影の基準など" /></label>
           <PendingSubmitButton className="button" pendingLabel="設定中…">選択した画像を参照に追加</PendingSubmitButton>
         </form> : <p className="mt-4 text-sm text-stone-600">利用できる画像素材はまだありません。</p>}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">生成準備方針</h2><p className="mt-2 text-sm text-stone-600">主要人物に承認済みの正面または顔参照がない場合の動作です。</p>
+        {!referenceWorkspace.p1Available?<p className="mt-3 text-sm text-stone-600">P1 migration適用後に利用できます。</p>:<form action={saveGenerationReadinessPolicyAction.bind(null,projectId)} className="mt-4 flex flex-wrap items-end gap-3"><label><span className="label">参照不足時</span><select className="field" name="policy" defaultValue={referenceWorkspace.readinessPolicy}><option value="block">生成を停止</option><option value="warn">警告して続行可能</option></select></label><PendingSubmitButton className="button" pendingLabel="保存中…">方針を保存</PendingSubmitButton></form>}
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">人物versionへ参照roleを設定</h2><p className="mt-2 text-sm text-stone-600">既存参照画像を人物の特定versionへ結び付けます。生成に使うには承認済みにしてください。</p>
+        {!referenceWorkspace.p1Available||!characterVersionOptions.length?<p className="mt-3 text-sm text-stone-600">人物versionとP1 migrationを確認してください。</p>:<form action={saveCharacterReferenceBindingAction.bind(null,projectId)} className="mt-4 grid gap-4 md:grid-cols-2"><label><span className="label">人物version</span><select className="field" name="characterVersion" required>{characterVersionOptions.map(item=><option key={item.value} value={item.value}>{item.label}{item.current?"（現在）":""}</option>)}</select></label><label><span className="label">参照画像</span><select className="field" name="assetId" required>{referenceWorkspace.references.filter(item=>item.subject_kind==="character").map(item=><option key={item.id} value={item.asset_id}>{characterName.get(item.subject_id)??"人物"}：{item.label||"参照画像"}</option>)}</select></label><label><span className="label">role</span><select className="field" name="role">{Object.entries(roleLabel).map(([key,label])=><option key={key} value={key}>{label}</option>)}</select></label><label><span className="label">表情名（表情roleのみ）</span><input className="field" name="expressionKey" maxLength={80}/></label><label><span className="label">優先度 0〜100</span><input className="field" name="priority" type="number" min="0" max="100" defaultValue="50"/></label><label><span className="label">確認状態</span><select className="field" name="reviewStatus"><option value="draft">下書き</option><option value="approved">承認済み</option><option value="rejected">不採用</option></select></label><div className="md:col-span-2"><PendingSubmitButton className="button" pendingLabel="保存中…">versionへ設定</PendingSubmitButton></div></form>}
+        <div className="mt-4 space-y-2">{referenceWorkspace.bindings.map(binding=><div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3" key={binding.id}><span>{characterName.get(binding.character_profile_id)??"人物"}・{roleLabel[binding.reference_role as keyof typeof roleLabel]}・{binding.review_status}・優先度{binding.priority}（{referenceName.get(binding.asset_id)??"画像"}）</span><form action={deleteCharacterReferenceBindingAction.bind(null,projectId,binding.id)}><PendingSubmitButton className="button-secondary" pendingLabel="解除中…">解除</PendingSubmitButton></form></div>)}</div>
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">衣装・状態の適用範囲</h2><p className="mt-2 text-sm text-stone-600">同じ人物version内で、衣装や負傷などを適用するページ範囲を重複なしで保存します。</p>
+        {!referenceWorkspace.p1Available||!characterVersionOptions.length?<p className="mt-3 text-sm text-stone-600">人物versionとP1 migrationを確認してください。</p>:<form action={saveCharacterStateAssignmentAction.bind(null,projectId)} className="mt-4 grid gap-4 md:grid-cols-2"><label><span className="label">人物version</span><select className="field" name="characterVersion">{characterVersionOptions.map(item=><option key={item.value} value={item.value}>{item.label}{item.current?"（現在）":""}</option>)}</select></label><label><span className="label">範囲名</span><input className="field" name="assignmentLabel" required maxLength={120} placeholder="第1章・制服"/></label><label><span className="label">開始ページ</span><input className="field" name="startPage" type="number" min="1" required/></label><label><span className="label">終了ページ</span><input className="field" name="endPage" type="number" min="1" required/></label><label><span className="label">scene key（任意）</span><input className="field" name="sceneKey" maxLength={120}/></label><label><span className="label">優先度</span><input className="field" name="priority" type="number" min="0" max="100" defaultValue="0"/></label><label><span className="label">衣装</span><textarea className="field min-h-20" name="costumeOverride" maxLength={500}/></label><label><span className="label">状態</span><textarea className="field min-h-20" name="stateNote" maxLength={500}/></label><div className="md:col-span-2"><PendingSubmitButton className="button" pendingLabel="保存中…">適用範囲を保存</PendingSubmitButton></div></form>}
+        <div className="mt-4 space-y-2">{referenceWorkspace.stateAssignments.map(item=><div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3" key={item.id}><span>{characterName.get(item.character_profile_id)??"人物"}：{item.start_page}〜{item.end_page}ページ「{item.assignment_label}」{item.costume_override?`・衣装 ${item.costume_override}`:""}</span><form action={deleteCharacterStateAssignmentAction.bind(null,projectId,item.id)}><PendingSubmitButton className="button-secondary" pendingLabel="解除中…">解除</PendingSubmitButton></form></div>)}</div>
       </section>
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">設定をコマへ割り当て</h2>
