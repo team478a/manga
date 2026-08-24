@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0生成基盤・OSS比較調査（2026-08-24）
+
+- PR #336 merge commit `4d7b9fa`を基準に、現行生成入力からAsset保存・品質後処理までをコード／schemaから監査した。
+- P0基盤の多くは既存実装済み。追加対象を工程別状態、失敗区分、retry chain、HTTP status、生成run checkpointへ限定した。
+- Inkstone `c34a214`、StoryDiffusion `8de45e4`、comicgeneration `3b10366`をLICENSE／依存／実装から比較した。ライセンス不明コードは転用しない。
+- 既存経路を残す追加migration、Feature Flag、20ページ中断再開試験、5段階PR案を記録した。
+- P0実装、Production、Provider、Job、credit操作0件。詳細は`docs/RESEARCH_P0_GENERATION_FOUNDATION_20260824.md`。
+
+---
+
 ## 0.0 23–24ページPilot Visual Settings保存前下書き（2026-08-24）
 
 - PR #335 merge commit `a042faa`を基準に既存正本を再監査した。
