@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-08-24 Codex: P0-A 再開可能な生成基盤schema
+
+- Branch: `codex/p0a-resumable-generation-schema`。Base: PR #337 merge commit `109bea3`。
+- 既存Job statusを置換せず、工程、失敗区分、retry parent/root、HTTP status、workflow、seed、checkpoint列を追加した。
+- append-only event tableは秘密metadata keyを拒否し、owner read／service-role insertへ限定した。
+- 既存5 statusからv2 8状態へのdomain写像とstrict既定OFF Feature Flagを追加した。Worker書込みはまだ接続していない。
+- 集中9/9、deps、lint、全型検査、Hub 834項目／838 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 63件、build、RC structure、diff check成功。
+- Production、Provider、Worker、Job、credit操作0件。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-24 Codex: P0生成基盤・OSS比較調査
 
 - Branch: `codex/research-p0-generation-foundation`。Base: PR #336 merge commit `4d7b9fa`。

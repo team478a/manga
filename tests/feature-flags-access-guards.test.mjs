@@ -10,14 +10,18 @@ import {
   featureFlagEnabled,
 } from "../src/lib/feature-flags.ts";
 
-test("Feature Flag registryは監査済み22件を保持する", () => {
-  assert.equal(Object.keys(featureFlagDefinitions).length, 22);
+test("Feature Flag registryは監査済み23件を保持する", () => {
+  assert.equal(Object.keys(featureFlagDefinitions).length, 23);
   assert.equal(
     featureFlagDefinitions.CLOUD_PANEL_INPAINTING_ENABLED,
     "strict",
   );
   assert.equal(
     featureFlagDefinitions.CLOUD_PANEL_OUTPAINTING_ENABLED,
+    "strict",
+  );
+  assert.equal(
+    featureFlagDefinitions.CLOUD_GENERATION_RESUMABLE_V2_ENABLED,
     "strict",
   );
 });
@@ -43,6 +47,7 @@ test("既存のcase-insensitive Flag解釈を維持する", () => {
 
 test("Provider／Workerと画像編集Flagは小文字trueだけを許可する", () => {
   const strictFlags = [
+    "CLOUD_GENERATION_RESUMABLE_V2_ENABLED",
     "CLOUD_PANEL_INPAINTING_ENABLED",
     "CLOUD_PANEL_OUTPAINTING_ENABLED",
     "MANGAI_CLOUD_AI_WORKER_ENABLED",

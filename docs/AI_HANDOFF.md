@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0-A 再開可能な生成基盤schema（2026-08-24）
+
+- PR #337 merge commit `109bea3`を基準にP0-Aだけを実装した。
+- 既存5 status、RPC、Worker、Providerを維持し、nullable工程列、retry系譜、append-only event、8状態写像を追加した。
+- `CLOUD_GENERATION_RESUMABLE_V2_ENABLED`はstrict・既定OFF。今回の実装はv2 eventを書き込まない。
+- migration／rollback／canonical schema／manifest 63件を同期し、利用開始後のrollbackを停止する。
+- 全ローカル品質ゲート成功。Production、Provider、Job、credit操作0件。詳細は`docs/RELEASE_CANDIDATE_P0A_RESUMABLE_GENERATION_FOUNDATION_20260824.md`。
+
+---
+
 ## 0.0 P0生成基盤・OSS比較調査（2026-08-24）
 
 - PR #336 merge commit `4d7b9fa`を基準に、現行生成入力からAsset保存・品質後処理までをコード／schemaから監査した。

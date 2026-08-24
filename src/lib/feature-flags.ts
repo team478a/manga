@@ -9,6 +9,7 @@ export const featureFlagDefinitions = {
   CLOUD_RESEARCH_MVP_ENABLED: "case-insensitive",
   CLOUD_RESEARCH_SEARCH_ENABLED: "case-insensitive",
   CLOUD_RESEARCH_SOURCE_VERIFICATION_ENABLED: "case-insensitive",
+  CLOUD_GENERATION_RESUMABLE_V2_ENABLED: "strict",
   CLOUD_SCENARIO_GENERATION_ENABLED: "case-insensitive",
   CLOUD_STORYBOARD_CANVAS_ENABLED: "case-insensitive",
   CLOUD_STORYBOARD_GENERATION_ENABLED: "case-insensitive",
