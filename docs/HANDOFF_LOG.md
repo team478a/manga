@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-24 Codex: 採用画像Visual Judge連続性証跡監査
+
+- PR #326 merge commit `e0e8aae`から`codex/audit-r4-3-visual-judge-evidence`を作成した。
+- 品質評価は生成Job主キーで、採用layerの`sourceJobId`へ決定的に結び付けられることを確認した。
+- `evaluation_details.continuityMatch`がstatus／score／confidence／sourceの現行契約を満たす場合だけ参考表示する。legacy中立点をVisual Judge評価と誤認しない。
+- 候補表示は既存警告数、完成判定、自動不採用、自動再生成、Provider、creditへ接続していない。
+- 集中7/7、deps error 0（既存warning 2件）、lint、全型検査、Hub 832/832、Canvas 26/26、AI 48/48、Desktop 182/182、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Production、作品、Canvas、DB、Storage、Provider、creditへの書込み・実行0件。
+- 次はDraft PRの全CI／Vercel Preview成功で停止し、Production操作は別途明示承認を待つ。
+
+---
+
 ## 2026-08-24 Codex: 見た目の連続性・完全一致候補監査
 
 - PR #325 merge commit `6b3e70d`から`codex/audit-r4-3-visual-continuity`を作成した。

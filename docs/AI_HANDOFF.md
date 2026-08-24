@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 採用画像Visual Judge連続性証跡監査（2026-08-24）
+
+- 最新基準はPR #326 merge commit `e0e8aae`。Branchは`codex/audit-r4-3-visual-judge-evidence`。
+- 採用layerの生成Jobに保存された`evaluation_details.continuityMatch`を厳格検証し、現行Evidence schema適合時だけ一貫性画面へ参考表示する。
+- rule-based評価の未観測中立75点、旧形式、不正形式は表示しない。完成判定、自動不採用、自動再生成へ非接続。
+- 集中7/7、deps、lint、全型検査、Hub 832/832、Canvas 26/26、AI 48/48、Desktop 182/182、migration 61件、Hub／Desktop build、RC structure、diff check成功。
+- Production、Provider、credit、DB、Storage、Canvas、PNG／PDFは不変。詳細は`docs/RELEASE_CANDIDATE_ADOPTED_VISUAL_JUDGE_CONTINUITY_EVIDENCE_20260824.md`。
+
+---
+
 ## 0.0 見た目の連続性・完全一致候補監査（2026-08-24）
 
 - 最新基準はPR #325 merge commit `6b3e70d`。Branchは`codex/audit-r4-3-visual-continuity`。
