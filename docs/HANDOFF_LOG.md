@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: Production品質イベント5xx修正受入れ
+
+- PR #329 merge commit `e8d9146`から`codex/docs-production-quality-event-acceptance`を作成した。
+- Vercel Production deploymentがReady、Production、`feature/manga-canvas-mvp`、commit `e8d9146`であることを確認した。
+- 対象22ページを1回だけ開き、複数回の3秒Job更新後にVercel Logsを確認した。品質イベントrouteの連続500は再発せず、直近30分はError 0。
+- ページは正常表示・保存済み。creditは使用4・予約0・残り16で不変。修復、Provider、生成Job、credit、DB、Storageへの書込み0件。
+- 次はdocs-only Draft PRと全CI／Vercel Preview成功で停止する。Pilot生成の停止条件は継続する。
+
+---
+
 ## 2026-08-24 Codex: Production品質イベント5xx再送loop修正
 
 - PR #327 merge commit `35c358f`から`codex/fix-production-quality-event-5xx`を作成した。
