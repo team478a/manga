@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: 追加creditなし8コマPilot候補選定
+
+- PR #334 merge commit `ac30805`から`codex/docs-eight-panel-pilot-candidate`を作成した。
+- 連続2ページ候補を比較し、既存画像／失敗Jobと競合しない23–24ページ（各4コマ）を推奨した。
+- Production見積りは8コマ、必要16 credit／残り16、最大予約$0.24、最短3 Worker回。monitor残り11内。
+- 必要人物は城戸真琴、有坂冬馬、榊圭吾。Visual Readiness、画風・人物、migration、本人preflightは未完了。
+- 一時選択は破棄済み。Production、Provider、Worker、Job、credit変更0件。
+
+---
+
 ## 2026-08-24 Codex: 2ページPilot 所有者・モニター枠診断
 
 - PR #333 merge commit `9d2455a`から`codex/docs-pilot-owner-monitor-diagnosis`を作成した。

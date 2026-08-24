@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 追加creditなし8コマPilot候補選定
+
+- 状態: `CANDIDATE_SELECTED_READ_ONLY / CREDIT_FITS_WITH_ZERO_BUFFER / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #334 merge commit `ac30805`。Branch: `codex/docs-eight-panel-pilot-candidate`。
+- 推奨: 23–24ページ。各4コマ、両方未着手、画像0、再実行待ち0。既存画像／失敗Jobと競合しない唯一の8コマ連続候補。
+- 見積り: 2ページ／8コマ、必要16 credit／残り16、最大予約$0.24、Worker最短3回／約15分。`test` monitor残り11回には収まる。
+- 人物: 23ページは城戸真琴／有坂冬馬、24ページは城戸真琴／榊圭吾。計3名と作品画風・場所／小物の正本が必要。
+- 制約: credit余裕0。失敗再実行は含めず別承認とする。Visual Readiness、Production migration、本人session preflightは未完了。
+- 次: docs-only PR後に停止。対象23–24ページ、最大16 credit、再実行なしを含む明示承認前に生成しない。
+- 不変: 一時選択はタブ終了で破棄。Production、作品、Canvas、DB、Storage、Provider、Worker、Job、credit変更0件。
+- 詳細: `docs/RELEASE_CANDIDATE_EIGHT_PANEL_PILOT_CANDIDATE_20260824.md`
+
+---
+
 ## 2026-08-24 2ページPilot 所有者・モニター枠診断
 
 - 状態: `MONITOR_ENROLLMENT_CONFIRMED / SESSION_MISMATCH_SCOPED / CREDIT_SHORTAGE_REMAINS / PRODUCTION_UNCHANGED`
