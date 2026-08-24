@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P1-B 人物参照resolver・生成準備方針（2026-08-25）
+
+- PR #344 merge commit `552e0dc`を基準に、単一コマ／batch共通のversion付き人物参照resolverを追加した。
+- Flag既定OFF。ON時はapprovedのfront／face不足を作品別warn／blockで扱い、解決結果と警告をJob入力へ固定する。
+- Production／Provider／Job／Storage／credit操作0件。P1-Cはレビュー後。
+
+---
+
 ## 0.0 P1-A 人物version付き参照画像binding（2026-08-24）
 
 - PR #343 merge commit `7cd2e23`を基準に、version付き構造化人物参照table／RPCを追加した。
