@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-24 Codex: 見た目の連続性・完全一致候補監査
+
+- PR #325 merge commit `6b3e70d`から`codex/audit-r4-3-visual-continuity`を作成した。
+- 一貫性チェックの採用中生成画像へAsset IDと既存`cloud_assets.sha256`をread-onlyで結び付け、同一／隣接ページの完全一致だけを目視確認候補にした。
+- 同一Asset IDを優先し、別Asset IDでもSHA-256が完全一致する場合を検出する。2ページ以上離れた組、perceptual similarity、推測スコアは対象外。
+- 既存の履歴警告数、完成判定、自動不採用、自動再生成、Provider、creditには接続していない。
+- 集中6/6、deps error 0（既存warning 2件）、lint、全型検査、Hub 831/831、Canvas 26/26、AI 48/48、Desktop 182/182、migration 61件、Hub／Desktop build、`git diff --check`成功。
+- Production、作品、Canvas、DB、Storage、Provider、creditへの書込み・実行は0件。
+- 次はcommit・push・Draft PR作成後、全CIとVercel Preview成功で停止する。Production修復・再集計・Pilot生成は別途明示承認待ち。
+
+---
+
 ## 2026-08-24 Codex: Production人物連続性監査・残コマ生成計画
 
 - PR #324 merge commit `7f4ccf1fcc8226ce81881d81d1c5862a82ab8e08`から`codex/audit-r4-3-production-continuity`を作成した。

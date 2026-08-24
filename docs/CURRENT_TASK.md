@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-24 見た目の連続性・完全一致候補監査
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #325 merge commit `6b3e70d`。Branch: `codex/audit-r4-3-visual-continuity`。
+- 実装: 一貫性チェックへ、同一ページまたは隣接ページの採用中生成画像について、同一Asset IDまたは完全一致SHA-256だけをread-only目視確認候補として表示する。
+- 安全境界: 既存の設定版・参照画像・割当履歴警告と分離し、警告数、完成判定、自動不採用、自動再生成、Provider、creditへ接続しない。perceptual similarityや推測閾値は導入しない。
+- 検証: 集中6/6、deps error 0（既存warning 2件）、lint、全型検査、Hub 831/831、Canvas 26/26、AI 48/48、Desktop 182/182、migration 61件、Hub／Desktop build、`git diff --check`成功。
+- 不変: Production、作品、Canvas、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、PNG／PDF、成人向け境界、Desktop製品コードを変更していない。書込み・Provider実行・credit予約／消費0件。
+- 次: commit・push・Draft PRを作成し、全CIとVercel Preview成功で停止する。Production修復、read-only再集計、Pilot生成は個別の明示承認前に実行しない。
+- 詳細: `docs/RELEASE_CANDIDATE_VISUAL_CONTINUITY_EXACT_MATCH_REVIEW_20260824.md`
+
+---
+
 ## 2026-08-24 Production人物連続性監査・残コマ生成計画
 
 - 状態: `AUDITED_LOCAL / DOCUMENTED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
