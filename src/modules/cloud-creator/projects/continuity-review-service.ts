@@ -1,4 +1,7 @@
-import { evaluateCloudContinuity } from "@/lib/cloud-continuity-review";
+import {
+  evaluateCloudContinuity,
+  parseAdoptedContinuityEvidence,
+} from "@/lib/cloud-continuity-review";
 import { DomainError } from "@/lib/domain-errors";
 import { cloudCreatorContext } from "../auth-context";
 import { normalizeCloudCanvas } from "../canvas/canvas-normalizer";
@@ -8,7 +11,7 @@ export async function getCloudContinuityReview(projectId: string) {
   const { supabase } = await cloudCreatorContext();
   const workspace = await getCloudProjectWorkspace(projectId);
   const pageIds = workspace.pages.map((page) => page.id);
-  const [snapshots, jobs, assets, characters, worlds, style, references, assignments] =
+  const [snapshots, jobs, assets, evaluations, characters, worlds, style, references, assignments] =
     await Promise.all([
       pageIds.length
         ? supabase
@@ -25,6 +28,10 @@ export async function getCloudContinuityReview(projectId: string) {
       supabase
         .from("cloud_assets")
         .select("id,sha256")
+        .eq("project_id", projectId),
+      supabase
+        .from("cloud_manga_quality_evaluations")
+        .select("generation_job_id,evaluation_details")
         .eq("project_id", projectId),
       supabase
         .from("cloud_character_profiles")
@@ -50,7 +57,7 @@ export async function getCloudContinuityReview(projectId: string) {
         .select("page_id,panel_id,subject_kind,subject_id")
         .eq("project_id", projectId),
     ]);
-  const results = [snapshots, jobs, assets, characters, worlds, style, references, assignments];
+  const results = [snapshots, jobs, assets, evaluations, characters, worlds, style, references, assignments];
   const unavailable = results.some((result) => result.error?.code === "42P01");
   if (unavailable)
     return {
@@ -77,6 +84,14 @@ export async function getCloudContinuityReview(projectId: string) {
   const assetSha256 = new Map(
     (assets.data ?? []).map((asset) => [asset.id, asset.sha256]),
   );
+  const continuityEvidence = new Map(
+    (evaluations.data ?? [])
+      .map((evaluation) => [
+        evaluation.generation_job_id,
+        parseAdoptedContinuityEvidence(evaluation.evaluation_details),
+      ] as const)
+      .filter((entry) => entry[1] !== null),
+  );
   const placements = workspace.pages.flatMap((page) => {
     const canvas = normalizeCloudCanvas(page, latest.get(page.id));
     return canvas.panelLayers
@@ -88,6 +103,7 @@ export async function getCloudContinuityReview(projectId: string) {
         sourceJobId: layer.sourceJobId!,
         assetId: layer.assetId,
         assetSha256: layer.assetId ? (assetSha256.get(layer.assetId) ?? null) : null,
+        continuityEvidence: continuityEvidence.get(layer.sourceJobId!) ?? null,
         jobInput: jobMap.get(layer.sourceJobId!) ?? null,
       }));
   });
