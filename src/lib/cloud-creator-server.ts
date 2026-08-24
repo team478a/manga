@@ -17,9 +17,7 @@ export type {
   CloudProjectSummary,
   CloudScene,
 } from "@/modules/cloud-creator/contracts/types";
-
 export { listCloudPageProductionStates, setCloudPageProductionStatus } from "@/modules/cloud-creator/production/production-status-service";
-
 export {
   cancelCloudGenerationJob,
   enqueueCloudGenerationJob,
@@ -63,11 +61,13 @@ export {
   saveCloudWorldProfile,
 } from "@/modules/cloud-creator/projects/world-bible-service";
 export {
+  deleteCloudCharacterReferenceBinding,deleteCloudCharacterStateAssignment,
   deleteCloudPanelSubjectAssignment,
   deleteCloudVisualReference,
   getCloudVisualReferenceWorkspace,
   saveCloudPanelSubjectAssignment,
   saveCloudVisualReference,
+  saveCloudCharacterReferenceBinding,saveCloudCharacterStateAssignment,saveCloudGenerationReadinessPolicy,
 } from "@/modules/cloud-creator/projects/visual-reference-service";
 
 export {

@@ -402,7 +402,13 @@
       "description": "作品別の人物参照不足warn/block方針をowner境界内で保存",
       "forwardSha256": "81eefa67dbe19fae96ea692fbd67d2dd2965a93a5bf7e3d258db5e0dd7a15e6e",
       "rollbackSha256": "6ae8ebcffbccdb404f91a4aeb192f619a76f9af8066dfbadd5b7a7d617644306"
+    },
+    {
+      "id": "202608250002_cloud_character_state_assignments",
+      "description": "人物versionの衣装と状態を重複しないページ範囲へ割り当て",
+      "forwardSha256": "8cdbd829546a0a1800cd4ccaa82e02135bc81ba55e09c4cb03bd304619d87b0a",
+      "rollbackSha256": "0d8c9d81d9c6ad26fec311a0955eb5280211468a518d084a0b63d83df437b2e1"
     }
   ],
-  "schemaSha256": "27476b8468e82133ea08bfa010e5c96b04ce1ee81219f7a2f13b344be63c653e"
+  "schemaSha256": "533d92cef29aeae764442b948210efcd47c6e946c31f16e64c974daf5e99dd4e"
 }

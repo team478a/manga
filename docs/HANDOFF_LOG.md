@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P1-C 作品バイブル・人物参照UI）
+
+- Branch `codex/p1c-story-bible-reference-ui`、base `7e49a87`。
+- 既存参照画面へversion付きrole／承認、作品方針、衣装・状態ページ範囲を追加した。
+- 追加migrationはowner RLS、owner RPC、範囲重複拒否、利用後rollback停止を持つ。
+- 集中6/6、Hub 856 tests、全ローカル品質ゲート、PostgreSQL 16 migration roundtrip成功。
+- Production、Provider、Worker、Job、Storage、credit変更なし。P1-Dはmerge後。
+
+---
+
 ## 2026-08-25 Codex（P1-B 人物参照resolver・生成準備方針）
 
 - Branch `codex/p1b-reference-resolver-readiness`、base `552e0dc`。

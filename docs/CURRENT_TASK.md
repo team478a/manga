@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P1-C 作品バイブル・人物参照UI
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #345 merge commit `7e49a87`。Branch: `codex/p1c-story-bible-reference-ui`。
+- 実装: 人物version／参照role／優先度／承認状態、作品別warn/block、衣装・状態の非重複ページ範囲を既存参照画面へ追加。
+- Migration: `cloud_character_state_assignments`、owner RLS、保存／解除RPC、情報損失rollback停止。manifest 68件。
+- 互換: 旧参照画像、既存Asset、自由文人物設定、コマ割当を維持。migration未適用時は新UIだけ停止。
+- 不変: Production、Provider、Worker、Job、Storage、credit操作0件。
+- 検証: 集中6/6、Hub 852項目／856 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 68件の静的検査／roundtrip、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。P1-Dはmerge後。
+- 詳細: `docs/RELEASE_CANDIDATE_P1C_STORY_BIBLE_REFERENCE_UI_20260825.md`
+
+---
+
 ## 2026-08-25 P1-B 人物参照resolver・生成準備方針
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`
