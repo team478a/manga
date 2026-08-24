@@ -26,7 +26,8 @@ test("page locks expire and require an opaque token", () => {
 test("batch service durably registers bounded panel work before the worker runs", () => {
   const service = read("src/modules/cloud-creator/generation/batch-production-service.ts");
   const policy = read("src/modules/manga/domain/generation-batch.ts");
-  assert.match(policy, /uniquePageIds\.length < 4 \|\| uniquePageIds\.length > 8/);
+  assert.match(policy, /pageCount === 2 \|\| \(pageCount >= 4 && pageCount <= 8\)/);
+  assert.match(policy, /Math\.abs\(pageNumbers\[0\] - pageNumbers\[1\]\) === 1/);
   assert.match(policy, /targets\.length > 64/);
   assert.match(service, /normalizeGenerationBatchPageIds/);
   assert.match(service, /planGenerationBatchTargets/);
@@ -99,7 +100,7 @@ test("batch target idempotency keys keep the panel request UUID contract", () =>
 
 test("batch UI exposes progress, pause, cancel and safe retry", () => {
   const component = read("src/app/creator/[projectId]/LongformPageManager.tsx");
-  assert.match(component, /4〜8ページをまとめて生成/);
+  assert.match(component, /2ページPilot／4〜8ページ一括生成/);
   assert.match(component, /一時停止/);
   assert.match(component, /再開/);
   assert.match(component, /中止/);

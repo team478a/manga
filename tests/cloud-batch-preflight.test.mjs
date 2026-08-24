@@ -26,6 +26,7 @@ const context = (overrides = {}) => ({
   userRequestsPerMinute: 30,
   projectRequestsPerMinute: 20,
   pagePanelCounts: { a: 2, b: 3, c: 1, d: 4, e: 12 },
+  pageNumbers: { a: 1, b: 2, c: 3, d: 4, e: 5 },
   visualReadinessAvailable: true,
   styleBibleConfigured: true,
   configuredCharacterNames: ["主人公", "相棒", "敵"],
@@ -74,6 +75,19 @@ test("一括生成preflightは対象コマ、credit、最大予約費用、Worke
   assert.equal(estimate.schedulerMinimumMinutes, 20);
   assert.equal(estimate.registrationLimit, 20);
   assert.equal(estimate.canStart, true);
+});
+
+test("2ページPilotは連番だけを許可し、3ページは通常batchへ拡張するまで拒否する", () => {
+  const pilot = estimateGenerationBatch(context(), ["a", "b"]);
+  assert.equal(pilot.canStart, true);
+  assert.equal(pilot.targetPanelCount, 5);
+  assert.equal(pilot.requiredCredits, 10);
+  const nonConsecutive = estimateGenerationBatch(context(), ["a", "c"]);
+  assert.equal(nonConsecutive.canStart, false);
+  assert.match(nonConsecutive.blockers.join("\n"), /ページ番号が連続/);
+  const threePages = estimateGenerationBatch(context(), ["a", "b", "c"]);
+  assert.equal(threePages.canStart, false);
+  assert.match(threePages.blockers.join("\n"), /通常の一括生成は4〜8ページ/);
 });
 
 test("plan、作品、global、monitorの不足はbatch作成前のblockerになる", () => {

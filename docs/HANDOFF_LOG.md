@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-08-24 Codex: 連続2ページ生成Pilot契約
+
+- PR #330 merge commit `b9f07fd`から`codex/enable-two-page-generation-pilot`を作成した。
+- 連続2ページPilotと4〜8ページ通常batchを明示的に分離し、3ページと非連続2ページを拒否する。
+- アプリpreflightとDB RPCの両方で連番を検証する追加migration、canonical schema、fail-closed rollbackを追加した。
+- 集中15/15、deps、lint、全型検査、Hub 834/834、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、migration 62件、両build、RC structure、diff check成功。PostgreSQL 16 roundtripはCIで確認する。
+- Production、Provider、生成Job、credit、作品データへの変更0件。次はcommit・push・Draft PR後、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-24 Codex: Production品質イベント5xx修正受入れ
 
 - PR #329 merge commit `e8d9146`から`codex/docs-production-quality-event-acceptance`を作成した。

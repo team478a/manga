@@ -277,6 +277,7 @@ export async function getCloudGenerationBatchPreflight(
     userRequestsPerMinute: planResult.data.user_requests_per_minute,
     projectRequestsPerMinute: planResult.data.project_requests_per_minute,
     pagePanelCounts: pageStructure.pagePanelCounts,
+    pageNumbers: pageStructure.pageNumbers,
     ...visualReadiness,
     schedulerJobsPerRun: 3,
     schedulerIntervalMinutes: 5,

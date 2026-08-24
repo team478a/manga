@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 連続2ページ生成Pilot契約（2026-08-24）
+
+- 最新基準はPR #330 merge commit `b9f07fd`。Branchは`codex/enable-two-page-generation-pilot`。
+- 既存4〜8ページ通常batchに加え、ページ番号が連続する2ページだけをPilotとして許可する。3ページと非連続2ページは拒否する。
+- 連番はアプリpreflightとDB RPCで二重検証し、既存の人物・画風、quota、費用、モニター枠、Provider・model・料金版、moderation guardを維持する。
+- 集中15/15、deps、lint、全型検査、Hub 834/834、Canvas 26/26、AI 48/48、Desktop 182/182、a11y、migration 62件、両build、RC structure、diff check成功。
+- Production migration、Provider実行、生成Job、credit予約／消費は行っていない。明示承認までは実行しない。
+- 詳細は`docs/RELEASE_CANDIDATE_TWO_PAGE_GENERATION_PILOT_20260824.md`。
+
+---
+
 ## 0.0 Production品質イベント5xx修正受入れ（2026-08-24）
 
 - PR #329 merge commit `e8d9146`のProduction deployment Readyを確認した。

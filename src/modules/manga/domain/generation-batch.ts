@@ -18,9 +18,23 @@ export type MangaGenerationBatch = {
 
 export function normalizeGenerationBatchPageIds(pageIds: string[]) {
   const uniquePageIds = [...new Set(pageIds)];
-  if (uniquePageIds.length < 4 || uniquePageIds.length > 8)
-    throw new ValidationError("一括生成するページを4〜8ページ選んでください。");
+  if (!isGenerationBatchPageCountAllowed(uniquePageIds.length))
+    throw new ValidationError("Pilotは連続2ページ、通常の一括生成は4〜8ページを選んでください。");
   return uniquePageIds;
+}
+
+export function isGenerationBatchPageCountAllowed(pageCount: number) {
+  return pageCount === 2 || (pageCount >= 4 && pageCount <= 8);
+}
+
+export function isConsecutiveGenerationPilot(input: {
+  pageIds: string[];
+  pageNumbers: Record<string, number>;
+}) {
+  const uniquePageIds = [...new Set(input.pageIds)];
+  if (uniquePageIds.length !== 2) return true;
+  const pageNumbers = uniquePageIds.map((pageId) => input.pageNumbers[pageId]);
+  return pageNumbers.every(Number.isInteger) && Math.abs(pageNumbers[0] - pageNumbers[1]) === 1;
 }
 
 export function planGenerationBatchTargets(input: {
