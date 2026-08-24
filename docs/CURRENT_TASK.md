@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 Production品質イベント5xx再送loop修正
+
+- 状態: `IMPLEMENTED_LOCAL / HUB_REGRESSION_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #327 merge commit `35c358f`。Branch: `codex/fix-production-quality-event-5xx`。
+- Production証跡: `app.mang-ai.com`の22ページから`POST /api/creator/manga-quality-events`が同一時刻に多数500。deployment `dpl_EjYtBf2cCPF7xDsqSAFz8Jd7vMBR`、Production、`feature/manga-canvas-mvp`。
+- 原因: 完成Jobの表示イベント失敗時に送信済みIDを削除し、3秒周期のJob更新ごとに同じJob群を再送していた。旧Job等でRPCが`P0001 / cloud_generation_job_not_found`を返す場合も表示テレメトリを致命的に扱っていた。
+- 修正: 表示イベントは画面session内で1 Job 1回だけ試行する。所有者として記録不能な旧Jobの上記エラーだけを非致命化する。採用・不採用、他のRPC／schema障害は従来どおりfail-closed。
+- 不変: API payload、DB、migration、RPC、Storage、Provider、model、pricing、credit、Canvas、PNG／PDF、Productionデータを変更しない。
+- 検証: 集中4/4、deps error 0（既存warning 2件）、lint、全型検査、Hub 833/833、`git diff --check`成功。
+- 次: commit・push・Draft PR後、全CIとVercel Preview成功で停止する。merge／Production反映後に22ページを1回再読込し、同routeの5xx再発なしをread-only確認する。
+- 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_QUALITY_EVENT_5XX_RETRY_GUARD_20260824.md`
+
+---
+
 ## 2026-08-24 採用画像Visual Judge連続性証跡監査
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`

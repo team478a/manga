@@ -4,6 +4,7 @@ import test from "node:test";
 
 import { calculateMangaQualityMetrics } from "../src/modules/manga-quality/application/quality-metrics.ts";
 import { isMangaQualityFailureCategory } from "../src/modules/manga-quality/domain/failure-category.ts";
+import { isNonRecordableDisplayedEventError } from "../src/modules/manga-quality/domain/quality-event-error.ts";
 
 const row = (overrides = {}) => ({
   candidateDisplayed: true,
@@ -62,7 +63,35 @@ test("Q0は既存生成APIを変えず専用presentationとrepositoryへ入る",
   assert.match(editor, /event: "displayed"/);
   assert.match(editor, /event: "selected"/);
   assert.match(editor, /\.catch\(\(\) => undefined\)/);
+  assert.doesNotMatch(
+    editor,
+    /recordedDisplayedJobIds\.current\.delete\(job\.id\)/,
+  );
   assert.match(migration, /unique \(generation_job_id, event_type\)/);
   assert.match(migration, /on conflict \(generation_job_id, event_type\) do nothing/);
   assert.doesNotMatch(migration, /grant select, insert, update .* authenticated/);
+});
+
+test("表示イベントは所有者として記録不能な旧Jobだけを非致命化する", () => {
+  assert.equal(
+    isNonRecordableDisplayedEventError({
+      code: "P0001",
+      message: "cloud_generation_job_not_found",
+    }),
+    true,
+  );
+  assert.equal(
+    isNonRecordableDisplayedEventError({
+      code: "P0001",
+      message: "cloud_manga_quality_event_invalid",
+    }),
+    false,
+  );
+  assert.equal(
+    isNonRecordableDisplayedEventError({
+      code: "42P01",
+      message: "cloud_generation_job_not_found",
+    }),
+    false,
+  );
 });

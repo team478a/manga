@@ -1,6 +1,7 @@
 import { DomainError } from "@/lib/domain-errors";
 import { cloudCreatorContext } from "@/modules/cloud-creator/auth-context";
 import type { MangaQualityEventRepository } from "../application/record-candidate-event";
+import { isNonRecordableDisplayedEventError } from "../domain/quality-event-error";
 
 export function createMangaQualityRepository(): MangaQualityEventRepository {
   return {
@@ -11,6 +12,11 @@ export function createMangaQualityRepository(): MangaQualityEventRepository {
         p_event: event.event,
         p_rejected_reason: event.rejectedReason ?? null,
       });
+      if (
+        event.event === "displayed" &&
+        isNonRecordableDisplayedEventError(error)
+      )
+        return;
       if (error)
         throw new DomainError(
           "INTERNAL_ERROR",

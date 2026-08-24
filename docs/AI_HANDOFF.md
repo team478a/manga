@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production品質イベント5xx再送loop修正（2026-08-24）
+
+- 最新基準はPR #327 merge commit `35c358f`。Branchは`codex/fix-production-quality-event-5xx`。
+- Production 22ページから品質表示イベントが同時多発500となり、失敗IDを再送可能へ戻す処理と3秒Job更新が再送loopを作っていた。
+- 表示イベントはsession内1回に固定し、`P0001 / cloud_generation_job_not_found`だけを非致命化した。採用・不採用と他障害はfail-closedを維持。
+- 集中4/4、deps、lint、全型検査、Hub 833/833、diff check成功。Production、Provider、credit、DBは変更していない。
+- 詳細は`docs/RELEASE_CANDIDATE_PRODUCTION_QUALITY_EVENT_5XX_RETRY_GUARD_20260824.md`。
+
+---
+
 ## 0.0 採用画像Visual Judge連続性証跡監査（2026-08-24）
 
 - 最新基準はPR #326 merge commit `e0e8aae`。Branchは`codex/audit-r4-3-visual-judge-evidence`。
