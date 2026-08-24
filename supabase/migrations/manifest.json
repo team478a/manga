@@ -372,7 +372,13 @@
       "description": "連続2ページPilotを既存の4〜8ページ通常batchと同じ安全境界で登録可能にする",
       "forwardSha256": "b57a3736c0427f5a53e8ec785777dbedfe6d16349678ef054f0c36d089215602",
       "rollbackSha256": "ca049bba647f13decda75020e10b638ecf717be8db7c6e50b9331ef9fdb32584"
+    },
+    {
+      "id": "202608240002_cloud_generation_resumable_foundation",
+      "description": "既存生成Jobを維持したまま工程状態・再試行系譜・安全なappend-only event基盤を追加",
+      "forwardSha256": "c9c05147c7d0cdaa14d65ec77338e378b96fe39bad656b9958942d8561c542ec",
+      "rollbackSha256": "2945ae04065b680d676746df173a08964943ebfa66116025174fc5857f297d8c"
     }
   ],
-  "schemaSha256": "478d242b0669088aaf5ef589e398df636b06094b37550ab691cb9782c4695905"
+  "schemaSha256": "333426a65039ec216d80f62a37174eef11126df38c8da731980d68e225da9906"
 }

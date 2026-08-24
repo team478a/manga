@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 P0-A 再開可能な生成基盤schema
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`
+- Base: PR #337 merge commit `109bea3`。Branch: `codex/p0a-resumable-generation-schema`。
+- 実装: 既存5 statusを維持し、工程／失敗／retry系譜／HTTP／workflow／seed／checkpoint列、append-only event table、8状態写像、strict既定OFF Flagを追加した。
+- 安全境界: event metadataの秘密keyをDB制約で拒否し、owner read／service-role insertに限定。既存running rowは工程を推測せず`unknown`へbackfillする。
+- Migration: forward／rollback／canonical schema／manifest 63件を同期。利用開始後の情報損失rollbackは停止する。
+- 検証: 集中9/9、deps error 0（既存warning 2）、lint、全型検査、Hub 834項目／838 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 63件、Hub／Desktop build、RC structure、diff check成功。
+- 不変: 現行enqueue／Worker／Provider／quota／credit／Canvas動作、Production、DB、Storage、作品、Jobは未変更。Flagによるv2書込みも未開始。
+- 次: commit・push・Draft PR後、全CI／Vercel Preview成功で停止する。P0-Bはレビュー前に開始しない。
+- 詳細: `docs/RELEASE_CANDIDATE_P0A_RESUMABLE_GENERATION_FOUNDATION_20260824.md`
+
+---
+
 ## 2026-08-24 P0生成基盤・OSS比較調査
 
 - 状態: `RESEARCH_DOCUMENTED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
