@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-24 Production再集計・22ページ追加生成なし修復・Pilot判断
+
+- 状態: `PRODUCTION_REAGGREGATED / PAGE_22_REPAIR_SAVED / PILOT_BLOCKED / PROVIDER_NOT_CALLED`
+- Base: PR #327 merge commit `35c358f`。Branch: `codex/docs-r4-3-production-reaggregation-repair`。
+- read-only再集計: 32ページ157コマ、画像配置13、未配置144、画像配置完了2/32、原稿要修正276、生成Job 78、処理中0。既存候補総数は画面から直接取得できないため、78 Jobを候補数とみなさない。
+- credit表示: 制作コックピットの月次集計は使用92・予約0・推定$1.38。作品batch画面は必要0・残り16、ページ編集画面はFREE枠の使用4・予約0・上限20。集計範囲が異なるため合算しない。
+- 22ページ修復: 「既存原稿を修復」を1回だけ実行し、短い縦書き1件を追加生成なしで修復した。不採用画像0件、背景順0件。自動保存後に「保存済み」、再読込後に修復ボタンが消えたことを確認した。
+- 未確認: Production原稿プレビューは一時読込失敗、PNG操作はブラウザtimeoutのため、修復後のPreview／PNG同一性は未確認。
+- Pilot判断: 作品画風未設定、人物・画風の生成準備とモニターAI枠が確認不可、残り16 credit、一括生成UIは4〜8ページ必須で連続2ページPilotを実行できない。Provider Job、credit予約・消費0件で停止した。
+- 次: Preview／PNGをread-only再確認し、参照設定、AI枠、UIと2ページ計画の不一致、対象ページ、最大creditを責任者が決定するまでProvider実行・credit予約を行わない。
+- 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_REAGGREGATION_REPAIR_AND_PILOT_DECISION_20260824.md`
+
+---
+
 ## 2026-08-24 採用画像Visual Judge連続性証跡監査
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`

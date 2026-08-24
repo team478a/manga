@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production再集計・22ページ修復・Pilot判断（2026-08-24）
+
+- 最新基準はPR #327 merge commit `35c358f`。Branchは`codex/docs-r4-3-production-reaggregation-repair`。
+- Productionは32ページ157コマ、配置13、未配置144、画像配置完了2/32、要修正276、生成Job 78、処理中0。既存候補総数は画面から直接取得できない。
+- 22ページで追加生成なし修復を1回実行し、短い縦書き1件を修復した。自動保存と再読込後の修復ボタン消失を確認した。不採用画像・背景順の修復は0件。
+- 修復後の原稿プレビューは一時読込失敗、PNGはブラウザtimeoutで未確認。
+- creditはコックピット月次使用92・予約0、作品batch残り16、ページFREE枠使用4・予約0・上限20。Provider Job、credit予約・消費は実行していない。
+- Pilotは画風未設定、生成準備とモニターAI枠の確認不可、4〜8ページ必須UIと2ページ計画の不一致により停止。詳細は`docs/RELEASE_CANDIDATE_PRODUCTION_REAGGREGATION_REPAIR_AND_PILOT_DECISION_20260824.md`。
+
+---
+
 ## 0.0 採用画像Visual Judge連続性証跡監査（2026-08-24）
 
 - 最新基準はPR #326 merge commit `e0e8aae`。Branchは`codex/audit-r4-3-visual-judge-evidence`。
