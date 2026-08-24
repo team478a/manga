@@ -88,6 +88,21 @@ export const cloudGenerationInputSchema = z
       .max(12)
       .optional(),
     referenceAssetIds: z.array(z.string().uuid()).max(8).optional(),
+    referenceBundleVersion: z.literal(1).optional(),
+    referenceResolverVersion: z.literal("character-reference-v1").optional(),
+    resolvedCharacterReferences: z.array(z.object({
+      profileId: z.string().uuid(),
+      profileVersion: z.number().int().positive(),
+      assetId: z.string().uuid(),
+      role: z.enum(["front", "side", "back", "face", "full_body", "expression", "costume_detail"]),
+    })).max(12).optional(),
+    referenceReadiness: z.object({
+      policy: z.enum(["warn", "block"]),
+      warnings: z.array(z.object({
+        code: z.literal("major_character_identity_reference_missing"),
+        profileId: z.string().uuid(),
+      })).max(12),
+    }).optional(),
     operation: z
       .enum(["text_to_image", "image_to_image", "inpainting", "outpainting"])
       .optional(),

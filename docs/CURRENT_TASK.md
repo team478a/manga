@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P1-B 人物参照resolver・生成準備方針
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / PRODUCTION_UNCHANGED`
+- Base: PR #344 merge commit `552e0dc`。Branch: `codex/p1b-reference-resolver-readiness`。
+- 実装: 現在人物versionのapproved参照だけをrole順で解決し、単一コマ／batch共通準備経路でJob入力へbundle／resolver／version／Asset／role／警告を固定する。
+- 方針: 作品別`warn / block`、既定`block`。新経路は`CLOUD_VERSIONED_CHARACTER_REFERENCES_ENABLED`のstrict trueだけで有効、既定OFF。
+- 不変: 既存参照、Prompt、Provider、Worker、料金、Production、Job、Storage、credit操作0件。
+- 検証: resolver 3/3、Hub 849項目／853 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 67件の静的検査／roundtrip、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ローカル品質ゲート、commit・push・Draft PR、全CI／Vercel成功で停止する。P1-Cはレビュー前に開始しない。
+- 詳細: `docs/RELEASE_CANDIDATE_P1B_REFERENCE_RESOLVER_READINESS_20260825.md`
+
+---
+
 ## 2026-08-24 P1-A 人物version付き参照画像binding
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`

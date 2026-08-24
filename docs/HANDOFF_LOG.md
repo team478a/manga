@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P1-B 人物参照resolver・生成準備方針）
+
+- Branch `codex/p1b-reference-resolver-readiness`、base `552e0dc`。
+- 現在人物versionとapproved bindingの一致を検査し、role優先で最大8枚を共通生成準備経路へ固定した。
+- 作品別warn／block table／RPC、owner RLS、rollback、canonical schemaを追加。Flag既定OFF。
+- resolver 3/3、Hub 853 tests、全ローカル品質ゲート、PostgreSQL 16 migration roundtrip成功。
+- Production、Provider、Worker、Job、Storage、credit変更なし。次は全ゲートとDraft PR、P1-Cはmerge後。
+
+---
+
 このファイルはAI間の作業交代記録です。新しい記録を上へ追記してください。
 
 ---

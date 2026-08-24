@@ -396,7 +396,13 @@
       "description": "人物versionと構造化された参照画像roleをowner境界内で結合",
       "forwardSha256": "a6aec91fa5305277ae70758d3282ed77d62e2719d4fa4e8146efc02e120ee2d2",
       "rollbackSha256": "62850e099ddd0c641d6ec706bbc2a64232932ff09af4771f9b7032773a672faf"
+    },
+    {
+      "id": "202608250001_cloud_generation_reference_readiness",
+      "description": "作品別の人物参照不足warn/block方針をowner境界内で保存",
+      "forwardSha256": "81eefa67dbe19fae96ea692fbd67d2dd2965a93a5bf7e3d258db5e0dd7a15e6e",
+      "rollbackSha256": "6ae8ebcffbccdb404f91a4aeb192f619a76f9af8066dfbadd5b7a7d617644306"
     }
   ],
-  "schemaSha256": "8bb0aec5d403c4d5a725306429ec3b4e46044881bcd04eceeeb300d02d8e082c"
+  "schemaSha256": "27476b8468e82133ea08bfa010e5c96b04ce1ee81219f7a2f13b344be63c653e"
 }

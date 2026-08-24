@@ -1,6 +1,10 @@
 \set ON_ERROR_STOP on
 
 do $$begin
+  if to_regclass('public.cloud_project_generation_readiness_policies') is not null or to_regprocedure('public.save_cloud_project_generation_readiness_policy(uuid,text)') is not null then raise exception 'Cloud generation reference readiness objects remain after rollback';end if;
+end$$;
+
+do $$begin
   if to_regclass('public.cloud_character_reference_bindings') is not null or to_regprocedure('public.save_cloud_character_reference_binding(uuid,uuid,uuid,uuid,text,text,integer,text)') is not null then raise exception 'Cloud character reference binding objects remain after rollback';end if;
 end$$;
 

@@ -24,6 +24,11 @@ import { consumeCloudGeneralMonitorAiRequest } from "@/lib/cloud-general-monitor
 import type { CloudCharacterProfile } from "@/lib/cloud-character-profile.ts";
 import type { CloudStyleBible, CloudWorldProfile } from "@/lib/cloud-world-bible.ts";
 import { savePanelSpecification } from "@/modules/manga-quality/infrastructure/panel-quality-repository";
+import { resolveVersionedCharacterReferences } from "../domain/panel-reference-policy";
+
+function versionedCharacterReferenceResolverEnabled() {
+  return process.env.CLOUD_VERSIONED_CHARACTER_REFERENCES_ENABLED === "true";
+}
 
 async function runStoryboardPanelImage(
   input: unknown,
@@ -126,7 +131,7 @@ async function runStoryboardPanelImage(
     const versionRows = await supabase
       .from("cloud_character_profile_versions")
       .select(
-        "profile_id,version_number,appearance_age,body_build,hair,costume,color_palette,immutable_traits,prompt,negative_prompt",
+        "version_id:id,profile_id,version_number,appearance_age,body_build,hair,costume,color_palette,immutable_traits,prompt,negative_prompt",
       )
       .in(
         "profile_id",
@@ -269,6 +274,7 @@ async function runStoryboardPanelImage(
     subjectId: string;
     assetId: string;
   }> = [];
+  let referenceResolution: ReturnType<typeof resolveVersionedCharacterReferences> | null = null;
   const assignments = await supabase
     .from("cloud_panel_subject_assignments")
     .select("subject_kind,subject_id")
@@ -332,6 +338,50 @@ async function runStoryboardPanelImage(
         assetId: item.asset_id,
       }));
     }
+    if (versionedCharacterReferenceResolverEnabled()) {
+      const characterVersions = (selected.generation.characterProfileVersions ?? []).flatMap((item) => {
+        const version = visualCharacterProfiles.find(
+          (profile) => profile.id === item.profileId && profile.current_version === item.version,
+        ) as (CloudCharacterProfile & { version_id?: string }) | undefined;
+        const versionId = version?.version_id;
+        return versionId ? [{ profileId: item.profileId, versionId, version: item.version }] : [];
+      });
+      if (characterVersions.length !== (selected.generation.characterProfileVersions ?? []).length)
+        throw new DomainError("INTERNAL_ERROR", "人物設定の版を特定できませんでした。");
+      const [bindings, policy] = await Promise.all([
+        characterVersions.length
+          ? supabase.from("cloud_character_reference_bindings")
+              .select("character_profile_id,character_version_id,asset_id,reference_role,priority")
+              .eq("project_id", request.projectId).eq("owner_profile_id", profile.id)
+              .eq("review_status", "approved")
+              .in("character_version_id", characterVersions.map((item) => item.versionId))
+          : Promise.resolve({ data: [], error: null }),
+        supabase.from("cloud_project_generation_readiness_policies")
+          .select("major_character_reference_policy")
+          .eq("project_id", request.projectId).eq("owner_profile_id", profile.id).maybeSingle(),
+      ]);
+      if (bindings.error || (policy.error && policy.error.code !== "PGRST116"))
+        throw new DomainError("INTERNAL_ERROR", "人物参照画像の準備状況を確認できませんでした。", { cause: bindings.error ?? policy.error });
+      referenceResolution = resolveVersionedCharacterReferences({
+        characters: characterVersions,
+        policy: (policy.data?.major_character_reference_policy as "warn" | "block" | undefined) ?? "block",
+        bindings: (bindings.data ?? []).map((item) => {
+          const version = characterVersions.find((candidate) => candidate.versionId === item.character_version_id)!;
+          return {
+            subjectKind: "character" as const, subjectId: item.character_profile_id,
+            characterVersionId: item.character_version_id, profileVersion: version.version,
+            assetId: item.asset_id, role: item.reference_role as "front", priority: item.priority,
+          };
+        }),
+      });
+      if (referenceResolution.blocked)
+        throw new ValidationError("主要人物の承認済み正面・顔参照画像が不足しています。参照画像を確認してから開始してください。");
+      const structuredCharacterIds = new Set(characterVersions.map((item) => item.profileId));
+      referenceAssets = [
+        ...referenceResolution.references,
+        ...referenceAssets.filter((item) => item.subjectKind !== "character" || !structuredCharacterIds.has(item.subjectId)),
+      ];
+    }
   }
   const jobs: Array<{ id: string; candidateNumber: number }> = [];
   const prepared: Array<{
@@ -367,6 +417,15 @@ async function runStoryboardPanelImage(
         prepared.push({
           generation: await prepareCloudGenerationJob({
             ...resolved.generation,
+            ...(referenceResolution ? {
+              referenceBundleVersion: referenceResolution.bundleVersion,
+              referenceResolverVersion: referenceResolution.resolverVersion,
+              resolvedCharacterReferences: referenceResolution.references.map((item) => ({
+                profileId: item.subjectId, profileVersion: item.profileVersion,
+                assetId: item.assetId, role: item.role,
+              })),
+              referenceReadiness: { policy: referenceResolution.policy, warnings: referenceResolution.warnings },
+            } : {}),
             sourcePageRevision: page.revision,
             candidateCount: 1,
             autoAdopt: true,
@@ -385,6 +444,15 @@ async function runStoryboardPanelImage(
               : `${request.idempotencyKey}:candidate:${candidateIndex + 1}`,
           generation: {
             ...resolved.generation,
+            ...(referenceResolution ? {
+              referenceBundleVersion: referenceResolution.bundleVersion,
+              referenceResolverVersion: referenceResolution.resolverVersion,
+              resolvedCharacterReferences: referenceResolution.references.map((item) => ({
+                profileId: item.subjectId, profileVersion: item.profileVersion,
+                assetId: item.assetId, role: item.role,
+              })),
+              referenceReadiness: { policy: referenceResolution.policy, warnings: referenceResolution.warnings },
+            } : {}),
             sourcePageRevision: page.revision,
             candidateCount: request.candidateCount,
             autoAdopt: request.candidateCount === 1,
