@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-24 Production人物連続性監査・残コマ生成計画
+
+- 状態: `AUDITED_LOCAL / DOCUMENTED / PRODUCTION_UNCHANGED / PROVIDER_NOT_CALLED`
+- Base: PR #324 merge commit `7f4ccf1fcc8226ce81881d81d1c5862a82ab8e08`。Branch: `codex/audit-r4-3-production-continuity`。
+- PR #324: 基準ブランチへの反映を確認した。既存Production原稿は明示的な「追加生成なし修復」と保存を行うまで自動更新されない。
+- 監査結果: 現行の一貫性チェックは設定版、参照画像ID、コマ割当、生成履歴を検査するが、画像ピクセル上の顔・衣装・背景一致や類似構図は判定しない。Visual Judgeの`continuityMatch`契約は存在するが、Production完成判定へ未接続である。
+- 既知証跡: 2026-08-20時点で32ページ157コマ中13コマ配置、144コマ未配置、完成原稿1/32。22ページは画像4/4、必須セリフ1/1、revision 11/11、PNG成功だが、類似構図と人物・場面連続性の目視事項が残る。
+- 計画: Production再集計後、連続2ページ・最大8〜12コマのPilotから開始し、合格後も4ページ単位を上限とする。各batch前後にcheckpoint、参照設定、credit予約、品質、PNGを確認する。
+- 検証: 一貫性・Character Identity・Visual Judge境界の集中テスト23/23成功。`git diff --check`成功。
+- 不変: Production、作品、Canvas、DB、migration、RPC、Storage、API、URL、Feature Flag、Provider、model、pricing、credit、retry、timeout、Scheduler、PNG／PDF、成人向け境界、Desktopを変更していない。Provider実行・credit消費0件。
+- 制約: 今回のProductionブラウザ再確認は接続が応答せず未実施。既知件数とcreditは次回実行前にread-onlyで再集計する。
+- 次: 責任者がProduction 22ページの追加生成なし修復、read-only再集計、Pilot対象・最大creditを承認した後にのみ実行する。見た目の連続性自動判定は別PRで契約を監査する。
+- 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_CONTINUITY_AND_REMAINING_GENERATION_PLAN_20260824.md`
+
+---
+
 ## 2026-08-20 セリフ出力の可読性と完成判定
 
 - 状態: `READY_FOR_OWNER_REVIEW / ALL_LOCAL_GATES_PASSED / INITIAL_CI_PASSED / PREVIEW_READY / PRODUCTION_READ_ONLY`

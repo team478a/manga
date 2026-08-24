@@ -4,6 +4,18 @@
 
 ---
 
+## 2026-08-24 Codex: Production人物連続性監査・残コマ生成計画
+
+- PR #324 merge commit `7f4ccf1fcc8226ce81881d81d1c5862a82ab8e08`から`codex/audit-r4-3-production-continuity`を作成した。
+- 現行の一貫性チェックが、設定版・参照画像ID・生成履歴の監査であり、画像の見た目や類似構図は判定しないことをコードと設計文書で確認した。
+- 2026-08-20のread-only証跡（32ページ、157コマ、配置13、未配置144、完成原稿1ページ）を最新値と混同しないよう明示した。
+- 残コマを連続2ページ・最大8〜12コマのPilotから開始し、合格後も4ページ単位でcheckpointと停止条件を確認する計画を作成した。
+- 一貫性・Character Identity・Visual Judge境界の集中テスト23/23と`git diff --check`に成功した。
+- Production、作品、Canvas、DB、Storage、Provider、creditへの変更・実行は0件。今回のProductionブラウザ再確認は接続が応答せず未実施。
+- 次は責任者承認後に、22ページの追加生成なし修復、read-only再集計、Pilot対象と最大creditの確定を順に行う。
+
+---
+
 ## 2026-08-20 Codex: セリフ出力の可読性と完成判定
 
 - Branch: `codex/fix-r4-3-dialogue-output-readability`
