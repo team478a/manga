@@ -1,5 +1,12 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0-E optional Provider interface（2026-08-24）
+
+- PR #341 merge commit `6aaa5d9`を基準に、共通画像Providerのoptional拡張と既存adapter互換aliasを追加した。
+- 現行generate／cancelとProvider通信は不変。新Provider追加、Production／Provider／credit操作0件。
+
+---
+
 ## 0.0 P0-D 生成失敗・再開UI（2026-08-24）
 
 - PR #340 merge commit `15c37ae`を基準に、工程／失敗工程／自動再開／checkpoint表示を追加した。

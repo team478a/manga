@@ -4,6 +4,14 @@
 
 ---
 
+## 2026-08-24 Codex: P0-E optional Provider interface
+
+- Branch: `codex/p0e-provider-interface`。Base: PR #341 merge commit `6aaa5d9`。
+- 共通画像Providerをoptional拡張し、既存Mock／Gateway／BFLは既存generateへ委譲する。
+- Worker、Provider通信、model、費用は不変。Production／Provider／Job／credit操作0件。
+
+---
+
 ## 2026-08-24 Codex: P0-D 生成失敗・再開UI
 
 - Branch: `codex/p0d-generation-recovery-ui`。Base: PR #340 merge commit `15c37ae`。
