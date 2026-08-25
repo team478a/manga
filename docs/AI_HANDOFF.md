@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P1-E 生成追跡情報（2026-08-25）
+
+- PR #347 merge commit `94a4853`を基準に、漫画コマ生成のworkflow versionと型付きprovenanceを追加した。
+- 人物／参照／画風／世界／連続状態／Provider／model／seedを追跡し、Promptや秘密情報は公開しない。
+- migration、Production、Provider、Job、Storage、credit操作0件。次は外部Providerなしの固定10シーンfixture。
+
+---
+
 ## 0.0 P1-D コマ連続状態（2026-08-25）
 
 - PR #346 merge commit `9c80cbc`を基準に、subject別の時間／天候／左右／持ち手／視線／継続元panelを追加した。

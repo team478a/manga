@@ -118,6 +118,7 @@ export type CloudGenerationJob = {
     | "inpainting"
     | "outpainting"
     | null;
+  generation_provenance: import("@/lib/cloud-generation-provenance").CloudGenerationProvenance;
   error_code: string | null;
   error_message: string | null;
   recovery_ui_enabled: boolean;

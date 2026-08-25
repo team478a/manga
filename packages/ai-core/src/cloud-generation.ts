@@ -62,6 +62,7 @@ export const cloudGenerationInputSchema = z
     sourcePageRevision: z.number().int().nonnegative().optional(),
     candidateCount: z.number().int().min(1).max(4).optional(),
     autoAdopt: z.boolean().optional(),
+    workflowVersion: z.literal("storyboard-panel-v1").optional(),
     characterProfileVersions: z
       .array(
         z.object({

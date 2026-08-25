@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P1-E 生成追跡情報）
+
+- Branch `codex/p1e-generation-provenance`、base `94a4853`。
+- 単一／batch漫画コマ生成へworkflow versionを固定し、既存Job inputから安全な追跡情報を集約・表示した。
+- 集中4/4、Hub 860 tests、全ローカル品質ゲート成功。migration追加なし。
+- Production、Provider、Worker、Job、Storage、credit変更なし。次は固定10シーン追跡fixture。
+
+---
+
 ## 2026-08-25 Codex（P1-D コマ連続状態）
 
 - Branch `codex/p1d-panel-continuity-state`、base `9c80cbc`。
