@@ -1,6 +1,7 @@
 \set ON_ERROR_STOP on
 
 do $$begin if to_regclass('public.cloud_panel_continuity_states')is not null or to_regprocedure('public.save_cloud_panel_continuity_state(uuid,uuid,uuid,text,uuid,text,text,text,text,text,text,uuid)')is not null then raise exception 'Cloud panel continuity state objects remain after rollback';end if;end$$;
+do $$begin if to_regclass('public.cloud_panel_designs')is not null or to_regclass('public.cloud_panel_design_versions')is not null or to_regprocedure('public.save_cloud_panel_design(uuid,uuid,uuid,bigint,jsonb)')is not null then raise exception 'Cloud panel design objects remain after rollback';end if;end$$;
 
 do $$begin if to_regclass('public.cloud_character_state_assignments')is not null or to_regprocedure('public.save_cloud_character_state_assignment(uuid,uuid,uuid,integer,integer,text,text,text,text,integer)')is not null then raise exception 'Cloud character state assignment objects remain after rollback';end if;end$$;
 
