@@ -38,6 +38,7 @@ import type {
 } from "@/lib/cloud-creator-server";
 import type { CloudPageDialoguePlacement } from "@/modules/cloud-creator/canvas/dialogue-placement-service";
 import type { CloudPageCompletion } from "@/modules/cloud-creator/projects/page-completion-service";
+import type { CloudInspectionFindingRecord } from "@/modules/cloud-creator/projects/inspection-service";
 import { buildGenerationRecoveryPresentation } from "@/modules/cloud-ai/domain/generation-recovery-presentation";
 import { PageCompletionBanner } from "./PageCompletionBanner";
 import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
@@ -245,6 +246,8 @@ export function CloudCanvasEditor({
   initialQuota,
   initialDialoguePlacement,
   initialPageCompletion,
+  initialInspectionFindings,
+  inspectionFindingsAvailable,
   storyboardPanelGenerationEnabled,
   panelInpaintingEnabled,
   panelOutpaintingEnabled,
@@ -259,6 +262,8 @@ export function CloudCanvasEditor({
   initialQuota: CloudAiQuota | null;
   initialDialoguePlacement: CloudPageDialoguePlacement | null;
   initialPageCompletion: CloudPageCompletion | null;
+  initialInspectionFindings: CloudInspectionFindingRecord[];
+  inspectionFindingsAvailable: boolean;
   storyboardPanelGenerationEnabled: boolean;
   panelInpaintingEnabled: boolean;
   panelOutpaintingEnabled: boolean;
@@ -1232,6 +1237,30 @@ export function CloudCanvasEditor({
   const selectedPanelAssetRevisions = selection?.type === "panel"
     ? listPanelAssetRevisions(canvas, selection.id, generationJobs)
     : [];
+  const selectedPanelFindings = selection?.type === "panel"
+    ? initialInspectionFindings.filter((finding) => finding.panelId === selection.id)
+    : [];
+  function prepareFindingRepair(finding: CloudInspectionFindingRecord) {
+    if (selection?.type !== "panel") return;
+    const preset: RevisionPreset = finding.category === "anatomy" ? "hands" : finding.category === "costume" ? "costume" : finding.category === "background" ? "background" : finding.category === "character_identity" || finding.category === "hair" ? "face" : "polish";
+    setRevisionPreset(preset);
+    setRevisionInstruction(finding.reason);
+    if (finding.suggestion === "inpaint" && panelInpaintingEnabled && selectedRevisionAsset) {
+      setInpaintingDialogOpen(true);
+      return;
+    }
+    if (finding.suggestion === "update_design") {
+      setMessage("選択コマの設計欄を開きました。保存するまで正本は変わりません。");
+      document.querySelector('[data-testid="panel-design-inspector"]')?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (finding.suggestion === "update_reference") {
+      router.push(`/creator/${project.id}/references`);
+      return;
+    }
+    setMessage(finding.suggestion === "edit_text" ? "Canvas上の文字を選択して修正してください。文字変更だけでは画像Jobやcreditは発生しません。" : "修正内容を生成欄へ準備しました。費用と候補数を確認してから明示的に実行してください。");
+    document.getElementById("panel-generation-controls")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   function restoreAssetRevision(layerId: string) {
     if (selection?.type !== "panel") return;
     const panelId = selection.id;
@@ -1564,7 +1593,7 @@ export function CloudCanvasEditor({
               </button>
             </div>
           </section>
-          <section className="panel p-4">
+          <section className="panel p-4" id="panel-generation-controls">
             <h2 className="flex items-center gap-2 font-bold">
               <Sparkles className="h-5 w-5" /> AI制作アシスト
             </h2>
@@ -2629,6 +2658,24 @@ export function CloudCanvasEditor({
                         </div>
                       ))}
                     </div>
+                  </div>
+                ) : null}
+                {selection?.type === "panel" ? (
+                  <div data-testid="panel-quality-inspector">
+                    <h3 className="font-semibold">品質検査</h3>
+                    {!inspectionFindingsAvailable ? <p className="mt-1 text-xs text-stone-600">品質finding migration未適用のため表示できません。</p> : null}
+                    {inspectionFindingsAvailable && !selectedPanelFindings.length ? <p className="mt-1 text-xs text-stone-600">このコマの保存済み検査結果はありません。未検査を合格とは扱いません。</p> : null}
+                    <div className="mt-2 space-y-2">
+                      {selectedPanelFindings.map((finding) => (
+                        <div className={`rounded border p-2 text-xs ${finding.status === "FAIL" ? "border-red-200 bg-red-50 text-red-950" : finding.status === "WARNING" ? "border-amber-200 bg-amber-50 text-amber-950" : finding.status === "PASS" ? "border-green-200 bg-green-50 text-green-950" : "border-stone-200 bg-stone-50 text-stone-700"}`} key={finding.id}>
+                          <p className="font-bold">{finding.status} / {finding.category}</p>
+                          <p className="mt-1">{finding.reason}</p>
+                          <p className="mt-1 text-[11px]">confidence: {finding.confidence === null ? "未評価" : `${Math.round(finding.confidence * 100)}%`} / region: {finding.region?.kind === "rectangle" ? `矩形 x${finding.region.x.toFixed(2)} y${finding.region.y.toFixed(2)} w${finding.region.width.toFixed(2)} h${finding.region.height.toFixed(2)}` : finding.region?.kind === "polygon" ? `多角形 ${finding.region.points.length}点` : "対象全体または特定なし"}</p>
+                          {finding.status !== "PASS" ? <button className="button-secondary mt-2 w-full" onClick={() => prepareFindingRepair(finding)} type="button">修正候補を準備</button> : null}
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-2 text-[11px] text-stone-500">この操作だけでは生成Jobやcredit予約は発生せず、元Assetも削除しません。</p>
                   </div>
                 ) : null}
                 <button

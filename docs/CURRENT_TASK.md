@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P3-C+D 品質Inspector・修正準備導線
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #357 merge commit `b5100f8`。Branch: `codex/p3cd-quality-inspector-repair-links`。
+- P3-C: owner-scoped findingをページ読込時に取得し、選択コマへstatus、category、理由、confidence、normalized regionを表示。migration未適用はfail closed。
+- P3-D: findingから既存の設計編集、参照画像、生成preset、inpainting dialogへ明示導線。準備操作だけではJob／creditを作成せず、元Assetを削除しない。
+- 検証: P3-A〜D集中6/6、Hub 882/882、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: migration、Production、Provider、Worker、Job自動作成、Storage、credit操作0件。
+- 次: commit・push・Draft PR、全CI／Vercel成功で停止。P3-Eはmerge後かつ外部実行は明示承認後。
+- 詳細: `docs/RELEASE_CANDIDATE_P3CD_QUALITY_INSPECTOR_REPAIR_LINKS_20260825.md`
+
+---
+
 ## 2026-08-25 P3-A+B 品質finding基盤・決定論的rule検査
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

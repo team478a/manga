@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P3-C+D 品質Inspector・修正準備導線（2026-08-25）
+
+- PR #357 merge commit `b5100f8`を基準に、選択コマの品質finding表示と既存修正UIへの明示導線を追加した。
+- 準備操作はpreset／説明の設定、設計欄／参照画面／inpainting dialogの表示だけで、自動Job／credit／Asset削除は行わない。
+- Production、Provider／Worker／Storage／credit操作0件。P3-E外部実行は明示承認待ち。
+- 集中6/6、Hub 882/882、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P3-A+B 品質finding基盤・決定論的rule検査（2026-08-25）
 
 - PR #356 merge commit `cfa2ca9`を基準に、append-only inspection run／findingと決定論的rule変換を追加した。

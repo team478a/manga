@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P3-C+D 品質Inspector・修正準備導線）
+
+- Branch: `codex/p3cd-quality-inspector-repair-links`
+- Base: `origin/feature/manga-canvas-mvp`@`b5100f8`（PR #357 merge commit）
+- owner確認済みworkspaceとRLSを通じてpage findingを読み、選択コマのstatus／reason／confidence／region／suggestionをInspectorへ表示する。
+- findingの修正案を既存のpanel design、references、revision preset、inpainting dialogへ接続する。生成は既存の費用／候補数表示後に別の明示ボタンが必要。
+- migration未適用はInspectorだけを停止し、Canvasを維持。準備だけではJob／credit／Assetを変更しない。
+- 集中6/6、Hub 882/882、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- Production、Provider、Worker、Job自動作成、Storage、credit操作0件。
+- 次: commit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（P3-A+B 品質finding基盤・決定論的rule検査）
 
 - Branch: `codex/p3ab-quality-findings-rules`
