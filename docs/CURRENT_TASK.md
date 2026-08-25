@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-26 P4-A 完成モードprofile契約
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #362 merge commit `3b260a2`。Branch: `codex/p4a-completion-mode-profile`。
+- schema: 3 mode、version、execution surface、page preset、推奨コマ数／セリフ量、必須検査、許可exportを純粋検証。
+- 境界: 成人向けはDesktopのみ。content boundary必須。mode未設定はnullで従来動作を維持。
+- preset: 固定テスト値は契約fixtureであり製品推奨値ではない。公式値はP4-B前に承認が必要。
+- 検証: 集中8/8、Hub 893/893、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: DB、migration、API、UI、export、Storage、Provider、Worker、Job、credit、Production／staging操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。merge後はP4-B。
+- 詳細: `docs/RELEASE_CANDIDATE_P4A_COMPLETION_MODE_PROFILE_20260826.md`
+
+---
+
 ## 2026-08-25 P4 用途別完成モード・書き出しgap監査
 
 - 状態: `RESEARCH_DOCUMENTED / ALL_LOCAL_GATES_PASSED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`

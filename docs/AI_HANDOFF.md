@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P4-A 完成モードprofile契約（2026-08-26）
+
+- PR #362 merge commit `3b260a2`を基準に、3用途のversioned completion profileを`@mangai/shared`へ追加した。
+- 成人向けはDesktop local-only、content boundary必須、重複検査／出力と不正範囲をfail closedにする。
+- mode未設定の既存Projectはnullへ解決し、数値fixtureを製品presetとして公開しない。
+- 集中8/8、Hub 893/893、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、全ローカル品質ゲート成功。Production／staging、Provider、Job、credit、Storage操作0件。
+
+---
+
 ## 0.0 P4 用途別完成モード・書き出しgap監査（2026-08-25）
 
 - PR #361 merge commit `11e70b6`を基準に、Hub／Desktopのexport、完成preflight、Project JSON、成人向け境界を監査した。
