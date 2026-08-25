@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P2 漫画設計データ・コマ単位編集gap監査
+
+- 状態: `RESEARCH_DOCUMENTED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`
+- Base: PR #349 merge commit `1a85d5a`。Branch: `codex/research-p2-panel-editing-gap`。
+- 現行: コマ／layer／吹き出し／文字、テンプレート、変形、Undo／Redo、1コマ再生成、inpainting、候補採否、前後比較は実装済み。
+- 主要gap: 行動・表情・カメラ・小物等の編集可能なpanel設計正本、意味上の読み順、永続revision chain／差し戻し。
+- 設計: Canvas、Storyboard、Job inputを置換せず、追加`cloud_panel_designs`とversion追跡へ隔離。P2-A〜Eへ分割。
+- 不変: code、migration、API、UI、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: docs-only全ゲート、commit・push・Draft PR後、全CI／Vercel成功で停止。merge後はP2-A。
+- 詳細: `docs/RESEARCH_P2_PANEL_EDITING_GAP_20260825.md`
+
+---
+
 ## 2026-08-25 P1-F 固定10シーン追跡fixture
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / VISUAL_NOT_EVALUATED / PRODUCTION_UNCHANGED`

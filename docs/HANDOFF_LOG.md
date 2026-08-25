@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P2 漫画設計データ・コマ単位編集gap監査）
+
+- Branch `codex/research-p2-panel-editing-gap`、base `1a85d5a`。
+- Canvas／吹き出し／文字／Undo／再生成等の既存実装を確認し、重複実装を除外した。
+- panel意味データ、読み順、永続revision chainをP2-A〜Eで追加する設計を正本化した。
+- docs-only。Production、Provider、Worker、Job、Storage、credit操作なし。
+
+---
+
 ## 2026-08-25 Codex（P1-F 固定10シーン追跡fixture）
 
 - Branch `codex/p1f-ten-scene-provenance-fixture`、base `d11ea3d`。
