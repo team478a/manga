@@ -8,6 +8,7 @@ import {
   readApiErrorMessage,
   type CompatibleApiErrorEnvelope,
 } from "@/lib/api-error-contract";
+import type { CloudPanelDesign, CloudPanelDesignRecord } from "@/lib/cloud-panel-design";
 
 async function responseJson<T>(response: Response, fallback: string) {
   const result = (await response.json()) as T & CompatibleApiErrorEnvelope;
@@ -151,3 +152,7 @@ export async function recordMangaQualityEvent(body: {
   });
   if (!response.ok) throw new Error("品質ログを保存できませんでした。");
 }
+
+export async function listPanelDesigns(projectId:string,pageId:string){const query=new URLSearchParams({projectId,pageId});return responseJson<{available:boolean;designs:CloudPanelDesignRecord[]}>(await fetch(`/api/creator/panel-designs?${query}`,{cache:"no-store"}),"コマ設計を読み込めませんでした。");}
+export async function materializePanelDesign(body:{projectId:string;pageId:string;panelId:string;orderIndex:number}){return responseJson<CloudPanelDesign>(await fetch("/api/creator/panel-designs",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),"コマ設計の下書きを作成できませんでした。");}
+export async function savePanelDesign(body:{projectId:string;pageId:string;panelId:string;expectedRevision:number|null;design:CloudPanelDesign}){return responseJson<{panel_design_id:string;revision:number}>(await fetch("/api/creator/panel-designs",{method:"PUT",headers:{"content-type":"application/json"},body:JSON.stringify(body)}),"コマ設計を保存できませんでした。");}

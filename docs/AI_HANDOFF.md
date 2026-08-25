@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P2-B コマ設計materialization・Inspector（2026-08-25）
+
+- PR #351 merge commit `90df975`を基準に、選択コマの意味設計Inspectorと明示materializationを追加した。
+- 既存assignment／continuity／panel specificationは下書きにだけ使い、確認保存前には正本を変更しない。自動backfillなし。
+- Canvas／Storyboard／Job／Prompt／Provider、Production／Storage／credit操作0件。P2-Cはmerge後。
+
+---
+
 ## 0.0 P2-A コマ意味設計schema（2026-08-25）
 
 - PR #350 merge commit `845df71`を基準に、現在panel設計とappend-only revision履歴を追加した。
