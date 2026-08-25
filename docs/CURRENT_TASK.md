@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-26 P4-B 完成モードpreset・新規Project選択
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
+- Base: PR #363 merge commit `42cc676`。Branch: `codex/p4b-mode-presets`。
+- preset: 3用途を共有契約で固定。Cloud新規作品は長編／Kindle解説を選択し、寸法・DPI・推奨コマ数・セリフ量をpreview。
+- 永続化: 新規Projectだけprofile全文をnullable JSONBと初期version manifestへ保存。既存Projectはnullで寸法・metadataを変更しない。
+- 境界: 成人向けはDesktop local-only。Cloud UIとDBの双方で拒否。
+- 検証: 集中5/5、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 73件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production／staging適用、Provider、Worker、Job、credit、Storage操作0件。
+- 詳細: `docs/RELEASE_CANDIDATE_P4B_COMPLETION_MODE_PRESETS_20260826.md`
+
+---
+
 ## 2026-08-26 P4-A 完成モードprofile契約
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

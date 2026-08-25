@@ -432,6 +432,12 @@
       "description": "BFL FLUX.2 Pro参照生成の原価予約上限を最大4MP料金へ更新",
       "forwardSha256": "f642e17c6ee1986025e9d390d12a80346df8a4a79c17f950d688b7393aec326c",
       "rollbackSha256": "e87a5944a6f04a28f676480a0db77362712cceadba00bcd33382a5ae0c128393"
+    },
+    {
+      "id": "202608260001_cloud_completion_mode_profiles",
+      "description": "Cloud新規作品へversion付き完成モードprofileを保存",
+      "forwardSha256": "3cdfaa44424ee9516abbcee47f0144dec898f9ba7f0fa6c1dc0f3f2ce400ae13",
+      "rollbackSha256": "272f4dc47a858b8493ccd608e1f89ed027814c1f6d47a0fe110635bf286ffdc7"
     }
   ],
   "schemaSha256": "167286346eca630e35387864c8ad0803c5bd49aa0dc2ef57246b8abd3b9cd25c"

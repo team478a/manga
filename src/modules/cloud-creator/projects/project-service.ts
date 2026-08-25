@@ -27,6 +27,7 @@ import {
   DomainError,
   ResourceNotFoundError,
 } from "../../../lib/domain-errors.ts";
+import type { CompletionModeProfile } from "@mangai/shared";
 
 export async function listCloudProjects() {
   const { supabase } = await cloudCreatorContext();
@@ -162,6 +163,7 @@ export async function createCloudProject(input: {
   width: number;
   height: number;
   dpi: number;
+  completionModeProfile: CompletionModeProfile;
 }) {
   const { supabase } = await cloudCreatorContext();
   const { data, error } = await supabase.rpc(
@@ -174,6 +176,7 @@ export async function createCloudProject(input: {
       p_width: input.width,
       p_height: input.height,
       p_dpi: input.dpi,
+      p_completion_mode_profile: input.completionModeProfile,
     },
   );
   if (error || !data?.[0]?.project_id)

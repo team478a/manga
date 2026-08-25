@@ -3,6 +3,7 @@ import { createCloudProjectAction } from "@/app/creator/actions";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { requireProfile } from "@/lib/auth";
+import { CompletionModeFields } from "./CompletionModeFields";
 
 export default async function NewCloudProjectPage({
   searchParams,
@@ -61,61 +62,8 @@ export default async function NewCloudProjectPage({
               <option>15歳以上</option>
             </select>
           </div>
-          <div>
-            <label className="label" htmlFor="readingDirection">
-              綴じ方向
-            </label>
-            <select
-              className="field"
-              id="readingDirection"
-              name="readingDirection"
-            >
-              <option value="rtl">右綴じ</option>
-              <option value="ltr">左綴じ</option>
-            </select>
-          </div>
         </div>
-        <fieldset>
-          <legend className="label">ページ設定</legend>
-          <div className="mt-2 grid grid-cols-3 gap-3">
-            <label>
-              幅
-              <input
-                className="field"
-                name="width"
-                type="number"
-                min="100"
-                max="20000"
-                defaultValue="1600"
-                required
-              />
-            </label>
-            <label>
-              高さ
-              <input
-                className="field"
-                name="height"
-                type="number"
-                min="100"
-                max="20000"
-                defaultValue="2400"
-                required
-              />
-            </label>
-            <label>
-              DPI
-              <input
-                className="field"
-                name="dpi"
-                type="number"
-                min="72"
-                max="1200"
-                defaultValue="300"
-                required
-              />
-            </label>
-          </div>
-        </fieldset>
+        <CompletionModeFields />
         <p className="rounded-md bg-amber-50 p-4 text-sm text-amber-950">
           成人向けへ変更することはできません。成人向け制作にはDesktop
           Adultを使用してください。

@@ -26,6 +26,7 @@ import {
   setCloudGenerationBatchState,
   startCloudPageGenerationBatch,
 } from "@/lib/cloud-creator-server";
+import { completionModeSchema, createCompletionModeProfile } from "@mangai/shared";
 import { createCloudExportJob, setCloudExportJobState } from "@/modules/cloud-creator/export/durable-export-service";
 import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
@@ -39,6 +40,7 @@ const projectSchema = z.object({
   width: z.coerce.number().int().min(100).max(20_000),
   height: z.coerce.number().int().min(100).max(20_000),
   dpi: z.coerce.number().int().min(72).max(1200),
+  completionMode: completionModeSchema.exclude(["adult_local"]),
 });
 
 function domainMessage(error: unknown, fallback: string) {
@@ -54,12 +56,16 @@ export async function createCloudProjectAction(formData: FormData) {
     width: formString(formData, "width"),
     height: formString(formData, "height"),
     dpi: formString(formData, "dpi"),
+    completionMode: formString(formData, "completionMode"),
   });
   if (!parsed.success)
     redirect(encodeURI("/creator/new?error=作品設定を確認してください"));
   let result: Awaited<ReturnType<typeof createCloudProject>>;
   try {
-    result = await createCloudProject(parsed.data);
+    result = await createCloudProject({
+      ...parsed.data,
+      completionModeProfile: createCompletionModeProfile(parsed.data.completionMode, "cloud_general"),
+    });
   } catch (error) {
     const message = domainMessage(error, "作品を作成できませんでした。");
     redirect(`/creator/new?error=${encodeURIComponent(message)}`);
