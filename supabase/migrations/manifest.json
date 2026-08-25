@@ -414,7 +414,13 @@
       "description": "コマ単位の時間・天候・左右・持ち手・視線・前コマ継続を構造化",
       "forwardSha256": "a87cd081b8441e26001357b3b053c0a8e407c415ac81617f0c61ad5dbcdc695e",
       "rollbackSha256": "c51ed6449edf7d6d13393b7362148f094a444ce5241d5c3b5e5ff2491585b367"
+    },
+    {
+      "id": "202608250004_cloud_panel_designs",
+      "description": "編集可能なコマ意味設計とappend-only revision履歴をowner境界内で保存",
+      "forwardSha256": "04c6a5f7ae20c10add547ec5f955fab7a5f127cf18b86291dac1fed3ddec6046",
+      "rollbackSha256": "e81fb1b8d30f521c11a44c93f420cc387156bad8b9adf02aa1f9b57632b6792a"
     }
   ],
-  "schemaSha256": "4507e3d985a1b7751990a81fb11290b488d30bfe707e4fead8256bef71ceef44"
+  "schemaSha256": "4e3ded463f1bb8086a58a16c0f0cdc600f47ffa74db6596b6770fd097a9a5ff5"
 }

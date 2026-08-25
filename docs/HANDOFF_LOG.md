@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P2-A コマ意味設計schema）
+
+- Branch `codex/p2a-panel-design-schema`、base `845df71`。
+- panel意味設計の現在行／append-only履歴、owner RLS／保存RPC、revision conflict、現行Canvas panel検証を追加した。
+- 集中2/2、Hub 865 tests、全ローカル品質ゲート、migration 70件、PostgreSQL 16 roundtrip成功。
+- Production、Provider、Worker、Job、Storage、credit変更なし。P2-Bはmerge後。
+
+---
+
 ## 2026-08-25 Codex（P2 漫画設計データ・コマ単位編集gap監査）
 
 - Branch `codex/research-p2-panel-editing-gap`、base `1a85d5a`。

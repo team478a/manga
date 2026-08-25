@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P2-A コマ意味設計schema
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #350 merge commit `845df71`。Branch: `codex/p2a-panel-design-schema`。
+- 実装: 現在panel設計とappend-only revision履歴、owner read RLS、owner保存RPC、optimistic conflict、現行Canvas panel検証。
+- 設計項目: 読み順、場所／時間／天候、人物versionと行動等、camera、小物、dialogue参照、連続状態、生成方向、変更理由。
+- 互換: Canvas、Storyboard、Job、Providerは変更なし。自動backfillなし。利用後rollback停止。
+- 検証: 集中2/2、Hub 861項目／865 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、PostgreSQL 16 migration roundtrip、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。P2-Bはmerge後。
+- 詳細: `docs/RELEASE_CANDIDATE_P2A_PANEL_DESIGN_SCHEMA_20260825.md`
+
+---
+
 ## 2026-08-25 P2 漫画設計データ・コマ単位編集gap監査
 
 - 状態: `RESEARCH_DOCUMENTED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`

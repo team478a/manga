@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P2-A コマ意味設計schema（2026-08-25）
+
+- PR #350 merge commit `845df71`を基準に、現在panel設計とappend-only revision履歴を追加した。
+- owner、現行Canvas panel、optimistic revisionをDBで検証し、自動backfillは行わない。
+- Canvas／Storyboard／Job／Provider、Production／Storage／credit操作0件。P2-Bはmerge後。
+
+---
+
 ## 0.0 P2 漫画設計データ・コマ単位編集gap監査（2026-08-25）
 
 - PR #349 merge commit `1a85d5a`を基準に、P2の現行Canvas／生成／履歴を監査した。
