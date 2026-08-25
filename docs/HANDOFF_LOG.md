@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-26 Codex（P4-A 完成モードprofile契約）
+
+- Branch: `codex/p4a-completion-mode-profile`
+- Base: `origin/feature/manga-canvas-mvp`@`3b260a2`（PR #362 merge commit）
+- 3 mode、version、surface、page preset、guidance、required checks、allowed exportsの純粋schemaを追加した。
+- 成人向けCloudとcontent boundary省略を拒否し、mode未設定はnullで既存動作を維持する。
+- fixture数値は製品presetではない。DB、API、UI、export、Storage、Provider、Job、creditを変更しない。
+- 集中8/8、Hub 893/893、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（P4 用途別完成モード・書き出しgap監査）
 
 - Branch: `codex/research-p4-completion-export`

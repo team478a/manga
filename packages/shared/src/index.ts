@@ -50,6 +50,96 @@ export const contentExecutionPolicySchema = z
       });
   });
 export const readingDirectionSchema = z.enum(["rtl", "ltr"]);
+export const COMPLETION_MODE_PROFILE_VERSION = 1 as const;
+export const completionModeSchema = z.enum([
+  "longform_story",
+  "kindle_explainer",
+  "adult_local",
+]);
+export const completionExecutionSurfaceSchema = z.enum([
+  "cloud_general",
+  "desktop_local",
+]);
+export const completionExportFormatSchema = z.enum([
+  "png",
+  "jpeg",
+  "pdf",
+  "project_json",
+]);
+export const completionRequiredCheckSchema = z.enum([
+  "manuscript_preflight",
+  "quality_findings",
+  "content_boundary",
+]);
+export const completionModeProfileSchema = z
+  .object({
+    version: z.literal(COMPLETION_MODE_PROFILE_VERSION),
+    mode: completionModeSchema,
+    executionSurface: completionExecutionSurfaceSchema,
+    pagePreset: z.object({
+      width: z.number().int().min(100).max(20000),
+      height: z.number().int().min(100).max(20000),
+      dpi: z.number().int().min(72).max(1200),
+      readingDirection: readingDirectionSchema,
+    }),
+    guidance: z.object({
+      panelsPerPage: z
+        .object({
+          min: z.number().int().min(1).max(20),
+          max: z.number().int().min(1).max(20),
+        })
+        .refine((value) => value.min <= value.max, {
+          message: "推奨コマ数の最小値は最大値以下にしてください。",
+          path: ["min"],
+        }),
+      maxDialogueGraphemesPerPanel: z.number().int().min(1).max(2000),
+    }),
+    requiredChecks: z.array(completionRequiredCheckSchema).min(1),
+    allowedExports: z.array(completionExportFormatSchema).min(1),
+  })
+  .superRefine((profile, context) => {
+    if (
+      new Set(profile.requiredChecks).size !== profile.requiredChecks.length
+    )
+      context.addIssue({
+        code: "custom",
+        message: "必須検査を重複して指定できません。",
+        path: ["requiredChecks"],
+      });
+    if (new Set(profile.allowedExports).size !== profile.allowedExports.length)
+      context.addIssue({
+        code: "custom",
+        message: "書き出し形式を重複して指定できません。",
+        path: ["allowedExports"],
+      });
+    if (!profile.requiredChecks.includes("content_boundary"))
+      context.addIssue({
+        code: "custom",
+        message: "完成モードには作品区分の安全検査が必須です。",
+        path: ["requiredChecks"],
+      });
+    if (
+      profile.mode === "adult_local" &&
+      profile.executionSurface !== "desktop_local"
+    )
+      context.addIssue({
+        code: "custom",
+        message: "成人向け完成モードはMANGAI Desktop内だけで利用できます。",
+        path: ["executionSurface"],
+      });
+  });
+
+export type CompletionMode = z.infer<typeof completionModeSchema>;
+export type CompletionModeProfile = z.infer<
+  typeof completionModeProfileSchema
+>;
+
+export function resolveCompletionModeProfile(
+  value: unknown,
+): CompletionModeProfile | null {
+  if (value === undefined || value === null) return null;
+  return completionModeProfileSchema.parse(value);
+}
 export const projectInputSchema = z.object({
   title: z.string().trim().min(1).max(200),
   subtitle: z.string().trim().max(200).default(""),
