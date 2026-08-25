@@ -193,10 +193,20 @@ begin
     select 1 from public.cloud_ai_provider_prices
     where provider_id = 'black-forest-labs'
       and model_id = 'flux-2-pro'
-      and pricing_version = 'bfl-flux2-2026-03'
+      and pricing_version = 'bfl-flux2-pro-2026-08'
+      and max_cost_micros = 180000
       and active
   ) then
     raise exception 'Cloud general image Provider prices missing';
+  end if;
+  if exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-2-pro'
+      and pricing_version = 'bfl-flux2-2026-03'
+      and active
+  ) then
+    raise exception 'Cloud general image Provider legacy price is still active';
   end if;
   if not exists (
     select 1 from public.cloud_ai_provider_prices
