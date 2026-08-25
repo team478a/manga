@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P3 自動品質検査・部分再生成gap監査）
+
+- Branch: `codex/research-p3-quality-inspection-gap`
+- Base: `origin/feature/manga-canvas-mvp`@`6e14d8b`（PR #355 merge commit）
+- 現行のpanel specification、rule evaluation、Visual Evidence／benchmark、採否KPI、manuscript preflight、continuity review、1コマ再生成／inpaintingを追跡した。
+- 未取得の視覚項目を75へ補完する現行rule評価、finding単位のstatus／region／confidence／suggestion不足、Creator UIが総合点順位しか使わない点、findingと部分修正が未接続な点を主要gapとした。
+- 既存評価を置換しないappend-only findingをP3-A〜Fで追加する設計。自動削除・自動生成・外部Vision実行なし。
+- 文書のみ。Production、Provider、Worker、Job、Storage、credit操作0件。
+- Hub 876/876、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: docs-only全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（P2-E 10コマ編集受入fixture）
 
 - Branch: `codex/p2e-panel-editing-acceptance`
