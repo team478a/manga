@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P3-A+B 品質finding基盤・決定論的rule検査
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #356 merge commit `cfa2ca9`。Branch: `codex/p3ab-quality-findings-rules`。
+- P3-A: append-only inspection run／finding、owner read RLS、service-role記録RPC、status／region／confidence／suggestion／provenance、情報損失防止rollback。
+- P3-B: 原稿preflightとcontinuity issueを対象コマfindingへ変換し、未実行の視覚／意味検査を中立点ではなく`NOT_EVALUATED`へ固定。
+- 検証: 集中4/4、Hub 880/880、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: 既存品質評価・採否ログ、UI、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。P3-Cはmerge後。
+- 詳細: `docs/RELEASE_CANDIDATE_P3AB_QUALITY_FINDINGS_RULES_20260825.md`
+
+---
+
 ## 2026-08-25 P3 自動品質検査・部分再生成gap監査
 
 - 状態: `RESEARCH_DOCUMENTED / ALL_LOCAL_GATES_PASSED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`

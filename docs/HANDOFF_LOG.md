@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P3-A+B 品質finding基盤・決定論的rule検査）
+
+- Branch: `codex/p3ab-quality-findings-rules`
+- Base: `origin/feature/manga-canvas-mvp`@`cfa2ca9`（PR #356 merge commit）
+- inspection run／findingを既存評価から独立したappend-only tableへ保存し、owner read RLSとservice-role限定の原子的記録RPCを追加した。
+- status、category、理由、normalized region、confidence、修正案、evaluator、panel設計revision／Asset／Job provenanceを型とDBで制約する。
+- 原稿preflight／continuity issueをコマ単位findingへ変換し、未実行項目は`NOT_EVALUATED`のまま保持する。
+- 集中4/4、Hub 880/880、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 既存評価・採否ログ、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（P3 自動品質検査・部分再生成gap監査）
 
 - Branch: `codex/research-p3-quality-inspection-gap`

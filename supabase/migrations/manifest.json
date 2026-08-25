@@ -420,7 +420,13 @@
       "description": "編集可能なコマ意味設計とappend-only revision履歴をowner境界内で保存",
       "forwardSha256": "04c6a5f7ae20c10add547ec5f955fab7a5f127cf18b86291dac1fed3ddec6046",
       "rollbackSha256": "e81fb1b8d30f521c11a44c93f420cc387156bad8b9adf02aa1f9b57632b6792a"
+    },
+    {
+      "id": "202608250005_cloud_manga_inspection_findings",
+      "description": "非破壊の品質検査runとfindingをappend-onlyで保存",
+      "forwardSha256": "fd1c62adb016a8ef44eaf1fa7729b57d3e6e2c8ece77ad78b31d9892e426d361",
+      "rollbackSha256": "0705ba3e83c47ce172ae3c821718c063e3703c675833e369ccf06167265d6621"
     }
   ],
-  "schemaSha256": "4e3ded463f1bb8086a58a16c0f0cdc600f47ffa74db6596b6770fd097a9a5ff5"
+  "schemaSha256": "49a5144fae5d3cae8dbcdaa9d480610a576091e1aa700039696919da2f23d49e"
 }
