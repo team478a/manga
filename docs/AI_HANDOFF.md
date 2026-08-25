@@ -2554,3 +2554,10 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - Production／staging migration、Provider、Job、credit、Storageは未実施。詳細は`docs/RELEASE_CANDIDATE_P4B_COMPLETION_MODE_PRESETS_20260826.md`。
 
 ---
+# 2026-08-26 P4-C handoff
+
+- `codex/p4c-mode-preflight`はmode guidance warningとP3 finding read-only判定を既存原稿preflightへ統合した。
+- P3 FAILだけをerror、WARNING／NOT_EVALUATEDをwarningとし、既存Asset・文字・確定状態errorは弱めない。
+- mode未設定Projectは従来動作。Production／Provider／Job／credit／Storage操作なし。
+
+---
