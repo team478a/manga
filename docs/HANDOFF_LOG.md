@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P3-E Provider再開・参照付き10シーン比較）
+
+- Branch: `codex/p3e-resume-refund-provider-comparison`
+- Base: `origin/feature/manga-canvas-mvp`@`8fb863f`（PR #358 merge commit）
+- checkpoint再開、重複submit防止、20ページ再開、終端失敗時の予約credit／費用解放を既存決定論的テスト34/34で再確認した。
+- 責任者の`$0.50`上限承認により、BFL `flux-2-pro`で基準1枚＋参照付き9枚を生成。重大な別人化防止10/10、主要衣装／体格10/10、重大人体破綻なし10/10。
+- warningは髪の軽微変動2、疑似文字3、色混入1。moderation拒否1件は自動retryせず停止し、再承認後に別の穏やかな場面へ置換した。
+- 成功分見込み`$0.435`、拒否分込み最大見込み`$0.480`。Production、Supabase、MANGAI Job／credit台帳、Storage、Canvas、Gitへの画像保存0件。
+- adapterのImage Editing原価が固定`$0.030`、公式最低`$0.045`で乖離するgapを検出。価格計測修正後にstaging E2Eへ進む。
+- 集中34/34、Hub 882/882、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 2026-08-25 Codex（P3-C+D 品質Inspector・修正準備導線）
 
 - Branch: `codex/p3cd-quality-inspector-repair-links`

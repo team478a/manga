@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P3-E Provider再開・参照付き10シーン比較（2026-08-25）
+
+- PR #358 merge commit `8fb863f`を基準に、無課金の再開／失敗解放34/34と、責任者承認済みBFL参照付き10シーンを実行した。
+- 重大な別人化防止10/10で受入基準を達成。髪の軽微変動2、疑似文字3、色混入1はwarning。自動retry 0。
+- 成功分見込み`$0.435`、拒否1件を含む最大見込み`$0.480`で承認上限`$0.50`内。Production、Supabase、MANGAI Job／credit／Storageは不変。
+- 現行adapterがImage Editingも`$0.030`として返す一方、公式最低料金は`$0.045`。Provider返却costを取り込む修正後にstaging E2Eへ進む。
+- 集中34/34、Hub 882/882、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P3-C+D 品質Inspector・修正準備導線（2026-08-25）
 
 - PR #357 merge commit `b5100f8`を基準に、選択コマの品質finding表示と既存修正UIへの明示導線を追加した。
