@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 BFL Image Editing原価計測・予約guard
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
+- Base: PR #359 merge commit `0174ef3`。Branch: `codex/fix-bfl-image-editing-cost`。
+- adapter: BFL submitのProvider creditを検証してUSD microsへ変換。取得不能時は出力MPと参照有無から算出し、参照付きProは`$0.045/MP`。
+- pricing: Proだけ新version `bfl-flux2-pro-2026-08`、4用途の最大4MP予約上限`$0.180`。通常生成は安全側に予約し、Provider実額との差額を確定時に解放。
+- migration: 追加1件＋rollback。旧migration／旧価格行は不変。
+- 検証: 集中16/16、Hub 886/886、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production／staging適用、Provider、Job、credit、Storage操作0件。内部credit数、Prompt、moderation、retry、timeout不変。
+- 次: 全ゲート、commit・push・Draft PR、CI／Vercel成功で停止。merge後のstaging適用／1 Job受入れは別承認。
+- 詳細: `docs/RELEASE_CANDIDATE_BFL_IMAGE_EDITING_COST_GUARD_20260825.md`
+
+---
+
 ## 2026-08-25 P3-E Provider再開・失敗解放・参照付き10シーン比較
 
 - 状態: `EXTERNAL_TEST_COMPLETED / ACCEPTANCE_PASSED_WITH_WARNINGS / ALL_LOCAL_GATES_PASSED / PRICING_GAP_FOUND / PRODUCTION_UNCHANGED`

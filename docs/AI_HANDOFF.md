@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 BFL Image Editing原価計測・予約guard（2026-08-25）
+
+- PR #359 merge commit `0174ef3`を基準に、BFL submitのProvider creditをUSD microsへ変換し、参照付きProのfallbackを`$0.045/MP`、最大4MP予約上限を`$0.180`へ更新した。
+- Proだけ新pricing versionを使い、通常生成は安全側予約後にProvider実額との差額を解放する。内部credit数2は不変。
+- 追加migration／rollbackはローカルのみ。Production／staging、Provider、Job、credit、Storage操作0件。
+- 集中16/16、Hub 886/886、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P3-E Provider再開・参照付き10シーン比較（2026-08-25）
 
 - PR #358 merge commit `8fb863f`を基準に、無課金の再開／失敗解放34/34と、責任者承認済みBFL参照付き10シーンを実行した。
