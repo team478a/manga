@@ -2547,3 +2547,10 @@ docs/HANDOFF_LOG.mdを読み、git status、直近15コミット、
 feature/manga-canvas-mvpとの差分を確認してください。
 CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り直さないでください。
 ```
+# 2026-08-26 P4-B handoff
+
+- `codex/p4b-mode-presets`は共有3用途preset、Cloud新規作品の長編／Kindle選択・preview、nullable profile保存migrationを追加した。
+- 既存Projectはnullのまま変更しない。成人向けはDesktop local-onlyでCloud DB保存も拒否する。
+- Production／staging migration、Provider、Job、credit、Storageは未実施。詳細は`docs/RELEASE_CANDIDATE_P4B_COMPLETION_MODE_PRESETS_20260826.md`。
+
+---

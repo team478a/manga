@@ -5685,3 +5685,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 証跡同期後の最終HEADの5チェックを確認し、merge前にProductionを変更しない。
 
 ---
+# 2026-08-26 P4-B 完成モードpreset
+
+- PR #363 merge `42cc676`をbaseに、3用途の製品presetとCloud新規Project選択・previewを実装。
+- profileは新規Projectだけへ保存し、既存Projectを自動更新しない。成人向けCloud拒否を維持。
+- migration未適用、Production unchanged、Provider／Job／credit／Storage操作なし。
+
+---

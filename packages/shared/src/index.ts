@@ -134,6 +134,61 @@ export type CompletionModeProfile = z.infer<
   typeof completionModeProfileSchema
 >;
 
+const COMPLETION_REQUIRED_CHECKS = [
+  "manuscript_preflight",
+  "quality_findings",
+  "content_boundary",
+] as const;
+
+export function createCompletionModeProfile(
+  mode: CompletionMode,
+  executionSurface: "cloud_general" | "desktop_local",
+): CompletionModeProfile {
+  const common = {
+    version: COMPLETION_MODE_PROFILE_VERSION,
+    executionSurface,
+    requiredChecks: [...COMPLETION_REQUIRED_CHECKS],
+  } as const;
+  if (mode === "kindle_explainer")
+    return completionModeProfileSchema.parse({
+      ...common,
+      mode,
+      pagePreset: {
+        width: 2400,
+        height: 3840,
+        dpi: 300,
+        readingDirection: "rtl",
+      },
+      guidance: { panelsPerPage: { min: 1, max: 6 }, maxDialogueGraphemesPerPanel: 120 },
+      allowedExports: ["jpeg", "pdf", "project_json"],
+    });
+  if (mode === "adult_local")
+    return completionModeProfileSchema.parse({
+      ...common,
+      mode,
+      pagePreset: {
+        width: 1600,
+        height: 2400,
+        dpi: 300,
+        readingDirection: "rtl",
+      },
+      guidance: { panelsPerPage: { min: 1, max: 8 }, maxDialogueGraphemesPerPanel: 200 },
+      allowedExports: ["png", "jpeg", "pdf", "project_json"],
+    });
+  return completionModeProfileSchema.parse({
+    ...common,
+    mode,
+    pagePreset: {
+      width: 1600,
+      height: 2400,
+      dpi: 300,
+      readingDirection: "rtl",
+    },
+    guidance: { panelsPerPage: { min: 1, max: 8 }, maxDialogueGraphemesPerPanel: 200 },
+    allowedExports: ["png", "jpeg", "pdf", "project_json"],
+  });
+}
+
 export function resolveCompletionModeProfile(
   value: unknown,
 ): CompletionModeProfile | null {

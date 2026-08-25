@@ -1,4 +1,5 @@
 import type { CloudGenerationInput } from "@mangai/ai-core";
+import type { CompletionModeProfile } from "@mangai/shared";
 
 export type CloudProjectSummary = {
   id: string;
@@ -16,6 +17,7 @@ export type CloudProjectSummary = {
   cover_page_id: string | null;
   thumbnail_url?: string | null;
   updated_at: string;
+  completion_mode_profile: CompletionModeProfile | null;
 };
 
 export type CloudEpisode = {

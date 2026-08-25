@@ -4,6 +4,7 @@ import {
   COMPLETION_MODE_PROFILE_VERSION,
   completionModeProfileSchema,
   resolveCompletionModeProfile,
+  createCompletionModeProfile,
 } from "../packages/shared/src/index.ts";
 
 const profile = (overrides = {}) => ({
@@ -15,6 +16,17 @@ const profile = (overrides = {}) => ({
   requiredChecks: ["manuscript_preflight", "quality_findings", "content_boundary"],
   allowedExports: ["png", "jpeg", "pdf", "project_json"],
   ...overrides,
+});
+
+test("product presets are valid and preserve execution boundaries", () => {
+  const longform = createCompletionModeProfile("longform_story", "cloud_general");
+  assert.deepEqual(longform.pagePreset, { width: 1600, height: 2400, dpi: 300, readingDirection: "rtl" });
+  const kindle = createCompletionModeProfile("kindle_explainer", "cloud_general");
+  assert.deepEqual(kindle.pagePreset, { width: 2400, height: 3840, dpi: 300, readingDirection: "rtl" });
+  assert.deepEqual(kindle.allowedExports, ["jpeg", "pdf", "project_json"]);
+  const adult = createCompletionModeProfile("adult_local", "desktop_local");
+  assert.equal(adult.executionSurface, "desktop_local");
+  assert.throws(() => createCompletionModeProfile("adult_local", "cloud_general"));
 });
 
 test("P4-A完成profileは3 modeとversion付き追跡値を検証する", () => {
