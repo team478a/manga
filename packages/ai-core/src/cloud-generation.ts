@@ -103,6 +103,12 @@ export const cloudGenerationInputSchema = z
         profileId: z.string().uuid(),
       })).max(12),
     }).optional(),
+    panelContinuityStates: z.array(z.object({
+      subjectKind:z.enum(["character","location","prop"]),subjectId:z.string().uuid(),
+      timeOfDay:z.string().max(80),weather:z.string().max(80),stateNote:z.string().max(500),
+      holdingHand:z.enum(["unspecified","left","right","both","none"]),screenSide:z.enum(["unspecified","left","center","right"]),
+      gazeDirection:z.string().max(120),continuesFromPanelId:z.string().uuid().nullable(),
+    })).max(12).optional(),
     operation: z
       .enum(["text_to_image", "image_to_image", "inpainting", "outpainting"])
       .optional(),

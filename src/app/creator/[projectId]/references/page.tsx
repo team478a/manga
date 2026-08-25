@@ -18,11 +18,13 @@ import { ResourceNotFoundError } from "@/lib/domain-errors";
 import {
   assignPanelSubjectAction,
   deleteCharacterReferenceBindingAction,deleteCharacterStateAssignmentAction,
+  deletePanelContinuityStateAction,
   deletePanelAssignmentAction,
   deleteVisualReferenceAction,
   linkExistingVisualReferenceAction,
   uploadVisualReferenceAction,
   saveCharacterReferenceBindingAction,saveCharacterStateAssignmentAction,saveGenerationReadinessPolicyAction,
+  savePanelContinuityStateAction,
 } from "./actions";
 
 const kindLabel = {
@@ -62,7 +64,7 @@ export default async function VisualReferencesPage({ params, searchParams }: {
     safelyLoadCloudData(
       "creator/references/assets",
       () => getCloudVisualReferenceWorkspace(projectId),
-      { available: false, references: [], assignments: [],p1Available:false,characterVersions:[],bindings:[],stateAssignments:[],readinessPolicy:"block" as const },
+      { available: false, references: [], assignments: [],p1Available:false,characterVersions:[],bindings:[],stateAssignments:[],readinessPolicy:"block" as const,continuityAvailable:false,continuityStates:[] },
     ),
     safelyLoadCloudData(
       "creator/references/project-assets",
@@ -147,6 +149,11 @@ export default async function VisualReferencesPage({ params, searchParams }: {
         <h2 className="text-xl font-bold">衣装・状態の適用範囲</h2><p className="mt-2 text-sm text-stone-600">同じ人物version内で、衣装や負傷などを適用するページ範囲を重複なしで保存します。</p>
         {!referenceWorkspace.p1Available||!characterVersionOptions.length?<p className="mt-3 text-sm text-stone-600">人物versionとP1 migrationを確認してください。</p>:<form action={saveCharacterStateAssignmentAction.bind(null,projectId)} className="mt-4 grid gap-4 md:grid-cols-2"><label><span className="label">人物version</span><select className="field" name="characterVersion">{characterVersionOptions.map(item=><option key={item.value} value={item.value}>{item.label}{item.current?"（現在）":""}</option>)}</select></label><label><span className="label">範囲名</span><input className="field" name="assignmentLabel" required maxLength={120} placeholder="第1章・制服"/></label><label><span className="label">開始ページ</span><input className="field" name="startPage" type="number" min="1" required/></label><label><span className="label">終了ページ</span><input className="field" name="endPage" type="number" min="1" required/></label><label><span className="label">scene key（任意）</span><input className="field" name="sceneKey" maxLength={120}/></label><label><span className="label">優先度</span><input className="field" name="priority" type="number" min="0" max="100" defaultValue="0"/></label><label><span className="label">衣装</span><textarea className="field min-h-20" name="costumeOverride" maxLength={500}/></label><label><span className="label">状態</span><textarea className="field min-h-20" name="stateNote" maxLength={500}/></label><div className="md:col-span-2"><PendingSubmitButton className="button" pendingLabel="保存中…">適用範囲を保存</PendingSubmitButton></div></form>}
         <div className="mt-4 space-y-2">{referenceWorkspace.stateAssignments.map(item=><div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3" key={item.id}><span>{characterName.get(item.character_profile_id)??"人物"}：{item.start_page}〜{item.end_page}ページ「{item.assignment_label}」{item.costume_override?`・衣装 ${item.costume_override}`:""}</span><form action={deleteCharacterStateAssignmentAction.bind(null,projectId,item.id)}><PendingSubmitButton className="button-secondary" pendingLabel="解除中…">解除</PendingSubmitButton></form></div>)}</div>
+      </section>
+      <section className="panel mt-6">
+        <h2 className="text-xl font-bold">コマの連続状態</h2><p className="mt-2 text-sm text-stone-600">時間帯・天候・状態・持ち手・画面上の左右・視線と、前コマからの継続を構造化して保存します。</p>
+        {!referenceWorkspace.continuityAvailable||!panels.length?<p className="mt-3 text-sm text-stone-600">P1-D migrationとコマ情報を確認してください。</p>:<form action={savePanelContinuityStateAction.bind(null,projectId)} className="mt-4 grid gap-4 md:grid-cols-2"><label><span className="label">対象</span><select className="field" name="subject" required>{subjects.filter(item=>item.kind!=="style").map(item=><option key={`${item.kind}:${item.id}`} value={`${item.kind}:${item.id}`}>{kindLabel[item.kind]}：{item.name}</option>)}</select></label><label><span className="label">対象コマ</span><select className="field" name="panel" required>{panels.map(item=><option key={`${item.pageId}:${item.panelId}`} value={`${item.pageId}:${item.panelId}`}>{item.label}</option>)}</select></label><label><span className="label">時間帯</span><input className="field" name="timeOfDay" maxLength={80} placeholder="夕方"/></label><label><span className="label">天候</span><input className="field" name="weather" maxLength={80} placeholder="小雨"/></label><label><span className="label">持ち手</span><select className="field" name="holdingHand" defaultValue="unspecified"><option value="unspecified">未指定</option><option value="left">左手</option><option value="right">右手</option><option value="both">両手</option><option value="none">持っていない</option></select></label><label><span className="label">画面上の位置</span><select className="field" name="screenSide" defaultValue="unspecified"><option value="unspecified">未指定</option><option value="left">左</option><option value="center">中央</option><option value="right">右</option></select></label><label><span className="label">視線</span><input className="field" name="gazeDirection" maxLength={120} placeholder="画面右の相手を見る"/></label><label><span className="label">継続元コマ（任意）</span><select className="field" name="continuesFromPanelId"><option value="">新しい状態</option>{panels.map(item=><option key={item.panelId} value={item.panelId}>{item.label}</option>)}</select></label><label className="md:col-span-2"><span className="label">状態</span><textarea className="field min-h-20" name="stateNote" maxLength={500} placeholder="右手に赤い傘、上着は濡れている"/></label><div className="md:col-span-2"><PendingSubmitButton className="button" pendingLabel="保存中…">連続状態を保存</PendingSubmitButton></div></form>}
+        <div className="mt-4 space-y-2">{referenceWorkspace.continuityStates.map(item=><div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3" key={item.id}><span>{panelName.get(`${item.page_id}:${item.panel_id}`)??"コマ"}：{kindLabel[item.subject_kind as keyof typeof kindLabel]}「{subjectName.get(`${item.subject_kind}:${item.subject_id}`)??"設定"}」{item.time_of_day?`・${item.time_of_day}`:""}{item.weather?`・${item.weather}`:""}{item.state_note?`・${item.state_note}`:""}</span><form action={deletePanelContinuityStateAction.bind(null,projectId,item.id)}><PendingSubmitButton className="button-secondary" pendingLabel="解除中…">解除</PendingSubmitButton></form></div>)}</div>
       </section>
       <section className="panel mt-6">
         <h2 className="text-xl font-bold">設定をコマへ割り当て</h2>

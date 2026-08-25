@@ -6,6 +6,7 @@ import { z } from "zod";
 import {
   characterReferenceBindingInputSchema,characterStateAssignmentInputSchema,
 } from "@/lib/cloud-character-reference-settings";
+import{cloudPanelContinuityStateInputSchema}from"@/lib/cloud-panel-continuity-state";
 import {
   cloudPanelSubjectAssignmentInputSchema,
   cloudVisualReferenceInputSchema,
@@ -19,6 +20,7 @@ import {
   uploadCloudAsset,
   deleteCloudCharacterReferenceBinding,deleteCloudCharacterStateAssignment,
   saveCloudCharacterReferenceBinding,saveCloudCharacterStateAssignment,saveCloudGenerationReadinessPolicy,
+  saveCloudPanelContinuityState,deleteCloudPanelContinuityState,
 } from "@/lib/cloud-creator-server";
 
 const uuid = z.string().uuid();
@@ -143,3 +145,5 @@ export async function deleteCharacterReferenceBindingAction(projectId:string,bin
 export async function saveCharacterStateAssignmentAction(projectId:string,form:FormData){const[characterProfileId,characterVersionId]=value(form,"characterVersion").split(":");const parsed=characterStateAssignmentInputSchema.safeParse({projectId,characterProfileId,characterVersionId,startPage:Number(value(form,"startPage")),endPage:Number(value(form,"endPage")),sceneKey:value(form,"sceneKey"),label:value(form,"assignmentLabel"),costumeOverride:value(form,"costumeOverride"),stateNote:value(form,"stateNote"),priority:Number(value(form,"priority"))});if(!parsed.success)return back(projectId,"error","衣装・状態のページ範囲を確認してください。");await saveCloudCharacterStateAssignment(parsed.data).catch(()=>back(projectId,"error","範囲が重複しているか、衣装・状態を保存できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","衣装・状態の適用範囲を保存しました。");}
 export async function deleteCharacterStateAssignmentAction(projectId:string,assignmentId:string){if(!uuid.safeParse(assignmentId).success)return back(projectId,"error","適用範囲を確認できませんでした。");await deleteCloudCharacterStateAssignment(projectId,assignmentId).catch(()=>back(projectId,"error","適用範囲を解除できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","衣装・状態の適用範囲を解除しました。");}
 export async function saveGenerationReadinessPolicyAction(projectId:string,form:FormData){const policy=z.enum(["warn","block"]).safeParse(value(form,"policy"));if(!policy.success)return back(projectId,"error","参照画像不足時の方針を確認してください。");await saveCloudGenerationReadinessPolicy(projectId,policy.data).catch(()=>back(projectId,"error","参照画像不足時の方針を保存できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","生成準備方針を保存しました。");}
+export async function savePanelContinuityStateAction(projectId:string,form:FormData){const target=subject(value(form,"subject")),[pageId,panelId]=value(form,"panel").split(":"),continues=value(form,"continuesFromPanelId");if(!target||target.kind==="style")return back(projectId,"error","連続状態の対象を確認してください。");const parsed=cloudPanelContinuityStateInputSchema.safeParse({projectId,pageId,panelId,subjectKind:target.kind,subjectId:target.id,timeOfDay:value(form,"timeOfDay"),weather:value(form,"weather"),stateNote:value(form,"stateNote"),holdingHand:value(form,"holdingHand"),screenSide:value(form,"screenSide"),gazeDirection:value(form,"gazeDirection"),continuesFromPanelId:continues||null});if(!parsed.success)return back(projectId,"error","コマの連続状態を確認してください。");await saveCloudPanelContinuityState(parsed.data).catch(()=>back(projectId,"error","コマの連続状態を保存できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","コマの連続状態を保存しました。");}
+export async function deletePanelContinuityStateAction(projectId:string,stateId:string){if(!uuid.safeParse(stateId).success)return back(projectId,"error","連続状態を確認できませんでした。");await deleteCloudPanelContinuityState(projectId,stateId).catch(()=>back(projectId,"error","コマの連続状態を解除できませんでした。"));revalidatePath(`/creator/${projectId}/references`);back(projectId,"message","コマの連続状態を解除しました。");}

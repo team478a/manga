@@ -23,8 +23,7 @@ export {
   enqueueCloudGenerationJob,
   getMyCloudAiQuota,
   listCloudGenerationJobs,
-} from "@/modules/cloud-creator/generation/generation-service";
-export type { CloudGenerationBatch } from "@/modules/cloud-creator/generation/batch-production-service";
+} from "@/modules/cloud-creator/generation/generation-service";export type { CloudGenerationBatch } from "@/modules/cloud-creator/generation/batch-production-service";
 export {
   listCloudGenerationBatches,
   retryFailedCloudGenerationBatchTargets, retryFailedCloudGenerationJob,
@@ -61,6 +60,7 @@ export {
   saveCloudWorldProfile,
 } from "@/modules/cloud-creator/projects/world-bible-service";
 export {
+  deleteCloudPanelContinuityState,
   deleteCloudCharacterReferenceBinding,deleteCloudCharacterStateAssignment,
   deleteCloudPanelSubjectAssignment,
   deleteCloudVisualReference,
@@ -68,8 +68,8 @@ export {
   saveCloudPanelSubjectAssignment,
   saveCloudVisualReference,
   saveCloudCharacterReferenceBinding,saveCloudCharacterStateAssignment,saveCloudGenerationReadinessPolicy,
+  saveCloudPanelContinuityState,
 } from "@/modules/cloud-creator/projects/visual-reference-service";
-
 export {
   addCloudChapter,
   addCloudEpisode,
