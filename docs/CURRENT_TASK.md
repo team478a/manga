@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P3 自動品質検査・部分再生成gap監査
+
+- 状態: `RESEARCH_DOCUMENTED / ALL_LOCAL_GATES_PASSED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`
+- Base: PR #355 merge commit `6e14d8b`。Branch: `codex/research-p3-quality-inspection-gap`。
+- 現行: 生成仕様／rule評価／Visual Judge契約・benchmark／採否KPI／原稿preflight／連続性review／1コマ再生成・inpaintingは実装済み。
+- 主要gap: 統一finding正本、未評価の厳密保持、Creator向け理由／領域／confidence／修正案、findingと既存修正経路の接続。
+- 設計: 既存評価・ログを置換せずappend-only run／findingを追加し、P3-A〜Fへ分割。自動削除・自動Job作成なし。
+- 不変: code、migration、API、UI、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 検証: Hub 876/876、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: docs-only全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。merge後はP3-A。
+- 詳細: `docs/RESEARCH_P3_QUALITY_INSPECTION_GAP_20260825.md`
+
+---
+
 ## 2026-08-25 P2-E 10コマ編集受入fixture
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

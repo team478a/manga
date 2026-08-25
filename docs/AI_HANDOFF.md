@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P3 自動品質検査・部分再生成gap監査（2026-08-25）
+
+- PR #355 merge commit `6e14d8b`を基準に、品質評価、Visual Judge、preflight、continuity、部分修正の既存経路を監査した。
+- 主要gapはCreator向け統一finding、未評価の厳密保持、対象領域／修正案、既存inpainting等への明示接続。
+- P3-A〜Fへ分割。文書のみでProduction、Provider／Worker／Job／Storage／credit操作0件。
+- Hub 876/876、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P2-E 10コマ編集受入fixture（2026-08-25）
 
 - PR #354 merge commit `5a7ccbe`を基準に、P2の編集不変条件を外部Providerなしで検証する固定10コマfixtureを追加した。
