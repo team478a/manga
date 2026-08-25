@@ -16,13 +16,13 @@ drop function public.create_cloud_project_with_first_page(text,text,text,text,in
 
 create function public.create_cloud_project_with_first_page(
   p_title text,
-  p_description text default '',
-  p_age_rating text default '全年齢',
-  p_reading_direction text default 'rtl',
-  p_width integer default 1600,
-  p_height integer default 2400,
-  p_dpi integer default 300,
-  p_completion_mode_profile jsonb default null
+  p_description text,
+  p_age_rating text,
+  p_reading_direction text,
+  p_width integer,
+  p_height integer,
+  p_dpi integer,
+  p_completion_mode_profile jsonb
 )
 returns table(project_id uuid, episode_id uuid, page_id uuid)
 language plpgsql security invoker set search_path = public as $$
@@ -53,7 +53,21 @@ begin
   return next;
 end $$;
 
+create function public.create_cloud_project_with_first_page(
+  p_title text,p_description text default '',p_age_rating text default '全年齢',
+  p_reading_direction text default 'rtl',p_width integer default 1600,
+  p_height integer default 2400,p_dpi integer default 300
+)
+returns table(project_id uuid,episode_id uuid,page_id uuid)
+language sql security invoker set search_path=public as $$
+  select * from public.create_cloud_project_with_first_page(
+    p_title,p_description,p_age_rating,p_reading_direction,p_width,p_height,p_dpi,null
+  );
+$$;
+
 revoke all on function public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer,jsonb) from public, anon;
 grant execute on function public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer,jsonb) to authenticated, service_role;
+revoke all on function public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer) from public, anon;
+grant execute on function public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer) to authenticated, service_role;
 
 commit;

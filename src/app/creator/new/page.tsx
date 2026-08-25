@@ -63,7 +63,10 @@ export default async function NewCloudProjectPage({
             </select>
           </div>
         </div>
-        <CompletionModeFields />
+        <section aria-labelledby="page-settings-heading">
+          <h2 id="page-settings-heading" className="label">ページ設定</h2>
+          <div className="mt-2"><CompletionModeFields /></div>
+        </section>
         <p className="rounded-md bg-amber-50 p-4 text-sm text-amber-950">
           成人向けへ変更することはできません。成人向け制作にはDesktop
           Adultを使用してください。

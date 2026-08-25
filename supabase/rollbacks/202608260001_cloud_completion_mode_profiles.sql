@@ -1,6 +1,7 @@
 begin;
 
 drop function if exists public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer,jsonb);
+drop function if exists public.create_cloud_project_with_first_page(text,text,text,text,integer,integer,integer);
 alter table public.cloud_projects drop column if exists completion_mode_profile;
 
 create function public.create_cloud_project_with_first_page(
