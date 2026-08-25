@@ -11,6 +11,10 @@ export type MangaQualityMetrics = {
   providerSelectionRates: Record<string, number>;
   modelSelectionRates: Record<string, number>;
   averageAiCostMicrosPerPage: number;
+  averageCostMicrosPerSelectedPanel: number;
+  averageCompletionTimeMs: number;
+  majorCharacterMismatchRate: number;
+  generationFailureRate: number;
 };
 
 const ratio = (count: number, total: number) =>
@@ -47,6 +51,17 @@ export function calculateMangaQualityMetrics(
   const selectedCandidates = rows.filter(
     (row) => row.candidateSelected,
   ).length;
+  const selectedPanelCosts = rows.filter(
+    (row) => row.candidateSelected && row.actualCostMicros !== null,
+  );
+  const completedCandidates = rows.filter(
+    (row) => row.generationLatencyMs !== null,
+  );
+  const majorCharacterMismatches = rows.filter((row) =>
+    row.failureCategories.some((category) =>
+      ["face_mismatch", "wrong_character_count", "continuity_break"].includes(category),
+    ),
+  ).length;
   const pageCosts = new Map<string, number>();
   for (const row of rows) {
     if (!row.pageId || row.actualCostMicros === null) continue;
@@ -79,6 +94,22 @@ export function calculateMangaQualityMetrics(
     averageAiCostMicrosPerPage: ratio(
       [...pageCosts.values()].reduce((sum, cost) => sum + cost, 0),
       pageCosts.size,
+    ),
+    averageCostMicrosPerSelectedPanel: ratio(
+      selectedPanelCosts.reduce((sum, row) => sum + (row.actualCostMicros ?? 0), 0),
+      selectedPanelCosts.length,
+    ),
+    averageCompletionTimeMs: ratio(
+      completedCandidates.reduce(
+        (sum, row) => sum + (row.generationLatencyMs ?? 0) + (row.evaluationLatencyMs ?? 0),
+        0,
+      ),
+      completedCandidates.length,
+    ),
+    majorCharacterMismatchRate: ratio(majorCharacterMismatches, rows.length),
+    generationFailureRate: ratio(
+      rows.filter((row) => row.rejectedReason === "generation_failed").length,
+      rows.length,
     ),
   };
 }

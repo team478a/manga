@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P3-F 品質検査・部分修正 受入fixture）
+
+- Branch: `codex/p3f-quality-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`@`ebfab6f`（PR #360 merge commit）
+- 固定6コマへ人数違い、衣装違い、文字切れを混入し、findingの対象コマ／normalized region／修正案と`NOT_EVALUATED`を検証する。
+- 修正準備の前後で全Asset、候補、Job、inspection snapshotを完全一致させ、自動採否／Job／creditを発生させない。
+- 既存KPIへ採用コマ費用、完成時間、人物重大不一致率、明示的な`generation_failed`率を追加する。
+- 集中13/13、Hub 889/889、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。Production／staging、Provider、Worker、Job、credit、Storage操作0件。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（BFL Image Editing原価計測・予約guard）
 
 - Branch: `codex/fix-bfl-image-editing-cost`

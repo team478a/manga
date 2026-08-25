@@ -39,6 +39,10 @@ test("Q0 KPIは採用率、再生成、修正、failure categoryを決定的に�
   assert.equal(metrics.providerSelectionRates["black-forest-labs"], 0.5);
   assert.equal(metrics.modelSelectionRates["flux-2-pro"], 0.5);
   assert.equal(metrics.averageAiCostMicrosPerPage, 300);
+  assert.equal(metrics.averageCostMicrosPerSelectedPanel, 100);
+  assert.equal(metrics.averageCompletionTimeMs, 0);
+  assert.equal(metrics.majorCharacterMismatchRate, 0);
+  assert.equal(metrics.generationFailureRate, 0);
 });
 
 test("Q0は既存生成APIを変えず専用presentationとrepositoryへ入る", async () => {
