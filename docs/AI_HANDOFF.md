@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P4 用途別完成モード・書き出しgap監査（2026-08-25）
+
+- PR #361 merge commit `11e70b6`を基準に、Hub／Desktopのexport、完成preflight、Project JSON、成人向け境界を監査した。
+- PNG、PDF、package、Desktop Project JSON、長編durable PDFは既存。主要gapは3用途のversioned mode profile、mode別推奨値／検査、Hub単体／durable JSON、JPEG。
+- 既存exportを維持しP4-A〜Fへ分割する。成人向けはDesktop local-onlyから動かさない。
+- 文書のみ。Hub 889/889、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、全ローカル品質ゲート成功。Production／staging、Provider、Worker、Job、credit、Storage操作0件。
+
+---
+
 ## 0.0 P3-F 品質検査・部分修正 受入fixture（2026-08-25）
 
 - PR #360 merge commit `ebfab6f`を基準に、外部Providerなしの固定6コマfixtureで人数違い、衣装違い、文字切れを検出する。
