@@ -48,6 +48,7 @@ import {
   detachRejectedPanelCandidate,
   repairReversedPanelBackgroundStacks,
 } from "@/modules/manga/domain/panel-adoption";
+import { listPanelAssetRevisions, restorePanelAssetRevision } from "@/modules/manga/domain/panel-asset-revision";
 import {
   countRepairableShortVerticalDialogue,
   repairShortVerticalDialogueLayout,
@@ -1228,6 +1229,20 @@ export function CloudCanvasEditor({
   const selectedRevisionAsset = selectedRevisionLayer?.assetId
     ? assetMap.get(selectedRevisionLayer.assetId)
     : undefined;
+  const selectedPanelAssetRevisions = selection?.type === "panel"
+    ? listPanelAssetRevisions(canvas, selection.id, generationJobs)
+    : [];
+  function restoreAssetRevision(layerId: string) {
+    if (selection?.type !== "panel") return;
+    const panelId = selection.id;
+    let restored = false;
+    const committed = commit((draft) => {
+      restored = restorePanelAssetRevision(draft, panelId, layerId, now());
+    });
+    setMessage(committed && restored
+      ? "選択したAsset版へ戻しました。元画像と後続候補は削除していません。保存完了まで画面を閉じないでください。"
+      : "Asset版へ戻せませんでした。Canvasを再読み込みして確認してください。");
+  }
   const comparisonJob = comparisonJobId
     ? generationJobs.find((job) => job.id === comparisonJobId)
     : undefined;
@@ -2591,6 +2606,26 @@ export function CloudCanvasEditor({
                           >
                             <ArrowDown className="h-4 w-4" />
                           </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                {selection?.type === "panel" && selectedPanelAssetRevisions.length ? (
+                  <div data-testid="panel-asset-revision-history">
+                    <h3 className="font-semibold">Asset版履歴</h3>
+                    <p className="mt-1 text-xs text-stone-600">過去画像は削除せず、選択した種類の表示だけを差し戻します。</p>
+                    <div className="mt-2 space-y-2">
+                      {[...selectedPanelAssetRevisions].reverse().map((revision) => (
+                        <div className="rounded border border-stone-200 p-2 text-xs" key={revision.layerId}>
+                          <div className="flex items-center justify-between gap-2">
+                            <span>版 {revision.revision} / {revision.operation}</span>
+                            <span>{revision.active ? "使用中" : "保持中"}</span>
+                          </div>
+                          <p className="mt-1 truncate text-stone-500">Asset: {assetMap.get(revision.assetId)?.file_name ?? revision.assetId}</p>
+                          {!revision.active ? (
+                            <button className="button-secondary mt-2 w-full" onClick={() => restoreAssetRevision(revision.layerId)} type="button">この版へ戻す</button>
+                          ) : null}
                         </div>
                       ))}
                     </div>

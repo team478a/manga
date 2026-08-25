@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P2-D コマAsset版履歴・差し戻し（2026-08-25）
+
+- PR #353 merge commit `182283b`を基準に、Canvas保存済みAsset layerを採用／修正の版履歴として表示し、過去版への明示差し戻しを追加した。
+- 差し戻しは選択コマの背景／補正版系列だけ。元Asset、後続候補、Job、layer、人物／効果、他コマを削除・変更しない。
+- API／DB／migration、Production、Provider／Worker／Job／Storage／credit操作0件。P2-Eはmerge後。
+- 集中13/13、Hub 872/872、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 0.0 P2-C コマ設計生成入力snapshot（2026-08-25）
 
 - PR #352 merge commit `c91078f`を基準に、保存済みコマ設計revision／JSONを単一・batch生成入力へ固定した。

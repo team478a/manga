@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P2-D コマAsset版履歴・差し戻し
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #353 merge commit `182283b`。Branch: `codex/p2d-panel-asset-revisions`。
+- 実装: Canvasに永続化済みの採用／修正Asset layerを版履歴へ一般化し、選択コマだけを過去Assetへ明示差し戻し。operation、source Job／Asset、使用中状態を追跡。
+- 非破壊: 元Asset、後続候補、Job、layerを削除しない。背景／補正版系列だけを差し戻し、人物・効果layerと他コマは変更しない。
+- 検証: 集中13/13、Hub 872/872、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: API、DB、migration、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。P2-Eはmerge後。
+- 詳細: `docs/RELEASE_CANDIDATE_P2D_PANEL_ASSET_REVISIONS_20260825.md`
+
+---
+
 ## 2026-08-25 P2-C コマ設計生成入力snapshot
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FLAG_DEFAULT_OFF / PRODUCTION_UNCHANGED`

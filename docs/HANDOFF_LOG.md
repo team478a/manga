@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P2-D コマAsset版履歴・差し戻し）
+
+- Branch: `codex/p2d-panel-asset-revisions`
+- Base: `origin/feature/manga-canvas-mvp`@`182283b`（PR #353 merge commit）
+- Canvas snapshotに永続化済みの背景／補正版／legacy Asset layerを古い順のrevision chainへ一般化し、source Job、source Asset、生成operation、使用中状態を解決するdomain契約を追加した。
+- 選択コマのInspectorで版履歴を表示し、保持中の版へ明示差し戻しできる。既存autosaveで保存後再読込にも反映される。
+- 差し戻しは同じコマの採用画像系列の可視性と`imageAssetId`だけを変える。元Asset、後続候補、Job、layerは削除せず、人物／効果layerと他コマは維持する。
+- 集中13/13、Hub 872/872、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- API、DB、migration、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。P2-Eはmerge後。
+
+---
+
 ## 2026-08-25 Codex（P2-C コマ設計生成入力snapshot）
 
 - Branch: `codex/p2c-panel-design-generation`
