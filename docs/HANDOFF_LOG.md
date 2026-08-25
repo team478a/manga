@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P2-E 10コマ編集受入fixture）
+
+- Branch: `codex/p2e-panel-editing-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`@`5a7ccbe`（PR #354 merge commit）
+- 10コマそれぞれに2 Asset版、独立した吹き出し／縦書き文字、panel設計revision、生成Job／credit記録を持つ決定論的fixtureを追加した。
+- セリフだけの変更が画像／Job／credit／設計revisionへ波及しないこと、1コマ差し戻しが他9コマを変えないこと、JSON保存再読込一致、全コマの設計revision／修正元Asset追跡を検証する。
+- P2-A〜E集中13/13、Hub 876/876、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 製品コード、API、DB、migration、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（P2-D コマAsset版履歴・差し戻し）
 
 - Branch: `codex/p2d-panel-asset-revisions`

@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P2-E 10コマ編集受入fixture（2026-08-25）
+
+- PR #354 merge commit `5a7ccbe`を基準に、P2の編集不変条件を外部Providerなしで検証する固定10コマfixtureを追加した。
+- セリフ変更、単一コマ画像差し戻し、保存再読込、設計revision／修正元Asset追跡を決定論的に検証する。
+- 製品コード、API／DB／migration、Production、Provider／Worker／Job／Storage／credit操作0件。
+- P2-A〜E集中13/13、Hub 876/876、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P2-D コマAsset版履歴・差し戻し（2026-08-25）
 
 - PR #353 merge commit `182283b`を基準に、Canvas保存済みAsset layerを採用／修正の版履歴として表示し、過去版への明示差し戻しを追加した。
