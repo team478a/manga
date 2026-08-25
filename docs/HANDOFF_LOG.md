@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P1-F 固定10シーン追跡fixture）
+
+- Branch `codex/p1f-ten-scene-provenance-fixture`、base `d11ea3d`。
+- 10シーンの人物／衣装／参照／workflow追跡をPASS／FAILで採点し、未生成の視覚項目を`NOT_EVALUATED`にした。
+- 集中5/5、Hub 863 tests、全ローカル品質ゲート成功。migration／製品動作変更なし。
+- Production、Provider、Worker、Job、Storage、credit操作なし。外部比較は明示承認待ち。
+
+---
+
 ## 2026-08-25 Codex（P1-E 生成追跡情報）
 
 - Branch `codex/p1e-generation-provenance`、base `94a4853`。
