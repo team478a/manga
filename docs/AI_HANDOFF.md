@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P2 漫画設計データ・コマ単位編集gap監査（2026-08-25）
+
+- PR #349 merge commit `1a85d5a`を基準に、P2の現行Canvas／生成／履歴を監査した。
+- 編集UIの大半は既存。主要gapは編集可能なpanel意味データ正本と永続差し戻し履歴。
+- P2-A〜Eへ分割。文書のみでProduction／Provider／Job／Storage／credit操作0件。
+
+---
+
 ## 0.0 P1-F 固定10シーン追跡fixture（2026-08-25）
 
 - PR #348 merge commit `d11ea3d`を基準に、外部Providerなしの10シーン追跡fixtureと採点表を追加した。
