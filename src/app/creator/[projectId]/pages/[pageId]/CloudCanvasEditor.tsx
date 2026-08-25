@@ -77,6 +77,7 @@ import { PanelInpaintingDialog } from "./PanelInpaintingDialog";
 import { PanelImageComparisonDialog } from "./PanelImageComparisonDialog";
 import { PanelImageQualityReviewDialog } from "./PanelImageQualityReviewDialog";
 import { MonitorQualityFeedback } from "./MonitorQualityFeedback";
+import { PanelDesignInspector } from "./PanelDesignInspector";
 import {
   cancelGeneration,
   createGenerationJob,
@@ -2245,6 +2246,12 @@ export function CloudCanvasEditor({
               selectedPanelId={selection?.type === "panel" ? selection.id : null}
             />
           ) : null}
+          <PanelDesignInspector
+            projectId={project.id}
+            pageId={page.id}
+            panelIds={canvas.panels.map((panel) => panel.id)}
+            selectedPanelId={selection?.type === "panel" ? selection.id : null}
+          />
         </aside>
         <main className="flex items-start justify-center overflow-auto rounded-lg bg-stone-300 p-4 sm:p-8">
           <div

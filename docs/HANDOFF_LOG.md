@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P2-B コマ設計materialization・Inspector）
+
+- Branch: `codex/p2b-panel-design-inspector`
+- Base: `origin/feature/manga-canvas-mvp`@`90df975`（PR #351 merge commit）
+- Canvasの選択コマへ、未作成／保存revisionと意味設計編集Inspectorを追加した。
+- 既存assignment、continuity state、最新panel specificationは明示操作で下書きにだけ使い、保存前に正本を変更しない。空設計開始も明示操作に限定した。
+- 保存はP2-Aのowner／現行Canvas panel／optimistic revision検証済みRPCを利用する。migration未適用時はInspectorだけを停止する。
+- 集中4/4、Hub 867/867、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。P2-Cはmerge後。
+
+---
+
 ## 2026-08-25 Codex（P2-A コマ意味設計schema）
 
 - Branch `codex/p2a-panel-design-schema`、base `845df71`。

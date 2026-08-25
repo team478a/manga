@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P2-B コマ設計materialization・Inspector
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #351 merge commit `90df975`。Branch: `codex/p2b-panel-design-inspector`。
+- 実装: 選択コマの設計Inspector、revision読込、optimistic保存、空設計、既存assignment／continuity state／最新panel specificationからの明示下書き作成。
+- 非破壊: 下書きだけではDBを更新しない。自動backfillなし。Canvas／Storyboard／生成Job／Promptを置換しない。
+- 検証: 集中4/4、Hub 867/867、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。P2-Cはmerge後。
+- 詳細: `docs/RELEASE_CANDIDATE_P2B_PANEL_DESIGN_INSPECTOR_20260825.md`
+
+---
+
 ## 2026-08-25 P2-A コマ意味設計schema
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
