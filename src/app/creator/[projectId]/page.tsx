@@ -158,7 +158,7 @@ export default async function CloudProjectPage({
                 原稿チェック
               </h2>
               <p className="mt-2 text-sm text-stone-600">
-                表紙、ページ順、空コマ、画像解像度、文字の収まりを自動確認します。
+                表紙、ページ順、空コマ、画像解像度、文字の収まり、完成モードの目安、品質検査結果を確認します。
               </p>
             </div>
             <span

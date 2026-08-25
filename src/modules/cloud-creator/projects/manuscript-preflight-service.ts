@@ -5,6 +5,7 @@ import { cloudCreatorContext } from "../auth-context";
 import { normalizeCloudCanvas } from "../canvas/canvas-normalizer";
 import { getCloudProjectWorkspace } from "./project-service";
 import { listCloudPageProductionStates } from "../production/production-status-service";
+import { resolveCompletionModeProfile } from "@mangai/shared";
 
 export async function getCloudManuscriptPreflight(
   projectId: string,
@@ -12,8 +13,9 @@ export async function getCloudManuscriptPreflight(
 ) {
   const { supabase } = await cloudCreatorContext();
   const workspace = await getCloudProjectWorkspace(projectId);
+  const completionModeProfile = resolveCompletionModeProfile(workspace.project.completion_mode_profile);
   const pageIds = workspace.pages.map((page) => page.id);
-  const [snapshotsResult, assetsResult, activeJobsResult] = await Promise.all([
+  const [snapshotsResult, assetsResult, activeJobsResult, findingsResult] = await Promise.all([
     pageIds.length
       ? supabase
           .from("cloud_canvas_snapshots")
@@ -33,12 +35,18 @@ export async function getCloudManuscriptPreflight(
           .in("page_id", pageIds)
           .in("status", ["queued", "running"])
       : Promise.resolve({ data: [], error: null }),
+    completionModeProfile?.requiredChecks.includes("quality_findings")
+      ? supabase.from("cloud_manga_inspection_findings")
+          .select("page_id,panel_id,status,category,reason,created_at")
+          .eq("project_id", projectId).order("created_at", { ascending: false }).limit(1000)
+      : Promise.resolve({ data: [], error: null }),
   ]);
-  if (snapshotsResult.error || assetsResult.error || activeJobsResult.error)
+  const findingsUnavailable = findingsResult.error?.code === "42P01";
+  if (snapshotsResult.error || assetsResult.error || activeJobsResult.error || (findingsResult.error && !findingsUnavailable))
     throw new DomainError(
       "INTERNAL_ERROR",
       "原稿の完成状況を確認できませんでした。",
-      { cause: snapshotsResult.error ?? assetsResult.error ?? activeJobsResult.error },
+      { cause: snapshotsResult.error ?? assetsResult.error ?? activeJobsResult.error ?? findingsResult.error },
     );
   const latestSnapshots = new Map<string, unknown>();
   for (const snapshot of snapshotsResult.data ?? []) {
@@ -48,6 +56,12 @@ export async function getCloudManuscriptPreflight(
   const productionStates = options?.requireFinalizedPages
     ? await listCloudPageProductionStates(projectId, workspace.pages)
     : undefined;
+  const latestFindings = new Map<string, { status: "PASS" | "WARNING" | "FAIL" | "NOT_EVALUATED"; reason: string; pageId: string | null; panelId: string | null }>();
+  for (const row of findingsResult.data ?? []) {
+    const key = `${row.page_id ?? "project"}:${row.panel_id ?? "page"}:${row.category}`;
+    if (!latestFindings.has(key) && ["PASS", "WARNING", "FAIL", "NOT_EVALUATED"].includes(row.status))
+      latestFindings.set(key, { status: row.status as "PASS" | "WARNING" | "FAIL" | "NOT_EVALUATED", reason: row.reason, pageId: row.page_id, panelId: row.panel_id });
+  }
   return analyzeCloudManuscript({
     coverPageId: workspace.project.cover_page_id,
     pages: workspace.pages.map((page) => ({
@@ -61,6 +75,9 @@ export async function getCloudManuscriptPreflight(
       .map((row) => row.page_id)
       .filter((id): id is string => Boolean(id)),
     requireFinalizedPages: options?.requireFinalizedPages,
+    completionModeProfile,
+    qualityFindings: [...latestFindings.values()],
+    qualityFindingsAvailable: !findingsUnavailable,
   });
 }
 

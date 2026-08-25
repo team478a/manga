@@ -5,6 +5,7 @@ import {
   segmentGraphemes,
   type PageCanvas,
 } from "@mangai/canvas-core";
+import type { CompletionModeProfile } from "@mangai/shared";
 
 export type CloudManuscriptPreflightIssue = {
   code:
@@ -17,7 +18,11 @@ export type CloudManuscriptPreflightIssue = {
     | "text_layout"
     | "page_not_finalized"
     | "page_stale"
-    | "generation_active";
+    | "generation_active"
+    | "mode_panel_count"
+    | "mode_dialogue_length"
+    | "quality_finding"
+    | "quality_not_evaluated";
   severity: "error" | "warning";
   message: string;
   pageId: string | null;
@@ -36,6 +41,7 @@ export type CloudManuscriptPreflightReport = {
   pageProgress: CloudManuscriptPageProgress[];
   issues: CloudManuscriptPreflightIssue[];
   truncatedIssueCount: number;
+  completionMode: CompletionModeProfile["mode"] | null;
 };
 
 export type CloudManuscriptPageProgress = {
@@ -61,6 +67,13 @@ type PreflightProductionState = {
   pageId: string;
   status: string;
   isStale: boolean;
+};
+
+type PreflightQualityFinding = {
+  status: "PASS" | "WARNING" | "FAIL" | "NOT_EVALUATED";
+  reason: string;
+  pageId: string | null;
+  panelId: string | null;
 };
 
 function textOverflows(canvas: PageCanvas) {
@@ -128,6 +141,9 @@ export function analyzeCloudManuscript(input: {
   productionStates?: PreflightProductionState[];
   activeGenerationPageIds?: string[];
   requireFinalizedPages?: boolean;
+  completionModeProfile?: CompletionModeProfile | null;
+  qualityFindings?: PreflightQualityFinding[];
+  qualityFindingsAvailable?: boolean;
 }): CloudManuscriptPreflightReport {
   const targetPageCount = input.targetPageCount ?? 8;
   const issueLimit = input.issueLimit ?? 100;
@@ -146,6 +162,7 @@ export function analyzeCloudManuscript(input: {
   const pageProgress: CloudManuscriptPageProgress[] = [];
 
   const addIssue = (issue: CloudManuscriptPreflightIssue) => issues.push(issue);
+  const profile = input.completionModeProfile ?? null;
   if (!input.coverPageId || !pageIds.has(input.coverPageId)) {
     addIssue({
       code: "cover_missing",
@@ -264,6 +281,31 @@ export function analyzeCloudManuscript(input: {
         });
       }
     }
+    if (profile) {
+      const visiblePanels = page.canvas.panels.filter((item) => item.visible);
+      const { min, max } = profile.guidance.panelsPerPage;
+      if (visiblePanels.length < min || visiblePanels.length > max)
+        addIssue({
+          code: "mode_panel_count",
+          severity: "warning",
+          message: `${page.page_number}ページは${visiblePanels.length}コマです。このモードの目安は${min}〜${max}コマです。`,
+          pageId: page.id,
+          pageNumber: page.page_number,
+          panelId: null,
+        });
+      for (const text of page.canvas.textObjects.filter((item) => item.visible && item.text.trim())) {
+        const length = segmentGraphemes(parseRubyText(text.text).plainText).length;
+        if (length > profile.guidance.maxDialogueGraphemesPerPanel)
+          addIssue({
+            code: "mode_dialogue_length",
+            severity: "warning",
+            message: `${page.page_number}ページ「${text.name}」は${length}文字です。このモードの1コマ目安は${profile.guidance.maxDialogueGraphemesPerPanel}文字までです。`,
+            pageId: page.id,
+            pageNumber: page.page_number,
+            panelId: null,
+          });
+      }
+    }
     for (const text of textOverflows(page.canvas)) {
       addIssue({
         code: "text_overflow",
@@ -292,6 +334,22 @@ export function analyzeCloudManuscript(input: {
     });
   });
 
+  if (profile?.requiredChecks.includes("quality_findings")) {
+    if (input.qualityFindingsAvailable === false)
+      addIssue({ code: "quality_not_evaluated", severity: "warning", message: "品質検査結果を参照できないため、書き出し前に手動確認してください。", pageId: null, pageNumber: null, panelId: null });
+    for (const finding of input.qualityFindings ?? []) {
+      if (finding.status === "PASS") continue;
+      addIssue({
+        code: finding.status === "NOT_EVALUATED" ? "quality_not_evaluated" : "quality_finding",
+        severity: finding.status === "FAIL" ? "error" : "warning",
+        message: finding.status === "NOT_EVALUATED" ? `未評価の品質項目があります: ${finding.reason}` : `品質検査: ${finding.reason}`,
+        pageId: finding.pageId,
+        pageNumber: finding.pageId ? orderedPages.find((page) => page.id === finding.pageId)?.page_number ?? null : null,
+        panelId: finding.panelId,
+      });
+    }
+  }
+
   const errorCount = issues.filter((issue) => issue.severity === "error").length;
   const warningCount = issues.length - errorCount;
   return {
@@ -305,5 +363,6 @@ export function analyzeCloudManuscript(input: {
     pageProgress,
     issues: issues.slice(0, issueLimit),
     truncatedIssueCount: Math.max(0, issues.length - issueLimit),
+    completionMode: profile?.mode ?? null,
   };
 }

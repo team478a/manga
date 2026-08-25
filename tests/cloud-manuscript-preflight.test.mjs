@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { analyzeCloudManuscript } from "../src/lib/cloud-manuscript-preflight.ts";
+import { createCompletionModeProfile } from "../packages/shared/src/index.ts";
 
 function makePage(index) {
   const pageId = `page-${index}`;
@@ -232,4 +233,54 @@ test("永続書き出し前に未確定・stale・生成中ページを拒否す
   assert.ok(codes.has("page_not_finalized"));
   assert.ok(codes.has("page_stale"));
   assert.ok(codes.has("generation_active"));
+});
+
+test("P4-Cはmode別コマ数とセリフ量をwarningに留める", () => {
+  const fixture = makeEightPageManuscript();
+  fixture.pages[0].canvas.panels = Array.from({ length: 7 }, (_, index) => ({
+    ...fixture.pages[0].canvas.panels[0], id: `kindle-panel-${index}`,
+  }));
+  fixture.pages[0].canvas.textObjects.push({
+    id: "long-dialogue", pageId: fixture.pages[0].id, parentBalloonId: null,
+    name: "長いセリフ", text: "あ".repeat(121), writingMode: "horizontal",
+    x: 0, y: 0, width: 1500, height: 500, rotation: 0, zIndex: 1,
+    visible: true, locked: false, fontFamily: "sans-serif", fontSize: 20,
+    fontWeight: 400, color: "#111111", textAlign: "start", verticalAlign: "top",
+    lineHeight: 1.2, letterSpacing: 0, padding: 0, opacity: 1, createdAt: "", updatedAt: "",
+  });
+  const report = analyzeCloudManuscript({
+    coverPageId: fixture.pages[0].id, ...fixture,
+    completionModeProfile: createCompletionModeProfile("kindle_explainer", "cloud_general"),
+    qualityFindings: [], qualityFindingsAvailable: true,
+  });
+  assert.equal(report.ready, true);
+  assert.equal(report.completionMode, "kindle_explainer");
+  assert.ok(report.issues.some((issue) => issue.code === "mode_panel_count" && issue.severity === "warning"));
+  assert.ok(report.issues.some((issue) => issue.code === "mode_dialogue_length" && issue.severity === "warning"));
+});
+
+test("P4-Cは最新P3 findingをread-only判定しFAILだけをerrorにする", () => {
+  const fixture = makeEightPageManuscript();
+  const report = analyzeCloudManuscript({
+    coverPageId: fixture.pages[0].id, ...fixture,
+    completionModeProfile: createCompletionModeProfile("longform_story", "cloud_general"),
+    qualityFindingsAvailable: true,
+    qualityFindings: [
+      { status: "PASS", reason: "人数一致", pageId: fixture.pages[0].id, panelId: "panel-1" },
+      { status: "WARNING", reason: "衣装を確認", pageId: fixture.pages[1].id, panelId: "panel-2" },
+      { status: "NOT_EVALUATED", reason: "視覚検査未実行", pageId: fixture.pages[2].id, panelId: "panel-3" },
+      { status: "FAIL", reason: "文字切れ", pageId: fixture.pages[3].id, panelId: "panel-4" },
+    ],
+  });
+  assert.equal(report.ready, false);
+  assert.equal(report.errorCount, 1);
+  assert.ok(report.issues.some((issue) => issue.message.includes("文字切れ") && issue.severity === "error"));
+  assert.ok(report.issues.some((issue) => issue.code === "quality_not_evaluated" && issue.severity === "warning"));
+});
+
+test("mode未設定ProjectはP4 guidanceを推測せず従来preflightを維持する", () => {
+  const fixture = makeEightPageManuscript();
+  const report = analyzeCloudManuscript({ coverPageId: fixture.pages[0].id, ...fixture });
+  assert.equal(report.completionMode, null);
+  assert.equal(report.issues.some((issue) => issue.code.startsWith("mode_") || issue.code.startsWith("quality_")), false);
 });

@@ -5692,3 +5692,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - migration未適用、Production unchanged、Provider／Job／credit／Storage操作なし。
 
 ---
+# 2026-08-26 P4-C mode別preflight
+
+- PR #364 merge `bbd9784`をbaseに、mode別コマ数／セリフ量warningとP3 finding read-only判定を実装。
+- FAILだけが完成判定を停止し、WARNING／NOT_EVALUATEDは確認警告。既存preflight errorとlegacy互換を維持。
+- DB変更、Production、Provider、Job、credit、Storage操作なし。
+
+---

@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-26 P4-C mode別preflight
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #364 merge commit `bbd9784`。Branch: `codex/p4c-mode-preflight`。
+- guidance: mode別の推奨コマ数／セリフgrapheme超過はwarningで、単独では書き出しを停止しない。
+- finding: P3結果をread-only参照し、最新keyのFAILはerror、WARNING／NOT_EVALUATEDはwarning、PASSは問題なし。
+- 互換: mode未設定の既存Projectは従来preflight。Asset欠落、文字切れ、未確定ページ等の既存errorは不変。
+- 不変: DB／migration、Production／staging、Provider、Worker、Job、credit、Storage操作0件。
+- 検証: 集中10/10、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 73件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_P4C_MODE_PREFLIGHT_20260826.md`
+
+---
+
 ## 2026-08-26 P4-B 完成モードpreset・新規Project選択
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
