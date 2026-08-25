@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P2-E 10コマ編集受入fixture
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #354 merge commit `5a7ccbe`。Branch: `codex/p2e-panel-editing-acceptance`。
+- fixture: 10コマ、各2 Asset版、独立吹き出し／縦書き文字、panel設計revision、生成Job、credit記録を固定。
+- 受入: セリフだけの変更で画像／Job／credit／設計revision不変、1コマ差し戻しで他9コマ不変、JSON保存再読込一致、設計revision／修正元Asset追跡を検証。
+- 検証: P2-A〜E集中13/13、Hub 876/876、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: 製品コード、API、DB、migration、Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。P2完了後の次段階はmerge後に正本から選定。
+- 詳細: `docs/RELEASE_CANDIDATE_P2E_PANEL_EDITING_ACCEPTANCE_20260825.md`
+
+---
+
 ## 2026-08-25 P2-D コマAsset版履歴・差し戻し
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
