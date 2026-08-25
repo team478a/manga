@@ -430,8 +430,8 @@
     {
       "id": "202608250006_bfl_flux2_pro_cost_guard",
       "description": "BFL FLUX.2 Pro参照生成の原価予約上限を最大4MP料金へ更新",
-      "forwardSha256": "59a7b238c14c03288fc36bdb20ce5a2a89abc76ab935add3ced5fa2ebab893de",
-      "rollbackSha256": "712fb48f7dcb30e6cf057d826bb55cd338a51d77b185e9652b5b608b645d3bd4"
+      "forwardSha256": "f642e17c6ee1986025e9d390d12a80346df8a4a79c17f950d688b7393aec326c",
+      "rollbackSha256": "e87a5944a6f04a28f676480a0db77362712cceadba00bcd33382a5ae0c128393"
     }
   ],
   "schemaSha256": "25a88f8cf96ae73c61c8910f2ec62a08e16ab6ac79982cd8497672d5eb679010"

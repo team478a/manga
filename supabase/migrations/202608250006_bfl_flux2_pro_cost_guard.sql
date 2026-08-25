@@ -1,5 +1,14 @@
 begin;
 
+update public.cloud_ai_provider_prices
+set active = false,
+    updated_at = now()
+where provider_id = 'black-forest-labs'
+  and model_id = 'flux-2-pro'
+  and job_type in ('background', 'prop', 'effect', 'character_base')
+  and pricing_version <> 'bfl-flux2-pro-2026-08'
+  and active = true;
+
 insert into public.cloud_ai_provider_prices (
   provider_id,
   model_id,
