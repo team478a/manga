@@ -2006,6 +2006,7 @@ export function CloudCanvasEditor({
                       <dt>参照resolver</dt><dd>{job.generation_provenance.referenceResolverVersion ?? "未使用"}</dd>
                       <dt>場所・小物version</dt><dd>{job.generation_provenance.worldVersions.length}件</dd>
                       <dt>連続状態</dt><dd>{job.generation_provenance.continuityStateCount}件</dd>
+                      <dt>コマ設計revision</dt><dd>{job.generation_provenance.panelDesignRevision ?? "未使用"}</dd>
                     </dl>
                   </details>
                   {job.output_asset_id && assetMap.get(job.output_asset_id) ? (

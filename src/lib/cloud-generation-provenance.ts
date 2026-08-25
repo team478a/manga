@@ -8,6 +8,7 @@ export type CloudGenerationProvenance = {
   styleVersion: { bibleId: string; version: number } | null;
   worldVersions: Array<{ profileId: string; version: number; kind: "location" | "prop" }>;
   continuityStateCount: number;
+  panelDesignRevision: number | null;
 };
 
 export function extractCloudGenerationProvenance(input: unknown, providerId: string, modelId: string): CloudGenerationProvenance {
@@ -16,5 +17,5 @@ export function extractCloudGenerationProvenance(input: unknown, providerId: str
     characterVersions:value?.characterProfileVersions??[],referenceBundleVersion:value?.referenceBundleVersion??null,
     referenceResolverVersion:value?.referenceResolverVersion??null,references:value?.resolvedCharacterReferences??[],
     styleVersion:value?.styleBibleVersion??null,worldVersions:value?.worldProfileVersions??[],
-    continuityStateCount:value?.panelContinuityStates?.length??0};
+    continuityStateCount:value?.panelContinuityStates?.length??0,panelDesignRevision:value?.panelDesignSnapshot?.revision??null};
 }

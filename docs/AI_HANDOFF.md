@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P2-C コマ設計生成入力snapshot（2026-08-25）
+
+- PR #352 merge commit `c91078f`を基準に、保存済みコマ設計revision／JSONを単一・batch生成入力へ固定した。
+- Flag strict・既定OFF。OFF／設計未作成は従来Promptを維持し、履歴へPromptを公開せずrevisionだけを表示する。
+- migration、Production、Provider／Worker実行、Job／Storage／credit操作0件。P2-Dはmerge後。
+
+---
+
 ## 0.0 P2-B コマ設計materialization・Inspector（2026-08-25）
 
 - PR #351 merge commit `90df975`を基準に、選択コマの意味設計Inspectorと明示materializationを追加した。

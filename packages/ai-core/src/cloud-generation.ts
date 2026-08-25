@@ -27,6 +27,26 @@ export type CloudGenerationJobType = z.infer<
   typeof cloudGenerationJobTypeSchema
 >;
 
+const panelDesignRefSchema = z.object({
+  profileId: z.string().uuid(),
+  version: z.number().int().positive(),
+});
+export const cloudPanelDesignSchema = z.object({
+  schemaVersion: z.literal(1),
+  orderIndex: z.number().int().min(0).max(499),
+  location: z.object({ profileId: z.string().uuid().nullable(), timeOfDay: z.string().trim().max(80), weather: z.string().trim().max(80) }),
+  characters: z.array(panelDesignRefSchema.extend({ action: z.string().trim().max(300), expression: z.string().trim().max(120), pose: z.string().trim().max(160), gaze: z.string().trim().max(120), position: z.string().trim().max(120) })).max(12),
+  camera: z.object({ distance: z.string().trim().max(80), angle: z.string().trim().max(80), lens: z.string().trim().max(80), composition: z.string().trim().max(300) }),
+  props: z.array(panelDesignRefSchema.extend({ holdingHand: z.enum(["unspecified", "left", "right", "both", "none"]), screenSide: z.enum(["unspecified", "left", "center", "right"]) })).max(20),
+  dialogueRefs: z.array(z.string().uuid()).max(30),
+  continuityNote: z.string().trim().max(1000), promptDirection: z.string().trim().max(2000),
+  negativeDirection: z.string().trim().max(1000), changeReason: z.string().trim().max(300),
+});
+export const cloudPanelDesignSnapshotSchema = z.object({
+  revision: z.number().int().positive(),
+  design: cloudPanelDesignSchema,
+});
+
 export const cloudModerationReasonSchema = z.enum([
   "adult_content",
   "minor_risk",
@@ -63,6 +83,7 @@ export const cloudGenerationInputSchema = z
     candidateCount: z.number().int().min(1).max(4).optional(),
     autoAdopt: z.boolean().optional(),
     workflowVersion: z.literal("storyboard-panel-v1").optional(),
+    panelDesignSnapshot: cloudPanelDesignSnapshotSchema.optional(),
     characterProfileVersions: z
       .array(
         z.object({
