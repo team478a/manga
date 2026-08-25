@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P4 用途別完成モード・書き出しgap監査）
+
+- Branch: `codex/research-p4-completion-export`
+- Base: `origin/feature/manga-canvas-mvp`@`11e70b6`（PR #361 merge commit）
+- Hub互換export、長編durable PDF、Desktop export、原稿preflight、Project JSON、成人向けlocal-only境界を追跡した。
+- 主要gapをversioned mode profile、承認済みpreset、mode別warning／検査、Hub単体／durable Project JSON、JPEGに限定した。
+- 既存API／export／packageを置換せずP4-A〜Fへ分割する。文書のみでHub 889/889、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。Production／staging、Provider、Worker、Job、credit、Storage操作0件。
+- 次: docs-only全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（P3-F 品質検査・部分修正 受入fixture）
 
 - Branch: `codex/p3f-quality-acceptance`

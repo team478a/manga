@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P4 用途別完成モード・書き出しgap監査
+
+- 状態: `RESEARCH_DOCUMENTED / ALL_LOCAL_GATES_PASSED / IMPLEMENTATION_NOT_STARTED / PRODUCTION_UNCHANGED`
+- Base: PR #361 merge commit `11e70b6`。Branch: `codex/research-p4-completion-export`。
+- 現行: Hub互換PNG ZIP／PDF／package、長編durable PDF、Desktop PDF／PNG ZIP／Project JSON／販売packageは実装済み。
+- gap: 3用途のversioned mode profile、承認済み寸法preset、推奨コマ数／セリフ量、mode別preflight、Hub単体／durable Project JSON、JPEG。
+- 設計: 既存exportを置換せずP4-A〜Fへ分割。成人向けはDesktop local-onlyをschemaで維持。
+- 検証: Hub 889/889、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: code、API、DB、migration、Storage、Provider、Worker、Job、credit、Production／staging操作0件。
+- 次: docs-only全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。merge後はP4-A。
+- 詳細: `docs/RESEARCH_P4_COMPLETION_MODES_AND_EXPORT_GAP_20260825.md`
+
+---
+
 ## 2026-08-25 P3-F 品質検査・部分修正 受入fixture
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
