@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P3-A+B 品質finding基盤・決定論的rule検査（2026-08-25）
+
+- PR #356 merge commit `cfa2ca9`を基準に、append-only inspection run／findingと決定論的rule変換を追加した。
+- 未実行の視覚／意味検査は`NOT_EVALUATED`かつconfidence null。既存75点評価、採否ログ、Asset、Jobを置換・削除しない。
+- Production、Provider／Worker／Job／Storage／credit操作0件。P3-Cはmerge後。
+- 集中4/4、Hub 880/880、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P3 自動品質検査・部分再生成gap監査（2026-08-25）
 
 - PR #355 merge commit `6e14d8b`を基準に、品質評価、Visual Judge、preflight、continuity、部分修正の既存経路を監査した。
