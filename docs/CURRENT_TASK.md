@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-08-25 P3-E Provider再開・失敗解放・参照付き10シーン比較
+
+- 状態: `EXTERNAL_TEST_COMPLETED / ACCEPTANCE_PASSED_WITH_WARNINGS / ALL_LOCAL_GATES_PASSED / PRICING_GAP_FOUND / PRODUCTION_UNCHANGED`
+- Base: PR #358 merge commit `8fb863f`。Branch: `codex/p3e-resume-refund-provider-comparison`。
+- 無課金: checkpoint再開、重複submit防止、20ページ再開、終端失敗時の予約解放を34/34で再確認。
+- 実Provider: BFL `flux-2-pro`で基準1＋参照付き9の10画像を生成。重大な別人化防止10/10、眼鏡／主要衣装／体格10/10、重大人体破綻なし10/10。自動retry 0。
+- warning: 髪の軽微変動2、疑似文字3、夕景の色混入1。moderation拒否1件は再承認後に別場面へ置換。
+- 費用: 公式最低料金による成功分見込み`$0.435`、拒否分を含む最大見込み`$0.480`、承認上限`$0.50`内。請求確定額は未取得。
+- gap: adapterは参照付きImage Editingも`$0.030`として返すが、公式料金は`from $0.045`。Provider返却cost未取得のため、staging E2E前に価格計測を修正する。
+- 不変: Production、Supabase、MANGAI Job／credit台帳、Storage、Canvas、生成画像のGit保存0件。
+- 検証: 集中34/34、Hub 882/882、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 71件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 価格計測gapの最小修正、全ゲート、Draft PR／CI。そのmerge後に参照付きstaging E2E。
+- 詳細: `docs/RELEASE_CANDIDATE_P3E_PROVIDER_RESUME_AND_TEN_SCENE_COMPARISON_20260825.md`
+
+---
+
 ## 2026-08-25 P3-C+D 品質Inspector・修正準備導線
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
