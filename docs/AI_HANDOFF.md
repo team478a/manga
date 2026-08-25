@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P1-F 固定10シーン追跡fixture（2026-08-25）
+
+- PR #348 merge commit `d11ea3d`を基準に、外部Providerなしの10シーン追跡fixtureと採点表を追加した。
+- 参照有無と人物／衣装driftを検出する。実画像の6視覚項目は`NOT_EVALUATED`。
+- Production／Provider／Job／Storage／credit操作0件。外部比較は責任者の明示承認待ち。
+
+---
+
 ## 0.0 P1-E 生成追跡情報（2026-08-25）
 
 - PR #347 merge commit `94a4853`を基準に、漫画コマ生成のworkflow versionと型付きprovenanceを追加した。

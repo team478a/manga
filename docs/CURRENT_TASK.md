@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P1-F 固定10シーン追跡fixture
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / VISUAL_NOT_EVALUATED / PRODUCTION_UNCHANGED`
+- Base: PR #348 merge commit `d11ea3d`。Branch: `codex/p1f-ten-scene-provenance-fixture`。
+- 実装: 同一人物／衣装の固定10シーンを、人物version、衣装version、必須参照role、bundle／resolver、Provider／model／workflowで採点する決定論的fixture。
+- 比較: 参照付きは自動6項目PASS。参照なしはreference coverage／bundle FAIL。人物・衣装drift混入も検出。
+- 境界: 顔、髪、衣装、体格、配色、構図は画像未生成のため`NOT_EVALUATED`。成功扱いにしない。
+- 検証: 集中5/5、Hub 859項目／863 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 69件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: commit・push・Draft PR後、全CI／Vercel成功で停止。外部Provider／実画像比較は責任者の明示承認待ち。
+- 詳細: `docs/RELEASE_CANDIDATE_P1F_TEN_SCENE_PROVENANCE_FIXTURE_20260825.md`
+
+---
+
 ## 2026-08-25 P1-E 生成追跡情報
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
