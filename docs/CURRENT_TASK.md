@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-25 P2-C コマ設計生成入力snapshot
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FLAG_DEFAULT_OFF / PRODUCTION_UNCHANGED`
+- Base: PR #352 merge commit `c91078f`。Branch: `codex/p2c-panel-design-generation`。
+- 実装: 保存済みコマ設計revision／JSONを単一・batch共通準備点でJob入力へ固定し、意味情報をPrompt compilerへ反映。履歴にはrevisionだけ表示。
+- Flag: `CLOUD_PANEL_DESIGN_GENERATION_ENABLED` strict・既定OFF。OFFまたは設計未作成では従来Prompt経路を維持。
+- 検証: 集中12/12、Hub 870/870、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: migration、Production、Provider、Worker実行、Job作成、Storage、credit操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。P2-Dはmerge後。
+- 詳細: `docs/RELEASE_CANDIDATE_P2C_PANEL_DESIGN_GENERATION_20260825.md`
+
+---
+
 ## 2026-08-25 P2-B コマ設計materialization・Inspector
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

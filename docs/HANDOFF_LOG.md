@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（P2-C コマ設計生成入力snapshot）
+
+- Branch: `codex/p2c-panel-design-generation`
+- Base: `origin/feature/manga-canvas-mvp`@`c91078f`（PR #352 merge commit）
+- AI Coreの生成入力schemaへversion付きpanel design snapshotを追加し、Hubの編集schemaも同じ正本を再利用した。
+- Flag ONかつ保存済み設計がある場合だけ、単一／batch共通準備点でrevisionと設計JSONをJob入力へ固定し、場面、人物動作、camera、小物、連続状態、negative条件をPromptへ反映する。
+- Flag OFFまたは設計未作成では従来Prompt経路を維持する。履歴UI／provenanceはrevision番号だけを公開し、Promptや設計本文を公開しない。
+- 集中12/12、Hub 870/870、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 70件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- migration、Production、Provider／Worker実行、Job作成、Storage、credit操作0件。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。P2-Dはmerge後。
+
+---
+
 ## 2026-08-25 Codex（P2-B コマ設計materialization・Inspector）
 
 - Branch: `codex/p2b-panel-design-inspector`

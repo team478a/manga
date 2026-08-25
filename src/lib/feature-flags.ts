@@ -5,6 +5,7 @@ export const featureFlagDefinitions = {
   CLOUD_PANEL_IMAGE_GENERATION_ENABLED: "case-insensitive",
   CLOUD_PANEL_INPAINTING_ENABLED: "strict",
   CLOUD_PANEL_OUTPAINTING_ENABLED: "strict",
+  CLOUD_PANEL_DESIGN_GENERATION_ENABLED: "strict",
   CLOUD_PROPOSAL_GENERATION_ENABLED: "case-insensitive",
   CLOUD_RESEARCH_MVP_ENABLED: "case-insensitive",
   CLOUD_RESEARCH_SEARCH_ENABLED: "case-insensitive",
