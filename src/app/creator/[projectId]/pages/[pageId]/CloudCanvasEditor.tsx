@@ -1994,6 +1994,19 @@ export function CloudCanvasEditor({
                       </button>
                     ) : null}
                   </div>
+                  <details className="mt-2 rounded bg-stone-50 p-2">
+                    <summary className="cursor-pointer font-bold">生成の追跡情報</summary>
+                    <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-2">
+                      <dt>Provider / Model</dt><dd>{job.generation_provenance.providerId} / {job.generation_provenance.modelId}</dd>
+                      <dt>Seed</dt><dd>{job.generation_provenance.seed ?? "未指定"}</dd>
+                      <dt>Workflow</dt><dd>{job.generation_provenance.workflowVersion ?? "従来経路"}</dd>
+                      <dt>人物version</dt><dd>{job.generation_provenance.characterVersions.length}件</dd>
+                      <dt>承認済み参照</dt><dd>{job.generation_provenance.references.length}件</dd>
+                      <dt>参照resolver</dt><dd>{job.generation_provenance.referenceResolverVersion ?? "未使用"}</dd>
+                      <dt>場所・小物version</dt><dd>{job.generation_provenance.worldVersions.length}件</dd>
+                      <dt>連続状態</dt><dd>{job.generation_provenance.continuityStateCount}件</dd>
+                    </dl>
+                  </details>
                   {job.output_asset_id && assetMap.get(job.output_asset_id) ? (
                     <img
                       alt="生成されたコマ候補"

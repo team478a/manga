@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P1-E 生成追跡情報
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #347 merge commit `94a4853`。Branch: `codex/p1e-generation-provenance`。
+- 実装: 漫画コマ単一／batch生成へ`storyboard-panel-v1`を固定し、人物・参照・画風・世界・連続状態・Provider・model・seedを型付き追跡情報へ集約。
+- UI: 生成履歴の折りたたみ欄へ安全な識別情報と件数を表示。Prompt、画像、signed URL、秘密情報は非公開。
+- 互換: migrationなし。従来Job／不正な旧inputは空値へfail closedし履歴を維持。
+- 検証: 集中4/4、Hub 856項目／860 tests、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 69件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production、Provider、Worker、Job、Storage、credit操作0件。
+- 次: commit・push・Draft PR後、全CI／Vercel成功で停止。merge後は外部Providerなしの固定10シーン追跡fixture。
+- 詳細: `docs/RELEASE_CANDIDATE_P1E_GENERATION_PROVENANCE_20260825.md`
+
+---
+
 ## 2026-08-25 P1-D コマ連続状態
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

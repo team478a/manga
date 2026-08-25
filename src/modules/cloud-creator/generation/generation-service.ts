@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { featureFlagEnabled } from "@/lib/feature-flags";
+import { extractCloudGenerationProvenance } from "@/lib/cloud-generation-provenance";
 import {
   cloudGenerationInputSchema,
   cloudImageRevisionPresetSchema,
@@ -148,6 +149,7 @@ export async function listCloudGenerationJobs(
       outpainting_direction: outpaintingDirection,
       revision_preset: revisionPreset,
       generation_operation: generationOperation,
+      generation_provenance: extractCloudGenerationProvenance(row.input,row.provider_id,row.model_id),
     } as CloudGenerationJob;
   });
   const completedIds = publicRows
