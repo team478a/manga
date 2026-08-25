@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P3-F 品質検査・部分修正 受入fixture（2026-08-25）
+
+- PR #360 merge commit `ebfab6f`を基準に、外部Providerなしの固定6コマfixtureで人数違い、衣装違い、文字切れを検出する。
+- normalized region、対象コマ、修正案、`NOT_EVALUATED`を追跡し、修正準備でAsset／候補／Jobを変更しない。
+- 既存KPIへ採用コマ費用、完成時間、人物重大不一致率、明示的生成失敗率を追加した。
+- 集中13/13、Hub 889/889、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、全ローカル品質ゲート成功。Production／staging、Provider、Job、credit、Storage操作0件。
+
+---
+
 ## 0.0 BFL Image Editing原価計測・予約guard（2026-08-25）
 
 - PR #359 merge commit `0174ef3`を基準に、BFL submitのProvider creditをUSD microsへ変換し、参照付きProのfallbackを`$0.045/MP`、最大4MP予約上限を`$0.180`へ更新した。

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-25 P3-F 品質検査・部分修正 受入fixture
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #360 merge commit `ebfab6f`。Branch: `codex/p3f-quality-acceptance`。
+- fixture: 固定6コマへ人数違い、衣装違い、文字切れを混入し、対象コマ／領域／修正案と視覚未評価を追跡。
+- 非破壊: 修正準備前後で全Asset、候補、Job、inspection snapshotが不変。自動採否・自動Jobなし。
+- KPI: 採用コマ費用、完成時間、人物重大不一致率、明示的生成失敗率を既存集計へ追加。
+- 検証: 集中13/13、Hub 889/889、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 不変: Production／staging、migration、Provider、Worker、Job、credit、Storage操作0件。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。staging適用／1 Job受入れは別承認。
+- 詳細: `docs/RELEASE_CANDIDATE_P3F_QUALITY_INSPECTION_ACCEPTANCE_20260825.md`
+
+---
+
 ## 2026-08-25 BFL Image Editing原価計測・予約guard
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
