@@ -11,6 +11,7 @@ import {
 const submitResponseSchema = z.object({
   id: z.string().min(1).max(300),
   polling_url: z.string().url(),
+  cost: z.number().finite().min(0).max(100_000).nullable().optional(),
 });
 const pollResponseSchema = z.object({
   status: z.string(),
@@ -28,6 +29,23 @@ const modelCostMicros = {
   "flux-2-max": 70_000,
   "flux-pro-1.0-fill": 50_000,
 } as const;
+
+const BFL_CREDIT_MICROS = 10_000;
+
+function fallbackCostMicros(
+  model: FluxModel,
+  hasReferenceImages: boolean,
+  width: number | undefined,
+  height: number | undefined,
+) {
+  if (model === "flux-pro-1.0-fill") return modelCostMicros[model];
+  const baseCost = model === "flux-2-pro" && hasReferenceImages
+    ? 45_000
+    : modelCostMicros[model];
+  const outputMegapixels =
+    (normalizeDimension(width) * normalizeDimension(height)) / (1024 * 1024);
+  return Math.ceil(baseCost * Math.max(1, outputMegapixels));
+}
 
 type FluxModel = keyof typeof modelCostMicros;
 
@@ -327,6 +345,7 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
           };
       let providerJobId = context.providerJobId;
       let pollingUrl: string;
+      let providerCostMicros: number | null = null;
       if (providerJobId) {
         providerJobId = z.string().min(1).max(300).parse(providerJobId);
         pollingUrl = safeBflUrl(
@@ -356,6 +375,8 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
         const job = submitResponseSchema.parse(await submitted.json());
         providerJobId = job.id;
         pollingUrl = safeBflUrl(job.polling_url);
+        if (job.cost !== null && job.cost !== undefined)
+          providerCostMicros = Math.round(job.cost * BFL_CREDIT_MICROS);
         await context.checkpointProviderJobId?.(providerJobId);
       }
       const startedAt = Date.now();
@@ -459,7 +480,16 @@ export class BlackForestLabsFluxImageProvider implements CloudImageGenerationPro
               fileName: `${context.jobId}.png`,
             },
           ],
-          usage: { actualCostMicros: modelCostMicros[this.config.model] },
+          usage: {
+            actualCostMicros:
+              providerCostMicros ??
+              fallbackCostMicros(
+                this.config.model,
+                referenceImageUrls.length > 0,
+                input.width,
+                input.height,
+              ),
+          },
           providerModeration: {
             decision: "allow" as const,
             reasons: [],

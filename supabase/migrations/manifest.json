@@ -426,7 +426,13 @@
       "description": "非破壊の品質検査runとfindingをappend-onlyで保存",
       "forwardSha256": "fd1c62adb016a8ef44eaf1fa7729b57d3e6e2c8ece77ad78b31d9892e426d361",
       "rollbackSha256": "0705ba3e83c47ce172ae3c821718c063e3703c675833e369ccf06167265d6621"
+    },
+    {
+      "id": "202608250006_bfl_flux2_pro_cost_guard",
+      "description": "BFL FLUX.2 Pro参照生成の原価予約上限を最大4MP料金へ更新",
+      "forwardSha256": "f642e17c6ee1986025e9d390d12a80346df8a4a79c17f950d688b7393aec326c",
+      "rollbackSha256": "e87a5944a6f04a28f676480a0db77362712cceadba00bcd33382a5ae0c128393"
     }
   ],
-  "schemaSha256": "49a5144fae5d3cae8dbcdaa9d480610a576091e1aa700039696919da2f23d49e"
+  "schemaSha256": "167286346eca630e35387864c8ad0803c5bd49aa0dc2ef57246b8abd3b9cd25c"
 }

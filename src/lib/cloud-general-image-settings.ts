@@ -13,7 +13,7 @@ export type CloudGeneralImageModel = z.infer<
 
 const pricingVersions: Record<CloudGeneralImageModel, string> = {
   "flux-2-klein-9b": "bfl-flux2-2026-03",
-  "flux-2-pro": "bfl-flux2-2026-03",
+  "flux-2-pro": "bfl-flux2-pro-2026-08",
   "flux-2-max": "bfl-flux2-2026-03",
 };
 

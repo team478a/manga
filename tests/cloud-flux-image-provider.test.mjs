@@ -348,7 +348,7 @@ test("BFL adapterは署名済み参照画像をmulti-reference入力へ渡す", 
       return new Response(new Uint8Array([137,80,78,71]), { status: 200 });
     },
   });
-  await provider.generate({
+  const result = await provider.generate({
     kind: "image",
     jobType: "background",
     prompt: "manga panel",
@@ -363,6 +363,70 @@ test("BFL adapterは署名済み参照画像をmulti-reference入力へ渡す", 
   const request = JSON.parse(calls[0].init.body);
   assert.match(request.input_image, /a\.png/);
   assert.match(request.input_image_2, /b\.png/);
+  assert.equal(result.usage.actualCostMicros, 45_000);
+});
+
+test("BFL adapterはProvider返却creditを実原価microsへ変換する", async () => {
+  let calls = 0;
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-2-pro",
+    capability,
+    pollIntervalMs: 1,
+    fetcher: async () => {
+      calls += 1;
+      if (calls === 1) return new Response(JSON.stringify({
+        id: "bfl-job-provider-cost",
+        polling_url: "https://api.bfl.ai/v1/get_result?id=bfl-job-provider-cost",
+        cost: 4.75,
+      }), { status: 200 });
+      if (calls === 2) return new Response(JSON.stringify({
+        status: "Ready",
+        result: { sample: "https://delivery.bfl.ai/result/provider-cost.png" },
+      }), { status: 200 });
+      return new Response(new Uint8Array([137,80,78,71]), { status: 200 });
+    },
+  });
+  const result = await provider.generate({
+    kind: "image",
+    jobType: "background",
+    operation: "image_to_image",
+    prompt: "manga panel",
+    negativePrompt: "",
+  }, { ...context, referenceImageUrls: ["https://project.supabase.co/reference.png"] });
+  assert.equal(result.usage.actualCostMicros, 47_500);
+});
+
+test("BFL adapterはcost取得不能時も最大4MPの参照生成を過少計上しない", async () => {
+  let calls = 0;
+  const provider = new BlackForestLabsFluxImageProvider({
+    apiKey: "bfl-test-key-with-at-least-twenty-characters",
+    model: "flux-2-pro",
+    capability,
+    pollIntervalMs: 1,
+    fetcher: async () => {
+      calls += 1;
+      if (calls === 1) return new Response(JSON.stringify({
+        status: "Ready",
+        result: { sample: "https://delivery.bfl.ai/result/resumed-4mp.png" },
+      }), { status: 200 });
+      return new Response(new Uint8Array([137,80,78,71]), { status: 200 });
+    },
+  });
+  const result = await provider.generate({
+    kind: "image",
+    jobType: "background",
+    operation: "image_to_image",
+    prompt: "manga panel",
+    negativePrompt: "",
+    width: 2048,
+    height: 2048,
+  }, {
+    ...context,
+    providerJobId: "bfl-job-resumed-4mp",
+    referenceImageUrls: ["https://project.supabase.co/reference.png"],
+  });
+  assert.equal(result.usage.actualCostMicros, 180_000);
 });
 
 test("BFL Fill adapterは元画像と白黒マスクをbase64で送信する", async () => {

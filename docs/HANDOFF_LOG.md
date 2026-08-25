@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-25 Codex（BFL Image Editing原価計測・予約guard）
+
+- Branch: `codex/fix-bfl-image-editing-cost`
+- Base: `origin/feature/manga-canvas-mvp`@`0174ef3`（PR #359 merge commit）
+- BFL submitのoptional costを安全に検証し、Provider creditからUSD microsへ変換して実原価へ使用する。
+- submit cost取得不能時は出力MPと参照有無でfallbackし、参照付きProは`$0.045/MP`。新pricing versionと追加migrationで4用途の最大4MP予約上限を`$0.180`へ更新する。
+- 旧migration／旧価格、内部credit数、Provider／model、Prompt、moderation、retry、timeout、Job／Storage契約は維持。
+- 集中16/16、Hub 886/886、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 72件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。Production／staging適用、Provider、Job、credit、Storage操作0件。
+- 次: 全ゲート後にcommit・push・Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-25 Codex（P3-E Provider再開・参照付き10シーン比較）
 
 - Branch: `codex/p3e-resume-refund-provider-comparison`

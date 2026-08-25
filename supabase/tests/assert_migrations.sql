@@ -274,10 +274,20 @@ begin
     select 1 from public.cloud_ai_provider_prices
     where provider_id = 'black-forest-labs'
       and model_id = 'flux-2-pro'
-      and pricing_version = 'bfl-flux2-2026-03'
+      and pricing_version = 'bfl-flux2-pro-2026-08'
+      and max_cost_micros = 180000
       and active
   ) then
     raise exception 'Cloud general image Provider price migration missing';
+  end if;
+  if exists (
+    select 1 from public.cloud_ai_provider_prices
+    where provider_id = 'black-forest-labs'
+      and model_id = 'flux-2-pro'
+      and pricing_version = 'bfl-flux2-2026-03'
+      and active
+  ) then
+    raise exception 'Cloud general image Provider legacy price is still active';
   end if;
   if not exists (
     select 1 from public.cloud_ai_provider_prices
@@ -1318,7 +1328,7 @@ begin
     idempotency_key,kind,job_type,provider_id,model_id,pricing_version,prompt_sha256,input,moderation,panel_specification
   ) values(
     v_target,v_batch,v_project,v_pages[1],v_panel,v_profile,0,1,'durable-batch-target-test',
-    'image','background','black-forest-labs','flux-2-pro','bfl-flux2-2026-03',repeat('a',64),
+    'image','background','black-forest-labs','flux-2-pro','bfl-flux2-pro-2026-08',repeat('a',64),
     jsonb_build_object('kind','image','jobType','background','prompt','test prompt'),
     jsonb_build_object('decision','allow','policyVersion','1'),
     jsonb_build_object('version',1,'panelId',v_panel)
