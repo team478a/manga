@@ -69,3 +69,30 @@ test("作品画面は進捗・停止・再開・失敗箇所からの再開を�
   assert.match(autoRefresh, /router\.refresh/);
   assert.match(autoRefresh, /5秒ごとに自動更新/);
 });
+
+test("P4-Dは既存PDFを維持しimagesとProject JSONを既定OFFで追加する", () => {
+  const migration = read("supabase/migrations/202608260002_cloud_durable_export_formats.sql");
+  const rollback = read("supabase/rollbacks/202608260002_cloud_durable_export_formats.sql");
+  const flags = read("src/lib/feature-flags.ts");
+  const service = read("src/modules/cloud-creator/export/durable-export-service.ts");
+  const panel = read("src/app/creator/[projectId]/DurableExportPanel.tsx");
+  assert.match(migration, /format in\('pdf','images','project_json'\)/);
+  assert.match(migration, /application\/json/);
+  assert.match(rollback, /rollback_requires_no_extended_export_jobs/);
+  assert.match(flags, /MANGAI_CLOUD_DURABLE_EXPORT_FORMATS_ENABLED: "strict"/);
+  assert.match(service, /format !== "pdf".*MANGAI_CLOUD_DURABLE_EXPORT_FORMATS_ENABLED/s);
+  assert.match(panel, /extendedFormatsEnabled/);
+});
+
+test("P4-D Workerはsegment再開からPNG ZIPとversioned Project JSONを完成する", () => {
+  const worker = read("src/modules/cloud-creator/export/process-export-segment.ts");
+  const repository = read("src/modules/cloud-creator/export/manga-export-repository.ts");
+  assert.match(worker, /createImagesZip/);
+  assert.match(worker, /pages\.zip/);
+  assert.match(worker, /schemaVersion: 1/);
+  assert.match(worker, /modeProfile: project\.completion_mode_profile/);
+  assert.match(worker, /exportJobId: job\.id/);
+  assert.match(worker, /sort\(\(a, b\) => a\.pageNumber - b\.pageNumber\)/);
+  assert.match(repository, /page_storage_paths/);
+  assert.match(repository, /completion_mode_profile/);
+});

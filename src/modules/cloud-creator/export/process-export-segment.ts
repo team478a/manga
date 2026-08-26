@@ -1,5 +1,6 @@
 import {
   createPagesPdf,
+  createImagesZip,
   mergePagesPdfs,
   type ExportImage,
 } from "@mangai/export-core";
@@ -16,6 +17,8 @@ import {
   createMangaExportRepositoryClient,
   failExportJob,
   listExportSegmentPaths,
+  listExportSegments,
+  loadExportProject,
   loadExportAssets,
   loadExportSegment,
   loadProjectDpi,
@@ -87,37 +90,57 @@ export async function processExportSegment(input: {
     }
 
     const dpi = await loadProjectDpi(client, job.projectId);
-    const segmentPdf = await createPagesPdf(images, { dpi });
-    const segmentPath = exportJobPath(
-      job,
-      `segments/${String(plan.segmentIndex).padStart(3, "0")}.pdf`,
-    );
-    await uploadExportObject(
-      client,
-      segmentPath,
-      segmentPdf,
-      "application/pdf",
-    );
+    const segmentDocument = {
+      schemaVersion: 1,
+      jobId: job.id,
+      projectId: job.projectId,
+      segmentIndex: plan.segmentIndex,
+      pages: canvases.map(({ page, canvas }) => ({
+        id: page.id, pageNumber: page.page_number, revision: page.revision,
+        width: page.width, height: page.height, canvas,
+      })),
+    };
+    const segmentBytes = job.format === "pdf"
+      ? await createPagesPdf(images, { dpi })
+      : new TextEncoder().encode(JSON.stringify(segmentDocument));
+    const segmentPath = exportJobPath(job, `segments/${String(plan.segmentIndex).padStart(3, "0")}.${job.format === "pdf" ? "pdf" : "json"}`);
+    await uploadExportObject(client, segmentPath, segmentBytes, job.format === "pdf" ? "application/pdf" : "application/json");
 
     let outputPath: string | null = null;
     let outputBytes: Uint8Array | null = null;
     if (plan.isFinal) {
-      const segmentPaths = await listExportSegmentPaths(client, job.id);
-      const pdfs: Uint8Array[] = [];
-      for (const storagePath of segmentPaths) {
-        pdfs.push(
-          await downloadExportObject(client, "cloud-exports", storagePath),
-        );
+      if (job.format === "pdf") {
+        const pdfs: Uint8Array[] = [];
+        for (const storagePath of await listExportSegmentPaths(client, job.id))
+          pdfs.push(await downloadExportObject(client, "cloud-exports", storagePath));
+        pdfs.push(segmentBytes);
+        outputBytes = await mergePagesPdfs(pdfs);
+        outputPath = exportJobPath(job, "manuscript.pdf");
+        await uploadExportObject(client, outputPath, outputBytes, "application/pdf");
+      } else if (job.format === "images") {
+        const prior = await listExportSegments(client, job.id);
+        const paths = [...prior.flatMap((segment) => segment.page_storage_paths as string[]), ...pagePaths];
+        const allImages: ExportImage[] = [];
+        for (const path of paths) allImages.push({ fileName: path.split("/").at(-1)!, bytes: await downloadExportObject(client, "cloud-exports", path), mimeType: "image/png", width: 1, height: 1 });
+        outputBytes = await createImagesZip(allImages);
+        outputPath = exportJobPath(job, "pages.zip");
+        await uploadExportObject(client, outputPath, outputBytes, "application/zip");
+      } else {
+        const prior = await listExportSegments(client, job.id);
+        const documents = [];
+        for (const segment of prior) documents.push(JSON.parse(new TextDecoder().decode(await downloadExportObject(client, "cloud-exports", segment.pdf_storage_path))));
+        documents.push(segmentDocument);
+        const project = await loadExportProject(client, job.projectId);
+        outputBytes = new TextEncoder().encode(JSON.stringify({
+          schemaVersion: 1,
+          modeProfile: project.completion_mode_profile,
+          project: { id: project.id, title: project.title, description: project.description, readingDirection: project.reading_direction, width: project.width, height: project.height, dpi: project.dpi, revision: project.revision },
+          pages: documents.flatMap((document) => document.pages).sort((a, b) => a.pageNumber - b.pageNumber),
+          provenance: { exportJobId: job.id, format: "project_json", generatedAt: new Date().toISOString() },
+        }));
+        outputPath = exportJobPath(job, "project.json");
+        await uploadExportObject(client, outputPath, outputBytes, "application/json");
       }
-      pdfs.push(segmentPdf);
-      outputBytes = await mergePagesPdfs(pdfs);
-      outputPath = exportJobPath(job, "manuscript.pdf");
-      await uploadExportObject(
-        client,
-        outputPath,
-        outputBytes,
-        "application/pdf",
-      );
     }
 
     await completeExportSegment(client, {

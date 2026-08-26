@@ -9,6 +9,7 @@ export type ExportJobClaim = {
   completedPages: number;
   segmentSize: number;
   leaseToken: string;
+  format: "pdf" | "images" | "project_json";
 };
 
 export function visibleCanvasAssetIds(canvas: PageCanvas) {
