@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-26 P4-E JPEG export adapter
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PNG_DEFAULT_UNCHANGED / PRODUCTION_UNCHANGED`
+- Base: PR #366 merge commit `9b55f768`。Branch: `codex/p4e-jpeg-export`。
+- adapter: Node専用`@mangai/export-core/jpeg`へquality 90、白背景flatten、4:4:4、`.jpg`／`image/jpeg`を固定した。
+- integrity: format/version付きmanifestへ順序、寸法、byte size、各画像SHA-256を保存し、canonical manifest bytesのSHA-256を返す。同一入力は同一結果。
+- 境界: browser利用のmain entrypointへSharpを混在させず、既存PNG／PDF／Project JSON／UIを変更しない。
+- 不変: DB／migration、Production／staging、Provider／Worker、Job、credit、Storage操作0件。
+- 検証: 集中4/4、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、export-core／Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_P4E_JPEG_EXPORT_ADAPTER_20260826.md`
+
+---
+
 ## 2026-08-26 P4-D durable images／Project JSON
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
