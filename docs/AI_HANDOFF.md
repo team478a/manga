@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Staging durable export受入れ準備（2026-08-26）
+
+- 初期ユーザー向け最後の外部gateを`STAGING_DURABLE_EXPORT_ACCEPTANCE_RUNBOOK_20260826.md`へ固定した。
+- staging固定一般向けProject 1件だけでPDF／PNG ZIP／Project JSON、中断再開、owner分離、署名URL、cleanup、queue、Flag既定OFF復元を検証する。
+- staging project一致、preflight、migration drift、既存queue、対象データを確認できなければ変更前に停止する。
+- スマートフォン作業中かつ対象Supabaseアクセスなしのため、migration、Flag、Worker、Job、Storage、Provider、credit操作は行わない。
+- 集中6/6、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P0〜P4 Provider証跡訂正・Production受入れ準備（2026-08-26）
 
 - PR #369のcloseout監査は、P3-Eで既に完了した責任者承認済みBFL参照付き10シーン比較を見落としていた。

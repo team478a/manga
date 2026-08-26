@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-26 Codex（Staging durable export受入れ準備）
+
+- Branch: `codex/staging-durable-export-acceptance-runbook`
+- Base: `origin/feature/manga-canvas-mvp`@`7e2ba90`（PR #370 merge commit）
+- 最後の外部gateをstaging 1 Project／3形式／中断再開／owner A・B／cleanup／Flag復元のrunbookへ固定し、文書契約テストを追加する。
+- Production／staging、migration、Flag、Provider／Worker、Job、Storage、credit操作0件。
+- 集中6/6、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 2026-08-26 Codex（P0〜P4 Provider証跡訂正・Production受入れ準備）
 
 - Branch: `codex/fix-p0-p4-provider-evidence`
