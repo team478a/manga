@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0〜P4 closeout監査（2026-08-26）
+
+- PR #368 merge commit `d208541`を基準に、初期ユーザー向け7完了条件をrepository／external gateへ分類した。
+- 5件はrepository成功。人物重大不一致20%以下は実画像未評価、durable exportはstaging実Storage／Worker未受入れのため、初期ユーザー提供READYとはまだ判定しない。
+- 次は承認後のstaging durable export、その後に費用上限付き10シーン実画像比較。Production／Provider／credit操作0件。
+- 集中3/3、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P4-F 完成モード・書き出し総合受入（2026-08-26）
 
 - PR #367 merge commit `eb9e9dd`を基準に、長編／Kindle解説／成人向けlocal-only固定3作品のrepository-only受入fixtureを追加した。
