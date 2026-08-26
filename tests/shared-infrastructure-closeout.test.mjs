@@ -104,7 +104,10 @@ test("signed URLとresilienceは異なるpolicy／failure意味を統合しな�
       read("src/lib/cloud-runtime-resilience.ts"),
     ]);
   assert.match(asset, /createSignedUrl\(asset\.storage_path, 300\)/);
-  assert.match(exportService, /createSignedUrl\(data\.output_storage_path, 300, \{ download: "mangai-manuscript\.pdf" \}\)/);
+  assert.match(exportService, /pdf: "mangai-manuscript\.pdf"/);
+  assert.match(exportService, /images: "mangai-pages\.zip"/);
+  assert.match(exportService, /project_json: "mangai-project\.json"/);
+  assert.match(exportService, /createSignedUrl\(data\.output_storage_path, 300, \{ download: downloadNames\[data\.format as CloudDurableExportFormat\] \}\)/);
   assert.match(checkout, /createSignedUrl\(order\.digital_products\.file_url, 300, \{/);
   assert.match(checkout, /download: true/);
   assert.match(monitor, /createSignedUrl\(path, 600\)/);
