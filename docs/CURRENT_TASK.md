@@ -1,10 +1,22 @@
 # MANGAI Current Task
 
+## 2026-08-26 P0〜P4 Provider証跡訂正・Production受入れ準備
+
+- 状態: `CLOSEOUT_EVIDENCE_CORRECTED / 6_OF_7_ACCEPTED / PRODUCTION_ACCEPTANCE_BLOCKED_BY_ACCESS`
+- Base: PR #369 merge commit `b41747f`。Branch: `codex/fix-p0-p4-provider-evidence`。
+- 訂正: P3-Eで責任者承認済みBFL参照付き10シーンを既に実施し、重大な別人化防止10/10で受入基準8/10以上を達成済み。closeoutの外部承認待ち判定をProvider受入れ成功へ修正する。
+- 残り: staging durable export実Storage／Worker受入れ1件。初期ユーザー提供READYはまだ判定しない。
+- Production BFL: migration適用後の原価guard確認用1 Jobは最大予約`$0.180`で承認済み。ただし現在のSupabaseログインには対象project `vmdsyxykcrgxcdbrwlkv`へのアクセスがなく、スマートフォン作業中のため実行しない。手順は専用runbookへ固定する。
+- 不変: Production／staging、migration、Feature Flag、Provider／Worker、Job、Storage、credit操作0件。
+- 検証: 集中3/3、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 2026-08-26 P0〜P4 closeout監査
 
 - 状態: `REPOSITORY_SCOPE_COMPLETE / INITIAL_USER_READINESS_EXTERNAL_GATES_PENDING / PRODUCTION_UNCHANGED`
 - Base: PR #368 merge commit `d208541`。Branch: `codex/p0-p4-closeout-audit`。
-- matrix: 初期ユーザー向け7完了条件を固定し、5件repository成功、人物重大不一致率は実Provider承認待ち、durable exportはrepository成功／staging受入れ待ちと分類。
+- matrix（後続訂正前）: 初期ユーザー向け7完了条件を固定し、人物重大不一致率を実Provider承認待ちと分類したが、P3-E完了証跡の見落としがあり後続PRで訂正する。
 - guard: repository成功と実環境成功を混同しない自動テストを追加。
 - 次: 責任者承認後、staging migration／durable export 1件受入れ、次に費用上限付き10シーン実画像比較。順序を逆転しない。
 - 不変: Production／staging、migration、Feature Flag、Provider／Worker、Job、Storage、credit操作0件。

@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P0〜P4 Provider証跡訂正・Production受入れ準備（2026-08-26）
+
+- PR #369のcloseout監査は、P3-Eで既に完了した責任者承認済みBFL参照付き10シーン比較を見落としていた。
+- 人物重大不一致条件を`PROVIDER_ACCEPTANCE_PASSED`へ訂正する。重大な別人化防止10/10で、受入基準8/10以上を達成済み。
+- 初期ユーザー向け7条件は6件受入れ済み。残る外部gateはstaging durable export実Storage／Worker受入れ1件。
+- Production原価guard確認用BFL 1 Job（最大予約`$0.180`）は承認済みだが、対象Supabase projectへのアクセスがないため未実施。スマートフォン作業中はProductionを変更しない。
+- `PRODUCTION_BFL_COST_ACCEPTANCE_RUNBOOK_20260826.md`を正本として、PC復帰後も対象project・migration・価格version・queueを読み取り確認してから1 Jobだけ実行する。
+- 集中3/3、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P0〜P4 closeout監査（2026-08-26）
 
 - PR #368 merge commit `d208541`を基準に、初期ユーザー向け7完了条件をrepository／external gateへ分類した。
