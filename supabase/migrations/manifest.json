@@ -438,6 +438,12 @@
       "description": "Cloud新規作品へversion付き完成モードprofileを保存",
       "forwardSha256": "9ed1085740fafcccf0fc0fcf8b16c72dd2280837bdefdef50daba53903f824f3",
       "rollbackSha256": "c939f7f64149e3e9b8ee0d35358ddd3a59240f0ad5e08e438dea49a7588a67b8"
+    },
+    {
+      "id": "202608260002_cloud_durable_export_formats",
+      "description": "Flag配下で長編連番PNG ZIPとProject JSON書き出し形式を追加",
+      "forwardSha256": "a3ba7b35744516faa1862a4f7d7039fb2df283ff546ae9a7a463770893fedbc5",
+      "rollbackSha256": "e2083c7c190d3f37707b6c88d60f53728792c3512af39a47b0b3958c9a2d6590"
     }
   ],
   "schemaSha256": "167286346eca630e35387864c8ad0803c5bd49aa0dc2ef57246b8abd3b9cd25c"

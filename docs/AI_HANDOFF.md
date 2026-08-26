@@ -2561,3 +2561,10 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - mode未設定Projectは従来動作。Production／Provider／Job／credit／Storage操作なし。
 
 ---
+# 2026-08-26 P4-D handoff
+
+- `codex/p4d-durable-export-formats`は既存durable PDF状態機械へ連番PNG ZIPとversioned Project JSONを追加した。
+- 新2形式はstrict Flag既定OFF。既存PDF、Storage prefix、lease／再開は不変。
+- migration／Flag未適用、Worker／Job／Storage／Provider／credit操作なし。
+
+---

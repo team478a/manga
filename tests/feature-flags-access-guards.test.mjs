@@ -10,8 +10,12 @@ import {
   featureFlagEnabled,
 } from "../src/lib/feature-flags.ts";
 
-test("Feature Flag registryは監査済み24件を保持する", () => {
-  assert.equal(Object.keys(featureFlagDefinitions).length, 24);
+test("Feature Flag registryは監査済み25件を保持する", () => {
+  assert.equal(Object.keys(featureFlagDefinitions).length, 25);
+  assert.equal(
+    featureFlagDefinitions.MANGAI_CLOUD_DURABLE_EXPORT_FORMATS_ENABLED,
+    "strict",
+  );
   assert.equal(
     featureFlagDefinitions.CLOUD_PANEL_INPAINTING_ENABLED,
     "strict",

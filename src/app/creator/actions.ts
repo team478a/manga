@@ -421,16 +421,16 @@ export async function markCloudPageRevisionAddressedAction(
   redirect(`${pagePath}?message=${encodeURIComponent("修正完了として再確認します")}`);
 }
 
-export async function startCloudExportAction(projectId: string) {
-  const parsed = z.string().uuid().safeParse(projectId);
+export async function startCloudExportAction(projectId: string, format: "pdf" | "images" | "project_json" = "pdf") {
+  const parsed = z.object({ projectId: z.string().uuid(), format: z.enum(["pdf", "images", "project_json"]) }).safeParse({ projectId, format });
   if (!parsed.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));
   try {
-    await createCloudExportJob(parsed.data);
+    await createCloudExportJob(parsed.data.projectId, parsed.data.format);
   } catch (error) {
-    redirect(`/creator/${parsed.data}?error=${encodeURIComponent(domainMessage(error, "書き出しを開始できませんでした。"))}`);
+    redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "書き出しを開始できませんでした。"))}`);
   }
-  revalidatePath(`/creator/${parsed.data}`);
-  redirect(`/creator/${parsed.data}?message=${encodeURIComponent("PDF書き出しを受け付けました")}`);
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("書き出しを受け付けました")}`);
 }
 
 export async function createCloudProjectCheckpointAction(projectId: string, kind: "checkpoint" | "release", formData: FormData) {

@@ -41,6 +41,7 @@ import {
 } from "@/lib/cloud-creator-server";
 import { getCloudGenerationBatchPreflight } from "@/modules/cloud-creator/generation/batch-preflight-service";
 import { listCloudExportJobs } from "@/modules/cloud-creator/export/durable-export-service";
+import { featureFlagEnabled } from "@/lib/feature-flags";
 import { LongformPageManager } from "./LongformPageManager";
 import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
@@ -305,6 +306,7 @@ export default async function CloudProjectPage({
         jobs={exportHistory.jobs}
         projectId={projectId}
         ready={Boolean(exportReadiness?.ready)}
+        extendedFormatsEnabled={featureFlagEnabled("MANGAI_CLOUD_DURABLE_EXPORT_FORMATS_ENABLED")}
       />
       <ProjectCheckpointPanel
         available={checkpointHistory.available}

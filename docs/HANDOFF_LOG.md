@@ -5699,3 +5699,10 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - DB変更、Production、Provider、Job、credit、Storage操作なし。
 
 ---
+# 2026-08-26 P4-D durable export formats
+
+- PR #365 merge `b2d3249`をbaseに、長編連番PNG ZIPとProject JSONを既存durable exportへ追加。
+- schema version／mode／Project／page／Canvas／provenanceをJSONへ保持。新形式は専用strict Flag既定OFF。
+- Production migration、Flag、Worker、Job、Storage、Provider、credit操作なし。
+
+---

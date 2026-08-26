@@ -13,6 +13,7 @@ type ClaimedExportJobRow = {
   completed_pages: number;
   segment_size: number;
   lease_token: string;
+  format: "pdf" | "images" | "project_json";
 };
 
 export function createMangaExportRepositoryClient() {
@@ -40,6 +41,7 @@ export async function claimExportJob(
         completedPages: row.completed_pages,
         segmentSize: row.segment_size,
         leaseToken: row.lease_token,
+        format: row.format,
       }
     : null;
 }
@@ -107,6 +109,14 @@ export async function loadProjectDpi(
   return result.data.dpi;
 }
 
+export async function loadExportProject(client: MangaExportAdminClient, projectId: string) {
+  const result = await client.from("cloud_projects")
+    .select("id,title,description,reading_direction,width,height,dpi,revision,completion_mode_profile")
+    .eq("id", projectId).single();
+  if (result.error || !result.data) throw new Error("export_project_missing");
+  return result.data;
+}
+
 export async function listExportSegmentPaths(
   client: MangaExportAdminClient,
   jobId: string,
@@ -118,6 +128,14 @@ export async function listExportSegmentPaths(
     .order("segment_index");
   if (result.error) throw new Error("export_segments_missing");
   return (result.data ?? []).map((segment) => segment.pdf_storage_path);
+}
+
+export async function listExportSegments(client: MangaExportAdminClient, jobId: string) {
+  const result = await client.from("cloud_export_segments")
+    .select("segment_index,pdf_storage_path,page_storage_paths")
+    .eq("job_id", jobId).order("segment_index");
+  if (result.error) throw new Error("export_segments_missing");
+  return result.data ?? [];
 }
 
 export async function completeExportSegment(

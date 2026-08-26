@@ -3,11 +3,14 @@ import { DomainError, ValidationError } from "@/lib/domain-errors";
 import { cloudCreatorContext } from "../auth-context";
 import { getCloudManuscriptPreflight } from "../projects/manuscript-preflight-service";
 import { assertCloudProjectComplete } from "../projects/page-completion-service";
+import { featureFlagEnabled } from "@/lib/feature-flags";
+
+export type CloudDurableExportFormat = "pdf" | "images" | "project_json";
 
 export type CloudExportJob = {
   id: string;
   projectId: string;
-  format: "pdf";
+  format: CloudDurableExportFormat;
   status: "queued" | "running" | "paused" | "completed" | "failed" | "canceled";
   totalPages: number;
   completedPages: number;
@@ -22,7 +25,7 @@ function mapJob(row: Record<string, unknown>): CloudExportJob {
   return {
     id: String(row.id),
     projectId: String(row.project_id),
-    format: "pdf",
+    format: row.format as CloudDurableExportFormat,
     status: row.status as CloudExportJob["status"],
     totalPages: Number(row.total_pages),
     completedPages: Number(row.completed_pages),
@@ -48,7 +51,9 @@ export async function listCloudExportJobs(projectId: string) {
   return { available: true, jobs: (data ?? []).map((row) => mapJob(row as Record<string, unknown>)) };
 }
 
-export async function createCloudExportJob(projectId: string) {
+export async function createCloudExportJob(projectId: string, format: CloudDurableExportFormat = "pdf") {
+  if (format !== "pdf" && !featureFlagEnabled("MANGAI_CLOUD_DURABLE_EXPORT_FORMATS_ENABLED"))
+    throw new ValidationError("長編画像／Project JSON書き出しは現在停止中です。");
   const [report] = await Promise.all([
     assertCloudProjectComplete(projectId),
     getCloudManuscriptPreflight(projectId, { requireFinalizedPages: true }).then((legacy) => {
@@ -59,7 +64,7 @@ export async function createCloudExportJob(projectId: string) {
   ]);
   if (!report.complete) throw new ValidationError("原稿チェックの要修正項目を解消し、すべてのページを確定してください。");
   const { supabase } = await cloudCreatorContext();
-  const { data, error } = await supabase.rpc("create_cloud_export_job", { p_project_id: projectId, p_format: "pdf" });
+  const { data, error } = await supabase.rpc("create_cloud_export_job", { p_project_id: projectId, p_format: format });
   if (error?.code === "42883") throw new ValidationError("長編書き出し用migrationを適用してください。");
   if (error?.message?.includes("cloud_export_already_active")) throw new ValidationError("進行中の書き出しがあります。");
   if (error || !data) throw new DomainError("INTERNAL_ERROR", "書き出しを開始できませんでした。", { cause: error });
@@ -77,16 +82,17 @@ export async function createCloudExportDownloadUrl(jobId: string) {
   const { supabase, profile } = await cloudCreatorContext();
   const { data, error } = await supabase
     .from("cloud_export_jobs")
-    .select("output_bucket,output_storage_path,status")
+    .select("output_bucket,output_storage_path,status,format")
     .eq("id", jobId)
     .eq("created_by_profile_id", profile.id)
     .maybeSingle();
   if (error || !data || data.status !== "completed" || !data.output_storage_path)
     throw new ValidationError("完成した書き出しファイルがありません。");
   const admin = createAdminClient();
+  const downloadNames: Record<CloudDurableExportFormat, string> = { pdf: "mangai-manuscript.pdf", images: "mangai-pages.zip", project_json: "mangai-project.json" };
   const signed = await admin.storage
     .from(data.output_bucket ?? "cloud-exports")
-    .createSignedUrl(data.output_storage_path, 300, { download: "mangai-manuscript.pdf" });
+    .createSignedUrl(data.output_storage_path, 300, { download: downloadNames[data.format as CloudDurableExportFormat] });
   if (signed.error || !signed.data?.signedUrl)
     throw new DomainError("INTERNAL_ERROR", "ダウンロードを準備できませんでした。", { cause: signed.error });
   return signed.data.signedUrl;

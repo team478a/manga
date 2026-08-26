@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-26 P4-D durable images／Project JSON
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / FEATURE_FLAG_OFF / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
+- Base: PR #365 merge commit `b2d3249`。Branch: `codex/p4d-durable-export-formats`。
+- export: 既存PDF状態機械へ連番PNG ZIPとversioned Project JSONを追加。4ページsegment、lease、再開、Storage pathを共用。
+- JSON: schema version、mode profile、Project、page／Canvas、job provenanceをページ順で保存。
+- Flag: `MANGAI_CLOUD_DURABLE_EXPORT_FORMATS_ENABLED`はstrict、既定OFF。PDFは不変。
+- 不変: Production／staging適用、Flag変更、Worker、Job、Storage、Provider、credit操作0件。
+- 検証: 集中7/7、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_P4D_DURABLE_EXPORT_FORMATS_20260826.md`
+
+---
+
 ## 2026-08-26 P4-C mode別preflight
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
