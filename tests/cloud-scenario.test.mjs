@@ -84,6 +84,25 @@ test("シナリオschemaは三幕と主人公1名を検証する", () => {
   assert.equal(cloudStoryScenarioResultSchema.safeParse({ ...scenario, characters: scenario.characters.map((item) => ({ ...item, role: "supporting" })) }).success, false);
 });
 
+test("4ページ短編を明示指定すると32ページへ拡張せず三幕で保存できる", () => {
+  const short = {
+    ...scenario,
+    pageCount: 4,
+    acts: [
+      { ...scenario.acts[0], pageStart: 1, pageEnd: 1 },
+      { ...scenario.acts[1], pageStart: 2, pageEnd: 3 },
+      { ...scenario.acts[2], pageStart: 4, pageEnd: 4 },
+    ],
+    scenes: [
+      { ...scenario.scenes[0], index: 1, pageStart: 1, pageEnd: 1 },
+      { ...scenario.scenes[1], index: 2, pageStart: 2, pageEnd: 3 },
+      { ...scenario.scenes[2], index: 3, pageStart: 4, pageEnd: 4 },
+    ],
+  };
+  assert.equal(scenarioPageCount({ pageCount: 4, publicationFormat: "one_shot" }), 4);
+  assert.equal(cloudStoryScenarioResultSchema.parse(short).pageCount, 4);
+});
+
 test("採用企画から構造化シナリオを生成しProvider保存を無効化する", async () => {
   let body;
   const result = await runCloudScenarioAi({

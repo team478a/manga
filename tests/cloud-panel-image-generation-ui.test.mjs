@@ -49,6 +49,10 @@ test("Canvasは選択コマからAIおまかせ生成と対象コマ配置を提
   assert.match(editor, /target_panel_id/);
   assert.match(editor, /画像生成を受付中…/);
   assert.match(editor, /requestingPanelGeneration/);
+  assert.match(editor, /panelGenerationBlockReason/);
+  assert.match(editor, /生成したいコマをCanvasまたはレイヤー一覧で選択/);
+  assert.match(editor, /最初のコマを選択する/);
+  assert.match(editor, /利用可能な生成クレジットがありません/);
 });
 
 test("Canvasは画角・カメラ・人物配置・視線を選んで通常生成だけへ送る", () => {
@@ -140,6 +144,8 @@ test("既存原稿は追加生成なしで不採用画像・短い縦書き・�
   assert.match(editor, /不採用画像をCanvasから外す（追加生成なし）/);
   assert.match(editor, /countRepairableShortVerticalDialogue/);
   assert.match(editor, /repairShortVerticalDialogueLayout/);
+  assert.match(editor, /repairLinkedDialogueBounds/);
+  assert.match(editor, /コマ外文字/);
   assert.match(editor, /countReversedPanelBackgroundStacks/);
   assert.match(editor, /repairReversedPanelBackgroundStacks/);
   assert.match(editor, /画像の追加生成やクレジット消費はありません/);

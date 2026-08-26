@@ -54,6 +54,19 @@ test("採用シナリオから構造化ネームを生成しProvider保存を無
   assert.equal(request.reasoning.effort, "low");
   assert.ok(!JSON.stringify(request).includes("sk-test"));
 });
+test("4ページ短編は分割せず4ページのままネームを生成する", async () => {
+  const shortBody = { ...body, pageCount: 4, pages: Array.from({ length: 4 }, (_, index) => page(index + 1)) };
+  const generated = await runCloudStoryboardAi({
+    profileId,
+    report,
+    scenario: { ...scenario, result: { ...scenario.result, pageCount: 4 } },
+    now: result.generatedAt,
+    runtimeConfig: { apiKey: "sk-test-00000000000000000000", model: "gpt-5.6-terra" },
+    fetchImplementation: async () => new Response(JSON.stringify({ output_text: JSON.stringify(shortBody) })),
+  });
+  assert.equal(generated.pageCount, 4);
+  assert.equal(generated.pages.length, 4);
+});
 test("長編ネームは全体設計後に8ページ単位で並列生成する", async () => {
   const longScenario = { ...scenario, result: { ...scenario.result, pageCount: 32 } };
   const ranges = splitStoryboardPageRanges(32);

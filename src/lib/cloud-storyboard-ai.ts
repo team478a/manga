@@ -64,10 +64,10 @@ const outputSchema = {
   type: "object", additionalProperties: false,
   required: ["title", "pageCount", "readingDirection", "pages", "productionNotes"],
   properties: {
-    title: text(200), pageCount: { type: "integer", minimum: 8, maximum: 48 },
+    title: text(200), pageCount: { type: "integer", minimum: 4, maximum: 48 },
     readingDirection: { type: "string", enum: ["rtl"] },
     pages: {
-      type: "array", minItems: 8, maxItems: 48,
+      type: "array", minItems: 4, maxItems: 48,
       items: pageOutputSchema,
     },
     productionNotes: productionNotesOutputSchema,
@@ -389,7 +389,7 @@ export async function runCloudStoryboardAi(input: {
     throw new ValidationError("修正元ネームを確認してください。");
   let pageCount: number;
   try { pageCount = assertStoryboardPageCount(input.scenario.result.pageCount); }
-  catch { throw new ValidationError("ネーム生成v1は8〜48ページのシナリオに対応しています。"); }
+  catch { throw new ValidationError("ネーム生成v1は4〜48ページのシナリオに対応しています。"); }
   const runtime = input.runtimeConfig ?? await getCloudResearchAiRuntimeConfig();
   const generatedAt = input.now ?? new Date().toISOString();
   const shared = {

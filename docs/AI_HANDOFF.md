@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 モニター進行阻害フィードバック修正（2026-08-26）
+
+- 生成ボタンの禁止表示へ理由と回復操作を追加し、コマ未選択、利用枠、生成停止、credit不足を区別する。
+- 吹き出し外へずれたunlocked既存文字を、追加生成・credit消費なしで吹き出し内へ戻す。
+- 市場分析へ4／8ページを追加し、scenario／storyboardの最小を4ページへ統一する。明示した4ページを32ページへ拡張しない。
+- Production／staging、migration、Flag、Provider、Job、Storage、credit操作0件。モニター報告状態も未変更。
+- 関連62/62、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 Staging durable export受入れ準備（2026-08-26）
 
 - 初期ユーザー向け最後の外部gateを`STAGING_DURABLE_EXPORT_ACCEPTANCE_RUNBOOK_20260826.md`へ固定した。

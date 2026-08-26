@@ -41,10 +41,10 @@ export const cloudStoryScenarioResultSchema = z
     containsGeneratedMarketNumbers: z.literal(false),
     title: z.string().trim().min(1).max(200),
     oneSentencePitch: z.string().trim().min(1).max(1000),
-    pageCount: z.number().int().min(8).max(200),
+    pageCount: z.number().int().min(4).max(200),
     characters: z.array(characterSchema).min(2).max(6),
     acts: z.array(actSchema).length(3),
-    scenes: z.array(sceneSchema).min(6).max(20),
+    scenes: z.array(sceneSchema).min(3).max(20),
     commercialAlignment: z.object({
       openingHook: z.string().trim().min(1).max(1000),
       readerPayoff: z.string().trim().min(1).max(1000),
@@ -82,6 +82,6 @@ export function scenarioPageCount(input: {
   pageCount: number;
   publicationFormat: "auto" | "series" | "one_shot";
 }) {
-  if (input.pageCount >= 8 && input.pageCount <= 200) return input.pageCount;
+  if (input.pageCount >= 4 && input.pageCount <= 200) return input.pageCount;
   return input.publicationFormat === "series" ? 24 : 32;
 }

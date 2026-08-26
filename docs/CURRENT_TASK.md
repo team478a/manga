@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-26 モニター進行阻害フィードバック修正
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Base: PR #371 merge commit `9b6a37c`。Branch: `codex/fix-monitor-blockers-20260826`。
+- Canvas: 選択コマ生成の無効理由と回復操作を表示し、吹き出し外へずれたunlocked文字を追加生成なしで修復する。
+- 短編: 市場分析に4／8ページを追加し、4ページをscenario／storyboardまで保持する。AIおまかせの32ページ既定を説明する。
+- 不変: migration、DB／Storage、Production／staging、Flag、Provider、Job、credit操作0件。モニター報告状態・管理メモ・返信も未変更。
+- 検証: 関連62/62、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_MONITOR_BLOCKER_FIXES_20260826.md`
+
+---
+
 ## 2026-08-26 Staging durable export受入れ準備
 
 - 状態: `RUNBOOK_IMPLEMENTED / EXTERNAL_EXECUTION_BLOCKED_BY_ACCESS / PRODUCTION_UNCHANGED`
