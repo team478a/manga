@@ -11,9 +11,9 @@ export const p0P4CloseoutMatrix = [
   },
   {
     id: "major_character_mismatch_below_20_percent",
-    status: "EXTERNAL_APPROVAL_REQUIRED",
-    evidence: "tests/cloud-story-bible-ten-scene-acceptance.test.mjs",
-    blocker: "実画像10シーンの視覚採点にはProvider実行・credit承認が必要",
+    status: "PROVIDER_ACCEPTANCE_PASSED",
+    evidence: "docs/RELEASE_CANDIDATE_P3E_PROVIDER_RESUME_AND_TEN_SCENE_COMPARISON_20260825.md",
+    result: "BFL参照付き10シーンで重大な別人化防止10/10（受入基準8/10以上）",
   },
   {
     id: "dialogue_edit_without_regeneration",

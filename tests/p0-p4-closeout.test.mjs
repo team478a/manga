@@ -19,16 +19,16 @@ test("P0〜P4 closeoutは初期ユーザー向け7完了条件を重複なく追
   for (const item of p0P4CloseoutMatrix) assert.equal(fs.existsSync(item.evidence), true, item.evidence);
 });
 
-test("repository成功と外部承認待ちを混同しない", () => {
+test("完了済みProvider受入れと残る外部受入れを混同しない", () => {
   const visual = p0P4CloseoutMatrix.find((item) => item.id === "major_character_mismatch_below_20_percent");
-  assert.equal(visual.status, "EXTERNAL_APPROVAL_REQUIRED");
-  assert.match(visual.blocker, /Provider実行・credit承認/);
+  assert.equal(visual.status, "PROVIDER_ACCEPTANCE_PASSED");
+  assert.match(visual.result, /10\/10/);
   const exportAcceptance = p0P4CloseoutMatrix.find((item) => item.id === "page_export_pdf_and_images");
   assert.equal(exportAcceptance.status, "REPOSITORY_PASSED_EXTERNAL_PENDING");
   assert.match(exportAcceptance.blocker, /staging受入れには承認が必要/);
 });
 
-test("承認不要の5条件はrepository gateで完了している", () => {
+test("5条件はrepository gate、1条件はProvider受入れで完了している", () => {
   assert.deepEqual(
     p0P4CloseoutMatrix.filter((item) => item.status === "REPOSITORY_PASSED").map((item) => item.id),
     [
@@ -39,4 +39,5 @@ test("承認不要の5条件はrepository gateで完了している", () => {
       "project_cost_and_regeneration_metrics",
     ],
   );
+  assert.equal(p0P4CloseoutMatrix.filter((item) => item.status === "PROVIDER_ACCEPTANCE_PASSED").length, 1);
 });

@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-26 Codex（P0〜P4 Provider証跡訂正・Production受入れ準備）
+
+- Branch: `codex/fix-p0-p4-provider-evidence`
+- Base: `origin/feature/manga-canvas-mvp`@`b41747f`（PR #369 merge commit）
+- P3-E有償BFL参照付き10シーンの重大な別人化防止10/10をcloseout matrixへ反映し、7条件中6件受入れ済みへ訂正する。
+- 残る外部gateはstaging durable export受入れ。Production BFL原価guardの1 Jobは別目的で、最大予約`$0.180`、自動retryなしのrunbookへ固定する。
+- 対象Supabase projectにアクセスできずスマートフォン作業中のため、Production／staging、migration、Provider／Worker、Job、Storage、credit操作0件。
+- 集中3/3、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 2026-08-26 Codex（P0〜P4 closeout監査）
 
 - Branch: `codex/p0-p4-closeout-audit`
