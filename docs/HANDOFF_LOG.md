@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-26 Codex（モニター進行阻害フィードバック修正）
+
+- Branch: `codex/fix-monitor-blockers-20260826`
+- Base: `origin/feature/manga-canvas-mvp`@`9b6a37c`（PR #371 merge commit）
+- 選択コマ生成の無効理由／回復操作、コマ外文字の無課金修復、4／8ページ指定と4ページscenario／storyboard対応を実装する。
+- migration、DB／Storage、Production／staging、Flag、Provider、Job、credit操作0件。モニター報告状態・管理メモ・返信も未変更。
+- 関連62/62、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 2026-08-26 Codex（Staging durable export受入れ準備）
 
 - Branch: `codex/staging-durable-export-acceptance-runbook`

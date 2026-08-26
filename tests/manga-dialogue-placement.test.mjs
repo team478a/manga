@@ -4,8 +4,10 @@ import test from "node:test";
 import { layoutHorizontalText, layoutVerticalText } from "@mangai/canvas-core";
 import { placeCompletedPageDialogue } from "../src/modules/manga/application/auto-place-page-dialogue.ts";
 import {
+  countRepairableLinkedDialogueBounds,
   countRepairableShortVerticalDialogue,
   placeStructuredPageDialogue,
+  repairLinkedDialogueBounds,
   repairShortVerticalDialogueLayout,
 } from "../src/modules/manga/domain/dialogue-placement.ts";
 
@@ -111,6 +113,23 @@ test("対象コマの空吹き出しへ縦書きテキストを関連付ける",
   assert.equal(result.canvas.textObjects[0].text, "ここから始めよう。");
   assert.ok(result.canvas.textObjects[0].fontSize >= 18);
   assert.ok(result.canvas.textObjects[0].fontSize <= 32);
+});
+
+test("吹き出し外へずれた既存文字を追加生成なしで内側へ戻す", () => {
+  const targetBalloon = balloon({ x: 500, y: 140, width: 260, height: 180 });
+  const placed = place(canvas({ balloons: [targetBalloon] })).canvas.textObjects[0];
+  const value = canvas({
+    balloons: [targetBalloon],
+    textObjects: [{ ...placed, x: 980, y: 700, width: 300, height: 240 }],
+  });
+  assert.equal(countRepairableLinkedDialogueBounds(value), 1);
+  assert.equal(repairLinkedDialogueBounds(value, "2026-08-26T00:00:00.000Z"), 1);
+  const repaired = value.textObjects[0];
+  assert.ok(repaired.x >= targetBalloon.x);
+  assert.ok(repaired.y >= targetBalloon.y);
+  assert.ok(repaired.x + repaired.width <= targetBalloon.x + targetBalloon.width);
+  assert.ok(repaired.y + repaired.height <= targetBalloon.y + targetBalloon.height);
+  assert.equal(countRepairableLinkedDialogueBounds(value), 0);
 });
 
 test("横長吹き出しの短いセリフは可読サイズの横書き中央へ配置する", () => {

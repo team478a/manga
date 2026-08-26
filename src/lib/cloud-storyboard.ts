@@ -37,9 +37,9 @@ export const cloudStoryboardResultSchema = z.object({
   classification: z.literal("ai_inference"),
   containsGeneratedMarketNumbers: z.literal(false),
   title: z.string().trim().min(1).max(200),
-  pageCount: z.number().int().min(8).max(48),
+  pageCount: z.number().int().min(4).max(48),
   readingDirection: z.literal("rtl"),
-  pages: z.array(pageSchema).min(8).max(48),
+  pages: z.array(pageSchema).min(4).max(48),
   productionNotes: z.object({
     pageRhythm: z.string().trim().min(1).max(1000),
     visualMotifs: z.array(z.string().trim().min(1).max(300)).min(1).max(5),
@@ -61,7 +61,7 @@ export const cloudStoryboardResultSchema = z.object({
 export type CloudStoryboardResult = z.infer<typeof cloudStoryboardResultSchema>;
 
 export function assertStoryboardPageCount(pageCount: number) {
-  if (!Number.isInteger(pageCount) || pageCount < 8 || pageCount > 48)
-    throw new ValidationError("ネーム生成v1は8〜48ページのシナリオに対応しています。");
+  if (!Number.isInteger(pageCount) || pageCount < 4 || pageCount > 48)
+    throw new ValidationError("ネーム生成v1は4〜48ページのシナリオに対応しています。");
   return pageCount;
 }

@@ -51,7 +51,9 @@ import {
 } from "@/modules/manga/domain/panel-adoption";
 import { listPanelAssetRevisions, restorePanelAssetRevision } from "@/modules/manga/domain/panel-asset-revision";
 import {
+  countRepairableLinkedDialogueBounds,
   countRepairableShortVerticalDialogue,
+  repairLinkedDialogueBounds,
   repairShortVerticalDialogueLayout,
 } from "@/modules/manga/domain/dialogue-placement";
 import {
@@ -533,6 +535,10 @@ export function CloudCanvasEditor({
     () => countRepairableShortVerticalDialogue(canvas),
     [canvas],
   );
+  const repairableLinkedDialogueBoundsCount = useMemo(
+    () => countRepairableLinkedDialogueBounds(canvas),
+    [canvas],
+  );
   const reversedBackgroundStackCount = useMemo(
     () => countReversedPanelBackgroundStacks(canvas),
     [canvas],
@@ -540,7 +546,20 @@ export function CloudCanvasEditor({
   const existingManuscriptRepairCount =
     rejectedPlacedJobIds.length +
     repairableShortDialogueCount +
+    repairableLinkedDialogueBoundsCount +
     reversedBackgroundStackCount;
+
+  const panelGenerationBlockReason = requestingPanelGeneration
+    ? "画像生成を受け付けています。完了までお待ちください。"
+    : selection?.type !== "panel"
+      ? "生成したいコマをCanvasまたはレイヤー一覧で選択してください。"
+      : !quota
+        ? "利用枠を確認できません。ページを再読み込みしてください。"
+        : !quota.generation_enabled
+          ? "現在、画像生成は停止中です。運営へお問い合わせください。"
+          : remainingCredits <= 0
+            ? "利用可能な生成クレジットがありません。"
+            : null;
 
   const deleteSelected = useCallback(() => {
     if (!selection) return;
@@ -1079,12 +1098,14 @@ export function CloudCanvasEditor({
     const timestamp = now();
     let detachedCount = 0;
     let repairedTextCount = 0;
+    let repairedTextBoundsCount = 0;
     let repairedBackgroundCount = 0;
     const committed = commit((draft) => {
       for (const jobId of rejectedPlacedJobIds) {
         if (detachRejectedPanelCandidate(draft, jobId)) detachedCount += 1;
       }
       repairedTextCount = repairShortVerticalDialogueLayout(draft, timestamp);
+      repairedTextBoundsCount = repairLinkedDialogueBounds(draft, timestamp);
       repairedBackgroundCount = repairReversedPanelBackgroundStacks(
         draft,
         timestamp,
@@ -1097,7 +1118,7 @@ export function CloudCanvasEditor({
       return;
     }
     setMessage(
-      `既存原稿を修復しました（不採用画像 ${detachedCount}件・短い縦書き ${repairedTextCount}件・背景順 ${repairedBackgroundCount}コマ）。追加生成とクレジット消費はありません。保存済みになった後、ページを再読み込みして完成判定を確認してください。`,
+      `既存原稿を修復しました（不採用画像 ${detachedCount}件・短い縦書き ${repairedTextCount}件・コマ外文字 ${repairedTextBoundsCount}件・背景順 ${repairedBackgroundCount}コマ）。追加生成とクレジット消費はありません。保存済みになった後、ページを再読み込みして完成判定を確認してください。`,
     );
   }
 
@@ -1526,7 +1547,8 @@ export function CloudCanvasEditor({
               </strong>
               <p className="mt-1">
                 不採用画像 {rejectedPlacedJobIds.length}件・短い縦書き{" "}
-                {repairableShortDialogueCount}件・背景順{" "}
+                {repairableShortDialogueCount}件・コマ外文字{" "}
+                {repairableLinkedDialogueBoundsCount}件・背景順{" "}
                 {reversedBackgroundStackCount}コマ。画像の追加生成やクレジット消費はありません。
               </p>
             </div>
@@ -1768,13 +1790,9 @@ export function CloudCanvasEditor({
                   <option value={4}>4案（比較重視）</option>
                 </select>
                 <button
+                  aria-describedby={panelGenerationBlockReason ? "panel-generation-block-reason" : undefined}
                   className="button mt-3 w-full"
-                  disabled={
-                    selection?.type !== "panel" ||
-                    !quota?.generation_enabled ||
-                    remainingCredits <= 0 ||
-                    requestingPanelGeneration
-                  }
+                  disabled={panelGenerationBlockReason !== null}
                   onClick={() =>
                     void requestStoryboardPanelGeneration({
                       shotOverride,
@@ -1792,6 +1810,20 @@ export function CloudCanvasEditor({
                     ? "画像生成を受付中…"
                     : `選択したコマを${panelCandidateCount}案生成`}
                 </button>
+                {panelGenerationBlockReason ? (
+                  <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950" id="panel-generation-block-reason" role="status">
+                    <p>{panelGenerationBlockReason}</p>
+                    {selection?.type !== "panel" && canvas.panels[0] ? (
+                      <button
+                        className="mt-2 font-bold underline"
+                        onClick={() => setSelection({ type: "panel", id: canvas.panels[0]!.id })}
+                        type="button"
+                      >
+                        最初のコマを選択する
+                      </button>
+                    ) : null}
+                  </div>
+                ) : null}
                 <div className="mt-4 border-t border-violet-200 pt-4">
                   <p className="text-sm font-bold text-violet-950">
                     採用画像の気になる部分を直す

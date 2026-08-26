@@ -232,6 +232,47 @@ export function repairShortVerticalDialogueLayout(
   return repairedTextCount;
 }
 
+function linkedDialogueBoundsRepair(
+  canvas: PageCanvas,
+  text: TextObject,
+) {
+  if (!text.visible || text.locked || !text.parentBalloonId || !text.text.trim())
+    return null;
+  const balloon = canvas.balloons.find((item) => item.id === text.parentBalloonId);
+  if (!balloon || !balloon.visible || balloon.locked) return null;
+  const expected = {
+    x: balloon.x + TEXT_PADDING,
+    y: balloon.y + TEXT_PADDING,
+    width: Math.max(1, balloon.width - TEXT_PADDING * 2),
+    height: Math.max(1, balloon.height - TEXT_PADDING * 2),
+  };
+  const withinBalloon =
+    text.x >= expected.x &&
+    text.y >= expected.y &&
+    text.x + text.width <= expected.x + expected.width &&
+    text.y + text.height <= expected.y + expected.height;
+  if (withinBalloon) return null;
+  const layout = fitDialogueTextLayout(text.text, balloon);
+  return layout == null ? null : { ...expected, ...layout };
+}
+
+export function countRepairableLinkedDialogueBounds(canvas: PageCanvas) {
+  return canvas.textObjects.filter(
+    (text) => linkedDialogueBoundsRepair(canvas, text) != null,
+  ).length;
+}
+
+export function repairLinkedDialogueBounds(canvas: PageCanvas, timestamp: string) {
+  let repairedTextCount = 0;
+  for (const text of canvas.textObjects) {
+    const repair = linkedDialogueBoundsRepair(canvas, text);
+    if (repair == null) continue;
+    Object.assign(text, repair, { updatedAt: timestamp });
+    repairedTextCount += 1;
+  }
+  return repairedTextCount;
+}
+
 function createDefaultBalloon(input: {
   panel: Panel;
   dialogue: StructuredPanelDialogue;

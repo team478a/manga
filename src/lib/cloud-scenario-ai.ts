@@ -23,7 +23,7 @@ const outputSchema = {
   type: "object", additionalProperties: false,
   required: ["title", "oneSentencePitch", "pageCount", "characters", "acts", "scenes", "commercialAlignment"],
   properties: {
-    title: text(200), oneSentencePitch: text(1000), pageCount: { type: "integer", minimum: 8, maximum: 200 },
+    title: text(200), oneSentencePitch: text(1000), pageCount: { type: "integer", minimum: 4, maximum: 200 },
     characters: {
       type: "array", minItems: 2, maxItems: 6,
       items: {
@@ -48,7 +48,7 @@ const outputSchema = {
       },
     },
     scenes: {
-      type: "array", minItems: 6, maxItems: 20,
+      type: "array", minItems: 3, maxItems: 20,
       items: {
         type: "object", additionalProperties: false,
         required: ["index", "pageStart", "pageEnd", "title", "purpose", "summary", "emotionalBeat", "hook", "dialogueGoal"],
