@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-26 Codex（P4-E JPEG export adapter）
+
+- Branch: `codex/p4e-jpeg-export`
+- Base: `origin/feature/manga-canvas-mvp`@`9b55f768`（PR #366 merge commit）
+- Node専用subpathへJPEG adapterを隔離し、quality 90、白背景、4:4:4、`.jpg`／`image/jpeg`を固定した。
+- 同一入力でJPEG、versioned manifest、画像／manifest SHA-256が一致する。宣言寸法と出力寸法の不一致は拒否する。
+- 既存PNG／PDF／JSON／UI、DB／migration、Production／staging、Provider／Worker、Job、credit、Storage操作0件。
+- 集中4/4、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、export-core／Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ゲート後にcommit・push・Draft PRを作成し、全CI／Vercel成功で停止。merge後はP4-F受入fixture。
+
+---
+
 ## 2026-08-26 Codex（P4-A 完成モードprofile契約）
 
 - Branch: `codex/p4a-completion-mode-profile`

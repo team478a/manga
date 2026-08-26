@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P4-E JPEG export adapter（2026-08-26）
+
+- PR #366 merge commit `9b55f768`を基準に、Node専用`@mangai/export-core/jpeg`を追加した。
+- quality 90、白背景flatten、4:4:4、`.jpg`／`image/jpeg`を固定し、寸法不一致を拒否する。
+- manifestは順序、寸法、byte size、画像SHA-256とcanonical manifest SHA-256を決定論的に追跡する。
+- 既存PNG既定、browser entrypoint、UI、DB、Production／staging、Provider／Worker、Job、credit、Storageは変更しない。
+- 集中4/4、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P4-A 完成モードprofile契約（2026-08-26）
 
 - PR #362 merge commit `3b260a2`を基準に、3用途のversioned completion profileを`@mangai/shared`へ追加した。
