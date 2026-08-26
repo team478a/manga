@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-26 Staging durable export受入れ準備
+
+- 状態: `RUNBOOK_IMPLEMENTED / EXTERNAL_EXECUTION_BLOCKED_BY_ACCESS / PRODUCTION_UNCHANGED`
+- Base: PR #370 merge commit `7e2ba90`。Branch: `codex/staging-durable-export-acceptance-runbook`。
+- 目的: 初期ユーザー向け最後の外部gateを、staging固定一般向けProject 1件、PDF／PNG ZIP／Project JSON、中断再開、owner A／B、署名URL、cleanup、Flag復元へ固定する。
+- guard: staging project一致、2つのpreflight、remote migration drift、既存queue、対象owner／Project不明のいずれかで変更前に停止する。
+- 不変: Production／staging、migration、Feature Flag、Provider／Worker、Job、Storage、credit操作0件。実行はPCで対象stagingへアクセスできる場合だけ行う。
+- 検証: 集中6/6、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 2026-08-26 P0〜P4 Provider証跡訂正・Production受入れ準備
 
 - 状態: `CLOSEOUT_EVIDENCE_CORRECTED / 6_OF_7_ACCEPTED / PRODUCTION_ACCEPTANCE_BLOCKED_BY_ACCESS`
