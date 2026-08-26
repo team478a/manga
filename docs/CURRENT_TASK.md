@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-26 P0〜P4 closeout監査
+
+- 状態: `REPOSITORY_SCOPE_COMPLETE / INITIAL_USER_READINESS_EXTERNAL_GATES_PENDING / PRODUCTION_UNCHANGED`
+- Base: PR #368 merge commit `d208541`。Branch: `codex/p0-p4-closeout-audit`。
+- matrix: 初期ユーザー向け7完了条件を固定し、5件repository成功、人物重大不一致率は実Provider承認待ち、durable exportはrepository成功／staging受入れ待ちと分類。
+- guard: repository成功と実環境成功を混同しない自動テストを追加。
+- 次: 責任者承認後、staging migration／durable export 1件受入れ、次に費用上限付き10シーン実画像比較。順序を逆転しない。
+- 不変: Production／staging、migration、Feature Flag、Provider／Worker、Job、Storage、credit操作0件。
+- 検証: 集中3/3、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_P0_P4_CLOSEOUT_AUDIT_20260826.md`
+
+---
+
 ## 2026-08-26 P4-F 完成モード・書き出し総合受入
 
 - 状態: `ACCEPTANCE_IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / P4_REPOSITORY_SCOPE_COMPLETE / PRODUCTION_UNCHANGED`

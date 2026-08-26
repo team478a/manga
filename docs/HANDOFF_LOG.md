@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-26 Codex（P0〜P4 closeout監査）
+
+- Branch: `codex/p0-p4-closeout-audit`
+- Base: `origin/feature/manga-canvas-mvp`@`d208541`（PR #368 merge commit）
+- 初期ユーザー向け7完了条件を固定matrix化し、repository成功5件、外部承認待ち1件、repository成功／staging待ち1件へ分類した。
+- 実画像の人物重大不一致率とstaging durable exportを未評価のままPASSにしない自動guardを追加した。
+- Production／staging、migration、Flag、Provider／Worker、Job、Storage、credit操作0件。
+- 集中3/3、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ゲート、commit・push・Draft PR、全CI／Vercel成功で停止。merge後も明示承認前に外部gateを実行しない。
+
+---
+
 ## 2026-08-26 Codex（P4-F 完成モード・書き出し総合受入）
 
 - Branch: `codex/p4f-completion-export-acceptance`
