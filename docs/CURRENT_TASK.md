@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-26 P4-F 完成モード・書き出し総合受入
+
+- 状態: `ACCEPTANCE_IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / P4_REPOSITORY_SCOPE_COMPLETE / PRODUCTION_UNCHANGED`
+- Base: PR #367 merge commit `eb9e9dd`。Branch: `codex/p4f-completion-export-acceptance`。
+- fixture: 長編、Kindle解説、成人向けlocal-onlyの固定3作品。各modeの実寸2ページ、文字レイヤー、逆順入力を使用。
+- export: PNG許可、JPEG拡張子／MIME／manifest、PDFページ数／寸法、Project JSON順序／文字／保存再読込を検証。
+- boundary: KindleのPNG非許可、成人向けCloud拒否、Project作成／exportの認証owner境界を確認。
+- 不変: 製品コード、API、DB／migration、UI、Production／staging、Provider／Worker、Job、credit、Storage操作0件。
+- 検証: 集中4/4、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_P4F_COMPLETION_EXPORT_ACCEPTANCE_20260826.md`
+
+---
+
 ## 2026-08-26 P4-E JPEG export adapter
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PNG_DEFAULT_UNCHANGED / PRODUCTION_UNCHANGED`

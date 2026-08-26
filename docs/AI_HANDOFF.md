@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 P4-F 完成モード・書き出し総合受入（2026-08-26）
+
+- PR #367 merge commit `eb9e9dd`を基準に、長編／Kindle解説／成人向けlocal-only固定3作品のrepository-only受入fixtureを追加した。
+- 実寸2ページ、順序、PNG許可、JPEG、PDF、Project JSON、文字レイヤー保存再読込を検証する。
+- KindleのPNG非許可、成人向けCloud拒否、Project作成／exportの認証owner境界をfail closedで確認する。
+- 製品コード、API、DB／migration、UI、Production／staging、Provider／Worker、Job、credit、Storage操作0件。
+- 集中4/4、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 P4-E JPEG export adapter（2026-08-26）
 
 - PR #366 merge commit `9b55f768`を基準に、Node専用`@mangai/export-core/jpeg`を追加した。

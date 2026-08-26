@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-26 Codex（P4-F 完成モード・書き出し総合受入）
+
+- Branch: `codex/p4f-completion-export-acceptance`
+- Base: `origin/feature/manga-canvas-mvp`@`eb9e9dd`（PR #367 merge commit）
+- 長編／Kindle解説／成人向けlocal-onlyの固定3作品で、実寸2ページと文字レイヤーをrepository-only検証する。
+- PNG許可、JPEG拡張子／MIME／manifest、PDF順序／寸法、Project JSON順序／保存再読込、owner／成人向け境界を確認した。
+- 製品コード、API、DB／migration、UI、Production／staging、Provider／Worker、Job、credit、Storage操作0件。
+- 集中4/4、Hub全件、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ゲート後にcommit・push・Draft PRを作成し、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-08-26 Codex（P4-E JPEG export adapter）
 
 - Branch: `codex/p4e-jpeg-export`
