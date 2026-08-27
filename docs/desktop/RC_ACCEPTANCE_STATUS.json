@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "releaseVersion": "0.1.0",
-  "updatedAt": "2026-08-12",
+  "updatedAt": "2026-08-28",
   "requirements": [
     {
       "id": "local-quality-gate",
@@ -11,10 +11,10 @@
       "verifier": "Codex automated validation",
       "evidence": [
         "PR #216 final HEAD 342927c / merge 78f4503",
-        "Hub 620/620, Canvas 26/26, ai-core 48/48 tests",
+        "Hub 917/917, Canvas 26/26, ai-core 48/48 tests (2026-08-28 latest full gate)",
         "Desktop 182/182 tests",
         "axe 29 screens / 0 violations",
-        "Supabase migrations 50/50, Hub and Desktop production builds"
+        "Supabase migrations 74/74, Hub and Desktop production builds (2026-08-28 latest full gate)"
       ]
     },
     {
@@ -24,6 +24,18 @@
       "completedAt": "2026-07-15",
       "verifier": "Codex product build acceptance",
       "evidence": ["docs/desktop/RELEASE_CANDIDATE_ACCEPTANCE.md#10-rc判定記録"]
+    },
+    {
+      "id": "initial-user-readiness",
+      "label": "初期ユーザー向けP0〜P4受入れ",
+      "status": "passed",
+      "completedAt": "2026-08-27",
+      "verifier": "Codex repository and external acceptance",
+      "evidence": [
+        "docs/RELEASE_CANDIDATE_P0_P4_CLOSEOUT_AUDIT_20260826.md",
+        "docs/RELEASE_CANDIDATE_PRODUCTION_BFL_ACCEPTANCE_CLOSEOUT_20260827.md",
+        "docs/RELEASE_CANDIDATE_STAGING_DURABLE_EXPORT_ACCEPTANCE_CLOSEOUT_20260827.md"
+      ]
     },
     {
       "id": "windows-narrator-ja",
@@ -91,7 +103,7 @@
       "id": "hub-production-acceptance",
       "label": "Hub公開環境受入れ",
       "status": "pending",
-      "reason": "Cloud text model・pricing・Gatewayと実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2E待ち。市場分析と非公開Cloud作品の2一般ユーザーRLS、および対象本人の市場分析E2Eは2026-08-12に成功",
+      "reason": "release-wide gateとしてCloud text model・pricing・Gatewayの実Job、AIネーム由来8ページProduction E2E、Production一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2E待ち。初期ユーザー向けP0〜P4受入れ7/7と隔離Staging durable exportは2026-08-27に成功",
       "evidence": [
         "docs/RELEASE_CANDIDATE_R4_1_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1B_PRODUCTION_API_EVIDENCE.md",
@@ -107,7 +119,9 @@
         "docs/RELEASE_CANDIDATE_R4_1L_ADMIN_USER_COUNT_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1M_PRODUCTION_CLOSEOUT_EVIDENCE.md",
         "docs/RELEASE_CANDIDATE_R4_1N_OWNER_ISOLATION_EVIDENCE.md",
-        "docs/RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md"
+        "docs/RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md",
+        "docs/RELEASE_CANDIDATE_PRODUCTION_BFL_ACCEPTANCE_CLOSEOUT_20260827.md",
+        "docs/RELEASE_CANDIDATE_STAGING_DURABLE_EXPORT_ACCEPTANCE_CLOSEOUT_20260827.md"
       ]
     }
   ]

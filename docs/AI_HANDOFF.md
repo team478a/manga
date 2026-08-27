@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 RC受入れ台帳整合化（2026-08-28）
+
+- `docs/desktop/RC_ACCEPTANCE_STATUS.json`を直近の受入れ証跡へ整合した。
+- 初期ユーザー向けP0〜P4は7/7 passed。release-wideは11 pending／2 blockedを維持し、未検証項目を完了扱いにしていない。
+- Hub Production残件はCloud text実Job、AIネーム由来8ページProduction E2E、Production owner isolation、Stripe test E2E。
+- repository内の台帳・テスト・文書のみ更新し、Production、Provider、credit、利用者データ操作0件。
+- 集中1/1、Hub 917/917、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_RC_LEDGER_RECONCILIATION_20260828.md`
+
+---
+
 ## 0.0 モニター進行阻害フィードバック対応完了closeout（2026-08-28）
 
 - PR #371対象のProductionモニター報告2件を`resolved`へ更新し、利用者の送信履歴で「修正済み」となる既存契約へ同期した。
