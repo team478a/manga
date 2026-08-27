@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production migration・BFL原価guard受入れcloseout（2026-08-27）
+
+- Production project `vmdsyxykcrgxcdbrwlkv`の到達点をread-only照合し、`202608240001`〜`202608260002`の未適用13 migrationだけを正本順に適用した。
+- Creatorのschema不足による読込失敗は解消し、固定一般向け作品とページ編集画面を確認した。
+- 責任者承認済みBFL `flux-2-pro`参照付き1 Jobだけを実行し、pricing `bfl-flux2-pro-2026-08`、予約`$0.180`、実額`$0.045`、差額`$0.135`解放、Asset 1件、重複なし、queue 0を確認した。
+- 旧参照はstyle参照であり、人物reference bindingへ誤変換していない。追加Job、retry、Production修復、秘密値変更、staging操作0件。
+- 初期ユーザー向け残り外部gateはstaging durable export 1件。本PRはdocs-only証跡同期で、1案生成UIは後続UX候補として記録する。
+- Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。`rc:preflight`は外部設定と手動E2Eを未完了として正しく維持する。
+- 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_BFL_ACCEPTANCE_CLOSEOUT_20260827.md`
+
+---
+
 ## 0.0 モニター進行阻害フィードバック修正（2026-08-26）
 
 - 生成ボタンの禁止表示へ理由と回復操作を追加し、コマ未選択、利用枠、生成停止、credit不足を区別する。

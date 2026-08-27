@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-27 Production migration・BFL原価guard受入れcloseout
+
+- 状態: `EXTERNAL_ACCEPTANCE_PASSED / ALL_LOCAL_GATES_PASSED / PRODUCTION_QUEUE_EMPTY`
+- Base: PR #372 merge commit `9297281`。Branch: `codex/production-bfl-acceptance-closeout`。
+- migration: Production project `vmdsyxykcrgxcdbrwlkv`へ、到達点`202608180002`の次から`202608260002`まで連続13本だけを適用。主要schema／constraintとCreator復旧を確認した。
+- BFL: `flux-2-pro`参照付き1 Jobだけを実行。pricing `bfl-flux2-pro-2026-08`、予約`$0.180`、実額`$0.045`、差額解放`$0.135`、Asset 1件、attempt 1、重複なし、queue 0で成功した。
+- guard: Prompt、画像、Provider Job ID、秘密値は記録しない。追加Job、retry、reference手動変更、Production修復、staging操作0件。
+- 残り: 初期ユーザー提供READYの外部gateはstaging durable export実Storage／Worker受入れ1件。新規生成の1案UIは後続UX候補で、本PRはdocs-only。
+- 検証: Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。`rc:preflight`の外部設定・手動E2Eは残るstaging gateとして未完了を維持する。
+- 詳細: `docs/RELEASE_CANDIDATE_PRODUCTION_BFL_ACCEPTANCE_CLOSEOUT_20260827.md`
+
+---
+
 ## 2026-08-26 モニター進行阻害フィードバック修正
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

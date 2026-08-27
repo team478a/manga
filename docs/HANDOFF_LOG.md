@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-27 Codex（Production migration・BFL原価guard受入れcloseout）
+
+- Branch: `codex/production-bfl-acceptance-closeout`
+- Base: `origin/feature/manga-canvas-mvp`@`9297281`（PR #372 merge commit）
+- Production project `vmdsyxykcrgxcdbrwlkv`へ未適用13 migration（`202608240001`〜`202608260002`）だけを順序通り適用し、主要schema／constraint、価格guard、Creator復旧を確認した。
+- 固定一般向け作品のstyle参照を含むBFL `flux-2-pro` 1 Jobだけを実行。予約2 credits／`$0.180`、実額`$0.045`、差額`$0.135`解放、Asset 1件、attempt 1、同一idempotency 1件、queue 0で完了した。
+- 既存Production Worker workflow run `33036852036`を1回だけ起動。追加Job、自動retry、失敗Job再実行、reference binding手動変更、秘密値変更、staging操作0件。
+- 本ブランチはdocs-only。残る外部gateはstaging durable export受入れ1件。詳細は`docs/RELEASE_CANDIDATE_PRODUCTION_BFL_ACCEPTANCE_CLOSEOUT_20260827.md`。
+- Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。`rc:preflight`の外部設定・手動E2E pendingは残るstaging gateと一致する。
+
+---
+
 ## 2026-08-26 Codex（モニター進行阻害フィードバック修正）
 
 - Branch: `codex/fix-monitor-blockers-20260826`
