@@ -1,6 +1,6 @@
 # Windows Narrator アクセシビリティ受入れ
 
-更新日: 2026-07-17
+更新日: 2026-08-28
 
 ## 1. 目的
 
@@ -94,6 +94,13 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 | 30  | 表示倍率150%          | 主要操作が欠けず、横スクロールだけに依存しない  | 未確認 |      |
 
 ## 9. 判定
+
+自動preflight（2026-08-28）:
+
+- Windows 11 Home 25H2 build 26200で、製品プロセスだけを150%相当（devicePixelRatio 1.5）と強制カラー（forced colors active）へ隔離起動した。
+- 両条件で29画面のblocking axe violation 0、document横あふれ0、主要visual／keyboard check 21/21を確認した。
+- 初回強制カラーで検出したsystem color未追従を修正し、再実行で解消した。
+- 詳細は`docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`。実Windows設定とNarrator音声の人手確認は未完了のため、以下のRC判定は保留を維持する。
 
 | 項目             | 結果   |
 | ---------------- | ------ |

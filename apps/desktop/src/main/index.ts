@@ -1137,6 +1137,39 @@ app
         throw new Error("MANGAI_AXE_PATH must point to axe.min.js.");
       if (!reportPath || !path.isAbsolute(reportPath))
         throw new Error("MANGAI_A11Y_REPORT must be an absolute path.");
+      const runtimeReportPath = process.env.MANGAI_A11Y_RUNTIME_REPORT;
+      if (!runtimeReportPath || !path.isAbsolute(runtimeReportPath))
+        throw new Error("MANGAI_A11Y_RUNTIME_REPORT must be an absolute path.");
+      const accessibilityVariant = process.env.MANGAI_A11Y_VARIANT ?? "default";
+      const runtimeReport = (await win.webContents.executeJavaScript(`({
+        variant: ${JSON.stringify(accessibilityVariant)},
+        devicePixelRatio: window.devicePixelRatio,
+        forcedColorsActive: window.matchMedia("(forced-colors: active)").matches,
+        viewport: { width: window.innerWidth, height: window.innerHeight },
+        document: {
+          clientWidth: document.documentElement.clientWidth,
+          scrollWidth: document.documentElement.scrollWidth
+        }
+      })`)) as {
+        variant: string;
+        devicePixelRatio: number;
+        forcedColorsActive: boolean;
+        viewport: { width: number; height: number };
+        document: { clientWidth: number; scrollWidth: number };
+      };
+      if (
+        accessibilityVariant === "scale-150" &&
+        runtimeReport.devicePixelRatio < 1.49
+      )
+        throw new Error("150% display acceptance did not activate device scale 1.5.");
+      if (
+        accessibilityVariant === "high-contrast" &&
+        !runtimeReport.forcedColorsActive
+      )
+        throw new Error("High contrast acceptance did not activate forced colors.");
+      if (runtimeReport.document.scrollWidth > runtimeReport.document.clientWidth)
+        throw new Error("Accessibility acceptance started with horizontal document overflow.");
+      fs.writeFileSync(runtimeReportPath, JSON.stringify(runtimeReport, null, 2));
       const generationStateSeed = new Promise<boolean>((resolve) => {
         const deadline = Date.now() + 10_000;
         const timer = setInterval(() => {

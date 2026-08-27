@@ -1603,6 +1603,46 @@ label {
 }
 
 @media (forced-colors: active) {
+  :root {
+    color-scheme: light dark;
+    --bg-app: Canvas;
+    --bg-panel: Canvas;
+    --bg-panel-elevated: Canvas;
+    --bg-hover: Canvas;
+    --bg-selected: Canvas;
+    --bg-raised: Canvas;
+    --bg-glass: Canvas;
+    --glass-bg: Canvas;
+    --border-subtle: CanvasText;
+    --border-strong: CanvasText;
+    --glass-border: CanvasText;
+    --text-primary: CanvasText;
+    --text-secondary: CanvasText;
+    --text-muted: GrayText;
+    --accent: Highlight;
+    --accent-hover: Highlight;
+    --accent-active: Highlight;
+    --accent-text: LinkText;
+    --accent-soft: Canvas;
+    --success: CanvasText;
+    --success-soft: Canvas;
+    --warning: CanvasText;
+    --warning-soft: Canvas;
+    --danger: CanvasText;
+    --danger-soft: Canvas;
+    --info: LinkText;
+    --info-soft: Canvas;
+    --canvas-workspace: Canvas;
+    --canvas-page: Canvas;
+    --focus-ring: 0 0 0 2px Canvas, 0 0 0 4px Highlight;
+  }
+  body,
+  .modal,
+  .panel-lite,
+  .projects article {
+    background: Canvas;
+    color: CanvasText;
+  }
   button,
   input,
   textarea,
@@ -1612,6 +1652,22 @@ label {
   .modal,
   .panel-lite {
     border: 1px solid CanvasText;
+  }
+  button {
+    background: ButtonFace;
+    color: ButtonText;
+  }
+  button:disabled {
+    color: GrayText;
+  }
+  input,
+  textarea,
+  select {
+    background: Field;
+    color: FieldText;
+  }
+  a {
+    color: LinkText;
   }
   .selected,
   [aria-current="page"],

@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Windows表示受入れpreflight・強制カラー修正（2026-08-28）
+
+- Desktopだけを150%相当／強制カラーで隔離実行する`desktop:test:display-acceptance`を追加した。
+- runtime条件と横あふれをfail closedにし、既存29画面axeとvisual／keyboard 21項目を再利用する。
+- 初回強制カラーで検出したsystem color未追従を修正し、両variantでblocking violation 0を確認した。
+- 実Windows設定とNarrator音声は未確認なのでRC台帳4件はpendingのまま。Windows設定、Provider、credit操作0件。
+- 契約2/2、Hub 919/919、Canvas 26/26、AI 48/48、Desktop 182/182、通常／2 variant各29画面blocking violation 0、migration 74件を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`
+
+---
+
 ## 0.0 RC受入れ台帳整合化（2026-08-28）
 
 - `docs/desktop/RC_ACCEPTANCE_STATUS.json`を直近の受入れ証跡へ整合した。
