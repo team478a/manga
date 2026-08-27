@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Staging durable export受入れcloseout（2026-08-27）
+
+- 隔離Supabase Preview branchとVercel Preview branchで、8ページ固定一般向けProjectのPDF中断再開、PNG ZIP、Project JSONを実Storage／Worker受入れした。
+- PDFは4/8停止、停止中Worker idle、再開後8/8完了。3形式の順序／形式／schema／byte size、owner A／B、署名download、queue 0、active Job 0を確認した。
+- Supabase Preview branch、受入れ用Git branch、対象2 branchの一時Vercel環境変数、一時Automation Bypassを削除・失効した。通常設定は維持した。
+- Production、外部画像Provider、credit、利用者実データ操作0件。初期ユーザー向け7条件は7/7受入れ済み。
+- 文書契約3/3、Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_STAGING_DURABLE_EXPORT_ACCEPTANCE_CLOSEOUT_20260827.md`
+
+---
+
 ## 0.0 Production migration・BFL原価guard受入れcloseout（2026-08-27）
 
 - Production project `vmdsyxykcrgxcdbrwlkv`の到達点をread-only照合し、`202608240001`〜`202608260002`の未適用13 migrationだけを正本順に適用した。

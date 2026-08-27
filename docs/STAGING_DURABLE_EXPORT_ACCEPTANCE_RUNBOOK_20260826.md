@@ -1,5 +1,7 @@
 # Staging durable export 1 Project受入れrunbook
 
+> 2026-08-27に全項目合格し、隔離環境のcleanupまで完了した。結果は`RELEASE_CANDIDATE_STAGING_DURABLE_EXPORT_ACCEPTANCE_CLOSEOUT_20260827.md`を正本とする。
+
 ## 目的と範囲
 
 初期ユーザー向け最後の外部gateとして、stagingの固定一般向けProject 1件でPDF、連番PNG ZIP、Project JSONを検証する。Production、外部画像Provider、credit、利用者実データは使用しない。
