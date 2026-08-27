@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（モニター進行阻害フィードバック対応完了closeout）
+
+- Branch: `codex/monitor-feedback-response-closeout-20260828`
+- Base: `origin/feature/manga-canvas-mvp`@`17d737e`（PR #374 merge commit）
+- PR #371対象のProductionモニター報告2件を管理画面から`resolved`へ更新し、修正範囲と検証結果を非公開管理メモへ保存した。
+- 利用者の送信履歴では「修正済み」と表示する。管理画面に個別返信・メール送信欄はなく、外部メッセージは送信していない。
+- 報告本文／添付／owner／評価、schema／migration、Flag、Storage、Provider、Job、Asset、credit操作0件。報告・自動修正キュー未完了0件。
+- 集中13/13、Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細は`docs/RELEASE_CANDIDATE_MONITOR_FEEDBACK_RESPONSE_CLOSEOUT_20260828.md`。
+
+---
+
 ## 2026-08-27 Codex（Staging durable export受入れcloseout）
 
 - Branch: `codex/staging-durable-export-acceptance-closeout`
