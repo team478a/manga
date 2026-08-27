@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-28 モニター進行阻害フィードバック対応完了closeout
+
+- 状態: `PRODUCTION_FEEDBACK_RESOLVED / USER_VISIBLE_STATUS_UPDATED / PRODUCTION_QUEUE_EMPTY`
+- Base: PR #374 merge commit `17d737e`。Branch: `codex/monitor-feedback-response-closeout-20260828`。
+- 更新: PR #371対象のCanvas進行阻害1件と短編ページ数案内1件をProduction管理画面で`resolved`へ更新し、修正内容と検証結果を非公開管理メモへ記録した。
+- 利用者表示: 既存の送信履歴契約で両件を「修正済み」と表示する。個別返信・メール送信機能はないため、外部メッセージは送信していない。
+- 不変: 報告本文／添付／owner／評価、DB schema／migration、Feature Flag、Storage、Provider、Job、Asset、credit操作0件。報告・自動修正キュー未完了0件。
+- 検証: 集中13/13、Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。`rc:preflight`は差分外の外部設定・手動E2E pendingを維持する。
+- 詳細: `docs/RELEASE_CANDIDATE_MONITOR_FEEDBACK_RESPONSE_CLOSEOUT_20260828.md`
+
+---
+
 ## 2026-08-27 Staging durable export受入れcloseout
 
 - 状態: `EXTERNAL_ACCEPTANCE_PASSED / INITIAL_USER_READINESS_7_OF_7 / CLEANUP_COMPLETED`

@@ -24,3 +24,9 @@
 
 - 関連62/62、Hub／Canvas／AI／Desktop全件、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
 - CI／Vercel PreviewはDraft PRで確認する。
+
+## 対応完了通知
+
+- 2026-08-28、PR #371反映後に対象2件をProduction管理画面で`resolved`へ更新した。
+- 非公開管理メモへ修正範囲と検証結果を記録し、利用者の送信履歴では「修正済み」と表示する。
+- 詳細は`RELEASE_CANDIDATE_MONITOR_FEEDBACK_RESPONSE_CLOSEOUT_20260828.md`を正本とする。

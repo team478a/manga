@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 モニター進行阻害フィードバック対応完了closeout（2026-08-28）
+
+- PR #371対象のProductionモニター報告2件を`resolved`へ更新し、利用者の送信履歴で「修正済み」となる既存契約へ同期した。
+- 非公開管理メモにはPR #371の修正範囲と検証成功だけを記録した。個別返信、メール、LINEは送信していない。
+- 報告本文／添付／owner／評価、DB schema／migration、Feature Flag、Storage、Provider、Job、Asset、credit操作0件。Issue task未完了0件。
+- 集中13/13、Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_MONITOR_FEEDBACK_RESPONSE_CLOSEOUT_20260828.md`
+
+---
+
 ## 0.0 Staging durable export受入れcloseout（2026-08-27）
 
 - 隔離Supabase Preview branchとVercel Preview branchで、8ページ固定一般向けProjectのPDF中断再開、PNG ZIP、Project JSONを実Storage／Worker受入れした。
