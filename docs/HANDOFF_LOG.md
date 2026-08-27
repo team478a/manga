@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-27 Codex（Staging durable export受入れcloseout）
+
+- Branch: `codex/staging-durable-export-acceptance-closeout`
+- Base: `origin/feature/manga-canvas-mvp`@`dff7a91`
+- 隔離Supabase Preview branchとVercel Preview branchで、8ページ一般向け固定ProjectのPDF中断再開、PNG ZIP、Project JSONを各1 Jobだけ実行した。
+- PDFは4/8停止、停止中Worker idle、再開後8/8完了。3形式100%、owner分離、署名download、形式／schema／byte size、segment 6件、active export／generation Job 0、最終Worker idleを確認した。
+- Supabase Preview branch、受入れ用Git branch、対象2 branchの一時Vercel環境変数、一時Automation Bypassを削除・失効した。通常のProduction／Preview設定は維持した。
+- Production、外部画像Provider、credit、利用者実データへの操作0件。初期ユーザー向け7条件は7/7受入れ済み。
+- 文書契約3/3、Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細は`docs/RELEASE_CANDIDATE_STAGING_DURABLE_EXPORT_ACCEPTANCE_CLOSEOUT_20260827.md`。
+
+---
+
 ## 2026-08-27 Codex（Production migration・BFL原価guard受入れcloseout）
 
 - Branch: `codex/production-bfl-acceptance-closeout`

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-27 Staging durable export受入れcloseout
+
+- 状態: `EXTERNAL_ACCEPTANCE_PASSED / INITIAL_USER_READINESS_7_OF_7 / CLEANUP_COMPLETED`
+- Base: `origin/feature/manga-canvas-mvp`@`dff7a91`。Branch: `codex/staging-durable-export-acceptance-closeout`。
+- Preview: 隔離Supabase branchとVercel branchで、8ページ一般向け固定ProjectのPDF中断再開、PNG ZIP、Project JSONを各1 Jobだけ実行した。
+- 結果: PDFは4/8停止後に完了済みsegmentを維持して8/8完了。3形式とも100%、owner A／B分離、署名download、形式magic／schema、byte size、queue 0、active Job 0、最終Worker idleを確認した。
+- cleanup: Supabase Preview branch、受入れ用Git branch、対象2 branchの一時Vercel環境変数、一時Automation Bypassを削除・失効した。通常のProduction／Preview設定は維持した。
+- 不変: Production、外部画像Provider、credit、利用者実データへの操作0件。秘密値、署名URL、Storage pathは記録しない。
+- 判定: 初期ユーザー向け7完了条件は7/7受入れ済み。追加のProduction修復、Provider実行、credit予約は責任者の別承認まで行わない。
+- 検証: 文書契約3/3、Hub 916/916、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。`rc:preflight`は差分外の外部設定・手動E2E pendingを維持する。
+- 詳細: `docs/RELEASE_CANDIDATE_STAGING_DURABLE_EXPORT_ACCEPTANCE_CLOSEOUT_20260827.md`
+
+---
+
 ## 2026-08-27 Production migration・BFL原価guard受入れcloseout
 
 - 状態: `EXTERNAL_ACCEPTANCE_PASSED / ALL_LOCAL_GATES_PASSED / PRODUCTION_QUEUE_EMPTY`
