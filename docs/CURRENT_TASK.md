@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-28 RC受入れ台帳整合化
+
+- 状態: `LEDGER_RECONCILED / INITIAL_USER_READINESS_PASSED / RELEASE_WIDE_11_PENDING_2_BLOCKED`
+- 直近のProduction BFL受入れと隔離Staging durable export受入れをRC台帳へ同期し、初期ユーザー向けP0〜P4受入れを7/7 passedとして追加した。
+- release-wide gateは別管理とし、実機・外部環境・決済・公開環境の11件をpending、署名関連2件をblockedのまま維持した。
+- Production、Provider、生成Job、Asset、credit、決済、利用者データ操作0件。
+- 検証: 集中1/1、Hub 917/917、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_RC_LEDGER_RECONCILIATION_20260828.md`
+
+---
+
 ## 2026-08-28 モニター進行阻害フィードバック対応完了closeout
 
 - 状態: `PRODUCTION_FEEDBACK_RESOLVED / USER_VISIBLE_STATUS_UPDATED / PRODUCTION_QUEUE_EMPTY`

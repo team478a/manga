@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（RC受入れ台帳整合化）
+
+- Branch: `codex/rc-ledger-reconciliation-20260828`
+- Base: `origin/feature/manga-canvas-mvp`@`760bc34`（PR #375 merge commit）
+- 初期ユーザー向けP0〜P4受入れ7/7をRC台帳へpassedとして追加し、最新ローカル品質実績と正本証跡を同期した。
+- release-wide gateの11 pending／2 blockedは維持。Hub Productionの未完了範囲をCloud text実Job、AIネーム由来8ページ、Production owner isolation、Stripe testへ明確化した。
+- Production、Provider、Job、Asset、credit、決済、利用者データ操作0件。
+- 集中1/1、Hub 917/917、Canvas 26/26、AI 48/48、Desktop 182/182、a11y violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細は`docs/RELEASE_CANDIDATE_RC_LEDGER_RECONCILIATION_20260828.md`。
+
+---
+
 ## 2026-08-28 Codex（モニター進行阻害フィードバック対応完了closeout）
 
 - Branch: `codex/monitor-feedback-response-closeout-20260828`
