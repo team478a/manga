@@ -30,7 +30,15 @@ export const assessExternalEnvironments = ({
     "PGPASSWORD",
     "PGSSLMODE",
     "MANGAI_STAGING_PROJECT_REF",
+    "MANGAI_STAGING_PARENT_PROJECT_REF",
   ];
+  const stagingProjectRef = environment.MANGAI_STAGING_PROJECT_REF?.trim();
+  const stagingParentProjectRef =
+    environment.MANGAI_STAGING_PARENT_PROJECT_REF?.trim();
+  const hasIsolatedStagingIdentity =
+    configured(stagingProjectRef) &&
+    configured(stagingParentProjectRef) &&
+    stagingProjectRef.toLowerCase() !== stagingParentProjectRef.toLowerCase();
 
   return [
     {
@@ -59,13 +67,19 @@ export const assessExternalEnvironments = ({
       ready:
         environment.MANGAI_DB_ENV === "staging" &&
         hasCommand("psql") &&
-        stagingVariables.every((name) => configured(environment[name])),
+        stagingVariables.every((name) => configured(environment[name])) &&
+        hasIsolatedStagingIdentity,
       missing: [
         ...(environment.MANGAI_DB_ENV === "staging"
           ? []
           : ["MANGAI_DB_ENV=staging"]),
         ...(hasCommand("psql") ? [] : ["psql command"]),
         ...stagingVariables.filter((name) => !configured(environment[name])),
+        ...(configured(stagingProjectRef) &&
+        configured(stagingParentProjectRef) &&
+        !hasIsolatedStagingIdentity
+          ? ["isolated staging branch ref differs from parent project ref"]
+          : []),
       ],
       probeUrl: null,
       probePath: null,

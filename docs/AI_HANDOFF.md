@@ -2720,3 +2720,10 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - 通常RC確認は接続・probe・生成を行わず、秘密値も表示しない。3対象は現状どおりPENDING。
 - Production、DB、Provider、Queue、Job、Asset、credit操作0件。
 - 集中4/4、Hub 924/924、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+
+---
+# 0.0 RC隔離Staging identity guard（2026-08-28）
+
+- 外部E2E判定はSupabase Branch refと親Project refの両方を要求し、同一refなら接続前にPENDINGとする。
+- 通常のstagingスキーマpreflightは変更せず、release-wide隔離E2Eだけを厳格化した。
+- Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中5/5、Hub 925/925、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。

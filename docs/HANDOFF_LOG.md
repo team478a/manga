@@ -5878,3 +5878,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Ollama／ComfyUI／Supabase stagingはPENDINGを維持。Production、DB、Provider、Queue、Job、Asset、credit操作0件。
 - 集中4/4、Hub 924/924、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
 - 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+# 2026-08-28 Codex: RC隔離Staging identity guard
+
+- Branch: `codex/rc-isolated-staging-identity-20260828`
+- Base: `4b47e1c`（PR #381 merge commit）
+- Supabase外部E2EはBranch ref／親Project refの両方を要求し、同一refならDB接続前に停止する。
+- 通常staging preflightは不変。Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。
+- 集中5/5、Hub 925/925、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。次はDraft PRと全CI／Vercel Preview成功で停止する。

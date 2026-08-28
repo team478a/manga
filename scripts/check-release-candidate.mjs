@@ -139,6 +139,19 @@ const checks = [
       ],
       ["PGHOST", stateOf("PGHOST")],
       ["MANGAI_STAGING_PROJECT_REF", stateOf("MANGAI_STAGING_PROJECT_REF")],
+      [
+        "MANGAI_STAGING_PARENT_PROJECT_REF",
+        stateOf("MANGAI_STAGING_PARENT_PROJECT_REF"),
+      ],
+      [
+        "isolated staging branch identity",
+        stateOf("MANGAI_STAGING_PROJECT_REF") === "configured" &&
+        stateOf("MANGAI_STAGING_PARENT_PROJECT_REF") === "configured" &&
+        environment.MANGAI_STAGING_PROJECT_REF.trim().toLowerCase() !==
+          environment.MANGAI_STAGING_PARENT_PROJECT_REF.trim().toLowerCase()
+          ? "configured"
+          : "missing",
+      ],
       ["PGPORT", stateOf("PGPORT")],
       ["PGDATABASE", stateOf("PGDATABASE")],
       ["PGUSER", stateOf("PGUSER")],
