@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 一般向けモニター利用範囲の更新情報（2026-08-28）
+
+- ダッシュボードの更新情報先頭へ、一般向けモニターで利用できる工程と対象外機能を追加した。
+- 画像生成は利用設定、残りAI利用数、クレジット、安全確認を満たす場合だけ実行可能と明示した。
+- DB由来の公開更新情報は維持し、DB障害時も固定案内だけは表示する。
+- Production、DB、Provider、Queue、Job、Asset、credit操作0件。
+- 集中6/6、Hub 928/928、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+
+---
+
 ## 0.0 Windowsアニメーション効果OFF受入れ（2026-08-28）
 
 - Windows実設定のアニメーション効果OFFでHome・command palette・新規Project dialog・Escape復帰を受入れた。

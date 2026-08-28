@@ -18,6 +18,28 @@ test("更新情報は公開済みだけをダッシュボードへ表示する",
   assert.match(admin, /更新情報を追加/);
 });
 
+test("更新情報は一般向けモニターで利用できる範囲と対象外を明示する", async () => {
+  const dashboard = await read("../src/app/dashboard/page.tsx");
+
+  for (const available of [
+    "市場分析",
+    "AI企画",
+    "シナリオ",
+    "ネーム",
+    "Cloud原稿編集",
+    "人物・画風・参照画像設定",
+    "コマ画像生成",
+    "作品管理",
+    "PDF書き出し",
+    "状況・ご意見",
+  ]) {
+    assert.match(dashboard, new RegExp(available));
+  }
+  assert.match(dashboard, /成人向け制作、販売申請、決済、収益管理は今回のモニター対象外/);
+  assert.match(dashboard, /利用設定・残りAI利用数・クレジット・安全確認/);
+  assert.match(dashboard, /href="\/dashboard\/monitor\/guide"/);
+});
+
 test("モニター報告は種類・影響度・環境を構造化して保存する", async () => {
   const [migration, page, repository] = await Promise.all([
     read("../supabase/migrations/202608030001_cloud_monitor_operations_hub.sql"),

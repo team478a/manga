@@ -99,14 +99,31 @@ export default async function DashboardPage({
           {monitorNotice.message}
         </p>
       ) : null}
-      {!updatesResult.error && updatesResult.data?.length ? (
-        <section className="panel mt-5 border-violet-200">
+      <section className="panel mt-5 border-violet-200">
           <div className="flex items-center gap-2">
             <Megaphone className="h-5 w-5 text-violet-700" />
             <h2 className="text-xl font-bold">更新情報</h2>
           </div>
           <div className="mt-4 divide-y divide-stone-200">
-            {updatesResult.data.map((item) => (
+            <article className="pb-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="text-xs font-bold text-violet-700">改善</p>
+                  <h3 className="mt-1 font-bold">一般向けモニターで利用できる範囲を更新しました</h3>
+                  <p className="mt-1 text-sm text-stone-600">
+                    市場分析、AI企画、シナリオ、ネーム、Cloud原稿編集、人物・画風・参照画像設定、利用枠内のコマ画像生成、作品管理、PDF書き出し、状況・ご意見を利用できます。
+                  </p>
+                  <p className="mt-2 text-sm text-stone-600">
+                    成人向け制作、販売申請、決済、収益管理は今回のモニター対象外です。画像生成は利用設定・残りAI利用数・クレジット・安全確認を満たす場合だけ実行できます。
+                  </p>
+                </div>
+                <p className="shrink-0 text-xs text-stone-500">2026/8/28</p>
+              </div>
+              <Link className="mt-2 inline-flex text-sm font-semibold text-violet-700" href="/dashboard/monitor/guide">
+                利用できる範囲を確認 →
+              </Link>
+            </article>
+            {!updatesResult.error ? updatesResult.data?.map((item) => (
               <article className="py-4 first:pt-0 last:pb-0" key={item.id}>
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -120,10 +137,9 @@ export default async function DashboardPage({
                 </div>
                 {item.action_url ? <Link className="mt-2 inline-flex text-sm font-semibold text-violet-700" href={item.action_url}>関連画面を見る →</Link> : null}
               </article>
-            ))}
+            )) : null}
           </div>
         </section>
-      ) : null}
       <section className="panel mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-sm font-bold text-violet-700">限定モニター</p>
