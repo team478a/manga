@@ -156,7 +156,10 @@ export const probeReadOnlyEndpoint = async (
     });
     return { ok: response.ok, status: response.status };
   } catch {
-    return { ok: false, reason: "unreachable" };
+    return {
+      ok: false,
+      reason: controller.signal.aborted ? "timeout" : "unreachable",
+    };
   } finally {
     clearTimeout(timer);
   }

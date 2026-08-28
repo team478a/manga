@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-28 RC read-only probe失敗契約
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / EXTERNAL_E2E_PENDING`
+- Ollama／ComfyUIのread-only probeで、内部Abortによる失敗を`timeout`、その他の通信失敗を`unreachable`へ正規化した。
+- transport例外のメッセージや接続先情報は結果へ含めず、秘密値を露出しない既存境界を維持した。
+- 実ネットワークprobe、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中12/12、Hub 933/933、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+
+---
+
 ## 2026-08-28 RC read-only probe redirect防止
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / EXTERNAL_E2E_PENDING`
