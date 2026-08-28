@@ -8,6 +8,20 @@ const json = args.has("--json");
 
 const configured = (value) => Boolean(value?.trim());
 
+const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+export const isSafeRuntimeUrl = (value) => {
+  if (!configured(value)) return false;
+  try {
+    const url = new URL(value.trim());
+    if (url.username || url.password) return false;
+    return url.protocol === "https:" ||
+      (url.protocol === "http:" && loopbackHosts.has(url.hostname.toLowerCase()));
+  } catch {
+    return false;
+  }
+};
+
 export const commandAvailable = (command, platform = process.platform) => {
   const finder = platform === "win32" ? "where.exe" : "which";
   return spawnSync(finder, [command], {
@@ -46,25 +60,38 @@ export const assessExternalEnvironments = ({
   const targetsStagingBranch =
     hasValidStagingRefs &&
     stagingTargetIdentity.includes(stagingProjectRef.toLowerCase());
+  const hasOllamaRuntime =
+    hasCommand("ollama") || configured(environment.OLLAMA_HOST);
+  const ollamaProbeUrl =
+    environment.OLLAMA_HOST?.trim() || "http://127.0.0.1:11434";
+  const hasSafeOllamaUrl = isSafeRuntimeUrl(ollamaProbeUrl);
+  const hasComfyUiRuntime = configured(environment.COMFYUI_URL);
+  const hasSafeComfyUiUrl = isSafeRuntimeUrl(environment.COMFYUI_URL);
 
   return [
     {
       id: "ollama",
       label: "Ollama実環境E2E",
-      ready:
-        hasCommand("ollama") || configured(environment.OLLAMA_HOST),
-      missing:
-        hasCommand("ollama") || configured(environment.OLLAMA_HOST)
-          ? []
-          : ["ollama command or OLLAMA_HOST"],
-      probeUrl: environment.OLLAMA_HOST?.trim() || "http://127.0.0.1:11434",
+      ready: hasOllamaRuntime && hasSafeOllamaUrl,
+      missing: [
+        ...(hasOllamaRuntime ? [] : ["ollama command or OLLAMA_HOST"]),
+        ...(hasOllamaRuntime && !hasSafeOllamaUrl
+          ? ["OLLAMA_HOST uses loopback HTTP or HTTPS without credentials"]
+          : []),
+      ],
+      probeUrl: ollamaProbeUrl,
       probePath: "/api/tags",
     },
     {
       id: "comfyui",
       label: "ComfyUI実環境E2E",
-      ready: configured(environment.COMFYUI_URL),
-      missing: configured(environment.COMFYUI_URL) ? [] : ["COMFYUI_URL"],
+      ready: hasComfyUiRuntime && hasSafeComfyUiUrl,
+      missing: [
+        ...(hasComfyUiRuntime ? [] : ["COMFYUI_URL"]),
+        ...(hasComfyUiRuntime && !hasSafeComfyUiUrl
+          ? ["COMFYUI_URL uses loopback HTTP or HTTPS without credentials"]
+          : []),
+      ],
       probeUrl: environment.COMFYUI_URL?.trim() || null,
       probePath: "/system_stats",
     },

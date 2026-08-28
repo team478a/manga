@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-28 RCローカル生成runtime URL安全化
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / EXTERNAL_E2E_PENDING`
+- Ollama／ComfyUIの外部E2E preflightへURL安全検査を追加した。
+- loopbackへのHTTPまたはHTTPSだけを許可し、無効URL、資格情報埋込みURL、暗号化されていないremote HTTPを接続前にPENDINGへ戻す。
+- Ollama commandだけを使う従来のloopback既定値と、明示的なread-only GET probe契約は維持した。
+- 実ネットワークprobe、Provider生成、Production、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中10/10、Hub 931/931、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+
+---
+
 ## 2026-08-28 一般向けモニター利用範囲の更新情報
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`

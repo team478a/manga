@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import test from "node:test";
 import {
   assessExternalEnvironments,
+  isSafeRuntimeUrl,
   probeReadOnlyEndpoint,
 } from "../scripts/check-rc-external-environments.mjs";
 
@@ -44,6 +45,45 @@ test("requires the complete isolated staging contract", () => {
     checks.find((check) => check.id === "supabase-staging").ready,
     true,
   );
+});
+
+test("accepts loopback HTTP and remote HTTPS runtime URLs", () => {
+  assert.equal(isSafeRuntimeUrl("http://127.0.0.1:11434"), true);
+  assert.equal(isSafeRuntimeUrl("http://localhost:8188"), true);
+  assert.equal(isSafeRuntimeUrl("http://[::1]:8188"), true);
+  assert.equal(isSafeRuntimeUrl("https://runtime.example.invalid"), true);
+});
+
+test("rejects malformed, credentialed, and remote HTTP runtime URLs", () => {
+  for (const value of [
+    "not-a-url",
+    "ftp://localhost:8188",
+    "http://runtime.example.invalid:8188",
+    "https://user:password@runtime.example.invalid",
+  ]) {
+    assert.equal(isSafeRuntimeUrl(value), false, value);
+  }
+});
+
+test("does not mark unsafe configured runtimes ready", () => {
+  const checks = assessExternalEnvironments({
+    environment: {
+      OLLAMA_HOST: "http://runtime.example.invalid:11434",
+      COMFYUI_URL: "invalid-url",
+    },
+    commands: { ollama: true, psql: false },
+  });
+
+  const ollama = checks.find((check) => check.id === "ollama");
+  const comfyui = checks.find((check) => check.id === "comfyui");
+  assert.equal(ollama.ready, false);
+  assert.equal(comfyui.ready, false);
+  assert.deepEqual(ollama.missing, [
+    "OLLAMA_HOST uses loopback HTTP or HTTPS without credentials",
+  ]);
+  assert.deepEqual(comfyui.missing, [
+    "COMFYUI_URL uses loopback HTTP or HTTPS without credentials",
+  ]);
 });
 
 test("rejects a database target that does not match the isolated branch ref", () => {
