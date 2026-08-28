@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-28 Windowsアニメーション効果OFF受入れ
+
+- 状態: `WINDOWS_ANIMATION_EFFECTS_OFF_PASSED / SETTINGS_RESTORED / NARRATOR_PENDING`
+- Windows実設定でアニメーション効果をOFFにし、Home・command palette・新規Project dialog・Escape復帰を確認した。
+- 操作・状態理解のanimation依存はなく、検証後はアニメーション効果ONへ復元した。
+- Narrator日本語・Englishは利用者の音声確認待ち。Ollama／ComfyUIは本体・モデル未導入のため実環境E2E pending。
+- Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 検証: 集中3/3、Hub 920/920、deps、lint、RC acceptance 5 passed／9 pending／2 blocked、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_REDUCED_MOTION_ACCEPTANCE_20260828.md`
+
+---
+
 ## 2026-08-28 Windows実表示受入れ
 
 - 状態: `WINDOWS_SCALE_150_PASSED / WINDOWS_HIGH_CONTRAST_PASSED / NARRATOR_PENDING / SETTINGS_RESTORED`
