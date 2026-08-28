@@ -14,8 +14,8 @@ test("RC acceptance ledger preserves current evidence and remaining release gate
   const byId = new Map(ledger.requirements.map((requirement) => [requirement.id, requirement]));
 
   assert.equal(ledger.updatedAt, "2026-08-28");
-  assert.equal(ledger.requirements.filter(({ status }) => status === "passed").length, 5);
-  assert.equal(ledger.requirements.filter(({ status }) => status === "pending").length, 9);
+  assert.equal(ledger.requirements.filter(({ status }) => status === "passed").length, 7);
+  assert.equal(ledger.requirements.filter(({ status }) => status === "pending").length, 7);
   assert.equal(ledger.requirements.filter(({ status }) => status === "blocked").length, 2);
 
   const readiness = byId.get("initial-user-readiness");
@@ -35,6 +35,17 @@ test("RC acceptance ledger preserves current evidence and remaining release gate
     assert.ok(
       requirement?.evidence.includes(
         "docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md",
+      ),
+    );
+  }
+
+  for (const id of ["windows-narrator-ja", "windows-narrator-en"]) {
+    const requirement = byId.get(id);
+    assert.equal(requirement?.status, "passed");
+    assert.equal(requirement?.completedAt, "2026-08-28");
+    assert.ok(
+      requirement?.evidence.includes(
+        "docs/RELEASE_CANDIDATE_WINDOWS_NARRATOR_CORE_ACCEPTANCE_20260828.md",
       ),
     );
   }

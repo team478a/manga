@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Windows Narrator主要導線受入れ（2026-08-28）
+
+- Windows Narrator実機で日本語／Englishの主要Home／新規Project dialog導線を読み上げ、利用者が音声を識別できることを確認した。
+- UI Automationで名前、役割、modal focus循環、Escape復帰を照合し、表示言語は日本語へ復元した。
+- RC台帳はNarrator 2件をpassedへ更新し、7 passed／7 pending／2 blocked。拡張操作の実音声サンプル未実施範囲は証跡へ明記した。
+- Project作成・編集・削除、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- RC acceptance 3/3、Hub 933/933、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_NARRATOR_CORE_ACCEPTANCE_20260828.md`
+
+---
+
 ## 0.0 RC read-only probe失敗契約（2026-08-28）
 
 - Ollama／ComfyUIのread-only probeでtimeoutとその他の通信失敗を安定した理由コードへ分離した。

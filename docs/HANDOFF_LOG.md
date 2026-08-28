@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（Windows Narrator主要導線受入れ）
+
+- Branch: `codex/windows-narrator-core-acceptance-20260828`
+- Base: `55629ae`（PR #387 merge commit）
+- NarratorをWindows実機で起動し、日本語／EnglishのHome、新規Project dialog、Title、作成／Create、focus循環、Escape復帰をUI Automationと利用者の実音声で受入れた。
+- 表示言語は日本語へ復元済み。拡張操作6〜27の実音声サンプリングは未実施として明記し、既存29画面自動証跡と混同していない。
+- RC台帳7 passed／7 pending／2 blocked。Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- RC acceptance 3/3、Hub 933/933、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-28 Codex（RC read-only probe失敗契約）
 
 - Branch: `codex/rc-probe-failure-contract-20260828`
