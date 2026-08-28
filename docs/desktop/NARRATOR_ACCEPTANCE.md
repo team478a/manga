@@ -89,7 +89,7 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 
 | #   | 条件                  | 期待結果                                        | 結果   | 備考 |
 | --- | --------------------- | ----------------------------------------------- | ------ | ---- |
-| 28  | アニメーション効果OFF | 操作・状態理解にanimationを必要としない         | 未確認 |      |
+| 28  | アニメーション効果OFF | 操作・状態理解にanimationを必要としない         | 合格   | Windows実設定をOFFにし、Home・command palette・新規Project dialog・Escape復帰を確認。検証後ONへ復元 |
 | 29  | コントラストテーマ    | button、input、tab、選択、focus境界を識別できる | 合格   | Windows「夕暮れ」でHome・command palette・Editorを確認。skip link不具合を修正・再確認 |
 | 30  | 表示倍率150%          | 主要操作が欠けず、横スクロールだけに依存しない  | 合格   | 1920×1080 displayを150%へ変更し、Home・command palette・Editorを確認 |
 
@@ -103,6 +103,7 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 - 自動preflightの詳細は`docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`。
 - 続けて実Windows設定を150%とコントラストテーマ「夕暮れ」へ変更し、Home・command palette・Editorの主要操作、focus境界、画面横あふれを目視とUI Automationで確認した。実機で発見したskip linkのsystem color未対応を修正し、再起動後に可視化を確認した。
 - 検証後は表示倍率100%・コントラストテーマ「なし」へ復元した。詳細は`docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md`。Narrator音声の日本語・English確認は未完了のため、RC判定は保留を維持する。
+- Windows実設定でアニメーション効果をOFFにし、主要一時UIとdialogの表示・終了・focus復帰がanimationへ依存しないことを確認した。検証後はONへ復元した。詳細は`docs/RELEASE_CANDIDATE_WINDOWS_REDUCED_MOTION_ACCEPTANCE_20260828.md`。
 
 | 項目             | 結果   |
 | ---------------- | ------ |

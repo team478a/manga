@@ -35,3 +35,15 @@ test("forced colors map semantic tokens and controls to Windows system colors", 
     /\.skip-link\s*\{\s*border:\s*2px solid Highlight;\s*background:\s*Canvas;\s*color:\s*CanvasText/,
   );
 });
+
+test("Windows manual acceptance records reduced-motion behavior and restored settings", async () => {
+  const [checklist, evidence] = await Promise.all([
+    read("docs/desktop/NARRATOR_ACCEPTANCE.md"),
+    read("docs/RELEASE_CANDIDATE_WINDOWS_REDUCED_MOTION_ACCEPTANCE_20260828.md"),
+  ]);
+
+  assert.match(checklist, /アニメーション効果OFF[^\n]*合格/);
+  assert.match(evidence, /WINDOWS_ANIMATION_EFFECTS_OFF_PASSED/);
+  assert.match(evidence, /SETTINGS_RESTORED/);
+  assert.match(evidence, /Narrator日本語・English[^\n]*pending/);
+});

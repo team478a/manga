@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（Windowsアニメーション効果OFF受入れ）
+
+- Branch: `codex/windows-narrator-acceptance-20260828`
+- Base: `origin/feature/manga-canvas-mvp`@`b45bad2`（PR #378 merge commit）
+- Windows実設定のアニメーション効果OFFで主要一時UIとdialogの操作・終了・focus復帰を確認した。
+- Windows設定はアニメーション効果ONへ復元済み。Narrator日本語・Englishは利用者音声確認待ち。
+- Ollama／ComfyUI本体・モデルは未導入。Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 集中3/3、Hub 920/920、deps、lint、RC acceptance、diff check成功。
+- 詳細は`docs/RELEASE_CANDIDATE_WINDOWS_REDUCED_MOTION_ACCEPTANCE_20260828.md`。
+
+---
+
 ## 2026-08-28 Codex（Windows実表示受入れ）
 
 - Branch: `codex/windows-manual-display-acceptance-20260828`

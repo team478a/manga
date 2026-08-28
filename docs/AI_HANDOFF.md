@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Windowsアニメーション効果OFF受入れ（2026-08-28）
+
+- Windows実設定のアニメーション効果OFFでHome・command palette・新規Project dialog・Escape復帰を受入れた。
+- 操作・状態理解のanimation依存なし。検証後はONへ復元した。
+- Narrator日本語・Englishは利用者音声確認待ち。Ollama／ComfyUI実環境は未導入。
+- Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 集中3/3、Hub 920/920、deps、lint、RC acceptance、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_REDUCED_MOTION_ACCEPTANCE_20260828.md`
+
+---
+
 ## 0.0 Windows実表示受入れ（2026-08-28）
 
 - 実Windows設定で150%表示とコントラストテーマ「夕暮れ」を適用し、Home・command palette・Editorを目視とUI Automationで受入れた。
