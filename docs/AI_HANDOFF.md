@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 RC read-only probe失敗契約（2026-08-28）
+
+- Ollama／ComfyUIのread-only probeでtimeoutとその他の通信失敗を安定した理由コードへ分離した。
+- transport例外の内容は結果へ含めず、秘密値非表示と既存のGET-only／redirect拒否契約を維持した。
+- 実ネットワークprobe、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 集中12/12、Hub 933/933、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+
+---
+
 ## 0.0 RC read-only probe redirect防止（2026-08-28）
 
 - Ollama／ComfyUIのprobe関数自体で接続先を再検証し、同一originの絶対パスだけを許可した。

@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（RC read-only probe失敗契約）
+
+- Branch: `codex/rc-probe-failure-contract-20260828`
+- Base: `148e516`（PR #386 merge commit）
+- read-only probeの内部Abortを`timeout`、その他の通信失敗を`unreachable`へ分類し、例外メッセージを結果へ出さない契約テストを追加した。
+- GET-only、redirect拒否、same-origin制約は不変。実ネットワークprobe、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 集中12/12、Hub 933/933、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-28 Codex（RC read-only probe redirect防止）
 
 - Branch: `codex/rc-probe-redirect-guard-20260828`

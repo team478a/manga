@@ -197,6 +197,37 @@ test("read-only probe rejects unsafe targets before fetch", async () => {
   assert.equal(fetchCalls, 0);
 });
 
+test("read-only probe classifies timeout and transport failure without error details", async () => {
+  const timeoutResult = await probeReadOnlyEndpoint(
+    "http://127.0.0.1:8188",
+    "/system_stats",
+    {
+      timeoutMs: 0,
+      fetchImpl: (_url, { signal }) =>
+        new Promise((_resolve, reject) => {
+          signal.addEventListener(
+            "abort",
+            () => reject(new Error("secret timeout detail")),
+            { once: true },
+          );
+        }),
+    },
+  );
+  const unreachableResult = await probeReadOnlyEndpoint(
+    "http://127.0.0.1:8188",
+    "/system_stats",
+    {
+      fetchImpl: async () => {
+        throw new Error("secret transport detail");
+      },
+    },
+  );
+
+  assert.deepEqual(timeoutResult, { ok: false, reason: "timeout" });
+  assert.deepEqual(unreachableResult, { ok: false, reason: "unreachable" });
+  assert.doesNotMatch(JSON.stringify([timeoutResult, unreachableResult]), /secret/i);
+});
+
 test("main RC preflight includes external E2E readiness without probing", () => {
   const result = spawnSync(process.execPath, ["scripts/check-release-candidate.mjs"], {
     cwd: process.cwd(),
