@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 クリーンWindows最終受入れpreflight（2026-08-28）
+
+- `rc:clean-windows-acceptance`とstrict判定、構造化status、受入れ手順を追加した。
+- 合格にはクリーン環境、有効署名、install・起動、Project作成・PDF書き出し、署名付き旧版→新版更新、作品保持、uninstallの全証跡が必要。
+- RC台帳のコード署名・署名付き自動更新がpassedになる前は、最終受入れをpassedへ変更できない。
+- 現状は署名証明書と署名済み2version・公開更新URL待ちで`BLOCKED`。Production、Provider、credit操作0件。
+- 集中7/7、Hub 936/936、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+- 詳細: `docs/desktop/CLEAN_WINDOWS_ACCEPTANCE.md`
+
+---
+
 ## 0.0 Windows Narrator主要導線受入れ（2026-08-28）
 
 - Windows Narrator実機で日本語／Englishの主要Home／新規Project dialog導線を読み上げ、利用者が音声を識別できることを確認した。

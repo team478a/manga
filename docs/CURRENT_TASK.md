@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-28 クリーンWindows最終受入れpreflight
+
+- 状態: `PREFLIGHT_IMPLEMENTED / CLEAN_WINDOWS_BLOCKED_EXTERNAL_PREREQUISITES`
+- クリーン環境、有効なAuthenticode、install・起動、Project作成・PDF書き出し、署名付き更新、作品データ保持、uninstallの7項目を機械判定する契約を追加した。
+- `passed`には全7項目の日時・証跡、旧版／新版／書き出しのSHA-256、異なる2version、RC台帳上のコード署名・署名付き自動更新合格を必須とし、未署名版やローカルinstaller E2Eだけで完了扱いにできない。
+- 現状は0 passed／5 pending／2 blocked。信頼されたコード署名証明書と署名済み2version・公開更新URL待ち。
+- Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中7/7、Hub 936/936、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。strictは外部前提不足で意図どおり終了コード1。
+- 手順: `docs/desktop/CLEAN_WINDOWS_ACCEPTANCE.md`
+
+---
+
 ## 2026-08-28 Windows Narrator主要導線受入れ
 
 - 状態: `NARRATOR_JA_PASSED / NARRATOR_EN_PASSED / LOCALE_RESTORED / EXTENDED_AUDIO_SAMPLE_NOT_RUN`

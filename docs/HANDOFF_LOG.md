@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（クリーンWindows最終受入れpreflight）
+
+- Branch: `codex/clean-windows-acceptance-preflight-20260828`
+- Base: `23629c1`（PR #388 merge commit）
+- `apps/desktop/scripts/check-clean-windows-acceptance.mjs`で7つの必須実機証跡と署名前提をfail closedにした。
+- `docs/desktop/CLEAN_WINDOWS_ACCEPTANCE.json`は0 passed／5 pending／2 blocked。未署名成果物を完了扱いにしていない。
+- 次の実機作業は、信頼された証明書、署名済み旧版・新版、公開HTTPS更新URL、クリーンWindows環境が揃ってから行う。
+- Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中7/7、Hub 936/936、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、両build、RC preflight、diff check成功。
+
+---
+
 ## 2026-08-28 Codex（Windows Narrator主要導線受入れ）
 
 - Branch: `codex/windows-narrator-core-acceptance-20260828`

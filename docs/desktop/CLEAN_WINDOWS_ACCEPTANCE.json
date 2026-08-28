@@ -1,0 +1,43 @@
+{
+  "format": "mangai.clean-windows-acceptance",
+  "version": 1,
+  "status": "blocked",
+  "updatedAt": "2026-08-28",
+  "checks": [
+    {
+      "id": "clean_environment",
+      "status": "pending",
+      "reason": "Windows Sandbox、初期化済みVM、または新規PCでの実施待ち"
+    },
+    {
+      "id": "valid_authenticode",
+      "status": "blocked",
+      "reason": "信頼されたコード署名証明書待ち"
+    },
+    {
+      "id": "install_and_launch",
+      "status": "pending",
+      "reason": "クリーン環境での署名済みinstaller実行待ち"
+    },
+    {
+      "id": "project_create_and_export",
+      "status": "pending",
+      "reason": "製品画面からのProject作成とPDF書き出し待ち"
+    },
+    {
+      "id": "signed_update",
+      "status": "blocked",
+      "reason": "署名済み2versionと公開更新URL待ち"
+    },
+    {
+      "id": "project_data_preserved",
+      "status": "pending",
+      "reason": "旧版から新版への更新後の作品データ保持確認待ち"
+    },
+    {
+      "id": "uninstall",
+      "status": "pending",
+      "reason": "クリーン環境でのuninstallと利用者データ保持確認待ち"
+    }
+  ]
+}
