@@ -2705,3 +2705,10 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - migration／Flag未適用、Worker／Job／Storage／Provider／credit操作なし。
 
 ---
+# 0.0 RC外部環境preflight（2026-08-28）
+
+- Ollama、ComfyUI、Supabase stagingの実E2E開始条件を秘密値なしで判定するpreflightを追加した。
+- 通常実行は接続なし。明示probeもOllama／ComfyUIの状態確認GETだけで、生成・Queue・Job・Asset・credit操作を行わない。
+- `mangai-hub-staging`はHealthyだがSupabase Branchは`No branches`で、ローカル接続契約も未設定。表示中mainはProduction扱いのため変更せず停止した。
+- 現在の3対象はPENDING。詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+- 集中3/3、Hub 923/923、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
