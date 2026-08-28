@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-28 Windows Narrator主要導線受入れ
+
+- 状態: `NARRATOR_JA_PASSED / NARRATOR_EN_PASSED / LOCALE_RESTORED / EXTENDED_AUDIO_SAMPLE_NOT_RUN`
+- Windows Narrator実機で、日本語／EnglishのHome、新規Project button、dialog、Title編集欄、作成／Create、Tab循環、Escape復帰を確認した。
+- UI Automationの名前・役割・focus状態と、利用者による実音声確認が一致した。English確認後は表示言語を日本語へ復元した。
+- RC台帳は7 passed／7 pending／2 blocked。拡張操作6〜27は既存29画面の自動証跡を維持するが、今回の実音声サンプリング範囲外として明記した。
+- Project作成・編集・削除、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: RC acceptance 3/3、Hub 933/933、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_NARRATOR_CORE_ACCEPTANCE_20260828.md`
+
+---
+
 ## 2026-08-28 RC read-only probe失敗契約
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / EXTERNAL_E2E_PENDING`

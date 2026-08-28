@@ -40,11 +40,11 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 
 | #   | 操作                      | 期待結果                                                                  | 日本語 | English | 備考 |
 | --- | ------------------------- | ------------------------------------------------------------------------- | ------ | ------- | ---- |
-| 1   | Home先頭からTab           | スキップリンク、バックアップ、復元、新規Project、言語、更新の順で読まれる | 未確認 | 未確認  |      |
-| 2   | スキップリンクを実行      | main見出しへ移動する                                                      | 未確認 | 未確認  |      |
-| 3   | 新規Projectを開く         | dialog名を読み、Project名へfocusする                                      | 未確認 | 未確認  |      |
-| 4   | dialog内でTab / Shift+Tab | focusがdialog内を循環する                                                 | 未確認 | 未確認  |      |
-| 5   | Escapeで閉じる            | 新規Project buttonへfocusが戻る                                           | 未確認 | 未確認  |      |
+| 1   | Home先頭からTab           | スキップリンク、バックアップ、復元、新規Project、言語、更新の順で読まれる | 合格 | 合格  | UI Automationで順序と名前を確認 |
+| 2   | スキップリンクを実行      | main見出しへ移動する                                                      | 合格 | 合格  | 既存29画面keyboard受入れと併用 |
+| 3   | 新規Projectを開く         | dialog名を読み、Project名へfocusする                                      | 合格 | 合格  | 利用者が実音声を確認 |
+| 4   | dialog内でTab / Shift+Tab | focusがdialog内を循環する                                                 | 合格 | 合格  | Title／作成・Create間を実機確認 |
+| 5   | Escapeで閉じる            | 新規Project buttonへfocusが戻る                                           | 合格 | 合格  | 利用者が実音声を確認 |
 | 6   | Projectを開く             | 編集画面、Project名、保存状態を読める                                     | 未確認 | 未確認  |      |
 | 7   | グローバルナビゲーション  | 現在画面を`current page`として識別できる                                  | 未確認 | 未確認  |      |
 
@@ -102,16 +102,17 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 - 初回強制カラーで検出したsystem color未追従を修正し、再実行で解消した。
 - 自動preflightの詳細は`docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`。
 - 続けて実Windows設定を150%とコントラストテーマ「夕暮れ」へ変更し、Home・command palette・Editorの主要操作、focus境界、画面横あふれを目視とUI Automationで確認した。実機で発見したskip linkのsystem color未対応を修正し、再起動後に可視化を確認した。
-- 検証後は表示倍率100%・コントラストテーマ「なし」へ復元した。詳細は`docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md`。Narrator音声の日本語・English確認は未完了のため、RC判定は保留を維持する。
+- 検証後は表示倍率100%・コントラストテーマ「なし」へ復元した。詳細は`docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md`。
 - Windows実設定でアニメーション効果をOFFにし、主要一時UIとdialogの表示・終了・focus復帰がanimationへ依存しないことを確認した。検証後はONへ復元した。詳細は`docs/RELEASE_CANDIDATE_WINDOWS_REDUCED_MOTION_ACCEPTANCE_20260828.md`。
+- Windows Narratorを実機で起動し、日本語／EnglishのHome・新規Project dialog・Title入力・Create操作・focus循環・Escape復帰をUI Automationと利用者の実音声確認で受入れた。拡張操作6〜27は既存29画面の名前／役割／keyboard契約を維持するが、今回の実音声サンプリング範囲には含めていない。詳細は`docs/RELEASE_CANDIDATE_WINDOWS_NARRATOR_CORE_ACCEPTANCE_20260828.md`。
 
 | 項目             | 結果   |
 | ---------------- | ------ |
-| 日本語Narrator   | 未確認 |
-| English Narrator | 未確認 |
+| 日本語Narrator   | 合格   |
+| English Narrator | 合格   |
 | 高コントラスト   | 合格   |
 | 150%表示         | 合格   |
-| RC判定           | 保留   |
+| RC判定           | 主要導線合格 |
 
 未確認をすべて完了または既知制限として承認し、RC停止条件が0件になった時点で合格とします。
 

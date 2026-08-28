@@ -40,12 +40,24 @@
     {
       "id": "windows-narrator-ja",
       "label": "Windows Narrator 日本語",
-      "status": "pending"
+      "status": "passed",
+      "completedAt": "2026-08-28",
+      "verifier": "Codex UI Automation + product owner audio confirmation",
+      "evidence": [
+        "docs/RELEASE_CANDIDATE_WINDOWS_NARRATOR_CORE_ACCEPTANCE_20260828.md",
+        "docs/desktop/NARRATOR_ACCEPTANCE.md"
+      ]
     },
     {
       "id": "windows-narrator-en",
       "label": "Windows Narrator English",
-      "status": "pending"
+      "status": "passed",
+      "completedAt": "2026-08-28",
+      "verifier": "Codex UI Automation + product owner audio confirmation",
+      "evidence": [
+        "docs/RELEASE_CANDIDATE_WINDOWS_NARRATOR_CORE_ACCEPTANCE_20260828.md",
+        "docs/desktop/NARRATOR_ACCEPTANCE.md"
+      ]
     },
     {
       "id": "windows-high-contrast",
