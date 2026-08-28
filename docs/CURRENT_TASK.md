@@ -4652,3 +4652,11 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - standalone外部環境判定を既存`rc:preflight`へ統合し、通常のRC確認だけでOllama、ComfyUI、Supabase staging隔離接続の不足を表示する。
 - 通常RC実行はconfiguration-onlyで、明示`rc:external:probe`なしに接続しない。Provider生成、Queue／Job／Asset、credit、DB、Productionは変更しない。
 - 集中4/4、Hub 924/924、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。3環境は現状どおりPENDINGで、未検証を成功扱いにしていない。
+
+# 2026-08-28 RC隔離Staging identity guard
+
+- Branch: `codex/rc-isolated-staging-identity-20260828`。Base: PR #381 merge commit `4b47e1c`。
+- 外部E2EのSupabase判定へ親Project refを追加し、Branch refと親Project refが同一の場合はDB接続前にPENDINGとする。
+- 既存`db:staging:preflight`の通常staging契約は変更しない。隔離Branchを必要とするrelease-wide E2Eだけを厳格化する。
+- `mangai-hub-staging`のmainを隔離Branchとして誤認しない。Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。
+- 集中5/5、Hub 925/925、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。外部環境はPENDINGを維持する。

@@ -28,6 +28,7 @@ test("requires the complete isolated staging contract", () => {
     environment: {
       MANGAI_DB_ENV: "staging",
       MANGAI_STAGING_PROJECT_REF: "preview-ref",
+      MANGAI_STAGING_PARENT_PROJECT_REF: "parent-ref",
       PGHOST: "db.example.invalid",
       PGPORT: "5432",
       PGDATABASE: "postgres",
@@ -43,6 +44,29 @@ test("requires the complete isolated staging contract", () => {
     checks.find((check) => check.id === "supabase-staging").ready,
     true,
   );
+});
+
+test("rejects the parent Supabase main as an isolated staging branch", () => {
+  const checks = assessExternalEnvironments({
+    environment: {
+      MANGAI_DB_ENV: "staging",
+      MANGAI_STAGING_PROJECT_REF: "same-ref",
+      MANGAI_STAGING_PARENT_PROJECT_REF: "same-ref",
+      PGHOST: "db.example.invalid",
+      PGPORT: "5432",
+      PGDATABASE: "postgres",
+      PGUSER: "postgres",
+      PGPASSWORD: "hidden",
+      PGSSLMODE: "require",
+    },
+    commands: { ollama: false, psql: true },
+  });
+  const staging = checks.find((check) => check.id === "supabase-staging");
+
+  assert.equal(staging.ready, false);
+  assert.deepEqual(staging.missing, [
+    "isolated staging branch ref differs from parent project ref",
+  ]);
 });
 
 test("read-only probe only performs GET and reports reachability", async () => {
@@ -71,6 +95,7 @@ test("main RC preflight includes external E2E readiness without probing", () => 
       COMFYUI_URL: "",
       MANGAI_DB_ENV: "",
       MANGAI_STAGING_PROJECT_REF: "",
+      MANGAI_STAGING_PARENT_PROJECT_REF: "",
       PATH: "",
     },
     windowsHide: true,
