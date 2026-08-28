@@ -4660,3 +4660,10 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 既存`db:staging:preflight`の通常staging契約は変更しない。隔離Branchを必要とするrelease-wide E2Eだけを厳格化する。
 - `mangai-hub-staging`のmainを隔離Branchとして誤認しない。Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。
 - 集中5/5、Hub 925/925、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。外部環境はPENDINGを維持する。
+
+# 2026-08-28 RC Staging接続先identity guard
+
+- Branch: `codex/rc-staging-target-identity-20260828`。Base: PR #382 merge commit `4cea229`。
+- 外部E2EのSupabase判定でBranch／親Project refの形式を検証し、`PGHOST`または`PGUSER`が隔離Branch refを含むことをREADY条件へ追加する。
+- Branch refだけ差し替えて接続先が親mainのままの場合も、DB接続前にPENDINGとする。通常staging preflightの既存照合契約は不変。
+- Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。

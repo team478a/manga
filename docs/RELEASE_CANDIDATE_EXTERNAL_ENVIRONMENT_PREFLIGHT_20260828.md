@@ -10,7 +10,7 @@ Ollama、ComfyUI、Supabase stagingの実環境E2Eを開始する前に、必要
 - `npm run rc:external:probe`: 準備済みのOllama／ComfyUIに対して状態確認GETだけを行う。生成、Queue登録、キャンセル、Asset保存は行わない。
 - `npm run rc:preflight`: 上記3環境のconfiguration-only判定を通常のRC結果へ統合する。明示的な`rc:external:probe`を指定しない限り接続しない。
 - `--strict`: 不足または到達不能を終了コード1にする。
-- Supabase stagingは`MANGAI_DB_ENV=staging`、Branch ref、親Project ref、PostgreSQL接続契約、`psql`がすべて揃い、Branch refが親Project refと異なるまでREADYにしない。
+- Supabase stagingは`MANGAI_DB_ENV=staging`、正しい形式のBranch ref／親Project ref、PostgreSQL接続契約、`psql`がすべて揃い、Branch refが親Project refと異なり、`PGHOST`または`PGUSER`がBranch refと一致するまでREADYにしない。
 - URL、password、API key等の値は出力しない。
 
 ## 2026-08-28確認結果

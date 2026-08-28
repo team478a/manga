@@ -2727,3 +2727,10 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - 外部E2E判定はSupabase Branch refと親Project refの両方を要求し、同一refなら接続前にPENDINGとする。
 - 通常のstagingスキーマpreflightは変更せず、release-wide隔離E2Eだけを厳格化した。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中5/5、Hub 925/925、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+
+---
+# 0.0 RC Staging接続先identity guard（2026-08-28）
+
+- Branch／親Project refの形式と、`PGHOST`／`PGUSER`の隔離Branch ref一致を外部E2E READY条件へ追加した。
+- refだけ隔離Branchへ見せかけ、接続先が親mainのままになる設定を接続前に拒否する。
+- Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
