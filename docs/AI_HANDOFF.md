@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 RCローカル生成runtime URL安全化（2026-08-28）
+
+- Ollama／ComfyUIのpreflightで、loopback HTTPまたはHTTPSだけをREADY対象にした。
+- 無効URL、資格情報埋込みURL、remote HTTPは実接続前に拒否する。明示probeのread-only GET契約は不変。
+- 実ネットワークprobe、Production、Provider、Queue、Job、Asset、credit操作0件。
+- 集中10/10、Hub 931/931、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+
+---
+
 ## 0.0 一般向けモニター利用範囲の更新情報（2026-08-28）
 
 - ダッシュボードの更新情報先頭へ、一般向けモニターで利用できる工程と対象外機能を追加した。

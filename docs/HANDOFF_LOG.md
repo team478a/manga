@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（RCローカル生成runtime URL安全化）
+
+- Branch: `codex/rc-runtime-url-safety-20260828`
+- Base: `59c1837`（PR #384 merge commit）
+- Ollama／ComfyUIの接続先をloopback HTTPまたはHTTPSへ限定し、無効URL、資格情報埋込みURL、remote HTTPを接続前に拒否する。
+- Ollama command利用時のloopback既定値、read-only GET probe、秘密値非表示を維持した。
+- 実ネットワークprobe、Production、Provider、Queue、Job、Asset、credit操作0件。
+- 集中10/10、Hub 931/931、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-28 Codex（一般向けモニター利用範囲の更新情報）
 
 - Branch: `codex/monitor-scope-update-20260828`
