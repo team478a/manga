@@ -4636,3 +4636,12 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - ローカル検証: focused 3/3、deps、lint、Hub typecheck、Hub 715 tests、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight、`git diff --check`成功。全typecheckのDesktopだけはローカル依存の`@napi-rs/keyring`型宣言不足、通常Turbopack buildは既知のWindows path長上限で停止したため、正規確認先をGitHub Actions／Vercel Previewとする。
 - 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功で停止する。責任者merge前にProductionで参照登録や有料再生成を行わない。
 - Draft PR: [#266](https://github.com/team478a/manga/pull/266)。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-niam5c0ge-team478as-projects.vercel.app`。Draft／MERGEABLEを確認し、Productionを変更せず責任者review待ちで停止する。
+# 2026-08-28 RC外部環境preflight
+
+- Branch: `codex/rc-external-environment-preflight-20260828`。Base: PR #379 merge commit `362ec98`。
+- Ollama、ComfyUI、Supabase staging実環境E2Eの開始条件を、秘密値なし・通常時ネットワーク接続なしで判定する`rc:external:preflight`を追加した。
+- `rc:external:probe`は準備済みローカルProviderへの状態確認GETだけを許可し、生成、Queue、Job、Asset、creditを変更しない。
+- 既存Chromeログインで`mangai-hub-staging`がHealthy、Supabase Branchが`No branches`、表示中`main`がProduction扱いであることを読み取り専用確認した。隔離Branchとローカル接続契約がないためDB操作前に停止した。
+- 現在はOllama、ComfyUI、Supabase staging隔離接続の3対象ともPENDING。未検証項目を成功扱いにしていない。
+- 検証: 集中3/3、Hub 923/923、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`

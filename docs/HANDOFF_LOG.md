@@ -5860,3 +5860,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Production migration、Flag、Worker、Job、Storage、Provider、credit操作なし。
 
 ---
+# 2026-08-28 Codex: RC外部環境preflight
+
+- Branch: `codex/rc-external-environment-preflight-20260828`
+- Base: `362ec98`（PR #379 merge commit）
+- Ollama／ComfyUI／Supabase stagingの実環境開始条件を、秘密値非表示で判定するpreflightと集中テストを追加した。
+- Chromeの既存Supabase sessionで`mangai-hub-staging` Healthy、Branch `No branches`を読み取り専用確認。Production扱いのmain、migration、SQL、Flag、資格情報、利用者データは変更していない。
+- Provider生成、Queue／Job／Asset変更、credit予約・消費は0件。3対象は準備不足を正しくPENDINGとした。
+- 集中3/3、Hub 923/923、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
