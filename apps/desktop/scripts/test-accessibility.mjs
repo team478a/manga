@@ -17,6 +17,16 @@ const userData = path.join(temporaryRoot, "UserData");
 const reportPath =
   process.env.MANGAI_A11Y_REPORT ??
   path.join(temporaryRoot, "accessibility-home.json");
+const runtimeReportPath = path.join(temporaryRoot, "accessibility-runtime.json");
+const variant = process.env.MANGAI_A11Y_VARIANT ?? "default";
+const variantArgs =
+  variant === "scale-150"
+    ? ["--force-device-scale-factor=1.5"]
+    : variant === "high-contrast"
+      ? ["--force-high-contrast"]
+      : [];
+if (!["default", "scale-150", "high-contrast"].includes(variant))
+  throw new Error(`Unsupported MANGAI_A11Y_VARIANT: ${variant}`);
 const axePath = require.resolve("axe-core/axe.min.js");
 const env = {
   ...process.env,
@@ -24,13 +34,20 @@ const env = {
   MANGAI_TEST_USER_DATA: userData,
   MANGAI_AXE_PATH: axePath,
   MANGAI_A11Y_REPORT: path.resolve(reportPath),
+  MANGAI_A11Y_RUNTIME_REPORT: runtimeReportPath,
+  MANGAI_A11Y_VARIANT: variant,
 };
 delete env.ELECTRON_RUN_AS_NODE;
 
 try {
   const result = spawnSync(
     electronPath,
-    [appRoot, "--mangai-accessibility-test", "--disable-gpu"],
+    [
+      appRoot,
+      "--mangai-accessibility-test",
+      "--disable-gpu",
+      ...variantArgs,
+    ],
     {
       cwd: appRoot,
       env,
@@ -65,6 +82,13 @@ try {
     };
     process.stdout.write(`${JSON.stringify(summary, null, 2)}\n`);
   }
+  const runtimeReport = fs.existsSync(runtimeReportPath)
+    ? JSON.parse(fs.readFileSync(runtimeReportPath, "utf8"))
+    : null;
+  if (runtimeReport)
+    process.stdout.write(
+      `${JSON.stringify({ accessibilityRuntime: runtimeReport }, null, 2)}\n`,
+    );
   const visualReportPath = path.join(
     path.dirname(reportPath),
     "command-palette-visual.json",

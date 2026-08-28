@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（Windows表示受入れpreflight・強制カラー修正）
+
+- Branch: `codex/windows-display-acceptance-20260828`
+- Base: `origin/feature/manga-canvas-mvp`@`a629528`（PR #376 merge commit）
+- 150%相当のdevicePixelRatioと強制カラーmedia queryをruntimeで検証し、横あふれ・29画面axe・visual／keyboard 21項目を一括実行するcommandを追加した。
+- 強制カラー初回でseriousなコントラスト違反を検出し、semantic tokenとcontrolをWindows system colorへ対応させて解消した。
+- 実Windows設定とNarrator音声の人手確認は未完了。RC台帳のWindows 4件はpendingを維持する。
+- Windows設定、Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 契約2/2、Hub 919/919、Canvas 26/26、AI 48/48、Desktop 182/182、通常／150%相当／強制カラー各29画面blocking violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細は`docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`。
+
+---
+
 ## 2026-08-28 Codex（RC受入れ台帳整合化）
 
 - Branch: `codex/rc-ledger-reconciliation-20260828`

@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-28 Windows表示受入れpreflight・強制カラー修正
+
+- 状態: `AUTOMATED_PREFLIGHT_PASSED / HIGH_CONTRAST_DEFECT_FIXED / WINDOWS_MANUAL_ACCEPTANCE_PENDING`
+- Windows 11 Home 25H2 build 26200で、MANGAI Desktopだけを150%相当と強制カラーへ隔離起動する再現可能な受入れcommandを追加した。
+- 150%相当はdevicePixelRatio 1.5、強制カラーはforced colors activeをruntimeで必須化し、横あふれもfail closedにした。
+- 初回強制カラーで検出したseriousな色コントラスト違反を、Windows system colorへのsemantic token対応で修正した。
+- 両条件とも29画面blocking violation 0、横あふれ0、visual／keyboard 21/21。実Windows設定とNarrator音声の人手確認は未完了のためRC台帳4件はpendingを維持する。
+- Windows設定、Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 検証: 契約2/2、Hub 919/919、Canvas 26/26、AI 48/48、Desktop 182/182、通常／150%相当／強制カラー各29画面blocking violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`
+
+---
+
 ## 2026-08-28 RC受入れ台帳整合化
 
 - 状態: `LEDGER_RECONCILED / INITIAL_USER_READINESS_PASSED / RELEASE_WIDE_11_PENDING_2_BLOCKED`
