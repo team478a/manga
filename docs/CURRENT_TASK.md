@@ -4645,3 +4645,10 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 現在はOllama、ComfyUI、Supabase staging隔離接続の3対象ともPENDING。未検証項目を成功扱いにしていない。
 - 検証: 集中3/3、Hub 923/923、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
 - 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+
+# 2026-08-28 RC外部環境preflight統合
+
+- Branch: `codex/rc-external-preflight-integration-20260828`。Base: PR #380 merge commit `aaa8132`。
+- standalone外部環境判定を既存`rc:preflight`へ統合し、通常のRC確認だけでOllama、ComfyUI、Supabase staging隔離接続の不足を表示する。
+- 通常RC実行はconfiguration-onlyで、明示`rc:external:probe`なしに接続しない。Provider生成、Queue／Job／Asset、credit、DB、Productionは変更しない。
+- 集中4/4、Hub 924/924、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。3環境は現状どおりPENDINGで、未検証を成功扱いにしていない。
