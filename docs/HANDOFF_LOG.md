@@ -5886,3 +5886,11 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Supabase外部E2EはBranch ref／親Project refの両方を要求し、同一refならDB接続前に停止する。
 - 通常staging preflightは不変。Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。
 - 集中5/5、Hub 925/925、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。次はDraft PRと全CI／Vercel Preview成功で停止する。
+
+# 2026-08-28 Codex: RC Staging接続先identity guard
+
+- Branch: `codex/rc-staging-target-identity-20260828`
+- Base: `4cea229`（PR #382 merge commit）
+- 外部E2E READY条件へref形式と`PGHOST`／`PGUSER`の隔離Branch ref一致を追加した。
+- Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。

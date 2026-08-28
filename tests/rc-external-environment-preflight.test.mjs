@@ -29,7 +29,7 @@ test("requires the complete isolated staging contract", () => {
       MANGAI_DB_ENV: "staging",
       MANGAI_STAGING_PROJECT_REF: "preview-ref",
       MANGAI_STAGING_PARENT_PROJECT_REF: "parent-ref",
-      PGHOST: "db.example.invalid",
+      PGHOST: "db.preview-ref.example.invalid",
       PGPORT: "5432",
       PGDATABASE: "postgres",
       PGUSER: "postgres",
@@ -44,6 +44,52 @@ test("requires the complete isolated staging contract", () => {
     checks.find((check) => check.id === "supabase-staging").ready,
     true,
   );
+});
+
+test("rejects a database target that does not match the isolated branch ref", () => {
+  const checks = assessExternalEnvironments({
+    environment: {
+      MANGAI_DB_ENV: "staging",
+      MANGAI_STAGING_PROJECT_REF: "branch-ref",
+      MANGAI_STAGING_PARENT_PROJECT_REF: "parent-ref",
+      PGHOST: "db.parent-ref.example.invalid",
+      PGPORT: "5432",
+      PGDATABASE: "postgres",
+      PGUSER: "postgres",
+      PGPASSWORD: "hidden",
+      PGSSLMODE: "require",
+    },
+    commands: { ollama: false, psql: true },
+  });
+  const staging = checks.find((check) => check.id === "supabase-staging");
+
+  assert.equal(staging.ready, false);
+  assert.deepEqual(staging.missing, [
+    "PGHOST or PGUSER matches isolated staging branch ref",
+  ]);
+});
+
+test("rejects malformed staging project references before connection", () => {
+  const checks = assessExternalEnvironments({
+    environment: {
+      MANGAI_DB_ENV: "staging",
+      MANGAI_STAGING_PROJECT_REF: "bad ref",
+      MANGAI_STAGING_PARENT_PROJECT_REF: "parent-ref",
+      PGHOST: "db.bad-ref.example.invalid",
+      PGPORT: "5432",
+      PGDATABASE: "postgres",
+      PGUSER: "postgres",
+      PGPASSWORD: "hidden",
+      PGSSLMODE: "require",
+    },
+    commands: { ollama: false, psql: true },
+  });
+  const staging = checks.find((check) => check.id === "supabase-staging");
+
+  assert.equal(staging.ready, false);
+  assert.deepEqual(staging.missing, [
+    "valid staging branch and parent project refs",
+  ]);
 });
 
 test("rejects the parent Supabase main as an isolated staging branch", () => {

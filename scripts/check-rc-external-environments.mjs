@@ -35,10 +35,17 @@ export const assessExternalEnvironments = ({
   const stagingProjectRef = environment.MANGAI_STAGING_PROJECT_REF?.trim();
   const stagingParentProjectRef =
     environment.MANGAI_STAGING_PARENT_PROJECT_REF?.trim();
+  const projectRefPattern = /^[a-z0-9-]{8,64}$/i;
+  const hasValidStagingRefs =
+    projectRefPattern.test(stagingProjectRef ?? "") &&
+    projectRefPattern.test(stagingParentProjectRef ?? "");
   const hasIsolatedStagingIdentity =
-    configured(stagingProjectRef) &&
-    configured(stagingParentProjectRef) &&
+    hasValidStagingRefs &&
     stagingProjectRef.toLowerCase() !== stagingParentProjectRef.toLowerCase();
+  const stagingTargetIdentity = `${environment.PGHOST ?? ""} ${environment.PGUSER ?? ""}`.toLowerCase();
+  const targetsStagingBranch =
+    hasValidStagingRefs &&
+    stagingTargetIdentity.includes(stagingProjectRef.toLowerCase());
 
   return [
     {
@@ -68,7 +75,8 @@ export const assessExternalEnvironments = ({
         environment.MANGAI_DB_ENV === "staging" &&
         hasCommand("psql") &&
         stagingVariables.every((name) => configured(environment[name])) &&
-        hasIsolatedStagingIdentity,
+        hasIsolatedStagingIdentity &&
+        targetsStagingBranch,
       missing: [
         ...(environment.MANGAI_DB_ENV === "staging"
           ? []
@@ -77,8 +85,15 @@ export const assessExternalEnvironments = ({
         ...stagingVariables.filter((name) => !configured(environment[name])),
         ...(configured(stagingProjectRef) &&
         configured(stagingParentProjectRef) &&
+        !hasValidStagingRefs
+          ? ["valid staging branch and parent project refs"]
+          : []),
+        ...(hasValidStagingRefs &&
         !hasIsolatedStagingIdentity
           ? ["isolated staging branch ref differs from parent project ref"]
+          : []),
+        ...(hasIsolatedStagingIdentity && !targetsStagingBranch
+          ? ["PGHOST or PGUSER matches isolated staging branch ref"]
           : []),
       ],
       probeUrl: null,
