@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-29 クリーンWindows証跡取り込み
+
+- 状態: `EVIDENCE_IMPORT_IMPLEMENTED / ACCEPTANCE_REMAINS_BLOCKED`
+- クリーンWindows実機の固定7項目、Windows 11 clean環境、旧版／新版／PDFのSHA-256を検証して、構造化statusとRC台帳を同期する明示的な`--import`経路を追加した。
+- 取り込み前にRC台帳のコード署名・署名付き自動更新がpassedであることを必須化した。氏名、メール、端末名、APIキー、Prompt、画像、署名鍵を証跡形式へ含めない。
+- 正本は0 passed／5 pending／2 blockedのまま。テスト用コピー以外への証跡取り込みなし。
+- Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中9/9、Hub 938/938、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/desktop/CLEAN_WINDOWS_ACCEPTANCE.md`
+
+---
+
 ## 2026-08-28 クリーンWindows最終受入れpreflight
 
 - 状態: `PREFLIGHT_IMPLEMENTED / CLEAN_WINDOWS_BLOCKED_EXTERNAL_PREREQUISITES`
