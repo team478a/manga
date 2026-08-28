@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import test from "node:test";
 import {
   assessExternalEnvironments,
@@ -58,4 +59,26 @@ test("read-only probe only performs GET and reports reachability", async () => {
     method: "GET",
   });
   assert.deepEqual(result, { ok: true, status: 200 });
+});
+
+test("main RC preflight includes external E2E readiness without probing", () => {
+  const result = spawnSync(process.execPath, ["scripts/check-release-candidate.mjs"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    env: {
+      ...process.env,
+      OLLAMA_HOST: "",
+      COMFYUI_URL: "",
+      MANGAI_DB_ENV: "",
+      MANGAI_STAGING_PROJECT_REF: "",
+      PATH: "",
+    },
+    windowsHide: true,
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /External E2E environment readiness/);
+  assert.match(result.stdout, /\[PENDING\] Ollama実環境E2E/);
+  assert.match(result.stdout, /\[PENDING\] ComfyUI実環境E2E/);
+  assert.doesNotMatch(result.stdout, /\[probe\]/);
 });

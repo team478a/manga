@@ -5869,3 +5869,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Provider生成、Queue／Job／Asset変更、credit予約・消費は0件。3対象は準備不足を正しくPENDINGとした。
 - 集中3/3、Hub 923/923、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
 - 次: ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+# 2026-08-28 Codex: RC外部環境preflight統合
+
+- Branch: `codex/rc-external-preflight-integration-20260828`
+- Base: `aaa8132`（PR #380 merge commit）
+- 既存`rc:preflight`へ外部E2E環境のconfiguration-only判定を統合した。明示probeなしにネットワーク接続しない。
+- Ollama／ComfyUI／Supabase stagingはPENDINGを維持。Production、DB、Provider、Queue、Job、Asset、credit操作0件。
+- 集中4/4、Hub 924/924、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。

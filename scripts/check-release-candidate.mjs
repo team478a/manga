@@ -6,6 +6,7 @@ import {
   readAcceptanceRecord,
   summarizeAcceptance,
 } from "./lib/rc-acceptance.mjs";
+import { assessExternalEnvironments } from "./check-rc-external-environments.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = new Set(process.argv.slice(2));
@@ -147,6 +148,7 @@ const checks = [
     ],
   },
 ];
+const externalEnvironmentChecks = assessExternalEnvironments({ environment });
 
 const staticPaths = [
   "package.json",
@@ -173,6 +175,12 @@ for (const check of checks) {
   console.log(`${ready ? "[READY]" : "[PENDING]"} ${check.name}`);
   for (const [label, state] of check.items)
     console.log(`  ${state === "configured" ? "[ok]" : `[${state}]`} ${label}`);
+}
+
+console.log("\nExternal E2E environment readiness (values are hidden)");
+for (const check of externalEnvironmentChecks) {
+  console.log(`${check.ready ? "[READY]" : "[PENDING]"} ${check.label}`);
+  for (const item of check.missing) console.log(`  [missing] ${item}`);
 }
 
 console.log("\nManual acceptance required");
@@ -257,9 +265,10 @@ if (runFullValidation && !localFailure) {
   console.log("\nLocal quality gate: not run (use npm run rc:validate)");
 }
 
-const externalPending = checks.some((check) =>
-  check.items.some(([, state]) => state !== "configured"),
-);
+const externalPending =
+  checks.some((check) =>
+    check.items.some(([, state]) => state !== "configured"),
+  ) || externalEnvironmentChecks.some((check) => !check.ready);
 
 console.log("\nPreflight result");
 if (localFailure) console.log("  Local readiness: FAILED");

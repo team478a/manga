@@ -2712,3 +2712,11 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - `mangai-hub-staging`はHealthyだがSupabase Branchは`No branches`で、ローカル接続契約も未設定。表示中mainはProduction扱いのため変更せず停止した。
 - 現在の3対象はPENDING。詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
 - 集中3/3、Hub 923/923、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+
+---
+# 0.0 RC外部環境preflight統合（2026-08-28）
+
+- `rc:preflight`へOllama、ComfyUI、Supabase staging隔離接続のconfiguration-only判定を統合した。
+- 通常RC確認は接続・probe・生成を行わず、秘密値も表示しない。3対象は現状どおりPENDING。
+- Production、DB、Provider、Queue、Job、Asset、credit操作0件。
+- 集中4/4、Hub 924/924、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
