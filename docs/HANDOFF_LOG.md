@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（一般向けモニター利用範囲の更新情報）
+
+- Branch: `codex/monitor-scope-update-20260828`
+- Base: `02aa5a0`（PR #383 merge commit）
+- 更新情報の先頭へ、利用可能な一般向け制作工程と、成人向け制作・販売申請・決済・収益管理が対象外であることを追加した。
+- 画像生成の利用条件と利用ガイドへの導線を明記し、既存DB更新情報は維持した。
+- Production、DB、Provider、Queue、Job、Asset、credit操作0件。
+- 集中6/6、Hub 928/928、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-28 Codex（Windowsアニメーション効果OFF受入れ）
 
 - Branch: `codex/windows-narrator-acceptance-20260828`

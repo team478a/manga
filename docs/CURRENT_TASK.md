@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-28 一般向けモニター利用範囲の更新情報
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- ダッシュボードの更新情報先頭へ、一般向けモニターで利用できる制作工程を常時表示する案内を追加した。
+- 利用可能: 市場分析、AI企画、シナリオ、ネーム、Cloud原稿編集、人物・画風・参照画像設定、条件を満たすコマ画像生成、作品管理、PDF書き出し、状況・ご意見。
+- 対象外: 成人向け制作、販売申請、決済、収益管理。画像生成は利用設定、残りAI利用数、クレジット、安全確認を満たす場合だけ実行できることを明記した。
+- DB由来の公開更新情報は従来どおり後続表示する。DB障害時も利用範囲の案内は表示する。
+- Production、DB、Provider、Queue、Job、Asset、credit操作0件。
+- 検証: 集中6/6、Hub 928/928、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
+---
+
 ## 2026-08-28 Windowsアニメーション効果OFF受入れ
 
 - 状態: `WINDOWS_ANIMATION_EFFECTS_OFF_PASSED / SETTINGS_RESTORED / NARRATOR_PENDING`
