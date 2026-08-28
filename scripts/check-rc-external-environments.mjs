@@ -135,11 +135,23 @@ export const probeReadOnlyEndpoint = async (
   { fetchImpl = fetch, timeoutMs = 3000 } = {},
 ) => {
   if (!baseUrl) return { ok: false, reason: "not-configured" };
+  if (!isSafeRuntimeUrl(baseUrl) || !path?.startsWith("/") || path.startsWith("//"))
+    return { ok: false, reason: "unsafe-url" };
+  let targetUrl;
+  try {
+    const parsedBaseUrl = new URL(baseUrl);
+    targetUrl = new URL(path, parsedBaseUrl);
+    if (targetUrl.origin !== parsedBaseUrl.origin)
+      return { ok: false, reason: "unsafe-url" };
+  } catch {
+    return { ok: false, reason: "unsafe-url" };
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetchImpl(new URL(path, baseUrl), {
+    const response = await fetchImpl(targetUrl, {
       method: "GET",
+      redirect: "error",
       signal: controller.signal,
     });
     return { ok: response.ok, status: response.status };

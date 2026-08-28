@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-28 RC read-only probe redirect防止
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / EXTERNAL_E2E_PENDING`
+- Ollama／ComfyUIのread-only GET probeで、最終接続先を再検証し、同一originの絶対パスだけを許可するようにした。
+- fetchのredirect追従を禁止し、設定検査後の別origin誘導や、直接関数利用によるURL安全検査の迂回を防止した。
+- remote HTTP、資格情報埋込みURL、protocol-relative／別origin pathはfetch前に拒否する。
+- 実ネットワークprobe、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中11/11、Hub 932/932、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+
+---
+
 ## 2026-08-28 RCローカル生成runtime URL安全化
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_LOCAL_GATES_PASSED / EXTERNAL_E2E_PENDING`

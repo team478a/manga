@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 RC read-only probe redirect防止（2026-08-28）
+
+- Ollama／ComfyUIのprobe関数自体で接続先を再検証し、同一originの絶対パスだけを許可した。
+- HTTP redirectを追従せず、remote HTTP、資格情報埋込み、protocol-relative／別origin pathをfetch前に拒否する。
+- 実ネットワークprobe、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 集中11/11、Hub 932/932、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_EXTERNAL_ENVIRONMENT_PREFLIGHT_20260828.md`
+
+---
+
 ## 0.0 RCローカル生成runtime URL安全化（2026-08-28）
 
 - Ollama／ComfyUIのpreflightで、loopback HTTPまたはHTTPSだけをREADY対象にした。
