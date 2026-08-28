@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（RC read-only probe redirect防止）
+
+- Branch: `codex/rc-probe-redirect-guard-20260828`
+- Base: `05fa402`（PR #385 merge commit）
+- Ollama／ComfyUIのprobe関数へ最終URL検査とsame-origin制約を追加し、HTTP redirectを追従しない契約にした。
+- remote HTTP、資格情報埋込み、protocol-relative／別origin pathはfetch前に拒否する。
+- 実ネットワークprobe、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 集中11/11、Hub 932/932、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-28 Codex（RCローカル生成runtime URL安全化）
 
 - Branch: `codex/rc-runtime-url-safety-20260828`

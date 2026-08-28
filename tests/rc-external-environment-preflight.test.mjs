@@ -159,7 +159,11 @@ test("read-only probe only performs GET and reports reachability", async () => {
   let request;
   const result = await probeReadOnlyEndpoint("http://127.0.0.1:8188", "/system_stats", {
     fetchImpl: async (url, options) => {
-      request = { url: String(url), method: options.method };
+      request = {
+        url: String(url),
+        method: options.method,
+        redirect: options.redirect,
+      };
       return { ok: true, status: 200 };
     },
   });
@@ -167,8 +171,30 @@ test("read-only probe only performs GET and reports reachability", async () => {
   assert.deepEqual(request, {
     url: "http://127.0.0.1:8188/system_stats",
     method: "GET",
+    redirect: "error",
   });
   assert.deepEqual(result, { ok: true, status: 200 });
+});
+
+test("read-only probe rejects unsafe targets before fetch", async () => {
+  let fetchCalls = 0;
+  const fetchImpl = async () => {
+    fetchCalls += 1;
+    return { ok: true, status: 200 };
+  };
+
+  for (const [baseUrl, path] of [
+    ["http://runtime.example.invalid:8188", "/system_stats"],
+    ["https://user:password@runtime.example.invalid", "/system_stats"],
+    ["http://127.0.0.1:8188", "//runtime.example.invalid/system_stats"],
+    ["http://127.0.0.1:8188", "https://runtime.example.invalid/system_stats"],
+  ]) {
+    assert.deepEqual(
+      await probeReadOnlyEndpoint(baseUrl, path, { fetchImpl }),
+      { ok: false, reason: "unsafe-url" },
+    );
+  }
+  assert.equal(fetchCalls, 0);
 });
 
 test("main RC preflight includes external E2E readiness without probing", () => {
