@@ -1669,6 +1669,11 @@ label {
   a {
     color: LinkText;
   }
+  .skip-link {
+    border: 2px solid Highlight;
+    background: Canvas;
+    color: CanvasText;
+  }
   .selected,
   [aria-current="page"],
   [aria-selected="true"] {

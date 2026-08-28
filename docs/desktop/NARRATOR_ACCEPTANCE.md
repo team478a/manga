@@ -18,11 +18,11 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 
 | 項目                    | 値               |
 | ----------------------- | ---------------- |
-| 確認日                  |                  |
-| 確認者                  |                  |
-| Windows version / build |                  |
-| MANGAI version / commit |                  |
-| 表示倍率                | 100% / 150%      |
+| 確認日                  | 2026-08-28       |
+| 確認者                  | Codex（画面目視・UI Automation） |
+| Windows version / build | Windows 11 Home 25H2 / 26200 |
+| MANGAI version / commit | 0.1.0 / base `f0ea450` + 本修正 |
+| 表示倍率                | 100% / 150%（実Windows設定） |
 | locale                  | 日本語 / English |
 
 ## 3. RC停止条件
@@ -90,8 +90,8 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 | #   | 条件                  | 期待結果                                        | 結果   | 備考 |
 | --- | --------------------- | ----------------------------------------------- | ------ | ---- |
 | 28  | アニメーション効果OFF | 操作・状態理解にanimationを必要としない         | 未確認 |      |
-| 29  | コントラストテーマ    | button、input、tab、選択、focus境界を識別できる | 未確認 |      |
-| 30  | 表示倍率150%          | 主要操作が欠けず、横スクロールだけに依存しない  | 未確認 |      |
+| 29  | コントラストテーマ    | button、input、tab、選択、focus境界を識別できる | 合格   | Windows「夕暮れ」でHome・command palette・Editorを確認。skip link不具合を修正・再確認 |
+| 30  | 表示倍率150%          | 主要操作が欠けず、横スクロールだけに依存しない  | 合格   | 1920×1080 displayを150%へ変更し、Home・command palette・Editorを確認 |
 
 ## 9. 判定
 
@@ -100,14 +100,16 @@ axeで自動判定できない読み上げ、focus順、ネイティブ確認画
 - Windows 11 Home 25H2 build 26200で、製品プロセスだけを150%相当（devicePixelRatio 1.5）と強制カラー（forced colors active）へ隔離起動した。
 - 両条件で29画面のblocking axe violation 0、document横あふれ0、主要visual／keyboard check 21/21を確認した。
 - 初回強制カラーで検出したsystem color未追従を修正し、再実行で解消した。
-- 詳細は`docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`。実Windows設定とNarrator音声の人手確認は未完了のため、以下のRC判定は保留を維持する。
+- 自動preflightの詳細は`docs/RELEASE_CANDIDATE_WINDOWS_DISPLAY_PREFLIGHT_20260828.md`。
+- 続けて実Windows設定を150%とコントラストテーマ「夕暮れ」へ変更し、Home・command palette・Editorの主要操作、focus境界、画面横あふれを目視とUI Automationで確認した。実機で発見したskip linkのsystem color未対応を修正し、再起動後に可視化を確認した。
+- 検証後は表示倍率100%・コントラストテーマ「なし」へ復元した。詳細は`docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md`。Narrator音声の日本語・English確認は未完了のため、RC判定は保留を維持する。
 
 | 項目             | 結果   |
 | ---------------- | ------ |
 | 日本語Narrator   | 未確認 |
 | English Narrator | 未確認 |
-| 高コントラスト   | 未確認 |
-| 150%表示         | 未確認 |
+| 高コントラスト   | 合格   |
+| 150%表示         | 合格   |
 | RC判定           | 保留   |
 
 未確認をすべて完了または既知制限として承認し、RC停止条件が0件になった時点で合格とします。

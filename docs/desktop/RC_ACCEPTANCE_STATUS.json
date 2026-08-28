@@ -50,12 +50,24 @@
     {
       "id": "windows-high-contrast",
       "label": "Windows高コントラスト",
-      "status": "pending"
+      "status": "passed",
+      "completedAt": "2026-08-28",
+      "verifier": "Codex Windows manual visual and UI Automation acceptance",
+      "evidence": [
+        "docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md",
+        "docs/desktop/NARRATOR_ACCEPTANCE.md#8-windows表示設定"
+      ]
     },
     {
       "id": "windows-scale-150",
       "label": "Windows表示倍率150%",
-      "status": "pending"
+      "status": "passed",
+      "completedAt": "2026-08-28",
+      "verifier": "Codex Windows manual visual and UI Automation acceptance",
+      "evidence": [
+        "docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md",
+        "docs/desktop/NARRATOR_ACCEPTANCE.md#8-windows表示設定"
+      ]
     },
     {
       "id": "ollama-e2e",
