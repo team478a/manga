@@ -30,4 +30,8 @@ test("forced colors map semantic tokens and controls to Windows system colors", 
   assert.match(styles, /--text-muted:\s*GrayText/);
   assert.match(styles, /button\s*\{\s*background:\s*ButtonFace;\s*color:\s*ButtonText/);
   assert.match(styles, /input,[^]*background:\s*Field;\s*color:\s*FieldText/);
+  assert.match(
+    styles,
+    /\.skip-link\s*\{\s*border:\s*2px solid Highlight;\s*background:\s*Canvas;\s*color:\s*CanvasText/,
+  );
 });

@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-28 Codex（Windows実表示受入れ）
+
+- Branch: `codex/windows-manual-display-acceptance-20260828`
+- Base: `origin/feature/manga-canvas-mvp`@`f0ea450`（PR #377 merge commit）
+- Windows実設定の150%表示とコントラストテーマ「夕暮れ」でHome・command palette・Editorを受入れ、RC台帳の2件をpassedへ更新した。
+- コントラストテーマでskip linkの文字が見えない不具合を検出し、system color対応後に同じ実設定で再確認した。
+- 検証後は100%表示・コントラストテーマ「なし」へ復元した。Narrator日本語・Englishはpending。
+- Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 集中3/3、Hub 919/919、Canvas 26/26、AI 48/48、Desktop 182/182、通常／150%相当／強制カラー各29画面blocking violation 0、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+- 詳細は`docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md`。
+
+---
+
 ## 2026-08-28 Codex（Windows表示受入れpreflight・強制カラー修正）
 
 - Branch: `codex/windows-display-acceptance-20260828`

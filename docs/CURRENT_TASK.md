@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-08-28 Windows実表示受入れ
+
+- 状態: `WINDOWS_SCALE_150_PASSED / WINDOWS_HIGH_CONTRAST_PASSED / NARRATOR_PENDING / SETTINGS_RESTORED`
+- Windows 11 Home 25H2 build 26200の実設定で、1920×1080 displayを150%、コントラストテーマを「夕暮れ」へ変更してHome・command palette・Editorを確認した。
+- 150%では主要操作の欠落・document全体の横スクロール依存なし。実コントラストテーマではbutton、input、tab、選択、focus境界を確認した。
+- 実機でskip linkの文字が背景と同化する不具合を検出し、Windows system colorへ対応して同じ実テーマで再検証した。
+- 検証後は表示倍率100%・コントラストテーマ「なし」へ復元した。Narrator日本語・Englishは音声の人手確認が必要なためpendingを維持する。
+- Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 検証: 集中3/3、Hub 919/919、Canvas 26/26、AI 48/48、Desktop 182/182、通常／150%相当／強制カラー各29画面blocking violation 0、主要visual／keyboard各21/21、migration 74件、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知pending。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md`
+
+---
+
 ## 2026-08-28 Windows表示受入れpreflight・強制カラー修正
 
 - 状態: `AUTOMATED_PREFLIGHT_PASSED / HIGH_CONTRAST_DEFECT_FIXED / WINDOWS_MANUAL_ACCEPTANCE_PENDING`

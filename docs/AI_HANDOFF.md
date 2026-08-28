@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Windows実表示受入れ（2026-08-28）
+
+- 実Windows設定で150%表示とコントラストテーマ「夕暮れ」を適用し、Home・command palette・Editorを目視とUI Automationで受入れた。
+- 150%表示と高コントラストをRC台帳でpassedへ更新した。実機で検出したskip linkの視認性不具合はsystem color対応後に再確認した。
+- Windows設定は100%・コントラストテーマ「なし」へ復元済み。Narrator日本語・Englishはpendingを維持する。
+- Production、Provider、Job、Asset、credit、利用者データ操作0件。
+- 集中3/3、Hub 919/919、Canvas 26/26、AI 48/48、Desktop 182/182、通常／2 variant各29画面blocking violation 0、migration 74件を含む全ローカル品質ゲート成功。
+- 詳細: `docs/RELEASE_CANDIDATE_WINDOWS_MANUAL_DISPLAY_ACCEPTANCE_20260828.md`
+
+---
+
 ## 0.0 Windows表示受入れpreflight・強制カラー修正（2026-08-28）
 
 - Desktopだけを150%相当／強制カラーで隔離実行する`desktop:test:display-acceptance`を追加した。
