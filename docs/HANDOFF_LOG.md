@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（Windows Narratorエディター英語ラベル修正）
+
+- Branch: `codex/windows-narrator-editor-command-locale-20260829`
+- Base: `36b80d0`（PR #391 merge commit）
+- PR #391反映版Homeの英訳3点を受入れ、English生成ジョブ／書き出しdialogを再表示した。
+- エディター上部に残った日本語のコマンドパレットaria-label／titleを既存翻訳キーへ統一した。書き出し実音声は利用者確認待ち。
+- Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中27/27、Desktop 183/183、全型検査、diff check成功。
+- 次: Desktop全テスト、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-29 Codex（Windows Narrator拡張確認・英語表示修正）
 
 - Branch: `codex/windows-narrator-extended-locale-fix-20260829`

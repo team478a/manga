@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Windows Narratorエディター英語ラベル修正（2026-08-29）
+
+- PR #391反映版でHomeの英訳3点を確認し、English生成ジョブ／書き出しdialogを再表示した。
+- エディター上部だけ残っていた日本語のコマンドパレットaria-label／titleを既存翻訳キーへ統一した。
+- 書き出し実音声は利用者確認待ち。表示確認以外のProject、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 集中27/27、Desktop 183/183、全型検査、diff check成功。
+
+---
+
 ## 0.0 Windows Narrator拡張確認・英語表示修正（2026-08-29）
 
 - 既存受入れProjectで素材、追加メニュー、生成ジョブ、書き出し、Inspector、その他メニューを非破壊確認した。日本語の書き出しdialogは実音声確認済み。
