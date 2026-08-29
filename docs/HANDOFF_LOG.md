@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（23–24ページPilot readiness再確認）
+
+- Base: `feature/manga-canvas-mvp` @ `efe6fa0`（PR #399 merge）
+- Production作品画面で23–24ページを一時選択し、各4コマ・画像0、合計8コマのPilot候補を再確認した。
+- 最新見積り: 必要16 credit／残り16、最大予約`$1.44`、`flux-2-pro`、`bfl-flux2-pro-2026-08`、Worker最短3回／約15分。
+- 作品画風未設定、人物0/0、モニターAI残り確認不可で開始button無効。選択はタブ終了で破棄した。
+- Production保存、Provider、Worker、Job、credit予約・消費0件。
+
+---
+
 ## 2026-08-29 Codex（Production再利用候補2件の採用完了）
 
 - Base: `feature/manga-canvas-mvp` @ `0e854c5`（PR #398 merge）
