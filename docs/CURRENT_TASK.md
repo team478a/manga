@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-29 Production再利用候補2件の採用実行ランブック
+
+- 状態: `RUNBOOK_PREPARED / APPROVAL_REQUIRED / PRODUCTION_UNCHANGED`
+- 対象を19ページの空コマ向け夜間足場候補2件だけに固定する。2ページ候補、重大不良4件、完成済み22ページの余剰4件は対象外とする。
+- 実行前にページ19が画像0/4、対象2コマが空、処理待ち・実行中Job 0、credit予約0であることをread-only確認する。前提が1件でも異なれば採用せず停止する。
+- 明示承認後もProvider生成、Job登録、credit予約・消費は行わず、品質確認済み既存Assetの採用とCanvas保存だけを1件ずつ行う。
+- 各採用後に対象コマだけが更新され、他ページ・他コマ・元Asset履歴が維持されることを確認する。2件完了後の期待値は配置済み15/157、未配置142、ページ19画像2/4。
+- 誤対象、既存画像変更警告、保存失敗、完成判定の予期しない変化があれば2件目へ進まず停止する。自動削除やProvider再生成で復旧しない。
+- 本変更は文書限定。Production、候補採用・却下、Canvas保存、Provider、Job、credit操作は0件。
+
+---
+
 ## 2026-08-29 Production再利用候補3件の対象コマ最終比較
 
 - 状態: `PRODUCTION_FINAL_COMPARISON_COMPLETE / ADOPTION_NOT_EXECUTED / PRODUCTION_UNCHANGED`
