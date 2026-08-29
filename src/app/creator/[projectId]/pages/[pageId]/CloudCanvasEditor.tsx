@@ -45,6 +45,7 @@ import { CanvasImageGenerationNotice } from "./CanvasImageGenerationNotice";
 import { buildPanelRevisionRequest } from "@/modules/manga/application/build-panel-revision";
 import {
   applyPanelCandidateAdoption,
+  assessPanelCandidateAdoptionRisk,
   countReversedPanelBackgroundStacks,
   detachRejectedPanelCandidate,
   repairReversedPanelBackgroundStacks,
@@ -1308,6 +1309,31 @@ export function CloudCanvasEditor({
   const imageQualityReviewAsset = imageQualityReviewJob?.output_asset_id
     ? assetMap.get(imageQualityReviewJob.output_asset_id)
     : undefined;
+  const imageQualityReviewAdoptionWarning = (() => {
+    if (
+      imageQualityReview?.action !== "place" ||
+      !imageQualityReviewJob?.output_asset_id
+    )
+      return null;
+    const targetPanelId = resolveCandidateTargetPanelId({
+      job: imageQualityReviewJob,
+      generationTargets,
+      selectedPanelId: selection?.type === "panel" ? selection.id : null,
+    });
+    if (!targetPanelId) return null;
+    const risk = assessPanelCandidateAdoptionRisk(canvas, {
+      assetId: imageQualityReviewJob.output_asset_id,
+      layerType: classifyCandidateLayer(imageQualityReviewJob),
+      pageComplete: initialPageCompletion?.complete === true,
+      sourceJobId: imageQualityReviewJob.id,
+      targetPanelId,
+    });
+    if (risk === "changes_completed_page")
+      return "このページは完成済みです。採用するとCanvas revisionと完成原稿が変わるため、現在の画像を維持する場合は採用しないでください。";
+    if (risk === "replaces_existing_image")
+      return "対象コマには既に原稿画像があります。元Assetは履歴に残りますが、採用後の表示画像と書き出し結果が変わります。";
+    return null;
+  })();
   const editingBlocked = pageLockState !== "acquired";
 
   return (
@@ -2754,6 +2780,7 @@ export function CloudCanvasEditor({
       imageQualityReviewJob &&
       imageQualityReviewAsset ? (
         <PanelImageQualityReviewDialog
+          adoptionWarning={imageQualityReviewAdoptionWarning}
           imageUrl={imageQualityReviewAsset.url}
           onCancel={() => setImageQualityReview(null)}
           onConfirm={() => {

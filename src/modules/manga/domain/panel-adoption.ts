@@ -15,10 +15,45 @@ export type PanelCandidateAdoptionResult =
   | "already_applied"
   | "panel_not_found";
 
+export type PanelCandidateAdoptionRisk =
+  | "safe"
+  | "replaces_existing_image"
+  | "changes_completed_page";
+
 const backgroundLayerTypes = new Set<PanelLayer["type"]>([
   "background",
   "flattened_legacy",
 ]);
+
+export function assessPanelCandidateAdoptionRisk(
+  canvas: PageCanvas,
+  input: {
+    assetId: string;
+    layerType: PanelLayer["type"];
+    pageComplete: boolean;
+    sourceJobId: string | null;
+    targetPanelId: string;
+  },
+): PanelCandidateAdoptionRisk {
+  if (input.pageComplete) return "changes_completed_page";
+  if (
+    input.layerType !== "background" &&
+    input.layerType !== "correction"
+  )
+    return "safe";
+  const panel = canvas.panels.find((item) => item.id === input.targetPanelId);
+  if (!panel?.imageAssetId || panel.imageAssetId === input.assetId) return "safe";
+  if (
+    canvas.panelLayers.some(
+      (layer) =>
+        layer.panelId === input.targetPanelId &&
+        ((input.sourceJobId && layer.sourceJobId === input.sourceJobId) ||
+          layer.assetId === input.assetId),
+    )
+  )
+    return "safe";
+  return "replaces_existing_image";
+}
 
 function byOrderIndex(left: PanelLayer, right: PanelLayer) {
   return left.orderIndex - right.orderIndex;

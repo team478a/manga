@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 既存候補採用preflight（2026-08-29）
+
+- 完成済みページの変更と、画像配置済みコマの背景／補正画像変更を、候補採用前に決定的に分類するdomain helperを追加した。
+- 該当時は既存原稿への影響を品質確認dialogへ表示し、通常4項目とは別の明示確認を必須にした。人物・効果layerの追加や同一Assetは不要な上書き警告にしない。
+- 別ページ候補拒否、採用処理、元Asset履歴、完成判定、Provider／credit契約は不変。
+- 集中30/30、Hub 939/939、lint、全型検査、diff check成功。Production、候補、Canvas、Provider、Job、credit操作0件。
+
+---
+
 ## 0.0 Production未配置候補11件read-only目視確認（2026-08-29）
 
 - 原稿未配置の採用評価済み1件・未評価10件を、Production作品画面と署名付き画像表示で読み取り専用確認した。

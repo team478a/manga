@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-29 既存候補採用preflight
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- 完成済みページへ候補を採用する場合と、画像配置済みコマの背景／補正画像を変更する場合を、Canvas変更前に決定的に分類する。
+- 通常の画像品質4項目に加え、該当時だけ既存原稿への影響を説明し、別checkboxでの明示確認が揃うまで採用buttonを無効にする。
+- 別ページ候補拒否、元Asset履歴保持、採用処理、完成判定、Provider／credit契約は変更していない。
+- 検証: 集中30/30、Hub 939/939、lint、全型検査、`git diff --check`成功。
+- Production、候補採用・却下、Canvas保存、Provider実行、Job登録、credit予約・消費は0件。
+
+---
+
 ## 2026-08-29 Production未配置候補11件read-only目視確認
 
 - 状態: `PRODUCTION_VISUAL_REVIEW_COMPLETE / CANDIDATES_UNCHANGED / PRODUCTION_UNCHANGED`

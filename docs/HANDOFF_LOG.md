@@ -6025,3 +6025,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 外部E2E READY条件へref形式と`PGHOST`／`PGUSER`の隔離Branch ref一致を追加した。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
 - 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+# 2026-08-29 Codex: 既存候補採用preflight
+
+- Branch: `codex/candidate-adoption-preflight-20260829`
+- Base: `e8cc8d0`（PR #395 merge commit）
+- 完成済みページまたは画像配置済みコマへ候補を採用する場合、品質4項目だけでは実行できない追加確認を実装した。
+- 完成ページ変更を最優先で警告し、未完成ページでは背景／補正の表示画像変更だけを警告する。人物／効果layer追加、同一Asset、既配置候補は従来契約を維持する。
+- Production、DB、migration、Storage、Provider、Job、Asset、credit、Canvas schema、完成判定は変更していない。
+- 集中30/30、Hub 939/939、lint、全型検査、diff check成功。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production候補の実採用は責任者の対象・回数を含む明示承認まで行わない。
+
+---
