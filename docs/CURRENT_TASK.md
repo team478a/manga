@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-29 23–24ページPilot readiness再確認
+
+- 状態: `PILOT_TARGET_CONFIRMED / PREFLIGHT_BLOCKED / PRODUCTION_UNCHANGED`
+- 19ページ候補2件採用後のProduction作品画面で、23–24ページをread-only選択して最新preflightを確認した。両ページは各4コマ、画像0、合計8コマで、連続Pilot候補を維持する。
+- 見積りは1案／コマ、必要16 credit／残り16、最大予約`$1.44`、`flux-2-pro`、pricing `bfl-flux2-pro-2026-08`、Worker最短3回／約15分。
+- credit余裕0に加え、作品画風未設定、人物設定0/0、モニターAI残り確認不可のため開始buttonは無効。Visual Readinessと本人モニター枠を確認できるまで開始しない。
+- ページ選択はタブ内だけで破棄した。Production保存、Provider、Worker、Job、credit予約・消費は0件。
+
+---
+
 ## 2026-08-29 Production再利用候補2件の採用完了
 
 - 状態: `PRODUCTION_ADOPTION_COMPLETE / 2_ASSETS_PERSISTED / PROVIDER_UNCHANGED`

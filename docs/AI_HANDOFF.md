@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 23–24ページPilot readiness再確認（2026-08-29）
+
+- Productionの23–24ページは各4コマ・画像0で、採用後も8コマPilot候補を維持する。
+- 最新preflightは必要16 credit／残り16、最大予約`$1.44`、`flux-2-pro`、pricing `bfl-flux2-pro-2026-08`、Worker最短3回／約15分。
+- 作品画風未設定、人物設定0/0、モニターAI残り確認不可のため開始不可。責任者承認だけでなく、Visual Readinessと本人枠の解消が必要。
+- 一時選択は破棄済み。Production、Provider、Worker、Job、credit操作0件。
+
+---
+
 ## 0.0 Production再利用候補2件の採用完了（2026-08-29）
 
 - 責任者承認に基づき、19ページの空コマ向け候補2件だけを品質確認後に採用した。
