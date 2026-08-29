@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-29 Production残コマ・既存候補read-only再集計
+
+- 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / PRODUCTION_UNCHANGED`
+- 対象作品をProduction SQL Editorの`SELECT`だけで再集計し、32ページ、157コマ、配置済み13コマ、未配置144コマを確認した。2026-08-20時点の前提からコマ配置数の変化はない。
+- 完成済み画像候補は47 Job／47 Asset。このうち原稿へ未配置の候補は33 Assetで、最新品質イベントの内訳は採用評価済み1、却下済み22、未評価10だった。
+- 現行利用期間はcredit使用82、予約0、実原価1,245,000 micro USD、予約原価0。対象作品の処理待ちJob 0、実行中Job 0。
+- 次の安全な順序は、却下済み22件を再利用対象から除外し、未配置の採用評価済み1件と未評価10件を人間確認してから、なお不足するコマだけをPilot生成対象へ確定すること。
+- Productionへの`INSERT`／`UPDATE`／`DELETE`、Canvas修復、候補採用、Provider実行、Job登録、credit予約・消費は0件。SQL snippetも保存していない。
+- 検証: 文書差分限定、`git diff --check`成功。
+
+---
+
 ## 2026-08-29 Windows Narratorエディター英語ラベル修正
 
 - 状態: `MERGED / ENGLISH_EXPORT_AUDIO_PASSED / LOCALE_RESTORED`
