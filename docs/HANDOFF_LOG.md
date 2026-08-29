@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（クリーンWindows証跡取り込み）
+
+- Branch: `codex/clean-windows-evidence-import-20260829`
+- Base: `e5482c4`（PR #389 merge commit）
+- 明示的な証跡importを追加し、署名前提、clean Windows 11、固定7検査、異なる2version、3つのSHA-256を必須にした。
+- 成功時だけ受入れstatusとRC台帳を同期する。テスト用一時ファイル以外は変更していない。
+- 現在の正本は0 passed／5 pending／2 blocked。Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中9/9、Hub 938/938、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、両build、RC preflight、diff check成功。
+
+---
+
 ## 2026-08-28 Codex（クリーンWindows最終受入れpreflight）
 
 - Branch: `codex/clean-windows-acceptance-preflight-20260828`

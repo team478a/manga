@@ -15,6 +15,16 @@ npm run rc:clean-windows-acceptance:strict
 
 通常commandは現在のpending／blocked理由を表示します。`strict`は全証跡が揃うまで終了コード1となります。結果の正本は`CLEAN_WINDOWS_ACCEPTANCE.json`です。
 
+実機確認後は、秘密値を含まない証跡JSONを明示的に取り込みます。
+
+```powershell
+npm run rc:clean-windows-evidence:import -- C:\secure-transfer\clean-windows-evidence.json
+```
+
+取り込みは、RC台帳のコード署名と署名付き自動更新が先に合格している場合だけ許可されます。成功時は受入れstatusとRC台帳のクリーンWindows項目を同期します。
+
+証跡形式は`mangai.clean-windows-evidence` version 1です。`operatorRole`は`release-operator`固定とし、氏名、メール、端末名、APIキー、Prompt、画像、署名鍵を含めません。端末識別が必要な場合はランダムな端末ラベルのSHA-256だけを`machineIdSha256`へ記録します。
+
 ## 必須条件
 
 1. 信頼された証明書で旧版と新版のinstallerおよび製品EXEが署名され、Authenticodeが`Valid`である。

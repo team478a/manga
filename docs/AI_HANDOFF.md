@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 クリーンWindows証跡取り込み（2026-08-29）
+
+- `rc:clean-windows-evidence:import`で、実機証跡を検証後に`CLEAN_WINDOWS_ACCEPTANCE.json`とRC台帳へ同期できるようにした。
+- コード署名・署名付き自動更新gateがpassedになる前の取り込みを拒否し、7項目欠落、同一version、不正hash、非Windows 11、clean環境未確認をfail closedにする。
+- operatorは固定roleだけを記録し、個人情報・秘密値・制作内容を証跡へ含めない。
+- 現在の正本は外部前提待ちで`BLOCKED`。Production、Provider、credit操作0件。
+- 集中9/9、Hub 938/938、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+- 詳細: `docs/desktop/CLEAN_WINDOWS_ACCEPTANCE.md`
+
+---
+
 ## 0.0 クリーンWindows最終受入れpreflight（2026-08-28）
 
 - `rc:clean-windows-acceptance`とstrict判定、構造化status、受入れ手順を追加した。

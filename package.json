@@ -78,6 +78,7 @@
     "rc:windows-artifacts": "node apps/desktop/scripts/check-windows-artifacts.mjs",
     "rc:windows-installer-e2e": "node apps/desktop/scripts/smoke-windows-installer.mjs",
     "rc:clean-windows-acceptance": "node apps/desktop/scripts/check-clean-windows-acceptance.mjs",
+    "rc:clean-windows-evidence:import": "node apps/desktop/scripts/check-clean-windows-acceptance.mjs --import",
     "rc:clean-windows-acceptance:strict": "node apps/desktop/scripts/check-clean-windows-acceptance.mjs --strict",
     "rc:windows-cross-volume-trash": "npm --prefix apps/desktop run test:win:cross-volume-trash --",
     "rc:windows-evidence": "node apps/desktop/scripts/generate-windows-release-evidence.mjs",

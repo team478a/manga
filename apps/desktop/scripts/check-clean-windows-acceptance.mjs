@@ -12,6 +12,8 @@ const ledgerPath = process.env.MANGAI_RC_ACCEPTANCE_PATH
   ? path.resolve(process.env.MANGAI_RC_ACCEPTANCE_PATH)
   : path.join(root, "docs", "desktop", "RC_ACCEPTANCE_STATUS.json");
 const strict = process.argv.includes("--strict");
+const importIndex = process.argv.indexOf("--import");
+const importPath = importIndex >= 0 ? process.argv[importIndex + 1] : undefined;
 const requiredChecks = [
   "clean_environment",
   "valid_authenticode",
@@ -37,8 +39,8 @@ const readJson = (file, label) => {
 const validDate = (value) =>
   typeof value === "string" && !Number.isNaN(Date.parse(value));
 
-const document = readJson(statusPath, "status file");
-const ledger = readJson(ledgerPath, "RC acceptance ledger");
+let document = readJson(statusPath, "status file");
+let ledger = readJson(ledgerPath, "RC acceptance ledger");
 if (
   document.format !== "mangai.clean-windows-acceptance" ||
   document.version !== 1 ||
@@ -46,6 +48,113 @@ if (
   !Array.isArray(document.checks)
 )
   fail("format, version, or status is unsupported");
+
+const ledgerById = new Map(
+  (ledger.requirements ?? []).map((item) => [item.id, item]),
+);
+const signingReady = ledgerById.get("windows-code-signing")?.status === "passed";
+const updateReady = ledgerById.get("signed-auto-update")?.status === "passed";
+
+if (importIndex >= 0) {
+  if (!importPath) fail("--import requires an evidence JSON path");
+  if (!signingReady || !updateReady)
+    fail("evidence cannot be imported before code signing and signed auto-update gates");
+  const evidence = readJson(path.resolve(importPath), "evidence file");
+  if (
+    evidence.format !== "mangai.clean-windows-evidence" ||
+    evidence.version !== 1 ||
+    evidence.operatorRole !== "release-operator" ||
+    !validDate(evidence.checkedAt) ||
+    !["windows-sandbox", "reset-vm", "new-pc"].includes(
+      evidence.environment?.kind,
+    ) ||
+    evidence.environment?.cleanInstallConfirmed !== true ||
+    typeof evidence.environment?.windowsVersion !== "string" ||
+    !/^Windows 11(?:\s|$)/.test(evidence.environment.windowsVersion) ||
+    !Number.isInteger(evidence.environment?.build) ||
+    evidence.environment.build <= 0 ||
+    !hashPattern.test(evidence.environment?.machineIdSha256 ?? "")
+  )
+    fail("evidence metadata or clean environment is invalid");
+  for (const field of ["oldInstallerSha256", "newInstallerSha256", "exportSha256"])
+    if (!hashPattern.test(evidence.artifacts?.[field] ?? ""))
+      fail(`evidence requires ${field}`);
+  if (
+    !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(
+      evidence.artifacts?.oldVersion ?? "",
+    ) ||
+    !/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/.test(
+      evidence.artifacts?.newVersion ?? "",
+    ) ||
+    evidence.artifacts.oldVersion === evidence.artifacts.newVersion
+  )
+    fail("evidence requires two distinct versions");
+  const importedChecks = new Map(
+    (evidence.checks ?? []).map((item) => [item?.id, item]),
+  );
+  for (const id of requiredChecks) {
+    const check = importedChecks.get(id);
+    if (check?.result !== "passed" || !validDate(check.completedAt))
+      fail(`evidence is missing passed ${id}`);
+  }
+  if (
+    importedChecks.size !== requiredChecks.length ||
+    evidence.checks.length !== requiredChecks.length
+  )
+    fail("evidence contains unknown or duplicate checks");
+
+  document = {
+    format: "mangai.clean-windows-acceptance",
+    version: 1,
+    status: "passed",
+    updatedAt: evidence.checkedAt.slice(0, 10),
+    completedAt: evidence.checkedAt,
+    verifier: evidence.operatorRole,
+    environment: evidence.environment,
+    artifacts: evidence.artifacts,
+    checks: requiredChecks.map((id) => ({
+      id,
+      status: "passed",
+      completedAt: importedChecks.get(id).completedAt,
+      evidence: [`mangai.clean-windows-evidence:${id}`],
+    })),
+  };
+  const cleanWindowsGate = ledgerById.get("clean-windows-acceptance");
+  if (!cleanWindowsGate) fail("RC acceptance ledger has no clean Windows gate");
+  Object.assign(cleanWindowsGate, {
+    status: "passed",
+    completedAt: evidence.checkedAt.slice(0, 10),
+    verifier: evidence.operatorRole,
+    evidence: [
+      "docs/desktop/CLEAN_WINDOWS_ACCEPTANCE.json",
+      "docs/desktop/CLEAN_WINDOWS_ACCEPTANCE.md",
+    ],
+  });
+  delete cleanWindowsGate.reason;
+  ledger.updatedAt = evidence.checkedAt.slice(0, 10);
+
+  const statusTemporary = `${statusPath}.tmp`;
+  const ledgerTemporary = `${ledgerPath}.tmp`;
+  const originalStatus = fs.readFileSync(statusPath);
+  const originalLedger = fs.readFileSync(ledgerPath);
+  try {
+    fs.writeFileSync(statusTemporary, `${JSON.stringify(document, null, 2)}\n`, {
+      mode: 0o600,
+    });
+    fs.writeFileSync(ledgerTemporary, `${JSON.stringify(ledger, null, 2)}\n`, {
+      mode: 0o600,
+    });
+    fs.renameSync(statusTemporary, statusPath);
+    fs.renameSync(ledgerTemporary, ledgerPath);
+  } catch {
+    fs.writeFileSync(statusPath, originalStatus, { mode: 0o600 });
+    fs.writeFileSync(ledgerPath, originalLedger, { mode: 0o600 });
+    fs.rmSync(statusTemporary, { force: true });
+    fs.rmSync(ledgerTemporary, { force: true });
+    fail("status and RC ledger could not be synchronized");
+  }
+  console.log(`Imported clean Windows evidence into ${statusPath}`);
+}
 
 const checks = new Map(document.checks.map((item) => [item?.id, item]));
 for (const id of requiredChecks) {
@@ -76,11 +185,6 @@ if (document.status === "passed") {
     fail("signed update evidence requires two distinct versions");
 }
 
-const ledgerById = new Map(
-  (ledger.requirements ?? []).map((item) => [item.id, item]),
-);
-const signingReady = ledgerById.get("windows-code-signing")?.status === "passed";
-const updateReady = ledgerById.get("signed-auto-update")?.status === "passed";
 if (document.status === "passed" && (!signingReady || !updateReady))
   fail("overall status passed before code signing and signed auto-update gates");
 
