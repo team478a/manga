@@ -2,10 +2,10 @@
 
 ## 2026-08-29 Windows Narratorエディター英語ラベル修正
 
-- 状態: `IMPLEMENTED_LOCAL / ENGLISH_EXPORT_AUDIO_CONFIRMATION_PENDING`
+- 状態: `MERGED / ENGLISH_EXPORT_AUDIO_PASSED / LOCALE_RESTORED`
 - PR #391反映版のHomeで、`Open command palette`、`All projects are already backed up.`、`Last checked`をUI Automation確認した。
 - Englishエディター上部のコマンドパレットだけ日本語のaria-label／titleが残っていたため、Homeと同じ翻訳キーへ統一した。
-- Englishの生成ジョブと書き出しdialogを再表示した。UI Automationは正常で、書き出し実音声は利用者確認待ち。
+- Englishの生成ジョブと書き出しdialogを再表示した。UI Automationは正常で、利用者が書き出しの実音声を確認した。
 - 表示確認だけを行い、Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
 - 検証: 集中27/27、Desktop 183/183、全型検査、diff check成功。
 
@@ -13,9 +13,9 @@
 
 ## 2026-08-29 Windows Narrator拡張確認・英語表示修正
 
-- 状態: `EXTENDED_NARRATOR_PARTIAL / LOCALE_DEFECT_FIXED_LOCAL / ENGLISH_AUDIO_CONFIRMATION_PENDING`
+- 状態: `EXTENDED_NARRATOR_PARTIAL / LOCALE_DEFECT_MERGED / EXPORT_AUDIO_JA_EN_PASSED / LOCALE_RESTORED`
 - 既存受入れProjectで、素材、追加メニュー、生成ジョブ、書き出し、Inspector、その他メニューを非破壊で確認した。日本語の書き出しdialogは利用者の実音声確認済み。
-- Englishの生成ジョブ／書き出しdialogはUI Automation上で英語名・役割・説明を確認した。実音声の利用者確認は回答待ち。
+- Englishの生成ジョブ／書き出しdialogはUI Automation上で英語名・役割・説明を確認し、書き出しdialogは利用者が実音声を確認した。
 - English切替時にホームのコマンドボタンと最終確認が日本語のまま残る問題、および正常な自動バックアップ結果が汎用エラーへ誤変換される問題を修正した。表示言語は日本語へ復元済み。
 - Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
 - 検証: 集中27/27、Desktop 183/183、build:main、全型検査、diff check成功。

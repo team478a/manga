@@ -4,7 +4,7 @@
 
 - PR #391反映版でHomeの英訳3点を確認し、English生成ジョブ／書き出しdialogを再表示した。
 - エディター上部だけ残っていた日本語のコマンドパレットaria-label／titleを既存翻訳キーへ統一した。
-- 書き出し実音声は利用者確認待ち。表示確認以外のProject、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 利用者がEnglish書き出しdialogの実音声を確認した。表示言語は日本語へ復元済みで、Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
 - 集中27/27、Desktop 183/183、全型検査、diff check成功。
 
 ---
@@ -12,7 +12,7 @@
 ## 0.0 Windows Narrator拡張確認・英語表示修正（2026-08-29）
 
 - 既存受入れProjectで素材、追加メニュー、生成ジョブ、書き出し、Inspector、その他メニューを非破壊確認した。日本語の書き出しdialogは実音声確認済み。
-- Englishの生成ジョブ／書き出しdialogはUI Automationで英語名・役割・説明を確認した。利用者によるEnglish実音声確認は回答待ち。
+- Englishの生成ジョブ／書き出しdialogはUI Automationで英語名・役割・説明を確認し、書き出しdialogは利用者が実音声を確認した。
 - Englishホームの未翻訳コマンド／最終確認と、自動バックアップ成功文が汎用エラーへ変換される問題を修正した。表示言語は日本語へ復元した。
 - Production、Provider、DB、Queue、Job、Asset、credit操作0件。
 - 集中27/27、Desktop 183/183、build:main、全型検査、diff check成功。
