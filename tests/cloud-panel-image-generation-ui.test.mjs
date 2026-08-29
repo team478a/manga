@@ -128,7 +128,10 @@ test("生成画像は正立・画像内文字・人体・物語の必須確認�
   assert.match(qualityReviewDialog, /疑似文字・読めない文字・吹き出し・ロゴ/);
   assert.match(qualityReviewDialog, /顔・口元・手指・関節/);
   assert.match(qualityReviewDialog, /4項目を確認して採用/);
-  assert.match(qualityReviewDialog, /disabled=\{!allConfirmed\}/);
+  assert.match(qualityReviewDialog, /disabled=\{!canAdopt\}/);
+  assert.match(qualityReviewDialog, /既存原稿への影響を確認しました/);
+  assert.match(editor, /changes_completed_page/);
+  assert.match(editor, /replaces_existing_image/);
 });
 
 test("未採用候補は追加生成なしで明示的に不採用へできる", () => {

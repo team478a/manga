@@ -27,16 +27,20 @@ const reviewItems = [
 ] as const;
 
 export function PanelImageQualityReviewDialog({
+  adoptionWarning,
   imageUrl,
   onCancel,
   onConfirm,
 }: {
+  adoptionWarning?: string | null;
   imageUrl: string;
   onCancel: () => void;
   onConfirm: () => void;
 }) {
   const [confirmed, setConfirmed] = useState<Record<string, boolean>>({});
+  const [adoptionImpactConfirmed, setAdoptionImpactConfirmed] = useState(false);
   const allConfirmed = reviewItems.every((item) => confirmed[item.id]);
+  const canAdopt = allConfirmed && (!adoptionWarning || adoptionImpactConfirmed);
 
   return (
     <div
@@ -94,13 +98,26 @@ export function PanelImageQualityReviewDialog({
         <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">
           1項目でも満たさない場合は採用せず、候補一覧から不採用または作り直しを選んでください。
         </p>
+        {adoptionWarning ? (
+          <label className="mt-3 flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-950">
+            <input
+              checked={adoptionImpactConfirmed}
+              className="mt-0.5 h-5 w-5 accent-red-700"
+              onChange={(event) => setAdoptionImpactConfirmed(event.target.checked)}
+              type="checkbox"
+            />
+            <span>
+              <strong>既存原稿への影響を確認しました。</strong> {adoptionWarning}
+            </span>
+          </label>
+        ) : null}
         <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button className="button-secondary" onClick={onCancel} type="button">
             候補一覧へ戻る
           </button>
           <button
             className="button"
-            disabled={!allConfirmed}
+            disabled={!canAdopt}
             onClick={onConfirm}
             type="button"
           >

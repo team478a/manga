@@ -12,10 +12,48 @@ import {
 } from "../src/modules/manga/domain/panel-candidate.ts";
 import {
   applyPanelCandidateAdoption,
+  assessPanelCandidateAdoptionRisk,
   countReversedPanelBackgroundStacks,
   detachRejectedPanelCandidate,
   repairReversedPanelBackgroundStacks,
 } from "../src/modules/manga/domain/panel-adoption.ts";
+
+test("完成済みページと既存画像の候補採用は追加確認対象にする", () => {
+  const canvas = {
+    panels: [{ id: "panel-1", imageAssetId: "asset-before" }],
+    panelLayers: [],
+  };
+  const input = {
+    assetId: "asset-after",
+    layerType: "background",
+    sourceJobId: "job-after",
+    targetPanelId: "panel-1",
+  };
+  assert.equal(
+    assessPanelCandidateAdoptionRisk(canvas, { ...input, pageComplete: true }),
+    "changes_completed_page",
+  );
+  assert.equal(
+    assessPanelCandidateAdoptionRisk(canvas, { ...input, pageComplete: false }),
+    "replaces_existing_image",
+  );
+  assert.equal(
+    assessPanelCandidateAdoptionRisk(canvas, {
+      ...input,
+      assetId: "asset-before",
+      pageComplete: false,
+    }),
+    "safe",
+  );
+  assert.equal(
+    assessPanelCandidateAdoptionRisk(canvas, {
+      ...input,
+      layerType: "character",
+      pageComplete: false,
+    }),
+    "safe",
+  );
+});
 
 const job = (overrides = {}) => ({
   id: "job-1",
