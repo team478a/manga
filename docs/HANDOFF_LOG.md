@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（Production再利用候補2件の採用実行ランブック）
+
+- Base: `feature/manga-canvas-mvp` @ `ad816f7`（PR #397 merge）
+- 19ページの空コマ向け既存候補2件について、実行前条件、1件ずつの採用、再読込確認、最終集計、異常時停止を文書化した。
+- 対象外を2ページ候補、重大不良4件、完成済み22ページ余剰4件として固定した。
+- 期待値は配置済み15/157、未配置142、19ページ画像2/4。採用前の確定値にはしない。
+- 文書変更のみ。Production、候補採用・却下、Canvas保存、Provider、Job、credit操作0件。
+
+---
+
 ## 2026-08-29 Codex（Production未配置候補11件read-only目視確認）
 
 - Branch: `codex/production-candidate-visual-review-20260829`
