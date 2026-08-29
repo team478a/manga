@@ -142,6 +142,11 @@ test("Home画面のコマンド・最終確認・自動バックアップ結果�
 
 test("AppHeader（制作ワークスペース上部バー）にコマンドパレットトリガーが配線されている", () => {
   assert.match(appHeaderSource, /onToggleCommandPalette/);
+  assert.match(
+    appHeaderSource,
+    /aria-label=\{t\("home\.commandPaletteLabel"\)\}/,
+  );
+  assert.match(appHeaderSource, /title=\{t\("home\.commandPaletteLabel"\)\}/);
   assert.match(mainSource, /onToggleCommandPalette=\{toggleCommandPalette\}/);
 });
 

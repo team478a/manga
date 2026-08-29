@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-29 Windows Narratorエディター英語ラベル修正
+
+- 状態: `IMPLEMENTED_LOCAL / ENGLISH_EXPORT_AUDIO_CONFIRMATION_PENDING`
+- PR #391反映版のHomeで、`Open command palette`、`All projects are already backed up.`、`Last checked`をUI Automation確認した。
+- Englishエディター上部のコマンドパレットだけ日本語のaria-label／titleが残っていたため、Homeと同じ翻訳キーへ統一した。
+- Englishの生成ジョブと書き出しdialogを再表示した。UI Automationは正常で、書き出し実音声は利用者確認待ち。
+- 表示確認だけを行い、Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中27/27、Desktop 183/183、全型検査、diff check成功。
+
+---
+
 ## 2026-08-29 Windows Narrator拡張確認・英語表示修正
 
 - 状態: `EXTENDED_NARRATOR_PARTIAL / LOCALE_DEFECT_FIXED_LOCAL / ENGLISH_AUDIO_CONFIRMATION_PENDING`

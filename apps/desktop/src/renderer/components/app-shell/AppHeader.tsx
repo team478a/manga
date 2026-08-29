@@ -75,9 +75,9 @@ export function AppHeader({
           variant="secondary"
           size="sm"
           onClick={onToggleCommandPalette}
-          aria-label="コマンドパレットを開く (Ctrl+K)"
+          aria-label={t("home.commandPaletteLabel")}
           aria-pressed={commandPaletteOpen}
-          title="コマンドパレットを開く (Ctrl+K)"
+          title={t("home.commandPaletteLabel")}
         >
           <span aria-hidden="true">⌘K</span>
         </Button>
