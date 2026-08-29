@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-29 Production再利用候補3件の対象コマ最終比較
+
+- 状態: `PRODUCTION_FINAL_COMPARISON_COMPLETE / ADOPTION_NOT_EXECUTED / PRODUCTION_UNCHANGED`
+- 2ページの時計・焼損証拠候補は、マージ済み採用preflightで既存原稿画像を変更する候補と確認した。現行採用画像も同じ意図を満たし、空コマや完成率を改善しないため見送る。
+- 19ページの夜間足場候補2件は、1コマ目相当の男女対峙と4コマ目相当の奥行き構図として場面・人物関係に適合し、既存画像変更警告なしの空コマ向け候補と確認した。
+- 再利用対象は3件から19ページの2件へ絞り込み。将来2件を採用できた場合、未配置は144から142へ減る見込みだが、採用前の確定値にはしない。
+- 品質確認dialogを開いて警告有無を確認しただけで、checkbox、採用・却下、Canvas保存、Provider、Job、credit操作は0件。
+- 検証: 文書差分限定、`git diff --check`成功。
+
+---
+
 ## 2026-08-29 既存候補採用preflight
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
