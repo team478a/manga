@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-29 Production再利用候補2件の採用完了
+
+- 状態: `PRODUCTION_ADOPTION_COMPLETE / 2_ASSETS_PERSISTED / PROVIDER_UNCHANGED`
+- 責任者の明示承認に基づき、19ページの空コマ向け既存候補2件だけを品質4項目確認後に1件ずつ採用した。
+- 1件目は採用・保存・再読込後に画像1/4を確認した。2件目は操作中に保存競合表示が出たため追加上書きを止め、別タブのread-only表示と作品画面で確定状態を確認した。
+- 確定値は作品全体15/157コマ配置、未配置142コマ、19ページ2/4コマ配置、要修正273件、更新番号59、生成中0ページ。
+- 画面のcredit表示は使用4・予約0・残り16で前後不変。Provider生成、Job登録、credit予約・消費、候補却下、他ページ変更は行っていない。
+- 2ページ候補、重大不良4件、完成済み22ページの余剰4件は未操作。
+
+---
+
 ## 2026-08-29 Production再利用候補2件の採用実行ランブック
 
 - 状態: `RUNBOOK_PREPARED / APPROVAL_REQUIRED / PRODUCTION_UNCHANGED`
