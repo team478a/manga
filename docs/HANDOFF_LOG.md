@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（Production再利用候補2件の採用完了）
+
+- Base: `feature/manga-canvas-mvp` @ `0e854c5`（PR #398 merge）
+- 責任者の「Productionの19ページ候補2件の採用を承認します」に基づき、対象2件だけを品質4項目確認後に採用した。
+- 1件目は再読込で画像1/4を確認。2件目は保存競合表示で追加操作を止め、別タブと作品画面から2/4への永続化を確認した。
+- 最終値: 配置15/157、未配置142、19ページ2/4、要修正273、更新番号59、生成中0ページ。
+- credit表示は使用4・予約0・残り16で不変。Provider生成、Job登録、credit予約・消費、候補却下、他ページ変更なし。
+
+---
+
 ## 2026-08-29 Codex（Production再利用候補2件の採用実行ランブック）
 
 - Base: `feature/manga-canvas-mvp` @ `ad816f7`（PR #397 merge）
