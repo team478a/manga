@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（Production未配置候補11件read-only目視確認）
+
+- Branch: `codex/production-candidate-visual-review-20260829`
+- Base: `c3d194f`（PR #394 merge commit）
+- Productionの原稿未配置候補11件を、作品画面と署名付き画像表示で読み取り専用確認した。
+- 再利用候補3件、重大不良4件、完成済み22ページの余剰4件に分類した。重大不良は画像内文字／複数コマ焼込み3件、人体／接触／構図1件。
+- 3件を将来採用できれば未配置144から141へ減る見込み。採用前の確定値ではない。
+- Production書込み、候補採用・却下、Canvas保存、Provider実行、Job登録、credit予約・消費0件。文書差分限定、`git diff --check`成功。
+- 次: 責任者merge後、再利用候補3件の対象コマ比較と採用可否を別承認で判断する。22ページは変更せず、Pilot生成は候補処理後の不足コマだけを対象にする。
+
+---
+
 ## 2026-08-29 Codex（Production残コマ・既存候補read-only再集計）
 
 - Branch: `codex/production-readonly-reaggregation-20260829`
