@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Windows Narrator拡張確認・英語表示修正（2026-08-29）
+
+- 既存受入れProjectで素材、追加メニュー、生成ジョブ、書き出し、Inspector、その他メニューを非破壊確認した。日本語の書き出しdialogは実音声確認済み。
+- Englishの生成ジョブ／書き出しdialogはUI Automationで英語名・役割・説明を確認した。利用者によるEnglish実音声確認は回答待ち。
+- Englishホームの未翻訳コマンド／最終確認と、自動バックアップ成功文が汎用エラーへ変換される問題を修正した。表示言語は日本語へ復元した。
+- Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 集中27/27、Desktop 183/183、build:main、全型検査、diff check成功。
+
+---
+
 ## 0.0 クリーンWindows証跡取り込み（2026-08-29）
 
 - `rc:clean-windows-evidence:import`で、実機証跡を検証後に`CLEAN_WINDOWS_ACCEPTANCE.json`とRC台帳へ同期できるようにした。

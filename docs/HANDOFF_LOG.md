@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（Windows Narrator拡張確認・英語表示修正）
+
+- Branch: `codex/windows-narrator-extended-locale-fix-20260829`
+- Base: `b640db2`（PR #390 merge commit）
+- 既存受入れProjectで素材、追加、生成ジョブ、書き出し、Inspector、その他メニューを非破壊確認し、日本語の書き出しdialogは利用者が実音声を確認した。
+- English生成ジョブ／書き出しはUI Automationで確認済み。English実音声の利用者確認は回答待ち。
+- Englishホームの未翻訳2件と、自動バックアップ成功文の誤った汎用エラー変換を修正した。表示言語は日本語へ復元済み。
+- Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中27/27、Desktop 183/183、build:main、全型検査、diff check成功。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-08-29 Codex（クリーンWindows証跡取り込み）
 
 - Branch: `codex/clean-windows-evidence-import-20260829`

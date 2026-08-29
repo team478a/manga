@@ -449,10 +449,10 @@ function App() {
             <Button
               variant="secondary"
               onClick={toggleCommandPalette}
-              aria-label="コマンドパレットを開く (Ctrl+K)"
+              aria-label={t("home.commandPaletteLabel")}
               aria-pressed={commandPaletteOpen}
             >
-              コマンド
+              {t("home.commandPalette")}
               <kbd aria-hidden="true">Ctrl K</kbd>
             </Button>
             <Button
@@ -535,7 +535,11 @@ function App() {
             <b>{t("home.autoBackupStatus")}</b>{" "}
             {localizeMessage(autoBackup.message)}
             {autoBackup.checkedAt && (
-              <small>最終確認 {formatDateTime(autoBackup.checkedAt)}</small>
+              <small>
+                {t("home.lastChecked", {
+                  value: formatDateTime(autoBackup.checkedAt),
+                })}
+              </small>
             )}
           </div>
         )}
