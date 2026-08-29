@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-08-29 Production未配置候補11件read-only目視確認
+
+- 状態: `PRODUCTION_VISUAL_REVIEW_COMPLETE / CANDIDATES_UNCHANGED / PRODUCTION_UNCHANGED`
+- PR #394反映後、原稿未配置の採用評価済み1件・未評価10件を、Production作品画面と署名付き画像表示で読み取り専用確認した。
+- 再利用候補は3件。2ページの証拠品寄り1件と、19ページの同一夜間場面・人物関係に沿う2件で、採用前に対象コマとの最終比較が必要。
+- 再利用しない候補は4件。画像内へセリフや複数コマを焼き込んだ3件と、人体／接触／構図の重大不良1件で、新規生成対象から除外する。
+- 22ページの余剰候補4件は、同ページが画像4/4・セリフ1/1・revision 12/12・PNG成功で完成済みのため、既存原稿を上書きして再利用しない。
+- 再利用候補3件を将来採用できた場合、未配置は144から141へ減る見込み。採用前の確定値として扱わない。
+- Productionへの候補採用・却下、Canvas保存、Provider実行、Job登録、credit予約・消費は0件。検証は文書差分限定、`git diff --check`成功。
+
+---
+
 ## 2026-08-29 Production残コマ・既存候補read-only再集計
 
 - 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / PRODUCTION_UNCHANGED`
