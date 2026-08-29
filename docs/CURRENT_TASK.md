@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-08-29 Windows Narrator拡張確認・英語表示修正
+
+- 状態: `EXTENDED_NARRATOR_PARTIAL / LOCALE_DEFECT_FIXED_LOCAL / ENGLISH_AUDIO_CONFIRMATION_PENDING`
+- 既存受入れProjectで、素材、追加メニュー、生成ジョブ、書き出し、Inspector、その他メニューを非破壊で確認した。日本語の書き出しdialogは利用者の実音声確認済み。
+- Englishの生成ジョブ／書き出しdialogはUI Automation上で英語名・役割・説明を確認した。実音声の利用者確認は回答待ち。
+- English切替時にホームのコマンドボタンと最終確認が日本語のまま残る問題、および正常な自動バックアップ結果が汎用エラーへ誤変換される問題を修正した。表示言語は日本語へ復元済み。
+- Project、Production、Provider、DB、Queue、Job、Asset、credit操作0件。
+- 検証: 集中27/27、Desktop 183/183、build:main、全型検査、diff check成功。
+
+---
+
 ## 2026-08-29 クリーンWindows証跡取り込み
 
 - 状態: `EVIDENCE_IMPORT_IMPLEMENTED / ACCEPTANCE_REMAINS_BLOCKED`

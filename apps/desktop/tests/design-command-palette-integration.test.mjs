@@ -16,6 +16,7 @@ import {
 const here = path.dirname(fileURLToPath(import.meta.url));
 const rendererDir = path.join(here, "..", "src", "renderer");
 const mainSource = fs.readFileSync(path.join(rendererDir, "main.tsx"), "utf8");
+const i18nSource = fs.readFileSync(path.join(rendererDir, "i18n.tsx"), "utf8");
 const appHeaderSource = fs.readFileSync(
   path.join(rendererDir, "components", "app-shell", "AppHeader.tsx"),
   "utf8",
@@ -126,7 +127,17 @@ test("CommandPalette: Escapeで閉じる実装を維持している", () => {
 // --- 5: 上部バートリガーから開く（起動ボタン再操作で閉じるトグル契約を含む） ---
 test("Home画面の上部バーにコマンドパレットトリガーが存在し、再操作でトグルする", () => {
   assert.match(mainSource, /onClick=\{toggleCommandPalette\}/);
-  assert.match(mainSource, /コマンドパレットを開く \(Ctrl\+K\)/);
+  assert.match(mainSource, /aria-label=\{t\("home\.commandPaletteLabel"\)\}/);
+  assert.match(mainSource, /\{t\("home\.commandPalette"\)\}/);
+});
+
+test("Home画面のコマンド・最終確認・自動バックアップ結果は日英表示へ対応する", () => {
+  assert.match(mainSource, /t\("home\.lastChecked"/);
+  assert.match(i18nSource, /"home\.commandPaletteLabel": "Open command palette \(Ctrl\+K\)"/);
+  assert.match(i18nSource, /"home\.lastChecked": "Last checked \{value\}"/);
+  assert.match(i18nSource, /All projects are already backed up\./);
+  assert.match(i18nSource, /Created \$1 automatic backups\./);
+  assert.match(i18nSource, /\$1 projects could not be backed up\./);
 });
 
 test("AppHeader（制作ワークスペース上部バー）にコマンドパレットトリガーが配線されている", () => {

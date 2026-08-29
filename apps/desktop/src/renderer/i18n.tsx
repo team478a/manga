@@ -29,6 +29,8 @@ const ja = {
   "status.noPage": "Page未選択",
   "status.assets": "素材 {count}",
   "home.subtitle": "漫画制作プロジェクト",
+  "home.commandPalette": "コマンド",
+  "home.commandPaletteLabel": "コマンドパレットを開く (Ctrl+K)",
   "home.checkingBackup": "バックアップ確認中…",
   "home.autoBackup": "自動バックアップ",
   "home.restore": "バックアップから復元",
@@ -54,6 +56,7 @@ const ja = {
   "home.backupsFailed": " {count}件のバックアップを復元できませんでした。",
   "home.corruptArchive": "破損した原本の保管場所: {path}",
   "home.autoBackupStatus": "自動バックアップ:",
+  "home.lastChecked": "最終確認 {value}",
   "home.filterLabel": "表示するProject",
   "home.filterAll": "すべて",
   "home.filterGeneral": "一般",
@@ -1040,6 +1043,8 @@ const en: Record<TranslationKey, string> = {
   "status.noPage": "No page selected",
   "status.assets": "Assets {count}",
   "home.subtitle": "Manga creation projects",
+  "home.commandPalette": "Commands",
+  "home.commandPaletteLabel": "Open command palette (Ctrl+K)",
   "home.checkingBackup": "Checking backups…",
   "home.autoBackup": "Auto backup",
   "home.restore": "Restore from backup",
@@ -1065,6 +1070,7 @@ const en: Record<TranslationKey, string> = {
   "home.backupsFailed": " {count} backups could not be restored.",
   "home.corruptArchive": "Archived damaged database: {path}",
   "home.autoBackupStatus": "Automatic backup:",
+  "home.lastChecked": "Last checked {value}",
   "home.filterLabel": "Show projects",
   "home.filterAll": "All",
   "home.filterGeneral": "General",
@@ -2063,6 +2069,19 @@ function storedLocale(): AppLocale {
 }
 
 const englishMainMessageReplacements: Array<[RegExp, string]> = [
+  [/確認中…/g, "Checking…"],
+  [
+    /(\d+)件のProjectをバックアップできませんでした。/g,
+    "$1 projects could not be backed up.",
+  ],
+  [
+    /(\d+)件の自動バックアップを作成しました。/g,
+    "Created $1 automatic backups.",
+  ],
+  [
+    /すべてのProjectはバックアップ済みです。/g,
+    "All projects are already backed up.",
+  ],
   [
     /Hub URLはHTTPSを指定してください（localhostのみHTTPを利用できます）。/g,
     "Use an HTTPS Hub URL. HTTP is allowed only for localhost.",
