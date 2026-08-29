@@ -6025,6 +6025,18 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 外部E2E READY条件へref形式と`PGHOST`／`PGUSER`の隔離Branch ref一致を追加した。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
 - 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+# 2026-08-29 Codex: Production再利用候補の対象コマ最終比較
+
+- Branch: `codex/production-candidate-target-final-review-20260829`
+- Base: `34c3e59`（PR #396 merge commit）
+- Production作品の2ページ1件・19ページ2件を、対象ページ、現行原稿、マージ済み採用preflightとread-onlyで最終比較した。
+- 2ページ候補は既存の時計・焼損証拠画像を置き換えるだけで、現行画像も同意図を満たすため見送り。19ページの夜間足場2件だけを空コマ向け再利用対象とした。
+- 再利用後の未配置見込みは141ではなく142。候補採用前の確定値にはしない。
+- 品質確認dialogは閉じて終了。Production、候補採用・却下、Canvas、Provider、Job、Asset、credit操作0件。
+- 次: 文書をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。19ページ2件の実採用は、対象2件・2回のProduction変更として責任者が明示承認するまで行わない。
+
+---
+
 # 2026-08-29 Codex: 既存候補採用preflight
 
 - Branch: `codex/candidate-adoption-preflight-20260829`
