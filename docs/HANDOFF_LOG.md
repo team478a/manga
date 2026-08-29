@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-29 Codex（Production残コマ・既存候補read-only再集計）
+
+- Branch: `codex/production-readonly-reaggregation-20260829`
+- Base: `8a7ce57`（PR #393 merge commit）
+- Production SQL Editorで対象作品へ`SELECT`だけを実行し、32ページ／157コマ、配置済み13、未配置144を確認した。
+- 完成候補47 Assetのうち原稿未配置33。採用評価済み1、却下済み22、未評価10。credit使用82／予約0、実原価1,245,000 micro USD／予約原価0、待機・実行中Job 0。
+- Production書込み、Canvas修復、候補採用、Provider実行、Job登録、credit予約・消費0件。SQL snippet保存なし。
+- 検証: 文書差分限定、`git diff --check`成功。
+- 次: 既存の採用評価済み1件と未評価10件を人間確認し、不足分だけをPilot対象へ確定する。候補採用・Pilot生成は別の明示承認まで実行しない。
+
+---
+
 ## 2026-08-29 Codex（Windows Narratorエディター英語ラベル修正）
 
 - Branch: `codex/windows-narrator-editor-command-locale-20260829`

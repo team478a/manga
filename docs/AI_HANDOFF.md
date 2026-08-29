@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production残コマ・既存候補read-only再集計（2026-08-29）
+
+- Production SQL Editorの`SELECT`だけで対象作品を再集計し、32ページ／157コマ、配置済み13、未配置144を確認した。
+- 完成候補47 Assetのうち33 Assetが原稿未配置。内訳は採用評価済み1、却下済み22、未評価10。
+- 現行利用期間はcredit使用82／予約0、実原価1,245,000 micro USD／予約原価0。処理待ち・実行中Jobはいずれも0。
+- 次は既存の採用評価済み1件と未評価10件を先に人間確認し、却下済み22件を除外してからPilot生成範囲を決める。
+- Production書込み、Canvas修復、候補採用、Provider実行、Job登録、credit予約・消費0件。
+
+---
+
 ## 0.0 Windows Narratorエディター英語ラベル修正（2026-08-29）
 
 - PR #391反映版でHomeの英訳3点を確認し、English生成ジョブ／書き出しdialogを再表示した。
