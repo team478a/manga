@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-30 Codex（ダッシュボード品質確認の直接導線）
+
+- Base: `feature/manga-canvas-mvp` @ `2317ad4`（PR #400 merge）
+- ダッシュボードの「限定モニター」欄から、既存の漫画画像品質確認画面へ1操作で移動できるボタンを追加した。
+- 品質確認画面のFeature Flag、モニター状態、割当有無によるfail-closed挙動は変更していない。
+- 回帰7/7、Hub 940/940、lint、Hub/Desktop型検査、Production build、diff check成功。RC preflightは構造READY。Production、Provider、Job、credit操作0件。
+
+---
+
 ## 2026-08-29 Codex（23–24ページPilot readiness再確認）
 
 - Base: `feature/manga-canvas-mvp` @ `efe6fa0`（PR #399 merge）

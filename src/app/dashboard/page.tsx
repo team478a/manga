@@ -150,6 +150,7 @@ export default async function DashboardPage({
         <div className="flex flex-col gap-2 sm:flex-row">
           <Link className="button-secondary" href="/dashboard/monitor/guide">使い方</Link>
           <Link className="button-secondary" href="/dashboard/monitor">状況・ご意見</Link>
+          <Link className="button-secondary" href="/dashboard/monitor/quality-review">品質確認</Link>
           <Link className="button-secondary" href="/dashboard/notifications">通知 {notificationsResult.count ?? 0}件</Link>
         </div>
       </section>

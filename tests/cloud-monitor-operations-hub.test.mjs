@@ -40,6 +40,13 @@ test("更新情報は一般向けモニターで利用できる範囲と対象�
   assert.match(dashboard, /href="\/dashboard\/monitor\/guide"/);
 });
 
+test("ダッシュボードから漫画画像の品質確認へ直接移動できる", async () => {
+  const dashboard = await read("../src/app/dashboard/page.tsx");
+
+  assert.match(dashboard, /href="\/dashboard\/monitor\/quality-review"/);
+  assert.match(dashboard, />品質確認<\/Link>/);
+});
+
 test("モニター報告は種類・影響度・環境を構造化して保存する", async () => {
   const [migration, page, repository] = await Promise.all([
     read("../supabase/migrations/202608030001_cloud_monitor_operations_hub.sql"),
