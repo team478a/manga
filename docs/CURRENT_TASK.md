@@ -1,5 +1,14 @@
 # MANGAI Current Task
 
+## 2026-08-30 ダッシュボード品質確認の直接導線
+
+- 状態: `IMPLEMENTED_LOCAL / ALL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
+- 一般モニターの品質確認が「状況・ご意見」を経由しないと開けなかったため、ダッシュボードの「限定モニター」欄へ`/dashboard/monitor/quality-review`の直接ボタンを追加した。
+- 品質確認画面側のFeature Flag、モニター状態、割当有無によるfail-closed案内は変更していない。
+- 回帰7/7、Hub 940/940、lint、Hub/Desktop型検査、Production build、`git diff --check`成功。RC preflightは構造READYで、外部環境項目だけ従来どおり未設定。DB、Production、Provider、Job、credit操作0件。
+
+---
+
 ## 2026-08-29 23–24ページPilot readiness再確認
 
 - 状態: `PILOT_TARGET_CONFIRMED / PREFLIGHT_BLOCKED / PRODUCTION_UNCHANGED`

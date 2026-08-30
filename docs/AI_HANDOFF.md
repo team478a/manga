@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 ダッシュボード品質確認の直接導線（2026-08-30）
+
+- 一般モニター用ダッシュボードの「限定モニター」欄へ「品質確認」ボタンを追加した。
+- 遷移先は既存の`/dashboard/monitor/quality-review`で、Feature Flag、利用状態、割当有無の安全境界は不変。
+- 回帰7/7、Hub 940/940、lint、Hub/Desktop型検査、Production build、diff check成功。RC preflightは構造READY。Production、Provider、Job、credit操作0件。
+
+---
+
 ## 0.0 23–24ページPilot readiness再確認（2026-08-29）
 
 - Productionの23–24ページは各4コマ・画像0で、採用後も8コマPilot候補を維持する。
