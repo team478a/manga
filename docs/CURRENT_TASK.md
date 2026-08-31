@@ -1,5 +1,14 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult Pilot bundle preflight
+
+- 状態: `IMPLEMENTED_LOCAL / FAIL_CLOSED_PENDING_ARTIFACTS / DISTRIBUTION_BLOCKED`
+- ComfyUI、4方式workflow、checkpoint、VAE、ControlNetを固定する正本manifestと、version、SHA-256、導入容量、HTTPSの導入元・license URLを検査するpreflightを追加した。
+- strict判定は8項目すべての固定と、Phase 5の12GB実機4方式・書き出し証跡が揃うまで終了コード1で停止する。現在は固定0／未確定8、12GB証跡pendingで、招待配布不可を維持する。
+- 集中2/2、Desktop 185/185、lint、Hub/Desktop型検査、`git diff --check`成功。Production、Cloud、外部Provider、Project、Job、credit、モデル取得・生成操作0件。
+
+---
+
 ## 2026-08-31 Desktop Adult招待制モニター公開計画
 
 - 状態: `PLAN_READY / DISTRIBUTION_BLOCKED / CLOUD_ADULT_UNCHANGED`

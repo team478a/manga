@@ -34,6 +34,13 @@ MANGAI Desktop Adultのローカル制作機能を、対象環境を満たす少
 
 未署名installerを「モニター版」として外部配布しない。実機試験用の内部成果物と招待配布物を混在させない。
 
+固定対象は`DESKTOP_ADULT_PILOT_BUNDLE.json`で管理する。通常preflightは未確定項目を一覧化し、strict preflightは全artifactのversion、SHA-256、導入容量、HTTPSの導入元・license URLと、12GB実機証跡が揃うまで終了コード1で停止する。
+
+```powershell
+npm run desktop:adult:pilot-preflight
+npm run desktop:adult:pilot-preflight:strict
+```
+
 ## 4. モニター開始時の確認
 
 利用者は開始前に次を1項目ずつ確認する。
