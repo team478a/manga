@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot Runtimeモデル参照設定
+
+- Branch: `codex/desktop-adult-pilot-runtime-config-20260901`
+- Base: `1ebb6cd`（PR #413 merge commit）
+- 安全展開の確定前にComfyUI portable構成を検証し、検証済みmodel storeを`extra_model_paths.yaml`から参照する設定処理を追加した。model fileの重複copyは行わない。
+- 既存設定非上書き、全4 Artifact再検証、UNC／network share事前拒否を実装した。
+- 集中11/11、Desktop 201/201、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、diff check成功。実download、展開、起動、Production、Cloud、Provider、Project、Job、Asset、credit、生成操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。実Runtime受入れは適格内部端末で行う。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot Runtime展開IPC
 
 - Branch: `codex/desktop-adult-pilot-install-ipc-20260901`

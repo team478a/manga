@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot Runtimeモデル参照設定（2026-09-01）
+
+- Runtimeのatomic確定前にportable構成とmodel directoryを検査し、公式ComfyUI形式の`extra_model_paths.yaml`で検証済みcheckpoint／VAE／ControlNet保存領域を直接参照するようにした。
+- 既存設定は上書きせず、UNC／network shareを事前拒否する。install時にはRuntimeを含む全4 Artifactの容量／SHA-256を再検証する。
+- 集中11/11、Desktop 201/201、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。現PCはGPU／7-Zip条件外のため実download／展開／起動／生成なし。Production／Cloud／Provider／Job／credit操作なし。
+- 次は全検証とDraft PR後、適格内部端末で実Runtimeと4方式workflowを確認する。
+
+---
+
 ## 0.0 Desktop Adult Pilot Runtime展開IPC（2026-09-01）
 
 - Wizardへ安全展開buttonを追加し、Mainで同意／12GB VRAM／選択root／既存archive SHA／7-Zip 25.01+を再検証してからadapterと隔離installerを実行するIPCを接続した。

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot Runtimeモデル参照設定
+
+- 状態: `RUNTIME_CONFIG_IMPLEMENTED / VERIFIED_MODEL_STORE_REUSED / REAL_RUNTIME_NOT_RUN`
+- Branch: `codex/desktop-adult-pilot-runtime-config-20260901`
+- Base: `1ebb6cd`（PR #413 merge commit）
+- 安全展開のatomic確定前にComfyUI portable構成（`ComfyUI/main.py`、embedded Python、NVIDIA起動bat）と検証済みmodel 3 directoryを確認し、`extra_model_paths.yaml`を生成する処理を追加した。
+- `base_path`、`checkpoints`、`vae`、`controlnet`を公式ComfyUI形式で設定し、約12GBのmodelをRuntimeへ複製せず単一の検証済み保存領域から再利用する。既存設定fileは上書きしない。
+- install IPCはRuntimeを含む全4 Artifactの容量／SHA-256を再検証してから展開・設定する。選択rootとmodel rootのUNC／network shareはfilesystem／network操作前に拒否する。
+- 集中11/11、Desktop 201/201、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- 現PCは12GB NVIDIA GPU／7-Zip条件外のため、実download／展開／起動／生成なし。Production／Cloud／Provider／Job／credit操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末で実Runtime構成と4方式workflowを検証する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot Runtime展開IPC
 
 - 状態: `INSTALL_IPC_CONNECTED / CURRENT_HOST_FAIL_CLOSED / REAL_EXTRACTION_NOT_RUN`

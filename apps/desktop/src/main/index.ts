@@ -95,6 +95,7 @@ import {
 } from "./adult-pilot-downloader.js";
 import { AdultPilotRuntimeInstaller } from "./adult-pilot-runtime-installer.js";
 import { AdultPilot7ZipAdapter, findSupported7Zip } from "./adult-pilot-7zip.js";
+import { configureAdultPilotRuntime } from "./adult-pilot-runtime-config.js";
 import {
   balloonInputSchema,
   canvasBatchInputSchema,
@@ -866,13 +867,22 @@ function register() {
       throw new Error("安全な展開には正式インストール済みの7-Zip 25.01以上が必要です。");
     adultPilotInstallRunning = true;
     try {
-      const archive = await new AdultPilotDownloader().verifyExisting(v.root, "runtime");
+      const downloader = new AdultPilotDownloader();
+      const archive = await downloader.verifyExisting(v.root, "runtime");
+      await Promise.all([
+        downloader.verifyExisting(v.root, "checkpoint"),
+        downloader.verifyExisting(v.root, "vae"),
+        downloader.verifyExisting(v.root, "controlnet"),
+      ]);
       const adapter = new AdultPilot7ZipAdapter(executable);
       const entries = await adapter.list(archive.filePath);
       const result = await new AdultPilotRuntimeInstaller().install(
         v.root,
         entries,
         (staging) => adapter.extract(archive.filePath, staging),
+        (extractedRoot) => {
+          configureAdultPilotRuntime(extractedRoot, path.join(v.root, "models"));
+        },
       );
       return { status: "installed", runtimePath: result.runtimePath, entryCount: result.entryCount };
     } finally {
