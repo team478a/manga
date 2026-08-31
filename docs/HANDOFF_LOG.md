@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 7-Zip展開adapter
+
+- Branch: `codex/desktop-adult-pilot-7zip-adapter-20260901`
+- Base: `d1dc7ab`（PR #411 merge commit）
+- system-installed 7-Zipの固定path検出、25.01以上のversion gate、technical list parser、literal argumentによるlist／extract adapterを追加した。
+- PATH上の実行fileを信用せず、7-Zip binaryを同梱・再配布しない。現PCでは7-Zip未検出のため実展開なし。Wizard／IPC未接続。
+- Desktop 198/198、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 実download、展開、起動、Production、Cloud、Provider、Project、Job、Asset、credit、生成操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末で実archive list／展開を確認する。
+
+---
+
 ## 2026-08-31 Codex: Desktop Adult Pilot安全展開契約
 
 - Branch: `codex/desktop-adult-pilot-safe-extraction-contract-20260831`

@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 7-Zip展開adapter（2026-09-01）
+
+- 正式インストール先の7-Zip 25.01以上だけを検出し、technical listを安全展開契約へ渡せるadapterを実装した。PATH検索とshell文字列実行は行わない。
+- 7-Zipは同梱・再配布しない。現在のPCには未導入のため実archive list／展開なし。IPC／Wizardも未接続。
+- Desktop 198/198、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。
+- 次は12GB以上GPU＋7-Zip 25.01以上の内部端末で公式archiveの実一覧と展開treeを検証する。
+
+---
+
 ## 0.0 Desktop Adult Pilot安全展開契約（2026-08-31）
 
 - ComfyUI archiveを展開前後に検査し、path traversal、link、root不一致、Windows衝突、一覧外entry、既存Runtime上書きを拒否する隔離staging契約を実装した。

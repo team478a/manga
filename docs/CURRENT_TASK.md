@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 7-Zip展開adapter
+
+- 状態: `ADAPTER_IMPLEMENTED / SYSTEM_7ZIP_REQUIRED / CURRENT_HOST_BLOCKED`
+- Branch: `codex/desktop-adult-pilot-7zip-adapter-20260901`
+- Base: `d1dc7ab`（PR #411 merge commit）
+- 端末へ正式インストール済みの`7z.exe`だけを`ProgramW6432`／`ProgramFiles`配下の固定pathから検出し、PATH上の同名fileは使用しないadapterを追加した。
+- 7-Zip 25.01以上を必須とし、`-slt`一覧をfile／directory／symbolic link／hard linkへ分類する。shell文字列を組み立てず、literal argument配列でlist／extractする。
+- 7-ZipはMANGAIへ同梱・再配布しない。公式情報では商用端末で利用可能だが、組込み時にはLGPL等の表示義務があるためsystem-installed方式を維持する。
+- 現PCは7-Zip未導入で、adapterは未検出としてfail closed。IPC／Wizardへの展開接続も未実装。
+- Desktop 198/198、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- 実download／展開／起動、Production／Cloud／Provider／Job／credit／生成操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。12GB以上GPUかつ7-Zip 25.01以上の内部端末で実archive listと展開を検証後、Wizard接続を判断する。
+
+---
+
 ## 2026-08-31 Desktop Adult Pilot安全展開契約
 
 - 状態: `SAFE_EXTRACTION_CONTRACT_IMPLEMENTED / EXTRACTOR_NOT_CONNECTED / REAL_EXTRACTION_NOT_RUN`
