@@ -15,6 +15,46 @@ const fixture = (id, bytes) => ({
   sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
 });
 
+test("Adult Pilot downloader accepts only the pinned GitHub runtime asset", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-runtime-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const bytes = Buffer.from("verified-comfyui-runtime");
+  const artifact = {
+    id: "runtime",
+    fileName: "ComfyUI_windows_portable_nvidia.7z",
+    directory: "checkpoints",
+    area: "runtime",
+    sourceUrl: "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.34.0/ComfyUI_windows_portable_nvidia.7z",
+    bytes: bytes.length,
+    sha256: crypto.createHash("sha256").update(bytes).digest("hex"),
+  };
+  const downloader = new AdultPilotDownloader({
+    artifacts: [artifact],
+    freeBytes: () => 100 * 1024 ** 3,
+    fetcher: async () => new Response(bytes, { status: 200 }),
+  });
+  const result = await downloader.download(root, "runtime");
+  assert.equal(result.filePath, path.join(fs.realpathSync(root), "runtime", artifact.fileName));
+  assert.deepEqual(fs.readFileSync(result.filePath), bytes);
+  const reused = await downloader.download(root, "runtime");
+  assert.equal(reused.resumedFrom, bytes.length);
+});
+
+test("Adult Pilot downloader refuses to overwrite an invalid completed artifact", async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-invalid-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const bytes = Buffer.from("expected"), artifact = fixture("checkpoint", bytes);
+  const directory = path.join(root, "models", "checkpoints");
+  fs.mkdirSync(directory, { recursive: true });
+  fs.writeFileSync(path.join(directory, "checkpoint.bin"), Buffer.from("tampered"));
+  const downloader = new AdultPilotDownloader({
+    artifacts: [artifact],
+    freeBytes: () => 100 * 1024 ** 3,
+    fetcher: async () => { throw new Error("must not fetch"); },
+  });
+  await assert.rejects(downloader.download(root, "checkpoint"), /既存artifact/);
+});
+
 test("Adult Pilot downloader resumes a partial official artifact and verifies SHA", async (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-download-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));

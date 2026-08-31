@@ -6,15 +6,25 @@ import { Readable } from "node:stream";
 import { Transform } from "node:stream";
 
 export type AdultPilotArtifact = {
-  id: "checkpoint" | "vae" | "controlnet";
+  id: "runtime" | "checkpoint" | "vae" | "controlnet";
   fileName: string;
   directory: "checkpoints" | "vae" | "controlnet";
+  area?: "runtime" | "models";
   sourceUrl: string;
   bytes: number;
   sha256: string;
 };
 
 export const ADULT_PILOT_ARTIFACTS: readonly AdultPilotArtifact[] = [
+  {
+    id: "runtime",
+    fileName: "ComfyUI_windows_portable_nvidia.7z",
+    directory: "checkpoints",
+    area: "runtime",
+    sourceUrl: "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.34.0/ComfyUI_windows_portable_nvidia.7z",
+    bytes: 2_146_721_943,
+    sha256: "ed57cc6b19ae3d83add1ecebfdd56b25e04e0008cf0fe9af43a4ad8797e2a24c",
+  },
   {
     id: "checkpoint",
     fileName: "sd_xl_base_1.0.safetensors",
@@ -45,6 +55,9 @@ const redirectHosts = new Set([
   "huggingface.co",
   "cdn-lfs.huggingface.co",
   "cas-bridge.xethub.hf.co",
+  "github.com",
+  "objects.githubusercontent.com",
+  "release-assets.githubusercontent.com",
 ]);
 const reserveBytes = 8 * 1024 ** 3;
 
@@ -102,7 +115,9 @@ export class AdultPilotDownloader {
     if (!path.isAbsolute(root)) throw new Error("保存先は絶対pathで指定してください。");
     fs.mkdirSync(root, { recursive: true });
     const realRoot = fs.realpathSync(root);
-    const directory = path.join(realRoot, "models", artifact.directory);
+    const directory = artifact.area === "runtime"
+      ? path.join(realRoot, "runtime")
+      : path.join(realRoot, "models", artifact.directory);
     fs.mkdirSync(directory, { recursive: true });
     const realDirectory = fs.realpathSync(directory);
     if (!realDirectory.startsWith(`${realRoot}${path.sep}`))
@@ -135,6 +150,14 @@ export class AdultPilotDownloader {
     const artifact = this.artifact(id);
     const destination = this.destination(root, artifact);
     const partial = `${destination}.partial`;
+    const completedBytes = fs.statSync(destination, { throwIfNoEntry: false })?.size;
+    if (completedBytes === artifact.bytes) {
+      const sha256 = await hashFile(destination);
+      if (sha256 === artifact.sha256)
+        return { artifactId: id, filePath: destination, bytes: artifact.bytes, sha256, resumedFrom: artifact.bytes };
+    }
+    if (completedBytes !== undefined)
+      throw new Error("既存artifactの容量またはSHA-256が固定値と一致しません。保存先を確認してください。");
     const existing = fs.statSync(partial, { throwIfNoEntry: false })?.size ?? 0;
     if (existing > artifact.bytes) fs.truncateSync(partial, 0);
     let resumedFrom = existing > artifact.bytes ? 0 : existing;

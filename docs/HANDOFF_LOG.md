@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex: Desktop Adult Pilot固定ComfyUI Runtime取得
+
+- Branch: `codex/desktop-adult-pilot-runtime-acquisition-20260831`
+- Base: `37b3f09`（PR #409 merge commit）
+- ComfyUI `v0.34.0`公式NVIDIA portable AssetをGitHub公開の容量／SHA-256で固定し、安全downloaderとWizard進捗の4件目へ追加した。
+- 公式GitHub hostだけを追加許可し、保存先を選択root配下`runtime`へ限定。検証済み完成file再利用と不正完成fileの上書き拒否を実装した。
+- 展開・実行は未実装。現PCではVRAM gateが閉じるため実downloadなし。Production、Cloud、Provider、Project、Job、Asset、credit、生成操作0件。
+- AI Core 50/50、Desktop 190/190、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。安全な展開とRuntime構成検証は別PR。
+
+---
+
 ## 2026-08-31 Codex: Desktop Adult Pilot安全取得サービス
 
 - Branch: `codex/desktop-adult-pilot-safe-downloader-20260831`

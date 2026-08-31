@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult Pilot固定ComfyUI Runtime取得
+
+- 状態: `RUNTIME_ASSET_PINNED / SAFE_ACQUISITION_CONNECTED / EXTRACTION_NOT_IMPLEMENTED`
+- Branch: `codex/desktop-adult-pilot-runtime-acquisition-20260831`
+- Base: `37b3f09`（PR #409 merge commit）
+- ComfyUI `v0.34.0`公式NVIDIA portable Assetを、GitHub公開の容量`2,146,721,943 bytes`とSHA-256で固定し、既存の安全downloaderの4件目へ追加した。
+- GitHub公式release hostと検査済みredirect hostだけを許可し、取得先は選択root配下の`runtime`へ固定する。展開・実行・PATH変更は行わない。
+- 検証済み完成fileはSHA一致時に再利用し、不一致の完成fileは自動上書きせずfail closedとした。
+- AI Core 50/50、Desktop 190/190、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- 現PCではVRAM gateにより実取得不可。実Runtime／model download、展開、ComfyUI起動、生成、Production／Cloud／Provider／Job／credit操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。安全な展開・Runtime構成検証は別PRとし、12GB以上GPU端末でのみ実E2Eを行う。
+
+---
+
 ## 2026-08-31 Desktop Adult Pilot安全取得サービス
 
 - 状態: `DOWNLOADER_CORE_IMPLEMENTED / MOCK_VALIDATED / UI_NOT_CONNECTED`
