@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult招待制モニター公開計画
+
+- 状態: `PLAN_READY / DISTRIBUTION_BLOCKED / CLOUD_ADULT_UNCHANGED`
+- 成人向けCloudは既存の保存・生成・Storage拒否を維持し、Windows Desktop Adultを招待制で段階公開する計画を`docs/desktop/DESKTOP_ADULT_PRIVATE_MONITOR_RELEASE_PLAN_20260831.md`へ固定した。
+- 初回PilotはWindows 11、VRAM 12GB以上、ローカルOllama／ComfyUI、1操作1枚、最大5名。Cloud同期、外部Provider、販売、無人一括生成は対象外。
+- 公開前必須条件はコード署名、署名済みPilot version、12GB以上の内部4方式受入れ、workflow／model固定、18歳以上・禁止入力・privacy確認、招待／停止運用の承認。
+- 本変更は文書限定。実配布、Production、Cloud境界、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 2026-08-30 ダッシュボード品質確認の直接導線
 
 - 状態: `IMPLEMENTED_LOCAL / ALL_RELEVANT_GATES_PASSED / PRODUCTION_UNCHANGED`
