@@ -1,4 +1,5 @@
 import type { RuntimeProfileState } from "./runtime-profile.js";
+import { z } from "zod";
 
 export const ADULT_PILOT_MINIMUM_VRAM_MB = 12 * 1024;
 export const ADULT_PILOT_MODEL_BYTES = 12_276_887_360;
@@ -8,6 +9,11 @@ export type AdultLocalAISetupConsent = {
   localOnly: boolean;
   adultSafety: boolean;
 };
+export const adultLocalAISetupConsentSchema = z.object({
+  licenseTerms: z.literal(true),
+  localOnly: z.literal(true),
+  adultSafety: z.literal(true),
+});
 
 export type AdultLocalAISetupReadiness = {
   deviceEligible: boolean;

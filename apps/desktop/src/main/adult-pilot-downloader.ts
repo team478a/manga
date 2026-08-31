@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
+import { Transform } from "node:stream";
 
 export type AdultPilotArtifact = {
   id: "checkpoint" | "vae" | "controlnet";
@@ -129,6 +130,7 @@ export class AdultPilotDownloader {
     root: string,
     id: AdultPilotArtifact["id"],
     signal?: AbortSignal,
+    onProgress?: (downloadedBytes: number, totalBytes: number) => void,
   ): Promise<AdultPilotDownloadResult> {
     const artifact = this.artifact(id);
     const destination = this.destination(root, artifact);
@@ -161,8 +163,18 @@ export class AdultPilotDownloader {
         throw new Error("保存先の空き容量が不足しています。別ドライブを選択してください。");
       fs.truncateSync(partial, 0);
     }
+    let downloadedBytes = append ? resumedFrom : 0;
+    onProgress?.(downloadedBytes, artifact.bytes);
+    const progress = new Transform({
+      transform(chunk, _encoding, callback) {
+        downloadedBytes += chunk.length;
+        onProgress?.(downloadedBytes, artifact.bytes);
+        callback(null, chunk);
+      },
+    });
     await pipeline(
       Readable.fromWeb(response.body as never),
+      progress,
       fs.createWriteStream(partial, { flags: append ? "a" : "w", mode: 0o600 }),
     );
     const actualBytes = fs.statSync(partial).size;

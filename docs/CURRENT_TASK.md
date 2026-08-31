@@ -4928,3 +4928,14 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 外部E2EのSupabase判定でBranch／親Project refの形式を検証し、`PGHOST`または`PGUSER`が隔離Branch refを含むことをREADY条件へ追加する。
 - Branch refだけ差し替えて接続先が親mainのままの場合も、DB接続前にPENDINGとする。通常staging preflightの既存照合契約は不変。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+# 2026-08-31 Desktop成人向けPilot安全ダウンロードIPC接続
+
+- 状態: `DOWNLOAD_IPC_CONNECTED / CURRENT_HOST_FAIL_CLOSED / REAL_DOWNLOAD_NOT_RUN`
+- Branch: `codex/desktop-adult-pilot-download-ipc-20260831`
+- Base: `c9d3193`（PR #408 merge commit）
+- Adult Local AI Setup Wizardを、PR #408の固定Artifact安全ダウンローダーへElectron IPC経由で接続した。
+- Main processで同意3項目、12GB以上のVRAM判定、Main側で選択した保存先との完全一致を再検証する。Rendererからの入力だけでは実行できない。
+- 固定3 Artifactの逐次進捗、キャンセル、`.partial`からの再開、検証完了表示を追加した。任意URL、任意ファイル名、任意保存先は受け付けない。
+- 現在のPCはIntel Iris Xe／表示VRAM約2GBのためfail-closed。実モデルのダウンロード、ComfyUI導入、生成、Provider、Job、credit、Production／Cloud操作は行っていない。
+- 検証: AI Core 50/50、Desktop 188/188、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- 次: commit、push、Draft PRを作成し、全CIとVercel Preview成功で停止する。実12GB以上GPU端末でのE2EとComfyUI runtime取得は別タスクとする。

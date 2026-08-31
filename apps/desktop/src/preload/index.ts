@@ -158,6 +158,18 @@ contextBridge.exposeInMainWorld("mangai", {
   },
   ai: {
     runtimeInfo: () => ipcRenderer.invoke("ai:runtime"),
+    chooseAdultPilotDirectory: () =>
+      ipcRenderer.invoke("ai:adult-pilot:choose-directory"),
+    downloadAdultPilot: (root: string, consent: unknown) =>
+      ipcRenderer.invoke("ai:adult-pilot:download", { root, consent }),
+    cancelAdultPilotDownload: () =>
+      ipcRenderer.invoke("ai:adult-pilot:cancel"),
+    onAdultPilotProgress: (listener: (value: unknown) => void) => {
+      const handler = (_event: Electron.IpcRendererEvent, value: unknown) =>
+        listener(value);
+      ipcRenderer.on("ai:adult-pilot:progress", handler);
+      return () => ipcRenderer.removeListener("ai:adult-pilot:progress", handler);
+    },
     exportPhase5HardwareEvidence: (projectId: string) =>
       ipcRenderer.invoke("ai:phase5:hardware-evidence:export", {
         id: projectId,
