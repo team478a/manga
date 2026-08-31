@@ -18,11 +18,11 @@
   "comfyui": {
     "status": "pending",
     "version": "v0.34.0",
-    "sourceUrl": "https://github.com/Comfy-Org/ComfyUI/releases/tag/v0.34.0",
+    "sourceUrl": "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.34.0/ComfyUI_windows_portable_nvidia.7z",
     "licenseUrl": "https://github.com/Comfy-Org/ComfyUI/blob/v0.34.0/LICENSE",
-    "sha256": null,
-    "installedBytes": null,
-    "reviewStatus": "owner_license_confirmed_runtime_pending"
+    "sha256": "ed57cc6b19ae3d83add1ecebfdd56b25e04e0008cf0fe9af43a4ad8797e2a24c",
+    "installedBytes": 2146721943,
+    "reviewStatus": "owner_license_confirmed_file_validation_pending"
   },
   "workflows": [
     { "operation": "text_to_image", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/text-to-image.json", "sha256": "df50891be426d6c6e9e8427cb205393ca5580cb0a612fc67cf9c53c679a4e98b", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/text-to-image.mapping.json", "mappingSha256": "e42c3666372b08f17c2a0d16fcb2742b4f74d99c2b90ca87a8debb64edc982ea", "reviewStatus": "runtime_validation_required" },

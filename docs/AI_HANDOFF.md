@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot固定ComfyUI Runtime取得（2026-08-31）
+
+- ComfyUI `v0.34.0`公式NVIDIA portable `.7z`を容量・SHA-256付き固定Artifactとして既存Wizard/downloaderへ追加した。
+- 保存は選択rootの`runtime`内だけ。検証済みfileは再利用し、既存完成fileの不一致は上書きせず停止する。展開・実行は未実装。
+- AI Core 50/50、Desktop 190/190、build、a11y blocking violation 0、diff check成功。実download、生成、Production／Cloud／Provider／Job／credit操作なし。
+- 次は安全なarchive展開・Runtime構成検証を別PRで設計する。実機確認は12GB以上GPU端末が必要。
+
+---
+
 ## 0.0 Desktop Adult Pilot安全取得サービス（2026-08-31）
 
 - 固定3 modelだけを取得できるMain process downloaderを追加した。公式HTTPS host、redirect上限、保存先、空き容量、Range再開、容量、SHA、atomic確定をfail closedで検査する。

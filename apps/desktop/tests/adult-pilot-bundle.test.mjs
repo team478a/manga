@@ -21,6 +21,12 @@ test("canonical Adult pilot candidates are approved for internal use but remain 
   assert.equal(bundle.licenseReview.redistributionApproved, false);
   assert.equal(bundle.comfyui.version, "v0.34.0");
   assert.equal(bundle.comfyui.status, "pending");
+  assert.equal(
+    bundle.comfyui.sourceUrl,
+    "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.34.0/ComfyUI_windows_portable_nvidia.7z",
+  );
+  assert.equal(bundle.comfyui.installedBytes, 2_146_721_943);
+  assert.equal(bundle.comfyui.sha256, "ed57cc6b19ae3d83add1ecebfdd56b25e04e0008cf0fe9af43a4ad8797e2a24c");
   assert.deepEqual(
     bundle.models.map(({ role, status, version, sha256 }) => ({
       role,
