@@ -110,6 +110,13 @@ export type AdultPilotRuntimeState =
   | { status: "starting"; pid: number | null; available: boolean }
   | { status: "running"; pid: number | null; endpoint: "http://127.0.0.1:8188"; available: boolean }
   | { status: "failed"; message: string; available: boolean };
+export type AdultPilotRuntimeAcceptanceReport = {
+  status: "passed" | "failed";
+  comfyuiVersion: string | null;
+  gpuVramBytes: number | null;
+  modelsAvailable: boolean;
+  workflows: Array<{ operation: string; status: "passed" | "failed"; missingNodes: string[] }>;
+};
 export type AdultPilotDownloadProgress = {
   artifactId: "runtime" | "checkpoint" | "vae" | "controlnet";
   artifactIndex: number;
@@ -396,6 +403,7 @@ export type DesktopApi = {
       consent: { licenseTerms: true; localOnly: true; adultSafety: true },
     ) => Promise<AdultPilotRuntimeState>;
     stopAdultPilotRuntime: () => Promise<AdultPilotRuntimeState>;
+    inspectAdultPilotRuntime: () => Promise<AdultPilotRuntimeAcceptanceReport>;
     onAdultPilotProgress: (
       listener: (value: AdultPilotDownloadProgress) => void,
     ) => () => void;

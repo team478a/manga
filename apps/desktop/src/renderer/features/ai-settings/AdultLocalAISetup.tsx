@@ -23,6 +23,7 @@ export function AdultLocalAISetup({
   const [running, setRunning] = React.useState<"download" | "install" | "start" | "stop" | null>(null);
   const [downloadVerified, setDownloadVerified] = React.useState(false);
   const [runtimeState, setRuntimeState] = React.useState<AdultPilotRuntimeState>({ status: "stopped", available: false });
+  const [acceptancePassed, setAcceptancePassed] = React.useState<boolean | null>(null);
   const [message, setMessage] = React.useState("");
   React.useEffect(
     () => window.mangai.ai.onAdultPilotProgress(setProgress),
@@ -190,6 +191,23 @@ export function AdultLocalAISetup({
         >
           {t("settings.adultSetup.stopRuntime")}
         </button>
+        <button
+          className="secondary"
+          disabled={runtimeState.status !== "running" || Boolean(running)}
+          onClick={async () => {
+            setMessage(t("settings.adultSetup.acceptanceRunning"));
+            try {
+              const report = await window.mangai.ai.inspectAdultPilotRuntime();
+              setAcceptancePassed(report.status === "passed");
+              setMessage(report.status === "passed" ? t("settings.adultSetup.acceptancePassed") : t("settings.adultSetup.acceptanceFailed"));
+            } catch (cause) {
+              setAcceptancePassed(false);
+              setMessage(cause instanceof Error ? cause.message : String(cause));
+            }
+          }}
+        >
+          {t("settings.adultSetup.inspectRuntime")}
+        </button>
         {running === "download" && (
           <button
             className="danger"
@@ -207,6 +225,7 @@ export function AdultLocalAISetup({
         </span>
       </div>
       {root && <p className="adult-setup-path">{t("settings.adultSetup.destination", { value: root })}</p>}
+      {acceptancePassed !== null && <p role="status">{t(acceptancePassed ? "settings.adultSetup.acceptancePassed" : "settings.adultSetup.acceptanceFailed")}</p>}
       {progress && (
         <div className="adult-setup-progress" aria-live="polite">
           <progress value={progress.downloadedBytes} max={progress.totalBytes} />
