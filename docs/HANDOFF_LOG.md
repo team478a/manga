@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex（Desktop Adult Pilot model候補固定）
+
+- Base: `feature/manga-canvas-mvp` @ `f6e8645`（PR #403 merge）
+- ComfyUI `v0.34.0`、SDXL base、SDXL FP16 VAE、SDXL Canny ControlNetを初回12GB Pilot候補に限定し、公式revision、配布URL、LFS SHA-256、容量を正本manifestへ固定した。
+- Open RAIL++の利用制限、成人向け制作への適用、同梱／利用者取得方式は責任者確認待ち。statusは`pending`、strict gateは0/8固定・12GB pendingを維持する。
+- Desktop 186/186、lint、Hub/Desktop型検査、通常preflight、diff check成功。モデル・ComfyUI download、install、生成、Production、Cloud、Provider、Project、Job、credit操作0件。
+- 次: 責任者のlicense・配布方式確認後、custom nodeなし4方式workflowを作成してSHA-256を登録する。
+
+---
+
 ## 2026-08-31 Codex（Desktop Adult Pilot bundle preflight）
 
 - Base: `feature/manga-canvas-mvp` @ `72a3129`（PR #402 merge）

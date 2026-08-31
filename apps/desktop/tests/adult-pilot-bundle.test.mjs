@@ -14,6 +14,40 @@ const canonicalBundle = path.resolve(
 );
 const hash = (value) => value.repeat(64);
 
+test("canonical Adult pilot candidates are pinned but remain pending review", () => {
+  const bundle = JSON.parse(fs.readFileSync(canonicalBundle, "utf8"));
+  assert.equal(bundle.comfyui.version, "v0.34.0");
+  assert.equal(bundle.comfyui.status, "pending");
+  assert.deepEqual(
+    bundle.models.map(({ role, status, version, sha256 }) => ({
+      role,
+      status,
+      version,
+      sha256,
+    })),
+    [
+      {
+        role: "checkpoint",
+        status: "pending",
+        version: "462165984030d82259a11f4367a4eed129e94a7b",
+        sha256: "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b",
+      },
+      {
+        role: "vae",
+        status: "pending",
+        version: "207b116dae70ace3637169f1ddd2434b91b3a8cd",
+        sha256: "235745af8d86bf4a4c1b5b4f529868b37019a10f7c0b2e79ad0abca3a22bc6e1",
+      },
+      {
+        role: "controlnet",
+        status: "pending",
+        version: "eb115a19a10d14909256db740ed109532ab1483c",
+        sha256: "ea99040544a999f814fd854575a3aee069a005d026864c8d321b82576706a221",
+      },
+    ],
+  );
+});
+
 const run = (bundlePath, hardwarePath, strict = false) =>
   execFileSync(process.execPath, [script, ...(strict ? ["--strict"] : [])], {
     env: {

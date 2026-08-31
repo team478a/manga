@@ -1,5 +1,14 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult Pilot model候補固定
+
+- 状態: `CANDIDATES_PINNED / LICENSE_OWNER_CONFIRMATION_REQUIRED / DOWNLOAD_NOT_RUN`
+- 初回12GB Pilot候補をComfyUI `v0.34.0`、SDXL base、SDXL FP16 VAE、SDXL Canny ControlNetへ限定し、公式revision、配布URL、LFS SHA-256、容量をmanifestへ記録した。
+- Open RAIL++の利用制限継承、成人向け制作への適用、同梱／利用者取得方式は責任者確認待ち。全項目を`pending`のままとし、strict配布gateを緩和していない。
+- Desktop 186/186、lint、Hub/Desktop型検査、通常preflight、`git diff --check`成功。モデル・ComfyUI download、install、生成、Production、Cloud、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 2026-08-31 Desktop Adult Pilot bundle preflight
 
 - 状態: `IMPLEMENTED_LOCAL / FAIL_CLOSED_PENDING_ARTIFACTS / DISTRIBUTION_BLOCKED`

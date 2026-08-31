@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot model候補固定（2026-08-31）
+
+- 初回12GB Pilot候補をComfyUI `v0.34.0`、SDXL base、FP16 VAE、Canny ControlNetへ限定した。
+- 公式revision、配布URL、LFS SHA-256、容量をmanifestへ記録したが、license責任者確認と実file再計算前なのでstatusは全件`pending`を維持する。
+- Desktop 186/186、lint、全型検査、通常preflight、diff check成功。download、install、生成、Production、Cloud、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 0.0 Desktop Adult Pilot bundle preflight（2026-08-31）
 
 - ComfyUI、4方式workflow、checkpoint、VAE、ControlNetの固定一覧を`docs/desktop/DESKTOP_ADULT_PILOT_BUNDLE.json`へ追加した。
