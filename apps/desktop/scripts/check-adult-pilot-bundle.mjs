@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -22,6 +23,27 @@ const requiredOperations = [
 ];
 const requiredModelRoles = ["checkpoint", "vae", "controlnet"];
 const sha256Pattern = /^[0-9a-f]{64}$/;
+const allowedNodeTypes = new Set([
+  "CheckpointLoaderSimple",
+  "VAELoader",
+  "CLIPTextEncode",
+  "EmptyLatentImage",
+  "LoadImage",
+  "VAEEncodeTiled",
+  "VAEEncodeForInpaint",
+  "ImageToMask",
+  "ControlNetLoader",
+  "ControlNetApplyAdvanced",
+  "KSampler",
+  "VAEDecodeTiled",
+  "SaveImage",
+]);
+const requiredMappingFields = {
+  text_to_image: ["prompt", "negativePrompt", "width", "height", "seed"],
+  image_to_image: ["prompt", "negativePrompt", "seed", "sourceImage", "denoiseStrength"],
+  controlnet: ["prompt", "negativePrompt", "width", "height", "seed", "controlImage"],
+  inpainting: ["prompt", "negativePrompt", "seed", "sourceImage", "maskImage", "denoiseStrength"],
+};
 
 const fail = (message) => {
   console.error(`Desktop Adult pilot bundle invalid: ${message}`);
@@ -47,6 +69,16 @@ const fixedArtifact = (item, fields) =>
   sha256Pattern.test(item.sha256 ?? "") &&
   Number.isSafeInteger(item.installedBytes) &&
   item.installedBytes > 0;
+const sha256File = (file) =>
+  crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+const resolveBundleFile = (value, label) => {
+  if (typeof value !== "string" || !value.trim()) fail(`${label} path is missing`);
+  const resolved = path.resolve(root, value);
+  if (!resolved.startsWith(`${root}${path.sep}`)) fail(`${label} path escapes the repository`);
+  if (!fs.statSync(resolved, { throwIfNoEntry: false })?.isFile())
+    fail(`${label} file is missing`);
+  return resolved;
+};
 
 const bundle = readJson(bundlePath, "bundle manifest");
 if (
@@ -70,13 +102,36 @@ for (const operation of requiredOperations) {
   const workflow = bundle.workflows.find((item) => item?.operation === operation);
   if (!workflow || !["pending", "fixed"].includes(workflow.status))
     fail(`${operation} workflow is missing or has an invalid status`);
+  const workflowFile = resolveBundleFile(workflow.file, `${operation} workflow`),
+    mappingFile = resolveBundleFile(workflow.mappingFile, `${operation} mapping`);
+  if (sha256File(workflowFile) !== workflow.sha256)
+    fail(`${operation} workflow SHA-256 does not match`);
+  if (sha256File(mappingFile) !== workflow.mappingSha256)
+    fail(`${operation} mapping SHA-256 does not match`);
+  const graph = readJson(workflowFile, `${operation} workflow`),
+    mapping = readJson(mappingFile, `${operation} mapping`),
+    nodeTypes = new Set(Object.values(graph).map((node) => node?.class_type));
+  for (const nodeType of nodeTypes)
+    if (!allowedNodeTypes.has(nodeType)) fail(`${operation} uses non-core node ${nodeType}`);
+  if (![...Object.values(graph)].some((node) => node?.class_type === "VAEDecodeTiled"))
+    fail(`${operation} has no tiled VAE decode`);
+  for (const node of Object.values(graph))
+    if (node?.inputs?.batch_size !== undefined && node.inputs.batch_size !== 1)
+      fail(`${operation} batch size must be one`);
+  for (const [field, target] of Object.entries(mapping)) {
+    if (!graph[target?.nodeId]?.inputs || !(target.input in graph[target.nodeId].inputs))
+      fail(`${operation} mapping ${field} is invalid`);
+  }
+  for (const field of requiredMappingFields[operation])
+    if (!mapping[field]) fail(`${operation} mapping ${field} is required`);
   items.push({
     label: `workflow:${operation}`,
     fixed:
       workflow.status === "fixed" &&
       typeof workflow.version === "string" &&
       Boolean(workflow.version.trim()) &&
-      sha256Pattern.test(workflow.sha256 ?? ""),
+      sha256Pattern.test(workflow.sha256 ?? "") &&
+      sha256Pattern.test(workflow.mappingSha256 ?? ""),
   });
 }
 

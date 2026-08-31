@@ -1,0 +1,7 @@
+{
+  "prompt": { "nodeId": "3", "input": "text" },
+  "negativePrompt": { "nodeId": "4", "input": "text" },
+  "width": { "nodeId": "5", "input": "width" },
+  "height": { "nodeId": "5", "input": "height" },
+  "seed": { "nodeId": "6", "input": "seed" }
+}

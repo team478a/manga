@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 4方式workflow（2026-08-31）
+
+- SDXL候補向け4方式のComfyUI API workflow／mappingをcustom nodeなしで追加し、SHA-256をmanifestへ固定した。
+- preflightはpath、SHA、標準node、batch 1、tiled VAE、方式別mappingを検証する。実ComfyUI未検証なのでstatusは`pending`を維持する。
+- 集中3/3、Desktop 186/186、lint、全型検査、通常preflight、diff check成功。モデル取得、install、生成、Production、Cloud、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 0.0 Desktop Adult Pilot model候補固定（2026-08-31）
 
 - 初回12GB Pilot候補をComfyUI `v0.34.0`、SDXL base、FP16 VAE、Canny ControlNetへ限定した。

@@ -12,10 +12,10 @@
     "reviewStatus": "artifact_not_built"
   },
   "workflows": [
-    { "operation": "text_to_image", "status": "pending", "version": null, "sha256": null },
-    { "operation": "image_to_image", "status": "pending", "version": null, "sha256": null },
-    { "operation": "controlnet", "status": "pending", "version": null, "sha256": null },
-    { "operation": "inpainting", "status": "pending", "version": null, "sha256": null }
+    { "operation": "text_to_image", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/text-to-image.json", "sha256": "df50891be426d6c6e9e8427cb205393ca5580cb0a612fc67cf9c53c679a4e98b", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/text-to-image.mapping.json", "mappingSha256": "e42c3666372b08f17c2a0d16fcb2742b4f74d99c2b90ca87a8debb64edc982ea", "reviewStatus": "runtime_validation_required" },
+    { "operation": "image_to_image", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/image-to-image.json", "sha256": "f80103d4839057b2fc6d3dad83568611d66ccf35f7f52b56c7a69ce80e2c9642", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/image-to-image.mapping.json", "mappingSha256": "e6c12218005326b017d86b0aa0706bce14177bfa9abeff6bd2fc75a8145d4827", "reviewStatus": "runtime_validation_required" },
+    { "operation": "controlnet", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/controlnet.json", "sha256": "49024fb7d4ea92d4cca1546d52fa35bf7e59ee3cfb37abcc0a0a907bda303254", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/controlnet.mapping.json", "mappingSha256": "2af5e0520a62115fe26ffe5e74ee3dfc195395597fa865ef622b656b89c83d02", "reviewStatus": "runtime_validation_required" },
+    { "operation": "inpainting", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/inpainting.json", "sha256": "25f9aff136d25c837e17a3f1ccd71b8390599818a4d8626f0fa19983737ff9fd", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/inpainting.mapping.json", "mappingSha256": "a3de62909dc4435c0fd39b06950af2c54a249841c8723c201514a7d08f53d2ad", "reviewStatus": "runtime_validation_required" }
   ],
   "models": [
     {

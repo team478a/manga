@@ -1,0 +1,8 @@
+{
+  "prompt": { "nodeId": "3", "input": "text" },
+  "negativePrompt": { "nodeId": "4", "input": "text" },
+  "seed": { "nodeId": "9", "input": "seed" },
+  "sourceImage": { "nodeId": "5", "input": "image" },
+  "maskImage": { "nodeId": "6", "input": "image" },
+  "denoiseStrength": { "nodeId": "9", "input": "denoise" }
+}

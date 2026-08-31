@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex（Desktop Adult Pilot 4方式workflow）
+
+- Base: `feature/manga-canvas-mvp` @ `af70af3`（PR #404 merge）
+- SDXL候補向けText-to-Image、Image-to-Image、ControlNet、InpaintingのComfyUI API workflow／mappingをcustom nodeなし・batch 1・tiled VAEで追加し、SHA-256をmanifestへ固定した。
+- preflightへrepository内path、workflow／mapping SHA、標準node allowlist、方式別必須mapping検査を追加した。実ComfyUI未検証のためstatusは`pending`を維持する。
+- 集中3/3、Desktop 186/186、lint、Hub/Desktop型検査、通常preflight、diff check成功。モデル取得、install、生成、Production、Cloud、Provider、Project、Job、credit操作0件。
+- 次: license・配布方式確認後にComfyUIとモデルを用意し、12GB Windows実機で4方式を各1枚検証する。
+
+---
+
 ## 2026-08-31 Codex（Desktop Adult Pilot model候補固定）
 
 - Base: `feature/manga-canvas-mvp` @ `f6e8645`（PR #403 merge）

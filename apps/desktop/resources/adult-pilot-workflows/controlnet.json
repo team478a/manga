@@ -1,0 +1,13 @@
+{
+  "1": { "class_type": "CheckpointLoaderSimple", "inputs": { "ckpt_name": "sd_xl_base_1.0.safetensors" } },
+  "2": { "class_type": "VAELoader", "inputs": { "vae_name": "sdxl.vae.safetensors" } },
+  "3": { "class_type": "CLIPTextEncode", "inputs": { "text": "", "clip": ["1", 1] } },
+  "4": { "class_type": "CLIPTextEncode", "inputs": { "text": "", "clip": ["1", 1] } },
+  "5": { "class_type": "EmptyLatentImage", "inputs": { "width": 1024, "height": 1024, "batch_size": 1 } },
+  "6": { "class_type": "LoadImage", "inputs": { "image": "control.png" } },
+  "7": { "class_type": "ControlNetLoader", "inputs": { "control_net_name": "diffusion_pytorch_model.safetensors" } },
+  "8": { "class_type": "ControlNetApplyAdvanced", "inputs": { "strength": 1, "start_percent": 0, "end_percent": 1, "positive": ["3", 0], "negative": ["4", 0], "control_net": ["7", 0], "image": ["6", 0] } },
+  "9": { "class_type": "KSampler", "inputs": { "seed": 0, "steps": 25, "cfg": 7, "sampler_name": "euler", "scheduler": "normal", "denoise": 1, "model": ["1", 0], "positive": ["8", 0], "negative": ["8", 1], "latent_image": ["5", 0] } },
+  "10": { "class_type": "VAEDecodeTiled", "inputs": { "samples": ["9", 0], "vae": ["2", 0], "tile_size": 512 } },
+  "11": { "class_type": "SaveImage", "inputs": { "filename_prefix": "MANGAI_Pilot", "images": ["10", 0] } }
+}
