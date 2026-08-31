@@ -106,7 +106,7 @@ export type AISettingsHistoryItem = {
   createdAt: string;
 };
 export type AdultPilotDownloadProgress = {
-  artifactId: "checkpoint" | "vae" | "controlnet";
+  artifactId: "runtime" | "checkpoint" | "vae" | "controlnet";
   artifactIndex: number;
   artifactCount: number;
   downloadedBytes: number;
@@ -381,6 +381,10 @@ export type DesktopApi = {
       consent: { licenseTerms: true; localOnly: true; adultSafety: true },
     ) => Promise<{ status: "verified" | "canceled"; artifactCount: number }>;
     cancelAdultPilotDownload: () => Promise<boolean>;
+    installAdultPilotRuntime: (
+      root: string,
+      consent: { licenseTerms: true; localOnly: true; adultSafety: true },
+    ) => Promise<{ status: "installed"; runtimePath: string; entryCount: number }>;
     onAdultPilotProgress: (
       listener: (value: AdultPilotDownloadProgress) => void,
     ) => () => void;

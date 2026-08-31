@@ -38,6 +38,8 @@ test("Adult Pilot downloader accepts only the pinned GitHub runtime asset", asyn
   assert.deepEqual(fs.readFileSync(result.filePath), bytes);
   const reused = await downloader.download(root, "runtime");
   assert.equal(reused.resumedFrom, bytes.length);
+  const verified = await downloader.verifyExisting(root, "runtime");
+  assert.equal(verified.sha256, artifact.sha256);
 });
 
 test("Adult Pilot downloader refuses to overwrite an invalid completed artifact", async (t) => {

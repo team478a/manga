@@ -20,7 +20,8 @@ export function AdultLocalAISetup({
   });
   const [root, setRoot] = React.useState<string | null>(null);
   const [progress, setProgress] = React.useState<AdultPilotDownloadProgress | null>(null);
-  const [running, setRunning] = React.useState(false);
+  const [running, setRunning] = React.useState<"download" | "install" | null>(null);
+  const [downloadVerified, setDownloadVerified] = React.useState(false);
   const [message, setMessage] = React.useState("");
   React.useEffect(
     () => window.mangai.ai.onAdultPilotProgress(setProgress),
@@ -89,7 +90,7 @@ export function AdultLocalAISetup({
       <div className="inline">
         <button
           className="secondary"
-          disabled={!readiness.acquisitionReady || running}
+          disabled={!readiness.acquisitionReady || Boolean(running)}
           onClick={async () => {
             const selected = await window.mangai.ai.chooseAdultPilotDirectory();
             if (selected) setRoot(selected);
@@ -98,10 +99,10 @@ export function AdultLocalAISetup({
           {t("settings.adultSetup.chooseDirectory")}
         </button>
         <button
-          disabled={!readiness.acquisitionReady || !root || running}
+          disabled={!readiness.acquisitionReady || !root || Boolean(running)}
           onClick={async () => {
             if (!root) return;
-            setRunning(true);
+            setRunning("download");
             setMessage("");
             try {
               const result = await window.mangai.ai.downloadAdultPilot(root, {
@@ -114,18 +115,42 @@ export function AdultLocalAISetup({
                   ? t("settings.adultSetup.downloadVerified")
                   : t("settings.adultSetup.downloadCanceled"),
               );
+              setDownloadVerified(result.status === "verified");
             } catch (cause) {
               setMessage(cause instanceof Error ? cause.message : String(cause));
             } finally {
-              setRunning(false);
+              setRunning(null);
             }
           }}
         >
-          {running
+          {running === "download"
             ? t("settings.adultSetup.downloading")
             : t("settings.adultSetup.startDownload")}
         </button>
-        {running && (
+        <button
+          className="secondary"
+          disabled={!readiness.acquisitionReady || !root || !downloadVerified || Boolean(running)}
+          onClick={async () => {
+            if (!root) return;
+            setRunning("install");
+            setMessage("");
+            try {
+              await window.mangai.ai.installAdultPilotRuntime(root, {
+                licenseTerms: true,
+                localOnly: true,
+                adultSafety: true,
+              });
+              setMessage(t("settings.adultSetup.runtimeInstalled"));
+            } catch (cause) {
+              setMessage(cause instanceof Error ? cause.message : String(cause));
+            } finally {
+              setRunning(null);
+            }
+          }}
+        >
+          {t("settings.adultSetup.installRuntime")}
+        </button>
+        {running === "download" && (
           <button
             className="danger"
             onClick={() => void window.mangai.ai.cancelAdultPilotDownload()}

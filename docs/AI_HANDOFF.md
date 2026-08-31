@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot Runtime展開IPC（2026-09-01）
+
+- Wizardへ安全展開buttonを追加し、Mainで同意／12GB VRAM／選択root／既存archive SHA／7-Zip 25.01+を再検証してからadapterと隔離installerを実行するIPCを接続した。
+- install操作は不足archiveを自動取得しない。現PCはVRAM・7-Zip条件外のため実展開なし。
+- Desktop 198/198、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。Production／Provider／Job／credit操作なし。
+- 次は適格内部端末で公式archiveの実list／extractとRuntime構成を確認する。
+
+---
+
 ## 0.0 Desktop Adult Pilot 7-Zip展開adapter（2026-09-01）
 
 - 正式インストール先の7-Zip 25.01以上だけを検出し、technical listを安全展開契約へ渡せるadapterを実装した。PATH検索とshell文字列実行は行わない。

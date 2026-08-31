@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot Runtime展開IPC
+
+- 状態: `INSTALL_IPC_CONNECTED / CURRENT_HOST_FAIL_CLOSED / REAL_EXTRACTION_NOT_RUN`
+- Branch: `codex/desktop-adult-pilot-install-ipc-20260901`
+- Base: `80dd35e`（PR #412 merge commit）
+- 全4 Artifactの取得検証完了後だけ有効になる「Runtimeを安全に展開」導線をWizardへ追加し、Main IPCから7-Zip adapterと隔離staging installerを接続した。
+- Mainは同意、12GB+ VRAM、Main選択root、重複実行、取得済みRuntimeの容量／SHA-256、system 7-Zip 25.01以上、archive entry一覧を再検証する。install操作からnetwork取得は行わない。
+- Runtimeを含む進捗型と表示文言を4 Artifactへ同期した。展開中にdownload cancelを誤表示しない。
+- 現PCはVRAM要件と7-Zip要件の双方を満たさないため実取得／展開なし。
+- Desktop 198/198、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- Production／Cloud／Provider／Job／credit／生成操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末の実archiveでlist／extract／Runtime構成を確認する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 7-Zip展開adapter
 
 - 状態: `ADAPTER_IMPLEMENTED / SYSTEM_7ZIP_REQUIRED / CURRENT_HOST_BLOCKED`
