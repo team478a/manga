@@ -28,9 +28,42 @@ import {
   shouldRetryCloudGeneration,
   evaluateCloudGenerationQuota,
   phase5HardwareEvidenceSchema,
+  ADULT_PILOT_MODEL_BYTES,
+  evaluateAdultLocalAISetupReadiness,
 } from "../dist/index.js";
 
 const projectId = randomUUID();
+
+test("adult local AI setup blocks unsupported devices before acquisition", () => {
+  const readiness = evaluateAdultLocalAISetupReadiness(
+    {
+      hardware: { totalRamBytes: 16 * 1024 ** 3, gpuName: "Intel Iris Xe", dedicatedVramMb: 2048 },
+      recommendedProfile: "vram_6gb",
+      selection: "auto",
+      effectiveProfile: "vram_6gb",
+      limits: runtimeLimits("vram_6gb"),
+      detectedAt: new Date().toISOString(),
+    },
+    { licenseTerms: true, localOnly: true, adultSafety: true },
+  );
+  assert.equal(readiness.deviceEligible, false);
+  assert.equal(readiness.acquisitionReady, false);
+  assert.equal(readiness.reason, "vram_below_pilot");
+  assert.equal(ADULT_PILOT_MODEL_BYTES, 12_276_887_360);
+});
+
+test("adult local AI setup requires every consent on a 12GB device", () => {
+  const runtime = {
+    hardware: { totalRamBytes: 32 * 1024 ** 3, gpuName: "Pilot GPU", dedicatedVramMb: 12 * 1024 },
+    recommendedProfile: "vram_12gb",
+    selection: "auto",
+    effectiveProfile: "vram_12gb",
+    limits: runtimeLimits("vram_12gb"),
+    detectedAt: new Date().toISOString(),
+  };
+  assert.equal(evaluateAdultLocalAISetupReadiness(runtime, { licenseTerms: true, localOnly: true, adultSafety: false }).reason, "consent_required");
+  assert.equal(evaluateAdultLocalAISetupReadiness(runtime, { licenseTerms: true, localOnly: true, adultSafety: true }).acquisitionReady, true);
+});
 
 test("adult reference-image assessment is internally consistent", () => {
   const reviewedAt = "2026-07-24T00:00:00.000Z";

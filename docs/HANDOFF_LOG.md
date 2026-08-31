@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex: Desktop Adult ローカルAIセットアップWizard基盤
+
+- Branch: `codex/desktop-adult-local-ai-setup-wizard-20260831`
+- Base: `f0a6812`（PR #406 merge commit）
+- AI設定へ4段階のローカルAIセットアップを追加した。共通domainは12GB VRAMとlicense／local-only／成人安全条件の3確認を取得準備条件にする。
+- 低VRAMまたはGPU不明端末は取得前に停止する。自動取得は未接続で、次PRのMain process downloaderまでbuttonを明示的に無効にした。
+- AI Core 50/50、Desktop型検査、lint、diff check成功。Production、Cloud、Provider、Project、Job、credit、artifact取得・生成操作0件。
+
+---
+
 ## 2026-08-31 Codex: Desktop Adult Pilot license・実行端末判定
 
 - Branch: `codex/desktop-adult-pilot-license-host-readiness-20260831`

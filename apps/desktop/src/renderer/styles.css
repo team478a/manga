@@ -2641,6 +2641,39 @@ label {
   overflow-wrap: anywhere;
   margin-top: 5px;
 }
+.adult-setup-steps {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  list-style: none;
+  counter-reset: adult-setup;
+}
+.adult-setup-steps > li {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: 4px 10px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  counter-increment: adult-setup;
+}
+.adult-setup-steps > li::before {
+  content: counter(adult-setup);
+  display: grid;
+  grid-row: 1 / span 2;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-panel-elevated);
+  color: var(--text-muted);
+}
+.adult-setup-steps > li.complete::before { background: var(--success); color: var(--text-primary); }
+.adult-setup-steps > li.blocked { border-color: var(--danger); }
+.adult-setup-steps > li.locked { opacity: 0.65; }
+.adult-setup-steps p { margin: 0; color: var(--text-muted); }
+.adult-setup-consents { display: grid; gap: 8px; }
+.adult-setup-consents .check { align-items: flex-start; }
 
 /*
  * Phase D2 (MANGAI Creative Studio) common components.
