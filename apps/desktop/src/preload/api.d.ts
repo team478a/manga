@@ -105,6 +105,11 @@ export type AISettingsHistoryItem = {
   };
   createdAt: string;
 };
+export type AdultPilotRuntimeState =
+  | { status: "stopped"; available: boolean }
+  | { status: "starting"; pid: number | null; available: boolean }
+  | { status: "running"; pid: number | null; endpoint: "http://127.0.0.1:8188"; available: boolean }
+  | { status: "failed"; message: string; available: boolean };
 export type AdultPilotDownloadProgress = {
   artifactId: "runtime" | "checkpoint" | "vae" | "controlnet";
   artifactIndex: number;
@@ -385,6 +390,12 @@ export type DesktopApi = {
       root: string,
       consent: { licenseTerms: true; localOnly: true; adultSafety: true },
     ) => Promise<{ status: "installed"; runtimePath: string; entryCount: number }>;
+    adultPilotRuntimeStatus: () => Promise<AdultPilotRuntimeState>;
+    startAdultPilotRuntime: (
+      root: string,
+      consent: { licenseTerms: true; localOnly: true; adultSafety: true },
+    ) => Promise<AdultPilotRuntimeState>;
+    stopAdultPilotRuntime: () => Promise<AdultPilotRuntimeState>;
     onAdultPilotProgress: (
       listener: (value: AdultPilotDownloadProgress) => void,
     ) => () => void;

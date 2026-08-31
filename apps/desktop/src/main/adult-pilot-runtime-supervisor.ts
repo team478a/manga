@@ -57,6 +57,8 @@ export class AdultPilotRuntimeSupervisor {
   status() { return this.state; }
   async start(runtimeRoot: string): Promise<AdultPilotRuntimeState> {
     if (this.child || this.state.status === "starting" || this.state.status === "running") throw new Error("Adult Pilot Runtimeは既に起動処理中です。");
+    if (await this.checkHealth())
+      throw new Error("127.0.0.1:8188は別のComfyUIまたはサービスが使用しています。");
     const launch = resolveAdultPilotRuntimeLaunch(runtimeRoot), child = this.spawnProcess(launch.executable, launch.args, { cwd: launch.cwd, windowsHide: true, shell: false, stdio: "ignore" });
     this.child = child;
     this.state = { status: "starting", pid: child.pid ?? null };

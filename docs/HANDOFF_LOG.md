@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot Runtime起動IPC／Wizard
+
+- Branch: `codex/desktop-adult-pilot-runtime-ipc-20260901`
+- Base: `8b0d953`（PR #415 merge commit）
+- Supervisorの状態／起動／停止IPCとpreload型、Wizard button／日英文言、app終了時停止を追加した。
+- Mainは端末・同意・選択root・3モデルSHA・Runtime構成を再検証し、既存8188サービスへの誤接続を拒否する。
+- 集中8/8、Desktop 206/206、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 実Runtime起動、生成、Production、Cloud、Provider、Project、Job、Asset、credit操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot Runtime起動Supervisor基盤
 
 - Branch: `codex/desktop-adult-pilot-runtime-supervisor-20260901`
