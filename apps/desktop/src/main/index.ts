@@ -86,7 +86,13 @@ import {
   safeAssetLibraryRequestSchema,
   workflowMappingSchema,
   workflowUpdateSchema,
+  adultLocalAISetupConsentSchema,
+  evaluateAdultLocalAISetupReadiness,
 } from "@mangai/ai-core";
+import {
+  ADULT_PILOT_ARTIFACTS,
+  AdultPilotDownloader,
+} from "./adult-pilot-downloader.js";
 import {
   balloonInputSchema,
   canvasBatchInputSchema,
@@ -121,6 +127,8 @@ let runtimeProfile: RuntimeProfileService;
 let providerCredentials: ProviderCredentialStore;
 let dezgoFeatures: DezgoFeatureFlags;
 let databaseRecovery: DatabaseRecoveryReport | null = null;
+let adultPilotDownloadAbort: AbortController | null = null;
+let adultPilotSelectedRoot: string | null = null;
 type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
   checkedAt?: string;
@@ -762,6 +770,82 @@ function register() {
     runtimeProfile: runtimeProfile.getState(),
     dezgo: dezgoFeatures,
   }));
+  handle("ai:adult-pilot:choose-directory", async () => {
+    const result = await dialog.showOpenDialog({
+      title: "成人向けローカルAIの保存先を選択",
+      defaultPath: desktopPaths().root,
+      properties: ["openDirectory", "createDirectory"],
+    });
+    adultPilotSelectedRoot = result.canceled
+      ? null
+      : path.resolve(result.filePaths[0]);
+    return adultPilotSelectedRoot;
+  });
+  handle("ai:adult-pilot:download", async (v, event) => {
+    if (adultPilotDownloadAbort)
+      throw new Error("成人向けローカルAIの取得はすでに実行中です。");
+    const consent = adultLocalAISetupConsentSchema.parse(v?.consent);
+    const readiness = evaluateAdultLocalAISetupReadiness(
+      runtimeProfile.getState(),
+      consent,
+    );
+    if (!readiness.acquisitionReady)
+      throw new Error("この端末は成人向けPilotの取得条件を満たしていません。");
+    if (
+      typeof v?.root !== "string" ||
+      !path.isAbsolute(v.root) ||
+      path.resolve(v.root) !== adultPilotSelectedRoot
+    )
+      throw new Error("成人向けローカルAIの保存先を選択してください。");
+    adultPilotDownloadAbort = new AbortController();
+    const downloader = new AdultPilotDownloader();
+    try {
+      for (let index = 0; index < ADULT_PILOT_ARTIFACTS.length; index += 1) {
+        const artifact = ADULT_PILOT_ARTIFACTS[index];
+        event.sender.send("ai:adult-pilot:progress", {
+          artifactId: artifact.id,
+          artifactIndex: index + 1,
+          artifactCount: ADULT_PILOT_ARTIFACTS.length,
+          downloadedBytes: 0,
+          totalBytes: artifact.bytes,
+          status: "downloading",
+        });
+        await downloader.download(
+          v.root,
+          artifact.id,
+          adultPilotDownloadAbort.signal,
+          (downloadedBytes, totalBytes) =>
+            event.sender.send("ai:adult-pilot:progress", {
+              artifactId: artifact.id,
+              artifactIndex: index + 1,
+              artifactCount: ADULT_PILOT_ARTIFACTS.length,
+              downloadedBytes,
+              totalBytes,
+              status: "downloading",
+            }),
+        );
+        event.sender.send("ai:adult-pilot:progress", {
+          artifactId: artifact.id,
+          artifactIndex: index + 1,
+          artifactCount: ADULT_PILOT_ARTIFACTS.length,
+          downloadedBytes: artifact.bytes,
+          totalBytes: artifact.bytes,
+          status: "verified",
+        });
+      }
+      return { status: "verified", artifactCount: ADULT_PILOT_ARTIFACTS.length };
+    } catch (cause) {
+      if (adultPilotDownloadAbort.signal.aborted) return { status: "canceled", artifactCount: 0 };
+      throw cause;
+    } finally {
+      adultPilotDownloadAbort = null;
+    }
+  });
+  handle("ai:adult-pilot:cancel", () => {
+    const running = Boolean(adultPilotDownloadAbort);
+    adultPilotDownloadAbort?.abort();
+    return running;
+  });
   handle("ai:phase5:hardware-evidence:export", async (v) => {
     const projectId = projectIdSchema.parse(v).id;
     const evidence = store.createPhase5HardwareEvidence(

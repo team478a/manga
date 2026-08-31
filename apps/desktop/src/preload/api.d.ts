@@ -105,6 +105,14 @@ export type AISettingsHistoryItem = {
   };
   createdAt: string;
 };
+export type AdultPilotDownloadProgress = {
+  artifactId: "checkpoint" | "vae" | "controlnet";
+  artifactIndex: number;
+  artifactCount: number;
+  downloadedBytes: number;
+  totalBytes: number;
+  status: "downloading" | "verified";
+};
 export type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
   checkedAt?: string;
@@ -367,6 +375,15 @@ export type DesktopApi = {
         dezgoBatchGenerationEnabled: false;
       };
     }>;
+    chooseAdultPilotDirectory: () => Promise<string | null>;
+    downloadAdultPilot: (
+      root: string,
+      consent: { licenseTerms: true; localOnly: true; adultSafety: true },
+    ) => Promise<{ status: "verified" | "canceled"; artifactCount: number }>;
+    cancelAdultPilotDownload: () => Promise<boolean>;
+    onAdultPilotProgress: (
+      listener: (value: AdultPilotDownloadProgress) => void,
+    ) => () => void;
     exportPhase5HardwareEvidence: (
       projectId: string,
     ) => Promise<{

@@ -5,6 +5,7 @@ import {
   type RuntimeProfileState,
 } from "@mangai/ai-core";
 import { useI18n } from "../../i18n";
+import type { AdultPilotDownloadProgress } from "../../../preload/api";
 
 export function AdultLocalAISetup({
   runtimeProfile,
@@ -17,6 +18,14 @@ export function AdultLocalAISetup({
     localOnly: false,
     adultSafety: false,
   });
+  const [root, setRoot] = React.useState<string | null>(null);
+  const [progress, setProgress] = React.useState<AdultPilotDownloadProgress | null>(null);
+  const [running, setRunning] = React.useState(false);
+  const [message, setMessage] = React.useState("");
+  React.useEffect(
+    () => window.mangai.ai.onAdultPilotProgress(setProgress),
+    [],
+  );
   const readiness = evaluateAdultLocalAISetupReadiness(runtimeProfile, consent);
   const update = (key: keyof typeof consent, value: boolean) =>
     setConsent((current) => ({ ...current, [key]: value }));
@@ -78,15 +87,73 @@ export function AdultLocalAISetup({
         </li>
       </ol>
       <div className="inline">
-        <button disabled>{t("settings.adultSetup.downloadComing")}</button>
+        <button
+          className="secondary"
+          disabled={!readiness.acquisitionReady || running}
+          onClick={async () => {
+            const selected = await window.mangai.ai.chooseAdultPilotDirectory();
+            if (selected) setRoot(selected);
+          }}
+        >
+          {t("settings.adultSetup.chooseDirectory")}
+        </button>
+        <button
+          disabled={!readiness.acquisitionReady || !root || running}
+          onClick={async () => {
+            if (!root) return;
+            setRunning(true);
+            setMessage("");
+            try {
+              const result = await window.mangai.ai.downloadAdultPilot(root, {
+                licenseTerms: true,
+                localOnly: true,
+                adultSafety: true,
+              });
+              setMessage(
+                result.status === "verified"
+                  ? t("settings.adultSetup.downloadVerified")
+                  : t("settings.adultSetup.downloadCanceled"),
+              );
+            } catch (cause) {
+              setMessage(cause instanceof Error ? cause.message : String(cause));
+            } finally {
+              setRunning(false);
+            }
+          }}
+        >
+          {running
+            ? t("settings.adultSetup.downloading")
+            : t("settings.adultSetup.startDownload")}
+        </button>
+        {running && (
+          <button
+            className="danger"
+            onClick={() => void window.mangai.ai.cancelAdultPilotDownload()}
+          >
+            {t("settings.adultSetup.cancelDownload")}
+          </button>
+        )}
         <span role="status" aria-live="polite">
-          {t(reasonKey[readiness.reason], {
-            value: readiness.detectedVramMb === null
-              ? t("settings.runtime.unknown")
-              : `${(readiness.detectedVramMb / 1024).toFixed(1)}GB`,
-          })}
+          {message || t(reasonKey[readiness.reason], {
+              value: readiness.detectedVramMb === null
+                ? t("settings.runtime.unknown")
+                : `${(readiness.detectedVramMb / 1024).toFixed(1)}GB`,
+            })}
         </span>
       </div>
+      {root && <p className="adult-setup-path">{t("settings.adultSetup.destination", { value: root })}</p>}
+      {progress && (
+        <div className="adult-setup-progress" aria-live="polite">
+          <progress value={progress.downloadedBytes} max={progress.totalBytes} />
+          <span>
+            {t("settings.adultSetup.progress", {
+              current: progress.artifactIndex,
+              total: progress.artifactCount,
+              percent: Math.min(100, Math.round((progress.downloadedBytes / progress.totalBytes) * 100)),
+            })}
+          </span>
+        </div>
+      )}
       <small>{t("settings.adultSetup.noCloud")}</small>
     </section>
   );

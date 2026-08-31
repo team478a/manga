@@ -2957,3 +2957,10 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - Branch／親Project refの形式と、`PGHOST`／`PGUSER`の隔離Branch ref一致を外部E2E READY条件へ追加した。
 - refだけ隔離Branchへ見せかけ、接続先が親mainのままになる設定を接続前に拒否する。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+# 2026-08-31 Adult Pilot download IPC handoff
+
+- `codex/desktop-adult-pilot-download-ipc-20260831`はAdult Local AI Setup Wizardを固定Artifact downloaderへIPC接続した。
+- Main processが同意、12GB+ VRAM、Main選択保存先を再検証し、二重実行を拒否する。Rendererは進捗表示、キャンセル、再開導線だけを提供する。
+- 現PCは要件未達のため実ダウンロード・生成なし。Production／Cloud／Provider／Job／credit変更なし。
+- AI Core 50/50、Desktop 188/188、build、a11y blocking violation 0、diff check成功。
+- 次担当はPRのCI／Vercel完了後に停止する。実機E2Eは12GB以上のGPU端末と明示承認が揃ってから行う。

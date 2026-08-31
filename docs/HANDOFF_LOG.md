@@ -6156,3 +6156,12 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production候補の実採用は責任者の対象・回数を含む明示承認まで行わない。
 
 ---
+# 2026-08-31 Codex: Desktop成人向けPilot安全ダウンロードIPC接続
+
+- Branch: `codex/desktop-adult-pilot-download-ipc-20260831`
+- Base: `c9d3193`（PR #408 merge commit）
+- Wizardから固定3 Artifact downloaderを呼び出すIPC、Main側保存先選択、進捗通知、キャンセル、`.partial`再開を実装した。
+- Mainで同意3項目、12GB+ VRAM、選択済み保存先を再検証し、重複実行とRenderer改変による迂回を拒否する。
+- 現PCはIntel Iris Xe／表示VRAM約2GBのため実行不可を維持。実ダウンロード、ComfyUI、生成、Production、Cloud、Provider、Job、Asset、credit操作0件。
+- AI Core 50/50、Desktop 188/188、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。12GB以上GPU端末でのE2Eとruntime導入は別タスク。

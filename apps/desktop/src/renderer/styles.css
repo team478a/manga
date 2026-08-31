@@ -2674,6 +2674,9 @@ label {
 .adult-setup-steps p { margin: 0; color: var(--text-muted); }
 .adult-setup-consents { display: grid; gap: 8px; }
 .adult-setup-consents .check { align-items: flex-start; }
+.adult-setup-path { overflow-wrap: anywhere; }
+.adult-setup-progress { display: grid; gap: 6px; }
+.adult-setup-progress progress { width: 100%; }
 
 /*
  * Phase D2 (MANGAI Creative Studio) common components.
