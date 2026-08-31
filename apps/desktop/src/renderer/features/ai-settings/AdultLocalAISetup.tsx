@@ -5,7 +5,7 @@ import {
   type RuntimeProfileState,
 } from "@mangai/ai-core";
 import { useI18n } from "../../i18n";
-import type { AdultPilotDownloadProgress } from "../../../preload/api";
+import type { AdultPilotDownloadProgress, AdultPilotRuntimeState } from "../../../preload/api";
 
 export function AdultLocalAISetup({
   runtimeProfile,
@@ -20,8 +20,9 @@ export function AdultLocalAISetup({
   });
   const [root, setRoot] = React.useState<string | null>(null);
   const [progress, setProgress] = React.useState<AdultPilotDownloadProgress | null>(null);
-  const [running, setRunning] = React.useState<"download" | "install" | null>(null);
+  const [running, setRunning] = React.useState<"download" | "install" | "start" | "stop" | null>(null);
   const [downloadVerified, setDownloadVerified] = React.useState(false);
+  const [runtimeState, setRuntimeState] = React.useState<AdultPilotRuntimeState>({ status: "stopped", available: false });
   const [message, setMessage] = React.useState("");
   React.useEffect(
     () => window.mangai.ai.onAdultPilotProgress(setProgress),
@@ -93,7 +94,10 @@ export function AdultLocalAISetup({
           disabled={!readiness.acquisitionReady || Boolean(running)}
           onClick={async () => {
             const selected = await window.mangai.ai.chooseAdultPilotDirectory();
-            if (selected) setRoot(selected);
+            if (selected) {
+              setRoot(selected);
+              setRuntimeState(await window.mangai.ai.adultPilotRuntimeStatus());
+            }
           }}
         >
           {t("settings.adultSetup.chooseDirectory")}
@@ -140,6 +144,7 @@ export function AdultLocalAISetup({
                 localOnly: true,
                 adultSafety: true,
               });
+              setRuntimeState(await window.mangai.ai.adultPilotRuntimeStatus());
               setMessage(t("settings.adultSetup.runtimeInstalled"));
             } catch (cause) {
               setMessage(cause instanceof Error ? cause.message : String(cause));
@@ -149,6 +154,41 @@ export function AdultLocalAISetup({
           }}
         >
           {t("settings.adultSetup.installRuntime")}
+        </button>
+        <button
+          disabled={!readiness.acquisitionReady || !root || !runtimeState.available || runtimeState.status === "running" || runtimeState.status === "starting" || Boolean(running)}
+          onClick={async () => {
+            if (!root) return;
+            setRunning("start");
+            setMessage("");
+            try {
+              const state = await window.mangai.ai.startAdultPilotRuntime(root, { licenseTerms: true, localOnly: true, adultSafety: true });
+              setRuntimeState({ ...state, available: true });
+              setMessage(state.status === "running" ? t("settings.adultSetup.runtimeRunning") : state.status === "failed" ? state.message : t("settings.adultSetup.runtimeStarting"));
+            } catch (cause) {
+              setMessage(cause instanceof Error ? cause.message : String(cause));
+            } finally {
+              setRunning(null);
+            }
+          }}
+        >
+          {running === "start" ? t("settings.adultSetup.runtimeStarting") : t("settings.adultSetup.startRuntime")}
+        </button>
+        <button
+          className="secondary"
+          disabled={(runtimeState.status !== "running" && runtimeState.status !== "starting") || Boolean(running)}
+          onClick={async () => {
+            setRunning("stop");
+            try {
+              const state = await window.mangai.ai.stopAdultPilotRuntime();
+              setRuntimeState({ ...state, available: runtimeState.available });
+              setMessage(t("settings.adultSetup.runtimeStopped"));
+            } finally {
+              setRunning(null);
+            }
+          }}
+        >
+          {t("settings.adultSetup.stopRuntime")}
         </button>
         {running === "download" && (
           <button

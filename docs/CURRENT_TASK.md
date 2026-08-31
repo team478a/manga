@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot Runtime起動IPC／Wizard
+
+- 状態: `RUNTIME_CONTROLS_CONNECTED / MOCK_VALIDATED / REAL_RUNTIME_NOT_RUN`
+- Branch: `codex/desktop-adult-pilot-runtime-ipc-20260901`
+- Base: `8b0d953`（PR #415 merge commit）
+- Runtimeの状態確認、起動、停止をMain IPC／preload／設定Wizardへ接続し、日英表示を追加した。アプリ終了時もSupervisor管理processを停止する。
+- 起動時にMain側で12GB+ VRAM、3同意、Mainで選択したroot、checkpoint／VAE／ControlNetの容量・SHA-256、Runtime構成、MANGAI model path設定を再検証する。
+- Supervisorは起動前に`127.0.0.1:8188/system_stats`を確認し、既存サービスが応答する場合は誤接続を避けて起動を拒否する。
+- 集中8/8、Desktop 206/206、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- 現PCは12GB NVIDIA GPU／7-Zip条件外のため実Runtime起動／生成なし。Production／Cloud／Provider／Job／credit操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。実Runtime受入れは適格内部端末で行う。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot Runtime起動Supervisor基盤
 
 - 状態: `SUPERVISOR_IMPLEMENTED / IPC_NOT_CONNECTED / REAL_RUNTIME_NOT_RUN`

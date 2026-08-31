@@ -93,9 +93,10 @@ import {
   ADULT_PILOT_ARTIFACTS,
   AdultPilotDownloader,
 } from "./adult-pilot-downloader.js";
-import { AdultPilotRuntimeInstaller } from "./adult-pilot-runtime-installer.js";
+import { AdultPilotRuntimeInstaller, ADULT_PILOT_RUNTIME_DIRECTORY } from "./adult-pilot-runtime-installer.js";
 import { AdultPilot7ZipAdapter, findSupported7Zip } from "./adult-pilot-7zip.js";
 import { configureAdultPilotRuntime } from "./adult-pilot-runtime-config.js";
+import { AdultPilotRuntimeSupervisor, resolveAdultPilotRuntimeLaunch } from "./adult-pilot-runtime-supervisor.js";
 import {
   balloonInputSchema,
   canvasBatchInputSchema,
@@ -133,6 +134,19 @@ let databaseRecovery: DatabaseRecoveryReport | null = null;
 let adultPilotDownloadAbort: AbortController | null = null;
 let adultPilotSelectedRoot: string | null = null;
 let adultPilotInstallRunning = false;
+const adultPilotRuntimeSupervisor = new AdultPilotRuntimeSupervisor();
+const adultPilotRuntimeStatus = () => {
+  let available = false;
+  if (adultPilotSelectedRoot) {
+    try {
+      resolveAdultPilotRuntimeLaunch(path.join(adultPilotSelectedRoot, "runtime", ADULT_PILOT_RUNTIME_DIRECTORY));
+      available = true;
+    } catch {
+      available = false;
+    }
+  }
+  return { ...adultPilotRuntimeSupervisor.status(), available };
+};
 type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
   checkedAt?: string;
@@ -888,6 +902,29 @@ function register() {
     } finally {
       adultPilotInstallRunning = false;
     }
+  });
+  handle("ai:adult-pilot:runtime-status", adultPilotRuntimeStatus);
+  handle("ai:adult-pilot:start-runtime", async (v) => {
+    if (adultPilotDownloadAbort || adultPilotInstallRunning)
+      throw new Error("成人向けローカルAIの取得または展開中はRuntimeを起動できません。");
+    const consent = adultLocalAISetupConsentSchema.parse(v?.consent),
+      readiness = evaluateAdultLocalAISetupReadiness(runtimeProfile.getState(), consent);
+    if (!readiness.acquisitionReady)
+      throw new Error("この端末は成人向けPilotの起動条件を満たしていません。");
+    if (typeof v?.root !== "string" || path.resolve(v.root) !== adultPilotSelectedRoot)
+      throw new Error("成人向けローカルAIの保存先を選択してください。");
+    const downloader = new AdultPilotDownloader();
+    await Promise.all([
+      downloader.verifyExisting(v.root, "checkpoint"),
+      downloader.verifyExisting(v.root, "vae"),
+      downloader.verifyExisting(v.root, "controlnet"),
+    ]);
+    const state = await adultPilotRuntimeSupervisor.start(path.join(v.root, "runtime", ADULT_PILOT_RUNTIME_DIRECTORY));
+    return { ...state, available: true };
+  });
+  handle("ai:adult-pilot:stop-runtime", () => {
+    adultPilotRuntimeSupervisor.stop();
+    return adultPilotRuntimeStatus();
   });
   handle("ai:phase5:hardware-evidence:export", async (v) => {
     const projectId = projectIdSchema.parse(v).id;
@@ -2431,6 +2468,7 @@ app.on("window-all-closed", () => {
 });
 app.on("before-quit", () => {
   diagnostics?.log("info", "app_before_quit");
+  adultPilotRuntimeSupervisor.stop();
   if (autoBackupTimer) clearInterval(autoBackupTimer);
   store?.close();
 });

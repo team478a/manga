@@ -11,7 +11,7 @@ export type AdultPilotRuntimeInstallResult = {
   entryCount: number;
 };
 
-const expectedRoot = "ComfyUI_windows_portable";
+export const ADULT_PILOT_RUNTIME_DIRECTORY = "ComfyUI_windows_portable";
 const maximumEntries = 200_000;
 
 const normalizeEntry = (value: string) => value.replaceAll("\\", "/").replace(/\/$/, "");
@@ -32,7 +32,7 @@ export const validateAdultPilotArchiveEntries = (
       normalized.split("/").some((part) => !part || part === "." || part === "..")
     )
       throw new Error("ComfyUI archiveに保存先外を参照するpathが含まれています。");
-    if (normalized.split("/")[0] !== expectedRoot)
+    if (normalized.split("/")[0] !== ADULT_PILOT_RUNTIME_DIRECTORY)
       throw new Error("ComfyUI archiveのroot directoryが固定値と一致しません。");
     if (entry.type !== "file" && entry.type !== "directory")
       throw new Error("ComfyUI archiveにlinkまたは未対応entryが含まれています。");
@@ -79,7 +79,7 @@ export class AdultPilotRuntimeInstaller {
     const realRuntimeRoot = fs.realpathSync(runtimeRoot);
     if (!realRuntimeRoot.startsWith(`${realRoot}${path.sep}`))
       throw new Error("Runtime保存先がローカルAI領域の外を参照しています。");
-    const destination = path.join(realRuntimeRoot, expectedRoot);
+    const destination = path.join(realRuntimeRoot, ADULT_PILOT_RUNTIME_DIRECTORY);
     if (fs.existsSync(destination))
       throw new Error("既存のComfyUI Runtimeは自動上書きしません。");
     const staging = path.join(realRuntimeRoot, ".installing");
@@ -88,7 +88,7 @@ export class AdultPilotRuntimeInstaller {
     fs.mkdirSync(staging, { mode: 0o700 });
     try {
       await extract(staging);
-      const extractedRoot = path.join(staging, expectedRoot);
+      const extractedRoot = path.join(staging, ADULT_PILOT_RUNTIME_DIRECTORY);
       if (!fs.statSync(extractedRoot, { throwIfNoEntry: false })?.isDirectory())
         throw new Error("展開後のComfyUI root directoryを確認できません。");
       if (fs.readdirSync(staging).length !== 1)

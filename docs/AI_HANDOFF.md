@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot Runtime起動IPC／Wizard（2026-09-01）
+
+- Supervisorの状態確認／起動／停止をMain IPC、preload、設定Wizardへ接続し、日英表示とapp終了時停止を追加した。
+- Mainは起動ごとに端末、同意、選択root、3モデル容量／SHA、Runtime構成を再検証する。8188番に既存サービスがいる場合は起動しない。
+- 集中8/8、Desktop 206/206、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。実起動／生成、Production／Cloud／Provider／Job／credit操作なし。
+- 次は全検証とDraft PR後、適格内部端末で実Runtimeを受け入れる。
+
+---
+
 ## 0.0 Desktop Adult Pilot Runtime起動Supervisor基盤（2026-09-01）
 
 - embedded Pythonをshellなしで直接起動し、loopback `127.0.0.1:8188`だけへbindするSupervisor基盤を追加した。
