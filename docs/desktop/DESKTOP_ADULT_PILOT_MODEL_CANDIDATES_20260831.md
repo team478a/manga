@@ -4,9 +4,28 @@
 
 ## 判定
 
-`CANDIDATES_PINNED / LICENSE_OWNER_CONFIRMATION_REQUIRED / DOWNLOAD_NOT_RUN`
+`LICENSE_OWNER_CONFIRMED_FOR_INTERNAL_PILOT / USER_DOWNLOAD_SELECTED / RUNTIME_BLOCKED_ON_CURRENT_HOST`
 
-初回12GB Pilotの技術候補をSDXL系へ限定した。これは配布・利用承認ではない。Open RAIL++の利用制限継承、成人向け制作への適用、モデル同梱・利用者download方式を責任者が確認するまで、manifestのstatusは`pending`を維持する。
+初回12GB Pilotの技術候補をSDXL系へ限定した。責任者は2026-08-31に、Open RAIL++の利用制限をMANGAIの禁止入力へ継承すること、内部Pilotでのローカル利用、公式配布元からの取得を承認した。再配布・同梱は承認していない。実file検証と12GB実機Runtime検証が未完了のため、artifactのstatusは`pending`を維持する。
+
+## 配布判断
+
+- ComfyUI v0.34.0はGPL-3.0のため、初回PilotではMANGAI installerへ同梱しない。
+- SDXL baseとControlNetはOpen RAIL++のAttachment Aを利用者条件へ継承する。
+- VAEは公式model cardのMIT表示を根拠とし、取得元・revision・license表示を保持する。
+- ComfyUIとmodelは固定した公式URLから利用者が取得し、MANGAI preflightがversion、容量、SHA-256を検証する。
+- この判断は内部Pilot限定であり、一般配布、モデル再配布、Cloud利用、外部Provider利用を承認しない。
+
+## 現在の実行端末
+
+- OS: Windows 11 Home
+- GPU: Intel Iris Xe Graphics（Windows表示上のAdapter RAM約2GB）
+- NVIDIA Runtime: `nvidia-smi`未検出
+- RAM: 約16GB
+- Dドライブ空き: 約902GB
+- 判定: 保存容量は確保可能だが、専用NVIDIA GPU／VRAM 12GB以上のPilot条件を満たさない。大型artifactの取得と実生成はこの端末では開始しない。
+
+端末名、利用者名、絶対pathは証跡へ保存しない。
 
 ## 固定候補
 
@@ -29,15 +48,15 @@ SHA-256はHugging Face公式model APIのLFS metadataから取得し、`DESKTOP_A
 
 ## 未完了gate
 
-1. Open RAIL++のAttachment Aを含む利用制限とMANGAIの禁止入力が一致することを責任者が確認する。
-2. VAEのmodel card上MIT表示について、同梱・再配布時のNOTICE方法を確認する。
+1. 12GB以上のNVIDIA GPUを搭載したWindows 11内部受入れ端末を用意する。
+2. 固定URLから取得した3 model fileの容量とSHA-256を実fileで再計算する。
 3. ControlNet fileがComfyUI標準`ControlNetLoader`で読み込めることを12GB実機で確認する。
-4. ComfyUI `v0.34.0`のPilot artifactを作成し、SHA-256と展開後容量を登録する。
+4. ComfyUI `v0.34.0`を公式sourceから構築し、commit、展開後容量、Runtime構成を登録する。
 5. custom nodeを使わない4方式workflowとmappingは`pilot-sdxl-v1`として作成・SHA-256登録済み。実ComfyUIでのnode入力互換と1枚生成は未確認。
-6. モデル取得方法を「MANGAI同梱」または「利用者が公式配布元から取得」から決定する。
+6. Pilot利用条件へOpen RAIL++、GPL-3.0、MITの表示とAttachment A制限を反映する。
 
 ## 非実施
 
-- モデル・ComfyUI artifactのdownload、install、起動、生成
+- モデル・ComfyUI artifactのdownload、install、起動、生成（現端末はRuntime条件外のため停止）
 - 成人向けPrompt・画像の処理
 - Cloud、外部Provider、Production、Project、Job、credit操作

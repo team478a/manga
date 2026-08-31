@@ -14,8 +14,11 @@ const canonicalBundle = path.resolve(
 );
 const hash = (value) => value.repeat(64);
 
-test("canonical Adult pilot candidates are pinned but remain pending review", () => {
+test("canonical Adult pilot candidates are approved for internal use but remain runtime pending", () => {
   const bundle = JSON.parse(fs.readFileSync(canonicalBundle, "utf8"));
+  assert.equal(bundle.distributionMode, "user_download_official_source");
+  assert.equal(bundle.licenseReview.status, "owner_confirmed_for_internal_pilot");
+  assert.equal(bundle.licenseReview.redistributionApproved, false);
   assert.equal(bundle.comfyui.version, "v0.34.0");
   assert.equal(bundle.comfyui.status, "pending");
   assert.deepEqual(

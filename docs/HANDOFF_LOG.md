@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex: Desktop Adult Pilot license・実行端末判定
+
+- Branch: `codex/desktop-adult-pilot-license-host-readiness-20260831`
+- Base: `c986b67`（PR #405 merge commit）
+- 責任者承認を、内部PilotでのSDXL系利用、Open RAIL++制限継承、公式配布元からの利用者取得への承認として記録した。ComfyUI GPL-3.0、SDXL／ControlNet Open RAIL++、VAE MIT表示を確認し、再配布・同梱は承認対象外とした。
+- 現端末はWindows 11／Intel Iris Xe／RAM約16GB、`nvidia-smi`未検出で12GB NVIDIA GPU条件外。Dドライブ約902GB空きはあるが、実行不能端末への大型artifact取得を停止した。
+- Production、Cloud、外部Provider、Project、Job、credit操作0件。次は12GB以上NVIDIA GPUの内部端末でartifact取得・SHA再計算・ComfyUI構築・4方式Runtime検証。
+
+---
+
 ## 2026-08-31 Codex（Desktop Adult Pilot 4方式workflow）
 
 - Base: `feature/manga-canvas-mvp` @ `af70af3`（PR #404 merge）
