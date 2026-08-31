@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 4方式Runtime受入れ診断
+
+- Branch: `codex/desktop-adult-pilot-runtime-acceptance-20260901`
+- Base: `8c81633`（PR #416 merge commit）
+- 4 workflow配布resourceと、ComfyUI version／12GB GPU／3 model／必須nodeをread-only APIで確認する診断をMain IPC／preload／Wizardへ追加した。
+- 診断は`/system_stats`と`/object_info`だけを使用し、`/prompt`送信と画像生成を行わない。
+- 集中3/3、Desktop 209/209、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 実Runtime診断、生成、Production、Cloud、Provider、Project、Job、Asset、credit操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot Runtime起動IPC／Wizard
 
 - Branch: `codex/desktop-adult-pilot-runtime-ipc-20260901`

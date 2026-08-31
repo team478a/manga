@@ -97,6 +97,7 @@ import { AdultPilotRuntimeInstaller, ADULT_PILOT_RUNTIME_DIRECTORY } from "./adu
 import { AdultPilot7ZipAdapter, findSupported7Zip } from "./adult-pilot-7zip.js";
 import { configureAdultPilotRuntime } from "./adult-pilot-runtime-config.js";
 import { AdultPilotRuntimeSupervisor, resolveAdultPilotRuntimeLaunch } from "./adult-pilot-runtime-supervisor.js";
+import { inspectAdultPilotRuntime } from "./adult-pilot-runtime-acceptance.js";
 import {
   balloonInputSchema,
   canvasBatchInputSchema,
@@ -925,6 +926,14 @@ function register() {
   handle("ai:adult-pilot:stop-runtime", () => {
     adultPilotRuntimeSupervisor.stop();
     return adultPilotRuntimeStatus();
+  });
+  handle("ai:adult-pilot:inspect-runtime", async () => {
+    if (adultPilotRuntimeSupervisor.status().status !== "running")
+      throw new Error("Runtimeを起動してから4方式診断を実行してください。");
+    const workflowDirectory = app.isPackaged
+      ? path.join(process.resourcesPath, "adult-pilot-workflows")
+      : path.resolve(here, "..", "..", "resources", "adult-pilot-workflows");
+    return inspectAdultPilotRuntime(workflowDirectory);
   });
   handle("ai:phase5:hardware-evidence:export", async (v) => {
     const projectId = projectIdSchema.parse(v).id;

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 4方式Runtime受入れ診断
+
+- 状態: `ACCEPTANCE_DIAGNOSTIC_CONNECTED / NO_GENERATION_SUBMISSION / REAL_RUNTIME_NOT_RUN`
+- Branch: `codex/desktop-adult-pilot-runtime-acceptance-20260901`
+- Base: `8c81633`（PR #416 merge commit）
+- 固定4方式workflow／mappingをWindows配布resourcesへ追加し、起動済みlocal ComfyUIの`/system_stats`と`/object_info`だけを読むRuntime受入れ診断を実装した。
+- ComfyUI `0.34.0`、12GB以上の非CPU GPU、固定checkpoint／VAE／ControlNetのLoader選択肢、4方式すべての必須nodeを検査する。`/prompt`への送信と画像生成は行わない。
+- Main IPC／preload／設定Wizardへ「4方式Runtime診断」を接続し、日英で合否を表示する。Runtime停止中は実行できない。
+- 集中3/3、Desktop 209/209、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- 現PCは12GB NVIDIA GPU／7-Zip条件外のため実Runtime診断／生成なし。Production／Cloud／Provider／Job／credit操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末で診断後、1枚ずつの実生成受入れを別承認で行う。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot Runtime起動IPC／Wizard
 
 - 状態: `RUNTIME_CONTROLS_CONNECTED / MOCK_VALIDATED / REAL_RUNTIME_NOT_RUN`

@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 4方式Runtime受入れ診断（2026-09-01）
+
+- 固定4 workflow／mappingをWindows配布resourcesへ含め、local ComfyUIのversion、GPU／VRAM、固定model選択肢、必須nodeだけを読む診断をWizardへ接続した。
+- `/prompt`送信や生成は行わない。Runtime停止中は診断不可で、全4方式のnode互換が揃わなければfail closed。
+- 集中3/3、Desktop 209/209、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。実診断／生成、Production／Cloud／Provider／Job／credit操作なし。
+- 次は全検証とDraft PR後、適格内部端末で診断を実行する。
+
+---
+
 ## 0.0 Desktop Adult Pilot Runtime起動IPC／Wizard（2026-09-01）
 
 - Supervisorの状態確認／起動／停止をMain IPC、preload、設定Wizardへ接続し、日英表示とapp終了時停止を追加した。
