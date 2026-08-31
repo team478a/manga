@@ -33,7 +33,7 @@ SHA-256はHugging Face公式model APIのLFS metadataから取得し、`DESKTOP_A
 2. VAEのmodel card上MIT表示について、同梱・再配布時のNOTICE方法を確認する。
 3. ControlNet fileがComfyUI標準`ControlNetLoader`で読み込めることを12GB実機で確認する。
 4. ComfyUI `v0.34.0`のPilot artifactを作成し、SHA-256と展開後容量を登録する。
-5. custom nodeを使わない4方式workflowを作成し、SHA-256を登録する。
+5. custom nodeを使わない4方式workflowとmappingは`pilot-sdxl-v1`として作成・SHA-256登録済み。実ComfyUIでのnode入力互換と1枚生成は未確認。
 6. モデル取得方法を「MANGAI同梱」または「利用者が公式配布元から取得」から決定する。
 
 ## 非実施

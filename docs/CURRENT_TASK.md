@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult Pilot 4方式workflow
+
+- 状態: `WORKFLOWS_PINNED / STRUCTURE_VALIDATED / RUNTIME_VALIDATION_PENDING`
+- SDXL候補向けText-to-Image、Image-to-Image、ControlNet、InpaintingのComfyUI API workflowとmappingを追加し、各SHA-256をmanifestへ固定した。
+- preflightはrepository内path、workflow／mapping SHA、標準node allowlist、batch 1、`VAEDecodeTiled`、方式別必須mappingを検査する。custom nodeとPromptは含めない。
+- 実ComfyUIとモデルで未検証のため4 workflowは`pending`を維持し、strict配布gateを緩和していない。
+- 集中3/3、Desktop 186/186、lint、Hub/Desktop型検査、通常preflight、`git diff --check`成功。モデル取得、install、生成、Production、Cloud、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 2026-08-31 Desktop Adult Pilot model候補固定
 
 - 状態: `CANDIDATES_PINNED / LICENSE_OWNER_CONFIRMATION_REQUIRED / DOWNLOAD_NOT_RUN`

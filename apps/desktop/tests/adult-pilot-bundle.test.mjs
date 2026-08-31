@@ -82,7 +82,7 @@ test("strict Adult pilot bundle requires fixed artifacts and 12GB evidence", (t)
     installedBytes: 1,
   });
   for (const workflow of bundle.workflows)
-    Object.assign(workflow, { status: "fixed", version: "pilot-v1", sha256: hash("b") });
+    Object.assign(workflow, { status: "fixed", version: "pilot-v1" });
   for (const model of bundle.models)
     Object.assign(model, {
       status: "fixed",
