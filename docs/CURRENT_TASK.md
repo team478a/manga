@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult Pilot安全取得サービス
+
+- 状態: `DOWNLOADER_CORE_IMPLEMENTED / MOCK_VALIDATED / UI_NOT_CONNECTED`
+- 固定済みSDXL checkpoint、VAE、ControlNetだけを対象にするMain process取得サービスを追加した。保存先をlocal AI配下へ閉じ込め、HTTPSと許可host、redirect最大5回を検査する。
+- `.partial`とHTTP Rangeによる再開、8GiBの作業余裕を含む空き容量判定、確定前のfile容量／SHA-256検査、atomic renameを実装した。不一致時は確定fileを作らない。
+- focused 2/2、Main build、Desktop型検査、lint、`git diff --check`成功。実network取得とWizard button接続は未実施。
+- Production、Cloud、Provider、Project、Job、credit、実artifact取得・生成操作0件。
+
+---
+
 ## 2026-08-31 Desktop Adult ローカルAIセットアップWizard基盤
 
 - 状態: `WIZARD_FOUNDATION_IMPLEMENTED / DOWNLOAD_NOT_CONNECTED / CURRENT_HOST_BLOCKED`

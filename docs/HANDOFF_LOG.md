@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex: Desktop Adult Pilot安全取得サービス
+
+- Branch: `codex/desktop-adult-pilot-safe-downloader-20260831`
+- Base: `88f1dba`（PR #407 merge commit）
+- 固定SDXL checkpoint／VAE／ControlNet向けの安全downloader coreをMain processへ追加。許可host、最大5 redirect、local AI保存先、空き容量、`.partial` Range resume、容量、SHA、atomic renameを実装した。
+- mock 2/2成功。Wizard、IPC、進捗UIは次PRで接続する。実artifact download、install、生成は未実施。
+- Production、Cloud、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 2026-08-31 Codex: Desktop Adult ローカルAIセットアップWizard基盤
 
 - Branch: `codex/desktop-adult-local-ai-setup-wizard-20260831`
