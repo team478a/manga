@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot Runtime起動Supervisor基盤（2026-09-01）
+
+- embedded Pythonをshellなしで直接起動し、loopback `127.0.0.1:8188`だけへbindするSupervisor基盤を追加した。
+- 起動前にportable構成、MANGAI生成model path設定、同一local AI rootのmodel store一致、local driveを検査する。単一起動、health待機、timeout停止、明示停止をmock 3/3で確認した。Desktop 204/204、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。
+- IPC／Wizard未接続。現PCは条件外のため実起動／生成、Production／Cloud／Provider／Job／credit操作なし。
+- 次は全検証とDraft PR後、適格内部端末で実起動を確認してから製品導線へ接続する。
+
+---
+
 ## 0.0 Desktop Adult Pilot Runtimeモデル参照設定（2026-09-01）
 
 - Runtimeのatomic確定前にportable構成とmodel directoryを検査し、公式ComfyUI形式の`extra_model_paths.yaml`で検証済みcheckpoint／VAE／ControlNet保存領域を直接参照するようにした。

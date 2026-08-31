@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot Runtime起動Supervisor基盤
+
+- Branch: `codex/desktop-adult-pilot-runtime-supervisor-20260901`
+- Base: `c5d1a41`（PR #414 merge commit）
+- embedded Python直接起動、loopback固定、MANGAI model path設定照合、単一起動、health待機、timeout／明示停止を行うSupervisor基盤を追加した。
+- 集中3/3、Desktop 204/204、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、diff check成功。IPC／Wizardは未接続。
+- 実Runtime起動、生成、Production、Cloud、Provider、Project、Job、Asset、credit操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。実起動確認後に製品導線を別PRで接続する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot Runtimeモデル参照設定
 
 - Branch: `codex/desktop-adult-pilot-runtime-config-20260901`
