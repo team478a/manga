@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot安全取得サービス（2026-08-31）
+
+- 固定3 modelだけを取得できるMain process downloaderを追加した。公式HTTPS host、redirect上限、保存先、空き容量、Range再開、容量、SHA、atomic確定をfail closedで検査する。
+- mock 2/2でresume、危険redirect、容量不足、hash不一致を検証。Wizard／IPCへは未接続で、実network downloadは行っていない。
+- 次は端末・同意gateをMain processでも再評価し、保存先dialog、進捗／cancel、IPC、Wizard buttonを接続する。
+
+---
+
 ## 0.0 Desktop Adult ローカルAIセットアップWizard基盤（2026-08-31）
 
 - AI設定に4段階Wizardを追加し、端末診断→利用条件→公式取得→検証の利用者フローを可視化した。
