@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex: Desktop Adult Pilot安全展開契約
+
+- Branch: `codex/desktop-adult-pilot-safe-extraction-contract-20260831`
+- Base: `cb45027`（PR #410 merge commit）
+- archive entryの事前検査、選択root配下の隔離staging、展開後tree照合、既存Runtime非上書き、失敗staging cleanupを実装した。
+- 絶対path、`..`、link、未対応entry、root不一致、Windows大小文字衝突、一覧外entryをmock回帰で拒否した。
+- 展開エンジン／IPC／Wizardは未接続。実download、展開、起動、Production、Cloud、Provider、Project、Job、Asset、credit、生成操作0件。
+- Desktop 194/194、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。展開engine接続はlicenseと実archive listing確認後の別PR。
+
+---
+
 ## 2026-08-31 Codex: Desktop Adult Pilot固定ComfyUI Runtime取得
 
 - Branch: `codex/desktop-adult-pilot-runtime-acquisition-20260831`

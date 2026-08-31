@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult Pilot安全展開契約
+
+- 状態: `SAFE_EXTRACTION_CONTRACT_IMPLEMENTED / EXTRACTOR_NOT_CONNECTED / REAL_EXTRACTION_NOT_RUN`
+- Branch: `codex/desktop-adult-pilot-safe-extraction-contract-20260831`
+- Base: `cb45027`（PR #410 merge commit）
+- ComfyUI portable archiveのentry一覧を展開前に検査し、絶対path、`..`、link、未対応entry、root不一致、Windows大小文字衝突、20万件超を拒否する契約を追加した。
+- 展開は選択root配下`runtime/.installing`だけで行い、一覧外entry、展開後link、余分なroot、既存Runtime上書きを拒否する。失敗時は検証済みstagingだけを除去する。
+- 展開エンジンは注入式で、製品IPC／Wizardへ未接続。7-Zip binaryや新規依存は追加していない。
+- Desktop 194/194、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- 実archive download／展開／起動、Production／Cloud／Provider／Job／credit／生成操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。公式archiveを扱える展開エンジンのlicense・entry listing一致を確認してから接続する。
+
+---
+
 ## 2026-08-31 Desktop Adult Pilot固定ComfyUI Runtime取得
 
 - 状態: `RUNTIME_ASSET_PINNED / SAFE_ACQUISITION_CONNECTED / EXTRACTION_NOT_IMPLEMENTED`
