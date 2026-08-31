@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult ローカルAIセットアップWizard基盤
+
+- 状態: `WIZARD_FOUNDATION_IMPLEMENTED / DOWNLOAD_NOT_CONNECTED / CURRENT_HOST_BLOCKED`
+- AI設定へ、端末性能、3種の利用条件、公式取得、SHA／Runtime検証を順番に示す4段階Wizardを追加した。
+- 12GB未満またはGPU未検出では取得前にfail closed。12GB以上でもlicense、local-only、成人安全条件の3確認が揃うまで取得準備にならない。
+- 現段階は安全な状態機械とUIだけで、download buttonは準備中として無効。次PRで保存先選択、空き容量、公式URL限定、中断再開、容量・SHA検査をMain processへ接続する。
+- AI Core 50/50、Desktop型検査、lint、`git diff --check`成功。Production、Cloud、Provider、Project、Job、credit、artifact取得・生成操作0件。
+
+---
+
 ## 2026-08-31 Desktop Adult Pilot license・実行端末判定
 
 - 状態: `LICENSE_OWNER_CONFIRMED_FOR_INTERNAL_PILOT / USER_DOWNLOAD_SELECTED / CURRENT_HOST_RUNTIME_BLOCKED`

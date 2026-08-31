@@ -11,6 +11,7 @@ import type {
 import { useI18n } from "../../i18n";
 import { DezgoSettings } from "./DezgoSettings";
 import { AdultGenerationSettings } from "./AdultGenerationSettings";
+import { AdultLocalAISetup } from "./AdultLocalAISetup";
 
 type PromptTemplate = {
   id: string;
@@ -505,6 +506,7 @@ export function AISettings({ onClose }: { onClose: () => void }) {
             </>
           )}
         </section>
+        <AdultLocalAISetup runtimeProfile={runtimeProfile} />
         <section
           className="panel-lite diagnostics-privacy"
           aria-labelledby="diagnostics-privacy-title"

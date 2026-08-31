@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult ローカルAIセットアップWizard基盤（2026-08-31）
+
+- AI設定に4段階Wizardを追加し、端末診断→利用条件→公式取得→検証の利用者フローを可視化した。
+- 共通domainで12GB VRAMと3確認を取得準備条件にし、低VRAM／GPU不明端末は大型artifact取得前に停止する。
+- 自動取得は未接続でbuttonを無効化。次はMain processの保存先・容量・公式URL・resume・SHA契約を実装する。
+- Production、Cloud、Provider、Project、Job、credit、artifact取得・生成操作0件。
+
+---
+
 ## 0.0 Desktop Adult Pilot license・実行端末判定（2026-08-31）
 
 - 責任者は内部PilotでのSDXL系ローカル利用とOpen RAIL++制限継承を承認した。ComfyUI／modelは同梱せず、公式配布元から利用者が取得する方式を採用する。再配布・一般公開・Cloud・外部Providerは未承認。
