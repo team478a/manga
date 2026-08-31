@@ -105,3 +105,9 @@ test("Adult Pilot downloader rejects unsafe redirects, low disk and bad hashes",
   );
   assert.equal(fs.existsSync(path.join(root, "models", "vae", "vae.bin")), false);
 });
+
+test("Adult Pilot downloader rejects a network share before filesystem or network access", async () => {
+  const bytes = Buffer.from("fixed"), artifact = fixture("vae", bytes);
+  const downloader = new AdultPilotDownloader({ artifacts: [artifact] });
+  await assert.rejects(downloader.download("\\\\server\\adult-pilot", "vae"), /端末内drive/);
+});

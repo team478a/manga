@@ -67,9 +67,11 @@ export class AdultPilotRuntimeInstaller {
     root: string,
     entries: readonly AdultPilotArchiveEntry[],
     extract: (stagingDirectory: string) => Promise<void>,
+    configure?: (extractedRuntimeRoot: string) => Promise<void> | void,
   ): Promise<AdultPilotRuntimeInstallResult> {
     const validated = validateAdultPilotArchiveEntries(entries);
-    if (!path.isAbsolute(root)) throw new Error("保存先は絶対pathで指定してください。");
+    if (!path.isAbsolute(root) || path.parse(root).root.startsWith("\\\\"))
+      throw new Error("保存先は端末内driveの絶対pathで指定してください。");
     fs.mkdirSync(root, { recursive: true });
     const realRoot = fs.realpathSync(root);
     const runtimeRoot = path.join(realRoot, "runtime");
@@ -95,6 +97,7 @@ export class AdultPilotRuntimeInstaller {
         extractedRoot,
         new Set(validated.map((entry) => entry.path.toLocaleLowerCase("en-US"))),
       );
+      await configure?.(extractedRoot);
       fs.renameSync(extractedRoot, destination);
       fs.rmdirSync(staging);
       return { runtimePath: destination, entryCount: validated.length };

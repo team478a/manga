@@ -112,7 +112,8 @@ export class AdultPilotDownloader {
   }
 
   private destination(root: string, artifact: AdultPilotArtifact) {
-    if (!path.isAbsolute(root)) throw new Error("保存先は絶対pathで指定してください。");
+    if (!path.isAbsolute(root) || path.parse(root).root.startsWith("\\\\"))
+      throw new Error("保存先は端末内driveの絶対pathで指定してください。");
     fs.mkdirSync(root, { recursive: true });
     const realRoot = fs.realpathSync(root);
     const directory = artifact.area === "runtime"
