@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-08-31 Desktop Adult Pilot license・実行端末判定
+
+- 状態: `LICENSE_OWNER_CONFIRMED_FOR_INTERNAL_PILOT / USER_DOWNLOAD_SELECTED / CURRENT_HOST_RUNTIME_BLOCKED`
+- 責任者承認に基づき、Open RAIL++制限をPilot利用条件へ継承し、ComfyUI／modelはMANGAIへ同梱せず公式配布元から利用者が取得する方針をmanifestへ固定した。再配布、一般公開、Cloud、外部Providerは未承認。
+- 現端末はWindows 11／Intel Iris Xe／RAM約16GBで、`nvidia-smi`未検出。保存容量はDドライブ約902GBだが、12GB NVIDIA GPU条件を満たさないため大型artifact取得と実生成を開始しなかった。
+- 次は12GB以上NVIDIA GPUのWindows 11内部端末で、公式artifact取得、実file SHA再計算、ComfyUI構築、4方式Runtime検証を行う。
+- Production、Cloud、外部Provider、Project、Job、credit操作0件。
+
+---
+
 ## 2026-08-31 Desktop Adult Pilot 4方式workflow
 
 - 状態: `WORKFLOWS_PINNED / STRUCTURE_VALIDATED / RUNTIME_VALIDATION_PENDING`

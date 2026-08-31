@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot license・実行端末判定（2026-08-31）
+
+- 責任者は内部PilotでのSDXL系ローカル利用とOpen RAIL++制限継承を承認した。ComfyUI／modelは同梱せず、公式配布元から利用者が取得する方式を採用する。再配布・一般公開・Cloud・外部Providerは未承認。
+- 現端末はIntel Iris Xe、RAM約16GB、`nvidia-smi`なしで12GB NVIDIA GPU条件外。Dドライブ容量は十分だが、artifact取得と実生成は開始しなかった。
+- 次は条件を満たす内部端末でartifact SHA、ComfyUI v0.34.0、4方式Runtimeを検証する。Production、Cloud、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 0.0 Desktop Adult Pilot 4方式workflow（2026-08-31）
 
 - SDXL候補向け4方式のComfyUI API workflow／mappingをcustom nodeなしで追加し、SHA-256をmanifestへ固定した。
