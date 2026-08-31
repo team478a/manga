@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex（Desktop Adult招待制モニター公開計画）
+
+- Base: `feature/manga-canvas-mvp` @ `1ead4e0`（PR #401 merge）
+- 成人向けCloudを開放せず、Windows Desktop Adultを1名→最大3名→最大5名で段階公開する計画を作成した。
+- 初回対応をWindows 11／VRAM 12GB以上／ローカルOllama・ComfyUIへ限定し、コード署名、内部4方式受入れ、固定workflow／model、同意、privacy、停止条件を公開gateへ固定した。
+- 文書変更のみ。実配布、Production、Cloud境界、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 2026-08-30 Codex（ダッシュボード品質確認の直接導線）
 
 - Base: `feature/manga-canvas-mvp` @ `2317ad4`（PR #400 merge）

@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult招待制モニター公開計画（2026-08-31）
+
+- 成人向けCloudの拒否境界を維持し、Windows Desktop Adultを最大5名へ段階公開する計画を追加した。
+- 初回対象はWindows 11／VRAM 12GB以上、ローカルOllama／ComfyUI、1操作1枚。Cloud同期、外部Provider、販売は含めない。
+- コード署名、署名済みversion、12GB以上の内部受入れ、固定workflow／model、同意・privacy・停止運用が揃うまで配布しない。
+- 文書変更のみ。Production、Cloud、Provider、Project、Job、credit操作0件。
+
+---
+
 ## 0.0 ダッシュボード品質確認の直接導線（2026-08-30）
 
 - 一般モニター用ダッシュボードの「限定モニター」欄へ「品質確認」ボタンを追加した。
