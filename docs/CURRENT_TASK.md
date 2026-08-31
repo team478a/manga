@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot Runtime起動Supervisor基盤
+
+- 状態: `SUPERVISOR_IMPLEMENTED / IPC_NOT_CONNECTED / REAL_RUNTIME_NOT_RUN`
+- Branch: `codex/desktop-adult-pilot-runtime-supervisor-20260901`
+- Base: `c5d1a41`（PR #414 merge commit）
+- 検証済みportable Runtimeのembedded Pythonをshell／batなしで直接起動し、ComfyUIを`127.0.0.1:8188`だけへbindする起動契約を追加した。
+- embedded Python、`main.py`、MANGAI生成の`extra_model_paths.yaml`を起動前に検査し、設定が同じlocal AI rootのmodel storeと一致しない場合は停止する。UNC／network pathも拒否する。
+- Supervisorは単一起動、`/system_stats` health待機、timeout時停止、明示停止、秘密情報を含まない利用者向け失敗状態を管理する。process／health／waitはtest注入式。
+- 集中3/3、Desktop 204/204、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
+- Wizard／IPCへは未接続。現PCは12GB NVIDIA GPU／7-Zip条件外のため実Runtime起動／生成なし。Production／Cloud／Provider／Job／credit操作0件。
+- 次: 全検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末で実起動を検証してからIPC／Wizardへ接続する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot Runtimeモデル参照設定
 
 - 状態: `RUNTIME_CONFIG_IMPLEMENTED / VERIFIED_MODEL_STORE_REUSED / REAL_RUNTIME_NOT_RUN`
