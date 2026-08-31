@@ -14,7 +14,7 @@
     "build:main": "npm run build:packages && tsc -p tsconfig.main.json && node scripts/copy-preload-manifest.mjs",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.main.json --noEmit",
     "lint": "eslint src",
-    "test": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test tests/database.test.mjs tests/ai.test.mjs tests/dezgo.test.mjs tests/adult-provider-policy.test.mjs tests/hub-status.test.mjs tests/diagnostics.test.mjs tests/updater.test.mjs tests/phase5-hardware-acceptance.test.mjs tests/design-tokens.test.mjs tests/design-components.test.mjs tests/design-command-palette.test.mjs tests/design-home-screen.test.mjs tests/design-command-palette-integration.test.mjs tests/design-home-project-grid.test.mjs",
+    "test": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test tests/database.test.mjs tests/ai.test.mjs tests/dezgo.test.mjs tests/adult-provider-policy.test.mjs tests/hub-status.test.mjs tests/diagnostics.test.mjs tests/updater.test.mjs tests/phase5-hardware-acceptance.test.mjs tests/adult-pilot-bundle.test.mjs tests/design-tokens.test.mjs tests/design-components.test.mjs tests/design-command-palette.test.mjs tests/design-home-screen.test.mjs tests/design-command-palette-integration.test.mjs tests/design-home-project-grid.test.mjs",
     "test:phase5-offline": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test --test-name-pattern=\"Phase 5 offline adult\" tests/ai.test.mjs",
     "test:a11y": "npm run build && node scripts/test-accessibility.mjs",
     "test:display-acceptance": "npm run build && cross-env MANGAI_A11Y_VARIANT=scale-150 node scripts/test-accessibility.mjs && cross-env MANGAI_A11Y_VARIANT=high-contrast node scripts/test-accessibility.mjs",

@@ -1,0 +1,51 @@
+{
+  "format": "mangai.desktop-adult-pilot-bundle",
+  "version": 1,
+  "updatedAt": "2026-08-31T00:00:00.000Z",
+  "comfyui": {
+    "status": "pending",
+    "version": null,
+    "sourceUrl": null,
+    "licenseUrl": null,
+    "sha256": null,
+    "installedBytes": null
+  },
+  "workflows": [
+    { "operation": "text_to_image", "status": "pending", "version": null, "sha256": null },
+    { "operation": "image_to_image", "status": "pending", "version": null, "sha256": null },
+    { "operation": "controlnet", "status": "pending", "version": null, "sha256": null },
+    { "operation": "inpainting", "status": "pending", "version": null, "sha256": null }
+  ],
+  "models": [
+    {
+      "role": "checkpoint",
+      "status": "pending",
+      "name": null,
+      "version": null,
+      "sourceUrl": null,
+      "licenseUrl": null,
+      "sha256": null,
+      "installedBytes": null
+    },
+    {
+      "role": "vae",
+      "status": "pending",
+      "name": null,
+      "version": null,
+      "sourceUrl": null,
+      "licenseUrl": null,
+      "sha256": null,
+      "installedBytes": null
+    },
+    {
+      "role": "controlnet",
+      "status": "pending",
+      "name": null,
+      "version": null,
+      "sourceUrl": null,
+      "licenseUrl": null,
+      "sha256": null,
+      "installedBytes": null
+    }
+  ]
+}

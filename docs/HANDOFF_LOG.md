@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-08-31 Codex（Desktop Adult Pilot bundle preflight）
+
+- Base: `feature/manga-canvas-mvp` @ `72a3129`（PR #402 merge）
+- Pilot配布物のComfyUI、4方式workflow、checkpoint、VAE、ControlNetをversion／SHA-256／容量／導入元／license URL付きで固定するmanifestと検証commandを追加した。
+- strictは全8項目と12GB実機の4方式・書き出し証跡が揃うまで停止する。現状は0/8固定、12GB pendingで、配布blockedを維持する。
+- 集中2/2、Desktop 185/185、lint、Hub/Desktop型検査、diff check成功。Production、Cloud、外部Provider、Project、Job、credit、モデル取得・生成操作0件。
+- 次: 候補model／workflowのlicenseを責任者が確認し、固定artifactを用意した後、12GB Windows実機で4方式、保存、Page配置、PDF、バックアップ／復元を実施する。
+
+---
+
 ## 2026-08-31 Codex（Desktop Adult招待制モニター公開計画）
 
 - Base: `feature/manga-canvas-mvp` @ `1ead4e0`（PR #401 merge）

@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot bundle preflight（2026-08-31）
+
+- ComfyUI、4方式workflow、checkpoint、VAE、ControlNetの固定一覧を`docs/desktop/DESKTOP_ADULT_PILOT_BUNDLE.json`へ追加した。
+- 通常preflightは未確定項目を列挙し、strictは全8項目と12GB実機証跡が揃うまでfail closedで停止する。現在は0/8固定、12GB pending。
+- 集中2/2、Desktop 185/185、lint、全型検査、diff check成功。Production、Cloud、Provider、Project、Job、credit、モデル取得・生成操作0件。
+
+---
+
 ## 0.0 Desktop Adult招待制モニター公開計画（2026-08-31）
 
 - 成人向けCloudの拒否境界を維持し、Windows Desktop Adultを最大5名へ段階公開する計画を追加した。
