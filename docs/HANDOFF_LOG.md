@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot Runtime展開IPC
+
+- Branch: `codex/desktop-adult-pilot-install-ipc-20260901`
+- Base: `80dd35e`（PR #412 merge commit）
+- 全4 Artifact検証後のWizard展開button、preload型、Main IPCを追加し、既存7-Zip adapter／安全展開契約へ接続した。
+- Mainで同意、12GB+ VRAM、選択root、重複実行、Runtime容量／SHA、7-Zip version、entry一覧を再検証する。installからnetwork取得しない。
+- 現PCは条件外で実download／展開／起動なし。Production、Cloud、Provider、Project、Job、Asset、credit、生成操作0件。
+- Desktop 198/198、lint、typecheck、deps:check、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末の実archive受入れは別途実施する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 7-Zip展開adapter
 
 - Branch: `codex/desktop-adult-pilot-7zip-adapter-20260901`

@@ -164,6 +164,8 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:adult-pilot:download", { root, consent }),
     cancelAdultPilotDownload: () =>
       ipcRenderer.invoke("ai:adult-pilot:cancel"),
+    installAdultPilotRuntime: (root: string, consent: unknown) =>
+      ipcRenderer.invoke("ai:adult-pilot:install-runtime", { root, consent }),
     onAdultPilotProgress: (listener: (value: unknown) => void) => {
       const handler = (_event: Electron.IpcRendererEvent, value: unknown) =>
         listener(value);

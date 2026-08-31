@@ -141,6 +141,17 @@ export class AdultPilotDownloader {
     throw new Error("公式配布元のredirect回数が上限を超えました。");
   }
 
+  async verifyExisting(root: string, id: AdultPilotArtifact["id"]): Promise<AdultPilotDownloadResult> {
+    const artifact = this.artifact(id);
+    const destination = this.destination(root, artifact);
+    if (fs.statSync(destination, { throwIfNoEntry: false })?.size !== artifact.bytes)
+      throw new Error("取得済みartifactの容量が固定値と一致しません。");
+    const sha256 = await hashFile(destination);
+    if (sha256 !== artifact.sha256)
+      throw new Error("取得済みartifactのSHA-256が固定値と一致しません。");
+    return { artifactId: id, filePath: destination, bytes: artifact.bytes, sha256, resumedFrom: artifact.bytes };
+  }
+
   async download(
     root: string,
     id: AdultPilotArtifact["id"],

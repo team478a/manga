@@ -93,6 +93,8 @@ import {
   ADULT_PILOT_ARTIFACTS,
   AdultPilotDownloader,
 } from "./adult-pilot-downloader.js";
+import { AdultPilotRuntimeInstaller } from "./adult-pilot-runtime-installer.js";
+import { AdultPilot7ZipAdapter, findSupported7Zip } from "./adult-pilot-7zip.js";
 import {
   balloonInputSchema,
   canvasBatchInputSchema,
@@ -129,6 +131,7 @@ let dezgoFeatures: DezgoFeatureFlags;
 let databaseRecovery: DatabaseRecoveryReport | null = null;
 let adultPilotDownloadAbort: AbortController | null = null;
 let adultPilotSelectedRoot: string | null = null;
+let adultPilotInstallRunning = false;
 type AutoBackupState = {
   status: "idle" | "running" | "success" | "error";
   checkedAt?: string;
@@ -845,6 +848,36 @@ function register() {
     const running = Boolean(adultPilotDownloadAbort);
     adultPilotDownloadAbort?.abort();
     return running;
+  });
+  handle("ai:adult-pilot:install-runtime", async (v) => {
+    if (adultPilotDownloadAbort || adultPilotInstallRunning)
+      throw new Error("成人向けローカルAIの取得または展開はすでに実行中です。");
+    const consent = adultLocalAISetupConsentSchema.parse(v?.consent);
+    const readiness = evaluateAdultLocalAISetupReadiness(runtimeProfile.getState(), consent);
+    if (!readiness.acquisitionReady)
+      throw new Error("この端末は成人向けPilotの展開条件を満たしていません。");
+    if (
+      typeof v?.root !== "string" ||
+      !path.isAbsolute(v.root) ||
+      path.resolve(v.root) !== adultPilotSelectedRoot
+    ) throw new Error("成人向けローカルAIの保存先を選択してください。");
+    const executable = findSupported7Zip();
+    if (!executable)
+      throw new Error("安全な展開には正式インストール済みの7-Zip 25.01以上が必要です。");
+    adultPilotInstallRunning = true;
+    try {
+      const archive = await new AdultPilotDownloader().verifyExisting(v.root, "runtime");
+      const adapter = new AdultPilot7ZipAdapter(executable);
+      const entries = await adapter.list(archive.filePath);
+      const result = await new AdultPilotRuntimeInstaller().install(
+        v.root,
+        entries,
+        (staging) => adapter.extract(archive.filePath, staging),
+      );
+      return { status: "installed", runtimePath: result.runtimePath, entryCount: result.entryCount };
+    } finally {
+      adultPilotInstallRunning = false;
+    }
   });
   handle("ai:phase5:hardware-evidence:export", async (v) => {
     const projectId = projectIdSchema.parse(v).id;
