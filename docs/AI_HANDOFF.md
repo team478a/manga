@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot安全展開契約（2026-08-31）
+
+- ComfyUI archiveを展開前後に検査し、path traversal、link、root不一致、Windows衝突、一覧外entry、既存Runtime上書きを拒否する隔離staging契約を実装した。
+- 展開エンジン、IPC、Wizardは未接続。7-Zip binary／依存追加、実download／展開／起動なし。
+- Desktop 194/194、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。
+- 次は展開エンジン候補のlicenseと実archive listing形式を確認し、同じengineでlist／extractできる場合だけ接続する。
+
+---
+
 ## 0.0 Desktop Adult Pilot固定ComfyUI Runtime取得（2026-08-31）
 
 - ComfyUI `v0.34.0`公式NVIDIA portable `.7z`を容量・SHA-256付き固定Artifactとして既存Wizard/downloaderへ追加した。
