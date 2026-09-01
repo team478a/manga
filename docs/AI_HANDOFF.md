@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 停止・復旧運用（2026-09-01）
+
+- 公開前条件の緊急停止、配布停止、問い合わせ、アンインストール、作品データ保持、段階復旧を運用ランブックとして固定した。
+- Projectは自動削除せず、アンインストール前backupと後の作品領域確認を必須化した。診断共有はPrompt／画像／秘密値／絶対pathを含めない。
+- 遠隔強制停止／version失効機構は未実装。既存versionは配布停止、個別停止通知、Runtime停止で対応し、この制約を責任者承認なしに解消済みと扱わない。
+- 集中検査2/2、Desktop 216/216、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。Production／Cloud／外部Provider／Job／credit／生成／配布操作なし。
+- 次はDraft PRと全CI後、Pilot開始前の運用責任者承認を得る。
+
+---
+
 ## 0.0 Desktop Adult Pilot 診断プライバシー回帰強化（2026-09-01）
 
 - 診断サニタイザーへ作品内容の別名とホーム外のWindows／UNC／file URL／主要POSIX絶対pathの除外を追加した。

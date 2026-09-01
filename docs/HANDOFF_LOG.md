@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 停止・復旧運用
+
+- Branch: `codex/desktop-adult-pilot-stop-recovery-runbook-20260901`
+- Base: `e6fa3d7`（PR #420 merge commit）
+- 既存の更新配布、Project保存、backup／復元、Runtime停止、NSIS設定へ照合した停止・復旧ランブックを追加した。
+- 配布停止だけでは取得済みinstallerや既存installを止められず、遠隔強制停止／version失効は未実装であることを明記した。
+- 集中ランブック検査2/2、Desktop 216/216、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、diff check成功。Production、Cloud、外部Provider、Job、Asset、credit、生成、Release操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 診断プライバシー回帰強化
 
 - Branch: `codex/desktop-adult-pilot-diagnostics-privacy-20260901`

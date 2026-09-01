@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 停止・復旧運用
+
+- 状態: `STOP_RECOVERY_RUNBOOK_READY / MANUAL_VERSION_STOP_REQUIRED / DATA_PRESERVATION_REQUIRED`
+- Branch: `codex/desktop-adult-pilot-stop-recovery-runbook-20260901`
+- Base: `e6fa3d7`（PR #420 merge commit）
+- 緊急停止、配布停止、問い合わせ、Project保全、backup、アンインストール、段階復旧、停止通知を既存実装に照合して運用ランブックへ固定した。
+- 既存versionの遠隔強制停止／技術的失効は未実装であり、配布停止と個別停止連絡が必要であることを明記した。実装済みとして扱わない。
+- 集中ランブック検査2/2、Desktop 216/216、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。Production／Cloud／外部Provider／Job／Asset／credit／生成／配布設定操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。Pilot開始前に責任者が手動version停止制約を承認する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 診断プライバシー回帰強化
 
 - 状態: `DIAGNOSTIC_PRIVACY_HARDENED / CONTENT_ALIASES_REDACTED / LOCAL_PATHS_REDACTED`
