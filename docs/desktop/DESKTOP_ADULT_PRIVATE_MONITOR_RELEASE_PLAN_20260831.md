@@ -45,6 +45,14 @@ npm run desktop:adult:pilot-release-readiness:strict
 
 統合release readinessは公開前条件を8区分で表示する。通常実行は残件を報告し、strict実行は署名、固定Bundle、12GB実機4方式証跡、責任者承認を含む全区分が揃うまで終了コード1で停止する。
 
+責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。
+
+```powershell
+npm run desktop:adult:pilot-owner-approval:record -- --approve-pilot-start --accept-manual-version-stop
+```
+
+このcommandは他のBLOCKED条件を解除せず、配布、招待、生成、外部通信も開始しない。
+
 ## 4. モニター開始時の確認
 
 利用者は開始前に次を1項目ずつ確認する。

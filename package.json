@@ -24,6 +24,7 @@
     "desktop:adult:pilot-ledger:check": "npm --prefix apps/desktop run adult:pilot-ledger:check",
     "desktop:adult:pilot-release-readiness": "npm --prefix apps/desktop run adult:pilot-release-readiness",
     "desktop:adult:pilot-release-readiness:strict": "npm --prefix apps/desktop run adult:pilot-release-readiness:strict",
+    "desktop:adult:pilot-owner-approval:record": "npm --prefix apps/desktop run adult:pilot-owner-approval:record --",
     "desktop:adult:pilot-preflight:strict": "node apps/desktop/scripts/check-adult-pilot-bundle.mjs --strict",
     "desktop:test:a11y": "npm --prefix apps/desktop run test:a11y",
     "desktop:test:display-acceptance": "npm --prefix apps/desktop run test:display-acceptance",
