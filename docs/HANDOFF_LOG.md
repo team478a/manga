@@ -6349,3 +6349,13 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 現PCはIntel Iris Xe／表示VRAM約2GBのため実行不可を維持。実ダウンロード、ComfyUI、生成、Production、Cloud、Provider、Job、Asset、credit操作0件。
 - AI Core 50/50、Desktop 188/188、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、diff check成功。
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。12GB以上GPU端末でのE2Eとruntime導入は別タスク。
+# 2026-09-01 Codex: モニター品質確認開始案内
+
+- Branch: `codex/monitor-quality-review-start-notification-20260901`
+- Base: `47c293f`（PR #425 merge commit）
+- 割当だけでは通知されない現行仕様を確認し、未送信者限定の品質確認開始メール、管理画面の明示確認、送信履歴migration、管理者限定記録RPCを実装した。
+- Resend公式の`Idempotency-Key`を割当ID単位で使用する。連絡先、秘密値、Provider error本文はログへ出さない。
+- 集中14/14、Hub 942/942、migration 75/75、deps、lint、全型検査、Hub build、diff check成功。Production DB／メール送信、生成Provider、Job、Asset、credit操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後にmigrationを適用し、未送信5名へ管理画面から1回送信する。
+
+---
