@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 統合release readiness（2026-09-01）
+
+- 公開前8条件を一括表示するread-only preflightとstrict gateを追加した。
+- 同意・local境界、診断privacy、停止復旧、招待台帳はREADY。署名、固定Bundle、12GB実機4方式、責任者承認はBLOCKED。
+- 集中2/2、通常成功、strict期待失敗、Desktop 222/222、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。外部環境・配布・生成操作なし。
+- 次はDraft PRと全CI後、4外部blockerを責任者・適格実機で順番に解消する。
+
+---
+
 ## 0.0 Desktop Adult Pilot 内容非保持招待台帳（2026-09-01）
 
 - 公開前条件8の招待対象、配布日時、version、対応環境、同意日時、停止状態を内容非保持で追跡する台帳契約を追加した。

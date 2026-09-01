@@ -39,7 +39,11 @@ MANGAI Desktop Adultのローカル制作機能を、対象環境を満たす少
 ```powershell
 npm run desktop:adult:pilot-preflight
 npm run desktop:adult:pilot-preflight:strict
+npm run desktop:adult:pilot-release-readiness
+npm run desktop:adult:pilot-release-readiness:strict
 ```
+
+統合release readinessは公開前条件を8区分で表示する。通常実行は残件を報告し、strict実行は署名、固定Bundle、12GB実機4方式証跡、責任者承認を含む全区分が揃うまで終了コード1で停止する。
 
 ## 4. モニター開始時の確認
 
