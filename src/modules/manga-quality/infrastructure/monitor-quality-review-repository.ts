@@ -172,7 +172,7 @@ export async function loadMonitorQualityReviewNotificationTargets(batchId: strin
       .eq("id", batchId)
       .maybeSingle<{ id: string; status: string; target_reviewer_count: number; expires_at: string }>(),
     admin.from("cloud_monitor_quality_review_assignments")
-      .select("id,reviewer_profile_id,notification_sent_at")
+      .select("id,reviewer_profile_id,status,submitted_at,notification_sent_at")
       .eq("batch_id", batchId)
       .neq("status", "revoked")
       .order("reviewer_slot"),

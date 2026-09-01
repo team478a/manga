@@ -105,16 +105,18 @@ test("管理画面は進捗のみ表示し回答payloadを取得しない", asyn
   assert.match(adminLoader, /case_completed_at/);
 });
 
-test("管理画面は未送信者だけへ開始案内を送り送信履歴を保持する", async () => {
+test("管理画面は未提出かつ未送信の担当者だけへ開始案内を送り送信履歴を保持する", async () => {
   const [page, actions, repository, migration] = await Promise.all([
     read("../src/app/admin/general-monitors/quality-review/page.tsx"),
     read("../src/app/admin/general-monitors/quality-review/actions.ts"),
     read("../src/modules/manga-quality/infrastructure/monitor-quality-review-repository.ts"),
     read("../supabase/migrations/202609010001_cloud_monitor_quality_review_notifications.sql"),
   ]);
-  assert.match(page, /未送信.*名へ開始案内を送信/);
+  assert.match(page, /未提出・未送信.*名へ開始案内を送信/);
+  assert.match(page, /提出済み担当者には送信しません/);
   assert.match(page, /confirmation/);
-  assert.match(actions, /filter\(\(item\) => !item\.notification_sent_at\)/);
+  assert.match(actions, /!item\.notification_sent_at && item\.status !== "submitted" && !item\.submitted_at/);
+  assert.match(repository, /id,reviewer_profile_id,status,submitted_at,notification_sent_at/);
   assert.match(actions, /sendCloudGeneralMonitorQualityReviewStartEmail/);
   assert.match(repository, /record_cloud_monitor_quality_review_notification_sent/);
   assert.match(migration, /notification_sent_at/);
