@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 統合release readiness
+
+- Branch: `codex/desktop-adult-pilot-release-readiness-20260901`
+- Base: `c7c2189`（PR #422 merge commit）
+- 公開前8条件の統合preflightと未承認の承認manifestを追加し、strictをfail closedにした。
+- 現在4 READY／4 BLOCKED。外部blockerは署名、固定Bundle、12GB実機4方式証跡、責任者承認。
+- 集中2/2、通常preflight成功、strict期待失敗、Desktop 222/222、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、diff check成功。Production、Cloud、Provider、Job、credit、生成、Release操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 内容非保持招待台帳
 
 - Branch: `codex/desktop-adult-pilot-invite-ledger-20260901`

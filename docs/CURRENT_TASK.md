@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 統合release readiness
+
+- 状態: `REPOSITORY_READY_4_OF_8 / EXTERNAL_BLOCKERS_4 / STRICT_FAIL_CLOSED`
+- Branch: `codex/desktop-adult-pilot-release-readiness-20260901`
+- Base: `c7c2189`（PR #422 merge commit）
+- 公開前条件を署名、固定Bundle、12GB実機4方式、同意・local境界、診断privacy、停止復旧、招待台帳、責任者承認の8区分でread-only判定する統合preflightを追加した。
+- 現在は後半4区分READY。署名、固定Bundle 8項目、12GB実機4方式証跡、Pilot開始／手動version停止制約の責任者承認がBLOCKED。strictは終了コード1を維持する。
+- 集中2/2、通常preflight成功、strict期待失敗、Desktop 222/222、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。署名／Artifact／実機／承認状態、Production／Cloud／Provider／Job／credit／生成／配布操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 内容非保持招待台帳
 
 - 状態: `INVITE_LEDGER_CONTRACT_READY / PRIVATE_DATA_REJECTED / NO_REAL_INVITES`
