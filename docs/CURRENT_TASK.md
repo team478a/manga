@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 診断プライバシー回帰強化
+
+- 状態: `DIAGNOSTIC_PRIVACY_HARDENED / CONTENT_ALIASES_REDACTED / LOCAL_PATHS_REDACTED`
+- Branch: `codex/desktop-adult-pilot-diagnostics-privacy-20260901`
+- Base: `88d04b7`（PR #419 merge commit）
+- 共通診断サニタイザーで`sourceImage`、`referenceImage`、`controlImage`、mask、完成Page、自由記述等の作品内容別名を追加遮断した。
+- ホーム外のWindows drive path、UNC、file URL、主要POSIX local pathも`[LOCAL_PATH]`へ置換する。構造化ログと同意後クラッシュレポートの双方で内容・絶対path非保持を検証した。
+- 診断5/5、Desktop 214/214、lint、typecheck、Desktop build、a11y 29画面blocking violation 0成功。
+- Production／Cloud／外部Provider／Job／Asset／credit／生成操作0件。
+- 次: deps、diff check、commit、push、Draft PR、全CI／Vercel Preview成功で停止。実機受入れでは生成内容を含まない診断fileを再確認する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 1枚生成ドライラン事前診断
 
 - 状態: `ONE_IMAGE_PREFLIGHT_CONNECTED / SHARED_ADULT_POLICY / NO_GENERATION_SUBMISSION`

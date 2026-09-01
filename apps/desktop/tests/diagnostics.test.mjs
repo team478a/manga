@@ -52,6 +52,31 @@ test("構造化ログは秘密値を除外してローテーションする", ()
   }
 });
 
+test("Adult Pilot診断は作品内容と端末絶対パスの別名も保存しない", () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-diagnostics-privacy-"));
+  try {
+    const logger = new StructuredLogger(root);
+    logger.log("error", "adult_pilot_failure", {
+      detail: "runtime failed at D:\\MANGAI\\adult-project\\output.png",
+      archive: "\\\\studio-pc\\adult-share\\project.zip",
+      sourceImage: "private-source-image",
+      reference_image: { base64Payload: "private-reference-image" },
+      controlImage: "private-control-image",
+      mask: "private-mask",
+      completedPage: "private-completed-page",
+      freeText: "private-adult-description",
+      nested: { dataUrl: "data:image/png;base64,private-pixels" },
+    });
+    const saved = fs.readFileSync(path.join(root, "desktop.jsonl"), "utf8");
+    assert.doesNotMatch(saved, /D:\\\\MANGAI|studio-pc|adult-share/);
+    assert.doesNotMatch(saved, /private-source|private-reference|private-control|private-mask|private-completed|private-adult|private-pixels/);
+    assert.match(saved, /\[LOCAL_PATH\]/);
+    assert.match(saved, /\[REDACTED\]/);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("詳細クラッシュレポートは同意後だけ保存して削除できる", () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-diagnostics-"));
   const paths = { root, logs: path.join(root, "logs") };
@@ -75,6 +100,8 @@ test("詳細クラッシュレポートは同意後だけ保存して削除で�
         negativePrompt: "private negative prompt fixture",
         inputImage: { bytes: "private-image-bytes" },
         mask_image: "private-mask-bytes",
+        outputPath: "E:\\PrivateManga\\adult-page.png",
+        referenceImage: "private-reference-content",
       },
     );
     assert.ok(reportPath && fs.existsSync(reportPath));
@@ -84,6 +111,7 @@ test("詳細クラッシュレポートは同意後だけ保存して削除で�
       report,
       /private adult|private negative|private-image|private-mask/,
     );
+    assert.doesNotMatch(report, /PrivateManga|private-reference-content/);
     assert.match(report, /\[REDACTED\]/);
 
     const reopened = new DiagnosticsService(paths, runtime);

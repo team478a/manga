@@ -8,12 +8,16 @@ type LogContext = Record<string, unknown>;
 const SENSITIVE_KEY =
   /(^|_)(authorization|cookie|password|secret|token|api[_-]?key|device[_-]?code)($|_)/i;
 const PRIVATE_CREATIVE_KEY =
-  /(^|_)(prompt|negative[_-]?prompt|input[_-]?image|mask[_-]?image|image[_-]?bytes|bytes|base64|data[_-]?url|input[_-]?json|output[_-]?json)($|_)/i;
+  /(^|_)(prompt|negative[_-]?prompt|input[_-]?image|source[_-]?image|reference[_-]?image|control[_-]?image|mask(?:[_-]?image)?|completed[_-]?page|page[_-]?image|image[_-]?bytes|bytes|base64|data[_-]?url|input[_-]?json|output[_-]?json|free[_-]?text)($|_)/i;
 
 function sanitizeString(value: string) {
   const home = os.homedir();
   return value
     .replaceAll(home, "~")
+    .replace(/file:\/\/[A-Za-z]:[\\/][^\s"'<>]+/gi, "file://[LOCAL_PATH]")
+    .replace(/\\\\[^\\\s]+\\[^\s"'<>]+/g, "[LOCAL_PATH]")
+    .replace(/[A-Za-z]:[\\/][^\s"'<>]+/g, "[LOCAL_PATH]")
+    .replace(/\/(?:Users|home|private|tmp|var|mnt)\/[^\s"'<>]+/g, "[LOCAL_PATH]")
     .replace(/Bearer\s+[A-Za-z0-9._~-]+/gi, "Bearer [REDACTED]")
     .replace(/\bsk-[A-Za-z0-9_-]{8,}\b/g, "[REDACTED_KEY]")
     .replace(

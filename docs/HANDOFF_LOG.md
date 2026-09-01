@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 診断プライバシー回帰強化
+
+- Branch: `codex/desktop-adult-pilot-diagnostics-privacy-20260901`
+- Base: `88d04b7`（PR #419 merge commit）
+- 共通サニタイザーのprivate creative keyを入力／参照／ControlNet画像、mask、完成Page、自由記述へ拡張し、local絶対pathを置換するようにした。
+- 構造化ログとクラッシュレポートでD/E drive、UNC、作品内容aliasが残らないことを検証した。
+- 診断5/5、Desktop 214/214、lint、typecheck、Desktop build、a11y 29画面blocking violation 0成功。
+- Production、Cloud、外部Provider、Job、Asset、credit、生成操作0件。
+- 次: deps、diff check、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 1枚生成ドライラン事前診断
 
 - Branch: `codex/desktop-adult-pilot-generation-dry-run-20260901`
