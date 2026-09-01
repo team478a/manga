@@ -8,7 +8,7 @@ const target = path.resolve(
   process.env.MANGAI_ADULT_PILOT_RELEASE_APPROVALS_PATH ??
     path.join(root, "docs/desktop/DESKTOP_ADULT_PILOT_RELEASE_APPROVALS.json"),
 );
-const required = new Set(["--approve-pilot-start", "--accept-manual-version-stop"]);
+const required = new Set(["approve-pilot-start", "accept-manual-version-stop"]);
 const supplied = new Set(process.argv.slice(2));
 const fail = (message) => {
   console.error(`Desktop Adult pilot owner approval not recorded: ${message}`);

@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 責任者承認記録完了（2026-09-01）
+
+- 責任者がPilot開始準備と、遠隔強制停止未実装による手動停止制約を明示承認したため、専用commandで両方を記録した。
+- npmのdash flag転送を位置argument方式へ修正し、集中2/2成功後に記録した。初回fail closed時の変更なし。
+- readiness 5/8。署名、固定Bundle、12GB実機4方式だけがBLOCKEDで、strictは失敗を維持する。
+- Desktop 224/224、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。配布、招待、生成、Production／Cloud／Provider操作なし。
+- 次はDraft PRと全CI後、適格実機と署名証明書が必要な3外部blockerを進める。
+
+---
+
 ## 0.0 Desktop Adult Pilot 責任者承認記録（2026-09-01）
 
 - Pilot開始と手動version停止制約の両方を明示flagで確認する専用commandを追加した。
