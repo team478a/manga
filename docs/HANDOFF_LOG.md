@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 1枚生成ドライラン事前診断
+
+- Branch: `codex/desktop-adult-pilot-generation-dry-run-20260901`
+- Base: `b87b5c1`（PR #418 merge commit）
+- 成人向け設定・同意・作品・Prompt・参照画像の既存安全判定を共通関数へ抽出し、生成なしの1枚事前診断から再利用した。
+- loopback Provider、方式別mapping、固定workflow完全一致、Supervisor起動、4方式Runtime診断もMain側で確認する。ドライラン前後でJob 0件をtest確認した。
+- 集中4/4、Desktop 213/213、lint、typecheck、Desktop build、a11y 29画面blocking violation 0成功。
+- 現PCは条件外のため実Runtimeドライラン／生成なし。Production、Cloud、外部Provider、Job、Asset、credit操作0件。
+- 次: deps、diff check、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 固定4方式workflow登録
 
 - Branch: `codex/desktop-adult-pilot-workflow-registration-20260901`

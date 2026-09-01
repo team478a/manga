@@ -98,7 +98,7 @@ import { AdultPilot7ZipAdapter, findSupported7Zip } from "./adult-pilot-7zip.js"
 import { configureAdultPilotRuntime } from "./adult-pilot-runtime-config.js";
 import { AdultPilotRuntimeSupervisor, resolveAdultPilotRuntimeLaunch } from "./adult-pilot-runtime-supervisor.js";
 import { inspectAdultPilotRuntime } from "./adult-pilot-runtime-acceptance.js";
-import { registerAdultPilotWorkflows } from "./adult-pilot-workflow-registration.js";
+import { assertAdultPilotWorkflowSelection, registerAdultPilotWorkflows } from "./adult-pilot-workflow-registration.js";
 import {
   balloonInputSchema,
   canvasBatchInputSchema,
@@ -1129,6 +1129,9 @@ function register() {
   handle("ai:image:generate", (v) =>
     aiService.generateImage(imageJobRequestSchema.parse(v)),
   );
+  handle("ai:adult-pilot:preflight-image", (v) =>
+    aiService.preflightAdultPilotImage(imageJobRequestSchema.parse(v)),
+  );
   handle("ai:image:enqueue-pages", (v) =>
     aiService.enqueuePageBatch(pageBatchImageRequestSchema.parse(v)),
   );
@@ -1298,6 +1301,17 @@ app
       allowMock:
         !app.isPackaged || process.env.MANGAI_ENABLE_MOCK_AI === "true",
       getRuntimeProfile: () => runtimeProfile.getState(),
+      preflightAdultPilotRuntime: async (workflowId, operation) => {
+        if (adultPilotRuntimeSupervisor.status().status !== "running")
+          throw new Error("Adult Pilot Runtimeを起動してから1枚生成診断を実行してください。");
+        const workflowDirectory = app.isPackaged
+          ? path.join(process.resourcesPath, "adult-pilot-workflows")
+          : path.resolve(here, "..", "..", "resources", "adult-pilot-workflows"),
+          acceptance = await inspectAdultPilotRuntime(workflowDirectory);
+        if (acceptance.status !== "passed")
+          throw new Error("4方式Runtime診断に合格してから1枚生成診断を実行してください。");
+        assertAdultPilotWorkflowSelection(workflowDirectory, operation, store.getComfyWorkflow(workflowId));
+      },
       getProviderCredential: (providerId) =>
         providerCredentials.get(providerId),
       dezgoFeatures,

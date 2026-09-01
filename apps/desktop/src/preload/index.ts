@@ -258,6 +258,8 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:external-asset:enqueue", value),
     generateImage: (value: unknown) =>
       ipcRenderer.invoke("ai:image:generate", value),
+    preflightAdultPilotImage: (value: unknown) =>
+      ipcRenderer.invoke("ai:adult-pilot:preflight-image", value),
     enqueuePageBatch: (value: unknown) =>
       ipcRenderer.invoke("ai:image:enqueue-pages", value),
     listWorkflows: () => ipcRenderer.invoke("ai:workflows:list"),

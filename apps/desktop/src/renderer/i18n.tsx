@@ -552,6 +552,8 @@ const ja = {
   "generation.negativePrompt": "Negative Prompt",
   "generation.generating": "生成中…",
   "generation.start": "画像生成を開始",
+  "generation.adultPilotPreflight": "1枚生成の事前診断（生成なし）",
+  "generation.adultPilotPreflightReady": "1枚生成の事前条件を確認しました。画像生成、Job作成、保存は行っていません。",
   "generation.adult.confirmationTitle": "成人向け生成の内容確認",
   "generation.adult.referenceReviewTitle": "参照画像のローカル安全確認",
   "generation.adult.referenceReviewHelp":
@@ -1613,6 +1615,8 @@ const en: Record<TranslationKey, string> = {
   "generation.negativePrompt": "Negative prompt",
   "generation.generating": "Generating…",
   "generation.start": "Generate image",
+  "generation.adultPilotPreflight": "Preflight one image (no generation)",
+  "generation.adultPilotPreflightReady": "The one-image preflight passed. No image, job, or file was created.",
   "generation.adult.confirmationTitle": "Adult-generation content check",
   "generation.adult.referenceReviewTitle": "Local reference-image review",
   "generation.adult.referenceReviewHelp":

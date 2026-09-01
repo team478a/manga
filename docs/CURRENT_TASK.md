@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 1枚生成ドライラン事前診断
+
+- 状態: `ONE_IMAGE_PREFLIGHT_CONNECTED / SHARED_ADULT_POLICY / NO_GENERATION_SUBMISSION`
+- Branch: `codex/desktop-adult-pilot-generation-dry-run-20260901`
+- Base: `b87b5c1`（PR #418 merge commit）
+- 成人向け画像生成画面へ「1枚生成の事前診断（生成なし）」を追加した。成人向け設定、18歳以上確認、作品区分、Prompt、参照画像、loopback Provider、方式別mapping、固定workflow、Supervisor管理Runtime、4方式Runtime診断を確認する。
+- 成人向け安全判定を既存生成とドライランで共通化した。ドライランは`/prompt`、Queue／Job、画像・Asset・file保存を行わない。危険入力はRuntime確認前に停止する。
+- 集中4/4、Desktop 213/213、lint、typecheck、Desktop build、a11y 29画面blocking violation 0成功。
+- 現PCは12GB NVIDIA GPU／7-Zip条件外のため実Runtimeドライラン／生成なし。Production／Cloud／外部Provider／Job／credit操作0件。
+- 次: deps、diff check、commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末でドライラン合格後の各方式1枚生成は別承認で行う。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 固定4方式workflow登録
 
 - 状態: `FIXED_WORKFLOWS_REGISTRATION_CONNECTED / RUNTIME_RECHECK_REQUIRED / NO_GENERATION_SUBMISSION`

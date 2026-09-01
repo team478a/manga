@@ -186,6 +186,7 @@ export class AIService {
   private activeDezgoJobId: string | null = null;
   private allowMock: boolean;
   private getRuntimeProfile?: () => RuntimeProfileState;
+  private preflightAdultPilotRuntime?: (workflowId: string, operation: ImageJobRequest["operation"]) => Promise<void>;
   private retryBaseDelayMs: number;
   private getProviderCredential: (
     providerId: "dezgo",
@@ -203,6 +204,7 @@ export class AIService {
     options: {
       allowMock?: boolean;
       getRuntimeProfile?: () => RuntimeProfileState;
+      preflightAdultPilotRuntime?: (workflowId: string, operation: ImageJobRequest["operation"]) => Promise<void>;
       retryBaseDelayMs?: number;
       getProviderCredential?: (providerId: "dezgo") => Promise<string | null>;
       getDezgoBalance?: () => Promise<number | null>;
@@ -214,6 +216,7 @@ export class AIService {
     this.allowMock =
       options.allowMock ?? process.env.MANGAI_ENABLE_MOCK_AI === "true";
     this.getRuntimeProfile = options.getRuntimeProfile;
+    this.preflightAdultPilotRuntime = options.preflightAdultPilotRuntime;
     this.retryBaseDelayMs = Math.max(10, options.retryBaseDelayMs ?? 1000);
     this.getProviderCredential =
       options.getProviderCredential ?? (async () => null);
@@ -1451,6 +1454,71 @@ export class AIService {
       // runImageJob records the durable failure before rejecting.
     }
   }
+  private assertAdultLocalGenerationAllowed(
+    input: ImageJobRequest,
+    characterReferenceAssetIds: string[],
+  ) {
+    const settings = this.store.getAdultGenerationSettings();
+    if (!settings.administratorEnabled)
+      throw new AIProviderError("ADULT_GENERATION_ADMIN_DISABLED", "管理者設定で成人向け生成が無効です。設定画面で確認してください。");
+    if (!settings.userConfirmed18Plus)
+      throw new AIProviderError("ADULT_GENERATION_CONSENT_REQUIRED", "18歳以上の確認が無効または期限切れです。設定画面で確認してください。");
+    if (this.store.bundle(input.projectId).project.ageRating !== "成人向け")
+      throw new AIProviderError("ADULT_PROJECT_REQUIRED", "成人向け生成は対象年齢が成人向けのProjectでのみ利用できます。");
+    const review = reviewAdultGenerationPrompt(input.prompt);
+    if (!review.allowed)
+      throw new AIProviderError(
+        `ADULT_POLICY_${review.reason.toUpperCase()}`,
+        review.reason === "minor_or_age_ambiguous"
+          ? "未成年または年齢が曖昧な表現を含むため生成できません。"
+          : review.reason === "real_person_reference"
+            ? "実在人物を参照する表現を含むため生成できません。"
+            : "非同意または搾取的な表現を含むため生成できません。",
+      );
+    const referenceAssetIds = [...new Set([...(input.sourceAssetId ? [input.sourceAssetId] : []), ...characterReferenceAssetIds])];
+    for (const assetId of referenceAssetIds) {
+      const result = evaluateAdultReferenceImage(this.store.getAdultReferenceImageAssessment(input.projectId, assetId));
+      if (result.allowed) continue;
+      const error = {
+        assessment_missing: ["ADULT_REFERENCE_ASSESSMENT_REQUIRED", "成人向け生成に使う参照画像のローカル安全確認が必要です。"],
+        local_model_review_required: ["ADULT_REFERENCE_LOCAL_REVIEW_REQUIRED", "参照画像は端末内モデルによる安全確認が必要です。"],
+        person_presence_unknown: ["ADULT_REFERENCE_PERSON_UNKNOWN", "参照画像に人物が含まれるか判定できないため生成できません。"],
+        minor_or_age_ambiguous: ["ADULT_REFERENCE_MINOR_OR_AGE_AMBIGUOUS", "参照画像の人物が成人と確認できないため生成できません。"],
+        real_person_possible: ["ADULT_REFERENCE_REAL_PERSON_POSSIBLE", "参照画像が実在人物でないと確認できないため生成できません。"],
+      }[result.reason];
+      throw new AIProviderError(error[0], error[1]);
+    }
+    const comfySettings = this.settings("comfyui");
+    if (!this.isLoopbackUrl(comfySettings.baseUrl))
+      throw new AIProviderError("ADULT_LOCAL_PROVIDER_REQUIRED", "成人向け生成はこの段階では端末内ComfyUIでのみ実行できます。");
+    return comfySettings;
+  }
+  async preflightAdultPilotImage(input: ImageJobRequest) {
+    input = imageJobRequestSchema.parse(input);
+    if (input.jobType !== "adult_character_render")
+      throw new AIProviderError("ADULT_PILOT_REQUEST_REQUIRED", "成人向け1枚生成の入力を確認してください。");
+    let characterReferenceAssetIds: string[] = [];
+    if (input.characterProfileId) {
+      const profile = this.store.getCharacterProfile(input.projectId, input.characterProfileId);
+      characterReferenceAssetIds = profile.referenceAssets.map((reference) => reference.assetId);
+      input = { ...input, prompt: [profile.prompt, input.prompt].filter(Boolean).join(", "), negativePrompt: [profile.negativePrompt, input.negativePrompt].filter(Boolean).join(", ") };
+    }
+    const settings = this.assertAdultLocalGenerationAllowed(input, characterReferenceAssetIds);
+    if (!settings.enabled)
+      throw new AIProviderError("PROVIDER_DISABLED", "ComfyUIが無効です。設定画面で有効にしてください。");
+    const definition = this.store.getComfyWorkflow(input.workflowId),
+      requiredMappings = {
+        text_to_image: ["prompt"],
+        image_to_image: ["prompt", "sourceImage"],
+        controlnet: ["prompt", "controlImage"],
+        inpainting: ["prompt", "sourceImage", "maskImage"],
+      }[input.operation],
+      missingMappings = requiredMappings.filter((field) => !(field in definition.mapping));
+    if (missingMappings.length)
+      throw new AIProviderError("ADULT_PILOT_WORKFLOW_MAPPING_INVALID", "選択した固定workflowの入力mappingを確認してください。");
+    await this.preflightAdultPilotRuntime?.(input.workflowId, input.operation);
+    return { status: "ready" as const, operation: input.operation, checks: ["adult_policy", "reference_images", "local_provider", "fixed_workflow", "runtime"] };
+  }
   async generateImage(input: ImageJobRequest, existingJobId?: string) {
     input = imageJobRequestSchema.parse(input);
     let characterReferenceAssetIds: string[] = [];
@@ -1470,79 +1538,8 @@ export class AIService {
           .join(", "),
       };
     }
-    if (input.jobType === "adult_character_render") {
-      const settings = this.store.getAdultGenerationSettings();
-      if (!settings.administratorEnabled)
-        throw new AIProviderError(
-          "ADULT_GENERATION_ADMIN_DISABLED",
-          "管理者設定で成人向け生成が無効です。設定画面で確認してください。",
-        );
-      if (!settings.userConfirmed18Plus)
-        throw new AIProviderError(
-          "ADULT_GENERATION_CONSENT_REQUIRED",
-          "18歳以上の確認が無効または期限切れです。設定画面で確認してください。",
-        );
-      if (this.store.bundle(input.projectId).project.ageRating !== "成人向け")
-        throw new AIProviderError(
-          "ADULT_PROJECT_REQUIRED",
-          "成人向け生成は対象年齢が成人向けのProjectでのみ利用できます。",
-        );
-      const review = reviewAdultGenerationPrompt(input.prompt);
-      if (!review.allowed)
-        throw new AIProviderError(
-          `ADULT_POLICY_${review.reason.toUpperCase()}`,
-          review.reason === "minor_or_age_ambiguous"
-            ? "未成年または年齢が曖昧な表現を含むため生成できません。"
-            : review.reason === "real_person_reference"
-              ? "実在人物を参照する表現を含むため生成できません。"
-              : "非同意または搾取的な表現を含むため生成できません。",
-        );
-      const referenceAssetIds = [
-        ...new Set([
-          ...(input.sourceAssetId ? [input.sourceAssetId] : []),
-          ...characterReferenceAssetIds,
-        ]),
-      ];
-      for (const assetId of referenceAssetIds) {
-        const assessment = this.store.getAdultReferenceImageAssessment(
-          input.projectId,
-          assetId,
-        );
-        const result = evaluateAdultReferenceImage(assessment);
-        if (result.allowed) continue;
-        const error = {
-          assessment_missing: {
-            code: "ADULT_REFERENCE_ASSESSMENT_REQUIRED",
-            message: "成人向け生成に使う参照画像のローカル安全確認が必要です。",
-          },
-          local_model_review_required: {
-            code: "ADULT_REFERENCE_LOCAL_REVIEW_REQUIRED",
-            message: "参照画像は端末内モデルによる安全確認が必要です。",
-          },
-          person_presence_unknown: {
-            code: "ADULT_REFERENCE_PERSON_UNKNOWN",
-            message:
-              "参照画像に人物が含まれるか判定できないため生成できません。",
-          },
-          minor_or_age_ambiguous: {
-            code: "ADULT_REFERENCE_MINOR_OR_AGE_AMBIGUOUS",
-            message: "参照画像の人物が成人と確認できないため生成できません。",
-          },
-          real_person_possible: {
-            code: "ADULT_REFERENCE_REAL_PERSON_POSSIBLE",
-            message:
-              "参照画像が実在人物でないと確認できないため生成できません。",
-          },
-        }[result.reason];
-        throw new AIProviderError(error.code, error.message);
-      }
-      const comfySettings = this.settings("comfyui");
-      if (!this.isLoopbackUrl(comfySettings.baseUrl))
-        throw new AIProviderError(
-          "ADULT_LOCAL_PROVIDER_REQUIRED",
-          "成人向け生成はこの段階では端末内ComfyUIでのみ実行できます。",
-        );
-    }
+    if (input.jobType === "adult_character_render")
+      this.assertAdultLocalGenerationAllowed(input, characterReferenceAssetIds);
     const runtime = this.getRuntimeProfile?.();
     const dimensions = runtime
       ? constrainImageDimensions(

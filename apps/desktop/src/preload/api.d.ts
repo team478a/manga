@@ -546,6 +546,11 @@ export type DesktopApi = {
       modelId: string;
     }>;
     generateImage: (value: any) => Promise<any>;
+    preflightAdultPilotImage: (value: unknown) => Promise<{
+      status: "ready";
+      operation: "text_to_image" | "image_to_image" | "controlnet" | "inpainting";
+      checks: string[];
+    }>;
     enqueuePageBatch: (value: PageBatchImageRequest) => Promise<{
       jobs: Array<{ pageId: string; jobId: string }>;
       queuedCount: number;
