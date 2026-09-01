@@ -340,14 +340,7 @@ export function GenerationJobs({
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [externalConfirmOpen, externalEnqueueBusy]);
-  const generate = async () => {
-    if (!workflowId || !promptText.trim()) return;
-    setBusy(true);
-    setError("");
-    setGenerationNotice("");
-    const refreshTimer = window.setInterval(() => void load(), 750);
-    try {
-      const result = await window.mangai.ai.generateImage({
+  const generationInput = () => ({
         projectId: bundle.project.id,
         episodeId,
         pageId,
@@ -373,6 +366,14 @@ export function GenerationJobs({
             ? adultChecks
             : undefined,
       });
+  const generate = async () => {
+    if (!workflowId || !promptText.trim()) return;
+    setBusy(true);
+    setError("");
+    setGenerationNotice("");
+    const refreshTimer = window.setInterval(() => void load(), 750);
+    try {
+      const result = await window.mangai.ai.generateImage(generationInput());
       if (result.bundle) onBundle(result.bundle);
       if (result.dimensionsAdjusted)
         setGenerationNotice(
@@ -386,6 +387,19 @@ export function GenerationJobs({
       await load();
     } finally {
       window.clearInterval(refreshTimer);
+      setBusy(false);
+    }
+  };
+  const preflightAdultPilot = async () => {
+    setBusy(true);
+    setError("");
+    setGenerationNotice("");
+    try {
+      await window.mangai.ai.preflightAdultPilotImage(generationInput());
+      setGenerationNotice(t("generation.adultPilotPreflightReady"));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    } finally {
       setBusy(false);
     }
   };
@@ -1418,6 +1432,15 @@ export function GenerationJobs({
           >
             {busy ? t("generation.generating") : t("generation.start")}
           </button>
+          {bundle.project.ageRating === "成人向け" && (
+            <button
+              className="secondary"
+              disabled={busy || !workflowId || !promptText.trim() || !localInputsReady || !workflowSupportsOperation || !adultConfirmationComplete || !adultReferencesReady}
+              onClick={() => void preflightAdultPilot()}
+            >
+              {t("generation.adultPilotPreflight")}
+            </button>
+          )}
           {error && (
             <p className="error" role="alert">
               {localizeMessage(error)}

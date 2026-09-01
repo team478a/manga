@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { registerAdultPilotWorkflows } from "../dist-main/main/adult-pilot-workflow-registration.js";
+import { assertAdultPilotWorkflowSelection, registerAdultPilotWorkflows } from "../dist-main/main/adult-pilot-workflow-registration.js";
 
 const source = path.resolve(import.meta.dirname, "..", "resources", "adult-pilot-workflows");
 
@@ -35,4 +35,11 @@ test("reuses exact workflows and fails closed before partial registration on a c
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
   }
+});
+
+test("one-image preflight accepts only the fixed workflow for its operation", () => {
+  const workflow = JSON.parse(fs.readFileSync(path.join(source, "text-to-image.json"), "utf8"));
+  const mapping = JSON.parse(fs.readFileSync(path.join(source, "text-to-image.mapping.json"), "utf8"));
+  assert.doesNotThrow(() => assertAdultPilotWorkflowSelection(source, "text_to_image", { workflow, mapping }));
+  assert.throws(() => assertAdultPilotWorkflowSelection(source, "inpainting", { workflow, mapping }), /一致しません/);
 });

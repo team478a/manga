@@ -9,6 +9,12 @@ const definitions = [
   ["MANGAI Adult Pilot: ControlNet", "controlnet"],
   ["MANGAI Adult Pilot: Inpainting", "inpainting"],
 ] as const;
+const operationBasenames = {
+  text_to_image: "text-to-image",
+  image_to_image: "image-to-image",
+  controlnet: "controlnet",
+  inpainting: "inpainting",
+} as const;
 
 type ExistingWorkflow = { name?: unknown; filePath?: unknown; mappingJson?: unknown };
 
@@ -42,4 +48,21 @@ export const registerAdultPilotWorkflows = (
   });
   for (const item of planned) if (!item.current) register(item.name, item.workflowPath, item.mapping);
   return { status: "registered" as const, registeredCount: planned.filter((item) => !item.current).length, totalCount: planned.length };
+};
+
+export const assertAdultPilotWorkflowSelection = (
+  workflowDirectory: string,
+  operation: keyof typeof operationBasenames,
+  selected: { workflow: unknown; mapping: unknown },
+) => {
+  const basename = operationBasenames[operation],
+    workflowPath = path.join(workflowDirectory, `${basename}.json`),
+    mappingPath = path.join(workflowDirectory, `${basename}.mapping.json`);
+  if (!fs.statSync(workflowPath, { throwIfNoEntry: false })?.isFile() || !fs.statSync(mappingPath, { throwIfNoEntry: false })?.isFile())
+    throw new Error("固定Adult Pilot workflowを確認できません。");
+  const expectedWorkflow = JSON.parse(fs.readFileSync(workflowPath, "utf8")),
+    expectedMapping = workflowMappingSchema.parse(JSON.parse(fs.readFileSync(mappingPath, "utf8"))),
+    selectedMapping = workflowMappingSchema.parse(selected.mapping);
+  if (normalizedJson(selected.workflow) !== normalizedJson(expectedWorkflow) || normalizedJson(selectedMapping) !== normalizedJson(expectedMapping))
+    throw new Error("選択したworkflowは固定Adult Pilot構成と一致しません。");
 };

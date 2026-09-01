@@ -207,6 +207,47 @@ test("adult local generation requires device, age, project and content checks", 
   }
 });
 
+test("Adult Pilot one-image preflight reuses policy without creating a job", async () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-pilot-preflight-"));
+  const db = new MangaiDatabase({ root, database: path.join(root, "db.sqlite"), projects: path.join(root, "projects"), assets: path.join(root, "assets"), exports: path.join(root, "exports"), logs: path.join(root, "logs") });
+  try {
+    const project = db.createProject({ title: "Pilot preflight", subtitle: "", description: "", genre: "", ageRating: "成人向け", readingDirection: "rtl", width: 1024, height: 1024, dpi: 300 });
+    const workflowPath = path.join(root, "workflow.json");
+    fs.writeFileSync(workflowPath, JSON.stringify({ 3: { inputs: { text: "" } } }));
+    const workflow = db.registerComfyWorkflow("pilot", workflowPath, { prompt: { nodeId: "3", input: "text" } })[0];
+    db.saveProviderSettings({ ...settings("comfyui", "http://127.0.0.1:8188"), enabled: true });
+    db.setAdultGenerationAdministratorEnabled(true);
+    db.confirmAdultGeneration18Plus({ userConfirmed18Plus: true, termsVersion: ADULT_GENERATION_TERMS_VERSION });
+    let runtimeChecks = 0;
+    const service = new AIService(db, { preflightAdultPilotRuntime: async (workflowId, operation) => {
+      assert.equal(workflowId, workflow.id);
+      assert.equal(operation, "text_to_image");
+      runtimeChecks += 1;
+    } });
+    const request = {
+      projectId: project.project.id,
+      workflowId: workflow.id,
+      prompt: "two fictional consenting adults, both explicitly age 25",
+      jobType: "adult_character_render",
+      adultContentConfirmation: { fictionalAdultsOnly: true, allCharacters18Plus: true, noMinorOrAgeAmbiguousAppearance: true, noRealPersonReference: true, consensualAndNonExploitativeOnly: true, rightsConfirmed: true },
+    };
+    const before = db.listGenerationJobs().length;
+    assert.deepEqual(await service.preflightAdultPilotImage(request), {
+      status: "ready",
+      operation: "text_to_image",
+      checks: ["adult_policy", "reference_images", "local_provider", "fixed_workflow", "runtime"],
+    });
+    assert.equal(runtimeChecks, 1);
+    assert.equal(db.listGenerationJobs().length, before);
+    await assert.rejects(service.preflightAdultPilotImage({ ...request, prompt: "16 years old character" }), (error) => error.code === "ADULT_POLICY_MINOR_OR_AGE_AMBIGUOUS");
+    assert.equal(runtimeChecks, 1);
+    assert.equal(db.listGenerationJobs().length, before);
+  } finally {
+    db.close();
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("adult local generation blocks unsafe or unreviewed reference images", async () => {
   const root = fs.mkdtempSync(
     path.join(os.tmpdir(), "mangai-adult-reference-"),

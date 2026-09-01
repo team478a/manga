@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 1枚生成ドライラン事前診断（2026-09-01）
+
+- 成人向け生成画面へ生成なしの事前診断を追加し、既存生成と同じ成人向け安全判定を使用するよう共通化した。
+- Main側でloopback Provider、方式別mapping、選択workflowの固定内容、Supervisor管理Runtime、4方式診断を確認する。`/prompt`、Queue／Job、Asset／file保存は行わない。
+- 集中4/4、Desktop 213/213、lint、typecheck、build、a11y blocking violation 0成功。現PCで実Runtimeドライラン／生成なし。Production／Cloud／外部Provider／Job／credit操作なし。
+- 次はDraft PRと全CI後、適格内部端末でドライランを実行する。各方式1枚生成は別承認が必要。
+
+---
+
 ## 0.0 Desktop Adult Pilot 固定4方式workflow登録（2026-09-01）
 
 - Runtime診断合格後だけ固定4方式を既存ComfyUI workflow一覧へ登録できるMain IPC／Wizard導線を追加した。Main側でRuntime起動と診断を再確認する。
