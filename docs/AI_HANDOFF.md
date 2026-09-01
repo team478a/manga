@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 責任者承認記録（2026-09-01）
+
+- Pilot開始と手動version停止制約の両方を明示flagで確認する専用commandを追加した。
+- 会話の一般的な進行指示から承認を推測しない。両flag不足や既記録状態ではfileを変更せず停止する。
+- 集中2/2、readiness 4/8、Desktop 224/224、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。実承認記録、配布、招待、生成、外部操作なし。
+- 次はDraft PRと全CI後、責任者の明示文言がある場合だけ承認commandを実行する。
+
+---
+
 ## 0.0 Desktop Adult Pilot 統合release readiness（2026-09-01）
 
 - 公開前8条件を一括表示するread-only preflightとstrict gateを追加した。

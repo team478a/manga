@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 責任者承認記録
+
+- 状態: `EXPLICIT_DUAL_APPROVAL_REQUIRED / APPROVAL_NOT_RECORDED / DISTRIBUTION_BLOCKED`
+- Branch: `codex/desktop-adult-pilot-owner-approval-command-20260901`
+- Base: `30ab8cd`（PR #423 merge commit）
+- Pilot開始と遠隔強制停止未実装による手動停止制約を、別々の明示flagで同時確認した場合だけatomic記録するcommandを追加した。
+- 一般的な「進めてください」を承認へ変換しない。片方不足、未知argument、既記録manifestではfail closed。記録後も他の署名・Bundle・実機gateを解除しない。
+- 集中2/2、release readiness 4 READY／4 BLOCKED、Desktop 224/224、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。承認file変更、実招待、Production／Cloud／Provider／Job／credit／生成／配布操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 統合release readiness
 
 - 状態: `REPOSITORY_READY_4_OF_8 / EXTERNAL_BLOCKERS_4 / STRICT_FAIL_CLOSED`
