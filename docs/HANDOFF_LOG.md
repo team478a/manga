@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 内容非保持招待台帳
+
+- Branch: `codex/desktop-adult-pilot-invite-ledger-20260901`
+- Base: `bc7a994`（PR #421 merge commit）
+- 実利用者情報をcommitしない空template、運用手順、fail-closed検査scriptを追加した。
+- random ID、Stage、version、Windows／VRAM帯、配布・同意・停止日時、状態以外の個人情報・作品内容・pathを拒否する。
+- 集中4/4、空template検査、Desktop 220/220、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、diff check成功。実招待、利用者data、Production、Cloud、Provider、Job、credit、生成、Release操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 停止・復旧運用
 
 - Branch: `codex/desktop-adult-pilot-stop-recovery-runbook-20260901`
