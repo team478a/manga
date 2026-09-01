@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 内容非保持招待台帳
+
+- 状態: `INVITE_LEDGER_CONTRACT_READY / PRIVATE_DATA_REJECTED / NO_REAL_INVITES`
+- Branch: `codex/desktop-adult-pilot-invite-ledger-20260901`
+- Base: `bc7a994`（PR #421 merge commit）
+- random monitor ID、Stage、Desktop version、Windows 11／VRAM帯、配布・同意・停止日時、状態だけを保持する運用台帳契約と空templateを追加した。実台帳はGit外のアクセス制限領域へ保存する。
+- 氏名、メール、作品内容、自由記述、端末名、秘密値、絶対path、重複ID、同意なしACTIVE、停止日時なしSTOPPED、対象外環境をfail closedで拒否する。
+- 集中検査4/4、空template検査、Desktop 220/220、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。実招待／利用者data／Production／Cloud／Provider／Job／credit／生成／配布操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 停止・復旧運用
 
 - 状態: `STOP_RECOVERY_RUNBOOK_READY / MANUAL_VERSION_STOP_REQUIRED / DATA_PRESERVATION_REQUIRED`

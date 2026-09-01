@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 内容非保持招待台帳（2026-09-01）
+
+- 公開前条件8の招待対象、配布日時、version、対応環境、同意日時、停止状態を内容非保持で追跡する台帳契約を追加した。
+- 実台帳はGitへ置かず、空templateだけを管理する。個人情報、作品内容、自由記述、秘密値、絶対pathを検査で拒否する。
+- 集中4/4、空template検査、Desktop 220/220、lint、typecheck、deps、build、a11y blocking violation 0、diff check成功。実招待、利用者data、Production／Cloud／Provider／Job／credit／生成／配布操作なし。
+- 次はDraft PRと全CI後、実台帳保存先と運用責任者を責任者承認で確定する。
+
+---
+
 ## 0.0 Desktop Adult Pilot 停止・復旧運用（2026-09-01）
 
 - 公開前条件の緊急停止、配布停止、問い合わせ、アンインストール、作品データ保持、段階復旧を運用ランブックとして固定した。
