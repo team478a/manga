@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 診断プライバシー回帰強化（2026-09-01）
+
+- 診断サニタイザーへ作品内容の別名とホーム外のWindows／UNC／file URL／主要POSIX絶対pathの除外を追加した。
+- 構造化ログと同意後クラッシュレポートの双方でPrompt、参照／入力／mask画像、完成Page、自由記述、絶対pathを保持しないことをtestした。
+- 診断5/5、Desktop 214/214、lint、typecheck、build、a11y blocking violation 0成功。Production／Cloud／外部Provider／Job／credit／生成操作なし。
+- 次はDraft PRと全CI後、実機受入れの診断fileを内容非保持で確認する。
+
+---
+
 ## 0.0 Desktop Adult Pilot 1枚生成ドライラン事前診断（2026-09-01）
 
 - 成人向け生成画面へ生成なしの事前診断を追加し、既存生成と同じ成人向け安全判定を使用するよう共通化した。
