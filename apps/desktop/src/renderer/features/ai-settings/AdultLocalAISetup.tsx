@@ -208,6 +208,22 @@ export function AdultLocalAISetup({
         >
           {t("settings.adultSetup.inspectRuntime")}
         </button>
+        <button
+          className="secondary"
+          disabled={!acceptancePassed || runtimeState.status !== "running" || Boolean(running)}
+          onClick={async () => {
+            setMessage("");
+            try {
+              const result = await window.mangai.ai.registerAdultPilotWorkflows();
+              setMessage(t("settings.adultSetup.workflowsRegistered", { count: result.registeredCount }));
+            } catch (cause) {
+              setAcceptancePassed(false);
+              setMessage(cause instanceof Error ? cause.message : String(cause));
+            }
+          }}
+        >
+          {t("settings.adultSetup.registerWorkflows")}
+        </button>
         {running === "download" && (
           <button
             className="danger"

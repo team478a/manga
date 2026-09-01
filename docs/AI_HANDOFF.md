@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 固定4方式workflow登録（2026-09-01）
+
+- Runtime診断合格後だけ固定4方式を既存ComfyUI workflow一覧へ登録できるMain IPC／Wizard導線を追加した。Main側でRuntime起動と診断を再確認する。
+- 完全一致は再利用し、同名不一致は登録開始前にfail closed。既存設定を上書きせず、`/prompt`送信と生成は行わない。
+- 集中2/2、Desktop 211/211、lint、typecheck、build、a11y blocking violation 0成功。現PCで実Runtime／登録／生成なし。Production／Cloud／Provider／Job／credit操作なし。
+- 次はDraft PRと全CI後、適格内部端末で診断・登録を確認する。1枚生成は別承認が必要。
+
+---
+
 ## 0.0 Desktop Adult Pilot 4方式Runtime受入れ診断（2026-09-01）
 
 - 固定4 workflow／mappingをWindows配布resourcesへ含め、local ComfyUIのversion、GPU／VRAM、固定model選択肢、必須nodeだけを読む診断をWizardへ接続した。

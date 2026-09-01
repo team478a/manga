@@ -98,6 +98,7 @@ import { AdultPilot7ZipAdapter, findSupported7Zip } from "./adult-pilot-7zip.js"
 import { configureAdultPilotRuntime } from "./adult-pilot-runtime-config.js";
 import { AdultPilotRuntimeSupervisor, resolveAdultPilotRuntimeLaunch } from "./adult-pilot-runtime-supervisor.js";
 import { inspectAdultPilotRuntime } from "./adult-pilot-runtime-acceptance.js";
+import { registerAdultPilotWorkflows } from "./adult-pilot-workflow-registration.js";
 import {
   balloonInputSchema,
   canvasBatchInputSchema,
@@ -934,6 +935,23 @@ function register() {
       ? path.join(process.resourcesPath, "adult-pilot-workflows")
       : path.resolve(here, "..", "..", "resources", "adult-pilot-workflows");
     return inspectAdultPilotRuntime(workflowDirectory);
+  });
+  handle("ai:adult-pilot:register-workflows", async () => {
+    if (adultPilotRuntimeSupervisor.status().status !== "running")
+      throw new Error("Runtimeを起動してから固定workflowを登録してください。");
+    const workflowDirectory = app.isPackaged
+      ? path.join(process.resourcesPath, "adult-pilot-workflows")
+      : path.resolve(here, "..", "..", "resources", "adult-pilot-workflows"),
+      acceptance = await inspectAdultPilotRuntime(workflowDirectory);
+    if (acceptance.status !== "passed")
+      throw new Error("4方式Runtime診断に合格してから固定workflowを登録してください。");
+    return registerAdultPilotWorkflows(
+      workflowDirectory,
+      store.listComfyWorkflows(),
+      (name, workflowPath, mapping) => {
+        store.registerComfyWorkflow(name, workflowPath, mapping);
+      },
+    );
   });
   handle("ai:phase5:hardware-evidence:export", async (v) => {
     const projectId = projectIdSchema.parse(v).id;

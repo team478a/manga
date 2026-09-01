@@ -117,6 +117,11 @@ export type AdultPilotRuntimeAcceptanceReport = {
   modelsAvailable: boolean;
   workflows: Array<{ operation: string; status: "passed" | "failed"; missingNodes: string[] }>;
 };
+export type AdultPilotWorkflowRegistrationResult = {
+  status: "registered";
+  registeredCount: number;
+  totalCount: number;
+};
 export type AdultPilotDownloadProgress = {
   artifactId: "runtime" | "checkpoint" | "vae" | "controlnet";
   artifactIndex: number;
@@ -404,6 +409,7 @@ export type DesktopApi = {
     ) => Promise<AdultPilotRuntimeState>;
     stopAdultPilotRuntime: () => Promise<AdultPilotRuntimeState>;
     inspectAdultPilotRuntime: () => Promise<AdultPilotRuntimeAcceptanceReport>;
+    registerAdultPilotWorkflows: () => Promise<AdultPilotWorkflowRegistrationResult>;
     onAdultPilotProgress: (
       listener: (value: AdultPilotDownloadProgress) => void,
     ) => () => void;
