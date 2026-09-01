@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 責任者承認記録完了
+
+- 状態: `OWNER_APPROVAL_RECORDED / READINESS_5_OF_8 / DISTRIBUTION_BLOCKED`
+- Branch: `codex/desktop-adult-pilot-owner-approval-record-20260901`
+- Base: `554802d`（PR #424 merge commit）
+- 責任者の明示文言に基づき、Pilot開始準備と手動version停止制約の承認を専用commandで記録した。`approvedAt=2026-09-01T03:04:29.773Z`。
+- root npmでdash開始flagがnpm設定として消費される不具合を検出し、位置argumentへ修正して集中2/2後に再実行した。初回失敗では承認file変更0件。
+- readinessは5 READY／3 BLOCKED。残件は署名、固定Bundle、12GB実機4方式証跡。strictは期待どおり終了コード1。
+- Desktop 224/224、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、diff check成功。実配布／実招待、Production／Cloud／Provider／Job／credit／生成操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 責任者承認記録
 
 - 状態: `EXPLICIT_DUAL_APPROVAL_REQUIRED / APPROVAL_NOT_RECORDED / DISTRIBUTION_BLOCKED`

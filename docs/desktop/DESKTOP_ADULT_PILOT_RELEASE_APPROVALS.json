@@ -1,7 +1,7 @@
 {
   "format": "mangai.desktop-adult-pilot-release-approvals",
   "version": 1,
-  "pilotStartApproved": false,
-  "manualVersionStopConstraintAccepted": false,
-  "approvedAt": null
+  "pilotStartApproved": true,
+  "manualVersionStopConstraintAccepted": true,
+  "approvedAt": "2026-09-01T03:04:29.773Z"
 }

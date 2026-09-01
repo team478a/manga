@@ -25,7 +25,7 @@ const run = (file, args) => spawnSync(process.execPath, [script, ...args], {
 });
 
 test("Adult Pilot owner approval requires both explicit acknowledgements", () => {
-  for (const args of [[], ["--approve-pilot-start"], ["--accept-manual-version-stop"]]) {
+  for (const args of [[], ["approve-pilot-start"], ["accept-manual-version-stop"]]) {
     const { root, file } = fixture();
     assert.equal(run(file, args).status, 1);
     assert.deepEqual(JSON.parse(fs.readFileSync(file, "utf8")), initial);
@@ -35,12 +35,12 @@ test("Adult Pilot owner approval requires both explicit acknowledgements", () =>
 
 test("Adult Pilot owner approval records both decisions atomically", () => {
   const { root, file } = fixture();
-  const result = run(file, ["--approve-pilot-start", "--accept-manual-version-stop"]);
+  const result = run(file, ["approve-pilot-start", "accept-manual-version-stop"]);
   assert.equal(result.status, 0, result.stderr);
   const saved = JSON.parse(fs.readFileSync(file, "utf8"));
   assert.equal(saved.pilotStartApproved, true);
   assert.equal(saved.manualVersionStopConstraintAccepted, true);
   assert.equal(saved.approvedAt, new Date(saved.approvedAt).toISOString());
-  assert.equal(run(file, ["--approve-pilot-start", "--accept-manual-version-stop"]).status, 1);
+  assert.equal(run(file, ["approve-pilot-start", "accept-manual-version-stop"]).status, 1);
   fs.rmSync(root, { recursive: true, force: true });
 });

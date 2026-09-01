@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 責任者承認記録完了
+
+- Branch: `codex/desktop-adult-pilot-owner-approval-record-20260901`
+- Base: `554802d`（PR #424 merge commit）
+- 明示承認を専用commandで記録し、npm引数転送を安全な位置argumentへ修正した。
+- readiness 5 READY／3 BLOCKED。署名、固定Bundle、12GB実機4方式以外はREADY。strict期待失敗。
+- Desktop 224/224、lint、typecheck、deps、Desktop build、a11y 29画面blocking violation 0、diff check成功。実配布、実招待、Production、Cloud、Provider、Job、credit、生成、Release操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 責任者承認記録
 
 - Branch: `codex/desktop-adult-pilot-owner-approval-command-20260901`
