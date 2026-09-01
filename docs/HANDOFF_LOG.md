@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-02 Codex: 品質確認開始案内の提出済み除外
+
+- Branch: `codex/monitor-quality-review-exclude-submitted-20260902`
+- Base: `e3f82f2`（PR #426 merge commit）
+- Production送信直前に1名の最終送信済みを検出し、5名一括送信を中止した。メール送信0件。
+- Server／UI双方で提出済みを除外し、未提出・未送信4名だけを対象表示・送信する。完了者の通知未送信状態は履歴として保持する。
+- Production通知migration適用と3項目のschema確認済み。Batch active、画像28、割当5、通知0。
+- 集中14/14、Hub 942/942、deps、lint、全型検査、Hub build、diff check成功。Provider、Job、Asset、credit、生成操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後に4名対象を再確認して送信する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 責任者承認記録完了
 
 - Branch: `codex/desktop-adult-pilot-owner-approval-record-20260901`

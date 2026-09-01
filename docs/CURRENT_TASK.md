@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-02 品質確認開始案内の提出済み除外
+
+- 状態: `IMPLEMENTED / EMAIL_NOT_SENT / MERGE_REQUIRED`
+- Branch: `codex/monitor-quality-review-exclude-submitted-20260902`
+- Base: `e3f82f2`（PR #426 merge commit）
+- Production送信直前に、割当5名中1名が28/28回答を最終送信済みである一方、開始案内未送信5名として数えられる不整合を検出した。外部送信前に停止し、メール送信0件を維持した。
+- 通知対象を未提出・未送信に限定した。Server Actionは`status`と`submitted_at`を再検査し、管理画面は提出済み除外人数と送信対象人数を明示する。
+- Production通知追跡migrationは適用成功。`notification_sent_at`、`notification_send_count`、管理者記録RPCはすべて確認済み。Batch active、画像28、割当5、通知済み0、修正後の送信対象4。
+- 集中14/14、Hub 942/942、deps error 0（既存warning 2件）、lint、全型検査、Hub build、`git diff --check`成功。Productionメール、Provider、Job、Asset、credit、生成操作0件。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。mergeとProduction反映後に4名だけへ送信する。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 責任者承認記録完了
 
 - 状態: `OWNER_APPROVAL_RECORDED / READINESS_5_OF_8 / DISTRIBUTION_BLOCKED`

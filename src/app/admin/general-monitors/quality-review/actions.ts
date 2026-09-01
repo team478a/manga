@@ -111,9 +111,11 @@ export async function sendMonitorQualityReviewStartNotificationsAction(formData:
   const targets = await loadMonitorQualityReviewNotificationTargets(parsed.data.batchId);
   if (!targets)
     redirect(encodeURI("/admin/general-monitors/quality-review?error=有効なBatchと全確認担当の割当を確認してください"));
-  const unsent = targets.assignments.filter((item) => !item.notification_sent_at);
+  const unsent = targets.assignments.filter((item) =>
+    !item.notification_sent_at && item.status !== "submitted" && !item.submitted_at
+  );
   if (!unsent.length)
-    redirect(encodeURI("/admin/general-monitors/quality-review?message=開始案内は全員へ送信済みです"));
+    redirect(encodeURI("/admin/general-monitors/quality-review?message=開始案内が必要な未提出担当者はいません"));
 
   let sent = 0;
   let failed = 0;

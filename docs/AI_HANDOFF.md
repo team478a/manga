@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認開始案内の提出済み除外（2026-09-02）
+
+- Production送信直前に、5名中1名が28/28回答を最終送信済みで、従来の未送信判定では完了者にも開始案内を送ることを検出した。メール送信は0件のまま停止した。
+- Server Actionと管理画面の両方で、`notification_sent_at is null`に加えて`status <> submitted`かつ`submitted_at is null`を必須化した。画面は提出済み除外人数と、実際の未提出・未送信人数を表示する。
+- Productionへ通知追跡migrationは適用済みで、追加2列と管理者RPCはread-only確認済み。Batchはactive、画像28、割当5、通知0。修正merge／Production反映後の対象は4名。
+- 集中14/14、Hub 942/942、deps、lint、全型検査、Hub build、diff check成功。Productionメール、Provider、Job、Asset、credit、生成操作0件。
+- 次はDraft PRと全CI／Vercel Preview成功後に停止し、merge後に管理画面で4名対象を再確認して送信する。
+
+---
+
 ## 0.0 Desktop Adult Pilot 責任者承認記録完了（2026-09-01）
 
 - 責任者がPilot開始準備と、遠隔強制停止未実装による手動停止制約を明示承認したため、専用commandで両方を記録した。

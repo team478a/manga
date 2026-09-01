@@ -70,6 +70,12 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
           const assignedSlots = new Set(assignments.map((item) => item.reviewer_slot));
           const assignedProfiles = new Set(assignments.map((item) => item.reviewer_profile_id));
           const notifiedCount = assignments.filter((item) => item.notification_sent_at).length;
+          const pendingNotificationCount = assignments.filter((item) =>
+            !item.notification_sent_at && item.status !== "submitted" && !item.submitted_at
+          ).length;
+          const completedWithoutNotificationCount = assignments.filter((item) =>
+            !item.notification_sent_at && (item.status === "submitted" || Boolean(item.submitted_at))
+          ).length;
           const availableSlots = targetSlots.filter((slot) => !assignedSlots.has(slot));
           const availableMonitors = activeMonitors.filter((item) => !assignedProfiles.has(item.profile_id));
           const canActivate = batch.status === "draft" && total === MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT && assignments.length === 0;
@@ -120,9 +126,10 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
             {batch.status === "active" && assignments.length === targetReviewerCount ? <form action={sendMonitorQualityReviewStartNotificationsAction} className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
               <input name="batchId" type="hidden" value={batch.id} />
               <p className="font-bold">品質確認の開始案内</p>
-              <p className="mt-1 text-sm text-stone-700">未送信の確認担当だけへ、品質確認URL・28枚・期限・途中保存方法をメールで案内します。</p>
+              <p className="mt-1 text-sm text-stone-700">未提出かつ未送信の確認担当だけへ、品質確認URL・28枚・期限・途中保存方法をメールで案内します。提出済み担当者には送信しません。</p>
+              {completedWithoutNotificationCount ? <p className="mt-2 text-xs text-stone-600">提出済みのため送信対象外: {completedWithoutNotificationCount}名</p> : null}
               <label className="mt-3 flex items-start gap-2 text-sm"><input className="mt-1" name="confirmation" required type="checkbox" value="send" />登録済みメールアドレスへの外部送信を確認しました</label>
-              <PendingSubmitButton className="button mt-3 bg-emerald-700 hover:bg-emerald-800" disabled={notifiedCount === assignments.length} pendingLabel="開始案内を送信中…">{notifiedCount === assignments.length ? "全員へ送信済み" : `未送信${assignments.length - notifiedCount}名へ開始案内を送信`}</PendingSubmitButton>
+              <PendingSubmitButton className="button mt-3 bg-emerald-700 hover:bg-emerald-800" disabled={pendingNotificationCount === 0} pendingLabel="開始案内を送信中…">{pendingNotificationCount === 0 ? "開始案内が必要な担当者はいません" : `未提出・未送信${pendingNotificationCount}名へ開始案内を送信`}</PendingSubmitButton>
             </form> : null}
             <div className="mt-4 space-y-3">
               {assignments.map((assignment) => <div className="rounded-xl border border-stone-200 p-3" key={assignment.id}>
