@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-01 Codex: Desktop Adult Pilot 固定4方式workflow登録
+
+- Branch: `codex/desktop-adult-pilot-workflow-registration-20260901`
+- Base: `e4a1373`（PR #417 merge commit）
+- Supervisor管理Runtimeが起動中かつ固定4方式診断に再合格した場合だけ、配布resourcesのworkflow／mappingをComfyUI workflow一覧へ登録する導線を追加した。
+- 完全一致は冪等再利用し、同名不一致は4件の新規登録前に停止する。利用者workflowの上書き、`/prompt`送信、生成は行わない。
+- 集中2/2、Desktop 211/211、lint、typecheck、Desktop build、a11y 29画面blocking violation 0成功。
+- 現PCは条件外のため実Runtime診断／登録／生成なし。Production、Cloud、Provider、Job、Asset、credit操作0件。
+- 次: deps、diff check、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-01 Codex: Desktop Adult Pilot 4方式Runtime受入れ診断
 
 - Branch: `codex/desktop-adult-pilot-runtime-acceptance-20260901`

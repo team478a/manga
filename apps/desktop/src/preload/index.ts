@@ -171,6 +171,7 @@ contextBridge.exposeInMainWorld("mangai", {
       ipcRenderer.invoke("ai:adult-pilot:start-runtime", { root, consent }),
     stopAdultPilotRuntime: () => ipcRenderer.invoke("ai:adult-pilot:stop-runtime"),
     inspectAdultPilotRuntime: () => ipcRenderer.invoke("ai:adult-pilot:inspect-runtime"),
+    registerAdultPilotWorkflows: () => ipcRenderer.invoke("ai:adult-pilot:register-workflows"),
     onAdultPilotProgress: (listener: (value: unknown) => void) => {
       const handler = (_event: Electron.IpcRendererEvent, value: unknown) =>
         listener(value);

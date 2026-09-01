@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-01 Desktop Adult Pilot 固定4方式workflow登録
+
+- 状態: `FIXED_WORKFLOWS_REGISTRATION_CONNECTED / RUNTIME_RECHECK_REQUIRED / NO_GENERATION_SUBMISSION`
+- Branch: `codex/desktop-adult-pilot-workflow-registration-20260901`
+- Base: `e4a1373`（PR #417 merge commit）
+- Runtime診断済みの固定4方式を画像生成画面へ登録するMain IPC／preload／Wizard導線を追加した。登録IPCはSupervisor管理Runtimeの起動と4方式診断合格をMain側で再確認する。
+- workflow／mapping完全一致は再利用する。同名不一致が1件でもあれば新規登録前に全体を停止し、利用者設定を上書きしない。登録操作は`/prompt`を呼ばず、画像生成を開始しない。
+- 集中2/2、Desktop 211/211、lint、typecheck、Desktop build、a11y 29画面blocking violation 0成功。
+- 現PCは12GB NVIDIA GPU／7-Zip条件外のため実Runtime診断／登録／生成なし。Production／Cloud／Provider／Job／credit操作0件。
+- 次: deps、diff check、commit、push、Draft PR、全CI／Vercel Preview成功で停止。適格内部端末で診断・登録後、1方式1枚の実生成は別承認で行う。
+
+---
+
 ## 2026-09-01 Desktop Adult Pilot 4方式Runtime受入れ診断
 
 - 状態: `ACCEPTANCE_DIAGNOSTIC_CONNECTED / NO_GENERATION_SUBMISSION / REAL_RUNTIME_NOT_RUN`
