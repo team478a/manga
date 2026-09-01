@@ -105,6 +105,23 @@ test("管理画面は進捗のみ表示し回答payloadを取得しない", asyn
   assert.match(adminLoader, /case_completed_at/);
 });
 
+test("管理画面は未送信者だけへ開始案内を送り送信履歴を保持する", async () => {
+  const [page, actions, repository, migration] = await Promise.all([
+    read("../src/app/admin/general-monitors/quality-review/page.tsx"),
+    read("../src/app/admin/general-monitors/quality-review/actions.ts"),
+    read("../src/modules/manga-quality/infrastructure/monitor-quality-review-repository.ts"),
+    read("../supabase/migrations/202609010001_cloud_monitor_quality_review_notifications.sql"),
+  ]);
+  assert.match(page, /未送信.*名へ開始案内を送信/);
+  assert.match(page, /confirmation/);
+  assert.match(actions, /filter\(\(item\) => !item\.notification_sent_at\)/);
+  assert.match(actions, /sendCloudGeneralMonitorQualityReviewStartEmail/);
+  assert.match(repository, /record_cloud_monitor_quality_review_notification_sent/);
+  assert.match(migration, /notification_sent_at/);
+  assert.match(migration, /notification_send_count/);
+  assert.match(migration, /auth\.role\(\)<>'service_role'/);
+});
+
 test("送信済み回答だけを既存Human Review v2形式で非キャッシュ出力する", async () => {
   const route = await read("../src/app/admin/general-monitors/quality-review/export/route.ts");
   assert.match(route, /requireAdmin/);

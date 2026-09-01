@@ -5,9 +5,17 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth";
 import { monitorQualityReviewEnabled } from "@/lib/monitor-quality-review";
+import {
+  cloudGeneralMonitorInviteEmailConfigured,
+  sendCloudGeneralMonitorQualityReviewStartEmail,
+} from "@/lib/cloud-general-monitor-email";
+import { loadGeneralMonitorInviteRecipient } from "@/modules/general-monitor/infrastructure/admin-monitor-repository";
 import { monitorQualityReviewSlotSchema } from "@/modules/manga-quality/domain/monitor-quality-review";
 import {
   assignMonitorQualityReview,
+  loadMonitorQualityReviewNotificationTargets,
+  monitorQualityReviewNotificationTrackingConfigured,
+  recordMonitorQualityReviewNotificationDelivery,
   setMonitorQualityReviewBatchLifecycle,
 } from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
 
@@ -79,4 +87,61 @@ export async function assignMonitorQualityReviewAction(formData: FormData) {
   }
   revalidatePath("/admin/general-monitors/quality-review");
   redirect(encodeURI("/admin/general-monitors/quality-review?message=確認担当を割り当てました"));
+}
+
+const notificationSchema = z.object({
+  batchId: z.string().uuid(),
+  confirmation: z.literal("send"),
+});
+
+export async function sendMonitorQualityReviewStartNotificationsAction(formData: FormData) {
+  const { profile: actor } = await requireAdmin();
+  if (!monitorQualityReviewEnabled())
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=品質確認機能は停止中です"));
+  const parsed = notificationSchema.safeParse({
+    batchId: formData.get("batchId"),
+    confirmation: formData.get("confirmation"),
+  });
+  if (!parsed.success)
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=送信対象と確認欄を確認してください"));
+  if (!(await cloudGeneralMonitorInviteEmailConfigured()))
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=Resend送信設定を確認してください"));
+  if (!(await monitorQualityReviewNotificationTrackingConfigured()))
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=開始案内の送信履歴migrationを先に適用してください"));
+  const targets = await loadMonitorQualityReviewNotificationTargets(parsed.data.batchId);
+  if (!targets)
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=有効なBatchと全確認担当の割当を確認してください"));
+  const unsent = targets.assignments.filter((item) => !item.notification_sent_at);
+  if (!unsent.length)
+    redirect(encodeURI("/admin/general-monitors/quality-review?message=開始案内は全員へ送信済みです"));
+
+  let sent = 0;
+  let failed = 0;
+  for (const assignment of unsent) {
+    const recipient = await loadGeneralMonitorInviteRecipient(assignment.reviewer_profile_id);
+    if (!recipient) {
+      failed += 1;
+      continue;
+    }
+    try {
+      await sendCloudGeneralMonitorQualityReviewStartEmail({
+        assignmentId: assignment.id,
+        recipientEmail: recipient.email,
+        recipientName: recipient.name,
+        expiresAt: targets.batch.expires_at,
+      });
+      const recorded = await recordMonitorQualityReviewNotificationDelivery({
+        actorProfileId: actor.id,
+        assignmentId: assignment.id,
+      });
+      if (!recorded) throw new Error("monitor_quality_review_email_audit_failed");
+      sent += 1;
+    } catch {
+      failed += 1;
+    }
+  }
+  revalidatePath("/admin/general-monitors/quality-review");
+  if (failed)
+    redirect(encodeURI(`/admin/general-monitors/quality-review?error=開始案内は${sent}名へ送信、${failed}名は未送信です。未送信者だけ再実行できます`));
+  redirect(encodeURI(`/admin/general-monitors/quality-review?message=開始案内を${sent}名へ送信しました`));
 }

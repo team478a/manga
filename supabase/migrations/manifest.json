@@ -444,7 +444,13 @@
       "description": "Flag配下で長編連番PNG ZIPとProject JSON書き出し形式を追加",
       "forwardSha256": "a3ba7b35744516faa1862a4f7d7039fb2df283ff546ae9a7a463770893fedbc5",
       "rollbackSha256": "e2083c7c190d3f37707b6c88d60f53728792c3512af39a47b0b3958c9a2d6590"
+    },
+    {
+      "id": "202609010001_cloud_monitor_quality_review_notifications",
+      "description": "品質確認担当への開始案内送信履歴と管理者記録RPCを追加",
+      "forwardSha256": "8c1167bef37fe4241ba51cd8f317315560cecf15a99650795d3b95e76f2509b3",
+      "rollbackSha256": "70b142d82180ca1945f8321ce44ad47d59ebd36695c5f3cf469c62bf0fb81595"
     }
   ],
-  "schemaSha256": "167286346eca630e35387864c8ad0803c5bd49aa0dc2ef57246b8abd3b9cd25c"
+  "schemaSha256": "6deed7dbadb07f22a6f043355ac7309351775ff8d8a5c695224ea44fa64b6b69"
 }

@@ -2308,6 +2308,8 @@ create table if not exists public.cloud_monitor_quality_review_assignments (
   consented_at timestamptz,
   started_at timestamptz,
   submitted_at timestamptz,
+  notification_sent_at timestamptz,
+  notification_send_count integer not null default 0 check(notification_send_count>=0),
   assigned_by_profile_id uuid not null references public.profiles(id) on delete restrict,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -2478,6 +2480,23 @@ revoke all on function public.consent_cloud_monitor_quality_review(uuid),
 grant execute on function public.consent_cloud_monitor_quality_review(uuid),
   public.save_cloud_monitor_quality_review_case(uuid,uuid,jsonb,boolean),
   public.submit_cloud_monitor_quality_review(uuid) to authenticated,service_role;
+
+create or replace function public.record_cloud_monitor_quality_review_notification_sent(
+  p_actor_profile_id uuid,p_assignment_id uuid
+) returns void language plpgsql security definer set search_path=public,pg_temp as $$
+begin
+  if auth.role()<>'service_role' or not exists(
+    select 1 from public.profiles where id=p_actor_profile_id and role='admin'
+  ) then raise exception 'monitor_quality_review_admin_required';end if;
+  update public.cloud_monitor_quality_review_assignments
+  set notification_sent_at=now(),notification_send_count=notification_send_count+1,updated_at=now()
+  where id=p_assignment_id and status<>'revoked';
+  if not found then raise exception 'monitor_quality_review_assignment_unavailable';end if;
+end$$;
+revoke all on function public.record_cloud_monitor_quality_review_notification_sent(uuid,uuid)
+  from public,anon,authenticated;
+grant execute on function public.record_cloud_monitor_quality_review_notification_sent(uuid,uuid)
+  to service_role;
 
 create table if not exists public.cloud_generation_run_checkpoints (
   id uuid primary key default gen_random_uuid(),target_id uuid not null unique,batch_id uuid not null references public.cloud_generation_batches(id) on delete cascade,project_id uuid not null references public.cloud_projects(id) on delete cascade,page_id uuid not null,panel_id uuid not null,source_page_revision integer not null check(source_page_revision>=0),job_id uuid not null unique references public.cloud_generation_jobs(id) on delete restrict,output_asset_id uuid not null unique references public.cloud_assets(id) on delete restrict,output_sha256 text not null check(output_sha256~'^[0-9a-f]{64}$'),created_at timestamptz not null default now(),foreign key(batch_id,project_id) references public.cloud_generation_batches(id,project_id) on delete cascade,foreign key(page_id,project_id) references public.cloud_pages(id,project_id) on delete cascade,foreign key(job_id,project_id) references public.cloud_generation_jobs(id,project_id) on delete restrict

@@ -149,7 +149,7 @@ export async function loadMonitorQualityReviewAdminWorkspace() {
   const now = new Date().toISOString();
   const [batches, assignments, cases, responses, enrollments, profiles] = await Promise.all([
     admin.from("cloud_monitor_quality_review_batches").select("id,batch_code,status,review_scope,target_reviewer_count,starts_at,expires_at,created_at").order("created_at", { ascending: false }),
-    admin.from("cloud_monitor_quality_review_assignments").select("id,batch_id,reviewer_profile_id,reviewer_slot,status,consented_at,submitted_at,updated_at").order("updated_at", { ascending: false }),
+    admin.from("cloud_monitor_quality_review_assignments").select("id,batch_id,reviewer_profile_id,reviewer_slot,status,consented_at,submitted_at,notification_sent_at,notification_send_count,updated_at").order("updated_at", { ascending: false }),
     admin.from("cloud_monitor_quality_review_cases").select("id,batch_id"),
     admin.from("cloud_monitor_quality_review_responses").select("assignment_id,case_id,case_completed_at"),
     admin.from("cloud_general_monitor_enrollments").select("profile_id,status,expires_at").eq("status", "active").lte("starts_at", now).gt("expires_at", now),
@@ -162,6 +162,46 @@ export async function loadMonitorQualityReviewAdminWorkspace() {
     batches: batches.data ?? [], assignments: assignments.data ?? [], cases: cases.data ?? [],
     responses: responses.data ?? [], enrollments: enrollments.data ?? [], profiles: profiles.data ?? [],
   };
+}
+
+export async function loadMonitorQualityReviewNotificationTargets(batchId: string) {
+  const admin = createAdminClient();
+  const [batch, assignments] = await Promise.all([
+    admin.from("cloud_monitor_quality_review_batches")
+      .select("id,status,target_reviewer_count,expires_at")
+      .eq("id", batchId)
+      .maybeSingle<{ id: string; status: string; target_reviewer_count: number; expires_at: string }>(),
+    admin.from("cloud_monitor_quality_review_assignments")
+      .select("id,reviewer_profile_id,notification_sent_at")
+      .eq("batch_id", batchId)
+      .neq("status", "revoked")
+      .order("reviewer_slot"),
+  ]);
+  if (batch.error || assignments.error || !batch.data || batch.data.status !== "active") return null;
+  if ((assignments.data?.length ?? 0) !== batch.data.target_reviewer_count) return null;
+  return { batch: batch.data, assignments: assignments.data ?? [] };
+}
+
+export async function recordMonitorQualityReviewNotificationDelivery(input: {
+  actorProfileId: string;
+  assignmentId: string;
+}) {
+  const { error } = await createAdminClient().rpc(
+    "record_cloud_monitor_quality_review_notification_sent",
+    {
+      p_actor_profile_id: input.actorProfileId,
+      p_assignment_id: input.assignmentId,
+    },
+  );
+  return !error;
+}
+
+export async function monitorQualityReviewNotificationTrackingConfigured() {
+  const { error } = await createAdminClient()
+    .from("cloud_monitor_quality_review_assignments")
+    .select("notification_sent_at,notification_send_count")
+    .limit(1);
+  return !error;
 }
 
 export async function setMonitorQualityReviewBatchLifecycle(input: {

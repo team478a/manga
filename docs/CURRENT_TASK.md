@@ -5153,3 +5153,15 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 現在のPCはIntel Iris Xe／表示VRAM約2GBのためfail-closed。実モデルのダウンロード、ComfyUI導入、生成、Provider、Job、credit、Production／Cloud操作は行っていない。
 - 検証: AI Core 50/50、Desktop 188/188、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
 - 次: commit、push、Draft PRを作成し、全CIとVercel Preview成功で停止する。実12GB以上GPU端末でのE2EとComfyUI runtime取得は別タスクとする。
+# 2026-09-01 Codex: モニター品質確認の開始案内
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
+- Branch: `codex/monitor-quality-review-start-notification-20260901`
+- Base: `origin/feature/manga-canvas-mvp`@`47c293f`（PR #425 merge commit）
+- 品質確認Batchへ割当済みの未送信モニターだけを対象に、登録済みメールアドレスへ品質確認URL、全28枚、途中保存、期限、最終送信を案内する管理操作を追加した。
+- 管理者の明示チェック、全枠割当、Feature Flag、Resend設定、送信履歴migrationを送信前に再確認する。送信済み時刻・回数をDBへ保持し、割当ID単位のResend冪等性キーで再試行時の二重送信を防ぐ。
+- migration `202609010001_cloud_monitor_quality_review_notifications` は未適用。Production送信は未実施。Provider生成、Job、Asset、credit、成人向け境界、Desktopは変更していない。
+- 集中14/14、Hub 942/942、migration 75/75、deps、lint、全型検査、Hub production build、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge後にProduction migrationを適用し、管理画面で未送信5名への送信を1回だけ実行する。
+
+---

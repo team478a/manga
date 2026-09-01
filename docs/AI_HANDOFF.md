@@ -3110,3 +3110,11 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - 現PCは要件未達のため実ダウンロード・生成なし。Production／Cloud／Provider／Job／credit変更なし。
 - AI Core 50/50、Desktop 188/188、build、a11y blocking violation 0、diff check成功。
 - 次担当はPRのCI／Vercel完了後に停止する。実機E2Eは12GB以上のGPU端末と明示承認が揃ってから行う。
+# 0.0 モニター品質確認の開始案内（2026-09-01）
+
+- 5名割当後も自動通知されない欠落に対し、品質確認専用のResend開始案内と管理操作を追加した。
+- 未送信者だけを対象にし、送信時刻・回数、管理者限定記録RPC、割当ID単位の冪等性キーを使用する。メールアドレスや本文をログ・監査DBへ保存しない。
+- migration未適用、実メール未送信。集中14/14、Hub 942/942、migration 75/75、deps、lint、型検査、build、diff check成功。
+- 次はDraft PRと全CI後、merge、Production migration、管理画面から未送信5名への1回送信の順。送信前に管理画面の対象件数を再確認する。
+
+---

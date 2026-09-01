@@ -5,6 +5,7 @@ import {
   cloudGeneralMonitorInviteEmailConfigured,
   renderCloudGeneralMonitorInviteTemplate,
   sendCloudGeneralMonitorInviteEmail,
+  sendCloudGeneralMonitorQualityReviewStartEmail,
 } from "../src/lib/cloud-general-monitor-email.ts";
 import {
   DEFAULT_MONITOR_INVITE_BODY,
@@ -67,6 +68,38 @@ test("Resend招待メールはServer設定と安全な利用開始URLだけを�
       captured.init.headers.Authorization,
       "Bearer re_secret-token-for-test",
     );
+  } finally {
+    restoreEnvironment(previous);
+  }
+});
+
+test("品質確認開始案内は専用URLと冪等性キーで送る", async () => {
+  const previous = preserveEnvironment();
+  Object.assign(process.env, { MONITOR_INVITE_SITE_URL: "https://app.mang-ai.example" });
+  const loadConfig = async () => ({
+    apiKey: "re_secret-token-for-test",
+    fromEmail: "monitor@mang-ai.example",
+    fromName: "MANGAI運営",
+    subjectTemplate: DEFAULT_MONITOR_INVITE_SUBJECT,
+    bodyTemplate: DEFAULT_MONITOR_INVITE_BODY,
+  });
+  let captured;
+  try {
+    await sendCloudGeneralMonitorQualityReviewStartEmail({
+      assignmentId: "11111111-1111-4111-8111-111111111111",
+      recipientEmail: "reviewer@example.com",
+      recipientName: "確認者",
+      expiresAt: "2026-09-19T00:00:00.000Z",
+    }, async (url, init) => {
+      captured = { url, init };
+      return Response.json({ id: "quality-message-1" });
+    }, loadConfig);
+    const body = JSON.parse(captured.init.body);
+    assert.equal(body.subject, "MANGAI 漫画画像の品質確認開始のお願い");
+    assert.match(body.text, /全28枚/);
+    assert.match(body.text, /\/dashboard\/monitor\/quality-review/);
+    assert.equal(captured.init.headers["Idempotency-Key"], "monitor-quality-review-start/11111111-1111-4111-8111-111111111111");
+    assert.doesNotMatch(body.text, /secret-token/);
   } finally {
     restoreEnvironment(previous);
   }

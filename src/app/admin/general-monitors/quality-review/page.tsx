@@ -11,6 +11,7 @@ import {
 import { loadMonitorQualityReviewAdminWorkspace } from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
 import {
   assignMonitorQualityReviewAction,
+  sendMonitorQualityReviewStartNotificationsAction,
   setMonitorQualityReviewBatchLifecycleAction,
 } from "./actions";
 
@@ -68,6 +69,7 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
           const targetSlots = monitorQualityReviewSlotsForTarget(targetReviewerCount);
           const assignedSlots = new Set(assignments.map((item) => item.reviewer_slot));
           const assignedProfiles = new Set(assignments.map((item) => item.reviewer_profile_id));
+          const notifiedCount = assignments.filter((item) => item.notification_sent_at).length;
           const availableSlots = targetSlots.filter((slot) => !assignedSlots.has(slot));
           const availableMonitors = activeMonitors.filter((item) => !assignedProfiles.has(item.profile_id));
           const canActivate = batch.status === "draft" && total === MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT && assignments.length === 0;
@@ -80,6 +82,7 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
             <div className="flex items-start justify-between gap-3"><div><h2 className="text-xl font-bold">{batch.batch_code}</h2><p className="mt-1 text-sm text-stone-500">画像 {total}枚</p></div><span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-900">{batch.status}</span></div>
             <p className="mt-2 text-xs text-stone-500">期間: {batch.starts_at} 〜 {batch.expires_at}</p>
             <p className="mt-2 text-sm font-bold">確認者 {assignments.length} / {targetReviewerCount}名</p>
+            <p className="mt-1 text-sm text-stone-600">開始案内 {notifiedCount} / {assignments.length}名へ送信済み</p>
             {batch.status === "draft" ? <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3">
               <p className="text-sm text-amber-950">権利確認、元package SHA-256、期間、画像{MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT}枚、既存割当0件をサーバーで再検査してから有効化します。有効化だけではモニターへ公開されません。</p>
               <form action={setMonitorQualityReviewBatchLifecycleAction} className="mt-3">
@@ -114,12 +117,20 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
                 <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" disabled={!featureFlagEnabled} pendingLabel="割当中…">割り当て</PendingSubmitButton>
               </form> : assignmentPeriodOpen ? <p className="mt-2 text-sm text-stone-700">目標枠が埋まったか、割当可能な別モニターがいません。</p> : null}
             </div> : null}
+            {batch.status === "active" && assignments.length === targetReviewerCount ? <form action={sendMonitorQualityReviewStartNotificationsAction} className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+              <input name="batchId" type="hidden" value={batch.id} />
+              <p className="font-bold">品質確認の開始案内</p>
+              <p className="mt-1 text-sm text-stone-700">未送信の確認担当だけへ、品質確認URL・28枚・期限・途中保存方法をメールで案内します。</p>
+              <label className="mt-3 flex items-start gap-2 text-sm"><input className="mt-1" name="confirmation" required type="checkbox" value="send" />登録済みメールアドレスへの外部送信を確認しました</label>
+              <PendingSubmitButton className="button mt-3 bg-emerald-700 hover:bg-emerald-800" disabled={notifiedCount === assignments.length} pendingLabel="開始案内を送信中…">{notifiedCount === assignments.length ? "全員へ送信済み" : `未送信${assignments.length - notifiedCount}名へ開始案内を送信`}</PendingSubmitButton>
+            </form> : null}
             <div className="mt-4 space-y-3">
               {assignments.map((assignment) => <div className="rounded-xl border border-stone-200 p-3" key={assignment.id}>
                 <div className="flex justify-between gap-3"><strong>{describeMonitorQualityReviewSlot(assignment.reviewer_slot)}</strong><span className="text-sm">{assignment.status}</span></div>
                 <p className="mt-1 text-sm text-stone-700">{names.get(assignment.reviewer_profile_id) || "表示名未設定"}</p>
                 <p className="mt-2 text-sm font-bold">確定済み {completedPerAssignment.get(assignment.id) ?? 0} / {total}</p>
                 <p className="mt-1 text-xs text-stone-500">開始確認: {assignment.consented_at ? "済み" : "未確認"}・最終送信: {assignment.submitted_at ? "済み" : "未送信"}</p>
+                <p className="mt-1 text-xs text-stone-500">開始案内: {assignment.notification_sent_at ? `${new Date(assignment.notification_sent_at).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" })}送信` : "未送信"}</p>
                 {assignment.submitted_at ? <a className="button-secondary mt-3 w-full" href={`/admin/general-monitors/quality-review/export?assignmentId=${assignment.id}`}>回答JSONを保存</a> : null}
               </div>)}
               {!assignments.length ? <p className="text-sm text-stone-600">担当者はまだ割り当てられていません。</p> : null}
