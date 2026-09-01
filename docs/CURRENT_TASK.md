@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-02 品質確認開始案内 Production送信完了
+
+- 状態: `PRODUCTION_SENT_4 / SUBMITTED_EXCLUDED_1 / FAILED_0`
+- Branch: `codex/docs-monitor-quality-review-notification-production-20260902`
+- Base: `6cee9f2`（PR #427 merge commit）
+- merge commitのRequired Quality、Migration roundtrip、Windows build、Vercelがすべて成功した後、Production管理画面を最新反映へ更新した。
+- Batch active、画像28、割当5、開始案内0/5、提出済み除外1、未提出・未送信4を確認し、責任者のaction-time承認後に4名へ1回送信した。
+- 結果は「開始案内を4名へ送信しました」、開始案内4/5、4名の送信時刻あり、失敗0。提出済み1名は未送信のまま対象外。
+- Provider、生成Job、Asset、credit、作品データの変更0件。
+- 次: 証跡docsをcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。その後は回答進捗をread-only監視する。
+
+---
+
 ## 2026-09-02 品質確認開始案内の提出済み除外
 
 - 状態: `IMPLEMENTED / EMAIL_NOT_SENT / MERGE_REQUIRED`

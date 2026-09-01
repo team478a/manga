@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-02 Codex: 品質確認開始案内 Production送信完了
+
+- Branch: `codex/docs-monitor-quality-review-notification-production-20260902`
+- Base: `6cee9f2`（PR #427 merge commit）
+- merge commitの全CIとVercel成功後、Productionで提出済み1名を除外し、未提出・未送信4名だけへ開始案内を送信した。
+- 成功通知、開始案内4/5、個別4件の送信時刻、送信対象なし表示を確認。失敗0件。提出済み1名への送信0件。
+- Provider、生成Job、Asset、credit、作品データの変更0件。
+- 次: 証跡docsのDraft PRと全CI／Vercel Preview成功で停止。以後は回答進捗と問い合わせをread-only確認する。
+
+---
+
 ## 2026-09-02 Codex: 品質確認開始案内の提出済み除外
 
 - Branch: `codex/monitor-quality-review-exclude-submitted-20260902`
