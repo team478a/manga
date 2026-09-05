@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 先行販売購入者向け表記migrationのProduction適用（2026-09-05）
+
+- PR #432 merge commit `b553356`を確認後、責任者の明示承認に基づきProductionへ`202609050002_purchaser_early_access_wording.sql`を適用した。
+- SQL Editor成功後のread-only検証で、件名defaultと本文defaultはいずれも購入者向け説明へ更新済みだった。
+- 現在の設定行は新標準と一致せず、migrationは管理者の独自編集済み文面を上書きしなかった。これは完全一致時だけ更新する保護条件どおりである。
+- Productionアプリは対象Chrome profileで未ログインだったため表示確認は未実施。メール、利用者データ、Provider、Job、Asset、credit、生成操作なし。
+- 次はdocs-only Draft PRと全CI／Vercel Preview成功で停止し、利用者画面はログイン済み状態でread-only確認する。
+
+---
+
 ## 0.0 先行販売購入者向け先行利用の表記統一（2026-09-05）
 
 - PR #431 merge commit `8bd9715`を基点に、利用者向けの主要5画面を「先行販売購入者向け先行利用」へ統一した。

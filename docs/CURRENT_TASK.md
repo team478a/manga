@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-05 先行販売購入者向け表記migrationのProduction適用
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / DEFAULTS_VERIFIED / CUSTOM_TEMPLATE_PRESERVED`
+- Branch: `codex/docs-purchaser-wording-production-20260905`
+- Base: `b553356`（PR #432 merge commit）
+- 責任者の明示承認後、Productionへ`202609050002_purchaser_early_access_wording.sql`を適用し、SQL Editorの`Success. No rows returned`を確認した。
+- read-only検証は`subject_default_updated=true`、`body_default_updated=true`。今後作成される標準設定の件名・本文は購入者向け説明へ更新された。
+- 現在の設定行は新標準との完全一致が3項目ともfalseで、管理者が独自編集した既存文面をmigrationが上書きしなかった。設計どおりの保護動作であり、推測による文面変更は行っていない。
+- Productionアプリの利用者画面は対象Chrome profileで未ログインだったため、認証操作を行わず表示確認を未実施として残す。メール送信、利用者回答、Batch、割当、Provider、生成Job、Asset、credit、作品データは変更していない。
+- 次: docs-only commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production表示はログイン済み利用者画面でread-only確認する。
+
+---
+
 ## 2026-09-05 先行販売購入者向け先行利用の表記統一
 
 - 状態: `IMPLEMENTED / PRODUCTION_UNCHANGED / MIGRATION_NOT_APPLIED`
