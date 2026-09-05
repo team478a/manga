@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-05 Codex: Production購入者向け表示／品質確認進捗の確認
+
+- Branch: `codex/docs-purchaser-display-review-progress-20260905`
+- Base: `963b8ff`（PR #433 merge commit）
+- Productionダッシュボードで「先行販売購入者向け先行利用」badge、購入者向け更新情報、品質確認修正のお知らせと関連導線を確認した。
+- 品質確認はA/B/D/Eが28/28提出済み、Cがassigned・0/28。合計112/140、4/5名提出済み。Bの残り6枚完了も確認した。
+- Cへの開始案内は送信済み。重複メールは送信していない。Productionデータ、回答、Batch、割当、Provider、Job、Asset、credit、生成操作なし。
+- 次: docs-only Draft PRの全CI／Vercel Preview成功後、Cの回答を待ってread-only確認する。
+
+---
+
 ## 2026-09-05 Codex: 先行販売購入者向け表記migrationのProduction適用
 
 - Branch: `codex/docs-purchaser-wording-production-20260905`
