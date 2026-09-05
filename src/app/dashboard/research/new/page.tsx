@@ -114,6 +114,24 @@ export default async function NewCloudResearchPage({
                 />
               </Field>
             </div>
+            <div className="mt-5 rounded-lg border border-violet-200 bg-violet-50 p-4">
+              <Field id="pageCount" label="ページ数">
+                <select className="field" defaultValue="0" id="pageCount" name="pageCount" required>
+                  <option value="0">AIにおまかせ</option>
+                  <option value="4">4ページ（短いお試し）</option>
+                  <option value="8">8ページ（短編）</option>
+                  <option value="16">16ページ</option>
+                  <option value="24">24ページ</option>
+                  <option value="32">32ページ</option>
+                  <option value="48">48ページ</option>
+                  <option value="64">64ページ</option>
+                  <option value="100">100ページ前後</option>
+                </select>
+                <p className="mt-2 text-sm text-stone-600">
+                  短く試す場合は4ページ、短編を作る場合は8ページを選んでください。
+                </p>
+              </Field>
+            </div>
             <details className="mt-6 rounded-lg border border-stone-200 bg-stone-50 p-4">
               <summary className="cursor-pointer font-bold">
                 希望がある場合だけ詳細を設定
@@ -162,22 +180,6 @@ export default async function NewCloudResearchPage({
                     <option value="premium">1,000〜1,999円</option>
                     <option value="high">2,000円以上</option>
                   </select>
-                </Field>
-                <Field id="pageCount" label="ページ数">
-                  <select className="field" defaultValue="0" id="pageCount" name="pageCount" required>
-                    <option value="0">AIにおまかせ</option>
-                    <option value="4">4ページ（短いお試し）</option>
-                    <option value="8">8ページ（短編）</option>
-                    <option value="16">16ページ</option>
-                    <option value="24">24ページ</option>
-                    <option value="32">32ページ</option>
-                    <option value="48">48ページ</option>
-                    <option value="64">64ページ</option>
-                    <option value="100">100ページ前後</option>
-                  </select>
-                  <p className="mt-2 text-sm text-stone-500">
-                    最初に短く試す場合は4ページを選んでください。AIにおまかせでは読切が32ページになる場合があります。
-                  </p>
                 </Field>
               </div>
             </details>

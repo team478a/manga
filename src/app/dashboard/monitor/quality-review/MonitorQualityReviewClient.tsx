@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MONITOR_QUALITY_REVIEW_LABELS } from "@/modules/manga-quality/domain/monitor-quality-review";
 import type {
   MonitorQualityReviewCase,
@@ -44,10 +44,11 @@ export function MonitorQualityReviewClient(props: {
   const [status, setStatus] = useState("");
   const [busy, setBusy] = useState(false);
   const saveSequence = useRef(0);
+  const saveQueue = useRef<Promise<void>>(Promise.resolve());
   const current = props.cases[index];
   const draft = current ? drafts[current.id] ?? emptyDraft() : emptyDraft();
 
-  async function post(body: unknown) {
+  const post = useCallback(async (body: unknown) => {
     const response = await fetch("/api/monitor/quality-review", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -56,7 +57,15 @@ export function MonitorQualityReviewClient(props: {
     const data = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "保存できませんでした。");
     return data;
-  }
+  }, []);
+
+  const enqueueSave = useCallback((body: unknown) => {
+    const request = saveQueue.current
+      .catch(() => undefined)
+      .then(() => post(body));
+    saveQueue.current = request.then(() => undefined, () => undefined);
+    return request;
+  }, [post]);
 
   function updateDraft(change: Partial<Draft>) {
     if (!current || submitted) return;
@@ -75,7 +84,7 @@ export function MonitorQualityReviewClient(props: {
       const value = drafts[caseId] ?? emptyDraft();
       try {
         setStatus("下書きを保存中…");
-        await post({ action: "save", assignmentId: props.assignmentId, draft: { caseId, ...value, complete: false } });
+        await enqueueSave({ action: "save", assignmentId: props.assignmentId, draft: { caseId, ...value, complete: false } });
         if (saveSequence.current === sequence) {
           setDirtyCaseId(null);
           setStatus("下書きを保存しました");
@@ -85,7 +94,7 @@ export function MonitorQualityReviewClient(props: {
       }
     }, 900);
     return () => window.clearTimeout(timer);
-  }, [consented, dirtyCaseId, drafts, props.assignmentId, submitted]);
+  }, [consented, dirtyCaseId, drafts, enqueueSave, props.assignmentId, submitted]);
 
   async function acceptConsent() {
     setBusy(true); setStatus("");
@@ -98,9 +107,10 @@ export function MonitorQualityReviewClient(props: {
 
   async function completeCurrent() {
     if (!current) return;
+    ++saveSequence.current;
     setBusy(true); setStatus("");
     try {
-      await post({ action: "save", assignmentId: props.assignmentId, draft: { caseId: current.id, ...draft, complete: true } });
+      await enqueueSave({ action: "save", assignmentId: props.assignmentId, draft: { caseId: current.id, ...draft, complete: true } });
       setCompleted((value) => new Set(value).add(current.id));
       setDirtyCaseId(null);
       setStatus("この画像の判定を確定しました。");
