@@ -43,6 +43,15 @@ npm run desktop:adult:pilot-release-readiness
 npm run desktop:adult:pilot-release-readiness:strict
 ```
 
+適格な内部検証端末で公式配布元から4つのartifactを取得した後は、保存先の絶対pathを指定してローカルBundleを一括検証する。検査はfileを変更・削除せず、容量とSHA-256が固定manifestに一致する場合だけ成功する。
+
+```powershell
+$env:MANGAI_ADULT_PILOT_LOCAL_ROOT = "D:\MANGAI-Adult-Pilot"
+npm run desktop:adult:pilot-local-bundle:verify
+```
+
+必要な配置は`runtime/ComfyUI_windows_portable_nvidia.7z`、`models/checkpoints/`、`models/vae/`、`models/controlnet/`である。相対path、ネットワーク共有、欠落、容量不一致、SHA-256不一致、root外へ解決するfileはfail closedで拒否する。実pathや作品内容は出力せず、artifact roleと判定だけを表示する。
+
 統合release readinessは公開前条件を8区分で表示する。通常実行は残件を報告し、strict実行は署名、固定Bundle、12GB実機4方式証跡、責任者承認を含む全区分が揃うまで終了コード1で停止する。
 
 責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。

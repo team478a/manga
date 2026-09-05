@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-05 Codex: Desktop Adult Pilot ローカル固定Bundle検証
+
+- Branch: `codex/desktop-adult-pilot-local-bundle-verifier-20260905`
+- Base: `8b7f876`（PR #434 merge commit）
+- `verify-adult-pilot-local-bundle.mjs`とroot／Desktop npm commandを追加し、4artifactの配置・容量・SHA-256をstrict検証できるようにした。
+- 欠落と改変を同時に報告して終了コード1にし、既存fileを削除・上書きしない回帰テストを追加した。
+- 実artifact、署名、配布、Runtime、Provider、生成、Production／Cloud／credit操作なし。readinessは5 READY／3 BLOCKEDのまま。
+- 集中3/3、Desktop 227/227、既存Bundle preflight、release readiness、lint、全typecheck、deps error 0（既存warning 2件）、Desktop build、a11y 29画面blocking violation 0、diff check成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-05 Codex: Production購入者向け表示／品質確認進捗の確認
 
 - Branch: `codex/docs-purchaser-display-review-progress-20260905`
