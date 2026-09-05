@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production購入者向け表示／品質確認進捗の確認（2026-09-05）
+
+- PR #433 merge commit `963b8ff`後、Production利用者ダッシュボードで購入者向けbadge、更新情報、品質確認修正のお知らせと導線をread-only確認した。
+- 品質確認はA/B/D/Eが各28/28提出済み、Cのみassignedかつ0/28。全体は112/140、4/5名提出済み。
+- Bは保存修正後に残り6枚を完了した。Cには開始案内送信済みのため、現時点で再送対象はいない。
+- Productionデータ、回答、Batch、割当、メール、Provider、Job、Asset、credit、生成操作なし。
+- 次はdocs-only Draft PRと全CI／Vercel Preview成功で停止し、Cの回答進捗をread-onlyで確認する。
+
+---
+
 ## 0.0 先行販売購入者向け表記migrationのProduction適用（2026-09-05）
 
 - PR #432 merge commit `b553356`を確認後、責任者の明示承認に基づきProductionへ`202609050002_purchaser_early_access_wording.sql`を適用した。

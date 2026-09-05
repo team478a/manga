@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-05 Production購入者向け表示／品質確認進捗の確認
+
+- 状態: `PRODUCTION_DISPLAY_VERIFIED / REVIEW_4_OF_5_SUBMITTED / RESPONSE_PENDING_1`
+- Branch: `codex/docs-purchaser-display-review-progress-20260905`
+- Base: `963b8ff`（PR #433 merge commit）
+- Production利用者ダッシュボードで「先行販売購入者向け先行利用」のbadge、購入者向け更新情報、品質確認保存修正のお知らせと関連画面への導線を確認した。
+- Production品質確認はPrimary Reviewer A／B、Panel Reviewer D／Eが各28/28提出済み。Panel Reviewer Cのみassigned、0/28、未確認・未提出。合計112/140確定、4/5名提出済み。
+- Reviewer Bは22/28から28/28へ復旧し、保存競合修正後の残り6枚を提出済み。Reviewer Cには開始案内送信済みのため、重複送信しない。
+- read-only画面確認のみ。回答、Batch、割当、メール、Provider、生成Job、Asset、credit、作品データ、Production設定は変更していない。
+- 次: docs-only commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。その後はReviewer Cの回答を待ち、進捗をread-onlyで確認する。
+
+---
+
 ## 2026-09-05 先行販売購入者向け表記migrationのProduction適用
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / DEFAULTS_VERIFIED / CUSTOM_TEMPLATE_PRESERVED`
