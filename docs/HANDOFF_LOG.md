@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-05 Codex: 先行販売購入者向け表記migrationのProduction適用
+
+- Branch: `codex/docs-purchaser-wording-production-20260905`
+- Base: `b553356`（PR #432 merge commit）
+- 責任者の明示承認に基づき、Productionへ`202609050002_purchaser_early_access_wording.sql`を適用した。SQL Editorは成功した。
+- read-only検証で件名default／本文defaultの更新を確認した。現在の設定行は独自編集済みのため新標準と一致せず、migrationの保護条件により保持された。
+- Productionアプリ表示は対象profileが未ログインだったため未確認。認証操作、メール送信、利用者データ、Provider、Job、Asset、credit、生成操作なし。
+- 次: docs-only Draft PRの全CI／Vercel Preview成功後、ログイン済み利用者画面で表記をread-only確認する。
+
+---
+
 ## 2026-09-05 Codex: 品質確認フォローアップ送信
 
 - Branch: `codex/docs-monitor-quality-review-followup-20260905`
