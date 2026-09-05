@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-05 Desktop Adult Pilot ローカル固定Bundle検証
+
+- 状態: `LOCAL_BUNDLE_VERIFIER_IMPLEMENTED / ARTIFACTS_NOT_DOWNLOADED / DISTRIBUTION_BLOCKED`
+- Branch: `codex/desktop-adult-pilot-local-bundle-verifier-20260905`
+- Base: `8b7f876`（PR #434 merge commit）
+- 適格な内部端末へ取得したComfyUI、checkpoint、VAE、ControlNetの4artifactを、固定manifestの容量・SHA-256・配置と一括照合するstrict CLIを追加した。
+- local driveの絶対pathだけを受け付け、欠落、容量不一致、SHA-256不一致、root外解決をfail closedで拒否する。検査はfileを変更・削除せず、絶対pathや作品内容を出力しない。
+- 実artifactのdownload、署名、配布、Runtime起動、Provider実行、生成、Production、Cloud、credit操作は行っていない。readinessは引き続き5/8で、署名、固定Bundle実証、12GB実機4方式がBLOCKED。
+- 集中テスト3/3、Desktop 227/227、既存Bundle preflight、release readiness、lint、全typecheck、deps error 0（既存warning 2件）、Desktop build、a11y 29画面blocking violation 0、diff check成功。次: commit、push、Draft PRを作成し全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-05 Production購入者向け表示／品質確認進捗の確認
 
 - 状態: `PRODUCTION_DISPLAY_VERIFIED / REVIEW_4_OF_5_SUBMITTED / RESPONSE_PENDING_1`

@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot ローカル固定Bundle検証（2026-09-05）
+
+- PR #434 merge commit `8b7f876`を基点に、内部端末へ取得済みの4artifactを固定manifestと一括照合するstrict CLIを追加した。
+- ComfyUI、checkpoint、VAE、ControlNetの配置、容量、SHA-256を検証し、相対path、network share、欠落、改変、root外解決を拒否する。検査対象は変更・削除しない。
+- 取得・署名・配布・Runtime／Provider実行・生成は未実施。readiness 5/8と外部blocker 3件は変更しない。
+- 集中3/3、Desktop 227/227、既存Bundle preflight、release readiness、lint、全typecheck、deps、Desktop build、a11y blocking violation 0、diff check成功。次はDraft PRと全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 0.0 Production購入者向け表示／品質確認進捗の確認（2026-09-05）
 
 - PR #433 merge commit `963b8ff`後、Production利用者ダッシュボードで購入者向けbadge、更新情報、品質確認修正のお知らせと導線をread-only確認した。
