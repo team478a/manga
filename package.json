@@ -27,6 +27,7 @@
     "desktop:adult:pilot-owner-approval:record": "node apps/desktop/scripts/record-adult-pilot-owner-approval.mjs",
     "desktop:adult:pilot-preflight:strict": "node apps/desktop/scripts/check-adult-pilot-bundle.mjs --strict",
     "desktop:adult:pilot-local-bundle:verify": "node apps/desktop/scripts/verify-adult-pilot-local-bundle.mjs --strict",
+    "desktop:adult:pilot-bundle-evidence:import": "node apps/desktop/scripts/import-adult-pilot-bundle-evidence.mjs",
     "desktop:test:a11y": "npm --prefix apps/desktop run test:a11y",
     "desktop:test:display-acceptance": "npm --prefix apps/desktop run test:display-acceptance",
     "desktop:pack:win": "npm --prefix apps/desktop run pack:win",

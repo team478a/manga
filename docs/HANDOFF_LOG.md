@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-05 Codex: Desktop Adult Pilot 固定Bundle証跡取込
+
+- Branch: `codex/desktop-adult-pilot-bundle-evidence-import-20260905`
+- Base: `cde27a1`（PR #435 merge commit）
+- strictローカルBundle検証成功時だけpath-free証跡を排他的に新規作成し、固定manifest fingerprintとrepository workflow hashまで再検証して安全に取り込むCLIを追加した。
+- 改ざん、不足、余分なartifact、manifest／workflow不一致をfail closedで拒否し、失敗時はmanifestを変更しない。
+- 実証跡取込、artifact取得、署名、配布、Runtime、Provider、生成、Production／Cloud／credit操作なし。readinessは5 READY／3 BLOCKEDのまま。
+- 集中6/6、Desktop 230/230、preflight、readiness、lint、全typecheck、deps error 0（既存warning 2件）、Desktop build、a11y 29画面blocking violation 0成功。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-05 Codex: Desktop Adult Pilot ローカル固定Bundle検証
 
 - Branch: `codex/desktop-adult-pilot-local-bundle-verifier-20260905`
