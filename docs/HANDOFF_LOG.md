@@ -6418,3 +6418,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後にmigrationを適用し、未送信5名へ管理画面から1回送信する。
 
 ---
+# 2026-09-05 Codex: 先行販売購入者向け先行利用の表記統一
+
+- Branch: `codex/clarify-purchaser-early-access-20260905`
+- Base: `8bd9715`（PR #431 merge commit）
+- ダッシュボード、状況画面、初回案内、品質確認、Webマニュアルで、現在の対象者が先行販売購入者であり、利用形態は正式リリース前の先行提供であることを明記した。
+- 「モニター」表示によって購入者としての権利や正式リリース後の利用資格を失わない旨を表示し、標準招待メールも同じ説明へ更新した。
+- 追加migrationは旧標準テンプレートとの完全一致時だけ更新する。管理者が編集した文面、内部DB名・権限名・運用契約は維持する。
+- 集中20/20、Hub 945/945、deps error 0（既存warning 2件）、lint、全型検査、migration 77/77、Hub build、diff check成功。Production、外部メール、Provider、生成Job、Asset、credit、作品データ操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge前にmigrationやProduction表示を変更しない。
+
+---

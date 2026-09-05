@@ -15,7 +15,7 @@ export default function GeneralMonitorWelcomeError({
 }) {
   return (
     <AsyncStatePage className="max-w-3xl">
-      <p className="font-semibold text-violet-700">一般向け・招待制モニター</p>
+      <p className="font-semibold text-violet-700">先行販売購入者向け・招待制</p>
       <h1 className="mt-2 text-3xl font-bold">画面を読み込めませんでした</h1>
       <AsyncStatePanel className="mt-6" role="alert">
         <h2 className="text-xl font-bold">操作内容は失われていません</h2>

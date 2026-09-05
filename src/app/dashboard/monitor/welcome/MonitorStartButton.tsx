@@ -9,7 +9,7 @@ type StartResponse = {
 };
 
 const fallbackMessage =
-  "モニターを開始できませんでした。時間をおいてもう一度お試しください。";
+  "先行利用を開始できませんでした。時間をおいてもう一度お試しください。";
 
 export function MonitorStartButton() {
   const [pending, setPending] = useState(false);
@@ -35,7 +35,7 @@ export function MonitorStartButton() {
       }
 
       window.location.assign(
-        result.redirectTo || encodeURI("/dashboard?message=モニター利用を開始しました"),
+        result.redirectTo || encodeURI("/dashboard?message=先行利用を開始しました"),
       );
     } catch {
       setError(fallbackMessage);
@@ -52,7 +52,7 @@ export function MonitorStartButton() {
         onClick={() => void startMonitor()}
         type="button"
       >
-        {pending ? "開始準備中…" : "内容を確認してモニターを開始"}
+        {pending ? "開始準備中…" : "内容を確認して先行利用を開始"}
       </button>
       {error ? (
         <p className="mt-3 rounded-lg bg-red-50 p-4 text-red-700" role="alert">

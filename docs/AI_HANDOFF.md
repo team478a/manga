@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 先行販売購入者向け先行利用の表記統一（2026-09-05）
+
+- PR #431 merge commit `8bd9715`を基点に、利用者向けの主要5画面を「先行販売購入者向け先行利用」へ統一した。
+- 無料参加の一般的なモニター募集ではなく、購入者への正式リリース前の段階提供であり、購入者としての権利と正式リリース後の利用資格を失わないことを明記した。
+- 標準招待メールを同じ説明へ更新し、旧標準文面と完全一致する場合だけ移行する追加migrationとrollbackを用意した。独自編集済み文面は変更しない。
+- 集中20/20、Hub 945/945、deps、lint、全型検査、migration 77/77、Hub build、diff check成功。Production、メール、Provider、Job、Asset、credit操作なし。
+- 次はDraft PRと全CI／Vercel Preview成功で停止する。merge後のmigration適用とProduction表示確認は別途行う。
+
+---
+
 ## 0.0 品質確認フォローアップ送信（2026-09-05）
 
 - PR #430 merge commit `1b417af`を基点に、責任者のaction-time承認済みのフォローアップを実施した。

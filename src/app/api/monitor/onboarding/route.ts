@@ -36,12 +36,12 @@ export async function POST(request: Request) {
     revalidatePath("/dashboard/monitor");
     return NextResponse.json({
       ok: true,
-      redirectTo: encodeURI("/dashboard?message=モニター利用を開始しました"),
+      redirectTo: encodeURI("/dashboard?message=先行利用を開始しました"),
     });
   } catch (error) {
     const response = toApiError(
       error,
-      "モニターを開始できませんでした。時間をおいてもう一度お試しください。",
+      "先行利用を開始できませんでした。時間をおいてもう一度お試しください。",
     );
     return NextResponse.json(response.body, { status: response.status });
   }

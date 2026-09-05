@@ -55,7 +55,7 @@ export default async function DashboardPage({
           </p>
         </div>
         <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">
-          一般向けモニター
+          先行販売購入者向け先行利用
         </span>
       </div>
 
@@ -82,7 +82,7 @@ export default async function DashboardPage({
           ) : (
             <span className="button-secondary text-stone-400">
               <Lock className="mr-2 h-5 w-5" />
-              {enabled ? "モニター利用設定を確認" : "現在停止中"}
+              {enabled ? "先行利用設定を確認" : "現在停止中"}
             </span>
           )}
         </div>
@@ -109,12 +109,12 @@ export default async function DashboardPage({
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-xs font-bold text-violet-700">改善</p>
-                  <h3 className="mt-1 font-bold">一般向けモニターで利用できる範囲を更新しました</h3>
+                  <h3 className="mt-1 font-bold">先行販売購入者が利用できる範囲を更新しました</h3>
                   <p className="mt-1 text-sm text-stone-600">
                     市場分析、AI企画、シナリオ、ネーム、Cloud原稿編集、人物・画風・参照画像設定、利用枠内のコマ画像生成、作品管理、PDF書き出し、状況・ご意見を利用できます。
                   </p>
                   <p className="mt-2 text-sm text-stone-600">
-                    成人向け制作、販売申請、決済、収益管理は今回のモニター対象外です。画像生成は利用設定・残りAI利用数・クレジット・安全確認を満たす場合だけ実行できます。
+                    成人向け制作、販売申請、決済、収益管理は今回の先行利用対象外です。画像生成は利用設定・残りAI利用数・クレジット・安全確認を満たす場合だけ実行できます。
                   </p>
                 </div>
                 <p className="shrink-0 text-xs text-stone-500">2026/8/28</p>
@@ -142,9 +142,9 @@ export default async function DashboardPage({
         </section>
       <section className="panel mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm font-bold text-violet-700">限定モニター</p>
+          <p className="text-sm font-bold text-violet-700">先行販売購入者向け先行利用</p>
           <p className="mt-1 text-stone-600">
-            {monitor ? `AI利用数 ${monitor.ai_requests_used} / ${monitor.ai_request_limit}` : "モニター利用設定と現在の状態を確認できます。"}
+            {monitor ? `AI利用数 ${monitor.ai_requests_used} / ${monitor.ai_request_limit}` : "購入者向け先行利用の設定と現在の状態を確認できます。"}
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row">
