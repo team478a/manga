@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-05 モニター品質確認の確定巻き戻り／短編導線修正
+
+- 状態: `IMPLEMENTED / PRODUCTION_UNCHANGED / MIGRATION_NOT_APPLIED`
+- Branch: `codex/fix-monitor-review-save-and-short-page-discovery-20260905`
+- Base: `80af297`（PR #428 merge commit）
+- 28枚を確認したモニターが22/28へ戻る報告を調査し、900ms下書きautosaveと画像確定requestが並行して、遅延した下書きが`case_completed_at`をnullへ戻せる競合を特定した。
+- Clientの保存requestを直列化し、確定操作を先行下書き保存の後へ並べた。追加migrationは確定済みpayload／完了時刻を遅延下書きで上書きしない。
+- 市場分析の4／8ページ指定を折りたたみの外へ移し、短編の選び方を常時表示する。既存の他ページ数とAIおまかせ契約は維持する。
+- 既に22/28になった回答を自動確定しない。Production反映後、本人に未確定6枚だけ再確認してもらう。更新情報の既存action URL修正とモニター契約説明への回答はProduction／運営対応として分離する。
+- 集中22/22、Hub 943/943、deps error 0（既存warning 2件）、lint、全typecheck、migration 76/76、Hub build、diff check成功。Production、メール、Provider、Job、Asset、credit操作0件。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後にmigration適用とProduction表示を確認する。
+
+---
+
 ## 2026-09-02 品質確認開始案内 Production送信完了
 
 - 状態: `PRODUCTION_SENT_4 / SUBMITTED_EXCLUDED_1 / FAILED_0`

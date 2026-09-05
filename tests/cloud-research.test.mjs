@@ -236,7 +236,11 @@ test("市場分析UIは入力・履歴・再表示と完了後の企画導線を
   assert.match(files[0], /市場、販売先、価格の知識は不要/);
   assert.match(files[0], /4ページ（短いお試し）/);
   assert.match(files[0], /8ページ（短編）/);
-  assert.match(files[0], /AIにおまかせでは読切が32ページになる場合/);
+  assert.match(files[0], /短く試す場合は4ページ、短編を作る場合は8ページ/);
+  assert.ok(
+    files[0].indexOf('id="pageCount"') < files[0].indexOf("<details"),
+    "短編ページ数は折りたたみの外に表示する",
+  );
   assert.doesNotMatch(files[0], /sourceRetrievedAt|sourceFact/);
   assert.match(files[1], /listCloudResearchReports/);
   assert.match(files[2], /市場分析結果/);

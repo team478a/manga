@@ -450,7 +450,13 @@
       "description": "品質確認担当への開始案内送信履歴と管理者記録RPCを追加",
       "forwardSha256": "8c1167bef37fe4241ba51cd8f317315560cecf15a99650795d3b95e76f2509b3",
       "rollbackSha256": "70b142d82180ca1945f8321ce44ad47d59ebd36695c5f3cf469c62bf0fb81595"
+    },
+    {
+      "id": "202609050001_monitor_quality_review_completion_race",
+      "description": "品質確認の遅延下書き保存による確定状態の巻き戻りを防止",
+      "forwardSha256": "64550f414d04fa220927faeb4535470f483e920db529546274f77606a296668b",
+      "rollbackSha256": "004113cf424f7cd354daf1c5dd4486ca61e2400e2a1ad6f71091b1aa93f094a2"
     }
   ],
-  "schemaSha256": "6deed7dbadb07f22a6f043355ac7309351775ff8d8a5c695224ea44fa64b6b69"
+  "schemaSha256": "33047426d7e362e9b79ba64bbea2cf5fb9ada1010c62d4f4a5ba7b89677cb660"
 }

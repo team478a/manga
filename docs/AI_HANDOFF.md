@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 モニター品質確認の確定巻き戻り／短編導線修正（2026-09-05）
+
+- 品質確認の下書きautosaveと確定requestの競合で、遅延下書きが確定済み回答を未確定へ戻せることを特定した。Client保存を直列化し、DBも確定済みpayload／完了時刻を遅延下書きから保護する追加migrationを用意した。
+- 市場分析の4／8ページ指定を「希望がある場合だけ詳細を設定」の外へ移し、短編選択を常時見えるようにした。
+- 既存22/28回答の6件は推測で確定しない。merge／migration／Production反映後に本人へ再確認を依頼する。更新情報action URLと契約説明への異議は別のProduction／運営対応。
+- 集中22/22、Hub 943/943、deps、lint、全typecheck、migration 76/76、Hub build、diff check成功。Production、メール、Provider、Job、Asset、credit操作なし。
+- 次はDraft PRと全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 0.0 品質確認開始案内 Production送信完了（2026-09-02）
 
 - PR #427 merge commit `6cee9f2`のRequired Quality、Migration roundtrip、Windows build、Vercel Production反映成功を確認した。

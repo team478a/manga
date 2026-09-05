@@ -2447,8 +2447,17 @@ begin
   insert into public.cloud_monitor_quality_review_responses(assignment_id,case_id,response_payload,case_completed_at)
   values(p_assignment_id,p_case_id,p_payload,case when p_complete then now() else null end)
   on conflict(assignment_id,case_id) do update set
-    response_payload=excluded.response_payload,
-    case_completed_at=case when p_complete then coalesce(cloud_monitor_quality_review_responses.case_completed_at,now()) else null end,
+    response_payload=case
+      when cloud_monitor_quality_review_responses.case_completed_at is not null and not p_complete
+        then cloud_monitor_quality_review_responses.response_payload
+      else excluded.response_payload
+    end,
+    case_completed_at=case
+      when cloud_monitor_quality_review_responses.case_completed_at is not null and not p_complete
+        then cloud_monitor_quality_review_responses.case_completed_at
+      when p_complete then coalesce(cloud_monitor_quality_review_responses.case_completed_at,now())
+      else null
+    end,
     updated_at=now();
   update public.cloud_monitor_quality_review_assignments set
     status='in_progress',started_at=coalesce(started_at,now()),updated_at=now()

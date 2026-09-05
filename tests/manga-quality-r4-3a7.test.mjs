@@ -88,6 +88,15 @@ test("利用者UIはスマートフォン向け途中保存・再開・全件送
     assert.match(client, new RegExp(phrase));
   assert.match(client, /grid gap-5 lg:grid-cols/);
   assert.match(client, /setTimeout/);
+  assert.match(client, /saveQueue/);
+  assert.match(client, /enqueueSave/);
+});
+
+test("確定済み回答は遅延した下書き保存で未確定へ戻らない", async () => {
+  const migration = await read("../supabase/migrations/202609050001_monitor_quality_review_completion_race.sql");
+  assert.match(migration, /case_completed_at is not null and not p_complete/);
+  assert.match(migration, /cloud_monitor_quality_review_responses\.response_payload/);
+  assert.match(migration, /cloud_monitor_quality_review_responses\.case_completed_at/);
 });
 
 test("管理画面は進捗のみ表示し回答payloadを取得しない", async () => {

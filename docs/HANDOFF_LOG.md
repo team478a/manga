@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-05 Codex: モニター品質確認の確定巻き戻り／短編導線修正
+
+- Branch: `codex/fix-monitor-review-save-and-short-page-discovery-20260905`
+- Base: `80af297`（PR #428 merge commit）
+- 下書きautosaveと画像確定のrequestを直列化し、追加migrationで確定済み回答を遅延下書きから保護した。既存のblind review、本人限定RPC、入力validationは維持する。
+- 市場分析の4／8ページ指定を折りたたみ外へ移し、短編選択説明を常時表示した。
+- 既存22/28の6件は自動復元しない。更新情報action URL修正と契約説明への異議は未実施。Production反映後の本人再確認／運営回答が必要。
+- 集中22/22、Hub 943/943、deps error 0（既存warning 2件）、lint、全typecheck、migration 76/76、Hub build、diff check成功。Production、外部送信、Provider、Job、Asset、credit操作0件。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-02 Codex: 品質確認開始案内 Production送信完了
 
 - Branch: `codex/docs-monitor-quality-review-notification-production-20260902`
