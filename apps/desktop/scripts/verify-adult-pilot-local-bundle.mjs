@@ -12,6 +12,8 @@ const manifestPath = path.resolve(
 );
 const localRootInput = process.env.MANGAI_ADULT_PILOT_LOCAL_ROOT;
 const strict = process.argv.includes("--strict");
+const evidenceIndex = process.argv.indexOf("--evidence-out");
+const evidenceOutput = evidenceIndex >= 0 ? process.argv[evidenceIndex + 1] : undefined;
 
 const fail = (message) => {
   console.error(`Desktop Adult pilot local bundle invalid: ${message}`);
@@ -98,4 +100,25 @@ for (const artifact of artifacts) {
 for (const result of results) console.log(`${result.id}: ${result.status}`);
 const verified = results.filter((result) => result.status === "verified").length;
 console.log(`Desktop Adult pilot local bundle: verified=${verified}, pending=${results.length - verified}`);
+if (evidenceIndex >= 0) {
+  if (!evidenceOutput) fail("--evidence-out requires an absolute JSON path");
+  if (!path.isAbsolute(evidenceOutput)) fail("evidence output must be an absolute path");
+  if (verified !== results.length) fail("evidence cannot be written for an incomplete bundle");
+  const manifestSha256 = crypto
+    .createHash("sha256")
+    .update(fs.readFileSync(manifestPath))
+    .digest("hex");
+  const evidence = {
+    format: "mangai.desktop-adult-pilot-bundle-evidence",
+    version: 1,
+    checkedAt: new Date().toISOString(),
+    manifestSha256,
+    artifacts: artifacts.map(({ id, bytes, sha256 }) => ({ id, bytes, sha256 })),
+  };
+  fs.writeFileSync(path.resolve(evidenceOutput), `${JSON.stringify(evidence, null, 2)}\n`, {
+    flag: "wx",
+    mode: 0o600,
+  });
+  console.log("Desktop Adult pilot bundle evidence written");
+}
 if (strict && verified !== results.length) process.exit(1);

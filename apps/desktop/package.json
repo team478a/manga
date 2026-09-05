@@ -19,6 +19,7 @@
     "adult:pilot-release-readiness": "node scripts/check-adult-pilot-release-readiness.mjs",
     "adult:pilot-release-readiness:strict": "node scripts/check-adult-pilot-release-readiness.mjs --strict",
     "adult:pilot-local-bundle:verify": "node scripts/verify-adult-pilot-local-bundle.mjs --strict",
+    "adult:pilot-bundle-evidence:import": "node scripts/import-adult-pilot-bundle-evidence.mjs",
     "adult:pilot-ledger:check": "node scripts/check-adult-pilot-invite-ledger.mjs",
     "test:phase5-offline": "npm run build:main && cross-env ELECTRON_RUN_AS_NODE=1 electron --test --test-name-pattern=\"Phase 5 offline adult\" tests/ai.test.mjs",
     "test:a11y": "npm run build && node scripts/test-accessibility.mjs",

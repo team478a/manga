@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const script = path.resolve(here, "../scripts/verify-adult-pilot-local-bundle.mjs");
+const importScript = path.resolve(here, "../scripts/import-adult-pilot-bundle-evidence.mjs");
 const digest = (value) => crypto.createHash("sha256").update(value).digest("hex");
 
 const fixture = (root) => {
@@ -29,11 +30,35 @@ const fixture = (root) => {
     installedBytes: files[role][1].length,
     sha256: digest(files[role][1]),
   });
+  const operations = ["text_to_image", "image_to_image", "controlnet", "inpainting"];
+  const workflows = operations.map((operation) => {
+    const workflow = Buffer.from(`${operation}-workflow`);
+    const mapping = Buffer.from(`${operation}-mapping`);
+    const file = `workflows/${operation}.json`;
+    const mappingFile = `workflows/${operation}.mapping.json`;
+    for (const [relative, bytes] of [[file, workflow], [mappingFile, mapping]]) {
+      const target = path.join(root, relative);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.writeFileSync(target, bytes);
+    }
+    return {
+      operation,
+      status: "pending",
+      file,
+      sha256: digest(workflow),
+      mappingFile,
+      mappingSha256: digest(mapping),
+    };
+  });
   const manifest = {
     format: "mangai.desktop-adult-pilot-bundle",
     version: 1,
-    comfyui: { installedBytes: files.runtime[1].length, sha256: digest(files.runtime[1]) },
-    models: [model("checkpoint"), model("vae"), model("controlnet")],
+    comfyui: { status: "pending", installedBytes: files.runtime[1].length, sha256: digest(files.runtime[1]) },
+    models: [model("checkpoint"), model("vae"), model("controlnet")].map((item) => ({
+      ...item,
+      status: "pending",
+    })),
+    workflows,
   };
   const manifestPath = path.join(root, "manifest.json");
   fs.writeFileSync(manifestPath, JSON.stringify(manifest));
@@ -86,4 +111,84 @@ test("local Adult Pilot bundle requires an existing absolute local-drive root", 
   });
   assert.equal(result.status, 1);
   assert.match(result.stderr, /absolute path on a local drive/);
+});
+
+test("verified local bundle writes path-free evidence and imports all fixed statuses", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-bundle-evidence-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { manifestPath } = fixture(root);
+  const evidencePath = path.join(root, "evidence.json");
+  execFileSync(process.execPath, [script, "--strict", "--evidence-out", evidencePath], {
+    env: {
+      ...process.env,
+      MANGAI_ADULT_PILOT_LOCAL_ROOT: root,
+      MANGAI_ADULT_PILOT_BUNDLE_PATH: manifestPath,
+    },
+  });
+  const evidenceText = fs.readFileSync(evidencePath, "utf8");
+  const evidence = JSON.parse(evidenceText);
+  assert.equal(evidence.format, "mangai.desktop-adult-pilot-bundle-evidence");
+  assert.deepEqual(evidence.artifacts.map(({ id }) => id), ["runtime", "checkpoint", "vae", "controlnet"]);
+  assert.equal(evidenceText.includes(root), false);
+
+  const output = execFileSync(process.execPath, [importScript, evidencePath], {
+    env: {
+      ...process.env,
+      MANGAI_ADULT_PILOT_REPOSITORY_ROOT: root,
+      MANGAI_ADULT_PILOT_BUNDLE_PATH: manifestPath,
+    },
+    encoding: "utf8",
+  });
+  assert.match(output, /fixed=8/);
+  const imported = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  assert.equal(imported.comfyui.status, "fixed");
+  assert.ok(imported.models.every(({ status }) => status === "fixed"));
+  assert.ok(imported.workflows.every(({ status }) => status === "fixed"));
+});
+
+test("bundle evidence import rejects tampering without changing the manifest", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-bundle-evidence-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { manifestPath } = fixture(root);
+  const evidencePath = path.join(root, "evidence.json");
+  execFileSync(process.execPath, [script, "--strict", "--evidence-out", evidencePath], {
+    env: {
+      ...process.env,
+      MANGAI_ADULT_PILOT_LOCAL_ROOT: root,
+      MANGAI_ADULT_PILOT_BUNDLE_PATH: manifestPath,
+    },
+  });
+  const evidence = JSON.parse(fs.readFileSync(evidencePath, "utf8"));
+  evidence.artifacts[0].sha256 = "0".repeat(64);
+  fs.writeFileSync(evidencePath, JSON.stringify(evidence));
+  const before = fs.readFileSync(manifestPath);
+  const result = spawnSync(process.execPath, [importScript, evidencePath], {
+    env: {
+      ...process.env,
+      MANGAI_ADULT_PILOT_REPOSITORY_ROOT: root,
+      MANGAI_ADULT_PILOT_BUNDLE_PATH: manifestPath,
+    },
+    encoding: "utf8",
+  });
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /runtime evidence does not match/);
+  assert.deepEqual(fs.readFileSync(manifestPath), before);
+});
+
+test("local bundle evidence output never overwrites an existing file", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-bundle-evidence-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { manifestPath } = fixture(root);
+  const evidencePath = path.join(root, "evidence.json");
+  fs.writeFileSync(evidencePath, "keep-me");
+  const result = spawnSync(process.execPath, [script, "--strict", "--evidence-out", evidencePath], {
+    env: {
+      ...process.env,
+      MANGAI_ADULT_PILOT_LOCAL_ROOT: root,
+      MANGAI_ADULT_PILOT_BUNDLE_PATH: manifestPath,
+    },
+    encoding: "utf8",
+  });
+  assert.notEqual(result.status, 0);
+  assert.equal(fs.readFileSync(evidencePath, "utf8"), "keep-me");
 });

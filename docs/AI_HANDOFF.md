@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot 固定Bundle証跡取込（2026-09-05）
+
+- PR #435 merge commit `cde27a1`を基点に、ローカルBundle検証結果を改ざん検知付きで固定manifestへ反映するCLIを追加した。
+- 証跡は検証済み4artifactのrole、容量、SHA-256とmanifest fingerprintだけを保持し、実pathや作品内容を含めない。既存fileへの上書きを拒否する。
+- 取込時にmanifest fingerprint、4artifact情報、repository内の4 workflow／mapping hashを再検証し、全一致時だけ8項目を`fixed`へ更新する。不一致時はmanifestを変更しない。
+- 実証跡、実artifact、署名、配布、Runtime／Provider、生成、Production／Cloud／credit操作なし。readiness 5/8と外部blocker 3件は変更しない。
+- 集中6/6、Desktop 230/230、preflight、readiness、lint、全typecheck、deps、Desktop build、a11y blocking violation 0成功。次はDraft PRを作成し、全CI／Vercel Preview成功で停止する。実機取込はmerge後の別工程とする。
+
+---
+
 ## 0.0 Desktop Adult Pilot ローカル固定Bundle検証（2026-09-05）
 
 - PR #434 merge commit `8b7f876`を基点に、内部端末へ取得済みの4artifactを固定manifestと一括照合するstrict CLIを追加した。

@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-05 Desktop Adult Pilot 固定Bundle証跡取込
+
+- 状態: `EVIDENCE_IMPORT_IMPLEMENTED / REAL_EVIDENCE_NOT_IMPORTED / DISTRIBUTION_BLOCKED`
+- Branch: `codex/desktop-adult-pilot-bundle-evidence-import-20260905`
+- Base: `cde27a1`（PR #435 merge commit）
+- ローカル4artifactのstrict検証成功時だけ、実pathや内容を含まない証跡JSONを排他的に新規作成できるようにした。既存証跡を上書きしない。
+- 取込CLIは固定manifest fingerprint、4artifactの容量・SHA-256、repository内4 workflow／mappingのSHA-256を再検証し、全一致時だけmanifestの8項目を`fixed`へ更新する。改ざん時はmanifestを変更しない。
+- 実証跡の作成・取込、artifact取得、署名、配布、Runtime／Provider実行、生成、Production／Cloud／credit操作は行っていない。readinessは5/8のままである。
+- 集中6/6、Desktop 230/230、既存Bundle preflight、release readiness、lint、全typecheck、deps error 0（既存warning 2件）、Desktop build、a11y 29画面blocking violation 0成功。次: commit、push、Draft PRを行い、全CI／Vercel Preview成功で停止する。merge後、適格な12GB以上端末で実Bundleを検証して証跡を取り込む工程は別途実施する。
+
+---
+
 ## 2026-09-05 Desktop Adult Pilot ローカル固定Bundle検証
 
 - 状態: `LOCAL_BUNDLE_VERIFIER_IMPLEMENTED / ARTIFACTS_NOT_DOWNLOADED / DISTRIBUTION_BLOCKED`
