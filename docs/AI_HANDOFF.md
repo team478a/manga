@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認保存修正のProduction反映（2026-09-05）
+
+- PR #429 merge commit `a9d7f95`のRequired Quality、Migration roundtrip、Windows build、Vercel Preview、Vercel Production成功を確認した。
+- Productionへ品質確認完了状態の競合保護migrationを適用し、関数定義に保護条件が存在することを`completion_race_guard_installed=true`で確認した。
+- 品質確認進捗はA 28/28提出済み、B 22/28作業中、C 0/28未開始、D 28/28提出済み、E 28/28提出済み。Bの既存6枚は推測で復元・確定していない。
+- 更新情報「品質確認の保存安定性を改善しました」をProductionへ公開し、ダッシュボード表示と`/dashboard/monitor/quality-review`への関連リンクを確認した。
+- 次はReviewer B本人へ6枚の再確認を依頼し、Reviewer Cの開始状況を確認する。外部連絡は新しいaction-time承認を得てから行う。
+
+---
+
 ## 0.0 モニター品質確認の確定巻き戻り／短編導線修正（2026-09-05）
 
 - 品質確認の下書きautosaveと確定requestの競合で、遅延下書きが確定済み回答を未確定へ戻せることを特定した。Client保存を直列化し、DBも確定済みpayload／完了時刻を遅延下書きから保護する追加migrationを用意した。

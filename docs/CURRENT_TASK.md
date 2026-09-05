@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-05 品質確認保存修正のProduction反映
+
+- 状態: `PRODUCTION_APPLIED / UPDATE_PUBLISHED / FOLLOW_UP_REQUIRED`
+- Branch: `codex/docs-monitor-quality-review-production-20260905`
+- Base: `a9d7f95`（PR #429 merge commit）
+- PR #429はmerge済み。Required Quality、Migration roundtrip、Windows build、Vercel Preview、Vercel Productionはいずれも成功した。
+- Productionへ`202609050001_monitor_quality_review_completion_race.sql`を適用し、`completion_race_guard_installed=true`をread-only queryで確認した。確定済み回答を遅延下書きが未確定へ戻す経路はDB側でも保護された。
+- Production進捗はReviewer A 28/28提出済み、B 22/28作業中、C 0/28未開始、D 28/28提出済み、E 28/28提出済み。既に未確定へ戻ったBの6枚は自動復元・自動確定していない。
+- 利用者向け更新情報「品質確認の保存安定性を改善しました」を不具合修正として公開し、`/dashboard/monitor/quality-review`への導線をProductionダッシュボードで確認した。
+- Production DBの関数更新と更新情報1件の公開以外に、回答、メール、Provider、生成Job、Asset、credit、作品データの変更なし。
+- 次: Reviewer Bへ未確定6枚の再確認を依頼し、Reviewer Cの開始状況を確認する。外部連絡は責任者のaction-time承認後に行う。
+
+---
+
 ## 2026-09-05 モニター品質確認の確定巻き戻り／短編導線修正
 
 - 状態: `IMPLEMENTED / PRODUCTION_UNCHANGED / MIGRATION_NOT_APPLIED`
