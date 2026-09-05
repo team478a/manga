@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-05 品質確認フォローアップ送信
+
+- 状態: `FOLLOW_UP_SENT_2 / DELIVERY_UI_CONFIRMED / RESPONSE_PENDING`
+- Branch: `codex/docs-monitor-quality-review-followup-20260905`
+- Base: `1b417af`（PR #430 merge commit）
+- 責任者のaction-time承認後、Reviewer Bへ未確定6枚だけの再確認依頼、Reviewer Cへ未開始28枚の再案内を個別に送信した。
+- 2通ともGmailの「メッセージを送信しました」を確認した。宛先、個人名、本文はGit・DB・監査ログへ保存しない。
+- Reviewer Bには、確定済み22枚をやり直す必要がないことと、契約説明に関する指摘は別途回答することを案内した。
+- Production回答、Batch、割当、Provider、生成Job、Asset、credit、作品データは変更していない。
+- 次: 回答進捗をread-onlyで確認する。Reviewer Bの契約説明への回答は事実関係を整理し、送信前に責任者のaction-time承認を得る。
+
+---
+
 ## 2026-09-05 品質確認保存修正のProduction反映
 
 - 状態: `PRODUCTION_APPLIED / UPDATE_PUBLISHED / FOLLOW_UP_REQUIRED`

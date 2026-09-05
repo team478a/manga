@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認フォローアップ送信（2026-09-05）
+
+- PR #430 merge commit `1b417af`を基点に、責任者のaction-time承認済みのフォローアップを実施した。
+- Reviewer Bへ未確定6枚だけの再確認を依頼し、確定済み22枚の再実施は不要と明記した。Reviewer Cへ未開始28枚の品質確認を再案内した。
+- Gmail上で2通それぞれの送信完了表示を確認した。個人名、メールアドレス、本文はGit・DB・監査ログへ記録していない。
+- Reviewer Bの契約説明に関する指摘は未解決の別件として維持し、確認後に別途回答すると案内した。
+- Production回答、Batch、割当、Provider、Job、Asset、credit、生成操作なし。
+- 次は回答進捗をread-only確認し、契約説明への回答案を事実確認後に責任者へ提示する。
+
+---
+
 ## 0.0 品質確認保存修正のProduction反映（2026-09-05）
 
 - PR #429 merge commit `a9d7f95`のRequired Quality、Migration roundtrip、Windows build、Vercel Preview、Vercel Production成功を確認した。

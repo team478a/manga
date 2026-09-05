@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-05 Codex: 品質確認フォローアップ送信
+
+- Branch: `codex/docs-monitor-quality-review-followup-20260905`
+- Base: `1b417af`（PR #430 merge commit）
+- 責任者のaction-time承認に基づき、Reviewer Bへ残り6枚の再確認依頼、Reviewer Cへ未開始28枚の再案内を個別送信した。
+- Reviewer Bには確定済み22枚のやり直しが不要であることを明記し、契約説明への指摘は別途回答すると案内した。
+- Gmailで2通とも送信完了を確認した。個人名、メールアドレス、本文をGitへ保存していない。
+- Production回答、Batch、割当、Provider、Job、Asset、credit、生成操作なし。
+- 次: docs-only PRの全CI／Vercel Preview成功で停止する。その後は進捗のread-only確認と契約説明回答案の作成を行う。
+
+---
+
 ## 2026-09-05 Codex: 品質確認保存修正のProduction反映
 
 - Branch: `codex/docs-monitor-quality-review-production-20260905`
