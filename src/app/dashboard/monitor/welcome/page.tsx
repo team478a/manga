@@ -24,15 +24,15 @@ export default async function GeneralMonitorWelcomePage({
 
     return (
       <main className="page max-w-3xl">
-        <p className="font-semibold text-violet-700">一般向け・招待制モニター</p>
-        <h1 className="mt-2 text-3xl font-bold">モニターを開始できません</h1>
+        <p className="font-semibold text-violet-700">先行販売購入者向け・招待制</p>
+        <h1 className="mt-2 text-3xl font-bold">先行利用を開始できません</h1>
         <section className="panel mt-6" role="alert">
           <h2 className="text-xl font-bold">利用状況をご確認ください</h2>
           <p className="mt-3 text-stone-600">{unavailableMessage}</p>
         </section>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link className="button-secondary" href="/dashboard">ダッシュボードへ戻る</Link>
-          <Link className="button-secondary" href="/dashboard/monitor">モニター状況を確認</Link>
+          <Link className="button-secondary" href="/dashboard/monitor">先行利用の状況を確認</Link>
         </div>
       </main>
     );
@@ -40,14 +40,20 @@ export default async function GeneralMonitorWelcomePage({
 
   return (
     <main className="page max-w-3xl">
-      <p className="font-semibold text-violet-700">一般向け・招待制モニター</p>
+      <p className="font-semibold text-violet-700">先行販売購入者向け・招待制</p>
       <h1 className="mt-2 text-3xl font-bold">最初にご確認ください</h1>
       <p className="mt-3 text-stone-600">
         専門知識は不要です。市場分析から順番に進み、実際に漫画制作が進められるかをお試しください。
       </p>
+      <section className="mt-6 rounded-xl border border-violet-200 bg-violet-50 p-5">
+        <h2 className="text-xl font-bold text-violet-950">購入者向けの先行提供について</h2>
+        <p className="mt-2 leading-relaxed text-violet-950">
+          これはMANGAIを先行販売でご購入いただいたお客様への先行提供です。正式リリース前の機能を段階的にご利用いただき、ご意見を伺います。先行利用中も購入者としての権利や、正式リリース後の利用資格は失われません。
+        </p>
+      </section>
       {error ? <InlineErrorMessage radius="lg" role="alert">{error}</InlineErrorMessage> : null}
       <section className="panel mt-6">
-        <h2 className="text-xl font-bold">モニター条件</h2>
+        <h2 className="text-xl font-bold">先行利用の条件</h2>
         <ul className="mt-4 space-y-3">
           {[
             `AI利用上限は合計${enrollment.ai_request_limit}回です`,

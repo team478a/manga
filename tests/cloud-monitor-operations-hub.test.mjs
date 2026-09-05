@@ -18,7 +18,7 @@ test("更新情報は公開済みだけをダッシュボードへ表示する",
   assert.match(admin, /更新情報を追加/);
 });
 
-test("更新情報は一般向けモニターで利用できる範囲と対象外を明示する", async () => {
+test("更新情報は購入者向け先行利用で利用できる範囲と対象外を明示する", async () => {
   const dashboard = await read("../src/app/dashboard/page.tsx");
 
   for (const available of [
@@ -35,7 +35,8 @@ test("更新情報は一般向けモニターで利用できる範囲と対象�
   ]) {
     assert.match(dashboard, new RegExp(available));
   }
-  assert.match(dashboard, /成人向け制作、販売申請、決済、収益管理は今回のモニター対象外/);
+  assert.match(dashboard, /成人向け制作、販売申請、決済、収益管理は今回の先行利用対象外/);
+  assert.match(dashboard, /先行販売購入者向け先行利用/);
   assert.match(dashboard, /利用設定・残りAI利用数・クレジット・安全確認/);
   assert.match(dashboard, /href="\/dashboard\/monitor\/guide"/);
 });

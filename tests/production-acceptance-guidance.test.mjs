@@ -13,7 +13,7 @@ test("モニター未登録を招待メール未完了と断定しない", async
   ]);
 
   assert.doesNotMatch(dashboard, /招待が必要です/);
-  assert.match(dashboard, /モニター利用設定を確認/);
+  assert.match(dashboard, /先行利用設定を確認/);
   assert.match(monitorPage, /招待メールの完了状況とは別に/);
   assert.match(monitorPolicy, /招待メールの完了状況とは別に利用枠の設定が必要です/);
 });

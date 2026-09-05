@@ -10,11 +10,14 @@ const runtimeConfigSchema = z.object({
 });
 
 export const DEFAULT_MONITOR_INVITE_SUBJECT =
-  "MANGAI 一般向けモニターのご案内";
+  "MANGAI 先行販売購入者向け先行利用のご案内";
 
 export const DEFAULT_MONITOR_INVITE_BODY = `{{recipient_name}}
 
-MANGAI一般向けモニターへご招待しました。
+MANGAIを先行販売でご購入いただいたお客様への先行利用をご案内します。
+これは無料参加をお願いする一般的なモニター募集ではありません。正式リリース前の機能を段階的にご利用いただき、ご意見を伺う購入者向け先行提供です。
+先行利用中も購入者としての権利や、正式リリース後の利用資格は失われません。
+
 登録済みのメールアドレスでログインし、初回案内をご確認ください。
 
 利用開始: {{welcome_url}}

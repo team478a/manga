@@ -103,8 +103,8 @@ export default async function GeneralMonitorPage({
     <main className="page max-w-3xl">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="font-semibold text-violet-700">一般向け・招待制</p>
-          <h1 className="mt-1 text-3xl font-bold">モニター状況とご意見</h1>
+          <p className="font-semibold text-violet-700">先行販売購入者向け・招待制</p>
+          <h1 className="mt-1 text-3xl font-bold">先行利用の状況とご意見</h1>
         </div>
         <Link className="button-secondary" href="/dashboard/monitor/guide">
           Webマニュアル
@@ -112,14 +112,20 @@ export default async function GeneralMonitorPage({
       </div>
       {!enrollment ? (
         <section className="panel mt-6">
-          <h2 className="text-xl font-bold">モニター利用設定を確認できません</h2>
+          <h2 className="text-xl font-bold">購入者向け先行利用の設定を確認できません</h2>
           <p className="mt-2 text-stone-600">
             招待メールの完了状況とは別に、管理画面のモニター利用枠が必要です。設定済みの場合は、時間をおいて再読み込みするか管理者へお問い合わせください。
           </p>
         </section>
       ) : (
         <>
-          <section className="panel mt-6">
+          <section className="panel mt-6 border-violet-200 bg-violet-50">
+            <h2 className="text-xl font-bold text-violet-950">先行販売でご購入いただいたお客様への先行提供です</h2>
+            <p className="mt-2 leading-relaxed text-violet-950">
+              この利用枠は、無料参加をお願いする一般的なモニター募集ではありません。正式リリース前の機能を段階的にご利用いただき、ご意見を伺う購入者向け先行利用です。先行利用中も購入者としての権利や、正式リリース後の利用資格は失われません。
+            </p>
+          </section>
+          <section className="panel mt-5">
             <div className="grid gap-4 sm:grid-cols-3">
               <div><p className="text-sm text-stone-500">状態</p><p className="font-bold">{enrollment.status}</p></div>
               <div><p className="text-sm text-stone-500">AI利用数</p><p className="font-bold">{enrollment.ai_requests_used} / {enrollment.ai_request_limit}</p></div>

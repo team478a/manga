@@ -217,14 +217,14 @@ export default async function GeneralMonitorGuidePage() {
   return (
     <main className="page max-w-5xl">
       <Link className="text-violet-700 underline" href="/dashboard/monitor">
-        ← モニター状況へ
+        ← 先行利用の状況へ
       </Link>
       <header className="mt-5 flex items-start gap-4">
         <span className="rounded-2xl bg-violet-100 p-3 text-violet-700">
           <BookOpenCheck className="h-7 w-7" aria-hidden="true" />
         </span>
         <div className="min-w-0">
-          <p className="text-sm font-bold text-violet-700">一般向け・招待制</p>
+          <p className="text-sm font-bold text-violet-700">先行販売購入者向け・招待制</p>
           <h1 className="mt-1 text-3xl font-bold">MANGAI Web使い方マニュアル</h1>
           <p className="mt-2 leading-relaxed text-stone-600">
             市場やAIの専門知識は必要ありません。上から順番に操作すると、
@@ -233,6 +233,13 @@ export default async function GeneralMonitorGuidePage() {
           </p>
         </div>
       </header>
+
+      <section className="panel mt-5 border-violet-200 bg-violet-50">
+        <h2 className="text-xl font-bold text-violet-950">購入者向けの先行提供です</h2>
+        <p className="mt-2 leading-relaxed text-violet-950">
+          この利用枠は、MANGAIを先行販売でご購入いただいたお客様への先行提供です。無料参加をお願いする一般的なモニター募集ではありません。正式リリース前の機能を段階的にご利用いただき、ご意見を伺いますが、購入者としての権利や正式リリース後の利用資格は失われません。
+        </p>
+      </section>
 
       <nav
         aria-label="マニュアル内メニュー"
@@ -272,7 +279,7 @@ export default async function GeneralMonitorGuidePage() {
           </dl>
         ) : (
           <p className="mt-4 rounded-lg bg-white p-3 text-sm text-stone-700">
-            利用開始には管理者からのモニター招待が必要です。
+            利用開始には管理者からの購入者向け先行利用の招待が必要です。
           </p>
         )}
       </section>
@@ -282,7 +289,7 @@ export default async function GeneralMonitorGuidePage() {
         <ol className="panel mt-4 space-y-4">
           {[
             "招待メールを受け取ったメールアドレスでログインする",
-            "モニター状況で利用期限とAI利用上限を確認する",
+            "先行利用の状況で利用期限とAI利用上限を確認する",
             "このマニュアルを一度最後まで確認する",
             "サイドバーの「市場分析」から分析を1件作成する",
             "迷った場所や結果の感想を送る",
@@ -479,7 +486,7 @@ export default async function GeneralMonitorGuidePage() {
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
           <strong>「停止中」は故障ではありません。</strong>
           運営が安全確認や利用範囲の調整のために工程を止めている状態です。
-          何度も操作せず、モニター状況からスタッフへご連絡ください。
+          何度も操作せず、先行利用の状況からスタッフへご連絡ください。
         </div>
       </section>
 

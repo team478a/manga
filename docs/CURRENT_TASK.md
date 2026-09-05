@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-05 先行販売購入者向け先行利用の表記統一
+
+- 状態: `IMPLEMENTED / PRODUCTION_UNCHANGED / MIGRATION_NOT_APPLIED`
+- Branch: `codex/clarify-purchaser-early-access-20260905`
+- Base: `8bd9715`（PR #431 merge commit）
+- ダッシュボード、先行利用状況、初回案内、品質確認、Webマニュアルで「先行販売購入者向け先行利用」と明記した。無料参加の一般的なモニター募集ではなく、購入者への正式リリース前の段階提供であり、購入者としての権利と正式リリース後の利用資格を失わないことを案内する。
+- 今後の標準招待メールも同じ説明へ更新した。追加migrationは旧標準件名・本文と完全一致する行だけを移行し、管理者が独自編集した文面を上書きしない。
+- 内部DB名、権限名、管理者向け運用用語は互換維持のため変更していない。既存利用者、回答、Batch、割当、メール送信、Provider、生成Job、Asset、credit、作品データ、Productionは変更していない。
+- 集中20/20、Hub 945/945、deps error 0（既存warning 2件）、lint、全typecheck、migration 77/77、Hub build、diff check成功。初回Hub全体検査で旧表示を固定するテスト1件が失敗し、期待値を新表記へ同期後に全件成功した。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後のProduction migration適用と表示確認は別工程とし、明示承認前に実施しない。
+
+---
+
 ## 2026-09-05 品質確認フォローアップ送信
 
 - 状態: `FOLLOW_UP_SENT_2 / DELIVERY_UI_CONFIRMED / RESPONSE_PENDING`

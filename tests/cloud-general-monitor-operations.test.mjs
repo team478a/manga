@@ -43,7 +43,9 @@ test("警告と初回案内は利用可能なモニターだけに表示され�
   assert.match(welcome,/APIキー、パスワード、個人情報/);
   assert.match(welcome,/getCloudGeneralMonitorEnrollment/);
   assert.doesNotMatch(welcome,/requireCloudGeneralMonitor/);
-  assert.match(welcome,/モニターを開始できません/);
+  assert.match(welcome,/先行利用を開始できません/);
+  assert.match(welcome,/先行販売でご購入いただいたお客様/);
+  assert.match(welcome,/購入者としての権利/);
   assert.match(welcome,/MonitorStartButton/);
   assert.doesNotMatch(welcome,/<form action=/);
   assert.match(startButton,/fetch\("\/api\/monitor\/onboarding"/);

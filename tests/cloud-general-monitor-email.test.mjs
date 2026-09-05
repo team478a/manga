@@ -60,8 +60,11 @@ test("Resend招待メールはServer設定と安全な利用開始URLだけを�
     const body = JSON.parse(captured.init.body);
     assert.equal(body.from, "MANGAI運営 <monitor@mang-ai.example>");
     assert.equal(body.to[0], "reader@example.com");
-    assert.equal(body.subject, "MANGAI 一般向けモニターのご案内");
+    assert.equal(body.subject, "MANGAI 先行販売購入者向け先行利用のご案内");
     assert.match(body.text, /山田 様/);
+    assert.match(body.text, /先行販売でご購入いただいたお客様/);
+    assert.match(body.text, /一般的なモニター募集ではありません/);
+    assert.match(body.text, /購入者としての権利/);
     assert.match(body.text, /https:\/\/preview\.mang-ai\.example\/dashboard\/monitor\/welcome/);
     assert.doesNotMatch(body.text, /secret-token/);
     assert.equal(

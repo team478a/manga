@@ -456,6 +456,12 @@
       "description": "品質確認の遅延下書き保存による確定状態の巻き戻りを防止",
       "forwardSha256": "64550f414d04fa220927faeb4535470f483e920db529546274f77606a296668b",
       "rollbackSha256": "004113cf424f7cd354daf1c5dd4486ca61e2400e2a1ad6f71091b1aa93f094a2"
+    },
+    {
+      "id": "202609050002_purchaser_early_access_wording",
+      "description": "既存の標準招待文面だけを先行販売購入者向け先行利用の説明へ更新",
+      "forwardSha256": "639bfc92e1326d52dc63362c4759e36d67a1fe009eab19cbb7a26e1123fb2b4e",
+      "rollbackSha256": "e1773e43ab73caaf29b4b3b3ef87fdcfdeb930be3e0c445e8cdb5d3825c5cfee"
     }
   ],
   "schemaSha256": "33047426d7e362e9b79ba64bbea2cf5fb9ada1010c62d4f4a5ba7b89677cb660"
