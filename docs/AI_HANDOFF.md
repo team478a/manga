@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud原稿編集報告の対応完了通知（2026-09-10）
+
+- PR #441 merge commit `c999a79`と本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- 責任者の実行時承認後、Productionの報告タスク`7abcc2cb-a67e-4af1-beee-2c0e23f95971`（原稿編集の未生成／大量要修正表示）を`detected`から`resolved`へ1件だけ更新した。
+- 連動して元報告`49eeb608-a202-4103-bc38-4465eb84cdc0`の公開状態が`resolved`となり、`monitor_report_status`通知が1件作成された。通知は「ご報告への対応が完了しました」「修正内容は更新情報をご確認ください。」である。
+- 他4件の報告状態、Production作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次は本記録のdocs-only Draft PRを全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 0.0 Cloud原稿編集案内のProduction受入完了（2026-09-10）
 
 - PR #440はmerge commit `70c7b8f`で本線へ統合された。Required Quality（Core quality／Migration roundtrip）、Desktop Windows build、Vercel Productionはいずれも成功した。
