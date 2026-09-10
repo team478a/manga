@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloudシナリオ保存報告の対応完了通知（2026-09-10）
+
+- PR #442 merge commit `1bfc720`と本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- 責任者の実行時承認後、Productionの報告タスク`2954455c-42cd-4ad3-b830-335c3af3103e`（4ページ短編シナリオ保存失敗）を`detected`から`resolved`へ1件だけ更新した。
+- 連動して元報告`426263cd-2325-442e-88d4-c442cdf3fcfd`の公開状態が`resolved`となり、`monitor_report_status`通知を1件作成した。通知では修正とProductionでの初稿／修正版保存確認に加え、先行利用対象が先行販売購入者5名であること、改善は運営側の自動テスト・検証も並行し購入者の作業だけに依存しないことを案内した。
+- 他3件の報告状態、Production作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次は本記録のdocs-only Draft PRを全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 0.0 Cloud原稿編集報告の対応完了通知（2026-09-10）
 
 - PR #441 merge commit `c999a79`と本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
