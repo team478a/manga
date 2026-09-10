@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-10 Cloud原稿編集報告の対応完了通知
+
+- 状態: `REPORT_RESOLVED / USER_NOTIFICATION_CREATED / PRODUCTION_VERIFIED`
+- Branch: `codex/docs-cloud-manuscript-report-resolution-20260910`
+- Base: `c999a79`（PR #441 merge commit）
+- 責任者の実行時承認に基づき、Productionの対象タスク`7abcc2cb-a67e-4af1-beee-2c0e23f95971`を現在状態`detected`との一致条件付きで`resolved`へ更新した。更新件数は1件。
+- 別クエリでタスク`resolved`、元報告`49eeb608-a202-4103-bc38-4465eb84cdc0`の公開状態`resolved`、通知種別`monitor_report_status`を確認した。利用者通知は「ご報告への対応が完了しました」「修正内容は更新情報をご確認ください。」。
+- 他4件の報告、作品データ、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: docs-onlyのdiff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-10 Cloud原稿編集案内のProduction受入完了
 
 - 状態: `MERGED / ALL_MAINLINE_CI_PASSED / PRODUCTION_ACCEPTANCE_PASSED / REPORT_STATUS_UNCHANGED`
