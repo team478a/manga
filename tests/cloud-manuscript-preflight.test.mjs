@@ -94,6 +94,7 @@ test("8ページ全コマに画像があれば完成原稿として判定する"
   assert.equal(report.completedPanelCount, 8);
   assert.equal(report.totalPanelCount, 8);
   assert.equal(report.errorCount, 0);
+  assert.deepEqual(report.issueCountByCode, {});
   assert.equal(report.pageProgress.length, 8);
   assert.deepEqual(report.pageProgress[0], {
     pageId: "page-1",
@@ -151,6 +152,9 @@ test("表紙・順番・空コマ・素材・解像度・文字overflowをまと
   ]) {
     assert.ok(codes.has(code), `${code} should be reported`);
   }
+  assert.equal(report.issueCountByCode.empty_panel, 1);
+  assert.equal(report.issueCountByCode.missing_asset, 1);
+  assert.equal(report.issueCountByCode.low_resolution, 1);
 });
 
 test("大量の修正項目は上限を設け、残件数を保持する", () => {

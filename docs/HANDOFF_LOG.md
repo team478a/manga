@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-10 Codex: Cloud原稿編集の未生成／大量要修正表示改善
+
+- Branch: `codex/fix-cloud-manuscript-first-step-guidance-20260910`
+- Base: `6ad5bbf`（PR #439 merge commit）
+- Production報告と既存作品集計をread-only照合し、ネーム直後の正常な未生成状態を大量障害に見せる原稿チェックUXを原因と判定した。
+- preflightの全issueをcode別集計し、画像未生成コマとその他の完成前チェックを分離表示した。正常状態の説明、4〜8ページからの開始案内、生成欄への直接導線、詳細の折りたたみを追加した。
+- 完成判定、品質検査、書き出しguardは維持。Production、Provider、Job、credit、報告状態、利用者連絡なし。
+- 集中14/14、Hub 950/950、deps error 0（既存warning 2件）、lint、全型検査、Production build、diff check成功。次: Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-10 Codex: Cloudシナリオ修正版のProduction受入完了
 
 - Branch: `codex/docs-cloud-scenario-revision-production-20260910`

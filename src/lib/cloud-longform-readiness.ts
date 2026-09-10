@@ -20,6 +20,7 @@ export function buildCloudLongformReadiness(input: {
   manuscriptAvailable: boolean;
   manuscriptReady: boolean;
   manuscriptErrorCount: number;
+  manuscriptEmptyPanelCount: number;
   checkpointAvailable: boolean;
   restoreAvailable: boolean;
   checkpointCount: number;
@@ -49,7 +50,9 @@ export function buildCloudLongformReadiness(input: {
         ? "全ページの確認と原稿チェックが完了しています。"
         : manuscriptStatus === "unavailable"
           ? "原稿の完成状況を取得できませんでした。"
-          : `${input.manuscriptErrorCount}件の要修正を解消し、全ページを確定してください。`,
+          : input.manuscriptEmptyPanelCount > 0
+            ? `画像未生成${input.manuscriptEmptyPanelCount}コマを含む完成前チェックがあります。まず画像生成を進めてください。`
+            : `${input.manuscriptErrorCount}件の完成前チェックを解消し、全ページを確定してください。`,
       status: manuscriptStatus,
       href: "#manuscript-status",
     },
@@ -102,7 +105,7 @@ export function buildCloudLongformReadiness(input: {
                 ? "完成版固定の準備を確認"
                 : "PDF書き出しの準備を確認"
           : firstIncomplete.id === "manuscript"
-            ? "原稿の修正項目を確認"
+            ? "原稿の完成前チェックを確認"
             : firstIncomplete.id === "recovery"
               ? "バックアップを作成"
               : firstIncomplete.id === "release"

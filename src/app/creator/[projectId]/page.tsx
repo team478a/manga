@@ -89,6 +89,8 @@ export default async function CloudProjectPage({
     ? await getCloudGenerationBatchPreflight(projectId).catch(() => null)
     : null;
   const manuscript = exportReadiness ?? productionProgress?.manuscript ?? null;
+  const emptyPanelCount = manuscript?.issueCountByCode.empty_panel ?? 0;
+  const actionableErrorCount = Math.max(0, (manuscript?.errorCount ?? 0) - emptyPanelCount);
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product && marketplaceDraft.work?.current_publication_id,
   );
@@ -98,6 +100,7 @@ export default async function CloudProjectPage({
     manuscriptAvailable: Boolean(exportReadiness),
     manuscriptReady: Boolean(exportReadiness?.ready),
     manuscriptErrorCount: exportReadiness?.errorCount ?? 0,
+    manuscriptEmptyPanelCount: exportReadiness?.issueCountByCode.empty_panel ?? 0,
     checkpointAvailable: checkpointHistory.available,
     restoreAvailable: checkpointHistory.restoreAvailable,
     checkpointCount: checkpointHistory.checkpoints.length,
@@ -161,6 +164,18 @@ export default async function CloudProjectPage({
               <p className="mt-2 text-sm text-stone-600">
                 表紙、ページ順、空コマ、画像解像度、文字の収まり、完成モードの目安、品質検査結果を確認します。
               </p>
+              {emptyPanelCount > 0 ? (
+                <div className="mt-4 rounded-lg border border-violet-200 bg-violet-50 p-4 text-sm text-violet-950">
+                  <p className="font-bold">ネーム作成直後に画像がないのは正常です</p>
+                  <p className="mt-1">
+                    ネームではコマ枠・構図・セリフだけを作成し、画像は原稿編集で必要なコマを選んで生成します。
+                    まず4〜8ページを選び、人物・画風を設定してから画像生成へ進んでください。
+                  </p>
+                  <a className="mt-3 inline-flex font-bold underline" href="#panel-generation">
+                    画像生成を始める場所へ移動
+                  </a>
+                </div>
+              ) : null}
             </div>
             <span
               className={`w-fit rounded-full px-3 py-1 text-sm font-bold ${
@@ -185,10 +200,16 @@ export default async function CloudProjectPage({
                 {manuscript.completedPanelCount}/{manuscript.totalPanelCount}
               </dd>
             </div>
+            <div className="rounded-lg bg-violet-50 p-3">
+              <dt className="text-xs text-violet-700">画像未生成</dt>
+              <dd className="mt-1 text-xl font-bold text-violet-900">
+                {emptyPanelCount}コマ
+              </dd>
+            </div>
             <div className="rounded-lg bg-red-50 p-3">
-              <dt className="text-xs text-red-700">要修正</dt>
+              <dt className="text-xs text-red-700">その他の完成前チェック</dt>
               <dd className="mt-1 text-xl font-bold text-red-800">
-                {manuscript.errorCount}
+                {actionableErrorCount}件
               </dd>
             </div>
             <div className="rounded-lg bg-amber-50 p-3">
@@ -199,7 +220,14 @@ export default async function CloudProjectPage({
             </div>
           </dl>
           {manuscript.issues.length ? (
-            <ul className="mt-5 space-y-2">
+            <details className="mt-5 rounded-lg border border-stone-200 p-4">
+              <summary className="cursor-pointer font-bold text-stone-800">
+                完成前チェックの詳細を確認
+              </summary>
+              <p className="mt-2 text-sm text-stone-600">
+                画像未生成は不具合ではありません。生成したいページから順に進め、その他の項目は書き出し前に確認してください。
+              </p>
+              <ul className="mt-4 space-y-2">
               {manuscript.issues.slice(0, 12).map((issue, index) => (
                 <li
                   className={`rounded-lg border p-3 text-sm ${
@@ -230,7 +258,8 @@ export default async function CloudProjectPage({
                   件あります。上から順に修正してください。
                 </li>
               ) : null}
-            </ul>
+              </ul>
+            </details>
           ) : (
             <p className="mt-5 rounded-lg bg-green-50 p-3 text-sm font-semibold text-green-800">
               原稿チェックで問題は見つかりませんでした。
@@ -419,7 +448,7 @@ export default async function CloudProjectPage({
         </PendingSubmitButton>
       </form>
       <div className="mt-7 grid gap-6 lg:grid-cols-[1fr_320px]">
-        <section className="space-y-5">
+        <section className="space-y-5" id="panel-generation">
           {longform.available ? (
             <LongformPageManager
               batches={generationBatches}

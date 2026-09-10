@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-10 Cloud原稿編集の未生成／大量要修正表示改善
+
+- 状態: `ROOT_CAUSE_CONFIRMED / UX_FIX_IMPLEMENTED / PRODUCTION_UNCHANGED`
+- Branch: `codex/fix-cloud-manuscript-first-step-guidance-20260910`
+- Base: `6ad5bbf`（PR #439 merge commit）
+- Productionの未解決報告をread-only確認した。対象は`/creator/a4c1c4b6-9bf7-4d2f-8d4b-b70e0d28df4c`で、市場分析以降をデフォルトのまま進め、ネームから原稿編集へ入った時点で画像0・大量の要修正表示となり、次の操作が分からないという内容だった。
+- 履歴上、対象作品は32ページ157コマ、画像配置15、未配置142、要修正273。ネーム作成はコマ枠・構図・セリフを作り、画像を自動生成しない仕様である。原稿チェックが未生成コマ、未確定ページ、品質検査等を単一の赤い要修正へ合算し、明細を縦に展開した表示が誤認の原因だった。
+- preflightへ全件ベースのcode別集計を追加し、画面では「画像未生成」と「その他の完成前チェック」を分離した。ネーム直後に画像がないのは正常である説明、4〜8ページからの開始案内、画像生成欄へのanchorを追加し、明細を折りたたんだ。完成判定・書き出しguardは緩めていない。
+- 集中14/14、Hub 950/950、deps error 0（既存warning 2件）、lint、全typecheck、Production build、diff check成功。Productionデータ、画像、Provider、Job、credit、報告状態、利用者連絡は変更していない。
+- 次: commit、push、Draft PR後に全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-10 Cloudシナリオ修正版のProduction受入完了
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / LIVE_REVISION_PASSED / FOLLOW_UP_AUDIT_PENDING`

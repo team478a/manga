@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud原稿編集の未生成／大量要修正表示改善（2026-09-10）
+
+- Production報告の対象作品は32ページ157コマで、ネームからCanvas下書きを作成した後も画像が自動生成されない正常な状態だった。
+- 原稿チェックが未生成コマ、未確定ページ、品質検査等をすべて赤い要修正件数へ合算し、明細を即時展開していたため、大量障害か手順誤りのように見えるUX問題を特定した。
+- 判定の安全性は維持しつつ、全issueのcode別件数を返し、「画像未生成」と「その他の完成前チェック」を分離した。ネーム直後は正常である説明、4〜8ページから始める案内、画像生成欄への導線を追加した。
+- 明細は折りたたみ表示へ変更した。画像を自動生成せず、Productionデータ、Provider、Job、credit、報告状態、利用者連絡は変更していない。
+- 集中14/14、Hub 950/950、deps error 0（既存warning 2件）、lint、全型検査、Production build、diff check成功。次はDraft PR、全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 0.0 Cloudシナリオ修正版のProduction受入完了（2026-09-10）
 
 - PR #438 merge commit `e9a7a18`を確認し、責任者承認済みの`202609100002_cloud_scenario_revision_rls.sql`をProductionへ適用した。
