@@ -12,6 +12,11 @@ test("作品画面は原稿チェックと修正先への導線を表示する",
   assert.match(page, /原稿チェック/);
   assert.match(page, /8ページ基準/);
   assert.match(page, /画像配置済みコマ/);
+  assert.match(page, /ネーム作成直後に画像がないのは正常です/);
+  assert.match(page, /画像未生成/);
+  assert.match(page, /その他の完成前チェック/);
+  assert.match(page, /完成前チェックの詳細を確認/);
+  assert.match(page, /href="#panel-generation"/);
   assert.match(page, /書き出し準備完了/);
   assert.match(page, /issue\.pageId/);
 });

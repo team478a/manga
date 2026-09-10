@@ -30,6 +30,8 @@ export type CloudManuscriptPreflightIssue = {
   panelId: string | null;
 };
 
+export type CloudManuscriptPreflightIssueCode = CloudManuscriptPreflightIssue["code"];
+
 export type CloudManuscriptPreflightReport = {
   ready: boolean;
   pageCount: number;
@@ -38,6 +40,7 @@ export type CloudManuscriptPreflightReport = {
   completedPanelCount: number;
   errorCount: number;
   warningCount: number;
+  issueCountByCode: Partial<Record<CloudManuscriptPreflightIssueCode, number>>;
   pageProgress: CloudManuscriptPageProgress[];
   issues: CloudManuscriptPreflightIssue[];
   truncatedIssueCount: number;
@@ -352,6 +355,13 @@ export function analyzeCloudManuscript(input: {
 
   const errorCount = issues.filter((issue) => issue.severity === "error").length;
   const warningCount = issues.length - errorCount;
+  const issueCountByCode = issues.reduce<Partial<Record<CloudManuscriptPreflightIssueCode, number>>>(
+    (counts, issue) => {
+      counts[issue.code] = (counts[issue.code] ?? 0) + 1;
+      return counts;
+    },
+    {},
+  );
   return {
     ready: errorCount === 0 && orderedPages.length > 0,
     pageCount: orderedPages.length,
@@ -360,6 +370,7 @@ export function analyzeCloudManuscript(input: {
     completedPanelCount,
     errorCount,
     warningCount,
+    issueCountByCode,
     pageProgress,
     issues: issues.slice(0, issueLimit),
     truncatedIssueCount: Math.max(0, issues.length - issueLimit),

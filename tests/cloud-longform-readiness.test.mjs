@@ -7,6 +7,7 @@ const base = {
   manuscriptAvailable: true,
   manuscriptReady: false,
   manuscriptErrorCount: 3,
+  manuscriptEmptyPanelCount: 0,
   checkpointAvailable: true,
   restoreAvailable: true,
   checkpointCount: 0,
@@ -19,8 +20,12 @@ const base = {
 test("長編完成ガイドは未完了工程を制作順に案内する", () => {
   const first = buildCloudLongformReadiness(base);
   assert.equal(first.ready, false);
-  assert.deepEqual(first.nextAction, { label: "原稿の修正項目を確認", href: "#manuscript-status" });
+  assert.deepEqual(first.nextAction, { label: "原稿の完成前チェックを確認", href: "#manuscript-status" });
   assert.match(first.items[0].detail, /3件/);
+
+  const ungenerated = buildCloudLongformReadiness({ ...base, manuscriptErrorCount: 273, manuscriptEmptyPanelCount: 142 });
+  assert.match(ungenerated.items[0].detail, /画像未生成142コマ/);
+  assert.doesNotMatch(ungenerated.items[0].detail, /273件の要修正/);
 
   const protectedWork = buildCloudLongformReadiness({ ...base, manuscriptReady: true, manuscriptErrorCount: 0 });
   assert.deepEqual(protectedWork.nextAction, { label: "バックアップを作成", href: "#checkpoint-heading" });
