@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-10 Codex: Cloudシナリオ修正版のProduction受入完了
+
+- Branch: `codex/docs-cloud-scenario-revision-production-20260910`
+- Base: `e9a7a18`（PR #438 merge commit）
+- 責任者承認済みmigrationをProductionへ適用し、成人向けguard維持とRLS完全修飾をread-only検証した。
+- `test`で既存4ページ初稿から修正版を1回生成し、版`a8e48a7e-e0df-4b3b-bb2c-6c8952d348de`への保存、成功通知、4ページ／登場人物維持、明るい結末への反映を確認した。
+- AI利用数は94/100から95/100。追加Provider実行、採用変更、報告状態更新、利用者連絡なし。
+- 未解決表示5件の実質的な残件は原稿編集の未生成画像／200件超の要修正表示。その他は今回または既存PRで修正済みの状態未更新3件と肯定的感想1件。
+- 次: docs-only Draft PRの全CI／Vercel Preview成功後、原稿編集報告をread-only調査する。
+
+---
+
 ## 2026-09-10 Codex: 4ページ短編シナリオ保存失敗の修正
 
 - Branch: `codex/fix-cloud-scenario-four-page-persistence-20260910`
