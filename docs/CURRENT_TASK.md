@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-10 Cloud原稿編集案内のProduction受入完了
+
+- 状態: `MERGED / ALL_MAINLINE_CI_PASSED / PRODUCTION_ACCEPTANCE_PASSED / REPORT_STATUS_UNCHANGED`
+- Branch: `codex/docs-cloud-manuscript-guidance-production-20260910`
+- Base: `70c7b8f`（PR #440 merge commit）
+- 本線Required Quality run `34463179412`はCore qualityとMigration roundtripが成功し、Desktop Windows run `34463179534`もWindows buildを含め成功した。merge Production deploymentも成功した。
+- Productionの`test`既存作品で、画像生成前の正常状態を説明する案内、4〜8ページから始める導線、画像生成欄へのanchor、未生成とその他チェックの分離、詳細の折りたたみをread-only確認した。表示値は画像配置15/157、画像未生成142コマ、その他の完成前チェック131件、確認推奨0。
+- Productionデータ、画像、Provider、Job、credit、報告状態、利用者連絡は変更していない。対象報告は修正・Production確認済みだが`detected`のまま。
+- 次: docs-onlyのdiff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。報告の解決処理と利用者通知は実行時の明示指示を待つ。
+
+---
+
 ## 2026-09-10 Cloud原稿編集の未生成／大量要修正表示改善
 
 - 状態: `ROOT_CAUSE_CONFIRMED / UX_FIX_IMPLEMENTED / PRODUCTION_UNCHANGED`
