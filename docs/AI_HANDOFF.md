@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud修正済み報告2件の対応完了通知（2026-09-10）
+
+- PR #443 merge commit `84d5407`と本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- 責任者の実行時承認後、Productionの品質確認進捗タスク`842cfaaa-02f6-42bc-b468-766cee7b5aff`と4／8ページ・購入者表記タスク`ce0ab559-face-4a6e-a26b-170bf184d81b`を、各`detected`との一致条件付きで`resolved`へ更新した。
+- 元報告`0d267d39-5a1c-4c10-98be-fe3219d8de5a`と`2441f7f6-c948-4ea8-a2d6-f48c1dbea923`も公開状態`resolved`となり、修正内容を説明する`monitor_report_status`通知を各1件作成・検証した。
+- 残る`170fc105-edbe-499c-b147-e8f12b7e3f1f`は画像品質への肯定的感想であり、`detected`のまま変更していない。Production作品、Provider、Job、Asset、credit、生成処理も変更していない。
+- 次は本記録のdocs-only Draft PRを全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 0.0 Cloudシナリオ保存報告の対応完了通知（2026-09-10）
 
 - PR #442 merge commit `1bfc720`と本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
