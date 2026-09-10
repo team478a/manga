@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 4ページ短編シナリオ保存失敗の修正（2026-09-10）
+
+- Production管理画面の緊急報告「シナリオを保存できません」をread-only調査した。添付でもAI初稿生成後のDB保存失敗を確認した。
+- アプリ側は4ページ漫画を3シーンで正常とするが、DB制約が6シーン以上を要求していたことが原因。
+- `202609100001_cloud_scenario_short_scene_count.sql`でDBを3〜20シーンへ同期し、canonical schemaとchecksum manifestを更新した。
+- rollbackは3〜5シーンが保存済みならデータを消さず停止する。Production適用、Provider、credit、報告状態、利用者連絡は未実施。
+- 新規3/3、Hub 948/948、migration 78/78、lint、全typecheck、deps、Production build、diff check成功。次はDraft PRと全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 0.0 Desktop Adult Pilot 固定Bundle証跡取込（2026-09-05）
 
 - PR #435 merge commit `cde27a1`を基点に、ローカルBundle検証結果を改ざん検知付きで固定manifestへ反映するCLIを追加した。

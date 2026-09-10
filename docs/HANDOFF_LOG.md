@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-10 Codex: 4ページ短編シナリオ保存失敗の修正
+
+- Branch: `codex/fix-cloud-scenario-four-page-persistence-20260910`
+- Base: `64d0c44`（PR #436 merge commit）
+- 新着緊急報告と添付をread-only確認し、4ページ漫画の3シーンをアプリは許可するがDBは6シーン以上を要求する不整合を特定した。
+- DB制約を3〜20シーンへ同期するmigration、データ非破壊rollback、canonical schema、checksum、回帰テストを追加した。
+- 新規3/3、Hub 948/948、migration 78/78、lint、全typecheck、deps error 0（既存warning 2件）、Production build、diff check成功。
+- Production migration、Provider、credit、報告ステータス変更、利用者返信なし。次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-05 Codex: Desktop Adult Pilot 固定Bundle証跡取込
 
 - Branch: `codex/desktop-adult-pilot-bundle-evidence-import-20260905`

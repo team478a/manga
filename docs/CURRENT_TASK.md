@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-10 4ページ短編シナリオ保存失敗の修正
+
+- 状態: `FIX_IMPLEMENTED / PRODUCTION_MIGRATION_NOT_APPLIED / MONITOR_ISSUE_OPEN`
+- Branch: `codex/fix-cloud-scenario-four-page-persistence-20260910`
+- Base: `64d0c44`（PR #436 merge commit）
+- Production管理画面の新着緊急報告と添付をread-only確認し、4ページ漫画でAI初稿生成後に「シナリオを保存できませんでした」となる事象を確認した。
+- 原因はアプリschemaが4ページ向け3シーンを許可する一方、DBの`cloud_story_scenario_versions_result_check`が6〜20シーンだけを許可していた契約不整合だった。
+- 追加migrationで許可範囲を3〜20シーンへ同期した。rollbackは3〜5シーンの既存データがある場合、削除せず明示エラーで停止する。
+- 新規回帰3/3、Hub 948/948、migration 78/78、lint、全typecheck、deps error 0（既存warning 2件）、Production build、diff check成功。
+- Production migration、Provider再実行、credit消費、報告ステータス変更、利用者への返信は行っていない。次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-05 Desktop Adult Pilot 固定Bundle証跡取込
 
 - 状態: `EVIDENCE_IMPORT_IMPLEMENTED / REAL_EVIDENCE_NOT_IMPORTED / DISTRIBUTION_BLOCKED`
