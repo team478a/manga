@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud原稿編集案内のProduction受入完了（2026-09-10）
+
+- PR #440はmerge commit `70c7b8f`で本線へ統合された。Required Quality（Core quality／Migration roundtrip）、Desktop Windows build、Vercel Productionはいずれも成功した。
+- Productionの`test`既存作品（32ページ157コマ）で、長編案内と原稿編集に「画像未生成142コマを含む完成前チェック」「ネーム作成直後に画像がないのは正常です」「画像生成を始める場所へ移動」が表示されることをread-only確認した。
+- 原稿チェックは「画像未生成 142コマ」「その他の完成前チェック 131件」「確認推奨 0」へ分離され、詳細は折りたたみ表示になった。完成判定と書き出しguardは維持されている。
+- Productionデータ、Provider、Job、credit、報告状態、利用者連絡は変更していない。対象報告は修正・Production確認済みだが、状態は`detected`のまま維持する。
+- 次は本記録のdocs-only Draft PRを全CI／Vercel Preview成功まで確認する。報告の解決処理や利用者通知は責任者の実行時指示後に別工程で行う。
+
+---
+
 ## 0.0 Cloud原稿編集の未生成／大量要修正表示改善（2026-09-10）
 
 - Production報告の対象作品は32ページ157コマで、ネームからCanvas下書きを作成した後も画像が自動生成されない正常な状態だった。

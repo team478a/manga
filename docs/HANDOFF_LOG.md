@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-10 Codex: Cloud原稿編集案内のProduction受入完了
+
+- Branch: `codex/docs-cloud-manuscript-guidance-production-20260910`
+- Base: `70c7b8f`（PR #440 merge commit）
+- PR #440の本線Required Quality、Migration roundtrip、Desktop Windows build、Vercel Production成功を確認した。
+- Productionの`test`既存作品で、画像未生成142コマとその他131件の分離、ネーム直後の正常状態説明、4〜8ページ開始案内、生成欄への導線、詳細折りたたみをread-only確認した。
+- 完成guardは維持。Productionデータ、Provider、Job、credit、報告状態、利用者連絡なし。報告は`detected`のまま。
+- 次: docs-only Draft PRを作成し、全CI／Vercel Preview成功で停止する。報告解決と通知は別途明示指示後に実施する。
+
+---
+
 ## 2026-09-10 Codex: Cloud原稿編集の未生成／大量要修正表示改善
 
 - Branch: `codex/fix-cloud-manuscript-first-step-guidance-20260910`
