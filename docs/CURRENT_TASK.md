@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-10 Cloudシナリオ修正版のProduction受入完了
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / LIVE_REVISION_PASSED / FOLLOW_UP_AUDIT_PENDING`
+- Branch: `codex/docs-cloud-scenario-revision-production-20260910`
+- Base: `e9a7a18`（PR #438 merge commit）
+- Productionへ`202609100002_cloud_scenario_revision_rls.sql`を適用し、SQL Editorの成功を確認した。read-only検証結果は`adult_guard=true`、`shadowed_parent=false`、`shadowed_report=false`、`qualified_parent=true`、`qualified_report=true`。
+- `test`の既存4ページ初稿からAI修正版を1回生成し、新しい版`a8e48a7e-e0df-4b3b-bb2c-6c8952d348de`として保存できた。成功通知、4ページ維持、登場人物維持、最終ページの明るい読後感への反映を画面で確認した。
+- AI利用数は94/100から95/100。今回の受入ではProvider request 1件を使用した。追加生成、採用変更、作品データ削除、報告状態更新、利用者連絡は行っていない。
+- Productionの未解決表示5件を整理した。シナリオ保存、4／8ページ表示、品質確認進捗は修正済みだが報告状態が未更新。1件は画像品質を評価する肯定的感想。残る実質的な不具合候補は原稿編集の「画像が無いなど200以上の要修正」で、次のread-only調査対象とする。
+- 次: docs-onlyのdiff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。merge後は原稿編集報告を再現条件・作品・保存データ・画面集計の順にread-only調査する。
+
+---
+
 ## 2026-09-10 4ページ短編シナリオ保存失敗の修正
 
 - 状態: `FIX_IMPLEMENTED / PRODUCTION_MIGRATION_NOT_APPLIED / MONITOR_ISSUE_OPEN`
