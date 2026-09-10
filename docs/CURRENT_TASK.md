@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-10 Cloud修正済み報告2件の対応完了通知
+
+- 状態: `TWO_REPORTS_RESOLVED / TWO_USER_NOTIFICATIONS_CREATED / PRODUCTION_VERIFIED`
+- Branch: `codex/docs-cloud-two-report-resolutions-20260910`
+- Base: `84d5407`（PR #443 merge commit）。本線Required Quality（Core quality／Migration roundtrip）とDesktop Windows buildの成功を確認した。
+- 責任者の実行時承認に基づき、Productionの品質確認進捗タスク`842cfaaa-02f6-42bc-b468-766cee7b5aff`と4／8ページ・購入者表記タスク`ce0ab559-face-4a6e-a26b-170bf184d81b`を、各`detected`との一致条件付きで`resolved`へ更新した。
+- 別クエリで両タスク`resolved`、元報告`0d267d39-5a1c-4c10-98be-fe3219d8de5a`／`2441f7f6-c948-4ea8-a2d6-f48c1dbea923`の公開状態`resolved`、通知種別`monitor_report_status`、承認済みタイトル／本文を各1件確認した。
+- 通知は「品質確認の進捗表示を修正しました」と「ページ数と先行利用の表示を修正しました」。後者では、モニター表記により購入者の権利や正式リリース後の利用資格を失わないことも案内した。
+- 残る画像品質への肯定的感想1件、作品データ、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: docs-onlyのdiff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-10 Cloudシナリオ保存報告の対応完了通知
 
 - 状態: `REPORT_RESOLVED / USER_NOTIFICATION_CREATED / PRODUCTION_VERIFIED`
