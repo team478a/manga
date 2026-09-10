@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloudシナリオ修正版RLS修正／ユーザー報告監査（2026-09-10）
+
+- `test`のProduction通し検証で、4ページ初稿の生成・保存・採用・ネーム画面遷移は成功したが、親版からのAI修正版だけ生成後の保存に失敗した。
+- authenticated相当のrollback probeで、`cloud_story_scenario_versions_owner_insert`が外側の新規行ではなく内側alias同士を比較するRLS名解決不具合を特定した。
+- 追加migrationで外側の`research_report_id`、`parent_version_id`、`proposal_selection_id`を完全修飾する。Productionに存在する成人向け`content_class`／許可guardは条件分岐で維持し、canonicalの一般向け構造にも適用可能とする。
+- Productionの未解決issue taskは5件。今回のシナリオ保存1件、既修正だが状態未更新2件、画像品質の肯定的感想1件、別途調査が必要な原稿編集UX／未生成画像1件だった。報告状態とProductionは変更していない。
+- Provider検証は4 requestを使用し、`test`のAI利用数は90/100から94/100。追加生成、Production migration適用、報告状態更新は未実施。
+
+---
+
 ## 0.0 4ページ短編シナリオ保存失敗の修正（2026-09-10）
 
 - Production管理画面の緊急報告「シナリオを保存できません」をread-only調査した。添付でもAI初稿生成後のDB保存失敗を確認した。
