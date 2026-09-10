@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-10 品質確認Panel Reviewer C進捗再監査
+
+- 状態: `BATCH_ACTIVE / REVIEW_4_OF_5_SUBMITTED / REVIEWER_C_NOT_STARTED`
+- Branch: `codex/docs-quality-reviewer-c-progress-20260910`
+- Base: `dcc8203`（PR #445 merge commit）。本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- Productionの`batch_private_01`をread-only集計した。Batchはactive、期限は`2026-09-19T15:00:00Z`（日本時間2026-09-20 00:00）。
+- Reviewer A／B／D／Eは各28/28提出済み。Panel Reviewer C（青木隆康）は`assigned`、開始同意なし、0/28、未提出、回答更新なしだった。
+- Reviewer Cへの開始案内は`2026-09-01T23:33:31.682056Z`に1回送信済み。重複通知は送っていない。
+- Productionデータ、回答、Batch、割当、メール、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: docs-onlyのdiff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。再案内は責任者のaction-time承認後に別工程で行う。
+
+---
+
 ## 2026-09-10 Cloud画像品質への肯定的フィードバック確認完了
 
 - 状態: `POSITIVE_FEEDBACK_CLOSED / USER_NOTIFICATION_CREATED / PRODUCTION_VERIFIED`

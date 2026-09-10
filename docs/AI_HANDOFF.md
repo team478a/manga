@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Panel Reviewer C進捗再監査（2026-09-10）
+
+- PR #445 merge commit `dcc8203`と本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- Productionの`batch_private_01`をread-only確認し、5名中4名は28/28提出済み、Panel Reviewer C（青木隆康）は`assigned`、開始同意なし、0/28、未提出、回答更新なしだった。
+- Batchはactive、期限は日本時間2026-09-20 00:00。Reviewer Cへの開始案内は1回送信済みで、今回の再監査では重複送信していない。
+- Productionデータ、回答、Batch、割当、メール、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次は本記録のdocs-only Draft PRを全CI／Vercel Preview成功まで確認する。再案内は責任者の実行時承認を待つ。
+
+---
+
 ## 0.0 Cloud画像品質への肯定的フィードバック確認完了（2026-09-10）
 
 - PR #444 merge commit `35a72b9`を基準とし、本線Required Quality／Desktop Windows成功を確認した。
