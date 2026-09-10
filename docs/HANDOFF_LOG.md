@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-10 Codex: Cloudシナリオ保存報告の対応完了通知
+
+- Branch: `codex/docs-cloud-scenario-report-resolution-20260910`
+- Base: `1bfc720`（PR #442 merge commit）。本線Required Quality、Migration roundtrip、Desktop Windows build成功を確認した。
+- 責任者の実行時承認後、Productionのシナリオ保存報告タスク`2954455c-42cd-4ad3-b830-335c3af3103e`を条件付きで`resolved`へ1件更新した。
+- 元報告`426263cd-2325-442e-88d4-c442cdf3fcfd`も公開状態`resolved`となり、修正内容、Production受入結果、先行販売購入者5名、運営側検証の並行実施を説明する利用者向け`monitor_report_status`通知1件を確認した。
+- 他3件の報告、作品、Provider、Job、Asset、credit、生成操作なし。次はdocs-only Draft PRと全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-10 Codex: Cloud原稿編集報告の対応完了通知
 
 - Branch: `codex/docs-cloud-manuscript-report-resolution-20260910`

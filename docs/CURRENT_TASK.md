@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-10 Cloudシナリオ保存報告の対応完了通知
+
+- 状態: `REPORT_RESOLVED / USER_NOTIFICATION_CREATED / PRODUCTION_VERIFIED`
+- Branch: `codex/docs-cloud-scenario-report-resolution-20260910`
+- Base: `1bfc720`（PR #442 merge commit）。本線Required Quality（Core quality／Migration roundtrip）とDesktop Windows buildの成功を確認した。
+- 責任者の実行時承認に基づき、Productionの対象タスク`2954455c-42cd-4ad3-b830-335c3af3103e`を現在状態`detected`との一致条件付きで`resolved`へ更新した。更新件数は1件。
+- 別クエリでタスク`resolved`、元報告`426263cd-2325-442e-88d4-c442cdf3fcfd`の公開状態`resolved`、通知種別`monitor_report_status`、承認済みの通知タイトル／本文を確認した。
+- 通知では、修正とProductionで4ページ初稿／修正版を保存できること、現在の先行利用対象は先行販売購入者5名であること、運営側の自動テスト・検証も並行しており完成が他の購入者の作業だけに依存しないことを案内した。
+- 他3件の報告、作品データ、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: docs-onlyのdiff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-10 Cloud原稿編集報告の対応完了通知
 
 - 状態: `REPORT_RESOLVED / USER_NOTIFICATION_CREATED / PRODUCTION_VERIFIED`
