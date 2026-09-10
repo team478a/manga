@@ -6486,3 +6486,14 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge前にmigrationやProduction表示を変更しない。
 
 ---
+# 2026-09-10 Codex: Cloudシナリオ修正版RLS修正／ユーザー報告監査
+
+- Branch: `codex/fix-cloud-scenario-revision-rls-20260910`
+- Base: `20e00bf`（PR #437 merge commit）
+- `test`の4ページ初稿生成・保存・採用とネーム画面遷移は成功。親版からのAI修正版だけRLSで保存失敗することをProductionで再現した。
+- scenario insert policyの内側aliasによる名前衝突を、外側行の完全修飾で修正するmigration、rollback、canonical schema、回帰テストを追加した。Production固有の成人向けguardを後退させない条件分岐を含む。
+- 未解決ユーザー報告5件をread-only確認。Production、報告状態、Provider、Job、Assetは変更していない。通し検証で4 request消費、残り6 request。
+- 集中5/5、Hub 640/640、migration 79/79、PostgreSQL canonical／Production相当分岐、deps、lint、全typecheck、Hub build、diff check成功。
+- 次: commit／push／Draft PR。全CI／Vercel Preview成功で停止し、merge後にProduction migration適用と修正版再検証を別工程で行う。
+
+---

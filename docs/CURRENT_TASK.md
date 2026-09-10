@@ -5308,3 +5308,15 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge後にProduction migrationを適用し、管理画面で未送信5名への送信を1回だけ実行する。
 
 ---
+# 2026-09-10 Cloudシナリオ修正版RLS修正／ユーザー報告監査
+
+- Branch: `codex/fix-cloud-scenario-revision-rls-20260910`
+- Base: `origin/feature/manga-canvas-mvp`@`20e00bf`（PR #437 merge commit）
+- Productionで4ページ初稿は保存・採用でき、ネーム作成画面へ遷移できた。AI修正版はProvider完了後、RLS拒否で保存できなかった。
+- 原因はscenario insert policy内の非修飾列が内側aliasへ束縛され、`parent.id=parent.parent_version_id`等へ変形していたこと。追加migrationとcanonical schemaで外側の新規行を完全修飾する。
+- Productionの成人向けscenario列と`can_use_cloud_adult_scenario()`が存在する場合は現在の成人向け境界を維持し、存在しないcanonical環境では一般向けpolicyを修正する。
+- Production未解決報告5件をread-only監査。既修正・状態未更新2件、肯定的画像品質感想1件、今回のscenario 1件、別途調査対象のCanvas未生成画像／要修正過多1件。
+- Production適用、報告状態更新、追加Provider実行、追加credit消費なし。直前の通し検証は4 requestを消費し、AI利用数94/100。
+- 集中テスト5/5、Hub 640/640、migration manifest 79/79、PostgreSQLでcanonical／Production相当の両policy分岐、deps、lint、全typecheck、Hub build、diff check成功。残り: commit、push、Draft PR、全CI／Vercel Preview確認。
+
+---
