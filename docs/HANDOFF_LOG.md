@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 4ページ短編ネーム保存制約のProduction適用・受入完了
+
+- Branch: `codex/docs-cloud-storyboard-short-production-20260914`
+- Base: `2ca3a66`（PR #449 merge commit）。本線Required Quality run `34801758027`とDesktop Windows run `34801758059`は成功。
+- 責任者の明示承認後、Productionへ`202609140002_cloud_storyboard_short_page_count.sql`を1回適用し、成功を確認した。DB制約のread-only照会は`jsonb_array_length(result->'pages') >= 4`かつ`<= 48`を返した。
+- `test`の既存採用シナリオ「雨宿りポスト」で4ページ初稿ネームを1回生成し、保存版`1bcc4b66-8bb3-48e9-bdd4-f47a6a0e5b78`へ遷移した。画面で4ページすべてを確認し、DBでも同一ID、`page_count=4`、作成時刻`2026-09-14T03:20:27.395723Z`を確認した。
+- Provider request 1件、AI利用数96/100→97/100。ネーム採用、修正版、画像生成、報告状態、利用者通知、画像Provider、Job、Assetの変更なし。
+- docs-only差分のRC構造検査とdiff check成功。外部環境preflightの既存PENDING項目は不変。
+- 次はdocs-onlyの差分検査、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。利用者報告の解決処理と通知は別工程とする。
+
+---
+
 ## 2026-09-14 Codex: 4ページ短編ネーム保存制約の修正
 
 - Branch: `codex/fix-cloud-storyboard-short-page-count-20260914`

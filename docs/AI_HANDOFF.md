@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 4ページ短編ネーム保存制約のProduction適用・受入完了（2026-09-14）
+
+- PR #449はmerge commit `2ca3a66`で本線へ統合され、本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- 責任者承認後、Productionへ`202609140002_cloud_storyboard_short_page_count.sql`を適用した。SQL Editorは成功し、`pg_constraint`のread-only照会でもネームの許可ページ数が4〜48件になったことを確認した。
+- `test`の「雨宿りポスト」で4ページ初稿ネームを1回生成し、版`1bcc4b66-8bb3-48e9-bdd4-f47a6a0e5b78`として保存・再読込できた。Production DBの同一行も`page_count=4`だった。
+- Provider request 1件を使用し、AI利用数は96/100から97/100。ネーム採用、修正版生成、画像生成、報告状態、通知、画像Provider、Job、Assetは変更していない。
+- docs-only差分のRC構造検査とdiff checkは成功した。外部環境の既存PENDING項目に変更はない。
+- 次は本記録のdocs-only Draft PRを全CI／Vercel Preview成功まで確認する。merge後、該当する利用者報告のread-only監査を行い、状態変更・利用者通知・更新情報掲載は責任者の実行時承認を待つ。
+
+---
+
 ## 0.0 4ページ短編ネーム保存制約の修正（2026-09-14）
 
 - PR #448 merge後のProduction受入れを`test`で行い、4ページAIネームは生成できたがDB保存に失敗した。AI／アプリschemaは4〜48ページ対応、DB制約は8〜48ページの旧仕様であり、4ページ結果を拒否していた。
