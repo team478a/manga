@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定 Production migration適用（2026-09-14）
+
+- PR #463はmerge commit `d523de4`で本線へ統合され、本線Required Quality run `34848635326`とDesktop Windows run `34848635294`は成功した。
+- Supabase `mangai-hub-staging`、Project ref `vmdsyxykcrgxcdbrwlkv`、`main` ProductionでHealthyと適用前backupを確認した。修正版read-only preflightは`batch_private_01 / completed / target 5 / case 28 / reviewer 5 / completed response 140`、裁定object未存在を確認した。
+- 旧ランブックのpreflightは存在しないresponseの`id`列を参照して`42703`となったが、read-only transactionのためProduction変更は0件だった。相関subqueryへ修正してランブックを更新した。
+- 責任者承認後、`202609140003_cloud_monitor_quality_review_adjudication.sql`を34,757 bytes、SHA-256 `D1AA14EDA0476F277F1D3A03FA770436D40E8E2B05A00E474B75BE7D0E9F9DA5`で照合し、全文を1回適用した。結果は`Success. No rows returned`。
+- postflightは裁定2テーブル存在・RLS有効、8 RPC存在、裁定／event 0件、`authenticated`直接CRUD権限なし、既存Batch `completed / 28 / 5 / 140`不変を確認した。
+- 担当者割当、通知、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成処理は変更していない。次はdocs-only PRの全CI／Preview成功で停止し、1件canary割当は別承認を待つ。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定 Production運用ランブック（2026-09-14）
 
 - PR #462はmerge commit `b9fff3b`で本線へ統合された。次のProduction工程を安全に進めるため、`docs/quality-benchmark-monitor-adjudication-production-runbook.md`を追加した。

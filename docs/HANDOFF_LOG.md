@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認Pilot 第三者裁定 Production migration適用
+
+- Branch: `codex/docs-quality-review-adjudication-production-migration-20260914`
+- Base: `d523de4`（PR #463 merge commit）。本線Required Quality run `34848635326`、Desktop Windows run `34848635294`は成功。
+- Supabase `mangai-hub-staging`、Project ref `vmdsyxykcrgxcdbrwlkv`、`main` Productionで、責任者の実行時明示承認後に`202609140003_cloud_monitor_quality_review_adjudication.sql`を全文1回適用した。原本は34,757 bytes、SHA-256 `D1AA14EDA0476F277F1D3A03FA770436D40E8E2B05A00E474B75BE7D0E9F9DA5`で一致し、実行結果は`Success. No rows returned`。
+- 旧ランブックpreflightの存在しないresponse `id`参照はread-onlyで`42703`となり変更0件。相関subqueryへ修正後、適用前`completed / 5 / 28 / 5 / 140`とobject未存在を確認した。
+- postflightは2テーブル・RLS・8 RPC、裁定／event 0件、`authenticated`直接CRUD権限なし、既存Batch `completed / 28 / 5 / 140`不変を確認した。
+- Production変更はadditive migrationだけ。割当、通知、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成処理なし。
+- 次: runbook修正と本証跡をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。工程2のcanary割当は責任者の別承認を必要とする。
+
+---
+
 ## 2026-09-14 Codex: 品質確認Pilot 第三者裁定 Production運用ランブック
 
 - Branch: `codex/docs-quality-review-adjudication-production-runbook-20260914`

@@ -57,19 +57,21 @@ select
   b.batch_code,
   b.status,
   b.target_reviewer_count,
-  count(distinct c.id) as case_count,
-  count(distinct a.reviewer_profile_id) as reviewer_count,
-  count(distinct r.id) filter (
-    where a.status = 'submitted'
-      and a.submitted_at is not null
-      and r.case_completed_at is not null
-  ) as completed_response_count
+  (select count(*)
+   from public.cloud_monitor_quality_review_cases c
+   where c.batch_id = b.id) as case_count,
+  (select count(distinct a.reviewer_profile_id)
+   from public.cloud_monitor_quality_review_assignments a
+   where a.batch_id = b.id) as reviewer_count,
+  (select count(*)
+   from public.cloud_monitor_quality_review_responses r
+   join public.cloud_monitor_quality_review_assignments a on a.id = r.assignment_id
+   where a.batch_id = b.id
+     and a.status = 'submitted'
+     and a.submitted_at is not null
+     and r.case_completed_at is not null) as completed_response_count
 from public.cloud_monitor_quality_review_batches b
-left join public.cloud_monitor_quality_review_cases c on c.batch_id = b.id
-left join public.cloud_monitor_quality_review_assignments a on a.batch_id = b.id
-left join public.cloud_monitor_quality_review_responses r on r.assignment_id = a.id
-where b.batch_code = 'batch_private_01'
-group by b.id, b.batch_code, b.status, b.target_reviewer_count;
+where b.batch_code = 'batch_private_01';
 
 select
   to_regclass('public.cloud_monitor_quality_review_adjudications') as adjudications_table,
@@ -130,6 +132,15 @@ commit;
 期待値は、2テーブルともRLS有効、8 RPCすべて`true`、裁定・eventとも0件、`authenticated`の直接table権限4項目がすべて`false`である。ここまで確認しても担当割り当ては行わない。
 
 rollbackは裁定・eventが0件の場合だけ検討できる。1件でも存在すればguardが停止するため、SQLを改変して強制dropしない。
+
+### 4.4 2026-09-14 Production適用記録
+
+- 対象はSupabase Project `mangai-hub-staging`、Project ref `vmdsyxykcrgxcdbrwlkv`、Branch `main`（Production）である。ProjectはHealthy、直近backupは適用前に存在することを画面で確認した。
+- 初回のread-only preflightは、旧ランブックが存在しない`cloud_monitor_quality_review_responses.id`を参照していたため`42703`で停止した。書き込みSQLは含まず、Production変更は0件である。本節4.1を実schemaに合う相関subqueryへ修正した。
+- 修正版preflightで`batch_private_01 / completed / target 5 / case 28 / reviewer 5 / completed response 140`を確認し、裁定2テーブルと割当RPCが未存在であることを確認した。
+- 責任者の実行時明示承認後、merge済み本線`d523de4`に含まれる`202609140003_cloud_monitor_quality_review_adjudication.sql`を全文1回適用した。原本は34,757 bytes、SHA-256 `D1AA14EDA0476F277F1D3A03FA770436D40E8E2B05A00E474B75BE7D0E9F9DA5`で照合し、SQL Editorは`Success. No rows returned`を返した。
+- postflightは、裁定2テーブル存在・両方RLS有効、8 RPCすべて存在、裁定0件・event 0件、`authenticated`の直接SELECT／INSERT／UPDATE／DELETE権限がすべて`false`であることを確認した。既存Batchは`completed / 28 / 5 / 140`のままである。
+- 担当者割当、開始案内、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成処理は変更していない。工程2は別の実行時明示承認まで開始しない。
 
 ## 5. 工程2: 担当者割り当て
 
