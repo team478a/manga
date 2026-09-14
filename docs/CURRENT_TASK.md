@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認Pilot 第三者裁定 Production migration適用
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / ASSIGNMENT_NOT_STARTED`
+- Branch: `codex/docs-quality-review-adjudication-production-migration-20260914`
+- Base: `d523de4`（PR #463 merge commit）。本線Required Quality run `34848635326`とDesktop Windows run `34848635294`は成功した。
+- 対象Supabaseは`mangai-hub-staging`、Project ref `vmdsyxykcrgxcdbrwlkv`、`main` Production。Healthyと適用前backupを画面で確認した。
+- 旧ランブックのread-only preflightは存在しない`cloud_monitor_quality_review_responses.id`参照により`42703`で停止し、Production変更は0件だった。実schemaに合う相関subqueryへ修正し、`batch_private_01 / completed / target 5 / case 28 / reviewer 5 / completed response 140`と裁定object未存在を確認した。
+- 責任者の実行時明示承認後、`supabase/migrations/202609140003_cloud_monitor_quality_review_adjudication.sql`を全文1回適用した。34,757 bytes、SHA-256 `D1AA14EDA0476F277F1D3A03FA770436D40E8E2B05A00E474B75BE7D0E9F9DA5`を原本と照合し、SQL Editorは`Success. No rows returned`を返した。
+- postflightは裁定2テーブル存在・両方RLS有効、8 RPCすべて存在、裁定0件・event 0件、`authenticated`直接CRUD権限なしを確認した。既存Batchは`completed / 28 / 5 / 140`で不変である。
+- Production変更は上記additive migrationだけ。担当者割当、通知、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: runbook修正と適用証跡のdocs-only Draft PRを作成し、全CI／Vercel Preview成功で停止する。工程2の1件canary割当は別の責任者実行時明示承認まで行わない。
+
+---
+
 ## 2026-09-14 品質確認Pilot 第三者裁定 Production運用ランブック
 
 - 状態: `RUNBOOK_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
