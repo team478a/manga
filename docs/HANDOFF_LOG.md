@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認Pilot 第三者裁定DB基盤
+
+- Branch: `codex/feat-quality-review-adjudication-db-20260914`
+- Base: `a9b803b`（PR #458 merge commit）
+- 既存回答を保持したまま第三者裁定を追加保存するadditive migration、裁定専用table、payload非保持のappend-only event、RLS、管理者／本人別Security Definer RPCを実装した。
+- 完了Batch、Primary A/B確定不一致、第三者性、Blind-first、source fingerprint、idempotency、immutable lockをDB境界でもfail closedにした。rollbackは保存済み行がある場合にデータを削除せず停止する。
+- canonical schema、schema assertion、manifest checksum、集中テストを同期した。集中9/9、Hub 976/976、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。
+- 初回CIはvanilla PostgreSQLで`pgcrypto`が`public`へ配置される差を検出した。固定search pathを`extensions,public,pg_temp`へ修正し、SupabaseとCIの両配置でunqualified `digest`を安全に解決する。Production、migration適用、回答、割当、通知、Provider、Job、Asset、credit、生成操作なし。
+- Draft PR [#459](https://github.com/team478a/manga/pull/459)はDraft／MERGEABLE。実装HEAD `a48775f`のCore quality run `34832351502`（Core quality 3分20秒、Migration roundtrip 57秒）、Desktop Windows run `34832351467`（4分32秒）、Vercel、Preview Commentsは成功した。
+- 次: 証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後もProduction適用は責任者の明示承認まで行わない。
+
+---
+
 ## 2026-09-14 Codex: 品質確認Pilot 第三者裁定Domain
 
 - Branch: `codex/feat-quality-review-adjudication-domain-20260914`

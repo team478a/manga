@@ -486,7 +486,13 @@
       "description": "4ページ短編ネームをDBへ保存可能にする",
       "forwardSha256": "fba3802098693b096e09f5d9769da2a1e480dc0655807424ba39c8fdb7856e2b",
       "rollbackSha256": "cc76de12aef17c52c3ed8faec886b5c7d93736017eba8fcb2b713977a7e09d87"
+    },
+    {
+      "id": "202609140003_cloud_monitor_quality_review_adjudication",
+      "description": "品質確認Pilotの第三者裁定をBlind-firstかつ追記型監査で保存",
+      "forwardSha256": "d1aa14eda0476f277f1d3a03fa770436d40e8e2b05a00e474b75be7d0e9f9da5",
+      "rollbackSha256": "1914f9b1947023d4a19a3c7667fbc0452dfbafd0728d0a86e318d73c6be697dd"
     }
   ],
-  "schemaSha256": "72feb650978648397c61e4a732a815e0ed18f2fe93a89711bc89c7bef92c0f98"
+  "schemaSha256": "345e4d4c3d187e66c1eca06637e432f01566922830c4d14cc9d384b35d71f38a"
 }

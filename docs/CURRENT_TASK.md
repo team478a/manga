@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認Pilot 第三者裁定DB基盤
+
+- 状態: `DATABASE_SLICE_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/feat-quality-review-adjudication-db-20260914`
+- Base: `a9b803b`（PR #458 merge commit）。本線へ第三者裁定Domainが統合済みである。
+- 既存Batch／case／assignment／responseを変更しないadditive migrationとして、裁定専用tableと回答本文を複製しないappend-only event tableを追加した。有効な同一caseの重複裁定をDB制約で拒否する。
+- 管理者server専用の割当／revoke RPCと、担当本人専用の同意／draft／独立判断lock／匿名A-B差分開示／最終提出／棄権RPCを追加した。完了Batch、Primary A/B確定、不一致、第三者性、source fingerprint、expected state、idempotencyを毎回fail closedで検査する。
+- 独立判断をimmutableに確定するまでA/B差分を返さず、開示後もverdict、defect category／severityだけを返す。氏名、メール、profile ID、自由記述、Prompt、画像をevent／差分応答へ含めない。直接table accessはauthenticatedからrevokeし、RLSを有効化した。
+- rollbackは裁定またはeventが1件でも存在する場合にデータを削除せず停止する。canonical schema、schema assertion、manifest checksum、集中回帰テストを同期した。
+- 集中9/9、Hub 976/976、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration validator 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。初回CIがvanilla PostgreSQLでは`pgcrypto`が`public`に置かれる差を検出したため、固定search pathを`extensions,public,pg_temp`として両環境で同じ関数を解決するよう修正した。
+- Production、DB適用、裁定回答、割当、通知、画像、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- Draft PR [#459](https://github.com/team478a/manga/pull/459)はDraft／MERGEABLE。実装HEAD `a48775f`のCore quality run `34832351502`（Core quality 3分20秒、Migration roundtrip 57秒）、Desktop Windows run `34832351467`（4分32秒）、Vercel、Vercel Preview Commentsはすべて成功した。[Preview](https://mangai-hub-staging-git-codex-feat-qua-a854f1-team478as-projects.vercel.app)はReadyである。
+- 次: この証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後もProduction migration適用は責任者の実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-14 品質確認Pilot 第三者裁定Domain
 
 - 状態: `DOMAIN_IMPLEMENTED / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
