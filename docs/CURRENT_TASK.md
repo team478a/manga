@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-14 Cloudネーム保存RLS再発修正
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATED / PRODUCTION_UNCHANGED`
+- Branch: `codex/fix-cloud-storyboard-save-rls-20260914`
+- Base: `d33b2c0`（PR #446 merge commit）
+- Productionの緊急報告「ネームを保存できませんでした。」は、前回のシナリオ修正版とは別の`cloud_story_storyboard_versions` INSERT policyで再発していた。
+- 原因はpolicy内の非修飾`scenario_version_id`／`parent_version_id`が内側aliasの列へ束縛され、外側の保存対象行を検証できなかったこと。追加migrationとcanonical schemaで外側行を完全修飾した。
+- 最新採用シナリオ、所有者、親版の同一シナリオ条件は維持した。回帰テスト2/2、Hub 952/952、migration／rollback検証80/80、deps error 0（既存warning 2件）、lint、全typecheck、Hub build、diff check成功。
+- Production、報告状態、利用者通知、Provider、Job、Asset、credit、生成処理は変更していない。migrationは未適用。
+- 次: Hub品質ゲート、diff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。merge後にProduction migration適用と利用者再検証を別工程で行う。
+
+---
+
 ## 2026-09-10 品質確認Panel Reviewer C進捗再監査
 
 - 状態: `BATCH_ACTIVE / REVIEW_4_OF_5_SUBMITTED / REVIEWER_C_NOT_STARTED`

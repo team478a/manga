@@ -474,7 +474,13 @@
       "description": "シナリオ修正版の親版と企画選択を外側の新規行へ正しく照合",
       "forwardSha256": "351a3571541587a7f104031093446c566938798ade1dbe82658e262f04bd34f3",
       "rollbackSha256": "ebcdcda968ab4c25cce5bcc4f73ba6735b86af100b00e6e27ee7a42ec4cb5f7e"
+    },
+    {
+      "id": "202609140001_cloud_storyboard_version_rls",
+      "description": "ネーム版のシナリオと親版を外側の新規行へ正しく照合",
+      "forwardSha256": "5abb1c27b019848a39b55a7ade30a7d8f42cd97a137d44715b3a0f3e50e4f042",
+      "rollbackSha256": "c22a92148113d717ba441ea8f3d3fb815e66be33a1f0831c513f2eb7c5b424ff"
     }
   ],
-  "schemaSha256": "2980fe4b7fc0bb1e690f44a9e71a764c347f15747ae86057b362a91200352744"
+  "schemaSha256": "fe8966048172d40dcfa42d4f9e6a5769eea83b6c8884a9e3a13c5dc0b1977f7c"
 }
