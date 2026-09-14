@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定 Production canary割り当て（2026-09-15）
+
+- PR #464はmerge commit `2aaf43b`で本線へ統合され、本線Required Quality run `34854617431`とDesktop Windows run `34854617516`は成功した。
+- Production `batch_private_01`をread-only確認し、`completed / target 5 / case 28 / reviewer 5 / completed response 140`、`case_000003`のPrimary A/B signature不一致、対象caseの有効裁定0件、裁定／event合計0件を確認した。
+- 責任者が1件canaryと対象Panel Reviewer Cを明示承認後、管理者actorで割当RPCを1回実行した。`2026-09-15 00:32:22.686426 JST`に`case_000003`の`assigned` 1件とappend-only `assigned` event 1件が作成された。
+- postflightはactive case unique guard、対象有効担当1件、裁定1件、event 1件、Primary回答56件、全回答140件、画像28件、Batch `completed`不変を確認した。
+- docs-only検証はmigration validator 82/82、RC structure、diff checkが成功した。外部環境PENDING／手動E2Eは既存状態を維持する。
+- 通知、開始案内、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は実行していない。次はdocs-only PRの全CI／Preview成功で停止し、残り22件の割り当てと開始案内は別承認を待つ。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定 Production migration適用（2026-09-14）
 
 - PR #463はmerge commit `d523de4`で本線へ統合され、本線Required Quality run `34848635326`とDesktop Windows run `34848635294`は成功した。

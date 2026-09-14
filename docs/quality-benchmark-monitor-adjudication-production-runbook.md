@@ -1,6 +1,6 @@
 # 品質確認Pilot 第三者裁定 Production運用ランブック
 
-更新日: 2026-09-14  
+更新日: 2026-09-15
 対象Batch: `batch_private_01`  
 正本設計: `docs/quality-benchmark-monitor-adjudication.md`
 
@@ -160,6 +160,15 @@ rollbackは裁定・eventが0件の場合だけ検討できる。1件でも存�
 - 二重割当が拒否される。
 
 canary確認後も、残り22件の割り当てには別途対象範囲を明示した承認を必要とする。一括割当を暗黙に開始しない。
+
+### 5.1 2026-09-15 Production canary割り当て記録
+
+- 対象はSupabase Project `mangai-hub-staging`、Project ref `vmdsyxykcrgxcdbrwlkv`、Branch `main`（Production）の`batch_private_01`である。
+- read-only preflightでBatch `completed`、目標5名、28ケース、5名、確定回答140件を確認した。`case_000003`はPrimary A/Bの確定回答2件が異なるsignatureで、対象caseの有効裁定0件、裁定／event合計0件だった。第三者候補はPanel Reviewer C／D／Eである。
+- 責任者は第三者裁定1件のcanary割り当てを承認し、対象者が通常品質レビューを完了済みのPanel Reviewer Cであることを確認後、`case_000003`を同Reviewerへ割り当てることを明示承認した。
+- 管理者actorから`assign_cloud_monitor_quality_review_adjudication` RPCを固定idempotency keyで1回実行した。`2026-09-15 00:32:22.686426 JST`（`2026-09-14 15:32:22.686426 UTC`）に状態`assigned` 1件とappend-only `assigned` event 1件が作成された。
+- postflightは対象caseの有効担当1件、裁定合計1件、`assigned` event 1件、active case unique guard存在を確認した。Primary A/B回答56件、全回答140件、画像28件、Batch状態`completed`は不変である。
+- メール、LINE、アプリ通知、開始案内、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は変更していない。工程3と残り22件の割り当ては、それぞれ別の責任者実行時明示承認まで開始しない。
 
 ## 6. 工程3: 開始案内
 
