@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 4ページ短編ネーム保存制約の修正
+
+- Branch: `codex/fix-cloud-storyboard-short-page-count-20260914`
+- Base: `91fd81c`（PR #448 merge commit）
+- Productionの`test`で4ページネーム生成を1回実行し、Provider生成後の保存失敗を再現した。アプリは4〜48ページ対応だがDB制約だけが8〜48ページの旧値だったことを追加原因と確定した。
+- DB制約を4〜48ページへ同期するmigration、データ非破壊rollback、canonical schema、checksum、回帰テストを追加した。短編ネームが存在する状態でのrollbackは明示エラーで停止する。
+- 集中16/16、Hub 955/955、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。
+- 受入れでAI利用数は95/100から96/100へ変化し、ネーム版は保存されていない。新migration、報告状態、通知、作品、画像Provider、Job、Assetは変更していない。
+- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge後のProduction migrationと再受入れは責任者の明示承認後に別工程で行う。
+
+---
+
 ## 2026-09-14 Codex: Cloudネーム保存RLSのProduction適用
 
 - Branch: `codex/docs-cloud-storyboard-rls-production-20260914`

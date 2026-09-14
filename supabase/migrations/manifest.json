@@ -480,7 +480,13 @@
       "description": "ネーム版のシナリオと親版を外側の新規行へ正しく照合",
       "forwardSha256": "5abb1c27b019848a39b55a7ade30a7d8f42cd97a137d44715b3a0f3e50e4f042",
       "rollbackSha256": "c22a92148113d717ba441ea8f3d3fb815e66be33a1f0831c513f2eb7c5b424ff"
+    },
+    {
+      "id": "202609140002_cloud_storyboard_short_page_count",
+      "description": "4ページ短編ネームをDBへ保存可能にする",
+      "forwardSha256": "fba3802098693b096e09f5d9769da2a1e480dc0655807424ba39c8fdb7856e2b",
+      "rollbackSha256": "cc76de12aef17c52c3ed8faec886b5c7d93736017eba8fcb2b713977a7e09d87"
     }
   ],
-  "schemaSha256": "fe8966048172d40dcfa42d4f9e6a5769eea83b6c8884a9e3a13c5dc0b1977f7c"
+  "schemaSha256": "72feb650978648397c61e4a732a815e0ed18f2fe93a89711bc89c7bef92c0f98"
 }
