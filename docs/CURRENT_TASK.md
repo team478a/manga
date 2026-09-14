@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認Pilot 第三者裁定Domain
+
+- 状態: `DOMAIN_IMPLEMENTED / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/feat-quality-review-adjudication-domain-20260914`
+- Base: `5b15c13`（PR #457 merge commit）。本線Required Quality run `34828180291`、Desktop Windows run `34828180350`、Vercelは成功した。
+- 第三者裁定のstrict record schema、`assigned`／`in_progress`／`independent_locked`／`submitted`／`abstained`／`revoked`状態機械、遷移前検査、匿名派生判定を`monitor-quality-review-adjudication.ts`へ追加した。
+- 既存Human response schemaを再利用し、A/B本人、重複Primary、一致ケース、case不一致、判定不整合、Blind-first順序違反、独立判断なしの最終提出、確定後の通常編集を拒否する。棄権、不要裁定、重複有効裁定は`adjudication_blocked`とする。
+- 全必要ケース確定時だけ`pilot_adjudication_complete`とするが、元のagreement／kappaを変更せず、`formalBenchmarkEligible=false`と`automaticAdoption=false`を維持する。DB、repository、API、UIへの接続はまだない。
+- 集中7/7、Hub 968/968、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。外部環境の既存PENDING項目は不変。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功まで確認して停止する。merge後の実装分割2（additive migration／RLS／RPC／rollback）は別PRとし、Production適用はさらに別の明示承認を必要とする。
+
+---
+
 ## 2026-09-14 品質確認Pilot 第三者裁定フロー設計
 
 - 状態: `DESIGN_COMPLETE / PRODUCTION_UNCHANGED / IMPLEMENTATION_APPROVAL_PENDING`

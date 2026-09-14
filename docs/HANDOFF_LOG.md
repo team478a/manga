@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認Pilot 第三者裁定Domain
+
+- Branch: `codex/feat-quality-review-adjudication-domain-20260914`
+- Base: `5b15c13`（PR #457 merge commit）。本線Required Quality run `34828180291`、Desktop Windows run `34828180350`、Vercelは成功。
+- 第三者裁定のstrict record schema、6状態の状態機械、Blind-first遷移guard、匿名派生判定を追加した。既存Human response契約を再利用し、独立性、対象case、payload整合、確定後immutableを検査する。
+- 不要裁定、重複、棄権は完了を止め、全必要ケース確定時だけ`pilot_adjudication_complete`を返す。元のagreement／kappa、正式Benchmark不適格、自動採用なしは不変。
+- 集中7/7、Hub 968/968、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成操作なし。次はcommit、push、Draft PR、全CI／Preview成功で停止する。
+
+---
+
 ## 2026-09-14 Codex: 品質確認Pilot 第三者裁定フロー設計
 
 - Branch: `codex/design-quality-review-adjudication-20260914`
