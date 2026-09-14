@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定 Production運用ランブック（2026-09-14）
+
+- PR #462はmerge commit `b9fff3b`で本線へ統合された。次のProduction工程を安全に進めるため、`docs/quality-benchmark-monitor-adjudication-production-runbook.md`を追加した。
+- migration、担当者割当、開始案内、23件裁定、匿名export／private assemblyを独立工程とし、それぞれ直前のread-only確認と責任者の実行時明示承認を必須にした。migration preflight／postflight SQL、1件canary、不変条件、停止条件、通知境界、証跡テンプレートを固定した。
+- PR #462の本線Required Quality run `34845642643`とDesktop Windows run `34845642705`は成功した。ランブックSQLを現行schema／RPC署名へ照合し、migration validator 82/82、RC structure、diff checkが成功した。
+- 本作業ではProduction、migration適用、割当、通知、裁定回答、private実データ、Provider、Job、Asset、credit、生成処理を変更していない。
+- 次はdocs-only Draft PRの全CI／Vercel Preview成功で停止する。merge後もProduction migration適用は別の実行時明示承認を待つ。
+
+---
+
 ## 0.0 品質確認Pilot 匿名裁定export・private assembly adapter（2026-09-14）
 
 - PR #461はmerge commit `31dbda3`で本線へ統合された。実装分割5として、管理者向けの匿名裁定JSON downloadとGit外private assembly adapterを追加した。

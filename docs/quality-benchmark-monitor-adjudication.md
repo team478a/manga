@@ -257,6 +257,8 @@ CLIはroot外path、repository内の非ignore領域、URL、メール、token、
 
 各PRは既存回答・画像を保存し、Production未変更、Provider未実行、credit未消費を既定とする。
 
+Productionで実装分割6を実行する際の工程別preflight、postflight、承認点、停止条件、証跡は`docs/quality-benchmark-monitor-adjudication-production-runbook.md`を正本とする。
+
 ## 15. 次の承認点
 
 設計、Domain、DB基盤、管理画面、担当者画面はmerge済みである。実装分割5として、管理者向け匿名裁定downloadとGit外private assembly adapterを追加した。匿名downloadは個人情報・自由記述・時刻を出さず、adapterは明示的な中立仮名だけを受け付け、現在のPilotを正式Benchmarkへ自動昇格しない。

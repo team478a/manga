@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認Pilot 第三者裁定 Production運用ランブック
+
+- Branch: `codex/docs-quality-review-adjudication-production-runbook-20260914`
+- Base: `b9fff3b`（PR #462 merge commit）
+- Production migration、担当者割当、開始案内、23件裁定、匿名export／Git外private assemblyを5工程へ分離するrunbookを追加した。各工程はread-only確認、期待状態、個別の実行時明示承認、postflight、停止条件を持つ。
+- migration前後のSQL、1件canary、不変件数、RLS／RPC／直接table権限、Blind-first違反時の停止、通知の重複防止、匿名export禁止項目、証跡テンプレートを明文化した。
+- PR #462の本線Required Quality run `34845642643`とDesktop Windows run `34845642705`は成功した。SQLと現行schema／RPC署名を照合し、migration validator 82/82、RC structure、diff checkが成功した。
+- Production、migration適用、割当、通知、裁定回答、private実データ、Provider、Job、Asset、credit、生成処理は変更していない。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-14 Codex: 品質確認Pilot 匿名裁定export・private assembly adapter
 
 - Branch: `codex/feat-quality-review-adjudication-export-20260914`
