@@ -9,11 +9,17 @@ import {
   monitorQualityReviewSlotsForTarget,
 } from "@/modules/manga-quality/domain/monitor-quality-review";
 import {
+  deriveMonitorQualityReviewAdjudicationDecision,
+  type MonitorQualityReviewAdjudicationStatus,
+} from "@/modules/manga-quality/domain/monitor-quality-review-adjudication";
+import {
   loadMonitorQualityReviewAdminWorkspace,
   loadMonitorQualityReviewBenchmarkSummary,
 } from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
 import {
   assignMonitorQualityReviewAction,
+  assignMonitorQualityReviewAdjudicationAction,
+  revokeMonitorQualityReviewAdjudicationAction,
   sendMonitorQualityReviewStartNotificationsAction,
   setMonitorQualityReviewBatchLifecycleAction,
 } from "./actions";
@@ -158,6 +164,14 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
                 <p className="mt-1 text-xs">28画像のPilot集計であり、正式Benchmarkの140画像要件は未達です。自動採用・画像削除は行いません。</p>
                 <a className="button-secondary mt-3 w-full" href={`/admin/general-monitors/quality-review/summary?batchId=${batch.id}`}>匿名集計JSONを保存</a>
               </div> : <p className="mt-2 text-red-800">匿名集計を作成できませんでした。回答schemaを確認してください。</p>}
+              {summary?.decision.status === "needs_adjudication" ? <AdjudicationAdminPanel
+                activeMonitors={activeMonitors}
+                assignments={assignments}
+                batchId={batch.id}
+                data={data}
+                featureFlagEnabled={featureFlagEnabled}
+                summary={summary}
+              /> : null}
             </div> : null}
             {batch.status === "active" ? <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-3">
               <h3 className="font-bold">このBatchへ確認担当を追加</h3>
@@ -198,4 +212,134 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
         {!data.batches.length ? <p className="panel text-stone-600">登録済みBatchはありません。</p> : null}
       </section>
   </>;
+}
+
+type AdminWorkspace = Awaited<ReturnType<typeof loadMonitorQualityReviewAdminWorkspace>>;
+type BenchmarkSummary = NonNullable<Awaited<ReturnType<typeof loadMonitorQualityReviewBenchmarkSummary>>>;
+
+const adjudicationStatusLabels: Record<MonitorQualityReviewAdjudicationStatus, string> = {
+  assigned: "割当済み",
+  in_progress: "確認中",
+  independent_locked: "独立判断確定",
+  submitted: "最終裁定確定",
+  abstained: "判断不能",
+  revoked: "停止済み",
+};
+
+const adjudicationDecisionLabels = {
+  not_required: "裁定不要",
+  needs_adjudication: "裁定が必要",
+  adjudication_blocked: "要確認",
+  pilot_adjudication_complete: "Pilot裁定完了",
+} as const;
+
+function AdjudicationAdminPanel({
+  activeMonitors,
+  assignments,
+  batchId,
+  data,
+  featureFlagEnabled,
+  summary,
+}: {
+  activeMonitors: AdminWorkspace["enrollments"];
+  assignments: AdminWorkspace["assignments"];
+  batchId: string;
+  data: AdminWorkspace;
+  featureFlagEnabled: boolean;
+  summary: BenchmarkSummary;
+}) {
+  const batchCases = data.cases.filter((item) => item.batch_id === batchId);
+  const caseById = new Map(batchCases.map((item) => [item.id, item]));
+  const caseByKey = new Map(batchCases.map((item) => [item.case_key, item]));
+  const requiredCases = summary.decision.disagreementCaseKeys
+    .map((caseKey) => caseByKey.get(caseKey))
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+  const adjudications = data.adjudications.filter((item) => item.batch_id === batchId);
+  const activeByCase = new Map(adjudications
+    .filter((item) => item.status !== "revoked")
+    .map((item) => [item.case_id, item]));
+  const unassignedCases = requiredCases.filter((item) => !activeByCase.has(item.id));
+  const primaryProfileIds = new Set(assignments
+    .filter((item) => item.reviewer_slot === "reviewer_a" || item.reviewer_slot === "reviewer_b")
+    .map((item) => item.reviewer_profile_id));
+  const eligibleMonitors = activeMonitors.filter((item) => !primaryProfileIds.has(item.profile_id));
+  const assignmentByProfile = new Map(assignments.map((item) => [item.reviewer_profile_id, item]));
+  const adjudicatorLabel = (profileId: string, fallbackIndex = 0) => {
+    const existing = assignmentByProfile.get(profileId);
+    return existing
+      ? describeMonitorQualityReviewSlot(existing.reviewer_slot)
+      : `適格な第三者確認担当 ${fallbackIndex + 1}`;
+  };
+  const decision = deriveMonitorQualityReviewAdjudicationDecision({
+    disagreementCaseKeys: summary.decision.disagreementCaseKeys,
+    adjudications: adjudications.flatMap((item) => {
+      const reviewCase = caseById.get(item.case_id);
+      return reviewCase ? [{ caseKey: reviewCase.case_key, status: item.status }] : [];
+    }),
+  });
+  const statusCounts = Object.fromEntries(
+    Object.keys(adjudicationStatusLabels).map((status) => [
+      status,
+      adjudications.filter((item) => item.status === status).length,
+    ]),
+  ) as Record<MonitorQualityReviewAdjudicationStatus, number>;
+  const canAssign = featureFlagEnabled
+    && data.adjudicationConfigured
+    && unassignedCases.length > 0
+    && eligibleMonitors.length > 0;
+
+  return <section className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-3">
+    <h3 className="font-bold">第三者裁定（派生状態: {adjudicationDecisionLabels[decision.status]}）</h3>
+    <p className="mt-1 text-sm font-bold">不一致{decision.requiredCount}件中 {decision.submittedCount}件確定</p>
+    <p className="mt-1 text-xs text-stone-700">
+      割当済み {statusCounts.assigned}・確認中 {statusCounts.in_progress}・独立判断確定 {statusCounts.independent_locked}・最終裁定 {statusCounts.submitted}・判断不能 {statusCounts.abstained}・停止履歴 {statusCounts.revoked}
+    </p>
+    <p className="mt-2 text-xs text-stone-600">完全一致5件は対象外です。裁定後も元のA/B回答、一致率、κは変更せず、自動採用・画像削除を行いません。</p>
+    {!data.adjudicationConfigured ? <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">裁定用migrationは未適用です。画面確認はできますが、割当・停止操作はできません。</p> : null}
+
+    <div className="mt-4 rounded-lg border border-violet-200 bg-white p-3">
+      <h4 className="font-bold">不一致ケース1件へ担当を割り当てる</h4>
+      <p className="mt-1 text-xs text-stone-600">この操作だけではメール、外部案内、回答依頼を送信しません。担当者名や個人別成績も進捗一覧へ表示しません。</p>
+      <form action={assignMonitorQualityReviewAdjudicationAction} className="mt-3 grid gap-3">
+        <input name="batchId" type="hidden" value={batchId} />
+        <label className="text-xs font-bold" htmlFor={`adjudication-case-${batchId}`}>裁定対象</label>
+        <select className="field" disabled={!canAssign} id={`adjudication-case-${batchId}`} name="caseId" required>
+          <option value="">未割当の不一致ケースを選択</option>
+          {unassignedCases.map((item) => <option key={item.id} value={item.id}>{item.case_key}</option>)}
+        </select>
+        <label className="text-xs font-bold" htmlFor={`adjudicator-${batchId}`}>裁定担当</label>
+        <select className="field" disabled={!canAssign} id={`adjudicator-${batchId}`} name="adjudicatorProfileId" required>
+          <option value="">Primary A/B以外の担当を選択</option>
+          {eligibleMonitors.map((item, index) => <option key={item.profile_id} value={item.profile_id}>{adjudicatorLabel(item.profile_id, index)}</option>)}
+        </select>
+        <label className="flex items-start gap-2 text-xs"><input className="mt-1" name="scopeConfirmation" required type="checkbox" value="one_disagreement_case" />選択した不一致ケース1件だけが対象です</label>
+        <label className="flex items-start gap-2 text-xs"><input className="mt-1" name="independenceConfirmation" required type="checkbox" value="not_primary_reviewer" />担当者がこのBatchのPrimary Reviewer A/B本人ではないことを確認しました</label>
+        <label className="flex items-start gap-2 text-xs"><input className="mt-1" name="deliveryConfirmation" required type="checkbox" value="no_external_delivery" />この操作では外部送信・通知を行わないことを確認しました</label>
+        <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" disabled={!canAssign} pendingLabel="割当中…">裁定担当を割り当てる</PendingSubmitButton>
+      </form>
+      {data.adjudicationConfigured && !unassignedCases.length ? <p className="mt-2 text-xs text-stone-600">すべての不一致ケースに有効な担当があります。</p> : null}
+      {data.adjudicationConfigured && !eligibleMonitors.length ? <p className="mt-2 text-xs text-red-800">Primary A/B以外の有効なモニター登録がありません。</p> : null}
+    </div>
+
+    <div className="mt-4 space-y-3">
+      {adjudications.map((item, index) => {
+        const reviewCase = caseById.get(item.case_id);
+        return <div className="rounded-lg border border-violet-200 bg-white p-3" key={item.id}>
+          <div className="flex items-start justify-between gap-3">
+            <div><strong>{reviewCase?.case_key ?? "対象ケース不明"}</strong><p className="mt-1 text-xs text-stone-600">{adjudicatorLabel(item.adjudicator_profile_id, index)}</p></div>
+            <span className="text-xs font-bold">{adjudicationStatusLabels[item.status]}</span>
+          </div>
+          <p className="mt-2 text-xs text-stone-500">独立判断: {item.independent_locked_at ? "確定済み" : "未確定"}・A/B差分: {item.differences_revealed_at ? "開示済み" : "未開示"}・最終裁定: {item.submitted_at ? "確定済み" : "未確定"}</p>
+          {item.status !== "revoked" ? <form action={revokeMonitorQualityReviewAdjudicationAction} className="mt-3 grid gap-2 border-t border-stone-200 pt-3">
+            <input name="adjudicationId" type="hidden" value={item.id} />
+            <label className="text-xs font-bold" htmlFor={`revoke-reason-${item.id}`}>停止理由</label>
+            <textarea className="field min-h-20" id={`revoke-reason-${item.id}`} maxLength={500} name="reason" required />
+            <label className="flex items-start gap-2 text-xs"><input className="mt-1" name="confirmation" required type="checkbox" value="revoke_with_history" />回答と監査履歴を削除せず保持して停止します</label>
+            <PendingSubmitButton className="button-secondary" disabled={!data.adjudicationConfigured} pendingLabel="停止中…">裁定を停止（記録保持）</PendingSubmitButton>
+          </form> : <p className="mt-2 text-xs text-stone-600">停止済みの履歴です。削除されていません。</p>}
+        </div>;
+      })}
+      {!adjudications.length ? <p className="text-sm text-stone-600">裁定担当はまだ割り当てられていません。</p> : null}
+    </div>
+  </section>;
 }

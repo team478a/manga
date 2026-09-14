@@ -4,7 +4,7 @@
 
 対象Batch: `batch_private_01`
 
-状態: `DESIGN_APPROVED / DOMAIN_SLICE_IMPLEMENTED / DATABASE_SLICE_IMPLEMENTED / UI_NOT_IMPLEMENTED`
+状態: `DESIGN_APPROVED / DOMAIN_SLICE_IMPLEMENTED / DATABASE_SLICE_IMPLEMENTED / ADMIN_UI_SLICE_IMPLEMENTED / ADJUDICATOR_UI_NOT_IMPLEMENTED`
 
 ## 1. 目的
 
@@ -244,6 +244,6 @@ assignment、consent、draft、independent lock、A/B差分開示、finalize、a
 
 ## 15. 次の承認点
 
-設計PR #457はmerge済みで、実装分割1のDomain schema、状態機械、匿名派生判定を追加した。既存Human response契約を再利用し、Primary本人、完全一致ケース、順序違反、確定後の通常編集、重複有効裁定、棄権をfail closedで止める。
+設計PR #457、Domain PR #458、DB基盤PR #459はmerge済みである。実装分割3として、完了Batchの不一致ケースだけを1件ずつ割り当て、6状態の進捗を確認し、回答・監査履歴を保持したまま理由付きで停止する管理画面を追加した。Production migration未適用環境では操作をfail closedで閉じる。
 
-次は実装分割2のadditive migration、RLS、RPC、rollback、migration testへ進むかを責任者が判断する。Production適用、担当者割り当て、通知、裁定開始は、それぞれ該当工程で明示承認されるまで実施しない。
+次は実装分割4の裁定担当者向けBlind-first / compare-second画面へ進む。Production migration適用、実際の担当者割り当て、通知、裁定開始は、それぞれ該当工程で責任者が明示承認するまで実施しない。
