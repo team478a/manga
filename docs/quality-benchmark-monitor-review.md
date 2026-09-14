@@ -157,6 +157,16 @@ ProductionのBatch完了操作は、実装PRのmergeと責任者の実行時承�
 - 28画像を5名が確認した結果は140「回答」であって140「画像」ではない。正式v2.1要件は140画像とPrimary 2名による独立回答280件であり、このPilot集計単独では`formalBenchmarkEligible=false`を維持する。
 - 集計は状況確認と手動判断の材料であり、候補画像の自動採用、元回答・画像の削除、Visual Judgeへの自動接続は行わない。
 
+### `batch_private_01` Production集計結果（2026-09-14）
+
+- 対象: 28画像、Primary 2名・56回答、補助Panel 3名・84回答、合計140回答。
+- Primary完全一致: 5/28件（17.86%）。verdict一致: 11/28件（39.29%）。Cohen's kappa: 0.1250。
+- Primary verdict: good 17、borderline 7、bad 32。平均confidenceは3.9286。
+- Panel verdict: good 41、borderline 16、bad 27。平均confidenceは4.0000。Panelは補助票でありPrimary判定へ加算しない。
+- 第三者裁定対象は23件: `case_000003`〜`case_000010`、`case_000012`〜`case_000020`、`case_000022`〜`case_000027`。完全一致した5件は`case_000001`、`case_000002`、`case_000011`、`case_000021`、`case_000028`。
+- `exactAgreementPass=false`、`kappaPass=false`、判定は`needs_adjudication`。正式Benchmark要件140画像・Primary独立回答280件は未達のため`formalBenchmarkEligible=false`。
+- Productionでは匿名統計を返す`SELECT`だけを実行した。回答・割当・画像・Batch状態を変更せず、自動採用・削除を行っていない。
+
 ## 次工程への停止条件
 
 - Draft PRの全CIとVercel Previewが成功する。
