@@ -2,7 +2,7 @@
 
 ## 2026-09-14 品質確認回答の匿名集計・Pilot採否ルール
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATED / PRODUCTION_UNCHANGED`
+- 状態: `IMPLEMENTED / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
 - Branch: `codex/feat-quality-review-benchmark-summary-20260914`
 - Base: `7122479`（PR #454 merge commit）。本線Required Quality run `34818104284`（Core quality／Migration roundtrip）とDesktop Windows run `34818104316`は成功した。
 - 完了済みBatchの回答を管理者サーバー内で検査し、Primary Reviewer A/BとPanel Reviewer C〜Iを分離した匿名集計を追加した。集計結果には氏名、メール、profile ID、assignment ID、自由記述、回答時刻を含めない。
@@ -10,7 +10,8 @@
 - 管理画面へ匿名集計を追加し、個人識別子を含まないprivate／no-store JSONを保存できるようにした。28画像×5名=140回答であっても、正式Benchmarkの140画像・独立回答280件の要件は未達として`formalBenchmarkEligible=false`を固定する。候補の自動採用、回答・画像の削除は行わない。
 - 集中5/5、Hub 961/961、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、Hub typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。RC外部環境の既存PENDING項目は不変。
 - Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。
-- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後、Productionの匿名集計値をread-onlyで確認し、Primary不一致の第三者裁定手順を別工程で決める。
+- Draft PR [#455](https://github.com/team478a/manga/pull/455)はDraft／MERGEABLE。実装HEAD `522f348`のCore quality run `34819489512`、Migration roundtrip、Windows build run `34819489713`、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次: この証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後、Productionの匿名集計値をread-onlyで確認し、Primary不一致の第三者裁定手順を別工程で決める。
 
 ---
 

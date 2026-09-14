@@ -7,7 +7,7 @@
 - 集計結果から氏名、メール、profile／assignment ID、自由記述、回答時刻を除外した。Panel票は正式採否へ加算せず、Primary不一致はPanel多数決で自動確定せず第三者裁定を要求する。
 - 完全一致90%以上、kappa 0.75以上をPilot閾値とする。28画像×5名の140回答を正式140画像と混同せず、正式Benchmark要件140画像・独立回答280件は未達として明示する。自動採用・画像削除はない。
 - 集中5/5、Hub 961/961、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、Hub typecheck、Hub／Desktop build、RC structure、diff check成功。外部環境PENDINGは不変。
-- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成操作なし。次はDraft PRの全CI／Vercel Preview成功で停止し、merge後にProduction集計をread-onlyで確認する。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成操作なし。Draft PR #455はDraft／MERGEABLEで、実装HEAD `522f348`のCore quality run `34819489512`、Migration roundtrip、Windows build run `34819489713`、Vercel、Vercel Preview Commentsは成功した。次は証跡同期後の最終HEADで全CI／Preview成功を確認して停止し、merge後にProduction集計をread-onlyで確認する。
 
 ---
 
