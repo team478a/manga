@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認Pilot 匿名裁定export・private assembly adapter
+
+- Branch: `codex/feat-quality-review-adjudication-export-20260914`
+- Base: `31dbda3`（PR #461 merge commit）
+- 管理者向け匿名裁定JSONは許可項目だけのstrict schemaを使い、氏名、メール、Production ID、自由記述、confidence、bbox、時刻を出さない。repositoryも担当ID・理由・時刻を選択せず、routeはadmin限定・private no-store・nosniffである。
+- Git外private root専用adapterはoperator指定の中立仮名とcase mappingを既存assembly ledger互換recordへ変換する。Production UUID／派生ID、PII／secret、非独立担当、変換不能defect、root逸脱、上書き、canonical ledger直書きを拒否する。
+- 出力は`pilot_only=true`、`formal_benchmark_eligible=false`、`automatic_import=false`に固定する。元agreement／kappa、自動採用、画像・回答を変更しない。
+- 集中37/37、Hub 998/998、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。Production、migration、割当、通知、裁定回答、Provider、credit、生成、private実データ操作なし。
+- Draft PR [#462](https://github.com/team478a/manga/pull/462)はDraft／MERGEABLE。実装HEAD `d59b286`のRequired Quality run `34844164187`、Migration roundtrip、Desktop Windows run `34844164109`、Vercel、Preview Commentsは成功した。[Preview](https://mangai-hub-staging-git-codex-feat-qua-90e2ec-team478as-projects.vercel.app)はReady。次は証跡同期後の最終HEADの全CI／Preview成功で停止する。
+
+---
+
 ## 2026-09-14 Codex: 品質確認Pilot 第三者裁定 担当者画面
 
 - Branch: `codex/feat-quality-review-adjudicator-ui-20260914`

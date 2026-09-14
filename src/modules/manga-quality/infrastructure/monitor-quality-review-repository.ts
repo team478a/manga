@@ -14,6 +14,8 @@ import type {
   MonitorQualityReviewAdjudicationStatus,
 } from
   "@/modules/manga-quality/domain/monitor-quality-review-adjudication";
+import { buildMonitorQualityReviewAdjudicationSummary } from
+  "@/modules/manga-quality/domain/monitor-quality-review-adjudication";
 
 export type MonitorQualityReviewAdjudicationAdminRow = {
   id: string;
@@ -693,6 +695,47 @@ export async function loadMonitorQualityReviewBenchmarkSummary(batchId: string) 
       caseId: item.case_id,
       responsePayload: item.response_payload,
       caseCompletedAt: item.case_completed_at,
+    })),
+  });
+}
+
+export async function loadMonitorQualityReviewAdjudicationSummary(batchId: string) {
+  const benchmarkSummary = await loadMonitorQualityReviewBenchmarkSummary(batchId);
+  if (!benchmarkSummary) return null;
+  const admin = createAdminClient();
+  const [batch, cases, adjudications] = await Promise.all([
+    admin.from("cloud_monitor_quality_review_batches")
+      .select("batch_code,status")
+      .eq("id", batchId)
+      .maybeSingle<{ batch_code: string; status: string }>(),
+    admin.from("cloud_monitor_quality_review_cases")
+      .select("id,case_key")
+      .eq("batch_id", batchId)
+      .returns<Array<{ id: string; case_key: string }>>(),
+    admin.from("cloud_monitor_quality_review_adjudications")
+      .select("case_id,status,independent_payload,final_payload")
+      .eq("batch_id", batchId)
+      .neq("status", "revoked")
+      .returns<Array<{
+        case_id: string;
+        status: Exclude<MonitorQualityReviewAdjudicationStatus, "revoked">;
+        independent_payload: unknown;
+        final_payload: unknown;
+      }>>(),
+  ]);
+  if (adjudications.error && isMissingAdjudicationSchema(adjudications.error.message)) return null;
+  if (batch.error || cases.error || adjudications.error || batch.data?.status !== "completed") return null;
+  const caseById = new Map((cases.data ?? []).map((item) => [item.id, item.case_key]));
+  const rows = adjudications.data ?? [];
+  if (rows.some((item) => !caseById.has(item.case_id))) return null;
+  return buildMonitorQualityReviewAdjudicationSummary({
+    batchCode: batch.data.batch_code,
+    disagreementCaseKeys: benchmarkSummary.decision.disagreementCaseKeys,
+    adjudications: rows.map((item) => ({
+      caseKey: caseById.get(item.case_id)!,
+      status: item.status,
+      independentPayload: item.independent_payload,
+      finalPayload: item.final_payload,
     })),
   });
 }
