@@ -2,12 +2,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
   evaluateMonitorQualityReviewBatchTransition,
+  monitorQualityReviewDraftSchema,
   monitorQualityReviewSlotsForTarget,
   summarizeMonitorQualityReviewBenchmark,
+  type MonitorQualityReviewDraft,
   type MonitorQualityReviewSlot,
   type MonitorQualityReviewBatchTransition,
 } from "@/modules/manga-quality/domain/monitor-quality-review";
-import type { MonitorQualityReviewAdjudicationStatus } from
+import type {
+  MonitorQualityReviewAdjudicationDifference,
+  MonitorQualityReviewAdjudicationStatus,
+} from
   "@/modules/manga-quality/domain/monitor-quality-review-adjudication";
 
 export type MonitorQualityReviewAdjudicationAdminRow = {
@@ -61,6 +66,45 @@ export type MonitorQualityReviewWorkspace = {
   cases: MonitorQualityReviewCase[];
   responses: MonitorQualityReviewResponse[];
 };
+
+export type MonitorQualityReviewAdjudicationWorkspace = {
+  configured: boolean;
+  adjudication: null | {
+    id: string;
+    status: MonitorQualityReviewAdjudicationStatus;
+    consented_at: string | null;
+    independent_locked_at: string | null;
+    differences_revealed_at: string | null;
+    submitted_at: string | null;
+    abstained_at: string | null;
+    draft: MonitorQualityReviewDraft | null;
+    independentDraft: MonitorQualityReviewDraft | null;
+  };
+  reviewCase: MonitorQualityReviewCase | null;
+  progress: {
+    total: number;
+    pending: number;
+    submitted: number;
+    abstained: number;
+  };
+};
+
+function parseAdjudicationDraft(
+  payload: unknown,
+  caseId: string,
+): MonitorQualityReviewDraft | null {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return null;
+  const stored = payload as Record<string, unknown>;
+  const parsed = monitorQualityReviewDraftSchema.safeParse({
+    caseId,
+    verdict: stored.verdict ?? null,
+    confidence: stored.confidence ?? null,
+    defects: stored.defects ?? [],
+    overallComment: stored.overall_comment ?? "",
+    complete: false,
+  });
+  return parsed.success ? parsed.data : null;
+}
 
 export async function loadMonitorQualityReviewWorkspace(
   reviewerProfileId: string,
@@ -120,6 +164,92 @@ export async function loadMonitorQualityReviewWorkspace(
   };
 }
 
+export async function loadMonitorQualityReviewAdjudicationWorkspace(
+  adjudicatorProfileId: string,
+  adjudicationId?: string,
+): Promise<MonitorQualityReviewAdjudicationWorkspace> {
+  const admin = createAdminClient();
+  const adjudications = await admin
+    .from("cloud_monitor_quality_review_adjudications")
+    .select("id,batch_id,case_id,status,consented_at,draft_payload,independent_payload,independent_locked_at,differences_revealed_at,submitted_at,abstained_at,created_at")
+    .eq("adjudicator_profile_id", adjudicatorProfileId)
+    .neq("status", "revoked")
+    .order("created_at", { ascending: true })
+    .limit(100)
+    .returns<Array<{
+      id: string;
+      batch_id: string;
+      case_id: string;
+      status: MonitorQualityReviewAdjudicationStatus;
+      consented_at: string | null;
+      draft_payload: unknown;
+      independent_payload: unknown;
+      independent_locked_at: string | null;
+      differences_revealed_at: string | null;
+      submitted_at: string | null;
+      abstained_at: string | null;
+      created_at: string;
+    }>>();
+  if (adjudications.error) {
+    if (isMissingAdjudicationSchema(adjudications.error.message))
+      return {
+        configured: false,
+        adjudication: null,
+        reviewCase: null,
+        progress: { total: 0, pending: 0, submitted: 0, abstained: 0 },
+      };
+    throw adjudications.error;
+  }
+
+  const rows = adjudications.data ?? [];
+  const pendingStatuses = new Set<MonitorQualityReviewAdjudicationStatus>([
+    "assigned", "in_progress", "independent_locked",
+  ]);
+  const current = adjudicationId
+    ? rows.find((item) => item.id === adjudicationId)
+    : rows.find((item) => pendingStatuses.has(item.status)) ?? rows.at(-1);
+  const progress = {
+    total: rows.length,
+    pending: rows.filter((item) => pendingStatuses.has(item.status)).length,
+    submitted: rows.filter((item) => item.status === "submitted").length,
+    abstained: rows.filter((item) => item.status === "abstained").length,
+  };
+  if (!current)
+    return { configured: true, adjudication: null, reviewCase: null, progress };
+
+  const [reviewCase, batch] = await Promise.all([
+    admin.from("cloud_monitor_quality_review_cases")
+      .select("id,case_key,display_order,review_mode,allowed_defect_categories")
+      .eq("id", current.case_id)
+      .eq("batch_id", current.batch_id)
+      .maybeSingle<MonitorQualityReviewCase>(),
+    admin.from("cloud_monitor_quality_review_batches")
+      .select("status")
+      .eq("id", current.batch_id)
+      .maybeSingle<{ status: string }>(),
+  ]);
+  if (reviewCase.error || batch.error) throw reviewCase.error ?? batch.error;
+  if (!reviewCase.data || batch.data?.status !== "completed")
+    return { configured: true, adjudication: null, reviewCase: null, progress };
+
+  return {
+    configured: true,
+    adjudication: {
+      id: current.id,
+      status: current.status,
+      consented_at: current.consented_at,
+      independent_locked_at: current.independent_locked_at,
+      differences_revealed_at: current.differences_revealed_at,
+      submitted_at: current.submitted_at,
+      abstained_at: current.abstained_at,
+      draft: parseAdjudicationDraft(current.draft_payload, current.case_id),
+      independentDraft: parseAdjudicationDraft(current.independent_payload, current.case_id),
+    },
+    reviewCase: reviewCase.data,
+    progress,
+  };
+}
+
 export async function createMonitorQualityReviewCandidateUrl(input: {
   reviewerProfileId: string;
   assignmentId: string;
@@ -139,6 +269,26 @@ export async function createMonitorQualityReviewCandidateUrl(input: {
   if (error || !storedCase) return null;
   const signed = await admin.storage.from("manga-quality-review")
     .createSignedUrl(storedCase.candidate_storage_path, 120);
+  return signed.data?.signedUrl ?? null;
+}
+
+export async function createMonitorQualityReviewAdjudicationCandidateUrl(input: {
+  adjudicatorProfileId: string;
+  adjudicationId: string;
+  caseId: string;
+}) {
+  const workspace = await loadMonitorQualityReviewAdjudicationWorkspace(input.adjudicatorProfileId);
+  if (workspace.adjudication?.id !== input.adjudicationId
+    || workspace.reviewCase?.id !== input.caseId)
+    return null;
+  const admin = createAdminClient();
+  const storedCase = await admin.from("cloud_monitor_quality_review_cases")
+    .select("candidate_storage_path")
+    .eq("id", input.caseId)
+    .maybeSingle<{ candidate_storage_path: string }>();
+  if (storedCase.error || !storedCase.data) return null;
+  const signed = await admin.storage.from("manga-quality-review")
+    .createSignedUrl(storedCase.data.candidate_storage_path, 120);
   return signed.data?.signedUrl ?? null;
 }
 
@@ -194,6 +344,82 @@ export async function loadMonitorQualityReviewAdminWorkspace() {
     adjudicationConfigured: !adjudications.error,
     adjudications: adjudications.data ?? [],
   };
+}
+
+export async function consentMonitorQualityReviewAdjudication(input: {
+  adjudicationId: string;
+  idempotencyKey: string;
+}) {
+  const client = await createClient();
+  return client.rpc("consent_cloud_monitor_quality_review_adjudication", {
+    p_adjudication_id: input.adjudicationId,
+    p_idempotency_key: input.idempotencyKey,
+  });
+}
+
+export async function saveMonitorQualityReviewAdjudicationDraft(input: {
+  adjudicationId: string;
+  payload: Record<string, unknown>;
+  idempotencyKey: string;
+}) {
+  const client = await createClient();
+  return client.rpc("save_cloud_monitor_quality_review_adjudication_draft", {
+    p_adjudication_id: input.adjudicationId,
+    p_payload: input.payload,
+    p_idempotency_key: input.idempotencyKey,
+  });
+}
+
+export async function lockMonitorQualityReviewAdjudicationIndependent(input: {
+  adjudicationId: string;
+  payload: Record<string, unknown>;
+  idempotencyKey: string;
+}) {
+  const client = await createClient();
+  return client.rpc("lock_cloud_monitor_quality_review_adjudication_independent", {
+    p_adjudication_id: input.adjudicationId,
+    p_payload: input.payload,
+    p_idempotency_key: input.idempotencyKey,
+  });
+}
+
+export async function revealMonitorQualityReviewAdjudicationDifferences(input: {
+  adjudicationId: string;
+  idempotencyKey: string;
+}) {
+  const client = await createClient();
+  return client.rpc("reveal_cloud_monitor_quality_review_adjudication_differences", {
+    p_adjudication_id: input.adjudicationId,
+    p_idempotency_key: input.idempotencyKey,
+  }).returns<MonitorQualityReviewAdjudicationDifference[]>();
+}
+
+export async function submitMonitorQualityReviewAdjudication(input: {
+  adjudicationId: string;
+  payload: Record<string, unknown>;
+  decisionReason: string;
+  idempotencyKey: string;
+}) {
+  const client = await createClient();
+  return client.rpc("submit_cloud_monitor_quality_review_adjudication", {
+    p_adjudication_id: input.adjudicationId,
+    p_payload: input.payload,
+    p_decision_reason: input.decisionReason,
+    p_idempotency_key: input.idempotencyKey,
+  });
+}
+
+export async function abstainMonitorQualityReviewAdjudication(input: {
+  adjudicationId: string;
+  reason: string;
+  idempotencyKey: string;
+}) {
+  const client = await createClient();
+  return client.rpc("abstain_cloud_monitor_quality_review_adjudication", {
+    p_adjudication_id: input.adjudicationId,
+    p_reason: input.reason,
+    p_idempotency_key: input.idempotencyKey,
+  });
 }
 
 export async function monitorQualityReviewAdjudicationConfigured() {

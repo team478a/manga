@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認Pilot 第三者裁定 担当者画面
+
+- Branch: `codex/feat-quality-review-adjudicator-ui-20260914`
+- Base: `f9772aa`（PR #460 merge commit）。本線Required Quality run `34836623793`、Desktop Windows run `34836623753`は成功。
+- 担当本人向けに、候補画像だけを見る独立判定、途中保存・再開、変更不可の確定、確定後だけの匿名A/B差分、理由付き最終裁定／辞退を追加した。スマートフォンで画像拡大と複数割当の進捗確認ができる。
+- APIは割当・case・状態を毎回再検査し、明示確認、idempotency、匿名差分strict schema、120秒画像署名URLを使用する。一時障害の再送でも完了済み裁定IDを安全に照合する。元回答・画像・採用状態は変更しない。
+- 集中14/14、Hub 991/991、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。Production、migration適用、割当、通知、裁定回答、Provider、Job、Asset、credit、生成操作なし。
+- Draft PR [#461](https://github.com/team478a/manga/pull/461)はDraft／MERGEABLE。実装HEAD `9d03df9`のRequired Quality run `34839062691`、Migration roundtrip、Desktop Windows run `34839062685`、Vercel、Preview Commentsは成功した。[Preview](https://mangai-hub-staging-gxn4tign5-team478as-projects.vercel.app)はReadyである。
+- 次: 証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後は匿名export／private assembly adapterを別PRで進める。
+
+---
+
 ## 2026-09-14 Codex: 品質確認Pilot 第三者裁定 管理画面
 
 - Branch: `codex/feat-quality-review-adjudication-admin-20260914`

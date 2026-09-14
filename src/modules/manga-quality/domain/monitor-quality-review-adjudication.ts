@@ -1,7 +1,10 @@
 import { z } from "zod";
 import {
   humanReviewCaseIdSchema,
+  humanReviewDefectCategorySchema,
   humanReviewRecordSchema,
+  humanReviewSeveritySchema,
+  humanReviewVerdictSchema,
 } from "./human-review-package.ts";
 
 export const MONITOR_QUALITY_REVIEW_ADJUDICATION_VERSION =
@@ -27,6 +30,24 @@ const decisionReasonSchema = z.string().trim().min(1).max(500);
 
 export const monitorQualityReviewAdjudicationPayloadSchema =
   humanReviewRecordSchema;
+
+const monitorQualityReviewAnonymousVoteSchema = z.object({
+  verdict: humanReviewVerdictSchema,
+  defects: z.array(z.object({
+    category: humanReviewDefectCategorySchema,
+    severity: humanReviewSeveritySchema,
+  }).strict()).max(30),
+}).strict();
+
+export const monitorQualityReviewAdjudicationDifferenceSchema = z.object({
+  case_key: humanReviewCaseIdSchema,
+  reviewer_a: monitorQualityReviewAnonymousVoteSchema,
+  reviewer_b: monitorQualityReviewAnonymousVoteSchema,
+}).strict();
+
+export type MonitorQualityReviewAdjudicationDifference = z.infer<
+  typeof monitorQualityReviewAdjudicationDifferenceSchema
+>;
 
 export const monitorQualityReviewAdjudicationRecordSchema = z
   .object({
