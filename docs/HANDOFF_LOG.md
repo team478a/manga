@@ -7,7 +7,8 @@
 - 完了済みBatchの不一致ケースだけを対象にする第三者裁定の管理者画面を追加した。1ケース単位の割当、6状態の進捗、理由付きrevokeを提供し、Primary A/Bを候補から除外する。
 - 割当時は範囲・独立性・外部送信なしの3確認を必須にした。管理一覧へ回答本文・理由・fingerprint・idempotencyを取得せず、revokeでも既存回答と監査履歴を削除しない。
 - Production migration未適用時は準備未完了を表示して操作を閉じる。集中21/21、Hub 982/982、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。基準本線CI run `34833386100`／`34833385944`も成功した。Production、割当、通知、回答、Provider、credit、生成操作なし。
-- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+- Draft PR [#460](https://github.com/team478a/manga/pull/460)はDraft／MERGEABLE。実装HEAD `5b4ef97`のRequired Quality run `34834975227`、Migration roundtrip、Desktop Windows run `34834975274`、Vercel、Preview Commentsは成功した。
+- 次は証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。
 
 ---
 

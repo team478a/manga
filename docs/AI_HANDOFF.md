@@ -6,7 +6,8 @@
 - 割当は1ケース単位、Primary A/B以外、外部送信なしの3確認を必須にする。状態別進捗を表示し、停止は理由付きrevoke RPCだけを通して回答・監査履歴を保持する。
 - 管理一覧は回答payload、自由記述、fingerprint、idempotency keyを取得しない。裁定migration未適用環境は画面を壊さず操作を閉じる。
 - 集中21/21、Hub 982/982、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。基準本線CI run `34833386100`／`34833385944`も成功した。Production、migration適用、実割当、通知、回答、Provider、Job、Asset、credit、生成操作なし。
-- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。裁定担当者UIは別PRとする。
+- Draft PR [#460](https://github.com/team478a/manga/pull/460)はDraft／MERGEABLE。実装HEAD `5b4ef97`のRequired Quality run `34834975227`、Migration roundtrip、Desktop Windows run `34834975274`、Vercel、Preview Commentsは成功した。
+- 次は証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。裁定担当者UIは別PRとする。
 
 ---
 
