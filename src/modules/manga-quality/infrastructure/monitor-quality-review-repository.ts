@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   evaluateMonitorQualityReviewBatchTransition,
   monitorQualityReviewSlotsForTarget,
+  summarizeMonitorQualityReviewBenchmark,
   type MonitorQualityReviewSlot,
   type MonitorQualityReviewBatchTransition,
 } from "@/modules/manga-quality/domain/monitor-quality-review";
@@ -343,4 +344,60 @@ export async function loadMonitorQualityReviewExport(assignmentId: string) {
   ]);
   if (cases.error || responses.error) return null;
   return { assignment: assignment.data, cases: cases.data ?? [], responses: responses.data ?? [] };
+}
+
+export async function loadMonitorQualityReviewBenchmarkSummary(batchId: string) {
+  const admin = createAdminClient();
+  const [batch, cases, assignments] = await Promise.all([
+    admin.from("cloud_monitor_quality_review_batches")
+      .select("id,status")
+      .eq("id", batchId)
+      .maybeSingle<{ id: string; status: string }>(),
+    admin.from("cloud_monitor_quality_review_cases")
+      .select("id,case_key,display_order")
+      .eq("batch_id", batchId)
+      .order("display_order")
+      .returns<Array<{ id: string; case_key: string; display_order: number }>>(),
+    admin.from("cloud_monitor_quality_review_assignments")
+      .select("id,reviewer_slot,status,submitted_at")
+      .eq("batch_id", batchId)
+      .neq("status", "revoked")
+      .order("reviewer_slot")
+      .returns<Array<{
+        id: string;
+        reviewer_slot: MonitorQualityReviewSlot;
+        status: string;
+        submitted_at: string | null;
+      }>>(),
+  ]);
+  if (batch.error || cases.error || assignments.error || !batch.data) return null;
+  const assignmentRows = assignments.data ?? [];
+  const responses = assignmentRows.length
+    ? await admin.from("cloud_monitor_quality_review_responses")
+      .select("assignment_id,case_id,response_payload,case_completed_at")
+      .in("assignment_id", assignmentRows.map((item) => item.id))
+      .returns<Array<{
+        assignment_id: string;
+        case_id: string;
+        response_payload: unknown;
+        case_completed_at: string | null;
+      }>>()
+    : { data: [], error: null };
+  if (responses.error) return null;
+  return summarizeMonitorQualityReviewBenchmark({
+    batchStatus: batch.data.status,
+    cases: (cases.data ?? []).map((item) => ({ id: item.id, caseKey: item.case_key })),
+    assignments: assignmentRows.map((item) => ({
+      id: item.id,
+      reviewerSlot: item.reviewer_slot,
+      status: item.status,
+      submittedAt: item.submitted_at,
+    })),
+    responses: (responses.data ?? []).map((item) => ({
+      assignmentId: item.assignment_id,
+      caseId: item.case_id,
+      responsePayload: item.response_payload,
+      caseCompletedAt: item.case_completed_at,
+    })),
+  });
 }
