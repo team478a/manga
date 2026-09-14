@@ -2,7 +2,7 @@
 
 ## 2026-09-14 4ページ短編ネーム保存制約の修正
 
-- 状態: `ROOT_CAUSE_CONFIRMED / FIX_IMPLEMENTED / LOCAL_VALIDATED / PRODUCTION_MIGRATION_PENDING`
+- 状態: `ROOT_CAUSE_CONFIRMED / FIX_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_MIGRATION_PENDING`
 - Branch: `codex/fix-cloud-storyboard-short-page-count-20260914`
 - Base: `91fd81c`（PR #448 merge commit）
 - `test`アカウントの既存採用シナリオ「雨宿りポスト」でProduction受入れを実施した。4ページのAIネーム生成は完了したが、保存は再び「ネームを保存できませんでした。」となった。
@@ -10,7 +10,8 @@
 - 追加migrationでDB制約を4〜48ページへ同期した。rollbackは4〜7ページの既存ネームがある場合、データを削除せず明示エラーで停止する。canonical schema、checksum、回帰テストも同期した。
 - 集中16/16、Hub 955/955、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。
 - Production受入れではProvider requestを1件使用し、AI利用数は95/100から96/100（残り4回）へ変化した。ネーム版は保存されていない。報告状態、利用者通知、作品、画像Provider、Job、Assetは変更していない。新migrationは未適用。
-- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後にProduction migration適用と4ページネーム保存再受入れを別工程で行う。migration適用は責任者の明示承認前に実施しない。
+- Draft PR [#449](https://github.com/team478a/manga/pull/449)はDraft／MERGEABLE。実装HEAD `143f5b7`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次: この証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後にProduction migration適用と4ページネーム保存再受入れを別工程で行う。migration適用は責任者の明示承認前に実施しない。
 
 ---
 
