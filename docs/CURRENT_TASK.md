@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 4ページ短編ネーム保存制約のProduction適用・受入完了
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / LIVE_SAVE_PASSED / DATABASE_ROW_VERIFIED`
+- Branch: `codex/docs-cloud-storyboard-short-production-20260914`
+- Base: `2ca3a66`（PR #449 merge commit）。本線Required Quality run `34801758027`（Core quality／Migration roundtrip）とDesktop Windows run `34801758059`が成功した。
+- 責任者の明示承認に基づき、Productionへ`202609140002_cloud_storyboard_short_page_count.sql`を1回適用し、SQL Editorの`Success. No rows returned`を確認した。
+- `pg_constraint`のread-only照会で、`cloud_story_storyboard_versions_result_check`がネームの`pages`を4〜48件で許可していることを確認した。
+- `test`アカウントの既存採用シナリオ「雨宿りポスト」で4ページ初稿ネームを1回生成し、版`1bcc4b66-8bb3-48e9-bdd4-f47a6a0e5b78`として保存・再読込できた。画面は4ページすべてを表示し、Production DBも同じIDと`page_count=4`、作成時刻`2026-09-14T03:20:27.395723Z`を返した。
+- 受入れでProvider requestを1件使用し、AI利用数は96/100から97/100（残り3回）へ変化した。ネーム採用、修正版生成、画像生成、報告状態、利用者通知、画像Provider、Job、Assetは変更していない。
+- docs-only差分のRC構造検査と`git diff --check`は成功した。外部環境preflightの既存PENDING項目は変更していない。
+- 次: 本証跡をdocs-onlyでcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。merge後は該当する利用者報告の状態をread-onlyで確認し、解決処理・通知・更新情報掲載は責任者の実行時承認後に別工程で行う。
+
+---
+
 ## 2026-09-14 4ページ短編ネーム保存制約の修正
 
 - 状態: `ROOT_CAUSE_CONFIRMED / FIX_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_MIGRATION_PENDING`
