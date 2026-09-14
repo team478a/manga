@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認回答の匿名集計・Pilot採否ルール（2026-09-14）
+
+- PR #454はmerge commit `7122479`で本線へ統合され、本線Required Quality run `34818104284`とDesktop Windows run `34818104316`の成功を確認した。
+- 完了Batchの回答を管理者サーバー内で再検査し、Primary A/Bの完全一致率・verdict一致率・Cohen's kappaと、Panel C〜Iの補助傾向を別々に匿名集計する機能を追加した。
+- 集計結果から氏名、メール、profile／assignment ID、自由記述、回答時刻を除外した。Panel票は正式採否へ加算せず、Primary不一致はPanel多数決で自動確定せず第三者裁定を要求する。
+- 完全一致90%以上、kappa 0.75以上をPilot閾値とする。28画像×5名の140回答を正式140画像と混同せず、正式Benchmark要件140画像・独立回答280件は未達として明示する。自動採用・画像削除はない。
+- 集中5/5、Hub 961/961、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、Hub typecheck、Hub／Desktop build、RC structure、diff check成功。外部環境PENDINGは不変。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成操作なし。Draft PR #455はDraft／MERGEABLEで、実装HEAD `522f348`のCore quality run `34819489512`、Migration roundtrip、Windows build run `34819489713`、Vercel、Vercel Preview Commentsは成功した。次は証跡同期後の最終HEADで全CI／Preview成功を確認して停止し、merge後にProduction集計をread-onlyで確認する。
+
+---
+
 ## 0.0 品質確認BatchのProduction完了（2026-09-14）
 
 - PR #453はmerge commit `5f76672`で本線へ統合され、本線Required Quality run `34815935979`とDesktop Windows run `34815935989`の成功を確認した。

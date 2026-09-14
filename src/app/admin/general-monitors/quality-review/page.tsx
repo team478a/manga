@@ -8,7 +8,10 @@ import {
   MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT,
   monitorQualityReviewSlotsForTarget,
 } from "@/modules/manga-quality/domain/monitor-quality-review";
-import { loadMonitorQualityReviewAdminWorkspace } from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
+import {
+  loadMonitorQualityReviewAdminWorkspace,
+  loadMonitorQualityReviewBenchmarkSummary,
+} from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
 import {
   assignMonitorQualityReviewAction,
   sendMonitorQualityReviewStartNotificationsAction,
@@ -46,6 +49,11 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
     data = null;
   }
   if (!data) return <p className="mt-6 rounded-lg bg-amber-50 p-4 text-amber-950">品質確認用migrationまたはデータを確認してください。</p>;
+  const completedSummaries = new Map(await Promise.all(
+    data.batches
+      .filter((batch) => batch.status === "completed")
+      .map(async (batch) => [batch.id, await loadMonitorQualityReviewBenchmarkSummary(batch.id)] as const),
+  ));
   const names = new Map(data.profiles.map((item) => [item.id, item.display_name]));
   const casesPerBatch = new Map<string, number>();
   for (const item of data.cases) casesPerBatch.set(item.batch_id, (casesPerBatch.get(item.batch_id) ?? 0) + 1);
@@ -63,6 +71,7 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
       </section>
       <section className="mt-6 grid gap-4 lg:grid-cols-2">
         {data.batches.map((batch) => {
+          const summary = completedSummaries.get(batch.id);
           const assignments = data.assignments.filter((item) => item.batch_id === batch.id);
           const total = casesPerBatch.get(batch.id) ?? 0;
           const targetReviewerCount = batch.target_reviewer_count ?? MONITOR_QUALITY_REVIEW_DEFAULT_REVIEWER_COUNT;
@@ -133,7 +142,23 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
               </form>
               {!canComplete ? <p className="mt-2 text-xs text-red-800">目標人数分の提出と、各担当28件の確定回答を確認してください。</p> : null}
             </div> : null}
-            {batch.status === "completed" ? <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">このBatchは完了済みです。回答JSONは引き続き保存できます。</p> : null}
+            {batch.status === "completed" ? <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">
+              <p>このBatchは完了済みです。回答JSONは引き続き保存できます。</p>
+              {summary ? <div className="mt-3 border-t border-emerald-200 pt-3">
+                <h3 className="font-bold">匿名Benchmark集計</h3>
+                <p className="mt-1">Primary A/B: 完全一致 {summary.primary.exactAgreementCount} / {summary.primary.caseCount}件（{Math.round(summary.primary.exactAgreementRate * 100)}%）・Cohen&apos;s κ {summary.primary.cohenKappa}</p>
+                <p className="mt-1">補助Panel: {summary.panel.reviewerCount}名・{summary.panel.responseCount}件（正式判定には加算しません）</p>
+                <p className="mt-1 font-bold">{summary.decision.status === "needs_adjudication"
+                  ? `不一致${summary.decision.disagreementCaseKeys.length}件の第三者裁定が必要です`
+                  : summary.decision.status === "pilot_review_passed"
+                    ? "Pilot回答契約を通過しました"
+                    : summary.decision.status === "agreement_below_threshold"
+                      ? "合意率またはκが基準未満です"
+                      : "回答の不足または契約不一致があります"}</p>
+                <p className="mt-1 text-xs">28画像のPilot集計であり、正式Benchmarkの140画像要件は未達です。自動採用・画像削除は行いません。</p>
+                <a className="button-secondary mt-3 w-full" href={`/admin/general-monitors/quality-review/summary?batchId=${batch.id}`}>匿名集計JSONを保存</a>
+              </div> : <p className="mt-2 text-red-800">匿名集計を作成できませんでした。回答schemaを確認してください。</p>}
+            </div> : null}
             {batch.status === "active" ? <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-3">
               <h3 className="font-bold">このBatchへ確認担当を追加</h3>
               {!assignmentPeriodOpen ? <p className="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">割り当ては開始日時の{startsAtJapan}（日本時間）以降に行えます。</p> : null}

@@ -148,6 +148,15 @@ ProductionのBatch完了操作は、実装PRのmergeと責任者の実行時承�
 
 `batch_private_01`は責任者の実行時承認後、2026-09-14に上記条件をすべて再検査して`completed`へ移行した。担当5名・確定回答140件を維持し、回答・割当・画像は削除していない。
 
+## 完了後の匿名集計とPilot判定
+
+- 管理画面は完了Batchだけについて、回答本文をサーバー内で検査して匿名集計を返す。氏名、メール、profile ID、assignment ID、自由記述、回答時刻は集計結果へ含めない。
+- Primary Reviewer A/Bは、verdict一致率と、verdictにdefect category／severityを加えた完全一致率、Cohen's kappaを算出する。Pilot閾値は完全一致90%以上、kappa 0.75以上とする。
+- Primary A/Bに1件でも完全不一致がある場合は`needs_adjudication`とし、case IDを第三者裁定候補として出す。Panel C〜Iの多数決だけでPrimary結果を上書きしない。
+- Panel C〜Iは補助証拠であり、verdict件数、平均confidence、defect件数だけを別集計する。正式Benchmarkの独立2名reviewやadjudicationの代用にはしない。
+- 28画像を5名が確認した結果は140「回答」であって140「画像」ではない。正式v2.1要件は140画像とPrimary 2名による独立回答280件であり、このPilot集計単独では`formalBenchmarkEligible=false`を維持する。
+- 集計は状況確認と手動判断の材料であり、候補画像の自動採用、元回答・画像の削除、Visual Judgeへの自動接続は行わない。
+
 ## 次工程への停止条件
 
 - Draft PRの全CIとVercel Previewが成功する。

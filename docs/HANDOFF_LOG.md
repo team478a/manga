@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認回答の匿名集計・Pilot採否ルール
+
+- Branch: `codex/feat-quality-review-benchmark-summary-20260914`
+- Base: `7122479`（PR #454 merge commit）。本線Required Quality run `34818104284`、Desktop Windows run `34818104316`は成功。
+- 完了Batchの回答をPrimary A/Bと補助Panel C〜Iへ分け、完全一致、verdict一致、Cohen's kappa、verdict／confidence／defect傾向を管理者向けに匿名集計する。個人識別子・自由記述・回答時刻は出力しない。
+- Primary不一致はPanel多数決で自動確定せず第三者裁定へ送る。完全一致90%とkappa 0.75の閾値を持つが、正式Benchmarkは140画像・独立回答280件が必要であり、今回の28画像・140回答だけではeligibleにしない。自動採用・削除なし。
+- 集中5/5、Hub 961/961、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、Hub typecheck、Hub／Desktop build、RC structure、diff check成功。Production、DB、Provider、credit、生成操作なし。
+- Draft PR #455はDraft／MERGEABLE。実装HEAD `522f348`のCore quality run `34819489512`、Migration roundtrip、Windows build run `34819489713`、Vercel、Vercel Preview Commentsは成功した。
+- 次は証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後にProduction集計値をread-only確認する。
+
+---
+
 ## 2026-09-14 Codex: 品質確認BatchのProduction完了
 
 - Branch: `codex/docs-quality-review-batch-completion-production-20260914`

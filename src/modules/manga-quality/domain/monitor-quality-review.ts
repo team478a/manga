@@ -137,6 +137,278 @@ export const MONITOR_QUALITY_REVIEW_LABELS = {
 
 export const MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT = 28;
 
+export const MONITOR_QUALITY_REVIEW_PRIMARY_EXACT_AGREEMENT_THRESHOLD = 0.9;
+export const MONITOR_QUALITY_REVIEW_PRIMARY_KAPPA_THRESHOLD = 0.75;
+
+type MonitorQualityReviewBenchmarkInput = {
+  batchStatus: string;
+  cases: Array<{ id: string; caseKey: string }>;
+  assignments: Array<{
+    id: string;
+    reviewerSlot: MonitorQualityReviewSlot;
+    status: string;
+    submittedAt: string | null;
+  }>;
+  responses: Array<{
+    assignmentId: string;
+    caseId: string;
+    responsePayload: unknown;
+    caseCompletedAt: string | null;
+  }>;
+};
+
+type ParsedMonitorQualityReview = z.infer<typeof humanReviewRecordSchema>;
+
+function monitorReviewSignature(review: ParsedMonitorQualityReview) {
+  return JSON.stringify([
+    review.verdict,
+    review.defects
+      .map((defect) => `${defect.category}:${defect.severity}`)
+      .sort(),
+  ]);
+}
+
+function roundMonitorMetric(value: number) {
+  return Math.round(value * 10_000) / 10_000;
+}
+
+function calculatePrimaryVerdictKappa(
+  pairs: Array<[ParsedMonitorQualityReview, ParsedMonitorQualityReview]>,
+) {
+  if (!pairs.length) return 0;
+  const verdicts = ["good", "borderline", "bad"] as const;
+  const observed = pairs.filter(([a, b]) => a.verdict === b.verdict).length / pairs.length;
+  const expected = verdicts.reduce((sum, verdict) => {
+    const aRate = pairs.filter(([a]) => a.verdict === verdict).length / pairs.length;
+    const bRate = pairs.filter(([, b]) => b.verdict === verdict).length / pairs.length;
+    return sum + aRate * bRate;
+  }, 0);
+  if (expected === 1) return observed === 1 ? 1 : 0;
+  return roundMonitorMetric((observed - expected) / (1 - expected));
+}
+
+function emptyVerdictCounts() {
+  return { good: 0, borderline: 0, bad: 0 };
+}
+
+/**
+ * Produces an administrator-only, identity-free summary of a completed monitor
+ * batch. Reviewer profile IDs, names, comments, and response timestamps never
+ * enter the returned object. Primary A/B determine the pilot decision; Panel
+ * C-I are supplemental evidence only.
+ */
+export function summarizeMonitorQualityReviewBenchmark(
+  input: MonitorQualityReviewBenchmarkInput,
+) {
+  const blockers: string[] = [];
+  if (input.batchStatus !== "completed") blockers.push("batch_not_completed");
+  if (input.cases.length !== MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT)
+    blockers.push("pilot_case_count_invalid");
+
+  const caseIds = new Set(input.cases.map((item) => item.id));
+  const assignmentById = new Map(input.assignments.map((item) => [item.id, item]));
+  const assignmentBySlot = new Map(input.assignments.map((item) => [item.reviewerSlot, item]));
+  if (assignmentById.size !== input.assignments.length)
+    blockers.push("assignment_id_duplicate");
+  if (assignmentBySlot.size !== input.assignments.length)
+    blockers.push("reviewer_slot_duplicate");
+  for (const assignment of input.assignments) {
+    if (assignment.status !== "submitted" || !assignment.submittedAt)
+      blockers.push(`assignment_incomplete:${assignment.reviewerSlot}`);
+  }
+  for (const slot of MONITOR_QUALITY_REVIEW_PRIMARY_SLOTS) {
+    const assignment = assignmentBySlot.get(slot);
+    if (!assignment || assignment.status !== "submitted" || !assignment.submittedAt)
+      blockers.push(`primary_assignment_incomplete:${slot}`);
+  }
+
+  const reviewByAssignmentCase = new Map<string, ParsedMonitorQualityReview>();
+  for (const response of input.responses) {
+    const assignment = assignmentById.get(response.assignmentId);
+    const reviewCase = input.cases.find((item) => item.id === response.caseId);
+    if (!assignment || !reviewCase || !caseIds.has(response.caseId)) {
+      blockers.push("response_outside_batch");
+      continue;
+    }
+    const key = `${response.assignmentId}:${response.caseId}`;
+    if (reviewByAssignmentCase.has(key)) {
+      blockers.push("response_duplicate");
+      continue;
+    }
+    if (!response.caseCompletedAt) {
+      blockers.push("response_not_completed");
+      continue;
+    }
+    const parsed = humanReviewRecordSchema.safeParse({
+      ...(typeof response.responsePayload === "object" && response.responsePayload !== null
+        ? response.responsePayload
+        : {}),
+      case_id: reviewCase.caseKey,
+    });
+    if (!parsed.success) {
+      blockers.push("response_payload_invalid");
+      continue;
+    }
+    reviewByAssignmentCase.set(key, parsed.data);
+  }
+
+  const primaryPairs: Array<[ParsedMonitorQualityReview, ParsedMonitorQualityReview]> = [];
+  const caseSummaries = input.cases.map((reviewCase) => {
+    const primaryA = assignmentBySlot.get("reviewer_a");
+    const primaryB = assignmentBySlot.get("reviewer_b");
+    const reviewA = primaryA
+      ? reviewByAssignmentCase.get(`${primaryA.id}:${reviewCase.id}`)
+      : undefined;
+    const reviewB = primaryB
+      ? reviewByAssignmentCase.get(`${primaryB.id}:${reviewCase.id}`)
+      : undefined;
+    if (!reviewA || !reviewB) blockers.push(`primary_response_missing:${reviewCase.caseKey}`);
+    if (reviewA && reviewB) primaryPairs.push([reviewA, reviewB]);
+
+    for (const assignment of input.assignments) {
+      if (!reviewByAssignmentCase.has(`${assignment.id}:${reviewCase.id}`))
+        blockers.push(`response_missing:${assignment.reviewerSlot}:${reviewCase.caseKey}`);
+    }
+
+    const panelVerdicts = emptyVerdictCounts();
+    const panelDefects: Record<string, number> = {};
+    const panelConfidences: number[] = [];
+    for (const assignment of input.assignments) {
+      if (isMonitorQualityReviewPrimarySlot(assignment.reviewerSlot)) continue;
+      const review = reviewByAssignmentCase.get(`${assignment.id}:${reviewCase.id}`);
+      if (!review) continue;
+      panelVerdicts[review.verdict] += 1;
+      panelConfidences.push(review.confidence);
+      for (const defect of review.defects)
+        panelDefects[defect.category] = (panelDefects[defect.category] ?? 0) + 1;
+    }
+
+    return {
+      caseKey: reviewCase.caseKey,
+      primary: reviewA && reviewB ? {
+        reviewerAVerdict: reviewA.verdict,
+        reviewerBVerdict: reviewB.verdict,
+        verdictAgreement: reviewA.verdict === reviewB.verdict,
+        exactAgreement: monitorReviewSignature(reviewA) === monitorReviewSignature(reviewB),
+      } : null,
+      panel: {
+        reviewCount: panelConfidences.length,
+        verdicts: panelVerdicts,
+        averageConfidence: panelConfidences.length
+          ? roundMonitorMetric(panelConfidences.reduce((sum, value) => sum + value, 0) / panelConfidences.length)
+          : null,
+        defects: Object.fromEntries(Object.entries(panelDefects).sort(([a], [b]) => a.localeCompare(b))),
+      },
+    };
+  });
+
+  const uniqueBlockers = [...new Set(blockers)];
+  const exactAgreementCount = caseSummaries.filter((item) => item.primary?.exactAgreement).length;
+  const verdictAgreementCount = caseSummaries.filter((item) => item.primary?.verdictAgreement).length;
+  const primaryCaseCount = primaryPairs.length;
+  const exactAgreementRate = primaryCaseCount
+    ? roundMonitorMetric(exactAgreementCount / primaryCaseCount)
+    : 0;
+  const verdictAgreementRate = primaryCaseCount
+    ? roundMonitorMetric(verdictAgreementCount / primaryCaseCount)
+    : 0;
+  const kappa = calculatePrimaryVerdictKappa(primaryPairs);
+  const disagreementCaseKeys = caseSummaries
+    .filter((item) => item.primary && !item.primary.exactAgreement)
+    .map((item) => item.caseKey);
+  const exactAgreementPass = primaryCaseCount === input.cases.length
+    && exactAgreementRate >= MONITOR_QUALITY_REVIEW_PRIMARY_EXACT_AGREEMENT_THRESHOLD;
+  const kappaPass = primaryCaseCount === input.cases.length
+    && kappa >= MONITOR_QUALITY_REVIEW_PRIMARY_KAPPA_THRESHOLD;
+  const decision = uniqueBlockers.length
+    ? "blocked_incomplete"
+    : disagreementCaseKeys.length
+      ? "needs_adjudication"
+      : exactAgreementPass && kappaPass
+        ? "pilot_review_passed"
+        : "agreement_below_threshold";
+
+  const primaryVerdicts = emptyVerdictCounts();
+  const panelVerdicts = emptyVerdictCounts();
+  const primaryDefects: Record<string, number> = {};
+  const panelDefects: Record<string, number> = {};
+  let primaryConfidenceTotal = 0;
+  let primaryResponseCount = 0;
+  let panelConfidenceTotal = 0;
+  let panelResponseCount = 0;
+  for (const [key, review] of reviewByAssignmentCase) {
+    const assignment = assignmentById.get(key.split(":", 1)[0]);
+    if (!assignment) continue;
+    const primary = isMonitorQualityReviewPrimarySlot(assignment.reviewerSlot);
+    const verdicts = primary ? primaryVerdicts : panelVerdicts;
+    const defects = primary ? primaryDefects : panelDefects;
+    verdicts[review.verdict] += 1;
+    if (primary) {
+      primaryConfidenceTotal += review.confidence;
+      primaryResponseCount += 1;
+    } else {
+      panelConfidenceTotal += review.confidence;
+      panelResponseCount += 1;
+    }
+    for (const defect of review.defects)
+      defects[defect.category] = (defects[defect.category] ?? 0) + 1;
+  }
+
+  return {
+    schemaVersion: "mangai-monitor-review-summary-v1" as const,
+    anonymized: true as const,
+    automaticAdoption: false as const,
+    source: {
+      caseCount: input.cases.length,
+      responseCount: reviewByAssignmentCase.size,
+      primaryResponseCount,
+      panelResponseCount,
+    },
+    decision: {
+      status: decision,
+      blockers: uniqueBlockers,
+      exactAgreementThreshold: MONITOR_QUALITY_REVIEW_PRIMARY_EXACT_AGREEMENT_THRESHOLD,
+      kappaThreshold: MONITOR_QUALITY_REVIEW_PRIMARY_KAPPA_THRESHOLD,
+      exactAgreementPass,
+      kappaPass,
+      adjudicationRequired: disagreementCaseKeys.length > 0,
+      disagreementCaseKeys,
+      formalBenchmarkEligible: false as const,
+      formalBenchmarkBlockers: [
+        `formal_fixture_count_${input.cases.length}_of_140`,
+        `formal_independent_reviews_${primaryResponseCount}_of_280`,
+      ],
+    },
+    primary: {
+      role: "formal_candidate" as const,
+      caseCount: primaryCaseCount,
+      exactAgreementCount,
+      exactAgreementRate,
+      verdictAgreementCount,
+      verdictAgreementRate,
+      cohenKappa: kappa,
+      verdicts: primaryVerdicts,
+      averageConfidence: primaryResponseCount
+        ? roundMonitorMetric(primaryConfidenceTotal / primaryResponseCount)
+        : null,
+      defects: Object.fromEntries(Object.entries(primaryDefects).sort(([a], [b]) => a.localeCompare(b))),
+    },
+    panel: {
+      role: "supplemental_only" as const,
+      reviewerCount: input.assignments.filter((item) =>
+        !isMonitorQualityReviewPrimarySlot(item.reviewerSlot)
+      ).length,
+      responseCount: panelResponseCount,
+      verdicts: panelVerdicts,
+      averageConfidence: panelResponseCount
+        ? roundMonitorMetric(panelConfidenceTotal / panelResponseCount)
+        : null,
+      defects: Object.fromEntries(Object.entries(panelDefects).sort(([a], [b]) => a.localeCompare(b))),
+    },
+    cases: caseSummaries,
+  };
+}
+
 export type MonitorQualityReviewBatchTransition = "activate" | "pause" | "resume" | "complete";
 
 export type MonitorQualityReviewBatchReadinessCode =
