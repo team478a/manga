@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定DB基盤（2026-09-14）
+
+- PR #458はmerge commit `a9b803b`で本線へ統合された。実装分割2として、裁定専用table、回答本文を持たないappend-only event、RLS、Security Definer RPC、安全なrollbackを追加した。
+- 割当は完了Batch、Primary A/Bの確定、不一致、第三者性、管理者を必須にする。担当者操作は本人割当、source fingerprint、状態、idempotencyを再検査し、独立判断lock前のA/B差分開示を拒否する。
+- A/B差分は匿名のverdict、category、severityだけを返す。既存responseを更新・削除せず、rollbackも保存済み裁定があれば削除せず停止する。authenticatedの直接table accessは許可しない。
+- 集中8/8、Hub 976/976、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration validator 82/82、deps、lint、typecheck、build、RC structure、diff check成功。実PostgreSQL roundtripはGitHub CIで確認する。
+- Production、migration適用、裁定回答、割当、通知、Provider、Job、Asset、credit、生成操作なし。Draft PRの全CI／Preview成功で停止し、merge後のProduction適用は別の責任者明示承認を必要とする。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定Domain（2026-09-14）
 
 - PR #457はmerge commit `5b15c13`で本線へ統合され、本線Required Quality run `34828180291`、Desktop Windows run `34828180350`、Vercelの成功を確認した。

@@ -531,3 +531,33 @@ do $$ begin
     raise exception 'Current schema monitor operations Phase 2 objects missing';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_monitor_quality_review_adjudications') is null
+     or to_regclass('public.cloud_monitor_quality_review_adjudication_events') is null
+     or to_regprocedure('public.assign_cloud_monitor_quality_review_adjudication(uuid,uuid,uuid,uuid,text)') is null
+     or to_regprocedure('public.consent_cloud_monitor_quality_review_adjudication(uuid,text)') is null
+     or to_regprocedure('public.save_cloud_monitor_quality_review_adjudication_draft(uuid,jsonb,text)') is null
+     or to_regprocedure('public.lock_cloud_monitor_quality_review_adjudication_independent(uuid,jsonb,text)') is null
+     or to_regprocedure('public.reveal_cloud_monitor_quality_review_adjudication_differences(uuid,text)') is null
+     or to_regprocedure('public.submit_cloud_monitor_quality_review_adjudication(uuid,jsonb,text,text)') is null
+     or to_regprocedure('public.abstain_cloud_monitor_quality_review_adjudication(uuid,text,text)') is null
+     or to_regprocedure('public.revoke_cloud_monitor_quality_review_adjudication(uuid,uuid,text,text)') is null
+     or not exists (
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public'
+         and c.relname='cloud_monitor_quality_review_adjudications'
+         and c.relrowsecurity
+     )
+     or not exists (
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public'
+         and c.relname='cloud_monitor_quality_review_adjudication_events'
+         and c.relrowsecurity
+     )
+     or has_table_privilege('authenticated','public.cloud_monitor_quality_review_adjudications','select')
+     or has_table_privilege('authenticated','public.cloud_monitor_quality_review_adjudications','insert')
+     or has_table_privilege('authenticated','public.cloud_monitor_quality_review_adjudication_events','select') then
+    raise exception 'Current schema monitor quality review adjudication objects missing or exposed';
+  end if;
+end $$;
