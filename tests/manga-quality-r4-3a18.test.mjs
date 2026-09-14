@@ -14,6 +14,13 @@ test("裁定migrationは既存回答を変更せず専用tableと有効case一�
   assert.doesNotMatch(migration, /delete from public\.cloud_monitor_quality_review_(responses|assignments|cases)/);
 });
 
+test("fingerprintはSupabaseとvanilla PostgreSQL双方のpgcrypto配置を解決する", async () => {
+  const migration = await read("../supabase/migrations/202609140003_cloud_monitor_quality_review_adjudication.sql");
+  assert.match(migration, /set search_path=extensions,public,pg_temp/);
+  assert.match(migration, /select encode\(digest\(/);
+  assert.doesNotMatch(migration, /extensions\.digest/);
+});
+
 test("割り当ては完了Batch・Primary確定不一致・第三者・管理者をDBでも必須にする", async () => {
   const migration = await read("../supabase/migrations/202609140003_cloud_monitor_quality_review_adjudication.sql");
   assert.match(migration, /v_batch_status is distinct from 'completed'/);

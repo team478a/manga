@@ -9,7 +9,7 @@
 - 管理者server専用の割当／revoke RPCと、担当本人専用の同意／draft／独立判断lock／匿名A-B差分開示／最終提出／棄権RPCを追加した。完了Batch、Primary A/B確定、不一致、第三者性、source fingerprint、expected state、idempotencyを毎回fail closedで検査する。
 - 独立判断をimmutableに確定するまでA/B差分を返さず、開示後もverdict、defect category／severityだけを返す。氏名、メール、profile ID、自由記述、Prompt、画像をevent／差分応答へ含めない。直接table accessはauthenticatedからrevokeし、RLSを有効化した。
 - rollbackは裁定またはeventが1件でも存在する場合にデータを削除せず停止する。canonical schema、schema assertion、manifest checksum、集中回帰テストを同期した。
-- 集中8/8、Hub 976/976、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration validator 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。ローカルにDocker／psqlがないため実PostgreSQL roundtripはCIで確認する。
+- 集中9/9、Hub 976/976、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration validator 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。初回CIがvanilla PostgreSQLでは`pgcrypto`が`public`に置かれる差を検出したため、固定search pathを`extensions,public,pg_temp`として両環境で同じ関数を解決するよう修正した。
 - Production、DB適用、裁定回答、割当、通知、画像、作品、Provider、Job、Asset、credit、生成処理は変更していない。
 - 次: commit、push、Draft PRを作成し、Migration roundtripを含む全CI／Vercel Preview成功まで確認して停止する。merge後もProduction migration適用は責任者の実行時明示承認を必要とする。
 

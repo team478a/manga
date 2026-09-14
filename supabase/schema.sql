@@ -2542,9 +2542,9 @@ create or replace function public.cloud_monitor_quality_review_signature(p_paylo
 returns text
 language sql
 immutable
-set search_path=public,extensions,pg_temp
+set search_path=extensions,public,pg_temp
 as $$
-  select encode(extensions.digest(convert_to(jsonb_build_object(
+  select encode(digest(convert_to(jsonb_build_object(
     'verdict',p_payload->>'verdict',
     'defects',coalesce((
       select jsonb_agg(
@@ -2561,7 +2561,7 @@ create or replace function public.cloud_monitor_quality_review_primary_fingerpri
 ) returns text
 language plpgsql
 security definer
-set search_path=public,extensions,pg_temp
+set search_path=extensions,public,pg_temp
 as $$
 declare
   v_a text;
@@ -2586,7 +2586,7 @@ begin
   if v_a is null or v_b is null then
     raise exception 'monitor_quality_review_primary_responses_incomplete';
   end if;
-  return encode(extensions.digest(convert_to(v_a||':'||v_b,'UTF8'),'sha256'),'hex');
+  return encode(digest(convert_to(v_a||':'||v_b,'UTF8'),'sha256'),'hex');
 end$$;
 
 create table if not exists public.cloud_monitor_quality_review_adjudications (
@@ -2761,7 +2761,7 @@ create or replace function public.enforce_cloud_monitor_quality_review_adjudicat
 returns trigger
 language plpgsql
 security definer
-set search_path=public,extensions,pg_temp
+set search_path=extensions,public,pg_temp
 as $$
 declare
   v_batch_status text;
@@ -2809,7 +2809,7 @@ begin
       raise exception 'monitor_quality_review_adjudication_not_required';
     end if;
     new.response_fingerprint:=encode(
-      extensions.digest(convert_to(v_signature_a||':'||v_signature_b,'UTF8'),'sha256'),'hex'
+      digest(convert_to(v_signature_a||':'||v_signature_b,'UTF8'),'sha256'),'hex'
     );
   else
     if row(new.batch_id,new.case_id,new.adjudicator_profile_id,new.assigned_by_profile_id,

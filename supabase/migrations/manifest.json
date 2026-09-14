@@ -490,9 +490,9 @@
     {
       "id": "202609140003_cloud_monitor_quality_review_adjudication",
       "description": "品質確認Pilotの第三者裁定をBlind-firstかつ追記型監査で保存",
-      "forwardSha256": "49b5168c2028f7e01cf7467b117534e8b5faede9117e8a1f22f33204ce8dfb99",
+      "forwardSha256": "d1aa14eda0476f277f1d3a03fa770436d40e8e2b05a00e474b75be7d0e9f9da5",
       "rollbackSha256": "1914f9b1947023d4a19a3c7667fbc0452dfbafd0728d0a86e318d73c6be697dd"
     }
   ],
-  "schemaSha256": "c682f3506720ce72a7734528b80d5c71349ef36bb538d784c27b189a502d9598"
+  "schemaSha256": "345e4d4c3d187e66c1eca06637e432f01566922830c4d14cc9d384b35d71f38a"
 }
