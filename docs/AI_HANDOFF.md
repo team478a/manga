@@ -6,7 +6,8 @@
 - 実装分割4として、購入者向け品質確認ページに裁定担当本人のBlind-first / compare-second画面を追加した。同意、独立判定の自動保存・再開、immutable確定、匿名A/B差分、理由付き最終裁定／辞退を状態順に提供する。
 - APIは本人割当、対象case、完了Batch、明示確認、idempotencyを毎回検査する。差分はverdict、category、severityだけをstrict schemaで返し、個人識別子や自由記述を表示しない。候補画像は120秒署名URLで、通信・429・5xxは同一requestを安全に再送する。
 - 集中14/14、Hub 991/991、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。Production、migration適用、実割当、通知、裁定回答、Provider、Job、Asset、credit、生成操作なし。
-- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge後は匿名export／private assembly adapterを別PRとし、Production操作は責任者の実行時明示承認まで行わない。
+- Draft PR [#461](https://github.com/team478a/manga/pull/461)はDraft／MERGEABLE。実装HEAD `9d03df9`のRequired Quality run `34839062691`、Migration roundtrip、Desktop Windows run `34839062685`、Vercel、Preview Commentsは成功した。[Preview](https://mangai-hub-staging-gxn4tign5-team478as-projects.vercel.app)はReadyである。
+- 次は証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後は匿名export／private assembly adapterを別PRとし、Production操作は責任者の実行時明示承認まで行わない。
 
 ---
 

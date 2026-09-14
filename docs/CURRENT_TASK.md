@@ -2,7 +2,7 @@
 
 ## 2026-09-14 品質確認Pilot 第三者裁定 担当者画面
 
-- 状態: `ADJUDICATOR_UI_IMPLEMENTED / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- 状態: `ADJUDICATOR_UI_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
 - Branch: `codex/feat-quality-review-adjudicator-ui-20260914`
 - Base: `f9772aa`（PR #460 merge commit）。本線Required Quality run `34836623793`とDesktop Windows run `34836623753`は成功した。
 - 購入者向け品質確認ページへ、未完了の第三者裁定を優先表示するBlind-first / compare-second画面を追加した。担当本人だけが、同意、独立判定の途中保存・再開、変更不可の確定、匿名A/B差分表示、理由付き最終裁定または辞退を行える。
@@ -11,7 +11,8 @@
 - スマートフォン向け1ケース画面、画像拡大、進捗、次割当への再初期化を備える。裁定migration未適用環境は既存品質確認を壊さず、裁定操作を開かない。
 - 集中14/14、Hub 991/991、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration validator 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。外部環境の既存PENDING項目は不変である。
 - Production、migration適用、裁定割当、通知、裁定回答、既存回答、画像、作品、Provider、Job、Asset、credit、生成処理は変更していない。
-- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後は実装分割5（匿名export／private assembly adapter）を別PRで行う。Production migration適用、実割当、通知、裁定開始は責任者の実行時明示承認を必要とする。
+- Draft PR [#461](https://github.com/team478a/manga/pull/461)はDraft／MERGEABLE。実装HEAD `9d03df9`のRequired Quality run `34839062691`（Core quality／Migration roundtrip）、Desktop Windows run `34839062685`、Vercel、Vercel Preview Commentsはすべて成功した。[Preview](https://mangai-hub-staging-gxn4tign5-team478as-projects.vercel.app)はReadyである。
+- 次: この証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後は実装分割5（匿名export／private assembly adapter）を別PRで行う。Production migration適用、実割当、通知、裁定開始は責任者の実行時明示承認を必要とする。
 
 ---
 
