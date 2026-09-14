@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認BatchのProduction完了
+
+- 状態: `PRODUCTION_BATCH_COMPLETED / FIVE_OF_FIVE_PRESERVED / RESPONSES_PRESERVED`
+- Branch: `codex/docs-quality-review-batch-completion-production-20260914`
+- Base: `5f76672`（PR #453 merge commit）。本線Required Quality run `34815935979`（Core quality／Migration roundtrip）とDesktop Windows run `34815935989`は成功した。
+- 責任者の実行時承認に基づき、Productionの`batch_private_01`（ID `0a115917-caef-4e4c-ad0c-f8f27b62e900`）を`active -> completed`へ1件だけ更新した。更新時刻は`2026-09-14T07:13:45.954693Z`。
+- 同一SQL内で対象ID・Batch code・現在状態`active`・開始済み・目標5名・ケース28件・異なる確認者5名・全員`submitted`かつ`submitted_at`あり・各担当28件の確定回答を再検査した。結果行は担当5名、確定回答140件を返した。
+- 最初の入力では既存照会がEditorに残り構文エラーで停止し、更新0件だった。SQL全文を読み戻して完全置換した後に再実行し、上記1件だけが更新された。
+- 回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。回答JSONの管理者保存機能も維持される。
+- 次: 本Production証跡をdocs-onlyでcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。その後は140件の集計・Benchmark採否設計を次工程とし、自動採用や画像削除は行わない。
+
+---
+
 ## 2026-09-14 品質確認5名完了監査・Batch完了操作の実装
 
 - 状態: `FIVE_OF_FIVE_SUBMITTED / COMPLETION_GUARD_IMPLEMENTED / PRODUCTION_UNCHANGED`

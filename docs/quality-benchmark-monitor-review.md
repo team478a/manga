@@ -146,6 +146,8 @@ npm run manga:benchmark:monitor-batch:admit -- `
 
 ProductionのBatch完了操作は、実装PRのmergeと責任者の実行時承認後にだけ行う。
 
+`batch_private_01`は責任者の実行時承認後、2026-09-14に上記条件をすべて再検査して`completed`へ移行した。担当5名・確定回答140件を維持し、回答・割当・画像は削除していない。
+
 ## 次工程への停止条件
 
 - Draft PRの全CIとVercel Previewが成功する。

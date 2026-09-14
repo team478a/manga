@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認BatchのProduction完了（2026-09-14）
+
+- PR #453はmerge commit `5f76672`で本線へ統合され、本線Required Quality run `34815935979`とDesktop Windows run `34815935989`の成功を確認した。
+- 責任者の実行時承認後、Productionの`batch_private_01`（ID `0a115917-caef-4e4c-ad0c-f8f27b62e900`）を現在状態`active`との一致条件付きで`completed`へ1件更新した。更新時刻は`2026-09-14T07:13:45.954693Z`。
+- 更新と同じSQLで、対象Batch、開始済み、ケース28件、異なる確認者5名、全員の最終送信、各担当28件の確定回答を再検査し、担当5名・確定回答140件を確認した。
+- 初回はEditorの既存照会が残ったため構文エラーで更新0件。SQL全文を完全置換・読み戻し確認してから成功した1回だけ更新した。
+- 回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。回答JSON保存を維持し、自動採用・削除はしていない。
+- 次は本証跡のdocs-only Draft PRを全CI／Vercel Preview成功まで確認する。その後、140件の集計とBenchmark採否設計を別工程で行う。
+
+---
+
 ## 0.0 品質確認5名完了監査・Batch完了操作の実装（2026-09-14）
 
 - PR #452はmerge commit `a7ea8d4`で本線へ統合され、本線Required Quality run `34811202993`とDesktop Windows run `34811202992`の成功を確認した。
