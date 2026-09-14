@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloudネーム保存報告のProduction状態監査（2026-09-14）
+
+- PR #450はmerge commit `c12bd8c`で本線へ統合され、本線Required Quality run `34808654501`とDesktop Windows run `34808654502`の成功を確認した。
+- Productionの報告タスク`79a6b398-a344-4a70-add0-aa626e127daf`をread-only監査した。元報告`65f4c2a5-3852-4434-8599-a0f9f222dcd3`は「ネームを保存できませんでした。」、workflowは`storyboard`、priorityは`critical`、発生1件である。
+- 修正migration適用と`test`での4ページ保存受入れは完了しているが、タスクは`detected`、報告は`review_status=new`／`public_status=submitted`のまま残っている。
+- 利用者向け通知は2026-09-11の受付通知1件だけで、対応完了通知はない。現在の修正内容に対応する更新情報も未掲載である。
+- Productionの報告状態、通知、更新情報、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- docs-only差分のRC構造検査と`git diff --check`は成功した。外部環境preflightの既存PENDING項目に変更はない。
+- 次は本記録をdocs-only Draft PRで全CI／Vercel Preview成功まで確認する。merge後、タスクを現在状態`detected`との一致条件付きで`resolved`へ更新して対応完了通知を作成し、ネーム保存修正の更新情報を掲載する操作は、責任者の実行時承認後に別工程で行う。
+
+---
+
 ## 0.0 4ページ短編ネーム保存制約のProduction適用・受入完了（2026-09-14）
 
 - PR #449はmerge commit `2ca3a66`で本線へ統合され、本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。

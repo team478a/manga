@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-14 Cloudネーム保存報告のProduction状態監査
+
+- 状態: `READ_ONLY_AUDIT_COMPLETE / LIVE_FIX_ACCEPTED / OPERATIONAL_RESOLUTION_PENDING`
+- Branch: `codex/docs-cloud-storyboard-report-audit-20260914`
+- Base: `c12bd8c`（PR #450 merge commit）。本線Required Quality run `34808654501`（Core quality／Migration roundtrip）とDesktop Windows run `34808654502`が成功した。
+- Productionの報告タスク`79a6b398-a344-4a70-add0-aa626e127daf`をread-only照会した。元報告`65f4c2a5-3852-4434-8599-a0f9f222dcd3`は「ネームを保存できませんでした。」、`workflow_step=storyboard`、`priority=critical`、`occurrence_count=1`、報告日時は`2026-09-11T01:56:22.680453Z`である。
+- タスクは`detected`、元報告は`review_status=new`／`public_status=submitted`。PR #447／#449の修正、2件のProduction migration、`test`での4ページ保存受入れは完了しているが、運用上の解決処理が残っている。
+- 元報告に紐づく通知は受付時の`monitor_report_received` 1件だけで、`monitor_report_status`の対応完了通知は0件。受付通知は未読である。
+- 更新情報をネーム／保存の語で照合したが、今回の修正を説明する掲載はなかった。2026-08-27の短編4／8ページ案内は報告より前、2026-09-05の保存安定性案内は品質確認機能向けであり、この報告の解決案内には該当しない。
+- Productionの報告状態、利用者通知、更新情報、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- docs-only差分のRC構造検査と`git diff --check`は成功した。外部環境preflightの既存PENDING項目は不変である。
+- 次: commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。merge後、対象タスクを現在状態`detected`との一致条件付きで`resolved`へ更新し、利用者向け対応完了通知とネーム保存修正の更新情報を作成する操作は、責任者の実行時承認後に別工程で行う。
+
+---
+
 ## 2026-09-14 4ページ短編ネーム保存制約のProduction適用・受入完了
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / LIVE_SAVE_PASSED / DATABASE_ROW_VERIFIED`
