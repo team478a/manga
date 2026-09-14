@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認匿名集計のProduction確認
+
+- Branch: `codex/docs-quality-review-production-summary-20260914`
+- Base: `aa99b23`（PR #455 merge commit）。本線Required Quality run `34820676146`、Desktop Windows run `34820676145`は成功。
+- Productionの`batch_private_01`を匿名・read-only集計し、Primary A/Bの完全一致5/28（17.86%）、verdict一致11/28（39.29%）、Cohen's kappa 0.1250、不一致23件を確認した。判定は`needs_adjudication`で、Pilot閾値は未達。
+- Primaryは56回答（good 17／borderline 7／bad 32、平均confidence 3.9286）。Panelは3名・84回答（good 41／borderline 16／bad 27、平均confidence 4.0000）で、補助票として分離した。
+- 正式Benchmark要件140画像・独立回答280件に対し28画像・Primary 56回答のためeligibleではない。Production、DB、回答、画像、Provider、Job、credit、生成、自動採用・削除操作なし。
+- 次はdocs-only Draft PRと全CI／Vercel Preview成功で停止し、merge後に23件の第三者裁定手順を設計する。
+
+---
+
 ## 2026-09-14 Codex: 品質確認回答の匿名集計・Pilot採否ルール
 
 - Branch: `codex/feat-quality-review-benchmark-summary-20260914`

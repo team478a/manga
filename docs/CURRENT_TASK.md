@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認匿名集計のProduction確認
+
+- 状態: `PRODUCTION_READ_ONLY_VERIFIED / NEEDS_ADJUDICATION / FORMAL_BENCHMARK_INELIGIBLE`
+- Branch: `codex/docs-quality-review-production-summary-20260914`
+- Base: `aa99b23`（PR #455 merge commit）。本線Required Quality run `34820676146`とDesktop Windows run `34820676145`は成功した。
+- Productionの`batch_private_01`（28画像・5名・確定回答140件）を、個人識別子・自由記述・回答時刻を取得しない`SELECT`だけで匿名集計した。Primary A/Bは完全一致5/28件（0.1786）、verdict一致11/28件（0.3929）、Cohen's kappa 0.1250である。
+- Primary不一致は23件で、判定は`needs_adjudication`。完全一致90%以上・kappa 0.75以上のPilot閾値はいずれも未達であり、Panel多数決による自動確定、候補画像の自動採用、回答・画像の削除は行っていない。
+- Primaryは56回答（good 17／borderline 7／bad 32、平均confidence 3.9286）。Panelは3名・84回答（good 41／borderline 16／bad 27、平均confidence 4.0000）で、補助情報としてのみ扱う。
+- 28画像・Primary 56回答のため、正式Benchmark要件140画像・独立回答280件は未達で`formalBenchmarkEligible=false`を維持する。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: 本証跡をdocs-only Draft PRとして全CI／Vercel Preview成功まで確認して停止する。merge後は23件の第三者裁定手順を設計し、責任者確認前に回答・ラベル・候補画像を変更しない。
+
+---
+
 ## 2026-09-14 品質確認回答の匿名集計・Pilot採否ルール
 
 - 状態: `IMPLEMENTED / ALL_CI_PASSED / PRODUCTION_UNCHANGED`

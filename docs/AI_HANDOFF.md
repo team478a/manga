@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認匿名集計のProduction確認（2026-09-14）
+
+- PR #455はmerge commit `aa99b23`で本線へ統合され、本線Required Quality run `34820676146`とDesktop Windows run `34820676145`の成功を確認した。
+- Productionの完了済み`batch_private_01`を個人識別子・自由記述・回答時刻を取得しない`SELECT`だけで集計した。Primary A/Bは完全一致5/28件（17.86%）、verdict一致11/28件（39.29%）、Cohen's kappa 0.1250で、23件が第三者裁定対象である。
+- Primary 56回答はgood 17／borderline 7／bad 32、平均confidence 3.9286。補助Panel 3名・84回答はgood 41／borderline 16／bad 27、平均confidence 4.0000だった。Panel票はPrimary判定へ加算していない。
+- 判定は`needs_adjudication`で、完全一致90%・kappa 0.75の閾値はいずれも未達。正式Benchmark要件140画像・Primary独立回答280件に対して28画像・56件のため、`formalBenchmarkEligible=false`を維持する。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成操作なし。自動採用・削除もない。次はdocs-only Draft PRの全CI／Vercel Preview成功後、23件の第三者裁定手順を別工程で設計する。
+
+---
+
 ## 0.0 品質確認回答の匿名集計・Pilot採否ルール（2026-09-14）
 
 - PR #454はmerge commit `7122479`で本線へ統合され、本線Required Quality run `34818104284`とDesktop Windows run `34818104316`の成功を確認した。
