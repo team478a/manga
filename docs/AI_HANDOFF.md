@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定 管理画面（2026-09-14）
+
+- PR #459はmerge commit `c81037c`で本線へ統合された。実装分割3として、完了BatchのPrimary A/B不一致ケースだけを対象にする管理者向け裁定割当・進捗・停止画面を追加した。
+- 割当は1ケース単位、Primary A/B以外、外部送信なしの3確認を必須にする。状態別進捗を表示し、停止は理由付きrevoke RPCだけを通して回答・監査履歴を保持する。
+- 管理一覧は回答payload、自由記述、fingerprint、idempotency keyを取得しない。裁定migration未適用環境は画面を壊さず操作を閉じる。
+- 集中21/21、Hub 982/982、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。基準本線CI run `34833386100`／`34833385944`も成功した。Production、migration適用、実割当、通知、回答、Provider、Job、Asset、credit、生成操作なし。
+- 次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。裁定担当者UIは別PRとする。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定DB基盤（2026-09-14）
 
 - PR #458はmerge commit `a9b803b`で本線へ統合された。実装分割2として、裁定専用table、回答本文を持たないappend-only event、RLS、Security Definer RPC、安全なrollbackを追加した。

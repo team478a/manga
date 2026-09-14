@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認Pilot 第三者裁定 管理画面
+
+- 状態: `ADMIN_SLICE_IMPLEMENTED / LOCAL_FOCUSED_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/feat-quality-review-adjudication-admin-20260914`
+- Base: `c81037c`（PR #459 merge commit）。第三者裁定のDomainとDB基盤は本線へ統合済みである。
+- 完了済みBatchでPrimary A/B不一致ケースだけを対象に、裁定担当の割当、状態別進捗、理由付き停止を行う管理画面を追加した。派生状態と「不一致N件中M件確定」を表示し、`submitted`、`abstained`、`revoked`を分離する。
+- 割当前に、対象が1ケースだけであること、担当者がPrimary A/B本人でないこと、この操作では外部送信・通知を行わないことの3確認を必須にした。担当停止は専用revoke RPCだけを通し、既存回答とappend-only監査履歴を削除しない。
+- 管理一覧は回答payload、自由記述、fingerprint、idempotency keyを取得しない。Productionへ裁定migrationが未適用でも既存管理画面を壊さず、準備未完了を表示して割当・停止操作を無効化する。
+- 集中21/21、Hub 982/982、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration validator 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。基準merge commit `c81037c`の本線Required Quality run `34833386100`とDesktop Windows run `34833385944`も成功した。
+- Production migration、裁定割当、通知、回答、画像、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後のProduction migration適用、実際の割当、通知、裁定開始はそれぞれ責任者の実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-14 品質確認Pilot 第三者裁定DB基盤
 
 - 状態: `DATABASE_SLICE_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`

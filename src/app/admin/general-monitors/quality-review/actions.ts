@@ -13,9 +13,12 @@ import { loadGeneralMonitorInviteRecipient } from "@/modules/general-monitor/inf
 import { monitorQualityReviewSlotSchema } from "@/modules/manga-quality/domain/monitor-quality-review";
 import {
   assignMonitorQualityReview,
+  assignMonitorQualityReviewAdjudication,
   loadMonitorQualityReviewNotificationTargets,
+  monitorQualityReviewAdjudicationConfigured,
   monitorQualityReviewNotificationTrackingConfigured,
   recordMonitorQualityReviewNotificationDelivery,
+  revokeMonitorQualityReviewAdjudication,
   setMonitorQualityReviewBatchLifecycle,
 } from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
 
@@ -97,6 +100,89 @@ export async function assignMonitorQualityReviewAction(formData: FormData) {
   }
   revalidatePath("/admin/general-monitors/quality-review");
   redirect(encodeURI("/admin/general-monitors/quality-review?message=確認担当を割り当てました"));
+}
+
+const adjudicationAssignmentSchema = z.object({
+  batchId: z.string().uuid(),
+  caseId: z.string().uuid(),
+  adjudicatorProfileId: z.string().uuid(),
+  scopeConfirmation: z.literal("one_disagreement_case"),
+  independenceConfirmation: z.literal("not_primary_reviewer"),
+  deliveryConfirmation: z.literal("no_external_delivery"),
+});
+
+const adjudicationRevocationSchema = z.object({
+  adjudicationId: z.string().uuid(),
+  reason: z.string().trim().min(1).max(500),
+  confirmation: z.literal("revoke_with_history"),
+});
+
+function describeAdjudicationError(message: string) {
+  if (message.includes("adjudicator_not_independent"))
+    return "Primary Reviewer A/B本人は裁定担当にできません";
+  if (message.includes("adjudication_not_required"))
+    return "完全一致ケースには裁定を割り当てられません";
+  if (message.includes("active_case_unique") || message.includes("duplicate key"))
+    return "このケースには有効な裁定担当がすでにいます";
+  if (message.includes("source_changed"))
+    return "元のPrimary回答が変わったため、状態を再確認してください";
+  if (message.includes("adjudication_unavailable"))
+    return "裁定割当の現在状態が変わりました。再読み込みしてください";
+  return "裁定操作を完了できませんでした。Batch・ケース・担当者を再確認してください";
+}
+
+export async function assignMonitorQualityReviewAdjudicationAction(formData: FormData) {
+  const { profile: actor } = await requireAdmin();
+  if (!monitorQualityReviewEnabled())
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=品質確認機能は停止中です"));
+  const parsed = adjudicationAssignmentSchema.safeParse({
+    batchId: formData.get("batchId"),
+    caseId: formData.get("caseId"),
+    adjudicatorProfileId: formData.get("adjudicatorProfileId"),
+    scopeConfirmation: formData.get("scopeConfirmation"),
+    independenceConfirmation: formData.get("independenceConfirmation"),
+    deliveryConfirmation: formData.get("deliveryConfirmation"),
+  });
+  if (!parsed.success)
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=裁定対象・担当者・3つの確認欄を確認してください"));
+  if (!(await monitorQualityReviewAdjudicationConfigured()))
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=裁定用migrationを先に適用してください"));
+
+  const result = await assignMonitorQualityReviewAdjudication({
+    actorProfileId: actor.id,
+    batchId: parsed.data.batchId,
+    caseId: parsed.data.caseId,
+    adjudicatorProfileId: parsed.data.adjudicatorProfileId,
+    idempotencyKey: `adjudication-${crypto.randomUUID()}`,
+  });
+  if (result.error)
+    redirect(encodeURI(`/admin/general-monitors/quality-review?error=${describeAdjudicationError(result.error.message)}`));
+  revalidatePath("/admin/general-monitors/quality-review");
+  redirect(encodeURI("/admin/general-monitors/quality-review?message=不一致ケース1件へ裁定担当を割り当てました。案内は送信していません"));
+}
+
+export async function revokeMonitorQualityReviewAdjudicationAction(formData: FormData) {
+  const { profile: actor } = await requireAdmin();
+  const parsed = adjudicationRevocationSchema.safeParse({
+    adjudicationId: formData.get("adjudicationId"),
+    reason: formData.get("reason"),
+    confirmation: formData.get("confirmation"),
+  });
+  if (!parsed.success)
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=停止理由（500文字以内）と履歴保持の確認欄を入力してください"));
+  if (!(await monitorQualityReviewAdjudicationConfigured()))
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=裁定用migrationを先に適用してください"));
+
+  const result = await revokeMonitorQualityReviewAdjudication({
+    actorProfileId: actor.id,
+    adjudicationId: parsed.data.adjudicationId,
+    reason: parsed.data.reason,
+    idempotencyKey: `adjudication-revoke-${crypto.randomUUID()}`,
+  });
+  if (result.error)
+    redirect(encodeURI(`/admin/general-monitors/quality-review?error=${describeAdjudicationError(result.error.message)}`));
+  revalidatePath("/admin/general-monitors/quality-review");
+  redirect(encodeURI("/admin/general-monitors/quality-review?message=裁定割当を停止しました。回答と監査履歴は保持されています"));
 }
 
 const notificationSchema = z.object({

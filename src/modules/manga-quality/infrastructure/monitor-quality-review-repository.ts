@@ -7,6 +7,28 @@ import {
   type MonitorQualityReviewSlot,
   type MonitorQualityReviewBatchTransition,
 } from "@/modules/manga-quality/domain/monitor-quality-review";
+import type { MonitorQualityReviewAdjudicationStatus } from
+  "@/modules/manga-quality/domain/monitor-quality-review-adjudication";
+
+export type MonitorQualityReviewAdjudicationAdminRow = {
+  id: string;
+  batch_id: string;
+  case_id: string;
+  adjudicator_profile_id: string;
+  status: MonitorQualityReviewAdjudicationStatus;
+  independent_locked_at: string | null;
+  differences_revealed_at: string | null;
+  submitted_at: string | null;
+  abstained_at: string | null;
+  revoked_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+function isMissingAdjudicationSchema(message: string) {
+  return /cloud_monitor_quality_review_adjudications.*(does not exist|schema cache)|relation .*cloud_monitor_quality_review_adjudications.* does not exist|could not find .*cloud_monitor_quality_review_adjudications/i
+    .test(message);
+}
 
 export type MonitorQualityReviewCase = {
   id: string;
@@ -151,18 +173,65 @@ export async function loadMonitorQualityReviewAdminWorkspace() {
   const [batches, assignments, cases, responses, enrollments, profiles] = await Promise.all([
     admin.from("cloud_monitor_quality_review_batches").select("id,batch_code,status,review_scope,target_reviewer_count,starts_at,expires_at,created_at").order("created_at", { ascending: false }),
     admin.from("cloud_monitor_quality_review_assignments").select("id,batch_id,reviewer_profile_id,reviewer_slot,status,consented_at,submitted_at,notification_sent_at,notification_send_count,updated_at").order("updated_at", { ascending: false }),
-    admin.from("cloud_monitor_quality_review_cases").select("id,batch_id"),
+    admin.from("cloud_monitor_quality_review_cases").select("id,batch_id,case_key,display_order"),
     admin.from("cloud_monitor_quality_review_responses").select("assignment_id,case_id,case_completed_at"),
     admin.from("cloud_general_monitor_enrollments").select("profile_id,status,expires_at").eq("status", "active").lte("starts_at", now).gt("expires_at", now),
     admin.from("profiles").select("id,display_name"),
   ]);
   const error = batches.error ?? assignments.error ?? cases.error ?? responses.error ?? enrollments.error ?? profiles.error;
   if (error) throw error;
+  const adjudications = await admin
+    .from("cloud_monitor_quality_review_adjudications")
+    .select("id,batch_id,case_id,adjudicator_profile_id,status,independent_locked_at,differences_revealed_at,submitted_at,abstained_at,revoked_at,created_at,updated_at")
+    .order("created_at", { ascending: false })
+    .returns<MonitorQualityReviewAdjudicationAdminRow[]>();
+  if (adjudications.error && !isMissingAdjudicationSchema(adjudications.error.message))
+    throw adjudications.error;
   return {
     loadedAt: now,
     batches: batches.data ?? [], assignments: assignments.data ?? [], cases: cases.data ?? [],
     responses: responses.data ?? [], enrollments: enrollments.data ?? [], profiles: profiles.data ?? [],
+    adjudicationConfigured: !adjudications.error,
+    adjudications: adjudications.data ?? [],
   };
+}
+
+export async function monitorQualityReviewAdjudicationConfigured() {
+  const { error } = await createAdminClient()
+    .from("cloud_monitor_quality_review_adjudications")
+    .select("id")
+    .limit(1);
+  return !error;
+}
+
+export async function assignMonitorQualityReviewAdjudication(input: {
+  actorProfileId: string;
+  batchId: string;
+  caseId: string;
+  adjudicatorProfileId: string;
+  idempotencyKey: string;
+}) {
+  return createAdminClient().rpc("assign_cloud_monitor_quality_review_adjudication", {
+    p_actor_profile_id: input.actorProfileId,
+    p_batch_id: input.batchId,
+    p_case_id: input.caseId,
+    p_adjudicator_profile_id: input.adjudicatorProfileId,
+    p_idempotency_key: input.idempotencyKey,
+  });
+}
+
+export async function revokeMonitorQualityReviewAdjudication(input: {
+  actorProfileId: string;
+  adjudicationId: string;
+  reason: string;
+  idempotencyKey: string;
+}) {
+  return createAdminClient().rpc("revoke_cloud_monitor_quality_review_adjudication", {
+    p_actor_profile_id: input.actorProfileId,
+    p_adjudication_id: input.adjudicationId,
+    p_reason: input.reason,
+    p_idempotency_key: input.idempotencyKey,
+  });
 }
 
 export async function loadMonitorQualityReviewNotificationTargets(batchId: string) {
