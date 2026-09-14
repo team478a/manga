@@ -7,6 +7,7 @@
 - A/B差分は匿名のverdict、category、severityだけを返す。既存responseを更新・削除せず、rollbackも保存済み裁定があれば削除せず停止する。authenticatedの直接table accessは許可しない。
 - 集中9/9、Hub 976/976、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration validator 82/82、deps、lint、typecheck、build、RC structure、diff check成功。初回CIで検出したSupabase／vanilla PostgreSQL間の`pgcrypto`配置差を固定search pathで解消し、再roundtripで確認する。
 - Production、migration適用、裁定回答、割当、通知、Provider、Job、Asset、credit、生成操作なし。Draft PRの全CI／Preview成功で停止し、merge後のProduction適用は別の責任者明示承認を必要とする。
+- Draft PR [#459](https://github.com/team478a/manga/pull/459)はDraft／MERGEABLE。実装HEAD `a48775f`のCore quality run `34832351502`、Migration roundtrip、Desktop Windows run `34832351467`、Vercel、Vercel Preview Commentsは成功した。次は証跡同期後の最終HEADを確認して停止する。
 
 ---
 
