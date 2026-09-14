@@ -169,6 +169,8 @@ ProductionのBatch完了操作は、実装PRのmergeと責任者の実行時承�
 
 ## 次工程への停止条件
 
+第三者裁定の対象、独立性、Blind-first / compare-second、保存・権限・監査・実装分割の正本は`docs/quality-benchmark-monitor-adjudication.md`とする。
+
 - Draft PRの全CIとVercel Previewが成功する。
 - migration roundtripとモバイル実機確認が完了する。
 - 人間による権利確認が完了するまではProductionへ画像を登録しない。
