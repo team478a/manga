@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認Pilot 第三者裁定 担当者画面
+
+- 状態: `ADJUDICATOR_UI_IMPLEMENTED / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/feat-quality-review-adjudicator-ui-20260914`
+- Base: `f9772aa`（PR #460 merge commit）。本線Required Quality run `34836623793`とDesktop Windows run `34836623753`は成功した。
+- 購入者向け品質確認ページへ、未完了の第三者裁定を優先表示するBlind-first / compare-second画面を追加した。担当本人だけが、同意、独立判定の途中保存・再開、変更不可の確定、匿名A/B差分表示、理由付き最終裁定または辞退を行える。
+- 独立判定確定前はAPIとDBの両方で差分開示を拒否する。差分はstrict schemaでverdict、defect category、severityだけを許可し、氏名、メール、profile ID、自由記述、回答時刻を返さない。元の独立判定は差分表示後も固定表示する。
+- APIは本人の割当・対象ケース・完了Batchを毎回再取得し、確定操作の確認値とidempotency keyを必須にする。ネットワーク・429・5xxだけを同じrequestで再送し、完了応答喪失後も指定された裁定IDを再検査して安全に再試行できる。候補画像は本人割当確認後の120秒署名URLだけを返す。
+- スマートフォン向け1ケース画面、画像拡大、進捗、次割当への再初期化を備える。裁定migration未適用環境は既存品質確認を壊さず、裁定操作を開かない。
+- 集中14/14、Hub 991/991、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration validator 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。外部環境の既存PENDING項目は不変である。
+- Production、migration適用、裁定割当、通知、裁定回答、既存回答、画像、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後は実装分割5（匿名export／private assembly adapter）を別PRで行う。Production migration適用、実割当、通知、裁定開始は責任者の実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-14 品質確認Pilot 第三者裁定 管理画面
 
 - 状態: `ADMIN_SLICE_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`

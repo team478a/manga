@@ -4,7 +4,7 @@
 
 対象Batch: `batch_private_01`
 
-状態: `DESIGN_APPROVED / DOMAIN_SLICE_IMPLEMENTED / DATABASE_SLICE_IMPLEMENTED / ADMIN_UI_SLICE_IMPLEMENTED / ADJUDICATOR_UI_NOT_IMPLEMENTED`
+状態: `DESIGN_APPROVED / DOMAIN_SLICE_IMPLEMENTED / DATABASE_SLICE_IMPLEMENTED / ADMIN_UI_SLICE_IMPLEMENTED / ADJUDICATOR_UI_SLICE_IMPLEMENTED / ANONYMOUS_EXPORT_NOT_IMPLEMENTED`
 
 ## 1. 目的
 
@@ -244,6 +244,6 @@ assignment、consent、draft、independent lock、A/B差分開示、finalize、a
 
 ## 15. 次の承認点
 
-設計PR #457、Domain PR #458、DB基盤PR #459はmerge済みである。実装分割3として、完了Batchの不一致ケースだけを1件ずつ割り当て、6状態の進捗を確認し、回答・監査履歴を保持したまま理由付きで停止する管理画面を追加した。Production migration未適用環境では操作をfail closedで閉じる。
+設計PR #457、Domain PR #458、DB基盤PR #459、管理画面PR #460はmerge済みである。実装分割4として、裁定担当本人だけが候補画像を確認し、独立判定の下書き保存・再開、変更不可の確定、匿名A/B差分の開示、最終裁定または理由付き辞退を順番どおり行う画面とAPIを追加した。通信・一時障害は同一idempotency keyで再送し、複数割当は未完了を優先する。
 
-次は実装分割4の裁定担当者向けBlind-first / compare-second画面へ進む。Production migration適用、実際の担当者割り当て、通知、裁定開始は、それぞれ該当工程で責任者が明示承認するまで実施しない。
+次は実装分割5の匿名exportとprivate assembly adapterへ進む。Production migration適用、実際の担当者割り当て、通知、裁定開始は、それぞれ該当工程で責任者が明示承認するまで実施しない。

@@ -3,7 +3,11 @@ import type { ReactNode } from "react";
 import { requireProfile } from "@/lib/auth";
 import { getCloudGeneralMonitorEnrollment, isCloudGeneralMonitorActive } from "@/lib/cloud-general-monitor";
 import { monitorQualityReviewEnabled } from "@/lib/monitor-quality-review";
-import { loadMonitorQualityReviewWorkspace } from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
+import {
+  loadMonitorQualityReviewAdjudicationWorkspace,
+  loadMonitorQualityReviewWorkspace,
+} from "@/modules/manga-quality/infrastructure/monitor-quality-review-repository";
+import { MonitorQualityReviewAdjudicationClient } from "./MonitorQualityReviewAdjudicationClient";
 import { MonitorQualityReviewClient } from "./MonitorQualityReviewClient";
 
 export default async function MonitorQualityReviewPage() {
@@ -16,13 +20,28 @@ export default async function MonitorQualityReviewPage() {
     content = <p className="panel mt-6 text-stone-700">この画面は購入者向け先行利用が有効なアカウントだけが使用できます。</p>;
   } else {
     let workspace = null;
+    let adjudicationWorkspace = null;
     try {
-      workspace = await loadMonitorQualityReviewWorkspace(profile.id);
+      [adjudicationWorkspace, workspace] = await Promise.all([
+        loadMonitorQualityReviewAdjudicationWorkspace(profile.id),
+        loadMonitorQualityReviewWorkspace(profile.id),
+      ]);
     } catch {
       workspace = null;
+      adjudicationWorkspace = null;
     }
-    content = !workspace ? (
+    const adjudicationIsPending = adjudicationWorkspace?.adjudication
+      && ["assigned", "in_progress", "independent_locked"].includes(adjudicationWorkspace.adjudication.status);
+    content = !workspace || !adjudicationWorkspace ? (
       <p className="panel mt-6 text-stone-700">品質確認の情報を読み込めませんでした。時間をおいて再度お試しください。</p>
+    ) : adjudicationWorkspace.adjudication && adjudicationWorkspace.reviewCase
+      && (adjudicationIsPending || !workspace.assignment) ? (
+      <MonitorQualityReviewAdjudicationClient
+        adjudication={adjudicationWorkspace.adjudication}
+        key={adjudicationWorkspace.adjudication.id}
+        progress={adjudicationWorkspace.progress}
+        reviewCase={adjudicationWorkspace.reviewCase}
+      />
     ) : !workspace.configured ? (
       <p className="panel mt-6 text-stone-700">品質確認用の準備が完了していません。</p>
     ) : !workspace.assignment ? (

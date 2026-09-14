@@ -6,9 +6,12 @@ const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("管理一覧は裁定本文・理由・fingerprint・idempotencyを取得しない", async () => {
   const repository = await read("../src/modules/manga-quality/infrastructure/monitor-quality-review-repository.ts");
-  const query = repository.slice(
-    repository.indexOf('.from("cloud_monitor_quality_review_adjudications")'),
-    repository.indexOf("if (adjudications.error"),
+  const adminWorkspace = repository.slice(
+    repository.indexOf("export async function loadMonitorQualityReviewAdminWorkspace"),
+  );
+  const query = adminWorkspace.slice(
+    adminWorkspace.indexOf('.from("cloud_monitor_quality_review_adjudications")'),
+    adminWorkspace.indexOf("if (adjudications.error"),
   );
   assert.match(query, /independent_locked_at/);
   assert.match(query, /differences_revealed_at/);
