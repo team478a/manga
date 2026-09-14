@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-14 Cloudネーム保存RLSのProduction適用
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / POLICY_VERIFIED / USER_ACCEPTANCE_PENDING`
+- Branch: `codex/docs-cloud-storyboard-rls-production-20260914`
+- Base: `51bfce7`（PR #447 merge commit）。本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- 責任者の明示承認に基づき、Productionへ`202609140001_cloud_storyboard_version_rls.sql`を1回適用した。結果は`Success. No rows returned`。
+- `pg_policies`をread-only照会し、`qualified_scenario`、`qualified_parent`、`qualified_parent_scenario`、`latest_adoption_guard`、`no_shadowed_scenario`、`no_shadowed_parent`がすべて`true`であることを確認した。
+- 報告状態、利用者通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: docs-onlyのdiff check、commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。その後、利用者再試行または明示承認済みテストアカウントでネーム保存受入れを行う。
+
+---
+
 ## 2026-09-14 Cloudネーム保存RLS再発修正
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATED / PRODUCTION_UNCHANGED`

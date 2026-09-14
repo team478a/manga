@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloudネーム保存RLSのProduction適用（2026-09-14）
+
+- PR #447はmerge commit `51bfce7`で本線へ統合され、本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
+- 責任者の明示承認後、Productionへ`202609140001_cloud_storyboard_version_rls.sql`を適用し、SQL Editorの`Success. No rows returned`を確認した。
+- `pg_policies`のread-only照会で、シナリオ・親版・親版シナリオの外側行参照、最新採用シナリオguard、誤った内側alias参照の不在を示す6項目がすべて`true`だった。
+- 報告状態、利用者通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。次はdocs-only Draft PRを全CI／Vercel Preview成功まで確認し、利用者による再試行または承認済みテストアカウントでの保存受入れを別工程で行う。
+
+---
+
 ## 0.0 Cloudネーム保存RLS再発修正（2026-09-14）
 
 - Production報告「ネームを保存できませんでした。」の再発を調査し、ネーム版INSERT policyの非修飾列が内側aliasへ束縛されるRLS不具合を特定した。
