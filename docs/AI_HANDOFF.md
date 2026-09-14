@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 匿名裁定export・private assembly adapter（2026-09-14）
+
+- PR #461はmerge commit `31dbda3`で本線へ統合された。実装分割5として、管理者向けの匿名裁定JSON downloadとGit外private assembly adapterを追加した。
+- 匿名JSONはcase、状態、独立／最終verdict、最終defect category／severity、件数、派生判定だけを出す。strict schema、管理者認証、private no-store、nosniffを使い、PII、ID、自由記述、confidence、bbox、時刻を出力しない。
+- private adapterは明示的な中立仮名とcase対応を必須にし、Production UUID／派生ID、root逸脱、PII／secret、非独立担当、変換不能defect、上書き、canonical ledger直書きを拒否する。結果はPilot専用、正式Benchmark不適格、自動importなしである。
+- 集中37/37、Hub 998/998、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。Production、migration適用、割当、通知、裁定回答、Provider、credit、生成、private実データ操作なし。
+- 次は全CI／Vercel Preview成功で停止する。merge後のProduction操作は責任者の実行時明示承認まで行わない。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定 担当者画面（2026-09-14）
 
 - PR #460はmerge commit `f9772aa`で本線へ統合され、Required Quality run `34836623793`とDesktop Windows run `34836623753`は成功した。

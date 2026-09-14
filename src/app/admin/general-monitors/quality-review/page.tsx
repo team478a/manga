@@ -296,6 +296,7 @@ function AdjudicationAdminPanel({
     </p>
     <p className="mt-2 text-xs text-stone-600">完全一致5件は対象外です。裁定後も元のA/B回答、一致率、κは変更せず、自動採用・画像削除を行いません。</p>
     {!data.adjudicationConfigured ? <p className="mt-3 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">裁定用migrationは未適用です。画面確認はできますが、割当・停止操作はできません。</p> : null}
+    {data.adjudicationConfigured ? <a className="button-secondary mt-3 w-full" href={`/admin/general-monitors/quality-review/adjudication-export?batchId=${batchId}`}>匿名裁定JSONを保存</a> : null}
 
     <div className="mt-4 rounded-lg border border-violet-200 bg-white p-3">
       <h4 className="font-bold">不一致ケース1件へ担当を割り当てる</h4>

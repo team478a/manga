@@ -1,0 +1,60 @@
+{
+  "schema_version": "mangai-monitor-review-private-assembly-adapter-v1",
+  "source_scope": "monitor_quality_review_pilot",
+  "source_batch_code": "batch_example_01",
+  "pilot_only": true,
+  "formal_benchmark_eligible": false,
+  "automatic_import": false,
+  "records": [
+    {
+      "source_case_key": "case_000003",
+      "assembly_case_id": "img_0003",
+      "reviewer_a": {
+        "pseudonym_id": "reviewer-a",
+        "reviewed_at": "2026-09-14",
+        "payload": {
+          "case_id": "case_000003",
+          "verdict": "good",
+          "confidence": 5,
+          "defects": [],
+          "overall_comment": ""
+        }
+      },
+      "reviewer_b": {
+        "pseudonym_id": "reviewer-b",
+        "reviewed_at": "2026-09-14",
+        "payload": {
+          "case_id": "case_000003",
+          "verdict": "bad",
+          "confidence": 5,
+          "defects": [
+            {
+              "category": "anatomy_hand_error",
+              "severity": "major",
+              "comment": ""
+            }
+          ],
+          "overall_comment": ""
+        }
+      },
+      "adjudication": {
+        "pseudonym_id": "adjudicator-c",
+        "decided_at": "2026-09-14",
+        "reason": "定義に照らして重大な手指破綻を確認した。",
+        "payload": {
+          "case_id": "case_000003",
+          "verdict": "bad",
+          "confidence": 5,
+          "defects": [
+            {
+              "category": "anatomy_hand_error",
+              "severity": "major",
+              "comment": ""
+            }
+          ],
+          "overall_comment": ""
+        }
+      }
+    }
+  ]
+}

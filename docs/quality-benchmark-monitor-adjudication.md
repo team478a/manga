@@ -4,7 +4,7 @@
 
 対象Batch: `batch_private_01`
 
-状態: `DESIGN_APPROVED / DOMAIN_SLICE_IMPLEMENTED / DATABASE_SLICE_IMPLEMENTED / ADMIN_UI_SLICE_IMPLEMENTED / ADJUDICATOR_UI_SLICE_IMPLEMENTED / ANONYMOUS_EXPORT_NOT_IMPLEMENTED`
+状態: `DESIGN_APPROVED / DOMAIN_SLICE_IMPLEMENTED / DATABASE_SLICE_IMPLEMENTED / ADMIN_UI_SLICE_IMPLEMENTED / ADJUDICATOR_UI_SLICE_IMPLEMENTED / ANONYMOUS_EXPORT_AND_PRIVATE_ADAPTER_IMPLEMENTED`
 
 ## 1. 目的
 
@@ -189,6 +189,21 @@ assignment、consent、draft、independent lock、A/B差分開示、finalize、a
 
 氏名、メール、profile／assignment ID、自由記述、回答時刻は含めない。管理者のprivate exportと正式assembly用ledgerは別物とし、public artifactを作らない。
 
+管理画面の「匿名裁定JSONを保存」は、`private, no-store`かつ`nosniff`のdownloadとして提供する。出力schemaは許可項目だけを持つstrict schemaであり、repositoryの専用取得も`case_id`、状態、独立payload、最終payload以外の裁定列を取得しない。payload内のconfidence、bbox、自由記述はサーバー内検証にだけ使い、downloadへコピーしない。
+
+正式assembly互換recordへの変換はWeb routeから行わない。Git外の`MANGAI_QUALITY_BENCHMARK_ROOT`内に、Production IDを含まない明示的な仮名、`case_XXXXXX -> img_XXXX`対応、Primary A/B回答、裁定結果をoperatorが準備し、次を実行する。
+
+入力例は`tests/fixtures/manga-quality/examples/monitor-adjudication-private-assembly.example.json`を正本にする。匿名裁定downloadをそのまま入力にはできない。管理者がprivateに保持するPrimary A/B回答と裁定結果を照合し、Productionのprofile／assignment／adjudication UUIDを除去して中立仮名へ置換した後にだけ入力を作る。
+
+```powershell
+$env:MANGAI_QUALITY_BENCHMARK_ROOT = "C:\private\mangai-quality-benchmark-v2.1"
+npm run manga:benchmark:monitor-adjudication:adapt -- `
+  --source "monitor-adjudication\source.private.json" `
+  --output "monitor-adjudication\assembly-records.private.json"
+```
+
+CLIはroot外path、repository内の非ignore領域、URL、メール、token、Production UUID、UUID由来の`monitor_...`識別子、Primaryと裁定者の重複、変換不能defect、既存output上書きを拒否する。`assembly/reviews.private.json`へは直接書かず、出力wrapperを`pilot_only=true`、`formal_benchmark_eligible=false`、`automatic_import=false`に固定する。正式ledgerへ組み込む判断は、画像・権利・140画像・280独立回答を別途検証する既存assembly工程でのみ行う。
+
 ## 12. migrationとrollback
 
 - 新しい連番のadditive migrationだけを追加する。
@@ -244,6 +259,6 @@ assignment、consent、draft、independent lock、A/B差分開示、finalize、a
 
 ## 15. 次の承認点
 
-設計PR #457、Domain PR #458、DB基盤PR #459、管理画面PR #460はmerge済みである。実装分割4として、裁定担当本人だけが候補画像を確認し、独立判定の下書き保存・再開、変更不可の確定、匿名A/B差分の開示、最終裁定または理由付き辞退を順番どおり行う画面とAPIを追加した。通信・一時障害は同一idempotency keyで再送し、複数割当は未完了を優先する。
+設計、Domain、DB基盤、管理画面、担当者画面はmerge済みである。実装分割5として、管理者向け匿名裁定downloadとGit外private assembly adapterを追加した。匿名downloadは個人情報・自由記述・時刻を出さず、adapterは明示的な中立仮名だけを受け付け、現在のPilotを正式Benchmarkへ自動昇格しない。
 
-次は実装分割5の匿名exportとprivate assembly adapterへ進む。Production migration適用、実際の担当者割り当て、通知、裁定開始は、それぞれ該当工程で責任者が明示承認するまで実施しない。
+次は本PRの全CI／Vercel Preview成功後に停止する。merge後のProduction migration適用、実際の担当者割り当て、通知、裁定開始、private adapterへの実データ投入は、それぞれ該当工程で責任者が明示承認するまで実施しない。

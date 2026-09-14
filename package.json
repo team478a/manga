@@ -65,6 +65,7 @@
     "manga:benchmark:review-transfer:validate": "node scripts/validate-manga-quality-secure-review-transfer.mjs",
     "manga:benchmark:review-response:validate": "node --experimental-strip-types scripts/validate-manga-quality-review-response.mjs",
     "manga:benchmark:review-responses:compare": "node --experimental-strip-types scripts/compare-manga-quality-review-responses.mjs",
+    "manga:benchmark:monitor-adjudication:adapt": "node --experimental-strip-types scripts/adapt-monitor-quality-adjudication-private-assembly.mjs",
     "cloud:production:routes": "node scripts/check-cloud-production-routes.mjs",
     "cloud:production:routes:preflight": "node scripts/check-cloud-production-routes.mjs --preflight",
     "cloud:ai-worker:scheduler": "node scripts/run-cloud-ai-worker-scheduler.mjs",

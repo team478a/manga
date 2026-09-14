@@ -9,6 +9,8 @@ import {
 
 export const MONITOR_QUALITY_REVIEW_ADJUDICATION_VERSION =
   "mangai-monitor-review-adjudication-v1" as const;
+export const MONITOR_QUALITY_REVIEW_ADJUDICATION_SUMMARY_VERSION =
+  "mangai-monitor-review-adjudication-summary-v1" as const;
 
 export const MONITOR_QUALITY_REVIEW_ADJUDICATION_STATUSES = [
   "assigned",
@@ -260,6 +262,61 @@ export type MonitorQualityReviewAdjudicationDecisionStatus =
   | "adjudication_blocked"
   | "pilot_adjudication_complete";
 
+const monitorQualityReviewAdjudicationSummaryDefectSchema = z.object({
+  category: humanReviewDefectCategorySchema,
+  severity: humanReviewSeveritySchema,
+}).strict();
+
+const monitorQualityReviewAdjudicationSummaryRecordSchema = z.object({
+  case_key: humanReviewCaseIdSchema,
+  status: monitorQualityReviewAdjudicationStatusSchema.exclude(["revoked"]),
+  independent_verdict: humanReviewVerdictSchema.nullable(),
+  final_verdict: humanReviewVerdictSchema.nullable(),
+  final_defects: z.array(monitorQualityReviewAdjudicationSummaryDefectSchema).max(30),
+}).strict();
+
+export const monitorQualityReviewAdjudicationSummarySchema = z.object({
+  schema_version: z.literal(MONITOR_QUALITY_REVIEW_ADJUDICATION_SUMMARY_VERSION),
+  batch_code: z.string().regex(/^[a-z0-9][a-z0-9_-]{2,79}$/),
+  anonymized: z.literal(true),
+  automatic_adoption: z.literal(false),
+  original_agreement_metrics_changed: z.literal(false),
+  formal_benchmark_eligible: z.literal(false),
+  counts: z.object({
+    required: z.number().int().nonnegative(),
+    completed: z.number().int().nonnegative(),
+    pending: z.number().int().nonnegative(),
+    abstained: z.number().int().nonnegative(),
+  }).strict(),
+  derived_decision: z.object({
+    status: z.enum([
+      "not_required",
+      "needs_adjudication",
+      "adjudication_blocked",
+      "pilot_adjudication_complete",
+    ]),
+    blockers: z.array(z.string()),
+    required_case_keys: z.array(humanReviewCaseIdSchema),
+    submitted_case_keys: z.array(humanReviewCaseIdSchema),
+    pending_case_keys: z.array(humanReviewCaseIdSchema),
+  }).strict(),
+  records: z.array(monitorQualityReviewAdjudicationSummaryRecordSchema),
+}).strict().superRefine((value, context) => {
+  if (value.counts.required !== value.derived_decision.required_case_keys.length)
+    context.addIssue({ code: "custom", path: ["counts", "required"], message: "required count must match decision" });
+  if (value.counts.completed !== value.derived_decision.submitted_case_keys.length)
+    context.addIssue({ code: "custom", path: ["counts", "completed"], message: "completed count must match decision" });
+  if (value.counts.pending !== value.derived_decision.pending_case_keys.length)
+    context.addIssue({ code: "custom", path: ["counts", "pending"], message: "pending count must match decision" });
+  const caseKeys = value.records.map((record) => record.case_key);
+  if (new Set(caseKeys).size !== caseKeys.length)
+    context.addIssue({ code: "custom", path: ["records"], message: "active adjudication cases must be unique" });
+});
+
+export type MonitorQualityReviewAdjudicationSummary = z.infer<
+  typeof monitorQualityReviewAdjudicationSummarySchema
+>;
+
 /**
  * Produces an identity-free workflow decision. Adjudication resolves final
  * labels only; it never changes the original agreement metrics or formal
@@ -323,4 +380,85 @@ export function deriveMonitorQualityReviewAdjudicationDecision(input: {
     submittedCaseKeys,
     pendingCaseKeys,
   };
+}
+
+/**
+ * Builds the download-safe adjudication summary. The input may contain private
+ * response payloads, but the strict output deliberately has no field for
+ * identities, free text, confidence, bounding boxes, or timestamps.
+ */
+export function buildMonitorQualityReviewAdjudicationSummary(input: {
+  batchCode: string;
+  disagreementCaseKeys: readonly string[];
+  adjudications: ReadonlyArray<{
+    caseKey: string;
+    status: Exclude<MonitorQualityReviewAdjudicationStatus, "revoked">;
+    independentPayload: unknown;
+    finalPayload: unknown;
+  }>;
+}): MonitorQualityReviewAdjudicationSummary {
+  const decision = deriveMonitorQualityReviewAdjudicationDecision({
+    disagreementCaseKeys: input.disagreementCaseKeys,
+    adjudications: input.adjudications.map((item) => ({
+      caseKey: item.caseKey,
+      status: item.status,
+    })),
+  });
+  const requiredSet = new Set(decision.requiredCaseKeys);
+  const records = input.adjudications
+    .filter((item) => requiredSet.has(item.caseKey))
+    .map((item) => {
+      const independent = item.independentPayload === null
+        ? null
+        : monitorQualityReviewAdjudicationPayloadSchema.parse(item.independentPayload);
+      const final = item.finalPayload === null
+        ? null
+        : monitorQualityReviewAdjudicationPayloadSchema.parse(item.finalPayload);
+      if (independent && independent.case_id !== item.caseKey)
+        throw new Error(`monitor_adjudication_independent_case_mismatch:${item.caseKey}`);
+      if (final && final.case_id !== item.caseKey)
+        throw new Error(`monitor_adjudication_final_case_mismatch:${item.caseKey}`);
+      if (["independent_locked", "submitted"].includes(item.status) && !independent)
+        throw new Error(`monitor_adjudication_independent_payload_missing:${item.caseKey}`);
+      if (item.status === "submitted" && !final)
+        throw new Error(`monitor_adjudication_final_payload_missing:${item.caseKey}`);
+      if (item.status !== "submitted" && final)
+        throw new Error(`monitor_adjudication_final_payload_unexpected:${item.caseKey}`);
+      return {
+        case_key: item.caseKey,
+        status: item.status,
+        independent_verdict: independent?.verdict ?? null,
+        final_verdict: final?.verdict ?? null,
+        final_defects: final?.defects.map((defect) => ({
+          category: defect.category,
+          severity: defect.severity,
+        })) ?? [],
+      };
+    })
+    .sort((left, right) => left.case_key.localeCompare(right.case_key));
+
+  return monitorQualityReviewAdjudicationSummarySchema.parse({
+    schema_version: MONITOR_QUALITY_REVIEW_ADJUDICATION_SUMMARY_VERSION,
+    batch_code: input.batchCode,
+    anonymized: true,
+    automatic_adoption: false,
+    original_agreement_metrics_changed: false,
+    formal_benchmark_eligible: false,
+    counts: {
+      required: decision.requiredCount,
+      completed: decision.submittedCount,
+      pending: decision.pendingCount,
+      abstained: input.adjudications.filter((item) =>
+        requiredSet.has(item.caseKey) && item.status === "abstained"
+      ).length,
+    },
+    derived_decision: {
+      status: decision.status,
+      blockers: decision.blockers,
+      required_case_keys: decision.requiredCaseKeys,
+      submitted_case_keys: decision.submittedCaseKeys,
+      pending_case_keys: decision.pendingCaseKeys,
+    },
+    records,
+  });
 }
