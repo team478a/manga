@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認Pilot 第三者裁定フロー設計
+
+- Branch: `codex/design-quality-review-adjudication-20260914`
+- Base: `639dbf3`（PR #456 merge commit）。本線Required Quality run `34824001323`、Desktop Windows run `34824001299`は成功。
+- `batch_private_01`でPrimary A/Bが不一致だった23件を対象に、独立した第三者がBlind-first / compare-secondで裁定する設計を追加した。完全一致5件、既存Panel回答の自動転用、多数決は対象外。
+- 既存回答をimmutableに維持する専用保存、append-only監査、状態遷移、RLS／RPC、匿名出力、mobile UI、rollback、テスト計画と実装分割を定義した。裁定完了によって元のagreement／kappaや正式Benchmark適格性を変更しない。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成操作なし。
+- 次はdocs-only差分を検査し、commit、push、Draft PRを作成して全CI／Vercel Preview成功で停止する。merge後のDomain実装は責任者レビュー後の別PRとする。
+
+---
+
 ## 2026-09-14 Codex: 品質確認匿名集計のProduction確認
 
 - Branch: `codex/docs-quality-review-production-summary-20260914`

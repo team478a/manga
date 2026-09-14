@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認Pilot 第三者裁定フロー設計
+
+- 状態: `DESIGN_COMPLETE / PRODUCTION_UNCHANGED / IMPLEMENTATION_APPROVAL_PENDING`
+- Branch: `codex/design-quality-review-adjudication-20260914`
+- Base: `639dbf3`（PR #456 merge commit）。本線Required Quality run `34824001323`とDesktop Windows run `34824001299`は成功した。
+- `batch_private_01`のPrimary A/B不一致23件について、既存Benchmark契約をProduction Pilotへ接続する第三者裁定フローを`docs/quality-benchmark-monitor-adjudication.md`へ整理した。完全一致5件は対象外とする。
+- 裁定者はA/Bと異なる人間とし、最初に独立判断をimmutableに確定してから匿名化したA/B差分を見るBlind-first / compare-second方式とする。Panel回答を裁定へ自動変換せず、多数決で決めない。
+- 既存回答を上書きしない専用table、append-only audit event、RLS／Security Definer RPC、状態機械、匿名export、mobile UI、migration／rollback、テスト計画、6段階の実装分割を定義した。
+- 23件の裁定が完了してもA/B一致率・kappaを遡及変更しない。正式Benchmark要件は未達のため`formalBenchmarkEligible=false`を維持し、自動採用・削除・Visual Judge接続を行わない。
+- Production、DB、migration、回答、割当、画像、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。
+- 次: docs-only Draft PRをcommit、pushし、全CI／Vercel Preview成功まで確認して停止する。merge後は責任者レビューを受け、承認された場合だけ実装分割1（Domain schema／状態機械）を別PRで開始する。
+
+---
+
 ## 2026-09-14 品質確認匿名集計のProduction確認
 
 - 状態: `PRODUCTION_READ_ONLY_VERIFIED / NEEDS_ADJUDICATION / FORMAL_BENCHMARK_INELIGIBLE`
