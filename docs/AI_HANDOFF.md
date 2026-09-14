@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloudネーム保存RLS再発修正（2026-09-14）
+
+- Production報告「ネームを保存できませんでした。」の再発を調査し、ネーム版INSERT policyの非修飾列が内側aliasへ束縛されるRLS不具合を特定した。
+- `scenario_version_id`と`parent_version_id`を外側の`cloud_story_storyboard_versions`新規行へ完全修飾するmigration、rollback、canonical schema、回帰テストを追加した。最新採用シナリオ・所有者・親版整合性guardは維持する。
+- Production、報告状態、利用者通知、Provider、Job、Asset、credit、生成処理は変更していない。migrationは未適用である。
+- 次はローカル品質ゲート、commit、push、Draft PRを行い、全CI／Vercel Preview成功で停止する。merge後のProduction migration適用と利用者再検証は別工程とし、明示承認前に実施しない。
+
+---
+
 ## 0.0 品質確認Panel Reviewer C進捗再監査（2026-09-10）
 
 - PR #445 merge commit `dcc8203`と本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: Cloudネーム保存RLS再発修正
+
+- Branch: `codex/fix-cloud-storyboard-save-rls-20260914`
+- Base: `d33b2c0`（PR #446 merge commit）
+- Production緊急報告の保存エラーを、ネーム版INSERT policyの非修飾列によるalias束縛不具合と特定した。外側の新規行を完全修飾するmigration、rollback、canonical schema、回帰テストを追加し、既存の認可guardを維持した。
+- 回帰2/2、Hub 952/952、migration検証80/80、deps error 0（既存warning 2件）、lint、全typecheck、Hub build、diff check成功。Production、報告状態、通知、Provider、Job、Asset、credit、生成操作なし。migration未適用。
+- 次はHub品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。Production適用はmerge後かつ責任者の明示承認後に行う。
+
+---
+
 ## 2026-09-10 Codex: 品質確認Panel Reviewer C進捗再監査
 
 - Branch: `codex/docs-quality-reviewer-c-progress-20260910`
