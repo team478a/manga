@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: 品質確認5名完了監査・Batch完了操作の実装
+
+- Branch: `codex/feat-quality-review-batch-completion-20260914`
+- Base: `a7ea8d4`（PR #452 merge commit）。本線Required Quality run `34811202993`、Desktop Windows run `34811202992`は成功。
+- Productionをread-only監査し、新着一般報告0、未解決タスク0、`batch_private_01`のReviewer A〜E全員`submitted`、各28/28、合計140/140件確定を確認した。Reviewer Cの提出は`2026-09-14T01:28:59.728249Z`。
+- `active -> completed`の管理操作を追加し、目標人数、確認者の重複、全員の最終送信、Batch内の確定回答をサーバーで再検査する。管理画面には進捗、必須確認欄、完了ボタン、完了済み表示を追加し、回答JSON保存を維持した。
+- 集中5/5、Hub 956/956、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、diff check成功。RC外部環境の既存PENDING項目は不変。ProductionのBatch、回答、割当、通知、作品、Provider、Job、Asset、credit、生成操作なし。
+- 次はDraft PRの全CI／Vercel Preview成功で停止する。ProductionでのBatch完了はmerge後かつ責任者の実行時承認後に別工程で行う。
+
+---
+
 ## 2026-09-14 Codex: Cloudネーム保存報告の対応完了・更新情報掲載
 
 - Branch: `codex/docs-cloud-storyboard-report-resolution-20260914`

@@ -27,7 +27,8 @@ const schema = z.object({
 
 const lifecycleSchema = z.object({
   batchId: z.string().uuid(),
-  transition: z.enum(["activate", "pause", "resume"]),
+  transition: z.enum(["activate", "pause", "resume", "complete"]),
+  confirmation: z.string().optional(),
 });
 
 function describeBatchLifecycleError(message: string) {
@@ -40,6 +41,11 @@ function describeBatchLifecycleError(message: string) {
     monitor_quality_review_schedule_invalid: "Batchの開始・終了期間を確認してください",
     monitor_quality_review_case_count_invalid: "画像件数がPilot契約の28枚と一致しません",
     monitor_quality_review_draft_assignment_exists: "Draft Batchに既存の担当割当があるため有効化できません",
+    monitor_quality_review_completion_assignment_count_invalid: "目標人数分の確認担当が揃っていません",
+    monitor_quality_review_completion_reviewer_count_invalid: "同じ確認者が重複しているため完了できません",
+    monitor_quality_review_completion_assignment_not_submitted: "未提出の確認担当がいるため完了できません",
+    monitor_quality_review_completion_response_count_invalid: "28枚すべてを確定していない確認担当がいるため完了できません",
+    monitor_quality_review_completion_evidence_unavailable: "回答の完了証跡を確認できませんでした",
     monitor_quality_review_batch_update_conflict: "別の操作でBatch状態が変わりました。再読み込みしてください",
   };
   return descriptions[message] ?? "Batchの状態を変更できませんでした";
@@ -53,6 +59,8 @@ export async function setMonitorQualityReviewBatchLifecycleAction(formData: Form
   });
   if (!parsed.success)
     redirect(encodeURI("/admin/general-monitors/quality-review?error=Batch操作を確認してください"));
+  if (parsed.data.transition === "complete" && parsed.data.confirmation !== "complete")
+    redirect(encodeURI("/admin/general-monitors/quality-review?error=全回答の確認欄をチェックしてください"));
   const result = await setMonitorQualityReviewBatchLifecycle(parsed.data);
   if (result.error)
     redirect(encodeURI(`/admin/general-monitors/quality-review?error=${describeBatchLifecycleError(result.error.message)}`));
@@ -61,7 +69,9 @@ export async function setMonitorQualityReviewBatchLifecycleAction(formData: Form
     ? "Batchを停止しました"
     : parsed.data.transition === "resume"
       ? "Batchを再開しました"
-      : "Batchを有効化しました";
+      : parsed.data.transition === "complete"
+        ? "Batchを完了しました"
+        : "Batchを有効化しました";
   redirect(encodeURI(`/admin/general-monitors/quality-review?message=${message}`));
 }
 

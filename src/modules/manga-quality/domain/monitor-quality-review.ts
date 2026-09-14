@@ -137,7 +137,7 @@ export const MONITOR_QUALITY_REVIEW_LABELS = {
 
 export const MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT = 28;
 
-export type MonitorQualityReviewBatchTransition = "activate" | "pause" | "resume";
+export type MonitorQualityReviewBatchTransition = "activate" | "pause" | "resume" | "complete";
 
 export type MonitorQualityReviewBatchReadinessCode =
   | "ready"
@@ -147,7 +147,11 @@ export type MonitorQualityReviewBatchReadinessCode =
   | "rights_review_invalid"
   | "schedule_invalid"
   | "case_count_invalid"
-  | "draft_assignment_exists";
+  | "draft_assignment_exists"
+  | "completion_assignment_count_invalid"
+  | "completion_reviewer_count_invalid"
+  | "completion_assignment_not_submitted"
+  | "completion_response_count_invalid";
 
 export function evaluateMonitorQualityReviewBatchTransition(input: {
   transition: MonitorQualityReviewBatchTransition;
@@ -162,13 +166,19 @@ export function evaluateMonitorQualityReviewBatchTransition(input: {
   };
   caseCount: number;
   assignmentCount: number;
+  targetReviewerCount?: number;
+  distinctReviewerCount?: number;
+  submittedAssignmentCount?: number;
+  completedResponseCount?: number;
   now: Date;
 }): { ready: boolean; code: MonitorQualityReviewBatchReadinessCode } {
   const expectedState = input.transition === "activate"
     ? "draft"
     : input.transition === "pause"
       ? "active"
-      : "paused";
+      : input.transition === "resume"
+        ? "paused"
+        : "active";
   if (input.batch.status !== expectedState)
     return { ready: false, code: "batch_state_invalid" };
 
@@ -186,11 +196,24 @@ export function evaluateMonitorQualityReviewBatchTransition(input: {
   const startsAt = Date.parse(input.batch.startsAt);
   const expiresAt = Date.parse(input.batch.expiresAt);
   if (!Number.isFinite(startsAt) || !Number.isFinite(expiresAt)
-    || expiresAt <= startsAt || expiresAt <= input.now.getTime())
+    || expiresAt <= startsAt
+    || (input.transition === "complete" && startsAt > input.now.getTime())
+    || (input.transition !== "complete" && expiresAt <= input.now.getTime()))
     return { ready: false, code: "schedule_invalid" };
   if (input.caseCount !== MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT)
     return { ready: false, code: "case_count_invalid" };
   if (input.transition === "activate" && input.assignmentCount !== 0)
     return { ready: false, code: "draft_assignment_exists" };
+  if (input.transition === "complete") {
+    const targetReviewerCount = input.targetReviewerCount ?? 0;
+    if (input.assignmentCount !== targetReviewerCount)
+      return { ready: false, code: "completion_assignment_count_invalid" };
+    if ((input.distinctReviewerCount ?? 0) !== targetReviewerCount)
+      return { ready: false, code: "completion_reviewer_count_invalid" };
+    if ((input.submittedAssignmentCount ?? 0) !== targetReviewerCount)
+      return { ready: false, code: "completion_assignment_not_submitted" };
+    if ((input.completedResponseCount ?? 0) !== input.caseCount * targetReviewerCount)
+      return { ready: false, code: "completion_response_count_invalid" };
+  }
   return { ready: true, code: "ready" };
 }
