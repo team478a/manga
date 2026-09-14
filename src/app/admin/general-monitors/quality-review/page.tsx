@@ -76,9 +76,22 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
           const completedWithoutNotificationCount = assignments.filter((item) =>
             !item.notification_sent_at && (item.status === "submitted" || Boolean(item.submitted_at))
           ).length;
+          const submittedAssignmentCount = assignments.filter((item) =>
+            item.status === "submitted" && Boolean(item.submitted_at)
+          ).length;
+          const completedResponseCount = assignments.reduce(
+            (sum, item) => sum + (completedPerAssignment.get(item.id) ?? 0),
+            0,
+          );
+          const expectedResponseCount = total * targetReviewerCount;
           const availableSlots = targetSlots.filter((slot) => !assignedSlots.has(slot));
           const availableMonitors = activeMonitors.filter((item) => !assignedProfiles.has(item.profile_id));
           const canActivate = batch.status === "draft" && total === MONITOR_QUALITY_REVIEW_PILOT_CASE_COUNT && assignments.length === 0;
+          const canComplete = batch.status === "active"
+            && assignments.length === targetReviewerCount
+            && assignedProfiles.size === targetReviewerCount
+            && submittedAssignmentCount === targetReviewerCount
+            && completedResponseCount === expectedResponseCount;
           const startsAt = Date.parse(batch.starts_at);
           const expiresAt = Date.parse(batch.expires_at);
           const now = Date.parse(data.loadedAt);
@@ -108,6 +121,19 @@ async function QualityReviewAdminContent({ error, featureFlagEnabled, message }:
               <input name="transition" type="hidden" value="resume" />
               <PendingSubmitButton className="button-secondary" pendingLabel="再検査・再開中…">Batchを検査して再開</PendingSubmitButton>
             </form> : null}
+            {batch.status === "active" && assignments.length === targetReviewerCount ? <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+              <h3 className="font-bold">品質確認Batchの完了</h3>
+              <p className="mt-1 text-sm text-stone-700">提出済み {submittedAssignmentCount} / {targetReviewerCount}名・確定回答 {completedResponseCount} / {expectedResponseCount}件</p>
+              <p className="mt-2 text-sm text-stone-700">全員の最終送信と全28枚の確定回答をサーバーで再検査してから、Batchを完了状態にします。回答は削除されません。</p>
+              <form action={setMonitorQualityReviewBatchLifecycleAction} className="mt-3">
+                <input name="batchId" type="hidden" value={batch.id} />
+                <input name="transition" type="hidden" value="complete" />
+                <label className="flex items-start gap-2 text-sm"><input className="mt-1" name="confirmation" required type="checkbox" value="complete" />全確認担当の提出と確定回答件数を確認しました</label>
+                <PendingSubmitButton className="button mt-3 bg-emerald-700 hover:bg-emerald-800" disabled={!canComplete} pendingLabel="完了処理中…">全回答を検査してBatchを完了</PendingSubmitButton>
+              </form>
+              {!canComplete ? <p className="mt-2 text-xs text-red-800">目標人数分の提出と、各担当28件の確定回答を確認してください。</p> : null}
+            </div> : null}
+            {batch.status === "completed" ? <p className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950">このBatchは完了済みです。回答JSONは引き続き保存できます。</p> : null}
             {batch.status === "active" ? <div className="mt-4 rounded-xl border border-violet-200 bg-violet-50 p-3">
               <h3 className="font-bold">このBatchへ確認担当を追加</h3>
               {!assignmentPeriodOpen ? <p className="mt-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-950">割り当ては開始日時の{startsAtJapan}（日本時間）以降に行えます。</p> : null}

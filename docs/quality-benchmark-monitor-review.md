@@ -18,7 +18,8 @@
 
 - 進捗: `/admin/general-monitors/quality-review`
 - `draft` Batchは、権利確認、元package SHA-256、期間、画像28枚、既存割当0件をサーバーで再検査してから`active`へ変更する。
-- Batchの有効化／停止／再開は管理者だけが実行でき、状態更新は取得時の状態が変わっていない場合だけ成功する。
+- Batchの有効化／停止／再開／完了は管理者だけが実行でき、状態更新は取得時の状態が変わっていない場合だけ成功する。
+- 完了は、目標人数分の異なる確認者が全員最終送信し、各確認者が全28枚を確定済みの場合だけ`active -> completed`を許可する。管理画面とサーバーの両方で提出人数と確定回答件数を再検査し、回答は削除しない。
 - Feature Flag停止中でもBatchの検査と有効化はできるが、担当割当とモニター画面公開はできない。
 - 有効なBatchへ、異なるモニターを既定5名（最大9名）まで割り当てる。Batchごとの目標人数を超える枠はapplicationとDB triggerの両方で拒否する。
 - Primary Reviewer A/Bは正式Benchmark v2比較用、Panel Reviewer C以降は補助票であり、回答schemaを混在させない。
@@ -134,6 +135,16 @@ npm run manga:benchmark:monitor-batch:admit -- `
 - Panel rollback: C〜Iのassignmentが0件であることを確認してから`supabase/rollbacks/202608180002_cloud_monitor_quality_review_panel.sql`を実行する。C〜Iが存在する場合は削除せずfail closedで停止する。
 - 全体DB rollback: 対象環境と保存件数を確認し、回答を安全な場所へ退避した後、`supabase/rollbacks/202608180001_cloud_monitor_quality_review.sql`を実行する。
 - Storageの削除は対象Batch IDの完全一致を確認して実施する。Productionで自動実行しない。
+
+## Batch完了
+
+1. 管理画面で、確認担当が目標人数に一致し、全員が`submitted`、確定回答が`28 × 目標人数`件であることを確認する。
+2. 「全確認担当の提出と確定回答件数を確認しました」をチェックする。
+3. 「全回答を検査してBatchを完了」を実行する。
+4. サーバーはBatch、28ケース、重複しない確認者、全員の最終送信、Batch内ケースの確定回答を再取得し、1件でも不足すれば状態を変更しない。
+5. `completed`後も管理者は回答JSONを保存できる。モニター画面には完了Batchを再公開せず、回答行と画像を自動削除しない。
+
+ProductionのBatch完了操作は、実装PRのmergeと責任者の実行時承認後にだけ行う。
 
 ## 次工程への停止条件
 

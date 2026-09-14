@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 品質確認5名完了監査・Batch完了操作の実装
+
+- 状態: `FIVE_OF_FIVE_SUBMITTED / COMPLETION_GUARD_IMPLEMENTED / PRODUCTION_UNCHANGED`
+- Branch: `codex/feat-quality-review-batch-completion-20260914`
+- Base: `a7ea8d4`（PR #452 merge commit）。本線Required Quality run `34811202993`とDesktop Windows run `34811202992`は成功した。
+- Productionの報告タスクと品質確認Batchをread-only監査した。一般報告は前回解決以降0件、未解決タスクは0件。`batch_private_01`はactive、28ケース、目標5名で、Reviewer A〜Eは全員`submitted`、各28件すべて確定、合計140/140件である。最後のReviewer Cは`2026-09-14T01:28:59.728249Z`に提出した。Batch期限は`2026-09-19T15:00:00Z`。
+- DB schemaは`completed`を許可するが、管理画面の遷移は有効化・停止・再開だけだった。`complete`遷移を追加し、現在状態がactive、ケース28件、非revoked担当が目標人数と一致、確認者が重複しない、全担当が`submitted`かつ`submitted_at`あり、Batch内の確定回答が`28 × 目標人数`件、という条件を再取得して検査する。
+- 管理画面に提出済み人数と確定回答件数、必須確認チェック、完了ボタン、完了済み表示を追加した。サーバー検査失敗時は理由別に拒否し、状態更新は取得時の`active`との一致条件を維持する。完了後も回答JSONを保存でき、回答・画像を削除しない。
+- ProductionのBatch状態、回答、割当、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。Production完了はmerge後かつ責任者の実行時承認後に別工程で行う。
+- 集中テスト5/5、Hub 956/956、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`成功。直接の`node --test`はTypeScript loaderなしで起動できなかったため、repository既定の`--experimental-strip-types`付きコマンドで再実行して5/5成功した。RC外部環境の既存PENDING項目は不変である。
+- 次: commit、push、Draft PRを実施し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-14 Cloudネーム保存報告の対応完了・更新情報掲載
 
 - 状態: `OPERATIONAL_RESOLUTION_COMPLETE / USER_NOTIFICATION_CREATED / PRODUCT_UPDATE_PUBLISHED`

@@ -74,6 +74,36 @@ test("停止はactiveだけ、再開はpausedを再検査して許可する", ()
   }), { ready: true, code: "ready" });
 });
 
+test("完了は目標人数全員の提出と全回答の確定が揃ったactive Batchだけを許可する", () => {
+  const completeInput = {
+    transition: "complete",
+    batch: { ...validBatch, status: "active" },
+    caseCount: 28,
+    assignmentCount: 5,
+    targetReviewerCount: 5,
+    distinctReviewerCount: 5,
+    submittedAssignmentCount: 5,
+    completedResponseCount: 140,
+    now: new Date("2026-08-21T00:00:00Z"),
+  };
+  assert.deepEqual(evaluateMonitorQualityReviewBatchTransition(completeInput), {
+    ready: true,
+    code: "ready",
+  });
+  const invalidCases = [
+    ["completion_assignment_count_invalid", { assignmentCount: 4 }],
+    ["completion_reviewer_count_invalid", { distinctReviewerCount: 4 }],
+    ["completion_assignment_not_submitted", { submittedAssignmentCount: 4 }],
+    ["completion_response_count_invalid", { completedResponseCount: 139 }],
+  ];
+  for (const [expected, override] of invalidCases) {
+    assert.deepEqual(evaluateMonitorQualityReviewBatchTransition({
+      ...completeInput,
+      ...override,
+    }), { ready: false, code: expected });
+  }
+});
+
 test("管理者操作はFlag停止中でも検査でき、担当割当はFlagで停止する", async () => {
   const [page, actions, repository] = await Promise.all([
     readFile(new URL("../src/app/admin/general-monitors/quality-review/page.tsx", import.meta.url), "utf8"),
@@ -82,6 +112,8 @@ test("管理者操作はFlag停止中でも検査でき、担当割当はFlagで
   ]);
   assert.match(page, /Batchを検査して有効化/);
   assert.match(page, /有効化だけではモニターへ公開されません/);
+  assert.match(page, /全回答を検査してBatchを完了/);
+  assert.match(page, /回答は削除されません/);
   assert.match(actions, /await requireAdmin\(\)/);
   const lifecycleAction = actions.slice(
     actions.indexOf("export async function setMonitorQualityReviewBatchLifecycleAction"),
@@ -89,5 +121,6 @@ test("管理者操作はFlag停止中でも検査でき、担当割当はFlagで
   );
   assert.doesNotMatch(lifecycleAction, /monitorQualityReviewEnabled/);
   assert.match(repository, /\.eq\("status", currentStatus\)/);
-  assert.match(repository, /count: "exact", head: true/);
+  assert.match(repository, /monitor_quality_review_completion_evidence_unavailable/);
+  assert.match(repository, /\.in\("assignment_id", assignments\.map/);
 });

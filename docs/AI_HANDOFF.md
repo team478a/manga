@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認5名完了監査・Batch完了操作の実装（2026-09-14）
+
+- PR #452はmerge commit `a7ea8d4`で本線へ統合され、本線Required Quality run `34811202993`とDesktop Windows run `34811202992`の成功を確認した。
+- Productionをread-only監査し、新着一般報告0件、未解決タスク0件を確認した。`batch_private_01`はactive、28ケース、目標5名で、Reviewer A〜Eは全員`submitted`、各28/28、合計140/140件が確定済みである。最後のReviewer Cは`2026-09-14T01:28:59.728249Z`に提出した。
+- DBに既存の`completed`状態はあったが管理画面から安全に完了する操作がなかったため、`active -> completed`の検査付き遷移を追加した。目標人数、異なる確認者、全員の最終送信、Batch内の全確定回答をサーバーで再取得し、不足時はfail closedで拒否する。
+- 管理画面へ提出人数・確定回答件数、明示確認欄、完了操作、完了後表示を追加した。回答JSONの保存を維持し、回答・画像を削除しない。
+- ProductionのBatch状態、回答、割当、通知、作品、Provider、Job、Asset、credit、生成処理は変更していない。Production完了操作はmerge後かつ責任者の実行時承認後に別工程で行う。
+- 集中5/5、Hub 956/956、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。RC外部環境の既存PENDING項目は不変。次はcommit、push、Draft PR、全CI／Vercel Preview成功まで確認して停止する。
+
+---
+
 ## 0.0 Cloudネーム保存報告の対応完了・更新情報掲載（2026-09-14）
 
 - PR #451はmerge commit `fe54a30`で本線へ統合され、本線Required Quality run `34810013197`とDesktop Windows run `34810013206`の成功を確認した。

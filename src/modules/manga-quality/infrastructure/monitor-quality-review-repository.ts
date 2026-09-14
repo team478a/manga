@@ -207,11 +207,11 @@ export async function monitorQualityReviewNotificationTrackingConfigured() {
 export async function setMonitorQualityReviewBatchLifecycle(input: {
   batchId: string;
   transition: MonitorQualityReviewBatchTransition;
-}): Promise<{ data: { id: string; status: "active" | "paused" } | null; error: { message: string } | null }> {
+}): Promise<{ data: { id: string; status: "active" | "paused" | "completed" } | null; error: { message: string } | null }> {
   const admin = createAdminClient();
   const [batchResult, casesResult, assignmentsResult] = await Promise.all([
     admin.from("cloud_monitor_quality_review_batches")
-      .select("status,review_scope,source_package_sha256,rights_reviewed_at,rights_reviewed_by,starts_at,expires_at")
+      .select("status,review_scope,source_package_sha256,rights_reviewed_at,rights_reviewed_by,starts_at,expires_at,target_reviewer_count")
       .eq("id", input.batchId)
       .maybeSingle<{
         status: string;
@@ -221,14 +221,42 @@ export async function setMonitorQualityReviewBatchLifecycle(input: {
         rights_reviewed_by: string;
         starts_at: string;
         expires_at: string;
+        target_reviewer_count: number;
       }>(),
     admin.from("cloud_monitor_quality_review_cases")
-      .select("id", { count: "exact", head: true }).eq("batch_id", input.batchId),
+      .select("id").eq("batch_id", input.batchId).returns<Array<{ id: string }>>(),
     admin.from("cloud_monitor_quality_review_assignments")
-      .select("id", { count: "exact", head: true }).eq("batch_id", input.batchId),
+      .select("id,reviewer_profile_id,status,submitted_at")
+      .eq("batch_id", input.batchId)
+      .neq("status", "revoked")
+      .returns<Array<{
+        id: string;
+        reviewer_profile_id: string;
+        status: string;
+        submitted_at: string | null;
+      }>>(),
   ]);
   if (batchResult.error || casesResult.error || assignmentsResult.error || !batchResult.data)
     return { data: null, error: { message: "monitor_quality_review_batch_not_found" } };
+
+  const cases = casesResult.data ?? [];
+  const assignments = assignmentsResult.data ?? [];
+  let completedResponseCount = 0;
+  if (input.transition === "complete" && assignments.length) {
+    const responseResult = await admin.from("cloud_monitor_quality_review_responses")
+      .select("assignment_id,case_id,case_completed_at")
+      .in("assignment_id", assignments.map((item) => item.id))
+      .returns<Array<{ assignment_id: string; case_id: string; case_completed_at: string | null }>>();
+    if (responseResult.error)
+      return { data: null, error: { message: "monitor_quality_review_completion_evidence_unavailable" } };
+    const caseIds = new Set(cases.map((item) => item.id));
+    const assignmentIds = new Set(assignments.map((item) => item.id));
+    completedResponseCount = (responseResult.data ?? []).filter((item) =>
+      Boolean(item.case_completed_at)
+      && caseIds.has(item.case_id)
+      && assignmentIds.has(item.assignment_id)
+    ).length;
+  }
 
   const readiness = evaluateMonitorQualityReviewBatchTransition({
     transition: input.transition,
@@ -241,21 +269,31 @@ export async function setMonitorQualityReviewBatchLifecycle(input: {
       startsAt: batchResult.data.starts_at,
       expiresAt: batchResult.data.expires_at,
     },
-    caseCount: casesResult.count ?? 0,
-    assignmentCount: assignmentsResult.count ?? 0,
+    caseCount: cases.length,
+    assignmentCount: assignments.length,
+    targetReviewerCount: batchResult.data.target_reviewer_count,
+    distinctReviewerCount: new Set(assignments.map((item) => item.reviewer_profile_id)).size,
+    submittedAssignmentCount: assignments.filter((item) =>
+      item.status === "submitted" && Boolean(item.submitted_at)
+    ).length,
+    completedResponseCount,
     now: new Date(),
   });
   if (!readiness.ready)
     return { data: null, error: { message: `monitor_quality_review_${readiness.code}` } };
 
   const currentStatus = batchResult.data.status;
-  const nextStatus = input.transition === "pause" ? "paused" : "active";
+  const nextStatus = input.transition === "pause"
+    ? "paused"
+    : input.transition === "complete"
+      ? "completed"
+      : "active";
   const updateResult = await admin.from("cloud_monitor_quality_review_batches")
     .update({ status: nextStatus, updated_at: new Date().toISOString() })
     .eq("id", input.batchId)
     .eq("status", currentStatus)
     .select("id,status")
-    .maybeSingle<{ id: string; status: "active" | "paused" }>();
+    .maybeSingle<{ id: string; status: "active" | "paused" | "completed" }>();
   if (updateResult.error || !updateResult.data)
     return { data: null, error: { message: "monitor_quality_review_batch_update_conflict" } };
   return { data: updateResult.data, error: null };
