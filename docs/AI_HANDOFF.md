@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 4ページ短編ネーム保存制約の修正（2026-09-14）
+
+- PR #448 merge後のProduction受入れを`test`で行い、4ページAIネームは生成できたがDB保存に失敗した。AI／アプリschemaは4〜48ページ対応、DB制約は8〜48ページの旧仕様であり、4ページ結果を拒否していた。
+- `cloud_story_storyboard_versions_result_check`を4〜48ページへ同期するmigration、4〜7ページデータを削除せずrollbackを停止するguard、canonical schema、checksum、回帰テストを追加した。
+- 集中16/16、Hub 955/955、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 81/81、deps／lint／全typecheck／Hub・Desktop build／RC structure／diff check成功。
+- 受入れでProvider request 1件、AI利用数95/100→96/100。保存ネーム版は0件。新migration、報告状態、通知、作品、画像Provider、Job、Assetは変更していない。
+- Draft PR [#449](https://github.com/team478a/manga/pull/449)はDraft／MERGEABLE。実装HEAD `143f5b7`のCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功した。
+- 次は証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。Production migration適用と4ページ再受入れはmerge後かつ責任者の明示承認後に別工程で行う。
+
+---
+
 ## 0.0 Cloudネーム保存RLSのProduction適用（2026-09-14）
 
 - PR #447はmerge commit `51bfce7`で本線へ統合され、本線Required Quality／Migration roundtrip／Desktop Windows成功を確認した。
