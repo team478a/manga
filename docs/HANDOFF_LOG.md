@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: Cloudネーム保存RLSのProduction適用
+
+- Branch: `codex/docs-cloud-storyboard-rls-production-20260914`
+- Base: `51bfce7`（PR #447 merge commit）。本線Required Quality／Migration roundtrip／Desktop Windows成功。
+- 責任者承認済みmigrationをProductionへ1回適用し、`Success. No rows returned`を確認した。policyの外側行完全修飾、最新採用guard、誤alias不在をread-onlyで照会し、6項目すべて`true`だった。
+- 報告状態、通知、作品、Provider、Job、Asset、credit、生成操作なし。次はdocs-only Draft PRと全CI／Vercel Preview成功で停止し、利用者受入れは別工程で行う。
+
+---
+
 ## 2026-09-14 Codex: Cloudネーム保存RLS再発修正
 
 - Branch: `codex/fix-cloud-storyboard-save-rls-20260914`
