@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定Domain（2026-09-14）
+
+- PR #457はmerge commit `5b15c13`で本線へ統合され、本線Required Quality run `34828180291`、Desktop Windows run `34828180350`、Vercelの成功を確認した。
+- 設計の実装分割1として、第三者裁定のstrict schema、6状態の状態機械、遷移guard、匿名派生判定を追加した。既存Human response検証を再利用する。
+- Primary A/B本人、完全一致ケース、Blind-first順序違反、独立判断なしの提出、確定後編集、不要裁定、重複有効裁定、棄権をfail closedで扱う。全必要ケース確定時だけPilot裁定完了とする。
+- 裁定後も元agreement／kappa、`formalBenchmarkEligible=false`、自動採用なしを維持する。DB／API／UIは未接続で、Production、migration、回答、割当、通知、Provider、credit、生成操作なし。
+- 集中7/7、Hub 968/968、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 81/81、deps、lint、typecheck、build、RC structure、diff check成功。次はDraft PRの全CI／Preview成功で停止し、merge後にDB実装を別PRで行う。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定フロー設計（2026-09-14）
 
 - PR #456はmerge commit `639dbf3`で本線へ統合され、本線Required Quality run `34824001323`とDesktop Windows run `34824001299`の成功を確認した。
