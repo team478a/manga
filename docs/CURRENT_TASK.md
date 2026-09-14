@@ -2,7 +2,7 @@
 
 ## 2026-09-14 品質確認Pilot 匿名裁定export・private assembly adapter
 
-- 状態: `IMPLEMENTED / ALL_LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- 状態: `IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
 - Branch: `codex/feat-quality-review-adjudication-export-20260914`
 - Base: `31dbda3`（PR #461 merge commit）。
 - 管理画面に、裁定状態、独立verdict、最終verdict／defect category・severity、完了／未完了／abstain件数、派生判定だけを含む匿名裁定JSON downloadを追加した。strict schemaに氏名、メール、profile／assignment ID、自由記述、confidence、bbox、回答時刻の置き場所を作らない。
@@ -10,7 +10,8 @@
 - Git外private rootだけで、operatorが明示した中立仮名とcase対応を既存assembly ledger互換recordへ変換するCLIを追加した。Production UUID／派生ID、PII、URL／token、root逸脱、非独立担当、変換不能defect、既存出力上書き、canonical `reviews.private.json`への直書きを拒否する。出力はPilot専用・正式資格なし・自動importなしに固定する。
 - 集中テスト37/37、Hub 998/998、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。a11y初回は並列build競合でpackage export解決に失敗し、続く2回はreport作成前に終了したが、単独再実行で29画面とvisual checksすべて成功した。
 - Production、migration適用、実割当、通知、裁定回答、既存回答、画像、作品、Provider、Job、Asset、credit、生成処理、private実データは変更していない。
-- 次: 全local gate後にcommit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後のProduction操作とprivate実データ投入は責任者の実行時明示承認を必要とする。
+- Draft PR [#462](https://github.com/team478a/manga/pull/462)はDraft／MERGEABLE。実装HEAD `d59b286`のRequired Quality run `34844164187`（Core quality／Migration roundtrip）、Desktop Windows run `34844164109`、Vercel、Vercel Preview Commentsはすべて成功した。[Preview](https://mangai-hub-staging-git-codex-feat-qua-90e2ec-team478as-projects.vercel.app)はReadyである。
+- 次: この証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後のProduction migration、担当者割当、通知、裁定開始、private実データ投入は責任者の実行時明示承認を必要とする。
 
 ---
 
