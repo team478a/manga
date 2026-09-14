@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-14 Codex: Cloudネーム保存報告の対応完了・更新情報掲載
+
+- Branch: `codex/docs-cloud-storyboard-report-resolution-20260914`
+- Base: `fe54a30`（PR #451 merge commit）。本線Required Quality run `34810013197`、Desktop Windows run `34810013206`は成功。
+- 責任者承認後、Productionの対象タスク`79a6b398-a344-4a70-add0-aa626e127daf`を`detected`との一致条件付きで`resolved`へ1件更新し、元報告`65f4c2a5-3852-4434-8599-a0f9f222dcd3`の公開状態`resolved`を確認した。
+- 「ネーム保存の不具合を修正しました」という利用者向け`monitor_report_status`通知を1件作成し、重複がないことを確認した。
+- 更新情報「4ページ短編のネーム保存を修正しました」（ID `2733fe3d-901d-45f5-b404-51fc9cfe9ccf`、`fix`、`/dashboard`）を掲載し、Productionダッシュボードでカード表示を確認した。
+- Provider、Job、Asset、credit、画像生成、ネーム生成・採用、作品データの変更なし。AI利用数は97/100（残り3回）のまま。
+- docs-only差分のRC構造検査とdiff check成功。外部環境preflightの既存PENDING項目は不変。次はDraft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-14 Codex: Cloudネーム保存報告のProduction状態監査
 
 - Branch: `codex/docs-cloud-storyboard-report-audit-20260914`

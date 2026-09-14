@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloudネーム保存報告の対応完了・更新情報掲載（2026-09-14）
+
+- PR #451はmerge commit `fe54a30`で本線へ統合され、本線Required Quality run `34810013197`とDesktop Windows run `34810013206`の成功を確認した。
+- 責任者の実行時承認に基づき、Productionの報告タスク`79a6b398-a344-4a70-add0-aa626e127daf`を現在状態`detected`との一致条件付きで`resolved`へ1件だけ更新した。元報告`65f4c2a5-3852-4434-8599-a0f9f222dcd3`の公開状態も`resolved`になった。
+- 利用者向け`monitor_report_status`通知を1件作成し、タイトル「ネーム保存の不具合を修正しました」と、4ページ短編の保存・Production再表示確認・再試行案内を含む本文を確認した。
+- 更新情報「4ページ短編のネーム保存を修正しました」（ID `2733fe3d-901d-45f5-b404-51fc9cfe9ccf`、category `fix`、action URL `/dashboard`）を掲載し、Productionダッシュボードで2026/9/14付のカード表示を確認した。
+- Provider、Job、Asset、credit、画像生成、ネーム生成・採用、作品データは変更していない。AI利用数は97/100（残り3回）のままである。
+- docs-only差分のRC構造検査と`git diff --check`は成功した。外部環境preflightの既存PENDING項目は不変である。次はDraft PRの全CI／Vercel Preview成功まで確認して停止する。
+
+---
+
 ## 0.0 Cloudネーム保存報告のProduction状態監査（2026-09-14）
 
 - PR #450はmerge commit `c12bd8c`で本線へ統合され、本線Required Quality run `34808654501`とDesktop Windows run `34808654502`の成功を確認した。
