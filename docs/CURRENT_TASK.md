@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-14 Cloudネーム保存報告の対応完了・更新情報掲載
+
+- 状態: `OPERATIONAL_RESOLUTION_COMPLETE / USER_NOTIFICATION_CREATED / PRODUCT_UPDATE_PUBLISHED`
+- Branch: `codex/docs-cloud-storyboard-report-resolution-20260914`
+- Base: `fe54a30`（PR #451 merge commit）。本線Required Quality run `34810013197`とDesktop Windows run `34810013206`は成功した。
+- 責任者の実行時承認に基づき、Productionの報告タスク`79a6b398-a344-4a70-add0-aa626e127daf`を現在状態`detected`との一致条件付きで`resolved`へ更新した。更新件数は1件で、元報告`65f4c2a5-3852-4434-8599-a0f9f222dcd3`の`public_status`も`resolved`になった。内部の`review_status=new`は変更していない。
+- 元報告の所有者へ`monitor_report_status`通知を1件作成した。タイトルは「ネーム保存の不具合を修正しました」、本文は4ページ短編のネーム保存修正、Productionでの保存・再表示確認、再試行案内と謝意を伝える内容である。dedupe keyとの一致を含め、対象通知が1件だけ存在することを確認した。
+- 更新情報「4ページ短編のネーム保存を修正しました」を1件掲載した。IDは`2733fe3d-901d-45f5-b404-51fc9cfe9ccf`、categoryは`fix`、action URLは`/dashboard`、公開時刻は`2026-09-14T05:41:04.370835Z`。`test`でProductionダッシュボードを再読込し、2026/9/14付のカードと説明文を確認した。
+- Provider、Job、Asset、credit、画像生成、ネーム生成・採用、作品データは変更していない。AI利用数は97/100（残り3回）のままである。
+- docs-only差分のRC構造検査と`git diff --check`は成功した。外部環境preflightの既存PENDING項目は不変である。
+- 次: commit、push、Draft PR後に全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-14 Cloudネーム保存報告のProduction状態監査
 
 - 状態: `READ_ONLY_AUDIT_COMPLETE / LIVE_FIX_ACCEPTED / OPERATIONAL_RESOLUTION_PENDING`
