@@ -2,14 +2,15 @@
 
 ## 2026-09-14 品質確認Pilot 第三者裁定 Production運用ランブック
 
-- 状態: `RUNBOOK_IMPLEMENTED / LOCAL_CHECKS_PASSED / PRODUCTION_UNCHANGED`
+- 状態: `RUNBOOK_IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
 - Branch: `codex/docs-quality-review-adjudication-production-runbook-20260914`
 - Base: `b9fff3b`（PR #462 merge commit）。
 - `docs/quality-benchmark-monitor-adjudication-production-runbook.md`を追加し、Production migration、担当者割当、開始案内、23件裁定、匿名export／private assemblyを5つの独立工程へ分離した。前工程の承認を後工程へ流用せず、各変更・外部送信の直前に責任者の実行時明示承認を必要とする。
 - migration前後のread-only SQL、期待件数、RLS／RPC／直接権限検査、1件canary割当、不変条件、停止条件、通知内容、監視状態、匿名export検査、証跡テンプレートを固定した。rollback guardを迂回せず、回答・画像・元指標・採用状態を変更しない。
 - PR #462のmerge commit `b9fff3b`はRequired Quality run `34845642643`とDesktop Windows run `34845642705`が成功した。ランブックのSQLは現行schemaと8 RPCの署名へ照合し、migration validator 82/82、RC structure、`git diff --check`は成功した。RC外部環境の既存PENDING項目は不変である。
 - Production、migration適用、実割当、通知、裁定回答、private実データ、Provider、Job、Asset、credit、生成処理は変更していない。
-- 次: docs-only差分を検証し、commit、push、Draft PRを作成して全CI／Vercel Preview成功で停止する。merge後も工程1のProduction migration適用は責任者の実行時明示承認を必要とする。
+- Draft PR [#463](https://github.com/team478a/manga/pull/463)はDraft／MERGEABLE。実装HEAD `ebe84b6`のCore qualityとMigration roundtrip（run `34846254710`）、Windows build（run `34846254735`）、Vercel、Vercel Preview Commentsはすべて成功した。[Preview](https://mangai-hub-staging-git-codex-docs-qua-7f7f5a-team478as-projects.vercel.app)はReadyである。
+- 次: この証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。merge後も工程1のProduction migration適用は責任者の実行時明示承認を必要とする。
 
 ---
 

@@ -7,7 +7,8 @@
 - Production migration、担当者割当、開始案内、23件裁定、匿名export／Git外private assemblyを5工程へ分離するrunbookを追加した。各工程はread-only確認、期待状態、個別の実行時明示承認、postflight、停止条件を持つ。
 - migration前後のSQL、1件canary、不変件数、RLS／RPC／直接table権限、Blind-first違反時の停止、通知の重複防止、匿名export禁止項目、証跡テンプレートを明文化した。
 - PR #462の本線Required Quality run `34845642643`とDesktop Windows run `34845642705`は成功した。SQLと現行schema／RPC署名を照合し、migration validator 82/82、RC structure、diff checkが成功した。
-- Production、migration適用、割当、通知、裁定回答、private実データ、Provider、Job、Asset、credit、生成処理は変更していない。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+- Draft PR [#463](https://github.com/team478a/manga/pull/463)はDraft／MERGEABLE。HEAD `ebe84b6`のRequired Quality run `34846254710`、Desktop Windows run `34846254735`、Vercel、Preview Commentsは成功し、[Preview](https://mangai-hub-staging-git-codex-docs-qua-7f7f5a-team478as-projects.vercel.app)はReadyである。
+- Production、migration適用、割当、通知、裁定回答、private実データ、Provider、Job、Asset、credit、生成処理は変更していない。次は証跡同期後の最終HEADの全CI／Preview成功で停止する。
 
 ---
 
