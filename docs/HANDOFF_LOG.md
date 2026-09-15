@@ -7,7 +7,8 @@
 - 回復buttonで対象コマを選択し、調整欄を自動展開して「追加の構図指定」へscroll／focusする。button文言と`aria-controls`も実際の操作先に合わせた。
 - 生成入力、Provider、model、料金、credit、保存、通常retry、一括生成、成人向け境界は変更しない。
 - 集中25/25、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。既知の依存warning 2件、外部設定と手動E2EのPENDINGは不変。
-- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。実際の構図変更・再実行は別承認まで行わない。
+- Commit `1192dad`をpushしてDraft PR #479を作成した。最初のHEADでRequired Quality run `35034833343`（Core quality／Migration roundtrip）、Desktop Windows run `35034833406`、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/EoaLyH4ftZp4XnVEKj5fJVBkdhA5`。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次は正本同期commitの最終CI／Vercel Preview成功で停止する。実際の構図変更・再実行は別承認まで行わない。
 
 ---
 

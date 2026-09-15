@@ -6,7 +6,8 @@
 - 終端moderation失敗の回復buttonは対象コマを選択するだけでなく、「画角・ポーズを調整」の`details`を開き、「追加の構図指定」へscroll／focusする。
 - button文言を「このコマの構図・場面を見直す」とし、`aria-controls`で展開対象と関連付けた。既存の画角、カメラ、人物配置、視線、構図指定、候補生成処理を再利用する。
 - 集中25/25、Hub 1002/1002、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
-- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-recovery-editor-focus-20260916`。次はDraft PRの全CI／Vercel Preview成功で停止し、実生成は別承認を待つ。
+- Commit `1192dad`をpushしてDraft PR #479を作成した。最初のHEADでRequired Quality run `35034833343`、Desktop Windows run `35034833406`、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/EoaLyH4ftZp4XnVEKj5fJVBkdhA5`。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-recovery-editor-focus-20260916`。次は正本同期commitの最終CI／Preview成功で停止し、実生成は別承認を待つ。
 
 ---
 
