@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-15 品質確認Pilot 第三者裁定 Production canary割り当て
+
+- 状態: `PRODUCTION_CANARY_ASSIGNED / POSTFLIGHT_PASSED / NOTIFICATION_NOT_STARTED`
+- Branch: `codex/docs-quality-review-adjudication-canary-20260915`
+- Base: `2aaf43b`（PR #464 merge commit）。本線Required Quality run `34854617431`とDesktop Windows run `34854617516`は成功した。
+- 対象はSupabase `mangai-hub-staging`、Project ref `vmdsyxykcrgxcdbrwlkv`、`main` Productionの`batch_private_01`。read-only preflightでBatch `completed`、目標5名、28ケース、5名、確定回答140件、`case_000003`のPrimary A/B回答2件・異なるsignature 2件、対象caseの有効裁定0件、裁定／event合計0件を確認した。
+- 責任者はProductionで第三者裁定1件のcanary割り当てを承認し、対象者が既存のPanel Reviewer Cであることを確認後、`case_000003`をPanel Reviewer Cへ1件だけ割り当てることを明示承認した。
+- `assign_cloud_monitor_quality_review_adjudication` RPCを管理者actor・固定idempotency keyで1回実行した。`2026-09-15 00:32:22.686426 JST`（`2026-09-14 15:32:22.686426 UTC`）に状態`assigned`が1件、append-only `assigned` eventが1件作成された。
+- postflightは対象caseの有効担当1件、裁定合計1件、`assigned` event 1件、active case unique guard存在を確認した。Primary A/B回答56件、全回答140件、画像28件、Batch `completed`は不変である。
+- メール、LINE、アプリ通知、開始案内、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は変更していない。
+- docs-only検証はmigration validator 82/82、RC structure、`git diff --check`が成功した。RCの外部環境PENDING／手動E2E項目は既存状態のままである。
+- 次: 本証跡をdocs-only Draft PRとして全CI／Vercel Preview成功まで確認して停止する。開始案内の送信と残り22件の割り当ては、それぞれ対象範囲を示した別の責任者実行時明示承認まで行わない。
+
+---
+
 ## 2026-09-14 品質確認Pilot 第三者裁定 Production migration適用
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / ASSIGNMENT_NOT_STARTED`

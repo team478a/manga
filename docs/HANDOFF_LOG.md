@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 品質確認Pilot 第三者裁定 Production canary割り当て
+
+- Branch: `codex/docs-quality-review-adjudication-canary-20260915`
+- Base: `2aaf43b`（PR #464 merge commit）。本線Required Quality run `34854617431`、Desktop Windows run `34854617516`は成功。
+- Production `batch_private_01`のread-only preflightは`completed / target 5 / 28 cases / 5 reviewers / 140 completed responses`、`case_000003`のPrimary A/B signature 2種類、対象case有効裁定0件、裁定／event合計0件、第三者候補Panel C／D／Eを確認した。
+- 責任者が1件canaryとPanel Reviewer Cへの割り当てを明示承認後、管理者actorで割当RPCを1回実行した。`2026-09-15 00:32:22.686426 JST`に対象caseの`assigned` 1件とappend-only `assigned` event 1件を作成した。
+- postflightは対象有効担当1件、裁定1件、event 1件、active case unique guard存在、Primary回答56件、全回答140件、画像28件、Batch `completed`不変を確認した。
+- 外部通知、開始案内、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除なし。
+- migration validator 82/82、RC structure、diff check成功。外部環境PENDING／手動E2Eは既存状態のまま。
+- 次: 本証跡をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。残り22件の割り当てと開始案内は、それぞれ別の責任者実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-14 Codex: 品質確認Pilot 第三者裁定 Production migration適用
 
 - Branch: `codex/docs-quality-review-adjudication-production-migration-20260914`
