@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 一括生成のmoderation終端回復導線（2026-09-16）
+
+- BaseはPR #476 merge commit `5f1a2e5`。長編23–24ページPilotは8コマ中6コマ成功、2コマが通常生成と一般向け安全再構成後も`provider_moderation_blocked`で終端している。
+- 一括生成履歴のServer読込時に、失敗Jobの保存済み入力を検証し、再実行可能、内容変更が必要、条件復元不可の3種へ分類する。Prompt、negative prompt、Provider本文はClientへ返さない。
+- 保守的な第2段階安全再構成まで拒否されたJobは、再実行buttonを表示せず、Batchを「内容の見直し待ち」と表示する。元画像・完了済みコマを保持している旨と、対象ページで構図や場面を変更する案内・編集導線を表示する。
+- 一時失敗の再実行、Job化失敗の再登録、安全再構成、credit、Provider、成人向け境界は維持した。Production、DB、Provider、Job、Asset、Canvas、credit変更なし。
+- 集中16/16、Hub 1000/1000、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub build、RC構造、diff check成功。外部設定・手動E2Eの既知PENDINGは維持する。
+- Branchは`codex/cloud-moderation-blocked-recovery-20260916`。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。2コマの実内容変更・再生成は別のProduction承認が必要。
+
+---
+
 ## 0.0 長編23–24ページPilot Production再開（2026-09-15）
 
 - BaseはPR #475 merge commit `4ff0175`。本線Required Quality run `34969218686`とDesktop Windows run `34969218751`は成功した。

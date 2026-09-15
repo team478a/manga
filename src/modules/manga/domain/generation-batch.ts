@@ -14,6 +14,11 @@ export type MangaGenerationBatch = {
   pendingTargets: number;
   failedTargets: number;
   failedJobIds: string[];
+  failedJobDetails: Array<{
+    jobId: string;
+    pageId: string | null;
+    recovery: "retryable" | "edit_required" | "unavailable";
+  }>;
 };
 
 export function normalizeGenerationBatchPageIds(pageIds: string[]) {
@@ -138,7 +143,13 @@ export function summarizeGenerationBatches(input: {
     requested_page_ids: string[];
     created_at: string;
   }>;
-  links: Array<{ batch_id: string; job_id: string; status: string }>;
+  links: Array<{
+    batch_id: string;
+    job_id: string;
+    status: string;
+    page_id?: string | null;
+    recovery?: "retryable" | "edit_required" | "unavailable";
+  }>;
   targetProgress?: Array<{
     batch_id: string;
     pending_targets: number;
@@ -171,6 +182,11 @@ export function summarizeGenerationBatches(input: {
       pendingTargets,
       failedTargets,
       failedJobIds: jobs.filter((job) => job.status === "failed").map((job) => job.job_id),
+      failedJobDetails: jobs.filter((job) => job.status === "failed").map((job) => ({
+        jobId: job.job_id,
+        pageId: job.page_id ?? null,
+        recovery: job.recovery ?? "unavailable",
+      })),
     }];
   });
 }

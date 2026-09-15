@@ -123,10 +123,21 @@ test("一括生成履歴は全Job完了時だけ表示状態をcompletedへ変�
   assert.equal(pending.pendingTargets, 1);
   const [failed] = summarizeGenerationBatches({
     batches: [base],
-    links: [{ batch_id: "batch", job_id: "c", status: "failed" }],
+    links: [{
+      batch_id: "batch",
+      job_id: "c",
+      status: "failed",
+      page_id: "page-c",
+      recovery: "edit_required",
+    }],
   });
   assert.equal(failed.status, "active");
   assert.deepEqual(failed.failedJobIds, ["c"]);
+  assert.deepEqual(failed.failedJobDetails, [{
+    jobId: "c",
+    pageId: "page-c",
+    recovery: "edit_required",
+  }]);
 
   const canceledWithoutJobs = summarizeGenerationBatches({
     batches: [{ ...base, status: "canceled" }],

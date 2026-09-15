@@ -46,6 +46,8 @@ test("batch service durably registers bounded panel work before the worker runs"
   assert.match(service, /buildConservativeGeneralAudienceGenerationRetry/);
   assert.match(service, /isGeneralAudienceGenerationRetry/);
   assert.match(service, /isConservativeGeneralAudienceGenerationRetry/);
+  assert.match(service, /classifyFailedBatchJobRecovery/);
+  assert.match(service, /status,page_id,input,error_code,provider_job_id/);
 });
 
 test("durable dispatcher keeps limits atomic and never exposes prepared prompts", () => {
@@ -104,7 +106,11 @@ test("batch UI exposes progress, pause, cancel and safe retry", () => {
   assert.match(component, /一時停止/);
   assert.match(component, /再開/);
   assert.match(component, /中止/);
-  assert.match(component, /失敗\{index \+ 1\}を再実行/);
+  assert.match(component, /再実行できる失敗\{index \+ 1\}/);
+  assert.match(component, /内容の見直し待ち/);
+  assert.match(component, /batchNeedsManualEdit/);
+  assert.match(component, /一般向けの安全再構成でも生成できなかったため、自動再実行を停止しました/);
+  assert.match(component, /\$\{pageNumber\}ページを編集/);
   assert.match(component, /Job化失敗\{batch\.failedTargets\}コマを再実行/);
   assert.match(component, /画面を閉じても未Job化コマは保持されます/);
   assert.match(component, /batch\.status === "active" \|\| batch\.status === "paused"/);
