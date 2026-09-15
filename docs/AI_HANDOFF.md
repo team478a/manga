@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 購入者向け報告の複数画像添付 Production canary（2026-09-15）
+
+- BaseはPR #472 merge commit `26fe391`。本線Required Quality run `34946640510`、Desktop Windows run `34946640500`は成功した。
+- 責任者のProduction canary承認と送信直前のAction確認後、`test`購入者枠から非個人情報fixture 2枚を付けたcanary報告を1件だけ送信した。成功表示と履歴の`受付済み / スクリーンショット2枚添付済み`を確認した。
+- Production read-only postflightは最新canary 1件、配列2件、旧pathと配列先頭の一致`true`、`submitted`、private Storage object 2件。初回Storage SQLのread-only `42883`は変更0件で、`unnest`へ修正後に成功した。
+- 管理UIは`test`が非管理者として拒否され、別Chromeにも管理者sessionがなく未確認。管理者sessionで2添付リンクを確認するread-only工程を残す。
+- Production変更は報告1件とprivate object 2件だけ。既存状態、通知、裁定、作品、Provider、Job、Asset、credit、生成、採用・削除なし。
+- Branchは`codex/docs-monitor-feedback-multiple-attachments-production-canary-20260915`。次はdocs-only Draft PRの全CI／Vercel Preview成功で停止する。状態変更・削除は別承認を必要とする。
+
+---
+
 ## 0.0 購入者向け報告の複数画像添付 Production migration適用（2026-09-15）
 
 - BaseはPR #471 merge commit `fbe931b`。本線Required Quality run `34935007773`、Desktop Windows run `34935007765`は成功した。

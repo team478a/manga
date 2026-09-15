@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-15 購入者向け報告の複数画像添付 Production canary
+
+- 状態: `PRODUCTION_CANARY_SENT / USER_HISTORY_PASSED / DB_STORAGE_POSTFLIGHT_PASSED / ADMIN_UI_NOT_VERIFIED / DOCS_PR_PENDING`
+- Branch: `codex/docs-monitor-feedback-multiple-attachments-production-canary-20260915`
+- Base: `26fe391`（PR #472 merge commit）。本線Required Quality run `34946640510`とDesktop Windows run `34946640500`は成功した。
+- 責任者は、Productionで複数画像添付を1件だけ実送信するcanaryを承認した。送信直前には、報告1件、private Storage画像2枚、ブラウザ種別・言語・画面サイズ・timezone・画面path等の診断情報が保存されることを提示し、Action実行時の明示確認を得た。
+- Production `test`購入者枠から、件名`【Canary】複数画像添付のProduction保存確認`、種類`感想`、工程`全体`、評価5、影響なし、実不具合ではない旨の本文で1件だけ送信した。個人情報を含まない既存fixture 2枚（67,604 bytes／31,503 bytes）を同時選択し、成功表示`フィードバックを送信しました`を確認した。
+- 利用者の送信履歴は当該canaryを`受付済み`として1件表示し、`スクリーンショット 2 枚添付済み`を確認した。二重送信はない。
+- Supabase `mangai-hub-staging / vmdsyxykcrgxcdbrwlkv / main Production`のread-only postflightは、最新canary 1件、`attachment_paths` 2件、旧`attachment_path`と配列先頭の一致`true`、`public_status=submitted`、private `monitor-feedback` Storage object 2件を確認した。
+- Storage確認SQLの初回は`text = text[]`の演算子不一致によりread-onlyエラー`42883`となり変更0件。配列を`unnest`するSQLへ修正して2件を確認した。
+- 管理画面の直接表示は、`test`が非管理者として正しく拒否され、別Chrome profileにも管理者sessionがなかったため未確認。管理UIの2添付リンク表示は、管理者sessionで行う別のread-only確認として残す。
+- Production変更はcanary報告1件とprivate Storage object 2件だけ。既存報告状態、通知、品質回答、裁定、作品、Provider、Job、Asset、credit、生成、採用・削除は変更していない。
+- 次: docs-only差分を検証し、commit、push、Draft PRを作成して全CI／Vercel Preview成功で停止する。管理UI確認、canaryの状態変更・削除は別工程とする。
+
+---
+
 ## 2026-09-15 購入者向け報告の複数画像添付 Production migration適用
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / DOCS_PR_PENDING`
