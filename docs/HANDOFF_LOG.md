@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 購入者向け報告の複数画像添付 Production canary
+
+- Branch: `codex/docs-monitor-feedback-multiple-attachments-production-canary-20260915`
+- Base: `26fe391`（PR #472 merge commit）。本線Required Quality run `34946640510`、Desktop Windows run `34946640500`は成功。
+- 責任者のProduction canary承認後、送信直前に報告1件、private画像2枚、診断情報の保存を提示してAction確認を得た。`test`購入者枠から非個人情報fixture 2枚を添付したcanary報告を1件だけ送信した。
+- 画面は`フィードバックを送信しました`、履歴は`受付済み / スクリーンショット2枚添付済み`を表示した。二重送信なし。
+- Production read-only postflightは最新canary 1件、`attachment_paths` 2件、legacy先頭一致`true`、`submitted`、private Storage object 2件。初回Storage SQLはread-only `42883`で変更0件、`unnest`へ修正後に2件を確認した。
+- `test`は管理者画面で正しく拒否され、別Chromeにも管理者sessionがなかったため管理UIの2添付リンク表示は未確認。別のread-only工程として残す。
+- Production変更はcanary報告1件とprivate object 2件だけ。既存報告状態、通知、品質回答、裁定、作品、Provider、Job、Asset、credit、生成、採用・削除なし。
+- 次はdocs-only差分のcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。管理UI確認、状態変更、削除は別工程とする。
+
+---
+
 ## 2026-09-15 Codex: 購入者向け報告の複数画像添付 Production migration適用
 
 - Branch: `codex/docs-monitor-feedback-multiple-attachments-production-migration-20260915`
