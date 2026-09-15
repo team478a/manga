@@ -13,6 +13,9 @@ const context = (overrides = {}) => ({
   maxCostMicrosPerJob: 30_000,
   planKey: "creator",
   entitlementStatus: "active",
+  entitlementPeriodStartsAt: "2026-09-01T00:00:00.000Z",
+  entitlementPeriodEndsAt: "2026-10-01T00:00:00.000Z",
+  evaluatedAt: "2026-09-15T00:00:00.000Z",
   planGenerationEnabled: true,
   planCreditsRemaining: 100,
   planCostMicrosRemaining: 10_000_000,
@@ -102,6 +105,21 @@ test("plan、作品、global、monitorの不足はbatch作成前のblockerにな
   assert.match(estimate.blockers.join("\n"), /作品の生成creditが2不足/);
   assert.match(estimate.blockers.join("\n"), /全体の日次費用上限/);
   assert.match(estimate.blockers.join("\n"), /モニターAI利用枠が1回不足/);
+});
+
+test("statusがtrialingでも契約期間外ならbatch作成前に拒否する", () => {
+  const expired = estimateGenerationBatch(context({
+    entitlementStatus: "trialing",
+    entitlementPeriodEndsAt: "2026-09-12T00:00:00.000Z",
+  }), ["a", "b"]);
+  assert.equal(expired.canStart, false);
+  assert.match(expired.blockers.join("\n"), /Cloud AI利用契約の有効期間外/);
+
+  const notStarted = estimateGenerationBatch(context({
+    entitlementPeriodStartsAt: "2026-09-16T00:00:00.000Z",
+  }), ["a", "b"]);
+  assert.equal(notStarted.canStart, false);
+  assert.match(notStarted.blockers.join("\n"), /Cloud AI利用契約の有効期間外/);
 });
 
 test("現在snapshot欠損は拒否し、1分上限超過はdurable Job化へ委ねる", () => {

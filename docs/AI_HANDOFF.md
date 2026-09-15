@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 長編23–24ページPilot 契約期限preflight修正（2026-09-15）
+
+- BaseはPR #474 merge commit `37ed486`。本線Required Quality run `34961544823`とDesktop Windows run `34961544783`は成功した。
+- モニターAI上限100→105の監査付き更新後、開始直前に23–24ページ、8コマ、16 credit、残り18、モニター残り8、最大`$1.44`、`flux-2-pro`、人物2/2、画風設定済みを確認した。責任者のAction承認後、8 targetを1回だけ登録した。
+- Worker run `34963035642`は3件を処理し`billing_unavailable`で安全に終了した。read-only postflightはpending 5／failed 3／Job link 0。AI entitlementは`trialing / admin`だが2026-09-12に期限切れで、plan・料金・通貨は有効だった。
+- creditは使用82／予約0／上限100、モニターAIは使用97／上限105、費用予約0のまま。Provider送信、Job、Asset、画像配置、Canvas revision、追加課金なし。
+- preflightへServer評価時刻とentitlement期間を追加し、statusが`active / trialing`でも期間外ならBatch登録前に明示停止する。集中10/10、Hub 1000/1000、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面・違反0、migration 83件、全typecheck、lint、依存／module境界、Hub／Desktop build、diff check成功。RC preflightは構造READYで外部設定・手動E2Eのみ既知のPENDING。
+- Branchは`codex/production-longform-pilot-pages-23-24-20260915`。次はDraft PRの全CI／Preview成功で停止する。Productionの期間延長と既存Batch再実行は、merge後に別の実行時明示承認を必要とする。
+
+---
+
 ## 0.0 Cloud画像付きマニュアル／長編23–24ページPilot再確認（2026-09-15）
 
 - Branch `codex/cloud-visual-manual-20260915`、base `0aa9c32`（PR #473 merge commit）。mainline Required Quality run `34957093780`とDesktop Windows run `34957093898`は成功。

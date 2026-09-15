@@ -13,6 +13,9 @@ export type GenerationBatchPreflightContext = {
   maxCostMicrosPerJob: number | null;
   planKey: "free" | "trial" | "creator" | null;
   entitlementStatus: string | null;
+  entitlementPeriodStartsAt: string | null;
+  entitlementPeriodEndsAt: string | null;
+  evaluatedAt: string;
   planGenerationEnabled: boolean;
   planCreditsRemaining: number | null;
   planCostMicrosRemaining: number | null;
@@ -138,6 +141,23 @@ export function estimateGenerationBatch(
     blockers.push(`モニターAI利用枠が${targetPanelCount - context.monitorRequestsRemaining}回不足しています。`);
   if (!["active", "trialing"].includes(context.entitlementStatus ?? ""))
     blockers.push("Cloud AI利用契約が有効ではありません。");
+  const evaluatedAt = new Date(context.evaluatedAt);
+  const entitlementPeriodStartsAt = context.entitlementPeriodStartsAt
+    ? new Date(context.entitlementPeriodStartsAt)
+    : null;
+  const entitlementPeriodEndsAt = context.entitlementPeriodEndsAt
+    ? new Date(context.entitlementPeriodEndsAt)
+    : null;
+  if (
+    Number.isNaN(evaluatedAt.getTime()) ||
+    !entitlementPeriodStartsAt ||
+    Number.isNaN(entitlementPeriodStartsAt.getTime()) ||
+    !entitlementPeriodEndsAt ||
+    Number.isNaN(entitlementPeriodEndsAt.getTime()) ||
+    evaluatedAt < entitlementPeriodStartsAt ||
+    evaluatedAt >= entitlementPeriodEndsAt
+  )
+    blockers.push("Cloud AI利用契約の有効期間外です。管理者へ利用期間の確認を依頼してください。");
   if (!context.planGenerationEnabled || !context.projectGenerationEnabled || !context.globalGenerationEnabled)
     blockers.push("Cloud AI生成は現在停止中です。");
   if (requiredCredits !== null && context.planCreditsRemaining !== null && requiredCredits > context.planCreditsRemaining)
