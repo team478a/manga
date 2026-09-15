@@ -1243,6 +1243,7 @@ end $$;
 do $$ begin
   if not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='client_context')
      or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='attachment_path')
+     or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='attachment_paths')
      or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='cloud_general_monitor_feedback' and column_name='public_status')
      or to_regprocedure('public.limit_cloud_monitor_feedback_rate()') is null
      or to_regprocedure('public.notify_cloud_monitor_feedback_received()') is null

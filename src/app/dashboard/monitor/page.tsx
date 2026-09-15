@@ -25,6 +25,7 @@ type Feedback = {
   public_status: "submitted" | "triaged" | "in_progress" | "resolved" | "closed";
   status_updated_at: string;
   attachment_path: string | null;
+  attachment_paths: string[];
 };
 
 type LegacyFeedback = Pick<
@@ -66,14 +67,29 @@ export default async function GeneralMonitorPage({
     "monitor/feedback-history",
     async () => {
       const supabase = await createClient();
-      const { data, error } = await supabase
+      const withMultipleAttachments = await supabase
+        .from("cloud_general_monitor_feedback")
+        .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict,request_type,title,severity,public_status,status_updated_at,attachment_path,attachment_paths")
+        .eq("owner_profile_id", profile.id)
+        .order("created_at", { ascending: false })
+        .returns<Feedback[]>();
+      if (!withMultipleAttachments.error)
+        return withMultipleAttachments.data ?? [];
+      if (!isMissingMonitorFeedbackSchema(withMultipleAttachments.error))
+        throw withMultipleAttachments.error;
+      const structured = await supabase
         .from("cloud_general_monitor_feedback")
         .select("id,workflow_step,rating,outcome,comment,created_at,target_scope,page_number_snapshot,panel_name_snapshot,verdict,request_type,title,severity,public_status,status_updated_at,attachment_path")
         .eq("owner_profile_id", profile.id)
         .order("created_at", { ascending: false })
-        .returns<Feedback[]>();
-      if (!error) return data ?? [];
-      if (!isMissingMonitorFeedbackSchema(error)) throw error;
+        .returns<Omit<Feedback, "attachment_paths">[]>();
+      if (!structured.error)
+        return (structured.data ?? []).map((item) => ({
+          ...item,
+          attachment_paths: item.attachment_path ? [item.attachment_path] : [],
+        }));
+      if (!isMissingMonitorFeedbackSchema(structured.error))
+        throw structured.error;
       const { data: legacyData, error: legacyError } = await supabase
         .from("cloud_general_monitor_feedback")
         .select("id,workflow_step,rating,outcome,comment,created_at")
@@ -93,6 +109,7 @@ export default async function GeneralMonitorPage({
         public_status: "submitted",
         status_updated_at: item.created_at,
         attachment_path: null,
+        attachment_paths: [],
       }));
     },
     [],
@@ -163,7 +180,11 @@ export default async function GeneralMonitorPage({
                     </p>
                   ) : null}
                   <p className="mt-2 whitespace-pre-wrap break-words text-stone-700">{item.comment}</p>
-                  {item.attachment_path ? <p className="mt-2 text-xs text-stone-500">スクリーンショット添付済み</p> : null}
+                  {item.attachment_paths.length || item.attachment_path ? (
+                    <p className="mt-2 text-xs text-stone-500">
+                      スクリーンショット{item.attachment_paths.length || 1}枚添付済み
+                    </p>
+                  ) : null}
                 </article>
               ))}
               {!feedback?.length ? <p className="text-stone-600">まだ送信していません。</p> : null}

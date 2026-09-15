@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-15 購入者向け報告の複数画像添付
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING`
+- Branch: `codex/monitor-feedback-multiple-attachments-20260915`
+- Base: `827eb9a`（PR #470 merge commit）。本線Required Quality run `34932064492`とDesktop Windows run `34932064467`は成功した。
+- 購入者向け報告フォームでPNG／JPEG／WebPを最大5枚、1枚5MB、合計20MBまで選択できるようにした。既存の単一画像fieldもActionで受理し、旧クライアントとの互換性を維持する。
+- private Storageへ1枚ずつ保存し、途中失敗またはDB確定失敗時は当該送信で保存済みの全画像を補償削除する。既存`attachment_path`を先頭画像として残し、新しい`attachment_paths`へ全pathを保存する。migration未適用時は0／1枚を旧schemaへfallbackし、複数枚は欠落させず安全な再試行案内で停止する。
+- 管理者のモニター一覧・自動修正キューで全添付を個別の短期署名URLとして確認でき、購入者の履歴には添付枚数を表示する。画像本体、署名URL、PIIをGit／通常ログへ保存しない。
+- additive migration `202609150001_cloud_monitor_feedback_multiple_attachments.sql`、安全なrollback、canonical schema、migration manifest／assertionを追加した。Production migrationは未適用である。
+- Production read-only確認では未完了報告0件、緊急・高優先度0件、重複0件。第三者裁定はCの1件が`submitted`、D／Eの各1件は`assigned`、独立判断未確定・A/B差分未開示・最終裁定未確定のままである。
+- 集中10/10、Hub 999/999、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration validator 83/83、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。a11y初回は終了コード1だったが、単独再実行で全検査に成功した。
+- Production、報告状態、通知、第三者裁定、作品、画像、Provider、Job、Asset、credit、生成、採用・削除は変更していない。
+- 次: 差分をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。merge後のProduction migration適用は、責任者の別の実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-15 Cloud原稿編集案内のProduction公開・報告対応完了
 
 - 状態: `PRODUCTION_UPDATE_PUBLISHED / REPORT_RESOLVED / OPEN_ISSUES_ZERO / DOCS_PR_PENDING`

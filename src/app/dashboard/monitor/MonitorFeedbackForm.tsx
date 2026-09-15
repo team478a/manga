@@ -37,7 +37,7 @@ export function MonitorFeedbackForm() {
         <div><label className="label" htmlFor="severity">影響</label><select className="field" id="severity" name="severity"><option value="none">影響なし</option><option value="minor">少し困る</option><option value="major">大きく困る</option><option value="blocked">作業を続けられない</option></select></div>
         <div><label className="label" htmlFor="environment">補足する利用環境（任意）</label><input className="field" id="environment" maxLength={200} name="environment" placeholder="例：外付けディスプレイ使用" /></div>
         <div className="sm:col-span-2"><label className="label" htmlFor="pageUrl">発生した画面URL</label><input className="field" id="pageUrl" maxLength={500} name="pageUrl" ref={pageUrlRef} /></div>
-        <div className="sm:col-span-2"><label className="label" htmlFor="screenshot">スクリーンショット（任意）</label><input accept="image/png,image/jpeg,image/webp" className="field" id="screenshot" name="screenshot" type="file" /><p className="mt-1 text-xs text-stone-500">PNG・JPEG・WebP、5MBまで。個人情報が映っていないか確認してください。</p></div>
+        <div className="sm:col-span-2"><label className="label" htmlFor="screenshots">スクリーンショット（任意・複数選択可）</label><input accept="image/png,image/jpeg,image/webp" className="field" id="screenshots" multiple name="screenshots" type="file" /><p className="mt-1 text-xs text-stone-500">5枚まで。PNG・JPEG・WebP、1枚5MB・合計20MBまで。個人情報が映っていないか確認してください。</p></div>
       </div>
       <div><label className="label" htmlFor="feedback-comment">詳しい内容</label><textarea className="field min-h-32" id="feedback-comment" maxLength={2000} name="comment" placeholder="何をした時に、何が起きたか。期待していた結果も入力してください。" required /></div>
       <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" pendingLabel="報告を安全に送信中…">報告を送信</PendingSubmitButton>

@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isMissingMonitorFeedbackSchema } from "@/modules/general-monitor/infrastructure/monitor-feedback-schema-compatibility";
 
 export type MonitorIssueTask = {
   id: string;
@@ -28,6 +29,7 @@ export type MonitorIssueFeedbackSummary = {
   severity: string | null;
   client_context: Record<string, unknown> | null;
   attachment_path: string | null;
+  attachment_paths: string[];
   public_status: string;
 };
 
@@ -46,18 +48,39 @@ export async function loadAdminMonitorIssueWorkspace() {
         .filter(Boolean),
     ),
   ] as string[];
-  const feedbackResult = feedbackIds.length
+  const feedbackWithMultipleAttachments = feedbackIds.length
+    ? await admin
+        .from("cloud_general_monitor_feedback")
+        .select("id,title,comment,page_url,environment,severity,client_context,attachment_path,attachment_paths,public_status")
+        .in("id", feedbackIds)
+        .returns<MonitorIssueFeedbackSummary[]>()
+    : { data: [] as MonitorIssueFeedbackSummary[], error: null };
+  const feedbackResult = isMissingMonitorFeedbackSchema(
+    feedbackWithMultipleAttachments.error,
+  )
     ? await admin
         .from("cloud_general_monitor_feedback")
         .select("id,title,comment,page_url,environment,severity,client_context,attachment_path,public_status")
         .in("id", feedbackIds)
-        .returns<MonitorIssueFeedbackSummary[]>()
-    : { data: [] as MonitorIssueFeedbackSummary[], error: null };
+        .returns<Omit<MonitorIssueFeedbackSummary, "attachment_paths">[]>()
+        .then((result) => ({
+          ...result,
+          data: (result.data ?? []).map((item) => ({
+            ...item,
+            attachment_paths: item.attachment_path ? [item.attachment_path] : [],
+          })),
+        }))
+    : feedbackWithMultipleAttachments;
   const attachmentPaths = [
     ...new Set(
       (feedbackResult.data ?? [])
-        .map((item) => item.attachment_path)
-        .filter(Boolean),
+        .flatMap((item) =>
+          item.attachment_paths.length
+            ? item.attachment_paths
+            : item.attachment_path
+              ? [item.attachment_path]
+              : [],
+        ),
     ),
   ] as string[];
   const attachmentUrls = new Map<string, string>();

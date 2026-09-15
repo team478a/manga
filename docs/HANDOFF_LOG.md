@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 購入者向け報告の複数画像添付
+
+- Branch: `codex/monitor-feedback-multiple-attachments-20260915`
+- Base: `827eb9a`（PR #470 merge commit）。本線Required Quality run `34932064492`、Desktop Windows run `34932064467`は成功。
+- 報告フォームを最大5枚、1枚5MB、合計20MBのPNG／JPEG／WebPへ拡張した。旧単一画像fieldと既存`attachment_path`を保持し、新しい`attachment_paths`へ全pathを保存する。
+- private Storageの途中失敗・DB確定失敗では当該送信の保存済み画像を補償削除する。migration未適用時は0／1枚を旧schemaへfallbackし、複数枚は欠落させず安全に停止する。
+- 管理者の報告一覧・自動修正キューは全添付を個別の短期署名URLで表示し、購入者履歴は枚数を表示する。migration／rollback／schema／manifest／assertionと回帰テストを追加した。
+- Production read-only確認は未完了報告0件、緊急・高優先度0件、重複0件。第三者裁定はCが`submitted`、D／Eが各1件`assigned`で未着手。
+- 集中10/10、Hub 999/999、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 83/83、deps error 0（既存warning 2件）、lint、typecheck、Hub／Desktop build、RC structure、diff check成功。
+- Production、migration、報告状態、通知、裁定、作品、画像、Provider、Job、Asset、credit、生成、採用・削除なし。次はDraft PRの全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-15 Codex: Cloud原稿編集案内のProduction公開・報告対応完了
 
 - Branch: `codex/docs-monitor-report-resolution-20260915`

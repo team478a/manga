@@ -48,9 +48,36 @@ const allowedScreenshotTypes = new Map([
   ["image/webp", "webp"],
 ]);
 
-export function validateMonitorScreenshot(value: FormDataEntryValue | null) {
+export const MAX_MONITOR_SCREENSHOTS = 5;
+export const MAX_MONITOR_SCREENSHOT_BYTES = 5 * 1024 * 1024;
+export const MAX_MONITOR_SCREENSHOTS_TOTAL_BYTES = 20 * 1024 * 1024;
+
+export type MonitorScreenshot = {
+  file: File;
+  extension: string;
+};
+
+export function validateMonitorScreenshot(
+  value: FormDataEntryValue | null,
+): MonitorScreenshot | null {
   if (!(value instanceof File) || value.size === 0) return null;
   const extension = allowedScreenshotTypes.get(value.type);
-  if (!extension || value.size > 5 * 1024 * 1024) throw new Error("monitor_screenshot_invalid");
+  if (!extension || value.size > MAX_MONITOR_SCREENSHOT_BYTES)
+    throw new Error("monitor_screenshot_invalid");
   return { file: value, extension };
+}
+
+export function validateMonitorScreenshots(
+  values: FormDataEntryValue[],
+): MonitorScreenshot[] {
+  const screenshots = values
+    .map(validateMonitorScreenshot)
+    .filter((item): item is MonitorScreenshot => item !== null);
+  if (
+    screenshots.length > MAX_MONITOR_SCREENSHOTS ||
+    screenshots.reduce((sum, item) => sum + item.file.size, 0) >
+      MAX_MONITOR_SCREENSHOTS_TOTAL_BYTES
+  )
+    throw new Error("monitor_screenshots_invalid");
+  return screenshots;
 }

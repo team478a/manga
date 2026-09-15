@@ -1,15 +1,13 @@
-import type { MonitorDiagnostic } from "@/lib/monitor-feedback";
+import type {
+  MonitorDiagnostic,
+  MonitorScreenshot,
+} from "@/lib/monitor-feedback";
 import { ValidationError } from "@/lib/domain-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   isMissingMonitorFeedbackSchema,
   legacyMonitorFeedbackComment,
 } from "./monitor-feedback-schema-compatibility";
-
-type MonitorScreenshot = {
-  file: File;
-  extension: string;
-} | null;
 
 export async function saveGeneralMonitorFeedback(input: {
   feedbackId: string;
@@ -31,24 +29,32 @@ export async function saveGeneralMonitorFeedback(input: {
   environment: string | null;
   comment: string;
   clientContext: MonitorDiagnostic;
-  screenshot: MonitorScreenshot;
+  screenshots: MonitorScreenshot[];
 }) {
   const admin = createAdminClient();
   const storage = admin.storage.from("monitor-feedback");
-  const attachmentPath = input.screenshot
-    ? `${input.ownerProfileId}/${input.feedbackId}.${input.screenshot.extension}`
-    : null;
-  if (input.screenshot && attachmentPath) {
-    const upload = await storage.upload(attachmentPath, input.screenshot.file, {
-      contentType: input.screenshot.file.type,
+  const attachmentPaths = input.screenshots.map((screenshot, index) =>
+    index === 0
+      ? `${input.ownerProfileId}/${input.feedbackId}.${screenshot.extension}`
+      : `${input.ownerProfileId}/${input.feedbackId}-${index + 1}.${screenshot.extension}`,
+  );
+  const uploadedPaths: string[] = [];
+  for (const [index, screenshot] of input.screenshots.entries()) {
+    const attachmentPath = attachmentPaths[index];
+    const upload = await storage.upload(attachmentPath, screenshot.file, {
+      contentType: screenshot.file.type,
       upsert: false,
     });
-    if (upload.error)
+    if (upload.error) {
+      if (uploadedPaths.length) await storage.remove(uploadedPaths);
       throw new ValidationError(
-        "スクリーンショットを保存できませんでした。画像を確認してください。",
+        "スクリーンショットを保存できませんでした。画像と合計容量を確認してください。",
       );
+    }
+    uploadedPaths.push(attachmentPath);
   }
-  const { error: structuredError } = await admin.from("cloud_general_monitor_feedback").insert({
+  const attachmentPath = attachmentPaths[0] ?? null;
+  const structuredPayload = {
     id: input.feedbackId,
     owner_profile_id: input.ownerProfileId,
     request_type: input.requestType,
@@ -62,13 +68,32 @@ export async function saveGeneralMonitorFeedback(input: {
     comment: input.comment,
     client_context: input.clientContext,
     attachment_path: attachmentPath,
-  });
+  };
+  const { error: structuredError } = await admin
+    .from("cloud_general_monitor_feedback")
+    .insert({ ...structuredPayload, attachment_paths: attachmentPaths });
   if (!isMissingMonitorFeedbackSchema(structuredError)) {
-    if (structuredError && attachmentPath) await storage.remove([attachmentPath]);
+    if (structuredError && uploadedPaths.length)
+      await storage.remove(uploadedPaths);
     return { error: structuredError };
   }
 
-  if (attachmentPath) await storage.remove([attachmentPath]);
+  if (attachmentPaths.length > 1) {
+    await storage.remove(uploadedPaths);
+    throw new ValidationError(
+      "複数画像の添付準備が完了していません。時間をおいて再度お試しください。",
+    );
+  }
+  const { error: compatibleError } = await admin
+    .from("cloud_general_monitor_feedback")
+    .insert(structuredPayload);
+  if (!isMissingMonitorFeedbackSchema(compatibleError)) {
+    if (compatibleError && uploadedPaths.length)
+      await storage.remove(uploadedPaths);
+    return { error: compatibleError };
+  }
+
+  if (uploadedPaths.length) await storage.remove(uploadedPaths);
   const { error } = await admin.from("cloud_general_monitor_feedback").insert({
     id: input.feedbackId,
     owner_profile_id: input.ownerProfileId,
@@ -80,7 +105,7 @@ export async function saveGeneralMonitorFeedback(input: {
       title: input.title,
       severity: input.severity,
       comment: input.comment,
-      attachmentOmitted: Boolean(attachmentPath),
+      attachmentOmitted: uploadedPaths.length > 0,
     }),
   });
   return { error };
