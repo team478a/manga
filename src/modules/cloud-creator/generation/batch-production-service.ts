@@ -25,6 +25,24 @@ import {
 
 export type CloudGenerationBatch = MangaGenerationBatch;
 
+function classifyFailedBatchJobRecovery(job: {
+  status: string;
+  input: unknown;
+  error_code: string | null;
+  provider_job_id: string | null;
+}): "retryable" | "edit_required" | "unavailable" {
+  if (job.status !== "failed") return "unavailable";
+  const parsed = cloudGenerationInputSchema.safeParse(job.input);
+  if (!parsed.success) return "unavailable";
+  const providerRejected = Boolean(job.provider_job_id) && (
+    job.error_code === "provider_rejected" ||
+    job.error_code === "provider_moderation_blocked"
+  );
+  return providerRejected && isConservativeGeneralAudienceGenerationRetry(parsed.data)
+    ? "edit_required"
+    : "retryable";
+}
+
 export async function startCloudPageGenerationBatch(projectId: string, pageIds: string[]) {
   const uniquePageIds = normalizeGenerationBatchPageIds(pageIds);
   const { supabase } = await cloudCreatorContext();
@@ -140,7 +158,7 @@ export async function listCloudGenerationBatches(projectId: string): Promise<Clo
   const ids = (batches.data ?? []).map((batch) => batch.id);
   if (!ids.length) return [];
   const links = await supabase.from("cloud_generation_batch_jobs")
-    .select("batch_id,job_id,cloud_generation_jobs!inner(status)").in("batch_id", ids);
+    .select("batch_id,job_id,cloud_generation_jobs!inner(status,page_id,input,error_code,provider_job_id)").in("batch_id", ids);
   if (links.error) throw new DomainError("INTERNAL_ERROR", "一括生成状況を読み込めませんでした。", { cause: links.error });
   const progress = await supabase.rpc("get_cloud_generation_batch_target_progress", {
     p_project_id: projectId,
@@ -153,7 +171,18 @@ export async function listCloudGenerationBatches(projectId: string): Promise<Clo
     }>,
     links: (links.data ?? []).map((link) => {
       const joined = Array.isArray(link.cloud_generation_jobs) ? link.cloud_generation_jobs[0] : link.cloud_generation_jobs;
-      return { batch_id: link.batch_id, job_id: link.job_id, status: joined?.status as string };
+      return {
+        batch_id: link.batch_id,
+        job_id: link.job_id,
+        status: joined?.status as string,
+        page_id: joined?.page_id ?? null,
+        recovery: classifyFailedBatchJobRecovery({
+          status: joined?.status as string,
+          input: joined?.input,
+          error_code: joined?.error_code ?? null,
+          provider_job_id: joined?.provider_job_id ?? null,
+        }),
+      };
     }),
     targetProgress: ((progress.data ?? []) as Array<{
       batch_id: string;

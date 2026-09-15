@@ -172,14 +172,31 @@ export function LongformPageManager({
         </div>
       </form>
 
-      {batches.length ? <section className="panel" aria-label="一括生成履歴"><h3 className="text-lg font-bold">一括生成の進行状況</h3><div className="mt-3 space-y-3">{batches.map((batch) => <article className="rounded-lg border border-stone-200 p-3" key={batch.id}>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><strong>{batch.status === "paused" ? "一時停止中" : batch.status === "canceled" ? "中止" : batch.status === "completed" ? "完了" : "処理中"}</strong><p className="text-sm text-stone-600">Job化待ち {batch.pendingTargets}・Job化済み {batch.totalJobs}・完了 {batch.completedJobs}・待機 {batch.queuedJobs}・処理中 {batch.runningJobs}・失敗 {batch.failedJobs + batch.failedTargets}</p><p className="text-xs text-stone-500">選択{batch.requested_page_ids.length}ページ。画面を閉じても未Job化コマは保持されます。</p></div><div className="flex flex-wrap gap-2">
-          {batch.status === "active" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "paused")}><PendingSubmitButton className="button-secondary" pendingLabel="停止中…"><Pause className="mr-1 h-4 w-4" />一時停止</PendingSubmitButton></form> : batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "active")}><PendingSubmitButton className="button-secondary" pendingLabel="再開中…"><Play className="mr-1 h-4 w-4" />再開</PendingSubmitButton></form> : null}
-          {batch.status === "active" || batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "canceled")}><PendingSubmitButton className="button-secondary text-red-700" pendingLabel="中止中…"><XCircle className="mr-1 h-4 w-4" />中止</PendingSubmitButton></form> : null}
+      {batches.length ? <section className="panel" aria-label="一括生成履歴"><h3 className="text-lg font-bold">一括生成の進行状況</h3><div className="mt-3 space-y-3">{batches.map((batch) => {
+        const retryableFailures = batch.failedJobDetails.filter((failure) => failure.recovery === "retryable");
+        const editRequiredFailures = batch.failedJobDetails.filter((failure) => failure.recovery === "edit_required");
+        const unavailableFailures = batch.failedJobDetails.filter((failure) => failure.recovery === "unavailable");
+        const batchNeedsManualEdit = editRequiredFailures.length > 0 &&
+          retryableFailures.length === 0 && unavailableFailures.length === 0 &&
+          batch.pendingTargets === 0 && batch.failedTargets === 0 &&
+          batch.queuedJobs === 0 && batch.runningJobs === 0;
+        return <article className="rounded-lg border border-stone-200 p-3" key={batch.id}>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"><div><strong>{batchNeedsManualEdit ? "内容の見直し待ち" : batch.status === "paused" ? "一時停止中" : batch.status === "canceled" ? "中止" : batch.status === "completed" ? "完了" : "処理中"}</strong><p className="text-sm text-stone-600">Job化待ち {batch.pendingTargets}・Job化済み {batch.totalJobs}・完了 {batch.completedJobs}・待機 {batch.queuedJobs}・処理中 {batch.runningJobs}・失敗 {batch.failedJobs + batch.failedTargets}</p><p className="text-xs text-stone-500">選択{batch.requested_page_ids.length}ページ。画面を閉じても未Job化コマは保持されます。</p></div><div className="flex flex-wrap gap-2">
+          {!batchNeedsManualEdit && batch.status === "active" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "paused")}><PendingSubmitButton className="button-secondary" pendingLabel="停止中…"><Pause className="mr-1 h-4 w-4" />一時停止</PendingSubmitButton></form> : !batchNeedsManualEdit && batch.status === "paused" ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "active")}><PendingSubmitButton className="button-secondary" pendingLabel="再開中…"><Play className="mr-1 h-4 w-4" />再開</PendingSubmitButton></form> : null}
+          {!batchNeedsManualEdit && (batch.status === "active" || batch.status === "paused") ? <form action={setCloudGenerationBatchStateAction.bind(null, projectId, batch.id, "canceled")}><PendingSubmitButton className="button-secondary text-red-700" pendingLabel="中止中…"><XCircle className="mr-1 h-4 w-4" />中止</PendingSubmitButton></form> : null}
         </div></div>
-        {(batch.status === "active" || batch.status === "paused") && batch.failedJobIds.length ? <div className="mt-3 flex flex-wrap gap-2">{batch.failedJobIds.map((jobId, index) => <form action={retryFailedCloudGenerationJobAction.bind(null, projectId, jobId)} key={jobId}><PendingSubmitButton className="button-secondary" pendingLabel="再登録中…"><RotateCcw className="mr-1 h-4 w-4" />失敗{index + 1}を再実行</PendingSubmitButton></form>)}</div> : null}
+        {(batch.status === "active" || batch.status === "paused") && retryableFailures.length ? <div className="mt-3 flex flex-wrap gap-2">{retryableFailures.map((failure, index) => <form action={retryFailedCloudGenerationJobAction.bind(null, projectId, failure.jobId)} key={failure.jobId}><PendingSubmitButton className="button-secondary" pendingLabel="再登録中…"><RotateCcw className="mr-1 h-4 w-4" />再実行できる失敗{index + 1}</PendingSubmitButton></form>)}</div> : null}
+        {editRequiredFailures.length ? <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-950" role="status">
+          <p className="font-bold"><AlertTriangle className="mr-1 inline h-4 w-4" />{editRequiredFailures.length}コマは内容の見直しが必要です</p>
+          <p className="mt-1">一般向けの安全再構成でも生成できなかったため、自動再実行を停止しました。元の画像や完了済みコマは失われていません。対象ページで構図や場面を穏やかな内容へ変更してから、改めて生成してください。</p>
+          <div className="mt-2 flex flex-wrap gap-2">{Array.from(new Set(editRequiredFailures.flatMap((failure) => failure.pageId ? [failure.pageId] : []))).map((pageId) => {
+            const pageNumber = orderedPages.find((page) => page.id === pageId)?.page_number;
+            return <Link className="button-secondary" href={`/creator/${projectId}/pages/${pageId}`} key={pageId}>{pageNumber ? `${pageNumber}ページを編集` : "対象ページを編集"}</Link>;
+          })}</div>
+        </div> : null}
+        {unavailableFailures.length ? <p className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">{unavailableFailures.length}件は保存済み条件を安全に復元できないため、再実行できません。対象ページから新しく生成してください。</p> : null}
         {(batch.status === "active" || batch.status === "paused") && batch.failedTargets > 0 ? <form action={retryFailedCloudGenerationBatchTargetsAction.bind(null, projectId, batch.id)} className="mt-3"><PendingSubmitButton className="button-secondary" pendingLabel="再登録中…"><RotateCcw className="mr-1 h-4 w-4" />Job化失敗{batch.failedTargets}コマを再実行</PendingSubmitButton></form> : null}
-      </article>)}</div></section> : null}
+      </article>})}</div></section> : null}
 
       {structure.chapters.map((chapter) => {
         const chapterEpisodes = episodes.filter((episode) => structure.episodeChapterIds[episode.id] === chapter.id);
