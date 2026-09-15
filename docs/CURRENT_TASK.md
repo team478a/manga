@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 原稿編集の構図・場面見直しフォーカス
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
+- Branch: `codex/cloud-panel-recovery-editor-focus-20260916`
+- Base: `faf462b`（PR #478 merge commit）。マージ後Required Quality run `35034388069`とDesktop Windows run `35034388041`は成功した。
+- 終端moderation失敗の「このコマの構図・場面を見直す」から、対象コマを選択し、既存の「画角・ポーズを調整」を自動展開して「追加の構図指定」入力へスクロール・フォーカスする。利用者が案内先で修正欄を探す行き止まりを解消する。
+- 既存の画角、カメラ位置、人物配置、視線方向、構図指定、候補数、再生成APIをそのまま利用する。Prompt再構築、Provider選択、料金、credit、保存形式、Feature Flag、成人向け境界は変更しない。
+- `aria-controls`で回復buttonと展開対象を関連付けた。通常の再試行可能Job、元画像、完了済み候補、一括生成画面は変更しない。
+- 検証: 集中25/25、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。依存境界の既知warning 2件、RC外部設定と手動E2Eの既知PENDINGは不変。
+- Commit `1192dad`をpushし、Draft PR #479を作成した。最初のHEADでRequired Quality run `35034833343`（Core quality 3分12秒／Migration roundtrip 52秒）、Desktop Windows run `35034833406`（3分43秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/EoaLyH4ftZp4XnVEKj5fJVBkdhA5`。
+- Production、DB、Provider実行、Job登録、Asset、Canvas、credit操作は0件。次: この正本同期commitの最終CI／Vercel Preview成功で停止する。実際の構図変更・再生成は別の実行時明示承認まで行わない。
+
+---
+
 ## 2026-09-16 原稿編集画面のmoderation終端回復導線
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
