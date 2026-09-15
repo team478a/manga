@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定 Production D/E canary開始案内（2026-09-15）
+
+- BaseはPR #468 merge commit `ad8e128`。本線Required Quality run `34922590516`とDesktop Windows run `34922590531`は成功した。
+- Production `batch_private_01`では、Panel Reviewer D／Eへ第三者裁定が各1件割り当て済みで、両者とも案内前は`assigned`、独立判断未確定、A/B差分未開示、最終裁定未確定だった。Panel Reviewer Cの既存1件は`submitted`のままである。
+- 責任者へD／Eの対象2名、登録済み宛先、件名、本文、送信件数2件を提示し、外部送信の実行時明示承認を取得した。送信前にGmailの送信済みを同件名で検索し、重複0件を確認した。
+- 従来案内と同じ運営送信元から、件名`MANGAI 第三者裁定（1件）開始のお願い`を`2026-09-15 12:54 JST`にD／Eへ各1件、合計2件送信した。各送信の完了表示と、送信済みフォルダで同件名2件を確認した。
+- 案内には先行販売購入者向け限定Pilot、Production URL、対象1件、期限2026-09-20、途中保存・再開、Blind-first、確定後変更不可、匿名A/B差分、理由付き辞退、共有禁止、問題時の返信連絡を含めた。PIIと本文はGit／通常ログへ記録していない。
+- docs-only検証はmigration validator 82/82、RC structure、`git diff --check`が成功した。RCの外部環境PENDING／手動E2E項目は既存状態のままである。
+- 通常品質レビューの再案内、Panel Reviewer Cへの重複通知、残り20件の割り当て、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は行っていない。次はdocs-only PRの全CI／Preview成功で停止し、D／E本人の操作をread-onlyで監視する。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定 Production D/E canary割り当て（2026-09-15）
 
 - BaseはPR #467 merge commit `06364d7`。本線Required Quality run `34917613618`とDesktop Windows run `34917613659`は成功した。

@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-15 品質確認Pilot 第三者裁定 Production D/E canary開始案内
+
+- 状態: `PRODUCTION_NOTIFICATION_SENT / 2_OF_2_SUCCEEDED / RESPONSE_PENDING / DOCS_PR_PENDING`
+- Branch: `codex/docs-quality-review-adjudication-de-notice-20260915`
+- Base: `ad8e128`（PR #468 merge commit）。本線Required Quality run `34922590516`とDesktop Windows run `34922590531`は成功した。
+- ProductionではPanel Reviewer D／Eに第三者裁定を各1件割り当て済みで、案内前はいずれも`assigned`、独立判断未確定、A/B差分未開示、最終裁定未確定だった。Panel Reviewer Cの既存1件は`submitted`のままである。
+- 責任者へ対象2名、登録済み宛先、件名、本文、送信件数2件を提示し、外部送信の実行時明示承認を取得した。送信前の送信済み検索では同件名0件だった。
+- 従来案内と同じ運営送信元から`MANGAI 第三者裁定（1件）開始のお願い`を`2026-09-15 12:54 JST`（`2026-09-15 03:54 UTC`）にD／Eへ各1件送信した。Gmailは両方で送信完了を表示し、送信済み検索は同件名2件を返した。失敗0件、重複0件である。
+- 案内は限定Pilot、Production品質確認URL、対象1件、期限2026-09-20、途中保存・再開、Blind-first、独立判断の変更不可、匿名A/B差分、理由付き辞退、共有禁止、問題時の返信連絡を含む。宛先と本文はGit／通常ログへ複製していない。
+- 通常レビュー再案内、Cへの再送、残り20件の割り当て、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は実行していない。
+- docs-only検証はmigration validator 82/82、RC structure、`git diff --check`が成功した。RCの外部環境PENDING／手動E2E項目は既存状態のままである。
+- 次: docs-only差分を検証し、commit、push、Draft PRを作成して全CI／Vercel Preview成功で停止する。その後はD／E本人の裁定進捗をread-onlyで確認し、未応答への再送や追加割り当ては別の実行時明示承認まで行わない。
+
+---
+
 ## 2026-09-15 品質確認Pilot 第三者裁定 Production D/E canary割り当て
 
 - 状態: `PRODUCTION_CANARY_ASSIGNED / POSTFLIGHT_PASSED / DRAFT_PR_READY / ALL_CI_PASSED / NOTIFICATION_NOT_STARTED`

@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 品質確認Pilot 第三者裁定 Production D/E canary開始案内
+
+- Branch: `codex/docs-quality-review-adjudication-de-notice-20260915`
+- Base: `ad8e128`（PR #468 merge commit）。本線Required Quality run `34922590516`、Desktop Windows run `34922590531`は成功。
+- ProductionではPanel Reviewer D／Eの第三者裁定各1件が`assigned`、独立判断未確定、A/B差分未開示、最終裁定未確定で、Panel Reviewer Cの既存1件は`submitted`だった。
+- 責任者へ対象2名、登録済み宛先、件名、本文、2件送信を提示し、外部送信の実行時明示承認を取得した。送信前の送信済み検索は同件名0件だった。
+- 従来と同じ運営送信元から第三者裁定1件専用の開始案内を`2026-09-15 12:54 JST`にD／Eへ各1件、合計2件送信した。両方の送信完了表示と送信済みフォルダの同件名2件を確認した。失敗・重複なし。宛先と本文は記録していない。
+- 通常レビュー再案内、Cへの再送、残り20件の割り当て、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除なし。
+- migration validator 82/82、RC structure、diff check成功。外部環境PENDING／手動E2Eは既存状態のまま。
+- 次: docs-only検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge後はD／E本人の進捗をread-only監視し、再送と追加割り当ては別承認を必要とする。
+
+---
+
 ## 2026-09-15 Codex: 品質確認Pilot 第三者裁定 Production D/E canary割り当て
 
 - Branch: `codex/docs-quality-review-adjudication-de-canary-20260915`
