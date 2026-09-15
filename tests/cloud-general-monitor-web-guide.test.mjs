@@ -12,6 +12,13 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
   );
   for (const text of [
     "最初の5分で行うこと",
+    "画面を見ながら漫画を完成させる",
+    "実際の画面を基に、個人名・作品内容・利用枠を含まない画面例",
+    "ダッシュボードから市場分析を始める",
+    "企画・シナリオ・ネームを順番に採用する",
+    "原稿編集で人物・画風・参照画像を固定する",
+    "ページを選び、見積りと停止理由を確認する",
+    "全ページを確定し、完成原稿PDFを書き出す",
     "市場分析",
     "AI企画提案",
     "シナリオ作成",
@@ -38,6 +45,17 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     assert.match(source, new RegExp(text.replace("・", "・")));
   }
   assert.match(source, /overflow-x-auto/);
+  for (const image of [
+    "01-dashboard.svg",
+    "02-workflow.svg",
+    "03-creator-project.svg",
+    "04-generation-preflight.svg",
+    "05-export.svg",
+  ]) {
+    assert.match(source, new RegExp(image.replace(".", "\\.")));
+  }
+  assert.match(source, /<Image/);
+  assert.match(source, /alt=\{item\.alt\}/);
   assert.match(source, /details/);
   assert.match(source, /dashboard\/research\/new/);
   assert.match(source, /dashboard\/workflow\/proposal/);

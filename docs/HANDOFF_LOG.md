@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: Cloud画像付きマニュアル／長編Pilot再確認
+
+- Branch: `codex/cloud-visual-manual-20260915`
+- Base: `0aa9c32`（PR #473 merge commit）
+- 購入者向けWebマニュアルへ、Production画面を基準にした匿名化画面例5件を追加した。個人名、作品内容、実利用枠を含めず、altと説明を付与した。
+- Production `test`枠の対象作品は配置15/157、未生成142、生成中0。23–24ページは8コマ、必要16 credit／残り18、最大予約`$1.44`、画風設定済み、登場人物2/2設定済みだった。
+- モニターAI残り3回で5回不足し、生成開始buttonは無効。ブラウザ内ページ選択以外のProduction変更、Provider、Worker、Job、Asset、credit予約・消費、生成、Canvas保存なし。
+- 既存管理UIのAI上限更新は招待メール再送を伴うため未実行。上限100→105は対象・差分・監査方法を示した別のProduction実行時確認後に行う。
+- 検証: 5画面例の一時PNG目視、Web guide集中2/2、lint、全typecheck、Hub Production build、migration 83件、`git diff --check`成功。RC preflightは構造READYで外部設定・手動E2EのみPENDING。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後にquota追加を安全に実施し、Provider開始直前に8コマ・16 credit・最大`$1.44`を再提示してAction確認を得る。
+
+---
+
 ## 2026-09-15 Codex: 購入者向け報告の複数画像添付 Production canary
 
 - Branch: `codex/docs-monitor-feedback-multiple-attachments-production-canary-20260915`

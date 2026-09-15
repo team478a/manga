@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-15 Cloud画像付きマニュアル／長編23–24ページPilot再確認
+
+- 状態: `VISUAL_MANUAL_IMPLEMENTED / LOCAL_GATES_PASSED / PRODUCTION_PREFLIGHT_BLOCKED_MONITOR_QUOTA / PROVIDER_NOT_STARTED`
+- Branch: `codex/cloud-visual-manual-20260915`
+- Base: `0aa9c32`（PR #473 merge commit）。マージ後Required Quality run `34957093780`とDesktop Windows run `34957093898`は成功した。
+- 購入者向けWebマニュアルへ、ダッシュボード、企画〜ネーム、原稿編集の事前設定、ページ一括生成見積り、完成原稿PDFの5画面例を追加した。Production実画面を基準にしつつ、個人名、作品内容、実利用枠をGitへ残さない匿名化SVGとし、説明文、alt、図番号を付けた。
+- Production `test`購入者枠で対象作品をread-only確認した。確定値は32ページ、157コマ中15コマ配置、画像未生成142コマ、生成中0ページである。
+- 23–24ページをブラウザ内で選択した最新preflightは2ページ／8コマ、1案／コマ、必要16 credit／残り18、最大予約`$1.44`、`flux-2-pro`、pricing `bfl-flux2-pro-2026-08`、Worker最短3回／約15分、作品画風設定済み、登場人物2/2設定済みだった。
+- モニターAI残りは3回で8コマに対して5回不足し、開始buttonは無効だった。選択は画面内だけで保存されず、Provider、Worker、Job、Asset、credit予約・消費、生成、Canvas保存は0件である。
+- 既存の管理画面でAI利用上限を更新すると招待条件更新と案内メール再送を同時実行する。不要な再送を避けるため、`test`の上限100→105は、対象・現在値・新値・監査記録方法を示した別のProduction実行時確認後に行う。
+- 検証: 画面例5件をPNGへ一時renderして文字欠け・重なりなしを目視確認。Web guide集中2/2、lint、全typecheck、Hub Production build、migration 83件、`git diff --check`成功。RC preflightは構造READYで、外部設定と手動E2EのみPENDING。
+- 次: 差分をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。merge後、AI枠を安全に追加して23–24ページの最新preflightを再確認し、Provider実行直前に8コマ・16 credit・最大`$1.44`のAction確認を得る。
+
+---
+
 ## 2026-09-15 購入者向け報告の複数画像添付 Production canary
 
 - 状態: `PRODUCTION_CANARY_SENT / USER_HISTORY_PASSED / DB_STORAGE_POSTFLIGHT_PASSED / ADMIN_UI_NOT_VERIFIED / DOCS_PR_PENDING`

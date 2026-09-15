@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud画像付きマニュアル／長編23–24ページPilot再確認（2026-09-15）
+
+- Branch `codex/cloud-visual-manual-20260915`、base `0aa9c32`（PR #473 merge commit）。mainline Required Quality run `34957093780`とDesktop Windows run `34957093898`は成功。
+- 購入者向けWebマニュアルへ、実画面に沿った匿名化SVG 5件を追加した。ダッシュボード、企画〜ネーム、原稿編集の固定設定、生成前preflight、PDF書き出しを図番号・説明・alt付きで確認できる。Production利用者の氏名、作品内容、実利用枠、画像はGitへ保存しない。
+- Production `test`枠の対象作品は32ページ／157コマ、配置15、未生成142。23–24ページの最新preflightは8コマ、必要16 credit／残り18、最大予約`$1.44`、`flux-2-pro`、画風設定済み、登場人物2/2設定済み。
+- モニターAI残り3回で5回不足し、開始buttonは無効。ページ選択はブラウザ内だけで破棄され、Provider、Worker、Job、Asset、credit予約・消費、生成、Canvas保存なし。
+- AI上限100→105は既存管理UIだと招待メール再送を伴う。不要な外部送信を避け、別のProduction実行時確認後にquotaだけを監査可能な方法で更新する。更新後も8コマ生成のAction確認は開始直前に別途必要。
+- 検証は画面例5件の一時PNG目視、集中2/2、lint、全typecheck、Hub Production build、migration 83件、diff check成功。RC preflightは構造READYで外部設定・手動E2EのみPENDING。次はDraft PRの全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 0.0 購入者向け報告の複数画像添付 Production canary（2026-09-15）
 
 - BaseはPR #472 merge commit `26fe391`。本線Required Quality run `34946640510`、Desktop Windows run `34946640500`は成功した。

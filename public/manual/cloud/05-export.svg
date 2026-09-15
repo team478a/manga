@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">完成原稿の確認とPDF書き出し</title>
+  <desc id="desc">原稿チェック、全ページ確定、完成版固定、PDF書き出しの順番を示す画面図</desc>
+  <rect width="1200" height="675" fill="#fafaf9"/>
+  <text x="64" y="72" fill="#18181b" font-family="system-ui, sans-serif" font-size="31" font-weight="700">完成原稿を書き出す</text>
+  <g font-family="system-ui, sans-serif">
+    <rect x="64" y="124" width="1072" height="120" rx="18" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="92" y="165" fill="#9a3412" font-size="20" font-weight="700">原稿チェック</text>
+    <text x="92" y="202" fill="#7c2d12" font-size="17">空コマ、文字切れ、品質検査、生成中Jobを確認し、要修正を解消します。</text>
+    <g transform="translate(64 278)">
+      <rect width="246" height="170" rx="18" fill="#fff" stroke="#ddd6fe"/><circle cx="42" cy="42" r="24" fill="#ede9fe"/><text x="42" y="50" fill="#6d28d9" text-anchor="middle" font-size="22" font-weight="700">1</text><text x="24" y="100" fill="#18181b" font-size="20" font-weight="700">全ページを確定</text><text x="24" y="136" fill="#57534e" font-size="15">ページごとに確認します</text>
+      <text x="266" y="95" fill="#7c3aed" font-size="30">→</text>
+      <g transform="translate(300 0)"><rect width="246" height="170" rx="18" fill="#fff" stroke="#ddd6fe"/><circle cx="42" cy="42" r="24" fill="#ede9fe"/><text x="42" y="50" fill="#6d28d9" text-anchor="middle" font-size="22" font-weight="700">2</text><text x="24" y="100" fill="#18181b" font-size="20" font-weight="700">完成版を固定</text><text x="24" y="136" fill="#57534e" font-size="15">復旧可能な状態を保持</text></g>
+      <text x="566" y="95" fill="#7c3aed" font-size="30">→</text>
+      <g transform="translate(600 0)"><rect width="246" height="170" rx="18" fill="#fff" stroke="#ddd6fe"/><circle cx="42" cy="42" r="24" fill="#ede9fe"/><text x="42" y="50" fill="#6d28d9" text-anchor="middle" font-size="22" font-weight="700">3</text><text x="24" y="100" fill="#18181b" font-size="20" font-weight="700">PDFを開始</text><text x="24" y="136" fill="#57534e" font-size="15">ボタンは1回だけ押す</text></g>
+      <text x="866" y="95" fill="#7c3aed" font-size="30">→</text>
+      <g transform="translate(900 0)"><rect width="172" height="170" rx="18" fill="#ecfdf5" stroke="#a7f3d0"/><circle cx="42" cy="42" r="24" fill="#d1fae5"/><text x="42" y="50" fill="#047857" text-anchor="middle" font-size="22" font-weight="700">4</text><text x="24" y="100" fill="#065f46" font-size="19" font-weight="700">ダウンロード</text><text x="24" y="136" fill="#065f46" font-size="14">完了後に保存</text></g>
+    </g>
+    <rect x="64" y="490" width="1072" height="112" rx="18" fill="#ecfdf5"/>
+    <text x="92" y="533" fill="#065f46" font-size="19" font-weight="700">完成の目印</text>
+    <text x="92" y="571" fill="#065f46" font-size="17">「PDFをダウンロード」が表示され、保存したファイルを開いて全ページを確認できること。</text>
+  </g>
+</svg>
