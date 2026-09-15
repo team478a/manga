@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: 原稿編集の構図・場面見直しフォーカス
+
+- PR #478 merge commit `faf462b`から`codex/cloud-panel-recovery-editor-focus-20260916`を開始した。本線Required Quality run `35034388069`とDesktop Windows run `35034388041`は成功した。
+- 終端moderation失敗から生成設定へ移動しても、実際の修正欄は閉じた`details`内にあり、利用者が再び操作箇所を探す状態だった。
+- 回復buttonで対象コマを選択し、調整欄を自動展開して「追加の構図指定」へscroll／focusする。button文言と`aria-controls`も実際の操作先に合わせた。
+- 生成入力、Provider、model、料金、credit、保存、通常retry、一括生成、成人向け境界は変更しない。
+- 集中25/25、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。既知の依存warning 2件、外部設定と手動E2EのPENDINGは不変。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。実際の構図変更・再実行は別承認まで行わない。
+
+---
+
 ## 2026-09-16 Codex: 原稿編集画面のmoderation終端回復導線
 
 - PR #477 merge commit `08940ae`から`codex/cloud-panel-moderation-recovery-20260916`を開始した。

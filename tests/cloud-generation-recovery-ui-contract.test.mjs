@@ -27,6 +27,10 @@ test("終端moderation失敗はPromptを返さず内容見直しへ案内する"
   assert.match(service, /provider_job_id: _privateProviderJobId/);
   assert.match(contracts, /failed_retry_recovery: "retryable" \| "edit_required" \| "unavailable"/);
   assert.match(editor, /一般向けの安全再構成でも生成できなかったため、自動再実行を停止しました/);
-  assert.match(editor, /このコマの生成設定を見直す/);
+  assert.match(editor, /このコマの構図・場面を見直す/);
   assert.match(editor, /panel-ai-generation/);
+  assert.match(editor, /panel-generation-adjustments/);
+  assert.match(editor, /adjustments instanceof HTMLDetailsElement/);
+  assert.match(editor, /adjustments\.open = true/);
+  assert.match(editor, /compositionInput\?\.focus\(\)/);
 });

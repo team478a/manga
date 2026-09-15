@@ -346,6 +346,25 @@ export function CloudCanvasEditor({
     useState<ImageQualityReviewRequest | null>(null);
   const [preview, setPreview] = useState(false);
   const canvasElement = useRef<HTMLDivElement>(null);
+
+  const openPanelGenerationAdjustments = (panelId: string) => {
+    setSelection({ type: "panel", id: panelId });
+    window.requestAnimationFrame(() => {
+      const adjustments = document.getElementById(
+        "panel-generation-adjustments",
+      );
+      if (adjustments instanceof HTMLDetailsElement) adjustments.open = true;
+      const compositionInput = document.getElementById(
+        "panel-composition-instruction",
+      );
+      compositionInput?.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+      compositionInput?.focus();
+    });
+  };
+
   const { saveState, save, markDirty, hasUnsavedChanges } = useCanvasAutosave({
       pageId: page.id,
       initialRevision: page.revision,
@@ -1706,7 +1725,10 @@ export function CloudCanvasEditor({
                     分離素材は別レイヤーとして採用され、背景・人物・効果を個別に表示・並べ替えできます。
                   </p>
                 ) : null}
-                <details className="mt-3 rounded-lg border border-violet-200 bg-white/70 p-3">
+                <details
+                  className="mt-3 rounded-lg border border-violet-200 bg-white/70 p-3"
+                  id="panel-generation-adjustments"
+                >
                   <summary className="cursor-pointer text-xs font-bold text-violet-950">
                     画角・ポーズを調整（任意）
                   </summary>
@@ -2173,24 +2195,16 @@ export function CloudCanvasEditor({
                         </button>
                       ) : job.target_panel_id ? (
                         <button
+                          aria-controls="panel-generation-adjustments"
                           className="mt-1 font-bold underline"
-                          onClick={() => {
-                            setSelection({
-                              type: "panel",
-                              id: job.target_panel_id!,
-                            });
-                            window.requestAnimationFrame(() => {
-                              document
-                                .getElementById("panel-ai-generation")
-                                ?.scrollIntoView({
-                                  behavior: "smooth",
-                                  block: "start",
-                                });
-                            });
-                          }}
+                          onClick={() =>
+                            openPanelGenerationAdjustments(
+                              job.target_panel_id!,
+                            )
+                          }
                           type="button"
                         >
-                          このコマの生成設定を見直す
+                          このコマの構図・場面を見直す
                         </button>
                       ) : null}
                     </div>
