@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   BarChart3,
@@ -25,12 +26,56 @@ import { getCloudGeneralMonitorEnrollment } from "@/lib/cloud-general-monitor";
 
 const sections = [
   { href: "#quick-start", label: "最初の5分" },
+  { href: "#visual-guide", label: "画面で確認" },
   { href: "#workflow", label: "制作手順" },
   { href: "#manga-production", label: "漫画原稿の作り方" },
   { href: "#mobile", label: "スマートフォン" },
   { href: "#feedback", label: "感想の送り方" },
   { href: "#troubleshooting", label: "困ったとき" },
   { href: "#safety", label: "安全上の注意" },
+] as const;
+
+const visualGuide = [
+  {
+    number: 1,
+    title: "ダッシュボードから市場分析を始める",
+    description:
+      "左側の制作ワークフローで現在の工程を確認し、画面中央の紫色のボタンから市場分析を始めます。",
+    image: "/manual/cloud/01-dashboard.svg",
+    alt: "MANGAI Cloudダッシュボードで制作ワークフローと市場分析開始ボタンを確認する画面例",
+  },
+  {
+    number: 2,
+    title: "企画・シナリオ・ネームを順番に採用する",
+    description:
+      "各工程の結果を保存・採用すると次の工程へ進めます。生成ボタンは1回だけ押し、完了表示を確認します。",
+    image: "/manual/cloud/02-workflow.svg",
+    alt: "市場分析、AI企画提案、シナリオ作成、ネーム作成の順序を示す画面例",
+  },
+  {
+    number: 3,
+    title: "原稿編集で人物・画風・参照画像を固定する",
+    description:
+      "画像生成前に、人物の外見・衣装、作品画風、場所・小物、参照画像とコマ割当を保存します。",
+    image: "/manual/cloud/03-creator-project.svg",
+    alt: "原稿編集の作品画面で完成ガイド、原稿チェック、画像生成前設定を確認する画面例",
+  },
+  {
+    number: 4,
+    title: "ページを選び、見積りと停止理由を確認する",
+    description:
+      "最初は連続2ページを選び、必要credit、残り利用枠、人物・画風、停止理由を確認してから開始します。",
+    image: "/manual/cloud/04-generation-preflight.svg",
+    alt: "ページ一括生成の開始前見積りと安全確認項目を示す画面例",
+  },
+  {
+    number: 5,
+    title: "全ページを確定し、完成原稿PDFを書き出す",
+    description:
+      "原稿チェックを解消して全ページを確定し、完成版を固定してからPDFを開始します。",
+    image: "/manual/cloud/05-export.svg",
+    alt: "原稿チェックから完成版固定、PDF書き出し、ダウンロードまでを示す画面例",
+  },
 ] as const;
 
 const mangaProductionSteps = [
@@ -302,6 +347,43 @@ export default async function GeneralMonitorGuidePage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      <section
+        aria-labelledby="visual-guide-title"
+        className="mt-9 scroll-mt-6"
+        id="visual-guide"
+      >
+        <h2 className="text-2xl font-bold" id="visual-guide-title">
+          画面を見ながら漫画を完成させる
+        </h2>
+        <p className="mt-2 leading-relaxed text-stone-600">
+          実際の画面を基に、個人名・作品内容・利用枠を含まない画面例にしています。
+          表示される件数や料金はアカウントごとに異なるため、操作時の画面で必ず確認してください。
+        </p>
+        <div className="mt-5 space-y-6">
+          {visualGuide.map((item) => (
+            <figure className="panel overflow-hidden p-0" key={item.number}>
+              <Image
+                alt={item.alt}
+                className="h-auto w-full border-b border-stone-200"
+                height={675}
+                priority={item.number === 1}
+                src={item.image}
+                width={1200}
+              />
+              <figcaption className="p-4 sm:p-5">
+                <p className="text-sm font-bold text-violet-700">
+                  画面 {item.number}
+                </p>
+                <h3 className="mt-1 text-lg font-bold">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                  {item.description}
+                </p>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
       </section>
 
       <section

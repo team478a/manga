@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">ページ一括生成の見積り画面</title>
+  <desc id="desc">ページ選択、必要クレジット、利用枠、ビジュアル準備、停止理由を確認する画面図</desc>
+  <rect width="1200" height="675" fill="#f7f5ff"/>
+  <text x="58" y="70" fill="#18181b" font-family="system-ui, sans-serif" font-size="30" font-weight="700">画像生成するページを選ぶ</text>
+  <text x="58" y="104" fill="#57534e" font-family="system-ui, sans-serif" font-size="17">最初は連続する2ページのPilotがおすすめです。</text>
+  <g font-family="system-ui, sans-serif">
+    <rect x="58" y="138" width="1084" height="96" rx="16" fill="#fff"/>
+    <rect x="82" y="160" width="315" height="52" rx="11" fill="#f5f3ff"/><text x="102" y="191" fill="#5b21b6" font-size="16" font-weight="700">1. ページを選択</text>
+    <rect x="421" y="160" width="315" height="52" rx="11" fill="#f5f3ff"/><text x="441" y="191" fill="#5b21b6" font-size="16" font-weight="700">2. 見積りを確認</text>
+    <rect x="760" y="160" width="356" height="52" rx="11" fill="#f5f3ff"/><text x="780" y="191" fill="#5b21b6" font-size="16" font-weight="700">3. 紫のボタンで開始</text>
+    <rect x="58" y="258" width="1084" height="276" rx="18" fill="#ede9fe" stroke="#c4b5fd"/>
+    <text x="84" y="299" fill="#4c1d95" font-size="20" font-weight="700">開始前の生成見積り</text>
+    <g font-size="16"><text x="84" y="339" fill="#57534e">対象</text><text x="148" y="339" fill="#18181b" font-weight="700">2ページ／6コマ</text><text x="350" y="339" fill="#57534e">必要credit</text><text x="460" y="339" fill="#18181b" font-weight="700">12（残り40）</text><text x="700" y="339" fill="#57534e">最大予約費用</text><text x="826" y="339" fill="#18181b" font-weight="700">$0.80</text></g>
+    <rect x="84" y="366" width="1032" height="90" rx="12" fill="#fff"/>
+    <text x="106" y="397" fill="#18181b" font-size="16" font-weight="700">生成前のビジュアル準備</text>
+    <text x="106" y="430" fill="#57534e" font-size="15">作品画風：設定済み　　登場人物の外見・衣装：設定済み</text>
+    <rect x="84" y="472" width="1032" height="40" rx="10" fill="#fff7ed"/>
+    <text x="106" y="498" fill="#9a3412" font-size="16">● 停止理由が表示された場合は、生成せず先に解消します。</text>
+    <rect x="58" y="558" width="1084" height="68" rx="14" fill="#fff"/>
+    <text x="84" y="601" fill="#065f46" font-size="17" font-weight="700">開始前に「必要credit」「利用枠」「人物・画風」「停止理由」の4点を確認</text>
+  </g>
+  <text x="1140" y="650" fill="#78716c" text-anchor="end" font-family="system-ui, sans-serif" font-size="13">画面例：料金・残数は実際の画面で再確認してください</text>
+</svg>
