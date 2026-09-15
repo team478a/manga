@@ -1669,7 +1669,10 @@ export function CloudCanvasEditor({
               )}
             </div>
             {storyboardPanelGenerationEnabled ? (
-              <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3">
+              <div
+                className="mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3"
+                id="panel-ai-generation"
+              >
                 <p className="text-sm font-bold text-violet-950">
                   AIおまかせ画像生成
                 </p>
@@ -2134,18 +2137,25 @@ export function CloudCanvasEditor({
                     </button>
                   ) : null}
                   {job.status === "failed" ? (
-                    <div className="mt-2 rounded bg-red-50 p-2 text-red-800">
+                    <div
+                      className={`mt-2 rounded p-2 ${job.failed_retry_recovery === "edit_required" ? "bg-amber-50 text-amber-950" : "bg-red-50 text-red-800"}`}
+                    >
                       <p>
-                        {job.target_panel_id &&
-                        hasActivePanelGeneration(
-                          generationJobs,
-                          job.target_panel_id,
-                          job.id,
-                        )
-                          ? "同じコマの生成または候補確認が進行中です。"
-                          : "生成に失敗しました。この候補だけ再実行できます。"}
+                        {job.failed_retry_recovery === "edit_required"
+                          ? "一般向けの安全再構成でも生成できなかったため、自動再実行を停止しました。元画像と完了済み候補は保持されています。構図や場面を見直して、新しい候補として生成してください。"
+                          : job.failed_retry_recovery === "unavailable"
+                            ? "保存済みの生成条件を安全に復元できません。構図や場面を確認し、新しい候補として生成してください。"
+                            : job.target_panel_id &&
+                                hasActivePanelGeneration(
+                                  generationJobs,
+                                  job.target_panel_id,
+                                  job.id,
+                                )
+                              ? "同じコマの生成または候補確認が進行中です。"
+                              : "生成に失敗しました。この候補だけ再実行できます。"}
                       </p>
-                      {job.target_panel_id ? (
+                      {job.target_panel_id &&
+                      job.failed_retry_recovery === "retryable" ? (
                         <button
                           className="mt-1 font-bold underline"
                           disabled={
@@ -2160,6 +2170,27 @@ export function CloudCanvasEditor({
                           type="button"
                         >
                           このコマだけ再実行
+                        </button>
+                      ) : job.target_panel_id ? (
+                        <button
+                          className="mt-1 font-bold underline"
+                          onClick={() => {
+                            setSelection({
+                              type: "panel",
+                              id: job.target_panel_id!,
+                            });
+                            window.requestAnimationFrame(() => {
+                              document
+                                .getElementById("panel-ai-generation")
+                                ?.scrollIntoView({
+                                  behavior: "smooth",
+                                  block: "start",
+                                });
+                            });
+                          }}
+                          type="button"
+                        >
+                          このコマの生成設定を見直す
                         </button>
                       ) : null}
                     </div>

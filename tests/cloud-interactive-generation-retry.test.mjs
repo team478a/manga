@@ -40,6 +40,8 @@ test("Canvasの再実行ボタンは同じPromptを再構築せず失敗Job ID�
   assert.match(handler, /retryGeneration\(job\.id\)/);
   assert.doesNotMatch(handler, /requestStoryboardPanelGeneration/);
   assert.match(editor, /onClick=\{\(\) => void retryFailedPanelGeneration\(job\)\}/);
+  assert.match(editor, /job\.failed_retry_recovery === "retryable"/);
+  assert.match(editor, /このコマの生成設定を見直す/);
   assert.match(client, /generation-jobs\/\$\{encodeURIComponent\(jobId\)\}\/retry/);
   assert.match(client, /method: "POST"/);
 });

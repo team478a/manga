@@ -20,6 +20,7 @@ import {
   DomainError,
   ValidationError,
 } from "@/lib/domain-errors";
+import { classifyFailedGenerationRetryRecovery } from "@/lib/cloud-generation-retry-recovery";
 
 export async function getMyCloudAiQuota() {
   const { supabase } = await cloudCreatorContext();
@@ -86,10 +87,10 @@ export async function listCloudGenerationJobs(
   const recoveryUiEnabled = featureFlagEnabled("CLOUD_GENERATION_RESUMABLE_V2_ENABLED");
   let query = recoveryUiEnabled
     ? supabase.from("cloud_generation_jobs").select(
-        "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input,execution_phase,failure_stage,retry_disposition,last_checkpoint_at",
+        "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input,provider_job_id,execution_phase,failure_stage,retry_disposition,last_checkpoint_at",
       ).eq("project_id", projectId)
     : supabase.from("cloud_generation_jobs").select(
-        "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input",
+        "id,project_id,page_id,kind,job_type,provider_id,model_id,status,progress,attempt_count,max_attempts,estimated_cost_micros,actual_cost_micros,output,output_asset_id,error_code,error_message,created_at,updated_at,input,provider_job_id",
       ).eq("project_id", projectId);
   if (pageId) query = query.eq("page_id", pageId);
   const { data, error } = await query
@@ -131,13 +132,25 @@ export async function listCloudGenerationJobs(
       input?.operation === "outpainting"
         ? input.operation
         : null;
-    const { input: _privateInput, ...publicRow } = row;
+    const parsedGeneration = cloudGenerationInputSchema.safeParse(row.input);
+    const failedRetryRecovery = classifyFailedGenerationRetryRecovery({
+      status: row.status,
+      generation: parsedGeneration.success ? parsedGeneration.data : null,
+      errorCode: row.error_code,
+      hasProviderJobId: Boolean(row.provider_job_id),
+    });
+    const {
+      input: _privateInput,
+      provider_job_id: _privateProviderJobId,
+      ...publicRow
+    } = row;
     return {
       ...publicRow,
       recovery_ui_enabled: recoveryUiEnabled,
       execution_phase: recoveryUiEnabled && "execution_phase" in row ? row.execution_phase : null,
       failure_stage: recoveryUiEnabled && "failure_stage" in row ? row.failure_stage : null,
       retry_disposition: recoveryUiEnabled && "retry_disposition" in row ? row.retry_disposition : null,
+      failed_retry_recovery: failedRetryRecovery,
       last_checkpoint_at: recoveryUiEnabled && "last_checkpoint_at" in row ? row.last_checkpoint_at : null,
       panel_adoption_eligible: input?.autoAdopt === true,
       panel_adoption_status: null,

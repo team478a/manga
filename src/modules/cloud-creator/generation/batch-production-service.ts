@@ -22,6 +22,7 @@ import {
   isConservativeGeneralAudienceGenerationRetry,
   isGeneralAudienceGenerationRetry,
 } from "../../manga/domain/general-audience-generation-retry";
+import { classifyFailedGenerationRetryRecovery } from "@/lib/cloud-generation-retry-recovery";
 
 export type CloudGenerationBatch = MangaGenerationBatch;
 
@@ -31,16 +32,13 @@ function classifyFailedBatchJobRecovery(job: {
   error_code: string | null;
   provider_job_id: string | null;
 }): "retryable" | "edit_required" | "unavailable" {
-  if (job.status !== "failed") return "unavailable";
   const parsed = cloudGenerationInputSchema.safeParse(job.input);
-  if (!parsed.success) return "unavailable";
-  const providerRejected = Boolean(job.provider_job_id) && (
-    job.error_code === "provider_rejected" ||
-    job.error_code === "provider_moderation_blocked"
-  );
-  return providerRejected && isConservativeGeneralAudienceGenerationRetry(parsed.data)
-    ? "edit_required"
-    : "retryable";
+  return classifyFailedGenerationRetryRecovery({
+    status: job.status,
+    generation: parsed.success ? parsed.data : null,
+    errorCode: job.error_code,
+    hasProviderJobId: Boolean(job.provider_job_id),
+  });
 }
 
 export async function startCloudPageGenerationBatch(projectId: string, pageIds: string[]) {

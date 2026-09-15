@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: 原稿編集画面のmoderation終端回復導線
+
+- PR #477 merge commit `08940ae`から`codex/cloud-panel-moderation-recovery-20260916`を開始した。
+- 一括生成側で解消した終端moderationの行き止まりが、原稿編集画面の生成履歴には残っていた。第2段階の一般向け安全再構成まで拒否されたJobにも「このコマだけ再実行」が表示され、再実行して初めて拒否される状態だった。
+- 保存済み入力をServer側で検証し、失敗Jobを`retryable / edit_required / unavailable`へ分類する中立判定器を追加した。公開responseから入力全文とProvider Job IDを除外し、Clientには回復区分だけを渡す。
+- 通常の一時失敗だけコマ単位再実行を表示する。終端moderationと復元不可では、元画像・完了済み候補を保持したまま、対象コマ選択とAI画像生成設定の見直しへ案内する。
+- 集中28/28、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。既知の依存warning 2件、外部設定と手動E2EのPENDINGは不変。
+- Commit `f4e1030`をpushしてDraft PR #478を作成した。最初のHEADでRequired Quality run `35033422341`（Core quality／Migration roundtrip）、Desktop Windows run `35033422084`、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/6eYxNj61MceZdYSfj3DBERu5LABq`。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次は正本同期commitの最終CI／Vercel Preview成功で停止する。残る2コマの内容変更・再実行は別承認まで行わない。
+
+---
+
 ## 2026-09-16 Codex: 一括生成のmoderation終端回復導線
 
 - PR #476 merge commit `5f1a2e5`から`codex/cloud-moderation-blocked-recovery-20260916`を開始した。

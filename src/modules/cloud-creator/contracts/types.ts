@@ -127,6 +127,7 @@ export type CloudGenerationJob = {
   execution_phase: "queued" | "preparing" | "generating" | "validating" | "succeeded" | "failed" | "canceled" | "unknown" | null;
   failure_stage: "request" | "visual_readiness" | "moderation" | "quota" | "claim" | "lease" | "reference_resolution" | "provider" | "validation" | "storage" | "completion" | "quality" | "adoption" | "dialogue" | null;
   retry_disposition: "automatic" | "manual" | "none" | null;
+  failed_retry_recovery: "retryable" | "edit_required" | "unavailable";
   last_checkpoint_at: string | null;
   created_at: string;
   updated_at: string;
