@@ -1,5 +1,23 @@
 # MANGAI Current Task
 
+## 2026-09-15 長編23–24ページPilot Production再開
+
+- 状態: `PRODUCTION_ENTITLEMENT_EXTENDED / EXISTING_BATCH_TERMINAL / 6_OF_8_COMPLETED / 2_MODERATION_BLOCKED / LIMITS_RESPECTED / DOCS_PR_PENDING`
+- Branch: `codex/docs-production-longform-pilot-pages-23-24-resume-20260915`
+- Base: `4ff0175`（PR #475 merge commit）。本線Required Quality run `34969218686`とDesktop Windows run `34969218751`は成功した。
+- 責任者はProduction `test`購入者枠のCloud AI利用期限を2026-10-15まで延長し、23–24ページの既存Batchを最大16 credit／`$1.44`で再開することを明示承認した。
+- entitlementの`period_ends_at`を`2026-10-15T14:59:59.999+00:00`（JST 23:59:59.999）へtransaction内で更新した。start、status `trialing`、plan `trial`、source `admin`、使用82 credit、予約0、実費1,245,000 microsを維持し、`extend_user_entitlement_production_pilot`を監査記録した。
+- 既存Batch IDは`4760af6d-e521-4785-b8c5-9dea8fac85db`、対象Projectは`b008b746-94c6-4e83-85dd-3bb0e379c96a`、対象は23–24ページ8コマ。新規Batch作成、target追加、target promptの手動変更は行っていない。
+- 公式Cloud AI Workerを5回実行した。run `34972097976`、`34973260173`、`34973533958`、`34973962614`、`34974205781`はいずれも`feature/manga-canvas-mvp`@`4ff0175`で成功した。
+- 初回3コマは`provider_moderation_blocked`だったが、既存の一般向け安全再構成で3/3成功した。次3コマは1件成功・2件moderation停止、最終2コマは2/2成功。停止2件は安全再構成後も同codeとなったため、自動再試行を終えた。
+- 最終表示はBatch 8件中完了6、待機0、処理中0、失敗2。23ページ3/4、24ページ3/4、作品全体の画像配置は15→21/157、未生成は142→136。成功6件はAsset保存と原稿配置まで完了した。
+- Cloud AI使用は82→94、予約0、実費は1,245,000→1,515,000 micros。本工程は12/16 credit、`$0.27/$1.44`で承認上限内。モニターAIは97→105/105。失敗試行のcreditと費用予約は全解放された。
+- frozen targetの手動修正、別Provider、新規Batch、候補の手動採用、未関連ページ、品質回答、通知、成人向け処理は変更していない。
+- docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`が成功した。外部設定と手動E2Eの既知PENDINGは維持する。
+- 次: commit、push、Draft PRを作成して全CI／Vercel Preview成功で停止する。残る2コマは内容修正または別生成経路の設計を別工程とし、Production実行は別承認まで行わない。
+
+---
+
 ## 2026-09-15 長編23–24ページPilot 契約期限preflight修正
 
 - 状態: `PRODUCTION_BATCH_REGISTERED / WORKER_FAILED_SAFE / PROVIDER_NOT_CALLED / PREFLIGHT_FIX_IMPLEMENTED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`

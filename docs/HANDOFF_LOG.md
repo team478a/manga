@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 長編23–24ページPilot Production再開
+
+- Branch: `codex/docs-production-longform-pilot-pages-23-24-resume-20260915`
+- Base: `4ff0175`（PR #475 merge commit）。本線Required Quality run `34969218686`、Desktop Windows run `34969218751`は成功。
+- 責任者の明示承認後、Production `test`のCloud AI利用期限を2026-10-15まで延長した。既存値を維持し、監査action `extend_user_entitlement_production_pilot`を記録した。
+- 既存Batch `4760af6d-e521-4785-b8c5-9dea8fac85db`の23–24ページ8コマだけを再開した。新規Batchは作成していない。
+- Worker run `34972097976`、`34973260173`、`34973533958`、`34973962614`、`34974205781`はすべて成功。通常生成でmoderation停止した5件のうち3件は既存の一般向け安全再構成で成功し、2件は安全再構成後も停止したため追加再試行を行わなかった。
+- postflightは完了6／待機0／処理中0／失敗2。23ページと24ページは各3/4コマ、作品画像配置21/157。Cloud AIは使用94、予約0、実費1,515,000 micros、モニターAI105/105。本工程差分は12 credit／`$0.27`で、承認上限16 credit／`$1.44`内。
+- target promptの手動変更、別Provider、新規Batch、候補の手動採用、未関連ページ、品質回答、通知、成人向け処理なし。
+- docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`が成功した。外部設定と手動E2Eの既知PENDINGは維持する。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。残る2コマの内容変更または別経路は別承認を必要とする。
+
+---
+
 ## 2026-09-15 Codex: 長編23–24ページPilot 契約期限preflight修正
 
 - Branch: `codex/production-longform-pilot-pages-23-24-20260915`
