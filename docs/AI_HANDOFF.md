@@ -7,7 +7,8 @@
 - 案内は既存入力を上書きせず、生成も開始しない。候補数と残りcreditを確認してから利用者が明示的に実行する契約を表示する。
 - 対象コマと現在選択中のコマが一致するときだけ表示し、構図入力の`aria-describedby`へ接続する。通常生成、retry、一括生成、Provider、料金、credit契約は維持する。
 - 集中25/25、Hub 1002/1002、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
-- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-recovery-guidance-20260916`。次はDraft PRの全CI／Vercel Preview成功で停止する。
+- Commit `d42680e`をpushしてDraft PR #480を作成した。最初のHEADでRequired Quality run `35036065376`、Desktop Windows run `35036065383`、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/AgZxRpaEZFe1vLbuoU2fMve4orW4`。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-recovery-guidance-20260916`。次は正本同期commitの最終CI／Preview成功で停止する。
 
 ---
 

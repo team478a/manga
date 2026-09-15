@@ -7,7 +7,8 @@
 - 対象コマに限り、直接描写を避け、表情・視線・距離・穏やかな背景で物語を伝える見直し例を表示する。既存入力を自動変更せず、生成も開始しない。
 - 候補数と残りcreditを確認してから明示実行する旨を表示し、案内と構図入力をアクセシブルに関連付けた。
 - 集中25/25、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。既知warning 2件、外部設定と手動E2EのPENDINGは不変。
-- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+- Commit `d42680e`をpushしてDraft PR #480を作成した。最初のHEADでRequired Quality run `35036065376`（Core quality／Migration roundtrip）、Desktop Windows run `35036065383`、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/AgZxRpaEZFe1vLbuoU2fMve4orW4`。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
 
 ---
 
