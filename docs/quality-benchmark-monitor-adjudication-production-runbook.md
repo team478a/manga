@@ -170,6 +170,15 @@ canary確認後も、残り22件の割り当てには別途対象範囲を明示
 - postflightは対象caseの有効担当1件、裁定合計1件、`assigned` event 1件、active case unique guard存在を確認した。Primary A/B回答56件、全回答140件、画像28件、Batch状態`completed`は不変である。
 - メール、LINE、アプリ通知、開始案内、裁定回答、private実データ、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は変更していない。工程3と残り22件の割り当ては、それぞれ別の責任者実行時明示承認まで開始しない。
 
+### 5.2 2026-09-15 Production D/E追加canary割り当て記録
+
+- 既存canaryの`case_000003`はPanel Reviewer Cが独立判断を確定し、匿名A/B差分確認後の最終裁定まで完了していた。Production管理画面では、不一致23件中1件確定、追加割当前の有効状態は`assigned` 1件、`submitted` 1件だった。
+- 責任者はPanel Reviewer D／Eへ各1件の追加canary割り当てを明示承認した。対象caseを1件ずつ固定し、`case_000004`をPanel Reviewer Dへ、`case_000005`をPanel Reviewer Eへ割り当てた。
+- 各操作は管理画面の対象1件、Primary A/B本人ではないこと、外部送信・通知を行わないことの3確認を満たして実行した。いずれも「不一致ケース1件へ裁定担当を割り当てました。案内は送信していません」の完了表示を確認した。
+- postflightは`assigned` 2件、`in_progress` 0件、`independent_locked` 0件、`submitted` 1件、`abstained` 0件、`revoked` 0件である。D／Eの両caseは独立判断未確定、A/B差分未開示、最終裁定未確定で、Cの既存最終裁定は確定済みのままである。
+- Batch `completed`、画像28枚、確認者5/5名、全員の通常品質レビュー28/28、Primary A/B完全一致5/28件、Cohen's kappa 0.125は不変である。メール、LINE、アプリ通知、開始案内、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は変更していない。
+- D／Eへの開始案内と残り20件の割り当ては別工程とし、それぞれ対象者、件数、内容を示した責任者の実行時明示承認まで開始しない。
+
 ## 6. 工程3: 開始案内
 
 割り当ては通知の承認を含まない。担当者へのメール、アプリ通知、LINE、Chatworkその他の外部送信は、宛先、件名、本文、送信件数を責任者へ提示し、送信の実行時承認後に行う。

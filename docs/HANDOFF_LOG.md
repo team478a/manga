@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 品質確認Pilot 第三者裁定 Production D/E canary割り当て
+
+- Branch: `codex/docs-quality-review-adjudication-de-canary-20260915`
+- Base: `06364d7`（PR #467 merge commit）。本線Required Quality run `34917613618`、Desktop Windows run `34917613659`は成功。
+- Production `batch_private_01`のread-only preflightで`completed / 28 images / 5 of 5 reviewers / 140 completed responses`、Primary A/B完全一致5/28、Cohen's kappa 0.125、不一致23件中1件確定を確認した。既存`case_000003`はPanel Reviewer Cによる最終裁定確定済みだった。
+- 責任者がPanel Reviewer D／Eへ各1件を明示承認後、管理画面から`case_000004`をDへ、`case_000005`をEへ割り当てた。両操作の成功表示と案内未送信を確認した。
+- postflightは`assigned` 2件、`submitted` 1件。D／Eは独立判断未確定、A/B差分未開示、最終裁定未確定。Cの最終裁定、Batch、通常品質レビュー、Primary A/B集計、画像は不変。
+- 外部通知、開始案内、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除なし。
+- migration validator 82/82、RC structure、diff check成功。外部環境PENDING／手動E2Eは既存状態のまま。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。D／Eへの開始案内と残り20件の割り当ては、それぞれ別の実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-15 Codex: Cloud原稿編集「次に行う操作」導線修正
 
 - Branch: `codex/fix-cloud-manuscript-next-action-20260915`
