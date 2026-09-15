@@ -6,7 +6,8 @@
 - Production `batch_private_01`は`completed`、画像28枚、確認者5/5名、確定回答140件、Primary A/B完全一致5/28件、Cohen's kappa 0.125、不一致23件中1件確定である。既存`case_000003`はPanel Reviewer Cによる最終裁定確定済みだった。
 - 責任者の対象者・件数を指定した明示承認後、`case_000004`をPanel Reviewer Dへ、`case_000005`をPanel Reviewer Eへ1件ずつ割り当てた。両操作とも管理画面で成功し、案内未送信を確認した。
 - postflightは`assigned` 2件、`submitted` 1件。D／Eは独立判断未確定、A/B差分未開示、最終裁定未確定で、Cの既存最終裁定は維持されている。
-- Batch、通常品質レビュー、Primary A/B集計、画像は不変。通知、裁定回答、Provider、Job、Asset、credit、生成、採用・削除は行っていない。migration validator 82/82、RC structure、diff checkは成功した。次はdocs-only PRの全CI／Preview成功で停止し、D／Eへの開始案内と残り20件の割り当ては別承認を待つ。
+- Batch、通常品質レビュー、Primary A/B集計、画像は不変。通知、裁定回答、Provider、Job、Asset、credit、生成、採用・削除は行っていない。migration validator 82/82、RC structure、diff checkは成功した。
+- Draft PR [#468](https://github.com/team478a/manga/pull/468)はDraft／MERGEABLE。初回HEAD `320a5ce`のRequired Quality run `34921813802`、Desktop Windows run `34921813800`、Vercel、Preview Commentsは成功した。[Preview](https://mangai-hub-staging-git-codex-docs-qua-3edaa1-team478as-projects.vercel.app)はReady。次は証跡同期後の最終HEADの全CI／Preview成功で停止し、D／Eへの開始案内と残り20件の割り当ては別承認を待つ。
 
 ---
 

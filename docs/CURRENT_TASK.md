@@ -2,7 +2,7 @@
 
 ## 2026-09-15 品質確認Pilot 第三者裁定 Production D/E canary割り当て
 
-- 状態: `PRODUCTION_CANARY_ASSIGNED / POSTFLIGHT_PASSED / NOTIFICATION_NOT_STARTED`
+- 状態: `PRODUCTION_CANARY_ASSIGNED / POSTFLIGHT_PASSED / DRAFT_PR_READY / ALL_CI_PASSED / NOTIFICATION_NOT_STARTED`
 - Branch: `codex/docs-quality-review-adjudication-de-canary-20260915`
 - Base: `06364d7`（PR #467 merge commit）。本線Required Quality run `34917613618`とDesktop Windows run `34917613659`は成功した。
 - Production管理画面のread-only preflightで`batch_private_01`が`completed`、画像28枚、確認者5/5名、確定回答140件、Primary A/B完全一致5/28件、Cohen's kappa 0.125、不一致23件中1件確定であることを確認した。既存の`case_000003`はPanel Reviewer Cによる最終裁定確定済みで、追加割当前は`assigned` 1件、`submitted` 1件だった。
@@ -10,7 +10,8 @@
 - postflightは`assigned` 2件、`submitted` 1件、不一致23件中1件確定を確認した。D／Eの両caseは独立判断未確定、A/B差分未開示、最終裁定未確定で、Cの既存最終裁定は確定済みのままである。
 - Batch `completed`、画像28枚、確認者5/5名、全員の通常品質レビュー28/28、Primary A/B集計は不変である。通知、開始案内、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は実行していない。
 - docs-only検証はmigration validator 82/82、RC structure、`git diff --check`が成功した。RCの外部環境PENDING／手動E2E項目は既存状態のままである。
-- 次: 本証跡をdocs-only Draft PRとして全CI／Vercel Preview成功まで確認して停止する。D／Eへの開始案内と残り20件の割り当ては、それぞれ別の責任者実行時明示承認まで行わない。
+- Draft PR [#468](https://github.com/team478a/manga/pull/468)はDraft／MERGEABLE。初回HEAD `320a5ce`のRequired Quality run `34921813802`、Desktop Windows run `34921813800`、Vercel、Vercel Preview Commentsはすべて成功した。[Preview](https://mangai-hub-staging-git-codex-docs-qua-3edaa1-team478as-projects.vercel.app)はReadyである。
+- 次: この証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。D／Eへの開始案内と残り20件の割り当ては、それぞれ別の責任者実行時明示承認まで行わない。
 
 ---
 

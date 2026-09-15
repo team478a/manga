@@ -9,7 +9,8 @@
 - postflightは`assigned` 2件、`submitted` 1件。D／Eは独立判断未確定、A/B差分未開示、最終裁定未確定。Cの最終裁定、Batch、通常品質レビュー、Primary A/B集計、画像は不変。
 - 外部通知、開始案内、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除なし。
 - migration validator 82/82、RC structure、diff check成功。外部環境PENDING／手動E2Eは既存状態のまま。
-- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。D／Eへの開始案内と残り20件の割り当ては、それぞれ別の実行時明示承認を必要とする。
+- Draft PR [#468](https://github.com/team478a/manga/pull/468)はDraft／MERGEABLE。初回HEAD `320a5ce`のRequired Quality run `34921813802`、Desktop Windows run `34921813800`、Vercel、Preview Commentsは成功。[Preview](https://mangai-hub-staging-git-codex-docs-qua-3edaa1-team478as-projects.vercel.app)はReady。
+- 次: 証跡同期後の最終HEADの全CI／Vercel Preview成功で停止する。D／Eへの開始案内と残り20件の割り当ては、それぞれ別の実行時明示承認を必要とする。
 
 ---
 
