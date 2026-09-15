@@ -43,6 +43,8 @@ test("Canvasの再実行ボタンは同じPromptを再構築せず失敗Job ID�
   assert.match(editor, /job\.failed_retry_recovery === "retryable"/);
   assert.match(editor, /このコマの構図・場面を見直す/);
   assert.match(editor, /aria-controls="panel-generation-adjustments"/);
+  assert.match(editor, /setRecoveryGuidancePanelId\(panelId\)/);
+  assert.match(editor, /残りクレジットを確認してから生成してください/);
   assert.match(client, /generation-jobs\/\$\{encodeURIComponent\(jobId\)\}\/retry/);
   assert.match(client, /method: "POST"/);
 });

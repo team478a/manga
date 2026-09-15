@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 moderation終端後の安全な見直し案内（2026-09-16）
+
+- BaseはPR #479 merge commit `558d6f0`。マージ後Required Quality run `35035590798`とDesktop Windows run `35035590592`は成功した。
+- 終端moderation回復を選んだコマだけに、直接描写を避け、人物の表情・視線・距離と穏やかな背景で物語を伝える構図変更例を表示する。
+- 案内は既存入力を上書きせず、生成も開始しない。候補数と残りcreditを確認してから利用者が明示的に実行する契約を表示する。
+- 対象コマと現在選択中のコマが一致するときだけ表示し、構図入力の`aria-describedby`へ接続する。通常生成、retry、一括生成、Provider、料金、credit契約は維持する。
+- 集中25/25、Hub 1002/1002、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-recovery-guidance-20260916`。次はDraft PRの全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 0.0 原稿編集の構図・場面見直しフォーカス（2026-09-16）
 
 - BaseはPR #478 merge commit `faf462b`。マージ後Required Quality run `35034388069`とDesktop Windows run `35034388041`は成功した。

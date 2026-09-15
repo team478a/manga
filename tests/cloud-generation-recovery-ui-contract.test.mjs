@@ -33,4 +33,8 @@ test("終端moderation失敗はPromptを返さず内容見直しへ案内する"
   assert.match(editor, /adjustments instanceof HTMLDetailsElement/);
   assert.match(editor, /adjustments\.open = true/);
   assert.match(editor, /compositionInput\?\.focus\(\)/);
+  assert.match(editor, /PANEL_MODERATION_RECOVERY_GUIDANCE/);
+  assert.match(editor, /内容は自動入力されず、生成もまだ始まりません/);
+  assert.match(editor, /panel-moderation-recovery-guidance/);
+  assert.match(editor, /recoveryGuidancePanelId === selection\.id/);
 });

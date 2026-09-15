@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: moderation終端後の安全な見直し案内
+
+- PR #479 merge commit `558d6f0`から`codex/cloud-panel-recovery-guidance-20260916`を開始した。本線Required Quality run `35035590798`とDesktop Windows run `35035590592`は成功した。
+- 回復導線は構図入力まで到達できるが、moderation停止を避けるため何を直すかの案内がなかった。
+- 対象コマに限り、直接描写を避け、表情・視線・距離・穏やかな背景で物語を伝える見直し例を表示する。既存入力を自動変更せず、生成も開始しない。
+- 候補数と残りcreditを確認してから明示実行する旨を表示し、案内と構図入力をアクセシブルに関連付けた。
+- 集中25/25、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。既知warning 2件、外部設定と手動E2EのPENDINGは不変。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-16 Codex: 原稿編集の構図・場面見直しフォーカス
 
 - PR #478 merge commit `faf462b`から`codex/cloud-panel-recovery-editor-focus-20260916`を開始した。本線Required Quality run `35034388069`とDesktop Windows run `35034388041`は成功した。
