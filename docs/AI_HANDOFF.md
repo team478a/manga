@@ -1,5 +1,19 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 長編23–24ページPilot Production再開（2026-09-15）
+
+- BaseはPR #475 merge commit `4ff0175`。本線Required Quality run `34969218686`とDesktop Windows run `34969218751`は成功した。
+- 責任者はProduction `test`のCloud AI利用期限を2026-10-15まで延長し、既存23–24ページBatchを最大16 credit／`$1.44`で再開することを明示承認した。新規Batchは作成していない。
+- entitlementはJST `2026-10-15 23:59:59.999`まで延長し、status、plan、開始日、source、既存使用量を維持した。監査actionは`extend_user_entitlement_production_pilot`。
+- 既存Batch `4760af6d-e521-4785-b8c5-9dea8fac85db`の8コマを公式Worker run `34972097976`、`34973260173`、`34973533958`、`34973962614`、`34974205781`で処理した。全runはmerge済みSHA `4ff0175`で成功した。
+- 8コマ中6コマは生成・Asset保存・原稿配置まで成功し、23／24ページは各3/4コマ配置となった。残る2コマは通常生成と一般向け安全再構成の双方で`provider_moderation_blocked`となり、追加の自動再試行を停止した。
+- Cloud AIは使用82→94、予約0、実費`$1.245`→`$1.515`。本工程の消費は12/16 credit、`$0.27/$1.44`で承認上限内。モニターAIは97→105/105、画像配置は15→21/157。失敗試行のcredit・費用予約は解放済み。
+- frozen targetの手動変更、別Provider、新規Batch、候補の手動採用、未関連ページ、品質回答、通知、成人向け処理は変更していない。残る2コマの内容修正または別経路実行は別工程・別承認とする。
+- docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`が成功した。外部設定と手動E2Eの既知PENDINGは維持する。
+- Branchは`codex/docs-production-longform-pilot-pages-23-24-resume-20260915`。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 0.0 長編23–24ページPilot 契約期限preflight修正（2026-09-15）
 
 - BaseはPR #474 merge commit `37ed486`。本線Required Quality run `34961544823`とDesktop Windows run `34961544783`は成功した。
