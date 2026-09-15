@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: Cloud原稿編集「次に行う操作」導線修正
+
+- Branch: `codex/fix-cloud-manuscript-next-action-20260915`
+- Base: `ca50314`（PR #466 merge commit）
+- Productionモニター報告をread-onlyで確認し、未生成の原稿編集画面で利用者が最初のクリック先を特定できない原因を、完成ガイドとページ選択欄の分断および未選択理由の不足と特定した。
+- 未生成時の完成ガイドをページ生成欄へ直結し、ページ選択・見積り・開始の3手順、未選択理由、選択件数、阻害条件を表示する。生成処理と保存契約は変更しない。
+- 集中6/6、Hub 645/645、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps error 0（既存warning 2件）、lint、typecheck、Hub／Desktop build、RC structure、diff check成功。
+- Production、報告状態、通知、作品、画像、Provider、Job、Asset、credit、生成なし。複数画像添付は別タスク。次はcommit、push、Draft PR、全CI／Preview成功で停止する。
+
+---
+
 ## 2026-09-15 Codex: 品質確認Pilot 第三者裁定 Production canary開始案内
 
 - Branch: `codex/docs-quality-review-adjudication-notification-20260915`
