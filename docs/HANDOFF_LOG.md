@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 長編23–24ページPilot 契約期限preflight修正
+
+- Branch: `codex/production-longform-pilot-pages-23-24-20260915`
+- Base: `37ed486`（PR #474 merge commit）
+- Productionで23–24ページの8 targetを責任者承認後に1回登録した。Worker run `34963035642`は3件を処理し、全件`billing_unavailable`でJob化前に安全停止した。最新Batchはpending 5／failed 3／Job link 0。
+- read-only診断でAI entitlementのstatusは`trialing`だが期間が2026-09-12に終了済みと確認した。plan、料金、通貨は有効。credit使用82／予約0／上限100、モニターAI使用97／上限105、費用予約0で不変。Provider、Job、Asset、画像配置、Canvas revision、追加課金なし。
+- 一括生成preflightへServer評価時刻とentitlement開始・終了時刻を追加し、statusだけで開始可にしない。期間外・不正時刻はBatch登録前に明示理由でfail closedする。
+- 検証: 集中10/10、Hub 1000/1000、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面・違反0、migration 83件、Hub／Desktop typecheck、lint、依存／module境界、Hub／Desktop build、`git diff --check`成功。RC preflightは構造READYで外部設定・手動E2Eのみ既知のPENDING。
+- Commit `9e008fe`をpushし、Draft PR #475を作成した。Required Quality run `34965713625`、Desktop Windows run `34965713610`、Vercel Preview／Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-1i7ieazgb-team478as-projects.vercel.app`。
+- 次: 正本同期commitの最終CI／Vercel Preview成功で停止。merge後のProduction entitlement延長と既存Batch再実行は別承認を待つ。
+
+---
+
 ## 2026-09-15 Codex: Cloud画像付きマニュアル／長編Pilot再確認
 
 - Branch: `codex/cloud-visual-manual-20260915`
