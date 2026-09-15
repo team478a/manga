@@ -26,6 +26,8 @@ test("長編完成ガイドは未完了工程を制作順に案内する", () =>
   const ungenerated = buildCloudLongformReadiness({ ...base, manuscriptErrorCount: 273, manuscriptEmptyPanelCount: 142 });
   assert.match(ungenerated.items[0].detail, /画像未生成142コマ/);
   assert.doesNotMatch(ungenerated.items[0].detail, /273件の要修正/);
+  assert.equal(ungenerated.items[0].href, "#page-generation");
+  assert.deepEqual(ungenerated.nextAction, { label: "画像生成するページを選ぶ", href: "#page-generation" });
 
   const protectedWork = buildCloudLongformReadiness({ ...base, manuscriptReady: true, manuscriptErrorCount: 0 });
   assert.deepEqual(protectedWork.nextAction, { label: "バックアップを作成", href: "#checkpoint-heading" });
@@ -61,6 +63,7 @@ test("作品画面は長編完成ガイドと既存工程のanchorを持つ", ()
   assert.match(page, /LongformReadinessPanel/);
   assert.match(page, /const manuscript = exportReadiness/);
   assert.match(panel, /長編完成ガイド/);
+  assert.match(panel, /次に行う操作/);
   assert.match(page, /id="manuscript-status"/);
   assert.match(exportPanel, /id="durable-export"/);
   assert.match(checkpointPanel, /id="checkpoint-heading"/);

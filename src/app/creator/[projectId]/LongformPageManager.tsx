@@ -119,9 +119,18 @@ export function LongformPageManager({
 
       <form action={startCloudPageGenerationBatchAction.bind(null, projectId)} className="panel" id="page-generation">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div><h3 className="text-lg font-bold">2ページPilot／4〜8ページ一括生成</h3><p className="mt-1 text-sm text-stone-600">Pilotはページ番号が連続する2ページを選びます。通常は4〜8ページを選び、各ページの全コマを既存の安全な生成Queueへ登録します。</p></div>
-          <PendingSubmitButton className="button shrink-0" disabled={!batchEstimate?.canStart} pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />選択ページを生成</PendingSubmitButton>
+          <div>
+            <p className="text-xs font-bold text-violet-700">次に行う操作 · 2ページPilot／4〜8ページ一括生成</p>
+            <h3 className="mt-1 text-lg font-bold">画像生成するページを選ぶ</h3>
+            <p className="mt-1 text-sm text-stone-600">下のページ番号を2ページ、または4〜8ページ選び、見積りを確認してから生成を開始します。</p>
+          </div>
+          <PendingSubmitButton className="button shrink-0" disabled={!batchEstimate?.canStart} pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />{selectedPageIds.length ? "選択したページを生成" : "ページを選択してください"}</PendingSubmitButton>
         </div>
+        <ol className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
+          <li className="rounded-lg border border-violet-100 bg-violet-50 p-3"><strong>1. ページを選択</strong><p className="mt-1 text-xs text-stone-600">最初は連続する2ページのPilotがおすすめです。</p></li>
+          <li className="rounded-lg border border-violet-100 bg-violet-50 p-3"><strong>2. 見積りを確認</strong><p className="mt-1 text-xs text-stone-600">必要credit、人物・画風、停止理由を確認します。</p></li>
+          <li className="rounded-lg border border-violet-100 bg-violet-50 p-3"><strong>3. 紫のボタンで開始</strong><p className="mt-1 text-xs text-stone-600">選択したページの各コマだけを順番に生成します。</p></li>
+        </ol>
         {batchPreflight && batchEstimate ? <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm" aria-live="polite">
           <p className="font-bold">開始前の生成見積り</p>
           <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
@@ -153,6 +162,11 @@ export function LongformPageManager({
           {batchEstimate.blockers.length ? <ul className="mt-2 list-disc pl-5 text-amber-900">{batchEstimate.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : <p className="mt-2 font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />現在の利用枠では開始できます。</p>}
         </div> : <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><AlertTriangle className="mr-1 inline h-4 w-4" />生成料金と利用枠を確認できないため、一括生成を開始できません。</div>}
         <p className="mt-2 text-xs text-stone-500">2ページPilotも既存の人物・画風、利用枠、最大64コマの安全確認を通過した場合だけ開始できます。画面を閉じてもWorker処理は継続します。</p>
+        <p className="mt-3 rounded-lg border border-stone-200 bg-white p-3 text-sm font-semibold" aria-live="polite">
+          {selectedPageIds.length
+            ? `${selectedPageIds.length}ページ選択中です。開始できない場合は、上の見積りに表示された理由を確認してください。`
+            : "まだページが選択されていません。下のページ番号にチェックを入れてください。"}
+        </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className={`flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm ${statusOf(page.id) === "finalized" ? "opacity-50" : ""}`} key={page.id}><input checked={selectedPageIds.includes(page.id)} disabled={statusOf(page.id) === "finalized"} name="pageId" onChange={(event) => setSelectedPageIds((current) => event.target.checked ? [...current, page.id] : current.filter((id) => id !== page.id))} type="checkbox" value={page.id} />{page.page_number}ページ（{batchPreflight?.pagePanelCounts[page.id] ?? "?"}コマ）</label>)}
         </div>

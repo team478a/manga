@@ -39,4 +39,10 @@ test("blank name pages explain that image generation has not started", () => {
   assert.match(notice, /完成原稿画像ではありません/);
   assert.match(notice, /href=\{`\/creator\/\$\{projectId\}#page-generation`\}/);
   assert.match(manager, /id="page-generation"/);
+  assert.match(manager, /次に行う操作/);
+  assert.match(manager, /画像生成するページを選ぶ/);
+  assert.match(manager, /1\. ページを選択/);
+  assert.match(manager, /2\. 見積りを確認/);
+  assert.match(manager, /3\. 紫のボタンで開始/);
+  assert.match(manager, /まだページが選択されていません/);
 });

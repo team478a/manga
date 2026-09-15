@@ -30,7 +30,8 @@ export function LongformReadinessPanel({ readiness }: { readiness: LongformReadi
           </li>;
         })}
       </ol>
-      <a className="button mt-5 inline-flex" href={readiness.nextAction.href}>{readiness.nextAction.label}</a>
+      <p className="mt-5 text-xs font-bold text-violet-700">次に行う操作</p>
+      <a className="button mt-2 inline-flex" href={readiness.nextAction.href}>{readiness.nextAction.label}</a>
     </section>
   );
 }
