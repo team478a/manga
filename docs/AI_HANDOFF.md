@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 品質確認Pilot 第三者裁定 Production canary開始案内（2026-09-15）
+
+- PR #465はmerge commit `d7f47a1`で本線へ統合され、本線Required Quality run `34911495706`とDesktop Windows run `34911495708`は成功した。
+- 責任者へPanel Reviewer C 1名、件名、本文、送信件数1件を提示し、外部送信の実行時明示承認を取得した。既存の正式連絡スレッドで登録済み宛先を照合した。
+- 従来案内と同じ運営送信元から、第三者裁定1件専用の開始案内を`2026-09-15 09:12 JST`に1件だけ送信した。Gmailの送信完了表示と送信済みフォルダで、対象件名が1件だけ存在することを確認した。
+- 案内には限定Pilot、Production URL、1件、期限、途中保存・再開、Blind-first、確定後変更不可、匿名差分、理由付き辞退、共有禁止、問題時の返信連絡を含めた。PIIと本文はGit／通常ログへ記録していない。
+- 通常品質レビューの再案内、他担当者への通知、残り22件の割り当て、裁定回答、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は行っていない。次はdocs-only PRの全CI／Preview成功で停止し、Panel Reviewer C本人の操作を待つ。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定 Production canary割り当て（2026-09-15）
 
 - PR #464はmerge commit `2aaf43b`で本線へ統合され、本線Required Quality run `34854617431`とDesktop Windows run `34854617516`は成功した。

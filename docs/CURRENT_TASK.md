@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-15 品質確認Pilot 第三者裁定 Production canary開始案内
+
+- 状態: `CANARY_NOTIFICATION_SENT / SENT_FOLDER_VERIFIED / ADJUDICATION_RESPONSE_NOT_STARTED`
+- Branch: `codex/docs-quality-review-adjudication-notification-20260915`
+- Base: `d7f47a1`（PR #465 merge commit）。本線Required Quality run `34911495706`とDesktop Windows run `34911495708`は成功した。
+- 責任者へPanel Reviewer C 1名、件名、本文、送信件数1件を提示し、送信の実行時明示承認を取得した。
+- 既存の正式連絡スレッドで登録済み宛先を照合し、従来案内と同じ運営送信元から`MANGAI 第三者裁定（1件）開始のお願い`を`2026-09-15 09:12 JST`（`2026-09-15 00:12 UTC`）に1件だけ送信した。Gmailの送信完了表示と送信済みフォルダの1件一致を確認した。
+- 案内は先行販売購入者向け限定Pilot、Production品質確認URL、対象1件、期限2026-09-20、途中保存・再開、Blind-first、独立判断の変更不可、匿名A/B差分、理由付き辞退、第三者共有禁止、問題時の返信連絡を含む。宛先と本文はGitおよび通常ログへ複製しない。
+- 通常28画像レビューの再案内、他4名への通知、残り22件の割り当て、裁定回答・代理入力、既存回答・画像、Provider、Job、Asset、credit、生成、採用・削除は実行していない。
+- 次: 本証跡をdocs-only Draft PRとして全CI／Vercel Preview成功まで確認して停止する。工程4はPanel Reviewer C本人の操作を待ち、管理者は集計状態だけをread-only監視する。残り22件の割り当てや追加通知は別の責任者実行時明示承認まで行わない。
+
+---
+
 ## 2026-09-15 品質確認Pilot 第三者裁定 Production canary割り当て
 
 - 状態: `PRODUCTION_CANARY_ASSIGNED / POSTFLIGHT_PASSED / NOTIFICATION_NOT_STARTED`
