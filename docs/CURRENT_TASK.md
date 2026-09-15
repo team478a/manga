@@ -2,14 +2,15 @@
 
 ## 2026-09-16 原稿編集画面のmoderation終端回復導線
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
 - Branch: `codex/cloud-panel-moderation-recovery-20260916`
 - Base: `08940ae`（PR #477 merge commit）。一括生成画面では、第2段階の一般向け安全再構成まで拒否されたJobを「内容の見直し待ち」として案内できる状態になった。
 - 同じ失敗Jobを原稿編集画面でも`retryable / edit_required / unavailable`へ分類する。通常の再実行可能Jobだけ「このコマだけ再実行」を表示し、終端moderation失敗と保存条件を安全に復元できないJobは、対象コマを選択してAI画像生成設定へ移動する「このコマの生成設定を見直す」導線へ切り替える。
 - 判定はServer側の保存済み入力とProvider Job有無から行い、Prompt、negative prompt、Provider Job IDはClientへ返さない。一括生成と原稿編集で同じ中立判定器を使用し、module循環は発生させない。
 - 元画像、完了済み候補、通常の一時失敗再実行、Feature Flag OFF契約、credit予約・解放、Provider・model・料金、成人向け境界は変更しない。Production、DB、Provider実行、Job登録、Asset、Canvas、credit操作は0件。
 - 検証: 集中28/28、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。依存境界の既知warning 2件、RC外部設定と手動E2Eの既知PENDINGは不変。
-- 次: 差分をcommit、push、Draft PR化し、Required Quality、Migration roundtrip、Desktop Windows、Vercel Preview／Preview Commentsがすべて成功した時点で停止する。残る2コマの内容変更やProvider再実行は別の実行時明示承認まで行わない。
+- Commit `f4e1030`をpushし、Draft PR #478を作成した。最初のHEADでRequired Quality run `35033422341`（Core quality 3分14秒／Migration roundtrip 1分2秒）、Desktop Windows run `35033422084`（4分1秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/6eYxNj61MceZdYSfj3DBERu5LABq`。
+- 次: この正本同期commitの最終CI／Vercel Preview成功で停止する。残る2コマの内容変更やProvider再実行は別の実行時明示承認まで行わない。
 
 ---
 

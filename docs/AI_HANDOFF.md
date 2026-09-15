@@ -7,7 +7,8 @@
 - `retryable`だけ既存のコマ単位再実行を維持する。`edit_required`は一般向け安全再構成でも生成できず自動再実行を停止したことを表示し、`unavailable`は保存条件を復元できないことを表示する。両方とも対象コマを選択し、AI画像生成設定へscrollする。
 - 判定器は`src/lib`の中立層に置き、一括生成と原稿編集で共用する。`cloud-creator`と`manga`の循環依存はない。
 - 集中28/28、Hub 1002/1002、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
-- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-moderation-recovery-20260916`。次はDraft PRの全CI／Vercel Preview成功で停止し、実生成は別承認を待つ。
+- Commit `f4e1030`をpushしてDraft PR #478を作成した。最初のHEADでRequired Quality run `35033422341`、Desktop Windows run `35033422084`、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/6eYxNj61MceZdYSfj3DBERu5LABq`。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-moderation-recovery-20260916`。次は正本同期commitの最終CI／Preview成功で停止し、実生成は別承認を待つ。
 
 ---
 
