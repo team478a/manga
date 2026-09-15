@@ -7,7 +7,8 @@
 - 保守的な第2段階安全再構成まで拒否されたJobは、再実行buttonを表示せず、Batchを「内容の見直し待ち」と表示する。元画像・完了済みコマを保持している旨と、対象ページで構図や場面を変更する案内・編集導線を表示する。
 - 一時失敗の再実行、Job化失敗の再登録、安全再構成、credit、Provider、成人向け境界は維持した。Production、DB、Provider、Job、Asset、Canvas、credit変更なし。
 - 集中16/16、Hub 1000/1000、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub build、RC構造、diff check成功。外部設定・手動E2Eの既知PENDINGは維持する。
-- Branchは`codex/cloud-moderation-blocked-recovery-20260916`。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。2コマの実内容変更・再生成は別のProduction承認が必要。
+- Commit `9f3458d`をpushし、Draft PR #477を作成した。Required Quality run `35031034333`、Desktop Windows run `35031034043`、Vercel Preview／Preview Commentsは最初のHEADで成功した。
+- Branchは`codex/cloud-moderation-blocked-recovery-20260916`。次は正本同期commitの最終CI／Vercel Preview成功で停止する。2コマの実内容変更・再生成は別のProduction承認が必要。
 
 ---
 

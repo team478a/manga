@@ -2,14 +2,15 @@
 
 ## 2026-09-16 一括生成のmoderation終端回復導線
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
 - Branch: `codex/cloud-moderation-blocked-recovery-20260916`
 - Base: `5f1a2e5`（PR #476 merge commit）。PR #476は長編23–24ページPilotのProduction再開証跡を本線へ反映した。
 - 既存Batchで通常生成と2段階の一般向け安全再構成がすべて`provider_moderation_blocked`となったJobを、再実行可能な失敗と区別する。Prompt本文はClientへ返さず、Serverで保存済み入力を検証して`retryable / edit_required / unavailable`だけを画面へ渡す。
 - `edit_required`のJobは無効な再実行buttonを表示せず、Batchを「処理中」ではなく「内容の見直し待ち」と表示する。完了済み画像を保持していること、自動再実行を停止したこと、対象ページで構図や場面を見直すことを案内し、対象ページの編集画面へ遷移できるようにする。
 - 再実行可能な一時失敗、Job化失敗、既存の一般向け安全再構成、credit予約・解放、Provider・model・料金、成人向け境界は変更しない。DB migration、Production、Provider実行、Job登録、Asset、Canvas、credit操作は0件。
 - 検証: 集中16/16、Hub 1000/1000、Hub typecheck、lint、依存／module／size境界、migration 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。RC外部設定と手動E2Eの既知PENDINGは不変。
-- 次: 差分をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。残る2コマの内容変更やProvider再実行は、merge後も対象・費用上限を示した別の実行時明示承認まで行わない。
+- Commit `9f3458d`をpushし、Draft PR #477を作成した。最初のHEADでRequired Quality run `35031034333`（Core quality／Migration roundtrip）、Desktop Windows run `35031034043`、Vercel Preview／Preview Commentsはすべて成功した。
+- 次: この正本同期commitの最終CI／Vercel Preview成功で停止する。残る2コマの内容変更やProvider再実行は、merge後も対象・費用上限を示した別の実行時明示承認まで行わない。
 
 ---
 

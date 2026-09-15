@@ -7,7 +7,8 @@
 - Batch読込時に保存済み入力をServerで検証し、失敗Jobを`retryable / edit_required / unavailable`へ分類する。ClientへPromptやProvider本文は送らない。
 - 終端Jobは「内容の見直し待ち」とし、無効な再実行・一時停止・中止buttonを隠した。完了済み結果を保持していることと自動再実行停止を説明し、対象ページの編集画面へ案内する。通常の再実行可能JobとJob化失敗の操作は維持した。
 - 集中16/16、Hub 1000/1000、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変。
-- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。残る2コマの内容変更・再実行は別承認まで行わない。
+- Commit `9f3458d`をpushしてDraft PR #477を作成した。最初のHEADでRequired Quality run `35031034333`、Desktop Windows run `35031034043`、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次は正本同期commitの最終CI／Vercel Preview成功で停止する。残る2コマの内容変更・再実行は別承認まで行わない。
 
 ---
 
