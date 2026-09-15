@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-15 購入者向け報告の複数画像添付 Production migration適用
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / DOCS_PR_PENDING`
+- Branch: `codex/docs-monitor-feedback-multiple-attachments-production-migration-20260915`
+- Base: `fbe931b`（PR #471 merge commit）。本線Required Quality run `34935007773`とDesktop Windows run `34935007765`は成功した。
+- 対象はSupabase `mangai-hub-staging`、Project ref `vmdsyxykcrgxcdbrwlkv`、`main` Production。適用前にHealthy、最終backup 5時間前、対象table存在、新列・制約なし、報告11件、既存添付path 4件、private Storage bucket 1件をread-only確認した。
+- 責任者の実行時明示承認後、`202609150001_cloud_monitor_feedback_multiple_attachments.sql`を全文1回適用した。原本は644 bytes、SHA-256 `D2EA2B68D64C2199E127C56D9A4BA871540FA4C1852B813C5B4FFBD9EAB46806`で、SQL Editorは`Success. No rows returned`を返した。
+- postflightは`attachment_paths`が`text[] / NOT NULL / default '{}'::text[]`、制約validated、報告11件、旧path 4件、配列path 4件、backfill不一致0件、上限超過0件、private bucket 1件を確認した。
+- 補助確認SQLの初回はEditorの置換残りによりread-only構文エラー`42601`で停止し、DB変更は0件だった。空の新規Editorで完全置換して再実行し、defaultとprivate bucketを確認した。
+- Production変更は上記additive migrationと既存4件のpath配列backfillだけ。画像本体、報告状態、通知、裁定、作品、Provider、Job、Asset、credit、生成、採用・削除は変更していない。
+- 次: docs-only差分を検証し、commit、push、Draft PRを作成して全CI／Vercel Preview成功で停止する。複数画像の実送信canaryは別工程とする。
+
+---
+
 ## 2026-09-15 購入者向け報告の複数画像添付
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING`
