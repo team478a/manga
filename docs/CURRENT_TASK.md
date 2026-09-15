@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 moderation終端後の安全な見直し案内
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
+- Branch: `codex/cloud-panel-recovery-guidance-20260916`
+- Base: `558d6f0`（PR #479 merge commit）。マージ後Required Quality run `35035590798`とDesktop Windows run `35035590592`は成功した。
+- 終端moderation失敗から構図入力を開いた対象コマだけに、刺激の強い出来事を直接描かず、人物の表情・視線・距離と穏やかな背景で伝える見直し例を表示する。
+- 見直し例は入力欄へ自動挿入せず、生成も自動開始しない。利用者へ、構図指定と候補数、残りクレジットを確認してから明示的に生成するよう案内する。既存入力を上書きしない。
+- 対象コマIDと現在選択中のコマが一致するときだけ案内を表示し、`aria-describedby`で構図入力と関連付ける。通常の生成、再試行、一括生成、Provider・model・料金、成人向け境界は変更しない。
+- 検証: 集中25/25、Hub 1002/1002、Hub typecheck、lint、依存／module／size境界、migration 83/83、Hub Production build、RC Repository structure READY、`git diff --check`成功。依存境界の既知warning 2件、RC外部設定と手動E2Eの既知PENDINGは不変。
+- Commit `d42680e`をpushし、Draft PR #480を作成した。最初のHEADでRequired Quality run `35036065376`（Core quality 3分3秒／Migration roundtrip 47秒）、Desktop Windows run `35036065383`（3分31秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/AgZxRpaEZFe1vLbuoU2fMve4orW4`。
+- Production、DB、Provider実行、Job登録、Asset、Canvas、credit操作は0件。次: この正本同期commitの最終CI／Vercel Preview成功で停止する。構図入力と実生成は利用者の明示操作または別の実行時承認を必要とする。
+
+---
+
 ## 2026-09-16 原稿編集の構図・場面見直しフォーカス
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`

@@ -182,6 +182,8 @@ const gazeDirectionLabels: Record<GazeDirection, string> = {
   partner: "会話相手を見る",
   off_frame: "画面外を見る",
 };
+const PANEL_MODERATION_RECOVERY_GUIDANCE =
+  "刺激の強い出来事を直接描かず、人物の表情・視線・距離と穏やかな背景で物語を伝える構図へ変更してください。";
 const panelGenerationTargetLabels: Record<PanelGenerationTarget, string> = {
   composite: "完成コマ（背景・人物・効果）",
   background: "背景だけ",
@@ -335,6 +337,9 @@ export function CloudCanvasEditor({
   const [gazeDirection, setGazeDirection] =
     useState<GazeDirection>("storyboard");
   const [compositionInstruction, setCompositionInstruction] = useState("");
+  const [recoveryGuidancePanelId, setRecoveryGuidancePanelId] = useState<
+    string | null
+  >(null);
   const [revisionPreset, setRevisionPreset] =
     useState<RevisionPreset>("face");
   const [revisionInstruction, setRevisionInstruction] = useState("");
@@ -349,6 +354,7 @@ export function CloudCanvasEditor({
 
   const openPanelGenerationAdjustments = (panelId: string) => {
     setSelection({ type: "panel", id: panelId });
+    setRecoveryGuidancePanelId(panelId);
     window.requestAnimationFrame(() => {
       const adjustments = document.getElementById(
         "panel-generation-adjustments",
@@ -1811,7 +1817,29 @@ export function CloudCanvasEditor({
                   >
                     追加の構図指定（任意）
                   </label>
+                  {selection?.type === "panel" &&
+                  recoveryGuidancePanelId === selection.id ? (
+                    <div
+                      className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-[11px] leading-relaxed text-amber-950"
+                      id="panel-moderation-recovery-guidance"
+                      role="note"
+                    >
+                      <p className="font-bold">見直し方の例</p>
+                      <p className="mt-1">
+                        {PANEL_MODERATION_RECOVERY_GUIDANCE}
+                      </p>
+                      <p className="mt-1">
+                        内容は自動入力されず、生成もまだ始まりません。構図指定と候補数、残りクレジットを確認してから生成してください。
+                      </p>
+                    </div>
+                  ) : null}
                   <input
+                    aria-describedby={
+                      selection?.type === "panel" &&
+                      recoveryGuidancePanelId === selection.id
+                        ? "panel-moderation-recovery-guidance"
+                        : undefined
+                    }
                     className="field mt-1 w-full"
                     id="panel-composition-instruction"
                     maxLength={500}
