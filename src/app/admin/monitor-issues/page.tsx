@@ -75,7 +75,22 @@ export default async function MonitorIssuesAdminPage({
                     {latest?.page_url ? <p className="break-all">画面: {latest.page_url}</p> : null}
                     {latest?.environment ? <p>環境: {latest.environment}</p> : null}
                     {latest?.client_context ? <p>診断: {String(latest.client_context.pathname ?? "画面不明")}・{String(latest.client_context.timezone ?? "地域不明")}</p> : null}
-                    {latest?.attachment_path && attachmentUrls.get(latest.attachment_path) ? <p><a className="font-semibold text-violet-700" href={attachmentUrls.get(latest.attachment_path)} rel="noreferrer" target="_blank">添付画像を確認</a></p> : null}
+                    {latest ? (
+                      <div className="flex flex-wrap gap-3">
+                        {(latest.attachment_paths.length
+                          ? latest.attachment_paths
+                          : latest.attachment_path
+                            ? [latest.attachment_path]
+                            : []
+                        ).map((path, index) =>
+                          attachmentUrls.get(path) ? (
+                            <a className="font-semibold text-violet-700" href={attachmentUrls.get(path)} key={path} rel="noreferrer" target="_blank">
+                              添付画像{index + 1}を確認
+                            </a>
+                          ) : null,
+                        )}
+                      </div>
+                    ) : null}
                     <p>初回 {new Date(task.first_reported_at).toLocaleString("ja-JP")}・最終 {new Date(task.last_reported_at).toLocaleString("ja-JP")}</p>
                   </div>
                   {task.reproduction_summary ? <p className="mt-3 rounded-lg bg-stone-50 p-3 text-sm"><strong>自動解析:</strong> {task.reproduction_summary}</p> : null}

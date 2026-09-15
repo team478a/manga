@@ -6,6 +6,7 @@ import {
   sanitizeMonitorText,
   sanitizeMonitorUrl,
   validateMonitorScreenshot,
+  validateMonitorScreenshots,
 } from "../src/lib/monitor-feedback.ts";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
@@ -34,6 +35,13 @@ test("ブラウザー診断と画像を制限する", () => {
   assert.deepEqual(parseMonitorDiagnostic("not-json"), {});
   assert.equal(validateMonitorScreenshot(new File([], "empty.png", { type: "image/png" })), null);
   assert.throws(() => validateMonitorScreenshot(new File(["x"], "bad.gif", { type: "image/gif" })), /monitor_screenshot_invalid/);
+  assert.equal(validateMonitorScreenshots([
+    new File(["1"], "one.png", { type: "image/png" }),
+    new File(["2"], "two.webp", { type: "image/webp" }),
+  ]).length, 2);
+  assert.throws(() => validateMonitorScreenshots(Array.from({ length: 6 }, (_, index) =>
+    new File([String(index)], `${index}.jpg`, { type: "image/jpeg" }),
+  )), /monitor_screenshots_invalid/);
 });
 
 test("非公開添付・投稿制限・状況通知をDBで強制する", async () => {
@@ -61,14 +69,29 @@ test("利用者画面と管理画面は診断・添付・進捗を表示する",
   ]);
   assert.match(form, /diagnostic/);
   assert.match(form, /スクリーンショット/);
+  assert.match(form, /multiple name="screenshots"/);
   assert.match(action, /sanitizeMonitorText/);
-  assert.match(feedbackRepository, /\.remove\(\[attachmentPath\]\)/);
+  assert.match(action, /getAll\("screenshots"\)/);
+  assert.match(feedbackRepository, /attachment_paths: attachmentPaths/);
+  assert.match(feedbackRepository, /\.remove\(uploadedPaths\)/);
   assert.match(monitor, /publicStatusLabels/);
   assert.match(admin, /attachmentUrls/);
   assert.match(monitorRepository, /createSignedUrl/);
   assert.match(admin, /直近100件内の報告/);
-  assert.match(issues, /添付画像を確認/);
+  assert.match(issues, /添付画像\{index \+ 1\}を確認/);
   assert.match(dashboard, /通知 \{notificationsResult\.count/);
+});
+
+test("複数添付migrationは既存1枚を保持し最大5枚へ拡張する", async () => {
+  const [migration, rollback] = await Promise.all([
+    read("../supabase/migrations/202609150001_cloud_monitor_feedback_multiple_attachments.sql"),
+    read("../supabase/rollbacks/202609150001_cloud_monitor_feedback_multiple_attachments.sql"),
+  ]);
+  assert.match(migration, /add column if not exists attachment_paths text\[\]/);
+  assert.match(migration, /set attachment_paths=array\[attachment_path\]/);
+  assert.match(migration, /cardinality\(attachment_paths\) between 0 and 5/);
+  assert.match(rollback, /set attachment_path=attachment_paths\[1\]/);
+  assert.match(rollback, /drop column if exists attachment_paths/);
 });
 
 test("rollbackはPhase 2の追加物を除去する", async () => {

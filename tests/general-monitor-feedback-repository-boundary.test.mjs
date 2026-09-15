@@ -32,11 +32,11 @@ test("monitor feedback repository preserves private Storage and rollback contrac
   assert.match(repository, /admin\.storage\.from\("monitor-feedback"\)/);
   assert.match(
     repository,
-    /`\$\{input\.ownerProfileId\}\/\$\{input\.feedbackId\}\.\$\{input\.screenshot\.extension\}`/,
+    /`\$\{input\.ownerProfileId\}\/\$\{input\.feedbackId\}\.\$\{screenshot\.extension\}`/,
   );
-  assert.match(repository, /contentType: input\.screenshot\.file\.type/);
+  assert.match(repository, /contentType: screenshot\.file\.type/);
   assert.match(repository, /upsert: false/);
-  assert.match(repository, /\.remove\(\[attachmentPath\]\)/);
+  assert.match(repository, /\.remove\(uploadedPaths\)/);
 });
 
 test("monitor feedback repository preserves DB owner and payload contracts", async () => {
@@ -52,6 +52,7 @@ test("monitor feedback repository preserves DB owner and payload contracts", asy
     "page_url",
     "client_context",
     "attachment_path",
+    "attachment_paths",
   ]) {
     assert.match(repository, new RegExp(`${field}:`));
   }

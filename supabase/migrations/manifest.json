@@ -492,7 +492,13 @@
       "description": "品質確認Pilotの第三者裁定をBlind-firstかつ追記型監査で保存",
       "forwardSha256": "d1aa14eda0476f277f1d3a03fa770436d40e8e2b05a00e474b75be7d0e9f9da5",
       "rollbackSha256": "1914f9b1947023d4a19a3c7667fbc0452dfbafd0728d0a86e318d73c6be697dd"
+    },
+    {
+      "id": "202609150001_cloud_monitor_feedback_multiple_attachments",
+      "description": "購入者向け報告へ最大5枚の非公開画像添付を追加",
+      "forwardSha256": "d2ea2b68d64c2199e127c56d9a4ba871540fa4c1852b813c5b4ffbd9eab46806",
+      "rollbackSha256": "ec8d0b564bc046ae73110933958628a19b850f4e0a64a26fb8b4662addc648b9"
     }
   ],
-  "schemaSha256": "345e4d4c3d187e66c1eca06637e432f01566922830c4d14cc9d384b35d71f38a"
+  "schemaSha256": "1800ebc224acf9f7194e08572cd1613dd41fbcd98d1003708b09077c4137b52f"
 }

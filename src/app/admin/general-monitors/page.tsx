@@ -149,7 +149,18 @@ export default async function GeneralMonitorsAdminPage() {
               {item.target_scope === "general" ? (
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   <span className="rounded-full bg-violet-100 px-2 py-1 font-bold text-violet-900">{publicStatusLabels[item.public_status]}</span>
-                  {item.attachment_path && attachmentUrls.get(item.attachment_path) ? <a className="rounded-full bg-blue-100 px-2 py-1 font-bold text-blue-900" href={attachmentUrls.get(item.attachment_path)} rel="noreferrer" target="_blank">添付画像を確認</a> : null}
+                  {(item.attachment_paths.length
+                    ? item.attachment_paths
+                    : item.attachment_path
+                      ? [item.attachment_path]
+                      : []
+                  ).map((path, index) =>
+                    attachmentUrls.get(path) ? (
+                      <a className="rounded-full bg-blue-100 px-2 py-1 font-bold text-blue-900" href={attachmentUrls.get(path)} key={path} rel="noreferrer" target="_blank">
+                        添付画像{index + 1}
+                      </a>
+                    ) : null,
+                  )}
                 </div>
               ) : null}
               {item.target_scope !== "general" && item.verdict ? (

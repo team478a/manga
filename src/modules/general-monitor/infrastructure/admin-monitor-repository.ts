@@ -37,6 +37,7 @@ export type GeneralMonitorAdminFeedback = {
   environment: string | null;
   client_context: Record<string, unknown> | null;
   attachment_path: string | null;
+  attachment_paths: string[];
   public_status: "submitted" | "triaged" | "in_progress" | "resolved" | "closed";
   status_updated_at: string;
 };
@@ -62,6 +63,17 @@ type LegacyGeneralMonitorAdminFeedback = Pick<
 async function loadAdminFeedback(
   admin: ReturnType<typeof createAdminClient>,
 ) {
+  const withMultipleAttachments = await admin
+    .from("cloud_general_monitor_feedback")
+    .select(
+      "id,owner_profile_id,workflow_step,rating,outcome,comment,created_at,review_status,admin_note,target_scope,project_id,page_id,panel_id,page_number_snapshot,panel_name_snapshot,verdict,issue_type,severity,provider_id,model_id,generation_count,generation_cost_micros,generation_elapsed_ms,request_type,title,page_url,environment,client_context,attachment_path,attachment_paths,public_status,status_updated_at",
+    )
+    .order("created_at", { ascending: false })
+    .limit(100)
+    .returns<GeneralMonitorAdminFeedback[]>();
+  if (!isMissingMonitorFeedbackSchema(withMultipleAttachments.error))
+    return withMultipleAttachments;
+
   const structured = await admin
     .from("cloud_general_monitor_feedback")
     .select(
@@ -69,8 +81,15 @@ async function loadAdminFeedback(
     )
     .order("created_at", { ascending: false })
     .limit(100)
-    .returns<GeneralMonitorAdminFeedback[]>();
-  if (!isMissingMonitorFeedbackSchema(structured.error)) return structured;
+    .returns<Omit<GeneralMonitorAdminFeedback, "attachment_paths">[]>();
+  if (!isMissingMonitorFeedbackSchema(structured.error))
+    return {
+      ...structured,
+      data: (structured.data ?? []).map((item) => ({
+        ...item,
+        attachment_paths: item.attachment_path ? [item.attachment_path] : [],
+      })),
+    };
 
   const legacy = await admin
     .from("cloud_general_monitor_feedback")
@@ -106,6 +125,7 @@ async function loadAdminFeedback(
       environment: null,
       client_context: null,
       attachment_path: null,
+      attachment_paths: [],
       public_status: "submitted",
       status_updated_at: item.created_at,
     })),
@@ -132,7 +152,13 @@ export async function loadGeneralMonitorAdminWorkspace() {
     ...new Set(
       (feedbackResult.data ?? [])
         .filter((item) => item.target_scope === "general")
-        .map((item) => item.attachment_path)
+        .flatMap((item) =>
+          item.attachment_paths.length
+            ? item.attachment_paths
+            : item.attachment_path
+              ? [item.attachment_path]
+              : [],
+        )
         .filter(Boolean),
     ),
   ] as string[];

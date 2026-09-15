@@ -11,7 +11,7 @@ import {
   parseMonitorDiagnostic,
   sanitizeMonitorText,
   sanitizeMonitorUrl,
-  validateMonitorScreenshot,
+  validateMonitorScreenshots,
 } from "@/lib/monitor-feedback";
 import { saveGeneralMonitorFeedback } from "@/modules/general-monitor/infrastructure/monitor-feedback-repository";
 
@@ -45,11 +45,16 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
       environment: formData.get("environment"),
       comment: formData.get("comment"),
     });
-    let screenshot;
+    let screenshots;
     try {
-      screenshot = validateMonitorScreenshot(formData.get("screenshot"));
+      screenshots = validateMonitorScreenshots([
+        ...formData.getAll("screenshots"),
+        ...formData.getAll("screenshot"),
+      ]);
     } catch {
-      throw new ValidationError("スクリーンショットはPNG・JPEG・WebP、5MB以下にしてください。");
+      throw new ValidationError(
+        "スクリーンショットは5枚まで、PNG・JPEG・WebP、1枚5MB以下・合計20MB以下にしてください。",
+      );
     }
     const feedbackId = crypto.randomUUID();
     const diagnostic = parseMonitorDiagnostic(formData.get("diagnostic"));
@@ -66,7 +71,7 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
       environment: sanitizeMonitorText(parsed.environment) || null,
       comment: sanitizeMonitorText(parsed.comment),
       clientContext: diagnostic,
-      screenshot,
+      screenshots,
     });
     if (error) {
       if (error.message.includes("cloud_monitor_feedback_rate_limited")) {

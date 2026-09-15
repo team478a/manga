@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 購入者向け報告の複数画像添付（2026-09-15）
+
+- PR #470はmerge commit `827eb9a`で本線へ統合され、本線Required Quality run `34932064492`とDesktop Windows run `34932064467`は成功した。
+- 購入者向け報告は最大5枚、1枚5MB、合計20MBのPNG／JPEG／WebPを受理する。旧単一画像fieldと既存`attachment_path`を維持し、新しい`attachment_paths`へ全pathを保存する。
+- Storage途中失敗・DB確定失敗時は同一送信の保存済み画像を補償削除する。migration未適用環境では0／1枚だけ旧schemaへfallbackし、複数枚は黙って欠落させず再試行案内でfail closedする。
+- 管理者2画面は全画像を個別の短期署名URLで表示し、購入者履歴は添付枚数だけを表示する。画像、署名URL、PIIはGit／通常ログへ残さない。
+- migration／rollback／schema／manifest／assertionと回帰テストを追加した。Production migrationおよび実データ変更は行っていない。
+- Production read-only監査は未完了報告0件、緊急・高優先度0件、重複0件。第三者裁定はCが`submitted`、D／Eが各1件`assigned`のままである。
+- 集中10/10、Hub 999/999、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 83/83、deps error 0（既存warning 2件）、lint、typecheck、build、RC structure、diff check成功。
+- Branchは`codex/monitor-feedback-multiple-attachments-20260915`。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。Production migrationは別承認まで適用しない。
+
+---
+
 ## 0.0 Cloud原稿編集案内のProduction公開・報告対応完了（2026-09-15）
 
 - BaseはPR #469 merge commit `26029d5`。本線Required Quality run `34928802452`とDesktop Windows run `34928802474`は成功した。
