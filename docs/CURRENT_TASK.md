@@ -7,7 +7,7 @@
 - Base: `ca50314`（PR #466 merge commit）。
 - Productionの責任者確認待ちモニター報告をread-onlyで確認し、制作工程5「原稿編集」で画像生成の開始操作が分からない原因を、完成ガイドからページ選択までが二段階で、未選択理由も明示されない導線と特定した。
 - 未生成コマがあるときは完成ガイドから`#page-generation`へ直接移動し、「画像生成するページを選ぶ」を次操作として表示する。ページ生成欄には、選択・見積り・開始の3手順、未選択理由、選択件数、阻害条件の確認先を常時表示する。
-- 集中6/6、Hub 645/645、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。
+- 集中16/16、Hub 645/645、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面blocking violation 0、migration 82/82、deps error 0（既存warning 2件）、lint、全typecheck、Hub／Desktop build、RC structure、`git diff --check`は成功した。初回CIが既存Batch案内文の互換性違反を1件検出したため、新しい次操作表示と併記して修正した。
 - Production、報告状態、通知、作品、画像、Provider、Job、Asset、credit、生成処理は変更していない。複数画像添付要望はDB／Storage契約を伴う独立タスクとして残す。
 - 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後のProduction反映確認、対応完了通知、報告状態変更は別工程とする。
 

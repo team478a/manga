@@ -31,7 +31,7 @@ Productionのモニター報告で、制作工程5「原稿編集」まで進ん
 
 ## 5. 検証
 
-- 集中テスト: 6/6成功
+- 集中テスト（既存Batch UI互換を含む）: 16/16成功
 - Hub: 645/645成功
 - Canvas: 26/26成功
 - AI: 50/50成功
@@ -45,6 +45,8 @@ Productionのモニター報告で、制作工程5「原稿編集」まで進ん
 - Desktop build: 成功（既存のchunk size warningのみ）
 - RC preflight: repository structure ready。外部設定と手動E2Eの既存PENDINGは不変
 - `git diff --check`: 成功
+
+初回CIは既存の「2ページPilot／4〜8ページ一括生成」案内文が見出し変更で失われたことを1件検出した。新しい次操作表示と併記して既存案内を保持し、関連回帰16/16で修正を確認した。
 
 ## 6. Merge後の運用
 

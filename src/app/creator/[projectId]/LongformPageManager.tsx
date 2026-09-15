@@ -120,7 +120,7 @@ export function LongformPageManager({
       <form action={startCloudPageGenerationBatchAction.bind(null, projectId)} className="panel" id="page-generation">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold text-violet-700">次に行う操作</p>
+            <p className="text-xs font-bold text-violet-700">次に行う操作 · 2ページPilot／4〜8ページ一括生成</p>
             <h3 className="mt-1 text-lg font-bold">画像生成するページを選ぶ</h3>
             <p className="mt-1 text-sm text-stone-600">下のページ番号を2ページ、または4〜8ページ選び、見積りを確認してから生成を開始します。</p>
           </div>
