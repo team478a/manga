@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud原稿編集案内のProduction公開・報告対応完了（2026-09-15）
+
+- BaseはPR #469 merge commit `26029d5`。本線Required Quality run `34928802452`とDesktop Windows run `34928802474`は成功した。
+- Productionの報告キューには、PR #467で主訴を修正済みの「原稿編集で次に何をすればよいか分からない」1件だけが未完了として残っていた。複数画像添付要望は別タスクである。
+- 責任者の実行時明示承認後、更新情報「原稿編集で次に行う操作を分かりやすくしました」を`改善`、`/creator`として公開し、対象報告を`対応済み`へ変更した。更新成功表示、公開中表示、対応状態更新成功、未完了0件／緊急・高優先度0件を確認した。
+- 報告状態の`resolved`遷移は既存trigger契約により報告者向けアプリ内対応完了通知1件を作成する。PII、報告本文、画像、署名URLはGit／通常ログへ記録していない。
+- 作品、画像、品質回答、裁定、Provider、Job、Asset、credit、生成、採用・削除は変更していない。D／Eの第三者裁定各1件は`assigned`、未着手である。
+- docs-only検証はmigration validator 82/82、RC structure、`git diff --check`が成功した。外部環境PENDING／手動E2Eは既存状態を維持する。
+- 次はdocs-only PRの全CI／Preview成功で停止する。複数画像添付、裁定再案内、追加割り当ては別承認を必要とする。
+
+---
+
 ## 0.0 品質確認Pilot 第三者裁定 Production D/E canary開始案内（2026-09-15）
 
 - BaseはPR #468 merge commit `ad8e128`。本線Required Quality run `34922590516`とDesktop Windows run `34922590531`は成功した。
