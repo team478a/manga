@@ -47,6 +47,7 @@ test("batch service durably registers bounded panel work before the worker runs"
   assert.match(service, /isGeneralAudienceGenerationRetry/);
   assert.match(service, /isConservativeGeneralAudienceGenerationRetry/);
   assert.match(service, /classifyFailedBatchJobRecovery/);
+  assert.match(service, /classifyFailedGenerationRetryRecovery/);
   assert.match(service, /status,page_id,input,error_code,provider_job_id/);
 });
 

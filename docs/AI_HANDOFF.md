@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 原稿編集画面のmoderation終端回復導線（2026-09-16）
+
+- BaseはPR #477 merge commit `08940ae`。一括生成画面に加え、原稿編集画面の生成履歴も終端moderation失敗を通常の再実行可能失敗と区別する。
+- Server側で保存済み生成入力を検証し、Provider Job有無と失敗codeを使って`retryable / edit_required / unavailable`を返す。Prompt、negative prompt、Provider Job IDは公開responseから除外する。
+- `retryable`だけ既存のコマ単位再実行を維持する。`edit_required`は一般向け安全再構成でも生成できず自動再実行を停止したことを表示し、`unavailable`は保存条件を復元できないことを表示する。両方とも対象コマを選択し、AI画像生成設定へscrollする。
+- 判定器は`src/lib`の中立層に置き、一括生成と原稿編集で共用する。`cloud-creator`と`manga`の循環依存はない。
+- 集中28/28、Hub 1002/1002、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-moderation-recovery-20260916`。次はDraft PRの全CI／Vercel Preview成功で停止し、実生成は別承認を待つ。
+
+---
+
 ## 0.0 一括生成のmoderation終端回復導線（2026-09-16）
 
 - BaseはPR #476 merge commit `5f1a2e5`。長編23–24ページPilotは8コマ中6コマ成功、2コマが通常生成と一般向け安全再構成後も`provider_moderation_blocked`で終端している。

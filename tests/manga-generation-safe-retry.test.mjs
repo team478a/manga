@@ -7,6 +7,7 @@ import {
   isConservativeGeneralAudienceGenerationRetry,
   isGeneralAudienceGenerationRetry,
 } from "../src/modules/manga/domain/general-audience-generation-retry.ts";
+import { classifyFailedGenerationRetryRecovery } from "../src/lib/cloud-generation-retry-recovery.ts";
 
 const imageGeneration = {
   kind: "image",
@@ -74,6 +75,29 @@ const compactProviderContractGeneration = {
     }),
   ].join("\n"),
 };
+
+test("失敗Jobは安全再構成の段階に応じて再実行可否を分類する", () => {
+  const firstRetry = buildGeneralAudienceGenerationRetry(imageGeneration);
+  const conservativeRetry = buildConservativeGeneralAudienceGenerationRetry(firstRetry);
+  assert.equal(classifyFailedGenerationRetryRecovery({
+    status: "failed",
+    generation: imageGeneration,
+    errorCode: "provider_moderation_blocked",
+    hasProviderJobId: true,
+  }), "retryable");
+  assert.equal(classifyFailedGenerationRetryRecovery({
+    status: "failed",
+    generation: conservativeRetry,
+    errorCode: "provider_moderation_blocked",
+    hasProviderJobId: true,
+  }), "edit_required");
+  assert.equal(classifyFailedGenerationRetryRecovery({
+    status: "failed",
+    generation: null,
+    errorCode: "provider_moderation_blocked",
+    hasProviderJobId: true,
+  }), "unavailable");
+});
 
 test("Provider拒否後は人物同一性と参照画像を維持して直接描写だけを安全化する", () => {
   const retry = buildGeneralAudienceGenerationRetry(imageGeneration);
