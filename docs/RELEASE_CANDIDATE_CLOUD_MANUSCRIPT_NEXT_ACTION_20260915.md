@@ -2,7 +2,7 @@
 
 更新日: 2026-09-15  
 対象: MANGAI Cloud 一般向け制作フロー  
-状態: `IMPLEMENTED / LOCAL_GATES_PASSED / PRODUCTION_UNCHANGED`
+状態: `IMPLEMENTED / DRAFT_PR_READY / ALL_CI_PASSED / PRODUCTION_UNCHANGED`
 
 ## 1. 対象報告
 
@@ -54,3 +54,12 @@ Productionのモニター報告で、制作工程5「原稿編集」まで進ん
 2. Production反映後、対象利用者が画像生成を開始できることを確認する。
 3. 対応完了通知やモニター報告状態の変更は、反映確認後に責任者の実行時明示承認を得て別工程で行う。
 4. 複数画像添付は独立タスクで設計する。
+
+## 7. PR／Preview証跡
+
+- Draft PR: [#467](https://github.com/team478a/manga/pull/467)
+- 実装HEAD: `58b7de7`
+- Required Quality run `34916648485`: Core quality、Migration roundtrip成功
+- Desktop Windows run `34916648430`: Windows build成功
+- Vercel、Vercel Preview Comments: 成功
+- Preview: https://mangai-hub-staging-1igxhtbx6-team478as-projects.vercel.app

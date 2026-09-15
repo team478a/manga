@@ -5,7 +5,8 @@
 - BaseはPR #466 merge commit `ca50314`。Productionモニター報告をread-onlyで確認し、原稿編集の未生成状態から実際のページ選択までが二段階で、無効な生成ボタンの解除方法も不明瞭だったことを原因とした。
 - 未生成時は完成ガイドからページ生成欄へ直接移動する。ページ生成欄へ次操作、3手順、未選択理由、選択件数、阻害条件の確認先を追加し、生成済み時の従来導線は維持する。
 - 集中16/16、Hub 645/645、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面0 violation、migration 82/82、deps、lint、typecheck、Hub／Desktop build、RC structure、diff check成功。初回CIが検出した既存Batch案内文の互換性違反は、新案内との併記で修正した。
-- Production、報告状態、通知、作品、画像、Provider、Job、Asset、credit、生成なし。複数画像添付はDB／Storageと後方互換を設計する別タスク。次はDraft PRの全CI／Preview成功で停止する。
+- Production、報告状態、通知、作品、画像、Provider、Job、Asset、credit、生成なし。複数画像添付はDB／Storageと後方互換を設計する別タスク。
+- Draft PR [#467](https://github.com/team478a/manga/pull/467)はDraft／MERGEABLE。実装HEAD `58b7de7`のRequired Quality run `34916648485`、Desktop Windows run `34916648430`、Vercel、Preview Commentsは成功した。[Preview](https://mangai-hub-staging-1igxhtbx6-team478as-projects.vercel.app)はReady。次は証跡同期後の最終HEADの全CI／Preview成功で停止する。
 
 ---
 
