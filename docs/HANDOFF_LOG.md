@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: 購入者向け報告の複数画像添付 Production migration適用
+
+- Branch: `codex/docs-monitor-feedback-multiple-attachments-production-migration-20260915`
+- Base: `fbe931b`（PR #471 merge commit）。本線Required Quality run `34935007773`、Desktop Windows run `34935007765`は成功。
+- Production `mangai-hub-staging / vmdsyxykcrgxcdbrwlkv / main`でHealthy、最終backup 5時間前、新列・制約なし、報告11件、旧添付4件、private bucket 1件をread-only確認した。
+- 責任者の実行時明示承認後、migration `202609150001`を全文1回適用した。644 bytes、SHA-256 `D2EA2B68D64C2199E127C56D9A4BA871540FA4C1852B813C5B4FFBD9EAB46806`、結果は`Success. No rows returned`。
+- postflightは`text[] / NOT NULL / default '{}'::text[]`、制約validated、報告11件、旧path 4件、配列path 4件、backfill不一致0件、上限超過0件、private bucket 1件を確認した。
+- 補助SQL初回はEditor置換残りによるread-only `42601`で変更0件。空の新規Editorで再実行し成功した。
+- Production変更はadditive migrationと4件のbackfillだけ。画像、報告状態、通知、裁定、作品、Provider、Job、Asset、credit、生成、採用・削除なし。
+- 次はdocs-only差分のcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。複数画像の実送信canaryは別工程とする。
+
+---
+
 ## 2026-09-15 Codex: 購入者向け報告の複数画像添付
 
 - Branch: `codex/monitor-feedback-multiple-attachments-20260915`

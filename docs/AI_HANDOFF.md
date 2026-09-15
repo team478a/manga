@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 購入者向け報告の複数画像添付 Production migration適用（2026-09-15）
+
+- BaseはPR #471 merge commit `fbe931b`。本線Required Quality run `34935007773`、Desktop Windows run `34935007765`は成功した。
+- Production `mangai-hub-staging / vmdsyxykcrgxcdbrwlkv / main`で、Healthy、backup、対象table、新列未適用、報告11件、旧添付4件、private bucket 1件をread-only preflightした。
+- 責任者の実行時明示承認後、644 bytes、SHA-256 `D2EA2B68D64C2199E127C56D9A4BA871540FA4C1852B813C5B4FFBD9EAB46806`のmigrationを全文1回適用し、`Success. No rows returned`を確認した。
+- postflightは`attachment_paths text[] not null default '{}'::text[]`、validated constraint、報告11件、旧path 4件、配列path 4件、backfill不一致0件、上限超過0件、private bucket 1件である。
+- 補助SQL初回のEditor置換残りはread-only `42601`となり変更0件。新規Editorで再実行して成功した。
+- Production変更はadditive schemaと4件のbackfillだけ。画像、報告状態、通知、裁定、Provider、credit、生成、採用・削除なし。
+- Branchは`codex/docs-monitor-feedback-multiple-attachments-production-migration-20260915`。次はdocs-only Draft PRの全CI／Vercel Preview成功で停止する。実送信canaryは別工程である。
+
+---
+
 ## 0.0 購入者向け報告の複数画像添付（2026-09-15）
 
 - PR #470はmerge commit `827eb9a`で本線へ統合され、本線Required Quality run `34932064492`とDesktop Windows run `34932064467`は成功した。
