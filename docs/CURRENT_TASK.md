@@ -2,7 +2,7 @@
 
 ## 2026-09-15 長編23–24ページPilot 契約期限preflight修正
 
-- 状態: `PRODUCTION_BATCH_REGISTERED / WORKER_FAILED_SAFE / PROVIDER_NOT_CALLED / PREFLIGHT_FIX_IMPLEMENTED / DRAFT_PR_PENDING`
+- 状態: `PRODUCTION_BATCH_REGISTERED / WORKER_FAILED_SAFE / PROVIDER_NOT_CALLED / PREFLIGHT_FIX_IMPLEMENTED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
 - Branch: `codex/production-longform-pilot-pages-23-24-20260915`
 - Base: `37ed486`（PR #474 merge commit）。マージ後Required Quality run `34961544823`とDesktop Windows run `34961544783`は成功した。
 - Production `test`購入者枠は、別工程でモニターAI上限100→105を監査記録付きで更新済み。23–24ページの開始直前preflightは2ページ／8コマ、必要16 credit／残り18、モニターAI残り8、最大予約`$1.44`、`flux-2-pro`、pricing `bfl-flux2-pro-2026-08`、画風設定済み、登場人物2/2設定済みだった。
@@ -11,7 +11,8 @@
 - 失敗処理はtransactionで巻き戻され、postflightはCloud AI creditが使用82／予約0／上限100、費用予約0、モニターAIが使用97／上限105のまま。Provider送信、生成Job、Asset、画像配置、Canvas revision、追加課金は0件である。
 - 原因は一括生成preflightがentitlementのstatusだけを検査し、`period_starts_at / period_ends_at`を検査していなかったこと。Server取得時刻と契約期間をpreflight contextへ追加し、`active / trialing`でも期間外・不正時刻ならBatch登録前に明示理由でfail closedする。Server Actionも同じ再取得済みcontextを使う。
 - 検証: 集中10/10、Hub 1000/1000、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面・違反0、migration 83件、Hub／Desktop typecheck、lint、依存／module境界、Hub／Desktop build、`git diff --check`成功。RC preflightはRepository structure READY、外部設定・手動E2Eのみ既知のPENDING。Production entitlement延長、失敗3件の再登録、残り5件のWorker実行は行っていない。
-- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge／Production反映後、責任者が期間・対象を示してAI entitlement延長を別途明示承認した場合だけ、期限を更新して既存Batchの失敗3件を再登録し、8件を完了まで処理する。
+- Commit `9e008fe`をpushし、Draft PR #475を作成した。Required Quality run `34965713625`（Core quality／Migration roundtrip）、Desktop Windows run `34965713610`、Vercel Preview／Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-1i7ieazgb-team478as-projects.vercel.app`。
+- 次: この正本同期commitの最終CI／Vercel Preview成功で停止する。merge／Production反映後、責任者が期間・対象を示してAI entitlement延長を別途明示承認した場合だけ、期限を更新して既存Batchの失敗3件を再登録し、8件を完了まで処理する。
 
 ---
 

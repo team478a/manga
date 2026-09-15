@@ -7,7 +7,7 @@
 - Worker run `34963035642`は3件を処理し`billing_unavailable`で安全に終了した。read-only postflightはpending 5／failed 3／Job link 0。AI entitlementは`trialing / admin`だが2026-09-12に期限切れで、plan・料金・通貨は有効だった。
 - creditは使用82／予約0／上限100、モニターAIは使用97／上限105、費用予約0のまま。Provider送信、Job、Asset、画像配置、Canvas revision、追加課金なし。
 - preflightへServer評価時刻とentitlement期間を追加し、statusが`active / trialing`でも期間外ならBatch登録前に明示停止する。集中10/10、Hub 1000/1000、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面・違反0、migration 83件、全typecheck、lint、依存／module境界、Hub／Desktop build、diff check成功。RC preflightは構造READYで外部設定・手動E2Eのみ既知のPENDING。
-- Branchは`codex/production-longform-pilot-pages-23-24-20260915`。次はDraft PRの全CI／Preview成功で停止する。Productionの期間延長と既存Batch再実行は、merge後に別の実行時明示承認を必要とする。
+- Commit `9e008fe`をpushし、Draft PR #475を作成した。Required Quality run `34965713625`、Desktop Windows run `34965713610`、Vercel Preview／Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-1i7ieazgb-team478as-projects.vercel.app`。次は正本同期commitの最終CI／Preview成功で停止する。Productionの期間延長と既存Batch再実行は、merge後に別の実行時明示承認を必要とする。
 
 ---
 

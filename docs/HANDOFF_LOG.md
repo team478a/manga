@@ -8,7 +8,8 @@
 - read-only診断でAI entitlementのstatusは`trialing`だが期間が2026-09-12に終了済みと確認した。plan、料金、通貨は有効。credit使用82／予約0／上限100、モニターAI使用97／上限105、費用予約0で不変。Provider、Job、Asset、画像配置、Canvas revision、追加課金なし。
 - 一括生成preflightへServer評価時刻とentitlement開始・終了時刻を追加し、statusだけで開始可にしない。期間外・不正時刻はBatch登録前に明示理由でfail closedする。
 - 検証: 集中10/10、Hub 1000/1000、Canvas 26/26、AI 50/50、Desktop 230/230、a11y 29画面・違反0、migration 83件、Hub／Desktop typecheck、lint、依存／module境界、Hub／Desktop build、`git diff --check`成功。RC preflightは構造READYで外部設定・手動E2Eのみ既知のPENDING。
-- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後のProduction entitlement延長と既存Batch再実行は別承認を待つ。
+- Commit `9e008fe`をpushし、Draft PR #475を作成した。Required Quality run `34965713625`、Desktop Windows run `34965713610`、Vercel Preview／Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-1i7ieazgb-team478as-projects.vercel.app`。
+- 次: 正本同期commitの最終CI／Vercel Preview成功で停止。merge後のProduction entitlement延長と既存Batch再実行は別承認を待つ。
 
 ---
 
