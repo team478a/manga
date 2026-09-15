@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-15 Cloud原稿編集案内のProduction公開・報告対応完了
+
+- 状態: `PRODUCTION_UPDATE_PUBLISHED / REPORT_RESOLVED / OPEN_ISSUES_ZERO / DOCS_PR_PENDING`
+- Branch: `codex/docs-monitor-report-resolution-20260915`
+- Base: `26029d5`（PR #469 merge commit）。本線Required Quality run `34928802452`とDesktop Windows run `34928802474`は成功した。
+- Productionの報告・自動修正キューをread-only確認し、未完了は「原稿編集で次に何をすればよいか分からない」1件だけだった。主訴はPR #467で修正済みで、複数画像添付要望はDB／Storage／後方互換設計を伴う別タスクとして維持する。
+- 責任者へ公開文面、報告状態変更、アプリ内通知1件の自動送信を提示し、Production実行時の明示承認を取得した。
+- 更新情報「原稿編集で次に行う操作を分かりやすくしました」を種類`改善`、関連画面`/creator`として`2026-09-15 13:40 JST`に公開した。未生成画面のページ選択・見積り・生成開始手順、選択できない理由、複数添付は別検討であることを案内した。
+- 対象報告を`対応済み`へ変更した。画面は「対応状態を更新しました」を表示し、未完了0件、緊急・高優先度0件になった。既存DB trigger契約により報告者向けアプリ内対応完了通知1件が同時作成される操作である。
+- 作品、画像、通常品質レビュー、第三者裁定、Provider、Job、Asset、credit、生成、採用・削除は変更していない。D／Eの第三者裁定は各1件とも`assigned`、未着手のままである。
+- docs-only検証はmigration validator 82/82、RC structure、`git diff --check`が成功した。外部環境PENDING／手動E2Eは既存状態のままである。
+- 次: docs-only差分を検証し、commit、push、Draft PRを作成して全CI／Vercel Preview成功で停止する。複数画像添付の実装、D／Eへの再案内、追加裁定割り当ては別工程とする。
+
+---
+
 ## 2026-09-15 品質確認Pilot 第三者裁定 Production D/E canary開始案内
 
 - 状態: `PRODUCTION_NOTIFICATION_SENT / 2_OF_2_SUCCEEDED / RESPONSE_PENDING / DOCS_PR_PENDING`

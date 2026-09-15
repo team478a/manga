@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-15 Codex: Cloud原稿編集案内のProduction公開・報告対応完了
+
+- Branch: `codex/docs-monitor-report-resolution-20260915`
+- Base: `26029d5`（PR #469 merge commit）。本線Required Quality run `34928802452`、Desktop Windows run `34928802474`は成功。
+- Production read-only preflightでは、PR #467で主訴を修正済みの原稿編集案内報告1件だけが未完了だった。複数画像添付要望はDB／Storage設計が必要な別タスクとして残した。
+- 責任者の公開文面・状態変更・アプリ内通知1件に対する実行時明示承認後、更新情報1件を公開し、対象報告1件を`対応済み`へ変更した。公開中表示、状態更新成功、未完了0件／緊急・高優先度0件を確認した。
+- 既存trigger契約により報告者向けアプリ内対応完了通知1件が同時作成される。PII、報告本文、添付画像、署名URLは記録していない。
+- 作品、画像、通常レビュー、第三者裁定、Provider、Job、Asset、credit、生成、採用・削除なし。D／Eは各1件`assigned`、未着手。
+- migration validator 82/82、RC structure、diff check成功。外部環境PENDING／手動E2Eは既存状態のまま。
+- 次: docs-only検証、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-15 Codex: 品質確認Pilot 第三者裁定 Production D/E canary開始案内
 
 - Branch: `codex/docs-quality-review-adjudication-de-notice-20260915`
