@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 0完了証跡連結
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_NOT_CREATED / REAL_STAGE0_NOT_RUN / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Base: PR #494 merge commit `4062044`。マージ後Required Quality run `35088579072`（Core quality 2分38秒、Migration roundtrip 50秒）とDesktop Windows run `35088579042`（4分7秒）は成功済み。
+- Branch: `codex/adult-stage0-completion-evidence-20260916`
+- 開始承認のconsumeを予定開始日時以後に限定し、消費済みreceipt、固定operation package、12GB帯4方式実機証跡を1つの内容非保持Stage 0完了証跡へSHA-256で連結するCLIを追加した。完了証跡は固定package隣へ排他的に新規作成し、別session、移動・copy、改変、消費前証跡、期限切れ、上書きをfail closedで拒否する。
+- 12GB Phase 5取込は`--stage0-completion`と`--stage0-package`を必須にし、完了証跡、元operation packageの内容・場所、元実機証跡を再検証してから内容非保持summaryだけを受入れ表へ保存する。Adult Pilot bundleと統合release readinessも連結済み完了証跡を必須とし、合格しても`stage1DistributionAuthorized=false`を維持する。8GB／16GBの従来Phase 5経路は変更していない。
+- Runbookへ「開始承認消費→4方式受入れ→完了証跡作成→12GB取込」の固定順序とコマンドを追記した。CLIはRuntime、model取得、artifact送付、生成、配布を自動実行せず、標準出力へ候補ID・実path・作品内容を表示しない。
+- 検証: 集中24/24、Desktop 287/287、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY成功。Viteの既知chunk warningと外部設定・手動E2Eの既知PENDINGは不変である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者、実operation package、実開始承認、実完了証跡は変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: `git diff --check`、commit、push、Draft PR作成後、全CI／Vercel Preview成功で停止する。実Stage 0開始、実機証跡回収・取込、Stage 1配布は外部前提と対象付き明示承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult Stage 0開始承認の一回限定化
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / FIRST_HEAD_ALL_CHECKS_PASSED / REAL_AUTHORIZATION_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`

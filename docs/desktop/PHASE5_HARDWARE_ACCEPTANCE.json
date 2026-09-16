@@ -17,6 +17,7 @@
       "hardware": null,
       "checkedAt": null,
       "evidence": [],
+      "stage0Completion": null,
       "notes": "12GB GPU Windows実機とローカルComfyUIが必要"
     },
     {

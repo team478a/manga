@@ -187,8 +187,31 @@ npm run desktop:adult:stage0-start-authorization:consume -- `
 7. 内容を特定しない架空の成人用fixtureでText-to-Image、Image-to-Image、ControlNet、Inpaintingを各1回だけ実施する。
 8. 素材保存、Page配置、再起動復元、PDFまたは画像書き出し、backupから別Project復元を確認する。
 9. Prompt、画像、Project名、絶対pathを含まない実機証跡JSONだけを安全な受渡し領域で回収する。
-10. `phase5:hardware-evidence:import`で12GB profileへ取り込み、統合release readinessを再実行する。
-11. 24時間以上、データ消失、意図しない通信、起動不能、安全境界違反がないことを確認する。
+10. 同じoperation package、開始承認と実機証跡からStage 0完了証跡を作成する。
+11. 完了証跡を指定して`phase5:hardware-evidence:import`で12GB profileへ取り込み、統合release readinessを再実行する。
+12. 24時間以上、データ消失、意図しない通信、起動不能、安全境界違反がないことを確認する。
+
+```powershell
+$hardwareEvidence = "<回収したphase5-hardware-evidence.jsonの絶対path>"
+$stage0Completion = "${stage0Package}.stage0-completion.json"
+
+npm run desktop:adult:stage0-completion-evidence -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence
+
+npm run phase5:hardware-evidence:import -- `
+  $hardwareEvidence `
+  --stage0-completion $stage0Completion `
+  --stage0-package $stage0Package
+npm run desktop:adult:pilot-release-readiness:strict
+```
+
+完了証跡は固定operation packageの隣に排他的に作成され、取込時にも元packageの内容SHA-256と場所SHA-256を再照合する。開始承認の消費前に作成された実機証跡、予定開始前の消費、別packageへ移動した開始記録、別pathへ移動した実機証跡、改変された証跡、期限切れを拒否する。同じpackageへ完了証跡を上書きできないため、別セッションの結果を流用しない。完了証跡と受入れ表には内容や実pathを保持せず、合格後も`stage1DistributionAuthorized=false`を維持する。
 
 Stage 0 artifactはPilot招待物ではない。同じ候補者をStage 1へ進める場合も、責任者確認後にStage 1用の配布記録と招待台帳entryを新規作成する。
 

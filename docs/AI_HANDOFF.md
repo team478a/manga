@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0完了証跡連結（2026-09-16）
+
+- BaseはPR #494 merge commit `4062044`。マージ後のRequired Quality run `35088579072`とDesktop Windows run `35088579042`は成功済み。
+- consume済み開始承認、固定operation package、12GB帯4方式実機証跡をSHA-256で結ぶ内容非保持Stage 0完了証跡CLIを追加した。開始予定前のconsume、消費前証跡、別session、package／証跡の移動・copy、改変、期限切れ、上書きをfail closedで拒否する。
+- 12GB Phase 5取込は完了証跡と元operation packageの内容・場所を再照合し、Adult Pilot bundle、統合release readinessも連結済み完了証跡を必須にした。8GB／16GB経路は維持し、Stage 0合格後もStage 1配布許可はfalseである。runbookへ作成・取込の固定コマンドを追記した。
+- 集中24/24、Desktop 287/287、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造成功。Vite既知warning、外部設定・手動E2EのPENDINGは不変。
+- Branchは`codex/adult-stage0-completion-evidence-20260916`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書、実候補者・実package・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 0.0 Desktop Adult Stage 0開始承認の一回限定化（2026-09-16）
 
 - BaseはPR #493 merge commit `338b7b6`。マージ後のCore quality、Migration roundtrip、Desktop Windowsは成功済み。

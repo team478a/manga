@@ -8,6 +8,7 @@ import test from "node:test";
 import {
   consumeStage0StartAuthorization,
   createStage0StartAuthorization,
+  verifyConsumedStage0StartAuthorization,
 } from "../scripts/adult-pilot-stage0-start-authorization.mjs";
 
 const write = (root, name, value) => {
@@ -30,8 +31,8 @@ const fixture = (t) => {
     candidateId: "candidate-a1b2c3d4e5f6",
     artifactVersion: "0.1.0",
     artifactPurpose: "stage0_acceptance_only",
-    scheduledStartAt: "2099-01-01T00:00:00.000Z",
-    deleteBy: "2099-01-08T00:00:00.000Z",
+    scheduledStartAt: "2026-09-16T09:30:00.000Z",
+    deleteBy: "2026-09-20T00:00:00.000Z",
     sources: {
       candidateAssessmentSha256: "a".repeat(64),
       stage0PlanSha256: "b".repeat(64),
@@ -128,7 +129,32 @@ test("Stage 0 start authorization is consumed once with a fixed receipt", (t) =>
   assert.equal(receipt.stage1DistributionAuthorized, false);
   assert.equal(receiptPath, `${values.packagePath}.stage0-start-consumed.json`);
   assert.equal(fs.existsSync(receiptPath), true);
+  const verified = verifyConsumedStage0StartAuthorization(values);
+  assert.equal(verified.receiptSha256.length, 64);
+  assert.equal(verified.receipt.candidateId, receipt.candidateId);
   assert.throws(() => consumeStage0StartAuthorization(values), /EEXIST/);
+});
+
+test("Stage 0 start authorization cannot be consumed before its scheduled start", (t) => {
+  const values = fixture(t);
+  const operationPackage = JSON.parse(
+    fs.readFileSync(values.packagePath, "utf8"),
+  );
+  operationPackage.scheduledStartAt = "2026-09-16T10:30:00.000Z";
+  fs.writeFileSync(
+    values.packagePath,
+    `${JSON.stringify(operationPackage, null, 2)}\n`,
+  );
+  values.operationPackageVerifier = () => operationPackage;
+  createStage0StartAuthorization(values);
+  assert.throws(
+    () =>
+      consumeStage0StartAuthorization({
+        ...values,
+        now: new Date("2026-09-16T10:29:59.999Z"),
+      }),
+    /予定開始日時より前/,
+  );
 });
 
 test("Stage 0 start authorization rejects tampering, expiry, and unsafe output", (t) => {
@@ -145,7 +171,7 @@ test("Stage 0 start authorization rejects tampering, expiry, and unsafe output",
   );
 
   const expired = fixture(t);
-  expired.now = new Date("2099-01-08T00:00:00.000Z");
+  expired.now = new Date("2026-09-20T00:00:00.000Z");
   assert.throws(() => createStage0StartAuthorization(expired), /削除期限/);
 
   const unsafe = fixture(t);

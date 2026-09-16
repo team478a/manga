@@ -57,7 +57,7 @@ npm run desktop:adult:pilot-release-readiness
 
 全artifactの検証に成功した場合だけ、`--evidence-out`で内容や実pathを含まない検証証跡を新規作成できる。既存fileは上書きしない。証跡の取込時は、固定manifest自体のSHA-256、4artifactの容量・SHA-256、repository内の4 workflowとmappingのSHA-256を再検証し、すべて一致した場合だけ固定Bundleの8項目を`fixed`へ更新する。同時に、元証跡全体のSHA-256、元manifestのSHA-256、artifact／workflow digest集合を内容非保持の`verification`としてmanifestへ保存する。証跡JSON自体はGitへcommitせず、安全な受渡し領域で管理する。取込後のmanifest差分をreviewし、統合readinessを再実行する。実artifactの取得、Runtime起動、Provider実行、生成、配布はこの操作では行わない。
 
-統合release readinessは公開前条件を8区分で表示する。通常実行は残件を報告し、strict実行は署名、固定Bundle、12GB実機4方式証跡、責任者承認を含む全区分が揃うまで終了コード1で停止する。
+統合release readinessは公開前条件を9区分で表示する。通常実行は残件を報告し、strict実行は署名、固定Bundle、12GB実機4方式証跡、消費済みStage 0 sessionへ結び付いた完了証跡、責任者承認を含む全区分が揃うまで終了コード1で停止する。
 
 運営側に適格12GB端末がない場合は、`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`に従い、技術モニター候補のscreening、署名済み受入れ試験専用artifactによるStage 0、Stage 1招待を分離する。候補preflight成功は配布許可ではなく、未署名installer、未固定Bundle、12GB実機証跡なしの招待禁止を維持する。
 

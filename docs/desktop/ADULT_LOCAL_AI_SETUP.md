@@ -10,11 +10,11 @@
 
 Creator Chat用モデルは、端末のRAMとモデル配布元の利用条件を確認して選択する。MANGAIはモデル名からlicenseを推測しない。
 
-| 端末目安 | 推奨するモデル規模 | 運用 |
-| --- | --- | --- |
-| RAM 8GB | 1B〜3Bの量子化モデル | Chatだけを実行し、画像生成前にモデルを解放 |
-| RAM 12〜16GB | 3B〜7Bの量子化モデル | ComfyUIとの同時実行を避ける |
-| RAM 24GB以上 | 7B前後から検証 | 応答速度とlicenseを確認して段階的に変更 |
+| 端末目安     | 推奨するモデル規模   | 運用                                       |
+| ------------ | -------------------- | ------------------------------------------ |
+| RAM 8GB      | 1B〜3Bの量子化モデル | Chatだけを実行し、画像生成前にモデルを解放 |
+| RAM 12〜16GB | 3B〜7Bの量子化モデル | ComfyUIとの同時実行を避ける                |
+| RAM 24GB以上 | 7B前後から検証       | 応答速度とlicenseを確認して段階的に変更    |
 
 確認項目は、商用利用、成人向け利用、派生物、クレジット表示、再配布である。確認できないモデルは制作へ使用しない。
 
@@ -65,11 +65,11 @@ mapping例:
 
 ## 低VRAM受入れ
 
-| Profile | 最大辺 | ControlNet | LoRA | 排他制御 |
-| --- | ---: | ---: | ---: | --- |
-| 8GB | 1024px | 1 | 2 | Chatと画像生成を同時実行しない |
-| 12GB | 1024px | 2 | 3 | Chatと画像生成を同時実行しない |
-| 16GB | 1536px | 4 | 4 | 画像生成は1件ずつ |
+| Profile | 最大辺 | ControlNet | LoRA | 排他制御                       |
+| ------- | -----: | ---------: | ---: | ------------------------------ |
+| 8GB     | 1024px |          1 |    2 | Chatと画像生成を同時実行しない |
+| 12GB    | 1024px |          2 |    3 | Chatと画像生成を同時実行しない |
+| 16GB    | 1536px |          4 |    4 | 画像生成は1件ずつ              |
 
 各端末でText-to-Image、Image-to-Image、ControlNet、Inpaintingを1枚ずつ実行し、生成後に保存・Page配置・PDF書き出しまで確認する。
 
@@ -87,6 +87,8 @@ npm run phase5:hardware-acceptance:strict
 ```
 
 証跡にはGPU名・VRAM・RAM、4方式の結果hash、PDFと販売パッケージのhashだけを記録する。Project IDはSHA-256化し、Prompt、参照画像、生成画像、成人向け内容は含めない。Profileと実VRAM帯が一致しない証跡、4方式または書き出しが不足する証跡は登録できない。
+
+技術モニターによるAdult Pilot Stage 0の12GB証跡は、単独では取り込めない。開始承認を消費した同じoperation packageへ完了証跡を作成し、`--stage0-completion`と`--stage0-package`を付けて取り込む。固定手順は[`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`](DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md)に従う。8GB・16GBの通常Phase 5受入れは上記の従来コマンドを使用する。
 
 ## Project privacy評価
 

@@ -3,6 +3,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+import { verifyStage0CompletionEvidenceForImport } from "./adult-pilot-stage0-completion-evidence.mjs";
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "../../..");
 const file = process.env.MANGAI_PHASE5_HARDWARE_STATUS_PATH
@@ -11,6 +13,12 @@ const file = process.env.MANGAI_PHASE5_HARDWARE_STATUS_PATH
 const strict = process.argv.includes("--strict");
 const importIndex = process.argv.indexOf("--import");
 const importFile = importIndex >= 0 ? process.argv[importIndex + 1] : undefined;
+const completionIndex = process.argv.indexOf("--stage0-completion");
+const completionFile =
+  completionIndex >= 0 ? process.argv[completionIndex + 1] : undefined;
+const stage0PackageIndex = process.argv.indexOf("--stage0-package");
+const stage0PackageFile =
+  stage0PackageIndex >= 0 ? process.argv[stage0PackageIndex + 1] : undefined;
 const allowedStatus = new Set(["pending", "passed", "blocked"]);
 const requiredProfiles = ["vram_8gb", "vram_12gb", "vram_16gb"];
 const requiredOperations = [
@@ -45,8 +53,7 @@ const validHardware = (hardware, profile) => {
   };
   const [minimum, maximum] = ranges[profile];
   return (
-    hardware.dedicatedVramMb >= minimum &&
-    hardware.dedicatedVramMb < maximum
+    hardware.dedicatedVramMb >= minimum && hardware.dedicatedVramMb < maximum
   );
 };
 const validateOperations = (operations, label) => {
@@ -71,6 +78,14 @@ const validateExport = (value, label) => {
   )
     fail(`${label} is missing verified export evidence`);
 };
+const validStage0Completion = (value) =>
+  value?.status === "passed" &&
+  sha256Pattern.test(value.completionSha256 ?? "") &&
+  sha256Pattern.test(value.operationPackageSha256 ?? "") &&
+  sha256Pattern.test(value.startReceiptSha256 ?? "") &&
+  sha256Pattern.test(value.hardwareEvidenceSha256 ?? "") &&
+  validDate(value.completedAt) &&
+  value.stage1DistributionAuthorized === false;
 
 let document;
 try {
@@ -105,18 +120,52 @@ if (importIndex >= 0) {
     fail(`${evidence.profile} hardware is outside the required VRAM range`);
   validateOperations(evidence.operations, evidence.profile);
   validateExport(evidence.export, evidence.profile);
+  let stage0Completion;
+  if (evidence.profile === "vram_12gb") {
+    if (!completionFile || !stage0PackageFile)
+      fail(
+        "vram_12gb import requires --stage0-completion and --stage0-package evidence",
+      );
+    try {
+      stage0Completion = verifyStage0CompletionEvidenceForImport({
+        repositoryRoot: root,
+        completionPath: path.resolve(completionFile),
+        hardwareEvidencePath: path.resolve(importFile),
+        packagePath: path.resolve(stage0PackageFile),
+      });
+    } catch {
+      fail("vram_12gb Stage 0 completion evidence is invalid");
+    }
+  } else if (completionFile || stage0PackageFile) {
+    fail(
+      "--stage0-completion and --stage0-package are only valid for vram_12gb evidence",
+    );
+  }
   const target = document.profiles.find(
     (item) => item.profile === evidence.profile,
   );
   if (!target) fail(`${evidence.profile} is missing from the status file`);
-  Object.assign(target, {
+  const imported = {
     status: "passed",
     hardware: evidence.hardware,
     checkedAt: evidence.checkedAt,
     evidence: evidence.operations,
     export: evidence.export,
     notes: "MANGAI Desktopが生成した実機証跡JSONから登録",
-  });
+  };
+  if (stage0Completion)
+    imported.stage0Completion = {
+      status: "passed",
+      completionSha256: stage0Completion.completionSha256,
+      operationPackageSha256:
+        stage0Completion.completion.operationPackageSha256,
+      startReceiptSha256: stage0Completion.completion.startReceiptSha256,
+      hardwareEvidenceSha256:
+        stage0Completion.completion.hardwareEvidenceSha256,
+      completedAt: stage0Completion.completion.completedAt,
+      stage1DistributionAuthorized: false,
+    };
+  Object.assign(target, imported);
   document.updatedAt = new Date().toISOString();
   fs.writeFileSync(file, `${JSON.stringify(document, null, 2)}\n`, {
     mode: 0o600,
@@ -124,7 +173,9 @@ if (importIndex >= 0) {
   console.log(`Imported ${evidence.profile} evidence into ${file}`);
 }
 
-const profileMap = new Map(document.profiles.map((item) => [item.profile, item]));
+const profileMap = new Map(
+  document.profiles.map((item) => [item.profile, item]),
+);
 for (const profile of requiredProfiles) {
   const item = profileMap.get(profile);
   if (!item || !allowedStatus.has(item.status))
@@ -136,6 +187,11 @@ for (const profile of requiredProfiles) {
       fail(`${profile} passed without a valid checkedAt`);
     validateOperations(item.evidence, profile);
     validateExport(item.export, profile);
+    if (
+      profile === "vram_12gb" &&
+      !validStage0Completion(item.stage0Completion)
+    )
+      fail("vram_12gb passed without linked Stage 0 completion evidence");
   }
 }
 const counts = { pending: 0, passed: 0, blocked: 0 };

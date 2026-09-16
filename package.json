@@ -33,6 +33,7 @@
     "desktop:adult:stage0-operation-package:verify": "npm --prefix apps/desktop run adult:stage0-operation-package:verify --",
     "desktop:adult:stage0-start-authorization:create": "npm --prefix apps/desktop run adult:stage0-start-authorization:create --",
     "desktop:adult:stage0-start-authorization:consume": "npm --prefix apps/desktop run adult:stage0-start-authorization:consume --",
+    "desktop:adult:stage0-completion-evidence": "npm --prefix apps/desktop run adult:stage0-completion-evidence --",
     "desktop:adult:pilot-release-readiness": "npm --prefix apps/desktop run adult:pilot-release-readiness",
     "desktop:adult:pilot-release-readiness:strict": "npm --prefix apps/desktop run adult:pilot-release-readiness:strict",
     "desktop:adult:pilot-owner-approval:record": "node apps/desktop/scripts/record-adult-pilot-owner-approval.mjs",

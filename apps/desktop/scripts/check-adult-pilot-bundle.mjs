@@ -40,9 +40,29 @@ const allowedNodeTypes = new Set([
 ]);
 const requiredMappingFields = {
   text_to_image: ["prompt", "negativePrompt", "width", "height", "seed"],
-  image_to_image: ["prompt", "negativePrompt", "seed", "sourceImage", "denoiseStrength"],
-  controlnet: ["prompt", "negativePrompt", "width", "height", "seed", "controlImage"],
-  inpainting: ["prompt", "negativePrompt", "seed", "sourceImage", "maskImage", "denoiseStrength"],
+  image_to_image: [
+    "prompt",
+    "negativePrompt",
+    "seed",
+    "sourceImage",
+    "denoiseStrength",
+  ],
+  controlnet: [
+    "prompt",
+    "negativePrompt",
+    "width",
+    "height",
+    "seed",
+    "controlImage",
+  ],
+  inpainting: [
+    "prompt",
+    "negativePrompt",
+    "seed",
+    "sourceImage",
+    "maskImage",
+    "denoiseStrength",
+  ],
 };
 
 const fail = (message) => {
@@ -65,16 +85,20 @@ const isHttpsUrl = (value) => {
 };
 const fixedArtifact = (item, fields) =>
   item?.status === "fixed" &&
-  fields.every((field) => typeof item[field] === "string" && item[field].trim()) &&
+  fields.every(
+    (field) => typeof item[field] === "string" && item[field].trim(),
+  ) &&
   sha256Pattern.test(item.sha256 ?? "") &&
   Number.isSafeInteger(item.installedBytes) &&
   item.installedBytes > 0;
 const sha256File = (file) =>
   crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
 const resolveBundleFile = (value, label) => {
-  if (typeof value !== "string" || !value.trim()) fail(`${label} path is missing`);
+  if (typeof value !== "string" || !value.trim())
+    fail(`${label} path is missing`);
   const resolved = path.resolve(root, value);
-  if (!resolved.startsWith(`${root}${path.sep}`)) fail(`${label} path escapes the repository`);
+  if (!resolved.startsWith(`${root}${path.sep}`))
+    fail(`${label} path escapes the repository`);
   if (!fs.statSync(resolved, { throwIfNoEntry: false })?.isFile())
     fail(`${label} file is missing`);
   return resolved;
@@ -99,11 +123,19 @@ const comfyuiFixed =
 items.push({ label: "comfyui", fixed: comfyuiFixed });
 
 for (const operation of requiredOperations) {
-  const workflow = bundle.workflows.find((item) => item?.operation === operation);
+  const workflow = bundle.workflows.find(
+    (item) => item?.operation === operation,
+  );
   if (!workflow || !["pending", "fixed"].includes(workflow.status))
     fail(`${operation} workflow is missing or has an invalid status`);
-  const workflowFile = resolveBundleFile(workflow.file, `${operation} workflow`),
-    mappingFile = resolveBundleFile(workflow.mappingFile, `${operation} mapping`);
+  const workflowFile = resolveBundleFile(
+      workflow.file,
+      `${operation} workflow`,
+    ),
+    mappingFile = resolveBundleFile(
+      workflow.mappingFile,
+      `${operation} mapping`,
+    );
   if (sha256File(workflowFile) !== workflow.sha256)
     fail(`${operation} workflow SHA-256 does not match`);
   if (sha256File(mappingFile) !== workflow.mappingSha256)
@@ -112,14 +144,22 @@ for (const operation of requiredOperations) {
     mapping = readJson(mappingFile, `${operation} mapping`),
     nodeTypes = new Set(Object.values(graph).map((node) => node?.class_type));
   for (const nodeType of nodeTypes)
-    if (!allowedNodeTypes.has(nodeType)) fail(`${operation} uses non-core node ${nodeType}`);
-  if (![...Object.values(graph)].some((node) => node?.class_type === "VAEDecodeTiled"))
+    if (!allowedNodeTypes.has(nodeType))
+      fail(`${operation} uses non-core node ${nodeType}`);
+  if (
+    ![...Object.values(graph)].some(
+      (node) => node?.class_type === "VAEDecodeTiled",
+    )
+  )
     fail(`${operation} has no tiled VAE decode`);
   for (const node of Object.values(graph))
     if (node?.inputs?.batch_size !== undefined && node.inputs.batch_size !== 1)
       fail(`${operation} batch size must be one`);
   for (const [field, target] of Object.entries(mapping)) {
-    if (!graph[target?.nodeId]?.inputs || !(target.input in graph[target.nodeId].inputs))
+    if (
+      !graph[target?.nodeId]?.inputs ||
+      !(target.input in graph[target.nodeId].inputs)
+    )
       fail(`${operation} mapping ${field} is invalid`);
   }
   for (const field of requiredMappingFields[operation])
@@ -156,7 +196,8 @@ const operationEvidence = new Set(
   pilotHardware?.evidence
     ?.filter(
       (item) =>
-        item?.result === "passed" && sha256Pattern.test(item.outputSha256 ?? ""),
+        item?.result === "passed" &&
+        sha256Pattern.test(item.outputSha256 ?? ""),
     )
     .map((item) => item.operation) ?? [],
 );
@@ -164,7 +205,19 @@ const hardwareReady =
   pilotHardware?.status === "passed" &&
   requiredOperations.every((operation) => operationEvidence.has(operation)) &&
   sha256Pattern.test(pilotHardware?.export?.pdfSha256 ?? "") &&
-  sha256Pattern.test(pilotHardware?.export?.salesPackageSha256 ?? "");
+  sha256Pattern.test(pilotHardware?.export?.salesPackageSha256 ?? "") &&
+  pilotHardware?.stage0Completion?.status === "passed" &&
+  sha256Pattern.test(pilotHardware?.stage0Completion?.completionSha256 ?? "") &&
+  sha256Pattern.test(
+    pilotHardware?.stage0Completion?.operationPackageSha256 ?? "",
+  ) &&
+  sha256Pattern.test(
+    pilotHardware?.stage0Completion?.startReceiptSha256 ?? "",
+  ) &&
+  sha256Pattern.test(
+    pilotHardware?.stage0Completion?.hardwareEvidenceSha256 ?? "",
+  ) &&
+  pilotHardware?.stage0Completion?.stage1DistributionAuthorized === false;
 
 const fixedCount = items.filter((item) => item.fixed).length;
 const pending = items.filter((item) => !item.fixed).map((item) => item.label);
