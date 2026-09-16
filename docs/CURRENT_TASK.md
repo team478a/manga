@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-16 Production 23–24ページ安全再構成段階の記録訂正
+
+- 状態: `PRODUCTION_READ_ONLY_RECONCILED / UI_BEHAVIOR_CORRECT / DOCS_CORRECTION_READY / PRODUCTION_UNCHANGED`
+- Branch: `codex/docs-production-safe-retry-state-correction-20260916`
+- Base: `2eefb87`（PR #482 merge commit）。マージ後Required Quality run `35044985042`とDesktop Windows run `35044985030`は成功し、Vercel Production deployment `dpl_6YnvyTZTpCSmnaopu52se4vNGbW1`はReady、`app.mang-ai.com`へalias済みである。
+- Production `test`の23ページをread-only再確認したところ、残る失敗履歴は「生成失敗・再実行可能」「このコマだけ再実行」と表示された。Production DBをManagement API経由の`SELECT`だけで照合し、23ページ最新失敗Job `6ed98da4-b43f-437f-b715-f45bfe347fb4`と24ページ最新失敗Job `5948a685-d41b-4b83-940c-bc9df828835c`はいずれも`provider_moderation_blocked`、Provider Job IDあり、第1段階の一般向け再構成済み、第2段階の保守的再構成は未実行と確認した。
+- したがって現行classifierの`retryable`とProduction表示は正しい。直前の正本にあった「第2段階まで拒否された終端Job」「Provider Job ID未保存が現行2件の原因」という記録は実データと不一致だった。PR #482のJob ID未保存moderation保護は有効な防御的修正だが、今回の2件には該当しない。
+- ページ23／24は各3/4コマ配置、Cloud AIは使用94／予約0／上限100のまま。確認中の再実行、Job登録、Provider送信、Asset／Canvas保存、credit予約・消費は0件。監査用に一時取得した環境ファイルは削除した。
+- Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変である。
+- 次: 正本3文書を訂正してDraft PR化し、全CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は、対象・必要credit・費用上限を示した別のProduction実行時承認まで行わない。
+
+---
+
 ## 2026-09-16 Provider Job ID未保存moderation終端回復
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_READ_ONLY_FINDING / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
