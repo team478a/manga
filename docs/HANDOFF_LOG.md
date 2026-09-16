@@ -7,7 +7,7 @@
 - 12GB Phase 5取込は完了証跡と元operation packageの内容・場所、元実機証跡を再照合して内容非保持summaryを保存する。Adult Pilot bundleと統合release readinessも同summaryを必須にした。8GB／16GB経路とStage 1未許可境界は維持する。
 - runbookへ開始承認消費、4方式受入れ、完了証跡作成、12GB取込の固定順序を追記した。CLIはRuntime、model取得、送付、生成、配布を実行しない。
 - 集中24/24、Desktop 287/287、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造成功。Vite既知warningと外部設定・手動E2EのPENDINGは不変。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実package・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はdiff check、commit、push、Draft PR、全CI／Vercel Preview成功まで確認する。
+- 実装commit `6327983`をpushしてDraft PR #495を作成した。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実package・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitと全CI／Vercel Preview成功まで確認する。
 
 ---
 
