@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult 技術モニターStage 1開始準備（2026-09-16）
+
+- BaseはPR #484 merge commit `bb20488`。マージ後Required Quality run `35054212683`、Desktop Windows run `35054212706`、Vercel Production `dpl_BCM3PkDhFL5MyfpiogwYZ6cotESy`は成功／Ready。
+- 適格な技術モニター候補を、個人情報・作品内容・端末識別情報・絶対path・自由記述を保持せずscreeningするpreflight、fail-closed example、集中テストを追加した。適格判定でも`distributionAuthorized=false`を固定し、既存assessmentを上書きしない。
+- `DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`で候補募集、署名済み受入れ試験用artifactのStage 0、release readiness strict成功後のStage 1招待を分離した。未署名配布、未固定Bundle、12GB実機証跡なしの招待は引き続き禁止。
+- 集中5/5、Desktop 235/235、Hub 1008/1008、deps error 0（既知warning 2件）、lint、全typecheck、Desktop build、migration 83/83、Prettier、RC構造、diff check成功。統合readinessは5 READY／3 BLOCKEDで、署名、固定Bundle、12GB実機4方式を待つ。
+- Branchは`codex/adult-pilot-technical-monitor-preflight-20260916`。Production、Cloud、Provider、Runtime／model取得、生成、招待、配布、credit変更なし。次はDraft PRの全CI／Vercel Preview成功まで確認し、候補者実情報の取得、artifact送付、Stage 0は別の実行時承認を待つ。
+
+---
+
 ## 0.0 Production 23–24ページ第2段階再実行（2026-09-16）
 
 - BaseはPR #483 merge commit `9bb321d`。本線Required Quality run `35048818257`、Desktop Windows run `35048818319` attempt 2、Vercel Production deployment `dpl_Afkv6MpBCsP8RKJQGg2UmWoKAaL7`は成功／Readyである。

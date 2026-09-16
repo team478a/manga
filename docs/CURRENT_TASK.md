@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult 技術モニターStage 1開始準備
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / CANDIDATE_SCREENING_READY / DISTRIBUTION_BLOCKED`
+- Branch: `codex/adult-pilot-technical-monitor-preflight-20260916`
+- Base: `bb20488`（PR #484 merge commit）。マージ後Required Quality run `35054212683`、Desktop Windows run `35054212706`、同commitのVercel Production deployment `dpl_BCM3PkDhFL5MyfpiogwYZ6cotESy`は成功／Readyである。
+- 運営側にWindows 11／NVIDIA VRAM 12GB以上のPCがない場合でも、技術モニター候補の募集と内容非保持screeningを先に行えるpreflightを追加した。候補者JSONはrandom candidate ID、Windows／GPU／VRAM／RAM／空き容量の帯、初回支援・24時間観察、18歳以上・架空成人限定・禁止入力・local-only・公式配布元・内容非保持診断・backup・手動停止の確認だけを受理する。
+- 氏名、メール、住所、電話、端末名、serial、IP／MAC、作品名、Prompt、画像、mask、自由記述、local絶対path、未知fieldを拒否する。適格でもassessmentは常に`distributionAuthorized=false`で、既存出力を上書きしない。exampleは全条件を不適格にし、そのままではstrict成功しない。
+- 新runbookで候補screening、署名済み受入れ試験専用artifactによるStage 0、release readiness strict成功後のStage 1招待を分離した。Stage 0 artifactと招待配布物を混在させず、未署名installer、未固定Bundle、12GB実機証跡なしの招待禁止、ローカル処理、手動version停止、内容非保持診断を維持する。
+- 検証: 集中5/5、Desktop 235/235、Hub 1008/1008、deps error 0（既知warning 2件）、lint、Hub／Desktop typecheck、Desktop Production build、migration 83/83、Prettier、RC Repository structure READY、`git diff --check`成功。candidate exampleのstrict拒否も確認した。
+- Adult Pilot統合readinessは5 READY／3 BLOCKED。残件は`署名済みartifact`、`固定Bundle実ファイル`、`12GB実機4方式証跡`であり、本変更では解除していない。Production、Cloud、外部Provider、Runtime取得、model取得、生成、招待、配布、creditを変更していない。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功まで確認して停止する。merge後は候補者本人のPC仕様と同意をGit外で取得してpreflightする。署名済み受入れ試験専用artifactの準備・送付とStage 0実施は、対象・version・送付先・停止連絡を示した別の実行時承認まで行わない。
+
+---
+
 ## 2026-09-16 Production 23–24ページ第2段階再実行
 
 - 状態: `PRODUCTION_EXECUTED / 2_OF_2_COMPLETED / AUTO_PLACED / LIMITS_RESPECTED / DOCS_PR_PENDING`

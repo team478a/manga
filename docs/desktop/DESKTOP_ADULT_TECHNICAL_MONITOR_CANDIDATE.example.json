@@ -1,0 +1,27 @@
+{
+  "format": "mangai.desktop-adult-technical-monitor-candidate",
+  "version": 1,
+  "candidateId": "candidate-000000000000",
+  "confirmedAt": "1970-01-01T00:00:00.000Z",
+  "environment": {
+    "windows": "other",
+    "gpuVendor": "other",
+    "vramBand": "under_12gb",
+    "ramBand": "under_16gb",
+    "freeDiskBand": "under_40gb"
+  },
+  "availability": {
+    "assistedFirstRun": false,
+    "observation24Hours": false
+  },
+  "confirmations": {
+    "age18OrOlder": false,
+    "fictionalAdultsOnly": false,
+    "prohibitedContentPolicy": false,
+    "localOnlyBoundary": false,
+    "officialSourceDownloads": false,
+    "contentFreeDiagnostics": false,
+    "localBackupResponsibility": false,
+    "manualStopProcedure": false
+  }
+}
