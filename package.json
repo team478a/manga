@@ -38,6 +38,7 @@
     "desktop:adult:stage1-invitation-authorization:consume": "npm --prefix apps/desktop run adult:stage1-invitation-authorization:consume --",
     "desktop:adult:stage1-invite-ledger-proposal:create": "npm --prefix apps/desktop run adult:stage1-invite-ledger-proposal:create --",
     "desktop:adult:stage1-invite-ledger-proposal:apply": "npm --prefix apps/desktop run adult:stage1-invite-ledger-proposal:apply --",
+    "desktop:adult:pilot-ledger-status-proposal:create": "npm --prefix apps/desktop run adult:pilot-ledger-status-proposal:create --",
     "desktop:adult:pilot-release-readiness": "npm --prefix apps/desktop run adult:pilot-release-readiness",
     "desktop:adult:pilot-release-readiness:strict": "npm --prefix apps/desktop run adult:pilot-release-readiness:strict",
     "desktop:adult:pilot-owner-approval:record": "node apps/desktop/scripts/record-adult-pilot-owner-approval.mjs",

@@ -317,6 +317,27 @@ npm run desktop:adult:pilot-ledger:check
 
 apply CLIは招待、配布、メール、Runtime／model、生成、credit操作を実行しない。現在の正本でCLIを実行してよいことを意味せず、実proposal適用は外部前提完了と対象付き運用承認を必要とする。
 
+### 6.4 招待後の状態遷移proposal
+
+同意確認、停止、完了、辞退を記録する場合は、運用台帳を直接編集せず、`DESKTOP_ADULT_PILOT_INVITE_LEDGER.md`の状態遷移proposalを作成する。許可する遷移は`INVITED→ACTIVE/WITHDRAWN`と`ACTIVE→STOPPED/COMPLETED/WITHDRAWN`だけである。終端状態からの再開は行わない。
+
+```powershell
+$statusProposal = Join-Path $privateRoot "stage1-status-proposal.json"
+$occurredAt = "<状態遷移を確認したUTC ISO日時>"
+
+npm run desktop:adult:pilot-ledger-status-proposal:create -- `
+  --ledger $ledger `
+  --out $statusProposal `
+  --monitor-id "<招待台帳のrandom monitor ID>" `
+  --target-status ACTIVE `
+  --occurred-at $occurredAt `
+  --confirm-status-evidence-reviewed `
+  --confirm-content-remained-local `
+  --confirm-consent-recorded
+```
+
+`ACTIVE`以外では対象状態に対応する`--confirm-stop-action-recorded`、`--confirm-completion-reviewed`、`--confirm-withdrawal-recorded`を指定する。proposalは元台帳の内容・場所、対象monitor、遷移時刻、更新後台帳を固定するが、運用台帳を変更しない。実台帳反映は専用applyと対象付き運用承認が整うまで行わない。氏名、メール、問い合わせ本文、作品内容、端末識別情報、local pathは記録しない。
+
 現在の正本は署名、固定Bundle、12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了はStage 1配布許可を意味しない。
 
 ## 7. 停止条件
