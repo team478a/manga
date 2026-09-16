@@ -271,6 +271,8 @@ export const consumeStage0StartAuthorization = (rawOptions) => {
   );
   if (options.now.getTime() < Date.parse(authorization.approvedAt))
     throw new Error("Stage 0開始承認日時より前には消費できません。");
+  if (options.now.getTime() < Date.parse(operationPackage.scheduledStartAt))
+    throw new Error("Stage 0の予定開始日時より前には消費できません。");
   const receipt = {
     format: "mangai.desktop-adult-stage0-start-receipt",
     version: 1,
@@ -289,6 +291,89 @@ export const consumeStage0StartAuthorization = (rawOptions) => {
     mode: 0o600,
   });
   return { receipt, receiptPath };
+};
+
+export const verifyConsumedStage0StartAuthorization = (rawOptions) => {
+  const options = normalizedOptions(rawOptions);
+  assertPrivatePath(
+    options.repositoryRoot,
+    options.authorizationPath,
+    "Stage 0開始承認",
+  );
+  const receiptPath = `${options.packagePath}.stage0-start-consumed.json`;
+  assertPrivatePath(
+    options.repositoryRoot,
+    receiptPath,
+    "Stage 0開始承認receipt",
+  );
+  const authorizationBefore = readFile(
+    options.authorizationPath,
+    "Stage 0開始承認",
+  );
+  const receiptBefore = readFile(receiptPath, "Stage 0開始承認receipt");
+  const { operationPackage, packageSha256 } =
+    verifyBoundOperationPackage(options);
+  assertCurrentTime(options.now, operationPackage.deleteBy);
+  const authorizationBytes = readFile(
+    options.authorizationPath,
+    "Stage 0開始承認",
+  );
+  const receiptBytes = readFile(receiptPath, "Stage 0開始承認receipt");
+  if (
+    !authorizationBefore.equals(authorizationBytes) ||
+    !receiptBefore.equals(receiptBytes)
+  )
+    throw new Error("Stage 0開始承認またはreceiptが検証中に変更されました。");
+  const authorization = readJson(authorizationBytes, "Stage 0開始承認");
+  validateAuthorization(
+    authorization,
+    { ...operationPackage, packagePath: options.packagePath },
+    packageSha256,
+  );
+  const receipt = readJson(receiptBytes, "Stage 0開始承認receipt");
+  exactKeys(
+    receipt,
+    [
+      "format",
+      "version",
+      "consumedAt",
+      "authorizationSha256",
+      "operationPackageSha256",
+      "candidateId",
+      "artifactVersion",
+      "scheduledStartAt",
+      "deleteBy",
+      "stage0StartAuthorized",
+      "stage1DistributionAuthorized",
+    ],
+    "Stage 0開始承認receipt",
+  );
+  if (
+    receipt.format !== "mangai.desktop-adult-stage0-start-receipt" ||
+    receipt.version !== 1 ||
+    !isTimestamp(receipt.consumedAt) ||
+    receipt.authorizationSha256 !== digest(authorizationBytes) ||
+    receipt.operationPackageSha256 !== packageSha256 ||
+    receipt.candidateId !== operationPackage.candidateId ||
+    receipt.artifactVersion !== operationPackage.artifactVersion ||
+    receipt.scheduledStartAt !== operationPackage.scheduledStartAt ||
+    receipt.deleteBy !== operationPackage.deleteBy ||
+    receipt.stage0StartAuthorized !== true ||
+    receipt.stage1DistributionAuthorized !== false ||
+    Date.parse(receipt.consumedAt) < Date.parse(authorization.approvedAt) ||
+    Date.parse(receipt.consumedAt) <
+      Date.parse(operationPackage.scheduledStartAt) ||
+    Date.parse(receipt.consumedAt) >= Date.parse(operationPackage.deleteBy)
+  )
+    throw new Error("Stage 0開始承認receiptが実施境界と一致しません。");
+  return {
+    operationPackage,
+    packageSha256,
+    authorization,
+    receipt,
+    receiptPath,
+    receiptSha256: digest(receiptBytes),
+  };
 };
 
 const valueFlags = new Set([

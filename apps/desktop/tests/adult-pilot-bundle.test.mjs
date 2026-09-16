@@ -17,7 +17,10 @@ const hash = (value) => value.repeat(64);
 test("canonical Adult pilot candidates are approved for internal use but remain runtime pending", () => {
   const bundle = JSON.parse(fs.readFileSync(canonicalBundle, "utf8"));
   assert.equal(bundle.distributionMode, "user_download_official_source");
-  assert.equal(bundle.licenseReview.status, "owner_confirmed_for_internal_pilot");
+  assert.equal(
+    bundle.licenseReview.status,
+    "owner_confirmed_for_internal_pilot",
+  );
   assert.equal(bundle.licenseReview.redistributionApproved, false);
   assert.equal(bundle.comfyui.version, "v0.34.0");
   assert.equal(bundle.comfyui.status, "pending");
@@ -26,7 +29,10 @@ test("canonical Adult pilot candidates are approved for internal use but remain 
     "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.34.0/ComfyUI_windows_portable_nvidia.7z",
   );
   assert.equal(bundle.comfyui.installedBytes, 2_146_721_943);
-  assert.equal(bundle.comfyui.sha256, "ed57cc6b19ae3d83add1ecebfdd56b25e04e0008cf0fe9af43a4ad8797e2a24c");
+  assert.equal(
+    bundle.comfyui.sha256,
+    "ed57cc6b19ae3d83add1ecebfdd56b25e04e0008cf0fe9af43a4ad8797e2a24c",
+  );
   assert.deepEqual(
     bundle.models.map(({ role, status, version, sha256 }) => ({
       role,
@@ -39,19 +45,22 @@ test("canonical Adult pilot candidates are approved for internal use but remain 
         role: "checkpoint",
         status: "pending",
         version: "462165984030d82259a11f4367a4eed129e94a7b",
-        sha256: "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b",
+        sha256:
+          "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b",
       },
       {
         role: "vae",
         status: "pending",
         version: "207b116dae70ace3637169f1ddd2434b91b3a8cd",
-        sha256: "235745af8d86bf4a4c1b5b4f529868b37019a10f7c0b2e79ad0abca3a22bc6e1",
+        sha256:
+          "235745af8d86bf4a4c1b5b4f529868b37019a10f7c0b2e79ad0abca3a22bc6e1",
       },
       {
         role: "controlnet",
         status: "pending",
         version: "eb115a19a10d14909256db740ed109532ab1483c",
-        sha256: "ea99040544a999f814fd854575a3aee069a005d026864c8d321b82576706a221",
+        sha256:
+          "ea99040544a999f814fd854575a3aee069a005d026864c8d321b82576706a221",
       },
     ],
   );
@@ -115,11 +124,27 @@ test("strict Adult pilot bundle requires fixed artifacts and 12GB evidence", (t)
             "image_to_image",
             "controlnet",
             "inpainting",
-          ].map((operation) => ({ operation, result: "passed", outputSha256: hash("d") })),
+          ].map((operation) => ({
+            operation,
+            result: "passed",
+            outputSha256: hash("d"),
+          })),
           export: { pdfSha256: hash("e"), salesPackageSha256: hash("f") },
+          stage0Completion: {
+            status: "passed",
+            completionSha256: hash("1"),
+            operationPackageSha256: hash("2"),
+            startReceiptSha256: hash("3"),
+            hardwareEvidenceSha256: hash("4"),
+            completedAt: "2026-09-16T00:00:00.000Z",
+            stage1DistributionAuthorized: false,
+          },
         },
       ],
     }),
   );
-  assert.match(run(bundlePath, hardwarePath, true), /fixed=8, pending=0, hardware12gb=passed/);
+  assert.match(
+    run(bundlePath, hardwarePath, true),
+    /fixed=8, pending=0, hardware12gb=passed/,
+  );
 });

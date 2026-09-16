@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 0完了証跡連結
+
+- PR #494 merge commit `4062044`から`codex/adult-stage0-completion-evidence-20260916`を作成した。本線Required QualityとDesktop Windowsは成功済み。
+- 開始承認consumeを予定開始日時以後に限定し、消費receipt、固定operation package、12GB帯4方式実機証跡をSHA-256で結ぶ内容非保持完了証跡CLIを追加した。別session、移動・copy、改変、消費前証跡、期限切れ、上書きを拒否する。
+- 12GB Phase 5取込は完了証跡と元operation packageの内容・場所、元実機証跡を再照合して内容非保持summaryを保存する。Adult Pilot bundleと統合release readinessも同summaryを必須にした。8GB／16GB経路とStage 1未許可境界は維持する。
+- runbookへ開始承認消費、4方式受入れ、完了証跡作成、12GB取込の固定順序を追記した。CLIはRuntime、model取得、送付、生成、配布を実行しない。
+- 集中24/24、Desktop 287/287、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造成功。Vite既知warningと外部設定・手動E2EのPENDINGは不変。
+- 実装commit `6327983`をpushしてDraft PR #495を作成した。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実package・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitと全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult Stage 0開始承認の一回限定化
 
 - PR #493 merge commit `338b7b6`から`codex/adult-stage0-start-authorization-20260916`を作成した。本線Core quality、Migration roundtrip、Desktop Windowsは成功済み。
