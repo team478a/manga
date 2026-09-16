@@ -8,7 +8,8 @@
 - 完全な生成requestをServerでread-only検証するpreflight endpointを追加し、解決済みProvider／model／pricingと最新の契約期間、credit、モニターAI、費用上限を照合する。Client指定の価格情報は受け付けない。
 - 1回目の操作で対象、候補数、必要credit、最大予約費用、残枠、blockerを表示し、2回目の確定操作だけJob作成へ進む。入力変更時は確認結果を破棄する。
 - 集中21/21、Hub 1006/1006、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub／Desktop Production build、RC Repository structure READY、`git diff --check`成功。既知warning 2件、外部設定と手動E2EのPENDINGは不変。
-- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+- Commit `50fbd42`をpushしてDraft PR #481を作成した。最初のHEADでRequired Quality run `35039613995`（Core quality 3分19秒／Migration roundtrip 55秒）、Desktop Windows run `35039613952`（4分2秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/9xjnr9y86inwLy8h6p7tD1Ww4KeA`。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
 
 ---
 

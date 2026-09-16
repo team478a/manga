@@ -8,7 +8,8 @@
 - 確認画面へ対象ページ／コマ、候補数、必要credit、最大予約費用、Cloud AI／作品／モニターAI残枠、blockerを表示する。2回目の明示確認だけ既存のJob作成を呼び、入力変更時は確認snapshotを無効化する。
 - preflightはJob、credit予約、Provider、Asset、Canvasへ副作用を持たない。通常生成、retry、範囲修正、一括生成、Provider・料金契約は維持する。
 - 集中21/21、Hub 1006/1006、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y、Hub型検査、lint、依存／module／size境界、migration 83/83、Hub／Desktop build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
-- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-recovery-preflight-20260916`。次はcommit、push、Draft PR、全CI／Preview成功で停止する。
+- Commit `50fbd42`をpushしてDraft PR #481を作成した。最初のHEADでRequired Quality run `35039613995`（Core quality 3分19秒／Migration roundtrip 55秒）、Desktop Windows run `35039613952`（4分2秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/9xjnr9y86inwLy8h6p7tD1Ww4KeA`。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-panel-recovery-preflight-20260916`。次は正本同期commitの最終CI／Preview成功で停止する。
 
 ---
 
