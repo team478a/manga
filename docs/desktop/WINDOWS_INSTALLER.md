@@ -1,6 +1,6 @@
 # Windowsインストーラー
 
-更新日: 2026-07-15
+更新日: 2026-09-16
 
 ## 生成
 
@@ -94,6 +94,14 @@ Windowsリリースworkflowでは署名、metadata、install・起動E2Eの成�
 
 ## 署名ビルド
 
+署名経路はPFX方式とWindows証明書ストア方式のどちらか一方だけを使用します。設定値は表示せず、生成前にpreflightで不足・競合・形式を検査します。
+
+```powershell
+npm run desktop:signing:preflight
+```
+
+### PFX方式
+
 署名証明書のPFXファイルまたはbase64値を`WIN_CSC_LINK`、パスワードを`WIN_CSC_KEY_PASSWORD`へ設定します。これらはGit管理ファイルへ書かず、CIの暗号化シークレットまたはビルド端末の一時的な環境変数から渡してください。
 
 ```powershell
@@ -102,7 +110,22 @@ $env:WIN_CSC_KEY_PASSWORD = "<ローカルまたはCIのシークレットから
 npm run desktop:dist:win:signed
 ```
 
-署名コマンドは証明書が未設定なら生成前に停止し、Electron Builderの`forceCodeSigning`を有効にします。これにより署名版として実行した処理から未署名EXEが誤って出力されることを防ぎます。
+### Windows証明書ストア／ハードウェアトークン方式
+
+法人向けOV／EV証明書がWindows証明書ストアから利用できるビルド端末では、40桁の証明書thumbprintだけを指定します。秘密鍵やトークンPINは環境変数、Git、ログへ保存しません。トークンのdriverを導入し、証明書が見えることを署名担当者が確認してから実行してください。
+
+```powershell
+Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert |
+  Select-Object Subject, Thumbprint, NotAfter
+
+$env:MANGAI_WIN_CERTIFICATE_SHA1 = "<40桁のthumbprint>"
+npm run desktop:signing:preflight
+npm run desktop:dist:win:signed
+```
+
+この方式はWindows端末上の対話的な署名を対象とします。GitHub hosted runnerへ物理トークンを接続できないため、現在の`desktop-release.yml`はPFX Secret方式のままです。Stage 0の受入れ専用artifactはローカルで署名・検証し、一般公開用Releaseとは分離します。
+
+署名コマンドは証明書が未設定、不完全、両方式同時設定、thumbprint形式不正の場合に生成前に停止し、Electron Builderの`forceCodeSigning`を有効にします。これにより署名版として実行した処理から未署名EXEが誤って出力されることを防ぎます。
 
 生成後は次で署名状態を確認します。
 

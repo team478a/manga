@@ -37,6 +37,7 @@
     "desktop:pack:win": "npm --prefix apps/desktop run pack:win",
     "desktop:dist:win": "npm --prefix apps/desktop run dist:win",
     "desktop:dist:win:signed": "npm --prefix apps/desktop run dist:win:signed",
+    "desktop:signing:preflight": "npm --prefix apps/desktop run verify:win:signing-readiness",
     "desktop:dist:win:update": "npm --prefix apps/desktop run dist:win:update",
     "canvas:test": "npm --prefix packages/canvas-core test",
     "ai:test": "npm --prefix packages/ai-core test",

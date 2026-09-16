@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Windowsハードウェアトークン署名対応（2026-09-16）
+
+- BaseはPR #486 merge commit `acedcab`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
+- `WIN_CSC_LINK`／`WIN_CSC_KEY_PASSWORD`の既存PFX方式を維持し、`MANGAI_WIN_CERTIFICATE_SHA1`でWindows証明書ストア／ハードウェアトークンを選ぶローカル署名経路を追加した。現在のGitHub hosted runnerはPFX方式のままである。
+- 署名設定を共通resolverへ集約し、不完全・競合・曖昧・非Windows指定をfail closedで拒否する。readiness preflightは資格情報を表示せず、modeと設定状態だけを返す。
+- 日本法人のStage 0は公開信頼されたOV証明書のhardware tokenを第一候補とする。自己署名は不可、Azure Artifact Signingは現在の組織申込地域案内からStage 0の確定経路にしない。判断根拠と残る購入・発行・署名・検証手順を`WINDOWS_CODE_SIGNING_DECISION_20260916.md`へ記録した。
+- 集中5/5、Desktop 245/245、Hub 1008/1008、Canvas 26/26、AI 50/50、deps error 0（既知warning 2件）、lint、typecheck、Desktop build、migration 83/83、RC構造、diff check成功。
+- Branchは`codex/desktop-hardware-token-signing-20260916`。Production、Cloud、Provider、Runtime／model、生成、配布、credit、Secret、証明書購入、Release変更なし。未追跡`apps/desktop/artifacts/`は未変更。次はDraft PRの全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 0.0 Desktop Adult 技術モニターStage 0開始gate（2026-09-16）
 
 - BaseはPR #485 merge commit `88cc5d3`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
@@ -3082,7 +3093,6 @@
 
 ---
 
-
 ## 0. 現在の優先タスク（M5-3 長編作品コックピット、2026-08-01）
 
 - Branch: `agent/manga-longform-cockpit-v1`
@@ -3097,7 +3107,6 @@
 - 状態: 実装、全ローカル品質ゲート、Draft PR、Preview、全GitHub CI成功。実作品確認と責任者承認待ち
 
 ---
-
 
 ## 0. 現在の優先タスク（M5-2 連続性設定候補、2026-08-01）
 
@@ -3128,7 +3137,6 @@
 
 ---
 
-
 ## 0. 現在の優先タスク（M4 Storageライフサイクル、2026-08-01）
 
 - Branch: `agent/manga-storage-lifecycle-v1`
@@ -3144,7 +3152,6 @@
 
 ---
 
-
 ## 0. 現在の優先タスク（M4 永続PDFエクスポート、2026-08-01）
 
 - Branch: `agent/manga-durable-export-v1`
@@ -3158,7 +3165,6 @@
 - 状態: 実装、ローカル検証、Draft PR、Preview完了。GitHub CI確認中
 
 ---
-
 
 ## 0. 現在の優先タスク（M4制作管理 ページ状態・確定ロック、2026-08-01）
 
@@ -3174,7 +3180,6 @@
 - 状態: 実装・Draft PR・Preview完了。Supabase staging適用、実ブラウザ確認、責任者承認待ち
 
 ---
-
 
 ## 0. 現在の優先タスク（M4後半 一括生成・編集ロック、2026-08-01）
 
@@ -3561,12 +3566,12 @@ Feature Flag有効化、redeploy、実招待はDraft PRの全CIと責任者承�
 
 ## 2. 製品構成
 
-| 製品 | 主な配置 | 責務 |
-| --- | --- | --- |
-| MANGAI Hub / Cloud | リポジトリルート、`src/` | 一般漫画制作、Project/Canvas、認証、公開、販売、Stripe、管理 |
-| MANGAI Desktop | `apps/desktop/` | Windowsローカル制作、成人向け制作、Ollama、ComfyUI、書き出し、更新 |
-| 共通Domain | `packages/` | Canvas、AI、Project、Export、IPC schema等の共通処理 |
-| Hub DB | `supabase/` | PostgreSQL、RLS、Storage、migration |
+| 製品               | 主な配置                 | 責務                                                               |
+| ------------------ | ------------------------ | ------------------------------------------------------------------ |
+| MANGAI Hub / Cloud | リポジトリルート、`src/` | 一般漫画制作、Project/Canvas、認証、公開、販売、Stripe、管理       |
+| MANGAI Desktop     | `apps/desktop/`          | Windowsローカル制作、成人向け制作、Ollama、ComfyUI、書き出し、更新 |
+| 共通Domain         | `packages/`              | Canvas、AI、Project、Export、IPC schema等の共通処理                |
+| Hub DB             | `supabase/`              | PostgreSQL、RLS、Storage、migration                                |
 
 製品方針は、一般漫画をCloud、成人向け漫画をDesktopで扱う分離構成です。成人向け処理と人物・参照画像・完成Pageはローカル優先・fail-closedを維持します。
 
@@ -3636,22 +3641,22 @@ git diff feature/manga-canvas-mvp...HEAD --stat
 
 ## 7. 外部環境待ち・責任者判断待ち
 
-| 項目 | 状態 | 必要条件 |
-| --- | --- | --- |
-| Desktop Accessibility（ローカル） | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT | Xサーバー（ディスプレイ）を持つ実行環境。GitHub ActionsのDesktop Windows workflowでは`npm run test:a11y`が成功済み |
-| Vercel Preview deployment | PASS（CI確認済み） | ― |
-| Vercel本番環境の通し受入れ | BLOCKED_EXTERNAL_ENVIRONMENT | Vercel/Supabase/Stripe本番設定 |
-| Windows実署名 | BLOCKED_EXTERNAL_ENVIRONMENT | 信頼されたコード署名証明書 |
-| 署名付き更新E2E | BLOCKED_EXTERNAL_ENVIRONMENT | 署名済み2version、公開更新URL |
-| クリーンWindows受入れ | BLOCKED_EXTERNAL_ENVIRONMENT | Windows VMまたは新規PC |
-| Ollama実環境E2E | BLOCKED_EXTERNAL_ENVIRONMENT | Ollama、対象モデル |
-| ComfyUI実環境E2E | BLOCKED_EXTERNAL_ENVIRONMENT | ComfyUI、モデル、workflow JSON |
-| Dezgo実API E2E | BLOCKED_EXTERNAL_ENVIRONMENT | BYOK key、課金承認、safe素材条件 |
-| Supabase staging | BLOCKED_EXTERNAL_ENVIRONMENT | staging DB、接続情報、`psql` |
-| Stripe E2E | BLOCKED_EXTERNAL_ENVIRONMENT | Stripe test、Webhook endpoint |
-| log sink/alert | DECISION_REQUIRED | hosting、通知先、保持期間、担当者 |
-| Desktopブランドカラー・テーマ・Tailwind非移行 | 確定済み（責任者指示、2026-07-26） | ― |
-| Hubの配色・ダークモード方針 | DECISION_REQUIRED | Desktopデザイン確定後に判断（`docs/design/DESIGN_SYSTEM.md`§5） |
+| 項目                                          | 状態                               | 必要条件                                                                                                           |
+| --------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Desktop Accessibility（ローカル）             | LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT | Xサーバー（ディスプレイ）を持つ実行環境。GitHub ActionsのDesktop Windows workflowでは`npm run test:a11y`が成功済み |
+| Vercel Preview deployment                     | PASS（CI確認済み）                 | ―                                                                                                                  |
+| Vercel本番環境の通し受入れ                    | BLOCKED_EXTERNAL_ENVIRONMENT       | Vercel/Supabase/Stripe本番設定                                                                                     |
+| Windows実署名                                 | BLOCKED_EXTERNAL_ENVIRONMENT       | 信頼されたコード署名証明書                                                                                         |
+| 署名付き更新E2E                               | BLOCKED_EXTERNAL_ENVIRONMENT       | 署名済み2version、公開更新URL                                                                                      |
+| クリーンWindows受入れ                         | BLOCKED_EXTERNAL_ENVIRONMENT       | Windows VMまたは新規PC                                                                                             |
+| Ollama実環境E2E                               | BLOCKED_EXTERNAL_ENVIRONMENT       | Ollama、対象モデル                                                                                                 |
+| ComfyUI実環境E2E                              | BLOCKED_EXTERNAL_ENVIRONMENT       | ComfyUI、モデル、workflow JSON                                                                                     |
+| Dezgo実API E2E                                | BLOCKED_EXTERNAL_ENVIRONMENT       | BYOK key、課金承認、safe素材条件                                                                                   |
+| Supabase staging                              | BLOCKED_EXTERNAL_ENVIRONMENT       | staging DB、接続情報、`psql`                                                                                       |
+| Stripe E2E                                    | BLOCKED_EXTERNAL_ENVIRONMENT       | Stripe test、Webhook endpoint                                                                                      |
+| log sink/alert                                | DECISION_REQUIRED                  | hosting、通知先、保持期間、担当者                                                                                  |
+| Desktopブランドカラー・テーマ・Tailwind非移行 | 確定済み（責任者指示、2026-07-26） | ―                                                                                                                  |
+| Hubの配色・ダークモード方針                   | DECISION_REQUIRED                  | Desktopデザイン確定後に判断（`docs/design/DESIGN_SYSTEM.md`§5）                                                    |
 
 ## 8. 壊してはいけない境界
 
@@ -3703,6 +3708,7 @@ docs/HANDOFF_LOG.mdを読み、git status、直近15コミット、
 feature/manga-canvas-mvpとの差分を確認してください。
 CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り直さないでください。
 ```
+
 # 2026-08-26 P4-B handoff
 
 - `codex/p4b-mode-presets`は共有3用途preset、Cloud新規作品の長編／Kindle選択・preview、nullable profile保存migrationを追加した。
@@ -3710,6 +3716,7 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - Production／staging migration、Provider、Job、credit、Storageは未実施。詳細は`docs/RELEASE_CANDIDATE_P4B_COMPLETION_MODE_PRESETS_20260826.md`。
 
 ---
+
 # 2026-08-26 P4-C handoff
 
 - `codex/p4c-mode-preflight`はmode guidance warningとP3 finding read-only判定を既存原稿preflightへ統合した。
@@ -3717,6 +3724,7 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - mode未設定Projectは従来動作。Production／Provider／Job／credit／Storage操作なし。
 
 ---
+
 # 2026-08-26 P4-D handoff
 
 - `codex/p4d-durable-export-formats`は既存durable PDF状態機械へ連番PNG ZIPとversioned Project JSONを追加した。
@@ -3724,6 +3732,7 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - migration／Flag未適用、Worker／Job／Storage／Provider／credit操作なし。
 
 ---
+
 # 0.0 RC外部環境preflight（2026-08-28）
 
 - Ollama、ComfyUI、Supabase stagingの実E2E開始条件を秘密値なしで判定するpreflightを追加した。
@@ -3733,6 +3742,7 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - 集中3/3、Hub 923/923、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
 
 ---
+
 # 0.0 RC外部環境preflight統合（2026-08-28）
 
 - `rc:preflight`へOllama、ComfyUI、Supabase staging隔離接続のconfiguration-only判定を統合した。
@@ -3741,6 +3751,7 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - 集中4/4、Hub 924/924、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
 
 ---
+
 # 0.0 RC隔離Staging identity guard（2026-08-28）
 
 - 外部E2E判定はSupabase Branch refと親Project refの両方を要求し、同一refなら接続前にPENDINGとする。
@@ -3748,11 +3759,13 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中5/5、Hub 925/925、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
 
 ---
+
 # 0.0 RC Staging接続先identity guard（2026-08-28）
 
 - Branch／親Project refの形式と、`PGHOST`／`PGUSER`の隔離Branch ref一致を外部E2E READY条件へ追加した。
 - refだけ隔離Branchへ見せかけ、接続先が親mainのままになる設定を接続前に拒否する。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74を含む全ローカル品質ゲート成功。
+
 # 2026-08-31 Adult Pilot download IPC handoff
 
 - `codex/desktop-adult-pilot-download-ipc-20260831`はAdult Local AI Setup Wizardを固定Artifact downloaderへIPC接続した。
@@ -3760,6 +3773,7 @@ CURRENT_TASK.mdの未完了項目から継続し、完了済み変更を作り�
 - 現PCは要件未達のため実ダウンロード・生成なし。Production／Cloud／Provider／Job／credit変更なし。
 - AI Core 50/50、Desktop 188/188、build、a11y blocking violation 0、diff check成功。
 - 次担当はPRのCI／Vercel完了後に停止する。実機E2Eは12GB以上のGPU端末と明示承認が揃ってから行う。
+
 # 0.0 モニター品質確認の開始案内（2026-09-01）
 
 - 5名割当後も自動通知されない欠落に対し、品質確認専用のResend開始案内と管理操作を追加した。
