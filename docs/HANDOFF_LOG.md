@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 0署名artifact証跡
+
+- PR #487 merge commit `01b2c86`から`codex/adult-stage0-artifact-evidence-20260916`を作成した。
+- 既存Windows成果物、更新metadata、SBOM、checksumを検証し、installerと製品EXEのAuthenticodeがともに`Valid`かつ同一署名者の場合だけ内容非保持のStage 0 artifact証跡を新規作成する。
+- 証跡に絶対path、file名、証明書thumbprint／subject、PIN、秘密鍵、作品内容を保存せず、6ファイルのSHA-256と署名判定だけを残す。上書き、署名者不一致、不正path、未署名をfail closedで拒否する。
+- Stage 0 readinessを実artifact証跡へ接続し、RC台帳の`passed`記載だけでは合格しないよう強化した。Stage 1の署名付き更新・統合readinessは変更せず、配布許可はfalseのままである。
+- 集中9/9、Desktop 249/249、Hub 1008/1008、Canvas 26/26、AI 50/50、deps、lint、typecheck、Desktop build、migration 83/83、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release操作なし。未追跡`apps/desktop/artifacts/`は未変更。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-16 Codex: Desktop Windowsハードウェアトークン署名対応
 
 - PR #486 merge commit `acedcab`から`codex/desktop-hardware-token-signing-20260916`を開始した。
