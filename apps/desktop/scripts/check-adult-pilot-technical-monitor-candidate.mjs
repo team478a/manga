@@ -20,6 +20,14 @@ const strict = process.argv.includes("--strict");
 const resultIndex = process.argv.indexOf("--result-out");
 const resultPath = resultIndex >= 0 ? process.argv[resultIndex + 1] : undefined;
 
+const isInside = (parent, child) => {
+  const relative = path.relative(path.resolve(parent), path.resolve(child));
+  return (
+    relative === "" ||
+    (!relative.startsWith("..") && !path.isAbsolute(relative))
+  );
+};
+
 const forbiddenKeys =
   /^(name|email|address|phone|prompt|negativePrompt|image|mask|projectName|deviceName|hostname|serialNumber|ipAddress|macAddress|absolutePath|content|notes?)$/i;
 const emailPattern = /\b[^\s@]+@[^\s@]+\.[^\s@]+\b/;
@@ -197,13 +205,23 @@ const assessment = {
 
 if (resultIndex >= 0) {
   if (!resultPath) fail("--result-out requires a JSON path");
+  if (!path.isAbsolute(resultPath) || resultPath.startsWith("\\\\"))
+    fail("result output must be an absolute local-drive path");
   const output = path.resolve(resultPath);
+  if (isInside(root, output))
+    fail("result output must be outside the Git repository");
+  const parent = path.dirname(output);
+  if (!fs.existsSync(parent) || !fs.statSync(parent).isDirectory())
+    fail("result output directory does not exist");
   if (fs.existsSync(output)) fail("result output already exists");
-  fs.mkdirSync(path.dirname(output), { recursive: true });
-  fs.writeFileSync(output, `${JSON.stringify(assessment, null, 2)}\n`, {
-    flag: "wx",
-    mode: 0o600,
-  });
+  try {
+    fs.writeFileSync(output, `${JSON.stringify(assessment, null, 2)}\n`, {
+      flag: "wx",
+      mode: 0o600,
+    });
+  } catch {
+    fail("result output could not be written");
+  }
 }
 
 console.log(

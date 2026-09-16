@@ -39,20 +39,36 @@ Stage 0の4方式、保存、Page配置、PDF、backup／別Project復元が合�
 
 実台帳はGitへ保存せず、アクセス制限された運用領域へ置く。氏名、メール、端末名、serial、IP、MAC address、作品名、Prompt、画像、自由記述、local絶対pathをJSONへ含めない。連絡先は既存の連絡管理で別に保持し、candidate IDとの対応表をGitや診断へ複製しない。
 
-`DESKTOP_ADULT_TECHNICAL_MONITOR_CANDIDATE.example.json`を運用領域へcopyし、氏名やメールから導出していないrandomな`candidate-` IDを設定する。exampleは誤配布防止のため全条件を不適格にしてあり、そのままではstrict成功しない。
+候補者JSONは手編集せず、専用generatorへ選択式のPC環境帯と、本人が確認した項目だけを渡す。generatorは氏名やメールから導出しないrandomな`candidate-` IDと確認日時を作り、Git管理外の既存directoryに新規保存する。氏名、メール、連絡先、自由記述を引数へ渡す機能はない。確認flagを省略した項目は`false`となり、preflight strictで停止する。
 
 ```powershell
-$candidateId = "candidate-$((New-Guid).Guid.Replace('-', '').Substring(0, 12))"
+$privateRoot = "<既存のアクセス制限されたGit管理外directory>"
+$candidate = Join-Path $privateRoot "candidate.json"
+$assessment = Join-Path $privateRoot "assessment.json"
+npm run desktop:adult:technical-monitor:candidate:create -- `
+  --windows windows_11 `
+  --gpu-vendor nvidia `
+  --vram-band 12gb `
+  --ram-band 32gb_or_more `
+  --free-disk-band 50gb_or_more `
+  --confirm-assisted-first-run `
+  --confirm-observation-24-hours `
+  --confirm-age-18-or-older `
+  --confirm-fictional-adults-only `
+  --confirm-prohibited-content-policy `
+  --confirm-local-only-boundary `
+  --confirm-official-source-downloads `
+  --confirm-content-free-diagnostics `
+  --confirm-local-backup-responsibility `
+  --confirm-manual-stop-procedure `
+  --out $candidate
+$env:MANGAI_ADULT_PILOT_TECHNICAL_MONITOR_CANDIDATE_PATH = $candidate
+npm run desktop:adult:technical-monitor:preflight
+npm run desktop:adult:technical-monitor:preflight:strict -- --result-out $assessment
+$candidateId = (Get-Content -LiteralPath $assessment -Raw | ConvertFrom-Json).candidateId
 ```
 
-```powershell
-$env:MANGAI_ADULT_PILOT_TECHNICAL_MONITOR_CANDIDATE_PATH = "<access-controlled-candidate.json>"
-$assessment = "<access-controlled-assessment.json>"
-npm run desktop:adult:technical-monitor:preflight -- --result-out $assessment
-npm run desktop:adult:technical-monitor:preflight:strict -- --result-out "<new-assessment-path.json>"
-```
-
-通常preflightは適格／不適格と不足項目を表示する。strictは1項目でも不足すれば終了コード1となる。出力assessmentは環境帯、失敗check、warningだけを含み、常に`distributionAuthorized=false`である。既存fileを上書きしない。
+候補者JSONとassessmentは相対path、UNC、repository内への出力、存在しない出力directory、既存fileの上書きを拒否する。通常preflightは適格／不適格と不足項目を表示する。strictは1項目でも不足すれば終了コード1となる。出力assessmentは環境帯、失敗check、warningだけを含み、常に`distributionAuthorized=false`である。`DESKTOP_ADULT_TECHNICAL_MONITOR_CANDIDATE.example.json`はfail-closedなschema例であり、実候補者用にcopy・編集しない。
 
 RAM 16〜31GBと空き容量40〜49GBは最低条件内だがwarningとする。VRAM 12GB未満、Windows 11以外、NVIDIA以外、確認未完了は不適格である。自己申告は候補選考専用であり、Stage 0ではComfyUI `/system_stats`とMANGAI実機証跡で再検証する。
 
@@ -63,7 +79,7 @@ Stage 0を開始する前に、候補assessmentと実施計画をアクセス制
 ```powershell
 $stage0Plan = "<access-controlled-stage0-plan.jsonの絶対path>"
 npm run desktop:adult:stage0-plan:create -- `
-  --candidate-id "candidate-<12桁の小文字16進数>" `
+  --candidate-id $candidateId `
   --scheduled-start "<UTC ISO日時>" `
   --delete-by "<実施後14日以内のUTC ISO日時>" `
   --confirm-assisted-session `
