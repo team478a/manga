@@ -84,6 +84,8 @@ npm run desktop:adult:stage0-readiness:strict
 
 計画generatorはDesktop versionとStage 1配布未許可を固定し、過去日時、14日超の保持、確認漏れ、Git管理内への出力、既存fileの上書きを拒否する。候補者の本人情報、作品内容、Prompt、画像、端末識別情報を引数や計画JSONへ含めない。
 
+readiness strict成功後は`desktop:adult:stage0-operation-package:create`で候補assessment、計画、署名artifact証跡、Bundle証跡、固定Bundle manifest、責任者承認の6 sourceをSHA-256で固定する。実施直前に`desktop:adult:stage0-operation-package:verify`で同じsourceを再検証し、取り違え、改変、candidate ID／Desktop version／期限不一致、readinessの後退をfail closedで停止する。operation packageはGit管理外へ新規保存し、pathや個人情報を保持せず、成功してもStage 1配布を許可しない。
+
 Stage 0 gateは取込済みmanifestと元Bundle証跡を再照合する。manifestの`fixed`状態だけでは合格せず、証跡fileの改変、artifact ID重複、未知field、容量・SHA-256、workflow／mapping SHA-256、取込verificationのいずれかが不一致なら`fixed_bundle: BLOCKED`または入力不正として停止する。
 
 責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。

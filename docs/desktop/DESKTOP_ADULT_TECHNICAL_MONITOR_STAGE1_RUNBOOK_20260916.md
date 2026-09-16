@@ -126,6 +126,27 @@ $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH = "<access-controlled-bundle
 
 `fixed`という文字列だけを手作業で設定してもREADYにはならない。元証跡の改変、重複artifact ID、未知field、容量・digest不一致、workflow digest不一致、取込verification不一致はfail closedで拒否する。元証跡には実pathや作品内容を含めず、Gitへcommitしない。
 
+readiness strict成功後は、同じ候補assessment、計画、署名artifact証跡、Bundle証跡と、現在の固定Bundle manifest、責任者承認を1つの内容非保持operation packageへSHA-256で固定する。operation packageはアクセス制限されたGit管理外の既存directoryへ新規作成し、実施直前に同じ6 sourceで再検証する。
+
+```powershell
+$stage0Package = Join-Path $privateRoot "stage0-operation-package.json"
+npm run desktop:adult:stage0-operation-package:create -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --out $stage0Package
+
+npm run desktop:adult:stage0-operation-package:verify -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package
+```
+
+作成・再検証の両方でStage 0 readiness strictを再実行する。candidate ID、Desktop version、実施日時、削除期限、6 sourceのいずれかが違う場合、sourceが改変された場合、現在のreadinessがBLOCKEDへ戻った場合はfail closedで停止する。operation packageは実path、氏名、メール、作品内容、Prompt、画像、署名者情報を保存せず、`stage1DistributionAuthorized=false`を固定する。成功はartifact送付やStage 0開始の承認ではない。
+
 1. 候補者preflight strict成功とStage 0 readiness strict成功を確認する。
 2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを確認し、内容非保持のartifact証跡をStage 0 gateへ接続する。
 3. 初回は支援付きでinstallし、公式配布元から固定ComfyUI／modelを取得する。MANGAIから再配布しない。
