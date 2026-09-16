@@ -29,6 +29,8 @@
     "desktop:adult:stage0-readiness:strict": "npm --prefix apps/desktop run adult:stage0-readiness:strict --",
     "desktop:adult:stage0-plan:create": "npm --prefix apps/desktop run adult:stage0-plan:create --",
     "desktop:adult:stage0-artifact-evidence": "npm --prefix apps/desktop run adult:stage0-artifact-evidence --",
+    "desktop:adult:stage0-operation-package:create": "npm --prefix apps/desktop run adult:stage0-operation-package:create --",
+    "desktop:adult:stage0-operation-package:verify": "npm --prefix apps/desktop run adult:stage0-operation-package:verify --",
     "desktop:adult:pilot-release-readiness": "npm --prefix apps/desktop run adult:pilot-release-readiness",
     "desktop:adult:pilot-release-readiness:strict": "npm --prefix apps/desktop run adult:pilot-release-readiness:strict",
     "desktop:adult:pilot-owner-approval:record": "node apps/desktop/scripts/record-adult-pilot-owner-approval.mjs",

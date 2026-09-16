@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 0運用パッケージ検証
+
+- PR #491 merge commit `514da48`から`codex/adult-stage0-operation-package-20260916`を作成した。マージ後Core quality、Migration roundtrip、Desktop Windowsは成功済み。
+- 候補assessment、計画、署名artifact証跡、Bundle証跡、固定Bundle manifest、責任者承認をSHA-256で固定する内容非保持operation packageのcreate／verify CLIを追加した。
+- 作成時と実施直前に既存Stage 0 readiness strictを再実行し、candidate ID、Desktop version、実施日時、削除期限、6 source digest、配布境界を相互照合する。改変、取り違え、readiness後退をfail closedで停止し、pathや本人情報を保存しない。
+- 集中14/14、Desktop 268/268、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- Commit `513b57f`をpushしてDraft PR #492を作成した。canonical Stage 0は1 READY／4 BLOCKED、Stage 1配布許可falseのまま。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実証跡・実package操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。
+- 次: 正本同期commitの全CI／Vercel Preview成功で停止する。実packageとStage 0外部操作は別承認事項である。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult 技術モニター候補generator
 
 - PR #490 merge commit `a826931`から`codex/adult-technical-monitor-candidate-generator-20260916`を作成した。
