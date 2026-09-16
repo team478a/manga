@@ -3,10 +3,11 @@
 ## 2026-09-16 Codex: Desktop Adult Stage 1招待台帳proposal適用
 
 - PR #497 merge commit `76682a3`から`codex/adult-stage1-ledger-proposal-apply-20260916`を作成した。本線Required Quality run `35104365167`とDesktop Windows run `35104365065`は成功済み。
+- Implementation commit `0ddee44`をpushし、Draft PR #498を作成した。全CI／Vercel Previewを確認中。
 - 検査済みproposal、承認、消費receipt、候補assessment、承認時点の原本台帳を再検証し、固定backupと適用intentを残して一時fileから台帳を置換するCLIを追加した。置換後の中断は再実行でreceiptだけを回復確定できる。
 - proposal／原本／source改変、期限外、明示確認不足、backup／intent競合、適用中変更、二重適用を拒否する。運用記録と標準出力へ個人情報、作品内容、candidate ID、pathを出さず、外部処理を実行しない。
 - runbookへproposal検査後の適用、固定backup／intent／receipt、回復時の再実行、通常時に運用fileを削除しない手順を追記した。
-- 集中16/16、Desktop 315/315、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。commit、push、Draft PRは継続する。canonical readinessは5 READY／4 BLOCKEDのまま。
+- 集中16/16、Desktop 315/315、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。PR #498の全CI／Vercel Previewを確認中。canonical readinessは5 READY／4 BLOCKEDのまま。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書、Secret、Release、実候補者・実Stage 1・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。
 
 ---
