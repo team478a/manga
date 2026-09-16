@@ -7,7 +7,8 @@
 - 根因は、`provider_moderation_blocked`の判定がProvider Job IDを要求していたこと。Gateway moderationは応答を検証してからJob IDを保存するため、正規のmoderation codeでもIDがない失敗を作り得る。
 - `provider_moderation_blocked`をJob IDなしでも拒否として扱い、汎用`provider_rejected`のJob ID条件は維持した。生成一覧と一括生成一覧だけでなく、原稿編集と一括生成の再実行Actionも同じ共通判定器へ変更し、直接API実行でも終端Jobを閉じる。
 - 集中30/30、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y 29画面blocking violation 0、Hub／Desktop typecheck、lint、依存／module／size境界、migration validator 83/83、Hub／Desktop Production build、RC Repository structure READY、`git diff --check`成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
-- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+- Commit `5669f58`をpushしてDraft PR #482を作成した。最初のHEADでRequired Quality run `35042754670`（Core quality 3分9秒／Migration roundtrip 48秒）、Desktop Windows run `35042754753`（4分30秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://mangai-hub-staging-2po9uay3z-team478as-projects.vercel.app`。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
 
 ---
 

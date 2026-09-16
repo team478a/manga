@@ -7,7 +7,8 @@
 - GatewayはProvider応答内moderationをProvider Job ID保存前に例外化できる。旧BFL履歴もcheckpoint未保存になり得るため、`provider_moderation_blocked`はJob IDなしでも信頼できるServer書込みcodeとして扱う。汎用`provider_rejected`は従来どおりJob ID必須を維持する。
 - 判定を共通helperへ集約し、生成一覧、一括生成一覧、原稿編集retry、一括生成retryの表示・実行を同一契約へ揃えた。終端の安全再構成は再実行せず、構図・場面の見直しへ案内する。
 - 集中30/30、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y、Hub／Desktop型検査、lint、依存／module／size境界、migration 83/83、Hub／Desktop build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
-- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-moderation-prejob-recovery-20260916`。次はDraft PRと全CI／Vercel Preview成功で停止し、merge後にProduction表示をread-only再確認する。
+- Commit `5669f58`をpushしてDraft PR #482を作成した。最初のHEADでRequired Quality run `35042754670`、Desktop Windows run `35042754753`、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://mangai-hub-staging-2po9uay3z-team478as-projects.vercel.app`。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-moderation-prejob-recovery-20260916`。次は正本同期commitの最終CI／Preview成功で停止し、merge後にProduction表示をread-only再確認する。
 
 ---
 
