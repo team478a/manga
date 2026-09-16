@@ -37,4 +37,10 @@ test("終端moderation失敗はPromptを返さず内容見直しへ案内する"
   assert.match(editor, /内容は自動入力されず、生成もまだ始まりません/);
   assert.match(editor, /panel-moderation-recovery-guidance/);
   assert.match(editor, /recoveryGuidancePanelId === selection\.id/);
+  assert.match(editor, /1案（回復・最小費用）/);
+  assert.match(editor, /prepareRecoveryPanelGenerationConfirmation/);
+  assert.match(editor, /画像生成の実行前確認/);
+  assert.match(editor, /生成Job、credit予約、Provider実行は発生していません/);
+  assert.match(editor, /confirmRecoveryPanelGeneration/);
+  assert.match(editor, /estimate\.canStart/);
 });

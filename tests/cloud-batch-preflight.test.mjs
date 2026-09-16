@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
-import { estimateGenerationBatch } from "../src/modules/manga/domain/generation-batch-preflight.ts";
+import {
+  estimateGenerationBatch,
+  estimatePanelGeneration,
+} from "../src/modules/manga/domain/generation-batch-preflight.ts";
 
 const context = (overrides = {}) => ({
   available: true,
@@ -64,6 +67,41 @@ test("人物・画風を確認できない状態はfail-closedにする", () => 
   }), ["a", "b", "c", "d"]);
   assert.equal(estimate.canStart, false);
   assert.match(estimate.blockers.join("\n"), /人物・画風の生成準備を確認できません/);
+});
+
+test("個別コマ回復preflightは1案のcreditと最大予約費用を表示する", () => {
+  const estimate = estimatePanelGeneration(context({
+    planCreditsRemaining: 6,
+    monitorRequestsRemaining: 1,
+  }), { pageId: "a", candidateCount: 1 });
+  assert.equal(estimate.pageNumber, 1);
+  assert.equal(estimate.candidateCount, 1);
+  assert.equal(estimate.requiredCredits, 2);
+  assert.equal(estimate.maxReservedCostMicros, 30_000);
+  assert.equal(estimate.planCreditsRemaining, 6);
+  assert.equal(estimate.monitorRequestsRemaining, 1);
+  assert.equal(estimate.canStart, true);
+});
+
+test("個別コマ回復preflightはcredit、monitor枠、契約期間をfail-closedで確認する", () => {
+  const estimate = estimatePanelGeneration(context({
+    planCreditsRemaining: 1,
+    monitorRequestsRemaining: 0,
+    entitlementPeriodEndsAt: "2026-09-12T00:00:00.000Z",
+  }), { pageId: "a", candidateCount: 1 });
+  assert.equal(estimate.canStart, false);
+  assert.match(estimate.blockers.join("\n"), /Cloud AI creditが1不足/);
+  assert.match(estimate.blockers.join("\n"), /モニターAI利用枠が1回不足/);
+  assert.match(estimate.blockers.join("\n"), /Cloud AI利用契約の有効期間外/);
+});
+
+test("個別コマ回復preflightは候補数と対象ページのCanvasを検査する", () => {
+  const estimate = estimatePanelGeneration(context({
+    pagePanelCounts: { a: null },
+  }), { pageId: "a", candidateCount: 5 });
+  assert.equal(estimate.canStart, false);
+  assert.match(estimate.blockers.join("\n"), /候補数は1〜4案/);
+  assert.match(estimate.blockers.join("\n"), /現在のCanvasを確認できません/);
 });
 
 test("一括生成preflightは対象コマ、credit、最大予約費用、Worker下限を合算する", () => {
@@ -176,4 +214,15 @@ test("preflight serviceは採用ネームと現行人物・画風versionだけ�
   assert.match(service, /version\.appearance_age\.trim\(\) &&/);
   assert.match(service, /style\.art_style\.trim\(\) &&/);
   assert.match(service, /visualReadinessAvailable: true/);
+});
+
+test("個別コマpreflight APIはread-only見積りだけを返す", () => {
+  const route = fs.readFileSync(new URL("../src/app/api/creator/storyboard-panel-generation/preflight/route.ts", import.meta.url), "utf8");
+  const service = fs.readFileSync(new URL("../src/modules/cloud-creator/generation/batch-preflight-service.ts", import.meta.url), "utf8");
+  assert.match(route, /getCloudPanelGenerationPreflight/);
+  assert.match(route, /prepareStoryboardPanelImage/);
+  assert.match(route, /private, no-store/);
+  assert.doesNotMatch(route, /enqueue|reserve|consume|Provider/);
+  assert.match(service, /estimatePanelGeneration/);
+  assert.match(service, /cloud_ai_provider_prices/);
 });

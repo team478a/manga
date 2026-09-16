@@ -55,6 +55,22 @@ export type GenerationBatchPreflightEstimate = {
   blockers: string[];
 };
 
+export type PanelGenerationPreflightEstimate = {
+  modelId: string | null;
+  pricingVersion: string | null;
+  currency: string;
+  pageId: string;
+  pageNumber: number | null;
+  candidateCount: number;
+  requiredCredits: number | null;
+  maxReservedCostMicros: number | null;
+  planCreditsRemaining: number | null;
+  projectCreditsRemaining: number | null;
+  monitorRequestsRemaining: number | null;
+  canStart: boolean;
+  blockers: string[];
+};
+
 function remaining(limit: number | null, reserved: number, used: number) {
   return limit === null ? null : Math.max(0, limit - reserved - used);
 }
@@ -65,6 +81,131 @@ export function remainingGenerationCapacity(input: {
   used: number;
 }) {
   return remaining(input.limit, input.reserved, input.used);
+}
+
+function entitlementPeriodIsActive(context: GenerationBatchPreflightContext) {
+  const evaluatedAt = new Date(context.evaluatedAt);
+  const entitlementPeriodStartsAt = context.entitlementPeriodStartsAt
+    ? new Date(context.entitlementPeriodStartsAt)
+    : null;
+  const entitlementPeriodEndsAt = context.entitlementPeriodEndsAt
+    ? new Date(context.entitlementPeriodEndsAt)
+    : null;
+  return !(
+    Number.isNaN(evaluatedAt.getTime()) ||
+    !entitlementPeriodStartsAt ||
+    Number.isNaN(entitlementPeriodStartsAt.getTime()) ||
+    !entitlementPeriodEndsAt ||
+    Number.isNaN(entitlementPeriodEndsAt.getTime()) ||
+    evaluatedAt < entitlementPeriodStartsAt ||
+    evaluatedAt >= entitlementPeriodEndsAt
+  );
+}
+
+export function estimatePanelGeneration(
+  context: GenerationBatchPreflightContext,
+  input: { pageId: string; candidateCount: number },
+): PanelGenerationPreflightEstimate {
+  const candidateCount = Number.isInteger(input.candidateCount)
+    ? input.candidateCount
+    : 0;
+  const requiredCredits = context.creditsPerJob === null
+    ? null
+    : candidateCount * context.creditsPerJob;
+  const maxReservedCostMicros = context.maxCostMicrosPerJob === null
+    ? null
+    : candidateCount * context.maxCostMicrosPerJob;
+  const blockers: string[] = [];
+
+  if (candidateCount < 1 || candidateCount > 4)
+    blockers.push("生成する候補数は1〜4案で選んでください。");
+  if (
+    context.pagePanelCounts[input.pageId] === null ||
+    context.pagePanelCounts[input.pageId] === undefined
+  )
+    blockers.push(
+      "現在のCanvasを確認できません。ページを保存してから再度お試しください。",
+    );
+  else if (context.pagePanelCounts[input.pageId] === 0)
+    blockers.push("生成可能なコマがありません。コマを配置して保存してください。");
+  if (
+    !context.available ||
+    !context.providerEnabled ||
+    requiredCredits === null ||
+    maxReservedCostMicros === null
+  )
+    blockers.push("画像生成の料金と利用枠を確認できませんでした。");
+  if (!context.monitorActive)
+    blockers.push("一般向けモニターのAI利用枠を確認できませんでした。");
+  if (
+    context.monitorRequestsRemaining !== null &&
+    candidateCount > context.monitorRequestsRemaining
+  )
+    blockers.push(
+      `モニターAI利用枠が${candidateCount - context.monitorRequestsRemaining}回不足しています。`,
+    );
+  if (!["active", "trialing"].includes(context.entitlementStatus ?? ""))
+    blockers.push("Cloud AI利用契約が有効ではありません。");
+  if (!entitlementPeriodIsActive(context))
+    blockers.push(
+      "Cloud AI利用契約の有効期間外です。管理者へ利用期間の確認を依頼してください。",
+    );
+  if (
+    !context.planGenerationEnabled ||
+    !context.projectGenerationEnabled ||
+    !context.globalGenerationEnabled
+  )
+    blockers.push("Cloud AI生成は現在停止中です。");
+  if (
+    requiredCredits !== null &&
+    context.planCreditsRemaining !== null &&
+    requiredCredits > context.planCreditsRemaining
+  )
+    blockers.push(
+      `Cloud AI creditが${requiredCredits - context.planCreditsRemaining}不足しています。`,
+    );
+  if (
+    requiredCredits !== null &&
+    context.projectCreditsRemaining !== null &&
+    requiredCredits > context.projectCreditsRemaining
+  )
+    blockers.push(
+      `作品の生成creditが${requiredCredits - context.projectCreditsRemaining}不足しています。`,
+    );
+  if (
+    maxReservedCostMicros !== null &&
+    context.planCostMicrosRemaining !== null &&
+    maxReservedCostMicros > context.planCostMicrosRemaining
+  )
+    blockers.push("Cloud AI費用上限を超えるため開始できません。");
+  if (
+    maxReservedCostMicros !== null &&
+    context.projectCostMicrosRemaining !== null &&
+    maxReservedCostMicros > context.projectCostMicrosRemaining
+  )
+    blockers.push("作品の費用上限を超えるため開始できません。");
+  if (
+    maxReservedCostMicros !== null &&
+    context.globalCostMicrosRemaining !== null &&
+    maxReservedCostMicros > context.globalCostMicrosRemaining
+  )
+    blockers.push("全体の日次費用上限を超えるため開始できません。");
+
+  return {
+    modelId: context.modelId,
+    pricingVersion: context.pricingVersion,
+    currency: context.currency,
+    pageId: input.pageId,
+    pageNumber: context.pageNumbers[input.pageId] ?? null,
+    candidateCount,
+    requiredCredits,
+    maxReservedCostMicros,
+    planCreditsRemaining: context.planCreditsRemaining,
+    projectCreditsRemaining: context.projectCreditsRemaining,
+    monitorRequestsRemaining: context.monitorRequestsRemaining,
+    canStart: blockers.length === 0,
+    blockers: [...new Set(blockers)],
+  };
 }
 
 export function estimateGenerationBatch(
@@ -141,22 +282,7 @@ export function estimateGenerationBatch(
     blockers.push(`モニターAI利用枠が${targetPanelCount - context.monitorRequestsRemaining}回不足しています。`);
   if (!["active", "trialing"].includes(context.entitlementStatus ?? ""))
     blockers.push("Cloud AI利用契約が有効ではありません。");
-  const evaluatedAt = new Date(context.evaluatedAt);
-  const entitlementPeriodStartsAt = context.entitlementPeriodStartsAt
-    ? new Date(context.entitlementPeriodStartsAt)
-    : null;
-  const entitlementPeriodEndsAt = context.entitlementPeriodEndsAt
-    ? new Date(context.entitlementPeriodEndsAt)
-    : null;
-  if (
-    Number.isNaN(evaluatedAt.getTime()) ||
-    !entitlementPeriodStartsAt ||
-    Number.isNaN(entitlementPeriodStartsAt.getTime()) ||
-    !entitlementPeriodEndsAt ||
-    Number.isNaN(entitlementPeriodEndsAt.getTime()) ||
-    evaluatedAt < entitlementPeriodStartsAt ||
-    evaluatedAt >= entitlementPeriodEndsAt
-  )
+  if (!entitlementPeriodIsActive(context))
     blockers.push("Cloud AI利用契約の有効期間外です。管理者へ利用期間の確認を依頼してください。");
   if (!context.planGenerationEnabled || !context.projectGenerationEnabled || !context.globalGenerationEnabled)
     blockers.push("Cloud AI生成は現在停止中です。");

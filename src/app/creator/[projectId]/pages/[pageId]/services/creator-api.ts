@@ -9,6 +9,7 @@ import {
   type CompatibleApiErrorEnvelope,
 } from "@/lib/api-error-contract";
 import type { CloudPanelDesign, CloudPanelDesignRecord } from "@/lib/cloud-panel-design";
+import type { PanelGenerationPreflightEstimate } from "@/modules/manga/domain/generation-batch-preflight";
 
 async function responseJson<T>(response: Response, fallback: string) {
   const result = (await response.json()) as T & CompatibleApiErrorEnvelope;
@@ -118,6 +119,20 @@ export async function createStoryboardPanelGenerationJob(
       body: JSON.stringify(body),
     }),
     "ネームから画像生成を開始できませんでした。",
+  );
+}
+
+export async function getStoryboardPanelGenerationPreflight(
+  body: import("@/modules/manga/contracts/panel-generation").CloudPanelImageGenerationRequestInput,
+) {
+  return responseJson<PanelGenerationPreflightEstimate>(
+    await fetch("/api/creator/storyboard-panel-generation/preflight", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      cache: "no-store",
+      body: JSON.stringify(body),
+    }),
+    "画像生成の実行前確認を完了できませんでした。",
   );
 }
 

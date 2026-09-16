@@ -66,6 +66,7 @@ import {
   resolveCandidateTargetPanelId,
   type PanelGenerationTarget,
 } from "@/modules/manga/domain/panel-candidate";
+import type { PanelGenerationPreflightEstimate } from "@/modules/manga/domain/generation-batch-preflight";
 import { useCanvasAutosave } from "./hooks/useCanvasAutosave";
 import { useCanvasHistory } from "./hooks/useCanvasHistory";
 import {
@@ -89,6 +90,7 @@ import {
   createStoryboardPanelGenerationJob,
   getAiQuota,
   getAssetUrl,
+  getStoryboardPanelGenerationPreflight,
   listGenerationJobs,
   listProjectAssets,
   recordMangaQualityEvent,
@@ -135,6 +137,29 @@ type GazeDirection =
 type ImageQualityReviewRequest = {
   jobId: string;
   action: "place" | "approve";
+};
+type PanelGenerationRequestOptions = {
+  panelId?: string;
+  candidateCount?: number;
+  sourceAssetId?: string;
+  maskAssetId?: string;
+  outpaintingDirection?: OutpaintingDirection;
+  revisionPreset?: RevisionPreset;
+  revisionInstruction?: string;
+  shotOverride?: ShotOverride;
+  cameraAngleOverride?: CameraAngleOverride;
+  subjectPlacement?: SubjectPlacement;
+  gazeDirection?: GazeDirection;
+  compositionInstruction?: string;
+  generationTarget?: PanelGenerationTarget;
+};
+type PendingPanelGenerationConfirmation = {
+  request: PanelGenerationRequestOptions & {
+    panelId: string;
+    candidateCount: number;
+  };
+  panelNumber: number;
+  estimate: PanelGenerationPreflightEstimate;
 };
 const revisionPresetLabels: Record<RevisionPreset, string> = {
   face: "顔の崩れを直す",
@@ -190,6 +215,14 @@ const panelGenerationTargetLabels: Record<PanelGenerationTarget, string> = {
   character: "人物だけ",
   effect: "効果だけ",
 };
+
+function formatReservedCost(micros: number | null, currency: string) {
+  if (micros === null) return "確認できません";
+  return new Intl.NumberFormat("ja-JP", {
+    style: "currency",
+    currency,
+  }).format(micros / 1_000_000);
+}
 
 function generationStatusLabel(job: CloudGenerationJob) {
   if (job.status === "queued" || job.status === "running") return "生成中";
@@ -326,6 +359,11 @@ export function CloudCanvasEditor({
   const [requestingPanelGeneration, setRequestingPanelGeneration] =
     useState(false);
   const [panelCandidateCount, setPanelCandidateCount] = useState(3);
+  const [recoveryCandidateCount, setRecoveryCandidateCount] = useState(1);
+  const [checkingPanelGenerationPreflight, setCheckingPanelGenerationPreflight] =
+    useState(false);
+  const [panelGenerationConfirmation, setPanelGenerationConfirmation] =
+    useState<PendingPanelGenerationConfirmation | null>(null);
   const [panelGenerationTarget, setPanelGenerationTarget] =
     useState<PanelGenerationTarget>("composite");
   const [shotOverride, setShotOverride] =
@@ -355,6 +393,8 @@ export function CloudCanvasEditor({
   const openPanelGenerationAdjustments = (panelId: string) => {
     setSelection({ type: "panel", id: panelId });
     setRecoveryGuidancePanelId(panelId);
+    setRecoveryCandidateCount(1);
+    setPanelGenerationConfirmation(null);
     window.requestAnimationFrame(() => {
       const adjustments = document.getElementById(
         "panel-generation-adjustments",
@@ -546,6 +586,19 @@ export function CloudCanvasEditor({
         quota.credits_limit - quota.credits_used - quota.credits_reserved,
       )
     : 0;
+  const recoveryPanelSelected =
+    selection?.type === "panel" && recoveryGuidancePanelId === selection.id;
+  const selectedPanelCandidateCount = recoveryPanelSelected
+    ? recoveryCandidateCount
+    : panelCandidateCount;
+  useEffect(() => {
+    if (
+      panelGenerationConfirmation &&
+      (selection?.type !== "panel" ||
+        selection.id !== panelGenerationConfirmation.request.panelId)
+    )
+      setPanelGenerationConfirmation(null);
+  }, [panelGenerationConfirmation, selection]);
   const rejectedPlacedJobIds = useMemo(
     () =>
       generationJobs
@@ -836,21 +889,9 @@ export function CloudCanvasEditor({
     }
   }
 
-  async function requestStoryboardPanelGeneration(options?: {
-    panelId?: string;
-    candidateCount?: number;
-    sourceAssetId?: string;
-    maskAssetId?: string;
-    outpaintingDirection?: OutpaintingDirection;
-    revisionPreset?: RevisionPreset;
-    revisionInstruction?: string;
-    shotOverride?: ShotOverride;
-    cameraAngleOverride?: CameraAngleOverride;
-    subjectPlacement?: SubjectPlacement;
-    gazeDirection?: GazeDirection;
-    compositionInstruction?: string;
-    generationTarget?: PanelGenerationTarget;
-  }) {
+  async function requestStoryboardPanelGeneration(
+    options?: PanelGenerationRequestOptions,
+  ) {
     const panelId =
       options?.panelId ?? (selection?.type === "panel" ? selection.id : null);
     if (!panelId || requestingPanelGeneration) return;
@@ -887,6 +928,58 @@ export function CloudCanvasEditor({
     } finally {
       setRequestingPanelGeneration(false);
     }
+  }
+
+  async function prepareRecoveryPanelGenerationConfirmation(
+    options: PanelGenerationRequestOptions,
+  ) {
+    const panelId =
+      options.panelId ?? (selection?.type === "panel" ? selection.id : null);
+    if (!panelId || checkingPanelGenerationPreflight || requestingPanelGeneration)
+      return;
+    const candidateCount = options.candidateCount ?? recoveryCandidateCount;
+    setCheckingPanelGenerationPreflight(true);
+    setPanelGenerationConfirmation(null);
+    setMessage("対象コマの最新利用枠と最大予約費用を確認しています…");
+    try {
+      const estimate = await getStoryboardPanelGenerationPreflight(
+        buildPanelRevisionRequest({
+          projectId: project.id,
+          pageId: page.id,
+          panelId,
+          idempotencyKey: crypto.randomUUID(),
+          candidateCount,
+          options,
+        }),
+      );
+      const panelNumber =
+        canvas.panels.findIndex((candidate) => candidate.id === panelId) + 1;
+      setPanelGenerationConfirmation({
+        request: { ...options, panelId, candidateCount },
+        panelNumber: Math.max(1, panelNumber),
+        estimate,
+      });
+      setMessage(
+        estimate.canStart
+          ? "実行前確認を表示しました。まだJob登録・credit予約・Provider実行は行っていません。"
+          : "利用枠または生成条件を確認してください。生成は開始していません。",
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "画像生成の実行前確認を完了できませんでした。",
+      );
+    } finally {
+      setCheckingPanelGenerationPreflight(false);
+    }
+  }
+
+  async function confirmRecoveryPanelGeneration() {
+    if (!panelGenerationConfirmation?.estimate.canStart) return;
+    const pending = panelGenerationConfirmation;
+    setPanelGenerationConfirmation(null);
+    await requestStoryboardPanelGeneration(pending.request);
   }
 
   async function requestPanelInpainting(maskFile: File) {
@@ -1714,11 +1807,12 @@ export function CloudCanvasEditor({
                   className="field mt-1 w-full"
                   id="panel-generation-target"
                   value={panelGenerationTarget}
-                  onChange={(event) =>
+                  onChange={(event) => {
+                    setPanelGenerationConfirmation(null);
                     setPanelGenerationTarget(
                       event.target.value as PanelGenerationTarget,
-                    )
-                  }
+                    );
+                  }}
                 >
                   {Object.entries(panelGenerationTargetLabels).map(
                     ([value, label]) => (
@@ -1747,9 +1841,10 @@ export function CloudCanvasEditor({
                       <select
                         className="field mt-1 w-full"
                         value={shotOverride}
-                        onChange={(event) =>
-                          setShotOverride(event.target.value as ShotOverride)
-                        }
+                        onChange={(event) => {
+                          setPanelGenerationConfirmation(null);
+                          setShotOverride(event.target.value as ShotOverride);
+                        }}
                       >
                         {Object.entries(shotOverrideLabels).map(
                           ([value, label]) => (
@@ -1763,11 +1858,12 @@ export function CloudCanvasEditor({
                       <select
                         className="field mt-1 w-full"
                         value={cameraAngleOverride}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          setPanelGenerationConfirmation(null);
                           setCameraAngleOverride(
                             event.target.value as CameraAngleOverride,
-                          )
-                        }
+                          );
+                        }}
                       >
                         {Object.entries(cameraAngleOverrideLabels).map(
                           ([value, label]) => (
@@ -1781,11 +1877,12 @@ export function CloudCanvasEditor({
                       <select
                         className="field mt-1 w-full"
                         value={subjectPlacement}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          setPanelGenerationConfirmation(null);
                           setSubjectPlacement(
                             event.target.value as SubjectPlacement,
-                          )
-                        }
+                          );
+                        }}
                       >
                         {Object.entries(subjectPlacementLabels).map(
                           ([value, label]) => (
@@ -1799,9 +1896,10 @@ export function CloudCanvasEditor({
                       <select
                         className="field mt-1 w-full"
                         value={gazeDirection}
-                        onChange={(event) =>
-                          setGazeDirection(event.target.value as GazeDirection)
-                        }
+                        onChange={(event) => {
+                          setPanelGenerationConfirmation(null);
+                          setGazeDirection(event.target.value as GazeDirection);
+                        }}
                       >
                         {Object.entries(gazeDirectionLabels).map(
                           ([value, label]) => (
@@ -1845,9 +1943,10 @@ export function CloudCanvasEditor({
                     maxLength={500}
                     placeholder="例：右手を前に伸ばす"
                     value={compositionInstruction}
-                    onChange={(event) =>
-                      setCompositionInstruction(event.target.value)
-                    }
+                    onChange={(event) => {
+                      setPanelGenerationConfirmation(null);
+                      setCompositionInstruction(event.target.value);
+                    }}
                   />
                 </details>
                 <label
@@ -1859,11 +1958,18 @@ export function CloudCanvasEditor({
                 <select
                   className="field mt-1 w-full"
                   id="panel-candidate-count"
-                  value={panelCandidateCount}
-                  onChange={(event) =>
-                    setPanelCandidateCount(Number(event.target.value))
-                  }
+                  value={selectedPanelCandidateCount}
+                  onChange={(event) => {
+                    setPanelGenerationConfirmation(null);
+                    const nextCount = Number(event.target.value);
+                    if (recoveryPanelSelected)
+                      setRecoveryCandidateCount(nextCount);
+                    else setPanelCandidateCount(nextCount);
+                  }}
                 >
+                  {recoveryPanelSelected ? (
+                    <option value={1}>1案（回復・最小費用）</option>
+                  ) : null}
                   <option value={2}>2案（節約）</option>
                   <option value={3}>3案（おすすめ）</option>
                   <option value={4}>4案（比較重視）</option>
@@ -1871,9 +1977,13 @@ export function CloudCanvasEditor({
                 <button
                   aria-describedby={panelGenerationBlockReason ? "panel-generation-block-reason" : undefined}
                   className="button mt-3 w-full"
-                  disabled={panelGenerationBlockReason !== null}
-                  onClick={() =>
-                    void requestStoryboardPanelGeneration({
+                  disabled={
+                    panelGenerationBlockReason !== null ||
+                    checkingPanelGenerationPreflight
+                  }
+                  onClick={() => {
+                    const options: PanelGenerationRequestOptions = {
+                      candidateCount: selectedPanelCandidateCount,
                       shotOverride,
                       cameraAngleOverride,
                       subjectPlacement,
@@ -1881,14 +1991,123 @@ export function CloudCanvasEditor({
                       compositionInstruction:
                         compositionInstruction.trim() || undefined,
                       generationTarget: panelGenerationTarget,
-                    })
-                  }
+                    };
+                    if (recoveryPanelSelected)
+                      void prepareRecoveryPanelGenerationConfirmation(options);
+                    else void requestStoryboardPanelGeneration(options);
+                  }}
                   type="button"
                 >
                   {requestingPanelGeneration
                     ? "画像生成を受付中…"
-                    : `選択したコマを${panelCandidateCount}案生成`}
+                    : checkingPanelGenerationPreflight
+                      ? "最新利用枠を確認中…"
+                      : recoveryPanelSelected
+                        ? `${selectedPanelCandidateCount}案の実行前確認へ`
+                        : `選択したコマを${selectedPanelCandidateCount}案生成`}
                 </button>
+                {panelGenerationConfirmation && recoveryPanelSelected ? (
+                  <section
+                    aria-labelledby="panel-generation-confirmation-title"
+                    className="mt-3 rounded-lg border-2 border-violet-300 bg-white p-3 text-xs text-violet-950"
+                    id="panel-generation-confirmation"
+                  >
+                    <h3
+                      className="text-sm font-bold"
+                      id="panel-generation-confirmation-title"
+                    >
+                      画像生成の実行前確認
+                    </h3>
+                    <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1">
+                      <dt>対象</dt>
+                      <dd className="font-bold">
+                        {panelGenerationConfirmation.estimate.pageNumber ??
+                          page.page_number}
+                        ページ {panelGenerationConfirmation.panelNumber}コマ目
+                      </dd>
+                      <dt>候補数</dt>
+                      <dd className="font-bold">
+                        {panelGenerationConfirmation.estimate.candidateCount}案
+                      </dd>
+                      <dt>必要credit</dt>
+                      <dd className="font-bold">
+                        {panelGenerationConfirmation.estimate.requiredCredits ??
+                          "確認できません"}
+                      </dd>
+                      <dt>最大予約費用</dt>
+                      <dd className="font-bold">
+                        {formatReservedCost(
+                          panelGenerationConfirmation.estimate
+                            .maxReservedCostMicros,
+                          panelGenerationConfirmation.estimate.currency,
+                        )}
+                      </dd>
+                      <dt>Cloud AI残り</dt>
+                      <dd>
+                        {panelGenerationConfirmation.estimate
+                          .planCreditsRemaining ?? "確認できません"}
+                        credit
+                      </dd>
+                      <dt>作品の残り</dt>
+                      <dd>
+                        {panelGenerationConfirmation.estimate
+                          .projectCreditsRemaining ?? "上限なし"}
+                        {panelGenerationConfirmation.estimate
+                          .projectCreditsRemaining === null
+                          ? ""
+                          : " credit"}
+                      </dd>
+                      <dt>モニターAI残り</dt>
+                      <dd>
+                        {panelGenerationConfirmation.estimate
+                          .monitorRequestsRemaining ?? "対象外"}
+                        回
+                      </dd>
+                    </dl>
+                    <p className="mt-2 rounded bg-violet-50 p-2 leading-relaxed">
+                      ここまででは生成Job、credit予約、Provider実行は発生していません。下の確定ボタンを押した場合だけ、確認した条件で生成を開始します。
+                    </p>
+                    {panelGenerationConfirmation.estimate.blockers.length ? (
+                      <div
+                        className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-amber-950"
+                        role="status"
+                      >
+                        <p className="font-bold">開始前に確認してください</p>
+                        <ul className="mt-1 list-disc pl-5">
+                          {panelGenerationConfirmation.estimate.blockers.map(
+                            (blocker) => <li key={blocker}>{blocker}</li>,
+                          )}
+                        </ul>
+                      </div>
+                    ) : null}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        className="button"
+                        disabled={
+                          !panelGenerationConfirmation.estimate.canStart ||
+                          requestingPanelGeneration
+                        }
+                        onClick={() =>
+                          void confirmRecoveryPanelGeneration()
+                        }
+                        type="button"
+                      >
+                        確認して
+                        {panelGenerationConfirmation.estimate.candidateCount}
+                        案の生成を開始
+                      </button>
+                      <button
+                        className="button-secondary"
+                        onClick={() =>
+                          setPanelGenerationConfirmation(null)
+                        }
+                        type="button"
+                      >
+                        内容を見直す
+                      </button>
+                    </div>
+                  </section>
+                ) : null}
                 {panelGenerationBlockReason ? (
                   <div className="mt-2 rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950" id="panel-generation-block-reason" role="status">
                     <p>{panelGenerationBlockReason}</p>
