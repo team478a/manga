@@ -3,11 +3,12 @@
 ## 2026-09-17 Codex: Desktop Adult Pilot招待台帳状態遷移read-only監査
 
 - PR #500 merge commit `91e09ef`から`codex/adult-pilot-ledger-status-audit-20260917`を作成した。マージ後Required Quality run `35159053386`とDesktop Windows run `35159053390`は成功済み。
+- Implementation commit `8e3a492`をpushし、Draft PR #501を作成した。全CI／Vercel Previewを確認中。
 - 状態遷移proposalと台帳、backup、intent、receiptを変更せず検査し、`PROPOSAL_READY`、`APPLY_PREPARED`、`RECOVERY_REQUIRED`、`APPLIED`を判定するCLIを追加した。
 - 既存applyと同じproposal／source／intent検証を再利用し、receiptの全契約、digest、時系列も検証する。証跡欠損・矛盾・改変、監査中のfile内容・存在状態変更をfail closedで拒否する。
 - 招待台帳文書とStage 1 runbookへ、適用前後の監査コマンド、4状態の意味、安全な次アクション、承認非代替境界を追記した。
 - 集中27/27、Desktop 342/342、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はcommit、Draft PR、全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitとPR #501の全CI／Vercel Preview確認である。
 
 ---
 

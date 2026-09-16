@@ -2,15 +2,15 @@
 
 ## 2026-09-17 Desktop Adult Pilot招待台帳状態遷移read-only監査
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_PENDING / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
 - Base: PR #500 merge commit `91e09ef`。マージ後Required Quality run `35159053386`（Core quality、Migration roundtrip）とDesktop Windows run `35159053390`は成功済み。
-- Branch: `codex/adult-pilot-ledger-status-audit-20260917`。
+- Branch: `codex/adult-pilot-ledger-status-audit-20260917`。Implementation commit `8e3a492`。Draft PR: #501。
 - 状態遷移proposalと現在の台帳、固定backup、intent、receiptをread-onlyで検査し、`PROPOSAL_READY`、`APPLY_PREPARED`、`RECOVERY_REQUIRED`、`APPLIED`の4状態を判定する専用CLIを追加した。
 - proposalと元台帳の結合、対象外entryの不変性、時系列、全digest、intent／receipt契約を既存applyと共通検証する。証跡欠損・矛盾・改変、適用前後のどちらでもない台帳、監査中の内容・存在状態変更をfail closedで拒否する。
 - CLIはfileを作成・更新・削除せず、monitor IDとpathを標準出力へ表示しない。監査成功はproposalレビュー、対象付き適用承認、再実行承認を代替せず、招待、配布、Runtime／model、生成、credit操作を行わない。
 - 検証: 集中27/27、Desktop 342/342、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳を変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
-- 次: implementation commitをpushし、Draft PRを作成して全CI／Vercel Preview成功まで確認する。実proposal監査・適用は行わない。
+- 次: 正本同期commitをpushし、PR #501の全CI／Vercel Preview成功まで確認する。実proposal監査・適用は行わない。
 
 ---
 
