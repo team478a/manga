@@ -3,11 +3,12 @@
 ## 2026-09-16 Codex: Desktop Adult Stage 1一回限定招待承認
 
 - PR #495 merge commit `4b5980a`から`codex/adult-stage1-invitation-authorization-20260916`を作成した。本線Required QualityとDesktop Windowsは成功済み。
+- 実装commit `bdb4b37`をpushし、Draft PR #496を作成した。
 - Stage 1の実招待前に、候補assessment、Stage 0 operation packageと完了証跡、招待台帳、RC、固定Bundle、12GB受入れ表、責任者承認をSHA-256で固定する一回限定create／consume CLIを追加した。release readiness strict、5つの明示確認、24時間以内かつ証跡削除期限内の承認を必須にした。
 - candidate IDから独立したrandom monitor ID、承認fileの場所、現在のsource snapshotを固定し、改変、移動・copy、候補不一致、進行中Stage 1、個人情報・作品内容、期限切れ、上書き、再消費を拒否する。consumeはreceiptだけを作り、配布や招待を自動実行しない。
 - 技術モニターrunbookと招待台帳runbookへ、責任者の対象付き承認、配布直前consume、手動配布、配布後台帳記録の順序を追記した。
 - 集中12/12、Desktop 299/299、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
-- canonical readinessは5 READY／4 BLOCKED。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実Stage 0／1承認操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はcommit、push、Draft PR、全CI／Vercel Preview成功まで確認する。
+- canonical readinessは5 READY／4 BLOCKED。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実Stage 0／1承認操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はPR #496の正本同期commitをpushし、全CI／Vercel Preview成功まで確認する。
 
 ---
 
