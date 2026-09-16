@@ -145,7 +145,7 @@ npm run desktop:adult:stage0-operation-package:verify -- `
   --package $stage0Package
 ```
 
-作成・再検証の両方でStage 0 readiness strictを再実行する。candidate ID、Desktop version、実施日時、削除期限、6 sourceのいずれかが違う場合、sourceが改変された場合、現在のreadinessがBLOCKEDへ戻った場合はfail closedで停止する。operation packageは実path、氏名、メール、作品内容、Prompt、画像、署名者情報を保存せず、`stage1DistributionAuthorized=false`を固定する。成功はartifact送付やStage 0開始の承認ではない。
+作成・再検証の両方でStage 0 readiness strictを再実行する。6 sourceはreadiness strictの前後で再読込し、byte単位で同一の場合だけ検査済みsnapshotとして使用する。candidate ID、Desktop version、実施日時、削除期限、6 sourceのいずれかが違う場合、sourceが検査中に改変された場合、現在のreadinessがBLOCKEDへ戻った場合はfail closedで停止する。operation packageは実path、氏名、メール、作品内容、Prompt、画像、署名者情報を保存せず、`stage1DistributionAuthorized=false`を固定する。成功はartifact送付やStage 0開始の承認ではない。
 
 1. 候補者preflight strict成功とStage 0 readiness strict成功を確認する。
 2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを確認し、内容非保持のartifact証跡をStage 0 gateへ接続する。

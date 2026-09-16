@@ -172,6 +172,19 @@ const sourceDigests = (bytes) => ({
   ownerApprovalsSha256: digest(bytes.approvals),
 });
 
+const assertSourcesUnchanged = (before, after) => {
+  const sourceIds = Object.keys(before);
+  if (
+    sourceIds.length !== Object.keys(after).length ||
+    sourceIds.some(
+      (sourceId) =>
+        !Buffer.isBuffer(after[sourceId]) ||
+        !before[sourceId].equals(after[sourceId]),
+    )
+  )
+    throw new Error("Stage 0 sourceがreadiness検証中に変更されました。");
+};
+
 const normalizedOptions = (options) => {
   const desktopRoot = options.desktopRoot ?? defaultDesktopRoot;
   return {
@@ -221,8 +234,10 @@ export const createStage0OperationPackage = (rawOptions) => {
     throw new Error("operation packageの出力先directoryがありません。");
   if (!(options.now instanceof Date) || Number.isNaN(options.now.getTime()))
     throw new Error("operation package作成日時が不正です。");
+  const beforeReadiness = loadSources(options);
   verifyCurrentReadiness(options);
   const { sourceBytes, sourceJson } = loadSources(options);
+  assertSourcesUnchanged(beforeReadiness.sourceBytes, sourceBytes);
   const operationPackage = {
     format: "mangai.desktop-adult-stage0-operation-package",
     version: 1,
@@ -251,8 +266,10 @@ export const verifyStage0OperationPackage = (rawOptions) => {
     options.packagePath,
     "operation package",
   );
+  const beforeReadiness = loadSources(options);
   verifyCurrentReadiness(options);
   const { sourceBytes, sourceJson } = loadSources(options);
+  assertSourcesUnchanged(beforeReadiness.sourceBytes, sourceBytes);
   const operationPackage = readJson(
     readFile(options.packagePath, "operation package"),
     "operation package",
