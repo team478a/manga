@@ -2,15 +2,16 @@
 
 ## 2026-09-16 Desktop Adult Stage 1招待台帳proposal
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_PENDING / REAL_PROPOSAL_NOT_CREATED / REAL_LEDGER_NOT_CHANGED / REAL_DISTRIBUTION_NOT_RUN / STAGE1_DISTRIBUTION_BLOCKED`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_PROPOSAL_NOT_CREATED / REAL_LEDGER_NOT_CHANGED / REAL_DISTRIBUTION_NOT_RUN / STAGE1_DISTRIBUTION_BLOCKED`
 - Base: PR #496 merge commit `9b5fa22`。マージ後Required Quality run `35100560911`（Core quality、Migration roundtrip）とDesktop Windows run `35100560955`は成功済み。
 - Branch: `codex/adult-stage1-ledger-proposal-20260916`
+- Implementation commit: `970b803`。Draft PR: #497。
 - 消費済みStage 1招待承認、固定receipt、候補assessment、承認時点の招待台帳を照合し、配布後の`INVITED` entryを追加した別fileの台帳proposalを排他的に作成するCLIを追加した。実台帳は直接変更しない。
 - 承認file／receiptのcopy・改変、assessment／台帳の変更、配布前・未来・期限外日時、個人情報、重複monitor ID、進行中Stage 1、上書きをfail closedで拒否する。proposalへcandidate ID、氏名、メール、作品内容、local pathを保存しない。
 - 4つの配布後確認を必須にし、標準出力へcandidate ID、monitor ID、pathを表示しない。配布、メール、Runtime／model、生成、運用台帳への反映は自動実行しない。
 - 検証: 集中8/8、Desktop 307/307、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
 - canonical統合readinessは5 READY／4 BLOCKEDのまま。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書、Secret、Release、実候補者、実承認、実台帳を変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
-- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。実proposal作成、実配布、運用台帳反映は外部前提と対象付き明示承認を待つ。
+- 次: PR #497の全CI／Vercel Preview成功を確認して停止する。実proposal作成、実配布、運用台帳反映は外部前提と対象付き明示承認を待つ。
 
 ---
 
