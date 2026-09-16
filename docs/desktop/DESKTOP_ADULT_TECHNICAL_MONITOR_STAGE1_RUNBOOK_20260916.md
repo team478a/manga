@@ -266,7 +266,33 @@ npm run desktop:adult:stage1-invitation-authorization:consume -- `
   --authorization $stage1Authorization
 ```
 
-`consume`は固定sidecar receiptを排他的に作るだけで、artifact送信、招待メール、Runtime／model取得、生成、台帳更新を自動実行しない。消費後にだけ承認対象へ手動配布し、実際の配布日時を同じmonitor IDで招待台帳へ記録して`desktop:adult:pilot-ledger:check`を実行する。配布できなかった場合はreceiptを削除して再利用せず、新しい承認を責任者へ依頼する。
+`consume`は固定sidecar receiptを排他的に作るだけで、artifact送信、招待メール、Runtime／model取得、生成、台帳更新を自動実行しない。消費後にだけ承認対象へ手動配布し、6.2の手順で実際の配布日時を含むproposalを作成・検査してから別途運用台帳へ反映する。配布できなかった場合はreceiptを削除して再利用せず、新しい承認を責任者へ依頼する。
+
+### 6.2 配布後の招待台帳proposal
+
+手動配布が実際に完了した後、配布先、停止連絡、作品内容のlocal保持を確認してから、運用台帳を直接編集せず別fileのproposalを作成する。generatorは承認fileと固定sidecar receipt、候補assessment、承認時点の台帳を照合し、candidate IDや個人情報を含めず、random monitor IDの`INVITED` entryだけを追加する。
+
+```powershell
+$distributedAt = "<実配布日時のUTC ISO日時>"
+$ledgerProposal = "$stage1Authorization.ledger-proposal.json"
+
+npm run desktop:adult:stage1-invite-ledger-proposal:create -- `
+  --authorization $stage1Authorization `
+  --assessment $assessment `
+  --ledger $ledger `
+  --distributed-at $distributedAt `
+  --confirm-manual-distribution-completed `
+  --confirm-recipient-matched `
+  --confirm-stop-contact-shared `
+  --confirm-content-remained-local
+
+$previousLedgerPath = $env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH
+$env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH = $ledgerProposal
+npm run desktop:adult:pilot-ledger:check
+$env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH = $previousLedgerPath
+```
+
+proposal作成は既存台帳を変更せず、配布、招待メール、Runtime／model、生成も実行しない。検査済みproposalの運用台帳への反映は、アクセス制限領域内の回復可能な運用手順で別途行う。承認file／receiptのcopy・改変、承認時点から変化したassessment／台帳、配布前日時、未来日時、期限切れ、個人情報、重複monitor ID、進行中Stage 1、proposal上書きをfail closedで拒否する。
 
 現在の正本は署名、固定Bundle、12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了はStage 1配布許可を意味しない。
 
