@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 1招待台帳proposal
+
+- PR #496 merge commit `9b5fa22`から`codex/adult-stage1-ledger-proposal-20260916`を作成した。本線Required QualityとDesktop Windowsは成功済み。
+- Implementation commit `970b803`をpushし、Draft PR #497を作成した。全CI／Vercel Previewを確認中。
+- 消費済みStage 1承認、固定receipt、候補assessment、承認時点の招待台帳を照合し、`INVITED` entryを追加した別fileの内容非保持proposalを排他的に作るCLIを追加した。実台帳は直接更新しない。
+- 4つの配布後確認を必須にし、source copy・改変、変更済みassessment／台帳、不正な日時、個人情報、重複monitor、進行中Stage 1、上書きを拒否する。proposalへcandidate IDを保存せず、標準出力へcandidate／monitor／pathを表示しない。
+- 技術モニターrunbookと招待台帳runbookへ、手動配布後のproposal作成、既存checkerによる検査、別運用での反映を追記した。配布、メール、Runtime／model、生成、運用台帳反映は自動実行しない。
+- 集中8/8、Desktop 307/307、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。PR #497の全CI／Vercel Previewを確認中。canonical readinessは5 READY／4 BLOCKEDのまま。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書、Secret、Release、実候補者・実Stage 1・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult Stage 1一回限定招待承認
 
 - PR #495 merge commit `4b5980a`から`codex/adult-stage1-invitation-authorization-20260916`を作成した。本線Required QualityとDesktop Windowsは成功済み。

@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 1招待台帳proposal（2026-09-16）
+
+- BaseはPR #496 merge commit `9b5fa22`。マージ後Required Quality run `35100560911`とDesktop Windows run `35100560955`は成功済み。Branchは`codex/adult-stage1-ledger-proposal-20260916`。
+- Implementation commitは`970b803`、Draft PRは#497。全CI／Vercel Previewを確認中。
+- 消費済みStage 1承認、固定receipt、候補assessment、承認時点の台帳を照合し、内容非保持`INVITED` entryを追加した別fileの台帳proposalを作るCLIを追加した。実台帳、配布、メール、Runtime／model、生成は変更しない。
+- copy・改変、source変更、不正な日時、個人情報、重複monitor、進行中Stage 1、上書きを拒否する。candidate ID、monitor ID、pathは標準出力へ表示せず、candidate IDはproposalへ保存しない。
+- 集中8/8、Desktop 307/307、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。PR #497の全CI／Vercel Previewを確認中。canonical readinessは5 READY／4 BLOCKEDでstrict失敗を維持する。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書、実候補者・実承認・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。
+
+---
+
 ## 0.0 Desktop Adult Stage 1一回限定招待承認（2026-09-16）
 
 - BaseはPR #495 merge commit `4b5980a`。マージ後Required Quality run `35095937061`とDesktop Windows run `35095937005`は成功済み。
