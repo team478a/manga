@@ -139,6 +139,30 @@ test("Stage 0 operation package requires current strict readiness", (t) => {
   assert.equal(fs.existsSync(values.outputPath), false);
 });
 
+test("Stage 0 operation package rejects sources changed during readiness", (t) => {
+  const values = fixture(t);
+  values.readinessCheck = () => {
+    fs.appendFileSync(values.bundleEvidencePath, " ");
+  };
+  assert.throws(
+    () => createStage0OperationPackage(values),
+    /readiness検証中に変更/,
+  );
+  assert.equal(fs.existsSync(values.outputPath), false);
+});
+
+test("Stage 0 operation package verification rejects a readiness race", (t) => {
+  const values = fixture(t);
+  createStage0OperationPackage(values);
+  values.readinessCheck = () => {
+    fs.appendFileSync(values.approvalsPath, " ");
+  };
+  assert.throws(
+    () => verifyStage0OperationPackage(values),
+    /readiness検証中に変更/,
+  );
+});
+
 test("Stage 0 operation package only reads and writes private absolute paths", (t) => {
   const values = fixture(t);
   assert.throws(
