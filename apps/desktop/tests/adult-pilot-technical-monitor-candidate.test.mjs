@@ -130,3 +130,31 @@ test("Adult Pilot技術モニター判定は内容非保持assessmentを新規�
   assert.match(secondResult.stderr, /already exists/);
   cleanup(root);
 });
+
+test("Adult Pilot技術モニター判定はassessmentをGit管理外の既存directoryだけへ保存する", () => {
+  const { root, input } = run(baseCandidate());
+  const repositoryRoot = path.resolve(import.meta.dirname, "../../..");
+  for (const output of [
+    "relative-assessment.json",
+    path.join(repositoryRoot, "assessment.json"),
+    path.join(root, "missing", "assessment.json"),
+  ]) {
+    const result = spawnSync(
+      process.execPath,
+      [script, "--strict", "--result-out", output],
+      {
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          MANGAI_ADULT_PILOT_TECHNICAL_MONITOR_CANDIDATE_PATH: input,
+        },
+      },
+    );
+    assert.notEqual(result.status, 0);
+    assert.match(
+      result.stderr,
+      /absolute local-drive path|outside the Git repository|directory does not exist/,
+    );
+  }
+  cleanup(root);
+});

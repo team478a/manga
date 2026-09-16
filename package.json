@@ -24,6 +24,7 @@
     "desktop:adult:pilot-ledger:check": "npm --prefix apps/desktop run adult:pilot-ledger:check",
     "desktop:adult:technical-monitor:preflight": "npm --prefix apps/desktop run adult:technical-monitor:preflight --",
     "desktop:adult:technical-monitor:preflight:strict": "npm --prefix apps/desktop run adult:technical-monitor:preflight:strict --",
+    "desktop:adult:technical-monitor:candidate:create": "npm --prefix apps/desktop run adult:technical-monitor:candidate:create --",
     "desktop:adult:stage0-readiness": "npm --prefix apps/desktop run adult:stage0-readiness --",
     "desktop:adult:stage0-readiness:strict": "npm --prefix apps/desktop run adult:stage0-readiness:strict --",
     "desktop:adult:stage0-plan:create": "npm --prefix apps/desktop run adult:stage0-plan:create --",

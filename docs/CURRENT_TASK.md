@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult 技術モニター候補generator
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / REAL_CANDIDATE_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Branch: `codex/adult-technical-monitor-candidate-generator-20260916`
+- Base: `a826931`（PR #490 merge commit）。PR #490最終HEADのCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済みである。
+- 技術モニター候補JSONを手編集せず生成するCLIを追加した。candidate IDは6 byteの安全な乱数から作り、氏名・メール・連絡先・自由記述を受け付けず、選択式環境回答と明示確認だけを保存する。確認flagの省略は`false`となる。
+- candidate／assessmentはGit管理外の既存absolute local-drive directoryへの新規出力だけを許可し、相対／UNC、repository内、存在しないdirectory、上書きを拒否する。CLI出力はcandidate IDとpathを隠し、preflight成功時も`distributionAuthorized=false`を固定する。
+- 検証: 集中11/11、Desktop 262/262、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDING、Viteの既知chunk warningは不変である。
+- Commit `fe149e7`をpushしてDraft PR #491を作成した。canonical Stage 0は1 READY／4 BLOCKEDのまま。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画は変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: この正本同期commitの全CI／Vercel Preview成功まで確認して停止する。実候補者JSON／assessment／計画の作成、署名、Bundle取込、送付、Stage 0開始は別の実行時承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult Stage 0実施計画generator
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`

@@ -61,6 +61,8 @@ npm run desktop:adult:pilot-release-readiness
 
 運営側に適格12GB端末がない場合は、`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`に従い、技術モニター候補のscreening、署名済み受入れ試験専用artifactによるStage 0、Stage 1招待を分離する。候補preflight成功は配布許可ではなく、未署名installer、未固定Bundle、12GB実機証跡なしの招待禁止を維持する。
 
+候補者JSONは専用`desktop:adult:technical-monitor:candidate:create`で作り、個人情報・自由記述を受け付けず、random candidate IDと選択式回答だけをGit管理外へ保存する。assessmentもGit管理外の既存directoryへの新規出力に限定する。候補者JSON／assessmentの成功は配布・招待・Stage 0開始を許可しない。
+
 Stage 0開始時は候補assessmentと内容非保持の実施計画を専用gateへ渡し、署名、固定Bundle、責任者承認、支援・停止・証跡回収計画を一括確認する。Stage 0で採取する12GB実機4方式証跡を開始前に要求する循環は作らないが、Stage 1招待は従来どおり統合release readiness strict成功まで禁止する。
 
 ```powershell
