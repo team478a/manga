@@ -12,6 +12,7 @@ import { savePanelSpecification } from "../../manga-quality/infrastructure/panel
 import { cloudCreatorContext } from "../auth-context";
 import { enqueueCloudGenerationJob } from "./generation-service";
 import { featureFlagEnabled } from "@/lib/feature-flags";
+import { isProviderRejectedGenerationFailure } from "@/lib/cloud-generation-retry-recovery";
 
 export async function retryFailedInteractiveCloudGenerationJob(jobId: string) {
   const { supabase, profile } = await cloudCreatorContext();
@@ -42,10 +43,10 @@ export async function retryFailedInteractiveCloudGenerationJob(jobId: string) {
       "元のコマ生成条件を安全に復元できないため、再実行できませんでした。",
     );
 
-  const providerRejected =
-    Boolean(source.data.provider_job_id) &&
-    (source.data.error_code === "provider_rejected" ||
-      source.data.error_code === "provider_moderation_blocked");
+  const providerRejected = isProviderRejectedGenerationFailure({
+    errorCode: source.data.error_code,
+    hasProviderJobId: Boolean(source.data.provider_job_id),
+  });
   if (
     providerRejected &&
     isConservativeGeneralAudienceGenerationRetry(parsedGeneration.data)

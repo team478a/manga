@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Provider Job ID未保存moderation終端回復（2026-09-16）
+
+- BaseはPR #481 merge commit `182503d`。本線Required Quality run `35040981622`、Desktop Windows run `35040981625`、Vercel Production Readyを確認した。
+- Production `test`の23ページをread-only確認し、安全再構成後の終端moderation失敗が「再実行可能」と表示され、1案preflightへ到達できない実不整合を確認した。
+- GatewayはProvider応答内moderationをProvider Job ID保存前に例外化できる。旧BFL履歴もcheckpoint未保存になり得るため、`provider_moderation_blocked`はJob IDなしでも信頼できるServer書込みcodeとして扱う。汎用`provider_rejected`は従来どおりJob ID必須を維持する。
+- 判定を共通helperへ集約し、生成一覧、一括生成一覧、原稿編集retry、一括生成retryの表示・実行を同一契約へ揃えた。終端の安全再構成は再実行せず、構図・場面の見直しへ案内する。
+- 集中30/30、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y、Hub／Desktop型検査、lint、依存／module／size境界、migration 83/83、Hub／Desktop build、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは維持する。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。Branchは`codex/cloud-moderation-prejob-recovery-20260916`。次はDraft PRと全CI／Vercel Preview成功で停止し、merge後にProduction表示をread-only再確認する。
+
+---
+
 ## 0.0 moderation終端回復の低コスト生成・実行前確認（2026-09-16）
 
 - BaseはPR #480 merge commit `32d9575`。マージ後Required Quality run `35036886446`とDesktop Windows run `35036886444`は成功した。

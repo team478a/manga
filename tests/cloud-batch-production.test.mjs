@@ -41,7 +41,7 @@ test("batch service durably registers bounded panel work before the worker runs"
   assert.match(service, /replace_cloud_generation_batch_job/);
   assert.match(service, /Number\(replaced\.data\) < 1/);
   assert.match(service, /provider_job_id/);
-  assert.match(service, /provider_moderation_blocked/);
+  assert.match(service, /isProviderRejectedGenerationFailure/);
   assert.match(service, /buildGeneralAudienceGenerationRetry/);
   assert.match(service, /buildConservativeGeneralAudienceGenerationRetry/);
   assert.match(service, /isGeneralAudienceGenerationRetry/);
