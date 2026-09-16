@@ -9,7 +9,8 @@
 - したがって現行classifierの`retryable`とProduction表示は正しい。直前の正本にあった「第2段階まで拒否された終端Job」「Provider Job ID未保存が現行2件の原因」という記録は実データと不一致だった。PR #482のJob ID未保存moderation保護は有効な防御的修正だが、今回の2件には該当しない。
 - ページ23／24は各3/4コマ配置、Cloud AIは使用94／予約0／上限100のまま。確認中の再実行、Job登録、Provider送信、Asset／Canvas保存、credit予約・消費は0件。監査用に一時取得した環境ファイルは削除した。
 - Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変である。
-- 次: 正本3文書を訂正してDraft PR化し、全CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は、対象・必要credit・費用上限を示した別のProduction実行時承認まで行わない。
+- Commit `58713b9`をpushしてDraft PR #483を作成した。初回HEADでRequired Quality run `35048124579`（Core quality 3分16秒／Migration roundtrip 51秒）、Desktop Windows run `35048124581`（4分38秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- 次: この正本同期commitの最終CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は、対象・必要credit・費用上限を示した別のProduction実行時承認まで行わない。
 
 ---
 

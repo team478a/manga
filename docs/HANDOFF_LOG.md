@@ -7,7 +7,8 @@
 - 現行classifierとUIは実データどおり`retryable`で正しい。従前の「2段階まで拒否された終端Job」「現行2件のProvider Job ID未保存」という記録は訂正が必要である。PR #482のID未保存moderation保護は、別の正規Gateway失敗に備える防御的修正として維持する。
 - ページ23／24は各3/4配置、Cloud AIは使用94／予約0／上限100。ブラウザとDBの確認中に再実行、Job登録、Provider送信、Asset／Canvas保存、credit予約・消費は行っていない。Vercel環境監査用に作成した一時ファイルは削除した。
 - Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変。
-- `2eefb87`からBranch `codex/docs-production-safe-retry-state-correction-20260916`を開始した。次は正本訂正をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は別のProduction実行時承認まで行わない。
+- `2eefb87`からBranch `codex/docs-production-safe-retry-state-correction-20260916`を開始し、Commit `58713b9`をpushしてDraft PR #483を作成した。初回HEADのRequired Quality run `35048124579`（Core quality 3分16秒／Migration roundtrip 51秒）、Desktop Windows run `35048124581`（4分38秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- 次は正本同期commitの最終CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は別のProduction実行時承認まで行わない。
 
 ---
 

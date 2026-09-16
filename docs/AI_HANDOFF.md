@@ -7,7 +7,8 @@
 - 現行の`retryable`表示は正しい。従前の「2段階の一般向け安全再構成が完了した終端Job」「現行2件はProvider Job ID未保存」という記録を訂正する。PR #482の防御的修正自体は、GatewayがID保存前に返す正規moderation codeを閉じる回帰対策として維持する。
 - ページ23／24は各3/4コマ配置、Cloud AIは使用94／予約0／上限100。再実行、Provider送信、Job／Asset／Canvas／credit変更は0件。監査用一時環境ファイルは削除済み。
 - Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変。
-- Branchは`codex/docs-production-safe-retry-state-correction-20260916`。次は正本訂正をDraft PR化し、CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は別のProduction実行時承認を必要とする。
+- Branchは`codex/docs-production-safe-retry-state-correction-20260916`。Commit `58713b9`をpushしてDraft PR #483を作成した。初回HEADのRequired Quality run `35048124579`、Desktop Windows run `35048124581`、Vercel Preview／Preview Commentsはすべて成功した。
+- 次は正本同期commitの最終CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は別のProduction実行時承認を必要とする。
 
 ---
 
