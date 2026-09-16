@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: moderation終端回復の低コスト生成・実行前確認
+
+- PR #480 merge commit `32d9575`から`codex/cloud-panel-recovery-preflight-20260916`を開始した。本線Required Quality run `35036886446`とDesktop Windows run `35036886444`は成功した。
+- 終端moderation失敗の見直し後も、従来は最小2案をJob作成前の費用確認なしで開始するため、低コストで慎重に再開する余地がなかった。
+- 回復対象だけ1案を初期値にし、通常生成の候補数状態とは分離した。通常生成の2〜4案・初期3案は変えていない。
+- 完全な生成requestをServerでread-only検証するpreflight endpointを追加し、解決済みProvider／model／pricingと最新の契約期間、credit、モニターAI、費用上限を照合する。Client指定の価格情報は受け付けない。
+- 1回目の操作で対象、候補数、必要credit、最大予約費用、残枠、blockerを表示し、2回目の確定操作だけJob作成へ進む。入力変更時は確認結果を破棄する。
+- 集中21/21、Hub 1006/1006、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y、Hub typecheck、lint、依存／module／size境界、migration validator 83/83、Hub／Desktop Production build、RC Repository structure READY、`git diff --check`成功。既知warning 2件、外部設定と手動E2EのPENDINGは不変。
+- Commit `50fbd42`をpushしてDraft PR #481を作成した。最初のHEADでRequired Quality run `35039613995`（Core quality 3分19秒／Migration roundtrip 55秒）、Desktop Windows run `35039613952`（4分2秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/9xjnr9y86inwLy8h6p7tD1Ww4KeA`。
+- Production、DB、Provider、Job、Asset、Canvas、credit操作0件。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-16 Codex: moderation終端後の安全な見直し案内
 
 - PR #479 merge commit `558d6f0`から`codex/cloud-panel-recovery-guidance-20260916`を開始した。本線Required Quality run `35035590798`とDesktop Windows run `35035590592`は成功した。

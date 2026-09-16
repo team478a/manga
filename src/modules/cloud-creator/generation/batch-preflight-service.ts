@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { DomainError, ValidationError } from "@/lib/domain-errors";
 import {
   estimateGenerationBatch,
+  estimatePanelGeneration,
   remainingGenerationCapacity,
   type GenerationBatchPreflightContext,
 } from "../../manga/domain/generation-batch-preflight";
@@ -296,4 +297,50 @@ export async function assertCloudGenerationBatchPreflight(
   if (!estimate.canStart)
     throw new ValidationError(estimate.blockers[0] ?? "一括生成を開始できませんでした。");
   return estimate;
+}
+
+export async function getCloudPanelGenerationPreflight(input: {
+  projectId: string;
+  pageId: string;
+  candidateCount: number;
+  providerId: string;
+  modelId: string;
+  kind: "image" | "text";
+  jobType: string;
+  pricingVersion: string;
+}) {
+  const [{ supabase }, context] = await Promise.all([
+    cloudCreatorContext(),
+    getCloudGenerationBatchPreflight(input.projectId),
+  ]);
+  const priceResult = await supabase
+    .from("cloud_ai_provider_prices")
+    .select("credits,max_cost_micros,currency,pricing_version")
+    .eq("provider_id", input.providerId)
+    .eq("model_id", input.modelId)
+    .eq("kind", input.kind)
+    .eq("job_type", input.jobType)
+    .eq("pricing_version", input.pricingVersion)
+    .eq("active", true)
+    .maybeSingle<PriceRow>();
+  if (priceResult.error)
+    throw new DomainError(
+      "INTERNAL_ERROR",
+      "画像生成料金を確認できませんでした。",
+      { cause: priceResult.error },
+    );
+  const price = priceResult.data;
+  return estimatePanelGeneration(
+    {
+      ...context,
+      available: Boolean(price),
+      providerEnabled: true,
+      modelId: input.modelId,
+      pricingVersion: input.pricingVersion,
+      currency: price?.currency ?? context.currency,
+      creditsPerJob: price?.credits ?? null,
+      maxCostMicrosPerJob: price?.max_cost_micros ?? null,
+    },
+    { pageId: input.pageId, candidateCount: input.candidateCount },
+  );
 }

@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-16 moderation終端回復の低コスト生成・実行前確認
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
+- Branch: `codex/cloud-panel-recovery-preflight-20260916`
+- Base: `32d9575`（PR #480 merge commit）。マージ後Required Quality run `35036886446`とDesktop Windows run `35036886444`は成功した。
+- 終端moderation失敗から見直す対象コマだけ、候補数の初期値を1案へ分離した。通常生成の2〜4案・初期3案は変更せず、回復時だけ最小2 credit／料金表上限の1件分から再開できる。
+- 回復時の生成buttonはJobを直接作らず、現在のCanvas、対象コマ、再構築済み入力、moderation、参照画像、Provider／model／pricing、契約期間、Cloud AI・作品・モニターAIの残枠、費用上限をread-onlyで再確認する。
+- 確認画面にページ／コマ、候補数、必要credit、最大予約費用、各残枠、開始不可理由を表示する。「確認して生成を開始」の2回目の明示操作だけ既存のJob作成へ進み、選択・構図・候補数を変更した場合は古い確認結果を破棄する。
+- preflight routeはServerで完全な生成requestを検証し、Client指定のProvider／model／価格を信頼しない。確認処理ではJob登録、credit予約、Provider実行、Asset／Canvas保存を行わない。通常生成、通常retry、inpainting／outpainting、一括生成、料金・Provider契約は変更しない。
+- 検証: 集中21/21、Hub 1006/1006、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y、Hub typecheck、lint、依存／module／size境界、migration 83/83、Hub／Desktop Production build、RC Repository structure READY、`git diff --check`成功。依存境界の既知warning 2件、RC外部設定と手動E2Eの既知PENDINGは不変。
+- Commit `50fbd42`をpushし、Draft PR #481を作成した。最初のHEADでRequired Quality run `35039613995`（Core quality 3分19秒／Migration roundtrip 55秒）、Desktop Windows run `35039613952`（4分2秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://vercel.com/team478as-projects/mangai-hub-staging/9xjnr9y86inwLy8h6p7tD1Ww4KeA`。
+- Production、DB、Provider実行、Job登録、Asset、Canvas、credit操作は0件。次: この正本同期commitの最終CI／Vercel Preview成功で停止する。実生成はmerge後も利用者の確認操作または別のProduction実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-16 moderation終端後の安全な見直し案内
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
