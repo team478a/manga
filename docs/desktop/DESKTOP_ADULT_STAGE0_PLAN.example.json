@@ -1,0 +1,14 @@
+{
+  "format": "mangai.desktop-adult-stage0-plan",
+  "version": 1,
+  "candidateId": "candidate-000000000000",
+  "artifactVersion": "0.1.0",
+  "artifactPurpose": "stage0_acceptance_only",
+  "scheduledStartAt": "2099-01-01T00:00:00.000Z",
+  "deleteBy": "2099-01-08T00:00:00.000Z",
+  "assistedSessionConfirmed": false,
+  "stopContactConfirmed": false,
+  "evidenceTransferConfirmed": false,
+  "artifactSeparatedFromStage1": true,
+  "stage1DistributionAuthorized": false
+}

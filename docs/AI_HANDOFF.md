@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult 技術モニターStage 0開始gate（2026-09-16）
+
+- BaseはPR #485 merge commit `88cc5d3`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
+- 技術モニター候補assessment、署名済み受入れ専用artifact、固定Bundle、責任者承認、内容非保持の支援・停止・証跡回収計画をまとめて判定するStage 0 gateとfail-closed exampleを追加した。
+- 12GB実機4方式証跡はStage 0で採取するため開始前gateから分離した。gate成功でもStage 1配布許可はfalseで、既存の統合release readiness strictを迂回しない。
+- candidate ID不一致、未知field、個人情報・作品内容・local path、環境帯の矛盾、14日超の保持期限、未署名、未固定Bundleを拒否する。
+- GitHub Actionsには`WIN_CSC_LINK`／`WIN_CSC_KEY_PASSWORD`が未登録。canonical判定は1 READY／4 BLOCKEDであり、Stage 0／Stage 1とも未開始。
+- 集中5/5、Desktop 240/240、Hub 1008/1008、deps error 0（既知warning 2件）、lint、全typecheck、Desktop build、migration 83/83、RC構造、diff check成功。
+- Branchは`codex/adult-pilot-fixed-bundle-preflight-20260916`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、Secret、Release変更なし。次はDraft PRの全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 0.0 Desktop Adult 技術モニターStage 1開始準備（2026-09-16）
 
 - BaseはPR #484 merge commit `bb20488`。マージ後Required Quality run `35054212683`、Desktop Windows run `35054212706`、Vercel Production `dpl_BCM3PkDhFL5MyfpiogwYZ6cotESy`は成功／Ready。

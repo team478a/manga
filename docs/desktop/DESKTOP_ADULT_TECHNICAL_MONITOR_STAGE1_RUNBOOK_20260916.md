@@ -58,7 +58,20 @@ RAM 16〜31GBと空き容量40〜49GBは最低条件内だがwarningとする。
 
 ## 5. Stage 0: 支援付き実機受入れ
 
-1. 候補者preflight strict成功を確認する。
+Stage 0を開始する前に、候補assessmentと実施計画をアクセス制限された運用領域へ置く。`DESKTOP_ADULT_STAGE0_PLAN.example.json`をcopyし、候補assessmentと同じrandom candidate ID、Desktop version、支援日時、14日以内の削除期限を設定する。氏名、メール、端末名、作品内容、Prompt、画像、絶対path、自由記述は記録しない。
+
+```powershell
+$env:MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH = "<access-controlled-assessment.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = "<access-controlled-stage0-plan.json>"
+npm run desktop:adult:stage0-readiness
+npm run desktop:adult:stage0-readiness:strict
+```
+
+専用gateは候補assessment、Windowsコード署名、固定Bundle、責任者承認、支援・停止連絡・証跡回収計画をまとめて検査する。12GB実機4方式証跡はStage 0で採取するため開始条件には含めず、`COLLECT_DURING_STAGE0`と表示する。gateが成功しても`stage1DistributionAuthorized=false`を維持し、招待配布を許可しない。
+
+2026-09-16時点ではGitHub Actionsに`WIN_CSC_LINK`／`WIN_CSC_KEY_PASSWORD`が登録されておらず、コード署名と固定Bundle実ファイル検証も未完了のため、Stage 0 gateは正しく`BLOCKED`となる。秘密値をGit、計画JSON、assessment、診断へ保存しない。
+
+1. 候補者preflight strict成功とStage 0 readiness strict成功を確認する。
 2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを運営側で確認する。
 3. 初回は支援付きでinstallし、公式配布元から固定ComfyUI／modelを取得する。MANGAIから再配布しない。
 4. AI一括診断でWindows、GPU、VRAM、ComfyUI version、model、workflowを確認する。
