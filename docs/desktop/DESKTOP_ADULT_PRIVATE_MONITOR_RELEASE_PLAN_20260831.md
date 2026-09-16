@@ -59,6 +59,8 @@ npm run desktop:adult:pilot-release-readiness
 
 統合release readinessは公開前条件を8区分で表示する。通常実行は残件を報告し、strict実行は署名、固定Bundle、12GB実機4方式証跡、責任者承認を含む全区分が揃うまで終了コード1で停止する。
 
+運営側に適格12GB端末がない場合は、`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`に従い、技術モニター候補のscreening、署名済み受入れ試験専用artifactによるStage 0、Stage 1招待を分離する。候補preflight成功は配布許可ではなく、未署名installer、未固定Bundle、12GB実機証跡なしの招待禁止を維持する。
+
 責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。
 
 ```powershell

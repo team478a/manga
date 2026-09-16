@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult 技術モニターStage 1開始準備
+
+- PR #484 merge commit `bb20488`から`codex/adult-pilot-technical-monitor-preflight-20260916`を作成した。
+- 内容非保持の候補者preflight、fail-closed example、集中テスト、Stage 0／Stage 1分離runbookを追加し、既存の公開計画・招待台帳へ接続した。氏名、メール、端末識別情報、Prompt、画像、自由記述、絶対path、未知fieldを拒否し、適格でも配布を許可しない。
+- 運営側に12GB端末がない場合は、候補募集だけを先行し、署名済み受入れ試験専用artifactでStage 0実機証跡を取得する。合格証跡取込と統合readiness strict成功後にだけStage 1招待台帳へ進む。
+- 集中5/5、Desktop 235/235、Hub 1008/1008、deps error 0（既知warning 2件）、lint、全typecheck、Desktop build、migration 83/83、Prettier、RC構造、diff check成功。現状は5 READY／3 BLOCKEDで、署名、固定Bundle、12GB実機4方式を待つ。
+- Production、Cloud、外部Provider、Runtime／model取得、生成、招待、配布、credit変更なし。次はcommit、push、Draft PRと全CI／Vercel Preview成功で停止する。候補者実情報、外部送信、artifact送付、Stage 0実行は別承認事項である。
+
+---
+
 ## 2026-09-16 Codex: Production 23–24ページ第2段階再実行
 
 - PR #483はmerge commit `9bb321d`で反映済み。マージ後Required Quality run `35048818257`、Desktop Windows run `35048818319` attempt 2、Vercel Production deployment `dpl_Afkv6MpBCsP8RKJQGg2UmWoKAaL7`の成功／Readyを確認した。

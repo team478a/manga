@@ -17,6 +17,8 @@ npm run desktop:adult:pilot-ledger:check
 
 検査成功だけで招待や配布は行われない。招待開始、Stage追加、停止解除は責任者の明示承認が必要である。
 
+技術モニター候補のPC適格性確認は、この招待台帳へ登録する前に`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`の候補preflightで行う。候補assessmentと招待台帳を混在させず、Stage 0合格とrelease readiness strict成功前に`INVITED` entryを作成しない。
+
 ## Entry契約
 
 ```json
