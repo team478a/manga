@@ -3,6 +3,7 @@
 ## 2026-09-17 Codex: Desktop Adult Pilot招待台帳状態遷移proposal適用
 
 - PR #499 merge commit `7a91a70`から`codex/adult-pilot-ledger-status-apply-20260917`を作成した。本線Required Quality run `35122591058`とDesktop Windows run `35122591027`は成功済み。
+- Implementation commit `a9058ad`をpushし、Draft PR #500を作成した。全CI／Vercel Previewを確認中。
 - 状態遷移proposalを元台帳へ安全に適用する専用CLIを追加した。元台帳の内容・場所、遷移前状態、対象外entryの不変性、遷移時系列を再検証し、固定backupと内容非保持intentを作成して同一directoryの一時fileから原子的に置換する。
 - proposal／source改変、対象外変更、明示確認不足、backup／intent競合、適用中変更、二重適用をfail closedで拒否する。置換後の中断は、同じ入力の再実行で台帳を再置換せずreceiptだけを回復確定する。
 - 招待台帳文書とStage 1 runbookへ適用コマンド、固定証跡、回復手順、対象付き運用承認の必須境界を追記した。
@@ -14,12 +15,12 @@
 ## 2026-09-16 Codex: Desktop Adult Pilot招待台帳状態遷移proposal
 
 - PR #498 merge commit `45eb83c`から`codex/adult-pilot-ledger-status-proposal-20260916`を作成した。本線Required Quality run `35107448769`とDesktop Windows run `35107448759`は成功済み。
-- Implementation commit `d5c0ae8`をpushし、Draft PR #499を作成した。全CI／Vercel Previewを確認中。
+- Implementation commit `d5c0ae8`を含むPR #499はmerge commit `7a91a70`でマージ済み。マージ後Required Quality run `35122591058`とDesktop Windows run `35122591027`も成功した。
 - `INVITED→ACTIVE/WITHDRAWN`と`ACTIVE→STOPPED/COMPLETED/WITHDRAWN`だけを許可し、終端状態からの再開を拒否する状態遷移proposal CLIを追加した。proposalは元台帳の内容・場所、対象monitor、遷移日時、固定evidence、更新後台帳を保持し、実台帳を変更しない。
 - 共通2確認と遷移別確認を必須にし、不正遷移、不正時系列、不明monitor、private data、repository内path、作成中変更、上書きを拒否する。標準出力へmonitor IDとpathを表示せず、Runtime／model、生成、配布、招待、creditを実行しない。
 - 招待台帳文書とStage 1 runbookへ許可遷移、コマンド、終端状態、専用applyまで手動反映禁止を追記した。
 - 集中8/8、Desktop 323/323、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。canonical readinessは5 READY／4 BLOCKEDのまま。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はPR #499の全CI／Vercel Preview成功確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。実台帳反映はPR #500と対象付き運用承認を待つ。
 
 ---
 
