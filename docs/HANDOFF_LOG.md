@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 0実施計画generator
+
+- PR #489 merge commit `a4521c0`から`codex/adult-stage0-plan-generator-20260916`を作成した。
+- Stage 0計画を手編集せず、候補ID、支援日時、14日以内の削除期限、3つの明示確認から内容非保持JSONを新規作成するCLIを追加した。Desktop version、受入れ専用目的、Stage 1分離、配布未許可を固定する。
+- 過去日時、期限超過、確認漏れ、repository内／UNC／相対path、上書きをfail closedで拒否し、候補IDと出力pathを標準出力へ表示しない。runbookを専用generator利用へ同期した。
+- 集中12/12、Desktop 256/256、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。canonical Stage 0は1 READY／4 BLOCKEDを維持する。
+- Commit `8e80d10`をpushしてDraft PR #490を作成した。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画変更なし。未追跡`apps/desktop/artifacts/`は未commit。
+- 次: 全CI／Vercel Preview成功まで確認して停止する。実計画とStage 0外部操作は別承認事項である。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult Stage 0固定Bundle証跡連結
 
 - PR #488 merge commit `22d4d8b`から`codex/adult-stage0-fixed-bundle-evidence-20260916`を作成した。

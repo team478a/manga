@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 0実施計画generator
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Branch: `codex/adult-stage0-plan-generator-20260916`
+- Base: `a4521c0`（PR #489 merge commit）。PR #489最終HEADのCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済みである。
+- 候補assessmentと同じrandom candidate ID、未来のUTC実施日時、実施後14日以内の削除期限、支援付き実施・停止連絡・証跡回収の明示確認から、内容非保持のStage 0計画JSONを新規作成するCLIを追加した。
+- Desktop version、`stage0_acceptance_only`、Stage 1分離、`stage1DistributionAuthorized=false`はgeneratorが固定する。過去日時、14日超の保持、確認漏れ、相対／UNC path、repository内出力、既存file上書きをfail closedで拒否し、標準出力には候補IDや出力pathを表示しない。
+- runbookはfail-closed exampleのcopy／手編集ではなくgenerator利用へ更新した。実計画はアクセス制限されたGit管理外の領域にだけ作り、氏名、メール、端末識別情報、作品内容、Prompt、画像、自由記述を含めない。
+- 検証: 集中12/12、Desktop 256/256、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。canonical Stage 0は1 READY／4 BLOCKEDで、外部設定と手動E2Eの既知PENDING、Viteの既知chunk warningは不変である。
+- Commit `8e80d10`をpushしてDraft PR #490を作成した。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画は変更していない。未追跡`apps/desktop/artifacts/`は既存利用者所有物として未変更・未commitである。
+- 次: 全CI／Vercel Preview成功まで確認して停止する。実計画作成、実候補者選定、artifact署名、Bundle検証・取込、送付、Stage 0開始は別の実行時承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult Stage 0固定Bundle証跡連結
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / FIRST_HEAD_ALL_CHECKS_PASSED / REAL_BUNDLE_EVIDENCE_NOT_AVAILABLE / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
