@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot招待台帳状態遷移proposal（2026-09-16）
+
+- BaseはPR #498 merge commit `45eb83c`。マージ後Required Quality run `35107448769`とDesktop Windows run `35107448759`は成功済み。Branchは`codex/adult-pilot-ledger-status-proposal-20260916`。
+- 許可した5つの状態遷移だけを、元台帳の内容・場所、対象monitor、実遷移日時、固定evidence、更新後台帳へ結ぶproposal CLIを追加した。実台帳は変更せず、終端状態からの再開や逆向き遷移を拒否する。
+- `ACTIVE`の同意日時と`STOPPED`の停止日時は既存fieldへ反映し、`COMPLETED`／`WITHDRAWN`の時刻はproposalへ保持する。共通確認と遷移別確認、時系列、private path、作成中のsource不変、排他的な新規出力を必須にする。
+- 集中8/8、Desktop 323/323、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。canonical readinessは5 READY／4 BLOCKEDでstrict失敗を維持する。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は実装commit、push、Draft PR、全CI／Vercel Preview確認である。
+
+---
+
 ## 0.0 Desktop Adult Stage 1招待台帳proposal適用（2026-09-16）
 
 - BaseはPR #497 merge commit `76682a3`。マージ後Required Quality run `35104365167`とDesktop Windows run `35104365065`は成功済み。Branchは`codex/adult-stage1-ledger-proposal-apply-20260916`。
