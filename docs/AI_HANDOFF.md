@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 1一回限定招待承認（2026-09-16）
+
+- BaseはPR #495 merge commit `4b5980a`。マージ後Required Quality run `35095937061`とDesktop Windows run `35095937005`は成功済み。
+- Stage 1招待承認create／consume CLIを追加し、適格候補、Stage 0 operation packageと完了証跡、招待台帳、RC、固定Bundle、12GB受入れ表、責任者承認を内容・場所SHA-256で固定した。release readiness strictと対象付き5確認を必須にし、承認は24時間以内かつ証跡削除期限内の1回に限定する。
+- random monitor IDはcandidate IDから導出せず、個人情報・作品内容・実pathを保存・表示しない。source変更、候補不一致、移動・copy、期限切れ、進行中Stage 1、上書き、再消費を拒否する。consumeはreceipt作成だけで送付・招待・Runtime／model取得・生成・台帳更新を行わない。
+- 集中12/12、Desktop 299/299、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- canonical readinessは5 READY／4 BLOCKEDでstrict失敗を維持する。Branchは`codex/adult-stage1-invitation-authorization-20260916`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書、実候補者・実承認操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はcommit、push、Draft PR、全CI／Vercel Preview確認で停止する。
+
+---
+
 ## 0.0 Desktop Adult Stage 0完了証跡連結（2026-09-16）
 
 - BaseはPR #494 merge commit `4062044`。マージ後のRequired Quality run `35088579072`とDesktop Windows run `35088579042`は成功済み。
