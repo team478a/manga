@@ -55,7 +55,7 @@ npm run desktop:adult:pilot-release-readiness
 
 必要な配置は`runtime/ComfyUI_windows_portable_nvidia.7z`、`models/checkpoints/`、`models/vae/`、`models/controlnet/`である。相対path、ネットワーク共有、欠落、容量不一致、SHA-256不一致、root外へ解決するfileはfail closedで拒否する。実pathや作品内容は出力せず、artifact roleと判定だけを表示する。
 
-全artifactの検証に成功した場合だけ、`--evidence-out`で内容や実pathを含まない検証証跡を新規作成できる。既存fileは上書きしない。証跡の取込時は、固定manifest自体のSHA-256、4artifactの容量・SHA-256、repository内の4 workflowとmappingのSHA-256を再検証し、すべて一致した場合だけ固定Bundleの8項目を`fixed`へ更新する。証跡JSON自体はGitへcommitせず、安全な受渡し領域で管理する。取込後のmanifest差分をreviewし、統合readinessを再実行する。実artifactの取得、Runtime起動、Provider実行、生成、配布はこの操作では行わない。
+全artifactの検証に成功した場合だけ、`--evidence-out`で内容や実pathを含まない検証証跡を新規作成できる。既存fileは上書きしない。証跡の取込時は、固定manifest自体のSHA-256、4artifactの容量・SHA-256、repository内の4 workflowとmappingのSHA-256を再検証し、すべて一致した場合だけ固定Bundleの8項目を`fixed`へ更新する。同時に、元証跡全体のSHA-256、元manifestのSHA-256、artifact／workflow digest集合を内容非保持の`verification`としてmanifestへ保存する。証跡JSON自体はGitへcommitせず、安全な受渡し領域で管理する。取込後のmanifest差分をreviewし、統合readinessを再実行する。実artifactの取得、Runtime起動、Provider実行、生成、配布はこの操作では行わない。
 
 統合release readinessは公開前条件を8区分で表示する。通常実行は残件を報告し、strict実行は署名、固定Bundle、12GB実機4方式証跡、責任者承認を含む全区分が揃うまで終了コード1で停止する。
 
@@ -66,8 +66,12 @@ Stage 0開始時は候補assessmentと内容非保持の実施計画を専用gat
 ```powershell
 $env:MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH = "<access-controlled-assessment.json>"
 $env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = "<access-controlled-stage0-plan.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = "<access-controlled-stage0-artifact-evidence.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH = "<access-controlled-bundle-evidence.json>"
 npm run desktop:adult:stage0-readiness:strict
 ```
+
+Stage 0 gateは取込済みmanifestと元Bundle証跡を再照合する。manifestの`fixed`状態だけでは合格せず、証跡fileの改変、artifact ID重複、未知field、容量・SHA-256、workflow／mapping SHA-256、取込verificationのいずれかが不一致なら`fixed_bundle: BLOCKED`または入力不正として停止する。
 
 責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。
 

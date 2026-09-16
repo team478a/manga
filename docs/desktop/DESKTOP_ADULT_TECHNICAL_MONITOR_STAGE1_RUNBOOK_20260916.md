@@ -63,6 +63,8 @@ Stage 0を開始する前に、候補assessmentと実施計画をアクセス制
 ```powershell
 $env:MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH = "<access-controlled-assessment.json>"
 $env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = "<access-controlled-stage0-plan.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = "<access-controlled-stage0-artifact-evidence.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH = "<access-controlled-bundle-evidence.json>"
 npm run desktop:adult:stage0-readiness
 npm run desktop:adult:stage0-readiness:strict
 ```
@@ -85,6 +87,14 @@ $env:MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = $artifactEvidence
 ```
 
 この証跡はversion、`Valid`判定、同一署名者判定、6ファイルのSHA-256だけを保持し、絶対path、証明書thumbprint、subject、PIN、作品内容を保持しない。Stage 0 gateはRC台帳の`passed`記載だけを署名証拠として信頼せず、この実artifact証跡を必須とする。証跡が成功しても`stage1DistributionAuthorized=false`であり、Stage 1の署名付き自動更新・release readinessは別に合格させる。
+
+固定Bundleは`desktop:adult:pilot-local-bundle:verify -- --evidence-out`で作成した元証跡を、`desktop:adult:pilot-bundle-evidence:import`でmanifestへ取り込む。取込処理は元証跡全体のSHA-256、元manifestのSHA-256、4 artifactの容量・SHA-256、4 workflowとmappingのSHA-256を内容非保持の`verification`としてmanifestへ固定する。Stage 0 gateには取込に使用した同一の元証跡を指定する。
+
+```powershell
+$env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH = "<access-controlled-bundle-evidence.json>"
+```
+
+`fixed`という文字列だけを手作業で設定してもREADYにはならない。元証跡の改変、重複artifact ID、未知field、容量・digest不一致、workflow digest不一致、取込verification不一致はfail closedで拒否する。元証跡には実pathや作品内容を含めず、Gitへcommitしない。
 
 1. 候補者preflight strict成功とStage 0 readiness strict成功を確認する。
 2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを確認し、内容非保持のartifact証跡をStage 0 gateへ接続する。

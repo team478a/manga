@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 0固定Bundle証跡連結
+
+- PR #488 merge commit `22d4d8b`から`codex/adult-stage0-fixed-bundle-evidence-20260916`を作成した。
+- 既存Bundle証跡importへstrict schema、未知field／重複artifact ID拒否、証跡file SHA-256、元manifest SHA-256、4 artifact、4 workflow／mappingの内容非保持verification保存を追加した。
+- Stage 0 readinessは元Bundle証跡の指定を必須とし、取込verificationと現在manifestを相互照合する。`fixed`状態だけの偽装、証跡改変、容量・digest不一致、workflow digest不一致をfail closedで停止する。
+- 集中15/15、Desktop 252/252、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、canonical Stage 0の期待BLOCKEDを確認した。
+- Commit `2fc3e46`をpushしてDraft PR #489を作成した。初回HEADでCore quality run `35066494718`（3分33秒）、Migration roundtrip（55秒）、Desktop Windows run `35066494767`（4分13秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release操作なし。未追跡`apps/desktop/artifacts/`は未commit。次は正本同期commitの最終CI／Vercel Preview成功で停止する。実BundleとStage 0外部操作は別承認事項である。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult Stage 0署名artifact証跡
 
 - PR #487 merge commit `01b2c86`から`codex/adult-stage0-artifact-evidence-20260916`を作成した。

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -70,13 +71,68 @@ const fixtures = (root) => {
       productExecutableSha256: "6".repeat(64),
     },
   };
-  const fixed = { status: "fixed" };
+  const bundleEvidence = {
+    format: "mangai.desktop-adult-pilot-bundle-evidence",
+    version: 1,
+    checkedAt: timestamp,
+    manifestSha256: "9".repeat(64),
+    artifacts: [
+      { id: "runtime", bytes: 10, sha256: "a".repeat(64) },
+      { id: "checkpoint", bytes: 20, sha256: "b".repeat(64) },
+      { id: "vae", bytes: 30, sha256: "c".repeat(64) },
+      { id: "controlnet", bytes: 40, sha256: "d".repeat(64) },
+    ],
+  };
+  const bundleEvidencePath = write(
+    root,
+    "bundle-evidence.json",
+    bundleEvidence,
+  );
+  const workflows = [
+    "text_to_image",
+    "image_to_image",
+    "controlnet",
+    "inpainting",
+  ].map((operation, index) => ({
+    operation,
+    status: "fixed",
+    reviewStatus: "repository_hash_verified",
+    sha256: String(index + 1).repeat(64),
+    mappingSha256: String(index + 5).repeat(64),
+  }));
   const bundle = {
     format: "mangai.desktop-adult-pilot-bundle",
     version: 1,
-    comfyui: fixed,
-    workflows: Array.from({ length: 4 }, () => ({ ...fixed })),
-    models: Array.from({ length: 3 }, () => ({ ...fixed })),
+    comfyui: {
+      status: "fixed",
+      reviewStatus: "local_bundle_evidence_verified",
+      installedBytes: 10,
+      sha256: "a".repeat(64),
+    },
+    workflows,
+    models: bundleEvidence.artifacts.slice(1).map((artifact) => ({
+      role: artifact.id,
+      status: "fixed",
+      reviewStatus: "local_bundle_evidence_verified",
+      installedBytes: artifact.bytes,
+      sha256: artifact.sha256,
+    })),
+    verification: {
+      format: "mangai.desktop-adult-pilot-bundle-verification",
+      version: 1,
+      evidenceCheckedAt: bundleEvidence.checkedAt,
+      sourceManifestSha256: bundleEvidence.manifestSha256,
+      evidenceSha256: crypto
+        .createHash("sha256")
+        .update(fs.readFileSync(bundleEvidencePath))
+        .digest("hex"),
+      artifacts: bundleEvidence.artifacts,
+      workflows: workflows.map(({ operation, sha256, mappingSha256 }) => ({
+        operation,
+        sha256,
+        mappingSha256,
+      })),
+    },
   };
   const approvals = {
     format: "mangai.desktop-adult-pilot-release-approvals",
@@ -100,6 +156,7 @@ const fixtures = (root) => {
         "artifact-evidence.json",
         artifactEvidence,
       ),
+      MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH: bundleEvidencePath,
       MANGAI_ADULT_PILOT_BUNDLE_PATH: write(root, "bundle.json", bundle),
       MANGAI_ADULT_PILOT_RELEASE_APPROVALS_PATH: write(
         root,
@@ -138,6 +195,7 @@ test("Adult Stage 0 gate blocks missing candidate, signing, fixed bundle, and se
   const { env, plan } = fixtures(root);
   delete env.MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH;
   delete env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH;
+  delete env.MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH;
   const bundle = JSON.parse(
     fs.readFileSync(env.MANGAI_ADULT_PILOT_BUNDLE_PATH),
   );
@@ -163,6 +221,45 @@ test("Adult Stage 0 gate blocks missing candidate, signing, fixed bundle, and se
   ])
     assert.match(result.stdout, new RegExp(`${id}: BLOCKED`));
   assert.match(result.stdout, /stage0Ready=false/);
+});
+
+test("Adult Stage 0 gate does not trust fixed bundle status without imported evidence", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-stage0-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { env } = fixtures(root);
+  delete env.MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH;
+  const bundle = JSON.parse(
+    fs.readFileSync(env.MANGAI_ADULT_PILOT_BUNDLE_PATH),
+  );
+  delete bundle.verification;
+  env.MANGAI_ADULT_PILOT_BUNDLE_PATH = write(
+    root,
+    "fixed-without-evidence.json",
+    bundle,
+  );
+
+  const result = run(env, "--strict");
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /fixed_bundle: BLOCKED/);
+});
+
+test("Adult Stage 0 gate rejects tampered bundle evidence", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-stage0-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { env } = fixtures(root);
+  const evidence = JSON.parse(
+    fs.readFileSync(env.MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH),
+  );
+  evidence.artifacts[0].sha256 = "f".repeat(64);
+  env.MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH = write(
+    root,
+    "tampered-bundle-evidence.json",
+    evidence,
+  );
+
+  const result = run(env, "--strict");
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /fixed_bundle: BLOCKED/);
 });
 
 test("Adult Stage 0 gate rejects a candidate mismatch", (t) => {
