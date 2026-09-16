@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 0運用パッケージ検証
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / REAL_OPERATION_PACKAGE_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Branch: `codex/adult-stage0-operation-package-20260916`
+- Base: `514da48`（PR #491 merge commit）。マージ後Core quality run `35075869980`（2分36秒）、Migration roundtrip（50秒）、Desktop Windows run `35075869919`（4分17秒）は成功済みである。
+- Stage 0候補assessment、計画、署名artifact証跡、Bundle証跡、固定Bundle manifest、責任者承認の6 sourceをSHA-256で結ぶ内容非保持operation packageのcreate／verify CLIを追加した。
+- create／verifyの両方が既存Stage 0 readiness strictを再実行する。candidate ID、Desktop version、実施日時、削除期限、source digest、配布境界の不一致・改変・readiness後退をfail closedで停止し、実path、氏名、メール、作品内容、Prompt、画像、署名者情報をpackageへ保存しない。
+- 検証: 集中14/14、Desktop 268/268、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDING、Viteの既知chunk warningは不変である。
+- Commit `513b57f`をpushしてDraft PR #492を作成した。canonical Stage 0は実候補者assessment・署名artifact証跡・固定Bundle・個別計画が未取得のため1 READY／4 BLOCKED。`stage1DistributionAuthorized=false`を維持する。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実証跡・実operation packageは変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: この正本同期commitの全CI／Vercel Preview成功まで確認して停止する。実package作成、署名、Bundle取込、artifact送付、Stage 0開始は別の実行時承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult 技術モニター候補generator
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / REAL_CANDIDATE_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`

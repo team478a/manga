@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0運用パッケージ検証（2026-09-16）
+
+- BaseはPR #491 merge commit `514da48`。マージ後のCore quality run `35075869980`（2分36秒）、Migration roundtrip（50秒）、Desktop Windows run `35075869919`（4分17秒）は成功済み。
+- Stage 0開始に使用する候補assessment、実施計画、署名artifact証跡、Bundle証跡、固定Bundle manifest、責任者承認の6 sourceをSHA-256で固定する内容非保持operation packageのcreate／verify CLIを追加した。
+- 作成時と実施直前のverify時に既存Stage 0 readiness strictを再実行し、candidate ID、Desktop version、実施日時、削除期限、source digest、配布境界の取り違え・改変・後退をfail closedで拒否する。実pathや個人情報を保存せず、`stage1DistributionAuthorized=false`を維持する。
+- 集中14/14、Desktop 268/268、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。canonical Stage 0は実証跡未取得のため1 READY／4 BLOCKEDのままである。
+- Commit `513b57f`をpushしてDraft PR #492を作成した。Branchは`codex/adult-stage0-operation-package-20260916`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実証跡・実package変更なし。
+- 未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitの全CI／Vercel Preview成功で停止する。実operation package作成、artifact送付、Stage 0開始は別の実行時承認を待つ。
+
+---
+
 ## 0.0 Desktop Adult 技術モニター候補generator（2026-09-16）
 
 - BaseはPR #490 merge commit `a826931`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
