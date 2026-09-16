@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Production 23–24ページ第2段階再実行
+
+- PR #483はmerge commit `9bb321d`で反映済み。マージ後Required Quality run `35048818257`、Desktop Windows run `35048818319` attempt 2、Vercel Production deployment `dpl_Afkv6MpBCsP8RKJQGg2UmWoKAaL7`の成功／Readyを確認した。
+- 責任者はProduction 23／24ページの最新失敗候補を各1件、合計4 credit／最大`$0.36`で第2段階再実行することを承認した。source Jobは23ページ`6ed98da4-b43f-437f-b715-f45bfe347fb4`、24ページ`5948a685-d41b-4b83-940c-bc9df828835c`。
+- Cloud AIは使用94／予約0／残り6だったが、一般モニターAIが105/105だった。2件だけの実行に必要な上限105→107をguard付きtransactionで更新し、管理監査`update`へbefore／afterを保存した。受付後は107/107で余剰枠を残していない。
+- 原稿編集画面で各sourceの最新履歴を1回だけ再実行し、23ページJob `84d3733b-1b89-4471-b937-47f2c1690781`、24ページJob `e0957cc9-e695-4330-b05f-04fcbaeea3f5`を登録した。両Jobは保守的な一般向け再構成で、各2 credit／180,000 microsを予約した。
+- 公式Cloud AI Worker scheduler run `35052003429`を`mode=run`で1回実行した。`feature/manga-canvas-mvp`@`9bb321d`、`status=idle / requests=3 / processed=2`で成功し、対象2件以外を処理していない。
+- 両Jobはattempt 1で完了し、704×1024 private PNG Assetを各1件保存した。各実費45,000 micros、合計`$0.09`。Canvas配置台帳は両方`auto_placed`、ページrevisionは各4、画面再読込で各画像4/4・生成中0・失敗0・PNG成功を確認した。
+- postflightは作品画像23/157、未配置134、Cloud AI使用98／予約0／残り2、実費1,605,000 micros、費用予約0、一般モニターAI107/107。今回差分4 credit／`$0.09`は承認上限4 credit／`$0.36`内。追加Job、別Provider、別ページ、品質承認、公開・販売、成人向け処理なし。
+- Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変。
+- Base `9bb321d`からBranch `codex/docs-production-pages-23-24-second-stage-20260916`を開始した。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-16 Codex: Production 23–24ページ安全再構成段階の記録訂正
 
 - PR #482はmerge commit `2eefb87`で反映済み。マージ後Required Quality run `35044985042`、Desktop Windows run `35044985030`、Vercel Production deployment `dpl_6YnvyTZTpCSmnaopu52se4vNGbW1`のReadyを確認した。

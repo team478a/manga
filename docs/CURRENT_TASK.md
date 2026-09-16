@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-16 Production 23–24ページ第2段階再実行
+
+- 状態: `PRODUCTION_EXECUTED / 2_OF_2_COMPLETED / AUTO_PLACED / LIMITS_RESPECTED / DOCS_PR_PENDING`
+- Branch: `codex/docs-production-pages-23-24-second-stage-20260916`
+- Base: `9bb321d`（PR #483 merge commit）。マージ後Required Quality run `35048818257`は成功した。Desktop Windows run `35048818319`は初回のElectron accessibility process timeoutだけをattempt 2で再実行し、全step成功した。Vercel Production deployment `dpl_Afkv6MpBCsP8RKJQGg2UmWoKAaL7`はReadyで`app.mang-ai.com`へalias済みである。
+- 責任者はProduction 23ページ／24ページの最新失敗候補を各1件、合計4 credit／最大`$0.36`で第2段階再実行することを明示承認した。対象source Jobは23ページ`6ed98da4-b43f-437f-b715-f45bfe347fb4`、24ページ`5948a685-d41b-4b83-940c-bc9df828835c`である。
+- 実行直前はCloud AI使用94／予約0／残り6だったが、一般モニターAI枠が105/105だった。承認対象2件だけを通すため、Production Management APIで上限を105→107へguard付きtransactionで更新し、管理監査`update`へbefore／afterを保存した。使用数は105のまま維持し、2件受付後は107/107で追加枠を残していない。
+- 原稿編集画面から最新失敗候補を各1回だけ再実行した。新Jobは23ページ`84d3733b-1b89-4471-b937-47f2c1690781`、24ページ`e0957cc9-e695-4330-b05f-04fcbaeea3f5`。両方とも第2段階の保守的な一般向け再構成を保持し、各2 credit／180,000 microsを予約した。
+- 公式Cloud AI Worker scheduler run `35052003429`を`feature/manga-canvas-mvp`@`9bb321d`、`mode=run`で1回実行した。`status=idle / requests=3 / processed=2`で成功し、対象2件以外の処理はなかった。
+- 2 Jobは各attempt 1で完了し、704×1024 private PNG Assetを保存した。実費は各45,000 micros、合計90,000 micros（`$0.09`）。両方とも`auto_placed`となり、23／24ページはrevision 4、画像4/4、生成中0、失敗0、PNG成功へ更新された。作品全体は画像配置21→23/157、未配置136→134である。
+- postflightはCloud AI使用98／予約0／残り2、実費1,605,000 micros、費用予約0。今回差分は4 credit／`$0.09`で、承認上限4 credit／`$0.36`内。一般モニターAIは107/107。追加Job、別Provider、別ページ、品質承認、公開・販売、成人向け処理は変更していない。
+- Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変である。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功まで進めて停止する。新しい2候補の目視品質確認と品質承認は別工程とし、追加生成は別の実行時承認まで行わない。
+
+---
+
 ## 2026-09-16 Production 23–24ページ安全再構成段階の記録訂正
 
 - 状態: `PRODUCTION_READ_ONLY_RECONCILED / UI_BEHAVIOR_CORRECT / DOCS_CORRECTION_READY / PRODUCTION_UNCHANGED`

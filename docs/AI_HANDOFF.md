@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production 23–24ページ第2段階再実行（2026-09-16）
+
+- BaseはPR #483 merge commit `9bb321d`。本線Required Quality run `35048818257`、Desktop Windows run `35048818319` attempt 2、Vercel Production deployment `dpl_Afkv6MpBCsP8RKJQGg2UmWoKAaL7`は成功／Readyである。
+- 責任者の明示承認範囲は23／24ページ最新失敗候補の各1件、合計4 credit／最大`$0.36`。source Jobは`6ed98da4-b43f-437f-b715-f45bfe347fb4`と`5948a685-d41b-4b83-940c-bc9df828835c`。
+- モニターAIが105/105だったため、承認対象2件だけを受付できるよう上限105→107をguard付きで更新し、管理監査`update`を保存した。受付後は107/107で余剰枠なし。
+- 第2段階の保守的な一般向け再構成Job `84d3733b-1b89-4471-b937-47f2c1690781`と`e0957cc9-e695-4330-b05f-04fcbaeea3f5`を各1回だけ登録した。各2 credit／180,000 micros予約。
+- 公式Worker run `35052003429`は`status=idle / requests=3 / processed=2`で成功。両Jobはattempt 1、各45,000 microsで完成し、704×1024 private PNG Assetを保存してCanvasへ自動配置した。
+- 23／24ページは各revision 4、画像4/4、生成中0、失敗0、PNG成功。作品全体は画像23/157、未配置134。Cloud AIは使用98／予約0／残り2、実費1,605,000 micros、費用予約0。今回の消費は4 credit／`$0.09`で承認内。
+- Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変。
+- Branchは`codex/docs-production-pages-23-24-second-stage-20260916`。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。新候補の品質承認と追加生成は行わない。
+
+---
+
 ## 0.0 Production 23–24ページ安全再構成段階の記録訂正（2026-09-16）
 
 - PR #482はmerge commit `2eefb87`で本線へ反映済み。マージ後Required Quality run `35044985042`、Desktop Windows run `35044985030`、Vercel Production Readyを確認した。
