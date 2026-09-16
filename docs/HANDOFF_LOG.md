@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Provider Job ID未保存moderation終端回復
+
+- PR #481 merge commit `182503d`から`codex/cloud-moderation-prejob-recovery-20260916`を開始した。本線Required Quality run `35040981622`、Desktop Windows run `35040981625`、Vercel Production Readyを確認した。
+- Production `test`で23ページをread-only確認したところ、一般向け安全再構成でも拒否された終端Jobが「再実行可能」のままで、構図・場面の見直しと1案preflightへ進めなかった。閲覧中の保存、再実行、Provider送信、credit操作は0件。
+- 根因は、`provider_moderation_blocked`の判定がProvider Job IDを要求していたこと。Gateway moderationは応答を検証してからJob IDを保存するため、正規のmoderation codeでもIDがない失敗を作り得る。
+- `provider_moderation_blocked`をJob IDなしでも拒否として扱い、汎用`provider_rejected`のJob ID条件は維持した。生成一覧と一括生成一覧だけでなく、原稿編集と一括生成の再実行Actionも同じ共通判定器へ変更し、直接API実行でも終端Jobを閉じる。
+- 集中30/30、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y 29画面blocking violation 0、Hub／Desktop typecheck、lint、依存／module／size境界、migration validator 83/83、Hub／Desktop Production build、RC Repository structure READY、`git diff --check`成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
+- Commit `5669f58`をpushしてDraft PR #482を作成した。最初のHEADでRequired Quality run `35042754670`（Core quality 3分9秒／Migration roundtrip 48秒）、Desktop Windows run `35042754753`（4分30秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://mangai-hub-staging-2po9uay3z-team478as-projects.vercel.app`。
+- Production、DB、Provider、Job、Asset、Canvas、credit変更なし。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-16 Codex: moderation終端回復の低コスト生成・実行前確認
 
 - PR #480 merge commit `32d9575`から`codex/cloud-panel-recovery-preflight-20260916`を開始した。本線Required Quality run `35036886446`とDesktop Windows run `35036886444`は成功した。

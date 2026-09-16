@@ -22,7 +22,10 @@ import {
   isConservativeGeneralAudienceGenerationRetry,
   isGeneralAudienceGenerationRetry,
 } from "../../manga/domain/general-audience-generation-retry";
-import { classifyFailedGenerationRetryRecovery } from "@/lib/cloud-generation-retry-recovery";
+import {
+  classifyFailedGenerationRetryRecovery,
+  isProviderRejectedGenerationFailure,
+} from "@/lib/cloud-generation-retry-recovery";
 
 export type CloudGenerationBatch = MangaGenerationBatch;
 
@@ -217,10 +220,10 @@ export async function retryFailedCloudGenerationJob(jobId: string) {
   const parsedGeneration = cloudGenerationInputSchema.safeParse(source.data.input);
   if (!parsedGeneration.success)
     throw new ValidationError("元の生成条件を安全に復元できないため、再実行できませんでした。");
-  const providerRejected =
-    Boolean(source.data.provider_job_id) &&
-    (source.data.error_code === "provider_rejected" ||
-      source.data.error_code === "provider_moderation_blocked");
+  const providerRejected = isProviderRejectedGenerationFailure({
+    errorCode: source.data.error_code,
+    hasProviderJobId: Boolean(source.data.provider_job_id),
+  });
   if (
     providerRejected &&
     isConservativeGeneralAudienceGenerationRetry(parsedGeneration.data)

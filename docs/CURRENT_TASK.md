@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 Provider Job ID未保存moderation終端回復
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_READ_ONLY_FINDING / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`
+- Branch: `codex/cloud-moderation-prejob-recovery-20260916`
+- Base: `182503d`（PR #481 merge commit）。マージ後Required Quality run `35040981622`とDesktop Windows run `35040981625`は成功し、Vercel Productionも同commitでReadyを確認した。
+- Production `test`をread-only確認し、23ページの終端moderation失敗が「再実行可能」のままで、回復用の「内容の見直し」導線と1案preflightへ到達できないことを確認した。Projectは32ページ／157コマ、画像配置21、未配置136、23・24ページは各3/4配置である。
+- 原因は、失敗分類と2つの再実行Actionが`provider_moderation_blocked`にもProvider Job IDを必須としていたこと。GatewayはProvider応答のmoderationをJob ID保存前に例外化でき、旧BFL履歴もcheckpoint未保存の可能性があるため、正規のmoderation codeだけで拒否を確定できる。
+- 共通判定器を追加し、`provider_moderation_blocked`はJob IDなしでもProvider拒否、汎用`provider_rejected`は従来どおりJob IDありの場合だけProvider拒否とした。生成一覧、一括生成一覧、原稿編集retry、一括生成retryを同じ判定へ統一し、表示だけでなくServer実行もfail closedにした。
+- 検証: 集中30/30、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop 230/230、Desktop a11y 29画面blocking violation 0、Hub／Desktop typecheck、lint、依存／module／size境界、migration 83/83、Hub／Desktop Production build、RC Repository structure READY、`git diff --check`成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
+- Commit `5669f58`をpushしてDraft PR #482を作成した。最初のHEADでRequired Quality run `35042754670`（Core quality 3分9秒／Migration roundtrip 48秒）、Desktop Windows run `35042754753`（4分30秒）、Vercel Preview／Preview Commentsはすべて成功した。Previewは`https://mangai-hub-staging-2po9uay3z-team478as-projects.vercel.app`。
+- Production確認は閲覧だけで、DB、Provider、Job、Asset、Canvas、credit操作は0件。次: この正本同期commitの最終CI／Vercel Preview成功で停止する。merge後に同じProduction画面をread-only再確認するまで、残る2コマの実生成は行わない。
+
+---
+
 ## 2026-09-16 moderation終端回復の低コスト生成・実行前確認
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED / DRAFT_PR_READY / FIRST_HEAD_CI_PASSED`

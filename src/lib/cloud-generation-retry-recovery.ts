@@ -8,6 +8,20 @@ export type FailedGenerationRetryRecovery =
   | "edit_required"
   | "unavailable";
 
+export function isProviderRejectedGenerationFailure(input: {
+  errorCode: string | null;
+  hasProviderJobId: boolean;
+}) {
+  // Gateway moderation can reject a parsed provider response before its
+  // provider job id is checkpointed. The server-written moderation code is
+  // therefore authoritative on its own, including for older BFL jobs whose
+  // checkpoint was not persisted.
+  return (
+    input.errorCode === "provider_moderation_blocked" ||
+    (input.hasProviderJobId && input.errorCode === "provider_rejected")
+  );
+}
+
 export function classifyFailedGenerationRetryRecovery(input: {
   status: string;
   generation: CloudGenerationInput | null;
@@ -15,10 +29,7 @@ export function classifyFailedGenerationRetryRecovery(input: {
   hasProviderJobId: boolean;
 }): FailedGenerationRetryRecovery {
   if (input.status !== "failed" || !input.generation) return "unavailable";
-  const providerRejected =
-    input.hasProviderJobId &&
-    (input.errorCode === "provider_rejected" ||
-      input.errorCode === "provider_moderation_blocked");
+  const providerRejected = isProviderRejectedGenerationFailure(input);
   const conservativeRetry =
     input.generation.kind === "image" &&
     input.generation.prompt.includes(

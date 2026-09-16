@@ -44,3 +44,15 @@ test("終端moderation失敗はPromptを返さず内容見直しへ案内する"
   assert.match(editor, /confirmRecoveryPanelGeneration/);
   assert.match(editor, /estimate\.canStart/);
 });
+
+test("moderation拒否はProvider Job ID保存前でも表示と実行を同じ判定器で閉じる", async () => {
+  const [classifier, interactiveRetry, batchRetry] = await Promise.all([
+    readFile("src/lib/cloud-generation-retry-recovery.ts", "utf8"),
+    readFile("src/modules/cloud-creator/generation/interactive-retry-service.ts", "utf8"),
+    readFile("src/modules/cloud-creator/generation/batch-production-service.ts", "utf8"),
+  ]);
+  assert.match(classifier, /errorCode === "provider_moderation_blocked" \|\|/);
+  assert.match(classifier, /hasProviderJobId && input\.errorCode === "provider_rejected"/);
+  assert.match(interactiveRetry, /isProviderRejectedGenerationFailure/);
+  assert.match(batchRetry, /isProviderRejectedGenerationFailure/);
+});
