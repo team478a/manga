@@ -49,8 +49,26 @@ const fixtures = (root) => {
     distributionAuthorized: false,
     nextStep: "signed_acceptance_artifact_and_release_readiness_required",
   };
-  const rc = {
-    requirements: [{ id: "windows-code-signing", status: "passed" }],
+  const artifactEvidence = {
+    format: "mangai.desktop-adult-stage0-artifact-evidence",
+    version: 1,
+    generatedAt: timestamp,
+    artifactVersion: "0.1.0",
+    artifactPurpose: "stage0_acceptance_only",
+    distributionAuthorized: false,
+    signatures: {
+      installerStatus: "Valid",
+      productExecutableStatus: "Valid",
+      sameSigner: true,
+    },
+    artifacts: {
+      installerSha256: "1".repeat(64),
+      blockmapSha256: "2".repeat(64),
+      updateMetadataSha256: "3".repeat(64),
+      sbomSha256: "4".repeat(64),
+      checksumsSha256: "5".repeat(64),
+      productExecutableSha256: "6".repeat(64),
+    },
   };
   const fixed = { status: "fixed" };
   const bundle = {
@@ -77,7 +95,11 @@ const fixtures = (root) => {
         "assessment.json",
         assessment,
       ),
-      MANGAI_ADULT_PILOT_RC_STATUS_PATH: write(root, "rc.json", rc),
+      MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH: write(
+        root,
+        "artifact-evidence.json",
+        artifactEvidence,
+      ),
       MANGAI_ADULT_PILOT_BUNDLE_PATH: write(root, "bundle.json", bundle),
       MANGAI_ADULT_PILOT_RELEASE_APPROVALS_PATH: write(
         root,
@@ -115,10 +137,7 @@ test("Adult Stage 0 gate blocks missing candidate, signing, fixed bundle, and se
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const { env, plan } = fixtures(root);
   delete env.MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH;
-  const rc = {
-    requirements: [{ id: "windows-code-signing", status: "blocked" }],
-  };
-  env.MANGAI_ADULT_PILOT_RC_STATUS_PATH = write(root, "blocked-rc.json", rc);
+  delete env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH;
   const bundle = JSON.parse(
     fs.readFileSync(env.MANGAI_ADULT_PILOT_BUNDLE_PATH),
   );
@@ -207,4 +226,33 @@ test("Adult Stage 0 gate rejects extra assessment fields and inconsistent hardwa
   result = run(env, "--strict");
   assert.equal(result.status, 1);
   assert.match(result.stdout, /candidate_assessment: BLOCKED/);
+});
+
+test("Adult Stage 0 gate rejects forged or path-bearing artifact evidence", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-stage0-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const { env } = fixtures(root);
+  const evidence = JSON.parse(
+    fs.readFileSync(env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH),
+  );
+  evidence.absolutePath = "C:\\private\\MANGAI.exe";
+  env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = write(
+    root,
+    "path-evidence.json",
+    evidence,
+  );
+  let result = run(env, "--strict");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /absolutePath is prohibited/);
+
+  delete evidence.absolutePath;
+  evidence.signatures.sameSigner = false;
+  env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = write(
+    root,
+    "forged-evidence.json",
+    evidence,
+  );
+  result = run(env, "--strict");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /format or verification is unsupported/);
 });

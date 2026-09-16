@@ -73,8 +73,21 @@ npm run desktop:adult:stage0-readiness:strict
 
 Stage 0受入れ専用artifactは、既存PFX方式に加えてWindows証明書ストア／ハードウェアトークン方式でローカル署名できる。`npm run desktop:signing:preflight`で資格情報を表示せず構成を確認し、詳細は`WINDOWS_INSTALLER.md`と`WINDOWS_CODE_SIGNING_DECISION_20260916.md`に従う。これは署名経路の準備であり、証明書購入、artifact署名、候補者への送付またはStage 0開始を許可しない。
 
+署名後は、installer、blockmap、更新metadata、SBOM、checksumと、install後または展開後の製品EXEを同じWindows署名端末で検証する。証跡は既存fileを上書きせず、アクセス制限された運用領域へ出力する。
+
+```powershell
+$artifactEvidence = "<access-controlled-stage0-artifact-evidence.json>"
+npm run desktop:adult:stage0-artifact-evidence -- `
+  --directory "<Desktop内のStage 0 release directory名>" `
+  --product-exe "<署名済みMANGAI Desktop.exeの絶対path>" `
+  --out $artifactEvidence
+$env:MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = $artifactEvidence
+```
+
+この証跡はversion、`Valid`判定、同一署名者判定、6ファイルのSHA-256だけを保持し、絶対path、証明書thumbprint、subject、PIN、作品内容を保持しない。Stage 0 gateはRC台帳の`passed`記載だけを署名証拠として信頼せず、この実artifact証跡を必須とする。証跡が成功しても`stage1DistributionAuthorized=false`であり、Stage 1の署名付き自動更新・release readinessは別に合格させる。
+
 1. 候補者preflight strict成功とStage 0 readiness strict成功を確認する。
-2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを運営側で確認する。
+2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを確認し、内容非保持のartifact証跡をStage 0 gateへ接続する。
 3. 初回は支援付きでinstallし、公式配布元から固定ComfyUI／modelを取得する。MANGAIから再配布しない。
 4. AI一括診断でWindows、GPU、VRAM、ComfyUI version、model、workflowを確認する。
 5. 内容を特定しない架空の成人用fixtureでText-to-Image、Image-to-Image、ControlNet、Inpaintingを各1回だけ実施する。

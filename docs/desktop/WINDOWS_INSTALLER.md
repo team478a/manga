@@ -127,6 +127,19 @@ npm run desktop:dist:win:signed
 
 署名コマンドは証明書が未設定、不完全、両方式同時設定、thumbprint形式不正の場合に生成前に停止し、Electron Builderの`forceCodeSigning`を有効にします。これにより署名版として実行した処理から未署名EXEが誤って出力されることを防ぎます。
 
+### Adult技術モニターStage 0の署名証跡
+
+署名済み受入れ専用artifactをStage 0 gateへ接続する場合は、通常の成果物検証とSBOM／checksum検証に加え、installerと製品EXEがともに`Valid`で同じ証明書により署名されていることを確認します。
+
+```powershell
+npm run desktop:adult:stage0-artifact-evidence -- `
+  --directory "<Desktop内のrelease directory名>" `
+  --product-exe "<署名済み製品EXEの絶対path>" `
+  --out "<新規のアクセス制限済み証跡JSON絶対path>"
+```
+
+release directoryにはinstaller、blockmap、`latest.yml`または`beta.yml`、SPDX SBOM、`SHA256SUMS.txt`が必要です。証跡は新規fileだけを作成し、既存fileを上書きしません。出力には絶対path、署名証明書のthumbprint／subject、秘密鍵、PINを含めず、署名状態・同一署名者判定・SHA-256だけを保存します。この成功はStage 0用artifactの検証であり、一般配布、Stage 1、Release公開を許可しません。
+
 生成後は次で署名状態を確認します。
 
 ```powershell

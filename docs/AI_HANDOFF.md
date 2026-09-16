@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0署名artifact証跡（2026-09-16）
+
+- BaseはPR #487 merge commit `01b2c86`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
+- 既存Windows成果物、SBOM、checksum gateを通過し、installerと製品EXEがともにAuthenticode `Valid`かつ同一署名者の場合だけ、Stage 0専用artifact証跡を新規出力するgeneratorを追加した。
+- 証跡はversion、Stage 0専用目的、配布未許可、署名状態、同一署名者判定、6ファイルのSHA-256だけを保持する。path、file名、thumbprint、subject、PIN、秘密鍵、作品内容を保持せず、既存fileを上書きしない。
+- Stage 0 gateはRC台帳の記載だけでは署名合格にせず、実artifact証跡のstrict schema、両署名、同一署名者、version一致を必須にした。Stage 1 release readinessは変更していない。
+- 集中9/9、Desktop 249/249、Hub 1008/1008、Canvas 26/26、AI 50/50、deps error 0（既知warning 2件）、lint、typecheck、Desktop build、migration 83/83、RC構造、diff check成功。canonical結果は1 READY／4 BLOCKEDのままである。
+- Commit `0969dc4`をpushしてDraft PR #488を作成した。初回HEADでCore quality run `35063287314`（2分8秒）、Migration roundtrip（50秒）、Desktop Windows run `35063287183`（3分42秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Branchは`codex/adult-stage0-artifact-evidence-20260916`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release変更なし。未追跡`apps/desktop/artifacts/`は未変更。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
+
+---
+
 ## 0.0 Desktop Windowsハードウェアトークン署名対応（2026-09-16）
 
 - BaseはPR #486 merge commit `acedcab`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。

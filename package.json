@@ -26,6 +26,7 @@
     "desktop:adult:technical-monitor:preflight:strict": "npm --prefix apps/desktop run adult:technical-monitor:preflight:strict --",
     "desktop:adult:stage0-readiness": "npm --prefix apps/desktop run adult:stage0-readiness --",
     "desktop:adult:stage0-readiness:strict": "npm --prefix apps/desktop run adult:stage0-readiness:strict --",
+    "desktop:adult:stage0-artifact-evidence": "npm --prefix apps/desktop run adult:stage0-artifact-evidence --",
     "desktop:adult:pilot-release-readiness": "npm --prefix apps/desktop run adult:pilot-release-readiness",
     "desktop:adult:pilot-release-readiness:strict": "npm --prefix apps/desktop run adult:pilot-release-readiness:strict",
     "desktop:adult:pilot-owner-approval:record": "node apps/desktop/scripts/record-adult-pilot-owner-approval.mjs",

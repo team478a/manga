@@ -13,13 +13,12 @@ const paths = {
   assessment: process.env.MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH
     ? path.resolve(process.env.MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH)
     : undefined,
+  artifactEvidence: process.env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH
+    ? path.resolve(process.env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH)
+    : undefined,
   plan: fromEnv(
     "MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH",
     "docs/desktop/DESKTOP_ADULT_STAGE0_PLAN.example.json",
-  ),
-  rc: fromEnv(
-    "MANGAI_ADULT_PILOT_RC_STATUS_PATH",
-    "docs/desktop/RC_ACCEPTANCE_STATUS.json",
   ),
   bundle: fromEnv(
     "MANGAI_ADULT_PILOT_BUNDLE_PATH",
@@ -73,6 +72,29 @@ const exactEnvironmentKeys = [
   "vramBand",
   "ramBand",
   "freeDiskBand",
+];
+const exactArtifactEvidenceKeys = [
+  "format",
+  "version",
+  "generatedAt",
+  "artifactVersion",
+  "artifactPurpose",
+  "distributionAuthorized",
+  "signatures",
+  "artifacts",
+];
+const exactSignatureKeys = [
+  "installerStatus",
+  "productExecutableStatus",
+  "sameSigner",
+];
+const exactArtifactDigestKeys = [
+  "installerSha256",
+  "blockmapSha256",
+  "updateMetadataSha256",
+  "sbomSha256",
+  "checksumsSha256",
+  "productExecutableSha256",
 ];
 
 const fail = (message) => {
@@ -144,7 +166,6 @@ if (
     "Stage 0 deletion deadline must be after the session and within 14 days",
   );
 
-const rc = read(paths.rc, "RC status");
 const bundle = read(paths.bundle, "bundle");
 const approvals = read(paths.approvals, "approvals");
 const desktopPackage = read(paths.desktopPackage, "Desktop package");
@@ -180,8 +201,42 @@ if (paths.assessment) {
     fail("candidate assessment format is unsupported");
 }
 
-const rcStatus = (id) =>
-  rc.requirements?.find((item) => item?.id === id)?.status;
+let artifactEvidence;
+if (paths.artifactEvidence) {
+  artifactEvidence = read(paths.artifactEvidence, "Stage 0 artifact evidence");
+  scanPrivateData(artifactEvidence, "stage0ArtifactEvidence");
+  exactKeys(
+    artifactEvidence,
+    exactArtifactEvidenceKeys,
+    "Stage 0 artifact evidence",
+  );
+  exactKeys(
+    artifactEvidence.signatures,
+    exactSignatureKeys,
+    "Stage 0 artifact evidence signatures",
+  );
+  exactKeys(
+    artifactEvidence.artifacts,
+    exactArtifactDigestKeys,
+    "Stage 0 artifact evidence digests",
+  );
+  if (
+    artifactEvidence.format !==
+      "mangai.desktop-adult-stage0-artifact-evidence" ||
+    artifactEvidence.version !== 1 ||
+    !isTimestamp(artifactEvidence.generatedAt) ||
+    artifactEvidence.artifactPurpose !== "stage0_acceptance_only" ||
+    artifactEvidence.distributionAuthorized !== false ||
+    artifactEvidence.signatures.installerStatus !== "Valid" ||
+    artifactEvidence.signatures.productExecutableStatus !== "Valid" ||
+    artifactEvidence.signatures.sameSigner !== true ||
+    Object.values(artifactEvidence.artifacts).some(
+      (digest) => !/^[a-f0-9]{64}$/.test(digest),
+    )
+  )
+    fail("Stage 0 artifact evidence format or verification is unsupported");
+}
+
 const bundleItems = [
   bundle.comfyui,
   ...(bundle.workflows ?? []),
@@ -204,7 +259,8 @@ const candidateReady =
   ["16_to_31gb", "32gb_or_more"].includes(assessment.environment.ramBand) &&
   ["40_to_49gb", "50gb_or_more"].includes(assessment.environment.freeDiskBand);
 const signedArtifactReady =
-  rcStatus("windows-code-signing") === "passed" &&
+  artifactEvidence?.artifactVersion === desktopPackage.version &&
+  artifactEvidence.artifactVersion === plan.artifactVersion &&
   plan.artifactVersion === desktopPackage.version &&
   plan.artifactPurpose === "stage0_acceptance_only" &&
   plan.artifactSeparatedFromStage1 === true &&

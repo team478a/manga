@@ -28,8 +28,9 @@ Azure Artifact Signingは将来候補として維持するが、MicrosoftのWind
 1. 法人名義、申請担当者、必要書類、請求先を責任者が確定する。
 2. OV証明書を申請し、トークン到着後に専用Windows署名端末へdriverを導入する。
 3. 証明書subject、有効期限、thumbprintを画面で確認する。thumbprintは運用設定として扱い、秘密鍵とPINは記録しない。
-4. Stage 0専用versionをローカル署名し、installer、製品EXE、blockmap、SBOM、checksumを固定する。
-5. 署名検証と既存Stage 0 readiness strictの両方が成功してから、対象者・日時・送付物を別承認する。
+4. Stage 0専用versionをローカル署名し、installer、製品EXE、blockmap、更新metadata、SBOM、checksumを固定する。
+5. `desktop:adult:stage0-artifact-evidence`でinstallerと製品EXEの`Valid`・同一署名者、既存成果物gate、全SHA-256を検証し、path・証明書識別子を含まない新規証跡を作成する。
+6. artifact証跡と既存Stage 0 readiness strictの両方が成功してから、対象者・日時・送付物を別承認する。
 
 ## 参照
 
