@@ -228,6 +228,48 @@ Stage 0合格後、次をすべて満たす場合だけ1名へ招待する。
 
 最初の1枚は支援付きで実施する。24時間以上の観察後、重大障害0件の場合だけStage 2を提案する。Stage 2／3を自動開始しない。
 
+### 6.1 一回限定の招待承認
+
+Stage 1の実招待では、会話上の継続指示や過去のPilot開始承認を流用しない。統合release readiness strictが成功し、同じ候補者のStage 0完了証跡が12GB受入れ表へ取り込まれ、進行中のStage 1招待がないことを確認した後に、その1名・そのPilot version・24時間以内の1回だけを責任者が明示承認する。
+
+承認fileは候補assessment、Stage 0 operation packageと完了証跡、招待台帳、RC状態、固定Bundle、12GB受入れ表、責任者承認の内容と場所をSHA-256で固定する。候補IDから導出しないrandomなmonitor IDを割り当てるが、標準出力へ候補ID、monitor ID、実pathを表示しない。氏名、メール、作品内容、Prompt、画像、端末識別情報、絶対pathは保存しない。
+
+```powershell
+$stage1Authorization = Join-Path $privateRoot "stage1-invitation-authorization.json"
+$stage1ExpiresAt = "<作成から24時間以内かつStage 0証跡削除期限より前のUTC ISO日時>"
+$pilotVersion = "<署名済みStage 1 Pilot version>"
+$ledger = "<access-controlled-invite-ledger.jsonの絶対path>"
+
+npm run desktop:adult:stage1-invitation-authorization:create -- `
+  --assessment $assessment `
+  --stage0-package $stage0Package `
+  --stage0-completion $stage0Completion `
+  --ledger $ledger `
+  --pilot-version $pilotVersion `
+  --expires-at $stage1ExpiresAt `
+  --confirm-owner-approved `
+  --confirm-signed-pilot-artifact `
+  --confirm-assisted-first-panel `
+  --confirm-observation-24-hours `
+  --confirm-manual-stop `
+  --out $stage1Authorization
+```
+
+配布直前に同じsourceで再検証し、承認を1回だけ消費する。source改変、承認fileのcopy・移動、期限切れ、release readiness後退、候補不一致、進行中Stage 1、個人情報または作品内容を含む台帳をfail closedで拒否する。
+
+```powershell
+npm run desktop:adult:stage1-invitation-authorization:consume -- `
+  --assessment $assessment `
+  --stage0-package $stage0Package `
+  --stage0-completion $stage0Completion `
+  --ledger $ledger `
+  --authorization $stage1Authorization
+```
+
+`consume`は固定sidecar receiptを排他的に作るだけで、artifact送信、招待メール、Runtime／model取得、生成、台帳更新を自動実行しない。消費後にだけ承認対象へ手動配布し、実際の配布日時を同じmonitor IDで招待台帳へ記録して`desktop:adult:pilot-ledger:check`を実行する。配布できなかった場合はreceiptを削除して再利用せず、新しい承認を責任者へ依頼する。
+
+現在の正本は署名、固定Bundle、12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了はStage 1配布許可を意味しない。
+
 ## 7. 停止条件
 
 次のいずれかで受入れと新規配布を停止する。

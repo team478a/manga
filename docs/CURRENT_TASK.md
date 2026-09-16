@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 1一回限定招待承認
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_AUTHORIZATION_NOT_CREATED / REAL_DISTRIBUTION_NOT_RUN / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Base: PR #495 merge commit `4b5980a`。マージ後Required Quality run `35095937061`（Core quality、Migration roundtrip）とDesktop Windows run `35095937005`は成功済み。
+- Branch: `codex/adult-stage1-invitation-authorization-20260916`
+- 実装commit: `bdb4b37`。Draft PR: #496。
+- Stage 1の1名招待を、現在の候補assessment、Stage 0 operation packageと完了証跡、招待台帳、RC状態、固定Bundle、12GB受入れ表、責任者承認へSHA-256で結ぶcreate／consume CLIを追加した。統合release readiness strict成功と5つの対象付き明示確認を必須にし、承認期限は24時間以内かつStage 0証跡削除期限より前へ限定する。
+- candidate IDから導出しないrandom monitor IDを作成し、承認fileの場所を固定する。source改変、候補／完了証跡／12GB受入れ表の不一致、承認fileの移動・copy、期限切れ、進行中Stage 1、個人情報・作品内容・local path、上書き、2回目のconsumeをfail closedで拒否する。
+- consumeは固定sidecar receiptを排他的に作るだけで、artifact送信、招待メール、Runtime／model取得、生成、台帳更新を自動実行しない。実配布後の招待台帳記録は手動運用としてrunbookへ固定した。
+- 検証: 集中12/12、Desktop 299/299、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
+- canonical統合readinessは5 READY／4 BLOCKED（署名、固定Bundle、12GB実機4方式、Stage 0完了連結）でstrict失敗を維持する。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者、実Stage 0／1承認を変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: PR #496の正本同期commitをpushし、全CI／Vercel Preview成功で停止する。実Stage 0と実Stage 1承認・配布は外部前提と対象付き明示承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult Stage 0完了証跡連結
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_STAGE0_NOT_RUN / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
