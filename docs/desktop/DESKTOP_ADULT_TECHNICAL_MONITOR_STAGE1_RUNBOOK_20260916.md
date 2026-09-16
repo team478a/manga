@@ -336,7 +336,22 @@ npm run desktop:adult:pilot-ledger-status-proposal:create -- `
   --confirm-consent-recorded
 ```
 
-`ACTIVE`以外では対象状態に対応する`--confirm-stop-action-recorded`、`--confirm-completion-reviewed`、`--confirm-withdrawal-recorded`を指定する。proposalは元台帳の内容・場所、対象monitor、遷移時刻、更新後台帳を固定するが、運用台帳を変更しない。実台帳反映は専用applyと対象付き運用承認が整うまで行わない。氏名、メール、問い合わせ本文、作品内容、端末識別情報、local pathは記録しない。
+`ACTIVE`以外では対象状態に対応する`--confirm-stop-action-recorded`、`--confirm-completion-reviewed`、`--confirm-withdrawal-recorded`を指定する。proposalは元台帳の内容・場所、対象monitor、遷移時刻、更新後台帳を固定するが、運用台帳を変更しない。氏名、メール、問い合わせ本文、作品内容、端末識別情報、local pathは記録しない。
+
+対象proposalを明記した運用承認とレビュー完了後だけ、次の専用applyを実行する。
+
+```powershell
+npm run desktop:adult:pilot-ledger-status-proposal:apply -- `
+  --ledger $ledger `
+  --proposal $statusProposal `
+  --confirm-proposal-reviewed `
+  --confirm-recovery-backup `
+  --confirm-ledger-apply
+
+npm run desktop:adult:pilot-ledger:check
+```
+
+固定backup、intent、receiptはproposal pathから導出される。中断時は各fileを変更せず同じコマンドを再実行し、検査済み台帳への置換後であればreceiptだけを復旧する。CLIの実装完了は実proposalの適用承認を意味しない。
 
 現在の正本は署名、固定Bundle、12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了はStage 1配布許可を意味しない。
 

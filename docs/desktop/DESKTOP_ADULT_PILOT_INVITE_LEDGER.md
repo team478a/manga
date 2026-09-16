@@ -75,7 +75,28 @@ npm run desktop:adult:pilot-ledger-status-proposal:create -- `
 
 対象状態に応じ、最後の確認flagを`--confirm-stop-action-recorded`、`--confirm-completion-reviewed`、`--confirm-withdrawal-recorded`へ置き換える。CLIは元台帳の内容と場所をSHA-256で結び、対象monitor、遷移前後の状態、遷移日時、固定evidence種別、更新後台帳を1つのproposalへ保存する。`COMPLETED`／`WITHDRAWN`の遷移日時は現行台帳に専用fieldがないため、proposalを運用証跡として保持する。
 
-proposal作成は実台帳、Runtime、model、生成、配布、招待、creditを変更しない。元台帳の作成中変更、未来日時、配布前日時、同意前の終端遷移、個人情報・作品内容・local path、既存proposalの上書きをfail closedで拒否する。proposalの実台帳への反映はこのCLIの範囲外であり、専用applyと対象付き運用承認が整うまで手動反映しない。
+proposal作成は実台帳、Runtime、model、生成、配布、招待、creditを変更しない。元台帳の作成中変更、未来日時、配布前日時、同意前の終端遷移、個人情報・作品内容・local path、既存proposalの上書きをfail closedで拒否する。
+
+### 状態遷移proposalの適用
+
+レビュー済みproposalを運用台帳へ反映する場合は、対象proposalを明記した運用承認を得てから専用apply CLIを使用する。CLIの実装、テスト成功、過去の包括承認だけでは実proposalを適用できない。
+
+```powershell
+npm run desktop:adult:pilot-ledger-status-proposal:apply -- `
+  --ledger $env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH `
+  --proposal $statusProposal `
+  --confirm-proposal-reviewed `
+  --confirm-recovery-backup `
+  --confirm-ledger-apply
+
+npm run desktop:adult:pilot-ledger:check
+```
+
+固定backupは`$statusProposal.ledger-before-apply.json`、intentは`$statusProposal.apply-intent.json`、適用receiptは`$statusProposal.applied.json`である。applyは元台帳の内容・場所、proposal全体、更新後台帳をSHA-256で固定し、対象entry以外の変更、対象状態の不一致、時系列不整合、既存証跡との衝突、二重適用、適用中の変更をfail closedで拒否する。同一directoryの一時fileをfsyncしてから台帳pathへ原子的に置換する。
+
+台帳置換後かつreceipt確定前に中断した場合は、台帳、backup、intent、proposalを編集・削除せず、同じ引数と3つの確認flagでもう一度実行する。CLIは「現在の台帳=proposalの更新後台帳」「backup=proposalが固定した元台帳」「intent=同じproposalと各digest」を再確認し、台帳を再置換せずreceiptだけを確定する。
+
+intentとreceiptにはmonitor ID、氏名、メール、作品内容、local pathを保存しない。apply CLIは招待、配布、メール、Runtime／model、生成、credit操作を実行しない。
 
 ## 保存禁止
 

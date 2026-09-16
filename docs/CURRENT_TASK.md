@@ -1,17 +1,31 @@
 # MANGAI Current Task
 
+## 2026-09-17 Desktop Adult Pilot招待台帳状態遷移proposal適用
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_PROPOSAL_NOT_APPLIED / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
+- Base: PR #499 merge commit `7a91a70`。マージ後Required Quality run `35122591058`（Core quality、Migration roundtrip）とDesktop Windows run `35122591027`は成功済み。
+- Branch: `codex/adult-pilot-ledger-status-apply-20260917`。Implementation commit `a9058ad`。Draft PR: #500。
+- レビュー済み状態遷移proposalを、元台帳の内容・場所、対象entryの遷移前状態、対象外entryの不変性、遷移時系列へ再結合し、完全一致した場合だけ運用台帳へ反映する専用apply CLIを追加した。
+- 固定backup、内容非保持intent、同一directoryの一時file、fsync、原子的置換、内容非保持receiptを使用する。proposal／元台帳の改変、対象外変更、明示確認不足、backup／intent競合、適用中変更、二重適用をfail closedで拒否する。置換後かつreceipt確定前の中断は、台帳を再置換せずreceiptだけを回復確定する。
+- intent／receiptと標準出力へmonitor ID、個人情報、作品内容、local pathを出さない。CLIは招待、配布、メール、Runtime／model、生成、credit操作を実行しない。実proposalの適用には、対象proposalを明記した運用承認が別途必要である。
+- 検証: 集中17/17、Desktop 332/332、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳を変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: implementation commitをpushし、Draft PRを作成して全CI／Vercel Preview成功まで確認する。実proposal適用は行わない。
+
+---
+
 ## 2026-09-16 Desktop Adult Pilot招待台帳状態遷移proposal
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_PROPOSAL_NOT_CREATED / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
+- 状態: `MERGED / CI_PASSED / REAL_PROPOSAL_NOT_CREATED / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
 - Base: PR #498 merge commit `45eb83c`。マージ後Required Quality run `35107448769`（Core quality、Migration roundtrip）とDesktop Windows run `35107448759`は成功済み。
 - Branch: `codex/adult-pilot-ledger-status-proposal-20260916`
-- Implementation commit: `d5c0ae8`。Draft PR: #499。
+- Implementation commit: `d5c0ae8`。PR #499はmerge commit `7a91a70`でマージ済み。マージ後Required Quality run `35122591058`とDesktop Windows run `35122591027`は成功済み。
 - `INVITED→ACTIVE/WITHDRAWN`と`ACTIVE→STOPPED/COMPLETED/WITHDRAWN`だけを許可する内容非保持の状態遷移proposal CLIを追加した。`STOPPED`、`COMPLETED`、`WITHDRAWN`は終端状態とし、再開、同一状態、逆向き遷移を拒否する。
 - 元台帳の内容・場所、対象random monitor ID、遷移前後の状態、実遷移日時、固定evidence種別、更新後台帳を1つのproposalへ固定する。`ACTIVE`は`consentedAt`、`STOPPED`は`stoppedAt`を更新し、専用時刻fieldがない`COMPLETED`／`WITHDRAWN`はproposal自体へ遷移日時を保持する。実台帳は変更しない。
 - 共通2確認と遷移別確認を必須にし、不正遷移、未来・配布前・同意前日時、不明monitor、個人情報・作品内容・local path、Git管理内path、作成中の台帳変更、既存proposal上書きをfail closedで拒否する。標準出力へmonitor IDとpathを表示しない。
 - 検証: 集中8/8、Desktop 323/323、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDING、`npm install`の既知audit 8件は変更していない。
 - canonical統合readinessは5 READY／4 BLOCKED。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳を変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
-- 次: PR #499の全CI／Vercel Preview成功まで確認して停止する。実proposal作成と実台帳反映は対象付き運用承認と専用applyが整うまで行わない。
+- 次: 状態遷移proposalの実台帳反映は、PR #500の専用applyと対象付き運用承認が整うまで行わない。
 
 ---
 
