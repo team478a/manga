@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 0固定Bundle証跡連結
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / REAL_BUNDLE_EVIDENCE_NOT_AVAILABLE / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Branch: `codex/adult-stage0-fixed-bundle-evidence-20260916`
+- Base: `22d4d8b`（PR #488 merge commit）。PR #488最終HEADのCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済みである。
+- 既存のローカルBundle証跡取込を強化し、元証跡全体のSHA-256、元manifest SHA-256、4 artifactのID・容量・SHA-256、4 workflow／mapping SHA-256を内容非保持の`verification`として固定manifestへ保存する。未知field、artifact ID重複、不完全な集合をfail closedで拒否する。
+- Stage 0 readinessは`MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH`で取込に使用した元証跡を受け取り、元証跡、取込verification、現在のfixed manifestを相互照合する。`status=fixed`だけの手作業変更ではREADYにならず、証跡改変、容量・digest、workflow digest、review statusの不一致を拒否する。
+- 検証: 集中15/15、Desktop 252/252、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、canonical Stage 0は1 READY／4 BLOCKED。外部設定と手動E2Eの既知PENDING、Viteの既知chunk warningは不変である。
+- 未追跡`apps/desktop/artifacts/`は既存利用者所有物として未commitである。Production、Cloud、Provider、Runtime／model取得、生成、招待、配布、credit、証明書購入、実署名、Secret、Releaseは変更していない。
+- 次: `git diff --check`後にcommit、push、Draft PRを作成して全CI／Vercel Preview成功まで確認する。実Bundleの取得・検証・取込とStage 0開始は別の実行時承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult Stage 0署名artifact証跡
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / FIRST_HEAD_ALL_CHECKS_PASSED / REAL_SIGNED_ARTIFACT_NOT_AVAILABLE / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`

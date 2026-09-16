@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0固定Bundle証跡連結（2026-09-16）
+
+- BaseはPR #488 merge commit `22d4d8b`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
+- ローカルBundle証跡取込時に、元証跡全体、元manifest、4 artifact、4 workflow／mappingのdigestをmanifestの内容非保持`verification`へ固定する。未知field、重複ID、不完全なartifact集合を拒否する。
+- Stage 0 gateはアクセス制限領域の元Bundle証跡、取込verification、fixed manifestを相互照合する。固定状態の文字列だけでは合格せず、証跡改変、容量・digest、workflow digest、review status不一致をBLOCKEDまたは入力不正にする。
+- 集中15/15、Desktop 252/252、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造成功。canonical Stage 0は1 READY／4 BLOCKED、外部設定・手動E2Eの既知PENDINGは不変。
+- Branchは`codex/adult-stage0-fixed-bundle-evidence-20260916`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release変更なし。未追跡`apps/desktop/artifacts/`は未commit。次はdiff check、commit、push、Draft PR、全CI／Vercel Preview成功まで進める。実Bundle検証・取込・配布・Stage 0開始は行わない。
+
+---
+
 ## 0.0 Desktop Adult Stage 0署名artifact証跡（2026-09-16）
 
 - BaseはPR #487 merge commit `01b2c86`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。

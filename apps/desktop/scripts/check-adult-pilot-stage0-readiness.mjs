@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -15,6 +16,9 @@ const paths = {
     : undefined,
   artifactEvidence: process.env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH
     ? path.resolve(process.env.MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH)
+    : undefined,
+  bundleEvidence: process.env.MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH
+    ? path.resolve(process.env.MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH)
     : undefined,
   plan: fromEnv(
     "MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH",
@@ -96,6 +100,37 @@ const exactArtifactDigestKeys = [
   "checksumsSha256",
   "productExecutableSha256",
 ];
+const exactBundleEvidenceKeys = [
+  "format",
+  "version",
+  "checkedAt",
+  "manifestSha256",
+  "artifacts",
+];
+const exactBundleEvidenceArtifactKeys = ["id", "bytes", "sha256"];
+const exactBundleVerificationKeys = [
+  "format",
+  "version",
+  "evidenceCheckedAt",
+  "sourceManifestSha256",
+  "evidenceSha256",
+  "artifacts",
+  "workflows",
+];
+const exactBundleWorkflowKeys = ["operation", "sha256", "mappingSha256"];
+const requiredBundleArtifactIds = [
+  "runtime",
+  "checkpoint",
+  "vae",
+  "controlnet",
+];
+const requiredBundleOperations = [
+  "text_to_image",
+  "image_to_image",
+  "controlnet",
+  "inpainting",
+];
+const sha256Pattern = /^[a-f0-9]{64}$/;
 
 const fail = (message) => {
   console.error(`Desktop Adult Stage 0 readiness invalid: ${message}`);
@@ -104,6 +139,13 @@ const fail = (message) => {
 const read = (file, label) => {
   try {
     return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    fail(`${label} could not be read`);
+  }
+};
+const readBytes = (file, label) => {
+  try {
+    return fs.readFileSync(file);
   } catch {
     fail(`${label} could not be read`);
   }
@@ -237,14 +279,160 @@ if (paths.artifactEvidence) {
     fail("Stage 0 artifact evidence format or verification is unsupported");
 }
 
+let bundleEvidence;
+let bundleEvidenceBytes;
+if (paths.bundleEvidence) {
+  bundleEvidenceBytes = readBytes(
+    paths.bundleEvidence,
+    "Stage 0 bundle evidence",
+  );
+  bundleEvidence = read(paths.bundleEvidence, "Stage 0 bundle evidence");
+  scanPrivateData(bundleEvidence, "stage0BundleEvidence");
+  exactKeys(bundleEvidence, exactBundleEvidenceKeys, "Stage 0 bundle evidence");
+  if (!Array.isArray(bundleEvidence.artifacts))
+    fail("Stage 0 bundle evidence artifacts must be an array");
+  bundleEvidence.artifacts.forEach((artifact, index) =>
+    exactKeys(
+      artifact,
+      exactBundleEvidenceArtifactKeys,
+      `Stage 0 bundle evidence artifact ${index}`,
+    ),
+  );
+  if (
+    bundleEvidence.format !== "mangai.desktop-adult-pilot-bundle-evidence" ||
+    bundleEvidence.version !== 1 ||
+    !isTimestamp(bundleEvidence.checkedAt) ||
+    !sha256Pattern.test(bundleEvidence.manifestSha256 ?? "")
+  )
+    fail("Stage 0 bundle evidence format or timestamp is unsupported");
+}
+
 const bundleItems = [
   bundle.comfyui,
   ...(bundle.workflows ?? []),
   ...(bundle.models ?? []),
 ];
+const bundleVerification = bundle.verification;
+if (bundleVerification) {
+  exactKeys(
+    bundleVerification,
+    exactBundleVerificationKeys,
+    "bundle verification",
+  );
+  if (!Array.isArray(bundleVerification.artifacts))
+    fail("bundle verification artifacts must be an array");
+  if (!Array.isArray(bundleVerification.workflows))
+    fail("bundle verification workflows must be an array");
+  bundleVerification.artifacts.forEach((artifact, index) =>
+    exactKeys(
+      artifact,
+      exactBundleEvidenceArtifactKeys,
+      `bundle verification artifact ${index}`,
+    ),
+  );
+  bundleVerification.workflows.forEach((workflow, index) =>
+    exactKeys(
+      workflow,
+      exactBundleWorkflowKeys,
+      `bundle verification workflow ${index}`,
+    ),
+  );
+}
+const exactIds = (items, required, key) =>
+  Array.isArray(items) &&
+  items.length === required.length &&
+  new Set(items.map((item) => item?.[key])).size === required.length &&
+  required.every((id) => items.some((item) => item?.[key] === id));
+const expectedBundleArtifacts = [
+  {
+    id: "runtime",
+    bytes: bundle.comfyui?.installedBytes,
+    sha256: bundle.comfyui?.sha256,
+  },
+  ...(bundle.models ?? []).map((model) => ({
+    id: model?.role,
+    bytes: model?.installedBytes,
+    sha256: model?.sha256,
+  })),
+];
+const expectedBundleWorkflows = (bundle.workflows ?? []).map((workflow) => ({
+  operation: workflow?.operation,
+  sha256: workflow?.sha256,
+  mappingSha256: workflow?.mappingSha256,
+}));
+const sameRecords = (expected, actual, idKey, fields) =>
+  exactIds(
+    expected,
+    expected.map((item) => item[idKey]),
+    idKey,
+  ) &&
+  exactIds(
+    actual,
+    expected.map((item) => item[idKey]),
+    idKey,
+  ) &&
+  expected.every((item) => {
+    const match = actual.find(
+      (candidate) => candidate?.[idKey] === item[idKey],
+    );
+    return fields.every((field) => match?.[field] === item[field]);
+  });
 const bundleReady =
   bundleItems.length === 8 &&
-  bundleItems.every((item) => item?.status === "fixed");
+  bundle.comfyui?.status === "fixed" &&
+  bundle.comfyui?.reviewStatus === "local_bundle_evidence_verified" &&
+  (bundle.models ?? []).length === 3 &&
+  bundle.models.every(
+    (item) =>
+      item?.status === "fixed" &&
+      item?.reviewStatus === "local_bundle_evidence_verified",
+  ) &&
+  (bundle.workflows ?? []).length === 4 &&
+  bundle.workflows.every(
+    (item) =>
+      item?.status === "fixed" &&
+      item?.reviewStatus === "repository_hash_verified",
+  ) &&
+  bundleEvidence &&
+  bundleVerification?.format ===
+    "mangai.desktop-adult-pilot-bundle-verification" &&
+  bundleVerification.version === 1 &&
+  bundleVerification.evidenceCheckedAt === bundleEvidence.checkedAt &&
+  bundleVerification.sourceManifestSha256 === bundleEvidence.manifestSha256 &&
+  bundleVerification.evidenceSha256 ===
+    crypto.createHash("sha256").update(bundleEvidenceBytes).digest("hex") &&
+  exactIds(bundleEvidence.artifacts, requiredBundleArtifactIds, "id") &&
+  exactIds(bundleVerification.artifacts, requiredBundleArtifactIds, "id") &&
+  exactIds(
+    bundleVerification.workflows,
+    requiredBundleOperations,
+    "operation",
+  ) &&
+  sameRecords(expectedBundleArtifacts, bundleEvidence.artifacts, "id", [
+    "bytes",
+    "sha256",
+  ]) &&
+  sameRecords(expectedBundleArtifacts, bundleVerification.artifacts, "id", [
+    "bytes",
+    "sha256",
+  ]) &&
+  sameRecords(
+    expectedBundleWorkflows,
+    bundleVerification.workflows,
+    "operation",
+    ["sha256", "mappingSha256"],
+  ) &&
+  [...bundleEvidence.artifacts, ...bundleVerification.artifacts].every(
+    (item) =>
+      Number.isSafeInteger(item?.bytes) &&
+      item.bytes > 0 &&
+      sha256Pattern.test(item?.sha256 ?? ""),
+  ) &&
+  bundleVerification.workflows.every(
+    (item) =>
+      sha256Pattern.test(item?.sha256 ?? "") &&
+      sha256Pattern.test(item?.mappingSha256 ?? ""),
+  );
 const approvalsReady =
   approvals.pilotStartApproved === true &&
   approvals.manualVersionStopConstraintAccepted === true &&
