@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult 技術モニター候補generator
+
+- PR #490 merge commit `a826931`から`codex/adult-technical-monitor-candidate-generator-20260916`を作成した。
+- random candidate ID、確認日時、選択式PC環境帯、明示確認だけから内容非保持の候補者JSONを新規作成するCLIを追加した。氏名、メール、連絡先、自由記述を入力できず、省略した確認はfalseになる。
+- candidateとassessmentをGit管理外の既存absolute local-drive directoryへの新規fileに限定し、相対／UNC、repository内、存在しないdirectory、上書きをfail closedで拒否する。candidate IDとpathを標準出力へ表示せず、適格でも配布許可はfalseである。
+- runbookをexampleのcopy／手編集からgenerator利用へ更新した。集中11/11、Desktop 262/262、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- Commit `fe149e7`をpushしてDraft PR #491を作成した。canonical Stage 0は1 READY／4 BLOCKEDのまま。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画の操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。
+- 次: 正本同期commitの全CI／Vercel Preview成功で停止する。実候補者データ、署名artifact、固定Bundle、Stage 0外部操作は別承認事項である。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult Stage 0実施計画generator
 
 - PR #489 merge commit `a4521c0`から`codex/adult-stage0-plan-generator-20260916`を作成した。

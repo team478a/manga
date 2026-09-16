@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult 技術モニター候補generator（2026-09-16）
+
+- BaseはPR #490 merge commit `a826931`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
+- 候補者JSONを手編集せず、random candidate ID、確認日時、選択式のWindows／GPU／VRAM／RAM／空き容量帯、明示確認だけから作るCLIを追加した。氏名、メール、連絡先、自由記述を受け付けず、標準出力へcandidate IDや保存pathを表示しない。
+- 候補者JSONとassessmentはローカルドライブ上のGit管理外にある既存directoryへの新規fileだけを許可し、相対／UNC path、repository内出力、存在しないdirectory、既存file上書きをfail closedで拒否する。適格でも`distributionAuthorized=false`を維持する。
+- 集中11/11、Desktop 262/262、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。canonical Stage 0は1 READY／4 BLOCKEDのままである。
+- Commit `fe149e7`をpushしてDraft PR #491を作成した。Branchは`codex/adult-technical-monitor-candidate-generator-20260916`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画変更なし。
+- 未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitの全CI／Vercel Preview成功で停止する。実候補者JSON、assessment、Stage 0計画の作成と外部操作は別の実行時承認を待つ。
+
+---
+
 ## 0.0 Desktop Adult Stage 0実施計画generator（2026-09-16）
 
 - BaseはPR #489 merge commit `a4521c0`。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済み。
