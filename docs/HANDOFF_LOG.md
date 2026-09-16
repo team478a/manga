@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult 技術モニターStage 0開始gate
+
+- Branch: `codex/adult-pilot-fixed-bundle-preflight-20260916`
+- Base: `88cc5d3`（PR #485 merge commit）
+- 候補assessment、コード署名、固定Bundle、責任者承認、支援付き実施・停止連絡・証跡回収計画を一括判定するStage 0専用gateを追加した。12GB実機4方式証跡はStage 0で採取し、Stage 1配布許可は常にfalseのままにする。
+- 内容非保持のStage 0計画exampleと集中テストを追加し、候補ID不一致、未知field、個人情報、環境矛盾、14日超保持、未署名、未固定Bundleをfail closedで拒否する。
+- GitHub Actions Secret名のread-only確認ではコード署名Secretが未登録だった。canonical結果は責任者承認1件だけREADY、候補assessment・署名・固定Bundle・実施計画の4件がBLOCKED。
+- 集中5/5、Desktop 240/240、Hub 1008/1008、deps、lint、全型検査、Desktop build、migration 83/83、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、Secret、Release操作なし。未追跡`apps/desktop/artifacts/`は未変更。
+- 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。署名証明書、固定Bundle実ファイル検証、候補者情報、Stage 0実施は別の実行時承認を待つ。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult 技術モニターStage 1開始準備
 
 - PR #484 merge commit `bb20488`から`codex/adult-pilot-technical-monitor-preflight-20260916`を作成した。

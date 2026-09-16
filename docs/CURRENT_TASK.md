@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult 技術モニターStage 0開始gate
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Branch: `codex/adult-pilot-fixed-bundle-preflight-20260916`
+- Base: `88cc5d3`（PR #485 merge commit）。PR #485のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済みである。
+- 技術モニター候補の自己申告assessment、署名済み受入れ試験専用artifact、固定Bundle、既存の責任者承認、支援付き実施・停止連絡・証跡回収計画を一括判定するStage 0専用gateを追加した。12GB実機4方式証跡はStage 0で採取するため開始前条件には含めず、`COLLECT_DURING_STAGE0`として明示する。
+- Stage 0計画はrandom candidate ID、Desktop version、受入れ専用目的、実施日時、14日以内の削除期限、支援・停止連絡・証跡回収・Stage 1分離のbooleanだけを許可する。個人情報、作品内容、Prompt、画像、端末識別情報、絶対path、自由記述、未知fieldを拒否する。
+- candidate assessmentは適格判定だけでなく環境帯を再照合し、未知field、候補ID不一致、12GB未満との矛盾、配布許可済みの入力を拒否する。gateが全条件を満たしても`stage1DistributionAuthorized=false`を固定し、Stage 1招待には既存の統合release readiness strict成功を要求する。
+- GitHub Actions Secret名をread-only確認し、現時点ではCloud Worker用2件だけで、`WIN_CSC_LINK`／`WIN_CSC_KEY_PASSWORD`は未登録だった。canonical gateは責任者承認のみREADY、候補assessment・署名・固定Bundle・実施計画の4件をBLOCKEDと正しく報告する。
+- 検証: 集中5/5、Desktop 240/240、Hub 1008/1008、deps error 0（既知warning 2件）、lint、Hub／Desktop typecheck、Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
+- Production、Cloud、Provider、Runtime／model取得、生成、招待、配布、credit、GitHub Secret、Releaseを変更していない。未追跡`apps/desktop/artifacts/`は既存利用者所有物として未変更・未commitである。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功まで確認して停止する。merge後もStage 0開始には、コード署名証明書の準備、固定Bundle実ファイル検証、候補assessment、個別実施計画と別の実行時承認が必要である。
+
+---
+
 ## 2026-09-16 Desktop Adult 技術モニターStage 1開始準備
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / CANDIDATE_SCREENING_READY / DISTRIBUTION_BLOCKED`

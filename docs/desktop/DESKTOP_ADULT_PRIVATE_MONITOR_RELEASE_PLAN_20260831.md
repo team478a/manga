@@ -61,6 +61,14 @@ npm run desktop:adult:pilot-release-readiness
 
 運営側に適格12GB端末がない場合は、`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`に従い、技術モニター候補のscreening、署名済み受入れ試験専用artifactによるStage 0、Stage 1招待を分離する。候補preflight成功は配布許可ではなく、未署名installer、未固定Bundle、12GB実機証跡なしの招待禁止を維持する。
 
+Stage 0開始時は候補assessmentと内容非保持の実施計画を専用gateへ渡し、署名、固定Bundle、責任者承認、支援・停止・証跡回収計画を一括確認する。Stage 0で採取する12GB実機4方式証跡を開始前に要求する循環は作らないが、Stage 1招待は従来どおり統合release readiness strict成功まで禁止する。
+
+```powershell
+$env:MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH = "<access-controlled-assessment.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = "<access-controlled-stage0-plan.json>"
+npm run desktop:adult:stage0-readiness:strict
+```
+
 責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。
 
 ```powershell
