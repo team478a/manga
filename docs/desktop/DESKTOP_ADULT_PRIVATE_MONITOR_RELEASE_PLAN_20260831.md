@@ -64,12 +64,23 @@ npm run desktop:adult:pilot-release-readiness
 Stage 0開始時は候補assessmentと内容非保持の実施計画を専用gateへ渡し、署名、固定Bundle、責任者承認、支援・停止・証跡回収計画を一括確認する。Stage 0で採取する12GB実機4方式証跡を開始前に要求する循環は作らないが、Stage 1招待は従来どおり統合release readiness strict成功まで禁止する。
 
 ```powershell
+$stage0Plan = "<access-controlled-stage0-plan.jsonの絶対path>"
+npm run desktop:adult:stage0-plan:create -- `
+  --candidate-id "candidate-<12桁の小文字16進数>" `
+  --scheduled-start "<UTC ISO日時>" `
+  --delete-by "<実施後14日以内のUTC ISO日時>" `
+  --confirm-assisted-session `
+  --confirm-stop-contact `
+  --confirm-evidence-transfer `
+  --out $stage0Plan
 $env:MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH = "<access-controlled-assessment.json>"
-$env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = "<access-controlled-stage0-plan.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = $stage0Plan
 $env:MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = "<access-controlled-stage0-artifact-evidence.json>"
 $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH = "<access-controlled-bundle-evidence.json>"
 npm run desktop:adult:stage0-readiness:strict
 ```
+
+計画generatorはDesktop versionとStage 1配布未許可を固定し、過去日時、14日超の保持、確認漏れ、Git管理内への出力、既存fileの上書きを拒否する。候補者の本人情報、作品内容、Prompt、画像、端末識別情報を引数や計画JSONへ含めない。
 
 Stage 0 gateは取込済みmanifestと元Bundle証跡を再照合する。manifestの`fixed`状態だけでは合格せず、証跡fileの改変、artifact ID重複、未知field、容量・SHA-256、workflow／mapping SHA-256、取込verificationのいずれかが不一致なら`fixed_bundle: BLOCKED`または入力不正として停止する。
 

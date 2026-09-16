@@ -58,11 +58,25 @@ RAM 16〜31GBと空き容量40〜49GBは最低条件内だがwarningとする。
 
 ## 5. Stage 0: 支援付き実機受入れ
 
-Stage 0を開始する前に、候補assessmentと実施計画をアクセス制限された運用領域へ置く。`DESKTOP_ADULT_STAGE0_PLAN.example.json`をcopyし、候補assessmentと同じrandom candidate ID、Desktop version、支援日時、14日以内の削除期限を設定する。氏名、メール、端末名、作品内容、Prompt、画像、絶対path、自由記述は記録しない。
+Stage 0を開始する前に、候補assessmentと実施計画をアクセス制限されたGit管理外の運用領域へ置く。計画は手編集せず、候補assessmentと同じrandom candidate ID、支援日時、14日以内の削除期限と3つの明示確認を専用generatorへ渡す。Desktop version、受入れ専用目的、Stage 1分離、配布未許可はgeneratorが固定する。氏名、メール、端末名、作品内容、Prompt、画像、絶対path、自由記述は計画へ記録しない。
+
+```powershell
+$stage0Plan = "<access-controlled-stage0-plan.jsonの絶対path>"
+npm run desktop:adult:stage0-plan:create -- `
+  --candidate-id "candidate-<12桁の小文字16進数>" `
+  --scheduled-start "<UTC ISO日時>" `
+  --delete-by "<実施後14日以内のUTC ISO日時>" `
+  --confirm-assisted-session `
+  --confirm-stop-contact `
+  --confirm-evidence-transfer `
+  --out $stage0Plan
+```
+
+generatorは過去の実施日時、14日を超える保持、確認漏れ、相対path、repository内への出力、既存fileの上書きを拒否する。出力には候補者の本人情報や出力pathを含めず、成功しても`stage1DistributionAuthorized=false`を維持する。`DESKTOP_ADULT_STAGE0_PLAN.example.json`はfail-closedなschema例であり、実施計画としてそのまま使わない。
 
 ```powershell
 $env:MANGAI_ADULT_PILOT_STAGE0_ASSESSMENT_PATH = "<access-controlled-assessment.json>"
-$env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = "<access-controlled-stage0-plan.json>"
+$env:MANGAI_ADULT_PILOT_STAGE0_PLAN_PATH = $stage0Plan
 $env:MANGAI_ADULT_PILOT_STAGE0_ARTIFACT_EVIDENCE_PATH = "<access-controlled-stage0-artifact-evidence.json>"
 $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH = "<access-controlled-bundle-evidence.json>"
 npm run desktop:adult:stage0-readiness
