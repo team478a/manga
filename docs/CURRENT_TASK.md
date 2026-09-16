@@ -2,7 +2,7 @@
 
 ## 2026-09-16 Desktop Adult Stage 0署名artifact証跡
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / REAL_SIGNED_ARTIFACT_NOT_AVAILABLE / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / FIRST_HEAD_ALL_CHECKS_PASSED / REAL_SIGNED_ARTIFACT_NOT_AVAILABLE / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
 - Branch: `codex/adult-stage0-artifact-evidence-20260916`
 - Base: `01b2c86`（PR #487 merge commit）。PR #487のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済みである。
 - Stage 0受入れ専用の署名済みartifactを実物で固定する内容非保持証跡generatorを追加した。既存のWindows成果物gateとSBOM／checksum gateを再利用し、installerと製品EXEがともにAuthenticode `Valid`、40桁thumbprintを持ち、同じ証明書で署名されている場合だけ新規JSONを出力する。
@@ -10,7 +10,8 @@
 - Stage 0 readinessはRC台帳の`windows-code-signing=passed`記載だけを署名証拠として信頼せず、strict schemaの実artifact証跡とplan／Desktop versionの一致を必須にした。Stage 1 release readinessと署名付き自動更新gateは変更せず、`stage1DistributionAuthorized=false`を維持する。
 - 検証: 集中9/9、Desktop 249/249、Hub 1008/1008、Canvas 26/26、AI 50/50、deps error 0（既知warning 2件）、lint、typecheck、Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。canonical Stage 0は責任者承認だけREADY、候補assessment・署名artifact証跡・固定Bundle・個別実施計画の4件BLOCKEDを維持する。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、GitHub Secret、Releaseを変更していない。未追跡`apps/desktop/artifacts/`は既存利用者所有物として未変更・未commitである。
-- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功まで確認して停止する。merge後も証明書購入・発行、Stage 0 versionの実署名、固定Bundle、候補assessment、個別実施計画、artifact送付はそれぞれ必要な責任者判断と実行時承認を待つ。
+- Commit `0969dc4`をpushしてDraft PR #488を作成した。初回HEADでCore quality run `35063287314`（2分8秒）、Migration roundtrip（50秒）、Desktop Windows run `35063287183`（3分42秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- 次: この正本同期commitの最終CI／Vercel Preview成功で停止する。merge後も証明書購入・発行、Stage 0 versionの実署名、固定Bundle、候補assessment、個別実施計画、artifact送付はそれぞれ必要な責任者判断と実行時承認を待つ。
 
 ---
 

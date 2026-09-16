@@ -7,7 +7,8 @@
 - 証跡に絶対path、file名、証明書thumbprint／subject、PIN、秘密鍵、作品内容を保存せず、6ファイルのSHA-256と署名判定だけを残す。上書き、署名者不一致、不正path、未署名をfail closedで拒否する。
 - Stage 0 readinessを実artifact証跡へ接続し、RC台帳の`passed`記載だけでは合格しないよう強化した。Stage 1の署名付き更新・統合readinessは変更せず、配布許可はfalseのままである。
 - 集中9/9、Desktop 249/249、Hub 1008/1008、Canvas 26/26、AI 50/50、deps、lint、typecheck、Desktop build、migration 83/83、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release操作なし。未追跡`apps/desktop/artifacts/`は未変更。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+- Commit `0969dc4`をpushしてDraft PR #488を作成した。初回HEADでCore quality run `35063287314`（2分8秒）、Migration roundtrip（50秒）、Desktop Windows run `35063287183`（3分42秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release操作なし。未追跡`apps/desktop/artifacts/`は未変更。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
 
 ---
 
