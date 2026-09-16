@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot招待台帳状態遷移proposal適用（2026-09-17）
+
+- BaseはPR #499 merge commit `7a91a70`。マージ後Required Quality run `35122591058`とDesktop Windows run `35122591027`は成功済み。Branchは`codex/adult-pilot-ledger-status-apply-20260917`。
+- 状態遷移proposalを元台帳へ再結合し、対象entry以外の不変性と遷移時系列を確認してから固定backup、intent、同一directory一時file、fsync、原子的置換、receiptで反映する専用CLIを追加した。
+- proposal／source改変、対象外変更、確認不足、backup／intent競合、適用中変更、二重適用を拒否する。置換後の中断は原本backup、intent、proposal、適用済み台帳を再検証し、台帳を再置換せずreceiptだけを確定する。
+- intent／receiptと標準出力へmonitor ID、個人情報、作品内容、pathを出さない。実proposal適用は対象付き承認が別途必要であり、CLIは配布、メール、Runtime／model、生成、credit操作を行わない。
+- 集中17/17、Desktop 332/332、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次はcommit、Draft PR、全CI／Vercel Preview確認である。
+
+---
+
 ## 0.0 Desktop Adult Pilot招待台帳状態遷移proposal（2026-09-16）
 
 - BaseはPR #498 merge commit `45eb83c`。マージ後Required Quality run `35107448769`とDesktop Windows run `35107448759`は成功済み。Branchは`codex/adult-pilot-ledger-status-proposal-20260916`。
