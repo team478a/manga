@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Production 23–24ページ安全再構成段階の記録訂正（2026-09-16）
+
+- PR #482はmerge commit `2eefb87`で本線へ反映済み。マージ後Required Quality run `35044985042`、Desktop Windows run `35044985030`、Vercel Production Readyを確認した。
+- Production `test`の23ページをread-only再確認し、失敗履歴が引き続き「再実行可能」と表示されることを確認した。Production DBを`SELECT`だけで照合した結果、23ページ最新失敗Job `6ed98da4-b43f-437f-b715-f45bfe347fb4`と24ページ最新失敗Job `5948a685-d41b-4b83-940c-bc9df828835c`はProvider Job IDあり、第1段階の一般向け再構成済みだが、第2段階の保守的再構成は未実行だった。
+- 現行の`retryable`表示は正しい。従前の「2段階の一般向け安全再構成が完了した終端Job」「現行2件はProvider Job ID未保存」という記録を訂正する。PR #482の防御的修正自体は、GatewayがID保存前に返す正規moderation codeを閉じる回帰対策として維持する。
+- ページ23／24は各3/4コマ配置、Cloud AIは使用94／予約0／上限100。再実行、Provider送信、Job／Asset／Canvas／credit変更は0件。監査用一時環境ファイルは削除済み。
+- Docs-only検証はmigration validator 83/83、RC Repository structure READY、`git diff --check`成功。外部設定・手動E2Eの既知PENDINGは不変。
+- Branchは`codex/docs-production-safe-retry-state-correction-20260916`。Commit `58713b9`をpushしてDraft PR #483を作成した。初回HEADのRequired Quality run `35048124579`、Desktop Windows run `35048124581`、Vercel Preview／Preview Commentsはすべて成功した。
+- 次は正本同期commitの最終CI／Vercel Preview成功で停止する。残る2件の第2段階再実行は別のProduction実行時承認を必要とする。
+
+---
+
 ## 0.0 Provider Job ID未保存moderation終端回復（2026-09-16）
 
 - BaseはPR #481 merge commit `182503d`。本線Required Quality run `35040981622`、Desktop Windows run `35040981625`、Vercel Production Readyを確認した。
