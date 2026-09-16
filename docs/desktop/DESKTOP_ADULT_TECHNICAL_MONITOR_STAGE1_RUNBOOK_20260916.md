@@ -147,15 +147,48 @@ npm run desktop:adult:stage0-operation-package:verify -- `
 
 作成・再検証の両方でStage 0 readiness strictを再実行する。6 sourceはreadiness strictの前後で再読込し、byte単位で同一の場合だけ検査済みsnapshotとして使用する。candidate ID、Desktop version、実施日時、削除期限、6 sourceのいずれかが違う場合、sourceが検査中に改変された場合、現在のreadinessがBLOCKEDへ戻った場合はfail closedで停止する。operation packageは実path、氏名、メール、作品内容、Prompt、画像、署名者情報を保存せず、`stage1DistributionAuthorized=false`を固定する。成功はartifact送付やStage 0開始の承認ではない。
 
+実施対象、署名artifact、固定Bundle、支援日時が確定し、責任者がその1回のStage 0開始を明示承認した後にだけ、開始承認fileを作成する。4つの確認flagは、責任者承認、受入れ試験限定、遠隔強制停止がなく手動停止である制約、Stage 1配布未許可をそれぞれ確認した記録である。実operation packageと同じアクセス制限領域へ新規作成し、copy、rename、上書き、再利用をしない。
+
+```powershell
+$stage0Authorization = Join-Path $privateRoot "stage0-start-authorization.json"
+npm run desktop:adult:stage0-start-authorization:create -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --confirm-owner-approved `
+  --confirm-acceptance-only `
+  --confirm-manual-stop `
+  --confirm-stage1-blocked `
+  --out $stage0Authorization
+```
+
+支援付き実施の開始直前に、同じsource、operation package、開始承認を再検証して1回だけ消費する。消費記録は固定operation packageの隣へ排他的に作成され、同じpackageの再消費、別pathへcopyしたpackage、削除期限切れ、承認前の時計、承認後のsource改変を拒否する。
+
+```powershell
+npm run desktop:adult:stage0-start-authorization:consume -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --authorization $stage0Authorization
+```
+
+`consume`は承認消費記録を作るだけで、Runtime起動、model取得、artifact送付、生成を自動実行しない。消費成功後も、承認済みの支援付き手順だけを手動で開始する。開始できなかった場合に消費記録を削除して再利用せず、新しい日時、operation package、開始承認を作り直して責任者の明示承認を取り直す。開始承認と消費記録はいずれも本人情報、実path、作品内容を保存せず、`stage1DistributionAuthorized=false`を固定する。
+
 1. 候補者preflight strict成功とStage 0 readiness strict成功を確認する。
 2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを確認し、内容非保持のartifact証跡をStage 0 gateへ接続する。
-3. 初回は支援付きでinstallし、公式配布元から固定ComfyUI／modelを取得する。MANGAIから再配布しない。
-4. AI一括診断でWindows、GPU、VRAM、ComfyUI version、model、workflowを確認する。
-5. 内容を特定しない架空の成人用fixtureでText-to-Image、Image-to-Image、ControlNet、Inpaintingを各1回だけ実施する。
-6. 素材保存、Page配置、再起動復元、PDFまたは画像書き出し、backupから別Project復元を確認する。
-7. Prompt、画像、Project名、絶対pathを含まない実機証跡JSONだけを安全な受渡し領域で回収する。
-8. `phase5:hardware-evidence:import`で12GB profileへ取り込み、統合release readinessを再実行する。
-9. 24時間以上、データ消失、意図しない通信、起動不能、安全境界違反がないことを確認する。
+3. 固定operation packageを検証し、対象の1回に限る責任者承認から開始承認を作成する。
+4. 実施直前に開始承認を1回だけ消費する。
+5. 初回は支援付きでinstallし、公式配布元から固定ComfyUI／modelを取得する。MANGAIから再配布しない。
+6. AI一括診断でWindows、GPU、VRAM、ComfyUI version、model、workflowを確認する。
+7. 内容を特定しない架空の成人用fixtureでText-to-Image、Image-to-Image、ControlNet、Inpaintingを各1回だけ実施する。
+8. 素材保存、Page配置、再起動復元、PDFまたは画像書き出し、backupから別Project復元を確認する。
+9. Prompt、画像、Project名、絶対pathを含まない実機証跡JSONだけを安全な受渡し領域で回収する。
+10. `phase5:hardware-evidence:import`で12GB profileへ取り込み、統合release readinessを再実行する。
+11. 24時間以上、データ消失、意図しない通信、起動不能、安全境界違反がないことを確認する。
 
 Stage 0 artifactはPilot招待物ではない。同じ候補者をStage 1へ進める場合も、責任者確認後にStage 1用の配布記録と招待台帳entryを新規作成する。
 
