@@ -17,7 +17,7 @@ npm run desktop:adult:pilot-ledger:check
 
 検査成功だけで招待や配布は行われない。招待開始、Stage追加、停止解除は責任者の明示承認が必要である。
 
-Stage 1の最初の1名は、`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`の一回限定招待承認を配布直前に消費してから手動配布する。消費receiptは配布を自動実行せず、台帳も自動更新しない。配布後は専用generatorで、receiptのrandom monitor ID、署名済みPilot version、実際の配布日時、候補assessmentの確認済み環境帯から、現在の台帳へ`INVITED` entryを追加した別fileのproposalを作成する。proposalを本検査で確認してから運用台帳へ反映する。candidate ID、承認fileのpath、氏名、メールは台帳へ転記しない。
+Stage 1の最初の1名は、`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`の一回限定招待承認を配布直前に消費してから手動配布する。消費receiptは配布を自動実行せず、台帳も自動更新しない。配布後は専用generatorで、receiptのrandom monitor ID、署名済みPilot version、実際の配布日時、候補assessmentの確認済み環境帯から、現在の台帳へ`INVITED` entryを追加した別fileのproposalを作成する。proposalを本検査で確認し、専用apply CLIで固定backupとintentを作成してから運用台帳へ反映する。適用後は内容非保持receiptを残し、二重適用を拒否する。candidate ID、承認fileのpath、氏名、メールは台帳・backup・intent・receiptへ転記しない。
 
 技術モニター候補のPC適格性確認は、この招待台帳へ登録する前に`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`の候補preflightで行う。候補assessmentと招待台帳を混在させず、Stage 0合格とrelease readiness strict成功前に`INVITED` entryを作成しない。
 

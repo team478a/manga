@@ -18,17 +18,17 @@ const emailPattern = /\b[^\s@]+@[^\s@]+\.[^\s@]+\b/;
 const absolutePathPattern =
   /(?:[a-z]:\\|\\\\[^\\]+\\|file:\/\/|\/(?:home|users|var|tmp)\/)/i;
 
-const digest = (bytes) =>
+export const digest = (bytes) =>
   crypto.createHash("sha256").update(bytes).digest("hex");
 
-const locationDigest = (target) => {
+export const locationDigest = (target) => {
   const resolved = path.resolve(target);
   const canonical =
     process.platform === "win32" ? resolved.toLowerCase() : resolved;
   return digest(Buffer.from(canonical, "utf8"));
 };
 
-const sourceBinding = (bytes, target) =>
+export const sourceBinding = (bytes, target) =>
   `${digest(bytes)}:${locationDigest(target)}`;
 
 const isInside = (parent, child) => {
@@ -39,7 +39,7 @@ const isInside = (parent, child) => {
   );
 };
 
-const assertPrivatePath = (repositoryRoot, target, label) => {
+export const assertPrivatePath = (repositoryRoot, target, label) => {
   if (!path.isAbsolute(target ?? "") || target.startsWith("\\\\"))
     throw new Error(
       `${label}はローカルドライブ上の絶対pathで指定してください。`,
@@ -48,7 +48,7 @@ const assertPrivatePath = (repositoryRoot, target, label) => {
     throw new Error(`${label}はGit管理外のアクセス制限領域に置いてください。`);
 };
 
-const readFile = (target, label) => {
+export const readFile = (target, label) => {
   try {
     const bytes = fs.readFileSync(target);
     if (!bytes.length) throw new Error();
@@ -58,7 +58,7 @@ const readFile = (target, label) => {
   }
 };
 
-const readJson = (bytes, label) => {
+export const readJson = (bytes, label) => {
   try {
     const value = JSON.parse(bytes.toString("utf8"));
     if (!value || typeof value !== "object" || Array.isArray(value))
@@ -69,7 +69,7 @@ const readJson = (bytes, label) => {
   }
 };
 
-const exactKeys = (value, expected, label) => {
+export const exactKeys = (value, expected, label) => {
   if (!value || typeof value !== "object" || Array.isArray(value))
     throw new Error(`${label}のfield構成が不正です。`);
   const actual = Object.keys(value).sort();
@@ -81,12 +81,12 @@ const exactKeys = (value, expected, label) => {
     throw new Error(`${label}のfield構成が不正です。`);
 };
 
-const isTimestamp = (value) =>
+export const isTimestamp = (value) =>
   typeof value === "string" &&
   !Number.isNaN(Date.parse(value)) &&
   new Date(value).toISOString() === value;
 
-const scanPrivateData = (value, location) => {
+export const scanPrivateData = (value, location) => {
   if (Array.isArray(value)) {
     value.forEach((item, index) =>
       scanPrivateData(item, `${location}[${index}]`),
@@ -108,7 +108,7 @@ const scanPrivateData = (value, location) => {
     throw new Error(`${location}に個人情報またはlocal pathを保存できません。`);
 };
 
-const validateAssessment = (assessment) => {
+export const validateAssessment = (assessment) => {
   scanPrivateData(assessment, "候補assessment");
   exactKeys(
     assessment,
@@ -151,7 +151,7 @@ const validateAssessment = (assessment) => {
   return assessment;
 };
 
-const validateAuthorization = (authorization, authorizationPath) => {
+export const validateAuthorization = (authorization, authorizationPath) => {
   scanPrivateData(authorization, "Stage 1招待承認");
   exactKeys(
     authorization,
@@ -216,7 +216,7 @@ const validateAuthorization = (authorization, authorizationPath) => {
   return authorization;
 };
 
-const validateReceipt = (receipt, authorization, authorizationBytes) => {
+export const validateReceipt = (receipt, authorization, authorizationBytes) => {
   scanPrivateData(receipt, "Stage 1招待承認receipt");
   exactKeys(
     receipt,
@@ -253,7 +253,7 @@ const validateReceipt = (receipt, authorization, authorizationBytes) => {
   return receipt;
 };
 
-const validateLedger = (ledger) => {
+export const validateLedger = (ledger) => {
   scanPrivateData(ledger, "招待台帳");
   exactKeys(ledger, ["format", "version", "entries"], "招待台帳");
   if (
@@ -306,7 +306,7 @@ const validateLedger = (ledger) => {
   return ledger;
 };
 
-const assertTimeBoundary = (options, authorization, receipt) => {
+export const assertTimeBoundary = (options, authorization, receipt) => {
   if (!(options.now instanceof Date) || Number.isNaN(options.now.getTime()))
     throw new Error("招待台帳proposal作成日時が不正です。");
   if (!isTimestamp(options.distributedAt))

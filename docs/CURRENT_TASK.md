@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 1招待台帳proposal適用
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_PENDING / REAL_LEDGER_NOT_CHANGED / REAL_DISTRIBUTION_NOT_RUN / STAGE1_DISTRIBUTION_BLOCKED`
+- Base: PR #497 merge commit `76682a3`。マージ後Required Quality run `35104365167`（Core quality、Migration roundtrip）とDesktop Windows run `35104365065`は成功済み。
+- Branch: `codex/adult-stage1-ledger-proposal-apply-20260916`
+- 検査済みStage 1台帳proposalを、承認、消費receipt、候補assessment、承認時点の原本台帳へ再結合し、完全一致した場合だけ固定backupと適用intentを作成して同一directoryの一時fileから運用台帳へ反映するCLIを追加した。
+- proposal／原本／sourceの改変、期限外、明示確認不足、backup／intent競合、適用中のsource変更、二重適用をfail closedで拒否する。置換後かつreceipt確定前の中断は、原本backup、intent、現在台帳=proposalを再確認し、台帳を再置換せず内容非保持receiptだけを確定する。
+- backup、intent、receiptへcandidate ID、氏名、メール、作品内容、local pathを保存せず、標準出力へcandidate、monitor ID、pathを表示しない。CLIは配布、招待メール、Runtime／model、生成、credit操作を実行しない。
+- 検証: 集中16/16（新規8件＋既存proposal 8件）、Desktop 315/315、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
+- canonical統合readinessは5 READY／4 BLOCKEDのまま。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書、Secret、Release、実候補者、実承認、実proposal、実台帳を変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。実proposal適用は外部前提完了と対象付き運用承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult Stage 1招待台帳proposal
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_PROPOSAL_NOT_CREATED / REAL_LEDGER_NOT_CHANGED / REAL_DISTRIBUTION_NOT_RUN / STAGE1_DISTRIBUTION_BLOCKED`

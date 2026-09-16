@@ -292,7 +292,30 @@ npm run desktop:adult:pilot-ledger:check
 $env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH = $previousLedgerPath
 ```
 
-proposal作成は既存台帳を変更せず、配布、招待メール、Runtime／model、生成も実行しない。検査済みproposalの運用台帳への反映は、アクセス制限領域内の回復可能な運用手順で別途行う。承認file／receiptのcopy・改変、承認時点から変化したassessment／台帳、配布前日時、未来日時、期限切れ、個人情報、重複monitor ID、進行中Stage 1、proposal上書きをfail closedで拒否する。
+proposal作成は既存台帳を変更せず、配布、招待メール、Runtime／model、生成も実行しない。承認file／receiptのcopy・改変、承認時点から変化したassessment／台帳、配布前日時、未来日時、期限切れ、個人情報、重複monitor ID、進行中Stage 1、proposal上書きをfail closedで拒否する。
+
+### 6.3 検査済みproposalの運用台帳反映
+
+6.2の検査が成功した同じproposalだけを、次のCLIで運用台帳へ反映する。proposal、承認、消費receipt、候補assessment、承認時点の原本台帳を再検証し、固定backupと適用intentをアクセス制限領域へ保存してから、同じdirectoryの一時fileを使って原本台帳を置換する。
+
+```powershell
+npm run desktop:adult:stage1-invite-ledger-proposal:apply -- `
+  --authorization $stage1Authorization `
+  --assessment $assessment `
+  --ledger $ledger `
+  --confirm-proposal-reviewed `
+  --confirm-recovery-backup `
+  --confirm-ledger-apply
+
+$env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH = $ledger
+npm run desktop:adult:pilot-ledger:check
+```
+
+固定backupは`$stage1Authorization.ledger-before-apply.json`、intentは`$stage1Authorization.ledger-apply-intent.json`、適用receiptは`$stage1Authorization.ledger-applied.json`である。candidate ID、氏名、メール、作品内容、local pathを保存しない。原本、proposal、承認source、backup、intentの不一致、期限外、二重適用、適用中の変更をfail closedで拒否する。
+
+台帳置換後かつreceipt確定前に中断した場合は、backup、intent、proposalを削除・編集せず、同じ引数と3つの確認flagでもう一度実行する。CLIは「現在の台帳=検査済みproposal」「backup=承認時点の原本」「intent=同じ承認とdigest」を再確認し、台帳を再置換せずreceiptだけを確定する。backup、intent、receiptの削除は通常の再実行手段にしない。
+
+apply CLIは招待、配布、メール、Runtime／model、生成、credit操作を実行しない。現在の正本でCLIを実行してよいことを意味せず、実proposal適用は外部前提完了と対象付き運用承認を必要とする。
 
 現在の正本は署名、固定Bundle、12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了はStage 1配布許可を意味しない。
 
