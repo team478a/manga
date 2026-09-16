@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 0 source snapshot固定
+
+- PR #492 merge commit `f4ba95b`から`codex/adult-stage0-source-snapshot-20260916`を作成した。本線Core quality、Migration roundtrip、Desktop Windowsは成功済み。
+- operation package作成・再検証のreadiness strict前後で6 sourceを再読込し、byte単位の一致を必須にした。検査中の変更はcandidate情報やpathを表示せず拒否し、作成時は出力fileを残さない。
+- 集中8/8、Desktop 270/270、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- Commit `d3024ff`。canonical Stage 0は外部実証跡待ちを維持する。Production、Provider、Runtime、生成、配布、credit、実候補者、実package操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。
+- 次: 正本同期commitをpushしてDraft PRを作り、全CI／Vercel Preview成功まで確認する。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult Stage 0運用パッケージ検証
 
 - PR #491 merge commit `514da48`から`codex/adult-stage0-operation-package-20260916`を作成した。マージ後Core quality、Migration roundtrip、Desktop Windowsは成功済み。

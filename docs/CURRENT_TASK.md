@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 0 source snapshot固定
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_PENDING / REAL_OPERATION_PACKAGE_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Branch: `codex/adult-stage0-source-snapshot-20260916`
+- Base: `f4ba95b`（PR #492 merge commit）。マージ後Required Quality run `35080116375`（Core quality 4分5秒、Migration roundtrip 54秒）とDesktop Windows run `35080116377`（4分25秒）は成功済みである。
+- Stage 0 operation packageのcreate／verifyで、6 sourceをreadiness strictの前後に読み取り、byte単位で同一であることを確認する。readiness検査中に候補assessment、計画、署名artifact証跡、Bundle証跡、固定Bundle manifest、責任者承認のいずれかが変化した場合はfail closedで停止し、packageを作成しない。
+- 検証: 集中8/8、Desktop 270/270、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDING、Viteの既知chunk warningは不変である。
+- Commit `d3024ff`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実証跡・実operation packageは変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: 正本同期後にpushしてDraft PRを作成し、全CI／Vercel Preview成功まで確認して停止する。実operation package作成、artifact送付、Stage 0開始は別の実行時承認を待つ。
+
+---
+
 ## 2026-09-16 Desktop Adult Stage 0運用パッケージ検証
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / REAL_OPERATION_PACKAGE_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`

@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0 source snapshot固定（2026-09-16）
+
+- BaseはPR #492 merge commit `f4ba95b`。マージ後のCore quality、Migration roundtrip、Desktop Windowsは成功済み。
+- operation packageのcreate／verifyで6 sourceをreadiness strict前後にsnapshotし、byte差分があればfail closedで停止する。検査済み入力とSHA-256固定対象が時間差で入れ替わる競合を閉じ、package未作成を維持する。
+- 集中8/8、Desktop 270/270、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- Commit `d3024ff`。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実証跡・実package変更なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。
+- 次は正本同期commit、push、Draft PR、全CI／Vercel Preview成功で停止する。実operation packageとStage 0外部操作は別承認事項である。
+
+---
+
 ## 0.0 Desktop Adult Stage 0運用パッケージ検証（2026-09-16）
 
 - BaseはPR #491 merge commit `514da48`。マージ後のCore quality run `35075869980`（2分36秒）、Migration roundtrip（50秒）、Desktop Windows run `35075869919`（4分17秒）は成功済み。
