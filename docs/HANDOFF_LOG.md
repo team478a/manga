@@ -7,7 +7,8 @@
 - PFXの片方欠落、別名環境変数の競合、PFXと証明書ストアの同時指定、不正fingerprint、非Windows指定をfail closedで拒否する。build logとpreflightに秘密値を表示しない。
 - 日本法人向けの公開信頼されたOVコードサイニング証明書をStage 0第一候補とし、自己署名は採用しない。Azure Artifact Signingは現在の組織申込地域制限から確実な日本法人経路として扱わない。物理tokenを接続できないGitHub ActionsはPFX方式を維持する。
 - 集中5/5、Desktop 245/245、Hub 1008/1008、Canvas 26/26、AI 50/50、deps、lint、typecheck、Desktop build、migration 83/83、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、Secret、証明書購入、Release操作なし。未追跡`apps/desktop/artifacts/`は未変更。次はcommit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+- Commit `3ebec1c`をpushしてDraft PR #487を作成した。初回HEADでCore quality run `35060818983`（3分20秒）、Migration roundtrip（59秒）、Desktop Windows run `35060819016`（4分15秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、Secret、証明書購入、Release操作なし。未追跡`apps/desktop/artifacts/`は未変更。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
 
 ---
 

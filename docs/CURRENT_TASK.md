@@ -2,7 +2,7 @@
 
 ## 2026-09-16 Desktop Windowsハードウェアトークン署名対応
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / CERTIFICATE_PURCHASE_NOT_STARTED / STAGE0_DISTRIBUTION_BLOCKED`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / FIRST_HEAD_ALL_CHECKS_PASSED / CERTIFICATE_PURCHASE_NOT_STARTED / STAGE0_DISTRIBUTION_BLOCKED`
 - Branch: `codex/desktop-hardware-token-signing-20260916`
 - Base: `acedcab`（PR #486 merge commit）。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済みである。
 - Adult技術モニターStage 0の最大外部blockerであるWindowsコード署名について、既存PFX方式に加え、Windows証明書ストア／ハードウェアトークンの証明書SHA-1を使うローカル署名経路を追加した。GitHub hosted runnerに物理トークンは接続できないため、正式Release workflowは従来のPFX Secret方式を維持する。
@@ -10,7 +10,8 @@
 - 日本法人のStage 0第一候補は公開信頼されたOVコードサイニング証明書のハードウェアトークンとし、自己署名へ要件を下げない。Azure Artifact SigningはMicrosoftの現行申込地域案内から日本法人の確実な経路と断定できないため将来候補に留める。OV署名後もSmartScreen評価は別に観察する。
 - 検証: 集中5/5、Desktop 245/245、Hub 1008/1008、Canvas 26/26、AI 50/50、deps error 0（既知warning 2件）、lint、typecheck、Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、GitHub Secret、証明書購入、Releaseを変更していない。未追跡`apps/desktop/artifacts/`は既存利用者所有物として未変更・未commitである。
-- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功まで確認して停止する。merge後もStage 0開始には、責任者による証明書購入判断、発行・token初期化、署名済みartifact実検証、固定Bundle、候補assessment、個別実施計画と別の実行時承認が必要である。
+- Commit `3ebec1c`をpushしてDraft PR #487を作成した。初回HEADでCore quality run `35060818983`（3分20秒）、Migration roundtrip（59秒）、Desktop Windows run `35060819016`（4分15秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- 次: この正本同期commitの最終CI／Vercel Preview成功で停止する。merge後もStage 0開始には、責任者による証明書購入判断、発行・token初期化、署名済みartifact実検証、固定Bundle、候補assessment、個別実施計画と別の実行時承認が必要である。
 
 ---
 

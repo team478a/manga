@@ -7,7 +7,8 @@
 - 署名設定を共通resolverへ集約し、不完全・競合・曖昧・非Windows指定をfail closedで拒否する。readiness preflightは資格情報を表示せず、modeと設定状態だけを返す。
 - 日本法人のStage 0は公開信頼されたOV証明書のhardware tokenを第一候補とする。自己署名は不可、Azure Artifact Signingは現在の組織申込地域案内からStage 0の確定経路にしない。判断根拠と残る購入・発行・署名・検証手順を`WINDOWS_CODE_SIGNING_DECISION_20260916.md`へ記録した。
 - 集中5/5、Desktop 245/245、Hub 1008/1008、Canvas 26/26、AI 50/50、deps error 0（既知warning 2件）、lint、typecheck、Desktop build、migration 83/83、RC構造、diff check成功。
-- Branchは`codex/desktop-hardware-token-signing-20260916`。Production、Cloud、Provider、Runtime／model、生成、配布、credit、Secret、証明書購入、Release変更なし。未追跡`apps/desktop/artifacts/`は未変更。次はDraft PRの全CI／Vercel Preview成功まで確認する。
+- Commit `3ebec1c`をpushしてDraft PR #487を作成した。初回HEADでCore quality run `35060818983`（3分20秒）、Migration roundtrip（59秒）、Desktop Windows run `35060819016`（4分15秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Branchは`codex/desktop-hardware-token-signing-20260916`。Production、Cloud、Provider、Runtime／model、生成、配布、credit、Secret、証明書購入、Release変更なし。未追跡`apps/desktop/artifacts/`は未変更。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
 
 ---
 
