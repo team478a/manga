@@ -2,11 +2,13 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveWindowsSigningConfig } from "./windows-signing-config.mjs";
 
-if (!process.env.WIN_CSC_LINK && !process.env.CSC_LINK) {
-  console.error(
-    "署名証明書が未設定です。WIN_CSC_LINK または CSC_LINK を設定してください。",
-  );
+let signing;
+try {
+  signing = resolveWindowsSigningConfig();
+} catch (error) {
+  console.error(error.message);
   process.exit(1);
 }
 
@@ -32,6 +34,13 @@ execFileSync(process.execPath, [npmCli, "run", "build"], {
 });
 execFileSync(
   process.execPath,
-  [builderCli, "--win", "nsis", "--x64", "-c.forceCodeSigning=true"],
+  [
+    builderCli,
+    "--win",
+    "nsis",
+    "--x64",
+    "-c.forceCodeSigning=true",
+    ...signing.builderArguments,
+  ],
   { cwd: root, stdio: "inherit" },
 );

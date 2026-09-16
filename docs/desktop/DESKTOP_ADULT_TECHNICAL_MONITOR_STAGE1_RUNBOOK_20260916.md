@@ -71,6 +71,8 @@ npm run desktop:adult:stage0-readiness:strict
 
 2026-09-16時点ではGitHub Actionsに`WIN_CSC_LINK`／`WIN_CSC_KEY_PASSWORD`が登録されておらず、コード署名と固定Bundle実ファイル検証も未完了のため、Stage 0 gateは正しく`BLOCKED`となる。秘密値をGit、計画JSON、assessment、診断へ保存しない。
 
+Stage 0受入れ専用artifactは、既存PFX方式に加えてWindows証明書ストア／ハードウェアトークン方式でローカル署名できる。`npm run desktop:signing:preflight`で資格情報を表示せず構成を確認し、詳細は`WINDOWS_INSTALLER.md`と`WINDOWS_CODE_SIGNING_DECISION_20260916.md`に従う。これは署名経路の準備であり、証明書購入、artifact署名、候補者への送付またはStage 0開始を許可しない。
+
 1. 候補者preflight strict成功とStage 0 readiness strict成功を確認する。
 2. 署名済み受入れ試験専用artifactの署名、checksum、SBOMを運営側で確認する。
 3. 初回は支援付きでinstallし、公式配布元から固定ComfyUI／modelを取得する。MANGAIから再配布しない。

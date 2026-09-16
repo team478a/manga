@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Windowsハードウェアトークン署名対応
+
+- PR #486 merge commit `acedcab`から`codex/desktop-hardware-token-signing-20260916`を開始した。
+- 既存のPFX署名を維持しながら、Windows証明書ストア／ハードウェアトークンのcertificate SHA-1をelectron-builderへ安全に渡すローカル署名経路と資格情報非表示のreadiness preflightを追加した。
+- PFXの片方欠落、別名環境変数の競合、PFXと証明書ストアの同時指定、不正fingerprint、非Windows指定をfail closedで拒否する。build logとpreflightに秘密値を表示しない。
+- 日本法人向けの公開信頼されたOVコードサイニング証明書をStage 0第一候補とし、自己署名は採用しない。Azure Artifact Signingは現在の組織申込地域制限から確実な日本法人経路として扱わない。物理tokenを接続できないGitHub ActionsはPFX方式を維持する。
+- 集中5/5、Desktop 245/245、Hub 1008/1008、Canvas 26/26、AI 50/50、deps、lint、typecheck、Desktop build、migration 83/83、RC構造、diff check成功。既知warning 2件と外部設定・手動E2EのPENDINGは不変。
+- Commit `3ebec1c`をpushしてDraft PR #487を作成した。初回HEADでCore quality run `35060818983`（3分20秒）、Migration roundtrip（59秒）、Desktop Windows run `35060819016`（4分15秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、Secret、証明書購入、Release操作なし。未追跡`apps/desktop/artifacts/`は未変更。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-16 Codex: Desktop Adult 技術モニターStage 0開始gate
 
 - Branch: `codex/adult-pilot-fixed-bundle-preflight-20260916`
@@ -4170,6 +4182,7 @@ READY_FOR_REVIEW
   production build、diff checkが成功した。
 - `npm ci`の既存依存監査にはhigh severity 11件が残るが、今回の表示変更では
   依存更新を行っていない。
+
 ## 2026-07-31 Codex: M2-2 画風・場所・小物設定
 
 - `codex/manga-world-bible-v1`をM2-1ブランチから作成した。
@@ -6351,6 +6364,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 
 -
 ```
+
 ## 2026-08-01 Codex: M4制作管理 ページ状態・確定ロック
 
 - `agent/manga-production-status-v1` を `agent/manga-batch-production-v1` から作成
@@ -6551,6 +6565,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 実行中はスピナーと`ログイン中…`、`登録中…`、`送信中…`、`更新中…`を表示し、再クリックを防ぐ。
 - 認証ロジック、Supabase、migration、環境変数は変更していない。
 - 検証: 専用1/1、Hub 477/477、deps、Hub typecheck、lint、production build、diff check成功。
+
 # 2026-08-05 Codex: PR-R2B-3 Cloud AI Provider境界分離
 
 - Branch: `codex/refactor-r2b3-cloud-ai-providers`
@@ -6572,6 +6587,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Stripe、成人向け機能、業務ロジック、DB、migration、環境変数の変更はない。
 - 検証: 専用3/3、Hub 478/478、deps:check、typecheck、lint、migration 48本、production build、git diff --check成功。
 - CI: Core quality、Migration roundtrip、Windows build、Vercel成功。
+
 # 2026-08-04 Codex: 更新情報保存後の遷移修正
 
 - Branch: `codex/product-update-save-redirect-fix`
@@ -6587,6 +6603,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - モニター開始API／Client fallbackとStripe Checkout完了・キャンセルURLを追加で安全化した。
 - `tests/action-redirect-encoding.test.mjs`により、未エンコードの日本語`message`／`error` queryを今後のHub testで拒否する。
 - migration、環境変数、外部API実行、Feature Flagの変更はない。
+
 ## 2026-08-04 Codex: 更新情報の二重登録防止
 
 - Branch: `codex/product-update-idempotency-v1`
@@ -6604,6 +6621,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 公開中情報は編集後にダッシュボードを再検証し、アーカイブ済み情報と不正UUIDは編集対象外にする。
 - DB schema、migration、環境変数の変更はない。
 - 検証: 専用6/6、Hub 482/482、deps:check、Hub typecheck、lint、migration 48/48、production build、diff check成功。
+
 ## 2026-08-04 Codex: 一般向けCloud漫画制作 正本統合監査
 
 - `codex/cloud-manga-canonical-audit-v1`を最新`feature/manga-canvas-mvp`から作成。
@@ -6614,6 +6632,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次の必須作業を、実Provider 1コマ生成、候補比較・採用・再実行、8ページPDF／PNG目視、390／768／1280確認、一般向け工程E2Eへ限定。
 - deps:check、lint、Hub typecheck、Hub 482/482、migration 48/48、diff checkに成功。
 - 詳細: `docs/cloud/CLOUD_MANGA_CANONICAL_INTEGRATION_AUDIT.md`
+
 # 2026-08-04 Codex: 一般向け画像生成 受入れ基盤
 
 - Branch: `codex/general-image-acceptance-v1`
@@ -6623,6 +6642,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - `docs/cloud/CLOUD_GENERAL_IMAGE_ACCEPTANCE.md`へ合格条件と禁止事項を記録した。
 - 外部Provider呼び出し、DB／migration、環境変数、Feature Flag変更は行っていない。
 - 専用2/2、deps:check、lint、Hub typecheck、Hub 482/482、migration 48/48、production build、git diff check成功。
+
 # 2026-08-04 Codex: Cloud漫画制作 受入れ自動化
 
 - Branch: `codex/cloud-manga-acceptance-automation-v1`
@@ -6632,6 +6652,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 実Provider・候補操作・8ページ目視・実ブラウザ3幅・別ユーザー分離は手動項目として出力する。
 - DB、migration、環境変数、外部API実行は追加していない。
 - 専用3/3、repository preflight、deps:check、lint、Hub typecheck、Hub 485/485、migration 48/48、production build、git diff check成功。
+
 # 2026-08-04 Codex: Cloud漫画制作 2ユーザー所有者分離受入れ
 
 - Branch: `codex/cloud-manga-owner-isolation-e2e-v1`
@@ -6643,6 +6664,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - データ作成、更新、削除、有料Provider実行、Feature Flag変更、migration適用は行わない。
 - 専用4/4、既存所有者分離7/7、Cloud漫画repository preflight、deps:check、lint、Hub typecheck、Hub 490/490、migration 48/48、production build、git diff check成功。
 - 未完了: ステージング認証情報と受入れ用データを用いた実行、署名URL・生成キャンセル・共同編集者の実ブラウザ確認。
+
 # 2026-08-06 Codex: PR-R2C-4 PDF／PNG出力application／infrastructure境界
 
 - Branch: `codex/refactor-r2c4-export-boundary`
@@ -6662,6 +6684,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 原因は本番でも`VERCEL_URL`を優先し、保護付き固有デプロイURLへ自己fetchしていたこと。productionのみ公開`NEXT_PUBLIC_SITE_URL`を優先し、Preview分離を回帰テストで固定した。
 - 待機中の一般向け背景画像Jobは再実行していない。PR mergeと本番再デプロイ後、管理画面から1件だけ処理してBFL実Provider、Asset保存、Canvas採用まで確認する。
 - DB、migration、RPC、Storage、Provider契約、価格、Scheduler、成人向け境界、Desktopの変更なし。
+
 # 2026-08-06 Codex: BFL実Provider拒否の安全な診断
 
 - Branch: `codex/fix-bfl-provider-rejection-diagnostics`
@@ -6671,6 +6694,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - API key、Prompt、画像、Provider response body、URL、Job ID、利用者情報はログへ追加しない。Provider request、model、pricing、retry、timeout、DB、migration、RPC、Storage、成人向け境界は変更しない。
 - BFL focused 6/6、deps、lint、Hub／Desktop typecheck、research eval、AI 48/48、Hub／Canvas／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。Draft PR、CI、Vercel Preview確認を継続する。
 - merge／本番再デプロイ後に新規Jobを1件だけ実行し、診断eventから拒否段階を特定する。それまでは実Providerを再実行しない。
+
 # 2026-08-06 Codex: BFL poll待機応答の互換修正
 
 - Branch: `codex/fix-bfl-poll-null-result`
@@ -6680,6 +6704,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Provider request、model、pricing、retry、timeout、API、DB、migration、RPC、Storage、秘密境界、成人向け境界は変更しない。
 - BFL focused 7/7、deps、lint、Hub／Desktop typecheck、research eval、Hub／Canvas／AI／Desktop／a11y、migration 48/48、Hub／Desktop build、release structure preflight、diff check成功。
 - Draft PRと全CI／Vercel Preview成功後に停止し、merge／本番反映前に実Providerを再実行しない。
+
 # 2026-08-06 Codex: 生成画像のコマ採用永続化修正
 
 - Branch: `codex/fix-generated-panel-adoption-persistence`
@@ -6688,6 +6713,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 背景候補の`orderIndex=-1`がCanvas schemaの0以上制約に違反し、履歴commitが変更を破棄していた。背景を0、既存レイヤーを順序維持で1以降へ正規化し、commit拒否時の誤った成功表示も防止する。
 - API、DB、migration、RPC、Storage、Provider、model、pricing、Canvas schema、成人向け境界、Desktopの変更なし。追加の実Provider生成は不要。
 - focused 4/4と全ローカル品質ゲート、migration 48/48、Hub／Desktop build、release structure preflight、diff checkに成功。
+
 # 2026-08-06 Codex: PR-R2C 実Provider本番受入れ完了
 
 - Base: `origin/feature/manga-canvas-mvp`@`fd87cfb`（PR #187 merge後）
@@ -6761,6 +6787,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - focused 24/24、deps、lint、typecheck、Hub、AI、Canvas、Desktop、a11y、migration 55本、Cloud漫画repository、owner isolation、100ページ長編、Webpack Hub build、Desktop build、RC structure、diff check成功。通常Turbopack buildは既知のWindowsパス長上限で停止した。
 - Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Draft／MERGEABLE。
 - 次: 責任者merge待ち。Production反映後、失敗2件だけを再登録して16/16と生成画像品質を確認する。
+
 # 2026-08-14 Codex: PR-R4-2A実装前監査
 
 - Branch: `codex/feat-r4-2a-auto-panel-adoption`
@@ -6807,6 +6834,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 集中27/27、Hub全体、Canvas 26/26、AI 48/48、長編4/4、deps、lint、Hub typecheck、migration 59/59、research eval、repository受入れ、owner isolation、packages／Webpack build、RC structure、diff check成功。Turbopackは既知のWindows path長、Desktopは既存keyring型宣言不足のためCIで判定する。
 - Draft PR [#267](https://github.com/team478a/manga/pull/267)を作成。Draft／MERGEABLE。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-p3ch4z2xg-team478as-projects.vercel.app`。
 - 次: 文書同期後の最終HEADでも全CI／Vercel Preview成功を確認して停止。merge前にProduction再実行を行わない。
+
 # 2026-08-17 Codex: Benchmark Content Credentials保全
 
 - Branch: `codex/fix-r4-3a4-benchmark-provenance`
@@ -6946,6 +6974,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: 証跡同期後の最終HEADの5チェックを確認し、merge前にProductionを変更しない。
 
 ---
+
 # 2026-08-26 P4-B 完成モードpreset
 
 - PR #363 merge `42cc676`をbaseに、3用途の製品presetとCloud新規Project選択・previewを実装。
@@ -6953,6 +6982,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - migration未適用、Production unchanged、Provider／Job／credit／Storage操作なし。
 
 ---
+
 # 2026-08-26 P4-C mode別preflight
 
 - PR #364 merge `bbd9784`をbaseに、mode別コマ数／セリフ量warningとP3 finding read-only判定を実装。
@@ -6960,6 +6990,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - DB変更、Production、Provider、Job、credit、Storage操作なし。
 
 ---
+
 # 2026-08-26 P4-D durable export formats
 
 - PR #365 merge `b2d3249`をbaseに、長編連番PNG ZIPとProject JSONを既存durable exportへ追加。
@@ -6967,6 +6998,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - Production migration、Flag、Worker、Job、Storage、Provider、credit操作なし。
 
 ---
+
 # 2026-08-28 Codex: RC外部環境preflight
 
 - Branch: `codex/rc-external-environment-preflight-20260828`
@@ -7001,6 +7033,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 外部E2E READY条件へref形式と`PGHOST`／`PGUSER`の隔離Branch ref一致を追加した。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
 - 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel Preview成功で停止する。
+
 # 2026-08-29 Codex: Production再利用候補の対象コマ最終比較
 
 - Branch: `codex/production-candidate-target-final-review-20260829`
@@ -7024,6 +7057,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production候補の実採用は責任者の対象・回数を含む明示承認まで行わない。
 
 ---
+
 # 2026-08-31 Codex: Desktop成人向けPilot安全ダウンロードIPC接続
 
 - Branch: `codex/desktop-adult-pilot-download-ipc-20260831`
@@ -7033,6 +7067,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 現PCはIntel Iris Xe／表示VRAM約2GBのため実行不可を維持。実ダウンロード、ComfyUI、生成、Production、Cloud、Provider、Job、Asset、credit操作0件。
 - AI Core 50/50、Desktop 188/188、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、diff check成功。
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。12GB以上GPU端末でのE2Eとruntime導入は別タスク。
+
 # 2026-09-01 Codex: モニター品質確認開始案内
 
 - Branch: `codex/monitor-quality-review-start-notification-20260901`
@@ -7043,6 +7078,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止。merge後にmigrationを適用し、未送信5名へ管理画面から1回送信する。
 
 ---
+
 # 2026-09-05 Codex: 先行販売購入者向け先行利用の表記統一
 
 - Branch: `codex/clarify-purchaser-early-access-20260905`
@@ -7054,6 +7090,7 @@ IN_PROGRESS / BLOCKED / READY_FOR_REVIEW / COMPLETE
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge前にmigrationやProduction表示を変更しない。
 
 ---
+
 # 2026-09-10 Codex: Cloudシナリオ修正版RLS修正／ユーザー報告監査
 
 - Branch: `codex/fix-cloud-scenario-revision-rls-20260910`

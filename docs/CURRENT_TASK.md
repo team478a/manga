@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Windowsハードウェアトークン署名対応
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / FIRST_HEAD_ALL_CHECKS_PASSED / CERTIFICATE_PURCHASE_NOT_STARTED / STAGE0_DISTRIBUTION_BLOCKED`
+- Branch: `codex/desktop-hardware-token-signing-20260916`
+- Base: `acedcab`（PR #486 merge commit）。前工程のCore quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功済みである。
+- Adult技術モニターStage 0の最大外部blockerであるWindowsコード署名について、既存PFX方式に加え、Windows証明書ストア／ハードウェアトークンの証明書SHA-1を使うローカル署名経路を追加した。GitHub hosted runnerに物理トークンは接続できないため、正式Release workflowは従来のPFX Secret方式を維持する。
+- 署名設定resolverはPFXのlink／password片方欠落、別名環境変数の競合、PFXと証明書ストアの同時指定、40桁以外のfingerprint、非Windowsでの証明書ストア利用をfail closedで拒否する。readiness出力はmodeと設定有無だけを表示し、PFX path、password、fingerprintを表示しない。
+- 日本法人のStage 0第一候補は公開信頼されたOVコードサイニング証明書のハードウェアトークンとし、自己署名へ要件を下げない。Azure Artifact SigningはMicrosoftの現行申込地域案内から日本法人の確実な経路と断定できないため将来候補に留める。OV署名後もSmartScreen評価は別に観察する。
+- 検証: 集中5/5、Desktop 245/245、Hub 1008/1008、Canvas 26/26、AI 50/50、deps error 0（既知warning 2件）、lint、typecheck、Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、GitHub Secret、証明書購入、Releaseを変更していない。未追跡`apps/desktop/artifacts/`は既存利用者所有物として未変更・未commitである。
+- Commit `3ebec1c`をpushしてDraft PR #487を作成した。初回HEADでCore quality run `35060818983`（3分20秒）、Migration roundtrip（59秒）、Desktop Windows run `35060819016`（4分15秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- 次: この正本同期commitの最終CI／Vercel Preview成功で停止する。merge後もStage 0開始には、責任者による証明書購入判断、発行・token初期化、署名済みartifact実検証、固定Bundle、候補assessment、個別実施計画と別の実行時承認が必要である。
+
+---
+
 ## 2026-09-16 Desktop Adult 技術モニターStage 0開始gate
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
@@ -5939,6 +5954,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - ローカル検証: focused 3/3、deps、lint、Hub typecheck、Hub 715 tests、Canvas 26/26、AI 48/48、migration 59本、Webpack Hub build、RC structure preflight、`git diff --check`成功。全typecheckのDesktopだけはローカル依存の`@napi-rs/keyring`型宣言不足、通常Turbopack buildは既知のWindows path長上限で停止したため、正規確認先をGitHub Actions／Vercel Previewとする。
 - 次: commit・push・Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Comments成功で停止する。責任者merge前にProductionで参照登録や有料再生成を行わない。
 - Draft PR: [#266](https://github.com/team478a/manga/pull/266)。初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Vercel Preview Commentsはすべて成功。Previewは`https://mangai-hub-staging-niam5c0ge-team478as-projects.vercel.app`。Draft／MERGEABLEを確認し、Productionを変更せず責任者review待ちで停止する。
+
 # 2026-08-28 RC外部環境preflight
 
 - Branch: `codex/rc-external-environment-preflight-20260828`。Base: PR #379 merge commit `362ec98`。
@@ -5970,6 +5986,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 外部E2EのSupabase判定でBranch／親Project refの形式を検証し、`PGHOST`または`PGUSER`が隔離Branch refを含むことをREADY条件へ追加する。
 - Branch refだけ差し替えて接続先が親mainのままの場合も、DB接続前にPENDINGとする。通常staging preflightの既存照合契約は不変。
 - Production、Supabase、DB、Provider、Queue、Job、Asset、credit操作0件。集中7/7、Hub 927/927、Canvas 26/26、AI 48/48、Desktop 182/182、a11y 29画面blocking violation 0、migration 74/74、deps、lint、全型検査、Hub／Desktop build、RC structure、diff check成功。
+
 # 2026-08-31 Desktop成人向けPilot安全ダウンロードIPC接続
 
 - 状態: `DOWNLOAD_IPC_CONNECTED / CURRENT_HOST_FAIL_CLOSED / REAL_DOWNLOAD_NOT_RUN`
@@ -5981,6 +5998,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 現在のPCはIntel Iris Xe／表示VRAM約2GBのためfail-closed。実モデルのダウンロード、ComfyUI導入、生成、Provider、Job、credit、Production／Cloud操作は行っていない。
 - 検証: AI Core 50/50、Desktop 188/188、lint、typecheck、Desktop build、a11y 29画面blocking violation 0、`git diff --check`成功。
 - 次: commit、push、Draft PRを作成し、全CIとVercel Preview成功で停止する。実12GB以上GPU端末でのE2EとComfyUI runtime取得は別タスクとする。
+
 # 2026-09-01 Codex: モニター品質確認の開始案内
 
 - 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE`
@@ -5993,6 +6011,7 @@ Release 5で作成したCanvas下書きのコマを選ぶだけで、採用ネ�
 - 次: commit、push、Draft PR、全CI／Vercel Preview成功で停止する。merge後にProduction migrationを適用し、管理画面で未送信5名への送信を1回だけ実行する。
 
 ---
+
 # 2026-09-10 Cloudシナリオ修正版RLS修正／ユーザー報告監査
 
 - Branch: `codex/fix-cloud-scenario-revision-rls-20260910`
