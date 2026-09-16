@@ -77,6 +77,23 @@ npm run desktop:adult:pilot-ledger-status-proposal:create -- `
 
 proposal作成は実台帳、Runtime、model、生成、配布、招待、creditを変更しない。元台帳の作成中変更、未来日時、配布前日時、同意前の終端遷移、個人情報・作品内容・local path、既存proposalの上書きをfail closedで拒否する。
 
+### 状態遷移のread-only監査
+
+proposal作成後、適用前、適用中断後、適用後のいずれでも、最初にread-only監査を実行する。監査は台帳、proposal、backup、intent、receiptの組合せとdigestを検査するだけで、fileの作成・更新・削除、状態遷移の適用、外部処理を行わない。
+
+```powershell
+npm run desktop:adult:pilot-ledger-status:audit -- `
+  --ledger $env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH `
+  --proposal $statusProposal
+```
+
+- `PROPOSAL_READY`: 現在の台帳がproposalの元台帳で、適用証跡はまだない。proposalレビューへ進む。
+- `APPLY_PREPARED`: backupとintentは一致するが、台帳は元の状態である。中断原因を確認し、対象付き承認が現在も有効な場合だけapplyを再実行する。
+- `RECOVERY_REQUIRED`: 台帳は更新後と一致するがreceiptがない。backup、intent、proposalを変更せず、同じapplyコマンドでreceipt回復を行う。
+- `APPLIED`: 台帳、backup、intent、receiptがすべて一致し、適用完了を確認できる。applyを再実行しない。
+
+証跡の一部欠損、receiptと台帳の矛盾、改変、適用前後のどちらでもない台帳は終了コード1で停止する。監査成功はproposalレビュー、対象付き適用承認、再実行承認の代わりにならない。標準出力にはmonitor IDとpathを表示しない。
+
 ### 状態遷移proposalの適用
 
 レビュー済みproposalを運用台帳へ反映する場合は、対象proposalを明記した運用承認を得てから専用apply CLIを使用する。CLIの実装、テスト成功、過去の包括承認だけでは実proposalを適用できない。
@@ -90,6 +107,9 @@ npm run desktop:adult:pilot-ledger-status-proposal:apply -- `
   --confirm-ledger-apply
 
 npm run desktop:adult:pilot-ledger:check
+npm run desktop:adult:pilot-ledger-status:audit -- `
+  --ledger $env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH `
+  --proposal $statusProposal
 ```
 
 固定backupは`$statusProposal.ledger-before-apply.json`、intentは`$statusProposal.apply-intent.json`、適用receiptは`$statusProposal.applied.json`である。applyは元台帳の内容・場所、proposal全体、更新後台帳をSHA-256で固定し、対象entry以外の変更、対象状態の不一致、時系列不整合、既存証跡との衝突、二重適用、適用中の変更をfail closedで拒否する。同一directoryの一時fileをfsyncしてから台帳pathへ原子的に置換する。

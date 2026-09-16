@@ -338,6 +338,16 @@ npm run desktop:adult:pilot-ledger-status-proposal:create -- `
 
 `ACTIVE`以外では対象状態に対応する`--confirm-stop-action-recorded`、`--confirm-completion-reviewed`、`--confirm-withdrawal-recorded`を指定する。proposalは元台帳の内容・場所、対象monitor、遷移時刻、更新後台帳を固定するが、運用台帳を変更しない。氏名、メール、問い合わせ本文、作品内容、端末識別情報、local pathは記録しない。
 
+proposal作成後とapplyの前後は、まずread-only監査で現在状態を確認する。
+
+```powershell
+npm run desktop:adult:pilot-ledger-status:audit -- `
+  --ledger $ledger `
+  --proposal $statusProposal
+```
+
+`PROPOSAL_READY`は未適用、`APPLY_PREPARED`はbackup／intent作成後かつ台帳置換前、`RECOVERY_REQUIRED`は台帳置換後かつreceipt確定前、`APPLIED`は証跡を含む適用完了を表す。監査はfileを変更せず、対象付き承認を作成・代替しない。不完全・矛盾・改変証跡は安全側に停止し、monitor IDとpathを標準出力へ表示しない。
+
 対象proposalを明記した運用承認とレビュー完了後だけ、次の専用applyを実行する。
 
 ```powershell
@@ -349,6 +359,9 @@ npm run desktop:adult:pilot-ledger-status-proposal:apply -- `
   --confirm-ledger-apply
 
 npm run desktop:adult:pilot-ledger:check
+npm run desktop:adult:pilot-ledger-status:audit -- `
+  --ledger $ledger `
+  --proposal $statusProposal
 ```
 
 固定backup、intent、receiptはproposal pathから導出される。中断時は各fileを変更せず同じコマンドを再実行し、検査済み台帳への置換後であればreceiptだけを復旧する。CLIの実装完了は実proposalの適用承認を意味しない。

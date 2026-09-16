@@ -21,10 +21,10 @@ const defaultRepositoryRoot = path.resolve(
 );
 const sha256Pattern = /^[a-f0-9]{64}$/;
 
-const canonicalBytes = (value) =>
+export const canonicalStatusBytes = (value) =>
   Buffer.from(`${JSON.stringify(value, null, 2)}\n`, "utf8");
 
-const derivedPaths = (proposalPath, ledgerPath) => ({
+export const statusApplyDerivedPaths = (proposalPath, ledgerPath) => ({
   backupPath: `${proposalPath}.ledger-before-apply.json`,
   intentPath: `${proposalPath}.apply-intent.json`,
   appliedReceiptPath: `${proposalPath}.applied.json`,
@@ -68,15 +68,15 @@ const validateExpectedProposal = (
     ),
   };
   if (
-    !canonicalBytes(proposal.updatedLedger).equals(
-      canonicalBytes(expectedLedger),
+    !canonicalStatusBytes(proposal.updatedLedger).equals(
+      canonicalStatusBytes(expectedLedger),
     )
   )
     throw new Error("状態遷移proposalが対象entry以外を変更しています。");
-  return canonicalBytes(expectedLedger);
+  return canonicalStatusBytes(expectedLedger);
 };
 
-const validateIntent = (intent, snapshot) => {
+export const validateStatusApplyIntent = (intent, snapshot) => {
   exactKeys(
     intent,
     [
@@ -110,7 +110,7 @@ const validateIntent = (intent, snapshot) => {
   return intent;
 };
 
-const readSnapshot = (options, sourceLedgerBytes) => {
+export const readStatusApplySnapshot = (options, sourceLedgerBytes) => {
   const proposalBytes = readFile(options.proposalPath, "状態遷移proposal");
   const ledger = validateLedger(readJson(sourceLedgerBytes, "適用前招待台帳"));
   const proposal = validateStatusProposal(
@@ -157,7 +157,7 @@ const rereadSources = (options, snapshot, sourcePath) => {
 
 const createOrReadIntent = (options, paths, snapshot) => {
   if (fs.existsSync(paths.intentPath))
-    return validateIntent(
+    return validateStatusApplyIntent(
       readJson(
         readFile(paths.intentPath, "状態遷移適用intent"),
         "状態遷移適用intent",
@@ -175,7 +175,7 @@ const createOrReadIntent = (options, paths, snapshot) => {
     targetStatus: snapshot.proposal.targetStatus,
     statusLedgerApplyAuthorized: true,
   };
-  writeExclusive(paths.intentPath, canonicalBytes(intent));
+  writeExclusive(paths.intentPath, canonicalStatusBytes(intent));
   return intent;
 };
 
@@ -193,7 +193,7 @@ const writeAppliedReceipt = (options, paths, snapshot, recovered) => {
     result: "APPLIED",
   };
   const temporary = `${paths.appliedReceiptPath}.${crypto.randomUUID()}.tmp`;
-  writeExclusive(temporary, canonicalBytes(receipt));
+  writeExclusive(temporary, canonicalStatusBytes(receipt));
   try {
     fs.renameSync(temporary, paths.appliedReceiptPath);
   } catch (error) {
@@ -211,7 +211,10 @@ const assertPaths = (options) => {
     [options.proposalPath, "状態遷移proposal"],
   ])
     assertPrivatePath(options.repositoryRoot, target, label);
-  const paths = derivedPaths(options.proposalPath, options.ledgerPath);
+  const paths = statusApplyDerivedPaths(
+    options.proposalPath,
+    options.ledgerPath,
+  );
   for (const [target, label] of [
     [paths.backupPath, "招待台帳backup"],
     [paths.intentPath, "状態遷移適用intent"],
@@ -246,11 +249,11 @@ export const applyInviteLedgerStatusProposal = (rawOptions) => {
       "状態遷移proposal",
     ),
   );
-  const targetBytes = canonicalBytes(rawProposal.updatedLedger);
+  const targetBytes = canonicalStatusBytes(rawProposal.updatedLedger);
   if (currentLedgerBytes.equals(targetBytes)) {
     const backupBytes = readFile(paths.backupPath, "招待台帳backup");
-    const snapshot = readSnapshot(options, backupBytes);
-    validateIntent(
+    const snapshot = readStatusApplySnapshot(options, backupBytes);
+    validateStatusApplyIntent(
       readJson(
         readFile(paths.intentPath, "状態遷移適用intent"),
         "状態遷移適用intent",
@@ -271,14 +274,17 @@ export const applyInviteLedgerStatusProposal = (rawOptions) => {
     };
   }
 
-  const snapshot = readSnapshot(options, currentLedgerBytes);
+  const snapshot = readStatusApplySnapshot(options, currentLedgerBytes);
   if (fs.existsSync(paths.backupPath)) {
     if (
       !readFile(paths.backupPath, "招待台帳backup").equals(currentLedgerBytes)
     )
       throw new Error("既存backupが適用前の招待台帳と一致しません。");
   } else writeExclusive(paths.backupPath, currentLedgerBytes);
-  validateIntent(createOrReadIntent(options, paths, snapshot), snapshot);
+  validateStatusApplyIntent(
+    createOrReadIntent(options, paths, snapshot),
+    snapshot,
+  );
 
   const temporary = `${paths.temporaryLedgerPrefix}${crypto.randomUUID()}.tmp`;
   writeExclusive(temporary, snapshot.targetLedgerBytes);
