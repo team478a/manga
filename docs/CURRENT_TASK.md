@@ -2,15 +2,16 @@
 
 ## 2026-09-16 Desktop Adult Pilot招待台帳状態遷移proposal
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_NOT_CREATED / REAL_PROPOSAL_NOT_CREATED / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_PROPOSAL_NOT_CREATED / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
 - Base: PR #498 merge commit `45eb83c`。マージ後Required Quality run `35107448769`（Core quality、Migration roundtrip）とDesktop Windows run `35107448759`は成功済み。
 - Branch: `codex/adult-pilot-ledger-status-proposal-20260916`
+- Implementation commit: `d5c0ae8`。Draft PR: #499。
 - `INVITED→ACTIVE/WITHDRAWN`と`ACTIVE→STOPPED/COMPLETED/WITHDRAWN`だけを許可する内容非保持の状態遷移proposal CLIを追加した。`STOPPED`、`COMPLETED`、`WITHDRAWN`は終端状態とし、再開、同一状態、逆向き遷移を拒否する。
 - 元台帳の内容・場所、対象random monitor ID、遷移前後の状態、実遷移日時、固定evidence種別、更新後台帳を1つのproposalへ固定する。`ACTIVE`は`consentedAt`、`STOPPED`は`stoppedAt`を更新し、専用時刻fieldがない`COMPLETED`／`WITHDRAWN`はproposal自体へ遷移日時を保持する。実台帳は変更しない。
 - 共通2確認と遷移別確認を必須にし、不正遷移、未来・配布前・同意前日時、不明monitor、個人情報・作品内容・local path、Git管理内path、作成中の台帳変更、既存proposal上書きをfail closedで拒否する。標準出力へmonitor IDとpathを表示しない。
 - 検証: 集中8/8、Desktop 323/323、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDING、`npm install`の既知audit 8件は変更していない。
 - canonical統合readinessは5 READY／4 BLOCKED。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳を変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
-- 次: 実装commitをpushし、Draft PRを作成して全CI／Vercel Preview成功まで確認する。実proposal作成と実台帳反映は対象付き運用承認と専用applyが整うまで行わない。
+- 次: PR #499の全CI／Vercel Preview成功まで確認して停止する。実proposal作成と実台帳反映は対象付き運用承認と専用applyが整うまで行わない。
 
 ---
 
