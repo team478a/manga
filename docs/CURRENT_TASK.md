@@ -9,8 +9,8 @@
 - Desktop version、`stage0_acceptance_only`、Stage 1分離、`stage1DistributionAuthorized=false`はgeneratorが固定する。過去日時、14日超の保持、確認漏れ、相対／UNC path、repository内出力、既存file上書きをfail closedで拒否し、標準出力には候補IDや出力pathを表示しない。
 - runbookはfail-closed exampleのcopy／手編集ではなくgenerator利用へ更新した。実計画はアクセス制限されたGit管理外の領域にだけ作り、氏名、メール、端末識別情報、作品内容、Prompt、画像、自由記述を含めない。
 - 検証: 集中12/12、Desktop 256/256、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。canonical Stage 0は1 READY／4 BLOCKEDで、外部設定と手動E2Eの既知PENDING、Viteの既知chunk warningは不変である。
-- Commit `8e80d10`をpushしてDraft PR #490を作成した。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画は変更していない。未追跡`apps/desktop/artifacts/`は既存利用者所有物として未変更・未commitである。
-- 次: 全CI／Vercel Preview成功まで確認して停止する。実計画作成、実候補者選定、artifact署名、Bundle検証・取込、送付、Stage 0開始は別の実行時承認を待つ。
+- Commit `8e80d10`をpushしてDraft PR #490を作成した。初回HEADでCore quality run `35070662348`（2分9秒）、Migration roundtrip（52秒）、Desktop Windows run `35070662457`（4分33秒）、Vercel Preview／Preview Commentsはすべて成功した。Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画は変更していない。未追跡`apps/desktop/artifacts/`は既存利用者所有物として未変更・未commitである。
+- 次: この正本同期commitの最終CI／Vercel Preview成功まで確認して停止する。実計画作成、実候補者選定、artifact署名、Bundle検証・取込、送付、Stage 0開始は別の実行時承認を待つ。
 
 ---
 

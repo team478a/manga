@@ -6,8 +6,8 @@
 - Stage 0実施計画を手編集せず、random candidate ID、未来のUTC実施日時、14日以内の削除期限、支援・停止連絡・証跡回収の明示確認から内容非保持JSONを作るCLIを追加した。
 - Desktop version、受入れ専用目的、Stage 1分離、`stage1DistributionAuthorized=false`を固定し、相対／UNC path、repository内出力、既存file上書き、過去日時、期限超過、確認漏れをfail closedで拒否する。標準出力へ候補IDと出力pathを表示しない。
 - 集中12/12、Desktop 256/256、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造成功。canonical Stage 0は1 READY／4 BLOCKEDのままである。
-- Commit `8e80d10`をpushしてDraft PR #490を作成した。Branchは`codex/adult-stage0-plan-generator-20260916`。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画変更なし。未追跡`apps/desktop/artifacts/`は未commit。次は全CI／Vercel Preview成功まで確認して停止する。
+- Commit `8e80d10`をpushしてDraft PR #490を作成した。初回HEADでCore quality run `35070662348`（2分9秒）、Migration roundtrip（52秒）、Desktop Windows run `35070662457`（4分33秒）、Vercel Preview／Preview Commentsはすべて成功した。Branchは`codex/adult-stage0-plan-generator-20260916`。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者情報、実計画変更なし。未追跡`apps/desktop/artifacts/`は未commit。次は正本同期commitの最終CI／Vercel Preview成功で停止する。
 
 ---
 
