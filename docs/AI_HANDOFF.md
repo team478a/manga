@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0開始承認の一回限定化（2026-09-16）
+
+- BaseはPR #493 merge commit `338b7b6`。マージ後のCore quality、Migration roundtrip、Desktop Windowsは成功済み。
+- 検証済みoperation packageへ対象候補、署名artifact version、支援日時、削除期限、package内容と場所をSHA-256で結ぶ開始承認create／consume CLIを追加した。責任者承認、受入れ限定、手動停止制約、Stage 1未許可の4確認が揃わなければ作成しない。
+- consumeは現在の6 sourceでpackageを再検証し、改変、期限切れ、承認前時刻、package copyを拒否する。固定package側へ排他的receiptを作り、同じpackageを再消費できない。Runtime起動、model取得、配布、生成は行わない。
+- Runbookを対象付きの一回承認と直前消費へ更新した。集中8/8、Desktop 278/278、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- Commit `7dc8575`、Draft PR #494。初回HEADのCore quality `35087030015`（3分27秒）、Migration roundtrip（54秒）、Desktop Windows `35087030014`（4分29秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実package・実承認変更なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitの全CI／Vercel Preview成功で停止する。実開始承認とStage 0外部操作は対象付きの別承認事項である。
+
 ## 0.0 Desktop Adult Stage 0 source snapshot固定（2026-09-16）
 
 - BaseはPR #492 merge commit `f4ba95b`。マージ後のCore quality、Migration roundtrip、Desktop Windowsは成功済み。

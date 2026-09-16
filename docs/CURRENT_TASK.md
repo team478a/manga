@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-16 Desktop Adult Stage 0開始承認の一回限定化
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / FIRST_HEAD_ALL_CHECKS_PASSED / REAL_AUTHORIZATION_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`
+- Base: PR #493 merge commit `338b7b6`
+- Branch: `codex/adult-stage0-start-authorization-20260916`
+- 検証済みoperation packageに候補ID、artifact version、受入れ試験限定、支援日時、削除期限、package内容SHA-256とpackage場所SHA-256を固定するStage 0開始承認のcreate／consume CLIを追加した。4つの明示確認を必須にし、`stage1DistributionAuthorized=false`を維持する。
+- 消費時は現在の6 sourceを使ってoperation package verifyを再実行し、承認改変、source改変、package移動・copy、期限切れ、承認前時刻をfail closedで拒否する。消費receiptは固定packageの隣へ排他的に新規作成し、同じpackageの2回目の消費を拒否する。CLIはRuntime、model、artifact送付、生成を自動実行しない。
+- Runbookへ「対象の1回に限る責任者承認→開始承認作成→実施直前の一回消費→支援付き手動開始」を追記した。開始できなかった場合もreceiptを削除して再利用せず、新しいpackageと明示承認を必要とする。
+- 検証: 集中8/8、Desktop 278/278、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。Viteの既知chunk warningと外部設定・手動E2Eの既知PENDINGは不変である。
+- Commit `7dc8575`をpushし、Draft PR #494を作成した。初回HEADのCore quality run `35087030015`は3分27秒、Migration roundtripは54秒、Desktop Windows run `35087030014`は4分29秒、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者、実operation package、実開始承認は変更していない。未追跡`apps/desktop/artifacts/`は未変更・未commitである。
+- 次: この正本同期commitの全CI／Vercel Preview成功まで確認して停止する。実開始承認作成・消費、artifact送付、Stage 0開始は、外部前提が揃った後の対象付き明示承認を待つ。
+
 ## 2026-09-16 Desktop Adult Stage 0 source snapshot固定
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_READY / FIRST_HEAD_ALL_CHECKS_PASSED / REAL_OPERATION_PACKAGE_NOT_CREATED / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / STAGE1_DISTRIBUTION_BLOCKED`

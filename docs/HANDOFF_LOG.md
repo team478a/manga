@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-16 Codex: Desktop Adult Stage 0開始承認の一回限定化
+
+- PR #493 merge commit `338b7b6`から`codex/adult-stage0-start-authorization-20260916`を作成した。本線Core quality、Migration roundtrip、Desktop Windowsは成功済み。
+- 検証済みoperation packageへ対象候補、署名artifact version、支援日時、削除期限、package内容・場所のSHA-256を固定する開始承認create／consume CLIを追加した。4つの明示確認を必須にし、Stage 1配布許可はfalseを維持する。
+- consumeは現在の6 sourceとpackageを再検証し、改変、移動・copy、期限切れ、承認前時刻を拒否する。固定package側の排他的receiptで同じpackageの再消費を停止する。CLIはRuntime、model、artifact送付、生成を行わない。
+- 技術モニターrunbookを、対象の1回に限る責任者承認、開始承認作成、実施直前の一回消費、支援付き手動開始の順へ更新した。失敗時もreceipt削除による再利用を禁止した。
+- 集中8/8、Desktop 278/278、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- Commit `7dc8575`をpushしDraft PR #494を作成した。初回HEADのCore quality `35087030015`（3分27秒）、Migration roundtrip（54秒）、Desktop Windows `35087030014`（4分29秒）、Vercel Preview／Preview Commentsはすべて成功した。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、証明書購入、実署名、Secret、Release、実候補者・実package・実承認操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitの全CI／Vercel Preview成功まで確認する。
+
 ## 2026-09-16 Codex: Desktop Adult Stage 0 source snapshot固定
 
 - PR #492 merge commit `f4ba95b`から`codex/adult-stage0-source-snapshot-20260916`を作成した。本線Core quality、Migration roundtrip、Desktop Windowsは成功済み。
