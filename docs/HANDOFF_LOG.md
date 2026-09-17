@@ -3,11 +3,12 @@
 ## 2026-09-17 Codex: Desktop Adult Stage 1初回招待台帳read-only監査
 
 - PR #501 merge commit `e53e251`から`codex/adult-stage1-ledger-audit-20260917`を作成した。マージ後Required Quality run `35165212620`とDesktop Windows run `35165212632`は成功済み。
+- Implementation commit `a899361`をpushし、Draft PR #502を作成した。全CI／Vercel Previewを確認中。
 - Stage 1初回proposalと台帳、承認、消費receipt、候補assessment、backup、intent、適用receiptを変更せず検査し、`PROPOSAL_READY`、`APPLY_PREPARED`、`RECOVERY_REQUIRED`、`APPLIED`を判定するCLIを追加した。
 - 既存applyと同じ承認／source／proposal／intent検証を再利用し、receiptの全契約、digest、時系列も検証する。証跡欠損・矛盾・改変、監査中のfile内容・存在状態変更をfail closedで拒否する。intent作成後はその準備時刻で境界を再現し、期限後の中断・完了証跡も監査できる。
 - 招待台帳文書とStage 1 runbookへ、適用前後の監査コマンド、4状態の意味、安全な次アクション、承認非代替境界を追記した。
 - 集中27/27、Desktop 353/353、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実承認・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は実装commit、Draft PR、正本同期、全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実承認・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitとPR #502の全CI／Vercel Preview確認である。
 
 ---
 
