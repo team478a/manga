@@ -131,6 +131,8 @@ export const auditStage1InviteLedgerProposal = (rawOptions) => {
   ]);
 
   if (!backupExists && !intentExists && !receiptExists) {
+    if (options.allowHistoricalCurrentLedger)
+      throw new Error("履歴監査には招待台帳適用receiptが必要です。");
     if (ledgerBytes.equals(proposalBytes))
       throw new Error("適用済み台帳に回復証跡がありません。");
     const snapshot = readStage1LedgerApplySnapshot(
@@ -143,7 +145,14 @@ export const auditStage1InviteLedgerProposal = (rawOptions) => {
     addSnapshotSources(observed, options, snapshot, options.ledgerPath);
     verifyUnchanged(observed);
     verifyEvidencePresence(evidencePresence);
-    return { state: "PROPOSAL_READY", stage: 1 };
+    const result = { state: "PROPOSAL_READY", stage: 1 };
+    if (options.includeLedgerDetails)
+      Object.assign(result, {
+        monitorId: snapshot.authorization.monitorId,
+        sourceLedgerBytes: snapshot.sourceLedgerBytes,
+        targetLedgerBytes: snapshot.proposalBytes,
+      });
+    return result;
   }
 
   if (!backupExists || !intentExists)
@@ -168,12 +177,16 @@ export const auditStage1InviteLedgerProposal = (rawOptions) => {
   addSnapshotSources(observed, options, snapshot, paths.backupPath);
   const ledgerIsSource = ledgerBytes.equals(snapshot.sourceLedgerBytes);
   const ledgerIsTarget = ledgerBytes.equals(snapshot.proposalBytes);
-  if (!ledgerIsSource && !ledgerIsTarget)
+  if (
+    !ledgerIsSource &&
+    !ledgerIsTarget &&
+    !options.allowHistoricalCurrentLedger
+  )
     throw new Error("招待台帳が適用前後のどちらとも一致しません。");
 
   let state;
   if (receiptExists) {
-    if (!ledgerIsTarget)
+    if (!ledgerIsTarget && !options.allowHistoricalCurrentLedger)
       throw new Error("適用receiptと現在の招待台帳が一致しません。");
     const receiptBytes = readFile(
       paths.appliedReceiptPath,
@@ -191,11 +204,22 @@ export const auditStage1InviteLedgerProposal = (rawOptions) => {
       options.now,
     );
     state = "APPLIED";
-  } else state = ledgerIsSource ? "APPLY_PREPARED" : "RECOVERY_REQUIRED";
+  } else {
+    if (options.allowHistoricalCurrentLedger)
+      throw new Error("履歴監査には招待台帳適用receiptが必要です。");
+    state = ledgerIsSource ? "APPLY_PREPARED" : "RECOVERY_REQUIRED";
+  }
 
   verifyUnchanged(observed);
   verifyEvidencePresence(evidencePresence);
-  return { state, stage: 1 };
+  const result = { state, stage: 1 };
+  if (options.includeLedgerDetails)
+    Object.assign(result, {
+      monitorId: snapshot.authorization.monitorId,
+      sourceLedgerBytes: snapshot.sourceLedgerBytes,
+      targetLedgerBytes: snapshot.proposalBytes,
+    });
+  return result;
 };
 
 const valueFlags = new Set(["--authorization", "--assessment", "--ledger"]);

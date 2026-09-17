@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-17 Desktop Adult Stage 1運用ライフサイクル統合read-only監査
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`
+- Base: PR #502 merge commit `cda5029`。マージ後Required Quality run `35167341045`（Core quality、Migration roundtrip）とDesktop Windows run `35167340992`は成功済み。
+- Branch: `codex/adult-stage1-lifecycle-audit-20260917`。
+- Implementation commit: `5cfcdbe`。Draft PR: #503。
+- 初回Stage 1招待の承認・消費receipt・assessment・proposal・backup・intent・適用receiptを起点に、0件以上の状態遷移proposalを古い順に連結して現在状態までread-onlyで監査する統合CLIを追加した。
+- 途中の状態遷移は`APPLIED`を必須とし、最後だけ`PROPOSAL_READY`、`APPLY_PREPARED`、`RECOVERY_REQUIRED`、`APPLIED`を許可する。初回招待とのmonitor一致、各source／target台帳のbyte連続性、proposal重複、履歴欠落、証跡改変、監査中の台帳変更をfail closedで検査する。
+- 個別監査を履歴用途でも共有できるよう、適用receiptが完成した過去工程だけ現在台帳との差を許可する内部optionを追加した。通常の個別CLI契約は変更せず、履歴途中の未完了証跡は拒否する。
+- CLIはfileを作成・更新・削除せず、candidate ID、monitor ID、pathを標準出力へ表示しない。監査成功は個別proposalレビュー、対象付き適用承認、再実行承認を代替せず、招待、配布、状態適用、Runtime／model、生成、credit操作を行わない。
+- 検証: 集中30/30、Desktop 362/362、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実承認、実proposal、実台帳を変更していない。未追跡`apps/desktop/artifacts/`はcommit対象外である。
+- 次: PR #503の全CI／Vercel Preview成功まで確認する。実ライフサイクル監査や実proposal操作は行わない。
+
+---
+
 ## 2026-09-17 Desktop Adult Stage 1初回招待台帳read-only監査
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_LEDGER_NOT_CHANGED / REAL_PILOT_OPERATION_NOT_RUN`

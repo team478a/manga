@@ -121,6 +121,8 @@ export const auditInviteLedgerStatusProposal = (rawOptions) => {
   ]);
 
   if (!backupExists && !intentExists && !receiptExists) {
+    if (options.allowHistoricalCurrentLedger)
+      throw new Error("履歴監査には状態遷移適用receiptが必要です。");
     if (ledgerBytes.equals(targetLedgerBytes))
       throw new Error("適用済み台帳に回復証跡がありません。");
     const snapshot = readStatusApplySnapshot(options, ledgerBytes);
@@ -128,11 +130,18 @@ export const auditInviteLedgerStatusProposal = (rawOptions) => {
       throw new Error("状態遷移proposalが監査中に変更されました。");
     verifyUnchanged(observed);
     verifyEvidencePresence(evidencePresence);
-    return {
+    const result = {
       state: "PROPOSAL_READY",
       sourceStatus: proposal.sourceStatus,
       targetStatus: proposal.targetStatus,
     };
+    if (options.includeLedgerDetails)
+      Object.assign(result, {
+        monitorId: proposal.monitorId,
+        sourceLedgerBytes: snapshot.sourceLedgerBytes,
+        targetLedgerBytes: snapshot.targetLedgerBytes,
+      });
+    return result;
   }
 
   if (!backupExists || !intentExists)
@@ -152,12 +161,16 @@ export const auditInviteLedgerStatusProposal = (rawOptions) => {
   );
   const ledgerIsSource = ledgerBytes.equals(snapshot.sourceLedgerBytes);
   const ledgerIsTarget = ledgerBytes.equals(snapshot.targetLedgerBytes);
-  if (!ledgerIsSource && !ledgerIsTarget)
+  if (
+    !ledgerIsSource &&
+    !ledgerIsTarget &&
+    !options.allowHistoricalCurrentLedger
+  )
     throw new Error("招待台帳が適用前後のどちらとも一致しません。");
 
   let state;
   if (receiptExists) {
-    if (!ledgerIsTarget)
+    if (!ledgerIsTarget && !options.allowHistoricalCurrentLedger)
       throw new Error("適用receiptと現在の招待台帳が一致しません。");
     const receiptBytes = readFile(
       paths.appliedReceiptPath,
@@ -175,15 +188,26 @@ export const auditInviteLedgerStatusProposal = (rawOptions) => {
       options.now,
     );
     state = "APPLIED";
-  } else state = ledgerIsSource ? "APPLY_PREPARED" : "RECOVERY_REQUIRED";
+  } else {
+    if (options.allowHistoricalCurrentLedger)
+      throw new Error("履歴監査には状態遷移適用receiptが必要です。");
+    state = ledgerIsSource ? "APPLY_PREPARED" : "RECOVERY_REQUIRED";
+  }
 
   verifyUnchanged(observed);
   verifyEvidencePresence(evidencePresence);
-  return {
+  const result = {
     state,
     sourceStatus: proposal.sourceStatus,
     targetStatus: proposal.targetStatus,
   };
+  if (options.includeLedgerDetails)
+    Object.assign(result, {
+      monitorId: proposal.monitorId,
+      sourceLedgerBytes: snapshot.sourceLedgerBytes,
+      targetLedgerBytes: snapshot.targetLedgerBytes,
+    });
+  return result;
 };
 
 const valueFlags = new Set(["--ledger", "--proposal"]);

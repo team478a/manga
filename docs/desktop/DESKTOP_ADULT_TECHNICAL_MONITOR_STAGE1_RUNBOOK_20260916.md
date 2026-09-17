@@ -381,6 +381,23 @@ npm run desktop:adult:pilot-ledger-status:audit -- `
 
 固定backup、intent、receiptはproposal pathから導出される。中断時は各fileを変更せず同じコマンドを再実行し、検査済み台帳への置換後であればreceiptだけを復旧する。CLIの実装完了は実proposalの適用承認を意味しない。
 
+### 6.5 Stage 1運用ライフサイクルの統合監査
+
+初回招待から現在状態までの証跡を引継ぎ時または状態更新前にまとめて確認する。状態遷移proposalは必ず古い順に指定し、存在しない場合は`--status-proposal`を省略する。
+
+```powershell
+npm run desktop:adult:stage1-lifecycle:audit -- `
+  --authorization $stage1Authorization `
+  --assessment $assessment `
+  --ledger $ledger `
+  --status-proposal $activeProposal `
+  --status-proposal $completedProposal
+```
+
+統合監査は初回招待の適用完了と各状態遷移のsource／target台帳を連結し、同一monitorの履歴だけを受け入れる。途中の遷移は適用receiptまで完成している必要があり、最後の遷移だけが未適用・準備済み・receipt回復待ち・適用済みになれる。履歴の欠落、順序違い、重複、別monitor混入、証跡改変、監査中変更はfail closedで拒否する。
+
+出力はphase、適用状態、現在status、検査した遷移数だけで、candidate ID、monitor ID、pathを表示しない。file変更、招待、配布、状態適用、Runtime／model、生成、credit操作は行わない。統合監査成功は個別proposalのレビュー、対象付き運用承認、再実行承認を代替しない。
+
 現在の正本は署名、固定Bundle、12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了はStage 1配布許可を意味しない。
 
 ## 7. 停止条件
