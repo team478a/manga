@@ -193,6 +193,6 @@ Pilot合格は12GB以上の限定環境に対する判断であり、一般公�
 
 `PLAN_READY / DISTRIBUTION_BLOCKED`
 
-リポジトリ実装と実機証跡回収経路は完成している。招待公開の開始には、信頼されたコード署名、署名済みPilot version、12GB以上の内部実機受入れ、固定workflow／model一覧、招待・停止運用の責任者承認が必要である。
+リポジトリ実装、実機証跡回収経路、固定Bundleの実file容量・SHA-256検証は完成している。統合readinessは6/9 READYで、招待公開の開始には、信頼されたコード署名、署名済みPilot version、12GB以上の実機受入れとStage 0完了証跡連結が必要である。招待・停止運用の責任者承認は記録済みだが、他のBLOCKED条件を解除しない。
 
 Production、Cloud、外部Provider、利用者Project、creditは本計画の作成では変更しない。

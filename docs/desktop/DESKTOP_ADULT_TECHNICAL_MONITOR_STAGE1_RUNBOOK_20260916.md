@@ -101,7 +101,7 @@ npm run desktop:adult:stage0-readiness:strict
 
 専用gateは候補assessment、Windowsコード署名、固定Bundle、責任者承認、支援・停止連絡・証跡回収計画をまとめて検査する。12GB実機4方式証跡はStage 0で採取するため開始条件には含めず、`COLLECT_DURING_STAGE0`と表示する。gateが成功しても`stage1DistributionAuthorized=false`を維持し、招待配布を許可しない。
 
-2026-09-16時点ではGitHub Actionsに`WIN_CSC_LINK`／`WIN_CSC_KEY_PASSWORD`が登録されておらず、コード署名と固定Bundle実ファイル検証も未完了のため、Stage 0 gateは正しく`BLOCKED`となる。秘密値をGit、計画JSON、assessment、診断へ保存しない。
+2026-09-17に固定Bundleの4artifactを公式URLから取得し、容量・SHA-256を全件照合して4workflow／mappingとともにmanifestへ固定した。`fixed_bundle`は`READY`である。一方、コード署名と12GB実機受入れは未完了のため、Stage 0 gateと配布は引き続き`BLOCKED`となる。秘密値、実path、作品内容をGit、計画JSON、assessment、診断へ保存しない。
 
 Stage 0受入れ専用artifactは、既存PFX方式に加えてWindows証明書ストア／ハードウェアトークン方式でローカル署名できる。`npm run desktop:signing:preflight`で資格情報を表示せず構成を確認し、詳細は`WINDOWS_INSTALLER.md`と`WINDOWS_CODE_SIGNING_DECISION_20260916.md`に従う。これは署名経路の準備であり、証明書購入、artifact署名、候補者への送付またはStage 0開始を許可しない。
 
@@ -533,7 +533,7 @@ npm run desktop:adult:stage1-lifecycle:audit -- `
 
 出力はphase、適用状態、現在status、検査した遷移数だけで、candidate ID、monitor ID、pathを表示しない。file変更、招待、配布、状態適用、Runtime／model、生成、credit操作は行わない。統合監査成功は個別proposalのレビュー、対象付き運用承認、再実行承認を代替しない。
 
-現在の正本は署名、固定Bundle、12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了はStage 1配布許可を意味しない。
+現在の正本は固定Bundle検証まで完了したが、署名と12GB Stage 0実機証跡が未完了であり、release readiness strictが失敗するため、実承認の作成・消費はできない。CLIの実装完了や固定Bundleの`READY`はStage 1配布許可を意味しない。
 
 ## 7. 停止条件
 
@@ -550,4 +550,4 @@ npm run desktop:adult:stage1-lifecycle:audit -- `
 
 ## 8. 完了判定
 
-この準備で技術モニター候補の内容非保持screeningを`READY`とする。Desktop Adult Pilot配布は、署名、固定Bundle、12GB Stage 0実機証跡、統合release readiness strict成功まで`BLOCKED`を維持する。
+この準備で技術モニター候補の内容非保持screeningと固定Bundleを`READY`とする。Desktop Adult Pilot配布は、署名、12GB Stage 0実機証跡、統合release readiness strict成功まで`BLOCKED`を維持する。

@@ -1,18 +1,32 @@
 # MANGAI Current Task
 
+## 2026-09-17 Desktop Adult Pilot固定Bundle実file検証・正本固定
+
+- 状態: `FIXED_BUNDLE_READY / LOCAL_VALIDATION_PASSED / PR_NOT_CREATED / SIGNED_ARTIFACTS_BLOCKED / HARDWARE_12GB_BLOCKED / STAGE0_COMPLETION_BLOCKED / REAL_STAGE0_NOT_RUN`
+- Base: PR #507 merge commit `746c399`。マージ後Required Quality run `35181913762`（Core quality 2分14秒、Migration roundtrip 55秒）とDesktop Windows run `35181913763`（4分26秒）は成功済み。
+- Branch: `codex/adult-pilot-fixed-bundle-20260917`。
+- 公式固定URLからComfyUI v0.34.0、SDXL base、SDXL VAE、Canny ControlNetの4artifactをGit管理外のlocal rootへ取得し、manifest記載の容量とSHA-256を全件再計算して一致を確認した。
+- 内容非保持のBundle証跡をアクセス制限領域へ排他的に作成し、4artifactとrepository内の4workflow／mapping digestを`DESKTOP_ADULT_PILOT_BUNDLE.json`へ固定した。実path、作品内容、Prompt、端末識別情報、秘密値をmanifestやGitへ保存していない。
+- Adult Pilot bundle preflightは`fixed=8 / pending=0`、統合release readinessは`ready=6 / blocked=3`となり、`fixed_bundle`が`BLOCKED`から`READY`へ改善した。
+- 現端末には有効なコード署名秘密鍵とNVIDIA Runtimeがないため、artifact署名、Runtime展開・起動、4方式生成、12GB実機証跡、Stage 0完了証跡は未実施である。Production、Cloud、外部Provider、credit、配布、実候補者、利用者Projectを変更していない。
+- 検証: Bundle／Stage 0／release readiness集中20/20、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
+- 次: commit、push、Draft PR、全CI／Vercel Previewを確認する。その後は署名済み受入れ専用artifactと12GB技術モニター実機受入れを外部前提として進める。
+
+---
+
 ## 2026-09-17 Desktop Adult Stage 0証跡削除ライフサイクル統合read-only監査
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_DELETION_AUTHORIZATION_NOT_CREATED / REAL_EVIDENCE_NOT_DELETED / REAL_STAGE0_NOT_RUN`
+- 状態: `MERGED / CI_PASSED / REAL_DELETION_AUTHORIZATION_NOT_CREATED / REAL_EVIDENCE_NOT_DELETED / REAL_STAGE0_NOT_RUN`
 - Base: PR #506 merge commit `7374ed9`。マージ後Required Quality run `35179668342`（Core quality 2分29秒、Migration roundtrip 46秒）とDesktop Windows run `35179668255`（4分24秒）は成功済み。
 - Branch: `codex/adult-stage0-retention-lifecycle-audit-20260917`。
-- Implementation commit: `4c7af68`。Draft PR: #507。
+- Implementation commit: `4c7af68`。PR #507はmerge commit `746c399`でマージ済み。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`も成功した。
 - retention proposal準備から削除完了までを変更せず連結し、`PROPOSAL_READY`、`AUTHORIZED`、`MANIFEST_PREPARED`、`DELETE_PREPARED`、`STAGING_RECOVERY_REQUIRED`、`PURGE_READY`、`PURGE_PREPARED`、`PURGE_RECOVERY_REQUIRED`、`RECEIPT_RECOVERY_REQUIRED`、`DELETED`の10状態を判定する統合CLIを追加した。
 - proposal、削除承認、manifest、delete／purge intent、receipt、各原本と回復payloadの存在状態・digest・時系列を再検証する。削除intent後は承認期限後も固定intentからの回復状態を監査できるが、intent前の期限切れは新規applyを許可しない。
 - 原本と回復copyの同時欠損、未知file、control file順序違い、payload改変、purge後の原本再出現、監査中変更をfail closedで拒否する。CLIはfileを作成・更新・削除せず、candidate ID、端末情報、作品内容、pathを標準出力へ表示しない。
 - applyへmanifest直後とdelete intent直後の内部中断hookを追加し、実際の中断境界を一時directoryで再現した。CLI契約、承認確認、削除対象scopeは変更していない。
 - 検証: 新規7/7、削除集中23/23、Stage 0 lifecycle＋retention集中43/43、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者、実承認、実証跡、実proposal、実削除を変更していない。監査・削除状態の検証は一時directoryだけで行い、未追跡`apps/desktop/artifacts/`はcommit対象外である。
-- 次: PR #507の全CI／Vercel Preview成功まで確認する。実proposalの監査・承認・applyは対象付き明示承認を待つ。
+- 次: 実proposalの監査・承認・applyは対象付き明示承認を待つ。固定Bundleの実取得・正本固定を次工程で実施した。
 
 ---
 

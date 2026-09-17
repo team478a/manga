@@ -1,7 +1,7 @@
 {
   "format": "mangai.desktop-adult-pilot-bundle",
   "version": 1,
-  "updatedAt": "2026-08-31T12:00:00.000Z",
+  "updatedAt": "2026-09-17T05:28:45.785Z",
   "distributionMode": "user_download_official_source",
   "licenseReview": {
     "status": "owner_confirmed_for_internal_pilot",
@@ -16,53 +16,140 @@
     ]
   },
   "comfyui": {
-    "status": "pending",
+    "status": "fixed",
     "version": "v0.34.0",
     "sourceUrl": "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.34.0/ComfyUI_windows_portable_nvidia.7z",
     "licenseUrl": "https://github.com/Comfy-Org/ComfyUI/blob/v0.34.0/LICENSE",
     "sha256": "ed57cc6b19ae3d83add1ecebfdd56b25e04e0008cf0fe9af43a4ad8797e2a24c",
     "installedBytes": 2146721943,
-    "reviewStatus": "owner_license_confirmed_file_validation_pending"
+    "reviewStatus": "local_bundle_evidence_verified"
   },
   "workflows": [
-    { "operation": "text_to_image", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/text-to-image.json", "sha256": "df50891be426d6c6e9e8427cb205393ca5580cb0a612fc67cf9c53c679a4e98b", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/text-to-image.mapping.json", "mappingSha256": "e42c3666372b08f17c2a0d16fcb2742b4f74d99c2b90ca87a8debb64edc982ea", "reviewStatus": "runtime_validation_required" },
-    { "operation": "image_to_image", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/image-to-image.json", "sha256": "f80103d4839057b2fc6d3dad83568611d66ccf35f7f52b56c7a69ce80e2c9642", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/image-to-image.mapping.json", "mappingSha256": "e6c12218005326b017d86b0aa0706bce14177bfa9abeff6bd2fc75a8145d4827", "reviewStatus": "runtime_validation_required" },
-    { "operation": "controlnet", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/controlnet.json", "sha256": "49024fb7d4ea92d4cca1546d52fa35bf7e59ee3cfb37abcc0a0a907bda303254", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/controlnet.mapping.json", "mappingSha256": "2af5e0520a62115fe26ffe5e74ee3dfc195395597fa865ef622b656b89c83d02", "reviewStatus": "runtime_validation_required" },
-    { "operation": "inpainting", "status": "pending", "version": "pilot-sdxl-v1", "file": "apps/desktop/resources/adult-pilot-workflows/inpainting.json", "sha256": "25f9aff136d25c837e17a3f1ccd71b8390599818a4d8626f0fa19983737ff9fd", "mappingFile": "apps/desktop/resources/adult-pilot-workflows/inpainting.mapping.json", "mappingSha256": "a3de62909dc4435c0fd39b06950af2c54a249841c8723c201514a7d08f53d2ad", "reviewStatus": "runtime_validation_required" }
+    {
+      "operation": "text_to_image",
+      "status": "fixed",
+      "version": "pilot-sdxl-v1",
+      "file": "apps/desktop/resources/adult-pilot-workflows/text-to-image.json",
+      "sha256": "df50891be426d6c6e9e8427cb205393ca5580cb0a612fc67cf9c53c679a4e98b",
+      "mappingFile": "apps/desktop/resources/adult-pilot-workflows/text-to-image.mapping.json",
+      "mappingSha256": "e42c3666372b08f17c2a0d16fcb2742b4f74d99c2b90ca87a8debb64edc982ea",
+      "reviewStatus": "repository_hash_verified"
+    },
+    {
+      "operation": "image_to_image",
+      "status": "fixed",
+      "version": "pilot-sdxl-v1",
+      "file": "apps/desktop/resources/adult-pilot-workflows/image-to-image.json",
+      "sha256": "f80103d4839057b2fc6d3dad83568611d66ccf35f7f52b56c7a69ce80e2c9642",
+      "mappingFile": "apps/desktop/resources/adult-pilot-workflows/image-to-image.mapping.json",
+      "mappingSha256": "e6c12218005326b017d86b0aa0706bce14177bfa9abeff6bd2fc75a8145d4827",
+      "reviewStatus": "repository_hash_verified"
+    },
+    {
+      "operation": "controlnet",
+      "status": "fixed",
+      "version": "pilot-sdxl-v1",
+      "file": "apps/desktop/resources/adult-pilot-workflows/controlnet.json",
+      "sha256": "49024fb7d4ea92d4cca1546d52fa35bf7e59ee3cfb37abcc0a0a907bda303254",
+      "mappingFile": "apps/desktop/resources/adult-pilot-workflows/controlnet.mapping.json",
+      "mappingSha256": "2af5e0520a62115fe26ffe5e74ee3dfc195395597fa865ef622b656b89c83d02",
+      "reviewStatus": "repository_hash_verified"
+    },
+    {
+      "operation": "inpainting",
+      "status": "fixed",
+      "version": "pilot-sdxl-v1",
+      "file": "apps/desktop/resources/adult-pilot-workflows/inpainting.json",
+      "sha256": "25f9aff136d25c837e17a3f1ccd71b8390599818a4d8626f0fa19983737ff9fd",
+      "mappingFile": "apps/desktop/resources/adult-pilot-workflows/inpainting.mapping.json",
+      "mappingSha256": "a3de62909dc4435c0fd39b06950af2c54a249841c8723c201514a7d08f53d2ad",
+      "reviewStatus": "repository_hash_verified"
+    }
   ],
   "models": [
     {
       "role": "checkpoint",
-      "status": "pending",
+      "status": "fixed",
       "name": "stabilityai/stable-diffusion-xl-base-1.0:sd_xl_base_1.0.safetensors",
       "version": "462165984030d82259a11f4367a4eed129e94a7b",
       "sourceUrl": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/462165984030d82259a11f4367a4eed129e94a7b/sd_xl_base_1.0.safetensors",
       "licenseUrl": "https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/blob/462165984030d82259a11f4367a4eed129e94a7b/LICENSE.md",
       "sha256": "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b",
       "installedBytes": 6938078334,
-      "reviewStatus": "owner_license_confirmed_file_validation_pending"
+      "reviewStatus": "local_bundle_evidence_verified"
     },
     {
       "role": "vae",
-      "status": "pending",
+      "status": "fixed",
       "name": "madebyollin/sdxl-vae-fp16-fix:sdxl.vae.safetensors",
       "version": "207b116dae70ace3637169f1ddd2434b91b3a8cd",
       "sourceUrl": "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/resolve/207b116dae70ace3637169f1ddd2434b91b3a8cd/sdxl.vae.safetensors",
       "licenseUrl": "https://huggingface.co/madebyollin/sdxl-vae-fp16-fix/tree/207b116dae70ace3637169f1ddd2434b91b3a8cd",
       "sha256": "235745af8d86bf4a4c1b5b4f529868b37019a10f7c0b2e79ad0abca3a22bc6e1",
       "installedBytes": 334641162,
-      "reviewStatus": "owner_license_confirmed_file_validation_pending"
+      "reviewStatus": "local_bundle_evidence_verified"
     },
     {
       "role": "controlnet",
-      "status": "pending",
+      "status": "fixed",
       "name": "diffusers/controlnet-canny-sdxl-1.0:diffusion_pytorch_model.safetensors",
       "version": "eb115a19a10d14909256db740ed109532ab1483c",
       "sourceUrl": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/resolve/eb115a19a10d14909256db740ed109532ab1483c/diffusion_pytorch_model.safetensors",
       "licenseUrl": "https://huggingface.co/diffusers/controlnet-canny-sdxl-1.0/tree/eb115a19a10d14909256db740ed109532ab1483c",
       "sha256": "ea99040544a999f814fd854575a3aee069a005d026864c8d321b82576706a221",
       "installedBytes": 5004167864,
-      "reviewStatus": "owner_license_confirmed_file_validation_pending"
+      "reviewStatus": "local_bundle_evidence_verified"
     }
-  ]
+  ],
+  "verification": {
+    "format": "mangai.desktop-adult-pilot-bundle-verification",
+    "version": 1,
+    "evidenceCheckedAt": "2026-09-17T05:28:21.137Z",
+    "sourceManifestSha256": "29859af3fe53de3ed2cf39e54f32e24a1b0fa7982c3ec7464826fd98590ce083",
+    "evidenceSha256": "ae144d5200b6ae6c8e8cb07b7ecf4c8b9f17dc951b888a7803fd16fd2a946737",
+    "artifacts": [
+      {
+        "id": "runtime",
+        "bytes": 2146721943,
+        "sha256": "ed57cc6b19ae3d83add1ecebfdd56b25e04e0008cf0fe9af43a4ad8797e2a24c"
+      },
+      {
+        "id": "checkpoint",
+        "bytes": 6938078334,
+        "sha256": "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b"
+      },
+      {
+        "id": "vae",
+        "bytes": 334641162,
+        "sha256": "235745af8d86bf4a4c1b5b4f529868b37019a10f7c0b2e79ad0abca3a22bc6e1"
+      },
+      {
+        "id": "controlnet",
+        "bytes": 5004167864,
+        "sha256": "ea99040544a999f814fd854575a3aee069a005d026864c8d321b82576706a221"
+      }
+    ],
+    "workflows": [
+      {
+        "operation": "text_to_image",
+        "sha256": "df50891be426d6c6e9e8427cb205393ca5580cb0a612fc67cf9c53c679a4e98b",
+        "mappingSha256": "e42c3666372b08f17c2a0d16fcb2742b4f74d99c2b90ca87a8debb64edc982ea"
+      },
+      {
+        "operation": "image_to_image",
+        "sha256": "f80103d4839057b2fc6d3dad83568611d66ccf35f7f52b56c7a69ce80e2c9642",
+        "mappingSha256": "e6c12218005326b017d86b0aa0706bce14177bfa9abeff6bd2fc75a8145d4827"
+      },
+      {
+        "operation": "controlnet",
+        "sha256": "49024fb7d4ea92d4cca1546d52fa35bf7e59ee3cfb37abcc0a0a907bda303254",
+        "mappingSha256": "2af5e0520a62115fe26ffe5e74ee3dfc195395597fa865ef622b656b89c83d02"
+      },
+      {
+        "operation": "inpainting",
+        "sha256": "25f9aff136d25c837e17a3f1ccd71b8390599818a4d8626f0fa19983737ff9fd",
+        "mappingSha256": "a3de62909dc4435c0fd39b06950af2c54a249841c8723c201514a7d08f53d2ad"
+      }
+    ]
+  }
 }
