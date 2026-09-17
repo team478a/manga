@@ -88,6 +88,8 @@ readiness strict成功後は`desktop:adult:stage0-operation-package:create`で�
 
 Stage 0の引継ぎと期限管理では`desktop:adult:stage0-lifecycle:audit`を使用し、operation package、開始承認、消費receipt、12GB実機証跡、完了証跡を変更せず連結確認する。`READY`、`PREPARED`、`IN_PROGRESS`、`COMPLETED`、`EXPIRED`を判定し、前工程欠落、別session、改変、監査中変更をfail closedで停止する。監査成功は実施承認、外部配布、Stage 1招待を許可せず、`EXPIRED`は証跡の再利用ではなく保持期限対応を要求する。
 
+`EXPIRED`後は`desktop:adult:stage0-retention-proposal:create`でStage 0運用証跡だけを内容SHA-256／場所SHA-256付きの削除候補scopeへ固定し、`desktop:adult:stage0-retention-proposal:audit`で原本との一致をread-only確認する。proposalは利用者Project、Prompt、画像、export、backup、Runtime、model、installer、Bundle本体を対象外とし、常に`deletionAuthorized=false`を固定する。削除applyと削除receiptは未実装であり、対象proposalを明記した責任者承認と専用実装なしにfileを削除しない。
+
 Stage 0 gateは取込済みmanifestと元Bundle証跡を再照合する。manifestの`fixed`状態だけでは合格せず、証跡fileの改変、artifact ID重複、未知field、容量・SHA-256、workflow／mapping SHA-256、取込verificationのいずれかが不一致なら`fixed_bundle: BLOCKED`または入力不正として停止する。
 
 責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。

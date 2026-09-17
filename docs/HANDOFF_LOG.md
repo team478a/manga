@@ -1,15 +1,27 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-17 Codex: Desktop Adult Stage 0証跡保持期限proposal／read-only監査
+
+- PR #504 merge commit `260fd11`から`codex/adult-stage0-retention-proposal-20260917`を作成した。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`は成功済み。
+- `EXPIRED`となったStage 0の運用証跡を、実削除せず削除候補proposalへ固定するCLIと、そのproposalを元証跡へ再結合するread-only監査CLIを追加した。
+- proposalはlifecycle phaseに応じた5〜9件だけを対象にし、内容／場所digest、削除期限、scope digest、4つの保持確認を保存する。user content、installer、bundle artifact、Runtime／model、Project、prompt、画像、export、backupは対象外である。
+- proposalは`deletionAuthorized=false`かつ別承認・別apply必須である。期限未到達、改変、移動・copy、重複、上書き、作成・監査中のsource変更をfail closedで拒否し、監査はfileを変更しない。
+- Stage 0 runbookとAdult Pilot公開計画へ対象範囲、除外範囲、作成／監査コマンド、4確認、実削除禁止境界を追記した。
+- 新規12/12、Stage 0集中45/45、Desktop 384/384、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はcommit・push・Draft PR作成と全CI／Vercel Preview確認である。
+
+---
+
 ## 2026-09-17 Codex: Desktop Adult Stage 0運用ライフサイクル統合read-only監査
 
 - PR #503 merge commit `3cff3e8`から`codex/adult-stage0-lifecycle-audit-20260917`を作成した。マージ後Required Quality run `35169748338`とDesktop Windows run `35169748296`は成功済み。
-- Implementation commit `9e81edc`をpushし、Draft PR #504を作成した。全CI／Vercel Previewを確認中。
+- Implementation commit `9e81edc`を含むPR #504はmerge commit `260fd11`でマージ済み。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`も成功した。
 - Stage 0の候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation package、開始承認、消費receipt、12GB実機証跡、完了証跡を連結するread-only監査CLIを追加した。
 - 開始前、承認済み、実施中、完了、削除期限到達を5状態で判定する。期限後の履歴監査でもsource bindingと全証跡を検査し、通常の新規作成・消費は期限切れを引き続き拒否する。
 - 前工程なしの証跡、別session、時系列不整合、改変、監査中変更をfail closedで拒否する。CLIはcandidate ID、端末情報、作品内容、pathを表示せず、file変更や外部操作を行わない。
 - Stage 0 runbookとAdult Pilot公開計画へ監査コマンド、状態の意味、保持期限対応、承認非代替境界を追記した。
 - 集中33/33、Desktop 372/372、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #504の全CI／Vercel Preview成功まで確認する。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。保持期限対応は削除候補proposalとread-only監査から進め、実削除は対象付き明示承認を待つ。
 
 ---
 

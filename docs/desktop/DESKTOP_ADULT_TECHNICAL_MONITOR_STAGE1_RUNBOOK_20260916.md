@@ -232,6 +232,42 @@ npm run desktop:adult:stage0-lifecycle:audit -- `
 
 監査はcandidate ID、実path、端末情報、作品内容を表示せず、fileの作成・更新・削除、Runtime起動、model取得、生成、Stage 1承認を行わない。成功は責任者承認、Stage 0開始、完了証跡取込、Stage 1配布許可を代替しない。前工程なしのreceipt／完了証跡、別session、改変、監査中の変更はfail closedで停止する。
 
+### 5.2 Stage 0証跡の保持期限proposal
+
+統合監査が`EXPIRED`を返した場合も、証跡を手作業で直ちに削除しない。最初に削除候補scopeだけを内容非保持proposalへ固定し、read-only監査を行う。proposalは候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation packageと、存在する場合だけ開始承認、消費receipt、12GB実機証跡、完了証跡の5〜9fileを対象にする。installer、Bundle本体、Runtime、model、Project、Prompt、参照画像、生成画像、export、backupは対象に含めない。
+
+```powershell
+$retentionProposal = Join-Path $privateRoot "stage0-retention-proposal.json"
+
+npm run desktop:adult:stage0-retention-proposal:create -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence `
+  --confirm-retention-scope-reviewed `
+  --confirm-no-retention-hold `
+  --confirm-user-content-excluded `
+  --confirm-separate-apply-required `
+  --out $retentionProposal
+
+npm run desktop:adult:stage0-retention-proposal:audit -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence `
+  --proposal $retentionProposal
+```
+
+開始承認前は`--authorization`を、実機証跡回収前は`--hardware-evidence`を省略する。proposal作成時に統合ライフサイクル監査を再実行し、現在も`EXPIRED`であること、削除期限、phaseと存在する証跡の組合せ、各fileの内容SHA-256と場所SHA-256、proposal自体の保存場所、4つの明示確認を固定する。作成中または監査中の証跡変更、proposalのcopy／rename、原本改変、保持命令あり、利用者コンテンツ混入、phaseに対する証跡欠落をfail closedで拒否する。
+
+proposalと監査は証跡を変更・削除せず、常に`deletionAuthorized=false`とする。proposalの成功は削除承認ではない。削除apply、削除receipt、削除後監査は未実装であり、専用実装、proposalレビュー、対象proposalを明記した責任者承認が揃うまで、proposalを含む全fileを保持する。
+
 Stage 0 artifactはPilot招待物ではない。同じ候補者をStage 1へ進める場合も、責任者確認後にStage 1用の配布記録と招待台帳entryを新規作成する。
 
 ## 6. Stage 1: 1名招待
