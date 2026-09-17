@@ -668,7 +668,10 @@ export const applyStage0RetentionDeletion = (rawOptions) => {
   }
 
   let context = createOrReadManifest(contextBase, !recovering);
+  if (typeof options.afterManifest === "function") options.afterManifest();
   context = createOrReadDeleteIntent(context);
+  if (typeof options.afterDeleteIntent === "function")
+    options.afterDeleteIntent();
   if (!fs.existsSync(paths.purgeIntentPath)) stageOriginalEvidence(context);
   context = createOrReadPurgeIntent(context);
   if (typeof options.afterPurgeIntent === "function")

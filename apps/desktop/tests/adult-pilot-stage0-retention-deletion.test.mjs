@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { createStage0RetentionAuthorization } from "../scripts/adult-pilot-stage0-retention-authorization.mjs";
 import { applyStage0RetentionDeletion } from "../scripts/adult-pilot-stage0-retention-apply.mjs";
 import { auditStage0RetentionDeletion } from "../scripts/adult-pilot-stage0-retention-deletion-audit.mjs";
+import { auditStage0RetentionDeletionLifecycle } from "../scripts/adult-pilot-stage0-retention-deletion-lifecycle-audit.mjs";
 import { createStage0RetentionProposal } from "../scripts/adult-pilot-stage0-retention-proposal.mjs";
 
 const scriptDirectory = path.resolve(
@@ -558,6 +559,282 @@ test("post-deletion audit CLI does not disclose private paths or candidate data"
   });
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /DELETION_VERIFIED/);
+  assert.doesNotMatch(
+    result.stdout,
+    /candidate-|assessment\.json|retention-recovery|private/i,
+  );
+});
+
+test("retention deletion lifecycle audit reports proposal, authorization, and expiration without writes", (t) => {
+  const values = fixture(t);
+  const proposalBefore = directorySnapshot(values.privateRoot);
+  assert.equal(
+    auditStage0RetentionDeletionLifecycle(values.applyOptions).state,
+    "PROPOSAL_READY",
+  );
+  assert.deepEqual(directorySnapshot(values.privateRoot), proposalBefore);
+
+  authorize(values);
+  const authorizedBefore = directorySnapshot(values.privateRoot);
+  const authorized = auditStage0RetentionDeletionLifecycle(values.applyOptions);
+  assert.equal(authorized.state, "AUTHORIZED");
+  assert.equal(authorized.authorizationExpired, false);
+  assert.deepEqual(directorySnapshot(values.privateRoot), authorizedBefore);
+
+  const expired = auditStage0RetentionDeletionLifecycle({
+    ...values.applyOptions,
+    now: new Date("2026-09-17T01:01:00.001Z"),
+  });
+  assert.equal(expired.state, "AUTHORIZED");
+  assert.equal(expired.authorizationExpired, true);
+});
+
+test("retention deletion lifecycle audit distinguishes manifest and delete-intent preparation", (t) => {
+  const manifest = fixture(t);
+  authorize(manifest);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...manifest.applyOptions,
+        afterManifest: () => {
+          throw new Error("manifest prepared");
+        },
+      }),
+    /manifest prepared/,
+  );
+  assert.equal(
+    auditStage0RetentionDeletionLifecycle(manifest.applyOptions).state,
+    "MANIFEST_PREPARED",
+  );
+
+  const intent = fixture(t);
+  authorize(intent);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...intent.applyOptions,
+        afterDeleteIntent: () => {
+          throw new Error("delete intent prepared");
+        },
+      }),
+    /delete intent prepared/,
+  );
+  const result = auditStage0RetentionDeletionLifecycle(intent.applyOptions);
+  assert.equal(result.state, "DELETE_PREPARED");
+  assert.equal(result.originalsAbsent, 0);
+  assert.equal(result.recoveryPayloadsPresent, 0);
+  const expiredPrepared = auditStage0RetentionDeletionLifecycle({
+    ...intent.applyOptions,
+    now: new Date("2026-09-17T02:00:00.000Z"),
+  });
+  assert.equal(expiredPrepared.state, "DELETE_PREPARED");
+  assert.equal(expiredPrepared.authorizationExpired, true);
+  assert.equal(
+    applyStage0RetentionDeletion({
+      ...intent.applyOptions,
+      now: new Date("2026-09-17T02:00:00.000Z"),
+    }).recovered,
+    true,
+  );
+});
+
+test("retention deletion lifecycle audit distinguishes staging recovery and purge readiness", (t) => {
+  const partial = fixture(t);
+  authorize(partial);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...partial.applyOptions,
+        afterOriginalRemoval: ({ index }) => {
+          if (index === 0) throw new Error("partial staging");
+        },
+      }),
+    /partial staging/,
+  );
+  const partialResult = auditStage0RetentionDeletionLifecycle(
+    partial.applyOptions,
+  );
+  assert.equal(partialResult.state, "STAGING_RECOVERY_REQUIRED");
+  assert.equal(partialResult.originalsAbsent, 1);
+  assert.equal(partialResult.recoveryPayloadsPresent, 1);
+
+  const staged = fixture(t);
+  authorize(staged);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...staged.applyOptions,
+        afterOriginalRemoval: ({ index }) => {
+          if (index === staged.sourcePaths.length - 1)
+            throw new Error("all originals staged");
+        },
+      }),
+    /all originals staged/,
+  );
+  const stagedResult = auditStage0RetentionDeletionLifecycle(
+    staged.applyOptions,
+  );
+  assert.equal(stagedResult.state, "PURGE_READY");
+  assert.equal(stagedResult.originalsAbsent, 5);
+  assert.equal(stagedResult.recoveryPayloadsPresent, 5);
+});
+
+test("retention deletion lifecycle audit distinguishes purge and receipt recovery", (t) => {
+  const prepared = fixture(t);
+  authorize(prepared);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...prepared.applyOptions,
+        afterPurgeIntent: () => {
+          throw new Error("purge prepared");
+        },
+      }),
+    /purge prepared/,
+  );
+  assert.equal(
+    auditStage0RetentionDeletionLifecycle(prepared.applyOptions).state,
+    "PURGE_PREPARED",
+  );
+
+  const partial = fixture(t);
+  authorize(partial);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...partial.applyOptions,
+        afterQuarantinePurge: ({ index }) => {
+          if (index === 0) throw new Error("partial purge");
+        },
+      }),
+    /partial purge/,
+  );
+  assert.equal(
+    auditStage0RetentionDeletionLifecycle(partial.applyOptions).state,
+    "PURGE_RECOVERY_REQUIRED",
+  );
+
+  const receipt = fixture(t);
+  authorize(receipt);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...receipt.applyOptions,
+        afterQuarantinePurge: ({ index }) => {
+          if (index === receipt.sourcePaths.length - 1)
+            throw new Error("receipt recovery");
+        },
+      }),
+    /receipt recovery/,
+  );
+  const receiptResult = auditStage0RetentionDeletionLifecycle(
+    receipt.applyOptions,
+  );
+  assert.equal(receiptResult.state, "RECEIPT_RECOVERY_REQUIRED");
+  assert.equal(receiptResult.recoveryPayloadsPresent, 0);
+});
+
+test("retention deletion lifecycle audit verifies completion and remains read-only", (t) => {
+  const values = fixture(t);
+  authorize(values);
+  applyStage0RetentionDeletion(values.applyOptions);
+  const before = directorySnapshot(values.privateRoot);
+  const result = auditStage0RetentionDeletionLifecycle({
+    ...values.applyOptions,
+    now: new Date("2026-09-17T02:00:00.000Z"),
+  });
+  assert.equal(result.state, "DELETED");
+  assert.equal(result.authorizationExpired, true);
+  assert.equal(result.originalsAbsent, 5);
+  assert.equal(result.recoveryPayloadsPresent, 0);
+  assert.deepEqual(directorySnapshot(values.privateRoot), before);
+});
+
+test("retention deletion lifecycle audit fails closed on missing, unknown, and concurrent state", (t) => {
+  const missing = fixture(t);
+  authorize(missing);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...missing.applyOptions,
+        afterOriginalRemoval: ({ index }) => {
+          if (index === 0) throw new Error("stop");
+        },
+      }),
+    /stop/,
+  );
+  const payload = fs
+    .readdirSync(missing.quarantineDirectory)
+    .find((name) => name.endsWith(".evidence"));
+  fs.unlinkSync(path.join(missing.quarantineDirectory, payload));
+  assert.throws(
+    () => auditStage0RetentionDeletionLifecycle(missing.applyOptions),
+    /両方から証跡が失われています/,
+  );
+
+  const unknown = fixture(t);
+  authorize(unknown);
+  assert.throws(
+    () =>
+      applyStage0RetentionDeletion({
+        ...unknown.applyOptions,
+        afterManifest: () => {
+          throw new Error("stop");
+        },
+      }),
+    /stop/,
+  );
+  write(path.join(unknown.quarantineDirectory, "unknown.txt"), "unknown");
+  assert.throws(
+    () => auditStage0RetentionDeletionLifecycle(unknown.applyOptions),
+    /未承認file/,
+  );
+
+  const concurrent = fixture(t);
+  authorize(concurrent);
+  assert.throws(
+    () =>
+      auditStage0RetentionDeletionLifecycle({
+        ...concurrent.applyOptions,
+        beforeFinalVerification: () =>
+          fs.appendFileSync(concurrent.deletionAuthorizationPath, " "),
+      }),
+    /処理中に変更/,
+  );
+});
+
+test("retention deletion lifecycle audit CLI hides private data", (t) => {
+  const values = fixture(t);
+  authorize(values);
+  applyStage0RetentionDeletion(values.applyOptions);
+  const result = spawnSync(
+    process.execPath,
+    [
+      path.join(
+        scriptDirectory,
+        "adult-pilot-stage0-retention-deletion-lifecycle-audit.mjs",
+      ),
+      "--assessment",
+      values.assessmentPath,
+      "--plan",
+      values.planPath,
+      "--artifact-evidence",
+      values.artifactEvidencePath,
+      "--bundle-evidence",
+      values.bundleEvidencePath,
+      "--package",
+      values.packagePath,
+      "--proposal",
+      values.proposalPath,
+      "--deletion-authorization",
+      values.deletionAuthorizationPath,
+      "--quarantine-dir",
+      values.quarantineDirectory,
+    ],
+    { encoding: "utf8", env: process.env },
+  );
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /State: DELETED/);
   assert.doesNotMatch(
     result.stdout,
     /candidate-|assessment\.json|retention-recovery|private/i,

@@ -292,6 +292,26 @@ npm run desktop:adult:stage0-retention-authorization:create -- `
   --out $deletionAuthorization
 ```
 
+削除applyの前、実行中断後、完了後は、最初に統合read-only監査で現在位置を確認する。削除承認がまだ存在しない場合も、将来作成する`$deletionAuthorization`と`$recoveryDirectory`の固定pathをそのまま指定する。
+
+```powershell
+npm run desktop:adult:stage0-retention-deletion-lifecycle:audit -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --start-authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence `
+  --proposal $retentionProposal `
+  --deletion-authorization $deletionAuthorization `
+  --quarantine-dir $recoveryDirectory
+```
+
+`PROPOSAL_READY`は削除未承認、`AUTHORIZED`は承認済み・未変更、`MANIFEST_PREPARED`はmanifest作成後かつintent前、`DELETE_PREPARED`は削除intent作成済み・原本隔離前を表す。`STAGING_RECOVERY_REQUIRED`は原本隔離途中、`PURGE_READY`は全原本隔離済み・purge intent前、`PURGE_PREPARED`はpurge intent作成済み・回復payload削除前、`PURGE_RECOVERY_REQUIRED`は回復payload削除途中、`RECEIPT_RECOVERY_REQUIRED`はpayload削除済み・receipt未確定、`DELETED`は削除後監査まで成功した状態である。`authorizationExpired=yes`でも、削除intentが存在する中断状態は同じ固定intentから回復できる。削除intent前に期限切れとなった場合は新しい対象付き承認なしにapplyしない。
+
+統合監査はproposal、承認、manifest、intent、receipt、各原本と回復payloadの存在状態・digest・時系列を再結合する。原本と回復copyの同時欠損、未知file、control fileの順序違い、purge後の原本再出現、監査中変更をfail closedで拒否する。fileを作成・変更・削除せず、成功結果は削除承認、apply実行、再実行承認を代替しない。
+
 削除applyは承認、proposal、全sourceを再検証してから内容非保持manifestと削除intentを作る。各原本を固定回復領域へ1fileずつfsync付きで隔離し、全原本が消え、全copyがproposal digestと一致した場合だけpurge intentを作成する。その後、回復copyをすべてpurgeし、原本と回復payloadの両方が存在しない場合だけ内容非保持receiptを確定する。最終的に回復領域へ残すのは内容・pathを含まないmanifestだけであり、証跡copyを保持期限後のbackupとして残さない。
 
 ```powershell
@@ -324,7 +344,7 @@ npm run desktop:adult:stage0-retention-deletion:audit -- `
   --quarantine-dir $recoveryDirectory
 ```
 
-開始承認前は`--start-authorization`を、実機証跡回収前は`--hardware-evidence`を省略する。中断時はmanifest、削除intent、purge intent、承認、proposalを編集・削除せず、同じapply引数と確認flagで再実行する。purge intent前は原本または検証済み回復copyのどちらかを必須とし、両方がない場合はfail closedで停止する。purge intent後は原本の再出現を拒否し、残っている回復copyだけをpurgeしてreceiptを回復確定する。手作業で原本、回復copy、control fileを削除して再開しない。
+開始承認前は`--start-authorization`を、実機証跡回収前は`--hardware-evidence`を省略する。中断時は統合read-only監査で状態を確認し、manifest、削除intent、purge intent、承認、proposalを編集・削除せず、同じapply引数と確認flagで再実行する。purge intent前は原本または検証済み回復copyのどちらかを必須とし、両方がない場合はfail closedで停止する。purge intent後は原本の再出現を拒否し、残っている回復copyだけをpurgeしてreceiptを回復確定する。手作業で原本、回復copy、control fileを削除して再開しない。
 
 削除後監査はproposal、承認、manifest、2つのintent、receiptの全digestと時系列、原本・回復payloadの不在をread-onlyで確認し、成功時だけ`DELETION_VERIFIED`を返す。candidate ID、実path、作品内容を表示せず、Runtime、model、生成、配布、credit操作を行わない。実proposalへの削除承認作成とapplyは、この手順を実装しただけでは許可されず、対象proposalを明記した責任者の明示承認を別途必要とする。
 

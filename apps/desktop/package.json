@@ -39,6 +39,7 @@
     "adult:stage0-retention-authorization:create": "node scripts/adult-pilot-stage0-retention-authorization.mjs",
     "adult:stage0-retention:apply": "node scripts/adult-pilot-stage0-retention-apply.mjs",
     "adult:stage0-retention-deletion:audit": "node scripts/adult-pilot-stage0-retention-deletion-audit.mjs",
+    "adult:stage0-retention-deletion-lifecycle:audit": "node scripts/adult-pilot-stage0-retention-deletion-lifecycle-audit.mjs",
     "adult:stage1-invitation-authorization:create": "node scripts/adult-pilot-stage1-invitation-authorization.mjs create",
     "adult:stage1-invitation-authorization:consume": "node scripts/adult-pilot-stage1-invitation-authorization.mjs consume",
     "adult:stage1-invite-ledger-proposal:create": "node scripts/adult-pilot-stage1-invite-ledger-proposal.mjs",
