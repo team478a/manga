@@ -3,12 +3,13 @@
 ## 2026-09-17 Codex: Desktop Adult Stage 0証跡保持期限proposal／read-only監査
 
 - PR #504 merge commit `260fd11`から`codex/adult-stage0-retention-proposal-20260917`を作成した。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`は成功済み。
+- Implementation commit `0593e60`をpushし、Draft PR #505を作成した。全CI／Vercel Previewを確認中。
 - `EXPIRED`となったStage 0の運用証跡を、実削除せず削除候補proposalへ固定するCLIと、そのproposalを元証跡へ再結合するread-only監査CLIを追加した。
 - proposalはlifecycle phaseに応じた5〜9件だけを対象にし、内容／場所digest、削除期限、scope digest、4つの保持確認を保存する。user content、installer、bundle artifact、Runtime／model、Project、prompt、画像、export、backupは対象外である。
 - proposalは`deletionAuthorized=false`かつ別承認・別apply必須である。期限未到達、改変、移動・copy、重複、上書き、作成・監査中のsource変更をfail closedで拒否し、監査はfileを変更しない。
 - Stage 0 runbookとAdult Pilot公開計画へ対象範囲、除外範囲、作成／監査コマンド、4確認、実削除禁止境界を追記した。
 - 新規12/12、Stage 0集中45/45、Desktop 384/384、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はcommit・push・Draft PR作成と全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #505の全CI／Vercel Preview確認である。
 
 ---
 

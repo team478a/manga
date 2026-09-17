@@ -2,16 +2,17 @@
 
 ## 2026-09-17 Desktop Adult Stage 0証跡保持期限proposal／read-only監査
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PR_NOT_CREATED / REAL_RETENTION_PROPOSAL_NOT_CREATED / REAL_EVIDENCE_NOT_DELETED / REAL_STAGE0_NOT_RUN`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_RETENTION_PROPOSAL_NOT_CREATED / REAL_EVIDENCE_NOT_DELETED / REAL_STAGE0_NOT_RUN`
 - Base: PR #504 merge commit `260fd11`。マージ後Required Quality run `35173684638`（Core quality 3分28秒、Migration roundtrip 51秒）とDesktop Windows run `35173684496`（4分0秒）は成功済み。
 - Branch: `codex/adult-stage0-retention-proposal-20260917`。
+- Implementation commit: `0593e60`。Draft PR: #505。
 - Stage 0統合監査が`EXPIRED`かつ`retentionActionRequired=true`を返す場合だけ、候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation packageと、進行段階に応じた開始承認・消費receipt・12GB実機証跡・完了証跡を5〜9件の削除候補proposalへ固定するCLIを追加した。
 - proposalは各証跡の内容SHA-256と場所SHA-256、削除期限、lifecycle phase、scope digest、proposal場所digest、4つの保持確認を保存する。installer、bundle artifact、Runtime／model、Project、prompt、画像、export、backupは対象外で、`deletionAuthorized=false`と`SEPARATE_APPROVAL_AND_APPLY_REQUIRED`を固定する。
 - read-only監査CLIは、元証跡とproposalの内容・場所・phase・scope・時系列・保持確認を再結合し、`PROPOSAL_READY`だけを返す。改変、移動・copy、重複、期限未到達、監査中の内容・存在状態変更をfail closedで拒否する。
 - proposal作成・監査はいずれも実証跡を削除せず、外部処理を行わない。proposalはGit管理外のprivate absolute pathへ排他的に作成し、標準出力へcandidate ID、端末情報、作品内容、pathを表示しない。実削除には別実装、対象確認、明示承認が必要である。
 - 検証: 新規12/12、Stage 0集中45/45、Desktop 384/384、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者、実承認、実証跡、実proposal、実削除を変更していない。未追跡`apps/desktop/artifacts/`はcommit対象外である。
-- 次: commit・push・Draft PRを作成し、全CI／Vercel Preview成功まで確認する。実proposal作成・実削除は行わない。
+- 次: PR #505の全CI／Vercel Preview成功まで確認する。実proposal作成・実削除は行わない。
 
 ---
 

@@ -3,12 +3,13 @@
 ## 0.0 Desktop Adult Stage 0証跡保持期限proposal／read-only監査（2026-09-17）
 
 - BaseはPR #504 merge commit `260fd11`。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`は成功済み。Branchは`codex/adult-stage0-retention-proposal-20260917`。
+- Implementation commitは`0593e60`。Draft PR #505を作成し、全CI／Vercel Previewを確認中。
 - Stage 0統合監査が`EXPIRED`かつ保持期限対応必須を返す場合だけ、ライフサイクル段階に応じた5〜9件の運用証跡を内容・場所SHA-256へ固定する削除候補proposal CLIを追加した。
 - 対象は候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation package、存在する開始承認・消費receipt・12GB実機証跡・完了証跡に限定した。installer、bundle artifact、Runtime／model、Project、prompt、画像、export、backupは除外する。
 - 4つの保持確認を必須にし、proposalへ`deletionAuthorized=false`と別承認・別apply必須を固定する。Git管理外private pathへ排他的に作成し、上書き、移動・copy、重複、source競合を拒否する。
 - read-only監査CLIはproposal、現在のStage 0 lifecycle、全source、phase、scope、digestを再結合して`PROPOSAL_READY`を判定する。改変、期限未到達、監査中変更をfail closedで拒否し、fileを書き換えない。
 - 新規12/12、Stage 0集中45/45、Desktop 384/384、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はcommit・push・Draft PRと全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #505の全CI／Vercel Preview確認である。
 
 ---
 
