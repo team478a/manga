@@ -1,15 +1,28 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0証跡削除承認／中断回復apply／read-only監査（2026-09-17）
+
+- BaseはPR #505 merge commit `e18c99c`。マージ後Required Quality run `35176879178`とDesktop Windows run `35176879177`は成功済み。Branchは`codex/adult-stage0-retention-apply-20260917`。
+- Implementation commitは`3d1d06c`。Draft PR #506を作成し、全CI／Vercel Previewを確認中。
+- 監査済みretention proposalへ削除対象scopeと固定回復隔離先を結ぶ、最大24時間の別削除承認CLIを追加した。5つの明示確認を必須にし、user contentとStage 1配布は許可しない。
+- apply CLIはproposal／承認／sourceを再検証し、内容非保持manifestとintentを固定してから、各元証跡を隔離copyへfsync・digest検証後に削除する。全元証跡の隔離後はpurge intentを固定し、隔離payloadを全削除してからreceiptを確定するため、保持期限を越える証跡backupを残さない。
+- 固定intentから個別隔離途中、元証跡削除後、purge intent後、隔離payload一部削除後を回復できる。元証跡とcopyの同時欠損、copy／control改変、manifest欠損、scope外証跡、二重適用はfail closedで拒否する。
+- post-delete read-only監査CLIはproposal、承認、manifest、delete／purge intent、receiptと、元証跡・隔離payloadの不存在を再結合する。標準出力へcandidate ID、端末情報、作品内容、pathを表示せず、監査はfileを変更しない。
+- 新規16/16、Stage 0 lifecycle＋retention集中36/36、Desktop 400/400、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造成功。Vite既知warningと外部設定・手動E2EのPENDINGは不変。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。削除検証は一時directoryのみ。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #506の全CI／Vercel Preview確認である。
+
+---
+
 ## 0.0 Desktop Adult Stage 0証跡保持期限proposal／read-only監査（2026-09-17）
 
 - BaseはPR #504 merge commit `260fd11`。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`は成功済み。Branchは`codex/adult-stage0-retention-proposal-20260917`。
-- Implementation commitは`0593e60`。Draft PR #505を作成し、全CI／Vercel Previewを確認中。
+- Implementation commitは`0593e60`。PR #505はmerge commit `e18c99c`でマージ済み。マージ後Required Quality run `35176879178`とDesktop Windows run `35176879177`も成功した。
 - Stage 0統合監査が`EXPIRED`かつ保持期限対応必須を返す場合だけ、ライフサイクル段階に応じた5〜9件の運用証跡を内容・場所SHA-256へ固定する削除候補proposal CLIを追加した。
 - 対象は候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation package、存在する開始承認・消費receipt・12GB実機証跡・完了証跡に限定した。installer、bundle artifact、Runtime／model、Project、prompt、画像、export、backupは除外する。
 - 4つの保持確認を必須にし、proposalへ`deletionAuthorized=false`と別承認・別apply必須を固定する。Git管理外private pathへ排他的に作成し、上書き、移動・copy、重複、source競合を拒否する。
 - read-only監査CLIはproposal、現在のStage 0 lifecycle、全source、phase、scope、digestを再結合して`PROPOSAL_READY`を判定する。改変、期限未到達、監査中変更をfail closedで拒否し、fileを書き換えない。
 - 新規12/12、Stage 0集中45/45、Desktop 384/384、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #505の全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。専用applyは実装済みだが、実削除は対象付き明示承認を待つ。
 
 ---
 
