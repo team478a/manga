@@ -266,7 +266,67 @@ npm run desktop:adult:stage0-retention-proposal:audit -- `
 
 開始承認前は`--authorization`を、実機証跡回収前は`--hardware-evidence`を省略する。proposal作成時に統合ライフサイクル監査を再実行し、現在も`EXPIRED`であること、削除期限、phaseと存在する証跡の組合せ、各fileの内容SHA-256と場所SHA-256、proposal自体の保存場所、4つの明示確認を固定する。作成中または監査中の証跡変更、proposalのcopy／rename、原本改変、保持命令あり、利用者コンテンツ混入、phaseに対する証跡欠落をfail closedで拒否する。
 
-proposalと監査は証跡を変更・削除せず、常に`deletionAuthorized=false`とする。proposalの成功は削除承認ではない。削除apply、削除receipt、削除後監査は未実装であり、専用実装、proposalレビュー、対象proposalを明記した責任者承認が揃うまで、proposalを含む全fileを保持する。
+proposalと監査は証跡を変更・削除せず、常に`deletionAuthorized=false`とする。proposalの成功は削除承認ではない。削除する場合は、対象proposalを責任者がレビューし、24時間以内の一回限定削除承認を別fileへ作成する。回復領域は未作成のGit管理外absolute pathを指定し、削除承認作成時点ではdirectoryを作成しない。
+
+```powershell
+$deletionAuthorization = Join-Path $privateRoot "stage0-retention-deletion-authorization.json"
+$recoveryDirectory = Join-Path $privateRoot "stage0-retention-recovery"
+$authorizationExpiresAt = "<作成から24時間以内のUTC ISO日時>"
+
+npm run desktop:adult:stage0-retention-authorization:create -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --start-authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence `
+  --proposal $retentionProposal `
+  --quarantine-dir $recoveryDirectory `
+  --expires-at $authorizationExpiresAt `
+  --confirm-proposal-reviewed `
+  --confirm-exact-evidence-scope-approved `
+  --confirm-no-retention-hold `
+  --confirm-user-content-excluded `
+  --confirm-staged-recovery-understood `
+  --out $deletionAuthorization
+```
+
+削除applyは承認、proposal、全sourceを再検証してから内容非保持manifestと削除intentを作る。各原本を固定回復領域へ1fileずつfsync付きで隔離し、全原本が消え、全copyがproposal digestと一致した場合だけpurge intentを作成する。その後、回復copyをすべてpurgeし、原本と回復payloadの両方が存在しない場合だけ内容非保持receiptを確定する。最終的に回復領域へ残すのは内容・pathを含まないmanifestだけであり、証跡copyを保持期限後のbackupとして残さない。
+
+```powershell
+npm run desktop:adult:stage0-retention:apply -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --start-authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence `
+  --proposal $retentionProposal `
+  --deletion-authorization $deletionAuthorization `
+  --quarantine-dir $recoveryDirectory `
+  --confirm-authorization-reviewed `
+  --confirm-quarantine-recovery `
+  --confirm-exact-evidence-deletion `
+  --confirm-final-quarantine-purge
+
+npm run desktop:adult:stage0-retention-deletion:audit -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --start-authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence `
+  --proposal $retentionProposal `
+  --deletion-authorization $deletionAuthorization `
+  --quarantine-dir $recoveryDirectory
+```
+
+開始承認前は`--start-authorization`を、実機証跡回収前は`--hardware-evidence`を省略する。中断時はmanifest、削除intent、purge intent、承認、proposalを編集・削除せず、同じapply引数と確認flagで再実行する。purge intent前は原本または検証済み回復copyのどちらかを必須とし、両方がない場合はfail closedで停止する。purge intent後は原本の再出現を拒否し、残っている回復copyだけをpurgeしてreceiptを回復確定する。手作業で原本、回復copy、control fileを削除して再開しない。
+
+削除後監査はproposal、承認、manifest、2つのintent、receiptの全digestと時系列、原本・回復payloadの不在をread-onlyで確認し、成功時だけ`DELETION_VERIFIED`を返す。candidate ID、実path、作品内容を表示せず、Runtime、model、生成、配布、credit操作を行わない。実proposalへの削除承認作成とapplyは、この手順を実装しただけでは許可されず、対象proposalを明記した責任者の明示承認を別途必要とする。
 
 Stage 0 artifactはPilot招待物ではない。同じ候補者をStage 1へ進める場合も、責任者確認後にStage 1用の配布記録と招待台帳entryを新規作成する。
 
