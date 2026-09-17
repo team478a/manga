@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-17 Cloud原稿編集以降の字幕付き操作デモ
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / PRODUCTION_UNCHANGED`
+- Base: PR #508 merge commit `df0dff4`。Branchは`codex/cloud-creator-operation-video-20260917`。
+- Implementation commitは`af5dce3`。Draft PR #509を作成し、全CI／Vercel Previewを確認中。
+- 購入者からの「原稿編集以降は人の作業が増え、操作難易度が急に上がるためサンプル動画がほしい」という要望に対応し、Cloud使い方ページへ約1分・8工程の字幕付き操作デモを追加した。
+- 人物・画風固定、参照画像割当、2ページ選択、費用／停止理由の事前確認、候補比較と採用、吹き出し／文字レイヤー修正、確定・PDF書き出しを、自動再生、再生／一時停止、前後移動、工程選択、最初から再生で確認できる。`prefers-reduced-motion`時は自動再生しない。
+- 匿名化した候補比較画面とセリフ編集画面のSVGを追加し、Cloud原稿編集の一覧とProject画面から操作デモへ直接遷移できるようにした。実利用者データ、実作品、Production、Provider、credit、DB／Storageは変更していない。
+- 検証: 集中2/2、Hub 1008/1008、Desktop 407/407、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
+- 次: Draft PR #509の全CI／Vercel Preview成功を確認して停止する。
+
+---
+
 ## 2026-09-17 Desktop Adult Pilot固定Bundle実file検証・正本固定
 
 - 状態: `FIXED_BUNDLE_READY / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / SIGNED_ARTIFACTS_BLOCKED / HARDWARE_12GB_BLOCKED / STAGE0_COMPLETION_BLOCKED / REAL_STAGE0_NOT_RUN`

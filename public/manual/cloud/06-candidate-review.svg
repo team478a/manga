@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">生成候補の比較と採用</title>
+  <desc id="desc">原稿編集でコマを選択し、生成候補を拡大して品質を確認し、使用する画像を採用する匿名化した画面図</desc>
+  <defs>
+    <linearGradient id="sceneA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ddd6fe"/><stop offset="1" stop-color="#cbd5e1"/></linearGradient>
+    <linearGradient id="sceneB" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfdbfe"/><stop offset="1" stop-color="#e7e5e4"/></linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="#f7f5ff"/>
+  <g font-family="system-ui, sans-serif">
+    <rect x="36" y="28" width="1128" height="72" rx="16" fill="#fff"/>
+    <text x="64" y="57" fill="#6d28d9" font-size="14" font-weight="700">原稿編集　ページ画面</text>
+    <text x="64" y="84" fill="#18181b" font-size="24" font-weight="700">生成候補を比較して採用する</text>
+
+    <rect x="36" y="120" width="700" height="505" rx="18" fill="#292524"/>
+    <text x="62" y="153" fill="#e7e5e4" font-size="15" font-weight="700">Canvas　2ページ目</text>
+    <rect x="102" y="172" width="568" height="420" rx="8" fill="#fff"/>
+    <rect x="122" y="192" width="330" height="180" rx="5" fill="url(#sceneA)" stroke="#7c3aed" stroke-width="5"/>
+    <circle cx="260" cy="276" r="48" fill="#fff" opacity=".72"/>
+    <path d="M226 334 Q260 297 294 334" fill="none" stroke="#64748b" stroke-width="12" stroke-linecap="round"/>
+    <rect x="470" y="192" width="180" height="180" rx="5" fill="url(#sceneB)" stroke="#d6d3d1" stroke-width="3"/>
+    <rect x="122" y="390" width="220" height="182" rx="5" fill="url(#sceneB)" stroke="#d6d3d1" stroke-width="3"/>
+    <rect x="360" y="390" width="290" height="182" rx="5" fill="url(#sceneA)" stroke="#d6d3d1" stroke-width="3"/>
+    <rect x="146" y="208" width="132" height="48" rx="24" fill="#fff" stroke="#a8a29e"/>
+    <text x="212" y="238" fill="#44403c" text-anchor="middle" font-size="13">セリフは別レイヤー</text>
+    <rect x="136" y="532" width="176" height="32" rx="8" fill="#ede9fe"/>
+    <text x="224" y="553" fill="#5b21b6" text-anchor="middle" font-size="13" font-weight="700">選択中：コマ1</text>
+
+    <rect x="758" y="120" width="406" height="505" rx="18" fill="#fff" stroke="#ddd6fe"/>
+    <text x="786" y="158" fill="#18181b" font-size="20" font-weight="700">生成履歴・候補</text>
+    <text x="786" y="184" fill="#57534e" font-size="14">拡大して4項目を確認します。</text>
+    <rect x="786" y="204" width="160" height="128" rx="12" fill="url(#sceneA)" stroke="#7c3aed" stroke-width="4"/>
+    <rect x="966" y="204" width="170" height="128" rx="12" fill="url(#sceneB)" stroke="#e7e5e4"/>
+    <rect x="798" y="218" width="62" height="24" rx="12" fill="#6d28d9"/><text x="829" y="235" fill="#fff" text-anchor="middle" font-size="11" font-weight="700">候補1</text>
+    <rect x="978" y="218" width="62" height="24" rx="12" fill="#78716c"/><text x="1009" y="235" fill="#fff" text-anchor="middle" font-size="11" font-weight="700">候補2</text>
+    <rect x="786" y="350" width="350" height="132" rx="12" fill="#fafaf9"/>
+    <text x="806" y="379" fill="#18181b" font-size="15" font-weight="700">採用前の品質確認</text>
+    <text x="806" y="408" fill="#57534e" font-size="14">✓ 人物の顔・手・身体に重大な崩れがない</text>
+    <text x="806" y="433" fill="#57534e" font-size="14">✓ 衣装・場所・小物が設定と一致している</text>
+    <text x="806" y="458" fill="#57534e" font-size="14">✓ 疑似文字・ロゴ・不要な吹き出しがない</text>
+    <rect x="786" y="504" width="350" height="56" rx="12" fill="#6d28d9"/>
+    <text x="961" y="539" fill="#fff" text-anchor="middle" font-size="16" font-weight="700">4項目を確認してコマへ採用</text>
+    <text x="786" y="592" fill="#065f46" font-size="14" font-weight="700">元候補は履歴に残り、他のコマは変わりません。</text>
+  </g>
+  <text x="1140" y="650" fill="#78716c" text-anchor="end" font-family="system-ui, sans-serif" font-size="13">画面例：作品画像・人物名は使用していません</text>
+</svg>

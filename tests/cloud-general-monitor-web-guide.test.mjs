@@ -3,13 +3,27 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("利用者向けWebマニュアルは制作完走とモバイル操作を案内する", async () => {
-  const source = await readFile(
-    new URL(
-      "../src/app/dashboard/monitor/guide/page.tsx",
-      import.meta.url,
+  const [source, operationVideo, creatorIndex, creatorProject] = await Promise.all([
+    readFile(
+      new URL(
+        "../src/app/dashboard/monitor/guide/page.tsx",
+        import.meta.url,
+      ),
+      "utf8",
     ),
-    "utf8",
-  );
+    readFile(
+      new URL(
+        "../src/app/dashboard/monitor/guide/CloudCreatorOperationVideo.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(new URL("../src/app/creator/page.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL("../src/app/creator/[projectId]/page.tsx", import.meta.url),
+      "utf8",
+    ),
+  ]);
   for (const text of [
     "最初の5分で行うこと",
     "画面を見ながら漫画を完成させる",
@@ -19,6 +33,9 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "原稿編集で人物・画風・参照画像を固定する",
     "ページを選び、見積りと停止理由を確認する",
     "全ページを確定し、完成原稿PDFを書き出す",
+    "原稿編集からPDF完成までの操作デモ",
+    "音声なし・字幕付き",
+    "一時停止しながら",
     "市場分析",
     "AI企画提案",
     "シナリオ作成",
@@ -66,6 +83,33 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
   assert.match(source, /href: "\/dashboard\/works"/);
   assert.match(source, /availability: "coming-soon"/);
   assert.match(source, /dashboard\/monitor/);
+  assert.match(source, /id="creator-operation-video"/);
+  assert.match(source, /<CloudCreatorOperationVideo \/>/);
+  for (const text of [
+    "人物・衣装と作品の画風を固定",
+    "参照画像を登録してコマへ割り当て",
+    "最初は連続する2ページだけを選択",
+    "生成候補を拡大して比較・採用",
+    "吹き出しと文字を画像とは別に調整",
+    "全ページを確定してPDFを保存",
+    "一時停止",
+    "最初から見る",
+  ]) {
+    assert.match(operationVideo, new RegExp(text.replace("・", "・")));
+  }
+  for (const image of [
+    "03-creator-project.svg",
+    "04-generation-preflight.svg",
+    "05-export.svg",
+    "06-candidate-review.svg",
+    "07-dialogue-edit.svg",
+  ]) {
+    assert.match(operationVideo, new RegExp(image.replace(".", "\\.")));
+  }
+  assert.match(operationVideo, /prefers-reduced-motion/);
+  assert.match(operationVideo, /role="progressbar"/);
+  assert.match(creatorIndex, /guide#creator-operation-video/);
+  assert.match(creatorProject, /guide#creator-operation-video/);
   assert.doesNotMatch(source, /APIキーを入力|出典URLを入力/);
 });
 
