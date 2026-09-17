@@ -4,9 +4,9 @@
 
 ## 判定
 
-`LICENSE_OWNER_CONFIRMED_FOR_INTERNAL_PILOT / USER_DOWNLOAD_SELECTED / RUNTIME_BLOCKED_ON_CURRENT_HOST`
+`LICENSE_OWNER_CONFIRMED_FOR_INTERNAL_PILOT / FIXED_BUNDLE_VERIFIED / RUNTIME_BLOCKED_ON_CURRENT_HOST`
 
-初回12GB Pilotの技術候補をSDXL系へ限定した。責任者は2026-08-31に、Open RAIL++の利用制限をMANGAIの禁止入力へ継承すること、内部Pilotでのローカル利用、公式配布元からの取得を承認した。再配布・同梱は承認していない。実file検証と12GB実機Runtime検証が未完了のため、artifactのstatusは`pending`を維持する。
+初回12GB Pilotの技術候補をSDXL系へ限定した。責任者は2026-08-31に、Open RAIL++の利用制限をMANGAIの禁止入力へ継承すること、内部Pilotでのローカル利用、公式配布元からの取得を承認した。再配布・同梱は承認していない。2026-09-17に公式URLから4artifactを取得し、容量とSHA-256を再計算して固定Bundle証跡へ連結した。12GB実機Runtime検証は未完了である。
 
 ## 配布判断
 
@@ -29,14 +29,14 @@
 
 ## 固定候補
 
-|役割|候補|revision|配布file|公称license|容量|
-|---|---|---|---|---|---:|
-|Runtime|ComfyUI|`v0.34.0`|Pilot artifact未作成|GPL-3.0|未確定|
-|Checkpoint|`stabilityai/stable-diffusion-xl-base-1.0`|`462165984030d82259a11f4367a4eed129e94a7b`|`sd_xl_base_1.0.safetensors`|CreativeML Open RAIL++-M|6,938,078,334 bytes|
-|VAE|`madebyollin/sdxl-vae-fp16-fix`|`207b116dae70ace3637169f1ddd2434b91b3a8cd`|`sdxl.vae.safetensors`|MIT（model card表示）|334,641,162 bytes|
-|ControlNet|`diffusers/controlnet-canny-sdxl-1.0`|`eb115a19a10d14909256db740ed109532ab1483c`|`diffusion_pytorch_model.safetensors`|Open RAIL++|5,004,167,864 bytes|
+| 役割       | 候補                                       | revision                                   | 配布file                              | 公称license              |                容量 |
+| ---------- | ------------------------------------------ | ------------------------------------------ | ------------------------------------- | ------------------------ | ------------------: |
+| Runtime    | ComfyUI                                    | `v0.34.0`                                  | `ComfyUI_windows_portable_nvidia.7z`  | GPL-3.0                  | 2,146,721,943 bytes |
+| Checkpoint | `stabilityai/stable-diffusion-xl-base-1.0` | `462165984030d82259a11f4367a4eed129e94a7b` | `sd_xl_base_1.0.safetensors`          | CreativeML Open RAIL++-M | 6,938,078,334 bytes |
+| VAE        | `madebyollin/sdxl-vae-fp16-fix`            | `207b116dae70ace3637169f1ddd2434b91b3a8cd` | `sdxl.vae.safetensors`                | MIT（model card表示）    |   334,641,162 bytes |
+| ControlNet | `diffusers/controlnet-canny-sdxl-1.0`      | `eb115a19a10d14909256db740ed109532ab1483c` | `diffusion_pytorch_model.safetensors` | Open RAIL++              | 5,004,167,864 bytes |
 
-SHA-256はHugging Face公式model APIのLFS metadataから取得し、`DESKTOP_ADULT_PILOT_BUNDLE.json`へ保存した。実fileをdownloadしての再計算はまだ行っていない。
+SHA-256はHugging Face公式model APIのLFS metadataおよびComfyUI固定manifestから取得し、`DESKTOP_ADULT_PILOT_BUNDLE.json`へ保存した。2026-09-17に4つの実fileを公式URLから取得し、容量とSHA-256を再計算して全件一致を確認した。内容非保持の検証証跡から4artifactと4workflow／mappingをmanifestへ固定し、実pathや作品内容はGitへ保存していない。
 
 ## 技術選定理由
 
@@ -49,14 +49,13 @@ SHA-256はHugging Face公式model APIのLFS metadataから取得し、`DESKTOP_A
 ## 未完了gate
 
 1. 12GB以上のNVIDIA GPUを搭載したWindows 11内部受入れ端末を用意する。
-2. 固定URLから取得した3 model fileの容量とSHA-256を実fileで再計算する。
-3. ControlNet fileがComfyUI標準`ControlNetLoader`で読み込めることを12GB実機で確認する。
-4. ComfyUI `v0.34.0`を公式sourceから構築し、commit、展開後容量、Runtime構成を登録する。
-5. custom nodeを使わない4方式workflowとmappingは`pilot-sdxl-v1`として作成・SHA-256登録済み。実ComfyUIでのnode入力互換と1枚生成は未確認。
-6. Pilot利用条件へOpen RAIL++、GPL-3.0、MITの表示とAttachment A制限を反映する。
+2. ControlNet fileがComfyUI標準`ControlNetLoader`で読み込めることを12GB実機で確認する。
+3. ComfyUI `v0.34.0`を12GB実機へ展開し、Runtime構成を登録する。
+4. custom nodeを使わない4方式workflowとmappingは`pilot-sdxl-v1`としてSHA-256固定済み。実ComfyUIでnode入力互換と各1枚生成を確認する。
+5. Pilot利用条件へOpen RAIL++、GPL-3.0、MITの表示とAttachment A制限を反映する。
 
 ## 非実施
 
-- モデル・ComfyUI artifactのdownload、install、起動、生成（現端末はRuntime条件外のため停止）
+- モデル・ComfyUI artifactのinstall、展開、起動、生成（現端末はRuntime条件外のため停止）
 - 成人向けPrompt・画像の処理
 - Cloud、外部Provider、Production、Project、Job、credit操作

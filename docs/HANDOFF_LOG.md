@@ -1,15 +1,28 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-17 Codex: Desktop Adult Pilot固定Bundle実file検証・正本固定
+
+- PR #507 merge commit `746c399`から`codex/adult-pilot-fixed-bundle-20260917`を作成した。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`は成功済み。
+- Implementation commit `3ee155d`をpushし、Draft PR #508を作成した。全CI／Vercel Previewを確認中。
+- 公式固定URLからComfyUI v0.34.0、SDXL base、SDXL VAE、Canny ControlNetをGit管理外へ取得し、正本の容量・SHA-256と全件一致を確認した。
+- 内容非保持Bundle証跡から4artifactとrepository内4workflow／mapping digestをmanifestへ固定し、bundle preflightを`fixed=8 / pending=0`、release readinessを6/9 READYへ進めた。
+- 実path、作品内容、Prompt、端末識別情報、秘密値はGitへ保存せず、local rootと証跡はcommitしない。未追跡`apps/desktop/artifacts/`も変更・commit対象外である。
+- 現端末はコード署名秘密鍵とNVIDIA Runtimeがないため、署名、Runtime起動、生成、12GB実機証跡、Stage 0完了連結は行っていない。Production、Cloud、Provider、credit、配布、実候補者操作なし。
+- Bundle／Stage 0／release readiness集中20/20、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- 次はDraft PR #508の全CI／Vercel Preview成功確認である。その後は署名済み受入れ専用artifactと12GB技術モニター実機受入れを外部前提として進める。
+
+---
+
 ## 2026-09-17 Codex: Desktop Adult Stage 0証跡削除ライフサイクル統合read-only監査
 
 - PR #506 merge commit `7374ed9`から`codex/adult-stage0-retention-lifecycle-audit-20260917`を作成した。マージ後Required Quality run `35179668342`とDesktop Windows run `35179668255`は成功済み。
-- Implementation commit `4c7af68`をpushし、Draft PR #507を作成した。全CI／Vercel Previewを確認中。
+- Implementation commit `4c7af68`を含むPR #507はmerge commit `746c399`でマージ済み。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`も成功した。
 - retention proposalから削除完了までを変更せず連結し、proposal、承認、manifest／intent準備、原本隔離途中、purge準備／途中、receipt回復、完了を10状態で表示する統合CLIを追加した。
 - 全control fileと原本／回復payloadのdigest、存在状態、時系列を検査する。削除intent後は承認期限後も固定intentから回復できるが、intent前の期限切れは新規applyを許可しない。
 - 欠損、未知file、順序矛盾、改変、purge後の原本再出現、監査中変更をfail closedで拒否する。監査は内容とpathを表示せず、file変更、Runtime／model、生成、配布、credit操作を行わない。
 - applyへ2つの内部中断hookを追加し、全状態を一時directoryで再現した。Stage 0 runbookとAdult Pilot公開計画へ統合監査command、状態の意味、回復手順、承認非代替境界を追記した。
 - 新規7/7、削除集中23/23、Stage 0 lifecycle＋retention集中43/43、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #507の全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。固定Bundleの実取得・正本固定を次工程で実施した。
 
 ---
 

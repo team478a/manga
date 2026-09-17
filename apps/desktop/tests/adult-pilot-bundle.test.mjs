@@ -14,7 +14,7 @@ const canonicalBundle = path.resolve(
 );
 const hash = (value) => value.repeat(64);
 
-test("canonical Adult pilot candidates are approved for internal use but remain runtime pending", () => {
+test("canonical Adult pilot bundle is evidence-fixed while runtime acceptance remains separate", () => {
   const bundle = JSON.parse(fs.readFileSync(canonicalBundle, "utf8"));
   assert.equal(bundle.distributionMode, "user_download_official_source");
   assert.equal(
@@ -23,7 +23,8 @@ test("canonical Adult pilot candidates are approved for internal use but remain 
   );
   assert.equal(bundle.licenseReview.redistributionApproved, false);
   assert.equal(bundle.comfyui.version, "v0.34.0");
-  assert.equal(bundle.comfyui.status, "pending");
+  assert.equal(bundle.comfyui.status, "fixed");
+  assert.equal(bundle.comfyui.reviewStatus, "local_bundle_evidence_verified");
   assert.equal(
     bundle.comfyui.sourceUrl,
     "https://github.com/Comfy-Org/ComfyUI/releases/download/v0.34.0/ComfyUI_windows_portable_nvidia.7z",
@@ -43,26 +44,38 @@ test("canonical Adult pilot candidates are approved for internal use but remain 
     [
       {
         role: "checkpoint",
-        status: "pending",
+        status: "fixed",
         version: "462165984030d82259a11f4367a4eed129e94a7b",
         sha256:
           "31e35c80fc4829d14f90153f4c74cd59c90b779f6afe05a74cd6120b893f7e5b",
       },
       {
         role: "vae",
-        status: "pending",
+        status: "fixed",
         version: "207b116dae70ace3637169f1ddd2434b91b3a8cd",
         sha256:
           "235745af8d86bf4a4c1b5b4f529868b37019a10f7c0b2e79ad0abca3a22bc6e1",
       },
       {
         role: "controlnet",
-        status: "pending",
+        status: "fixed",
         version: "eb115a19a10d14909256db740ed109532ab1483c",
         sha256:
           "ea99040544a999f814fd854575a3aee069a005d026864c8d321b82576706a221",
       },
     ],
+  );
+  assert.equal(
+    bundle.verification.format,
+    "mangai.desktop-adult-pilot-bundle-verification",
+  );
+  assert.deepEqual(
+    bundle.verification.artifacts.map(({ id }) => id),
+    ["runtime", "checkpoint", "vae", "controlnet"],
+  );
+  assert.deepEqual(
+    bundle.verification.workflows.map(({ operation }) => operation),
+    ["text_to_image", "image_to_image", "controlnet", "inpainting"],
   );
 });
 
@@ -76,12 +89,15 @@ const run = (bundlePath, hardwarePath, strict = false) =>
     encoding: "utf8",
   });
 
-test("canonical Adult pilot bundle remains fail-closed while artifacts are pending", (t) => {
+test("canonical Adult pilot bundle remains fail-closed until 12GB evidence exists", (t) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "mangai-adult-pilot-"));
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const hardwarePath = path.join(root, "hardware.json");
   fs.writeFileSync(hardwarePath, JSON.stringify({ profiles: [] }));
-  assert.match(run(canonicalBundle, hardwarePath), /fixed=0, pending=8/);
+  assert.match(
+    run(canonicalBundle, hardwarePath),
+    /fixed=8, pending=0, hardware12gb=pending/,
+  );
   assert.throws(() => run(canonicalBundle, hardwarePath, true));
 });
 

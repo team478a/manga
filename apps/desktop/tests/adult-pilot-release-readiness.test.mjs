@@ -14,6 +14,7 @@ test("Adult Pilot release readiness reports repository-ready and external blocke
   const result = run();
   assert.equal(result.status, 0, result.stderr);
   for (const id of [
+    "fixed_bundle",
     "consent_and_local_boundary",
     "diagnostic_privacy",
     "stop_recovery_runbook",
@@ -23,12 +24,11 @@ test("Adult Pilot release readiness reports repository-ready and external blocke
     assert.match(result.stdout, new RegExp(`${id}: READY`));
   for (const id of [
     "signed_artifacts",
-    "fixed_bundle",
     "hardware_12gb_four_modes",
     "stage0_completion_linked",
   ])
     assert.match(result.stdout, new RegExp(`${id}: BLOCKED`));
-  assert.match(result.stdout, /ready=5, blocked=4/);
+  assert.match(result.stdout, /ready=6, blocked=3/);
 });
 
 test("Adult Pilot strict release readiness stays fail-closed", () => {
@@ -36,6 +36,6 @@ test("Adult Pilot strict release readiness stays fail-closed", () => {
   assert.equal(result.status, 1);
   assert.match(
     result.stdout,
-    /Blocked: signed_artifacts, fixed_bundle, hardware_12gb_four_modes, stage0_completion_linked/,
+    /Blocked: signed_artifacts, hardware_12gb_four_modes, stage0_completion_linked/,
   );
 });

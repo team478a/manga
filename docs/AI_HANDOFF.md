@@ -1,15 +1,28 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Pilot固定Bundle実file検証・正本固定（2026-09-17）
+
+- BaseはPR #507 merge commit `746c399`。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`は成功済み。Branchは`codex/adult-pilot-fixed-bundle-20260917`。
+- Implementation commitは`3ee155d`。Draft PR #508を作成し、全CI／Vercel Previewを確認中。
+- ComfyUI v0.34.0、SDXL base、SDXL VAE、Canny ControlNetを公式固定URLからGit管理外へ取得し、4fileの容量・SHA-256を再計算してmanifestと全件一致を確認した。
+- 内容非保持Bundle証跡をGit管理外へ新規作成し、4artifactと4workflow／mapping digestを固定manifestへ取り込んだ。`fixed_bundle`は`READY`、bundle preflightは`fixed=8 / pending=0`、release readinessは6/9 READYとなった。
+- 実path、作品内容、Prompt、端末識別情報、秘密値はGitへ保存していない。local rootと証跡fileはcommit対象外である。
+- 現端末は有効なコード署名秘密鍵0件、NVIDIA Runtimeなしのため、署名、Runtime起動、生成、12GB実機証跡、Stage 0完了連結は未実施。Production、Cloud、Provider、credit、配布、実候補者操作なし。
+- Bundle／Stage 0／release readiness集中20/20、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- 次はDraft PR #508の全CI／Vercel Preview成功確認である。その後の残件は署名済み受入れ専用artifact、12GB実機4方式、Stage 0完了証跡連結である。
+
+---
+
 ## 0.0 Desktop Adult Stage 0証跡削除ライフサイクル統合read-only監査（2026-09-17）
 
 - BaseはPR #506 merge commit `7374ed9`。マージ後Required Quality run `35179668342`とDesktop Windows run `35179668255`は成功済み。Branchは`codex/adult-stage0-retention-lifecycle-audit-20260917`。
-- Implementation commitは`4c7af68`。Draft PR #507を作成し、全CI／Vercel Previewを確認中。
+- Implementation commitは`4c7af68`。PR #507はmerge commit `746c399`でマージ済み。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`も成功した。
 - retention proposal準備、削除承認、manifest、delete intent、原本隔離、purge intent、回復payload削除、receipt確定を変更せず連結し、10状態を判定する統合CLIを追加した。
 - proposal、承認、manifest、2 intent、receipt、原本、回復payloadの存在状態・digest・時系列を再検証する。削除intent後は承認期限後の回復も監査するが、intent前の期限切れから新規applyへ進めない。
 - 原本と回復copyの同時欠損、未知file、control順序違い、改変、purge後の原本再出現、監査中変更をfail closedで拒否する。CLIはfile変更や外部操作を行わず、candidate ID、端末情報、作品内容、pathを表示しない。
 - applyへmanifest／delete intent直後の内部中断hookを追加し、全中断境界を一時directoryで検証した。runbookと公開計画へ統合監査command、10状態、安全な再開境界、承認非代替を追記した。
 - 新規7/7、削除集中23/23、Stage 0 lifecycle＋retention集中43/43、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #507の全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。固定Bundleの実取得・正本固定を次工程で実施した。
 
 ---
 
