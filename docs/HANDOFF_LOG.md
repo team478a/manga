@@ -3,11 +3,12 @@
 ## 2026-09-17 Codex: Desktop Adult Stage 1運用ライフサイクル統合read-only監査
 
 - PR #502 merge commit `cda5029`から`codex/adult-stage1-lifecycle-audit-20260917`を作成した。マージ後Required Quality run `35167341045`とDesktop Windows run `35167340992`は成功済み。
+- Implementation commit `5cfcdbe`をpushし、Draft PR #503を作成した。全CI／Vercel Previewを確認中。
 - 初回Stage 1招待証跡と、古い順に指定した0件以上の状態遷移proposalを連結して現在状態までread-only監査するCLIを追加した。
 - 初回招待とのmonitor一致、各source／target台帳のbyte連続性、途中遷移の適用完了、最後の4適用状態、重複、欠落、別monitor混入、改変、監査中変更を検査する。既存個別監査は通常契約を維持し、receipt完成済みの過去工程だけ履歴検査できるよう内部拡張した。
 - 招待台帳文書とStage 1 runbookへ統合監査コマンド、指定順、状態の意味、fail-closed条件、承認非代替境界を追記した。
 - 集中30/30、Desktop 362/362、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実承認・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次は実装commitをpushしてDraft PRを作成し、全CI／Vercel Preview成功まで確認する。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実承認・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #503の全CI／Vercel Preview成功まで確認する。
 
 ---
 
