@@ -98,6 +98,28 @@ test("Stage 0 operation package verifies the unchanged source set", (t) => {
   assert.equal(verified.artifactVersion, "0.1.0");
 });
 
+test("Stage 0 operation package historical verification keeps source binding", (t) => {
+  const values = fixture(t);
+  createStage0OperationPackage(values);
+  values.readinessCheck = () => {
+    throw new Error("current readiness must not run");
+  };
+  const verified = verifyStage0OperationPackage({
+    ...values,
+    allowHistoricalExpired: true,
+  });
+  assert.equal(verified.candidateId, "candidate-a1b2c3d4e5f6");
+  fs.appendFileSync(values.planPath, " ");
+  assert.throws(
+    () =>
+      verifyStage0OperationPackage({
+        ...values,
+        allowHistoricalExpired: true,
+      }),
+    /現在のStage 0 sourceが一致しません/,
+  );
+});
+
 test("Stage 0 operation package detects source tampering", (t) => {
   const values = fixture(t);
   createStage0OperationPackage(values);

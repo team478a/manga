@@ -96,6 +96,7 @@ const verifyBoundOperationPackage = (options) => {
     artifactEvidencePath: options.artifactEvidencePath,
     bundleEvidencePath: options.bundleEvidencePath,
     packagePath: options.packagePath,
+    allowHistoricalExpired: options.allowHistoricalExpired,
   });
   const after = readFile(options.packagePath, "operation package");
   if (!before.equals(after))
@@ -243,6 +244,41 @@ const validateAuthorization = (
     throw new Error("Stage 0開始承認の有効期間が不正です。");
 };
 
+export const verifyStage0StartAuthorization = (rawOptions) => {
+  const options = normalizedOptions(rawOptions);
+  assertPrivatePath(
+    options.repositoryRoot,
+    options.authorizationPath,
+    "Stage 0開始承認",
+  );
+  const authorizationBefore = readFile(
+    options.authorizationPath,
+    "Stage 0開始承認",
+  );
+  const { operationPackage, packageSha256 } =
+    verifyBoundOperationPackage(options);
+  if (options.allowHistoricalExpired !== true)
+    assertCurrentTime(options.now, operationPackage.deleteBy);
+  const authorizationBytes = readFile(
+    options.authorizationPath,
+    "Stage 0開始承認",
+  );
+  if (!authorizationBefore.equals(authorizationBytes))
+    throw new Error("Stage 0開始承認が検証中に変更されました。");
+  const authorization = readJson(authorizationBytes, "Stage 0開始承認");
+  validateAuthorization(
+    authorization,
+    { ...operationPackage, packagePath: options.packagePath },
+    packageSha256,
+  );
+  return {
+    operationPackage,
+    packageSha256,
+    authorization,
+    authorizationSha256: digest(authorizationBytes),
+  };
+};
+
 export const consumeStage0StartAuthorization = (rawOptions) => {
   const options = normalizedOptions(rawOptions);
   assertPrivatePath(
@@ -313,7 +349,8 @@ export const verifyConsumedStage0StartAuthorization = (rawOptions) => {
   const receiptBefore = readFile(receiptPath, "Stage 0開始承認receipt");
   const { operationPackage, packageSha256 } =
     verifyBoundOperationPackage(options);
-  assertCurrentTime(options.now, operationPackage.deleteBy);
+  if (options.allowHistoricalExpired !== true)
+    assertCurrentTime(options.now, operationPackage.deleteBy);
   const authorizationBytes = readFile(
     options.authorizationPath,
     "Stage 0開始承認",
@@ -370,6 +407,7 @@ export const verifyConsumedStage0StartAuthorization = (rawOptions) => {
     operationPackage,
     packageSha256,
     authorization,
+    authorizationSha256: digest(authorizationBytes),
     receipt,
     receiptPath,
     receiptSha256: digest(receiptBytes),

@@ -86,6 +86,8 @@ npm run desktop:adult:stage0-readiness:strict
 
 readiness strict成功後は`desktop:adult:stage0-operation-package:create`で候補assessment、計画、署名artifact証跡、Bundle証跡、固定Bundle manifest、責任者承認の6 sourceをSHA-256で固定する。実施直前に`desktop:adult:stage0-operation-package:verify`で同じsourceを再検証し、取り違え、改変、candidate ID／Desktop version／期限不一致、readinessの後退をfail closedで停止する。operation packageはGit管理外へ新規保存し、pathや個人情報を保持せず、成功してもStage 1配布を許可しない。
 
+Stage 0の引継ぎと期限管理では`desktop:adult:stage0-lifecycle:audit`を使用し、operation package、開始承認、消費receipt、12GB実機証跡、完了証跡を変更せず連結確認する。`READY`、`PREPARED`、`IN_PROGRESS`、`COMPLETED`、`EXPIRED`を判定し、前工程欠落、別session、改変、監査中変更をfail closedで停止する。監査成功は実施承認、外部配布、Stage 1招待を許可せず、`EXPIRED`は証跡の再利用ではなく保持期限対応を要求する。
+
 Stage 0 gateは取込済みmanifestと元Bundle証跡を再照合する。manifestの`fixed`状態だけでは合格せず、証跡fileの改変、artifact ID重複、未知field、容量・SHA-256、workflow／mapping SHA-256、取込verificationのいずれかが不一致なら`fixed_bundle: BLOCKED`または入力不正として停止する。
 
 責任者承認は会話上の「進めてください」や実装継続指示から推測して記録しない。Pilot開始と、遠隔強制停止未実装のため手動停止運用となる制約をそれぞれ明示承認した後だけ、次の専用commandを実行する。

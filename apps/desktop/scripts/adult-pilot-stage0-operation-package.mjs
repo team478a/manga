@@ -267,7 +267,7 @@ export const verifyStage0OperationPackage = (rawOptions) => {
     "operation package",
   );
   const beforeReadiness = loadSources(options);
-  verifyCurrentReadiness(options);
+  if (options.allowHistoricalExpired !== true) verifyCurrentReadiness(options);
   const { sourceBytes, sourceJson } = loadSources(options);
   assertSourcesUnchanged(beforeReadiness.sourceBytes, sourceBytes);
   const operationPackage = readJson(
