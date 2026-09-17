@@ -112,6 +112,23 @@ npm run desktop:adult:pilot-ledger-status:audit -- `
 
 証跡の一部欠損、receiptと台帳の矛盾、改変、適用前後のどちらでもない台帳は終了コード1で停止する。監査成功はproposalレビュー、対象付き適用承認、再実行承認の代わりにならない。標準出力にはmonitor IDとpathを表示しない。
 
+### Stage 1運用ライフサイクルの統合read-only監査
+
+初回招待から現在の状態までをまとめて確認する場合は、初回招待承認、候補assessment、現在の運用台帳と、状態遷移proposalを古い順に指定する。状態遷移がまだない場合は`--status-proposal`を省略する。
+
+```powershell
+npm run desktop:adult:stage1-lifecycle:audit -- `
+  --authorization $stage1Authorization `
+  --assessment $assessment `
+  --ledger $env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH `
+  --status-proposal $activeProposal `
+  --status-proposal $completedProposal
+```
+
+統合監査は、初回招待の承認・消費receipt・assessment・proposal・backup・intent・適用receiptを起点に、各状態遷移の元台帳と更新後台帳を順番に連結する。途中のproposalは`APPLIED`でなければならず、最後のproposalだけが`PROPOSAL_READY`、`APPLY_PREPARED`、`RECOVERY_REQUIRED`、`APPLIED`のいずれかになれる。履歴の欠落、順序違い、同じproposalの重複、別monitorのproposal混入、証跡改変、監査中の台帳変更は終了コード1で停止する。
+
+出力する`Current status`は検証済みの現在台帳に対応する。`RECOVERY_REQUIRED`では台帳置換後のtarget状態を示すが、receipt回復の承認を意味しない。統合監査はfileを作成・更新・削除せず、招待、配布、状態適用、Runtime／model、生成、credit操作を行わない。candidate ID、monitor ID、pathも標準出力へ表示しない。監査成功は個別proposalのレビュー、対象付き適用承認、再実行承認を代替しない。
+
 ### 状態遷移proposalの適用
 
 レビュー済みproposalを運用台帳へ反映する場合は、対象proposalを明記した運用承認を得てから専用apply CLIを使用する。CLIの実装、テスト成功、過去の包括承認だけでは実proposalを適用できない。
