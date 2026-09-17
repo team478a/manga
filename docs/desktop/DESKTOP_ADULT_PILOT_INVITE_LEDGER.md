@@ -21,6 +21,24 @@ Stage 1の最初の1名は、`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_202
 
 技術モニター候補のPC適格性確認は、この招待台帳へ登録する前に`DESKTOP_ADULT_TECHNICAL_MONITOR_STAGE1_RUNBOOK_20260916.md`の候補preflightで行う。候補assessmentと招待台帳を混在させず、Stage 0合格とrelease readiness strict成功前に`INVITED` entryを作成しない。
 
+### Stage 1初回proposalのread-only監査
+
+Stage 1初回proposalの作成後、apply前、適用中断後、適用後は、運用台帳へ書き込む前にread-only監査を実行する。監査は承認、消費receipt、候補assessment、台帳、proposal、backup、intent、適用receiptの組合せとdigestを検査するだけで、fileの作成・更新・削除、招待、配布、Runtime／model、生成、credit操作を行わない。
+
+```powershell
+npm run desktop:adult:stage1-invite-ledger:audit -- `
+  --authorization $stage1Authorization `
+  --assessment $assessment `
+  --ledger $env:MANGAI_ADULT_PILOT_INVITE_LEDGER_PATH
+```
+
+- `PROPOSAL_READY`: 現在の台帳が承認時点の原本で、適用証跡はまだない。承認有効期間内にproposalレビューへ進む。
+- `APPLY_PREPARED`: backupとintentは一致するが、台帳は原本のままである。中断原因を確認し、対象付き承認が現在も有効な場合だけapplyを再実行する。
+- `RECOVERY_REQUIRED`: 台帳はproposalと一致するがreceiptがない。backup、intent、proposalを変更せず、同じapplyコマンドでreceipt回復を行う。
+- `APPLIED`: 台帳、backup、intent、receiptがすべて一致し、適用完了を確認できる。applyを再実行しない。
+
+適用準備後はintentの準備時刻を承認境界として検証するため、承認期限後も中断状態と適用済み証跡を監査できる。ただし期限後に新しい適用を開始してよいという意味ではない。証跡の一部欠損、receiptと台帳の矛盾、改変、適用前後のどちらでもない台帳は終了コード1で停止する。監査成功はproposalレビュー、対象付き適用承認、再実行承認の代わりにならず、標準出力にはcandidate ID、monitor ID、pathを表示しない。
+
 ## Entry契約
 
 ```json

@@ -24,10 +24,13 @@ const defaultRepositoryRoot = path.resolve(
 );
 const sha256Pattern = /^[a-f0-9]{64}$/;
 
-const canonicalBytes = (value) =>
+export const canonicalStage1LedgerBytes = (value) =>
   Buffer.from(`${JSON.stringify(value, null, 2)}\n`, "utf8");
 
-const derivedPaths = (authorizationPath, ledgerPath) => ({
+export const stage1LedgerApplyDerivedPaths = (
+  authorizationPath,
+  ledgerPath,
+) => ({
   consumedReceiptPath: `${authorizationPath}.consumed.json`,
   proposalPath: `${authorizationPath}.ledger-proposal.json`,
   backupPath: `${authorizationPath}.ledger-before-apply.json`,
@@ -36,7 +39,7 @@ const derivedPaths = (authorizationPath, ledgerPath) => ({
   temporaryLedgerPrefix: `${ledgerPath}.stage1-apply-`,
 });
 
-const validateIntent = (intent, snapshot) => {
+export const validateStage1LedgerApplyIntent = (intent, snapshot) => {
   exactKeys(
     intent,
     [
@@ -69,8 +72,15 @@ const validateIntent = (intent, snapshot) => {
   return intent;
 };
 
-const readSnapshot = (options, sourceLedgerBytes, boundaryNow) => {
-  const paths = derivedPaths(options.authorizationPath, options.ledgerPath);
+export const readStage1LedgerApplySnapshot = (
+  options,
+  sourceLedgerBytes,
+  boundaryNow,
+) => {
+  const paths = stage1LedgerApplyDerivedPaths(
+    options.authorizationPath,
+    options.ledgerPath,
+  );
   const authorizationBytes = readFile(
     options.authorizationPath,
     "Stage 1招待承認",
@@ -126,7 +136,7 @@ const readSnapshot = (options, sourceLedgerBytes, boundaryNow) => {
   };
   if (
     proposal.entries.length !== sourceLedger.entries.length + 1 ||
-    !proposalBytes.equals(canonicalBytes(expectedProposal))
+    !proposalBytes.equals(canonicalStage1LedgerBytes(expectedProposal))
   )
     throw new Error("招待台帳proposalが承認済み内容と完全一致しません。");
   assertTimeBoundary(
@@ -193,7 +203,7 @@ const writeAppliedReceipt = (options, snapshot, recovered) => {
     result: "APPLIED",
   };
   const temporaryReceiptPath = `${snapshot.paths.appliedReceiptPath}.${crypto.randomUUID()}.tmp`;
-  writeExclusive(temporaryReceiptPath, canonicalBytes(receipt));
+  writeExclusive(temporaryReceiptPath, canonicalStage1LedgerBytes(receipt));
   try {
     fs.renameSync(temporaryReceiptPath, snapshot.paths.appliedReceiptPath);
   } catch (error) {
@@ -207,7 +217,7 @@ const writeAppliedReceipt = (options, snapshot, recovered) => {
 
 const createOrReadIntent = (options, snapshot) => {
   if (fs.existsSync(snapshot.paths.intentPath))
-    return validateIntent(
+    return validateStage1LedgerApplyIntent(
       readJson(
         readFile(snapshot.paths.intentPath, "招待台帳適用intent"),
         "招待台帳適用intent",
@@ -224,7 +234,7 @@ const createOrReadIntent = (options, snapshot) => {
     stage: 1,
     stage1LedgerApplyAuthorized: true,
   };
-  writeExclusive(snapshot.paths.intentPath, canonicalBytes(intent));
+  writeExclusive(snapshot.paths.intentPath, canonicalStage1LedgerBytes(intent));
   return intent;
 };
 
@@ -235,7 +245,10 @@ const assertPaths = (options) => {
     [options.ledgerPath, "招待台帳"],
   ])
     assertPrivatePath(options.repositoryRoot, target, label);
-  const paths = derivedPaths(options.authorizationPath, options.ledgerPath);
+  const paths = stage1LedgerApplyDerivedPaths(
+    options.authorizationPath,
+    options.ledgerPath,
+  );
   for (const [target, label] of [
     [paths.consumedReceiptPath, "Stage 1招待承認receipt"],
     [paths.proposalPath, "招待台帳proposal"],
@@ -270,12 +283,12 @@ export const applyStage1InviteLedgerProposal = (rawOptions) => {
   if (currentLedgerBytes.equals(proposalBytes)) {
     const backupBytes = readFile(paths.backupPath, "招待台帳backup");
     const intentBytes = readFile(paths.intentPath, "招待台帳適用intent");
-    const provisionalSnapshot = readSnapshot(
+    const provisionalSnapshot = readStage1LedgerApplySnapshot(
       options,
       backupBytes,
       new Date(readJson(intentBytes, "招待台帳適用intent").preparedAt),
     );
-    validateIntent(
+    validateStage1LedgerApplyIntent(
       readJson(intentBytes, "招待台帳適用intent"),
       provisionalSnapshot,
     );
@@ -290,7 +303,11 @@ export const applyStage1InviteLedgerProposal = (rawOptions) => {
     return { appliedReceipt, recovered: true, backupPath: paths.backupPath };
   }
 
-  const snapshot = readSnapshot(options, currentLedgerBytes, options.now);
+  const snapshot = readStage1LedgerApplySnapshot(
+    options,
+    currentLedgerBytes,
+    options.now,
+  );
   if (fs.existsSync(paths.backupPath)) {
     if (
       !readFile(paths.backupPath, "招待台帳backup").equals(currentLedgerBytes)
@@ -298,7 +315,7 @@ export const applyStage1InviteLedgerProposal = (rawOptions) => {
       throw new Error("既存backupが承認時点の招待台帳と一致しません。");
   } else writeExclusive(paths.backupPath, currentLedgerBytes);
   const intent = createOrReadIntent(options, snapshot);
-  validateIntent(intent, snapshot);
+  validateStage1LedgerApplyIntent(intent, snapshot);
 
   const temporaryLedgerPath = `${paths.temporaryLedgerPrefix}${crypto.randomUUID()}.tmp`;
   writeExclusive(temporaryLedgerPath, snapshot.proposalBytes);

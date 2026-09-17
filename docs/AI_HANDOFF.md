@@ -1,14 +1,25 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 1初回招待台帳read-only監査（2026-09-17）
+
+- BaseはPR #501 merge commit `e53e251`。マージ後Required Quality run `35165212620`とDesktop Windows run `35165212632`は成功済み。Branchは`codex/adult-stage1-ledger-audit-20260917`。
+- Stage 1初回proposal、現在台帳、承認、消費receipt、候補assessment、backup、intent、適用receiptを変更せず検査し、未適用、適用準備、中断後receipt回復、適用完了を4状態で表示するCLIを追加した。
+- 既存applyの承認／source／proposal／intent検証を共有し、receipt契約も全field、digest、時系列まで検証する。証跡欠損・矛盾・改変、監査中競合はfail closedで停止する。適用準備後の監査はintent準備時刻を境界にするため期限後も履歴確認できるが、新規適用は許可しない。
+- candidate ID、monitor ID、pathを標準出力へ出さず、file変更、台帳適用、外部処理を行わない。監査結果は対象付き運用承認を代替しない。
+- 集中27/27、Desktop 353/353、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実承認、実proposal、実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は実装commit、Draft PR、正本同期、全CI／Vercel Preview確認である。
+
+---
+
 ## 0.0 Desktop Adult Pilot招待台帳状態遷移read-only監査（2026-09-17）
 
 - BaseはPR #500 merge commit `91e09ef`。マージ後Required Quality run `35159053386`とDesktop Windows run `35159053390`は成功済み。Branchは`codex/adult-pilot-ledger-status-audit-20260917`。
-- Implementation commitは`8e3a492`、Draft PRは#501。全CI／Vercel Previewを確認中。
+- Implementation commitは`8e3a492`。PR #501はmerge commit `e53e251`でマージ済みで、マージ後Required Quality run `35165212620`とDesktop Windows run `35165212632`も成功した。
 - 状態遷移proposal、現在台帳、backup、intent、receiptを変更せず検査し、未適用、適用準備、中断後receipt回復、適用完了を4状態で表示するCLIを追加した。
 - 既存applyのsource／proposal／intent検証を共有し、receipt契約も全field、digest、時系列まで検証する。証跡欠損・矛盾・改変、監査中競合はfail closedで停止する。
 - monitor IDとpathを標準出力へ出さず、file変更、状態適用、外部処理を行わない。監査結果は対象付き運用承認を代替しない。
 - 集中27/27、Desktop 342/342、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。次は正本同期commitとPR #501の全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor、実proposal、実台帳操作なし。未追跡`apps/desktop/artifacts/`は未変更・未commit。実状態遷移proposal操作は対象付き運用承認を待つ。
 
 ---
 
