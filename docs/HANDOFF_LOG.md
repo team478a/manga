@@ -3,6 +3,7 @@
 ## 2026-09-17 Codex: Cloud原稿編集以降の字幕付き操作デモ
 
 - PR #508 merge commit `df0dff4`から`codex/cloud-creator-operation-video-20260917`を作成した。
+- Implementation commit `af5dce3`をpushし、Draft PR #509を作成した。全CI／Vercel Previewを確認中。
 - 購入者から寄せられた原稿編集以降の操作難易度に関する要望へ対応し、使い方ページに約1分・8工程の字幕付き操作デモを実装した。
 - デモは人物・画風固定、参照画像割当、2ページ選択、費用／停止理由の事前確認、候補比較・採用、吹き出し／文字編集、確定／PDF書き出しを案内する。再生／一時停止、前後移動、工程選択、再スタートとreduced motion対応を含む。
 - 候補比較／セリフ編集用の匿名化SVGを追加し、Cloud原稿編集一覧とProject画面からデモへリンクした。利用者データや実作品を含まず、Production、Provider、credit、DB／Storageを変更していない。

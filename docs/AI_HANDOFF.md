@@ -3,6 +3,7 @@
 ## 0.0 Cloud原稿編集以降の字幕付き操作デモ（2026-09-17）
 
 - BaseはPR #508 merge commit `df0dff4`。Branchは`codex/cloud-creator-operation-video-20260917`。
+- Implementation commitは`af5dce3`。Draft PR #509を作成し、全CI／Vercel Previewを確認中。
 - 購入者フィードバックを受け、Cloud使い方ページへ原稿編集からPDF完成までを8工程で示す約1分の字幕付き操作デモを追加した。
 - 人物・画風固定、参照画像、ページ選択、費用／停止理由のpreflight、候補比較・採用、吹き出し／文字レイヤー編集、確定／書き出しを順に説明する。自動再生と手動操作を併設し、reduced motion環境では初期停止する。
 - 候補比較とセリフ編集は匿名化SVGで追加した。Cloud原稿編集一覧とProjectから操作デモへ直接移動できる。実作品、実利用者情報、Production、Provider、credit、DB／Storage操作はない。
