@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 購入者向け報告フォームの実画像送信エラー修正（2026-09-18）
+
+- BaseはPR #509 merge commit `8fdd460`。Branchは`codex/monitor-feedback-upload-budget-20260918`。
+- Implementation commitは`56e817b`。Draft PR #510を作成し、全CI／Vercel Previewを確認中。
+- 報告フォームの選択上限20MBとVercel Functions request body上限4.5MBの不整合により、実画像がServer Action前に413となる経路を特定した。従来canaryは約99KBで通過していたため、実利用サイズの回帰を検出できていなかった。
+- 最大5枚・選択時1枚5MB／合計20MBを維持し、送信直前にブラウザ内で合計3MB以下へ自動最適化する。WebP変換、段階的な寸法／品質調整、Chrome系decodeとfallback、処理中／失敗表示を追加した。
+- Serverも3MB transport budgetを共有定数で再検証する。private Storage、DB、旧単一添付互換、複数path、投稿制限、診断、maskは不変である。
+- 集中11/11、Hub 1009/1009、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。Production、Provider、credit、実データ操作なし。
+- 次はDraft PR #510の全CI／Vercel Preview成功確認である。
+
+---
+
 ## 0.0 Cloud原稿編集以降の字幕付き操作デモ（2026-09-17）
 
 - BaseはPR #508 merge commit `df0dff4`。Branchは`codex/cloud-creator-operation-video-20260917`。

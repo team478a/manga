@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-18 Codex: 購入者向け報告フォームの実画像送信エラー修正
+
+- PR #509 merge commit `8fdd460`から`codex/monitor-feedback-upload-budget-20260918`を作成した。
+- Implementation commit `56e817b`をpushし、Draft PR #510を作成した。全CI／Vercel Previewを確認中。
+- 選択可能な合計20MBをServer Actionへ直接送る実装が、Vercel Functionsの4.5MB request body上限を超える設計不整合を特定した。小容量fixture canaryは成功していたが、PCスペック等の実スクリーンショットでは413となり得る。
+- Clientで最大5枚・元画像1枚5MB／合計20MBを検査し、必要時だけWebP中心に段階圧縮して合計3MB以下にしてから既存Actionを呼ぶ。decode fallbackと利用者向け進捗／失敗表示を追加した。
+- Server側の再検証も共有transport budgetへ揃え、Storage／DB／後方互換／rate limit／個人情報maskを維持した。
+- 集中11/11、Hub 1009/1009、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。
+- Production、DB、Storage、Provider、生成、credit、既存報告、実利用者データを変更していない。次はDraft PRと全CI／Vercel Preview確認へ進む。
+
+---
+
 ## 2026-09-17 Codex: Cloud原稿編集以降の字幕付き操作デモ
 
 - PR #508 merge commit `df0dff4`から`codex/cloud-creator-operation-video-20260917`を作成した。

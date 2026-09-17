@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-18 購入者向け報告フォームの実画像送信エラー修正
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / PRODUCTION_UNCHANGED`
+- Base: PR #509 merge commit `8fdd460`。Branchは`codex/monitor-feedback-upload-budget-20260918`。
+- Implementation commitは`56e817b`。Draft PR #510を作成し、全CI／Vercel Previewを確認中。
+- Productionの購入者向け報告フォームは1枚5MB・合計20MBまで選択可能と案内していたが、Vercel Functionsのrequest body上限は4.5MBであり、実スクリーンショットがこれを超えるとServer Actionへ到達する前に413となる不整合を特定した。既存canaryは2枚合計99,107 bytesのため、この経路を検出していなかった。
+- 選択時の最大5枚・1枚5MB・合計20MBは維持し、送信直前にブラウザ内だけで画像をWebP中心に縮小し、合計3MB以下へ自動調整する。Chrome系の`createImageBitmap`に加えて画像要素fallbackを備え、調整中／調整済み／失敗理由を画面内で通知する。
+- Server側も合計3MBを再検証し、古いClientや改変requestをfail closedにする。既存のprivate Storage path、DB schema、複数添付、旧単一添付互換、投稿制限、診断情報、個人情報maskは変更しない。
+- 検証: 集中11/11、Hub 1009/1009、Desktop 407/407、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、`git diff --check`成功。Vite既知chunk warningと外部設定・手動E2EのPENDINGは不変である。
+- Production、DB、Storage、Provider、生成、credit、既存報告、実利用者データを変更していない。次はDraft PR #510の全CI／Vercel Preview成功確認で停止する。
+
+---
+
 ## 2026-09-17 Cloud原稿編集以降の字幕付き操作デモ
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / PRODUCTION_UNCHANGED`
