@@ -1,15 +1,28 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-17 Codex: Desktop Adult Stage 0証跡削除ライフサイクル統合read-only監査
+
+- PR #506 merge commit `7374ed9`から`codex/adult-stage0-retention-lifecycle-audit-20260917`を作成した。マージ後Required Quality run `35179668342`とDesktop Windows run `35179668255`は成功済み。
+- Implementation commit `4c7af68`をpushし、Draft PR #507を作成した。全CI／Vercel Previewを確認中。
+- retention proposalから削除完了までを変更せず連結し、proposal、承認、manifest／intent準備、原本隔離途中、purge準備／途中、receipt回復、完了を10状態で表示する統合CLIを追加した。
+- 全control fileと原本／回復payloadのdigest、存在状態、時系列を検査する。削除intent後は承認期限後も固定intentから回復できるが、intent前の期限切れは新規applyを許可しない。
+- 欠損、未知file、順序矛盾、改変、purge後の原本再出現、監査中変更をfail closedで拒否する。監査は内容とpathを表示せず、file変更、Runtime／model、生成、配布、credit操作を行わない。
+- applyへ2つの内部中断hookを追加し、全状態を一時directoryで再現した。Stage 0 runbookとAdult Pilot公開計画へ統合監査command、状態の意味、回復手順、承認非代替境界を追記した。
+- 新規7/7、削除集中23/23、Stage 0 lifecycle＋retention集中43/43、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #507の全CI／Vercel Preview確認である。
+
+---
+
 ## 2026-09-17 Codex: Desktop Adult Stage 0証跡削除承認／中断回復apply／read-only監査
 
 - PR #505 merge commit `e18c99c`から`codex/adult-stage0-retention-apply-20260917`を作成した。マージ後Required Quality run `35176879178`とDesktop Windows run `35176879177`は成功済み。
-- Implementation commit `3d1d06c`をpushし、Draft PR #506を作成した。全CI／Vercel Previewを確認中。
+- Implementation commit `3d1d06c`を含むPR #506はmerge commit `7374ed9`でマージ済み。マージ後Required Quality run `35179668342`とDesktop Windows run `35179668255`も成功した。
 - retention proposalを対象scope、場所、承認、固定回復隔離directoryへ結合する最大24時間の削除承認CLIを追加した。5確認を必須にし、user contentとStage 1配布を許可しない。
 - apply CLIは初回変更前に全sourceを再監査し、各証跡を隔離copyへfsync・digest検証後に元だけを削除する。全件隔離後にpurge intentを作成して隔離payloadを全削除し、最後に内容非保持receiptを確定する。
 - delete intent前後、個別隔離途中、purge途中から安全に再開できる。元証跡とcopyの同時欠損、copy／control改変、manifest欠損、scope外証跡、二重適用は拒否する。post-delete read-only監査は全control chainと元／隔離payloadの不存在を再検証する。
 - Stage 0 runbookとAdult Pilot公開計画へ承認、apply、回復、事後監査、実削除の対象付き明示承認境界を追記した。root npm aliasも既存proposal／監査を含めて整備した。
 - 新規16/16、Stage 0 lifecycle＋retention集中36/36、Desktop 400/400、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。削除検証は一時directoryのみ。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #506の全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。削除検証は一時directoryのみ。未追跡`apps/desktop/artifacts/`はcommit対象外。削除全段階の統合read-only監査を次工程で追加した。
 
 ---
 

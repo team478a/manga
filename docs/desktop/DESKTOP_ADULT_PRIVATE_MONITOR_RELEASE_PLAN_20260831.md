@@ -90,7 +90,7 @@ Stage 0の引継ぎと期限管理では`desktop:adult:stage0-lifecycle:audit`�
 
 `EXPIRED`後は`desktop:adult:stage0-retention-proposal:create`でStage 0運用証跡だけを内容SHA-256／場所SHA-256付きの削除候補scopeへ固定し、`desktop:adult:stage0-retention-proposal:audit`で原本との一致をread-only確認する。proposalは利用者Project、Prompt、画像、export、backup、Runtime、model、installer、Bundle本体を対象外とし、常に`deletionAuthorized=false`を固定する。
 
-削除は対象proposalをレビューした後、`desktop:adult:stage0-retention-authorization:create`で24時間以内・一回限定の内容非保持承認を別途作成し、`desktop:adult:stage0-retention:apply`でだけ実行する。applyは全sourceを再検証し、原本を固定回復領域へ段階的に隔離してからpurge intentを確定し、回復copyも全件purgeした後にだけreceiptを残す。中断時は同じ入力で回復し、原本と回復copyの両方がない状態、control file改変、対象外証跡追加、期限外承認をfail closedで拒否する。`desktop:adult:stage0-retention-deletion:audit`は原本と回復payloadの不在をread-only確認する。実proposalへの承認作成・applyには対象を明記した責任者の明示承認が必要であり、実装や監査成功だけで削除を許可しない。
+削除は対象proposalをレビューした後、`desktop:adult:stage0-retention-authorization:create`で24時間以内・一回限定の内容非保持承認を別途作成し、`desktop:adult:stage0-retention:apply`でだけ実行する。applyは全sourceを再検証し、原本を固定回復領域へ段階的に隔離してからpurge intentを確定し、回復copyも全件purgeした後にだけreceiptを残す。中断時は同じ入力で回復し、原本と回復copyの両方がない状態、control file改変、対象外証跡追加、期限外承認をfail closedで拒否する。`desktop:adult:stage0-retention-deletion-lifecycle:audit`はproposal準備から削除完了までの10状態をread-only判定し、安全な再開地点を示す。`desktop:adult:stage0-retention-deletion:audit`は完了後に原本と回復payloadの不在をread-only確認する。いずれの監査も削除、再実行、Stage 1配布を許可しない。実proposalへの承認作成・applyには対象を明記した責任者の明示承認が必要であり、実装や監査成功だけで削除を許可しない。
 
 Stage 0 gateは取込済みmanifestと元Bundle証跡を再照合する。manifestの`fixed`状態だけでは合格せず、証跡fileの改変、artifact ID重複、未知field、容量・SHA-256、workflow／mapping SHA-256、取込verificationのいずれかが不一致なら`fixed_bundle: BLOCKED`または入力不正として停止する。
 
