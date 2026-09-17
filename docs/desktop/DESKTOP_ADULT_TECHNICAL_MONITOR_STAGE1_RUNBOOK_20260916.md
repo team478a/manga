@@ -213,6 +213,25 @@ npm run desktop:adult:pilot-release-readiness:strict
 
 完了証跡は固定operation packageの隣に排他的に作成され、取込時にも元packageの内容SHA-256と場所SHA-256を再照合する。開始承認の消費前に作成された実機証跡、予定開始前の消費、別packageへ移動した開始記録、別pathへ移動した実機証跡、改変された証跡、期限切れを拒否する。同じpackageへ完了証跡を上書きできないため、別セッションの結果を流用しない。完了証跡と受入れ表には内容や実pathを保持せず、合格後も`stage1DistributionAuthorized=false`を維持する。
 
+### 5.1 Stage 0運用ライフサイクルの統合監査
+
+引継ぎ時、実施直前、完了証跡作成後、削除期限確認時は、候補assessmentから完了証跡までをread-onlyでまとめて監査する。開始承認前は`--authorization`を省略し、実機証跡の回収前は`--hardware-evidence`を省略する。固定receiptと完了証跡はoperation packageの隣から自動検出する。
+
+```powershell
+npm run desktop:adult:stage0-lifecycle:audit -- `
+  --assessment $assessment `
+  --plan $stage0Plan `
+  --artifact-evidence $artifactEvidence `
+  --bundle-evidence $env:MANGAI_ADULT_PILOT_STAGE0_BUNDLE_EVIDENCE_PATH `
+  --package $stage0Package `
+  --authorization $stage0Authorization `
+  --hardware-evidence $hardwareEvidence
+```
+
+`READY`は検証済みoperation package、`PREPARED`は未消費の開始承認、`IN_PROGRESS`は開始承認消費後、`COMPLETED`は同じsessionへ連結済みの12GB実機証跡と完了証跡、`EXPIRED`は削除期限到達を表す。期限後もsource、承認、receipt、実機証跡、完了証跡の結合は検査するが、新規開始や再利用を許可しない。`EXPIRED`ではアクセス制限領域の保持期限対応が必要である。
+
+監査はcandidate ID、実path、端末情報、作品内容を表示せず、fileの作成・更新・削除、Runtime起動、model取得、生成、Stage 1承認を行わない。成功は責任者承認、Stage 0開始、完了証跡取込、Stage 1配布許可を代替しない。前工程なしのreceipt／完了証跡、別session、改変、監査中の変更はfail closedで停止する。
+
 Stage 0 artifactはPilot招待物ではない。同じ候補者をStage 1へ進める場合も、責任者確認後にStage 1用の配布記録と招待台帳entryを新規作成する。
 
 ## 6. Stage 1: 1名招待

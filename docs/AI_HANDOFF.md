@@ -1,15 +1,28 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0運用ライフサイクル統合read-only監査（2026-09-17）
+
+- BaseはPR #503 merge commit `3cff3e8`。マージ後Required Quality run `35169748338`とDesktop Windows run `35169748296`は成功済み。Branchは`codex/adult-stage0-lifecycle-audit-20260917`。
+- Implementation commitは`9e81edc`。Draft PR #504を作成し、全CI／Vercel Previewを確認中。
+- Stage 0の候補assessmentから完了証跡までを変更せず連結し、`READY`、`PREPARED`、`IN_PROGRESS`、`COMPLETED`、`EXPIRED`を判定する統合CLIを追加した。
+- operation packageの6 source、開始承認、消費receipt、12GB実機4方式証跡、完了証跡、package／receipt digest、candidate／version／時系列を再検証する。期限後は新規操作を許可せず、source bindingを維持したまま保持期限対応が必要な`EXPIRED`として監査できる。
+- 前工程欠落、承認消費前の実機証跡、別session、改変、監査中の内容・存在状態変更をfail closedで拒否する。通常のpackage／開始承認CLIの期限契約は変更しない。
+- candidate ID、端末情報、作品内容、pathを表示せず、file変更、配布、Runtime／model、生成、Stage 1承認を行わない。監査結果は実施承認を代替しない。
+- 集中33/33、Desktop 372/372、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #504の全CI／Vercel Preview確認である。
+
+---
+
 ## 0.0 Desktop Adult Stage 1運用ライフサイクル統合read-only監査（2026-09-17）
 
 - BaseはPR #502 merge commit `cda5029`。マージ後Required Quality run `35167341045`とDesktop Windows run `35167340992`は成功済み。Branchは`codex/adult-stage1-lifecycle-audit-20260917`。
-- Implementation commitは`5cfcdbe`、Draft PRは#503。全CI／Vercel Previewを確認中。
+- Implementation commitは`5cfcdbe`。PR #503はmerge commit `3cff3e8`でマージ済みで、マージ後Required Quality run `35169748338`とDesktop Windows run `35169748296`も成功した。
 - 初回Stage 1招待証跡から0件以上の状態遷移proposalを古い順に連結し、現在状態まで変更せず確認する統合CLIを追加した。
 - 途中の遷移は適用receiptまで完成している必要があり、最後だけ未適用、適用準備、receipt回復待ち、適用済みを許可する。初回招待とのmonitor一致、台帳のbyte連続性、履歴欠落、順序違い、重複、別monitor混入、改変、監査中変更をfail closedで拒否する。
 - 既存の初回招待監査と状態遷移監査へ、完成済み過去工程を検査する内部履歴modeと連結用詳細を追加した。通常CLIの出力・判定契約は維持し、履歴modeでもreceiptのない途中工程は拒否する。
 - phase、状態、現在status、検査遷移数だけを出力し、candidate ID、monitor ID、pathを表示しない。file変更、招待、配布、状態適用、Runtime／model、生成、credit操作は行わず、監査成功は対象付き運用承認を代替しない。
 - 集中30/30、Desktop 362/362、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実承認・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #503の全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実monitor・実承認・実proposal・実台帳操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。実運用は外部前提と対象付き承認を待つ。
 
 ---
 

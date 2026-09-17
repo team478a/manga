@@ -9,6 +9,7 @@ import {
   consumeStage0StartAuthorization,
   createStage0StartAuthorization,
   verifyConsumedStage0StartAuthorization,
+  verifyStage0StartAuthorization,
 } from "../scripts/adult-pilot-stage0-start-authorization.mjs";
 
 const write = (root, name, value) => {
@@ -133,6 +134,33 @@ test("Stage 0 start authorization is consumed once with a fixed receipt", (t) =>
   assert.equal(verified.receiptSha256.length, 64);
   assert.equal(verified.receipt.candidateId, receipt.candidateId);
   assert.throws(() => consumeStage0StartAuthorization(values), /EEXIST/);
+});
+
+test("Stage 0 start authorization can be audited read-only after expiry", (t) => {
+  const values = fixture(t);
+  createStage0StartAuthorization(values);
+  consumeStage0StartAuthorization(values);
+  const historical = {
+    ...values,
+    now: new Date("2026-09-20T00:00:00.000Z"),
+    allowHistoricalExpired: true,
+  };
+  assert.equal(
+    verifyStage0StartAuthorization(historical).authorization.candidateId,
+    "candidate-a1b2c3d4e5f6",
+  );
+  assert.equal(
+    verifyConsumedStage0StartAuthorization(historical).receipt.candidateId,
+    "candidate-a1b2c3d4e5f6",
+  );
+  assert.throws(
+    () =>
+      verifyConsumedStage0StartAuthorization({
+        ...historical,
+        allowHistoricalExpired: false,
+      }),
+    /削除期限/,
+  );
 });
 
 test("Stage 0 start authorization cannot be consumed before its scheduled start", (t) => {

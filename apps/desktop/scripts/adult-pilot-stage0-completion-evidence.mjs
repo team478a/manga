@@ -83,7 +83,11 @@ const isTimestamp = (value) =>
   !Number.isNaN(Date.parse(value)) &&
   new Date(value).toISOString() === value;
 
-const validateHardwareEvidence = (evidence, consumedAt, deleteBy) => {
+export const validateStage0HardwareEvidence = (
+  evidence,
+  consumedAt,
+  deleteBy,
+) => {
   exactKeys(
     evidence,
     [
@@ -223,7 +227,7 @@ const validateCompletion = (
     completion.stage1DistributionAuthorized !== false
   )
     throw new Error("Stage 0完了証跡が実機証跡と一致しません。");
-  validateHardwareEvidence(
+  validateStage0HardwareEvidence(
     hardwareEvidence,
     completion.consumedAt,
     completion.deleteBy,
@@ -281,7 +285,7 @@ export const createStage0CompletionEvidence = (rawOptions) => {
   );
   if (!hardwareBefore.equals(hardwareBytes))
     throw new Error("Stage 0実機証跡が検証中に変更されました。");
-  const hardwareEvidence = validateHardwareEvidence(
+  const hardwareEvidence = validateStage0HardwareEvidence(
     readJson(hardwareBytes, "Stage 0実機証跡"),
     verified.receipt.consumedAt,
     verified.operationPackage.deleteBy,
@@ -359,7 +363,7 @@ export const verifyStage0CompletionEvidenceForImport = (rawOptions) => {
   const verified = validateCompletion(
     readJson(completionBytes, "Stage 0完了証跡"),
     completionBytes,
-    validateHardwareEvidence(readJson(hardwareBytes, "Stage 0実機証跡")),
+    validateStage0HardwareEvidence(readJson(hardwareBytes, "Stage 0実機証跡")),
     hardwareBytes,
     rawOptions.hardwareEvidencePath,
   );
