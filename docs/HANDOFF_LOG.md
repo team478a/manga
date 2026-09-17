@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-17 Codex: Cloud原稿編集以降の字幕付き操作デモ
+
+- PR #508 merge commit `df0dff4`から`codex/cloud-creator-operation-video-20260917`を作成した。
+- 購入者から寄せられた原稿編集以降の操作難易度に関する要望へ対応し、使い方ページに約1分・8工程の字幕付き操作デモを実装した。
+- デモは人物・画風固定、参照画像割当、2ページ選択、費用／停止理由の事前確認、候補比較・採用、吹き出し／文字編集、確定／PDF書き出しを案内する。再生／一時停止、前後移動、工程選択、再スタートとreduced motion対応を含む。
+- 候補比較／セリフ編集用の匿名化SVGを追加し、Cloud原稿編集一覧とProject画面からデモへリンクした。利用者データや実作品を含まず、Production、Provider、credit、DB／Storageを変更していない。
+- 集中2/2、Hub 1008/1008、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。Draft PR作成後に全CI／Vercel Preview確認へ進む。
+
+---
+
 ## 2026-09-17 Codex: Desktop Adult Pilot固定Bundle実file検証・正本固定
 
 - PR #507 merge commit `746c399`から`codex/adult-pilot-fixed-bundle-20260917`を作成した。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`は成功済み。

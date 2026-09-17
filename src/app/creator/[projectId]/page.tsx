@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   FilePlus2,
   PencilLine,
+  PlayCircle,
   Plus,
   ShoppingBag,
   Trash2,
@@ -123,6 +124,7 @@ export default async function CloudProjectPage({
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link className="button-secondary" href="/dashboard/monitor/guide#creator-operation-video"><PlayCircle className="h-4 w-4" />操作デモ</Link>
           <Link className="button-secondary" href={`/creator/${projectId}/preview`}><BookOpen className="h-4 w-4" />原稿プレビュー</Link>
           <span className="rounded-full bg-green-50 px-4 py-2 font-semibold text-green-800">一般向け・クラウド制作</span>
         </div>

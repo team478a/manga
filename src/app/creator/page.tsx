@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, FilePenLine, ListTree, Plus, Trash2 } from "lucide-react";
+import { BookOpen, FilePenLine, ListTree, PlayCircle, Plus, Trash2 } from "lucide-react";
 import { requireProfile } from "@/lib/auth";
 import { listCloudProjects } from "@/lib/cloud-creator-server";
 
@@ -68,12 +68,18 @@ export default async function CloudCreatorPage({
               まずはこの3ステップで原稿を編集します
             </h2>
           </div>
-          {!projects.length ? (
-            <Link className="button" href="/creator/new">
-              <Plus className="mr-2 h-5 w-5" />
-              作品づくりを始める
+          <div className="flex flex-wrap gap-2">
+            <Link className="button-secondary" href="/dashboard/monitor/guide#creator-operation-video">
+              <PlayCircle className="mr-2 h-5 w-5" />
+              原稿編集の操作デモ
             </Link>
-          ) : null}
+            {!projects.length ? (
+              <Link className="button" href="/creator/new">
+                <Plus className="mr-2 h-5 w-5" />
+                作品づくりを始める
+              </Link>
+            ) : null}
+          </div>
         </div>
         <ol className="mt-5 grid gap-3 md:grid-cols-3">
           <li className="rounded-lg border border-violet-100 bg-white p-4">

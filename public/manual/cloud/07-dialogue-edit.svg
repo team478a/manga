@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">吹き出しと文字の編集</title>
+  <desc id="desc">原稿編集で吹き出しと縦書き文字を画像とは別のレイヤーとして選択し、位置と大きさを調整する匿名化した画面図</desc>
+  <rect width="1200" height="675" fill="#f7f5ff"/>
+  <g font-family="system-ui, sans-serif">
+    <rect x="36" y="28" width="1128" height="72" rx="16" fill="#fff"/>
+    <text x="64" y="57" fill="#6d28d9" font-size="14" font-weight="700">原稿編集　ページ画面</text>
+    <text x="64" y="84" fill="#18181b" font-size="24" font-weight="700">吹き出し・文字を画像とは別に修正する</text>
+
+    <rect x="36" y="120" width="1128" height="54" rx="14" fill="#fff" stroke="#e7e5e4"/>
+    <rect x="56" y="132" width="132" height="30" rx="8" fill="#ede9fe"/><text x="122" y="153" fill="#5b21b6" text-anchor="middle" font-size="13" font-weight="700">吹き出しを追加</text>
+    <rect x="200" y="132" width="112" height="30" rx="8" fill="#ede9fe"/><text x="256" y="153" fill="#5b21b6" text-anchor="middle" font-size="13" font-weight="700">文字を追加</text>
+    <rect x="324" y="132" width="112" height="30" rx="8" fill="#fafaf9"/><text x="380" y="153" fill="#57534e" text-anchor="middle" font-size="13">元に戻す</text>
+    <text x="1136" y="153" fill="#065f46" text-anchor="end" font-size="13" font-weight="700">保存済み</text>
+
+    <rect x="36" y="194" width="790" height="431" rx="18" fill="#292524"/>
+    <rect x="154" y="216" width="554" height="386" rx="8" fill="#fff"/>
+    <rect x="174" y="236" width="246" height="346" rx="5" fill="#e7e5e4" stroke="#d6d3d1" stroke-width="3"/>
+    <rect x="438" y="236" width="250" height="166" rx="5" fill="#ddd6fe" stroke="#d6d3d1" stroke-width="3"/>
+    <rect x="438" y="420" width="250" height="162" rx="5" fill="#dbeafe" stroke="#d6d3d1" stroke-width="3"/>
+    <ellipse cx="316" cy="330" rx="91" ry="62" fill="#fff" stroke="#7c3aed" stroke-width="5"/>
+    <path d="M370 374 L397 407 L358 384" fill="#fff" stroke="#7c3aed" stroke-width="5" stroke-linejoin="round"/>
+    <rect x="281" y="274" width="70" height="114" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-dasharray="7 5" stroke-width="3"/>
+    <text x="322" y="297" fill="#18181b" font-size="15" text-anchor="middle" font-weight="700">こ</text>
+    <text x="322" y="318" fill="#18181b" font-size="15" text-anchor="middle" font-weight="700">こ</text>
+    <text x="322" y="339" fill="#18181b" font-size="15" text-anchor="middle" font-weight="700">を</text>
+    <text x="322" y="360" fill="#18181b" font-size="15" text-anchor="middle" font-weight="700">修</text>
+    <text x="322" y="381" fill="#18181b" font-size="15" text-anchor="middle" font-weight="700">正</text>
+    <circle cx="281" cy="274" r="7" fill="#7c3aed"/><circle cx="351" cy="274" r="7" fill="#7c3aed"/><circle cx="281" cy="388" r="7" fill="#7c3aed"/><circle cx="351" cy="388" r="7" fill="#7c3aed"/>
+    <ellipse cx="564" cy="300" rx="84" ry="42" fill="#fff" stroke="#a8a29e" stroke-width="3"/>
+    <text x="564" y="306" fill="#44403c" text-anchor="middle" font-size="14">画像は再生成しません</text>
+
+    <rect x="846" y="194" width="318" height="431" rx="18" fill="#fff" stroke="#ddd6fe"/>
+    <text x="872" y="233" fill="#18181b" font-size="20" font-weight="700">選択中：縦書き文字</text>
+    <text x="872" y="272" fill="#57534e" font-size="13">セリフ</text>
+    <rect x="872" y="284" width="266" height="74" rx="10" fill="#fafaf9" stroke="#d6d3d1"/>
+    <text x="890" y="315" fill="#18181b" font-size="15">ここを修正</text>
+    <text x="890" y="340" fill="#78716c" font-size="12">入力後に保存します</text>
+    <text x="872" y="392" fill="#57534e" font-size="13">文字方向</text>
+    <rect x="872" y="404" width="126" height="40" rx="9" fill="#6d28d9"/><text x="935" y="430" fill="#fff" text-anchor="middle" font-size="14" font-weight="700">縦書き</text>
+    <rect x="1012" y="404" width="126" height="40" rx="9" fill="#fafaf9" stroke="#d6d3d1"/><text x="1075" y="430" fill="#57534e" text-anchor="middle" font-size="14">横書き</text>
+    <text x="872" y="478" fill="#57534e" font-size="13">文字サイズ・位置</text>
+    <rect x="872" y="492" width="266" height="12" rx="6" fill="#ddd6fe"/><rect x="872" y="492" width="158" height="12" rx="6" fill="#7c3aed"/><circle cx="1030" cy="498" r="11" fill="#6d28d9"/>
+    <rect x="872" y="536" width="266" height="52" rx="11" fill="#ecfdf5"/>
+    <text x="1005" y="559" fill="#065f46" text-anchor="middle" font-size="14" font-weight="700">文字だけを保存</text>
+    <text x="1005" y="579" fill="#065f46" text-anchor="middle" font-size="12">画像・他のコマは変わりません</text>
+  </g>
+  <text x="1140" y="650" fill="#78716c" text-anchor="end" font-family="system-ui, sans-serif" font-size="13">画面例：作品画像・実際のセリフは使用していません</text>
+</svg>

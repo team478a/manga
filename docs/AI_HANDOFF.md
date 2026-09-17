@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud原稿編集以降の字幕付き操作デモ（2026-09-17）
+
+- BaseはPR #508 merge commit `df0dff4`。Branchは`codex/cloud-creator-operation-video-20260917`。
+- 購入者フィードバックを受け、Cloud使い方ページへ原稿編集からPDF完成までを8工程で示す約1分の字幕付き操作デモを追加した。
+- 人物・画風固定、参照画像、ページ選択、費用／停止理由のpreflight、候補比較・採用、吹き出し／文字レイヤー編集、確定／書き出しを順に説明する。自動再生と手動操作を併設し、reduced motion環境では初期停止する。
+- 候補比較とセリフ編集は匿名化SVGで追加した。Cloud原稿編集一覧とProjectから操作デモへ直接移動できる。実作品、実利用者情報、Production、Provider、credit、DB／Storage操作はない。
+- 集中2/2、Hub 1008/1008、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、diff check成功。Draft PR作成後にCI／Vercel Preview成功を確認する。
+
+---
+
 ## 0.0 Desktop Adult Pilot固定Bundle実file検証・正本固定（2026-09-17）
 
 - BaseはPR #507 merge commit `746c399`。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`は成功済み。Branchは`codex/adult-pilot-fixed-bundle-20260917`。
