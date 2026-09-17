@@ -3,6 +3,7 @@
 ## 2026-09-18 Codex: 購入者向け報告フォームの実画像送信エラー修正
 
 - PR #509 merge commit `8fdd460`から`codex/monitor-feedback-upload-budget-20260918`を作成した。
+- Implementation commit `56e817b`をpushし、Draft PR #510を作成した。全CI／Vercel Previewを確認中。
 - 選択可能な合計20MBをServer Actionへ直接送る実装が、Vercel Functionsの4.5MB request body上限を超える設計不整合を特定した。小容量fixture canaryは成功していたが、PCスペック等の実スクリーンショットでは413となり得る。
 - Clientで最大5枚・元画像1枚5MB／合計20MBを検査し、必要時だけWebP中心に段階圧縮して合計3MB以下にしてから既存Actionを呼ぶ。decode fallbackと利用者向け進捗／失敗表示を追加した。
 - Server側の再検証も共有transport budgetへ揃え、Storage／DB／後方互換／rate limit／個人情報maskを維持した。
