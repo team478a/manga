@@ -1,18 +1,34 @@
 # MANGAI Current Task
 
+## 2026-09-17 Desktop Adult Stage 0証跡保持期限proposal／read-only監査
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_RETENTION_PROPOSAL_NOT_CREATED / REAL_EVIDENCE_NOT_DELETED / REAL_STAGE0_NOT_RUN`
+- Base: PR #504 merge commit `260fd11`。マージ後Required Quality run `35173684638`（Core quality 3分28秒、Migration roundtrip 51秒）とDesktop Windows run `35173684496`（4分0秒）は成功済み。
+- Branch: `codex/adult-stage0-retention-proposal-20260917`。
+- Implementation commit: `0593e60`。Draft PR: #505。
+- Stage 0統合監査が`EXPIRED`かつ`retentionActionRequired=true`を返す場合だけ、候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation packageと、進行段階に応じた開始承認・消費receipt・12GB実機証跡・完了証跡を5〜9件の削除候補proposalへ固定するCLIを追加した。
+- proposalは各証跡の内容SHA-256と場所SHA-256、削除期限、lifecycle phase、scope digest、proposal場所digest、4つの保持確認を保存する。installer、bundle artifact、Runtime／model、Project、prompt、画像、export、backupは対象外で、`deletionAuthorized=false`と`SEPARATE_APPROVAL_AND_APPLY_REQUIRED`を固定する。
+- read-only監査CLIは、元証跡とproposalの内容・場所・phase・scope・時系列・保持確認を再結合し、`PROPOSAL_READY`だけを返す。改変、移動・copy、重複、期限未到達、監査中の内容・存在状態変更をfail closedで拒否する。
+- proposal作成・監査はいずれも実証跡を削除せず、外部処理を行わない。proposalはGit管理外のprivate absolute pathへ排他的に作成し、標準出力へcandidate ID、端末情報、作品内容、pathを表示しない。実削除には別実装、対象確認、明示承認が必要である。
+- 検証: 新規12/12、Stage 0集中45/45、Desktop 384/384、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者、実承認、実証跡、実proposal、実削除を変更していない。未追跡`apps/desktop/artifacts/`はcommit対象外である。
+- 次: PR #505の全CI／Vercel Preview成功まで確認する。実proposal作成・実削除は行わない。
+
+---
+
 ## 2026-09-17 Desktop Adult Stage 0運用ライフサイクル統合read-only監査
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_STAGE0_NOT_RUN / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / REAL_PILOT_OPERATION_NOT_RUN`
+- 状態: `MERGED / CI_PASSED / REAL_STAGE0_NOT_RUN / STAGE0_BLOCKED_EXTERNAL_PREREQUISITES / REAL_PILOT_OPERATION_NOT_RUN`
 - Base: PR #503 merge commit `3cff3e8`。マージ後Required Quality run `35169748338`（Core quality 3分13秒、Migration roundtrip 57秒）とDesktop Windows run `35169748296`（4分37秒）は成功済み。
 - Branch: `codex/adult-stage0-lifecycle-audit-20260917`。
-- Implementation commit: `9e81edc`。Draft PR: #504。
+- Implementation commit: `9e81edc`。PR #504はmerge commit `260fd11`でマージ済み。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`も成功した。
 - 候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation package、開始承認、消費receipt、12GB実機証跡、完了証跡を1つのread-only CLIで連結監査する。
 - `READY`、`PREPARED`、`IN_PROGRESS`、`COMPLETED`、`EXPIRED`を判定する。期限後もsource bindingと全証跡を検査する履歴modeを内部追加したが、通常のpackage／開始承認CLIは期限切れを引き続き拒否する。
 - 前工程なしのreceipt／完了証跡、承認消費前の実機証跡、別session、source改変、期限・時系列不整合、監査中のfile内容・存在状態変更をfail closedで拒否する。完了時は実際の消費receipt digestまで再結合する。
 - CLIはfileを作成・更新・削除せず、candidate ID、端末情報、作品内容、pathを標準出力へ表示しない。監査成功は責任者承認、Artifact配布、Runtime／model、生成、実機受入れ、Stage 1招待を代替しない。
 - 検証: 集中33/33、Desktop 372/372、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者、実承認、実証跡を変更していない。未追跡`apps/desktop/artifacts/`はcommit対象外である。
-- 次: PR #504の全CI／Vercel Preview成功まで確認する。実Stage 0操作は行わない。
+- 次: 保持期限対応は削除候補proposalとread-only監査から安全に進める。実Stage 0操作と実削除は対象付き明示承認を待つ。
 
 ---
 

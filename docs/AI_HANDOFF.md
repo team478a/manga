@@ -1,15 +1,28 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Desktop Adult Stage 0証跡保持期限proposal／read-only監査（2026-09-17）
+
+- BaseはPR #504 merge commit `260fd11`。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`は成功済み。Branchは`codex/adult-stage0-retention-proposal-20260917`。
+- Implementation commitは`0593e60`。Draft PR #505を作成し、全CI／Vercel Previewを確認中。
+- Stage 0統合監査が`EXPIRED`かつ保持期限対応必須を返す場合だけ、ライフサイクル段階に応じた5〜9件の運用証跡を内容・場所SHA-256へ固定する削除候補proposal CLIを追加した。
+- 対象は候補assessment、計画、署名Artifact証跡、固定Bundle証跡、operation package、存在する開始承認・消費receipt・12GB実機証跡・完了証跡に限定した。installer、bundle artifact、Runtime／model、Project、prompt、画像、export、backupは除外する。
+- 4つの保持確認を必須にし、proposalへ`deletionAuthorized=false`と別承認・別apply必須を固定する。Git管理外private pathへ排他的に作成し、上書き、移動・copy、重複、source競合を拒否する。
+- read-only監査CLIはproposal、現在のStage 0 lifecycle、全source、phase、scope、digestを再結合して`PROPOSAL_READY`を判定する。改変、期限未到達、監査中変更をfail closedで拒否し、fileを書き換えない。
+- 新規12/12、Stage 0集中45/45、Desktop 384/384、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡・実proposal・実削除操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #505の全CI／Vercel Preview確認である。
+
+---
+
 ## 0.0 Desktop Adult Stage 0運用ライフサイクル統合read-only監査（2026-09-17）
 
 - BaseはPR #503 merge commit `3cff3e8`。マージ後Required Quality run `35169748338`とDesktop Windows run `35169748296`は成功済み。Branchは`codex/adult-stage0-lifecycle-audit-20260917`。
-- Implementation commitは`9e81edc`。Draft PR #504を作成し、全CI／Vercel Previewを確認中。
+- Implementation commitは`9e81edc`。PR #504はmerge commit `260fd11`でマージ済み。マージ後Required Quality run `35173684638`とDesktop Windows run `35173684496`も成功した。
 - Stage 0の候補assessmentから完了証跡までを変更せず連結し、`READY`、`PREPARED`、`IN_PROGRESS`、`COMPLETED`、`EXPIRED`を判定する統合CLIを追加した。
 - operation packageの6 source、開始承認、消費receipt、12GB実機4方式証跡、完了証跡、package／receipt digest、candidate／version／時系列を再検証する。期限後は新規操作を許可せず、source bindingを維持したまま保持期限対応が必要な`EXPIRED`として監査できる。
 - 前工程欠落、承認消費前の実機証跡、別session、改変、監査中の内容・存在状態変更をfail closedで拒否する。通常のpackage／開始承認CLIの期限契約は変更しない。
 - candidate ID、端末情報、作品内容、pathを表示せず、file変更、配布、Runtime／model、生成、Stage 1承認を行わない。監査結果は実施承認を代替しない。
 - 集中33/33、Desktop 372/372、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #504の全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。保持期限対応は削除候補proposalとread-only監査から進め、実削除は対象付き明示承認を待つ。
 
 ---
 
