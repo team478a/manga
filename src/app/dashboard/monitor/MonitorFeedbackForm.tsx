@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { optimizeMonitorScreenshots } from "@/lib/monitor-feedback-client";
 import { submitCloudGeneralMonitorFeedbackAction } from "./actions";
 
 export function MonitorFeedbackForm() {
   const diagnosticRef = useRef<HTMLInputElement>(null);
   const pageUrlRef = useRef<HTMLInputElement>(null);
+  const [attachmentStatus, setAttachmentStatus] = useState<string | null>(null);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (pageUrlRef.current) pageUrlRef.current.value = window.location.href.split(/[?#]/)[0];
@@ -21,8 +24,33 @@ export function MonitorFeedbackForm() {
     });
   }, []);
 
+  const submitWithOptimizedScreenshots = async (formData: FormData) => {
+    setAttachmentError(null);
+    setAttachmentStatus("スクリーンショットを送信向けに確認しています…");
+    let optimized;
+    try {
+      optimized = await optimizeMonitorScreenshots(
+        formData.getAll("screenshots"),
+      );
+    } catch {
+      setAttachmentStatus(null);
+      setAttachmentError(
+        "画像を送信できる容量に調整できませんでした。画像を減らすか、PNG・JPEG・WebPを選び直してください。",
+      );
+      return;
+    }
+    formData.delete("screenshots");
+    for (const file of optimized.files) formData.append("screenshots", file);
+    setAttachmentStatus(
+      optimized.optimized
+        ? `スクリーンショット${optimized.files.length}枚を安全な送信容量へ自動調整しました。送信しています…`
+        : "スクリーンショットを確認しました。送信しています…",
+    );
+    await submitCloudGeneralMonitorFeedbackAction(formData);
+  };
+
   return (
-    <form action={submitCloudGeneralMonitorFeedbackAction} className="panel mt-6 space-y-4">
+    <form action={submitWithOptimizedScreenshots} className="panel mt-6 space-y-4">
       <input name="diagnostic" ref={diagnosticRef} type="hidden" />
       <div>
         <h2 className="text-xl font-bold">感想・不具合・ご要望を送る</h2>
@@ -37,9 +65,11 @@ export function MonitorFeedbackForm() {
         <div><label className="label" htmlFor="severity">影響</label><select className="field" id="severity" name="severity"><option value="none">影響なし</option><option value="minor">少し困る</option><option value="major">大きく困る</option><option value="blocked">作業を続けられない</option></select></div>
         <div><label className="label" htmlFor="environment">補足する利用環境（任意）</label><input className="field" id="environment" maxLength={200} name="environment" placeholder="例：外付けディスプレイ使用" /></div>
         <div className="sm:col-span-2"><label className="label" htmlFor="pageUrl">発生した画面URL</label><input className="field" id="pageUrl" maxLength={500} name="pageUrl" ref={pageUrlRef} /></div>
-        <div className="sm:col-span-2"><label className="label" htmlFor="screenshots">スクリーンショット（任意・複数選択可）</label><input accept="image/png,image/jpeg,image/webp" className="field" id="screenshots" multiple name="screenshots" type="file" /><p className="mt-1 text-xs text-stone-500">5枚まで。PNG・JPEG・WebP、1枚5MB・合計20MBまで。個人情報が映っていないか確認してください。</p></div>
+        <div className="sm:col-span-2"><label className="label" htmlFor="screenshots">スクリーンショット（任意・複数選択可）</label><input accept="image/png,image/jpeg,image/webp" className="field" id="screenshots" multiple name="screenshots" onChange={() => { setAttachmentError(null); setAttachmentStatus(null); }} type="file" /><p className="mt-1 text-xs text-stone-500">5枚まで。PNG・JPEG・WebP、選択時は1枚5MB・合計20MBまで。送信時に画質を保ちながら合計3MB以下へ自動調整します。個人情報が映っていないか確認してください。</p></div>
       </div>
       <div><label className="label" htmlFor="feedback-comment">詳しい内容</label><textarea className="field min-h-32" id="feedback-comment" maxLength={2000} name="comment" placeholder="何をした時に、何が起きたか。期待していた結果も入力してください。" required /></div>
+      {attachmentStatus ? <p aria-live="polite" className="rounded-md bg-blue-50 p-3 text-sm text-blue-900">{attachmentStatus}</p> : null}
+      {attachmentError ? <p aria-live="assertive" className="rounded-md bg-red-50 p-3 text-sm font-semibold text-red-900" role="alert">{attachmentError}</p> : null}
       <PendingSubmitButton className="button bg-violet-700 hover:bg-violet-800" pendingLabel="報告を安全に送信中…">報告を送信</PendingSubmitButton>
     </form>
   );

@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  MAX_MONITOR_SCREENSHOTS,
+  MAX_MONITOR_SCREENSHOTS_TRANSPORT_BYTES,
+  MAX_MONITOR_SCREENSHOT_SOURCE_BYTES,
+} from "./monitor-feedback-limits.ts";
 
 const diagnosticSchema = z.object({
   userAgent: z.string().max(500).optional(),
@@ -48,9 +53,11 @@ const allowedScreenshotTypes = new Map([
   ["image/webp", "webp"],
 ]);
 
-export const MAX_MONITOR_SCREENSHOTS = 5;
-export const MAX_MONITOR_SCREENSHOT_BYTES = 5 * 1024 * 1024;
-export const MAX_MONITOR_SCREENSHOTS_TOTAL_BYTES = 20 * 1024 * 1024;
+export { MAX_MONITOR_SCREENSHOTS } from "./monitor-feedback-limits.ts";
+export const MAX_MONITOR_SCREENSHOT_BYTES =
+  MAX_MONITOR_SCREENSHOT_SOURCE_BYTES;
+export const MAX_MONITOR_SCREENSHOTS_TOTAL_BYTES =
+  MAX_MONITOR_SCREENSHOTS_TRANSPORT_BYTES;
 
 export type MonitorScreenshot = {
   file: File;

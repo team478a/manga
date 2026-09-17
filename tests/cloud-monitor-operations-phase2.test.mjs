@@ -42,6 +42,11 @@ test("ブラウザー診断と画像を制限する", () => {
   assert.throws(() => validateMonitorScreenshots(Array.from({ length: 6 }, (_, index) =>
     new File([String(index)], `${index}.jpg`, { type: "image/jpeg" }),
   )), /monitor_screenshots_invalid/);
+  assert.throws(() => validateMonitorScreenshots([
+    new File([new Uint8Array(3 * 1024 * 1024 + 1)], "large.png", {
+      type: "image/png",
+    }),
+  ]), /monitor_screenshots_invalid/);
 });
 
 test("非公開添付・投稿制限・状況通知をDBで強制する", async () => {
@@ -70,6 +75,9 @@ test("利用者画面と管理画面は診断・添付・進捗を表示する",
   assert.match(form, /diagnostic/);
   assert.match(form, /スクリーンショット/);
   assert.match(form, /multiple name="screenshots"/);
+  assert.match(form, /optimizeMonitorScreenshots/);
+  assert.match(form, /合計3MB以下へ自動調整/);
+  assert.match(form, /aria-live="assertive"/);
   assert.match(action, /sanitizeMonitorText/);
   assert.match(action, /getAll\("screenshots"\)/);
   assert.match(feedbackRepository, /attachment_paths: attachmentPaths/);
@@ -80,6 +88,21 @@ test("利用者画面と管理画面は診断・添付・進捗を表示する",
   assert.match(admin, /直近100件内の報告/);
   assert.match(issues, /添付画像\{index \+ 1\}を確認/);
   assert.match(dashboard, /通知 \{notificationsResult\.count/);
+});
+
+test("実画像はVercelの送信上限を越える前にブラウザで最適化する", async () => {
+  const [client, limits, server] = await Promise.all([
+    read("../src/lib/monitor-feedback-client.ts"),
+    read("../src/lib/monitor-feedback-limits.ts"),
+    read("../src/lib/monitor-feedback.ts"),
+  ]);
+  assert.match(limits, /MAX_MONITOR_SCREENSHOTS_TRANSPORT_BYTES = 3 \* 1024 \* 1024/);
+  assert.match(client, /createImageBitmap/);
+  assert.match(client, /URL\.createObjectURL/);
+  assert.match(client, /canvas\.toBlob/);
+  assert.match(client, /image\/webp/);
+  assert.match(client, /transportBytes > MAX_MONITOR_SCREENSHOTS_TRANSPORT_BYTES/);
+  assert.match(server, /MAX_MONITOR_SCREENSHOTS_TRANSPORT_BYTES/);
 });
 
 test("複数添付migrationは既存1枚を保持し最大5枚へ拡張する", async () => {

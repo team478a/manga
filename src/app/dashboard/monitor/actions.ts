@@ -53,7 +53,7 @@ export async function submitCloudGeneralMonitorFeedbackAction(formData: FormData
       ]);
     } catch {
       throw new ValidationError(
-        "スクリーンショットは5枚まで、PNG・JPEG・WebP、1枚5MB以下・合計20MB以下にしてください。",
+        "スクリーンショットは5枚まで、PNG・JPEG・WebP、送信時の合計3MB以下にしてください。画像を選び直して再度お試しください。",
       );
     }
     const feedbackId = crypto.randomUUID();
