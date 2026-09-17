@@ -3,12 +3,13 @@
 ## 2026-09-17 Codex: Desktop Adult Pilot固定Bundle実file検証・正本固定
 
 - PR #507 merge commit `746c399`から`codex/adult-pilot-fixed-bundle-20260917`を作成した。マージ後Required Quality run `35181913762`とDesktop Windows run `35181913763`は成功済み。
+- Implementation commit `3ee155d`をpushし、Draft PR #508を作成した。全CI／Vercel Previewを確認中。
 - 公式固定URLからComfyUI v0.34.0、SDXL base、SDXL VAE、Canny ControlNetをGit管理外へ取得し、正本の容量・SHA-256と全件一致を確認した。
 - 内容非保持Bundle証跡から4artifactとrepository内4workflow／mapping digestをmanifestへ固定し、bundle preflightを`fixed=8 / pending=0`、release readinessを6/9 READYへ進めた。
 - 実path、作品内容、Prompt、端末識別情報、秘密値はGitへ保存せず、local rootと証跡はcommitしない。未追跡`apps/desktop/artifacts/`も変更・commit対象外である。
 - 現端末はコード署名秘密鍵とNVIDIA Runtimeがないため、署名、Runtime起動、生成、12GB実機証跡、Stage 0完了連結は行っていない。Production、Cloud、Provider、credit、配布、実候補者操作なし。
 - Bundle／Stage 0／release readiness集中20/20、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- 次はcommit、push、Draft PR、全CI／Vercel Preview確認である。その後は署名済み受入れ専用artifactと12GB技術モニター実機受入れを外部前提として進める。
+- 次はDraft PR #508の全CI／Vercel Preview成功確認である。その後は署名済み受入れ専用artifactと12GB技術モニター実機受入れを外部前提として進める。
 
 ---
 

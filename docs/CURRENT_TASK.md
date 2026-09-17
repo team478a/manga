@@ -2,15 +2,16 @@
 
 ## 2026-09-17 Desktop Adult Pilot固定Bundle実file検証・正本固定
 
-- 状態: `FIXED_BUNDLE_READY / LOCAL_VALIDATION_PASSED / PR_NOT_CREATED / SIGNED_ARTIFACTS_BLOCKED / HARDWARE_12GB_BLOCKED / STAGE0_COMPLETION_BLOCKED / REAL_STAGE0_NOT_RUN`
+- 状態: `FIXED_BUNDLE_READY / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / SIGNED_ARTIFACTS_BLOCKED / HARDWARE_12GB_BLOCKED / STAGE0_COMPLETION_BLOCKED / REAL_STAGE0_NOT_RUN`
 - Base: PR #507 merge commit `746c399`。マージ後Required Quality run `35181913762`（Core quality 2分14秒、Migration roundtrip 55秒）とDesktop Windows run `35181913763`（4分26秒）は成功済み。
 - Branch: `codex/adult-pilot-fixed-bundle-20260917`。
+- Implementation commit: `3ee155d`。Draft PR #508を作成し、全CI／Vercel Previewを確認中。
 - 公式固定URLからComfyUI v0.34.0、SDXL base、SDXL VAE、Canny ControlNetの4artifactをGit管理外のlocal rootへ取得し、manifest記載の容量とSHA-256を全件再計算して一致を確認した。
 - 内容非保持のBundle証跡をアクセス制限領域へ排他的に作成し、4artifactとrepository内の4workflow／mapping digestを`DESKTOP_ADULT_PILOT_BUNDLE.json`へ固定した。実path、作品内容、Prompt、端末識別情報、秘密値をmanifestやGitへ保存していない。
 - Adult Pilot bundle preflightは`fixed=8 / pending=0`、統合release readinessは`ready=6 / blocked=3`となり、`fixed_bundle`が`BLOCKED`から`READY`へ改善した。
 - 現端末には有効なコード署名秘密鍵とNVIDIA Runtimeがないため、artifact署名、Runtime展開・起動、4方式生成、12GB実機証跡、Stage 0完了証跡は未実施である。Production、Cloud、外部Provider、credit、配布、実候補者、利用者Projectを変更していない。
 - 検証: Bundle／Stage 0／release readiness集中20/20、Desktop 407/407、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY、Prettier、`git diff --check`成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
-- 次: commit、push、Draft PR、全CI／Vercel Previewを確認する。その後は署名済み受入れ専用artifactと12GB技術モニター実機受入れを外部前提として進める。
+- 次: Draft PR #508の全CI／Vercel Preview成功を確認して停止する。その後は署名済み受入れ専用artifactと12GB技術モニター実機受入れを外部前提として進める。
 
 ---
 
