@@ -3,12 +3,13 @@
 ## 0.0 Desktop Adult Stage 0運用ライフサイクル統合read-only監査（2026-09-17）
 
 - BaseはPR #503 merge commit `3cff3e8`。マージ後Required Quality run `35169748338`とDesktop Windows run `35169748296`は成功済み。Branchは`codex/adult-stage0-lifecycle-audit-20260917`。
+- Implementation commitは`9e81edc`。Draft PR #504を作成し、全CI／Vercel Previewを確認中。
 - Stage 0の候補assessmentから完了証跡までを変更せず連結し、`READY`、`PREPARED`、`IN_PROGRESS`、`COMPLETED`、`EXPIRED`を判定する統合CLIを追加した。
 - operation packageの6 source、開始承認、消費receipt、12GB実機4方式証跡、完了証跡、package／receipt digest、candidate／version／時系列を再検証する。期限後は新規操作を許可せず、source bindingを維持したまま保持期限対応が必要な`EXPIRED`として監査できる。
 - 前工程欠落、承認消費前の実機証跡、別session、改変、監査中の内容・存在状態変更をfail closedで拒否する。通常のpackage／開始承認CLIの期限契約は変更しない。
 - candidate ID、端末情報、作品内容、pathを表示せず、file変更、配布、Runtime／model、生成、Stage 1承認を行わない。監査結果は実施承認を代替しない。
 - 集中33/33、Desktop 372/372、Hub 1008/1008、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 83/83、RC構造、Prettier、diff check成功。
-- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はcommit／push／Draft PRと全CI／Vercel Preview確認である。
+- Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者・実承認・実証跡操作なし。未追跡`apps/desktop/artifacts/`はcommit対象外。次はPR #504の全CI／Vercel Preview確認である。
 
 ---
 
