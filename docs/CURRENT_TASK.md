@@ -2,16 +2,17 @@
 
 ## 2026-09-17 Desktop Adult Stage 0証跡削除承認／中断回復apply／read-only監査
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PR_NOT_CREATED / REAL_DELETION_AUTHORIZATION_NOT_CREATED / REAL_EVIDENCE_NOT_DELETED / REAL_STAGE0_NOT_RUN`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_OPEN / CI_PENDING / REAL_DELETION_AUTHORIZATION_NOT_CREATED / REAL_EVIDENCE_NOT_DELETED / REAL_STAGE0_NOT_RUN`
 - Base: PR #505 merge commit `e18c99c`。マージ後Required Quality run `35176879178`（Core quality 3分35秒、Migration roundtrip 55秒）とDesktop Windows run `35176879177`（4分47秒）は成功済み。
 - Branch: `codex/adult-stage0-retention-apply-20260917`。
+- Implementation commit: `3d1d06c`。Draft PR: #506。
 - read-only監査済みの保持期限proposalへ、proposal内容・場所、対象scope、承認場所、固定回復隔離directoryを結合する24時間以内の別削除承認CLIを追加した。proposal確認、対象scope承認、holdなし、user content除外、中断回復理解の5確認を必須にし、Stage 1配布許可はfalseを維持する。
 - apply CLIは初回変更前にproposalと承認を再監査し、内容非保持manifest／delete intentを固定する。各元証跡を回復隔離先へfsync付きで複製・digest検証してから元証跡だけを削除し、全件隔離後にpurge intentを作成、隔離payloadを全削除してから内容非保持receiptを確定する。保持期限後に証跡backupを残さない。
 - 中断後は固定intentから、個別隔離途中、元証跡削除後、purge intent後、隔離payload一部削除後を回復できる。元証跡と回復copyの同時欠損、回復copy改変、control file改変、manifest欠損、scope外証跡、二重適用はfail closedで拒否する。
 - post-delete read-only監査CLIはproposal、承認、manifest、2 intent、receiptのdigest／時系列、元証跡と隔離payloadの不存在を再検証する。監査はfileを変更せず、標準出力へcandidate ID、端末情報、作品内容、pathを表示しない。
 - 検証: 新規16/16、Stage 0 lifecycle＋retention集中36/36、Desktop 400/400、Hub 1008/1008、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 83/83、RC Repository structure READY成功。Viteの既知chunk warning、外部設定・手動E2Eの既知PENDINGは不変である。
 - Production、Cloud、Provider、Runtime／model、生成、招待、配布、credit、実候補者、実承認、実証跡、実proposal、実削除を変更していない。削除検証は一時directoryのみで行い、未追跡`apps/desktop/artifacts/`はcommit対象外である。
-- 次: Prettierと`git diff --check`後にcommit、push、Draft PRを作成し、全CI／Vercel Preview成功まで確認する。実proposalへの削除承認作成・applyは、対象を明記した責任者の明示承認まで行わない。
+- 次: PR #506の全CI／Vercel Preview成功まで確認する。実proposalへの削除承認作成・applyは、対象を明記した責任者の明示承認まで行わない。
 
 ---
 
