@@ -3,10 +3,11 @@
 ## 0.0 管理者向けCloud生成品質ギャラリー（2026-09-18）
 
 - BaseはPR #510 merge commit `7e0a238`。Branchは`codex/admin-generation-quality-gallery-20260918`。
+- Implementation commitは`a7e723d`。Draft PR #511を作成し、全CI／Vercel Previewを確認中。
 - 一般向けCloud AIで生成された候補を、完成・公開・採用前も含めて管理者が確認できるread-onlyギャラリーを追加した。生成jobのoutputとsource jobが一致する生成Assetだけを表示し、利用者参照画像は含めない。
 - 作品／利用者／ページ状態、Provider／model、採用状態、自動検査、job／asset追跡情報を表示し、4系統のfilterを提供する。private画像は300秒署名URLで表示する。
 - admin専用RPCで3段階判定と内部メモをupsertし、権限・job状態・asset結合をDB側でも再検証する。監査ログには判定statusだけを残し、Promptやメモを複製しない。
-- migrationは未適用。Production、Provider、生成、credit、利用者データ操作なし。集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 84/84、RC構造、diff check成功。Draft PR作成後に全CI／Vercel Previewを確認する。
+- migrationは未適用。Production、Provider、生成、credit、利用者データ操作なし。集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 84/84、RC構造、diff check成功。次はDraft PR #511の全CI／Vercel Preview確認である。
 
 ---
 
