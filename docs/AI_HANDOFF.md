@@ -6,6 +6,7 @@
 - 既存の購入者向けWebマニュアルへ「出品・収益化」を追加し、完成原稿、表紙・商品画像、商品情報、権利・AI利用表示を外部販売用の一式へまとめる匿名化SVGを追加した。
 - KDPとBOOTHへの手動出品手順は公式ヘルプを参照し、変動し得る費用・規約・ファイル要件は出品日の公式画面を正本として確認するよう案内する。
 - MANGAI内販売、決済、収益管理を実装済みと誤認させず、Production／Provider／credit／DB／Storageを変更しない文書・UI限定PRとする。
+- 集中2/2、Hub 1013/1013、Hub typecheck、lint、deps error 0（既知warning 2件）、Hub Production build、SVG実レンダリング、diff checkが成功した。
 
 ---
 

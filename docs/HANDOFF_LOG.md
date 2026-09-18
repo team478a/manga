@@ -7,6 +7,7 @@
 - KDPのKPF作成・KCB保存・Previewer・AI生成申告、BOOTHのダウンロード商品登録・差し替え注意を公式資料に基づき掲載した。
 - 匿名化した説明用SVGを2点追加した。MANGAI内販売・決済・収益管理は準備中、売上保証なし、成人向け対象外の境界を維持する。
 - Production、Provider、生成、credit、DB／Storage、利用者データの変更はない。
+- 集中2/2、Hub 1013/1013、Hub typecheck、lint、deps error 0（既知warning 2件）、Hub Production build、SVG実レンダリング、diff checkが成功した。
 
 ---
 
