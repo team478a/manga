@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-18 管理者向けCloud生成品質ギャラリー
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / PRODUCTION_UNCHANGED`
+- Base: PR #510 merge commit `7e0a238`。Branchは`codex/admin-generation-quality-gallery-20260918`。
+- Implementation commitは`a7e723d`。Draft PR #511を作成し、全CI／Vercel Previewを確認中。
+- 管理画面へ一般向けCloud AIの生成画像を確認する「生成品質ギャラリー」を追加した。完成・公開・採用状態に依存せず、生成jobと正しく結び付いた生成Assetだけを最大120件表示し、利用者がアップロードした参照画像は対象外とする。
+- 作品、利用者、ページ制作状態、Provider／model、採用状態、自動品質検査、生成追跡情報を一覧化し、検索・管理者判定・採用状態・自動検査で絞り込める。画像はprivate Storageの300秒署名URLで読み取り専用表示する。
+- 管理者は「問題なし／要確認／品質問題」と内部メモを保存できる。保存RPCはadmin権限と生成画像の結合を再検証し、判定statusだけを管理監査ログへ記録する。Prompt、参照画像、内部メモは監査ログへ複製しない。
+- 新migration `202609180001_cloud_admin_generation_quality_reviews`は未適用。Production、Provider、生成、credit、利用者Project／画像を変更していない。
+- 検証: 集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 84/84、RC Repository structure READY、`git diff --check`成功。既知の外部設定・手動E2E PENDINGは不変である。
+- 次はDraft PR #511の全CI／Vercel Preview成功確認で停止する。migration適用はマージ後の別承認対象である。
+
+---
+
 ## 2026-09-18 購入者向け報告フォームの実画像送信エラー修正
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / PRODUCTION_UNCHANGED`

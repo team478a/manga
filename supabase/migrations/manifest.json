@@ -498,7 +498,13 @@
       "description": "購入者向け報告へ最大5枚の非公開画像添付を追加",
       "forwardSha256": "d2ea2b68d64c2199e127c56d9a4ba871540fa4c1852b813c5b4ffbd9eab46806",
       "rollbackSha256": "ec8d0b564bc046ae73110933958628a19b850f4e0a64a26fb8b4662addc648b9"
+    },
+    {
+      "id": "202609180001_cloud_admin_generation_quality_reviews",
+      "description": "未完成を含むCloud生成画像の管理者品質判定と監査記録を追加",
+      "forwardSha256": "94221837338252cf9656129312885a7f44f4f14945caf2829a7db5be2de9d216",
+      "rollbackSha256": "73f4f276f3264f36b2431f0a6168bff66ad6512101a1721d74d7aec0c6528886"
     }
   ],
-  "schemaSha256": "1800ebc224acf9f7194e08572cd1613dd41fbcd98d1003708b09077c4137b52f"
+  "schemaSha256": "15841fc66e5eb247aeba1bb9082b0914e477761cc32d8c9c428326b4d819bab6"
 }
