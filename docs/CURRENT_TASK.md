@@ -1,5 +1,26 @@
 # MANGAI Current Task
 
+## 2026-09-18 生成品質ギャラリーの生成者識別強化
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_UPDATED / PRODUCTION_UNCHANGED`
+- Production確認で表示名`test`のように表示名だけでは生成者を一意に識別しにくいことを確認したため、各生成画像へ生成者の表示名、登録メール、管理者ユーザー詳細リンクを表示する。
+- 既存の管理者ユーザー画面と同じadmin専用Auth directoryを利用し、メールアドレスでも絞り込めるようにする。一般利用者画面、公開作品画面、通常ログ、監査ログへメールを追加しない。
+- 生成・Provider・credit・DB schema・Storage・利用者コンテンツは変更しない。PR #513へ追加コミットとして反映し、全CI／Vercel Preview成功で停止する。
+- 検証: 集中4/4、Hub 1013/1013、lint、Hub typecheck、deps error 0（既知warning 2件）、Hub Production build、`git diff --check`成功。fresh worktreeの全体typecheckはDesktop依存未導入によりDesktopだけ解決不能だったため、DesktopはCIのWindows buildで確認する。
+
+---
+
+## 2026-09-18 管理者向け生成品質ギャラリー Production read-only受入れ
+
+- 状態: `PRODUCTION_READONLY_UI_PASSED / JUDGMENT_CANARY_PENDING_EXPLICIT_APPROVAL / PROVIDER_UNCHANGED / CREDIT_UNCHANGED`
+- BaseはPR #512 merge commit `fd8a14c`。Branchは`codex/admin-generation-quality-production-readonly-20260918`。
+- Productionの管理者sessionで`/admin/generation-quality`を開き、生成画像71件、未確認71件、品質問題・自動FAIL 0件、24時間以内の画像生成失敗0件が表示されることを確認した。
+- 生成画像サムネイルがprivate Storageの短期署名URLから実表示され、作品、利用者、ページ、Provider／model、採用状態、自動検査、管理者判定欄が読み込まれることを確認した。利用者の参照画像は一覧対象に含まれない既存仕様を維持する。
+- 作品名の完全一致検索で71件から1件へ絞り込めることを確認し、その後queryなしの全71件表示へ戻した。判定欄、品質メモ、保存操作は変更していない。
+- DB、Storage object、Provider、生成Job、credit、利用者Project／画像、既存管理者判定を変更していない。次は対象画像を1件選定し、責任者の別の明示承認後に判定保存canaryを行う。
+
+---
+
 ## 2026-09-18 管理者向け生成品質ギャラリー Production migration適用
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / DB_POSTFLIGHT_PASSED / ADMIN_UI_SESSION_BLOCKED / PROVIDER_UNCHANGED / CREDIT_UNCHANGED`

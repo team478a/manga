@@ -1,5 +1,23 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-18 Codex: 生成品質ギャラリーの生成者識別強化
+
+- Production確認で表示名だけでは生成者のアカウント識別が不足するケースを確認した。
+- 生成品質カードへ表示名、登録メール、管理者ユーザー詳細リンクを追加し、作品・表示名・メール・Provider検索へ拡張した。
+- Auth directory参照はadmin専用server処理に限定し、メールを一般画面・通常ログ・監査ログへ追加しない。DB migration、Provider、生成、credit、Storage操作なし。
+- PR #513へ追加コミットとして反映する。集中4/4、Hub 1013/1013、lint、Hub typecheck、deps error 0（既知warning 2件）、Hub Production build、diff checkが成功した。fresh worktreeの全体typecheckはDesktop依存未導入によりDesktopだけ解決不能で、CIのWindows buildを正本確認とする。
+
+---
+
+## 2026-09-18 Codex: 管理者向け生成品質ギャラリー Production read-only受入れ
+
+- PR #512 merge commit `fd8a14c`から`codex/admin-generation-quality-production-readonly-20260918`を作成した。
+- Productionの管理者sessionで`/admin/generation-quality`を確認し、生成画像71件、未確認71件、品質問題・自動FAIL 0件、24時間以内の生成失敗0件を確認した。
+- 生成画像サムネイルが実表示され、作品、利用者、ページ、Provider／model、採用状態、自動検査、管理者判定欄が読み込まれた。作品名の完全一致検索で1件へ絞り込み、最後に全71件表示へ戻した。
+- 判定保存は実施していない。DB、Storage object、Provider、生成Job、credit、利用者Project／画像、既存管理者判定は変更なし。1件の判定保存canaryは別の明示承認待ちである。
+
+---
+
 ## 2026-09-18 Codex: 管理者向け生成品質ギャラリー Production migration適用
 
 - PR #511 merge commit `4d1b0fa`と全CI／Vercel Preview成功を確認した。

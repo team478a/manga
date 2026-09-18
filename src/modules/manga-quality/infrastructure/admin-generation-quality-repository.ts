@@ -9,7 +9,9 @@ export type AdminGenerationQualityItem = {
   projectId: string;
   projectTitle: string;
   projectVisibility: string;
+  ownerProfileId: string;
   ownerName: string;
+  ownerEmail: string | null;
   pageNumber: number | null;
   productionStatus: string | null;
   providerId: string;
@@ -84,6 +86,7 @@ export async function loadAdminGenerationQualityGallery() {
     reviewsResult,
     runsResult,
     failedResult,
+    authUsersResult,
   ] = await Promise.all([
     admin
       .from("cloud_projects")
@@ -95,7 +98,7 @@ export async function loadAdminGenerationQualityGallery() {
           .select("id,page_number,production_status")
           .in("id", pageIds)
       : Promise.resolve({ data: [], error: null }),
-    admin.from("profiles").select("id,display_name").in("id", ownerIds),
+    admin.from("profiles").select("id,user_id,display_name").in("id", ownerIds),
     admin
       .from("cloud_assets")
       .select("id,storage_path,width,height,source_generation_job_id")
@@ -120,6 +123,7 @@ export async function loadAdminGenerationQualityGallery() {
       .eq("kind", "image")
       .eq("status", "failed")
       .gte("updated_at", failedSince),
+    admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
   ]);
 
   const failure = [
@@ -131,6 +135,7 @@ export async function loadAdminGenerationQualityGallery() {
     reviewsResult,
     runsResult,
     failedResult,
+    authUsersResult,
   ].find((result) => result.error);
   if (failure?.error) throw failure.error;
 
@@ -152,6 +157,12 @@ export async function loadAdminGenerationQualityGallery() {
   );
   const ownerById = new Map(
     ((ownersResult.data ?? []) as Row[]).map((row) => [String(row.id), row]),
+  );
+  const ownerEmailByUserId = new Map(
+    (authUsersResult.data?.users ?? []).map((user) => [
+      user.id,
+      user.email ?? null,
+    ]),
   );
   const assetById = new Map(
     ((assetsResult.data ?? []) as Row[]).map((row) => [String(row.id), row]),
@@ -241,7 +252,12 @@ export async function loadAdminGenerationQualityGallery() {
         projectId: String(job.project_id),
         projectTitle: String(project?.title ?? "名称未取得"),
         projectVisibility: String(project?.visibility ?? "private"),
+        ownerProfileId: String(job.created_by_profile_id),
         ownerName: String(owner?.display_name ?? "名称未取得"),
+        ownerEmail:
+          owner?.user_id == null
+            ? null
+            : (ownerEmailByUserId.get(String(owner.user_id)) ?? null),
         pageNumber: page?.page_number == null ? null : Number(page.page_number),
         productionStatus:
           page?.production_status == null

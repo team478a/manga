@@ -1,5 +1,22 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 生成品質ギャラリーの生成者識別強化（2026-09-18）
+
+- Productionのread-only受入れで表示名だけではアカウントを一意に識別しにくいケースを確認し、各生成画像へ生成者の表示名、登録メール、管理者ユーザー詳細リンクを追加した。
+- メール取得は既存管理者ユーザー画面と同じadmin専用Auth directory境界内に限定し、メール検索も追加した。一般画面・通常ログ・監査ログへメールを追加しない。
+- PR #513へ追加する。Provider、生成Job、credit、DB schema、Storage、利用者コンテンツは変更しない。集中4/4、Hub 1013/1013、lint、Hub typecheck、deps error 0（既知warning 2件）、Hub Production build、diff checkが成功した。fresh worktreeの全体typecheckはDesktop依存未導入のためDesktopだけ解決不能で、CIのWindows buildを正本確認とする。
+
+---
+
+## 0.0 管理者向け生成品質ギャラリー Production read-only受入れ（2026-09-18）
+
+- BaseはPR #512 merge commit `fd8a14c`。Branchは`codex/admin-generation-quality-production-readonly-20260918`。
+- Productionの管理者sessionで生成品質ギャラリーを表示し、生成画像71件、未確認71件、品質問題・自動FAIL 0件、24時間以内の生成失敗0件を確認した。
+- private Storageの短期署名URLによる実画像表示と、作品／利用者／ページ／Provider／model／採用状態／自動検査／管理者判定欄の表示を確認した。作品名検索は71件から完全一致1件へ絞り込まれ、最後に全件表示へ戻した。
+- 判定・メモは保存していない。DB、Storage object、Provider、生成Job、credit、利用者コンテンツ、既存reviewは変更なし。次は対象1件を選び、責任者の別の明示承認後に判定保存canaryを行う。
+
+---
+
 ## 0.0 管理者向け生成品質ギャラリー Production migration適用（2026-09-18）
 
 - PR #511はmerge commit `4d1b0fa`でマージ済み。責任者承認後、Production `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main PRODUCTION`）へ`202609180001_cloud_admin_generation_quality_reviews.sql`を適用した。
