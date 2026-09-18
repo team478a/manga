@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">外部販売用ファイルの準備</title>
+  <desc id="desc">完成原稿、表紙、商品情報、権利とAI利用表示を確認して外部販売用の一式へまとめる匿名化した画面図</desc>
+  <rect width="1200" height="675" fill="#f7f5ff"/>
+  <g font-family="system-ui, sans-serif">
+    <rect x="36" y="28" width="1128" height="76" rx="16" fill="#fff"/>
+    <text x="64" y="57" fill="#6d28d9" font-size="14" font-weight="700">完成原稿PDFの次に行うこと</text>
+    <text x="64" y="86" fill="#18181b" font-size="25" font-weight="700">外部販売用の一式を準備する</text>
+
+    <rect x="36" y="126" width="722" height="494" rx="20" fill="#fff" stroke="#ddd6fe"/>
+    <text x="64" y="166" fill="#18181b" font-size="21" font-weight="700">出品ファイル</text>
+    <text x="64" y="192" fill="#57534e" font-size="14">すべて確認できたら、販売サイトへ手動で登録します</text>
+
+    <g>
+      <rect x="64" y="222" width="318" height="112" rx="14" fill="#f5f3ff"/>
+      <circle cx="94" cy="252" r="16" fill="#6d28d9"/><path d="M86 252l6 6 11-14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="122" y="254" fill="#18181b" font-size="17" font-weight="700">完成原稿</text>
+      <text x="84" y="286" fill="#57534e" font-size="14">PDF・連番画像・編集元を保存</text>
+      <text x="84" y="310" fill="#065f46" font-size="13" font-weight="700">全ページ確定・ページ順確認済み</text>
+    </g>
+    <g>
+      <rect x="410" y="222" width="318" height="112" rx="14" fill="#f5f3ff"/>
+      <circle cx="440" cy="252" r="16" fill="#6d28d9"/><path d="M432 252l6 6 11-14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="468" y="254" fill="#18181b" font-size="17" font-weight="700">表紙・商品画像</text>
+      <text x="430" y="286" fill="#57534e" font-size="14">タイトル・作者名・縮小時の見やすさ</text>
+      <text x="430" y="310" fill="#065f46" font-size="13" font-weight="700">販売サイト用の画像を別保存</text>
+    </g>
+    <g>
+      <rect x="64" y="358" width="318" height="112" rx="14" fill="#f5f3ff"/>
+      <circle cx="94" cy="388" r="16" fill="#6d28d9"/><path d="M86 388l6 6 11-14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="122" y="390" fill="#18181b" font-size="17" font-weight="700">商品情報</text>
+      <text x="84" y="422" fill="#57534e" font-size="14">紹介文・ジャンル・タグ・対象年齢</text>
+      <text x="84" y="446" fill="#065f46" font-size="13" font-weight="700">価格・公開日も下書き</text>
+    </g>
+    <g>
+      <rect x="410" y="358" width="318" height="112" rx="14" fill="#f5f3ff"/>
+      <circle cx="440" cy="388" r="16" fill="#6d28d9"/><path d="M432 388l6 6 11-14" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="468" y="390" fill="#18181b" font-size="17" font-weight="700">権利・AI利用表示</text>
+      <text x="430" y="422" fill="#57534e" font-size="14">素材・商標・肖像・販売サイト規約</text>
+      <text x="430" y="446" fill="#065f46" font-size="13" font-weight="700">必要な申告を正確に準備</text>
+    </g>
+
+    <rect x="64" y="498" width="664" height="82" rx="14" fill="#ecfdf5"/>
+    <text x="396" y="532" fill="#065f46" text-anchor="middle" font-size="18" font-weight="700">外部販売サイトへ登録できる状態</text>
+    <text x="396" y="558" fill="#047857" text-anchor="middle" font-size="13">原稿・表紙・商品情報・権利確認を同じ版として保管</text>
+
+    <rect x="782" y="126" width="382" height="494" rx="20" fill="#fff" stroke="#ddd6fe"/>
+    <text x="812" y="166" fill="#18181b" font-size="21" font-weight="700">公開前の最終確認</text>
+    <g fill="#57534e" font-size="14">
+      <circle cx="826" cy="215" r="9" fill="#7c3aed"/><text x="850" y="220">PDFを最初から最後まで開く</text>
+      <circle cx="826" cy="260" r="9" fill="#7c3aed"/><text x="850" y="265">文字切れ・ページ順・表紙を確認</text>
+      <circle cx="826" cy="305" r="9" fill="#7c3aed"/><text x="850" y="310">紹介文と実際の内容を一致させる</text>
+      <circle cx="826" cy="350" r="9" fill="#7c3aed"/><text x="850" y="355">権利と対象年齢を確認する</text>
+      <circle cx="826" cy="395" r="9" fill="#7c3aed"/><text x="850" y="400">規約・手数料を最新画面で確認</text>
+      <circle cx="826" cy="440" r="9" fill="#7c3aed"/><text x="850" y="445">AI利用の質問へ正確に回答</text>
+    </g>
+    <rect x="812" y="486" width="322" height="88" rx="14" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="973" y="520" fill="#9a3412" text-anchor="middle" font-size="16" font-weight="700">MANGAI内販売は準備中</text>
+    <text x="973" y="548" fill="#9a3412" text-anchor="middle" font-size="13">外部サイトで本人が公開します</text>
+  </g>
+  <text x="1140" y="650" fill="#78716c" text-anchor="end" font-family="system-ui, sans-serif" font-size="13">説明用の匿名化画面例です</text>
+</svg>

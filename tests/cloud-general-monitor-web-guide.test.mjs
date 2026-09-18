@@ -3,27 +3,25 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 test("利用者向けWebマニュアルは制作完走とモバイル操作を案内する", async () => {
-  const [source, operationVideo, creatorIndex, creatorProject] = await Promise.all([
-    readFile(
-      new URL(
-        "../src/app/dashboard/monitor/guide/page.tsx",
-        import.meta.url,
+  const [source, operationVideo, creatorIndex, creatorProject] =
+    await Promise.all([
+      readFile(
+        new URL("../src/app/dashboard/monitor/guide/page.tsx", import.meta.url),
+        "utf8",
       ),
-      "utf8",
-    ),
-    readFile(
-      new URL(
-        "../src/app/dashboard/monitor/guide/CloudCreatorOperationVideo.tsx",
-        import.meta.url,
+      readFile(
+        new URL(
+          "../src/app/dashboard/monitor/guide/CloudCreatorOperationVideo.tsx",
+          import.meta.url,
+        ),
+        "utf8",
       ),
-      "utf8",
-    ),
-    readFile(new URL("../src/app/creator/page.tsx", import.meta.url), "utf8"),
-    readFile(
-      new URL("../src/app/creator/[projectId]/page.tsx", import.meta.url),
-      "utf8",
-    ),
-  ]);
+      readFile(new URL("../src/app/creator/page.tsx", import.meta.url), "utf8"),
+      readFile(
+        new URL("../src/app/creator/[projectId]/page.tsx", import.meta.url),
+        "utf8",
+      ),
+    ]);
   for (const text of [
     "最初の5分で行うこと",
     "画面を見ながら漫画を完成させる",
@@ -48,6 +46,16 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "参照画像を登録してコマへ割り当てる",
     "4〜8ページずつ制作状態を進める",
     "全ページを確定してPDFを書き出す",
+    "完成した漫画を出品する",
+    "一般向け漫画・外部販売サイト",
+    "MANGAI内の販売申請・決済・収益管理は準備中です",
+    "外部販売サイトへ手動登録する",
+    "出品前チェック",
+    "KDPへ電子漫画を出品する",
+    "BOOTHへ電子漫画を出品する",
+    "商品情報の下書きテンプレート",
+    "AI生成画像を含む場合は、KDPの質問へ正確に申告",
+    "本人確認、口座、税務情報は販売サイト上で本人が入力",
     "完成の目印",
     "販売準備",
     "収益管理",
@@ -68,6 +76,8 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "03-creator-project.svg",
     "04-generation-preflight.svg",
     "05-export.svg",
+    "08-sales-package.svg",
+    "09-external-listing.svg",
   ]) {
     assert.match(source, new RegExp(image.replace(".", "\\.")));
   }
@@ -83,6 +93,11 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
   assert.match(source, /href: "\/dashboard\/works"/);
   assert.match(source, /availability: "coming-soon"/);
   assert.match(source, /dashboard\/monitor/);
+  assert.match(source, /id="sales-listing"/);
+  assert.match(source, /kdp\.amazon\.co\.jp/);
+  assert.match(source, /kdp\.amazon\.com\/en_US\/help\/topic\/G200672390/);
+  assert.match(source, /booth\.pm\/guide/);
+  assert.match(source, /booth\.pixiv\.help/);
   assert.match(source, /id="creator-operation-video"/);
   assert.match(source, /<CloudCreatorOperationVideo \/>/);
   for (const text of [
@@ -123,10 +138,7 @@ test("スタッフ向けWebマニュアルは約10名の招待・監視・停止
       "utf8",
     ),
     readFile(
-      new URL(
-        "../src/app/admin/general-monitors/page.tsx",
-        import.meta.url,
-      ),
+      new URL("../src/app/admin/general-monitors/page.tsx", import.meta.url),
       "utf8",
     ),
   ]);
