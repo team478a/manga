@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-18 Codex: 完成原稿・作品管理から外部出品マニュアルへの導線
+
+- PR #514 merge commit `38f1863`から新規ブランチを作成した。
+- 完成原稿PDFがダウンロード可能になった利用者へ、KDP／BOOTH等への外部出品マニュアルを次の操作として表示する。
+- 作品管理にも同じ章への常設リンクと、MANGAI内販売・決済・収益管理が準備中である説明を追加した。
+- Provider、生成、credit、DB／Storage、Production、利用者データの変更はない。
+- 集中10/10、Hub 1014/1014、Hub typecheck、lint、deps error 0（既知warning 2件）、Hub Production build、diff checkが成功した。
+
+---
+
 ## 2026-09-18 Codex: 一般向けCloud漫画の外部出品・収益化マニュアル
 
 - PR #513 merge commit `f8e935c`を基準に、購入者向けWebマニュアルへ一般向け漫画の外部販売手順を追加した。

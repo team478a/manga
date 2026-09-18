@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 完成原稿・作品管理から外部出品マニュアルへの導線（2026-09-18）
+
+- PR #514 merge commit `38f1863`から`codex/cloud-sales-listing-entrypoints-20260918`を作成した。
+- ダウンロード可能なPDFがある完成原稿パネルと作品管理から、前PRで追加した`#sales-listing`へ直接進める導線を追加した。
+- PDF未完成時は完成原稿パネルの出品案内を表示しない。作品管理の案内は常設し、MANGAI内販売・決済・収益管理が準備中である境界を同時に表示する。
+- UIと文書だけを変更し、Production、Provider、credit、DB／Storage、利用者データは変更しない。
+- 集中10/10、Hub 1014/1014、Hub typecheck、lint、deps error 0（既知warning 2件）、Hub Production build、diff checkが成功した。
+
+---
+
 ## 0.0 一般向けCloud漫画の外部出品・収益化マニュアル（2026-09-18）
 
 - PR #513 merge commit `f8e935c`から`codex/cloud-sales-listing-guide-20260918`を作成した。
