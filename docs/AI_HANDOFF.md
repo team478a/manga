@@ -1,13 +1,24 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 管理者向け生成品質ギャラリー Production migration適用（2026-09-18）
+
+- PR #511はmerge commit `4d1b0fa`でマージ済み。責任者承認後、Production `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main PRODUCTION`）へ`202609180001_cloud_admin_generation_quality_reviews.sql`を適用した。
+- 証跡commitは`1c93581`。Draft PR #512を作成し、全CI／Vercel Previewを確認中。
+- 正本は3,981 bytes、SHA-256 `94221837338252CF9656129312885A7F44F4F14945CAF2829A7DB5BE2DE9D216`。適用前はtable／RPCとも未存在だった。
+- SQL Editorの既存SELECTが残った初回入力は構文解析前に失敗し、DB変更なし。全文選択置換後の再実行は`Success. No rows returned`で完了した。
+- postflightはtable／RPC／RLS／admin policy／authenticated SELECT／RPC EXECUTEがtrue、anon RPC EXECUTEがfalse、review 0件である。
+- 現在のProductionアプリsessionは`test`で、管理画面へのredirect拒否を確認した。管理者sessionの一覧表示と判定保存canaryは未実施。Provider、生成、Storage、credit、利用者コンテンツ変更なし。
+
+---
+
 ## 0.0 管理者向けCloud生成品質ギャラリー（2026-09-18）
 
 - BaseはPR #510 merge commit `7e0a238`。Branchは`codex/admin-generation-quality-gallery-20260918`。
-- Implementation commitは`a7e723d`。Draft PR #511を作成し、全CI／Vercel Previewを確認中。
+- Implementation commitは`a7e723d`。PR #511はmerge commit `4d1b0fa`でマージ済み。全CI／Vercel Preview成功済み。
 - 一般向けCloud AIで生成された候補を、完成・公開・採用前も含めて管理者が確認できるread-onlyギャラリーを追加した。生成jobのoutputとsource jobが一致する生成Assetだけを表示し、利用者参照画像は含めない。
 - 作品／利用者／ページ状態、Provider／model、採用状態、自動検査、job／asset追跡情報を表示し、4系統のfilterを提供する。private画像は300秒署名URLで表示する。
 - admin専用RPCで3段階判定と内部メモをupsertし、権限・job状態・asset結合をDB側でも再検証する。監査ログには判定statusだけを残し、Promptやメモを複製しない。
-- migrationは未適用。Production、Provider、生成、credit、利用者データ操作なし。集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 84/84、RC構造、diff check成功。次はDraft PR #511の全CI／Vercel Preview確認である。
+- migrationはProductionへ適用済み。Provider、生成、credit、利用者データ操作なし。集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 84/84、RC構造、diff check成功。
 
 ---
 
