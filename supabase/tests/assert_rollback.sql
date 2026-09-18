@@ -290,3 +290,10 @@ do $$ begin
     raise exception 'Cloud work publication objects remain after rollback';
   end if;
 end $$;
+
+do $$ begin
+  if to_regclass('public.cloud_admin_generation_quality_reviews') is not null
+     or to_regprocedure('public.review_cloud_admin_generation_quality(uuid,text,text)') is not null then
+    raise exception 'Cloud admin generation quality review objects remain after rollback';
+  end if;
+end $$;

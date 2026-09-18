@@ -518,6 +518,21 @@ end $$;
 reset role;
 rollback;
 
+do $$ begin
+  if to_regclass('public.cloud_admin_generation_quality_reviews') is null
+     or to_regprocedure('public.review_cloud_admin_generation_quality(uuid,text,text)') is null
+     or not exists(
+       select 1 from pg_policies
+       where schemaname='public'
+         and tablename='cloud_admin_generation_quality_reviews'
+         and policyname='cloud_admin_generation_quality_reviews_admin_read'
+     )
+     or has_table_privilege('authenticated','public.cloud_admin_generation_quality_reviews','insert')
+     or has_table_privilege('authenticated','public.cloud_admin_generation_quality_reviews','update') then
+    raise exception 'Cloud admin generation quality review boundary missing or unsafe';
+  end if;
+end $$;
+
 do $$begin if to_regclass('public.cloud_panel_continuity_states')is null or to_regprocedure('public.save_cloud_panel_continuity_state(uuid,uuid,uuid,text,uuid,text,text,text,text,text,text,uuid)')is null or has_table_privilege('authenticated','public.cloud_panel_continuity_states','insert,update,delete')then raise exception 'Cloud panel continuity state contract is incomplete';end if;end$$;
 do $$begin if to_regclass('public.cloud_panel_designs')is null or to_regclass('public.cloud_panel_design_versions')is null or to_regprocedure('public.save_cloud_panel_design(uuid,uuid,uuid,bigint,jsonb)')is null or has_table_privilege('authenticated','public.cloud_panel_designs','insert,update,delete')then raise exception 'Cloud panel design contract is incomplete';end if;end$$;
 
