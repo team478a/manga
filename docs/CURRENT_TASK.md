@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-18 完成原稿・作品管理から外部出品マニュアルへの導線
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`
+- BaseはPR #514 merge commit `38f1863`。Branchは`codex/cloud-sales-listing-entrypoints-20260918`。
+- 完成原稿PDFが実際にダウンロード可能になった場合だけ、完成原稿パネルへ「出品・収益化の手順を見る」を表示する。
+- 作品管理へ常設の案内カードと導線を追加し、両方から`/dashboard/monitor/guide#sales-listing`へ直接移動できるようにする。
+- MANGAI内の販売申請・決済・収益管理は準備中であることを導線上でも明記する。Production、Provider、生成、credit、DB／Storage、利用者データは変更しない。
+- 検証: 集中10/10、Hub 1014/1014、Hub typecheck、lint、deps error 0（既知warning 2件）、Hub Production build、`git diff --check`成功。
+
+---
+
 ## 2026-09-18 一般向けCloud漫画の外部出品・収益化マニュアル
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`

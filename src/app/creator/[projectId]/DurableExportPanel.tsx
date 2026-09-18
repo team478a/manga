@@ -1,4 +1,5 @@
-import { Download, FileCheck2, Pause, Play, RotateCcw, XCircle } from "lucide-react";
+import Link from "next/link";
+import { BookOpenCheck, Download, FileCheck2, Pause, Play, RotateCcw, XCircle } from "lucide-react";
 import type { CloudExportJob } from "@/modules/cloud-creator/export/durable-export-service";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import { setCloudExportStateAction, startCloudExportAction } from "@/app/creator/actions";
@@ -12,6 +13,9 @@ export function DurableExportPanel({ projectId, available, ready, jobs, extended
   extendedFormatsEnabled?: boolean;
 }) {
   const active = jobs.find((job) => ["queued", "running", "paused"].includes(job.status));
+  const downloadablePdfAvailable = jobs.some(
+    (job) => job.format === "pdf" && job.downloadable,
+  );
   return (
     <section className="panel mt-6" aria-labelledby="durable-export">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -43,6 +47,30 @@ export function DurableExportPanel({ projectId, available, ready, jobs, extended
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-stone-100"><div className="h-full bg-violet-600" style={{ width: `${job.progress}%` }} /></div>
         </article>;
       })}</div> : null}
+      {downloadablePdfAvailable ? (
+        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <div className="flex items-start gap-3">
+            <BookOpenCheck
+              aria-hidden="true"
+              className="mt-0.5 h-5 w-5 shrink-0 text-emerald-700"
+            />
+            <div>
+              <h3 className="font-bold text-emerald-950">
+                次は外部販売サイトへの出品準備です
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-emerald-950">
+                ダウンロードした完成原稿を確認し、表紙・商品情報をそろえてKDPやBOOTHへ手動で登録します。MANGAI内の販売申請・決済・収益管理は準備中です。
+              </p>
+              <Link
+                className="button-secondary mt-3 w-full border-emerald-300 bg-white text-emerald-900 sm:w-auto"
+                href="/dashboard/monitor/guide#sales-listing"
+              >
+                出品・収益化の手順を見る
+              </Link>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

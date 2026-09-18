@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { BookOpenCheck } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -26,10 +27,40 @@ export default async function DashboardWorksPage({ searchParams }: { searchParam
           <h1 className="text-3xl font-bold">作品管理</h1>
           <p className="mt-2 text-lg text-stone-600">登録した作品の公開状態を確認し、編集できます。</p>
         </div>
-        <Link className="button" href="/dashboard/works/new">作品をアップロード</Link>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Link
+            className="button-secondary"
+            href="/dashboard/monitor/guide#sales-listing"
+          >
+            出品・収益化の手順
+          </Link>
+          <Link className="button" href="/dashboard/works/new">作品をアップロード</Link>
+        </div>
       </div>
       {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
       {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
+      <section className="panel mt-6 border-violet-200 bg-violet-50" aria-labelledby="external-sales-guide">
+        <div className="flex items-start gap-3">
+          <BookOpenCheck
+            aria-hidden="true"
+            className="mt-0.5 h-6 w-6 shrink-0 text-violet-700"
+          />
+          <div>
+            <h2 className="text-xl font-bold" id="external-sales-guide">
+              完成原稿を販売したい方へ
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-stone-700">
+              一般向け漫画は完成原稿PDFを書き出した後、KDPやBOOTHなどの外部販売サイトへご自身で登録できます。MANGAI内の販売申請・決済・収益管理は準備中です。
+            </p>
+            <Link
+              className="mt-3 inline-block font-bold text-violet-700 underline"
+              href="/dashboard/monitor/guide#sales-listing"
+            >
+              出品前チェックと登録手順を確認する
+            </Link>
+          </div>
+        </div>
+      </section>
       {works?.length ? (
         <div className="mt-8 grid gap-4">
           {works.map((work) => (
