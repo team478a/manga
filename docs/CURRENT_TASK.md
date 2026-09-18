@@ -1,16 +1,28 @@
 # MANGAI Current Task
 
+## 2026-09-18 管理者向け生成品質ギャラリー Production migration適用
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / DB_POSTFLIGHT_PASSED / ADMIN_UI_SESSION_BLOCKED / PROVIDER_UNCHANGED / CREDIT_UNCHANGED`
+- PR #511はmerge commit `4d1b0fa`でマージ済み。全CI／Vercel Preview成功を確認した。
+- 責任者の実行時明示承認後、Production Project `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main PRODUCTION`）へ`202609180001_cloud_admin_generation_quality_reviews.sql`を全文1回適用した。原本は3,981 bytes、SHA-256 `94221837338252CF9656129312885A7F44F4F14945CAF2829A7DB5BE2DE9D216`である。
+- 適用前read-only照会でtable／RPCがともに`NULL`であることを確認した。最初の実行はSQL Editorの既存SELECTが残った入力不整合により構文解析前に停止し、DB変更は0件だった。全文を選択置換して再実行し、`Success. No rows returned`を確認した。
+- 適用後read-only照会はtable、RPC、RLS、admin read policy、authenticated SELECT／RPC EXECUTEがすべて`true`、anon RPC EXECUTEが`false`、既存review件数が`0`だった。
+- Productionアプリは現在`test`アカウントでログインしており、`/admin/generation-quality`は管理者限定エラーでDashboardへ戻る正しい権限制御を確認した。管理者sessionでの画像一覧表示と判定保存canaryは未実施である。
+- Provider、生成Job、Storage、credit、利用者Project／画像、既存管理者判定を変更していない。次は管理者sessionでread-only一覧を確認し、1件の判定保存canaryは別の明示承認後に行う。
+
+---
+
 ## 2026-09-18 管理者向けCloud生成品質ギャラリー
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / PRODUCTION_UNCHANGED`
+- 状態: `MERGED / CI_PASSED / PRODUCTION_MIGRATION_APPLIED`
 - Base: PR #510 merge commit `7e0a238`。Branchは`codex/admin-generation-quality-gallery-20260918`。
-- Implementation commitは`a7e723d`。Draft PR #511を作成し、全CI／Vercel Previewを確認中。
+- Implementation commitは`a7e723d`。PR #511はmerge commit `4d1b0fa`でマージ済み。全CI／Vercel Preview成功を確認した。
 - 管理画面へ一般向けCloud AIの生成画像を確認する「生成品質ギャラリー」を追加した。完成・公開・採用状態に依存せず、生成jobと正しく結び付いた生成Assetだけを最大120件表示し、利用者がアップロードした参照画像は対象外とする。
 - 作品、利用者、ページ制作状態、Provider／model、採用状態、自動品質検査、生成追跡情報を一覧化し、検索・管理者判定・採用状態・自動検査で絞り込める。画像はprivate Storageの300秒署名URLで読み取り専用表示する。
 - 管理者は「問題なし／要確認／品質問題」と内部メモを保存できる。保存RPCはadmin権限と生成画像の結合を再検証し、判定statusだけを管理監査ログへ記録する。Prompt、参照画像、内部メモは監査ログへ複製しない。
-- 新migration `202609180001_cloud_admin_generation_quality_reviews`は未適用。Production、Provider、生成、credit、利用者Project／画像を変更していない。
+- 新migration `202609180001_cloud_admin_generation_quality_reviews`は責任者承認後にProductionへ適用済み。Provider、生成、credit、利用者Project／画像は変更していない。
 - 検証: 集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop Production build、migration 84/84、RC Repository structure READY、`git diff --check`成功。既知の外部設定・手動E2E PENDINGは不変である。
-- 次はDraft PR #511の全CI／Vercel Preview成功確認で停止する。migration適用はマージ後の別承認対象である。
+- 次は管理者sessionでProduction一覧のread-only表示を確認する。
 
 ---
 

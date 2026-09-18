@@ -1,13 +1,23 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-18 Codex: 管理者向け生成品質ギャラリー Production migration適用
+
+- PR #511 merge commit `4d1b0fa`と全CI／Vercel Preview成功を確認した。
+- 責任者承認に基づき、Production Project `vmdsyxykcrgxcdbrwlkv`へ正本migration（3,981 bytes、SHA-256 `94221837338252CF9656129312885A7F44F4F14945CAF2829A7DB5BE2DE9D216`）を適用した。
+- preflightではtable／RPCなし。初回はSQL Editorの既存SELECT残存で構文解析前に停止し、変更0件。全文置換後は`Success. No rows returned`となった。
+- postflightはtable、RPC、RLS、admin policy、authenticated権限が成立し、anon EXECUTEなし、review 0件を確認した。
+- `test`アカウントでは管理画面が権限拒否されることを確認した。管理者sessionのread-only一覧確認と判定保存canaryは未実施。Provider、生成、Storage、credit、利用者コンテンツ変更なし。
+
+---
+
 ## 2026-09-18 Codex: 管理者向けCloud生成品質ギャラリー
 
 - PR #510 merge commit `7e0a238`から`codex/admin-generation-quality-gallery-20260918`を作成した。
-- Implementation commit `a7e723d`をpushし、Draft PR #511を作成した。全CI／Vercel Previewを確認中。
+- Implementation commit `a7e723d`を含むPR #511はmerge commit `4d1b0fa`でマージ済み。全CI／Vercel Preview成功済み。
 - 管理者が一般向けCloud AIの生成結果を、作品の完成・公開・採用前も含めて品質確認できるギャラリーを追加した。生成jobと生成Assetを相互照合し、利用者アップロード画像を除外する。
 - private画像は300秒署名URLで読み取り専用表示し、作品／利用者／ページ制作状態、Provider／model、採用、自動検査、追跡情報とfilterを提供する。
 - 3段階の管理者判定と内部メモをadmin専用RPCで保存する。DB側でadmin権限と対象を再検証し、監査ログへstatus変更だけを記録する。
-- migrationは未適用。Production、Provider、生成、credit、利用者Project／画像を変更していない。集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 84/84、RC構造、diff check成功。次はDraft PR #511の全CI／Vercel Preview確認で停止する。
+- migrationはProductionへ適用済み。Provider、生成、credit、利用者Project／画像は変更していない。集中4/4、Hub 1013/1013、Desktop 407/407、Canvas 26/26、AI 50/50、a11y 29画面blocking violation 0、deps error 0（既知warning 2件）、lint、typecheck、Hub／Desktop build、migration 84/84、RC構造、diff check成功。
 
 ---
 
