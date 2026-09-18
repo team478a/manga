@@ -3,6 +3,7 @@
 ## 0.0 管理者向け生成品質ギャラリー Production migration適用（2026-09-18）
 
 - PR #511はmerge commit `4d1b0fa`でマージ済み。責任者承認後、Production `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main PRODUCTION`）へ`202609180001_cloud_admin_generation_quality_reviews.sql`を適用した。
+- 証跡commitは`1c93581`。Draft PR #512を作成し、全CI／Vercel Previewを確認中。
 - 正本は3,981 bytes、SHA-256 `94221837338252CF9656129312885A7F44F4F14945CAF2829A7DB5BE2DE9D216`。適用前はtable／RPCとも未存在だった。
 - SQL Editorの既存SELECTが残った初回入力は構文解析前に失敗し、DB変更なし。全文選択置換後の再実行は`Success. No rows returned`で完了した。
 - postflightはtable／RPC／RLS／admin policy／authenticated SELECT／RPC EXECUTEがtrue、anon RPC EXECUTEがfalse、review 0件である。

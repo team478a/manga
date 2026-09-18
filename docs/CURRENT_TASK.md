@@ -4,6 +4,7 @@
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / DB_POSTFLIGHT_PASSED / ADMIN_UI_SESSION_BLOCKED / PROVIDER_UNCHANGED / CREDIT_UNCHANGED`
 - PR #511はmerge commit `4d1b0fa`でマージ済み。全CI／Vercel Preview成功を確認した。
+- 証跡commitは`1c93581`。Draft PR #512を作成し、全CI／Vercel Previewを確認中。
 - 責任者の実行時明示承認後、Production Project `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main PRODUCTION`）へ`202609180001_cloud_admin_generation_quality_reviews.sql`を全文1回適用した。原本は3,981 bytes、SHA-256 `94221837338252CF9656129312885A7F44F4F14945CAF2829A7DB5BE2DE9D216`である。
 - 適用前read-only照会でtable／RPCがともに`NULL`であることを確認した。最初の実行はSQL Editorの既存SELECTが残った入力不整合により構文解析前に停止し、DB変更は0件だった。全文を選択置換して再実行し、`Success. No rows returned`を確認した。
 - 適用後read-only照会はtable、RPC、RLS、admin read policy、authenticated SELECT／RPC EXECUTEがすべて`true`、anon RPC EXECUTEが`false`、既存review件数が`0`だった。

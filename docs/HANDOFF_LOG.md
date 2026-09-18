@@ -3,6 +3,7 @@
 ## 2026-09-18 Codex: 管理者向け生成品質ギャラリー Production migration適用
 
 - PR #511 merge commit `4d1b0fa`と全CI／Vercel Preview成功を確認した。
+- 証跡commit `1c93581`をpushし、Draft PR #512を作成した。全CI／Vercel Previewを確認中。
 - 責任者承認に基づき、Production Project `vmdsyxykcrgxcdbrwlkv`へ正本migration（3,981 bytes、SHA-256 `94221837338252CF9656129312885A7F44F4F14945CAF2829A7DB5BE2DE9D216`）を適用した。
 - preflightではtable／RPCなし。初回はSQL Editorの既存SELECT残存で構文解析前に停止し、変更0件。全文置換後は`Success. No rows returned`となった。
 - postflightはtable、RPC、RLS、admin policy、authenticated権限が成立し、anon EXECUTEなし、review 0件を確認した。
