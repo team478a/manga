@@ -41,6 +41,9 @@ test("生成品質repositoryは生成Assetだけへ短時間署名URLを発行�
     source,
     /from\("cloud-assets"\)\s*\.createSignedUrls\(paths, 300\)/,
   );
+  assert.match(source, /select\("id,user_id,display_name"\)/);
+  assert.match(source, /auth\.admin\.listUsers/);
+  assert.match(source, /ownerEmail/);
   assert.doesNotMatch(source, /input,prompt|prompt_sha256/);
 });
 
@@ -54,6 +57,10 @@ test("生成品質画面は未完成・未採用候補を含めて絞り込み�
   assert.match(page, /未採用候補/);
   assert.match(page, /管理者判定/);
   assert.match(page, /自動検査/);
+  assert.match(page, /生成者:/);
+  assert.match(page, /登録メール:/);
+  assert.match(page, /\/admin\/users\/\$\{item\.ownerProfileId\}/);
+  assert.match(page, /item\.ownerEmail/);
   assert.doesNotMatch(page, /productionStatus === "finalized"/);
   assert.match(action, /requireAdmin\(\)/);
   assert.match(action, /reviewAdminGenerationQualityAction/);

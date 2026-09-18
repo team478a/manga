@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 生成品質ギャラリーの生成者識別強化（2026-09-18）
+
+- Productionのread-only受入れで表示名だけではアカウントを一意に識別しにくいケースを確認し、各生成画像へ生成者の表示名、登録メール、管理者ユーザー詳細リンクを追加した。
+- メール取得は既存管理者ユーザー画面と同じadmin専用Auth directory境界内に限定し、メール検索も追加した。一般画面・通常ログ・監査ログへメールを追加しない。
+- PR #513へ追加する。Provider、生成Job、credit、DB schema、Storage、利用者コンテンツは変更しない。集中4/4、Hub 1013/1013、lint、Hub typecheck、deps error 0（既知warning 2件）、Hub Production build、diff checkが成功した。fresh worktreeの全体typecheckはDesktop依存未導入のためDesktopだけ解決不能で、CIのWindows buildを正本確認とする。
+
+---
+
 ## 0.0 管理者向け生成品質ギャラリー Production read-only受入れ（2026-09-18）
 
 - BaseはPR #512 merge commit `fd8a14c`。Branchは`codex/admin-generation-quality-production-readonly-20260918`。

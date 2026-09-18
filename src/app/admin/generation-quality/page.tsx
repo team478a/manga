@@ -39,6 +39,8 @@ function matches(item: AdminGenerationQualityItem, query: Search) {
     ![
       item.projectTitle,
       item.ownerName,
+      item.ownerEmail ?? "",
+      item.ownerProfileId,
       item.providerId,
       item.modelId,
       item.jobId,
@@ -108,10 +110,23 @@ function QualityCard({ item }: { item: AdminGenerationQualityItem }) {
           </div>
           <h2 className="mt-3 text-xl font-bold">{item.projectTitle}</h2>
           <p className="mt-1 text-sm text-stone-600">
-            {item.ownerName}・
             {item.pageNumber ? `${item.pageNumber}ページ` : "ページ未指定"}・
             {item.projectVisibility}
           </p>
+          <div className="mt-3 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm">
+            <p className="font-semibold text-stone-800">
+              生成者: {item.ownerName}
+            </p>
+            <p className="mt-1 break-all text-stone-600">
+              登録メール: {item.ownerEmail ?? "未取得"}
+            </p>
+            <Link
+              className="mt-2 inline-block text-leaf underline"
+              href={`/admin/users/${item.ownerProfileId}`}
+            >
+              ユーザー詳細を確認
+            </Link>
+          </div>
         </div>
         <dl className="grid grid-cols-2 gap-3 rounded-lg bg-stone-50 p-3 text-sm">
           <div>
@@ -279,7 +294,7 @@ export default async function AdminGenerationQualityPage({
             className="field mt-1"
             defaultValue={query.q}
             name="q"
-            placeholder="検索"
+            placeholder="作品名・表示名・メール・Provider"
           />
         </label>
         <label className="label">
