@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">外部販売サイトへの出品フロー</title>
+  <desc id="desc">MANGAIで完成原稿を保存し、外部販売サイトへ手動登録、プレビュー、公開、記録する流れを示す匿名化した画面図</desc>
+  <rect width="1200" height="675" fill="#f7f5ff"/>
+  <g font-family="system-ui, sans-serif">
+    <rect x="36" y="28" width="1128" height="76" rx="16" fill="#fff"/>
+    <text x="64" y="57" fill="#6d28d9" font-size="14" font-weight="700">一般向け漫画の出品</text>
+    <text x="64" y="86" fill="#18181b" font-size="25" font-weight="700">完成原稿から販売ページ公開まで</text>
+
+    <rect x="48" y="152" width="198" height="284" rx="20" fill="#fff" stroke="#ddd6fe"/>
+    <circle cx="147" cy="205" r="30" fill="#ede9fe"/><text x="147" y="214" fill="#6d28d9" text-anchor="middle" font-size="24" font-weight="700">1</text>
+    <text x="147" y="264" fill="#18181b" text-anchor="middle" font-size="18" font-weight="700">MANGAI</text>
+    <text x="147" y="295" fill="#57534e" text-anchor="middle" font-size="14">全ページ確定</text>
+    <text x="147" y="320" fill="#57534e" text-anchor="middle" font-size="14">PDF書き出し</text>
+    <rect x="74" y="350" width="146" height="50" rx="10" fill="#ecfdf5"/>
+    <text x="147" y="380" fill="#065f46" text-anchor="middle" font-size="14" font-weight="700">原稿を保存</text>
+
+    <path d="M256 294h54" stroke="#7c3aed" stroke-width="5" stroke-linecap="round"/><path d="M298 283l14 11-14 11" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="320" y="152" width="246" height="284" rx="20" fill="#fff" stroke="#ddd6fe"/>
+    <circle cx="443" cy="205" r="30" fill="#ede9fe"/><text x="443" y="214" fill="#6d28d9" text-anchor="middle" font-size="24" font-weight="700">2</text>
+    <text x="443" y="264" fill="#18181b" text-anchor="middle" font-size="18" font-weight="700">販売サイトへ登録</text>
+    <text x="443" y="295" fill="#57534e" text-anchor="middle" font-size="14">KDP：KPF・表紙・書誌情報</text>
+    <text x="443" y="320" fill="#57534e" text-anchor="middle" font-size="14">BOOTH：PDF・商品画像・説明</text>
+    <rect x="350" y="350" width="186" height="50" rx="10" fill="#f5f3ff"/>
+    <text x="443" y="380" fill="#5b21b6" text-anchor="middle" font-size="14" font-weight="700">本人が手動入力</text>
+
+    <path d="M576 294h54" stroke="#7c3aed" stroke-width="5" stroke-linecap="round"/><path d="M618 283l14 11-14 11" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="640" y="152" width="226" height="284" rx="20" fill="#fff" stroke="#ddd6fe"/>
+    <circle cx="753" cy="205" r="30" fill="#ede9fe"/><text x="753" y="214" fill="#6d28d9" text-anchor="middle" font-size="24" font-weight="700">3</text>
+    <text x="753" y="264" fill="#18181b" text-anchor="middle" font-size="18" font-weight="700">プレビュー</text>
+    <text x="753" y="295" fill="#57534e" text-anchor="middle" font-size="14">ページ順・見開き</text>
+    <text x="753" y="320" fill="#57534e" text-anchor="middle" font-size="14">文字・表紙・価格・規約</text>
+    <rect x="670" y="350" width="166" height="50" rx="10" fill="#fff7ed"/>
+    <text x="753" y="380" fill="#9a3412" text-anchor="middle" font-size="14" font-weight="700">公開前に再確認</text>
+
+    <path d="M876 294h54" stroke="#7c3aed" stroke-width="5" stroke-linecap="round"/><path d="M918 283l14 11-14 11" fill="none" stroke="#7c3aed" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <rect x="940" y="152" width="212" height="284" rx="20" fill="#fff" stroke="#ddd6fe"/>
+    <circle cx="1046" cy="205" r="30" fill="#d1fae5"/><text x="1046" y="214" fill="#047857" text-anchor="middle" font-size="24" font-weight="700">4</text>
+    <text x="1046" y="264" fill="#18181b" text-anchor="middle" font-size="18" font-weight="700">公開・記録</text>
+    <text x="1046" y="295" fill="#57534e" text-anchor="middle" font-size="14">販売URL・公開日</text>
+    <text x="1046" y="320" fill="#57534e" text-anchor="middle" font-size="14">原稿版・価格・売上</text>
+    <rect x="970" y="350" width="152" height="50" rx="10" fill="#ecfdf5"/>
+    <text x="1046" y="380" fill="#065f46" text-anchor="middle" font-size="14" font-weight="700">手元にも保存</text>
+
+    <rect x="48" y="474" width="1104" height="118" rx="18" fill="#fff" stroke="#fed7aa"/>
+    <text x="74" y="510" fill="#9a3412" font-size="17" font-weight="700">自動連携ではありません</text>
+    <text x="74" y="540" fill="#57534e" font-size="14">アカウント作成・本人確認・口座・税務情報・AI利用申告・公開操作は、販売サイト上でご本人が行います。</text>
+    <text x="74" y="566" fill="#57534e" font-size="14">規約、手数料、ファイル要件は変わるため、出品する日の公式画面を正本として確認してください。</text>
+  </g>
+  <text x="1140" y="650" fill="#78716c" text-anchor="end" font-family="system-ui, sans-serif" font-size="13">KDP・BOOTH等への手動出品を示す説明用画面例です</text>
+</svg>

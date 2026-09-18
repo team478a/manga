@@ -1,5 +1,15 @@
 # MANGAI Current Task
 
+## 2026-09-18 一般向けCloud漫画の外部出品・収益化マニュアル
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_IN_PROGRESS / PRODUCTION_UNCHANGED`
+- BaseはPR #513 merge commit `f8e935c`。Branchは`codex/cloud-sales-listing-guide-20260918`。
+- 購入者向け画像付きWebマニュアルへ、完成原稿PDFから外部販売サイトへ手動出品する共通手順、出品前チェック、商品情報テンプレート、販売後の記録を追加した。
+- KDPはKindle Create／KPF／KCB／Kindle Previewer／AI生成コンテンツ申告、BOOTHはダウンロード商品登録／公開確認／安全なファイル差し替えを公式情報に基づき案内する。
+- MANGAI内の販売申請・決済・収益管理は準備中、売上保証なし、成人向けは対象外と明記する。Production、Provider、生成、credit、DB／Storage、利用者データは変更しない。
+
+---
+
 ## 2026-09-18 生成品質ギャラリーの生成者識別強化
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_UPDATED / PRODUCTION_UNCHANGED`
