@@ -2,8 +2,9 @@
 
 ## 2026-09-24 Cloud画像生成のページ選択停止理由改善
 
-- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_CREATED / CI_PENDING / PRODUCTION_UNCHANGED`
 - BaseはPR #517 merge commit `285ffe72`。Branchは`codex/fix-generation-selection-guidance-20260924`。
+- Implementation commitは`9056d9e5`。Draft PR #519を作成し、全CI／Vercel Previewを確認中。
 - Productionの管理画面で未完了報告「先に進めません」をread-only調査した。期限とcreditは同日の全利用者更新で解消済みだが、報告画像では1ページだけが選択され、作品画風と登場人物の必須設定も不足していた。
 - 従来は前提不足で無効な生成ボタンにも待機カーソルが出るため、処理中と誤認できた。送信中だけspinner／待機カーソル、前提不足は操作不可カーソルと具体的な停止表示に分離した。
 - 1ページ選択時は連続する隣接ページを画面内のボタンで追加できる。非連続2ページ、3ページ、絞り込みで隣接ページが見えない場合にも、それぞれ具体的な解消方法を表示し、選択中ページを強調する。
