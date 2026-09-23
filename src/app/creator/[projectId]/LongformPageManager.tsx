@@ -73,6 +73,16 @@ export function LongformPageManager({
     ? "確認できません"
     : new Intl.NumberFormat("ja-JP", { style: "currency", currency: batchPreflight?.currency ?? "USD" })
       .format(batchEstimate.maxReservedCostMicros / 1_000_000);
+  const entitlementEndDate = batchPreflight?.entitlementPeriodEndsAt
+    ? new Date(batchPreflight.entitlementPeriodEndsAt)
+    : null;
+  const entitlementEnd = entitlementEndDate && !Number.isNaN(entitlementEndDate.getTime())
+    ? new Intl.DateTimeFormat("ja-JP", { dateStyle: "medium" }).format(entitlementEndDate)
+    : "確認不可";
+  const planCostRemaining = batchPreflight?.planCostMicrosRemaining === null || batchPreflight?.planCostMicrosRemaining === undefined
+    ? "確認不可"
+    : new Intl.NumberFormat("ja-JP", { style: "currency", currency: batchPreflight.currency })
+      .format(batchPreflight.planCostMicrosRemaining / 1_000_000);
 
   const moveBefore = (targetPageId: string) => {
     if (!draggedPageId || draggedPageId === targetPageId) return;
@@ -139,6 +149,8 @@ export function LongformPageManager({
             <p>必要credit: <strong>{batchEstimate.requiredCredits ?? "確認不可"}</strong>（残り{batchPreflight.planCreditsRemaining ?? "確認不可"}）</p>
             <p>作品credit: <strong>{batchPreflight.projectCreditsRemaining ?? "上限設定なし"}</strong></p>
             <p>モニターAI残り: <strong>{batchPreflight.monitorRequestsRemaining ?? "確認不可"}回</strong></p>
+            <p>Cloud AI利用期限: <strong>{entitlementEnd}</strong></p>
+            <p>Cloud AI費用上限残り: <strong>{planCostRemaining}</strong></p>
             <p>最大予約費用: <strong>{cost}</strong></p>
             <p>Model: <strong>{batchPreflight.modelId ?? "確認不可"}</strong></p>
             <p>料金版: <strong>{batchPreflight.pricingVersion ?? "確認不可"}</strong></p>
@@ -153,13 +165,14 @@ export function LongformPageManager({
               <p>作品画風: <strong>{batchPreflight.styleBibleConfigured ? "設定済み" : "未設定"}</strong></p>
               <p>登場人物の外見・衣装: <strong>{batchEstimate.requiredCharacterNames.length - batchEstimate.missingCharacterNames.length}/{batchEstimate.requiredCharacterNames.length}名設定済み</strong></p>
             </div>
-            {batchEstimate.missingCharacterNames.length ? <p className="mt-2 text-amber-900">未設定: {batchEstimate.missingCharacterNames.join("、")}</p> : null}
+            {!batchPreflight.styleBibleConfigured && batchPreflight.styleBibleMissingFields.length ? <p className="mt-2 text-amber-900">作品画風の不足項目: {batchPreflight.styleBibleMissingFields.join("、")}</p> : null}
+            {batchEstimate.missingCharacterNames.length ? <p className="mt-2 text-amber-900">人物の必須設定が不足: {batchEstimate.missingCharacterNames.join("、")}</p> : null}
             {(!batchPreflight.styleBibleConfigured || batchEstimate.missingCharacterNames.length) ? <div className="mt-3 flex flex-wrap gap-2">
-              {!batchPreflight.styleBibleConfigured ? <Link className="button-secondary" href={`/creator/${projectId}/bible`}>画風・世界観を設定</Link> : null}
-              {batchEstimate.missingCharacterNames.length ? <Link className="button-secondary" href={`/creator/${projectId}/characters`}>キャラクター設定を追加</Link> : null}
+              {!batchPreflight.styleBibleConfigured ? <Link className="button-secondary" href={`/creator/${projectId}/bible`}>作品画風の必須項目を設定</Link> : null}
+              {batchEstimate.missingCharacterNames.length ? <Link className="button-secondary" href={`/creator/${projectId}/characters`}>人物の必須項目を設定</Link> : null}
             </div> : null}
           </div>
-          {batchEstimate.blockers.length ? <ul className="mt-2 list-disc pl-5 text-amber-900">{batchEstimate.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : <p className="mt-2 font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />現在の利用枠では開始できます。</p>}
+          {batchEstimate.blockers.length ? <><ul className="mt-2 list-disc pl-5 text-amber-900">{batchEstimate.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul><p className="mt-2 text-xs text-stone-600">利用期限、credit、費用上限は作品設定から変更できません。該当する場合は、表示された必要数と残り数を添えて管理者へ連絡してください。</p></> : <p className="mt-2 font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />現在の利用枠では開始できます。</p>}
         </div> : <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><AlertTriangle className="mr-1 inline h-4 w-4" />生成料金と利用枠を確認できないため、一括生成を開始できません。</div>}
         <p className="mt-2 text-xs text-stone-500">2ページPilotも既存の人物・画風、利用枠、最大64コマの安全確認を通過した場合だけ開始できます。画面を閉じてもWorker処理は継続します。</p>
         <p className="mt-3 rounded-lg border border-stone-200 bg-white p-3 text-sm font-semibold" aria-live="polite">

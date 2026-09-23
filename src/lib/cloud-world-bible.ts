@@ -2,11 +2,11 @@ import { z } from "zod";
 
 export const cloudStyleBibleInputSchema = z.object({
   projectId: z.string().uuid(),
-  artStyle: z.string().trim().max(500),
-  linework: z.string().trim().max(500),
-  shading: z.string().trim().max(500),
-  backgroundDetail: z.string().trim().max(500),
-  compositionRules: z.string().trim().max(1000),
+  artStyle: z.string().trim().min(1).max(500),
+  linework: z.string().trim().min(1).max(500),
+  shading: z.string().trim().min(1).max(500),
+  backgroundDetail: z.string().trim().min(1).max(500),
+  compositionRules: z.string().trim().min(1).max(1000),
   negativePrompt: z.string().trim().max(1500),
 });
 
@@ -53,6 +53,25 @@ export type CloudWorldProfile = {
   negative_prompt: string;
   updated_at: string;
 };
+
+const cloudStyleBibleRequiredFields = [
+  ["art_style", "画風"],
+  ["linework", "線の表現"],
+  ["shading", "陰影・トーン"],
+  ["background_detail", "背景の密度"],
+  ["composition_rules", "構図の共通ルール"],
+] as const;
+
+export function getMissingCloudStyleBibleFields(
+  bible: Pick<
+    CloudStyleBible,
+    "art_style" | "linework" | "shading" | "background_detail" | "composition_rules"
+  > | null,
+) {
+  return cloudStyleBibleRequiredFields.flatMap(([key, label]) =>
+    bible?.[key]?.trim() ? [] : [label],
+  );
+}
 
 const normalize = (value: string) => value.normalize("NFKC").toLocaleLowerCase();
 

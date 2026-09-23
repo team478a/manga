@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 生成前設定の保存条件と開始判定の整合（2026-09-24）
+
+- PR #516 merge commit `cc4cab2b`から`codex/fix-generation-preflight-settings-20260924`を作成した。
+- 画風・世界観画面で一部項目だけ保存できるのに、生成開始時は画風5項目が揃わないと未設定扱いになる不一致を解消した。人物設定も同様に、生成開始で必要な5条件を保存時から必須にした。
+- 既存の不完全な設定は保持し、画面と生成前チェックの両方で具体的な不足項目を案内する。場所・小物は任意であり、それだけでは作品画風の設定完了にならない境界を明示した。
+- Cloud AI利用期限、credit不足数、月額上限の残額を生成前画面へ表示し、設定不足と契約・料金側の停止理由を区別できるようにした。料金計算、上限、契約、生成処理は変更していない。
+- 集中23/23、Hub 1018/1018、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、diff check成功。Production、DB／Storage、migration、Provider、生成Job、credit、利用者データ変更なし。
+
+---
+
 ## 0.0 AI市場分析の429原因判別改善（2026-09-23）
 
 - BaseはPR #515 merge commit `17ec125d`。Branchは`codex/fix-market-analysis-429-20260923`。

@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-24 生成前設定の保存条件と開始判定の整合
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`
+- BaseはPR #516 merge commit `cc4cab2b`。Branchは`codex/fix-generation-preflight-settings-20260924`。
+- 利用者報告の「世界観設定後も作品画風が未設定」と表示される問題を調査し、保存画面では空欄を許容する一方、生成開始判定では画風5項目と人物5条件をすべて要求していた不一致を修正した。
+- 作品画風は画風、線、陰影、背景密度、構図、人物は年齢感、体格、髪、衣装、固定特徴を保存時から必須とし、既存の不完全な設定は削除せず不足項目を表示して再保存できるようにした。場所・小物だけの保存では作品画風の準備完了にならないことも明記した。
+- 生成前画面では不足項目、Cloud AI利用期限、credit不足数、月額上限の残額を分けて表示し、契約・credit・上限は作品設定画面では変更できないことを案内する。既存データ、料金条件、生成上限の判定自体は変更しない。
+- 検証: 集中23/23、Hub 1018/1018、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、`git diff --check`成功。Production、DB／Storage、migration、外部Provider、生成Job、credit予約・消費、利用者データ変更なし。
+
+---
+
 ## 2026-09-23 AI市場分析の429原因判別改善
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`

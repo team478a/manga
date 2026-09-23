@@ -17,7 +17,7 @@ export async function saveCharacterProfileAction(projectId: string, form: FormDa
     immutableTraits: text(form,"immutableTraits").split("\n").map((value)=>value.trim()).filter(Boolean),
     prompt: text(form,"prompt"),negativePrompt: text(form,"negativePrompt"),
   });
-  if (!parsed.success) redirect(`/creator/${projectId}/characters?error=${encodeURIComponent("入力内容を確認してください。")}`);
+  if (!parsed.success) redirect(`/creator/${projectId}/characters?error=${encodeURIComponent("名前、見た目の年齢、体格、髪型・髪色、基本衣装、変えてはいけない特徴をすべて入力してください。")}`);
   await saveCloudCharacterProfile(parsed.data).catch(() => redirect(`/creator/${projectId}/characters?error=${encodeURIComponent("設定を保存できませんでした。")}`));
   revalidatePath(`/creator/${projectId}`);revalidatePath(`/creator/${projectId}/characters`);
   redirect(`/creator/${projectId}/characters?message=${encodeURIComponent("キャラクター設定を保存しました。")}`);

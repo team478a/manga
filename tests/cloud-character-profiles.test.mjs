@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { cloudCharacterProfileInputSchema } from "../src/lib/cloud-character-profile.ts";
+import {
+  cloudCharacterProfileInputSchema,
+  getMissingCloudCharacterVisualFields,
+} from "../src/lib/cloud-character-profile.ts";
 
 const migrationPath =
   "supabase/migrations/202607310005_cloud_character_profiles.sql";
@@ -28,6 +31,22 @@ test("M2キャラクター設定は入力上限とUUIDを検証する", () => {
       immutableTraits: Array.from({ length: 13 }, (_, index) => `特徴${index}`),
     }),
   );
+  assert.throws(() =>
+    cloudCharacterProfileInputSchema.parse({
+      ...parsed,
+      costume: "",
+    }),
+  );
+});
+
+test("人物設定は画像生成に必要な不足項目を日本語で返す", () => {
+  assert.deepEqual(getMissingCloudCharacterVisualFields({
+    appearance_age: "20代前半",
+    body_build: "",
+    hair: "黒髪",
+    costume: "",
+    immutable_traits: [],
+  }), ["体格", "基本衣装", "変えてはいけない特徴"]);
 });
 
 test("M2 migrationは履歴を不変スナップショットとして所有者だけに公開する", async () => {
@@ -54,4 +73,6 @@ test("設定画面は保存中表示と日本語の空状態を備える", async
   assert.match(page, /保存中…/);
   assert.match(page, /設定済みキャラクターはまだありません/);
   assert.match(page, /新しい版として保存/);
+  assert.match(page, /画像生成の必須項目が不足/);
+  assert.match(page, /required/);
 });

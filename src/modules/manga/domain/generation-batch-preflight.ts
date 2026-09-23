@@ -32,6 +32,7 @@ export type GenerationBatchPreflightContext = {
   pageNumbers: Record<string, number>;
   visualReadinessAvailable: boolean;
   styleBibleConfigured: boolean;
+  styleBibleMissingFields: string[];
   configuredCharacterNames: string[];
   pageCharacterNames: Record<string, string[]>;
   schedulerJobsPerRun: number;
@@ -269,10 +270,12 @@ export function estimateGenerationBatch(
   if (!context.visualReadinessAvailable)
     blockers.push("人物・画風の生成準備を確認できませんでした。時間をおいて再度お試しください。");
   if (context.visualReadinessAvailable && !context.styleBibleConfigured)
-    blockers.push("作品全体の画風が未設定です。画風・世界観設定を保存してから開始してください。");
+    blockers.push(
+      `作品画風の必須項目が未設定です${context.styleBibleMissingFields.length ? `（${context.styleBibleMissingFields.join("、")}）` : ""}。画風・世界観設定を保存してから開始してください。`,
+    );
   if (context.visualReadinessAvailable && missingCharacterNames.length)
     blockers.push(
-      `登場人物「${missingCharacterNames.join("、")}」の外見・衣装設定が未設定です。キャラクター設定を保存してから開始してください。`,
+      `登場人物「${missingCharacterNames.join("、")}」の必須項目（年齢感、体格、髪、衣装、固定特徴）が未設定です。キャラクター設定を保存してから開始してください。`,
     );
   if (!context.available || !context.providerEnabled || requiredCredits === null || maxReservedCostMicros === null)
     blockers.push("画像生成の料金と利用枠を確認できませんでした。");
