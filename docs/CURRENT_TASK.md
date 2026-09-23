@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-23 AI市場分析の429原因判別改善
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`
+- BaseはPR #515 merge commit `17ec125d`。Branchは`codex/fix-market-analysis-429-20260923`。
+- Production利用者の「AI市場分析が混み合っています」報告を調査し、外部AI ProviderのHTTP 429を一律に混雑扱いしていたこと、429だけはRequest IDと安全な分類がログへ残らないことを特定した。
+- Provider応答の生メッセージを保存せず、許可した`code`／`type`だけで一時的なrate limitと利用上限・請求系quotaを分類する。一時制限は1分後の再実行、quotaは管理者確認を案内する。
+- ログはHTTP status、Request ID、`rate_limited`／`quota_exhausted`、許可済みerror codeだけを記録する。APIキー、入力、Provider生メッセージは記録しない。
+- 検証: 集中7/7、Hub 1016/1016、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、`git diff --check`成功。外部Provider実行、monitor allowance消費、Production、DB／Storage、credit、利用者データ変更なし。
+
+---
+
 ## 2026-09-18 完成原稿・作品管理から外部出品マニュアルへの導線
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`

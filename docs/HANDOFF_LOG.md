@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-23 Codex: AI市場分析の429原因判別改善
+
+- PR #515 merge commit `17ec125d`から`codex/fix-market-analysis-429-20260923`を作成した。
+- 利用者報告の文言はMANGAI内部の1分間制限ではなく、外部AI ProviderのHTTP 429でのみ発生することを確認した。
+- 429応答の許可済みerror codeだけを読み、一時的なrate limitは1分後の再実行、quota／billing系上限は管理者への連絡へ分けた。
+- status、Request ID、安全な分類、許可済みerror codeを監査可能にし、Providerの生メッセージ、APIキー、市場分析入力はログへ残さない。
+- 集中7/7、Hub 1016/1016、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production buildが成功した。Production、Provider実行、monitor allowance、credit、DB／Storage、利用者データは変更していない。
+
+---
+
 ## 2026-09-18 Codex: 完成原稿・作品管理から外部出品マニュアルへの導線
 
 - PR #514 merge commit `38f1863`から新規ブランチを作成した。
