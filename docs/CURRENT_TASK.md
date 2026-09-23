@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-24 Cloud画像生成のページ選択停止理由改善
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`
+- BaseはPR #517 merge commit `285ffe72`。Branchは`codex/fix-generation-selection-guidance-20260924`。
+- Productionの管理画面で未完了報告「先に進めません」をread-only調査した。期限とcreditは同日の全利用者更新で解消済みだが、報告画像では1ページだけが選択され、作品画風と登場人物の必須設定も不足していた。
+- 従来は前提不足で無効な生成ボタンにも待機カーソルが出るため、処理中と誤認できた。送信中だけspinner／待機カーソル、前提不足は操作不可カーソルと具体的な停止表示に分離した。
+- 1ページ選択時は連続する隣接ページを画面内のボタンで追加できる。非連続2ページ、3ページ、絞り込みで隣接ページが見えない場合にも、それぞれ具体的な解消方法を表示し、選択中ページを強調する。
+- 検証: 集中4/4、Hub 1020/1020、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、`git diff --check`成功。生成条件、料金、利用枠は不変。Production、DB／Storage、migration、外部Provider、生成Job、credit予約・消費、利用者データ変更なし。
+
+---
+
 ## 2026-09-24 生成前設定の保存条件と開始判定の整合
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`

@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: Cloud画像生成のページ選択停止理由改善
+
+- PR #517 merge commit `285ffe72`から`codex/fix-generation-selection-guidance-20260924`を作成した。
+- Productionの未完了報告をread-only確認し、1ページだけの選択、画風・人物設定不足、無効ボタンの待機カーソルが「先に進めない」状態を分かりにくくしていたことを確認した。
+- 送信中と前提不足の表示を分離し、1ページ選択時の隣接ページ追加、非連続2ページ／3ページの具体的な修正案、選択ページの強調表示を追加した。既存の生成可否ルールは変更していない。
+- 集中4/4、Hub 1020/1020、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、diff check成功。Production、DB／Storage、migration、Provider、生成Job、credit、利用者データは変更していない。
+
+---
+
 ## 2026-09-24 Codex: 生成前設定の保存条件と開始判定の整合
 
 - PR #516 merge commit `cc4cab2b`から`codex/fix-generation-preflight-settings-20260924`を作成した。
