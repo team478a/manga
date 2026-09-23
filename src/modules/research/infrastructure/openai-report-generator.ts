@@ -13,6 +13,7 @@ import {
   ContentRejectedError,
   ProviderTimeoutError,
   ProviderUnavailableError,
+  QuotaExceededError,
   RateLimitedError,
 } from "../../../lib/domain-errors.ts";
 import { logHubEvent } from "../../../lib/hub-logger.ts";
@@ -66,6 +67,45 @@ const responseJsonSchema = {
 };
 
 type Citation = { url: string; title: string };
+
+const providerQuotaErrorCodes = new Set([
+  "billing_hard_limit_reached",
+  "billing_not_active",
+  "insufficient_quota",
+  "usage_limit_reached",
+]);
+
+type ProviderRateLimitClassification = {
+  category: "quota_exhausted" | "rate_limited";
+  code: string;
+};
+
+async function classifyProviderRateLimit(
+  response: Response,
+): Promise<ProviderRateLimitClassification> {
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    return { category: "rate_limited", code: "unknown" };
+  }
+  if (!payload || typeof payload !== "object")
+    return { category: "rate_limited", code: "unknown" };
+  const error = (payload as Record<string, unknown>).error;
+  if (!error || typeof error !== "object")
+    return { category: "rate_limited", code: "unknown" };
+  const providerError = error as Record<string, unknown>;
+  const candidates = [providerError.code, providerError.type].filter(
+    (value): value is string => typeof value === "string",
+  );
+  const quotaCode = candidates.find((value) =>
+    providerQuotaErrorCodes.has(value),
+  );
+  if (quotaCode) return { category: "quota_exhausted", code: quotaCode };
+  if (candidates.includes("rate_limit_exceeded"))
+    return { category: "rate_limited", code: "rate_limit_exceeded" };
+  return { category: "rate_limited", code: "unknown" };
+}
 
 function collectCitations(value: unknown, citations = new Map<string, string>()) {
   if (!value || typeof value !== "object") return citations;
@@ -208,10 +248,22 @@ export async function runCloudResearchAiAnalysis(input: {
       "AI市場分析を開始できませんでした。しばらくしてから再実行してください。",
     );
   });
-  if (response.status === 429)
+  if (response.status === 429) {
+    const classification = await classifyProviderRateLimit(response);
+    logHubEvent("warn", "cloud_research_ai_provider_rate_limited", {
+      status: response.status,
+      requestId: response.headers.get("x-request-id"),
+      category: classification.category,
+      providerErrorCode: classification.code,
+    });
+    if (classification.category === "quota_exhausted")
+      throw new QuotaExceededError(
+        "市場分析AIの利用上限に達しています。管理者へお問い合わせください。",
+      );
     throw new RateLimitedError(
-      "AI市場分析が混み合っています。しばらくしてから再実行してください。",
+      "AI市場分析が混み合っています。1分ほど待ってから再実行してください。",
     );
+  }
   if (!response.ok) {
     logHubEvent("warn", "cloud_research_ai_provider_rejected", {
       status: response.status,

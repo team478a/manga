@@ -209,3 +209,92 @@ test("引用がないProvider応答は保存せず安全に失敗する", async 
     /十分な根拠を確認できる分析結果/,
   );
 });
+
+test("Providerの一時的な429は待って再実行する案内と安全な診断情報を返す", async () => {
+  const originalWarn = console.warn;
+  const warnings = [];
+  console.warn = (line) => warnings.push(line);
+  try {
+    await assert.rejects(
+      runCloudResearchAiAnalysis({
+        profileId: "46f3ad2e-3b9a-4aef-94ee-188978be9cf0",
+        request,
+        fetchImplementation: async () =>
+          new Response(
+            JSON.stringify({
+              error: {
+                type: "rate_limit_exceeded",
+                code: "rate_limit_exceeded",
+                message: "provider detail must not be logged",
+              },
+            }),
+            {
+              status: 429,
+              headers: { "x-request-id": "req_rate_limit_123" },
+            },
+          ),
+        runtimeConfig: {
+          apiKey: "sk-test-00000000000000000000",
+          model: "gpt-5.6-terra",
+        },
+      }),
+      (error) => {
+        assert.equal(error.code, "RATE_LIMITED");
+        assert.match(error.message, /1分ほど待って/);
+        return true;
+      },
+    );
+  } finally {
+    console.warn = originalWarn;
+  }
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /cloud_research_ai_provider_rate_limited/);
+  assert.match(warnings[0], /req_rate_limit_123/);
+  assert.match(warnings[0], /rate_limit_exceeded/);
+  assert.doesNotMatch(warnings[0], /provider detail must not be logged/);
+  assert.doesNotMatch(warnings[0], /sk-test/);
+});
+
+test("Providerの利用上限429は管理者確認が必要な案内へ分ける", async () => {
+  const originalWarn = console.warn;
+  const warnings = [];
+  console.warn = (line) => warnings.push(line);
+  try {
+    await assert.rejects(
+      runCloudResearchAiAnalysis({
+        profileId: "46f3ad2e-3b9a-4aef-94ee-188978be9cf0",
+        request,
+        fetchImplementation: async () =>
+          new Response(
+            JSON.stringify({
+              error: {
+                type: "insufficient_quota",
+                code: "insufficient_quota",
+                message: "provider billing detail must not be logged",
+              },
+            }),
+            {
+              status: 429,
+              headers: { "x-request-id": "req_quota_123" },
+            },
+          ),
+        runtimeConfig: {
+          apiKey: "sk-test-00000000000000000000",
+          model: "gpt-5.6-terra",
+        },
+      }),
+      (error) => {
+        assert.equal(error.code, "QUOTA_EXCEEDED");
+        assert.match(error.message, /管理者へお問い合わせください/);
+        return true;
+      },
+    );
+  } finally {
+    console.warn = originalWarn;
+  }
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /quota_exhausted/);
+  assert.match(warnings[0], /insufficient_quota/);
+  assert.doesNotMatch(warnings[0], /provider billing detail must not be logged/);
+  assert.doesNotMatch(warnings[0], /sk-test/);
+});

@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 AI市場分析の429原因判別改善（2026-09-23）
+
+- BaseはPR #515 merge commit `17ec125d`。Branchは`codex/fix-market-analysis-429-20260923`。
+- OpenAI Responses APIのHTTP 429をすべて「混雑」と表示し、429だけは診断用Request IDも残らない実装を修正した。
+- 応答本文のうち許可したerror code／typeのみを分類し、一時的なrate limitとquota／billing系利用上限で利用者案内を分離する。
+- ログ対象はstatus、Request ID、安全な分類、許可済みerror codeだけとし、APIキー、入力、Provider生メッセージを保存しない。
+- 集中7/7、Hub 1016/1016、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build成功。Production、外部Provider、monitor allowance、credit、DB／Storage、利用者データ変更なし。
+
+---
+
 ## 0.0 完成原稿・作品管理から外部出品マニュアルへの導線（2026-09-18）
 
 - PR #514 merge commit `38f1863`から`codex/cloud-sales-listing-entrypoints-20260918`を作成した。
