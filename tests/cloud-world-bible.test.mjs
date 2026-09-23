@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   cloudStyleBibleInputSchema,
   cloudWorldProfileInputSchema,
+  getMissingCloudStyleBibleFields,
   resolveWorldProfilesForPanel,
 } from "../src/lib/cloud-world-bible.ts";
 
@@ -40,6 +41,15 @@ test("画風・世界観入力は上限と種類を検証する", () => {
     compositionRules: "右から左",
     negativePrompt: "厚塗り",
   }).artStyle, "青年漫画");
+  assert.throws(() => cloudStyleBibleInputSchema.parse({
+    projectId: baseProfile.project_id,
+    artStyle: "青年漫画",
+    linework: "",
+    shading: "網点",
+    backgroundDetail: "詳細",
+    compositionRules: "右から左",
+    negativePrompt: "",
+  }));
   assert.throws(() => cloudWorldProfileInputSchema.parse({
     projectId: baseProfile.project_id,
     profileId: null,
@@ -52,6 +62,16 @@ test("画風・世界観入力は上限と種類を検証する", () => {
     prompt: "",
     negativePrompt: "",
   }));
+});
+
+test("作品画風は生成に必要な不足項目を日本語で返す", () => {
+  assert.deepEqual(getMissingCloudStyleBibleFields({
+    art_style: "青年漫画",
+    linework: "",
+    shading: "網点",
+    background_detail: "",
+    composition_rules: "右から左",
+  }), ["線の表現", "背景の密度"]);
 });
 
 test("M2-2 migrationは版履歴・所有者RLS・RPCだけの書込を持つ", async () => {
@@ -73,4 +93,7 @@ test("画風・世界観画面は日本語の空状態と処理中表示を持�
   assert.match(page, /保存中…/);
   assert.match(page, /設定済みの場所・小物はまだありません/);
   assert.match(page, /技術的なAI設定は必要ありません/);
+  assert.match(page, /次の5項目をすべて入力/);
+  assert.match(page, /ここだけを保存しても/);
+  assert.match(page, /required/);
 });

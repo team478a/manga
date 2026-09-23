@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: 生成前設定の保存条件と開始判定の整合
+
+- PR #516 merge commit `cc4cab2b`から`codex/fix-generation-preflight-settings-20260924`を作成した。
+- 保存時と生成前判定の必須条件が一致していなかったため、画風5項目と人物5条件を保存時から必須化した。既存の部分保存データは削除せず、不足項目を具体表示して再保存を促す。
+- 生成前画面へ作品画風と人物の不足条件、Cloud AI期限、credit不足数、月額上限残額を表示し、利用者が複数の停止理由を切り分けられるようにした。
+- 場所・小物だけでは作品画風の設定完了にならないことを画面上で明示した。既存の生成可否判定、料金、利用枠は変更していない。
+- 集中23/23、Hub 1018/1018、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、diff check成功。Production、DB／Storage、migration、Provider、生成Job、credit、利用者データは変更していない。
+
+---
+
 ## 2026-09-23 Codex: AI市場分析の429原因判別改善
 
 - PR #515 merge commit `17ec125d`から`codex/fix-market-analysis-429-20260923`を作成した。

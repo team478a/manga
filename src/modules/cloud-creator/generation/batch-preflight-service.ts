@@ -14,6 +14,8 @@ import { cloudCreatorContext } from "../auth-context";
 import type { CloudProjectResourceUsage } from "@/lib/cloud-project-budget";
 import { cloudStoryboardResultSchema } from "@/lib/cloud-storyboard";
 import { cloudStoryScenarioResultSchema } from "@/lib/cloud-scenario";
+import { getMissingCloudCharacterVisualFields } from "@/lib/cloud-character-profile";
+import { getMissingCloudStyleBibleFields } from "@/lib/cloud-world-bible";
 
 type PriceRow = {
   credits: number;
@@ -71,24 +73,6 @@ async function loadPageStructure(
   };
 }
 
-function hasCharacterVisualDetails(version: {
-  appearance_age: string;
-  body_build: string;
-  hair: string;
-  costume: string;
-  color_palette: string;
-  immutable_traits: string[];
-  prompt: string;
-}) {
-  return Boolean(
-    version.appearance_age.trim() &&
-    version.body_build.trim() &&
-    version.hair.trim() &&
-    version.costume.trim() &&
-    version.immutable_traits.length,
-  );
-}
-
 async function loadVisualReadiness(
   supabase: Awaited<ReturnType<typeof cloudCreatorContext>>["supabase"],
   projectId: string,
@@ -118,6 +102,7 @@ async function loadVisualReadiness(
     return {
       visualReadinessAvailable: false,
       styleBibleConfigured: false,
+      styleBibleMissingFields: [] as string[],
       configuredCharacterNames: [] as string[],
       pageCharacterNames: {} as Record<string, string[]>,
     };
@@ -159,6 +144,7 @@ async function loadVisualReadiness(
     return {
       visualReadinessAvailable: false,
       styleBibleConfigured: false,
+      styleBibleMissingFields: [] as string[],
       configuredCharacterNames: [] as string[],
       pageCharacterNames: {} as Record<string, string[]>,
     };
@@ -169,18 +155,13 @@ async function loadVisualReadiness(
         version.profile_id === profile.id &&
         version.version_number === profile.current_version,
     );
-    return current && hasCharacterVisualDetails(current) ? [profile.name] : [];
+    return current && !getMissingCloudCharacterVisualFields(current).length
+      ? [profile.name]
+      : [];
   });
   const style = styleVersion.data;
-  const styleBibleConfigured = Boolean(
-    style && (
-      style.art_style.trim() &&
-      style.linework.trim() &&
-      style.shading.trim() &&
-      style.background_detail.trim() &&
-      style.composition_rules.trim()
-    ),
-  );
+  const styleBibleMissingFields = getMissingCloudStyleBibleFields(style);
+  const styleBibleConfigured = styleBibleMissingFields.length === 0;
   const storyboardByPage = new Map(
     parsedStoryboard.data.pages.map((page) => [page.pageNumber, page]),
   );
@@ -202,6 +183,7 @@ async function loadVisualReadiness(
   return {
     visualReadinessAvailable: true,
     styleBibleConfigured,
+    styleBibleMissingFields,
     configuredCharacterNames,
     pageCharacterNames,
   };

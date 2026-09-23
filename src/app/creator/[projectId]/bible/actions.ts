@@ -30,7 +30,14 @@ export async function saveStyleBibleAction(projectId: string, form: FormData) {
     compositionRules: text(form, "compositionRules"),
     negativePrompt: text(form, "negativePrompt"),
   });
-  if (!parsed.success) redirect(url(projectId, "error", "画風設定の入力内容を確認してください。"));
+  if (!parsed.success)
+    redirect(
+      url(
+        projectId,
+        "error",
+        "画風、線の表現、陰影・トーン、背景の密度、構図の共通ルールをすべて入力してください。",
+      ),
+    );
   await saveCloudStyleBible(parsed.data).catch(() =>
     redirect(url(projectId, "error", "画風設定を保存できませんでした。")),
   );
