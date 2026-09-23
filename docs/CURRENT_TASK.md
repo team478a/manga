@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-24 生成不能報告のCloud AI利用枠 Production read-only監査
+
+- 状態: `PRODUCTION_READONLY_AUDIT_COMPLETE / ENTITLEMENT_RENEWAL_PENDING_EXPLICIT_APPROVAL / PROVIDER_UNCHANGED / CREDIT_UNCHANGED`
+- BaseはPR #517 merge commit `285ffe72`。Branchは`codex/audit-cloud-ai-account-blockers-20260924`。
+- 一般向けモニター報告「先に進めません」と添付画面を照合し、対象は樋口美子さんであることを確認した。モニター枠は`active`、33/50回、期限2026-09-30である。
+- Cloud AI個別利用枠は`FREE / active / default`だが、期間終了が2026-09-01 00:00 JSTで現在は期間外。管理画面上の使用／予約creditは0/0、処理中Jobは0件だった。画面のCloud AI credit不足とCloud AI費用上限超過は、全体停止や現在の予約超過ではなく、期限切れ利用枠の残容量が生成開始判定を満たさないことが主因である。
+- Production全体は生成有効、Provider APIキー設定済み・有効、Worker正常、待機0・実行中0・24時間以内失敗0、当日原価`$0.09`／予約`$0`／日次上限`$100`。Free Planは20 credit、月間原価上限`$2.00`、User 5件/分、Project 3件/分で有効だった。
+- 監査は画面表示の読み取りだけで実施した。利用期間、Plan、モニター枠、作品予算、Provider、Job、Asset、credit、生成、報告状態、利用者通知は変更していない。次は対象付きの別の明示承認後に、予約0・処理中0を再確認してFree Planの新期間を付与する。
+- docs-only検証はmigration validator 84/84、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
+
+---
+
 ## 2026-09-24 生成前設定の保存条件と開始判定の整合
 
 - 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`

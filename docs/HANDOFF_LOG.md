@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: 生成不能報告のCloud AI利用枠 Production read-only監査
+
+- PR #517 merge commit `285ffe72`から新規ブランチを作成し、一般向けモニター報告「先に進めません」の利用枠をProduction管理画面で読み取り確認した。
+- 対象の樋口美子さんはモニターactive、33/50回、期限2026-09-30。Cloud AIはFree active/defaultだが期間終了が2026-09-01 00:00 JSTで、使用／予約credit 0/0、処理中Job 0件だった。
+- Production全体の生成は有効、BFL接続有効、Worker正常、待機・実行中・直近24時間失敗0。当日実費`$0.09`／予約`$0`／日次上限`$100`。Free Planは20 credit／月額原価上限`$2.00`で有効だった。
+- 報告画面のCloud AI期限、credit、費用上限の停止理由は、全体停止や現在の予約ではなく期限切れ個別利用枠に起因する。Productionの設定、DB、Provider、Job、Asset、credit、生成、報告状態、利用者通知は変更していない。
+- 次は対象、Plan、期間を明記した実行時承認を得た後、予約0・処理中0を再確認して新期間を付与する。
+- docs-only検証はmigration validator 84/84、RC Repository structure READY、diff check成功。外部設定・手動E2Eの既知PENDINGは不変である。
+
+---
+
 ## 2026-09-24 Codex: 生成前設定の保存条件と開始判定の整合
 
 - PR #516 merge commit `cc4cab2b`から`codex/fix-generation-preflight-settings-20260924`を作成した。

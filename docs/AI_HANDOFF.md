@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 生成不能報告のCloud AI利用枠 Production read-only監査（2026-09-24）
+
+- PR #517 merge commit `285ffe72`から`codex/audit-cloud-ai-account-blockers-20260924`を作成した。
+- 一般向けモニターの最新未完了報告「先に進めません」と添付内容を照合し、対象を樋口美子さんとしてread-only監査した。モニター枠はactive、33/50回、期限2026-09-30。
+- Cloud AIは`FREE / active / default`、期間終了2026-09-01 00:00 JST、管理画面上の使用／予約credit 0/0、処理中Job 0件。生成前画面の契約期間外、credit不足、Cloud AI費用上限超過は、期限切れ利用枠が主因である。
+- 全体生成、BFL接続、Workerは有効・正常。待機0、実行中0、24時間以内失敗0、当日実費`$0.09`、予約`$0`、日次上限`$100`。Free Planは20 credit／`$2.00`で有効である。
+- Productionは読み取りだけで、entitlement、Plan、モニター枠、作品予算、Provider、Job、Asset、credit、生成、報告状態、通知を変更していない。新期間付与は別の実行時明示承認を待つ。
+- docs-only検証はmigration validator 84/84、RC Repository structure READY、diff check成功。既知の外部設定・手動E2E PENDINGは変更していない。
+
+---
+
 ## 0.0 生成前設定の保存条件と開始判定の整合（2026-09-24）
 
 - PR #516 merge commit `cc4cab2b`から`codex/fix-generation-preflight-settings-20260924`を作成した。
