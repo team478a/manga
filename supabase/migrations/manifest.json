@@ -504,7 +504,13 @@
       "description": "未完成を含むCloud生成画像の管理者品質判定と監査記録を追加",
       "forwardSha256": "94221837338252cf9656129312885a7f44f4f14945caf2829a7db5be2de9d216",
       "rollbackSha256": "73f4f276f3264f36b2431f0a6168bff66ad6512101a1721d74d7aec0c6528886"
+    },
+    {
+      "id": "202609240001_cloud_general_monitor_expiry_extension",
+      "description": "一般向けモニターの利用条件を保持した期限延長と任意通知監査を追加",
+      "forwardSha256": "bb39b3ddded77d841ebce75296dcb165ebc4ec22fcb7fb8e0ca000cbbe8817f6",
+      "rollbackSha256": "3dc38a2a0b515d3f65c1f5cf9f58b968762d70bd2a1bff7a29f46e14f1e19841"
     }
   ],
-  "schemaSha256": "15841fc66e5eb247aeba1bb9082b0914e477761cc32d8c9c428326b4d819bab6"
+  "schemaSha256": "55ba3e951fc5c6909a363a0a57d54d4ab61ecb37d722166184ec1b8960f384d0"
 }

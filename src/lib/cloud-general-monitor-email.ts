@@ -16,6 +16,13 @@ type QualityReviewStartEmailInput = {
   expiresAt: string;
 };
 
+type ExpiryExtendedEmailInput = {
+  profileId: string;
+  recipientEmail: string;
+  recipientName: string;
+  expiresAt: string;
+};
+
 type InviteTemplateValues = {
   recipientName: string;
   welcomeUrl: string;
@@ -162,6 +169,41 @@ export async function sendCloudGeneralMonitorQualityReviewStartEmail(
     signal: AbortSignal.timeout(10_000),
   });
   if (!response.ok) throw new Error("monitor_quality_review_email_send_failed");
+  const result = await response.json().catch(() => null) as { id?: unknown } | null;
+  return { messageId: typeof result?.id === "string" ? result.id : null };
+}
+
+export async function sendCloudGeneralMonitorExpiryExtendedEmail(
+  input: ExpiryExtendedEmailInput,
+  request: typeof fetch = fetch,
+  loadConfig = getCloudGeneralMonitorEmailRuntimeConfig,
+) {
+  const config = await loadConfig();
+  const welcomeUrl = inviteSiteUrl();
+  const expiry = new Date(input.expiresAt).toLocaleDateString("ja-JP", {
+    timeZone: "Asia/Tokyo",
+  });
+  const greeting = input.recipientName.trim()
+    ? `${input.recipientName.trim()} 様`
+    : "MANGAI先行利用者様";
+  const response = await request(RESEND_EMAIL_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "Idempotency-Key": `monitor-expiry-extension/${input.profileId}/${new Date(input.expiresAt).toISOString()}`,
+    },
+    body: JSON.stringify({
+      from: formatFrom(config.fromEmail, config.fromName),
+      to: [input.recipientEmail],
+      subject: "MANGAI 先行利用期間延長のお知らせ",
+      text: `${greeting}\n\n先行販売でご購入いただいたお客様向けのMANGAI先行利用期間を、${expiry}まで延長しました。\n\n今回の変更は利用期限のみです。AI利用数・利用上限・購入者としての権利は変更していません。\n\n以下のURLから引き続きご利用いただけます。\n${welcomeUrl}\n\nこのメールには返信せず、問題がある場合はMANGAI運営へご連絡ください。`,
+    }),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok)
+    throw new Error("monitor_expiry_extension_email_send_failed");
   const result = await response.json().catch(() => null) as { id?: unknown } | null;
   return { messageId: typeof result?.id === "string" ? result.id : null };
 }

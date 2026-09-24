@@ -270,6 +270,36 @@ export async function recordGeneralMonitorInviteDelivery(
   return !error;
 }
 
+export async function extendGeneralMonitorExpiry(input: {
+  actorProfileId: string;
+  profileId: string;
+  expiresAt: string;
+  adminNote: string;
+}) {
+  return createAdminClient().rpc("extend_cloud_general_monitor_expiry", {
+    p_actor_profile_id: input.actorProfileId,
+    p_target_profile_id: input.profileId,
+    p_expires_at: input.expiresAt,
+    p_admin_note: input.adminNote,
+  });
+}
+
+export async function recordGeneralMonitorExpiryNotification(input: {
+  actorProfileId: string;
+  profileId: string;
+  expiresAt: string;
+}) {
+  const { error } = await createAdminClient().rpc(
+    "record_cloud_general_monitor_expiry_email_sent",
+    {
+      p_actor_profile_id: input.actorProfileId,
+      p_target_profile_id: input.profileId,
+      p_expires_at: input.expiresAt,
+    },
+  );
+  return !error;
+}
+
 export async function stopGeneralMonitor(input: {
   actorProfileId: string;
   profileId: string;

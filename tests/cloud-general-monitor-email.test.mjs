@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   cloudGeneralMonitorInviteEmailConfigured,
   renderCloudGeneralMonitorInviteTemplate,
+  sendCloudGeneralMonitorExpiryExtendedEmail,
   sendCloudGeneralMonitorInviteEmail,
   sendCloudGeneralMonitorQualityReviewStartEmail,
 } from "../src/lib/cloud-general-monitor-email.ts";
@@ -102,6 +103,42 @@ test("品質確認開始案内は専用URLと冪等性キーで送る", async ()
     assert.match(body.text, /全28枚/);
     assert.match(body.text, /\/dashboard\/monitor\/quality-review/);
     assert.equal(captured.init.headers["Idempotency-Key"], "monitor-quality-review-start/11111111-1111-4111-8111-111111111111");
+    assert.doesNotMatch(body.text, /secret-token/);
+  } finally {
+    restoreEnvironment(previous);
+  }
+});
+
+test("期限延長案内は購入者権利を保持すると伝え対象と期限で冪等化する", async () => {
+  const previous = preserveEnvironment();
+  Object.assign(process.env, { MONITOR_INVITE_SITE_URL: "https://app.mang-ai.example" });
+  const loadConfig = async () => ({
+    apiKey: "re_secret-token-for-test",
+    fromEmail: "monitor@mang-ai.example",
+    fromName: "MANGAI運営",
+    subjectTemplate: DEFAULT_MONITOR_INVITE_SUBJECT,
+    bodyTemplate: DEFAULT_MONITOR_INVITE_BODY,
+  });
+  let captured;
+  try {
+    await sendCloudGeneralMonitorExpiryExtendedEmail({
+      profileId: "11111111-1111-4111-8111-111111111111",
+      recipientEmail: "buyer@example.com",
+      recipientName: "購入者",
+      expiresAt: "2026-10-31T14:59:59.000Z",
+    }, async (url, init) => {
+      captured = { url, init };
+      return Response.json({ id: "expiry-message-1" });
+    }, loadConfig);
+    const body = JSON.parse(captured.init.body);
+    assert.equal(body.subject, "MANGAI 先行利用期間延長のお知らせ");
+    assert.match(body.text, /先行販売でご購入いただいたお客様/);
+    assert.match(body.text, /AI利用数・利用上限・購入者としての権利は変更していません/);
+    assert.match(body.text, /https:\/\/app\.mang-ai\.example\/dashboard\/monitor\/welcome/);
+    assert.equal(
+      captured.init.headers["Idempotency-Key"],
+      "monitor-expiry-extension/11111111-1111-4111-8111-111111111111/2026-10-31T14:59:59.000Z",
+    );
     assert.doesNotMatch(body.text, /secret-token/);
   } finally {
     restoreEnvironment(previous);

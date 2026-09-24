@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-24 モニター利用期限だけを安全に延長する管理機能
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / DRAFT_PR_PENDING / PRODUCTION_UNCHANGED`
+- BaseはPR #521 merge commit `45673682684e75c5bd9b4d73fa39cb898cf2a117`。Branchは`codex/admin-monitor-expiry-extension-20260924`。
+- 既存の「招待条件を更新」はAI利用数を0へ戻し開始日も更新するため、保存statusがactiveの利用者には表示せず、期限だけを延長する専用操作へ切り替えた。期限短縮、停止済み利用者、権限外実行はDBでも拒否する。
+- 専用RPCは`expires_at`と`updated_at`だけを更新し、AI利用数、AI上限、開始日、グループ、状態を保持する。同じ期限への再実行は変更なしで完了し、変更前後と管理者メモを監査ログへ保存する。
+- 案内メールは初期OFFで管理者が選択できる。送信時は対象と新期限による冪等性キーを使い、購入者としての権利と利用条件を変更していないことを明記する。画面では対象、新期限、通知有無を実行前に確認する。
+- 新migration `202609240001_cloud_general_monitor_expiry_extension`とrollback、schema正本、manifestを同期した。集中10/10、Hub 1028/1028、migration 85/85、全typecheck、全lint、deps error 0（既知warning 2件）、Hub Production build、RC Repository structure、`git diff --check`成功。Draft PR作成とCI確認を継続する。
+- Production migration、利用者データ、実メール、Provider、生成Job、creditは変更していない。Production適用と実期限延長は別の実行時明示承認が必要である。
+
+---
+
 ## 2026-09-24 モニター利用条件の管理警告
 
 - 状態: `DRAFT_PR_521 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / PRODUCTION_UNCHANGED`

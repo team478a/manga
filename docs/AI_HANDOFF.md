@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 モニター利用期限だけを安全に延長する管理機能（2026-09-24）
+
+- PR #521 merge commit `45673682684e75c5bd9b4d73fa39cb898cf2a117`から`codex/admin-monitor-expiry-extension-20260924`を作成した。
+- active中の利用者には、AI利用数をリセットする既存再招待フォームを隠し、期限だけを延長する専用フォームを表示する。対象、新期限、通知有無を確認し、通知は初期OFFとする。
+- DBは期限短縮、停止済み利用者、権限外実行を拒否し、`expires_at`と`updated_at`以外を更新しない。同一期限はno-op、変更時は変更前後と管理者メモを監査する。
+- 任意の期限延長メールは対象＋期限の冪等性キーを使い、先行販売購入者の権利とAI利用条件が不変であることを案内する。通知監査も対象＋期限で重複を防ぐ。
+- 新migration／rollback／schema／manifestを同期した。集中10/10、Hub 1028/1028、migration 85/85、全typecheck、全lint、deps error 0（既知warning 2件）、Hub Production build、RC Repository structure、diff check成功。Draft PR作成とCI確認を継続する。
+- Production migration、利用者データ、実メール、Provider、生成Job、creditは変更していない。Production適用・実期限延長は別承認とする。
+
+---
+
 ## 0.0 モニター利用条件の管理警告（2026-09-24）
 
 - PR #520 merge commit `fe1ddf2ecf23f5d2a3eca52711d6030dfe698c94`から`codex/admin-monitor-operational-warnings-20260924`を作成した。
