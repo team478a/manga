@@ -2,7 +2,7 @@
 
 ## 2026-09-24 モニター8名のProduction利用期限整合
 
-- 状態: `PRODUCTION_APPLIED / 8_OF_8_ALIGNED / NOTIFICATION_OFF / USAGE_AND_CREDIT_UNCHANGED / DOCS_VALIDATION_PASSED`
+- 状態: `PRODUCTION_APPLIED / 8_OF_8_ALIGNED / NOTIFICATION_OFF / USAGE_AND_CREDIT_UNCHANGED / DRAFT_PR_524 / ALL_CI_AND_VERCEL_PREVIEW_PASSED`
 - 責任者が対象8名、各自のCloud AI利用期限までの延長、通知OFF、モニターAI利用数・上限とCloud AI creditを変更しない条件を実行時に明示承認した。Production project `vmdsyxykcrgxcdbrwlkv`（Dashboard表示: `mangai-hub-staging` / `main Production`）で専用RPC `extend_cloud_general_monitor_expiry`だけを実行した。
 - 実行前にprofile ID・表示名・monitor `active`・現在期限・Cloud AI期限・監査actorを照合した。8名すべて一致し、監査actorは既存招待管理者`tanaka`だった。
 
@@ -21,6 +21,7 @@
 - `extend_expiry`監査は8件・対象8名、`expiry_extension_email_sent`監査の増分は0件。メール送信、通知、利用数リセット、上限変更、credit付与・消費、Provider実行、生成Job操作は行っていない。
 - `team478+staging`、沖野航太、`test`は対象外で変更していない。管理メモは`Cloud AI利用期限との整合（責任者承認 2026-09-24）`で統一した。
 - docs-only検証はmigration validator 85/85、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
+- 証跡commit `ff863d7a`をpushし、Draft PR [#524](https://github.com/team478a/manga/pull/524)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
 
 ---
 

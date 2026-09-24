@@ -8,6 +8,7 @@
 - 延長後は8/8でmonitor期限とCloud AI期限が一致した。監査ログは`extend_expiry`が8件・対象8名、期限延長メール監査は増分0件。実メール、通知、利用回数・上限、credit、Provider、生成Jobは変更していない。
 - 管理メモは`Cloud AI利用期限との整合（責任者承認 2026-09-24）`。個別時刻と実行後利用数は`docs/CURRENT_TASK.md`を正本とする。
 - docs-only検証はmigration validator 85/85、RC Repository structure READY、diff check成功。外部設定と手動E2Eの既知PENDINGは継続する。
+- 証跡commit `ff863d7a`、Draft PR [#524](https://github.com/team478a/manga/pull/524)。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
 
 ---
 

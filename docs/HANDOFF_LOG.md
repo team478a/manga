@@ -7,7 +7,8 @@
 - transaction内snapshot比較で、期限と`updated_at`以外のmonitor項目、Cloud AI entitlement、全usage period／creditは不変。`extend_expiry`監査8件、対象8名、通知監査増分0件。
 - 通知OFFを維持し、メール、利用数・上限、credit、Provider、生成Jobは操作していない。`team478+staging`、沖野航太、`test`は対象外。管理メモは責任者承認日を含む固定文言で記録した。
 - migration validator 85/85、RC Repository structure READY、diff check成功。外部設定と手動E2Eの既知PENDINGは不変である。
-- Branch: `codex/production-monitor-expiry-extension-20260924`。次はcommit、push、Draft PR、全CI／Vercel Preview成功確認で停止する。
+- 証跡commit `ff863d7a`をpushし、Draft PR [#524](https://github.com/team478a/manga/pull/524)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
+- Branch: `codex/production-monitor-expiry-extension-20260924`。責任者によるPRレビュー・merge判断待ち。
 
 ---
 
