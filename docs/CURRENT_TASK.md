@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-24 モニター利用条件の管理警告
+
+- 状態: `DRAFT_PR_521 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / PRODUCTION_UNCHANGED`
+- BaseはPR #520 merge commit `fe1ddf2ecf23f5d2a3eca52711d6030dfe698c94`。Branchは`codex/admin-monitor-operational-warnings-20260924`。
+- 管理画面の保存statusだけでは期限切れを判別できなかったため、開始日、終了日、モニターAI利用数から実効状態を算出する共通判定を追加した。表示は`利用中`、`開始前`、`期限間近`、`期限切れ`、`AI上限到達`、停止系状態に分ける。
+- モニター一覧は期限切れ、7日以内の期限、AI上限到達の人数を上部へ集計し、各カードにも理由を表示する。ユーザー詳細も同じ判定を使い、期限切れの保存activeを明示し、利用不能な期限切れ相手への招待再送を表示しない。
+- 集中7/7、Hub 1023/1023、全typecheck、全lint、deps error 0（既知warning 2件）、migration 84/84、Hub Production build、RC Repository structure、`git diff --check`成功。
+- Implementation commitは`bef0ea17`。Draft PR [#521](https://github.com/team478a/manga/pull/521)はMERGEABLEで、Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsがすべて成功した。
+- Production、DB／Storage、migration、Provider、生成Job、credit、モニター設定、利用者データ、通知は変更していない。実利用者8名の期限更新は、対象、期限、上限、通知方針を固定した別の実行時承認が必要である。
+
+---
+
 ## 2026-09-24 モニター期限とCloud AI利用期限のProduction整合監査
 
 - 状態: `PRODUCTION_READONLY_AUDIT_COMPLETE / 8_MONITORS_EXPIRING_2026_09_30 / 1_MONITOR_ALREADY_EXPIRED / PRODUCTION_CHANGE_PENDING_EXPLICIT_APPROVAL`

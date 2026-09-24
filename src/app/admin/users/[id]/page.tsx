@@ -18,8 +18,14 @@ import {
 } from "./general-monitor-actions";
 import {
   cloudGeneralMonitorBetaEnabled,
+  isCloudGeneralMonitorActive,
   type CloudGeneralMonitorEnrollment,
 } from "@/lib/cloud-general-monitor";
+import {
+  cloudGeneralMonitorOperationalLabels,
+  getCloudGeneralMonitorAdminNotice,
+  getCloudGeneralMonitorOperationalState,
+} from "@/lib/cloud-general-monitor-status";
 import {
   loadAdminUserDetailData,
   loadAdminUserProfile,
@@ -96,6 +102,12 @@ export default async function AdminUserDetailPage({
       !cloudAi.usageResult?.error &&
       !cloudAi.activeJobsResult?.error;
   }
+  const generalMonitorOperationalState = generalMonitor
+    ? getCloudGeneralMonitorOperationalState(generalMonitor)
+    : null;
+  const generalMonitorNotice = generalMonitor
+    ? getCloudGeneralMonitorAdminNotice(generalMonitor)
+    : null;
 
   return (
     <main className="page max-w-3xl">
@@ -215,13 +227,21 @@ export default async function AdminUserDetailPage({
           <>
             {generalMonitor ? (
               <dl className="mt-5 grid gap-3 rounded-xl bg-violet-50 p-4 sm:grid-cols-4">
-                <div><dt className="text-sm text-stone-500">状態</dt><dd className="font-bold">{generalMonitor.status}</dd></div>
+                <div><dt className="text-sm text-stone-500">実効状態</dt><dd className="font-bold">{generalMonitorOperationalState ? cloudGeneralMonitorOperationalLabels[generalMonitorOperationalState] : "確認不可"}</dd></div>
                 <div><dt className="text-sm text-stone-500">AI利用数</dt><dd className="font-bold">{generalMonitor.ai_requests_used} / {generalMonitor.ai_request_limit}</dd></div>
                 <div><dt className="text-sm text-stone-500">期限</dt><dd className="font-bold">{new Date(generalMonitor.expires_at).toLocaleDateString("ja-JP")}</dd></div>
                 <div><dt className="text-sm text-stone-500">初回案内</dt><dd className="font-bold">{generalMonitor.onboarding_completed_at ? "確認済み" : "未確認"}</dd></div>
               </dl>
             ) : null}
-            {generalMonitor?.status === "active" &&
+            {generalMonitorNotice ? (
+              <p
+                className={`mt-4 rounded-lg p-4 text-sm ${generalMonitorNotice.level === "error" ? "bg-red-50 text-red-900" : generalMonitorNotice.level === "warning" ? "bg-amber-50 text-amber-950" : "bg-blue-50 text-blue-900"}`}
+                role={generalMonitorNotice.level === "error" ? "alert" : "status"}
+              >
+                {generalMonitorNotice.message}
+              </p>
+            ) : null}
+            {isCloudGeneralMonitorActive(generalMonitor) &&
             email !== "未設定" && email !== "未取得" ? (
               <form action={resendCloudGeneralMonitorInviteAction.bind(null, user.id)} className="mt-4">
                 <PendingSubmitButton className="button-secondary" pendingLabel="招待メールを送信中…">
