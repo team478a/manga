@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 モニター8名のProduction利用期限整合（2026-09-24）
+
+- 責任者の実行時明示承認に基づき、Production `vmdsyxykcrgxcdbrwlkv`で実利用者8名のmonitor期限を各自のCloud AI `period_ends_at`へ揃えた。通知はOFFで、専用RPC `extend_cloud_general_monitor_expiry`だけを使用した。
+- 対象は山極和彦、hiroro、加藤周星、樋口美子、工藤一郎、青木隆康、なっかん、松浦周平。`team478+staging`、沖野航太、`test`は対象外。
+- 変更前にID・氏名・active・旧期限・Cloud AI期限・actorを照合し、8/8成功。1 transactionのsnapshot検査で、期限と`updated_at`以外のmonitor項目、Cloud AI entitlement、全usage period／creditが不変であることを確認した。
+- 延長後は8/8でmonitor期限とCloud AI期限が一致した。監査ログは`extend_expiry`が8件・対象8名、期限延長メール監査は増分0件。実メール、通知、利用回数・上限、credit、Provider、生成Jobは変更していない。
+- 管理メモは`Cloud AI利用期限との整合（責任者承認 2026-09-24）`。個別時刻と実行後利用数は`docs/CURRENT_TASK.md`を正本とする。
+- docs-only検証はmigration validator 85/85、RC Repository structure READY、diff check成功。外部設定と手動E2Eの既知PENDINGは継続する。
+
+---
+
 ## 0.0 モニター利用期限延長 Production migration適用（2026-09-24）
 
 - 責任者の実行時明示承認後、Production project `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main Production`）へPR #522 merge commit `5ceb06d453813d8626bad22773d5c837d955b438`のmigration `202609240001`を全文1回適用した。原本SHA-256は`BB39B3DDDED77D841EBCE75296DCB165EBC4EC22FCB7FB8E0CA000CBBE8817F6`。

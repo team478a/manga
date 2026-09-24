@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: モニター8名のProduction利用期限整合
+
+- 責任者承認後、Production `vmdsyxykcrgxcdbrwlkv`で実利用者8名のmonitor期限を、現在の各Cloud AI期限へ専用RPCで延長した。対象は山極和彦、hiroro、加藤周星、樋口美子、工藤一郎、青木隆康、なっかん、松浦周平。
+- preflightはID・氏名・active・旧期限・Cloud AI期限・管理者actorの8/8一致。postflightは8/8でmonitor期限とCloud AI期限が一致した。
+- transaction内snapshot比較で、期限と`updated_at`以外のmonitor項目、Cloud AI entitlement、全usage period／creditは不変。`extend_expiry`監査8件、対象8名、通知監査増分0件。
+- 通知OFFを維持し、メール、利用数・上限、credit、Provider、生成Jobは操作していない。`team478+staging`、沖野航太、`test`は対象外。管理メモは責任者承認日を含む固定文言で記録した。
+- migration validator 85/85、RC Repository structure READY、diff check成功。外部設定と手動E2Eの既知PENDINGは不変である。
+- Branch: `codex/production-monitor-expiry-extension-20260924`。次はcommit、push、Draft PR、全CI／Vercel Preview成功確認で停止する。
+
+---
+
 ## 2026-09-24 Codex: モニター利用期限延長 Production migration適用
 
 - 責任者承認後、Production `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main Production`）へ、merge済みPR #522の`202609240001_cloud_general_monitor_expiry_extension.sql`を全文1回適用した。原本4,518 bytes、SHA-256 `BB39B3DDDED77D841EBCE75296DCB165EBC4EC22FCB7FB8E0CA000CBBE8817F6`。
