@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud画像生成のページ選択停止理由改善（2026-09-24）
+
+- BaseはPR #517 merge commit `285ffe72`。Branchは`codex/fix-generation-selection-guidance-20260924`。
+- Implementation commitは`9056d9e5`。Draft PR #519を作成し、全CI／Vercel Previewを確認中。
+- Productionの未完了報告「先に進めません」をread-only確認し、利用期限・creditは同日の全利用者更新で解消済みだが、1ページだけの選択と画風・人物設定不足が残っていた。無効な生成ボタンが待機カーソルを表示し、処理中に見える問題も確認した。
+- 送信中だけ待機カーソルとspinnerを表示し、前提不足は操作不可カーソルへ分離した。1ページ選択時は必要な隣接ページをワンクリックで追加でき、非連続2ページ・3ページにも具体的な直し方を表示する。選択中ページと生成ボタンの停止表示も明確化した。
+- 既存の生成条件、料金、利用枠、Provider処理は変更していない。集中4/4、Hub 1020/1020、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、diff check成功。Production、DB／Storage、migration、Provider、生成Job、credit、利用者データ変更なし。
+
+---
+
 ## 0.0 生成前設定の保存条件と開始判定の整合（2026-09-24）
 
 - PR #516 merge commit `cc4cab2b`から`codex/fix-generation-preflight-settings-20260924`を作成した。

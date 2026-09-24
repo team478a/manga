@@ -16,13 +16,18 @@ export function PendingSubmitButton({
 }: PendingSubmitButtonProps) {
   const { pending } = useFormStatus();
   const isDisabled = Boolean(disabled || pending);
+  const disabledStateClass = pending
+    ? "cursor-wait opacity-70"
+    : disabled
+      ? "cursor-not-allowed opacity-60"
+      : "";
 
   return (
     <button
       {...props}
       aria-busy={pending}
       aria-disabled={isDisabled}
-      className={`${className} disabled:cursor-wait disabled:opacity-70`}
+      className={`${className} ${disabledStateClass}`}
       disabled={isDisabled}
       type="submit"
     >
