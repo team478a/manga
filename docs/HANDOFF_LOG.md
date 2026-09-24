@@ -3,10 +3,22 @@
 ## 2026-09-24 Codex: Cloud画像生成のページ選択停止理由改善
 
 - PR #517 merge commit `285ffe72`から`codex/fix-generation-selection-guidance-20260924`を作成した。
-- Implementation commit `9056d9e5`をpushし、Draft PR #519を作成した。全CI／Vercel Previewを確認中。
+- Implementation commit `9056d9e5`をpushし、PR #519はmerge commit `020dc1f2`でマージ済み。全CI／Vercel Preview／Vercel Production成功を確認した。
 - Productionの未完了報告をread-only確認し、1ページだけの選択、画風・人物設定不足、無効ボタンの待機カーソルが「先に進めない」状態を分かりにくくしていたことを確認した。
 - 送信中と前提不足の表示を分離し、1ページ選択時の隣接ページ追加、非連続2ページ／3ページの具体的な修正案、選択ページの強調表示を追加した。既存の生成可否ルールは変更していない。
 - 集中4/4、Hub 1020/1020、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、diff check成功。Production、DB／Storage、migration、Provider、生成Job、credit、利用者データは変更していない。
+
+---
+
+## 2026-09-24 Codex: 生成不能報告のCloud AI利用枠 Production read-only監査
+
+- PR #517 merge commit `285ffe72`から新規ブランチを作成し、一般向けモニター報告「先に進めません」の利用枠をProduction管理画面で読み取り確認した。PR #519 merge commit `020dc1f2`を通常マージして正本3ファイルの競合を解消した。
+- 対象の樋口美子さんは監査時点でモニターactive、33/50回、期限2026-09-30。Cloud AIはFree active/defaultだが期間終了が2026-09-01 00:00 JSTで、使用／予約credit 0/0、処理中Job 0件だった。
+- Production全体の生成は有効、BFL接続有効、Worker正常、待機・実行中・直近24時間失敗0。当日実費`$0.09`／予約`$0`／日次上限`$100`。Free Planは20 credit／月額原価上限`$2.00`で有効だった。
+- 報告画面のCloud AI期限、credit、費用上限の停止理由は、全体停止や現在の予約ではなく期限切れ個別利用枠に起因していた。その後の責任者承認済み全利用者更新で対象の利用期限とcredit停止理由は解消した。
+- PR #519で残るページ選択と設定不足の案内を修正し、Production反映後に報告を`対応中`へ更新して登録メールへ再確認を依頼した。次は本人の回答待ちである。
+- 本PRは監査記録と競合解消だけを行う。Production、DB／Storage、Provider、Job、Asset、credit、生成、利用者データは変更しない。
+- 競合解消後のmigration validator 84/84、RC Repository structure、diff checkは成功。外部環境と手動E2Eの既知PENDINGは維持する。
 
 ---
 
