@@ -4,6 +4,12 @@ import { AdminDataUnavailable } from "@/components/admin/AdminDataUnavailable";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { requireAdmin } from "@/lib/auth";
 import { cloudGeneralMonitorBetaEnabled } from "@/lib/cloud-general-monitor";
+import {
+  cloudGeneralMonitorOperationalLabels,
+  getCloudGeneralMonitorAdminNotice,
+  getCloudGeneralMonitorOperationalState,
+  type CloudGeneralMonitorOperationalState,
+} from "@/lib/cloud-general-monitor-status";
 import { loadGeneralMonitorAdminWorkspace } from "@/modules/general-monitor/infrastructure/admin-monitor-repository";
 import { reviewGeneralMonitorFeedbackAction } from "./actions";
 
@@ -25,6 +31,17 @@ const issueLabels: Record<string, string> = {
 
 const severityLabels: Record<string, string> = {
   none: "影響なし", minor: "軽微", major: "大きい", blocked: "進行不能",
+};
+
+const operationalStateClasses: Record<CloudGeneralMonitorOperationalState, string> = {
+  active: "bg-green-100 text-green-800",
+  scheduled: "bg-blue-100 text-blue-800",
+  expiring_soon: "bg-amber-100 text-amber-900",
+  expired: "bg-red-100 text-red-900",
+  limit_reached: "bg-red-100 text-red-900",
+  paused: "bg-stone-100 text-stone-700",
+  completed: "bg-stone-100 text-stone-700",
+  revoked: "bg-stone-100 text-stone-700",
 };
 
 export default async function GeneralMonitorsAdminPage() {
@@ -80,6 +97,14 @@ export default async function GeneralMonitorsAdminPage() {
   const recentFeedbackCount = generalFeedback.length;
   const openFeedbackCount = generalFeedback.filter((item) => !["resolved", "closed"].includes(item.public_status)).length;
   const urgentFeedbackCount = generalFeedback.filter((item) => ["major", "blocked"].includes(item.severity ?? "")).length;
+  const monitors = (enrollmentsResult.data ?? []).map((monitor) => ({
+    monitor,
+    operationalState: getCloudGeneralMonitorOperationalState(monitor),
+    notice: getCloudGeneralMonitorAdminNotice(monitor),
+  }));
+  const expiredCount = monitors.filter(({ operationalState }) => operationalState === "expired").length;
+  const expiringSoonCount = monitors.filter(({ operationalState }) => operationalState === "expiring_soon").length;
+  const limitReachedCount = monitors.filter(({ operationalState }) => operationalState === "limit_reached").length;
   return (
     <main className="page">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -103,24 +128,45 @@ export default async function GeneralMonitorsAdminPage() {
           モニター情報を読み込めません。migrationを確認してください。
         </p>
       ) : (
-        <section className="mt-6 grid gap-4 lg:grid-cols-2">
-          {(enrollmentsResult.data ?? []).map((monitor) => (
-            <article className="panel min-w-0" key={monitor.profile_id}>
-              <div className="flex items-start justify-between gap-3">
-                <div><p className="text-sm text-stone-500">{monitor.cohort}</p>
-                  <h2 className="mt-1 break-words text-xl font-bold">{profiles.get(monitor.profile_id)?.display_name || "表示名未設定"}</h2>
+        <>
+          {expiredCount || expiringSoonCount || limitReachedCount ? (
+            <section className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-amber-950" role="alert">
+              <h2 className="font-bold">利用条件の運用警告</h2>
+              <p className="mt-1 text-sm">
+                期限切れ {expiredCount}名・7日以内に期限 {expiringSoonCount}名・AI上限到達 {limitReachedCount}名です。
+                対象者のカードから詳細を確認してください。
+              </p>
+            </section>
+          ) : null}
+          <section className="mt-6 grid gap-4 lg:grid-cols-2">
+            {monitors.map(({ monitor, operationalState, notice }) => (
+              <article className="panel min-w-0" key={monitor.profile_id}>
+                <div className="flex items-start justify-between gap-3">
+                  <div><p className="text-sm text-stone-500">{monitor.cohort}</p>
+                    <h2 className="mt-1 break-words text-xl font-bold">{profiles.get(monitor.profile_id)?.display_name || "表示名未設定"}</h2>
+                  </div>
+                  <span className={`rounded-full px-3 py-1 text-xs font-bold ${operationalStateClasses[operationalState]}`}>
+                    {cloudGeneralMonitorOperationalLabels[operationalState]}
+                  </span>
                 </div>
-                <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-800">{monitor.status}</span>
-              </div>
-              <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
-                <div><dt className="text-stone-500">AI利用数</dt><dd className="font-bold">{monitor.ai_requests_used} / {monitor.ai_request_limit}</dd></div>
-                <div><dt className="text-stone-500">期限</dt><dd className="font-bold">{new Date(monitor.expires_at).toLocaleString("ja-JP")}</dd></div>
-              </dl>
-              <Link className="button-secondary mt-5 w-full" href={`/admin/users/${monitor.profile_id}`}>設定・停止</Link>
-            </article>
-          ))}
-          {!enrollmentsResult.data?.length ? <p className="panel text-stone-600">モニターはまだ登録されていません。</p> : null}
-        </section>
+                <dl className="mt-5 grid grid-cols-2 gap-3 text-sm">
+                  <div><dt className="text-stone-500">AI利用数</dt><dd className="font-bold">{monitor.ai_requests_used} / {monitor.ai_request_limit}</dd></div>
+                  <div><dt className="text-stone-500">期限</dt><dd className="font-bold">{new Date(monitor.expires_at).toLocaleString("ja-JP")}</dd></div>
+                </dl>
+                {notice ? (
+                  <p
+                    className={`mt-4 rounded-lg p-3 text-sm ${notice.level === "error" ? "bg-red-50 text-red-900" : notice.level === "warning" ? "bg-amber-50 text-amber-950" : "bg-blue-50 text-blue-900"}`}
+                    role={notice.level === "error" ? "alert" : "status"}
+                  >
+                    {notice.message}
+                  </p>
+                ) : null}
+                <Link className="button-secondary mt-5 w-full" href={`/admin/users/${monitor.profile_id}`}>設定・停止</Link>
+              </article>
+            ))}
+            {!monitors.length ? <p className="panel text-stone-600">モニターはまだ登録されていません。</p> : null}
+          </section>
+        </>
       )}
       <section className="panel mt-7">
         <h2 className="text-xl font-bold">モニターの声</h2>

@@ -2,6 +2,23 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { buildGeneralMonitorCsv, csvCell } from "../src/lib/cloud-general-monitor-export.ts";
+import {
+  getCloudGeneralMonitorAdminNotice,
+  getCloudGeneralMonitorOperationalState,
+} from "../src/lib/cloud-general-monitor-status.ts";
+
+const now = Date.parse("2026-09-24T00:00:00.000Z");
+
+function enrollment(overrides = {}) {
+  return {
+    status: "active",
+    ai_request_limit: 30,
+    ai_requests_used: 1,
+    starts_at: "2026-09-01T00:00:00.000Z",
+    expires_at: "2026-10-31T00:00:00.000Z",
+    ...overrides,
+  };
+}
 
 test("CSVはUTF-8 BOMと安全な引用符で出力する", () => {
   assert.equal(csvCell('a"b'), '"a""b"');
@@ -64,4 +81,55 @@ test("管理画面はフィードバック対応とCSVを提供する",async()=>
   const page=await readFile(new URL("../src/app/admin/general-monitors/page.tsx",import.meta.url),"utf8");
   assert.match(page,/reviewGeneralMonitorFeedbackAction/);
   assert.match(page,/general-monitors\/export/);
+});
+
+test("実効状態は保存activeより期限とAI上限を優先する", () => {
+  assert.equal(
+    getCloudGeneralMonitorOperationalState(
+      enrollment({ expires_at: "2026-09-23T23:59:59.000Z" }),
+      now,
+    ),
+    "expired",
+  );
+  assert.equal(
+    getCloudGeneralMonitorOperationalState(
+      enrollment({ ai_requests_used: 30 }),
+      now,
+    ),
+    "limit_reached",
+  );
+  assert.equal(
+    getCloudGeneralMonitorOperationalState(
+      enrollment({ expires_at: "2026-09-29T00:00:00.000Z" }),
+      now,
+    ),
+    "expiring_soon",
+  );
+  assert.equal(getCloudGeneralMonitorOperationalState(enrollment(), now), "active");
+});
+
+test("期限切れの管理警告は保存状態との差を明示する", () => {
+  assert.deepEqual(
+    getCloudGeneralMonitorAdminNotice(
+      enrollment({ expires_at: "2026-09-23T23:59:59.000Z" }),
+      now,
+    ),
+    {
+      level: "error",
+      message:
+        "保存状態はactiveですが、利用期限を過ぎているため現在は利用できません。",
+    },
+  );
+});
+
+test("管理画面は一覧とユーザー詳細で同じ実効状態を表示する", async () => {
+  const [listPage, detailPage] = await Promise.all([
+    readFile(new URL("../src/app/admin/general-monitors/page.tsx", import.meta.url), "utf8"),
+    readFile(new URL("../src/app/admin/users/[id]/page.tsx", import.meta.url), "utf8"),
+  ]);
+  assert.match(listPage, /利用条件の運用警告/);
+  assert.match(listPage, /getCloudGeneralMonitorOperationalState/);
+  assert.match(detailPage, /実効状態/);
+  assert.match(detailPage, /getCloudGeneralMonitorAdminNotice/);
+  assert.match(detailPage, /isCloudGeneralMonitorActive\(generalMonitor\)/);
 });

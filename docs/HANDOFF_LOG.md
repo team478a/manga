@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: モニター利用条件の管理警告
+
+- PR #520 merge commit `fe1ddf2ecf23f5d2a3eca52711d6030dfe698c94`から新規ブランチを作成した。
+- モニターの開始日、終了日、AI利用数から実効状態を算出し、管理一覧で期限切れ、7日以内の期限、AI上限到達を集計する。各カードとユーザー詳細にも理由を表示し、保存activeの期限切れを利用中と誤表示しない。
+- 期限切れでは招待再送を表示しない。既存のDB利用可否判定、利用枠更新、料金、通知処理は不変である。
+- 集中7/7、Hub 1023/1023、全typecheck、全lint、deps error 0（既知warning 2件）、migration 84/84、Hub Production build、RC Repository structure、diff check成功。
+- Production、DB／Storage、migration、Provider、生成Job、credit、モニター設定、利用者データ、通知の変更は0件。実期限更新は別の明示承認待ち。
+
+---
+
 ## 2026-09-24 Codex: モニター期限とCloud AI利用期限のProduction整合監査
 
 - PR #518 merge commit `32afbfbcecf43293684af4d90467a8154d1cc693`から新規ブランチを作成し、Productionのモニター11名とCloud AI個別利用枠を管理画面でread-only照合した。
