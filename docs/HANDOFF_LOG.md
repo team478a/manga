@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: モニター期限とCloud AI利用期限のProduction整合監査
+
+- PR #518 merge commit `32afbfbcecf43293684af4d90467a8154d1cc693`から新規ブランチを作成し、Productionのモニター11名とCloud AI個別利用枠を管理画面でread-only照合した。
+- Cloud AIは全員有効。9名が2026-10-23、沖野航太さんが2026-10-31、`test`がTrialで2026-11-15までで、全員の使用／予約credit 0/0、処理中Job 0件を確認した。
+- モニター期限は8名が2026-09-30、沖野航太さんが2026-10-26、`test`が2026-10-31、`team478+staging`が2026-08-08。保存statusは全件`active`だが、DB RPCとapplication判定は`expires_at>now()`を強制するため、1名は期限切れ、8名は6日後に利用停止となる。
+- モニターAI上限は`test`が107/107、沖野航太さんが26/30。Cloud AI creditと別管理であり、期限更新時の上限維持・増枠・再開始を明示する必要がある。
+- 推奨実行案は、実利用者8名を各Cloud AI期限まで延長し、`test`と`team478+staging`を個別判断すること。更新RPCは招待メール送信も伴うため、対象・期限・上限・通知方針を固定した実行時承認前には実行しない。
+- Production、DB／Storage、Provider、生成Job、credit、モニター設定、利用者データ、通知への変更は0件。
+- docs-only検証はmigration validator 84/84、RC Repository structure READY、diff check成功。外部環境と手動E2Eの既知PENDINGは不変である。
+
+---
+
 ## 2026-09-24 Codex: Cloud画像生成のページ選択停止理由改善
 
 - PR #517 merge commit `285ffe72`から`codex/fix-generation-selection-guidance-20260924`を作成した。
