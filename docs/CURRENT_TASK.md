@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-24 モニター期限とCloud AI利用期限のProduction整合監査
+
+- 状態: `PRODUCTION_READONLY_AUDIT_COMPLETE / 8_MONITORS_EXPIRING_2026_09_30 / 1_MONITOR_ALREADY_EXPIRED / PRODUCTION_CHANGE_PENDING_EXPLICIT_APPROVAL`
+- BaseはPR #518 merge commit `32afbfbcecf43293684af4d90467a8154d1cc693`。Branchは`codex/audit-monitor-entitlement-alignment-20260924`。
+- Production管理画面で一般向けモニター11名をread-only照合した。Cloud AI側は全員に有効な個別利用枠があり、9名は2026-10-23、沖野航太さんは2026-10-31、`test`はTrialで2026-11-15まで。全員の使用／予約creditは0/0、処理中Jobは0件だった。
+- モニター招待側は8名が2026-09-30、沖野航太さんが2026-10-26、`test`が2026-10-31、`team478+staging`が2026-08-08。全件の保存statusは`active`だが、`team478+staging`はすでに期限切れ、8名は6日後に制作フローとAI利用が停止する状態だった。
+- repository確認で`can_use_cloud_general_monitor()`、`consume_cloud_general_monitor_ai_request()`、利用者向け判定はいずれも`status='active'`に加えて`expires_at>now()`を強制している。したがってCloud AI利用枠だけを延長してもモニター期限切れは回避できない。
+- モニターAI利用回数は`test`が107/107で上限到達、沖野航太さんが26/30で残り4回。これはCloud AIのcreditとは別の上限であり、期限調整時に同時に維持・増枠・再開始のいずれにするかを明示する必要がある。
+- 安全な次操作は、実利用者8名のモニター期限を少なくとも各Cloud AI期限まで延長し、`test`の107/107と期限切れの`team478+staging`は実利用者と分離して個別判断すること。`activate_cloud_general_monitor`は期限だけでなく利用回数等も更新し招待メールを送るため、対象、期限、上限、通知方針を固定した実行時明示承認前には実行しない。
+- 今回は一覧・詳細画面の読み取りとrepository確認だけで、Production、DB／Storage、Provider、生成Job、credit、モニター設定、利用者データ、通知を変更していない。
+- docs-only検証はmigration validator 84/84、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
+
+---
+
 ## 2026-09-24 Cloud画像生成のページ選択停止理由改善
 
 - 状態: `MERGED / CI_PASSED / VERCEL_PRODUCTION_PASSED`

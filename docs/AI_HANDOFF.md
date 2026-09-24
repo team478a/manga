@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 モニター期限とCloud AI利用期限のProduction整合監査（2026-09-24）
+
+- PR #518 merge commit `32afbfbcecf43293684af4d90467a8154d1cc693`から`codex/audit-monitor-entitlement-alignment-20260924`を作成した。
+- Production管理画面でモニター11名をread-only照合した。Cloud AI個別利用枠は全員有効で、9名が2026-10-23、沖野航太さんが2026-10-31、`test`がTrialで2026-11-15まで。全員の使用／予約creditは0/0、処理中Jobは0件だった。
+- モニター期限は8名が2026-09-30、沖野航太さんが2026-10-26、`test`が2026-10-31、`team478+staging`が2026-08-08。保存statusは全件`active`だが、期限判定は別に強制されるため、1名は停止済み、8名は9月30日に停止する。
+- `can_use_cloud_general_monitor()`、`consume_cloud_general_monitor_ai_request()`、利用者向け判定はすべて`expires_at>now()`を要求する。Cloud AI利用期限だけの延長では一般向け制作フローを継続できないことを確認した。
+- モニターAI上限は`test`が107/107、沖野航太さんが26/30。Cloud AI creditとは別枠である。次は実利用者8名の期限を各Cloud AI期限まで揃える案を基本とし、`test`と`team478+staging`は期限・上限・通知の扱いを分離して実行時承認を得る。
+- Production、DB／Storage、Provider、Job、Asset、credit、モニター設定、利用者データ、通知は変更していない。
+- docs-only検証はmigration validator 84/84、RC Repository structure READY、diff check成功。外部設定・手動E2Eの既知PENDINGは維持する。
+
+---
+
 ## 0.0 Cloud画像生成のページ選択停止理由改善（2026-09-24）
 
 - BaseはPR #517 merge commit `285ffe72`。Branchは`codex/fix-generation-selection-guidance-20260924`。
