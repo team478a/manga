@@ -6,6 +6,7 @@
 - 保存statusではなく開始日、終了日、モニターAI利用数から実効状態を算出する共通ロジックを追加した。管理一覧は期限切れ、7日以内の期限、AI上限到達を集計し、各カードとユーザー詳細に同じ警告を表示する。
 - 期限を過ぎても保存statusがactiveのレコードは`期限切れ`と表示し、招待再送を出さない。DB判定、利用枠、料金、通知処理は変更していない。
 - 集中7/7、Hub 1023/1023、全typecheck、全lint、deps error 0（既知warning 2件）、migration 84/84、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `bef0ea17`をpushし、Draft PR [#521](https://github.com/team478a/manga/pull/521)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
 - Production、DB／Storage、migration、Provider、Job、Asset、credit、モニター設定、利用者データ、通知は変更していない。8名の期限延長は対象・期限・上限・通知方針を定めた別の実行時承認後に行う。
 
 ---

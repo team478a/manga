@@ -6,6 +6,7 @@
 - モニターの開始日、終了日、AI利用数から実効状態を算出し、管理一覧で期限切れ、7日以内の期限、AI上限到達を集計する。各カードとユーザー詳細にも理由を表示し、保存activeの期限切れを利用中と誤表示しない。
 - 期限切れでは招待再送を表示しない。既存のDB利用可否判定、利用枠更新、料金、通知処理は不変である。
 - 集中7/7、Hub 1023/1023、全typecheck、全lint、deps error 0（既知warning 2件）、migration 84/84、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `bef0ea17`、Draft PR [#521](https://github.com/team478a/manga/pull/521)。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
 - Production、DB／Storage、migration、Provider、生成Job、credit、モニター設定、利用者データ、通知の変更は0件。実期限更新は別の明示承認待ち。
 
 ---
