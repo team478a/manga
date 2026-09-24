@@ -6,7 +6,8 @@
 - active利用者の期限延長を、AI利用数・上限・開始日・グループ・statusを変えない専用RPCと管理フォームへ分離した。短縮、停止済み対象、権限外操作はfail closedとする。
 - 同じ期限への再実行はno-opで、変更時はbefore／afterと管理者メモを監査する。通知は初期OFFの任意選択で、対象＋期限の冪等性キーと重複監査防止を備える。
 - 購入者向けメールには期限だけの変更であり、AI利用条件と購入者権利を保持することを明記した。管理画面は実行前に対象・期限・通知有無を確認する。
-- migration 85/85、集中10/10、Hub 1028/1028、全typecheck、全lint、deps error 0（既知warning 2件）、Hub Production build、RC Repository structure、diff check成功。Draft PR作成とCI確認を継続する。
+- migration 85/85、集中10/10、Hub 1028/1028、全typecheck、全lint、deps error 0（既知warning 2件）、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `f88a3390`、Draft PR [#522](https://github.com/team478a/manga/pull/522)。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
 - Production migration、利用者データ、実メール、Provider、生成Job、creditの変更は0件。実運用は別の明示承認待ち。
 
 ---
