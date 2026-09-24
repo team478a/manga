@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 モニター利用期限延長 Production migration適用（2026-09-24）
+
+- 責任者の実行時明示承認後、Production project `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main Production`）へPR #522 merge commit `5ceb06d453813d8626bad22773d5c837d955b438`のmigration `202609240001`を全文1回適用した。原本SHA-256は`BB39B3DDDED77D841EBCE75296DCB165EBC4EC22FCB7FB8E0CA000CBBE8817F6`。
+- preflightは両RPC未存在・監査制約未拡張、実行結果は`Success. No rows returned`。postflightは両RPC存在、`extend_expiry` / `expiry_extension_email_sent`許可、両RPCとも`service_role`だけEXECUTE可、`anon` / `authenticated`は不可。
+- 新actionの監査行は0件であり、利用者期限、AI利用数・上限、実メール、Provider、生成Job、creditを変更していない。実期限延長は対象・新期限・通知有無を固定した別承認後に行う。
+
+---
+
 ## 0.0 モニター利用期限だけを安全に延長する管理機能（2026-09-24）
 
 - PR #521 merge commit `45673682684e75c5bd9b4d73fa39cb898cf2a117`から`codex/admin-monitor-expiry-extension-20260924`を作成した。

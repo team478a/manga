@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-24 モニター利用期限延長 Production migration適用
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / USER_DATA_UNCHANGED`
+- 責任者の実行時明示承認後、Production project `vmdsyxykcrgxcdbrwlkv`（Dashboard表示: `mangai-hub-staging` / `main Production`）へ、PR #522 merge commit `5ceb06d453813d8626bad22773d5c837d955b438`の`202609240001_cloud_general_monitor_expiry_extension.sql`を全文そのまま1回適用した。適用原本は4,518 bytes、SHA-256 `BB39B3DDDED77D841EBCE75296DCB165EBC4EC22FCB7FB8E0CA000CBBE8817F6`。
+- preflightでは2つのRPCが未存在で、監査action制約は既存6 actionのみだった。実行結果は`Success. No rows returned`。
+- postflightで`extend_cloud_general_monitor_expiry(uuid,uuid,timestamptz,text)`と`record_cloud_general_monitor_expiry_email_sent(uuid,uuid,timestamptz)`の存在、新しい2 actionの制約追加を確認した。両RPCのEXECUTEは`service_role=true`、`anon=false`、`authenticated=false`。
+- 新action `extend_expiry` / `expiry_extension_email_sent`の監査行は0件。利用者期限、AI利用数・上限、実メール、Provider、生成Job、creditは変更していない。
+- 次: 実利用者の期限延長は、対象・新期限・通知有無を固定した別の実行時明示承認後に管理画面から行う。
+
+---
+
 ## 2026-09-24 モニター利用期限だけを安全に延長する管理機能
 
 - 状態: `DRAFT_PR_522 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / PRODUCTION_UNCHANGED`

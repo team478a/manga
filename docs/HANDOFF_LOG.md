@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: モニター利用期限延長 Production migration適用
+
+- 責任者承認後、Production `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main Production`）へ、merge済みPR #522の`202609240001_cloud_general_monitor_expiry_extension.sql`を全文1回適用した。原本4,518 bytes、SHA-256 `BB39B3DDDED77D841EBCE75296DCB165EBC4EC22FCB7FB8E0CA000CBBE8817F6`。
+- preflightはRPC 2件未存在、既存監査action 6件。migrationは`Success. No rows returned`で完了した。
+- postflightはRPC 2件存在、監査action 2件追加、両RPCとも`service_role=true` / `anon=false` / `authenticated=false`。新action監査行0件。
+- 利用者期限、AI利用数・上限、通知、実メール、Provider、生成Job、creditは変更していない。実利用者の期限更新は別の実行時明示承認待ち。
+
+---
+
 ## 2026-09-24 Codex: モニター利用期限だけを安全に延長する管理機能
 
 - PR #521 merge commit `45673682684e75c5bd9b4d73fa39cb898cf2a117`から新規ブランチを作成した。
