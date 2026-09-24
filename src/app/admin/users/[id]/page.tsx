@@ -13,9 +13,11 @@ import { setCloudAdultResearchEntitlementAction } from "./adult-research-actions
 import { updateCloudAiUserEntitlementAction } from "./cloud-ai-actions";
 import {
   activateCloudGeneralMonitorAction,
+  extendCloudGeneralMonitorExpiryAction,
   resendCloudGeneralMonitorInviteAction,
   stopCloudGeneralMonitorAction,
 } from "./general-monitor-actions";
+import { MonitorExpiryExtensionForm } from "./MonitorExpiryExtensionForm";
 import {
   cloudGeneralMonitorBetaEnabled,
   isCloudGeneralMonitorActive,
@@ -108,6 +110,18 @@ export default async function AdminUserDetailPage({
   const generalMonitorNotice = generalMonitor
     ? getCloudGeneralMonitorAdminNotice(generalMonitor)
     : null;
+  const generalMonitorExpiryInputValue = generalMonitor
+    ? new Intl.DateTimeFormat("sv-SE", {
+        timeZone: "Asia/Tokyo",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hourCycle: "h23",
+      }).format(new Date(generalMonitor.expires_at)).replace(" ", "T")
+    : "";
 
   return (
     <main className="page max-w-3xl">
@@ -249,6 +263,14 @@ export default async function AdminUserDetailPage({
                 </PendingSubmitButton>
               </form>
             ) : null}
+            {generalMonitor?.status === "active" ? (
+              <MonitorExpiryExtensionForm
+                action={extendCloudGeneralMonitorExpiryAction.bind(null, user.id)}
+                currentExpiry={generalMonitor.expires_at}
+                defaultExpiryValue={generalMonitorExpiryInputValue}
+                displayName={user.display_name}
+              />
+            ) : (
             <form action={activateCloudGeneralMonitorAction.bind(null, user.id)} className="mt-5 space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 <div><label className="label" htmlFor="generalMonitorCohort">グループ名</label>
@@ -268,9 +290,10 @@ export default async function AdminUserDetailPage({
                 className="button bg-violet-700 hover:bg-violet-800"
                 pendingLabel="招待処理中…"
               >
-                {generalMonitor ? "招待条件を更新してメール送信" : "招待してメール送信"}
+                {generalMonitor ? "モニター利用を再開してメール送信" : "招待してメール送信"}
               </PendingSubmitButton>
             </form>
+            )}
             {generalMonitor ? (
               <form action={stopCloudGeneralMonitorAction.bind(null, user.id)} className="mt-6 border-t border-stone-200 pt-5">
                 <div className="grid gap-4 sm:grid-cols-2">

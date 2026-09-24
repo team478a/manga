@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-24 Codex: モニター利用期限だけを安全に延長する管理機能
+
+- PR #521 merge commit `45673682684e75c5bd9b4d73fa39cb898cf2a117`から新規ブランチを作成した。
+- active利用者の期限延長を、AI利用数・上限・開始日・グループ・statusを変えない専用RPCと管理フォームへ分離した。短縮、停止済み対象、権限外操作はfail closedとする。
+- 同じ期限への再実行はno-opで、変更時はbefore／afterと管理者メモを監査する。通知は初期OFFの任意選択で、対象＋期限の冪等性キーと重複監査防止を備える。
+- 購入者向けメールには期限だけの変更であり、AI利用条件と購入者権利を保持することを明記した。管理画面は実行前に対象・期限・通知有無を確認する。
+- migration 85/85、集中10/10、Hub 1028/1028、全typecheck、全lint、deps error 0（既知warning 2件）、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `f88a3390`、Draft PR [#522](https://github.com/team478a/manga/pull/522)。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
+- Production migration、利用者データ、実メール、Provider、生成Job、creditの変更は0件。実運用は別の明示承認待ち。
+
+---
+
 ## 2026-09-24 Codex: モニター利用条件の管理警告
 
 - PR #520 merge commit `fe1ddf2ecf23f5d2a3eca52711d6030dfe698c94`から新規ブランチを作成した。
