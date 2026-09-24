@@ -1,14 +1,27 @@
 # MANGAI Current Task
 
+## 2026-09-24 Cloud画像生成のページ選択停止理由改善
+
+- 状態: `MERGED / CI_PASSED / VERCEL_PRODUCTION_PASSED`
+- BaseはPR #517 merge commit `285ffe72`。Branchは`codex/fix-generation-selection-guidance-20260924`。
+- Implementation commitは`9056d9e5`。PR #519はmerge commit `020dc1f2`でマージ済み。全CI／Vercel Preview／Vercel Production成功を確認した。
+- Productionの管理画面で未完了報告「先に進めません」をread-only調査した。期限とcreditは同日の全利用者更新で解消済みだが、報告画像では1ページだけが選択され、作品画風と登場人物の必須設定も不足していた。
+- 従来は前提不足で無効な生成ボタンにも待機カーソルが出るため、処理中と誤認できた。送信中だけspinner／待機カーソル、前提不足は操作不可カーソルと具体的な停止表示に分離した。
+- 1ページ選択時は連続する隣接ページを画面内のボタンで追加できる。非連続2ページ、3ページ、絞り込みで隣接ページが見えない場合にも、それぞれ具体的な解消方法を表示し、選択中ページを強調する。
+- 検証: 集中4/4、Hub 1020/1020、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、`git diff --check`成功。生成条件、料金、利用枠は不変。Production、DB／Storage、migration、外部Provider、生成Job、credit予約・消費、利用者データ変更なし。
+
+---
+
 ## 2026-09-24 生成不能報告のCloud AI利用枠 Production read-only監査
 
-- 状態: `PRODUCTION_READONLY_AUDIT_COMPLETE / ENTITLEMENT_RENEWAL_PENDING_EXPLICIT_APPROVAL / PROVIDER_UNCHANGED / CREDIT_UNCHANGED`
-- BaseはPR #517 merge commit `285ffe72`。Branchは`codex/audit-cloud-ai-account-blockers-20260924`。
-- 一般向けモニター報告「先に進めません」と添付画面を照合し、対象は樋口美子さんであることを確認した。モニター枠は`active`、33/50回、期限2026-09-30である。
-- Cloud AI個別利用枠は`FREE / active / default`だが、期間終了が2026-09-01 00:00 JSTで現在は期間外。管理画面上の使用／予約creditは0/0、処理中Jobは0件だった。画面のCloud AI credit不足とCloud AI費用上限超過は、全体停止や現在の予約超過ではなく、期限切れ利用枠の残容量が生成開始判定を満たさないことが主因である。
+- 状態: `PRODUCTION_READONLY_AUDIT_COMPLETE / ENTITLEMENT_RENEWED_BY_LATER_ALL_USER_UPDATE / USER_CONFIRMATION_PENDING / PROVIDER_UNCHANGED`
+- BaseはPR #517 merge commit `285ffe72`。Branchは`codex/audit-cloud-ai-account-blockers-20260924`。PR #519 merge commit `020dc1f2`を通常マージして競合を解消した。
+- 一般向けモニター報告「先に進めません」と添付画面を照合し、対象は樋口美子さんであることを確認した。監査時点のモニター枠は`active`、33/50回、期限2026-09-30だった。
+- 監査時点のCloud AI個別利用枠は`FREE / active / default`、期間終了2026-09-01 00:00 JST、使用／予約credit 0/0、処理中Job 0件だった。画面の契約期間外、credit不足、費用上限超過は、全体停止や現在の予約超過ではなく、期限切れ利用枠の残容量が生成開始判定を満たさないことが主因だった。
 - Production全体は生成有効、Provider APIキー設定済み・有効、Worker正常、待機0・実行中0・24時間以内失敗0、当日原価`$0.09`／予約`$0`／日次上限`$100`。Free Planは20 credit、月間原価上限`$2.00`、User 5件/分、Project 3件/分で有効だった。
-- 監査は画面表示の読み取りだけで実施した。利用期間、Plan、モニター枠、作品予算、Provider、Job、Asset、credit、生成、報告状態、利用者通知は変更していない。次は対象付きの別の明示承認後に、予約0・処理中0を再確認してFree Planの新期間を付与する。
-- docs-only検証はmigration validator 84/84、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
+- その後、責任者承認済みの同日全利用者更新により対象の利用期限とcredit停止理由は解消した。PR #519でページ選択と停止理由の案内も改善し、Production反映後に報告を`対応中`へ更新して登録メールへ再確認を依頼した。次は本人の再確認結果を受け、成功なら`対応済み`、再現する場合は新しい画面状態を再調査する。
+- 本PRは監査記録と競合解消だけを行い、Production、DB／Storage、Provider、生成Job、credit予約・消費、利用者データを変更しない。
+- 競合解消後の検証はmigration validator 84/84、RC Repository structure READY、`git diff --check`成功。外部設定と手動E2Eの既知PENDINGは不変である。
 
 ---
 

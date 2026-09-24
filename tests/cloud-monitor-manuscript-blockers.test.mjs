@@ -46,3 +46,22 @@ test("blank name pages explain that image generation has not started", () => {
   assert.match(manager, /3\. 紫のボタンで開始/);
   assert.match(manager, /まだページが選択されていません/);
 });
+
+test("page generation gives an explicit recovery path for invalid selection", () => {
+  const manager = read(
+    "src/app/creator/[projectId]/LongformPageManager.tsx",
+  );
+  assert.match(manager, /あと1ページ必要です/);
+  assert.match(manager, /ページも選ぶ/);
+  assert.match(manager, /選択した2ページが連続していません/);
+  assert.match(manager, /3ページでは開始できません/);
+  assert.match(manager, /表示中の停止理由を解消してください/);
+  assert.match(manager, /page-generation-selection-status/);
+});
+
+test("disabled submit is distinct from an in-progress submit", () => {
+  const button = read("src/components/PendingSubmitButton.tsx");
+  assert.match(button, /pending\s*\?\s*"cursor-wait opacity-70"/);
+  assert.match(button, /disabled\s*\?\s*"cursor-not-allowed opacity-60"/);
+  assert.doesNotMatch(button, /disabled:cursor-wait/);
+});

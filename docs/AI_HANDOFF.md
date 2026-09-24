@@ -1,13 +1,24 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud画像生成のページ選択停止理由改善（2026-09-24）
+
+- BaseはPR #517 merge commit `285ffe72`。Branchは`codex/fix-generation-selection-guidance-20260924`。
+- Implementation commitは`9056d9e5`。PR #519はmerge commit `020dc1f2`でマージ済み。全CI／Vercel Preview／Vercel Production成功を確認した。
+- Productionの未完了報告「先に進めません」をread-only確認し、利用期限・creditは同日の全利用者更新で解消済みだが、1ページだけの選択と画風・人物設定不足が残っていた。無効な生成ボタンが待機カーソルを表示し、処理中に見える問題も確認した。
+- 送信中だけ待機カーソルとspinnerを表示し、前提不足は操作不可カーソルへ分離した。1ページ選択時は必要な隣接ページをワンクリックで追加でき、非連続2ページ・3ページにも具体的な直し方を表示する。選択中ページと生成ボタンの停止表示も明確化した。
+- 既存の生成条件、料金、利用枠、Provider処理は変更していない。集中4/4、Hub 1020/1020、Hub typecheck、対象lint、deps error 0（既知warning 2件）、Hub Production build、diff check成功。Production、DB／Storage、migration、Provider、生成Job、credit、利用者データ変更なし。
+
+---
+
 ## 0.0 生成不能報告のCloud AI利用枠 Production read-only監査（2026-09-24）
 
-- PR #517 merge commit `285ffe72`から`codex/audit-cloud-ai-account-blockers-20260924`を作成した。
-- 一般向けモニターの最新未完了報告「先に進めません」と添付内容を照合し、対象を樋口美子さんとしてread-only監査した。モニター枠はactive、33/50回、期限2026-09-30。
-- Cloud AIは`FREE / active / default`、期間終了2026-09-01 00:00 JST、管理画面上の使用／予約credit 0/0、処理中Job 0件。生成前画面の契約期間外、credit不足、Cloud AI費用上限超過は、期限切れ利用枠が主因である。
-- 全体生成、BFL接続、Workerは有効・正常。待機0、実行中0、24時間以内失敗0、当日実費`$0.09`、予約`$0`、日次上限`$100`。Free Planは20 credit／`$2.00`で有効である。
-- Productionは読み取りだけで、entitlement、Plan、モニター枠、作品予算、Provider、Job、Asset、credit、生成、報告状態、通知を変更していない。新期間付与は別の実行時明示承認を待つ。
-- docs-only検証はmigration validator 84/84、RC Repository structure READY、diff check成功。既知の外部設定・手動E2E PENDINGは変更していない。
+- PR #517 merge commit `285ffe72`から`codex/audit-cloud-ai-account-blockers-20260924`を作成し、PR #519 merge commit `020dc1f2`を通常マージして競合を解消した。
+- 一般向けモニターの未完了報告「先に進めません」と添付内容を照合し、対象を樋口美子さんとしてread-only監査した。監査時点のモニター枠はactive、33/50回、期限2026-09-30だった。
+- 監査時点のCloud AIは`FREE / active / default`、期間終了2026-09-01 00:00 JST、使用／予約credit 0/0、処理中Job 0件。生成前画面の契約期間外、credit不足、費用上限超過は、期限切れ利用枠が主因だった。
+- 全体生成、BFL接続、Workerは有効・正常。待機0、実行中0、24時間以内失敗0、当日実費`$0.09`、予約`$0`、日次上限`$100`。Free Planは20 credit／`$2.00`で有効だった。
+- その後の責任者承認済み全利用者更新で対象の利用期限とcredit停止理由は解消し、PR #519でページ選択案内もProductionへ反映した。報告は`対応中`へ更新し、登録メールへ再確認を依頼済み。次は本人回答に応じて解決または再調査する。
+- 本PRは文書同期のみで、Production、DB／Storage、Provider、Job、Asset、credit、生成、利用者データを変更しない。
+- 競合解消後はmigration validator 84/84、RC Repository structure READY、diff check成功。外部設定・手動E2Eの既知PENDINGは不変である。
 
 ---
 

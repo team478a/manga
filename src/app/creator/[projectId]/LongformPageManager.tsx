@@ -69,6 +69,22 @@ export function LongformPageManager({
     () => batchPreflight ? estimateGenerationBatch(batchPreflight, selectedPageIds) : null,
     [batchPreflight, selectedPageIds],
   );
+  const selectedPages = orderedPages.filter((page) => selectedPageIds.includes(page.id));
+  const singleSelectedPage = selectedPages.length === 1 ? selectedPages[0] : null;
+  const adjacentSelectablePages = singleSelectedPage
+    ? orderedPages.filter((page) =>
+      visibleIds.has(page.id) &&
+      statusOf(page.id) !== "finalized" &&
+      Math.abs(page.page_number - singleSelectedPage.page_number) === 1)
+    : [];
+  const selectedPageNumbers = selectedPages.map((page) => page.page_number).sort((a, b) => a - b);
+  const hasNonConsecutivePilotSelection = selectedPageNumbers.length === 2 &&
+    selectedPageNumbers[1] - selectedPageNumbers[0] !== 1;
+  const generationButtonLabel = !selectedPageIds.length
+    ? "ページを選択してください"
+    : batchEstimate?.canStart
+      ? "選択したページを生成"
+      : "表示中の停止理由を解消してください";
   const cost = batchEstimate?.maxReservedCostMicros === null || batchEstimate?.maxReservedCostMicros === undefined
     ? "確認できません"
     : new Intl.NumberFormat("ja-JP", { style: "currency", currency: batchPreflight?.currency ?? "USD" })
@@ -134,7 +150,7 @@ export function LongformPageManager({
             <h3 className="mt-1 text-lg font-bold">画像生成するページを選ぶ</h3>
             <p className="mt-1 text-sm text-stone-600">下のページ番号を2ページ、または4〜8ページ選び、見積りを確認してから生成を開始します。</p>
           </div>
-          <PendingSubmitButton className="button shrink-0" disabled={!batchEstimate?.canStart} pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />{selectedPageIds.length ? "選択したページを生成" : "ページを選択してください"}</PendingSubmitButton>
+          <PendingSubmitButton aria-describedby="page-generation-selection-status" className="button shrink-0" disabled={!batchEstimate?.canStart} pendingLabel="生成を登録しています…"><Sparkles className="mr-2 h-4 w-4" />{generationButtonLabel}</PendingSubmitButton>
         </div>
         <ol className="mt-4 grid gap-2 text-sm sm:grid-cols-3">
           <li className="rounded-lg border border-violet-100 bg-violet-50 p-3"><strong>1. ページを選択</strong><p className="mt-1 text-xs text-stone-600">最初は連続する2ページのPilotがおすすめです。</p></li>
@@ -175,13 +191,22 @@ export function LongformPageManager({
           {batchEstimate.blockers.length ? <><ul className="mt-2 list-disc pl-5 text-amber-900">{batchEstimate.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul><p className="mt-2 text-xs text-stone-600">利用期限、credit、費用上限は作品設定から変更できません。該当する場合は、表示された必要数と残り数を添えて管理者へ連絡してください。</p></> : <p className="mt-2 font-bold text-green-800"><CheckCircle2 className="mr-1 inline h-4 w-4" />現在の利用枠では開始できます。</p>}
         </div> : <div className="mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800"><AlertTriangle className="mr-1 inline h-4 w-4" />生成料金と利用枠を確認できないため、一括生成を開始できません。</div>}
         <p className="mt-2 text-xs text-stone-500">2ページPilotも既存の人物・画風、利用枠、最大64コマの安全確認を通過した場合だけ開始できます。画面を閉じてもWorker処理は継続します。</p>
-        <p className="mt-3 rounded-lg border border-stone-200 bg-white p-3 text-sm font-semibold" aria-live="polite">
-          {selectedPageIds.length
-            ? `${selectedPageIds.length}ページ選択中です。開始できない場合は、上の見積りに表示された理由を確認してください。`
-            : "まだページが選択されていません。下のページ番号にチェックを入れてください。"}
-        </p>
+        <div className="mt-3 rounded-lg border border-stone-200 bg-white p-3 text-sm" id="page-generation-selection-status" aria-live="polite">
+          {!selectedPageIds.length ? <p className="font-semibold">まだページが選択されていません。下のページ番号にチェックを入れてください。</p> : null}
+          {singleSelectedPage ? <>
+            <p className="font-bold text-amber-900">あと1ページ必要です。</p>
+            <p className="mt-1 text-stone-700">2ページPilotでは、{singleSelectedPage.page_number}ページと連続する隣のページも選択してください。</p>
+            {adjacentSelectablePages.length ? <div className="mt-2 flex flex-wrap gap-2">
+              {adjacentSelectablePages.map((page) => <button className="button-secondary" key={page.id} onClick={() => setSelectedPageIds((current) => current.includes(page.id) ? current : [...current, page.id])} type="button">{page.page_number}ページも選ぶ</button>)}
+            </div> : <p className="mt-2 text-amber-900">表示中のページに選択可能な隣接ページがありません。絞り込みを「すべて」に戻すか、別のページを選んでください。</p>}
+          </> : null}
+          {hasNonConsecutivePilotSelection ? <p className="font-bold text-amber-900">選択した2ページが連続していません。どちらかを外し、その隣のページを選んでください。</p> : null}
+          {selectedPageIds.length === 3 ? <p className="font-bold text-amber-900">3ページでは開始できません。1ページ外して連続2ページにするか、あと1ページ追加して4ページにしてください。</p> : null}
+          {selectedPageIds.length >= 4 ? <p className="font-semibold">{selectedPageIds.length}ページ選択中です。開始できない場合は、上の見積りに表示された停止理由を確認してください。</p> : null}
+          {selectedPageIds.length === 2 && !hasNonConsecutivePilotSelection ? <p className="font-semibold">連続2ページを選択しました。上の見積りと停止理由を確認してください。</p> : null}
+        </div>
         <div className="mt-3 flex flex-wrap gap-2">
-          {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className={`flex min-h-11 items-center gap-2 rounded-lg border border-stone-200 bg-white px-3 text-sm ${statusOf(page.id) === "finalized" ? "opacity-50" : ""}`} key={page.id}><input checked={selectedPageIds.includes(page.id)} disabled={statusOf(page.id) === "finalized"} name="pageId" onChange={(event) => setSelectedPageIds((current) => event.target.checked ? [...current, page.id] : current.filter((id) => id !== page.id))} type="checkbox" value={page.id} />{page.page_number}ページ（{batchPreflight?.pagePanelCounts[page.id] ?? "?"}コマ）</label>)}
+          {orderedPages.filter((page) => visibleIds.has(page.id)).map((page) => <label className={`flex min-h-11 items-center gap-2 rounded-lg border bg-white px-3 text-sm ${selectedPageIds.includes(page.id) ? "border-violet-500 bg-violet-50 font-bold text-violet-900" : "border-stone-200"} ${statusOf(page.id) === "finalized" ? "opacity-50" : ""}`} key={page.id}><input checked={selectedPageIds.includes(page.id)} disabled={statusOf(page.id) === "finalized"} name="pageId" onChange={(event) => setSelectedPageIds((current) => event.target.checked ? [...current, page.id] : current.filter((id) => id !== page.id))} type="checkbox" value={page.id} />{page.page_number}ページ（{batchPreflight?.pagePanelCounts[page.id] ?? "?"}コマ）</label>)}
         </div>
       </form>
 
