@@ -19,6 +19,6 @@ end
 $$;
 
 create index if not exists orders_payment_mode_status_idx
-  on public.orders(payment_mode, status, created_at desc);
+  on public.orders(payment_mode, status);
 
 commit;

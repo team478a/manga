@@ -514,9 +514,9 @@
     {
       "id": "202609270001_marketplace_test_sales",
       "description": "Stripeテスト販売注文を本番売上と分離して記録",
-      "forwardSha256": "d78c0fbfc975c5665e24f1807078210eac06e9d60c9be5f2f3d75e38d5b2f071",
+      "forwardSha256": "cecbf849fee5b6a3145c35a8c3128277483940f4fe2e193bb54ddc10f1ed18d5",
       "rollbackSha256": "b8788e914aa2e45501fb3dd4a9d152e81b699e8cacf9b6e95f9b08cfd4993c0d"
     }
   ],
-  "schemaSha256": "97ad9511a3d220b6bc6298e1594a4b505526e49e02506a28ed30ba61e2fbca3c"
+  "schemaSha256": "af66eded361f9eb2b820282301d1f2be934b1cd3cf99cbd61d295ed741392f2c"
 }

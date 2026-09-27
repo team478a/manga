@@ -113,7 +113,7 @@ create table if not exists public.orders (
 );
 
 create index if not exists orders_payment_mode_status_idx
-  on public.orders(payment_mode, status, created_at desc);
+  on public.orders(payment_mode, status);
 
 create table if not exists public.desktop_device_authorizations (
   id uuid primary key default gen_random_uuid(),
