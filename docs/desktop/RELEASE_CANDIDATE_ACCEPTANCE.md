@@ -154,6 +154,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 ## 9. Stripeテスト決済E2E
 
 1. Productionとは別のSupabase Branch／Projectを用意し、Previewの`NEXT_PUBLIC_SUPABASE_URL`・anon key・service-role keyをすべて隔離Stagingへ切り替えます。`MANGAI_STAGING_PROJECT_REF`には接続先、`MANGAI_STAGING_PARENT_PROJECT_REF`には親Production refを設定し、両者が異なることを確認します。PreviewとProductionのSupabase 3値が同一なら、以降を実行しません。
+   - Vercelへ設定する前に、候補値をrepository外のenvファイルへ保存し、`npm run marketplace:staging:candidate:validate -- "C:\\secure\\marketplace-preview.env"`で検証します。絶対パスかつrepository外のファイルだけを受け付け、Production環境と秘密値非表示で比較します。候補ファイルをGitへ追加しません。
    - 設定後は`npm run marketplace:staging:preflight:strict`を実行します。linked Vercel projectのPreview／Production環境を一時領域へ取得して値を表示せず比較し、一時ファイルは成否にかかわらず削除します。3項目すべてが`READY`になるまで次へ進みません。
 2. migration `202609270001_marketplace_test_sales`を隔離Stagingへ適用し、`MANGAI_MARKETPLACE_CHECKOUT_MODE=test`、`sk_test_` Secret Key、Webhook Secret、Cancel SecretをPreviewだけへ設定します。Production deploymentまたは`sk_live_`との組合せでは開始しないことを確認します。
 3. Stripe CLIまたはstaging Webhook endpointへテストイベントを転送します。
