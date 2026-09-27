@@ -510,7 +510,13 @@
       "description": "一般向けモニターの利用条件を保持した期限延長と任意通知監査を追加",
       "forwardSha256": "bb39b3ddded77d841ebce75296dcb165ebc4ec22fcb7fb8e0ca000cbbe8817f6",
       "rollbackSha256": "3dc38a2a0b515d3f65c1f5cf9f58b968762d70bd2a1bff7a29f46e14f1e19841"
+    },
+    {
+      "id": "202609270001_marketplace_test_sales",
+      "description": "Stripeテスト販売注文を本番売上と分離して記録",
+      "forwardSha256": "cecbf849fee5b6a3145c35a8c3128277483940f4fe2e193bb54ddc10f1ed18d5",
+      "rollbackSha256": "b8788e914aa2e45501fb3dd4a9d152e81b699e8cacf9b6e95f9b08cfd4993c0d"
     }
   ],
-  "schemaSha256": "55ba3e951fc5c6909a363a0a57d54d4ab61ecb37d722166184ec1b8960f384d0"
+  "schemaSha256": "af66eded361f9eb2b820282301d1f2be934b1cd3cf99cbd61d295ed741392f2c"
 }

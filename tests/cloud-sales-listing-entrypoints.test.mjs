@@ -33,7 +33,8 @@ test("完成PDFと作品管理から外部出品マニュアルへ進める", as
 
   for (const source of [exportPanel, worksPage]) {
     assert.match(source, /\/dashboard\/monitor\/guide#sales-listing/);
-    assert.match(source, /MANGAI内の販売申請・決済・収益管理は準備中です/);
+    assert.match(source, /MANGAI内のテスト販売は管理者が有効化した期間だけ利用でき/);
+    assert.match(source, /実決済・振込・本番収益管理は準備中/);
   }
 
   assert.match(guide, /id="sales-listing"/);

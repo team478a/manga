@@ -25,6 +25,7 @@ export default async function PurchasesPage() {
                   <h2 className="text-xl font-bold">
                     {purchase.digital_products?.title ?? "販売終了商品"}
                   </h2>
+                  {purchase.payment_mode === "test" ? <span className="mt-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-900">テスト購入</span> : null}
                   <p className="mt-1 text-stone-600">
                     {purchase.digital_products?.works?.title ?? "作品"}・{yen(purchase.amount)}
                   </p>

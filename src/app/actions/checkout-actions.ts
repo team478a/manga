@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { createStripeCheckoutSession } from "@/lib/checkout";
+import { requireMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { normalizeBuyerEmail } from "@/lib/checkout-policy";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
@@ -11,6 +12,16 @@ import { formText } from "./shared/form-data";
 
 export async function createPendingOrder(formData: FormData) {
   const productId = formText(formData, "productId");
+  let paymentMode: "test" | "live";
+  try {
+    paymentMode = requireMarketplaceCheckoutMode();
+  } catch (error) {
+    const message = safeDomainErrorMessage(
+      error,
+      "購入手続きを開始できません。",
+    );
+    redirect(`/checkout/${productId}?error=${encodeURIComponent(message)}`);
+  }
   let buyerEmail = "";
   try {
     buyerEmail = normalizeBuyerEmail(formText(formData, "buyerEmail"));
@@ -68,6 +79,7 @@ export async function createPendingOrder(formData: FormData) {
     amount,
     platformFee,
     creatorRevenue,
+    paymentMode,
   });
   if (error || !order) {
     redirect(encodeURI(`/checkout/${productId}?error=仮注文の作成に失敗しました`));
@@ -79,6 +91,7 @@ export async function createPendingOrder(formData: FormData) {
       orderId: order.id,
       productId: product.id,
       buyerEmail,
+      paymentMode,
     });
     checkoutUrl = session.url ?? "";
   } catch (error) {

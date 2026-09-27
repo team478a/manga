@@ -270,6 +270,7 @@ where user_id = '対象ユーザーのauth.users.id';
 
 ```env
 STRIPE_SECRET_KEY=sk_test_xxx
+MANGAI_MARKETPLACE_CHECKOUT_MODE=test
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
@@ -279,8 +280,9 @@ Stripeテスト環境の設定:
 1. Stripeダッシュボードでテストモードを有効にします。
 2. Developers > API keys から Secret key をコピーします。
 3. `.env.local` の `STRIPE_SECRET_KEY` に `sk_test_...` を設定します。
-4. ローカル確認では `NEXT_PUBLIC_SITE_URL=http://localhost:3000` を設定します。
-5. Stripe Checkoutではテストカード `4242 4242 4242 4242` を使えます。
+4. `MANGAI_MARKETPLACE_CHECKOUT_MODE=test`を設定します。未設定・`disabled`・キー種別不一致では購入を開始しません。
+5. ローカル確認では `NEXT_PUBLIC_SITE_URL=http://localhost:3000` を設定します。
+6. Stripe CheckoutではStripe公式のテストカードを使います。実在カードは使用しません。
 
 今回実装済み:
 
@@ -289,6 +291,7 @@ Stripeテスト環境の設定:
 - `success_url`: `/checkout/success?session_id={CHECKOUT_SESSION_ID}`
 - `cancel_url`: `/checkout/cancel?order_id=xxx`
 - metadataに `order_id`、`product_id`、`creator_id` を設定
+- テスト注文を`payment_mode=test`で記録し、本番売上集計から除外
 - キャンセル時に注文ステータスを `canceled` に更新
 - Webhook署名検証と冪等な注文更新
 - `paid`、`failed`、`refunded`の状態反映

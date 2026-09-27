@@ -13,6 +13,7 @@ export function insertPendingCheckoutOrder(input: {
   amount: number;
   platformFee: number;
   creatorRevenue: number;
+  paymentMode: "test" | "live";
 }) {
   return createAdminClient()
     .from("orders")
@@ -24,6 +25,7 @@ export function insertPendingCheckoutOrder(input: {
       amount: input.amount,
       platform_fee: input.platformFee,
       creator_revenue: input.creatorRevenue,
+      payment_mode: input.paymentMode,
       status: "pending",
     })
     .select("id")

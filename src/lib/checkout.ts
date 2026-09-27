@@ -1,6 +1,10 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStripeClient } from "@/lib/stripe";
 import {
+  requireMarketplaceCheckoutMode,
+  type OrderPaymentMode,
+} from "@/lib/checkout-mode";
+import {
   assertCheckoutOrder,
   createCheckoutCancelToken,
   normalizeBuyerEmail,
@@ -19,6 +23,7 @@ type CheckoutOrder = {
   creator_id: string;
   amount: number;
   status: string;
+  payment_mode: OrderPaymentMode;
   buyer_profile_id: string | null;
   digital_products: {
     id: string;
@@ -40,23 +45,25 @@ export async function createStripeCheckoutSession({
   productId,
   buyerEmail,
   origin,
+  paymentMode,
 }: {
   orderId: string;
   productId: string;
   buyerEmail: string;
   origin?: string;
+  paymentMode?: OrderPaymentMode;
 }) {
-  if (!process.env.STRIPE_SECRET_KEY) {
+  const configuredPaymentMode = requireMarketplaceCheckoutMode();
+  if (paymentMode && paymentMode !== configuredPaymentMode)
     throw new ProviderUnavailableError(
-      "Stripeのシークレットキーが設定されていません。",
+      "注文の決済環境が現在の販売モードと一致しません。",
     );
-  }
 
   const supabase = createAdminClient();
   const { data: checkoutOrder, error: checkoutOrderError } = await supabase
     .from("orders")
     .select(
-      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class))",
+      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class))",
     )
     .eq("id", orderId)
     .eq("product_id", productId)
@@ -72,6 +79,7 @@ export async function createStripeCheckoutSession({
     orderId,
     productId,
     buyerEmail,
+    paymentMode: configuredPaymentMode,
   });
   const normalizedEmail = normalizeBuyerEmail(buyerEmail);
   const siteUrl = resolveCheckoutOrigin({
@@ -111,6 +119,7 @@ export async function createStripeCheckoutSession({
         order_id: order.id,
         product_id: order.product_id,
         creator_id: order.creator_id,
+        payment_mode: configuredPaymentMode,
         ...buyerMetadata,
       },
       payment_intent_data: {
@@ -118,6 +127,7 @@ export async function createStripeCheckoutSession({
           order_id: order.id,
           product_id: order.product_id,
           creator_id: order.creator_id,
+          payment_mode: configuredPaymentMode,
           ...buyerMetadata,
         },
       },

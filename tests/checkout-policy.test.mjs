@@ -16,6 +16,7 @@ const order = () => ({
   creator_id: "creator-1",
   amount: 1200,
   status: "pending",
+  payment_mode: "test",
   digital_products: {
     id: "product-1",
     status: "active",
@@ -40,6 +41,7 @@ test("pending注文の商品・購入者・出品者・公開状態を照合す�
       orderId: "order-1",
       productId: "product-1",
       buyerEmail: "BUYER@example.com",
+      paymentMode: "test",
     }),
     value,
   );
@@ -51,6 +53,7 @@ test("pending注文の商品・購入者・出品者・公開状態を照合す�
           orderId: "order-1",
           productId: "product-1",
           buyerEmail: "buyer@example.com",
+          paymentMode: "test",
         },
       ),
     /商品情報/,
@@ -66,6 +69,7 @@ test("pending注文の商品・購入者・出品者・公開状態を照合す�
           orderId: "order-1",
           productId: "product-1",
           buyerEmail: "buyer@example.com",
+          paymentMode: "test",
         },
       ),
     /購入できません/,
@@ -84,6 +88,7 @@ test("pending注文の商品・購入者・出品者・公開状態を照合す�
           orderId: "order-1",
           productId: "product-1",
           buyerEmail: "buyer@example.com",
+          paymentMode: "test",
         },
       ),
     /購入できません/,
@@ -143,13 +148,15 @@ test("支払済みSessionから注文IDと商品IDの組だけを取得する", 
   assert.deepEqual(
     paidSessionReference({
       payment_status: "paid",
-      metadata: { order_id: "order-1", product_id: "product-1" },
+      livemode: false,
+      metadata: { order_id: "order-1", product_id: "product-1", payment_mode: "test" },
     }),
-    { orderId: "order-1", productId: "product-1" },
+    { orderId: "order-1", productId: "product-1", paymentMode: "test" },
   );
   assert.equal(
     paidSessionReference({
       payment_status: "unpaid",
+      livemode: false,
       metadata: { order_id: "order-1", product_id: "product-1" },
     }),
     null,
@@ -157,7 +164,16 @@ test("支払済みSessionから注文IDと商品IDの組だけを取得する", 
   assert.equal(
     paidSessionReference({
       payment_status: "paid",
+      livemode: false,
       metadata: { order_id: "order-1" },
+    }),
+    null,
+  );
+  assert.equal(
+    paidSessionReference({
+      payment_status: "paid",
+      livemode: true,
+      metadata: { order_id: "order-1", product_id: "product-1", payment_mode: "test" },
     }),
     null,
   );

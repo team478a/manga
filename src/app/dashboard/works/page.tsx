@@ -50,7 +50,7 @@ export default async function DashboardWorksPage({ searchParams }: { searchParam
               完成原稿を販売したい方へ
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-stone-700">
-              一般向け漫画は完成原稿PDFを書き出した後、KDPやBOOTHなどの外部販売サイトへご自身で登録できます。MANGAI内の販売申請・決済・収益管理は準備中です。
+              一般向け漫画は完成原稿PDFを書き出した後、KDPやBOOTHなどの外部販売サイトへご自身で登録できます。MANGAI内のテスト販売は管理者が有効化した期間だけ利用でき、実決済・振込・本番収益管理は準備中です。
             </p>
             <Link
               className="mt-3 inline-block font-bold text-violet-700 underline"

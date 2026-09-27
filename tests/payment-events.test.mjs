@@ -5,12 +5,13 @@ import {
   planPaymentEvent,
 } from "../src/lib/payment-events.ts";
 
-const event = (type, object) => ({ type, data: { object } });
+const event = (type, object, livemode = false) => ({ type, livemode, data: { object } });
 
 test("決済成功イベントを注文支払済み処理へ変換する", () => {
   const session = {
     id: "cs_test_paid",
     payment_status: "paid",
+    livemode: false,
     metadata: { order_id: "order-1", product_id: "product-1" },
   };
   assert.deepEqual(
@@ -38,6 +39,7 @@ test("同期・非同期の決済失敗を失敗処理へ変換する", () => {
       paymentIntentId: "pi_failed",
       status: "failed",
       orderId: "order-2",
+      paymentMode: "test",
     },
   );
   assert.deepEqual(
@@ -52,6 +54,7 @@ test("同期・非同期の決済失敗を失敗処理へ変換する", () => {
       paymentIntentId: "pi_async_failed",
       status: "failed",
       orderId: "order-3",
+      paymentMode: "test",
     },
   );
 });
@@ -68,6 +71,7 @@ test("全額返金だけを返金済み処理へ変換する", () => {
       type: "payment-status",
       paymentIntentId: "pi_refunded",
       status: "refunded",
+      paymentMode: "test",
     },
   );
   assert.equal(

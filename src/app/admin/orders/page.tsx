@@ -9,6 +9,7 @@ type AdminOrder = {
   platform_fee: number;
   creator_revenue: number;
   status: string;
+  payment_mode: "test" | "live";
   created_at: string;
 };
 
@@ -22,7 +23,7 @@ export default async function AdminOrdersPage() {
       <h1 className="text-3xl font-bold">注文管理</h1>
       <div className="panel mt-6 overflow-x-auto">
         <table className="w-full min-w-[720px] text-left">
-          <thead><tr className="border-b"><th className="py-3">購入者</th><th>金額</th><th>手数料</th><th>作者受取</th><th>状態</th></tr></thead>
+          <thead><tr className="border-b"><th className="py-3">購入者</th><th>金額</th><th>手数料</th><th>作者受取</th><th>状態</th><th>区分</th></tr></thead>
           <tbody>
             {orders?.map((order) => (
               <tr className="border-b border-stone-100" key={order.id}>
@@ -31,6 +32,7 @@ export default async function AdminOrdersPage() {
                 <td>{yen(order.platform_fee)}</td>
                 <td>{yen(order.creator_revenue)}</td>
                 <td>{statusLabel(order.status)}</td>
+                <td>{order.payment_mode === "test" ? "テスト" : "本番"}</td>
               </tr>
             ))}
           </tbody>

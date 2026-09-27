@@ -1,4 +1,8 @@
 import type Stripe from "stripe";
+import {
+  paymentModeForStripeLivemode,
+  type OrderPaymentMode,
+} from "./checkout-mode.ts";
 
 export type PaymentEventAction =
   | { type: "checkout-paid"; session: Stripe.Checkout.Session }
@@ -7,6 +11,7 @@ export type PaymentEventAction =
       paymentIntentId: string;
       status: "failed" | "refunded";
       orderId?: string;
+      paymentMode: OrderPaymentMode;
     };
 
 export function allowedOrderStatuses(status: "failed" | "refunded") {
@@ -24,6 +29,7 @@ function paymentIntentId(
 export function planPaymentEvent(
   event: Stripe.Event,
 ): PaymentEventAction | null {
+  const paymentMode = paymentModeForStripeLivemode(Boolean(event.livemode));
   if (
     event.type === "checkout.session.completed" ||
     event.type === "checkout.session.async_payment_succeeded"
@@ -40,6 +46,7 @@ export function planPaymentEvent(
           paymentIntentId: id,
           status: "failed",
           orderId: event.data.object.metadata?.order_id,
+          paymentMode,
         }
       : null;
   }
@@ -50,6 +57,7 @@ export function planPaymentEvent(
       paymentIntentId: event.data.object.id,
       status: "failed",
       orderId: event.data.object.metadata.order_id,
+      paymentMode,
     };
 
   if (event.type === "charge.refunded" && event.data.object.refunded) {
@@ -59,6 +67,7 @@ export function planPaymentEvent(
           type: "payment-status",
           paymentIntentId: id,
           status: "refunded",
+          paymentMode,
         }
       : null;
   }

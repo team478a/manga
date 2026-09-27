@@ -57,6 +57,7 @@ export async function POST(request: Request) {
         paymentAction.paymentIntentId,
         paymentAction.status,
         paymentAction.orderId,
+        paymentAction.paymentMode,
       );
     logHubEvent("info", "stripe_webhook_processed", {
       ...logContext,

@@ -25,6 +25,7 @@ import { loadAdminVisibleUserCount } from "@/modules/account/infrastructure/admi
 type OrderSummary = {
   amount: number;
   status: string;
+  payment_mode: "test" | "live";
 };
 
 export default async function AdminPage() {
@@ -46,12 +47,12 @@ export default async function AdminPage() {
         .from("goods_requests")
         .select("id", { count: "exact", head: true }),
       supabase.from("orders").select("id", { count: "exact", head: true }),
-      supabase.from("orders").select("amount,status").returns<OrderSummary[]>(),
+      supabase.from("orders").select("amount,status,payment_mode").returns<OrderSummary[]>(),
     ]);
 
   const salesTotal =
     orders.data
-      ?.filter((order) => order.status === "paid")
+      ?.filter((order) => order.status === "paid" && order.payment_mode === "live")
       .reduce((sum, order) => sum + order.amount, 0) ?? 0;
   const cards = [
     {
@@ -85,7 +86,7 @@ export default async function AdminPage() {
       icon: ReceiptText,
     },
     {
-      title: "売上合計（仮）",
+      title: "本番売上合計（仮）",
       count: yen(salesTotal),
       href: "/admin/orders",
       icon: BadgeJapaneseYen,
@@ -144,7 +145,7 @@ export default async function AdminPage() {
     <main className="page">
       <h1 className="text-3xl font-bold">管理者ダッシュボード</h1>
       <p className="mt-3 text-lg leading-relaxed text-stone-600">
-        ユーザー、作品、商品、申請、注文の状況を一目で確認できます。売上合計は支払い済み注文の金額を仮集計しています。
+        ユーザー、作品、商品、申請、注文の状況を一目で確認できます。売上合計は支払い済みの本番注文だけを仮集計し、テスト購入は含みません。
       </p>
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((card) => (

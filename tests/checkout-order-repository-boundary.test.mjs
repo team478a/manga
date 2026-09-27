@@ -36,6 +36,7 @@ test("checkout repository preserves pending order DB contracts", async () => {
     "amount: input.amount",
     "platform_fee: input.platformFee",
     "creator_revenue: input.creatorRevenue",
+    "payment_mode: input.paymentMode",
     'status: "pending"',
   ]) {
     assert.ok(repository.includes(contract), contract);

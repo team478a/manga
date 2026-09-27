@@ -9,6 +9,7 @@ type Order = {
   platform_fee: number;
   creator_revenue: number;
   status: string;
+  payment_mode: "test" | "live";
   created_at: string;
 };
 
@@ -22,7 +23,9 @@ export default async function SalesPage() {
     .order("created_at", { ascending: false })
     .returns<Order[]>();
 
-  const total = orders?.reduce((sum, order) => sum + order.creator_revenue, 0) ?? 0;
+  const total = orders
+    ?.filter((order) => order.status === "paid" && order.payment_mode === "live")
+    .reduce((sum, order) => sum + order.creator_revenue, 0) ?? 0;
 
   return (
     <main className="page">
@@ -30,6 +33,7 @@ export default async function SalesPage() {
       <div className="panel mt-6">
         <p className="text-lg text-stone-600">クリエイター受取予定額</p>
         <p className="mt-2 text-4xl font-bold">{yen(total)}</p>
+        <p className="mt-3 text-sm text-stone-600">テスト購入は受取予定額に含みません。</p>
       </div>
       <section className="panel mt-6">
         <h2 className="text-2xl font-bold">注文一覧</h2>
@@ -42,6 +46,7 @@ export default async function SalesPage() {
                 <th className="py-3">手数料</th>
                 <th className="py-3">受取</th>
                 <th className="py-3">状態</th>
+                <th className="py-3">区分</th>
               </tr>
             </thead>
             <tbody>
@@ -52,9 +57,10 @@ export default async function SalesPage() {
                   <td className="py-3">{yen(order.platform_fee)}</td>
                   <td className="py-3 font-semibold">{yen(order.creator_revenue)}</td>
                   <td className="py-3">{statusLabel(order.status)}</td>
+                  <td className="py-3">{order.payment_mode === "test" ? "テスト" : "本番"}</td>
                 </tr>
               )) : (
-                <tr><td className="py-5 text-stone-600" colSpan={5}>注文はまだありません。</td></tr>
+                <tr><td className="py-5 text-stone-600" colSpan={6}>注文はまだありません。</td></tr>
               )}
             </tbody>
           </table>

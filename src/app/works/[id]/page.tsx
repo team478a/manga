@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { yen } from "@/lib/format";
+import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { createClient } from "@/lib/supabase/server";
 import type { DigitalProduct, Work } from "@/lib/types";
 
@@ -21,6 +22,7 @@ export default async function WorkDetailPage({
     .maybeSingle<Work>();
 
   if (!work) notFound();
+  const checkout = inspectMarketplaceCheckoutMode();
 
   const { data: products } = await supabase
     .from("digital_products")
@@ -95,6 +97,9 @@ export default async function WorkDetailPage({
       ) : null}
       <section className="mt-10">
         <h2 className="text-2xl font-bold">販売中の商品</h2>
+        {checkout.paymentMode === "test" ? (
+          <p className="mt-3 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">現在はテスト販売です。購入操作で実際の請求や売上計上は行われません。</p>
+        ) : null}
         <div className="mt-4 grid gap-4">
           {products?.length ? (
             products.map((product) => (
@@ -110,9 +115,13 @@ export default async function WorkDetailPage({
                   <p className="text-2xl font-bold">
                     税込 {yen(product.price)}
                   </p>
-                  <Link className="button" href={`/checkout/${product.id}`}>
-                    購入ボタン
-                  </Link>
+                  {checkout.enabled ? (
+                    <Link className="button" href={`/checkout/${product.id}`}>
+                      {checkout.paymentMode === "test" ? "テスト購入" : "購入する"}
+                    </Link>
+                  ) : (
+                    <span className="rounded-md bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-600">購入準備中</span>
+                  )}
                 </div>
               </div>
             ))

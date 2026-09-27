@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-27 Codex: 一般向けMarketplaceのStripeテスト販売準備
+
+- Base `cf9f34184807ea9ed4636175f7deacf6e1862edf`から新規branchを作成し、Stripeテスト販売を本番販売と混在させないmode境界を実装した。
+- `disabled`／`test`／`live`とSecret Key種別を照合し、未設定・placeholder・不一致はfail closedにする。注文へ`payment_mode`を永続化し、Checkout／PaymentIntent metadataとWebhook更新でも照合する。
+- テスト購入を作品・Checkout・完了・購入履歴・売上一覧・注文管理で識別可能にし、テスト注文を管理者／出品者の本番売上合計から除外した。
+- `202609270001_marketplace_test_sales` migration／rollback、schema、manifest、環境例、RC preflight、案内文、StripeテストE2E手順を同期した。
+- 集中5/5、Hub 1034/1034、全typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `050262ae`とmigration互換修正`a6bb823c`をpushし、Draft PR [#525](https://github.com/team478a/manga/pull/525)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
+- Production、外部設定、Stripe、Webhook、実決済、Provider、生成Job、credit、利用者データは未変更。次はPRのmerge判断後、isolated stagingで外部Stripe E2Eを行う。
+
+---
+
 ## 2026-09-24 Codex: モニター8名のProduction利用期限整合
 
 - 責任者承認後、Production `vmdsyxykcrgxcdbrwlkv`で実利用者8名のmonitor期限を、現在の各Cloud AI期限へ専用RPCで延長した。対象は山極和彦、hiroro、加藤周星、樋口美子、工藤一郎、青木隆康、なっかん、松浦周平。

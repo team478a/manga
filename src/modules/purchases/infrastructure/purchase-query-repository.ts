@@ -6,6 +6,7 @@ export type PurchaseHistoryRecord = {
   status: "paid" | "refunded";
   paid_at: string | null;
   download_count: number;
+  payment_mode: "test" | "live";
   digital_products: {
     title: string;
     file_url: string | null;
@@ -17,7 +18,7 @@ export function listPurchaseHistoryForProfile(profileId: string) {
   return createAdminClient()
     .from("orders")
     .select(
-      "id,amount,status,paid_at,download_count,digital_products:product_id(title,file_url,works:work_id(title))",
+      "id,amount,status,paid_at,download_count,payment_mode,digital_products:product_id(title,file_url,works:work_id(title))",
     )
     .eq("buyer_profile_id", profileId)
     .in("status", ["paid", "refunded"])

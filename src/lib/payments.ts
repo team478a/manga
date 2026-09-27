@@ -25,6 +25,7 @@ export async function markCheckoutSessionPaid(
     .eq("id", reference.orderId)
     .eq("product_id", reference.productId)
     .eq("status", "pending")
+    .eq("payment_mode", reference.paymentMode)
     .select("id")
     .maybeSingle();
 
@@ -42,6 +43,7 @@ export async function markCheckoutSessionPaid(
     .eq("id", reference.orderId)
     .eq("product_id", reference.productId)
     .eq("status", "paid")
+    .eq("payment_mode", reference.paymentMode)
     .maybeSingle();
   if (paidOrderError)
     throw new DomainError(
@@ -56,6 +58,7 @@ export async function markPaymentIntentStatus(
   paymentIntentId: string,
   status: "failed" | "refunded",
   orderId?: string,
+  paymentMode?: "test" | "live",
 ) {
   const supabase = createAdminClient();
   let query = supabase.from("orders").update({ status });
@@ -63,6 +66,7 @@ export async function markPaymentIntentStatus(
   query = orderId
     ? query.eq("id", orderId)
     : query.eq("stripe_payment_intent_id", paymentIntentId);
+  if (paymentMode) query = query.eq("payment_mode", paymentMode);
   const { error } = await query;
   if (error)
     throw new DomainError(
