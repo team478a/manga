@@ -30,7 +30,11 @@ export async function createDigitalProduct(formData: FormData) {
   const supabase = await createClient();
   const { data: work } = await supabase
     .from("works")
-    .select("id,source_project_id,current_publication_id,is_public,status")
+    // Keep manually registered Marketplace works compatible with deployments
+    // where Cloud publication columns have not been migrated yet. Selecting
+    // `*` lets standalone works proceed while the publication gate below still
+    // fails closed for Cloud-linked works when the column is unavailable.
+    .select("*")
     .eq("id", workId)
     .eq("creator_id", profile.id)
     .eq("content_class", "general")
@@ -108,7 +112,9 @@ export async function updateDigitalProduct(formData: FormData) {
       .maybeSingle(),
     supabase
       .from("works")
-      .select("id,source_project_id,current_publication_id,is_public,status")
+      // See createDigitalProduct: old Marketplace schemas do not necessarily
+      // expose Cloud publication columns, but standalone works remain sellable.
+      .select("*")
       .eq("id", workId)
       .eq("creator_id", profile.id)
       .eq("content_class", "general")

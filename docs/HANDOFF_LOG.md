@@ -1,5 +1,36 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace隔離Staging テスト購入成功・callback host修正
+
+- 責任者の実行時承認を得て、synthetic buyer B／公式Stripeテストカードで100円のsandbox決済を実行した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`はテスト購入として購入履歴へ表示された。
+- 成功画面の5分署名URLから67,604 byteのPNGを取得した。購入履歴の再ダウンロード導線は本人確認後に新しい署名URLを発行し、download countが0から1へ更新された。実請求・本番売上・振込は発生していない。
+- 成功callbackがbranch aliasではなく固有deployment URLへ戻り、認証Cookieを外すPreview固有不具合を追加検出した。`x-forwarded-host`／`host`を検証してrequest originを作る共通helperを追加し、Server ActionとAPIのStripe Session作成へ渡した。Productionは`NEXT_PUBLIC_SITE_URL`固定を維持する。
+- focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、diff check成功。次はDraft PR #532への追加push、全CI／Vercel、更新Previewでcallback host・出品者売上0円・管理売上0円を確認する。Production DB／Storage、Provider、生成Job、creditは変更していない。
+- commit `6908b997`をpush後、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。更新Previewで作成した未決済Sessionのcancel URLはbranch aliasを維持し、pending注文`cb545a04-506d-4038-a423-a8b0307491a9`には決済がない。残りはsynthetic seller売上0円と管理売上0円の実画面確認。
+- Vercel保護により新規ブラウザSessionの実画面確認は行わず、保護を迂回しなかった。代わりに隔離Preview Branch `vaepinhkcjxjzrxflxwi`をread-only照合し、対象注文が`paid/test` 1件・100円・download count 1、synthetic sellerの本番受取予定額0円、Branch全体の本番売上0円、未決済注文が`pending/test`であることを確認した。画面コードは双方とも`paid && payment_mode === "live"`だけを集計するため、テスト売上は除外される。Productionは変更していない。
+
+---
+
+## 2026-09-28 Codex: Marketplace隔離Preview Checkout origin修正
+
+- Draft PR #532の修正版Previewでsynthetic seller Bを作成し、公開作品`f884fd36-7c62-409f-8bac-42356fe1b711`と販売中商品`3d5e8dfd-60d8-4795-9b04-c989a128aaa9`を保存した。自己所有作品エラーは再発せず、商品保存と公開作品ページのテスト購入導線を確認した。
+- synthetic buyer BでCheckoutを開始したところ、Stripe遷移前にPreviewが`NODE_ENV=production`だけで本番扱いされ、`NEXT_PUBLIC_SITE_URL`必須判定で停止した。pending仮注文`f558f6fe-abcd-43b7-963d-fb0738a8f6dc`だけが作成され、Stripe Session、決済、売上、downloadは0件。
+- `VERCEL_ENV=preview`ではrequest originまたは`VERCEL_URL`を優先し、Production用`NEXT_PUBLIC_SITE_URL`をPreview callbackへ混在させない共通origin resolverへ変更した。Vercel Productionと非Vercel production buildは従来どおり設定URL必須でfail closed。Cloud AI subscriptionも同じ安全な判定へ統一した。
+- focused 20/20、Hub 1048/1048、Hub typecheck、lint、Hub Production build、diff check成功。Production DB／Storage、Provider、生成Job、credit、実決済、実利用者データは変更していない。
+- 次: commit・pushし、Draft PR #532の全CI／Vercel Preview成功後に同じbuyerでCheckoutを再試行する。Stripe最終テスト支払いは実行直前に責任者確認を得る。
+
+---
+
+## 2026-09-28 Codex: Marketplace隔離Staging 商品保存の旧schema互換
+
+- Branch: `codex/marketplace-purchase-e2e-continuation-20260928`。Base: `f6ba962d`（PR #531 merge commit）。
+- synthetic sellerで公開作品を保存した後、販売中商品の保存が「自分の作品だけを商品に紐づけできます」で停止する事象を再現した。
+- 隔離Previewのread-only確認で`works.current_publication_id`列が未適用、明示selectがPostgREST `42703`となることを確認した。手動登録作品を旧schemaでも編集・販売できる互換修正と回帰テストを追加し、Cloud-linked作品の完成版gateはfail closedのまま維持した。
+- Implementation commit `51f80b54`をpushし、Draft PR [#532](https://github.com/team478a/manga/pull/532)を作成した。Hub 1046/1046、全typecheck、lint、Hub Production build、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。Production DB／Storage、Provider、生成Job、credit、Stripe決済、注文、実利用者データの変更は0件。
+- 修正版PreviewはVercel Deployment Protectionのログイン画面で停止したため、Chromeへhandoffして認証操作は行っていない。次の一手はログイン後に同じsellerの商品保存を再試行する。buyerのテスト決済確定前に別確認を得る。
+
+---
+
 ## 2026-09-28 Codex: Marketplace隔離Staging 静的seed／Storage復旧
 
 - Branch: `codex/marketplace-test-purchase-e2e-20260927`。Base: `014a71fe`（PR #530 merge commit）。

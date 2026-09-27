@@ -58,3 +58,14 @@ test("checkout action preserves guest checkout, fee calculation, and Stripe orde
   assert.match(action, /error=仮注文の作成に失敗しました/);
   assert.match(action, /&orderId=\$\{order\.id\}/);
 });
+
+test("checkout entrypoints preserve the browser-visible proxy origin", async () => {
+  const action = await read("src/app/actions/checkout-actions.ts");
+  const apiRoute = await read("src/app/api/checkout/create-session/route.ts");
+
+  assert.match(action, /requestOriginFromHeaders\(await headers\(\)\)/);
+  assert.match(
+    apiRoute,
+    /requestOriginFromHeaders\(request\.headers\) \?\? new URL\(request\.url\)\.origin/,
+  );
+});

@@ -94,3 +94,19 @@ test("作品と商品Actionは共通Storage transactionを利用する", async (
     assert.doesNotMatch(source, /storage\.from\([^)]*\)\.upload/);
   }
 });
+
+test("手動登録作品はCloud publication列がない旧Marketplace schemaでも編集・販売できる", async () => {
+  for (const relative of [
+    "../src/app/actions/work-actions.ts",
+    "../src/app/actions/product-actions.ts",
+  ]) {
+    const source = await readFile(new URL(relative, import.meta.url), "utf8");
+    assert.match(source, /\.select\("\*"\)/);
+    assert.doesNotMatch(
+      source,
+      /\.select\("[^"]*current_publication_id[^"]*"\)/,
+    );
+    assert.match(source, /source_project_id/);
+    assert.match(source, /current_publication_id/);
+  }
+});

@@ -105,7 +105,10 @@ export async function updateWork(formData: FormData) {
   const supabase = await createClient();
   const { data: ownedWork } = await supabase
     .from("works")
-    .select("id,image_url,source_project_id,current_publication_id")
+    // Preserve editing for manually registered works on deployments that have
+    // not received the optional Cloud publication columns yet. Cloud-linked
+    // works still fail closed below when no fixed publication is available.
+    .select("*")
     .eq("id", id)
     .eq("creator_id", profile.id)
     .eq("content_class", "general")

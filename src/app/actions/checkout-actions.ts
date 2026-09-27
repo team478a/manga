@@ -1,11 +1,13 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { createStripeCheckoutSession } from "@/lib/checkout";
 import { requireMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { normalizeBuyerEmail } from "@/lib/checkout-policy";
 import { hasSupabaseAdminEnv } from "@/lib/env";
+import { requestOriginFromHeaders } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 import { insertPendingCheckoutOrder } from "@/modules/checkout/infrastructure/checkout-order-repository";
 import { formText } from "./shared/form-data";
@@ -91,6 +93,7 @@ export async function createPendingOrder(formData: FormData) {
       orderId: order.id,
       productId: product.id,
       buyerEmail,
+      origin: requestOriginFromHeaders(await headers()) ?? undefined,
       paymentMode,
     });
     checkoutUrl = session.url ?? "";

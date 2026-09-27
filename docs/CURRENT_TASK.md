@@ -1,5 +1,41 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace隔離Staging テスト購入成功・callback host修正
+
+- 状態: `STRIPE_TEST_PAYMENT_PASSED / PURCHASE_HISTORY_PASSED / DOWNLOAD_PASSED / CALLBACK_HOST_PREVIEW_PASSED / SALES_EXCLUSION_READ_ONLY_PASSED / ALL_CI_AND_VERCEL_PASSED / PRODUCTION_UNCHANGED`
+- 責任者の実行時承認後、synthetic buyer Bで`Marketplace Staging E2E Product B`を100円のStripeサンドボックス決済で購入した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`は購入履歴へ`テスト購入`として表示され、実請求・本番売上・振込は発生していない。
+- Checkout成功画面で5分有効の署名付きdownload URLを発行し、67,604 byteのPNGを取得した。購入履歴からの再発行導線も通過し、download countが0回から1回へ更新された。
+- Stripeからの戻り先がbranch aliasではなく固有deployment URLになり、成功画面のヘッダーだけログアウト表示になる追加不具合を検出した。Server Actionがrequest originを渡していなかったため、`x-forwarded-host`を優先し、`host`へfallbackする共通resolverを追加した。Production callbackは従来どおり`NEXT_PUBLIC_SITE_URL`固定であり、Previewだけが現在の公開ホストへ戻る。
+- callback修正の検証: focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、`git diff --check`成功。Production、Provider、生成Job、creditは未変更。
+- commit `6908b997`をDraft PR #532へpushした。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。更新Previewから作成した未決済Sessionのcancel URLがbranch aliasを保持することを確認した（pending注文`cb545a04-506d-4038-a423-a8b0307491a9`、決済未実行）。
+- Supabase Preview Branch `marketplace-staging`（ref `vaepinhkcjxjzrxflxwi`）をread-only照合した。支払済み注文は対象の`payment_mode=test` 1件・100円だけでdownload countは1、同一出品者の本番支払済み注文は0件・本番受取予定額0円、Branch全体の本番支払済み注文も0件・本番売上0円だった。テスト受取相当80円とテスト売上100円は画面実装の`payment_mode=live`集計から除外される。未決済注文は`pending/test`のままである。
+- 次: この最終証跡をcommit・pushし、Draft PR #532の全CI／Vercel成功で停止する。Preview Branch削除は別承認まで行わない。
+
+---
+
+## 2026-09-28 Marketplace隔離Preview Checkout origin修正
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / PRODUCT_SAVE_E2E_PASSED / CHECKOUT_PREVIEW_RETRY_PENDING / PRODUCTION_UNCHANGED`
+- 修正版Previewへsynthetic seller Bで公開作品`Marketplace Staging E2E Sample B`（`f884fd36-7c62-409f-8bac-42356fe1b711`）と販売中商品`Marketplace Staging E2E Product B`（`3d5e8dfd-60d8-4795-9b04-c989a128aaa9`、100円）を保存した。PR #532の旧schema互換修正により、従来の自己所有作品エラーは再発せず、公開作品ページへテスト購入導線が表示された。
+- synthetic buyer BでCheckoutを開始すると、Stripe遷移前に`本番環境ではNEXT_PUBLIC_SITE_URLが必要です。`で停止し、pending仮注文`f558f6fe-abcd-43b7-963d-fb0738a8f6dc`だけが作成された。決済、Stripe Session、売上、download、Provider、Job、creditは発生していない。
+- 原因はVercel Previewも`NODE_ENV=production`であるのに、Checkout origin判定が`NODE_ENV`だけを本番判定に使ったこと。`VERCEL_ENV=preview`では現在のrequest originまたは`VERCEL_URL`を使い、`NEXT_PUBLIC_SITE_URL`を無視してProductionとのcallback混在を防ぐ。本番Vercelと非Vercel production buildは従来どおり`NEXT_PUBLIC_SITE_URL`必須でfail closedとする。Cloud AI subscriptionの同じorigin解決も共通化した。
+- 検証: focused 20/20、Hub 1048/1048、Hub typecheck、lint、Hub Production build、`git diff --check`成功。
+- 次: commit・pushしてDraft PR #532の全CI／Vercel Preview成功を確認後、更新Previewでbuyer Checkoutを再開する。Stripeテスト画面では入力準備まで進め、最終支払い確定直前に責任者へ別確認する。
+
+---
+
+## 2026-09-28 Marketplace隔離Staging 商品保存の旧schema互換
+
+- 状態: `DRAFT_PR_532 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / SELLER_WORK_CREATED / PRODUCT_RETRY_BLOCKED_BY_PREVIEW_LOGIN / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-purchase-e2e-continuation-20260928`。BaseはPR #531 merge commit `f6ba962d0822c45a2fe21f5834cb5aeccdbbcd2d`。
+- synthetic sellerで公開作品`Marketplace Staging E2E Sample`を隔離Stagingへ保存できた。販売中商品を保存すると、作品一覧には表示される一方で「自分の作品だけを商品に紐づけできます」と拒否される事象を再現した。
+- read-only確認でPreview Branchの`works.current_publication_id`列が未適用と判明した。商品／作品Actionが同列を明示selectしたためPostgREST `42703`となり、所有権エラーへ誤変換されていた。
+- 手動登録作品は旧Marketplace schemaでも編集・販売できるよう、作品rowを互換取得する。Cloud-linked作品は`source_project_id`と完成版条件を引き続きfail closedで検査し、安全境界を緩和しない。
+- Implementation commit `51f80b54`をpushし、Draft PR [#532](https://github.com/team478a/manga/pull/532)を作成した。Hub 1046/1046、全typecheck、lint、Hub Production build、`git diff --check`、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。Production DB／Storage、Provider、生成Job、credit、Stripe決済、注文、実利用者データは変更していない。
+- 次: Chromeで修正版PreviewのVercel Deployment Protectionへログイン後、同じsynthetic sellerで販売中商品を保存する。buyer Checkoutの最終テスト決済は金融操作として実行直前に別確認を得る。
+
+---
+
 ## 2026-09-28 Marketplace隔離Staging 静的seed／Storage復旧
 
 - 状態: `STAGING_STATIC_SEED_REPAIRED / MIGRATION_AND_REGRESSION_TEST_ADDED / SELLER_WORK_RETRY_PENDING / PRODUCTION_UNCHANGED`

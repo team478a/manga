@@ -2,7 +2,7 @@ import type { CloudSubscriptionAction } from "@/lib/subscription-events";
 import { createStripeClient } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { resolveCheckoutOrigin } from "@/lib/checkout-policy";
+import { resolveCheckoutDeploymentOrigin } from "@/lib/checkout-policy";
 import {
   AuthenticationRequiredError,
   DomainError,
@@ -64,10 +64,8 @@ async function billingContext() {
 }
 
 function siteOrigin(request: Request) {
-  return resolveCheckoutOrigin({
-    configured: process.env.NEXT_PUBLIC_SITE_URL,
+  return resolveCheckoutDeploymentOrigin({
     requestOrigin: new URL(request.url).origin,
-    production: process.env.NODE_ENV === "production",
   });
 }
 

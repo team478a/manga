@@ -116,6 +116,46 @@ export function resolveCheckoutOrigin({
   return url.origin;
 }
 
+type CheckoutOriginEnvironment = {
+  NEXT_PUBLIC_SITE_URL?: string;
+  NODE_ENV?: string;
+  VERCEL_ENV?: string;
+  VERCEL_URL?: string;
+};
+
+export function resolveCheckoutDeploymentOrigin({
+  environment = process.env,
+  requestOrigin,
+}: {
+  environment?: CheckoutOriginEnvironment;
+  requestOrigin?: string;
+}) {
+  const vercelEnvironment = environment.VERCEL_ENV?.trim().toLowerCase();
+
+  if (vercelEnvironment === "preview") {
+    const deploymentUrl = environment.VERCEL_URL?.trim();
+    const previewOrigin =
+      requestOrigin?.trim() ||
+      (deploymentUrl
+        ? deploymentUrl.includes("://")
+          ? deploymentUrl
+          : `https://${deploymentUrl}`
+        : undefined);
+    return resolveCheckoutOrigin({
+      requestOrigin: previewOrigin,
+      production: false,
+    });
+  }
+
+  return resolveCheckoutOrigin({
+    configured: environment.NEXT_PUBLIC_SITE_URL,
+    requestOrigin,
+    production:
+      vercelEnvironment === "production" ||
+      (!vercelEnvironment && environment.NODE_ENV === "production"),
+  });
+}
+
 export function createCheckoutCancelToken(orderId: string, secret: string) {
   if (!orderId || secret.length < 16)
     throw new ProviderUnavailableError("キャンセル認証設定が不足しています。");
