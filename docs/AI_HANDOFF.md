@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Staging deployment preflight（2026-09-27）
+
+- PR #526 merge commit `ce51839ba9a3879df8bea3cc50ec1fa86b62f82d`から`codex/staging-supabase-bootstrap-20260927`を作成した。
+- linked Vercel projectのPreview／Production環境を専用一時ディレクトリへ取得し、秘密値やProject refを表示せず、Supabase 3資格情報の分離、接続先ref、checkout mode、Stripe test資格情報を一括判定するpreflightを追加した。一時ファイルは成功・失敗にかかわらず削除する。
+- 実環境のread-only実行結果は、`Preview Supabase isolation`、`Marketplace checkout mode`、`Stripe test credentials`の3項目がすべて`PENDING`。Productionへ共有接続した現状では、migration／Webhook／テスト購入へ進まない。
+- Supabase CLIの再利用可能な認証情報はローカルに存在せず、ブラウザ連携もrequest-header policyで利用不可。隔離Branch／Project作成とPreview資格情報設定は、外部前提と費用条件を確認した後の別操作とする。
+- 集中4/4、Hub 1041/1041、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。Production、Vercel設定、Supabase、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+
+---
+
 ## 0.0 Marketplaceテスト販売の隔離Staging強制（2026-09-27）
 
 - PR #525 merge commit `a057f338610a45c20f7dd68156cd2ec9289cc324`から`codex/staging-marketplace-test-e2e-20260927`を作成した。

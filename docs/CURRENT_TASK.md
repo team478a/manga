@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-27 Marketplace隔離Staging deployment preflight
+
+- 状態: `LOCAL_PREFLIGHT_READY / ACTUAL_DEPLOYMENT_3_OF_3_PENDING / EXTERNAL_SETUP_NOT_STARTED / PRODUCTION_UNCHANGED`
+- BaseはPR #526 merge commit `ce51839ba9a3879df8bea3cc50ec1fa86b62f82d`。Branchは`codex/staging-supabase-bootstrap-20260927`。
+- `npm run marketplace:staging:preflight`とstrict版を追加した。linked Vercel projectのPreview／Production環境を専用一時ディレクトリへ取得し、値を表示せず、PreviewのSupabase URL／anon key／service-role keyがProductionとすべて異なること、接続先refと宣言refの一致、Previewだけがcheckout `test`であること、Stripe test Secret／Webhook／Cancel Secretが揃うことを判定する。
+- 一時envは処理結果にかかわらず`finally`で削除する。診断結果には秘密値、URL、Project refを含めず、READY／PENDINGと不足条件だけを出力する。
+- linked Vercel projectでread-only実行し、`Preview Supabase isolation`、`Marketplace checkout mode`、`Stripe test credentials`の3項目がすべて`PENDING`であることを確認した。migration、Webhook、購入E2Eは実行していない。
+- ローカルには再利用可能なSupabase CLI認証情報がなく、ブラウザ連携もrequest-header policyで利用できない。隔離Branch／Project作成とPreview設定は、外部条件を整えた次の実行単位で行う。
+- 検証: 集中4/4、Hub 1041/1041、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、`git diff --check`成功。
+- Production、DB／Storage、Vercel環境変数、Stripe設定、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+
+---
+
 ## 2026-09-27 Marketplaceテスト販売の隔離Staging強制
 
 - 状態: `DRAFT_PR_526 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / EXTERNAL_E2E_BLOCKED_BY_SHARED_PRODUCTION_DB / PRODUCTION_UNCHANGED`
