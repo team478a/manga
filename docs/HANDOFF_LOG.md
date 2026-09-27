@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-27 Codex: Marketplaceテスト販売の隔離Staging強制
+
+- Base `a057f338610a45c20f7dd68156cd2ec9289cc324`から`codex/staging-marketplace-test-e2e-20260927`を作成した。
+- Vercel Preview／ProductionのSupabase URL、anon key、service-role keyを値非表示で比較し、3値すべて同一と判定した。PreviewのStripe test key／Webhook secret／checkout modeも未設定だったため、migrationと外部Stripe E2Eを実行前に停止した。比較用の一時env 2件は削除済み。
+- Production deploymentではtest checkoutを拒否し、Previewでは接続Supabase ref＝staging ref、かつstaging ref≠親Production refの場合だけ許可する。RC preflightも同一条件を検査し、値やrefを出力しない。
+- 集中21/21、Hub 1037/1037、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `00cc58b6`をpushし、Draft PR [#526](https://github.com/team478a/manga/pull/526)を作成した。Core quality run `36314520708`、Migration roundtrip、Windows build run `36314520723`、Vercel Preview、Preview Commentsはすべて成功した。
+- Production、Supabase、Vercel環境変数、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。ブラウザ連携はrequest-header policyエラー、Supabase CLIはローカル未導入かつnpm一時cache不整合のため、隔離Branchの作成・確認は外部前提として残る。
+
+---
+
 ## 2026-09-27 Codex: 一般向けMarketplaceのStripeテスト販売準備
 
 - Base `cf9f34184807ea9ed4636175f7deacf6e1862edf`から新規branchを作成し、Stripeテスト販売を本番販売と混在させないmode境界を実装した。

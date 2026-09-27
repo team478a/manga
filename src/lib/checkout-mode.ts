@@ -13,11 +13,50 @@ export type MarketplaceCheckoutAvailability = {
 type CheckoutEnvironment = {
   [key: string]: string | undefined;
   MANGAI_MARKETPLACE_CHECKOUT_MODE?: string;
+  MANGAI_STAGING_PARENT_PROJECT_REF?: string;
+  MANGAI_STAGING_PROJECT_REF?: string;
+  NEXT_PUBLIC_SUPABASE_URL?: string;
   STRIPE_SECRET_KEY?: string;
+  VERCEL_ENV?: string;
 };
 
 const invalidModeMessage =
   "販売モードの設定を確認できないため、購入手続きを開始できません。";
+const invalidTestIsolationMessage =
+  "Stripeテスト販売は、Productionと分離したStaging環境でのみ開始できます。";
+
+function supabaseProjectRef(value: string | undefined) {
+  if (!value?.trim()) return null;
+  try {
+    const url = new URL(value.trim());
+    const match = url.hostname.match(/^([a-z0-9-]{8,64})\.supabase\.co$/i);
+    return match?.[1]?.toLowerCase() ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function hasIsolatedPreviewDatabase(environment: CheckoutEnvironment) {
+  const stagingRef = environment.MANGAI_STAGING_PROJECT_REF
+    ?.trim()
+    .toLowerCase();
+  const parentRef = environment.MANGAI_STAGING_PARENT_PROJECT_REF
+    ?.trim()
+    .toLowerCase();
+  const connectedRef = supabaseProjectRef(
+    environment.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  const validRef = /^[a-z0-9-]{8,64}$/;
+
+  return Boolean(
+    stagingRef &&
+      parentRef &&
+      validRef.test(stagingRef) &&
+      validRef.test(parentRef) &&
+      stagingRef !== parentRef &&
+      connectedRef === stagingRef,
+  );
+}
 
 export function inspectMarketplaceCheckoutMode(
   environment: CheckoutEnvironment = process.env,
@@ -39,6 +78,21 @@ export function inspectMarketplaceCheckoutMode(
       enabled: false,
       paymentMode: null,
       reason: "MANGAI内の購入手続きは現在準備中です。",
+    };
+  }
+
+  const deploymentEnvironment = environment.VERCEL_ENV?.trim().toLowerCase();
+  if (
+    mode === "test" &&
+    (deploymentEnvironment === "production" ||
+      (deploymentEnvironment === "preview" &&
+        !hasIsolatedPreviewDatabase(environment)))
+  ) {
+    return {
+      configuredMode: mode,
+      enabled: false,
+      paymentMode: null,
+      reason: invalidTestIsolationMessage,
     };
   }
 

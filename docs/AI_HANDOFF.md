@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplaceテスト販売の隔離Staging強制（2026-09-27）
+
+- PR #525 merge commit `a057f338610a45c20f7dd68156cd2ec9289cc324`から`codex/staging-marketplace-test-e2e-20260927`を作成した。
+- Vercel環境を秘密値非表示でread-only比較し、PreviewとProductionのSupabase URL、anon key、service-role keyが同一であることを確認した。PreviewのStripe test設定も未設定だったため、Productionへ影響し得るmigration／購入E2Eは実行前に停止した。
+- Production deploymentのtest checkoutを拒否し、Vercel Previewは接続Supabase refが明示したstaging refと一致し、親Production refと異なる場合だけtest checkoutを許可する。RC preflight、環境例、手動E2E手順も同じfail-closed条件へ同期した。
+- 集中21/21、Hub 1037/1037、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `00cc58b6`をpushし、Draft PR [#526](https://github.com/team478a/manga/pull/526)を作成した。Core quality run `36314520708`、Migration roundtrip、Windows build run `36314520723`、Vercel Preview、Preview Commentsはすべて成功した。
+- Production、DB／Storage、Vercel設定、Stripe設定、Webhook、注文、決済、Provider、生成Job、credit、利用者データは未変更。次は隔離Supabase Branch／ProjectとPreview専用資格情報、Stripe test資格情報を準備してから外部E2Eを再開する。
+
+---
+
 ## 0.0 一般向けMarketplaceのStripeテスト販売準備（2026-09-27）
 
 - PR #524 merge commit `cf9f34184807ea9ed4636175f7deacf6e1862edf`から`codex/stripe-test-sale-readiness-20260927`を作成した。

@@ -87,6 +87,33 @@ const stripeTestSecretState = () => {
     : "missing";
 };
 
+const marketplaceTestIsolationState = () => {
+  if (environment.MANGAI_MARKETPLACE_CHECKOUT_MODE !== "test")
+    return "missing";
+  const stagingRef = environment.MANGAI_STAGING_PROJECT_REF
+    ?.trim()
+    .toLowerCase();
+  const parentRef = environment.MANGAI_STAGING_PARENT_PROJECT_REF
+    ?.trim()
+    .toLowerCase();
+  if (
+    !stagingRef ||
+    !parentRef ||
+    !/^[a-z0-9-]{8,64}$/.test(stagingRef) ||
+    !/^[a-z0-9-]{8,64}$/.test(parentRef) ||
+    stagingRef === parentRef
+  )
+    return "missing";
+  try {
+    const host = new URL(environment.NEXT_PUBLIC_SUPABASE_URL ?? "").hostname;
+    return host.toLowerCase() === `${stagingRef}.supabase.co`
+      ? "configured"
+      : "missing";
+  } catch {
+    return "missing";
+  }
+};
+
 const commandAvailable = (command) => {
   const finder = process.platform === "win32" ? "where.exe" : "which";
   const result = spawnSync(finder, [command], {
@@ -124,6 +151,10 @@ const checks = [
         stripeTestSecretState(),
       ],
       ["STRIPE_WEBHOOK_SECRET", stateOf("STRIPE_WEBHOOK_SECRET", 16)],
+      [
+        "isolated Supabase target for test checkout",
+        marketplaceTestIsolationState(),
+      ],
       [
         "checkout cancel signing secret",
         effectiveSecretState(

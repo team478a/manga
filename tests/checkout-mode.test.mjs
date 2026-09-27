@@ -47,6 +47,57 @@ test("テスト販売はStripeテストキーとの組だけを許可する", ()
   );
 });
 
+test("Production deploymentではStripeテスト販売を拒否する", () => {
+  const availability = inspectMarketplaceCheckoutMode({
+    MANGAI_MARKETPLACE_CHECKOUT_MODE: "test",
+    STRIPE_SECRET_KEY: fakeTestSecret,
+    VERCEL_ENV: "production",
+  });
+
+  assert.equal(availability.enabled, false);
+  assert.match(availability.reason, /Productionと分離したStaging/);
+});
+
+test("Previewのテスト販売は隔離Supabase接続だけを許可する", () => {
+  const base = {
+    MANGAI_MARKETPLACE_CHECKOUT_MODE: "test",
+    STRIPE_SECRET_KEY: fakeTestSecret,
+    VERCEL_ENV: "preview",
+    MANGAI_STAGING_PROJECT_REF: "preview-branch-ref",
+    MANGAI_STAGING_PARENT_PROJECT_REF: "production-parent-ref",
+  };
+
+  assert.equal(
+    inspectMarketplaceCheckoutMode({
+      ...base,
+      NEXT_PUBLIC_SUPABASE_URL:
+        "https://preview-branch-ref.supabase.co",
+    }).enabled,
+    true,
+  );
+  for (const environment of [
+    {
+      ...base,
+      NEXT_PUBLIC_SUPABASE_URL:
+        "https://production-parent-ref.supabase.co",
+    },
+    {
+      ...base,
+      MANGAI_STAGING_PROJECT_REF: "production-parent-ref",
+      NEXT_PUBLIC_SUPABASE_URL:
+        "https://production-parent-ref.supabase.co",
+    },
+    {
+      ...base,
+      NEXT_PUBLIC_SUPABASE_URL: "https://example.invalid",
+    },
+  ]) {
+    const availability = inspectMarketplaceCheckoutMode(environment);
+    assert.equal(availability.enabled, false);
+    assert.match(availability.reason, /Productionと分離したStaging/);
+  }
+});
+
 test("本番販売はStripe本番キーとの組だけを許可する", () => {
   assert.equal(
     requireMarketplaceCheckoutMode({
