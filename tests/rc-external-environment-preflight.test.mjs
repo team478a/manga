@@ -250,3 +250,59 @@ test("main RC preflight includes external E2E readiness without probing", () => 
   assert.match(result.stdout, /\[PENDING\] ComfyUI実環境E2E/);
   assert.doesNotMatch(result.stdout, /\[probe\]/);
 });
+
+test("Stripe test preflight requires a Preview URL bound to the isolated staging ref", () => {
+  const baseEnvironment = {
+    ...process.env,
+    MANGAI_MARKETPLACE_CHECKOUT_MODE: "test",
+    STRIPE_SECRET_KEY: ["sk", "test", "0123456789abcdefghijklmnop"].join(
+      "_",
+    ),
+    STRIPE_WEBHOOK_SECRET: "whsec_0123456789abcdefghijklmnop",
+    CHECKOUT_CANCEL_SECRET: "cancel_0123456789abcdefghijklmnop",
+    MANGAI_STAGING_PROJECT_REF: "preview-branch-ref",
+    MANGAI_STAGING_PARENT_PROJECT_REF: "production-parent-ref",
+    PATH: "",
+  };
+  const isolated = spawnSync(
+    process.execPath,
+    ["scripts/check-release-candidate.mjs"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: {
+        ...baseEnvironment,
+        NEXT_PUBLIC_SUPABASE_URL:
+          "https://preview-branch-ref.supabase.co",
+      },
+      windowsHide: true,
+    },
+  );
+  const sharedProduction = spawnSync(
+    process.execPath,
+    ["scripts/check-release-candidate.mjs"],
+    {
+      cwd: process.cwd(),
+      encoding: "utf8",
+      env: {
+        ...baseEnvironment,
+        NEXT_PUBLIC_SUPABASE_URL:
+          "https://production-parent-ref.supabase.co",
+      },
+      windowsHide: true,
+    },
+  );
+
+  assert.equal(isolated.status, 0, isolated.stderr);
+  assert.match(isolated.stdout, /\[READY\] Stripe test/);
+  assert.equal(sharedProduction.status, 0, sharedProduction.stderr);
+  assert.match(sharedProduction.stdout, /\[PENDING\] Stripe test/);
+  assert.match(
+    sharedProduction.stdout,
+    /\[missing\] isolated Supabase target for test checkout/,
+  );
+  assert.doesNotMatch(
+    sharedProduction.stdout,
+    /preview-branch-ref|production-parent-ref/,
+  );
+});

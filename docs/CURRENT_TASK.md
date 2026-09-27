@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-27 Marketplaceテスト販売の隔離Staging強制
+
+- 状態: `IMPLEMENTED / LOCAL_VALIDATION_PASSED / EXTERNAL_E2E_BLOCKED_BY_SHARED_PRODUCTION_DB / PRODUCTION_UNCHANGED`
+- BaseはPR #525 merge commit `a057f338610a45c20f7dd68156cd2ec9289cc324`。Branchは`codex/staging-marketplace-test-e2e-20260927`。
+- Vercel Preview／Productionの環境を秘密値非表示でread-only比較した結果、Supabase URL、anon key、service-role keyの3つが同一だった。PreviewにはStripe Secret Key、Webhook Secret、`MANGAI_MARKETPLACE_CHECKOUT_MODE`も未設定だった。現在のPreviewはisolated stagingではないため、migration、Stripe設定、Webhook、テスト購入を実行前に停止した。
+- Production deploymentでは`test` checkoutを常に拒否する。Vercel Previewでは、接続中のSupabase URLのrefが`MANGAI_STAGING_PROJECT_REF`と一致し、`MANGAI_STAGING_PARENT_PROJECT_REF`と異なる場合だけ`test` checkoutを許可する。local test環境と`live`販売の既存契約は変更していない。
+- RC preflightへ同じ隔離判定を追加し、Secret値やProject refを出力せずREADY／PENDINGだけを表示する。環境例とStripeテストE2E手順も、PreviewのSupabase 3値がProductionと同一なら停止する順序へ更新した。
+- 検証: 集中21/21、Hub 1037/1037、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、`git diff --check`成功。
+- Production、Supabase DB／Storage、Vercel環境変数、Stripe設定、Webhook、注文、決済、ダウンロード、Provider、生成Job、credit、利用者データは変更していない。外部E2Eを再開する条件は、Productionと異なるSupabase Branch／Project、Preview専用3資格情報、Stripe test資格情報の準備である。
+
+---
+
 ## 2026-09-27 一般向けMarketplaceのStripeテスト販売準備
 
 - 状態: `DRAFT_PR_525 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / EXTERNAL_STRIPE_E2E_PENDING / PRODUCTION_UNCHANGED`
