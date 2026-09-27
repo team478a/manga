@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Supabase Preview Branch作成・Migration適用（2026-09-27）
+
+- PR #528 merge commit `d85c9245e1948fb1c7c9b43b5e57161da591c2b0`から`codex/marketplace-staging-migration-20260927`を作成した。
+- `stockbusiness's Org`の`mangai-hub-staging`配下へ、短期検証用Preview Branch `marketplace-staging`をMicro computeで作成した。Branch refは`vaepinhkcjxjzrxflxwi`で、親Production refとは異なる。
+- 作成直後の厳密なread-only検査で、public base table 106件、public row 0件、Auth user 0件、Storage object 0件を確認した。Productionの利用者データとStorageは複製されていない。
+- 隔離Branchで未適用を確認した後、原本SHA-256 `CECBF849FEE5B6A3145C35A8C3128277483940F4FE2E193BB54DDC10F1ED18D5`の`202609270001_marketplace_test_sales.sql`だけを全文1回適用した。結果は`Success. No rows returned`。
+- postflightで`orders.payment_mode`が`text / NOT NULL / default live`、`test`／`live`制約、`orders_payment_mode_status_idx`を確認した。注文、Auth user、Storage objectはいずれも0件のまま。
+- 集中13/13、migration validator 86/86成功。Production、Vercel環境変数、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+- Branch computeは`$0.01344/hour`で課金中。責任者承認条件は24時間以内の短期利用であり、検証終了後の削除は実行時確認を得て行う。
+- 次はrepository外の候補envを作成し、Supabase 3資格情報とStripe test資格情報を候補検証した後、Vercel Previewへ設定して`marketplace:staging:preflight:strict`を3/3 READYにする。秘密値の取得・Vercel送信は別の実行時確認を必要とする。
+
+---
+
 ## 0.0 Marketplace隔離Staging候補資格情報の事前検証（2026-09-27）
 
 - PR #527 merge commit `1e43452bcfe40b7bd9fbaaedd0fb14b5e161d0c0`から`codex/staging-marketplace-credential-validation-20260927`を作成した。
