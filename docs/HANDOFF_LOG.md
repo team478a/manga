@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace隔離Staging テスト購入成功・callback host修正
+
+- 責任者の実行時承認を得て、synthetic buyer B／公式Stripeテストカードで100円のsandbox決済を実行した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`はテスト購入として購入履歴へ表示された。
+- 成功画面の5分署名URLから67,604 byteのPNGを取得した。購入履歴の再ダウンロード導線は本人確認後に新しい署名URLを発行し、download countが0から1へ更新された。実請求・本番売上・振込は発生していない。
+- 成功callbackがbranch aliasではなく固有deployment URLへ戻り、認証Cookieを外すPreview固有不具合を追加検出した。`x-forwarded-host`／`host`を検証してrequest originを作る共通helperを追加し、Server ActionとAPIのStripe Session作成へ渡した。Productionは`NEXT_PUBLIC_SITE_URL`固定を維持する。
+- focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、diff check成功。次はDraft PR #532への追加push、全CI／Vercel、更新Previewでcallback host・出品者売上0円・管理売上0円を確認する。Production DB／Storage、Provider、生成Job、creditは変更していない。
+
+---
+
 ## 2026-09-28 Codex: Marketplace隔離Preview Checkout origin修正
 
 - Draft PR #532の修正版Previewでsynthetic seller Bを作成し、公開作品`f884fd36-7c62-409f-8bac-42356fe1b711`と販売中商品`3d5e8dfd-60d8-4795-9b04-c989a128aaa9`を保存した。自己所有作品エラーは再発せず、商品保存と公開作品ページのテスト購入導線を確認した。

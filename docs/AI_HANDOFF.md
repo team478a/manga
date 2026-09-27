@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Staging テスト購入成功・callback host修正（2026-09-28）
+
+- 責任者の実行時承認後、synthetic buyer Bで100円のStripe sandbox決済を実行した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`は`payment_mode=test`の購入履歴へ表示され、5分署名URLから67,604 byteのPNG取得、購入履歴からの再発行、download count 0→1を確認した。実請求・本番売上・振込はない。
+- Stripe成功callbackが固有deployment URLを使い、branch aliasの認証Cookieを引き継げない事象を検出した。Server Action／APIでproxyの`x-forwarded-host`を優先してrequest originを解決し、Preview callbackを現在の公開ホストへ固定する。Productionは設定済み`NEXT_PUBLIC_SITE_URL`必須のまま変更しない。
+- focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、diff check成功。次はcommit／push、PR #532の全CI／Vercel、更新Previewのcallback host確認、出品者／管理売上除外確認。Production、Provider、Job、creditは未変更。Preview Branch削除は別承認待ち。
+
+---
+
 ## 0.0 Marketplace隔離Preview Checkout origin修正（2026-09-28）
 
 - PR #532のPreviewでsynthetic seller Bの公開作品と100円の販売中商品を保存し、旧schema互換修正の実画面成功を確認した。

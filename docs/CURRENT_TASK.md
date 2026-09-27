@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace隔離Staging テスト購入成功・callback host修正
+
+- 状態: `STRIPE_TEST_PAYMENT_PASSED / PURCHASE_HISTORY_PASSED / DOWNLOAD_PASSED / CALLBACK_HOST_FIX_LOCAL_VALIDATION_COMPLETE / PRODUCTION_UNCHANGED`
+- 責任者の実行時承認後、synthetic buyer Bで`Marketplace Staging E2E Product B`を100円のStripeサンドボックス決済で購入した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`は購入履歴へ`テスト購入`として表示され、実請求・本番売上・振込は発生していない。
+- Checkout成功画面で5分有効の署名付きdownload URLを発行し、67,604 byteのPNGを取得した。購入履歴からの再発行導線も通過し、download countが0回から1回へ更新された。
+- Stripeからの戻り先がbranch aliasではなく固有deployment URLになり、成功画面のヘッダーだけログアウト表示になる追加不具合を検出した。Server Actionがrequest originを渡していなかったため、`x-forwarded-host`を優先し、`host`へfallbackする共通resolverを追加した。Production callbackは従来どおり`NEXT_PUBLIC_SITE_URL`固定であり、Previewだけが現在の公開ホストへ戻る。
+- callback修正の検証: focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、`git diff --check`成功。Production、Provider、生成Job、creditは未変更。
+- 次: commit・pushし、Draft PR #532の全CI／Vercel Previewを確認する。更新Previewでbranch aliasを維持したStripe遷移を確認し、出品者売上0円・管理売上0円を確認する。Preview Branch削除は別承認まで行わない。
+
+---
+
 ## 2026-09-28 Marketplace隔離Preview Checkout origin修正
 
 - 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / PRODUCT_SAVE_E2E_PASSED / CHECKOUT_PREVIEW_RETRY_PENDING / PRODUCTION_UNCHANGED`

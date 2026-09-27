@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createStripeCheckoutSession } from "@/lib/checkout";
 import { toMessageApiError } from "@/lib/api-errors";
 import { ValidationError } from "@/lib/domain-errors";
+import { requestOriginFromHeaders } from "@/lib/request-origin";
 import { z } from "zod";
 
 const checkoutSchema = z.object({
@@ -23,7 +24,8 @@ export async function POST(request: Request) {
       orderId: parsed.data.order_id,
       productId: parsed.data.productId,
       buyerEmail: parsed.data.buyer_email,
-      origin: new URL(request.url).origin,
+      origin:
+        requestOriginFromHeaders(request.headers) ?? new URL(request.url).origin,
     });
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {

@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { hasSupabaseEnv } from "@/lib/env";
+import { requestOriginFromHeaders } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
 import { formText } from "./shared/form-data";
 
@@ -75,22 +76,7 @@ export async function signIn(formData: FormData) {
 }
 
 async function requestOrigin() {
-  const requestHeaders = await headers();
-  const forwardedHost = requestHeaders.get("x-forwarded-host");
-  const host = forwardedHost ?? requestHeaders.get("host");
-  const forwardedProtocol = requestHeaders.get("x-forwarded-proto");
-  const protocol =
-    forwardedProtocol === "http" || forwardedProtocol === "https"
-      ? forwardedProtocol
-      : host?.startsWith("localhost")
-        ? "http"
-        : "https";
-
-  if (!host || !/^[a-z0-9.-]+(?::\d+)?$/i.test(host)) {
-    return null;
-  }
-
-  return `${protocol}://${host}`;
+  return requestOriginFromHeaders(await headers());
 }
 
 export async function requestPasswordReset(formData: FormData) {
