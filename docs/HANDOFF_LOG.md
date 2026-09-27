@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-27 Codex: Marketplace隔離Staging deployment preflight
+
+- PR #526 merge commit `ce51839ba9a3879df8bea3cc50ec1fa86b62f82d`から`codex/staging-supabase-bootstrap-20260927`を作成した。
+- linked Vercel Preview／Productionの環境を一時領域へpullし、秘密値非表示でSupabase分離、ref整合、checkout mode、Stripe test資格情報を確認する専用preflightと4件の回帰テストを追加した。一時envは必ず削除する。
+- 実環境では3チェックすべて`PENDING`。Production共有状態とStripe test未設定を検知したため、migration、Webhook、外部購入E2Eは開始していない。
+- Supabase CLI認証情報はローカルに存在せず、ブラウザ連携もrequest-header policyで利用不可。隔離Branch／Project作成は費用・外部条件を確認した別の実行単位へ残す。
+- 集中4/4、Hub 1041/1041、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。Production、Vercel設定、Supabase、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+- Implementation commit `f433df82`をpushし、Draft PR [#527](https://github.com/team478a/manga/pull/527)を作成した。Core quality／Migration roundtrip run `36315810713`、Windows build run `36315810800`、Vercel Preview、Preview Commentsはすべて成功した。
+
+---
+
 ## 2026-09-27 Codex: Marketplaceテスト販売の隔離Staging強制
 
 - Base `a057f338610a45c20f7dd68156cd2ec9289cc324`から`codex/staging-marketplace-test-e2e-20260927`を作成した。
