@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Staging 商品保存の旧schema互換（2026-09-28）
+
+- Branch `codex/marketplace-purchase-e2e-continuation-20260928`、Base `f6ba962d`（PR #531 merge commit）。隔離Stagingでsynthetic sellerの公開作品は保存済み。販売中商品保存時に、作品選択一覧へ出る自己所有作品が所有権エラーで拒否される事象を再現した。
+- Preview Branchのread-only確認で`works.current_publication_id`列が存在せず、商品／作品Actionの明示selectがPostgREST `42703`となることを特定した。所有者不一致ではなくschema互換の問題である。
+- Actionの作品取得を旧schema互換にし、手動作品は編集・販売可能、Cloud-linked作品は完成版が確認できなければfail closedを維持する回帰テストを追加した。
+- Hub 1046/1046、全typecheck、lint、`git diff --check`成功。Production、Provider、Job、credit、Stripe決済、注文、実利用者データは未変更。
+- 次はDraft PRのVercel Preview成功後に商品保存を再試行し、buyer Checkoutへ進む。テスト決済確定直前には別確認する。
+
+---
+
 ## 0.0 Marketplace隔離Staging 静的seed／Storage復旧（2026-09-28）
 
 - Branch `codex/marketplace-test-purchase-e2e-20260927`、Base `014a71fe`（PR #530 merge commit）。隔離Stagingのsynthetic seller／buyer作成中に、Preview Branchではpublic schemaだけが複製され、Cloud AI静的seed、Marketplace Storage bucket／policyが欠落することを確認した。

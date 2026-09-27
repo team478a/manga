@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace隔離Staging 商品保存の旧schema互換
+
+- 状態: `SELLER_WORK_CREATED / PRODUCT_SAVE_FAILURE_REPRODUCED / COMPATIBILITY_FIX_IMPLEMENTED / PREVIEW_REDEPLOY_PENDING / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-purchase-e2e-continuation-20260928`。BaseはPR #531 merge commit `f6ba962d0822c45a2fe21f5834cb5aeccdbbcd2d`。
+- synthetic sellerで公開作品`Marketplace Staging E2E Sample`を隔離Stagingへ保存できた。販売中商品を保存すると、作品一覧には表示される一方で「自分の作品だけを商品に紐づけできます」と拒否される事象を再現した。
+- read-only確認でPreview Branchの`works.current_publication_id`列が未適用と判明した。商品／作品Actionが同列を明示selectしたためPostgREST `42703`となり、所有権エラーへ誤変換されていた。
+- 手動登録作品は旧Marketplace schemaでも編集・販売できるよう、作品rowを互換取得する。Cloud-linked作品は`source_project_id`と完成版条件を引き続きfail closedで検査し、安全境界を緩和しない。
+- 検証: Hub 1046/1046、全typecheck、lint、`git diff --check`成功。Production DB／Storage、Provider、生成Job、credit、Stripe決済、注文、実利用者データは変更していない。
+- 次: Draft PRのVercel Preview成功後、同じsynthetic sellerで販売中商品を保存する。buyer Checkoutの最終テスト決済は金融操作として実行直前に別確認を得る。
+
+---
+
 ## 2026-09-28 Marketplace隔離Staging 静的seed／Storage復旧
 
 - 状態: `STAGING_STATIC_SEED_REPAIRED / MIGRATION_AND_REGRESSION_TEST_ADDED / SELLER_WORK_RETRY_PENDING / PRODUCTION_UNCHANGED`

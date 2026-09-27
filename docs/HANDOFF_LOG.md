@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace隔離Staging 商品保存の旧schema互換
+
+- Branch: `codex/marketplace-purchase-e2e-continuation-20260928`。Base: `f6ba962d`（PR #531 merge commit）。
+- synthetic sellerで公開作品を保存した後、販売中商品の保存が「自分の作品だけを商品に紐づけできます」で停止する事象を再現した。
+- 隔離Previewのread-only確認で`works.current_publication_id`列が未適用、明示selectがPostgREST `42703`となることを確認した。手動登録作品を旧schemaでも編集・販売できる互換修正と回帰テストを追加し、Cloud-linked作品の完成版gateはfail closedのまま維持した。
+- 検証: Hub 1046/1046、全typecheck、lint、`git diff --check`成功。Production DB／Storage、Provider、生成Job、credit、Stripe決済、注文、実利用者データの変更は0件。
+- 次の一手: Draft PRのVercel Preview成功後、同じsellerの商品保存を再試行する。buyerのテスト決済確定前に別確認を得る。
+
+---
+
 ## 2026-09-28 Codex: Marketplace隔離Staging 静的seed／Storage復旧
 
 - Branch: `codex/marketplace-test-purchase-e2e-20260927`。Base: `014a71fe`（PR #530 merge commit）。
