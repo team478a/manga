@@ -7,6 +7,7 @@
 - 実環境では3チェックすべて`PENDING`。Production共有状態とStripe test未設定を検知したため、migration、Webhook、外部購入E2Eは開始していない。
 - Supabase CLI認証情報はローカルに存在せず、ブラウザ連携もrequest-header policyで利用不可。隔離Branch／Project作成は費用・外部条件を確認した別の実行単位へ残す。
 - 集中4/4、Hub 1041/1041、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。Production、Vercel設定、Supabase、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+- Implementation commit `f433df82`をpushし、Draft PR [#527](https://github.com/team478a/manga/pull/527)を作成した。Core quality／Migration roundtrip run `36315810713`、Windows build run `36315810800`、Vercel Preview、Preview Commentsはすべて成功した。
 
 ---
 

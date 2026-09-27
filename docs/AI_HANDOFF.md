@@ -7,6 +7,7 @@
 - 実環境のread-only実行結果は、`Preview Supabase isolation`、`Marketplace checkout mode`、`Stripe test credentials`の3項目がすべて`PENDING`。Productionへ共有接続した現状では、migration／Webhook／テスト購入へ進まない。
 - Supabase CLIの再利用可能な認証情報はローカルに存在せず、ブラウザ連携もrequest-header policyで利用不可。隔離Branch／Project作成とPreview資格情報設定は、外部前提と費用条件を確認した後の別操作とする。
 - 集中4/4、Hub 1041/1041、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。Production、Vercel設定、Supabase、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+- Implementation commit `f433df82`をpushし、Draft PR [#527](https://github.com/team478a/manga/pull/527)を作成した。Core quality／Migration roundtrip run `36315810713`、Windows build run `36315810800`、Vercel Preview、Preview Commentsはすべて成功した。
 
 ---
 
