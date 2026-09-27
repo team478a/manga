@@ -65,6 +65,14 @@ test("隔離Stagingとbranch Preview以外を実行前に拒否する", () => {
     () => resolveMarketplaceAuthExpiryEnvironment(wrongRef),
     /does not match/,
   );
+
+  const unsafeDeploymentId = readyEnvironment();
+  unsafeDeploymentId.MANGAI_STAGING_VERCEL_DEPLOYMENT_ID =
+    "deployment&cancel_token=unsafe";
+  assert.throws(
+    () => resolveMarketplaceAuthExpiryEnvironment(unsafeDeploymentId),
+    /deployment ID is invalid/,
+  );
 });
 
 test("改ざんcancelの前後状態と5分署名URLの失効を実環境手順どおり検査する", async () => {
@@ -109,7 +117,7 @@ test("改ざんcancelの前後状態と5分署名URLの失効を実環境手順�
       "/storage/v1/object/sign/digital-products/products/sample.png"
     )
       return json({
-        signedURL: `/storage/v1/object/sign/digital-products/products/sample.png?token=${jwt(
+        signedURL: `/object/sign/digital-products/products/sample.png?token=${jwt(
           Math.floor(now / 1000) + 300,
         )}`,
       });
@@ -177,4 +185,73 @@ test("改ざんcancelで注文状態が変わった場合は失敗する", async
     }),
     /changed the staging order/,
   );
+});
+
+test("Vercel保護付きPreviewはCLI経由で改ざんcancelを検査する", async () => {
+  let now = Date.parse("2026-09-28T00:00:00.000Z");
+  let pendingReads = 0;
+  let protectedRequests = 0;
+  let signedReads = 0;
+  const environment = readyEnvironment();
+  environment.MANGAI_STAGING_VERCEL_DEPLOYMENT_ID =
+    "crZyJsbguqSuqzkAQZTvb8enPsPr";
+
+  const fetchFn = async (input) => {
+    const url = new URL(input);
+    if (url.pathname === "/rest/v1/orders") {
+      const orderFilter = url.searchParams.get("id");
+      if (orderFilter === `eq.${pendingOrderId}`) {
+        pendingReads += 1;
+        return json([
+          { id: pendingOrderId, payment_mode: "test", status: "pending" },
+        ]);
+      }
+      if (orderFilter === `eq.${paidOrderId}`)
+        return json([
+          {
+            digital_products: { file_url: "products/sample.png" },
+            id: paidOrderId,
+            payment_mode: "test",
+            status: "paid",
+          },
+        ]);
+    }
+    if (
+      url.pathname ===
+        "/storage/v1/object/sign/digital-products/products/sample.png" &&
+      url.searchParams.has("token")
+    ) {
+      signedReads += 1;
+      return new Response("x", { status: signedReads === 1 ? 206 : 401 });
+    }
+    if (
+      url.pathname ===
+      "/storage/v1/object/sign/digital-products/products/sample.png"
+    )
+      return json({
+        signedURL: `/object/sign/digital-products/products/sample.png?token=${jwt(
+          Math.floor(now / 1000) + 300,
+        )}`,
+      });
+    throw new Error(`Unexpected request: ${url.pathname}`);
+  };
+
+  const report = await runMarketplaceAuthExpiryAcceptance({
+    environment,
+    fetchFn,
+    now: () => now,
+    protectedPreviewRequest: async ({ deploymentId, orderId }) => {
+      protectedRequests += 1;
+      assert.equal(deploymentId, "crZyJsbguqSuqzkAQZTvb8enPsPr");
+      assert.equal(orderId, pendingOrderId);
+      return "注文状態は変更していません";
+    },
+    wait: async (milliseconds) => {
+      now += milliseconds;
+    },
+  });
+
+  assert.equal(protectedRequests, 1);
+  assert.equal(pendingReads, 2);
+  assert.ok(Object.values(report.checks).every(Boolean));
 });

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace保護付きPreview認可／署名URL失効の実Staging完了
+
+- PR #534 merge commit `9dfd3a95`から`codex/marketplace-auth-expiry-protected-preview-20260928`を作成した。
+- 初回実行でVercel Deployment Protectionのログインredirect、2回目でSupabase Storage相対署名URLのHTTP 404を検出し、いずれも失効待機前に安全停止した。
+- 検査済みdeployment IDがある場合だけ`vercel curl`を使う保護付きPreview経路と、Storageの`/object/sign/...`を`/storage/v1`へ安全に正規化する処理を追加した。同一Staging Supabase host以外は拒否する。
+- focused 4/4、Hub 1058/1058、全typecheck、lint、deps error 0（既知warning 2件）、packages／Next.js Webpack Production build、diff checkが成功。実Stagingでは改ざんcancel拒否、注文`pending/test`不変、5分署名URLの即時取得、実時間期限後の拒否が4/4成功した。秘密値と署名URLは出力していない。
+- Production、Stripe request／決済／返金、Provider、生成Job、credit、実利用者データは未変更。次は全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace改ざんcancel／署名URL失効のStaging受入れハーネス
 
 - PR #533 merge commit `78f5e589`から`codex/marketplace-auth-expiry-20260928`を作成した。
