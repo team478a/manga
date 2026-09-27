@@ -6,6 +6,7 @@
 - Vercel Preview投入前の候補envを、linked Production環境と値非表示で比較するstrict検証を追加した。候補ファイルはrepository外の絶対パスだけを許可し、誤配置・相対パス・不存在を外部読取前に拒否する。
 - Supabase 3資格情報分離、ref整合、checkout mode、Stripe test資格情報は既存deployment preflightと同じ判定を共有し、Production pull用一時envを必ず削除する。
 - 集中5/5、Hub 1042/1042、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `b258c298`をpushし、Draft PR [#528](https://github.com/team478a/manga/pull/528)を作成した。Core quality／Migration roundtrip run `36316942841`、Windows build run `36316942802`、Vercel Preview、Preview Commentsはすべて成功した。
 - Production、Vercel設定、Supabase、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。実候補envの作成と外部設定は別工程である。
 
 ---
