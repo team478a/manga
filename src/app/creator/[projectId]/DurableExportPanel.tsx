@@ -59,7 +59,7 @@ export function DurableExportPanel({ projectId, available, ready, jobs, extended
                 次は外部販売サイトへの出品準備です
               </h3>
               <p className="mt-1 text-sm leading-relaxed text-emerald-950">
-                ダウンロードした完成原稿を確認し、表紙・商品情報をそろえてKDPやBOOTHへ手動で登録します。MANGAI内の販売申請・決済・収益管理は準備中です。
+                ダウンロードした完成原稿を確認し、表紙・商品情報をそろえてKDPやBOOTHへ手動で登録します。MANGAI内のテスト販売は管理者が有効化した期間だけ利用でき、実決済・振込・本番収益管理は準備中です。
               </p>
               <Link
                 className="button-secondary mt-3 w-full border-emerald-300 bg-white text-emerald-900 sm:w-auto"

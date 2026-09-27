@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 一般向けMarketplaceのStripeテスト販売準備（2026-09-27）
+
+- PR #524 merge commit `cf9f34184807ea9ed4636175f7deacf6e1862edf`から`codex/stripe-test-sale-readiness-20260927`を作成した。
+- `MANGAI_MARKETPLACE_CHECKOUT_MODE`を追加し、未設定は`disabled`として購入を停止する。`test`は`sk_test_`、`live`は`sk_live_`との一致を必須にし、誤ったキー種別では注文を開始しない。
+- `orders.payment_mode`を追加し、注文、Stripe Checkout／PaymentIntent metadata、Webhook eventのtest/liveを照合する。テスト注文は履歴と管理画面へ明示する一方、本番売上合計から除外する。
+- migration／rollback／schema／manifest、RC preflight、環境例、一般向け案内、手動E2Eチェックリストを同期した。既存注文は`live`を維持し、テスト注文が残るrollbackはfail closedとした。
+- 集中5/5、Hub 1034/1034、全typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- 外部Stripe E2Eは未実施。Production、DB／Storage、Vercel設定、Stripe設定、Webhook、実決済、Provider、生成Job、credit、利用者データは変更していない。次はDraft PRのCI／Vercel Preview成功後、別の明示承認でisolated stagingだけを設定・検証する。
+
+---
+
 ## 0.0 モニター8名のProduction利用期限整合（2026-09-24）
 
 - 責任者の実行時明示承認に基づき、Production `vmdsyxykcrgxcdbrwlkv`で実利用者8名のmonitor期限を各自のCloud AI `period_ends_at`へ揃えた。通知はOFFで、専用RPC `extend_cloud_general_monitor_expiry`だけを使用した。

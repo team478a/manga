@@ -4,6 +4,10 @@ import {
   ProviderUnavailableError,
   ValidationError,
 } from "./domain-errors.ts";
+import {
+  paymentModeForStripeLivemode,
+  type OrderPaymentMode,
+} from "./checkout-mode.ts";
 
 export type CheckoutOrderPolicy = {
   id: string;
@@ -12,6 +16,7 @@ export type CheckoutOrderPolicy = {
   creator_id: string;
   amount: number;
   status: string;
+  payment_mode: OrderPaymentMode;
   digital_products: {
     id: string;
     status: string;
@@ -32,7 +37,12 @@ export function normalizeBuyerEmail(value: string) {
 
 export function assertCheckoutOrder<T extends CheckoutOrderPolicy>(
   order: T | null,
-  expected: { orderId: string; productId: string; buyerEmail: string },
+  expected: {
+    orderId: string;
+    productId: string;
+    buyerEmail: string;
+    paymentMode: OrderPaymentMode;
+  },
 ): T & { digital_products: NonNullable<T["digital_products"]> } {
   if (!order || order.id !== expected.orderId || order.status !== "pending")
     throw new ValidationError("決済準備できる注文が見つかりません。");
@@ -48,6 +58,8 @@ export function assertCheckoutOrder<T extends CheckoutOrderPolicy>(
     throw new ValidationError(
       "購入者メールアドレスが注文情報と一致しません。",
     );
+  if (order.payment_mode !== expected.paymentMode)
+    throw new ValidationError("注文の決済環境が現在の販売モードと一致しません。");
   if (
     order.digital_products.status !== "active" ||
     !order.digital_products.works?.is_public ||
@@ -133,7 +145,14 @@ export function verifyCheckoutCancelToken(
 export function paidSessionReference(session: Stripe.Checkout.Session) {
   const orderId = session.metadata?.order_id;
   const productId = session.metadata?.product_id;
-  return session.payment_status === "paid" && orderId && productId
-    ? { orderId, productId }
-    : null;
+  const paymentMode = paymentModeForStripeLivemode(Boolean(session.livemode));
+  const metadataMode = session.metadata?.payment_mode;
+  if (
+    session.payment_status !== "paid" ||
+    !orderId ||
+    !productId ||
+    (metadataMode && metadataMode !== paymentMode)
+  )
+    return null;
+  return { orderId, productId, paymentMode };
 }

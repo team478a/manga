@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPendingOrder } from "@/app/actions";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
@@ -42,7 +43,9 @@ export default async function CheckoutPage({
 
   if (!product) notFound();
 
-  const canPurchase = product.status === "active" && product.works?.is_public;
+  const checkout = inspectMarketplaceCheckoutMode();
+  const productAvailable = product.status === "active" && product.works?.is_public;
+  const canPurchase = productAvailable && checkout.enabled;
 
   return (
     <main className="page max-w-5xl">
@@ -62,9 +65,17 @@ export default async function CheckoutPage({
           <p className="mt-5 text-3xl font-bold">税込 {yen(product.price)}</p>
           <p className="mt-5 whitespace-pre-wrap text-lg leading-relaxed text-stone-700">{product.description || "商品説明はまだありません。"}</p>
 
+          {checkout.paymentMode === "test" ? (
+            <div className="mt-5 rounded-md border border-blue-200 bg-blue-50 p-4 text-blue-950" role="status">
+              <p className="font-bold">テスト販売</p>
+              <p className="mt-1 text-sm leading-relaxed">Stripeのテスト環境を使用します。実際のカード請求や出品者への売上計上は行われません。</p>
+            </div>
+          ) : null}
+
           {messages.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{messages.message}</p> : null}
           {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
-          {!canPurchase ? <InlineErrorMessage>この商品は現在購入できません。</InlineErrorMessage> : null}
+          {!productAvailable ? <InlineErrorMessage>この商品は現在購入できません。</InlineErrorMessage> : null}
+          {productAvailable && !checkout.enabled ? <InlineErrorMessage>{checkout.reason ?? "購入手続きは現在利用できません。"}</InlineErrorMessage> : null}
 
           <form action={createPendingOrder} className="mt-6 space-y-5">
             <input name="productId" type="hidden" value={product.id} />
@@ -77,7 +88,7 @@ export default async function CheckoutPage({
               </p>
             </div>
             <button className="button w-full" type="submit" disabled={!canPurchase}>
-              購入へ進む
+              {checkout.paymentMode === "test" ? "テスト購入へ進む" : "購入へ進む"}
             </button>
           </form>
 

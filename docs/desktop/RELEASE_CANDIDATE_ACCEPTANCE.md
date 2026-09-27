@@ -153,12 +153,14 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 
 ## 9. Stripeテスト決済E2E
 
-1. Stripe CLIまたはstaging Webhook endpointへテストイベントを転送します。
-2. 公開作品の販売中商品からCheckout Sessionを作成します。
-3. Stripeのテストカードで成功し、注文が`paid`となり期限付きダウンロードが成功することを確認します。
-4. Checkoutキャンセルで署名付き注文だけがキャンセルされ、改ざんtokenでは更新されないことを確認します。
-5. 非同期成功、非同期失敗、Payment Intent失敗、全額返金を送信し、状態が後戻りしないことを確認します。
-6. 未払い、別注文metadata、期限切れURLではダウンロードできないことを確認します。
+1. migration `202609270001_marketplace_test_sales`をstagingへ適用し、`MANGAI_MARKETPLACE_CHECKOUT_MODE=test`、`sk_test_` Secret Key、Webhook Secret、Cancel Secretを設定します。`sk_live_`との組合せでは開始しないことを確認します。
+2. Stripe CLIまたはstaging Webhook endpointへテストイベントを転送します。
+3. 公開作品の販売中商品からCheckout Sessionを作成し、注文が`payment_mode=test`であることを確認します。
+4. Stripe公式のテストカードで成功し、注文が`paid`となり期限付きダウンロードが成功することを確認します。
+5. 購入履歴に「テスト購入」、注文管理に「テスト」が表示され、管理者・出品者の本番売上合計へ加算されないことを確認します。
+6. Checkoutキャンセルで署名付き注文だけがキャンセルされ、改ざんtokenでは更新されないことを確認します。
+7. 非同期成功、非同期失敗、Payment Intent失敗、全額返金を送信し、状態が後戻りしないことを確認します。
+8. 未払い、別注文metadata、決済mode不一致、期限切れURLではダウンロードできないことを確認します。
 
 実在カードや本番課金は使用しません。テスト後はWebhook endpoint、テスト注文、ダウンロードURLの有効期限を確認します。
 

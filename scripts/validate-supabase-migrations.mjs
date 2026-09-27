@@ -126,6 +126,8 @@ for (const required of [
   "stripe_webhook_events",
   "apply_cloud_ai_subscription_event",
   "buyer_profile_id",
+  "payment_mode",
+  "orders_payment_mode_status_idx",
   "orders_buyer_read",
   "record_order_download",
   "sync_cloud_marketplace_draft",

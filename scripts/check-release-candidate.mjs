@@ -79,6 +79,14 @@ const effectiveSecretState = (primary, fallback, minimumLength) => {
   return stateOf(fallback, minimumLength);
 };
 
+const stripeTestSecretState = () => {
+  const state = stateOf("STRIPE_SECRET_KEY", 20);
+  if (state !== "configured") return state;
+  return environment.STRIPE_SECRET_KEY?.trim().startsWith("sk_test_")
+    ? "configured"
+    : "missing";
+};
+
 const commandAvailable = (command) => {
   const finder = process.platform === "win32" ? "where.exe" : "which";
   const result = spawnSync(finder, [command], {
@@ -105,7 +113,16 @@ const checks = [
   {
     name: "Stripe test",
     items: [
-      ["STRIPE_SECRET_KEY", stateOf("STRIPE_SECRET_KEY")],
+      [
+        "MANGAI_MARKETPLACE_CHECKOUT_MODE=test",
+        environment.MANGAI_MARKETPLACE_CHECKOUT_MODE === "test"
+          ? "configured"
+          : "missing",
+      ],
+      [
+        "STRIPE_SECRET_KEY (test mode)",
+        stripeTestSecretState(),
+      ],
       ["STRIPE_WEBHOOK_SECRET", stateOf("STRIPE_WEBHOOK_SECRET", 16)],
       [
         "checkout cancel signing secret",

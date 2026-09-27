@@ -226,7 +226,7 @@ const steps = [
     icon: ShoppingBag,
     before: "作品情報、販売形式、価格などを整える工程です。",
     action:
-      "MANGAI内の販売機能は準備中です。完成PDFを外部販売サイトへ手動出品する手順は、このページの「出品・収益化」で確認できます。",
+      "MANGAI内のテスト販売は管理者が有効化した期間だけ利用できます。実決済・振込・本番収益管理は準備中です。完成PDFを外部販売サイトへ手動出品する手順は、このページの「出品・収益化」で確認できます。",
     result: "MANGAI内の販売機能は今後の更新で利用可能になる予定です。",
     href: null,
     linkLabel: null,
@@ -615,7 +615,7 @@ export default async function GeneralMonitorGuidePage() {
         </p>
 
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
-          <strong>MANGAI内の販売申請・決済・収益管理は準備中です。</strong>
+          <strong>MANGAI内のテスト販売は段階提供中で、実決済・振込・本番収益管理は準備中です。</strong>
           この章は外部販売サイトへの手動出品を案内するもので、売上を保証するものではありません。
           成人向け作品は、この一般向けCloudマニュアルの対象外です。
         </div>

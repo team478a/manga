@@ -106,10 +106,14 @@ create table if not exists public.orders (
   platform_fee integer not null default 0 check (platform_fee >= 0),
   creator_revenue integer not null default 0 check (creator_revenue >= 0),
   stripe_payment_intent_id text,
+  payment_mode text not null default 'live' check (payment_mode in ('test', 'live')),
   status text not null default 'pending' check (status in ('pending', 'paid', 'failed', 'refunded', 'canceled')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+create index if not exists orders_payment_mode_status_idx
+  on public.orders(payment_mode, status, created_at desc);
 
 create table if not exists public.desktop_device_authorizations (
   id uuid primary key default gen_random_uuid(),
