@@ -7,7 +7,8 @@
 - `orders.payment_mode`を追加し、注文、Stripe Checkout／PaymentIntent metadata、Webhook eventのtest/liveを照合する。テスト注文は履歴と管理画面へ明示する一方、本番売上合計から除外する。
 - migration／rollback／schema／manifest、RC preflight、環境例、一般向け案内、手動E2Eチェックリストを同期した。既存注文は`live`を維持し、テスト注文が残るrollbackはfail closedとした。
 - 集中5/5、Hub 1034/1034、全typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
-- 外部Stripe E2Eは未実施。Production、DB／Storage、Vercel設定、Stripe設定、Webhook、実決済、Provider、生成Job、credit、利用者データは変更していない。次はDraft PRのCI／Vercel Preview成功後、別の明示承認でisolated stagingだけを設定・検証する。
+- Implementation commit `050262ae`、migration互換修正`a6bb823c`、Draft PR [#525](https://github.com/team478a/manga/pull/525)。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
+- 外部Stripe E2Eは未実施。Production、DB／Storage、Vercel設定、Stripe設定、Webhook、実決済、Provider、生成Job、credit、利用者データは変更していない。次はPRのmerge判断後、別の明示承認でisolated stagingだけを設定・検証する。
 
 ---
 

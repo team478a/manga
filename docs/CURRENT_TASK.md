@@ -2,13 +2,14 @@
 
 ## 2026-09-27 一般向けMarketplaceのStripeテスト販売準備
 
-- 状態: `IMPLEMENTED_LOCAL / LOCAL_VALIDATION_PASSED / EXTERNAL_STRIPE_E2E_PENDING / DRAFT_PR_PENDING / PRODUCTION_UNCHANGED`
+- 状態: `DRAFT_PR_525 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / EXTERNAL_STRIPE_E2E_PENDING / PRODUCTION_UNCHANGED`
 - BaseはPR #524 merge commit `cf9f34184807ea9ed4636175f7deacf6e1862edf`。Branchは`codex/stripe-test-sale-readiness-20260927`。
 - Marketplace販売モードを`disabled`／`test`／`live`で明示し、未設定は停止、`test`と`sk_test_`、`live`と`sk_live_`が一致した場合だけ購入を開始するfail-closed境界を追加した。
 - 注文へ`payment_mode`を保存し、注文作成、Stripe Checkout／PaymentIntent metadata、Webhook、支払済み更新まで同じmodeを照合する。既存注文はmigrationで`live`を既定値として保持する。
 - 作品詳細、購入画面、完了画面、購入履歴、出品者売上一覧、管理者注文一覧へテスト表示を追加した。テスト注文は一覧には残すが、管理者と出品者の本番売上合計へ含めない。
 - 新migration `202609270001_marketplace_test_sales`、rollback、schema正本、manifest、環境例、利用者案内、StripeテストE2E手順を同期した。rollbackはテスト注文が存在する場合に停止し、監査対象データを暗黙削除しない。
 - 検証: 集中5/5、Hub 1034/1034、全typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、`git diff --check`成功。
+- Implementation commit `050262ae`とmigration互換修正`a6bb823c`をpushし、Draft PR [#525](https://github.com/team478a/manga/pull/525)を作成した。Core quality、Migration roundtrip、Windows build、Vercel Preview、Preview Commentsはすべて成功した。
 - Production migration、Vercel環境変数、Stripe設定、Webhook、実決済、外部Provider、生成Job、credit、利用者データは変更していない。次の外部ゲートはisolated stagingへmigrationとStripe test設定を適用し、公式テストカードで購入・履歴・5分署名download・売上除外を確認すること。
 
 ---
