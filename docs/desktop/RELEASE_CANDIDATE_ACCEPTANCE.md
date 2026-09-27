@@ -24,6 +24,8 @@ R4-1nではProductionのread only transactionで2人の一般ユーザーclaim�
 
 R4-1oでは2026-08-12のMANGAI責任者報告により、対象ユーザー本人の市場分析ユーザー検証完了を受入れた。PR-R4-1mで保留した既存Report表示、新規市場分析保存、詳細表示、再読込後の本人履歴再表示を完了とし、非blocking保留を解除する。本人E2Eは完了したが、Cloud text実Job、AIネーム由来8ページE2E、一般ユーザー所有生成成果物・署名付き書き出しURLのowner isolation、Stripe test E2Eが残るため`hub-production-acceptance`はpendingを維持する。詳細は[`../RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md`](../RELEASE_CANDIDATE_R4_1O_RESEARCH_USER_ACCEPTANCE_EVIDENCE.md)を参照する。
 
+2026-09-27のMarketplace隔離Preview受入れでは、Supabase Branch分離、Marketplace test mode、Stripe test資格情報のstrict preflightが3/3 READYとなり、Stripeサンドボックスの`checkout.session.completed`がPreview WebhookへHTTP 200／`received=true`で到達した。Productionは未変更で、実決済・実注文はない。第9節のうち環境分離、migration、Webhook署名到達は完了したが、公式テストカード購入、履歴、署名download、売上除外、失敗／返金／認可は未実施のため`stripe-test-e2e`はpendingを維持する。
+
 ## 1. 目的
 
 MANGAI DesktopとMANGAI Hubを配布候補版として判定するため、外部サービスなしで再現できるローカル品質ゲートと、実サービスを使う手動E2Eを分離します。自動検証の成功だけではRC承認とせず、最後に本書の手動項目を実施します。
@@ -155,7 +157,7 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 
 1. Productionとは別のSupabase Branch／Projectを用意し、Previewの`NEXT_PUBLIC_SUPABASE_URL`・anon key・service-role keyをすべて隔離Stagingへ切り替えます。`MANGAI_STAGING_PROJECT_REF`には接続先、`MANGAI_STAGING_PARENT_PROJECT_REF`には親Production refを設定し、両者が異なることを確認します。PreviewとProductionのSupabase 3値が同一なら、以降を実行しません。
    - Vercelへ設定する前に、候補値をrepository外のenvファイルへ保存し、`npm run marketplace:staging:candidate:validate -- "C:\\secure\\marketplace-preview.env"`で検証します。絶対パスかつrepository外のファイルだけを受け付け、Production環境と秘密値非表示で比較します。候補ファイルをGitへ追加しません。
-   - 設定後は`npm run marketplace:staging:preflight:strict`を実行します。linked Vercel projectのPreview／Production環境を一時領域へ取得して値を表示せず比較し、一時ファイルは成否にかかわらず削除します。3項目すべてが`READY`になるまで次へ進みません。
+   - 設定後は`npm run marketplace:staging:preflight:strict`を実行します。linked Vercel projectのPreview／Production環境を一時領域へ取得して値を表示せず比較し、一時ファイルは成否にかかわらず削除します。Sensitive値がpull不可の場合は、target限定metadata、明示した親ref、Preview URLのrefを組み合わせます。共有scopeや通常型Webhook metadataは代替証拠にしません。3項目すべてが`READY`になるまで次へ進みません。
 2. migration `202609270001_marketplace_test_sales`を隔離Stagingへ適用し、`MANGAI_MARKETPLACE_CHECKOUT_MODE=test`、`sk_test_` Secret Key、Webhook Secret、Cancel SecretをPreviewだけへ設定します。Production deploymentまたは`sk_live_`との組合せでは開始しないことを確認します。
 3. Stripe CLIまたはstaging Webhook endpointへテストイベントを転送します。
 4. 公開作品の販売中商品からCheckout Sessionを作成し、注文が`payment_mode=test`であることを確認します。
@@ -176,8 +178,8 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 | Ollama                | 第5節を実サービスで完了             | 外部サービス待ち                           |
 | ComfyUI               | 第6節を実サービスで完了             | 外部サービス待ち                           |
 | Dezgo                 | 第6.1節の非成人向け10枚を完了        | 利用者のBYOK・課金承認待ち                 |
-| Hub staging           | 読み取り専用preflightと端末認証完了 | 接続設定待ち                               |
-| Stripe                | テスト決済・失敗・返金・認可を完了  | 接続設定待ち                               |
+| Hub staging           | 読み取り専用preflightと端末認証完了 | 隔離環境3/3 READY、端末認証待ち            |
+| Stripe                | テスト決済・失敗・返金・認可を完了  | Webhook 200確認済み、購入・失敗系E2E待ち   |
 | Windows成果物         | 署名済みinstallerと更新metadata確認 | 起動・SBOM・checksum完了、コード署名待ち   |
 
 すべてが完了し、重大な未解決不具合がない場合だけRC承認とします。未実施項目を自動テスト成功で代替しません。

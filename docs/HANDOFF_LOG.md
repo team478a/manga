@@ -1,5 +1,19 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-27 Codex: Marketplace隔離Preview環境・Stripe Webhook実到達
+
+- Branch: `codex/marketplace-preview-env-20260927`
+- Base: `8c98e545`（PR #529 merge commit）
+- Supabase Preview Branch `marketplace-staging`（ref `vaepinhkcjxjzrxflxwi`）と親Production ref `vmdsyxykcrgxcdbrwlkv`を使い、Supabase 3資格情報、checkout test mode、Stripe test資格情報をVercel Previewだけへ設定した。Production環境は未変更。
+- Vercel Protection Bypass secretとStripe Webhook signing secretを最終ローテーションし、秘密値を画面出力、terminal、文書、Gitへ残さずendpoint／Previewへ反映した。
+- Preview deployment `mangai-hub-staging-bzc5obiz9-team478as-projects.vercel.app`はReady。Stripe test endpoint `we_1UKITdPygTr6OEgKFxR7pYM8`へサンドボックスの`checkout.session.completed`を1件送信し、event `evt_1UKIiwPygTr6OEgKeAmRAYbL`がHTTP 200／`received=true`で完了した。
+- Sensitive変数の値を取得できないVercel CLI契約へ対応し、strict preflightはtarget限定metadata、明示親ref、Preview URL refを組み合わせる。Production／Preview共有scopeまたはSensitiveでないWebhook metadataは拒否する。
+- 検証: focused 8/8、`npm run marketplace:staging:preflight:strict` 3/3 READY、Hub 1045/1045、deps error 0（既知warning 2件）、lint、全typecheck、migration 86/86、Hub Production build、`git diff --check`成功。
+- Production、Production DB／Storage、実決済、実注文、Provider、生成Job、credit、利用者データの変更は0件。Supabase Microは`$0.01344/hour`で課金中、最大24時間の承認範囲内。
+- 次の一手: テスト用seller／buyer、公開作品、販売中商品を隔離Stagingだけへ作成し、公式テストカードによる購入、`payment_mode=test`、履歴、5分署名download、売上除外、失敗／返金／認可を確認する。Branch削除は別承認まで行わない。
+
+---
+
 ## 2026-09-27 Codex: Marketplace隔離Supabase Preview Branch作成・Migration適用
 
 - PR #528 merge commit `d85c9245e1948fb1c7c9b43b5e57161da591c2b0`から`codex/marketplace-staging-migration-20260927`を作成した。

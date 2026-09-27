@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-27 Marketplace隔離Preview環境・Stripe Webhook実到達
+
+- 状態: `ISOLATED_PREVIEW_READY / STRIPE_TEST_WEBHOOK_200_OK / STRICT_PREFLIGHT_3_OF_3_READY / TEST_PURCHASE_PENDING / PRODUCTION_UNCHANGED`
+- BaseはPR #529 merge commit `8c98e545c452584e31c80a91b8ec2ceff0f30576`。Branchは`codex/marketplace-preview-env-20260927`。
+- Supabase Preview Branch `marketplace-staging`（ref `vaepinhkcjxjzrxflxwi`）のURL、anon key、service-role key、staging ref、親Production refをVercelのPreview環境だけへ設定した。親Production refは`vmdsyxykcrgxcdbrwlkv`で、Production環境変数は変更していない。
+- Marketplace checkout modeをPreviewだけ`test`とし、Stripe test Secret Key、Cancel Secret、Webhook SecretをPreviewだけへ設定した。Vercel Protection Bypass secretとStripe Webhook signing secretは最終ローテーション済みで、値は画面出力、端末出力、文書、Gitへ残していない。
+- Stripe test endpoint `we_1UKITdPygTr6OEgKFxR7pYM8`は8イベントを購読する。Preview再deploy後、Stripe Shellから`checkout.session.completed`を1件だけ送信し、event `evt_1UKIiwPygTr6OEgKeAmRAYbL`がHTTP 200、response `received=true`で完了した。サンドボックスfixtureだけを使用し、実決済、実カード、実注文はない。
+- VercelのSensitive変数は`env pull`で値を返さないため、strict preflightをtarget限定metadata、明示した親ref、Preview URLのref、取得可能なPreview値で検証するようにした。ProductionとPreviewへ共有されたmetadataや、SensitiveでないWebhook metadataは代替証拠として認めない。
+- 最新Preview deploymentは`https://mangai-hub-staging-bzc5obiz9-team478as-projects.vercel.app`、branch aliasは`https://mangai-hub-staging-git-codex-marketpl-063ad9-team478as-projects.vercel.app`。`npm run marketplace:staging:preflight:strict`はSupabase isolation、checkout mode、Stripe test credentialsの3/3 `READY`。
+- 検証: 集中8/8、実linked Vercel strict preflight 3/3 READY、Hub 1045/1045、deps error 0（既知warning 2件）、lint、全typecheck、migration 86/86、Hub Production build、`git diff --check`成功。Production、Production DB／Storage、Provider、生成Job、credit、利用者データは変更していない。
+- Supabase Branch computeは`$0.01344/hour`で課金中。責任者承認上限は24時間であり、削除はテスト購入E2E完了後に別の実行時確認を得て行う。
+- 次: 隔離Stagingだけにテスト用seller／buyer、公開作品、販売中商品を用意し、公式テストカードで購入、`payment_mode=test`、購入履歴、5分署名download、売上除外、失敗／返金／認可を確認する。実決済、Production変更、Provider実行、credit消費は行わない。
+
+---
+
 ## 2026-09-27 Marketplace隔離Supabase Preview Branch作成・Migration適用
 
 - 状態: `STAGING_BRANCH_CREATED / MIGRATION_APPLIED / POSTFLIGHT_PASSED / VERCEL_PREVIEW_CREDENTIALS_PENDING / PRODUCTION_UNCHANGED`

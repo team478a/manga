@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Preview環境・Stripe Webhook実到達（2026-09-27）
+
+- PR #529 merge commit `8c98e545c452584e31c80a91b8ec2ceff0f30576`から`codex/marketplace-preview-env-20260927`を作成した。
+- Supabase Preview Branch `marketplace-staging`（ref `vaepinhkcjxjzrxflxwi`、親Production ref `vmdsyxykcrgxcdbrwlkv`）の3資格情報とref宣言をVercel Previewだけへ設定した。checkout mode、Stripe test Secret Key、Cancel Secret、Webhook SecretもPreviewだけで、Production環境は未変更。
+- Vercel Protection Bypass secretとStripe Webhook signing secretを最終ローテーションした。値は画面・terminal・文書・Gitへ出力せず、Stripe endpointとVercel Previewへ直接反映した。
+- Previewを再deployし、deployment `https://mangai-hub-staging-bzc5obiz9-team478as-projects.vercel.app`をReadyにした。branch aliasは`https://mangai-hub-staging-git-codex-marketpl-063ad9-team478as-projects.vercel.app`。
+- Stripe test endpoint `we_1UKITdPygTr6OEgKFxR7pYM8`へ`checkout.session.completed`を1件送信し、event `evt_1UKIiwPygTr6OEgKeAmRAYbL`がHTTP 200／`received=true`となった。サンドボックスfixtureだけで、実決済、実カード、実注文はない。
+- Vercel Sensitive値が`env pull`へ現れない場合でも、Preview／Production専用metadata、明示親ref、Preview URLのrefを組み合わせてfail closedに判定するようpreflightを更新した。共有scopeや通常型Webhook metadataは代替に使わない。
+- 集中8/8、linked Vercel strict preflight 3/3 READY、Hub 1045/1045、deps error 0（既知warning 2件）、lint、全typecheck、migration 86/86、Hub Production build、diff check成功。Production、Production DB／Storage、Provider、生成Job、credit、利用者データは変更していない。
+- 次は隔離Stagingのテスト用seller／buyerと販売データを準備し、公式テストカードで購入、履歴、署名download、売上除外、失敗／返金／認可を確認する。Supabase Micro computeは`$0.01344/hour`で課金中、承認上限24時間。Branch削除は別の実行時確認を必要とする。
+
+---
+
 ## 0.0 Marketplace隔離Supabase Preview Branch作成・Migration適用（2026-09-27）
 
 - PR #528 merge commit `d85c9245e1948fb1c7c9b43b5e57161da591c2b0`から`codex/marketplace-staging-migration-20260927`を作成した。

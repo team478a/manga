@@ -90,9 +90,25 @@ const projectRefFromSupabaseUrl = (value) => {
   }
 };
 
+const hasTargetScopedVariable = ({ metadata, key, target, type }) =>
+  metadata.some(
+    (entry) =>
+      entry?.key === key &&
+      Array.isArray(entry.target) &&
+      entry.target.length === 1 &&
+      entry.target[0] === target &&
+      !entry.gitBranch &&
+      (!type || entry.type === type),
+  );
+
+const hasTargetScopedVariables = ({ metadata, keys, target }) =>
+  keys.every((key) => hasTargetScopedVariable({ metadata, key, target }));
+
 export const assessMarketplaceStagingDeployment = ({
   previewEnvironment,
   productionEnvironment,
+  previewMetadata = [],
+  productionMetadata = [],
 }) => {
   const previewRef = projectRefFromSupabaseUrl(
     previewEnvironment.NEXT_PUBLIC_SUPABASE_URL,
@@ -108,36 +124,75 @@ export const assessMarketplaceStagingDeployment = ({
       ?.trim()
       .toLowerCase();
   const validRef = /^[a-z0-9-]{8,64}$/;
-  const hasDistinctSupabaseCredentials = [
+  const supabaseCredentialNames = [
     "NEXT_PUBLIC_SUPABASE_URL",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY",
     "SUPABASE_SERVICE_ROLE_KEY",
-  ].every(
+  ];
+  const previewSupabaseConfigured = supabaseCredentialNames.every((name) =>
+    configured(previewEnvironment[name]),
+  );
+  const productionSupabaseValuesAvailable = supabaseCredentialNames.every(
+    (name) => configured(productionEnvironment[name]),
+  );
+  const noKnownSupabaseCredentialCollision = supabaseCredentialNames.every(
     (name) =>
-      configured(previewEnvironment[name]) &&
-      configured(productionEnvironment[name]) &&
+      !configured(productionEnvironment[name]) ||
       previewEnvironment[name] !== productionEnvironment[name],
   );
+  const hasDistinctSupabaseValues =
+    productionSupabaseValuesAvailable &&
+    supabaseCredentialNames.every(
+      (name) => previewEnvironment[name] !== productionEnvironment[name],
+    );
+  const hasIsolatedSupabaseMetadata =
+    hasTargetScopedVariables({
+      metadata: previewMetadata,
+      keys: supabaseCredentialNames,
+      target: "preview",
+    }) &&
+    hasTargetScopedVariables({
+      metadata: productionMetadata,
+      keys: supabaseCredentialNames,
+      target: "production",
+    });
+  const productionUrlValueAvailable = configured(
+    productionEnvironment.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  const parentIdentityVerified = productionUrlValueAvailable
+    ? productionRef === declaredParentRef
+    : hasIsolatedSupabaseMetadata;
+  const supabaseCredentialsVerified = productionSupabaseValuesAvailable
+    ? hasDistinctSupabaseValues
+    : hasIsolatedSupabaseMetadata && noKnownSupabaseCredentialCollision;
   const isolatedSupabase = Boolean(
     previewRef &&
-      productionRef &&
       declaredStagingRef &&
       declaredParentRef &&
       validRef.test(declaredStagingRef) &&
       validRef.test(declaredParentRef) &&
       previewRef === declaredStagingRef &&
-      productionRef === declaredParentRef &&
-      previewRef !== productionRef &&
-      hasDistinctSupabaseCredentials,
+      parentIdentityVerified &&
+      previewRef !== declaredParentRef &&
+      previewSupabaseConfigured &&
+      supabaseCredentialsVerified,
   );
   const checkoutModeReady =
     previewEnvironment.MANGAI_MARKETPLACE_CHECKOUT_MODE?.trim() === "test" &&
     productionEnvironment.MANGAI_MARKETPLACE_CHECKOUT_MODE?.trim() !== "test";
+  const webhookSecretVerified =
+    (configured(previewEnvironment.STRIPE_WEBHOOK_SECRET, 16) &&
+      previewEnvironment.STRIPE_WEBHOOK_SECRET.trim().startsWith("whsec_")) ||
+    hasTargetScopedVariable({
+      metadata: previewMetadata,
+      key: "STRIPE_WEBHOOK_SECRET",
+      target: "preview",
+      type: "sensitive",
+    });
   const stripeTestReady =
     configured(previewEnvironment.STRIPE_SECRET_KEY, 20) &&
     previewEnvironment.STRIPE_SECRET_KEY.trim().startsWith("sk_test_") &&
-    configured(previewEnvironment.STRIPE_WEBHOOK_SECRET, 16) &&
-    previewEnvironment.STRIPE_WEBHOOK_SECRET.trim().startsWith("whsec_") &&
+    webhookSecretVerified &&
     configured(
       previewEnvironment.CHECKOUT_CANCEL_SECRET ||
         previewEnvironment.STRIPE_WEBHOOK_SECRET,
@@ -201,6 +256,31 @@ const pullVercelEnvironment = (target, outputPath) => {
   );
 };
 
+const listVercelEnvironmentMetadata = (target) => {
+  const command = process.platform === "win32" ? "vercel.cmd" : "vercel";
+  const result = spawnSync(
+    command,
+    ["env", "ls", target, "--format", "json", "--no-color"],
+    {
+      cwd: root,
+      encoding: "utf8",
+      shell: process.platform === "win32",
+      stdio: "pipe",
+      windowsHide: true,
+    },
+  );
+  if (result.status !== 0) return { status: result.status, entries: [] };
+  try {
+    const parsed = JSON.parse(result.stdout);
+    return {
+      status: 0,
+      entries: Array.isArray(parsed?.envs) ? parsed.envs : [],
+    };
+  } catch {
+    return { status: 1, entries: [] };
+  }
+};
+
 const printReport = (report) => {
   console.log("MANGAI Marketplace isolated staging preflight");
   console.log("==============================================");
@@ -248,9 +328,13 @@ if (isEntrypoint) {
       "production",
       productionPath,
     );
+    const previewMetadata = listVercelEnvironmentMetadata("preview");
+    const productionMetadata = listVercelEnvironmentMetadata("production");
     if (
       previewPull.status !== 0 ||
       productionPull.status !== 0 ||
+      previewMetadata.status !== 0 ||
+      productionMetadata.status !== 0 ||
       (!candidatePath && !fs.existsSync(previewPath)) ||
       !fs.existsSync(productionPath)
     ) {
@@ -268,6 +352,8 @@ if (isEntrypoint) {
         productionEnvironment: parseEnvironmentFile(
           fs.readFileSync(productionPath, "utf8"),
         ),
+        previewMetadata: previewMetadata.entries,
+        productionMetadata: productionMetadata.entries,
       });
       printReport(report);
       if (strict && !report.passed) process.exitCode = 1;

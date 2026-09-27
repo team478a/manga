@@ -36,6 +36,9 @@ const readyEnvironments = () => ({
   },
 });
 
+const targetScopedMetadata = (target, keys, type = "encrypted") =>
+  keys.map((key) => ({ key, type, target: [target] }));
+
 test("Vercel env形式を引用符やexportを含めて解析する", () => {
   assert.deepEqual(
     parseEnvironmentFile(
@@ -99,6 +102,96 @@ test("Productionのtest modeと不完全なStripe資格情報を拒否する", (
     report.checks.find((check) => check.id === "stripe-test").ready,
     false,
   );
+});
+
+test("Sensitive値をpullできない場合はtarget限定metadataと明示refで検証する", () => {
+  const input = readyEnvironments();
+  delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_URL;
+  delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  delete input.productionEnvironment.SUPABASE_SERVICE_ROLE_KEY;
+  delete input.previewEnvironment.STRIPE_WEBHOOK_SECRET;
+  input.previewMetadata = [
+    ...targetScopedMetadata("preview", [
+      "NEXT_PUBLIC_SUPABASE_URL",
+      "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "SUPABASE_SERVICE_ROLE_KEY",
+    ]),
+    ...targetScopedMetadata(
+      "preview",
+      ["STRIPE_WEBHOOK_SECRET"],
+      "sensitive",
+    ),
+  ];
+  input.productionMetadata = targetScopedMetadata("production", [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+  ]);
+
+  const report = assessMarketplaceStagingDeployment(input);
+
+  assert.equal(report.passed, true);
+  assert.ok(report.checks.every((check) => check.ready));
+});
+
+test("共有scopeのmetadataや通常型WebhookはSensitive値の代替にしない", () => {
+  const input = readyEnvironments();
+  delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_URL;
+  delete input.productionEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  delete input.productionEnvironment.SUPABASE_SERVICE_ROLE_KEY;
+  delete input.previewEnvironment.STRIPE_WEBHOOK_SECRET;
+  input.previewMetadata = [
+    ...["NEXT_PUBLIC_SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_ANON_KEY"].map(
+      (key) => ({ key, type: "encrypted", target: ["production", "preview"] }),
+    ),
+    ...targetScopedMetadata("preview", ["SUPABASE_SERVICE_ROLE_KEY"]),
+    ...targetScopedMetadata("preview", ["STRIPE_WEBHOOK_SECRET"]),
+  ];
+  input.productionMetadata = targetScopedMetadata("production", [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+  ]);
+
+  const report = assessMarketplaceStagingDeployment(input);
+
+  assert.equal(report.passed, false);
+  assert.equal(
+    report.checks.find((check) => check.id === "supabase-isolation").ready,
+    false,
+  );
+  assert.equal(
+    report.checks.find((check) => check.id === "stripe-test").ready,
+    false,
+  );
+});
+
+test("一部だけ取得できたProduction値の衝突や不正URLをmetadataで隠さない", () => {
+  const collision = readyEnvironments();
+  delete collision.productionEnvironment.NEXT_PUBLIC_SUPABASE_URL;
+  delete collision.productionEnvironment.SUPABASE_SERVICE_ROLE_KEY;
+  collision.productionEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY =
+    collision.previewEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  collision.previewMetadata = targetScopedMetadata("preview", [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+  ]);
+  collision.productionMetadata = targetScopedMetadata("production", [
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "SUPABASE_SERVICE_ROLE_KEY",
+  ]);
+
+  const invalidUrl = readyEnvironments();
+  invalidUrl.productionEnvironment.NEXT_PUBLIC_SUPABASE_URL = "not-a-url";
+  delete invalidUrl.productionEnvironment.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  delete invalidUrl.productionEnvironment.SUPABASE_SERVICE_ROLE_KEY;
+  invalidUrl.previewMetadata = collision.previewMetadata;
+  invalidUrl.productionMetadata = collision.productionMetadata;
+
+  assert.equal(assessMarketplaceStagingDeployment(collision).passed, false);
+  assert.equal(assessMarketplaceStagingDeployment(invalidUrl).passed, false);
 });
 
 test("候補envはrepository外の絶対パスだけを受け入れる", (context) => {
