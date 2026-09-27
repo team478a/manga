@@ -5,8 +5,8 @@
 - Branch: `codex/marketplace-purchase-e2e-continuation-20260928`。Base: `f6ba962d`（PR #531 merge commit）。
 - synthetic sellerで公開作品を保存した後、販売中商品の保存が「自分の作品だけを商品に紐づけできます」で停止する事象を再現した。
 - 隔離Previewのread-only確認で`works.current_publication_id`列が未適用、明示selectがPostgREST `42703`となることを確認した。手動登録作品を旧schemaでも編集・販売できる互換修正と回帰テストを追加し、Cloud-linked作品の完成版gateはfail closedのまま維持した。
-- 検証: Hub 1046/1046、全typecheck、lint、`git diff --check`成功。Production DB／Storage、Provider、生成Job、credit、Stripe決済、注文、実利用者データの変更は0件。
-- 次の一手: Draft PRのVercel Preview成功後、同じsellerの商品保存を再試行する。buyerのテスト決済確定前に別確認を得る。
+- Implementation commit `51f80b54`をpushし、Draft PR [#532](https://github.com/team478a/manga/pull/532)を作成した。Hub 1046/1046、全typecheck、lint、Hub Production build、diff check、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。Production DB／Storage、Provider、生成Job、credit、Stripe決済、注文、実利用者データの変更は0件。
+- 修正版PreviewはVercel Deployment Protectionのログイン画面で停止したため、Chromeへhandoffして認証操作は行っていない。次の一手はログイン後に同じsellerの商品保存を再試行する。buyerのテスト決済確定前に別確認を得る。
 
 ---
 
