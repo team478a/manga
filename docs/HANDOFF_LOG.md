@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace決済失敗通知の注文境界強化
+
+- PR #532 merge commit `c842d4ec`から`codex/marketplace-download-boundary-20260928`を作成した。
+- 同期／非同期のStripe決済失敗イベントについて、注文・商品・出品者・決済modeのmetadataが完全な場合だけ状態更新計画を作り、DB更新も同一4条件へ固定した。返金はPayment Intent照合を維持する。
+- focused 23/23、Hub 1054/1054、Hub typecheck、lint、deps error 0（既知warning 2件）、Next.js Webpack Production build、diff check成功。通常のTurbopack buildはworktree外へのjunctionを拒否した環境制約のためWebpackで本番コンパイルを完了した。
+- Production、Supabase、Stripe決済／返金、Provider、生成Job、credit、利用者データは変更していない。次はcommit・push・Draft PRを作成し、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace隔離Staging テスト購入成功・callback host修正
 
 - 責任者の実行時承認を得て、synthetic buyer B／公式Stripeテストカードで100円のsandbox決済を実行した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`はテスト購入として購入履歴へ表示された。
