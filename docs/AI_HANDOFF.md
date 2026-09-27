@@ -5,6 +5,8 @@
 - 責任者の実行時承認後、synthetic buyer Bで100円のStripe sandbox決済を実行した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`は`payment_mode=test`の購入履歴へ表示され、5分署名URLから67,604 byteのPNG取得、購入履歴からの再発行、download count 0→1を確認した。実請求・本番売上・振込はない。
 - Stripe成功callbackが固有deployment URLを使い、branch aliasの認証Cookieを引き継げない事象を検出した。Server Action／APIでproxyの`x-forwarded-host`を優先してrequest originを解決し、Preview callbackを現在の公開ホストへ固定する。Productionは設定済み`NEXT_PUBLIC_SITE_URL`必須のまま変更しない。
 - focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、diff check成功。次はcommit／push、PR #532の全CI／Vercel、更新Previewのcallback host確認、出品者／管理売上除外確認。Production、Provider、Job、creditは未変更。Preview Branch削除は別承認待ち。
+- commit `6908b997`をPR #532へpushし、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsは全成功。更新Previewの未決済Sessionではcancel URLがbranch aliasを保持した。pending注文`cb545a04-506d-4038-a423-a8b0307491a9`に決済はない。残りはsynthetic seller／管理画面の売上除外確認。
+- Preview Branch ref `vaepinhkcjxjzrxflxwi`をread-only照合し、対象の支払済み注文は`test` 1件・100円・download count 1、synthetic sellerの`live/paid`は0件・受取予定額0円、Branch全体の`live/paid`も0件・本番売上0円と確認した。テスト受取相当80円／テスト売上100円は画面集計から除外される。親Production ref `vmdsyxykcrgxcdbrwlkv`は変更していない。
 
 ---
 

@@ -2,12 +2,14 @@
 
 ## 2026-09-28 Marketplace隔離Staging テスト購入成功・callback host修正
 
-- 状態: `STRIPE_TEST_PAYMENT_PASSED / PURCHASE_HISTORY_PASSED / DOWNLOAD_PASSED / CALLBACK_HOST_FIX_LOCAL_VALIDATION_COMPLETE / PRODUCTION_UNCHANGED`
+- 状態: `STRIPE_TEST_PAYMENT_PASSED / PURCHASE_HISTORY_PASSED / DOWNLOAD_PASSED / CALLBACK_HOST_PREVIEW_PASSED / SALES_EXCLUSION_READ_ONLY_PASSED / ALL_CI_AND_VERCEL_PASSED / PRODUCTION_UNCHANGED`
 - 責任者の実行時承認後、synthetic buyer Bで`Marketplace Staging E2E Product B`を100円のStripeサンドボックス決済で購入した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`は購入履歴へ`テスト購入`として表示され、実請求・本番売上・振込は発生していない。
 - Checkout成功画面で5分有効の署名付きdownload URLを発行し、67,604 byteのPNGを取得した。購入履歴からの再発行導線も通過し、download countが0回から1回へ更新された。
 - Stripeからの戻り先がbranch aliasではなく固有deployment URLになり、成功画面のヘッダーだけログアウト表示になる追加不具合を検出した。Server Actionがrequest originを渡していなかったため、`x-forwarded-host`を優先し、`host`へfallbackする共通resolverを追加した。Production callbackは従来どおり`NEXT_PUBLIC_SITE_URL`固定であり、Previewだけが現在の公開ホストへ戻る。
 - callback修正の検証: focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、`git diff --check`成功。Production、Provider、生成Job、creditは未変更。
-- 次: commit・pushし、Draft PR #532の全CI／Vercel Previewを確認する。更新Previewでbranch aliasを維持したStripe遷移を確認し、出品者売上0円・管理売上0円を確認する。Preview Branch削除は別承認まで行わない。
+- commit `6908b997`をDraft PR #532へpushした。Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。更新Previewから作成した未決済Sessionのcancel URLがbranch aliasを保持することを確認した（pending注文`cb545a04-506d-4038-a423-a8b0307491a9`、決済未実行）。
+- Supabase Preview Branch `marketplace-staging`（ref `vaepinhkcjxjzrxflxwi`）をread-only照合した。支払済み注文は対象の`payment_mode=test` 1件・100円だけでdownload countは1、同一出品者の本番支払済み注文は0件・本番受取予定額0円、Branch全体の本番支払済み注文も0件・本番売上0円だった。テスト受取相当80円とテスト売上100円は画面実装の`payment_mode=live`集計から除外される。未決済注文は`pending/test`のままである。
+- 次: この最終証跡をcommit・pushし、Draft PR #532の全CI／Vercel成功で停止する。Preview Branch削除は別承認まで行わない。
 
 ---
 

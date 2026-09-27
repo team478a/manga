@@ -6,6 +6,8 @@
 - 成功画面の5分署名URLから67,604 byteのPNGを取得した。購入履歴の再ダウンロード導線は本人確認後に新しい署名URLを発行し、download countが0から1へ更新された。実請求・本番売上・振込は発生していない。
 - 成功callbackがbranch aliasではなく固有deployment URLへ戻り、認証Cookieを外すPreview固有不具合を追加検出した。`x-forwarded-host`／`host`を検証してrequest originを作る共通helperを追加し、Server ActionとAPIのStripe Session作成へ渡した。Productionは`NEXT_PUBLIC_SITE_URL`固定を維持する。
 - focused 23/23と追加境界7/7、Hub 1052/1052、Hub typecheck、lint、Hub Production build、diff check成功。次はDraft PR #532への追加push、全CI／Vercel、更新Previewでcallback host・出品者売上0円・管理売上0円を確認する。Production DB／Storage、Provider、生成Job、creditは変更していない。
+- commit `6908b997`をpush後、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。更新Previewで作成した未決済Sessionのcancel URLはbranch aliasを維持し、pending注文`cb545a04-506d-4038-a423-a8b0307491a9`には決済がない。残りはsynthetic seller売上0円と管理売上0円の実画面確認。
+- Vercel保護により新規ブラウザSessionの実画面確認は行わず、保護を迂回しなかった。代わりに隔離Preview Branch `vaepinhkcjxjzrxflxwi`をread-only照合し、対象注文が`paid/test` 1件・100円・download count 1、synthetic sellerの本番受取予定額0円、Branch全体の本番売上0円、未決済注文が`pending/test`であることを確認した。画面コードは双方とも`paid && payment_mode === "live"`だけを集計するため、テスト売上は除外される。Productionは変更していない。
 
 ---
 
