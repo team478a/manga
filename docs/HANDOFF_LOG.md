@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-27 Codex: Marketplace隔離Staging候補資格情報の事前検証
+
+- PR #527 merge commit `1e43452bcfe40b7bd9fbaaedd0fb14b5e161d0c0`から`codex/staging-marketplace-credential-validation-20260927`を作成した。
+- Vercel Preview投入前の候補envを、linked Production環境と値非表示で比較するstrict検証を追加した。候補ファイルはrepository外の絶対パスだけを許可し、誤配置・相対パス・不存在を外部読取前に拒否する。
+- Supabase 3資格情報分離、ref整合、checkout mode、Stripe test資格情報は既存deployment preflightと同じ判定を共有し、Production pull用一時envを必ず削除する。
+- 集中5/5、Hub 1042/1042、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- Production、Vercel設定、Supabase、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。実候補envの作成と外部設定は別工程である。
+
+---
+
 ## 2026-09-27 Codex: Marketplace隔離Staging deployment preflight
 
 - PR #526 merge commit `ce51839ba9a3879df8bea3cc50ec1fa86b62f82d`から`codex/staging-supabase-bootstrap-20260927`を作成した。

@@ -1,8 +1,12 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import test from "node:test";
 import {
   assessMarketplaceStagingDeployment,
   parseEnvironmentFile,
+  resolveCandidateEnvironmentPath,
 } from "../scripts/check-marketplace-staging-deployment.mjs";
 
 const fakeTestSecret = ["sk", "test", "0123456789abcdefghijklmnop"].join(
@@ -94,5 +98,53 @@ test("Productionのtest modeと不完全なStripe資格情報を拒否する", (
   assert.equal(
     report.checks.find((check) => check.id === "stripe-test").ready,
     false,
+  );
+});
+
+test("候補envはrepository外の絶対パスだけを受け入れる", (context) => {
+  const repositoryRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mangai-repository-"),
+  );
+  const externalRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "mangai-candidate-"),
+  );
+  context.after(() => {
+    fs.rmSync(repositoryRoot, { recursive: true, force: true });
+    fs.rmSync(externalRoot, { recursive: true, force: true });
+  });
+
+  const internalFile = path.join(repositoryRoot, "preview.env");
+  const externalFile = path.join(externalRoot, "preview.env");
+  fs.writeFileSync(internalFile, "A=internal\n", {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+  fs.writeFileSync(externalFile, "A=external\n", {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+
+  assert.throws(
+    () =>
+      resolveCandidateEnvironmentPath({
+        argument: internalFile,
+        repositoryRoot,
+      }),
+    /outside the repository/,
+  );
+  assert.throws(
+    () =>
+      resolveCandidateEnvironmentPath({
+        argument: "preview.env",
+        repositoryRoot,
+      }),
+    /absolute path/,
+  );
+  assert.equal(
+    resolveCandidateEnvironmentPath({
+      argument: externalFile,
+      repositoryRoot,
+    }),
+    fs.realpathSync(externalFile),
   );
 });

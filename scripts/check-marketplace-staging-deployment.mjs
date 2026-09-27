@@ -41,6 +41,45 @@ export const parseEnvironmentFile = (content) => {
   return result;
 };
 
+const isPathInside = (parentPath, candidatePath) => {
+  const relative = path.relative(parentPath, candidatePath);
+  return (
+    relative === "" ||
+    (!relative.startsWith(`..${path.sep}`) &&
+      relative !== ".." &&
+      !path.isAbsolute(relative))
+  );
+};
+
+export const resolveCandidateEnvironmentPath = ({
+  argument,
+  repositoryRoot = root,
+  workingDirectory = process.cwd(),
+  existsSync = fs.existsSync,
+  realpathSync = fs.realpathSync,
+}) => {
+  if (!argument || !path.isAbsolute(argument)) {
+    throw new Error("Candidate environment file must use an absolute path.");
+  }
+
+  const resolvedRepositoryRoot = realpathSync(repositoryRoot);
+  const resolvedCandidate = path.resolve(workingDirectory, argument);
+  if (!existsSync(resolvedCandidate)) {
+    throw new Error("Candidate environment file was not found.");
+  }
+
+  const realCandidate = realpathSync(resolvedCandidate);
+  if (
+    isPathInside(resolvedRepositoryRoot, resolvedCandidate) ||
+    isPathInside(resolvedRepositoryRoot, realCandidate)
+  ) {
+    throw new Error(
+      "Candidate environment file must be stored outside the repository.",
+    );
+  }
+  return realCandidate;
+};
+
 const projectRefFromSupabaseUrl = (value) => {
   try {
     const host = new URL(value?.trim() ?? "").hostname.toLowerCase();
@@ -178,6 +217,23 @@ const isEntrypoint =
 
 if (isEntrypoint) {
   const strict = process.argv.includes("--strict");
+  const candidateIndex = process.argv.indexOf("--candidate");
+  let candidatePath = null;
+  if (candidateIndex >= 0) {
+    try {
+      candidatePath = resolveCandidateEnvironmentPath({
+        argument: process.argv[candidateIndex + 1],
+      });
+    } catch (error) {
+      console.error(
+        error instanceof Error ? error.message : "Invalid candidate file.",
+      );
+      process.exitCode = 1;
+    }
+  }
+
+  if (candidateIndex >= 0 && !candidatePath) process.exit();
+
   const temporaryRoot = fs.mkdtempSync(
     path.join(os.tmpdir(), "mangai-marketplace-preflight-"),
   );
@@ -185,22 +241,29 @@ if (isEntrypoint) {
   const productionPath = path.join(temporaryRoot, "production.env");
   let report;
   try {
-    const previewPull = pullVercelEnvironment("preview", previewPath);
-    const productionPull = pullVercelEnvironment("production", productionPath);
+    const previewPull = candidatePath
+      ? { status: 0 }
+      : pullVercelEnvironment("preview", previewPath);
+    const productionPull = pullVercelEnvironment(
+      "production",
+      productionPath,
+    );
     if (
       previewPull.status !== 0 ||
       productionPull.status !== 0 ||
-      !fs.existsSync(previewPath) ||
+      (!candidatePath && !fs.existsSync(previewPath)) ||
       !fs.existsSync(productionPath)
     ) {
       console.error(
-        "Unable to read the linked Vercel Preview and Production environments.",
+        candidatePath
+          ? "Unable to read the linked Vercel Production environment."
+          : "Unable to read the linked Vercel Preview and Production environments.",
       );
       process.exitCode = 1;
     } else {
       report = assessMarketplaceStagingDeployment({
         previewEnvironment: parseEnvironmentFile(
-          fs.readFileSync(previewPath, "utf8"),
+          fs.readFileSync(candidatePath || previewPath, "utf8"),
         ),
         productionEnvironment: parseEnvironmentFile(
           fs.readFileSync(productionPath, "utf8"),

@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-27 Marketplace隔離Staging候補資格情報の事前検証
+
+- 状態: `LOCAL_VALIDATOR_READY / REAL_CANDIDATE_NOT_CREATED / EXTERNAL_SETUP_NOT_STARTED / PRODUCTION_UNCHANGED`
+- BaseはPR #527 merge commit `1e43452bcfe40b7bd9fbaaedd0fb14b5e161d0c0`。Branchは`codex/staging-marketplace-credential-validation-20260927`。
+- `npm run marketplace:staging:candidate:validate -- "C:\\secure\\marketplace-preview.env"`を追加した。Vercelへ設定する前の候補envとlinked Production環境を秘密値非表示で比較し、既存のSupabase分離、ref整合、checkout mode、Stripe test資格情報の全条件をstrict判定する。
+- 候補ファイルはrepository外の絶対パスだけを受け付ける。repository内、相対パス、不存在はVercel Production環境のpullより前に拒否し、候補値・Production値・Project refを出力しない。Production pull用一時envは成功・失敗にかかわらず削除する。
+- 購入テスト手順へ「候補検証→Preview設定→実deployment preflight」の順序を追加した。実候補env、Supabase Branch／Project、Stripe test資格情報は作成していない。
+- 検証: 集中5/5、Hub 1042/1042、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、`git diff --check`成功。
+- Production、DB／Storage、Vercel環境変数、Stripe設定、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+
+---
+
 ## 2026-09-27 Marketplace隔離Staging deployment preflight
 
 - 状態: `DRAFT_PR_527 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / ACTUAL_DEPLOYMENT_3_OF_3_PENDING / PRODUCTION_UNCHANGED`

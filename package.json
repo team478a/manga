@@ -111,6 +111,7 @@
     "rc:external:probe": "node scripts/check-rc-external-environments.mjs --probe",
     "marketplace:staging:preflight": "node scripts/check-marketplace-staging-deployment.mjs",
     "marketplace:staging:preflight:strict": "node scripts/check-marketplace-staging-deployment.mjs --strict",
+    "marketplace:staging:candidate:validate": "node scripts/check-marketplace-staging-deployment.mjs --strict --candidate",
     "rc:acceptance": "node scripts/check-rc-acceptance.mjs",
     "rc:acceptance:strict": "node scripts/check-rc-acceptance.mjs --strict",
     "rc:acceptance:test": "node --test tests/rc-acceptance.test.mjs",

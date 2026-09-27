@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Staging候補資格情報の事前検証（2026-09-27）
+
+- PR #527 merge commit `1e43452bcfe40b7bd9fbaaedd0fb14b5e161d0c0`から`codex/staging-marketplace-credential-validation-20260927`を作成した。
+- Vercel Previewへ設定する前の候補envを、linked Vercel Production環境と秘密値非表示で比較できるstrict検証を追加した。候補ファイルはrepository外の絶対パスだけを受け付け、repository内・相対パス・不存在を接続前に拒否する。
+- 既存のSupabase 3資格情報分離、staging／parent ref整合、Preview test／Production非test、Stripe test Secret／Webhook／Cancel Secret条件を再利用する。Production環境のpullはread-onlyで、一時ファイルは必ず削除する。
+- 集中5/5、Hub 1042/1042、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- Production、Vercel設定、Supabase、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。実候補envの作成・検証、隔離Branch／Project作成、Preview設定は外部条件確定後の別操作とする。
+
+---
+
 ## 0.0 Marketplace隔離Staging deployment preflight（2026-09-27）
 
 - PR #526 merge commit `ce51839ba9a3879df8bea3cc50ec1fa86b62f82d`から`codex/staging-supabase-bootstrap-20260927`を作成した。
