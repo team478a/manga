@@ -6,6 +6,7 @@
 - Vercel Preview／ProductionのSupabase URL、anon key、service-role keyを値非表示で比較し、3値すべて同一と判定した。PreviewのStripe test key／Webhook secret／checkout modeも未設定だったため、migrationと外部Stripe E2Eを実行前に停止した。比較用の一時env 2件は削除済み。
 - Production deploymentではtest checkoutを拒否し、Previewでは接続Supabase ref＝staging ref、かつstaging ref≠親Production refの場合だけ許可する。RC preflightも同一条件を検査し、値やrefを出力しない。
 - 集中21/21、Hub 1037/1037、Hub typecheck、全lint、deps error 0（既知warning 2件）、migration 86/86、Hub Production build、RC Repository structure、diff check成功。
+- Implementation commit `00cc58b6`をpushし、Draft PR [#526](https://github.com/team478a/manga/pull/526)を作成した。全CI／Vercel Previewを確認中。
 - Production、Supabase、Vercel環境変数、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。ブラウザ連携はrequest-header policyエラー、Supabase CLIはローカル未導入かつnpm一時cache不整合のため、隔離Branchの作成・確認は外部前提として残る。
 
 ---
