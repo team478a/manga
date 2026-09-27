@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace隔離Preview Checkout origin修正
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / PRODUCT_SAVE_E2E_PASSED / CHECKOUT_PREVIEW_RETRY_PENDING / PRODUCTION_UNCHANGED`
+- 修正版Previewへsynthetic seller Bで公開作品`Marketplace Staging E2E Sample B`（`f884fd36-7c62-409f-8bac-42356fe1b711`）と販売中商品`Marketplace Staging E2E Product B`（`3d5e8dfd-60d8-4795-9b04-c989a128aaa9`、100円）を保存した。PR #532の旧schema互換修正により、従来の自己所有作品エラーは再発せず、公開作品ページへテスト購入導線が表示された。
+- synthetic buyer BでCheckoutを開始すると、Stripe遷移前に`本番環境ではNEXT_PUBLIC_SITE_URLが必要です。`で停止し、pending仮注文`f558f6fe-abcd-43b7-963d-fb0738a8f6dc`だけが作成された。決済、Stripe Session、売上、download、Provider、Job、creditは発生していない。
+- 原因はVercel Previewも`NODE_ENV=production`であるのに、Checkout origin判定が`NODE_ENV`だけを本番判定に使ったこと。`VERCEL_ENV=preview`では現在のrequest originまたは`VERCEL_URL`を使い、`NEXT_PUBLIC_SITE_URL`を無視してProductionとのcallback混在を防ぐ。本番Vercelと非Vercel production buildは従来どおり`NEXT_PUBLIC_SITE_URL`必須でfail closedとする。Cloud AI subscriptionの同じorigin解決も共通化した。
+- 検証: focused 20/20、Hub 1048/1048、Hub typecheck、lint、Hub Production build、`git diff --check`成功。
+- 次: commit・pushしてDraft PR #532の全CI／Vercel Preview成功を確認後、更新Previewでbuyer Checkoutを再開する。Stripeテスト画面では入力準備まで進め、最終支払い確定直前に責任者へ別確認する。
+
+---
+
 ## 2026-09-28 Marketplace隔離Staging 商品保存の旧schema互換
 
 - 状態: `DRAFT_PR_532 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / SELLER_WORK_CREATED / PRODUCT_RETRY_BLOCKED_BY_PREVIEW_LOGIN / PRODUCTION_UNCHANGED`

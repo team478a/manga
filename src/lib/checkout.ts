@@ -8,7 +8,7 @@ import {
   assertCheckoutOrder,
   createCheckoutCancelToken,
   normalizeBuyerEmail,
-  resolveCheckoutOrigin,
+  resolveCheckoutDeploymentOrigin,
 } from "@/lib/checkout-policy";
 import {
   DomainError,
@@ -82,10 +82,8 @@ export async function createStripeCheckoutSession({
     paymentMode: configuredPaymentMode,
   });
   const normalizedEmail = normalizeBuyerEmail(buyerEmail);
-  const siteUrl = resolveCheckoutOrigin({
-    configured: process.env.NEXT_PUBLIC_SITE_URL,
+  const siteUrl = resolveCheckoutDeploymentOrigin({
     requestOrigin: origin,
-    production: process.env.NODE_ENV === "production",
   });
   const cancelSecret =
     process.env.CHECKOUT_CANCEL_SECRET ||

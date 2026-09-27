@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Preview Checkout origin修正（2026-09-28）
+
+- PR #532のPreviewでsynthetic seller Bの公開作品と100円の販売中商品を保存し、旧schema互換修正の実画面成功を確認した。
+- synthetic buyer BのCheckout開始はStripe遷移前に`NEXT_PUBLIC_SITE_URL`必須判定で停止し、pending仮注文1件だけを作成、決済・Stripe Session・売上・downloadは0件。原因はPreviewも`NODE_ENV=production`であること。
+- `VERCEL_ENV=preview`だけはrequest origin／`VERCEL_URL`へ固定し、Productionは設定済み`NEXT_PUBLIC_SITE_URL`必須を維持する共通resolverへ変更した。
+- focused 20/20、Hub 1048/1048、typecheck、lint、Production build、diff check成功。次はcommit・push・全CI／Vercel後にCheckout再試行し、最終テスト支払い直前で別確認を得る。Production、Provider、Job、creditは未変更。
+
+---
+
 ## 0.0 Marketplace隔離Staging 商品保存の旧schema互換（2026-09-28）
 
 - Branch `codex/marketplace-purchase-e2e-continuation-20260928`、Base `f6ba962d`（PR #531 merge commit）。隔離Stagingでsynthetic sellerの公開作品は保存済み。販売中商品保存時に、作品選択一覧へ出る自己所有作品が所有権エラーで拒否される事象を再現した。

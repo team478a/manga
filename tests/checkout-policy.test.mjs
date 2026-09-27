@@ -5,6 +5,7 @@ import {
   createCheckoutCancelToken,
   normalizeBuyerEmail,
   paidSessionReference,
+  resolveCheckoutDeploymentOrigin,
   resolveCheckoutOrigin,
   verifyCheckoutCancelToken,
 } from "../src/lib/checkout-policy.ts";
@@ -129,6 +130,54 @@ test("本番URLは設定済みHTTPS originだけを許可する", () => {
         production: true,
       }),
     /origin/,
+  );
+});
+
+test("Vercel PreviewはNODE_ENV=productionでもPreview originへ分離する", () => {
+  assert.equal(
+    resolveCheckoutDeploymentOrigin({
+      environment: {
+        NODE_ENV: "production",
+        VERCEL_ENV: "preview",
+        VERCEL_URL: "preview-branch.example.vercel.app",
+        NEXT_PUBLIC_SITE_URL: "https://app.example.com",
+      },
+    }),
+    "https://preview-branch.example.vercel.app",
+  );
+  assert.equal(
+    resolveCheckoutDeploymentOrigin({
+      environment: {
+        NODE_ENV: "production",
+        VERCEL_ENV: "preview",
+        VERCEL_URL: "deployment.example.vercel.app",
+      },
+      requestOrigin: "https://branch-alias.example.vercel.app",
+    }),
+    "https://branch-alias.example.vercel.app",
+  );
+});
+
+test("Vercel Productionと非Vercel production buildは設定URLを必須にする", () => {
+  assert.throws(
+    () =>
+      resolveCheckoutDeploymentOrigin({
+        environment: {
+          NODE_ENV: "production",
+          VERCEL_ENV: "production",
+          VERCEL_URL: "production-deployment.example.vercel.app",
+        },
+        requestOrigin: "https://untrusted.example.com",
+      }),
+    /NEXT_PUBLIC_SITE_URL/,
+  );
+  assert.throws(
+    () =>
+      resolveCheckoutDeploymentOrigin({
+        environment: { NODE_ENV: "production" },
+        requestOrigin: "https://untrusted.example.com",
+      }),
+    /NEXT_PUBLIC_SITE_URL/,
   );
 });
 

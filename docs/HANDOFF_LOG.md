@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace隔離Preview Checkout origin修正
+
+- Draft PR #532の修正版Previewでsynthetic seller Bを作成し、公開作品`f884fd36-7c62-409f-8bac-42356fe1b711`と販売中商品`3d5e8dfd-60d8-4795-9b04-c989a128aaa9`を保存した。自己所有作品エラーは再発せず、商品保存と公開作品ページのテスト購入導線を確認した。
+- synthetic buyer BでCheckoutを開始したところ、Stripe遷移前にPreviewが`NODE_ENV=production`だけで本番扱いされ、`NEXT_PUBLIC_SITE_URL`必須判定で停止した。pending仮注文`f558f6fe-abcd-43b7-963d-fb0738a8f6dc`だけが作成され、Stripe Session、決済、売上、downloadは0件。
+- `VERCEL_ENV=preview`ではrequest originまたは`VERCEL_URL`を優先し、Production用`NEXT_PUBLIC_SITE_URL`をPreview callbackへ混在させない共通origin resolverへ変更した。Vercel Productionと非Vercel production buildは従来どおり設定URL必須でfail closed。Cloud AI subscriptionも同じ安全な判定へ統一した。
+- focused 20/20、Hub 1048/1048、Hub typecheck、lint、Hub Production build、diff check成功。Production DB／Storage、Provider、生成Job、credit、実決済、実利用者データは変更していない。
+- 次: commit・pushし、Draft PR #532の全CI／Vercel Preview成功後に同じbuyerでCheckoutを再試行する。Stripe最終テスト支払いは実行直前に責任者確認を得る。
+
+---
+
 ## 2026-09-28 Codex: Marketplace隔離Staging 商品保存の旧schema互換
 
 - Branch: `codex/marketplace-purchase-e2e-continuation-20260928`。Base: `f6ba962d`（PR #531 merge commit）。
