@@ -2,7 +2,10 @@ import Stripe from "stripe";
 import { paidSessionReference } from "@/lib/checkout-policy";
 import { DomainError } from "@/lib/domain-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { allowedOrderStatuses } from "@/lib/payment-events";
+import {
+  allowedOrderStatuses,
+  type PaymentStatusAction,
+} from "@/lib/payment-events";
 
 export async function markCheckoutSessionPaid(
   session: Stripe.Checkout.Session,
@@ -54,19 +57,18 @@ export async function markCheckoutSessionPaid(
   return Boolean(paidOrder);
 }
 
-export async function markPaymentIntentStatus(
-  paymentIntentId: string,
-  status: "failed" | "refunded",
-  orderId?: string,
-  paymentMode?: "test" | "live",
-) {
+export async function markPaymentIntentStatus(action: PaymentStatusAction) {
   const supabase = createAdminClient();
-  let query = supabase.from("orders").update({ status });
-  query = query.in("status", allowedOrderStatuses(status));
-  query = orderId
-    ? query.eq("id", orderId)
-    : query.eq("stripe_payment_intent_id", paymentIntentId);
-  if (paymentMode) query = query.eq("payment_mode", paymentMode);
+  let query = supabase.from("orders").update({ status: action.status });
+  query = query.in("status", allowedOrderStatuses(action.status));
+  query =
+    action.status === "failed"
+      ? query
+          .eq("id", action.orderId)
+          .eq("product_id", action.productId)
+          .eq("creator_id", action.creatorId)
+      : query.eq("stripe_payment_intent_id", action.paymentIntentId);
+  query = query.eq("payment_mode", action.paymentMode);
   const { error } = await query;
   if (error)
     throw new DomainError(

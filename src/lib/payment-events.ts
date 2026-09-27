@@ -9,10 +9,23 @@ export type PaymentEventAction =
   | {
       type: "payment-status";
       paymentIntentId: string;
-      status: "failed" | "refunded";
-      orderId?: string;
+      status: "failed";
+      orderId: string;
+      productId: string;
+      creatorId: string;
+      paymentMode: OrderPaymentMode;
+    }
+  | {
+      type: "payment-status";
+      paymentIntentId: string;
+      status: "refunded";
       paymentMode: OrderPaymentMode;
     };
+
+export type PaymentStatusAction = Extract<
+  PaymentEventAction,
+  { type: "payment-status" }
+>;
 
 export function allowedOrderStatuses(status: "failed" | "refunded") {
   return status === "failed"
@@ -24,6 +37,23 @@ function paymentIntentId(
   value: string | Stripe.PaymentIntent | null,
 ): string | null {
   return typeof value === "string" ? value : (value?.id ?? null);
+}
+
+function failedPaymentReference(
+  metadata: Stripe.Metadata | null | undefined,
+  paymentMode: OrderPaymentMode,
+) {
+  const orderId = metadata?.order_id;
+  const productId = metadata?.product_id;
+  const creatorId = metadata?.creator_id;
+  if (
+    !orderId ||
+    !productId ||
+    !creatorId ||
+    metadata?.payment_mode !== paymentMode
+  )
+    return null;
+  return { orderId, productId, creatorId };
 }
 
 export function planPaymentEvent(
@@ -40,25 +70,36 @@ export function planPaymentEvent(
 
   if (event.type === "checkout.session.async_payment_failed") {
     const id = paymentIntentId(event.data.object.payment_intent);
-    return id
+    const reference = failedPaymentReference(
+      event.data.object.metadata,
+      paymentMode,
+    );
+    return id && reference
       ? {
           type: "payment-status",
           paymentIntentId: id,
           status: "failed",
-          orderId: event.data.object.metadata?.order_id,
+          ...reference,
           paymentMode,
         }
       : null;
   }
 
-  if (event.type === "payment_intent.payment_failed")
-    return {
-      type: "payment-status",
-      paymentIntentId: event.data.object.id,
-      status: "failed",
-      orderId: event.data.object.metadata.order_id,
+  if (event.type === "payment_intent.payment_failed") {
+    const reference = failedPaymentReference(
+      event.data.object.metadata,
       paymentMode,
-    };
+    );
+    return reference
+      ? {
+          type: "payment-status",
+          paymentIntentId: event.data.object.id,
+          status: "failed",
+          ...reference,
+          paymentMode,
+        }
+      : null;
+  }
 
   if (event.type === "charge.refunded" && event.data.object.refunded) {
     const id = paymentIntentId(event.data.object.payment_intent);

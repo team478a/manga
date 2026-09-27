@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace決済失敗通知の注文境界強化
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-download-boundary-20260928`。BaseはPR #532 merge commit `c842d4ece4d99edef7bf0c48149b26116fe457af`。
+- Stripeの同期／非同期決済失敗イベントが`order_id`だけで注文を更新できたため、署名済みイベントでも別商品のmetadataを混在させた場合に誤ったpending注文へ失敗状態を適用し得る境界を修正した。
+- 失敗イベントは`order_id`、`product_id`、`creator_id`、イベント由来の`payment_mode`がすべて一致する場合だけ処理し、DB更新も同じ4条件と既存の単調な状態遷移で絞り込む。返金は従来どおり保存済みPayment Intentとmodeで照合し、失敗処理と分離する。
+- 検証: focused 23/23、Hub 1054/1054、Hub typecheck、lint、依存境界error 0（既知warning 2件）、Next.js Webpack Production build、`git diff --check`成功。通常のTurbopack buildは容量回避用の外部`node_modules` junctionをfilesystem root外として拒否したため、コード不具合ではない環境制約としてWebpackで本番コンパイルを完了した。
+- Production、Supabase、Stripe設定・決済・返金、Provider、生成Job、credit、利用者データは変更していない。
+- 次: commit・push・Draft PRを作成し、全CI／Vercel成功で停止する。外部E2Eとしてtampered cancel token、署名URL失効、async failure、全額返金は残り、決済／返金操作は別の実行時承認単位とする。
+
+---
+
 ## 2026-09-28 Marketplace隔離Staging テスト購入成功・callback host修正
 
 - 状態: `STRIPE_TEST_PAYMENT_PASSED / PURCHASE_HISTORY_PASSED / DOWNLOAD_PASSED / CALLBACK_HOST_PREVIEW_PASSED / SALES_EXCLUSION_READ_ONLY_PASSED / ALL_CI_AND_VERCEL_PASSED / PRODUCTION_UNCHANGED`

@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace決済失敗通知の注文境界強化（2026-09-28）
+
+- Branch `codex/marketplace-download-boundary-20260928`、Base `c842d4ec`（PR #532 merge commit）。
+- 決済失敗Webhookを`order_id`だけで更新せず、`order_id`／`product_id`／`creator_id`／イベント由来`payment_mode`の完全一致を必須にした。返金経路は保存済みPayment Intentとの照合を維持し、失敗経路から分離した。
+- focused 23/23、Hub 1054/1054、typecheck、lint、依存境界error 0（既知warning 2件）、Next.js Webpack Production build、diff check成功。通常のTurbopack buildはworktree外の`node_modules` junctionを拒否した環境制約のためWebpackで本番コンパイルを完了した。
+- Production、Supabase、Stripe外部状態、Provider、Job、credit、利用者データは未変更。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+- 未完了の外部E2Eはtampered cancel token、署名URL失効、async failure、全額返金。実決済・返金は別の実行時承認が必要。
+
+---
+
 ## 0.0 Marketplace隔離Staging テスト購入成功・callback host修正（2026-09-28）
 
 - 責任者の実行時承認後、synthetic buyer Bで100円のStripe sandbox決済を実行した。注文`61c1b818-33b3-4101-939c-4580d430f5fb`は`payment_mode=test`の購入履歴へ表示され、5分署名URLから67,604 byteのPNG取得、購入履歴からの再発行、download count 0→1を確認した。実請求・本番売上・振込はない。

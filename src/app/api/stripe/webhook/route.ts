@@ -53,12 +53,7 @@ export async function POST(request: Request) {
     if (paymentAction?.type === "checkout-paid")
       await markCheckoutSessionPaid(paymentAction.session);
     else if (paymentAction?.type === "payment-status")
-      await markPaymentIntentStatus(
-        paymentAction.paymentIntentId,
-        paymentAction.status,
-        paymentAction.orderId,
-        paymentAction.paymentMode,
-      );
+      await markPaymentIntentStatus(paymentAction);
     logHubEvent("info", "stripe_webhook_processed", {
       ...logContext,
       stripeEventId: event.id,
