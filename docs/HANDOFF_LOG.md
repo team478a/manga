@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace隔離Staging 静的seed／Storage復旧
+
+- Branch: `codex/marketplace-test-purchase-e2e-20260927`。Base: `014a71fe`（PR #530 merge commit）。
+- synthetic seller／buyerの初期化でCloud AI静的seed欠落、公開作品保存でMarketplace bucket／policy欠落を確認した。Supabase Preview Branchがschemaを持っていても、静的rowとStorage設定を持たないことが原因だった。
+- 責任者承認後、CLIでBranch ref `vaepinhkcjxjzrxflxwi`と親Production ref `vmdsyxykcrgxcdbrwlkv`の分離を再確認し、Stagingへだけ冪等修復を適用した。postflightはplan 3、settings 1、bucket 2、policy 7。
+- synthetic user 2、profile 2、work 0、Marketplace object 0、order 0。Production、Provider、Job、credit、決済、実利用者データの変更は0件。
+- `202609280001_marketplace_static_seed`、非破壊rollback、欠落再現roundtrip test、manifest、証跡文書を追加した。strict Staging preflight 3/3 READY、Hub 1045/1045、依存関係error 0（既知warning 2件）、lint、全typecheck、migration validator 87/87、Hub Production build、diff check成功。
+- 次の一手: Chrome連携を復旧してseller作品／商品を作成し、buyerのテストCheckoutを開く。公式テストカード入力と決済確定前に別確認を得る。
+
+---
+
 ## 2026-09-27 Codex: Marketplace隔離Preview環境・Stripe Webhook実到達
 
 - Branch: `codex/marketplace-preview-env-20260927`

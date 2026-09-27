@@ -516,6 +516,12 @@
       "description": "Stripeテスト販売注文を本番売上と分離して記録",
       "forwardSha256": "cecbf849fee5b6a3145c35a8c3128277483940f4fe2e193bb54ddc10f1ed18d5",
       "rollbackSha256": "b8788e914aa2e45501fb3dd4a9d152e81b699e8cacf9b6e95f9b08cfd4993c0d"
+    },
+    {
+      "id": "202609280001_marketplace_static_seed",
+      "description": "Preview Branchで欠落するMarketplace静的seedとStorage設定を冪等復元",
+      "forwardSha256": "8535c0df7ec372a2944b2c60bab81f72e97e6a96cab05f1dbce92438c847222b",
+      "rollbackSha256": "1f9ba1944067e4f9811346cc2802eafe411bf355501e260ea84d542fb5bc43f9"
     }
   ],
   "schemaSha256": "af66eded361f9eb2b820282301d1f2be934b1cd3cf99cbd61d295ed741392f2c"

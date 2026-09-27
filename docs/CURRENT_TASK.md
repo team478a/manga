@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace隔離Staging 静的seed／Storage復旧
+
+- 状態: `STAGING_STATIC_SEED_REPAIRED / MIGRATION_AND_REGRESSION_TEST_ADDED / SELLER_WORK_RETRY_PENDING / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-test-purchase-e2e-20260927`。BaseはPR #530 merge commit `014a71fe47d1ea65e726fa307be17bb9c470767c`。
+- 隔離Stagingへsynthetic seller／buyerを各1名作成した。Auth userは作成できたが、Preview Branchに`cloud_ai_plans`／`cloud_ai_settings`の静的行がなく、profile作成時のentitlement付与が外部キー違反になった。Stagingだけへ3 plan、singleton settings、2 profileを冪等登録した。
+- sellerで公開作品の画像保存を実行すると、`works`／`digital-products` bucketとStorage policyがPreview Branchへ複製されておらず、Storage保存前に停止した。責任者の実行時承認後、`202609280001_marketplace_static_seed`の内容を隔離Branch `vaepinhkcjxjzrxflxwi`だけへ適用した。
+- postflightはplan 3件、settings 1件、bucket 2件、policy 7件。synthetic user 2件、profile 2件、work 0件、Marketplace Storage object 0件、order 0件であり、失敗試行の部分データはない。
+- 再発防止として静的seed／bucket／owner policyを冪等復元するmigration、非破壊rollback、Migration roundtripの欠落再現試験、manifestを追加した。検証はstrict Staging preflight 3/3 READY、Hub 1045/1045、依存関係error 0（既知warning 2件）、lint、全typecheck、migration 87/87、Hub Production build、`git diff --check`成功。
+- Production DB／Storage／環境変数、Provider、生成Job、credit、Stripe決済、注文、実利用者データは変更していない。詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_STATIC_SEED_REPAIR_20260928.md`。
+- 次: Chrome連携復旧後に公開作品／商品保存を再試行する。公式テストカードの入力・テスト決済確定は金融操作のため、実行直前に別確認を得る。その後、`payment_mode=test`、履歴、5分署名download、売上除外、失敗／返金／認可を確認する。
+
+---
+
 ## 2026-09-27 Marketplace隔離Preview環境・Stripe Webhook実到達
 
 - 状態: `ISOLATED_PREVIEW_READY / STRIPE_TEST_WEBHOOK_200_OK / STRICT_PREFLIGHT_3_OF_3_READY / TEST_PURCHASE_PENDING / PRODUCTION_UNCHANGED`
