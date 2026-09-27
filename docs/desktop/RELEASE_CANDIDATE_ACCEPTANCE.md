@@ -167,6 +167,14 @@ DB migrationの適用・rollback手順は[`../hub/DATABASE_MIGRATIONS.md`](../hu
 8. 非同期成功、非同期失敗、Payment Intent失敗、全額返金を送信し、状態が後戻りしないことを確認します。
 9. 未払い、別注文metadata、決済mode不一致、期限切れURLではダウンロードできないことを確認します。
 
+手順7と9のうち、改ざんキャンセルtokenと期限切れURLは、隔離Stagingの外部envへ合成pending／paid注文IDを設定して次のコマンドでも実行できます。コマンドは改ざんリクエスト前後の注文状態をread-onlyで比較し、Storage署名URLの即時取得後、5分の実時間経過を待って同じURLが拒否されることを確認します。Stripe、Production、実利用者注文は操作しません。
+
+```bash
+npm run marketplace:staging:auth-expiry
+```
+
+必要な環境変数は`MANGAI_DB_ENV=staging`、`MANGAI_MARKETPLACE_CHECKOUT_MODE=test`、`NEXT_PUBLIC_SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY`、`MANGAI_STAGING_PROJECT_REF`、`MANGAI_STAGING_PARENT_PROJECT_REF`、`MANGAI_STAGING_PREVIEW_URL`、`MANGAI_STAGING_PENDING_ORDER_ID`、`MANGAI_STAGING_PAID_ORDER_ID`です。先に`marketplace:staging:preflight:strict`の3項目がすべて`READY`であることを確認します。秘密値とURLはrepository外で管理し、実行ログへ出力しません。このコマンドのローカル単体テスト成功を外部E2Eの代替証跡にはしません。
+
 実在カードや本番課金は使用しません。テスト後はWebhook endpoint、テスト注文、ダウンロードURLの有効期限を確認します。
 
 ## 10. RC判定記録

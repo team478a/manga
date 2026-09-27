@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace改ざんcancel／署名URL失効のStaging受入れハーネス
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / TAMPERED_CANCEL_PREVIEW_REJECTED / EXTERNAL_DB_AND_EXPIRY_RUN_PENDING / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-auth-expiry-20260928`。BaseはPR #533 merge commit `78f5e5894f0dcb2462a74e8a6495b65cf2bd238e`。
+- PR #533の最新Previewで既存synthetic pending注文に64桁の改ざんtokenを付けたcancel URLを開き、「キャンセル情報を確認できなかったため、注文状態は変更していません。」を確認した。ログインやStripe操作は行っていない。
+- 隔離Stagingの合成pending／paid注文を指定し、改ざんリクエスト前後の`pending/test`不変、商品Storageの5分署名URLの即時取得、JWT `exp`、実時間失効後の取得拒否を一括検査する`npm run marketplace:staging:auth-expiry`を追加した。
+- コマンドはSupabase URLと宣言Staging refの一致、親refとの差分、branch Vercel Preview、2件のUUIDを接続前に検査する。Production custom domain／親Project／同一注文を拒否し、Stripe request、決済、返金を行わず、秘密値・URL・Project refを出力しない。
+- 実Staging実行は対象Supabaseアカウントへ接続したChromeプロファイルのrequest-header policy読込が連続失敗し、外部資格情報を安全に取得できなかったため未実施。ローカルテスト成功を外部E2Eの代替証跡にはしない。
+- 検証: focused 3/3、Hub 1057/1057、Hub typecheck、lint、依存境界error 0（既知warning 2件）、packages build、Next.js Webpack Production build、`git diff --check`成功。
+- Production、Supabase DB／Storage、Stripe設定・決済・返金、Provider、生成Job、credit、利用者データは変更していない。
+- 次: commit・push・Draft PRを作成し、全CI／Vercel成功で停止する。merge後、隔離Staging資格情報をrepository外から与えてコマンドを実行し、約5分後の失効まで記録する。
+
+---
+
 ## 2026-09-28 Marketplace決済失敗通知の注文境界強化
 
 - 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / PRODUCTION_UNCHANGED`
