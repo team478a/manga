@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-27 Marketplace隔離Supabase Preview Branch作成・Migration適用
+
+- 状態: `STAGING_BRANCH_CREATED / MIGRATION_APPLIED / POSTFLIGHT_PASSED / VERCEL_PREVIEW_CREDENTIALS_PENDING / PRODUCTION_UNCHANGED`
+- BaseはPR #528 merge commit `d85c9245e1948fb1c7c9b43b5e57161da591c2b0`。Branchは`codex/marketplace-staging-migration-20260927`。
+- 責任者承認条件（名称`marketplace-staging`、Production data／Storage非複製、Micro compute、短期利用、最大24時間・概算`$0.33`＋税等）に従い、Supabase Preview Branchを作成した。Branch refは`vaepinhkcjxjzrxflxwi`、親Production refは`vmdsyxykcrgxcdbrwlkv`で分離している。
+- Branchは一時的な`Unhealthy`から`Healthy`へ移行し、computeはMicro。作成後の厳密なread-only SQLでpublic base table 106件、非空table 0件、public row 0件、Auth user 0件、Storage object 0件を確認した。
+- `orders.payment_mode`列、`orders_payment_mode_check`、`orders_payment_mode_status_idx`が未存在かつ注文0件であることをpreflight確認した。原本SHA-256 `CECBF849FEE5B6A3145C35A8C3128277483940F4FE2E193BB54DDC10F1ED18D5`の`202609270001_marketplace_test_sales.sql`を全文1回だけ適用し、`Success. No rows returned`を確認した。
+- postflightは列定義`text / NOT NULL / default 'live'`、制約`payment_mode in ('test','live')`、索引`orders_payment_mode_status_idx(payment_mode,status)`が一致した。注文、Auth user、Storage objectは0件のまま。
+- 検証: `npm run db:migrations:validate` 86/86、Marketplace／checkout／deployment preflight集中13/13成功。
+- Production、Production DB／Storage、Vercel環境変数、Stripe設定、Webhook、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+- Branch computeは`$0.01344/hour`で課金中。2026-09-28夜までを上限として、検証完了後の削除は実行時確認後に行う。
+- 次: repository外の候補envへ隔離Supabase 3資格情報とStripe test資格情報を揃え、`marketplace:staging:candidate:validate`を実行する。候補合格後だけVercel Previewへ設定し、`marketplace:staging:preflight:strict`の3項目をREADYにする。秘密値の取得・Vercel送信は実行直前に確認する。
+
+---
+
 ## 2026-09-27 Marketplace隔離Staging候補資格情報の事前検証
 
 - 状態: `DRAFT_PR_528 / ALL_CI_AND_VERCEL_PREVIEW_PASSED / REAL_CANDIDATE_NOT_CREATED / PRODUCTION_UNCHANGED`

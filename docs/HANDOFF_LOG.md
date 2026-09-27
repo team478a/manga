@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-27 Codex: Marketplace隔離Supabase Preview Branch作成・Migration適用
+
+- PR #528 merge commit `d85c9245e1948fb1c7c9b43b5e57161da591c2b0`から`codex/marketplace-staging-migration-20260927`を作成した。
+- 責任者の費用条件付き承認に基づき、Supabase Preview Branch `marketplace-staging`（ref `vaepinhkcjxjzrxflxwi`）をMicro computeで作成した。親Production ref `vmdsyxykcrgxcdbrwlkv`と異なる。
+- 厳密なread-only検査でpublic base table 106件・public row 0件、Auth user 0件、Storage object 0件を確認し、Production利用者データ／Storageが複製されていないことを確認した。
+- preflightでMarketplace test sales migrationが未適用、注文0件を確認した。SHA-256 `CECBF849FEE5B6A3145C35A8C3128277483940F4FE2E193BB54DDC10F1ED18D5`の`202609270001_marketplace_test_sales.sql`だけを全文1回適用し、成功した。
+- postflightは`orders.payment_mode`のNOT NULL／default live、test/live制約、`orders_payment_mode_status_idx`を確認した。注文・Auth user・Storage objectは0件のまま。
+- 集中13/13、migration validator 86/86成功。Production、Vercel、Stripe、Webhook、注文、決済、Provider、生成Job、credit、利用者データは未変更。
+- Branch computeは`$0.01344/hour`で課金中。最大24時間の短期利用条件を維持し、削除は実行時確認後に行う。
+- 次は候補envのrepository外作成、秘密値非表示のcandidate validation、Vercel Preview専用env設定、strict deployment preflightの順。秘密値をVercelへ送信する直前に責任者確認を得る。
+
+---
+
 ## 2026-09-27 Codex: Marketplace隔離Staging候補資格情報の事前検証
 
 - PR #527 merge commit `1e43452bcfe40b7bd9fbaaedd0fb14b5e161d0c0`から`codex/staging-marketplace-credential-validation-20260927`を作成した。
