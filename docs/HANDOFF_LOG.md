@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace改ざんcancel／署名URL失効のStaging受入れハーネス
+
+- PR #533 merge commit `78f5e589`から`codex/marketplace-auth-expiry-20260928`を作成した。
+- 最新Previewの既存synthetic pending注文へ改ざんcancel tokenを送信し、注文状態を変更しない表示を実確認した。DB前後状態と期限後取得は対象Supabaseセッションへ接続できず未確定。
+- 隔離Stagingのpending／paid合成注文を使い、DB不変、5分署名URLの即時成功、JWT期限、実時間失効後の拒否を確認する専用コマンドと3件の回帰テストを追加した。親Project、Production URL、通常Vercel URL、同一注文は接続前に拒否する。
+- focused 3/3、Hub 1057/1057、Hub typecheck、lint、deps error 0（既知warning 2件）、packages／Next.js Webpack Production build、diff check成功。
+- Production、Supabase DB／Storage、Stripe、Provider、生成Job、credit、利用者データは変更していない。次はcommit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace決済失敗通知の注文境界強化
 
 - PR #532 merge commit `c842d4ec`から`codex/marketplace-download-boundary-20260928`を作成した。

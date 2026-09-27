@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace改ざんcancel／署名URL失効のStaging受入れハーネス（2026-09-28）
+
+- Branch `codex/marketplace-auth-expiry-20260928`、Base `78f5e589`（PR #533 merge commit）。最新Previewで既存synthetic pending注文へ改ざんtokenを送信し、画面が注文非更新を明示することを確認した。
+- `marketplace:staging:auth-expiry`を追加し、隔離Project／branch Previewだけを対象に、改ざんcancel前後のDB状態、5分署名URLの即時取得、実時間経過後の拒否を一括検査できる。Stripe request／決済／Production mutationはなく、秘密値を出力しない。
+- focused 3/3、Hub 1057/1057、typecheck、lint、deps error 0（既知warning 2件）、packages／Webpack Production build、diff check成功。
+- 対象Supabaseアカウントのブラウザ連携がrequest-header policy読込に失敗したため、外部コマンド実行は未完了。ローカルテストを外部E2Eの代替にしない。
+- Production、Supabase、Stripe、Provider、Job、credit、利用者データは未変更。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace決済失敗通知の注文境界強化（2026-09-28）
 
 - Branch `codex/marketplace-download-boundary-20260928`、Base `c842d4ec`（PR #532 merge commit）。
