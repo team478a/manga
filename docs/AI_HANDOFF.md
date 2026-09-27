@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace隔離Staging 静的seed／Storage復旧（2026-09-28）
+
+- Branch `codex/marketplace-test-purchase-e2e-20260927`、Base `014a71fe`（PR #530 merge commit）。隔離Stagingのsynthetic seller／buyer作成中に、Preview Branchではpublic schemaだけが複製され、Cloud AI静的seed、Marketplace Storage bucket／policyが欠落することを確認した。
+- Stagingだけへ3 plan、singleton settings、2 synthetic profileを冪等登録し、責任者の実行時承認後に`202609280001_marketplace_static_seed`原本をBranch ref `vaepinhkcjxjzrxflxwi`へ適用した。親Production refは`vmdsyxykcrgxcdbrwlkv`で異なる。
+- postflightはplan 3、settings 1、bucket 2、Storage policy 7。synthetic user 2、profile 2、work 0、Marketplace object 0、order 0。失敗した初回作品保存の部分データはない。
+- migration／非破壊rollback／欠落再現roundtrip test／manifestを追加した。strict Staging preflight 3/3 READY、Hub 1045/1045、依存関係error 0（既知warning 2件）、lint、全typecheck、migration validator 87/87、Hub Production build、diff check成功。Production、Provider、Job、credit、Stripe決済、注文、実利用者データは未変更。
+- 次はChrome連携復旧後にsellerの公開作品／販売商品を保存し、buyerのStripeテストCheckoutへ進む。テストカード入力と決済確定は実行直前に別確認する。詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_STATIC_SEED_REPAIR_20260928.md`。
+
+---
+
 ## 0.0 Marketplace隔離Preview環境・Stripe Webhook実到達（2026-09-27）
 
 - PR #529 merge commit `8c98e545c452584e31c80a91b8ec2ceff0f30576`から`codex/marketplace-preview-env-20260927`を作成した。
