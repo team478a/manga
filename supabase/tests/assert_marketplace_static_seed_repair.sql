@@ -12,6 +12,13 @@ drop policy if exists "works_public_read" on storage.objects;
 
 delete from storage.buckets where id in ('works','digital-products');
 delete from public.cloud_ai_settings where singleton;
+-- The canonical schema provisions default entitlements for fixture profiles.
+-- Remove their dependent usage rows only in this disposable CI database so
+-- the test can reproduce a Preview Branch where the plan seed is absent.
+delete from public.cloud_ai_usage_periods
+where plan_key in ('free','trial','creator');
+delete from public.cloud_ai_entitlements
+where plan_key in ('free','trial','creator');
 delete from public.cloud_ai_plans where plan_key in ('free','trial','creator');
 
 \ir ../migrations/202609280001_marketplace_static_seed.sql
