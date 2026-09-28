@@ -1,4 +1,5 @@
 export const maximumMarketplaceProductionCanaryProducts = 100;
+export const maximumMarketplaceProductionCanaryWorks = 100;
 
 export type MarketplaceProductionCanaryRuntimeEnvironment = {
   VERCEL_ENV?: string;
@@ -86,6 +87,15 @@ export type MarketplaceProductionCanaryInventoryReport = {
     activationReadyPausedProducts: number;
     activationReadySellers: number;
   };
+  sourcePreparation: {
+    audited: boolean;
+    complete: boolean;
+    ready: boolean;
+    checkedWorks: number;
+    unregisteredWorks: number;
+    registrationReadyWorks: number;
+    registrationReadySellers: number;
+  };
   checks: MarketplaceProductionCanaryInventoryCheck[];
 };
 
@@ -101,12 +111,15 @@ const check = (
   missing: ready ? [] : [missing],
 });
 
-const hasEligibleWork = (product: MarketplaceProductionCanaryProduct) => {
-  const work =
-    product.works && !Array.isArray(product.works) ? product.works : null;
+const isEligibleWork = (
+  work: MarketplaceProductionCanaryWork | null,
+  expectedCreatorId?: unknown,
+) => {
   return Boolean(
     work &&
-      work.creator_id === product.creator_id &&
+      typeof work.id === "string" &&
+      typeof work.creator_id === "string" &&
+      (expectedCreatorId === undefined || work.creator_id === expectedCreatorId) &&
       work.status === "published" &&
       work.is_public === true &&
       work.content_class === "general" &&
@@ -114,9 +127,16 @@ const hasEligibleWork = (product: MarketplaceProductionCanaryProduct) => {
   );
 };
 
+const hasEligibleWork = (product: MarketplaceProductionCanaryProduct) => {
+  const work =
+    product.works && !Array.isArray(product.works) ? product.works : null;
+  return isEligibleWork(work, product.creator_id);
+};
+
 export function assessMarketplaceProductionCanaryInventory(input: {
   products: MarketplaceProductionCanaryProduct[];
   profiles: MarketplaceProductionCanaryProfile[];
+  sourceWorks?: MarketplaceProductionCanaryWork[];
 }): MarketplaceProductionCanaryInventoryReport {
   if (input.products.length > maximumMarketplaceProductionCanaryProducts) {
     const checks = [
@@ -146,6 +166,15 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         pausedProducts: 0,
         activationReadyPausedProducts: 0,
         activationReadySellers: 0,
+      },
+      sourcePreparation: {
+        audited: false,
+        complete: false,
+        ready: false,
+        checkedWorks: 0,
+        unregisteredWorks: 0,
+        registrationReadyWorks: 0,
+        registrationReadySellers: 0,
       },
       checks,
     };
@@ -190,6 +219,35 @@ export function assessMarketplaceProductionCanaryInventory(input: {
   const activationReadySellers = new Set(
     activationReadyPausedProducts.map((product) => String(product.creator_id)),
   ).size;
+  const sourceWorks = input.sourceWorks;
+  const sourceInventoryAudited = sourceWorks !== undefined;
+  const sourceInventoryComplete = Boolean(
+    sourceWorks && sourceWorks.length <= maximumMarketplaceProductionCanaryWorks,
+  );
+  const completeSourceWorks = sourceInventoryComplete ? (sourceWorks ?? []) : [];
+  const registeredWorkIds = new Set(
+    input.products.flatMap((product) =>
+      typeof product.work_id === "string" && product.work_id
+        ? [product.work_id]
+        : [],
+    ),
+  );
+  const unregisteredWorks = sourceInventoryComplete
+    ? completeSourceWorks.filter(
+        (work) =>
+          isEligibleWork(work) &&
+          typeof work.id === "string" &&
+          !registeredWorkIds.has(work.id),
+      )
+    : [];
+  const registrationReadyWorks = unregisteredWorks.filter(
+    (work) =>
+      typeof work.creator_id === "string" &&
+      eligibleSellerIds.has(work.creator_id),
+  );
+  const registrationReadySellers = new Set(
+    registrationReadyWorks.map((work) => String(work.creator_id)),
+  ).size;
   const checks = [
     check(
       "bounded-inventory",
@@ -220,6 +278,19 @@ export function assessMarketplaceProductionCanaryInventory(input: {
       pausedProducts: pausedProducts.length,
       activationReadyPausedProducts: activationReadyPausedProducts.length,
       activationReadySellers,
+    },
+    sourcePreparation: {
+      audited: sourceInventoryAudited,
+      complete: sourceInventoryComplete,
+      ready: sourceInventoryComplete && registrationReadyWorks.length > 0,
+      checkedWorks: sourceInventoryComplete
+        ? completeSourceWorks.length
+        : sourceInventoryAudited
+          ? maximumMarketplaceProductionCanaryWorks
+          : 0,
+      unregisteredWorks: unregisteredWorks.length,
+      registrationReadyWorks: registrationReadyWorks.length,
+      registrationReadySellers,
     },
     checks,
   };
