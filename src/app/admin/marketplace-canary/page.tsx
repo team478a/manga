@@ -2,6 +2,7 @@ import { CircleAlert, CircleCheck, LockKeyhole, Store } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { loadAdminMarketplaceProductionCanaryInventory } from "@/modules/checkout/infrastructure/admin-production-canary-inventory-repository";
+import { loadAdminMarketplacePublicationFixationReadiness } from "@/modules/checkout/infrastructure/admin-publication-fixation-readiness-repository";
 import { loadAdminMarketplacePublicationMigrationReadiness } from "@/modules/checkout/infrastructure/admin-publication-migration-readiness-repository";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,15 @@ const migrationCheckLabels = {
   "unique-project-work": "1つのCloud Projectに作品が重複していない",
 } as const;
 
+const fixationCheckLabels = {
+  "bounded-inventory": "監査範囲が完全",
+  "mutable-cloud-works": "未公開・未固定のCloud作品がある",
+  "owner-alignment": "作品と制作Projectの所有者が一致",
+  "release-checkpoints": "完成版checkpointがある",
+  "complete-checkpoint-pages": "完成版のページ構成が完全",
+  "fixation-targets": "固定可能な作品とpaused商品がある",
+} as const;
+
 export default async function AdminMarketplaceCanaryPage() {
   await requireAdmin();
   const inventory = await safelyLoadAdminData(
@@ -29,6 +39,10 @@ export default async function AdminMarketplaceCanaryPage() {
   const migrationReadiness = await safelyLoadAdminData(
     "marketplace-publication-migration-readiness",
     () => loadAdminMarketplacePublicationMigrationReadiness(),
+  );
+  const fixationReadiness = await safelyLoadAdminData(
+    "marketplace-publication-fixation-readiness",
+    () => loadAdminMarketplacePublicationFixationReadiness(),
   );
 
   return (
@@ -304,6 +318,90 @@ export default async function AdminMarketplaceCanaryPage() {
         <p className="mt-4 text-sm leading-relaxed text-stone-600">
           READYでも適用は自動実行しません。原本SHA-256の再照合と責任者の明示承認後に、別工程で1回だけ適用します。
         </p>
+      </section>
+
+      <section className="panel mt-6" aria-labelledby="publication-fixation-heading">
+        <h2 className="text-xl font-bold" id="publication-fixation-heading">
+          Cloud完成版固定の準備確認
+        </h2>
+        <p className="mt-2 leading-relaxed text-stone-600">
+          未公開のCloud作品、paused商品、完成版checkpointとページ構成を匿名件数で照合します。同期RPCやStorage object取得は行いません。
+        </p>
+
+        {!fixationReadiness.ok ? (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4" role="status">
+            <div className="flex items-start gap-3">
+              <CircleAlert aria-hidden="true" className="mt-1 h-5 w-5 text-amber-700" />
+              <div>
+                <h3 className="font-bold text-amber-950">現在は固定候補を確認できません</h3>
+                <p className="mt-1 text-sm leading-relaxed text-amber-900">
+                  Production管理画面で再読み込みし、同じ状態が続く場合は対象schemaを確認してください。候補を推測して固定することはありません。
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              className={`mt-4 rounded-2xl border p-4 ${
+                fixationReadiness.value.passed
+                  ? "border-emerald-200 bg-emerald-50"
+                  : "border-amber-200 bg-amber-50"
+              }`}
+              role="status"
+            >
+              <div className="flex items-start gap-3">
+                {fixationReadiness.value.passed ? (
+                  <CircleCheck aria-hidden="true" className="mt-1 h-5 w-5 text-emerald-700" />
+                ) : (
+                  <CircleAlert aria-hidden="true" className="mt-1 h-5 w-5 text-amber-700" />
+                )}
+                <div>
+                  <h3 className="font-bold">
+                    {fixationReadiness.value.passed
+                      ? "完成版固定の候補があります"
+                      : "完成版固定の前に確認が必要です"}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed">
+                    この画面から完成版固定は実行できません。候補があっても利用者のCloud制作画面で完成版を選択する別工程です。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              {[
+                ["確認したCloud作品", fixationReadiness.value.counts.checkedCloudWorks],
+                ["未公開・未固定の作品", fixationReadiness.value.counts.unpinnedMutableCloudWorks],
+                ["所有者一致の作品", fixationReadiness.value.counts.ownerAlignedCloudWorks],
+                ["paused商品に紐づく作品", fixationReadiness.value.counts.pausedProductCloudWorks],
+                ["完成版checkpoint", fixationReadiness.value.counts.releaseCheckpoints],
+                ["ページ構成が完全な完成版", fixationReadiness.value.counts.completeReleaseCheckpoints],
+                ["固定可能な作品", fixationReadiness.value.counts.fixationReadyWorks],
+                ["固定後に更新するpaused商品", fixationReadiness.value.counts.fixationReadyProducts],
+              ].map(([label, count]) => (
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-3" key={label}>
+                  <dt>{label}</dt>
+                  <dd className="font-semibold">{count}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <ul className="mt-4 space-y-2">
+              {fixationReadiness.value.checks.map((check) => (
+                <li className="flex items-center gap-3 text-sm" key={check.id}>
+                  {check.ready ? (
+                    <CircleCheck aria-hidden="true" className="h-4 w-4 text-emerald-700" />
+                  ) : (
+                    <CircleAlert aria-hidden="true" className="h-4 w-4 text-amber-700" />
+                  )}
+                  <span>{fixationCheckLabels[check.id]}</span>
+                  <span className="font-semibold">{check.ready ? "READY" : "PENDING"}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
 
       <section className="panel mt-6 border-violet-200 bg-violet-50">

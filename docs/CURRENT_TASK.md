@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-29 Marketplace Cloud完成版固定 readiness
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-publication-fixation-readiness-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`0ad899d5`（PR #557 merge commit）。
+- `/admin/marketplace-canary`へ、Cloud作品の完成版固定候補を匿名件数だけで確認するread-only readinessを追加した。一般向け・非公開・draft・未固定、所有者一致、商品が1件だけかつpaused、release checkpointのmanifestと連番ページが完全、という条件をすべて満たす場合だけ候補とする。
+- DBは5 tableへのSELECTだけ。管理画面に固定操作を置かず、個人情報・名称・説明・内部ID・file path・Storage pathを取得／表示しない。RPC、Storage object、Stripe、Provider、生成Job、creditへアクセスしない。
+- 監査上限超過、商品重複、ページ欠落、所有者不一致、公開済み／固定済み作品はfail closed。Productionの作品、publication、商品、注文、決済、利用者データは変更していない。
+- 検証: focused 14/14、Hub 1141/1141、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC repository structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_FIXATION_READINESS_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後はProduction管理画面をread-only確認し、完成版固定・作品公開・商品active化・購入は別の明示承認を待つ。
+
+---
+
 ## 2026-09-29 Marketplace Cloud完成版migration Production適用
 
 - 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / SCHEMA_ALREADY_APPLIED / PUBLICATION_DATA_UNCHANGED`
