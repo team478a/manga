@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Cloud完成版migration適用前readiness
+
+- 状態: `DRAFT_PR_554 / INITIAL_ALL_CI_AND_VERCEL_PASSED / PRODUCTION_PREFLIGHT_BLOCKED_BEFORE_CONNECTION / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-publication-migration-readiness-20260928`
+- Base: `origin/feature/manga-canvas-mvp`@`9cb283e4`（PR #553 merge commit）。
+- Production管理画面のread-only再確認はChrome拡張接続が3回タイムアウトしたため、画面・DBを変更せず停止した。作業を止めないため、未適用の`202608140004_cloud_work_publications`を安全に適用できるか判定する専用preflightを追加した。
+- Production identity guard通過後、GETだけで依存schema、未適用／部分適用／適用済み状態、公開済みCloud作品、active Cloud商品、Cloud Projectへの作品重複、100件上限を確認する。schema状態と件数だけを出力し、ID、名称、メール、file path、秘密値は出力しない。
+- 対象migration SHA-256は`eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa`。READYでも自動適用せず、Production適用・作品公開・publication固定・商品active化・live購入を別承認とする。
+- 検証: focused 6/6、Hub 1132/1132、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure、diff check成功。
+- `vercel env run -e production`でも外部preflightを試行したが、SensitiveなProduction Supabase値をCLIへ取得できず、接続前の`Missing Production environment: NEXT_PUBLIC_SUPABASE_URL`で停止した。Production requestと変更は0件。
+- Production DB、schema、商品、作品、販売状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは変更していない。
+- Draft PR [#554](https://github.com/team478a/manga/pull/554)を作成した。実装HEAD `0b34d94a`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Draft／MERGEABLE。
+- 次: 証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。Production migration適用は別の実行時明示承認を必要とする。
+
+---
+
 ## 2026-09-28 Marketplace Production canary候補化readiness
 
 - 状態: `DRAFT_PR_553 / INITIAL_ALL_CI_AND_VERCEL_PASSED / PRODUCTION_UNCHANGED`
