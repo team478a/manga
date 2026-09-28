@@ -6,7 +6,8 @@
 - Production `works`の列存在だけをread-only SQLで照合し、`current_publication_id`だけが未適用、その他の監査列は存在することを確認した。SQL、管理画面ともデータ変更は行っていない。
 - 現行列selectに失敗した場合だけ旧schemaの最小列へ再試行する。手動登録作品は監査を継続し、Cloud-linked作品は`current_publication_id`を確認できないため候補外のままfail closedとする。作品名、説明、画像、メール、file pathは取得・表示しない。
 - 集中12/12、Hub 1124/1124、Canvas 26/26、AI 50/50、Desktop 407/407、a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC structure、diff check成功。Production、商品、販売状態、注文、Stripe、Provider、Job、creditは未変更。
-- 次: commit・push・Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後にProduction管理画面をread-only再確認し、商品作成・有効化は別途明示承認まで行わない。
+- Draft PR [#551](https://github.com/team478a/manga/pull/551)を作成した。初回HEAD `d1bf0efa`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功し、Draft／MERGEABLEを確認した。
+- 次: 証跡同期後の最終HEADで全チェック成功を確認して停止する。merge後にProduction管理画面をread-only再確認し、商品作成・有効化は別途明示承認まで行わない。
 
 ---
 
