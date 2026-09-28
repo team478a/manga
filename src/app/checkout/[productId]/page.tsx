@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPendingOrder } from "@/app/actions";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
+import { isMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -13,6 +14,7 @@ type CheckoutProduct = {
   description: string | null;
   price: number;
   status: string;
+  creator_id: string;
   profiles: { display_name: string } | null;
   works: {
     id: string;
@@ -37,15 +39,34 @@ export default async function CheckoutPage({
   } = await supabase.auth.getUser();
   const { data: product } = await supabase
     .from("digital_products")
-    .select("id,title,description,price,status,profiles:creator_id(display_name),works:work_id(id,title,image_url,is_public)")
+    .select("id,title,description,price,status,creator_id,profiles:creator_id(display_name),works:work_id(id,title,image_url,is_public)")
     .eq("id", productId)
     .maybeSingle<CheckoutProduct>();
 
   if (!product) notFound();
 
   const checkout = inspectMarketplaceCheckoutMode();
+  let buyerProfileId: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle<{ id: string }>();
+    buyerProfileId = profile?.id ?? null;
+  }
   const productAvailable = product.status === "active" && product.works?.is_public;
-  const canPurchase = productAvailable && checkout.enabled;
+  const canPurchase = Boolean(
+    productAvailable &&
+      checkout.enabled &&
+      checkout.paymentMode &&
+      isMarketplaceCanaryCheckoutTarget({
+        buyerProfileId,
+        paymentMode: checkout.paymentMode,
+        productId: product.id,
+        sellerProfileId: product.creator_id,
+      }),
+  );
 
   return (
     <main className="page max-w-5xl">
@@ -76,6 +97,7 @@ export default async function CheckoutPage({
           {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
           {!productAvailable ? <InlineErrorMessage>この商品は現在購入できません。</InlineErrorMessage> : null}
           {productAvailable && !checkout.enabled ? <InlineErrorMessage>{checkout.reason ?? "購入手続きは現在利用できません。"}</InlineErrorMessage> : null}
+          {productAvailable && checkout.enabled && !canPurchase ? <InlineErrorMessage>この商品は現在、指定された購入者だけが購入できます。</InlineErrorMessage> : null}
 
           <form action={createPendingOrder} className="mt-6 space-y-5">
             <input name="productId" type="hidden" value={product.id} />

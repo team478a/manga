@@ -4,6 +4,7 @@ import {
   assessMarketplaceProductionCanaryPlan,
   resolveCanaryPlanPath,
 } from "./check-marketplace-production-canary-plan.mjs";
+import { assessMarketplaceRuntimeCanary } from "./marketplace-production-canary-runtime.mjs";
 
 const expectedOrigin = "https://app.mang-ai.com";
 const placeholderPattern =
@@ -63,7 +64,7 @@ export function resolveMarketplaceProductionTargetEnvironment(environment) {
   if (!new Set(["disabled", "live"]).has(checkoutMode))
     throw new Error("Production target preflight rejects test checkout mode.");
 
-  return { serviceRoleKey, supabaseUrl };
+  return { checkoutMode, serviceRoleKey, supabaseUrl };
 }
 
 const authorizedHeaders = (serviceRoleKey) => ({
@@ -109,8 +110,18 @@ export async function runMarketplaceProductionCanaryTargetPreflight({
   const planReport = assessMarketplaceProductionCanaryPlan(plan, { now });
   if (!planReport.passed)
     throw new Error("Canary plan must pass local validation before Production access.");
-  const { serviceRoleKey, supabaseUrl } =
+  const { checkoutMode, serviceRoleKey, supabaseUrl } =
     resolveMarketplaceProductionTargetEnvironment(environment);
+  const runtimeCanary = assessMarketplaceRuntimeCanary(environment, now);
+  const runtimeTargetReady = Boolean(
+    checkoutMode === "disabled" ||
+      (runtimeCanary.enabled &&
+        runtimeCanary.target?.productId === plan.productId &&
+        runtimeCanary.target.sellerProfileId === plan.sellerProfileId &&
+        runtimeCanary.target.buyerProfileId === plan.buyerProfileId &&
+        runtimeCanary.target.expiresAt === Date.parse(plan.expiresAt) &&
+        runtimeCanary.target.planFingerprint === planReport.fingerprint),
+  );
 
   const productUrl = new URL("/rest/v1/digital_products", supabaseUrl);
   productUrl.searchParams.set(
@@ -190,6 +201,12 @@ export async function runMarketplaceProductionCanaryTargetPreflight({
   );
   const noExistingOrder = existingOrders.length === 0;
   const checks = [
+    readinessCheck(
+      "runtime-canary",
+      "Runtime canary target",
+      runtimeTargetReady,
+      "disabled checkout or a live runtime gate matching the approved plan exactly",
+    ),
     readinessCheck(
       "product",
       "Exact active product",

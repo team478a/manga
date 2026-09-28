@@ -94,6 +94,30 @@ test("pending注文の商品・購入者・出品者・公開状態を照合す�
       ),
     /購入できません/,
   );
+  assert.throws(
+    () =>
+      assertCheckoutOrder(
+        {
+          ...value,
+          digital_products: {
+            ...value.digital_products,
+            works: {
+              is_public: true,
+              content_class: "general",
+              source_project_id: "project-1",
+              current_publication_id: null,
+            },
+          },
+        },
+        {
+          orderId: "order-1",
+          productId: "product-1",
+          buyerEmail: "buyer@example.com",
+          paymentMode: "test",
+        },
+      ),
+    /購入できません/,
+  );
 });
 
 test("本番URLは設定済みHTTPS originだけを許可する", () => {

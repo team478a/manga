@@ -291,7 +291,7 @@ npm run marketplace:production:preflight
 vercel.cmd env run -e production -- npm.cmd run marketplace:production:preflight:injected
 ```
 
-`Production-only Vercel scope`、`Production Supabase identity`、`Production checkout origin`、`Marketplace live checkout mode`、`Stripe live credentials`がすべて`READY`になるまで`live`販売を開始しません。preflightは環境変数、Stripe、決済、DBを変更しません。
+`Production-only Vercel scope`、`Production Supabase identity`、`Production checkout origin`、`Marketplace live checkout mode`、`Single-target live canary gate`、`Stripe live credentials`がすべて`READY`になるまで`live`販売を開始しません。preflightは環境変数、Stripe、決済、DBを変更しません。
 
 1件だけのProduction canary販売を計画する場合は、氏名・メール・秘密値を含めない固定schemaのJSONをrepository外へ保存し、承認対象のSHA-256 fingerprintを発行します。
 
@@ -301,6 +301,19 @@ vercel.cmd env run -e production -- npm.cmd run marketplace:production:canary-ta
 ```
 
 計画はProductionの正規origin、1商品、異なる売り手／買い手、1回、50〜1,000円、最大24時間、受入れ失敗時の返金を必須にします。1つ目の検証は外部接続せず、2つ目はProductionへGETだけを行い、対象商品・一般向け公開作品・参加者・既存live注文なしを照合します。どちらも商品公開・購入・決済を行いません。実行順と停止条件は[`docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md`](docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md)を参照してください。
+
+Productionの`live`は現在、次のserver-only設定が承認済み計画と揃った1件canaryだけを許可します。未設定、不一致、期限切れ、24時間超過では購入画面・仮注文・Stripe Sessionをfail closedで停止します。これらはPreview／Developmentへ共有しません。
+
+```env
+MANGAI_MARKETPLACE_LIVE_ACCESS=canary
+MANGAI_MARKETPLACE_CANARY_PRODUCT_ID=...
+MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID=...
+MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID=...
+MANGAI_MARKETPLACE_CANARY_EXPIRES_AT=...
+MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT=...
+```
+
+同一購入者・商品の本番`pending`／`paid`注文はDBで1件に制限し、同じ注文のStripe Session作成には同じidempotency keyを使用します。一般公開販売への切替は、このcanary gateとは別の設計・承認が必要です。
 
 今回実装済み:
 

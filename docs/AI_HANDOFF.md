@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary実行時gate（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-gate-20260928`、Base `f62ed7c3`（PR #540 merge commit）。Production liveを全商品へ開かず、承認済み1商品・1販売者・1購入者・最大24時間・計画fingerprintへ固定するruntime gateを追加した。
+- 公開作品画面、Checkout画面、注文作成Action、Stripe Session作成前で同一targetを検査する。`MANGAI_MARKETPLACE_LIVE_ACCESS=canary`と6設定が欠落・不正・期限切れ・不一致なら購入不可。Staging `test`は従来どおりでcanary gateの対象外。
+- Cloud-linked作品はcurrent publication必須。本番`pending`／`paid`の同一商品・購入者を1件にするpartial unique indexとrollbackを追加し、Stripe Sessionへ注文ID由来idempotency keyを付けた。失敗・取消・返金後の再試行は妨げない。
+- Production readiness／target preflight、runbook、README、schema、migration manifestを同期した。検証: focused 50/50、UI境界込み38/38、Hub 1097/1097、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。
+- Production、Vercel、Supabase、Stripe、商品、注文、決済、返金、Provider、Job、credit、利用者データは未変更。次はcommit／push／Draft PR、全CI／Vercel成功で停止。migration適用、Production env、read-only対象照合、実購入はmerge後の別承認が必要。
+
+---
+
 ## 0.0 Marketplace Production canary対象preflight（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-target-20260928`、Base `c4de7ac8`（PR #539 merge commit）。前段のrepository外canary計画を再検証してからだけProduction Supabaseへ接続する、GET専用の対象照合を追加した。

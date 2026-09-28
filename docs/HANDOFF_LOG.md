@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary実行時gate
+
+- Branch: `codex/marketplace-production-canary-gate-20260928`
+- Base: `f62ed7c3`（PR #540 merge commit）
+- Production live Checkoutを承認済み1商品・1販売者・1購入者・最大24時間・計画fingerprintへ限定するruntime gateを追加した。公開作品画面からStripe Session直前まで同じ対象を再検査し、不完全な設定、期限切れ、対象外利用者をfail closedで拒否する。隔離Staging test販売は変更しない。
+- Cloud-linked作品のcurrent publicationを購入条件へ追加した。同一商品・購入者の本番`pending`／`paid`を1件に制限するpartial unique indexとrollback、注文ID由来のStripe idempotency keyを追加した。
+- Production readiness／target preflight、README、canary runbook、migration manifest、schema正本を同期した。秘密値と内部targetは結果へ表示しない。
+- 検証: focused 50/50、UI境界込み38/38、Hub 1097/1097、deps error 0（既知warning 2件）、lint、全typecheck、packages build、migration 88/88、RC Repository structure、Next.js Webpack Production build、diff check成功。
+- Production、Vercel環境変数、Supabase migration／データ、Stripe、商品、注文、決済、返金、Provider、生成Job、credit、利用者データは未変更。次はcommit、push、Draft PR、全CI／Vercel成功で停止する。外部適用と実購入は別承認。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary対象preflight
 
 - Branch: `codex/marketplace-production-canary-target-20260928`

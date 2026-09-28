@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary実行時gate
+
+- 状態: `RUNTIME_CANARY_GATE_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / MIGRATION_NOT_APPLIED / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-canary-gate-20260928`。BaseはPR #540 merge commit `f62ed7c3`。
+- Productionの`live`購入は、`MANGAI_MARKETPLACE_LIVE_ACCESS=canary`と商品・売り手・買い手・最大24時間の期限・承認計画fingerprintがすべて有効な場合だけ起動し、公開一覧、商品詳細、Server Action、Stripe Session作成直前の各層で同じ固定対象を照合する。未設定、期限切れ、対象不一致はfail closed。隔離Stagingの`test`販売契約は変更しない。
+- Cloud-linked作品はcurrent publication固定済みを必須とした。本番の同一商品・同一購入者について`pending`／`paid`注文をDBのpartial unique indexで1件に制限し、Stripe Sessionは注文ID由来のidempotency keyで重複作成を防ぐ。失敗・取消・返金済み注文は再試行可能な既存契約を維持する。
+- readiness／対象preflightも6つのruntime canary設定と承認計画の完全一致を検査する。設定値・内部ID・秘密値を結果へ出さず、設定候補の検証とProduction mutationを分離した。運用runbook、rollback、migration manifest、schema正本を同期した。
+- 検証: Marketplace集中50/50、UI境界を含む再確認38/38、Hub 1097/1097、deps error 0（既知warning 2件）、lint、全typecheck、packages build、migration 88/88、RC Repository structure、Next.js Webpack Production build、diff check成功。
+- Production、Vercel環境変数、Supabase migration／データ、Stripe、商品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。merge後のmigration適用、Production env設定、対象preflight、実購入はそれぞれ別の明示承認単位とする。
+
+---
+
 ## 2026-09-28 Marketplace Production canary対象preflight
 
 - 状態: `TARGET_PREFLIGHT_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / EXTERNAL_RUN_PENDING / LIVE_SALES_DISABLED`

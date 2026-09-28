@@ -78,7 +78,16 @@ repository外の候補envを既存preflightへ通す。
 npm run marketplace:production:candidate:validate -- "C:\secure\marketplace-production.env"
 ```
 
-5項目すべてが`READY`になるまでVercel Productionへ設定しない。候補検証だけでは環境変数を変更しない。
+6項目すべてが`READY`になるまでVercel Productionへ設定しない。候補検証だけでは環境変数を変更しない。`live`設定にはStripe資格情報に加えて次のserver-only canary gateを含め、すべてProduction限定かつ内部ID・期限・fingerprintはSensitiveとして保存する。
+
+```env
+MANGAI_MARKETPLACE_LIVE_ACCESS=canary
+MANGAI_MARKETPLACE_CANARY_PRODUCT_ID=<plan.productId>
+MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID=<plan.sellerProfileId>
+MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID=<plan.buyerProfileId>
+MANGAI_MARKETPLACE_CANARY_EXPIRES_AT=<plan.expiresAt>
+MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT=<validator fingerprint>
+```
 
 ### 3. 設定適用
 
@@ -90,6 +99,8 @@ vercel.cmd env run -e production -- npm.cmd run marketplace:production:preflight
 
 strictが失敗した場合は購入へ進まない。
 
+設定後のtarget preflightでは、runtime gateの3 ID、期限、fingerprintがrepository外計画と完全一致することも確認する。不一致時は商品状態にかかわらず停止する。
+
 ### 4. 1件canary購入
 
 1. 承認fingerprintと計画ファイルが一致し、有効期限内であることを再検証する。
@@ -97,6 +108,8 @@ strictが失敗した場合は購入へ進まない。
 3. 指定購入者が正規Production URLから1回だけ購入する。
 4. Stripe Checkoutで表示された通貨・金額・商品名を確定前に照合する。
 5. 計画額を超える、別商品になる、2件目の注文が存在する場合は確定せず停止する。
+
+アプリは公開画面、購入画面、仮注文作成前、Stripe Session作成直前の各段階で同じcanary対象を検査する。本番`pending`／`paid`は同一購入者・商品につきDBで1件に制限し、同一注文のStripe Sessionは注文ID由来のidempotency keyで重複作成を防ぐ。
 
 ### 5. 購入後の受入れ
 
@@ -124,5 +137,6 @@ strictが失敗した場合は購入へ進まない。
 - 隔離Stagingの成功、失敗、全額返金、認可、署名URL失効は完了。
 - Production readiness preflightは実装済み。
 - Production canary対象のGET-only preflightは実装済み。実計画が未確定のため外部実行は未実施。
+- 1商品・売り手・買い手・期限・承認fingerprintを強制するruntime canary gateと、本番重複購入防止migrationは実装済み。migration適用と環境設定は未実施。
 - Productionは正規originだけREADYで、live modeとStripe live資格情報は未設定。
 - canary計画検証器は外部接続しない。対象preflightはProductionへGETだけを行い、どちらも設定・商品・注文・決済を変更しない。

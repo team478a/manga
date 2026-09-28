@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { assessMarketplaceRuntimeCanary } from "./marketplace-production-canary-runtime.mjs";
 import {
   parseEnvironmentFile,
   resolveCandidateEnvironmentPath,
@@ -76,6 +77,7 @@ const hasProductionOnlyVariable = ({ metadata, key, type }) =>
 export const assessMarketplaceProductionReadiness = ({
   environment,
   metadata = [],
+  now = Date.now(),
   requireTargetScopedMetadata = false,
   expectedOrigin = expectedProductionOrigin,
 }) => {
@@ -94,12 +96,23 @@ export const assessMarketplaceProductionReadiness = ({
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "CHECKOUT_CANCEL_SECRET",
+    "MANGAI_MARKETPLACE_LIVE_ACCESS",
+    "MANGAI_MARKETPLACE_CANARY_PRODUCT_ID",
+    "MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID",
+    "MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID",
+    "MANGAI_MARKETPLACE_CANARY_EXPIRES_AT",
+    "MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT",
   ];
   const sensitiveKeys = new Set([
     "SUPABASE_SERVICE_ROLE_KEY",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "CHECKOUT_CANCEL_SECRET",
+    "MANGAI_MARKETPLACE_CANARY_PRODUCT_ID",
+    "MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID",
+    "MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID",
+    "MANGAI_MARKETPLACE_CANARY_EXPIRES_AT",
+    "MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT",
   ]);
   const targetScopeReady =
     !requireTargetScopedMetadata ||
@@ -126,6 +139,7 @@ export const assessMarketplaceProductionReadiness = ({
   );
   const checkoutModeReady =
     environment.MANGAI_MARKETPLACE_CHECKOUT_MODE?.trim() === "live";
+  const canaryReady = assessMarketplaceRuntimeCanary(environment, now).enabled;
   const stripeLiveReady = Boolean(
     configured(environment.STRIPE_SECRET_KEY, 20) &&
       environment.STRIPE_SECRET_KEY.trim().startsWith("sk_live_") &&
@@ -169,6 +183,14 @@ export const assessMarketplaceProductionReadiness = ({
       missing: checkoutModeReady
         ? []
         : ["MANGAI_MARKETPLACE_CHECKOUT_MODE=live"],
+    },
+    {
+      id: "checkout-canary",
+      label: "Single-target live canary gate",
+      ready: canaryReady,
+      missing: canaryReady
+        ? []
+        : ["one product, seller, buyer, fingerprint, and expiry within 24 hours"],
     },
     {
       id: "stripe-live",

@@ -522,7 +522,13 @@
       "description": "Preview Branchで欠落するMarketplace静的seedとStorage設定を冪等復元",
       "forwardSha256": "8535c0df7ec372a2944b2c60bab81f72e97e6a96cab05f1dbce92438c847222b",
       "rollbackSha256": "1f9ba1944067e4f9811346cc2802eafe411bf355501e260ea84d542fb5bc43f9"
+    },
+    {
+      "id": "202609280002_marketplace_live_single_purchase",
+      "description": "本番Marketplaceで同一購入者の商品別pending・paid重複購入を防止",
+      "forwardSha256": "8974ef309c434518bcf9ec664e90ffbf0b4f9fbf100860bc9c2428a151473b73",
+      "rollbackSha256": "9119b5c442f3b2ae7aff6629aaa8b4af11dcb74bd6d3ef4aa4490cc15aaaef88"
     }
   ],
-  "schemaSha256": "af66eded361f9eb2b820282301d1f2be934b1cd3cf99cbd61d295ed741392f2c"
+  "schemaSha256": "6e57de7de43df78fec9a29e4a96b10d7d3e6265817bf064f857296c68773ea42"
 }

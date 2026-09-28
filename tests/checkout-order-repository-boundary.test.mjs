@@ -19,6 +19,25 @@ test("checkout action verifies buyer and product before pending order persistenc
     action.indexOf('product.status !== "active"', start) <
       action.indexOf("insertPendingCheckoutOrder({", start),
   );
+  assert.ok(
+    action.indexOf("assertMarketplaceCanaryCheckoutTarget({", start) <
+      action.indexOf("insertPendingCheckoutOrder({", start),
+  );
+});
+
+test("Stripe Session作成前にもlive canary対象を再検証する", async () => {
+  const checkout = await read("src/lib/checkout.ts");
+
+  assert.ok(
+    checkout.indexOf("assertMarketplaceCanaryCheckoutTarget({") <
+      checkout.indexOf("stripe.checkout.sessions.create("),
+  );
+  assert.match(checkout, /buyerProfileId: order\.buyer_profile_id/);
+  assert.match(checkout, /sellerProfileId: order\.creator_id/);
+  assert.match(
+    checkout,
+    /idempotencyKey: `marketplace-checkout-\$\{order\.id\}`/,
+  );
 });
 
 test("checkout repository preserves pending order DB contracts", async () => {

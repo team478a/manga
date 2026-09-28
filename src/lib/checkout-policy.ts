@@ -24,6 +24,8 @@ export type CheckoutOrderPolicy = {
     works: {
       is_public: boolean;
       content_class: "general" | "adult";
+      source_project_id?: string | null;
+      current_publication_id?: string | null;
     } | null;
   } | null;
 };
@@ -63,7 +65,9 @@ export function assertCheckoutOrder<T extends CheckoutOrderPolicy>(
   if (
     order.digital_products.status !== "active" ||
     !order.digital_products.works?.is_public ||
-    order.digital_products.works.content_class !== "general"
+    order.digital_products.works.content_class !== "general" ||
+    (order.digital_products.works.source_project_id &&
+      !order.digital_products.works.current_publication_id)
   )
     throw new ValidationError("この商品は現在購入できません。");
   if (

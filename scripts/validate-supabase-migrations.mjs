@@ -128,6 +128,7 @@ for (const required of [
   "buyer_profile_id",
   "payment_mode",
   "orders_payment_mode_status_idx",
+  "orders_live_single_purchase_idx",
   "orders_buyer_read",
   "record_order_download",
   "sync_cloud_marketplace_draft",

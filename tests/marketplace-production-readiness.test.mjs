@@ -22,6 +22,17 @@ const readyEnvironment = () => ({
   STRIPE_SECRET_KEY: fakeLiveSecret,
   STRIPE_WEBHOOK_SECRET: "whsec_0123456789abcdefghijklmnop",
   CHECKOUT_CANCEL_SECRET: "cancel_0123456789abcdefghijklmnop",
+  MANGAI_MARKETPLACE_LIVE_ACCESS: "canary",
+  MANGAI_MARKETPLACE_CANARY_PRODUCT_ID:
+    "11111111-1111-4111-8111-111111111111",
+  MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID:
+    "22222222-2222-4222-8222-222222222222",
+  MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID:
+    "33333333-3333-4333-8333-333333333333",
+  MANGAI_MARKETPLACE_CANARY_EXPIRES_AT: new Date(
+    Date.now() + 60 * 60 * 1000,
+  ).toISOString(),
+  MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT: "a".repeat(64),
 });
 
 const productionMetadata = () =>
@@ -34,6 +45,12 @@ const productionMetadata = () =>
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "CHECKOUT_CANCEL_SECRET",
+    "MANGAI_MARKETPLACE_LIVE_ACCESS",
+    "MANGAI_MARKETPLACE_CANARY_PRODUCT_ID",
+    "MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID",
+    "MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID",
+    "MANGAI_MARKETPLACE_CANARY_EXPIRES_AT",
+    "MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT",
   ].map((key) => ({
     key,
     type: [
@@ -41,6 +58,11 @@ const productionMetadata = () =>
       "STRIPE_SECRET_KEY",
       "STRIPE_WEBHOOK_SECRET",
       "CHECKOUT_CANCEL_SECRET",
+      "MANGAI_MARKETPLACE_CANARY_PRODUCT_ID",
+      "MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID",
+      "MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID",
+      "MANGAI_MARKETPLACE_CANARY_EXPIRES_AT",
+      "MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT",
     ].includes(key)
       ? "sensitive"
       : "encrypted",
@@ -88,6 +110,24 @@ test("disabledまたはtest設定とStripe test keyを拒否する", () => {
     testReport.checks.find((check) => check.id === "stripe-live").ready,
     false,
   );
+});
+
+test("live canary対象または期限が不完全ならREADYにしない", () => {
+  const missingTarget = readyEnvironment();
+  delete missingTarget.MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID;
+  const expired = readyEnvironment();
+  expired.MANGAI_MARKETPLACE_CANARY_EXPIRES_AT = new Date(
+    Date.now() - 60 * 1000,
+  ).toISOString();
+
+  for (const environment of [missingTarget, expired]) {
+    const report = assessMarketplaceProductionReadiness({ environment });
+    assert.equal(report.passed, false);
+    assert.equal(
+      report.checks.find((check) => check.id === "checkout-canary").ready,
+      false,
+    );
+  }
 });
 
 test("Productionの誤originとStaging marker混入を拒否する", () => {
