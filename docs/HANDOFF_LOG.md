@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production migration適用
+
+- Branch: `codex/marketplace-production-migration-preflight-20260928`
+- Base: `25d9a4d0`（PR #541 merge commit）
+- Production Supabaseの画面上のidentityを`mangai-hub-staging`／`main`／`PRODUCTION`として再確認した。read-only preflightで`payment_mode`欠落を検出し、追加承認を得るまでmutationを行わなかった。
+- 責任者の明示承認後、`202609270001_marketplace_test_sales.sql`（SHA-256 `A7F2BB799C4C6433AAD4B5DBAB683348297574375DDE37C2480B5F339D381E6D`）を適用した。列、check constraint、status indexが存在し、不正mode 0件、注文0件、重複0件を確認した。
+- 次に`202609280002_marketplace_live_single_purchase.sql`（SHA-256 `8974EF309C434518BCF9EC664E90FFBF0B4F9FBF100860BC9C2428A151473B73`）を適用した。unique partial index定義を`pg_indexes`で確認し、live重複group 0件、不正mode 0件を確認した。
+- Vercel環境、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。live販売は無効。migration validator 88/88、RC Repository structure、diff check成功。Draft PR [#542](https://github.com/team478a/manga/pull/542)の初回HEAD `64f8fb81`はCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功した。外部設定と手動E2Eの既知PENDINGは不変。最終証跡HEADの全チェック成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary実行時gate
 
 - Branch: `codex/marketplace-production-canary-gate-20260928`
