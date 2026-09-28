@@ -2,14 +2,15 @@
 
 ## 2026-09-28 Marketplace Production canary候補化readiness
 
-- 状態: `LOCAL_VALIDATION_COMPLETE / PRODUCTION_UNCHANGED / DRAFT_PR_PENDING`
+- 状態: `DRAFT_PR_553 / INITIAL_ALL_CI_AND_VERCEL_PASSED / PRODUCTION_UNCHANGED`
 - Branch: `codex/marketplace-canary-remediation-readiness-20260928`
 - Base: `origin/feature/manga-canvas-mvp`@`3725b927`（PR #552 merge commit）。
 - paused商品を、即時の有効化前候補、作品公開設定の確認、Cloud完成版固定の確認、両方の確認、その他の阻害条件という重複しない5区分へ集計するread-only判定を追加した。
 - 管理画面は区分ごとの件数だけを表示し、商品名、作品名、利用者名、メール、内部ID、file pathを表示しない。作品公開、完成版固定、商品有効化、商品作成は行わず、すべて別承認を維持する。
 - 検証: focused 14/14、Hub 1126/1126、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure成功。
 - Production DB、商品、作品、販売状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは変更していない。
-- 次: diff確認、commit／push／Draft PRを行い、全CI／Vercel Preview成功で停止する。Productionでの実件数確認と状態変更は別承認単位とする。
+- Draft PR [#553](https://github.com/team478a/manga/pull/553)を作成した。初回HEAD `a1e09172`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Draft／MERGEABLE。
+- 次: 証跡同期後の最終HEADで全CI／Vercel Preview成功を確認して停止する。Productionでの実件数確認と状態変更は別承認単位とする。
 
 ---
 
