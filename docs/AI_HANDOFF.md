@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace保護付きPreview認可／署名URL失効の実Staging完了（2026-09-28）
+
+- Branch `codex/marketplace-auth-expiry-protected-preview-20260928`、Base `9dfd3a95`（PR #534 merge commit）。PR #534の外部受入れを隔離Supabase Preview BranchとVercel branch Previewで実行した。
+- Vercel Deployment Protectionが通常`fetch`をログイン画面へredirectするため、厳格に検査したdeployment IDを指定した場合だけ公式`vercel curl`経由で改ざんcancelを送る。未保護Previewの従来経路も維持する。
+- Supabase Storage RESTが返す`/object/sign/...`を`/storage/v1/object/sign/...`へ正規化し、HTTPSかつ同じStaging Supabase hostだけを許可する。これにより実URLの即時取得HTTP 404を解消した。
+- 実Stagingで改ざんcancel拒否、前後の`pending/test`不変、5分署名URLの即時1 byte取得、期限後の同一URL拒否を4/4確認した。秘密値・署名URLは出力していない。
+- focused 4/4、Hub 1058/1058、全typecheck、lint、deps error 0（既知warning 2件）、packages／Next.js Webpack Production build、diff check成功。
+- Production、Stripe request／決済／返金、Provider、生成Job、credit、実利用者データは変更していない。次は全ローカル品質ゲート、commit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace改ざんcancel／署名URL失効のStaging受入れハーネス（2026-09-28）
 
 - Branch `codex/marketplace-auth-expiry-20260928`、Base `78f5e589`（PR #533 merge commit）。最新Previewで既存synthetic pending注文へ改ざんtokenを送信し、画面が注文非更新を明示することを確認した。

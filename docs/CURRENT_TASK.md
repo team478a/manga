@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace保護付きPreview認可／署名URL失効の実Staging完了
+
+- 状態: `EXTERNAL_STAGING_AUTH_AND_EXPIRY_4_OF_4_PASSED / FULL_LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-auth-expiry-protected-preview-20260928`。BaseはPR #534 merge commit `9dfd3a95`。
+- PR #534の受入れコマンドを実行したところ、Vercel Deployment Protectionが通常`fetch`をログイン画面へredirectし、続いてSupabase Storageの相対`/object/sign/...`をホスト直下へ解決して即時取得がHTTP 404になる実環境差を検出した。
+- deployment IDは英数字・`_`・`-`だけを許可し、指定時だけVercel公式CLIの保護バイパス付き`curl`で改ざんcancelを送る。注文IDは既存UUID検査済み、tokenは固定64桁で、shellへ任意値を渡さない。未指定時は従来の直接`fetch`を使う。
+- Storage相対署名URLは`/storage/v1`へ正規化し、HTTPSかつ宣言Staging Supabaseと同一hostでなければ失敗する。絶対URLと既に正規化済みのURLも後方互換で扱う。
+- 隔離Staging実行は4/4成功: `tamperedCancelRejected`、`tamperedOrderUnchanged`、`freshSignedUrlDownloaded`、`expiredSignedUrlRejected`。約5分の実時間待機後、同じURLが取得不能になることを確認した。秘密値、署名URL、Project refは出力していない。
+- 検証: focused 4/4、Hub 1058/1058、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages build、Next.js Webpack Production build、`git diff --check`成功。最初のtypecheckは新規worktreeのDesktop依存link不足でmodule解決できず、既存依存cacheを接続後に同一コマンドが成功した。
+- Production、Production DB／Storage、Stripe request・決済・返金、Provider、生成Job、credit、実利用者データは変更していない。Stagingも注文はread-only照合、Storageは署名URL発行と1 byte GETだけで、元ファイルを変更していない。
+- 次: commit・push・Draft PRを作成し、全CI／Vercel成功で停止する。async failureと全額返金の外部E2Eは別タスクとし、決済／返金操作は改めて実行時承認を得る。
+
+---
+
 ## 2026-09-28 Marketplace改ざんcancel／署名URL失効のStaging受入れハーネス
 
 - 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / TAMPERED_CANCEL_PREVIEW_REJECTED / EXTERNAL_DB_AND_EXPIRY_RUN_PENDING / PRODUCTION_UNCHANGED`

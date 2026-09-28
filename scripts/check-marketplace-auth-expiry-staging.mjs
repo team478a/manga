@@ -1,10 +1,14 @@
+import { execFile } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const PROJECT_REF_PATTERN = /^[a-z0-9-]{8,64}$/;
+const VERCEL_DEPLOYMENT_ID_PATTERN = /^[A-Za-z0-9_-]{8,128}$/;
 const EXPIRY_SECONDS = 300;
+const execFileAsync = promisify(execFile);
 
 const required = (environment, name) => {
   const value = environment[name]?.trim();
@@ -77,6 +81,14 @@ export function resolveMarketplaceAuthExpiryEnvironment(environment) {
   if (pendingOrderId === paidOrderId)
     throw new Error("Pending and paid order IDs must be distinct.");
 
+  const vercelDeploymentId =
+    environment.MANGAI_STAGING_VERCEL_DEPLOYMENT_ID?.trim() || null;
+  if (
+    vercelDeploymentId &&
+    !VERCEL_DEPLOYMENT_ID_PATTERN.test(vercelDeploymentId)
+  )
+    throw new Error("Vercel deployment ID is invalid.");
+
   return {
     paidOrderId,
     parentRef,
@@ -85,8 +97,45 @@ export function resolveMarketplaceAuthExpiryEnvironment(environment) {
     serviceRoleKey,
     stagingRef,
     supabaseUrl,
+    vercelDeploymentId,
   };
 }
+
+const requestCancelThroughVercelCli = async ({
+  deploymentId,
+  orderId,
+}) => {
+  const command = process.platform === "win32" ? "vercel.cmd" : "vercel";
+  try {
+    const { stdout } = await execFileAsync(
+      command,
+      [
+        "curl",
+        "/checkout/cancel",
+        "--deployment",
+        deploymentId,
+        "--",
+        "--silent",
+        "--show-error",
+        "--location",
+        "--get",
+        "--data-urlencode",
+        `order_id=${orderId}`,
+        "--data-urlencode",
+        `cancel_token=${"0".repeat(64)}`,
+      ],
+      {
+        encoding: "utf8",
+        maxBuffer: 1024 * 1024,
+        shell: process.platform === "win32",
+        windowsHide: true,
+      },
+    );
+    return stdout;
+  } catch {
+    throw new Error("Protected Preview request through Vercel CLI failed.");
+  }
+};
 
 const authorizedHeaders = (serviceRoleKey, extra = {}) => ({
   apikey: serviceRoleKey,
@@ -174,13 +223,32 @@ const createStorageSignedUrl = async ({
   const value = result.signedURL ?? result.signedUrl;
   if (typeof value !== "string" || !value)
     throw new Error("Storage did not return a signed URL.");
-  return new URL(value, supabaseUrl);
+  let signedUrl;
+  try {
+    if (/^https:\/\//i.test(value)) {
+      signedUrl = new URL(value);
+    } else {
+      const normalizedPath = value.startsWith("/storage/v1/")
+        ? value
+        : `/storage/v1/${value.replace(/^\/+/, "")}`;
+      signedUrl = new URL(normalizedPath, supabaseUrl);
+    }
+  } catch {
+    throw new Error("Storage returned an invalid signed URL.");
+  }
+  if (
+    signedUrl.protocol !== "https:" ||
+    signedUrl.hostname !== supabaseUrl.hostname
+  )
+    throw new Error("Storage signed URL escaped the staging Supabase host.");
+  return signedUrl;
 };
 
 export async function runMarketplaceAuthExpiryAcceptance({
   environment = process.env,
   fetchFn = fetch,
   now = () => Date.now(),
+  protectedPreviewRequest = requestCancelThroughVercelCli,
   wait = (milliseconds) =>
     new Promise((resolve) => setTimeout(resolve, milliseconds)),
 }) {
@@ -194,19 +262,26 @@ export async function runMarketplaceAuthExpiryAcceptance({
   if (pendingBefore.status !== "pending" || pendingBefore.payment_mode !== "test")
     throw new Error("Tamper canary must be a pending test order.");
 
-  const cancelUrl = new URL("/checkout/cancel", target.previewUrl);
-  cancelUrl.searchParams.set("order_id", target.pendingOrderId);
-  cancelUrl.searchParams.set("cancel_token", "0".repeat(64));
-  const cancelResponse = await fetchFn(cancelUrl, {
-    cache: "no-store",
-    method: "GET",
-    redirect: "follow",
-  });
-  const cancelBody = await cancelResponse.text();
-  if (
-    !cancelResponse.ok ||
-    !cancelBody.includes("注文状態は変更していません")
-  )
+  let cancelBody;
+  if (target.vercelDeploymentId) {
+    cancelBody = await protectedPreviewRequest({
+      deploymentId: target.vercelDeploymentId,
+      orderId: target.pendingOrderId,
+    });
+  } else {
+    const cancelUrl = new URL("/checkout/cancel", target.previewUrl);
+    cancelUrl.searchParams.set("order_id", target.pendingOrderId);
+    cancelUrl.searchParams.set("cancel_token", "0".repeat(64));
+    const cancelResponse = await fetchFn(cancelUrl, {
+      cache: "no-store",
+      method: "GET",
+      redirect: "follow",
+    });
+    cancelBody = await cancelResponse.text();
+    if (!cancelResponse.ok)
+      throw new Error("Tampered cancel token was not rejected by Preview.");
+  }
+  if (!cancelBody.includes("注文状態は変更していません"))
     throw new Error("Tampered cancel token was not rejected by Preview.");
 
   const pendingAfter = await readOrder({
@@ -255,7 +330,9 @@ export async function runMarketplaceAuthExpiryAcceptance({
     method: "GET",
   });
   if (!immediate.ok)
-    throw new Error("Fresh Storage signed URL could not download the product.");
+    throw new Error(
+      `Fresh Storage signed URL could not download the product (HTTP ${immediate.status}).`,
+    );
 
   const waitMilliseconds = Math.max(0, expirySeconds * 1000 - now() + 2_000);
   if (waitMilliseconds > 362_000)
@@ -297,6 +374,7 @@ Required environment (use an external, untracked environment source):
   MANGAI_STAGING_PREVIEW_URL
   MANGAI_STAGING_PENDING_ORDER_ID
   MANGAI_STAGING_PAID_ORDER_ID
+  MANGAI_STAGING_VERCEL_DEPLOYMENT_ID (for a protected Preview)
 
 The command reads two synthetic test orders, submits one invalid cancel token,
 creates a five-minute Storage signed URL, and confirms it fails after expiry.
