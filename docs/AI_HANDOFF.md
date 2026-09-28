@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production限定販売 readiness preflight（2026-09-28）
+
+- Branch `codex/marketplace-production-readiness-20260928`、Base `c942b4d2`（PR #537 merge commit）。Staging受入れと終了後、Productionのlive販売条件を変更なしで監査するpreflightを追加した。
+- Production限定Vercel scope、Supabase identity、正規site origin、checkout `live`、Stripe live Secret／Webhook／Cancel Secretを判定し、値やProject refを出力しない。
+- `disabled`／`test`、test key、Preview共有、branch限定、誤origin、Staging marker、不完全なSupabase資格情報はfail closed。repository外候補envと`vercel env run`注入にも対応する。
+- 実Productionのread-only結果はsite originだけREADYで、scope／Supabase identity／live mode／Stripe liveはPENDING。販売、環境変数、DB、Stripe、注文、Provider、Job、creditは変更していない。
+- 集中8/8、Marketplace関連19/19、Hub 1071/1071、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 87/87、RC Repository structure、diff checkが成功。通常Turbopackは外部`node_modules` junctionを拒否した環境制約。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。Production live設定とcanary販売は別承認が必要。
+
+---
+
 ## 0.0 Marketplace隔離Staging終了処理（2026-09-28）
 
 - Branch `codex/marketplace-staging-cleanup-20260928`、Base `46924a07`（PR #536 merge commit）。Marketplace外部E2E完了後の責任者承認に基づき、短期検証リソースを終了した。

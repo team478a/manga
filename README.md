@@ -264,7 +264,7 @@ where user_id = '対象ユーザーのauth.users.id';
 
 ## Stripe決済について
 
-`/api/checkout/create-session` でStripe Checkout Sessionを作成します。Stripeはテストモード前提です。
+`/api/checkout/create-session` でStripe Checkout Sessionを作成します。既定は`disabled`で、テスト販売は隔離Staging、本番販売はProduction限定の`live`設定だけを受け付けます。
 
 必要な環境変数:
 
@@ -283,6 +283,15 @@ Stripeテスト環境の設定:
 4. `MANGAI_MARKETPLACE_CHECKOUT_MODE=test`を設定します。未設定・`disabled`・キー種別不一致では購入を開始しません。
 5. ローカル確認では `NEXT_PUBLIC_SITE_URL=http://localhost:3000` を設定します。
 6. Stripe CheckoutではStripe公式のテストカードを使います。実在カードは使用しません。
+
+本番販売を有効化する前に、秘密値を画面やログへ出さないread-only preflightを実行します。
+
+```powershell
+npm run marketplace:production:preflight
+vercel.cmd env run -e production -- npm.cmd run marketplace:production:preflight:injected
+```
+
+`Production-only Vercel scope`、`Production Supabase identity`、`Production checkout origin`、`Marketplace live checkout mode`、`Stripe live credentials`がすべて`READY`になるまで`live`販売を開始しません。preflightは環境変数、Stripe、決済、DBを変更しません。
 
 今回実装済み:
 
