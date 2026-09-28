@@ -87,6 +87,15 @@ export type MarketplaceProductionCanaryInventoryReport = {
     activationReadyPausedProducts: number;
     activationReadySellers: number;
   };
+  preparationDiagnostics: {
+    audited: boolean;
+    priceReadyPausedProducts: number;
+    fileReadyPausedProducts: number;
+    linkedWorkReadyPausedProducts: number;
+    publicGeneralWorkReadyPausedProducts: number;
+    publicationReadyPausedProducts: number;
+    sellerRoleReadyPausedProducts: number;
+  };
   sourcePreparation: {
     audited: boolean;
     complete: boolean;
@@ -167,6 +176,15 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         activationReadyPausedProducts: 0,
         activationReadySellers: 0,
       },
+      preparationDiagnostics: {
+        audited: false,
+        priceReadyPausedProducts: 0,
+        fileReadyPausedProducts: 0,
+        linkedWorkReadyPausedProducts: 0,
+        publicGeneralWorkReadyPausedProducts: 0,
+        publicationReadyPausedProducts: 0,
+        sellerRoleReadyPausedProducts: 0,
+      },
       sourcePreparation: {
         audited: false,
         complete: false,
@@ -188,21 +206,54 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         : [],
     ),
   );
-  const hasEligibleProductDetails = (
-    product: MarketplaceProductionCanaryProduct,
-  ) => {
+  const productWork = (product: MarketplaceProductionCanaryProduct) =>
+    product.works && !Array.isArray(product.works) ? product.works : null;
+  const hasReadyPrice = (product: MarketplaceProductionCanaryProduct) => {
     const price = Number(product.price);
+    return Number.isInteger(price) && price >= 50 && price <= 1000;
+  };
+  const hasReadyFile = (product: MarketplaceProductionCanaryProduct) =>
+    typeof product.file_url === "string" && Boolean(product.file_url.trim());
+  const hasReadyLinkedWork = (product: MarketplaceProductionCanaryProduct) => {
+    const work = productWork(product);
     return Boolean(
-      typeof product.creator_id === "string" &&
-        eligibleSellerIds.has(product.creator_id) &&
-        Number.isInteger(price) &&
-        price >= 50 &&
-        price <= 1000 &&
-        typeof product.file_url === "string" &&
-        product.file_url.trim() &&
-        hasEligibleWork(product),
+      work &&
+        typeof work.id === "string" &&
+        typeof work.creator_id === "string" &&
+        work.creator_id === product.creator_id,
     );
   };
+  const hasReadyPublicGeneralWork = (
+    product: MarketplaceProductionCanaryProduct,
+  ) => {
+    const work = productWork(product);
+    return Boolean(
+      hasReadyLinkedWork(product) &&
+        work?.status === "published" &&
+        work.is_public === true &&
+        work.content_class === "general",
+    );
+  };
+  const hasReadyPublication = (product: MarketplaceProductionCanaryProduct) => {
+    const work = productWork(product);
+    return Boolean(
+      hasReadyLinkedWork(product) &&
+        work &&
+        (!work.source_project_id || work.current_publication_id),
+    );
+  };
+  const hasReadySellerRole = (product: MarketplaceProductionCanaryProduct) =>
+    typeof product.creator_id === "string" &&
+    eligibleSellerIds.has(product.creator_id);
+  const hasEligibleProductDetails = (
+    product: MarketplaceProductionCanaryProduct,
+  ) =>
+    hasReadyPrice(product) &&
+    hasReadyFile(product) &&
+    hasReadyPublicGeneralWork(product) &&
+    hasReadyPublication(product) &&
+    hasReadySellerRole(product) &&
+    hasEligibleWork(product);
   const eligibleProducts = input.products.filter(
     (product) =>
       product.status === "active" && hasEligibleProductDetails(product),
@@ -278,6 +329,20 @@ export function assessMarketplaceProductionCanaryInventory(input: {
       pausedProducts: pausedProducts.length,
       activationReadyPausedProducts: activationReadyPausedProducts.length,
       activationReadySellers,
+    },
+    preparationDiagnostics: {
+      audited: true,
+      priceReadyPausedProducts: pausedProducts.filter(hasReadyPrice).length,
+      fileReadyPausedProducts: pausedProducts.filter(hasReadyFile).length,
+      linkedWorkReadyPausedProducts: pausedProducts.filter(hasReadyLinkedWork)
+        .length,
+      publicGeneralWorkReadyPausedProducts: pausedProducts.filter(
+        hasReadyPublicGeneralWork,
+      ).length,
+      publicationReadyPausedProducts: pausedProducts.filter(hasReadyPublication)
+        .length,
+      sellerRoleReadyPausedProducts: pausedProducts.filter(hasReadySellerRole)
+        .length,
     },
     sourcePreparation: {
       audited: sourceInventoryAudited,

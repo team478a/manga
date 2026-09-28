@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary候補の阻害条件診断
+
+- 状態: `DRAFT_PR_552 / INITIAL_ALL_CI_AND_VERCEL_PASSED / PRODUCTION_READ_ONLY_AUDIT_COMPLETE / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-canary-blocker-diagnostics-20260928`
+- Base: `origin/feature/manga-canvas-mvp`@`ddc332ec`（PR #551 merge commit）。
+- PR #551反映後のProductionを件数だけでread-only監査した。登録商品1件、active 0件、paused 1件、有効化可能paused 0件、商品未登録の公開作品0件、商品化準備可能作品0件だった。
+- paused 1件は、価格、販売file、作品所有者一致、一般区分、販売者roleを満たす一方、作品が未published・非公開で、Cloud由来作品の完成版固定も旧schemaでは確認できない。商品、作品、利用者、内部IDを出力せず、SELECT以外のProduction操作は行っていない。
+- 管理画面へ、価格、file、所有者一致、公開済み一般作品、Cloud完成版固定、販売者roleを満たすpaused商品数を追加した。各件数だけを表示し、自動修正・公開・有効化・商品作成は行わない。
+- 検証: focused 13/13、Hub 1125/1125、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure成功。
+- Draft PR [#552](https://github.com/team478a/manga/pull/552)を作成した。初回HEAD `5426d08a`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。Draft／MERGEABLE。
+- 次: 証跡同期後の最終HEADで全CI／Vercel成功を確認して停止する。作品公開、商品有効化、Production migration、live設定、実決済は別の明示承認を必要とする。
+
+---
+
 ## 2026-09-28 Marketplace Production canary旧schema互換
 
 - 状態: `DRAFT_PR_551 / INITIAL_ALL_CI_AND_VERCEL_PASSED / PRODUCTION_READ_ONLY_AUDIT_COMPLETE / PRODUCTION_UNCHANGED`

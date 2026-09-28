@@ -114,6 +114,32 @@ export default async function AdminMarketplaceCanaryPage() {
                 ? `有効化前の候補があります（販売者${inventory.value.preparation.activationReadySellers}名）`
                 : "現在、有効化できるpaused商品はありません。"}
             </p>
+            {inventory.value.preparationDiagnostics.audited &&
+            inventory.value.preparation.pausedProducts > 0 ? (
+              <div className="mt-5 rounded-2xl border border-stone-200 bg-white p-4">
+                <h3 className="font-bold">paused商品の条件別充足数</h3>
+                <p className="mt-1 text-sm leading-relaxed text-stone-600">
+                  個別の商品や作品を表示せず、各条件を満たすpaused商品の件数だけを示します。
+                </p>
+                <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                  {[
+                    ["価格（50〜1,000円）", inventory.value.preparationDiagnostics.priceReadyPausedProducts],
+                    ["販売ファイル", inventory.value.preparationDiagnostics.fileReadyPausedProducts],
+                    ["所有者が一致する作品", inventory.value.preparationDiagnostics.linkedWorkReadyPausedProducts],
+                    ["公開済みの一般向け作品", inventory.value.preparationDiagnostics.publicGeneralWorkReadyPausedProducts],
+                    ["Cloud完成版の固定", inventory.value.preparationDiagnostics.publicationReadyPausedProducts],
+                    ["販売者権限", inventory.value.preparationDiagnostics.sellerRoleReadyPausedProducts],
+                  ].map(([label, count]) => (
+                    <div className="flex items-center justify-between gap-3" key={label}>
+                      <dt>{label}</dt>
+                      <dd className="font-semibold">
+                        {count} / {inventory.value.preparation.pausedProducts}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ) : null}
             <p className="mt-2 text-sm leading-relaxed text-stone-600">
               この画面から商品を有効化・作成することはありません。候補がない場合は、販売パッケージから一般向け商品を準備します。
             </p>
