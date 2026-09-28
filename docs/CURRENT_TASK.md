@@ -7,7 +7,7 @@
 - PR #549のpaused商品監査に続き、商品が未登録でも販売パッケージを準備できる公開作品の件数監査を追加した。公開・published・一般向け・Cloud publication固定・creator／admin所有を満たし、既存のactive／paused商品に紐付かない作品だけを商品化準備候補として数える。
 - 公開作品は最大100件までの完全inventoryだけをREADYにする。商品名、作品名、氏名、メール、内部ID、file pathは画面へ出さず、商品作成・状態変更・注文・Stripe接続・Storage downloadは行わない。
 - 集中17/17、Hub 1123/1123、lint、全typecheck、依存境界error 0（既知warning 2）、packages build、Webpack Production build、migration 88/88、RC repository structure成功。通常Turbopack buildは既知のWindows junction制約で停止した。
-- Production、Supabase、Stripe、商品、作品、注文、決済、環境変数、Provider、生成Job、credit、利用者データは変更していない。PR #549反映後のProduction再確認は、現在のIABが未ログインでChrome連携も接続できなかったため未実施。次はdiff check、commit／push／Draft PR、全CI／Vercel成功で停止する。
+- Production、Supabase、Stripe、商品、作品、注文、決済、環境変数、Provider、生成Job、credit、利用者データは変更していない。PR #549反映後のProduction再確認は、現在のIABが未ログインでChrome連携も接続できなかったため未実施。Draft PR [#550](https://github.com/team478a/manga/pull/550)を作成し、初回HEAD `c38bdbee`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。証跡同期後の最終HEADでも全チェック成功を確認して停止する。
 
 ---
 

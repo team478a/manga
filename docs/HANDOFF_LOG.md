@@ -7,7 +7,7 @@
 - Production canary候補の次の準備経路として、既存商品に紐付かない公開済み一般作品と、そのうちcreator／admin所有で商品化準備可能な作品・販売者を管理画面へ件数だけ追加した。
 - Cloud由来作品はcurrent publication固定を必須にし、作品inventoryが100件を超える場合は部分集計をREADYにしない。画面・reportへ名称、氏名、メール、内部ID、file pathを出さず、DBはselectだけを使用する。
 - 集中17/17、Hub 1123/1123、lint、全typecheck、deps error 0（既知warning 2）、packages／Webpack Production build、migration 88/88、RC structure成功。通常Turbopackは既知のWindows junction制約で停止。
-- Production、Vercel環境、Supabaseデータ、Stripe、商品、作品、注文、決済、Provider、Job、creditは未変更。Production画面のread-only再確認は認証済みbrowser session不足でPENDING。次はdiff check、commit、push、Draft PR、全CI／Vercel成功で停止する。
+- Production、Vercel環境、Supabaseデータ、Stripe、商品、作品、注文、決済、Provider、Job、creditは未変更。Production画面のread-only再確認は認証済みbrowser session不足でPENDING。Draft PR [#550](https://github.com/team478a/manga/pull/550)を作成し、初回HEAD `c38bdbee`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。最終証跡HEADの全チェック成功で停止する。
 
 ---
 
