@@ -114,15 +114,17 @@ export const assessMarketplaceProductionReadiness = ({
     "MANGAI_MARKETPLACE_CANARY_EXPIRES_AT",
     "MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT",
   ]);
-  const targetScopeReady =
-    !requireTargetScopedMetadata ||
-    deploymentKeys.every((key) =>
-      hasProductionOnlyVariable({
-        metadata,
-        key,
-        type: sensitiveKeys.has(key) ? "sensitive" : undefined,
-      }),
-    );
+  const invalidProductionScopeKeys = requireTargetScopedMetadata
+    ? deploymentKeys.filter(
+        (key) =>
+          !hasProductionOnlyVariable({
+            metadata,
+            key,
+            type: sensitiveKeys.has(key) ? "sensitive" : undefined,
+          }),
+      )
+    : [];
+  const targetScopeReady = invalidProductionScopeKeys.length === 0;
   const supabaseReady = Boolean(
     productionRef &&
       supabaseKeys.every((key) => configured(environment[key], 8)) &&
@@ -155,7 +157,10 @@ export const assessMarketplaceProductionReadiness = ({
       ready: targetScopeReady,
       missing: targetScopeReady
         ? []
-        : ["Marketplace credentials are scoped only to Production"],
+        : invalidProductionScopeKeys.map(
+            (key) =>
+              `${key}: Production-only${sensitiveKeys.has(key) ? " Sensitive" : ""}`,
+          ),
     },
     {
       id: "production-supabase",

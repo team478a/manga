@@ -188,6 +188,37 @@ test("server秘密情報がSensitive型でなければProduction専用と認め�
   );
 });
 
+test("Production scope不足は値を出さずキー名ごとに診断する", () => {
+  const metadata = productionMetadata().filter(
+    (entry) =>
+      ![
+        "MANGAI_MARKETPLACE_CHECKOUT_MODE",
+        "STRIPE_SECRET_KEY",
+        "MANGAI_MARKETPLACE_CANARY_PRODUCT_ID",
+      ].includes(entry.key),
+  );
+  metadata.find((entry) => entry.key === "STRIPE_WEBHOOK_SECRET").target = [
+    "production",
+    "preview",
+  ];
+
+  const report = assessMarketplaceProductionReadiness({
+    environment: readyEnvironment(),
+    metadata,
+    requireTargetScopedMetadata: true,
+  });
+  const scope = report.checks.find((check) => check.id === "production-scope");
+
+  assert.equal(scope.ready, false);
+  assert.deepEqual(scope.missing, [
+    "MANGAI_MARKETPLACE_CHECKOUT_MODE: Production-only",
+    "STRIPE_SECRET_KEY: Production-only Sensitive",
+    "STRIPE_WEBHOOK_SECRET: Production-only Sensitive",
+    "MANGAI_MARKETPLACE_CANARY_PRODUCT_ID: Production-only Sensitive",
+  ]);
+  assert.doesNotMatch(JSON.stringify(scope), /sk_live_|whsec_|service-role-key/);
+});
+
 test("Supabase資格情報の欠落・同一値・不正URLを拒否する", () => {
   const missing = readyEnvironment();
   delete missing.SUPABASE_SERVICE_ROLE_KEY;

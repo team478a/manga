@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary環境準備監査
+
+- Branch: `codex/marketplace-production-canary-env-preparation-20260928`
+- Base: `cdf43339`（PR #542 merge commit）
+- Vercel Productionのmetadataとreadinessをread-onlyで再監査した。Supabase 3資格情報、site URL、Cancel SecretはProduction-onlyで存在し、checkout mode、Stripe live 2資格情報、live access、canary target 5項目は未設定だった。
+- `Production-only Vercel scope`の失敗理由を不足キー単位へ分解し、必要なSensitive属性も値なしで表示する。秘密値、内部ID、Project refをreportへ含めない。
+- focused 10/10、Hub 1098/1098、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。originだけREADYで、Supabase値照合、live mode、runtime canary、Stripe liveはPENDING。Vercel設定、Supabase、Stripe、商品、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+- 次は全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel成功で停止する。外部設定と購入は別承認。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production migration適用
 
 - Branch: `codex/marketplace-production-migration-preflight-20260928`

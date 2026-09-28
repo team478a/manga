@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary環境準備監査（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-env-preparation-20260928`、Base `cdf43339`（PR #542 merge commit）。Production販売を有効化せず、Vercel Productionの環境metadataとreadinessをread-onlyで再監査した。
+- Production限定で既存なのはSupabase URL／anon／service role、site URL、Cancel Secretの5項目。checkout mode、Stripe live Secret／Webhook、live access、商品・売り手・買い手・期限・計画fingerprintの9項目は未設定だった。
+- readiness preflightのscope診断を、genericな1理由ではなく不足キー名と必要なProduction-only／Sensitive属性を個別表示するよう改善した。値、Project ref、内部ID、秘密値は表示しない。
+- focused 10/10、Hub 1098/1098、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。外部監査はoriginだけREADY、残りは安全側にPENDING。Vercel設定、Supabase、Stripe、商品、注文、決済、Provider、生成Job、credit、利用者データは変更していない。
+- 次はローカル品質ゲート、commit／push／Draft PR、全CI／Vercel成功で停止する。Stripe live設定、canary計画確定、Production env適用、購入は別の明示承認単位とする。
+
+---
+
 ## 0.0 Marketplace Production migration適用（2026-09-28）
 
 - Branch `codex/marketplace-production-migration-preflight-20260928`、Base `25d9a4d0`（PR #541 merge commit）。責任者が`202609270001`と`202609280002`の順次適用を明示承認した。
