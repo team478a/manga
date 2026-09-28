@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary候補読取り修正
+
+- Branch: `codex/marketplace-production-canary-inventory-diagnostics-20260928`
+- Base: `ac907b62`（PR #547 merge commit）
+- Productionで管理者ログインと画面到達は成功した。Vercel read-onlyログからruntime guard通過後のPostgREST query failureを確認し、埋め込みrelationship取得を商品・作品・Profileの3つの明示的selectへ置換した。
+- 作品は`work_id`でメモリ上結合し、対応作品が欠ける商品はfail closedで候補外にする。失敗ログは読取りstageを示す固定Error名だけで、Provider詳細や利用者識別子を記録しない。
+- 集中13/13、Hub 1120/1120、lint、全typecheck、deps error 0（既知warning 2）、packages／Webpack Production build、migration 88/88、RC structure、diff check成功。通常Turbopackは既知のWindows junction制約のみで停止。
+- Production mutation、Stripe request、Storage download、商品・注文・決済・利用者データ・環境変数変更なし。次はDraft PRと全CI／Vercel確認。merge後のProduction再確認までは件数を成功扱いにしない。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary候補管理画面
 
 - Branch: `codex/marketplace-production-canary-inventory-admin-20260928`

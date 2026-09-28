@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary候補読取り修正
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-production-canary-inventory-diagnostics-20260928`。BaseはPR #547 merge commit `ac907b62`。
+- Production管理画面へのログインと`/admin/marketplace-canary`到達は成功したが、埋め込みPostgREST relationship queryがplain provider errorを返し、件数表示が安全停止していた。
+- active商品、作品、販売者Profileを3つの明示的なselectへ分け、`work_id`でdomain層内結合するよう修正した。relationship schema cacheへ依存せず、対応作品がない商品は候補にしない。
+- DB読取り失敗は`Products`／`Works`／`Profiles`の安定したError名だけをVercelログへ残す。Providerのmessage、code、details、内部ID、商品名、氏名、メール、file pathは出力しない。
+- 集中13/13、Hub 1120/1120、lint、全typecheck、依存境界error 0（既知warning 2）、packages build、Webpack Production build、migration 88/88、RC repository structure、diff check成功。通常Turbopack buildだけは既知のWindows junction制約で停止した。
+- Production、Supabase、Stripe、商品、作品、注文、決済、環境変数、Provider、生成Job、credit、利用者データは変更していない。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。merge後にProduction画面をread-onlyで再確認する。
+
+---
+
 ## 2026-09-28 Marketplace Production canary候補管理画面
 
 - 状態: `ADMIN_AGGREGATE_INVENTORY_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / LIVE_SALES_DISABLED`
