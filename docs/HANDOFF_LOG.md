@@ -7,7 +7,7 @@
 - Productionでactive商品0件をread-only確認したため、全登録商品を最大100件で監査し、paused商品のうちcanary条件を満たす件数と販売者数を管理画面へ追加した。
 - 価格、file、作品公開・一般区分、Cloud publication、所有者、販売者roleを既存共有domainで検査する。名称、氏名、メール、内部ID、file pathは表示せず、select以外のDB操作、Storage download、Stripe requestを行わない。
 - 集中14/14、Hub 1121/1121、lint、全typecheck、deps error 0（既知warning 2）、packages／Webpack Production build、migration 88/88、RC structure、diff check成功。
-- Production外部状態は未変更。次はDraft PRと全CI／Vercel確認。merge後にpaused候補件数をProductionで再確認し、商品作成または有効化は別の明示承認単位とする。
+- Production外部状態は未変更。Draft PR [#549](https://github.com/team478a/manga/pull/549)の初回HEADはCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功。merge後にpaused候補件数をProductionで再確認し、商品作成または有効化は別の明示承認単位とする。
 
 ---
 
