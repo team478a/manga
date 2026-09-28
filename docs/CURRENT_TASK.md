@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary旧schema互換
+
+- 状態: `IMPLEMENTED_LOCAL_VALIDATION_COMPLETE / PRODUCTION_READ_ONLY_AUDIT_COMPLETE / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-production-canary-schema-fallback-20260928`
+- Base: `origin/feature/manga-canvas-mvp`@`9a6a0fd2`（PR #550 merge commit）
+- Production `/admin/marketplace-canary`は認証・runtime guardを通過したが、`MarketplaceProductionCanaryWorksReadError`で件数を表示できなかった。Vercel logの固定Error名とSupabaseのread-only列存在確認から、`works.current_publication_id`だけが未適用であることを特定した。
+- repositoryは現行の最小列selectを優先し、失敗時だけ`current_publication_id`を除いた旧schema最小列へ再試行する。手動登録作品は監査可能、Cloud-linked作品は完成版IDを確認できないため候補外である。全列select、作品内容取得、Provider error本文の記録は行わない。
+- Production read-only結果: 商品1件、active 0件、paused 1件。DB row、商品状態、販売、注文、Stripe、Storage、Provider、Job、credit、利用者データの変更0件。
+- 検証: focused 12/12、Hub 1124/1124、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub Production build、Desktop build、RC repository structure、`git diff --check`成功。
+- 次: commit／push／Draft PR、全CI／Vercel Preview成功で停止する。merge後のProduction再確認もread-onlyに限定し、商品作成・有効化は別承認を必要とする。
+
+---
+
 ## 2026-09-28 Marketplace Production canary商品化元作品inventory
 
 - 状態: `LOCAL_VALIDATION_COMPLETE / PRODUCTION_UNCHANGED / PRODUCTION_READ_ONLY_RECHECK_PENDING`

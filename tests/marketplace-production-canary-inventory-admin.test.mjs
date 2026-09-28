@@ -288,6 +288,22 @@ test("repositoryはProduction runtimeと正規originを先に検証しGET query�
   assert.match(source, /MarketplaceProductionCanaryWorksReadError/);
   assert.match(source, /MarketplaceProductionCanarySourceWorksReadError/);
   assert.match(source, /MarketplaceProductionCanaryProfilesReadError/);
+  assert.match(
+    source,
+    /marketplaceProductionCanaryLegacyWorkColumns[\s\S]*id,creator_id,status,is_public,content_class,source_project_id/,
+  );
+  assert.match(
+    source,
+    /marketplaceProductionCanaryWorkColumns[\s\S]*current_publication_id/,
+  );
+  assert.ok(
+    source.match(/\.select\(marketplaceProductionCanaryLegacyWorkColumns\)/g)
+      ?.length === 2,
+  );
+  assert.match(
+    source,
+    /Cloud-linked work[\s\S]*remains ineligible[\s\S]*fail closed/,
+  );
   assert.doesNotMatch(source, /\.insert\(|\.update\(|\.delete\(|\.upsert\(|stripe/i);
   assert.doesNotMatch(source, /title|display_name|email|buyer_email/);
   assert.match(source, /\.eq\("status", "published"\)/);
