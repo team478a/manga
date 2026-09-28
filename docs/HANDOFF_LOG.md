@@ -1,5 +1,18 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary対象preflight
+
+- Branch: `codex/marketplace-production-canary-target-20260928`
+- Base: `c4de7ac8`（PR #539 merge commit）
+- repository外の承認済みcanary計画を再検証した後だけ、Production Supabaseへ3件のGETを行う読み取り専用preflightを追加した。商品／作品、参加者ID・role、対象関係の既存`pending`／`paid` live注文以外を取得しない。
+- active商品、計画どおりの所有者・JPY金額・保存先、公開・一般・公開済み作品、Cloud-linked作品のcurrent publication、creator／admin売り手、参加者profile、既存live注文なしをREADY条件とした。checkout `disabled`でも対象確認は可能だが、`test`は拒否する。
+- 出力はREADY判定と計画fingerprintだけで、氏名、メール、商品名、Payment Intent、秘密値、Storage path、内部IDを含めない。Storage download、Stripe接続、DB mutationはない。
+- 検証: focused 17/17、Hub 1088/1088、deps error 0（既知warning 2件）、lint、全typecheck、packages build、Next.js Webpack Production build、migration 87/87、RC Repository structure、diff check成功。
+- 実対象計画が未確定のためProduction外部実行は未実施。Production、Vercel、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは未変更。
+- 次: commit／push／Draft PRを作成し、Core quality、Migration roundtrip、Windows build、Vercel、Preview Commentsの成功で停止する。実対象確定と外部照合は別工程。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production 1件canary販売計画
 
 - PR #538 merge commit `83fd4ff8`から`codex/marketplace-production-canary-runbook-20260928`を作成した。

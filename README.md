@@ -297,9 +297,10 @@ vercel.cmd env run -e production -- npm.cmd run marketplace:production:preflight
 
 ```powershell
 npm run marketplace:production:canary-plan:validate -- "C:\secure\marketplace-canary.json"
+vercel.cmd env run -e production -- npm.cmd run marketplace:production:canary-target:preflight -- "C:\secure\marketplace-canary.json"
 ```
 
-計画はProductionの正規origin、1商品、異なる売り手／買い手、1回、50〜1,000円、最大24時間、受入れ失敗時の返金を必須にします。この検証はProduction、Stripe、DBへ接続せず、商品公開・購入・決済も行いません。実行順と停止条件は[`docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md`](docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md)を参照してください。
+計画はProductionの正規origin、1商品、異なる売り手／買い手、1回、50〜1,000円、最大24時間、受入れ失敗時の返金を必須にします。1つ目の検証は外部接続せず、2つ目はProductionへGETだけを行い、対象商品・一般向け公開作品・参加者・既存live注文なしを照合します。どちらも商品公開・購入・決済を行いません。実行順と停止条件は[`docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md`](docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md)を参照してください。
 
 今回実装済み:
 
