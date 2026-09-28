@@ -73,7 +73,8 @@ Stripeとcanary targetの値は未確定であり、推測して設定しない�
 2. canary商品、売り手、買い手、金額を確定する。
 3. repository外計画を作成してfingerprintを検証する。
 4. Production候補envをrepository外で検証する。
-5. 対象と全キーを固定した明示承認後だけVercel Productionへ設定する。
-6. GET-only対象preflight成功後、別承認で1件購入する。
+5. 計画JSONと候補envをbundle gateへ通し、対象5要素の完全一致を確認する。
+6. 対象と全キーを固定した明示承認後だけVercel Productionへ設定する。
+7. GET-only対象preflight成功後、別承認で1件購入する。
 
 本監査ではVercel環境、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データを変更していない。

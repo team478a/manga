@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary bundle事前検証
+
+- 状態: `OFFLINE_BUNDLE_GATE_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-canary-bundle-preflight-20260928`。BaseはPR #543 merge commit `9d0cd27a`。
+- repository外のcanary計画JSONとProduction候補envを同時に読み、計画自体、Production readiness、商品・売り手・買い手・期限・計画fingerprintの完全一致を、外部接続前に一括判定するCLIを追加した。
+- 計画または候補envは絶対pathかつrepository外を必須とする。結果へ内部ID、Supabase資格情報、Stripe key、Webhook secret、Cancel secretを含めない。
+- 集中32/32、Hub 1102/1102、依存境界error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。Production、Vercel環境変数、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。
+- 次はcommit／push／Draft PR、全CI／Vercel成功で停止する。実計画作成、Stripe live準備、Production env適用、購入は別の明示承認単位とする。
+
+---
+
 ## 2026-09-28 Marketplace Production canary環境準備監査
 
 - 状態: `READ_ONLY_PRODUCTION_ENV_AUDIT_COMPLETE / ACTIONABLE_SCOPE_DIAGNOSTICS_IMPLEMENTED / LIVE_SALES_DISABLED`

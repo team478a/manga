@@ -89,6 +89,14 @@ MANGAI_MARKETPLACE_CANARY_EXPIRES_AT=<plan.expiresAt>
 MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT=<validator fingerprint>
 ```
 
+個別検証後、同じ計画JSONと候補envをbundle gateへ渡す。商品、売り手、買い手、期限、fingerprintが1項目でも計画と違えば、Productionへ接続する前に停止する。
+
+```powershell
+npm run marketplace:production:canary-bundle:validate -- "C:\secure\marketplace-canary.json" "C:\secure\marketplace-production.env"
+```
+
+bundle gateはofflineであり、Vercel、Supabase、Stripeへ接続しない。計画ID、環境値、秘密値は出力しない。
+
 ### 3. 設定適用
 
 責任者が対象変数と適用先を明示承認した後だけ、Production限定scopeへ設定する。Preview／Developmentへlive資格情報を共有しない。設定後にDeploymentを作成し、注入済みprocessでstrict preflightを再実行する。
