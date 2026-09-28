@@ -5,7 +5,7 @@
 - Branch `codex/marketplace-production-canary-inventory-diagnostics-20260928`、Base `ac907b62`（PR #547 merge commit）。Production管理画面は認証・runtime guardを通過したが、PostgREST埋め込みrelationship queryで安全停止した。
 - 商品、作品、Profileを個別selectし、`work_id`でdomain層内結合する。対応作品なしは候補外。失敗時は`Products`／`Works`／`Profiles`の固定Error名だけを記録し、Provider詳細、内部ID、名称、メール、file pathを出さない。
 - 集中13/13、Hub 1120/1120、lint、全typecheck、依存境界error 0（既知warning 2）、packages／Webpack Production build、migration 88/88、RC structure、diff check成功。Production外部状態は未変更。
-- 次はcommit／push／Draft PR、全CI／Vercel成功で停止する。merge後、ログイン済みProductionの`/admin/marketplace-canary`をread-onlyで再確認する。
+- Draft PR [#548](https://github.com/team478a/manga/pull/548)の初回HEADはCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功。merge後、ログイン済みProductionの`/admin/marketplace-canary`をread-onlyで再確認する。
 
 ---
 
