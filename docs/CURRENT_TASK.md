@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace隔離Staging終了処理
+
+- 状態: `STAGING_RESOURCES_REMOVED / COMPUTE_STOPPED / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-staging-cleanup-20260928`。BaseはPR #536 merge commit `46924a07`。
+- Marketplace外部E2E完了後の責任者承認に基づき、Stripe test webhook endpoint 1件、Vercel Preview限定のMarketplace／Staging変数9件、Supabase Preview Branch `marketplace-staging`を終了した。
+- Stripe endpointは削除直前に`livemode=false`、`enabled`、Vercel Preview、正規Webhook path、Protection Bypass付きであることを検査した。削除応答は対象ID一致、`deleted=true`。Stripe liveは変更していない。
+- VercelはPreview scopeだけから対象9件を削除した。削除後の再監査でMarketplace Preview変数は不在、ProductionのSupabase 3資格情報とCancel Secretは残存している。
+- Supabase Branchは親Production refと異なる対象IDを一覧で再確認後に削除した。削除後のBranch一覧はHealthyなProduction main 1件だけで、Preview Branch computeは終了した。
+- 削除されたBranch内の合成ユーザー、合成注文、Marketplace Storageは復元されない。Production DB／Storage、実利用者データ、Provider、生成Job、creditには変更なし。
+- 証跡文書の`git diff --check`は成功。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Marketplace決済失敗／全額返金の実Staging E2E
 
 - 状態: `EXTERNAL_STAGING_FAILURE_AND_REFUND_PASSED / IDEMPOTENCY_PASSED / PRODUCTION_UNCHANGED`
@@ -8,7 +21,7 @@
 - 責任者承認範囲で、合成pending注文に拒否PaymentIntentを1件作成した。Stripe自身が`payment_intent.payment_failed`を最新Previewへ署名配送し、注文が`pending → failed`になった。
 - 既存100円テストPaymentIntentを全額返金した。Stripe自身が`charge.refunded`を署名配送し、合成注文が`paid → refunded`になった。実請求、本番売上、振込は発生していない。
 - 実行中だけ既存test webhook endpointを最新Previewへ向け、成功後に元URLへ復元した。同じ2操作を再実行し、完了済み注文では追加PaymentIntent、追加返金、endpoint変更を行わない冪等性を確認した。
-- focused 5/5、Hub 1063/1063、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages build、Next.js Webpack Production build、`git diff --check`成功。commit／push／Draft PR、全CI／Vercelはこれから実施する。
+- focused 5/5、Hub 1063/1063、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages build、Next.js Webpack Production build、`git diff --check`成功。Draft PR #536の全CI／Vercelは成功し、merge commitは`46924a07`。
 - Production、Production DB／Storage、Stripe live、実利用者注文、Provider、生成Job、creditは変更していない。詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_FAILURE_REFUND_STAGING_E2E_20260928.md`。
 
 ---
