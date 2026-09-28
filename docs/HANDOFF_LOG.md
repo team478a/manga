@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary計画generator
+
+- Branch: `codex/marketplace-production-canary-plan-generator-20260928`
+- Base: `559ea01c`（PR #544 merge commit）
+- 固定canary schemaを手作業で編集せず、必要な6引数からrepository外へ検証済みJSONを排他的に新規作成するCLIを追加した。
+- UUID、売買参加者分離、50〜1,000円、1〜24時間、絶対path、repository外、`.json`、上書き禁止を強制する。出力はfingerprintと安全状態だけで対象ID／pathを含めない。
+- 集中18/18、Hub 1107/1107、依存境界error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。Production、Vercel、Supabase、Stripe、商品、注文、決済、Provider、生成Job、credit、利用者データは未変更。次はcommit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary bundle事前検証
 
 - Branch: `codex/marketplace-production-canary-bundle-preflight-20260928`

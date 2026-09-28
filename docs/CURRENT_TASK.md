@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary計画generator
+
+- 状態: `OFFLINE_PLAN_GENERATOR_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-canary-plan-generator-20260928`。BaseはPR #544 merge commit `559ea01c`。
+- 固定済みの1件canary仕様から、repository外へ検証済み計画JSONを新規作成するCLIを追加した。UUID、金額50〜1,000円、1〜24時間を必須とし、売り手本人の購入、未知・不足・重複optionを拒否する。
+- 出力先は絶対path、repository外、既存でない`.json`だけを許可し、排他的作成で上書きを防ぐ。出力先pathと対象IDを表示せず、承認用fingerprintだけを表示する。
+- 集中18/18、Hub 1107/1107、依存境界error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。Production、Vercel環境変数、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。
+- 次はcommit／push／Draft PR、全CI／Vercel成功で停止する。実対象の選定、計画作成、Stripe live準備、Production env適用、購入は別の明示承認単位とする。
+
+---
+
 ## 2026-09-28 Marketplace Production canary bundle事前検証
 
 - 状態: `OFFLINE_BUNDLE_GATE_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / LIVE_SALES_DISABLED`

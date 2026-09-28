@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary計画generator（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-plan-generator-20260928`、Base `559ea01c`（PR #544 merge commit）。手入力による固定field・時刻・保存先の誤りを防ぐoffline計画generatorを追加した。
+- `marketplace:production:canary-plan:create`は商品・売り手・買い手UUID、50〜1,000円、1〜24時間を受け取り、既存validatorを通過した固定schema JSONだけをrepository外へ排他的に新規作成する。
+- repository内、相対path、非JSON、既存ファイル、本人購入、未知・不足・重複optionを拒否する。対象IDと出力先pathは表示せず、承認fingerprintだけを表示する。
+- 集中18/18、Hub 1107/1107、依存境界error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。外部接続、Production mutation、Stripe requestは行わず、live販売は無効のまま。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace Production canary bundle事前検証（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-bundle-preflight-20260928`、Base `9d0cd27a`（PR #543 merge commit）。Production設定適用前に計画JSONと候補envの取り違えを止めるoffline gateを追加した。

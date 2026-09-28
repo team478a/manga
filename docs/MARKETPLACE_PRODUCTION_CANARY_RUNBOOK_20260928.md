@@ -23,6 +23,20 @@ Production販売を全面公開する前に、対象を1商品・購入者1名�
 
 計画はrepository外の絶対pathにJSONで保存する。氏名、メールアドレス、API key、Webhook secret、カード情報、住所、自由記述を含めない。
 
+対象と価格を責任者が確定した後、generatorで新規作成する。既存ファイルは上書きせず、出力先directoryを事前に作成する。
+
+```powershell
+npm run marketplace:production:canary-plan:create -- `
+  --output "C:\secure\marketplace-canary.json" `
+  --product-id "<product UUID>" `
+  --seller-profile-id "<seller profile UUID>" `
+  --buyer-profile-id "<buyer profile UUID>" `
+  --amount-jpy "100" `
+  --duration-hours "12"
+```
+
+generatorはrepository外の未作成`.json`だけへ保存し、作成直前に同じvalidatorへ通す。対象IDと出力pathは出力しない。
+
 ```json
 {
   "schemaVersion": 1,
@@ -42,7 +56,7 @@ Production販売を全面公開する前に、対象を1商品・購入者1名�
 }
 ```
 
-UUIDと時刻は実行対象へ置き換える。`expiresAt`は`createdAt`から24時間以内かつ検証時点より後でなければならない。
+JSONはgeneratorの出力例である。手編集した場合も`expiresAt`は`createdAt`から24時間以内かつ検証時点より後でなければならない。
 
 ```powershell
 npm run marketplace:production:canary-plan:validate -- "C:\secure\marketplace-canary.json"
