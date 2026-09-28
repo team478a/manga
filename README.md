@@ -293,6 +293,14 @@ vercel.cmd env run -e production -- npm.cmd run marketplace:production:preflight
 
 `Production-only Vercel scope`、`Production Supabase identity`、`Production checkout origin`、`Marketplace live checkout mode`、`Stripe live credentials`がすべて`READY`になるまで`live`販売を開始しません。preflightは環境変数、Stripe、決済、DBを変更しません。
 
+1件だけのProduction canary販売を計画する場合は、氏名・メール・秘密値を含めない固定schemaのJSONをrepository外へ保存し、承認対象のSHA-256 fingerprintを発行します。
+
+```powershell
+npm run marketplace:production:canary-plan:validate -- "C:\secure\marketplace-canary.json"
+```
+
+計画はProductionの正規origin、1商品、異なる売り手／買い手、1回、50〜1,000円、最大24時間、受入れ失敗時の返金を必須にします。この検証はProduction、Stripe、DBへ接続せず、商品公開・購入・決済も行いません。実行順と停止条件は[`docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md`](docs/MARKETPLACE_PRODUCTION_CANARY_RUNBOOK_20260928.md)を参照してください。
+
 今回実装済み:
 
 - 仮注文作成

@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production 1件canary販売計画
+
+- PR #538 merge commit `83fd4ff8`から`codex/marketplace-production-canary-runbook-20260928`を作成した。
+- 1商品・異なる売り手／買い手・購入1回・50〜1,000円・最大24時間・受入れ失敗時の返金へ固定したrepository外JSON計画を検証し、承認対象のSHA-256 fingerprintだけを表示するCLIを追加した。
+- 計画は固定fieldだけを許可し、氏名・メール・秘密値・自由記述を持てない。Preview、test mode、誤origin、本人購入、複数購入、上限超過、期限切れをfail closedで停止する。
+- Production canary runbookへ、外部判断、read-only対象照合、候補env検証、設定適用、1件購入、購入後受入れ、停止・返金の順序と別承認境界を記録した。
+- 集中9/9、Marketplace関連22/22、Hub 1080/1080、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 87/87、RC Repository structure、diff check成功。通常Turbopackは外部`node_modules` junctionを拒否した既知の作業環境制約。
+- Production、環境変数、Supabase、Stripe、商品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。次はcommit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production限定販売 readiness preflight
 
 - PR #537 merge commit `c942b4d2`から`codex/marketplace-production-readiness-20260928`を作成した。

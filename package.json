@@ -116,6 +116,7 @@
     "marketplace:production:preflight:strict": "node scripts/check-marketplace-production-readiness.mjs --strict",
     "marketplace:production:preflight:injected": "node scripts/check-marketplace-production-readiness.mjs --injected",
     "marketplace:production:candidate:validate": "node scripts/check-marketplace-production-readiness.mjs --strict --candidate",
+    "marketplace:production:canary-plan:validate": "node scripts/check-marketplace-production-canary-plan.mjs",
     "marketplace:staging:auth-expiry": "node scripts/check-marketplace-auth-expiry-staging.mjs",
     "marketplace:staging:failure-refund": "node scripts/check-marketplace-failure-refund-staging.mjs",
     "rc:acceptance": "node scripts/check-rc-acceptance.mjs",
