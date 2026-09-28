@@ -8,7 +8,8 @@
 - schema状態と件数だけを出力し、商品・作品・Project・利用者ID、名称、メール、file path、秘密値を出力しない。部分適用と適用済みも再適用せずfail closedで停止する。
 - focused 6/6、Hub 1132/1132、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure、diff check成功。
 - `vercel env run -e production`はSensitiveなSupabase値をCLIへ取得できず、接続前に不足として停止した。Production requestは0件で、DB、schema、商品、作品、販売状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは未変更。
-- 次はcommit／push／Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用は別の実行時明示承認を待つ。
+- Draft PR [#554](https://github.com/team478a/manga/pull/554)を作成した。実装HEAD `0b34d94a`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功し、Draft／MERGEABLEを確認した。
+- 次は証跡同期後の最終HEADで同じ5チェックの成功を確認して停止する。Production migration適用は別の実行時明示承認を待つ。
 
 ---
 

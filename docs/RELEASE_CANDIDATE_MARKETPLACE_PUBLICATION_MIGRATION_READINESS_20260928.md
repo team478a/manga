@@ -1,5 +1,7 @@
 # Marketplace Cloud完成版migration適用前readiness
 
+- Draft PR: [#554](https://github.com/team478a/manga/pull/554)
+
 ## 目的
 
 Productionで未適用と確認された`202608140004_cloud_work_publications`を、既存作品・商品を壊さず適用できる状態か読み取り専用で判定する。これはmigrationを適用する機能ではなく、適用判断の前提を匿名集計で固定するpreflightである。
@@ -45,3 +47,11 @@ npm run marketplace:production:publication-migration:preflight -- --candidate C:
 ## 適用時の別承認
 
 preflightがREADYでもmigrationは自動適用しない。Production適用には、対象IDとSHA-256を含む実行時の明示承認、直前のread-only再確認、SQL Editorまたは承認済み手段による1回の適用、postflightが別途必要である。作品公開、publication作成、商品active化、live canary購入も別承認単位とする。
+
+## 検証結果
+
+- focused 6/6、Hub 1132/1132、Canvas 26/26、AI 50/50、Desktop 407/407。
+- Desktop a11yは29画面でblocking violation 0。
+- dependency／module boundary error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure、diff check成功。
+- 実装HEAD `0b34d94a`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功。
+- Chrome接続とVercel Sensitive env取得はいずれもProduction接続前に停止し、Production requestと変更は0件。

@@ -7,7 +7,8 @@
 - 出力はschema状態と匿名件数だけ。ID、名称、メール、file path、環境値、秘密値は出力せず、個人情報列、Storage、Stripe、Providerへアクセスしない。部分適用、適用済み、101件以上、危険な既存データをfail closedで停止する。
 - focused 6/6、Hub 1132/1132、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC structure、diff check成功。
 - Vercel Production環境の一時注入も試したが、SensitiveなSupabase値はCLIで取得できず、接続前の不足判定で停止した。Production外部preflight、migration適用、作品公開、publication固定、商品active化、live購入は未実施。
-- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production適用は対象ID・checksumを含む実行時の明示承認を別途必要とする。
+- Draft PR [#554](https://github.com/team478a/manga/pull/554)を作成した。実装HEAD `0b34d94a`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功し、Draft／MERGEABLEを確認した。
+- 次: 証跡同期後の最終HEADで同じ5チェックの成功を確認して停止する。Production適用は対象ID・checksumを含む実行時の明示承認を別途必要とする。
 
 ---
 
