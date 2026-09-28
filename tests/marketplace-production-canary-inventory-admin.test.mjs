@@ -54,6 +54,14 @@ test("管理画面とCLIで共有する判定は適格商品・販売者を件�
     publicationReadyPausedProducts: 0,
     sellerRoleReadyPausedProducts: 0,
   });
+  assert.deepEqual(report.preparationRemediation, {
+    audited: true,
+    activationReadyPausedProducts: 0,
+    workPublicationReviewPausedProducts: 0,
+    cloudPublicationReviewPausedProducts: 0,
+    workAndCloudPublicationReviewPausedProducts: 0,
+    otherBlockerPausedProducts: 0,
+  });
   assert.doesNotMatch(JSON.stringify(report), /22222222-2222-4222-8222-222222222222/);
 });
 
@@ -134,6 +142,14 @@ test("条件を満たすpaused商品を有効化前候補として件数だけ�
     publicationReadyPausedProducts: 1,
     sellerRoleReadyPausedProducts: 1,
   });
+  assert.deepEqual(report.preparationRemediation, {
+    audited: true,
+    activationReadyPausedProducts: 1,
+    workPublicationReviewPausedProducts: 0,
+    cloudPublicationReviewPausedProducts: 0,
+    workAndCloudPublicationReviewPausedProducts: 0,
+    otherBlockerPausedProducts: 0,
+  });
   assert.doesNotMatch(JSON.stringify(report), /22222222-2222-4222-8222-222222222222/);
 });
 
@@ -165,7 +181,52 @@ test("paused候補の阻害条件を個別情報なしの件数で返す", () =>
     publicationReadyPausedProducts: 0,
     sellerRoleReadyPausedProducts: 1,
   });
+  assert.deepEqual(report.preparationRemediation, {
+    audited: true,
+    activationReadyPausedProducts: 0,
+    workPublicationReviewPausedProducts: 0,
+    cloudPublicationReviewPausedProducts: 0,
+    workAndCloudPublicationReviewPausedProducts: 1,
+    otherBlockerPausedProducts: 0,
+  });
   assert.doesNotMatch(JSON.stringify(report), /33333333-3333-4333-8333-333333333333/);
+});
+
+test("paused商品を重複しない候補化確認区分へ分類する", () => {
+  const report = assessMarketplaceProductionCanaryInventory({
+    products: [
+      product({
+        status: "paused",
+        works: { ...product().works, status: "draft", is_public: false },
+      }),
+      product({
+        status: "paused",
+        works: {
+          ...product().works,
+          source_project_id: "33333333-3333-4333-8333-333333333333",
+        },
+      }),
+      product({ status: "paused", price: 0 }),
+    ],
+    profiles: [
+      { id: "22222222-2222-4222-8222-222222222222", role: "creator" },
+    ],
+  });
+
+  assert.deepEqual(report.preparationRemediation, {
+    audited: true,
+    activationReadyPausedProducts: 0,
+    workPublicationReviewPausedProducts: 1,
+    cloudPublicationReviewPausedProducts: 1,
+    workAndCloudPublicationReviewPausedProducts: 0,
+    otherBlockerPausedProducts: 1,
+  });
+  assert.equal(
+    Object.entries(report.preparationRemediation)
+      .filter(([key]) => key !== "audited")
+      .reduce((sum, [, count]) => sum + Number(count), 0),
+    report.preparation.pausedProducts,
+  );
 });
 
 test("商品未登録の公開作品を商品化準備候補として件数だけ返す", () => {
@@ -313,6 +374,9 @@ test("管理画面はadmin認証後だけProduction件数repositoryを呼ぶ", a
   assert.match(page, /販売パッケージや商品を自動作成しません/);
   assert.match(page, /この画面から商品を有効化・作成することはありません/);
   assert.match(page, /paused商品の条件別充足数/);
+  assert.match(page, /候補化までに必要な確認/);
+  assert.match(page, /paused商品を重複しない区分へ分けます/);
+  assert.match(page, /作品公開やCloud完成版の変更は行わず/);
   assert.match(page, /個別の商品や作品を表示せず/);
   assert.doesNotMatch(page, /product\.id|creator_id|file_url|display_name|email\}/);
 });

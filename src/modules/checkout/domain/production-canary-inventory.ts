@@ -96,6 +96,14 @@ export type MarketplaceProductionCanaryInventoryReport = {
     publicationReadyPausedProducts: number;
     sellerRoleReadyPausedProducts: number;
   };
+  preparationRemediation: {
+    audited: boolean;
+    activationReadyPausedProducts: number;
+    workPublicationReviewPausedProducts: number;
+    cloudPublicationReviewPausedProducts: number;
+    workAndCloudPublicationReviewPausedProducts: number;
+    otherBlockerPausedProducts: number;
+  };
   sourcePreparation: {
     audited: boolean;
     complete: boolean;
@@ -185,6 +193,14 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         publicationReadyPausedProducts: 0,
         sellerRoleReadyPausedProducts: 0,
       },
+      preparationRemediation: {
+        audited: false,
+        activationReadyPausedProducts: 0,
+        workPublicationReviewPausedProducts: 0,
+        cloudPublicationReviewPausedProducts: 0,
+        workAndCloudPublicationReviewPausedProducts: 0,
+        otherBlockerPausedProducts: 0,
+      },
       sourcePreparation: {
         audited: false,
         complete: false,
@@ -234,6 +250,12 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         work.content_class === "general",
     );
   };
+  const hasReadyGeneralWork = (product: MarketplaceProductionCanaryProduct) => {
+    const work = productWork(product);
+    return Boolean(
+      hasReadyLinkedWork(product) && work?.content_class === "general",
+    );
+  };
   const hasReadyPublication = (product: MarketplaceProductionCanaryProduct) => {
     const work = productWork(product);
     return Boolean(
@@ -264,6 +286,37 @@ export function assessMarketplaceProductionCanaryInventory(input: {
   const activationReadyPausedProducts = pausedProducts.filter(
     hasEligibleProductDetails,
   );
+  const hasReadyRemediationBase = (
+    product: MarketplaceProductionCanaryProduct,
+  ) =>
+    hasReadyPrice(product) &&
+    hasReadyFile(product) &&
+    hasReadyLinkedWork(product) &&
+    hasReadyGeneralWork(product) &&
+    hasReadySellerRole(product);
+  const workPublicationReviewPausedProducts = pausedProducts.filter(
+    (product) =>
+      hasReadyRemediationBase(product) &&
+      !hasReadyPublicGeneralWork(product) &&
+      hasReadyPublication(product),
+  );
+  const cloudPublicationReviewPausedProducts = pausedProducts.filter(
+    (product) =>
+      hasReadyRemediationBase(product) &&
+      hasReadyPublicGeneralWork(product) &&
+      !hasReadyPublication(product),
+  );
+  const workAndCloudPublicationReviewPausedProducts = pausedProducts.filter(
+    (product) =>
+      hasReadyRemediationBase(product) &&
+      !hasReadyPublicGeneralWork(product) &&
+      !hasReadyPublication(product),
+  );
+  const classifiedRemediationProducts =
+    activationReadyPausedProducts.length +
+    workPublicationReviewPausedProducts.length +
+    cloudPublicationReviewPausedProducts.length +
+    workAndCloudPublicationReviewPausedProducts.length;
   const eligibleSellers = new Set(
     eligibleProducts.map((product) => String(product.creator_id)),
   ).size;
@@ -343,6 +396,18 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         .length,
       sellerRoleReadyPausedProducts: pausedProducts.filter(hasReadySellerRole)
         .length,
+    },
+    preparationRemediation: {
+      audited: true,
+      activationReadyPausedProducts: activationReadyPausedProducts.length,
+      workPublicationReviewPausedProducts:
+        workPublicationReviewPausedProducts.length,
+      cloudPublicationReviewPausedProducts:
+        cloudPublicationReviewPausedProducts.length,
+      workAndCloudPublicationReviewPausedProducts:
+        workAndCloudPublicationReviewPausedProducts.length,
+      otherBlockerPausedProducts:
+        pausedProducts.length - classifiedRemediationProducts,
     },
     sourcePreparation: {
       audited: sourceInventoryAudited,

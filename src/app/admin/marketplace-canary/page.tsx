@@ -140,6 +140,29 @@ export default async function AdminMarketplaceCanaryPage() {
                 </dl>
               </div>
             ) : null}
+            {inventory.value.preparationRemediation.audited &&
+            inventory.value.preparation.pausedProducts > 0 ? (
+              <div className="mt-5 rounded-2xl border border-violet-200 bg-violet-50 p-4">
+                <h3 className="font-bold text-violet-950">候補化までに必要な確認</h3>
+                <p className="mt-1 text-sm leading-relaxed text-violet-900">
+                  paused商品を重複しない区分へ分けます。作品公開やCloud完成版の変更は行わず、別承認が必要な確認件数だけを表示します。
+                </p>
+                <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                  {[
+                    ["そのまま有効化前候補", inventory.value.preparationRemediation.activationReadyPausedProducts],
+                    ["作品の公開設定を確認", inventory.value.preparationRemediation.workPublicationReviewPausedProducts],
+                    ["Cloud完成版の固定を確認", inventory.value.preparationRemediation.cloudPublicationReviewPausedProducts],
+                    ["作品公開とCloud完成版を確認", inventory.value.preparationRemediation.workAndCloudPublicationReviewPausedProducts],
+                    ["価格・ファイル・所有者・権限等を確認", inventory.value.preparationRemediation.otherBlockerPausedProducts],
+                  ].map(([label, count]) => (
+                    <div className="flex items-center justify-between gap-3" key={label}>
+                      <dt>{label}</dt>
+                      <dd className="font-semibold">{count}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ) : null}
             <p className="mt-2 text-sm leading-relaxed text-stone-600">
               この画面から商品を有効化・作成することはありません。候補がない場合は、販売パッケージから一般向け商品を準備します。
             </p>
