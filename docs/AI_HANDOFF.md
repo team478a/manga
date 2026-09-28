@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace決済失敗／全額返金の実Staging E2E（2026-09-28）
+
+- Branch `codex/marketplace-failure-refund-e2e-20260928`、Base `f31e18ee`（PR #535 merge commit）。隔離Stagingの合成注文2件を使う専用受入れコマンドを追加した。
+- `sk_test_`、隔離Supabase ref、branch Preview、test webhook endpoint、注文mode／状態／金額、返金元PaymentIntentを事前検査する。live key、Production、別endpoint、別注文では接続前または更新前に停止する。
+- Stripe testの拒否PaymentIntentから`payment_intent.payment_failed`を実配送し、合成注文`pending → failed`を確認した。既存100円test PaymentIntentを全額返金し、`charge.refunded`の実配送で`paid → refunded`を確認した。
+- test webhook endpointは実行中だけ最新Previewへ向け、finallyで元URLへ復元する。完了後の再実行では追加Stripe更新もendpoint変更もなく、冪等だった。Vercel Sensitive値、payload、endpoint URL、内部IDは出力していない。
+- focused 5/5、Hub 1063/1063、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages／Next.js Webpack Production build、diff check成功。Production、Stripe live、実利用者注文、Provider、生成Job、creditは未変更。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace保護付きPreview認可／署名URL失効の実Staging完了（2026-09-28）
 
 - Branch `codex/marketplace-auth-expiry-protected-preview-20260928`、Base `9dfd3a95`（PR #534 merge commit）。PR #534の外部受入れを隔離Supabase Preview BranchとVercel branch Previewで実行した。
