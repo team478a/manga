@@ -6,7 +6,8 @@
 - 結果は登録商品1件、active 0件、paused 1件、有効化可能paused 0件、商品未登録の公開作品0件、商品化準備可能作品0件。paused 1件は価格、file、作品所有者一致、一般区分、販売者roleを満たすが、未published・非公開で、Cloud完成版固定も旧schemaでは確認できない。
 - 共有domain reportへpaused商品の条件別充足数を追加し、Production管理画面へ価格、販売file、作品所有者、公開済み一般作品、Cloud完成版固定、販売者roleの件数だけを表示する。名称、メール、内部ID、file pathは表示せず、自動修正や状態変更を行わない。
 - focused 13/13、Hub 1125/1125、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure成功。Production DB、商品、作品、販売状態、注文、Stripe、Storage、Provider、Job、credit、利用者データの変更なし。
-- 次: diff check、commit／push／Draft PR、全CI／Vercel成功で停止する。作品公開、商品有効化、migration適用、live設定、購入は別承認単位とする。
+- Draft PR [#552](https://github.com/team478a/manga/pull/552)を作成した。初回HEAD `5426d08a`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功し、Draft／MERGEABLEを確認した。
+- 次: 証跡同期後の最終HEADで全CI／Vercel成功を確認して停止する。作品公開、商品有効化、migration適用、live設定、購入は別承認単位とする。
 
 ---
 
