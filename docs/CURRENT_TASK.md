@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Marketplace Cloud完成版migration Production適用
+
+- 状態: `PRODUCTION_MIGRATION_APPLIED / POSTFLIGHT_PASSED / SCHEMA_ALREADY_APPLIED / PUBLICATION_DATA_UNCHANGED`
+- Branch: `codex/marketplace-publication-production-apply-evidence-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`37daed06`（PR #556 merge commit）。
+- 責任者が`202608140004_cloud_work_publications`（SHA-256 `eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa`）のProduction 1回適用を明示承認した。repository原本を再照合し、SQL Editor入力全文との一致を確認して1回だけ実行し、`Success. No rows returned`を確認した。
+- Postflightでは2 table、3 works列、2 RPC、2 trigger、3 index、2 policy、2 tableのRLSがすべて存在／有効。publication、publication page、publication固定済み作品、active Cloud商品はいずれも0件。
+- 管理画面`/admin/marketplace-canary`はschema状態`already-applied`。匿名件数はCloud作品1件、active商品0件、公開済みCloud作品0件、active Cloud商品0件、重複Project mapping 0件。
+- 2回目のread-only SELECTはEditorの旧SELECT残りにより最初だけ構文エラーで停止した。mutationは0件。全文置換と正規化後の完全一致を確認して再実行し、上記結果を得た。
+- 作品公開、publication固定、商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データ、Vercel環境変数は変更していない。詳細証跡は`docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_MIGRATION_PRODUCTION_APPLY_20260929.md`。
+- 検証: RC repository structure、`git diff --check`成功。外部設定と手動E2Eは資格情報未注入の既知`PENDING`。製品コードとmigration原本は変更していない。
+- 次: 文書のみを検証、commit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。完成版固定、作品公開、商品active化、canary購入はそれぞれ別の明示承認を必要とする。
+
+---
+
 ## 2026-09-29 Marketplace Cloud完成版migration Production適用前監査
 
 - 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / ALL_PREAPPLY_CONDITIONS_READY / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`

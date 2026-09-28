@@ -1,5 +1,18 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Cloud完成版migration Production適用（2026-09-29）
+
+- Branch `codex/marketplace-publication-production-apply-evidence-20260929`、Base `37daed06`（PR #556 merge commit）。責任者承認済みの`202608140004_cloud_work_publications`をProductionへ1回だけ適用した。
+- repository原本SHA-256 `eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa`を再照合し、SQL Editor全文との一致を確認した。実行結果は`Success. No rows returned`。
+- Postflightでは2 table、3 works列、2 RPC、2 trigger、3 index、2 policy、RLSがすべて存在／有効。publication rows 0、publication page rows 0、固定済み作品0、active Cloud商品0。
+- Production管理画面はschema状態`already-applied`。Cloud作品1件、active商品0件、公開済みCloud作品0件、active Cloud商品0件、重複Project mapping 0件を匿名表示で確認した。
+- 2回目のread-only確認で旧SELECT残りによる構文エラーが1回あったが、mutationは0件。全文置換・一致確認後に成功した。
+- 作品公開、publication固定、商品状態、注文、Stripe、Storage、Provider、Job、credit、利用者データ、Vercel環境変数は未変更。詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_MIGRATION_PRODUCTION_APPLY_20260929.md`。
+- RC repository structure、`git diff --check`成功。外部設定と手動E2Eは資格情報未注入の既知`PENDING`。製品コードとmigration原本は未変更。
+- 次: 文書検証、commit、push、Draft PR、全CI／Vercel成功で停止する。その後の完成版固定、作品公開、商品active化、canary購入は別承認単位。
+
+---
+
 ## 0.0 Marketplace Cloud完成版migration Production適用前監査（2026-09-29）
 
 - Branch `codex/marketplace-publication-readiness-production-audit-20260929`、Base `a4d5c4c8`（PR #555 merge commit）。Production管理画面`/admin/marketplace-canary`で、資格情報を端末へ取り出さずCloud完成版migrationの適用前状態をread-only確認した。
