@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Cloud完成版migration Production適用前監査（2026-09-29）
+
+- Branch `codex/marketplace-publication-readiness-production-audit-20260929`、Base `a4d5c4c8`（PR #555 merge commit）。Production管理画面`/admin/marketplace-canary`で、資格情報を端末へ取り出さずCloud完成版migrationの適用前状態をread-only確認した。
+- schemaは`not-applied`。確認したCloud作品1件、active商品0件、公開済みCloud作品0件、active Cloud商品0件、重複Project mapping 0件。監査上限内の全件確認と、依存schema、未適用状態、公開済み未固定作品、active商品、Project重複の6条件はすべて`READY`。
+- Productionで実行したのはSELECTのみ。migration適用、作品公開、publication固定、商品active化、注文、Stripe、Storage、Provider、Job、credit、利用者データ変更は行っていない。
+- 対象は`202608140004_cloud_work_publications`、SHA-256 `eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa`。READYでも自動適用しない。適用直前に原本SHA-256を再照合し、対象IDを含む実行時の責任者明示承認が必要。
+- 正本migrationのSHA-256再照合、RC repository structure、`git diff --check`成功。外部E2E設定はローカルでPENDINGを維持。次は文書のみの証跡PRをcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。Production適用は別工程とする。
+
+---
+
 ## 0.0 Marketplace Cloud完成版migration 管理画面readiness（2026-09-29）
 
 - Branch `codex/marketplace-publication-readiness-admin-20260929`、Base `08781728`（PR #554 merge commit）。Vercel CLIのProduction env pullではSensitive値を取得できず、CLI preflightはSupabase接続前に停止した。request 0件、一時file削除済み。

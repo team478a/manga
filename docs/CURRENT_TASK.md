@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Marketplace Cloud完成版migration Production適用前監査
+
+- 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / ALL_PREAPPLY_CONDITIONS_READY / MIGRATION_NOT_APPLIED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-publication-readiness-production-audit-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`a4d5c4c8`（PR #555 merge commit）。
+- PR #555反映後のProduction管理画面`/admin/marketplace-canary`を管理者sessionで開き、Cloud完成版migration適用前確認をread-onlyで実施した。schema状態は`not-applied`で、6つの適用前条件はすべて`READY`。
+- 匿名件数は、確認したCloud作品1件、確認したactive商品0件、公開済みCloud作品0件、active Cloud商品0件、重複Project mapping 0件。対象件数は監査上限内で全件確認できている。
+- READY条件は、依存schema、未適用schemaの一貫性、全件監査、未固定の公開済みCloud作品なし、未固定Cloud作品に紐づくactive商品なし、1 Cloud Projectへの作品重複なしの6件。
+- ProductionではSELECT以外を実行していない。DB row、schema、作品公開、publication固定、商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データの変更は0件。
+- 対象migrationは`202608140004_cloud_work_publications`、正本SHA-256は`eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa`。今回は適用せず、実行時の再照合と責任者の別途明示承認を待つ。
+- 検証: Production管理画面の匿名read-only表示でschema状態、5件の匿名件数、6判定を確認。正本migrationのSHA-256再照合、RC repository structure、`git diff --check`成功。このPRは証跡同期のみで製品コードとmigrationは変更しない。外部E2E設定は従来どおりローカル環境でPENDING。
+- 次: 証跡をcommit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。Production migration適用は、対象IDとSHA-256を示した実行時の明示承認が得られた場合だけ1回実行する。
+
+---
+
 ## 2026-09-29 Marketplace Cloud完成版migration 管理画面readiness
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_CONNECTION_BLOCKED_BEFORE_REQUEST / PRODUCTION_UNCHANGED`
