@@ -7,7 +7,7 @@
 
 隔離Stagingでは、テスト購入、購入履歴、署名download、売上除外、改ざんcancel拒否、署名URL失効、決済失敗、全額返金まで完了した。次の段階として、Productionの設定を変更せず、live販売を開始できる条件だけを秘密値非表示で判定するpreflightを追加した。
 
-現行Productionは販売開始前の安全な状態を維持している。`NEXT_PUBLIC_SITE_URL`だけがREADYで、Production限定scope、Supabase identity、live checkout mode、Stripe live資格情報はPENDINGである。したがって本PRでは販売を有効化しない。
+現行Productionは販売開始前の安全な状態を維持している。`NEXT_PUBLIC_SITE_URL`だけがREADYで、Production限定scope、Supabase identity、live checkout mode、runtime canary、Stripe live資格情報はPENDINGである。したがって本PRでは販売を有効化しない。
 
 ## 追加した判定
 
@@ -34,9 +34,10 @@ npm run marketplace:production:candidate:validate -- "C:\secure\marketplace-prod
 ## 実環境のread-only結果
 
 - `Production checkout origin`: READY。
-- `Production-only Vercel scope`: PENDING。Marketplace live mode／Stripe live変数がProductionに未設定。
+- `Production-only Vercel scope`: PENDING。Supabase URL／anon／service role、site URL、Cancel Secretの5項目はProduction限定で存在する。checkout mode、Stripe live Secret／Webhook、live access、canary商品・売り手・買い手・期限・計画fingerprintの9項目は未設定。
 - `Production Supabase identity`: PENDING。3変数のProduction限定metadataは存在するがSensitive値をCLIで取得できず、正確な接続先照合は未完了。
 - `Marketplace live checkout mode`: PENDING。
+- `Single-target live canary gate`: PENDING。
 - `Stripe live credentials`: PENDING。
 
 preflight実行中にProduction環境変数、Supabase、Stripe、注文、決済、Provider、生成Job、credit、利用者データは変更していない。

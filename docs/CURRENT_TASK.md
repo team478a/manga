@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary環境準備監査
+
+- 状態: `READ_ONLY_PRODUCTION_ENV_AUDIT_COMPLETE / ACTIONABLE_SCOPE_DIAGNOSTICS_IMPLEMENTED / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-canary-env-preparation-20260928`。BaseはPR #542 merge commit `cdf43339`。
+- Vercel Productionの値を表示せず、metadataとreadiness preflightを再実行した。既存Production-only項目は`NEXT_PUBLIC_SUPABASE_URL`、`NEXT_PUBLIC_SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`NEXT_PUBLIC_SITE_URL`、`CHECKOUT_CANCEL_SECRET`の5件。
+- 未設定は`MANGAI_MARKETPLACE_CHECKOUT_MODE`、`STRIPE_SECRET_KEY`、`STRIPE_WEBHOOK_SECRET`、`MANGAI_MARKETPLACE_LIVE_ACCESS`、canary商品・売り手・買い手・期限・計画fingerprintの9件。site originだけREADYで、Supabase資格情報の値照合、live mode、runtime canary、Stripe liveはPENDINGを維持する。
+- scope preflightは不足したキーごとに必要なProduction-only／Sensitive属性を表示する。環境値、秘密値、Project ref、内部targetは出力しない回帰テストを追加した。
+- focused 10/10、Hub 1098/1098、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。
+- Production env、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。外部設定は対象計画とStripe live運用が確定した別承認後だけ行う。
+
+---
+
 ## 2026-09-28 Marketplace Production migration適用
 
 - 状態: `DRAFT_PR_542 / PRODUCTION_MIGRATIONS_APPLIED / POSTFLIGHT_PASSED / ALL_CI_AND_VERCEL_PASSED / LIVE_SALES_DISABLED`
