@@ -5,8 +5,10 @@ import {
   parseEnvironmentFile,
   resolveCandidateEnvironmentPath,
 } from "./check-marketplace-staging-deployment.mjs";
-
-const maximumProducts = 100;
+import {
+  assessMarketplaceProductionCanaryInventory,
+  maximumMarketplaceProductionCanaryProducts,
+} from "../src/modules/checkout/domain/production-canary-inventory.ts";
 
 const authorizedHeaders = (serviceRoleKey) => ({
   apikey: serviceRoleKey,
@@ -30,26 +32,6 @@ const readRows = async ({ fetchFn, label, serviceRoleKey, url }) => {
   return rows;
 };
 
-const check = (id, label, ready, missing) => ({
-  id,
-  label,
-  ready,
-  missing: ready ? [] : [missing],
-});
-
-const eligibleWork = (product) => {
-  const work =
-    product?.works && !Array.isArray(product.works) ? product.works : null;
-  return Boolean(
-    work &&
-      work.creator_id === product.creator_id &&
-      work.status === "published" &&
-      work.is_public === true &&
-      work.content_class === "general" &&
-      (!work.source_project_id || work.current_publication_id),
-  );
-};
-
 export async function runMarketplaceProductionCanaryInventory({
   environment,
   fetchFn = fetch,
@@ -63,7 +45,10 @@ export async function runMarketplaceProductionCanaryInventory({
   );
   productsUrl.searchParams.set("status", "eq.active");
   productsUrl.searchParams.set("order", "created_at.asc,id.asc");
-  productsUrl.searchParams.set("limit", String(maximumProducts + 1));
+  productsUrl.searchParams.set(
+    "limit",
+    String(maximumMarketplaceProductionCanaryProducts + 1),
+  );
 
   const products = await readRows({
     fetchFn,
@@ -71,15 +56,15 @@ export async function runMarketplaceProductionCanaryInventory({
     serviceRoleKey,
     url: productsUrl,
   });
-  const inventoryComplete = products.length <= maximumProducts;
+  const inventoryComplete =
+    products.length <= maximumMarketplaceProductionCanaryProducts;
   if (!inventoryComplete) {
+    const report = assessMarketplaceProductionCanaryInventory({
+      products,
+      profiles: [],
+    });
     return {
-      passed: false,
-      counts: {
-        checkedActiveProducts: maximumProducts,
-        eligibleProducts: 0,
-        eligibleSellers: 0,
-      },
+      ...report,
       safety: {
         requestMethods: ["GET"],
         identifiersPrinted: false,
@@ -89,20 +74,6 @@ export async function runMarketplaceProductionCanaryInventory({
         stripeRequest: false,
         paymentCreated: false,
       },
-      checks: [
-        check(
-          "bounded-inventory",
-          "Bounded complete inventory",
-          false,
-          "no more than 100 active products per operator review batch",
-        ),
-        check(
-          "eligible-products",
-          "Eligible canary products",
-          false,
-          "a complete inventory before candidate counting",
-        ),
-      ],
     };
   }
 
@@ -118,7 +89,10 @@ export async function runMarketplaceProductionCanaryInventory({
     const profilesUrl = new URL("/rest/v1/profiles", supabaseUrl);
     profilesUrl.searchParams.set("select", "id,role");
     profilesUrl.searchParams.set("id", `in.(${sellerIds.join(",")})`);
-    profilesUrl.searchParams.set("limit", String(maximumProducts));
+    profilesUrl.searchParams.set(
+      "limit",
+      String(maximumMarketplaceProductionCanaryProducts),
+    );
     profiles = await readRows({
       fetchFn,
       label: "Production seller inventory",
@@ -126,50 +100,13 @@ export async function runMarketplaceProductionCanaryInventory({
       url: profilesUrl,
     });
   }
-  const eligibleSellerIds = new Set(
-    profiles
-      .filter((profile) => ["creator", "admin"].includes(profile?.role))
-      .map((profile) => profile.id),
-  );
-  const eligibleProducts = products.filter((product) => {
-    const price = Number(product?.price);
-    return Boolean(
-      product?.status === "active" &&
-        eligibleSellerIds.has(product.creator_id) &&
-        Number.isInteger(price) &&
-        price >= 50 &&
-        price <= 1000 &&
-        typeof product.file_url === "string" &&
-        product.file_url.trim() &&
-        eligibleWork(product),
-    );
+  const report = assessMarketplaceProductionCanaryInventory({
+    products,
+    profiles,
   });
-  const eligibleSellers = new Set(
-    eligibleProducts.map((product) => product.creator_id),
-  ).size;
-  const hasEligibleProduct = eligibleProducts.length > 0;
-  const checks = [
-    check(
-      "bounded-inventory",
-      "Bounded complete inventory",
-      true,
-      "no more than 100 active products per operator review batch",
-    ),
-    check(
-      "eligible-products",
-      "Eligible canary products",
-      hasEligibleProduct,
-      "at least one 50-1,000 JPY active product with an eligible seller, file, and published public general-audience work",
-    ),
-  ];
 
   return {
-    passed: checks.every((item) => item.ready),
-    counts: {
-      checkedActiveProducts: products.length,
-      eligibleProducts: eligibleProducts.length,
-      eligibleSellers,
-    },
+    ...report,
     safety: {
       requestMethods: sellerIds.length > 0 ? ["GET", "GET"] : ["GET"],
       identifiersPrinted: false,
@@ -179,7 +116,6 @@ export async function runMarketplaceProductionCanaryInventory({
       stripeRequest: false,
       paymentCreated: false,
     },
-    checks,
   };
 }
 

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary候補管理画面
+
+- Branch: `codex/marketplace-production-canary-inventory-admin-20260928`
+- Base: `40f3b385`（PR #546 merge commit）
+- Production管理画面へ件数専用inventoryを追加した。管理者認証とProduction identity確認をservice role client作成より先に行い、既存CLIと同じ共有domain判定で候補商品・販売者を集計する。
+- 商品／作品／販売者の名称、氏名、メール、内部ID、file pathを表示しない。select以外のDB操作、Storage download、Stripe request、注文・決済・環境更新は行わない。
+- 集中12/12、Hub 1119/1119、lint、full typecheck、依存境界error 0（既知warning 2）、packages build、Webpack Production build、migration 88/88、RC repository structure成功。Production外部状態は未変更。次はdiff check、commit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary候補inventory
 
 - Branch: `codex/marketplace-production-canary-inventory-20260928`
