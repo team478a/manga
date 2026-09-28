@@ -118,6 +118,7 @@
     "marketplace:production:candidate:validate": "node scripts/check-marketplace-production-readiness.mjs --strict --candidate",
     "marketplace:production:canary-plan:create": "node scripts/create-marketplace-production-canary-plan.mjs",
     "marketplace:production:canary-plan:validate": "node scripts/check-marketplace-production-canary-plan.mjs",
+    "marketplace:production:canary-inventory": "node scripts/check-marketplace-production-canary-inventory.mjs",
     "marketplace:production:canary-bundle:validate": "node scripts/check-marketplace-production-canary-bundle.mjs",
     "marketplace:production:canary-target:preflight": "node scripts/check-marketplace-production-canary-target.mjs",
     "marketplace:staging:auth-expiry": "node scripts/check-marketplace-auth-expiry-staging.mjs",

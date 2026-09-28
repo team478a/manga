@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary候補inventory
+
+- Branch: `codex/marketplace-production-canary-inventory-20260928`
+- Base: `50215cc3`（PR #545 merge commit）
+- Production active商品と売り手ProfileをGETだけで読み、少額canary候補の商品数・売り手数だけを返すCLIを追加した。作品公開・一般区分・Cloud publication・file・roleを検査し、100件を上限とする。
+- 商品／作品／売り手ID、氏名、メール、名称、file pathを出力せず、Storage download、注文照会、Stripe request、mutationを行わない。
+- 集中19/19、Hub 1112/1112、依存境界error 0（既知warning 2）、lint、full typecheck、packages build、Webpack Production build、migration 88/88、RC repository structureが成功した。Vercel Production metadataにはSupabase 3変数がSensitiveで存在するが、CLI注入値は欠落したため外部接続前に停止した。repository外候補envを指定できるfallbackを追加した。
+- Production外部状態は未変更。次はcommit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary計画generator
 
 - Branch: `codex/marketplace-production-canary-plan-generator-20260928`
