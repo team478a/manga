@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary候補準備inventory
+
+- 状態: `READY_FOR_REVIEW / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-production-canary-preparation-inventory-20260928`。BaseはPR #548 merge commit `c65c0353`。
+- Production再確認でactive商品0件、候補商品0件、候補販売者0名を確認した。次の安全な判断材料として、activeだけでなくpausedを含む登録商品を最大100件までselectし、既存canary条件を満たす「有効化可能なpaused商品」と販売者の件数を管理画面へ追加した。
+- 価格、販売file、公開済み一般作品、Cloud publication固定、creator／admin roleを共有domain判定で検査する。商品名、作品名、氏名、メール、内部ID、file pathは画面へ出さない。この画面から商品作成・有効化・注文・Stripe接続は行わない。
+- 集中14/14、Hub 1121/1121、lint、全typecheck、依存境界error 0（既知warning 2）、packages build、Webpack Production build、migration 88/88、RC repository structure、diff check成功。
+- Production、Supabase、Stripe、商品、作品、注文、決済、環境変数、Provider、生成Job、credit、利用者データは変更していない。Draft PR [#549](https://github.com/team478a/manga/pull/549)を作成し、初回HEADのCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。merge後にProduction画面をread-onlyで再確認する。
+
+---
+
 ## 2026-09-28 Marketplace Production canary候補読取り修正
 
 - 状態: `READY_FOR_REVIEW / PRODUCTION_UNCHANGED`

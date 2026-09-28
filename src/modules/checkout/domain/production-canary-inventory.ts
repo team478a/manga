@@ -79,6 +79,13 @@ export type MarketplaceProductionCanaryInventoryReport = {
     eligibleProducts: number;
     eligibleSellers: number;
   };
+  preparation: {
+    ready: boolean;
+    checkedProducts: number;
+    pausedProducts: number;
+    activationReadyPausedProducts: number;
+    activationReadySellers: number;
+  };
   checks: MarketplaceProductionCanaryInventoryCheck[];
 };
 
@@ -133,6 +140,13 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         eligibleProducts: 0,
         eligibleSellers: 0,
       },
+      preparation: {
+        ready: false,
+        checkedProducts: maximumMarketplaceProductionCanaryProducts,
+        pausedProducts: 0,
+        activationReadyPausedProducts: 0,
+        activationReadySellers: 0,
+      },
       checks,
     };
   }
@@ -145,11 +159,12 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         : [],
     ),
   );
-  const eligibleProducts = input.products.filter((product) => {
+  const hasEligibleProductDetails = (
+    product: MarketplaceProductionCanaryProduct,
+  ) => {
     const price = Number(product.price);
     return Boolean(
-      product.status === "active" &&
-        typeof product.creator_id === "string" &&
+      typeof product.creator_id === "string" &&
         eligibleSellerIds.has(product.creator_id) &&
         Number.isInteger(price) &&
         price >= 50 &&
@@ -158,9 +173,22 @@ export function assessMarketplaceProductionCanaryInventory(input: {
         product.file_url.trim() &&
         hasEligibleWork(product),
     );
-  });
+  };
+  const eligibleProducts = input.products.filter(
+    (product) =>
+      product.status === "active" && hasEligibleProductDetails(product),
+  );
+  const pausedProducts = input.products.filter(
+    (product) => product.status === "paused",
+  );
+  const activationReadyPausedProducts = pausedProducts.filter(
+    hasEligibleProductDetails,
+  );
   const eligibleSellers = new Set(
     eligibleProducts.map((product) => String(product.creator_id)),
+  ).size;
+  const activationReadySellers = new Set(
+    activationReadyPausedProducts.map((product) => String(product.creator_id)),
   ).size;
   const checks = [
     check(
@@ -180,9 +208,18 @@ export function assessMarketplaceProductionCanaryInventory(input: {
   return {
     passed: checks.every((item) => item.ready),
     counts: {
-      checkedActiveProducts: input.products.length,
+      checkedActiveProducts: input.products.filter(
+        (product) => product.status === "active",
+      ).length,
       eligibleProducts: eligibleProducts.length,
       eligibleSellers,
+    },
+    preparation: {
+      ready: activationReadyPausedProducts.length > 0,
+      checkedProducts: input.products.length,
+      pausedProducts: pausedProducts.length,
+      activationReadyPausedProducts: activationReadyPausedProducts.length,
+      activationReadySellers,
     },
     checks,
   };
