@@ -1,13 +1,23 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace隔離Staging終了処理
+
+- PR #536 merge commit `46924a07`から`codex/marketplace-staging-cleanup-20260928`を作成した。
+- 責任者の終了承認後、Stripe test webhook endpoint 1件をtest mode・対象URL・Protection Bypassまで検査して削除した。削除応答は対象一致、`deleted=true`。
+- Vercel Preview scopeから今回追加したMarketplace／Staging用9変数だけを削除した。postflightは対象変数不在、ProductionのSupabase URL／anon key／service-role key／Cancel Secret残存。
+- Supabase Branch一覧で`marketplace-staging`が親Productionと異なる非default Preview Branchであることを再確認し、対象Branch IDだけを削除した。postflightのBranch一覧はHealthyなmain 1件だけ。
+- Preview Branch compute、合成DB／Auth／Storageは終了・削除済み。Production、Stripe live、実利用者データ、Provider、生成Job、creditは変更していない。
+- 証跡文書のdiff checkは成功。次はcommit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace決済失敗／全額返金の実Staging E2E
 
 - PR #535 merge commit `f31e18ee`から`codex/marketplace-failure-refund-e2e-20260928`を作成した。
 - 隔離Staging、branch Preview、`sk_test_`、既存test webhook endpoint、合成pending／paid注文、返金元PaymentIntentをfail closedで検査する`marketplace:staging:failure-refund`を追加した。
 - 責任者承認後、拒否PaymentIntentを1件作成し、Stripeの`payment_intent.payment_failed`実配送で合成注文`pending → failed`を確認した。続いて既存100円test PaymentIntentを全額返金し、`charge.refunded`実配送で`paid → refunded`を確認した。
 - webhook endpointは最新Previewへ一時的に向け、各操作後に元URLへ復元した。完了後に両コマンドを再実行し、追加PaymentIntent、追加返金、endpoint変更がない冪等性を確認した。
-- focused 5/5、Hub 1063/1063、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages／Next.js Webpack Production build、diff check成功。Production、Production DB／Storage、Stripe live、実利用者注文、Provider、生成Job、creditは変更していない。秘密値・payload・保護バイパスURLは出力、保存していない。
-- 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel成功で停止する。
+- focused 5/5、Hub 1063/1063、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages／Next.js Webpack Production build、diff check成功。Draft PR #536の全CI／Vercelは成功し、merge commitは`46924a07`。Production、Production DB／Storage、Stripe live、実利用者注文、Provider、生成Job、creditは変更していない。秘密値・payload・保護バイパスURLは出力、保存していない。
 
 ---
 
