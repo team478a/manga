@@ -2,7 +2,7 @@
 
 作成日: 2026-09-28
 対象: 一般向けMarketplaceのProduction限定販売
-状態: 計画・検証手順のみ。live販売は未有効化
+状態: Production migration適用済み。live販売は未有効化
 
 ## 目的
 
@@ -55,7 +55,7 @@ npm run marketplace:production:canary-plan:validate -- "C:\secure\marketplace-ca
 ### 1. 外部判断とProduction状態のread-only確認
 
 1. 法務・税務・Stripe運用の確定を記録する。
-2. Production migrationが正本87件と一致することをread-onlyで確認する。
+2. Production migrationは適用済み。`payment_mode`境界とlive重複購入防止indexのpostflightも成功した。
 3. Stripe live webhook endpointが正規Production URLだけを向き、必要eventだけを購読していることをread-onlyで確認する。
 4. 商品が対象売り手所有、販売可能、JPY価格が計画と一致し、downloadファイルが存在することをread-onlyで確認する。
 5. 購入者と売り手が異なることを確認する。
@@ -137,6 +137,6 @@ strictが失敗した場合は購入へ進まない。
 - 隔離Stagingの成功、失敗、全額返金、認可、署名URL失効は完了。
 - Production readiness preflightは実装済み。
 - Production canary対象のGET-only preflightは実装済み。実計画が未確定のため外部実行は未実施。
-- 1商品・売り手・買い手・期限・承認fingerprintを強制するruntime canary gateと、本番重複購入防止migrationは実装済み。migration適用と環境設定は未実施。
+- 1商品・売り手・買い手・期限・承認fingerprintを強制するruntime canary gateは実装済み。本番重複購入防止migrationと前提の`payment_mode` migrationはProductionへ適用済みで、環境設定は未実施。
 - Productionは正規originだけREADYで、live modeとStripe live資格情報は未設定。
 - canary計画検証器は外部接続しない。対象preflightはProductionへGETだけを行い、どちらも設定・商品・注文・決済を変更しない。

@@ -7,7 +7,7 @@
 
 `live`設定だけで販売中商品全体の購入経路が開かないよう、承認計画の1商品・売り手・買い手・期限・fingerprintをserver側で固定するruntime gateを追加した。
 
-環境変数、Production migration、商品、注文、Stripe、決済は変更していない。実計画が確定し、migrationとProduction限定設定が別途承認・適用されるまでは販売を開始できない。
+Production migrationは責任者承認後に適用済みである。環境変数、商品、注文、Stripe、決済は変更していない。実計画が確定し、Production限定設定が別途承認・適用されるまでは販売を開始できない。
 
 ## 多層防御
 
@@ -30,9 +30,15 @@
 
 ## 未実施
 
-- `202609280002_marketplace_live_single_purchase`のProduction適用。
 - Production限定canary環境変数の設定。
 - Stripe live資格情報とWebhookの設定。
 - 対象計画の確定、実購入、返金。
 
 これらはそれぞれ実行対象を固定した別の明示承認単位とする。
+
+## Production migration適用結果
+
+- `202609270001_marketplace_test_sales`を先行適用し、`payment_mode`列、`orders_payment_mode_check`、`orders_payment_mode_status_idx`を確認した。
+- 続いて`202609280002_marketplace_live_single_purchase`を適用し、`orders_live_single_purchase_idx`が想定どおりのunique partial indexであることを確認した。
+- postflightは注文0件、live重複group 0件、不正`payment_mode` 0件。
+- Vercel環境、Stripe、商品、注文、決済、返金、Provider、生成Job、creditは変更していない。

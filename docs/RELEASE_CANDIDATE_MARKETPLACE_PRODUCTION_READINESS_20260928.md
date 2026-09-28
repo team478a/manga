@@ -44,7 +44,7 @@ preflight実行中にProduction環境変数、Supabase、Stripe、注文、決�
 ## 販売開始前に残る外部判断
 
 1. Stripe liveアカウント、入金先、特商法・利用規約・返金方針・税務運用を責任者が確定する。
-2. Production migration適用状態をread-only照合する。
+2. Production migration適用状態は照合・適用・postflight済み。`payment_mode`境界とlive重複購入防止indexが有効で、重複0件を確認した。
 3. live webhook endpointと購読eventをread-only照合する。
 4. Production専用のlive資格情報を候補preflightへ通す。
 5. 別の明示承認後だけVercel Productionへ設定し、1商品・少額・限定購入者でcanary販売する。
