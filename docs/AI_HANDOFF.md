@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production 1件canary販売計画（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-runbook-20260928`、Base `83fd4ff8`（PR #538 merge commit）。Production live販売を開始せず、1件canaryの計画境界だけを実装した。
+- repository外の固定JSONを、1商品、異なる売り手／買い手、1回、50〜1,000円、最大24時間、受入れ失敗時の返金へ制限し、合格時だけSHA-256 fingerprintを発行する。
+- 余分なfield、PII・自由記述、Preview／test、誤origin、不正UUID、本人購入、複数購入、高額、期限切れを拒否する。結果へ計画値と内部IDを出さず、Production／Stripeへ接続しない。
+- canary runbookは外部判断、read-only照合、候補env、設定適用、1回購入、postflight、停止・返金を分離し、各mutationを別承認とした。
+- 集中9/9、Marketplace関連22/22、Hub 1080/1080、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 87/87、RC Repository structure、diff check成功。通常Turbopackは外部`node_modules` junctionを拒否した既知の環境制約。
+- Production、Vercel、Supabase、Stripe、商品、注文、決済、返金、Provider、Job、credit、利用者データは変更していない。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace Production限定販売 readiness preflight（2026-09-28）
 
 - Branch `codex/marketplace-production-readiness-20260928`、Base `c942b4d2`（PR #537 merge commit）。Staging受入れと終了後、Productionのlive販売条件を変更なしで監査するpreflightを追加した。
