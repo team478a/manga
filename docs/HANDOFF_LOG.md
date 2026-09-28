@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Marketplace Cloud完成版migration Production適用
+
+- Branch: `codex/marketplace-publication-production-apply-evidence-20260929`。Base: `37daed06`（PR #556 merge commit）。
+- 明示承認されたmigration `202608140004_cloud_work_publications`を、SHA-256 `eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa`とSQL Editor全文一致の再確認後、Productionへ1回適用した。結果は`Success. No rows returned`。
+- Postflightでmigrationの2 table、3 works列、2 RPC、2 trigger、3 index、2 policy、RLSを確認し、すべて存在／有効。publication、publication page、固定済み作品、active Cloud商品は0件。
+- Production管理画面`/admin/marketplace-canary`は`already-applied`を表示。Cloud作品1件、active商品0件、公開済みCloud作品0件、active Cloud商品0件、重複Project mapping 0件。
+- read-only SELECTのEditor置換残りによる構文エラーが1回あったが、mutationは0件。全文置換後の再実行は成功した。
+- 作品公開、publication固定、商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データ、Vercel環境変数は変更していない。RC repository structure、`git diff --check`成功。外部設定と手動E2Eは既知`PENDING`。次は文書のみをcommit／push／Draft PR化し、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-29 Codex: Marketplace Cloud完成版migration Production適用前監査
 
 - Branch: `codex/marketplace-publication-readiness-production-audit-20260929`。Base: `a4d5c4c8`（PR #555 merge commit）。
