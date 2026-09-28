@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Marketplace Cloud完成版migration 管理画面readiness
+
+- Branch: `codex/marketplace-publication-readiness-admin-20260929`。Base: `08781728`（PR #554 merge commit）。
+- Vercel Production env pullの一時fileを使ってCLI preflightを再試行したが、Sensitive Supabase値は取得できず、`NEXT_PUBLIC_SUPABASE_URL`不足で接続前に停止した。Supabase request 0件、一時file削除済み、Production変更なし。
+- `/admin/marketplace-canary`へ、admin認証・Production runtime・正規origin guard後だけ実行するread-only publication migration集計を追加した。CLIから共有domainへ判定を分離し、管理画面とCLIの停止条件を一致させた。
+- 画面はschema状態、6つのREADY／PENDING、Cloud作品・active商品・公開済みCloud作品・active Cloud商品・Project重複の件数だけを表示する。個人情報・識別子・file path・秘密値を表示せず、適用操作を提供しない。
+- focused 23/23、Hub 1135/1135、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC structure、diff check成功。
+- Production DB、schema、商品、作品、販売状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは未変更。
+- 次はcommit、push、Draft PR、全CI／Vercel成功で停止する。merge後のProduction画面確認はread-only、migration適用は対象ID・checksumを含む別承認単位とする。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Cloud完成版migration適用前readiness
 
 - Branch: `codex/marketplace-publication-migration-readiness-20260928`。Base: `9cb283e4`（PR #553 merge commit）。

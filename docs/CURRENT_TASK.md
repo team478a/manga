@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Marketplace Cloud完成版migration 管理画面readiness
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_CONNECTION_BLOCKED_BEFORE_REQUEST / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-publication-readiness-admin-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`08781728`（PR #554 merge commit）。
+- Vercel CLIではSensitiveなProduction Supabase資格情報を取得できず、外部preflightは接続前の`NEXT_PUBLIC_SUPABASE_URL`不足で停止した。Supabase request 0件、一時env fileは削除済み。
+- 資格情報を端末へ持ち出さず確認するため、Production管理者ページ`/admin/marketplace-canary`へCloud完成版migration適用前確認を追加した。admin認証とProduction runtime／正規origin guard通過後だけ、schema probe、Cloud作品、active商品のSELECTを行う。
+- CLI判定を共有domainへ移し、管理画面とCLIが依存schema、未適用／部分適用／適用済み状態、100件上限、公開済みCloud作品、active Cloud商品、Cloud Project重複を同一条件でfail closed判定する。
+- 画面表示はschema状態、6つのREADY／PENDING、匿名件数のみ。ID、名称、メール、file path、秘密値は表示せず、migration適用buttonやDB mutation経路を持たない。
+- 検証: focused 23/23、Hub 1135/1135、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure、diff check成功。
+- Production DB、schema、商品、作品、販売状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは変更していない。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後はProduction管理画面でread-only結果を記録し、migration適用は対象IDとSHA-256を示す別の実行時明示承認を待つ。
+
+---
+
 ## 2026-09-28 Marketplace Cloud完成版migration適用前readiness
 
 - 状態: `DRAFT_PR_554 / INITIAL_ALL_CI_AND_VERCEL_PASSED / PRODUCTION_PREFLIGHT_BLOCKED_BEFORE_CONNECTION / PRODUCTION_UNCHANGED`

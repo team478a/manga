@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Cloud完成版migration 管理画面readiness（2026-09-29）
+
+- Branch `codex/marketplace-publication-readiness-admin-20260929`、Base `08781728`（PR #554 merge commit）。Vercel CLIのProduction env pullではSensitive値を取得できず、CLI preflightはSupabase接続前に停止した。request 0件、一時file削除済み。
+- Production資格情報を端末へ出さず確認するため、`/admin/marketplace-canary`へpublication migration適用前のread-only集計を追加した。`requireAdmin()`、Production runtime、正規originの順にguardし、その後だけservice roleでSELECTする。
+- CLIの判定を共有domainへ移し、管理画面も依存schema、artifact状態、100件上限、公開済みCloud作品、active Cloud商品、Project重複を同じ条件で判定する。部分適用・適用済み・read失敗は再適用へ進めない。
+- 表示はschema状態、6判定、匿名件数だけ。ID、名称、メール、file path、秘密値を表示せず、migration適用、作品公開、publication固定、商品active化、Stripe、Storage、Provider、Job、credit操作を行わない。
+- focused 23/23、Hub 1135/1135、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC structure、diff check成功。
+- 次: Draft PRの全CI／Vercel成功まで確認する。merge後にProduction管理画面で匿名結果を記録し、対象migration `202608140004_cloud_work_publications`の適用はSHA-256再照合と別の実行時明示承認を必要とする。
+
+---
+
 ## 0.0 Marketplace Cloud完成版migration適用前readiness（2026-09-28）
 
 - Branch `codex/marketplace-publication-migration-readiness-20260928`、Base `9cb283e4`（PR #553 merge commit）。Production管理画面のread-only再確認はChrome拡張接続の連続timeoutで変更なしのまま停止し、未適用migrationの安全な次工程を先に実装した。

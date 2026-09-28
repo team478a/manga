@@ -2,6 +2,7 @@ import { CircleAlert, CircleCheck, LockKeyhole, Store } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { loadAdminMarketplaceProductionCanaryInventory } from "@/modules/checkout/infrastructure/admin-production-canary-inventory-repository";
+import { loadAdminMarketplacePublicationMigrationReadiness } from "@/modules/checkout/infrastructure/admin-publication-migration-readiness-repository";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +11,24 @@ const checkLabels = {
   "eligible-products": "canary候補商品あり",
 } as const;
 
+const migrationCheckLabels = {
+  dependencies: "依存schemaが揃っている",
+  "pre-apply-state": "未適用schemaが一貫している",
+  "inventory-complete": "対象件数を上限内で全件確認できる",
+  "unpublished-cloud-works": "未固定の公開済みCloud作品がない",
+  "inactive-cloud-products": "未固定Cloud作品に紐づくactive商品がない",
+  "unique-project-work": "1つのCloud Projectに作品が重複していない",
+} as const;
+
 export default async function AdminMarketplaceCanaryPage() {
   await requireAdmin();
   const inventory = await safelyLoadAdminData(
     "marketplace-production-canary-inventory",
     () => loadAdminMarketplaceProductionCanaryInventory(),
+  );
+  const migrationReadiness = await safelyLoadAdminData(
+    "marketplace-publication-migration-readiness",
+    () => loadAdminMarketplacePublicationMigrationReadiness(),
   );
 
   return (
@@ -202,6 +216,95 @@ export default async function AdminMarketplaceCanaryPage() {
           </section>
         </>
       )}
+
+      <section className="panel mt-6" aria-labelledby="publication-migration-heading">
+        <h2 className="text-xl font-bold" id="publication-migration-heading">
+          Cloud完成版migration 適用前確認
+        </h2>
+        <p className="mt-2 leading-relaxed text-stone-600">
+          Production資格情報を端末へ取り出さず、依存schema・未適用状態・既存Cloud作品と商品を読み取り専用で確認します。この画面からmigrationは適用できません。
+        </p>
+
+        {!migrationReadiness.ok ? (
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4" role="status">
+            <div className="flex items-start gap-3">
+              <CircleAlert aria-hidden="true" className="mt-1 h-5 w-5 text-amber-700" />
+              <div>
+                <h3 className="font-bold text-amber-950">現在は適用前条件を確認できません</h3>
+                <p className="mt-1 text-sm leading-relaxed text-amber-900">
+                  Production管理画面で再読み込みし、同じ状態が続く場合は接続設定を確認してください。誤った判定で適用を進めることはありません。
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              className={`mt-4 rounded-2xl border p-4 ${
+                migrationReadiness.value.passed
+                  ? "border-emerald-200 bg-emerald-50"
+                  : "border-amber-200 bg-amber-50"
+              }`}
+              role="status"
+            >
+              <div className="flex items-start gap-3">
+                {migrationReadiness.value.passed ? (
+                  <CircleCheck aria-hidden="true" className="mt-1 h-5 w-5 text-emerald-700" />
+                ) : (
+                  <CircleAlert aria-hidden="true" className="mt-1 h-5 w-5 text-amber-700" />
+                )}
+                <div>
+                  <h3 className="font-bold">
+                    {migrationReadiness.value.passed
+                      ? "適用前条件を満たしています"
+                      : migrationReadiness.value.state === "already-applied"
+                        ? "migration artifactは適用済みです"
+                        : migrationReadiness.value.state === "partial"
+                          ? "部分適用状態のため停止しています"
+                          : "適用前に確認が必要です"}
+                  </h3>
+                  <p className="mt-1 text-sm leading-relaxed">
+                    schema状態: {migrationReadiness.value.state}。確認はSELECTのみで、作品公開、商品変更、決済、ファイル取得は行いません。
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+              {[
+                ["確認したCloud作品", migrationReadiness.value.counts.checkedCloudWorks],
+                ["確認したactive商品", migrationReadiness.value.counts.checkedActiveProducts],
+                ["公開済みCloud作品", migrationReadiness.value.counts.publicOrPublishedCloudWorks],
+                ["active Cloud商品", migrationReadiness.value.counts.activeCloudProducts],
+                ["重複Project mapping", migrationReadiness.value.counts.duplicateCloudProjectMappings],
+              ].map(([label, count]) => (
+                <div className="flex items-center justify-between gap-3 rounded-xl border border-stone-200 bg-white p-3" key={label}>
+                  <dt>{label}</dt>
+                  <dd className="font-semibold">{count}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <ul className="mt-4 space-y-2">
+              {migrationReadiness.value.checks.map((check) => (
+                <li className="flex items-center gap-3 text-sm" key={check.id}>
+                  {check.ready ? (
+                    <CircleCheck aria-hidden="true" className="h-4 w-4 text-emerald-700" />
+                  ) : (
+                    <CircleAlert aria-hidden="true" className="h-4 w-4 text-amber-700" />
+                  )}
+                  <span>{migrationCheckLabels[check.id]}</span>
+                  <span className="font-semibold">{check.ready ? "READY" : "PENDING"}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        <p className="mt-4 text-sm leading-relaxed text-stone-600">
+          READYでも適用は自動実行しません。原本SHA-256の再照合と責任者の明示承認後に、別工程で1回だけ適用します。
+        </p>
+      </section>
 
       <section className="panel mt-6 border-violet-200 bg-violet-50">
         <div className="flex items-start gap-3">

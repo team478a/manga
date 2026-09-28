@@ -5,14 +5,19 @@ import {
   parseEnvironmentFile,
   resolveCandidateEnvironmentPath,
 } from "./check-marketplace-staging-deployment.mjs";
+import {
+  assessMarketplacePublicationMigrationReadiness,
+  marketplacePublicationMigration,
+  maximumMarketplacePublicationMigrationInventoryRows,
+} from "../src/modules/checkout/domain/publication-migration-readiness.ts";
 
-export const marketplacePublicationMigration = Object.freeze({
-  checksumSha256:
-    "eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa",
-  id: "202608140004_cloud_work_publications",
-});
+export {
+  assessMarketplacePublicationMigrationReadiness,
+  marketplacePublicationMigration,
+};
 
-const maximumInventoryRows = 100;
+const maximumInventoryRows =
+  maximumMarketplacePublicationMigrationInventoryRows;
 const missingSchemaCodes = new Set(["42P01", "42703", "PGRST204", "PGRST205"]);
 
 const authorizedHeaders = (serviceRoleKey) => ({
@@ -74,127 +79,6 @@ const relationProbeUrl = (supabaseUrl, relation, columns) => {
   url.searchParams.set("limit", "0");
   return url;
 };
-
-const check = (id, label, ready, missing) => ({
-  id,
-  label,
-  ready,
-  missing: ready ? [] : [missing],
-});
-
-export function assessMarketplacePublicationMigrationReadiness({
-  activeProducts = [],
-  artifacts,
-  cloudWorks = [],
-  dependencies,
-}) {
-  const artifactValues = Object.values(artifacts);
-  const artifactState = artifactValues.every(Boolean)
-    ? "already-applied"
-    : artifactValues.every((value) => !value)
-      ? "not-applied"
-      : "partial";
-  const inventoryComplete =
-    cloudWorks.length <= maximumInventoryRows &&
-    activeProducts.length <= maximumInventoryRows;
-  const inspectedCloudWorks = cloudWorks.slice(0, maximumInventoryRows);
-  const inspectedActiveProducts = activeProducts.slice(0, maximumInventoryRows);
-  const cloudWorkIds = new Set(
-    inspectedCloudWorks
-      .map((work) => work?.id)
-      .filter((value) => typeof value === "string" && value),
-  );
-  const sourceProjectCounts = new Map();
-  let publicOrPublishedCloudWorks = 0;
-  for (const work of inspectedCloudWorks) {
-    if (work?.is_public === true || work?.status === "published")
-      publicOrPublishedCloudWorks += 1;
-    if (typeof work?.source_project_id === "string" && work.source_project_id) {
-      sourceProjectCounts.set(
-        work.source_project_id,
-        (sourceProjectCounts.get(work.source_project_id) ?? 0) + 1,
-      );
-    }
-  }
-  const duplicateCloudProjectMappings = [...sourceProjectCounts.values()].filter(
-    (count) => count > 1,
-  ).length;
-  const activeCloudProducts = inspectedActiveProducts.filter(
-    (product) =>
-      typeof product?.work_id === "string" && cloudWorkIds.has(product.work_id),
-  ).length;
-  const dependenciesReady = Object.values(dependencies).every(Boolean);
-  const dataReady =
-    inventoryComplete &&
-    publicOrPublishedCloudWorks === 0 &&
-    activeCloudProducts === 0 &&
-    duplicateCloudProjectMappings === 0;
-  const migrationReady =
-    dependenciesReady && artifactState === "not-applied" && dataReady;
-
-  return {
-    passed: migrationReady,
-    migration: marketplacePublicationMigration,
-    state: artifactState,
-    checks: [
-      check(
-        "dependencies",
-        "Migration dependency schema",
-        dependenciesReady,
-        "one or more required relations or columns are unavailable",
-      ),
-      check(
-        "pre-apply-state",
-        "Clean pre-apply schema state",
-        artifactState === "not-applied",
-        artifactState === "already-applied"
-          ? "migration artifacts already exist; do not apply again"
-          : "migration artifacts are partially present; stop and inspect",
-      ),
-      check(
-        "inventory-complete",
-        "Bounded Production inventory",
-        inventoryComplete,
-        `more than ${maximumInventoryRows} Cloud works or active products require a paginated audit`,
-      ),
-      check(
-        "unpublished-cloud-works",
-        "No pre-existing published Cloud works without a fixed publication",
-        publicOrPublishedCloudWorks === 0,
-        "published or public Cloud-linked works require remediation before migration",
-      ),
-      check(
-        "inactive-cloud-products",
-        "No active product linked to a pre-migration Cloud work",
-        activeCloudProducts === 0,
-        "active Cloud-linked products require remediation before migration",
-      ),
-      check(
-        "unique-project-work",
-        "One work per Cloud project",
-        duplicateCloudProjectMappings === 0,
-        "duplicate work mappings for a Cloud project require remediation",
-      ),
-    ],
-    counts: {
-      activeCloudProducts,
-      checkedActiveProducts: Math.min(
-        activeProducts.length,
-        maximumInventoryRows,
-      ),
-      checkedCloudWorks: Math.min(cloudWorks.length, maximumInventoryRows),
-      duplicateCloudProjectMappings,
-      publicOrPublishedCloudWorks,
-    },
-    safety: {
-      identifiersPrinted: false,
-      personalDataSelected: false,
-      productionMutation: false,
-      requestMethods: ["GET"],
-      stripeRequest: false,
-    },
-  };
-}
 
 export async function runMarketplacePublicationMigrationReadiness({
   environment,
