@@ -14,11 +14,11 @@ Vercel Sensitiveとして登録されたProduction Supabase資格情報をoperat
 - `requireAdmin()`を通過した管理者だけが表示できる。
 - `VERCEL_ENV=production`かつ`NEXT_PUBLIC_SITE_URL=https://app.mang-ai.com`の場合だけDBを読む。
 - Preview、local、誤origin、DB読取り失敗では件数を表示せず安全側に停止する。
-- 表示する集計は確認したactive商品数、候補商品数、候補販売者数だけである。
+- 表示する集計は確認したactive商品数、候補商品数、候補販売者数に加え、全登録商品、paused商品、有効化可能なpaused商品とその販売者の件数だけである。
 
 ## 判定条件
 
-- active商品は最大100件。101件以上は部分集計をREADYにしない。
+- 全登録商品は最大100件。101件以上は部分集計をREADYにしない。
 - 価格は50〜1,000円の整数。
 - 販売fileが登録済み。
 - 作品は公開、published、一般向けで、商品と同じ販売者に属する。
@@ -26,6 +26,8 @@ Vercel Sensitiveとして登録されたProduction Supabase資格情報をoperat
 - 販売者roleはcreatorまたはadmin。
 
 条件は前段CLIと同じ共有domain判定を使用する。
+
+paused商品は同じ条件から販売状態だけを除いて検査し、条件を満たす場合のみ有効化前候補として数える。管理画面から販売状態は変更しない。
 
 ## データ最小化と安全境界
 
@@ -43,8 +45,8 @@ Vercel Sensitiveとして登録されたProduction Supabase資格情報をoperat
 
 ## 検証
 
-- 集中テスト: 12/12成功
-- Hub test: 1119/1119成功
+- 集中テスト: 14/14成功
+- Hub test: 1121/1121成功
 - lint、full typecheck: 成功
 - 依存境界: error 0、既知warning 2
 - packages build、Webpack Production build: 成功

@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary候補準備inventory
+
+- Branch: `codex/marketplace-production-canary-preparation-inventory-20260928`
+- Base: `c65c0353`（PR #548 merge commit）
+- Productionでactive商品0件をread-only確認したため、全登録商品を最大100件で監査し、paused商品のうちcanary条件を満たす件数と販売者数を管理画面へ追加した。
+- 価格、file、作品公開・一般区分、Cloud publication、所有者、販売者roleを既存共有domainで検査する。名称、氏名、メール、内部ID、file pathは表示せず、select以外のDB操作、Storage download、Stripe requestを行わない。
+- 集中14/14、Hub 1121/1121、lint、全typecheck、deps error 0（既知warning 2）、packages／Webpack Production build、migration 88/88、RC structure、diff check成功。
+- Production外部状態は未変更。次はDraft PRと全CI／Vercel確認。merge後にpaused候補件数をProductionで再確認し、商品作成または有効化は別の明示承認単位とする。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary候補読取り修正
 
 - Branch: `codex/marketplace-production-canary-inventory-diagnostics-20260928`

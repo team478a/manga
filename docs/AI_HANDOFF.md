@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary候補準備inventory（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-preparation-inventory-20260928`、Base `c65c0353`（PR #548 merge commit）。Productionでactive商品・候補商品が0件だったため、既存paused商品から有効化前候補を探す件数監査を追加した。
+- 全登録商品を最大100件までselectし、価格、file、一般公開作品、Cloud publication、販売者roleを満たすpaused商品と販売者の件数だけを表示する。商品作成・状態変更・Stripe接続は行わず、識別子・名称・メール・file pathを表示しない。
+- 集中14/14、Hub 1121/1121、lint、全typecheck、依存境界error 0（既知warning 2）、packages／Webpack Production build、migration 88/88、RC structure、diff check成功。Production外部状態は未変更。
+- 次はcommit／push／Draft PR、全CI／Vercel成功で停止する。merge後のProduction確認を経て、商品準備は別承認で進める。
+
+---
+
 ## 0.0 Marketplace Production canary候補読取り修正（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-inventory-diagnostics-20260928`、Base `ac907b62`（PR #547 merge commit）。Production管理画面は認証・runtime guardを通過したが、PostgREST埋め込みrelationship queryで安全停止した。

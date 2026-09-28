@@ -41,7 +41,6 @@ export async function loadAdminMarketplaceProductionCanaryInventory(
   const productsResult = await admin
     .from("digital_products")
     .select("id,work_id,creator_id,price,status,file_url")
-    .eq("status", "active")
     .order("created_at", { ascending: true })
     .order("id", { ascending: true })
     .limit(maximumMarketplaceProductionCanaryProducts + 1);
