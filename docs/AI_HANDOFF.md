@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Cloud完成版migration適用前readiness（2026-09-28）
+
+- Branch `codex/marketplace-publication-migration-readiness-20260928`、Base `9cb283e4`（PR #553 merge commit）。Production管理画面のread-only再確認はChrome拡張接続の連続timeoutで変更なしのまま停止し、未適用migrationの安全な次工程を先に実装した。
+- `202608140004_cloud_work_publications`（SHA-256 `eaf9d6af5febdad9c8e78c3de80c2181a30afac60f3572a6758d82e1e247b7aa`）の適用前に、依存schema、artifact未適用状態、公開済みCloud作品、active Cloud商品、Cloud Project重複、100件上限をProduction GETだけで判定する。
+- 出力はschema状態と匿名件数だけ。ID、名称、メール、file path、環境値、秘密値は出力せず、個人情報列、Storage、Stripe、Providerへアクセスしない。部分適用、適用済み、101件以上、危険な既存データをfail closedで停止する。
+- focused 6/6、Hub 1132/1132、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC structure、diff check成功。
+- Vercel Production環境の一時注入も試したが、SensitiveなSupabase値はCLIで取得できず、接続前の不足判定で停止した。Production外部preflight、migration適用、作品公開、publication固定、商品active化、live購入は未実施。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production適用は対象ID・checksumを含む実行時の明示承認を別途必要とする。
+
+---
+
 ## 0.0 Marketplace Production canary候補化readiness（2026-09-28）
 
 - Branch `codex/marketplace-canary-remediation-readiness-20260928`、Base `3725b927`（PR #552 merge commit）。paused商品がcanary候補になるまでに必要な確認を、相互排他的な件数として判定する。

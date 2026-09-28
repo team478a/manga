@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Cloud完成版migration適用前readiness
+
+- Branch: `codex/marketplace-publication-migration-readiness-20260928`。Base: `9cb283e4`（PR #553 merge commit）。
+- Production管理画面`/admin/marketplace-canary`のread-only再確認を試みたが、既存Chromeタブ、新規接続、再初期化後の接続がいずれもCDP timeoutとなった。画面操作、DB操作、外部状態変更は行わず停止した。
+- 未適用の`202608140004_cloud_work_publications`へ進む前に、対象SHA-256、依存schema、clean pre-apply状態、公開済みCloud作品、active Cloud商品、Cloud Project重複、100件上限をGETだけで検証するCLIと6件の回帰テストを追加した。
+- schema状態と件数だけを出力し、商品・作品・Project・利用者ID、名称、メール、file path、秘密値を出力しない。部分適用と適用済みも再適用せずfail closedで停止する。
+- focused 6/6、Hub 1132/1132、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure、diff check成功。
+- `vercel env run -e production`はSensitiveなSupabase値をCLIへ取得できず、接続前に不足として停止した。Production requestは0件で、DB、schema、商品、作品、販売状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは未変更。
+- 次はcommit／push／Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用は別の実行時明示承認を待つ。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary候補化readiness
 
 - Branch: `codex/marketplace-canary-remediation-readiness-20260928`。Base: `3725b927`（PR #552 merge commit）。
