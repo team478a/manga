@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStripeClient } from "@/lib/stripe";
+import { assertMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
 import {
   requireMarketplaceCheckoutMode,
   type OrderPaymentMode,
@@ -36,6 +37,8 @@ type CheckoutOrder = {
       title: string;
       is_public: boolean;
       content_class: "general" | "adult";
+      source_project_id: string | null;
+      current_publication_id: string | null;
     } | null;
   } | null;
 };
@@ -63,7 +66,7 @@ export async function createStripeCheckoutSession({
   const { data: checkoutOrder, error: checkoutOrderError } = await supabase
     .from("orders")
     .select(
-      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class))",
+      "id,buyer_email,buyer_profile_id,product_id,creator_id,amount,status,payment_mode,digital_products:product_id(id,title,description,status,creator_id,works:work_id(id,title,is_public,content_class,source_project_id,current_publication_id))",
     )
     .eq("id", orderId)
     .eq("product_id", productId)
@@ -81,6 +84,12 @@ export async function createStripeCheckoutSession({
     buyerEmail,
     paymentMode: configuredPaymentMode,
   });
+  assertMarketplaceCanaryCheckoutTarget({
+    buyerProfileId: order.buyer_profile_id,
+    paymentMode: configuredPaymentMode,
+    productId: order.product_id,
+    sellerProfileId: order.creator_id,
+  });
   const normalizedEmail = normalizeBuyerEmail(buyerEmail);
   const siteUrl = resolveCheckoutDeploymentOrigin({
     requestOrigin: origin,
@@ -95,32 +104,25 @@ export async function createStripeCheckoutSession({
   if (order.buyer_profile_id)
     buyerMetadata.buyer_profile_id = order.buyer_profile_id;
   try {
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      customer_email: normalizedEmail,
-      line_items: [
-        {
-          price_data: {
-            currency: "jpy",
-            product_data: {
-              name: order.digital_products.title,
-              description: order.digital_products.description ?? undefined,
+    const session = await stripe.checkout.sessions.create(
+      {
+        mode: "payment",
+        customer_email: normalizedEmail,
+        line_items: [
+          {
+            price_data: {
+              currency: "jpy",
+              product_data: {
+                name: order.digital_products.title,
+                description: order.digital_products.description ?? undefined,
+              },
+              unit_amount: order.amount,
             },
-            unit_amount: order.amount,
+            quantity: 1,
           },
-          quantity: 1,
-        },
-      ],
-      success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/checkout/cancel?order_id=${order.id}&cancel_token=${cancelToken}`,
-      metadata: {
-        order_id: order.id,
-        product_id: order.product_id,
-        creator_id: order.creator_id,
-        payment_mode: configuredPaymentMode,
-        ...buyerMetadata,
-      },
-      payment_intent_data: {
+        ],
+        success_url: `${siteUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${siteUrl}/checkout/cancel?order_id=${order.id}&cancel_token=${cancelToken}`,
         metadata: {
           order_id: order.id,
           product_id: order.product_id,
@@ -128,8 +130,18 @@ export async function createStripeCheckoutSession({
           payment_mode: configuredPaymentMode,
           ...buyerMetadata,
         },
+        payment_intent_data: {
+          metadata: {
+            order_id: order.id,
+            product_id: order.product_id,
+            creator_id: order.creator_id,
+            payment_mode: configuredPaymentMode,
+            ...buyerMetadata,
+          },
+        },
       },
-    });
+      { idempotencyKey: `marketplace-checkout-${order.id}` },
+    );
     if (!session.url)
       throw new ProviderUnavailableError(
         "Stripe CheckoutのURLを作成できませんでした。",

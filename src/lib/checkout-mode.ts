@@ -1,4 +1,5 @@
 import { ProviderUnavailableError } from "./domain-errors.ts";
+import { inspectMarketplaceLiveCanary } from "./checkout-canary.ts";
 
 export type MarketplaceCheckoutMode = "disabled" | "test" | "live";
 export type OrderPaymentMode = Exclude<MarketplaceCheckoutMode, "disabled">;
@@ -112,6 +113,18 @@ export function inspectMarketplaceCheckoutMode(
           ? "Stripeテスト環境の設定が一致しないため、テスト購入を開始できません。"
           : "Stripe本番環境の設定が一致しないため、購入手続きを開始できません。",
     };
+  }
+
+  if (mode === "live") {
+    const canary = inspectMarketplaceLiveCanary(environment);
+    if (!canary.enabled) {
+      return {
+        configuredMode: mode,
+        enabled: false,
+        paymentMode: null,
+        reason: canary.reason,
+      };
+    }
   }
 
   return {

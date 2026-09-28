@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { yen } from "@/lib/format";
+import { isMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { createClient } from "@/lib/supabase/server";
 import type { DigitalProduct, Work } from "@/lib/types";
@@ -23,6 +24,20 @@ export default async function WorkDetailPage({
 
   if (!work) notFound();
   const checkout = inspectMarketplaceCheckoutMode();
+  let buyerProfileId: string | null = null;
+  if (checkout.enabled && checkout.paymentMode === "live") {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle<{ id: string }>();
+      buyerProfileId = profile?.id ?? null;
+    }
+  }
 
   const { data: products } = await supabase
     .from("digital_products")
@@ -102,29 +117,43 @@ export default async function WorkDetailPage({
         ) : null}
         <div className="mt-4 grid gap-4">
           {products?.length ? (
-            products.map((product) => (
-              <div
-                className="panel flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-                key={product.id}
-              >
-                <div>
-                  <h3 className="text-xl font-bold">{product.title}</h3>
-                  <p className="mt-1 text-stone-600">{product.description}</p>
+            products.map((product) => {
+              const canPurchase = Boolean(
+                checkout.enabled &&
+                  checkout.paymentMode &&
+                  isMarketplaceCanaryCheckoutTarget({
+                    buyerProfileId,
+                    paymentMode: checkout.paymentMode,
+                    productId: product.id,
+                    sellerProfileId: product.creator_id,
+                  }),
+              );
+              return (
+                <div
+                  className="panel flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                  key={product.id}
+                >
+                  <div>
+                    <h3 className="text-xl font-bold">{product.title}</h3>
+                    <p className="mt-1 text-stone-600">{product.description}</p>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:items-end">
+                    <p className="text-2xl font-bold">
+                      税込 {yen(product.price)}
+                    </p>
+                    {canPurchase ? (
+                      <Link className="button" href={`/checkout/${product.id}`}>
+                        {checkout.paymentMode === "test" ? "テスト購入" : "購入する"}
+                      </Link>
+                    ) : (
+                      <span className="rounded-md bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-600">
+                        {checkout.paymentMode === "live" ? "限定販売中" : "購入準備中"}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2 sm:items-end">
-                  <p className="text-2xl font-bold">
-                    税込 {yen(product.price)}
-                  </p>
-                  {checkout.enabled ? (
-                    <Link className="button" href={`/checkout/${product.id}`}>
-                      {checkout.paymentMode === "test" ? "テスト購入" : "購入する"}
-                    </Link>
-                  ) : (
-                    <span className="rounded-md bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-600">購入準備中</span>
-                  )}
-                </div>
-              </div>
-            ))
+              );
+            })
           ) : (
             <p className="mt-3 text-lg text-stone-600">
               販売中の商品はまだありません。

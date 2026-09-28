@@ -4,6 +4,7 @@ import {
   resolveMarketplaceProductionTargetEnvironment,
   runMarketplaceProductionCanaryTargetPreflight,
 } from "../scripts/check-marketplace-production-canary-target.mjs";
+import { assessMarketplaceProductionCanaryPlan } from "../scripts/check-marketplace-production-canary-plan.mjs";
 
 const now = Date.parse("2026-09-28T03:00:00.000Z");
 const plan = () => ({
@@ -85,6 +86,45 @@ test("Production対象をGETだけで照合しREADYにする", async () => {
     stripeRequest: false,
     paymentCreated: false,
   });
+});
+
+test("live時はruntime canary設定と承認計画の完全一致を要求する", async () => {
+  const candidate = plan();
+  const liveEnvironment = environment();
+  const fingerprint = assessMarketplaceProductionCanaryPlan(candidate, {
+    now,
+  }).fingerprint;
+  Object.assign(liveEnvironment, {
+    MANGAI_MARKETPLACE_CHECKOUT_MODE: "live",
+    MANGAI_MARKETPLACE_LIVE_ACCESS: "canary",
+    MANGAI_MARKETPLACE_CANARY_PRODUCT_ID: candidate.productId,
+    MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID: candidate.sellerProfileId,
+    MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID: candidate.buyerProfileId,
+    MANGAI_MARKETPLACE_CANARY_EXPIRES_AT: candidate.expiresAt,
+    MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT: fingerprint,
+  });
+
+  const ready = await runMarketplaceProductionCanaryTargetPreflight({
+    environment: liveEnvironment,
+    fetchFn: mockFetch({ candidate }),
+    now,
+    plan: candidate,
+  });
+  assert.equal(ready.passed, true);
+
+  liveEnvironment.MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID =
+    "77777777-7777-4777-8777-777777777777";
+  const mismatch = await runMarketplaceProductionCanaryTargetPreflight({
+    environment: liveEnvironment,
+    fetchFn: mockFetch({ candidate }),
+    now,
+    plan: candidate,
+  });
+  assert.equal(mismatch.passed, false);
+  assert.equal(
+    mismatch.checks.find((item) => item.id === "runtime-canary").ready,
+    false,
+  );
 });
 
 test("Production接続先は正規origin、hosted Supabase、非testだけを許可する", () => {

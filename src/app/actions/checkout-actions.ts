@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { createStripeCheckoutSession } from "@/lib/checkout";
+import { assertMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
 import { requireMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { normalizeBuyerEmail } from "@/lib/checkout-policy";
 import { hasSupabaseAdminEnv } from "@/lib/env";
@@ -57,17 +58,45 @@ export async function createPendingOrder(formData: FormData) {
   }
   const { data: product } = await supabase
     .from("digital_products")
-    .select("id,creator_id,price,status,works:work_id(id,is_public)")
+    .select("id,creator_id,price,status,works:work_id(id,is_public,content_class,source_project_id,current_publication_id)")
     .eq("id", productId)
     .maybeSingle<{
       id: string;
       creator_id: string;
       price: number;
       status: string;
-      works: { id: string; is_public: boolean } | null;
+      works: {
+        id: string;
+        is_public: boolean;
+        content_class: "general" | "adult";
+        source_project_id: string | null;
+        current_publication_id: string | null;
+      } | null;
     }>();
-  if (!product || product.status !== "active" || !product.works?.is_public) {
+  if (
+    !product ||
+    product.status !== "active" ||
+    !product.works?.is_public ||
+    product.works.content_class !== "general" ||
+    (product.works.source_project_id &&
+      !product.works.current_publication_id)
+  ) {
     redirect(encodeURI(`/checkout/${productId}?error=この商品は現在購入できません`));
+  }
+
+  try {
+    assertMarketplaceCanaryCheckoutTarget({
+      buyerProfileId,
+      paymentMode,
+      productId: product.id,
+      sellerProfileId: product.creator_id,
+    });
+  } catch (error) {
+    const message = safeDomainErrorMessage(
+      error,
+      "この商品は現在購入できません。",
+    );
+    redirect(`/checkout/${productId}?error=${encodeURIComponent(message)}`);
   }
 
   const amount = Math.round(product.price);

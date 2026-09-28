@@ -8,6 +8,21 @@ import {
 
 const fakeTestSecret = ["sk", "test", "0123456789abcdefghijklmnop"].join("_");
 const fakeLiveSecret = ["sk", "live", "0123456789abcdefghijklmnop"].join("_");
+const liveCanaryEnvironment = () => ({
+  MANGAI_MARKETPLACE_CHECKOUT_MODE: "live",
+  STRIPE_SECRET_KEY: fakeLiveSecret,
+  MANGAI_MARKETPLACE_LIVE_ACCESS: "canary",
+  MANGAI_MARKETPLACE_CANARY_PRODUCT_ID:
+    "11111111-1111-4111-8111-111111111111",
+  MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID:
+    "22222222-2222-4222-8222-222222222222",
+  MANGAI_MARKETPLACE_CANARY_BUYER_PROFILE_ID:
+    "33333333-3333-4333-8333-333333333333",
+  MANGAI_MARKETPLACE_CANARY_EXPIRES_AT: new Date(
+    Date.now() + 60 * 60 * 1000,
+  ).toISOString(),
+  MANGAI_MARKETPLACE_CANARY_PLAN_FINGERPRINT: "a".repeat(64),
+});
 
 test("販売モード未設定はfail-closedで購入を無効にする", () => {
   assert.deepEqual(inspectMarketplaceCheckoutMode({}), {
@@ -100,11 +115,15 @@ test("Previewのテスト販売は隔離Supabase接続だけを許可する", ()
 
 test("本番販売はStripe本番キーとの組だけを許可する", () => {
   assert.equal(
-    requireMarketplaceCheckoutMode({
+    requireMarketplaceCheckoutMode(liveCanaryEnvironment()),
+    "live",
+  );
+  assert.equal(
+    inspectMarketplaceCheckoutMode({
       MANGAI_MARKETPLACE_CHECKOUT_MODE: "live",
       STRIPE_SECRET_KEY: fakeLiveSecret,
-    }),
-    "live",
+    }).enabled,
+    false,
   );
   assert.equal(paymentModeForStripeLivemode(false), "test");
   assert.equal(paymentModeForStripeLivemode(true), "live");
