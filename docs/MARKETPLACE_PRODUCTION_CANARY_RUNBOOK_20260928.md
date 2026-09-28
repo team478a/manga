@@ -62,6 +62,14 @@ npm run marketplace:production:canary-plan:validate -- "C:\secure\marketplace-ca
 
 1項目でも不一致なら停止する。
 
+Production環境をprocessへ一時注入し、計画と商品・作品・参加者・既存注文をGETだけで照合する。checkout modeがまだ`disabled`でも対象照合はできるが、`test`はProduction取り違えとして拒否する。
+
+```powershell
+vercel.cmd env run -e production -- npm.cmd run marketplace:production:canary-target:preflight -- "C:\secure\marketplace-canary.json"
+```
+
+このpreflightは氏名、メール、Payment Intent、販売ファイル本体を取得しない。商品は計画の売り手所有・販売中・計画額・file pathあり、作品は一般向け・公開・published・Cloud由来なら完成版固定済み、参加者は2名とも存在、同じ組み合わせの`pending`／`paid` live注文は0件であることを必須にする。結果へ内部ID、file path、秘密値を出力しない。
+
 ### 2. Production設定候補の検証
 
 repository外の候補envを既存preflightへ通す。
@@ -115,5 +123,6 @@ strictが失敗した場合は購入へ進まない。
 
 - 隔離Stagingの成功、失敗、全額返金、認可、署名URL失効は完了。
 - Production readiness preflightは実装済み。
+- Production canary対象のGET-only preflightは実装済み。実計画が未確定のため外部実行は未実施。
 - Productionは正規originだけREADYで、live modeとStripe live資格情報は未設定。
-- 本ランブックとcanary計画検証器はProductionへ接続せず、設定・商品・注文・決済を変更しない。
+- canary計画検証器は外部接続しない。対象preflightはProductionへGETだけを行い、どちらも設定・商品・注文・決済を変更しない。

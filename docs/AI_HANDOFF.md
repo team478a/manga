@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary対象preflight（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-target-20260928`、Base `c4de7ac8`（PR #539 merge commit）。前段のrepository外canary計画を再検証してからだけProduction Supabaseへ接続する、GET専用の対象照合を追加した。
+- 商品／作品、参加者IDとrole、同一商品・売り手・買い手の既存`pending`／`paid` live注文だけを取得する。active商品、計画と一致する所有者・JPY金額・保存先、公開一般作品、Cloud-linked作品のcurrent publication、creator／admin売り手、参加者profile、既存live注文なしをREADY条件とする。
+- HTTPS Production Supabase、正規site origin、service role、checkout `disabled`または`live`を要求する。`test`、Staging marker、対象不一致はfail closed。氏名、メール、商品名、Payment Intent、秘密値、Storage path、内部IDは結果へ出さず、ファイルdownload、Stripe接続、DB更新を行わない。
+- 集中17/17、Hub 1088/1088、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 87/87、RC Repository structure、diff check成功。
+- 実対象計画が未確定のため外部実行は保留。Production、Vercel、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、Job、credit、利用者データは変更していない。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace Production 1件canary販売計画（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-runbook-20260928`、Base `83fd4ff8`（PR #538 merge commit）。Production live販売を開始せず、1件canaryの計画境界だけを実装した。

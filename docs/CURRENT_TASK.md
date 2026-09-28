@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary対象preflight
+
+- 状態: `TARGET_PREFLIGHT_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / EXTERNAL_RUN_PENDING / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-canary-target-20260928`。BaseはPR #539 merge commit `c4de7ac8`。
+- repository外の承認済みcanary計画を最初に再検証し、その後だけProduction SupabaseへGETを3回行う読み取り専用preflightを追加した。対象は商品と作品、売り手／買い手の存在とrole、同一商品の既存`pending`／`paid` live注文に限定する。
+- 商品はactive、計画どおりの所有者・JPY金額・保存先を必須とし、作品は公開・一般向け・公開済みを要求する。Cloud-linked作品はcurrent publicationも必須。売り手はcreator／admin、売り手と買い手のprofileが揃い、既存live注文がない場合だけREADYとする。
+- HTTPSのProduction Supabase、正規origin `https://app.mang-ai.com`、service role、checkout `disabled`または`live`を要求し、`test`、Staging marker、誤origin、対象不一致を接続前またはREADY前にfail closedで拒否する。商品名、氏名、メール、Payment Intent、秘密値、Storage path、内部IDを結果へ出さない。ファイルdownload、Stripe接続、DB更新は行わない。
+- 集中17/17、Hub 1088/1088、deps error 0（既知warning 2件）、lint、全typecheck、packages build、migration 87/87、RC Repository structure、Next.js Webpack Production build、diff checkが成功した。通常Turbopack buildは既知の外部`node_modules` junction制約があるため実行せず、Webpackで本番コンパイルを確認した。
+- 実商品・売り手・買い手の計画が未確定のため、Productionへの外部preflightは未実施。Production、Vercel環境変数、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更なし。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。実計画確定・外部照合・live設定・購入はそれぞれ別工程とする。
+
+---
+
 ## 2026-09-28 Marketplace Production 1件canary販売計画
 
 - 状態: `CANARY_PLAN_VALIDATOR_IMPLEMENTED / RUNBOOK_COMPLETE / LIVE_SALES_DISABLED`
