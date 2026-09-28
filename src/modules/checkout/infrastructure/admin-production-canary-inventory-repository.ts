@@ -36,6 +36,11 @@ class MarketplaceProductionCanaryReadError extends Error {
   }
 }
 
+const marketplaceProductionCanaryLegacyWorkColumns =
+  "id,creator_id,status,is_public,content_class,source_project_id";
+const marketplaceProductionCanaryWorkColumns =
+  `${marketplaceProductionCanaryLegacyWorkColumns},current_publication_id`;
+
 export async function loadAdminMarketplaceProductionCanaryInventory(
   environment: MarketplaceProductionCanaryRuntimeEnvironment = {
     VERCEL_ENV: process.env.VERCEL_ENV,
@@ -76,34 +81,59 @@ export async function loadAdminMarketplaceProductionCanaryInventory(
   if (workIds.length > 0) {
     const worksResult = await admin
       .from("works")
-      .select(
-        "id,creator_id,status,is_public,content_class,source_project_id,current_publication_id",
-      )
+      .select(marketplaceProductionCanaryWorkColumns)
       .in("id", workIds)
       .limit(maximumMarketplaceProductionCanaryProducts);
     if (worksResult.error) {
-      throw new MarketplaceProductionCanaryReadError("Works");
+      // Some deployed Marketplace schemas predate Cloud publication pinning.
+      // Retry with the legacy least-privilege projection instead of selecting
+      // content fields. A Cloud-linked work then lacks current_publication_id
+      // and remains ineligible in the domain assessment (fail closed), while a
+      // manually registered work can still be audited.
+      const legacyWorksResult = await admin
+        .from("works")
+        .select(marketplaceProductionCanaryLegacyWorkColumns)
+        .in("id", workIds)
+        .limit(maximumMarketplaceProductionCanaryProducts);
+      if (legacyWorksResult.error) {
+        throw new MarketplaceProductionCanaryReadError("Works");
+      }
+      works = (legacyWorksResult.data ?? []) as MarketplaceProductionCanaryWork[];
+    } else {
+      works = (worksResult.data ?? []) as MarketplaceProductionCanaryWork[];
     }
-    works = (worksResult.data ?? []) as MarketplaceProductionCanaryWork[];
   }
   const products = attachMarketplaceProductionCanaryWorks(rawProducts, works);
 
   const sourceWorksResult = await admin
     .from("works")
-    .select(
-      "id,creator_id,status,is_public,content_class,source_project_id,current_publication_id",
-    )
+    .select(marketplaceProductionCanaryWorkColumns)
     .eq("status", "published")
     .eq("is_public", true)
     .eq("content_class", "general")
     .order("created_at", { ascending: true })
     .order("id", { ascending: true })
     .limit(maximumMarketplaceProductionCanaryWorks + 1);
+  let sourceWorks: MarketplaceProductionCanaryWork[];
   if (sourceWorksResult.error) {
-    throw new MarketplaceProductionCanaryReadError("SourceWorks");
+    const legacySourceWorksResult = await admin
+      .from("works")
+      .select(marketplaceProductionCanaryLegacyWorkColumns)
+      .eq("status", "published")
+      .eq("is_public", true)
+      .eq("content_class", "general")
+      .order("created_at", { ascending: true })
+      .order("id", { ascending: true })
+      .limit(maximumMarketplaceProductionCanaryWorks + 1);
+    if (legacySourceWorksResult.error) {
+      throw new MarketplaceProductionCanaryReadError("SourceWorks");
+    }
+    sourceWorks = (legacySourceWorksResult.data ??
+      []) as MarketplaceProductionCanaryWork[];
+  } else {
+    sourceWorks = (sourceWorksResult.data ??
+      []) as MarketplaceProductionCanaryWork[];
   }
-  const sourceWorks = (sourceWorksResult.data ??
-    []) as MarketplaceProductionCanaryWork[];
 
   const sellerIds = [
     ...new Set(

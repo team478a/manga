@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary旧schema互換
+
+- Branch: `codex/marketplace-production-canary-schema-fallback-20260928`。Base: `9a6a0fd2`（PR #550 merge commit）。
+- PR #550反映済みProductionの管理画面をread-onlyで開き、固定Error名`MarketplaceProductionCanaryWorksReadError`を確認した。Supabase Productionで列存在と商品集計だけをSELECTし、`works.current_publication_id=false`、他の必要列=true、商品1件／active 0件／paused 1件を確認した。
+- 現行projectionの失敗時だけ旧schemaの最小projectionへ再試行する。旧schemaではCloud-linked作品を完成版固定済みと推測せず候補外にし、手動登録作品だけ監査を継続する。作品内容、個人情報、file pathをselect・表示・logへ含めない。
+- focused 12/12、Hub 1124/1124、Canvas 26/26、AI 50/50、Desktop 407/407、a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC structure、diff check成功。
+- Production DB、商品、販売状態、注文、決済、Stripe、Storage、Provider、生成Job、credit、利用者データの変更なし。
+- Draft PR [#551](https://github.com/team478a/manga/pull/551)の初回HEAD `d1bf0efa`はCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功。Draft／MERGEABLE。次は証跡同期後の最終HEADを再確認して停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary商品化元作品inventory
 
 - Branch: `codex/marketplace-production-canary-source-inventory-20260928`
