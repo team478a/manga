@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary bundle事前検証
+
+- Branch: `codex/marketplace-production-canary-bundle-preflight-20260928`
+- Base: `9d0cd27a`（PR #543 merge commit）
+- repository外の計画JSONとProduction候補envをofflineで同時検証し、個別検証では検出できなかった商品・売り手・買い手・期限・fingerprintの相互不一致を拒否するCLIを追加した。
+- 計画、Production readiness、exact matchがすべてREADYの場合だけ合格する。内部ID、環境値、Supabase／Stripe秘密値はreportへ含めない。
+- 集中32/32、Hub 1102/1102、依存境界error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。外部接続とProduction mutationはなく、live販売は無効のまま。次はcommit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary環境準備監査
 
 - Branch: `codex/marketplace-production-canary-env-preparation-20260928`

@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary bundle事前検証（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-bundle-preflight-20260928`、Base `9d0cd27a`（PR #543 merge commit）。Production設定適用前に計画JSONと候補envの取り違えを止めるoffline gateを追加した。
+- `marketplace:production:canary-bundle:validate`は両ファイルをrepository外の絶対pathに限定し、計画、Production readiness、商品・売り手・買い手・期限・fingerprintの完全一致を一括判定する。
+- 不一致はProduction、Stripe、Vercelへ接続する前にfail closedで拒否する。出力へ計画ID、環境値、秘密値を含めず、承認用fingerprintだけを表示する。
+- 集中32/32、Hub 1102/1102、依存境界error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 88/88、RC Repository structure、diff check成功。Production、Vercel、Supabase、Stripe、商品、注文、決済、Provider、生成Job、credit、利用者データは変更していない。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace Production canary環境準備監査（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-env-preparation-20260928`、Base `cdf43339`（PR #542 merge commit）。Production販売を有効化せず、Vercel Productionの環境metadataとreadinessをread-onlyで再監査した。
