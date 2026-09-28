@@ -68,6 +68,6 @@ Production環境は表示名に`staging`を含むが、画面上のBranchと環�
 - Cloud AI Provider、生成Job、Asset、credit
 - 利用者profile、Auth、Storage
 
-Repository検証はmigration validator 88/88、RC Repository structure、`git diff --check`が成功した。RC preflightの外部設定と手動E2Eは資格情報を注入していないため既知のPENDINGを維持する。
+Repository検証はmigration validator 88/88、RC Repository structure、`git diff --check`が成功した。Draft PR [#542](https://github.com/team478a/manga/pull/542)の初回HEAD `64f8fb81`はCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功した。RC preflightの外部設定と手動E2Eは資格情報を注入していないため既知のPENDINGを維持する。
 
 この適用だけではlive販売は開始しない。次の工程はProduction限定canary env候補、承認済み計画、GET-only対象preflightであり、設定適用と1件購入はそれぞれ別の明示承認単位とする。

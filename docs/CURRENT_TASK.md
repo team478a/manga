@@ -2,13 +2,13 @@
 
 ## 2026-09-28 Marketplace Production migration適用
 
-- 状態: `PRODUCTION_MIGRATIONS_APPLIED / POSTFLIGHT_PASSED / LIVE_SALES_DISABLED`
+- 状態: `DRAFT_PR_542 / PRODUCTION_MIGRATIONS_APPLIED / POSTFLIGHT_PASSED / ALL_CI_AND_VERCEL_PASSED / LIVE_SALES_DISABLED`
 - Branchは`codex/marketplace-production-migration-preflight-20260928`。BaseはPR #541 merge commit `25d9a4d0`。
 - Production Supabase `mangai-hub-staging`の`main`／`PRODUCTION`へ、責任者が明示承認した`202609270001_marketplace_test_sales.sql`と`202609280002_marketplace_live_single_purchase.sql`をこの順で適用した。
 - 1件目のpreflightでProductionに`payment_mode`がないことを検出したため、当初承認の範囲では変更せず停止した。2件の順次適用が追加承認された後、原本SHA-256を照合して各migrationを1回ずつ実行した。
 - 1件目postflight: `payment_mode`列、`orders_payment_mode_check`、`orders_payment_mode_status_idx`はすべて存在。不正mode 0件、注文総数0件、live注文0件、live重複group 0件。
 - 2件目postflight: `orders_live_single_purchase_idx`はunique partial indexとして存在し、`payment_mode=live`、buyer非NULL、status `pending`／`paid`だけを対象とする。live重複group 0件、不正mode 0件。
-- Vercel環境変数、Stripe live資格情報／Webhook、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。Marketplace live販売は無効のまま。migration validator 88/88、RC Repository structure、diff check成功。外部設定と手動E2Eの既知PENDINGは不変。次は証跡文書のcommit／push／Draft PRと全CI／Vercel成功で停止する。その後のProduction env設定、対象preflight、1件購入は別承認単位とする。
+- Vercel環境変数、Stripe live資格情報／Webhook、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。Marketplace live販売は無効のまま。migration validator 88/88、RC Repository structure、diff check成功。Draft PR [#542](https://github.com/team478a/manga/pull/542)の初回HEAD `64f8fb81`はCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsがすべて成功した。外部設定と手動E2Eの既知PENDINGは不変。最終証跡HEADの全チェック成功で停止し、その後のProduction env設定、対象preflight、1件購入は別承認単位とする。
 
 ---
 

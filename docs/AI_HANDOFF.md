@@ -6,7 +6,7 @@
 - Production Supabase `mangai-hub-staging`／`main`／`PRODUCTION`を画面上で再確認した。初回read-only preflightで`buyer_profile_id=true`、`payment_mode=false`、`stripe_payment_intent_id=true`、canary index未作成を検出し、追加承認前には変更せず停止した。
 - 承認後、SHA-256 `A7F2BB799C4C6433AAD4B5DBAB683348297574375DDE37C2480B5F339D381E6D`の`202609270001_marketplace_test_sales.sql`を先に適用し、`payment_mode`、check constraint、status indexを確認した。既存注文は0件、不正modeは0件、live重複groupは0件だった。
 - 続いてSHA-256 `8974EF309C434518BCF9EC664E90FFBF0B4F9FBF100860BC9C2428A151473B73`の`202609280002_marketplace_live_single_purchase.sql`を適用した。`orders_live_single_purchase_idx`は`product_id, buyer_profile_id`のunique partial indexとして作成され、predicateは`payment_mode=live`、buyer非NULL、statusが`pending`／`paid`である。
-- 最終postflightはindex 1件、live重複group 0件、不正`payment_mode` 0件。Vercel環境、Stripe、商品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。live販売は引き続き無効で、次はProduction env設定候補とcanary対象計画の別承認が必要。
+- 最終postflightはindex 1件、live重複group 0件、不正`payment_mode` 0件。Vercel環境、Stripe、商品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。Draft PR [#542](https://github.com/team478a/manga/pull/542)を作成し、初回HEAD `64f8fb81`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。live販売は引き続き無効で、次はProduction env設定候補とcanary対象計画の別承認が必要。
 
 ---
 
