@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production限定販売 readiness preflight
+
+- PR #537 merge commit `c942b4d2`から`codex/marketplace-production-readiness-20260928`を作成した。
+- Production販売開始前に、Vercel Production限定scope、Supabase identity、site origin、live mode、Stripe live資格情報を値非表示で判定するread-only preflightと8件の回帰テストを追加した。
+- 通常pull、`vercel env run`注入、repository外候補envの3経路を用意し、候補envのrepository内配置を拒否する。結果には秘密値とProject refを含めない。
+- 現行Productionは`https://app.mang-ai.com` originだけREADY。Marketplace live mode／Stripe live変数は未設定で、Sensitive Supabase値の接続先照合も未完了のため、販売は安全側に停止している。
+- 集中8/8、Marketplace関連19/19、Hub 1071/1071、deps error 0（既知warning 2件）、lint、全typecheck、packages／Webpack Production build、migration 87/87、RC Repository structure、diff check成功。通常Turbopackは外部`node_modules` junctionを拒否した環境制約。
+- Production環境変数、Supabase、Stripe、商品、注文、決済、Provider、生成Job、credit、利用者データは変更していない。次はdiff check、commit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace隔離Staging終了処理
 
 - PR #536 merge commit `46924a07`から`codex/marketplace-staging-cleanup-20260928`を作成した。

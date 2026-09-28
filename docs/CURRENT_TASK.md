@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production限定販売 readiness preflight
+
+- 状態: `PREFLIGHT_IMPLEMENTED / PRODUCTION_READ_ONLY_AUDIT_COMPLETE / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-readiness-20260928`。BaseはPR #537 merge commit `c942b4d2`。
+- 隔離Staging受入れ完了後の次段階として、Production限定scope、Supabase identity、`https://app.mang-ai.com` origin、live checkout mode、Stripe live資格情報を秘密値非表示で判定するpreflightを追加した。
+- checkout `disabled`／`test`、`sk_test_`、Preview共有scope、branch限定変数、誤origin、Staging marker、Supabase資格情報の欠落・同一値をfail closedで拒否する。
+- Productionをread-only監査し、originだけREADY、Production scope／Supabase identity／live mode／Stripe liveはPENDING。Supabase 3変数はProduction限定metadataが存在するがSensitive値の正確な接続先照合は未完了。販売は有効化していない。
+- 集中8/8、Marketplace関連19/19、Hub 1071/1071、deps error 0（既知warning 2件）、lint、Hub／Desktop typecheck、packages build、migration 87/87、RC Repository structure、Next.js Webpack Production buildが成功した。通常Turbopack buildは作業用`node_modules` junctionがfilesystem root外を指すため停止した既知の環境制約。
+- `git diff --check`成功。Production環境変数、Supabase、Stripe、注文、決済、Provider、生成Job、credit、利用者データは変更なし。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。live資格情報設定・商品公開・canary決済は別の明示承認単位とする。
+
+---
+
 ## 2026-09-28 Marketplace隔離Staging終了処理
 
 - 状態: `STAGING_RESOURCES_REMOVED / COMPUTE_STOPPED / PRODUCTION_UNCHANGED`
