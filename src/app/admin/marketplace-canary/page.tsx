@@ -118,6 +118,39 @@ export default async function AdminMarketplaceCanaryPage() {
               この画面から商品を有効化・作成することはありません。候補がない場合は、販売パッケージから一般向け商品を準備します。
             </p>
           </section>
+
+          <section className="panel mt-6">
+            <h2 className="text-xl font-bold">商品化できる公開作品</h2>
+            <p className="mt-2 leading-relaxed text-stone-600">
+              商品がまだ登録されていない場合に備え、公開済みの一般向け作品から販売パッケージを準備できる候補を件数だけで確認します。
+            </p>
+            <div className="mt-4 grid gap-4 sm:grid-cols-3" aria-label="商品化準備件数">
+              {[
+                ["確認した公開作品", inventory.value.sourcePreparation.checkedWorks],
+                ["商品未登録の公開作品", inventory.value.sourcePreparation.unregisteredWorks],
+                [
+                  "商品化準備が可能な作品",
+                  inventory.value.sourcePreparation.registrationReadyWorks,
+                ],
+              ].map(([label, count]) => (
+                <div className="rounded-2xl border border-stone-200 bg-white p-4" key={label}>
+                  <p className="text-stone-600">{label}</p>
+                  <p className="mt-2 text-3xl font-bold">{count}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 font-semibold">
+              {!inventory.value.sourcePreparation.audited ||
+              !inventory.value.sourcePreparation.complete
+                ? "公開作品の全件監査を完了できませんでした。"
+                : inventory.value.sourcePreparation.ready
+                  ? `商品化準備の候補があります（販売者${inventory.value.sourcePreparation.registrationReadySellers}名）`
+                  : "現在、商品化準備が可能な公開作品はありません。"}
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-stone-600">
+              この集計から販売パッケージや商品を自動作成しません。対象作品の選定と商品登録は別工程です。
+            </p>
+          </section>
         </>
       )}
 

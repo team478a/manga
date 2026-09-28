@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary商品化元作品inventory（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-source-inventory-20260928`、Base `6494db6f`（PR #549 merge commit）。active／paused商品に候補がない場合でも次の準備判断ができるよう、商品未登録の公開済み一般作品を件数だけ監査する機能を追加した。
+- 公開・published・一般向け・Cloud publication固定・creator／admin所有・既存商品未紐付けを共有domainで再検証する。公開作品は最大100件で、101件以上の部分集計はREADYにしない。名称、個人情報、内部ID、file pathを表示せず、商品作成・販売開始・Stripe接続は行わない。
+- 集中17/17、Hub 1123/1123、lint、全typecheck、依存境界error 0（既知warning 2）、packages／Webpack Production build、migration 88/88、RC structure成功。通常Turbopackは既知のWindows junction制約だけで停止した。Production外部状態は未変更。
+- PR #549反映後のProduction read-only再確認は認証済みブラウザを取得できずPENDING。Draft PR [#550](https://github.com/team478a/manga/pull/550)を作成し、初回HEAD `c38bdbee`のCore quality、Migration roundtrip、Windows build、Vercel、Preview Commentsはすべて成功した。最終証跡HEADの全チェック成功で停止し、merge後にProduction管理画面で3段階の件数を再確認する。
+
+---
+
 ## 0.0 Marketplace Production canary候補準備inventory（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-preparation-inventory-20260928`、Base `c65c0353`（PR #548 merge commit）。Productionでactive商品・候補商品が0件だったため、既存paused商品から有効化前候補を探す件数監査を追加した。

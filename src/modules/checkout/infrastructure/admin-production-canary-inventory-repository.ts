@@ -6,13 +6,18 @@ import {
   assessMarketplaceProductionCanaryInventory,
   assertMarketplaceProductionCanaryRuntime,
   maximumMarketplaceProductionCanaryProducts,
+  maximumMarketplaceProductionCanaryWorks,
   type MarketplaceProductionCanaryProduct,
   type MarketplaceProductionCanaryProfile,
   type MarketplaceProductionCanaryRuntimeEnvironment,
   type MarketplaceProductionCanaryWork,
 } from "@/modules/checkout/domain/production-canary-inventory";
 
-type MarketplaceProductionCanaryReadStage = "Products" | "Works" | "Profiles";
+type MarketplaceProductionCanaryReadStage =
+  | "Products"
+  | "Works"
+  | "SourceWorks"
+  | "Profiles";
 
 const marketplaceProductionCanaryReadErrorNames: Record<
   MarketplaceProductionCanaryReadStage,
@@ -20,6 +25,7 @@ const marketplaceProductionCanaryReadErrorNames: Record<
 > = {
   Products: "MarketplaceProductionCanaryProductsReadError",
   Works: "MarketplaceProductionCanaryWorksReadError",
+  SourceWorks: "MarketplaceProductionCanarySourceWorksReadError",
   Profiles: "MarketplaceProductionCanaryProfilesReadError",
 };
 
@@ -82,13 +88,39 @@ export async function loadAdminMarketplaceProductionCanaryInventory(
   }
   const products = attachMarketplaceProductionCanaryWorks(rawProducts, works);
 
+  const sourceWorksResult = await admin
+    .from("works")
+    .select(
+      "id,creator_id,status,is_public,content_class,source_project_id,current_publication_id",
+    )
+    .eq("status", "published")
+    .eq("is_public", true)
+    .eq("content_class", "general")
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
+    .limit(maximumMarketplaceProductionCanaryWorks + 1);
+  if (sourceWorksResult.error) {
+    throw new MarketplaceProductionCanaryReadError("SourceWorks");
+  }
+  const sourceWorks = (sourceWorksResult.data ??
+    []) as MarketplaceProductionCanaryWork[];
+
   const sellerIds = [
     ...new Set(
-      products.flatMap((product) =>
-        typeof product.creator_id === "string" && product.creator_id
-          ? [product.creator_id]
-          : [],
-      ),
+      [
+        ...products.flatMap((product) =>
+          typeof product.creator_id === "string" && product.creator_id
+            ? [product.creator_id]
+            : [],
+        ),
+        ...(sourceWorks.length <= maximumMarketplaceProductionCanaryWorks
+          ? sourceWorks.flatMap((work) =>
+              typeof work.creator_id === "string" && work.creator_id
+                ? [work.creator_id]
+                : [],
+            )
+          : []),
+      ],
     ),
   ];
   let profiles: MarketplaceProductionCanaryProfile[] = [];
@@ -104,5 +136,9 @@ export async function loadAdminMarketplaceProductionCanaryInventory(
     profiles = (profilesResult.data ?? []) as MarketplaceProductionCanaryProfile[];
   }
 
-  return assessMarketplaceProductionCanaryInventory({ products, profiles });
+  return assessMarketplaceProductionCanaryInventory({
+    products,
+    profiles,
+    sourceWorks,
+  });
 }

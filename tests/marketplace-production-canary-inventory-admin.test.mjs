@@ -13,6 +13,7 @@ const product = (overrides = {}) => ({
   status: "active",
   file_url: "marketplace/private/file.zip",
   works: {
+    id: "11111111-1111-4111-8111-111111111111",
     creator_id: "22222222-2222-4222-8222-222222222222",
     status: "published",
     is_public: true,
@@ -118,6 +119,92 @@ test("条件を満たすpaused商品を有効化前候補として件数だけ�
   assert.doesNotMatch(JSON.stringify(report), /22222222-2222-4222-8222-222222222222/);
 });
 
+test("商品未登録の公開作品を商品化準備候補として件数だけ返す", () => {
+  const report = assessMarketplaceProductionCanaryInventory({
+    products: [
+      product({
+        work_id: "11111111-1111-4111-8111-111111111111",
+      }),
+    ],
+    profiles: [
+      { id: "22222222-2222-4222-8222-222222222222", role: "creator" },
+    ],
+    sourceWorks: [
+      {
+        ...product().works,
+        id: "11111111-1111-4111-8111-111111111111",
+      },
+      {
+        ...product().works,
+        id: "33333333-3333-4333-8333-333333333333",
+      },
+    ],
+  });
+
+  assert.deepEqual(report.sourcePreparation, {
+    audited: true,
+    complete: true,
+    ready: true,
+    checkedWorks: 2,
+    unregisteredWorks: 1,
+    registrationReadyWorks: 1,
+    registrationReadySellers: 1,
+  });
+  assert.doesNotMatch(JSON.stringify(report), /33333333-3333-4333-8333-333333333333/);
+});
+
+test("101件以上の公開作品は商品化候補の部分集計をREADYにしない", () => {
+  const report = assessMarketplaceProductionCanaryInventory({
+    products: [],
+    profiles: [
+      { id: "22222222-2222-4222-8222-222222222222", role: "creator" },
+    ],
+    sourceWorks: Array.from({ length: 101 }, (_, index) => ({
+      ...product().works,
+      id: `${String(index).padStart(8, "0")}-1111-4111-8111-111111111111`,
+    })),
+  });
+
+  assert.deepEqual(report.sourcePreparation, {
+    audited: true,
+    complete: false,
+    ready: false,
+    checkedWorks: 100,
+    unregisteredWorks: 0,
+    registrationReadyWorks: 0,
+    registrationReadySellers: 0,
+  });
+});
+
+test("成人向け・Cloud publication未固定・不適格roleの作品を商品化候補から除外する", () => {
+  const report = assessMarketplaceProductionCanaryInventory({
+    products: [],
+    profiles: [
+      { id: "22222222-2222-4222-8222-222222222222", role: "user" },
+    ],
+    sourceWorks: [
+      {
+        ...product().works,
+        id: "11111111-1111-4111-8111-111111111111",
+        content_class: "adult",
+      },
+      {
+        ...product().works,
+        id: "33333333-3333-4333-8333-333333333333",
+        source_project_id: "44444444-4444-4444-8444-444444444444",
+      },
+      {
+        ...product().works,
+        id: "55555555-5555-4555-8555-555555555555",
+      },
+    ],
+  });
+
+  assert.equal(report.sourcePreparation.unregisteredWorks, 1);
+  assert.equal(report.sourcePreparation.registrationReadyWorks, 0);
+  assert.equal(report.sourcePreparation.ready, false);
+});
+
 test("101件以上の部分集計は候補件数を確定しない", () => {
   const report = assessMarketplaceProductionCanaryInventory({
     products: Array.from({ length: 101 }, () => product()),
@@ -172,6 +259,9 @@ test("管理画面はadmin認証後だけProduction件数repositoryを呼ぶ", a
   assert.match(page, /商品名、利用者名、メールアドレス、内部IDは表示しません/);
   assert.match(page, /販売開始、注文作成、Stripe接続、ファイル取得は行いません/);
   assert.match(page, /有効化可能なpaused商品/);
+  assert.match(page, /商品化できる公開作品/);
+  assert.match(page, /商品化準備が可能な作品/);
+  assert.match(page, /販売パッケージや商品を自動作成しません/);
   assert.match(page, /この画面から商品を有効化・作成することはありません/);
   assert.doesNotMatch(page, /product\.id|creator_id|file_url|display_name|email\}/);
 });
@@ -196,9 +286,13 @@ test("repositoryはProduction runtimeと正規originを先に検証しGET query�
   assert.doesNotMatch(source, /works:work_id/);
   assert.match(source, /MarketplaceProductionCanaryProductsReadError/);
   assert.match(source, /MarketplaceProductionCanaryWorksReadError/);
+  assert.match(source, /MarketplaceProductionCanarySourceWorksReadError/);
   assert.match(source, /MarketplaceProductionCanaryProfilesReadError/);
   assert.doesNotMatch(source, /\.insert\(|\.update\(|\.delete\(|\.upsert\(|stripe/i);
   assert.doesNotMatch(source, /title|display_name|email|buyer_email/);
+  assert.match(source, /\.eq\("status", "published"\)/);
+  assert.match(source, /\.eq\("is_public", true\)/);
+  assert.match(source, /\.eq\("content_class", "general"\)/);
 });
 
 test("既存CLIも共有判定を利用する", async () => {

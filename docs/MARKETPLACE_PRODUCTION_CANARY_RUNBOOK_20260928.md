@@ -78,7 +78,7 @@ npm run marketplace:production:canary-plan:validate -- "C:\secure\marketplace-ca
 
 対象を決める前に、Productionの候補件数だけをGET専用inventoryで確認できる。商品・売り手・作品のIDや名称は出力しない。
 
-Productionへmerge・deploy済みの場合、管理者は資格情報を端末へ取り出さず、管理画面の`Marketplace canary候補`（`/admin/marketplace-canary`）から同じ条件の確認商品数・候補商品数・候補販売者数を確認できる。active候補がない場合は、同じ画面でpaused商品と有効化前候補の件数も確認できる。Preview／localではProductionとの取り違えを避けるため集計しない。この画面から対象選定、商品作成、設定変更、販売開始、購入はできない。
+Productionへmerge・deploy済みの場合、管理者は資格情報を端末へ取り出さず、管理画面の`Marketplace canary候補`（`/admin/marketplace-canary`）から同じ条件の確認商品数・候補商品数・候補販売者数を確認できる。active候補がない場合は、同じ画面でpaused商品と有効化前候補、さらに商品未登録の公開済み一般作品と商品化準備候補の件数を確認できる。Preview／localではProductionとの取り違えを避けるため集計しない。この画面から対象選定、商品作成、設定変更、販売開始、購入はできない。
 
 ```powershell
 vercel.cmd env run -e production -- npm.cmd run marketplace:production:canary-inventory

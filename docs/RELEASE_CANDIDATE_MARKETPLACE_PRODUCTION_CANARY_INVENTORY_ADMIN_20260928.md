@@ -14,7 +14,7 @@ Vercel Sensitiveとして登録されたProduction Supabase資格情報をoperat
 - `requireAdmin()`を通過した管理者だけが表示できる。
 - `VERCEL_ENV=production`かつ`NEXT_PUBLIC_SITE_URL=https://app.mang-ai.com`の場合だけDBを読む。
 - Preview、local、誤origin、DB読取り失敗では件数を表示せず安全側に停止する。
-- 表示する集計は確認したactive商品数、候補商品数、候補販売者数に加え、全登録商品、paused商品、有効化可能なpaused商品とその販売者の件数だけである。
+- 表示する集計は確認したactive商品数、候補商品数、候補販売者数に加え、全登録商品、paused商品、有効化可能なpaused商品、商品未登録の公開作品、商品化準備が可能な作品と各販売者の件数だけである。
 
 ## 判定条件
 
@@ -29,11 +29,13 @@ Vercel Sensitiveとして登録されたProduction Supabase資格情報をoperat
 
 paused商品は同じ条件から販売状態だけを除いて検査し、条件を満たす場合のみ有効化前候補として数える。管理画面から販売状態は変更しない。
 
+商品化元作品は公開・published・一般向け・Cloud publication固定を必須とし、既存のactive／paused商品へ紐付く作品を除外する。creator／admin所有の作品だけを商品化準備候補として数える。公開作品inventoryも最大100件とし、101件以上の場合は部分集計をREADYにしない。
+
 ## データ最小化と安全境界
 
 - 商品名、作品名、氏名、表示名、メールをselectしない。
 - IDとfile pathは判定にのみ使用し、画面またはreportへ含めない。
-- DBはselectだけで、insert、update、delete、upsertを行わない。
+- DBは商品、作品、Profileのselectだけで、insert、update、delete、upsertを行わない。
 - Storage file、注文、Payment Intentを取得しない。
 - Stripe APIへ接続しない。
 - 販売開始、環境更新、決済、返金を行わない。
@@ -45,8 +47,8 @@ paused商品は同じ条件から販売状態だけを除いて検査し、条�
 
 ## 検証
 
-- 集中テスト: 14/14成功
-- Hub test: 1121/1121成功
+- 集中テスト: 17/17成功
+- Hub test: 1123/1123成功
 - lint、full typecheck: 成功
 - 依存境界: error 0、既知warning 2
 - packages build、Webpack Production build: 成功
