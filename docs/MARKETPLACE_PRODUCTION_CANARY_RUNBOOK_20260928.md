@@ -1,7 +1,7 @@
 # Marketplace Production 1件canary販売ランブック
 
-作成日: 2026-09-28  
-対象: 一般向けMarketplaceのProduction限定販売  
+作成日: 2026-09-28
+対象: 一般向けMarketplaceのProduction限定販売
 状態: 計画・検証手順のみ。live販売は未有効化
 
 ## 目的
