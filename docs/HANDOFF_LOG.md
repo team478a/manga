@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace Production canary候補の阻害条件診断
+
+- Branch: `codex/marketplace-canary-blocker-diagnostics-20260928`。Base: `ddc332ec`（PR #551 merge commit）。
+- Production Supabase `mangai-hub-staging`／`main`／`PRODUCTION`で件数専用SELECTを実行した。登録商品1件、active 0件、paused 1件、有効化可能paused 0件、未登録公開作品0件、商品化準備可能作品0件だった。初回Editor置換残りによるread-only構文エラーは変更0件で、全文置換後に成功した。
+- paused 1件は価格、販売file、作品所有者一致、一般区分、販売者roleを満たすが、作品は未published・非公開で、旧schemaではCloud完成版固定を確認できない。管理画面へこれらの条件別充足数だけを追加し、個別の商品・作品・利用者・内部IDを表示しない。
+- focused 13/13、Hub 1125/1125、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Hub／Desktop build、RC repository structure成功。Production DB、商品、作品、販売状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは未変更。
+- 次はdiff check、commit、push、Draft PR、全CI／Vercel成功で停止する。Production mutationは別の明示承認を待つ。
+
+---
+
 ## 2026-09-28 Codex: Marketplace Production canary旧schema互換
 
 - Branch: `codex/marketplace-production-canary-schema-fallback-20260928`。Base: `9a6a0fd2`（PR #550 merge commit）。

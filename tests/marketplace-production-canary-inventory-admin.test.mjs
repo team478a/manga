@@ -45,6 +45,15 @@ test("管理画面とCLIで共有する判定は適格商品・販売者を件�
     activationReadyPausedProducts: 0,
     activationReadySellers: 0,
   });
+  assert.deepEqual(report.preparationDiagnostics, {
+    audited: true,
+    priceReadyPausedProducts: 0,
+    fileReadyPausedProducts: 0,
+    linkedWorkReadyPausedProducts: 0,
+    publicGeneralWorkReadyPausedProducts: 0,
+    publicationReadyPausedProducts: 0,
+    sellerRoleReadyPausedProducts: 0,
+  });
   assert.doesNotMatch(JSON.stringify(report), /22222222-2222-4222-8222-222222222222/);
 });
 
@@ -116,7 +125,47 @@ test("条件を満たすpaused商品を有効化前候補として件数だけ�
     activationReadyPausedProducts: 1,
     activationReadySellers: 1,
   });
+  assert.deepEqual(report.preparationDiagnostics, {
+    audited: true,
+    priceReadyPausedProducts: 1,
+    fileReadyPausedProducts: 1,
+    linkedWorkReadyPausedProducts: 1,
+    publicGeneralWorkReadyPausedProducts: 1,
+    publicationReadyPausedProducts: 1,
+    sellerRoleReadyPausedProducts: 1,
+  });
   assert.doesNotMatch(JSON.stringify(report), /22222222-2222-4222-8222-222222222222/);
+});
+
+test("paused候補の阻害条件を個別情報なしの件数で返す", () => {
+  const report = assessMarketplaceProductionCanaryInventory({
+    products: [
+      product({
+        status: "paused",
+        works: {
+          ...product().works,
+          status: "draft",
+          is_public: false,
+          source_project_id: "33333333-3333-4333-8333-333333333333",
+        },
+      }),
+    ],
+    profiles: [
+      { id: "22222222-2222-4222-8222-222222222222", role: "creator" },
+    ],
+  });
+
+  assert.equal(report.preparation.activationReadyPausedProducts, 0);
+  assert.deepEqual(report.preparationDiagnostics, {
+    audited: true,
+    priceReadyPausedProducts: 1,
+    fileReadyPausedProducts: 1,
+    linkedWorkReadyPausedProducts: 1,
+    publicGeneralWorkReadyPausedProducts: 0,
+    publicationReadyPausedProducts: 0,
+    sellerRoleReadyPausedProducts: 1,
+  });
+  assert.doesNotMatch(JSON.stringify(report), /33333333-3333-4333-8333-333333333333/);
 });
 
 test("商品未登録の公開作品を商品化準備候補として件数だけ返す", () => {
@@ -263,6 +312,8 @@ test("管理画面はadmin認証後だけProduction件数repositoryを呼ぶ", a
   assert.match(page, /商品化準備が可能な作品/);
   assert.match(page, /販売パッケージや商品を自動作成しません/);
   assert.match(page, /この画面から商品を有効化・作成することはありません/);
+  assert.match(page, /paused商品の条件別充足数/);
+  assert.match(page, /個別の商品や作品を表示せず/);
   assert.doesNotMatch(page, /product\.id|creator_id|file_url|display_name|email\}/);
 });
 
