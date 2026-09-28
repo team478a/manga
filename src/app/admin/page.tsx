@@ -8,6 +8,7 @@ import {
   Images,
   Image,
   KeyRound,
+  ListChecks,
   Megaphone,
   PackageCheck,
   ReceiptText,
@@ -84,6 +85,12 @@ export default async function AdminPage() {
       count: ordersCount.count ?? 0,
       href: "/admin/orders",
       icon: ReceiptText,
+    },
+    {
+      title: "Marketplace canary候補",
+      count: "件数のみ確認",
+      href: "/admin/marketplace-canary",
+      icon: ListChecks,
     },
     {
       title: "本番売上合計（仮）",

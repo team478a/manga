@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary候補管理画面
+
+- 状態: `ADMIN_AGGREGATE_INVENTORY_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-canary-inventory-admin-20260928`。BaseはPR #546 merge commit `40f3b385`。
+- Vercel SensitiveのSupabase資格情報を端末へ取り出さず、Production管理画面でcanary候補商品・候補販売者の件数だけを確認する`/admin/marketplace-canary`を追加した。管理者認証後、`VERCEL_ENV=production`と正規originを検査してからservice roleをinfrastructure層で使用する。
+- 前段CLIと共有する純粋判定へ条件を集約した。active商品100件上限、50〜1,000円、販売file、公開済み一般作品、Cloud publication固定、creator／admin販売者を維持する。商品名、利用者名、メール、内部ID、file pathは画面へ出さない。
+- 画面・repositoryはGET相当のselectだけを使い、販売開始、注文作成、Stripe接続、Storage download、環境更新、決済を行わない。Preview／local／誤originは接続前に安全停止する。
+- 集中12/12、Hub 1119/1119、lint、full typecheck、依存境界error 0（既知warning 2）、packages build、Webpack Production build、migration 88/88、RC repository structure成功。Production外部状態は未変更。次はdiff check、commit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Marketplace Production canary候補inventory
 
 - 状態: `GET_ONLY_INVENTORY_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / EXTERNAL_CREDENTIAL_INJECTION_PENDING / LIVE_SALES_DISABLED`

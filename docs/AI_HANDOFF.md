@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary候補管理画面（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-inventory-admin-20260928`、Base `40f3b385`（PR #546 merge commit）。Vercel Sensitive値をoperator端末へ取り出さず、Production runtime内部で候補件数だけを確認するadmin画面を追加した。
+- `/admin/marketplace-canary`は`requireAdmin()`後にProduction runtime・正規originを検査し、infrastructure repositoryからactive商品と販売者roleをselectする。画面へ出すのは確認商品数、候補商品数、候補販売者数、2つの判定状態だけである。
+- CLIと管理画面の候補条件は共有domain判定へ統合した。Preview／local／誤originではDB接続前に停止する。販売開始、注文、Stripe、Storage、決済、環境更新の処理は持たない。
+- 集中12/12、Hub 1119/1119、lint、full typecheck、依存境界error 0（既知warning 2）、packages build、Webpack Production build、migration 88/88、RC repository structure成功。Production外部状態は未変更。次はdiff check、commit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace Production canary候補inventory（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-inventory-20260928`、Base `50215cc3`（PR #545 merge commit）。実対象選定前にProductionの候補商品有無を件数だけで確認するGET専用inventoryを追加した。
