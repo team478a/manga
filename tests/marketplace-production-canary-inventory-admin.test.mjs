@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import {
+  attachMarketplaceProductionCanaryWorks,
   assessMarketplaceProductionCanaryInventory,
   assertMarketplaceProductionCanaryRuntime,
 } from "../src/modules/checkout/domain/production-canary-inventory.ts";
@@ -60,6 +61,30 @@ test("成人向け・Cloud publication未固定・不適格roleを除外する",
   assert.equal(report.passed, false);
   assert.equal(report.counts.eligibleProducts, 0);
   assert.equal(report.counts.eligibleSellers, 0);
+});
+
+test("商品と作品はwork_idで明示的に結合し、対応しない作品を採用しない", () => {
+  const products = attachMarketplaceProductionCanaryWorks(
+    [
+      product({
+        work_id: "11111111-1111-4111-8111-111111111111",
+        works: undefined,
+      }),
+      product({
+        work_id: "99999999-9999-4999-8999-999999999999",
+        works: undefined,
+      }),
+    ],
+    [
+      {
+        id: "11111111-1111-4111-8111-111111111111",
+        ...product().works,
+      },
+    ],
+  );
+
+  assert.equal(products[0].works?.status, "published");
+  assert.equal(products[1].works, null);
 });
 
 test("101件以上の部分集計は候補件数を確定しない", () => {
@@ -131,7 +156,13 @@ test("repositoryはProduction runtimeと正規originを先に検証しGET query�
   assert.ok(environmentIndex >= 0);
   assert.ok(clientIndex > environmentIndex);
   assert.match(source, /\.from\("digital_products"\)/);
+  assert.match(source, /\.from\("works"\)/);
   assert.match(source, /\.from\("profiles"\)/);
+  assert.match(source, /select\("id,work_id,creator_id,price,status,file_url"\)/);
+  assert.doesNotMatch(source, /works:work_id/);
+  assert.match(source, /MarketplaceProductionCanaryProductsReadError/);
+  assert.match(source, /MarketplaceProductionCanaryWorksReadError/);
+  assert.match(source, /MarketplaceProductionCanaryProfilesReadError/);
   assert.doesNotMatch(source, /\.insert\(|\.update\(|\.delete\(|\.upsert\(|stripe/i);
   assert.doesNotMatch(source, /title|display_name|email|buyer_email/);
 });

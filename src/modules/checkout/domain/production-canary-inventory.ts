@@ -23,6 +23,7 @@ export function assertMarketplaceProductionCanaryRuntime(
 }
 
 export type MarketplaceProductionCanaryWork = {
+  id?: unknown;
   creator_id?: unknown;
   status?: unknown;
   is_public?: unknown;
@@ -32,12 +33,32 @@ export type MarketplaceProductionCanaryWork = {
 };
 
 export type MarketplaceProductionCanaryProduct = {
+  work_id?: unknown;
   creator_id?: unknown;
   price?: unknown;
   status?: unknown;
   file_url?: unknown;
   works?: MarketplaceProductionCanaryWork | MarketplaceProductionCanaryWork[] | null;
 };
+
+export function attachMarketplaceProductionCanaryWorks(
+  products: MarketplaceProductionCanaryProduct[],
+  works: MarketplaceProductionCanaryWork[],
+): MarketplaceProductionCanaryProduct[] {
+  const worksById = new Map(
+    works.flatMap((work) =>
+      typeof work.id === "string" && work.id ? [[work.id, work] as const] : [],
+    ),
+  );
+
+  return products.map((product) => ({
+    ...product,
+    works:
+      typeof product.work_id === "string"
+        ? (worksById.get(product.work_id) ?? null)
+        : null,
+  }));
+}
 
 export type MarketplaceProductionCanaryProfile = {
   id?: unknown;
