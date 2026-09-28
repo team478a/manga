@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace Production canary候補inventory
+
+- 状態: `GET_ONLY_INVENTORY_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / EXTERNAL_CREDENTIAL_INJECTION_PENDING / LIVE_SALES_DISABLED`
+- Branchは`codex/marketplace-production-canary-inventory-20260928`。BaseはPR #545 merge commit `50215cc3`。
+- Productionのactive商品を最大100件までGETし、50〜1,000円、販売file、公開済み一般作品、Cloud作品の固定publication、creator／admin売り手を満たす候補商品数と売り手数だけを集計するCLIを追加した。
+- 商品・作品・売り手のID、名称、メール、file pathを出力せず、ファイル本体、注文、Stripeへ接続しない。100件超は部分集計をREADYにしない。
+- 集中19/19、Hub 1112/1112、依存境界error 0（既知warning 2）、lint、full typecheck、packages build、Webpack Production build、migration 88/88、RC repository structureが成功した。実Production実行はVercel Sensitive値が`env run`へ注入されず、接続前に`NEXT_PUBLIC_SUPABASE_URL`欠落で停止した。Vercel metadata上はSupabase 3項目がProduction-only Sensitiveとして存在する。repository外候補envにも対応した。
+- Production、Vercel環境変数、Supabase、Stripe、商品、作品、注文、決済、返金、Provider、生成Job、credit、利用者データは変更していない。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Marketplace Production canary計画generator
 
 - 状態: `OFFLINE_PLAN_GENERATOR_IMPLEMENTED / LOCAL_VALIDATION_COMPLETE / LIVE_SALES_DISABLED`

@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production canary候補inventory（2026-09-28）
+
+- Branch `codex/marketplace-production-canary-inventory-20260928`、Base `50215cc3`（PR #545 merge commit）。実対象選定前にProductionの候補商品有無を件数だけで確認するGET専用inventoryを追加した。
+- active商品を最大100件に限定し、少額、file、公開済み一般作品、Cloud publication固定、適格売り手roleを検査する。ID、名称、メール、file pathはreportへ含めず、100件超の部分集計は拒否する。
+- 集中19/19、Hub 1112/1112、依存境界error 0（既知warning 2）、lint、full typecheck、packages build、Webpack Production build、migration 88/88、RC repository structureが成功した。`vercel env run -e production`での外部実行はSensitive Supabase値がprocessへ注入されず、接続前に停止した。metadataは3項目のProduction-only Sensitive存在を確認済み。repository外候補envを明示できる経路も追加した。
+- Production、Vercel、Supabase、Stripe、商品、注文、決済、Provider、生成Job、credit、利用者データは未変更。次はcommit／push／Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Marketplace Production canary計画generator（2026-09-28）
 
 - Branch `codex/marketplace-production-canary-plan-generator-20260928`、Base `559ea01c`（PR #544 merge commit）。手入力による固定field・時刻・保存先の誤りを防ぐoffline計画generatorを追加した。

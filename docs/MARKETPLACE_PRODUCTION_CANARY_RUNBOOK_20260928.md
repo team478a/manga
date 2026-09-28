@@ -76,6 +76,20 @@ npm run marketplace:production:canary-plan:validate -- "C:\secure\marketplace-ca
 
 1項目でも不一致なら停止する。
 
+対象を決める前に、Productionの候補件数だけをGET専用inventoryで確認できる。商品・売り手・作品のIDや名称は出力しない。
+
+```powershell
+vercel.cmd env run -e production -- npm.cmd run marketplace:production:canary-inventory
+```
+
+Vercel Sensitive値をprocessへ注入できない環境では、同じProduction資格情報を保存したrepository外の候補envを明示する。
+
+```powershell
+npm run marketplace:production:canary-inventory -- --candidate "C:\secure\marketplace-production.env"
+```
+
+候補envの取得・保存は本ランブックの外部資格情報管理に従い、Git、Issue、PR、チャットへ内容を貼らない。
+
 Production環境をprocessへ一時注入し、計画と商品・作品・参加者・既存注文をGETだけで照合する。checkout modeがまだ`disabled`でも対象照合はできるが、`test`はProduction取り違えとして拒否する。
 
 ```powershell
