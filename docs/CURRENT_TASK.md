@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-09-28 Marketplace決済失敗／全額返金の実Staging E2E
+
+- 状態: `EXTERNAL_STAGING_FAILURE_AND_REFUND_PASSED / IDEMPOTENCY_PASSED / PRODUCTION_UNCHANGED`
+- Branchは`codex/marketplace-failure-refund-e2e-20260928`。BaseはPR #535 merge commit `f31e18ee`。
+- `marketplace:staging:failure-refund`を追加した。隔離Supabase Preview Branch、branch Vercel Preview、`sk_test_`、既存のStripe test webhook endpoint、合成注文2件を接続前に検査し、Production ref、live key、不正endpointを拒否する。
+- 責任者承認範囲で、合成pending注文に拒否PaymentIntentを1件作成した。Stripe自身が`payment_intent.payment_failed`を最新Previewへ署名配送し、注文が`pending → failed`になった。
+- 既存100円テストPaymentIntentを全額返金した。Stripe自身が`charge.refunded`を署名配送し、合成注文が`paid → refunded`になった。実請求、本番売上、振込は発生していない。
+- 実行中だけ既存test webhook endpointを最新Previewへ向け、成功後に元URLへ復元した。同じ2操作を再実行し、完了済み注文では追加PaymentIntent、追加返金、endpoint変更を行わない冪等性を確認した。
+- focused 5/5、Hub 1063/1063、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages build、Next.js Webpack Production build、`git diff --check`成功。commit／push／Draft PR、全CI／Vercelはこれから実施する。
+- Production、Production DB／Storage、Stripe live、実利用者注文、Provider、生成Job、creditは変更していない。詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_FAILURE_REFUND_STAGING_E2E_20260928.md`。
+
+---
+
 ## 2026-09-28 Marketplace保護付きPreview認可／署名URL失効の実Staging完了
 
 - 状態: `EXTERNAL_STAGING_AUTH_AND_EXPIRY_4_OF_4_PASSED / FULL_LOCAL_VALIDATION_PASSED / PRODUCTION_UNCHANGED`

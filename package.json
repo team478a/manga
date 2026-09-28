@@ -113,6 +113,7 @@
     "marketplace:staging:preflight:strict": "node scripts/check-marketplace-staging-deployment.mjs --strict",
     "marketplace:staging:candidate:validate": "node scripts/check-marketplace-staging-deployment.mjs --strict --candidate",
     "marketplace:staging:auth-expiry": "node scripts/check-marketplace-auth-expiry-staging.mjs",
+    "marketplace:staging:failure-refund": "node scripts/check-marketplace-failure-refund-staging.mjs",
     "rc:acceptance": "node scripts/check-rc-acceptance.mjs",
     "rc:acceptance:strict": "node scripts/check-rc-acceptance.mjs --strict",
     "rc:acceptance:test": "node --test tests/rc-acceptance.test.mjs",

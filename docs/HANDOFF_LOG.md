@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-28 Codex: Marketplace決済失敗／全額返金の実Staging E2E
+
+- PR #535 merge commit `f31e18ee`から`codex/marketplace-failure-refund-e2e-20260928`を作成した。
+- 隔離Staging、branch Preview、`sk_test_`、既存test webhook endpoint、合成pending／paid注文、返金元PaymentIntentをfail closedで検査する`marketplace:staging:failure-refund`を追加した。
+- 責任者承認後、拒否PaymentIntentを1件作成し、Stripeの`payment_intent.payment_failed`実配送で合成注文`pending → failed`を確認した。続いて既存100円test PaymentIntentを全額返金し、`charge.refunded`実配送で`paid → refunded`を確認した。
+- webhook endpointは最新Previewへ一時的に向け、各操作後に元URLへ復元した。完了後に両コマンドを再実行し、追加PaymentIntent、追加返金、endpoint変更がない冪等性を確認した。
+- focused 5/5、Hub 1063/1063、Hub／Desktop typecheck、lint、deps error 0（既知warning 2件）、packages／Next.js Webpack Production build、diff check成功。Production、Production DB／Storage、Stripe live、実利用者注文、Provider、生成Job、creditは変更していない。秘密値・payload・保護バイパスURLは出力、保存していない。
+- 次: 全ローカル品質ゲート、commit、push、Draft PR、全CI／Vercel成功で停止する。
+
+---
+
 ## 2026-09-28 Codex: Marketplace保護付きPreview認可／署名URL失効の実Staging完了
 
 - PR #534 merge commit `9dfd3a95`から`codex/marketplace-auth-expiry-protected-preview-20260928`を作成した。
