@@ -11,15 +11,28 @@ export type MarketplaceCatalogSale = {
   productCount: number;
 };
 
+function isActiveMarketplaceCatalogProduct(
+  product: MarketplaceCatalogProduct,
+) {
+  return (
+    product.status === "active" &&
+    Number.isFinite(product.price) &&
+    product.price >= 0
+  );
+}
+
+export function hasActiveMarketplaceCatalogProduct(
+  products: MarketplaceCatalogProduct[] | null | undefined,
+) {
+  return (products ?? []).some(isActiveMarketplaceCatalogProduct);
+}
+
 export function summarizeMarketplaceCatalogSale(
   products: MarketplaceCatalogProduct[] | null | undefined,
   checkout: Pick<MarketplaceCheckoutAvailability, "enabled" | "paymentMode">,
 ): MarketplaceCatalogSale | null {
   const activeProducts = (products ?? []).filter(
-    (product) =>
-      product.status === "active" &&
-      Number.isFinite(product.price) &&
-      product.price >= 0,
+    isActiveMarketplaceCatalogProduct,
   );
   if (!activeProducts.length) return null;
 

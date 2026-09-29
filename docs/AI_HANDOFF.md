@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud公開カタログ販売中フィルター（2026-09-30）
+
+- Branch `codex/cloud-marketplace-sale-filter-20260930`、Base `a0e1e8dbebdc75dd3892fd6c2c2b60081d9b3b92`（PR #574 merge commit）。公開作品一覧へ販売中作品だけのフィルターを追加した。
+- 検索語・タグを維持して適用／解除し、`active`かつ正常価格の商品がある作品だけを表示する。件数、空状態、表示名RPCの対象も表示結果へ同期する。
+- 購入資格、canary、自己購入禁止、注文、Stripe、Webhook、ダウンロードは変更しない。migration、schema、RLS、Production、Provider、Job、credit操作は0件。
+- focused 7/7、Hub 1180/1180、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALE_FILTER_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Cloud公開クリエイター表示（2026-09-30）
 
 - Branch `codex/cloud-marketplace-public-creator-attribution-20260930`、Base `5701819b07a66f803e2b2d901532bae03cbdc709`（PR #573 merge commit）。公開作品一覧、作品詳細、購入準備へ販売者の表示名を追加した。

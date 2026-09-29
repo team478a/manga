@@ -4,6 +4,7 @@ import { WorkCard } from "@/components/WorkCard";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
 import {
+  hasActiveMarketplaceCatalogProduct,
   summarizeMarketplaceCatalogSale,
   type MarketplaceCatalogProduct,
 } from "@/lib/marketplace-catalog";
@@ -14,7 +15,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 
-type WorksSearchParams = { q?: string; tag?: string };
+type WorksSearchParams = { q?: string; tag?: string; sale?: string };
 type PublicCatalogWork = Work & {
   digital_products: MarketplaceCatalogProduct[] | null;
 };
@@ -24,6 +25,23 @@ function safeSearchValue(value: string) {
     .replace(/[,%()]/g, " ")
     .trim()
     .slice(0, 100);
+}
+
+function worksHref({
+  keyword,
+  selectedTag,
+  saleOnly,
+}: {
+  keyword: string;
+  selectedTag: string;
+  saleOnly: boolean;
+}) {
+  const query = new URLSearchParams();
+  if (keyword) query.set("q", keyword);
+  if (selectedTag) query.set("tag", selectedTag);
+  if (saleOnly) query.set("sale", "active");
+  const suffix = query.toString();
+  return suffix ? `/works?${suffix}` : "/works";
 }
 
 export default async function WorksPage({
@@ -45,6 +63,7 @@ export default async function WorksPage({
   const params = await searchParams;
   const keyword = safeSearchValue(params.q ?? "");
   const selectedTag = (params.tag ?? "").trim().slice(0, 50);
+  const saleOnly = params.sale === "active";
   const supabase = await createClient();
   const checkout = inspectMarketplaceCheckoutMode();
 
@@ -71,11 +90,15 @@ export default async function WorksPage({
       .eq("content_class", "general")
       .returns<Array<{ tags: string[] | null }>>(),
   ]);
+  const visibleWorks = (works ?? []).filter(
+    (work) =>
+      !saleOnly || hasActiveMarketplaceCatalogProduct(work.digital_products),
+  );
   let creatorRows: PublicWorkCreatorAttribution[] | null = null;
-  if (works?.length) {
+  if (visibleWorks.length) {
     const result = await supabase.rpc(
       "list_public_work_creator_attributions",
-      { p_work_ids: works.map((work) => work.id) },
+      { p_work_ids: visibleWorks.map((work) => work.id) },
     );
     creatorRows = result.data as PublicWorkCreatorAttribution[] | null;
   }
@@ -83,7 +106,7 @@ export default async function WorksPage({
   const tags = Array.from(
     new Set((tagRows ?? []).flatMap((row) => row.tags ?? [])),
   ).sort((a, b) => a.localeCompare(b, "ja"));
-  const filtering = Boolean(keyword || selectedTag);
+  const filtering = Boolean(keyword || selectedTag || saleOnly);
 
   return (
     <main className="page">
@@ -107,6 +130,9 @@ export default async function WorksPage({
           {selectedTag ? (
             <input type="hidden" name="tag" value={selectedTag} />
           ) : null}
+          {saleOnly ? (
+            <input type="hidden" name="sale" value="active" />
+          ) : null}
           <button className="button" type="submit">
             検索する
           </button>
@@ -117,9 +143,7 @@ export default async function WorksPage({
             <div className="mt-3 flex flex-wrap gap-2">
               <Link
                 className={`rounded-full px-3 py-2 text-sm ${!selectedTag ? "bg-leaf text-white" : "bg-linen text-stone-700"}`}
-                href={
-                  keyword ? `/works?q=${encodeURIComponent(keyword)}` : "/works"
-                }
+                href={worksHref({ keyword, selectedTag: "", saleOnly })}
               >
                 すべて
               </Link>
@@ -127,6 +151,7 @@ export default async function WorksPage({
                 const query = new URLSearchParams();
                 if (keyword) query.set("q", keyword);
                 query.set("tag", tag);
+                if (saleOnly) query.set("sale", "active");
                 return (
                   <Link
                     className={`rounded-full px-3 py-2 text-sm ${selectedTag === tag ? "bg-leaf text-white" : "bg-linen text-stone-700"}`}
@@ -140,10 +165,22 @@ export default async function WorksPage({
             </div>
           </div>
         ) : null}
+        <div className="mt-5 border-t border-stone-100 pt-5">
+          <Link
+            className={`inline-flex rounded-full px-4 py-2 text-sm font-semibold ${saleOnly ? "bg-violet-700 text-white" : "bg-violet-50 text-violet-800"}`}
+            href={worksHref({
+              keyword,
+              selectedTag,
+              saleOnly: !saleOnly,
+            })}
+          >
+            {saleOnly ? "販売中のみを解除" : "販売中の作品だけを見る"}
+          </Link>
+        </div>
       </form>
 
       <div className="mt-7 flex items-center justify-between gap-4">
-        <p className="text-stone-600">{works?.length ?? 0}件の作品</p>
+        <p className="text-stone-600">{visibleWorks.length}件の作品</p>
         {filtering ? (
           <Link
             className="font-semibold text-leaf hover:underline"
@@ -154,9 +191,9 @@ export default async function WorksPage({
         ) : null}
       </div>
 
-      {works?.length ? (
+      {visibleWorks.length ? (
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {works.map((work) => {
+          {visibleWorks.map((work) => {
             const sale = summarizeMarketplaceCatalogSale(
               work.digital_products,
               checkout,
@@ -180,7 +217,9 @@ export default async function WorksPage({
                 : "公開作品はまだありません"
             }
             body={
-              filtering
+              saleOnly
+                ? "検索条件を変えるか、販売中のみを解除してお試しください。"
+                : filtering
                 ? "検索語やタグを変えてお試しください。"
                 : "最初の作品が公開されると、ここに表示されます。"
             }
