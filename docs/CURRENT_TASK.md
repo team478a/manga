@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud出品確定
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-listing-completion-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`0d3bd245`（PR #567 merge commit）。
+- 販売下書き作成後、Creator画面から作品公開と商品販売開始を1操作で原子的に確定できるようにした。作品設定・商品設定の個別確認入口も維持する。
+- 新RPCは、認証、所有権、一般向け区分、Projectごとの単一作品、固定完成版、完全な連番ページ、単一商品、価格、販売ファイル、完成版PDFとの一致を同一transaction内で再検証する。不一致はfail closedし、途中失敗では作品公開・商品active化の両方をrollbackする。
+- migration `202609290001_cloud_marketplace_listing_publish`とrollback、正規schema、manifestを追加した。一般公開販売、自由購入、振込、精算確定の境界は変更していない。
+- Production接続、migration適用、作品公開、商品active化、注文、Stripe、決済、返金、Provider、生成Job、credit、利用者データ変更は0件。
+- 検証: focused 14/14、Hub 1160/1160、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的89/89、PostgreSQL 16 forward／全rollback／再forward 89/89、Web／Desktop build、RC repository structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LISTING_COMPLETION_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品の出品確定は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud限定販売 Checkout再試行回復
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

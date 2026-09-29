@@ -110,13 +110,15 @@ test("販売下書き後は完成版固定、作品公開、商品販売を順�
   assert.equal(ready.ready, true);
 });
 
-test("Creator画面は販売下書き後の次工程へ遷移できる", async () => {
+test("Creator画面は販売下書き後の出品確定と個別確認へ進める", async () => {
   const page = await read("src/app/creator/[projectId]/page.tsx");
 
   assert.match(page, /buildCloudMarketplaceSalesGuidance/);
   assert.match(page, /販売開始までの進捗/);
-  assert.match(page, /作品を公開設定する/);
-  assert.match(page, /商品の販売を開始する/);
+  assert.match(page, /作品公開と販売開始をまとめて確定/);
+  assert.match(page, /出品を確定する/);
+  assert.match(page, /作品設定を確認/);
+  assert.match(page, /販売商品を確認/);
   assert.match(page, /\/dashboard\/works\/\$\{marketplaceDraft\.work\.id\}\/edit/);
   assert.match(page, /\/dashboard\/products\/\$\{marketplaceDraft\.product\.id\}\/edit/);
 });

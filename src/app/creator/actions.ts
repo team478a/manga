@@ -28,7 +28,7 @@ import {
 } from "@/lib/cloud-creator-server";
 import { completionModeSchema, createCompletionModeProfile } from "@mangai/shared";
 import { createCloudExportJob, setCloudExportJobState } from "@/modules/cloud-creator/export/durable-export-service";
-import { syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
+import { publishCloudMarketplaceListing, syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
 import { formString } from "@/app/actions/shared/form-data";
 
@@ -444,6 +444,21 @@ export async function createCloudProjectCheckpointAction(projectId: string, kind
   catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "作品の固定版を作成できませんでした。"))}`); }
   revalidatePath(`/creator/${parsed.data.projectId}`);
   redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(parsed.data.kind === "release" ? "完成版を固定しました" : "バックアップを作成しました")}`);
+}
+
+export async function publishCloudMarketplaceListingAction(projectId: string) {
+  const parsed = z.string().uuid().safeParse(projectId);
+  if (!parsed.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));
+  try {
+    const result = await publishCloudMarketplaceListing(parsed.data);
+    revalidatePath(`/creator/${parsed.data}`);
+    revalidatePath(`/dashboard/works/${result.workId}/edit`);
+    revalidatePath(`/dashboard/products/${result.productId}/edit`);
+    revalidatePath(`/works/${result.workId}`);
+  } catch (error) {
+    redirect(`/creator/${parsed.data}?error=${encodeURIComponent(domainMessage(error, "出品を確定できませんでした。完成版・販売ファイル・価格を確認してください。"))}`);
+  }
+  redirect(`/creator/${parsed.data}?message=${encodeURIComponent("作品公開と商品販売を開始しました")}`);
 }
 
 export async function restoreCloudProjectCheckpointAction(projectId: string, checkpointId: string, formData: FormData) {
