@@ -111,10 +111,10 @@ export default async function DashboardPage({
                   <p className="text-xs font-bold text-violet-700">改善</p>
                   <h3 className="mt-1 font-bold">先行販売購入者が利用できる範囲を更新しました</h3>
                   <p className="mt-1 text-sm text-stone-600">
-                    市場分析、AI企画、シナリオ、ネーム、Cloud原稿編集、人物・画風・参照画像設定、利用枠内のコマ画像生成、作品管理、PDF書き出し、状況・ご意見を利用できます。
+                    市場分析、AI企画、シナリオ、ネーム、Cloud原稿編集、人物・画風・参照画像設定、利用枠内のコマ画像生成、作品管理、PDF書き出し、状況・ご意見を利用できます。管理者が対象を指定した場合は、MANGAI内限定テスト販売と注文・売上確認も利用できます。
                   </p>
                   <p className="mt-2 text-sm text-stone-600">
-                    成人向け制作、販売申請、決済、収益管理は今回の先行利用対象外です。画像生成は利用設定・残りAI利用数・クレジット・安全確認を満たす場合だけ実行できます。
+                    成人向け制作、一般公開販売、振込、精算確定は今回の先行利用対象外です。限定テスト購入は指定購入者・商品・期間を満たす場合だけ、画像生成は利用設定・残りAI利用数・クレジット・安全確認を満たす場合だけ実行できます。
                   </p>
                 </div>
                 <p className="shrink-0 text-xs text-stone-500">2026/8/28</p>
@@ -151,6 +151,7 @@ export default async function DashboardPage({
           <Link className="button-secondary" href="/dashboard/monitor/guide">使い方</Link>
           <Link className="button-secondary" href="/dashboard/monitor">状況・ご意見</Link>
           <Link className="button-secondary" href="/dashboard/monitor/quality-review">品質確認</Link>
+          <Link className="button-secondary" href="/dashboard/purchases">購入履歴</Link>
           <Link className="button-secondary" href="/dashboard/notifications">通知 {notificationsResult.count ?? 0}件</Link>
         </div>
       </section>

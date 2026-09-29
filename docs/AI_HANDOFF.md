@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud限定テスト購入者導線（2026-09-29）
+
+- Branch `codex/cloud-marketplace-buyer-journey-guidance-20260929`、Base `b97a732c`（PR #565 merge commit）。未ログインの指定購入者が購入準備画面からログイン後、同じ画面へ安全に戻れる導線を追加した。
+- `next`は同一originの内部pathだけを許可する。外部URL、protocol-relative URL、backslash、制御文字、`/login`、`/auth/*`は`/dashboard`へfail closedする。認証失敗時も正規化済み戻り先だけを保持する。
+- 購入準備画面へ購入からダウンロードまでの3手順と購入履歴リンクを追加し、ダッシュボードにも購入履歴入口を設けた。テスト購入では実際の請求・売上・振込が発生しないことを明記した。
+- 更新情報を限定テスト販売の現状へ同期した。一般公開販売、振込、精算確定は未提供。購入可否、自己購入禁止、canary、期間、商品状態の既存境界は未変更。
+- Production接続、DB mutation、migration、publication、作品・商品状態、注文、Stripe、Storage、Provider、Job、credit操作は0件。
+- focused 30/30、Hub 1154/1154、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_BUYER_JOURNEY_GUIDANCE_20260929.md`。次はDraft PRの全CI／Vercel成功で停止し、Production公開・購入・決済は別承認を待つ。
+
+---
+
 ## 0.0 Cloud限定テスト販売ガイド（2026-09-29）
 
 - Branch `codex/cloud-marketplace-test-sale-guide-20260929`、Base `46889073`（PR #564 merge commit）。MANGAI内の限定テスト販売を、原稿完成から注文・売上確認までの8手順として利用者ガイドへ追加した。

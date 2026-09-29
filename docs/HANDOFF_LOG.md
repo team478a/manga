@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Cloud限定テスト購入者導線
+
+- Branch: `codex/cloud-marketplace-buyer-journey-guidance-20260929`。Base: `b97a732c`（PR #565 merge commit）。指定購入者が未ログインの場合、ログイン後に同じ購入準備画面へ戻る導線を実装した。
+- 戻り先は同一originの内部pathだけに限定し、外部URL、認証path、backslash、制御文字は`/dashboard`へfail closedする。ログイン失敗時も安全な戻り先を維持する。
+- 購入準備画面へ購入からダウンロードまでの3手順を追加し、購入履歴を購入準備画面とダッシュボードから確認できるようにした。テスト購入の非請求・非売上・非振込も明示した。
+- 更新情報へMANGAI内限定テスト販売と注文・売上確認を反映し、一般公開販売、振込、精算確定は対象外のままとした。既存購入制約は未変更。
+- Production接続、DB mutation、migration、publication、作品・商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは未変更。
+- focused 30/30、Hub 1154/1154、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production公開・購入・決済は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Cloud限定テスト販売ガイド
 
 - Branch: `codex/cloud-marketplace-test-sale-guide-20260929`。Base: `46889073`（PR #564 merge commit）。原稿完成、完成版固定、販売下書き、作品公開、商品販売開始、管理者確認、指定購入者確認、注文・売上確認を一続きの8手順へまとめた。

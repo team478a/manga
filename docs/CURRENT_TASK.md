@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud限定テスト購入者導線
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-buyer-journey-guidance-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`b97a732c`（PR #565 merge commit）。
+- 未ログインの指定購入者が購入準備画面からログインし、同じ画面へ安全に戻れる導線を追加した。戻り先は同一originの内部pathだけを許可し、外部URL、認証path、backslash、制御文字は`/dashboard`へfail closedする。
+- 購入準備画面へ購入からダウンロードまでの3手順と購入履歴へのリンクを追加した。ダッシュボードにも購入履歴入口を設け、テスト購入は実請求・売上・振込を発生させないことを明示した。
+- 更新情報を限定テスト販売の現状へ同期し、一般公開販売、振込、精算確定は未提供とした。購入可否、自己購入禁止、canary対象、期間、商品状態の既存制約は変更していない。
+- Production接続、DB mutation、migration、publication、作品・商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは変更していない。
+- 検証: focused 30/30、Hub 1154/1154、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC repository structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_BUYER_JOURNEY_GUIDANCE_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production公開・購入・決済は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud限定テスト販売ガイド
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

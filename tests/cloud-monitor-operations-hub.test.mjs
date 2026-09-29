@@ -32,13 +32,17 @@ test("更新情報は購入者向け先行利用で利用できる範囲と対�
     "作品管理",
     "PDF書き出し",
     "状況・ご意見",
+    "MANGAI内限定テスト販売",
+    "注文・売上確認",
   ]) {
     assert.match(dashboard, new RegExp(available));
   }
-  assert.match(dashboard, /成人向け制作、販売申請、決済、収益管理は今回の先行利用対象外/);
+  assert.match(dashboard, /成人向け制作、一般公開販売、振込、精算確定は今回の先行利用対象外/);
+  assert.match(dashboard, /限定テスト購入は指定購入者・商品・期間を満たす場合だけ/);
   assert.match(dashboard, /先行販売購入者向け先行利用/);
   assert.match(dashboard, /利用設定・残りAI利用数・クレジット・安全確認/);
   assert.match(dashboard, /href="\/dashboard\/monitor\/guide"/);
+  assert.match(dashboard, /href="\/dashboard\/purchases"/);
 });
 
 test("ダッシュボードから漫画画像の品質確認へ直接移動できる", async () => {

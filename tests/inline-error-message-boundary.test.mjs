@@ -75,5 +75,5 @@ test("30画面34箇所は表示条件・文言・ARIAを各画面に保持する
   assert.equal(usageCount, 34);
   assert.match(sources[1], /!productAvailable \? <InlineErrorMessage>この商品は現在購入できません。<\/InlineErrorMessage>/);
   assert.match(sources[1], /productAvailable && !checkout\.enabled \? <InlineErrorMessage>\{checkout\.reason/);
-  assert.match(sources[1], /productAvailable && checkout\.enabled && !canPurchase \? <InlineErrorMessage>この商品は現在、指定された購入者だけが購入できます。<\/InlineErrorMessage>/);
+  assert.match(sources[1], /productAvailable && checkout\.enabled && !canPurchase \? \([\s\S]*<InlineErrorMessage>この商品は現在、指定された購入者だけが購入できます。<\/InlineErrorMessage>/);
 });
