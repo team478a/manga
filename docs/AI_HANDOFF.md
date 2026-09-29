@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud出品の安全な再開（2026-09-29）
+
+- Branch `codex/cloud-marketplace-listing-resume-20260929`、Base `790b8fd2`（PR #569 merge commit）。販売停止後の再出品を、初回出品と同じ安全確認を通して開始できるようにした。
+- Creator画面を`出品を開始・再開する`へ統一し、一般公開と新規販売を開始・再開する必須確認を追加した。確認値はServer Actionでも検証し、欠落時はfail closedする。
+- 既存の原子的な`publish_cloud_marketplace_listing(uuid)`を再利用する。所有権、一般向け、固定完成版、全ページ、単一商品、価格、販売ファイル、完成版PDF一致をtransaction内で再検証する。
+- 状態を`販売中`／`未公開・停止中`で表示し、再開後の関連cacheを更新する。購入済み利用権と注文履歴は維持する。migration、schema、RLS、Stripe、注文処理は未変更。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、Provider、Job、credit操作は0件。`202609290001`は承認済み・未適用、`202609290002`は未適用・別承認待ち。
+- focused 13/13、Hub 1164/1164、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LISTING_RESUME_20260929.md`。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Cloud出品の安全な販売停止（2026-09-29）
 
 - Branch `codex/cloud-marketplace-listing-withdrawal-20260929`、Base `243d941a`（PR #568 merge commit）。販売開始済みの作品について、新規販売と一般公開をCreator画面の1操作で停止できるようにした。
