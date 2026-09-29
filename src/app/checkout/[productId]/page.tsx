@@ -6,6 +6,10 @@ import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { isMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { yen } from "@/lib/format";
+import {
+  publicCreatorName,
+  type PublicWorkCreatorAttribution,
+} from "@/lib/public-creator-attribution";
 import { createClient } from "@/lib/supabase/server";
 
 type CheckoutProduct = {
@@ -15,7 +19,6 @@ type CheckoutProduct = {
   price: number;
   status: string;
   creator_id: string;
-  profiles: { display_name: string } | null;
   works: {
     id: string;
     title: string;
@@ -39,11 +42,21 @@ export default async function CheckoutPage({
   } = await supabase.auth.getUser();
   const { data: product } = await supabase
     .from("digital_products")
-    .select("id,title,description,price,status,creator_id,profiles:creator_id(display_name),works:work_id(id,title,image_url,is_public)")
+    .select("id,title,description,price,status,creator_id,works:work_id(id,title,image_url,is_public)")
     .eq("id", productId)
     .maybeSingle<CheckoutProduct>();
 
   if (!product) notFound();
+
+  const { data: creatorRows } = product.works
+    ? await supabase.rpc("list_public_work_creator_attributions", {
+        p_work_ids: [product.works.id],
+      })
+    : { data: null };
+  const creatorName = publicCreatorName(
+    creatorRows as PublicWorkCreatorAttribution[] | null,
+    product.works?.id,
+  );
 
   const checkout = inspectMarketplaceCheckoutMode();
   let buyerProfileId: string | null = null;
@@ -88,7 +101,7 @@ export default async function CheckoutPage({
           <p className="text-base font-semibold text-leaf">購入準備</p>
           <h1 className="mt-2 text-3xl font-bold">{product.title}</h1>
           <p className="mt-3 text-lg text-stone-600">作品：{product.works?.title ?? "不明"}</p>
-          <p className="mt-1 text-lg text-stone-600">クリエイター：{product.profiles?.display_name ?? "不明"}</p>
+          <p className="mt-1 text-lg text-stone-600">クリエイター：{creatorName}</p>
           <p className="mt-5 text-3xl font-bold">税込 {yen(product.price)}</p>
           <p className="mt-5 whitespace-pre-wrap text-lg leading-relaxed text-stone-700">{product.description || "商品説明はまだありません。"}</p>
 

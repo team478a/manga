@@ -7,6 +7,10 @@ import {
   summarizeMarketplaceCatalogSale,
   type MarketplaceCatalogProduct,
 } from "@/lib/marketplace-catalog";
+import {
+  mapPublicWorkCreatorAttributions,
+  type PublicWorkCreatorAttribution,
+} from "@/lib/public-creator-attribution";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 
@@ -67,6 +71,15 @@ export default async function WorksPage({
       .eq("content_class", "general")
       .returns<Array<{ tags: string[] | null }>>(),
   ]);
+  let creatorRows: PublicWorkCreatorAttribution[] | null = null;
+  if (works?.length) {
+    const result = await supabase.rpc(
+      "list_public_work_creator_attributions",
+      { p_work_ids: works.map((work) => work.id) },
+    );
+    creatorRows = result.data as PublicWorkCreatorAttribution[] | null;
+  }
+  const creatorByWork = mapPublicWorkCreatorAttributions(creatorRows);
   const tags = Array.from(
     new Set((tagRows ?? []).flatMap((row) => row.tags ?? [])),
   ).sort((a, b) => a.localeCompare(b, "ja"));
@@ -148,7 +161,14 @@ export default async function WorksPage({
               work.digital_products,
               checkout,
             );
-            return <WorkCard key={work.id} work={work} sale={sale} />;
+            return (
+              <WorkCard
+                key={work.id}
+                work={work}
+                sale={sale}
+                creatorName={creatorByWork.get(work.id) ?? "クリエイター"}
+              />
+            );
           })}
         </div>
       ) : (

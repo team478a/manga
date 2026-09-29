@@ -546,7 +546,13 @@
       "description": "Cloud商品の直接作成と固定項目更新をDB triggerで拒否し正規RPCだけを許可",
       "forwardSha256": "307f35ca1e08e0232164c79a8b2206c487748046eec65a95fccd9f98c5fd644d",
       "rollbackSha256": "7fd78717bcbd2960eb0ef97e05d5bfe25eb8f3ffae956852c86d0c98c241aafa"
+    },
+    {
+      "id": "202609300002_public_marketplace_creator_attribution",
+      "description": "公開中の一般作品に限定して安全なクリエイター表示名を提供",
+      "forwardSha256": "fa696a176c437dffd3b18deaa850fc203448eba731c9bfb5e6875fa6199ecbcd",
+      "rollbackSha256": "26807137a23f29b286dd60fcdbcb768909d2889b07fd2a6ba3525d876e4e1007"
     }
   ],
-  "schemaSha256": "43924e2f601c7ec5c033a0aabd2642bf71ad96005f394cf5ec38178a226e10e0"
+  "schemaSha256": "dd2739fda6aa25e509e1b9adea7b4820c53719be09b7707bdfa4b012267a62b7"
 }

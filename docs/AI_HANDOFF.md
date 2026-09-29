@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud公開クリエイター表示（2026-09-30）
+
+- Branch `codex/cloud-marketplace-public-creator-attribution-20260930`、Base `5701819b07a66f803e2b2d901532bae03cbdc709`（PR #573 merge commit）。公開作品一覧、作品詳細、購入準備へ販売者の表示名を追加した。
+- `list_public_work_creator_attributions(uuid[])`は公開中の一般作品に限定し、`work_id`と`display_name`だけを返す。プロフィールRLSは維持し、メール、Auth ID、プロフィール本文、権限は公開しない。購入準備の直接プロフィールjoinは削除した。
+- migration `202609300002_public_marketplace_creator_attribution`、rollback、schema、manifest、SQL assertion、集中テストを追加。RPC未適用・障害時は`クリエイター`へfail closedする。
+- Production接続・適用・実データ変更、Stripe、Storage、Provider、Job、credit操作は0件。Production未適用は`202609290001`、`202609290002`、`202609300001`、`202609300002`。
+- focused 6/6、Hub 1179/1179、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC structure、diff check成功。ローカルDB roundtripはDocker Desktop Linux Engineの一時500で中断したため、GitHub `Migration roundtrip`成功を必須とする。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_PUBLIC_CREATOR_ATTRIBUTION_20260930.md`。次はDraft PRの全CI／Vercel成功で停止し、Production適用は別承認を待つ。
+
+---
+
 ## 0.0 Cloud公開カタログ販売情報（2026-09-30）
 
 - Branch `codex/cloud-marketplace-catalog-sale-discovery-20260930`、Base `c84d8e57b68b79d04ae1f6b3b48bd30f5c718eed`（PR #572 merge commit）。公開作品一覧だけで販売中商品の有無、販売モード、価格を確認できるようにした。

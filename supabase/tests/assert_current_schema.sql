@@ -174,7 +174,10 @@ do $$ begin
      or to_regprocedure('public.sync_cloud_marketplace_release_draft(uuid,uuid,text,text,text,jsonb,integer,text)') is null
      or to_regprocedure('public.select_cloud_work_publication(uuid,uuid)') is null
      or to_regprocedure('public.publish_cloud_marketplace_listing(uuid)') is null
-     or to_regprocedure('public.withdraw_cloud_marketplace_listing(uuid)') is null then
+     or to_regprocedure('public.withdraw_cloud_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.list_public_work_creator_attributions(uuid[])') is null
+     or not has_function_privilege('anon','public.list_public_work_creator_attributions(uuid[])','execute')
+     or not has_function_privilege('authenticated','public.list_public_work_creator_attributions(uuid[])','execute') then
     raise exception 'Current schema Cloud work publication lifecycle objects missing';
   end if;
 end $$;

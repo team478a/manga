@@ -575,6 +575,9 @@ do $$ begin
      or to_regprocedure('public.select_cloud_work_publication(uuid,uuid)') is null
      or to_regprocedure('public.publish_cloud_marketplace_listing(uuid)') is null
      or to_regprocedure('public.withdraw_cloud_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.list_public_work_creator_attributions(uuid[])') is null
+     or not has_function_privilege('anon','public.list_public_work_creator_attributions(uuid[])','execute')
+     or not has_function_privilege('authenticated','public.list_public_work_creator_attributions(uuid[])','execute')
      or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='current_publication_id') then
     raise exception 'Cloud work publication objects missing';
   end if;

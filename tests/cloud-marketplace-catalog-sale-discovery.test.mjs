@@ -52,7 +52,7 @@ test("公開作品一覧はactive商品の最小情報だけを取得してカ�
   assert.match(page, /digital_products\(price,status\)/);
   assert.match(page, /\.eq\("digital_products\.status", "active"\)/);
   assert.match(page, /summarizeMarketplaceCatalogSale/);
-  assert.match(page, /<WorkCard key=\{work\.id\} work=\{work\} sale=\{sale\}/);
+  assert.match(page, /<WorkCard[\s\S]*?key=\{work\.id\}[\s\S]*?work=\{work\}[\s\S]*?sale=\{sale\}/);
   assert.match(card, /sale\.label/);
   assert.match(card, /yen\(sale\.lowestPrice\)/);
   assert.match(card, /sale\.productCount > 1 \? "から"/);

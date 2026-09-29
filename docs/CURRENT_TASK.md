@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud公開クリエイター表示
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-public-creator-attribution-20260930`
+- Base: `origin/feature/manga-canvas-mvp`@`5701819b07a66f803e2b2d901532bae03cbdc709`（PR #573 merge commit）。
+- 公開作品一覧、作品詳細、購入準備でクリエイター表示名を確認できるようにした。購入準備の直接プロフィールjoinを削除し、3画面を同じ公開用RPCへ統一した。
+- `list_public_work_creator_attributions(uuid[])`は公開中の一般作品だけを対象に`work_id`と`display_name`だけを返す。既存プロフィールRLSは変更せず、メール、Auth ID、プロフィール本文、権限、内部情報は公開しない。
+- migration `202609300002_public_marketplace_creator_attribution`、rollback、schema、manifest、SQL assertion、集中テストを追加した。RPC未適用・障害時は個人を推測せず`クリエイター`へfail closedする。
+- Production接続、migration適用、作品・商品・注文・Stripe・Storage・Provider・生成Job・credit・利用者データ変更は0件。Production未適用は`202609290001`、`202609290002`、`202609300001`、`202609300002`。今回migrationはmerge後に別承認が必要。
+- 検証: focused 6/6、Hub 1179/1179、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC structure、diff check成功。ローカルPostgreSQL roundtripはDocker Desktop Linux Engineの一時500で環境起因中断したため、GitHub `Migration roundtrip`成功を必須とする。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_PUBLIC_CREATOR_ATTRIBUTION_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用、一般購入解禁、実購入・実決済は別承認単位。
+
+---
+
 ## 2026-09-30 Cloud公開カタログ販売情報
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
