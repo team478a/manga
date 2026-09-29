@@ -24,6 +24,7 @@ import {
   moveCloudStructureAction,
   renameCloudEpisodeAction,
   renameCloudProjectAction,
+  publishCloudMarketplaceListingAction,
   setCloudProjectCoverAction,
   syncCloudMarketplaceDraftAction,
 } from "@/app/creator/actions";
@@ -776,15 +777,29 @@ export default async function CloudProjectPage({
                     3. 商品を販売中にする{marketplaceDraft.product.status === "active" ? "（完了）" : "（未完了）"}
                   </li>
                 </ol>
-                {marketplaceSalesGuidance?.actionTarget === "work" && marketplaceDraft.work ? (
-                  <Link className="button-secondary mt-3" href={`/dashboard/works/${marketplaceDraft.work.id}/edit`}>
-                    作品を公開設定する
-                  </Link>
-                ) : marketplaceSalesGuidance?.actionTarget === "product" ? (
-                  <Link className="button-secondary mt-3" href={`/dashboard/products/${marketplaceDraft.product.id}/edit`}>
-                    {marketplaceSalesGuidance.ready ? "販売商品を確認" : "商品の販売を開始する"}
-                  </Link>
+                {!marketplaceSalesGuidance?.ready && marketplaceDraft.work?.current_publication_id ? (
+                  <div className="mt-3 rounded-md border border-violet-200 bg-violet-50 p-3">
+                    <p className="font-bold text-violet-950">作品公開と販売開始をまとめて確定</p>
+                    <p className="mt-1 leading-relaxed text-violet-900">
+                      完成版、販売PDF、価格、所有権をもう一度確認し、問題がなければ作品公開と商品販売開始を同時に行います。
+                    </p>
+                    <form action={publishCloudMarketplaceListingAction.bind(null, projectId)}>
+                      <PendingSubmitButton className="button mt-3" pendingLabel="出品確定中…">
+                        出品を確定する
+                      </PendingSubmitButton>
+                    </form>
+                  </div>
                 ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {marketplaceDraft.work ? (
+                    <Link className="button-secondary" href={`/dashboard/works/${marketplaceDraft.work.id}/edit`}>
+                      作品設定を確認
+                    </Link>
+                  ) : null}
+                  <Link className="button-secondary" href={`/dashboard/products/${marketplaceDraft.product.id}/edit`}>
+                    販売商品を確認
+                  </Link>
+                </div>
                 {marketplaceSalesGuidance?.ready && marketplaceDraft.work ? (
                   <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-green-950">
                     <p className="font-bold">販売表示を確認できます</p>

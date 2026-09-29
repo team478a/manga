@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud出品確定（2026-09-29）
+
+- Branch `codex/cloud-marketplace-listing-completion-20260929`、Base `0d3bd245`（PR #567 merge commit）。販売下書き後の作品公開と商品販売開始をCreator画面の1操作へ統合した。
+- `publish_cloud_marketplace_listing(uuid)`は、所有する一般向けProject、単一作品、選択済み完成版、完全な連番ページ、単一商品、価格、販売ファイル、完成版PDF一致を同一transactionで検証し、成立時だけ作品を公開して商品をactive化する。再実行は冪等で、失敗は全体rollbackする。
+- migration `202609290001_cloud_marketplace_listing_publish`、rollback、schema、manifestを追加した。従来の個別設定画面とpublication triggerは維持する。
+- 一般公開販売、自由購入、振込、精算確定は未提供のまま。Production migration、作品公開、商品active化、注文、Stripe、Provider、Job、credit操作は0件。
+- focused 14/14、Hub 1160/1160、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的89/89、PostgreSQL 16 roundtrip 89/89、Web／Desktop build、RC structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LISTING_COMPLETION_20260929.md`。次はDraft PRの全CI／Vercel成功で停止し、Production適用と実出品は別承認を待つ。
+
+---
+
 ## 0.0 Cloud限定販売 Checkout再試行回復（2026-09-29）
 
 - Branch `codex/cloud-marketplace-checkout-retry-recovery-20260929`、Base `3cf0020f`（PR #566 merge commit）。Stripe Session作成結果が曖昧な場合も、live指定購入者が完全一致する既存pending注文を再利用して同じidempotency keyで再試行できるようにした。

@@ -204,3 +204,21 @@ export async function selectCloudWorkPublication(input: { workId: string; public
     throw new Error("公開・販売を停止してから完成版を切り替えてください。");
   if (error || !data) throw new Error("完成版を切り替えできませんでした。");
 }
+
+export async function publishCloudMarketplaceListing(projectId: string) {
+  await requireProfile();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("publish_cloud_marketplace_listing", {
+    p_project_id: projectId,
+  });
+  const result = (data ?? [])[0] as
+    | { work_id: string; product_id: string; publication_id: string }
+    | undefined;
+  if (error || !result)
+    throw new Error("出品条件を確認できませんでした。");
+  return {
+    workId: result.work_id,
+    productId: result.product_id,
+    publicationId: result.publication_id,
+  };
+}

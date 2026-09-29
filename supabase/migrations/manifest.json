@@ -528,7 +528,13 @@
       "description": "本番Marketplaceで同一購入者の商品別pending・paid重複購入を防止",
       "forwardSha256": "8974ef309c434518bcf9ec664e90ffbf0b4f9fbf100860bc9c2428a151473b73",
       "rollbackSha256": "9119b5c442f3b2ae7aff6629aaa8b4af11dcb74bd6d3ef4aa4490cc15aaaef88"
+    },
+    {
+      "id": "202609290001_cloud_marketplace_listing_publish",
+      "description": "Cloud作品公開と商品販売開始を所有権・完成版検証付きで原子的に確定",
+      "forwardSha256": "7cf041d4add68a08f994abb8a287159226574abb64da09d103ab7e085b959701",
+      "rollbackSha256": "a30d642b0d79c330083a62e6a58d494bace89a7c2c58585f91a5d1e5b7ae1013"
     }
   ],
-  "schemaSha256": "6e57de7de43df78fec9a29e4a96b10d7d3e6265817bf064f857296c68773ea42"
+  "schemaSha256": "6905d139aa635596b2cf019e5cebe54d548858c03c0fa818cc14b5ec6792bc6f"
 }
