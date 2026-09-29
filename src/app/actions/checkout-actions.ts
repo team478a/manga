@@ -10,7 +10,7 @@ import { normalizeBuyerEmail } from "@/lib/checkout-policy";
 import { hasSupabaseAdminEnv } from "@/lib/env";
 import { requestOriginFromHeaders } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
-import { insertPendingCheckoutOrder } from "@/modules/checkout/infrastructure/checkout-order-repository";
+import { createOrReusePendingCheckoutOrder } from "@/modules/checkout/infrastructure/checkout-order-repository";
 import { formText } from "./shared/form-data";
 
 export async function createPendingOrder(formData: FormData) {
@@ -102,7 +102,7 @@ export async function createPendingOrder(formData: FormData) {
   const amount = Math.round(product.price);
   const platformFee = Math.floor(amount * 0.2);
   const creatorRevenue = amount - platformFee;
-  const { data: order, error } = await insertPendingCheckoutOrder({
+  const { data: order, error } = await createOrReusePendingCheckoutOrder({
     buyerEmail,
     buyerProfileId,
     productId: product.id,

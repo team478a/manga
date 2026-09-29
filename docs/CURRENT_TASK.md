@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud限定販売 Checkout再試行回復
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-checkout-retry-recovery-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`3cf0020f`（PR #566 merge commit）。
+- Stripe Session作成結果が通信断などで曖昧になった後も、liveの指定購入者が同じpending注文IDを再利用し、既存のStripe idempotency keyで再試行できるようにした。
+- 再利用はliveかつログイン済みbuyerに限定し、メール、buyer profile、商品、販売者、金額、手数料、販売者売上額が完全一致するpending注文だけを許可する。競合insert時も同じ条件で1回だけ回復読込する。
+- test／guest checkoutは従来どおり新規注文を作成する。条件不一致、読込失敗、価格変更はfail closed。Stripe側作成済みの可能性があるため仮注文を自動cancelしない。
+- migration、schema、RLS、canary、Stripe metadata、Webhook、cancel token、download契約は変更していない。Production接続、DB mutation、注文、Stripe、決済、返金、Provider、生成Job、credit操作は0件。
+- 検証: focused 25/25、Hub 1157/1157、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC repository structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_CHECKOUT_RETRY_RECOVERY_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production購入・決済は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud限定テスト購入者導線
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

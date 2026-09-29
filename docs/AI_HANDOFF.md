@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud限定販売 Checkout再試行回復（2026-09-29）
+
+- Branch `codex/cloud-marketplace-checkout-retry-recovery-20260929`、Base `3cf0020f`（PR #566 merge commit）。Stripe Session作成結果が曖昧な場合も、live指定購入者が完全一致する既存pending注文を再利用して同じidempotency keyで再試行できるようにした。
+- 再利用条件は購入者メール、buyer profile、商品、販売者、金額、手数料、販売者売上額、live、pendingの完全一致。競合insert後は同じ条件で1回だけ再読込し、不一致・読込失敗・価格変更はfail closedする。
+- test／guest checkoutは従来どおり。Stripe側でSession作成済みの可能性を残すため、曖昧な失敗時にpending注文を自動cancelしない。
+- canary二重検査、live pending／paid一意制約、Stripe metadata、Webhook、cancel token、download契約は未変更。Production接続、DB mutation、注文、Stripe、決済、返金、Provider、Job、credit操作は0件。
+- focused 25/25、Hub 1157/1157、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_CHECKOUT_RETRY_RECOVERY_20260929.md`。次はDraft PRの全CI／Vercel成功で停止し、Production購入・決済は別承認を待つ。
+
+---
+
 ## 0.0 Cloud限定テスト購入者導線（2026-09-29）
 
 - Branch `codex/cloud-marketplace-buyer-journey-guidance-20260929`、Base `b97a732c`（PR #565 merge commit）。未ログインの指定購入者が購入準備画面からログイン後、同じ画面へ安全に戻れる導線を追加した。
