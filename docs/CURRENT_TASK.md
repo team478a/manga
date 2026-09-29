@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud販売表示の確認導線
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-sales-preview-guidance-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`4071e728`（PR #562 merge commit）。
+- 販売設定完了後のCreator作品画面へ、公開作品ページと購入準備画面を確認するリンクを追加した。完成版固定、作品公開、商品active化がすべて完了した場合だけ表示する。
+- 画面を開くだけでは注文・決済が発生しないことと、購入操作は管理者指定の購入者アカウントで行うことを明記した。Server Action、checkout制約、canary対象判定は変更していない。
+- Production接続、DB mutation、publication固定、作品公開、商品active化、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは変更していない。
+- 検証: focused 6/6、Hub 1149/1149、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALES_PREVIEW_GUIDANCE_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production公開・購入・決済は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud販売開始までの進捗案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

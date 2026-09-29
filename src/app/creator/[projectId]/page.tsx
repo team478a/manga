@@ -785,6 +785,22 @@ export default async function CloudProjectPage({
                     {marketplaceSalesGuidance.ready ? "販売商品を確認" : "商品の販売を開始する"}
                   </Link>
                 ) : null}
+                {marketplaceSalesGuidance?.ready && marketplaceDraft.work ? (
+                  <div className="mt-4 rounded-md border border-green-200 bg-green-50 p-3 text-green-950">
+                    <p className="font-bold">販売表示を確認できます</p>
+                    <p className="mt-1 leading-relaxed">
+                      画面を開くだけでは注文・決済は発生しません。購入操作は、管理者が指定した購入者アカウントで行ってください。
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <Link className="button-secondary" href={`/works/${marketplaceDraft.work.id}`}>
+                        公開作品ページを確認
+                      </Link>
+                      <Link className="button-secondary" href={`/checkout/${marketplaceDraft.product.id}`}>
+                        購入準備画面を確認
+                      </Link>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : null}
             <form

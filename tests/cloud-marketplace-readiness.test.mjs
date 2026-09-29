@@ -120,3 +120,14 @@ test("Creator画面は販売下書き後の次工程へ遷移できる", async (
   assert.match(page, /\/dashboard\/works\/\$\{marketplaceDraft\.work\.id\}\/edit/);
   assert.match(page, /\/dashboard\/products\/\$\{marketplaceDraft\.product\.id\}\/edit/);
 });
+
+test("販売設定完了後は注文を作らず公開・購入準備画面を確認できる", async () => {
+  const page = await read("src/app/creator/[projectId]/page.tsx");
+
+  assert.match(page, /marketplaceSalesGuidance\?\.ready && marketplaceDraft\.work/);
+  assert.match(page, /画面を開くだけでは注文・決済は発生しません/);
+  assert.match(page, /公開作品ページを確認/);
+  assert.match(page, /購入準備画面を確認/);
+  assert.match(page, /\/works\/\$\{marketplaceDraft\.work\.id\}/);
+  assert.match(page, /\/checkout\/\$\{marketplaceDraft\.product\.id\}/);
+});
