@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Cloud販売開始までの進捗案内
+
+- Branch: `codex/cloud-marketplace-sales-guidance-20260929`。Base: `6fa56e76`（PR #561 merge commit）。販売下書き作成後に必要な完成版固定、作品公開、商品販売開始をCreator作品画面で順番に案内する実装を追加した。
+- 現在の作品・商品状態から次の操作を純粋判定し、作品編集または商品編集へのリンクを表示する。完成版未固定と状態取得不能はfail closedで、販売工程を自動実行しない。
+- DB、migration、publication、作品・商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは未変更。
+- focused 5/5、Hub 1148/1148、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production公開操作と購入は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Cloud販売下書きの段階案内
 
 - Branch: `codex/cloud-marketplace-draft-guidance-20260929`。Base: `0798be6a`（PR #560 merge commit）。完成版checkpointがない場合も販売下書き欄から次の工程を判断できる案内を実装した。

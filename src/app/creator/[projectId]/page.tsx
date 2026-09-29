@@ -49,6 +49,7 @@ import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
 import { buildCloudMarketplaceDraftGuidance } from "@/lib/cloud-marketplace-draft-guidance";
+import { buildCloudMarketplaceSalesGuidance } from "@/lib/cloud-marketplace-sales-guidance";
 import { buildCloudReleaseCheckpointGuidance } from "@/lib/cloud-release-checkpoint-guidance";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
@@ -94,9 +95,16 @@ export default async function CloudProjectPage({
   const manuscript = exportReadiness ?? productionProgress?.manuscript ?? null;
   const emptyPanelCount = manuscript?.issueCountByCode.empty_panel ?? 0;
   const actionableErrorCount = Math.max(0, (manuscript?.errorCount ?? 0) - emptyPanelCount);
-  const marketplaceIsCurrent = Boolean(
-    marketplaceDraft?.product && marketplaceDraft.work?.current_publication_id,
-  );
+  const marketplaceSalesGuidance = marketplaceDraft?.product
+    ? buildCloudMarketplaceSalesGuidance({
+        currentPublicationId: marketplaceDraft.work?.current_publication_id ?? null,
+        productAvailable: true,
+        productStatus: marketplaceDraft.product.status,
+        workAvailable: Boolean(marketplaceDraft.work),
+        workIsPublic: marketplaceDraft.work?.is_public ?? false,
+        workStatus: marketplaceDraft.work?.status ?? null,
+      })
+    : null;
   const releaseCheckpoints = checkpointHistory.checkpoints.filter((item) => item.kind === "release");
   const marketplaceGuidance = buildCloudMarketplaceDraftGuidance({
     manuscriptAvailable: Boolean(exportReadiness),
@@ -746,16 +754,37 @@ export default async function CloudProjectPage({
               </p>
             ) : null}
             {marketplaceDraft?.product ? (
-              <div className="mt-4 rounded-md bg-stone-50 p-3 text-sm">
-                <p className="font-semibold">
-                  {marketplaceIsCurrent ? `完成版 v${marketplaceDraft?.work?.published_version ?? 1} に固定済み` : "完成版は未固定"}
-                </p>
-                <Link
-                  className="mt-1 inline-block text-leaf underline"
-                  href={`/dashboard/products/${marketplaceDraft.product.id}/edit`}
-                >
-                  商品下書きを確認
-                </Link>
+              <div className="mt-4 rounded-md border border-stone-200 bg-stone-50 p-4 text-sm">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p className="font-bold">販売開始までの進捗</p>
+                    <p className="mt-1 text-stone-700">{marketplaceSalesGuidance?.summary}</p>
+                  </div>
+                  <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${marketplaceSalesGuidance?.ready ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-900"}`}>
+                    {marketplaceSalesGuidance?.ready ? "販売設定完了" : "次の操作あり"}
+                  </span>
+                </div>
+                <ol className="mt-3 grid gap-2 sm:grid-cols-3">
+                  <li className={`rounded-md p-2 ${marketplaceDraft.work?.current_publication_id ? "bg-green-50 text-green-800" : "bg-white text-stone-600"}`}>
+                    1. 完成版を固定
+                    {marketplaceDraft.work?.current_publication_id ? `（v${marketplaceDraft.work.published_version ?? 1}）` : "（未完了）"}
+                  </li>
+                  <li className={`rounded-md p-2 ${marketplaceDraft.work?.is_public && marketplaceDraft.work.status === "published" ? "bg-green-50 text-green-800" : "bg-white text-stone-600"}`}>
+                    2. 作品を公開{marketplaceDraft.work?.is_public && marketplaceDraft.work.status === "published" ? "（完了）" : "（未完了）"}
+                  </li>
+                  <li className={`rounded-md p-2 ${marketplaceDraft.product.status === "active" ? "bg-green-50 text-green-800" : "bg-white text-stone-600"}`}>
+                    3. 商品を販売中にする{marketplaceDraft.product.status === "active" ? "（完了）" : "（未完了）"}
+                  </li>
+                </ol>
+                {marketplaceSalesGuidance?.actionTarget === "work" && marketplaceDraft.work ? (
+                  <Link className="button-secondary mt-3" href={`/dashboard/works/${marketplaceDraft.work.id}/edit`}>
+                    作品を公開設定する
+                  </Link>
+                ) : marketplaceSalesGuidance?.actionTarget === "product" ? (
+                  <Link className="button-secondary mt-3" href={`/dashboard/products/${marketplaceDraft.product.id}/edit`}>
+                    {marketplaceSalesGuidance.ready ? "販売商品を確認" : "商品の販売を開始する"}
+                  </Link>
+                ) : null}
               </div>
             ) : null}
             <form

@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import { buildCloudMarketplaceDraftGuidance } from "../src/lib/cloud-marketplace-draft-guidance.ts";
+import { buildCloudMarketplaceSalesGuidance } from "../src/lib/cloud-marketplace-sales-guidance.ts";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -68,4 +69,54 @@ test("Creator画面は案内が未完了なら販売操作を無効化する", a
   assert.match(page, /disabled=\{!marketplaceGuidance\.ready\}/);
   assert.match(page, /marketplaceGuidance\.summary/);
   assert.match(page, /marketplaceGuidance\.action\.href/);
+});
+
+test("販売下書き後は完成版固定、作品公開、商品販売を順番に案内する", () => {
+  const base = {
+    currentPublicationId: null,
+    productAvailable: true,
+    productStatus: "paused",
+    workAvailable: true,
+    workIsPublic: false,
+    workStatus: "draft",
+  };
+
+  const publication = buildCloudMarketplaceSalesGuidance(base);
+  const work = buildCloudMarketplaceSalesGuidance({
+    ...base,
+    currentPublicationId: "publication-1",
+  });
+  const product = buildCloudMarketplaceSalesGuidance({
+    ...base,
+    currentPublicationId: "publication-1",
+    workIsPublic: true,
+    workStatus: "published",
+  });
+  const ready = buildCloudMarketplaceSalesGuidance({
+    ...base,
+    currentPublicationId: "publication-1",
+    productStatus: "active",
+    workIsPublic: true,
+    workStatus: "published",
+  });
+
+  assert.equal(publication.stage, "publication_missing");
+  assert.equal(publication.actionTarget, null);
+  assert.equal(work.stage, "work_unpublished");
+  assert.equal(work.actionTarget, "work");
+  assert.equal(product.stage, "product_paused");
+  assert.equal(product.actionTarget, "product");
+  assert.equal(ready.stage, "ready");
+  assert.equal(ready.ready, true);
+});
+
+test("Creator画面は販売下書き後の次工程へ遷移できる", async () => {
+  const page = await read("src/app/creator/[projectId]/page.tsx");
+
+  assert.match(page, /buildCloudMarketplaceSalesGuidance/);
+  assert.match(page, /販売開始までの進捗/);
+  assert.match(page, /作品を公開設定する/);
+  assert.match(page, /商品の販売を開始する/);
+  assert.match(page, /\/dashboard\/works\/\$\{marketplaceDraft\.work\.id\}\/edit/);
+  assert.match(page, /\/dashboard\/products\/\$\{marketplaceDraft\.product\.id\}\/edit/);
 });
