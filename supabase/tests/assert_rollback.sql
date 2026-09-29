@@ -288,6 +288,7 @@ do $$ begin
      or to_regprocedure('public.sync_cloud_marketplace_release_draft(uuid,uuid,text,text,text,jsonb,integer,text)') is not null
      or to_regprocedure('public.publish_cloud_marketplace_listing(uuid)') is not null
      or to_regprocedure('public.withdraw_cloud_marketplace_listing(uuid)') is not null
+     or to_regprocedure('public.list_public_work_creator_attributions(uuid[])') is not null
      or exists(select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='current_publication_id') then
     raise exception 'Cloud work publication objects remain after rollback';
   end if;

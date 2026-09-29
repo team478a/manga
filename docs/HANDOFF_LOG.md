@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud公開クリエイター表示
+
+- Branch: `codex/cloud-marketplace-public-creator-attribution-20260930`。Base: `5701819b07a66f803e2b2d901532bae03cbdc709`（PR #573 merge commit）。
+- 公開作品一覧、作品詳細、購入準備へクリエイター表示名を追加した。一般・公開作品に限定した専用`security definer` RPCだけを匿名・認証済み利用者へ許可し、プロフィールRLSそのものは変更していない。
+- RPCの戻り値は`work_id`と`display_name`のみ。購入準備の直接プロフィールjoinを削除し、未適用・障害時は`クリエイター`へfail closedする。
+- migration `202609300002_public_marketplace_creator_attribution`、rollback、schema、manifest、SQL assertion、集中テストを追加。旧bootstrapの`profiles.display_name`列不足は`to_jsonb`取得で互換にした。Production接続、migration適用、作品・商品・注文、Stripe、Storage、Provider、Job、credit、利用者データ変更は未実施。
+- focused 6/6、Hub 1179/1179、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、PostgreSQL 16の92 forward／全rollback／92 re-forward／canonical schema二重適用、Web／Desktop build、RC structure、diff check成功。
+- 次: 互換修正をcommit／pushし、PR #574のGitHub `Migration roundtrip`を含む全CIとVercel Preview成功で停止する。Production適用は別承認単位。
+
+---
+
 ## 2026-09-30 Codex: Cloud公開カタログ販売情報
 
 - Branch: `codex/cloud-marketplace-catalog-sale-discovery-20260930`。Base: `c84d8e57b68b79d04ae1f6b3b48bd30f5c718eed`（PR #572 merge commit）。Cloud出品後の公開カタログで商品と価格を発見できる表示を追加した。

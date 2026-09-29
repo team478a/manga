@@ -4,6 +4,10 @@ import { notFound } from "next/navigation";
 import { yen } from "@/lib/format";
 import { isMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
+import {
+  publicCreatorName,
+  type PublicWorkCreatorAttribution,
+} from "@/lib/public-creator-attribution";
 import { createClient } from "@/lib/supabase/server";
 import type { DigitalProduct, Work } from "@/lib/types";
 
@@ -23,6 +27,14 @@ export default async function WorkDetailPage({
     .maybeSingle<Work>();
 
   if (!work) notFound();
+  const { data: creatorRows } = await supabase.rpc(
+    "list_public_work_creator_attributions",
+    { p_work_ids: [work.id] },
+  );
+  const creatorName = publicCreatorName(
+    creatorRows as PublicWorkCreatorAttribution[] | null,
+    work.id,
+  );
   const checkout = inspectMarketplaceCheckoutMode();
   let buyerProfileId: string | null = null;
   if (checkout.enabled && checkout.paymentMode === "live") {
@@ -67,6 +79,9 @@ export default async function WorkDetailPage({
         </div>
         <section>
           <h1 className="text-4xl font-bold">{work.title}</h1>
+          <p className="mt-3 text-lg font-semibold text-stone-600">
+            クリエイター：{creatorName}
+          </p>
           <p className="mt-5 whitespace-pre-wrap text-lg leading-relaxed text-stone-700">
             {work.description || "説明はまだありません。"}
           </p>

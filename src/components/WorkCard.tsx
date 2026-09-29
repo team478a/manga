@@ -8,10 +8,12 @@ export function WorkCard({
   work,
   editable = false,
   sale = null,
+  creatorName = null,
 }: {
   work: Work;
   editable?: boolean;
   sale?: MarketplaceCatalogSale | null;
+  creatorName?: string | null;
 }) {
   return (
     <article className="overflow-hidden rounded-lg border border-stone-200 bg-white shadow-soft">
@@ -25,6 +27,11 @@ export function WorkCard({
         </div>
         <div className="p-5">
           <h3 className="text-xl font-bold">{work.title}</h3>
+          {creatorName ? (
+            <p className="mt-2 text-sm font-semibold text-stone-500">
+              作：{creatorName}
+            </p>
+          ) : null}
           <p className="mt-2 line-clamp-2 text-base text-stone-600">{work.description || "説明はまだありません。"}</p>
           {sale ? (
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-4">
