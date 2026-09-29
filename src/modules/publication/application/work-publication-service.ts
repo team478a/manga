@@ -2,6 +2,7 @@ import { getCurrentProfile, requireProfile } from "@/lib/auth";
 import { ValidationError } from "@/lib/domain-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { canReadFixedWorkPublication } from "@/modules/publication/domain/work-publication-access";
 
 export type WorkPublicationVersion = {
   id: string;
@@ -39,8 +40,7 @@ export async function getReadableWorkPublication(workId: string, requestedPage: 
   const { data: work } = await admin.from("works")
     .select("id,creator_id,title,is_public,status,current_publication_id")
     .eq("id", workId).eq("content_class", "general").maybeSingle();
-  if (!work?.is_public || work.status !== "published" || !work.current_publication_id)
-    throw new ValidationError("公開中の漫画原稿がありません。");
+  if (!work) throw new ValidationError("漫画原稿がありません。");
   const { profile } = await getCurrentProfile();
   const owner = profile?.id === work.creator_id;
   let purchased = false;
@@ -52,6 +52,14 @@ export async function getReadableWorkPublication(workId: string, requestedPage: 
       return product?.work_id === workId;
     });
   }
+  if (!canReadFixedWorkPublication({
+    currentPublicationId: work.current_publication_id,
+    isPublic: work.is_public,
+    owner,
+    purchased,
+    status: work.status,
+  }))
+    throw new ValidationError("閲覧できる漫画原稿がありません。");
   const publication = await admin.from("cloud_work_publications")
     .select("id,version,page_count").eq("id", work.current_publication_id).eq("work_id", workId).maybeSingle();
   if (!publication.data) throw new ValidationError("公開版を確認できませんでした。");

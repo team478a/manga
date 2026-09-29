@@ -190,6 +190,7 @@ for (const required of [
   "sync_cloud_marketplace_release_draft",
   "select_cloud_work_publication",
   "publish_cloud_marketplace_listing",
+  "withdraw_cloud_marketplace_listing",
 ])
   assert.ok(schema.includes(required), `schema.sql is missing ${required}`);
 

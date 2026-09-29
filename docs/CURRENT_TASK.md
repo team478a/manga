@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud出品の安全な販売停止
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-listing-withdrawal-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`243d941a`（PR #568 merge commit）。
+- Creator作品画面から、新規販売と一般公開を1操作で停止できるようにした。商品を`paused`へ変更してから作品を非公開・下書きへ戻す処理を同一transactionで行い、失敗は全体rollback、再実行は冪等とする。
+- 販売停止後も固定完成版と注文履歴を保持し、所有者と支払い済み購入者の閲覧・ダウンロード権を維持する。匿名・未購入者は閲覧不可。購入履歴へ本文閲覧リンクを追加した。
+- migration `202609290002_cloud_marketplace_listing_withdrawal`、rollback、正規schema、manifestを追加した。すでに開かれたCheckoutは完了する可能性があることをUIへ明記した。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、決済、返金、Storage、Provider、生成Job、credit、利用者データ変更は0件。
+- 前段の`202609290001_cloud_marketplace_listing_publish`は承認済みだがChrome連携エラーにより未適用。今回の`202609290002`はmerge後に別承認が必要。
+- 検証: focused 21/21、Hub 1164/1164、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、PostgreSQL 16 forward／全rollback／再forward 90/90、canonical schema二重適用、Web／Desktop build、RC repository structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LISTING_WITHDRAWAL_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud出品確定
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

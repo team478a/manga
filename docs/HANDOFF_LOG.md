@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Cloud出品の安全な販売停止
+
+- Branch: `codex/cloud-marketplace-listing-withdrawal-20260929`。Base: `243d941a`（PR #568 merge commit）。Creator画面へ、販売中の作品の新規販売と一般公開をまとめて停止する操作を追加した。
+- DB RPCは認証、所有権、一般向け、作品・商品各1件、固定完成版をtransaction内で再検証し、商品`paused`化と作品非公開・下書き化を原子的に行う。条件不一致はfail closed、途中失敗は全rollback、停止済みへの再実行は冪等。
+- 固定完成版と注文履歴を削除せず、所有者および支払い済み購入者の閲覧・ダウンロード権を保持する。購入履歴に本文閲覧導線を追加した。匿名・未購入者の非公開閲覧は許可しない。
+- `202609290002_cloud_marketplace_listing_withdrawal`、rollback、正規schema、manifest、集中テストを追加した。停止前に開かれたCheckoutは完了する可能性がある。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、決済、返金、Provider、生成Job、credit、利用者データ変更は未実施。承認済み`202609290001`はChrome連携エラーにより未適用。新しい`202609290002`は別承認待ち。
+- focused 21/21、Hub 1164/1164、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、PostgreSQL 16 forward／rollback／reforward 90/90、canonical schema二重適用、Web／Desktop build、RC structure成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Cloud出品確定
 
 - Branch: `codex/cloud-marketplace-listing-completion-20260929`。Base: `0d3bd245`（PR #567 merge commit）。Creator画面へ、固定完成版を使った作品公開と商品販売開始をまとめて確定する操作を追加した。

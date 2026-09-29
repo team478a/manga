@@ -534,7 +534,13 @@
       "description": "Cloud作品公開と商品販売開始を所有権・完成版検証付きで原子的に確定",
       "forwardSha256": "7cf041d4add68a08f994abb8a287159226574abb64da09d103ab7e085b959701",
       "rollbackSha256": "a30d642b0d79c330083a62e6a58d494bace89a7c2c58585f91a5d1e5b7ae1013"
+    },
+    {
+      "id": "202609290002_cloud_marketplace_listing_withdrawal",
+      "description": "Cloud新規販売と一般公開を原子的に停止し購入済み利用権を維持",
+      "forwardSha256": "d16d53adb97bf255d6202b362182d1c0548e5f5a09ec953121a90c1fa7c5ea27",
+      "rollbackSha256": "2c07ca356f98dcc023a05ada189f545cccae4104239a91162091d42e5f8dbe91"
     }
   ],
-  "schemaSha256": "6905d139aa635596b2cf019e5cebe54d548858c03c0fa818cc14b5ec6792bc6f"
+  "schemaSha256": "cb42f41c4938b74a511474f170a8b4890b55e24935277346ae5d594b6a085539"
 }

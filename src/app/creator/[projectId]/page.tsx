@@ -27,6 +27,7 @@ import {
   publishCloudMarketplaceListingAction,
   setCloudProjectCoverAction,
   syncCloudMarketplaceDraftAction,
+  withdrawCloudMarketplaceListingAction,
 } from "@/app/creator/actions";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
@@ -819,6 +820,21 @@ export default async function CloudProjectPage({
                       <Link className="button-secondary" href="/dashboard/monitor/guide#internal-test-sale">
                         テスト販売の手順
                       </Link>
+                    </div>
+                    <div className="mt-4 border-t border-green-200 pt-4">
+                      <p className="font-bold">販売を停止する場合</p>
+                      <p className="mt-1 leading-relaxed">
+                        新規購入を停止し、公開作品一覧から非表示にします。固定完成版、注文履歴、購入済みの閲覧・ダウンロード権は削除しません。すでに開かれた決済画面は完了する場合があります。
+                      </p>
+                      <form action={withdrawCloudMarketplaceListingAction.bind(null, projectId)} className="mt-3">
+                        <label className="flex items-start gap-2">
+                          <input className="mt-1 h-4 w-4" name="confirm" required type="checkbox" value="withdraw" />
+                          <span>新規販売と一般公開を停止することを確認しました</span>
+                        </label>
+                        <PendingSubmitButton className="button-secondary mt-3" pendingLabel="販売停止中…">
+                          販売を停止する
+                        </PendingSubmitButton>
+                      </form>
                     </div>
                   </div>
                 ) : null}

@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud出品の安全な販売停止（2026-09-29）
+
+- Branch `codex/cloud-marketplace-listing-withdrawal-20260929`、Base `243d941a`（PR #568 merge commit）。販売開始済みの作品について、新規販売と一般公開をCreator画面の1操作で停止できるようにした。
+- `withdraw_cloud_marketplace_listing(uuid)`は認証、所有権、一般向け区分、Projectごとの単一作品、固定完成版、単一商品をtransaction内で再検証する。商品を先に`paused`、作品を次に非公開・下書きへ変更し、途中失敗は全rollback、完了状態への再実行は冪等。
+- 固定完成版、注文履歴、購入済み利用者の閲覧・ダウンロード権は維持する。匿名・未購入者は非公開作品を読めない。購入履歴に本文閲覧リンクを追加した。
+- migration `202609290002_cloud_marketplace_listing_withdrawal`、rollback、schema、manifest、検査を追加。すでに開かれたCheckoutは完了する可能性があることを案内する。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、Provider、Job、credit操作は0件。承認済みの`202609290001`はChrome policy接続エラーのため未適用で、承認は取り消されていない。`202609290002`はmerge後に別承認が必要。
+- focused 21/21、Hub 1164/1164、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、PostgreSQL 16 roundtrip 90/90、canonical schema二重適用、Web／Desktop build、RC structure成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LISTING_WITHDRAWAL_20260929.md`。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Cloud出品確定（2026-09-29）
 
 - Branch `codex/cloud-marketplace-listing-completion-20260929`、Base `0d3bd245`（PR #567 merge commit）。販売下書き後の作品公開と商品販売開始をCreator画面の1操作へ統合した。

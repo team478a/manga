@@ -573,6 +573,8 @@ do $$ begin
      or to_regclass('public.cloud_work_publication_pages') is null
      or to_regprocedure('public.sync_cloud_marketplace_release_draft(uuid,uuid,text,text,text,jsonb,integer,text)') is null
      or to_regprocedure('public.select_cloud_work_publication(uuid,uuid)') is null
+     or to_regprocedure('public.publish_cloud_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.withdraw_cloud_marketplace_listing(uuid)') is null
      or not exists(select 1 from information_schema.columns where table_schema='public' and table_name='works' and column_name='current_publication_id') then
     raise exception 'Cloud work publication objects missing';
   end if;

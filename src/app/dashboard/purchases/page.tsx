@@ -36,14 +36,22 @@ export default async function PurchasesPage() {
                       : "決済日時確認中"}・ダウンロード {purchase.download_count}回
                   </p>
                 </div>
-                {purchase.status === "paid" &&
-                purchase.digital_products?.file_url ? (
-                  <a
-                    className="button"
-                    href={`/api/purchases/${purchase.id}/download`}
-                  >
-                    ダウンロード
-                  </a>
+                {purchase.status === "paid" ? (
+                  <div className="flex flex-wrap gap-2">
+                    {purchase.digital_products?.works?.id ? (
+                      <Link className="button-secondary" href={`/works/${purchase.digital_products.works.id}/read`}>
+                        本文を読む
+                      </Link>
+                    ) : null}
+                    {purchase.digital_products?.file_url ? (
+                      <a
+                        className="button"
+                        href={`/api/purchases/${purchase.id}/download`}
+                      >
+                        ダウンロード
+                      </a>
+                    ) : null}
+                  </div>
                 ) : (
                   <span className="rounded bg-stone-100 px-3 py-2 text-stone-600">
                     {purchase.status === "refunded" ? "返金済み" : "利用不可"}

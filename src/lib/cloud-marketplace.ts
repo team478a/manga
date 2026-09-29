@@ -222,3 +222,21 @@ export async function publishCloudMarketplaceListing(projectId: string) {
     publicationId: result.publication_id,
   };
 }
+
+export async function withdrawCloudMarketplaceListing(projectId: string) {
+  await requireProfile();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("withdraw_cloud_marketplace_listing", {
+    p_project_id: projectId,
+  });
+  const result = (data ?? [])[0] as
+    | { work_id: string; product_id: string; publication_id: string }
+    | undefined;
+  if (error || !result)
+    throw new Error("販売停止条件を確認できませんでした。");
+  return {
+    workId: result.work_id,
+    productId: result.product_id,
+    publicationId: result.publication_id,
+  };
+}

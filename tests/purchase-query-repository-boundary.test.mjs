@@ -26,7 +26,7 @@ test("purchase history repository preserves owner and query contracts", async ()
   assert.match(repository, /\.from\("orders"\)/);
   assert.match(
     repository,
-    /id,amount,status,paid_at,download_count,payment_mode,digital_products:product_id\(title,file_url,works:work_id\(title\)\)/,
+    /id,amount,status,paid_at,download_count,payment_mode,digital_products:product_id\(title,file_url,works:work_id\(id,title\)\)/,
   );
   assert.match(repository, /\.eq\("buyer_profile_id", profileId\)/);
   assert.match(repository, /\.in\("status", \["paid", "refunded"\]\)/);
