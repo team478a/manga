@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud注文・売上確認導線（2026-09-29）
+
+- Branch `codex/cloud-marketplace-sales-monitoring-guidance-20260929`、Base `749096f7`（PR #563 merge commit）。販売設定完了後のCreator作品画面から売上管理へ進み、注文一覧で対象作品・商品を確認できるようにした。
+- 注文queryは必要列を明示し、既存owner境界内で商品名と作品名を追加取得する。テスト注文は一覧へ表示する一方、本番受取予定額へ含めない既存契約を維持する。
+- Production接続、DB mutation、publication、作品・商品状態、注文、Stripe、Storage、Provider、Job、credit操作は0件。
+- focused 10/10、Hub 1150/1150、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALES_MONITORING_GUIDANCE_20260929.md`。次はDraft PRの全CI／Vercel成功で停止し、Production購入は別承認を待つ。
+
+---
+
 ## 0.0 Cloud販売表示の確認導線（2026-09-29）
 
 - Branch `codex/cloud-marketplace-sales-preview-guidance-20260929`、Base `4071e728`（PR #562 merge commit）。販売設定完了後のCreator作品画面から、公開作品ページと購入準備画面を確認できる導線を追加した。

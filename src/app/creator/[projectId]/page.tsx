@@ -798,6 +798,9 @@ export default async function CloudProjectPage({
                       <Link className="button-secondary" href={`/checkout/${marketplaceDraft.product.id}`}>
                         購入準備画面を確認
                       </Link>
+                      <Link className="button-secondary" href="/dashboard/sales">
+                        注文・売上を確認
+                      </Link>
                     </div>
                   </div>
                 ) : null}

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Cloud注文・売上確認導線
+
+- Branch: `codex/cloud-marketplace-sales-monitoring-guidance-20260929`。Base: `749096f7`（PR #563 merge commit）。Creator作品画面から売上管理へ移動するリンクと、注文一覧の作品名・商品名表示を追加した。
+- 既存RLSでowner注文だけを読み取り、本番paid注文だけを受取予定額へ集計する契約は維持した。テスト注文は区分付きで確認できる。
+- DB、migration、publication、作品・商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは未変更。
+- focused 10/10、Hub 1150/1150、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production公開・購入・決済は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Cloud販売表示の確認導線
 
 - Branch: `codex/cloud-marketplace-sales-preview-guidance-20260929`。Base: `4071e728`（PR #562 merge commit）。販売設定完了時だけ、公開作品ページと購入準備画面をCreator作品画面から確認できるようにした。

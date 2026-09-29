@@ -33,6 +33,18 @@ test("管理者と出品者の売上合計は本番の支払済み注文だけ�
   assert.match(salesPage, /テスト購入は受取予定額に含みません/);
 });
 
+test("出品者は注文がどの作品・商品に対するものか確認できる", async () => {
+  const salesPage = await read("src/app/dashboard/sales/page.tsx");
+
+  assert.match(
+    salesPage,
+    /digital_products:product_id\(title,works:work_id\(title\)\)/,
+  );
+  assert.match(salesPage, /作品・商品/);
+  assert.match(salesPage, /order\.digital_products\?\.works\?\.title/);
+  assert.match(salesPage, /order\.digital_products\?\.title/);
+});
+
 test("migrationは既存注文をliveとして保ちtestとliveを制約する", async () => {
   const [migration, rollback] = await Promise.all([
     read("supabase/migrations/202609270001_marketplace_test_sales.sql"),

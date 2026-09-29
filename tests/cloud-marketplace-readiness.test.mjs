@@ -128,6 +128,8 @@ test("販売設定完了後は注文を作らず公開・購入準備画面を�
   assert.match(page, /画面を開くだけでは注文・決済は発生しません/);
   assert.match(page, /公開作品ページを確認/);
   assert.match(page, /購入準備画面を確認/);
+  assert.match(page, /注文・売上を確認/);
   assert.match(page, /\/works\/\$\{marketplaceDraft\.work\.id\}/);
   assert.match(page, /\/checkout\/\$\{marketplaceDraft\.product\.id\}/);
+  assert.match(page, /\/dashboard\/sales/);
 });
