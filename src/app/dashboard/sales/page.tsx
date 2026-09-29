@@ -11,6 +11,10 @@ type Order = {
   status: string;
   payment_mode: "test" | "live";
   created_at: string;
+  digital_products: {
+    title: string;
+    works: { title: string } | null;
+  } | null;
 };
 
 export default async function SalesPage() {
@@ -18,7 +22,7 @@ export default async function SalesPage() {
   const supabase = await createClient();
   const { data: orders } = await supabase
     .from("orders")
-    .select("*")
+    .select("id,buyer_email,amount,platform_fee,creator_revenue,status,payment_mode,created_at,digital_products:product_id(title,works:work_id(title))")
     .eq("creator_id", profile.id)
     .order("created_at", { ascending: false })
     .returns<Order[]>();
@@ -42,6 +46,7 @@ export default async function SalesPage() {
             <thead>
               <tr className="border-b border-stone-200">
                 <th className="py-3">購入者</th>
+                <th className="py-3">作品・商品</th>
                 <th className="py-3">金額</th>
                 <th className="py-3">手数料</th>
                 <th className="py-3">受取</th>
@@ -53,6 +58,10 @@ export default async function SalesPage() {
               {orders?.length ? orders.map((order) => (
                 <tr className="border-b border-stone-100" key={order.id}>
                   <td className="py-3">{order.buyer_email}</td>
+                  <td className="py-3">
+                    <span className="block font-semibold">{order.digital_products?.works?.title ?? "作品情報なし"}</span>
+                    <span className="block text-sm text-stone-600">{order.digital_products?.title ?? "商品情報なし"}</span>
+                  </td>
                   <td className="py-3">{yen(order.amount)}</td>
                   <td className="py-3">{yen(order.platform_fee)}</td>
                   <td className="py-3 font-semibold">{yen(order.creator_revenue)}</td>
@@ -60,7 +69,7 @@ export default async function SalesPage() {
                   <td className="py-3">{order.payment_mode === "test" ? "テスト" : "本番"}</td>
                 </tr>
               )) : (
-                <tr><td className="py-5 text-stone-600" colSpan={6}>注文はまだありません。</td></tr>
+                <tr><td className="py-5 text-stone-600" colSpan={7}>注文はまだありません。</td></tr>
               )}
             </tbody>
           </table>
