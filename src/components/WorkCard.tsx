@@ -51,6 +51,13 @@ export function WorkCard({
               </span>
             ))}
           </div>
+          <p className="mt-5 font-semibold text-leaf">
+            {editable
+              ? "編集する →"
+              : sale
+                ? "作品詳細・購入準備へ →"
+                : "作品を見る →"}
+          </p>
         </div>
       </Link>
     </article>
