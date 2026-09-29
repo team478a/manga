@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud販売中商品編集ガード
+
+- Branch: `codex/cloud-marketplace-active-product-guard-20260929`。Base: `bb38d0d1`（PR #570 merge commit）。販売開始後のCloud商品を汎用商品編集画面から不整合状態にしない通常経路ガードを追加した。
+- 作品、販売ファイル、販売状態を固定表示にし、販売中価格も変更不可とした。停止・再開と完成版変更はCreator作品画面へ統一する。停止後価格、商品名、説明と手動登録商品の従来操作は維持する。
+- Server Actionも現在状態を所有者境界内で再取得し、作品、file、状態、販売中価格の変更を拒否する。成功時は関連5経路を再検証する。
+- migration、schema、RLS、publication trigger、Stripe、Checkout、注文処理は未変更。DB直接更新耐性は既存RPC互換性を同時に扱う別migrationへ分離した。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、決済、返金、Provider、生成Job、credit、利用者データ変更は未実施。Production未適用migrationは`202609290001`と`202609290002`。
+- focused 19/19、Hub 1169/1169、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Cloud出品の安全な再開
 
 - Branch: `codex/cloud-marketplace-listing-resume-20260929`。Base: `790b8fd2`（PR #569 merge commit）。販売停止後の作品を安全に再出品できる画面と確認契約を追加した。

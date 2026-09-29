@@ -24,6 +24,7 @@ export default async function EditProductPage({
   ]);
 
   if (!product) notFound();
+  const cloudLinkedWork = works?.find((work) => work.id === product.work_id && work.source_project_id);
 
   return (
     <main className="page max-w-3xl">
@@ -40,17 +41,39 @@ export default async function EditProductPage({
       </div>
       {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
 
+      {cloudLinkedWork ? (
+        <div className="mt-6 rounded-md border border-violet-200 bg-violet-50 p-4 text-violet-950" role="status">
+          <p className="font-bold">Cloud連携商品の固定項目を保護しています</p>
+          <p className="mt-1 leading-relaxed">
+            作品、販売ファイル、販売状態は固定完成版と同期します。販売停止・再開や完成版の変更はCreator作品画面から行ってください。販売中は価格も固定されます。
+          </p>
+          <Link className="button-secondary mt-3" href={`/creator/${cloudLinkedWork.source_project_id}`}>
+            Creator作品画面を開く
+          </Link>
+        </div>
+      ) : null}
+
       <form action={updateDigitalProduct} className="panel mt-6 space-y-5">
         <input name="id" type="hidden" value={product.id} />
         <div>
-          <label className="label" htmlFor="workId">紐づける作品</label>
-          <select className="field" id="workId" name="workId" defaultValue={product.work_id} required>
-            {works?.map((work) => (
-              <option key={work.id} value={work.id}>
-                {work.title}
-              </option>
-            ))}
-          </select>
+          {cloudLinkedWork ? (
+            <>
+              <p className="label">紐づける作品</p>
+              <input name="workId" type="hidden" value={product.work_id} />
+              <p className="field bg-stone-100">{cloudLinkedWork.title}</p>
+            </>
+          ) : (
+            <>
+              <label className="label" htmlFor="workId">紐づける作品</label>
+              <select className="field" id="workId" name="workId" defaultValue={product.work_id} required>
+                {works?.map((work) => (
+                  <option key={work.id} value={work.id}>
+                    {work.title}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
         <div>
           <label className="label" htmlFor="title">商品名</label>
@@ -62,17 +85,34 @@ export default async function EditProductPage({
         </div>
         <div>
           <label className="label" htmlFor="price">販売価格（税込円）</label>
-          <input className="field" id="price" name="price" type="number" min="0" step="1" defaultValue={product.price} required />
+          <input className="field" id="price" name="price" type="number" min="0" step="1" defaultValue={product.price} required readOnly={Boolean(cloudLinkedWork && product.status === "active")} />
+          {cloudLinkedWork && product.status === "active" ? <p className="mt-2 text-sm text-stone-600">価格を変更するには、Creator作品画面で販売を停止してください。</p> : null}
         </div>
         <div>
-          <label className="label" htmlFor="file">ファイルを差し替える</label>
-          <p className="mt-1 text-base text-stone-600">変更しない場合は、何も選ばずに保存してください。PDF、PNG、JPG、ZIP、50MB以内に対応しています。</p>
-          <input className="field" id="file" name="file" type="file" accept="application/pdf,image/png,image/jpeg,application/zip,.zip" />
+          {cloudLinkedWork ? (
+            <>
+              <p className="label">ファイルを差し替える</p>
+              <p className="mt-1 text-base text-stone-600">Cloud連携商品の販売ファイルは固定完成版PDFと同期するため、この画面では差し替えできません。</p>
+            </>
+          ) : (
+            <>
+              <label className="label" htmlFor="file">ファイルを差し替える</label>
+              <p className="mt-1 text-base text-stone-600">変更しない場合は、何も選ばずに保存してください。PDF、PNG、JPG、ZIP、50MB以内に対応しています。</p>
+              <input className="field" id="file" name="file" type="file" accept="application/pdf,image/png,image/jpeg,application/zip,.zip" />
+            </>
+          )}
           {product.file_url ? <p className="mt-2 text-sm text-stone-600">登録済みファイルパス：{product.file_url}</p> : null}
         </div>
         <fieldset>
           <legend className="label">販売状態</legend>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {cloudLinkedWork ? (
+            <>
+              <input name="status" type="hidden" value={product.status} />
+              <p className="mt-3 rounded-md border border-stone-300 bg-stone-50 p-4 font-semibold">
+                現在: {product.status === "active" ? "販売中" : "停止中"}
+              </p>
+            </>
+          ) : <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="flex cursor-pointer items-start gap-3 rounded-md border border-stone-300 p-4">
               <input className="mt-1 h-5 w-5" name="status" type="radio" value="active" defaultChecked={product.status === "active"} />
               <span>
@@ -87,7 +127,7 @@ export default async function EditProductPage({
                 <span className="mt-1 block text-base text-stone-600">販売を止めて、管理画面だけに残します。</span>
               </span>
             </label>
-          </div>
+          </div>}
         </fieldset>
         <PendingSubmitButton className="button w-full" pendingLabel="商品を更新中…">更新する</PendingSubmitButton>
       </form>

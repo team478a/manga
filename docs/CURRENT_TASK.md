@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud販売中商品編集ガード
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-active-product-guard-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`bb38d0d1`（PR #570 merge commit）。
+- Cloud連携商品の紐づけ作品、販売ファイル、販売状態を汎用の商品編集画面から変更できないようにし、販売停止・再開と完成版変更をCreator作品画面の原子的操作へ統一した。
+- 販売中は価格も固定し、停止後だけ価格変更を許可する。商品名・説明は変更可能。手動登録商品は従来の編集機能を維持する。
+- Server Actionでも現在の商品・作品を所有者境界内で再取得し、作品、file、状態、販売中価格の改変をfail closedする。更新後は商品、作品、購入準備、Creatorのcacheを再検証する。
+- migration、schema、RLS、publication trigger、Stripe、Checkout、注文は変更していない。DB直接更新を含むtrigger強化は既存4 RPCとの互換性が必要な別migrationへ分離する。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、Storage、Provider、生成Job、credit、利用者データ変更は0件。`202609290001`と`202609290002`はいずれも未適用。
+- 検証: focused 19/19、Hub 1169/1169、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_ACTIVE_PRODUCT_GUARD_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud出品の安全な再開
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
