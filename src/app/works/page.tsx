@@ -5,6 +5,7 @@ import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
 import {
   hasActiveMarketplaceCatalogProduct,
+  prioritizeMarketplaceCatalogSales,
   summarizeMarketplaceCatalogSale,
   type MarketplaceCatalogProduct,
 } from "@/lib/marketplace-catalog";
@@ -90,9 +91,11 @@ export default async function WorksPage({
       .eq("content_class", "general")
       .returns<Array<{ tags: string[] | null }>>(),
   ]);
-  const visibleWorks = (works ?? []).filter(
-    (work) =>
-      !saleOnly || hasActiveMarketplaceCatalogProduct(work.digital_products),
+  const visibleWorks = prioritizeMarketplaceCatalogSales(
+    (works ?? []).filter(
+      (work) =>
+        !saleOnly || hasActiveMarketplaceCatalogProduct(work.digital_products),
+    ),
   );
   let creatorRows: PublicWorkCreatorAttribution[] | null = null;
   if (visibleWorks.length) {

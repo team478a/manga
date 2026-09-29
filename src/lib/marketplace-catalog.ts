@@ -27,6 +27,25 @@ export function hasActiveMarketplaceCatalogProduct(
   return (products ?? []).some(isActiveMarketplaceCatalogProduct);
 }
 
+export function prioritizeMarketplaceCatalogSales<
+  T extends { digital_products: MarketplaceCatalogProduct[] | null },
+>(works: T[]) {
+  return works
+    .map((work, index) => ({
+      work,
+      index,
+      hasActiveSale: hasActiveMarketplaceCatalogProduct(
+        work.digital_products,
+      ),
+    }))
+    .sort(
+      (left, right) =>
+        Number(right.hasActiveSale) - Number(left.hasActiveSale) ||
+        left.index - right.index,
+    )
+    .map(({ work }) => work);
+}
+
 export function summarizeMarketplaceCatalogSale(
   products: MarketplaceCatalogProduct[] | null | undefined,
   checkout: Pick<MarketplaceCheckoutAvailability, "enabled" | "paymentMode">,

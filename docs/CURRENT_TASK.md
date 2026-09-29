@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud公開カタログ販売中優先表示
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-sale-priority-20260930`
+- Base: `origin/feature/manga-canvas-mvp`@`730ad5a321b3b499cf56c45d67e6d3426ac0fdf7`（PR #575 merge commit）。
+- `active`かつ正常価格の商品がある作品を公開一覧の先頭へ並べ、同じ区分内では既存の新着順を維持する。元配列は変更しない。
+- 販売中カードへ`作品詳細・購入準備へ →`、その他の公開作品へ`作品を見る →`、編集カードへ`編集する →`を追加した。カード遷移先は従来どおり作品詳細で、一覧から注文は作成しない。
+- 購入資格、canary、自己購入禁止、注文、Stripe、Webhook、migration、schema、RLS、Production、Provider、Job、creditは変更していない。
+- 検証: focused 8/8、Hub 1181/1181、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALE_PRIORITY_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。
+
+---
+
 ## 2026-09-30 Cloud公開カタログ販売中フィルター
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

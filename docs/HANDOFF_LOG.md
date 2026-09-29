@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud公開カタログ販売中優先表示
+
+- Branch: `codex/cloud-marketplace-sale-priority-20260930`。Base: `730ad5a321b3b499cf56c45d67e6d3426ac0fdf7`（PR #575 merge commit）。
+- 販売中作品を公開一覧の先頭へ並べ、販売状態区分内の新着順と元配列を維持する純粋な優先表示を追加した。
+- カードへ作品詳細・購入準備、作品閲覧、編集の導線を明示した。一覧から注文を作らず、購入資格、Stripe、Webhook、migration、Production、Provider、Job、creditは変更していない。
+- focused 8/8、Hub 1181/1181、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CIとVercel Preview成功で停止する。
+
+---
+
 ## 2026-09-30 Codex: Cloud公開カタログ販売中フィルター
 
 - Branch: `codex/cloud-marketplace-sale-filter-20260930`。Base: `a0e1e8dbebdc75dd3892fd6c2c2b60081d9b3b92`（PR #574 merge commit）。
