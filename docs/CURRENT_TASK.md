@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud販売開始までの進捗案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-sales-guidance-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`6fa56e76`（PR #561 merge commit）。
+- 販売下書き作成後のCreator作品画面へ、完成版固定、作品公開、商品販売開始の3工程を追加した。各工程の完了／未完了と、現在行うべき操作を表示する。
+- 完成版固定後は作品編集の公開設定、作品公開後は商品編集の販売設定へ直接遷移できる。すべて完了した場合は販売設定完了を表示する。判定不能と完成版未固定はfail closedで、工程を飛ばさない。
+- 表示とリンクのみの変更。DB schema、migration、publication、作品・商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは変更していない。
+- 検証: focused 5/5、Hub 1148/1148、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALES_GUIDANCE_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後のProduction公開操作と購入は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud販売下書きの段階案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

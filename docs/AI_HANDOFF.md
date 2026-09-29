@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud販売開始までの進捗案内（2026-09-29）
+
+- Branch `codex/cloud-marketplace-sales-guidance-20260929`、Base `6fa56e76`（PR #561 merge commit）。販売下書き後の残工程を、完成版固定、作品公開、商品販売開始の順にCreator作品画面へ表示する。
+- 完成版固定済みなら作品編集、作品公開済みなら商品編集へ案内する。販売設定完了後も商品確認へ移動できる。状態取得不能と完成版未固定はfail closed。
+- UI案内だけを追加し、既存の公開・販売制約を維持した。Production接続、DB mutation、publication固定、作品公開、商品active化、注文、Stripe、Storage、Provider、Job、credit操作は0件。
+- focused 5/5、Hub 1148/1148、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALES_GUIDANCE_20260929.md`。次はDraft PRの全CI／Vercel成功で停止し、Production公開操作は別承認を待つ。
+
+---
+
 ## 0.0 Cloud販売下書きの段階案内（2026-09-29）
 
 - Branch `codex/cloud-marketplace-draft-guidance-20260929`、Base `0798be6a`（PR #560 merge commit）。販売欄が無言でdisabledになる状態をなくし、原稿確認、完成版固定、販売下書き作成を順番に案内する純粋判定を追加した。
