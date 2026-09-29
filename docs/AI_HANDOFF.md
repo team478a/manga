@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud公開カタログ販売情報（2026-09-30）
+
+- Branch `codex/cloud-marketplace-catalog-sale-discovery-20260930`、Base `c84d8e57b68b79d04ae1f6b3b48bd30f5c718eed`（PR #572 merge commit）。公開作品一覧だけで販売中商品の有無、販売モード、価格を確認できるようにした。
+- active商品の`price`、`status`だけを公開RLS越しに取得し、`テスト販売中`／`限定販売中`／`商品あり`と税込価格を作品カードへ表示する。複数商品は最低価格、停止中・不正価格は対象外。
+- 購入可否、指定購入者canary、自己購入禁止、注文、Stripe、Webhook、ダウンロードは未変更。一覧から直接注文を作らず、作品詳細・購入準備・Server Actionの再検証を維持する。
+- Production接続・データ変更、migration、schema、RLS、Storage、Provider、Job、credit操作は0件。一般公開販売・振込・精算確定は未提供のまま。
+- focused 12/12、Hub 1176/1176、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0（初回一時終了、同一HEAD再実行成功）、deps error 0（既知warning 2）、lint、全typecheck、migration静的91/91、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_CATALOG_SALE_DISCOVERY_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。一般購入解禁と実決済は別承認単位。
+
+---
+
 ## 0.0 Cloud商品DB編集ガード（2026-09-30）
 
 - Branch `codex/cloud-marketplace-db-product-guard-20260930`、Base `99c41e3b6f55814e145f1bd80d34291420ee6d15`（PR #571 merge commit）。所有者が通常画面を迂回してSupabase APIを直接更新しても、Cloud商品の固定項目を変更できないDB triggerを追加した。
