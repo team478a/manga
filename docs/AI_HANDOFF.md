@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud販売下書きの段階案内（2026-09-29）
+
+- Branch `codex/cloud-marketplace-draft-guidance-20260929`、Base `0798be6a`（PR #560 merge commit）。販売欄が無言でdisabledになる状態をなくし、原稿確認、完成版固定、販売下書き作成を順番に案内する純粋判定を追加した。
+- 原稿状態取得不能はfail closed。原稿未完了は要修正件数と原稿チェックへのリンク、原稿合格・完成版0件は完成版固定欄へのリンクを表示する。原稿合格かつ完成版1件以上の場合だけ販売入力欄とbuttonを有効にする。
+- DB schema、migration、checkpoint保存、販売artifact、publication固定、商品状態の処理は未変更。Chrome連携はrequest-header policyエラーで接続前停止し、Production request／mutationは0件。
+- focused 16/16、Hub 1146/1146、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、typecheck、migration 88/88、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_DRAFT_GUIDANCE_20260929.md`。次はDraft PRの全CI／Vercel成功まで確認し、完成版固定以降の実操作は別工程とする。
+
+---
+
 ## 0.0 Cloud完成版固定の阻害理由案内（2026-09-29）
 
 - Branch `codex/cloud-release-checkpoint-guidance-20260929`、Base `f04cece5`（PR #559 merge commit）。release checkpointがない作品で次の操作を判断できるよう、完成版固定欄へ原稿preflightの要修正総数と主要な阻害理由の件数を追加した。

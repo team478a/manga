@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud販売下書きの段階案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-draft-guidance-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`0798be6a`（PR #560 merge commit）。
+- 原稿preflight合格後も完成版checkpointが0件だと販売欄が無言で無効化されていたため、「原稿確認不能」「原稿要修正」「完成版未固定」「販売下書き作成可能」の4段階を判定する案内を追加した。
+- 原稿未完了時は要修正件数と原稿チェックへの導線、完成版未固定時は「次に完成版を固定」とバックアップ・完成版欄への導線を表示する。販売入力欄とbuttonは、原稿合格かつ完成版1件以上の場合だけ有効にする。
+- DB schema、migration、checkpoint保存、販売artifact生成、publication固定、商品状態は変更していない。Chrome連携はrequest-header policy読込みエラーで接続前に停止し、Production request／変更は0件。
+- 検証: focused 16/16、Hub 1146/1146、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、typecheck、migration 88/88、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_DRAFT_GUIDANCE_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後の完成版固定、販売下書き作成、作品公開、商品active化、購入は別工程とする。
+
+---
+
 ## 2026-09-29 Cloud完成版固定の阻害理由案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

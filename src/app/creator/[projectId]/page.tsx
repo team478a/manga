@@ -48,6 +48,7 @@ import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
+import { buildCloudMarketplaceDraftGuidance } from "@/lib/cloud-marketplace-draft-guidance";
 import { buildCloudReleaseCheckpointGuidance } from "@/lib/cloud-release-checkpoint-guidance";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
@@ -96,8 +97,13 @@ export default async function CloudProjectPage({
   const marketplaceIsCurrent = Boolean(
     marketplaceDraft?.product && marketplaceDraft.work?.current_publication_id,
   );
-  const marketplaceReady = Boolean(exportReadiness?.ready);
   const releaseCheckpoints = checkpointHistory.checkpoints.filter((item) => item.kind === "release");
+  const marketplaceGuidance = buildCloudMarketplaceDraftGuidance({
+    manuscriptAvailable: Boolean(exportReadiness),
+    manuscriptErrorCount: exportReadiness?.errorCount ?? 0,
+    manuscriptReady: Boolean(exportReadiness?.ready),
+    releaseCheckpointCount: releaseCheckpoints.length,
+  });
   const releaseGuidance = buildCloudReleaseCheckpointGuidance(exportReadiness);
   const longformReadiness = buildCloudLongformReadiness({
     manuscriptAvailable: Boolean(exportReadiness),
@@ -725,22 +731,18 @@ export default async function CloudProjectPage({
             <p className="mt-3 text-sm leading-relaxed text-stone-600">
               全ページをPDFへ再生成し、非公開作品と停止中商品を作成・更新します。公開中・販売中のデータは上書きしません。
             </p>
-            {!exportReadiness ? (
+            {!marketplaceGuidance.ready ? (
               <p
                 className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
                 id="marketplace-readiness"
+                role="status"
               >
-                原稿の完成状況を確認できないため、販売下書きは作成できません。
-              </p>
-            ) : !marketplaceReady ? (
-              <p
-                className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-900"
-                id="marketplace-readiness"
-              >
-                原稿チェックの要修正{exportReadiness.errorCount}件を解消し、すべてのページを確定すると作成できます。
-                <a className="ml-1 font-semibold underline" href="#manuscript-status">
-                  原稿チェックを確認
-                </a>
+                {marketplaceGuidance.summary}
+                {marketplaceGuidance.action ? (
+                  <a className="ml-1 font-semibold underline" href={marketplaceGuidance.action.href}>
+                    {marketplaceGuidance.action.label}
+                  </a>
+                ) : null}
               </p>
             ) : null}
             {marketplaceDraft?.product ? (
@@ -760,7 +762,7 @@ export default async function CloudProjectPage({
               action={syncCloudMarketplaceDraftAction.bind(null, projectId)}
               className="mt-4"
             >
-              <fieldset disabled={releaseCheckpoints.length === 0}>
+              <fieldset disabled={!marketplaceGuidance.ready}>
               <label className="label mt-4" htmlFor="marketplace-checkpoint">
                 販売に固定する完成版
               </label>
@@ -786,10 +788,10 @@ export default async function CloudProjectPage({
               />
               <PendingSubmitButton
                 aria-describedby={
-                  marketplaceReady ? undefined : "marketplace-readiness"
+                  marketplaceGuidance.ready ? undefined : "marketplace-readiness"
                 }
                 className="button mt-4 w-full"
-                disabled={!marketplaceReady}
+                disabled={!marketplaceGuidance.ready}
                 pendingLabel="作成中…"
               >
                 {marketplaceDraft?.product
