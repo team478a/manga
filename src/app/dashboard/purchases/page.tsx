@@ -1,12 +1,22 @@
 import Link from "next/link";
+import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { requireProfile } from "@/lib/auth";
 import { yen } from "@/lib/format";
+import { purchaseDownloadFailureMessage } from "@/lib/purchase-download-feedback";
 import { listPurchaseHistoryForProfile } from "@/modules/purchases/infrastructure/purchase-query-repository";
 
-export default async function PurchasesPage() {
+export default async function PurchasesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ download_error?: string }>;
+}) {
+  const params = await searchParams;
   const { profile } = await requireProfile();
-  const { data } = await listPurchaseHistoryForProfile(profile.id);
+  const { data, error } = await listPurchaseHistoryForProfile(profile.id);
   const purchases = data ?? [];
+  const pageError = error
+    ? "購入履歴を読み込めませんでした。購入情報は削除されていません。時間をおいて再読み込みしてください。"
+    : purchaseDownloadFailureMessage(params.download_error);
   return (
     <main className="page max-w-5xl">
       <Link className="text-leaf underline" href="/dashboard">
@@ -17,8 +27,20 @@ export default async function PurchasesPage() {
         支払済み商品は、本人確認後に5分間有効なURLを再発行します。
         テスト購入には「テスト購入」と表示され、実際の請求・売上・振込は発生しません。
       </p>
+      {pageError ? (
+        <InlineErrorMessage role="alert">{pageError}</InlineErrorMessage>
+      ) : null}
       <section className="mt-6 space-y-4">
-        {purchases.length ? (
+        {error ? (
+          <div className="panel p-6">
+            <p className="text-stone-600">
+              購入履歴を空として扱わず、読込を停止しました。
+            </p>
+            <Link className="button-secondary mt-4" href="/dashboard/purchases">
+              購入履歴を再読み込み
+            </Link>
+          </div>
+        ) : purchases.length ? (
           purchases.map((purchase) => (
             <article className="panel p-5" key={purchase.id}>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

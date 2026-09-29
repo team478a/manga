@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud購入履歴・ダウンロード回復
+
+- Branch: `codex/cloud-marketplace-purchase-recovery-20260930`。Base: `aeb9e28d658a08d7d5bd5688955f4eb99de10088`（PR #577 merge commit）。
+- 購入履歴の読込失敗を空履歴と区別し、購入情報を保持したまま再読み込みを案内する。ブラウザのdownload失敗は購入履歴へ303 redirectし、既知codeだけを安全な案内へ変換する。
+- API JSON、注文所有者、paid、5分URL、回数記録を維持した。Stripe、Webhook、migration、Production、Provider、Job、creditは変更していない。
+- focused 15/15、Hub 1184/1184、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CIとVercel Preview成功で停止する。
+
+---
+
 ## 2026-09-30 Codex: Cloud購入者導線の安全な完成
 
 - Branch: `codex/cloud-marketplace-buyer-journey-20260930`。Base: `338cd57c3f2d31c27cd1dd24a02afe30a438a77f`（PR #576 merge commit）。

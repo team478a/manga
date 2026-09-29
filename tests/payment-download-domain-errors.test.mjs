@@ -57,6 +57,33 @@ test("Webhookと購入download Routeは共通Error契約を使う", async () => 
   );
   assert.match(download, /toApiError/);
   assert.match(download, /NextResponse\.redirect\(signedUrl,\s*303\)/);
+  assert.match(download, /request\.headers\.get\("sec-fetch-mode"\) === "navigate"/);
+  assert.match(download, /requestOriginFromHeaders\(request\.headers\)/);
+  assert.match(download, /new URL\("\/dashboard\/purchases", origin\)/);
+  assert.match(download, /destination\.searchParams\.set\([\s\S]*"download_error"[\s\S]*response\.body\.errorCode/);
+  assert.match(download, /NextResponse\.redirect\(destination, 303\)/);
+  assert.match(download, /NextResponse\.json\(response\.body/);
+});
+
+test("購入downloadの画面表示は既知codeだけを安全な再試行案内へ変換する", async () => {
+  const { purchaseDownloadFailureMessage } = await import(
+    "../src/lib/purchase-download-feedback.ts"
+  );
+
+  assert.match(
+    purchaseDownloadFailureMessage("RESOURCE_NOT_FOUND"),
+    /購入履歴を再読み込み/,
+  );
+  assert.match(
+    purchaseDownloadFailureMessage("REVISION_CONFLICT"),
+    /現在の状態を確認/,
+  );
+  assert.match(
+    purchaseDownloadFailureMessage("STORAGE_TRANSACTION_ERROR"),
+    /もう一度お試しください/,
+  );
+  assert.equal(purchaseDownloadFailureMessage("UNKNOWN_ERROR"), null);
+  assert.equal(purchaseDownloadFailureMessage(), null);
 });
 
 test("決済・購入Serviceは生のErrorを生成しない", async () => {
