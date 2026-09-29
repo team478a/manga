@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Cloud完成版固定 Production監査（2026-09-29）
+
+- Branch `codex/marketplace-publication-fixation-production-audit-20260929`、Base `5e9b435c`（PR #558 merge commit）。Production管理画面のPR #558反映後表示を管理者sessionで匿名read-only確認した。
+- Cloud作品1件、未公開・未固定1件、所有者一致1件、paused商品紐付け1件。release checkpoint、完全なrelease checkpoint、固定可能作品、固定後更新商品はいずれも0件。
+- `READY`は監査範囲、未公開・未固定作品、所有者一致。`PENDING`はrelease checkpoint、ページ構成、固定候補。完成版checkpoint未作成が現在の阻害段階である。
+- migrationは`already-applied`、登録商品1件／paused 1件／active 0件。「作品公開とCloud完成版を確認」区分は1件。
+- Production mutation、checkpoint作成、publication固定、作品公開、商品active化、注文、Stripe、Storage、Provider、生成Job、credit、利用者データ変更は0件。詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_FIXATION_PRODUCTION_AUDIT_20260929.md`。
+- 次: 文書証跡をDraft PR化し全CI／Vercel成功で停止する。checkpoint作成と完成版固定は責任者の別途明示承認を必要とする。
+
+---
+
 ## 0.0 Marketplace Cloud完成版固定 readiness（2026-09-29）
 
 - Branch `codex/marketplace-publication-fixation-readiness-20260929`、Base `0ad899d5`（PR #557 merge commit）。Production変更なしで、Cloud完成版固定の候補条件と阻害状態を匿名件数だけで確認する管理画面readinessを追加した。

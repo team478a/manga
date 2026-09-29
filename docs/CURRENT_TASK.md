@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Marketplace Cloud完成版固定 Production監査
+
+- 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / RELEASE_CHECKPOINT_MISSING / FIXATION_NOT_READY / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-publication-fixation-production-audit-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`5e9b435c`（PR #558 merge commit）。
+- PR #558反映後のProduction管理画面`/admin/marketplace-canary`を管理者sessionで開き、Cloud完成版固定readinessを匿名・read-onlyで確認した。
+- 匿名件数はCloud作品1件、未公開・未固定1件、所有者一致1件、paused商品紐付け1件、release checkpoint 0件、完全なrelease checkpoint 0件、固定可能作品0件、固定後更新商品0件。
+- 監査範囲、未公開・未固定作品、所有者一致は`READY`。release checkpoint、完全なページ構成、固定候補は`PENDING`。現在の阻害段階はrelease checkpoint未作成で、完成版を推測して固定しない。
+- Production migrationは`already-applied`。登録商品1件／paused 1件／active 0件で、作品公開とCloud完成版の両方を確認する区分が1件。
+- Productionでは画面の匿名集計を読み取っただけで、DB mutation、checkpoint作成、publication固定、作品公開、商品active化、注文、Stripe、Storage、Provider、生成Job、credit、利用者データの変更は0件。
+- 詳細: `docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_FIXATION_PRODUCTION_AUDIT_20260929.md`。
+- 次: 文書のみを検証、commit、push、Draft PR化し、全CI／Vercel Preview成功で停止する。merge後のcheckpoint作成と完成版固定は別の明示承認を待つ。
+
+---
+
 ## 2026-09-29 Marketplace Cloud完成版固定 readiness
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

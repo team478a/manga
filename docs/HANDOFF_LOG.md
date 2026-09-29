@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Marketplace Cloud完成版固定 Production監査
+
+- Branch: `codex/marketplace-publication-fixation-production-audit-20260929`。Base: `5e9b435c`（PR #558 merge commit）。Production `/admin/marketplace-canary`で完成版固定readinessを匿名read-only確認した。
+- Cloud作品1件、未公開・未固定1件、所有者一致1件、paused商品紐付け1件に対し、release checkpoint 0件、完全なcheckpoint 0件、固定可能作品0件、固定後更新商品0件。
+- 監査範囲・未固定作品・所有者一致は`READY`、checkpoint・ページ構成・固定候補は`PENDING`。完成版checkpointがまだ作成されていないことが阻害段階である。
+- migrationは`already-applied`。登録商品1件、paused 1件、active 0件。「作品公開とCloud完成版を確認」区分1件。
+- ProductionではSELECT由来の画面表示を読んだだけで、DB mutation、checkpoint、publication、作品、商品、注文、Stripe、Storage、Provider、Job、credit、利用者データ変更は行っていない。
+- 次: 文書をcommit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。checkpoint作成と完成版固定は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Marketplace Cloud完成版固定 readiness
 
 - Branch: `codex/marketplace-publication-fixation-readiness-20260929`。Base: `0ad899d5`（PR #557 merge commit）。Cloud完成版固定を実行せずに候補条件を確認できる匿名read-only readinessを`/admin/marketplace-canary`へ追加した。
