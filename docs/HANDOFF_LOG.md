@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud商品DB編集ガード
+
+- Branch: `codex/cloud-marketplace-db-product-guard-20260930`。Base: `99c41e3b6f55814e145f1bd80d34291420ee6d15`（PR #571 merge commit）。Cloud商品の通常経路ガードを、直接authenticated API更新にも適用するDB triggerへ拡張した。
+- `authenticated`からのCloud商品直接作成、作品・販売ファイル・販売状態変更、販売中価格変更を`cloud_product_creator_managed`で拒否する。商品名・説明、停止中価格、手動商品は従来どおり。`cloud_product_publication_required`も維持する。
+- 正規の同期・完成版選択・出品開始・販売停止RPCは`security definer`として互換性を維持する。任意の`file_url`列は`to_jsonb`で比較し、最小bootstrapにも対応した。
+- `202609300001_cloud_marketplace_product_edit_guard`、rollback、schema、manifest、集中テストを追加。Production接続、migration適用、実作品・商品・注文・Stripe・Storage・Provider・Job・credit・利用者データ操作は未実施。未適用migrationは`202609290001`、`202609290002`、`202609300001`。
+- focused 16/16、Hub 1173/1173、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的91/91、PostgreSQL 16の91 forward／direct-auth guard／security-definer互換／91 rollback／91 re-forward／schema x2、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-30 Codex: Cloud販売中商品編集ガード
 
 - Branch: `codex/cloud-marketplace-active-product-guard-20260929`。Base: `bb38d0d1`（PR #570 merge commit）。販売開始後のCloud商品を汎用商品編集画面から不整合状態にしない通常経路ガードを追加した。

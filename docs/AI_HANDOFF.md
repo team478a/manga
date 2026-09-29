@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud商品DB編集ガード（2026-09-30）
+
+- Branch `codex/cloud-marketplace-db-product-guard-20260930`、Base `99c41e3b6f55814e145f1bd80d34291420ee6d15`（PR #571 merge commit）。所有者が通常画面を迂回してSupabase APIを直接更新しても、Cloud商品の固定項目を変更できないDB triggerを追加した。
+- `authenticated`からのCloud商品直接作成、作品・販売ファイル・販売状態変更、販売中価格変更を拒否する。商品名・説明、停止中価格、手動商品は維持する。既存の公開前提検査も維持した。
+- 正規の同期・完成版選択・出品開始・販売停止RPCは`security definer`であり、所有権と整合性を検証した更新を継続できる。PostgreSQL 16の実動作fixtureでも直接role拒否と正規関数成功を確認した。
+- migration `202609300001_cloud_marketplace_product_edit_guard`、rollback、schema、manifest、集中テストを追加。Production接続・適用・実データ操作は0件。Production未適用は`202609290001`、`202609290002`、`202609300001`。
+- focused 16/16、Hub 1173/1173、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的91/91、PostgreSQL 16の91 forward／guard互換／91 rollback／91 re-forward／schema x2、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_DB_PRODUCT_GUARD_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。Production適用はmerge後の別承認単位。
+
+---
+
 ## 0.0 Cloud販売中商品編集ガード（2026-09-30）
 
 - Branch `codex/cloud-marketplace-active-product-guard-20260929`、Base `bb38d0d1`（PR #570 merge commit）。Cloud出品後の商品編集で固定完成版と販売状態の整合性を迂回しないガードを追加した。
