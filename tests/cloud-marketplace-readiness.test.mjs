@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { buildCloudMarketplaceDraftGuidance } from "../src/lib/cloud-marketplace-draft-guidance.ts";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -25,11 +26,46 @@ test("販売artifact生成入口は完成原稿preflightを必須にする", asy
   assert.ok(stagingIndex > assertionIndex);
 });
 
-test("Creator画面は同じpreflightが未合格なら販売操作を無効化する", async () => {
+test("販売下書きは原稿確認と完成版固定を順番に案内する", () => {
+  const unavailable = buildCloudMarketplaceDraftGuidance({
+    manuscriptAvailable: false,
+    manuscriptErrorCount: 0,
+    manuscriptReady: false,
+    releaseCheckpointCount: 0,
+  });
+  const manuscript = buildCloudMarketplaceDraftGuidance({
+    manuscriptAvailable: true,
+    manuscriptErrorCount: 3,
+    manuscriptReady: false,
+    releaseCheckpointCount: 0,
+  });
+  const checkpoint = buildCloudMarketplaceDraftGuidance({
+    manuscriptAvailable: true,
+    manuscriptErrorCount: 0,
+    manuscriptReady: true,
+    releaseCheckpointCount: 0,
+  });
+  const ready = buildCloudMarketplaceDraftGuidance({
+    manuscriptAvailable: true,
+    manuscriptErrorCount: 0,
+    manuscriptReady: true,
+    releaseCheckpointCount: 1,
+  });
+
+  assert.equal(unavailable.stage, "manuscript_unavailable");
+  assert.equal(unavailable.action, null);
+  assert.match(manuscript.summary, /要修正3件/);
+  assert.equal(manuscript.action?.href, "#manuscript-status");
+  assert.equal(checkpoint.stage, "release_checkpoint_missing");
+  assert.equal(checkpoint.action?.href, "#checkpoint-heading");
+  assert.equal(ready.ready, true);
+});
+
+test("Creator画面は案内が未完了なら販売操作を無効化する", async () => {
   const page = await read("src/app/creator/[projectId]/page.tsx");
 
-  assert.match(page, /const marketplaceReady = Boolean\(exportReadiness\?\.ready\)/);
-  assert.match(page, /disabled=\{!marketplaceReady\}/);
-  assert.match(page, /原稿の完成状況を確認できないため、販売下書きは作成できません/);
-  assert.match(page, /原稿チェックの要修正\{exportReadiness\.errorCount\}件/);
+  assert.match(page, /buildCloudMarketplaceDraftGuidance/);
+  assert.match(page, /disabled=\{!marketplaceGuidance\.ready\}/);
+  assert.match(page, /marketplaceGuidance\.summary/);
+  assert.match(page, /marketplaceGuidance\.action\.href/);
 });
