@@ -1,11 +1,19 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/EmptyState";
 import { WorkCard } from "@/components/WorkCard";
+import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { hasSupabaseEnv } from "@/lib/env";
+import {
+  summarizeMarketplaceCatalogSale,
+  type MarketplaceCatalogProduct,
+} from "@/lib/marketplace-catalog";
 import { createClient } from "@/lib/supabase/server";
 import type { Work } from "@/lib/types";
 
 type WorksSearchParams = { q?: string; tag?: string };
+type PublicCatalogWork = Work & {
+  digital_products: MarketplaceCatalogProduct[] | null;
+};
 
 function safeSearchValue(value: string) {
   return value
@@ -34,12 +42,14 @@ export default async function WorksPage({
   const keyword = safeSearchValue(params.q ?? "");
   const selectedTag = (params.tag ?? "").trim().slice(0, 50);
   const supabase = await createClient();
+  const checkout = inspectMarketplaceCheckoutMode();
 
   let worksQuery = supabase
     .from("works")
-    .select("*")
+    .select("*,digital_products(price,status)")
     .eq("is_public", true)
     .eq("content_class", "general")
+    .eq("digital_products.status", "active")
     .order("created_at", { ascending: false });
 
   if (keyword)
@@ -49,7 +59,7 @@ export default async function WorksPage({
   if (selectedTag) worksQuery = worksQuery.contains("tags", [selectedTag]);
 
   const [{ data: works }, { data: tagRows }] = await Promise.all([
-    worksQuery.returns<Work[]>(),
+    worksQuery.returns<PublicCatalogWork[]>(),
     supabase
       .from("works")
       .select("tags")
@@ -133,9 +143,13 @@ export default async function WorksPage({
 
       {works?.length ? (
         <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {works.map((work) => (
-            <WorkCard key={work.id} work={work} />
-          ))}
+          {works.map((work) => {
+            const sale = summarizeMarketplaceCatalogSale(
+              work.digital_products,
+              checkout,
+            );
+            return <WorkCard key={work.id} work={work} sale={sale} />;
+          })}
         </div>
       ) : (
         <div className="mt-5">

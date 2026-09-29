@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud公開カタログ販売情報
+
+- Branch: `codex/cloud-marketplace-catalog-sale-discovery-20260930`。Base: `c84d8e57b68b79d04ae1f6b3b48bd30f5c718eed`（PR #572 merge commit）。Cloud出品後の公開カタログで商品と価格を発見できる表示を追加した。
+- 公開作品取得にactive商品の`price`、`status`だけを埋め込み、カードへ販売モードlabelと税込価格を表示する。複数商品は最低価格、停止中・不正価格は集計しない。
+- 購入資格、canary、自己購入禁止、注文、Stripe、Webhook、購入後権限は未変更。一覧カードは作品詳細へ進むだけで注文を作らない。
+- Production接続・データ変更、migration、schema、RLS、Storage、Provider、Job、credit操作は未実施。一般公開販売・振込・精算確定は未提供。
+- focused 12/12、Hub 1176/1176、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0（初回一時終了、同一HEAD再実行成功）、deps error 0（既知warning 2）、lint、全typecheck、migration静的91/91、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production設定変更、一般購入解禁、実購入・決済は別承認単位。
+
+---
+
 ## 2026-09-30 Codex: Cloud商品DB編集ガード
 
 - Branch: `codex/cloud-marketplace-db-product-guard-20260930`。Base: `99c41e3b6f55814e145f1bd80d34291420ee6d15`（PR #571 merge commit）。Cloud商品の通常経路ガードを、直接authenticated API更新にも適用するDB triggerへ拡張した。

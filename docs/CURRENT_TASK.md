@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud公開カタログ販売情報
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-catalog-sale-discovery-20260930`
+- Base: `origin/feature/manga-canvas-mvp`@`c84d8e57b68b79d04ae1f6b3b48bd30f5c718eed`（PR #572 merge commit）。
+- 公開作品一覧で、active商品がある作品に`テスト販売中`／`限定販売中`／`商品あり`と税込価格を表示する。複数商品では最低価格に`から`を付け、停止中・不正価格の商品は集計しない。
+- 公開RLSを通過した商品の`price`、`status`だけを取得する。既存の作品詳細・購入準備・Server Actionでの購入資格再検証を維持し、一覧から注文は作成しない。
+- migration、schema、RLS、購入資格、canary、Stripe、Webhook、注文、Storage、Provider、生成Job、creditは変更していない。Production接続・実データ変更は0件。一般公開販売・振込・精算確定も未提供のまま。
+- 検証: focused 12/12、Hub 1176/1176、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0（初回一時終了、同一HEAD再実行成功）、deps error 0（既知warning 2）、lint、全typecheck、migration静的91/91、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_CATALOG_SALE_DISCOVERY_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production設定変更、一般購入解禁、実購入・決済は別承認単位。
+
+---
+
 ## 2026-09-30 Cloud商品DB編集ガード
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
