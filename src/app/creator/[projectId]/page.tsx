@@ -801,6 +801,9 @@ export default async function CloudProjectPage({
                       <Link className="button-secondary" href="/dashboard/sales">
                         注文・売上を確認
                       </Link>
+                      <Link className="button-secondary" href="/dashboard/monitor/guide#internal-test-sale">
+                        テスト販売の手順
+                      </Link>
                     </div>
                   </div>
                 ) : null}

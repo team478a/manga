@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud限定テスト販売ガイド（2026-09-29）
+
+- Branch `codex/cloud-marketplace-test-sale-guide-20260929`、Base `46889073`（PR #564 merge commit）。MANGAI内の限定テスト販売を、原稿完成から注文・売上確認までの8手順として利用者ガイドへ追加した。
+- 制作ワークフローの販売準備・収益管理を`限定提供`へ更新し、ガイドと売上管理へ接続した。完成PDF後、作品一覧、販売設定完了後にもガイド入口を追加した。
+- 管理者指定の販売者・商品・購入者・期間、自己購入禁止、閲覧だけでは注文が発生しないこと、テスト注文を本番受取予定額へ含めないことを案内する。一般公開販売、振込、精算確定は未提供のまま。
+- Production接続、DB mutation、checkpoint、publication、作品・商品状態、注文、Stripe、Storage、Provider、Job、credit操作は0件。
+- focused 13/13、Hub 1151/1151、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_TEST_SALE_GUIDE_20260929.md`。次はDraft PRの全CI／Vercel成功で停止し、Production公開・購入・決済は別承認を待つ。
+
+---
+
 ## 0.0 Cloud注文・売上確認導線（2026-09-29）
 
 - Branch `codex/cloud-marketplace-sales-monitoring-guidance-20260929`、Base `749096f7`（PR #563 merge commit）。販売設定完了後のCreator作品画面から売上管理へ進み、注文一覧で対象作品・商品を確認できるようにした。

@@ -32,6 +32,7 @@ const sections = [
   { href: "#creator-operation-video", label: "原稿編集の操作デモ" },
   { href: "#workflow", label: "制作手順" },
   { href: "#manga-production", label: "漫画原稿の作り方" },
+  { href: "#internal-test-sale", label: "MANGAI内テスト販売" },
   { href: "#sales-listing", label: "出品・収益化" },
   { href: "#mobile", label: "スマートフォン" },
   { href: "#feedback", label: "感想の送り方" },
@@ -226,11 +227,12 @@ const steps = [
     icon: ShoppingBag,
     before: "作品情報、販売形式、価格などを整える工程です。",
     action:
-      "MANGAI内のテスト販売は管理者が有効化した期間だけ利用できます。実決済・振込・本番収益管理は準備中です。完成PDFを外部販売サイトへ手動出品する手順は、このページの「出品・収益化」で確認できます。",
-    result: "MANGAI内の販売機能は今後の更新で利用可能になる予定です。",
-    href: null,
-    linkLabel: null,
-    availability: "coming-soon",
+      "完成版を固定し、販売下書きを作成してから、作品公開と商品販売開始を順番に行います。現在は管理者が対象者・商品・期間を指定する限定テスト販売です。",
+    result:
+      "公開作品ページと購入準備画面を確認でき、指定購入者へ案内できる状態になります。",
+    href: "/dashboard/monitor/guide#internal-test-sale",
+    linkLabel: "限定テスト販売の手順を見る",
+    availability: "limited",
   },
   {
     number: 8,
@@ -238,11 +240,63 @@ const steps = [
     icon: ReceiptText,
     before: "販売後の売上や作品ごとの状況を確認する工程です。",
     action:
-      "MANGAI内の収益管理は準備中です。外部販売サイトの売上画面とご自身の帳簿で管理してください。",
-    result: "MANGAI内の収益管理は今後の更新で利用可能になる予定です。",
-    href: null,
-    linkLabel: null,
-    availability: "coming-soon",
+      "売上管理で注文区分、購入者、作品・商品、金額、状態を確認します。テスト注文は本番の受取予定額に含まれません。",
+    result:
+      "限定テストの注文結果を作品・商品ごとに確認できます。振込と精算確定はまだ利用できません。",
+    href: "/dashboard/sales",
+    linkLabel: "注文・売上を確認",
+    availability: "limited",
+  },
+] as const;
+
+const internalTestSaleSteps = [
+  {
+    number: 1,
+    title: "原稿を完成させる",
+    description:
+      "原稿チェックの修正項目を解消し、全ページを確定します。完成原稿PDFを確認してから次へ進みます。",
+  },
+  {
+    number: 2,
+    title: "完成版を固定する",
+    description:
+      "作品画面の「バックアップと完成版」で完成版を固定します。固定後の変更は販売物へ自動反映されません。",
+  },
+  {
+    number: 3,
+    title: "販売下書きを作成する",
+    description:
+      "販売に使う完成版と税込価格を選び、「販売下書きを作成」を押します。非公開作品と停止中商品が作成されます。",
+  },
+  {
+    number: 4,
+    title: "作品を公開する",
+    description:
+      "「作品を公開設定する」から作品情報を確認して公開します。公開後は公開作品ページを閲覧できます。",
+  },
+  {
+    number: 5,
+    title: "商品を販売中にする",
+    description:
+      "「商品の販売を開始する」から商品情報と価格を確認し、商品を販売中にします。閲覧だけでは注文・決済は発生しません。",
+  },
+  {
+    number: 6,
+    title: "管理者の対象指定を待つ",
+    description:
+      "現在は限定運用です。管理者が販売者、商品、指定購入者、利用期間を確認して案内するまで、購入操作を行わないでください。",
+  },
+  {
+    number: 7,
+    title: "指定購入者が確認する",
+    description:
+      "指定された購入者アカウントでログインし、案内された期間内だけ購入確認を行います。販売者本人の自己購入はできません。",
+  },
+  {
+    number: 8,
+    title: "注文・売上を確認する",
+    description:
+      "販売者は売上管理で対象作品・商品と注文状態を確認します。テスト注文は一覧に表示されますが、本番の受取予定額には加算されません。",
   },
 ] as const;
 
@@ -530,10 +584,15 @@ export default async function GeneralMonitorGuidePage() {
                         </dd>
                       </div>
                     </dl>
-                    {step.availability === "coming-soon" ? (
-                      <span className="mt-4 inline-flex rounded-full bg-stone-100 px-3 py-1.5 text-sm font-bold text-stone-500">
-                        準備中
-                      </span>
+                    {step.availability === "limited" && step.href && step.linkLabel ? (
+                      <div className="mt-4 flex flex-col items-start gap-2 sm:flex-row sm:items-center">
+                        <span className="inline-flex rounded-full bg-amber-100 px-3 py-1.5 text-sm font-bold text-amber-900">
+                          限定提供
+                        </span>
+                        <Link className="button-secondary w-full sm:w-auto" href={step.href}>
+                          {step.linkLabel}
+                        </Link>
+                      </div>
                     ) : step.href && step.linkLabel ? (
                       <Link
                         className="button-secondary mt-4 w-full sm:w-auto"
@@ -597,6 +656,70 @@ export default async function GeneralMonitorGuidePage() {
       </section>
 
       <section
+        aria-labelledby="internal-test-sale-title"
+        className="mt-9 scroll-mt-6"
+        id="internal-test-sale"
+      >
+        <p className="text-sm font-bold text-violet-700">
+          一般向け漫画・対象者限定
+        </p>
+        <h2 className="mt-1 text-2xl font-bold" id="internal-test-sale-title">
+          MANGAI内で限定テスト販売する
+        </h2>
+        <p className="mt-2 max-w-3xl leading-relaxed text-stone-600">
+          完成原稿を販売下書きへつなぎ、公開作品ページ、商品、注文・売上までをMANGAI内で確認できます。
+          現在は一般募集ではなく、管理者が販売者・商品・指定購入者・期間を確認した場合だけ利用できます。
+        </p>
+
+        <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
+          <strong>購入操作は管理者から案内された指定購入者だけが行ってください。</strong>
+          販売者本人の自己購入、対象外アカウントでの購入、案内前の実決済は行わないでください。
+          公開作品ページや購入準備画面を開くだけでは、注文・決済は発生しません。
+        </div>
+
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
+          {internalTestSaleSteps.map((step) => (
+            <article className="panel min-w-0" key={step.number}>
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-100 font-bold text-violet-700">
+                  {step.number}
+                </span>
+                <div>
+                  <h3 className="font-bold">{step.title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-stone-600">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div className="panel mt-5 border-emerald-200 bg-emerald-50">
+          <h3 className="font-bold text-emerald-950">販売者が確認する画面</h3>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-emerald-950">
+            <li>作品画面: 完成版固定、販売下書き、公開・販売開始の進捗</li>
+            <li>公開作品ページ: 購入者に表示される作品情報</li>
+            <li>購入準備画面: 商品、価格、現在の購入可否</li>
+            <li>売上管理: 注文区分、購入者、作品・商品、金額、状態</li>
+          </ul>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <Link className="button" href="/creator">
+              原稿編集を開く
+            </Link>
+            <Link className="button-secondary" href="/dashboard/sales">
+              注文・売上を確認
+            </Link>
+          </div>
+        </div>
+
+        <p className="mt-4 rounded-xl bg-stone-100 p-4 text-sm leading-relaxed text-stone-700">
+          一般公開販売、振込、精算確定はまだ提供していません。テスト注文は本番の受取予定額に含まれません。
+          管理者から停止連絡があった場合は、購入操作を中止してください。
+        </p>
+      </section>
+
+      <section
         aria-labelledby="sales-listing-title"
         className="mt-9 scroll-mt-6"
         id="sales-listing"
@@ -615,7 +738,7 @@ export default async function GeneralMonitorGuidePage() {
         </p>
 
         <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
-          <strong>MANGAI内のテスト販売は段階提供中で、実決済・振込・本番収益管理は準備中です。</strong>
+          <strong>MANGAI内の限定テスト販売は段階提供中で、一般公開販売・振込・精算確定は準備中です。</strong>
           この章は外部販売サイトへの手動出品を案内するもので、売上を保証するものではありません。
           成人向け作品は、この一般向けCloudマニュアルの対象外です。
         </div>

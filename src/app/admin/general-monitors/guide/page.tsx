@@ -114,7 +114,7 @@ export default async function GeneralMonitorStaffGuidePage() {
         <h2 className="text-2xl font-bold">今回確認する8工程</h2>
         <p className="mt-2 leading-relaxed text-stone-600">
           市場分析、AI企画提案、シナリオ作成、ネーム作成、原稿編集、作品管理の
-          6工程を確認します。販売準備と収益管理は「準備中」であり、今回の完走条件には含めません。
+          6工程を確認します。販売準備と収益管理は対象者限定で段階提供しており、通常の完走条件には含めません。
         </p>
       </section>
 
