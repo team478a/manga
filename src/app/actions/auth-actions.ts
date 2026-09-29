@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { resolvePostAuthRedirect } from "@/lib/auth-redirect";
 import { hasSupabaseEnv } from "@/lib/env";
 import { requestOriginFromHeaders } from "@/lib/request-origin";
 import { createClient } from "@/lib/supabase/server";
@@ -58,8 +59,11 @@ export async function signUp(formData: FormData) {
 }
 
 export async function signIn(formData: FormData) {
+  const nextPath = resolvePostAuthRedirect(formText(formData, "next"));
   if (!hasSupabaseEnv()) {
-    redirect(encodeURI("/login?error=Supabaseの環境変数を設定するとログインできます。"));
+    redirect(
+      `/login?error=${encodeURIComponent("Supabaseの環境変数を設定するとログインできます。")}&next=${encodeURIComponent(nextPath)}`,
+    );
   }
 
   const supabase = await createClient();
@@ -70,9 +74,9 @@ export async function signIn(formData: FormData) {
 
   if (error)
     redirect(
-      `/login?error=${encodeURIComponent("メールアドレスまたはパスワードを確認してください")}`,
+      `/login?error=${encodeURIComponent("メールアドレスまたはパスワードを確認してください")}&next=${encodeURIComponent(nextPath)}`,
     );
-  redirect("/dashboard");
+  redirect(nextPath);
 }
 
 async function requestOrigin() {

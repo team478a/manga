@@ -1,10 +1,12 @@
 import { signIn } from "@/app/actions";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
+import { resolvePostAuthRedirect } from "@/lib/auth-redirect";
 import Link from "next/link";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; message?: string; next?: string }> }) {
   const params = await searchParams;
+  const nextPath = resolvePostAuthRedirect(params.next);
 
   return (
     <main className="page max-w-xl">
@@ -13,6 +15,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       {params.message ? <p className="mt-5 rounded-md bg-green-50 p-4 text-green-800">{params.message}</p> : null}
       {params.error ? <InlineErrorMessage>{params.error}</InlineErrorMessage> : null}
       <form action={signIn} className="panel mt-6 space-y-5">
+        <input name="next" type="hidden" value={nextPath} />
         <div>
           <label className="label" htmlFor="email">メールアドレス</label>
           <input className="field" id="email" name="email" type="email" required />

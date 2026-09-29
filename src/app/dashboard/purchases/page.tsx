@@ -15,6 +15,7 @@ export default async function PurchasesPage() {
       <h1 className="mt-4 text-3xl font-bold">購入履歴</h1>
       <p className="mt-2 text-stone-600">
         支払済み商品は、本人確認後に5分間有効なURLを再発行します。
+        テスト購入には「テスト購入」と表示され、実際の請求・売上・振込は発生しません。
       </p>
       <section className="mt-6 space-y-4">
         {purchases.length ? (
@@ -52,7 +53,12 @@ export default async function PurchasesPage() {
             </article>
           ))
         ) : (
-          <div className="panel p-6 text-stone-600">購入履歴はありません。</div>
+          <div className="panel p-6 text-stone-600">
+            <p>購入履歴はありません。</p>
+            <Link className="button-secondary mt-4" href="/works">
+              公開作品を確認
+            </Link>
+          </div>
         )}
       </section>
     </main>
