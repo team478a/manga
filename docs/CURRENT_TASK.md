@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud完成版固定の阻害理由案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-release-checkpoint-guidance-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`f04cece5`（PR #559 merge commit）。
+- Production監査でrelease checkpointが0件だったため、作品画面の完成版固定欄へ原稿preflightの阻害理由を件数付きで表示する案内を追加した。画像未生成、生成処理中、ページ未確定、設定変更後の再確認を区別し、要修正総数と「原稿チェック」への導線を示す。
+- 固定buttonの有効条件は従来どおり原稿preflightの`ready`だけである。preflight取得不能時もfail closedで、条件を緩和しない。表紙、ページ順、素材、文字、品質検査など他の要修正はリンク先の原稿チェックで確認する。
+- DB schema、migration、checkpoint保存、publication固定処理は変更していない。Production接続、DB mutation、checkpoint作成、完成版固定、作品公開、商品active化、注文、Stripe、Storage、Provider、生成Job、credit、利用者データ変更は0件。
+- 検証: focused 15/15、Hub 1145/1145、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、typecheck、migration 88/88、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_RELEASE_CHECKPOINT_GUIDANCE_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。merge後に利用者がProductionで案内を確認できるが、checkpoint作成と完成版固定は別の明示承認を待つ。
+
+---
+
 ## 2026-09-29 Marketplace Cloud完成版固定 Production監査
 
 - 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / RELEASE_CHECKPOINT_MISSING / FIXATION_NOT_READY / PRODUCTION_UNCHANGED`
