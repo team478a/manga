@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Cloud出品の安全な再開
+
+- Branch: `codex/cloud-marketplace-listing-resume-20260929`。Base: `790b8fd2`（PR #569 merge commit）。販売停止後の作品を安全に再出品できる画面と確認契約を追加した。
+- Creator画面の操作を初回出品・再出品共通の`出品を開始・再開する`へ変更し、一般公開と新規販売の必須確認を追加した。Server Actionも確認値を検証する。
+- 既存RPCが所有権、一般向け、固定完成版、連番ページ、単一商品、価格、販売ファイル、完成版PDFをtransaction内で再確認するため、DB変更なしで原子的な再開を行える。購入済み利用権と注文履歴は維持する。
+- 状態表示を明確化し、成功後に作品一覧、作品・商品編集、公開作品、購入準備画面を再検証する。migration、schema、RLS、Stripe、Checkout、注文は未変更。
+- Production接続、migration適用、作品公開、商品active化、注文、Stripe、決済、返金、Provider、生成Job、credit、利用者データ変更は未実施。`202609290001`と`202609290002`はいずれもProduction未適用。
+- focused 13/13、Hub 1164/1164、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Cloud出品の安全な販売停止
 
 - Branch: `codex/cloud-marketplace-listing-withdrawal-20260929`。Base: `243d941a`（PR #568 merge commit）。Creator画面へ、販売中の作品の新規販売と一般公開をまとめて停止する操作を追加した。

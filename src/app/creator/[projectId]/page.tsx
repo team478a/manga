@@ -759,11 +759,11 @@ export default async function CloudProjectPage({
               <div className="mt-4 rounded-md border border-stone-200 bg-stone-50 p-4 text-sm">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div>
-                    <p className="font-bold">販売開始までの進捗</p>
+                    <p className="font-bold">販売開始・再開までの進捗</p>
                     <p className="mt-1 text-stone-700">{marketplaceSalesGuidance?.summary}</p>
                   </div>
                   <span className={`w-fit rounded-full px-3 py-1 text-xs font-bold ${marketplaceSalesGuidance?.ready ? "bg-green-100 text-green-800" : "bg-amber-100 text-amber-900"}`}>
-                    {marketplaceSalesGuidance?.ready ? "販売設定完了" : "次の操作あり"}
+                    {marketplaceSalesGuidance?.ready ? "販売中" : "未公開・停止中"}
                   </span>
                 </div>
                 <ol className="mt-3 grid gap-2 sm:grid-cols-3">
@@ -780,13 +780,17 @@ export default async function CloudProjectPage({
                 </ol>
                 {!marketplaceSalesGuidance?.ready && marketplaceDraft.work?.current_publication_id ? (
                   <div className="mt-3 rounded-md border border-violet-200 bg-violet-50 p-3">
-                    <p className="font-bold text-violet-950">作品公開と販売開始をまとめて確定</p>
+                    <p className="font-bold text-violet-950">作品公開と販売開始・再開をまとめて確定</p>
                     <p className="mt-1 leading-relaxed text-violet-900">
-                      完成版、販売PDF、価格、所有権をもう一度確認し、問題がなければ作品公開と商品販売開始を同時に行います。
+                      初回出品または販売停止後の再開です。完成版、販売PDF、価格、所有権をもう一度確認し、問題がなければ一般公開と新規販売を同時に開始します。購入済みの利用権と注文履歴はそのまま維持されます。
                     </p>
                     <form action={publishCloudMarketplaceListingAction.bind(null, projectId)}>
-                      <PendingSubmitButton className="button mt-3" pendingLabel="出品確定中…">
-                        出品を確定する
+                      <label className="mt-3 flex items-start gap-2 text-violet-950">
+                        <input className="mt-1 h-4 w-4" name="confirm" required type="checkbox" value="publish" />
+                        <span>一般公開と新規販売を開始・再開することを確認しました</span>
+                      </label>
+                      <PendingSubmitButton className="button mt-3" pendingLabel="出品開始・再開中…">
+                        出品を開始・再開する
                       </PendingSubmitButton>
                     </form>
                   </div>

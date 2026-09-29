@@ -450,19 +450,28 @@ export async function createCloudProjectCheckpointAction(projectId: string, kind
   redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(parsed.data.kind === "release" ? "完成版を固定しました" : "バックアップを作成しました")}`);
 }
 
-export async function publishCloudMarketplaceListingAction(projectId: string) {
-  const parsed = z.string().uuid().safeParse(projectId);
-  if (!parsed.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));
+export async function publishCloudMarketplaceListingAction(
+  projectId: string,
+  formData: FormData,
+) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    confirm: z.literal("publish"),
+  }).safeParse({ projectId, confirm: formString(formData, "confirm") });
+  if (!parsed.success)
+    redirect(encodeURI("/creator?error=作品IDと出品開始・再開の確認を確認してください"));
   try {
-    const result = await publishCloudMarketplaceListing(parsed.data);
-    revalidatePath(`/creator/${parsed.data}`);
+    const result = await publishCloudMarketplaceListing(parsed.data.projectId);
+    revalidatePath(`/creator/${parsed.data.projectId}`);
+    revalidatePath("/works");
     revalidatePath(`/dashboard/works/${result.workId}/edit`);
     revalidatePath(`/dashboard/products/${result.productId}/edit`);
     revalidatePath(`/works/${result.workId}`);
+    revalidatePath(`/checkout/${result.productId}`);
   } catch (error) {
-    redirect(`/creator/${parsed.data}?error=${encodeURIComponent(domainMessage(error, "出品を確定できませんでした。完成版・販売ファイル・価格を確認してください。"))}`);
+    redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "出品を開始・再開できませんでした。完成版・販売ファイル・価格を確認してください。"))}`);
   }
-  redirect(`/creator/${parsed.data}?message=${encodeURIComponent("作品公開と商品販売を開始しました")}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("作品公開と商品販売を開始・再開しました")}`);
 }
 
 export async function withdrawCloudMarketplaceListingAction(

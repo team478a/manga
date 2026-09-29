@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud出品の安全な再開
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-listing-resume-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`790b8fd2`（PR #569 merge commit）。
+- 販売停止後の作品を初回出品と同じ安全条件で再開できるよう、Creator画面を`出品を開始・再開する`へ統一し、一般公開と新規販売を確認する必須checkboxを追加した。確認値欠落はServer Actionでfail closedする。
+- 既存の原子的な`publish_cloud_marketplace_listing(uuid)`を再利用する。所有権、一般向け区分、固定完成版、連番ページ、単一商品、価格、販売ファイル、完成版PDF一致を再検証し、購入済み利用権と注文履歴は維持する。
+- 状態表示を`販売中`／`未公開・停止中`へ明確化し、再開後はCreator、作品一覧、作品・商品編集、公開作品、購入準備画面を再検証する。migration、schema、RLS、Stripe、Checkout、注文処理は変更していない。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、Storage、Provider、生成Job、credit、利用者データ変更は0件。承認済み`202609290001`はChrome policy接続エラーで未適用。`202609290002`も未適用で別承認が必要。
+- 検証: focused 13/13、Hub 1164/1164、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LISTING_RESUME_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud出品の安全な販売停止
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

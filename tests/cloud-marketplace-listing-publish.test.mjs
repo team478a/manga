@@ -22,7 +22,7 @@ test("Cloud出品確定は所有する一般作品・固定完成版・単一商
   assert.match(sql, /grant execute on function public\.publish_cloud_marketplace_listing\(uuid\) to authenticated,service_role/);
 });
 
-test("Creator画面からCloud出品を一操作で確定し確認画面へ進める", async () => {
+test("Creator画面からCloud出品を確認付きで開始・再開し確認画面へ進める", async () => {
   const [page, actions, marketplace] = await Promise.all([
     read("src/app/creator/[projectId]/page.tsx"),
     read("src/app/creator/actions.ts"),
@@ -30,11 +30,15 @@ test("Creator画面からCloud出品を一操作で確定し確認画面へ進�
   ]);
 
   assert.match(page, /publishCloudMarketplaceListingAction/);
-  assert.match(page, /作品公開と販売開始をまとめて確定/);
-  assert.match(page, /出品を確定する/);
+  assert.match(page, /作品公開と販売開始・再開をまとめて確定/);
+  assert.match(page, /出品を開始・再開する/);
+  assert.match(page, /一般公開と新規販売を開始・再開することを確認しました/);
   assert.match(page, /marketplaceDraft\.work\?\.current_publication_id/);
-  assert.match(actions, /publishCloudMarketplaceListing\(parsed\.data\)/);
-  assert.match(actions, /作品公開と商品販売を開始しました/);
+  assert.match(actions, /z\.literal\("publish"\)/);
+  assert.match(actions, /publishCloudMarketplaceListing\(parsed\.data\.projectId\)/);
+  assert.match(actions, /作品公開と商品販売を開始・再開しました/);
+  assert.match(actions, /revalidatePath\("\/works"\)/);
+  assert.match(actions, /revalidatePath\(`\/checkout\/\$\{result\.productId\}`\)/);
   assert.match(marketplace, /\.rpc\("publish_cloud_marketplace_listing"/);
   assert.match(page, /作品設定を確認/);
   assert.match(page, /販売商品を確認/);
