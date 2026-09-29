@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud購入者導線の安全な完成（2026-09-30）
+
+- Branch `codex/cloud-marketplace-buyer-journey-20260930`、Base `338cd57c3f2d31c27cd1dd24a02afe30a438a77f`（PR #576 merge commit）。公開作品詳細から購入準備、ログイン復帰、決済確認、購入履歴・再ダウンロードまでの買い手導線を監査・補強した。
+- 固定live canaryの商品・売り手が一致すれば未ログインでも購入準備を表示するが、購入実行は固定buyer、期限、fingerprintの従来条件を維持する。
+- checkout直接アクセスはactive、public、general、Cloud固定publicationを再検証する。成功画面はpaid確認後だけ決済完了を表示し、未確認状態を成功と誤表示しない。
+- 注文repository、Stripe、Webhook、RLS、schema、migrationは未変更。Production接続、実注文・実決済、返金、Provider、Job、credit操作は0件。
+- focused 17/17、Hub 1183/1183、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_BUYER_ENTRY_HARDENING_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Cloud公開カタログ販売中優先表示（2026-09-30）
 
 - Branch `codex/cloud-marketplace-sale-priority-20260930`、Base `730ad5a321b3b499cf56c45d67e6d3426ac0fdf7`（PR #575 merge commit）。販売中作品を公開一覧の先頭へ並べた。

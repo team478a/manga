@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud購入者導線の安全な完成
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-buyer-journey-20260930`
+- Base: `338cd57c3f2d31c27cd1dd24a02afe30a438a77f`（PR #576 merge commit）。
+- 固定live canaryの商品・売り手が一致する公開作品では、未ログインでも作品詳細から購入準備へ進み、ログイン後に同じcheckoutへ戻れるようにした。購入実行には従来どおり固定buyerとの完全一致が必要。
+- checkout直接アクセスでactive、public、general、Cloud固定publicationを再検証し、固定canary以外はfail closedする。決済完了表示はpaid確認後だけに限定した。
+- 購入資格、24時間期限、fingerprint、自己購入禁止、注文repository、Stripe、Webhook、RLS、schema、migrationは変更していない。Production、実注文・実決済、Provider、Job、credit操作は0件。
+- 検証: focused 17/17、Hub 1183/1183、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_BUYER_ENTRY_HARDENING_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production設定変更、canary実購入、一般購入解禁は別承認単位。
+
+---
+
 ## 2026-09-30 Cloud公開カタログ販売中優先表示
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

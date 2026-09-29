@@ -96,13 +96,43 @@ export function isMarketplaceCanaryCheckoutTarget({
   productId: string;
   sellerProfileId: string;
 }) {
+  if (
+    !isMarketplaceCanaryCheckoutListing({
+      environment,
+      now,
+      paymentMode,
+      productId,
+      sellerProfileId,
+    })
+  ) {
+    return false;
+  }
+  if (paymentMode === "test") return true;
+  const availability = inspectMarketplaceLiveCanary(environment, now);
+  return Boolean(
+    availability.target?.buyerProfileId === buyerProfileId,
+  );
+}
+
+export function isMarketplaceCanaryCheckoutListing({
+  environment = process.env,
+  now = Date.now(),
+  paymentMode,
+  productId,
+  sellerProfileId,
+}: {
+  environment?: MarketplaceLiveCanaryEnvironment;
+  now?: number;
+  paymentMode: "test" | "live";
+  productId: string;
+  sellerProfileId: string;
+}) {
   if (paymentMode === "test") return true;
   const availability = inspectMarketplaceLiveCanary(environment, now);
   return Boolean(
     availability.enabled &&
       availability.target?.productId === productId &&
-      availability.target.sellerProfileId === sellerProfileId &&
-      availability.target.buyerProfileId === buyerProfileId,
+      availability.target.sellerProfileId === sellerProfileId,
   );
 }
 

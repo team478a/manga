@@ -2,7 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { yen } from "@/lib/format";
-import { isMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
+import {
+  isMarketplaceCanaryCheckoutListing,
+  isMarketplaceCanaryCheckoutTarget,
+} from "@/lib/checkout-canary";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import {
   publicCreatorName,
@@ -133,8 +136,17 @@ export default async function WorkDetailPage({
         <div className="mt-4 grid gap-4">
           {products?.length ? (
             products.map((product) => {
-              const canPurchase = Boolean(
+              const canOpenCheckout = Boolean(
                 checkout.enabled &&
+                  checkout.paymentMode &&
+                  isMarketplaceCanaryCheckoutListing({
+                    paymentMode: checkout.paymentMode,
+                    productId: product.id,
+                    sellerProfileId: product.creator_id,
+                  }),
+              );
+              const canPurchase = Boolean(
+                canOpenCheckout &&
                   checkout.paymentMode &&
                   isMarketplaceCanaryCheckoutTarget({
                     buyerProfileId,
@@ -156,9 +168,13 @@ export default async function WorkDetailPage({
                     <p className="text-2xl font-bold">
                       税込 {yen(product.price)}
                     </p>
-                    {canPurchase ? (
+                    {canOpenCheckout ? (
                       <Link className="button" href={`/checkout/${product.id}`}>
-                        {checkout.paymentMode === "test" ? "テスト購入" : "購入する"}
+                        {canPurchase
+                          ? checkout.paymentMode === "test"
+                            ? "テスト購入"
+                            : "購入する"
+                          : "購入準備へ"}
                       </Link>
                     ) : (
                       <span className="rounded-md bg-stone-100 px-4 py-3 text-sm font-semibold text-stone-600">

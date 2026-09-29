@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud購入者導線の安全な完成
+
+- Branch: `codex/cloud-marketplace-buyer-journey-20260930`。Base: `338cd57c3f2d31c27cd1dd24a02afe30a438a77f`（PR #576 merge commit）。
+- 公開作品詳細から固定canaryの購入準備へ未ログインでも進めるようにし、ログイン後は同じcheckoutへ戻す。購入実行の固定buyer・期限・fingerprint条件は維持した。
+- checkout直接アクセスへ一般公開・固定完成版の再検証を追加し、対象外商品はfail closedする。決済完了はpaid確認後だけ表示する。
+- 注文、Stripe、Webhook、migration、schema、RLS、Production、Provider、Job、creditは変更していない。
+- focused 17/17、Hub 1183/1183、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CIとVercel Preview成功で停止する。
+
+---
+
 ## 2026-09-30 Codex: Cloud公開カタログ販売中優先表示
 
 - Branch: `codex/cloud-marketplace-sale-priority-20260930`。Base: `730ad5a321b3b499cf56c45d67e6d3426ac0fdf7`（PR #575 merge commit）。

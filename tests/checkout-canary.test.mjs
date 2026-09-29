@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   assertMarketplaceCanaryCheckoutTarget,
   inspectMarketplaceLiveCanary,
+  isMarketplaceCanaryCheckoutListing,
   isMarketplaceCanaryCheckoutTarget,
 } from "../src/lib/checkout-canary.ts";
 
@@ -81,6 +82,33 @@ test("隔離Stagingのtest販売はcanary gateの対象外にする", () => {
   );
 });
 
+test("未ログインでも固定商品と売り手が一致すれば購入準備だけを開ける", () => {
+  const candidate = environment();
+  const input = {
+    environment: candidate,
+    now,
+    paymentMode: "live",
+    productId: candidate.MANGAI_MARKETPLACE_CANARY_PRODUCT_ID,
+    sellerProfileId: candidate.MANGAI_MARKETPLACE_CANARY_SELLER_PROFILE_ID,
+  };
+
+  assert.equal(isMarketplaceCanaryCheckoutListing(input), true);
+  assert.equal(
+    isMarketplaceCanaryCheckoutListing({
+      ...input,
+      productId: "44444444-4444-4444-8444-444444444444",
+    }),
+    false,
+  );
+  assert.equal(
+    isMarketplaceCanaryCheckoutTarget({
+      ...input,
+      buyerProfileId: null,
+    }),
+    false,
+  );
+});
+
 test("公開画面と購入画面もログイン済みbuyer profileで対象を絞る", async () => {
   const [workPage, checkoutPage] = await Promise.all([
     readFile(new URL("../src/app/works/[id]/page.tsx", import.meta.url), "utf8"),
@@ -91,10 +119,12 @@ test("公開画面と購入画面もログイン済みbuyer profileで対象を�
   ]);
 
   for (const source of [workPage, checkoutPage]) {
+    assert.match(source, /isMarketplaceCanaryCheckoutListing/);
     assert.match(source, /isMarketplaceCanaryCheckoutTarget/);
     assert.match(source, /\.eq\("user_id", user\.id\)/);
     assert.match(source, /buyerProfileId/);
   }
+  assert.match(workPage, /購入準備へ/);
   assert.match(checkoutPage, /disabled=\{!canPurchase\}/);
 });
 

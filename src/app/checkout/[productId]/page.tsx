@@ -3,7 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPendingOrder } from "@/app/actions";
 import { InlineErrorMessage } from "@/components/InlineErrorMessage";
-import { isMarketplaceCanaryCheckoutTarget } from "@/lib/checkout-canary";
+import {
+  isMarketplaceCanaryCheckoutListing,
+  isMarketplaceCanaryCheckoutTarget,
+} from "@/lib/checkout-canary";
 import { inspectMarketplaceCheckoutMode } from "@/lib/checkout-mode";
 import { yen } from "@/lib/format";
 import {
@@ -24,6 +27,9 @@ type CheckoutProduct = {
     title: string;
     image_url: string | null;
     is_public: boolean;
+    content_class: "general" | "adult";
+    source_project_id: string | null;
+    current_publication_id: string | null;
   } | null;
 };
 
@@ -42,7 +48,7 @@ export default async function CheckoutPage({
   } = await supabase.auth.getUser();
   const { data: product } = await supabase
     .from("digital_products")
-    .select("id,title,description,price,status,creator_id,works:work_id(id,title,image_url,is_public)")
+    .select("id,title,description,price,status,creator_id,works:work_id(id,title,image_url,is_public,content_class,source_project_id,current_publication_id)")
     .eq("id", productId)
     .maybeSingle<CheckoutProduct>();
 
@@ -68,10 +74,25 @@ export default async function CheckoutPage({
       .maybeSingle<{ id: string }>();
     buyerProfileId = profile?.id ?? null;
   }
-  const productAvailable = product.status === "active" && product.works?.is_public;
-  const canPurchase = Boolean(
+  const productAvailable = Boolean(
+    product.status === "active" &&
+      product.works?.is_public &&
+      product.works.content_class === "general" &&
+      (!product.works.source_project_id ||
+        product.works.current_publication_id),
+  );
+  const checkoutEntryAvailable = Boolean(
     productAvailable &&
       checkout.enabled &&
+      checkout.paymentMode &&
+      isMarketplaceCanaryCheckoutListing({
+        paymentMode: checkout.paymentMode,
+        productId: product.id,
+        sellerProfileId: product.creator_id,
+      }),
+  );
+  const canPurchase = Boolean(
+    checkoutEntryAvailable &&
       checkout.paymentMode &&
       isMarketplaceCanaryCheckoutTarget({
         buyerProfileId,
@@ -81,8 +102,7 @@ export default async function CheckoutPage({
       }),
   );
   const loginRequired = Boolean(
-    productAvailable &&
-      checkout.enabled &&
+    checkoutEntryAvailable &&
       checkout.paymentMode === "live" &&
       !user,
   );
@@ -116,7 +136,9 @@ export default async function CheckoutPage({
           {messages.error ? <InlineErrorMessage>{messages.error}</InlineErrorMessage> : null}
           {!productAvailable ? <InlineErrorMessage>この商品は現在購入できません。</InlineErrorMessage> : null}
           {productAvailable && !checkout.enabled ? <InlineErrorMessage>{checkout.reason ?? "購入手続きは現在利用できません。"}</InlineErrorMessage> : null}
-          {loginRequired ? (
+          {productAvailable && checkout.enabled && !checkoutEntryAvailable ? (
+            <InlineErrorMessage>この商品は現在、購入手続きの対象外です。</InlineErrorMessage>
+          ) : loginRequired ? (
             <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-4 text-amber-950" role="status">
               <p className="font-bold">指定購入者アカウントでログインしてください</p>
               <p className="mt-1 text-sm leading-relaxed">
@@ -129,7 +151,7 @@ export default async function CheckoutPage({
                 ログインして戻る
               </Link>
             </div>
-          ) : productAvailable && checkout.enabled && !canPurchase ? (
+          ) : checkoutEntryAvailable && !canPurchase ? (
             <InlineErrorMessage>この商品は現在、指定された購入者だけが購入できます。</InlineErrorMessage>
           ) : null}
 

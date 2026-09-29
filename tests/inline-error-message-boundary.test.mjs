@@ -7,7 +7,7 @@ const readSource = (path) =>
 
 const pageContracts = [
   ["../src/app/forgot-password/page.tsx", /params\.error[\s\S]*<InlineErrorMessage>\{params\.error\}<\/InlineErrorMessage>/],
-  ["../src/app/checkout/[productId]/page.tsx", /<InlineErrorMessage>\{messages\.error\}<\/InlineErrorMessage>/, 4],
+  ["../src/app/checkout/[productId]/page.tsx", /<InlineErrorMessage>\{messages\.error\}<\/InlineErrorMessage>/, 5],
   ["../src/app/dashboard/goods-requests/page.tsx", /<InlineErrorMessage>\{params\.error\}<\/InlineErrorMessage>/],
   ["../src/app/dashboard/goods-requests/new/page.tsx", /<InlineErrorMessage>\{params\.error\}<\/InlineErrorMessage>/],
   ["../src/app/dashboard/works/[id]/edit/page.tsx", /<InlineErrorMessage>\{messages\.error\}<\/InlineErrorMessage>/],
@@ -49,7 +49,7 @@ test("Inline errorは既存のp要素とmd／lg visual classだけを共有す�
   assert.doesNotMatch(source, /role="alert"|params\.error|messages\.error|query\.error|canPurchase/);
 });
 
-test("30画面34箇所は表示条件・文言・ARIAを各画面に保持する", async () => {
+test("30画面35箇所は表示条件・文言・ARIAを各画面に保持する", async () => {
   const sources = await Promise.all(pageContracts.map(([path]) => readSource(path)));
 
   for (const [index, source] of sources.entries()) {
@@ -72,8 +72,9 @@ test("30画面34箇所は表示条件・文言・ARIAを各画面に保持する
     (count, source) => count + (source.match(/<InlineErrorMessage(?:\s|>)/g)?.length ?? 0),
     0,
   );
-  assert.equal(usageCount, 34);
+  assert.equal(usageCount, 35);
   assert.match(sources[1], /!productAvailable \? <InlineErrorMessage>この商品は現在購入できません。<\/InlineErrorMessage>/);
   assert.match(sources[1], /productAvailable && !checkout\.enabled \? <InlineErrorMessage>\{checkout\.reason/);
-  assert.match(sources[1], /productAvailable && checkout\.enabled && !canPurchase \? \([\s\S]*<InlineErrorMessage>この商品は現在、指定された購入者だけが購入できます。<\/InlineErrorMessage>/);
+  assert.match(sources[1], /productAvailable && checkout\.enabled && !checkoutEntryAvailable \? \([\s\S]*<InlineErrorMessage>この商品は現在、購入手続きの対象外です。<\/InlineErrorMessage>/);
+  assert.match(sources[1], /checkoutEntryAvailable && !canPurchase \? \([\s\S]*<InlineErrorMessage>この商品は現在、指定された購入者だけが購入できます。<\/InlineErrorMessage>/);
 });

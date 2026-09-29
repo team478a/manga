@@ -17,6 +17,10 @@ test("checkout success verifies the paid Stripe session before repository access
     page.indexOf("paidSessionReference(session)") <
       page.indexOf("getPaidCheckoutDownload(reference)"),
   );
+  assert.match(page, /let paymentConfirmed = false/);
+  assert.match(page, /paymentConfirmed = true/);
+  assert.match(page, /購入状況を確認してください/);
+  assert.match(page, /決済は確認されましたが、購入情報を表示できませんでした/);
 });
 
 test("checkout repository preserves paid order and signed download contracts", async () => {
