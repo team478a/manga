@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud完成版固定の阻害理由案内（2026-09-29）
+
+- Branch `codex/cloud-release-checkpoint-guidance-20260929`、Base `f04cece5`（PR #559 merge commit）。release checkpointがない作品で次の操作を判断できるよう、完成版固定欄へ原稿preflightの要修正総数と主要な阻害理由の件数を追加した。
+- 画像未生成、画像生成未完了ページ、未確定ページ、設定変更後の再確認ページを区別する。「原稿チェックを確認」から同一画面の詳細へ移動でき、表紙、ページ順、素材、文字、品質検査など残りの要修正も確認できる。
+- 固定可否は既存の`CloudManuscriptPreflightReport.ready`を唯一の基準として維持する。preflight取得不能はfail closed。DB schema、migration、checkpoint保存、publication固定処理は変更していない。
+- focused 15/15、Hub 1145/1145、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、typecheck、migration 88/88、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- Production接続・mutation、checkpoint作成、完成版固定、作品公開、商品active化、注文、Stripe、Storage、Provider、Job、credit、利用者データ変更は0件。詳細は`docs/RELEASE_CANDIDATE_CLOUD_RELEASE_CHECKPOINT_GUIDANCE_20260929.md`。
+- 次: Draft PRの全CI／Vercel Preview成功まで確認して停止する。merge後のcheckpoint作成と完成版固定は責任者の別途明示承認を必要とする。
+
+---
+
 ## 0.0 Marketplace Cloud完成版固定 Production監査（2026-09-29）
 
 - Branch `codex/marketplace-publication-fixation-production-audit-20260929`、Base `5e9b435c`（PR #558 merge commit）。Production管理画面のPR #558反映後表示を管理者sessionで匿名read-only確認した。

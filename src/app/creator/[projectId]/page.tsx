@@ -48,6 +48,7 @@ import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
+import { buildCloudReleaseCheckpointGuidance } from "@/lib/cloud-release-checkpoint-guidance";
 import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 export default async function CloudProjectPage({
@@ -97,6 +98,7 @@ export default async function CloudProjectPage({
   );
   const marketplaceReady = Boolean(exportReadiness?.ready);
   const releaseCheckpoints = checkpointHistory.checkpoints.filter((item) => item.kind === "release");
+  const releaseGuidance = buildCloudReleaseCheckpointGuidance(exportReadiness);
   const longformReadiness = buildCloudLongformReadiness({
     manuscriptAvailable: Boolean(exportReadiness),
     manuscriptReady: Boolean(exportReadiness?.ready),
@@ -343,7 +345,7 @@ export default async function CloudProjectPage({
         available={checkpointHistory.available}
         checkpoints={checkpointHistory.checkpoints}
         projectId={projectId}
-        releaseReady={Boolean(exportReadiness?.ready)}
+        releaseGuidance={releaseGuidance}
         restoreAvailable={Boolean(checkpointHistory.restoreAvailable)}
       />
       <section className="panel mt-6" aria-labelledby="character-sheet">

@@ -1,13 +1,14 @@
 import { Archive, CheckCircle2, LockKeyhole } from "lucide-react";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
 import type { CloudProjectCheckpoint } from "@/lib/cloud-creator-server";
+import type { CloudReleaseCheckpointGuidance } from "@/lib/cloud-release-checkpoint-guidance";
 import { createCloudProjectCheckpointAction, restoreCloudProjectCheckpointAction } from "@/app/creator/actions";
 
-export function ProjectCheckpointPanel({ available, checkpoints, projectId, releaseReady, restoreAvailable }: {
+export function ProjectCheckpointPanel({ available, checkpoints, projectId, releaseGuidance, restoreAvailable }: {
   available: boolean;
   checkpoints: CloudProjectCheckpoint[];
   projectId: string;
-  releaseReady: boolean;
+  releaseGuidance: CloudReleaseCheckpointGuidance;
   restoreAvailable: boolean;
 }) {
   return (
@@ -28,8 +29,14 @@ export function ProjectCheckpointPanel({ available, checkpoints, projectId, rele
             <p className="mt-1 text-xs text-stone-600">完成原稿としてページ構成とCanvas revisionを固定します。</p>
             <label className="label mt-3" htmlFor="release-label">完成版名</label>
             <input className="field" defaultValue={`完成版 ${new Date().toLocaleDateString("ja-JP")}`} id="release-label" maxLength={100} name="label" required />
-            <PendingSubmitButton className="button mt-3" disabled={!releaseReady} pendingLabel="固定中…">完成版を固定</PendingSubmitButton>
-            {!releaseReady ? <p className="mt-2 text-xs text-amber-800">原稿チェックの要修正を解消し、全ページを確定してください。</p> : null}
+            <PendingSubmitButton aria-describedby={!releaseGuidance.ready ? "release-checkpoint-readiness" : undefined} className="button mt-3" disabled={!releaseGuidance.ready} pendingLabel="固定中…">完成版を固定</PendingSubmitButton>
+            {!releaseGuidance.ready ? <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950" id="release-checkpoint-readiness" role="status">
+              <p className="font-bold">{releaseGuidance.summary}</p>
+              {releaseGuidance.blockers.length ? <ul className="mt-2 space-y-1">
+                {releaseGuidance.blockers.map((blocker) => <li key={blocker.code}>・{blocker.label}: {blocker.count}件</li>)}
+              </ul> : null}
+              {releaseGuidance.available ? <a className="mt-2 inline-flex font-bold underline" href="#manuscript-status">原稿チェックを確認</a> : null}
+            </div> : null}
           </form>
         </div>
         <div className="mt-5">

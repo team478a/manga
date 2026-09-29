@@ -36,7 +36,7 @@ test("完成版作成は原稿preflightを通り、UIは処理中状態を表示
   assert.match(application, /if \(!report\.ready\)/);
   assert.match(panel, /pendingLabel="作成中…"/);
   assert.match(panel, /pendingLabel="固定中…"/);
-  assert.match(panel, /disabled={!releaseReady}/);
+  assert.match(panel, /disabled={!releaseGuidance\.ready}/);
   assert.doesNotMatch(panel, /manifestSha256|canvasSha256|provider_id|model_id/);
 });
 
