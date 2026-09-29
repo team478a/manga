@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { summarizeMarketplaceCatalogSale } from "../src/lib/marketplace-catalog.ts";
+import {
+  hasActiveMarketplaceCatalogProduct,
+  summarizeMarketplaceCatalogSale,
+} from "../src/lib/marketplace-catalog.ts";
 
 const products = [
   { price: 900, status: "active" },
@@ -43,6 +46,18 @@ test("販売モードに応じてテスト販売と限定販売を区別する",
   );
 });
 
+test("販売中絞り込みは有効かつ正常価格の商品だけを対象にする", () => {
+  assert.equal(hasActiveMarketplaceCatalogProduct(products), true);
+  assert.equal(
+    hasActiveMarketplaceCatalogProduct([
+      { price: 500, status: "paused" },
+      { price: Number.NaN, status: "active" },
+      { price: -1, status: "active" },
+    ]),
+    false,
+  );
+});
+
 test("公開作品一覧はactive商品の最小情報だけを取得してカードへ渡す", async () => {
   const [page, card] = await Promise.all([
     readFile(new URL("../src/app/works/page.tsx", import.meta.url), "utf8"),
@@ -52,6 +67,9 @@ test("公開作品一覧はactive商品の最小情報だけを取得してカ�
   assert.match(page, /digital_products\(price,status\)/);
   assert.match(page, /\.eq\("digital_products\.status", "active"\)/);
   assert.match(page, /summarizeMarketplaceCatalogSale/);
+  assert.match(page, /params\.sale === "active"/);
+  assert.match(page, /販売中の作品だけを見る/);
+  assert.match(page, /hasActiveMarketplaceCatalogProduct\(work\.digital_products\)/);
   assert.match(page, /<WorkCard[\s\S]*?key=\{work\.id\}[\s\S]*?work=\{work\}[\s\S]*?sale=\{sale\}/);
   assert.match(card, /sale\.label/);
   assert.match(card, /yen\(sale\.lowestPrice\)/);

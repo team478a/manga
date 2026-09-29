@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud公開カタログ販売中フィルター
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-sale-filter-20260930`
+- Base: `origin/feature/manga-canvas-mvp`@`a0e1e8dbebdc75dd3892fd6c2c2b60081d9b3b92`（PR #574 merge commit）。
+- 公開作品一覧へ`販売中の作品だけを見る`を追加した。検索語・タグを維持したまま適用／解除でき、適用後の件数と空状態を表示する。
+- `active`かつ0円以上の有限価格の商品だけを対象にする。購入資格、canary、自己購入禁止、注文、Stripe、Webhook、ダウンロードは変更せず、一覧から注文を作成しない。
+- migration、schema、RLS、Storage、Provider、生成Job、creditは変更していない。Production接続・実データ操作・決済は0件。
+- 検証: focused 7/7、Hub 1180/1180、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALE_FILTER_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用、一般購入解禁、実購入・実決済は別承認単位。
+
+---
+
 ## 2026-09-30 Cloud公開クリエイター表示
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
