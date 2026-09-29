@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { safeDomainErrorMessage } from "@/lib/api-errors";
 import { requireProfile } from "@/lib/auth";
+import { assessCloudMarketplaceProductEdit } from "@/lib/cloud-marketplace-product-edit";
 import { createClient } from "@/lib/supabase/server";
+import type { DigitalProduct, Work } from "@/lib/types";
 import { validateDigitalProductFile } from "./shared/file-validation";
 import { formText } from "./shared/form-data";
 import {
@@ -103,13 +105,19 @@ export async function updateDigitalProduct(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const [{ data: product }, { data: work }] = await Promise.all([
-    supabase
-      .from("digital_products")
-      .select("id")
-      .eq("id", id)
-      .eq("creator_id", profile.id)
-      .maybeSingle(),
+  const { data: product } = await supabase
+    .from("digital_products")
+    .select("*")
+    .eq("id", id)
+    .eq("creator_id", profile.id)
+    .maybeSingle<DigitalProduct>();
+  if (!product) {
+    redirect(
+      encodeURI("/dashboard/products?error=商品が見つからないか、編集権限がありません"),
+    );
+  }
+
+  const [{ data: work }, { data: currentWork }] = await Promise.all([
     supabase
       .from("works")
       // See createDigitalProduct: old Marketplace schemas do not necessarily
@@ -118,16 +126,44 @@ export async function updateDigitalProduct(formData: FormData) {
       .eq("id", workId)
       .eq("creator_id", profile.id)
       .eq("content_class", "general")
-      .maybeSingle(),
+      .maybeSingle<Work>(),
+    supabase
+      .from("works")
+      .select("*")
+      .eq("id", product.work_id)
+      .eq("creator_id", profile.id)
+      .maybeSingle<Work>(),
   ]);
-  if (!product) {
-    redirect(
-      encodeURI("/dashboard/products?error=商品が見つからないか、編集権限がありません"),
-    );
-  }
   if (!work) {
     redirect(
       encodeURI(`/dashboard/products/${id}/edit?error=自分の作品だけを商品に紐づけできます`),
+    );
+  }
+  if (!currentWork) {
+    redirect(
+      `/dashboard/products/${id}/edit?error=${encodeURIComponent("現在の商品に紐づく作品を確認できませんでした")}`,
+    );
+  }
+
+  const productFileValue = formData.get("file");
+  const editAssessment = assessCloudMarketplaceProductEdit({
+    sourceProjectId: currentWork.source_project_id,
+    current: {
+      workId: product.work_id,
+      price: product.price,
+      status: product.status,
+    },
+    proposed: {
+      workId,
+      price,
+      replacesFile:
+        productFileValue instanceof File && productFileValue.size > 0,
+      status,
+    },
+  });
+  if (!editAssessment.allowed) {
+    redirect(
+      `/dashboard/products/${id}/edit?error=${encodeURIComponent(editAssessment.reason ?? "Cloud連携商品を更新できませんでした")}`,
     );
   }
   if (status === "active" && work.source_project_id && (!work.current_publication_id || !work.is_public || work.status !== "published")) {
@@ -144,7 +180,7 @@ export async function updateDigitalProduct(formData: FormData) {
   let result: { error: { message: string } | null };
   try {
     const productFile = validateDigitalProductFile(
-      formData.get("file"),
+      productFileValue,
       false,
     );
     const upload = await uploadMarketplaceFile({
@@ -180,5 +216,11 @@ export async function updateDigitalProduct(formData: FormData) {
     );
   }
   revalidatePath("/dashboard/products");
+  revalidatePath(`/dashboard/products/${id}/edit`);
+  revalidatePath(`/works/${workId}`);
+  revalidatePath(`/checkout/${id}`);
+  if (currentWork.source_project_id) {
+    revalidatePath(`/creator/${currentWork.source_project_id}`);
+  }
   redirect(encodeURI("/dashboard/products?message=販売商品を更新しました"));
 }

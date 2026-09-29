@@ -1,5 +1,17 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud販売中商品編集ガード（2026-09-30）
+
+- Branch `codex/cloud-marketplace-active-product-guard-20260929`、Base `bb38d0d1`（PR #570 merge commit）。Cloud出品後の商品編集で固定完成版と販売状態の整合性を迂回しないガードを追加した。
+- Cloud連携商品は作品、販売ファイル、販売状態を固定表示にし、販売中価格もread-onlyにした。停止・再開と完成版変更はCreator作品画面へ案内する。停止後の価格、商品名、説明は変更可能で、手動登録商品は従来どおり。
+- Server Actionは現在の商品と作品を再取得し、作品、file、状態、販売中価格の改変をfail closedする。関連する商品、作品、checkout、Creator cacheを更新する。
+- migration、schema、RLS、既存trigger、Stripe、注文は未変更。DB直接更新まで含むtrigger強化は、sync、publication選択、出品開始、販売停止RPCの互換性を扱う別migrationとする。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、Provider、Job、credit操作は0件。`202609290001`と`202609290002`はProduction未適用。
+- focused 19/19、Hub 1169/1169、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的90/90、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_ACTIVE_PRODUCT_GUARD_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Cloud出品の安全な再開（2026-09-29）
 
 - Branch `codex/cloud-marketplace-listing-resume-20260929`、Base `790b8fd2`（PR #569 merge commit）。販売停止後の再出品を、初回出品と同じ安全確認を通して開始できるようにした。
