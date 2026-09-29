@@ -169,6 +169,17 @@ begin
 end $$;
 
 do $$ begin
+  if to_regclass('public.cloud_work_publications') is null
+     or to_regclass('public.cloud_work_publication_pages') is null
+     or to_regprocedure('public.sync_cloud_marketplace_release_draft(uuid,uuid,text,text,text,jsonb,integer,text)') is null
+     or to_regprocedure('public.select_cloud_work_publication(uuid,uuid)') is null
+     or to_regprocedure('public.publish_cloud_marketplace_listing(uuid)') is null
+     or to_regprocedure('public.withdraw_cloud_marketplace_listing(uuid)') is null then
+    raise exception 'Current schema Cloud work publication lifecycle objects missing';
+  end if;
+end $$;
+
+do $$ begin
   if to_regclass('public.cloud_visual_reference_assets') is null
     or to_regclass('public.cloud_panel_subject_assignments') is null
     or not coalesce((select relrowsecurity from pg_class where oid='public.cloud_visual_reference_assets'::regclass),false)

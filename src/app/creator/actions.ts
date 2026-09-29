@@ -28,7 +28,11 @@ import {
 } from "@/lib/cloud-creator-server";
 import { completionModeSchema, createCompletionModeProfile } from "@mangai/shared";
 import { createCloudExportJob, setCloudExportJobState } from "@/modules/cloud-creator/export/durable-export-service";
-import { publishCloudMarketplaceListing, syncCloudMarketplaceDraft } from "@/lib/cloud-marketplace";
+import {
+  publishCloudMarketplaceListing,
+  syncCloudMarketplaceDraft,
+  withdrawCloudMarketplaceListing,
+} from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
 import { formString } from "@/app/actions/shared/form-data";
 
@@ -459,6 +463,31 @@ export async function publishCloudMarketplaceListingAction(projectId: string) {
     redirect(`/creator/${parsed.data}?error=${encodeURIComponent(domainMessage(error, "出品を確定できませんでした。完成版・販売ファイル・価格を確認してください。"))}`);
   }
   redirect(`/creator/${parsed.data}?message=${encodeURIComponent("作品公開と商品販売を開始しました")}`);
+}
+
+export async function withdrawCloudMarketplaceListingAction(
+  projectId: string,
+  formData: FormData,
+) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    confirm: z.literal("withdraw"),
+  }).safeParse({ projectId, confirm: formString(formData, "confirm") });
+  if (!parsed.success)
+    redirect(`/creator?error=${encodeURIComponent("作品IDと販売停止の確認を確認してください。")}`);
+  try {
+    const result = await withdrawCloudMarketplaceListing(parsed.data.projectId);
+    revalidatePath(`/creator/${parsed.data.projectId}`);
+    revalidatePath("/works");
+    revalidatePath(`/works/${result.workId}`);
+    revalidatePath(`/works/${result.workId}/read`);
+    revalidatePath(`/dashboard/works/${result.workId}/edit`);
+    revalidatePath(`/dashboard/products/${result.productId}/edit`);
+    revalidatePath("/dashboard/purchases");
+  } catch (error) {
+    redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "販売を停止できませんでした。作品・商品状態を確認してください。"))}`);
+  }
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("新規販売と一般公開を停止しました。購入済みの利用権は維持されます。")}`);
 }
 
 export async function restoreCloudProjectCheckpointAction(projectId: string, checkpointId: string, formData: FormData) {
