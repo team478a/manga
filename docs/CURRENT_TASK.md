@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud商品DB編集ガード
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-db-product-guard-20260930`
+- Base: `origin/feature/manga-canvas-mvp`@`99c41e3b6f55814e145f1bd80d34291420ee6d15`（PR #571 merge commit）。
+- Cloud連携商品を通常画面とServer ActionだけでなくDB triggerでも保護した。`authenticated`からのCloud商品直接作成、作品・販売ファイル・販売状態の変更、販売中価格の変更を拒否する。商品名・説明、停止中価格、手動商品は従来どおり。
+- 既存の公開前提検査を維持し、正規の同期・完成版選択・出品開始・販売停止RPCは`security definer`として互換性を保持する。最小bootstrapに`file_url`がない場合も`to_jsonb`比較で適用可能。
+- migration `202609300001_cloud_marketplace_product_edit_guard`、rollback、schema、manifest、集中テストを追加した。
+- Production接続、migration適用、作品・商品状態変更、注文、Stripe、Storage、Provider、生成Job、credit、利用者データ変更は0件。Production未適用は`202609290001`、`202609290002`、`202609300001`。今回migrationの適用はmerge後の別承認が必要。
+- 検証: focused 16/16、Hub 1173/1173、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的91/91、PostgreSQL 16 forward／direct-auth guard／security-definer互換／rollback／reforward 91/91、canonical schema二重適用、Web／Desktop build、RC structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_DB_PRODUCT_GUARD_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production migration適用と実作品操作は別承認単位。
+
+---
+
 ## 2026-09-30 Cloud販売中商品編集ガード
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

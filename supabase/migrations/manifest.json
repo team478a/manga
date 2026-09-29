@@ -540,7 +540,13 @@
       "description": "Cloud新規販売と一般公開を原子的に停止し購入済み利用権を維持",
       "forwardSha256": "d16d53adb97bf255d6202b362182d1c0548e5f5a09ec953121a90c1fa7c5ea27",
       "rollbackSha256": "2c07ca356f98dcc023a05ada189f545cccae4104239a91162091d42e5f8dbe91"
+    },
+    {
+      "id": "202609300001_cloud_marketplace_product_edit_guard",
+      "description": "Cloud商品の直接作成と固定項目更新をDB triggerで拒否し正規RPCだけを許可",
+      "forwardSha256": "307f35ca1e08e0232164c79a8b2206c487748046eec65a95fccd9f98c5fd644d",
+      "rollbackSha256": "7fd78717bcbd2960eb0ef97e05d5bfe25eb8f3ffae956852c86d0c98c241aafa"
     }
   ],
-  "schemaSha256": "cb42f41c4938b74a511474f170a8b4890b55e24935277346ae5d594b6a085539"
+  "schemaSha256": "43924e2f601c7ec5c033a0aabd2642bf71ad96005f394cf5ec38178a226e10e0"
 }

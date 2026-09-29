@@ -2215,15 +2215,49 @@ drop trigger if exists works_cloud_publication_gate on public.works;
 create trigger works_cloud_publication_gate before insert or update of is_public,status,current_publication_id on public.works
 for each row execute function public.enforce_cloud_work_publication_gate();
 
-create or replace function public.enforce_cloud_product_publication_gate() returns trigger language plpgsql set search_path=public as $$
+create or replace function public.enforce_cloud_product_publication_gate()
+returns trigger language plpgsql set search_path=public as $$
+declare
+  v_old_cloud boolean:=false;
+  v_new_cloud boolean:=false;
 begin
-  if new.status='active' and exists(select 1 from public.works w where w.id=new.work_id and w.source_project_id is not null
-    and (w.current_publication_id is null or not w.is_public or w.status<>'published'))
-  then raise exception 'cloud_product_publication_required';end if;
+  select exists(
+    select 1 from public.works work
+    where work.id=new.work_id and work.source_project_id is not null
+  ) into v_new_cloud;
+
+  if tg_op='INSERT' then
+    if current_user='authenticated' and v_new_cloud then
+      raise exception 'cloud_product_creator_managed';
+    end if;
+  else
+    select exists(
+      select 1 from public.works work
+      where work.id=old.work_id and work.source_project_id is not null
+    ) into v_old_cloud;
+
+    if current_user='authenticated' and (v_old_cloud or v_new_cloud) and (
+      new.work_id is distinct from old.work_id
+      or (to_jsonb(new)->'file_url') is distinct from (to_jsonb(old)->'file_url')
+      or new.status is distinct from old.status
+      or (old.status='active' and new.price is distinct from old.price)
+    ) then
+      raise exception 'cloud_product_creator_managed';
+    end if;
+  end if;
+
+  if new.status='active' and exists(
+    select 1 from public.works work
+    where work.id=new.work_id and work.source_project_id is not null
+      and (work.current_publication_id is null or not work.is_public or work.status<>'published')
+  ) then
+    raise exception 'cloud_product_publication_required';
+  end if;
   return new;
 end$$;
 drop trigger if exists digital_products_cloud_publication_gate on public.digital_products;
-create trigger digital_products_cloud_publication_gate before insert or update of status,work_id on public.digital_products
+create trigger digital_products_cloud_publication_gate
+before insert or update on public.digital_products
 for each row execute function public.enforce_cloud_product_publication_gate();
 
 create table if not exists public.cloud_project_generation_readiness_policies(project_id uuid primary key references public.cloud_projects(id) on delete cascade,owner_profile_id uuid not null references public.profiles(id) on delete cascade,major_character_reference_policy text not null default'block'check(major_character_reference_policy in('warn','block')),updated_at timestamptz not null default now(),unique(project_id,owner_profile_id));
