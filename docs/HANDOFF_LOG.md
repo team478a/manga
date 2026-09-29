@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Marketplace Cloud完成版固定 readiness
+
+- Branch: `codex/marketplace-publication-fixation-readiness-20260929`。Base: `0ad899d5`（PR #557 merge commit）。Cloud完成版固定を実行せずに候補条件を確認できる匿名read-only readinessを`/admin/marketplace-canary`へ追加した。
+- 一般向け・非公開・draft・未固定のCloud作品、Projectとの所有者一致、作品に商品が1件だけ存在してpaused、release checkpointのmanifestと連番ページが完全、という条件を共有domainで検証する。上限超過、重複商品、ページ欠落、所有者不一致はfail closed。
+- repositoryはProduction guard後に5 tableのmetadataをSELECTするだけ。個人情報、名称、説明、内部ID、file path、Storage pathを画面へ出さず、mutation、RPC、Storage object、Stripe、Provider、生成Job、credit操作を行わない。
+- focused 14/14、Hub 1141/1141、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC repository structure成功。外部設定と手動E2Eは既知PENDING。
+- Productionの作品、publication、商品、注文、利用者データは未変更。次はcommit／push／Draft PRと全CI／Vercel成功確認。merge後のProduction確認はread-only、完成版固定以降は別承認とする。
+
+---
+
 ## 2026-09-29 Codex: Marketplace Cloud完成版migration Production適用
 
 - Branch: `codex/marketplace-publication-production-apply-evidence-20260929`。Base: `37daed06`（PR #556 merge commit）。

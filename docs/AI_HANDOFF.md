@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Cloud完成版固定 readiness（2026-09-29）
+
+- Branch `codex/marketplace-publication-fixation-readiness-20260929`、Base `0ad899d5`（PR #557 merge commit）。Production変更なしで、Cloud完成版固定の候補条件と阻害状態を匿名件数だけで確認する管理画面readinessを追加した。
+- `/admin/marketplace-canary`はadmin認証とProduction runtime／origin guard後に、作品、商品、Project、release checkpoint、checkpoint pageのmetadataだけをSELECTする。一般向け・非公開・draft・未固定、所有者一致、商品1件かつpaused、完全なrelease checkpointを満たす場合だけ候補とする。
+- 監査上限超過、商品重複、ページ欠落、所有者不一致、公開済み／固定済みは候補外。利用者・作品・商品・Projectの識別子、氏名、メール、名称、説明、file path、Storage pathは取得／表示しない。
+- mutation、RPC、Storage object read、Stripe、Provider、生成Job、credit操作は0件。画面に固定buttonを置かず、完成版固定、作品公開、商品active化、購入を別承認単位として維持する。
+- focused 14/14、Hub 1141/1141、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure成功。詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_FIXATION_READINESS_20260929.md`。
+- 次: Draft PRの全CI／Vercel Preview成功まで確認する。merge後はProduction管理画面の匿名read-only結果を記録し、実際の固定は別の明示承認を待つ。
+
+---
+
 ## 0.0 Marketplace Cloud完成版migration Production適用（2026-09-29）
 
 - Branch `codex/marketplace-publication-production-apply-evidence-20260929`、Base `37daed06`（PR #556 merge commit）。責任者承認済みの`202608140004_cloud_work_publications`をProductionへ1回だけ適用した。
