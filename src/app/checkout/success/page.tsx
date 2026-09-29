@@ -13,6 +13,7 @@ export default async function CheckoutSuccessPage({
   let downloadUrl: string | null = null;
   let productTitle: string | null = null;
   let paymentMode: "test" | "live" | null = null;
+  let paymentConfirmed = false;
   let message =
     "決済情報を確認しています。少し時間をおいて再読み込みしてください。";
 
@@ -23,6 +24,7 @@ export default async function CheckoutSuccessPage({
       const paid = await markCheckoutSessionPaid(session);
       const reference = paid ? paidSessionReference(session) : null;
       if (reference) {
+        paymentConfirmed = true;
         paymentMode = reference.paymentMode;
         const { order, signedUrl } = await getPaidCheckoutDownload(reference);
 
@@ -37,16 +39,27 @@ export default async function CheckoutSuccessPage({
         }
       }
     } catch {
-      message =
-        "決済情報を確認できませんでした。セッションIDを確認してください。";
+      message = paymentConfirmed
+        ? "決済は確認されましたが、購入情報を表示できませんでした。購入履歴を確認してください。"
+        : "決済情報を確認できませんでした。セッションIDを確認してください。";
     }
   }
 
   return (
     <main className="page max-w-2xl">
       <section className="panel text-center">
-        <p className="text-base font-semibold text-leaf">{paymentMode === "test" ? "テスト決済完了" : "決済完了"}</p>
-        <h1 className="mt-3 text-3xl font-bold">購入ありがとうございます</h1>
+        <p className="text-base font-semibold text-leaf">
+          {paymentConfirmed
+            ? paymentMode === "test"
+              ? "テスト決済完了"
+              : "決済完了"
+            : "決済確認"}
+        </p>
+        <h1 className="mt-3 text-3xl font-bold">
+          {paymentConfirmed
+            ? "購入ありがとうございます"
+            : "購入状況を確認してください"}
+        </h1>
         {paymentMode === "test" ? <p className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-3 text-sm text-blue-950">テスト購入のため、実際の請求・売上・振込は発生しません。</p> : null}
         <p className="mt-4 text-lg leading-relaxed text-stone-600">{message}</p>
         {downloadUrl ? (

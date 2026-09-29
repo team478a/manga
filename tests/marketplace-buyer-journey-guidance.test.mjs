@@ -27,13 +27,17 @@ test("ログイン後の戻り先は同一originの内部pathだけを許可す�
   }
 });
 
-test("指定購入者はログイン後に同じ購入準備画面へ戻る", async () => {
-  const [checkout, login, authAction] = await Promise.all([
+test("指定購入者は作品詳細から購入準備へ進みログイン後に同じ画面へ戻る", async () => {
+  const [work, checkout, login, authAction] = await Promise.all([
+    read("src/app/works/[id]/page.tsx"),
     read("src/app/checkout/[productId]/page.tsx"),
     read("src/app/login/page.tsx"),
     read("src/app/actions/auth-actions.ts"),
   ]);
 
+  assert.match(work, /isMarketplaceCanaryCheckoutListing/);
+  assert.match(work, /href=\{`\/checkout\/\$\{product\.id\}`\}/);
+  assert.match(work, /購入準備へ/);
   assert.match(checkout, /const loginRequired = Boolean/);
   assert.match(checkout, /指定購入者アカウントでログインしてください/);
   assert.match(checkout, /ログイン後、この購入準備画面へ戻ります/);
@@ -43,6 +47,17 @@ test("指定購入者はログイン後に同じ購入準備画面へ戻る", as
   assert.match(authAction, /resolvePostAuthRedirect\(formText\(formData, "next"\)\)/);
   assert.match(authAction, /redirect\(nextPath\)/);
   assert.match(authAction, /next=\$\{encodeURIComponent\(nextPath\)\}/);
+});
+
+test("直接購入準備は一般公開・固定完成版・canary商品を再検証する", async () => {
+  const checkout = await read("src/app/checkout/[productId]/page.tsx");
+
+  assert.match(checkout, /content_class/);
+  assert.match(checkout, /source_project_id/);
+  assert.match(checkout, /current_publication_id/);
+  assert.match(checkout, /content_class === "general"/);
+  assert.match(checkout, /isMarketplaceCanaryCheckoutListing/);
+  assert.match(checkout, /この商品は現在、購入手続きの対象外です/);
 });
 
 test("購入準備から完了後の履歴・再ダウンロードまでを案内する", async () => {
