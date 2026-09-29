@@ -13,15 +13,15 @@ test("checkout action verifies buyer and product before pending order persistenc
   assert.ok(start >= 0);
   assert.ok(
     action.indexOf("await supabase.auth.getUser()", start) <
-      action.indexOf("insertPendingCheckoutOrder({", start),
+      action.indexOf("createOrReusePendingCheckoutOrder({", start),
   );
   assert.ok(
     action.indexOf('product.status !== "active"', start) <
-      action.indexOf("insertPendingCheckoutOrder({", start),
+      action.indexOf("createOrReusePendingCheckoutOrder({", start),
   );
   assert.ok(
     action.indexOf("assertMarketplaceCanaryCheckoutTarget({", start) <
-      action.indexOf("insertPendingCheckoutOrder({", start),
+      action.indexOf("createOrReusePendingCheckoutOrder({", start),
   );
 });
 
@@ -64,6 +64,31 @@ test("checkout repository preserves pending order DB contracts", async () => {
   assert.match(repository, /\.single<\{ id: string \}>\(\)/);
 });
 
+test("live checkout retry reuses only an exact pending order and recovers an insert race", async () => {
+  const repository = await read(
+    "src/modules/checkout/infrastructure/checkout-order-repository.ts",
+  );
+
+  assert.match(repository, /input\.paymentMode !== "live" \|\| !input\.buyerProfileId/);
+  for (const contract of [
+    '.eq("buyer_email", input.buyerEmail)',
+    '.eq("buyer_profile_id", input.buyerProfileId)',
+    '.eq("product_id", input.productId)',
+    '.eq("creator_id", input.creatorId)',
+    '.eq("amount", input.amount)',
+    '.eq("platform_fee", input.platformFee)',
+    '.eq("creator_revenue", input.creatorRevenue)',
+    '.eq("payment_mode", "live")',
+    '.eq("status", "pending")',
+  ]) {
+    assert.ok(repository.includes(contract), contract);
+  }
+  assert.match(repository, /const existing = await findReusableLivePendingCheckoutOrder\(input\)/);
+  assert.match(repository, /const inserted = await insertPendingCheckoutOrder\(input\)/);
+  assert.match(repository, /const recovered = await findReusableLivePendingCheckoutOrder\(input\)/);
+  assert.match(repository, /return recovered\.data \? recovered : inserted/);
+});
+
 test("checkout action preserves guest checkout, fee calculation, and Stripe ordering", async () => {
   const action = await read("src/app/actions/checkout-actions.ts");
 
@@ -71,7 +96,7 @@ test("checkout action preserves guest checkout, fee calculation, and Stripe orde
   assert.match(action, /Math\.floor\(amount \* 0\.2\)/);
   assert.match(action, /const creatorRevenue = amount - platformFee/);
   assert.ok(
-    action.indexOf("insertPendingCheckoutOrder({") <
+    action.indexOf("createOrReusePendingCheckoutOrder({") <
       action.indexOf("createStripeCheckoutSession({"),
   );
   assert.match(action, /error=仮注文の作成に失敗しました/);

@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-29 Codex: Cloud限定販売 Checkout再試行回復
+
+- Branch: `codex/cloud-marketplace-checkout-retry-recovery-20260929`。Base: `3cf0020f`（PR #566 merge commit）。Stripe Checkout Session作成が曖昧に失敗しても、live指定購入者が同じpending注文で再試行できる回復処理を追加した。
+- 既存注文は購入者メール、buyer profile、商品、販売者、金額、手数料、販売者売上額、live、pendingがすべて一致する場合だけ再利用する。競合insert後の再読込も同じ条件を使用する。
+- test／guest checkoutは再利用しない。価格変更や条件不一致はfail closed。Stripe側作成済みとの競合を避けるためpending注文の自動cancelは行わない。同じ注文IDにより既存Stripe idempotency keyを維持する。
+- migration、schema、RLS、canary、Stripe metadata、Webhook、cancel token、download契約は未変更。Production接続、DB mutation、注文、Stripe、決済、返金、Provider、生成Job、credit操作は未実施。
+- focused 25/25、Hub 1157/1157、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC structure成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production購入・決済は別承認単位。
+
+---
+
 ## 2026-09-29 Codex: Cloud限定テスト購入者導線
 
 - Branch: `codex/cloud-marketplace-buyer-journey-guidance-20260929`。Base: `b97a732c`（PR #565 merge commit）。指定購入者が未ログインの場合、ログイン後に同じ購入準備画面へ戻る導線を実装した。
