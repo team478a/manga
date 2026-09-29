@@ -19,6 +19,7 @@
 - 公開作品一覧のカードへ`作：表示名`、作品詳細と購入準備へ`クリエイター：表示名`を追加した。
 - migration未適用または一時的なRPC障害時も購入画面全体を停止させず、個人を推測しない`クリエイター`表記へfail closedする。
 - 購入準備の直接`profiles:creator_id(display_name)`参照を削除し、3画面を同じ公開境界へ統一した。
+- 旧migration bootstrapに`profiles.display_name`がない場合も適用できるよう、行を`to_jsonb`へ変換して表示名を取得する。現行schemaでは表示名を返し、旧schemaでは`クリエイター`へフォールバックする。
 
 ## 変更しない境界
 
@@ -31,7 +32,7 @@
 
 - forward: `supabase/migrations/202609300002_public_marketplace_creator_attribution.sql`
 - rollback: `supabase/rollbacks/202609300002_public_marketplace_creator_attribution.sql`
-- SHA-256: `fa696a176c437dffd3b18deaa850fc203448eba731c9bfb5e6875fa6199ecbcd`
+- SHA-256: `bdf4525991da2a180604be80b80d077e481919fd2c0eb4dfa9f5851cd4415d8f`
 - Production適用はmerge後の別承認単位とする。
 
 ## 検証
@@ -47,7 +48,8 @@
 - migration静的検査: 92/92 forward/rollback成功
 - RC repository structure: READY。外部設定と手動E2Eは既知PENDING
 - `git diff --check`: 成功
-- ローカルPostgreSQL 16 roundtripはDocker Desktop Linux Engineの一時的な500で環境起因中断。SQLエラーは未観測だが成功扱いにせず、GitHub Actionsの`Migration roundtrip`成功を必須とする。
+- PostgreSQL 16実動作: 92件forward、全rollback、92件再適用、canonical schema二重適用、全assertion成功。
+- PR #574初回CIで旧bootstrapの`profiles.display_name`列不足を検出した。`to_jsonb`互換取得へ修正し、同じPostgreSQL 16 roundtripをローカルで再現して成功した。最終HEADでもGitHub Actionsの`Migration roundtrip`成功を必須とする。
 
 ## 停止条件
 

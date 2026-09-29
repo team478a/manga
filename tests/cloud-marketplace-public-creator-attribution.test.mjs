@@ -40,6 +40,7 @@ test("公開用RPCは公開中の一般作品に限定し表示名以外のプ�
   for (const source of [migration, schema]) {
     assert.match(source, /list_public_work_creator_attributions\(p_work_ids uuid\[\]\)/);
     assert.match(source, /returns table\(work_id uuid, display_name text\)/);
+    assert.match(source, /to_jsonb\(profile\)->>'display_name'/);
     assert.match(source, /security definer/);
     assert.match(source, /work\.content_class='general'/);
     assert.match(source, /work\.is_public=true/);

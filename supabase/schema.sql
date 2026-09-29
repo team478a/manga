@@ -3376,7 +3376,7 @@ security definer
 set search_path=public,pg_temp
 as $$
   select work.id,
-    coalesce(nullif(btrim(profile.display_name),''),'クリエイター')
+    coalesce(nullif(btrim(to_jsonb(profile)->>'display_name'),''),'クリエイター')
   from public.works work
   join public.profiles profile on profile.id=work.creator_id
   where work.id=any(coalesce(p_work_ids,'{}'::uuid[]))
