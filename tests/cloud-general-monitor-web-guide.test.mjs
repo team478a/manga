@@ -46,10 +46,15 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
     "参照画像を登録してコマへ割り当てる",
     "4〜8ページずつ制作状態を進める",
     "全ページを確定してPDFを書き出す",
+    "MANGAI内で限定テスト販売する",
+    "販売下書きを作成する",
+    "管理者の対象指定を待つ",
+    "指定購入者が確認する",
+    "販売者本人の自己購入はできません",
+    "テスト注文は本番の受取予定額に含まれません",
     "完成した漫画を出品する",
     "一般向け漫画・外部販売サイト",
-    "MANGAI内のテスト販売は管理者が有効化した期間だけ利用できます",
-    "実決済・振込・本番収益管理は準備中です",
+    "一般公開販売・振込・精算確定は準備中です",
     "外部販売サイトへ手動登録する",
     "出品前チェック",
     "KDPへ電子漫画を出品する",
@@ -92,8 +97,10 @@ test("利用者向けWebマニュアルは制作完走とモバイル操作を�
   assert.match(source, /href: "\/creator"/);
   assert.match(source, /href="\/creator"/);
   assert.match(source, /href: "\/dashboard\/works"/);
-  assert.match(source, /availability: "coming-soon"/);
+  assert.match(source, /availability: "limited"/);
   assert.match(source, /dashboard\/monitor/);
+  assert.match(source, /id="internal-test-sale"/);
+  assert.match(source, /href="\/dashboard\/sales"/);
   assert.match(source, /id="sales-listing"/);
   assert.match(source, /kdp\.amazon\.co\.jp/);
   assert.match(source, /kdp\.amazon\.com\/en_US\/help\/topic\/G200672390/);
@@ -158,6 +165,6 @@ test("スタッフ向けWebマニュアルは約10名の招待・監視・停止
   assert.match(guide, /admin\/users/);
   assert.match(guide, /admin\/general-monitors\/email/);
   assert.match(guide, /admin\/general-monitors\/export/);
-  assert.match(guide, /販売準備と収益管理は「準備中」/);
+  assert.match(guide, /販売準備と収益管理は対象者限定で段階提供/);
   assert.match(admin, /admin\/general-monitors\/guide/);
 });

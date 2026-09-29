@@ -23,7 +23,7 @@ type WorkflowItem = {
   href?: string;
   icon: LucideIcon;
   feature?: "research" | "proposal" | "scenario" | "storyboard";
-  availability?: "coming-soon";
+  availability?: "coming-soon" | "limited";
 };
 
 const workflow: WorkflowItem[] = [
@@ -54,19 +54,28 @@ const workflow: WorkflowItem[] = [
   {
     step: 7,
     label: "販売準備",
+    href: "/dashboard/monitor/guide#internal-test-sale",
     icon: ShoppingBag,
-    availability: "coming-soon",
+    availability: "limited",
   },
   {
     step: 8,
     label: "収益管理",
+    href: "/dashboard/sales",
     icon: ReceiptText,
-    availability: "coming-soon",
+    availability: "limited",
   },
 ];
 
 function activeWorkflowStep(pathname: string) {
   if (pathname === "/creator" || pathname.startsWith("/creator/")) return 5;
+  if (
+    pathname === "/dashboard/products" ||
+    pathname.startsWith("/dashboard/products/")
+  )
+    return 7;
+  if (pathname === "/dashboard/sales" || pathname.startsWith("/dashboard/sales/"))
+    return 8;
   if (
     pathname === "/dashboard/works" ||
     pathname.startsWith("/dashboard/works/")
@@ -157,6 +166,8 @@ export function CloudWorkflowShell({
               const enabled = Boolean(item.href) && featureEnabled;
               const status = item.availability === "coming-soon"
                 ? "準備中"
+                : item.availability === "limited"
+                  ? "限定提供"
                 : !featureEnabled
                   ? "停止中"
                   : item.step >= 2 && item.step <= 4

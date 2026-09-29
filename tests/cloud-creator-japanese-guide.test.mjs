@@ -83,8 +83,11 @@ test("クラウド制作は紫基調の制作ワークフローシェルを使�
   assert.match(shell, /label: "原稿編集", href: "\/creator"/);
   assert.match(shell, /href="\/dashboard\/monitor\/guide"/);
   assert.match(shell, />\s*使い方\s*</);
-  assert.match(shell, /label: "販売準備"[\s\S]*availability: "coming-soon"/);
-  assert.match(shell, /label: "収益管理"[\s\S]*availability: "coming-soon"/);
+  assert.match(shell, /label: "販売準備"[\s\S]*availability: "limited"/);
+  assert.match(shell, /label: "収益管理"[\s\S]*availability: "limited"/);
+  assert.match(shell, /href: "\/dashboard\/monitor\/guide#internal-test-sale"/);
+  assert.match(shell, /href: "\/dashboard\/sales"/);
+  assert.match(shell, /限定提供/);
   assert.match(shell, /ステップ\{currentItem.step\}：\{currentItem.label\}/);
   assert.match(shell, /一般向け制作ワークフロー/);
   assert.doesNotMatch(shell, /label: "マンガ生成"/);

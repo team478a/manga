@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-09-29 Cloud限定テスト販売ガイド
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-test-sale-guide-20260929`
+- Base: `origin/feature/manga-canvas-mvp`@`46889073`（PR #564 merge commit）。
+- MANGAI内の限定テスト販売を、原稿完成、完成版固定、販売下書き、作品公開、商品販売開始、管理者の対象指定、指定購入者の確認、注文・売上確認の8手順として利用者ガイドへ追加した。
+- 制作ワークフローの販売準備・収益管理を`限定提供`として実装済み画面へ接続した。完成PDF後、作品一覧、販売設定完了後から同じ手順へ進める。
+- 自己購入禁止、指定購入者・期間限定、閲覧では注文が発生しないこと、テスト注文を本番受取予定額へ含めないこと、一般公開販売・振込・精算確定は未提供であることを明記した。
+- Production接続、DB mutation、checkpoint、publication、作品・商品状態、注文、Stripe、Storage、Provider、生成Job、credit、利用者データは変更していない。
+- 検証: focused 13/13、Hub 1151/1151、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration 88/88、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_TEST_SALE_GUIDE_20260929.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production公開・購入・決済は別承認単位。
+
+---
+
 ## 2026-09-29 Cloud注文・売上確認導線
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

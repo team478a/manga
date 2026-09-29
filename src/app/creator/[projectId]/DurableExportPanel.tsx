@@ -56,17 +56,25 @@ export function DurableExportPanel({ projectId, available, ready, jobs, extended
             />
             <div>
               <h3 className="font-bold text-emerald-950">
-                次は外部販売サイトへの出品準備です
+                次は販売方法を選びます
               </h3>
               <p className="mt-1 text-sm leading-relaxed text-emerald-950">
-                ダウンロードした完成原稿を確認し、表紙・商品情報をそろえてKDPやBOOTHへ手動で登録します。MANGAI内のテスト販売は管理者が有効化した期間だけ利用でき、実決済・振込・本番収益管理は準備中です。
+                MANGAI内では管理者指定の対象者・商品・購入者・期間による限定テスト販売を利用できます。KDPやBOOTHへ完成原稿を手動登録することもできます。一般公開販売・振込・精算確定は準備中です。
               </p>
-              <Link
-                className="button-secondary mt-3 w-full border-emerald-300 bg-white text-emerald-900 sm:w-auto"
-                href="/dashboard/monitor/guide#sales-listing"
-              >
-                出品・収益化の手順を見る
-              </Link>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <Link
+                  className="button-secondary w-full border-emerald-300 bg-white text-emerald-900 sm:w-auto"
+                  href="/dashboard/monitor/guide#internal-test-sale"
+                >
+                  MANGAI内テスト販売の手順
+                </Link>
+                <Link
+                  className="button-secondary w-full border-emerald-300 bg-white text-emerald-900 sm:w-auto"
+                  href="/dashboard/monitor/guide#sales-listing"
+                >
+                  外部出品の手順
+                </Link>
+              </div>
             </div>
           </div>
         </div>
