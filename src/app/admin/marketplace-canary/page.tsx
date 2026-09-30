@@ -1,8 +1,10 @@
 import { CircleAlert, CircleCheck, LockKeyhole, Store } from "lucide-react";
 import { MarketplaceCheckoutReadinessPanel } from "@/components/admin/MarketplaceCheckoutReadinessPanel";
+import { MarketplaceLiveLaunchReadinessPanel } from "@/components/admin/MarketplaceLiveLaunchReadinessPanel";
 import { requireAdmin } from "@/lib/auth";
 import { safelyLoadAdminData } from "@/lib/admin-resilience";
 import { assessMarketplaceCheckoutOperationalReadiness } from "@/modules/checkout/domain/marketplace-checkout-operational-readiness";
+import { loadAdminMarketplaceLiveLaunchReadiness } from "@/modules/checkout/infrastructure/admin-marketplace-live-launch-readiness-repository";
 import { loadAdminMarketplaceProductionCanaryInventory } from "@/modules/checkout/infrastructure/admin-production-canary-inventory-repository";
 import { loadAdminMarketplacePublicationFixationReadiness } from "@/modules/checkout/infrastructure/admin-publication-fixation-readiness-repository";
 import { loadAdminMarketplacePublicationMigrationReadiness } from "@/modules/checkout/infrastructure/admin-publication-migration-readiness-repository";
@@ -35,6 +37,10 @@ const fixationCheckLabels = {
 export default async function AdminMarketplaceCanaryPage() {
   await requireAdmin();
   const checkoutReadiness = assessMarketplaceCheckoutOperationalReadiness();
+  const launchReadiness = await safelyLoadAdminData(
+    "marketplace-live-launch-readiness",
+    () => loadAdminMarketplaceLiveLaunchReadiness(checkoutReadiness),
+  );
   const inventory = await safelyLoadAdminData(
     "marketplace-production-canary-inventory",
     () => loadAdminMarketplaceProductionCanaryInventory(),
@@ -56,6 +62,8 @@ export default async function AdminMarketplaceCanaryPage() {
       </p>
 
       <MarketplaceCheckoutReadinessPanel readiness={checkoutReadiness} />
+
+      <MarketplaceLiveLaunchReadinessPanel result={launchReadiness} />
 
       {!inventory.ok ? (
         <section

@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud限定販売の開始判定（2026-09-30）
+
+- Branch `codex/cloud-marketplace-launch-readiness-20260930`、Base `a32d3cd33e8213bb73ca7637ad404cadd28af6f3`（PR #581 merge commit）。管理者が設定済みの限定販売対象を1つの開始判定として確認できる表示を追加した。
+- 限定本番の購入設定、対象商品の販売状態・価格・ファイル、作品の一般公開・Cloud完成版固定、販売者と指定購入者、同一対象の処理中・支払済み本番注文を照合する。
+- 管理者認証後のSELECTのみ。内部ID、氏名、メール、販売ファイル、fingerprint、秘密値は非表示で、取得不能・不整合は`PENDING`へfail closedする。DB、migration、注文、決済、Stripe、Production、Provider、Job、creditは変更していない。
+- focused 35/35（新規4/4）、Hub 1198/1198、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LIVE_LAUNCH_READINESS_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。実canaryと実決済は別承認単位。
+
+---
+
 ## 0.0 Cloud限定販売 readiness表示（2026-09-30）
 
 - Branch `codex/cloud-marketplace-readiness-status-20260930`、Base `b23928f123129d4adfd7aacf910f4559d9245727`（PR #580 merge commit）。管理者が限定販売のcheckout modeとcanary状態を秘密情報なしで確認できる表示を追加した。
