@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud出品者注文・売上回復（2026-09-30）
+
+- Branch `codex/cloud-marketplace-sales-recovery-20260930`、Base `c47955d11bb48d09c038afffe2eda1872260edac`（PR #578 merge commit）。注文・売上の一時障害を売上0円や注文0件と誤表示しない回復導線を追加した。
+- 注文読込をrepositoryへ分離し、認証済み出品者の`creator_id`、既存RLS、新着順を維持する。障害時は受取予定額を「確認できません」とし、空注文表示を出さず再読み込みを案内する。
+- 正常時の本番・支払済み注文だけの集計、テスト注文除外、注文表示項目は維持した。Stripe、Webhook、RLS、schema、migrationは未変更。Production接続、実注文・実決済、Provider、Job、credit操作は0件。
+- focused 8/8、Hub 1186/1186、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALES_RECOVERY_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Cloud購入履歴・ダウンロード回復（2026-09-30）
 
 - Branch `codex/cloud-marketplace-purchase-recovery-20260930`、Base `aeb9e28d658a08d7d5bd5688955f4eb99de10088`（PR #577 merge commit）。購入後の一時障害を空履歴やJSON画面として利用者へ見せない回復導線を追加した。

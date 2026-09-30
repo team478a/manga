@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud出品者注文・売上回復
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-sales-recovery-20260930`
+- Base: `c47955d11bb48d09c038afffe2eda1872260edac`（PR #578 merge commit）。
+- 出品者の注文・売上読込失敗を本当の売上0円・注文0件と分離し、金額を「確認できません」として一覧読込を停止する。再読み込み導線を表示する。
+- 正常時は従来の本番・支払済み注文だけの集計とテスト注文除外を維持する。認証後に本人の`creator_id`だけをrepositoryで取得し、既存RLSを維持する。
+- Stripe、Webhook、振込・精算、注文状態、RLS、schema、migrationは未変更。Production接続、実注文・実決済、Provider、Job、credit操作は0件。
+- 検証: focused 8/8、Hub 1186/1186、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。
+- 外部Supabase／Stripe設定と手動E2Eは既知`PENDING`。次はDraft PRのCore quality、Migration roundtrip、Windows build、Vercel Preview、Preview Comments成功で停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_SALES_RECOVERY_20260930.md`
+
+---
+
 ## 2026-09-30 Cloud購入履歴・ダウンロード回復
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
