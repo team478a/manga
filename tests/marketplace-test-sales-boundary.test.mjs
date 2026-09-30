@@ -20,14 +20,15 @@ test("テスト注文は注文作成からStripe metadataまで同じmodeを維�
 });
 
 test("管理者と出品者の売上合計は本番の支払済み注文だけを集計する", async () => {
-  const [adminPage, salesPage] = await Promise.all([
+  const [adminPage, adminRepository, salesPage] = await Promise.all([
     read("src/app/admin/page.tsx"),
+    read("src/modules/sales/infrastructure/admin-sales-query-repository.ts"),
     read("src/app/dashboard/sales/page.tsx"),
   ]);
 
-  for (const page of [adminPage, salesPage]) {
-    assert.match(page, /order\.status === "paid"/);
-    assert.match(page, /order\.payment_mode === "live"/);
+  for (const source of [adminRepository, salesPage]) {
+    assert.match(source, /order\.status === "paid"/);
+    assert.match(source, /order\.payment_mode === "live"/);
   }
   assert.match(adminPage, /テスト購入は含みません/);
   assert.match(salesPage, /テスト購入は受取予定額に含みません/);

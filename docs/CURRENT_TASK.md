@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud管理者注文・売上回復
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-admin-sales-recovery-20260930`
+- Base: `7bf3adb5157ef4bbb428a4673a3891d65c62ef1a`（PR #579 merge commit）。
+- 管理者の注文一覧・注文数・本番売上の取得失敗を本当の0件・0円と分離する。一覧は空として扱わず再読み込みを案内し、ダッシュボードは取得不能時に「確認」と表示する。
+- 正常時は従来の本番・支払済み注文だけの集計とテスト注文除外を維持する。管理者認証後にrepositoryから必要列だけを取得する。
+- Stripe、Webhook、振込・精算、注文状態、RLS、schema、migrationは未変更。Production接続、実注文・実決済、Provider、Job、credit操作は0件。
+- 検証: focused 11/11、Hub 1189/1189、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。
+- 外部Supabase／Stripe設定と手動E2Eは既知`PENDING`。次はDraft PRのCore quality、Migration roundtrip、Windows build、Vercel Preview、Preview Comments成功で停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_ADMIN_SALES_RECOVERY_20260930.md`
+
+---
+
 ## 2026-09-30 Cloud出品者注文・売上回復
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud管理者注文・売上回復
+
+- Branch: `codex/cloud-marketplace-admin-sales-recovery-20260930`。Base: `7bf3adb5157ef4bbb428a4673a3891d65c62ef1a`（PR #579 merge commit）。
+- 管理者の注文・売上読込失敗を注文0件・売上0円と区別し、一覧の再読み込みとダッシュボードの「確認」表示へ切り替えた。正常時の集計契約は維持する。
+- 管理者認証後の注文読込をrepositoryへ分離し、明示列だけを取得する。Stripe、Webhook、migration、Production、Provider、Job、creditは変更していない。
+- focused 11/11、Hub 1189/1189、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CI／Vercel Preview成功で停止する。Production注文・決済・精算は別承認単位。
+
+---
+
 ## 2026-09-30 Codex: Cloud出品者注文・売上回復
 
 - Branch: `codex/cloud-marketplace-sales-recovery-20260930`。Base: `c47955d11bb48d09c038afffe2eda1872260edac`（PR #578 merge commit）。

@@ -22,17 +22,12 @@ import { hasSupabaseAdminEnv } from "@/lib/env";
 import { yen } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 import { loadAdminVisibleUserCount } from "@/modules/account/infrastructure/admin-user-repository";
-
-type OrderSummary = {
-  amount: number;
-  status: string;
-  payment_mode: "test" | "live";
-};
+import { loadAdminOrderMetrics } from "@/modules/sales/infrastructure/admin-sales-query-repository";
 
 export default async function AdminPage() {
   await requireAdmin();
   const supabase = await createClient();
-  const [users, publicWorks, products, goodsRequests, ordersCount, orders] =
+  const [users, publicWorks, products, goodsRequests, orderMetrics] =
     await Promise.all([
       safelyLoadAdminData("dashboard/users", () =>
         loadAdminVisibleUserCount(hasSupabaseAdminEnv()),
@@ -47,14 +42,9 @@ export default async function AdminPage() {
       supabase
         .from("goods_requests")
         .select("id", { count: "exact", head: true }),
-      supabase.from("orders").select("id", { count: "exact", head: true }),
-      supabase.from("orders").select("amount,status,payment_mode").returns<OrderSummary[]>(),
+      safelyLoadAdminData("dashboard/orders", loadAdminOrderMetrics),
     ]);
 
-  const salesTotal =
-    orders.data
-      ?.filter((order) => order.status === "paid" && order.payment_mode === "live")
-      .reduce((sum, order) => sum + order.amount, 0) ?? 0;
   const cards = [
     {
       title: "登録ユーザー数",
@@ -82,7 +72,7 @@ export default async function AdminPage() {
     },
     {
       title: "注文数",
-      count: ordersCount.count ?? 0,
+      count: orderMetrics.ok ? orderMetrics.value.orderCount : "確認",
       href: "/admin/orders",
       icon: ReceiptText,
     },
@@ -94,7 +84,7 @@ export default async function AdminPage() {
     },
     {
       title: "本番売上合計（仮）",
-      count: yen(salesTotal),
+      count: orderMetrics.ok ? yen(orderMetrics.value.livePaidTotal) : "確認",
       href: "/admin/orders",
       icon: BadgeJapaneseYen,
     },

@@ -20,6 +20,7 @@ const pageContracts = [
   ["../src/app/login/page.tsx", /<InlineErrorMessage>\{params\.error\}<\/InlineErrorMessage>/],
   ["../src/app/signup/page.tsx", /<InlineErrorMessage>\{params\.error\}<\/InlineErrorMessage>/],
   ["../src/app/admin/users/page.tsx", /<InlineErrorMessage role="alert">\{error\}<\/InlineErrorMessage>/],
+  ["../src/app/admin/orders/page.tsx", /<InlineErrorMessage role="alert">\{pageError\}<\/InlineErrorMessage>/],
   ["../src/app/sales-packages/page.tsx", /<InlineErrorMessage>\{params\.error\}<\/InlineErrorMessage>/],
   ["../src/app/dashboard/products/[id]/edit/page.tsx", /<InlineErrorMessage>\{messages\.error\}<\/InlineErrorMessage>/],
   ["../src/app/dashboard/products/page.tsx", /<InlineErrorMessage>\{params\.error\}<\/InlineErrorMessage>/],
@@ -51,7 +52,7 @@ test("Inline errorは既存のp要素とmd／lg visual classだけを共有す�
   assert.doesNotMatch(source, /role="alert"|params\.error|messages\.error|query\.error|canPurchase/);
 });
 
-test("32画面37箇所は表示条件・文言・ARIAを各画面に保持する", async () => {
+test("33画面38箇所は表示条件・文言・ARIAを各画面に保持する", async () => {
   const sources = await Promise.all(pageContracts.map(([path]) => readSource(path)));
 
   for (const [index, source] of sources.entries()) {
@@ -74,7 +75,7 @@ test("32画面37箇所は表示条件・文言・ARIAを各画面に保持する
     (count, source) => count + (source.match(/<InlineErrorMessage(?:\s|>)/g)?.length ?? 0),
     0,
   );
-  assert.equal(usageCount, 37);
+  assert.equal(usageCount, 38);
   assert.match(sources[1], /!productAvailable \? <InlineErrorMessage>この商品は現在購入できません。<\/InlineErrorMessage>/);
   assert.match(sources[1], /productAvailable && !checkout\.enabled \? <InlineErrorMessage>\{checkout\.reason/);
   assert.match(sources[1], /productAvailable && checkout\.enabled && !checkoutEntryAvailable \? \([\s\S]*<InlineErrorMessage>この商品は現在、購入手続きの対象外です。<\/InlineErrorMessage>/);
