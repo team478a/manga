@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud購入履歴・ダウンロード回復
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-purchase-recovery-20260930`
+- Base: `aeb9e28d658a08d7d5bd5688955f4eb99de10088`（PR #577 merge commit）。
+- 購入履歴のDB障害を空履歴と区別し、購入情報は削除されていないことと再読み込み操作を表示する。ブラウザのダウンロード失敗はJSON表示ではなく購入履歴へ戻して、安全な日本語の再試行案内を表示する。
+- API向けJSON Error契約、注文所有者、paid条件、5分署名URL、ダウンロード回数記録は維持する。不明なquery値や生例外は表示しない。
+- Stripe、Webhook、注文状態、商品、作品、RLS、schema、migration、Production、Provider、Job、creditは変更していない。
+- 検証: focused 15/15、Hub 1184/1184、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_PURCHASE_RECOVERY_20260930.md`。
+- 次: commit、push、Draft PRを作成し、全CI／Vercel Preview成功で停止する。Production設定変更、実購入、一般購入解禁は別承認単位。
+
+---
+
 ## 2026-09-30 Cloud購入者導線の安全な完成
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

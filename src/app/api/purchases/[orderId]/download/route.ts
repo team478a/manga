@@ -10,6 +10,7 @@ import {
   logHubEvent,
 } from "@/lib/hub-logger";
 import { createPurchaseDownloadUrl } from "@/lib/purchases";
+import { requestOriginFromHeaders } from "@/lib/request-origin";
 
 export async function GET(
   request: Request,
@@ -40,6 +41,21 @@ export async function GET(
       error,
       "購入済みファイルを準備できませんでした。",
     );
+    const acceptsHtml =
+      request.headers.get("sec-fetch-mode") === "navigate" ||
+      request.headers.get("accept")?.includes("text/html");
+    const origin = requestOriginFromHeaders(request.headers);
+    if (acceptsHtml && origin) {
+      const destination = new URL("/dashboard/purchases", origin);
+      destination.searchParams.set(
+        "download_error",
+        response.body.errorCode,
+      );
+      return attachHubRequestId(
+        NextResponse.redirect(destination, 303),
+        logContext,
+      );
+    }
     return attachHubRequestId(
       NextResponse.json(response.body, { status: response.status }),
       logContext,

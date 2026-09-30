@@ -42,5 +42,9 @@ test("purchase history keeps the existing download route and empty state", async
   assert.match(page, /`\/api\/purchases\/\$\{purchase\.id\}\/download`/);
   assert.match(page, /purchase\.status === "paid"/);
   assert.match(page, /purchase\.digital_products\?\.file_url/);
+  assert.match(page, /const \{ data, error \} = await listPurchaseHistoryForProfile/);
+  assert.match(page, /error \? \(/);
+  assert.match(page, /購入履歴を空として扱わず、読込を停止しました/);
+  assert.match(page, /購入履歴を再読み込み/);
   assert.match(page, /購入履歴はありません。/);
 });
