@@ -34,10 +34,13 @@ test("管理者と出品者の売上合計は本番の支払済み注文だけ�
 });
 
 test("出品者は注文がどの作品・商品に対するものか確認できる", async () => {
-  const salesPage = await read("src/app/dashboard/sales/page.tsx");
+  const [salesPage, repository] = await Promise.all([
+    read("src/app/dashboard/sales/page.tsx"),
+    read("src/modules/sales/infrastructure/sales-query-repository.ts"),
+  ]);
 
   assert.match(
-    salesPage,
+    repository,
     /digital_products:product_id\(title,works:work_id\(title\)\)/,
   );
   assert.match(salesPage, /作品・商品/);
