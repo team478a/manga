@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud限定販売の開始判定
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-launch-readiness-20260930`
+- Base: `a32d3cd33e8213bb73ca7637ad404cadd28af6f3`（PR #581 merge commit）。
+- 管理者canary画面へ、設定された限定販売対象の開始条件をまとめた`READY`／`PENDING`判定を追加した。購入設定、対象商品、公開・完成版固定、販売者と指定購入者、既存本番注文を照合する。
+- 必要列のSELECTだけを行い、内部ID、氏名、メール、販売ファイル、fingerprint、秘密値、生エラーを表示しない。取得不能・不整合はfail closedする。
+- DB、RLS、schema、migration、設定、商品、注文、決済、Stripe、Webhookは未変更。Production接続、実注文・実決済、Provider、Job、credit操作は0件。
+- 検証: focused 35/35（新規4/4）、Hub 1198/1198、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。
+- 外部Supabase／Stripe設定と手動E2Eは既知`PENDING`。次はDraft PRのCore quality、Migration roundtrip、Windows build、Vercel Preview、Preview Comments成功で停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_LIVE_LAUNCH_READINESS_20260930.md`
+
+---
+
 ## 2026-09-30 Cloud限定販売 readiness表示
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
