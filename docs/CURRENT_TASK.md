@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-09-30 Cloud限定販売 readiness表示
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-readiness-status-20260930`
+- Base: `b23928f123129d4adfd7aacf910f4559d9245727`（PR #580 merge commit）。
+- 管理画面の限定販売canaryに、checkout modeの停止中・隔離テスト・限定本番、READY／PENDING、安全な理由を表示する。限定本番ではcanaryの有効状態、失効日時、残り時間だけを表示する。
+- Stripe秘密鍵、商品・出品者・購入者の内部ID、fingerprintは返却・表示しない。管理者認証を先に維持し、期限切れ・不整合はfail closedする。
+- DB、環境変数、注文、決済、Stripe、Webhook、RLS、schema、migrationは未変更。Production接続、実注文・実決済、Provider、Job、credit操作は0件。
+- 検証: focused 31/31＋regression 7/7、Hub 1194/1194、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。
+- 外部Supabase／Stripe設定と手動E2Eは既知`PENDING`。次はDraft PRのCore quality、Migration roundtrip、Windows build、Vercel Preview、Preview Comments成功で停止する。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_READINESS_STATUS_20260930.md`
+
+---
+
 ## 2026-09-30 Cloud管理者注文・売上回復
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

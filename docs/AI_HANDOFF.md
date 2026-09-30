@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud限定販売 readiness表示（2026-09-30）
+
+- Branch `codex/cloud-marketplace-readiness-status-20260930`、Base `b23928f123129d4adfd7aacf910f4559d9245727`（PR #580 merge commit）。管理者が限定販売のcheckout modeとcanary状態を秘密情報なしで確認できる表示を追加した。
+- 停止中・隔離テスト・限定本番、READY／PENDING、安全な理由を表示する。限定本番は失効日時と残り時間だけを返し、期限切れ・不整合はfail closedする。
+- Stripe秘密鍵、商品・出品者・購入者ID、fingerprintは非表示。認証順序を維持し、DB、設定、注文、決済、Stripe、Webhook、migration、Production、Provider、Job、creditは変更していない。
+- focused 31/31＋regression 7/7、Hub 1194/1194、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_READINESS_STATUS_20260930.md`。次はDraft PRの全CI／Vercel成功で停止する。
+
+---
+
 ## 0.0 Cloud管理者注文・売上回復（2026-09-30）
 
 - Branch `codex/cloud-marketplace-admin-sales-recovery-20260930`、Base `7bf3adb5157ef4bbb428a4673a3891d65c62ef1a`（PR #579 merge commit）。管理者の注文・売上一時障害を注文0件・売上0円と誤表示しない回復導線を追加した。

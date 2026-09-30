@@ -38,29 +38,26 @@ function supabaseProjectRef(value: string | undefined) {
 }
 
 function hasIsolatedPreviewDatabase(environment: CheckoutEnvironment) {
-  const stagingRef = environment.MANGAI_STAGING_PROJECT_REF
-    ?.trim()
-    .toLowerCase();
-  const parentRef = environment.MANGAI_STAGING_PARENT_PROJECT_REF
-    ?.trim()
-    .toLowerCase();
-  const connectedRef = supabaseProjectRef(
-    environment.NEXT_PUBLIC_SUPABASE_URL,
-  );
+  const stagingRef =
+    environment.MANGAI_STAGING_PROJECT_REF?.trim().toLowerCase();
+  const parentRef =
+    environment.MANGAI_STAGING_PARENT_PROJECT_REF?.trim().toLowerCase();
+  const connectedRef = supabaseProjectRef(environment.NEXT_PUBLIC_SUPABASE_URL);
   const validRef = /^[a-z0-9-]{8,64}$/;
 
   return Boolean(
     stagingRef &&
-      parentRef &&
-      validRef.test(stagingRef) &&
-      validRef.test(parentRef) &&
-      stagingRef !== parentRef &&
-      connectedRef === stagingRef,
+    parentRef &&
+    validRef.test(stagingRef) &&
+    validRef.test(parentRef) &&
+    stagingRef !== parentRef &&
+    connectedRef === stagingRef,
   );
 }
 
 export function inspectMarketplaceCheckoutMode(
   environment: CheckoutEnvironment = process.env,
+  now = Date.now(),
 ): MarketplaceCheckoutAvailability {
   const configured = environment.MANGAI_MARKETPLACE_CHECKOUT_MODE?.trim();
   const mode = (configured || "disabled") as MarketplaceCheckoutMode;
@@ -116,7 +113,7 @@ export function inspectMarketplaceCheckoutMode(
   }
 
   if (mode === "live") {
-    const canary = inspectMarketplaceLiveCanary(environment);
+    const canary = inspectMarketplaceLiveCanary(environment, now);
     if (!canary.enabled) {
       return {
         configuredMode: mode,

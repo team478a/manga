@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-09-30 Codex: Cloud限定販売 readiness表示
+
+- Branch: `codex/cloud-marketplace-readiness-status-20260930`。Base: `b23928f123129d4adfd7aacf910f4559d9245727`（PR #580 merge commit）。
+- 管理者canary画面に限定販売のcheckout mode、READY／PENDING、安全な理由を追加した。限定本番はcanaryの有効状態、失効日時、残り時間だけを表示する。
+- 秘密鍵、内部ID、fingerprintは表示しない。管理者認証順序とfail closedを維持し、DB、設定、注文、決済、Stripe、Webhook、migration、Production、Provider、Job、creditは変更していない。
+- focused 31/31＋regression 7/7、Hub 1194/1194、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure、diff check成功。外部設定と手動E2Eは既知PENDING。
+- 次: commit／push／Draft PR化し、全CIとVercel Preview成功で停止する。Production設定変更と実決済は別承認単位。
+
+---
+
 ## 2026-09-30 Codex: Cloud管理者注文・売上回復
 
 - Branch: `codex/cloud-marketplace-admin-sales-recovery-20260930`。Base: `7bf3adb5157ef4bbb428a4673a3891d65c62ef1a`（PR #579 merge commit）。
