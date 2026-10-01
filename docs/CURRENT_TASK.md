@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-01 Marketplace Production schema監査バンドル
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-schema-readiness-20261001`
+- Base: `eb842a454a0b4c266cb53b6051c6bf8535a9b251`（PR #582 merge commit）。
+- Cloud Marketplaceの公開、公開停止、商品編集guard、作者表示に必要な4 migrationの正本SHA-256を固定し、Production SQL Editor向けの単一・読み取り専用schema監査SQLを追加した。
+- 監査はsystem catalogと権限だけを確認し、利用者・作品・商品・注文・決済・ファイル等のapplication dataを読まない。DML、DDL、RPCは行わず、4件を`APPLIED_CONTRACT_READY`／`NOT_APPLIED_OR_INCOMPLETE`で返す。
+- GitHub Actionsの`Migration roundtrip`でPostgreSQL 16の`current_schema`へ同じ監査SQLを実行する。ローカルDocker daemon停止のためローカルPostgreSQL実行のみ既知`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`。
+- Production接続、migration適用、schema、RLS、商品、注文、決済、Stripe、Provider、Job、credit操作は0件。
+- 検証: focused 3/3、Hub 1201/1201、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure成功。
+- 詳細: `docs/RELEASE_CANDIDATE_MARKETPLACE_PRODUCTION_SCHEMA_AUDIT_BUNDLE_20261001.md`
+- 次: Draft PRのCore quality、Migration roundtrip、Windows build、Vercel Preview、Preview Comments成功で停止する。merge後にProductionで監査SELECTだけを実行し、不足migrationがあっても別途明示承認前は適用しない。
+
+---
+
 ## 2026-09-30 Cloud限定販売の開始判定
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
