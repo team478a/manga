@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production schema実環境監査（2026-10-01）
+
+- Branch `codex/cloud-marketplace-production-schema-audit-20261001`、Base `4a4f48d6c5e9e54e11d21539d7565f0655e07930`（PR #583 merge commit）。対象はProduction Project `vmdsyxykcrgxcdbrwlkv`、`mangai-hub-staging`、`main PRODUCTION`。
+- SHA-256 `e1ee7c13636008f9e06a389b8ea3abfe090f62a29ef48f26fd7743b6484be69d`の監査SELECTを全文一致確認後に1回だけ実行した。結果は4件中商品編集guardだけREADYで、公開、公開停止、作者表示の3 function契約は未適用または不完全。
+- 初回の不完全なMonaco入力はRun前に停止し、実行0件。全文選択置換後の3,711文字・90行・SHAを再照合した。DB、schema、RLS、作品、商品、注文、決済、Stripe、Storage、Provider、Job、credit、利用者データは変更していない。
+- Local検証は監査bundle 4/4 READY、対象test 3/3成功、migration／rollback 92件成功、RC repository structure READY、`git diff --check`成功。外部設定と手動E2Eは未投入のためPENDING／REQUIRED。
+- 不足migrationは`202609290001`（SHA `7cf041...701`）、`202609290002`（SHA `d16d53...a27`）、`202609300002`（SHA `bdf452...d8f`）。適用には3 ID、完全なSHA、順序を含む実行時明示承認が必要。READYの`202609300001`は再適用しない。
+- 詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_PRODUCTION_SCHEMA_AUDIT_RESULT_20261001.md`。適用後は同じ監査を再実行して4/4 READYを必須とする。
+
+---
+
 ## 0.0 Marketplace Production schema監査バンドル（2026-10-01）
 
 - Branch `codex/cloud-marketplace-schema-readiness-20261001`、Base `eb842a454a0b4c266cb53b6051c6bf8535a9b251`（PR #582 merge commit）。Marketplaceの4 migrationを正本SHAへ固定し、Production SQL Editor用の単一・読み取り専用schema監査を追加した。

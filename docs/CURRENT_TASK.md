@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-01 Marketplace Production schema実環境監査
+
+- 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / 1_READY / 3_NOT_APPLIED_OR_INCOMPLETE`
+- Branch: `codex/cloud-marketplace-production-schema-audit-20261001`
+- Base: `4a4f48d6c5e9e54e11d21539d7565f0655e07930`（PR #583 merge commit）。
+- Production Project `vmdsyxykcrgxcdbrwlkv`（`mangai-hub-staging` / `main PRODUCTION`）で、merge済み監査SELECTを全文照合後に1回だけ実行した。
+- `202609300001_cloud_marketplace_product_edit_guard`は`APPLIED_CONTRACT_READY`。`202609290001_cloud_marketplace_listing_publish`、`202609290002_cloud_marketplace_listing_withdrawal`、`202609300002_public_marketplace_creator_attribution`はprimary／accessがfalseで`NOT_APPLIED_OR_INCOMPLETE`。
+- 監査SQLは3,711文字・90行・SHA-256 `e1ee7c13636008f9e06a389b8ea3abfe090f62a29ef48f26fd7743b6484be69d`と完全一致した。初回の不完全なEditor入力はRun前に検知して全文置換し、実行していない。
+- DB、schema、RLS、作品、商品、注文、決済、Stripe、Storage、Provider、Job、credit、利用者データ変更は0件。SQL Editorのprivate autosaveを除き外部状態を変更していない。
+- Local検証は監査bundle 4/4 READY、対象test 3/3成功、migration／rollback 92件成功、RC repository structure READY、`git diff --check`成功。外部設定と手動E2Eは未投入のためPENDING／REQUIRED。
+- 詳細: `docs/RELEASE_CANDIDATE_MARKETPLACE_PRODUCTION_SCHEMA_AUDIT_RESULT_20261001.md`
+- 次: 不足3 migrationのID、SHA-256、適用順序を含む責任者の明示承認後にだけ適用する。READYの`202609300001`は再適用しない。適用後は同じSELECTで4/4 READYを確認する。
+
+---
+
 ## 2026-10-01 Marketplace Production schema監査バンドル
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
