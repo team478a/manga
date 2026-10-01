@@ -509,7 +509,7 @@ export async function finalizeCloudPageAndContinueAction(
   }
   if (nextPageId)
     redirect(`${projectPath}/pages/${nextPageId}?message=${encodeURIComponent("ページを確定しました。次のページを確認してください")}`);
-  redirect(`${projectPath}?message=${encodeURIComponent(allStatesResolved ? "全ページの確定が完了しました" : "ページを確定しました。次のページは作品画面から確認してください")}`);
+  redirect(`${projectPath}?message=${encodeURIComponent(allStatesResolved ? "全ページの確定が完了しました。次に完成版を固定してください" : "ページを確定しました。次のページは作品画面から確認してください")}#project-checkpoints`);
 }
 
 export async function startCloudExportAction(projectId: string, format: "pdf" | "images" | "project_json" = "pdf") {

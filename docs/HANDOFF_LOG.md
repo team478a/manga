@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud全ページ確定後の完成版固定案内
+
+- Branch: `codex/cloud-release-checkpoint-handoff-20261002`。Base: `67caec39f88c07d9518abf2ba717791590be1c05`（PR #592 merge commit）。
+- 最後の未完了ページを確定した後は作品画面の「バックアップと完成版」へ直接移動し、全ページ確定完了と完成版固定が次工程であることを日本語で表示する。制作状態を完全に解決できない場合も同じ欄へ安全に戻す。
+- 完成版固定欄へ`project-checkpoints` anchorを追加した。release checkpointの自動作成、ページ状態の代理更新、Production変更は行わない。
+- Productionのページ状態、checkpoint、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 集中25/25、Hub 1203/1203、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。release checkpoint作成は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloudページ確定後の次ページ遷移
 
 - Branch: `codex/cloud-page-finalize-next-20261002`。Base: `a83880dc1b8aa79a2381997137f5f1ff7eb35a00`（PR #591 merge commit）。

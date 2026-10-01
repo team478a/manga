@@ -419,7 +419,8 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(creatorActions, /setCloudPageProductionStatus\(parsed\.data\.pageId, "review_required"\)/);
   assert.match(creatorActions, /setCloudPageProductionStatus\(parsed\.data\.pageId, "revision_required"\)/);
   assert.match(creatorActions, /findNextCloudReleaseCheckpointPage/);
-  assert.match(creatorActions, /全ページの確定が完了しました/);
+  assert.match(creatorActions, /全ページの確定が完了しました。次に完成版を固定してください/);
+  assert.match(creatorActions, /#project-checkpoints/);
   assert.match(creatorActions, /revalidatePath\(pagePath\)/);
   assert.match(generation, /quality_review_status/);
   assert.match(generation, /event_type/);

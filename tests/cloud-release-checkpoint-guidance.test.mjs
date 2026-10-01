@@ -133,6 +133,7 @@ test("作品画面は詳細案内を完成版固定buttonへ接続する", async
   assert.match(panel, /次に確認するページ/);
   assert.match(panel, /releaseGuidance\.nextPages/);
   assert.match(panel, /原稿チェックと修正先を確認/);
+  assert.match(panel, /id="project-checkpoints"/);
 });
 
 test("未完了ページは5件まで表示し残数を案内する", () => {

@@ -12,7 +12,7 @@ export function ProjectCheckpointPanel({ available, checkpoints, projectId, rele
   restoreAvailable: boolean;
 }) {
   return (
-    <section className="panel mt-6" aria-labelledby="checkpoint-heading">
+    <section className="panel mt-6 scroll-mt-6" aria-labelledby="checkpoint-heading" id="project-checkpoints">
       <h2 className="flex items-center gap-2 text-xl font-bold" id="checkpoint-heading"><Archive className="h-5 w-5 text-violet-700" />バックアップと完成版</h2>
       <p className="mt-2 text-sm leading-relaxed text-stone-600">保存済みページの変更分だけを再利用して固定します。完成版は原稿チェックと全ページ確定後に作成できます。</p>
       {!available ? <p className="mt-4 rounded-lg bg-amber-50 p-4 text-amber-900">作品バックアップ用migrationの適用後に利用できます。</p> : <>
