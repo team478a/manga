@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloudページ編集内の確定・再確認導線
+
+- Branch: `codex/cloud-page-finalization-navigation-20261002`。Base: `9f846e3ba93febbdfcfcbfeb77e4040f4cbbd5b2`（PR #590 merge commit）。
+- 原稿編集画面に制作状態を表示し、完成条件を満たして保存済みのページだけを同画面から確定できるようにした。保存完了前はbuttonを無効にし、server側の完成条件guardも維持する。
+- 作品設定変更後のstaleな確定済みページは、明示的な「編集を再開して再確認」で`revision_required`へ戻す。成功・失敗は同じ編集画面で表示し、自動更新は行わない。
+- Productionのページ状態、checkpoint、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 集中19/19、Hub 1202/1202、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionページ状態の代理更新とrelease checkpoint作成は明示承認前に行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud完成版固定の次ページ案内
 
 - Branch: `codex/cloud-page-finalization-guidance-20261002`。Base: `afe85f103497291a6c909ee1af02f830d6b8496b`（PR #589 merge commit）。

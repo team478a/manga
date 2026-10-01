@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloudページ編集内の確定・再確認導線
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-page-finalization-navigation-20261002`
+- Base: `9f846e3ba93febbdfcfcbfeb77e4040f4cbbd5b2`（PR #590 merge commit）。
+- 原稿編集画面に現在の制作状態を表示し、完成条件を満たした保存済みページは、その画面から利用者が明示的に確定できるようにした。未保存・保存中の状態では確定buttonを無効にする。
+- 作品設定変更後に古くなった確定済みページには「設定変更後の再確認が必要」と表示し、利用者が明示的に編集再開してから保存・再確認できる。自動確定、自動再開、自動状態更新は行わない。
+- Actionの成功・失敗は原稿編集画面へ戻して日本語で表示する。既存の完成条件server guard、owner境界、ページ単位の要修正解消導線は維持する。
+- DB、schema、migration、RPC、Provider、生成、Job、Asset、credit、利用期限、作品、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中19/19、Hub 1202/1202、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionページの確定・再開とrelease checkpoint作成は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud完成版固定の次ページ案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
