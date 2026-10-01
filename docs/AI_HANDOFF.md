@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud Marketplace Production canary readiness実環境監査（2026-10-01）
+
+- Branch `codex/cloud-marketplace-production-canary-readiness-audit-20261001`、Base `04014fd35ff8ea0e24915016b513cf3aa6f72b10`（PR #585 merge commit）。Productionの商品・作品・販売者roleを個人情報と内部IDなしの集計SELECTだけで再監査した。
+- 商品1件はpausedで、active 0件、適格active 0件、有効化可能paused 0件。価格、ファイル、所有者、一般向け区分、販売者権限は満たすが、作品は未公開・非公開でCloud完成版も未固定。公開済み一般向け作品も0件。
+- schemaは4/4`APPLIED_CONTRACT_READY`だが、商品・作品条件が不成立のため限定販売canaryは`PENDING`。現在のChromeにはMANGAI管理者セッションがなく、checkout runtime、固定buyer、既存live注文の管理画面確認は`NOT_EVALUATED`。
+- Production変更0件。作品公開、完成版固定、商品active化、Vercel環境変数、注文、決済、Stripe、Storage、Provider、Job、Asset、credit、利用期限、通知設定は未変更。
+- 限定販売readiness 28/28、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_PRODUCTION_CANARY_READINESS_AUDIT_20261001.md`。次はDraft PRの全CI／Vercel成功で停止し、merge後に管理者画面をread-only確認する。外部変更は対象ごとの別承認が必要。
+
+---
+
 ## 0.0 Marketplace Production schema適用完了（2026-10-01）
 
 - Branch `codex/cloud-marketplace-production-schema-applied-20261001`、Base `1aac60852abb7306453f8d840b9f5fc7a186ac03`（PR #584 merge commit）。対象はProduction Project `vmdsyxykcrgxcdbrwlkv`、`stockbusiness's Org`、`mangai-hub-staging`、`main PRODUCTION`、Role `postgres`。

@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-01 Codex: Cloud Marketplace Production canary readiness実環境監査
+
+- Branch: `codex/cloud-marketplace-production-canary-readiness-audit-20261001`。Base: `04014fd35ff8ea0e24915016b513cf3aa6f72b10`（PR #585 merge commit）。
+- Production Project `vmdsyxykcrgxcdbrwlkv`で、商品・作品・販売者roleの個別値を返さない集計SELECTだけを実行した。商品1件、active 0件、paused 1件、適格active 0件、有効化可能paused 0件、公開済み一般向け作品0件。
+- paused商品は価格、販売ファイル、所有者一致、一般向け区分、販売者権限を満たす。作品statusは未公開、公開flagはfalse、Cloud完成版は未固定のため、開始判定は`PENDING`。
+- MANGAI管理画面は管理者未ログインのためruntime条件を`NOT_EVALUATED`とした。ただし適格active商品がないため、限定販売を開始できない結論は確定する。
+- Production変更0件。作品公開、完成版固定、商品active化、環境変数、注文、決済、Stripe、Storage、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 限定販売readiness 28/28、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: 文書の検証、commit、push、Draft PR、全CI／Vercel成功で停止する。merge後は管理者画面をread-only確認し、変更操作は別承認まで行わない。
+
+---
+
 ## 2026-10-01 Codex: Marketplace Production schema適用完了
 
 - Branch: `codex/cloud-marketplace-production-schema-applied-20261001`。Base: `1aac60852abb7306453f8d840b9f5fc7a186ac03`（PR #584 merge commit）。
