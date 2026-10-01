@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production schema適用完了（2026-10-01）
+
+- Branch `codex/cloud-marketplace-production-schema-applied-20261001`、Base `1aac60852abb7306453f8d840b9f5fc7a186ac03`（PR #584 merge commit）。対象はProduction Project `vmdsyxykcrgxcdbrwlkv`、`stockbusiness's Org`、`mangai-hub-staging`、`main PRODUCTION`、Role `postgres`。
+- 責任者承認済みの`202609290001`（SHA `7cf041...701`）、`202609290002`（SHA `d16d53...a27`）、`202609300002`（SHA `bdf452...d8f`）をこの順で各1回だけ適用し、すべてSuccess。原本とEditor全文の文字数・SHAを実行前に照合した。
+- 適用後監査は4 migrationすべて`APPLIED_CONTRACT_READY`、primary／access／auxiliaryも全項目true。既にREADYだった`202609300001`は再適用していない。
+- 作品、publication、商品、価格、購入者、注文、決済、Stripe、Storage、Provider、Job、credit、利用期限、通知設定は未変更。商品active化、実購入・実決済、返金、一般販売開始も未実施。
+- Local検証は監査bundle 4/4 READY、対象test 3/3成功、migration／rollback 92件成功、RC repository structure READY、Prettier、`git diff --check`成功。外部設定と手動E2Eは未投入のためPENDING／REQUIRED。
+- 詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_PRODUCTION_SCHEMA_APPLIED_20261001.md`。次は限定販売canary readinessの再確認。外部変更は対象ごとの別承認が必要。
+
+---
+
 ## 0.0 Marketplace Production schema実環境監査（2026-10-01）
 
 - Branch `codex/cloud-marketplace-production-schema-audit-20261001`、Base `4a4f48d6c5e9e54e11d21539d7565f0655e07930`（PR #583 merge commit）。対象はProduction Project `vmdsyxykcrgxcdbrwlkv`、`mangai-hub-staging`、`main PRODUCTION`。
