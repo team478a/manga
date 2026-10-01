@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud完成版固定の次ページ案内
+
+- Branch: `codex/cloud-page-finalization-guidance-20261002`。Base: `afe85f103497291a6c909ee1af02f830d6b8496b`（PR #589 merge commit）。
+- 完成版固定欄に状態別件数だけでなく、次に確認すべき未完了ページを最大5件表示する。設定変更後の再確認、要修正、確認待ち、生成中、未着手の順で優先し、各ページへ直接移動できる。残り件数も明示する。
+- 全ページ分の制作状態を解決できない場合は候補リンクを表示せず、誤った未着手判定を避ける。完成条件、固定button、原稿チェックのfail-closedは変更していない。
+- Productionのページ状態、checkpoint、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 集中15/15、Hub 1202/1202、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionページ状態の変更とrelease checkpoint作成は明示承認前に行わない。
+
+---
+
 ## 2026-10-01 Codex: Cloud完成版固定 Production事前監査と案内改善
 
 - Branch: `codex/cloud-release-checkpoint-guidance-20261001`。Base: `7ab13e0c1b149f44d8ed02a4af5de93e22b34d0d`（PR #588 merge commit）。

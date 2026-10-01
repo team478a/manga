@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud完成版固定の次ページ案内（2026-10-02）
+
+- Branch `codex/cloud-page-finalization-guidance-20261002`、Base `afe85f103497291a6c909ee1af02f830d6b8496b`（PR #589 merge commit）。前回監査で判明した未着手24・確認待ち7・要修正1を、利用者がページ単位で解消しやすくするUI改善である。
+- 完成版固定欄に次の最大5ページを優先順で表示し、原稿編集へ直接リンクする。優先順は設定変更後の再確認、要修正、確認待ち、生成中、未着手。6件目以降は残り件数を表示する。
+- 制作状態を全ページ分取得できない場合はページを推測表示しない。完成条件と固定操作のfail-closed、既存の原稿チェックとページ別修正導線は維持する。
+- Production、DB、schema、migration、RPC、Provider、Job、Asset、creditは変更していない。集中15/15、Hub 1202/1202、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionページ状態の変更とrelease checkpoint作成は別の明示承認が必要。
+
+---
+
 ## 0.0 Cloud完成版固定 Production事前監査と案内改善（2026-10-01）
 
 - Branch `codex/cloud-release-checkpoint-guidance-20261001`、Base `7ab13e0c1b149f44d8ed02a4af5de93e22b34d0d`（PR #588 merge commit）。Productionを匿名集計SELECTだけで事前監査した。

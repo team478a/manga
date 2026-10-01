@@ -114,7 +114,20 @@ export default async function CloudProjectPage({
     manuscriptReady: Boolean(exportReadiness?.ready),
     releaseCheckpointCount: releaseCheckpoints.length,
   });
-  const releaseGuidance = buildCloudReleaseCheckpointGuidance(exportReadiness);
+  const pageProductionStateById = new Map(pageProductionStates.map((state) => [state.pageId, state]));
+  const resolvedReleaseGuidancePages = pages.flatMap((page) => {
+    const state = pageProductionStateById.get(page.id);
+    return state ? [{
+      isStale: state.isStale,
+      pageId: page.id,
+      pageNumber: page.page_number,
+      status: state.status,
+    }] : [];
+  });
+  const releaseGuidancePages = resolvedReleaseGuidancePages.length === pages.length
+    ? resolvedReleaseGuidancePages
+    : [];
+  const releaseGuidance = buildCloudReleaseCheckpointGuidance(exportReadiness, releaseGuidancePages);
   const longformReadiness = buildCloudLongformReadiness({
     manuscriptAvailable: Boolean(exportReadiness),
     manuscriptReady: Boolean(exportReadiness?.ready),
