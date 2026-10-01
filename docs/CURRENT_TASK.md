@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-01 Cloud Marketplace Production canary readiness実環境監査
+
+- 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / CANARY_PENDING`
+- Branch: `codex/cloud-marketplace-production-canary-readiness-audit-20261001`
+- Base: `04014fd35ff8ea0e24915016b513cf3aa6f72b10`（PR #585 merge commit）。
+- Production Project `vmdsyxykcrgxcdbrwlkv`（`stockbusiness's Org` / `mangai-hub-staging` / `main PRODUCTION` / Role `postgres`）で、商品・作品・販売者roleの匿名集計SELECTだけを実行した。
+- 商品1件のうちactive 0件、paused 1件、適格active 0件、有効化可能paused 0件、公開済み一般向け作品0件。paused商品は価格・ファイル・所有者・一般向け区分・販売者権限を満たすが、作品は未公開・非公開でCloud完成版も未固定。
+- schemaは4/4`APPLIED_CONTRACT_READY`だが、商品・作品条件が不成立のため限定販売canaryの総合判定は`PENDING`。MANGAI管理者セッションが現在のChromeにないため、checkout runtime、固定buyer、既存live注文の画面確認は`NOT_EVALUATED`。
+- Production変更0件。作品公開、完成版固定、商品active化、Vercel環境変数、注文、決済、Stripe、Storage、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 検証: 限定販売readiness 28/28、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_PRODUCTION_CANARY_READINESS_AUDIT_20261001.md`
+- 次: 文書をcommit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後は管理者画面のread-only確認を優先し、作品公開・完成版固定・商品active化・runtime設定・実購入は対象ごとの別承認前に行わない。
+
+---
+
 ## 2026-10-01 Marketplace Production schema適用完了
 
 - 状態: `PRODUCTION_MIGRATIONS_APPLIED / POST_AUDIT_4_OF_4_READY`
