@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-01 Marketplace Cloud完成版固定 Production再監査
+
+- 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / RELEASE_CHECKPOINT_REQUIRED`
+- Branch: `codex/cloud-marketplace-production-fixation-reaudit-20261001`
+- Base: `bb06bb4123c0669caf3ef0045d2e064f280176d1`（PR #587 merge commit）。
+- Productionで完成版固定条件を匿名集計SELECTだけで再監査した。Cloud作品1件、未公開・未固定1件、所有者一致1件、paused商品付き1件まではREADY。
+- release checkpoint 0件、完全なcheckpoint 0件、固定可能な作品・商品0件。2026-09-29から唯一の阻害条件は変わっておらず、最新状態を完成版と推測して固定しない。
+- 次の実行順序を、所有者によるrelease checkpoint作成、readiness再監査、固定publication／ページ／PDF同期、公開・商品active化、checkout runtime設定の5段階へ分離した。各Production変更は対象ごとの明示承認を必要とする。
+- 成功した監査はSELECTだけ。初回の構文エラーを含めProduction変更0件。checkpoint、Storage、publication、作品、商品、注文、決済、Stripe、Vercel設定、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 検証: 完成版固定readiness 6/6、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細: `docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_FIXATION_PRODUCTION_REAUDIT_20261001.md`
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もrelease checkpoint作成の明示承認前はProductionを変更しない。
+
+---
+
 ## 2026-10-01 Cloud Marketplace Production runtime設定監査
 
 - 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / CHECKOUT_DISABLED / CANARY_NOT_CONFIGURED`
