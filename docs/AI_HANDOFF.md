@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud Marketplace Production runtime設定監査（2026-10-01）
+
+- Branch `codex/cloud-marketplace-production-runtime-audit-20261001`、Base `0ee346b678e12dbe74e867cb314a80a156b7d2d2`（PR #586 merge commit）。Vercel Productionの環境変数名だけを読み取り確認した。
+- checkout mode、Stripe本番設定、canary access、対象商品・販売者・購入者、期限、plan fingerprintは未設定。コードはmode未設定を`disabled`へfail closedするため、総合判定は`CANARY_NOT_CONFIGURED / CHECKOUT_DISABLED`。
+- 管理画面は管理者未ログインで表示E2E未実施。Vercel CLIが一時作成した`.env.local`と`.vercel/`は内容を表示せず削除し、`.gitignore`も復元した。最終worktreeはcleanで秘密値を保存していない。
+- Production環境変数、DB、作品、publication、商品、注文、決済、Stripe、Storage、Provider、Job、Asset、credit、利用期限、通知設定は未変更。
+- checkout／canary／販売境界39/39、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_PRODUCTION_RUNTIME_AUDIT_20261001.md`。次はDraft PRの全CI／Vercel成功で停止し、merge後に管理者画面をread-only確認する。外部変更は対象ごとの別承認が必要。
+
+---
+
 ## 0.0 Cloud Marketplace Production canary readiness実環境監査（2026-10-01）
 
 - Branch `codex/cloud-marketplace-production-canary-readiness-audit-20261001`、Base `04014fd35ff8ea0e24915016b513cf3aa6f72b10`（PR #585 merge commit）。Productionの商品・作品・販売者roleを個人情報と内部IDなしの集計SELECTだけで再監査した。
