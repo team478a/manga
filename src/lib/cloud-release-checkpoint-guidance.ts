@@ -14,13 +14,28 @@ export type CloudReleaseCheckpointGuidance = {
   available: boolean;
   blockers: CloudReleaseCheckpointBlocker[];
   errorCount: number;
+  nextPages: Array<{
+    isStale: boolean;
+    pageId: string;
+    pageNumber: number;
+    status: CloudManuscriptProductionStatus;
+    statusLabel: string;
+  }>;
   pageStatuses: Array<{
     count: number;
     label: string;
     status: CloudManuscriptProductionStatus;
   }>;
+  remainingPageCount: number;
   ready: boolean;
   summary: string;
+};
+
+export type CloudReleaseCheckpointPage = {
+  isStale: boolean;
+  pageId: string;
+  pageNumber: number;
+  status: CloudManuscriptProductionStatus;
 };
 
 const blockerLabels: Partial<
@@ -40,32 +55,45 @@ const pageStatusLabels: Record<CloudManuscriptProductionStatus, string> = {
   finalized: "確定済み",
 };
 
+const nextPageStatusLabels: Record<CloudManuscriptProductionStatus, string> = {
+  not_started: "制作を開始",
+  generating: "生成状況を確認",
+  review_required: "確認して確定",
+  revision_required: "修正して再確認",
+  finalized: "再確認",
+};
+
+const nextPagePriorities: Record<CloudManuscriptProductionStatus, number> = {
+  revision_required: 0,
+  review_required: 1,
+  generating: 2,
+  not_started: 3,
+  finalized: 4,
+};
+
 export function buildCloudReleaseCheckpointGuidance(
-  report:
-    | Pick<
-        CloudManuscriptPreflightReport,
-        | "errorCount"
-        | "issueCountByCode"
-        | "pageCountByProductionStatus"
-        | "ready"
-      >
-    | null,
+  report: Pick<
+    CloudManuscriptPreflightReport,
+    "errorCount" | "issueCountByCode" | "pageCountByProductionStatus" | "ready"
+  > | null,
+  pages: CloudReleaseCheckpointPage[] = [],
 ): CloudReleaseCheckpointGuidance {
   if (!report) {
     return {
       available: false,
       blockers: [],
       errorCount: 0,
+      nextPages: [],
       pageStatuses: [],
+      remainingPageCount: 0,
       ready: false,
       summary: "完成条件を確認できないため、完成版を固定できません。",
     };
   }
 
   const blockers = Object.entries(blockerLabels).flatMap(([code, label]) => {
-    const count = report.issueCountByCode[
-      code as CloudManuscriptPreflightIssueCode
-    ] ?? 0;
+    const count =
+      report.issueCountByCode[code as CloudManuscriptPreflightIssueCode] ?? 0;
     return count > 0 && label
       ? [{ code: code as CloudManuscriptPreflightIssueCode, count, label }]
       : [];
@@ -92,12 +120,28 @@ export function buildCloudReleaseCheckpointGuidance(
     0,
   );
   const finalizedPageCount = report.pageCountByProductionStatus.finalized ?? 0;
+  const pendingPages = pages
+    .filter((page) => page.status !== "finalized" || page.isStale)
+    .sort((left, right) => {
+      if (left.isStale !== right.isStale) return left.isStale ? -1 : 1;
+      const priority =
+        nextPagePriorities[left.status] - nextPagePriorities[right.status];
+      return priority || left.pageNumber - right.pageNumber;
+    });
+  const nextPages = pendingPages.slice(0, 5).map((page) => ({
+    ...page,
+    statusLabel: page.isStale
+      ? "設定変更後の再確認"
+      : nextPageStatusLabels[page.status],
+  }));
 
   return {
     available: true,
     blockers,
     errorCount: report.errorCount,
+    nextPages,
     pageStatuses,
+    remainingPageCount: Math.max(0, pendingPages.length - nextPages.length),
     ready: report.ready,
     summary: report.ready
       ? "原稿チェックが完了しています。完成版を固定できます。"

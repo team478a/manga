@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud完成版固定の次ページ案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-page-finalization-guidance-20261002`
+- Base: `afe85f103497291a6c909ee1af02f830d6b8496b`（PR #589 merge commit）。
+- 完成版固定欄の状態別件数に加え、未完了ページを「設定変更後の再確認、要修正、確認待ち、生成中、未着手」の優先順で最大5件表示し、各ページの原稿編集へ直接移動できるようにした。残り件数も表示する。
+- ページ制作状態が全ページ分取得できない場合は候補を推測せず表示しない。完成判定と完成版固定buttonのfail-closed、既存の原稿チェック導線を維持する。
+- DB、schema、migration、RPC、API、生成、課金契約は変更していない。Productionのページ状態、checkpoint、作品、商品、Provider、Job、Asset、creditも変更していない。
+- 検証: 集中15/15、Hub 1202/1202、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionページ状態の変更とrelease checkpoint作成は別の明示承認を必要とする。
+
+---
+
 ## 2026-10-01 Cloud完成版固定 Production事前監査と案内改善
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / RELEASE_CHECKPOINT_BLOCKED_BY_PAGE_STATUS`

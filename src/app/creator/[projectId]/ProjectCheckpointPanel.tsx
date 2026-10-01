@@ -41,6 +41,15 @@ export function ProjectCheckpointPanel({ available, checkpoints, projectId, rele
               {releaseGuidance.blockers.length ? <ul className="mt-2 space-y-1">
                 {releaseGuidance.blockers.map((blocker) => <li key={blocker.code}>・{blocker.label}: {blocker.count}件</li>)}
               </ul> : null}
+              {releaseGuidance.nextPages.length ? <div className="mt-3">
+                <p className="font-bold">次に確認するページ</p>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {releaseGuidance.nextPages.map((page) => <li key={page.pageId}>
+                    <a className="inline-flex rounded-md border border-amber-300 bg-white px-2.5 py-1 font-bold underline" href={`/creator/${projectId}/pages/${page.pageId}`}>{page.pageNumber}ページ・{page.statusLabel}</a>
+                  </li>)}
+                </ul>
+                {releaseGuidance.remainingPageCount > 0 ? <p className="mt-2">ほか{releaseGuidance.remainingPageCount}ページあります。</p> : null}
+              </div> : null}
               {releaseGuidance.available ? <a className="mt-3 inline-flex font-bold underline" href="#manuscript-status">原稿チェックと修正先を確認</a> : null}
             </div> : null}
           </form>
