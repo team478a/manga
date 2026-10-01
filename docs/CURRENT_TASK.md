@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud全ページ確定後の完成版固定案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-release-checkpoint-handoff-20261002`
+- Base: `67caec39f88c07d9518abf2ba717791590be1c05`（PR #592 merge commit）。
+- 最後の未完了ページを確定した後、作品画面の「バックアップと完成版」へ直接移動し、「次に完成版を固定してください」と次工程を明示する。制作状態を全ページ分解決できない場合も、同じ欄から状態を確認できる。
+- 完成版固定欄へ安定したanchorを追加した。release checkpointは自動作成せず、既存の原稿チェック、全ページ確定、利用者の明示操作という安全境界を維持する。
+- DB、schema、migration、RPC、Provider、生成、Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中25/25、Hub 1203/1203、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もrelease checkpoint作成は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloudページ確定後の次ページ遷移
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
