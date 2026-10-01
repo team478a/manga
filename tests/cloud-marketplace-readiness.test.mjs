@@ -69,6 +69,8 @@ test("Creator画面は案内が未完了なら販売操作を無効化する", a
   assert.match(page, /disabled=\{!marketplaceGuidance\.ready\}/);
   assert.match(page, /marketplaceGuidance\.summary/);
   assert.match(page, /marketplaceGuidance\.action\.href/);
+  assert.match(page, /id="marketplace-listing"/);
+  assert.match(page, /aria-labelledby="marketplace-listing-heading"/);
 });
 
 test("販売下書き後は完成版固定、作品公開、商品販売を順番に案内する", () => {

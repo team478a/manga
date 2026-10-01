@@ -63,6 +63,12 @@ export function DurableExportPanel({ projectId, available, ready, jobs, extended
               </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <Link
+                  className="button w-full sm:w-auto"
+                  href="#marketplace-listing"
+                >
+                  MANGAI内の販売準備へ
+                </Link>
+                <Link
                   className="button-secondary w-full border-emerald-300 bg-white text-emerald-900 sm:w-auto"
                   href="/dashboard/monitor/guide#internal-test-sale"
                 >

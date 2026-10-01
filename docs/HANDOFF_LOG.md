@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud完成PDFから販売準備への案内
+
+- Branch: `codex/cloud-export-to-marketplace-handoff-20261002`。Base: `ee641e471f9c96265cb633dc0811550fb422f975`（PR #594 merge commit）。
+- 完成PDFがダウンロード可能になった後は「MANGAI内の販売準備へ」から同じ作品画面の販売準備欄へ直接移動できる。書き出し開始・状態変更後はPDF進捗欄へ戻す。
+- 販売準備欄へ`marketplace-listing` section anchorを追加した。販売下書き、公開、商品販売、注文、決済の自動実行は追加していない。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中24/24、Hub 1205/1205、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。ProductionでのPDF書き出しと販売工程は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud完成版固定後のPDF書き出し案内
 
 - Branch: `codex/cloud-release-to-export-handoff-20261002`。Base: `ae3cf936fcd4f4a02053d77a681310b4c4f34df0`（PR #593 merge commit）。

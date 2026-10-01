@@ -746,8 +746,8 @@ export default async function CloudProjectPage({
               </div>
             </dl>
           </section>
-          <section className="panel">
-            <h2 className="flex items-center text-xl font-bold">
+          <section className="panel scroll-mt-6" aria-labelledby="marketplace-listing-heading" id="marketplace-listing">
+            <h2 className="flex items-center text-xl font-bold" id="marketplace-listing-heading">
               <ShoppingBag className="mr-2 h-5 w-5" />
               販売準備へ進む
             </h2>

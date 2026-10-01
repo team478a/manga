@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud完成PDFから販売準備への案内（2026-10-02）
+
+- Branch `codex/cloud-export-to-marketplace-handoff-20261002`、Base `ee641e471f9c96265cb633dc0811550fb422f975`（PR #594 merge commit）。完成PDFからCloud販売準備へ迷わず進める案内改善である。
+- ダウンロード可能なPDFがある場合だけ「MANGAI内の販売準備へ」を表示し、同一作品画面の`marketplace-listing` sectionへ移動する。PDF操作後は`durable-export`へ戻して進捗を維持する。
+- 販売下書き作成、作品公開、商品active化、注文、決済を自動実行しない。既存の完成条件、owner境界、明示確認とfail-closedを維持する。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中24/24、Hub 1205/1205、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionでのPDF書き出しと販売工程は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud完成版固定後のPDF書き出し案内（2026-10-02）
 
 - Branch `codex/cloud-release-to-export-handoff-20261002`、Base `ae3cf936fcd4f4a02053d77a681310b4c4f34df0`（PR #593 merge commit）。完成版固定後に次の工程である完成原稿PDF書き出しへ迷わず進める案内改善である。
