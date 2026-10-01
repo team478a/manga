@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-01 Marketplace Production schema適用完了
+
+- 状態: `PRODUCTION_MIGRATIONS_APPLIED / POST_AUDIT_4_OF_4_READY`
+- Branch: `codex/cloud-marketplace-production-schema-applied-20261001`
+- Base: `1aac60852abb7306453f8d840b9f5fc7a186ac03`（PR #584 merge commit）。
+- 対象はProduction Project `vmdsyxykcrgxcdbrwlkv`（`stockbusiness's Org` / `mangai-hub-staging` / `main PRODUCTION` / Role `postgres`）。
+- 責任者承認どおり`202609290001`、`202609290002`、`202609300002`をこの順で各1回適用し、3件とも`Success. No rows returned`。各原本とEditor全文の文字数・SHA-256を実行前に完全一致確認した。
+- 既にREADYだった`202609300001`は再適用していない。適用後監査は4件すべて`APPLIED_CONTRACT_READY`、primary／access／auxiliaryは全項目`true`。
+- 作品、publication、商品、価格、購入者、注文、決済、Stripe、Storage、Provider、Job、credit、利用期限、通知設定は未変更。商品active化、実購入・実決済、返金、一般販売開始も未実施。
+- Local検証は監査bundle 4/4 READY、対象test 3/3成功、migration／rollback 92件成功、RC repository structure READY、Prettier、`git diff --check`成功。外部設定と手動E2Eは未投入のためPENDING／REQUIRED。
+- 詳細: `docs/RELEASE_CANDIDATE_MARKETPLACE_PRODUCTION_SCHEMA_APPLIED_20261001.md`
+- 次: Draft PRを作成し、全CI／Vercel成功で停止する。merge後は限定販売canary readinessの再確認へ進む。外部状態を変更する場合は対象ごとに別途明示承認を得る。
+
+---
+
 ## 2026-10-01 Marketplace Production schema実環境監査
 
 - 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / 1_READY / 3_NOT_APPLIED_OR_INCOMPLETE`

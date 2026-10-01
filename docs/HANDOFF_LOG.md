@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-01 Codex: Marketplace Production schema適用完了
+
+- Branch: `codex/cloud-marketplace-production-schema-applied-20261001`。Base: `1aac60852abb7306453f8d840b9f5fc7a186ac03`（PR #584 merge commit）。
+- Production Project `vmdsyxykcrgxcdbrwlkv`の`stockbusiness's Org` / `mangai-hub-staging` / `main PRODUCTION` / Role `postgres`を画面で確認した。
+- 責任者承認どおり`202609290001`、`202609290002`、`202609300002`を正本SHA照合後にこの順で各1回適用し、すべて`Success. No rows returned`。既にREADYの`202609300001`は再適用していない。
+- 適用後監査は4 migrationすべて`APPLIED_CONTRACT_READY`、primary／access／auxiliaryも全項目true。
+- 作品、publication、商品、価格、購入者、注文、決済、Stripe、Storage、Provider、Job、credit、利用期限、通知設定は未変更。商品active化、実購入・実決済、返金、一般販売開始も未実施。
+- Local検証は監査bundle 4/4 READY、対象test 3/3成功、migration／rollback 92件成功、RC repository structure READY、Prettier、`git diff --check`成功。外部設定と手動E2Eは未投入のためPENDING／REQUIRED。
+- 次: Draft PRを作成し、全CI／Vercel成功で停止。merge後は限定販売canary readinessを再確認し、外部変更は対象ごとに別途承認を得る。
+
+---
+
 ## 2026-10-01 Codex: Marketplace Production schema実環境監査
 
 - Branch: `codex/cloud-marketplace-production-schema-audit-20261001`。Base: `4a4f48d6c5e9e54e11d21539d7565f0655e07930`（PR #583 merge commit）。
