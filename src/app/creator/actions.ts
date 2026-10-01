@@ -534,7 +534,10 @@ export async function createCloudProjectCheckpointAction(projectId: string, kind
   try { await createCloudProjectCheckpoint(parsed.data); }
   catch (error) { redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "作品の固定版を作成できませんでした。"))}`); }
   revalidatePath(`/creator/${parsed.data.projectId}`);
-  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(parsed.data.kind === "release" ? "完成版を固定しました" : "バックアップを作成しました")}`);
+  const nextStep = parsed.data.kind === "release"
+    ? { anchor: "#durable-export", message: "完成版を固定しました。次に完成原稿PDFを書き出してください" }
+    : { anchor: "#project-checkpoints", message: "バックアップを作成しました" };
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(nextStep.message)}${nextStep.anchor}`);
 }
 
 export async function publishCloudMarketplaceListingAction(
