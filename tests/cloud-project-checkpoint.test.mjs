@@ -8,6 +8,8 @@ const digestSchemaRollback = fs.readFileSync("supabase/rollbacks/202608100001_cl
 const service = fs.readFileSync("src/modules/cloud-creator/projects/project-checkpoint-service.ts", "utf8");
 const application = fs.readFileSync("src/modules/manga/application/manage-project-checkpoint.ts", "utf8");
 const panel = fs.readFileSync("src/app/creator/[projectId]/ProjectCheckpointPanel.tsx", "utf8");
+const exportPanel = fs.readFileSync("src/app/creator/[projectId]/DurableExportPanel.tsx", "utf8");
+const actions = fs.readFileSync("src/app/creator/actions.ts", "utf8");
 
 test("変更のないCanvasはハッシュ単位で再利用する", () => {
   assert.match(migration, /digest\(convert_to\(v_canvas::text,'UTF8'\),'sha256'\)/);
@@ -38,6 +40,13 @@ test("完成版作成は原稿preflightを通り、UIは処理中状態を表示
   assert.match(panel, /pendingLabel="固定中…"/);
   assert.match(panel, /disabled={!releaseGuidance\.ready}/);
   assert.doesNotMatch(panel, /manifestSha256|canvasSha256|provider_id|model_id/);
+});
+
+test("完成版固定後は自動書き出しせず完成原稿PDFへ案内する", () => {
+  assert.match(actions, /完成版を固定しました。次に完成原稿PDFを書き出してください/);
+  assert.match(actions, /anchor: "#durable-export"/);
+  assert.match(exportPanel, /id="durable-export"/);
+  assert.match(exportPanel, /aria-labelledby="durable-export-heading"/);
 });
 
 test("固定版は100ページ上限と所有権RLSを持つ", () => {

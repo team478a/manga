@@ -17,10 +17,10 @@ export function DurableExportPanel({ projectId, available, ready, jobs, extended
     (job) => job.format === "pdf" && job.downloadable,
   );
   return (
-    <section className="panel mt-6" aria-labelledby="durable-export">
+    <section className="panel mt-6 scroll-mt-6" aria-labelledby="durable-export-heading" id="durable-export">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h2 className="flex items-center gap-2 text-xl font-bold" id="durable-export"><FileCheck2 className="h-6 w-6 text-violet-700" />完成原稿PDF</h2>
+          <h2 className="flex items-center gap-2 text-xl font-bold" id="durable-export-heading"><FileCheck2 className="h-6 w-6 text-violet-700" />完成原稿PDF</h2>
           <p className="mt-2 text-sm text-stone-600">4ページずつ安全に処理します。画面を閉じても書き出しは継続し、途中から再開できます。</p>
         </div>
         <form action={startCloudExportAction.bind(null, projectId, "pdf")}>

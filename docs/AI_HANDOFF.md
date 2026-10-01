@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud完成版固定後のPDF書き出し案内（2026-10-02）
+
+- Branch `codex/cloud-release-to-export-handoff-20261002`、Base `ae3cf936fcd4f4a02053d77a681310b4c4f34df0`（PR #593 merge commit）。完成版固定後に次の工程である完成原稿PDF書き出しへ迷わず進める案内改善である。
+- release checkpoint作成成功後は「完成原稿PDF」欄へanchor付きで移動し、「完成版を固定しました。次に完成原稿PDFを書き出してください」と表示する。作業バックアップ作成後は固定版欄へ戻す。
+- PDF書き出しを自動開始しない。既存の利用者による明示操作、durable export Jobの処理中表示、中断・再開・失敗再開境界を維持する。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中35/35、Hub 1204/1204、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionでの完成版固定とPDF書き出し開始は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud全ページ確定後の完成版固定案内（2026-10-02）
 
 - Branch `codex/cloud-release-checkpoint-handoff-20261002`、Base `67caec39f88c07d9518abf2ba717791590be1c05`（PR #592 merge commit）。ページ確定を連続して完了した利用者が、次に行う完成版固定を迷わないようにする案内改善である。

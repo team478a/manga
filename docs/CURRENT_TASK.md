@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud完成版固定後のPDF書き出し案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-release-to-export-handoff-20261002`
+- Base: `ae3cf936fcd4f4a02053d77a681310b4c4f34df0`（PR #593 merge commit）。
+- 利用者が完成版を固定した後、作品画面上部へ戻すだけでなく「完成原稿PDF」へ直接移動し、「次に完成原稿PDFを書き出してください」と次工程を明示する。
+- 完成原稿PDF欄へ安定したsection anchorとscroll marginを追加した。PDF書き出しは自動実行せず、既存の明示button、処理中表示、中断・再開境界を維持する。作業バックアップ作成後は固定版欄へ戻す。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中35/35、Hub 1204/1204、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionでの完成版固定とPDF書き出し開始は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud全ページ確定後の完成版固定案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
