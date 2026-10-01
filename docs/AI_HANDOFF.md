@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Production schema監査バンドル（2026-10-01）
+
+- Branch `codex/cloud-marketplace-schema-readiness-20261001`、Base `eb842a454a0b4c266cb53b6051c6bf8535a9b251`（PR #582 merge commit）。Marketplaceの4 migrationを正本SHAへ固定し、Production SQL Editor用の単一・読み取り専用schema監査を追加した。
+- 監査SQLはsystem catalogとfunction権限だけを読み、application data、秘密値、個人情報を読まない。DML、DDL、RPCを含まない。公開／停止functionの`SECURITY DEFINER`と権限、商品編集guard trigger、作者表示functionの権限までfail closedで確認する。
+- `Migration roundtrip`はPostgreSQL 16の`current_schema`で同じ監査SQLを実行する。ローカルDocker daemon停止のためローカルDB実行だけは既知`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`。
+- Production接続・変更は0件。migration、schema、RLS、商品、注文、決済、Stripe、Provider、Job、creditは変更していない。
+- focused 3/3、Hub 1201/1201、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure成功。
+- 詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_PRODUCTION_SCHEMA_AUDIT_BUNDLE_20261001.md`。次はDraft PRの全CI／Vercel成功で停止し、merge後にProductionでSELECTだけを実行する。不足migrationの適用は別承認単位。
+
+---
+
 ## 0.0 Cloud限定販売の開始判定（2026-09-30）
 
 - Branch `codex/cloud-marketplace-launch-readiness-20260930`、Base `a32d3cd33e8213bb73ca7637ad404cadd28af6f3`（PR #581 merge commit）。管理者が設定済みの限定販売対象を1つの開始判定として確認できる表示を追加した。

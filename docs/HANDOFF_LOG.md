@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-01 Codex: Marketplace Production schema監査バンドル
+
+- Branch: `codex/cloud-marketplace-schema-readiness-20261001`。Base: `eb842a454a0b4c266cb53b6051c6bf8535a9b251`（PR #582 merge commit）。
+- Marketplaceの公開、停止、商品編集guard、作者表示に必要な4 migrationを正本SHAへ固定し、Production SQL Editorで実行する単一・読み取り専用schema監査を追加した。
+- system catalogと権限だけを確認し、application data、PII、秘密値を読まない。DML、DDL、RPC、Production接続・変更は0件。
+- CIの`Migration roundtrip`はPostgreSQL 16の`current_schema`で同じSQLを実行する。ローカルDocker daemon停止のためローカルDB実行だけは既知`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`。
+- focused 3/3、Hub 1201/1201、Canvas 26/26、AI 50/50、Desktop 407/407、Desktop a11y 29画面blocking violation 0、deps error 0（既知warning 2）、lint、全typecheck、migration静的92/92、Web／Desktop build、RC repository structure成功。
+- 次: commit／push／Draft PR化し、全CIとVercel Preview成功で停止する。merge後にProductionで監査SELECTだけを実行し、不足migrationの適用には別途明示承認を要求する。
+
+---
+
 ## 2026-09-30 Codex: Cloud限定販売の開始判定
 
 - Branch: `codex/cloud-marketplace-launch-readiness-20260930`。Base: `a32d3cd33e8213bb73ca7637ad404cadd28af6f3`（PR #581 merge commit）。

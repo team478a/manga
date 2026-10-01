@@ -180,6 +180,8 @@ jobs:
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_schema_data_idempotency.sql
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_cloud_marketplace.sql
           psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/tests/assert_marketplace_static_seed_repair.sql
+      - name: Verify Production schema audit query
+        run: psql -v ON_ERROR_STOP=1 -d current_schema -f supabase/audits/marketplace_production_schema_readiness.sql
       - name: Run read-only staging preflight against test schema
         env:
           MANGAI_DB_ENV: staging
