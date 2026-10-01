@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloudページ編集内の確定・再確認導線（2026-10-02）
+
+- Branch `codex/cloud-page-finalization-navigation-20261002`、Base `9f846e3ba93febbdfcfcbfeb77e4040f4cbbd5b2`（PR #590 merge commit）。次ページ案内で原稿編集へ移動した後、作品画面へ戻らずに制作状態を確認・更新できるようにするUI改善である。
+- 原稿編集画面へページ制作状態を読み込み、完成条件を満たす保存済みページに「このページを確定して次へ」を表示する。保存前、保存中、状態取得不能、未完成、設定変更後の再確認中は確定できない。
+- 設定変更後にstaleとなった確定済みページは「編集を再開して再確認」を明示操作した場合だけ`revision_required`へ戻す。既存の要修正解消は`review_required`へ戻し、どちらも同じ編集画面へ結果を表示する。
+- Production、DB、schema、migration、RPC、Provider、Job、Asset、credit、作品、publication、商品、注文、決済は変更していない。集中19/19、Hub 1202/1202、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionページ状態の代理更新とrelease checkpoint作成は別の明示承認が必要。
+
+---
+
 ## 0.0 Cloud完成版固定の次ページ案内（2026-10-02）
 
 - Branch `codex/cloud-page-finalization-guidance-20261002`、Base `afe85f103497291a6c909ee1af02f830d6b8496b`（PR #589 merge commit）。前回監査で判明した未着手24・確認待ち7・要修正1を、利用者がページ単位で解消しやすくするUI改善である。

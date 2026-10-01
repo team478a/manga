@@ -5,6 +5,7 @@ import {
   getCloudProjectWorkspace,
   listCloudAssets,
   listCloudGenerationJobs,
+  listCloudPageProductionStates,
   getMyCloudAiQuota,
 } from "@/lib/cloud-creator-server";
 import { getCloudPageDialoguePlacement } from "@/modules/cloud-creator/canvas/dialogue-placement-service";
@@ -21,11 +22,14 @@ import { ResourceNotFoundError } from "@/lib/domain-errors";
 
 export default async function CloudCanvasPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string; pageId: string }>;
+  searchParams: Promise<{ error?: string; message?: string }>;
 }) {
   const { profile } = await requireProfile();
   const { projectId, pageId } = await params;
+  const query = await searchParams;
   let workspace: Awaited<ReturnType<typeof getCloudProjectWorkspace>>;
   let snapshot: Awaited<ReturnType<typeof getCloudPageSnapshot>>;
   let assets: Awaited<ReturnType<typeof listCloudAssets>>;
@@ -55,6 +59,11 @@ export default async function CloudCanvasPage({
   const dialoguePlacement = await dialoguePlacementPromise;
   const pageCompletion = await pageCompletionPromise;
   const inspection = await inspectionPromise;
+  const pageProductionState = (
+    await listCloudPageProductionStates(projectId, workspace.pages).catch(
+      () => [],
+    )
+  ).find((state) => state.pageId === pageId) ?? null;
   const monitorQualityFeedbackEnabled = isCloudGeneralMonitorActive(
     await getCloudGeneralMonitorEnrollment(profile.id),
   );
@@ -69,6 +78,9 @@ export default async function CloudCanvasPage({
       initialQuota={quota}
       initialDialoguePlacement={dialoguePlacement}
       initialPageCompletion={pageCompletion}
+      initialPageProductionState={pageProductionState}
+      initialActionError={query.error ?? null}
+      initialActionMessage={query.message ?? null}
       initialInspectionFindings={inspection.findings}
       inspectionFindingsAvailable={inspection.available}
       storyboardPanelGenerationEnabled={cloudPanelImageGenerationFeatureEnabled()}

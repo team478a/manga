@@ -425,6 +425,27 @@ export async function markCloudPageRevisionAddressedAction(
   redirect(`${pagePath}?message=${encodeURIComponent("修正完了として再確認します")}`);
 }
 
+export async function reopenCloudPageFromEditorAction(
+  projectId: string,
+  pageId: string,
+) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    pageId: z.string().uuid(),
+  }).safeParse({ projectId, pageId });
+  if (!parsed.success)
+    redirect(encodeURI("/creator?error=制作状態を確認してください"));
+  const pagePath = `/creator/${parsed.data.projectId}/pages/${parsed.data.pageId}`;
+  try {
+    await setCloudPageProductionStatus(parsed.data.pageId, "revision_required");
+  } catch (error) {
+    redirect(`${pagePath}?error=${encodeURIComponent(domainMessage(error, "編集を再開できませんでした。"))}`);
+  }
+  revalidatePath(pagePath);
+  revalidatePath(`/creator/${parsed.data.projectId}`);
+  redirect(`${pagePath}?message=${encodeURIComponent("編集を再開しました。保存後にもう一度確認してください")}`);
+}
+
 export async function startCloudExportAction(projectId: string, format: "pdf" | "images" | "project_json" = "pdf") {
   const parsed = z.object({ projectId: z.string().uuid(), format: z.enum(["pdf", "images", "project_json"]) }).safeParse({ projectId, format });
   if (!parsed.success) redirect(encodeURI("/creator?error=作品IDを確認してください"));

@@ -34,6 +34,7 @@ import type {
   CloudAiQuota,
   CloudGenerationJob,
   CloudPage,
+  CloudPageProductionState,
   CloudProjectSummary,
 } from "@/lib/cloud-creator-server";
 import type { CloudPageDialoguePlacement } from "@/modules/cloud-creator/canvas/dialogue-placement-service";
@@ -284,6 +285,9 @@ export function CloudCanvasEditor({
   initialQuota,
   initialDialoguePlacement,
   initialPageCompletion,
+  initialPageProductionState,
+  initialActionError,
+  initialActionMessage,
   initialInspectionFindings,
   inspectionFindingsAvailable,
   storyboardPanelGenerationEnabled,
@@ -300,6 +304,9 @@ export function CloudCanvasEditor({
   initialQuota: CloudAiQuota | null;
   initialDialoguePlacement: CloudPageDialoguePlacement | null;
   initialPageCompletion: CloudPageCompletion | null;
+  initialPageProductionState: CloudPageProductionState | null;
+  initialActionError: string | null;
+  initialActionMessage: string | null;
   initialInspectionFindings: CloudInspectionFindingRecord[];
   inspectionFindingsAvailable: boolean;
   storyboardPanelGenerationEnabled: boolean;
@@ -1673,9 +1680,13 @@ export function CloudCanvasEditor({
       ) : null}
       {initialPageCompletion ? (
         <PageCompletionBanner
+          actionError={initialActionError}
+          actionMessage={initialActionMessage}
           completion={initialPageCompletion}
+          productionState={initialPageProductionState}
           projectId={project.id}
           pageId={page.id}
+          saved={saveState === "saved"}
         />
       ) : null}
       {existingManuscriptRepairCount ? (
