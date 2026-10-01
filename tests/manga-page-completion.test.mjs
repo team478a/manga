@@ -410,7 +410,7 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(completionBanner, /修正完了として再確認/);
   assert.match(completionBanner, /markCloudPageRevisionAddressedAction/);
   assert.match(completionBanner, /reopenCloudPageFromEditorAction/);
-  assert.match(completionBanner, /setCloudPageProductionStatusAction/);
+  assert.match(completionBanner, /finalizeCloudPageAndContinueAction/);
   assert.match(completionBanner, /このページを確定して次へ/);
   assert.match(completionBanner, /保存が完了すると確定できます/);
   assert.match(completionBanner, /設定変更後の再確認が必要/);
@@ -418,6 +418,8 @@ test("previewとserver guardは保存済みCanvas、object-contain、owner RLS�
   assert.match(editor, /saved=\{saveState === "saved"\}/);
   assert.match(creatorActions, /setCloudPageProductionStatus\(parsed\.data\.pageId, "review_required"\)/);
   assert.match(creatorActions, /setCloudPageProductionStatus\(parsed\.data\.pageId, "revision_required"\)/);
+  assert.match(creatorActions, /findNextCloudReleaseCheckpointPage/);
+  assert.match(creatorActions, /全ページの確定が完了しました/);
   assert.match(creatorActions, /revalidatePath\(pagePath\)/);
   assert.match(generation, /quality_review_status/);
   assert.match(generation, /event_type/);

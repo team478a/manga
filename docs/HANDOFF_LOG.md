@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloudページ確定後の次ページ遷移
+
+- Branch: `codex/cloud-page-finalize-next-20261002`。Base: `a83880dc1b8aa79a2381997137f5f1ff7eb35a00`（PR #591 merge commit）。
+- 原稿編集画面でページを確定すると、完成版固定案内と共通の優先順位で次の未完了ページを選び、その編集画面へ直接遷移する。全ページ確定済みなら作品画面へ戻す。
+- ProjectとPageの所属を確定前に検証する。制作状態の取得が不完全な場合は次ページを推測しない。確定失敗は現在ページへ、確定後の候補取得不能は作品画面へ安全な日本語案内を返す。
+- Productionのページ状態、checkpoint、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 集中25/25、Hub 1203/1203、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionページ状態の代理更新とrelease checkpoint作成は明示承認前に行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloudページ編集内の確定・再確認導線
 
 - Branch: `codex/cloud-page-finalization-navigation-20261002`。Base: `9f846e3ba93febbdfcfcbfeb77e4040f4cbbd5b2`（PR #590 merge commit）。

@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloudページ確定後の次ページ遷移
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-page-finalize-next-20261002`
+- Base: `a83880dc1b8aa79a2381997137f5f1ff7eb35a00`（PR #591 merge commit）。
+- 原稿編集画面の「このページを確定して次へ」は、確定後に次の未完了ページを解決し、その原稿編集画面へ直接遷移する。全ページ確定済みの場合は作品画面へ戻って完了を案内する。
+- 次ページの優先順位を完成版固定案内と共通化し、設定変更後の再確認、要修正、確認待ち、生成中、未着手の順に選ぶ。現在ページは候補から除外する。
+- ProjectとPageの所属を確定前に検証する。制作状態を全ページ分解決できない場合は次ページを推測せず、確定成功を保ったまま作品画面で確認するよう案内する。
+- DB、schema、migration、RPC、Provider、生成、Job、Asset、credit、利用期限、作品、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中25/25、Hub 1203/1203、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionページの確定とrelease checkpoint作成は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloudページ編集内の確定・再確認導線
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
