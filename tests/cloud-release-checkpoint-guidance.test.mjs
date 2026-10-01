@@ -8,6 +8,7 @@ test("完成条件を取得できない場合は固定をfail closedにする", 
     available: false,
     blockers: [],
     errorCount: 0,
+    pageStatuses: [],
     ready: false,
     summary: "完成条件を確認できないため、完成版を固定できません。",
   });
@@ -22,12 +23,26 @@ test("完成版固定の主要な阻害理由を件数で案内する", () => {
       page_not_finalized: 2,
       page_stale: 2,
     },
+    pageCountByProductionStatus: {
+      not_started: 24,
+      review_required: 7,
+      revision_required: 1,
+    },
     ready: false,
   });
 
   assert.equal(guidance.available, true);
   assert.equal(guidance.ready, false);
+  assert.match(guidance.summary, /確定済み0\/32ページ/);
   assert.match(guidance.summary, /要修正9件/);
+  assert.deepEqual(
+    guidance.pageStatuses.map(({ status, count }) => ({ status, count })),
+    [
+      { status: "not_started", count: 24 },
+      { status: "review_required", count: 7 },
+      { status: "revision_required", count: 1 },
+    ],
+  );
   assert.deepEqual(
     guidance.blockers.map(({ code, count }) => ({ code, count })),
     [
@@ -43,11 +58,15 @@ test("原稿チェック合格時だけ完成版固定を許可する", () => {
   const guidance = buildCloudReleaseCheckpointGuidance({
     errorCount: 0,
     issueCountByCode: {},
+    pageCountByProductionStatus: { finalized: 8 },
     ready: true,
   });
 
   assert.equal(guidance.ready, true);
   assert.equal(guidance.blockers.length, 0);
+  assert.deepEqual(guidance.pageStatuses, [
+    { count: 8, label: "確定済み", status: "finalized" },
+  ]);
   assert.match(guidance.summary, /完成版を固定できます/);
 });
 
@@ -61,5 +80,5 @@ test("作品画面は詳細案内を完成版固定buttonへ接続する", async
   assert.match(page, /releaseGuidance=\{releaseGuidance\}/);
   assert.match(panel, /disabled=\{!releaseGuidance\.ready\}/);
   assert.match(panel, /release-checkpoint-readiness/);
-  assert.match(panel, /原稿チェックを確認/);
+  assert.match(panel, /原稿チェックと修正先を確認/);
 });

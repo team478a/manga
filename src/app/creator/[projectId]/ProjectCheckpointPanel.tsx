@@ -32,10 +32,16 @@ export function ProjectCheckpointPanel({ available, checkpoints, projectId, rele
             <PendingSubmitButton aria-describedby={!releaseGuidance.ready ? "release-checkpoint-readiness" : undefined} className="button mt-3" disabled={!releaseGuidance.ready} pendingLabel="固定中…">完成版を固定</PendingSubmitButton>
             {!releaseGuidance.ready ? <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950" id="release-checkpoint-readiness" role="status">
               <p className="font-bold">{releaseGuidance.summary}</p>
+              {releaseGuidance.pageStatuses.length ? <div className="mt-3">
+                <p className="font-bold">ページの制作状態</p>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {releaseGuidance.pageStatuses.map((item) => <li className="rounded-full border border-amber-300 bg-white px-2.5 py-1" key={item.status}>{item.label} {item.count}ページ</li>)}
+                </ul>
+              </div> : null}
               {releaseGuidance.blockers.length ? <ul className="mt-2 space-y-1">
                 {releaseGuidance.blockers.map((blocker) => <li key={blocker.code}>・{blocker.label}: {blocker.count}件</li>)}
               </ul> : null}
-              {releaseGuidance.available ? <a className="mt-2 inline-flex font-bold underline" href="#manuscript-status">原稿チェックを確認</a> : null}
+              {releaseGuidance.available ? <a className="mt-3 inline-flex font-bold underline" href="#manuscript-status">原稿チェックと修正先を確認</a> : null}
             </div> : null}
           </form>
         </div>

@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-01 Codex: Cloud完成版固定 Production事前監査と案内改善
+
+- Branch: `codex/cloud-release-checkpoint-guidance-20261001`。Base: `7ab13e0c1b149f44d8ed02a4af5de93e22b34d0d`（PR #588 merge commit）。
+- Productionの対象作品を匿名集計SELECTだけで確認した。32ページ中、未着手24、確認待ち7、要修正1、確定済み0。snapshot欠落0、実行中Job 0、編集ロック0で、release checkpointはまだ作成できない。
+- 原稿事前検査結果へ制作状態別ページ数を追加し、完成版固定欄に「確定済みX/Yページ」と状態内訳を表示する。既存の原稿チェックとページ別修正導線を維持し、新しい更新操作は追加しない。
+- Productionのページ状態、checkpoint、Storage、publication、作品、商品、注文、決済、Stripe、Vercel設定、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- 集中12/12、Hub 1201/1201、deps error 0（既知warning 2）、Hub型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: 全品質ゲート後にcommit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionのページ確定とrelease checkpoint作成は別の明示承認を必要とする。
+
+---
+
 ## 2026-10-01 Codex: Marketplace Cloud完成版固定 Production再監査
 
 - Branch: `codex/cloud-marketplace-production-fixation-reaudit-20261001`。Base: `bb06bb4123c0669caf3ef0045d2e064f280176d1`（PR #587 merge commit）。

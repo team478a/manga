@@ -32,6 +32,13 @@ export type CloudManuscriptPreflightIssue = {
 
 export type CloudManuscriptPreflightIssueCode = CloudManuscriptPreflightIssue["code"];
 
+export type CloudManuscriptProductionStatus =
+  | "not_started"
+  | "generating"
+  | "review_required"
+  | "revision_required"
+  | "finalized";
+
 export type CloudManuscriptPreflightReport = {
   ready: boolean;
   pageCount: number;
@@ -41,6 +48,9 @@ export type CloudManuscriptPreflightReport = {
   errorCount: number;
   warningCount: number;
   issueCountByCode: Partial<Record<CloudManuscriptPreflightIssueCode, number>>;
+  pageCountByProductionStatus: Partial<
+    Record<CloudManuscriptProductionStatus, number>
+  >;
   pageProgress: CloudManuscriptPageProgress[];
   issues: CloudManuscriptPreflightIssue[];
   truncatedIssueCount: number;
@@ -68,7 +78,7 @@ type PreflightAsset = {
 
 type PreflightProductionState = {
   pageId: string;
-  status: string;
+  status: CloudManuscriptProductionStatus;
   isStale: boolean;
 };
 
@@ -160,6 +170,15 @@ export function analyzeCloudManuscript(input: {
     (input.productionStates ?? []).map((state) => [state.pageId, state]),
   );
   const activeGenerationPageIds = new Set(input.activeGenerationPageIds ?? []);
+  const pageCountByProductionStatus = (
+    input.productionStates ?? []
+  ).reduce<Partial<Record<CloudManuscriptProductionStatus, number>>>(
+    (counts, state) => {
+      counts[state.status] = (counts[state.status] ?? 0) + 1;
+      return counts;
+    },
+    {},
+  );
   let totalPanelCount = 0;
   let completedPanelCount = 0;
   const pageProgress: CloudManuscriptPageProgress[] = [];
@@ -371,6 +390,7 @@ export function analyzeCloudManuscript(input: {
     errorCount,
     warningCount,
     issueCountByCode,
+    pageCountByProductionStatus,
     pageProgress,
     issues: issues.slice(0, issueLimit),
     truncatedIssueCount: Math.max(0, issues.length - issueLimit),
