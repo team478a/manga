@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Cloud完成版固定 Production再監査（2026-10-01）
+
+- Branch `codex/cloud-marketplace-production-fixation-reaudit-20261001`、Base `bb06bb4123c0669caf3ef0045d2e064f280176d1`（PR #587 merge commit）。Productionで完成版固定readinessを個人情報・内部IDなしの集計SELECTだけで再監査した。
+- Cloud作品1件、未公開・未固定1件、所有者一致1件、paused商品付き1件。release checkpoint 0件、完全なcheckpoint 0件、固定可能な作品・商品0件で、2026-09-29から唯一の阻害条件は変わっていない。
+- 作品所有者によるrelease checkpoint作成、匿名再監査、固定publication／ページ／PDF同期、公開・商品active化、checkout runtime設定を別工程・別承認に分けた。作品公開だけではcheckoutは有効にならない。
+- 成功した監査はSELECTのみ。置換前の断片が残った初回実行は構文エラーで、Production変更は0件。checkpoint、Storage、publication、作品、商品、注文、決済、Stripe、Vercel設定、Provider、Job、Asset、creditは変更していない。
+- 完成版固定readiness 6/6、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細は`docs/RELEASE_CANDIDATE_MARKETPLACE_PUBLICATION_FIXATION_PRODUCTION_REAUDIT_20261001.md`。次はDraft PRの全CI／Vercel成功で停止し、merge後もrelease checkpoint作成の明示承認前はProductionを変更しない。
+
+---
+
 ## 0.0 Cloud Marketplace Production runtime設定監査（2026-10-01）
 
 - Branch `codex/cloud-marketplace-production-runtime-audit-20261001`、Base `0ee346b678e12dbe74e867cb314a80a156b7d2d2`（PR #586 merge commit）。Vercel Productionの環境変数名だけを読み取り確認した。
