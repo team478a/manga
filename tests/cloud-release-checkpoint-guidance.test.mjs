@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { buildCloudReleaseCheckpointGuidance } from "../src/lib/cloud-release-checkpoint-guidance.ts";
+import {
+  buildCloudReleaseCheckpointGuidance,
+  findNextCloudReleaseCheckpointPage,
+} from "../src/lib/cloud-release-checkpoint-guidance.ts";
 
 test("完成条件を取得できない場合は固定をfail closedにする", () => {
   assert.deepEqual(buildCloudReleaseCheckpointGuidance(null), {
@@ -153,4 +156,26 @@ test("未完了ページは5件まで表示し残数を案内する", () => {
     [1, 2, 3, 4, 5],
   );
   assert.equal(guidance.remainingPageCount, 2);
+});
+
+test("確定後は現在ページを除き優先度が最も高いページへ進む", () => {
+  assert.deepEqual(
+    findNextCloudReleaseCheckpointPage(
+      [
+        { isStale: false, pageId: "current", pageNumber: 1, status: "revision_required" },
+        { isStale: false, pageId: "page-2", pageNumber: 2, status: "not_started" },
+        { isStale: false, pageId: "page-3", pageNumber: 3, status: "review_required" },
+        { isStale: true, pageId: "page-4", pageNumber: 4, status: "finalized" },
+      ],
+      "current",
+    ),
+    { isStale: true, pageId: "page-4", pageNumber: 4, status: "finalized" },
+  );
+  assert.equal(
+    findNextCloudReleaseCheckpointPage(
+      [{ isStale: false, pageId: "current", pageNumber: 1, status: "finalized" }],
+      "current",
+    ),
+    null,
+  );
 });

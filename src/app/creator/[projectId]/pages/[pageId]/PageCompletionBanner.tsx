@@ -1,7 +1,7 @@
 import type { CloudPageCompletion } from "@/modules/cloud-creator/projects/page-completion-service";
 import type { CloudPageProductionState } from "@/lib/cloud-creator-server";
 import { PendingSubmitButton } from "@/components/PendingSubmitButton";
-import { markCloudPageRevisionAddressedAction, reopenCloudPageFromEditorAction, setCloudPageProductionStatusAction } from "@/app/creator/actions";
+import { finalizeCloudPageAndContinueAction, markCloudPageRevisionAddressedAction, reopenCloudPageFromEditorAction } from "@/app/creator/actions";
 
 export function PageCompletionBanner({
   actionError,
@@ -54,7 +54,7 @@ export function PageCompletionBanner({
       {actionError ? <p className="mt-2 rounded-md bg-red-100 p-2 text-red-900" role="alert">{actionError}</p> : actionMessage ? <p className="mt-2 rounded-md bg-blue-100 p-2 text-blue-900" role="status">{actionMessage}</p> : null}
       {completion.blockers.length ? <ul className="mt-2 list-disc pl-5">{completion.blockers.slice(0, 6).map((blocker, index) => <li key={`${blocker.code}-${blocker.panelId ?? index}`}>{blocker.message}</li>)}</ul> : null}
       {isStale ? <form action={reopenCloudPageFromEditorAction.bind(null, projectId, pageId)} className="mt-3"><PendingSubmitButton className="button-secondary min-h-10 px-4 py-2" pendingLabel="再開中…">編集を再開して再確認</PendingSubmitButton></form> : null}
-      {completion.complete && productionState && !isFinalized && !isStale ? <form action={setCloudPageProductionStatusAction.bind(null, projectId, pageId, "finalized")} className="mt-3"><PendingSubmitButton className="button min-h-10 px-4 py-2" disabled={!canFinalize} pendingLabel="確定中…">このページを確定して次へ</PendingSubmitButton>{!saved ? <p className="mt-2">保存が完了すると確定できます。</p> : null}</form> : null}
+      {completion.complete && productionState && !isFinalized && !isStale ? <form action={finalizeCloudPageAndContinueAction.bind(null, projectId, pageId)} className="mt-3"><PendingSubmitButton className="button min-h-10 px-4 py-2" disabled={!canFinalize} pendingLabel="確定中…">このページを確定して次へ</PendingSubmitButton>{!saved ? <p className="mt-2">保存が完了すると確定できます。</p> : null}</form> : null}
       {pageRevisionRequired ? (
         <form
           action={markCloudPageRevisionAddressedAction.bind(null, projectId, pageId)}

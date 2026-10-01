@@ -71,6 +71,30 @@ const nextPagePriorities: Record<CloudManuscriptProductionStatus, number> = {
   finalized: 4,
 };
 
+export function listCloudReleaseCheckpointPendingPages(
+  pages: CloudReleaseCheckpointPage[],
+) {
+  return pages
+    .filter((page) => page.status !== "finalized" || page.isStale)
+    .sort((left, right) => {
+      if (left.isStale !== right.isStale) return left.isStale ? -1 : 1;
+      const priority =
+        nextPagePriorities[left.status] - nextPagePriorities[right.status];
+      return priority || left.pageNumber - right.pageNumber;
+    });
+}
+
+export function findNextCloudReleaseCheckpointPage(
+  pages: CloudReleaseCheckpointPage[],
+  currentPageId: string,
+) {
+  return (
+    listCloudReleaseCheckpointPendingPages(pages).find(
+      (page) => page.pageId !== currentPageId,
+    ) ?? null
+  );
+}
+
 export function buildCloudReleaseCheckpointGuidance(
   report: Pick<
     CloudManuscriptPreflightReport,
@@ -120,14 +144,7 @@ export function buildCloudReleaseCheckpointGuidance(
     0,
   );
   const finalizedPageCount = report.pageCountByProductionStatus.finalized ?? 0;
-  const pendingPages = pages
-    .filter((page) => page.status !== "finalized" || page.isStale)
-    .sort((left, right) => {
-      if (left.isStale !== right.isStale) return left.isStale ? -1 : 1;
-      const priority =
-        nextPagePriorities[left.status] - nextPagePriorities[right.status];
-      return priority || left.pageNumber - right.pageNumber;
-    });
+  const pendingPages = listCloudReleaseCheckpointPendingPages(pages);
   const nextPages = pendingPages.slice(0, 5).map((page) => ({
     ...page,
     statusLabel: page.isStale

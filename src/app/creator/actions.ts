@@ -13,6 +13,8 @@ import {
   createCloudProject,
   createCloudProjectCheckpoint,
   deleteCloudStructure,
+  getCloudProjectWorkspace,
+  listCloudPageProductionStates,
   moveCloudPageBefore,
   moveCloudStructure,
   renameCloudEpisode,
@@ -35,6 +37,7 @@ import {
 } from "@/lib/cloud-marketplace";
 import { isDomainError } from "@/lib/domain-errors";
 import { formString } from "@/app/actions/shared/form-data";
+import { findNextCloudReleaseCheckpointPage } from "@/lib/cloud-release-checkpoint-guidance";
 
 const projectSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -444,6 +447,69 @@ export async function reopenCloudPageFromEditorAction(
   revalidatePath(pagePath);
   revalidatePath(`/creator/${parsed.data.projectId}`);
   redirect(`${pagePath}?message=${encodeURIComponent("編集を再開しました。保存後にもう一度確認してください")}`);
+}
+
+export async function finalizeCloudPageAndContinueAction(
+  projectId: string,
+  pageId: string,
+) {
+  const parsed = z.object({
+    projectId: z.string().uuid(),
+    pageId: z.string().uuid(),
+  }).safeParse({ projectId, pageId });
+  if (!parsed.success)
+    redirect(encodeURI("/creator?error=制作状態を確認してください"));
+  const projectPath = `/creator/${parsed.data.projectId}`;
+  const pagePath = `${projectPath}/pages/${parsed.data.pageId}`;
+  let workspace: Awaited<ReturnType<typeof getCloudProjectWorkspace>>;
+  try {
+    workspace = await getCloudProjectWorkspace(parsed.data.projectId);
+  } catch (error) {
+    redirect(`${projectPath}?error=${encodeURIComponent(domainMessage(error, "作品を確認できませんでした。"))}`);
+  }
+  if (!workspace.pages.some((page) => page.id === parsed.data.pageId))
+    redirect(`${projectPath}?error=${encodeURIComponent("対象ページを確認してください。")}`);
+  try {
+    await setCloudPageProductionStatus(parsed.data.pageId, "finalized");
+  } catch (error) {
+    redirect(`${pagePath}?error=${encodeURIComponent(domainMessage(error, "ページを確定できませんでした。"))}`);
+  }
+  revalidatePath(pagePath);
+  revalidatePath(projectPath);
+
+  let nextPageId: string | null = null;
+  let allStatesResolved = false;
+  try {
+    const states = await listCloudPageProductionStates(
+      parsed.data.projectId,
+      workspace.pages,
+    );
+    allStatesResolved = states.length === workspace.pages.length;
+    if (allStatesResolved) {
+      const stateByPageId = new Map(
+        states.map((state) => [state.pageId, state]),
+      );
+      nextPageId = findNextCloudReleaseCheckpointPage(
+        workspace.pages.flatMap((page) => {
+          const state = stateByPageId.get(page.id);
+          return state
+            ? [{
+                isStale: state.isStale,
+                pageId: page.id,
+                pageNumber: page.page_number,
+                status: state.status,
+              }]
+            : [];
+        }),
+        parsed.data.pageId,
+      )?.pageId ?? null;
+    }
+  } catch {
+    allStatesResolved = false;
+  }
+  if (nextPageId)
+    redirect(`${projectPath}/pages/${nextPageId}?message=${encodeURIComponent("ページを確定しました。次のページを確認してください")}`);
+  redirect(`${projectPath}?message=${encodeURIComponent(allStatesResolved ? "全ページの確定が完了しました" : "ページを確定しました。次のページは作品画面から確認してください")}`);
 }
 
 export async function startCloudExportAction(projectId: string, format: "pdf" | "images" | "project_json" = "pdf") {
