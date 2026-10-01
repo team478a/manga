@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud完成PDFから販売準備への案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-export-to-marketplace-handoff-20261002`
+- Base: `ee641e471f9c96265cb633dc0811550fb422f975`（PR #594 merge commit）。
+- 完成原稿PDFがダウンロード可能になった後、同じ作品画面の「販売準備へ進む」へ直接移動できるbuttonを追加した。販売準備欄へ安定したsection anchorとscroll marginを追加した。
+- PDF書き出し開始・一時停止・再開・中止後は「完成原稿PDF」欄へ戻し、進捗を見失わないようにした。販売下書き、作品公開、商品販売、注文、決済は自動実行せず、既存の明示確認を維持する。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中24/24、Hub 1205/1205、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionでのPDF書き出し、販売下書き、公開、販売開始は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud完成版固定後のPDF書き出し案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

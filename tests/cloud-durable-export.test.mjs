@@ -64,10 +64,23 @@ test("作品画面は進捗・停止・再開・失敗箇所からの再開を�
   assert.match(component, /一時停止/);
   assert.match(component, /失敗箇所から再開/);
   assert.match(component, /PDFをダウンロード/);
+  assert.match(component, /href="#marketplace-listing"/);
+  assert.match(component, /MANGAI内の販売準備へ/);
   assert.match(component, /DurableExportAutoRefresh/);
   assert.match(autoRefresh, /window\.setInterval/);
   assert.match(autoRefresh, /router\.refresh/);
   assert.match(autoRefresh, /5秒ごとに自動更新/);
+});
+
+test("書き出し操作後は進捗欄へ戻り、販売操作を自動実行しない", () => {
+  const actions = read("src/app/creator/actions.ts");
+  const start = actions.indexOf("export async function startCloudExportAction");
+  const end = actions.indexOf("export async function createCloudProjectCheckpointAction");
+  const exportAction = actions.slice(start, end);
+  assert.ok(start >= 0 && end > start);
+  assert.match(actions, /書き出しを受け付けました。進捗を確認してください/);
+  assert.match(exportAction, /#durable-export/);
+  assert.doesNotMatch(exportAction, /publishCloudMarketplaceListing\(/);
 });
 
 test("P4-Dは既存PDFを維持しimagesとProject JSONを既定OFFで追加する", () => {

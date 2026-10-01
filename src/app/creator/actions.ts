@@ -521,7 +521,7 @@ export async function startCloudExportAction(projectId: string, format: "pdf" | 
     redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "書き出しを開始できませんでした。"))}`);
   }
   revalidatePath(`/creator/${parsed.data.projectId}`);
-  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("書き出しを受け付けました")}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent("書き出しを受け付けました。進捗を確認してください")}#durable-export`);
 }
 
 export async function createCloudProjectCheckpointAction(projectId: string, kind: "checkpoint" | "release", formData: FormData) {
@@ -616,5 +616,5 @@ export async function setCloudExportStateAction(
     redirect(`/creator/${parsed.data.projectId}?error=${encodeURIComponent(domainMessage(error, "書き出し状態を変更できませんでした。"))}`);
   }
   revalidatePath(`/creator/${parsed.data.projectId}`);
-  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "paused" ? "書き出しを一時停止しました" : status === "queued" ? "書き出しを再開しました" : "書き出しを中止しました")}`);
+  redirect(`/creator/${parsed.data.projectId}?message=${encodeURIComponent(status === "paused" ? "書き出しを一時停止しました" : status === "queued" ? "書き出しを再開しました" : "書き出しを中止しました")}#durable-export`);
 }
