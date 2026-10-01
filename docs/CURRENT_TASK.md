@@ -1,5 +1,19 @@
 # MANGAI Current Task
 
+## 2026-10-01 Cloud完成版固定 Production事前監査と案内改善
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / RELEASE_CHECKPOINT_BLOCKED_BY_PAGE_STATUS`
+- Branch: `codex/cloud-release-checkpoint-guidance-20261001`
+- Base: `7ab13e0c1b149f44d8ed02a4af5de93e22b34d0d`（PR #588 merge commit）。
+- Productionを匿名集計SELECTだけで確認し、対象32ページは確定済み0、未着手24、確認待ち7、要修正1。snapshot欠落0、実行中Job 0、編集ロック0で、release checkpoint作成可能作品は0件だった。
+- 完成版固定欄へ制作状態別ページ数と「確定済みX/Yページ」を表示し、既存の原稿チェックとページ別修正先へ案内する。取得不能・条件未達時のfail-closedは維持する。
+- DB、schema、migration、RPC、API、生成、課金契約は変更していない。Productionのページ状態、checkpoint、作品、商品、Provider、Job、Asset、creditも変更していない。
+- 検証: 集中12/12、Hub 1201/1201、deps error 0（既知warning 2）、Hub型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_RELEASE_CHECKPOINT_PRODUCTION_PREFLIGHT_20261001.md`
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もページ確定とrelease checkpoint作成は明示承認を得た別工程とする。
+
+---
+
 ## 2026-10-01 Marketplace Cloud完成版固定 Production再監査
 
 - 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / RELEASE_CHECKPOINT_REQUIRED`

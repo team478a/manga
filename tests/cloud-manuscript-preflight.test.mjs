@@ -95,6 +95,7 @@ test("8ページ全コマに画像があれば完成原稿として判定する"
   assert.equal(report.totalPanelCount, 8);
   assert.equal(report.errorCount, 0);
   assert.deepEqual(report.issueCountByCode, {});
+  assert.deepEqual(report.pageCountByProductionStatus, {});
   assert.equal(report.pageProgress.length, 8);
   assert.deepEqual(report.pageProgress[0], {
     pageId: "page-1",
@@ -237,6 +238,10 @@ test("永続書き出し前に未確定・stale・生成中ページを拒否す
   assert.ok(codes.has("page_not_finalized"));
   assert.ok(codes.has("page_stale"));
   assert.ok(codes.has("generation_active"));
+  assert.deepEqual(report.pageCountByProductionStatus, {
+    finalized: 7,
+    review_required: 1,
+  });
 });
 
 test("P4-Cはmode別コマ数とセリフ量をwarningに留める", () => {

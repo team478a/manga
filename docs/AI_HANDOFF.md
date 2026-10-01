@@ -1,5 +1,15 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Cloud完成版固定 Production事前監査と案内改善（2026-10-01）
+
+- Branch `codex/cloud-release-checkpoint-guidance-20261001`、Base `7ab13e0c1b149f44d8ed02a4af5de93e22b34d0d`（PR #588 merge commit）。Productionを匿名集計SELECTだけで事前監査した。
+- 対象32ページは確定済み0、未着手24、確認待ち7、要修正1。snapshot欠落、実行中Job、編集ロックはいずれも0で、release checkpoint作成可能作品は0件。阻害要因はページ制作状態だけである。
+- 原稿事前検査へ制作状態別件数を追加し、完成版固定欄で「確定済みX/Yページ」と状態内訳を表示する。既存の原稿チェックとページ別修正リンクを利用するため、新しい更新操作は追加しない。
+- ProductionのDB、ページ状態、checkpoint、作品、商品、Provider、Job、Asset、creditは変更していない。集中12/12、Hub 1201/1201、deps error 0（既知warning 2）、Hub型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、新規監査文書Prettier、diff check成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細は`docs/RELEASE_CANDIDATE_CLOUD_RELEASE_CHECKPOINT_PRODUCTION_PREFLIGHT_20261001.md`。次はDraft PRの全CI／Vercel成功で停止し、merge後もページ確定とrelease checkpoint作成は明示承認前に行わない。
+
+---
+
 ## 0.0 Marketplace Cloud完成版固定 Production再監査（2026-10-01）
 
 - Branch `codex/cloud-marketplace-production-fixation-reaudit-20261001`、Base `bb06bb4123c0669caf3ef0045d2e064f280176d1`（PR #587 merge commit）。Productionで完成版固定readinessを個人情報・内部IDなしの集計SELECTだけで再監査した。
