@@ -1,5 +1,17 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-01 Codex: Cloud Marketplace Production runtime設定監査
+
+- Branch: `codex/cloud-marketplace-production-runtime-audit-20261001`。Base: `0ee346b678e12dbe74e867cb314a80a156b7d2d2`（PR #586 merge commit）。
+- Vercel Productionの環境変数名だけを確認し、checkout mode、Stripe本番設定、canary access、対象商品・販売者・購入者、期限、plan fingerprintが未設定であることを確認した。値は取得・表示していない。
+- コード既定値はmode未設定時`disabled`で、前回のactive商品0件・作品未公開／未固定と合わせ、限定販売runtimeは`PENDING`と確定した。
+- 管理画面は管理者未ログインでログイン画面へ遷移。認証入力は行っていない。CLIが一時作成した`.env.local`と`.vercel/`は削除し、`.gitignore`を復元してworktree cleanを確認した。
+- Production環境変数、DB、作品、publication、商品、注文、決済、Stripe、Storage、Provider、Job、Asset、credit、利用期限、通知設定は変更していない。
+- checkout／canary／販売境界39/39、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: 文書検証、commit、push、Draft PR、全CI／Vercel成功で停止する。merge後は管理者画面のread-only確認を優先する。
+
+---
+
 ## 2026-10-01 Codex: Cloud Marketplace Production canary readiness実環境監査
 
 - Branch: `codex/cloud-marketplace-production-canary-readiness-audit-20261001`。Base: `04014fd35ff8ea0e24915016b513cf3aa6f72b10`（PR #585 merge commit）。

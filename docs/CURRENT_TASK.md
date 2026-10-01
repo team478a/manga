@@ -1,5 +1,21 @@
 # MANGAI Current Task
 
+## 2026-10-01 Cloud Marketplace Production runtime設定監査
+
+- 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / CHECKOUT_DISABLED / CANARY_NOT_CONFIGURED`
+- Branch: `codex/cloud-marketplace-production-runtime-audit-20261001`
+- Base: `0ee346b678e12dbe74e867cb314a80a156b7d2d2`（PR #586 merge commit）。
+- Vercel Productionの環境変数名だけを確認した。`NEXT_PUBLIC_SITE_URL`、Supabase設定、`CHECKOUT_CANCEL_SECRET`は存在するが、checkout mode、Stripe本番設定、canary access、商品・販売者・購入者、期限、plan fingerprintは未設定。
+- `MANGAI_MARKETPLACE_CHECKOUT_MODE`未設定時はコード既定値`disabled`となるため、総合判定は`CANARY_NOT_CONFIGURED / CHECKOUT_DISABLED`。前回監査のactive商品0件・作品未公開／未固定とも一致する。
+- MANGAI管理画面は管理者未ログインでログイン画面へ遷移したため表示E2Eは未実施。認証入力、自動ログインは行っていない。
+- Vercel CLIが一時作成した`.env.local`と`.vercel/`は内容を表示せず削除し、`.gitignore`も元へ復元した。最終worktreeはcleanで、秘密値・tokenをGitや文書へ残していない。
+- Production環境変数、DB、作品、publication、商品、注文、決済、Stripe、Storage、Provider、Job、Asset、credit、利用期限、通知設定は未変更。
+- 検証: checkout／canary／販売境界39/39、migration／rollback静的92/92、RC repository structure READY、新規監査文書Prettier、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 詳細: `docs/RELEASE_CANDIDATE_CLOUD_MARKETPLACE_PRODUCTION_RUNTIME_AUDIT_20261001.md`
+- 次: 文書を検証してcommit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後は管理者画面表示をread-only確認し、外部変更は対象ごとの別承認前に行わない。
+
+---
+
 ## 2026-10-01 Cloud Marketplace Production canary readiness実環境監査
 
 - 状態: `PRODUCTION_READ_ONLY_AUDIT_COMPLETE / CANARY_PENDING`
