@@ -1,5 +1,17 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace実画面受入れ・UI差分監査
+
+- 状態: `AUDITED_STATIC / BLOCKED_EXTERNAL_ENVIRONMENT / PHASE2_NO_GO / PRODUCTION_UNCHANGED`
+- 基準: `feature/manga-canvas-mvp@ee7018fec559c5bf210e8615ea84d507554da70c`、Marketplace UI PR #602、次工程PR #608。監査branchは`codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。
+- Marketplace集中22/22と`git diff --check`成功。書店型Home、2/3/4/5列Grid、試し読み優先色、4項目Mobile Nav、safe area、empty/error/loading、skip link、focus、ARIA、reduced motionの静的契約は成立する。
+- P0は静的に0件。P1はHome/Works/Detail/Bookshelfの`object-cover`、Detailの価格先行と購入状態非連動CTA、実データ実画面受入れblocker。P2は「注目作品」名称、試し読みCTA重複、36px filter chip、本棚の購入履歴語彙、canary案内。
+- Localは実データなし、VercelはSSOへ302、認証済みbrowser接続もrequest-header policy読込失敗のため、実表紙・4 viewport・認証済み本棚・Reader・実画面a11yは`BLOCKED_EXTERNAL_ENVIRONMENT`。認証迂回やProduction操作は行っていない。
+- 成果物: `docs/MARKETPLACE_UI_ACCEPTANCE_REPORT_20261002.md`、`docs/MARKETPLACE_UI_GAP_LIST_20261002.md`、`docs/MARKETPLACE_UI_ADJUSTMENT_PLAN_20261002.md`。
+- 次: 責任者確認で停止。承認後にMarketplace UI Adjustment PRを別工程で開始し、P1解消と実データread-only受入れ後にPhase 2可否を再判定する。
+
+---
+
 ## 2026-10-02 Marketplace UIマージ後受入れ・Phase 2スコープ監査
 
 - 状態: `AUDITED / LATEST_BASE_SYNCED / EXTERNAL_VISUAL_ACCEPTANCE_BLOCKED / PRODUCTION_UNCHANGED`

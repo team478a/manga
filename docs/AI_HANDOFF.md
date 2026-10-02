@@ -1,5 +1,14 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace実画面受入れ・UI差分監査（2026-10-02）
+
+- 基準`feature/manga-canvas-mvp@ee7018fe`、監査branch`codex/marketplace-acceptance-blocker-20261002`、Draft PR #609。UIコードは変更せず、Home、Works、Detail、Reader、Bookshelf、Header、Mobile Nav、状態設計、responsive、a11yを監査した。
+- Marketplace集中22/22とdiff check成功。P0は静的に0件。Home/Works/Detail/Bookshelfの`object-cover`、Detailの価格先行と購入状態非連動CTA、実画面証跡不足をP1とした。
+- Local実データなし、Vercel SSOへの302、認証済みbrowser接続失敗により、実表紙、4 viewport、認証済み本棚、Reader、実画面a11yは`BLOCKED_EXTERNAL_ENVIRONMENT`。Production、DB、Checkout、決済は未変更。
+- 成果物は`docs/MARKETPLACE_UI_ACCEPTANCE_REPORT_20261002.md`、`docs/MARKETPLACE_UI_GAP_LIST_20261002.md`、`docs/MARKETPLACE_UI_ADJUSTMENT_PLAN_20261002.md`。Phase 2は`NO-GO`。責任者確認後にAdjustment PRを別工程で開始する。
+
+---
+
 ## 0.0 Marketplace UIマージ後受入れ・Phase 2スコープ監査（2026-10-02）
 
 - Branch `codex/marketplace-phase2-scope-20261002`、Base `b1645081`。Marketplace UI-1〜5後の残件とPhase 2候補を監査した。

@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace実画面受入れ・UI差分監査
+
+- Branch: `codex/marketplace-acceptance-blocker-20261002`。Base: `feature/manga-canvas-mvp@ee7018fec559c5bf210e8615ea84d507554da70c`。Draft PR #609。
+- UIコード変更なしでHome、Works、Detail、Reader、Bookshelf、Header、Mobile Nav、empty/error/loading、responsive、a11yを監査した。Marketplace集中22/22、`git diff --check`成功。
+- P0は静的に0件。表紙4箇所の`object-cover`、Detailの価格先行と「漫画を読む・試し読み」、実データ実画面未確認をP1とした。「注目作品」、CTA重複、36px chip、本棚語彙、canary案内はP2。
+- Local実データなし、Vercel SSOへの302、認証済みbrowser接続失敗のため実表紙・4 viewport・認証済み本棚・Reader・実画面a11yは`BLOCKED_EXTERNAL_ENVIRONMENT`。認証迂回、Production、DB、作品、商品、publication、Checkout、Stripe、注文、決済、環境変数変更は0件。
+- 次: 3つの監査成果物を責任者が確認するまで停止。承認後にAdjustment PRを別工程で実施し、実データread-only受入れ完了後にPhase 2可否を再判定する。
+
+---
+
 ## 2026-10-02 Codex: Marketplace UIマージ後受入れ・Phase 2スコープ監査
 
 - Branch `codex/marketplace-phase2-scope-20261002`、Base `b1645081`。Marketplace UI-1〜5の次工程を現行schema、Reader、購入、本棚、GitHub open Issueと照合した。
