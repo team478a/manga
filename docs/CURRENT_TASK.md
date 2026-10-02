@@ -66,6 +66,19 @@
 - 次: UI-1のレビュー後、Phase UI-2としてMarketplace HomeのHero、注目作品、新着作品、ジャンル、試し読み作品、Creator CTAを既存データ契約の範囲で実装する。注目作品の選定契約がないため、人気・ランキング・レコメンドを推測実装しない。
 ---
 
+## 2026-10-02 Cloud売上注文から作品・商品設定への導線
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-order-source-links-20261002`
+- Base: `5f61f3dc41c6a222622285ff1157b2e51626e936`（PR #599 merge commit）。
+- 売上管理の各注文から、その注文に対応する所有作品と商品設定へ直接戻れるリンクを追加した。注文SELECTへ作品・商品IDを加え、既存のタイトル表示と情報欠落時の代替表示を維持した。
+- 遷移先の作品・商品編集画面は既存どおり`creator_id`で所有者本人を再確認する。注文・決済・公開状態を更新する処理やadmin clientは追加していない。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中17/17、Hub 1210/1210、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud売上管理の注文日時・状態案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

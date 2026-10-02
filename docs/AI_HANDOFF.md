@@ -50,6 +50,16 @@
 - 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
 ---
 
+## 0.0 Cloud売上注文から作品・商品設定への導線（2026-10-02）
+
+- Branch `codex/cloud-sales-order-source-links-20261002`、Base `5f61f3dc41c6a222622285ff1157b2e51626e936`（PR #599 merge commit）。販売者が注文内容を確認した後、元の作品・商品設定へ迷わず戻るためのread-only導線改善である。
+- 注文repositoryの既存nested SELECTへ作品ID・商品IDを追加し、売上表の作品名を`/dashboard/works/[id]/edit`、商品名を`/dashboard/products/[id]/edit`へリンクした。関連情報がない場合の代替表示を維持する。
+- 遷移先では既存の`creator_id` owner条件を再検証する。admin client、注文・決済・公開状態の更新、外部送信は追加していない。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中17/17、Hub 1210/1210、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud売上管理の注文日時・状態案内（2026-10-02）
 
 - Branch `codex/cloud-sales-order-timeline-20261002`、Base `5c775aeb2ede4768a554f5bf5ee14aeee37f1015`（PR #598 merge commit）。販売者が注文反映後の時系列と状態を誤解しないための表示改善である。

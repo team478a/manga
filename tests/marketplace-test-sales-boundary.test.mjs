@@ -42,11 +42,11 @@ test("出品者は注文がどの作品・商品に対するものか確認で�
 
   assert.match(
     repository,
-    /digital_products:product_id\(title,works:work_id\(title\)\)/,
+    /digital_products:product_id\(id,title,works:work_id\(id,title\)\)/,
   );
   assert.match(salesPage, /作品・商品/);
-  assert.match(salesPage, /order\.digital_products\?\.works\?\.title/);
-  assert.match(salesPage, /order\.digital_products\?\.title/);
+  assert.match(salesPage, /order\.digital_products\.works\.title/);
+  assert.match(salesPage, /order\.digital_products\.title/);
 });
 
 test("migrationは既存注文をliveとして保ちtestとliveを制約する", async () => {

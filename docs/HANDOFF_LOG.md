@@ -54,6 +54,17 @@
 - 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
 ---
 
+## 2026-10-02 Codex: Cloud売上注文から作品・商品設定への導線
+
+- Branch: `codex/cloud-sales-order-source-links-20261002`。Base: `5f61f3dc41c6a222622285ff1157b2e51626e936`（PR #599 merge commit）。
+- 売上管理の注文行から、対応する所有作品と商品設定へ直接戻れるようにした。注文repositoryはnested relationのIDとタイトルをread-onlyで取得する。
+- 遷移先の作品・商品編集画面は既存の`creator_id`条件で所有者本人を再確認する。admin clientや更新処理を追加せず、情報欠落時の代替表示も保持した。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中17/17、Hub 1210/1210、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud売上管理の注文日時・状態案内
 
 - Branch: `codex/cloud-sales-order-timeline-20261002`。Base: `5c775aeb2ede4768a554f5bf5ee14aeee37f1015`（PR #598 merge commit）。
