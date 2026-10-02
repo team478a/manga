@@ -1,5 +1,16 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Cloud販売開始後の購入者URL案内
+
+- Branch: `codex/cloud-marketplace-buyer-link-handoff-20261002`。Base: `a761b6949ae6ae25c4b6ede50e3a97454462f5fe`（PR #596 merge commit）。
+- 販売中の作品画面から、指定購入者向けの購入準備URLをスマートフォンの共有画面またはclipboardで案内できるようにした。共有結果は画面内で通知する。
+- リンク共有だけでは購入資格を付与せず、注文・決済も発生しないことを明示した。販売者本人、対象外アカウント、期限外の購入を許可する処理は追加していない。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中14/14、Hub 1207/1207、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの購入資格設定、URL実送信、注文、決済は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud販売下書き後の出品確認案内
 
 - Branch: `codex/cloud-marketplace-draft-handoff-20261002`。Base: `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。

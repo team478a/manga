@@ -49,6 +49,7 @@ import { LongformPageManager } from "./LongformPageManager";
 import { DurableExportPanel } from "./DurableExportPanel";
 import { ProjectCheckpointPanel } from "./ProjectCheckpointPanel";
 import { LongformReadinessPanel } from "./LongformReadinessPanel";
+import { MarketplaceBuyerLinkActions } from "./MarketplaceBuyerLinkActions";
 import { buildCloudLongformReadiness } from "@/lib/cloud-longform-readiness";
 import { buildCloudMarketplaceDraftGuidance } from "@/lib/cloud-marketplace-draft-guidance";
 import { buildCloudMarketplaceSalesGuidance } from "@/lib/cloud-marketplace-sales-guidance";
@@ -824,6 +825,16 @@ export default async function CloudProjectPage({
                     <p className="mt-1 leading-relaxed">
                       画面を開くだけでは注文・決済は発生しません。購入操作は、管理者が指定した購入者アカウントで行ってください。
                     </p>
+                    <div className="mt-3 rounded-md border border-green-200 bg-white p-3">
+                      <p className="font-bold">指定購入者へ購入準備URLを案内</p>
+                      <p className="mt-1 leading-relaxed">
+                        スマートフォンでは共有先を選び、その他の環境ではURLをコピーします。リンクを共有するだけでは購入資格は付与されず、注文・決済も発生しません。管理者が対象者と期間を確認した後に案内してください。
+                      </p>
+                      <MarketplaceBuyerLinkActions
+                        checkoutPath={`/checkout/${marketplaceDraft.product.id}`}
+                        workTitle={project.title}
+                      />
+                    </div>
                     <div className="mt-3 flex flex-wrap gap-2">
                       <Link className="button-secondary" href={`/works/${marketplaceDraft.work.id}`}>
                         公開作品ページを確認
