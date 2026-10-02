@@ -126,6 +126,45 @@ test("Creator画面は販売下書き後の出品開始・再開と個別確認�
   assert.match(page, /\/dashboard\/products\/\$\{marketplaceDraft\.product\.id\}\/edit/);
 });
 
+test("販売下書き後は販売準備欄へ戻り公開を自動実行しない", async () => {
+  const actions = await read("src/app/creator/actions.ts");
+  const functionStart = actions.indexOf(
+    "export async function syncCloudMarketplaceDraftAction",
+  );
+  const functionEnd = actions.indexOf(
+    "export async function startCloudPageGenerationBatchAction",
+  );
+  const functionSource = actions.slice(functionStart, functionEnd);
+
+  assert.ok(functionStart >= 0);
+  assert.ok(functionEnd > functionStart);
+  assert.match(
+    functionSource,
+    /販売用の下書きを更新しました。内容を確認して出品を開始してください/,
+  );
+  assert.match(functionSource, /#marketplace-listing/);
+  assert.doesNotMatch(functionSource, /publishCloudMarketplaceListing\(/);
+});
+
+test("出品開始・停止後も販売準備欄で最新状態を確認できる", async () => {
+  const actions = await read("src/app/creator/actions.ts");
+  const publishStart = actions.indexOf(
+    "export async function publishCloudMarketplaceListingAction",
+  );
+  const withdrawStart = actions.indexOf(
+    "export async function withdrawCloudMarketplaceListingAction",
+  );
+  const restoreStart = actions.indexOf(
+    "export async function restoreCloudProjectCheckpointAction",
+  );
+
+  assert.ok(publishStart >= 0);
+  assert.ok(withdrawStart > publishStart);
+  assert.ok(restoreStart > withdrawStart);
+  assert.match(actions.slice(publishStart, withdrawStart), /#marketplace-listing/);
+  assert.match(actions.slice(withdrawStart, restoreStart), /#marketplace-listing/);
+});
+
 test("販売設定完了後は注文を作らず公開・購入準備画面を確認できる", async () => {
   const page = await read("src/app/creator/[projectId]/page.tsx");
 

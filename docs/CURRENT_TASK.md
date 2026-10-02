@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud販売下書き後の出品確認案内
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-marketplace-draft-handoff-20261002`
+- Base: `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。
+- 販売用下書きの作成後は作品画面上部へ戻さず、同じ画面の販売準備欄へ直接戻し、「内容を確認して出品を開始してください」と次の明示操作を案内する。
+- 出品開始・再開または販売停止の完了後も販売準備欄へ戻し、更新後の状態をその場で確認できる。販売下書き作成から公開・商品販売を自動実行せず、既存の明示確認を維持する。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中15/15、Hub 1207/1207、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionでの販売下書き、公開、販売開始・停止は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud完成PDFから販売準備への案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
