@@ -11,6 +11,10 @@ import { InlineErrorMessage } from "@/components/InlineErrorMessage";
 import { MarketplaceCover } from "@/components/marketplace/MarketplaceCover";
 import { requireProfile } from "@/lib/auth";
 import { yen } from "@/lib/format";
+import {
+  loadMarketplaceReadingProgress,
+  marketplaceReadingProgressKey,
+} from "@/lib/marketplace-reading-progress";
 import { purchaseDownloadFailureMessage } from "@/lib/purchase-download-feedback";
 import { listPurchaseHistoryForProfile } from "@/modules/purchases/infrastructure/purchase-query-repository";
 
@@ -33,6 +37,11 @@ export default async function PurchasesPage({
   const { profile } = await requireProfile();
   const { data, error } = await listPurchaseHistoryForProfile(profile.id);
   const purchases = data ?? [];
+  const workIds = purchases.flatMap((purchase) => {
+    const workId = purchase.digital_products?.works?.id;
+    return workId ? [workId] : [];
+  });
+  const progress = await loadMarketplaceReadingProgress(profile.id, workIds);
   const pageError = error
     ? "購入履歴を読み込めませんでした。購入情報は削除されていません。時間をおいて再読み込みしてください。"
     : purchaseDownloadFailureMessage(params.download_error);
@@ -102,6 +111,17 @@ export default async function PurchasesPage({
                 const canDownload =
                   purchase.status === "paid" &&
                   Boolean(purchase.digital_products?.file_url);
+                const savedPage = work?.current_publication_id
+                  ? progress.pagesByPublication.get(
+                      marketplaceReadingProgressKey(
+                        work.id,
+                        work.current_publication_id,
+                      ),
+                    )
+                  : undefined;
+                const readerHref = savedPage
+                  ? `/works/${work!.id}/read?page=${savedPage}`
+                  : `/works/${work!.id}/read`;
 
                 return (
                   <article
@@ -149,10 +169,12 @@ export default async function PurchasesPage({
                           {canRead ? (
                             <Link
                               className="inline-flex min-h-12 flex-1 items-center justify-center rounded-lg bg-violet-700 px-4 font-bold text-white outline-none transition hover:bg-violet-800 focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
-                              href={`/works/${work!.id}/read`}
+                              href={readerHref}
                             >
                               <BookOpen aria-hidden="true" className="mr-2 h-5 w-5" />
-                              漫画を読む
+                              {savedPage && savedPage > 1
+                                ? `続きから読む（${savedPage}ページ）`
+                                : "漫画を読む"}
                             </Link>
                           ) : null}
                           {canDownload ? (

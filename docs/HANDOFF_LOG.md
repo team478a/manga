@@ -1,5 +1,15 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace Phase 2-2 続きから読む
+
+- Readerで表示した最終ページを現在の固定公開版単位で保存し、ページ指定なしReaderと本棚から復帰する機能を追加した。
+- 本棚は2ページ目以降を「続きから読む（Nページ）」と表示する。保存失敗・migration未適用時は従来の「漫画を読む」とReaderへ縮退する。
+- DBは本人SELECT、検証付きRPC書込、service role CRUDに限定した。サンプル利用者と作者／paid購入者の権限を分離し、既存Reader entitlementを変更していない。
+- Migration `202610020003`はProduction未適用。Production変更、Provider実行、credit消費はない。
+- 集中追加3/3、Marketplace関連138/138、Hub全1243/1243、migration静的95/95、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff check成功。Draft PRで全CI／Vercel成功まで監視する。
+
+---
+
 ## 2026-10-02 Codex: Marketplaceお気に入り Production UI空状態受入れ
 
 - 責任者提供のProductionスクリーンショットから、`https://app.mang-ai.com/dashboard/favorites`を利用者`tanaka`の認証済み状態で確認した。

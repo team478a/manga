@@ -1335,6 +1335,29 @@ do $$ begin
   end if;
 end $$;
 
+do $$ begin
+  if to_regclass('public.marketplace_reading_progress') is null
+     or to_regprocedure('public.save_marketplace_reading_progress(uuid,uuid,integer)') is null
+     or not exists (
+       select 1 from pg_constraint
+       where conrelid='public.marketplace_reading_progress'::regclass
+         and contype='p'
+     )
+     or not exists (
+       select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
+       where n.nspname='public' and c.relname='marketplace_reading_progress' and c.relrowsecurity
+     )
+     or not has_table_privilege('authenticated','public.marketplace_reading_progress','select')
+     or has_table_privilege('authenticated','public.marketplace_reading_progress','insert')
+     or has_table_privilege('authenticated','public.marketplace_reading_progress','update')
+     or has_table_privilege('authenticated','public.marketplace_reading_progress','delete')
+     or has_table_privilege('anon','public.marketplace_reading_progress','select')
+     or not has_function_privilege('authenticated','public.save_marketplace_reading_progress(uuid,uuid,integer)','execute')
+     or has_function_privilege('anon','public.save_marketplace_reading_progress(uuid,uuid,integer)','execute') then
+    raise exception 'Marketplace reading progress contract missing or exposed';
+  end if;
+end $$;
+
 begin;
 do $$
 declare

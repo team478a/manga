@@ -54,7 +54,10 @@ test("Creator販売停止は確認必須で購入権を維持し購入履歴か�
   assert.match(actions, /withdrawCloudMarketplaceListing\(parsed\.data\.projectId\)/);
   assert.match(marketplace, /\.rpc\("withdraw_cloud_marketplace_listing"/);
   assert.match(reader, /canReadFixedWorkPublication/);
-  assert.match(repository, /works:work_id\(id,title,image_url\)/);
+  assert.match(
+    repository,
+    /works:work_id\(id,title,image_url,current_publication_id\)/,
+  );
   assert.match(purchases, /\/works\/\$\{work!\.id\}\/read/);
 });
 

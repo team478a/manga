@@ -1,5 +1,16 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace Phase 2-2 続きから読む（2026-10-02）
+
+- Branch `codex/marketplace-continue-reading-phase2-20261002`で、固定公開版ごとの最終閲覧ページを保存し、作品詳細・本棚から再開する最小機能を実装した。
+- キーは`profile_id + work_id + publication_id`。現公開版だけを参照するため、版差し替え時に旧版進捗を誤用しない。
+- 未購入者は公開中サンプルだけ、作者・paid購入者は既存Reader entitlement内のページだけをRPC経由で保存する。authenticatedのtable直接書込は不可。
+- migration未適用や保存失敗では進捗機能だけを止め、既存Reader、本棚、購入、Downloadを維持する。
+- `202610020003` forward SHA-256 `34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`、rollback SHA-256 `691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96`。Production適用は別承認事項。
+- Production、作品、商品、publication、注文、決済、Provider、creditは変更していない。詳細は`docs/MARKETPLACE_CONTINUE_READING_PHASE2_20261002.md`。
+
+---
+
 ## 0.0 Marketplaceお気に入り Production UI空状態受入れ（2026-10-02）
 
 - 責任者提供のProductionスクリーンショットで、`https://app.mang-ai.com/dashboard/favorites`を利用者`tanaka`のログイン状態で確認した。
