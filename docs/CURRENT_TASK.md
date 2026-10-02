@@ -1,5 +1,20 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UIマージ後受入れ・Phase 2スコープ監査
+
+- 状態: `AUDITED / LATEST_BASE_SYNCED / EXTERNAL_VISUAL_ACCEPTANCE_BLOCKED / PRODUCTION_UNCHANGED`
+- Branch: `codex/marketplace-phase2-scope-20261002`
+- Base: `feature/manga-canvas-mvp` merge commit `b1645081`（Marketplace UI-1〜5、引き継ぎ更新、Cloud売上の注文状態サマリーを反映済み）。
+- 次タスクはPhase 2実装ではなく、実作品と認証済み購入データを使うMarketplace UIのread-only受入れ確認とする。LocalにはSupabase資格情報・購入データがなく、Vercel Production deploymentはsuccessだが匿名HTTPがVercel SSOへ302転送されるため、現時点の実データ目視は`BLOCKED_EXTERNAL_ENVIRONMENT`。
+- Phase 2候補を現行schema・Reader・Marketplace UIと照合した。お気に入り、Continue Reading、Creatorフォロー、レビュー／星評価、ランキング／急上昇、レコメンドはいずれも保存・集計契約がなく、推測実装できない。
+- 受入れ完了後の最初の候補は、行動追跡・moderation・集計に依存しない「お気に入り（あとで読む）」を推奨する。buyer-work一意関係、RLS、冪等な追加・解除、一覧取得を最小契約とし、件数・ランキング・通知・推薦は含めない。DB migrationを伴うため別の明示承認が必要。
+- 最新基準`b1645081`を通常mergeし、引き継ぎ文書3件はMarketplace監査とCloud売上の注文状態サマリーを両側保持して解消した。同期後のMarketplace／売上集中32/32と`git diff --check`が成功した。
+- Production作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、DB schema／migration、UIコードは変更していない。
+- 詳細: `docs/MARKETPLACE_POST_UI_ACCEPTANCE_AND_PHASE2_SCOPE_20261002.md`
+- 次: 認証済みブラウザでread-only受入れを行う明示承認、または隔離Staging再作成の明示承認を待つ。Phase 2-1実装はその後に別承認で開始する。
+
+---
+
 ## 2026-10-02 Cloud売上の注文状態サマリー
 
 - 状態: `IMPLEMENTED / LATEST_BASE_SYNCED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
