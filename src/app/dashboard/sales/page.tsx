@@ -54,6 +54,7 @@ export default async function SalesPage() {
         <h2 className="text-2xl font-bold">注文一覧</h2>
         <p className="mt-2 text-sm leading-relaxed text-stone-600">
           「受付済み」は決済確認前、「支払い済み」は購入完了です。失敗・キャンセル・返金済みの注文は受取予定額に含みません。日時は日本時間で表示します。
+          作品名・商品名から、所有する設定画面へ戻れます。
         </p>
         <div className="mt-5 overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-base">
@@ -88,8 +89,26 @@ export default async function SalesPage() {
                   </td>
                   <td className="py-3">{order.buyer_email}</td>
                   <td className="py-3">
-                    <span className="block font-semibold">{order.digital_products?.works?.title ?? "作品情報なし"}</span>
-                    <span className="block text-sm text-stone-600">{order.digital_products?.title ?? "商品情報なし"}</span>
+                    {order.digital_products?.works ? (
+                      <Link
+                        className="block font-semibold text-leaf underline"
+                        href={`/dashboard/works/${order.digital_products.works.id}/edit`}
+                      >
+                        {order.digital_products.works.title}
+                      </Link>
+                    ) : (
+                      <span className="block font-semibold">作品情報なし</span>
+                    )}
+                    {order.digital_products ? (
+                      <Link
+                        className="mt-1 block text-sm text-leaf underline"
+                        href={`/dashboard/products/${order.digital_products.id}/edit`}
+                      >
+                        {order.digital_products.title}
+                      </Link>
+                    ) : (
+                      <span className="mt-1 block text-sm text-stone-600">商品情報なし</span>
+                    )}
                   </td>
                   <td className="py-3">{yen(order.amount)}</td>
                   <td className="py-3">{yen(order.platform_fee)}</td>
