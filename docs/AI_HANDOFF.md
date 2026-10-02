@@ -8,7 +8,8 @@
 - 追加migrationは4 roleから全table権限をrevoke後、authenticatedへSELECT／INSERT／DELETE、service_roleへCRUDだけを再付与する。rollbackも危険な既定権限を戻さない。
 - `202610020002` forward SHA-256は`06c90f210ded5410b2f3be319599510a01ceb1ddb1e8f4e6c4e752c770edc7ad`、rollback SHA-256は`916a64f51d71ed5880eee99e74818ece7af9e4231def32bb77821b0864096869`。
 - 集中3/3、Hub全1240/1240、migration／rollback静的94/94、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff checkが成功した。
-- Productionへ`202610020002`は未適用。Hotfix merge後にchecksumを固定し、責任者の別承認を待つ。
+- PR #612はmerge commit `9d8191389489bfc1b89ba8f45fcb69a2da11baaf`でmerge済み。責任者の別承認後、Productionへ`202610020002`を承認checksum一致で1回適用した。
+- postflightでauthenticatedはSELECT／INSERT／DELETEのみ、service_roleはCRUDのみ、public／anonは権限なしを確認した。余分なUPDATE／TRUNCATE／REFERENCES／TRIGGERは除去され、table、RLS、一意制約、index、owner限定3 policy、row 0件を維持している。
 - お気に入りrow、作品、商品、publication、注文、決済、Provider、credit、利用期限は変更していない。詳細は`docs/MARKETPLACE_FAVORITES_PRODUCTION_PRIVILEGE_HARDENING_20261002.md`。
 
 ---
