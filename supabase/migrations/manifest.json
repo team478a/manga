@@ -558,7 +558,13 @@
       "description": "公開一般作品を購入権限と分離してあとで読むへ保存",
       "forwardSha256": "8868fac7836c09fb54b8da0446de6d847816a726562e23acf5d79a1970381d0f",
       "rollbackSha256": "29edf154b8a90a652cf99223e7377479d4a794f07e8377c1efdb096cdeaad853"
+    },
+    {
+      "id": "202610020002_marketplace_favorites_privilege_hardening",
+      "description": "Production既定付与を除去しお気に入りtableを最小権限へ固定",
+      "forwardSha256": "06c90f210ded5410b2f3be319599510a01ceb1ddb1e8f4e6c4e752c770edc7ad",
+      "rollbackSha256": "916a64f51d71ed5880eee99e74818ece7af9e4231def32bb77821b0864096869"
     }
   ],
-  "schemaSha256": "feb149bd58582f2f5254afdd7775447dc79fa100ed9b55ea85c879aeda81ab04"
+  "schemaSha256": "6b060ca8a92038e3c50e7811d600c2a183d28dabe83ccc7c23b54556b7d86105"
 }

@@ -1298,7 +1298,14 @@ do $$ begin
      )
      or not has_table_privilege('authenticated','public.marketplace_favorites','select,insert,delete')
      or has_table_privilege('authenticated','public.marketplace_favorites','update')
+     or has_table_privilege('authenticated','public.marketplace_favorites','truncate')
+     or has_table_privilege('authenticated','public.marketplace_favorites','references')
+     or has_table_privilege('authenticated','public.marketplace_favorites','trigger')
      or has_table_privilege('anon','public.marketplace_favorites','select')
+     or not has_table_privilege('service_role','public.marketplace_favorites','select,insert,update,delete')
+     or has_table_privilege('service_role','public.marketplace_favorites','truncate')
+     or has_table_privilege('service_role','public.marketplace_favorites','references')
+     or has_table_privilege('service_role','public.marketplace_favorites','trigger')
      or not exists (
        select 1 from pg_policies
        where schemaname='public'
