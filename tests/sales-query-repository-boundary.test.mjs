@@ -34,7 +34,7 @@ test("売上読込失敗を売上0円や注文0件として表示しない", asy
   assert.match(page, /注文一覧を空として扱わず、読込を停止しました/);
   assert.match(
     page,
-    /error \? \([\s\S]*注文・売上情報を再読み込み[\s\S]*\) : orders\.length/,
+    /error \? \([\s\S]*注文・売上情報を再読み込み[\s\S]*\) : filteredOrders\.length/,
   );
 });
 
@@ -110,4 +110,38 @@ test("スマートフォンでは注文を横スクロールなしのカード�
   assert.match(page, /break-all text-stone-900/);
   assert.match(page, /order\.payment_mode === "test" \? "テスト" : "本番"/);
   assert.match(page, /<OrderSourceLinks order=\{order\} \/>/);
+});
+
+test("注文は本番・テスト・受付済みで安全に絞り込める", async () => {
+  const page = await read("src/app/dashboard/sales/page.tsx");
+
+  assert.match(page, /searchParams: Promise<\{ filter\?: string \}>/);
+  assert.match(page, /resolveSalesOrderFilter\(params\.filter\)/);
+  assert.match(page, /\{ value: "all", label: "すべて" \}/);
+  assert.match(page, /\{ value: "live", label: "本番" \}/);
+  assert.match(page, /\{ value: "test", label: "テスト" \}/);
+  assert.match(page, /\{ value: "pending", label: "受付済み" \}/);
+  assert.match(
+    page,
+    /if \(filter === "live"\) return order\.payment_mode === "live"/,
+  );
+  assert.match(
+    page,
+    /if \(filter === "test"\) return order\.payment_mode === "test"/,
+  );
+  assert.match(
+    page,
+    /if \(filter === "pending"\) return order\.status === "pending"/,
+  );
+  assert.match(page, /aria-label="注文の絞り込み"/);
+  assert.match(page, /aria-current=\{isActive \? "page" : undefined\}/);
+  assert.match(
+    page,
+    /\{orders\.length\}件中 \{filteredOrders\.length\}件を表示/,
+  );
+  assert.match(page, /選択した条件に一致する注文はありません/);
+  assert.match(page, /すべての注文を表示/);
+  assert.ok(
+    page.indexOf("const total = error") < page.indexOf("filteredOrders.map"),
+  );
 });

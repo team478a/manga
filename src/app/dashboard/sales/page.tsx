@@ -13,6 +13,31 @@ const orderDateTimeFormatter = new Intl.DateTimeFormat("ja-JP", {
   timeZone: "Asia/Tokyo",
 });
 
+const salesOrderFilters = [
+  { value: "all", label: "すべて" },
+  { value: "live", label: "本番" },
+  { value: "test", label: "テスト" },
+  { value: "pending", label: "受付済み" },
+] as const;
+
+type SalesOrderFilter = (typeof salesOrderFilters)[number]["value"];
+
+function resolveSalesOrderFilter(value: string | undefined): SalesOrderFilter {
+  return salesOrderFilters.some((filter) => filter.value === value)
+    ? (value as SalesOrderFilter)
+    : "all";
+}
+
+function matchesSalesOrderFilter(
+  order: SalesOrderRecord,
+  filter: SalesOrderFilter,
+) {
+  if (filter === "live") return order.payment_mode === "live";
+  if (filter === "test") return order.payment_mode === "test";
+  if (filter === "pending") return order.status === "pending";
+  return true;
+}
+
 function OrderSourceLinks({ order }: { order: SalesOrderRecord }) {
   return (
     <>
@@ -40,10 +65,19 @@ function OrderSourceLinks({ order }: { order: SalesOrderRecord }) {
   );
 }
 
-export default async function SalesPage() {
+export default async function SalesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const params = await searchParams;
+  const activeFilter = resolveSalesOrderFilter(params.filter);
   const { profile } = await requireProfile();
   const { data, error } = await listSalesOrdersForCreator(profile.id);
   const orders = data ?? [];
+  const filteredOrders = error
+    ? []
+    : orders.filter((order) => matchesSalesOrderFilter(order, activeFilter));
   const pageError = error
     ? "注文・売上情報を読み込めませんでした。売上や注文が0件になったわけではありません。時間をおいて再読み込みしてください。"
     : null;
@@ -90,6 +124,32 @@ export default async function SalesPage() {
           「受付済み」は決済確認前、「支払い済み」は購入完了です。失敗・キャンセル・返金済みの注文は受取予定額に含みません。日時は日本時間で表示します。
           作品名・商品名から、所有する設定画面へ戻れます。
         </p>
+        {!error && orders.length ? (
+          <div className="mt-5">
+            <nav aria-label="注文の絞り込み" className="flex flex-wrap gap-2">
+              {salesOrderFilters.map((filter) => {
+                const isActive = filter.value === activeFilter;
+                const href =
+                  filter.value === "all"
+                    ? "/dashboard/sales"
+                    : `/dashboard/sales?filter=${filter.value}`;
+                return (
+                  <Link
+                    aria-current={isActive ? "page" : undefined}
+                    className={isActive ? "button" : "button-secondary"}
+                    href={href}
+                    key={filter.value}
+                  >
+                    {filter.label}
+                  </Link>
+                );
+              })}
+            </nav>
+            <p className="mt-3 text-sm text-stone-600" role="status">
+              {orders.length}件中 {filteredOrders.length}件を表示
+            </p>
+          </div>
+        ) : null}
         {error ? (
           <div className="mt-5 text-stone-600">
             <p>注文一覧を空として扱わず、読込を停止しました。</p>
@@ -97,13 +157,13 @@ export default async function SalesPage() {
               注文・売上情報を再読み込み
             </Link>
           </div>
-        ) : orders.length ? (
+        ) : filteredOrders.length ? (
           <>
             <div
               className="mt-5 space-y-4 md:hidden"
               aria-label="スマートフォン向け注文一覧"
             >
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <article
                   className="rounded-2xl border border-stone-200 p-4"
                   key={order.id}
@@ -174,7 +234,7 @@ export default async function SalesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order) => (
+                  {filteredOrders.map((order) => (
                     <tr className="border-b border-stone-100" key={order.id}>
                       <td className="py-3 pr-4">
                         <time dateTime={order.created_at}>
@@ -202,6 +262,15 @@ export default async function SalesPage() {
               </table>
             </div>
           </>
+        ) : orders.length ? (
+          <div className="mt-5 text-stone-600">
+            <p className="font-semibold text-stone-900">
+              選択した条件に一致する注文はありません。
+            </p>
+            <Link className="button-secondary mt-4" href="/dashboard/sales">
+              すべての注文を表示
+            </Link>
+          </div>
         ) : (
           <div className="mt-5 text-stone-600">
             <p className="font-semibold text-stone-900">
