@@ -7,7 +7,7 @@
 - 本文スキップリンク、keyboard focus ring、reduced-motion対応を追加した。既存のスマホ／Desktop responsive gridとmobile bottom navigationは維持した。
 - Production、作品・商品状態、publication、Checkout、Stripe、注文、決済、Storage、環境変数、migrationは変更していない。未契約のPhase 2機能も追加していない。
 - Marketplace集中29/29、最新基準統合後のHub 1235/1235、Hub typecheck、ESLint、deps、packages／Next Production build、diff check成功。Desktop／390px browserでHome、作品一覧、error state、mobile navigation、skip-link focusを確認した。Supabase未設定のため実データ表示は未確認。
-- Marketplace UI-1〜5は実装完了。PR #602は承認済みで、最新基準`91ee5edb`を取り込んで競合を解消し、最新headのCI／Vercelを再確認中。Production変更やPhase 2着手ではない。
+- Marketplace UI-1〜5は実装完了。PR #602は最新基準`91ee5edb`を取り込んで競合を解消し、Core quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功。基準取り込みで以前の承認が失効したため再承認待ちである。Production変更やPhase 2着手ではない。
 
 ---
 

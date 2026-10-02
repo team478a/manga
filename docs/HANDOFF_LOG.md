@@ -7,7 +7,7 @@
 - 本文スキップリンク、keyboard focus ring、`prefers-reduced-motion`対応を追加した。既存responsive gridとmobile bottom navigationを維持し、Desktop／390x844 mobileでHome、作品一覧、error state、skip-link focusを目視確認した。
 - Production作品、商品、publication、Checkout、Stripe、注文、決済、環境変数、DB migrationは変更していない。Phase 2機能も追加していない。
 - 集中29/29、最新基準統合後のHub 1235/1235、Hub typecheck、ESLint、deps error 0（既知warning 2）、packages／Next Production build、diff check成功。Supabase未設定のため実作品表紙と認証済み本棚データの目視は未実施。
-- PR #602は最新基準`91ee5edb`を取り込んで競合解消済み。最新headのCI／Vercel再確認中。Production変更とPhase 2機能は別の明示承認が必要。
+- PR #602は最新基準`91ee5edb`を取り込んで競合解消済み。Core quality、Migration roundtrip、Desktop Windows、Vercel Previewはすべて成功。基準取り込みで以前の承認が失効したため再承認待ち。Production変更とPhase 2機能は別の明示承認が必要。
 
 ---
 
