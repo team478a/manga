@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Cloud売上の本番売上内訳
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-revenue-breakdown-20261002`
+- Base: `91ee5edbb214680b962c2b6526f287063db9b0a1`（PR #604 merge commit）。
+- 売上管理へ、支払い済み本番注文の購入完了件数、販売金額、手数料、クリエイター受取予定額の内訳を追加した。4項目は同じ`paid/live`注文集合から算出する。
+- 内訳は注文一覧の表示フィルターから独立させ、テスト・受付済み表示へ切り替えても本番売上参考値を変えない。読込失敗時は0件・0円にせず、全項目を「確認できません」としてfail closedする。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中13/13、Hub 1214/1214、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud売上の振込・精算境界案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
