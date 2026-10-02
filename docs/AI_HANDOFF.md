@@ -50,6 +50,16 @@
 - 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
 ---
 
+## 0.0 Cloud売上注文の安全な絞り込み（2026-10-02）
+
+- Branch `codex/cloud-sales-order-filters-20261002`、Base `6aa04463170ce6b41f232eb4e41bd58c81038e5a`（PR #601 merge commit）。販売者がテスト販売と本番販売、決済確認待ちを区別するためのread-only表示改善である。
+- URL query `filter`は`all`、`live`、`test`、`pending`だけを許可し、未知値は`all`へfail closedする。選択状態を`aria-current`で示し、全件数と表示件数、該当0件時の復帰導線を表示する。
+- フィルターはowner-scoped取得後の画面内表示だけに適用する。受取予定額はフィルター前の全注文からlive paidだけを集計し、既存のスマートフォンカードとPC表で同じfiltered resultを使う。
+- Production、DB、schema、migration、RPC、Provider、export Job、Asset、credit、作品、checkpoint、publication、商品、注文、決済は変更していない。集中11/11、Hub 1212/1212、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、diff check成功。
+- 次はDraft PRの全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は別の明示承認または利用者の明示操作が必要。
+
+---
+
 ## 0.0 Cloud売上注文のスマートフォン表示（2026-10-02）
 
 - Branch `codex/cloud-sales-mobile-orders-20261002`、Base `9f5160a09c9edfd7317eb05457c930ef85cc16a2`（PR #600 merge commit）。販売者がスマートフォンから注文・売上を横スクロールなしで確認するための表示改善である。

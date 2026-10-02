@@ -67,6 +67,19 @@
 - 次: UI-1のレビュー後、Phase UI-2としてMarketplace HomeのHero、注目作品、新着作品、ジャンル、試し読み作品、Creator CTAを既存データ契約の範囲で実装する。注目作品の選定契約がないため、人気・ランキング・レコメンドを推測実装しない。
 ---
 
+## 2026-10-02 Cloud売上注文の安全な絞り込み
+
+- 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`
+- Branch: `codex/cloud-sales-order-filters-20261002`
+- Base: `6aa04463170ce6b41f232eb4e41bd58c81038e5a`（PR #601 merge commit）。
+- 売上管理の注文一覧を「すべて／本番／テスト／受付済み」で絞り込めるようにした。URL queryをallowlistで解決し、未知値は「すべて」へ戻す。選択中の条件と表示件数を明示し、該当0件から全件表示へ戻れる。
+- 絞り込みはowner-scopedで取得済みの注文に対する表示処理だけで、受取予定額は従来どおり全注文のうち本番・支払い済みだけから計算する。スマートフォンカードとPC表は同じ結果を使う。
+- DB、schema、migration、RPC、Provider、生成、export Job、Asset、credit、利用期限、作品、checkpoint、publication、商品、注文、決済、Productionデータは変更していない。
+- 検証: 集中11/11、Hub 1212/1212、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR化し、全CI／Vercel成功で停止する。merge後もProductionの作品・商品・注文・決済変更は利用者操作または別の明示承認を必要とする。
+
+---
+
 ## 2026-10-02 Cloud売上注文のスマートフォン表示
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

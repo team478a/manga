@@ -54,6 +54,17 @@
 - 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
 ---
 
+## 2026-10-02 Codex: Cloud売上注文の安全な絞り込み
+
+- Branch: `codex/cloud-sales-order-filters-20261002`。Base: `6aa04463170ce6b41f232eb4e41bd58c81038e5a`（PR #601 merge commit）。
+- 売上管理で「すべて／本番／テスト／受付済み」を切り替えられるようにした。未知のquery値は全件表示へ戻し、選択中条件・表示件数・該当0件からの復帰を明示する。
+- owner-scopedで取得済みの注文だけを画面内で絞り込む。受取予定額は絞り込み前のlive paid全件を集計し、注文・決済状態は更新しない。
+- Productionのページ状態、checkpoint、export Job、Storage、publication、作品、商品、注文、決済、Stripe、Provider、Asset、credit、利用期限、通知設定は変更していない。
+- 集中11/11、Hub 1212/1212、deps error 0（既知warning 2）、全型検査、ESLint、migration／rollback静的92/92、Hub Production build、RC repository structure、`git diff --check`成功。外部設定はPENDING、手動E2EはREQUIRED。
+- 次: commit、push、Draft PR、全CI／Vercel成功で停止する。Productionの作品・商品・注文・決済変更は明示承認または利用者の明示操作まで行わない。
+
+---
+
 ## 2026-10-02 Codex: Cloud売上注文のスマートフォン表示
 
 - Branch: `codex/cloud-sales-mobile-orders-20261002`。Base: `9f5160a09c9edfd7317eb05457c930ef85cc16a2`（PR #600 merge commit）。
