@@ -564,7 +564,13 @@
       "description": "Production既定付与を除去しお気に入りtableを最小権限へ固定",
       "forwardSha256": "06c90f210ded5410b2f3be319599510a01ceb1ddb1e8f4e6c4e752c770edc7ad",
       "rollbackSha256": "916a64f51d71ed5880eee99e74818ece7af9e4231def32bb77821b0864096869"
+    },
+    {
+      "id": "202610020003_marketplace_reading_progress",
+      "description": "固定公開版ごとの最終閲覧ページを権限境界内で保存",
+      "forwardSha256": "34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a",
+      "rollbackSha256": "691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96"
     }
   ],
-  "schemaSha256": "6b060ca8a92038e3c50e7811d600c2a183d28dabe83ccc7c23b54556b7d86105"
+  "schemaSha256": "de18c27143f1dd64da9773e48afe4193917daf75999e0c7b61ee3404e3b8bd26"
 }

@@ -1,5 +1,18 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace Phase 2-2 続きから読む
+
+- 状態: `IMPLEMENTED / FOCUSED_TESTS_PASSED / PRODUCTION_MIGRATION_NOT_APPLIED`
+- Branch: `codex/marketplace-continue-reading-phase2-20261002`
+- ログイン済みReaderの最終ページを`profile + work + current publication`単位で保存し、作品詳細と本棚から現行版の保存ページへ復帰する最小機能を実装した。
+- 匿名は保存しない。未購入者は公開中サンプルだけ、作者・支払済み購入者は既存Reader権限内の本文ページを保存できる。直接table書込は許可せず、検証付きRPCだけを使用する。
+- migration未適用または進捗DB失敗時は、従来Reader／本棚へ縮退する。公開版差し替え時は旧版進捗を流用しない。
+- Migration `202610020003_marketplace_reading_progress` forward SHA-256 `34c5c316060910aa7531ad4ac50d11b144b9a51714d1c558740e75010d7d959a`、rollback SHA-256 `691ae0506ef0504896f41ae24d53aed877e970b3ba0f3d1bf7f5f13dcf55cc96`。
+- 集中追加3/3、Marketplace関連138/138、Hub全1243/1243、migration静的95/95、Hub typecheck、ESLint、依存境界error 0（既知warning 2）、Production build、diff check成功。
+- Production migration、作品、商品、publication、注文、決済、Provider、creditは変更していない。次はcommit／push／Draft PR作成後、全CI／Vercel成功で停止する。詳細: `docs/MARKETPLACE_CONTINUE_READING_PHASE2_20261002.md`。
+
+---
+
 ## 2026-10-02 Marketplaceお気に入り Production UI空状態受入れ
 
 - 状態: `PRODUCTION_EMPTY_STATE_PASSED / AUTHENTICATED_UI_VERIFIED / MUTATION_E2E_NOT_RUN / PRODUCTION_DATA_UNCHANGED`

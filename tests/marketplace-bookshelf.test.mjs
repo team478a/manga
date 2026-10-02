@@ -18,14 +18,18 @@ test("本棚は表紙全体・タイトル・作者を中心とした購入作�
   assert.match(page, /work\?\.title/);
   assert.match(page, /product\?\.profiles\?\.display_name/);
   assert.match(repository, /profiles:creator_id\(display_name\)/);
-  assert.match(repository, /works:work_id\(id,title,image_url\)/);
+  assert.match(
+    repository,
+    /works:work_id\(id,title,image_url,current_publication_id\)/,
+  );
 });
 
 test("支払済み購入は既存ReaderとDownload routeだけを利用する", async () => {
   const page = await read("src/app/dashboard/purchases/page.tsx");
 
   assert.match(page, /purchase\.status === "paid"/);
-  assert.match(page, /href=\{`\/works\/\$\{work!\.id\}\/read`\}/);
+  assert.match(page, /const readerHref = savedPage/);
+  assert.match(page, /href=\{readerHref\}/);
   assert.match(page, /漫画を読む/);
   assert.match(page, /href=\{`\/api\/purchases\/\$\{purchase\.id\}\/download`\}/);
   assert.match(page, /Download/);
@@ -42,11 +46,11 @@ test("本棚は読込失敗・空・返金済みを別状態として表示す�
   assert.match(page, /この購入は返金済みのため利用できません/);
 });
 
-test("本棚に未契約の継続読書・評価機能を追加しない", async () => {
+test("本棚は続きから読む以外の未契約評価・推薦機能を追加しない", async () => {
   const page = await read("src/app/dashboard/purchases/page.tsx");
 
   assert.doesNotMatch(
     page,
-    /Continue Reading|続きを読む|お気に入り|フォロー|レビュー|星評価|ランキング|急上昇|レコメンド/,
+    /フォロー|レビュー|星評価|ランキング|急上昇|レコメンド/,
   );
 });

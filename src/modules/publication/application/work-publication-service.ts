@@ -2,6 +2,11 @@ import { getCurrentProfile, requireProfile } from "@/lib/auth";
 import { ValidationError } from "@/lib/domain-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  loadMarketplaceReadingProgress,
+  marketplaceReadingProgressKey,
+  resolveMarketplaceReadingPage,
+} from "@/lib/marketplace-reading-progress";
 import { canReadFixedWorkPublication } from "@/modules/publication/domain/work-publication-access";
 
 export type WorkPublicationVersion = {
@@ -73,7 +78,10 @@ export async function listOwnedWorkPublications(workId: string) {
   }));
 }
 
-export async function getReadableWorkPublication(workId: string, requestedPage: number) {
+export async function getReadableWorkPublication(
+  workId: string,
+  requestedPage: number | null,
+) {
   const admin = createAdminClient();
   const { data: work } = await admin.from("works")
     .select("id,creator_id,title,is_public,status,current_publication_id")
@@ -100,18 +108,34 @@ export async function getReadableWorkPublication(workId: string, requestedPage: 
     ? pages.data
     : pages.data.filter((page) => page.is_sample);
   if (!allowed.length) throw new ValidationError("サンプルページは設定されていません。");
-  const selected = allowed.find((page) => page.page_number === requestedPage) ?? allowed[0];
+  const accessiblePages = allowed.map((page) => Number(page.page_number));
+  let savedPage: number | null = null;
+  if (requestedPage === null && entitlement.profileId) {
+    const progress = await loadMarketplaceReadingProgress(entitlement.profileId, [workId]);
+    savedPage = progress.pagesByPublication.get(
+      marketplaceReadingProgressKey(workId, publication.data.id),
+    ) ?? null;
+  }
+  const selectedPageNumber = resolveMarketplaceReadingPage(
+    accessiblePages,
+    requestedPage,
+    savedPage,
+  );
+  const selected = allowed.find((page) => page.page_number === selectedPageNumber) ?? allowed[0];
   const signed = await admin.storage.from(selected.storage_bucket).createSignedUrl(selected.storage_path, 300);
   if (signed.error || !signed.data?.signedUrl) throw new ValidationError("本文ページを表示できませんでした。");
   return {
     workTitle: work.title,
+    publicationId: publication.data.id,
     publicationVersion: Number(publication.data.version),
     pageCount: Number(publication.data.page_count),
-    accessiblePages: allowed.map((page) => page.page_number),
+    accessiblePages,
     pageNumber: selected.page_number,
     width: selected.width,
     height: selected.height,
     imageUrl: signed.data.signedUrl,
     fullAccess: entitlement.fullAccess,
+    persistProgress: Boolean(entitlement.profileId),
+    resumedFromProgress: requestedPage === null && savedPage === selected.page_number,
   };
 }

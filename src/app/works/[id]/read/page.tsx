@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { MarketplaceReadingProgressBeacon } from "@/components/marketplace/MarketplaceReadingProgressBeacon";
 import { getReadableWorkPublication } from "@/modules/publication/application/work-publication-service";
 
 export default async function WorkReaderPage({ params, searchParams }: {
@@ -8,7 +9,9 @@ export default async function WorkReaderPage({ params, searchParams }: {
 }) {
   const { id } = await params;
   const query = await searchParams;
-  const requested = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
+  const requested = query.page
+    ? Math.max(1, Number.parseInt(query.page, 10) || 1)
+    : null;
   const publication = await getReadableWorkPublication(id, requested).catch(() => null);
   if (!publication) notFound();
   const index = publication.accessiblePages.indexOf(publication.pageNumber);
@@ -16,11 +19,23 @@ export default async function WorkReaderPage({ params, searchParams }: {
   const next = publication.accessiblePages[index + 1];
   return (
     <main className="page max-w-5xl">
+      {publication.persistProgress ? (
+        <MarketplaceReadingProgressBeacon
+          pageNumber={publication.pageNumber}
+          publicationId={publication.publicationId}
+          workId={id}
+        />
+      ) : null}
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <Link className="text-leaf underline" href={`/works/${id}`}>← 作品ページへ</Link>
           <h1 className="mt-3 text-3xl font-bold">{publication.workTitle}</h1>
           <p className="mt-2 text-stone-600">公開版 v{publication.publicationVersion}・{publication.pageNumber}/{publication.pageCount}ページ</p>
+          {publication.resumedFromProgress ? (
+            <p className="mt-2 text-sm font-semibold text-violet-700">
+              前回の{publication.pageNumber}ページから再開しました。
+            </p>
+          ) : null}
         </div>
         {!publication.fullAccess ? <p className="rounded-md bg-amber-50 px-4 py-2 text-amber-900">サンプルページを表示中です。購入後は全ページを読めます。</p> : null}
       </div>
