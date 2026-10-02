@@ -3,8 +3,8 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "MANGAI Creator Platform",
-  description: "AIクリエイター向け作品販売プラットフォーム"
+  title: "MANGAI | インディーズ漫画のデジタル書店",
+  description: "個性豊かなインディーズ漫画を探して、試し読みから購入まで楽しめるデジタル書店"
 };
 
 export const dynamic = "force-dynamic";

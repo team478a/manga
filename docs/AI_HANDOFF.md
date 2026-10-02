@@ -1,5 +1,13 @@
 # MANGAI Codex ⇄ Claude Code 引継ぎ台帳
 
+## 0.0 Marketplace UI-1 Foundation（2026-10-02）
+
+- Branch `codex/marketplace-ui-foundation-20261002`、Base `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。購入者向けMarketplaceの表示基盤を「インディーズ漫画のデジタル書店」へ更新した。
+- 検索付き書店Header、購入者route限定のmobile bottom navigation、縦長表紙の`MarketplaceWorkCard`、既存`q`／`tag`／`sale`契約を使う検索Filter、スマホ2列／Desktop 4〜5列Gridを追加した。
+- 公開一般作品query、作者表示RPC、active商品価格、Checkout mode／canary、Publication、購入履歴・Download契約は維持した。Production、DB、migration、Stripe、環境変数、作品・商品状態、実決済は変更していない。Phase 2機能は未追加。
+- Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser responsive／accessibility確認、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。
+- 次はUI-1レビュー後にMarketplace HomeのPhase UI-2へ進む。注目作品の選定契約がないため、ランキングやレコメンドとして推測実装しない。
+
 ## 0.0 Cloud完成PDFから販売準備への案内（2026-10-02）
 
 - Branch `codex/cloud-export-to-marketplace-handoff-20261002`、Base `ee641e471f9c96265cb633dc0811550fb422f975`（PR #594 merge commit）。完成PDFからCloud販売準備へ迷わず進める案内改善である。

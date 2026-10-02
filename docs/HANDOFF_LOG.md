@@ -1,5 +1,14 @@
 # MANGAI AI Handoff Log
 
+## 2026-10-02 Codex: Marketplace UI-1 Foundation
+
+- Branch `codex/marketplace-ui-foundation-20261002`、Base `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit）。Marketplaceの購入者向け表示基盤を漫画書店型へ更新した。
+- `Header`は認証取得adapterとして維持し、検索付き`MarketplaceHeader`へ表示を委譲した。購入者向けrouteだけにホーム／探す／本棚／マイページのmobile bottom navigationを表示する。
+- `/works`は既存queryとURL parameterを維持したまま、縦長`2:3`表紙、スマホ2列、Desktop 4〜5列、作者、価格、販売状態中心の`MarketplaceWorkCard`へ移行した。検索、既存tags、販売中filterは専用componentへ分離した。
+- Production、DB、migration、RPC、Storage、Checkout、Stripe、publication、商品・作品状態、注文、決済、Provider、Job、credit、利用者データは変更していない。Phase 2機能は追加していない。
+- Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、browser Desktop／390px mobile、mobile navigation accessibility、diff check成功。全体typecheckはDesktop依存installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`（Desktop差分なし）。Supabase未設定のローカル環境では安全なempty stateを目視確認した。
+- 次はUI-1レビュー後にPhase UI-2 Marketplace Homeへ進む。注目・人気・ランキング相当の新契約をUIだけで作らない。
+
 ## 2026-10-02 Codex: Cloud完成PDFから販売準備への案内
 
 - Branch: `codex/cloud-export-to-marketplace-handoff-20261002`。Base: `ee641e471f9c96265cb633dc0811550fb422f975`（PR #594 merge commit）。

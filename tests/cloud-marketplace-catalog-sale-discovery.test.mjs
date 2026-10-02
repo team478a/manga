@@ -79,23 +79,34 @@ test("公開カタログは販売中作品を先頭にし同じ区分の順序�
   ]);
 });
 
-test("公開作品一覧はactive商品の最小情報だけを取得してカードへ渡す", async () => {
-  const [page, card] = await Promise.all([
+test("公開作品一覧はactive商品の最小情報だけを取得して書店カードへ渡す", async () => {
+  const [page, card, filters] = await Promise.all([
     readFile(new URL("../src/app/works/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../src/components/WorkCard.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL(
+        "../src/components/marketplace/MarketplaceWorkCard.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../src/components/marketplace/MarketplaceSearchFilters.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
   ]);
 
   assert.match(page, /digital_products\(price,status\)/);
   assert.match(page, /\.eq\("digital_products\.status", "active"\)/);
   assert.match(page, /summarizeMarketplaceCatalogSale/);
   assert.match(page, /params\.sale === "active"/);
-  assert.match(page, /販売中の作品だけを見る/);
+  assert.match(filters, /販売中のみ/);
   assert.match(page, /hasActiveMarketplaceCatalogProduct\(work\.digital_products\)/);
   assert.match(page, /prioritizeMarketplaceCatalogSales/);
-  assert.match(page, /<WorkCard[\s\S]*?key=\{work\.id\}[\s\S]*?work=\{work\}[\s\S]*?sale=\{sale\}/);
+  assert.match(page, /<MarketplaceWorkCard[\s\S]*?key=\{work\.id\}[\s\S]*?sale=\{sale\}[\s\S]*?work=\{work\}/);
   assert.match(card, /sale\.label/);
   assert.match(card, /yen\(sale\.lowestPrice\)/);
-  assert.match(card, /sale\.productCount > 1 \? "から"/);
-  assert.match(card, /作品詳細・購入準備へ/);
-  assert.match(card, /作品を見る/);
+  assert.match(card, /sale\.productCount > 1 \? "〜"/);
 });

@@ -1,5 +1,16 @@
 # MANGAI Current Task
 
+## 2026-10-02 Marketplace UI-1 Foundation
+
+- Branch: `codex/marketplace-ui-foundation-20261002`
+- Base: `0f93a082f9c3e64904e5d91b4528b8c4c4afeb98`（PR #595 merge commit、`feature/manga-canvas-mvp`）
+- Marketplaceを「AIクリエイター向け販売サイト」から「インディーズ漫画のデジタル書店」へ移行するPhase UI-1として、書店型Header、モバイル下部ナビ、縦長`MarketplaceWorkCard`、検索・タグ・販売中Filter、スマホ2列／PC4〜5列Gridを実装した。
+- 既存の公開一般作品query、作者表示名RPC、active商品価格集計、Checkout mode／Production canary、Publication固定、購入・Download契約は変更していない。ジャンル専用schemaは追加せず、既存`tags`を「ジャンル・タグ」として表示する。
+- モバイル下部ナビは`/`、作品一覧・詳細、`/dashboard`、購入本棚だけに限定し、Reader、Creator、Admin、Checkout、認証画面では表示しない。Readerへのoverlayを発生させない。
+- Production作品、商品active化、release checkpoint、publication、Checkout enable、Stripe、環境変数、DB schema／migration、実決済は変更していない。お気に入り、フォロー、レビュー、星評価、ランキング、急上昇、レコメンド、Continue Readingも追加していない。
+- 検証: Marketplace集中28/28、Hub 1209/1209、deps error 0（既知warning 2）、ESLint、Hub typecheck、packages build、Next.js Production build、ブラウザDesktop／390px mobile表示、mobile navigation accessibility tree、diff check成功。全体typecheckはHub成功後、Desktop依存の追加installがローカルディスク空き容量0で停止したため`LOCAL_BLOCKED_EXTERNAL_ENVIRONMENT`。今回Desktopコードは変更していない。ローカルにSupabase資格情報がないため実作品データの目視は未実施し、Grid列数・表紙比率は静的回帰テストで固定した。
+- 次: UI-1のレビュー後、Phase UI-2としてMarketplace HomeのHero、注目作品、新着作品、ジャンル、試し読み作品、Creator CTAを既存データ契約の範囲で実装する。注目作品の選定契約がないため、人気・ランキング・レコメンドを推測実装しない。
+
 ## 2026-10-02 Cloud完成PDFから販売準備への案内
 
 - 状態: `IMPLEMENTED / LOCAL_ALL_GATES_PASSED / PRODUCTION_UNCHANGED`

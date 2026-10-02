@@ -64,7 +64,13 @@ test("公開一覧・詳細・購入準備は同じ安全な表示名RPCを使�
       new URL("../src/app/checkout/[productId]/page.tsx", import.meta.url),
       "utf8",
     ),
-    readFile(new URL("../src/components/WorkCard.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL(
+        "../src/components/marketplace/MarketplaceWorkCard.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
   ]);
 
   for (const source of [catalog, detail, checkout]) {
@@ -74,5 +80,5 @@ test("公開一覧・詳細・購入準備は同じ安全な表示名RPCを使�
   assert.match(detail, /クリエイター：\{creatorName\}/);
   assert.match(checkout, /クリエイター：\{creatorName\}/);
   assert.doesNotMatch(checkout, /profiles:creator_id\(display_name\)/);
-  assert.match(card, /作：\{creatorName\}/);
+  assert.match(card, /\{creatorName\}/);
 });

@@ -15,6 +15,10 @@ body {
   color: #263238;
 }
 
+body:has(.marketplace-mobile-nav) {
+  padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+}
+
 input,
 textarea,
 select {
@@ -50,6 +54,22 @@ select {
     @apply text-stone-600;
   }
 
+  .marketplace-page {
+    @apply min-h-[calc(100vh-4rem)] bg-stone-50 text-stone-900;
+  }
+
+  .marketplace-header-link {
+    @apply inline-flex min-h-10 items-center justify-center rounded-full px-3 text-sm font-bold text-stone-700 transition hover:bg-violet-50 hover:text-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2;
+  }
+
+  .marketplace-filter-chip {
+    @apply inline-flex min-h-9 items-center justify-center rounded-full border border-stone-300 bg-white px-3 py-1.5 text-xs font-bold text-stone-600 transition hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 sm:text-sm;
+  }
+
+  .marketplace-filter-chip-active {
+    @apply border-violet-700 bg-violet-700 text-white hover:border-violet-800 hover:bg-violet-800 hover:text-white;
+  }
+
   .cloud-studio-scope .panel {
     @apply rounded-xl border-violet-100 shadow-soft;
   }
@@ -68,5 +88,11 @@ select {
 
   .cloud-studio-scope .text-leaf {
     @apply text-violet-700;
+  }
+}
+
+@media (min-width: 1024px) {
+  body:has(.marketplace-mobile-nav) {
+    padding-bottom: 0;
   }
 }

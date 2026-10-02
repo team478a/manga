@@ -24,7 +24,13 @@ test("原稿編集の入口は日本語表記と3ステップガイドを表示�
 
 test("作品作成・構成・ゴミ箱・ヘッダーは利用者向け用語を日本語に統一する", async () => {
   const [header, create, workspace, trash, editor] = await Promise.all([
-    readFile(new URL("../src/components/Header.tsx", import.meta.url), "utf8"),
+    readFile(
+      new URL(
+        "../src/components/marketplace/MarketplaceHeader.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
     readFile(new URL("../src/app/creator/new/page.tsx", import.meta.url), "utf8"),
     readFile(
       new URL("../src/app/creator/[projectId]/page.tsx", import.meta.url),
@@ -43,7 +49,7 @@ test("作品作成・構成・ゴミ箱・ヘッダーは利用者向け用語�
     ),
   ]);
 
-  assert.match(header, /クラウド制作/);
+  assert.match(header, /漫画を作る/);
   assert.match(create, /新しい作品/);
   assert.match(create, /作品名/);
   assert.match(create, /ページ設定/);
